@@ -1,0 +1,11 @@
+uses
+	ide\Common,
+	Topic,
+	ide\Browser;
+
+file
+	Topic.h,
+	Reference.cpp,
+	Topic.cpp,
+	Topic.lay;
+

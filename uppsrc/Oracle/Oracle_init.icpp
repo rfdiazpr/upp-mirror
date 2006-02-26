@@ -1,0 +1,4 @@
+#include <Sql/Sql.h>
+
+#define TFILE <Oracle/Oracle_init.icpp>
+#include <Core/t.h>

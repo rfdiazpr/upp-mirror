@@ -1,0 +1,23 @@
+uses
+	ide\Common,
+	RichEdit,
+	Esc;
+
+file
+	LayDes.h,
+	laydes.key,
+	sdiff.cpp,
+	laylib.cpp,
+	layusc.cpp,
+	property.cpp,
+	textprop.cpp,
+	fontprop.cpp,
+	propane.cpp,
+	item.cpp,
+	layout.cpp,
+	visgen.cpp,
+	laydes.cpp,
+	layfile.cpp,
+	laywin.cpp,
+	LayDes.lay,
+	LayDes.iml;

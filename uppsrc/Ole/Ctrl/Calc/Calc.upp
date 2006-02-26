@@ -1,0 +1,24 @@
+uses
+	Ole\Ctrl,
+	TCtrlLib\Calc;
+
+target "calc.ocx";
+
+link "/def:calc.def";
+
+file
+	calc.cpp,
+	calc.idl,
+	calc_idl.h,
+	calc_idl.cpp,
+	calc.lay,
+	calc.def,
+	calc.rc
+		depends calc.tlb;
+
+mainconfig
+	"" = "GUI DLL MT";
+
+custom "post-link",
+	"regsvr32 /s /c $(OUTPUT)\\calc.ocx",
+	"";

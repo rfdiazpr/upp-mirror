@@ -1,0 +1,9 @@
+uses
+	CtrlLib;
+
+library(WIN32 GCC) "glaux glu32 opengl32";
+
+file
+	GLCtrl.h,
+	GLCtrl.cpp;
+

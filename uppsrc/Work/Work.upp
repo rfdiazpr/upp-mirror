@@ -1,0 +1,15 @@
+uses
+	CtrlLib;
+
+file
+	work.iml,
+	Fonts.cpp,
+	Main.cpp,
+	Info readonly separator,
+	COPYING,
+	COPYING-PLAIN,
+	AUTHORS;
+
+mainconfig
+	"" = "";
+

@@ -1,0 +1,1090 @@
+#ifndef DRAW_H
+#define DRAW_H
+
+#include <Core/Core.h>
+
+#ifdef PLATFORM_X11
+
+#ifdef flagXLFD
+#define PLATFORM_XLFD
+#else
+#define PLATFORM_XFT
+#endif
+
+#define Time    XTime
+#define Font    XFont
+#define Display XDisplay
+#define Picture XPicture
+
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xatom.h>
+
+#ifdef PLATFORM_XFT
+#include <X11/Xft/Xft.h>
+#endif
+
+#undef Picture
+#undef Time
+#undef Font
+#undef Display
+
+#undef True
+#undef False
+
+#define XFalse 0
+#define XTrue  1
+
+extern XDisplay   *Xdisplay;
+extern const char *Xdisplayname;
+extern int         Xscreenno;
+extern Window      Xroot;
+extern Screen     *Xscreen;
+extern Colormap    Xcolormap;
+extern int         Xheight;
+extern int         Xwidth;
+extern int         XheightMM;
+extern int         XwidthMM;
+extern int         Xdepth;
+extern dword       Xblack;
+extern dword       Xwhite;
+extern int         Xconnection;
+
+extern dword   (*Xgetpixel)(int r, int g, int b);
+
+void          InitX11Draw(const char *dispname = NULL);
+
+void                UpdateSystemSettings();
+const TextSettings& KDESettings();
+
+void   XError();
+void   XError(const char *s);
+
+inline dword GetXPixel(int r, int g, int b) { return (*Xgetpixel)(r, g, b); }
+inline dword GetXPixel(Color color)         { return (*Xgetpixel)(color.GetR(), color.GetG(), color.GetB()); }
+
+#endif
+
+class Drawing;
+class Draw;
+
+#ifdef PLATFORM_WIN32
+HDC ScreenHDC();
+#endif
+
+Draw& ScreenInfo();
+
+#include "PixelArray.h"
+#include "Image.h"
+
+const int FONT_V = 40;
+
+class Font : AssignValueTypeNo<Font, FONT_V, Moveable<Font> >{
+	word  face;
+	word  flags;
+	int16 height;
+	int16 width;
+
+public:
+	enum {
+		FIXEDPITCH  = 0x0001,
+		SCALEABLE   = 0x0002,
+		SYMBOLTYPE  = 0x0004,
+	};
+
+	static int    GetFaceCount();
+	static String GetFaceName(int index);
+	static int    FindFaceNameIndex(const char *name);
+	static dword  GetFaceInfo(int index);
+
+	enum {
+		STDFONT,
+		SCREEN_SERIF,
+		SCREEN_SANS,
+		SCREEN_FIXED,
+		ROMAN,
+		ARIAL,
+		COURIER,
+		SYMBOL,
+	#ifdef PLATFORM_WIN32
+		WINGDINGS,
+		TAHOMA,
+	#endif
+		OTHER,
+	};
+
+	int    GetFace() const          { return face; }
+	int    GetHeight() const        { return height; }
+	int    GetWidth() const         { return width; }
+	bool   IsBold() const           { return flags & 0x8000; }
+	bool   IsItalic() const         { return flags & 0x4000; }
+	bool   IsUnderline() const      { return flags & 0x2000; }
+	bool   IsStrikeout() const      { return flags & 0x1000; }
+	bool   IsNonAntiAliased() const { return flags & 0x800; }
+	bool   IsTrueTypeOnly() const   { return flags & 0x400; }
+	String GetFaceName() const;
+	dword  GetFaceInfo() const;
+
+	Font& Face(int n)            { face = n; return *this; }
+	Font& Height(int n)          { height = n; return *this; }
+	Font& Width(int n)           { width = n; return *this; }
+	Font& Bold()                 { flags |= 0x8000; return *this; }
+	Font& NoBold()               { flags &= ~0x8000; return *this; }
+	Font& Bold(bool b)           { return b ? Bold() : NoBold(); }
+	Font& Italic()               { flags |= 0x4000; return *this; }
+	Font& NoItalic()             { flags &= ~0x4000; return *this; }
+	Font& Italic(bool b)         { return b ? Italic() : NoItalic(); }
+	Font& Underline()            { flags |= 0x2000; return *this; }
+	Font& NoUnderline()          { flags &= ~0x2000; return *this; }
+	Font& Underline(bool b)      { return b ? Underline() : NoUnderline(); }
+	Font& Strikeout()            { flags |= 0x1000; return *this; }
+	Font& NoStrikeout()          { flags &= ~0x1000; return *this; }
+	Font& Strikeout(bool b)      { return b ? Strikeout() : NoStrikeout(); }
+	Font& NonAntiAliased()       { flags |= 0x800; return *this; }
+	Font& NoNonAntiAliased()     { flags &= ~0x800; return *this; }
+	Font& NonAntiAliased(bool b) { return b ? NonAntiAliased() : NoNonAntiAliased(); }
+	Font& TrueTypeOnly()         { flags |= 0x400; return *this; }
+	Font& NoTrueTypeOnly()       { flags &= ~0x400; return *this; }
+	Font& TrueTypeOnly(bool b)   { return b ? TrueTypeOnly() : NoTrueTypeOnly(); }
+	Font& FaceName(const String& name);
+
+	Font  operator()() const       { return *this; }
+	Font  operator()(int n) const  { return Font(*this).Height(n); }
+
+	void  Serialize(Stream& s);
+
+	bool  operator==(Font f) const { return face == f.face && flags == f.flags &&
+	                                        width == f.width && height == f.height; }
+	bool  operator!=(Font f) const { return !operator==(f); }
+
+	dword GetHashValue() const     { return MAKELONG(flags, width) ^ MAKELONG(face, height); }
+	bool  IsNull() const           { return face == 0xffff; }
+
+	Font()                         { height = width = 0; face = flags = 0; }
+	Font(int _face, int _height)   { face = _face; height = _height; flags = 0; width = 0; }
+	Font(const Nuller&)            { face = 0xffff; height = width = 0; flags = 0; }
+
+	operator Value() const         { return RichValue<Font>(*this); }
+	Font(const Value& q)           { *this = RichValue<Font>::Extract(q); }
+};
+
+template<>
+inline bool IsNull(const Font& f)            { return f.IsNull(); }
+
+template<>
+inline unsigned GetHashValue(const Font& f)  { return f.GetHashValue(); }
+
+template<>
+String AsString(const Font& f);
+
+struct StdFont   : public Font { StdFont(int n = 0) : Font(STDFONT, n) {} };
+
+struct ScreenSans : public Font  { ScreenSans(int n = 0) : Font(SCREEN_SANS, n) {} };
+struct ScreenSerif : public Font { ScreenSerif(int n = 0) : Font(SCREEN_SERIF, n) {} };
+struct ScreenFixed : public Font { ScreenFixed(int n = 0) : Font(SCREEN_FIXED, n) {} };
+
+struct Roman     : public Font { Roman(int n) : Font(ROMAN, n) {} };
+struct Arial     : public Font { Arial(int n) : Font(ARIAL, n) {} };
+struct Courier   : public Font { Courier(int n) : Font(COURIER, n) {} };
+struct Symbol    : public Font { Symbol(int n) : Font(SYMBOL, n) {} };
+
+#ifdef PLATFORM_WIN32
+struct WingDings : public Font { WingDings(int n) : Font(WINGDINGS, n) {} };
+struct Tahoma    : public Font { Tahoma(int n) : Font(TAHOMA, n) {} };
+#endif
+
+#ifdef PLATFORM_WIN32
+HPALETTE GetQlibPalette();
+#endif
+
+enum {
+	PEN_NULL = -1,
+	PEN_SOLID = -2,
+	PEN_DASH = -3,
+	PEN_DOT = -4,
+	PEN_DASHDOT = -5,
+	PEN_DASHDOTDOT = -6,
+};
+
+class Image;
+
+class FontInfo : Moveable<FontInfo> {
+	struct CharMetrics {
+		int  width;
+		int  lspc;
+		int  rspc;
+	#ifdef PLATFORM_X11
+		byte chr;
+	#endif
+	#ifdef PLATFORM_XLFD
+		byte fonti;
+	#endif
+	};
+	struct Data : public Link<Data, 2> {
+		void         GetMetrics(int page, CharMetrics *t);
+	#ifdef PLATFORM_X11
+		void         CreateFont(int i, int cs);
+	#endif
+
+		int          count;
+		Font         font;
+		int          angle;
+		int          device;
+	#ifdef PLATFORM_WIN32
+		HFONT        hfont;
+	#endif
+	#ifdef PLATFORM_XLFD
+		XFont        xfont[16];
+	#endif
+	#ifdef PLATFORM_XFT
+		XftFont     *xftfont;
+	#endif
+		int          ascent;
+		int          descent;
+		int          external;
+		int          internal;
+		int          height;
+		int          lineheight;
+		int          overhang;
+		Size         offset;
+		int          avewidth;
+		int          maxwidth;
+		int          firstchar;
+		int          charcount;
+		int          default_char;
+		CharMetrics *width[256];
+		bool         fixedpitch;
+		bool         scaleable;
+		int          spacebefore;
+		int          spaceafter;
+	#ifdef PLATFORM_X11
+		int          underline_position;
+		int          underline_thickness;
+		double       sina;
+		double       cosa;
+		bool         twobyte;
+	#endif
+
+		VectorMap<word, int> kerning;
+
+		Data();
+		~Data();
+	};
+
+	Data *ptr;
+	int   charset;
+
+	friend class Draw;
+
+	CharMetrics       *GetPage(int page) const;
+	#ifdef PLATFORM_X11
+	const CharMetrics& Get(wchar chr);
+	#endif
+
+	void       Release();
+	void       Retain(const FontInfo& f) { ptr = f.ptr; ptr->count++; charset = f.charset; }
+	FontInfo(Data *ptr) : ptr(ptr)       { charset = CHARSET_UNICODE; }
+
+	bool       IsEqual(byte charset, Font f, int angle, int device) const;
+
+public:
+	int        GetAscent() const                  { return ptr->ascent; }
+	int        GetDescent() const                 { return ptr->descent; }
+	int        GetExternal() const                { return ptr->external; }
+	int        GetInternal() const                { return ptr->internal; }
+	int        GetHeight() const                  { return ptr->height; }
+	int        GetLineHeight() const              { return ptr->lineheight; }
+	int        GetOverhang() const                { return ptr->overhang; }
+	int        GetAveWidth() const                { return ptr->avewidth; }
+	int        GetMaxWidth() const                { return ptr->maxwidth; }
+	int        GetWidth(int c) const;
+	int        operator[](int c) const            { return GetWidth(c); }
+	int        GetLeftSpace(int c) const;
+	int        GetRightSpace(int c) const;
+	int        GetKerning(int c1, int c2) const   { return ptr->kerning.Get(MAKEWORD(c1, c2), 0); }
+	bool       IsFixedPitch() const               { return ptr->fixedpitch; }
+	bool       IsScaleable() const                { return ptr->scaleable; }
+
+	Font       GetFont() const                    { return ptr->font; }
+	int        GetFontHeight() const              { return ptr->font.GetHeight(); }
+
+	void       Clear()                            { Release(); ptr = NULL; }
+	bool       IsEmpty() const                    { return !ptr; }
+	operator   bool() const                       { return ptr; }
+
+	FontInfo(const FontInfo& f);
+	FontInfo& operator=(const FontInfo& f);
+
+	FontInfo()                                    { ptr = NULL; charset = CHARSET_UNICODE; }
+	~FontInfo()                                   { Release(); }
+};
+
+struct DrawingPos;
+
+Color SBlack();
+Color SGray();
+Color SLtGray();
+Color SWhiteGray();
+Color SWhite();
+Color SRed();
+Color SGreen();
+Color SBrown();
+Color SBlue();
+Color SMagenta();
+Color SCyan();
+Color SYellow();
+Color SLtRed();
+Color SLtGreen();
+Color SLtYellow();
+Color SLtBlue();
+Color SLtMagenta();
+Color SLtCyan();
+
+Color SColorPaper();
+Color SColorText();
+Color SColorHighlight();
+Color SColorHighlightText();
+Color SColorMenu();
+Color SColorMenuText();
+Color SColorInfo();
+Color SColorInfoText();
+Color SColorDisabled();
+Color SColorLight();
+Color SColorFace();
+Color SColorShadow();
+
+void UpdateSColors();
+
+inline Color InvertColor() { return Color(255, 0); }
+
+class Draw {
+protected:
+	bool      palette:1;
+	bool      color16:1;
+	bool      printer:1;
+	bool      pixels:1;
+	bool      aborted:1;
+	bool      backdraw:1;
+	bool      is_mono:1;
+
+	static bool      sFini;
+
+	enum { LRU, HASH };
+	static FontInfo::Data *GetFontHash(int hash);
+	static FontInfo::Data *GetFontLru();
+	static int       FontCached;
+
+	static bool      StdFontSizeSet;
+	static Size      StdFontSize;
+	static Font      AStdFont;
+
+	typedef Link<FontInfo::Data, 2> FontLink;
+
+	Size   pagePixels;
+	Size   pageMMs;
+	Size   inchPixels;
+	Size   sheetPixels;
+	Point  pageOffset;
+
+	Draw();
+
+	friend bool DrawDrawing(Draw& w, Stream& s, const Rect& target, Size sz);
+
+	friend class  BackRectDraw;
+	friend class  FontInfo;
+	friend class  Font;
+
+	friend void StaticExitDraw_();
+
+	static void      InitColors();
+	static void      InitFonts();
+	static void      FreeFonts();
+	static void      Release(FontInfo::Data *font);
+
+	int       device;
+	FontInfo  lastFont;
+
+	Point        actual_offset;
+	struct Cloff : Moveable<Cloff> {
+		Point org;
+	#ifdef PLATFORM_WIN32
+		HRGN  hrgn;
+	#endif
+	#ifdef PLATFORM_X11
+		int clipi;
+		int offseti;
+	#endif
+		Rect  drawingclip;
+	};
+	Array<Cloff> cloff;
+	Rect         drawingclip;
+
+	static void      InitPlatformFonts();
+
+	enum FontHashConst { FONTHASH = 97 };
+
+#ifdef PLATFORM_WIN32
+	static int CALLBACK AddFace(const LOGFONT *logfont, const TEXTMETRIC *, dword type,
+	                            LPARAM param);
+	static int       EnumFace(HDC hdc, const char *face);
+	static void      ForceFace(HDC hdc, const char *face, const char *aface);
+	static void      Win32__InitColors();
+	static FontInfo  Acquire(Font font, HDC hdc, int angle, int device);
+
+	HDC       handle;
+	COLORREF  lastTextColor;
+	Color     lastColor;
+	HBRUSH    orgBrush;
+	HBRUSH    actBrush;
+	HFONT     orgFont;
+	HPEN      orgPen;
+	HPEN      actPen;
+	int       lastPen;
+	Color     lastPenColor;
+
+	void   Unselect0();
+	void   Cinit();
+	void   Init();
+
+	void   LoadCaps();
+	void   SetDevice(const char *devicename);
+	void   SetPrinterMode();
+	void   Reset();
+	void   SetOrg();
+	friend HPALETTE GetQlibPalette();
+
+	static const char *FontScreenSans;
+	static const char *FontScreenSerif;
+	static const char *FontScreenFixed;
+	static const char *FontRoman;
+	static const char *FontArial;
+	static const char *FontCourier;
+	static const char *FontSymbol;
+	static const char *FontWingdings;
+	static const char *FontTahoma;
+
+public:
+	static bool AutoPalette();
+	static void SetAutoPalette(bool ap);
+	static void Win32UpdateSColors();
+
+#endif
+
+#ifdef PLATFORM_X11
+	static int       AddFonts(const char *xlfd_pattern, int count);
+	static FontInfo  Acquire(Font font, int angle, int device);
+
+	Vector< Vector<Rect> > clip;
+	Vector<Point> offset;
+
+	Drawable   dw;
+	GC         gc;
+#ifdef PLATFORM_XFT
+	XftDraw   *xftdraw;
+#endif
+
+	int        foreground;
+	int        linewidth;
+
+	void       Init();
+	void       Init(const Vector<Rect>& clip, Point offset = Point(0, 0));
+	void       CloneClip();
+#endif
+
+public:
+	static int  FontCacheMax;
+
+	static void SinCos(int angle, double& sina, double& cosa);
+
+	static void SetStdFont(Font font);
+	static Font GetStdFont()                            { return AStdFont; }
+	static Size GetStdFontSize();
+	static int  GetStdFontCy()                          { return GetStdFontSize().cy; }
+
+#ifdef PLATFORM_WIN32
+	static void Flush()                                 { GdiFlush(); }
+#endif
+#ifdef PLATFORM_X11
+	static void Flush()                                 { XSync(Xdisplay, false); }
+#endif
+
+	bool  PaletteMode() const                           { return palette; }
+	bool  IsMono() const                                { return is_mono; }
+
+	Size  GetPagePixels() const                         { return pagePixels; }
+	Size  GetPageMMs() const                            { return pageMMs; }
+	Size  GetPixelsPerInch() const                      { return inchPixels; }
+	Size  GetSheetPixels() const                        { return sheetPixels; }
+	Point GetPageOffset() const                         { return pageOffset; }
+
+	bool  Pixels() const                                { return pixels; }
+	bool  Dots() const                                  { return !pixels; }
+
+	bool  IsPrinter() const                             { return printer; }
+	bool  IsAborted() const                             { return aborted; }
+	bool  IsBack() const                                { return backdraw; }
+#ifdef PLATFORM_WIN32
+	bool  IsSystem() const                              { return handle; }
+#endif
+#ifdef PLATFORM_X11
+	bool  IsSystem() const                              { return gc != None; }
+#endif
+	bool  IsDrawing() const;
+
+	enum {
+		BEGIN               = 1,
+		OFFSET              = 2,
+		CLIP                = 3,
+		CLIPOFF             = 4,
+		EXCLUDECLIP         = 5,
+		INTERSECTCLIP       = 6,
+		END                 = 7,
+		DRAWRECT            = 8,
+		DRAWIMAGE           = 9,
+		DRAWMONOIMAGE       = 10,
+		DRAWDRAWING         = 11,
+		DRAWLINE            = 12,
+		DRAWELLIPSE         = 13,
+		DRAWTEXT            = 14,
+		DRAWARC             = 15,
+		DRAWPOLYPOLYLINE    = 16,
+		DRAWPOLYPOLYPOLYGON = 17,
+	};
+	typedef void (*Drawer)(Draw&, Stream&, const DrawingPos&);
+
+	Stream&  DrawingOp(int code);
+	Stream&  PutRect(const Rect& r);
+
+	static void  Register(int code, Drawer drawer);
+
+	virtual void StartPage();
+	virtual void EndPage();
+
+	virtual void BeginOp();
+	virtual void EndOp();
+	virtual void OffsetOp(Point p);
+	virtual bool ClipOp(const Rect& r);
+	virtual bool ClipoffOp(const Rect& r);
+	virtual bool ExcludeClipOp(const Rect& r);
+	virtual bool IntersectClipOp(const Rect& r);
+	virtual Rect GetClipOp() const;
+	virtual bool IsPaintingOp(const Rect& r) const;
+
+	virtual	void DrawRectOp(int x, int y, int cx, int cy, Color color);
+	virtual void DrawImageOp(const Rect& rect, const Image& img, const Rect& src, int fx);
+	virtual void DrawImageOp(const Rect& rect, const Image& img, const Rect& src,
+		                     Color fore, Color back, Color doxor);
+	virtual void DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color);
+	virtual void DrawPolyPolylineOp(const Point *vertices, int vertex_count,
+	                                const int *counts, int count_count,
+	                                int width, Color color, Color doxor);
+	virtual void DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
+	                                   const int *subpolygon_counts, int scc,
+	                                   const int *disjunct_polygon_counts, int dpcc,
+	                                   Color color, int width, Color outline,
+	                                   Image image, Color doxor);
+	virtual void DrawEllipseOp(const Rect& r, Color color, int pen, Color pencolor);
+	virtual void DrawArcOp(const Rect& rc, Point start, Point end, int width, Color color);
+	virtual void DrawTextOp(int x, int y, int angle, const wchar *text, Font font,
+		                    Color ink, int n, const int *dx);
+
+	virtual void DrawDrawingOp(const Rect& target, const Drawing& w);
+
+	void  Begin()                                       { BeginOp(); }
+	void  End()                                         { EndOp(); }
+	void  Offset(Point p)                               { OffsetOp(p); }
+	void  Offset(int x, int y);
+	bool  Clip(const Rect& r)                           { return ClipOp(r); }
+	bool  Clip(int x, int y, int cx, int cy);
+	bool  Clipoff(const Rect& r)                        { return ClipoffOp(r); }
+	bool  Clipoff(int x, int y, int cx, int cy);
+	bool  ExcludeClip(const Rect& r)                    { return ExcludeClipOp(r); }
+	bool  ExcludeClip(int x, int y, int cx, int cy);
+	bool  IntersectClip(const Rect& r)                  { return IntersectClipOp(r); }
+	bool  IntersectClip(int x, int y, int cx, int cy);
+	Rect  GetClip() const                               { return GetClipOp(); }
+	bool  IsPainting(const Rect& r) const               { return IsPaintingOp(r); }
+	bool  IsPainting(int x, int y, int cx, int cy) const;
+
+	Point GetOffset() const                             { return actual_offset; }
+
+	int   GetCloffLevel() const                         { return cloff.GetCount(); }
+
+
+	void DrawRect(int x, int y, int cx, int cy, Color color)
+	{ DrawRectOp(x, y, cx, cy, color); }
+	void DrawRect(const Rect& rect, Color color);
+
+	void DrawImage(const Rect& rect, const Image& img, const Rect& src, int fx = 0)
+	{ DrawImageOp(rect, img, src, fx); }
+	void DrawImage(const Rect& rect, const Image& img, int fx = 0);
+	void DrawImage(int x, int y, int cx, int cy, const Image& img, int fx = 0);
+	void DrawImage(int x, int y, const Image& img, int fx = 0);
+
+	void DrawImage(const Rect& rect, const Image& img, const Rect& src,
+		             Color fore, Color back = Null, Color doxor = Null)
+	{ DrawImageOp(rect, img, src, fore, back, doxor); }
+	void DrawImage(const Rect& rect, const Image& img,
+		           Color fore, Color back = Null, Color doxor = Null);
+	void DrawImage(int x, int y, int cx, int cy, const Image& img,
+		           Color fore, Color back = Null, Color doxor = Null);
+	void DrawImage(int x, int y, const Image& img,
+		           Color fore, Color back = Null, Color doxor = Null);
+
+	void DrawLine(int x1, int y1, int x2, int y2, int width = 0, Color color = SBlack)
+	{ DrawLineOp(x1, y1, x2, y2, width, color); }
+	void DrawLine(Point p1, Point p2, int width = 0, Color color = SBlack);
+
+	void DrawEllipse(const Rect& r, Color color = SBlack,
+	                 int pen = Null, Color pencolor = SBlack)
+	{ DrawEllipseOp(r, color, pen, pencolor); }
+	void DrawEllipse(int x, int y, int cx, int cy, Color color = SBlack,
+		             int pen = Null, Color pencolor = SBlack);
+
+	void DrawArc(const Rect& rc, Point start, Point end, int width = 0, Color color = SBlack)
+	{ DrawArcOp(rc, start, end, width, color); }
+
+	void DrawPolyPolyline(const Point *vertices, int vertex_count,
+	                      const int *counts, int count_count,
+	                      int width = 0, Color color = SBlack, Color doxor = Null)
+	{ DrawPolyPolylineOp(vertices, vertex_count, counts, count_count, width, color, doxor); }
+	void DrawPolyPolyline(const Vector<Point>& vertices, const Vector<int>& counts,
+		                  int width = 0, Color color = SBlack, Color doxor = Null);
+	void DrawPolyline(const Point *vertices, int count,
+		              int width = 0, Color color = SBlack, Color doxor = Null);
+	void DrawPolyline(const Vector<Point>& vertices,
+		              int width = 0, Color color = SBlack, Color doxor = Null);
+
+	void   DrawPolyPolyPolygon(const Point *vertices, int vertex_count,
+		                       const int *subpolygon_counts, int subpolygon_count_count,
+		                       const int *disjunct_polygon_counts, int disjunct_polygon_count_count,
+		                       Color color = Black, int width = 0, Color outline = Null,
+		                       Image image = Null, Color doxor = Null)
+	{ DrawPolyPolyPolygonOp(vertices, vertex_count, subpolygon_counts, subpolygon_count_count,
+		                  disjunct_polygon_counts, disjunct_polygon_count_count,
+		                  color, width, outline, image, doxor); }
+
+	void   DrawPolyPolyPolygon(const Vector<Point>& vertices,
+	                           const Vector<int>& subpolygon_counts,
+	                           const Vector<int>& disjunct_polygon_counts,
+	                           Color color = Black(), int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	void   DrawPolyPolygon(const Point *vertices, int vertex_count,
+	                       const int *subpolygon_counts, int subpolygon_count_count,
+	                       Color color = Black(), int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	void   DrawPolyPolygon(const Vector<Point>& vertices, const Vector<int>& subpolygon_counts,
+	                       Color color = Black(), int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	void   DrawPolygons(const Point *vertices, int vertex_count,
+	                    const int *polygon_counts, int polygon_count_count,
+	                    Color color = Black(), int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	void   DrawPolygons(const Vector<Point>& vertices, const Vector<int>& polygon_counts,
+	                    Color color = Black(), int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	void   DrawPolygon(const Point *vertices, int vertex_count,
+	                   Color color = Black(), int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	void   DrawPolygon(const Vector<Point>& vertices,
+	                   Color color = Black(), int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+
+	void DrawDrawing(const Rect& r, const Drawing& iw) { DrawDrawingOp(r, iw); }
+	void DrawDrawing(int x, int y, int cx, int cy, const Drawing& iw);
+
+	FontInfo GetFontInfo(byte charset, Font font = StdFont());
+	FontInfo GetFontInfo(Font font = StdFont());
+	FontInfo GetFontInfoW(Font font = StdFont());
+
+	Size GetTextSize(const wchar *text, Font font = StdFont(), int n = -1);
+	void DrawText(int x, int y, int angle, const wchar *text, Font font = StdFont(),
+		          Color ink = SBlack, int n = -1, const int *dx = NULL);
+	void DrawText(int x, int y, const wchar *text, Font font = StdFont(),
+		          Color ink = SBlack, int n = -1, const int *dx = NULL);
+
+	Size GetTextSize(const WString& text, Font font = StdFont());
+	void DrawText(int x, int y, const WString& text, Font font = StdFont(),
+		          Color ink = SBlack, const int *dx = NULL);
+	void DrawText(int x, int y, int angle, const WString& text, Font font = StdFont(),
+		          Color ink = SBlack, const int *dx = NULL);
+
+	Size GetTextSize(const char *text, byte charset, Font font = StdFont(), int n = -1);
+	void DrawText(int x, int y, int angle, const char *text, byte charset,
+	              Font font = StdFont(), Color ink = SBlack, int n = -1, const int *dx = NULL);
+	void DrawText(int x, int y, const char *text, byte charset, Font font = StdFont(),
+		          Color ink = SBlack, int n = -1, const int *dx = NULL);
+
+	Size GetTextSize(const char *text, Font font = StdFont(), int n = -1);
+	void DrawText(int x, int y, int angle, const char *text,
+	              Font font = StdFont(), Color ink = SBlack, int n = -1, const int *dx = NULL);
+	void DrawText(int x, int y, const char *text, Font font = StdFont(),
+		          Color ink = SBlack, int n = -1, const int *dx = NULL);
+
+	Size GetTextSize(const String& text, Font font = StdFont());
+	void DrawText(int x, int y, const String& text, Font font = StdFont(),
+		          Color ink = SBlack, const int *dx = NULL);
+	void DrawText(int x, int y, int angle, const String& text, Font font = StdFont(),
+		          Color ink = SBlack, const int *dx = NULL);
+
+#ifdef PLATFORM_WIN32
+	bool         IsMetaFile() const                     { return device == -1; }
+
+	COLORREF GetColor(Color color) const;
+	Point LPtoDP(Point p) const;
+	Point DPtoLP(Point p) const;
+	Rect  LPtoDP(const Rect& r) const;
+	Rect  DPtoLP(const Rect& r) const;
+
+	void SetColor(Color color);
+	void SetFont(Font font, int angle = 0);
+	void SetDrawPen(int width, Color color);
+
+	Size  GetSizeCaps(int i, int j) const;
+	HDC   BeginGdi();
+	void  EndGdi();
+	HDC   GetHandle()                    { return handle; }
+	operator HDC() const                 { return handle; }
+	void  Unselect();
+	void  Attach(HDC ahandle)            { handle = ahandle; Init(); }
+	HDC   Detach()                       { Unselect(); HDC h = handle; handle = NULL; return h; }
+
+	Draw(HDC hdc);
+	~Draw();
+#endif
+
+#ifdef PLATFORM_X11
+	enum {
+		XLFD_ZERO, XLFD_FOUNDRY, XLFD_FAMILY, XLFD_WEIGHT, XLFD_SLANT, XLFD_SET_WIDTH,
+		XLFD_NOTHING, XLFD_PIXELS, XLFD_POINTS, XLFD_HRES, XLFD_VRES, XLFD_SPACING,
+		XLFD_AVG_WIDTH, XLFD_CHARSET1, XLFD_CHARSET2
+	};
+
+	static String MakeXLFD(byte cs, Font f, int height = Null, int angle = 0);
+#ifdef PLATFORM_XFT
+	static XftFont *CreateXftFont(Font f, int angle);
+	XftDraw *GetXftDraw() const               { return xftdraw; }
+#endif
+	void  SetForeground(Color color);
+	void  SetLineStyle(int width);
+	void  SetFont(Font font, int angle);
+	void  SetClip();
+
+	Drawable GetDrawable() const              { return dw; }
+	GC       GetGC() const                    { return gc; }
+	const Vector<Rect>& GetClipList() const   { return clip.Top(); }
+#ifdef PLATFORM_XFT
+	Draw(Drawable dw, GC gc, XftDraw *xftdraw, const Vector<Rect>& clip);
+#else
+	Draw(Drawable dw, GC gc, const Vector<Rect>& clip);
+#endif
+#endif
+
+private:
+	Draw(const Draw&);
+	void operator=(const Draw&);
+};
+
+struct DrawingPos {
+	Size    source;
+	Size    target;
+	Point   srcoff;
+	Point   trgoff;
+	Point   trgini;
+	Vector<Point16> stack;
+
+	bool  Identity() const                               { return source == target; }
+
+	int   GetX(int x) const;
+	int   GetY(int y) const;
+	int   GetW(int w) const;
+	Point Get(int x, int y) const;
+	Point Get(Point p) const;
+	Size  Get(Size sz) const;
+	Rect  Get(const Rect& r) const;
+	Rect  Get(int x, int y, int cx, int cy) const;
+
+	Point operator()(int x, int y) const                 { return Get(x, y); }
+	Point operator()(Point p) const                      { return Get(p); }
+	Size  operator()(Size sz) const                      { return Get(sz); }
+	Rect  operator()(const Rect& r) const                { return Get(r); }
+	Rect  operator()(int x, int y, int cx, int cy) const { return Get(x, y, cx, cy); }
+
+	void TransformX(int& x) const                        { x = GetX(x); }
+	void TransformY(int& y) const                        { y = GetY(y); }
+	void TransformW(int& w) const                        { w = GetW(w); }
+	void Transform(int& x, int& y) const                 { TransformX(x); TransformY(y); }
+	void Transform(Point& p) const                       { p = Get(p); }
+	void Transform(Size& sz) const                       { sz = Get(sz); }
+	void Transform(Rect& r) const                        { r = Get(r); }
+};
+
+class DrawerRegistrator {
+public:
+	DrawerRegistrator(int code, Draw::Drawer w)          { Draw::Register(code, w); }
+};
+
+#ifdef PLATFORM_WIN32
+class WinMetaFile;
+#endif
+
+class Drawing : Moveable<Drawing> {
+	Size   size;
+	String data;
+
+	friend class DrawingDraw;
+	friend class Draw;
+
+public:
+	operator bool() const          { return !data.IsEmpty(); }
+	Size GetSize() const           { return size; }
+	void SetSize(Size sz)          { size = sz; }
+	void SetSize(int cx, int cy)   { size = Size(cx, cy); }
+
+	Size RatioSize(int cx, int cy) const;
+	Size RatioSize(Size sz) const  { return RatioSize(sz.cx, sz.cy); }
+
+	void Clear()                   { data.Clear(); size = Null; }
+
+	void Append(Drawing& dw);
+
+	void Serialize(Stream& s);
+
+	operator Value() const         { return RawValue<Drawing>(*this); }
+	Drawing(const Value& src)      { if(!IsNull(src)) *this = RawValue<Drawing>::Extract(src); }
+
+	Drawing()                      { size = Null; }
+
+#ifdef PLATFORM_WIN32
+	static Drawing FromWMF(const WinMetaFile& wmf);
+	static Drawing LoadWMF(const char *file);
+	static Drawing ReadClipboardWMF();
+	WinMetaFile AsWMF() const;
+	void        WriteClipboardWMF() const;
+#endif
+};
+
+class DrawingDraw : public Draw {
+public:
+	virtual void BeginOp();
+	virtual void EndOp();
+	virtual void OffsetOp(Point p);
+	virtual bool ClipOp(const Rect& r);
+	virtual bool ClipoffOp(const Rect& r);
+	virtual bool ExcludeClipOp(const Rect& r);
+	virtual bool IntersectClipOp(const Rect& r);
+	virtual Rect GetClipOp() const;
+	virtual bool IsPaintingOp(const Rect& r) const;
+
+	virtual	void DrawRectOp(int x, int y, int cx, int cy, Color color);
+	virtual void DrawImageOp(const Rect& rect, const Image& img, const Rect& src, int fx);
+	virtual void DrawImageOp(const Rect& rect, const Image& img, const Rect& src,
+		                   Color fore, Color back, Color doxor);
+	virtual void DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color);
+	virtual void DrawPolyPolylineOp(const Point *vertices, int vertex_count,
+	                                const int *counts, int count_count,
+	                                int width, Color color, Color doxor);
+	virtual void DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
+	                                   const int *subpolygon_counts, int scc,
+	                                   const int *disjunct_polygon_counts, int dpcc,
+	                                   Color color, int width, Color outline,
+	                                   Image image, Color doxor);
+	virtual void DrawEllipseOp(const Rect& r, Color color, int pen, Color pencolor);
+	virtual void DrawArcOp(const Rect& rc, Point start, Point end, int pen, Color pencolor);
+	virtual void DrawTextOp(int x, int y, int angle, const wchar *text, Font font,
+		                    Color ink, int n, const int *dx);
+
+	virtual void DrawDrawingOp(const Rect& target, const Drawing& w);
+
+private:
+	Size         size;
+	StringStream drawing;
+
+	void         DInit();
+	void         DrawingBegin();
+
+public:
+	void     SetPixels(bool b = true)         { pixels = b; }
+
+	Stream&  GetStream()                      { return drawing; }
+
+	void     Create(int cx, int cy);
+	void     Create(Size sz);
+	
+	Size     GetSize() const                  { return size; }
+
+	Drawing  GetResult();
+	operator Drawing()                        { return GetResult(); }
+
+	DrawingDraw();
+	DrawingDraw(int cx, int cy);
+	DrawingDraw(Size sz);
+	~DrawingDraw();
+};
+
+class NilDraw : public Draw {
+public:
+	virtual void BeginOp();
+	virtual void EndOp();
+	virtual void OffsetOp(Point p);
+	virtual bool ClipOp(const Rect& r);
+	virtual bool ClipoffOp(const Rect& r);
+	virtual bool ExcludeClipOp(const Rect& r);
+	virtual bool IntersectClipOp(const Rect& r);
+	virtual Rect GetClipOp() const;
+	virtual bool IsPaintingOp(const Rect& r) const;
+
+	virtual	void DrawRectOp(int x, int y, int cx, int cy, Color color);
+	virtual void DrawImageOp(const Rect& rect, const Image& img, const Rect& src, int fx);
+	virtual void DrawImageOp(const Rect& rect, const Image& img, const Rect& src,
+		                   Color fore, Color back, Color doxor);
+	virtual void DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color);
+	virtual void DrawEllipseOp(const Rect& r, Color color, int pen, Color pencolor);
+	virtual void DrawTextOp(int x, int y, int angle, const wchar *text, Font font,
+		                    Color ink, int n, const int *dx);
+
+	virtual void DrawDrawingOp(const Rect& target, const Drawing& w);
+
+	NilDraw();
+	~NilDraw();
+};
+
+class BackDraw : public Draw {
+public:
+	virtual bool IsPaintingOp(const Rect& r) const;
+
+protected:
+#ifdef PLATFORM_WIN32
+	HBITMAP hbmpold;
+	HBITMAP hbmp;
+#endif
+#ifdef PLATFORM_X11
+	Pixmap  pixmap;
+#endif
+	Size    size;
+	Draw   *painting;
+	Point   painting_offset;
+
+
+public:
+	void  Put(Draw& w, int x, int y);
+	void  Put(Draw& w, Point p)                  { Put(w, p.x, p.y); }
+
+	void Create(Draw& draw, int cx, int cy);
+	void Create(Draw& draw, Size sz)             { Create(draw, sz.cx, sz.cy); }
+	void Create(int cx, int cy);
+	void Create(Size sz)                         { Create(sz.cx, sz.cy); }
+	void Destroy();
+
+	void SetPaintingDraw(Draw& w, Point off)     { painting = &w; painting_offset = off; }
+
+	BackDraw();
+	~BackDraw();
+};
+
+void         AddNotEmpty(Vector<Rect>& result, int left, int right, int top, int bottom);
+bool         Subtract(const Rect& r, const Rect& sub, Vector<Rect>& result);
+Vector<Rect> Subtract(const Vector<Rect>& rr, const Rect& sub, bool& changed);
+
+#ifdef PLATFORM_X11
+Vector<Rect> Intersect(const Vector<Rect>& b, const Rect& a, bool& changed);
+#ifdef PLATFORM_XFT
+void SetClip(GC gc, XftDraw *xftdraw, const Vector<Rect>& cl);
+#else
+void SetClip(GC gc, const Vector<Rect>& cl);
+#endif
+#endif
+
+void DrawRect(Draw& w, const Rect& rect, const Image& img, bool ralgn = false, int fx = 0);
+void DrawRect(Draw& w, int x, int y, int cx, int cy, const Image& img, bool ra = false, int fx = 0);
+
+void DrawFatFrame(Draw& w, int x, int y, int cx, int cy, Color color, int n);
+void DrawFatFrame(Draw& w, const Rect& r, Color color, int n);
+
+void DrawFrame(Draw& w, int x, int y, int cx, int cy,
+			   Color leftcolor, Color topcolor, Color rightcolor, Color bottomcolor);
+void DrawFrame(Draw& w, const Rect& r,
+			   Color leftcolor, Color topcolor, Color rightcolor, Color bottomcolor);
+void DrawFrame(Draw& w, int x, int y, int cx, int cy,
+			   Color topleftcolor, Color bottomrightcolor);
+void DrawFrame(Draw& w, const Rect& r,
+			   Color topleftcolor, Color bottomrightcolor);
+void DrawFrame(Draw& w, int x, int y, int cx, int cy, Color color);
+void DrawFrame(Draw& w, const Rect& r, Color color);
+
+void DrawBorder(Draw& w, int x, int y, int cx, int cy, const ColorF *colors_ltrd);
+void DrawBorder(Draw& w, const Rect& r, const ColorF *colors_ltrd);
+
+const ColorF *BlackBorder();
+const ColorF *ButtonPushBorder();
+const ColorF *EdgeButtonBorder();
+const ColorF *DefButtonBorder();
+const ColorF *ButtonBorder();
+const ColorF *InsetBorder();
+const ColorF *OutsetBorder();
+const ColorF *ThinOutsetBorder();
+const ColorF *ThinInsetBorder();
+
+void DrawBorder(Draw& w, int x, int y, int cx, int cy, const ColorF *(*colors_ltrd)());
+void DrawBorder(Draw& w, const Rect& r, const ColorF *(*colors_ltrd)());
+
+void DrawRectMinusRect(Draw& w, const Rect& rect, const Rect& inner, Color color);
+
+void DrawFocus(Draw& w, int x, int y, int cx, int cy, Color color);
+void DrawFocus(Draw& w, const Rect& r, Color color);
+void DrawFocus(Draw& w, int x, int y, int cx, int cy);
+void DrawFocus(Draw& w, const Rect& r);
+
+void DrawHighlightImage(Draw& w, int x, int y, const Image& img, bool highlight = true,
+                        bool enabled = true, Color maskcolor = SWhite);
+
+Color GradientColor(Color fc, Color tc, int i, int n);
+
+class SmartStretch
+{
+public:
+	SmartStretch(const Rect& dest, const Rect& src, const Rect& clip, int unit = 2048);
+
+	bool        Get();
+	const Rect& GetSrc() const   { return subsrc; }
+	const Rect& GetDest() const  { return subdest; }
+
+private:
+	Rect dest, src, subdest, subsrc;
+	Size area, dsize, ssize;
+	Rect subarea;
+	Point pos;
+};
+
+void DrawDragRect(Draw& w, const Rect& rect1, const Rect& rect2, const Rect& clip, int n,
+                  Color color, const word *pattern);
+
+enum {
+	BUTTON_NORMAL, BUTTON_OK, BUTTON_HIGHLIGHT, BUTTON_PUSH, BUTTON_DISABLED, BUTTON_CHECKED,
+	BUTTON_VERTICAL = 0x100,
+	BUTTON_EDGE = 0x200,
+	BUTTON_TOOL = 0x400,
+	BUTTON_SCROLL = 0x800,
+};
+
+void DrawXPButton(Draw& w, Rect r, int type);
+
+void DrawTextEllipsis(Draw& w, int x, int y, int cx, const char *text, const char *ellipsis,
+				      Font font = StdFont(), Color ink = SColorText(), int n = -1);
+void DrawTextEllipsis(Draw& w, int x, int y, int cx, const wchar *text, const char *ellipsis,
+				      Font font = StdFont(), Color ink = SColorText(), int n = -1);
+Size GetTLTextSize(Draw& draw, const wchar *text, Font font = StdFont());
+int  GetTLTextHeight(Draw& w, const wchar *s, Font font = StdFont());
+void DrawTLText(Draw& draw, int x, int y, int cx, const wchar *text, Font font = StdFont(),
+                Color ink = SColorText(), int accesskey = 0);
+
+
+typedef String (*DrawingToPdfFnType)(const Array<Drawing>& report, Size pagesize, int margin);
+
+void SetDrawingToPdfFn(DrawingToPdfFnType Pdf);
+DrawingToPdfFnType GetDrawingToPdfFn();
+
+#ifdef PLATFORM_WIN32
+
+#include "DrawWin32.h"
+
+#endif
+
+#include "Display.h"
+#include "ImageDraw.h"
+#include "Debug.h"
+
+#endif

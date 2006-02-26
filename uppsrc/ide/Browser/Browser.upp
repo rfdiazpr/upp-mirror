@@ -1,0 +1,18 @@
+uses
+	CppBase,
+	ide\Common;
+
+file
+	Browser.h,
+	Ref.cpp,
+	Lay.cpp,
+	Base.cpp optimize_speed,
+	ItemList.cpp,
+	Query.cpp,
+	Browser.cpp,
+	Browser.lay,
+	Browser.iml;
+
+mainconfig
+	"" = "GUI";
+

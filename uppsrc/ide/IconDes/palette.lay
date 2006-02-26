@@ -1,0 +1,10 @@
+#ifdef LAYOUTFILE
+
+LAYOUT(PaletteTransparentLayout, 208, 22)
+	ITEM(Label, dv___0, SetLabel(t_("&Transparent:")).LeftPosZ(4, 62).VSizePosZ(0, 0))
+	ITEM(DataPusher, transparent_color, HSizePosZ(68, 30).VSizePosZ(0, 0))
+	ITEM(Button, set_transparent_color, RightPosZ(4, 24).VSizePosZ(0, 0))
+END_LAYOUT
+
+#endif
+

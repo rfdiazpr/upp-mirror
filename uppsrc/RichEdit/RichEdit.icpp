@@ -1,0 +1,4 @@
+#include "RichEdit.h"
+
+#define TFILE <RichEdit/RichEdit.t>
+#include <Core/t.h>

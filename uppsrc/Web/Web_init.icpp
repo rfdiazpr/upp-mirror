@@ -1,0 +1,4 @@
+#include "Web.h"
+
+#define TFILE <Web/Web.t>
+#include <Core/t.h>

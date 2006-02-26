@@ -1,0 +1,6 @@
+file
+	umk.cpp;
+
+mainconfig
+	"" = "CONSOLE";
+

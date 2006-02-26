@@ -1,0 +1,21 @@
+uses
+	plugin\z,
+	Draw;
+
+file
+	PdfDraw.h,
+	TTFStream.cpp,
+	TTFStruct.cpp,
+	TTFReader.cpp,
+	TTFSubset.cpp,
+	PdfDraw.cpp,
+	PdfReport.icpp,
+	Test.cpp,
+	Info readonly separator,
+	COPYING,
+	COPYING-PLAIN,
+	AUTHORS;
+
+mainconfig
+	"" = "GUI";
+

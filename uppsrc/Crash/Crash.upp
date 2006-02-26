@@ -1,0 +1,15 @@
+uses
+	CtrlLib;
+
+file
+	imagehlp.dli,
+	crash.cpp,
+	crash.iml,
+	crash.rc,
+	Info readonly separator,
+	COPYING,
+	COPYING-PLAIN,
+	AUTHORS;
+
+mainconfig
+	"" = "GUI";

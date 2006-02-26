@@ -1,0 +1,10 @@
+uses
+	Core;
+
+file
+	ftp.h,
+	ftp.cpp,
+	lib readonly separator,
+	lib\README.ftplib,
+	lib\ftplib.h,
+	lib\ftplib.cpp tabsize 4;

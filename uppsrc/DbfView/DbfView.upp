@@ -1,0 +1,13 @@
+uses
+	TCtrlLib;
+
+file
+	DbfView.cpp,
+	Info readonly separator,
+	COPYING,
+	COPYING-PLAIN,
+	AUTHORS;
+
+mainconfig
+	"NORMAL" = "GUI";
+

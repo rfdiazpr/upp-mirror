@@ -1,0 +1,38 @@
+optimize_speed;
+
+flags(NOTMFC) "!GUI !CONSOLE";
+
+uses
+	Core;
+
+file
+	Wrapper readonly separator,
+	z.h,
+	zlibupp.cpp,
+	"Original files" readonly separator,
+	lib/adler32.c,
+	lib/compress.c,
+	lib/crc32.c,
+	lib/deflate.c tabsize 8,
+	lib/deflate.h,
+	lib/gzio.c,
+	lib/infblock.c,
+	lib/infblock.h,
+	lib/infcodes.c,
+	lib/infcodes.h,
+	lib/inffixed.h,
+	lib/inffast.c,
+	lib/inffast.h,
+	lib/inflate.c,
+	lib/inftrees.c,
+	lib/inftrees.h,
+	lib/infutil.c,
+	lib/infutil.h,
+	lib/trees.h,
+	lib/trees.c,
+	lib/uncompr.c,
+	lib/zconf.h,
+	lib/zlib.h,
+	lib/zutil.c,
+	lib/zutil.h;
+

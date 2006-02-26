@@ -1,0 +1,235 @@
+class TreeCtrl : public Ctrl {
+public:
+	virtual void  Paint(Draw& w);
+	virtual void  Layout();
+	virtual void  LeftDown(Point p, dword flags);
+	virtual void  LeftDouble(Point p, dword flags);
+	virtual void  RightDown(Point p, dword flags);
+	virtual void  MouseWheel(Point p, int zdelta, dword keyflags);
+	virtual bool  Key(dword key, int);
+	virtual void  GotFocus();
+	virtual void  LostFocus();
+	virtual void  ChildGotFocus();
+	virtual void  ChildRemoved(Ctrl *);
+	virtual void  SetData(const Value& data);
+	virtual Value GetData() const;
+
+public:
+	class Node
+	{
+		void           Init() { display = NULL; size = Null; margin = 2; canopen = false; canselect = true; }
+
+	public:
+		Image          image;
+		int            margin;
+		Value          key;
+		Value          value;
+		const Display *display;
+		Size           size;
+		Ptr<Ctrl>      ctrl;
+		bool           canopen;
+		bool           canselect;
+
+		Node& SetImage(const Image& img)          { image = img; return *this; }
+		Node& Set(const Value& v)                 { key = value = v; ctrl = NULL; return *this; }
+		Node& Set(const Value& v, const Value& t) { key = v; value = t; ctrl = NULL; return *this; }
+		Node& SetDisplay(const Display& d)        { display = &d; ctrl = NULL; return *this; }
+		Node& SetSize(Size sz)                    { size = sz; return *this; }
+		Node& SetCtrl(Ctrl& _ctrl)                { ctrl = &_ctrl; return *this; }
+		Node& CanOpen(bool b = true)              { canopen = b; return *this; }
+		Node& CanSelect(bool b)                   { canselect = b; return *this; }
+
+		Node();
+		Node(const Image& img, const Value& v);
+		Node(const Image& img, const Value& v, const Value& t);
+		Node(const Value& v);
+		Node(const Value& v, const Value& t);
+		Node(Ctrl& ctrl);
+		Node(const Image& img, Ctrl& ctrl, int cx = 0, int cy = 0);
+	};
+
+private:
+	struct Item : Node {
+		union {
+			int            parent;
+			int            freelink;
+		};
+
+		bool           isopen;
+		bool           sel;
+		Vector<int>    child;
+		int            linei;
+
+		Size GetValueSize() const;
+		Size GetSize() const;
+
+		Item() { isopen = false; linei = -1; parent = -1; canselect = true; sel = false; }
+	};
+	struct Line : Moveable<Line> {
+		int  level;
+		int  itemi;
+		int  ll;
+		int  y;
+	};
+
+	Array<Item>  item;
+	Vector<Line> line;
+	int          cursor;
+	int          freelist;
+	int          levelcx;
+	bool         nocursor;
+	bool         noroot;
+	bool         dirty;
+	bool         hasctrls;
+	bool         multiselect;
+	bool         isselection;
+	ScrollBars   sb;
+	Scroller     scroller;
+	Display     *display;
+
+	struct LineLess {
+		bool   operator()(int y, const Line& l) const            { return y < l.y; }
+	};
+
+	struct SortOrder;
+
+	void   Dirty(int id = 0);
+	void   ReLine(int, int, Size&);
+	void   SyncTree();
+	void   RemoveSubtree(int id);
+	void   Scroll();
+	int    FindLine(int y) const;
+	void   RefreshLine(int i);
+	void   RefreshItem(int id);
+	void   SetCursorLineSync(int i);
+	void   SetCursorLine(int i, bool scroll);
+	void   SetCursor(int id, bool scroll);
+	void   RemoveCtrls(int itemi);
+	void   SyncCtrls(bool add, Ctrl *restorefocus);
+	bool   Tab(int d);
+	void   Sort0(int id, const ValueOrder& order);
+	void   SortDeep0(int id, const ValueOrder& order);
+	void   GatherOpened(int id, Vector<int>& o);
+	void   UpdateSelect();
+	void   ClearSelTree(int id);
+	bool   UpdateSelTree(int id);
+	void   ShiftSelect(int l1, int l2);
+
+public:
+	Callback1<int>  WhenOpen;
+	Callback1<int>  WhenClose;
+	Callback        WhenCursor;
+	Callback        WhenLeftDouble;
+	Callback1<Bar&> WhenBar;
+	Callback        WhenSelection;
+
+	void   SetRoot(const Node& n);
+	void   SetRoot(const Image& img, Value v);
+	void   SetRoot(const Image& img, Value v, Value t);
+	void   SetRoot(const Image& img, Ctrl& ctrl, int cx = 0, int cy = 0);
+	int    Insert(int parent, int i, const Node& n);
+	int    Insert(int parent, int i);
+	int    Insert(int parent, int i, const Image& img, Value value, bool withopen = false);
+	int    Insert(int parent, int i, const Image& img, Value key, Value value, bool withopen = false);
+	int    Insert(int parent, int i, const Image& img, Ctrl& c, int cx = 0, int cy = 0, bool wo = false);
+	int    Add(int parent, const Node& n);
+	int    Add(int parent);
+	int    Add(int parent, const Image& img, Value value, bool withopen = false);
+	int    Add(int parent, const Image& img, Value key, Value value, bool withopen = false);
+	int    Add(int parent, const Image& img, Ctrl& ctrl, int cx = 0, int cy = 0, bool withopen = false);
+	void   Remove(int id);
+	void   RemoveChildren(int id);
+
+	int    GetChildCount(int id) const                         { return item[id].child.GetCount(); }
+	int    GetChild(int id, int i) const                       { return item[id].child[i]; }
+	int    GetParent(int id) const                             { return item[id].parent; }
+
+	Value  Get(int id) const;
+	Value  GetValue(int id) const;
+	Value  operator[](int id) const                            { return Get(id); }
+	void   Set(int id, Value value);
+	void   Set(int id, Value key, Value value);
+
+	int    GetLineCount();
+	int    GetItemAtLine(int i);
+	int    GetLineAtItem(int id);
+
+	const Node& GetNode(int id) const                          { return item[id]; }
+	void        SetNode(int id, const Node& n);
+
+	bool   IsOpen(int id) const;
+	void   Open(int id, bool open = true);
+	void   Close(int id)                                       { Open(id, false); }
+
+	void   MakeVisible(int id);
+
+	void   SetCursorLine(int i);
+	int    GetCursorLine() const                               { return cursor; }
+	void   KillCursor();
+	void   SetCursor(int id);
+	int    GetCursor() const;
+	bool   IsCursor() const                                    { return GetCursor() >= 0; }
+
+	Point  GetScroll() const;
+	void   ScrollTo(Point sc);
+
+	Value  Get() const;
+	Value  GetValue() const;
+
+	int    Find(Value key);
+	bool   FindSetCursor(Value key);
+
+	void   Sort(int id, const ValueOrder& order);
+	void   SortDeep(int id, const ValueOrder& order);
+
+	void   Sort(int id, int (*compare)(const Value& v1, const Value& v2) = StdValueCompare);
+	void   SortDeep(int id, int (*compare)(const Value& v1, const Value& v2) = StdValueCompare);
+
+	void   Clear();
+
+	bool         IsSelection() const            { return isselection; }
+	void         ClearSelection();
+	void         SelectOne(int id, bool sel);
+	bool         IsSelected(int id) const       { return item[id].sel; }
+
+	void   Dump();
+
+	TreeCtrl& NoCursor(bool b = true)    { nocursor = b; if(b) KillCursor(); return *this; }
+	TreeCtrl& NoRoot(bool b = true)      { noroot = b; Dirty(); Refresh(); return *this; }
+	TreeCtrl& LevelCx(int cx)            { levelcx = cx; Dirty(); return *this; }
+	TreeCtrl& MultiSelect(bool b = true) { multiselect = true; return *this; }
+
+	typedef TreeCtrl CLASSNAME;
+
+	TreeCtrl();
+	~TreeCtrl();
+};
+
+class OptionTree : public TreeCtrl {
+	Vector<Option *> option;
+	Array<Option>    aux;
+
+	void SetOption(int i);
+	void SetChildren(int id, bool b);
+
+public:
+	Callback WhenOption;
+
+	void SetRoot(const Image& img, Option& option, const char *text = NULL);
+	void SetRoot(Option& option, const char *text = NULL);
+	void SetRoot(const Image& img, const char *text);
+	void SetRoot(const char *text);
+	int  Add(int parent, const Image& img, Option& option, const char *text = NULL);
+	int  Add(int parent, Option& option, const char *text = NULL);
+	int  Add(int parent, const Image& img, const char *text);
+	int  Add(int parent, const char *text);
+
+	int  Get(int id) const                          { return option[id]->Get(); }
+
+	void Clear();
+
+	typedef OptionTree CLASSNAME;
+
+	OptionTree();
+	~OptionTree();
+};

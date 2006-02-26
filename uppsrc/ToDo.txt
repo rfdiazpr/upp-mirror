@@ -1,0 +1,291 @@
+602 critical bugs:
+
+- problem s crashem na startu
+- problem s CriticalSection v Linuxu
+- problem focusem v Linuxu - Gnome 2.10.0 to be exact, IDE, Alt+Tab
+- problem s umk - nevraci se z linkeru
+
+---------------------------
+* Assist++ Navigate is unable to find the "Alignment" enum in beta4.
+
+* The fact that there is key assignments for it should also be shown in the context menu (Assist++)
+
+* Single click breakpoints
+
+* LIneNumbers: However now that you mention it, it would be nice to be able to toggle that on/off in the context menu.
+
+* autocomplete pada nekde kolem invalidate v Linuxu (511)
+
+* Button, Enter, Shift - tlacitko zustane vtlacene
+
+* Alt+J neskace podle signatury
+int Odpady::SlozenkaVars(VectorMap<String, Value>& var,
+                         Osob0*|*Doklad od, Date datum,
+                         bool  preplatek, bool nedoplatek,
+                         bool& dotisk)
+
+* The assembly name editline in the New/Edit assembly dialog should restrict the chars usable in assembly names. Since the name is used as a filename, it should not contain the /;*?"|\ chars.
+
+* Cerna barva v Browseru
+
+* Assist++ Soci::NewDoc Alt+J skace do .h
+
+* some "add library" support in project templates would be helpful
+
+* Assist++ - templated inheritance - String missing AString as base...
+
+* Ctrl+Up / Down - prelozit! (Ctrl+Nahoru)
+
+* VisGen: non-class dialogs
+
+* However, I think that it is worth considering adding "CheckOnFocus" or something like that in EditField - it is not that hard to do.
+
+http://www.arilect.com/upp/forum/index.php?t=msg&th=289&start=0&S=86cb1ba64d5b6577f8e378aea8746282
+
+* Assist++ String::Find nechodi (neprojde dedicnosti?)
+
+* MenuBarItem::SetFont
+
+* ScrollArea (ScrollPane)
+
+* Rename/Delete/Duplicate package.
+
+* Esc - problem s porovnavanim Escapu
+
+* static DllFn attach_console("AttachConsole", "kernel32.dll");
+
+* Assist++: public/private, filter by class
+
+* String::Find(String)
+
+* LAYDES
+  When the LineEdit has the focus inside the SetLabel panel in the layout editor, and I press enter the enter is processed by a different control: the other textedit control above it.
+  index.php?t=getfile&id=49&private=0
+  And Alt-Backspace hotkey is missing for undo in the layout editor.
+
+
+* Esc: Padlo <:_DATUM. v Matrice na ASSERT...
+
+* first bug: Open a file from the current project. Rename the file by right-clicking on the project navigation tree. A new tab opens with the new name but the old tab remains open - it should have been removed.
+* another bug: Run a Query (Ctrl-Q), and from the list which displays on the bottom select multiple methods in the same class, so that the same files gets opened multiple times. Try to close the tab before the last one by clicking on the X icon. The tab is not closed just swich places with the other tabs, so all tabs remain open. This can only be reproduces in about 75% of the attempts.
+
+* Find a way how to avoid Bar bug (BrowseMenu(toolbar) instead of (bar))
+
+************
+
+* I found a minor bug in scope highlight. See attached screenshot of a scope highlight where the colored region is shifted with one character.
+
+* Assist++: FrameRight<ButtonOption>
+
+* Submit MSC bug....
+
+* By the way, now that I understand the actual processes between this, I think there's a bug in ConvertTime. The global Format produces a String of Time with forward slashes "/" dividing days, months and years but ConvertTime::Scan and ConvertTime::Filter expect full stops instead ".". This causes EditTime to refuse to close once any time has been entered.
+
+* Also, in edit controls (new assembly dialog, for example) clipboard cut/paste doesn't work. I am using ubuntu 5.10 and latest upp/linux. OK, this is something to check/fix.
+
+* Zrusit TopWindow z base IdeDesigneru
+
+**************
+These missing features would be essential for a documentation browser:
+- scrolling the text panel by keyboard
+- copying selected text regions from the text panel
+- search on current page
+- search on all pages
+- search by topic name
+**************
+
+* TopWindow::Run(this)
+
+Feature suggestions
+-------------------
+
+In select-main-package dialog
+1. allow display of packages to be those from one particular nest instead of
+all nests in the assembly
+2. allow checkbox option for hiding of "uppsrc" packages so "end users" see
+only their own packages
+3. when the list of packages is showing packages from more than one nest,
+somehow indicate which nest a particular package is from.
+4. "New" button could be labelled "new package"
+5. Add buttons for "edit assembly" etc. because right click is not so
+obvious
+**************
+
+* TreeTypes.txt odstranit! (presunout do cfg)
+
+* Opravit uvs2 - filediff
+
+* Presypaci hodiny na zacatku prace...
+
+* .lay - zobrazovat EdisString *spis*
+
+* BM: Create .map file
+
+* ScrollBar - trochu divne obarveni v rozich...
+
+* QTF: Co to je "~~~" ? (Soci)
+
+* Podivnosti Soci - Rozho - Text - problem s TopWindow a retezcem owneru a disabled....
+
+* Bar Gap(INT_MAX) ok Gap() cancel
+
+* Nvl(ROCNIK, SqlVal(999999)) (matrika)
+
+* brc/ship
+
+* RichEdit - zabavny problem us StatusBar _cy mizi underscore
+
+* Resolve problem with base class.... (search for type in base class too when qualifying) RichText::RestoreFormat
+
+* UPGRADE instead of uninstall
+
+* Blbne v debugger/Report pagei member v Report::Put(const RichText NECHODI THIS! - problem s vicenasobnou dedicnost ve virtualni funkci asi
+
+* void + v Esc !!!!
+
+* Nechodi assist++ u vicenasobnych templatu (viz. Matrika)
+
+* Improved Ctrl+W (goto real position)
+
+* Shift-Backspace to get back to the place of last modification.... (and maybe also <- -> buttons?)
+
+* TheIDE - readonly toolbar button vypada trosku osklive
+
+* Add printing
+
+* Check QTF in LayDes (changed)
+
+TCtrlLib -> CtrlLib
+1) DragDropCtrl
+2) ArrayPair
+
+* RichEdit repainting
+
+* <LRU> pseudopackage
+
+* And after right clicking on #include "some_h_file.h" add "Open file: some_h_file.h" into context menu.
+
+***********
+   1.  Assist++
+          * Show function prototype above function during autocompletion. See http://www.wholetomato.com/products/features/parameter.html
+          * Display the prototype definition line of the current symbol under the cursor at the top of the editing window. Or, as in visual slickedit, display the snippet of code around the definition of the current symbol under the cursor. See http://www.wholetomato.com/products/features/definition.html and similarly http://www.slickedit.com/images/stories/screenshots/vs10_jav a1.jpg
+          * Insert closing } ) ] " when the corresponding opening character is typed. See http://www.wholetomato.com/products/features/insert.html
+          * Show possible header files during #include. See http://www.wholetomato.com/products/features/include.html
+   2. Other
+          * Improve "Enclose selected text". Allow using '/' to comment lines with // and '*' to comment lines with /* ... */. Also, if the lines are already commented, then un-comment them instead. See http://www.wholetomato.com/products/features/surround.html
+-----------
+
+
+
+***********
+When I'm on it:
+1)
+in the Setup/Keys you can specify "Insert" key, but you can't specify "Delete" key, as it does just delete the defined key.
+Probably more user-friendly, than consistent behaviour, so no fix needed.
+
+If you try to specify "Esc" key, the Cancel button is pressed, but the window will remain anyway, and the Esc will be not mapped anyway. (so "nothing" happens)
+
+Maybe you should rethink what keys are "reserved" and let the user know about them in some way, so they will not try to map them. (but try to use as small number of "reserved" keys, as possible)
+
+2)
+There is no save/load functionality for keys setting, only "Default" button.
+Usually it's nice from IDE to allow save/load, and to install several saved configurations emulating common IDEs keyboard mapping, so people migrating from different IDE can choose their "common" hotkeys without redefining it by hand in setup menu.
+----------
+* Opravit FileSel - Enter pri vybranych discich...
+
+* externi hyperlinky v Topic++ nejdou reeditovat (zmrsi se to na tema)
+
+* I would like to be able to disable to the blue shortcut key texts in
+menus and filelist.
+Although the style of these texts vary in different microsoft apps.
+the consensus seems to be that they are gray of dark gray :)
+
+* 2005-11-15: Nevim, jestli se ti to taky stava, ale kdyz si nahraju novou verzi IDE, pri ktere mi spadne konfiguracni soubor, tak kdyz priste otevru Format | Environment a jenom ho zavru (nic do nej nepisu), tak se vysky vsech tech 5 fontu zmeni na 3 (ale pri otevreni toho dialogu to ukazuje spravne, nejakych 12/14). Kdyz to pak rucne prehazim, tak uz to vydrzi az do dalsiho spadnuti konfiguracniho souboru.
+
+* odstranit "falesne" main package
+
+* Compiler name
+
+* A taky by to chtelo konecne opravit, ze tam je nejaka posrana funkce, ktera uklada upp soubory bez SaveFileChanges,
+  takze pri nejake operaci v Package organizeru mi to vzdycky touchne vsechny package v uppsrc.
+
+* umake
+
+* Topic++ nestrankuje pri tisku
+
+*? proc pada debugging v Assist.cpp?
+
+* Vsechno O je cyan
+
+* SysTray http://groups.google.nl/group/comp.os.ms-windows.programmer.win32/browse_thread/thread/dd27924db57ec27a/05ed1407a817ee03?lnk=st&q=win32+minimize+tray+icon&rnum=1&hl=nl#05ed1407a817ee03
+
+* Network browsing v fileselectoru
+
+* BTW: There is an old bug in ArrayCtrl (I have written about it). When it has 3 columns in proportional
+  mode I can get the funny effect. Moving one column to the right the rest move to the left.
+  I'm writing about this, because I just did it in ctrl-j window
+
+* Assist++
+	- Filter je blbe pro '0' ->
+	- virtual function override
+	- THISBACK( by klidne mohl davat na vyber....
+	- Udelat definici promennych pri deklaraci structu/classsu
+	- Dodelat using
+	- Dodelat ::
+	- Generate class diagram
+	- FileLock v Browser++
+	- .sch
+	- 0 v prehledu
+
+
+* Topic++
+	- hledat chybny reference
+	- reference pres UUID
+
+******
+	SQL.ClearError();
+	SQL.Begin();
+-------
+
+* Zoom problem v layoutech
+
+
+RichEdit
+* Cut casti tabulky v textu necha prazdne bunky, jen odstrani texty
+* Remove row nefunguje na multiselect radku tabulky
+* hodilo by se split table na 2 tabulky s normalnim textem mezi nimi
+* Kdyz jses na zacatku radku, smazes slovo (Ctrl+Delete) a posunes kurzor
+nahoru / dolu, skoci na pozici kus odleva (jakoby za konec toho slova,
+* ktere jsi smazal na tom puvodnim radku)
+* hodila by se funkce na smazani radku
+* pri redo kurzor skoci vzdycky na konec textu
+* jak se da v 'Paragraph format' udelat hanging indent, kdyz Indent nejde
+nastavit na zapornou hodnotu?
+* kdyz v Topic++ vyvolas dialog pro zadani hyperlinku (Ctrl+H), tak pri prvnim
+kliknuti do seznamu metod na prave strane scrollbar vzdycky 'uskoci' na zacatek
+(kdyz jsi ho predtim posunul dolu).
+* pekna heuristika pri mazani znaku (nastaveni aktualnich atributu podle
+smazaneho znaku) nefunguje pri Ctrl+Backspace.
+* Odstraneni sloupce pomoci hspan (alespon postupne) zblbne sirku
+* dodelat "Header" do parametru
+* Blbne justify
+
+* callback2
+
+* Udelat autodetekci cr/lf
+
+* Problemy s clipboardem v X11 (nejak se pry opakuje atd...)
+
+* RichEdit by mel zacit s CurrentLang
+
+* Scrollovani Ctrlu
+
+* Ctrly v ArrayCtrl vylepsit
+
+* Bylo by potreba promyslet mutable v mutlithreading, zvlaste v souvislosti s Indexem....
+
+* Drag&Drop
+
+MB:
+C:\oracle\product\10.1.0\db_1\BIN>imp mb/idismain@cxl file=g:\hp.dmp fromuser=id
+is_main touser=mb tables=prest_sablona,prest_skupina,prest_makro

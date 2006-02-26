@@ -1,0 +1,15 @@
+uses
+	CtrlLib,
+	RichText;
+
+file
+	Report.h,
+	Report.cpp,
+	ReportDlg.cpp,
+	ReportI.icpp,
+	Report.lay,
+	Report.t charset "UTF-8";
+
+mainconfig
+	"" = "GUI";
+

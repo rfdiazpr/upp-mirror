@@ -1,0 +1,13 @@
+uses
+	Core;
+
+file
+	CppGen.cpp,
+	Info readonly separator,
+	COPYING,
+	COPYING-PLAIN,
+	AUTHORS;
+
+mainconfig
+	"Normal" = "";
+

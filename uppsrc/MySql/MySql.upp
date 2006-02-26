@@ -1,0 +1,30 @@
+uses
+	Sql,
+	plugin\z;
+
+acceptflags
+	NOMYSQL;
+
+library(WIN32 !NOMYSQL MSC DEBUG) "debug/mysqlclient.lib";
+
+library(WIN32 !NOMYSQL MSC) "ws2_32.lib";
+
+library(LINUX !NOMYSQL) "/usr/lib/mysql/libmysqlclient.a";
+
+library(WIN32 GCC !NOMYSQL) "libmysql.dll";
+
+library(WIN32 !NOMYSQL MSC !DEBUG) "opt/mysqlclient.lib";
+
+link(DEBUG SO) "/nodefaultlib:LIBCD";
+
+link(SHARED SO) "/nodefaultlib:LIBCMT";
+
+file
+	MySql.h,
+	MySqlSchema.h,
+	MySql.cpp,
+	Info readonly separator,
+	COPYING,
+	COPYING-PLAIN,
+	AUTHORS;
+

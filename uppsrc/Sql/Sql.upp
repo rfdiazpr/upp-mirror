@@ -1,0 +1,24 @@
+uses
+	Core;
+
+acceptflags
+	NOAPPSQL;
+
+file
+	Sql.h,
+	Sqlexp.h,
+	Sqlexp.cpp,
+	Sqls.h,
+	Sql.cpp,
+	Schema readonly separator,
+	SqlSchema.h,
+	SqlSchema.cpp,
+	sch_model.h,
+	sch_header.h,
+	sch_source.h,
+	sch_schema.h,
+	util_td.cpp,
+	Info readonly separator,
+	COPYING,
+	COPYING-PLAIN,
+	AUTHORS;

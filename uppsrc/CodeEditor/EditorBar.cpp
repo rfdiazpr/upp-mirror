@@ -1,0 +1,302 @@
+#include "CodeEditor.h"
+
+void Renumber(LineInfo& lf) {
+	LineInfo tf;
+	int l = 0;
+	if(lf.GetCount()) {
+		LineInfoRecord& t = tf.Add();
+		t.breakpoint = lf[0].breakpoint;
+		t.lineno = 0;
+		t.count = lf[0].count;
+		l += t.count;
+	}
+	for(int i = 1; i < lf.GetCount(); i++) {
+		LineInfoRecord& r = lf[i];
+		if(r.breakpoint.IsEmpty() && tf.Top().breakpoint.IsEmpty())
+			tf.Top().count += r.count;
+		else {
+			LineInfoRecord& t = tf.Add();
+			t.breakpoint = r.breakpoint;
+			t.count = r.count;
+			t.lineno = l;
+		}
+		l += r.count;
+	}
+	lf = tf;
+}
+
+void ClearBreakpoints(LineInfo& lf) {
+	for(int i = 0; i < lf.GetCount(); i++)
+		lf[i].breakpoint.Clear();
+}
+
+void ValidateBreakpoints(LineInfo& lf) {
+	for(int i = 0; i < lf.GetCount(); i++)
+		if(lf[i].breakpoint[0] == 0xe)
+			lf[i].breakpoint = "1";
+}
+
+void EditorBar::sPaintImage(Draw& w, int y, int fy, const Image& img)
+{
+	w.DrawImage(0, y + (fy - img.GetSize().cy) / 2, img);
+}
+
+void EditorBar::Paint(Draw& w) {
+	Size sz = GetSize();
+	w.DrawRect(0, 0, sz.cx, sz.cy, SWhiteGray);
+	if(!editor) return;
+	int fy = editor->GetFontSize().cy;
+	int hy = fy >> 1;
+	int y = 0;
+	int i = editor->GetScrollPos().y;
+	int cy = GetSize().cy;
+	int lno = i;
+	bool hi_if = (hilite_if_endif && (editor->highlight == CodeEditor::HIGHLIGHT_CPP
+		|| editor->highlight == CodeEditor::HIGHLIGHT_JAVA));
+	Vector<CodeEditor::IfState> previf;
+	if(hi_if)
+		previf <<= editor->ScanSyntax(i).ifstack;
+	while(y < cy) {
+		String b;
+		if(i < li.GetCount()) {
+			const LnInfo& l = li[i];
+			b = li[i].breakpoint;
+			if(l.lineno >= 0)
+				lno = l.lineno;
+		}
+		if(line_numbers && i < editor->GetLineCount()) {
+			static const Color cycle[] = { Black, Blue, Green, Red };
+			int n = i + 1;
+			Color c = cycle[n / 1000 % 4];
+			int x = sz.cx - 8;
+			for(int q = 3; q-- && n;) {
+				w.DrawImage(x, y + (fy - 12) / 2, CodeEditorImg::Vector[n % 10 + CodeEditorImg::I_N0], c);
+				n /= 10;
+				x -= 6;
+			}
+		}
+		if(hi_if) {
+			Vector<CodeEditor::IfState> nextif;
+			if(i < li.GetCount())
+				nextif <<= editor->ScanSyntax(i + 1).ifstack;
+			int pifl = previf.GetCount(), nifl = nextif.GetCount();
+			int dif = max(pifl, nifl);
+			if(--dif >= 0) {
+				char p = (dif < pifl ? previf[dif].state : 0);
+				char n = (dif < nifl ? nextif[dif].state : 0);
+				int wd = min(2 * (dif + 1), sz.cx);
+				int x = sz.cx - wd;
+				Color cn = CodeEditor::SyntaxState::IfColor(n);
+				if(p == n)
+					w.DrawRect(x, y, 1, fy, cn);
+				else {
+					Color cp = CodeEditor::SyntaxState::IfColor(p);
+					w.DrawRect(x, y, 1, hy, cp);
+					w.DrawRect(x, y + hy, wd, 1, Nvl(cn, cp));
+					w.DrawRect(x, y + hy, 1, fy - hy, cn);
+					if(--dif >= 0) {
+						x = sz.cx - min(2 * (dif + 1), sz.cx);
+						if(!p)
+							w.DrawRect(x, y, 1, hy, CodeEditor::SyntaxState::IfColor(dif < pifl ? previf[dif].state : 0));
+						if(!n)
+							w.DrawRect(x, y + hy, 1, fy - hy, CodeEditor::SyntaxState::IfColor(dif < nifl ? nextif[dif].state : 0));
+					}
+				}
+			}
+			previf = nextif;
+		}
+
+		if(!b.IsEmpty())
+			sPaintImage(w, y, fy, b == "1"   ? CodeEditorImg::Breakpoint() :
+			                      b == "\xe" ? CodeEditorImg::InvalidBreakpoint() :
+			                                   CodeEditorImg::CondBreakpoint());
+		for(int q = 0; q < 2; q++)
+			if(i < li.GetCount() && ptrline[q] >= 0 && ptrline[q] == li[i].lineno)
+				sPaintImage(w, y, fy, ptrimg[q]);
+		y += fy;
+		i++;
+		lno++;
+	}
+}
+
+void EditorBar::MouseMove(Point p, dword flags) {
+	if(editor)
+		editor->MouseMove(Point(0, p.y), flags);
+}
+
+void EditorBar::LeftDown(Point p, dword flags) {
+	if(editor)
+		editor->LeftDown(Point(0, p.y), flags);
+}
+
+String& EditorBar::PointBreak(int& y) {
+	y = minmax(y / ScreenInfo().GetFontInfo(editor->GetFont()).GetHeight()
+		+ editor->GetScrollPos().y, 0, editor->GetLineCount());
+	return li.At(y).breakpoint;
+}
+
+void EditorBar::LeftDouble(Point p, dword flags) {
+	if(!editor || !bingenabled) return;
+	String& b = PointBreak(p.y);
+	if(b.IsEmpty())
+		b = "1";
+	else
+		b.Clear();
+	WhenBreakpoint(p.y);
+	Refresh();
+}
+
+void EditorBar::RightDown(Point p, dword flags) {
+	return;
+	if(!editor || !bingenabled) return;
+	String& b = PointBreak(p.y);
+	EditText(b, "Conditional breakpoint", "Condition");
+	WhenBreakpoint(p.y);
+	Refresh();
+}
+
+void EditorBar::InsertLines(int i, int count) {
+	li.InsertN(minmax(i, 0, li.GetCount()), max(count, 0));
+	Refresh();
+}
+
+void EditorBar::RemoveLines(int i, int count) {
+	i = minmax(i, 0, li.GetCount());
+	li.Remove(i, minmax(count, 0, li.GetCount() - i));
+	Refresh();
+}
+
+void EditorBar::ClearLines() {
+	li.Clear();
+	li.Shrink();
+	Refresh();
+}
+
+LineInfo EditorBar::GetLineInfo() const {
+	LineInfo lf;
+	int l = -2;
+	for(int i = 0; i < li.GetCount(); i++) {
+		const LnInfo& ln = li[i];
+		if(!ln.breakpoint.IsEmpty()) {
+			LineInfoRecord& r = lf.Add();
+			r.lineno = ln.lineno;
+			r.count = 1;
+			r.breakpoint = ln.breakpoint;
+			l = -2;
+		}
+		else
+		if(ln.lineno != l) {
+			LineInfoRecord& r = lf.Add();
+			r.lineno = l = ln.lineno;
+			r.count = 1;
+		}
+		else
+			lf.Top().count++;
+		if(l >= 0) l++;
+	}
+	return lf;
+}
+
+void EditorBar::SetLineInfo(const LineInfo& lf, int total) {
+	li.Clear();
+	if(lf.GetCount() == 0) {
+		for(int i = 0; i < total; i++)
+			li.Add().lineno = i;
+	}
+	else {
+		for(int i = 0; i < lf.GetCount() && li.GetCount() < total; i++) {
+			const LineInfoRecord& r = lf[i];
+			int l = r.lineno;
+			for(int j = r.count; j-- && li.GetCount() < total;) {
+				LnInfo& ln = li.Add();
+				ln.lineno = l;
+				ln.breakpoint = r.breakpoint;
+				if(l >= 0) l++;
+			}
+		}
+		while(li.GetCount() < total)
+			li.Add().lineno = -1;
+	}
+}
+
+void EditorBar::Renumber(int linecount) {
+	li.SetCount(linecount);
+	for(int i = 0; i < linecount; i++)
+		li[i].lineno = i;
+}
+
+void EditorBar::ClearBreakpoints() {
+	for(int i = 0; i < li.GetCount(); i++)
+		li[i].breakpoint.Clear();
+	Refresh();
+}
+
+void EditorBar::ValidateBreakpoints()
+{
+	for(int i = 0; i < li.GetCount(); i++)
+		if(li[i].breakpoint[0] == 0xe)
+			li[i].breakpoint = "1";
+	Refresh();
+}
+
+String EditorBar::GetBreakpoint(int ln)
+{
+	return ln < li.GetCount() ? li[ln].breakpoint : Null;
+}
+
+void EditorBar::SetBreakpoint(int ln, const String& s)
+{
+	li.At(ln).breakpoint = s;
+	WhenBreakpoint(ln);
+}
+
+int  EditorBar::GetLineNo(int lineno) const {
+	for(int i = 0; i < li.GetCount(); i++) {
+		if(lineno <= li[i].lineno)
+			return i;
+	}
+	return lineno;
+}
+
+int  EditorBar::GetNoLine(int line) const {
+	int n = 0;
+	for(int i = 0; i < li.GetCount(); i++) {
+		if(li[i].lineno >= 0)
+			n = li[i].lineno;
+		if(i == line) return n;
+	}
+	return n;
+}
+
+void EditorBar::SetPtr(int line, const Image& img, int i)
+{
+	ASSERT(i >= 0 && i < 2);
+	ptrline[i] = line;
+	ptrimg[i] = img;
+	Refresh();
+}
+
+void EditorBar::HidePtr()
+{
+	ptrline[0] = ptrline[1] = -1;
+	Refresh();
+}
+
+void EditorBar::LineNumbers(bool b)
+{
+	line_numbers = b;
+	Width(b ? 21 : 12);
+	Refresh();
+}
+
+EditorBar::EditorBar() {
+	LineNumbers(false);
+	editor = NULL;
+	bingenabled = true;
+	hilite_if_endif = true;
+	line_numbers = false;
+}
+
+EditorBar::~EditorBar()
+{
+}

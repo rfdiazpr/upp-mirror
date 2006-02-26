@@ -1,0 +1,65 @@
+uses
+	Core;
+
+acceptflags
+	XLFD;
+
+library(WIN32) "user32 gdi32";
+
+library(LINUX) "X11";
+
+library(LINUX) "dl";
+
+library(LINUX !XLFD) "Xft";
+
+library(FREEBSD) "X11";
+
+library(FREEBSD !XLFD) "Xft fontconfig";
+
+library(LINUX !XLFD !SHARED) "fontconfig Xrender freetype expat";
+
+file
+	Draw.h,
+	DrawWin32.h,
+	DrawWin32.cpp,
+	DrawX11.cpp,
+	DrawText.cpp,
+	DrawTextWin32.cpp,
+	DrawTextXlfd.cpp,
+	DrawTextXft.cpp,
+	SSettings.cpp,
+	Draw.cpp,
+	DrawOpWin32.cpp,
+	DrawOpX11.cpp,
+	Drawing.cpp,
+	MetaFile.cpp,
+	DrawUtil.cpp,
+	DrawTextUtil.cpp,
+	Display.h,
+	Display.cpp,
+	Debug.h,
+	Debug.cpp,
+	Image readonly separator,
+	PixelArray.h,
+	PixelArray.cpp,
+	PixelBlt.cpp,
+	PixelPal.cpp,
+	PixelUtil.h,
+	PixelUtil.cpp,
+	Image.h,
+	ImageDraw.h,
+	Image.cpp,
+	ImageUtil.cpp,
+	io.cpp,
+	bmp.cpp,
+	iml.h,
+	iml_header.h,
+	iml_source.h,
+	Info readonly separator,
+	COPYING,
+	COPYING-PLAIN,
+	AUTHORS;
+
+mainconfig
+	"Debug" = "MSC GUI DEBUG WIN32";
+

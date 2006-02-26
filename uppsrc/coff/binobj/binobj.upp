@@ -1,0 +1,16 @@
+optimize_speed;
+
+uses
+	coff;
+
+file
+	binobj.h,
+	binobj.cpp,
+	Info readonly separator,
+	COPYING,
+	COPYING-PLAIN,
+	AUTHORS;
+
+mainconfig
+	"" = "";
+

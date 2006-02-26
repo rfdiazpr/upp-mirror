@@ -1,0 +1,4 @@
+#include "GeomCtrl.h"
+
+#define TFILE <Geom/Ctrl/GeomCtrl.t>
+#include <Core/t.h>

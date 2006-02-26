@@ -1,0 +1,11 @@
+uses Core;
+
+file "uld/uar.h",
+	"uld/uar.cpp",
+	Info readonly separator,
+	COPYING,
+	COPYING-PLAIN,
+	AUTHORS;
+
+mainconfig
+	"" = "";

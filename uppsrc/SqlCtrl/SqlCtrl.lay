@@ -1,0 +1,22 @@
+LAYOUT(SqlErrorLayout, 532, 244)
+	ITEM(Label, text, SetLabel(t_("Error")).LeftPosZ(4, 520).TopPosZ(12, 36))
+	ITEM(Label, cursors, SetLabel(t_("SQL error:")).LeftPosZ(4, 300).TopPosZ(60, 13))
+	ITEM(DocEdit, error, LeftPosZ(4, 522).TopPosZ(76, 52))
+	ITEM(Label, dv___3, SetLabel(t_("Error statement:")).LeftPosZ(4, 201).TopPosZ(136, 13))
+	ITEM(DocEdit, statement, LeftPosZ(4, 522).TopPosZ(152, 52))
+	ITEM(Button, retry, SetLabel(t_("Retry")).LeftPosZ(368, 75).TopPosZ(212, 24))
+	ITEM(Button, cancel, SetLabel(t_("Cancel")).LeftPosZ(448, 75).TopPosZ(212, 24))
+END_LAYOUT
+
+LAYOUT(SqlExportLayout, 340, 338)
+	ITEM(ArrayCtrl, columns, AutoHideSb(true).HSizePosZ(4, 4).VSizePosZ(4, 72))
+	ITEM(Label, dv___1, SetLabel(t_("&Commit each:")).LeftPosZ(6, 72).BottomPosZ(49, 19))
+	ITEM(EditIntSpin, commit_each, Min(0).Max(10000).LeftPosZ(78, 56).BottomPosZ(49, 19))
+	ITEM(Label, dv___3, SetLabel(t_("&Dialect:")).LeftPosZ(166, 44).BottomPosZ(49, 19))
+	ITEM(DropList, dialect, LeftPosZ(214, 120).BottomPosZ(49, 19))
+	ITEM(Option, omit_nulls, SetLabel(t_("&Omit NULL values")).LeftPosZ(4, 138).BottomPosZ(29, 15))
+	ITEM(Option, omit_schema, SetLabel(t_("Omit schema name")).LeftPosZ(4, 156).BottomPosZ(11, 15))
+	ITEM(Option, identity_insert, SetLabel(t_("MS-SQL identity_insert")).LeftPosZ(166, 168).TopPosZ(294, 15))
+	ITEM(Button, ok, SetLabel(t_("OK")).RightPosZ(88, 80).BottomPosZ(3, 21))
+	ITEM(Button, cancel, SetLabel(t_("Cancel")).RightPosZ(4, 80).BottomPosZ(4, 22))
+END_LAYOUT

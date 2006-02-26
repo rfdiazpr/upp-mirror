@@ -1,0 +1,5 @@
+#include "TSqlCtrl.h"
+#pragma hdrstop
+
+#define TFILE <TSql/Ctrl/TSqlCtrl.t>
+#include <Core/t.h>

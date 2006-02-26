@@ -1,0 +1,17 @@
+uses
+	Core;
+
+link(RELEASE) "/DEBUG";
+
+file
+	benchindex.cpp,
+	main.cpp;
+
+mainconfig
+	"Normal" = normal "CONSOLE ST NEWSTRING MT",
+	"Linux shared" = normal "GNU CONSOLE DEBUG LINUX ST SHARED",
+	"Linux debug" = normal "GNU CONSOLE DEBUG LINUX ST STATIC",
+	"Linux release" = normal "GNU CONSOLE RELEASE LINUX ST STATIC",
+	"MT" = normal "CONSOLE MT",
+	"INDEX_MOD" = normal "CONSOLE ST NEWSTRING MT INDEX_MOD";
+

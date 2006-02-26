@@ -1,0 +1,25 @@
+uses
+	ide\Common,
+	plugin\png,
+	plugin\gif,
+	Image,
+	plugin\tif,
+	plugin\jpg;
+
+file
+	IconDes.h,
+	Designer readonly separator,
+	editor.iml,
+	ImageEditCtrl.h,
+	ImageEditCtrl.cpp,
+	ImageEditAdapter.cpp,
+	editor.lay,
+	misc.iml,
+	palctrl.iml,
+	PaletteCtrl.h,
+	PaletteCtrl.cpp,
+	palette.lay,
+	Editor readonly separator,
+	DlgImage.cpp,
+	panel.lay;
+

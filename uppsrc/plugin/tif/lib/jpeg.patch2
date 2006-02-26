@@ -1,0 +1,444 @@
+*** tif_jpeg.c.orig	Mon Sep 18 14:27:13 2000
+--- tif_jpeg.c	Sat Jun  8 14:16:53 2002
+***************
+*** 47,55 ****
+--- 47,57 ----
+  #ifdef FAR
+  #undef FAR
+  #endif
+
++ #define JPEG_INTERNALS
+  #include "jpeglib.h"
++ #undef JPEG_INTERNALS
+  #include "jerror.h"
+
+  /*
+   * On some machines it may be worthwhile to use _setjmp or sigsetjmp
+***************
+*** 538,545 ****
+--- 540,558 ----
+  alloc_downsampled_buffers(TIFF* tif, jpeg_component_info* comp_info,
+  			  int num_components)
+  {
+  	JPEGState* sp = JState(tif);
++ 	tsize_t size = sp->cinfo.comm.is_decompressor
++ #ifdef D_LOSSLESS_SUPPORTED
++ 			? sp->cinfo.d.min_codec_data_unit
++ #else
++ 			? DCTSIZE
++ #endif
++ #ifdef C_LOSSLESS_SUPPORTED
++ 			: sp->cinfo.c.data_unit;
++ #else
++ 			: DCTSIZE;
++ #endif
+  	int ci;
+  	jpeg_component_info* compptr;
+  	JSAMPARRAY buf;
+  	int samples_per_clump = 0;
+***************
+*** 548,557 ****
+  	     ci++, compptr++) {
+  		samples_per_clump += compptr->h_samp_factor *
+  			compptr->v_samp_factor;
+  		buf = TIFFjpeg_alloc_sarray(sp, JPOOL_IMAGE,
+! 				compptr->width_in_blocks * DCTSIZE,
+! 				(JDIMENSION) (compptr->v_samp_factor*DCTSIZE));
+  		if (buf == NULL)
+  			return (0);
+  		sp->ds_buffer[ci] = buf;
+  	}
+--- 561,574 ----
+  	     ci++, compptr++) {
+  		samples_per_clump += compptr->h_samp_factor *
+  			compptr->v_samp_factor;
+  		buf = TIFFjpeg_alloc_sarray(sp, JPOOL_IMAGE,
+! #if defined(C_LOSSLESS_SUPPORTED) || defined(D_LOSSLESS_SUPPORTED)
+! 				compptr->width_in_data_units * size,
+! #else
+! 				compptr->width_in_blocks * size,
+! #endif
+! 				compptr->v_samp_factor * size);
+  		if (buf == NULL)
+  			return (0);
+  		sp->ds_buffer[ci] = buf;
+  	}
+***************
+*** 728,736 ****
+--- 743,755 ----
+  	if (downsampled_output) {
+  		if (!alloc_downsampled_buffers(tif, sp->cinfo.d.comp_info,
+  					       sp->cinfo.d.num_components))
+  			return (0);
++ #ifdef D_LOSSLESS_SUPPORTED
++ 		sp->scancount = sp->cinfo.d.min_codec_data_unit;
++ #else
+  		sp->scancount = DCTSIZE;	/* mark buffer empty */
++ #endif
+  	}
+  	return (1);
+  }
+
+***************
+*** 778,786 ****
+  	JPEGState *sp = JState(tif);
+  	JSAMPLE* inptr;
+  	JSAMPLE* outptr;
+  	tsize_t nrows;
+! 	JDIMENSION clumps_per_line, nclump;
+  	int clumpoffset, ci, xpos, ypos;
+  	jpeg_component_info* compptr;
+  	int samples_per_clump = sp->samplesperclump;
+
+--- 797,805 ----
+  	JPEGState *sp = JState(tif);
+  	JSAMPLE* inptr;
+  	JSAMPLE* outptr;
+  	tsize_t nrows;
+! 	JDIMENSION clumps_per_line, n, nclump, size;
+  	int clumpoffset, ci, xpos, ypos;
+  	jpeg_component_info* compptr;
+  	int samples_per_clump = sp->samplesperclump;
+
+***************
+*** 792,804 ****
+  		TIFFWarning(tif->tif_name, "fractional scanline not read");
+
+  	/* Cb,Cr both have sampling factors 1, so this is correct */
+  	clumps_per_line = sp->cinfo.d.comp_info[1].downsampled_width;
+!
+  	while (nrows-- > 0) {
+  		/* Reload downsampled-data buffer if needed */
+! 		if (sp->scancount >= DCTSIZE) {
+! 			int n = sp->cinfo.d.max_v_samp_factor * DCTSIZE;
+  			if (TIFFjpeg_read_raw_data(sp, sp->ds_buffer, n) != n)
+  				return (0);
+  			sp->scancount = 0;
+  		}
+--- 811,827 ----
+  		TIFFWarning(tif->tif_name, "fractional scanline not read");
+
+  	/* Cb,Cr both have sampling factors 1, so this is correct */
+  	clumps_per_line = sp->cinfo.d.comp_info[1].downsampled_width;
+! 	n = sp->cinfo.d.max_v_samp_factor
+! #ifdef D_LOSSLESS_SUPPORTED
+! 		* (size = sp->cinfo.d.min_codec_data_unit);
+! #else
+! 		* (size = DCTSIZE);
+! #endif
+  	while (nrows-- > 0) {
+  		/* Reload downsampled-data buffer if needed */
+! 		if (sp->scancount >= size) {
+  			if (TIFFjpeg_read_raw_data(sp, sp->ds_buffer, n) != n)
+  				return (0);
+  			sp->scancount = 0;
+  		}
+***************
+*** 974,999 ****
+  		return (0);
+  	}
+  	sp->cinfo.c.data_precision = td->td_bitspersample;
+  	if (isTiled(tif)) {
+! 		if ((td->td_tilelength % (sp->v_sampling * DCTSIZE)) != 0) {
+  			TIFFError(module,
+  				  "JPEG tile height must be multiple of %d",
+! 				  sp->v_sampling * DCTSIZE);
+  			return (0);
+  		}
+! 		if ((td->td_tilewidth % (sp->h_sampling * DCTSIZE)) != 0) {
+  			TIFFError(module,
+  				  "JPEG tile width must be multiple of %d",
+! 				  sp->h_sampling * DCTSIZE);
+  			return (0);
+  		}
+  	} else {
+  		if (td->td_rowsperstrip < td->td_imagelength &&
+! 		    (td->td_rowsperstrip % (sp->v_sampling * DCTSIZE)) != 0) {
+  			TIFFError(module,
+  				  "RowsPerStrip must be multiple of %d for JPEG",
+! 				  sp->v_sampling * DCTSIZE);
+  			return (0);
+  		}
+  	}
+
+--- 997,1044 ----
+  		return (0);
+  	}
+  	sp->cinfo.c.data_precision = td->td_bitspersample;
+  	if (isTiled(tif)) {
+! 		tsize_t size;
+!
+! #ifdef C_LOSSLESS_SUPPORTED
+! 		if ((size = sp->v_sampling * sp->cinfo.c.data_unit) < 16)
+! 			size = 16;
+! #else
+! 		if ((size = sp->v_sampling * DCTSIZE) < 16) size = 16;
+! #endif
+! 		if (td->td_tilelength % size) {
+  			TIFFError(module,
+  				  "JPEG tile height must be multiple of %d",
+! 				  size);
+  			return (0);
+  		}
+! #ifdef C_LOSSLESS_SUPPORTED
+! 		if ((size = sp->h_sampling * sp->cinfo.c.data_unit) < 16)
+! 			size = 16;
+! #else
+! 		if ((size = sp->h_sampling * DCTSIZE) < 16) size = 16;
+! #endif
+! 		if (td->td_tilewidth % size) {
+  			TIFFError(module,
+  				  "JPEG tile width must be multiple of %d",
+! 				  size);
+  			return (0);
+  		}
+  	} else {
++ 		tsize_t size;
++
++ #ifdef C_LOSSLESS_SUPPORTED
++ 		if ((size = sp->v_sampling * sp->cinfo.c.data_unit) < 16)
++ 			size = 16;
++ #else
++ 		if ((size = sp->v_sampling * DCTSIZE) < 16) size = 16;
++ #endif
+  		if (td->td_rowsperstrip < td->td_imagelength &&
+! 		    td->td_rowsperstrip % size) {
+  			TIFFError(module,
+  				  "RowsPerStrip must be multiple of %d for JPEG",
+! 				  size);
+  			return (0);
+  		}
+  	}
+
+***************
+*** 1176,1184 ****
+  	JPEGState *sp = JState(tif);
+  	JSAMPLE* inptr;
+  	JSAMPLE* outptr;
+  	tsize_t nrows;
+! 	JDIMENSION clumps_per_line, nclump;
+  	int clumpoffset, ci, xpos, ypos;
+  	jpeg_component_info* compptr;
+  	int samples_per_clump = sp->samplesperclump;
+
+--- 1221,1229 ----
+  	JPEGState *sp = JState(tif);
+  	JSAMPLE* inptr;
+  	JSAMPLE* outptr;
+  	tsize_t nrows;
+! 	JDIMENSION clumps_per_line, n, nclump, size;
+  	int clumpoffset, ci, xpos, ypos;
+  	jpeg_component_info* compptr;
+  	int samples_per_clump = sp->samplesperclump;
+
+***************
+*** 1190,1198 ****
+  		TIFFWarning(tif->tif_name, "fractional scanline discarded");
+
+  	/* Cb,Cr both have sampling factors 1, so this is correct */
+  	clumps_per_line = sp->cinfo.c.comp_info[1].downsampled_width;
+!
+  	while (nrows-- > 0) {
+  		/*
+  		 * Fastest way to separate the data is to make one pass
+  		 * over the scanline for each row of each component.
+--- 1235,1247 ----
+  		TIFFWarning(tif->tif_name, "fractional scanline discarded");
+
+  	/* Cb,Cr both have sampling factors 1, so this is correct */
+  	clumps_per_line = sp->cinfo.c.comp_info[1].downsampled_width;
+! #ifdef C_LOSSLESS_SUPPORTED
+! 	n = sp->cinfo.c.max_v_samp_factor * (size = sp->cinfo.d.data_unit);
+! #else
+! 	n = sp->cinfo.c.max_v_samp_factor * (size = DCTSIZE);
+! #endif
+  	while (nrows-- > 0) {
+  		/*
+  		 * Fastest way to separate the data is to make one pass
+  		 * over the scanline for each row of each component.
+***************
+*** 1202,1210 ****
+  		     ci < sp->cinfo.c.num_components;
+  		     ci++, compptr++) {
+  		    int hsamp = compptr->h_samp_factor;
+  		    int vsamp = compptr->v_samp_factor;
+! 		    int padding = (int) (compptr->width_in_blocks * DCTSIZE -
+  					 clumps_per_line * hsamp);
+  		    for (ypos = 0; ypos < vsamp; ypos++) {
+  			inptr = ((JSAMPLE*) buf) + clumpoffset;
+  			outptr = sp->ds_buffer[ci][sp->scancount*vsamp + ypos];
+--- 1251,1263 ----
+  		     ci < sp->cinfo.c.num_components;
+  		     ci++, compptr++) {
+  		    int hsamp = compptr->h_samp_factor;
+  		    int vsamp = compptr->v_samp_factor;
+! #ifdef C_LOSSLESS_SUPPORTED
+! 		    int padding = (int) (compptr->width_in_data_units * size -
+! #else
+! 		    int padding = (int) (compptr->width_in_blocks * size -
+! #endif
+  					 clumps_per_line * hsamp);
+  		    for (ypos = 0; ypos < vsamp; ypos++) {
+  			inptr = ((JSAMPLE*) buf) + clumpoffset;
+  			outptr = sp->ds_buffer[ci][sp->scancount*vsamp + ypos];
+***************
+*** 1230,1239 ****
+  			clumpoffset += hsamp;
+  		    }
+  		}
+  		sp->scancount++;
+! 		if (sp->scancount >= DCTSIZE) {
+! 			int n = sp->cinfo.c.max_v_samp_factor * DCTSIZE;
+  			if (TIFFjpeg_write_raw_data(sp, sp->ds_buffer, n) != n)
+  				return (0);
+  			sp->scancount = 0;
+  		}
+--- 1283,1291 ----
+  			clumpoffset += hsamp;
+  		    }
+  		}
+  		sp->scancount++;
+! 		if (sp->scancount >= size) {
+  			if (TIFFjpeg_write_raw_data(sp, sp->ds_buffer, n) != n)
+  				return (0);
+  			sp->scancount = 0;
+  		}
+***************
+*** 1256,1281 ****
+  		/*
+  		 * Need to emit a partial bufferload of downsampled data.
+  		 * Pad the data vertically.
+  		 */
+! 		int ci, ypos, n;
+  		jpeg_component_info* compptr;
+
+  		for (ci = 0, compptr = sp->cinfo.c.comp_info;
+  		     ci < sp->cinfo.c.num_components;
+  		     ci++, compptr++) {
+  			int vsamp = compptr->v_samp_factor;
+! 			tsize_t row_width = compptr->width_in_blocks * DCTSIZE
+! 				* sizeof(JSAMPLE);
+  			for (ypos = sp->scancount * vsamp;
+! 			     ypos < DCTSIZE * vsamp; ypos++) {
+  				_TIFFmemcpy((tdata_t)sp->ds_buffer[ci][ypos],
+  					    (tdata_t)sp->ds_buffer[ci][ypos-1],
+  					    row_width);
+
+  			}
+  		}
+! 		n = sp->cinfo.c.max_v_samp_factor * DCTSIZE;
+  		if (TIFFjpeg_write_raw_data(sp, sp->ds_buffer, n) != n)
+  			return (0);
+  	}
+
+--- 1308,1341 ----
+  		/*
+  		 * Need to emit a partial bufferload of downsampled data.
+  		 * Pad the data vertically.
+  		 */
+! #ifdef C_LOSSLESS_SUPPORTED
+! 		int ci, ypos, n, size = sp->cinfo.c.data_unit;
+! #else
+! 		int ci, ypos, n, size = DCTSIZE;
+! #endif
+  		jpeg_component_info* compptr;
+
+  		for (ci = 0, compptr = sp->cinfo.c.comp_info;
+  		     ci < sp->cinfo.c.num_components;
+  		     ci++, compptr++) {
+  			int vsamp = compptr->v_samp_factor;
+! #ifdef C_LOSSLESS_SUPPORTED
+! 			tsize_t row_width = compptr->width_in_data_units
+! #else
+! 			tsize_t row_width = compptr->width_in_blocks
+! #endif
+! 				* size * sizeof(JSAMPLE);
+  			for (ypos = sp->scancount * vsamp;
+! 			     ypos < size * vsamp; ypos++) {
+  				_TIFFmemcpy((tdata_t)sp->ds_buffer[ci][ypos],
+  					    (tdata_t)sp->ds_buffer[ci][ypos-1],
+  					    row_width);
+
+  			}
+  		}
+! 		n = sp->cinfo.c.max_v_samp_factor * size;
+  		if (TIFFjpeg_write_raw_data(sp, sp->ds_buffer, n) != n)
+  			return (0);
+  	}
+
+***************
+*** 1395,1404 ****
+  	JPEGState* sp = JState(tif);
+  	TIFFDirectory *td = &tif->tif_dir;
+
+  	s = (*sp->defsparent)(tif, s);
+! 	if (s < td->td_imagelength)
+! 		s = TIFFroundup(s, td->td_ycbcrsubsampling[1] * DCTSIZE);
+  	return (s);
+  }
+
+  static void
+--- 1455,1478 ----
+  	JPEGState* sp = JState(tif);
+  	TIFFDirectory *td = &tif->tif_dir;
+
+  	s = (*sp->defsparent)(tif, s);
+! 	if (s < td->td_imagelength) {
+! 		register tsize_t size = sp->cinfo.comm.is_decompressor
+! #ifdef D_LOSSLESS_SUPPORTED
+! 					? sp->cinfo.d.min_codec_data_unit
+! #else
+! 					? DCTSIZE
+! #endif
+! #ifdef C_LOSSLESS_SUPPORTED
+! 					: sp->cinfo.c.data_unit;
+! #else
+! 					: DCTSIZE;
+! #endif
+!
+! 		size = TIFFroundup(size, 16);
+! 		s = TIFFroundup(s, td->td_ycbcrsubsampling[1] * size);
+! 	}
+  	return (s);
+  }
+
+  static void
+***************
+*** 1405,1416 ****
+  JPEGDefaultTileSize(TIFF* tif, uint32* tw, uint32* th)
+  {
+  	JPEGState* sp = JState(tif);
+  	TIFFDirectory *td = &tif->tif_dir;
+
+  	(*sp->deftparent)(tif, tw, th);
+! 	*tw = TIFFroundup(*tw, td->td_ycbcrsubsampling[0] * DCTSIZE);
+! 	*th = TIFFroundup(*th, td->td_ycbcrsubsampling[1] * DCTSIZE);
+  }
+
+  int
+  TIFFInitJPEG(TIFF* tif, int scheme)
+--- 1479,1502 ----
+  JPEGDefaultTileSize(TIFF* tif, uint32* tw, uint32* th)
+  {
+  	JPEGState* sp = JState(tif);
+  	TIFFDirectory *td = &tif->tif_dir;
++ 	register tsize_t size = sp->cinfo.comm.is_decompressor
++ #ifdef D_LOSSLESS_SUPPORTED
++ 				? sp->cinfo.d.min_codec_data_unit
++ #else
++ 				? DCTSIZE
++ #endif
++ #ifdef C_LOSSLESS_SUPPORTED
++ 				: sp->cinfo.c.data_unit;
++ #else
++ 				: DCTSIZE;
++ #endif
+
++ 	size = TIFFroundup(size, 16);
+  	(*sp->deftparent)(tif, tw, th);
+! 	*tw = TIFFroundup(*tw, td->td_ycbcrsubsampling[0] * size);
+! 	*th = TIFFroundup(*th, td->td_ycbcrsubsampling[1] * size);
+  }
+
+  int
+  TIFFInitJPEG(TIFF* tif, int scheme)

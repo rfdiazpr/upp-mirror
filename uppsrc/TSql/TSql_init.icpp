@@ -1,0 +1,4 @@
+#include "TSql.h"
+
+#define TFILE <TSql/TSql.h>
+#include <Core/t.h>

@@ -1,0 +1,829 @@
+enum_property Frame {
+	"NullFrame()",
+	"FieldFrame()",
+	"InsetFrame()",
+	"OutsetFrame()",
+	"ButtonFrame()",
+	"ThinInsetFrame()",
+	"ThinOutsetFrame()",
+	"BlackFrame()",
+	"TopSeparatorFrame()",
+	"BottomSeparatorFrame()",
+	"LeftSeparatorFrame()",
+	"RightSeparatorFrame()"
+};
+
+enum_property Align {
+	"ALIGN_LEFT",
+	"ALIGN_CENTER",
+	"ALIGN_RIGHT"
+};
+
+fn DeflateRect(&r)
+{
+	r.top++;
+	r.left++;
+	r.right--;
+	r.bottom--;
+}
+
+fn DrawFrame(w, &r, c1, c2) {
+	w.DrawRect(r.left, r.top, r.right - r.left, 1, c1);
+	w.DrawRect(r.left, r.top, 1, r.bottom - r.top, c1);
+	w.DrawRect(r.right - 1, r.top, 1, r.bottom - r.top, c2);
+	w.DrawRect(r.left, r.bottom - 1, r.right - r.left, 1, c2);
+	DeflateRect(r);
+}
+
+fn DrawBorder(w, &r, ...)
+{
+	for(i = 0; i < count(argv); i += 2)
+		DrawFrame(w, r, argv[i], argv[i + 1]);
+}
+
+fn DrawButtonFrame(w, &r)
+{
+	DrawBorder(w, r, :SWhite, :SBlack, :SWhiteGray, :SGray);
+}
+
+fn DrawEdgeButtonFrame(w, &r)
+{
+	DrawBorder(w, r, :SWhiteGray, :SBlack, :SWhite, :SGray);
+}
+
+fn DrawEdgeButton(w, &r)
+{
+	DrawEdgeButtonFrame(w, r);
+	w.DrawRect(r, :SLtGray);
+}
+
+fn DrawInsetFrame(w, &r)
+{
+	DrawBorder(w, r, :SGray, :SWhite, :SBlack, :SLtGray);
+}
+
+fn DrawCtrlFrame(w, &r, frame)
+{
+	width = r.right - r.left;
+	height = r.bottom - r.top;
+	switch(frame) {
+	case "FieldFrame()":
+	case "InsetFrame()": DrawInsetFrame(w, r); break;
+	case "OutsetFrame()": DrawBorder(w, r, :SLtGray, :SBlack, :SWhite, :SGray); break;
+	case "ButtonFrame()": DrawButtonFrame(w, r); break;
+	case "ThinInsetFrame()": DrawBorder(w, r, :SGray, :SWhite); break;
+	case "ThinOutsetFrame()": DrawBorder(w, r, :SWhite, :SGray); break;
+	case "BlackFrame()": DrawBorder(w, r, :SBlack, :SBlack); break;
+	case "TopSeparatorFrame()":
+		w.DrawRect(r.left, r.top, width, 1, :SGray);
+		w.DrawRect(r.left, r.top + 1, width, 1, :SWhite);
+		r.top += 2;
+		break;
+	case "BottomSeparatorFrame()":
+		w.DrawRect(r.left, r.bottom - 2, width, 1, :SGray);
+		w.DrawRect(r.left, r.bottom - 1, width, 1, :SWhite);
+		r.bottom -= 2;
+		break;
+	case "LeftSeparatorFrame()":
+		w.DrawRect(r.left, r.top, 1, height, :SGray);
+		w.DrawRect(r.left + 1, r.top, 1, height, :SWhite);
+		r.left += 2;
+		break;
+	case "RightSeparatorFrame()":
+		w.DrawRect(r.right - 2, r.top, 1, height, :SGray);
+		w.DrawRect(r.right - 1, r.top, 1, height, :SWhite);
+		r.right -= 2;
+		break;
+	}
+}
+
+fn GradientColor(fc, tc, i, n)
+{
+	return Color(
+			fc.r + i * (tc.r - fc.r) / n,
+			fc.g + i * (tc.g - fc.g) / n,
+			fc.b + i * (tc.b - fc.b) / n
+	);
+}
+
+fn max(a, b)
+{
+	return a > b ? a : b;
+}
+
+fn min(a, b)
+{
+	return a < b ? a : b;
+}
+
+fn DrawSpinButtons(w, r)
+{
+	h = r.bottom - r.top;
+	h2 = int(h / 2);
+	h7 = int(7 * h / 10);
+	x = r.right - h7;
+	DrawEdgeButton(w, RectC(x, r.top, h7, h2));
+	w.DrawImage((h7 - 5) / 2 + x, (h2 - 3) / 2 + r.top, "CtrlImg::spinup");
+	DrawEdgeButton(w, RectC(x, r.top + h2, h7, h - h2));
+	w.DrawImage((h7 - 5) / 2 + x, (h - h2 - 3) / 2 + r.top + h2, "CtrlImg::spindown");
+}
+
+subctrl NormalSize {
+	GetMinSize() { sz = GetTextSize("X"); sz.cy += 2; return sz; }
+	GetStdSize() { sz = GetMinSize(); sz.cx *= 7; return sz; }
+};
+
+subctrl Base {
+	>NormalSize;
+
+	Doc    SetLabel @1 ? "Label of control" ;
+	Font   SetFont = StdFont();
+	Color  SetInk = :SBlack;
+	Frame  SetFrame @1;
+//	Qtf    SetInfo @1 ? "Info of control" ;
+
+	ViewRect(w) {
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+		return r;
+	}
+	ViewSize(w) {
+		r = ViewRect(w);
+		return Size(r.right - r.left, r.bottom - r.top);
+	}
+};
+
+subctrl Unknown {
+	> Base;
+};
+
+subctrl TextCtrl {
+	>NormalSize;
+
+	ViewRect(w) {
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+		return r;
+	}
+	ViewSize(w) {
+		r = ViewRect(w);
+		return Size(r.right - r.left, r.bottom - r.top);
+	}
+
+	Paint(w) {
+		sz = ViewSize(w);
+		textsize = GetSmartTextSize(.SetLabel, .SetFont);
+		px = 0;
+		if(.SetAlign == "ALIGN_CENTER")
+			px = (sz.cx - textsize.cx) / 2;
+		if(.SetAlign == "ALIGN_RIGHT")
+			px = sz.cx - textsize.cx;
+		w.DrawSmartText(px, (sz.cy - textsize.cy) / 2, .SetLabel, .SetFont, .SetInk);
+	}
+};
+
+ctrl Label {
+	group "Static";
+
+	GetMinSize() { return GetTextSize("X", .StdFont); }
+	GetStdSize() { sz = GetTextSize("Label", .StdFont); sz.cy += 6; return sz; }
+
+	>TextCtrl;
+
+	Doc    SetLabel ? "Label of control" ;
+	Align  SetAlign = ALIGN_LEFT;
+	Font   SetFont = StdFont();
+	Color  SetInk = :SBlack;
+	Frame  SetFrame @1;
+//	Qtf    SetInfo @1 ? "Info of control" ;
+
+	Paint(w) {
+		sz = ViewSize(w);
+		textsize = GetSmartTextSize(.SetLabel, .SetFont);
+		px = 0;
+		if(.SetAlign == "ALIGN_CENTER")
+			px = (sz.cx - textsize.cx) / 2;
+		if(.SetAlign == "ALIGN_RIGHT")
+			px = sz.cx - textsize.cx;
+		w.DrawSmartText(px, (sz.cy - textsize.cy) / 2, .SetLabel, .SetFont, .SetInk);
+	}
+	Sample() {
+		.SetLabel = "Label";
+		.SetFont = Arial(10).Bold().Italic();
+	}
+};
+
+ctrl StaticText {
+	group "Static";
+
+	GetMinSize() { return GetTextSize("X", .StdFont); }
+	GetStdSize() { sz = GetTextSize("Label", .StdFont); sz.cy += 6; return sz; }
+
+	>TextCtrl;
+
+	Doc    SetText ? "Label of control" ;
+	Align  SetAlign = ALIGN_LEFT;
+	Font   SetFont = StdFont();
+	Color  SetInk = :SBlack;
+	Frame  SetFrame @1;
+//	Qtf    SetInfo @1 ? "Info of control" ;
+
+	Paint(w) {
+		sz = ViewSize(w);
+		textsize = GetTextSize(.SetText, .SetFont);
+		px = 0;
+		if(.SetAlign == "ALIGN_CENTER")
+			px = (sz.cx - textsize.cx) / 2;
+		if(.SetAlign == "ALIGN_RIGHT")
+			px = sz.cx - textsize.cx;
+		w.DrawText(px, (sz.cy - textsize.cy) / 2, .SetText, .SetFont, .SetInk);
+	}
+	Sample() {
+		.SetText = "Text";
+		.SetFont = Arial(10).Bold().Italic();
+	}
+};
+
+ctrl LabelBox {
+	group "Static";
+
+	GetMinSize() { return Size(0, 0); }
+	GetStdSize() { return Size(64, 24); }
+
+	>Base;
+
+	Paint(w) {
+		sz = GetSize();
+		d = GetSmartTextSize("X").cy / 2;
+		w.DrawSmartText(d, 0, .SetLabel, .SetFont, .SetInk);
+		ts = GetSmartTextSize(.SetLabel, .SetFont);
+		if(2 * GetSmartTextSize("X").cy > sz.cy) {
+			d = sz.cy / 2;
+			w.DrawRect(1, d, d - 1, 1, :SGray);
+			w.DrawRect(1, d + 1, d - 1, 1, :SWhite);
+		}
+		else {
+			w.DrawRect(0, d + 2, 1, sz.cy - d - 4, :SGray);
+			w.DrawRect(1, d + 2, 1, sz.cy - d - 4, :SWhite);
+			w.DrawRect(sz.cx - 2, d, 1, sz.cy - d - 2, :SGray);
+			w.DrawRect(sz.cx - 1, d, 1, sz.cy - d - 2, :SWhite);
+			w.DrawRect(0, sz.cy - 2, sz.cx - 1, 1, :SGray);
+			w.DrawRect(0, sz.cy - 1, sz.cx - 1, 1, :SWhite);
+			w.DrawRect(sz.cx - 1, sz.cy - 2, 1, 2, :SWhite);
+			w.DrawRect(1, d, d - 1, 1, :SGray);
+			w.DrawRect(1, d + 1, d - 1, 1, :SWhite);
+			w.DrawRect(0, d, 1, 2, :SGray);
+		}
+		w.DrawRect(d + ts.cx, d, sz.cx - ts.cx - d - 2, 1, :SGray);
+		w.DrawRect(d + ts.cx, d + 1, sz.cx - ts.cx - d - 2, 1, :SWhite);
+	}
+}
+
+ctrl DataPusher {
+	group "Push";
+
+	GetStdSize() { return Size(64, 24); }
+
+	>Base;
+	Frame SetFrame = InsetFrame();
+	bool  SetEditable = true;
+
+	Paint(w) {
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+		w.DrawRect(r, :SWhite);
+	}
+};
+
+
+ctrl Button {
+	group "Push";
+
+	GetMinSize() { sz = GetTextSize("X"); sz.cy += 2; return sz; }
+	GetStdSize() { sz = GetMinSize(); sz.cx *= 7; return sz; }
+
+	Doc    SetLabel @1 ? "Label of control" ;
+	Font   SetFont = StdFont();
+	Frame  SetFrame @1;
+
+	Paint(w) {
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+		DrawButtonFrame(w, r);
+		sz = Size(r.right - r.left, r.bottom - r.top);
+		n = int(sz.cy / 8);
+		for(i = 0; i < sz.cy; i += n)
+			w.DrawRect(r.left, r.top + i, sz.cx, min(n, sz.cy - i),
+			           GradientColor(:SWhiteGray, :SLtGray,
+			                         i + sz.cy / 2, sz.cy / 2 + sz.cy - 4));
+		textsize = GetSmartTextSize(.SetLabel, .SetFont);
+		px = (sz.cx - textsize.cx) / 2;
+		py = (sz.cy - textsize.cy) / 2;
+		w.DrawSmartText(px + r.left, py + r.top, .SetLabel, .SetFont, :SBlack);
+	}
+}
+
+ctrl Option {
+	group "Push";
+
+	>Base;
+	bool   BlackEdge;
+	bool   SwitchImage;
+	bool   SetEditable = true ? "Editable";
+	bool   ThreeState;
+	bool   NotNull;
+
+	Paint(w) {
+		x = self;
+		sz = ViewSize(w);
+		img = .SwitchImage ? "CtrlImg::switch0" : .ThreeState ? "CtrlImg::option2" : "CtrlImg::option0";
+		imagesize = GetImageSize(img);
+		textsize = GetSmartTextSize(.SetLabel, .SetFont);
+		w.DrawImage(0, (sz.cy - imagesize.cy) / 2, img);
+		if(!.SwitchImage)
+			w.DrawImage(0, (sz.cy - imagesize.cy) / 2, "CtrlImg::optionedge");
+		w.DrawSmartText(imagesize.cx + 1, (sz.cy - textsize.cy) / 2, .SetLabel, .SetFont, .SetInk);
+	}
+}
+
+ctrl Switch {
+	group "Push";
+
+	GetMinSize() { sz = GetTextSize("X"); sz.cy += 2; return sz; }
+	GetStdSize() { sz = GetMinSize(); sz.cx *= 7; sz.cy = max(16, sz.cy); return sz; }
+
+	Doc    SetLabel;
+	Font   SetFont = StdFont();
+	bool   SetEditable = true ? "Editable";
+	Qtf    SetInfo @1 ? "Info of control" ;
+
+	Paint(w)
+	{
+		sz = GetSize();
+		ln = [];
+		cs = [];
+		for(i = 0; i < count(.SetLabel); i++) {
+			if(.SetLabel[i] >= 32 && .SetLabel[i] < 65536)
+				ln[] = .SetLabel[i];
+			if(.SetLabel[i] == '\n') {
+				cs[] = ln;
+				ln = "";
+			}
+		}
+		cs[] = ln;
+		tcy = GetTextSize("W", .SetFont).cy;
+		linecy = max(16, tcy + 2);
+		imagesize = GetImageSize("CtrlImg::switch0");
+		y = 0;
+		x = 0;
+		setlabel = .SetLabel;
+		for(i = 0; i < count(cs); i++) {
+			textsize = GetSmartTextSize(cs[i], .SetFont);
+			w.DrawImage(x, y, "CtrlImg::switch0");
+			w.DrawSmartText(x + imagesize.cx + 1, y + (imagesize.cy - tcy) / 2,
+			                cs[i], .SetFont);
+			if(linecy * count(cs) > sz.cy)
+				x += imagesize.cx + textsize.cx + max(imagesize.cy, tcy) / 2;
+			else
+				y += linecy;
+		}
+	}
+};
+
+ctrl EditField {
+	group "Input fields";
+
+	GetMinSize() { sz = GetTextSize("X"); sz.cy += 6; return sz; }
+	GetStdSize() { sz = GetMinSize(); sz.cx *= 8; return sz; }
+
+	Frame SetFrame = InsetFrame();
+	Font  SetFont = StdFont();
+	bool  SetEditable = true ? "Editable";
+	bool  WantFocus = true;
+	Qtf   SetInfo @1 ? "Info of control" ;
+
+	Paint(w) {
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+		w.DrawRect(r, :SWhite);
+		PaintData(w);
+	}
+
+	PaintText(w, text) {
+		w.DrawText(3, (GetSize().cy - GetTextSize(text, Arial(10)).cy) / 2,
+			(.SetEditable ? "" : "R/O ") + text, Arial(10), :SMagenta);
+	}
+
+	PaintData(w) {
+		PaintText(w, "EditField");
+	}
+}
+
+ctrl DocEdit {
+	group "Editors";
+
+	>EditField;
+
+	PaintData(w) {
+		PaintText(w, "DocEdit");
+	}
+}
+
+ctrl LineEdit {
+	group "Editors";
+
+	>EditField;
+
+	PaintData(w) {
+		PaintText(w, "LineEdit");
+	}
+}
+
+subctrl EditNotNull {
+	>EditField;
+	bool NotNull = false;
+
+	PaintMinMax(w, type, minval, maxval) {
+		text = (.NotNull ? "!" : "") + type;
+		if(minval != "" && maxval != "")
+			text << " " << minval << "..." << maxval;
+		else
+		if(minval != "")
+			text << " >= " << minval;
+		else
+		if(maxval != "")
+			text << " <= " << maxval;
+		PaintText(w, text);
+	}
+}
+
+ctrl EditString {
+	>EditNotNull;
+	raw MaxLen;
+
+	PaintData(w) {
+		text = (.NotNull ? "!" : "") + "String";
+		if(.MaxLen != "")
+			text << " < " << .MaxLen;
+		PaintText(w, text);
+	}
+}
+
+fn IntStr(x)
+{
+	return x == :IntNull || x < :DblNullLim ? "" : to_string(x);
+}
+
+fn DblStr(x)
+{
+	return x < :DblNullLim ? "" : to_string(x);
+}
+
+ctrl EditInt {
+	>EditNotNull;
+	int Min;
+	int Max;
+
+	PaintData(w) { PaintMinMax(w, "int", IntStr(.Min), IntStr(.Max)); }
+}
+
+ctrl EditIntNotNull {
+	>EditInt;
+
+	bool NotNull = true;
+};
+
+ctrl EditDouble {
+	>EditNotNull;
+	double Min;
+	double Max;
+
+	PaintData(w) { PaintMinMax(w, "dbl", DblStr(.Min), DblStr(.Max)); }
+}
+
+ctrl EditDoubleNotNull {
+	>EditDouble;
+
+	bool NotNull = true;
+}
+
+ctrl EditDate {
+	>EditNotNull;
+	PaintData(w) { PaintMinMax(w, "Date", "", ""); }
+}
+
+ctrl EditDateNotNull {
+	>EditDate;
+
+	bool NotNull = true;
+}
+
+ctrl EditTime {
+	>EditNotNull;
+	PaintData(w) { PaintMinMax(w, "Time", "", ""); }
+}
+
+ctrl EditTimeNotNull {
+	>EditTime;
+
+	bool NotNull = true;
+}
+
+ctrl EditIntSpin {
+	>EditInt;
+
+	Paint(w) {
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+		w.DrawRect(r, :SWhite);
+		DrawSpinButtons(w, r);
+		PaintMinMax(w, "int", IntStr(.Min), IntStr(.Max));
+	}
+}
+
+ctrl EditDoubleSpin {
+	>EditDouble;
+
+	double SetInc = 0.1;
+
+	Paint(w) {
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+		w.DrawRect(r, :SWhite);
+		DrawSpinButtons(w, r);
+		PaintMinMax(w, "double", DblStr(.Min), DblStr(.Max));
+	}
+}
+
+ctrl DropList {
+	group "Input fields";
+
+	GetMinSize() { sz = GetTextSize("X"); sz.cy += 6; return sz; }
+	GetStdSize() { sz = GetMinSize(); sz.cx *= 8; return sz; }
+
+	Frame SetFrame = InsetFrame();
+	bool  SetEditable = true ? "Editable";
+	bool  WantFocus = true;
+	bool  DisplayAll = false;
+	Qtf   SetInfo @1 ? "Info of control" ;
+
+	Paint(w) {
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+		w.DrawRect(r, :SWhite);
+		n = r.bottom - r.top;
+		DrawEdgeButton(w, RectC(r.right - n, r.top, n, n));
+		w.DrawImage((n - 7) / 2 + r.right - n, (n - 6) / 2 + r.top, "CtrlImg::smalldown");
+		w.DrawText(3, (GetSize().cy - GetTextSize("", Arial(10)).cy) / 2,
+			(.SetEditable ? "" : "R/O ") + "DropList", Arial(10), :SMagenta);
+	}
+}
+
+template WithDropChoice {
+	bool   Dropping = true;
+	String Appending = ", ";
+	raw    SetDropLines = 16;
+
+	Paint(w) {
+		CtrlPaint(w);
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+		n = r.bottom - r.top;
+		DrawEdgeButton(w, RectC(r.right - n, r.top, n, n));
+		w.DrawImage((n - 7) / 2 + r.right - n, (n - 6) / 2 + r.top, "CtrlImg::smalldown");
+	}
+};
+
+fn TabItemSize(text, font)
+{
+	SIDEGAP = 12;
+	VERTGAP = 4;
+	ts = GetTextSize(text, font.Bold());
+	return Size(ts.cx + 2 * SIDEGAP, (ts.cy < 16 ? 16 : ts.cy) + 2 * VERTGAP);
+}
+
+fn PaintTabItemFrame(w, rc)
+{
+	size = Size(rc.right - rc.left, rc.bottom - rc.top);
+	w.DrawRect(rc.left, rc.top, 1, size.cy - 1, :SLtGray);
+	w.DrawRect(rc.left + 1, rc.top + 2, 1, size.cy - 2, :SWhite);
+	w.DrawRect(rc.left + 2, rc.top + 1, 1, 1, :SWhite);
+	w.DrawRect(rc.left + 2, rc.top + 2, 1, size.cy - 2, :SLtGray);
+	w.DrawRect(rc.left + 3, rc.top, size.cx - 5, 1, :SWhite);
+	w.DrawRect(rc.left + 3, rc.top + 1, size.cx - 5, size.cy - 1, :SLtGray);
+	w.DrawRect(rc.right - 2, rc.top, 1, size.cy, :SBlack);
+	w.DrawRect(rc.right - 1, rc.top + 2, 1, size.cy - 2, :SBlack);
+}
+
+fn PaintTabItem(w, rc, text, font, active)
+{
+	if(active)
+		font = font.Bold();
+	else {
+		w.DrawRect(rc.left, rc.bottom - 1, rc.right - rc.left, 1, :SWhite);
+		w.DrawRect(rc.left, rc.bottom - 2, rc.right - rc.left, 1, :SLtGray);
+		rc.left += 2;
+		rc.top += 2;
+		rc.right -= 2;
+		rc.bottom -= 2;
+	}
+
+	PaintTabItemFrame(w, rc);
+
+	rc.top += (active ? 0 : 2);
+	SIDEGAP = 12;
+	sz = GetTextSize(text, font);
+	w.DrawText(rc.left + SIDEGAP, rc.top + ((rc.bottom - rc.top - sz.cy) >> 1), text, font);
+}
+
+ctrl TabCtrl {
+	group "Complex";
+
+	GetStdSize() { return Size(150, 100); }
+
+	Font SetFont = StdFont();
+	bool AcceptCurrent = false;
+	Qtf  SetInfo @1 ? "Info of control" ;
+
+	Paint(w) {
+		text1 = "Tab1";
+		text2 = "Tab2";
+		text3 = "Tab3";
+		size1 = TabItemSize(text1, .SetFont);
+		size2 = TabItemSize(text2, .SetFont);
+		size3 = TabItemSize(text3, .SetFont);
+		r = GetRect();
+		r1 = r;
+		INITGAP = -1;
+		r1.right = (r1.left += INITGAP) + size1.cx;
+		r1.bottom = r1.top + size1.cy;
+		CELLSEP = -4;
+		r2 = r1;
+		r2.right = (r2.left = r2.right + CELLSEP) + size2.cx;
+		r3 = r2;
+		r3.right = (r3.left = r3.right + CELLSEP) + size3.cx;
+		PaintTabItem(w, r3, text3, .SetFont, 0);
+		PaintTabItem(w, r2, text2, .SetFont, 0);
+		PaintTabItem(w, r1, text1, .SetFont, 1);
+		w.DrawRect(r.left, r1.bottom, 1, r.bottom - r1.bottom, :SWhite);
+		w.DrawRect(r3.right, r1.bottom - 1, r.right - r3.right, 1, :SWhite);
+		w.DrawRect(r.right - 1, r1.bottom, 1, r.bottom - r1.bottom, :SGray);
+		w.DrawRect(r.left, r.bottom - 1, r.right - r.left, 1, :SGray);
+	}
+};
+
+fn PaintHeaderTab(w, r, text)
+{
+	DrawButtonFrame(w, r);
+	w.DrawText(r.left + 2, (r.top + r.bottom - GetTextSize(text).cy) >> 1, text, StdFont());
+}
+
+fn PaintHeaderTabs(w, ...)
+{
+	for(i = 0; i < count(argv); i += 2)
+		PaintHeaderTab(w, argv[i], argv[i + 1]);
+}
+
+fn PaintCenterImage(w, x, y, img)
+{
+	sz = GetImageSize(img);
+	w.DrawImage(x - sz.cx / 2, y - sz.cy / 2, img);
+}
+
+fn PaintRcCenterImage(w, r, img)
+{
+	PaintCenterImage(w, (r.left + r.right) >> 1, (r.top + r.bottom) >> 1, img);
+}
+
+fn PaintVScrollBar(w, r)
+{
+	wd = r.right - r.left;
+	up = r;
+	r.top = (up.bottom = up.top + wd);
+	down = r;
+	r.bottom = (down.top = down.bottom - wd);
+	DrawButtonFrame(w, up);
+	PaintRcCenterImage(w, up, "CtrlImg::smallup");
+	DrawButtonFrame(w, down);
+	PaintRcCenterImage(w, down, "CtrlImg::smalldown");
+	w.DrawRect(r, :SWhiteGray);
+//	ht = r.bottom - r.top;
+//	r.top += ht / 4;
+//	r.bottom = r.top + ht / 3;
+//	DrawButtonFrame(w, r);
+//	w.DrawRect(r, :SLtGray);
+}
+
+ctrl ArrayCtrl {
+	group "Complex";
+
+	GetStdSize() { return Size(150, 100); }
+	Frame SetFrame = InsetFrame();
+	bool AutoHideSb = false;
+	bool Header = true;
+	bool Inserting = false;
+	bool Appending = false;
+	bool AppendLine = false;
+	bool Removing = false;
+	bool AskRemove = true;
+	bool Duplicating = false;
+	bool Moving = false;
+	bool Track = false;
+	bool VertGrid = true;
+	bool HorzGrid = true;
+	bool NoCursor = false;
+	bool MouseMoveCursor = false;
+	bool MultiSelect = false;
+	int  SetLineCy;
+	Qtf  SetInfo @1 ? "Info of control" ;
+
+	Paint(w) {
+		PaintArray(w, GetRect());
+	}
+
+	PaintArray(w, r) {
+		col1 = "Column 1";
+		col2 = "Column 2";
+		col3 = "Column 3";
+		fontcy = GetTextSize(col1).cy;
+		DrawCtrlFrame(w, r, .SetFrame);
+		if(!.AutoHideSb) {
+			rsb = r;
+			r.right = rsb.left = rsb.right - fontcy - 4;
+			PaintVScrollBar(w, rsb);
+		}
+		wd = r.right - r.left;
+		hdrcy = .Header ? fontcy + 4 : 0;
+		third = wd / 3;
+		r1 = r;
+		r1.bottom = r1.top + hdrcy;
+		r1.right = r.left + third;
+		r2 = r1;
+		r2.right = (r2.left = r1.right) + third;
+		r3 = r2;
+		r3.left = r2.right;
+		r3.right = r.right;
+		if(hdrcy)
+			PaintHeaderTabs(w, r1, col1, r2, col2, r3, col3);
+		linecy = .SetLineCy;
+		if(is_void(linecy) || linecy <= 0)
+			linecy = fontcy + 1;
+		celltop = r1.bottom;
+		cellht = 3 * linecy;
+		cellbot = celltop + cellht + 1;
+		w.DrawRect(r.left, celltop, wd, cellht, :SWhite);
+		if(.NoCursor == "false")
+			w.DrawRect(r.left, celltop + linecy, wd, linecy, :SBlue);
+		for(i = 1; i <= 3; i++)
+		{
+			if(.HorzGrid)
+				w.DrawRect(r.left, celltop + linecy * i, wd, 1, :SLtGray);
+			if(.VertGrid)
+				w.DrawRect(r.left + i * third - 1, celltop, 1, cellht, :SLtGray);
+		}
+		w.DrawRect(r.left, cellbot, wd, r.bottom - cellbot, :SGray);
+	}
+};
+
+ctrl RichTextView {
+	group "Complex";
+
+	GetMinSize() { sz = GetTextSize("X"); sz.cy += 6; return sz; }
+	GetStdSize() { sz = GetMinSize(); sz.cx *= 8; return sz; }
+
+	Frame SetFrame = InsetFrame() @1;
+	Color Background = :SWhite;
+	bool  VCenter = false;
+	bool  NoSb = false;
+	bool  AutoHideSb = false;
+	int   HMargins = 0;
+	int   VMargins = 0;
+
+	Paint(w) {
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+		w.DrawRect(r, .Background);
+		w.DrawText(3, 3, "RichTextView", Arial(10), :SMagenta);
+	}
+}
+
+ctrl RichTextCtrl {
+	group "Static";
+
+	>RichTextView;
+
+	GetMinSize() { sz = GetTextSize("X"); sz.cy += 6; return sz; }
+	GetStdSize() { sz = GetMinSize(); sz.cx *= 8; return sz; }
+
+	Frame SetFrame = NullFrame() @1;
+	Color Background = Null;
+	bool  AutoHideSb = true;
+
+	Paint(w) {
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+		if(!is_void(.Background))
+			w.DrawRect(r, .Background);
+		w.DrawText(3, 3, "RichTextView", Arial(10), :SMagenta);
+	}
+}

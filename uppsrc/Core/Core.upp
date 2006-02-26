@@ -1,0 +1,121 @@
+acceptflags
+	USEMALLOC;
+
+library(MSC) "kernel32 user32";
+
+library(WIN32 !GUI !GNU !GCC) "ole32 oleaut32 oldnames";
+
+library(LINUX) "pthread dl";
+
+library(WIN32) "advapi32 shell32 winmm";
+
+library(SOLARIS) "posix4 dl";
+
+library(WIN32 GCC) "ole32 oleaut32 uuid";
+
+options(XGNU) -O0;
+
+options(XGNU) -ffunction-sections;
+
+link(SOLARIS) "-Wl,-R -Wl,/usr/local/lib";
+
+link(MSC) "/NODEFAULTLIB:libcpmtd /NODEFAULTLIB:libcpmt ";
+
+file
+	Core.h,
+	Defs.h,
+	Mt.h,
+	Mt.cpp,
+	Thread.h,
+	Thread.cpp,
+	Global.h,
+	OL_Set.cpp,
+	heap.cpp optimize_speed,
+	heapdbg.cpp optimize_speed,
+	String.h,
+	String.hpp,
+	String.cpp optimize_speed,
+	StrUtil.cpp optimize_speed,
+	CharSet.h,
+	CharSet.cpp optimize_speed,
+	Path.h,
+	Path.cpp,
+	App.h,
+	App.cpp,
+	Stream.h,
+	Stream.cpp optimize_speed,
+	Profile.h,
+	Diag.h,
+	Log.cpp,
+	Debug.cpp,
+	Util.h,
+	Util.cpp optimize_speed,
+	mathutil.cpp optimize_speed,
+	Containers readonly separator,
+	Algo.h,
+	Topt.h,
+	Vcont.h,
+	BiCont.h,
+	Vcont.hpp,
+	Index.h,
+	Map.h,
+	Index.hpp,
+	Other.h,
+	Cont.cpp optimize_speed,
+	Concretes readonly separator,
+	Cbgen.h,
+	Callback.h,
+	Callback.cpp optimize_speed,
+	Color.h,
+	Color.cpp optimize_speed,
+	Gtypes.h,
+	Gtypes.cpp optimize_speed,
+	TimeDate.h,
+	TimeDate.cpp optimize_speed,
+	Value.h,
+	Value.cpp optimize_speed,
+	Convert.h,
+	Convert.cpp optimize_speed,
+	Format.h,
+	Format.cpp optimize_speed,
+	Language readonly separator,
+	i18n.h,
+	t.cpp optimize_speed,
+	Core.t charset "UTF-8",
+	t.h,
+	Lang.h,
+	Lang.cpp,
+	lcid.txt,
+	"Other files" readonly separator,
+	Parser.h,
+	parser.cpp optimize_speed,
+	XML.h,
+	XML.cpp optimize_speed,
+	Xmlize.h,
+	Xmlize.cpp optimize_speed,
+	Uuid.h,
+	Uuid.cpp optimize_speed,
+	Ptr.h,
+	Ptr.cpp optimize_speed,
+	Topic.h,
+	topic_group.h,
+	Topic.cpp,
+	"Win32 support" readonly separator,
+	Win32Com.h,
+	Win32Com.cpp,
+	dli.h,
+	dli_header.h,
+	dli_source.h,
+	Dli.cpp,
+	Meta readonly separator,
+	sub.upt,
+	core.upt,
+	Info readonly separator,
+	COPYING,
+	COPYING-PLAIN,
+	AUTHORS;
+
+mainconfig
+	"Normal" = "",
+	"Remote shared" = "SHARED";
+

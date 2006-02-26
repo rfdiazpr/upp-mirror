@@ -1,0 +1,14 @@
+optimize_speed;
+
+uses
+	Draw;
+
+file
+	Image.h,
+	aa.cpp,
+	bilinear.cpp,
+	Info readonly separator,
+	COPYING,
+	COPYING-PLAIN,
+	AUTHORS;
+

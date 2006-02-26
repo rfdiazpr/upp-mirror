@@ -1,0 +1,12 @@
+uses
+	CtrlLib;
+
+file
+	"Days.h"
+	, main.cpp
+	, "Days.lay"
+	
+;
+
+mainconfig
+	"" = "GUI";

@@ -1,0 +1,14 @@
+uses
+	CtrlLib;
+
+file
+	CompDir.h,
+	textdiff.h,
+	textdiff.cpp,
+	main.cpp,
+	CompDir.lay,
+	CompDir.iml;
+
+mainconfig
+	"" = "GUI";
+

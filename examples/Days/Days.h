@@ -1,0 +1,17 @@
+#ifndef _Days_Days_h
+#define _Days_Days_h
+
+#include <CtrlLib/CtrlLib.h>
+
+#define LAYOUTFILE <Days/Days.lay>
+#include <CtrlCore/lay.h>
+
+class Days : public WithDaysLayout<TopWindow> {
+public:
+	void Compute();
+
+	typedef Days CLASSNAME;
+	Days();
+};
+
+#endif

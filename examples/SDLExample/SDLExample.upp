@@ -1,0 +1,13 @@
+uses
+	Core;
+
+library(MSC) "SDL SDLmain";
+
+library(GCC WIN32) "SDL.dll SDLmain";
+
+file
+	main.cpp;
+
+mainconfig
+	"" = "";
+

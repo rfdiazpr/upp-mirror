@@ -1,0 +1,9 @@
+uses
+	CtrlLib;
+
+file
+	Button.cpp;
+
+mainconfig
+	"" = "GUI";
+

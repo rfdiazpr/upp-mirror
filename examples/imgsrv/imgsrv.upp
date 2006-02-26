@@ -1,0 +1,12 @@
+uses
+	Web,
+	Draw,
+	plugin\png;
+
+link "/MAP";
+
+file
+	imgsrv.cpp;
+
+mainconfig
+	"" = "";

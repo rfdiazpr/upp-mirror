@@ -1,0 +1,8 @@
+uses
+	Web;
+
+file
+	cmdsrv.cpp;
+
+mainconfig
+	"" = "";

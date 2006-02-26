@@ -1,0 +1,8 @@
+uses
+	MySql;
+
+file
+	main.cpp;
+
+mainconfig
+	"" = "MT";

@@ -1,0 +1,10 @@
+uses
+	Counter;
+
+file
+	main.lay,
+	main.cpp;
+
+mainconfig
+	"" = "GUI";
+

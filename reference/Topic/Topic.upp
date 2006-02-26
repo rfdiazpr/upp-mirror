@@ -1,0 +1,9 @@
+uses
+	CtrlLib;
+
+file
+	Topic.cpp;
+
+mainconfig
+	"" = "GUI";
+

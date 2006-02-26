@@ -1,0 +1,15 @@
+uses
+	CtrlLib;
+
+file
+	AK.h,
+	AK.key,
+	Setup.key,
+	setup.cpp,
+	main.cpp,
+	ak.t charset "utf8",
+	ak.icpp;
+
+mainconfig
+	"" = "GUI";
+

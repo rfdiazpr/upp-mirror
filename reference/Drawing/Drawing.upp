@@ -1,0 +1,9 @@
+uses
+	CtrlLib;
+
+file
+	Drawing.cpp;
+
+mainconfig
+	"" = "GUI";
+

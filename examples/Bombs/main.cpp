@@ -13,9 +13,9 @@ private:
 	Buffer<byte> field;
 	MenuBar      menu;
 	StatusBar    status;
-	
+
 	byte& Field(int x, int y) { return field[x + y * cx]; }
-	
+
 	enum {
 		HIDDEN = 16,
 		BOMB = 32,
@@ -26,11 +26,11 @@ private:
 	};
 
 	void About();
-	
+
 	void File(Bar& menu);
 	void Game(Bar& menu);
 	void Menu(Bar& menu);
-	
+
 	void ShowStatus();
 	void Level(Size sz);
 

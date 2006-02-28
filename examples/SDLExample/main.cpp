@@ -1,5 +1,10 @@
-#include <SDL.h>
 #include <Core/Core.h>
+
+#ifdef PLATFORM_WIN32
+#include <SDL.h>
+#else
+#include <SDL/SDL.h>
+#endif
 
 const int maxpoint  = 1000;
 const int maxscroll = 7;
@@ -54,7 +59,7 @@ const ScreenFont fntdef[50] =
 	378,177,392,231, 396,177,410,231
 };
 
-const int fntascii[96] = 
+const int fntascii[96] =
 {
 	0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,
@@ -72,29 +77,29 @@ void PutLetter(SDL_Surface * screen, int x, int y, int n, int col, double ampl)
 {
 	int dx = fntdef[n].x1 - fntdef[n].x0;
 	int dy = fntdef[n].y1 - fntdef[n].y0;
-	
+
 	int sx = fntdef[n].x0;
 	int sy = fntdef[n].y0;
-	
+
 	int w = screen->w;
 	int h = screen->h;
-	
+
 	if(x + dx < 0 || y + dy < 0 ||  x > w || y > h)
 		return;
-	
+
 	if(x < 0)
-	{	
+	{
 		sx -= x;
 		dx += x;
 		x = 0;
-	}	
+	}
 	if(y < 0)
-	{	
+	{
 		sy -= y;
 		dy += y;
-		y = 0;	
+		y = 0;
 	}
-	
+
 	if(x + dx > w)
 	dx = w - x;
 	if(y + dy > h)
@@ -110,13 +115,13 @@ void PutLetter(SDL_Surface * screen, int x, int y, int n, int col, double ampl)
 		for(int i = 0; i < dy; i++)
 		{
 			char c = f[adf + j];
-			if(c == 1) 
+			if(c == 1)
 				b[ads + j] = col;
 			else if(c == 3)
 				b[ads + j] = 0;
 			ads += screen->w;
 			adf += fntbmp->w;
-		} 	
+		}
 	}
 }
 
@@ -130,7 +135,7 @@ void WriteStr(SDL_Surface * screen, int x, int y, const char *str, int col, doub
 			PutLetter(screen, x, y, n, col, ampl);
 			x += fntdef[n].x1 - fntdef[n].x0 + 2;
 		}
-		else 
+		else
 			x += 20;
 		str++;
 	}
@@ -139,7 +144,7 @@ void WriteStr(SDL_Surface * screen, int x, int y, const char *str, int col, doub
 int LengthStr(const char *str)
 {
 	int l = 0, n;
-	
+
 	while(*str)
 	{
 		n = fntascii[*str];
@@ -147,14 +152,14 @@ int LengthStr(const char *str)
 			l += fntdef[n].x1 - fntdef[n].x0 + 2;
 		else
 			l += 20;
-		
-		str++;	
+
+		str++;
 	}
 	return l;
 }
 
 void DrawPoints(SDL_Surface *screen, ScreenPoint *p)
-{       
+{
 	Uint8 * b = (Uint8 *) screen->pixels;
 
 	for(int i = 0; i < maxpoint; i++)
@@ -166,29 +171,29 @@ void MovePoints(ScreenPoint *p)
 {
 	int w = width - 1;
 	int h = height - 1;
-	
+
 	for(int i = 0; i < maxpoint; i++)
 	{
 		p[i].x += p[i].sx;
 		p[i].y += p[i].sy;
-	
+
 		if(p[i].x > w)
-		{		
+		{
 			p[i].sx = -p[i].sx;
 			p[i].x = w;
 		}
 		if(p[i].x < 0)
-		{		
+		{
 			p[i].sx = -p[i].sx;
 			p[i].x = 0;
-		}		
+		}
 		if(p[i].y > h)
-		{		
+		{
 			p[i].sy = -p[i].sy;
 			p[i].y = h;
 		}
 		if(p[i].y < 0)
-		{		
+		{
 			p[i].sy = -p[i].sy;
 			p[i].y = 0;
 		}
@@ -196,7 +201,7 @@ void MovePoints(ScreenPoint *p)
 }
 
 void Blur(SDL_Surface *screen)
-{   
+{
 	Uint8 * b = (Uint8 *) screen->pixels;
 
 	int i = 0;
@@ -211,11 +216,11 @@ void Blur(SDL_Surface *screen)
 SDL_Surface *CreateScreen(int w, int h, int bpp, int flags)
 {
 	SDL_Surface * screen = SDL_SetVideoMode(w, h, bpp, flags);
-	if(!screen) 
+	if(!screen)
 	{
 		Cout() << Format("Couldn't set display mode: %s\n", SDL_GetError());
 		return NULL;
-	}    
+	}
 	Cout() << Format("Screen is in %s mode\n", (screen->flags & SDL_FULLSCREEN) ? "fullscreen" : "windowed");
 	return screen;
 }
@@ -226,23 +231,23 @@ void SetupPalette(SDL_Surface * screen)
 
 	double d = 20;
 	double dx = 63.0 / 256.0;
-	
+
 	for(int i = 0; i < 254; i++)
 	{
 		pal[i].r = (Uint8) d;
 		pal[i].g = (Uint8) d;
 		pal[i].b = 0;
-	
+
 		d += dx;
 	}
 	pal[254].r = 0;
 	pal[254].g = 150;
 	pal[254].b = 255;
-	
+
 	pal[255].r = 255;
 	pal[255].g = 255;
 	pal[255].b = 0;
-	
+
 	SDL_SetColors(screen, pal, 0, 256);
 	SDL_Flip(screen);
 	SDL_SetColors(screen, pal, 0, 256);
@@ -250,19 +255,19 @@ void SetupPalette(SDL_Surface * screen)
 
 CONSOLE_APP_MAIN
 {
-	if(SDL_Init(SDL_INIT_VIDEO) < 0) 
+	if(SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
 		Cout() << Format("Couldn't initialize SDL: %s\n", SDL_GetError());
 		return;
 	}
 
 	ScreenPoint points[maxpoint];
-	
+
 	for(int i = 0; i < width; i++)
 		sintab[i] = sin(i * M_PI / 180.0);
-	
+
 	for(int i = 0; i < maxpoint; i++)
-	{	
+	{
 		points[i].x   = rand() % (width - 1);
 		points[i].y   = rand() % (height - 1);
 		points[i].sx  = (rand() & 1) + 1;
@@ -276,17 +281,17 @@ CONSOLE_APP_MAIN
 		Cout() << Format("Error loading font.bmp : %s\n", SDL_GetError());
 		return;
 	}
-			
+
 	int videoflags = SDL_HWSURFACE | SDL_HWACCEL | SDL_DOUBLEBUF | SDL_FULLSCREEN;
 
 	SDL_Surface * screen = CreateScreen(width, height, bpp, videoflags);
 	if(!screen)
 		return;
-	
+
 	SDL_Surface * surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, bpp, 0, 0, 0, 0);
 	if(!surface)
 		return;
-	
+
 	SetupPalette(surface);
 	SetupPalette(screen);
 
@@ -300,21 +305,21 @@ CONSOLE_APP_MAIN
 
 	SDL_Event event;
 	bool done = false;
-	
+
 	while(!done)
-	{		
+	{
 		if(SDL_PollEvent(&event))
-			switch (event.type) 
-			{                    
+			switch (event.type)
+			{
 				case SDL_KEYDOWN:
 					if(event.key.keysym.sym == SDLK_LALT || event.key.keysym.sym == SDLK_TAB)
 						break;
-					
-					if(event.key.keysym.sym == SDLK_LALT && event.key.keysym.sym == SDLK_RETURN) 
+
+					if(event.key.keysym.sym == SDLK_LALT && event.key.keysym.sym == SDLK_RETURN)
 					{
 						videoflags ^= SDL_FULLSCREEN;
 						screen = CreateScreen(screen->w, screen->h, screen->format->BitsPerPixel, videoflags);
-						if(!screen) 
+						if(!screen)
 						{
 							Cout() << "Couldn't toggle fullscreen mode\n";
 							done = true;
@@ -332,27 +337,27 @@ CONSOLE_APP_MAIN
 			else
 			{
 				SDL_LockSurface(surface);
-				
+
 				DrawPoints(surface, points);
 				Blur(surface);
 				MovePoints(points);
-				
+
 				if(x0 > -len0)
 					WriteStr(surface, x0 + 5, height - 195, scroll[k], 254, 50);
 
 				if(x1 <= xmax)
 					WriteStr(surface, x1, height - 260, scroll[j], 255, 50);
-				
+
 				x0 -= 1;
 				x1 += 1;
-				
+
 				if(x0 < -len0)
 				{
 					if(++k > maxscroll - 1) k = 0;
 					len0 = LengthStr(scroll[k]);
 					x0 = width;
 				}
-				
+
 				if(x1 > xmax)
 				{
 					if(++j > maxscroll - 1) j = 0;
@@ -360,7 +365,7 @@ CONSOLE_APP_MAIN
 					xmax = (width - len1) / 2;
 					x1 = -len1;
 				}
-				
+
 				SDL_UnlockSurface(surface);
 				SDL_BlitSurface(surface, NULL, screen, NULL);
 				SDL_Flip(screen);

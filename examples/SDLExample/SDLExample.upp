@@ -5,9 +5,10 @@ library(MSC) "SDL SDLmain";
 
 library(GCC WIN32) "SDL.dll SDLmain";
 
+library(LINUX) "SDL SDLmain";
+
 file
 	main.cpp;
 
 mainconfig
 	"" = "";
-

@@ -3,8 +3,6 @@ uses
 	Draw,
 	plugin\png;
 
-link "/MAP";
-
 file
 	imgsrv.cpp;
 

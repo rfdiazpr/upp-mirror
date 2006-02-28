@@ -6,6 +6,10 @@ TOPIC("Vector$en-us")
 #include "Vector$en-us.tpp"
 END_TOPIC
 
+TOPIC("Convert$en-us")
+#include "Convert$en-us.tpp"
+END_TOPIC
+
 TOPIC("Segtor$en-us")
 #include "Segtor$en-us.tpp"
 END_TOPIC
@@ -97,4 +101,3 @@ END_TOPIC
 TOPIC("i18n$en-us")
 #include "i18n$en-us.tpp"
 END_TOPIC
-

@@ -477,10 +477,10 @@ extern int MemoryProbeFlags;
 
 void Uninstall();
 
+bool SilentMode;
+
 #ifdef PLATFORM_WIN32
 #include <Wincon.h>
-
-bool SilentMode;
 
 void Puts(const char *s)
 {
@@ -537,7 +537,9 @@ void AppMain___()
 			return;
 #endif
 
+#ifdef _DEBUG
 //	Ctrl::ShowRepaint = 30;
+#endif
 
 #ifdef PLATFORM_WIN32
 	if(!CheckLicense())
@@ -630,12 +632,19 @@ void AppMain___()
 					AllocConsole();
 			}
 		#endif
+			for(int i = 3; i < arg.GetCount(); i++)
+				if(arg[i][0] == '-') {
+					String x = arg[i];
+					for(int i = 1; i < x.GetCount(); i++)
+						if(x[i] == 'l')
+							SilentMode = true;
+				}
 			if(!LoadVars(arg[0])) {
 				if(build)
 					Puts("TheIDE: Invalid assembly\n");
 				else
 					Exclamation("Invalid assembly!");
-				SetExitCode(1);
+				SetExitCode(2);
 				return;
 			}
 			if(!FileExists(SourcePath(arg[1], GetFileTitle(arg[1]) + ".upp"))) {
@@ -643,7 +652,7 @@ void AppMain___()
 					Puts("TheIDE: Package does not exist\n");
 				else
 					Exclamation("Package does not exist!");
-				SetExitCode(1);
+				SetExitCode(2);
 				return;
 			}
 			ide.SetMain(arg[1]);
@@ -658,7 +667,9 @@ void AppMain___()
 					ide.mainconfigparam = f[0].param;
 				String m = arg[2];
 				if(!FileExists(ConfigFile((String)m + ".bm"))) {
+					SilentMode = false;
 					Puts("TheIDE: Invalid build method\n");
+					SetExitCode(3);
 					return;
 				}
 				ide.method <<= m;
@@ -692,9 +703,6 @@ void AppMain___()
 							case '2':
 								ide.targetmode = 3;
 								break;
-							case 'l':
-								SilentMode = true;
-								break;
 							case 'm':
 								ide.release.createmap = ide.debug.createmap = true;
 								break;
@@ -713,8 +721,12 @@ void AppMain___()
 							case 'v':
 								ide.verbosebuild = true;
 								break;
+							case 'l':
+								break;
 							default:
+								SilentMode = false;
 								Puts("Invalid build option(s)");
+								SetExitCode(3);
 								return;
 							}
 					}

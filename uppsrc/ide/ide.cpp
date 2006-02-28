@@ -216,6 +216,7 @@ String Ide::WorkspaceFile()
 
 void Ide::SaveWorkspace()
 {
+	if(console.console) return;
 	if(main.IsEmpty()) return;
 	lasttopicpath = topic.GetFilePath();
 	StoreToFile(THISBACK(SerializeWorkspace), WorkspaceFile());

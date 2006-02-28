@@ -19,8 +19,6 @@ options(XGNU) -ffunction-sections;
 
 link(SOLARIS) "-Wl,-R -Wl,/usr/local/lib";
 
-link(MSC) "/NODEFAULTLIB:libcpmtd /NODEFAULTLIB:libcpmt ";
-
 file
 	Core.h,
 	Defs.h,
@@ -118,4 +116,3 @@ file
 mainconfig
 	"Normal" = "",
 	"Remote shared" = "SHARED";
-

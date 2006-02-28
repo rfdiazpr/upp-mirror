@@ -104,7 +104,6 @@ void MemoryFreeDebug(void *ptr)
 
 void MemoryDumpLeaks()
 {
-	LOG("Exit memory diagnostics");
 	if(!dbg_live.next || dbg_live.next == dbg_live.prev)
 		return;
 	BugLog() << "\n\nHeap leaks detected:\n";

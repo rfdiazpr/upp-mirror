@@ -2,7 +2,7 @@
 
 #ifdef _MULTITHREADED
 
-#ifdef _DEBUG
+#if defined(_DEBUG) && defined(PLATFORM_WIN32)
 void CriticalSection::Enter()
 {
 	dword tid = GetCurrentThreadId();

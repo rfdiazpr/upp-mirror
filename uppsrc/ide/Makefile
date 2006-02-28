@@ -3,9 +3,9 @@ UPPDIR1 = /src/uppsrc/
 UPPOUT = /home/cxl/upp/out/
 CINC =  -I$(UPPDIR1)
 Macro =  -DflagGUI -DflagGCC -DflagSHARED -DflagLINUX
-CC = c++ -c -O2 -Os -ffunction-sections 
+CC = c++ -c -O2 -Os -ffunction-sections
 CFLAGS = $(CC) -x c
-CPPFLAGS = $(CC) -x c++ 
+CPPFLAGS = $(CC) -x c++
 LIBPATH =  -L"/usr/X11R6/lib"
 AR = ar -sr
 OutDir_ide = $(UPPOUT)ide/GCC32-Gcc-Gui-Linux-Main-Shared/
@@ -182,7 +182,7 @@ $(OutFile):  \
 	$(OutDir_RichText)RichText.a \
 	$(OutDir_CtrlCore)CtrlCore.a \
 	$(OutDir_PdfDraw)PdfDraw.a
-	c++ -o $(OutFile) -Wl,-s $(LIBPATH) -Wl,--gc-sections,-O,2 $(LINKOPTIONS) \
+	c++ -o $(OutFile) -Wl,-s $(LIBPATH) -Wl,-O,2 $(LINKOPTIONS) \
 		$(OutDir_ide)SelectPkg.o \
 		$(OutDir_ide)UppWspc.o \
 		$(OutDir_ide)UppDlg.o \
@@ -26010,4 +26010,3 @@ $(OutDir_PdfDraw)PdfDraw.a: \
 		$(OutDir_PdfDraw)TTFSubset.o \
 		$(OutDir_PdfDraw)PdfDraw.o \
 		$(OutDir_PdfDraw)Test.o
-

@@ -103,9 +103,11 @@ public:
 
 	int    Find(int chr, int from = 0) const;
 	int    ReverseFind(int chr, int from) const;
-	int    ReverseFind(int chr) const          { return ReverseFind(chr, GetCount()); }
+	int    ReverseFind(int chr) const;
 
-//	int    Find(const T *s, int len);
+	int    Find(int len, const T *s, int from) const;
+	int    Find(const T *s, int from = 0) const;
+	int    Find(const S& s, int from = 0) const { return Find(s.GetCount(), s.Begin(), from); }
 
 	void   Clear();
 

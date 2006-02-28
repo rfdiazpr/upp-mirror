@@ -9,7 +9,7 @@
 bool Ctrl::LogMessages;
 #endif
 
-#define LLOG(x)     // LOG(x)
+#define LLOG(x)      LOG(x)
 #define LTIMING(x)  // RTIMING(x)
 #define LDUMP(x)    // RDUMP(x)
 #define LDUMPC(x)   // RDUMPC(x)
@@ -555,6 +555,8 @@ WaitCursor::~WaitCursor() {
 	}
 }
 
+void ClearKbdState_();
+
 void Ctrl::TakeFocus()
 {
 	if(IsChild()) {
@@ -574,6 +576,7 @@ void Ctrl::TakeFocus()
 		return;
 	}
 	LLOG("TAKE_FOCUS " << Name());
+	ClearKbdState_();
 	if(IsEnabled() && IsVisible() && top->window != GetXServerFocusWindow())
 		SetWndFocus();
 	if(this != focusCtrlWnd) {
@@ -698,7 +701,7 @@ void Ctrl::WndCreateCaret(const Rect& cr)
 
 void Ctrl::Invalidate(XWindow& xw, const Rect& _r)
 {
-	RTIMING("Invalidate");
+	LTIMING("Invalidate");
 	Vector<Rect> inv;
 	Rect r = _r;
 	int ra = r.Width() * r.Height();

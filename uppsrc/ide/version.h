@@ -1,1 +1,1 @@
-#define IDE_VERSION    "602beta5"
+#define IDE_VERSION    "602"

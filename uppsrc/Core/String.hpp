@@ -333,20 +333,29 @@ int AString<T, S>::Find(int chr, int from) const
 template <class T, class S>
 int AString<T, S>::ReverseFind(int chr, int from) const
 {
-	const T *s = ptr + from;
-	while(s >= ptr)
-		if(*--s == chr)
-			return s - ptr;
+	ASSERT(from >= 0 && from <= GetLength());
+	if(from < GetLength())
+		for(const T *s = ptr + from; s >= ptr; s--)
+			if(*s == chr)
+				return s - ptr;
 	return -1;
 }
-/*
-int AString::Find(const char *s, int len, int from)
+
+template <class T, class S>
+int AString<T, S>::ReverseFind(int chr) const
 {
-	const char *p = ptr + from;
-	int l = GetLength() - len;
+	return GetCount() ? ReverseFind(chr, GetCount() - 1) : -1;
+}
+
+template <class T, class S>
+int AString<T, S>::Find(int len, const T *s, int from) const
+{
+	ASSERT(from >= 0 && from <= GetLength());
+	const T *p = ptr + from;
+	int l = GetLength() - len - from;
 	if(l < 0)
 		return -1;
-	const char *e = ptr + l;
+	const T *e = p + l;
 	len *= sizeof(T);
 	while(p <= e) {
 		if(memcmp(s, p, len) == 0)
@@ -355,7 +364,13 @@ int AString::Find(const char *s, int len, int from)
 	}
 	return -1;
 }
-*/
+
+template <class T, class S>
+int AString<T, S>::Find(const T *s, int from) const
+{
+	return Find(strlen(s), s, from);
+}
+
 template <class T, class S>
 bool AString<T, S>::IsEqual(const T *p, int len) const
 {

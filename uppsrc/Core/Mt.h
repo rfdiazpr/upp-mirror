@@ -44,12 +44,12 @@ inline CriticalSection::CriticalSection()  { InitializeCriticalSection(&section)
 
 typedef _Atomic_word Atomic;
 
-inline int  AtomicRead(const volatile Atomic& t)      { return t; } 
+inline int  AtomicRead(const volatile Atomic& t)      { return t; }
 inline void AtomicWrite(volatile Atomic& t, int val)  { t = val; }
 
-inline int  AtomicInc(volatile Atomic& t)             { __gnu_cxx::__atomic_add(&t, 1); return t; }
-inline int  AtomicDec(volatile Atomic& t)             { __gnu_cxx::__atomic_add(&t, -1); return t; }
-inline int  AtomicXAdd(volatile Atomic& t, int incr)  { return __gnu_cxx::__exchange_and_add(&t, incr); }
+inline int  AtomicInc(volatile Atomic& t)             { using namespace __gnu_cxx; __atomic_add(&t, 1); return t; }
+inline int  AtomicDec(volatile Atomic& t)             { using namespace __gnu_cxx; __atomic_add(&t, -1); return t; }
+inline int  AtomicXAdd(volatile Atomic& t, int incr)  { using namespace __gnu_cxx; return __exchange_and_add(&t, incr); }
 
 class CriticalSection {
 protected:
@@ -78,7 +78,7 @@ struct CriticalSection::Lock {
 class StaticCriticalSection {
 	volatile CriticalSection *section;
 	byte                      buffer[sizeof(CriticalSection)];
-	
+
 	void Initialize();
 
 public:

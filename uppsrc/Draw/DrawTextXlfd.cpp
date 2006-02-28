@@ -439,7 +439,7 @@ FontInfo Draw::Acquire(Font font, int angle, int device)
 
 void Draw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font,
                       Color ink, int n, const int *dx) {
-	RTIMING("DrawText");
+	LTIMING("DrawText");
 	LLOG("DrawText " << FromUnicode(text) << " color:" << ink << " font:" << font);
 	int ox = x + actual_offset.x;
 	int oy = y + actual_offset.y;

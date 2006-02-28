@@ -8,12 +8,18 @@
 
 #define LOGEVENTPROC
 
+static dword sKbdState;
 static dword sModState;
 
-bool GetShift() { return sModState & ShiftMask; }
-bool GetCtrl() { return sModState & ControlMask; }
-bool GetAlt() { return sModState & Mod1Mask; }
-bool GetCapsLock() { return sModState & LockMask; }
+void ClearKbdState_()
+{
+	sKbdState = 0;
+}
+
+bool GetShift() { return sKbdState & ShiftMask; }
+bool GetCtrl() { return sKbdState & ControlMask; }
+bool GetAlt() { return sKbdState & Mod1Mask; }
+bool GetCapsLock() { return sKbdState & LockMask; }
 bool GetMouseLeft() { return sModState & Button1Mask; }
 bool GetMouseRight() { return sModState & (Ctrl::Xbuttons >= 3 ? Button3Mask : Button2Mask); }
 bool GetMouseMiddle() { return sModState & (Ctrl::Xbuttons >= 3 ? Button2Mask : 0); }
@@ -143,30 +149,30 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 			if(keysym == XK_Control_L || keysym == XK_Control_R) {
 				keysym = XK_Control_L;
 				if(pressed)
-					sModState |= ControlMask;
+					sKbdState |= ControlMask;
 				else
-					sModState &= ~ControlMask;
+					sKbdState &= ~ControlMask;
 			}
 			if(keysym == XK_Shift_L || keysym == XK_Shift_R) {
 				keysym = XK_Shift_L;
 				if(pressed)
-					sModState |= ShiftMask;
+					sKbdState |= ShiftMask;
 				else
-					sModState &= ~ShiftMask;
+					sKbdState &= ~ShiftMask;
 			}
 			if(keysym == XK_Meta_L || keysym == XK_Meta_R || keysym == XK_Alt_L ||
 			   keysym == XK_Alt_R || keysym == XK_Super_L || keysym == XK_Super_R ||
 			   keysym == XK_Hyper_L || keysym == XK_Hyper_R || keysym == XK_ISO_Prev_Group) {
 				keysym == XK_Meta_L;
 				if(pressed)
-					sModState |= Mod1Mask;
+					sKbdState |= Mod1Mask;
 				else
-					sModState &= ~Mod1Mask;
+					sKbdState &= ~Mod1Mask;
 			}
 			LLOG("KeySym:" << FormatIntHex(keysym) << " " << (char)keysym << " " << count);
 			dword up = pressed ? 0 : K_KEYUP;
 			static struct { KeySym keysym; dword key; } tab[] = {
-				{ XK_ISO_Left_Tab, K_TAB|K_SHIFT }, 
+				{ XK_ISO_Left_Tab, K_TAB|K_SHIFT },
 				{ XK_BackSpace, K_BACKSPACE },
 				{ XK_Tab, K_TAB },
 				{ XK_Return, K_ENTER },
@@ -194,10 +200,10 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 				DispatchKey(KEYtoK(keysym|K_DELTA)|up, count);
 				return;
 			}
-			
+
 			if((chr == 32 || chr == 9 || chr == 13) && !pressed)
 				DispatchKey(chr|K_KEYUP, count);
-			if(chr && pressed) 
+			if(chr && pressed)
 				DispatchKey(chr, count);
 		}
 		break;

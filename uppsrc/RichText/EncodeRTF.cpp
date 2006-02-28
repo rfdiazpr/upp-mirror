@@ -514,6 +514,8 @@ void RTFEncoder::PutTable(const RichTable& table, int nesting, int dot_width)
 		Begin();
 		Command("pard");
 		Command("intbl");
+		parafmt = RichPara::Format();
+		charfmt = RichPara::CharFormat();
 		if(nesting)
 			Command("itap", nesting + 1);
 		if(!nesting)

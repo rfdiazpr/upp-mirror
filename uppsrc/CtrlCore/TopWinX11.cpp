@@ -2,7 +2,7 @@
 #pragma hdrstop
 #include <Draw/PixelUtil.h>
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)  LOG(x)
 
 #ifdef PLATFORM_X11
 

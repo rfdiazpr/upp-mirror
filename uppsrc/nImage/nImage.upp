@@ -1,0 +1,11 @@
+uses
+	CtrlLib;
+
+file
+	Image.h,
+	Image.cpp,
+	ImageWin32.cpp,
+	main.cpp;
+
+mainconfig
+	"" = "GUI";

@@ -1147,6 +1147,8 @@ void ArrayCtrl::Page(int q) {
 }
 
 void ArrayCtrl::DoPoint(Point p, bool dosel) {
+	if(!HasFocusDeep())
+		SetWantFocus();
 	p.y += sb;
 	if(p.y >= GetTotalCy() && IsAppendLine())
 		KillCursor();
@@ -1156,8 +1158,6 @@ void ArrayCtrl::DoPoint(Point p, bool dosel) {
 	else
 	if(IsCursor())
 		AcceptRow();
-	if(!HasFocusDeep())
-		SetWantFocus();
 }
 
 void ArrayCtrl::ClickColumn(Point p)

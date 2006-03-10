@@ -14,3 +14,6 @@ TOPIC("TopWindow$en-us")
 #include "TopWindow$en-us.tpp"
 END_TOPIC
 
+TOPIC("Layout$en-us")
+#include "Layout$en-us.tpp"
+END_TOPIC

@@ -85,4 +85,3 @@ LAYOUT(KeysLayout, 540, 388)
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).LeftPosZ(468, 64).TopPosZ(356, 24))
 	ITEM(Button, defaults, SetLabel(t_("Default")).LeftPosZ(8, 64).TopPosZ(324, 24))
 END_LAYOUT
-

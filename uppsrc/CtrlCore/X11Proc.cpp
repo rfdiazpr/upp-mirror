@@ -134,7 +134,7 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 			int    chr = 0;
 			if(pressed && w.xic) {
 				Status status;
-				int len = XmbLookupString(w.xic, &event->xkey, buff, sizeof(buff), &keysym, &status);
+				int len = Xutf8LookupString(w.xic, &event->xkey, buff, sizeof(buff), &keysym, &status);
 				buff[len] = 0;
 				if(status == XLookupChars || status == XLookupBoth)
 				    chr = FromUtf8(buff, len)[0];

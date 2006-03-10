@@ -58,12 +58,12 @@ TOPIC("macros$en-us")
 #include "macros$en-us.tpp"
 END_TOPIC
 
-TOPIC("Topic$en-us")
-#include "Topic$en-us.tpp"
-END_TOPIC
-
 TOPIC("Assist$en-us")
 #include "Assist$en-us.tpp"
+END_TOPIC
+
+TOPIC("Topic$en-us")
+#include "Topic$en-us.tpp"
 END_TOPIC
 
 TOPIC("Sponsor$en-us")
@@ -86,3 +86,6 @@ TOPIC("cmdline$en-us")
 #include "cmdline$en-us.tpp"
 END_TOPIC
 
+TOPIC("CrossComp$en-gb")
+#include "CrossComp$en-gb.tpp"
+END_TOPIC

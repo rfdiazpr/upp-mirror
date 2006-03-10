@@ -240,7 +240,8 @@ EscValue LayoutItem::CreateEsc() const
 	String tm;
 	if(ParseTemplate(tp, tm)) {
 		CreateMethods(ctrl, tp, true);
-		ctrl.MapSet("CtrlPaint", ctrl.MapGet("Paint"));
+		if(ctrl.IsMap())
+			ctrl.MapSet("CtrlPaint", ctrl.MapGet("Paint"));
 		CreateMethods(ctrl, tm, false);
 	}
 	else

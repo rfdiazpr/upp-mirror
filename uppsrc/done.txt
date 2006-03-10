@@ -1,3 +1,11 @@
+602 critical bugs:
+
+- problem s crashem na startu
+- problem s CriticalSection v Linuxu
+- problem focusem v Linuxu - Gnome 2.10.0 to be exact, IDE, Alt+Tab
+- problem s umk - nevraci se z linkeru
+
+
 * problem Could the problem be that the ide package has a groupping item (IDE) as the first entry and not a file?
 
 * EditField, kdyz je Null, umel misto toho prazdneho pole ukazovat nejaky text (treba "(default)"

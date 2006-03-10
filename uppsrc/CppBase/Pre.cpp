@@ -24,11 +24,10 @@ void  CppPos::Serialize(Stream& s)
 	s % fn;
 	file = GetCppFileIndex(fn);
 }
-*/
 
 String SSpaces(const char *txt)
 {
-	String r;
+	StringBuffer r;
 	while(*txt)
 		if(*txt == ' ') {
 			while((byte)*txt <= ' ' && *txt) txt++;
@@ -38,10 +37,17 @@ String SSpaces(const char *txt)
 			r.Cat(*txt++);
 	return r;
 }
-
+*/
 void SLPos(SrcFile& res)
 {
 	res.linepos.Add(res.text.GetLength());
+}
+
+SrcFile::SrcFile() :
+	preprocessorLinesRemoved(0),
+	blankLinesRemoved(0),
+	commentLinesRemoved(0)
+{
 }
 
 SrcFile PreProcess(Stream& in)
@@ -58,7 +64,12 @@ SrcFile PreProcess(Stream& in)
 		}
 		const char *rm = ln;
 		while(*rm == ' ' || *rm == '\t') rm++;
-		if(*rm == '#') {
+
+		if(*rm == '\0') {
+			res.blankLinesRemoved++;
+		}
+		else if(*rm == '#')
+		{
 			if(rm[1] == 'd' && rm[2] == 'e' && rm[3] == 'f' &&
 			   rm[4] == 'i' && rm[5] == 'n' && rm[6] == 'e' && !iscid(rm[7])) {
 				const char *s = rm + 8;
@@ -71,13 +82,18 @@ SrcFile PreProcess(Stream& in)
 						macro.Cat(*s++);
 					macro << ')';
 				}
-				res.text << '#' << AsCString(SSpaces(macro));
+//				res.text << '#' << AsCString(SSpaces(macro));
+				res.text << '#' << AsCString(macro);
 			}
+			res.preprocessorLinesRemoved++;
 		}
 		else {
+			bool lineContainsComment = false;
+			bool lineContainsNonComment = false;
 			String cmd;
 			while(*rm) {
 				if(*rm == '\"') {
+					lineContainsNonComment = true;
 					res.text << '\"';
 					rm++;
 					while((byte)*rm && *rm != '\r' && *rm != '\n') {
@@ -98,6 +114,7 @@ SrcFile PreProcess(Stream& in)
 				}
 				else
 				if(*rm == '\\' && rm[1]) {
+					lineContainsNonComment = true;
 					if(include) {
 						res.text.Cat(*rm++);
 						res.text.Cat(*rm++);
@@ -108,17 +125,23 @@ SrcFile PreProcess(Stream& in)
 				else
 				if(rm[0] == '/' && rm[1] == '/') {
 					cmd = rm + 2;
+					if(!lineContainsNonComment)
+						res.commentLinesRemoved++;
 					break;
 				}
 				else
 				if(rm[0] == '/' && rm[1] == '*') {
+					lineContainsComment = true;
 					rm += 2;
 					for(;;) {
 						if(*rm == '\0') {
+							if(!lineContainsNonComment)
+								res.commentLinesRemoved++;
 							if(in.IsEof()) break;
 							SLPos(res);
 							ln = in.GetLine();
 							rm = ~ln;
+							lineContainsNonComment = false;
 						}
 						if(rm[0] == '*' && rm[1] == '/') {
 							rm += 2;
@@ -130,6 +153,7 @@ SrcFile PreProcess(Stream& in)
 						res.text.Cat(' ');
 				}
 				else {
+					lineContainsNonComment = true;
 					if(include)
 						res.text.Cat(*rm);
 					rm++;
@@ -145,6 +169,8 @@ SrcFile PreProcess(Stream& in)
 					res.text.Cat(' ');
 				}
 			}
+			if(lineContainsComment && !lineContainsNonComment)
+				res.commentLinesRemoved++;
 		}
 	}
 	return res;

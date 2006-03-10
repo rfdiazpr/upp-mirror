@@ -1,4 +1,15 @@
 
+// EditCtrl.h
+
+T_("(default)")
+csCZ("(výchozí)")
+frFR("")
+huHU("")
+itIT("")
+ruRU("")
+srSP("")
+
+
 // Text.cpp
 
 T_("Undo")
@@ -271,7 +282,7 @@ srSP("Akcija")
 
 T_("Key 1")
 csCZ("Klávesa 1")
-frFR("")
+frFR("Touche 1")
 huHU("1. billentyű")
 itIT("")
 ruRU("")
@@ -279,7 +290,7 @@ srSP("Taster 1")
 
 T_("Key 2")
 csCZ("Klávesa 2")
-frFR("")
+frFR("Touche 2")
 huHU("2. billentyű")
 itIT("")
 ruRU("")

@@ -1,14 +1,5 @@
 #include "TCoreCalc.h"
 #pragma hdrstop
-#ifdef PLATFORM_WIN32
-#include <float.h>
-#endif
-#ifdef PLATFORM_POSIX
-#include <math.h>
-#endif
-#ifdef PLATFORM_SOLARIS
-#include <ieeefp.h>
-#endif
 
 String CalcTypeDescribeInt()            { return t_("integer"); }
 
@@ -78,23 +69,11 @@ String CalcTypeNameConvert::Format(const char *raw_name)
 
 Value CalcType<double>::ToValue(double t)
 {
-#ifdef PLATFORM_WIN32
-	if(_finite(t))
-		return t;
-	else if(_isnan(t))
+	if(IsNan(t))
 		throw Exc(CalcNanError());
-	else
+	if(IsInf(t))
 		throw Exc(CalcInfError());
-#elif defined(PLATFORM_POSIX)
-	if(isnan(t)) throw Exc(CalcNanError());
-//	if(isinf(t)) throw Exc(CalcInfError());
-	if(!finite(t)) throw Exc(CalcInfError());
-	// Solaris has finite(); if Linux doesn't support it, make conditional
 	return t;
-#else
-	#error
-#endif
-	return Null;
 }
 
 bool CalcType<bool>::ValueTo(Value v)

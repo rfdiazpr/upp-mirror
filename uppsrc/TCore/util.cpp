@@ -1,6 +1,40 @@
 #include "TCore.h"
 #pragma hdrstop
 
+#ifdef PLATFORM_WIN32
+#include <float.h>
+#endif
+#ifdef PLATFORM_POSIX
+#include <math.h>
+#endif
+#ifdef PLATFORM_SOLARIS
+#include <ieeefp.h>
+#endif
+
+bool IsNan(double t)
+{
+#ifdef PLATFORM_WIN32
+	return _isnan(t);
+#elif defined(PLATFORM_POSIX)
+	return isnan(t);
+#else
+	#error
+	return false;
+#endif
+}
+
+bool IsInf(double t)
+{
+#ifdef PLATFORM_WIN32
+	return !_finite(t);
+#elif defined(PLATFORM_POSIX)
+	return !finite(t);
+#else
+	#error
+	return false;
+#endif
+}
+
 void WeakBase::Chk() const
 {
 	if(!this)
@@ -1127,3 +1161,44 @@ String InstallServiceCmd(String service_name, String app_name, String arguments)
 	return Null;
 }
 #endif
+
+String AppendPath(String s, String new_path)
+{
+	String np = new_path;
+	if(np.IsEmpty())
+		return s;
+	if(*np.Last() == DIR_SEP)
+		np.Trim(np.GetLength() - 1);
+	const char *p = s;
+	while(*p) {
+		const char *b = p;
+		while(*p && *p != ';')
+			p++;
+		int dl = p - b - np.GetLength();
+		if((unsigned)dl <= 1u && !ComparePath(b, np, np.GetLength()))
+			return s; // path found
+		if(*p)
+			p++;
+	}
+	String ns = s;
+	if(!IsNull(ns) && *ns.Last() != ';')
+		ns.Cat(';');
+	ns.Cat(np);
+	return ns;
+}
+
+String AppendPathList(String s, String path_list)
+{
+	String result = s;
+	const char *p = path_list;
+	while(*p) {
+		const char *s = p;
+		while(*p && *p != ';')
+			p++;
+		if(p != s)
+			result = AppendPath(result, String(s, p));
+		if(*p)
+			p++;
+	}
+	return result;
+}

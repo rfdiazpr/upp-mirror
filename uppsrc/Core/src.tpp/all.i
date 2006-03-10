@@ -97,7 +97,3 @@ END_TOPIC
 TOPIC("Color$en-us")
 #include "Color$en-us.tpp"
 END_TOPIC
-
-TOPIC("i18n$en-us")
-#include "i18n$en-us.tpp"
-END_TOPIC

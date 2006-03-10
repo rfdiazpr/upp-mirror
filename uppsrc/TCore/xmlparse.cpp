@@ -101,6 +101,7 @@ XMLTagTree XMLParser::Read()
 
 void XMLParser::Read(XMLTagTree& tree)
 {
+	RTIMING("XMLParser::Read");
 	for(;; Next())
 		switch(Entity()) {
 			case TEXT: {
@@ -122,6 +123,7 @@ void XMLParser::Read(XMLTagTree& tree)
 
 bool XMLParser::FetchLine()
 {
+	RTIMING("XMLParser::FetchLine");
 	line_data = input->GetLine();
 	line_ptr = line_data;
 	line_number++;
@@ -130,6 +132,7 @@ bool XMLParser::FetchLine()
 
 bool XMLParser::SkipWhite()
 {
+	RTIMING("XMLParser::SkipWhite");
 	while((byte)*line_ptr <= ' ') {
 		if(*line_ptr == '\0') {
 			if(!FetchLine())
@@ -152,17 +155,20 @@ bool XMLParser::InLevel(int count)
 
 bool XMLParser::NextLevel(int count)
 {
+	RTIMING("XMLParser::NextLevel");
 	return Next() != ISEOF && InLevel(count);
 }
 
 void XMLParser::SkipLevel(int count)
 {
+	RTIMING("XMLParser::SkipLevel");
 	while(NextLevel(count))
 		;
 }
 
 XMLParser::ENTITY XMLParser::Next()
 {
+	RTIMING("XMLParser::Next");
 	if(current_entity == TAG && loner_tag)
 		return current_entity = ENDTAG;
 	if(current_entity == ENDTAG && !tag_stack.IsEmpty()) {
@@ -173,6 +179,7 @@ XMLParser::ENTITY XMLParser::Next()
 	current_text = Null;
 	while(SkipWhite()) {
 		if(*line_ptr == '<') {
+			RTIMING("XMLParser::Next / '<'");
 			char loner = '/';
 			loner_tag = false;
 			bool endtag = false;
@@ -215,7 +222,7 @@ XMLParser::ENTITY XMLParser::Next()
 				if(*line_ptr == '=') {
 					line_ptr++;
 					SkipWhite();
-					String attrval;
+					StringBuffer attrval;
 					if(*line_ptr == '\"') {
 						line_ptr++;
 						while(*line_ptr && *line_ptr != '\"')
@@ -234,7 +241,7 @@ XMLParser::ENTITY XMLParser::Next()
 							else
 								attrval.Cat(*line_ptr++);
 					}
-					value = FromUtf8(attrval);
+					value = FromUtf8(~attrval, attrval.GetLength());
 				}
 				tag.attrib.Add(attr, value);
 			}
@@ -269,10 +276,11 @@ XMLParser::ENTITY XMLParser::Next()
 			return current_entity = (endtag ? ENDTAG : TAG);
 		}
 		else { // text
+			RTIMING("XMLParser::Next / text");
 			char closer = 0;
 			if(!tag_stack.IsEmpty() && *tag_stack.Top().name == '!')
 				closer = ']';
-			String raw_text;
+			StringBuffer raw_text;
 			while(*line_ptr != '<' && *line_ptr != closer) {
 				if(*line_ptr == '&')
 					raw_text.Cat(GetCharRef());
@@ -285,10 +293,10 @@ XMLParser::ENTITY XMLParser::Next()
 				const char *p = raw_text.Begin(), *e = raw_text.End();
 				while(e > p && (byte)e[-1] <= ' ')
 					e--;
-				raw_text.Trim(e - p);
+				raw_text.SetLength(e - p);
 			}
-			if(!raw_text.IsEmpty()) {
-				current_text = FromUtf8(raw_text);
+			if(raw_text.GetLength() > 0) {
+				current_text = FromUtf8(~raw_text, raw_text.GetLength());
 				return current_entity = TEXT;
 			}
 			if(closer && *line_ptr == closer) {
@@ -304,6 +312,7 @@ XMLParser::ENTITY XMLParser::Next()
 
 String XMLParser::GetCharRef()
 {
+	RTIMING("XMLParser::GetCharRef");
 	String out;
 	int outconst = 0;
 	if(*++line_ptr == '#') {
@@ -315,7 +324,7 @@ String XMLParser::GetCharRef()
 			while(IsDigit(*line_ptr))
 				outconst = 10 * outconst + *line_ptr++ - '0';
 		}
-		out.Cat(ToUtf8(outconst));
+		out = ToUtf8(outconst);
 	}
 	else {
 		const char *begin = line_ptr;

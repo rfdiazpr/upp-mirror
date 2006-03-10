@@ -38,26 +38,35 @@ struct XmlError : public Exc
 };
 
 class XmlParser {
+	struct Nesting {
+		Nesting(String tag = Null, bool blanks = false) : tag(tag), preserve_blanks(blanks) {}
+		String tag;
+		bool   preserve_blanks;
+	};
+
 	const char               *begin;
 	const char               *term;
+	String                    attr1, attrval1;
 	VectorMap<String, String> attr;
-	Vector<String>            stack;
+	Array<Nesting>            stack;
 
 	int                       type;
+	String                    nattr1, nattrval1;
 	VectorMap<String, String> nattr;
 	String                    text;
 	bool                      empty_tag;
-	
+	bool                      npreserve;
+
 	int                       line;
-	
+
 	void                      Ent(StringBuffer& out);
 	void                      Next();
 
 public:
 	void   SkipWhites();
-	
+
 	bool   IsEof();
-	
+
 	bool   IsTag();
 	String ReadTag();
 	bool   Tag(const char *tag);
@@ -67,31 +76,31 @@ public:
 	void   PassEnd();
 	bool   TagE(const char *tag);
 	void   PassTagE(const char *tag);
-	
-	int    GetAttrCount() const                               { return attr.GetCount(); }
-	String GetAttr(int i) const                               { return attr.GetKey(i); }
-	String operator[](int i) const                            { return attr[i]; }
-	String operator[](const char *id) const                   { return attr.Get(id, Null); }
+
+	int    GetAttrCount() const                               { return attr.GetCount() + (!IsNull(attr1) ? 1 : 0); }
+	String GetAttr(int i) const                               { return i ? attr.GetKey(i - 1) : attr1; }
+	String operator[](int i) const                            { return i ? attr[i] : attrval1; }
+	String operator[](const char *id) const                   { return attr1 == id ? attrval1 : attr.Get(id, Null); }
 	int    Int(const char *id, int def = Null) const;
 	double Double(const char *id, double def = Null) const;
-	
+
 	bool   IsText();
-	String ReadRawText();
 	String ReadText();
-	
+
 	bool   IsDecl();
 	String ReadDecl();
-	
+
 	bool   IsPI();
 	String ReadPI();
-	
+
 	bool   IsComment();
 	String ReadComment();
-	
+
 	void   Skip();
-	
-	VectorMap<String, String> PickAttrs() pick_               { return attr; }
-	
+	void   SkipEnd();
+
+	VectorMap<String, String> PickAttrs() pick_;
+
 	int    GetLine() const                                    { return line; }
 	int    GetColumn() const;
 
@@ -140,7 +149,7 @@ public:
 	String         Attr(const char *id) const                 { return attr.Get(id, Null); }
 	XmlNode&       SetAttr(const char *id, const String& val);
 	int            AttrInt(const char *id, int def = Null) const;
-	XmlNode&       SetAttr(const char *id, int val);	
+	XmlNode&       SetAttr(const char *id, int val);
 
 	void           SetAttrsPick(pick_ VectorMap<String, String>& a) { attr = a; }
 

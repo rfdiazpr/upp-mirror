@@ -192,3 +192,5 @@ OsobaList
 0 0 -1
 VectorMap<String,Value,StdHash<String> >
 0 0 -1
+CMemInStream
+0 0 -1

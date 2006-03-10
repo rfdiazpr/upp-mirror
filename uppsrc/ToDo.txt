@@ -1,11 +1,30 @@
-602 critical bugs:
+* chlog - zmena SetFocus u ArrayCtrl
 
-- problem s crashem na startu
-- problem s CriticalSection v Linuxu
-- problem focusem v Linuxu - Gnome 2.10.0 to be exact, IDE, Alt+Tab
-- problem s umk - nevraci se z linkeru
+* Assist++ - PesDlg - k_adresa_seq.
 
----------------------------
+* CommandLine() function returns a Vector with command line arguments in system enconing. Other parts of U++ uses UTF-8.
+
+* Cursor blinks in TheIde code editor window even when the window is inactive. It should rather be hidden then.
+
+* I have found that if some source file is in location which contains a link, then ide considers two different files.
+
+* If I wish to link against some external libraries, outside of the normal library search path, in a project with multiple developers, it would be nice to be able to use EnvVars. Like, -I$SSL/ to point to where openssl is on your OS. However, it does not appear to expand $SSL. Is this definitely the case?
+
+* New Layout -> |Layout dat do editoru
+
+* Je-li app EP Zoomable a je autohide Win panel, tak se neobjevuje (panel)
+
+* Problem IDE helpfile a CrossPlafrom development tema
+
+* Assist++ Alt+C - inline conversion
+
+* GetDataFile / SDL / Linux
+
+* Check Colors (scope highlighting) - seems to change in different versions
+
+* Have found such an issue. When I start Build 602beta4, on FreeBSD 6.0 under xwm menus in ide disappear very quickly when I click them by mouse so I can't click menu items. When I access menu by pressing F10, everithing works fine with keyboard.
+In KDE works fine.
+
 * Assist++ Navigate is unable to find the "Alignment" enum in beta4.
 
 * The fact that there is key assignments for it should also be shown in the context menu (Assist++)

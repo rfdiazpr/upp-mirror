@@ -17,6 +17,9 @@ char           GetHotKeyText(longlong_t hotkey); // returns symbolic name of hot
 String         StripHotText(const char* s);
 String         HotTextToSmartText(const char *s);
 
+bool           IsNan(double d);
+bool           IsInf(double d);
+
 inline int     abs2         (Size p)             { return p.cx * p.cx + p.cy * p.cy; }
 inline int     abs          (Size p)             { return (int)hypot(p.cx, p.cy); }
 inline int     MulVector    (Size a, Size b)     { return a.cx * b.cy - a.cy * b.cx; }
@@ -252,3 +255,6 @@ inline Rectf PeekIDR(const byte *p)
 {
 	return Rectf(PeekID(p), PeekID(p + 8), PeekID(p + 16), PeekID(p + 24));
 }
+
+String AppendPath(String s, String new_path);
+String AppendPathList(String s, String path_list);

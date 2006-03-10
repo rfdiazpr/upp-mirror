@@ -178,7 +178,9 @@ void XmlParser::SkipWhites()
 
 void XmlParser::Next()
 {
+	RTIMING("XmlParser::Next");
 	nattr.Clear();
+	nattr1 = nattrval1 = Null;
 	if(empty_tag) {
 		empty_tag = false;
 		type = XML_END;
@@ -186,8 +188,8 @@ void XmlParser::Next()
 	}
 	text.Clear();
 	type = XML_EOF;
-	const char *bw = term;
-	SkipWhites();
+	if(!npreserve)
+		SkipWhites();
 	if(*term == '<') {
 		term++;
 		if(*term == '!') {
@@ -284,8 +286,13 @@ void XmlParser::Next()
 						while(*term && *term != '\"')
 							if(*term == '&')
 								Ent(attrval);
-							else
-								attrval.Cat(*term++);
+							else {
+								const char *e = term;
+								while(*++e && *e != '&' && *e != '\"')
+									;
+								attrval.Cat(term, e - term);
+								term = e;
+							}
 						if(*term == '\"')
 							term++;
 					}
@@ -293,31 +300,51 @@ void XmlParser::Next()
 						while((byte)*term > ' ' && *term != '>')
 							if(*term == '&')
 								Ent(attrval);
-							else
-								attrval.Cat(*term++);
+							else {
+								const char *e = term;
+								while((byte)*++e > ' ' && *e != '>' && *e != '&')
+									;
+								attrval.Cat(term, e - term);
+								term = e;
+							}
 					}
-					nattr.Add(attr, FromUtf8(String(attrval)).ToString());
+					if(attr == "xml:space" && attrval.GetLength() == 8 && !memcmp(~attrval, "preserve", 8))
+						npreserve = true;
+					String aval = FromUtf8(~attrval, attrval.GetLength()).ToString();
+					if(IsNull(nattr1)) {
+						nattr1 = attr;
+						nattrval1 = aval;
+					}
+					else
+						nattr.Add(attr, aval);
 				}
 			}
 		}
 	}
+	else if(*term == 0)
+		type = XML_EOF;
 	else {
 		StringBuffer raw_text;
-		term = bw;
 		while(*term != '<' && *term) {
 			if(*term == '\n')
 				line++;
 			if(*term == '&')
 				Ent(raw_text);
-			else
-				raw_text.Cat(*term++);
+			else {
+				const char *e = term;
+				while(*++e && *e != '&' && *e != '<')
+					;
+				raw_text.Cat(term, e - term);
+				term = e;
+			}
 		}
-		const char *q = raw_text.End();
-		while(q > raw_text.Begin() && (byte)*(q - 1) <= ' ')
-			q--;
-		raw_text.SetLength(q - raw_text.Begin());
-		text = FromUtf8(String(raw_text)).ToString();
-		type = IsNull(text) ? XML_EOF : XML_TEXT;
+		const char *re = raw_text.End();
+		if(!npreserve) {
+			while(re > raw_text.Begin() && (byte)re[-1] <= ' ')
+				re--;
+		}
+		text = FromUtf8(~raw_text, re - ~raw_text).ToString();
+		type = XML_TEXT;
 	}
 }
 
@@ -337,8 +364,10 @@ String XmlParser::ReadTag()
 		throw XmlError("Expected tag");
 	LLOG("ReadTag " << text);
 	String h = text;
-	stack.Add(h);
+	stack.Add(Nesting(h, npreserve));
 	attr = nattr;
+	attr1 = nattr1;
+	attrval1 = nattrval1;
 	Next();
 	return h;
 }
@@ -347,8 +376,10 @@ bool  XmlParser::Tag(const char *tag)
 {
 	if(IsTag() && text == tag) {
 		LLOG("Tag " << text);
-		stack.Add(text);
+		stack.Add(Nesting(text, npreserve));
 		attr = nattr;
+		attr1 = nattr1;
+		attrval1 = nattrval1;
 		Next();
 		return true;
 	}
@@ -372,10 +403,14 @@ bool  XmlParser::End()
 		throw XmlError("Unexpected end of file");
 	if(IsEnd()) {
 		LLOG("EndTag " << text);
-		if(stack.GetCount() == 0)
-			throw XmlError("Unexpected end-tag");
-		if(stack.Pop() != text)
-			throw XmlError("Tag/end-tag mismatch");
+		if(stack.IsEmpty())
+			throw XmlError(NFormat("Unexpected end-tag: </%s>", text));
+		if(stack.Top().tag != text) {
+			RLOG("Tag/end-tag mismatch: <" << stack.Top().tag << "> </" << text << ">");
+//			throw XmlError(NFormat("Tag/end-tag mismatch: <%s> </%s>", stack.Top().tag, text));
+		}
+		stack.Drop();
+		npreserve = (!stack.IsEmpty() && stack.Top().preserve_blanks);
 		Next();
 		return true;
 	}
@@ -385,7 +420,7 @@ bool  XmlParser::End()
 void  XmlParser::PassEnd()
 {
 	if(!End())
-		throw XmlError(String().Cat() << "Expected \'" << (stack.GetCount() ? stack.Top() : String()) << "\' end-tag");
+		throw XmlError(String().Cat() << "Expected \'" << (stack.GetCount() ? stack.Top().tag : String()) << "\' end-tag");
 }
 
 bool  XmlParser::TagE(const char *tag)
@@ -403,14 +438,23 @@ void  XmlParser::PassTagE(const char *tag)
 	PassEnd();
 }
 
+VectorMap<String, String> XmlParser::PickAttrs() pick_
+{
+	if(!IsNull(attr1))
+		attr.Insert(0, attr1, attrval1);
+	return attr;
+}
+
 int   XmlParser::Int(const char *id, int def) const
 {
+	if(id == attr1) return ScanInt(attrval1);
 	int q = attr.Find(id);
 	return q < 0 ? def : ScanInt(attr[q]);
 }
 
 double XmlParser::Double(const char *id, double def) const
 {
+	if(id == attr1) return ScanDouble(attrval1);
 	int q = attr.Find(id);
 	return q < 0 ? def : ScanDouble(attr[q]);
 }
@@ -487,6 +531,12 @@ void XmlParser::Skip()
 		Next();
 }
 
+void XmlParser::SkipEnd()
+{
+	while(!IsEnd()) Skip();
+	PassEnd();
+}
+
 int XmlParser::GetColumn() const
 {
 	const char *s = term;
@@ -501,6 +551,7 @@ int XmlParser::GetColumn() const
 XmlParser::XmlParser(const char *s)
 {
 	empty_tag = false;
+	npreserve = false;
 	begin = term = s;
 	line = 1;
 	Next();

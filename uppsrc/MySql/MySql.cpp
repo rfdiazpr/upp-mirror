@@ -303,7 +303,7 @@ bool MySqlConnection::Fetch() {
 	if(result) {
 		row = mysql_fetch_row(result);
 		if(row) {
-			len = mysql_fetch_lengths(result);
+			len = (dword *)mysql_fetch_lengths(result);
 			return true;
 		}
 	}

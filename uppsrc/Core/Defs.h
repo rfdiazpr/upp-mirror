@@ -8,6 +8,8 @@
 	#pragma warning(disable : 4005)
 	#pragma warning(disable : 4675)
 	#pragma warning(disable : 4996)
+
+	#pragma setlocale("C")
 #endif
 
 void    Panic(const char *msg);

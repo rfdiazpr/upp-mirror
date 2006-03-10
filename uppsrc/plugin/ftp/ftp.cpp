@@ -3,6 +3,9 @@
 
 #include "lib/ftplib.h"
 
+#define LLOGBLOCK(x)  LOGBLOCK(x)
+#define LLOG(x)       LOG(x)
+
 static bool ftpinit = false;
 
 FtpClient::FtpClient()
@@ -33,7 +36,7 @@ bool FtpClient::Connect(const char *host, const char *user, const char *password
 	LOGBLOCK("FtpClient::Connect");
 	Close();
 	char perror[512];
-	LOG("FtpConnect(" << host << ")");
+	LLOG("FtpConnect(" << host << ")");
 	if(WhenProgress()) {
 		error = "connect aborted";
 		return false;
@@ -42,13 +45,13 @@ bool FtpClient::Connect(const char *host, const char *user, const char *password
 		error = perror;
 		return false;
 	}
-	LOG("FtpLogin(" << user << ", " << password << ")");
+	LLOG("FtpLogin(" << user << ", " << password << ")");
 	if(!FtpLogin(user, password, ftpconn)) {
 		error = FtpError(ftpconn);
 		Close();
 		return false;
 	}
-	LOG("FtpOptions(pasv = " << pasv << ")");
+	LLOG("FtpOptions(pasv = " << pasv << ")");
 	if(!FtpOptions(FTPLIB_CONNMODE, pasv ? FTPLIB_PASSIVE : FTPLIB_PORT, ftpconn)) {
 		error = FtpError(ftpconn);
 		Close();
@@ -81,11 +84,11 @@ bool FtpClient::CheckOpen()
 
 String FtpClient::Load(const char *path, Gate1<String> progress)
 {
-	LOGBLOCK("FtpClient::Load");
+	LLOGBLOCK("FtpClient::Load");
 	if(!CheckOpen())
 		return String::GetVoid();
 	netbuf *ftpdata;
-	LOG("FtpAccess(" << path << ")");
+	LLOG("FtpAccess(" << path << ")");
 	if(progress(NFormat(t_("Reading file '%s'"), path))) {
 		error = t_("aborted");
 		return String::GetVoid();
@@ -101,7 +104,7 @@ String FtpClient::Load(const char *path, Gate1<String> progress)
 			break;
 		byte buffer[1024];
 		int ndata = FtpRead(buffer, sizeof(buffer), ftpdata);
-		LOG("FtpRead -> " << ndata);
+		LLOG("FtpRead -> " << ndata);
 		if(ndata < 0) {
 			error = FtpError(ftpdata);
 			FtpClose(ftpdata);
@@ -124,11 +127,11 @@ String FtpClient::Load(const char *path, Gate1<String> progress)
 
 bool FtpClient::Save(const char *path, String data, Gate2<int, int> progress)
 {
-	LOGBLOCK("FtpClient::Save");
+	LLOGBLOCK("FtpClient::Save");
 	netbuf *ftpdata;
 	if(!CheckOpen())
 		return false;
-	LOG("FtpAccess(" << path << ")");
+	LLOG("FtpAccess(" << path << ")");
 	if(progress(0, data.GetLength()))
 		return false;
 	if(!FtpAccess(path, FTPLIB_FILE_WRITE, FTPLIB_IMAGE, ftpconn, &ftpdata)) {
@@ -143,7 +146,7 @@ bool FtpClient::Save(const char *path, String data, Gate2<int, int> progress)
 		}
 		int chunk = min(data.GetLength() - done, 1024);
 		int ndata = FtpWrite((void *)data.GetIter(done), chunk, ftpdata);
-		LOG("FtpWrite(" << chunk << ") -> " << ndata);
+		LLOG("FtpWrite(" << chunk << ") -> " << ndata);
 		if(ndata <= 0 || ndata > chunk) {
 			error = FtpError(ftpdata);
 			FtpClose(ftpdata);
@@ -157,17 +160,17 @@ bool FtpClient::Save(const char *path, String data, Gate2<int, int> progress)
 #endif
 	}
 	progress(data.GetLength(), data.GetLength());
-	LOG("FtpClose");
+	LLOG("FtpClose");
 	FtpClose(ftpdata);
 	return true;
 }
 
 bool  FtpClient::Exists(const char *path) {
-	LOGBLOCK("FtpClient::Exists");
+	LLOGBLOCK("FtpClient::Exists");
 	if(!CheckOpen())
 		return false;
 	netbuf *data;
-	LOG("FtpAccess(" << path << ")");
+	LLOG("FtpAccess(" << path << ")");
 	if(!FtpAccess(path, FTPLIB_FILE_READ, FTPLIB_IMAGE, ftpconn, &data)) {
 		error = FtpError(ftpconn);
 		return false;
@@ -177,38 +180,38 @@ bool  FtpClient::Exists(const char *path) {
 }
 
 bool FtpClient::Rename(const char *oldpath, const char *newpath) {
-	LOGBLOCK("FtpClient::Rename");
-	LOG("FtpRename(oldname = " << oldpath << ", newname = " << newpath << ")");
+	LLOGBLOCK("FtpClient::Rename");
+	LLOG("FtpRename(oldname = " << oldpath << ", newname = " << newpath << ")");
 	return CheckOpen() && !!FtpRename(oldpath, newpath, ftpconn);
 }
 
 bool FtpClient::Cd(const char *path) {
-	LOGBLOCK("FtpClient::Cd");
-	LOG("FtpChdir(" << path << ")");
+	LLOGBLOCK("FtpClient::Cd");
+	LLOG("FtpChdir(" << path << ")");
 	return CheckOpen() && !!FtpChdir(path, ftpconn);
 }
 
 bool FtpClient::MkDir(const char *path) {
-	LOGBLOCK("FtpClient::MkDir");
-	LOG("FtpMkdir(" << path << ")");
+	LLOGBLOCK("FtpClient::MkDir");
+	LLOG("FtpMkdir(" << path << ")");
 	return CheckOpen() && !!FtpMkdir(path, ftpconn);
 }
 
 bool FtpClient::RmDir(const char *path) {
-	LOGBLOCK("FtpClient::RmDir");
-	LOG("FtpRmdir(" << path << ")");
+	LLOGBLOCK("FtpClient::RmDir");
+	LLOG("FtpRmdir(" << path << ")");
 	return CheckOpen() && !!FtpRmdir(path, ftpconn);
 }
 
 bool FtpClient::Delete(const char *path) {
-	LOGBLOCK("FtpClient::Delete");
-	LOG("FtpDelete(" << path << ")");
+	LLOGBLOCK("FtpClient::Delete");
+	LLOG("FtpDelete(" << path << ")");
 	return CheckOpen() && !!FtpDelete(path, ftpconn);
 }
 
 void FtpClient::RealizePath(const char *path)
 {
-	LOGBLOCK("FtpClient::RealizePath");
+	LLOGBLOCK("FtpClient::RealizePath");
 	const char *s = path;
 	if(*s == '\0') return;
 	for(;;) {

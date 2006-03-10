@@ -31,15 +31,7 @@ void Sum(V& sum, T ptr, T end)
 }
 
 template <class T>
-typename T::ValueType Sum(const T& c)
-{
-	typename T::ValueType sum;
-	Sum(sum, c.Begin(), c.End());
-	return sum;
-}
-
-template <class T>
-typename T::ValueType Sum(const T& c, const typename T::ValueType& init)
+typename T::ValueType Sum(const T& c, const typename T::ValueType& init = typename T::ValueType())
 {
 	typename T::ValueType sum = init;
 	Sum(sum, c.Begin(), c.End());

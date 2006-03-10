@@ -449,6 +449,13 @@ void AStringBuffer<T, S>::Expand(int len)
 }
 
 template <class T, class S>
+void AStringBuffer<T, S>::Reserve(int len)
+{
+	if((len -= (int)(intptr_t)(alloc - begin)) > 0)
+		Expand(len);
+}
+
+template <class T, class S>
 T *AStringBuffer<T, S>::SetLength(int len)
 {
 	if(alloc - begin < len)

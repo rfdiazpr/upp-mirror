@@ -263,7 +263,7 @@ String HttpClient::Execute(Gate2<int, int> progress)
 		String part = socket.Read(1000);
 		if(!part.IsEmpty()) {
 			if(body.GetLength() + part.GetLength() > DEFAULT_MAX_CONTENT_SIZE) {
-				error = NFormat(t_("Maximum content side exceeded: %d"), body.GetLength() + part.GetLength());
+				error = NFormat(t_("Maximum content size exceeded: %d"), body.GetLength() + part.GetLength());
 				return tc_chunked ? chunked : body;
 			}
 			body.Cat(part);

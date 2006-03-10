@@ -1305,7 +1305,7 @@ void AreaTool::LineToRawClip(Pointf pt)
 		Point cb = ClipBind(clipped ? B : next_phys);
 		Point ca = clipped ? ClipBind(A) : cb;
 		if(vertices.GetCount() > begin_index || clipped)
-			SkipTo(ca);
+			SkipTo(ca, (next_phys - last_phys) % (clip_center - last_phys) >= 0);
 		if(clipped && cb != vertices.Top())
 		{
 			if(prev_ghost)
@@ -1333,7 +1333,7 @@ void AreaTool::LineToRawClip(Pointf pt)
 #endif
 }
 
-void AreaTool::SkipTo(Point pt)
+void AreaTool::SkipTo(Point pt, bool clockwise)
 {
 /*
 	if(vertices.GetCount() == begin_index)
@@ -1346,13 +1346,13 @@ void AreaTool::SkipTo(Point pt)
 	if(la == pt)
 		return;
 
-	Size diff(pt.x + la.x - plotter.clip.left - plotter.clip.right, pt.y + la.y - plotter.clip.top - plotter.clip.bottom);
+//	Size diff(pt.x + la.x - plotter.clip.left - plotter.clip.right, pt.y + la.y - plotter.clip.top - plotter.clip.bottom);
 	if(la.y <= plotter.clip.top)
 	{
 		if(pt.y <= plotter.clip.top)
 			Horz(pt.x);
 		else if(pt.y >= plotter.clip.bottom)
-			Horz(diff.cx >= 0 ? plotter.clip.right : plotter.clip.left).Vert(plotter.clip.bottom).Horz(pt.x);
+			Horz(clockwise ? plotter.clip.right : plotter.clip.left).Vert(plotter.clip.bottom).Horz(pt.x);
 		else if(pt.x <= plotter.clip.left)
 			Horz(plotter.clip.left).Vert(pt.y);
 		else if(pt.x >= plotter.clip.right)
@@ -1363,7 +1363,7 @@ void AreaTool::SkipTo(Point pt)
 	else if(la.y >= plotter.clip.bottom)
 	{
 		if(pt.y <= plotter.clip.top)
-			Horz(diff.cx >= 0 ? plotter.clip.right : plotter.clip.left).Vert(plotter.clip.top).Horz(pt.x);
+			Horz(clockwise ? plotter.clip.left : plotter.clip.right).Vert(plotter.clip.top).Horz(pt.x);
 		else if(pt.y >= plotter.clip.bottom)
 			Horz(pt.x);
 		else if(pt.x <= plotter.clip.left)
@@ -1382,7 +1382,7 @@ void AreaTool::SkipTo(Point pt)
 		else if(pt.x <= plotter.clip.left)
 			Vert(pt.y);
 		else if(pt.x >= plotter.clip.right)
-			Vert(diff.cy >= 0 ? plotter.clip.bottom : plotter.clip.top).Horz(plotter.clip.right).Vert(pt.y);
+			Vert(clockwise ? plotter.clip.top : plotter.clip.bottom).Horz(plotter.clip.right).Vert(pt.y);
 		else
 			NEVER();
 	}
@@ -1393,7 +1393,7 @@ void AreaTool::SkipTo(Point pt)
 		else if(pt.y >= plotter.clip.bottom)
 			Vert(plotter.clip.bottom).Horz(pt.x);
 		else if(pt.x <= plotter.clip.left)
-			Vert(diff.cy >= 0 ? plotter.clip.bottom : plotter.clip.top).Horz(plotter.clip.left).Vert(pt.y);
+			Vert(clockwise ? plotter.clip.bottom : plotter.clip.top).Horz(plotter.clip.left).Vert(pt.y);
 		else if(pt.x >= plotter.clip.right)
 			Vert(pt.y);
 		else
@@ -1495,6 +1495,7 @@ void AreaTool::Set(const Plotter& _info, Color _fill_color, const Image& _fill_p
 		outline_width = DotsToPixels(*_info.draw, -outline_width);
 	const PathStyle& path = _info.GetPath(outline_pattern);
 	plotter = Plotter(_info, int(outline_width * path.width) + 2);
+	clip_center = Pointf(plotter.clip.CenterPoint());
 	fill_color = _fill_color;
 	fill_pattern = _fill_pattern;
 	double pw;

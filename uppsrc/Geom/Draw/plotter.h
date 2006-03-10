@@ -334,7 +334,7 @@ protected:
 	void           LineToRawClip(Pointf pt);
 
 private:
-	void           SkipTo(Point pt);
+	void           SkipTo(Point pt, bool clockwise);
 	void           Flush();
 	AreaTool&      Horz(int x);
 	AreaTool&      Vert(int y);
@@ -356,6 +356,7 @@ private:
 	int            disjunct_begin_index;
 	Pointf         last_phys;
 	Pointf         last_start;
+	Pointf         clip_center;
 	bool           last_in;
 	bool           std_pen;
 	bool           simple;

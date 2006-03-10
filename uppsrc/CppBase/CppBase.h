@@ -25,7 +25,7 @@ public:
 	bool operator&(const CppWordsHash& b) const {
 		return (w[0] & b.w[0]) | (w[1] & b.w[1]) | (w[2] & b.w[2]) | (w[3] & b.w[3]);
 	}
-	
+
 	bool IsAll() const { return (w[0] & w[1] & w[2] & w[3]) == (dword)~0; }
 
 	CppWordsHash() { Clear(); }
@@ -132,8 +132,12 @@ public:
 };
 
 struct SrcFile {
+	SrcFile();
 	String      text;
 	Vector<int> linepos;
+	int preprocessorLinesRemoved;
+	int blankLinesRemoved;
+	int commentLinesRemoved;
 };
 
 SrcFile PreProcess(Stream& in);

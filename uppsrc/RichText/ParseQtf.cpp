@@ -269,7 +269,7 @@ void RichQtfParser::ReadObject()
 	RichObject obj;
 	if(*term == '#') {
 		term++;
-	#ifdef CPU_32
+	#ifdef CPU_64
 		obj = *(RichObject *)stou64(term, &term);
 	#else
 		obj = *(RichObject *)stou(term, &term);

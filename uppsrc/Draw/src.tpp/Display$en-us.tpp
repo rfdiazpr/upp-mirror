@@ -53,179 +53,178 @@ TOPIC_TEXT(
 TOPIC_TEXT(
 "39900623488521:gap][t4167;C2 $$20,20#70211524482531209251820423858195:class`-nested][b50;2 "
 "$$21,21#03324558446220344731010354752573:Par][{_}%EN-US [s10;:`:`:Display`:`:class:* "
-"[%00-00* class_][%00-00 Display]&][s6; &][s6; Display and Display`-derived classes "
-"render Value into the specified rectangular area. References to Displays are used "
-"in many widgets as attributes affecting the rendering of wi")
+"[%00-00* class_][%00-00 Display]&][s6; Display and Display`-derived classes render "
+"Value into the specified rectangular area. References to Displays are used in many "
+"widgets as attributes affecting the rendering of widget Va")
 TOPIC_TEXT(
-"dget Values.&][s6; Base Display class implements rendering of Value converted to "
-"text and also rendering of special AttrText type (text with font and color attributes).&][s0; "
+"lues.&][s6; Base Display class implements rendering of Value converted to text and "
+"also rendering of special AttrText type (text with font and color attributes).&][s0; "
 "&][s0; [* Visual style constants ]are used as `\"style`\" parameter bit flags of "
 "rendering methods and provide additional information about required visual appearance:&][s0;* "
-"&][s0;l288;~~~.1408; [%00-00*C CURSOR][%00-00* -|][%")
+"&][s0;l288;~~~.1408; [%00-00*C CURSOR][%00-00* -|][%00-00 G")
 TOPIC_TEXT(
-"00-00 Gui element is current (`\"has cursor`\").]&][s4;l288;i0;:`:`:Display`:`:FOCUS:~~~.1408;A "
+"ui element is current (`\"has cursor`\").]&][s4;l288;i0;:`:`:Display`:`:FOCUS:~~~.1408;A "
 "[%00-00*C FOCUS][* -|]Gui element has focus.&][s4;l288;:`:`:Display`:`:SELECT:~~~.1408;A "
 "[%00-00*C SELECT][%00-00 -|Gui element is selected.]&][s4;l288;:`:`:Display`:`:READONLY:~~~.1408;A "
-"[%00-00*C READONLY][%00-00 -|Gui element is read`-only.]&][s0; &][s4;:`:`:Display`:`:Paint`(`:`:Draw`&`,const`:`:Rect`")
+"[%00-00*C READONLY][%00-00 -|Gui element is read`-only.]&][s0; &][s4;:`:`:Display`:`:Paint`(`:`:Draw`&`,const`:`:Rect`&`,cons")
 TOPIC_TEXT(
-"&`,const`:`:Value`&`,`:`:Color`,`:`:Color`,`:`:dword`)const: [%00-00 virtual void_][%00-00* "
+"t`:`:Value`&`,`:`:Color`,`:`:Color`,`:`:dword`)const: [%00-00 virtual void_][%00-00* "
 "Paint][%00-00 (Draw`&_][%00-00*@3 w][%00-00 , const_Rect`&_][%00-00*@3 r][%00-00 "
 ", const_Value`&_][%00-00*@3 q][%00-00 , Color_][%00-00*@3 ink][%00-00 , Color_][%00-00*@3 "
 "paper][%00-00 , dword_][%00-00*@3 style][%00-00 )_const]&][s6; This virtual method "
-"is used to paint rectangle content according to specif")
+"is used to paint rectangle content according to specified Val")
 TOPIC_TEXT(
-"ied Value. The base class implementation tries to convert the Value into the textual "
-"representation using AsString functions and display it as text, unless it is of AttrText "
-"type. Note that it is OK for derived class to understand just Value types it was "
-"designed for (and crash otherwise) `- it is client code responsibility to use the "
-"correct Display.&][s1; [%00-00*C@3 w]-|Draw.&][s1; [%00-00*C@3 ")
+"ue. The base class implementation tries to convert the Value into the textual representation "
+"using AsString functions and display it as text, unless it is of AttrText type. Note "
+"that it is OK for derived class to understand just Value types it was designed for "
+"(and crash otherwise) `- it is client code responsibility to use the correct Display.&][s1; "
+"[%00-00*C@3 w]-|Draw.&][s1; [%00-00*C@3 r]-|Tar")
 TOPIC_TEXT(
-"r]-|Target rectangle.&][s1; [%00-00*C@3 q]-|Value to be painted.&][s1; [%00-00*C@3 "
-"ink]-|Suggested foreground color.&][s1; [%00-00*C@3 paper]-|Suggested background "
-"color.&][s1; [%00-00*C@3 style]-|Visual style.&][s0; &][s4;:`:`:Display`:`:PaintBackground`(`:`:Draw`&`,const`:`:Rect`&`,const`:`:Value`&`,`:`:Color`,`:`:Color`,`:`:dword`)const: "
-"[%00-00 virtual void_][%00-00* PaintBackground][%00-00 (D")
+"get rectangle.&][s1; [%00-00*C@3 q]-|Value to be painted.&][s1; [%00-00*C@3 ink]-|Suggested "
+"foreground color.&][s1; [%00-00*C@3 paper]-|Suggested background color.&][s1; [%00-00*C@3 "
+"style]-|Visual style.&][s0; &][s4;:`:`:Display`:`:PaintBackground`(`:`:Draw`&`,const`:`:Rect`&`,const`:`:Value`&`,`:`:Color`,`:`:Color`,`:`:dword`)const: "
+"[%00-00 virtual void_][%00-00* PaintBackground][%00-00 (Draw`&_]")
 TOPIC_TEXT(
-"raw`&_][%00-00*@3 w][%00-00 , const_Rect`&_][%00-00*@3 r][%00-00 , const_Value`&_][%00-00*@3 "
+"[%00-00*@3 w][%00-00 , const_Rect`&_][%00-00*@3 r][%00-00 , const_Value`&_][%00-00*@3 "
 "q][%00-00 , Color_][%00-00*@3 ink][%00-00 , Color_][%00-00*@3 paper][%00-00 , dword_][%00-00*@3 "
 "style][%00-00 )_const]&][s6; This virtual method is used to paint areas of GUI element "
 "that are outside of rectangle specified in Paint method, but should have color related "
-"somewhat to current Display class `- ")
+"somewhat to current Display class `- usually")
 TOPIC_TEXT(
-"usually this color is the same as background painted in Paint. (Note that Paint "
-"method must clear the background separately, although base Display class is defined "
-"to use PaintBackground for this task).&][s1; [%00-00*C@3 w]-|Draw.&][s1; [%00-00*C@3 "
-"r]-|Target rectangle.&][s1; [%00-00*C@3 q]-|Value to be painted.&][s1; [%00-00*C@3 "
-"ink]-|Suggested foreground color.&][s1; [%00-00*C@3 paper]-|Suggeste")
+" this color is the same as background painted in Paint. (Note that Paint method "
+"must clear the background separately, although base Display class is defined to use "
+"PaintBackground for this task).&][s1; [%00-00*C@3 w]-|Draw.&][s1; [%00-00*C@3 r]-|Target "
+"rectangle.&][s1; [%00-00*C@3 q]-|Value to be painted.&][s1; [%00-00*C@3 ink]-|Suggested "
+"foreground color.&][s1; [%00-00*C@3 paper]-|Suggested backg")
 TOPIC_TEXT(
-"d background color.&][s1; [%00-00*C@3 style]-|Visual style.&][s1;*C@3 &][s4;:`:`:Display`:`:GetStdSize`(const`:`:Value`&`)const: "
+"round color.&][s1; [%00-00*C@3 style]-|Visual style.&][s1;*C@3 &][s4;:`:`:Display`:`:GetStdSize`(const`:`:Value`&`)const: "
 "[%00-00 virtual Size_][%00-00* GetStdSize][%00-00 (const_Value`&_][%00-00*@3 q][%00-00 "
 ")_const]&][s6; Should return standard size for given value and Display. E.g. if Display "
 "is rendering Images, it should return the Size of the Image in pixels. Base Display "
-"returns the ")
+"returns the size of")
 TOPIC_TEXT(
-"size of textual representation of the Value.&][s1; [%00-00*C@3 q]-|Value.&][s1; "
-"[*/ Return value]-|Size of Value for Display.&][s4;:`:`:Display`:`:RatioSize`(const`:`:Value`&`,int`,int`)const: "
+" textual representation of the Value.&][s1; [%00-00*C@3 q]-|Value.&][s1; [*/ Return "
+"value]-|Size of Value for Display.&][s4;:`:`:Display`:`:RatioSize`(const`:`:Value`&`,int`,int`)const: "
 "&][s4; [%00-00 virtual Size_][%00-00* RatioSize][%00-00 (const_Value`&_][%00-00*@3 "
 "q][%00-00 , int_][%00-00*@3 cx][%00-00 , int_][%00-00*@3 cy][%00-00 )_const]&][s6; "
-"Returns size for defined value keeping th")
+"Returns size for defined value keeping the aspec")
 TOPIC_TEXT(
-"e aspect ratio.&][s1; [%00-00*C@3 q]-|Value.&][s1; [%00-00*C@3 cx]-|Required width. "
-"If zero, it should be computed to keep aspect ratio with cy.&][s1; [%00-00*C@3 cy]-|Required "
+"t ratio.&][s1; [%00-00*C@3 q]-|Value.&][s1; [%00-00*C@3 cx]-|Required width. If "
+"zero, it should be computed to keep aspect ratio with cy.&][s1; [%00-00*C@3 cy]-|Required "
 "height. If zero, it should be computed to keep aspect ratio with cx.&][s1; [*/ Return "
 "value]-|Size of Value for Display.&][s0; &][s0; &][s0; &][s10;:`:`:AttrText`:`:struct:* "
-"[%00-00* struct_][%00-00 AttrText]&][s6; Simple h")
+"[%00-00* struct_][%00-00 AttrText]&][s6; Simple helper c")
 TOPIC_TEXT(
-"elper class convertible to the Value. Standard base Display detects whether Value "
-"passed in is of AttrText type and handles it differently by adopting non`-null attributes "
+"lass convertible to the Value. Standard base Display detects whether Value passed "
+"in is of AttrText type and handles it differently by adopting non`-null attributes "
 "for the text painted.&][s6; &][s4;:`:`:AttrText`:`:text:* [%00-00* WString_][%00-00 "
 "text]&][s6; Text to be displayed.&][s0; &][s4;:`:`:AttrText`:`:font:* [%00-00* Font_][%00-00 "
-"font]&][s6; Font of text.&][s0; &][s4;:`:`:AttrText")
+"font]&][s6; Font of text.&][s0; &][s4;:`:`:AttrText`:`:ink")
 TOPIC_TEXT(
-"`:`:ink:* [%00-00* Color_][%00-00 ink]&][s6; Text color.&][s0; &][s4;:`:`:AttrText`:`:paper:* "
+":* [%00-00* Color_][%00-00 ink]&][s6; Text color.&][s0; &][s4;:`:`:AttrText`:`:paper:* "
 "[%00-00* Color_][%00-00 paper]&][s6; Background color&][s0; &][s4;:`:`:AttrText`:`:Ink`(`:`:Color`): "
 "[%00-00 AttrText`&_][%00-00* Ink][%00-00 (Color_][%00-00*@3 c][%00-00 )]&][s6; Sets "
 "the text color.&][s1; [%00-00*C@3 c]-|The color.&][s1; [*/ Return value]-|`*this.&][s0; "
-"&][s4;:`:`:AttrText`:`:Paper`(`:`")
+"&][s4;:`:`:AttrText`:`:Paper`(`:`:Color`")
 TOPIC_TEXT(
-":Color`): [%00-00 AttrText`&_][%00-00* Paper][%00-00 (Color_][%00-00*@3 c][%00-00 "
-")]&][s6; Sets the paper color.&][s1; [%00-00*C@3 c]-|The color.&][s1; [*/ Return "
-"value]-|`*this.&][s0; &][s4;:`:`:AttrText`:`:SetFont`(`:`:Font`): [%00-00 AttrText`&_][%00-00* "
-"SetFont][%00-00 (Font_][%00-00*@3 f][%00-00 )]&][s6; Sets the font.&][s1; [%00-00*C@3 "
-"f]-|The font.&][s1; [*/ Return value]-|`*this.&][s0; &][")
+"): [%00-00 AttrText`&_][%00-00* Paper][%00-00 (Color_][%00-00*@3 c][%00-00 )]&][s6; "
+"Sets the paper color.&][s1; [%00-00*C@3 c]-|The color.&][s1; [*/ Return value]-|`*this.&][s0; "
+"&][s4;:`:`:AttrText`:`:SetFont`(`:`:Font`): [%00-00 AttrText`&_][%00-00* SetFont][%00-00 "
+"(Font_][%00-00*@3 f][%00-00 )]&][s6; Sets the font.&][s1; [%00-00*C@3 f]-|The font.&][s1; "
+"[*/ Return value]-|`*this.&][s0; &][s4;:`:`")
 TOPIC_TEXT(
-"s4;:`:`:AttrText`:`:operator`:`:Value`(`)const: [%00-00 operator_Value()_const]&][s1; "
-"[*/ Return value]-|AttrText as raw Value.&][s0; &][s4;:`:`:AttrText`:`:`:`:AttrText`(const "
+":AttrText`:`:operator`:`:Value`(`)const: [%00-00 operator_Value()_const]&][s1; [*/ "
+"Return value]-|AttrText as raw Value.&][s0; &][s4;:`:`:AttrText`:`:`:`:AttrText`(const "
 "char`*`): [%00-00* AttrText][%00-00 (const_char_`*][%00-00*@3 text][%00-00 )]&][s6; "
 "Constructs AttrText, assigning the text attribute and all other attributes to zero.&][s0; "
-"&][s4;:`:`:AttrText`:`:`:`:AttrText`(const`:`:wch")
+"&][s4;:`:`:AttrText`:`:`:`:AttrText`(const`:`:wchar`*`):")
 TOPIC_TEXT(
-"ar`*`): [%00-00* AttrText][%00-00 (const_wchar_`*][%00-00*@3 text][%00-00 )]&][s6; "
-"Constructs AttrText, assigning the text attribute and all other attributes to zero.&][s0; "
-"&][s4;:`:`:AttrText`:`:`:`:AttrText`(const`:`:WString`&`): [%00-00* AttrText][%00-00 "
-"(const_WString`&_][%00-00*@3 text][%00-00 )]&][s6; Constructs AttrText, assigning "
-"the text attribute and all other attributes to zero.&][s0;3 ")
+" [%00-00* AttrText][%00-00 (const_wchar_`*][%00-00*@3 text][%00-00 )]&][s6; Constructs "
+"AttrText, assigning the text attribute and all other attributes to zero.&][s0; &][s4;:`:`:AttrText`:`:`:`:AttrText`(const`:`:WString`&`): "
+"[%00-00* AttrText][%00-00 (const_WString`&_][%00-00*@3 text][%00-00 )]&][s6; Constructs "
+"AttrText, assigning the text attribute and all other attributes to zero.&][s0;3 &][s0;3")
 TOPIC_TEXT(
-"&][s0;3 &][s0;3 &][s0;3 Standard Displays&][s5; Standard Displays are implemented "
-"as `\"functional globals`\" `- functions returning constant reference to single global "
-"Display instance.&][s0; &][ {{3784:6216h1;@(204) [s0; Display name]:: [s0; Description]::^@2 "
-"[s0;* StdDisplay]::= [s0; Base Display. Displays Value as text, unless it is AttrText "
-"(see above)]::^ [s0;* ColorDisplay]::= [s0; Displays C")
+" &][s0;3 &][s0;3 Standard Displays&][s5; Standard Displays are implemented as `\"functional "
+"globals`\" `- functions returning constant reference to single global Display instance.&][s0; "
+"&][ {{3784:6216h1;@(204) [s0; Display name]:: [s0; Description]::^@2 [s0;* StdDisplay]::= "
+"[s0; Base Display. Displays Value as text, unless it is AttrText (see above)]::^ "
+"[s0;* ColorDisplay]::= [s0; Displays Color (r")
 TOPIC_TEXT(
-"olor (required) `- simply paints background using the Value passed in.]::^ [s0;* "
-"SizeTextDisplay]::= [s0; Similar to StdDisplay, but stretches the text size to fill "
-"whole display area.]::^ [s0;* ImageDisplay]::= [s0; Displays Image passed in as Value, "
-"aligns it to the top`-left corner.]::^ [s0;* FittedImageDisplay]::= [s0; Displays "
-"Image scaled to fit the rectangle.]::^ [s0;* CenteredImageDisplay]")
+"equired) `- simply paints background using the Value passed in.]::^ [s0;* SizeTextDisplay]::= "
+"[s0; Similar to StdDisplay, but stretches the text size to fill whole display area.]::^ "
+"[s0;* ImageDisplay]::= [s0; Displays Image passed in as Value, aligns it to the top`-left "
+"corner.]::^ [s0;* FittedImageDisplay]::= [s0; Displays Image scaled to fit the rectangle.]::^ "
+"[s0;* CenteredImageDisplay]::= [s0")
 TOPIC_TEXT(
-"::= [s0; Displays Image centered in the rectangle.]::^ [s0;* CenteredHighlightImageDisplay]::= "
+"; Displays Image centered in the rectangle.]::^ [s0;* CenteredHighlightImageDisplay]::= "
 "[s0; Displays Image centered in the rectangle with 1 pixel wide white border.]::^ "
 "[s0;* DrawingDisplay]::= [s0; Displays Drawing scaled to fit the rectangle.]}}&][s0;3 "
 "&][s0; &][s0; &][s10;:`:`:PaintRect`:`:class:* [%00-00* class_][%00-00 PaintRect]&][s6; "
-"PaintRect is a simple helper class that combines ")
+"PaintRect is a simple helper class that combines Value a")
 TOPIC_TEXT(
-"Value and a reference to the Display to provide `\"visual content`\" of rectangle. "
-"It is [%00-00*@(0.0.255) Moveable].&][s0;*@(128.0.255) &][s4;:`:`:PaintRect`:`:Paint`(`:`:Draw`&`,const`:`:Rect`&`,`:`:Color`,`:`:Color`,`:`:dword`)const: "
+"nd a reference to the Display to provide `\"visual content`\" of rectangle. It is "
+"[%00-00*@(0.0.255) Moveable].&][s0;*@(128.0.255) &][s4;:`:`:PaintRect`:`:Paint`(`:`:Draw`&`,const`:`:Rect`&`,`:`:Color`,`:`:Color`,`:`:dword`)const: "
 "[%00-00 void_][%00-00* Paint][%00-00 (Draw`&_][%00-00*@3 w][%00-00 , const_Rect`&_][%00-00*@3 "
-"r][%00-00 , Color_][%00-00*@3 ink][%00-00 _`=_SBlack, Color_][%00-00*@")
+"r][%00-00 , Color_][%00-00*@3 ink][%00-00 _`=_SBlack, Color_][%00-00*@3 paper")
 TOPIC_TEXT(
-"3 paper][%00-00 _`=_SWhite, dword_][%00-00*@3 style][%00-00 _`=_][%00-00@3 0][%00-00 "
-")_const]&][s6; Invokes Paint of contained Display for contained Value.&][s1; [%00-00*C@3 "
-"w]-|Draw.&][s1; [%00-00*C@3 r]-|Target rectangle.&][s1; [%00-00*C@3 ink]-|Suggested "
-"foreground color.&][s1; [%00-00*C@3 paper]-|Suggested background color.&][s1; [%00-00*C@3 "
-"style]-|Visual style.&][s0; &][s4;:`:`:PaintRect`:`:")
+"][%00-00 _`=_SWhite, dword_][%00-00*@3 style][%00-00 _`=_][%00-00@3 0][%00-00 )_const]&][s6; "
+"Invokes Paint of contained Display for contained Value.&][s1; [%00-00*C@3 w]-|Draw.&][s1; "
+"[%00-00*C@3 r]-|Target rectangle.&][s1; [%00-00*C@3 ink]-|Suggested foreground color.&][s1; "
+"[%00-00*C@3 paper]-|Suggested background color.&][s1; [%00-00*C@3 style]-|Visual "
+"style.&][s0; &][s4;:`:`:PaintRect`:`:Paint`(")
 TOPIC_TEXT(
-"Paint`(`:`:Draw`&`,int`,int`,int`,int`,`:`:Color`,`:`:Color`,`:`:dword`)const: [%00-00 "
+"`:`:Draw`&`,int`,int`,int`,int`,`:`:Color`,`:`:Color`,`:`:dword`)const: [%00-00 "
 "void_][%00-00* Paint][%00-00 (Draw`&_][%00-00*@3 w][%00-00 , int_][%00-00*@3 x][%00-00 "
 ", int_][%00-00*@3 y][%00-00 , int_][%00-00*@3 cx][%00-00 , int_][%00-00*@3 cy][%00-00 "
 ", Color_][%00-00*@3 ink][%00-00 _`=_SBlack, Color_][%00-00*@3 paper][%00-00 _`=_SWhite, "
-"dword_][%00-00*@3 style][%00-00 _`=_][%00-00@3 0][%0")
+"dword_][%00-00*@3 style][%00-00 _`=_][%00-00@3 0][%00-00 )_")
 TOPIC_TEXT(
-"0-00 )_const]&][s6; Invokes contained Display with contained Value.&][s1; [%00-00*C@3 "
-"w]-|Draw.&][s1; [%00-00*C@3 x, y, cx, cy]-|Target rectangle (left, top, width, height).&][s1; "
-"[%00-00*C@3 ink]-|Suggested foreground color.&][s1; [%00-00*C@3 paper]-|Suggested "
-"background color.&][s1; [%00-00*C@3 style]-|Visual style.&][s0; &][s4;:`:`:PaintRect`:`:GetStdSize`(`)const: "
-"[%00-00 Size_][%00-00* GetStd")
+"const]&][s6; Invokes contained Display with contained Value.&][s1; [%00-00*C@3 w]-|Draw.&][s1; "
+"[%00-00*C@3 x, y, cx, cy]-|Target rectangle (left, top, width, height).&][s1; [%00-00*C@3 "
+"ink]-|Suggested foreground color.&][s1; [%00-00*C@3 paper]-|Suggested background "
+"color.&][s1; [%00-00*C@3 style]-|Visual style.&][s0; &][s4;:`:`:PaintRect`:`:GetStdSize`(`)const: "
+"[%00-00 Size_][%00-00* GetStdSize][%")
 TOPIC_TEXT(
-"Size][%00-00 ()_const]&][s6; Invokes GetStdSize of contained Display for contained "
-"Value.&][s1; [*/ Return value]-|Preferred Size of Value.&][s0; &][s4;:`:`:PaintRect`:`:RatioSize`(int`,int`)const: "
+"00-00 ()_const]&][s6; Invokes GetStdSize of contained Display for contained Value.&][s1; "
+"[*/ Return value]-|Preferred Size of Value.&][s0; &][s4;:`:`:PaintRect`:`:RatioSize`(int`,int`)const: "
 "[%00-00 Size_][%00-00* RatioSize][%00-00 (int_][%00-00*@3 cx][%00-00 , int_][%00-00*@3 "
 "cy][%00-00 )_const]&][s6; Invokes RatioSize of contained Display for contained Value.&][s1; "
-"[%00-00*C@3 cx]-|Requir")
+"[%00-00*C@3 cx]-|Required widt")
 TOPIC_TEXT(
-"ed width. If zero, it should be computed to keep aspect ratio with cy.&][s1; [%00-00*C@3 "
+"h. If zero, it should be computed to keep aspect ratio with cy.&][s1; [%00-00*C@3 "
 "cy]-|Required height. If zero, it should be computed to keep aspect ratio with cx.&][s1; "
 "[*/ Return value]-|Size of Value for Display.&][s0; &][s4;:`:`:PaintRect`:`:RatioSize`(`:`:Size`)const: "
 "[%00-00 Size_][%00-00* RatioSize][%00-00 (Size_][%00-00*@3 sz][%00-00 )_const]&][s6; "
-"Equivalent to RatioSize(sz.cx, sz")
+"Equivalent to RatioSize(sz.cx, sz.cy).&]")
 TOPIC_TEXT(
-".cy).&][s0; &][s4;:`:`:PaintRect`:`:SetDisplay`(const`:`:Display`&`): [%00-00 void_][%00-00* "
+"[s0; &][s4;:`:`:PaintRect`:`:SetDisplay`(const`:`:Display`&`): [%00-00 void_][%00-00* "
 "SetDisplay][%00-00 (const_Display`&_][%00-00*@3 d][%00-00 )]&][s6; Sets the Display.&][s1; "
 "[%00-00*C@3 d]-|Display.&][s0; &][s4;:`:`:PaintRect`:`:SetValue`(const`:`:Value`&`): "
 "[%00-00 void_][%00-00* SetValue][%00-00 (const_Value`&_][%00-00*@3 v][%00-00 )]&][s6; "
-"Sets the Value.&][s1; [%00-00*C@3 v]-|Value.&")
+"Sets the Value.&][s1; [%00-00*C@3 v]-|Value.&][s0; &")
 TOPIC_TEXT(
-"][s0; &][s4;:`:`:PaintRect`:`:Set`(const`:`:Display`&`,const`:`:Value`&`): [%00-00 "
-"void_][%00-00* Set][%00-00 (const_Display`&_][%00-00*@3 d][%00-00 , const_Value`&_][%00-00*@3 "
-"v][%00-00 )]&][s6; Sets the Display and the Value.&][s1; [%00-00*C@3 d]-|Display.&][s1; "
-"[%00-00*C@3 v]-|Value.&][s0; &][s4;:`:`:PaintRect`:`:Clear`(`): [%00-00 void_][%00-00* "
-"Clear][%00-00 ()]&][s6; Removes the Display `- s")
+"][s4;:`:`:PaintRect`:`:Set`(const`:`:Display`&`,const`:`:Value`&`): [%00-00 void_][%00-00* "
+"Set][%00-00 (const_Display`&_][%00-00*@3 d][%00-00 , const_Value`&_][%00-00*@3 v][%00-00 "
+")]&][s6; Sets the Display and the Value.&][s1; [%00-00*C@3 d]-|Display.&][s1; [%00-00*C@3 "
+"v]-|Value.&][s0; &][s4;:`:`:PaintRect`:`:Clear`(`): [%00-00 void_][%00-00* Clear][%00-00 "
+"()]&][s6; Removes the Display `- subseque")
 TOPIC_TEXT(
-"ubsequent calls to Paint act as `\"no operation`\", calls to GetStdSize and RatioSize "
-"return Size(0, 0).&][s0; &][s4;:`:`:PaintRect`:`:GetValue`(`)const: [%00-00 const_Value`&_][%00-00* "
+"nt calls to Paint act as `\"no operation`\", calls to GetStdSize and RatioSize return "
+"Size(0, 0).&][s0; &][s4;:`:`:PaintRect`:`:GetValue`(`)const: [%00-00 const_Value`&_][%00-00* "
 "GetValue][%00-00 ()_const]&][s6; Returns the Value.&][s1; [*/ Return value]-|Value.&][s0; "
 "&][s4;:`:`:PaintRect`:`:GetDisplay`(`)const: [%00-00 const_Display`&_][%00-00* GetDisplay][%00-00 "
-"()_const]&][s6; Returns the ")
+"()_const]&][s6; Returns the Display")
 TOPIC_TEXT(
-"Display.&][s1; [*/ Return value]-|Display.&][s0; &][s4;:`:`:PaintRect`:`:operator "
-"bool`(`)const: [%00-00 operator_bool()_const]&][s1; [*/ Return value]-|true if Display "
-"is set.&][s0; &][s4;:`:`:PaintRect`:`:`:`:PaintRect`(`): [%00-00* PaintRect][%00-00 "
-"()]&][s6; Constructs empty PaintRect, with no Display assigned.&][s0; &][s4;:`:`:PaintRect`:`:`:`:PaintRect`(const`:`:Display`&`): "
-"[%00-00* PaintRe")
+".&][s1; [*/ Return value]-|Display.&][s0; &][s4;:`:`:PaintRect`:`:operator bool`(`)const: "
+"[%00-00 operator_bool()_const]&][s1; [*/ Return value]-|true if Display is set.&][s0; "
+"&][s4;:`:`:PaintRect`:`:`:`:PaintRect`(`): [%00-00* PaintRect][%00-00 ()]&][s6; Constructs "
+"empty PaintRect, with no Display assigned.&][s0; &][s4;:`:`:PaintRect`:`:`:`:PaintRect`(const`:`:Display`&`): "
+"[%00-00* PaintRect][%00")
 TOPIC_TEXT(
-"ct][%00-00 (const_Display`&_][%00-00*@3 display][%00-00 )]&][s6; Constructs PaintRect "
-"with specified Display.&][s1; [%00-00*C@3 display]-|Display.&][s0; &][s4;:`:`:PaintRect`:`:`:`:PaintRect`(const`:`:Display`&`,const`:`:Value`&`): "
+"-00 (const_Display`&_][%00-00*@3 display][%00-00 )]&][s6; Constructs PaintRect with "
+"specified Display.&][s1; [%00-00*C@3 display]-|Display.&][s0; &][s4;:`:`:PaintRect`:`:`:`:PaintRect`(const`:`:Display`&`,const`:`:Value`&`): "
 "[%00-00* PaintRect][%00-00 (const_Display`&_][%00-00*@3 display][%00-00 , const_Value`&_][%00-00*@3 "
-"val][%00-00 )]&][s6; Constructs PaintRext with specified Display and")
+"val][%00-00 )]&][s6; Constructs PaintRext with specified Display and Value.")
 TOPIC_TEXT(
-" Value.&][s1; [%00-00*C@3 display]-|Display.&][s1; [%00-00*C@3 val]-|Value.&][s0; "
-"&][s0; ]")
+"&][s1; [%00-00*C@3 display]-|Display.&][s1; [%00-00*C@3 val]-|Value.&][s0; &][s0;3 "
+"]")

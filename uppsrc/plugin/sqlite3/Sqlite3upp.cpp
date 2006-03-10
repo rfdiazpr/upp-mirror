@@ -5,6 +5,8 @@
 #include "lib/sqlite3.h"
 #include "sqlite3.h"
 
+#define LLOG(x) // LOG(x)
+
 //////////////////////////////////////////////////////////////////////
 
 const char *Sqlite3ReadString(const char *s, String& stmt) {
@@ -116,9 +118,9 @@ Sqlite3Connection::~Sqlite3Connection() {
 
 void Sqlite3Connection::FlushStatements()
 {
-	RLOG("Sqlite3Connection::FlushStatements(" << prepared_statements.GetCount() << " total)");
+	LLOG("Sqlite3Connection::FlushStatements(" << prepared_statements.GetCount() << " total)");
 	for (int i = 0; i < prepared_statements.GetCount(); ++i) {
-		RLOG("Sqlite3Connection::FlushStatements(" << FormatIntHex(prepared_statements[i]) << ") - " << prepared_statements.GetKey(i));
+		LLOG("Sqlite3Connection::FlushStatements(" << FormatIntHex(prepared_statements[i]) << ") - " << prepared_statements.GetKey(i));
 		int retval = sqlite3_finalize(prepared_statements[i]);
 		if (SQLITE_OK != retval)
 			session.SetError(sqlite3_errmsg(db),String("Finalizing statement: ")+prepared_statements.GetKeys()[i]);
@@ -128,7 +130,7 @@ void Sqlite3Connection::FlushStatements()
 }
 
 void Sqlite3Connection::SetParam(int i, const Value& r) {
-	//LOG(Format("SetParam(%d,%s)",i,r.ToString()));
+	LLOG(Format("SetParam(%d,%s)",i,r.ToString()));
 	param.At(i,r);
 }
 void Sqlite3Connection::BindParam(int i, const Value& r) {
@@ -226,11 +228,10 @@ bool Sqlite3Connection::Execute() {
 	return true;
 }
 int Sqlite3Connection::GetRowsProcessed() const {
-	LOG("GetRowsProcessed()");
-//	NEVER();		// Not yet inplemented -- when is this called?
-	// Sqlite doesn't give this information :-/
-	return -1;
+	LLOG("GetRowsProcessed()");
+	return sqlite3_changes(db);
 }
+
 bool Sqlite3Connection::Fetch() {
 	ASSERT(NULL != current_stmt);
 	if (!got_row_data)
@@ -298,12 +299,12 @@ sqlite3_stmt *Sqlite3Connection::Compile(String statement) {
 		FlushStatements();
 	sqlite3_stmt* stmt = NULL;
 	if (SQLITE_OK != sqlite3_prepare(db,statement,statement.GetLength(),&stmt,NULL)) {
-		RLOG("Sqlite3Connection::Compile(" << statement << ") -> error");
+		LLOG("Sqlite3Connection::Compile(" << statement << ") -> error");
 		session.SetError(sqlite3_errmsg(db), String("Preparing: ")+statement );
 		return NULL;
 	}
 	prepared_statements.Add(statement,stmt);
-	RLOG("Sqlite3Connection::Compile(" << statement << ") = " << FormatIntHex(stmt));
+	LLOG("Sqlite3Connection::Compile(" << statement << ") = " << FormatIntHex(stmt));
 	prep_stmt_size += statement.GetLength();
 	return stmt;
 }
@@ -383,7 +384,16 @@ Vector<SqlColumnInfo> Sqlite3Session::EnumColumns(String database, String table)
 	for (int i = 0; i < sqlite3_column_count(s); i++) {
 		SqlColumnInfo info;
 		info.name = sqlite3_column_name(s,i);
-		info.type = STRING_V;
+		switch (sqlite3_column_type(s, i)) {
+	    case 1:
+	        info.type = INT_V;
+	        break;
+	    case 2:
+	        info.type = DOUBLE_V;
+	        break;
+	    default:
+	        info.type = STRING_V;
+		}
 		info.width = info.decimals = info.scale = info.prec = 0;
 		out.Add(info);
 	}

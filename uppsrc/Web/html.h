@@ -190,16 +190,18 @@ public:
 };
 
 HtmlTag HtmlSingleTag(const char *s);
-HtmlTag HtmlInput(const char *s);
-HtmlTag HtmlEdit(String id);
+HtmlTag HtmlInput(const char *type, const char *name = 0);
+HtmlTag HtmlEdit(String name);
+HtmlTag HtmlEdit(String name, int size, int maxlength = 256,
+                 const char *defaultValue = 0, bool password = false);
 
-HtmlTag HtmlHidden(String s, Value val);
-HtmlTag HtmlHidden(const char *s, Value val);
+HtmlTag HtmlHidden(String name, Value val);
+HtmlTag HtmlHidden(const char *name, Value val);
 HtmlTag HtmlHidden(Value val);
 
 HtmlTag HtmlSubmit(const char *text);
 
-HtmlTag HtmlSelect(String id);
+HtmlTag HtmlSelect(String name);
 Htmls   HtmlOption(Value val, const char *text, bool selected = false);
 
 HtmlTag HtmlTable();
@@ -257,17 +259,17 @@ HtmlTag        HtmlFontSize(int s);
 
 inline Htmls   ToHtml(String s)   { return ToHtml(~s); }
 HtmlTag        HtmlLink(const char *link, const char *target);
+HtmlTag        HtmlImg(String src, String alt = "");
 
-Htmls          HtmlEdit(String id, int size, int maxlength = 256, const char *dflt = 0, bool password = false);
-Htmls          HtmlTextArea(String id, Size size, const char *dflt = 0);
+Htmls          HtmlTextArea(String id, Size size, const char *defaultValue = 0);
 
 Htmls          HtmlButton(String id, const char *text);
 HtmlTag        HtmlWarn(Color color = LtRed);
 HtmlTag        HtmlPackedTable();
-HtmlTag        HtmlForm(String action, bool multipart = false);
+HtmlTag        HtmlForm(String action, bool multipart = false, String method = "POST");
 
-Htmls          HtmlCheck(String id, bool on);
-Htmls          HtmlUpload(String id);
+Htmls          HtmlCheck(String name, bool on);
+Htmls          HtmlUpload(String name);
 
 HtmlTag        HtmlTCell();
 HtmlTag        HtmlRowCell();

@@ -824,6 +824,6 @@ ctrl RichTextCtrl {
 		DrawCtrlFrame(w, r, .SetFrame);
 		if(!is_void(.Background))
 			w.DrawRect(r, .Background);
-		w.DrawText(3, 3, "RichTextView", Arial(10), :SMagenta);
+		w.DrawText(3, 3, "RichTextCtrl", Arial(10), :SMagenta);
 	}
 }

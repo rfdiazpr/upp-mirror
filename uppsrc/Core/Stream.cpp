@@ -1482,7 +1482,17 @@ Stream& NilStream()
 }
 
 class CoutStream : public Stream {
-	virtual void    _Put(int w)    { putchar(w); }
+	virtual void    _Put(int w) {
+	#ifdef PLATFORM_WIN32
+		static HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+		char s[1];
+		s[0] = w;
+		dword dummy;
+		WriteFile(h, s, 1, &dummy, NULL);
+	#else
+		putchar(w);
+	#endif
+	}
 	virtual   bool  IsOpen() const { return true; }
 };
 

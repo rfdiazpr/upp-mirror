@@ -2,6 +2,11 @@
 
 #define LLOG(x) // LOG(x)
 
+Rect  RichTextView::GetPage() const
+{
+	return Rect(0, 0, GetPageCx(), INT_MAX);
+}
+
 void  RichTextView::Paint(Draw& w)
 {
 	Size sz = GetSize();
@@ -12,6 +17,10 @@ void  RichTextView::Paint(Draw& w)
 	PaintInfo pi;
 	if(!hldec)
 		pi.hyperlink = Null;
+	if(sell < selh) {
+		pi.sell = sell;
+		pi.selh = selh;
+	}
 	pi.indexentry = Null;
 	pi.highlightpara = highlight;
 	pi.zoom = GetZoom();
@@ -25,17 +34,33 @@ void  RichTextView::Paint(Draw& w)
 	pi.sizetracking = sizetracking;
 	int y = 0;
 	if(vcenter && sb.GetTotal() < sb.GetPage()) {
-		PageY py = text.GetHeight(Rect(0, 0, GetPageCx(), INT_MAX));
+		PageY py = text.GetHeight(GetPage());
 		y = (sz.cy / zoom  - py.y) / 2;
 	}
-	text.Paint(pw, Rect(0, 0, GetPageCx(), INT_MAX), pi);
+	text.Paint(pw, GetPage(), pi);
 	w.End();
 	w.End();
 }
 
+Zoom  RichTextView::GetZoom() const
+{
+	int szcx = GetSize().cx;
+	if(!sb.IsShown() && sb.IsAutoHide())
+		szcx -= ScrollBar::GetStdBox();
+	return IsNull(zoom) ? Zoom(szcx - margin.left - margin.right, cx) : zoom;
+}
+
+int   RichTextView::GetPageCx(bool reduced) const
+{
+	int szcx = GetSize().cx;
+	if(reduced && !sb.IsShown() && sb.IsAutoHide())
+		szcx -= ScrollBar::GetStdBox();
+	return IsNull(zoom) ? cx : (szcx - margin.left - margin.right) / zoom;
+}
+
 void  RichTextView::SetSb()
 {
-	Rect page(0, 0, GetPageCx(), INT_MAX);
+	Rect page(0, 0, GetPageCx(true), INT_MAX);
 	PageY py = text.GetHeight(page);
 	sb.SetTotal(py.y);
 	sb.SetPage((GetSize().cy - margin.top - margin.bottom) / GetZoom());
@@ -43,6 +68,10 @@ void  RichTextView::SetSb()
 
 bool  RichTextView::Key(dword key, int count)
 {
+	if(key == K_CTRL_C || key == K_SHIFT_INSERT) {
+		Copy();
+		return true;
+	}
 	return sb.VertKey(key);
 }
 
@@ -53,18 +82,119 @@ void  RichTextView::MouseWheel(Point p, int zdelta, dword keyflags)
 
 Image RichTextView::CursorImage(Point p, dword keyflags)
 {
-	if(WhenLink && !IsNull(GetLink(p)))
+	int pos = GetPointPos(p);
+	if(WhenLink && pos >= 0 && !IsNull(GetLink(pos, p)))
 		return CtrlImg::HandCursor();
+	if(HasCapture())
+		return CtrlImg::ibeam0();
 	return Image::Arrow();
+}
+
+
+void RichTextView::Copy()
+{
+	if(anchor == cursor)
+		text.WriteClipboard();
+	else
+		text.Copy(min(anchor, cursor), max(anchor, cursor)).WriteClipboard();
+}
+
+void RichTextView::RightDown(Point p, dword keyflags)
+{
+	MenuBar b;
+	b.Add(CtrlImg::copy(), t_("Copy"), THISBACK(Copy)).Key(K_CTRL_C);
+	b.Execute();
+}
+
+int  RichTextView::GetPointPos(Point p) const
+{
+	Size sz = GetSize();
+	sz.cx -= margin.left + margin.right;
+	sz.cy -= margin.top + margin.bottom;
+	p -= margin.TopLeft();
+	Zoom zoom = GetZoom();
+	p.y += sb * zoom;
+	return text.GetPos(p.x / zoom, PageY(0, p.y / zoom), GetPage());
+}
+
+String RichTextView::GetLink(int pos, Point p) const
+{
+
+	String link;
+	RichObject object = text.GetRichPos(pos).object;
+	if(object) {
+		Rect rc = text.GetCaret(pos, GetPage());
+		link = object.GetLink(p - rc.TopLeft(), rc.Size());
+	}
+
+	if(IsNull(link)) {
+		RichPos richpos = text.GetRichPos(pos);
+		link = Nvl(richpos.fieldformat.link, richpos.format.link);
+	}
+	return link;
+}
+
+void RichTextView::RefreshRange(int a, int b)
+{
+	int l = min(a, b);
+	int h = max(a, b);
+	if(l == h)
+		return;
+	Rect r1 = text.GetCaret(l, GetPage());
+	Rect r2 = text.GetCaret(h, GetPage());
+	Zoom zoom = GetZoom();
+	Refresh(0, zoom * (r1.top - sb), GetSize().cx, zoom * (r2.bottom - sb + zoom.d - 1));
+}
+
+void  RichTextView::RefreshSel()
+{
+	int l = min(cursor, anchor);
+	int h = max(cursor, anchor);
+	if(sell == l && selh == h)
+		return;
+	RefreshRange(sell, l);
+	RefreshRange(selh, h);
+	sell = l;
+	selh = h;
 }
 
 void  RichTextView::LeftDown(Point p, dword keyflags)
 {
-	String link = GetLink(p);
+	int pos = GetPointPos(p);
+	if(pos < 0) {
+		cursor = 0;
+		anchor = 0;
+		return;
+	}
+	String link = GetLink(pos, p);
 	if(!IsNull(link))
 		WhenLink(link);
-	else
+	else {
+		cursor = pos;
+		if(!(keyflags & K_SHIFT))
+			anchor = pos;
+		RefreshSel();
 		SetFocus();
+		SetCapture();
+	}
+}
+
+void RichTextView::MouseMove(Point p, dword keyflags)
+{
+	if(HasCapture()) {
+		int pos = GetPointPos(p);
+		if(pos < 0)
+			return;
+		cursor = pos;
+		Rect r1 = text.GetCaret(cursor, GetPage());
+		sb.ScrollInto(r1.top, r1.Height());
+		RefreshSel();
+	}
+}
+
+void RichTextView::LeftRepeat(Point p, dword keyflags)
+{
+	MouseMove(p, keyflags);
 }
 
 void  RichTextView::EndSizeTracking()
@@ -87,7 +217,7 @@ void  RichTextView::Layout()
 Value RichTextView::GetData() const
 {
 	if(text.IsEmpty()) return Value();
-	return AsQTF(text);
+	return GetQTF();
 }
 
 void  RichTextView::SetData(const Value& v)
@@ -100,63 +230,9 @@ void  RichTextView::Scroll()
 	scroller.Scroll(*this, Rect(GetSize()).Deflated(margin), sb * GetZoom());
 }
 
-Zoom  RichTextView::GetZoom() const
-{
-	int szcx = GetSize().cx;
-	if(!sb.IsShown() && sb.IsAutoHide())
-		szcx -= ScrollBar::GetStdBox();
-	return IsNull(zoom) ? Zoom(szcx - margin.left - margin.right, cx) : zoom;
-}
-
-int   RichTextView::GetPageCx() const
-{
-	int szcx = GetSize().cx;
-	if(!sb.IsShown() && sb.IsAutoHide())
-		szcx -= ScrollBar::GetStdBox();
-	return IsNull(zoom) ? cx : (szcx - margin.left - margin.right) / zoom;
-}
-
-String RichTextView::GetLink(Point p) const
-{
-	Size sz = GetSize();
-	sz.cx -= margin.left + margin.right;
-	sz.cy -= margin.top + margin.bottom;
-	p -= margin.TopLeft();
-	Zoom zoom = GetZoom();
-	p.y += sb * zoom;
-	int px = GetPageCx();
-	int pos = text.GetPos(p.x / zoom, PageY(0, p.y / zoom), Rect(0, 0, px, INT_MAX));
-	if(pos < 0) return Null;
-	String link;
-	RichObject object = text.GetRichPos(pos).object;
-	if(object) {
-		Rect rc = text.GetCaret(pos, Rect(0, 0, px, INT_MAX));
-		link = object.GetLink(p - rc.TopLeft(), rc.Size());
-	}
-
-	if(IsNull(link)) {
-		RichPos richpos = text.GetRichPos(pos);
-		link = Nvl(richpos.fieldformat.link, richpos.format.link);
-	}
-	if(!IsNull(link)) return link;
-
-/* TABLE
-	RichPara pa = text.Get(text.FindPara(pos));
-	int ii = pa.FindPart(pos);
-	if(ii < pa.GetCount() && pa[ii].field)
-	{
-		const Array<RichPara::Part>& fparts = pa[ii].fieldpart;
-		for(int p = 0; p < fparts.GetCount(); p++)
-			if(!IsNull(fparts[p].format.link))
-				return fparts[p].format.link;
-	}
-*/
-	return Null;
-}
-
 void RichTextView::GotoLabel(const String& lbl, bool dohighlight)
 {
-	Vector<RichValPos> f = text.GetValPos(Size(GetPageCx(), INT_MAX), RichText::LABELS);
+	Vector<RichValPos> f = text.GetValPos(GetPage(), RichText::LABELS);
 	highlight = Null;
 	for(int i = 0; i < f.GetCount(); i++) {
 		if(f[i].data == WString(lbl)) {
@@ -175,11 +251,13 @@ void  RichTextView::Clear()
 	text.Clear();
 	SetSb();
 	Refresh();
+	anchor = cursor = sell = selh = 0;
 }
 
 void  RichTextView::Pick(pick_ RichText& rt)
 {
 	sb = 0;
+	anchor = cursor = sell = selh = 0;
 	text = rt;
 	SetSb();
 	Refresh();
@@ -274,6 +352,8 @@ RichTextView::RichTextView()
 	hldec = true;
 	WhenLink = callback(LaunchWebBrowser);
 	NoWantFocus();
+	anchor = cursor = sell = selh = 0;
+	StdRichClipboardFormats();
 }
 
 RichTextView::~RichTextView() {}

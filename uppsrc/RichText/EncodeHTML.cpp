@@ -110,28 +110,30 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
               Zoom z, int& im)
 {
 	String html;
-	for(int i = 0; i < text.GetPartCount(); i++) {
+	for(int i = 0; i < text.GetPartCount(); i++)
+	{
 		if(text.IsTable(i)) {
 			const RichTable& t = text.GetTable(i);
 			int nx = t.format.column.GetCount();
 			int ny = t.cell.GetCount();
 			const RichTable::Format& tf = t.format;
-			html << "<TABLE WIDTH=100% BORDER=0>"
-			            "<TR HEIGHT=" << HtmlDot(tf.before, z) << " SPAN = 3><TD></TD></TR>"
-			            "<TR><TD><TABLE BORDER=0 WIDTH=" << HtmlDot(tf.lm, z) << "><TR><TD></TR></TD></TABLE></TD>"
-			                "<TD WIDTH=98%>";
+			html << "<TABLE WIDTH=\"100%\" BORDER=0>";
+			if(tf.before > 0)
+				html << "<TR><TD HEIGHT=" << HtmlDot(tf.before, z) << " COLSPAN=3></TD></TR>";
+			html << "<TR><TD><TABLE BORDER=0 WIDTH=" << HtmlDot(tf.lm, z) << "><TR><TD></TD></TR></TABLE></TD>\r\n"
+					"<TD WIDTH=\"98%\">";
 
 			String style;
-			
 			style << "border-collapse:collapse;table-layout:auto;"
 			      << "border:" << HtmlDotl(tf.frame, z) << " solid " << ColorToHtml(tf.framecolor) << ';';
-			html << "<TABLE WIDTH=100%" << FormatClass(css, style) << ">";
+
+			html << "<TABLE WIDTH=\"100%\"" << FormatClass(css, style) << ">";
 			int sum = 0;
 			for(int i = 0; i < nx; i++)
 				sum += t.format.column[i];
 			html << "<COLGROUP>";
 			for(int i = 0; i < nx; i++)
-				html << "<COL width=" << 100 * t.format.column[i] / sum << "%>";
+				html << "<COL width=\"" << 100 * t.format.column[i] / sum << "%\">";
 			html << "\r\n";
 			for(int i = 0; i < ny; i++) {
 				const Array<RichCell>& r = t.cell[i];
@@ -167,11 +169,11 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 				}
 				html << "</TR>\r\n";
 			}
-			html << "</TABLE>"
-			     << "</TD><TD><TABLE BORDER=0 WIDTH=" << HtmlDot(tf.rm, z) << "><TR><TD></TR></TD></TABLE></TD>"
-			     << "<TR HEIGHT=" << HtmlDot(tf.after, z) << " SPAN = 3><TD></TD></TR>"
-			     << "</TABLE>"
-			     << "\r\n";
+			html << "</TABLE></TD>\r\n"
+			     << "<TD><TABLE BORDER=0 WIDTH=" << HtmlDot(tf.rm, z) << "><TR><TD></TD></TR></TABLE></TD>";
+			if(tf.after > 0)
+				html << "<TR><TD HEIGHT=" << HtmlDot(tf.after, z) << " COLSPAN=3></TD></TR>";
+			html << "</TABLE>\r\n";
 		}
 		else
 		if(text.IsPara(i)) {
@@ -186,13 +188,13 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 					}
 				}
 			if(bultext) {
-				html << "<TABLE WIDTH=100% BORDER=0 "
+				html << "<TABLE WIDTH=\"100%\" BORDER=0 "
 				        "CELLPADDING=2 CELLSPACING=2>"
 				        "<TR>";
 				int q = z * p.format.lm - 8;
 				if(q > 0)
 					html << Format("<TD WIDTH=%d></TD>", q);
-				html << Format("<TD VALIGN=top WIDTH=%d BGCOLOR=#F0F0F0>\r\n",
+				html << Format("<TD VALIGN=\"top\" WIDTH=%d BGCOLOR=\"#F0F0F0\">\r\n",
 				               max(z * p.format.indent, 0));
 				p.format.after = p.format.before = p.format.indent = p.format.lm = 0;
 			}
@@ -213,7 +215,7 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 					PngEncoder::New()->SaveImageFile(AppendFileName(outdir, name), img);
 					if(psz.cx * psz.cy)
 						html << "<A HREF=\"" << lname << "\">";
-					html << "<IMG SRC=\"" << name << "\" BORDER=0>";
+					html << "<IMG SRC=\"" << name << "\" BORDER=0 ALT=\"\">";
 					if(psz.cx * psz.cy) {
 						html << "</A>";
 						Image img(psz);
@@ -226,7 +228,7 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 					String lnk = part.format.link;
 					int q = lnk.ReverseFind('#');
 					if(q >= 0) {
-						String l = lnk.Mid(0, q);
+						String l = lnk.Left(q);
 						lnk = links.Get(l, l) + '#' + lnk.Mid(q + 1);
 					}
 					else
@@ -246,27 +248,22 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 						}
 						else {
 							spc = false;
-							if(*s == 160)
-								html.Cat("&nbsp;");
+							if(*s == 160)  html.Cat("&nbsp;");
 							else
-							if(*s == '<')
-								html.Cat("&lt;");
+							if(*s == '<')  html.Cat("&lt;");
 							else
-							if(*s == '>')
-								html.Cat("&gt;");
+							if(*s == '>')  html.Cat("&gt;");
 							else
-							if(*s == '&')
-								html.Cat("&amp;");
+							if(*s == '&')  html.Cat("&amp;");
 							else
-							if(*s == '\"')
-								html.Cat("&quot;");
+							if(*s == '\"') html.Cat("&quot;");
 							else
 							if(*s == 9) {
 								if(bultext) {
 									if(!cs.IsEmpty() && part.text[0] != 9)
 										html << "</SPAN>";
 									html << "</P>";
-									html << "</TD>\r\n<TD VALIGN=top BGCOLOR=#F0F0F0>\r\n";
+									html << "</TD>\r\n<TD VALIGN=\"top\" BGCOLOR=\"#F0F0F0\">\r\n";
 									html << par;
 									if(s[1]) {
 										cs = HtmlCharStyle(part.format, p.format);
@@ -300,7 +297,7 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 
 String EncodeHtml(const RichText& text, Index<String>& css, const VectorMap<String, String>& links,
                   const String& outdir, const String& namebase, Zoom z)
-              {
+{
 	int im = 0;
 	return AsHtml(text, text.GetStyles(), css, links, outdir, namebase, z, im);
 }

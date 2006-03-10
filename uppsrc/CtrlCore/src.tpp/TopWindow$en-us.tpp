@@ -42,6 +42,8 @@ REF("::TopWindow::GetTitle()const")
 REF("::TopWindow::Sizeable(bool)")
 REF("::TopWindow::NoSizeable()")
 REF("::TopWindow::IsSizeable()const")
+REF("::TopWindow::MinimizeBox(bool)")
+REF("::TopWindow::MaximizeBox(bool)")
 REF("::TopWindow::Zoomable(bool)")
 REF("::TopWindow::NoZoomable()")
 REF("::TopWindow::IsZoomable()const")
@@ -250,63 +252,73 @@ TOPIC_TEXT(
 "[%00-00 TopWindow`&_][%00-00* NoSizeable][%00-00 ()]&][s6; Same as Sizeable(false).&][s1; "
 "[*/ Return value]-|`*this.&][s0; &][s4;:`:`:TopWindow`:`:IsSizeable`(`)const: [%00-00 "
 "bool_][%00-00* IsSizeable][%00-00 ()_const]&][s1; [*/ Return value]-|Value&][s0; "
-"&][s4;:`:`:TopWindow`:`:Zoomable`")
+"&][s4;:`:`:TopWindow`:`:MinimizeB")
 TOPIC_TEXT(
-"(bool`): [%00-00 TopWindow`&_][%00-00* Zoomable][%00-00 (bool_][%00-00*@3 b][%00-00 "
-"_`=_true)]&][s6; Sets TopWindow to be Zoomable `- to have maximize/minimize flags, "
-"if supported by host platform.&][s1; [%00-00*C@3 b]-|True to set.&][s1; [*/ Return "
-"value]-|`*this.&][s0; &][s4;:`:`:TopWindow`:`:NoZoomable`(`): [%00-00 TopWindow`&_][%00-00* "
-"NoZoomable][%00-00 ()]&][s6; Same as Zoomable(false).&][s1")
+"ox`(bool`): [%00-00 TopWindow`&_][%00-00* MinimizeBox][%00-00 (bool_][%00-00*@3 "
+"b][%00-00 _`=_true)]&][s6; Sets TopWindow to have a minimize box.&][s1; [%00-00*C@3 "
+"b]-|true to set.&][s1; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:TopWindow`:`:MaximizeBox`(bool`): "
+"[%00-00 TopWindow`&_][%00-00* MaximizeBox][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
+"Sets TopWindow to have a maximize box.&]")
 TOPIC_TEXT(
-"; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:TopWindow`:`:IsZoomable`(`)const: "
-"[%00-00 bool_][%00-00* IsZoomable][%00-00 ()_const]&][s1; [*/ Return value]-|Value "
-"of Zoomable flag.&][s0; &][s4;:`:`:TopWindow`:`:Background`(const`:`:PaintRect`&`): "
-"[%00-00 TopWindow`&_][%00-00* Background][%00-00 (const_PaintRect`&_][%00-00*@3 prect][%00-00 "
-")]&][s6; Sets PaintRect that will be used to paint TopWindo")
+"[s1; [%00-00*C@3 b]-|true to set.&][s1; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:TopWindow`:`:Zoomable`(bool`): "
+"[%00-00 TopWindow`&_][%00-00* Zoomable][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
+"Sets TopWindow to be Zoomable `- to have maximize/minimize flags, if supported by "
+"host platform. Same as MinimizeBox(b).MaximizeBox(b).&][s1; [%00-00*C@3 b]-|True "
+"to set.&][s1; [*/ Return value")
 TOPIC_TEXT(
-"w background. Default PaintRect paints background with SColorFace.&][s1; [%00-00*C@3 "
-"prect]-|PaintRect.&][s1; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:TopWindow`:`:GetBackground`(`)const: "
-"[%00-00 const_PaintRect`&_][%00-00* GetBackground][%00-00 ()_const]&][s6; Returns "
-"active PaintRect used to paint TopWindow background.&][s1; [*/ Return value]-|PaintRect.&][s0; "
-"&][s4;:`:`:TopWindow`:`:ToolWind")
+"]-|`*this.&][s0; &][s4;:`:`:TopWindow`:`:NoZoomable`(`): [%00-00 TopWindow`&_][%00-00* "
+"NoZoomable][%00-00 ()]&][s6; Same as Zoomable(false).&][s1; [*/ Return value]-|`*this.&][s0; "
+"&][s4;:`:`:TopWindow`:`:IsZoomable`(`)const: [%00-00 bool_][%00-00* IsZoomable][%00-00 "
+"()_const]&][s1; [*/ Return value]-|Value of Zoomable flag.&][s0; &][s4;:`:`:TopWindow`:`:Background`(const`:`:PaintRect`&`): "
+"[%00-00 ")
 TOPIC_TEXT(
-"ow`(bool`): [%00-00 TopWindow`&_][%00-00* ToolWindow][%00-00 (bool_][%00-00*@3 b][%00-00 "
-"_`=_true)]&][s6; Makes TopWindow appear with thin caption, of supported by host platform. "
-"Must be set before opening.&][s1; [%00-00*C@3 b]-|True to set the flag.&][s1; [*/ "
-"Return value]-|`*this.&][s0; &][s4;:`:`:TopWindow`:`:NoToolWindow`(`): [%00-00 TopWindow`&_][%00-00* "
-"NoToolWindow][%00-00 ()]&][s6; Same as")
+"TopWindow`&_][%00-00* Background][%00-00 (const_PaintRect`&_][%00-00*@3 prect][%00-00 "
+")]&][s6; Sets PaintRect that will be used to paint TopWindow background. Default "
+"PaintRect paints background with SColorFace.&][s1; [%00-00*C@3 prect]-|PaintRect.&][s1; "
+"[*/ Return value]-|`*this.&][s0; &][s4;:`:`:TopWindow`:`:GetBackground`(`)const: "
+"[%00-00 const_PaintRect`&_][%00-00* GetBackground][%00-00 ()_con")
 TOPIC_TEXT(
-" ToolWindow(false).&][s1; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:TopWindow`:`:IsToolWindow`(`)const: "
-"[%00-00 bool_][%00-00* IsToolWindow][%00-00 ()_const]&][s1; [*/ Return value]-|Value "
-"of ToolWindow flag.&][s0; &][s4;:`:`:TopWindow`:`:NoAccessKeysDistribution`(`): [%00-00 "
-"TopWindow`&_][%00-00* NoAccessKeysDistribution][%00-00 ()]&][s6; Disables distribution "
-"of access keys. Normally, TopWindo")
+"st]&][s6; Returns active PaintRect used to paint TopWindow background.&][s1; [*/ "
+"Return value]-|PaintRect.&][s0; &][s4;:`:`:TopWindow`:`:ToolWindow`(bool`): [%00-00 "
+"TopWindow`&_][%00-00* ToolWindow][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
+"Makes TopWindow appear with thin caption, of supported by host platform. Must be "
+"set before opening.&][s1; [%00-00*C@3 b]-|True to set the flag.&][s1")
 TOPIC_TEXT(
-"w tries to assign access`-keys (also known as `\"hot`-keys`\") to all of its child "
-"windows before opening. This method disables this behaviour.&][s1; [*/ Return value]-|`*this.&][s0; "
-"&][s4;:`:`:TopWindow`:`:Icon`(const`:`:Image`&`): [%00-00 TopWindow`&_][%00-00* Icon][%00-00 "
-"(const_Image`&_][%00-00*@3 m][%00-00 )]&][s6; Defines icon for TopWindow that is "
-"usually displayed in window caption (platform")
+"; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:TopWindow`:`:NoToolWindow`(`): [%00-00 "
+"TopWindow`&_][%00-00* NoToolWindow][%00-00 ()]&][s6; Same as ToolWindow(false).&][s1; "
+"[*/ Return value]-|`*this.&][s0; &][s4;:`:`:TopWindow`:`:IsToolWindow`(`)const: [%00-00 "
+"bool_][%00-00* IsToolWindow][%00-00 ()_const]&][s1; [*/ Return value]-|Value of ToolWindow "
+"flag.&][s0; &][s4;:`:`:TopWindow`:`:NoAccessKeysDi")
 TOPIC_TEXT(
-" specif).&][s1; [%00-00*C@3 m]-|Icon.&][s1; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:TopWindow`:`:LargeIcon`(const`:`:Image`&`): "
+"stribution`(`): [%00-00 TopWindow`&_][%00-00* NoAccessKeysDistribution][%00-00 ()]&][s6; "
+"Disables distribution of access keys. Normally, TopWindow tries to assign access`-keys "
+"(also known as `\"hot`-keys`\") to all of its child windows before opening. This "
+"method disables this behaviour.&][s1; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:TopWindow`:`:Icon`(const`:`:Image`&`): "
+"[%00-00 TopWindow`&_][%0")
+TOPIC_TEXT(
+"0-00* Icon][%00-00 (const_Image`&_][%00-00*@3 m][%00-00 )]&][s6; Defines icon for "
+"TopWindow that is usually displayed in window caption (platform specif).&][s1; [%00-00*C@3 "
+"m]-|Icon.&][s1; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:TopWindow`:`:LargeIcon`(const`:`:Image`&`): "
 "[%00-00 TopWindow`&_][%00-00* LargeIcon][%00-00 (const_Image`&_][%00-00*@3 m][%00-00 "
-")]&][s6; Defines `\"large`\" icon for TopWindow. It can be displayed e.g. in task "
-"switcher and other places (platform specific).&][s1; [%00-00*C@3 m]-|Icon.&][s1; "
-"[*/ Return value]-|`*t")
+")]&][s6; Defines `\"large`\" icon for To")
 TOPIC_TEXT(
-"his.&][s0; &][s4;:`:`:TopWindow`:`:Icon`(const`:`:Image`&`,const`:`:Image`&`): [%00-00 "
-"TopWindow`&_][%00-00* Icon][%00-00 (const_Image`&_][%00-00*@3 smallicon][%00-00 , "
-"const_Image`&_][%00-00*@3 largeicon][%00-00 )]&][s6; Defines both `\"small`\" and "
-"`\"large`\" icons for TopWindow.&][s1; [%00-00*C@3 smallicon]-|Small icon.&][s1; "
-"[%00-00*C@3 largeicon]-|Large icon.&][s1; [*/ Return value]-|`*this.&][s")
+"pWindow. It can be displayed e.g. in task switcher and other places (platform specific).&][s1; "
+"[%00-00*C@3 m]-|Icon.&][s1; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:TopWindow`:`:Icon`(const`:`:Image`&`,const`:`:Image`&`): "
+"[%00-00 TopWindow`&_][%00-00* Icon][%00-00 (const_Image`&_][%00-00*@3 smallicon][%00-00 "
+", const_Image`&_][%00-00*@3 largeicon][%00-00 )]&][s6; Defines both `\"small`\" and "
+"`\"larg")
 TOPIC_TEXT(
-"0; &][s4;:`:`:TopWindow`:`:SerializePlacement`(`:`:Stream`&`,bool`): [%00-00 void_][%00-00* "
-"SerializePlacement][%00-00 (Stream`&_][%00-00*@3 s][%00-00 , bool_][%00-00*@3 reminimize][%00-00 "
-"_`=_false)]&][s6; Serializes current placement of TopWindow. It is platform specific, "
-"however information can include screen position in `\"normal`\" state and current "
-"status (maximized, minimized, normal).&][s1; ")
+"e`\" icons for TopWindow.&][s1; [%00-00*C@3 smallicon]-|Small icon.&][s1; [%00-00*C@3 "
+"largeicon]-|Large icon.&][s1; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:TopWindow`:`:SerializePlacement`(`:`:Stream`&`,bool`): "
+"[%00-00 void_][%00-00* SerializePlacement][%00-00 (Stream`&_][%00-00*@3 s][%00-00 "
+", bool_][%00-00*@3 reminimize][%00-00 _`=_false)]&][s6; Serializes current placement "
+"of TopWindow. It is")
 TOPIC_TEXT(
-"[%00-00*C@3 s]-|Stream.&][s1; [%00-00*C@3 reminimize]-|If false and loading the "
-"information from the stream, minimized state is not restored.&][s0; &][s4;:`:`:TopWindow`:`:TopWindow`(`): "
-"[%00-00* TopWindow][%00-00 ()]&][s6; Constructor.&][s0; &][s4;:`:`:TopWindow`:`:`~TopWindow`(`): "
-"[%00-00 `~][%00-00* TopWindow][%00-00 ()]&][s6; Destructor.&][s0; &][s0;3 ]")
+" platform specific, however information can include screen position in `\"normal`\" "
+"state and current status (maximized, minimized, normal).&][s1; [%00-00*C@3 s]-|Stream.&][s1; "
+"[%00-00*C@3 reminimize]-|If false and loading the information from the stream, minimized "
+"state is not restored.&][s0; &][s4;:`:`:TopWindow`:`:TopWindow`(`): [%00-00* TopWindow][%00-00 "
+"()]&][s6; Constructor.&][s0; &][s4;:`:`:T")
+TOPIC_TEXT(
+"opWindow`:`:`~TopWindow`(`): [%00-00 `~][%00-00* TopWindow][%00-00 ()]&][s6; Destructor.&][s0; "
+"&][s0;3 ]")

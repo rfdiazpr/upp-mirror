@@ -8,6 +8,9 @@ public:
 	virtual void  MouseWheel(Point p, int zdelta, dword keyflags);
 	virtual Image CursorImage(Point p, dword keyflags);
 	virtual void  LeftDown(Point p, dword keyflags);
+	virtual void  MouseMove(Point p, dword keyflags);
+	virtual void  LeftRepeat(Point p, dword keyflags);
+	virtual void  RightDown(Point p, dword keyflags);
 
 private:
 	Rect          margin;
@@ -21,13 +24,19 @@ private:
 	bool          vcenter;
 	bool          hldec;
 	int           highlight;
+	int           sell, selh;
+	int           cursor, anchor;
 
 	void          EndSizeTracking();
 	void          SetSb();
 	void          Scroll();
 	Zoom          GetZoom() const;
-	int           GetPageCx() const;
-	String        GetLink(Point p) const;
+	int           GetPageCx(bool reduced = false) const;
+	int           GetPointPos(Point p) const;
+	String        GetLink(int pos, Point p) const;
+	void          RefreshRange(int a, int b);
+	Rect          GetPage() const;
+	void          RefreshSel();
 
 protected:
 	enum {
@@ -42,6 +51,7 @@ public:
 	void            Pick(pick_ RichText& t);
 	void            SetQTF(const char *qtf, Zoom z = Zoom(1, 1), bool scolors = false);
 	const RichText& Get() const                               { return text; }
+	String          GetQTF(byte cs = CHARSET_UTF8) const      { return AsQTF(text, cs); }
 
 	int             GetWidth() const                          { return text.GetWidth(); }
 	int             GetHeight(int cx) const                   { return text.GetHeight(Zoom(1, 1), cx); }
@@ -54,6 +64,8 @@ public:
 	void            ClearHighlight()                          { highlight = Null; Refresh(); }
 
 	int             GetLength() const                         { return text.GetLength(); }
+
+	void            Copy();
 
 	RichTextView&   PageWidth(int cx);
 	RichTextView&   SetZoom(Zoom z);

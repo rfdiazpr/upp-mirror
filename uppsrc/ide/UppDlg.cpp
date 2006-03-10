@@ -304,7 +304,7 @@ void PackageEditor::OptionMenu(Bar& bar)
 	bar.Add(b, "Remove", THISBACK(RemoveOption))
 	   .Key(K_DELETE);
 	bar.Separator();
-	int type = option.Get(0);
+	int type = option.IsCursor() ? (int)option.Get(0) : -1;
 	int i = -1;
 	Array<OptItem> *m = NULL;
 	if(type >= FLAG && type <= COMPILER) {

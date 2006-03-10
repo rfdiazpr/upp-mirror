@@ -428,6 +428,7 @@ void TopicEditor::AddPackage(const char *name, const char *dir)
 void TopicEditor::FinishPackages()
 {
 	String s = filepath;
+	SaveInc(ActualPackageDir(), group.GetCurrentName());
 	Flush();
 	group.Clear();
 	topic.Clear();
@@ -437,6 +438,7 @@ void TopicEditor::FinishPackages()
 void TopicEditor::Close()
 {
 	Save();
+	SaveInc(ActualPackageDir(), group.GetCurrentName());
 	TopWindow::Close();
 }
 

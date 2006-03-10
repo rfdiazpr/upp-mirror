@@ -1,6 +1,10 @@
 #include "Web.h"
 
-String ToHtml(const char *s) {
+String ToHtml(const char *s)
+{
+	if(*s == '`')
+		return String(++s);
+
 	String result;
 	while(*s) {
 		if(*s == 31)
@@ -58,7 +62,8 @@ Htmls& Htmls::Attr(const char *a, Value v)         { return Attr(a, StdFormat(v)
 
 Htmls& Htmls::Attp(const char *a, double v)        { return v >= 0 ? Attr(a, v) : Percent(a, -v); }
 
-Htmls& Htmls::Atth(const char *a, const char *h)   {
+Htmls& Htmls::Atth(const char *a, const char *h)
+{
 	Attr(a);
 	Cat('=');
 	Cat('\"');
@@ -75,7 +80,8 @@ Htmls& Htmls::Br()                                 { Cat("<BR>", 4); return *thi
 Htmls& Htmls::Hr()                                 { Cat("<HR>", 4); return *this; }
 Htmls& Htmls::Lf()                                 { Cat('\n'); return *this; }
 
-Htmls& Htmls::Cat(const HtmlTag& tag) {
+Htmls& Htmls::Cat(const HtmlTag& tag)
+{
 	Cat(tag.GetTag());
 	Cat(tag.GetEndTag());
 	return *this;
@@ -95,11 +101,12 @@ HtmlTag& HtmlTag::ReadOnly()                { return Attr("READONLY"); }
 HtmlTag& HtmlTag::Multiple()                { return Attr("MULTIPLE"); }
 HtmlTag& HtmlTag::Selected()                { return Attr("SELECTED"); }
 
-HtmlTag& HtmlTag::Align(Alignment align) {
+HtmlTag& HtmlTag::Align(Alignment align)
+{
 	switch(align) {
-	case ALIGN_CENTER: return Attr("ALIGN", "CENTER");
-	case ALIGN_RIGHT:  return Attr("ALIGN", "RIGHT");
-	default:           return Attr("ALIGN", "LEFT");
+		case ALIGN_CENTER: return Attr("ALIGN", "CENTER");
+		case ALIGN_RIGHT:  return Attr("ALIGN", "RIGHT");
+		default:           return Attr("ALIGN", "LEFT");
 	}
 }
 
@@ -107,11 +114,12 @@ HtmlTag& HtmlTag::Left()                    { return Align(ALIGN_LEFT); }
 HtmlTag& HtmlTag::Right()                   { return Align(ALIGN_RIGHT); }
 HtmlTag& HtmlTag::Center()                  { return Align(ALIGN_CENTER); }
 
-HtmlTag& HtmlTag::VAlign(Alignment align) {
+HtmlTag& HtmlTag::VAlign(Alignment align)
+{
 	switch(align) {
-	case ALIGN_CENTER: return Attr("VALIGN", "CENTER");
-	case ALIGN_BOTTOM: return Attr("VALIGN", "BOTTOM");
-	default:           return Attr("VALIGN", "TOP");
+		case ALIGN_CENTER: return Attr("VALIGN", "MIDDLE");
+		case ALIGN_BOTTOM: return Attr("VALIGN", "BOTTOM");
+		default:           return Attr("VALIGN", "TOP");
 	}
 }
 
@@ -184,7 +192,8 @@ Htmls HtmlTag::GetEndTag() const {
 	return end;
 }
 
-void  HtmlTag::Combine(const HtmlTag& tag2) {
+void  HtmlTag::Combine(const HtmlTag& tag2)
+{
 	if(tag2.IsEmpty()) return;
 	if(tag.GetLength()) {
 		tag = tag + '>' + tag2.tag;
@@ -196,7 +205,8 @@ void  HtmlTag::Combine(const HtmlTag& tag2) {
 	}
 }
 
-Htmls HtmlTag::ApplyTo(String s) const {
+Htmls HtmlTag::ApplyTo(String s) const
+{
 	Htmls h;
 	h.Cat(GetTag());
 	h.Cat(s);
@@ -204,7 +214,8 @@ Htmls HtmlTag::ApplyTo(String s) const {
 	return h;
 }
 
-Htmls HtmlTag::ApplyTo(const char *s) const {
+Htmls HtmlTag::ApplyTo(const char *s) const
+{
 	Htmls h;
 	h.Cat(GetTag());
 	h.Cat(s);
@@ -212,13 +223,15 @@ Htmls HtmlTag::ApplyTo(const char *s) const {
 	return h;
 }
 
-HtmlTag& HtmlTag::SingleTag(const char *s) {
+HtmlTag& HtmlTag::SingleTag(const char *s)
+{
 	tag = "<";
 	tag.Cat(s);
 	return *this;
 }
 
-HtmlTag& HtmlTag::PairTag(const char *s) {
+HtmlTag& HtmlTag::PairTag(const char *s)
+{
 	SingleTag(s);
 	end = "</";
 	end.Cat(s);
@@ -235,35 +248,50 @@ HtmlTag HtmlSingleTag(const char *tag) {
 	return HtmlTag().SingleTag(tag);
 }
 
-HtmlTag HtmlInput(const char *type) {
-	return HtmlSingleTag("INPUT").Type(type);
+HtmlTag HtmlInput(const char *type, const char *name)
+{
+	HtmlTag tag = HtmlSingleTag("INPUT").Type(type);
+	if(name && *name)
+		tag.Name(name);
+	return tag;
 }
 
-HtmlTag HtmlEdit(String id) {
-	return HtmlInput("TEXT").Name(id);
+HtmlTag HtmlEdit(String name)
+{
+	return HtmlInput("TEXT", name);
 }
 
-HtmlTag HtmlHidden(String id, Value val) {
-	return HtmlInput("HIDDEN").Name(id).Data(val);
+HtmlTag HtmlEdit(String name, int size, int maxlength, const char *defaultValue, bool password)
+{
+	HtmlTag tag = HtmlInput(password ? "PASSWORD" : "TEXT", name)
+		.Size(size).Attr("MAXLENGTH", maxlength);
+	if(defaultValue && *defaultValue)
+		tag.Data(defaultValue);
+	return tag;
 }
 
-HtmlTag HtmlHidden(const char *s, Value val) {
-	return HtmlInput("HIDDEN").Name(s).Data(val);
+HtmlTag HtmlHidden(String name, Value val) {
+	return HtmlInput("HIDDEN").Name(name).Data(val);
+}
+
+HtmlTag HtmlHidden(const char *name, Value val) {
+	return HtmlInput("HIDDEN").Name(name).Data(val);
 }
 
 HtmlTag HtmlHidden(Value val) {
-	return HtmlInput("HIDDEN").Name("STATE").Data(val);
+	return HtmlHidden("STATE", val);
 }
 
 HtmlTag HtmlSubmit(const char *s) {
 	return HtmlInput("SUBMIT").Data(s);
 }
 
-HtmlTag HtmlSelect(String id) {
-	return HtmlTag("SELECT").Name(id);
+HtmlTag HtmlSelect(String name) {
+	return HtmlTag("SELECT").Name(name);
 }
 
-Htmls HtmlOption(const Value& val, const char *text, bool selected) {
+Htmls HtmlOption(const Value& val, const char *text, bool selected)
+{
 	HtmlTag option("OPTION");
 	option.Data(val);
 	if(selected)
@@ -301,12 +329,14 @@ HtmlTag HtmlFont(Font font) {
 }
 */
 
-HtmlTag HtmlLink(const char *link) {
+HtmlTag HtmlLink(const char *link)
+{
 	return HtmlTag("A").Href(link);
 }
 
 Htmls HtmlBlock(Htmls html, double width, double left, double top, double right, double bottom,
-				Alignment align) {
+				Alignment align)
+{
 	Htmls h;
 	if(top)
 		h = HtmlRow() / HtmlCell().Height(top) / "";
@@ -322,38 +352,42 @@ Htmls HtmlBlock(Htmls html, double width, double left, double top, double right,
 		                 : html;
 }
 
-HtmlTag HtmlHeader(const char *title, String css, const char *other) {
+HtmlTag HtmlHeader(const char *title, String css, const char *other)
+{
 	String h =
 		"HTML>\r\n"
-        "<HEAD>\t\n"
-        "<META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=utf-8\">\t\n"
-        "<META NAME=\"Generator\" CONTENT=\"U++ HTML Package\">\t\n"
-        "<TITLE>" + String(title) + "</TITLE>\r\n"
-    ;
-    if(!IsNull(css))
-    	h << "<STYLE TYPE=\"text/css\"><!--\r\n"
-    	  << css << "\r\n-->\r\n</STYLE>\r\n";
-    if(other)
-        h << other;
-    h << "</HEAD";
+	    "<HEAD>\t\n"
+	    "<META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=utf-8\">\t\n"
+	    "<META NAME=\"Generator\" CONTENT=\"U++ HTML Package\">\t\n"
+	    "<TITLE>" + String(title) + "</TITLE>\r\n"
+	;
+	if(!IsNull(css))
+		h << "<STYLE TYPE=\"text/css\"><!--\r\n"
+		  << css << "\r\n-->\r\n</STYLE>\r\n";
+	if(other)
+		h << other;
+	h << "</HEAD";
 	return HtmlSingleTag(h) / HtmlTag("BODY");
 }
 
-Htmls operator+(const HtmlTag& tag1, const HtmlTag& tag2) {
+Htmls operator+(const HtmlTag& tag1, const HtmlTag& tag2)
+{
 	Htmls h;
 	h.Cat(tag1);
 	h.Cat(tag2);
 	return h;
 }
 
-Htmls operator+(const String& s, const HtmlTag& tag) {
+Htmls operator+(const String& s, const HtmlTag& tag)
+{
 	Htmls h;
 	h.Cat(s);
 	h.Cat(tag);
 	return h;
 }
 
-Htmls operator+(const HtmlTag& tag, const String& s) {
+Htmls operator+(const HtmlTag& tag, const String& s)
+{
 	Htmls h;
 	h.Cat(tag);
 	h.Cat(s);
@@ -367,20 +401,23 @@ Htmls operator+(const char *s, const HtmlTag& tag) {
 	return h;
 }
 
-Htmls operator+(const HtmlTag& tag, const char *s) {
+Htmls operator+(const HtmlTag& tag, const char *s)
+{
 	Htmls h;
 	h.Cat(tag);
 	h.Cat(s);
 	return h;
 }
 
-HtmlTag operator/(const HtmlTag& t1, const HtmlTag& t2) {
+HtmlTag operator/(const HtmlTag& t1, const HtmlTag& t2)
+{
 	HtmlTag t = t1;
 	t.Combine(t2);
 	return t;
 }
 
-HtmlTag& operator/=(HtmlTag& tag, const HtmlTag& s) {
+HtmlTag& operator/=(HtmlTag& tag, const HtmlTag& s)
+{
 	tag.Combine(s);
 	return tag;
 }
@@ -424,25 +461,21 @@ HtmlTag HtmlLink(const char *link, const char *target)
 	return tag;
 }
 
-Htmls HtmlEdit(String id, int size, int maxlength, const char *dflt, bool password)
+HtmlTag HtmlImg(String src, String alt)
 {
-	HtmlTag tag = HtmlSingleTag("INPUT").Type(password ? "PASSWORD" : "TEXT")
-		.Name(id).Size(size).Attr("MAXLENGTH", maxlength);
-	if(dflt && *dflt)
-		tag.Attr("VALUE", dflt);
-	return tag;
+	return HtmlSingleTag("IMG").Src(src).Alt(alt);
 }
 
-Htmls HtmlTextArea(String id, Size size, const char *dflt)
+Htmls HtmlTextArea(String name, Size size, const char *defaultValue)
 {
-	return HtmlTag("TEXTAREA").Attr("NAME", id).Attr("ROWS", size.cy).Attr("COLS", size.cx)
+	return HtmlTag("TEXTAREA").Name(name).Attr("ROWS", size.cy).Attr("COLS", size.cx)
 		.Attr("WRAP", "virtual")
-		/ ToHtml(dflt ? dflt : "");
+		/ ToHtml(defaultValue ? defaultValue : "");
 }
 
-Htmls HtmlButton(String id, const char *text)
+Htmls HtmlButton(String name, const char *text)
 {
-	return HtmlSingleTag("INPUT").Type("SUBMIT").Name(id).Attr("VALUE", text);
+	return HtmlInput("SUBMIT", name).Data(text);
 }
 
 HtmlTag HtmlWarn(Color color)
@@ -455,23 +488,22 @@ HtmlTag HtmlPackedTable()
 	return HtmlTable().Border(0).CellSpacing(0).CellPadding(0);
 }
 
-HtmlTag HtmlForm(String action, bool multipart)
+HtmlTag HtmlForm(String action, bool multipart, String method)
 {
-	HtmlTag tag = HtmlTag("FORM").Attr("ACTION", action).Attr("METHOD", "POST");
+	HtmlTag tag = HtmlTag("FORM").Attr("ACTION", action).Attr("METHOD", method);
 	if(multipart)
 		tag.Attr("ENCTYPE", "multipart/form-data");
 	return tag;
 }
 
-Htmls HtmlUpload(String id)
+Htmls HtmlUpload(String name)
 {
-	return HtmlSingleTag("INPUT").Attr("TYPE", "FILE").Attr("NAME", id);
+	return HtmlInput("FILE", name);
 }
 
-Htmls HtmlCheck(String id, bool on)
+Htmls HtmlCheck(String name, bool on)
 {
-	HtmlTag tag = HtmlSingleTag("INPUT").Attr("TYPE", "CHECKBOX")
-		.Attr("NAME", id).Attr("VALUE", "1");
+	HtmlTag tag = HtmlInput("CHECKBOX", name).Data("1");
 	if(on)
 		tag.Attr("CHECKED");
 	return tag;
@@ -576,4 +608,3 @@ HtmlTag HtmlFntSize(int size)
 {
 	return HtmlTag("span").Attr("style", Sprintf("font-size: %dpt", size));
 }
-

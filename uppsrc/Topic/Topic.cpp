@@ -214,6 +214,9 @@ void TopicEditor::Flush()
 
 void TopicEditor::SaveInc(const String& packagedir, const String& group)
 {
+	if(IsNull(packagedir) || IsNull(group))
+		return;
+
 	String gh;
 	FindFile ff(AppendFileName(AppendFileName(packagedir, group + ".tpp"), "*.tpp"));
 

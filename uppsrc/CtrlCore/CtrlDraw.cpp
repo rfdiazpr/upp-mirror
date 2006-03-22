@@ -5,8 +5,8 @@
 int  Ctrl::ShowRepaint;
 #endif
 
-#define LLOG(x)    //LOG(x)
-#define LLOGEND()  //LOGEND()
+#define LLOG(x)    // LOG(x)
+#define LLOGEND()  // LOGEND()
 
 void Ctrl::RefreshFrame(const Rect& r) {
 	if(!IsOpen() || !IsVisible() || r.IsEmpty()) return;
@@ -35,7 +35,6 @@ void Ctrl::Refresh() {
 	if(fullrefresh || !IsVisible() || !IsOpen()) return;
 	LLOG("Refresh " << Name() << " full:" << fullrefresh);
 	Refresh(Rect(GetSize()));
-	fullrefresh = true;
 }
 
 void Ctrl::Refresh(int x, int y, int cx, int cy) {
@@ -48,7 +47,6 @@ void Ctrl::RefreshFrame(int x, int y, int cx, int cy) {
 
 void Ctrl::RefreshFrame() {
 	LLOG("RefreshFrame " << Name());
-	fullrefresh = true;
 	RefreshFrame(Rect(GetRect().Size()));
 }
 

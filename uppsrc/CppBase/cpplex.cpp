@@ -27,7 +27,58 @@ const char *_CppKeyword[] = {
 
 const char **CppKeyword() { return _CppKeyword; }
 
-Lex::Lex()
+
+LexSymbolStat::LexSymbolStat() :
+  minSymbol(0)
+{
+}
+
+void LexSymbolStat::Reset(int minSymbol, int maxSymbol)
+{
+	ASSERT(minSymbol <= maxSymbol);
+	v.Clear();
+	this->minSymbol = minSymbol;
+	v.SetCount(maxSymbol - minSymbol + 1, 0);
+}
+
+void LexSymbolStat::IncStat(int symbol)
+{
+	int symbolIndex = symbol - minSymbol;
+	if(symbolIndex >= 0 && symbolIndex < v.GetCount())
+	  v[symbolIndex]++;
+}
+
+int  LexSymbolStat::GetStat(int symbol) const
+{
+	int symbolIndex = symbol - minSymbol;
+	return (symbolIndex >= 0 && symbolIndex < v.GetCount()) ?
+	       v[symbolIndex] :
+	       0;
+}
+
+int  LexSymbolStat::SumStat(const Vector<int> & symbols) const
+{
+	int sum = 0;
+	for(int i = 0; i < symbols.GetCount(); i++)
+		sum += GetStat(symbols[i]);
+	return sum;
+}
+
+void LexSymbolStat::Merge(const LexSymbolStat & other)
+{
+	if(v.GetCount() == 0) {
+		minSymbol = other.minSymbol;
+		v <<= other.v;
+		return;
+	}
+	ASSERT(other.minSymbol == minSymbol && other.v.GetCount() == v.GetCount());
+	for(int i = 0; i < v.GetCount(); i++)
+		v[i] += other.v[i];
+}
+
+
+Lex::Lex() :
+  statsCollected(false)
 {
 	const char **cppk = CppKeyword();
 	for(int i = 0; cppk[i]; i++)
@@ -44,6 +95,19 @@ void Lex::Init(const char *s, const Vector<String>& ig)
 		id.Add(ig[i]);
 	ignore_high = id.GetCount();
 }
+
+void Lex::StartStatCollection()
+{
+	symbolStat.Reset(-200, endkey+256);
+	statsCollected = true;
+}
+
+const LexSymbolStat & Lex::FinishStatCollection()
+{
+	statsCollected = false;
+	return symbolStat;
+}
+
 
 int Lex::GetCharacter()
 {
@@ -308,6 +372,8 @@ void Lex::Get(int n)
 	while(n--) {
 		if(term.GetCount()) {
 			int chr = term.Head().code;
+			if(statsCollected)
+				symbolStat.IncStat(chr);
 			if(chr == '{')
 				braceslevel++;
 			else

@@ -319,6 +319,5 @@ inline void   MemoryInitDiagnostics() {}
 inline void  *MemoryAllocDebug(dword size) {}
 inline void   MemoryFreeDebug(void *p) {}
 inline void   MemoryCheck() {}
-inline void   MemoryInitDiagnostics() {}
 
 #endif

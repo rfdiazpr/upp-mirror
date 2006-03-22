@@ -173,7 +173,7 @@ void ReportDlg::Pdf()
 		fs.Type("PDF file", "*.pdf");
 		fs.AllFilesType();
 	}
-	if(!fs.ExecuteSaveAs("Output PDF file"))
+	if(!fs.ExecuteSaveAs(t_("Output PDF file")))
 		return;
 	SaveFile(~fs, ::Pdf(*report));
 }

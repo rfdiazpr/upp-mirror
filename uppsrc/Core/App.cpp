@@ -90,6 +90,7 @@ String  ConfigFile() {
 }
 
 GLOBAL_VAR(Vector<String>, coreCmdLine__)
+
 const Vector<String>& CommandLine()
 {
 	return coreCmdLine__();

@@ -1,6 +1,6 @@
 #include "CtrlCore.h"
 
-#define LLOG(x)  //LOG(x)
+#define LLOG(x)  // LOG(x)
 
 #ifdef PLATFORM_WIN32
 
@@ -134,6 +134,7 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 		if(_this) PostInput();
 		return 0L;
 	case WM_MOUSEMOVE:
+		LLOG("WM_MOUSEMOVE: ignoreclick = " << ignoreclick);
 		if(ignoreclick) {
 			EndIgnore();
 			return 0L;

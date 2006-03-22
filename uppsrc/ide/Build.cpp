@@ -336,6 +336,10 @@ struct OneFileHost : Host {
 	virtual String LoadFile(const String& path) { return host->LoadFile(path); }
 	virtual int    Execute(const char *c) { return host->Execute(c); }
 	virtual int    Execute(const char *c, Stream& o) { return host->Execute(c, o); }
+	virtual int    AllocSlot() { return host->AllocSlot(); }
+	virtual bool   Run(const char *cmdline, int slot, String key, int blitz_count) { return host->Run(cmdline, slot, key, blitz_count); }
+	virtual bool   Run(const char *cmdline, Stream& out, int slot, String key, int blitz_count) { return host->Run(cmdline, out, slot, key, blitz_count); }
+	virtual bool   Wait() { return host->Wait(); }
 	virtual One<SlaveProcess> StartProcess(const char *c) { return host->StartProcess(c); }
 	virtual void   Launch(const char *cmdline, bool) { host->Launch(cmdline); }
 	virtual void   AddFlags(Index<String>& cfg) { host->AddFlags(cfg); }
@@ -416,9 +420,18 @@ bool Ide::BuildPackage(const Workspace& wspc, int pkindex, int pknumber, int pkc
 		                      GetAllUses(wspc, pkindex),
 		                      GetAllLibraries(wspc, pkindex, bm, mainparam, *host, *b),
 		                      targetmode - 1);
-	if(ok && link)
+	Vector<String> errors = console.PickErrors();
+	host->DeleteFile(errors);
+	if(!ok || !errors.IsEmpty())
+		return false;
+	if(link) {
 		ok = b->Link(linkfile, linkopt, GetTargetMode().createmap);
-	return ok;
+		errors = console.PickErrors();
+		host->DeleteFile(errors);
+		if(!ok || !errors.IsEmpty())
+			return false;
+	}
+	return true;
 }
 
 void Ide::SetHdependDirs()
@@ -438,6 +451,8 @@ void Ide::BeginBuilding(bool sync_files, bool clear_console)
 	SaveFile();
 	SaveWorkspace();
 	SetIdeState(BUILDING);
+	console.Kill();
+	console.ClearError();
 	if(clear_console)
 		console.Clear();
 	build_time = GetTickCount();
@@ -448,6 +463,12 @@ void Ide::BeginBuilding(bool sync_files, bool clear_console)
 
 void Ide::EndBuilding(bool ok)
 {
+	console.EndGroup();
+	console.Wait();
+	Vector<String> errors = console.PickErrors();
+	CreateHost(false)->DeleteFile(errors);
+	if(!errors.IsEmpty())
+		ok = false;
 	PutConsole("");
 	PutConsole((ok ? "OK. " : "There were errors. ") + GetPrintTime(build_time));
 	SetIdeState(EDITING);

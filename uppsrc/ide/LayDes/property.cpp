@@ -121,8 +121,7 @@ struct DoubleProperty : public EditorProperty<EditDouble> {
 			editor.SetData(p.ReadDouble());
 	}
 	virtual String Save(byte) const {
-		int q = ~editor;
-		return IsNull(q) ? "Null" : AsString(q);
+		return FormatDouble(~editor, 10);
 	}
 
 	DoubleProperty() {

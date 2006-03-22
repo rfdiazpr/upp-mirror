@@ -7,16 +7,18 @@ class LogStream : public Stream {
 	int   hfile;
 #endif
 
+	CriticalSection cs;
 	char  filename[512];
 	char  backup[512];
 	byte  buffer[512];
 	int   filesize;
 	byte *p;
-	
+
 	int   sizelimit;
 	int   part;
-	
+
 	void  Flush();
+	void  Put0(int w);
 
 protected:
 	virtual void    _Put(int w);

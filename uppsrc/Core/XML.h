@@ -86,6 +86,7 @@ public:
 
 	bool   IsText();
 	String ReadText();
+	String ReadTextE();
 
 	bool   IsDecl();
 	String ReadDecl();

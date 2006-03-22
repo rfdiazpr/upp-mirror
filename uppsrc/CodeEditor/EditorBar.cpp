@@ -65,15 +65,12 @@ void EditorBar::Paint(Draw& w) {
 				lno = l.lineno;
 		}
 		if(line_numbers && i < editor->GetLineCount()) {
-			static const Color cycle[] = { Black, Blue, Green, Red };
-			int n = i + 1;
-			Color c = cycle[n / 1000 % 4];
-			int x = sz.cx - 8;
-			for(int q = 3; q-- && n;) {
-				w.DrawImage(x, y + (fy - 12) / 2, CodeEditorImg::Vector[n % 10 + CodeEditorImg::I_N0], c);
-				n /= 10;
-				x -= 6;
-			}
+			String n = AsString(i + 1);
+			for(int q = 0; q < 4 && q < n.GetLength(); q++)
+				w.DrawImage(sz.cx - 8 - q * 6,
+				            y + (fy - CodeEditorImg::N0().GetSize().cy) / 2,
+				            CodeEditorImg::Vector[n[n.GetLength() - 1 - q] - '0'
+				                                  + CodeEditorImg::I_N0], Brown);
 		}
 		if(hi_if) {
 			Vector<CodeEditor::IfState> nextif;
@@ -285,7 +282,7 @@ void EditorBar::HidePtr()
 void EditorBar::LineNumbers(bool b)
 {
 	line_numbers = b;
-	Width(b ? 21 : 12);
+	Width(b ? 27 : 12);
 	Refresh();
 }
 

@@ -621,12 +621,12 @@ void  ArrayCtrl::Paint(Draw& w) {
 				if(i < array.GetCount() && array[i].select) {
 					st |= Display::SELECT;
 					fg = hasfocus ? SColorHighlightText : SColorText;
-					bg = hasfocus ? SColorHighlight : SLtGray;
+					bg = hasfocus ? SColorHighlight : SColorFace;
 				}
 				if(i == cursor && !nocursor) {
 					st |= Display::CURSOR;
 					fg = hasfocus ? SColorHighlightText : SColorText;
-					bg = hasfocus ? (GetSelectCount() > 1 ? SLtBlue : SColorHighlight) : SLtGray;
+					bg = hasfocus ? (GetSelectCount() > 1 ? SLtBlue : SColorHighlight) : SColorFace;
 				}
 				if(hasfocus) st |= Display::FOCUS;
 				const Display& d = ct ? StdDisplay() : GetDisplay(i, j);
@@ -661,6 +661,11 @@ void  ArrayCtrl::Paint(Draw& w) {
 	r.left = 0;
 	r.right = size.cx;
 	r.top = r.bottom;
+	if(IsAppendLine() && !IsCursor()) {
+		r.bottom = r.top + linecy;
+		w.DrawRect(r, HasFocus() ? SColorHighlight : SColorFace);
+		r.top = r.bottom;
+	}
 	r.bottom = size.cy;
 	w.DrawRect(r, SColorPaper);
 	scroller.Set(Point(header.GetScroll(), sb));
@@ -689,6 +694,8 @@ void ArrayCtrl::HeaderScrollVisibility()
 void ArrayCtrl::RefreshRow(int i) {
 	if(i >= 0 && i < GetCount())
 		Refresh(0, GetLineY(i) - sb, GetSize().cx, GetLineCy(i) + horzgrid);
+	if(IsAppendLine())
+		Refresh(0, GetLineY(GetCount()) - sb, GetSize().cx, linecy + horzgrid);
 }
 
 ArrayCtrl::IdInfo& ArrayCtrl::IndexInfo(int i) {
@@ -1007,6 +1014,7 @@ bool ArrayCtrl::SetCursor0(int i, bool dosel) {
 		return false;
 	i = minmax(i, 0, GetCount() - 1);
 	if(i != cursor) {
+		RefreshRow(cursor);
 		if(cursor >= 0) {
 			if(!KillCursor0()) return false;
 		}
@@ -1210,7 +1218,7 @@ void ArrayCtrl::LeftDouble(Point p, dword) {
 	if(IsReadOnly()) return;
 	DoPoint(p);
 	ClickColumn(p);
-	if(IsInserting() && IsAppendLine() && !IsCursor())
+	if((IsInserting() || IsAppending()) && IsAppendLine() && !IsCursor())
 		DoAppend();
 	WhenLeftDouble();
 }
@@ -1323,7 +1331,7 @@ bool ArrayCtrl::Key(dword key, int) {
 			return true;
 		case K_PAGEDOWN:
 		case K_SHIFT_PAGEDOWN:
-			if(IsInserting() && IsAppendLine() && cursor == GetCount() - 1)
+			if((IsInserting() || IsAppending()) && IsAppendLine() && cursor == GetCount() - 1)
 				KillCursor();
 			else {
 				Page(1);
@@ -1369,14 +1377,14 @@ bool ArrayCtrl::Key(dword key, int) {
 					KeyMultiSelect(key);
 		}
 		else
-		if(IsAppendLine())
+		if((IsInserting() || IsAppending()) && IsAppendLine())
 			SetCursor(GetCount() - 1);
 		else
 			sb.PrevLine();
 		return true;
 	case K_DOWN:
 	case K_SHIFT_DOWN:
-		if(IsInserting() && IsAppendLine() && cursor == GetCount() - 1 && !editmode)
+		if((IsInserting() || IsAppending()) && IsAppendLine() && cursor == GetCount() - 1 && !editmode)
 			KillCursor();
 		else
 		if(IsCursor()) {
@@ -1390,7 +1398,7 @@ bool ArrayCtrl::Key(dword key, int) {
 			sb.NextLine();
 		return true;
 	case K_ENTER:
-		if(!IsCursor() && IsInserting() && IsAppendLine()) {
+		if(!IsCursor() && (IsInserting() || IsAppending()) && IsAppendLine()) {
 			DoAppend();
 			return true;
 		}
@@ -1398,6 +1406,10 @@ bool ArrayCtrl::Key(dword key, int) {
 			bool ins = IsInsert() && autoappend;
 			if(AcceptEnter() && ins)
 				DoAppend();
+			return true;
+		}
+		if(WhenEnterKey && IsCursor()) {
+			WhenEnterKey();
 			return true;
 		}
 		break;
@@ -1419,7 +1431,7 @@ bool ArrayCtrl::AcceptEnter() {
 		if(!Accept())
 			return false;
 		if(GetCursor() == array.GetCount() - 1 &&
-		   IsInserting() && IsAppendLine() && ins && !noinsertappend) {
+		   (IsInserting() || IsAppending()) && IsAppendLine() && ins && !noinsertappend) {
 		   	KillCursor();
 		   	ShowAppendLine();
 		}
@@ -2007,17 +2019,18 @@ void ArrayOption::Paint(Draw& w, const Rect& r, const Value& q,
 	w.DrawRect(r, paper);
 	Size crsz = min(CtrlImg::smallcheck().GetSize() + 4, r.Size());
 	Rect cr = r.CenterRect(crsz);
+	bool focusCursor = (style & CURSOR) && (style & FOCUS);
 	if(!array || array->IsEnabled())
 		w.DrawRect(cr, threestate && IsNull(q) || !threestate && !IsNull(q) && q != f && q != t
 			? SLtGray() : paper);
 	if(frame)
-		DrawFrame(w, cr, SLtBlue);
+		DrawFrame(w, cr, focusCursor ? White : SLtBlue);
 	Image icon;
 	if(q != f) {
 		Image icon = CtrlImg::smallcheck();
 		Point p = cr.CenterPos(icon.GetSize());
 //		w.DrawRect(p.x, p.y, 8, 8, LtGreen());
-		if((style & CURSOR) && (style & FOCUS))
+		if(focusCursor)
 			w.DrawImage(p.x, p.y, icon, White(), Null);
 		else
 			w.DrawImage(p.x, p.y, icon);

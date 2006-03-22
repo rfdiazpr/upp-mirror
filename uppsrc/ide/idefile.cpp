@@ -275,7 +275,7 @@ void Ide::SaveFile(bool always)
 		FileDelete(outfile);
 		if(FileMove(tmpfile, outfile))
 			break;
-		console.FlushProcess();
+		console.Flush();
 		Sleep(200);
 		if(progress.SetPosCanceled(msecs(time) % progress.GetTotal()))
 		{
@@ -537,10 +537,10 @@ String Ide::GetOpposite()
 		return Null;
 	String ext = GetFileExt(editfile);
 	for(int i = 0; i < __countof(cpp); i++)
-		if(ext == cpp[i]) 
+		if(ext == cpp[i])
 			return sExFiles(editfile, hdr, __countof(hdr));
 	for(int i = 0; i < __countof(hdr); i++)
-		if(ext == hdr[i]) 
+		if(ext == hdr[i])
 			return sExFiles(editfile, cpp, __countof(cpp));
 	return Null;
 }

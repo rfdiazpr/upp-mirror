@@ -139,7 +139,7 @@ class TabDlg : public TopWindow {
 	Size    sz;
 
 	void           PlaceButton(Button& b, int& r);
-	TabCtrl::Item& TabDlg::Add0(Ctrl& tab, const char *text);
+	TabCtrl::Item& Add0(Ctrl& tab, const char *text);
 	TabDlg&        AButton(Button& b);
 
 public:

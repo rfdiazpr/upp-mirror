@@ -3,7 +3,9 @@ uses
 
 file
 	Image.h,
+	ImageBuffer.cpp,
 	Image.cpp,
+	ImageBlit.cpp,
 	ImageWin32.cpp,
 	main.cpp;
 

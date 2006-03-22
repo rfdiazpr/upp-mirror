@@ -655,11 +655,6 @@ bool LineEdit::Key(dword key, int count) {
 		break;
 	default:
 		if(IsReadOnly()) return false;
-		for(int i = 0; i < 4; i++)
-			if(dellinekey[i] == key) {
-				CutLine();
-				return true;
-			}
 		switch(key) {
 		case K_DELETE:
 			DeleteChar();

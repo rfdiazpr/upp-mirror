@@ -14,7 +14,7 @@ String CppBuilder::GetTargetExt() const
 		return HasFlag("DLL") ? ".dll" : ".exe";
 }
 
-String CppBuilder::GetSharedLibPath(const String& package)
+String CppBuilder::GetSharedLibPath(const String& package) const
 {
 	String outfn;
 	for(const char *p = package; *p; p++)
@@ -25,32 +25,32 @@ String CppBuilder::GetSharedLibPath(const String& package)
 	return CatAnyPath(GetFileFolder(target), outfn);
 }
 
-String CppBuilder::GetHostPath(const String& path)
+String CppBuilder::GetHostPath(const String& path) const
 {
 	return host->GetHostPath(path);
 }
 
-String CppBuilder::GetHostPathQ(const String& path)
+String CppBuilder::GetHostPathQ(const String& path) const
 {
 	return '\"' + GetHostPath(path) + '\"';
 }
 
-String CppBuilder::GetLocalPath(const String& path)
+String CppBuilder::GetLocalPath(const String& path) const
 {
 	return host->GetLocalPath(path);
 }
 
-Vector<Host::FileInfo> CppBuilder::GetFileInfo(const Vector<String>& path)
+Vector<Host::FileInfo> CppBuilder::GetFileInfo(const Vector<String>& path) const
 {
 	return host->GetFileInfo(path);
 }
 
-Host::FileInfo CppBuilder::GetFileInfo(const String& path)
+Host::FileInfo CppBuilder::GetFileInfo(const String& path) const
 {
 	return GetFileInfo(Vector<String>() << path)[0];
 }
 
-Time CppBuilder::GetFileTime(const String& path)
+Time CppBuilder::GetFileTime(const String& path) const
 {
 	return GetFileInfo(path);
 }
@@ -75,6 +75,26 @@ int CppBuilder::Execute(const char *cl, Stream& out)
 	return host->Execute(cl, out);
 }
 
+int CppBuilder::AllocSlot()
+{
+	return host->AllocSlot();
+}
+
+bool CppBuilder::Run(const char *cmdline, int slot, String key, int blitz_count)
+{
+	return host->Run(cmdline, slot, key, blitz_count);
+}
+
+bool CppBuilder::Run(const char *cmdline, Stream& out, int slot, String key, int blitz_count)
+{
+	return host->Run(cmdline, out, slot, key, blitz_count);
+}
+
+bool CppBuilder::Wait()
+{
+	return host->Wait();
+}
+
 void CppBuilder::ChDir(const String& path)
 {
 	host->ChDir(path);
@@ -90,7 +110,7 @@ String CppBuilder::LoadFile(const String& path)
 	return host->LoadFile(path);
 }
 
-bool CppBuilder::FileExists(const String& path)
+bool CppBuilder::FileExists(const String& path) const
 {
 	return !IsNull(GetFileInfo(path).length);
 }
@@ -513,4 +533,11 @@ Point CppBuilder::ExtractVersion()
 		p.Spaces();
 	}
 	return v;
+}
+
+void CppBuilder::ShowTime(int count, int start_time)
+{
+	if(count)
+		PutConsole(NFormat("%d file(s) compiled in %s %d msec/file",
+			count, GetPrintTime(start_time), msecs(start_time) / count));
 }

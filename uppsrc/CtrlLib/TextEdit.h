@@ -66,10 +66,9 @@ protected:
 	BiArray<UndoRec> redo;
 	int              dirty;
 	byte             charset;
-	dword            dellinekey[4];
 
 	Color            color[COLOR_COUNT];
-	
+
 	bool             processtab;
 
 	void   IncDirty();

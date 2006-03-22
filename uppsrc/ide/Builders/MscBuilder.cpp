@@ -107,6 +107,17 @@ bool MscBuilder::HasAnyDebug() const
 	return HasFlag("DEBUG") || HasFlag("DEBUG_MINIMAL") || HasFlag("DEBUG_FULL");
 }
 
+String MscBuilder::PdbPch(String package, int slot, bool do_pch) const
+{
+	String pkg_slot = NFormat("%s-%d", GetAnyFileName(package), slot + 1);
+	String pdb = GetHostPathQ(CatAnyPath(outdir, pkg_slot + ".pdb"));
+	String cc;
+	cc << " -Gy -Fd" << pdb;
+	if(do_pch && !HasFlag("MSC8")) // MSC8 does not support automatic precompiled headers...
+		cc << " -YX -Fp" << GetHostPathQ(CatAnyPath(outdir, pkg_slot + ".pch")) << ' ';
+	return cc;
+}
+
 bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, String& linkoptions,
 	const Vector<String>& all_uses, const Vector<String>& all_libraries, int opt)
 {
@@ -117,13 +128,13 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 	String packagedir = GetFileFolder(packagepath);
 	ChDir(packagedir);
 	PutVerbose("cd " + packagedir);
+	IdeConsoleBeginGroup(package);
 	Vector<String> obj;
 
 	bool is_shared = HasFlag("SO");
 
 	String cc = CmdLine();
-	if(HasFlag("EVC"))
-	{
+	if(HasFlag("EVC")) {
 		if(!HasFlag("SH3") && !HasFlag("SH4"))
 			cc << " -Gs8192"; // disable stack checking
 		cc << " -GF" // read-only string pooling
@@ -134,11 +145,11 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 		cc << " -EHsc";
 	else
 		cc << " -GX";
-	String pdb = GetHostPathQ(CatAnyPath(outdir, GetAnyFileName(package) + ".pdb"));
-	String pch;
-	if(!HasFlag("MSC8")) // MSC8 does not support automatic precompiled headers...
-		pch << " -YX -Fp" << GetHostPathQ(CatAnyPath(outdir, GetAnyFileName(package) + ".pch")) << ' ';
-	cc << " -Gy -Fd" << pdb;
+//	String pdb = GetHostPathQ(CatAnyPath(outdir, GetAnyFileName(package) + ".pdb"));
+//	String pch;
+//	if(!HasFlag("MSC8")) // MSC8 does not support automatic precompiled headers...
+//		pch << " -YX -Fp" << GetHostPathQ(CatAnyPath(outdir, GetAnyFileName(package) + ".pch")) << ' ';
+//	cc << " -Gy -Fd" << pdb;
 	if(HasFlag("DEBUG_MINIMAL"))
 		cc << " -Zd";
 	if(HasFlag("DEBUG_FULL"))
@@ -203,9 +214,9 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 		if(b.build) {
 			PutConsole("BLITZ:" + b.info);
 			int time = GetTickCount();
-			if(Execute(cc + " -Tp " + GetHostPathQ(b.path) + " -Fo" + GetHostPathQ(b.object)) == 0)
-				PutCompileTime(time, b.count);
-			else
+			int slot = AllocSlot();
+			if(slot < 0 || ! Run(cc + PdbPch(package, slot, false)
+			+ " -Tp " + GetHostPathQ(b.path) + " -Fo" + GetHostPathQ(b.object), slot, GetHostPath(b.object), b.count))
 				error = true;
 		}
 	}
@@ -218,8 +229,8 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 	int time = GetTickCount();
 	int ccount = 0;
 
-	if(sContainsPchOptions(cc))
-		pch = Null;
+//	if(sContainsPchOptions(cc))
+//		pch = Null;
 
 	for(i = 0; i < sfile.GetCount(); i++) {
 		if(!IdeIsBuilding())
@@ -235,8 +246,10 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 			bool execerr = false;
 			if(rc) {
 				PutConsole(GetFileNamePos(fn));
-				execerr = Execute("rc /fo" + GetHostPathQ(objfile)
-				                + Includes(" /i") + ' ' + GetHostPathQ(fn));
+				int slot = AllocSlot();
+				if(slot < 0 || !Run("rc /fo" + GetHostPathQ(objfile) + Includes(" /i")
+					+ ' ' + GetHostPathQ(fn), slot, GetHostPath(objfile), 1))
+					execerr = true;
 			}
 			else if(brc) {
 				PutConsole(GetFileNamePos(fn));
@@ -257,9 +270,11 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 				String c = cc;
 				if(optimize[i])
 					c = cc_speed;
-				execerr = Execute(c + (sContainsPchOptions(soptions[i]) ? String() : pch)
-				                  + soptions[i] + (ext == ".c" ? " -Tc " : " -Tp ")
-				                  + GetHostPathQ(fn) + " -Fo" + GetHostPathQ(objfile));
+				int slot = AllocSlot();
+				if(slot < 0 || !Run(c + PdbPch(package, slot, !sContainsPchOptions(cc) && !sContainsPchOptions(soptions[i]))
+				+ soptions[i] + (ext == ".c" ? " -Tc " : " -Tp ")
+				+ GetHostPathQ(fn) + " -Fo" + GetHostPathQ(objfile), slot, GetHostPath(objfile), 1))
+					execerr = true;
 			}
 			if(execerr)
 				DeleteFile(objfile);
@@ -272,12 +287,11 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 		else
 			obj.Add(objfile);
 	}
-	if(ccount)
-		PutConsole(String().Cat() << ccount << " file(s) compiled in " << GetPrintTime(time) <<
-		           " " << int(GetTickCount() - time) / ccount << " msec/file");
-
-	if(error)
+	if(error) {
+//		ShowTime(ccount, time);
+		IdeConsoleEndGroup();
 		return false;
+	}
 
 	Vector<String> pkglibs = Split(Gather(pkg.library, config.GetKeys()), ' ');
 	for(int i = 0; i < pkglibs.GetCount(); i++) {
@@ -295,10 +309,12 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 	}
 	linkoptions << ' ' << Gather(pkg.link, config.GetKeys());
 
-	time = GetTickCount();
+	int linktime = GetTickCount();
 	if(!HasFlag("MAIN")) {
 		if(HasFlag("BLITZ") || HasFlag("NOLIB")) {
 			linkfile.Append(obj);
+//			ShowTime(ccount, time);
+			IdeConsoleEndGroup();
 			return true;
 		}
 		String product;
@@ -308,6 +324,10 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 			product = CatAnyPath(outdir, GetAnyFileName(package) + ".lib");
 		Time producttime = GetFileTime(product);
 		linkfile.Add(ForceExt(product, ".lib"));
+		if(!Wait()) {
+			IdeConsoleEndGroup();
+			return false;
+		}
 		Vector<Host::FileInfo> objinfo = host->GetFileInfo(obj);
 		for(int i = 0; i < obj.GetCount(); i++)
 			if(objinfo[i] > producttime) {
@@ -365,18 +385,20 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 				for(int i = 0; i < obj.GetCount(); i++)
 					lib << ' ' << GetHostPathQ(obj[i]);
 				PutConsole("Creating library...");
+				IdeConsoleEndGroup();
 				DeleteFile(product);
 				if(Execute(lib)) {
 					DeleteFile(product);
 					return false;
 				}
 				PutConsole(String().Cat() << product << " (" << GetFileInfo(product).length
-				           << " B) created in " << GetPrintTime(time));
+				           << " B) created in " << GetPrintTime(linktime));
 				break;
 			}
 		return true;
 	}
 
+	IdeConsoleEndGroup();
 	obj.Append(linkfile);
 	linkfile = obj;
 	return true;
@@ -385,6 +407,8 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 bool MscBuilder::Link(const Vector<String>& linkfile, const String& linkoptions, bool createmap)
 {
 	int time = GetTickCount();
+	if(!Wait())
+		return false;
 	for(int i = 0; i < linkfile.GetCount(); i++)
 		if(GetFileTime(linkfile[i]) >= targettime) {
 			String link;

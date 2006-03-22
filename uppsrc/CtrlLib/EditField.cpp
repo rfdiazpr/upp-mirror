@@ -381,7 +381,7 @@ bool EditField::Key(dword key, int rep)
 		break;
 	case K_CTRL_V:
 	case K_SHIFT_INSERT:
-		Insert(ReadClipboardText().ToWString());
+		Insert(ReadClipboardUnicodeText());
 		Action();
 		return true;
 	case K_CTRL_Z:

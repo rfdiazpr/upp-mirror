@@ -52,7 +52,7 @@ String FnItem(const char *s, const char *pname, const char *qname, const String&
 			}
 			break;
 		}
-		while(*s == ' ')
+		while(*s && (byte)*s <= ' ')
 			s++;
 		if(*s == '(' && (res == name || res == '~' + name))
 			break;
@@ -94,6 +94,7 @@ String FnItem(const char *s, const char *pname, const char *qname, const String&
 		}
 		else
 		if((byte)*s <= ' ') {
+			s++;
 			while((byte)*s <= ' ' && *s)
 				s++;
 		}
@@ -112,9 +113,9 @@ String Purify(const char *s, const char *qname, const String& name) {
 			s = w;
 		}
 		else
-		if(*s >= 'a' && *s <= 'z') {
-			String q;
-			while(*s >= 'a' && *s <= 'z')
+		if(iscid(*s)) {
+			String q(*s++, 1); //!!! speed up!
+			while(iscid(*s))
 				q.Cat(*s++);
 			if(q != "virtual" && q != "inline" && q != "static")
 				res.Cat(q);
@@ -123,6 +124,7 @@ String Purify(const char *s, const char *qname, const String& name) {
 		}
 		else
 		if((byte)*s <= ' ') {
+			s++;
 			res.Cat(' ');
 			while((byte)*s <= ' ' && *s)
 				s++;
@@ -136,9 +138,9 @@ String Purify(const char *s, const char *qname, const String& name) {
 String Purify(const char *s) {
 	String res;
 	while(*s) {
-		if(*s >= 'a' && *s <= 'z') {
-			String q;
-			while(*s >= 'a' && *s <= 'z')
+		if(iscid(*s)) {
+			String q(*s++, 1); //!!! speed up!
+			while(iscid(*s))
 				q.Cat(*s++);
 			if(q != "virtual" && q != "inline")
 				res.Cat(q);
@@ -147,6 +149,7 @@ String Purify(const char *s) {
 		}
 		else
 		if((byte)*s <= ' ') {
+			s++;
 			res.Cat(' ');
 			while((byte)*s <= ' ' && *s)
 				s++;
@@ -170,6 +173,15 @@ String Parser::Context::Dump() const
 	return "Nesting: " + nesting;
 }
 
+Parser::FunctionStat::FunctionStat(const String & nesting,
+                                   const CppItem & cppItem,
+		                           const LexSymbolStat &symbolStat,
+		                           int maxScopeDepth) :
+	nesting(nesting), cppItem(cppItem),
+	symbolStat(symbolStat), maxScopeDepth(maxScopeDepth)
+{
+}
+
 void Parser::Context::operator<<=(const Context& t)
 {
 	nesting = t.nesting;
@@ -186,6 +198,7 @@ Parser::Decla::Decla()
 	s_static = s_auto = s_register = s_extern = s_mutable = s_explicit = s_virtual = false;
 	isfriend = istemplate = istructor = isptr = nofn = false;
 }
+
 
 bool Parser::Key(int code)
 {
@@ -528,7 +541,7 @@ void Parser::Declarator(Decl& d, const char *p)
 			if(!Key(t_integer))
 				Name();
 	}
-	if(Key('(') && !inbody) {
+	if(Key('(')) {
 		if((lex < 256 || lex == tk_true || lex == tk_false)
 		   && lex != ')' && lex != t_dblcolon) {
 			int level = 0;
@@ -782,6 +795,9 @@ void Parser::MatchPars()
 
 void Parser::Statement()
 {
+	RecursionCounter recursionCounter(currentScopeDepth);
+	maxScopeDepth = max(maxScopeDepth, currentScopeDepth);
+
 	if(Key(tk_case)) {
 		if(lex.IsId())
 			++lex;
@@ -795,8 +811,11 @@ void Parser::Statement()
 	}
 	if(Key('{')) {
 		int l = local.GetCount();
-		while(!Key('}'))
+		while(!Key('}')) {
+			if(lex == t_eof)
+				ThrowError("");
 			Statement();
+		}
 		local.Trim(l);
 	}
 	else
@@ -869,6 +888,7 @@ void Parser::Statement()
 bool Parser::EatBody()
 {
 	if(lex != '{') return false;
+	maxScopeDepth = currentScopeDepth = 1;
 	if(dobody) {
 		inbody = true;
 		Statement();
@@ -884,6 +904,7 @@ bool Parser::EatBody()
 			if(Key('}')) level--;
 			else
 				++lex;
+			maxScopeDepth = max(level, maxScopeDepth);
 		}
 	}
 	return true;
@@ -901,7 +922,7 @@ String CleanTp(const String& tp)
 		if(*s == ',') {
 			r.Cat(';');
 			s++;
-			while(*s == ' ')
+			while(*s && *s <= ' ')
 				s++;
 		}
 		else
@@ -1182,7 +1203,7 @@ void Parser::Do()
 {
 	Line();
 	if(Key(tk_using)) {
-		while(!Key(';'))
+		while(!Key(';') && lex != t_eof)
 			++lex;
 	}
 	else
@@ -1222,7 +1243,8 @@ void Parser::Do()
 			String tparam = TemplateParams(tnames);
 			if(!Nest(tparam, tnames)) {
 				Array<Decl> r = Declaration(true, true);
-				bool body = EatBody();
+				CppItem *functionItem = 0;
+				bool body = lex == '{';
 				for(int i = 0; i < r.GetCount(); i++) {
 					Decl& d = r[i];
 					if(!d.isfriend && d.function) {
@@ -1232,7 +1254,18 @@ void Parser::Do()
 								                     INSTANCEFUNCTIONTEMPLATE);
 						m.tname = tnames;
 						m.tparam = CleanTp(tparam);
+						functionItem = &m;
 					}
+				}
+				if(body && functionItem && whenFnEnd) {
+					symbolsOutsideFunctions.Merge( lex.FinishStatCollection() );
+					lex.StartStatCollection(); // start collection of function symbols
+				}
+				EatBody();
+				if(body && functionItem && whenFnEnd) {
+					whenFnEnd(FunctionStat(current_nest, *functionItem,
+					                       lex.FinishStatCollection(), maxScopeDepth));
+					lex.StartStatCollection(); // start collection of orphan symbols
 				}
 				Key(';');
 			}
@@ -1263,35 +1296,37 @@ void Parser::Do()
 				Key(',');
 				if(Key('}')) break;
 			}
-		};
+		}
 		Key(';');
 		SetNestCurrent();
 	}
 	else
 	if(Key('#')) {
-		String n = lex.GetText();
-		String name;
-		const char *s = n;
-		while(*s && iscid(*s))
-			name.Cat(*s++);
-		CppItem& im = Item(context.nesting, n, name);
-		im.kind = MACRO;
-		s = strchr(n, '(');
-		if(s) {
-			s++;
-			String p;
-			for(;;) {
-				if(iscid(*s))
-					p.Cat(*s++);
-				else {
-					ScAdd(im.pname, p);
-					p.Clear();
-					if(*s == ')' || *s == '\0') break;
-					s++;
+		if(lex.Code() == t_string) {
+			String n = lex.GetText();
+			String name;
+			const char *s = n;
+			while(*s && iscid(*s))
+				name.Cat(*s++);
+			CppItem& im = Item(context.nesting, n, name);
+			im.kind = MACRO;
+			s = strchr(n, '(');
+			if(s) {
+				s++;
+				String p;
+				for(;;) {
+					if(iscid(*s))
+						p.Cat(*s++);
+					else {
+						ScAdd(im.pname, p);
+						p.Clear();
+						if(*s == ')' || *s == '\0') break;
+						s++;
+					}
 				}
 			}
+			im.access = context.access;
 		}
-		im.access = context.access;
 	}
 	else
 	if(!Nest(String(), String())) {
@@ -1311,15 +1346,19 @@ void Parser::Do()
 		}
 		else {
 			Array<Decl> r = Declaration(true, true);
+			CppItem *functionItem = 0;
 			bool body = lex == '{';
 			for(int i = 0; i < r.GetCount(); i++) {
 				Decl& d = r[i];
-				if(!d.isfriend || d.isfriend && body) {
-					if(d.function)
-						Fn(d, Null, body, d.istructor ? (d.isdestructor ? DESTRUCTOR : CONSTRUCTOR) :
-						                  d.isfriend ? INLINEFRIEND :
-						                  context.noclass ? FUNCTION :
-						                  d.s_static ? CLASSFUNCTION : INSTANCEFUNCTION);
+				if(!d.isfriend || body) {
+					if(d.function) {
+						CppItem &im =
+						  Fn(d, Null, body, d.istructor ? (d.isdestructor ? DESTRUCTOR : CONSTRUCTOR) :
+						                    d.isfriend ? INLINEFRIEND :
+						                    context.noclass ? FUNCTION :
+						                    d.s_static ? CLASSFUNCTION : INSTANCEFUNCTION);
+						functionItem = &im;
+					}
 					else {
 						String h = d.natural;
 						int q = h.Find('=');
@@ -1338,7 +1377,16 @@ void Parser::Do()
 					}
 				}
 			}
+			if(body && functionItem && whenFnEnd) {
+				symbolsOutsideFunctions.Merge( lex.FinishStatCollection() );
+				lex.StartStatCollection(); // start collection of function symbols
+			}
 			EatBody();
+			if(body && functionItem && whenFnEnd) {
+				whenFnEnd(FunctionStat(current_nest, *functionItem,
+				                       lex.FinishStatCollection(), maxScopeDepth));
+				lex.StartStatCollection(); // start collection of orphan symbols
+			}
 			SetNestCurrent();
 			Key(';');
 		}
@@ -1362,6 +1410,9 @@ void Parser::Do(Stream& in, const Vector<String>& ignore, CppBase& _base, const 
 	filei = GetCppFileIndex(fn);
 	lpos = 0;
 	line = 0;
+	if(whenFnEnd)
+		lex.StartStatCollection();
+
 	while(lex != t_eof)
 		try {
 			Do();

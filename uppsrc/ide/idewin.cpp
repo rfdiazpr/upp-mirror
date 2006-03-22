@@ -39,7 +39,7 @@ void Ide::ConsolePaste()
 }
 
 void Ide::Serialize(Stream& s) {
-	int version = 2;
+	int version = 3;
 	s.Magic(0x12346);
 	s / version;
 	s % main;
@@ -94,6 +94,11 @@ void Ide::Serialize(Stream& s) {
 		s % bordercolumn;
 		s % bordercolor;
 	}
+	if(version >= 3) {
+		s % hydra1_threads;
+		if(s.IsLoading())
+			console.SetSlots(hydra1_threads);
+	}
 	s.Magic();
 }
 
@@ -121,19 +126,49 @@ String Ide::IdeGetOneFile() const
 	return onefile;
 }
 
-void Ide::IdeConsoleFlushProcess()
-{
-	console.FlushProcess();
-}
-
 int Ide::IdeConsoleExecute(const char *cmdline, Stream *out, const char *envptr, bool quiet)
 {
 	return console.Execute(cmdline, out, envptr, quiet);
 }
 
-int Ide::IdeConsoleExecute(One<SlaveProcess> process, Stream *out, bool quiet)
+int Ide::IdeConsoleExecute(One<SlaveProcess> process, const char *cmdline, Stream *out, bool quiet)
 {
-	return console.Execute(process, out, quiet);
+	return console.Execute(process, cmdline, out, quiet);
+}
+
+int Ide::IdeConsoleAllocSlot()
+{
+	return console.AllocSlot();
+}
+
+bool Ide::IdeConsoleRun(const char *cmdline, Stream *out, const char *envptr, bool quiet, int slot, String key, int blitz_count)
+{
+	return console.Run(cmdline, out, envptr, quiet, slot, key, blitz_count);
+}
+
+bool Ide::IdeConsoleRun(One<SlaveProcess> process, const char *cmdline, Stream *out, bool quiet, int slot, String key, int blitz_count)
+{
+	return console.Run(process, cmdline, out, quiet, slot, key, blitz_count);
+}
+
+void Ide::IdeConsoleFlush()
+{
+	console.Flush();
+}
+
+void Ide::IdeConsoleBeginGroup(String group)
+{
+	console.BeginGroup(group);
+}
+
+void Ide::IdeConsoleEndGroup()
+{
+	console.EndGroup();
+}
+
+bool Ide::IdeConsoleWait()
+{
+	return console.Wait();
 }
 
 void Ide::IdeSetRight(Ctrl& ctrl)
@@ -284,6 +319,12 @@ Ide::Ide()
 	start_time = GetSysTime();
 	stat_build_time = 0;
 	build_start_time = Null;
+	hydra1_threads = 1;
+#ifdef PLATFORM_WIN32
+	SYSTEM_INFO si;
+	GetSystemInfo(&si);
+	hydra1_threads = minmax<int>(si.dwNumberOfProcessors, 1, 10);
+#endif
 
 	Sizeable().Zoomable();
 
@@ -394,6 +435,7 @@ Ide::Ide()
 	debuglock = 0;
 
 	console.WhenSelect = THISBACK(FindError);
+	console.SetSlots(hydra1_threads);
 
 	editor.WhenSelection = THISBACK(Display);
 	verbosebuild = false;

@@ -17,22 +17,14 @@ TOPIC_TEXT(
 TOPIC_TEXT(
 "library&][s5; While NTL is kind of `\"alien technology`\" with respect to C`+`+ "
 "standard library, in fact it is largely inter`-operable with it.&][s3; Iterators&][s5; "
-"Each NTL container (with exception of [* One]) provides iterator access. All iterators "
+"Each NTL container (with exception of One) provides iterator access. All iterators "
 "satisfy STL requirements for random access iterators. This also means that most of "
-"STL (and STL based) algorithms can be used with NTL containers.&]")
+"STL (and STL based) algorithms can be used with NTL containers.&][s3;")
 TOPIC_TEXT(
-"[s3; std`::string[*  ]and std`::wstring&][s5; To be able to store `[w`]string into "
-"Vector flavor of containers, they must be made moveable. This is tricky. On the other "
-"hand, any current implementation of `[w`]string known to us [/ is] moveable (even "
-"if only by a little margin in case of Dinkuware`'s small string optimization). That "
-"is why for now we can afford to add template Moveable<std`::`[w`]")
-TOPIC_TEXT(
-"string> and use `[w`]string with Vector flavor of containers. Anyway, future releases "
-"will have to supply their own String classes.&][s5; [@4 ntls.h ]header adds this "
-"support and also adds [* GetHashValue] routines for `[w`]string.&][s3; auto`_ptr&][s5; "
-"Funny part about standard library and NTL relationship is that any known (and imaginable) "
-"implementation of auto`_ptr is moveable `- so you can st")
-TOPIC_TEXT(
-"ore it into any flavor of containers. All you need to do is to mark an instantiation "
+" auto`_ptr&][s5; Funny part about standard library and NTL relationship is that "
+"any known (and imaginable) implementation of auto`_ptr is moveable `- so you can "
+"store it into any flavor of containers. All you need to do is to mark an instantiation "
 "with the Moveable template.&][s5; Even better is that you do not need Vector of auto`_ptr "
-"`- because Array flavor will do the same job more comfortably.&][s0;3 ]")
+"`- because Array flavor will do the same job more comfortably.")
+TOPIC_TEXT(
+"&][s0;3 ]")

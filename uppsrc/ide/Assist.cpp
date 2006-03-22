@@ -125,6 +125,7 @@ void AssistEditor::TypeOf(const String& id, Vector<String>& r, bool& code)
 			r.Add("::");
 		return;
 	}
+	DUMPC(parser.local);
 	int q = parser.local.FindLast(id);
 	if(q >= 0) {
 		r.Add(parser.local[q]);
@@ -460,12 +461,14 @@ void AssistEditor::Assist()
 		q--;
 	String tp;
 	Vector<String> h = ReadBack(q, tp);
+	DUMPC(h);
 	Vector<String> type;
 	bool d;
 	if(h.GetCount() == 0 && IsNull(tp))
 		TypeOf(Null, type, d);
 	else {
 		type = TypeOf(h, tp);
+		DUMPC(type);
 		if(type.GetCount() == 0)
 			return;
 	}
@@ -503,7 +506,7 @@ void AssistEditor::PopUpAssist(const String& header, bool auto_insert)
 		assist.Header();
 		assist.HeaderTab(0).SetText(header);
 	}
-	sz.cx += 4 + (IsNull(header) * ScrollBar::GetStdBox()) + 12;
+	sz.cx += 4 + (IsNull(header) * ScrollBar::GetStdBox()) + 12 + ScrollBar::GetStdBox();
 	sz.cy += 4;
 	sz.cy += HeaderCtrl::GetStdHeight();
 	assist.SetLineCy(lcy);
@@ -879,7 +882,7 @@ void Ide::JumpS()
 		if(!IsNull(r))
 			nest.Add(r);
 	}
-	
+
 	if(nest.GetCount() == 0) {
 		Index<String> done;
 		String r = GetIdNest("::", id, done);
@@ -888,7 +891,7 @@ void Ide::JumpS()
 			if(BrowserBase().Find(t) < 0)
 				return;
 			nest.Add(t);
-		}	
+		}
 		else
 			nest.Add(r);
 	}

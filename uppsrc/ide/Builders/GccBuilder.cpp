@@ -91,7 +91,8 @@ void GccBuilder::BinaryToObject(String objfile, CParser& binscript, String based
 	SaveFile(tmpfile, fo);
 	String cc = CmdLine();
 	cc << " -c -o " << GetHostPathQ(objfile) << " -x c " << GetHostPathQ(tmpfile);
-	if(Execute(cc))
+	int slot = AllocSlot();
+	if(slot < 0 || !Run(cc, slot, objfile, 1))
 		throw Exc(NFormat("Error compiling binary object '%s'.", objfile));
 }
 
@@ -106,6 +107,7 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 	String packagedir = GetFileFolder(packagepath);
 	ChDir(packagedir);
 	PutVerbose("cd " + packagedir);
+	IdeConsoleBeginGroup(package);
 	Vector<String> obj;
 
 	bool is_shared = HasFlag("SO");
@@ -185,10 +187,9 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 		if(b.build) {
 			PutConsole("BLITZ:" + b.info);
 			int time = GetTickCount();
-			if(Execute(String().Cat() << cc << ' '
-				<< GetHostPathQ(b.path) << " -o " << GetHostPathQ(b.object)) == 0)
-				PutCompileTime(time, b.count);
-			else
+			int slot = AllocSlot();
+			if(slot < 0 || !Run(String().Cat() << cc << ' '
+			<< GetHostPathQ(b.path) << " -o " << GetHostPathQ(b.object), slot, GetHostPath(b.object), b.count))
 				error = true;
 		}
 	}
@@ -213,10 +214,12 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 			PutConsole(GetFileName(fn));
 			int time = GetTickCount();
 			bool execerr = false;
-			if(rc)
-				execerr = Execute("windres -i " + GetHostPathQ(fn)
-				                + " -o " + GetHostPathQ(objfile)
-				                + Includes(" --include-dir="));
+			if(rc) {
+				int slot = AllocSlot();
+				execerr = (slot < 0 || !Run("windres -i " + GetHostPathQ(fn)
+					+ " -o " + GetHostPathQ(objfile)
+					+ Includes(" --include-dir="), slot, GetHostPath(objfile), 1));
+			}
 			else if(brc) {
 				try {
 //					String hfn = GetHostPath(fn);
@@ -238,7 +241,8 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 				else
 					exec << fuse_cxa_atexit << " -x c++ ";
 				exec << GetHostPathQ(fn) << " -o " << GetHostPathQ(objfile);
-				execerr = Execute(exec);
+				int slot = AllocSlot();
+				execerr = (slot < 0 || !Run(exec, slot, GetHostPath(objfile), 1));
 			}
 			if(execerr)
 				DeleteFile(objfile);
@@ -251,21 +255,26 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 		else
 			obj.Add(objfile);
 	}
-	if(ccount)
-		PutCompileTime(time, ccount);
 
-	if(error)
+	if(error) {
+//		if(ccount)
+//			PutCompileTime(time, ccount);
+		IdeConsoleEndGroup();
 		return false;
+	}
 
 	linkoptions << Gather(pkg.link, config.GetKeys());
 
 	Vector<String> libs = Split(Gather(pkg.library, config.GetKeys()), ' ');
 	linkfile.Append(libs);
 
-	time = GetTickCount();
+	int libtime = GetTickCount();
 	if(!HasFlag("MAIN")) {
 		if(HasFlag("BLITZ") || HasFlag("NOLIB")) {
 			linkfile.Append(obj);
+			IdeConsoleEndGroup();
+//			if(ccount)
+//				PutCompileTime(time, ccount);
 			return true;
 		}
 		String product;
@@ -312,17 +321,21 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 					for(int i = 0; i < all_libraries.GetCount(); i++)
 						lib << " -l" << GetHostPathQ(all_libraries[i]);
 				}
+				IdeConsoleEndGroup();
+				if(!Wait())
+					return false;
 				if(!Execute(lib) == 0) {
 					DeleteFile(hproduct);
 					return false;
 				}
 				PutConsole(String().Cat() << hproduct << " (" << GetFileInfo(hproduct).length
-				           << " B) created in " << GetPrintTime(time));
+				           << " B) created in " << GetPrintTime(libtime));
 				break;
 			}
 		return true;
 	}
 
+	IdeConsoleEndGroup();
 	obj.Append(linkfile);
 	linkfile = obj;
 	return true;
@@ -331,6 +344,8 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 
 bool GccBuilder::Link(const Vector<String>& linkfile, const String& linkoptions, bool)
 {
+	if(!Wait())
+		return false;
 	int time = GetTickCount();
 	for(int i = 0; i < linkfile.GetCount(); i++)
 		if(GetFileTime(linkfile[i]) >= targettime) {

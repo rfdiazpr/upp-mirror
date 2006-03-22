@@ -250,7 +250,7 @@ void Picture::Paint(Draw& w) {
 	Size rz = sz;
 	if(ratio) {
 		Size sr = picture.GetSize();
-		if(sr.cx * sz.cx > sz.cy * sr.cy) {
+		if(sr.cx * sz.cx < sz.cy * sr.cy) {
 			rz.cy = sr.cy * sz.cx / sr.cx;
 			dy = (sz.cy - rz.cy) / 2;
 		}

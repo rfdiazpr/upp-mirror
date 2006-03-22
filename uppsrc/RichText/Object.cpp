@@ -308,8 +308,6 @@ Size   RichPng::GetPhysicalSize(const Value& data) const
 void   RichPng::Paint(const Value& data, Draw& w, Size sz) const
 {
 	PixelArray x = PngEncoder().LoadArray(data).pixel;
-//	if(x.GetPixelBPP() > 8)
-//		PixelSetConvert(x.pixel, -3); // not necessary anymore
 	Size outsz(min(sz.cx, 4 * x.GetWidth()), min(sz.cy, 4 * x.GetHeight()));
 	if(w.IsDrawing())
 		w.DrawImage(Rect(sz), PixelArrayToImage(x));
@@ -322,10 +320,6 @@ void   RichPng::Paint(const Value& data, Draw& w, Size sz) const
 		else
 			w.DrawImage(Rect(sz), PixelArrayToImage(dest));
 	}
-/*	
-	static int q;
-	PngEncoder().SaveImageFile(AppendFileName("e:/xxx", AsString(++q) + ".png"), PixelArrayToImage(x));
-*/
 }
 
 INITBLOCK

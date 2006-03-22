@@ -95,8 +95,10 @@ void RichTextView::Copy()
 {
 	if(anchor == cursor)
 		text.WriteClipboard();
-	else
-		text.Copy(min(anchor, cursor), max(anchor, cursor)).WriteClipboard();
+	else {
+		RefreshSel();
+		text.Copy(sell, selh - sell).WriteClipboard();
+	}
 }
 
 void RichTextView::RightDown(Point p, dword keyflags)
@@ -150,10 +152,38 @@ void  RichTextView::RefreshSel()
 {
 	int l = min(cursor, anchor);
 	int h = max(cursor, anchor);
-	if(sell == l && selh == h)
+	if(l != h) {
+		for(;;) {
+			RichPos pl = text.GetRichPos(l);
+			if(!pl.table)
+				break;
+			l -= pl.posintab + 1;
+			if(l < 0)
+				break;
+		}
+		for(;;) {
+			RichPos ph = text.GetRichPos(h);
+			if(!ph.table)
+				break;
+			h += ph.tablen - ph.posintab + 1;
+			if(h >= text.GetLength())
+				break;
+		}
+		if(l < 0 || h >= text.GetLength())
+			l = h = cursor;
+	}
+	if(sell == l && selh == h || sell == selh && l == h)
 		return;
-	RefreshRange(sell, l);
-	RefreshRange(selh, h);
+	RichPos pl = text.GetRichPos(l);
+	RichPos ph = text.GetRichPos(h);
+	RichPos psell = text.GetRichPos(sell);
+	RichPos pselh = text.GetRichPos(selh);
+	if(psell.parai != pl.parai || pselh.parai != ph.parai)
+		Refresh();
+	else {
+		RefreshRange(l, sell);
+		RefreshRange(h, selh);
+	}
 	sell = l;
 	selh = h;
 }

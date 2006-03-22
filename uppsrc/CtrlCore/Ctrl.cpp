@@ -221,8 +221,11 @@ void Ctrl::Show(bool ashow) {
 	if(visible != ashow) {
 		LLOG("Show " << Name() << " " << ashow);
 		visible = true;
+		fullrefresh = false;
 		RefreshFrame();
 		visible = ashow;
+		fullrefresh = false;
+		RefreshFrame();
 		if(parent)
 			StateH(SHOW);
 		else

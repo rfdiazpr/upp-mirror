@@ -72,6 +72,22 @@ enum {
 const char **CppKeyword();
 bool  InScList(const char *s, const char *list);
 
+class LexSymbolStat
+{
+public:
+	LexSymbolStat();
+	void Reset(int minSymbol, int maxSymbol);
+	void IncStat(int symbol);
+	int  GetStat(int symbol) const;
+	int  SumStat(const Vector<int> & symbols) const;
+	void Merge(const LexSymbolStat & other);
+
+private:
+	Vector<int> v;
+	int minSymbol;
+};
+
+
 class Lex {
 #ifdef _DEBUG
 	const char *pp;
@@ -92,7 +108,10 @@ class Lex {
 		double number;
 	};
 
+	bool statsCollected;
+	LexSymbolStat symbolStat;
 	BiVector<Term> term;
+
 
 	bool Char(int c)                 { if(*ptr == c) { ptr++; return true; } else return false; }
 	void AddCode(int code)           { Term& tm = term.AddTail(); tm.code = code; tm.ptr = pos; }
@@ -127,6 +146,8 @@ public:
 	void        operator++()                { Get(); }
 
 	void        Init(const char *s, const Vector<String>& ignore);
+	void        StartStatCollection();
+	const LexSymbolStat & FinishStatCollection();
 
 	Lex();
 };
@@ -307,6 +328,13 @@ class Parser {
 		Array<Decl> param;
 	};
 
+	struct RecursionCounter
+	{
+		int &count;
+		RecursionCounter(int &count_i) : count(count_i) { count++; }
+		~RecursionCounter() { count--; }
+	};
+
 	Context     context;
 	SrcFile     file;
 	Lex         lex;
@@ -371,19 +399,39 @@ class Parser {
 	String Tparam(int& q);
 
 public:
+	struct FunctionStat
+	{
+		FunctionStat(const String & nesting,
+		             const CppItem & cppItem,
+		             const LexSymbolStat &symbolStat,
+		             int maxScopeDepth);
+		String nesting;
+		const CppItem & cppItem;
+		const LexSymbolStat &symbolStat;
+		int maxScopeDepth;
+	};
+
 	bool                      IsInBody() const                   { return inbody; }
+
+	typedef Callback1<const FunctionStat &> FnEndCallback;
 
 	bool                      dobody;
 	String                    current_nest;
 	int                       current_namespacel;
 	String                    current_key;
 	CppItem                   current;
+	int                       currentScopeDepth;
+	int                       maxScopeDepth;
 	VectorMap<String, String> local;
+	FnEndCallback             whenFnEnd;
+	LexSymbolStat             symbolsOutsideFunctions;
+
+	const SrcFile &getPreprocessedFile() { return file; }
 
 	void   Do(Stream& s, const Vector<String>& ignore, CppBase& base, const String& fn,
 	          Callback2<int, const String&> err, const Vector<String>& typenames = Vector<String>());
 
-	Parser() { dobody = false; }
+	Parser() : dobody(false) {}
 };
 
 String NoTemplatePars(const String& type);

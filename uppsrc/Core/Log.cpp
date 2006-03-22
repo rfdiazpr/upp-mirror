@@ -103,12 +103,13 @@ void LogStream::Create(const char *path, bool append)
 	char h[1000];
 	sprintf(h, "* %s %02d.%02d.%04d %02d:%02d:%02d, user: %s\n",
 	           exe, t.day, t.month, t.year, t.hour, t.minute, t.second, user, part);
-	*this << h;
+	dword n;
+	WriteFile(hfile, h, strlen(h), &n, NULL);
 	if(part) {
 		sprintf(h, ", #%d", part);
-		*this << h;
+		WriteFile(hfile, h, strlen(h), &n, NULL);
 	}
-	*this << "\r\n";
+	WriteFile(hfile, "\r\n", 2, &n, NULL);
 }
 
 void LogStream::Flush()
@@ -130,20 +131,25 @@ void LogStream::Flush()
 		Create(filename, false);
 }
 
-void LogStream::_Put(int w)
+void LogStream::Put0(int w)
 {
-	static StaticCriticalSection logs;
-	CriticalSection::Lock __(logs);
 	*p++ = w;
 	if(w == '\n' || p == buffer + 512)
 		Flush();
 }
 
+void LogStream::_Put(int w)
+{
+	CriticalSection::Lock __(cs);
+	Put0(w);
+}
+
 void  LogStream::_Put(const void *data, dword size)
 {
+	CriticalSection::Lock __(cs);
 	const byte *q = (byte *)data;
 	while(size--)
-		_Put(*q++);
+		Put0(*q++);
 }
 
 bool LogStream::IsOpen() const

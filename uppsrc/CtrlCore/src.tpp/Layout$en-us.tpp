@@ -78,4 +78,4 @@ TOPIC_TEXT(
 TOPIC_TEXT(
 " assigns Acceptor(IDEXIT) to the [/ exit] member Ctrl variable and makes it the "
 "default button (activated by Enter).&][s1; [*C@4 T]-|Parent Ctrl type.&][s1; [%00-00*C@3 "
-"ctrl]-|Parent Ctrl.&][s1; [%00-00*C@3 title]-|Window title.&][s0; ]")
+"ctrl]-|Parent Ctrl.&][s1; [%00-00*C@3 title]-|Window title.&][s0;3 ]")

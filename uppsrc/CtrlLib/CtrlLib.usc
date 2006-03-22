@@ -444,6 +444,10 @@ subctrl EditNotNull {
 	bool NotNull = false;
 
 	PaintMinMax(w, type, minval, maxval) {
+		PaintMinMaxText(w, type, minval, maxval, addtext);
+	}
+
+	PaintMinMaxText(w, type, minval, maxval, addtext) {
 		text = (.NotNull ? "!" : "") + type;
 		if(minval != "" && maxval != "")
 			text << " " << minval << "..." << maxval;
@@ -453,6 +457,7 @@ subctrl EditNotNull {
 		else
 		if(maxval != "")
 			text << " <= " << maxval;
+		text << addtext;
 		PaintText(w, text);
 	}
 }
@@ -462,7 +467,7 @@ ctrl EditString {
 	raw MaxLen;
 
 	PaintData(w) {
-		text = (.NotNull ? "!" : "") + "String";
+		text = (.NotNull ? "!" : "") + "Str";
 		if(.MaxLen != "")
 			text << " < " << .MaxLen;
 		PaintText(w, text);
@@ -551,7 +556,7 @@ ctrl EditDoubleSpin {
 		DrawCtrlFrame(w, r, .SetFrame);
 		w.DrawRect(r, :SWhite);
 		DrawSpinButtons(w, r);
-		PaintMinMax(w, "double", DblStr(.Min), DblStr(.Max));
+		PaintMinMaxText(w, "dbl", DblStr(.Min), DblStr(.Max), "+-" + DblStr(.SetInc));
 	}
 }
 

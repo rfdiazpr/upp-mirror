@@ -224,6 +224,7 @@ void Ide::SetupFormat() {
 		(ide.browser_closeesc, browser_closeesc)
 		(ide.assist, editor.auto_assist)
 		(ide.commentdp, editor.commentdp)
+		(ide.hydra1_threads, hydra1_threads)
 	;
 	hlt.hlstyle.AddColumn("Style");
 	hlt.hlstyle.AddColumn("Color").Ctrls(HlPusherFactory);
@@ -247,6 +248,7 @@ void Ide::SetupFormat() {
 		font2 = f2.Get();
 		editortabsize = Nvl((int)~edt.tabsize, 4);
 		rtvr.Retrieve();
+		console.SetSlots(hydra1_threads);
 		hilite_scope = hs;
 		if(indent_spaces)
 			indent_amount = ~edt.indent_amount;

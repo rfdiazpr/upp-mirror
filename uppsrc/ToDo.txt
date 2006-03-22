@@ -1,4 +1,22 @@
-* chlog - zmena SetFocus u ArrayCtrl
+* Then dissable the saving on exit. With optional choice.
+
+* Valgrind
+
+* A jeste porad, uz delsi dobu, je ve WebMapu uplne dementni chyba, ktera netusim, cim muze byt zpusobena: mam v HeaderCtrl::WhenAction vyvolavani lokalniho menu pro sloupce nejake tabulky. To menu se normalne rozbali, muzes v nem jezdit, ale nemuzes nic vybrat
+
+* BTW There is a strange bug in Splitter. It doesn't produce equal results if I change the order of these two lines: splitter.SetPos(9000, 1);	splitter.SetPos(6500, 0);
+
+* Make a new GUI application and use the layout editor. Place any widget (e.g. a button) to your layout. Then change the widget to another using the scroll down menu in the left window (see attached picture). index.php?t=getfile&id=90&private=0
+  Now try to change the widget again and TheIde crashes.
+  U++602/Fedora4/Gnome
+
+* I love to use Virtual Desktop Managers for increased productivity. As of now, the free Microsoft Virtual Desktop Manager is having problems with theIDE. If I switch to a different desktop while running theIDE, the main window does not repaint itself when I return to the Desktop with theIDE in it. I have to close out of the program and reopen it for everything to work properly.
+
+* CppBase Purify speedup (no need for String...Cat)
+
+* Assist++ - ftp/Publi/ParseError.png
+
+* Assist++ - nechodi virtuals in nImage App
 
 * Assist++ - PesDlg - k_adresa_seq.
 

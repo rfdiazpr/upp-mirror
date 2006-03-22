@@ -14,7 +14,8 @@ String MakeLNG(int lang);
 
 bool   OldLang();
 
-String GetPrintTime(dword time0);
+String        PrintTime(int msecs);
+inline String GetPrintTime(dword time0) { return PrintTime(msecs(time0)); }
 
 bool   SaveChangedFile(const char *path, String data, bool delete_empty = false);
 
@@ -29,9 +30,15 @@ public:
 	virtual const Workspace& IdeWorkspace() const = 0;
 	virtual bool             IdeIsBuilding() const = 0;
 	virtual String           IdeGetOneFile() const = 0;
-	virtual void             IdeConsoleFlushProcess() = 0;
 	virtual int              IdeConsoleExecute(const char *cmdline, Stream *out = NULL, const char *envptr = NULL, bool quiet = false) = 0;
-	virtual int              IdeConsoleExecute(One<SlaveProcess> process, Stream *out = NULL, bool quiet = false) = 0;
+	virtual int              IdeConsoleExecute(One<SlaveProcess> process, const char *cmdline, Stream *out = NULL, bool quiet = false) = 0;
+	virtual int              IdeConsoleAllocSlot() = 0;
+	virtual bool             IdeConsoleRun(const char *cmdline, Stream *out = NULL, const char *envptr = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1) = 0;
+	virtual bool             IdeConsoleRun(One<SlaveProcess> process, const char *cmdline, Stream *out = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1) = 0;
+	virtual void             IdeConsoleFlush() = 0;
+	virtual void             IdeConsoleBeginGroup(String group) = 0;
+	virtual void             IdeConsoleEndGroup() = 0;
+	virtual bool             IdeConsoleWait() = 0;
 
 	virtual bool      IdeIsDebug() const = 0;
 	virtual void      IdeEndDebug() = 0;
@@ -62,9 +69,15 @@ void      PutVerbose(const char *s);
 const Workspace& GetIdeWorkspace();
 bool             IdeIsBuilding();
 String           IdeGetOneFile();
-void             IdeConsoleFlushProcess();
 int              IdeConsoleExecute(const char *cmdline, Stream *out = NULL, const char *envptr = NULL, bool quiet = false);
-int              IdeConsoleExecute(One<SlaveProcess> process, Stream *out = NULL, bool quiet = false);
+int              IdeConsoleExecute(One<SlaveProcess> process, const char *cmdline, Stream *out = NULL, bool quiet = false);
+int              IdeConsoleAllocSlot();
+bool             IdeConsoleRun(const char *cmdline, Stream *out = NULL, const char *envptr = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1);
+bool             IdeConsoleRun(One<SlaveProcess> process, const char *cmdline, Stream *out = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1);
+void             IdeConsoleFlush();
+void             IdeConsoleBeginGroup(String group);
+void             IdeConsoleEndGroup();
+bool             IdeConsoleWait();
 
 bool      IdeIsDebug();
 void      IdeEndDebug();
@@ -314,6 +327,10 @@ struct Host {
 	virtual String             LoadFile(const String& path) = 0;
 	virtual int                Execute(const char *cmdline) = 0;
 	virtual int                Execute(const char *cmdline, Stream& out) = 0;
+	virtual int                AllocSlot() = 0;
+	virtual bool               Run(const char *cmdline, int slot, String key, int blitz_count) = 0;
+	virtual bool               Run(const char *cmdline, Stream& out, int slot, String key, int blitz_count) = 0;
+	virtual bool               Wait() = 0;
 	virtual One<SlaveProcess>  StartProcess(const char *cmdline) = 0;
 	virtual void               Launch(const char *cmdline, bool console = false) = 0;
 	virtual void               AddFlags(Index<String>& cfg) = 0;

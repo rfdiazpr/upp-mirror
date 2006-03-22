@@ -118,20 +118,49 @@ String IdeGetOneFile()
 	return the_ide ? the_ide->IdeGetOneFile() : String(Null);
 }
 
-void IdeConsoleFlushProcess()
-{
-	if(the_ide)
-		the_ide->IdeConsoleFlushProcess();
-}
-
 int IdeConsoleExecute(const char *cmdline, Stream *out, const char *envptr, bool quiet)
 {
 	return the_ide ? the_ide->IdeConsoleExecute(cmdline, out, envptr, quiet) : -1;
 }
 
-int IdeConsoleExecute(One<SlaveProcess> process, Stream *out, bool quiet)
+int IdeConsoleExecute(One<SlaveProcess> process, const char *cmdline, Stream *out, bool quiet)
 {
-	return the_ide ? the_ide->IdeConsoleExecute(process, out, quiet) : -1;
+	return the_ide ? the_ide->IdeConsoleExecute(process, cmdline, out, quiet) : -1;
+}
+
+int IdeConsoleAllocSlot()
+{
+	return the_ide ? the_ide->IdeConsoleAllocSlot() : 0;
+}
+
+bool IdeConsoleRun(const char *cmdline, Stream *out, const char *envptr, bool quiet, int slot, String key, int blitz_count)
+{
+	return the_ide && the_ide->IdeConsoleRun(cmdline, out, envptr, quiet, slot, key, blitz_count);
+}
+
+bool IdeConsoleRun(One<SlaveProcess> process, const char *cmdline, Stream *out, bool quiet, int slot, String key, int blitz_count)
+{
+	return the_ide && the_ide->IdeConsoleRun(process, cmdline, out, quiet, slot, key, blitz_count);
+}
+
+void IdeConsoleFlush()
+{
+	if(the_ide) the_ide->IdeConsoleFlush();
+}
+
+void IdeConsoleBeginGroup(String group)
+{
+	if(the_ide) the_ide->IdeConsoleBeginGroup(group);
+}
+
+void IdeConsoleEndGroup()
+{
+	if(the_ide) the_ide->IdeConsoleEndGroup();
+}
+
+bool IdeConsoleWait()
+{
+	return the_ide && the_ide->IdeConsoleWait();
 }
 
 void IdeSetBottom(Ctrl& ctrl)
@@ -288,11 +317,10 @@ String MakeLNG(int lang)
 		       << char((lang & 31) + 'A' - 1) << "')";
 }
 
-String GetPrintTime(dword time) {
-	time = (GetTickCount() - time);
+String PrintTime(int time) {
 	int q = time % 1000 / 10;
 	time /= 1000;
-	return Format("(%d:%02d.%02d)", int(time / 60), int(time % 60), q);
+	return Format("(%d:%02d.%02d)", time / 60, time % 60, q);
 }
 
 Point ReadNums(CParser& p) {
@@ -333,8 +361,6 @@ IdeModule& GetIdeModule(int q)
 	return *sM()[q];
 }
 
-void IdeConsoleFlushProcess();
-
 bool FinishSave(String tmpfile, String outfile)
 {
 	Progress progress;
@@ -347,7 +373,7 @@ bool FinishSave(String tmpfile, String outfile)
 		FileDelete(outfile);
 		if(FileMove(tmpfile, outfile))
 			return true;
-		IdeConsoleFlushProcess();
+		IdeConsoleFlush();
 		Sleep(200);
 		if(progress.SetPosCanceled((GetTickCount() - time) % progress.GetTotal())) {
 			int art = Prompt(Ctrl::GetAppName(), CtrlImg::exclamation(),

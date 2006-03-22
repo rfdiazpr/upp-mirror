@@ -98,8 +98,6 @@ int LocalHost::Execute(const char *cmdline)
 		*cmdout << cmdline << '\n';
 	PutVerbose(cmdline);
 	int q = IdeConsoleExecute(FindCommand(exedirs, cmdline), NULL, environment, false);
-	if(q < 0)
-		PutConsole(String().Cat() << "Error executing " << cmdline);
 	PutVerbose(Format("Exitcode: %d", q));
 	return q;
 }
@@ -108,10 +106,28 @@ int LocalHost::Execute(const char *cmdline, Stream& out)
 {
 	PutVerbose(cmdline);
 	int q = IdeConsoleExecute(FindCommand(exedirs, cmdline), &out, environment, true);
-	if(q < 0)
-		PutConsole(String().Cat() << "Error executing " << cmdline);
 	PutVerbose(Format("Exitcode: %d", q));
 	return q;
+}
+
+int LocalHost::AllocSlot()
+{
+	return IdeConsoleAllocSlot();
+}
+
+bool LocalHost::Run(const char *cmdline, int slot, String key, int blitz_count)
+{
+	return IdeConsoleRun(FindCommand(exedirs, cmdline), NULL, environment, false, slot, key, blitz_count);
+}
+
+bool LocalHost::Run(const char *cmdline, Stream& out, int slot, String key, int blitz_count)
+{
+	return IdeConsoleRun(FindCommand(exedirs, cmdline), &out, environment, true, slot, key, blitz_count);
+}
+
+bool LocalHost::Wait()
+{
+	return IdeConsoleWait();
 }
 
 One<SlaveProcess> LocalHost::StartProcess(const char *cmdline)
@@ -436,26 +452,36 @@ String  RemoteHost::LoadFile(const String& path)
 
 int RemoteHost::Execute(const char *cmdline)
 {
-	One<SlaveProcess> proc = StartProcess(cmdline);
-	if(!proc) {
-		PutConsole(String().Cat() << "Error executing " << cmdline);
-		return -1;
-	}
-	int q = IdeConsoleExecute(proc);
+	int q = IdeConsoleExecute(StartProcess(cmdline), cmdline);
 	PutVerbose(Format("Exitcode: %d", q));
 	return q;
 }
 
 int RemoteHost::Execute(const char *cmdline, Stream& out)
 {
-	One<SlaveProcess> proc = StartProcess(cmdline);
-	if(!proc) {
-		PutConsole(String().Cat() << "Error executing " << cmdline);
-		return -1;
-	}
-	int q = IdeConsoleExecute(proc, &out, true);
+	int q = IdeConsoleExecute(StartProcess(cmdline), cmdline, &out, true);
 	PutVerbose(Format("Exitcode: %d", q));
 	return q;
+}
+
+int RemoteHost::AllocSlot()
+{
+	return IdeConsoleAllocSlot();
+}
+
+bool RemoteHost::Run(const char *cmdline, int slot, String key, int blitz_count)
+{
+	return IdeConsoleRun(StartProcess(cmdline), cmdline, NULL, false, slot, key, blitz_count);
+}
+
+bool RemoteHost::Run(const char *cmdline, Stream& out, int slot, String key, int blitz_count)
+{
+	return IdeConsoleRun(StartProcess(cmdline), cmdline, &out, false, slot, key, blitz_count);
+}
+
+bool RemoteHost::Wait()
+{
+	return IdeConsoleWait();
 }
 
 One<SlaveProcess> RemoteHost::StartProcess(const char *cmdline)

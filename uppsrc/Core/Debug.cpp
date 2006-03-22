@@ -58,8 +58,9 @@ LogStream& StdLogStream()
 		INTERLOCKED
 			if(!s) {
 				static byte lb[sizeof(LogStream)];
-				s = new(lb) LogStream;
-				sOpenVppLog(s);
+				LogStream *strm = new(lb) LogStream;
+				sOpenVppLog(strm);
+				s = strm;
 			}
 	}
 	return *s;

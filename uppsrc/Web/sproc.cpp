@@ -63,9 +63,9 @@ private:
 	pid_t        pid;
 	int          rpipe[2], wpipe[2];
 	String       exit_string;
-	int          exit_code;
 	bool         output_read;
 #endif
+	int          exit_code;
 };
 
 One<SlaveProcess> StartLocalProcess(const char *cmdline, const char *envptr)
@@ -80,9 +80,9 @@ void LocalSlaveProcess::Init() {
 #ifdef PLATFORM_POSIX
 	pid = 0;
 	rpipe[0] = rpipe[1] = wpipe[0] = wpipe[1] = -1;
-	exit_code = Null;
 	output_read = false;
 #endif
+	exit_code = Null;
 }
 
 void LocalSlaveProcess::Free() {
@@ -109,7 +109,6 @@ void LocalSlaveProcess::Free() {
 	if(wpipe[0] >= 0) { close(wpipe[0]); wpipe[0] = -1; }
 	if(wpipe[1] >= 0) { close(wpipe[1]); wpipe[1] = -1; }
 	pid = 0;
-	exit_code = Null;
 	output_read = false;
 #endif
 }
@@ -281,20 +280,16 @@ void LocalSlaveProcess::Open(const char *command, const char *envptr) {
 #ifdef PLATFORM_POSIX
 bool LocalSlaveProcess::DecodeExitCode(int status)
 {
-	if(WIFEXITED(status))
-	{
+	if(WIFEXITED(status)) {
 		exit_code = (byte)WEXITSTATUS(status);
 		return true;
 	}
-	else if(WIFSIGNALED(status) || WIFSTOPPED(status))
-	{
-		static const struct
-		{
+	else if(WIFSIGNALED(status) || WIFSTOPPED(status)) {
+		static const struct {
 			const char *name;
 			int         code;
 		}
-		signal_map[] =
-		{
+		signal_map[] = {
 #define SIGDEF(s) { #s, s },
 SIGDEF(SIGHUP) SIGDEF(SIGINT) SIGDEF(SIGQUIT) SIGDEF(SIGILL) SIGDEF(SIGABRT)
 SIGDEF(SIGFPE) SIGDEF(SIGKILL) SIGDEF(SIGSEGV) SIGDEF(SIGPIPE) SIGDEF(SIGALRM)
@@ -326,8 +321,10 @@ SIGDEF(SIGIO) SIGDEF(SIGWINCH)
 
 void LocalSlaveProcess::Kill() {
 #ifdef PLATFORM_WIN32
-	if(hProcess && IsRunning())
+	if(hProcess && IsRunning()) {
 		TerminateProcess(hProcess, (DWORD)-1);
+		exit_code = 255;
+	}
 #endif
 #ifdef PLATFORM_POSIX
 	if(!pid)
@@ -352,11 +349,15 @@ void LocalSlaveProcess::Detach()
 bool LocalSlaveProcess::IsRunning() {
 #ifdef PLATFORM_WIN32
 	dword exitcode;
-	return hProcess && GetExitCodeProcess(hProcess, &exitcode) && exitcode == STILL_ACTIVE;
+	if(!hProcess)
+		return false;
+	if(GetExitCodeProcess(hProcess, &exitcode) && exitcode == STILL_ACTIVE)
+		return true;
+	exit_code = exitcode;
+	return false;
 #endif
 #ifdef PLATFORM_POSIX
-	if(!pid || !IsNull(exit_code))
-	{
+	if(!pid || !IsNull(exit_code)) {
 		SVRLOG("IsRunning() -> no");
 		return false;
 	}
@@ -370,10 +371,7 @@ bool LocalSlaveProcess::IsRunning() {
 
 int  LocalSlaveProcess::GetExitCode() {
 #ifdef PLATFORM_WIN32
-	if(!hProcess) return -1;
-	dword exitcode;
-	GetExitCodeProcess(hProcess, &exitcode);
-	return exitcode;
+	return IsRunning() ? (int)Null : exit_code;
 #endif
 #ifdef PLATFORM_POSIX
 	if(!IsRunning())

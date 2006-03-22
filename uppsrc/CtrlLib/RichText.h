@@ -34,9 +34,9 @@ private:
 	int           GetPageCx(bool reduced = false) const;
 	int           GetPointPos(Point p) const;
 	String        GetLink(int pos, Point p) const;
-	void          RefreshRange(int a, int b);
 	Rect          GetPage() const;
 	void          RefreshSel();
+	void          RefreshRange(int a, int b);
 
 protected:
 	enum {

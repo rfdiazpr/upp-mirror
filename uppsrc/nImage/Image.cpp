@@ -1,46 +1,23 @@
 #include "Image.h"
 
-int ImageBuffer::GetKind()
+void Image::Set(ImageBuffer& b)
 {
-	if(kind == KIND_UNKNOWN) {
-		bool a255 = false;
-		bool a0 = false;
-		const RGBA *b = pixels;
-		for(int i = 0; i < sz.cy; i++) {
-			for(const RGBA *q = b, const RGBA *e = b + sz.cx; q < e; q++)
-				if(q->a == 0)
-					a0 = true;
-				else
-				if(q->a == 255)
-					a255 = true;
-				else {
-					kind = IMAGE_ALPHA;
-					return kind;
-				}
-			b += sz.cy;
-		}
-		kind = a255 ? a0 ? IMAGE_MASK : IMAGE_OPAUE : IMAGE_EMPTY;
-	}
-	return kind;
+	data = new Data(b);
 }
 
-ImageBuffer::ImageBuffer(Size sz, int _kind)
+void Image::Clear()
 {
-	pixels.Alloc(sz.cx * sz.cy);
-	kind = _kind;
+	if(data)
+		data->Release();
+	data = NULL;
 }
 
-ImageBuffer::ImageBuffer(pick_ ImageBuffer& b, int kind)
+Image& Image::operator=(ImageBuffer& img)
 {
-	pixels = b.pixels;
-	size = b.size;
-	kind = newkind;
-}
-
-ImageBuffer::ImageBuffer(Image& img, int kind)
-{
-
-	img = Image();
+	if(data)
+		data->Release();
+	Set(img);
+	return *this;
 }
 
 Image& Image::operator=(const Image& img)
@@ -48,15 +25,50 @@ Image& Image::operator=(const Image& img)
 	Data *d = data;
 	data = img.data;
 	data->Retain();
-	d->R
+	if(d)
+		d->Release();
+	return *this;
 }
 
-Image::Image()
+const RGBA* Image::operator~() const
 {
-
+	return data ? ~data->buffer : NULL;
 }
 
-Image::Image(pick_ ImageBuffer& b)
+Image::operator const RGBA*() const
 {
+	return data ? ~data->buffer : NULL;
+}
 
+Size Image::GetSize() const
+{
+	return data ? data->buffer.GetSize() : Size(0, 0);
+}
+
+Point Image::GetHotSpot() const
+{
+	return data ? data->buffer.GetHotSpot() : Null;
+}
+
+void Image::Paint(Draw& w, int x, int y, byte const_alpha, Color c)
+{
+	if(data)
+		data->Paint(w, x, y, const_alpha, c);
+}
+
+Image::Image(const Image& img)
+{
+	data = img.data;
+	data->Retain();
+}
+
+Image::Image(ImageBuffer& b)
+{
+	Set(b);
+}
+
+Image::~Image()
+{
+	if(data)
+		data->Release();
 }

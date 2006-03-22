@@ -151,13 +151,10 @@ int RichText::GetHeight(int cx) const
 	return GetHeight(Size(cx, 0xFFFFFFF)).y;
 }
 
-void RichText::Paint(Zoom zoom, Draw& w, int x, int y, int cx) const
+void RichText::Paint(Draw& w, int x, int y, int cx, const PaintInfo& pinit) const
 {
-	int lwd = cx / zoom;
-	PaintInfo pi;
-	pi.highlightpara = false;
-	pi.zoom = zoom;
 	SimplePageDraw pw(w);
+	PaintInfo pi(pinit);
 	pi.top = PageY(0, 0);
 	pi.bottom = PageY(0, INT_MAX);
 	pi.usecache = true;
@@ -166,6 +163,14 @@ void RichText::Paint(Zoom zoom, Draw& w, int x, int y, int cx) const
 	w.Offset(x, y);
 	Paint(pw, Size(cx / pi.zoom, INT_MAX), pi);
 	w.End();
+}
+
+void RichText::Paint(Zoom zoom, Draw& w, int x, int y, int cx) const
+{
+	PaintInfo pi;
+	pi.highlightpara = false;
+	pi.zoom = zoom;
+	Paint(w, x, y, cx, pi);
 }
 
 void RichText::Paint(Draw& w, int x, int y, int cx) const

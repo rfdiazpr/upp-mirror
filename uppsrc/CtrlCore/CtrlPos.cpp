@@ -1,6 +1,6 @@
 #include "CtrlCore.h"
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)  // LOG(x)
 
 bool Ctrl::Logc::IsEmpty() const {
 	return GetAlign() == SIZE ? GetB() <= GetA() : GetB() <= 0;

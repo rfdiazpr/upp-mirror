@@ -643,7 +643,7 @@ void  OCI8Connection::GetColumn(int i, Ref f) const {
 }
 
 void OCI8Connection::Cancel() {
-//	OCI8.OCIBreak(SvcCtx(), errhp);
+	OCI8().OCIBreak(SvcCtx(), errhp);
 	parse = true;
 }
 

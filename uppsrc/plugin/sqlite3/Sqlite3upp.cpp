@@ -3,7 +3,7 @@
 #include <Core/Core.h>
 #include <Sql/Sql.h>
 #include "lib/sqlite3.h"
-#include "sqlite3.h"
+#include "Sqlite3.h"
 
 #define LLOG(x) // LOG(x)
 

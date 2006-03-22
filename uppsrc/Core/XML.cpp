@@ -441,7 +441,7 @@ void  XmlParser::PassTagE(const char *tag)
 VectorMap<String, String> XmlParser::PickAttrs() pick_
 {
 	if(!IsNull(attr1))
-		attr.Insert(0, attr1, attrval1);
+		const_cast<VectorMap<String, String>&>(attr).Insert(0, attr1, attrval1);
 	return attr;
 }
 
@@ -471,6 +471,18 @@ String XmlParser::ReadText()
 	String h = text;
 	Next();
 	return h;
+}
+
+String XmlParser::ReadTextE()
+{
+	String out;
+	while(!IsEnd())
+		if(IsText())
+			out.Cat(ReadText());
+		else
+			Skip();
+	PassEnd();
+	return out;
 }
 
 bool   XmlParser::IsDecl()

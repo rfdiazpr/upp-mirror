@@ -19,14 +19,14 @@ struct CppBuilder : Builder {
 	const Workspace& wspc;
 	Time             targettime;
 
-	String                 GetSharedLibPath(const String& package);
-	String                 GetHostPath(const String& path);
-	String                 GetHostPathQ(const String& path);
-	String                 GetLocalPath(const String& path);
-	Vector<Host::FileInfo> GetFileInfo(const Vector<String>& path);
-	Host::FileInfo         GetFileInfo(const String& path);
-	Time                   GetFileTime(const String& path);
-	bool                   FileExists(const String& path);
+	String                 GetSharedLibPath(const String& package) const;
+	String                 GetHostPath(const String& path) const;
+	String                 GetHostPathQ(const String& path) const;
+	String                 GetLocalPath(const String& path) const;
+	Vector<Host::FileInfo> GetFileInfo(const Vector<String>& path) const;
+	Host::FileInfo         GetFileInfo(const String& path) const;
+	Time                   GetFileTime(const String& path) const;
+	bool                   FileExists(const String& path) const;
 	void                   DeleteFile(const Vector<String>& path);
 	void                   DeleteFile(const String& path);
 	void                   ChDir(const String& path);
@@ -34,6 +34,10 @@ struct CppBuilder : Builder {
 	String                 LoadFile(const String& path);
 	int                    Execute(const char *cmdline);
 	int                    Execute(const char *cl, Stream& out);
+	int                    AllocSlot();
+	bool                   Run(const char *cmdline, int slot, String key, int blitz_count);
+	bool                   Run(const char *cmdline, Stream& out, int slot, String key, int blitz_count);
+	bool                   Wait();
 	bool                   HasFlag(const char *f) const        { return config.Find(f) >= 0; }
 	Vector<String>         CustomStep(const String& file);
 
@@ -42,6 +46,8 @@ struct CppBuilder : Builder {
 
 	String                 GetMakePath(String fn) const;
 	Point                  ExtractVersion();
+
+	void                   ShowTime(int count, int start_time);
 
 	Blitz BlitzStep(Vector<String>& sfile, Vector<String>& soptions,
 	                Vector<String>& obj, const char *objext, Vector<bool>& optimize);
@@ -76,6 +82,7 @@ struct MscBuilder : CppBuilder {
 	String CmdLine();
 	String MachineName() const;
 	String LinkerName() const;
+	String PdbPch(String package, int slot, bool do_pch) const;
 	bool   HasAnyDebug() const;
 	void   BinObjConsole(String c) { PutConsole(c); }
 };

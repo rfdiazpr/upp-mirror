@@ -71,4 +71,5 @@ mainconfig
 	"" = "GUI XLFD",
 	"" = "GUI .ULD",
 	"" = "GUI USEMALLOC",
-	"" = "GUI MT";
+	"" = "GUI MT",
+	"" = "GUI NOLIB";

@@ -463,8 +463,8 @@ LRESULT CALLBACK Ctrl::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				break;
 			}
 	#endif
+	LRESULT l = 0;
 	if(w) {
-		LRESULT l = 0;
 		try
 		{
 #if defined(_DEBUG) && LOGTIMING
@@ -486,19 +486,17 @@ LRESULT CALLBACK Ctrl::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		}
 		catch(Exc e)
 		{
-			RLOG("Ctrl::WindowProc -> Exc: " << e);
+			LOG("Ctrl::WindowProc -> Exc: " << e);
 			NEVER();
 		}
-	#if LOGMESSAGES
-		if(logblk)
-			VppLog().End();
-	#endif
-		return l;
 	}
 	else
-	{
-		return DefWindowProc(hWnd, message, wParam, lParam);
-	}
+		l = DefWindowProc(hWnd, message, wParam, lParam);
+#if LOGMESSAGES
+	if(logblk)
+		VppLog().End();
+#endif
+	return l;
 }
 
 bool PassWindowsKey(int wParam)
@@ -531,6 +529,8 @@ bool Ctrl::ProcessEvent(bool *quit)
 {
 	if(EndSession())
 		return false;
+	if(!GetMouseLeft() && !GetMouseRight() && !GetMouseMiddle())
+		ReleaseCtrlCapture();
 	MSG msg;
 	if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 		if(msg.message == WM_QUIT && quit)

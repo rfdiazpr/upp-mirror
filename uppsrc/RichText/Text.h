@@ -54,6 +54,7 @@ public:
 
 	int                   GetHeight(int cx) const;
 	int                   GetHeight(Zoom zoom, int cx) const;
+	void                  Paint(Draw& w, int x, int y, int cx, const PaintInfo& pi) const;
 	void                  Paint(Zoom zoom, Draw& w, int x, int y, int cx) const;
 	void                  Paint(Draw& w, int x, int y, int cx) const;
 

@@ -295,7 +295,7 @@ private:
 	void    FlushText(int dx, int fi, int height, const String& txt);
 	static String PdfColor(Color c);
 
-	OutlineInfo PdfDraw::GetOutlineInfo(Font fnt);
+	OutlineInfo GetOutlineInfo(Font fnt);
 
 	struct M22 {
 		double a, b, c, d;

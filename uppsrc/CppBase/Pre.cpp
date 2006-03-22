@@ -64,11 +64,10 @@ SrcFile PreProcess(Stream& in)
 		}
 		const char *rm = ln;
 		while(*rm == ' ' || *rm == '\t') rm++;
-
-		if(*rm == '\0') {
+		if(*rm == '\0')
 			res.blankLinesRemoved++;
-		}
-		else if(*rm == '#')
+		else
+		if(*rm == '#')
 		{
 			if(rm[1] == 'd' && rm[2] == 'e' && rm[3] == 'f' &&
 			   rm[4] == 'i' && rm[5] == 'n' && rm[6] == 'e' && !iscid(rm[7])) {

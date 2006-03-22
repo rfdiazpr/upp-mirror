@@ -67,25 +67,70 @@ public:
 	virtual void Append(const String& s);
 
 protected:
-	One<SlaveProcess> process;
-	bool quiet;
+	struct Slot {
+		Slot() : outfile(NULL), quiet(true), exitcode(Null) {}
+
+		One<SlaveProcess> process;
+		String            cmdline;
+		String            output;
+		String            key;
+		String            group;
+		Stream            *outfile;
+		bool              quiet;
+		int               exitcode;
+		int               last_msecs;
+	};
+
+	struct Group {
+		Group() : count(0), finished(false), msecs(0), raw_msecs(0), start_time(::msecs()) {}
+
+		int               count;
+		int               start_time;
+		bool              finished;
+		int               msecs;
+		int               raw_msecs;
+	};
+
+	Array<Slot> processes;
+	ArrayMap<String, Group> groups;
+	Vector<String> error_keys;
+	String current_group;
+	String spooled_output;
+	int console_lock;
 	bool wrap_text;
+
+	void CheckEndGroup();
+	void FlushConsole();
 
 public:
 	Callback WhenSelect;
 	Callback1<Bar&> WhenBar;
-	Stream *outfile;
-	bool    console;
+	bool console;
 
 	int  Execute(const char *cmdline, Stream *out = NULL, const char *envptr = NULL, bool quiet = false);
-	int  Execute(One<SlaveProcess> process, Stream *out = NULL, bool quiet = false);
-	int  FlushProcess();
+	int  Execute(One<SlaveProcess> process, const char *cmdline, Stream *out = NULL, bool quiet = false);
+	int  GetSlotCount() const { return processes.GetCount(); }
+	int  AllocSlot();
+	bool Run(const char *cmdline, Stream *out = NULL, const char *endptr = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1);
+	bool Run(One<SlaveProcess> process, const char *cmdline, Stream *out = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1);
+	void BeginGroup(String group);
+	void EndGroup();
 
 	Console& operator<<(const String& s)      { Append(s); return *this; }
 
-	bool IsRunning()                          { return process && process->IsRunning(); }
+	bool IsRunning();
+	bool IsRunning(int slot);
+	int  Flush();
+	void Kill(int slot);
 	void Kill();
+	void ClearError()                         { error_keys.Clear(); }
+	Vector<String> PickErrors()               { Vector<String> e = error_keys; error_keys.Clear(); return e; }
+	void Wait(int slot);
+	bool Wait();
+
 	void WrapText(bool w)                     { wrap_text = w; }
+
+	void SetSlots(int s);
 
 	Console();
 };
@@ -110,6 +155,10 @@ struct LocalHost : Host {
 	virtual String             LoadFile(const String& path);
 	virtual int                Execute(const char *cmdline);
 	virtual int                Execute(const char *cmdline, Stream& out);
+	virtual int                AllocSlot();
+	virtual bool               Run(const char *cmdline, int slot, String key, int blitz_count);
+	virtual bool               Run(const char *cmdline, Stream& out, int slot, String key, int blitz_count);
+	virtual bool               Wait();
 	virtual One<SlaveProcess>  StartProcess(const char *cmdline);
 	virtual void               Launch(const char *cmdline, bool console);
 	virtual void               AddFlags(Index<String>& cfg);
@@ -140,6 +189,10 @@ struct RemoteHost : Host {
 	virtual String             LoadFile(const String& path);
 	virtual int                Execute(const char *cmdline);
 	virtual int                Execute(const char *cmdline, Stream& out);
+	virtual int                AllocSlot();
+	virtual bool               Run(const char *cmdline, int slot, String key, int blitz_count);
+	virtual bool               Run(const char *cmdline, Stream& out, int slot, String key, int blitz_count);
+	virtual bool               Wait();
 	virtual One<SlaveProcess>  StartProcess(const char *cmdline);
 	virtual void               Launch(const char *cmdline, bool console);
 	virtual void               AddFlags(Index<String>& cfg);
@@ -398,9 +451,15 @@ public:
 	virtual   const Workspace& IdeWorkspace() const;
 	virtual   bool             IdeIsBuilding() const;
 	virtual   String           IdeGetOneFile() const;
-	virtual   void             IdeConsoleFlushProcess();
 	virtual   int              IdeConsoleExecute(const char *cmdline, Stream *out = NULL, const char *envptr = NULL, bool quiet = false);
-	virtual   int              IdeConsoleExecute(One<SlaveProcess> process, Stream *out = NULL, bool quiet = false);
+	virtual   int              IdeConsoleExecute(One<SlaveProcess> process, const char *cmdline, Stream *out = NULL, bool quiet = false);
+	virtual   int              IdeConsoleAllocSlot();
+	virtual   bool             IdeConsoleRun(const char *cmdline, Stream *out = NULL, const char *envptr = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1);
+	virtual   bool             IdeConsoleRun(One<SlaveProcess> process, const char *cmdline, Stream *out = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1);
+	virtual   void             IdeConsoleFlush();
+	virtual   void             IdeConsoleBeginGroup(String group);
+	virtual   void             IdeConsoleEndGroup();
+	virtual   bool             IdeConsoleWait();
 
 	virtual   bool      IdeIsDebug() const;
 	virtual   void      IdeEndDebug();
@@ -435,7 +494,7 @@ public:
 
 	int        idestate;
 	int        debuglock;
-
+	int        hydra1_threads;
 
 	One<IdeDesigner> designer;
 	AssistEditor     editor;

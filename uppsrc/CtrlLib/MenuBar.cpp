@@ -1,6 +1,6 @@
 #include "CtrlLib.h"
 
-#define LLOG(x)    // LOG(x)
+#define LLOG(x)     LOG(x)
 #define LTIMING(x) // RTIMING(x)
 
 #ifdef PLATFORM_WIN32

@@ -249,6 +249,7 @@ protected:
 
 public:
 	Callback          WhenLeftDouble;
+	Callback          WhenEnterKey;
 	Callback          WhenLeftClick;
 	Callback1<Bar&>   WhenBar;
 	Callback          WhenEnterRow;

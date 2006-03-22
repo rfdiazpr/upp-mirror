@@ -185,7 +185,8 @@ char *ZoneAlloc::Alloc(int sz)
 
 int current_lang;
 
-unsigned GetHashValue(const char *s)
+template<>
+inline unsigned GetHashValue(const char * const &s)
 {
 	return GetPtrHashValue(s);
 }

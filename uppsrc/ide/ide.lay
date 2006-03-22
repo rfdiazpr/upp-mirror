@@ -406,16 +406,18 @@ LAYOUT(SetupEditorLayout, 488, 280)
 	ITEM(Option, auto_enclose, SetLabel(t_("[ { ( \" / enclose selection")).LeftPosZ(12, 168).TopPosZ(236, 15))
 END_LAYOUT
 
-LAYOUT(SetupIdeLayout, 512, 208)
+LAYOUT(SetupIdeLayout, 512, 216)
 	ITEM(Option, mute_sounds, SetLabel(t_("Mute sounds")).LeftPosZ(8, 80).TopPosZ(8, 18))
 	ITEM(Option, wrap_console_text, SetLabel(t_("Wrap console text")).LeftPosZ(8, 110).TopPosZ(28, 18))
 	ITEM(Option, show_status_bar, SetLabel(t_("Show status bar")).LeftPosZ(8, 96).TopPosZ(128, 18))
 	ITEM(Option, toolbar_in_row, SetLabel(t_("Menu and toolbar in a row")).LeftPosZ(8, 144).TopPosZ(148, 18))
 	ITEM(Option, splash_screen, SetLabel(t_("Show splash screen")).LeftPosZ(8, 144).TopPosZ(168, 18))
 	ITEM(Option, assist, SetLabel(t_("Automatic assist")).LeftPosZ(8, 144).TopPosZ(68, 18))
-	ITEM(Option, commentdp, SetLabel(t_("Comment out default parametrs when converting declaration to definition instead of removing them")).LeftPosZ(8, 496).TopPosZ(88, 18))
+	ITEM(Option, commentdp, SetLabel(t_("Comment out default parameters when converting declaration to definition instead of removing them")).LeftPosZ(8, 504).TopPosZ(88, 18))
 	ITEM(Option, browser_clickpos, SetLabel(t_("Browse code on single click")).LeftPosZ(8, 152).TopPosZ(48, 18))
 	ITEM(Option, browser_closeesc, SetLabel(t_("Esc closes browser")).LeftPosZ(8, 112).TopPosZ(108, 18))
+	ITEM(Label, dv___9, SetLabel(t_("HYDRA1 threads:")).LeftPosZ(8, 92).TopPosZ(188, 19))
+	ITEM(EditIntSpin, hydra1_threads, Min(1).Max(10).LeftPosZ(104, 48).TopPosZ(188, 19))
 END_LAYOUT
 
 LAYOUT(GotoLayout, 796, 524)

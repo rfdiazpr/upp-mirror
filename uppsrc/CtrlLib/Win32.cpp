@@ -68,7 +68,7 @@ TrayIcon& TrayIcon::Tip(const char *text)
 
 LRESULT TrayIcon::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
-	if(message == UM_TASKBAR) {
+	if(message == UM_TASKBAR)
 		switch(lParam) {
 		case WM_LBUTTONDOWN:
 			WhenLeftDown();
@@ -83,7 +83,6 @@ LRESULT TrayIcon::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 			MenuBar::Execute(this, WhenBar, GetMousePos());
 			return TRUE;
 		}
-	}
 	return Ctrl::WindowProc(message, wParam, lParam);
 }
 

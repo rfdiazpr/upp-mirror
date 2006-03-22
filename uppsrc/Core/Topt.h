@@ -1,3 +1,11 @@
+class NoCopy {
+private:
+	NoCopy(const NoCopy&);
+	void operator=(const NoCopy&);
+public:
+	NoCopy() {}
+};
+
 template <class T>
 inline void Swap(T& a, T& b) { T tmp = a; a = b; b = tmp; }
 
@@ -214,7 +222,7 @@ struct Moveable : public B {
 template <class T>
 inline void AssertMoveable(T *t = 0) { if(t) AssertMoveable0(t); }
 
-#if defined(COMPILER_MSC) || defined(COMPILER_GCC)
+#if defined(COMPILER_MSC) || defined(COMPILER_GCC) && (__GNUC__ < 4 || __GNUC_MINOR__ < 1)
 	#define NTL_MOVEABLE(T) inline void AssertMoveable0(T *) {}
 #else
 	#define NTL_MOVEABLE(T) template<> inline void AssertMoveable<T>(T *) {}

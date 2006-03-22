@@ -203,7 +203,7 @@ bool Socket::Data::OpenClient(const char *host, int port, bool nodelay, dword *m
 
 	int err = GetLastError();
 	if(err != SOCKERR(EWOULDBLOCK)) {
-		SetSockError("connect");
+		SetSockError(NFormat("connect(%s:%d)", host, port));
 		SLOG("Socket::Data::OpenClient -> connect error, returning false");
 		return false;
 	}

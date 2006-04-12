@@ -1,0 +1,9 @@
+uses
+	CtrlLib;
+
+file
+	dialog.xml,
+	main.cpp;
+
+mainconfig
+	"" = "GUI";

@@ -3,7 +3,8 @@
 CONSOLE_APP_MAIN
 {
 	MySqlSession session;
-	if(!session.Connect()) {
+	// substitute your 'username' and 'password' here:
+	if(!session.Connect("username", "password", "mysql", "localhost")) {
 		printf("Can't connect with MySql\n");
 		return;
 	}

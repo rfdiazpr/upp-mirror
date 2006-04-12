@@ -1,6 +1,6 @@
 #include "CtrlLib.h"
 
-#define LLOG(x)     LOG(x)
+#define LLOG(x)    // LOG(x)
 #define LTIMING(x) // RTIMING(x)
 
 #ifdef PLATFORM_WIN32
@@ -832,24 +832,26 @@ INITBLOCK
 bool MenuBar::Key(dword key, int count)
 {
 	bool horz = IsChild();
-	if((horz ? key == K_RIGHT : key == K_DOWN)/* || key == K_TAB*/) {
+	if((horz ? key == K_RIGHT : key == K_DOWN)) {
 		Ctrl *ctrl = GetFocusChildDeep();
 		LLOG("MenuBar::Key(" << key << ") -> IterateFocusForward for " << ::Name(ctrl) << ", pane " << ::Name(&pane));
 		if(HasMouseDeep())
 			GetMouseCtrl()->Refresh();
 		if(ctrl && IterateFocusForward(ctrl, &pane))
 			return true;
+		if(!pane.GetFirstChild()) return true;
 		if(pane.GetFirstChild()->SetWantFocus()) return true;
 		if(IterateFocusForward(pane.GetFirstChild(), &pane)) return true;
 	}
 	else
-	if((horz ? key == K_LEFT : key == K_UP)/* || key == K_SHIFT_TAB*/) {
+	if((horz ? key == K_LEFT : key == K_UP)) {
 		Ctrl *ctrl = GetFocusChildDeep();
 		LLOG("MenuBar::Key(" << key << ") -> IterateFocusBackward for " << ::Name(ctrl) << ", pane " << ::Name(&pane));
 		if(HasMouseDeep())
 			GetMouseCtrl()->Refresh();
 		if(ctrl && IterateFocusBackward(ctrl, &pane))
 			return true;
+		if(!pane.GetFirstChild()) return true;
 		if(pane.GetLastChild()->SetWantFocus()) return true;
 		if(IterateFocusBackward(pane.GetLastChild(), &pane)) return true;
 	}

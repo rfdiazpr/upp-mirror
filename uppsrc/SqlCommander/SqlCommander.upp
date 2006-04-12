@@ -1,14 +1,13 @@
 uses
 	SqlCtrl,
 	Oracle,
-	TCtrlLib,
 	OleDB,
 	MySql,
 	plugin\sqlite3;
 
-link(WIN32 DEBUG MSC) "/NODEFAULTLIB:libcmt";
+link(WIN32 DEBUG MSC) /NODEFAULTLIB:libcmt;
 
-link(WIN32 !DEBUG MSC) "/NODEFAULTLIB:libcmtd";
+link(WIN32 !DEBUG MSC) /NODEFAULTLIB:libcmtd;
 
 file
 	SqlCommander.cpp,

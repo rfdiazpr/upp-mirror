@@ -196,7 +196,7 @@ String EscValue::ToString(int maxlen, int indent_step, bool hex, int indent) con
 		{
 			s = ind;
 			if((int64)number == number)
-				s << Format64((int64)number);
+				s << FormatInt64((int64)number);
 			else
 				s << Format("%.8g", number);
 			if(hex && number >= INT64_MIN && number <= INT64_MAX && (int64)number == number)

@@ -327,6 +327,8 @@ void Ctrl::GatherTrect(Point offset, Vector<Rect>& tr, Vector<Rect>& er, bool al
 
 void Ctrl::UpdateArea(Draw& draw, const Rect& paintrect)
 {
+	if(IsPanicMode())
+		return;
 	if(backpaint != FULLBACKPAINT && !draw.IsBack()) {
 		int i;
 		Vector<Rect> tr;

@@ -178,7 +178,6 @@ void XmlParser::SkipWhites()
 
 void XmlParser::Next()
 {
-	RTIMING("XmlParser::Next");
 	nattr.Clear();
 	nattr1 = nattrval1 = Null;
 	if(empty_tag) {

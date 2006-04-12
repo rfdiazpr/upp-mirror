@@ -795,7 +795,7 @@ void Parser::MatchPars()
 
 void Parser::Statement()
 {
-	RecursionCounter recursionCounter(currentScopeDepth);
+	RecursionCounter recursionCounter(currentScopeDepth, lex == '{' ? 0 : 1);
 	maxScopeDepth = max(maxScopeDepth, currentScopeDepth);
 
 	if(Key(tk_case)) {
@@ -888,7 +888,7 @@ void Parser::Statement()
 bool Parser::EatBody()
 {
 	if(lex != '{') return false;
-	maxScopeDepth = currentScopeDepth = 1;
+	maxScopeDepth = currentScopeDepth = dobody ? 0 : 1;
 	if(dobody) {
 		inbody = true;
 		Statement();

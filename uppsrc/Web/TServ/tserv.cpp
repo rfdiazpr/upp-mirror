@@ -138,7 +138,7 @@ CommandServer::CommandConnection::CommandConnection(Socket _socket, const char *
 	if(!IsNull(pathlist)) {
 		String exec;
 		if(*_command == '\"') {
-			while(*++_command && *_command != '\"' || *++_command == '\"')
+			while(*++_command && (*_command != '\"' || *++_command == '\"'))
 				exec.Cat(*_command);
 		}
 		else

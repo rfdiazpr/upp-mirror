@@ -104,12 +104,21 @@ void LogStream::Create(const char *path, bool append)
 	sprintf(h, "* %s %02d.%02d.%04d %02d:%02d:%02d, user: %s\n",
 	           exe, t.day, t.month, t.year, t.hour, t.minute, t.second, user, part);
 	dword n;
+#ifdef PLATFORM_WIN32
 	WriteFile(hfile, h, strlen(h), &n, NULL);
 	if(part) {
 		sprintf(h, ", #%d", part);
 		WriteFile(hfile, h, strlen(h), &n, NULL);
 	}
 	WriteFile(hfile, "\r\n", 2, &n, NULL);
+#else
+	write(hfile, h, strlen(h));
+	if(part) {
+		sprintf(h, ", #%d", part);
+		write(hfile, h, strlen(h));
+	}
+	write(hfile, "\r\n", strlen(h));
+#endif
 }
 
 void LogStream::Flush()

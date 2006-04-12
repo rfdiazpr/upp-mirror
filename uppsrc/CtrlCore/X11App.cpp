@@ -1,5 +1,7 @@
 #include "CtrlCore.h"
 
+#include <locale.h>
+
 #ifdef PLATFORM_X11
 
 #ifdef _DEBUG

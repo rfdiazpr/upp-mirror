@@ -209,7 +209,7 @@ bool  ScrollBar::Set(int apagepos) {
 	if(totalsize <= 0)
 		slider.Set(0, slsize);
 	else {
-		double thumbsize = slsize * pagesize / (double) totalsize;       
+		double thumbsize = slsize * pagesize / (double) totalsize;
 		double rest = slsize * pagesize - thumbsize * totalsize;
 		double ts, ps;
 		if(thumbsize >= slsize || thumbsize < 0) {
@@ -225,7 +225,7 @@ bool  ScrollBar::Set(int apagepos) {
 			ps = (slsize * (double)pagepos + rest) / (double) totalsize;
 			ts = thumbsize;
 		}
-		slider.Set(ffloor(ps), fceil(ts)); 
+		slider.Set(ffloor(ps), fceil(ts));
     }
 	if(pagepos != op) {
 		Refresh();
@@ -534,7 +534,7 @@ SizeGrip::~SizeGrip() {}
 void SizeGrip::LeftDown(Point p, dword flags)
 {
 	TopWindow *q = dynamic_cast<TopWindow *>(GetTopCtrl());
-	if(!q || !q->IsMaximized() || q->IsSizeable()) return;
+	if(!q || q->IsMaximized() || !q->IsSizeable()) return;
 #ifdef PLATFORM_WIN32
 	HWND hwnd = q->GetHWND();
 	if(hwnd)

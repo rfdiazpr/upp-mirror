@@ -27,6 +27,11 @@ public:
 
 	static void Sleep(int ms);
 
+	static int  GetCount();
+	static void ShutdownThreads();
+	static bool IsShutdownThreads();
+
+
 	Thread();
 	~Thread()   { Detach(); }
 

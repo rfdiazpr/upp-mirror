@@ -1,12 +1,22 @@
 uses
-	CtrlLib;
+	CtrlLib,
+	TCore;
 
 file
 	Image.h,
-	ImageBuffer.cpp,
 	Image.cpp,
 	ImageBlit.cpp,
+	ImageOp.cpp,
+	ImageScale.cpp,
 	ImageWin32.cpp,
+	Raster.h,
+	RasterFormat.cpp,
+	RasterWrite.cpp,
+	Palette.cpp,
+	Raster.cpp,
+	_bmp.h,
+	Bmp.cpp,
+	BmpWrite.cpp,
 	main.cpp;
 
 mainconfig

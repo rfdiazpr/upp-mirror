@@ -108,11 +108,12 @@ Image Splitter::CursorImage(Point p, dword) {
 	return (*(vert ? vanipos : hanipos)[GetTimeClick() / 200 % 4])();
 }
 
-void   Splitter::SetPos(int p, int i) {
+Splitter& Splitter::SetPos(int p, int i) {
 	int l = (i > 0 && i - 1 < pos.GetCount() ? pos[i - 1] : 0) + (i < mins.GetCount() ? mins[i] : 0);
 	int h = (i + 1 < pos.GetCount() ? pos[i + 1] : 10000) - (i + 1 < mins.GetCount() ? mins[i + 1] : 0);
 	pos.At(i) = minmax(p, l, h);
 	Layout();
+	return *this;
 }
 
 void   Splitter::Zoom(int i) {

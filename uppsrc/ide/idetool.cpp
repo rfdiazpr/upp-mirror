@@ -121,6 +121,14 @@ void Ide::DppIgnoreList()
 	EditFile(CommonPath("dppignore.txt"));
 }
 
+void Ide::InsertColor()
+{
+	TopWindow test;
+	ColorPopUp h;
+	test.Add(h.SizePos());
+	test.Run();
+}
+
 struct FileStat {
 	int  count;
 	int  len;

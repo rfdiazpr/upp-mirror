@@ -4,9 +4,6 @@
 #include <Sql/Sql.h>
 #include <CtrlLib/CtrlLib.h>
 
-#define LAYOUTFILE <SqlCtrl/SqlCtrl.lay>
-#include <CtrlCore/lay.h>
-
 int  SqlError(const char *text, const char *error, const char *statement, bool retry = false);
 int  SqlError(const char *text, const SqlSession& session, bool retry = false);
 int  SqlError(const char *text, const Sql& sql APPSQLCURSOR, bool retry = false);

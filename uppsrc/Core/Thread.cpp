@@ -30,6 +30,8 @@ void Thread::Detach()
 #endif
 }
 
+static Atomic sThreadCount;
+
 #if defined(PLATFORM_WIN32) || defined(PLATFORM_POSIX)
 static
 #ifdef PLATFORM_WIN32
@@ -40,7 +42,9 @@ void *
 sThreadRoutine(void *arg)
 {
 	Callback *cb = (Callback *)arg;
+	AtomicInc(sThreadCount);
 	(*cb)();
+	AtomicDec(sThreadCount);
 	delete cb;
 	return 0;
 }
@@ -59,6 +63,26 @@ bool Thread::Run(Callback _cb)
 		handle = 0;
 #endif
 	return handle;
+}
+
+int Thread::GetCount()
+{
+	return sThreadCount;
+}
+
+static Atomic  sShutdown;
+
+void Thread::ShutdownThreads()
+{
+	AtomicInc(sShutdown);
+	while(sThreadCount)
+		Sleep(100);
+	AtomicDec(sShutdown);
+}
+
+bool Thread::IsShutdownThreads()
+{
+	return sShutdown;
 }
 
 int Thread::Wait(int timeout_msec)

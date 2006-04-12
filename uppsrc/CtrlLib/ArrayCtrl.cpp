@@ -1155,26 +1155,26 @@ void ArrayCtrl::Page(int q) {
 }
 
 void ArrayCtrl::DoPoint(Point p, bool dosel) {
-	if(!HasFocusDeep())
-		SetWantFocus();
 	p.y += sb;
 	if(p.y >= GetTotalCy() && IsAppendLine())
 		KillCursor();
-	int i = GetLineAt(p.y);
-	if(!IsNull(i))
-		SetCursor0(i, dosel);
+	clickpos.y = GetLineAt(p.y);
+	if(!IsNull(clickpos.y))
+		SetCursor0(clickpos.y, dosel);
 	else
 	if(IsCursor())
 		AcceptRow();
+	if(!HasFocusDeep())
+		SetWantFocus();
 }
 
 void ArrayCtrl::ClickColumn(Point p)
 {
-	clickcolumn = Null;
-	if(cursor >= 0)
+	clickpos.x = Null;
+	if(clickpos.y >= 0)
 		for(int i = 0; i < column.GetCount(); i++)
-			if(GetCellRect(cursor, i).Contains(p)) {
-				clickcolumn = i;
+			if(GetCellRect(clickpos.y, i).Contains(p)) {
+				clickpos.x = i;
 				break;
 			}
 }
@@ -1191,8 +1191,8 @@ void ArrayCtrl::LeftDown(Point p, dword flags)
 	bool b = HasFocus();
 	DoPoint(p, false);
 	ClickColumn(p);
-	if(!IsNull(clickcolumn) && c == cursor && cursor >= 0 && b && column[clickcolumn].clickedit)
-		StartEdit(clickcolumn);
+	if(!IsNull(clickpos.x) && c == cursor && cursor >= 0 && b && column[clickpos.x].clickedit)
+		StartEdit(clickpos.x);
 	else {
 		if(cursor >= 0 && multiselect) {
 			if(flags & K_CTRL) {
@@ -2019,10 +2019,12 @@ void ArrayOption::Paint(Draw& w, const Rect& r, const Value& q,
 	w.DrawRect(r, paper);
 	Size crsz = min(CtrlImg::smallcheck().GetSize() + 4, r.Size());
 	Rect cr = r.CenterRect(crsz);
-	bool focusCursor = (style & CURSOR) && (style & FOCUS);
-	if(!array || array->IsEnabled())
-		w.DrawRect(cr, threestate && IsNull(q) || !threestate && !IsNull(q) && q != f && q != t
-			? SLtGray() : paper);
+	bool focusCursor = (style & (CURSOR | SELECT)) && (style & FOCUS);
+	bool gray = false;
+	if(!array || array->IsEnabled()) {
+		gray = threestate && IsNull(q) || !threestate && !IsNull(q) && q != f && q != t;
+		w.DrawRect(cr, gray ? SLtGray() : paper);
+	}
 	if(frame)
 		DrawFrame(w, cr, focusCursor ? White : SLtBlue);
 	Image icon;
@@ -2030,7 +2032,7 @@ void ArrayOption::Paint(Draw& w, const Rect& r, const Value& q,
 		Image icon = CtrlImg::smallcheck();
 		Point p = cr.CenterPos(icon.GetSize());
 //		w.DrawRect(p.x, p.y, 8, 8, LtGreen());
-		if(focusCursor)
+		if(focusCursor && !gray)
 			w.DrawImage(p.x, p.y, icon, White(), Null);
 		else
 			w.DrawImage(p.x, p.y, icon);

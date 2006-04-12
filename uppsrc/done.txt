@@ -1,3 +1,7 @@
+* Fixed width editfield
+
+* A jeste porad, uz delsi dobu, je ve WebMapu uplne dementni chyba, ktera netusim, cim muze byt zpusobena: mam v HeaderCtrl::WhenAction vyvolavani lokalniho menu pro sloupce nejake tabulky. To menu se normalne rozbali, muzes v nem jezdit, ale nemuzes nic vybrat
+
 * Assist++: http://www.arilect.com/upp/forum/index.php?t=msg&th=457&start=0&S=ce930e323063ffa5157426d3ee9f4939 (Zrejme ":" v constructoru)
 
 * Enter in non-editable table rows usually equals doubleclick in GUIs. Why to make everybody reimplement his? Maybe ArrayCtrl could be improved to provide this interception.* Multiple selection in RichEditView

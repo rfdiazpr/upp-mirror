@@ -5,7 +5,7 @@
 #include <Draw/iml_source.h>
 
 void Ide::ToggleVerboseBuild() {
-	verbosebuild = !verbosebuild;
+	console.verbosebuild = !console.verbosebuild;
 }
 
 void Ide::ToggleStopOnErrors() {
@@ -110,7 +110,7 @@ void Ide::PutConsole(const char *s)
 
 void Ide::PutVerbose(const char *s)
 {
-	if(verbosebuild) {
+	if(console.verbosebuild) {
 		PutConsole(s);
 		console.Sync();
 	}
@@ -438,7 +438,6 @@ Ide::Ide()
 	console.SetSlots(hydra1_threads);
 
 	editor.WhenSelection = THISBACK(Display);
-	verbosebuild = false;
 	stoponerrors = true;
 	hilite_scope = 1;
 	hilite_bracket = 1;
@@ -761,7 +760,7 @@ void AppMain___()
 								stoponerror = true;
 								break;
 							case 'v':
-								ide.verbosebuild = true;
+								ide.console.verbosebuild = true;
 								break;
 							case 'l':
 								break;

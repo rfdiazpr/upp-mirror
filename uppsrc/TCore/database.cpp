@@ -521,7 +521,7 @@ int DataColumnVar::FindBlock(int index) const
 
 String DataColumnVar::GetRaw(int index)
 {
-	RTIMING("DataColumnVar::GetRaw");
+//	RTIMING("DataColumnVar::GetRaw");
 
 	if(current_size >= cache_size)
 		ClearCache();

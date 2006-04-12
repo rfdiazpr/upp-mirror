@@ -60,6 +60,7 @@ Array<LayoutItem> ReadItems(CParser& p, byte charset)
 			return items;
 		LayoutItem& m = items.Add();
 		m.Create(type);
+		m.SetCharset(charset);
 		if(p.IsId()) m.variable = ReadVar(p);
 		if(strncmp(m.variable, "dv___", 5) == 0)
 			m.variable.Clear();
@@ -69,7 +70,14 @@ Array<LayoutItem> ReadItems(CParser& p, byte charset)
 	}
 }
 
-void  LayoutData::Read(CParser& p, byte charset)
+void LayoutData::SetCharset(byte cs)
+{
+	charset = cs;
+	for(int i = 0; i < item.GetCount(); i++)
+		item[i].SetCharset(charset);
+}
+
+void  LayoutData::Read(CParser& p)
 {
 	p.PassId("LAYOUT");
 	p.PassChar('(');
@@ -83,37 +91,45 @@ void  LayoutData::Read(CParser& p, byte charset)
 	p.PassId("END_LAYOUT");
 }
 
-String LayoutData::Save(byte charset)
+String LayoutData::Save()
 {
 	String out;
 	out << "LAYOUT(" << name << ", " << size.cx << ", " << size.cy << ")\r\n";
-	for(int i = 0; i < item.GetCount(); i++)
-		out << item[i].Save(charset, i);
+	for(int i = 0; i < item.GetCount(); i++) {
+		out << item[i].Save(i);
+	}
 	out << "END_LAYOUT\r\n";
 	return out;
 }
 
-String LayoutData::Save(byte charset, const Vector<int>& sel)
+String LayoutData::Save(const Vector<int>& sel)
 {
 	Vector<int> cs(sel, 1);
 	Sort(cs);
 	String out;
 	out << "LAYOUT(" << name << ", " << size.cx << ", " << size.cy << ")\r\n";
 	for(int i = 0; i < cs.GetCount(); i++)
-		out << item[cs[i]].Save(charset, cs[i]);
+		out << item[cs[i]].Save(cs[i]);
 	out << "END_LAYOUT\r\n";
 	return out;
 }
 
 String LayoutData::MakeState()
 {
-	return Save(CHARSET_UTF8);
+	byte cs = charset;
+	SetCharset(CHARSET_UTF8);
+	String out = Save();
+	SetCharset(cs);
+	return out;
 }
 
 void LayoutData::LoadState(const String& s)
 {
 	CParser p(s);
-	Read(p, CHARSET_UTF8);
+	byte cs = charset;
+	SetCharset(CHARSET_UTF8);
+	Read(p);
+	SetCharset(cs);
 }
 
 void LayoutData::SaveState()

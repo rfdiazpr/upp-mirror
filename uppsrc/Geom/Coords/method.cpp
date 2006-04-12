@@ -170,7 +170,7 @@ void GisCoordsSpherical::SyncInterpolator() const
 
 double SphericalLatitudeFunction::Get(double phi) const
 {
-	RTIMING("SphericalLatitudeFunction::Get");
+//	RTIMING("SphericalLatitudeFunction::Get");
 	phi *= DEGRAD;
 	double esx = e * sin(phi);
 	double eps = pow((1 - esx) / (1 + esx), e * alpha / 2) / k;
@@ -178,7 +178,7 @@ double SphericalLatitudeFunction::Get(double phi) const
 	if(dpi <= 0.001)
 	{
 //		RLOG("first dpi = " << FormatDouble(x, 5));
-		RLOG("saturation: " << dpi);
+//		RLOG("saturation: " << dpi);
 		return 90 - 2 / DEGRAD * (pow(fabs(dpi), alpha) / (dpi >= 0 ? eps : -eps));
 	}
 	else
@@ -499,7 +499,7 @@ ConicalRadiusFunction::ConicalRadiusFunction(double n /*, double e*/, double rho
 
 double ConicalRadiusFunction::Get(double phi) const
 {
-	RTIMING("GisCoordsConical::CalcTgSinProjected");
+//	RTIMING("GisCoordsConical::CalcTgSinProjected");
 	phi *= DEGRAD;
 	double ang = phi / 2 + M_PI / 4;
 	double diff = M_PI / 2 - ang;
@@ -733,6 +733,22 @@ GisCoords GisCoords::GetEPSG(int code)
 		gc->ellipsoid = GisEllipsoid::GetEPSG(GisEllipsoid::BESSEL_1841);
 //		gc->ellipsoid = GisEllipsoid::GetEPSG(GisEllipsoid::WGS_1984);
 		gc->name = "S-JTSK (Ferro) / Krovak";
+		gc->coordsys =
+		"PROJCS[\"S-JTSK (Ferro) / Krovak\", "
+			"GEOGCS[\"S-JTSK (Ferro)\", "
+			"DATUM[\"D_S_JTSK_Ferro\", "
+			"SPHEROID[\"Bessel 1841\",6377397.155,299.1528128]], "
+			"PRIMEM[\"Ferro\",-17.66666666666667], "
+			"UNIT[\"degree\",0.0174532925199433]], "
+		"PROJECTION[\"Krovak\"], "
+		"PARAMETER[\"latitude_of_center\",49.5], "
+		"PARAMETER[\"longitude_of_center\",42.5], "
+		"PARAMETER[\"azimuth\",30.28813972222222], "
+		"PARAMETER[\"pseudo_standard_parallel_1\",78.5], "
+		"PARAMETER[\"scale_factor\",0.9999], "
+		"PARAMETER[\"false_easting\",0], "
+		"PARAMETER[\"false_northing\",0], "
+		"UNIT[\"metre\",1]]";
 		break;
 
 	case 4326:
@@ -740,6 +756,18 @@ GisCoords GisCoords::GetEPSG(int code)
 		gc->ellipsoid = GisEllipsoid::GetEPSG(GisEllipsoid::WGS_1984);
 		gc->name = "WGS 84";
 		gc->description = "World Geodetic System 1984";
+		gc->coordsys =
+		"GEOGCS[\"WGS 84\", "
+			"DATUM[\"WGS_1984\", "
+				"SPHEROID[\"WGS 84\",6378137,298.257223563, "
+				"AUTHORITY[\"EPSG\",7030]], "
+				"TOWGS84[0,0,0,0,0,0,0], "
+				"AUTHORITY[\"EPSG\",6326]], "
+		"PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",8901]], "
+		"UNIT[\"DMSH\",0.0174532925199433,AUTHORITY[\"EPSG\",9108]], "
+		"AXIS[\"Lat\",NORTH], "
+		"AXIS[\"Long\",EAST], "
+		"AUTHORITY[\"EPSG\",4326]]";
 		break;
 
 	case 4818:
@@ -756,6 +784,25 @@ GisCoords GisCoords::GetEPSG(int code)
 		gc->description = "Military mapping. Czech Republic and Germany ( former DDR) - east of 12 deg East; "
 			"Poland and Slovakia - west of 18 deg East.";
 		gc->lonlat_limits = Rectf(12, 45, 18, 55);
+		gc->coordsys =
+		"PROJCS[\"Pulkovo 1942(83) / Gauss Kruger zone 3\", "
+			"GEOGCS[\"Pulkovo 1942(83)\", "
+				"DATUM[\"Pulkovo_1942_83\", "
+				"SPHEROID[\"Krassowsky 1940\",6378245,298.3, "
+					"AUTHORITY[\"EPSG\",\"7024\"]], "
+				"TOWGS84[24,-123,-94,0.02,-0.25,-0.13,1.1], "
+				"AUTHORITY[\"EPSG\",\"6178\"]], "
+			"PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]], "
+		"UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]], "
+		"AUTHORITY[\"EPSG\",\"4178\"]], "
+		"PROJECTION[\"Transverse_Mercator\"], "
+		"PARAMETER[\"latitude_of_origin\",0], "
+		"PARAMETER[\"central_meridian\",9], "
+		"PARAMETER[\"scale_factor\",1], "
+		"PARAMETER[\"false_easting\",3500000], "
+		"PARAMETER[\"false_northing\",0], "
+		"UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]], "
+		"AUTHORITY[\"EPSG\",\"2166\"]]";
 		break;
 	}
 	gc->ident = NFormat("EPSG:%d", code);

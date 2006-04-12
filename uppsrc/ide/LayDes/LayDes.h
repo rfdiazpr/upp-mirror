@@ -100,8 +100,9 @@ struct ItemProperty : public Ctrl {
 
 	virtual int      GetHeight() const;
 
-	virtual void     Read(CParser& p, byte charset);
-	virtual String   Save(byte charset) const;
+	virtual void     SetCharset(byte charset);
+	virtual void     Read(CParser& p);
+	virtual String   Save() const;
 	virtual bool     PlaceFocus(dword k, int c);
 
 	ItemProperty() { NoWantFocus(); level = 0; }
@@ -132,8 +133,8 @@ String ReadPropertyParam(CParser& p);
 
 struct RawProperty : public EditorProperty<EditString>
 {
-	virtual String   Save(byte) const;
-	virtual void     Read(CParser& p, byte);
+	virtual String   Save() const;
+	virtual void     Read(CParser& p);
 
 	static ItemProperty *Create()            { return new RawProperty; }
 
@@ -167,6 +168,7 @@ struct LayoutItem {
 	Ctrl::LogPos        pos;
 	Array<ItemProperty> property;
 	bool                hide;
+	byte                charset;
 
 private:
 	Size      csize;
@@ -186,11 +188,12 @@ public:
 	void     Paint(Draw& w, Size sz, bool sample = false);
 	void     Create(const String& type);
 	int      FindProperty(const String& s) const;
-	void     ReadProperties(CParser& p, byte charset, bool addunknow = true);
-	String   SaveProperties(byte charset) const;
-	String   Save(byte charset, int i) const;
+	void     SetCharset(byte charset);
+	void     ReadProperties(CParser& p, bool addunknow = true);
+	String   SaveProperties() const;
+	String   Save(int i) const;
 
-	LayoutItem()                      { csize.cx = -1; hide = false; }
+	LayoutItem()                      { csize.cx = -1; hide = false; charset = CHARSET_UNICODE; }
 };
 
 Image GetTypeIcon(const String& type, int cx, int cy, int i, Color bg);
@@ -214,6 +217,7 @@ struct LayoutData {
 	Size   size;
 	Array<LayoutItem> item;
 	LayoutUndo undo, redo;
+	byte charset;
 
 private:
 	String      MakeState();
@@ -222,16 +226,17 @@ private:
 	String      GetTID(int i);
 
 public:
-	void        Read(CParser& p, byte charset);
-	String      Save(byte charset);
-	String      Save(byte charset, const Vector<int>& sel);
+	void        SetCharset(byte charset);
+	void        Read(CParser& p);
+	String      Save();
+	String      Save(const Vector<int>& sel);
 	void        SaveState();
 	bool        IsUndo();
 	void        Undo();
 	bool        IsRedo();
 	void        Redo();
 
-	LayoutData() { size = Size(400, 200); }
+	LayoutData() { size = Size(400, 200); charset = CHARSET_UNICODE; }
 };
 
 class LayDesigner;

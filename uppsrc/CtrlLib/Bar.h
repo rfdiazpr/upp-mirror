@@ -119,6 +119,8 @@ public:
 
 	Item&  Add(bool enable, const char *text, Callback1<Bar&> proc);
 	Item&  Add(const char *text, Callback1<Bar&> proc);
+	Item&  Add(bool enable, const char *text, const ::Image& image, Callback1<Bar&> proc);
+	Item&  Add(const char *text, const ::Image& image, Callback1<Bar&> proc);
 
 	void   ToolSeparator();
 	void   ToolBreak();

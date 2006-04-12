@@ -1120,6 +1120,7 @@ protected:
 
 public:
 	FrameLR& Width(int _cx)             { cx = _cx; this->RefreshParentLayout(); return *this; }
+	int      GetWidth() const           { return cx; }
 	FrameLR()                           { cx = 0; }
 };
 
@@ -1149,6 +1150,7 @@ protected:
 
 public:
 	FrameTB& Height(int _cy)            { cy = _cy; this->RefreshParentLayout(); return *this; }
+	int      GetHeight() const          { return cy; }
 	FrameTB()                           { cy = 0; }
 };
 

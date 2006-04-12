@@ -98,6 +98,8 @@ REF("::ArrayCtrl::SetCtrl(int,int,::Ctrl*)")
 REF("::ArrayCtrl::GetTotalCy()const")
 REF("::ArrayCtrl::GetLineAt(int)const")
 REF("::ArrayCtrl::GetClickColumn()const")
+REF("::ArrayCtrl::GetClickRow()const")
+REF("::ArrayCtrl::GetClickPos()const")
 REF("::ArrayCtrl::SetCount(int)")
 REF("::ArrayCtrl::SetVirtualCount(int)")
 REF("::ArrayCtrl::GetCount()const")
@@ -481,1400 +483,1413 @@ TOPIC_TEXT(
 " display]:: [s0; SetCtrl]:: [s0; sets a [* Ctrl] object for custom editation of "
 "a given cell]:: [s0; GetTotalCy]:: [s0; returns total row height]:: [s0; GetLineAt]:: "
 "[s0; locate table row when given an [/ y] position (relative to table top)]:: [s0; "
-"GetClickColumn]:: [s0; returns column number of last clicked column]}}&][s0; &][ "
-"{{2337:7663-1 [s0;* Data setting `& retrieval]:: [s0; ]:: [s0; SetCoun")
+"GetClickColumn]:: [s0; returns column number of last clicked column (Null if clicked "
+"outside existing rows)]:: [s0; GetClickRow]:: [s0; returns row num")
 TOPIC_TEXT(
-"t]:: [s0; sets number of rows in the array]:: [s0; SetVirtualCount]:: [s0; sets "
-"number of rows in the array with external data]:: [s0; GetCount]:: [s0; returns number "
-"of rows]:: [s0; Clear]:: [s0;* [* clears array data, identical to ]SetCount(0)]:: "
-"[s0; Shrink]:: [s0; shrinks source data matrix to the minimum necessary size]:: [s0; "
-"Get]:: [s0; returns given Value element of the source data matrix]")
+"ber of last clicked row (Null if clicked outside existing rows)]:: [s0; GetClickPos]:: "
+"[s0; returns Point(GetClickColumn(), GetClickRow())]}}&][s0; &][ {{2337:7663-1 [s0;* "
+"Data setting `& retrieval]:: [s0; ]:: [s0; SetCount]:: [s0; sets number of rows in "
+"the array]:: [s0; SetVirtualCount]:: [s0; sets number of rows in the array with external "
+"data]:: [s0; GetCount]:: [s0; returns number of rows]:: ")
 TOPIC_TEXT(
-":: [s0; GetOriginal]:: [s0; returns given element of source data matrix before editation]:: "
-"[s0; Set]:: [s0; sets given element of the source data matrix]:: [s0; GetKey]:: [s0; "
-"returns given primary key (column #0 in the data matrix)]:: [s0; GetOriginalKey]:: "
+"[s0; Clear]:: [s0;* [* clears array data, identical to ]SetCount(0)]:: [s0; Shrink]:: "
+"[s0; shrinks source data matrix to the minimum necessary size]:: [s0; Get]:: [s0; "
+"returns given Value element of the source data matrix]:: [s0; GetOriginal]:: [s0; "
+"returns given element of source data matrix before editation]:: [s0; Set]:: [s0; "
+"sets given element of the source data matrix]:: [s0; GetKey]:: [s0; r")
+TOPIC_TEXT(
+"eturns given primary key (column #0 in the data matrix)]:: [s0; GetOriginalKey]:: "
 "[s0; returns `'old`' value of primary key before editation]:: [s0; GetColumn]:: [s0; "
-"returns value of a given output column (according to it")
+"returns value of a given output column (according to its index mapping)]:: [s0; GetConvertedColumn]:: "
+"[s0;* [* returns value of a given output column after applying its ]Convert]:: [s0; "
+"ReadRow]:: [s0; returns a row of the source dat")
 TOPIC_TEXT(
-"s index mapping)]:: [s0; GetConvertedColumn]:: [s0;* [* returns value of a given "
-"output column after applying its ]Convert]:: [s0; ReadRow]:: [s0; returns a row of "
-"the source data matrix]:: [s0; Add]:: [s0; adds a new row at the end of table]:: "
-"[s0; Insert]:: [s0; inserts a new row into the table]:: [s0; Remove]:: [s0; removes "
-"a given table row]:: [s0; SwapUp]:: [s0; exchanges a table row with the")
+"a matrix]:: [s0; Add]:: [s0; adds a new row at the end of table]:: [s0; Insert]:: "
+"[s0; inserts a new row into the table]:: [s0; Remove]:: [s0; removes a given table "
+"row]:: [s0; SwapUp]:: [s0; exchanges a table row with the preceding row]:: [s0; SwapDown]:: "
+"[s0; exchanges a table row with the next row]:: [s0; Sort]:: [s0; sorts table rows "
+"using a given predicate]:: [s0; ClearCache]:: [s0; clears da")
 TOPIC_TEXT(
-" preceding row]:: [s0; SwapDown]:: [s0; exchanges a table row with the next row]:: "
-"[s0; Sort]:: [s0; sorts table rows using a given predicate]:: [s0; ClearCache]:: "
-"[s0; clears data conversion cache]:: [s0; InvalidateCache]:: [s0; invalidates given "
-"table row in the conversion cache]}}&][s0; &][ {{2337:7663-1 [s0;* Cursor `& selection "
-"management]:: [s0; ]:: [s0; GetSelectCount]:: [s0; returns number")
+"ta conversion cache]:: [s0; InvalidateCache]:: [s0; invalidates given table row "
+"in the conversion cache]}}&][s0; &][ {{2337:7663-1 [s0;* Cursor `& selection management]:: "
+"[s0; ]:: [s0; GetSelectCount]:: [s0; returns number of currently selected rows]:: "
+"[s0; IsSelection]:: [s0; checks whether any rows are selected (identical to [* GetSelectCount() "
+"> 0])]:: [s0; Select]:: [s0; selects / unselects gi")
 TOPIC_TEXT(
-" of currently selected rows]:: [s0; IsSelection]:: [s0; checks whether any rows "
-"are selected (identical to [* GetSelectCount() > 0])]:: [s0; Select]:: [s0; selects "
-"/ unselects given row or a series of rows]:: [s0; IsSelected]:: [s0; checks whether "
-"given row is selected]:: [s0; ClearSelection]:: [s0; clears the current selection]:: "
-"[s0; SetCursor]:: [s0; moves array cursor to a new row]:: [s0; Kill")
+"ven row or a series of rows]:: [s0; IsSelected]:: [s0; checks whether given row "
+"is selected]:: [s0; ClearSelection]:: [s0; clears the current selection]:: [s0; SetCursor]:: "
+"[s0; moves array cursor to a new row]:: [s0; KillCursor]:: [s0; removes the cursor "
+"away from the table]:: [s0; CancelCursor]:: [s0; cancels editation of current row]:: "
+"[s0; IsCursor]:: [s0; checks whether cursor is in the table")
 TOPIC_TEXT(
-"Cursor]:: [s0; removes the cursor away from the table]:: [s0; CancelCursor]:: [s0; "
-"cancels editation of current row]:: [s0; IsCursor]:: [s0; checks whether cursor is "
-"in the table (identical to [* GetCursor() > 0])]:: [s0; GetCursor]:: [s0; returns "
-"current cursor row, `-1 when none]:: [s0; GoBegin]:: [s0; moves the cursor to the "
-"first table row]:: [s0; GoEnd]:: [s0; moves the cursor to the last tab")
+" (identical to [* GetCursor() >`= 0])]:: [s0; GetCursor]:: [s0; returns current "
+"cursor row, `-1 when none]:: [s0; GoBegin]:: [s0; moves the cursor to the first table "
+"row]:: [s0; GoEnd]:: [s0; moves the cursor to the last table row]:: [s0; GetCursorSc]:: "
+"[s0; returns the location of the cursor row within the table view area]:: [s0; ScCursor]:: "
+"[s0; scrolls the table to move the cursor row to given ")
 TOPIC_TEXT(
-"le row]:: [s0; GetCursorSc]:: [s0; returns the location of the cursor row within "
-"the table view area]:: [s0; ScCursor]:: [s0; scrolls the table to move the cursor "
-"row to given location within the table view]:: [s0; CenterCursor]:: [s0; scrolls "
-"the table to move cursor into the middle of the current view]:: [s0; ScrollInto]:: "
-"[s0; scrolls the table by minimum amount necessary to make given row visi")
+"location within the table view]:: [s0; CenterCursor]:: [s0; scrolls the table to "
+"move cursor into the middle of the current view]:: [s0; ScrollInto]:: [s0; scrolls "
+"the table by minimum amount necessary to make given row visible]:: [s0; ScrollIntoCursor]:: "
+"[s0; scrolls the table by minimum amount necessary to make cursor row visible]:: "
+"[s0; GetScroll]:: [s0; returns current table scrollbar location")
 TOPIC_TEXT(
-"ble]:: [s0; ScrollIntoCursor]:: [s0; scrolls the table by minimum amount necessary "
-"to make cursor row visible]:: [s0; GetScroll]:: [s0; returns current table scrollbar "
-"location]:: [s0; ScrollTo]:: [s0; sets table scrollbar location]:: [s0; Find]:: [s0; "
-"locates table row containing a given element]:: [s0; FindSetCursor]:: [s0; moves "
-"the cursor to table row containing a given element]}}&][s0;3 &][s0")
+"]:: [s0; ScrollTo]:: [s0; sets table scrollbar location]:: [s0; Find]:: [s0; locates "
+"table row containing a given element]:: [s0; FindSetCursor]:: [s0; moves the cursor "
+"to table row containing a given element]}}&][s0;3 &][s0; &][s0; &][ {{2337:7663-1 "
+"[s0;* GUI elements]:: [s0; ]:: [s0; StdBar]:: [s0; the default array local menu]:: "
+"[s0; IsModified]:: [s0; checks modification state of given array c")
 TOPIC_TEXT(
-"; &][s0; &][ {{2337:7663-1 [s0;* GUI elements]:: [s0; ]:: [s0; StdBar]:: [s0; the "
-"default array local menu]:: [s0; IsModified]:: [s0; checks modification state of "
-"given array cell]:: [s0; StartEdit]:: [s0; open current array row for editing]:: "
-"[s0; GetEditColumn]:: [s0; returns the column being currently edited]:: [s0; DoEdit]:: "
-"[s0; corresponds to the local menu `'Edit`' function]:: [s0; DoInsert")
+"ell]:: [s0; StartEdit]:: [s0; open current array row for editing]:: [s0; GetEditColumn]:: "
+"[s0; returns the column being currently edited]:: [s0; DoEdit]:: [s0; corresponds "
+"to the local menu `'Edit`' function]:: [s0; DoInsert]:: [s0; corresponds to the local "
+"menu `'Insert`' function]:: [s0; DoInsertBefore]:: [s0; corresponds to the local "
+"menu `'Insert before`' function]:: [s0; DoInsertAfter]:: [s0;")
 TOPIC_TEXT(
-"]:: [s0; corresponds to the local menu `'Insert`' function]:: [s0; DoInsertBefore]:: "
-"[s0; corresponds to the local menu `'Insert before`' function]:: [s0; DoInsertAfter]:: "
-"[s0; corresponds to the local menu `'Insert after`' function]:: [s0; DoAppend]:: "
-"[s0; corresponds to the local menu `'Append`' function]:: [s0; DoRemove]:: [s0; corresponds "
-"to the local menu `'Remove`' function]:: [s0; DoDuplica")
+" corresponds to the local menu `'Insert after`' function]:: [s0; DoAppend]:: [s0; "
+"corresponds to the local menu `'Append`' function]:: [s0; DoRemove]:: [s0; corresponds "
+"to the local menu `'Remove`' function]:: [s0; DoDuplicate]:: [s0; corresponds to "
+"the local menu `'Duplicate`' function]:: [s0; DoSelectAll]:: [s0; selects the entire "
+"array]:: [s0; AcceptEnter]:: [s0; commits the currently edited ro")
 TOPIC_TEXT(
-"te]:: [s0; corresponds to the local menu `'Duplicate`' function]:: [s0; DoSelectAll]:: "
-"[s0; selects the entire array]:: [s0; AcceptEnter]:: [s0; commits the currently edited "
-"row and possibly begins insertion of another row]}}&][s0; &][ {{2337:7663-1 [s0;* "
+"w and possibly begins insertion of another row]}}&][s0; &][ {{2337:7663-1 [s0;* "
 "Notification callbacks]:: [s0; ]:: [s0; WhenLeftClick]:: [s0; left mouse click within "
-"the array]:: [s0; WhenLeftDouble]:: [s0; left mouse double")
+"the array]:: [s0; WhenLeftDouble]:: [s0; left mouse doubleclick within the array]:: "
+"[s0; WhenCursor]:: [s0; called whenever the cursor location changes]:: [s0; WhenKillCursor]:: "
+"[s0; called when the cursor moves away from the table]::")
 TOPIC_TEXT(
-"click within the array]:: [s0; WhenCursor]:: [s0; called whenever the cursor location "
-"changes]:: [s0; WhenKillCursor]:: [s0; called when the cursor moves away from the "
-"table]:: [s0; WhenSelection]:: [s0; called whenever current selection changes]:: "
-"[s0; WhenEnterRow]:: [s0; called whenever the cursor moves to a new row]:: [s0; WhenUpdateRow]:: "
-"[s0; called after updating a row]:: [s0; WhenAcceptRow")
+" [s0; WhenSelection]:: [s0; called whenever current selection changes]:: [s0; WhenEnterRow]:: "
+"[s0; called whenever the cursor moves to a new row]:: [s0; WhenUpdateRow]:: [s0; "
+"called after updating a row]:: [s0; WhenAcceptRow]:: [s0; additional row validation "
+"callback]:: [s0; WhenStartEdit]:: [s0; called after initiating row editation]:: [s0; "
+"WhenAcceptEdit]:: [s0; called after accepting changes to")
 TOPIC_TEXT(
-"]:: [s0; additional row validation callback]:: [s0; WhenStartEdit]:: [s0; called "
-"after initiating row editation]:: [s0; WhenAcceptEdit]:: [s0; called after accepting "
-"changes to a given row]:: [s0; WhenArrayAction]:: [s0; called whenever array source "
-"data changes (after insert / delete / edit)]:: [s0; WhenBar]:: [s0; can be used to "
-"supply custom local menu for the array]:: [s0; WhenCtrlsAction]:: [")
+" a given row]:: [s0; WhenArrayAction]:: [s0; called whenever array source data changes "
+"(after insert / delete / edit)]:: [s0; WhenBar]:: [s0; can be used to supply custom "
+"local menu for the array]:: [s0; WhenCtrlsAction]:: [s0; called by [* WhenAction] "
+"callbacks of internally created controls]}}&][s0; &][s0;*+117 Detailed method description&][s0; "
+"&][s0;* Initialization and configuration&][s0;3 &][")
 TOPIC_TEXT(
-"s0; called by [* WhenAction] callbacks of internally created controls]}}&][s0; &][s0;*+117 "
-"Detailed method description&][s0; &][s0;* Initialization and configuration&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:Reset`(`): void_[* Reset]()&][s6; Clears table rows and resets "
+"s4;:`:`:ArrayCtrl`:`:Reset`(`): void_[* Reset]()&][s6; Clears table rows and resets "
 "all array properties to their default values.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ShowAppendLine`(`): "
-"void_[* ShowAppendLine]()&][s6; Show an add")
+"void_[* ShowAppendLine]()&][s6; Show an additional pseudo`-row at the table end. "
+"When clicked, a new row is appended to the array.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsEdit`(`)const: "
+"bool_[* IsEdit]()_const&][s6; Checks whe")
 TOPIC_TEXT(
-"itional pseudo`-row at the table end. When clicked, a new row is appended to the "
-"array.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsEdit`(`)const: bool_[* IsEdit]()_const&][s6; "
-"Checks whether the array is currently being edited.&][s1; [*/ Return value]-|[* true] "
-"`= a row is currently open for editing, [* false] `= array is in normal browsing "
-"mode&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsInsert`(`)const: bool_[* IsIn")
+"ther the array is currently being edited.&][s1; [*/ Return value]-|[* true] `= a "
+"row is currently open for editing, [* false] `= array is in normal browsing mode&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:IsInsert`(`)const: bool_[* IsInsert]()_const&][s6; Checks "
+"whether a new row is currently being inserted.&][s1; [*/ Return value]-|[* true] "
+"`= newly inserted row is currently being edited, [* false] when not&")
 TOPIC_TEXT(
-"sert]()_const&][s6; Checks whether a new row is currently being inserted.&][s1; "
-"[*/ Return value]-|[* true] `= newly inserted row is currently being edited, [* false] "
-"when not&][s0;* &][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetLineCy`(int`): [%00-00 void_][%00-00* "
+"][s0;* &][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetLineCy`(int`): [%00-00 void_][%00-00* "
 "SetLineCy][%00-00 (int_][%00-00*@3 cy][%00-00 )]&][s6; Sets the (default) array row "
-"height. For certain rows, this can be overriden by the two`-")
+"height. For certain rows, this can be overriden by the two`-parameter version of "
+"this method.&][s1; [%00-00*C@3 cy]-|row height in pixels&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetLineCy`(int`,int`): "
+"[%00-00 void_][%00-00* SetLineCy][%00-00 (in")
 TOPIC_TEXT(
-"parameter version of this method.&][s1; [%00-00*C@3 cy]-|row height in pixels&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:SetLineCy`(int`,int`): [%00-00 void_][%00-00* SetLineCy][%00-00 "
-"(int_][%00-00*@3 i][%00-00 , int_][%00-00*@3 cy][%00-00 )]&][s6; Sets row height "
-"for a given row. This overrides the default value set by the one`-parameter version "
-"of this method.&][s1; [%00-00*C@3 i]-|row index (zero based)&]")
+"t_][%00-00*@3 i][%00-00 , int_][%00-00*@3 cy][%00-00 )]&][s6; Sets row height for "
+"a given row. This overrides the default value set by the one`-parameter version of "
+"this method.&][s1; [%00-00*C@3 i]-|row index (zero based)&][s1; [%00-00*C@3 cy]-|row "
+"height in pixels, [* Null] `= use default row height&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetLineCy`(`)const: "
+"[%00-00 int_][%00-00* GetLineCy][%00-00 ()_con")
 TOPIC_TEXT(
-"[s1; [%00-00*C@3 cy]-|row height in pixels, [* Null] `= use default row height&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:GetLineCy`(`)const: [%00-00 int_][%00-00* GetLineCy][%00-00 "
-"()_const]&][s6; Returns default array row height.&][s1; [*/ Return value]-|row height "
+"st]&][s6; Returns default array row height.&][s1; [*/ Return value]-|row height "
 "in pixels&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetLineY`(int`)const: [%00-00 int_][%00-00* "
-"GetLineY][%00-00 (int_][%00-00*@3 i][%00-00 )_const]&][s6; ")
+"GetLineY][%00-00 (int_][%00-00*@3 i][%00-00 )_const]&][s6; Returns [/ y] position "
+"of given array row (the pixel distance between the top of first array row and [/ "
+"i]`-th row, i.e. sum of heights of all rows above this row).&][s1; [%00-")
 TOPIC_TEXT(
-"Returns [/ y] position of given array row (the pixel distance between the top of "
-"first array row and [/ i]`-th row, i.e. sum of heights of all rows above this row).&][s1; "
-"[%00-00*C@3 i]-|row index (zero based)&][s1; [*/ Return value]-|Vertical position "
-"of row top in pixels (relative to array beginning)&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetLineCy`(int`)const: "
-"[%00-00 int_][%00-00* GetLineCy][%00-00 (i")
+"00*C@3 i]-|row index (zero based)&][s1; [*/ Return value]-|Vertical position of "
+"row top in pixels (relative to array beginning)&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetLineCy`(int`)const: "
+"[%00-00 int_][%00-00* GetLineCy][%00-00 (int_][%00-00*@3 i][%00-00 )_const]&][s6; "
+"Returns the height of a given row (either the row`-specific row height, or, when "
+"Null, the default row height).&][s1; [%00-00*C@3 i]-|ro")
 TOPIC_TEXT(
-"nt_][%00-00*@3 i][%00-00 )_const]&][s6; Returns the height of a given row (either "
-"the row`-specific row height, or, when Null, the default row height).&][s1; [%00-00*C@3 "
-"i]-|row index (zero based)&][s1; [*/ Return value]-|row height in pixels&][s0;* &][s0;3 "
+"w index (zero based)&][s1; [*/ Return value]-|row height in pixels&][s0;* &][s0;3 "
 "&][s4;:`:`:ArrayCtrl`:`:AppendLine`(bool`): [%00-00 ArrayCtrl`&_][%00-00* AppendLine][%00-00 "
-"(bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; The ")
+"(bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; The AppendLine property controls whether "
+"the array displays an additional `'append`' row after its last (real) row. &][s1; "
+"[%00-00*C@3 b]-|[* true] `= display appending row, [* fal")
 TOPIC_TEXT(
-"AppendLine property controls whether the array displays an additional `'append`' "
-"row after its last (real) row. &][s1; [%00-00*C@3 b]-|[* true] `= display appending "
-"row, [* false] `= hide it&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoAppendLine`(`): "
+"se] `= hide it&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoAppendLine`(`): "
 "[%00-00 ArrayCtrl`&_][%00-00* NoAppendLine][%00-00 ()]&][s6; Hide the appending line "
-"(identical to [* AppendLine(false)]).&]")
+"(identical to [* AppendLine(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:IsAppendLine`(`)const: [%00-00 bool_][%00-00* IsAppendLine][%00-00 "
+"()_const]&][s6; Returns current state of th")
 TOPIC_TEXT(
-"[s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsAppendLine`(`)const: "
-"[%00-00 bool_][%00-00* IsAppendLine][%00-00 ()_const]&][s6; Returns current state "
-"of the [* AppendLine] property.&][s1; [*/ Return value]-|[* true] `= display appending "
+"e [* AppendLine] property.&][s1; [*/ Return value]-|[* true] `= display appending "
 "pseudo`-row at the end of the array&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Inserting`(bool`): "
-"[%00-00 ArrayCtrl`&_][%00-00* Inserting][%00-00 (bool_][")
+"[%00-00 ArrayCtrl`&_][%00-00* Inserting][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
+"Enable / disable inserting new rows in the array (no matter which insertion mechanism "
+"is selected).&][s1; [%00-00*C@3 b]-|[* true] `= enabl")
 TOPIC_TEXT(
-"%00-00*@3 b][%00-00 _`=_true)]&][s6; Enable / disable inserting new rows in the "
-"array (no matter which insertion mechanism is selected).&][s1; [%00-00*C@3 b]-|[* "
-"true] `= enable insertion, [* false] `= disable it&][s1;* [/ Return value][* -|]`*this&][s0;3 "
+"e insertion, [* false] `= disable it&][s1;* [/ Return value][* -|]`*this&][s0;3 "
 "&][s4;:`:`:ArrayCtrl`:`:NoInserting`(`): [%00-00 ArrayCtrl`&_][%00-00* NoInserting][%00-00 "
-"()]&][s6; Disables row insertion (identical to [* Ins")
+"()]&][s6; Disables row insertion (identical to [* Inserting(false)]).&][s1;* [/ Return "
+"value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsInserting`(`)const: bool_[* IsInserting]()_const&][s6; "
+"Returns current state of the [* Ins")
 TOPIC_TEXT(
-"erting(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsInserting`(`)const: "
-"bool_[* IsInserting]()_const&][s6; Returns current state of the [* Inserting] property.&][s1; "
-"[*/ Return value]-|[* true] `= row insertion is enabled, [* false] when not&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:Appending`(bool`): [%00-00 ArrayCtrl`&_][%00-00* Appending][%00-00 "
-"(bool_][%00-00*@3 b][%00-0")
+"erting] property.&][s1; [*/ Return value]-|[* true] `= row insertion is enabled, "
+"[* false] when not&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Appending`(bool`): [%00-00 ArrayCtrl`&_][%00-00* "
+"Appending][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Enable / disable adding "
+"new rows at the table end.&][s1; [%00-00*C@3 b]-|[* true] `= enable row appending, "
+"[* false] `= disable it&][s1;* [/ Return value][* ")
 TOPIC_TEXT(
-"0 _`=_true)]&][s6; Enable / disable adding new rows at the table end.&][s1; [%00-00*C@3 "
-"b]-|[* true] `= enable row appending, [* false] `= disable it&][s1;* [/ Return value][* "
 "-|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsAppending`(`)const: [%00-00 bool_][%00-00* "
 "IsAppending][%00-00 ()_const]&][s6; Returns current state of the [* Appending] property.&][s1; "
-"[*/ Return value]-|[* true] `= appending ro")
+"[*/ Return value]-|[* true] `= appending rows is enabled, [* false] when not.&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:AutoAppending`(bool`): [%00-00 ArrayCtrl`&_][%00-00* AutoAppending][%00-00 "
+"(bool_][%00-00*@3 b][%00-00 _`=_tru")
 TOPIC_TEXT(
-"ws is enabled, [* false] when not.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AutoAppending`(bool`): "
-"[%00-00 ArrayCtrl`&_][%00-00* AutoAppending][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
-"Same as [* Appending] but Enter pressed when editing a new row accepts it and adds "
-"another one at the table end.&][s1; [%00-00*C@3 b]-|[* true ]to enable the mode&][s1;* "
-"[/ Return value][* -|]`*this&][s0; &][s4;:`:")
+"e)]&][s6; Same as [* Appending] but Enter pressed when editing a new row accepts "
+"it and adds another one at the table end.&][s1; [%00-00*C@3 b]-|[* true ]to enable "
+"the mode&][s1;* [/ Return value][* -|]`*this&][s0; &][s4;:`:`:ArrayCtrl`:`:IsAutoAppending`(`)const: "
+"[%00-00 bool_][%00-00* IsAutoAppending][%00-00 ()_const]&][s6; Returns current state "
+"of [* AutoAppending] property.&][s1; [*/ Return va")
 TOPIC_TEXT(
-"`:ArrayCtrl`:`:IsAutoAppending`(`)const: [%00-00 bool_][%00-00* IsAutoAppending][%00-00 "
-"()_const]&][s6; Returns current state of [* AutoAppending] property.&][s1; [*/ Return "
-"value]-|[* true] `= [* AutoAppending ]is active&][s0; &][s4;:`:`:ArrayCtrl`:`:BeforeAfterInserting`(int`): "
+"lue]-|[* true] `= [* AutoAppending ]is active&][s0; &][s4;:`:`:ArrayCtrl`:`:BeforeAfterInserting`(int`): "
 "[%00-00 ArrayCtrl`&_][%00-00* BeforeAfterInserting][%00-00 ()]&][s6; Activate before "
-"/ after row insertion mechanism ([")
+"/ after row insertion mechanism ([* Insert] hotkey `= before).&][s1;* [/ Return value][* "
+"-|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AfterBeforeInserting`(int`): [%00-00 ArrayCtrl`&_][%00-00* "
+"AfterBeforeInserting]")
 TOPIC_TEXT(
-"* Insert] hotkey `= before).&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AfterBeforeInserting`(int`): "
-"[%00-00 ArrayCtrl`&_][%00-00* AfterBeforeInserting][%00-00 ()]&][s6; Activate before "
-"/ after row insertion mechanism ([* Insert] hotkey `= after)&][s1;* [/ Return value][* "
-"-|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Duplicating`(bool`): [%00-00 ArrayCtrl`&_][%00-00* "
-"Duplicating")
+"[%00-00 ()]&][s6; Activate before / after row insertion mechanism ([* Insert] hotkey "
+"`= after)&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Duplicating`(bool`): "
+"[%00-00 ArrayCtrl`&_][%00-00* Duplicating][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
+"Enable / disable row duplication. Note that this property only controls whether the "
+"`'Duplicate`' item should be present i")
 TOPIC_TEXT(
-"][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Enable / disable row duplication. "
-"Note that this property only controls whether the `'Duplicate`' item should be present "
-"in the array local menu. Of course, nothing can prevent you from supporting duplication "
+"n the array local menu. Of course, nothing can prevent you from supporting duplication "
 "in some other way, or from calling the [* DoDuplicate] method as you see fit.&][s1; "
-"[%00-00*C@3 b]-|[* true] `= enable duplication, [* fa")
+"[%00-00*C@3 b]-|[* true] `= enable duplication, [* false] `= disable it&][s1;* [/ "
+"Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoDuplicating`(`): ArrayCtrl`&_[* "
+"NoDuplicating]()&][s6; Disable row duplication (identica")
 TOPIC_TEXT(
-"lse] `= disable it&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoDuplicating`(`): "
-"ArrayCtrl`&_[* NoDuplicating]()&][s6; Disable row duplication (identical to [* Duplicating(false)]).&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsDuplicating`(`)const: "
+"l to [* Duplicating(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsDuplicating`(`)const: "
 "bool_[* IsDuplicating]()_const&][s6; Returns the state of the [* Duplicating] property.&][s1; "
-"[*/ Retur")
+"[*/ Return value]-|[* true] `= local menu offers row duplication, [* false] when "
+"not&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoInsertAppend`(bool`): [%00-00 ArrayCtrl`&_][%00-00* "
+"NoInsertAppend]")
 TOPIC_TEXT(
-"n value]-|[* true] `= local menu offers row duplication, [* false] when not&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:NoInsertAppend`(bool`): [%00-00 ArrayCtrl`&_][%00-00* NoInsertAppend][%00-00 "
-"(bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Enables / disables the auto`-append "
+"[%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Enables / disables the auto`-append "
 "mechanism (see above section on inserting rows).&][s1; [%00-00*C@3 b]-|[* true] `= "
-"disable InsertAppend mechanism, [* false] `= enable ")
+"disable InsertAppend mechanism, [* false] `= enable it (the default)&][s1;* [/ Return "
+"value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsEditing`(`)const: bool_[* IsEditing]()_const&][s6; "
+"Checks whether at least one array colum")
 TOPIC_TEXT(
-"it (the default)&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsEditing`(`)const: "
-"bool_[* IsEditing]()_const&][s6; Checks whether at least one array column supports "
-"editing (whether it is possible to [/ open] a row for editation).&][s1; [*/ Return "
-"value]-|[* true] `= row editing is possible, [* false] when not&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Removing`(bool`): "
-"[%00-00 ArrayCtrl")
+"n supports editing (whether it is possible to [/ open] a row for editation).&][s1; "
+"[*/ Return value]-|[* true] `= row editing is possible, [* false] when not&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:Removing`(bool`): [%00-00 ArrayCtrl`&_][%00-00* Removing][%00-00 "
+"(bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Enable / disable deleting rows from "
+"the table.&][s1; [%00-00*C@3 b]-|[* true] `= enable deletion, [* ")
 TOPIC_TEXT(
-"`&_][%00-00* Removing][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Enable "
-"/ disable deleting rows from the table.&][s1; [%00-00*C@3 b]-|[* true] `= enable "
-"deletion, [* false] `= disable it&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoRemoving`(`): "
+"false] `= disable it&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoRemoving`(`): "
 "[%00-00 ArrayCtrl`&_][%00-00* NoRemoving][%00-00 ()]&][s6; Disable deleting table "
-"rows (identical to [* Removing(false)]")
+"rows (identical to [* Removing(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:IsRemoving`(`)const: [%00-00 bool_][%00-00* IsRemoving][%00-00 "
+"()_const]&][s6; Returns current state of th")
 TOPIC_TEXT(
-").&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsRemoving`(`)const: "
-"[%00-00 bool_][%00-00* IsRemoving][%00-00 ()_const]&][s6; Returns current state of "
-"the [* Removing] property.&][s1; [*/ Return value]-|[* true] `= row deletion is enabled, "
+"e [* Removing] property.&][s1; [*/ Return value]-|[* true] `= row deletion is enabled, "
 "[* false ]when not&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AskRemove`(bool`): [%00-00 ArrayCtrl`&_][%00-00* "
-"AskRemove][%00-00 (bool_][%00-00*@3 b]")
+"AskRemove][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Sets whether the user "
+"must manually confirm array row deletion. When set to [* true], every time a row "
+"is to be deleted, a confirmation dialog pops up.")
 TOPIC_TEXT(
-"[%00-00 _`=_true)]&][s6; Sets whether the user must manually confirm array row deletion. "
-"When set to [* true], every time a row is to be deleted, a confirmation dialog pops "
-"up. When set to [* false], rows are deleted automatically without any further confirmation.&][s1; "
+" When set to [* false], rows are deleted automatically without any further confirmation.&][s1; "
 "[%00-00*C@3 b]-|[* true] `= prompt user to confirm row deletion, [* false] `= delete "
-"rows instantly&][s1;* [/ Return value][* -|]")
+"rows instantly&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoAskRemove`(`): "
+"[%00-00 ArrayCtrl`&_][%00-00* NoAskRemove][%00-00 ()]&][s6; Disables user confirmation "
+"of row deletion (equivalent to [* ")
 TOPIC_TEXT(
-"`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoAskRemove`(`): [%00-00 ArrayCtrl`&_][%00-00* "
-"NoAskRemove][%00-00 ()]&][s6; Disables user confirmation of row deletion (equivalent "
-"to [* AskRemove(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsAskRemove`(`)const: "
+"AskRemove(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsAskRemove`(`)const: "
 "[%00-00 bool_][%00-00* IsAskRemove][%00-00 ()_const]&][s6; Returns current state "
-"of the [* AskRemove] property.&][s")
+"of the [* AskRemove] property.&][s1; [*/ Return value]-|[* true] `= user confirmation "
+"is needed to delete rows, [* false] `= rows are deleted immediately&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Moving`(bool`): "
+"[%00-00 A")
 TOPIC_TEXT(
-"1; [*/ Return value]-|[* true] `= user confirmation is needed to delete rows, [* "
-"false] `= rows are deleted immediately&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Moving`(bool`): "
-"[%00-00 ArrayCtrl`&_][%00-00* Moving][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
+"rrayCtrl`&_][%00-00* Moving][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
 "Enable / disable row swapping. When set to [* true], it is possible to move an array "
-"row up and down by swapping it with the previous / next ro")
+"row up and down by swapping it with the previous / next row. This can be used to "
+"reorder array rows in a visually straightforward manner.&][s1; [%00-00*C@3 b]-|[* "
+"true] `= offer row moving in the local menu, [* false] `= don`'t&][s1;*")
 TOPIC_TEXT(
-"w. This can be used to reorder array rows in a visually straightforward manner.&][s1; "
-"[%00-00*C@3 b]-|[* true] `= offer row moving in the local menu, [* false] `= don`'t&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsMoving`(`)const: [%00-00 "
-"bool_][%00-00* IsMoving][%00-00 ()_const]&][s6; Returns current state of the [* Moving] "
-"property.&][s1; [*/ Return value]-|[* true] `= l")
+" [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsMoving`(`)const: "
+"[%00-00 bool_][%00-00* IsMoving][%00-00 ()_const]&][s6; Returns current state of "
+"the [* Moving] property.&][s1; [*/ Return value]-|[* true] `= local menu supports "
+"row swapping, [* false] `= it doesn`'t&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Header`(bool`): "
+"[%00-00 ArrayCtrl`&_][%00-00* Header][%00-00 (bool_][%00-00*@3 b][%00-0")
 TOPIC_TEXT(
-"ocal menu supports row swapping, [* false] `= it doesn`'t&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Header`(bool`): "
-"[%00-00 ArrayCtrl`&_][%00-00* Header][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
-"Show / hide the [*^topic`:`/`/CtrlLib`/src`/HeaderCtrl`$en`-us^ HeaderCtrl] object "
-"for this table.&][s1; [%00-00*C@3 b]-|[* true] `= show table header, [* false] `= "
-"hide it&][s1;* [/ Return value][* -|]`*t")
+"0 _`=_true)]&][s6; Show / hide the [*^topic`:`/`/CtrlLib`/src`/HeaderCtrl`$en`-us^ "
+"HeaderCtrl] object for this table.&][s1; [%00-00*C@3 b]-|[* true] `= show table header, "
+"[* false] `= hide it&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoHeader`(`): "
+"[%00-00 ArrayCtrl`&_][%00-00* NoHeader][%00-00 ()]&][s6; Hide table header (equivalent "
+"to [* Header(false)]).&][s1;* [/ Return ")
 TOPIC_TEXT(
-"his&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoHeader`(`): [%00-00 ArrayCtrl`&_][%00-00* NoHeader][%00-00 "
-"()]&][s6; Hide table header (equivalent to [* Header(false)]).&][s1;* [/ Return value][* "
-"-|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Track`(bool`): [%00-00 ArrayCtrl`&_][%00-00* "
+"value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Track`(bool`): [%00-00 ArrayCtrl`&_][%00-00* "
 "Track][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Animate array column resizing. "
-"This is equivalent to setting the [*^to")
+"This is equivalent to setting the [*^topic`:`/`/CtrlLib`/src`/HeaderCtrl`$en`-us`#`:`:HeaderCtrl`:`:Track`(bool`)^ "
+"Track] property in the array HeaderCtrl.&][s1; [%00-00*C@3 b]-|[* true] `= repaint "
+"the array repeate")
 TOPIC_TEXT(
-"pic`:`/`/CtrlLib`/src`/HeaderCtrl`$en`-us`#`:`:HeaderCtrl`:`:Track`(bool`)^ Track] "
-"property in the array HeaderCtrl.&][s1; [%00-00*C@3 b]-|[* true] `= repaint the array "
-"repeatedly while dragging column widths, [* false] `= regenerate everything only "
-"after drag `& drop is finished.&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoTrack`(`): "
-"[%00-00 ArrayCtrl`&_][%00-00* NoTrack]")
+"dly while dragging column widths, [* false] `= regenerate everything only after "
+"drag `& drop is finished.&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoTrack`(`): "
+"[%00-00 ArrayCtrl`&_][%00-00* NoTrack][%00-00 ()]&][s6; Do not animate array column "
+"resizing (equivalent to [* Track(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:VertGrid`(bool`): [%")
 TOPIC_TEXT(
-"[%00-00 ()]&][s6; Do not animate array column resizing (equivalent to [* Track(false)]).&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:VertGrid`(bool`): [%00-00 "
-"ArrayCtrl`&_][%00-00* VertGrid][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
+"00-00 ArrayCtrl`&_][%00-00* VertGrid][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
 "Show / hide vertical array grid lines (separating array columns).&][s1; [%00-00*C@3 "
-"b]-|[* true] `= show vertical grid lines, [* false")
+"b]-|[* true] `= show vertical grid lines, [* false] `= hide them&][s1;* [/ Return "
+"value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoVertGrid`(`): [%00-00 ArrayCtrl`&_][%00-00* "
+"NoVertGrid][%00-00 ()]&][s6; Hide vertical grid ")
 TOPIC_TEXT(
-"] `= hide them&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoVertGrid`(`): "
-"[%00-00 ArrayCtrl`&_][%00-00* NoVertGrid][%00-00 ()]&][s6; Hide vertical grid lines "
-"(equivalent to [* VertGrid(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:HorzGrid`(bool`): "
-"[%00-00 ArrayCtrl`&_][%00-00* HorzGrid][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
-"Show")
+"lines (equivalent to [* VertGrid(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:HorzGrid`(bool`): [%00-00 ArrayCtrl`&_][%00-00* HorzGrid][%00-00 "
+"(bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Show / hide horizontal grid lines (separating "
+"array rows).&][s1; [%00-00*C@3 b]-|[* true] `= show horizontal grid lines, [* false] "
+"`= hide them&][s1;* [/ Return value][* -|]`*this&")
 TOPIC_TEXT(
-" / hide horizontal grid lines (separating array rows).&][s1; [%00-00*C@3 b]-|[* "
-"true] `= show horizontal grid lines, [* false] `= hide them&][s1;* [/ Return value][* "
-"-|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoHorzGrid`(`): [%00-00 ArrayCtrl`&_][%00-00* "
-"NoHorzGrid][%00-00 ()]&][s6; Hide horizontal grid lines (equivalent to [* HorzGrid(false)]).&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:")
+"][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoHorzGrid`(`): [%00-00 ArrayCtrl`&_][%00-00* NoHorzGrid][%00-00 "
+"()]&][s6; Hide horizontal grid lines (equivalent to [* HorzGrid(false)]).&][s1;* "
+"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Grid`(bool`): [%00-00 "
+"ArrayCtrl`&_][%00-00* Grid][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Show "
+"/ hide both horizontal and vertical grid lines (equivale")
 TOPIC_TEXT(
-"ArrayCtrl`:`:Grid`(bool`): [%00-00 ArrayCtrl`&_][%00-00* Grid][%00-00 (bool_][%00-00*@3 "
-"b][%00-00 _`=_true)]&][s6; Show / hide both horizontal and vertical grid lines (equivalent "
-"to [* HorzGrid(b).VertGrid(b)]).&][s1; [%00-00*C@3 b]-|[* true] `= show grid line "
-"matrix, [* false] `= hide all grid lines&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:NoGrid`(`): [%00-00 ArrayCtrl`&")
+"nt to [* HorzGrid(b).VertGrid(b)]).&][s1; [%00-00*C@3 b]-|[* true] `= show grid "
+"line matrix, [* false] `= hide all grid lines&][s1;* [/ Return value][* -|]`*this&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:NoGrid`(`): [%00-00 ArrayCtrl`&_][%00-00* NoGrid][%00-00 "
+"()]&][s6; Hide horizontal and vertical grid lines (equivalent to [* Grid(false)]).&][s1;* "
+"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:")
 TOPIC_TEXT(
-"_][%00-00* NoGrid][%00-00 ()]&][s6; Hide horizontal and vertical grid lines (equivalent "
-"to [* Grid(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GridColor`(`:`:Color`): "
-"[%00-00 ArrayCtrl`&_][%00-00* GridColor][%00-00 (Color_][%00-00*@3 c][%00-00 )]&][s6; "
-"Sets the color for grid lines.&][s1; [%00-00*C@3 c]-|new grid line color&][s1;* [/ "
-"Return value][* -|]`*this&][s0;")
+"GridColor`(`:`:Color`): [%00-00 ArrayCtrl`&_][%00-00* GridColor][%00-00 (Color_][%00-00*@3 "
+"c][%00-00 )]&][s6; Sets the color for grid lines.&][s1; [%00-00*C@3 c]-|new grid "
+"line color&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:EvenRowColor`(`:`:Color: "
+"[%00-00 ArrayCtrl`&_][%00-00* EvenRowColor][%00-00 (Color_][%00-00*@3 paper][%00-00 "
+"_`=_Blend(SColorHighlight, SColorPaper, ]")
 TOPIC_TEXT(
-"3 &][s4;:`:`:ArrayCtrl`:`:EvenRowColor`(`:`:Color: [%00-00 ArrayCtrl`&_][%00-00* "
-"EvenRowColor][%00-00 (Color_][%00-00*@3 paper][%00-00 _`=_Blend(SColorHighlight, "
-"SColorPaper, ][%00-00@3 220][%00-00 ), Color_][%00-00*@3 ink][%00-00 _`=_SColorText)]&][s6; "
-"Sets the paper and ink (background and foreground) color for even array rows. In "
-"certain cases setting a different background color for odd and ev")
+"[%00-00@3 220][%00-00 ), Color_][%00-00*@3 ink][%00-00 _`=_SColorText)]&][s6; Sets "
+"the paper and ink (background and foreground) color for even array rows. In certain "
+"cases setting a different background color for odd and even rows helps to simplify "
+"visual orientation in the arrays (especially when the array has many columns).&][s6; "
+"[* Note:] the even / odd row terminology refers to the natural ar")
 TOPIC_TEXT(
-"en rows helps to simplify visual orientation in the arrays (especially when the "
-"array has many columns).&][s6; [* Note:] the even / odd row terminology refers to "
-"the natural array row numbering, so first array row is [/ odd] and the second is "
-"[/ even]. This is in contrast to the zero`-baesd integral row indexing, where the "
-"first array row has index 0.&][s1; [%00-00*C@3 paper]-|background color to ")
+"ray row numbering, so first array row is [/ odd] and the second is [/ even]. This "
+"is in contrast to the zero`-baesd integral row indexing, where the first array row "
+"has index 0.&][s1; [%00-00*C@3 paper]-|background color to use for second, fourth, "
+"sixth etc. array row&][s1; [%00-00*C@3 ink]-|foreground color for even rows&][s1;* "
+"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:OddRowCol")
 TOPIC_TEXT(
-"use for second, fourth, sixth etc. array row&][s1; [%00-00*C@3 ink]-|foreground "
-"color for even rows&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:OddRowColor`(`:`:Color`,`:`:Color`): "
-"[%00-00 ArrayCtrl`&_][%00-00* OddRowColor][%00-00 (Color_][%00-00*@3 paper][%00-00 "
-"_`=_SColorInfo, Color_][%00-00*@3 ink][%00-00 _`=_SColorText)]&][s6; Sets the paper "
-"and ink (background and foreg")
+"or`(`:`:Color`,`:`:Color`): [%00-00 ArrayCtrl`&_][%00-00* OddRowColor][%00-00 (Color_][%00-00*@3 "
+"paper][%00-00 _`=_SColorInfo, Color_][%00-00*@3 ink][%00-00 _`=_SColorText)]&][s6; "
+"Sets the paper and ink (background and foreground) color for odd array rows.&][s1; "
+"[%00-00*C@3 paper]-|background color to use for first, third, fifth etc. array row&][s1; "
+"[%00-00*C@3 ink]-|foreground color for odd rows&")
 TOPIC_TEXT(
-"round) color for odd array rows.&][s1; [%00-00*C@3 paper]-|background color to use "
-"for first, third, fifth etc. array row&][s1; [%00-00*C@3 ink]-|foreground color for "
-"odd rows&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoCursor`(bool`): "
+"][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoCursor`(bool`): "
 "[%00-00 ArrayCtrl`&_][%00-00* NoCursor][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
-"Turns on / off highlighting cursor row.&][s1; [")
+"Turns on / off highlighting cursor row.&][s1; [%00-00*C@3 b]-|[* true] `= do not "
+"highlight cursor row, [* false] `= default behaviour (cursor row is shown in inverse "
+"colors)&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;")
 TOPIC_TEXT(
-"%00-00*C@3 b]-|[* true] `= do not highlight cursor row, [* false] `= default behaviour "
-"(cursor row is shown in inverse colors)&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:MouseMoveCursor`(bool`): [%00-00 ArrayCtrl`&_][%00-00* MouseMoveCursor][%00-00 "
+":`:`:ArrayCtrl`:`:MouseMoveCursor`(bool`): [%00-00 ArrayCtrl`&_][%00-00* MouseMoveCursor][%00-00 "
 "(bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Enables / disables automatical cursor "
-"row switching as the mouse cursor moves over")
+"row switching as the mouse cursor moves over the array rows.&][s1; [%00-00*C@3 b]-|[* "
+"true] `= automatically switch cursor row, [* false] `= only upon clicks and keyboard "
+"navigation&][s1;* [/ Return value][* -|]`*this&][")
 TOPIC_TEXT(
-" the array rows.&][s1; [%00-00*C@3 b]-|[* true] `= automatically switch cursor row, "
-"[* false] `= only upon clicks and keyboard navigation&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:NoMouseMoveCursor`(`): [%00-00 ArrayCtrl`&_][%00-00* NoMouseMoveCursor][%00-00 "
-"()]&][s6; Disable automatical cursor row switching (equivalent to [* MouseMoveCursor(false)]).&][s1;* "
-"[/ Return valu")
+"s0;3 &][s4;:`:`:ArrayCtrl`:`:NoMouseMoveCursor`(`): [%00-00 ArrayCtrl`&_][%00-00* "
+"NoMouseMoveCursor][%00-00 ()]&][s6; Disable automatical cursor row switching (equivalent "
+"to [* MouseMoveCursor(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AutoHideSb`(bool`): "
+"[%00-00 ArrayCtrl`&_][%00-00* AutoHideSb][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
+"When set to [* t")
 TOPIC_TEXT(
-"e][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AutoHideSb`(bool`): [%00-00 ArrayCtrl`&_][%00-00* "
-"AutoHideSb][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; When set to [* true], "
-"the vertical scrollbar at the right array edge is displayed only when the total row "
-"height exceeds the array view height. When set to [* false], the scrollbar is shown "
-"all the time.&][s1; [%00-00*C@3 b]-|[* true] `= sh")
+"rue], the vertical scrollbar at the right array edge is displayed only when the "
+"total row height exceeds the array view height. When set to [* false], the scrollbar "
+"is shown all the time.&][s1; [%00-00*C@3 b]-|[* true] `= show / hide the scrollbar "
+"as necessary, [* false] `= display it unconditionally&][s1;* [/ Return value][* -|]`*this&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:NoAutoHideSb`(`): [%00-00 Array")
 TOPIC_TEXT(
-"ow / hide the scrollbar as necessary, [* false] `= display it unconditionally&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoAutoHideSb`(`): [%00-00 "
-"ArrayCtrl`&_][%00-00* NoAutoHideSb][%00-00 ()]&][s6; Display vertical scrollbar all "
-"the time (equivalent to [* AutoHideSb(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:MultiSelect`(bool`): [%00-00 A")
+"Ctrl`&_][%00-00* NoAutoHideSb][%00-00 ()]&][s6; Display vertical scrollbar all the "
+"time (equivalent to [* AutoHideSb(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:MultiSelect`(bool`): [%00-00 ArrayCtrl`&_][%00-00* MultiSelect][%00-00 "
+"(bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Enable / disable multiple row selection. "
+"&][s1; [%00-00*C@3 b]-|[* true] `= allow selectin")
 TOPIC_TEXT(
-"rrayCtrl`&_][%00-00* MultiSelect][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
-"Enable / disable multiple row selection. &][s1; [%00-00*C@3 b]-|[* true] `= allow "
-"selecting multiple rows at the same time, [* false] `= only one row at a time&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ColumnWidths`(const char`*`): "
-"[%00-00 ArrayCtrl`&_][%00-00* ColumnWidths][%00-00 (const")
+"g multiple rows at the same time, [* false] `= only one row at a time&][s1;* [/ "
+"Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ColumnWidths`(const char`*`): "
+"[%00-00 ArrayCtrl`&_][%00-00* ColumnWidths][%00-00 (const_char_`*][%00-00*@3 s][%00-00 "
+")]&][s6; Initializes column widths based on a text string containing blank`-separated "
+"decimal numbers, e.g. `\"1 4 6 4 1`\".&][s1; [%00-00*C@3 s]-|c")
 TOPIC_TEXT(
-"_char_`*][%00-00*@3 s][%00-00 )]&][s6; Initializes column widths based on a text "
-"string containing blank`-separated decimal numbers, e.g. `\"1 4 6 4 1`\".&][s1; [%00-00*C@3 "
-"s]-|control string defining column widths&][s1;* [/ Return value][* -|]`*this&][s0;3 "
+"ontrol string defining column widths&][s1;* [/ Return value][* -|]`*this&][s0;3 "
 "&][s4;:`:`:ArrayCtrl`:`:RowFormat`(const char`*`): [%00-00 String_][%00-00* RowFormat][%00-00 "
-"(const_char_`*][%00-00*@3 s][%00-00 )]&][s6; Forma")
+"(const_char_`*][%00-00*@3 s][%00-00 )]&][s6; Formats a text by substituting [* %s] "
+"with the array`-specific term for `'row`' (as set by the [* RowName] property). This "
+"is used for array local menu items.&][s1; [%00-00*C@3 s]-|")
 TOPIC_TEXT(
-"ts a text by substituting [* %s] with the array`-specific term for `'row`' (as set "
-"by the [* RowName] property). This is used for array local menu items.&][s1; [%00-00*C@3 "
-"s]-|[* Format]`-like string to substitute.&][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:ArrayCtrl`:`:RowName`(const "
+"[* Format]`-like string to substitute.&][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:ArrayCtrl`:`:RowName`(const "
 "char`*`): [%00-00 ArrayCtrl`&_][%00-00* RowName][%00-00 (const_char_`*][%00-00*@3 "
-"s][%00-00 )]&][s6; Sets the arr")
+"s][%00-00 )]&][s6; Sets the array`-specific term for `'row`'. This can be used to "
+"customize the local menu terminology according to the logical content of the array. "
+"For instance, when you have an array with")
 TOPIC_TEXT(
-"ay`-specific term for `'row`'. This can be used to customize the local menu terminology "
-"according to the logical content of the array. For instance, when you have an array "
-"with the list of employees, you can call [* RowName(`\"employee`\")] and the menu "
-"items will then read [/ `'Insert new employee`', `'Delete employee`'] etc.&][s1; "
-"[%00-00*C@3 s]-|the term to substitute for `'array row`' in menu it")
+" the list of employees, you can call [* RowName(`\"employee`\")] and the menu items "
+"will then read [/ `'Insert new employee`', `'Delete employee`'] etc.&][s1; [%00-00*C@3 "
+"s]-|the term to substitute for `'array row`' in menu items&][s1;* [/ Return value][* "
+"-|]`*this&][s0;* &][s0;* &][s0;* Column structure programming&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IndexInfo`(int`): "
+"[%00-00 IdInfo`&_][%00-00* IndexInf")
 TOPIC_TEXT(
-"ems&][s1;* [/ Return value][* -|]`*this&][s0;* &][s0;* &][s0;* Column structure "
-"programming&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IndexInfo`(int`): [%00-00 IdInfo`&_][%00-00* "
-"IndexInfo][%00-00 (int_][%00-00*@3 ii][%00-00 )]&][s6; Returns a reference to the "
-"[* IdInfo] structure describing a given array index (column in the source data matrix).&][s1; "
-"[%00-00*C@3 ii]-|zero`-based ordinal number of the array")
+"o][%00-00 (int_][%00-00*@3 ii][%00-00 )]&][s6; Returns a reference to the [* IdInfo] "
+"structure describing a given array index (column in the source data matrix).&][s1; "
+"[%00-00*C@3 ii]-|zero`-based ordinal number of the array index&][s1; [*/ Return value]-|IdInfo "
+"reference for the given index&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IndexInfo`(`:`:Id`): "
+"[%00-00 IdInfo`&_][%00-00* IndexInfo][%00-00 (Id_][%00-")
 TOPIC_TEXT(
-" index&][s1; [*/ Return value]-|IdInfo reference for the given index&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IndexInfo`(`:`:Id`): "
-"[%00-00 IdInfo`&_][%00-00* IndexInfo][%00-00 (Id_][%00-00*@3 id][%00-00 )]&][s6; "
-"Returns a reference to the [* IdInfo] structure describing a given array index.&][s1; "
-"[%00-00*C@3 id]-|the [* Id] index identifier&][s1; [*/ Return value]-|IdInfo reference "
-"for the given index&][s0;")
+"00*@3 id][%00-00 )]&][s6; Returns a reference to the [* IdInfo] structure describing "
+"a given array index.&][s1; [%00-00*C@3 id]-|the [* Id] index identifier&][s1; [*/ "
+"Return value]-|IdInfo reference for the given index&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddIndex`(`:`:Id`): "
+"[%00-00 IdInfo`&_][%00-00* AddIndex][%00-00 (Id_][%00-00*@3 id][%00-00 )]&][s6; Adds "
+"a new index to the array and assign it a give")
 TOPIC_TEXT(
-"3 &][s4;:`:`:ArrayCtrl`:`:AddIndex`(`:`:Id`): [%00-00 IdInfo`&_][%00-00* AddIndex][%00-00 "
-"(Id_][%00-00*@3 id][%00-00 )]&][s6; Adds a new index to the array and assign it a "
-"given [* Id] identifier.&][s1; [%00-00*C@3 id]-|new index identifier&][s1; [*/ Return "
+"n [* Id] identifier.&][s1; [%00-00*C@3 id]-|new index identifier&][s1; [*/ Return "
 "value]-|A reference to the [* IdInfo ]structure describing the newly added index. "
-"The reference can be used to set additional index properties")
+"The reference can be used to set additional index properties.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddIndex`(`): "
+"[%00-00 IdInfo`&_][%00-00* AddIndex][%00-00 ()]&][s6; Adds a new index (without an "
+"identifier) to the array.&][s1; [*/ Return val")
 TOPIC_TEXT(
-".&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddIndex`(`): [%00-00 IdInfo`&_][%00-00* AddIndex][%00-00 "
-"()]&][s6; Adds a new index (without an identifier) to the array.&][s1; [*/ Return "
-"value]-|A reference to the [* IdInfo] structure describing the newly added index.&][s0;3 "
+"ue]-|A reference to the [* IdInfo] structure describing the newly added index.&][s0;3 "
 "&][s4;:`:`:ArrayCtrl`:`:GetIndexCount`(`)const: [%00-00 int_][%00-00* GetIndexCount][%00-00 "
-"()_const]&][s6; Returns number of indices in t")
+"()_const]&][s6; Returns number of indices in the array.&][s1; [*/ Return value]-|index "
+"count&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetId`(int`)const: [%00-00 Id_][%00-00* GetId][%00-00 "
+"(int_][%00-00*@3 ii][%00-00 )_const]&][s6; R")
 TOPIC_TEXT(
-"he array.&][s1; [*/ Return value]-|index count&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetId`(int`)const: "
-"[%00-00 Id_][%00-00* GetId][%00-00 (int_][%00-00*@3 ii][%00-00 )_const]&][s6; Returns "
-"the identifier of a given index (addresses by its zero`-based ordinal number).&][s1; "
+"eturns the identifier of a given index (addresses by its zero`-based ordinal number).&][s1; "
 "[%00-00*C@3 ii]-|zero`-based ordinal number of the queried index&][s1; [*/ Return "
-"value]-|index identifier or [* Null] if the index ")
+"value]-|index identifier or [* Null] if the index has no identifier&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetPos`(`:`:Id`)const: "
+"[%00-00 int_][%00-00* GetPos][%00-00 (Id_][%00-00*@3 id][%00-00 )_const]&][s6; Returns "
+"the zero`-based p")
 TOPIC_TEXT(
-"has no identifier&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetPos`(`:`:Id`)const: [%00-00 "
-"int_][%00-00* GetPos][%00-00 (Id_][%00-00*@3 id][%00-00 )_const]&][s6; Returns the "
-"zero`-based positional number of the array index with a given identifier.&][s1; [%00-00*C@3 "
-"id]-|array index identifier&][s1; [*/ Return value]-|zero`-based index number, `-1 "
-"when not found&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetId`(int`,`:`:")
+"ositional number of the array index with a given identifier.&][s1; [%00-00*C@3 id]-|array "
+"index identifier&][s1; [*/ Return value]-|zero`-based index number, `-1 when not "
+"found&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetId`(int`,`:`:Id`): [%00-00 IdInfo`&_][%00-00* "
+"SetId][%00-00 (int_][%00-00*@3 ii][%00-00 , Id_][%00-00*@3 id][%00-00 )]&][s6; Sets "
+"the identifier for a given array index. This can be used to")
 TOPIC_TEXT(
-"Id`): [%00-00 IdInfo`&_][%00-00* SetId][%00-00 (int_][%00-00*@3 ii][%00-00 , Id_][%00-00*@3 "
-"id][%00-00 )]&][s6; Sets the identifier for a given array index. This can be used "
-"to set or modify the identifier for a previously added index.&][s1; [%00-00*C@3 ii]-|zero`-based "
+" set or modify the identifier for a previously added index.&][s1; [%00-00*C@3 ii]-|zero`-based "
 "ordinal number of the index to set the identifier for&][s1; [%00-00*C@3 id]-|new "
-"index identifier ([* Null] when none)&][s1; [*/ ")
+"index identifier ([* Null] when none)&][s1; [*/ Return value]-|A reference to the "
+"[* IdInfo] descriptive structure for the [/ ii]`-th index. The reference can be used "
+"to set additional properties of the altered index.&][s0;3")
 TOPIC_TEXT(
-"Return value]-|A reference to the [* IdInfo] descriptive structure for the [/ ii]`-th "
-"index. The reference can be used to set additional properties of the altered index.&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:AddKey`(`:`:Id`): [%00-00 IdInfo`&_][%00-00* AddKey][%00-00 "
+" &][s4;:`:`:ArrayCtrl`:`:AddKey`(`:`:Id`): [%00-00 IdInfo`&_][%00-00* AddKey][%00-00 "
 "(Id_][%00-00*@3 id][%00-00 )]&][s6; Adds a [/ primary key] index to the table. The "
-"[/ primary key] is just another name for the first index")
+"[/ primary key] is just another name for the first index (index with ordinal number "
+"0). This is just a handy convention often used for SQL`-based tables. [* AddKey] "
+"must be called only once after array initialization or [* Reset] an")
 TOPIC_TEXT(
-" (index with ordinal number 0). This is just a handy convention often used for SQL`-based "
-"tables. [* AddKey] must be called only once after array initialization or [* Reset] "
-"and before calling any other functions adding indices (like [* AddIndex], [* AddColumn] "
+"d before calling any other functions adding indices (like [* AddIndex], [* AddColumn] "
 "or [* AddCtrl]). When [* GetIndexCount() > 0 ]before the call to this function, this "
-"method fails with an [* ASSERT].&][s1; [%00-00*C@3 id")
+"method fails with an [* ASSERT].&][s1; [%00-00*C@3 id]-|primary key identifier&][s1; "
+"[*/ Return value]-|A reference to the descriptive [* IdInfo] structure for the primary "
+"key index.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddKey`(`): [%0")
 TOPIC_TEXT(
-"]-|primary key identifier&][s1; [*/ Return value]-|A reference to the descriptive "
-"[* IdInfo] structure for the primary key index.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddKey`(`): "
-"[%00-00 IdInfo`&_][%00-00* AddKey][%00-00 ()]&][s6; Adds a primary key index without "
+"0-00 IdInfo`&_][%00-00* AddKey][%00-00 ()]&][s6; Adds a primary key index without "
 "an identifier to the table. This is equivalent to [* AddKey(Null)].&][s1; [*/ Return "
-"value]-|A reference to the [* IdInfo] structure describin")
+"value]-|A reference to the [* IdInfo] structure describing the primary key index.&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:GetKeyId`(`)const: [%00-00 Id_][%00-00* GetKeyId][%00-00 "
+"()_const]&][s6; Returns primary key identifier for this table. ")
 TOPIC_TEXT(
-"g the primary key index.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetKeyId`(`)const: [%00-00 "
-"Id_][%00-00* GetKeyId][%00-00 ()_const]&][s6; Returns primary key identifier for "
-"this table. This is equivalent to calling [* GetId(0)].&][s1; [*/ Return value]-|primary "
-"key index identifier&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddColumn`(const char`*`,int`): "
-"[%00-00 Column`&_][%00-00* AddColumn][%00-00 (const_char_`*][%0")
+"This is equivalent to calling [* GetId(0)].&][s1; [*/ Return value]-|primary key "
+"index identifier&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddColumn`(const char`*`,int`): [%00-00 "
+"Column`&_][%00-00* AddColumn][%00-00 (const_char_`*][%00-00*@3 text][%00-00 _`=_NULL, "
+"int_][%00-00*@3 w][%00-00 _`=_][%00-00@3 0][%00-00 )]&][s6; Add a new column`-index "
+"pair to the table. The function adds a (source) index and an ")
 TOPIC_TEXT(
-"0-00*@3 text][%00-00 _`=_NULL, int_][%00-00*@3 w][%00-00 _`=_][%00-00@3 0][%00-00 "
-")]&][s6; Add a new column`-index pair to the table. The function adds a (source) "
-"index and an (output) column and sets the index as the data source for the column. "
-"This is the most common method for adding columns to the array.&][s1; [%00-00*C@3 "
-"text]-|column name (displayed in the array header)&][s1; [%00-00*C@3 w]-")
+"(output) column and sets the index as the data source for the column. This is the "
+"most common method for adding columns to the array.&][s1; [%00-00*C@3 text]-|column "
+"name (displayed in the array header)&][s1; [%00-00*C@3 w]-|logical relative column "
+"width&][s1; [*/ Return value]-|A reference to the [* Column] structure describing "
+"the newly added column. This can be used to set additional properties")
 TOPIC_TEXT(
-"|logical relative column width&][s1; [*/ Return value]-|A reference to the [* Column] "
-"structure describing the newly added column. This can be used to set additional properties "
-"for the newly added column and the corresponding header tab.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddColumn`(`:`:Id`,const "
+" for the newly added column and the corresponding header tab.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddColumn`(`:`:Id`,const "
 "char`*`,int`): [%00-00 Column`&_][%00-00* AddColumn][%00-00 (Id_][%00-00*@3 id][%00-00 "
-", const_char_`*][%0")
-TOPIC_TEXT(
-"0-00*@3 text][%00-00 , int_][%00-00*@3 w][%00-00 _`=_][%00-00@3 0][%00-00 )]&][s6; "
-"Adds a new column`-index pair to the table. This is equivalent to the above two`-parameter "
-"version but, in addition, the method sets the [* Id] identifier for the newly created "
-"index.&][s1; [%00-00*C@3 id]-|new index identifier&][s1; [%00-00*C@3 text]-|column "
-"name (displayed in the header)&][s1; [%00-00*C@3 w]-|logi")
-TOPIC_TEXT(
-"cal relative column width&][s1; [*/ Return value]-|A reference to the [* Column] "
-"structure describing the newly added array column.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddColumnAt`(int`,const "
-"char`*`,int`): [%00-00 Column`&_][%00-00* AddColumnAt][%00-00 (int_][%00-00*@3 ii][%00-00 "
 ", const_char_`*][%00-00*@3 text][%00-00 , int_][%00-00*@3 w][%00-00 _`=_][%00-00@3 "
-"0][%00-00 )]&][s6; Adds a new column to ")
+"0][%00-00 )]&][s6; Adds a new column`-index pair to the table. This is equivalent "
+"to the above two`-parameter ve")
 TOPIC_TEXT(
-"the table and binds it to a given source data index.&][s1; [%00-00*C@3 ii]-|zero`-based "
-"ordinal number of the index to use as source for this column&][s1; [%00-00*C@3 text]-|column "
+"rsion but, in addition, the method sets the [* Id] identifier for the newly created "
+"index.&][s1; [%00-00*C@3 id]-|new index identifier&][s1; [%00-00*C@3 text]-|column "
 "name (displayed in the header)&][s1; [%00-00*C@3 w]-|logical relative column width&][s1; "
 "[*/ Return value]-|A reference to the [* Column] structure describing the newly added "
-"array column.&][s0;3 &][s4;:`:`:ArrayCtrl`:`")
+"array column.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddColumnAt`(")
 TOPIC_TEXT(
-":AddColumnAt`(`:`:Id`,const char`*`,int`): [%00-00 Column`&_][%00-00* AddColumnAt][%00-00 "
-"(Id_][%00-00*@3 id][%00-00 , const_char_`*][%00-00*@3 text][%00-00 , int_][%00-00*@3 "
-"w][%00-00 _`=_][%00-00@3 0][%00-00 )]&][s6; Adds a new column to the table and binds "
+"int`,const char`*`,int`): [%00-00 Column`&_][%00-00* AddColumnAt][%00-00 (int_][%00-00*@3 "
+"ii][%00-00 , const_char_`*][%00-00*@3 text][%00-00 , int_][%00-00*@3 w][%00-00 _`=_][%00-00@3 "
+"0][%00-00 )]&][s6; Adds a new column to the table and binds it to a given source "
+"data index.&][s1; [%00-00*C@3 ii]-|zero`-based ordinal number of the index to use "
+"as source for this column&][s1; [%00-00*C@3 text]-|co")
+TOPIC_TEXT(
+"lumn name (displayed in the header)&][s1; [%00-00*C@3 w]-|logical relative column "
+"width&][s1; [*/ Return value]-|A reference to the [* Column] structure describing "
+"the newly added array column.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddColumnAt`(`:`:Id`,const "
+"char`*`,int`): [%00-00 Column`&_][%00-00* AddColumnAt][%00-00 (Id_][%00-00*@3 id][%00-00 "
+", const_char_`*][%00-00*@3 text][%00-00 , int_][%00-00*@3 w")
+TOPIC_TEXT(
+"][%00-00 _`=_][%00-00@3 0][%00-00 )]&][s6; Adds a new column to the table and binds "
 "it to a given source data index.&][s1; [%00-00*C@3 id]-|identifier of the index to "
-"use as source for the newly added column&][s1; [%00-00*C@")
+"use as source for the newly added column&][s1; [%00-00*C@3 text]-|column name (displayed "
+"in the header)&][s1; [%00-00*C@3 w]-|logical relative column width&][s1; [*/ Return "
+"value]-|A reference to the [* Column] structure describing t")
 TOPIC_TEXT(
-"3 text]-|column name (displayed in the header)&][s1; [%00-00*C@3 w]-|logical relative "
-"column width&][s1; [*/ Return value]-|A reference to the [* Column] structure describing "
-"the newly added array column.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddRowNumColumn`(const "
+"he newly added array column.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddRowNumColumn`(const "
 "char`*`,int`): [%00-00 Column`&_][%00-00* AddRowNumColumn][%00-00 (const_char_`*][%00-00*@3 "
-"text][%00-00 , int_][%00-00*@3 w][%00-00 _`=_][%0")
+"text][%00-00 , int_][%00-00*@3 w][%00-00 _`=_][%00-00@3 0][%00-00 )]&][s6; Adds a "
+"new column to the table. The newly added column has no source index, it is assumed "
+"to have an external data source. Instead of the source data ")
 TOPIC_TEXT(
-"0-00@3 0][%00-00 )]&][s6; Adds a new column to the table. The newly added column "
-"has no source index, it is assumed to have an external data source. Instead of the "
-"source data [* Value] object, the current zero`-based row number is passed to the "
-"column`'s [* Convert] / [* Display]. This allows the host application to decode somehow "
-"the external data based on the row number. In the current U`+`+ ve")
+"[* Value] object, the current zero`-based row number is passed to the column`'s "
+"[* Convert] / [* Display]. This allows the host application to decode somehow the "
+"external data based on the row number. In the current U`+`+ version, the [/ RowNum "
+"columns] cannot be edited (using the standard array inline editation mechanism).&][s1; "
+"[%00-00*C@3 text]-|column name (displayed in the header)&][s1; [%00-")
 TOPIC_TEXT(
-"rsion, the [/ RowNum columns] cannot be edited (using the standard array inline "
-"editation mechanism).&][s1; [%00-00*C@3 text]-|column name (displayed in the header)&][s1; "
-"[%00-00*C@3 w]-|logical relative column width&][s1; [*/ Return value]-|A reference "
-"to the [* Column] structure describing the newly added array column.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddCtrl`(`:`:Ctrl`&`): "
-"[%00-00 IdInfo`&_][%00-")
+"00*C@3 w]-|logical relative column width&][s1; [*/ Return value]-|A reference to "
+"the [* Column] structure describing the newly added array column.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddCtrl`(`:`:Ctrl`&`): "
+"[%00-00 IdInfo`&_][%00-00* AddCtrl][%00-00 (Ctrl`&_][%00-00*@3 ctrl][%00-00 )]&][s6; "
+"Adds a new index`-control pair to the table; the index keeps the source data and "
+"the external control is used to e")
 TOPIC_TEXT(
-"00* AddCtrl][%00-00 (Ctrl`&_][%00-00*@3 ctrl][%00-00 )]&][s6; Adds a new index`-control "
-"pair to the table; the index keeps the source data and the external control is used "
-"to edit it. The ArrayCtrl handles data transfer between the source data matrix and "
-"the external control. The method returns a reference the [* IdInfo] descriptive structure "
-"for the newly added index.&][s6; [* Note:] it is good t")
+"dit it. The ArrayCtrl handles data transfer between the source data matrix and the "
+"external control. The method returns a reference the [* IdInfo] descriptive structure "
+"for the newly added index.&][s6; [* Note:] it is good to keep in mind that there "
+"are a few differences between the ordinary array cell editors and the freestanding "
+"edit controls. In contrast with the cell editors, which appear only")
 TOPIC_TEXT(
-"o keep in mind that there are a few differences between the ordinary array cell "
-"editors and the freestanding edit controls. In contrast with the cell editors, which "
-"appear only when the row is opened for editing, the freestanding controls are present "
-"all the time. For instance, the ArrayCtrl automatically disables the controls when "
-"the cursor moves away from the table (using [* KillCursor]) and re")
+" when the row is opened for editing, the freestanding controls are present all the "
+"time. For instance, the ArrayCtrl automatically disables the controls when the cursor "
+"moves away from the table (using [* KillCursor]) and re`-enables them after it comes "
+"back. This is important e.g. if you want to implement an additional logic enabling "
+"some of the controls only depending on the circumstances; in su")
 TOPIC_TEXT(
-"`-enables them after it comes back. This is important e.g. if you want to implement "
-"an additional logic enabling some of the controls only depending on the circumstances; "
-"in such case, you have to use one of the notification callbacks (like  [* WhenEnterRow]) "
+"ch case, you have to use one of the notification callbacks (like  [* WhenEnterRow]) "
 "to force your additional behaviour on the controls.&][s1; [%00-00*C@3 ctrl]-|control "
-"to attach to the given index&][s1; [*/ Return value]-|a")
+"to attach to the given index&][s1; [*/ Return value]-|a reference to the IdInfo structure "
+"describing the newly added index&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddCtrl`(`:`:Id`,`:`:Ctrl`&`): "
+"[%00-00 IdInfo`&_][%00-00* AddCtrl][%00-00 (Id")
 TOPIC_TEXT(
-" reference to the IdInfo structure describing the newly added index&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddCtrl`(`:`:Id`,`:`:Ctrl`&`): "
-"[%00-00 IdInfo`&_][%00-00* AddCtrl][%00-00 (Id_][%00-00*@3 id][%00-00 , Ctrl`&_][%00-00*@3 "
-"ctrl][%00-00 )]&][s6; Adds a new index`-control pair to the table. This is identical "
-"to the above version with the only difference that the newly added index is assigned "
-"an [* Id]")
+"_][%00-00*@3 id][%00-00 , Ctrl`&_][%00-00*@3 ctrl][%00-00 )]&][s6; Adds a new index`-control "
+"pair to the table. This is identical to the above version with the only difference "
+"that the newly added index is assigned an [* Id] identifier at the same time.&][s1; "
+"[%00-00*C@3 id]-|the identifier to assign to the newly created index&][s1; [%00-00*C@3 "
+"ctrl]-|freestanding control used to edit the given in")
 TOPIC_TEXT(
-" identifier at the same time.&][s1; [%00-00*C@3 id]-|the identifier to assign to "
-"the newly created index&][s1; [%00-00*C@3 ctrl]-|freestanding control used to edit "
-"the given index&][s1; [*/ Return value]-|a reference to the IdInfo structure describing "
-"the newly added index&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddCtrlAt`(int`,`:`:Ctrl`&`): "
-"[%00-00 void_][%00-00* AddCtrlAt][%00-00 (int_][%00-00*@3 ii][%00")
+"dex&][s1; [*/ Return value]-|a reference to the IdInfo structure describing the "
+"newly added index&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddCtrlAt`(int`,`:`:Ctrl`&`): [%00-00 "
+"void_][%00-00* AddCtrlAt][%00-00 (int_][%00-00*@3 ii][%00-00 , Ctrl`&_][%00-00*@3 "
+"ctrl][%00-00 )]&][s6; Adds a new control to the table and binds it to the index with "
+"given ordinal number. You can use this method to create the bindin")
 TOPIC_TEXT(
-"-00 , Ctrl`&_][%00-00*@3 ctrl][%00-00 )]&][s6; Adds a new control to the table and "
-"binds it to the index with given ordinal number. You can use this method to create "
-"the binding between the control and an arbitrary source index.&][s1; [%00-00*C@3 "
-"ii]-|zero`-based ordinal number of the index to bind to this control&][s1; [%00-00*C@3 "
-"ctrl]-|freestanding control used to edit the [/ ii]`-th data index")
+"g between the control and an arbitrary source index.&][s1; [%00-00*C@3 ii]-|zero`-based "
+"ordinal number of the index to bind to this control&][s1; [%00-00*C@3 ctrl]-|freestanding "
+"control used to edit the [/ ii]`-th data index&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddCtrlAt`(`:`:Id`,`:`:Ctrl`&`): "
+"[%00-00 void_][%00-00* AddCtrlAt][%00-00 (Id_][%00-00*@3 id][%00-00 , Ctrl`&_][%00-00*@3 "
+"ctrl][%00-00 )]&][s6; ")
 TOPIC_TEXT(
-"&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddCtrlAt`(`:`:Id`,`:`:Ctrl`&`): [%00-00 void_][%00-00* "
-"AddCtrlAt][%00-00 (Id_][%00-00*@3 id][%00-00 , Ctrl`&_][%00-00*@3 ctrl][%00-00 )]&][s6; "
 "Adds a new control to the table and binds it to the index with given identifier.&][s1; "
 "[%00-00*C@3 id]-|identifier of the index to bind to this control&][s1;/ [%00-00*/C@3 "
-"ctrl][/ -|freestanding control used to edit the inde")
+"ctrl][/ -|freestanding control used to edit the index with identifier ]id&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:AddRowNumCtrl`(`:`:Ctrl`&`): [%00-00 void_][%00-00* AddRowNumCtrl][%00-00 "
+"(Ctrl`&_][%00-00*@3 ctrl][%00-00 )]&][s6; Adds a ")
 TOPIC_TEXT(
-"x with identifier ]id&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddRowNumCtrl`(`:`:Ctrl`&`): "
-"[%00-00 void_][%00-00* AddRowNumCtrl][%00-00 (Ctrl`&_][%00-00*@3 ctrl][%00-00 )]&][s6; "
-"Adds a new freestanding control to the table. The control is not bound to any source "
-"data index. During cursor movement in the array, array uses the control`'s [* SetData] "
-"method to set it to the current row number. The control mus")
+"new freestanding control to the table. The control is not bound to any source data "
+"index. During cursor movement in the array, array uses the control`'s [* SetData] "
+"method to set it to the current row number. The control must be ready for that and "
+"it can use the row number value to decode some externally located data for display. "
+"In the current U`+`+ version, such controls cannot be used for edita")
 TOPIC_TEXT(
-"t be ready for that and it can use the row number value to decode some externally "
-"located data for display. In the current U`+`+ version, such controls cannot be used "
-"for editation (there is currently no clean way to store the edited data back to its "
-"external storage).&][s1; [%00-00*C@3 ctrl]-|[/ RowNum]`-based freestanding editor "
-"control&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetColumnCount`(`)const: [%0")
+"tion (there is currently no clean way to store the edited data back to its external "
+"storage).&][s1; [%00-00*C@3 ctrl]-|[/ RowNum]`-based freestanding editor control&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:GetColumnCount`(`)const: [%00-00 int_][%00-00* GetColumnCount][%00-00 "
+"()_const]&][s6; Returns the current number of (output) columns in the array.&][s1; "
+"[*/ Return value]-|number of columns&][s0;3 &][s4;:")
 TOPIC_TEXT(
-"0-00 int_][%00-00* GetColumnCount][%00-00 ()_const]&][s6; Returns the current number "
-"of (output) columns in the array.&][s1; [*/ Return value]-|number of columns&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:FindColumnWithPos`(int`)const: [%00-00 int_][%00-00* FindColumnWithPos][%00-00 "
+"`:`:ArrayCtrl`:`:FindColumnWithPos`(int`)const: [%00-00 int_][%00-00* FindColumnWithPos][%00-00 "
 "(int_][%00-00*@3 pos][%00-00 )_const]&][s6; Returns the zero`-based index of a column "
-"based on its source data index.&][s1; [%00")
+"based on its source data index.&][s1; [%00-00*C@3 pos]-|ordinal number of the source "
+"index&][s1; [*/ Return value]-|ordinal number of the column having the given index "
+"as its source, `-1 when not found&][s0;3 &][s4;:`:")
 TOPIC_TEXT(
-"-00*C@3 pos]-|ordinal number of the source index&][s1; [*/ Return value]-|ordinal "
-"number of the column having the given index as its source, `-1 when not found&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:FindColumnWithId`(`:`:Id`)const: [%00-00 int_][%00-00* FindColumnWithId][%00-00 "
+"`:ArrayCtrl`:`:FindColumnWithId`(`:`:Id`)const: [%00-00 int_][%00-00* FindColumnWithId][%00-00 "
 "(Id_][%00-00*@3 id][%00-00 )_const]&][s6; Returns the zero`-based index of a column "
-"based on its source data index.&][s1; [%00-00")
+"based on its source data index.&][s1; [%00-00*C@3 id]-|source index identifier&][s1; "
+"[*/ Return value]-|ordinal number of the column having the given index as its source, "
+"`-1 when not found&][s0;3 &][s4;:`:`:ArrayCtrl`:`:")
 TOPIC_TEXT(
-"*C@3 id]-|source index identifier&][s1; [*/ Return value]-|ordinal number of the "
-"column having the given index as its source, `-1 when not found&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ColumnAt`(int`): "
-"[%00-00 Column`&_][%00-00* ColumnAt][%00-00 (int_][%00-00*@3 i][%00-00 )]&][s6; Returns "
-"the [* Column] structure describing a given column.&][s1; [%00-00*C@3 i]-|zero`-based "
-"column index&][s1; [*/ Return val")
+"ColumnAt`(int`): [%00-00 Column`&_][%00-00* ColumnAt][%00-00 (int_][%00-00*@3 i][%00-00 "
+")]&][s6; Returns the [* Column] structure describing a given column.&][s1; [%00-00*C@3 "
+"i]-|zero`-based column index&][s1; [*/ Return value]-|a reference to the [* Column] "
+"structure describing the given column&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ColumnAt`(int`)const: "
+"[%00-00 const_Column`&_][%00-00* ColumnAt][%00-00 ")
 TOPIC_TEXT(
-"ue]-|a reference to the [* Column] structure describing the given column&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:ColumnAt`(int`)const: [%00-00 const_Column`&_][%00-00* ColumnAt][%00-00 "
 "(int_][%00-00*@3 i][%00-00 )_const]&][s6; Returns the [* Column] structure describing "
 "a given column. This is merely the const version of the above method; it can be used "
-"to query properties for the column.&][s1; [%00-00*C@3")
+"to query properties for the column.&][s1; [%00-00*C@3 i]-|zero`-based column index&][s1; "
+"[*/ Return value]-|a constant reference to the [* Column] structure describing the "
+"given column&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ColumnAt`(`:`")
 TOPIC_TEXT(
-" i]-|zero`-based column index&][s1; [*/ Return value]-|a constant reference to the "
-"[* Column] structure describing the given column&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ColumnAt`(`:`:Id`): "
-"[%00-00 Column`&_][%00-00* ColumnAt][%00-00 (Id_][%00-00*@3 id][%00-00 )]&][s6; Returns "
-"the [* Column] structure describing a column with given source index.&][s1; [%00-00*C@3 "
-"id]-|identifier of the index used as sour")
+":Id`): [%00-00 Column`&_][%00-00* ColumnAt][%00-00 (Id_][%00-00*@3 id][%00-00 )]&][s6; "
+"Returns the [* Column] structure describing a column with given source index.&][s1; "
+"[%00-00*C@3 id]-|identifier of the index used as source for the column&][s1; [*/ "
+"Return value]-|a reference to the [* Column] structure describing the given column&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:ColumnAt`(`:`:Id`)const: [%00-00 c")
 TOPIC_TEXT(
-"ce for the column&][s1; [*/ Return value]-|a reference to the [* Column] structure "
-"describing the given column&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ColumnAt`(`:`:Id`)const: "
-"[%00-00 const_Column`&_][%00-00* ColumnAt][%00-00 (Id_][%00-00*@3 id][%00-00 )_const]&][s6; "
+"onst_Column`&_][%00-00* ColumnAt][%00-00 (Id_][%00-00*@3 id][%00-00 )_const]&][s6; "
 "Returns a constant reference to the [* Column] structure describing a column with "
-"given source index. This is the constant version of the abo")
+"given source index. This is the constant version of the above method; it can be used "
+"to query properties for the column.&][s1; [%00-00*C@3 id]-|identifier of the index "
+"used as source for the column&][s1; [*/ Return value]-|a constant r")
 TOPIC_TEXT(
-"ve method; it can be used to query properties for the column.&][s1; [%00-00*C@3 "
-"id]-|identifier of the index used as source for the column&][s1; [*/ Return value]-|a "
-"constant reference to the [* Column] structure describing the given column&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:HeaderTab`(int`): [%00-00 HeaderCtrl`::Column`&_][%00-00* "
-"HeaderTab][%00-00 (int_][%00-00*@3 i][%00-00 )]&][s6; Returns the [*^t")
-TOPIC_TEXT(
-"opic`:`/`/CtrlLib`/src`/HeaderCtrl`$en`-us`#`:`:HeaderCtrl`:`:Column`:`:Min`(int`)^ "
+"eference to the [* Column] structure describing the given column&][s0;3 &][s4;:`:`:ArrayCtrl`:`:HeaderTab`(int`): "
+"[%00-00 HeaderCtrl`::Column`&_][%00-00* HeaderTab][%00-00 (int_][%00-00*@3 i][%00-00 "
+")]&][s6; Returns the [*^topic`:`/`/CtrlLib`/src`/HeaderCtrl`$en`-us`#`:`:HeaderCtrl`:`:Column`:`:Min`(int`)^ "
 "HeaderCtrl`::Column] descriptive structure for the given column. The correspondence "
-"between the array columns and the header tabs is 1:1, so that the indices of both "
-"are always the same ([* array.GetColumnCount() `=`= array.HeaderObject().GetCount()] "
-"holds all the time).&][s1; [%00-00*C@3 i]-|zero`-based column ind")
+"between ")
 TOPIC_TEXT(
-"ex&][s1; [*/ Return value]-|a reference to the [* HeaderCtrl`::Column] structure. "
-"This can be used to set additional properties of the header column (e.g. column width "
-"constraints, font and icon for the column title etc.)&][s0;3 &][s4;:`:`:ArrayCtrl`:`:HeaderTab`(int`)const: "
+"the array columns and the header tabs is 1:1, so that the indices of both are always "
+"the same ([* array.GetColumnCount() `=`= array.HeaderObject().GetCount()] holds all "
+"the time).&][s1; [%00-00*C@3 i]-|zero`-based column index&][s1; [*/ Return value]-|a "
+"reference to the [* HeaderCtrl`::Column] structure. This can be used to set additional "
+"properties of the header column (e.g. column width constrai")
+TOPIC_TEXT(
+"nts, font and icon for the column title etc.)&][s0;3 &][s4;:`:`:ArrayCtrl`:`:HeaderTab`(int`)const: "
 "[%00-00 const_HeaderCtrl`::Column`&_][%00-00* HeaderTab][%00-00 (int_][%00-00*@3 "
-"i][%00-00 )_const]&][s6; Returns a constant")
+"i][%00-00 )_const]&][s6; Returns a constant reference to the [* HeaderCtrl`::Column] "
+"structure for the given column.&][s1; [%00-00*C@3 i]-|zero`-based column index&][s1; "
+"[*/ Return value]-|a reference to the [* HeaderCt")
 TOPIC_TEXT(
-" reference to the [* HeaderCtrl`::Column] structure for the given column.&][s1; "
-"[%00-00*C@3 i]-|zero`-based column index&][s1; [*/ Return value]-|a reference to "
-"the [* HeaderCtrl`::Column] structure. This can be used to set additional properties "
-"of the header column (e.g. column width constraints, font and icon for the column "
-"title etc.)&][s0;3 &][s4;:`:`:ArrayCtrl`:`:HeaderTab`(`:`:Id`): [%00-00 ")
+"rl`::Column] structure. This can be used to set additional properties of the header "
+"column (e.g. column width constraints, font and icon for the column title etc.)&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:HeaderTab`(`:`:Id`): [%00-00 HeaderCtrl`::Column`&_][%00-00* "
+"HeaderTab][%00-00 (Id_][%00-00*@3 id][%00-00 )]&][s6; Returns the [* HeaderCtrl`::Column] "
+"descriptive structure for the column bound to a given ")
 TOPIC_TEXT(
-"HeaderCtrl`::Column`&_][%00-00* HeaderTab][%00-00 (Id_][%00-00*@3 id][%00-00 )]&][s6; "
-"Returns the [* HeaderCtrl`::Column] descriptive structure for the column bound to "
-"a given source index.&][s1; [%00-00*C@3 id]-|identifier of the index used as source "
-"for the column&][s1; [*/ Return value]-|a reference to the [* HeaderCtrl`::Column] "
-"structure&][s0;3 &][s4;:`:`:ArrayCtrl`:`:HeaderTab`(`:`:Id`)const")
+"source index.&][s1; [%00-00*C@3 id]-|identifier of the index used as source for "
+"the column&][s1; [*/ Return value]-|a reference to the [* HeaderCtrl`::Column] structure&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:HeaderTab`(`:`:Id`)const: [%00-00 const_HeaderCtrl`::Column`&_][%00-00* "
+"HeaderTab][%00-00 (Id_][%00-00*@3 id][%00-00 )_const]&][s6; Returns a constant reference "
+"to the [* HeaderCtrl`::Column] descript")
 TOPIC_TEXT(
-": [%00-00 const_HeaderCtrl`::Column`&_][%00-00* HeaderTab][%00-00 (Id_][%00-00*@3 "
-"id][%00-00 )_const]&][s6; Returns a constant reference to the [* HeaderCtrl`::Column] "
-"descriptive structure for the column bound to a given source index.&][s1; [%00-00*C@3 "
-"id]-|identifier of the index used as source for the column&][s1; [*/ Return value]-|a "
-"constant reference to the [* HeaderCtrl`::Column] structure&")
+"ive structure for the column bound to a given source index.&][s1; [%00-00*C@3 id]-|identifier "
+"of the index used as source for the column&][s1; [*/ Return value]-|a constant reference "
+"to the [* HeaderCtrl`::Column] structure&][s0;3 &][s4;:`:`:ArrayCtrl`:`:HeaderObject`(`): "
+"[%00-00 HeaderCtrl`&_][%00-00* HeaderObject][%00-00 ()]&][s6; Returns a non`-constant "
+"reference to the [* HeaderCtrl] object fo")
 TOPIC_TEXT(
-"][s0;3 &][s4;:`:`:ArrayCtrl`:`:HeaderObject`(`): [%00-00 HeaderCtrl`&_][%00-00* "
-"HeaderObject][%00-00 ()]&][s6; Returns a non`-constant reference to the [* HeaderCtrl] "
-"object for this table. The reference can be further used to alter properties of the "
-"table header (tab visibility, header visual mode and so on).&][s1; [*/ Return value]-|A "
-"non`-constant reference to the table HeaderCtrl object.&][s0;")
+"r this table. The reference can be further used to alter properties of the table "
+"header (tab visibility, header visual mode and so on).&][s1; [*/ Return value]-|A "
+"non`-constant reference to the table HeaderCtrl object.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:HeaderObject`(`)const: "
+"const_HeaderCtrl`&_[* HeaderObject]()_const&][s6; This is just the constant version "
+"of the above method; when called on a const")
 TOPIC_TEXT(
-"3 &][s4;:`:`:ArrayCtrl`:`:HeaderObject`(`)const: const_HeaderCtrl`&_[* HeaderObject]()_const&][s6; "
-"This is just the constant version of the above method; when called on a constant "
-"[* ArrayCtrl] reference, it returns a constant reference to its underlying HeaderCtrl "
+"ant [* ArrayCtrl] reference, it returns a constant reference to its underlying HeaderCtrl "
 "object which can be then used to query additional header information.&][s1; [*/ Return "
-"value]-|A constant reference to the table Heade")
+"value]-|A constant reference to the table HeaderCtrl object.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SerializeHeader`(`:`:Stream`&`): "
+"[%00-00 void_][%00-00* SerializeHeader][%00-00 (Stream`&_][%00-00*@3 s][%00-00 )]&][s6; "
+"Serializes")
 TOPIC_TEXT(
-"rCtrl object.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SerializeHeader`(`:`:Stream`&`): [%00-00 "
-"void_][%00-00* SerializeHeader][%00-00 (Stream`&_][%00-00*@3 s][%00-00 )]&][s6; Serializes "
-"all information pertaining to the array header (mainly the user`-set column widths). "
+" all information pertaining to the array header (mainly the user`-set column widths). "
 "This is equivalent to calling [* HeaderObject().Serialize(s)]. The main purpose of "
-"this function is to allow storing header configuration ")
+"this function is to allow storing header configuration to be restored upon opening "
+"the dialog or the application for the next time. &][s1; [%00-00*C@3 s]-|the [*^topic`:`/`/Core`/src`/Stream`$en`-us^ "
+"Stream] object to serialize the")
 TOPIC_TEXT(
-"to be restored upon opening the dialog or the application for the next time. &][s1; "
-"[%00-00*C@3 s]-|the [*^topic`:`/`/Core`/src`/Stream`$en`-us^ Stream] object to serialize "
-"the header to/from&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetDisplay`(int`,int`,const`:`:Display`&`): "
+" header to/from&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetDisplay`(int`,int`,const`:`:Display`&`): "
 "[%00-00 void_][%00-00* SetDisplay][%00-00 (int_][%00-00*@3 i][%00-00 , int_][%00-00*@3 "
-"j][%00-00 , const_Display`&_][%00-00*@3 d][%00")
+"j][%00-00 , const_Display`&_][%00-00*@3 d][%00-00 )]&][s6; Sets the [* Display] object "
+"for a given array cell.&][s6;* &][s6; [* Note:] the ownership to the Display object "
+"is not transferred by this call. The ArrayCtrl stor")
 TOPIC_TEXT(
-"-00 )]&][s6; Sets the [* Display] object for a given array cell.&][s6;* &][s6; [* "
-"Note:] the ownership to the Display object is not transferred by this call. The ArrayCtrl "
-"stores a mere pointer to it and it is the responsibility of the programmer to keep "
-"the Display object alive as long as necessary (until the array is shut down or the "
-"cell display changed via another call to SetDisplay). In fact,")
+"es a mere pointer to it and it is the responsibility of the programmer to keep the "
+"Display object alive as long as necessary (until the array is shut down or the cell "
+"display changed via another call to SetDisplay). In fact, most Display`-based objects "
+"don`'t support data copying at all. In any case, copying Displays is not a very good "
+"practice and is very prone to slicing (as most actual Displays")
 TOPIC_TEXT(
-" most Display`-based objects don`'t support data copying at all. In any case, copying "
-"Displays is not a very good practice and is very prone to slicing (as most actual "
-"Displays are actually derived classes with additional data members).&][s6; &][s6; "
-"In many cases it would be relatively safe to assume that the Display is not used "
-"unless the array is actually painted (e.g., when the control is not b")
+" are actually derived classes with additional data members).&][s6; &][s6; In many "
+"cases it would be relatively safe to assume that the Display is not used unless the "
+"array is actually painted (e.g., when the control is not bound to a parent or when "
+"its view has zero size), but it is not a very wise practice and it can fail in very "
+"weird ways under special circumstances (like making screenshots or ")
 TOPIC_TEXT(
-"ound to a parent or when its view has zero size), but it is not a very wise practice "
-"and it can fail in very weird ways under special circumstances (like making screenshots "
-"or graphical exports from the array control).&][s6; &][s1; [%00-00*C@3 i]-|zero`-based "
+"graphical exports from the array control).&][s6; &][s1; [%00-00*C@3 i]-|zero`-based "
 "row index&][s1; [%00-00*C@3 j]-|zero`-based column index&][s1; [%00-00*C@3 d]-|display "
-"to use&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetDisplay`(int")
+"to use&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetDisplay`(int`,int`): [%00-00 const_Display`&_][%00-00* "
+"GetDisplay][%00-00 (int_][%00-00*@3 row][%00-00 , int_][%00-00*@3 col][%00-00 )]&][s6; "
+"Returns a reference to the Display object for ")
 TOPIC_TEXT(
-"`,int`): [%00-00 const_Display`&_][%00-00* GetDisplay][%00-00 (int_][%00-00*@3 row][%00-00 "
-", int_][%00-00*@3 col][%00-00 )]&][s6; Returns a reference to the Display object "
-"for the given array cell.&][s1; [%00-00*C@3 row]-|zero`-based row index&][s1; [%00-00*C@3 "
+"the given array cell.&][s1; [%00-00*C@3 row]-|zero`-based row index&][s1; [%00-00*C@3 "
 "col]-|zero`-based column index&][s1; [*/ Return value]-|a reference to the Display "
-"object.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetDisplay`(int`")
+"object.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetDisplay`(int`): [%00-00 const_Display`&_][%00-00* "
+"GetDisplay][%00-00 (int_][%00-00*@3 col][%00-00 )]&][s6; Returns a reference to the "
+"Display object for the given array column.&][s1; [%00-0")
 TOPIC_TEXT(
-"): [%00-00 const_Display`&_][%00-00* GetDisplay][%00-00 (int_][%00-00*@3 col][%00-00 "
-")]&][s6; Returns a reference to the Display object for the given array column.&][s1; "
-"[%00-00*C@3 col]-|zero`-based column index&][s1; [*/ Return value]-|constant reference "
+"0*C@3 col]-|zero`-based column index&][s1; [*/ Return value]-|constant reference "
 "to the column Display&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetCtrl`(int`,int`,`:`:Ctrl`*`): "
-"[%00-00 Ctrl`&_][%00-00* SetCtrl][%00-00 (int_][%00-00*@3")
+"[%00-00 Ctrl`&_][%00-00* SetCtrl][%00-00 (int_][%00-00*@3 i][%00-00 , int_][%00-00*@3 "
+"j][%00-00 , Ctrl_`*][%00-00*@3 newctrl][%00-00 )]&][s6; Sets an external control "
+"to use as the editor for a single array cell. This function transf")
 TOPIC_TEXT(
-" i][%00-00 , int_][%00-00*@3 j][%00-00 , Ctrl_`*][%00-00*@3 newctrl][%00-00 )]&][s6; "
-"Sets an external control to use as the editor for a single array cell. This function "
-"transfers the ownership to the control (from now on, it is stored within the array "
-"and destroyed as necessary `- upon destruction of the array, deletion of the relevant "
-"row or another call to [* SetCtrl]). Naturally, the same Ctrl")
+"ers the ownership to the control (from now on, it is stored within the array and "
+"destroyed as necessary `- upon destruction of the array, deletion of the relevant "
+"row or another call to [* SetCtrl]). Naturally, the same Ctrl object cannot be used "
+"as the editor for multiple array cells. If you need to edit large number of array "
+"cells, you have to implement a control creation factory.and use the [* ")
 TOPIC_TEXT(
-" object cannot be used as the editor for multiple array cells. If you need to edit "
-"large number of array cells, you have to implement a control creation factory.and "
-"use the [* Ctrls] method of the [* Column] subobject to program the array to construct "
-"the controls on`-the`-fly.&][s1; [%00-00*C@3 i]-|zero`-based row index&][s1; [%00-00*C@3 "
-"j]-|zero`-based column index&][s1; [%00-00*C@3 newctrl]-|th")
+"Ctrls] method of the [* Column] subobject to program the array to construct the "
+"controls on`-the`-fly.&][s1; [%00-00*C@3 i]-|zero`-based row index&][s1; [%00-00*C@3 "
+"j]-|zero`-based column index&][s1; [%00-00*C@3 newctrl]-|the control to bind to the "
+"given array cell&][s1;* [/ Return value][* -|]`*newctrl&][s0;* &][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetTotalCy`(`)const: "
+"[%00-00 int_][%00-00* GetTotalCy][%")
 TOPIC_TEXT(
-"e control to bind to the given array cell&][s1;* [/ Return value][* -|]`*newctrl&][s0;* "
-"&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetTotalCy`(`)const: [%00-00 int_][%00-00* GetTotalCy][%00-00 "
-"()_const]&][s6; Returns total height of the array (sum of the individual line heights "
-"for all array rows)&][s1; [*/ Return value]-|array height in pixels&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetLineAt`(int`)const: "
-"[%00-00 in")
+"00-00 ()_const]&][s6; Returns total height of the array (sum of the individual line "
+"heights for all array rows)&][s1; [*/ Return value]-|array height in pixels&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:GetLineAt`(int`)const: [%00-00 int_][%00-00* GetLineAt][%00-00 "
+"(int_][%00-00*@3 y][%00-00 )_const]&][s6; Locates the array row according to given "
+"[/ y] coordinate (such array row [/ r] for which [* GetLineY(r)")
 TOPIC_TEXT(
-"t_][%00-00* GetLineAt][%00-00 (int_][%00-00*@3 y][%00-00 )_const]&][s6; Locates "
-"the array row according to given [/ y] coordinate (such array row [/ r] for which "
-"[* GetLineY(r) <`= y `&`& GetLineY(r) `+ GetLineCy(r) > y]).&][s1; [%00-00*C@3 y]-|vertical "
-"pixel coordinate to locate&][s1; [*/ Return value]-|zero`-based row number or `-1 "
-"when not found&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetClickColumn`(`)")
+" <`= y `&`& GetLineY(r) `+ GetLineCy(r) > y]).&][s1; [%00-00*C@3 y]-|vertical pixel "
+"coordinate to locate&][s1; [*/ Return value]-|zero`-based row number or `-1 when "
+"not found&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetClickColumn`(`)const: [%00-00 int_][%00-00* "
+"GetClickColumn][%00-00 ()_const]&][s6; Returns column index of the last clicked column "
+"in the array. If the click happens past the last row of arra")
 TOPIC_TEXT(
-"const: [%00-00 int_][%00-00* GetClickColumn][%00-00 ()_const]&][s6; Returns column "
-"index of the last clicked column in the array.&][s1; [*/ Return value]-|zero`-based "
-"index of the relevant column&][s0;* &][s0;* Data setting and retrieval&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetCount`(int`): "
-"[%00-00 void_][%00-00* SetCount][%00-00 (int_][%00-00*@3 c][%00-00 )]&][s6; Sets "
-"the number of rows in the array. ")
+"y, returns Null.&][s1; [*/ Return value]-|zero`-based index of the relevant column&][s0;* "
+"&][s4;:`:`:ArrayCtrl`:`:GetClickRow`(`)const: [%00-00 int_][%00-00* GetClickRow][%00-00 "
+"()_const]&][s6; Returns column index of the last clicked row in the array. If the "
+"click happens past the last row of array, returns Null.&][s1; [*/ Return value]-|zero`-based "
+"index of the relevant column&][s0; &][s4;:`:`:A")
 TOPIC_TEXT(
-"This extends or trims the source matrix as necessary. When using the Ctrl`-based "
-"individual cell editors, as a side`-effect of this call some controls can be constructed "
-"or destroyed.&][s1; [%00-00*C@3 c]-|new row count&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetVirtualCount`(int`): "
-"[%00-00 void_][%00-00* SetVirtualCount][%00-00 (int_][%00-00*@3 c][%00-00 )]&][s6; "
-"Sets the number of rows in an array with e")
+"rrayCtrl`:`:GetClickPos`(`)const: [%00-00 Point_][%00-00* GetClickPos][%00-00 ()_const]&][s1; "
+"[*/ Return value]-|[* Point(GetClickColumn(), GetClickRow())].&][s0; &][s0;* &][s0;* "
+"Data setting and retrieval&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetCount`(int`): [%00-00 "
+"void_][%00-00* SetCount][%00-00 (int_][%00-00*@3 c][%00-00 )]&][s6; Sets the number "
+"of rows in the array. This extends or trims the source")
 TOPIC_TEXT(
-"xternal data. This makes sense only when all the [/ Column`'s] and [/ Ctrl`'s] of "
-"the array are [/ rownum]`-based. The function doesn`'t physically allocate any source "
-"data matrix space, it just makes the array `'think`' it has [/ c] rows (this is of "
-"course necessary for the Paint routine, for cursor / selection management and so "
-"on).&][s6; [* Note:] in the current implementation, selection flags ")
+" matrix as necessary. When using the Ctrl`-based individual cell editors, as a side`-effect "
+"of this call some controls can be constructed or destroyed.&][s1; [%00-00*C@3 c]-|new "
+"row count&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetVirtualCount`(int`): [%00-00 void_][%00-00* "
+"SetVirtualCount][%00-00 (int_][%00-00*@3 c][%00-00 )]&][s6; Sets the number of rows "
+"in an array with external data. This makes sense o")
 TOPIC_TEXT(
-"for the individual rows are kept in the row objects. Therefore it is not very wise "
-"to use multiselection for arrays with external data, because as soon as the last "
-"row is selected, all row storage structures are allocated as a side effect to keep "
-"the selection flags.&][s1; [%00-00*C@3 c]-|new `'virtual`' number of rows&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:GetCount`(`)const: [%00-00 int_][%00-00* GetCoun")
+"nly when all the [/ Column`'s] and [/ Ctrl`'s] of the array are [/ rownum]`-based. "
+"The function doesn`'t physically allocate any source data matrix space, it just makes "
+"the array `'think`' it has [/ c] rows (this is of course necessary for the Paint "
+"routine, for cursor / selection management and so on).&][s6; [* Note:] in the current "
+"implementation, selection flags for the individual rows are kept")
 TOPIC_TEXT(
-"t][%00-00 ()_const]&][s6; Returns the number of rows in the array. In fact, this "
-"returns the maximum of the number of `'real`' source matrix rows (as set by the SetCount "
-"/ Add / Insert methods) and the `'virtual`' row count (as se by SetVirtualCount). "
-"By checking the implementation of this method, you can easily find that, simply,&][s6; "
-"&][s6;C int ArrayCtrl`::GetCount() const `{&][s6;C -|-|return")
+" in the row objects. Therefore it is not very wise to use multiselection for arrays "
+"with external data, because as soon as the last row is selected, all row storage "
+"structures are allocated as a side effect to keep the selection flags.&][s1; [%00-00*C@3 "
+"c]-|new `'virtual`' number of rows&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetCount`(`)const: "
+"[%00-00 int_][%00-00* GetCount][%00-00 ()_const]&][s6; Return")
 TOPIC_TEXT(
-" max(virtualcount, array.GetCount());&][s6;C `}&][s6; &][s1; [*/ Return value]-|Number "
-"of rows in the array.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Clear`(`): [%00-00 void_][%00-00* "
-"Clear][%00-00 ()]&][s6; Clears the array source data matrix and sets the virtual "
-"row count to 0.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Shrink`(`): [%00-00 void_][%00-00* "
-"Shrink][%00-00 ()]&][s6; Shrinks the source data array, i.e. re")
+"s the number of rows in the array. In fact, this returns the maximum of the number "
+"of `'real`' source matrix rows (as set by the SetCount / Add / Insert methods) and "
+"the `'virtual`' row count (as se by SetVirtualCount). By checking the implementation "
+"of this method, you can easily find that, simply,&][s6; &][s6;C int ArrayCtrl`::GetCount() "
+"const `{&][s6;C -|-|return max(virtualcount, array.GetCoun")
 TOPIC_TEXT(
-"allocates the data to the minimum required memory space.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Get`(int`,int`)const: "
-"[%00-00 Value_][%00-00* Get][%00-00 (int_][%00-00*@3 i][%00-00 , int_][%00-00*@3 "
-"ii][%00-00 )_const]&][s6; Returns the value at a given location in the source data "
-"matrix.&][s1; [%00-00*C@3 i]-|zero`-based row number&][s1; [%00-00*C@3 ii]-|zero`-based "
-"index ordinal number&][s1; [*/ Return ")
+"t());&][s6;C `}&][s6; &][s1; [*/ Return value]-|Number of rows in the array.&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:Clear`(`): [%00-00 void_][%00-00* Clear][%00-00 ()]&][s6; "
+"Clears the array source data matrix and sets the virtual row count to 0.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Shrink`(`): "
+"[%00-00 void_][%00-00* Shrink][%00-00 ()]&][s6; Shrinks the source data array, i.e. "
+"reallocates the data to the minimu")
 TOPIC_TEXT(
-"value]-|value at the given location in the source data matrix&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Get`(int`,`:`:Id`)const: "
+"m required memory space.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Get`(int`,int`)const: [%00-00 "
+"Value_][%00-00* Get][%00-00 (int_][%00-00*@3 i][%00-00 , int_][%00-00*@3 ii][%00-00 "
+")_const]&][s6; Returns the value at a given location in the source data matrix.&][s1; "
+"[%00-00*C@3 i]-|zero`-based row number&][s1; [%00-00*C@3 ii]-|zero`-based index ordinal "
+"number&][s1; [*/ Return value]-|value at the given locat")
+TOPIC_TEXT(
+"ion in the source data matrix&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Get`(int`,`:`:Id`)const: "
 "[%00-00 Value_][%00-00* Get][%00-00 (int_][%00-00*@3 i][%00-00 , Id_][%00-00*@3 id][%00-00 "
 ")_const]&][s6; Returns the value at a given location in the source data matrix. In "
 "this version, the source indices are addressed by their identifiers.&][s1; [%00-00*C@3 "
-"i]-|zero`-based row n")
+"i]-|zero`-based row number&][s1; [%00-00*C@3 id]-|sou")
 TOPIC_TEXT(
-"umber&][s1; [%00-00*C@3 id]-|source index identifier&][s1; [*/ Return value]-|value "
-"at the given location in the source data matrix&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Get`(int`)const: "
-"[%00-00 Value_][%00-00* Get][%00-00 (int_][%00-00*@3 ii][%00-00 )_const]&][s6; Returns "
+"rce index identifier&][s1; [*/ Return value]-|value at the given location in the "
+"source data matrix&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Get`(int`)const: [%00-00 Value_][%00-00* "
+"Get][%00-00 (int_][%00-00*@3 ii][%00-00 )_const]&][s6; Returns the value of a given "
+"source index at the currently active cursor row. This is equivalent to [* Get(GetCursor(), "
+"ii)]. When the row is currently being edited, the fun")
+TOPIC_TEXT(
+"ction returns the `'new`' value (the current value of the respective editor control, "
+"i.e. potentially edited).&][s6; [* Note:] when the cursor row is not set (when [* "
+"!IsCursor()]), the function fails with an [* ASSERT].&][s1; [%00-00*C@3 ii]-|zero`-based "
+"index ordinal number&][s1; [*/ Return value]-|value at a given location in the cursor "
+"row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Get`(`:`:Id`)const: [%0")
+TOPIC_TEXT(
+"0-00 Value_][%00-00* Get][%00-00 (Id_][%00-00*@3 id][%00-00 )_const]&][s6; Returns "
 "the value of a given source index at the currently active cursor row. This is equivalent "
-"to [* Get(GetCursor(), ii)]. When the row is")
+"to [* Get(GetCursor(), id)].&][s1; [%00-00*C@3 id]-|source index identifier&][s1; "
+"[*/ Return value]-|value at the given location in the cursor row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetOriginal`(int`)const: "
+"[%00-00 Value_][%00-00* G")
 TOPIC_TEXT(
-" currently being edited, the function returns the `'new`' value (the current value "
-"of the respective editor control, i.e. potentially edited).&][s6; [* Note:] when "
-"the cursor row is not set (when [* !IsCursor()]), the function fails with an [* ASSERT].&][s1; "
-"[%00-00*C@3 ii]-|zero`-based index ordinal number&][s1; [*/ Return value]-|value "
-"at a given location in the cursor row&][s0;3 &][s4;:`:`:Arra")
+"etOriginal][%00-00 (int_][%00-00*@3 ii][%00-00 )_const]&][s6; Returns the `'original`' "
+"value of a given source index at the currently active cursor row. When the row is "
+"open for editing, this function returns the `'old`' value before any editation took "
+"place.&][s1; [%00-00*C@3 ii]-|zero`-based index ordinal number&][s1; [*/ Return value]-|value "
+"at the given location in the cursor row&][s0;3 &][s4;")
 TOPIC_TEXT(
-"yCtrl`:`:Get`(`:`:Id`)const: [%00-00 Value_][%00-00* Get][%00-00 (Id_][%00-00*@3 "
-"id][%00-00 )_const]&][s6; Returns the value of a given source index at the currently "
-"active cursor row. This is equivalent to [* Get(GetCursor(), id)].&][s1; [%00-00*C@3 "
-"id]-|source index identifier&][s1; [*/ Return value]-|value at the given location "
-"in the cursor row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetOriginal`(int`)")
+":`:`:ArrayCtrl`:`:GetOriginal`(`:`:Id`)const: [%00-00 Value_][%00-00* GetOriginal][%00-00 "
+"(Id_][%00-00*@3 id][%00-00 )_const]&][s6; Returns the `'original`' value (i.e., without "
+"any editing changed applied) of a given source index at the currently active cursor "
+"row.&][s1; [%00-00*C@3 id]-|source index identifier&][s1; [*/ Return value]-|value "
+"at the given location in the cursor row&][s0;3 &][s4;:`")
 TOPIC_TEXT(
-"const: [%00-00 Value_][%00-00* GetOriginal][%00-00 (int_][%00-00*@3 ii][%00-00 )_const]&][s6; "
-"Returns the `'original`' value of a given source index at the currently active cursor "
-"row. When the row is open for editing, this function returns the `'old`' value before "
-"any editation took place.&][s1; [%00-00*C@3 ii]-|zero`-based index ordinal number&][s1; "
-"[*/ Return value]-|value at the given location")
+":`:ArrayCtrl`:`:GetKey`(`)const: [%00-00 Value_][%00-00* GetKey][%00-00 ()_const]&][s6; "
+"Returns the value of the current row`'s primary key. This is equivalent to [* Get(0)].&][s1; "
+"[*/ Return value]-|value at the index #0 in the cursor row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetOriginalKey`(`)const: "
+"[%00-00 Value_][%00-00* GetOriginalKey][%00-00 ()_const]&][s6; Returns the original "
+"value of the current")
 TOPIC_TEXT(
-" in the cursor row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetOriginal`(`:`:Id`)const: [%00-00 "
-"Value_][%00-00* GetOriginal][%00-00 (Id_][%00-00*@3 id][%00-00 )_const]&][s6; Returns "
-"the `'original`' value (i.e., without any editing changed applied) of a given source "
-"index at the currently active cursor row.&][s1; [%00-00*C@3 id]-|source index identifier&][s1; "
-"[*/ Return value]-|value at the given location i")
+" row`'s primary key. During editation, the function returns the value at the time "
+"of opening the row for editing, i.e. without any editing changes applied. This is "
+"equivalent to [* GetOriginal(0)].&][s1; [*/ Return value]-|value at the index #0 "
+"in the cursor row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Set`(int`,int`,const`:`:Value`&`): "
+"[%00-00 void_][%00-00* Set][%00-00 (int_][%00-00*@3 i][%00-00 , int_][%")
 TOPIC_TEXT(
-"n the cursor row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetKey`(`)const: [%00-00 Value_][%00-00* "
-"GetKey][%00-00 ()_const]&][s6; Returns the value of the current row`'s primary key. "
-"This is equivalent to [* Get(0)].&][s1; [*/ Return value]-|value at the index #0 "
-"in the cursor row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetOriginalKey`(`)const: [%00-00 "
-"Value_][%00-00* GetOriginalKey][%00-00 ()_const]&][s6; Returns t")
+"00-00*@3 ii][%00-00 , const_Value`&_][%00-00*@3 v][%00-00 )]&][s6; Sets the value "
+"at a given location in the source data matrix.&][s1; [%00-00*C@3 i]-|zero`-based "
+"row number&][s1; [%00-00*C@3 ii]-|zero`-based index ordinal number&][s1; [%00-00*C@3 "
+"v]-|value to set to the given cell&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Set`(int`,`:`:Id`,const`:`:Value`&`): "
+"[%00-00 void_][%00-00* Set][%00-00 (int_][%00-00")
 TOPIC_TEXT(
-"he original value of the current row`'s primary key. During editation, the function "
-"returns the value at the time of opening the row for editing, i.e. without any editing "
-"changes applied. This is equivalent to [* GetOriginal(0)].&][s1; [*/ Return value]-|value "
-"at the index #0 in the cursor row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Set`(int`,int`,const`:`:Value`&`): "
-"[%00-00 void_][%00-00* Set][%00-00 (int")
+"*@3 i][%00-00 , Id_][%00-00*@3 id][%00-00 , const_Value`&_][%00-00*@3 v][%00-00 "
+")]&][s6; Sets the value at a given location in the source data matrix. &][s1; [%00-00*C@3 "
+"i]-|zero`-based row number&][s1; [%00-00*C@3 id]-|source index identifier&][s1; [%00-00*C@3 "
+"v]-|value to set to the given cell&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Set`(int`,const`:`:Value`&`): "
+"[%00-00 void_][%00-00* Set][%00-00 (int_][")
 TOPIC_TEXT(
-"_][%00-00*@3 i][%00-00 , int_][%00-00*@3 ii][%00-00 , const_Value`&_][%00-00*@3 "
-"v][%00-00 )]&][s6; Sets the value at a given location in the source data matrix.&][s1; "
-"[%00-00*C@3 i]-|zero`-based row number&][s1; [%00-00*C@3 ii]-|zero`-based index ordinal "
-"number&][s1; [%00-00*C@3 v]-|value to set to the given cell&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Set`(int`,`:`:Id`,const`:`:Value`&`): "
-"[%00-00 void_][%")
+"%00-00*@3 ii][%00-00 , const_Value`&_][%00-00*@3 v][%00-00 )]&][s6; Modifies the "
+"value at a given location in the cursor row. When the row is open for editing, the "
+"function immediately changes the value in the appropriate editor control.&][s1; [%00-00*C@3 "
+"ii]-|zero`-based index ordinal number&][s1; [%00-00*C@3 v]-|value to set&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Set`(`:`:Id`,const`:`:Value`&`): "
+"[%00-00")
 TOPIC_TEXT(
-"00-00* Set][%00-00 (int_][%00-00*@3 i][%00-00 , Id_][%00-00*@3 id][%00-00 , const_Value`&_][%00-00*@3 "
-"v][%00-00 )]&][s6; Sets the value at a given location in the source data matrix. "
-"&][s1; [%00-00*C@3 i]-|zero`-based row number&][s1; [%00-00*C@3 id]-|source index "
-"identifier&][s1; [%00-00*C@3 v]-|value to set to the given cell&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Set`(int`,const`:`:Value`&`): "
-"[%00-00 vo")
+" void_][%00-00* Set][%00-00 (Id_][%00-00*@3 id][%00-00 , const_Value`&_][%00-00*@3 "
+"v][%00-00 )]&][s6; Modifies the value at a given location in the cursor row. This "
+"overloaded version uses the [* Id] identifier to address the relevant index.&][s1; "
+"[%00-00*C@3 id]-|index identifier&][s1; [%00-00*C@3 v]-|value to set&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetColumn`(int`,int`)const: "
+"[%00-00 Value_][%00-00* ")
 TOPIC_TEXT(
-"id_][%00-00* Set][%00-00 (int_][%00-00*@3 ii][%00-00 , const_Value`&_][%00-00*@3 "
-"v][%00-00 )]&][s6; Modifies the value at a given location in the cursor row. When "
-"the row is open for editing, the function immediately changes the value in the appropriate "
-"editor control.&][s1; [%00-00*C@3 ii]-|zero`-based index ordinal number&][s1; [%00-00*C@3 "
-"v]-|value to set&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Set`(`:`")
+"GetColumn][%00-00 (int_][%00-00*@3 row][%00-00 , int_][%00-00*@3 col][%00-00 )_const]&][s6; "
+"Returns the value of a given column. This depends on the column`-index mapping established "
+"when adding columns to the table. When the column is a [/ rownum] type (it is bound "
+"to no source indices), the function just returns the [/ row] parameter. For columns "
+"with a single source index, the function returns ")
 TOPIC_TEXT(
-":Id`,const`:`:Value`&`): [%00-00 void_][%00-00* Set][%00-00 (Id_][%00-00*@3 id][%00-00 "
-", const_Value`&_][%00-00*@3 v][%00-00 )]&][s6; Modifies the value at a given location "
-"in the cursor row. This overloaded version uses the [* Id] identifier to address "
-"the relevant index.&][s1; [%00-00*C@3 id]-|index identifier&][s1; [%00-00*C@3 v]-|value "
-"to set&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetColumn`(int`,int`")
+"the value of the mapped source index. For columns with multiple source indices, "
+"the function returns a [* ValueArray ]containing the values of its source indices.&][s1; "
+"[%00-00*C@3 row]-|zero`-based row index&][s1; [%00-00*C@3 col]-|zero`-based column "
+"index&][s1; [*/ Return value]-|value of the given column&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetConvertedColumn`(int`,int`): "
+"[%00-00 Value_][%00-00* GetC")
 TOPIC_TEXT(
-")const: [%00-00 Value_][%00-00* GetColumn][%00-00 (int_][%00-00*@3 row][%00-00 , "
-"int_][%00-00*@3 col][%00-00 )_const]&][s6; Returns the value of a given column. This "
-"depends on the column`-index mapping established when adding columns to the table. "
-"When the column is a [/ rownum] type (it is bound to no source indices), the function "
-"just returns the [/ row] parameter. For columns with a single sou")
+"onvertedColumn][%00-00 (int_][%00-00*@3 row][%00-00 , int_][%00-00*@3 col][%00-00 "
+")]&][s6; Returns the value of a given column after application of its [* Convert]. "
+"For performance reasons, the values obtained by calls to the [* Convert`::Format] "
+"methods are cached internally within the ArrayCtrl object. You can manipulate the "
+"conversion cache using the methods [*^topic`:`/`/CtrlLib`/src`/ArrayCtr")
 TOPIC_TEXT(
-"rce index, the function returns the value of the mapped source index. For columns "
-"with multiple source indices, the function returns a [* ValueArray ]containing the "
-"values of its source indices.&][s1; [%00-00*C@3 row]-|zero`-based row index&][s1; "
-"[%00-00*C@3 col]-|zero`-based column index&][s1; [*/ Return value]-|value of the "
-"given column&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetConvertedColumn`(int`,int")
-TOPIC_TEXT(
-"`): [%00-00 Value_][%00-00* GetConvertedColumn][%00-00 (int_][%00-00*@3 row][%00-00 "
-", int_][%00-00*@3 col][%00-00 )]&][s6; Returns the value of a given column after "
-"application of its [* Convert]. For performance reasons, the values obtained by calls "
-"to the [* Convert`::Format] methods are cached internally within the ArrayCtrl object. "
-"You can manipulate the conversion cache using the methods [*^t")
-TOPIC_TEXT(
-"opic`:`/`/CtrlLib`/src`/ArrayCtrl`$en`-us`#`:`:ArrayCtrl`:`:ClearCache`(`)^ ClearCache] "
-"and[*  ][*^topic`:`/`/CtrlLib`/src`/ArrayCtrl`$en`-us`#`:`:ArrayCtrl`:`:InvalidateCache`(int`)^ "
+"l`$en`-us`#`:`:ArrayCtrl`:`:ClearCache`(`)^ ClearCache] and[*  ][*^topic`:`/`/CtrlLib`/src`/ArrayCtrl`$en`-us`#`:`:ArrayCtrl`:`:InvalidateCache`(int`)^ "
 "InvalidateCache].&][s1; [%00-00*C@3 row]-|zero`-based row index&][s1; [%00-00*C@3 "
 "col]-|zero`-based column index&][s1; [*/ Return value]-|the converted cell value&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:ReadRow`(int`)const: [")
+"&][s4;:`:`:ArrayCtrl`:`:ReadRow`(int`)const: [%00-00 Vector<Value>_][%00-00* R")
 TOPIC_TEXT(
-"%00-00 Vector<Value>_][%00-00* ReadRow][%00-00 (int_][%00-00*@3 i][%00-00 )_const]&][s6; "
-"Returns a [* Vector] containing the values of all source indices in the given row. "
-"Invariantly, the [* GetCount()] of the returned array is equal to the [* GetIndexCount()] "
-"of the source ArrayCtrl.&][s1; [%00-00*C@3 i]-|zero`-based row index&][s1; [*/ Return "
-"value]-|an array of all source values in the given r")
+"eadRow][%00-00 (int_][%00-00*@3 i][%00-00 )_const]&][s6; Returns a [* Vector] containing "
+"the values of all source indices in the given row. Invariantly, the [* GetCount()] "
+"of the returned array is equal to the [* GetIndexCount()] of the source ArrayCtrl.&][s1; "
+"[%00-00*C@3 i]-|zero`-based row index&][s1; [*/ Return value]-|an array of all source "
+"values in the given row&][s0;3 &][s4;:`:`:ArrayCtrl`:")
 TOPIC_TEXT(
-"ow&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Set`(int`,const`:`:Vector`<`:`:Value`>`&`): [%00-00 "
-"void_][%00-00* Set][%00-00 (int_][%00-00*@3 i][%00-00 , const_Vector<Value>`&_][%00-00*@3 "
-"v][%00-00 )]&][s6; Modified a given row by setting all source index values to values "
-"passed in the parameter [/ v].&][s1; [%00-00*C@3 i]-|zero`-based row index&][s1; "
-"[%00-00*C@3 v]-|an array of values to set to the source da")
+"`:Set`(int`,const`:`:Vector`<`:`:Value`>`&`): [%00-00 void_][%00-00* Set][%00-00 "
+"(int_][%00-00*@3 i][%00-00 , const_Vector<Value>`&_][%00-00*@3 v][%00-00 )]&][s6; "
+"Modified a given row by setting all source index values to values passed in the parameter "
+"[/ v].&][s1; [%00-00*C@3 i]-|zero`-based row index&][s1; [%00-00*C@3 v]-|an array "
+"of values to set to the source data matrix row&][s0;3 &][s4;:`:`:")
 TOPIC_TEXT(
-"ta matrix row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Add`(`): [%00-00 void_][%00-00* Add][%00-00 "
-"()]&][s6; Adds an empty row to the source data matrix.&][s6; [* Note:] the [* InsertValue] "
-"property of the [* IdInfo] structure defines a method to generate / retrieve default "
-"values for newly inserted rows. However, these values are only used during the GUI`-based "
-"[* DoInsert] method and do not apply to the [")
+"ArrayCtrl`:`:Add`(`): [%00-00 void_][%00-00* Add][%00-00 ()]&][s6; Adds an empty "
+"row to the source data matrix.&][s6; [* Note:] the [* InsertValue] property of the "
+"[* IdInfo] structure defines a method to generate / retrieve default values for newly "
+"inserted rows. However, these values are only used during the GUI`-based [* DoInsert] "
+"method and do not apply to the [* Add] method. If you need to se")
 TOPIC_TEXT(
-"* Add] method. If you need to set the newly added source matrix row to some non`-null "
-"defaults, you have to modify the relevant cells manually.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Add`(const`:`:Vector`<`:`:Value`>`&`): "
+"t the newly added source matrix row to some non`-null defaults, you have to modify "
+"the relevant cells manually.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Add`(const`:`:Vector`<`:`:Value`>`&`): "
 "[%00-00 void_][%00-00* Add][%00-00 (const_Vector<Value>`&_][%00-00*@3 v][%00-00 )]&][s6; "
-"Adds a new row at the end of the source data matrix. The [*^topic`:`/`/Core`/src`/Vector`$en`-us^")
+"Adds a new row at the end of the source data matrix. The [*^topic`:`/`/Core`/src`/Vector`$en`-us^ "
+"Vector] parameter contains the ")
 TOPIC_TEXT(
-" Vector] parameter contains the values to be used to initialize the new row of the "
-"matrix.&][s1; [%00-00*C@3 v]-|new matrix row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Add`(const`:`:Value`&`[`,const`:`:Value`&`]`.`.`.`): "
+"values to be used to initialize the new row of the matrix.&][s1; [%00-00*C@3 v]-|new "
+"matrix row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Add`(const`:`:Value`&`[`,const`:`:Value`&`]`.`.`.`): "
 "[%00-00 void_][%00-00* Add][%00-00 (const_Value`&_`[, const_Value`&_`]...)]&][s6; "
 "Adds a new row at the bottom of the source data matrix. This is in fact a series "
-"of functions (generated a")
+"of functions (generated automatically using the [* Expand")
 TOPIC_TEXT(
-"utomatically using the [* Expand] macro) which takes an arbitrary number of arguments. "
-"Its arguments are used to initialize the source indices in the newly added row.&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:Insert`(int`): [%00-00 void_][%00-00* Insert][%00-00 (int_][%00-00*@3 "
-"i][%00-00 )]&][s6; Inserts a new row into the source array. All indices are initialized "
-"to [* Null] values. The [* InsertValue] prop")
+"] macro) which takes an arbitrary number of arguments. Its arguments are used to "
+"initialize the source indices in the newly added row.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Insert`(int`): "
+"[%00-00 void_][%00-00* Insert][%00-00 (int_][%00-00*@3 i][%00-00 )]&][s6; Inserts "
+"a new row into the source array. All indices are initialized to [* Null] values. "
+"The [* InsertValue] property doesn`'t apply; if you need")
 TOPIC_TEXT(
-"erty doesn`'t apply; if you need to set the newly created row to some non`-trivial "
-"values, you have to do so manually.&][s1; [%00-00*C@3 i]-|zero`-based position of "
-"the newly created row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Insert`(int`,const`:`:Vector`<`:`:Value`>`&`): "
+" to set the newly created row to some non`-trivial values, you have to do so manually.&][s1; "
+"[%00-00*C@3 i]-|zero`-based position of the newly created row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Insert`(int`,const`:`:Vector`<`:`:Value`>`&`): "
 "[%00-00 void_][%00-00* Insert][%00-00 (int_][%00-00*@3 i][%00-00 , const_Vector<Value>`&_][%00-00*@3 "
-"v][%00-00 )]&][s6; Inserts a new r")
+"v][%00-00 )]&][s6; Inserts a new row into the array at a given pos")
 TOPIC_TEXT(
-"ow into the array at a given position. The second parameter, [/ v], is used to initialize "
-"the source indices of the newly created row.&][s1; [%00-00*C@3 i]-|zero`-based row "
-"index&][s1; [%00-00*C@3 v]-|a vector of values used to initialize the source indices "
-"of the given row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Remove`(int`): [%00-00 void_][%00-00* "
-"Remove][%00-00 (int_][%00-00*@3 i][%00-00 )]&][s6; Remov")
+"ition. The second parameter, [/ v], is used to initialize the source indices of "
+"the newly created row.&][s1; [%00-00*C@3 i]-|zero`-based row index&][s1; [%00-00*C@3 "
+"v]-|a vector of values used to initialize the source indices of the given row&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:Remove`(int`): [%00-00 void_][%00-00* Remove][%00-00 (int_][%00-00*@3 "
+"i][%00-00 )]&][s6; Removes the given source data row.&][")
 TOPIC_TEXT(
-"es the given source data row.&][s6; [* Note:] the [* AskRemove] property of the "
-"[* ArrayCtrl] object tells whether a confirmation dialog should pop up every time "
-"the user wants to remove a row. However, this method applies only to the GUI`-based "
-"row removal; the [* Remove] method always removes the requested row unconditionally "
-"without popping up any confirmation dialog.&][s1; [%00-00*C@3 i]-|zero")
+"s6; [* Note:] the [* AskRemove] property of the [* ArrayCtrl] object tells whether "
+"a confirmation dialog should pop up every time the user wants to remove a row. However, "
+"this method applies only to the GUI`-based row removal; the [* Remove] method always "
+"removes the requested row unconditionally without popping up any confirmation dialog.&][s1; "
+"[%00-00*C@3 i]-|zero`-based index of the row to remo")
 TOPIC_TEXT(
-"`-based index of the row to remove&][s0;* &][s0;3 &][s4;:`:`:ArrayCtrl`:`:SwapUp`(`): "
-"[%00-00 void_][%00-00* SwapUp][%00-00 ()]&][s6; Exchanges the cursor row with the "
-"preceding row, effectively moving it up.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SwapDown`(`): "
-"[%00-00 void_][%00-00* SwapDown][%00-00 ()]&][s6; Exchanges the cursor row with following "
-"row, effectively moving it down.&][s0;3 &][s4;:`:`:Array")
+"ve&][s0;* &][s0;3 &][s4;:`:`:ArrayCtrl`:`:SwapUp`(`): [%00-00 void_][%00-00* SwapUp][%00-00 "
+"()]&][s6; Exchanges the cursor row with the preceding row, effectively moving it "
+"up.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SwapDown`(`): [%00-00 void_][%00-00* SwapDown][%00-00 "
+"()]&][s6; Exchanges the cursor row with following row, effectively moving it down.&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:Sort`(const`:`:ArrayCtrl")
 TOPIC_TEXT(
-"Ctrl`:`:Sort`(const`:`:ArrayCtrl`:`:Order`&`): [%00-00 void_][%00-00* Sort][%00-00 "
-"(const_ArrayCtrl`::Order`&_][%00-00*@3 order][%00-00 )]&][s6; Sorts the array rows "
-"according to a given ordering predicate. The [* ArrayCtrl`::Order] object defines "
-"the ordering predicate; its [* operator ()] should return [* true] whenever its first "
-"parameter (a vector containing the values of all source indices in")
+"`:`:Order`&`): [%00-00 void_][%00-00* Sort][%00-00 (const_ArrayCtrl`::Order`&_][%00-00*@3 "
+"order][%00-00 )]&][s6; Sorts the array rows according to a given ordering predicate. "
+"The [* ArrayCtrl`::Order] object defines the ordering predicate; its [* operator "
+"()] should return [* true] whenever its first parameter (a vector containing the "
+"values of all source indices in a row) is less than its second ")
 TOPIC_TEXT(
-" a row) is less than its second parameter.&][s1; [%00-00*C@3 order]-|&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Sort`(int`,int`,const`:`:ArrayCtrl`:`:Order`&`): "
+"parameter.&][s1; [%00-00*C@3 order]-|&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Sort`(int`,int`,const`:`:ArrayCtrl`:`:Order`&`): "
 "[%00-00 void_][%00-00* Sort][%00-00 (int_][%00-00*@3 from][%00-00 , int_][%00-00*@3 "
 "count][%00-00 , const_ArrayCtrl`::Order`&_][%00-00*@3 order][%00-00 )]&][s6; Sorts "
-"a portion of the array using a given ordering predicate.&][s1; [%00-00*C@3 from]-|z")
+"a portion of the array using a given ordering predicate.&][s1; [%00-00*C@3 from]-|zero`-based "
+"index of the first ro")
 TOPIC_TEXT(
-"ero`-based index of the first row to sort&][s1; [%00-00*C@3 count]-|number of rows "
-"to be sorted&][s1; [%00-00*C@3 order]-|the ordering predicate object. The object "
-"should be derived from [* ArrayCtrl`::Order] and should override the [* operator "
-"()] method. This method should return [* true ]whenever its first parameter (a vector "
-"containing all source index values for a certain row) is less than it")
+"w to sort&][s1; [%00-00*C@3 count]-|number of rows to be sorted&][s1; [%00-00*C@3 "
+"order]-|the ordering predicate object. The object should be derived from [* ArrayCtrl`::Order] "
+"and should override the [* operator ()] method. This method should return [* true "
+"]whenever its first parameter (a vector containing all source index values for a "
+"certain row) is less than its second parameter.&][s0;3 &][s4")
 TOPIC_TEXT(
-"s second parameter.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Sort`(int`(`*`)`(const`:`:Vector`<`:`:Value`>`&v1`,const`:`:Vector`<`:`:Value`>`&v2`)`): "
+";:`:`:ArrayCtrl`:`:Sort`(int`(`*`)`(const`:`:Vector`<`:`:Value`>`&v1`,const`:`:Vector`<`:`:Value`>`&v2`)`): "
 "[%00-00 void_][%00-00* Sort][%00-00 (int_(`*][%00-00*@3 compare][%00-00 )(const_Vector<Value>`&_v1, "
 "const_Vector<Value>`&_v2))]&][s6; Sorts the array rows according to the order defined "
-"by the specified ordering predicate [/ compare]. This is supposed to be a ")
+"by the specified ordering predicate [/ compare]. This is supposed to be a global "
+"function returning [* tru")
 TOPIC_TEXT(
-"global function returning [* true] whenever its first parameter ([/ v1], an array "
-"consisting of all source indices within a row) is less than the second parameter "
-"[/ v2] (according to the desired ordering).&][s1; [%00-00*C@3 compare]-|the ordering "
-"predicate; _the function is supposed to return [* true] whenever its first parameter "
-"([/ v1]) is less than the second parameter ([/ v2]) according to th")
+"e] whenever its first parameter ([/ v1], an array consisting of all source indices "
+"within a row) is less than the second parameter [/ v2] (according to the desired "
+"ordering).&][s1; [%00-00*C@3 compare]-|the ordering predicate; _the function is supposed "
+"to return [* true] whenever its first parameter ([/ v1]) is less than the second "
+"parameter ([/ v2]) according to the desired ordering.&][s0;3 &][s4")
 TOPIC_TEXT(
-"e desired ordering.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Sort`(int`,int`(`*`)`(const`:`:Value`&v1`,const`:`:Value`&v2`)`): "
+";:`:`:ArrayCtrl`:`:Sort`(int`,int`(`*`)`(const`:`:Value`&v1`,const`:`:Value`&v2`)`): "
 "[%00-00 void_][%00-00* Sort][%00-00 (int_][%00-00*@3 ii][%00-00 , int_(`*][%00-00*@3 "
 "compare][%00-00 )(const_Value`&_v1, const_Value`&_v2)_`=_StdValueCompare)]&][s6; "
 "Sorts the array rows according to the given ordering predicate for the source index "
-"with a given ordinal number. When")
+"with a given ordinal number. When not explicitly specified, the [")
 TOPIC_TEXT(
-" not explicitly specified, the [* StdValueCompare] function is used as the default "
-"comparison predicate.&][s1; [%00-00*C@3 ii]-|zero`-based ordinal number of the source "
-"index used for sorting&][s1; [%00-00*C@3 compare]-|the sorting predicate function: "
-"the function is supposed to return [* true] whenever its first parameter ([/ v1]) "
-"is less than the second parameter ([/ v2]) according to the desire")
+"* StdValueCompare] function is used as the default comparison predicate.&][s1; [%00-00*C@3 "
+"ii]-|zero`-based ordinal number of the source index used for sorting&][s1; [%00-00*C@3 "
+"compare]-|the sorting predicate function: the function is supposed to return [* true] "
+"whenever its first parameter ([/ v1]) is less than the second parameter ([/ v2]) "
+"according to the desired ordering.&][s0;3 &][s4;:`:`:Ar")
 TOPIC_TEXT(
-"d ordering.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Sort`(`:`:Id`,int`(`*`)`(const`:`:Value`&v1`,const`:`:Value`&v2`)`): "
+"rayCtrl`:`:Sort`(`:`:Id`,int`(`*`)`(const`:`:Value`&v1`,const`:`:Value`&v2`)`): "
 "[%00-00 void_][%00-00* Sort][%00-00 (Id_][%00-00*@3 id][%00-00 , int_(`*][%00-00*@3 "
 "compare][%00-00 )(const_Value`&_v1, const_Value`&_v2)_`=_StdValueCompare)]&][s6; "
 "Sorts the array rows according to the given ordering predicate for the source index "
-"with a given identifier. When not expli")
+"with a given identifier. When not explicitly specified, the [* StdValue")
 TOPIC_TEXT(
-"citly specified, the [* StdValueCompare] function is used as the default comparison "
-"predicate.&][s1; [%00-00*C@3 id]-|identifier of the source index used for sorting&][s1; "
-"[%00-00*C@3 compare]-|the sorting predicate function: the function is supposed to "
-"return [* true] whenever its first parameter ([/ v1]) is less than the second parameter "
-"([/ v2]) according to the desired ordering .&][s0;3 &][s4;")
+"Compare] function is used as the default comparison predicate.&][s1; [%00-00*C@3 "
+"id]-|identifier of the source index used for sorting&][s1; [%00-00*C@3 compare]-|the "
+"sorting predicate function: the function is supposed to return [* true] whenever "
+"its first parameter ([/ v1]) is less than the second parameter ([/ v2]) according "
+"to the desired ordering .&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Sort`(`): [%00")
 TOPIC_TEXT(
-":`:`:ArrayCtrl`:`:Sort`(`): [%00-00 void_][%00-00* Sort][%00-00 ()]&][s6; Sorts "
-"the array according to the default ordering predicate for the first source index. "
-"This is equivalent to calling [* Sort(0)].&][s0;* &][s0;3 &][s4;:`:`:ArrayCtrl`:`:ClearCache`(`): "
-"void_[* ClearCache]()&][s6; Invalidates the whole [/ convert cache]. The convert "
-"cache keeps the results of the [* Convert`::Format] method ")
+"-00 void_][%00-00* Sort][%00-00 ()]&][s6; Sorts the array according to the default "
+"ordering predicate for the first source index. This is equivalent to calling [* Sort(0)].&][s0;* "
+"&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ClearCache`(`): void_[* ClearCache]()&][s6; Invalidates "
+"the whole [/ convert cache]. The convert cache keeps the results of the [* Convert`::Format] "
+"method applied to individual array data")
 TOPIC_TEXT(
-"applied to individual array data cells for performance reasons. Whenever you call "
-"the [* ClearCache] method, all cache entries are marked as obsolete and the [* Convert]`'s "
-"[* Format] method will be called as soon as the converted value of a table cell is "
-"required (usually during the next [* Paint]).&][s0;3 &][s4;:`:`:ArrayCtrl`:`:InvalidateCache`(int`): "
-"void_[* InvalidateCache](int_[*@3 i])&][s6;")
+" cells for performance reasons. Whenever you call the [* ClearCache] method, all "
+"cache entries are marked as obsolete and the [* Convert]`'s [* Format] method will "
+"be called as soon as the converted value of a table cell is required (usually during "
+"the next [* Paint]).&][s0;3 &][s4;:`:`:ArrayCtrl`:`:InvalidateCache`(int`): void_[* "
+"InvalidateCache](int_[*@3 i])&][s6; Invalidates a given row in the ")
 TOPIC_TEXT(
-" Invalidates a given row in the [/ convert cache]. For performance reasons, the "
-"results of the [* Convert`::Format] method applied to the individual data cells are "
-"kept in a cache. This function marks a given row of the cache as obsolete; this means "
-"the next time the converted values are to be used (usually within the [* Paint] routine "
-"or when setting up the row editor controls), the [* Convert] o")
+"[/ convert cache]. For performance reasons, the results of the [* Convert`::Format] "
+"method applied to the individual data cells are kept in a cache. This function marks "
+"a given row of the cache as obsolete; this means the next time the converted values "
+"are to be used (usually within the [* Paint] routine or when setting up the row editor "
+"controls), the [* Convert] objects are used again to generat")
 TOPIC_TEXT(
-"bjects are used again to generate the actualized output values.&][s1; [*C@3 i]-|zero`-based "
-"row index&][s0;* &][s0;* Cursor and selection management&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetSelectCount`(`)const: "
+"e the actualized output values.&][s1; [*C@3 i]-|zero`-based row index&][s0;* &][s0;* "
+"Cursor and selection management&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetSelectCount`(`)const: "
 "[%00-00 int_][%00-00* GetSelectCount][%00-00 ()_const]&][s6; Returns the number of "
 "selected row within the table.&][s1; [*/ Return value]-|number of selected records "
-"(in the range [/ `[0 .. GetCo")
+"(in the range [/ `[0 .. GetCount()`]])&][s0;3 &][s4;:`:`:Arra")
 TOPIC_TEXT(
-"unt()`]])&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsSelection`(`)const: [%00-00 bool_][%00-00* "
-"IsSelection][%00-00 ()_const]&][s6; Checks whether any rows are selected. Equivalent "
-"to [* GetSelectCount() > 0].&][s1; [*/ Return value]-|[* true] `= there is at least "
-"one selected row, [* false] `= there is none.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Select`(int`,bool`): "
-"[%00-00 void_][%00-00* Select][%00-00 (int_][%0")
+"yCtrl`:`:IsSelection`(`)const: [%00-00 bool_][%00-00* IsSelection][%00-00 ()_const]&][s6; "
+"Checks whether any rows are selected. Equivalent to [* GetSelectCount() > 0].&][s1; "
+"[*/ Return value]-|[* true] `= there is at least one selected row, [* false] `= there "
+"is none.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Select`(int`,bool`): [%00-00 void_][%00-00* "
+"Select][%00-00 (int_][%00-00*@3 i][%00-00 , bool_][%00-0")
 TOPIC_TEXT(
-"0-00*@3 i][%00-00 , bool_][%00-00*@3 sel][%00-00 _`=_true)]&][s6; Selects / unselects "
-"a given row.&][s1; [%00-00*C@3 i]-|zero`-based row index&][s1; [%00-00*C@3 sel]-|[* "
-"true] `= add row to the current selection, [* false] `= remove row from selection&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:Select`(int`,int`,bool`): [%00-00 void_][%00-00* Select][%00-00 "
-"(int_][%00-00*@3 i][%00-00 , int_][%00-00*@3 count][%")
+"0*@3 sel][%00-00 _`=_true)]&][s6; Selects / unselects a given row.&][s1; [%00-00*C@3 "
+"i]-|zero`-based row index&][s1; [%00-00*C@3 sel]-|[* true] `= add row to the current "
+"selection, [* false] `= remove row from selection&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Select`(int`,int`,bool`): "
+"[%00-00 void_][%00-00* Select][%00-00 (int_][%00-00*@3 i][%00-00 , int_][%00-00*@3 "
+"count][%00-00 , bool_][%00-00*@3 sel][%0")
 TOPIC_TEXT(
-"00-00 , bool_][%00-00*@3 sel][%00-00 _`=_true)]&][s6; Selects / unselects a given "
-"row range.&][s1; [%00-00*C@3 i]-|zero`-based index of the first row to select / unselect&][s1; "
-"[%00-00*C@3 count]-|number of rows to select / unselect&][s1; [%00-00*C@3 sel]-|[* "
-"true] `= select the rows, [* false] `= unselect the rows&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsSelected`(int`)const: "
-"[%00-00 bool_][%00-00* IsSel")
+"0-00 _`=_true)]&][s6; Selects / unselects a given row range.&][s1; [%00-00*C@3 i]-|zero`-based "
+"index of the first row to select / unselect&][s1; [%00-00*C@3 count]-|number of rows "
+"to select / unselect&][s1; [%00-00*C@3 sel]-|[* true] `= select the rows, [* false] "
+"`= unselect the rows&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsSelected`(int`)const: [%00-00 "
+"bool_][%00-00* IsSelected][%00-00 (int_][%00-00*@3 i")
 TOPIC_TEXT(
-"ected][%00-00 (int_][%00-00*@3 i][%00-00 )_const]&][s6; Checks whether a given row "
-"is selected. For tables without the multiselection option, this is equal to the check "
-"[* GetCursor() `=`= i].&][s1; [%00-00*C@3 i]-|zero`-based row index to check for "
-"selection&][s1; [*/ Return value]-|[* true] `= row is selected, [* false] `= not "
-"selected&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ClearSelection`(`): [%00-00 v")
+"][%00-00 )_const]&][s6; Checks whether a given row is selected. For tables without "
+"the multiselection option, this is equal to the check [* GetCursor() `=`= i].&][s1; "
+"[%00-00*C@3 i]-|zero`-based row index to check for selection&][s1; [*/ Return value]-|[* "
+"true] `= row is selected, [* false] `= not selected&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ClearSelection`(`): "
+"[%00-00 void_][%00-00* ClearSelection][%0")
 TOPIC_TEXT(
-"oid_][%00-00* ClearSelection][%00-00 ()]&][s6; Clears the current selection (unselects "
-"all selected rows).&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsCursor`(`)const: [%00-00 bool_][%00-00* "
-"IsCursor][%00-00 ()_const]&][s6; Checks whether the cursor is within the table. This "
-"is equivalent to [* GetCursor()_>_0].&][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetCursor`(int`): "
-"[%00-00 bool_][%00-00*")
+"0-00 ()]&][s6; Clears the current selection (unselects all selected rows).&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:IsCursor`(`)const: [%00-00 bool_][%00-00* IsCursor][%00-00 "
+"()_const]&][s6; Checks whether the cursor is within the table. This is equivalent "
+"to [* GetCursor()_>`=_0].&][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetCursor`(int`): "
+"[%00-00 bool_][%00-00* SetCursor][%00-00 (int_][%00-")
 TOPIC_TEXT(
-" SetCursor][%00-00 (int_][%00-00*@3 i][%00-00 )]&][s6; Sets the current cursor row. "
-"When an array row is open for editing, the function first commits the edited row, "
-"then moved the cursor to the new row. When the edited row cannot be commited, the "
-"function returns [* false] and doesn`'t change the cursor location.&][s1; [%00-00*C@3 "
-"i]-|zero`-based row index&][s1; [*/ Return value]-|[* true] `= cur")
+"00*@3 i][%00-00 )]&][s6; Sets the current cursor row. When an array row is open "
+"for editing, the function first commits the edited row, then moved the cursor to "
+"the new row. When the edited row cannot be commited, the function returns [* false] "
+"and doesn`'t change the cursor location.&][s1; [%00-00*C@3 i]-|zero`-based row index&][s1; "
+"[*/ Return value]-|[* true] `= cursor has been moved, [* false ]")
 TOPIC_TEXT(
-"sor has been moved, [* false ]when not (when committing the previously edited row "
-"failed)&][s0;3 &][s4;:`:`:ArrayCtrl`:`:KillCursor`(`): [%00-00 bool_][%00-00* KillCursor][%00-00 "
-"()]&][s6; Moves the cursor away from the array. When an array row is open for editing, "
-"the function first commits the edited row, then moved the cursor away from the array. "
-"When the edited row cannot be commited, the func")
+"when not (when committing the previously edited row failed)&][s0;3 &][s4;:`:`:ArrayCtrl`:`:KillCursor`(`): "
+"[%00-00 bool_][%00-00* KillCursor][%00-00 ()]&][s6; Moves the cursor away from the "
+"array. When an array row is open for editing, the function first commits the edited "
+"row, then moved the cursor away from the array. When the edited row cannot be commited, "
+"the function returns [* false] and doe")
 TOPIC_TEXT(
-"tion returns [* false] and doesn`'t change the cursor location.&][s1; [*/ Return "
-"value]-|[* true] `= cursor has been moved away from the array, [* false] when not "
-"(when committing the previously edited row failed)&][s0;3 &][s4;:`:`:ArrayCtrl`:`:CancelCursor`(`): "
-"[%00-00 void_][%00-00* CancelCursor][%00-00 ()]&][s6; Cancels editation of the row "
-"being currently edited. All changes made in the indivi")
+"sn`'t change the cursor location.&][s1; [*/ Return value]-|[* true] `= cursor has "
+"been moved away from the array, [* false] when not (when committing the previously "
+"edited row failed)&][s0;3 &][s4;:`:`:ArrayCtrl`:`:CancelCursor`(`): [%00-00 void_][%00-00* "
+"CancelCursor][%00-00 ()]&][s6; Cancels editation of the row being currently edited. "
+"All changes made in the individual column editors are reject")
 TOPIC_TEXT(
-"dual column editors are rejected.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetCursor`(`)const: "
-"[%00-00 int_][%00-00* GetCursor][%00-00 ()_const]&][s6; Returns the current cursor "
-"row, `-1 when none.&][s1; [*/ Return value]-|zero`-based cursor row index, `-1 `= "
-"cursor is not in the array&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GoBegin`(`): [%00-00 void_][%00-00* "
-"GoBegin][%00-00 ()]&][s6; Moves the cursor to the first ")
+"ed.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetCursor`(`)const: [%00-00 int_][%00-00* GetCursor][%00-00 "
+"()_const]&][s6; Returns the current cursor row, `-1 when none.&][s1; [*/ Return value]-|zero`-based "
+"cursor row index, `-1 `= cursor is not in the array&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GoBegin`(`): "
+"[%00-00 void_][%00-00* GoBegin][%00-00 ()]&][s6; Moves the cursor to the first row "
+"in the array (equivalent t")
 TOPIC_TEXT(
-"row in the array (equivalent to [* SetCursor(0)]).&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GoEnd`(`): "
-"[%00-00 void_][%00-00* GoEnd][%00-00 ()]&][s6; Moves the cursor to the last array "
-"row (equivalent to [* SetCursor(GetCount() `- 1)]).&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetCursorSc`(`)const: "
+"o [* SetCursor(0)]).&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GoEnd`(`): [%00-00 void_][%00-00* "
+"GoEnd][%00-00 ()]&][s6; Moves the cursor to the last array row (equivalent to [* "
+"SetCursor(GetCount() `- 1)]).&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetCursorSc`(`)const: "
 "[%00-00 int_][%00-00* GetCursorSc][%00-00 ()_const]&][s6; Returns the visual vertical "
-"position of the cursor row relativ")
+"position of the cursor row relative to the current view. This me")
 TOPIC_TEXT(
-"e to the current view. This method, in combination with [* ScCursor], can be used "
-"to reposition the cursor row while maintaining the same visual position of the row "
-"within the array view.&][s1; [*/ Return value]-|an integer describing the vertical "
-"position of the cursor row relative to the array view&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ScCursor`(int`): "
-"[%00-00 void_][%00-00* ScCursor][%00-00 (int_][%00")
+"thod, in combination with [* ScCursor], can be used to reposition the cursor row "
+"while maintaining the same visual position of the row within the array view.&][s1; "
+"[*/ Return value]-|an integer describing the vertical position of the cursor row "
+"relative to the array view&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ScCursor`(int`): [%00-00 "
+"void_][%00-00* ScCursor][%00-00 (int_][%00-00*@3 a][%00-00 )]&][s6; Modi")
 TOPIC_TEXT(
-"-00*@3 a][%00-00 )]&][s6; Modifies the scrollbar position so that the current cursor "
-"row appears at a given vertical position relative to the array view. By doing the "
-"following sequence of operations: [* GetCursorSc], then reposition the cursor row, "
-"then [* ScCursor], you can achieve cursor relocation while maintaining its visual "
-"location within the array view.&][s1; [%00-00*C@3 a]-|an integer des")
+"fies the scrollbar position so that the current cursor row appears at a given vertical "
+"position relative to the array view. By doing the following sequence of operations: "
+"[* GetCursorSc], then reposition the cursor row, then [* ScCursor], you can achieve "
+"cursor relocation while maintaining its visual location within the array view.&][s1; "
+"[%00-00*C@3 a]-|an integer describing the vertical position ")
 TOPIC_TEXT(
-"cribing the vertical position of the cursor row (typically a number returned by "
-"a previous call to [* GetCursorSc])&][s0;3 &][s4;:`:`:ArrayCtrl`:`:CenterCursor`(`): "
-"[%00-00 void_][%00-00* CenterCursor][%00-00 ()]&][s6; Modifies the scrollbar position "
-"so that the current cursor row appears in the middle of the array view.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ScrollInto`(int`): "
-"[%00-00 void_][%00-00* Scro")
+"of the cursor row (typically a number returned by a previous call to [* GetCursorSc])&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:CenterCursor`(`): [%00-00 void_][%00-00* CenterCursor][%00-00 "
+"()]&][s6; Modifies the scrollbar position so that the current cursor row appears "
+"in the middle of the array view.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ScrollInto`(int`): "
+"[%00-00 void_][%00-00* ScrollInto][%00-00 (int_][%00-00*@")
 TOPIC_TEXT(
-"llInto][%00-00 (int_][%00-00*@3 line][%00-00 )]&][s6; Moves the scrollbar by the "
-"least possible amount in order to make the given array row visible. When the given "
-"array row is already visible, the function does nothing.&][s1; [%00-00*C@3 line]-|zero`-based "
-"row index of the array row to make visible&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ScrollIntoCursor`(`): "
-"[%00-00 void_][%00-00* ScrollIntoCursor][%00-0")
+"3 line][%00-00 )]&][s6; Moves the scrollbar by the least possible amount in order "
+"to make the given array row visible. When the given array row is already visible, "
+"the function does nothing.&][s1; [%00-00*C@3 line]-|zero`-based row index of the "
+"array row to make visible&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ScrollIntoCursor`(`): [%00-00 "
+"void_][%00-00* ScrollIntoCursor][%00-00 ()]&][s6; Moves the scrollba")
 TOPIC_TEXT(
-"0 ()]&][s6; Moves the scrollbar by the least possible amount in order to make the "
-"cursor row visible. This is equivalent to [* ScrollInto(GetCursor())].&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetScroll`(`)const: "
+"r by the least possible amount in order to make the cursor row visible. This is "
+"equivalent to [* ScrollInto(GetCursor())].&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetScroll`(`)const: "
 "[%00-00 int_][%00-00* GetScroll][%00-00 ()_const]&][s6; Returns the current vertical "
 "scrollbar position.&][s1; [*/ Return value]-|Pixel position of the vertical scrollbar. "
-"Position 0 is at the ver")
+"Position 0 is at the very top (the top row of the arra")
 TOPIC_TEXT(
-"y top (the top row of the array is fully visible).&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ScrollTo`(int`): "
-"[%00-00 void_][%00-00* ScrollTo][%00-00 (int_][%00-00*@3 sc][%00-00 )]&][s6; Moves "
-"the vertical array scrollbar to a given position.&][s1; [%00-00*C@3 sc]-|Pixel position "
-"of the scrollbar. The visible portion of the array can be obtained conceptually by "
-"taking the stack of array rows with its top ali")
+"y is fully visible).&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ScrollTo`(int`): [%00-00 void_][%00-00* "
+"ScrollTo][%00-00 (int_][%00-00*@3 sc][%00-00 )]&][s6; Moves the vertical array scrollbar "
+"to a given position.&][s1; [%00-00*C@3 sc]-|Pixel position of the scrollbar. The "
+"visible portion of the array can be obtained conceptually by taking the stack of "
+"array rows with its top aligned at the top of the view an")
 TOPIC_TEXT(
-"gned at the top of the view and moving it [/ sc] pixels upwards.&][s0;* &][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:Find`(const`:`:Value`&`,int`,int`)const: [%00-00 int_][%00-00* "
-"Find][%00-00 (const_Value`&_][%00-00*@3 v][%00-00 , int_][%00-00*@3 ii][%00-00 _`=_][%00-00@3 "
-"0][%00-00 , int_][%00-00*@3 from][%00-00 _`=_][%00-00@3 0][%00-00 )_const]&][s6; "
-"&][s1; [%00-00*C@3 v]-|value to look for in the given sour")
+"d moving it [/ sc] pixels upwards.&][s0;* &][s0;3 &][s4;:`:`:ArrayCtrl`:`:Find`(const`:`:Value`&`,int`,int`)const: "
+"[%00-00 int_][%00-00* Find][%00-00 (const_Value`&_][%00-00*@3 v][%00-00 , int_][%00-00*@3 "
+"ii][%00-00 _`=_][%00-00@3 0][%00-00 , int_][%00-00*@3 from][%00-00 _`=_][%00-00@3 "
+"0][%00-00 )_const]&][s6; &][s1; [%00-00*C@3 v]-|value to look for in the given source "
+"index&][s1; [%00-00*C@3 ii]")
 TOPIC_TEXT(
-"ce index&][s1; [%00-00*C@3 ii]-|zero`-based ordinal number of the source index to "
-"search&][s1; [%00-00*C@3 from]-|zero`-based row index to start the search from&][s1; "
-"[*/ Return value]-|zero`-based number of the matched row, `-1 when none&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Find`(const`:`:Value`&`,`:`:Id`,int`)const: "
-"[%00-00 int_][%00-00* Find][%00-00 (const_Value`&_][%00-00*@3 v][%00-00 , Id_][%00-00*")
-TOPIC_TEXT(
-"@3 id][%00-00 , int_][%00-00*@3 from][%00-00 _`=_][%00-00@3 0][%00-00 )_const]&][s6; "
-"Locates the row (using linear search beginning at the row [/ from]) in which the "
-"source index value identified by [/ id] equals [/ val]. If such a row is found, the "
-"function returns its zero`-based index. When not matched, the function returns `-1.&][s1; "
-"[%00-00*C@3 v]-|value to look for in the given source index&")
-TOPIC_TEXT(
-"][s1; [%00-00*C@3 id]-|source index identifier&][s1; [%00-00*C@3 from]-|zero`-based "
+"-|zero`-based ordinal number of the source index to search&][s1; [%00-00*C@3 from]-|zero`-based "
 "row index to start the search from&][s1; [*/ Return value]-|zero`-based number of "
-"the matched row, `-1 when none&][s0;3 &][s4;:`:`:ArrayCtrl`:`:FindSetCursor`(const`:`:Value`&`,int`,int`): "
+"the matched row, `-1 when none&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Find`(const`:`:Value`&`,`:`:Id`,int`)const: "
+"[%00-00 int_][%00-00* Find][%00-00 (const_Value`&_][%00-00*@3 v][%00-00 , Id_][%00-00*@3 "
+"id][%00-00 , int_][%00-00*@")
+TOPIC_TEXT(
+"3 from][%00-00 _`=_][%00-00@3 0][%00-00 )_const]&][s6; Locates the row (using linear "
+"search beginning at the row [/ from]) in which the source index value identified "
+"by [/ id] equals [/ val]. If such a row is found, the function returns its zero`-based "
+"index. When not matched, the function returns `-1.&][s1; [%00-00*C@3 v]-|value to "
+"look for in the given source index&][s1; [%00-00*C@3 id]-|source ")
+TOPIC_TEXT(
+"index identifier&][s1; [%00-00*C@3 from]-|zero`-based row index to start the search "
+"from&][s1; [*/ Return value]-|zero`-based number of the matched row, `-1 when none&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:FindSetCursor`(const`:`:Value`&`,int`,int`): [%00-00 bool_][%00-00* "
+"FindSetCursor][%00-00 (const_Value`&_][%00-00*@3 val][%00-00 , int_][%00-00*@3 ii][%00-00 "
+"_`=_][%00-00@3 0][%00-00 , int_][%00-00*@3 f")
+TOPIC_TEXT(
+"rom][%00-00 _`=_][%00-00@3 0][%00-00 )]&][s6; Locates the row (using linear search "
+"beginning at the row [/ from]) in which the source index value identified by its "
+"ordinal number [/ ii] equals [/ val]. If such a row is found, the [* SetCursor] is "
+"called automatically to move the cursor to such a row.&][s1; [%00-00*C@3 val]-|value "
+"to look for in the given source index&][s1; [%00-00*C@3 ii]-|zero`-b")
+TOPIC_TEXT(
+"ased ordinal number of the source index to search&][s1; [%00-00*C@3 from]-|zero`-based "
+"row index to start the search from&][s1; [*/ Return value]-|zero`-based number of "
+"the matched row, `-1 when none&][s0;3 &][s4;:`:`:ArrayCtrl`:`:FindSetCursor`(const`:`:Value`&`,`:`:Id`,int`): "
 "[%00-00 bool_][%00-00* FindSetCursor][%00-00 (const_Value`&_][%00-00*@3 val][%00-00 "
-", int_][%00-00*@3 ii][%00-00 _`=_][%00-00@3")
+", Id_][%00-00*@3 id][%00-00 , int_][%")
 TOPIC_TEXT(
-" 0][%00-00 , int_][%00-00*@3 from][%00-00 _`=_][%00-00@3 0][%00-00 )]&][s6; Locates "
-"the row (using linear search beginning at the row [/ from]) in which the source index "
-"value identified by its ordinal number [/ ii] equals [/ val]. If such a row is found, "
-"the [* SetCursor] is called automatically to move the cursor to such a row.&][s1; "
-"[%00-00*C@3 val]-|value to look for in the given source index&")
+"00-00*@3 from][%00-00 _`=_][%00-00@3 0][%00-00 )]&][s6; Locates the row (using linear "
+"search beginning at the row [/ from]) in which the source index value identified "
+"by [/ id] equals [/ val]. If such a row is found, the [* SetCursor] is called automatically "
+"to move the cursor to such a row.&][s1; [%00-00*C@3 val]-|value to look for in the "
+"given source index&][s1; [%00-00*C@3 id]-|source index ide")
 TOPIC_TEXT(
-"][s1; [%00-00*C@3 ii]-|zero`-based ordinal number of the source index to search&][s1; "
-"[%00-00*C@3 from]-|zero`-based row index to start the search from&][s1; [*/ Return "
-"value]-|zero`-based number of the matched row, `-1 when none&][s0;3 &][s4;:`:`:ArrayCtrl`:`:FindSetCursor`(const`:`:Value`&`,`:`:Id`,int`): "
-"[%00-00 bool_][%00-00* FindSetCursor][%00-00 (const_Value`&_][%00-00*@3 val][%00-00 "
-", Id_][")
+"ntifier&][s1; [%00-00*C@3 from]-|zero`-based row index to start the search from&][s1; "
+"[*/ Return value]-|[* true] `= the desired row was found (and the cursor set), [* "
+"false] when not&][s0;* &][s0;* &][s0;* User interface elements&][s0;3 &][s4;:`:`:ArrayCtrl`:`:StdBar`(`:`:Bar`&`): "
+"void_[* StdBar](Bar`&_[*@3 menu])&][s6; The default array local menu. The default "
+"local menu consists of the standard")
 TOPIC_TEXT(
-"%00-00*@3 id][%00-00 , int_][%00-00*@3 from][%00-00 _`=_][%00-00@3 0][%00-00 )]&][s6; "
-"Locates the row (using linear search beginning at the row [/ from]) in which the "
-"source index value identified by [/ id] equals [/ val]. If such a row is found, the "
-"[* SetCursor] is called automatically to move the cursor to such a row.&][s1; [%00-00*C@3 "
-"val]-|value to look for in the given source index&][s1; [%0")
+" editation actions (inserting / appending / duplicating a row, editing a row, removing "
+"a row, moving a row, select all rows) filtered by the array properties enabling / "
+"disabling the various GUI elements (item insertion / deletion etc.). &][s1; [*C@3 "
+"menu]-|the [* Bar] object representing the menu being generated&][s0;* &][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsModified`(int`)const: "
+"[%00-00 bool_][%00-00*")
 TOPIC_TEXT(
-"0-00*C@3 id]-|source index identifier&][s1; [%00-00*C@3 from]-|zero`-based row index "
-"to start the search from&][s1; [*/ Return value]-|[* true] `= the desired row was "
-"found (and the cursor set), [* false] when not&][s0;* &][s0;* &][s0;* User interface "
-"elements&][s0;3 &][s4;:`:`:ArrayCtrl`:`:StdBar`(`:`:Bar`&`): void_[* StdBar](Bar`&_[*@3 "
-"menu])&][s6; The default array local menu. The default local")
+" IsModified][%00-00 (int_][%00-00*@3 ii][%00-00 )_const]&][s6; Checks a source index "
+"in the currently edited row for changes.&][s1; [%00-00*C@3 ii]-|zero`-based row index&][s1; "
+"[*/ Return value]-|[* true] `= the index has been modified, [* false] `= the index "
+"is in its original state&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsModified`(`:`:Id`)const: "
+"[%00-00 bool_][%00-00* IsModified][%00-00 (Id_][%00-00*@3")
 TOPIC_TEXT(
-" menu consists of the standard editation actions (inserting / appending / duplicating "
-"a row, editing a row, removing a row, moving a row, select all rows) filtered by "
-"the array properties enabling / disabling the various GUI elements (item insertion "
-"/ deletion etc.). &][s1; [*C@3 menu]-|the [* Bar] object representing the menu being "
-"generated&][s0;* &][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsModified`(int`")
+" id][%00-00 )_const]&][s6; Checks a source index in the currently edited array row "
+"for changes.&][s1; [%00-00*C@3 id]-|source index identifier&][s1; [*/ Return value]-|[* "
+"true] `= the source index has been modified, [* false ]when not&][s0;3 &][s4;:`:`:ArrayCtrl`:`:StartEdit`(int`): "
+"[%00-00 bool_][%00-00* StartEdit][%00-00 (int_][%00-00*@3 d][%00-00 _`=_][%00-00@3 "
+"0][%00-00 )]&][s6; Opens the curr")
 TOPIC_TEXT(
-")const: [%00-00 bool_][%00-00* IsModified][%00-00 (int_][%00-00*@3 ii][%00-00 )_const]&][s6; "
-"Checks a source index in the currently edited row for changes.&][s1; [%00-00*C@3 "
-"ii]-|zero`-based row index&][s1; [*/ Return value]-|[* true] `= the index has been "
-"modified, [* false] `= the index is in its original state&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsModified`(`:`:Id`)const: "
-"[%00-00 bool_][%00-00* IsMo")
+"ent cursor row for editing and sets focus to the [/ d]`-th column.&][s1; [%00-00*C@3 "
+"d]-|zero`-based column index&][s1; [*/ Return value]-|[* true] `= editation successfully "
+"initiated, [* false] when not (when the array is in [* ReadOnly] mode or it has no "
+"editable columns)&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetEditColumn`(`)const: [%00-00 "
+"int_][%00-00* GetEditColumn][%00-00 ()_const]&][s6; Returns th")
 TOPIC_TEXT(
-"dified][%00-00 (Id_][%00-00*@3 id][%00-00 )_const]&][s6; Checks a source index in "
-"the currently edited array row for changes.&][s1; [%00-00*C@3 id]-|source index identifier&][s1; "
-"[*/ Return value]-|[* true] `= the source index has been modified, [* false ]when "
-"not&][s0;3 &][s4;:`:`:ArrayCtrl`:`:StartEdit`(int`): [%00-00 bool_][%00-00* StartEdit][%00-00 "
-"(int_][%00-00*@3 d][%00-00 _`=_][%00-00@3 0][")
+"e column being currently edited.&][s1; [*/ Return value]-|zero`-based index of the "
+"column being edited, `-1 `= none&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoEdit`(`): [%00-00 "
+"void_][%00-00* DoEdit][%00-00 ()]&][s6; Opens the current cursor row for editing.&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:DoInsert`(int`): [%00-00 void_][%00-00* DoInsert][%00-00 "
+"(int_][%00-00*@3 cursor][%00-00 )]&][s6; Begins the GUI inserti")
 TOPIC_TEXT(
-"%00-00 )]&][s6; Opens the current cursor row for editing and sets focus to the [/ "
-"d]`-th column.&][s1; [%00-00*C@3 d]-|zero`-based column index&][s1; [*/ Return value]-|[* "
-"true] `= editation successfully initiated, [* false] when not (when the array is "
-"in [* ReadOnly] mode or it has no editable columns)&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetEditColumn`(`)const: "
-"[%00-00 int_][%00-00* GetEditColumn][%00")
+"on of a new row at a given location.&][s1; [%00-00*C@3 cursor]-|zero`-based location "
+"of the new row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoInsertBefore`(`): [%00-00 void_][%00-00* "
+"DoInsertBefore][%00-00 ()]&][s6; Begins the GUI insertion of a new row above the "
+"current row.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoInsertAfter`(`): [%00-00 void_][%00-00* "
+"DoInsertAfter][%00-00 ()]&][s6; Begins the GUI insertion of")
 TOPIC_TEXT(
-"-00 ()_const]&][s6; Returns the column being currently edited.&][s1; [*/ Return "
-"value]-|zero`-based index of the column being edited, `-1 `= none&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoEdit`(`): "
-"[%00-00 void_][%00-00* DoEdit][%00-00 ()]&][s6; Opens the current cursor row for "
-"editing.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoInsert`(int`): [%00-00 void_][%00-00* DoInsert][%00-00 "
-"(int_][%00-00*@3 cursor][%00-00 )")
+" a new row below the current row.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoAppend`(`): [%00-00 "
+"void_][%00-00* DoAppend][%00-00 ()]&][s6; Begins the GUI insertion of a new row at "
+"the end of the array.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoRemove`(`): [%00-00 bool_][%00-00* "
+"DoRemove][%00-00 ()]&][s6; Performs the GUI`-based removal of the current cursor "
+"row. When the [* AskRemove] property is set to [* true] and")
 TOPIC_TEXT(
-"]&][s6; Begins the GUI insertion of a new row at a given location.&][s1; [%00-00*C@3 "
-"cursor]-|zero`-based location of the new row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoInsertBefore`(`): "
-"[%00-00 void_][%00-00* DoInsertBefore][%00-00 ()]&][s6; Begins the GUI insertion "
-"of a new row above the current row.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoInsertAfter`(`): "
-"[%00-00 void_][%00-00* DoInsertAfter][%00-00 ()]&][s")
+" the user cancels the confirmation dialog, the function returns [* false] and the "
+"current row is not removed.&][s1; [*/ Return value]-|[* true] `= row has been removed "
+"successfully, [* false] `=  user has canceled the row removal&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoDuplicate`(`): "
+"[%00-00 void_][%00-00* DoDuplicate][%00-00 ()]&][s6; Duplicates the current row and "
+"opens it for editing.&][s0;3 &][s4;:`:")
 TOPIC_TEXT(
-"6; Begins the GUI insertion of a new row below the current row.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoAppend`(`): "
-"[%00-00 void_][%00-00* DoAppend][%00-00 ()]&][s6; Begins the GUI insertion of a new "
-"row at the end of the array.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoRemove`(`): [%00-00 "
-"bool_][%00-00* DoRemove][%00-00 ()]&][s6; Performs the GUI`-based removal of the "
-"current cursor row. When the [* AskRemove] p")
-TOPIC_TEXT(
-"roperty is set to [* true] and the user cancels the confirmation dialog, the function "
-"returns [* false] and the current row is not removed.&][s1; [*/ Return value]-|[* "
-"true] `= row has been removed successfully, [* false] `=  user has canceled the row "
-"removal&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoDuplicate`(`): [%00-00 void_][%00-00* DoDuplicate][%00-00 "
-"()]&][s6; Duplicates the current row and opens it")
-TOPIC_TEXT(
-" for editing.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoSelectAll`(`): [%00-00 void_][%00-00* "
-"DoSelectAll][%00-00 ()]&][s6; Marks all array row as selected.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AcceptEnter`(`): "
+"`:ArrayCtrl`:`:DoSelectAll`(`): [%00-00 void_][%00-00* DoSelectAll][%00-00 ()]&][s6; "
+"Marks all array row as selected.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AcceptEnter`(`): "
 "bool_[* AcceptEnter]()&][s6; Performs all necessary GUI actions equivalent to when "
 "the user presses the [* Enter] key. The row being currently edited is committed and, "
-"in the case it was a newly appended ")
+"in the case it was a newly appended line and the [* NoInsertAppend")
 TOPIC_TEXT(
-"line and the [* NoInsertAppend] property is not set, an additional row is added "
-"to the array and opened for editation.&][s1; [*/ Return value]-|[* true] `= the current "
-"row has been successfully committed, [* false] when not&][s0;* &][s0;* Notification "
-"callbacks&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenLeftClick:* [* Callback_]WhenLeftClick&][s6; "
-"This callback is called whenever the user clicks an array ")
+"] property is not set, an additional row is added to the array and opened for editation.&][s1; "
+"[*/ Return value]-|[* true] `= the current row has been successfully committed, [* "
+"false] when not&][s0;* &][s0;* Notification callbacks&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenLeftClick:* "
+"[* Callback_]WhenLeftClick&][s6; This callback is called whenever the user clicks "
+"an array cell.&][s0;3 &][s4;:`:`:ArrayC")
 TOPIC_TEXT(
-"cell.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenLeftDouble:* [%00-00* Callback_][%00-00 "
-"WhenLeftDouble]&][s6; This callback is called whenever the user doubleclicks an array "
-"cell.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenBar:* [%00-00* Callback1<Bar`&>_][%00-00 "
-"WhenBar]&][s6; This callback is called whenever the local array menu has to be regenerated. "
-"By setting this callback to a different function / method y")
+"trl`:`:WhenLeftDouble:* [%00-00* Callback_][%00-00 WhenLeftDouble]&][s6; This callback "
+"is called whenever the user doubleclicks an array cell.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenBar:* "
+"[%00-00* Callback1<Bar`&>_][%00-00 WhenBar]&][s6; This callback is called whenever "
+"the local array menu has to be regenerated. By setting this callback to a different "
+"function / method you can supply a custom local m")
 TOPIC_TEXT(
-"ou can supply a custom local menu for the array. The [* Bar`&] argument is a reference "
-"to the menu to be generated.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenEnterRow:* [%00-00* "
-"Callback_][%00-00 WhenEnterRow]&][s6; This callback is called every time the cursor "
-"location changes to a different row of the array.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenAcceptRow:* "
-"[%00-00* Gate_][%00-00 WhenAcceptRow]&][s6; This")
+"enu for the array. The [* Bar`&] argument is a reference to the menu to be generated.&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:WhenEnterRow:* [%00-00* Callback_][%00-00 WhenEnterRow]&][s6; "
+"This callback is called every time the cursor location changes to a different row "
+"of the array.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenAcceptRow:* [%00-00* Gate_][%00-00 "
+"WhenAcceptRow]&][s6; This gate is called every time an ")
 TOPIC_TEXT(
-" gate is called every time an array row (open for editing) needs to be validated. "
-"When the gate returns [* false], the validation process is assumed to have failed, "
-"when it returns [* true], it is assumed to have succeeded. You can use this callback "
-"to add your own validation algorithms relevant to the array context within your application.&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:WhenUpdateRow:* [%00-00* C")
+"array row (open for editing) needs to be validated. When the gate returns [* false], "
+"the validation process is assumed to have failed, when it returns [* true], it is "
+"assumed to have succeeded. You can use this callback to add your own validation algorithms "
+"relevant to the array context within your application.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenUpdateRow:* "
+"[%00-00* Callback_][%00-00 WhenUpdateRow")
 TOPIC_TEXT(
-"allback_][%00-00 WhenUpdateRow]&][s6; This callback is called whenever an array "
-"row has been updated. You can use this callback e.g. to project the changes to a "
-"database or generally to an external data source.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenKillCursor:* "
-"[%00-00* Callback_][%00-00 WhenKillCursor]&][s6; This callback is called whenever "
-"the cursor is moved away from the table.&][s6; [* Note:] in")
+"]&][s6; This callback is called whenever an array row has been updated. You can "
+"use this callback e.g. to project the changes to a database or generally to an external "
+"data source.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenKillCursor:* [%00-00* Callback_][%00-00 "
+"WhenKillCursor]&][s6; This callback is called whenever the cursor is moved away from "
+"the table.&][s6; [* Note:] internally, when moving the curs")
 TOPIC_TEXT(
-"ternally, when moving the cursor (e.g. by calling the [* SetCursor ]method), after "
-"committing the previous row the cursor is removed from the table using [* KillCursor] "
-"and placed to the new location afterwards. Therefore every time the cursor is moved, "
-"the [* WhenKillCursor] callback is called as a by`-product.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenCursor:* "
-"[%00-00* Callback_][%00-00 WhenCursor]&][s")
+"or (e.g. by calling the [* SetCursor ]method), after committing the previous row "
+"the cursor is removed from the table using [* KillCursor] and placed to the new location "
+"afterwards. Therefore every time the cursor is moved, the [* WhenKillCursor] callback "
+"is called as a by`-product.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenCursor:* [%00-00* "
+"Callback_][%00-00 WhenCursor]&][s6; This callback is called eve")
 TOPIC_TEXT(
-"6; This callback is called every time the cursor row number changes (either when "
-"the cursor is removed from the table, or when it has been moved to a different row).&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:WhenArrayAction:* [%00-00* Callback_][%00-00 WhenArrayAction]&][s6; "
-"This callback is called every time the source array data changes (typically after "
-"accepting changes to a certain row or after deleting ")
+"ry time the cursor row number changes (either when the cursor is removed from the "
+"table, or when it has been moved to a different row).&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenArrayAction:* "
+"[%00-00* Callback_][%00-00 WhenArrayAction]&][s6; This callback is called every time "
+"the source array data changes (typically after accepting changes to a certain row "
+"or after deleting a row).&][s0;3 &][s4;:`:`:Arra")
 TOPIC_TEXT(
-"a row).&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenStartEdit:* [%00-00* Callback_][%00-00 "
-"WhenStartEdit]&][s6; This callback is called whenever the array row editation process "
-"is initiated. It can be used e.g. to set up some additional properties of the column "
-"editor objects, to fill in drop`-down lists pertaining to certain column editors "
-"etc.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenAcceptEdit:* [%00-00* Call")
+"yCtrl`:`:WhenStartEdit:* [%00-00* Callback_][%00-00 WhenStartEdit]&][s6; This callback "
+"is called whenever the array row editation process is initiated. It can be used e.g. "
+"to set up some additional properties of the column editor objects, to fill in drop`-down "
+"lists pertaining to certain column editors etc.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenAcceptEdit:* "
+"[%00-00* Callback_][%00-00 WhenAcceptEdit]&")
 TOPIC_TEXT(
-"back_][%00-00 WhenAcceptEdit]&][s6; This callback is called whenever the currently "
-"edited line has been committed.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenSelection:* [%00-00* "
-"Callback_][%00-00 WhenSelection]&][s6; This callback is called whenever the current "
-"array selection changes. This includes changes to the cursor location as the cursor "
-"is automatically considered part of the selection.&][s0;3 &][")
+"][s6; This callback is called whenever the currently edited line has been committed.&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:WhenSelection:* [%00-00* Callback_][%00-00 WhenSelection]&][s6; "
+"This callback is called whenever the current array selection changes. This includes "
+"changes to the cursor location as the cursor is automatically considered part of "
+"the selection.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenCtrls")
 TOPIC_TEXT(
-"s4;:`:`:ArrayCtrl`:`:WhenCtrlsAction:* [%00-00* Callback_][%00-00 WhenCtrlsAction]&][s6; "
-"This callback is called whenever some of the editor controls constructed automatically "
-"via the column editation [/ factory] calls its [* WhenAction] method. It can be used "
-"to watch out for changes in the cell editors and react to specific situations accordingly.&][s6; "
-"&][s0;3 &][s10;:`:`:ArrayCtrl`:`:IdInfo`:`")
+"Action:* [%00-00* Callback_][%00-00 WhenCtrlsAction]&][s6; This callback is called "
+"whenever some of the editor controls constructed automatically via the column editation "
+"[/ factory] calls its [* WhenAction] method. It can be used to watch out for changes "
+"in the cell editors and react to specific situations accordingly.&][s6; &][s0;3 &][s10;:`:`:ArrayCtrl`:`:IdInfo`:`:struct:* "
+"[%00-00* struct_][%0")
 TOPIC_TEXT(
-":struct:* [%00-00* struct_][%00-00 ArrayCtrl`::IdInfo]&][s0; &][s0; The [* IdInfo] "
-"structure contains properties of all source array indices. It can be used to set "
-"additional properties pertaining to source array data.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IdInfo`:`:InsertValue`(const`:`:Value`&`): "
+"0-00 ArrayCtrl`::IdInfo]&][s0; &][s0; The [* IdInfo] structure contains properties "
+"of all source array indices. It can be used to set additional properties pertaining "
+"to source array data.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IdInfo`:`:InsertValue`(const`:`:Value`&`): "
 "[%00-00 IdInfo`&_][%00-00* InsertValue][%00-00 (const_Value`&_][%00-00*@3 v][%00-00 "
-")]&][s6; The method set")
+")]&][s6; The method sets up the default source index ")
 TOPIC_TEXT(
-"s up the default source index value for newly created rows. This is used only when "
-"the row insertion is GUI`-based (like using the [* DoInsert] method for instance). "
-"When a row is added to the array programmatically (e.g. using [* Add] or [* Insert]), "
-"these default values are not used.&][s1; [%00-00*C@3 v]-|default source index value&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`")
+"value for newly created rows. This is used only when the row insertion is GUI`-based "
+"(like using the [* DoInsert] method for instance). When a row is added to the array "
+"programmatically (e.g. using [* Add] or [* Insert]), these default values are not "
+"used.&][s1; [%00-00*C@3 v]-|default source index value&][s1;* [/ Return value][* "
+"-|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IdInfo`:`:InsertValue`(`:`:")
 TOPIC_TEXT(
-":`:IdInfo`:`:InsertValue`(`:`:ValueGen`&`): [%00-00 IdInfo`&_][%00-00* InsertValue][%00-00 "
-"(ValueGen`&_][%00-00*@3 g][%00-00 )]&][s6; The method sets up a factory for generating "
-"default index values for newly created rows. This is used only when the row insertion "
-"is GUI`-based (like using the [* DoInsert] method for instance). When a row is added "
-"to the array programmatically (e.g. using [* Add] o")
+"ValueGen`&`): [%00-00 IdInfo`&_][%00-00* InsertValue][%00-00 (ValueGen`&_][%00-00*@3 "
+"g][%00-00 )]&][s6; The method sets up a factory for generating default index values "
+"for newly created rows. This is used only when the row insertion is GUI`-based (like "
+"using the [* DoInsert] method for instance). When a row is added to the array programmatically "
+"(e.g. using [* Add] or [* Insert]), the [* InserVal")
 TOPIC_TEXT(
-"r [* Insert]), the [* InserValue] property is not consulted.&][s1; [%00-00*C@3 g]-|a "
-"reference to the value generation factory. The ownership to the factory is not passed "
-"by this call; the caller must insure the existence of the factory object throughout "
-"the array duration.&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IdInfo`:`:Accel`(int`(`*`)`(int`)`): "
-"[%00-00 IdInfo`&_][%0")
+"ue] property is not consulted.&][s1; [%00-00*C@3 g]-|a reference to the value generation "
+"factory. The ownership to the factory is not passed by this call; the caller must "
+"insure the existence of the factory object throughout the array duration.&][s1;* "
+"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IdInfo`:`:Accel`(int`(`*`)`(int`)`): "
+"[%00-00 IdInfo`&_][%00-00* Accel][%00-00 (int_(`*][")
 TOPIC_TEXT(
-"0-00* Accel][%00-00 (int_(`*][%00-00*@3 filter][%00-00 )(int))]&][s6; This method "
-"sets up the source index accelerator function. The accelerator is used to quickly "
-"locate rows using the keyboard key presses.&][s1; [%00-00*C@3 filter]-|a [* CharFilter "
-"]function for keypress filtering&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IdInfo`:`:Accel`(`): "
-"[%00-00 IdInfo`&_][%00-00* A")
+"%00-00*@3 filter][%00-00 )(int))]&][s6; This method sets up the source index accelerator "
+"function. The accelerator is used to quickly locate rows using the keyboard key presses.&][s1; "
+"[%00-00*C@3 filter]-|a [* CharFilter ]function for keypress filtering&][s1;* [/ Return "
+"value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IdInfo`:`:Accel`(`): [%00-00 IdInfo`&_][%00-00* "
+"Accel][%00-00 ()]&][s6; This me")
 TOPIC_TEXT(
-"ccel][%00-00 ()]&][s6; This method sets up keyboard acceleration for the given source "
-"index. The `'trivial`' [/ CharConvert] is used for character translation.&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IdInfo`:`:GetInsertValue`(`): "
-"[%00-00 Value_][%00-00* GetInsertValue][%00-00 ()]&][s6; Uses the [* InsertValue] "
-"property to generate a new source index value (either using a")
+"thod sets up keyboard acceleration for the given source index. The `'trivial`' [/ "
+"CharConvert] is used for character translation.&][s1;* [/ Return value][* -|]`*this&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:IdInfo`:`:GetInsertValue`(`): [%00-00 Value_][%00-00* GetInsertValue][%00-00 "
+"()]&][s6; Uses the [* InsertValue] property to generate a new source index value "
+"(either using a fixed default value or the va")
 TOPIC_TEXT(
-" fixed default value or the value creation factory).&][s1; [*/ Return value]-|the "
-"generated value to be used as the default for the newly inserted row.&][s6; &][s0;3 "
-"&][s10;:`:`:ArrayCtrl`:`:Column`:`:class:* [%00-00* class_][%00-00 Column]&][s6; "
-"&][s9; [/ Derived from] [%00-00 FormatConvert]&][s0;3 &][s0;* &][s0; [%00-00 The "
-"][%00-00* ArrayCtrl`::Column][%00-00  structure describes an output arra")
+"lue creation factory).&][s1; [*/ Return value]-|the generated value to be used as "
+"the default for the newly inserted row.&][s6; &][s0;3 &][s10;:`:`:ArrayCtrl`:`:Column`:`:class:* "
+"[%00-00* class_][%00-00 Column]&][s6; &][s9; [/ Derived from] [%00-00 FormatConvert]&][s0;3 "
+"&][s0;* &][s0; [%00-00 The ][%00-00* ArrayCtrl`::Column][%00-00  structure describes "
+"an output array column. Its methods can be u")
 TOPIC_TEXT(
-"y column. Its methods can be used to set or query its properties, some of which "
-"are also settable via ArrayCtrl methods.]&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Add`(int`): "
-"[%00-00 Column`&_][%00-00* Add][%00-00 (int_][%00-00*@3 `_pos][%00-00 )]&][s6; Adds "
-"another source data index to the list of source indices used as the data for the "
-"given output column.&][s1; [%00-00*C@3 `_pos]-|zero`-based o")
+"sed to set or query its properties, some of which are also settable via ArrayCtrl "
+"methods.]&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Add`(int`): [%00-00 Column`&_][%00-00* "
+"Add][%00-00 (int_][%00-00*@3 `_pos][%00-00 )]&][s6; Adds another source data index "
+"to the list of source indices used as the data for the given output column.&][s1; "
+"[%00-00*C@3 `_pos]-|zero`-based ordinal number of the source in")
 TOPIC_TEXT(
-"rdinal number of the source index&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Add`(`:`:Id`): "
+"dex&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Add`(`:`:Id`): "
 "[%00-00 Column`&_][%00-00* Add][%00-00 (Id_][%00-00*@3 id][%00-00 )]&][s6; Adds another "
 "source data index to the list of source indices used as the data for the given output "
 "column.&][s1; [%00-00*C@3 id]-|the [* Id] identifier of the source index&][s1;* [/ "
-"Return value][* -")
+"Return value][* -|]`*this&][s0;3 &][s4;:`:`:Arr")
 TOPIC_TEXT(
-"|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:AddIndex`(`:`:Id`): [%00-00 Column`&_][%00-00* "
-"AddIndex][%00-00 (Id_][%00-00*@3 id][%00-00 )]&][s6; Adds another source index to "
-"the array and adds it to the list of source indices bound to this output column. "
-"The newly created index is assigned the given identifier.&][s1; [%00-00*C@3 id]-|the "
-"identifier for the newly created index&][s1;* [/ Return")
+"ayCtrl`:`:Column`:`:AddIndex`(`:`:Id`): [%00-00 Column`&_][%00-00* AddIndex][%00-00 "
+"(Id_][%00-00*@3 id][%00-00 )]&][s6; Adds another source index to the array and adds "
+"it to the list of source indices bound to this output column. The newly created index "
+"is assigned the given identifier.&][s1; [%00-00*C@3 id]-|the identifier for the newly "
+"created index&][s1;* [/ Return value][* -|]`*this&][s0;3 &][")
 TOPIC_TEXT(
-" value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:AddIndex`(`): [%00-00 "
-"Column`&_][%00-00* AddIndex][%00-00 ()]&][s6; Adds another source index to the array "
-"and adds it to the list of source indices bound to this output column.&][s1;* [/ "
-"Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:SetConvert`(const`:`:Convert`&`): "
-"[%00-00 Column`&_][%00-00* SetConvert][%00-00 (con")
+"s4;:`:`:ArrayCtrl`:`:Column`:`:AddIndex`(`): [%00-00 Column`&_][%00-00* AddIndex][%00-00 "
+"()]&][s6; Adds another source index to the array and adds it to the list of source "
+"indices bound to this output column.&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:SetConvert`(const`:`:Convert`&`): "
+"[%00-00 Column`&_][%00-00* SetConvert][%00-00 (const_Convert`&_][%00-00*@3 c][%0")
 TOPIC_TEXT(
-"st_Convert`&_][%00-00*@3 c][%00-00 )]&][s6; Sets the [* Convert] object for the "
-"given column. This object is used to convert the source values (obtained from the "
-"source data matrix) to the values displayable and/or editable by the respective column "
-"display / editor object.&][s6; [* Note:] the ownership of the [* Convert] object "
-"is not transferred by this function. The array merely stores a pointer")
+"0-00 )]&][s6; Sets the [* Convert] object for the given column. This object is used "
+"to convert the source values (obtained from the source data matrix) to the values "
+"displayable and/or editable by the respective column display / editor object.&][s6; "
+"[* Note:] the ownership of the [* Convert] object is not transferred by this function. "
+"The array merely stores a pointer to the Convert object. It is ")
 TOPIC_TEXT(
-" to the Convert object. It is up to the host application to keep the Convert object "
-"alive as long as necessary (until the ArrayCtrl object is destroyed or all references "
-"to the Convert object obliterated by new calls to the [* SetConvert] method). In "
-"any case, most Convert`-based object do not support copying at all; moreover, as "
-"the Convert`-based objects are mostly derived from the basic class, ")
+"up to the host application to keep the Convert object alive as long as necessary "
+"(until the ArrayCtrl object is destroyed or all references to the Convert object "
+"obliterated by new calls to the [* SetConvert] method). In any case, most Convert`-based "
+"object do not support copying at all; moreover, as the Convert`-based objects are "
+"mostly derived from the basic class, their copying is normally pron")
 TOPIC_TEXT(
-"their copying is normally prone to slicing.&][s1; [%00-00*C@3 c]-|a constant reference "
-"to the Convert object to use for the given column&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:Column`:`:SetFormat`(const char`*`): [%00-00 Column`&_][%00-00* "
-"SetFormat][%00-00 (const_char_`*][%00-00*@3 fmt][%00-00 )]&][s6; Sets the format "
-"string to use for the default value formatting. Whe")
+"e to slicing.&][s1; [%00-00*C@3 c]-|a constant reference to the Convert object to "
+"use for the given column&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:SetFormat`(const "
+"char`*`): [%00-00 Column`&_][%00-00* SetFormat][%00-00 (const_char_`*][%00-00*@3 "
+"fmt][%00-00 )]&][s6; Sets the format string to use for the default value formatting. "
+"When no Convert object is set for")
 TOPIC_TEXT(
-"n no Convert object is set for the column, the source value is normally passed to "
-"the [* NFormat] function where the [/ fmt] argument defines the desired formatting "
-"pattern.&][s1; [%00-00*C@3 fmt]-|a [* NFormat]`-compatible formatting pattern&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:SetDisplay`(const`:`:Display`&`): "
-"[%00-00 Column`&_][%00-00* SetDisplay][%00-00 ")
+" the column, the source value is normally passed to the [* NFormat] function where "
+"the [/ fmt] argument defines the desired formatting pattern.&][s1; [%00-00*C@3 fmt]-|a "
+"[* NFormat]`-compatible formatting pattern&][s1;* [/ Return value][* -|]`*this&][s0;3 "
+"&][s4;:`:`:ArrayCtrl`:`:Column`:`:SetDisplay`(const`:`:Display`&`): [%00-00 Column`&_][%00-00* "
+"SetDisplay][%00-00 (const_Display`&_][%00-00*@3 d")
 TOPIC_TEXT(
-"(const_Display`&_][%00-00*@3 d][%00-00 )]&][s6; Sets the default Display to use "
-"for this column. The column Display can be overridden for certain array cells by "
-"calls to the [*^topic`:`/`/CtrlLib`/src`/ArrayCtrl`$en`-us`#`:`:ArrayCtrl`:`:SetDisplay`(int`,int`,const "
+"][%00-00 )]&][s6; Sets the default Display to use for this column. The column Display "
+"can be overridden for certain array cells by calls to the [*^topic`:`/`/CtrlLib`/src`/ArrayCtrl`$en`-us`#`:`:ArrayCtrl`:`:SetDisplay`(int`,int`,const "
 "Display`&`)^ ArrayCtrl`::SetDisplay] method.&][s6; [* Note:] the ownership to the "
-"Display object is not transferred by this function. ")
+"Display object is not transferred by this function. The array merely stores a poin")
 TOPIC_TEXT(
-"The array merely stores a pointer to the Display; it is up to the host application "
-"to keep the Display object alive as long as necessary.&][s1; [%00-00*C@3 d]-|a reference "
-"to the Display object&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Edit`(`:`:Ctrl`&`): "
+"ter to the Display; it is up to the host application to keep the Display object "
+"alive as long as necessary.&][s1; [%00-00*C@3 d]-|a reference to the Display object&][s1;* "
+"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Edit`(`:`:Ctrl`&`): "
 "[%00-00 Column`&_][%00-00* Edit][%00-00 (Ctrl`&_][%00-00*@3 e][%00-00 )]&][s6; Sets "
-"up the Ctrl`-based object")
+"up the Ctrl`-based object to use for inline array colum")
 TOPIC_TEXT(
-" to use for inline array column editing.&][s1; [%00-00*C@3 e]-|a reference to the "
-"editor control object&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Ctrls`(`:`:Callback1`<`:`:One`<`:`:Ctrl`>`&`>`): "
+"n editing.&][s1; [%00-00*C@3 e]-|a reference to the editor control object&][s1;* "
+"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Ctrls`(`:`:Callback1`<`:`:One`<`:`:Ctrl`>`&`>`): "
 "[%00-00 Column`&_][%00-00* Ctrls][%00-00 (Callback1<One<Ctrl>`&>_][%00-00*@3 factory][%00-00 "
-")]&][s6; The methods sets up a factory which the ArrayCtrl uses as necessary ")
+")]&][s6; The methods sets up a factory which the ArrayCtrl uses as necessary to create "
+"new Ctrl`'s for edit")
 TOPIC_TEXT(
-"to create new Ctrl`'s for editing a given column. The argument of this function "
-"is a callback, which, upon execution, should allocate (normally using the [* new] "
-"operator) the desired editor object and set it to its argument.&][s1; [%00-00*C@3 "
-"factory]-|callback used for new control creation&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:Column`:`:Ctrls`(void`(`*`)`(`:`:One`<`:")
+"ing a given column. The argument of this function is a callback, which, upon execution, "
+"should allocate (normally using the [* new] operator) the desired editor object and "
+"set it to its argument.&][s1; [%00-00*C@3 factory]-|callback used for new control "
+"creation&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Ctrls`(void`(`*`)`(`:`:One`<`:`:Ctrl`>`&`)`): "
+"[%00-00 Column")
 TOPIC_TEXT(
-"`:Ctrl`>`&`)`): [%00-00 Column`&_][%00-00* Ctrls][%00-00 (void_(`*][%00-00*@3 factory][%00-00 "
-")(One<Ctrl>`&))]&][s6; This method sets up a factory which the ArrayCtrl uses as "
-"necessary to create new Ctrl`'s for editing a given column. The argument, a global "
-"function, is supposed to allocate a new editor control (normally using the [* new] "
-"operator) and set it to its argument.&][s1; [%00-00*C@3 fac")
+"`&_][%00-00* Ctrls][%00-00 (void_(`*][%00-00*@3 factory][%00-00 )(One<Ctrl>`&))]&][s6; "
+"This method sets up a factory which the ArrayCtrl uses as necessary to create new "
+"Ctrl`'s for editing a given column. The argument, a global function, is supposed "
+"to allocate a new editor control (normally using the [* new] operator) and set it "
+"to its argument.&][s1; [%00-00*C@3 factory]-|a global function used ")
 TOPIC_TEXT(
-"tory]-|a global function used for editor control creation&][s1;* [/ Return value][* "
-"-|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Ctrls`(`): [%00-00 Column`&_][%00-00* "
-"Ctrls][%00-00 ()]&][s6; This member template sets up a default factory for creating "
-"editor controls of a given type. Every time the ArrayCtrl needs to create a new editor "
-"control, an object of the type [* T] is created automati")
+"for editor control creation&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Ctrls`(`): "
+"[%00-00 Column`&_][%00-00* Ctrls][%00-00 ()]&][s6; This member template sets up a "
+"default factory for creating editor controls of a given type. Every time the ArrayCtrl "
+"needs to create a new editor control, an object of the type [* T] is created automatically "
+"(using the [* new] opera")
 TOPIC_TEXT(
-"cally (using the [* new] operator).&][s1; [*C@4 T]-|the desired object editor type "
-"&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:InsertValue`(const`:`:Value`&`): "
+"tor).&][s1; [*C@4 T]-|the desired object editor type &][s1;* [/ Return value][* "
+"-|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:InsertValue`(const`:`:Value`&`): "
 "[%00-00 Column`&_][%00-00* InsertValue][%00-00 (const_Value`&_][%00-00*@3 v][%00-00 "
 ")]&][s6; Instructs the ArrayCtrl object to initialize this column in newly created "
-"rows to the given value [/ v]. (This ap")
+"rows to the given value [/ v]. (This applies only to GUI`-based row i")
 TOPIC_TEXT(
-"plies only to GUI`-based row insertion using methods like [* DoInsert] etc., the "
-"low`-level, programmer`-controlled row insertion methods like [* Add] or [* Insert] "
-"always initialize the source data matrix with [* Null]`'s).&][s1; [%00-00*C@3 v]-|the "
-"value to use as the default for newly inserted rows&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:Column`:`:InsertValue`(`:`:Val")
+"nsertion using methods like [* DoInsert] etc., the low`-level, programmer`-controlled "
+"row insertion methods like [* Add] or [* Insert] always initialize the source data "
+"matrix with [* Null]`'s).&][s1; [%00-00*C@3 v]-|the value to use as the default for "
+"newly inserted rows&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:InsertValue`(`:`:ValueGen`&`): "
+"[%00-00 Column`&_][")
 TOPIC_TEXT(
-"ueGen`&`): [%00-00 Column`&_][%00-00* InsertValue][%00-00 (ValueGen`&_][%00-00*@3 "
-"g][%00-00 )]&][s6; Programs the ArrayCtrl object to use the given [* ValueGen] factory "
-"for default value generation for newly created rows. This can be used e.g. to generate "
-"unique UUID`'s or primary keys using an Oracle SEQUENCE object for a primary key "
-"column.&][s1; [%00-00*C@3 g]-|a reference to the ValueGen objec")
+"%00-00* InsertValue][%00-00 (ValueGen`&_][%00-00*@3 g][%00-00 )]&][s6; Programs "
+"the ArrayCtrl object to use the given [* ValueGen] factory for default value generation "
+"for newly created rows. This can be used e.g. to generate unique UUID`'s or primary "
+"keys using an Oracle SEQUENCE object for a primary key column.&][s1; [%00-00*C@3 "
+"g]-|a reference to the ValueGen object used for default value gener")
 TOPIC_TEXT(
-"t used for default value generation&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:NoClickEdit`(`): "
+"ation&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:NoClickEdit`(`): "
 "[%00-00 Column`&_][%00-00* NoClickEdit][%00-00 ()]&][s6; Disables entering the editation "
 "mode when clicking the respective column.&][s1;* [/ Return value][* -|]`*this&][s0;3 "
 "&][s4;:`:`:ArrayCtrl`:`:Column`:`:Cache`(`): [%00-00 Column`&_][%00-00* Cache][%00-00 "
-"()]&][s6; ")
+"()]&][s6; Enables using the cache to sto")
 TOPIC_TEXT(
-"Enables using the cache to store the converted values of this column. By default, "
-"converted value caching is turned off to make cell value conversion entirely dynamic; "
-"however, very often it is advisable to enable using the cache, especially when the "
-"conversion is relatively slow (for instance, when the conversion queries a database "
-"connection to convert the value).&][s1;* [/ Return value][* -|]`*")
+"re the converted values of this column. By default, converted value caching is turned "
+"off to make cell value conversion entirely dynamic; however, very often it is advisable "
+"to enable using the cache, especially when the conversion is relatively slow (for "
+"instance, when the conversion queries a database connection to convert the value).&][s1;* "
+"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCt")
 TOPIC_TEXT(
-"this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Accel`(int`(`*`)`(int`)`): [%00-00 "
-"Column`&_][%00-00* Accel][%00-00 (int_(`*][%00-00*@3 filter][%00-00 )(int))]&][s6; "
-"Sets up the accelerator for the given column. A given filtering function is used "
-"to convert keystrokes before acceleration.&][s1; [%00-00*C@3 filter]-|a [* CharConvert]`-style "
-"function to use for keystroke conversion&][s1;* [/ Return va")
+"rl`:`:Column`:`:Accel`(int`(`*`)`(int`)`): [%00-00 Column`&_][%00-00* Accel][%00-00 "
+"(int_(`*][%00-00*@3 filter][%00-00 )(int))]&][s6; Sets up the accelerator for the "
+"given column. A given filtering function is used to convert keystrokes before acceleration.&][s1; "
+"[%00-00*C@3 filter]-|a [* CharConvert]`-style function to use for keystroke conversion&][s1;* "
+"[/ Return value][* -|]`*this&][s0;3 &][s4;")
 TOPIC_TEXT(
-"lue][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Accel`(`): [%00-00 Column`&_][%00-00* "
-"Accel][%00-00 ()]&][s6; Sets up the accelerator for the given column. No keystroke "
-"conversion is performed.&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Margin`(int`): "
+":`:`:ArrayCtrl`:`:Column`:`:Accel`(`): [%00-00 Column`&_][%00-00* Accel][%00-00 "
+"()]&][s6; Sets up the accelerator for the given column. No keystroke conversion is "
+"performed.&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Margin`(int`): "
 "[%00-00 Column`&_][%00-00* Margin][%00-00 (int_][%00-00*@3 m][%00-00 )]&][s6; Sets "
-"up the margin width f")
+"up the margin width for the given column. This is e")
 TOPIC_TEXT(
-"or the given column. This is equivalent to calling the [*^topic`:`/`/CtrlLib`/src`/HeaderCtrl`$en`-us`#`:`:HeaderCtrl`:`:Column`:`:SetMargin`(int`)^ "
+"quivalent to calling the [*^topic`:`/`/CtrlLib`/src`/HeaderCtrl`$en`-us`#`:`:HeaderCtrl`:`:Column`:`:SetMargin`(int`)^ "
 "SetMargin] method of the underlying [* HeaderTab].&][s1; [%00-00*C@3 m]-|&][s1;* "
 "[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:HeaderTab`(`): "
 "[%00-00 HeaderCtrl`::Column`&_][%00-00* HeaderTab][%00-00 ()]&][s6; Returns the [* "
-"He")
+"HeaderCtrl`::Column] object desc")
 TOPIC_TEXT(
-"aderCtrl`::Column] object describing the given column. This object can be used to "
-"set up additional column properties (like column width constraints or the [*^topic`:`/`/CtrlLib`/src`/HeaderCtrl`$en`-us`#`:`:HeaderCtrl`:`:Column`:`:Callback "
+"ribing the given column. This object can be used to set up additional column properties "
+"(like column width constraints or the [*^topic`:`/`/CtrlLib`/src`/HeaderCtrl`$en`-us`#`:`:HeaderCtrl`:`:Column`:`:Callback "
 "WhenAction^ WhenAction] callback).&][s0; &][s0;3 &][s10;:`:`:ArrayCtrl`:`:Order`:`:struct:* "
-"[%00-00* struct_][%00-00 Order]&][s0; &][s0; The [* Order] object i")
+"[%00-00* struct_][%00-00 Order]&][s0; &][s0; The [* Order] object is used for array "
+"row sorting. ")
 TOPIC_TEXT(
-"s used for array row sorting. The overloaded [* operator ()] acts as the sorting "
-"predicate, which is consulted within the sorting method to determine which of a given "
-"pair of row is `'less`' according to the desired sorting.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Order`:`:operator`(`)`(const`:`:Vector`<`:`:Value`>`&`,const`:`:Vector`<`:`:Value`>`&`)const:@3 "
-"[%00-00@0 virtual bool_][%00-00*@0 operator()][%")
+"The overloaded [* operator ()] acts as the sorting predicate, which is consulted "
+"within the sorting method to determine which of a given pair of row is `'less`' according "
+"to the desired sorting.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Order`:`:operator`(`)`(const`:`:Vector`<`:`:Value`>`&`,const`:`:Vector`<`:`:Value`>`&`)const:@3 "
+"[%00-00@0 virtual bool_][%00-00*@0 operator()][%00-00@0 (const_Vector<Value>`&")
 TOPIC_TEXT(
-"00-00@0 (const_Vector<Value>`&_][%00-00* row1][%00-00@0 , const_Vector<Value>`&_][%00-00* "
-"row2][%00-00@0 )_const_`=_][%00-00 0]&][s6; The sorting predicate. This method should "
-"return [* true] when its first argument ([/ row1]) is less than the second argument "
-"([/ row2]) according to the desired ordering.&][s1; [%00-00*C@3 row1]-|an array of "
-"source data index values for the first of the rows to com")
+"_][%00-00* row1][%00-00@0 , const_Vector<Value>`&_][%00-00* row2][%00-00@0 )_const_`=_][%00-00 "
+"0]&][s6; The sorting predicate. This method should return [* true] when its first "
+"argument ([/ row1]) is less than the second argument ([/ row2]) according to the "
+"desired ordering.&][s1; [%00-00*C@3 row1]-|an array of source data index values for "
+"the first of the rows to compare&][s1; [%00-00*C@3 row2]-|")
 TOPIC_TEXT(
-"pare&][s1; [%00-00*C@3 row2]-|an array of source data index values for the other "
-"row to compare&][s1; [*/ Return value]-|[* true] `= row1 < row2, [* false] `= row1 "
-">`= row2&][s0;3 ]")
+"an array of source data index values for the other row to compare&][s1; [*/ Return "
+"value]-|[* true] `= row1 < row2, [* false] `= row1 >`= row2&][s0;3 ]")

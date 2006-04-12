@@ -51,7 +51,7 @@ inline void HashBase::DoIndex() const
 inline int HashBase::Find(unsigned _hash) const
 {
 	if(hash.GetCount() == 0) return -1;
-	if(link.GetCount() < hash.GetCount())
+	if(link.GetCount() < hash.GetCount() || mcount == 0)
 		DoIndex();
 	return Maph(_hash & ~UNSIGNED_HIBIT);
 }

@@ -55,8 +55,12 @@ void _PLACE_DEBUGER_FREE_BREAK_HERE_()
 
 static DbgBlkLink dbg_live;
 
+extern bool PanicMode;
+
 void *MemoryAllocDebug(size_t size)
 {
+	if(PanicMode)
+		return malloc(size);
 #ifdef _MULTITHREADED
 	sHeapLock2.Enter();
 #endif
@@ -85,6 +89,8 @@ void HeapPanic(const char *text, void *pos, int size);
 
 void MemoryFreeDebug(void *ptr)
 {
+	if(PanicMode)
+		return;
 	if(!ptr) return;
 //	LOG("T");
 #ifdef _MULTITHREADED
@@ -95,8 +101,10 @@ void MemoryFreeDebug(void *ptr)
 			_PLACE_DEBUGER_FREE_BREAK_HERE_();
 	DbgBlkLink *p = (DbgBlkLink *)ptr - 1;
 	DbgBlkLink *e = p->next;
-	if(p != e->prev)
+	if(p != e->prev) {
+		sHeapLock2.Leave();
 		HeapPanic("Heap is corrupted", p + 1, (uintptr_t)p->next - (uintptr_t)(p + 1));
+	}
 	e->Unlink();
 	p->Unlink();
 	MemoryFree(p);

@@ -1,6 +1,7 @@
 uses
 	Sql,
-	CtrlLib;
+	CtrlLib,
+	DocTypes;
 
 file
 	SqlCtrl.h,
@@ -9,6 +10,7 @@ file
 	SqlCtrl.cpp,
 	SqlArray.cpp,
 	SqlDetail.cpp,
+	SqlDlg.h,
 	SqlDlg.cpp,
 	SqlConsole.cpp,
 	SqlObjectTree.cpp,

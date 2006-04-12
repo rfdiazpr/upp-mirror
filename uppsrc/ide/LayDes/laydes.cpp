@@ -930,15 +930,16 @@ void LayDes::Delete()
 
 String LayDes::SaveSelection()
 {
-	return CurrentLayout().Save(charset, cursor) + "\r\n";
+	return CurrentLayout().Save(cursor) + "\r\n";
 }
 
 LayoutData LayDes::LoadLayoutData(const String& s)
 {
 	try {
 		LayoutData l;
+		l.SetCharset(charset);
 		CParser p(s);
-		l.Read(p, charset);
+		l.Read(p);
 		return l;
 	}
 	catch(CParser::Error) {}
@@ -1396,11 +1397,12 @@ void LayDes::TypeEdit()
 	LayoutData& l = CurrentLayout();
 	for(int i = 0; i < cursor.GetCount(); i++) {
 		LayoutItem& m = l.item[cursor[i]];
-		String s = m.SaveProperties(charset);
+		m.SetCharset(charset);
+		String s = m.SaveProperties();
 		m.Create(~type);
 		try {
 			CParser p(s);
-			m.ReadProperties(p, charset, false);
+			m.ReadProperties(p, false);
 		}
 		catch(CParser::Error&) {}
 		item.Set(cursor[i], 0, m.type);

@@ -196,252 +196,251 @@ TOPIC_TEXT(
 "callbacks. Note that this function stores a reference to the target callbacks in "
 "the created callback `- storing callbacks that are used as targets here in ")
 TOPIC_TEXT(
-"Vector flavor of containers is not a good idea.&][s1; [%00-00*C@3 cb1]-|First target "
-"callback.&][s1; [%00-00*C@3 cb2]-|Second target callback.&][s1; [*/ Return value]-|Created "
-"callback.&][s0; &][s13; `[ template_<[*/@(128.0.255) parameters]> `]&][s14; [*/@(128.0.255) "
-"CallbackType]<[*/@(128.0.255) arguments]>[%00-00 `&_][%00-00* operator<<][%00-00 "
-"(][*/@(128.0.255) CallbackType]<[*/@(128.0.255) arg")
+"Vector flavor of containers is not a good idea. For Gate callbacks, the result of "
+"this operation is the boolean value returned by [*@3 cb2].&][s1; [%00-00*C@3 cb1]-|First "
+"target callback.&][s1; [%00-00*C@3 cb2]-|Second target callback.&][s1; [*/ Return "
+"value]-|Created callback.&][s0; &][s13; `[ template_<[*/@(128.0.255) parameters]> "
+"`]&][s14; [*/@(128.0.255) CallbackType]<[*/@(128.0.255) arguments")
 TOPIC_TEXT(
-"uments]> [%00-00 `&_][%00-00*@3 a][%00-00 , ][*/@(128.0.255) CallbackType]<[*/@(128.0.255) "
+"]>[%00-00 `&_][%00-00* operator<<][%00-00 (][*/@(128.0.255) CallbackType]<[*/@(128.0.255) "
+"arguments]> [%00-00 `&_][%00-00*@3 a][%00-00 , ][*/@(128.0.255) CallbackType]<[*/@(128.0.255) "
 "arguments]>[%00-00 _][%00-00*@3 b][%00-00 )]&][s6; Operator variant of the previous "
 "function. Allows chaining thus imitating callback insertion.&][s1; [%00-00*C@3 a]-|First "
-"callback. Its value is replaced by a callback that calls both the first and the second "
-"callback.&][s1; [%00-00*C@3 b]-|Second callback.&")
+"callback. Its value is replaced by a callba")
 TOPIC_TEXT(
-"][s1; [*/ Return value]-|Reference to the first callback.&][s0;3 &][s3; Special "
-"functions creating callbacks&][s0; &][s4;:`:`:callback1`(Object`*`,void`(M`:`:`*`)`(P`)`,T`): "
+"ck that calls both the first and the second callback.&][s1; [%00-00*C@3 b]-|Second "
+"callback.&][s1; [*/ Return value]-|Reference to the first callback.&][s0;3 &][s3; "
+"Special functions creating callbacks&][s0; &][s4;:`:`:callback1`(Object`*`,void`(M`:`:`*`)`(P`)`,T`): "
 "[%00-00 template_<class_][%00-00*@4 Object][%00-00 , class_][%00-00*@4 M][%00-00 "
-", class_][%00-00*@4 P][%00-00 , class_][%00-00*@4 T][%00-00 >]&][s4;:`:`:callback1`(Object`*`,void`(M`:`:`*`)`(P`)`,T`): "
-"[%00-00 Callback_][%00-0")
+", class_][%00-00*@4 P][%00-00 , class_][%00-00*@4 T]")
 TOPIC_TEXT(
-"0* callback1][%00-00 (][%00-00*@4 Object][%00-00 _`*][%00-00*@3 object][%00-00 , "
-"void_(][%00-00*@4 M][%00-00 `::`*][%00-00*@3 method][%00-00 )(][%00-00*@4 P][%00-00 "
-"), ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; Returns a no`-parameter "
-"callback for a method expecting a single parameter. The parameter is supplied as "
-"[@3 arg] and stored in the Callback.&][s1; [%00-00*C@3 object]-|Object.")
+"[%00-00 >]&][s4;:`:`:callback1`(Object`*`,void`(M`:`:`*`)`(P`)`,T`): [%00-00 Callback_][%00-00* "
+"callback1][%00-00 (][%00-00*@4 Object][%00-00 _`*][%00-00*@3 object][%00-00 , void_(][%00-00*@4 "
+"M][%00-00 `::`*][%00-00*@3 method][%00-00 )(][%00-00*@4 P][%00-00 ), ][%00-00*@4 "
+"T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; Returns a no`-parameter callback for "
+"a method expecting a single parameter. The par")
 TOPIC_TEXT(
-"&][s1; [%00-00*C@3 method]-|Method pointer.&][s1; [%00-00*C@3 arg]-|Argument&][s1; "
-"[*/ Return value]-|Created callback.&][s0; &][s4;:`:`:callback1`(const Object`*`,void`(M`:`:`*`)`(P`)const`,T`): "
+"ameter is supplied as [@3 arg] and stored in the Callback.&][s1; [%00-00*C@3 object]-|Object.&][s1; "
+"[%00-00*C@3 method]-|Method pointer.&][s1; [%00-00*C@3 arg]-|Argument&][s1; [*/ Return "
+"value]-|Created callback.&][s0; &][s4;:`:`:callback1`(const Object`*`,void`(M`:`:`*`)`(P`)const`,T`): "
 "[%00-00 template_<class_][%00-00*@4 Object][%00-00 , class_][%00-00*@4 M][%00-00 "
-", class_][%00-00*@4 P][%00-00 , class_][%00-00*@4 T][%00-00 >]&][s4;:`:`:callback1`(const "
-"Object`*`,void`(M`:`:`*`)`(P`)con")
+", class_][%00-00*@4 P][%00-00 ")
 TOPIC_TEXT(
-"st`,T`): [%00-00 Callback_][%00-00* callback1][%00-00 (const_][%00-00*@4 Object][%00-00 "
-"_`*][%00-00*@3 object][%00-00 , void_(][%00-00*@4 M][%00-00 `::`*][%00-00*@3 method][%00-00 "
-")(][%00-00*@4 P][%00-00 )_const, ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; "
-"Constant variant of the previous callback1 routine.&][s1; [%00-00*C@3 object]-|Object.&][s1; "
-"[%00-00*C@3 method]-|Method pointer.&]")
+", class_][%00-00*@4 T][%00-00 >]&][s4;:`:`:callback1`(const Object`*`,void`(M`:`:`*`)`(P`)const`,T`): "
+"[%00-00 Callback_][%00-00* callback1][%00-00 (const_][%00-00*@4 Object][%00-00 _`*][%00-00*@3 "
+"object][%00-00 , void_(][%00-00*@4 M][%00-00 `::`*][%00-00*@3 method][%00-00 )(][%00-00*@4 "
+"P][%00-00 )_const, ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; Constant "
+"variant of the previous callb")
 TOPIC_TEXT(
-"[s1; [%00-00*C@3 arg]-|Argument&][s1; [*/ Return value]-|Created callback.&][s0;*C@4 "
+"ack1 routine.&][s1; [%00-00*C@3 object]-|Object.&][s1; [%00-00*C@3 method]-|Method "
+"pointer.&][s1; [%00-00*C@3 arg]-|Argument&][s1; [*/ Return value]-|Created callback.&][s0;*C@4 "
 "&][s4;:`:`:pteback1`(Object`*`,void`(M`:`:`*`)`(P`)`,T`): [%00-00 template_<class_][%00-00*@4 "
 "Object][%00-00 , class_][%00-00*@4 M][%00-00 , class_][%00-00*@4 P][%00-00 , class_][%00-00*@4 "
-"T][%00-00 >]&][s4;:`:`:pteback1`(Object`*`,void`(M`:`:`*`)`(P`)`,T`): [%00-00 Callback_][%00-00* "
-"pteback1][%00-00 (][%00-00*@4")
+"T][%00-00 >]&][s4;:`:`:pteback1`(")
 TOPIC_TEXT(
-" Object][%00-00 _`*][%00-00*@3 object][%00-00 , void_(][%00-00*@4 M][%00-00 `::`*][%00-00*@3 "
-"method][%00-00 )(][%00-00*@4 P][%00-00 ), ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 "
-")]&][s6; Returns a no`-parameter callback for a method expecting a single parameter. "
-"Parameter is supplied as [@3 arg] and stored in the Callback. The created Callback "
-"object can be safely invoked even after the object")
+"Object`*`,void`(M`:`:`*`)`(P`)`,T`): [%00-00 Callback_][%00-00* pteback1][%00-00 "
+"(][%00-00*@4 Object][%00-00 _`*][%00-00*@3 object][%00-00 , void_(][%00-00*@4 M][%00-00 "
+"`::`*][%00-00*@3 method][%00-00 )(][%00-00*@4 P][%00-00 ), ][%00-00*@4 T][%00-00 "
+"_][%00-00*@3 arg][%00-00 )]&][s6; Returns a no`-parameter callback for a method expecting "
+"a single parameter. Parameter is supplied as [@3 arg] and st")
 TOPIC_TEXT(
-" instance is destructed.&][s1; [%00-00*C@3 object]-|Object. Must be an ancestor "
-"of [^topic`:`/`/Core`/src`/PtePtr`$en`-us`#`:`:Pte`:`:template `<class T`> class "
-"Pte^ Pte].&][s1; [%00-00*C@3 method]-|Method pointer.&][s1; [%00-00*C@3 arg]-|Argument&][s1; "
-"[*/ Return value]-|Created callback.&][s0; &][s4;:`:`:callback1`(void`(`*`)`(P`)`,T`): "
-"[%00-00 template_<class_][%00-00*@4 T][%00-00 , class_][%00")
+"ored in the Callback. The created Callback object can be safely invoked even after "
+"the object instance is destructed.&][s1; [%00-00*C@3 object]-|Object. Must be an "
+"ancestor of [^topic`:`/`/Core`/src`/PtePtr`$en`-us`#`:`:Pte`:`:template `<class T`> "
+"class Pte^ Pte].&][s1; [%00-00*C@3 method]-|Method pointer.&][s1; [%00-00*C@3 arg]-|Argument&][s1; "
+"[*/ Return value]-|Created callback.&][s0; &][s4;:`:`")
 TOPIC_TEXT(
-"-00*@4 P][%00-00 >]&][s4;:`:`:callback1`(void`(`*`)`(P`)`,T`): [%00-00 Callback_][%00-00* "
-"callback1][%00-00 (void_(`*][%00-00*@3 fn][%00-00 )(][%00-00*@4 P][%00-00 ), ][%00-00*@4 "
-"T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; Returns a no`-parameter callback for "
-"a non`-member function expecting a single parameter. Parameter is supplied as [@3 "
-"arg] and stored in the Callback.&][s1; [%00-00*C@3 fn]-|Fu")
+":callback1`(void`(`*`)`(P`)`,T`): [%00-00 template_<class_][%00-00*@4 T][%00-00 "
+", class_][%00-00*@4 P][%00-00 >]&][s4;:`:`:callback1`(void`(`*`)`(P`)`,T`): [%00-00 "
+"Callback_][%00-00* callback1][%00-00 (void_(`*][%00-00*@3 fn][%00-00 )(][%00-00*@4 "
+"P][%00-00 ), ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; Returns a no`-parameter "
+"callback for a non`-member function expecting a single param")
 TOPIC_TEXT(
-"nction.&][s1; [%00-00*C@3 arg]-|Argument.&][s1; [*/ Return value]-|Created callback.&][s0; "
-"&][s4;:`:`:callback1`(Object`*`,void`(M`:`:`*`)`(P1`,P`)`,T`): [%00-00 template_<class_][%00-00*@4 "
-"Object][%00-00 , class_][%00-00*@4 M][%00-00 , class_][%00-00*@4 P1][%00-00 , class_][%00-00*@4 "
-"P][%00-00 , class_][%00-00*@4 T][%00-00 >]&][s4;:`:`:callback1`(Object`*`,void`(M`:`:`*`)`(P1`,P`)`,T`): "
-"[%00-00 C")
+"eter. Parameter is supplied as [@3 arg] and stored in the Callback.&][s1; [%00-00*C@3 "
+"fn]-|Function.&][s1; [%00-00*C@3 arg]-|Argument.&][s1; [*/ Return value]-|Created "
+"callback.&][s0; &][s4;:`:`:callback1`(Object`*`,void`(M`:`:`*`)`(P1`,P`)`,T`): [%00-00 "
+"template_<class_][%00-00*@4 Object][%00-00 , class_][%00-00*@4 M][%00-00 , class_][%00-00*@4 "
+"P1][%00-00 , class_][%00-00*@4 P][%00-00 , class_][%")
 TOPIC_TEXT(
-"allback1<][%00-00*@4 P1][%00-00 >_][%00-00* callback1][%00-00 (][%00-00*@4 Object][%00-00 "
-"_`*][%00-00*@3 object][%00-00 , void_(][%00-00*@4 M][%00-00 `::`*][%00-00*@3 method][%00-00 "
-")(][%00-00*@4 P1][%00-00 , ][%00-00*@4 P][%00-00 ), ][%00-00*@4 T][%00-00 _][%00-00*@3 "
-"arg][%00-00 )]&][s6; Returns a single`-parameter callback for a method expecting "
-"two parameters. Additional parameter is supplied a")
+"00-00*@4 T][%00-00 >]&][s4;:`:`:callback1`(Object`*`,void`(M`:`:`*`)`(P1`,P`)`,T`): "
+"[%00-00 Callback1<][%00-00*@4 P1][%00-00 >_][%00-00* callback1][%00-00 (][%00-00*@4 "
+"Object][%00-00 _`*][%00-00*@3 object][%00-00 , void_(][%00-00*@4 M][%00-00 `::`*][%00-00*@3 "
+"method][%00-00 )(][%00-00*@4 P1][%00-00 , ][%00-00*@4 P][%00-00 ), ][%00-00*@4 T][%00-00 "
+"_][%00-00*@3 arg][%00-00 )]&][s6; Returns a single`")
 TOPIC_TEXT(
-"s [@3 arg] and stored in the Callback.&][s1; [%00-00*C@3 object]-|Object.&][s1; "
+"-parameter callback for a method expecting two parameters. Additional parameter "
+"is supplied as [@3 arg] and stored in the Callback.&][s1; [%00-00*C@3 object]-|Object.&][s1; "
 "[%00-00*C@3 method]-|Method pointer.&][s1; [%00-00*C@3 arg]-|Second argument to the "
 "method.&][s1; [*/ Return value]-|Created callback.&][s0; &][s4;:`:`:callback1`(const "
-"Object`*`,void`(M`:`:`*`)`(P1`,P`)const`,T`): [%00-00 template_<class_][%00-00*@4 "
-"Object][%00-00 , class_][%00-00*@4 M][%00-00 , class_][%00-00*@4 P1][")
+"Object`*`,void`(M`:`:`*`)`(P1`,P`)const`,T`): [%00-00 temp")
 TOPIC_TEXT(
-"%00-00 , class_][%00-00*@4 P][%00-00 , class_][%00-00*@4 T][%00-00 >]&][s4;:`:`:callback1`(const "
+"late_<class_][%00-00*@4 Object][%00-00 , class_][%00-00*@4 M][%00-00 , class_][%00-00*@4 "
+"P1][%00-00 , class_][%00-00*@4 P][%00-00 , class_][%00-00*@4 T][%00-00 >]&][s4;:`:`:callback1`(const "
 "Object`*`,void`(M`:`:`*`)`(P1`,P`)const`,T`): [%00-00 Callback1<][%00-00*@4 P1][%00-00 "
 ">_][%00-00* callback1][%00-00 (const_][%00-00*@4 Object][%00-00 _`*][%00-00*@3 object][%00-00 "
-", void_(][%00-00*@4 M][%00-00 `::`*][%00-00*@3 method][%00-00 )(][%00-00*@4 P1][%00-00 "
-", ][%00-00*@4 P][%00-00 )_const, ][")
+", void_(][%00-00*@4 M][%00-00")
 TOPIC_TEXT(
-"%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; Constant variant of the previous "
-"callback.&][s1; [%00-00*C@3 object]-|Object.&][s1; [%00-00*C@3 method]-|Method pointer.&][s1; "
-"[%00-00*C@3 arg]-|Second argument to the method.&][s1; [*/ Return value]-|Created "
-"callback.&][s0; &][s4;:`:`:pteback1`(Object`*`,void`(M`:`:`*`)`(P1`,P`)`,T`): [%00-00 "
-"template_<class_][%00-00*@4 Object][%00-00 , class_")
+" `::`*][%00-00*@3 method][%00-00 )(][%00-00*@4 P1][%00-00 , ][%00-00*@4 P][%00-00 "
+")_const, ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; Constant variant "
+"of the previous callback.&][s1; [%00-00*C@3 object]-|Object.&][s1; [%00-00*C@3 method]-|Method "
+"pointer.&][s1; [%00-00*C@3 arg]-|Second argument to the method.&][s1; [*/ Return "
+"value]-|Created callback.&][s0; &][s4;:`:`:pteback1`(Object`")
 TOPIC_TEXT(
-"][%00-00*@4 M][%00-00 , class_][%00-00*@4 P1][%00-00 , class_][%00-00*@4 P][%00-00 "
-", class_][%00-00*@4 T][%00-00 >]&][s4;:`:`:pteback1`(Object`*`,void`(M`:`:`*`)`(P1`,P`)`,T`): "
+"*`,void`(M`:`:`*`)`(P1`,P`)`,T`): [%00-00 template_<class_][%00-00*@4 Object][%00-00 "
+", class_][%00-00*@4 M][%00-00 , class_][%00-00*@4 P1][%00-00 , class_][%00-00*@4 "
+"P][%00-00 , class_][%00-00*@4 T][%00-00 >]&][s4;:`:`:pteback1`(Object`*`,void`(M`:`:`*`)`(P1`,P`)`,T`): "
 "[%00-00 Callback1<][%00-00*@4 P1][%00-00 >_][%00-00* pteback1][%00-00 (][%00-00*@4 "
-"Object][%00-00 _`*][%00-00*@3 object][%00-00 , void_(][%00-00*@4 M][%00-00 `::`*][%00-00*@3 "
-"method][%00-00 )(][%00-00*@4 P1][%00-00 , ][%00-")
+"Object][%00-00 _`*][%00-00*@3 object][%00-00 , ")
 TOPIC_TEXT(
-"00*@4 P][%00-00 ), ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; Returns "
-"a single`-parameter callback for a method expecting two parameters. Additional parameter "
-"is supplied as [@3 arg] and stored in the Callback. The created Callback can be safely "
-"invoked even after the object instance is destructed.&][s1; [%00-00*C@3 object]-|Object. "
-"Must be an ancestor of [^topic`:`/`/Core`/src`/PtePt")
+"void_(][%00-00*@4 M][%00-00 `::`*][%00-00*@3 method][%00-00 )(][%00-00*@4 P1][%00-00 "
+", ][%00-00*@4 P][%00-00 ), ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; "
+"Returns a single`-parameter callback for a method expecting two parameters. Additional "
+"parameter is supplied as [@3 arg] and stored in the Callback. The created Callback "
+"can be safely invoked even after the object instance is destru")
 TOPIC_TEXT(
-"r`$en`-us`#`:`:Pte`:`:template `<class T`> class Pte^ Pte].&][s1; [%00-00*C@3 method]-|Method "
-"pointer.&][s1; [%00-00*C@3 arg]-|Second argument to the method.&][s0; &][s4;:`:`:callback1`(void`(`*`)`(P1`,P`)`,T`): "
-"[%00-00 template_<class_][%00-00*@4 T][%00-00 , class_][%00-00*@4 P1][%00-00 , class_][%00-00*@4 "
-"P][%00-00 >]&][s4;:`:`:callback1`(void`(`*`)`(P1`,P`)`,T`): [%00-00 Callback1<][%00-00*@4 "
-"P")
+"cted.&][s1; [%00-00*C@3 object]-|Object. Must be an ancestor of [^topic`:`/`/Core`/src`/PtePtr`$en`-us`#`:`:Pte`:`:template "
+"`<class T`> class Pte^ Pte].&][s1; [%00-00*C@3 method]-|Method pointer.&][s1; [%00-00*C@3 "
+"arg]-|Second argument to the method.&][s0; &][s4;:`:`:callback1`(void`(`*`)`(P1`,P`)`,T`): "
+"[%00-00 template_<class_][%00-00*@4 T][%00-00 , class_][%00-00*@4 P1][%00-00 , class_][%00-00*@")
 TOPIC_TEXT(
-"1][%00-00 >_][%00-00* callback1][%00-00 (void_(`*][%00-00*@3 fn][%00-00 )(][%00-00*@4 "
+"4 P][%00-00 >]&][s4;:`:`:callback1`(void`(`*`)`(P1`,P`)`,T`): [%00-00 Callback1<][%00-00*@4 "
+"P1][%00-00 >_][%00-00* callback1][%00-00 (void_(`*][%00-00*@3 fn][%00-00 )(][%00-00*@4 "
 "P1][%00-00 , ][%00-00*@4 P][%00-00 ), ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 "
 ")]&][s6; Returns a single`-parameter callback for a non`-member function expecting "
-"two parameters. Additional parameter is supplied as [@3 arg] and stored in the Callback.&][s1; "
-"[%00-00*C@3 fn]-|Function.&][s1; [%00-00*C@3 arg]-|")
+"two parameters. Additional parameter is supplied as [")
 TOPIC_TEXT(
-"Method pointer.&][s1; [*/ Return value]-|Created callback.&][s0; &][s4; [%00-00 "
+"@3 arg] and stored in the Callback.&][s1; [%00-00*C@3 fn]-|Function.&][s1; [%00-00*C@3 "
+"arg]-|Method pointer.&][s1; [*/ Return value]-|Created callback.&][s0; &][s4; [%00-00 "
 "template_<class_][%00-00*@4 T][%00-00 , class_][%00-00*@4 P][%00-00 >]&][s4; [%00-00 "
 "Callback_][%00-00* callback1][%00-00 (Callback1<][%00-00*@4 P][%00-00 >_][%00-00*@3 "
-"cb][%00-00 , ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; Combines a single`-parameter "
-"callback and an argument into a no`-parameter callbac")
+"cb][%00-00 , ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-0")
 TOPIC_TEXT(
-"k.&][s1; [%00-00*C@3 cb]-|Single`-parameter callback.&][s1; [%00-00*C@3 arg]-|Argument.&][s1; "
+"0 )]&][s6; Combines a single`-parameter callback and an argument into a no`-parameter "
+"callback.&][s1; [%00-00*C@3 cb]-|Single`-parameter callback.&][s1; [%00-00*C@3 arg]-|Argument.&][s1; "
 "[*/ Return value]-|Created callback.&][s0; &][s4; [%00-00 template_<class_][%00-00*@4 "
 "T][%00-00 , class_][%00-00*@4 P1][%00-00 , class_][%00-00*@4 P][%00-00 >]&][s4; [%00-00 "
-"Callback1<][%00-00*@4 P1][%00-00 >_][%00-00* callback1][%00-00 (Callback2<][%00-00*@4 "
-"P1][%00-00 , ][%00-00*@4 P][%00-00 >_][%00-00*")
+"Callback1<][%00-00*@4 P1][%00-00 >_][%0")
 TOPIC_TEXT(
-"@3 cb][%00-00 , ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; Combines "
-"a double`-parameter callback and an argument into a single parameter callback.&][s1; "
+"0-00* callback1][%00-00 (Callback2<][%00-00*@4 P1][%00-00 , ][%00-00*@4 P][%00-00 "
+">_][%00-00*@3 cb][%00-00 , ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; "
+"Combines a double`-parameter callback and an argument into a single parameter callback.&][s1; "
 "[%00-00*C@3 cb]-|Double`-parameter callback.&][s1; [%00-00*C@3 arg]-|Argument.&][s1; "
-"[*/ Return value]-|Created callback.&][s0; &][s4;:`:`:callback2`(Object`*`,R`(O`:`:`*`)`(A`,B`)`,T1`,T2`): "
-"[%00-00 template_<class_][%00-00*@4 Object")
+"[*/ Return value]-|Created callback.&][s0; &][s4;:`:`:ca")
 TOPIC_TEXT(
-"][%00-00 , class_][%00-00*@4 R][%00-00 , class_][%00-00*@4 O][%00-00 , class_][%00-00*@4 "
+"llback2`(Object`*`,R`(O`:`:`*`)`(A`,B`)`,T1`,T2`): [%00-00 template_<class_][%00-00*@4 "
+"Object][%00-00 , class_][%00-00*@4 R][%00-00 , class_][%00-00*@4 O][%00-00 , class_][%00-00*@4 "
 "A][%00-00 , class_][%00-00*@4 B][%00-00 , class_][%00-00*@4 T1][%00-00 , class_][%00-00*@4 "
 "T2][%00-00 >]&][s4;:`:`:callback2`(Object`*`,R`(O`:`:`*`)`(A`,B`)`,T1`,T2`): [%00-00 "
-"Callback_][%00-00* callback2][%00-00 (][%00-00*@4 Object][%00-00 _`*][%00-00*@3 object][%00-00 "
-", ][%00-00*@4 R][%00-00 _(][%00-00*@4 O]")
+"Callback_][%00-00* callback2][%00-00 (][%0")
 TOPIC_TEXT(
-"[%00-00 `::`*][%00-00*@3 method][%00-00 )(][%00-00*@4 A][%00-00 , ][%00-00*@4 B][%00-00 "
+"0-00*@4 Object][%00-00 _`*][%00-00*@3 object][%00-00 , ][%00-00*@4 R][%00-00 _(][%00-00*@4 "
+"O][%00-00 `::`*][%00-00*@3 method][%00-00 )(][%00-00*@4 A][%00-00 , ][%00-00*@4 B][%00-00 "
 "), ][%00-00*@4 T1][%00-00 _][%00-00*@3 arg1][%00-00 , ][%00-00*@4 T2][%00-00 _][%00-00*@3 "
 "arg2][%00-00 )]&][s6; Returns a no`-parameter callback for a method taking two parameters. "
-"Parameters are supplied as [@3 arg1] and [@3 arg2. ]They are stored in the created "
-"callback object.&][s1; [%00-00*C@3 object]-|Obje")
+"Parameters are supplied as [@3 arg1] a")
 TOPIC_TEXT(
-"ct.&][s1; [%00-00*C@3 method]-|Method pointer.&][s1; [%00-00*C@3 arg1]-|First argument.&][s1; "
-"[%00-00*C@3 arg2]-|Second argument.&][s1; [*/ Return value]-|Created callback.&][s0; "
-"&][s4;:`:`:callback2`(const Object`*`,R`(O`:`:`*`)`(A`,B`)const`,T1`,T2`): [%00-00 "
-"template_<class_][%00-00*@4 Object][%00-00 , class_][%00-00*@4 R][%00-00 , class_][%00-00*@4 "
-"O][%00-00 , class_][%00-00*@4 A][%00-00 , cla")
+"nd [@3 arg2. ]They are stored in the created callback object.&][s1; [%00-00*C@3 "
+"object]-|Object.&][s1; [%00-00*C@3 method]-|Method pointer.&][s1; [%00-00*C@3 arg1]-|First "
+"argument.&][s1; [%00-00*C@3 arg2]-|Second argument.&][s1; [*/ Return value]-|Created "
+"callback.&][s0; &][s4;:`:`:callback2`(const Object`*`,R`(O`:`:`*`)`(A`,B`)const`,T1`,T2`): "
+"[%00-00 template_<class_][%00-00*@4 Object][%00-00 , ")
 TOPIC_TEXT(
-"ss_][%00-00*@4 B][%00-00 , class_][%00-00*@4 T1][%00-00 , class_][%00-00*@4 T2][%00-00 "
-">]&][s4;:`:`:callback2`(const Object`*`,R`(O`:`:`*`)`(A`,B`)const`,T1`,T2`): [%00-00 "
-"Callback_][%00-00* callback2][%00-00 (const_][%00-00*@4 Object][%00-00 _`*][%00-00*@3 "
-"object][%00-00 , ][%00-00*@4 R][%00-00 _(][%00-00*@4 O][%00-00 `::`*][%00-00*@3 method][%00-00 "
-")(][%00-00*@4 A][%00-00 , ][%00-00*@4 B][%00-00")
-TOPIC_TEXT(
-" )_const, ][%00-00*@4 T1][%00-00 _][%00-00*@3 arg1][%00-00 , ][%00-00*@4 T2][%00-00 "
-"_][%00-00*@3 arg2][%00-00 )]&][s6; Constant version of the previous callback.&][s1; "
-"[%00-00*C@3 object]-|Object.&][s1; [%00-00*C@3 method]-|Method.&][s1; [%00-00*C@3 "
-"arg1]-|First argument.&][s1; [%00-00*C@3 arg2]-|Second argument.&][s1; [*/ Return "
-"value]-|Created callback.&][s1;*C@3 &][s4;:`:`:pteback2`(Object`*`,R")
-TOPIC_TEXT(
-"`(O`:`:`*`)`(A`,B`)`,T1`,T2`): [%00-00 template_<class_][%00-00*@4 Object][%00-00 "
-", class_][%00-00*@4 R][%00-00 , class_][%00-00*@4 O][%00-00 , class_][%00-00*@4 A][%00-00 "
+"class_][%00-00*@4 R][%00-00 , class_][%00-00*@4 O][%00-00 , class_][%00-00*@4 A][%00-00 "
 ", class_][%00-00*@4 B][%00-00 , class_][%00-00*@4 T1][%00-00 , class_][%00-00*@4 "
-"T2][%00-00 >]&][s4;:`:`:pteback2`(Object`*`,R`(O`:`:`*`)`(A`,B`)`,T1`,T2`): [%00-00 "
-"Callback_][%00-00* pteback2][%00-00 (][%00-00*@4 Object][%00-00")
+"T2][%00-00 >]&][s4;:`:`:callback2`(const Object`*`,R`(O`:`:`*`)`(A`,B`)const`,T1`,T2`): "
+"[%00-00 Callback_][%00-00* callback2][%00-00 (const_][%00-00*@4 Object][%00-00 _`*][%00-00*@3 "
+"object][%00-00 , ][%00-00*@4 R][%00-00 _(][%00-00")
 TOPIC_TEXT(
-" _`*][%00-00*@3 object][%00-00 , ][%00-00*@4 R][%00-00 _(][%00-00*@4 O][%00-00 `::`*][%00-00*@3 "
+"*@4 O][%00-00 `::`*][%00-00*@3 method][%00-00 )(][%00-00*@4 A][%00-00 , ][%00-00*@4 "
+"B][%00-00 )_const, ][%00-00*@4 T1][%00-00 _][%00-00*@3 arg1][%00-00 , ][%00-00*@4 "
+"T2][%00-00 _][%00-00*@3 arg2][%00-00 )]&][s6; Constant version of the previous callback.&][s1; "
+"[%00-00*C@3 object]-|Object.&][s1; [%00-00*C@3 method]-|Method.&][s1; [%00-00*C@3 "
+"arg1]-|First argument.&][s1; [%00-00*C@3 arg2]-|Second ar")
+TOPIC_TEXT(
+"gument.&][s1; [*/ Return value]-|Created callback.&][s1;*C@3 &][s4;:`:`:pteback2`(Object`*`,R`(O`:`:`*`)`(A`,B`)`,T1`,T2`): "
+"[%00-00 template_<class_][%00-00*@4 Object][%00-00 , class_][%00-00*@4 R][%00-00 "
+", class_][%00-00*@4 O][%00-00 , class_][%00-00*@4 A][%00-00 , class_][%00-00*@4 B][%00-00 "
+", class_][%00-00*@4 T1][%00-00 , class_][%00-00*@4 T2][%00-00 >]&][s4;:`:`:pteback2`(Object`*`,R`(O`:`:`*")
+TOPIC_TEXT(
+"`)`(A`,B`)`,T1`,T2`): [%00-00 Callback_][%00-00* pteback2][%00-00 (][%00-00*@4 Object][%00-00 "
+"_`*][%00-00*@3 object][%00-00 , ][%00-00*@4 R][%00-00 _(][%00-00*@4 O][%00-00 `::`*][%00-00*@3 "
 "method][%00-00 )(][%00-00*@4 A][%00-00 , ][%00-00*@4 B][%00-00 ), ][%00-00*@4 T1][%00-00 "
 "_][%00-00*@3 arg1][%00-00 , ][%00-00*@4 T2][%00-00 _][%00-00*@3 arg2][%00-00 )]&][s6; "
-"Returns a no`-parameter callback for a method taking two parameters. Parameter are "
-"supplied as [@3 arg1] and [@3 arg2. ]They are ")
+"Returns a no`-parameter callback for")
 TOPIC_TEXT(
-"stored in the created callback. The created Callback can be safely invoked even "
-"after the object instance is destructed.&][s1; [%00-00*C@3 object]-|Object.&][s1; "
+" a method taking two parameters. Parameter are supplied as [@3 arg1] and [@3 arg2. "
+"]They are stored in the created callback. The created Callback can be safely invoked "
+"even after the object instance is destructed.&][s1; [%00-00*C@3 object]-|Object.&][s1; "
 "[%00-00*C@3 method]-|Method pointer.&][s1; [%00-00*C@3 arg1]-|First argument.&][s1; "
-"[%00-00*C@3 arg2]-|Second argument.&][s1; [*/ Return value]-|Created callback.&][s0; "
-"&][s0; &][s4;:`:`:callback2`(R`(`*`)`(A`,B`)`,T1`,T2`): [%00-00 templ")
+"[%00-00*C@3 arg2]-|Second argument.&][s1; [*/ Return value]-|")
 TOPIC_TEXT(
-"ate_<class_][%00-00*@4 R][%00-00 , class_][%00-00*@4 A][%00-00 , class_][%00-00*@4 "
+"Created callback.&][s0; &][s0; &][s4;:`:`:callback2`(R`(`*`)`(A`,B`)`,T1`,T2`): "
+"[%00-00 template_<class_][%00-00*@4 R][%00-00 , class_][%00-00*@4 A][%00-00 , class_][%00-00*@4 "
 "B][%00-00 , class_][%00-00*@4 T1][%00-00 , class_][%00-00*@4 T2][%00-00 >]&][s4;:`:`:callback2`(R`(`*`)`(A`,B`)`,T1`,T2`): "
 "[%00-00 Callback_][%00-00* callback2][%00-00 (][%00-00*@4 R][%00-00 _(`*][%00-00*@3 "
-"fn][%00-00 )(][%00-00*@4 A][%00-00 , ][%00-00*@4 B][%00-00 ), ][%00-00*@4 T1][%00-00 "
-"_][%00-00*@3 arg1][%00-00")
+"fn][%00-00 )(][%0")
 TOPIC_TEXT(
-" , ][%00-00*@4 T2][%00-00 _][%00-00*@3 arg2][%00-00 )]&][s6; Returns a no`-parameter "
-"callback for a non`-member function taking two parameters. Parameter are supplied "
-"as [@3 arg1] and [@3 arg2. ]They are stored in the created callback.&][s1; [%00-00*C@3 "
-"fn]-|Function pointer.&][s1; [%00-00*C@3 arg1]-|First argument.&][s1; [%00-00*C@3 "
-"arg2]-|Second argument.&][s1; [*/ Return value]-|Created callbac")
+"0-00*@4 A][%00-00 , ][%00-00*@4 B][%00-00 ), ][%00-00*@4 T1][%00-00 _][%00-00*@3 "
+"arg1][%00-00 , ][%00-00*@4 T2][%00-00 _][%00-00*@3 arg2][%00-00 )]&][s6; Returns "
+"a no`-parameter callback for a non`-member function taking two parameters. Parameter "
+"are supplied as [@3 arg1] and [@3 arg2. ]They are stored in the created callback.&][s1; "
+"[%00-00*C@3 fn]-|Function pointer.&][s1; [%00-00*C@3 arg1]-|First")
 TOPIC_TEXT(
-"k.&][s0; &][s4; [%00-00 template_<class_][%00-00*@4 A][%00-00 , class_][%00-00*@4 "
+" argument.&][s1; [%00-00*C@3 arg2]-|Second argument.&][s1; [*/ Return value]-|Created "
+"callback.&][s0; &][s4; [%00-00 template_<class_][%00-00*@4 A][%00-00 , class_][%00-00*@4 "
 "B][%00-00 , class_][%00-00*@4 T1][%00-00 , class_][%00-00*@4 T2][%00-00 >]&][s4; "
 "[%00-00 Callback_][%00-00* callback2][%00-00 (Callback2<][%00-00*@4 A][%00-00 , ][%00-00*@4 "
-"B][%00-00 >_][%00-00*@3 cb][%00-00 , ][%00-00*@4 T1][%00-00 _][%00-00*@3 arg1][%00-00 "
-", ][%00-00*@4 T2][%00-00 _][%00-00*@3 arg2][%00-00 )]&][s6;")
+"B][%00-00 >_][%00-00*@3 cb][%00-00 , ][%00-00*@4 T1]")
 TOPIC_TEXT(
-" Combines a two`-parameter callback and two arguments into a no`-parameter callback.&][s1; "
-"[%00-00*C@3 cb]-|Two`-parameter callback.&][s1; [%00-00*C@3 arg1]-|First argument.&][s1; "
-"[%00-00*C@3 arg2]-|Second argument.&][s1; [*/ Return value]-|Created callback.&][s0;*C@3 "
-"&][s3; Callback macros&][s0; &][s0; Callback macros reduce verbosity of instance "
-"method callbacks. They expect CLASSNAME to be type")
+"[%00-00 _][%00-00*@3 arg1][%00-00 , ][%00-00*@4 T2][%00-00 _][%00-00*@3 arg2][%00-00 "
+")]&][s6; Combines a two`-parameter callback and two arguments into a no`-parameter "
+"callback.&][s1; [%00-00*C@3 cb]-|Two`-parameter callback.&][s1; [%00-00*C@3 arg1]-|First "
+"argument.&][s1; [%00-00*C@3 arg2]-|Second argument.&][s1; [*/ Return value]-|Created "
+"callback.&][s0;*C@3 &][s3; Callback macros&][s0; &][s0; Ca")
 TOPIC_TEXT(
-"def`-ed as the type of current class and return method callbacks bound to the [*@(0.0.255) "
-"this] pointer.&][s0; &][s4;:`:`:THISBACK`(x`): [%00-00* THISBACK][%00-00 (][%00-00*@3 "
-"x][%00-00 )]&][s6; Expands to callback(this, `&CLASSNAME`::[@3 x]).&][s1; [%00-00*C@3 "
-"x]-|Name of method.&][s0; &][s4;:`:`:THISBACK1`(x`, arg`): [%00-00* THISBACK1][%00-00 "
-"(][%00-00*@3 x][%00-00 , ][%00-00*@3 arg][%00-00 )]")
+"llback macros reduce verbosity of instance method callbacks. They expect CLASSNAME "
+"to be typedef`-ed as the type of current class and return method callbacks bound "
+"to the [*@(0.0.255) this] pointer.&][s0; &][s4;:`:`:THISBACK`(x`): [%00-00* THISBACK][%00-00 "
+"(][%00-00*@3 x][%00-00 )]&][s6; Expands to callback(this, `&CLASSNAME`::[@3 x]).&][s1; "
+"[%00-00*C@3 x]-|Name of method.&][s0; &][s4;:`:`:THISBAC")
 TOPIC_TEXT(
-"&][s6; Expands to callback1(this, `&CLASSNAME`::[@3 x], [@3 arg]).&][s1; [%00-00*C@3 "
+"K1`(x`, arg`): [%00-00* THISBACK1][%00-00 (][%00-00*@3 x][%00-00 , ][%00-00*@3 arg][%00-00 "
+")]&][s6; Expands to callback1(this, `&CLASSNAME`::[@3 x], [@3 arg]).&][s1; [%00-00*C@3 "
 "x]-|Name of method.&][s1; [%00-00*C@3 arg]-|Additional parameter.&][s0; &][s4;:`:`:THISBACK2`(m`, "
 "a`, b`): [%00-00* THISBACK2][%00-00 (][%00-00*@3 m][%00-00 , ][%00-00*@3 a][%00-00 "
-", ][%00-00*@3 b][%00-00 )]&][s6; Expands to callback2(this, `&CLASSNAME`::[@3 x], "
-"[@3 a],[@3  b]).&][s1; [%00-00*C@3 m]-|Name of metho")
+", ][%00-00*@3 b][%00-00 )]&][s6; Expands ")
 TOPIC_TEXT(
-"d.&][s1; [%00-00*C@3 a]-|First additional parameter.&][s1; [%00-00*C@3 b]-|Second "
+"to callback2(this, `&CLASSNAME`::[@3 x], [@3 a],[@3  b]).&][s1; [%00-00*C@3 m]-|Name "
+"of method.&][s1; [%00-00*C@3 a]-|First additional parameter.&][s1; [%00-00*C@3 b]-|Second "
 "additional parameter.&][s0; &][s4;:`:`:PTEBACK`(x`): [%00-00* PTEBACK][%00-00 (][%00-00*@3 "
 "x][%00-00 )]&][s6; Expands to pteback(this, `&CLASSNAME`::[@3 x]).&][s1; [%00-00*C@3 "
-"x]-|Name of method.&][s0; &][s4;:`:`:PTEBACK1`(x`, arg`): [%00-00* PTEBACK1][%00-00 "
-"(][%00-00*@3 x][%00-00 , ][%00-00*@3 arg][%00-00 )]&][s6; ")
+"x]-|Name of method.&][s0; &][s4;:`:`:PTEBACK1`(x`")
 TOPIC_TEXT(
-"Expands to pteback1(this, `&CLASSNAME`::[@3 x], [@3 arg]).&][s1; [%00-00*C@3 x]-|Name "
-"of method.&][s1; [%00-00*C@3 arg]-|Additional parameter.&][s0; &][s4;:`:`:PTEBACK2`(m`, "
+", arg`): [%00-00* PTEBACK1][%00-00 (][%00-00*@3 x][%00-00 , ][%00-00*@3 arg][%00-00 "
+")]&][s6; Expands to pteback1(this, `&CLASSNAME`::[@3 x], [@3 arg]).&][s1; [%00-00*C@3 "
+"x]-|Name of method.&][s1; [%00-00*C@3 arg]-|Additional parameter.&][s0; &][s4;:`:`:PTEBACK2`(m`, "
 "a`, b`): [%00-00* PTEBACK2][%00-00 (][%00-00*@3 m][%00-00 , ][%00-00*@3 a][%00-00 "
-", ][%00-00*@3 b][%00-00 )]&][s6; Expands to pteback2(this, `&CLASSNAME`::[@3 x], "
-"[@3 a],[@3  b]).&][s1; [%00-00*C@3 m]-|Name of method.&][s1; [%")
+", ][%00-00*@3 b][%00-00 )]&][s6; Expands to pteback")
 TOPIC_TEXT(
-"00-00*C@3 a]-|First additional parameter.&][s1; [%00-00*C@3 b]-|Second additional "
+"2(this, `&CLASSNAME`::[@3 x], [@3 a],[@3  b]).&][s1; [%00-00*C@3 m]-|Name of method.&][s1; "
+"[%00-00*C@3 a]-|First additional parameter.&][s1; [%00-00*C@3 b]-|Second additional "
 "parameter.&][s6; &][s0; &][s3; [%00-00 CallbackArgTarget]&][s0; &][s10; [%00-00 template_<class_][%00-00*@4 "
 "T][%00-00 >]&][s10;* [%00-00* class_][%00-00 CallbackArgTarget]&][s6; This helper "
-"class is useful in a situation when a set of callbacks define some output value. "
-"Example is pop`-up menu that provides selection")
+"class is useful in a situation when")
 TOPIC_TEXT(
-" of one character `- in that case, CallbackArgTarget can be used instead of dedicated "
-"method to obtain result of user selection.&][s12; [%00-00*C@4 T]-|Type of output "
-"value. Must be able to be assigned Null.&][s6; &][s4;:`:`:CallbackArgTarget`:`:CallbackArgTarget`(`): "
-"[%00-00* CallbackArgTarget][%00-00 ()]&][s6; Constructor. Assigns Null to the output "
-"value.&][s6; &][s4;:`:`:CallbackArgTarget`:`:o")
+" a set of callbacks define some output value. Example is pop`-up menu that provides "
+"selection of one character `- in that case, CallbackArgTarget can be used instead "
+"of dedicated method to obtain result of user selection.&][s12; [%00-00*C@4 T]-|Type "
+"of output value. Must be able to be assigned Null.&][s6; &][s4;:`:`:CallbackArgTarget`:`:CallbackArgTarget`(`): "
+"[%00-00* CallbackArgTarget][%00-00 ()]")
 TOPIC_TEXT(
-"perator const T`&`(`): [%00-00* operator_const_T`&][%00-00 ()]&][s1; [*/ Return "
-"value]-|Result.&][s0; &][s4;:`:`:CallbackArgTarget`:`:IsNullInstance`(`)const: [%00-00 "
-"bool_][%00-00* IsNullInstance][%00-00 ()_const]&][s1; [*/ Return value]-|True if "
-"there is not Null in output value.&][s0; &][s4;:`:`:CallbackArgTarget`:`:operator`[`]`(const "
-"T`&`): [%00-00 Callback_][%00-00* operator`[`]][%00-00 (con")
+"&][s6; Constructor. Assigns Null to the output value.&][s6; &][s4;:`:`:CallbackArgTarget`:`:operator "
+"const T`&`(`): [%00-00* operator_const_T`&][%00-00 ()]&][s1; [*/ Return value]-|Result.&][s0; "
+"&][s4;:`:`:CallbackArgTarget`:`:IsNullInstance`(`)const: [%00-00 bool_][%00-00* IsNullInstance][%00-00 "
+"()_const]&][s1; [*/ Return value]-|True if there is not Null in output value.&][s0; "
+"&][s4;:`:`:Callbac")
 TOPIC_TEXT(
-"st_T`&_][%00-00*@3 value][%00-00 )]&][s6; Returns a Callback that, when invoked, "
+"kArgTarget`:`:operator`[`]`(const T`&`): [%00-00 Callback_][%00-00* operator`[`]][%00-00 "
+"(const_T`&_][%00-00*@3 value][%00-00 )]&][s6; Returns a Callback that, when invoked, "
 "assigns [@3 value] to the output value.&][s1; [%00-00*C@3 value]-|Value.&][s1; [*/ "
 "Return value]-|Callback.&][s0;3 ]")

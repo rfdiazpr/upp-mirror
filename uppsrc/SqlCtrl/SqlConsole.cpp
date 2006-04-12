@@ -6,6 +6,8 @@
 #define IMAGEFILE <SqlCtrl/SqlCtrl.iml>
 #include <Draw/iml.h>
 
+void RunDlgSqlExport(Sql& cursor, String command, String tablename);
+
 class MacroSet {
 	struct Macro {
 		int            n;
@@ -201,6 +203,7 @@ public:
 	void ListMenu(Bar& bar);
 	void ListPrintRow();
 	void ListPrintList();
+	void ListExport();
 
 protected:
 	Sql                        cursor;
@@ -260,7 +263,7 @@ public:
 void SqlConsole::MacroList() {
 	list.Reset();
 	record.Clear();
-	list.AddColumn("Defined macros");
+	list.AddColumn(t_("Defined macros"));
 	for(int i = 0; i < macroset.GetCount(); i++)
 		list.Add('#' + macroset.Get(i));
 }
@@ -277,17 +280,17 @@ void SqlConsole::Execute(int type) {
 			command.Clear();
 			return;
 		}
-		list.AddColumn("Macro definition");
+		list.AddColumn(t_("Macro definition"));
 		if(macroset.Define(~s + 1)) {
 			list.Add("OK");
-			trace.Add(s, "Macro OK", "");
+			trace.Add(s, t_("Macro OK"), "");
 			if(type == NORMAL)
 				command.AddHistory();
 			command.Clear();
 		}
 		else {
-			list.Add("Invalid macro");
-			trace.Add(s, "Invalid", "");
+			list.Add(t_("Invalid macro"));
+			trace.Add(s, t_("Invalid"), "");
 		}
 		return;
 	}
@@ -302,7 +305,7 @@ void SqlConsole::Execute(int type) {
 	error:
 		record.Hide();
 		errortext.Show();
-		list.AddColumn("Error");
+		list.AddColumn(t_("Error"));
 		String err = cursor.GetLastError();
 		errortext <<= err;
 		list.Add(err);
@@ -326,7 +329,7 @@ void SqlConsole::Execute(int type) {
 		lob.Add(ci.type == -1 || ci.type == -2); // !! BLOB / CLOB hack
 	}
 	Progress pi;
-	pi.SetText("Naèteno %d øádek");
+	pi.SetText(t_("Fetched %d line(s)"));
 	while(cursor.Fetch()) {
 		Vector<Value> row = cursor.GetRow();
 		for(int i = 0; i < cursor.GetColumns(); i++)
@@ -351,9 +354,9 @@ void SqlConsole::Execute(int type) {
 	ColSize();
 	if(list.GetCount() > 0)
 		list.SetCursor(0);
-	Title(NFormat("%s (%d rows)", s, pi.GetPos()));
-	String rrows = Format("%d rows", max(list.GetCount(), cursor.GetRowsProcessed()));
-	String rms = Format("%d ms", ms1 - ms0);
+	Title(NFormat(t_("%s (%d rows)"), s, pi.GetPos()));
+	String rrows = Format(t_("%d rows"), max(list.GetCount(), cursor.GetRowsProcessed()));
+	String rms = Format(t_("%d ms"), ms1 - ms0);
 	if(type == RERUN && trace.IsCursor()) {
 		trace.Set(1, rrows);
 		trace.Set(2, rms);
@@ -443,7 +446,7 @@ void SqlConsole::Serialize(Stream& s) {
 void SqlConsole::Perform() {
 	const char cfg[] = "SqlConsole.cfg";
 	LoadFromFile(*this, cfg);
-	Title("SQL Commander");
+	Title(t_("SQL Commander"));
 	Icon(SqlConsoleIconSmall(), SqlConsoleIconLarge());
 	Sizeable();
 	Zoomable();
@@ -468,11 +471,6 @@ void SqlConsole::ListToCommand() {
 void SqlConsole::TraceToExecute() {
 	Execute(RERUN);
 }
-
-const char exts[] =
-	"Sql scripts (*.sql)|*.sql|"
-	"All files (*.*)|*.*|"
-;
 
 void SqlConsole::SaveTrace() {
 	FileSelector fsel;
@@ -519,6 +517,7 @@ void SqlConsole::ListMenu(Bar& bar)
 {
 	bar.Add(t_("Print record"), THISBACK(ListPrintRow));
 	bar.Add(t_("Print list"), THISBACK(ListPrintList));
+	bar.Add(t_("Export..."), THISBACK(ListExport));
 }
 
 void SqlConsole::ListPrintRow()
@@ -555,6 +554,11 @@ void SqlConsole::ListPrintList()
 	report.Perform();
 }
 
+void SqlConsole::ListExport()
+{
+	RunDlgSqlExport(cursor, lastquery, Null);
+}
+
 SqlConsole::SqlConsole(SqlSession& session)
 : cursor(session)
 {
@@ -566,11 +570,11 @@ SqlConsole::SqlConsole(SqlSession& session)
 	errortext.Hide();
 	vsplit.Vert(lires, trace);
 	record.NoCursor();
-	record.AddColumn("Column", 5);
-	record.AddColumn("Value", 10);
-	trace.AddColumn("Command", 8);
-	trace.AddColumn("Result", 1);
-	trace.AddColumn("Duration", 1);
+	record.AddColumn(t_("Column"), 5);
+	record.AddColumn(t_("Value"), 10);
+	trace.AddColumn(t_("Command"), 8);
+	trace.AddColumn(t_("Result"), 1);
+	trace.AddColumn(t_("Duration"), 1);
 	trace.WhenLeftClick = THISBACK(TraceToCommand);
 	trace.WhenLeftDouble = THISBACK(TraceToExecute);
 	trace.WhenBar = THISBACK(TraceMenu);
@@ -580,7 +584,7 @@ SqlConsole::SqlConsole(SqlSession& session)
 	Add(vsplit.VSizePos(0, ecy + 4).HSizePos(0, 0));
 	Add(command.BottomPos(0, ecy).HSizePos(0, 90));
 	Add(schema.BottomPos(0, ecy).RightPos(0, 80));
-	schema.SetLabel("&Schema");
+	schema.SetLabel(t_("&Schema"));
 	schema <<= THISBACK(ObjectTree);
 //	hide = callback(this, &SqlConsole::Hide);
 //	Size sz = Stock.GetScreenSize();

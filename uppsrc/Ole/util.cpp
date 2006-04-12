@@ -296,7 +296,7 @@ bool OleStream::Open(IUnknown *stream)
 	STATSTG stat;
 	Zero(stat);
 //	HRESULT statres = istream -> Stat(&stat, STATFLAG_NONAME);
-	OpenMode mode = READWRITE;
+	int mode = READWRITE;
 //	if(SUCCEEDED(statres) && (stat.grfMode & (STGM_READ | STGM_WRITE | STGM_READWRITE)) == STGM_READ)
 //		mode = READ;
 

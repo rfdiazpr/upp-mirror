@@ -42,6 +42,7 @@ file
 	App.cpp,
 	Stream.h,
 	Stream.cpp optimize_speed,
+	BlockStream.cpp,
 	Profile.h,
 	Diag.h,
 	Log.cpp,

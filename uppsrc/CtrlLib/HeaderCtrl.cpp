@@ -73,12 +73,18 @@ HeaderCtrl::Column& HeaderCtrl::Tab(int i) {
 	return col[i];
 }
 
+void HeaderCtrl::SetHeight(int cy)
+{
+	height = cy;
+	RefreshParentLayout();
+}
+
 int  HeaderCtrl::GetHeight() const
 {
 	int cy = 0;
 	for(int i = 0; i < col.GetCount(); i++)
 		cy = max(cy, col[i].GetLabelSize().cy);
-	return cy + 4;
+	return max(height, cy + 4);
 }
 
 HeaderCtrl::Column& HeaderCtrl::Add()
@@ -644,6 +650,8 @@ void HeaderCtrl::Reset()
 	track = true;
 	mode = PROPORTIONAL;
 	oszcx = -1;
+	invisible = false;
+	height = 0;
 }
 
 void HeaderCtrl::WScroll()
@@ -665,7 +673,6 @@ void HeaderCtrl::ScrollVisibility()
 HeaderCtrl::HeaderCtrl() {
 	Reset();
 	NoWantFocus();
-	invisible = false;
 	sb.AutoHide();
 	sb.WhenScroll = THISBACK(Scroll);
 	WhenScroll = THISBACK(WScroll);

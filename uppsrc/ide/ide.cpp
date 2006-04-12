@@ -689,7 +689,7 @@ void Ide::SerializeWorkspace(Stream& s) {
 	s % tablru;
 	s % mainconfigname;
 	s % mainconfigparam;
-	s % verbosebuild;
+	s % console.verbosebuild;
 	s % stoponerrors;
 	byte dummy;
 	s % dummy;

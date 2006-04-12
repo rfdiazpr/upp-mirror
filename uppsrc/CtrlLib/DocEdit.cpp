@@ -367,6 +367,7 @@ bool DocEdit::Key(dword key, int cnt)
 		if(IsReadOnly()) return MenuBar::Scan(WhenBar, key);
 		switch(key) {
 		case K_BACKSPACE:
+		case K_SHIFT|K_BACKSPACE:
 			if(RemoveSelection()) break;
 			if(cursor == 0) return true;
 			cursor--;

@@ -290,6 +290,12 @@ Bar::Item& Bar::Add(bool enable, const char *text, Callback1<Bar&> proc)
 Bar::Item& Bar::Add(const char *text, Callback1<Bar&> proc)
 { return Add(true, text, proc); }
 
+Bar::Item& Bar::Add(bool enable, const char *text, const ::Image& image, Callback1<Bar&> proc)
+{ return Add(enable, text, proc).Image(image); }
+
+Bar::Item& Bar::Add(const char *text, const ::Image& image, Callback1<Bar&> proc)
+{ return Add(text, proc).Image(image); }
+
 void   Bar::ToolSeparator()                { if(IsToolBar()) Separator(); }
 void   Bar::ToolBreak()                    { if(IsToolBar()) Break(); }
 void   Bar::ToolGap(int size)              { if(IsToolBar()) Gap(size); }

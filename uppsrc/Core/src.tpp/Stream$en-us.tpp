@@ -126,10 +126,6 @@ REF("::MemStream::class")
 REF("::MemStream::MemStream(void*,int)")
 REF("::MemReadStream::class")
 REF("::MemReadStream::MemReadStream(const void*,int)")
-REF("::BufferStream::class")
-REF("::BufferStream::BufferStream(::dword)")
-REF("::BufferStream::~BufferStream()")
-REF("::BufferStream::GetBufferSize()const")
 REF("::BlockStream::class")
 REF("::BlockStream::READ")
 REF("::BlockStream::CREATE")
@@ -143,6 +139,8 @@ REF("::BlockStream::Write(::int64,const void*,::dword)")
 REF("::BlockStream::SetStreamSize(::int64)")
 REF("::BlockStream::GetMediaSize()const")
 REF("::BlockStream::OpenInit(::dword,::int64)")
+REF("::BlockStream::SetBufferSize(::dword)")
+REF("::BlockStream::GetBufferSize()const")
 REF("::FileStream::class")
 REF("::FileStream::FileStream(const char*,::dword)")
 REF("::FileStream::FileStream(const char*,::dword,mode_t)")
@@ -775,187 +773,179 @@ TOPIC_TEXT(
 "MemReadStream][%00-00 (const_void_`*][%00-00*@3 data][%00-00 , int_][%00-00*@3 size][%00-00 "
 ")]&][s6; Constructs [* MemStream] at specified memory buffer.&][s1; [%00-00*C@3 data]-|Pointer "
 "to the stream content.&][s1; [%00-00*C@3 size]-|Size.&][s0;3 &][s0;3 &][s0;3 &][s0;3 "
-"&][s10;:`:`:BufferStream`:`:class:* [%00-00* class_][%00-00 BufferStream]&][s6; &][s6; "
-"BufferStream is a helper class that alloc")
+"&][s10;:`:`:BlockStream`:`:class:* [%00-00* class_][%00-00 BlockStream]&][s6; &][s6; "
+"BlockStream implements operations needed to")
 TOPIC_TEXT(
-"ates memory buffer and stores it into the [* buffer] protected member variable of "
-"Stream. Destructor deallocates this buffer.&][s6; &][s9; [/ Derived from] [%00-00 "
-"Stream]&][s0;3 &][s4;:`:`:BufferStream`:`:BufferStream`(`:`:dword`): [%00-00* BufferStream][%00-00 "
-"(dword_][%00-00*@3 buffersize][%00-00 _`=_4096)]&][s6; Constructs BufferStream with "
-"speciafied size of buffer.&][s1; [%00-00*C@3 buffersi")
+" manage streams that are able to read or write a block of data at random positon. "
+"BlockStream provides buffered implementation of such stream. It implements all virtual "
+"methods of Stream, with exception of [* IsOpen] and [* Close], using new virtual "
+"methods [* Read], [* Write] and [* SetStreamSize].&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:BufferStream`:`:class "
+"BufferStream^ [/^^ Der")
 TOPIC_TEXT(
-"ze]-|Size of buffer.&][s0;3 &][s4;:`:`:BufferStream`:`:`~BufferStream`(`): [%00-00 "
-"void_][%00-00* SetBufferSize][%00-00 (dword_][%00-00*@3 newsize][%00-00 )]&][s6; "
-"Sets new buffer size. Can be invoked only for stream that is not opened.&][s1; [%00-00*C@3 "
-"newsize]-|New size of buffer.&][s0;3 &][s4;:`:`:BufferStream`:`:GetBufferSize`(`)const: "
-"[%00-00 dword_][%00-00* GetBufferSize][%00-00 ()_const]&]")
+"ived from][^^  ][%00-00 BufferStream]&][s0;3 &][s4; [%00-00 enum_`{_][%00-00*@3 "
+"READ][%00-00 , ][%00-00*@3 CREATE][%00-00 , ][%00-00*@3 APPEND][%00-00 , ][%00-00*@3 "
+"READWRITE][%00-00 , ][%00-00*@3 NOWRITESHARE][%00-00 , ][%00-00*@3 DELETESHARE][%00-00 "
+", ][%00-00*@3 NOREADSHARE][%00-00 , ][%00-00*@3 SHAREMASK][%00-00 _`}]&][s6; This "
+"enum defines basic operation modes of BlockStream (used combined w")
 TOPIC_TEXT(
-"[s1; [*/ Return value]-|Size of buffer.&][s0;3 &][s0;3 &][s0;3 &][s0;3 &][s10;:`:`:BlockStream`:`:class:* "
-"[%00-00* class_][%00-00 BlockStream]&][s6; &][s6; BlockStream implements operations "
-"needed to manage streams that are able to read or write a block of data at random "
-"positon. BlockStream provides buffered implementation of such stream. It implements "
-"all virtual methods of Stream, with exceptio")
+"ith binary or).&][s1;:`:`:BlockStream`:`:READ: [%00-00*C@3 READ]-|Read mode.&][s1;:`:`:BlockStream`:`:CREATE: "
+"[%00-00*C@3 CREATE]-|Write mode.&][s1;:`:`:BlockStream`:`:APPEND: [%00-00*C@3 APPEND]-|Append "
+"mode `- means that initial position in the stream is at the end of it.&][s1;:`:`:BlockStream`:`:READWRITE: "
+"[%00-00*C@3 READWRITE]-|Enables subsequent streams full access to stream.&][s1;:`:`:Block")
 TOPIC_TEXT(
-"n of [* IsOpen] and [* Close], using new virtual methods [* Read], [* Write] and "
-"[* SetStreamSize].&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:BufferStream`:`:class "
-"BufferStream^ [/^^ Derived from][^^  ][%00-00 BufferStream]&][s0;3 &][s4; [%00-00 "
-"enum_`{_][%00-00*@3 READ][%00-00 , ][%00-00*@3 CREATE][%00-00 , ][%00-00*@3 APPEND][%00-00 "
-", ][%00-00*@3 READWRITE][%00-00 , ][%00-00*@3 NOWR")
+"Stream`:`:NOWRITESHARE: [%00-00*C@3 NOWRITESHARE]-|Disables subsequent streams to "
+"write to the stream.&][s1;:`:`:BlockStream`:`:DELETESHARE: [%00-00*C@3 DELETESHARE]-|Enables "
+"subsequent streams to delete the stream.&][s1;:`:`:BlockStream`:`:NOREADSHARE: [%00-00*C@3 "
+"NOREADSHARE]-|Disables subsequent streams to read the stream.&][s0;3 &][s4;:`:`:BlockStream`:`:Read`(`:`:int64`,void`*`,`:`:dword`): "
+"[")
 TOPIC_TEXT(
-"ITESHARE][%00-00 , ][%00-00*@3 DELETESHARE][%00-00 , ][%00-00*@3 NOREADSHARE][%00-00 "
-", ][%00-00*@3 SHAREMASK][%00-00 _`}]&][s6; This enum defines basic operation modes "
-"of BlockStream (used combined with binary or).&][s1;:`:`:BlockStream`:`:READ: [%00-00*C@3 "
-"READ]-|Read mode.&][s1;:`:`:BlockStream`:`:CREATE: [%00-00*C@3 CREATE]-|Write mode.&][s1;:`:`:BlockStream`:`:APPEND: "
-"[%00-00*C@3 APPEND]-|Appe")
-TOPIC_TEXT(
-"nd mode `- means that initial position in the stream is at the end of it.&][s1;:`:`:BlockStream`:`:READWRITE: "
-"[%00-00*C@3 READWRITE]-|Enables subsequent streams full access to stream.&][s1;:`:`:BlockStream`:`:NOWRITESHARE: "
-"[%00-00*C@3 NOWRITESHARE]-|Disables subsequent streams to write to the stream.&][s1;:`:`:BlockStream`:`:DELETESHARE: "
-"[%00-00*C@3 DELETESHARE]-|Enables subsequent streams to dele")
-TOPIC_TEXT(
-"te the stream.&][s1;:`:`:BlockStream`:`:NOREADSHARE: [%00-00*C@3 NOREADSHARE]-|Disables "
-"subsequent streams to read the stream.&][s0;3 &][s4;:`:`:BlockStream`:`:Read`(`:`:int64`,void`*`,`:`:dword`): "
-"[%00-00 virtual dword_][%00-00* Read][%00-00 (int64_][%00-00*@3 at][%00-00 , void_`*][%00-00*@3 "
+"%00-00 virtual dword_][%00-00* Read][%00-00 (int64_][%00-00*@3 at][%00-00 , void_`*][%00-00*@3 "
 "ptr][%00-00 , dword_][%00-00*@3 size][%00-00 )]&][s11; [%00-00 Protected.]&][s6; "
-"Implementation of this vi")
+"Implementation of this virtual method in derived class should read a block of data "
+"at specified position in media.&][s1; [%00-00*C@3 at]-|Position in media.&][s1; [%00-00*C@3 "
+"ptr]-|Pointer to buffer to receive data.&][s1; [%")
 TOPIC_TEXT(
-"rtual method in derived class should read a block of data at specified position "
-"in media.&][s1; [%00-00*C@3 at]-|Position in media.&][s1; [%00-00*C@3 ptr]-|Pointer "
-"to buffer to receive data.&][s1; [%00-00*C@3 size]-|Requested size of data.&][s1; "
-"[*/ Return value]-|Size of data read.&][s0;3 &][s4;:`:`:BlockStream`:`:Write`(`:`:int64`,const "
-"void`*`,`:`:dword`): [%00-00 virtual void_][%00-00* Write][")
+"00-00*C@3 size]-|Requested size of data.&][s1; [*/ Return value]-|Size of data read.&][s0;3 "
+"&][s4;:`:`:BlockStream`:`:Write`(`:`:int64`,const void`*`,`:`:dword`): [%00-00 virtual "
+"void_][%00-00* Write][%00-00 (int64_][%00-00*@3 at][%00-00 , const_void_`*][%00-00*@3 "
+"data][%00-00 , dword_][%00-00*@3 size][%00-00 )]&][s11; Protected.&][s6; Implementation "
+"of this virtual method in derived method should")
 TOPIC_TEXT(
-"%00-00 (int64_][%00-00*@3 at][%00-00 , const_void_`*][%00-00*@3 data][%00-00 , dword_][%00-00*@3 "
-"size][%00-00 )]&][s11; Protected.&][s6; Implementation of this virtual method in "
-"derived method should write a block of data at specified position in media.&][s1; "
-"[%00-00*C@3 at]-|Position in media.&][s1; [%00-00*C@3 data]-|Pointer to  data.&][s1; "
-"[%00-00*C@3 size]-|Size of data.&][s0;3 &][s4;:`:`:Bloc")
+" write a block of data at specified position in media.&][s1; [%00-00*C@3 at]-|Position "
+"in media.&][s1; [%00-00*C@3 data]-|Pointer to  data.&][s1; [%00-00*C@3 size]-|Size "
+"of data.&][s0;3 &][s4;:`:`:BlockStream`:`:SetStreamSize`(`:`:int64`): [%00-00 virtual "
+"void_][%00-00* SetStreamSize][%00-00 (int64_][%00-00*@3 size][%00-00 )]&][s11; Protected.&][s6; "
+"Implementation of this virtual method in derived")
 TOPIC_TEXT(
-"kStream`:`:SetStreamSize`(`:`:int64`): [%00-00 virtual void_][%00-00* SetStreamSize][%00-00 "
-"(int64_][%00-00*@3 size][%00-00 )]&][s11; Protected.&][s6; Implementation of this "
-"virtual method in derived class should adjust the size of media.&][s1; [%00-00*C@3 "
-"size]-|Requested new size of media.&][s0;3 &][s4;:`:`:BlockStream`:`:GetMediaSize`(`)const: "
-"[%00-00 int64_][%00-00* GetMediaSize][%00-00 ()_con")
+" class should adjust the size of media.&][s1; [%00-00*C@3 size]-|Requested new size "
+"of media.&][s0;3 &][s4;:`:`:BlockStream`:`:GetMediaSize`(`)const: [%00-00 int64_][%00-00* "
+"GetMediaSize][%00-00 ()_const]&][s11; Protected.&][s6; Returns current media size. "
+"Note that this might be different from current stream`-size `- size of media adjusting "
+"can be deffered to flushing the buffer.&][s1; [*/ Return")
 TOPIC_TEXT(
-"st]&][s11; Protected.&][s6; Returns current media size. Note that this might be "
-"different from current stream`-size `- size of media adjusting can be deffered to "
-"flushing the buffer.&][s1; [*/ Return value]-|Current media size.&][s0;3 &][s4;:`:`:BlockStream`:`:OpenInit`(`:`:dword`,`:`:int64`): "
+" value]-|Current media size.&][s0;3 &][s4;:`:`:BlockStream`:`:OpenInit`(`:`:dword`,`:`:int64`): "
 "[%00-00 void_][%00-00* OpenInit][%00-00 (dword_][%00-00*@3 mode][%00-00 , int64_][%00-00*@3 "
-"file`_size][%")
+"file`_size][%00-00 )]&][s11; Protected.&][s6; Initializes the BlockStream to specified "
+"mode and actual media size.&][s1; [%00-00*C@3 mode]-|Mode.&][s1; [%00-00*C@3 file`_size]-|Actual "
+"media size.&][s0;3 &][s4;:`:")
 TOPIC_TEXT(
-"00-00 )]&][s11; Protected.&][s6; Initializes the BlockStream to specified mode and "
-"actual media size.&][s1; [%00-00*C@3 mode]-|Mode.&][s1; [%00-00*C@3 file`_size]-|Actual "
-"media size.&][s0;3 &][s0;3 &][s0;3 &][s0;3 &][s10;:`:`:FileStream`:`:class:* [%00-00* "
-"class_][%00-00 FileStream]&][s6; &][s6; Classical file stream.&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:BlockStream`:`:class "
-"Bloc")
+"`:BlockStream`:`:SetBufferSize`(`:`:dword`): [%00-00 void_][%00-00* SetBufferSize][%00-00 "
+"(dword_][%00-00*@3 newsize][%00-00 )]&][s6; Sets a new size of internal buffer.&][s1; "
+"[%00-00*C@3 newsize]-|The new size of buffer.&][s0;3 &][s4;:`:`:BlockStream`:`:GetBufferSize`(`)const: "
+"[%00-00 dword_][%00-00* GetBufferSize][%00-00 ()_const]&][s1; [*/ Return value]-|Size "
+"of buffer.&][s0;3 &][s0;3 &][s0;3 &")
 TOPIC_TEXT(
-"kStream^ [/^^ Derived from][^^  ][%00-00 BlockStream]&][s0;3 &][s4;:`:`:FileStream`:`:FileStream`(const "
+"][s0;3 &][s10;:`:`:FileStream`:`:class:* [%00-00* class_][%00-00 FileStream]&][s6; "
+"&][s6; Classical file stream.&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:BlockStream`:`:class "
+"BlockStream^ [/^^ Derived from][^^  ][%00-00 BlockStream]&][s0;3 &][s4;:`:`:FileStream`:`:FileStream`(const "
 "char`*`,`:`:dword`): [%00-00* FileStream][%00-00 (const_char_`*][%00-00*@3 filename][%00-00 "
-", dword_][%00-00*@3 mode][%00-00 )]&][s6; Opens file stream in specified mode (as "
-"defined in BlockStream).&][s1; [%00-00*C@3 filename]-|The name of the file.&][s1; "
-"[%00-00*C@3 mode]-|Open mode.&][s0;3 &][")
+", dword_][%")
 TOPIC_TEXT(
-"s4;:`:`:FileStream`:`:FileStream`(const char`*`,`:`:dword`,mode`_t`): [%00-00* FileStream][%00-00 "
-"(const_char_`*][%00-00*@3 filename][%00-00 , dword_][%00-00*@3 mode][%00-00 , mode`_t_][%00-00*@3 "
-"acm][%00-00 _`=_][%00-00@3 0644][%00-00 )]&][s11; [%00-00 Posix specific.]&][s6; "
-"Opens file stream in specified mode (as defined in BlockStream) and specific POSIX "
-"access rights.&][s1; [%00-00*C@3 filenam")
+"00-00*@3 mode][%00-00 )]&][s6; Opens file stream in specified mode (as defined in "
+"BlockStream).&][s1; [%00-00*C@3 filename]-|The name of the file.&][s1; [%00-00*C@3 "
+"mode]-|Open mode.&][s0;3 &][s4;:`:`:FileStream`:`:FileStream`(const char`*`,`:`:dword`,mode`_t`): "
+"[%00-00* FileStream][%00-00 (const_char_`*][%00-00*@3 filename][%00-00 , dword_][%00-00*@3 "
+"mode][%00-00 , mode`_t_][%00-00*@3 acm][%00-00")
 TOPIC_TEXT(
-"e]-|The name of the file.&][s1; [%00-00*C@3 mode]-|Open mode.&][s1; [%00-00*C@3 "
-"acm]-|Access rights.&][s0;3 &][s4;:`:`:FileStream`:`:FileStream`(int`): [%00-00* "
-"FileStream][%00-00 (int_][%00-00*@3 std`_handle][%00-00 )]&][s11; Posix specific.&][s6; "
-"Assigns existing file handle to FileStream.&][s1; [%00-00*C@3 std`_handle]-|File "
-"handle of open file. FileStream takes ownership of this handle.&][s0;3")
+" _`=_][%00-00@3 0644][%00-00 )]&][s11; [%00-00 Posix specific.]&][s6; Opens file "
+"stream in specified mode (as defined in BlockStream) and specific POSIX access rights.&][s1; "
+"[%00-00*C@3 filename]-|The name of the file.&][s1; [%00-00*C@3 mode]-|Open mode.&][s1; "
+"[%00-00*C@3 acm]-|Access rights.&][s0;3 &][s4;:`:`:FileStream`:`:FileStream`(int`): "
+"[%00-00* FileStream][%00-00 (int_][%00-00*@3 std`_handl")
 TOPIC_TEXT(
-" &][s4;:`:`:FileStream`:`:FileStream`(`): [%00-00* FileStream][%00-00 ()]&][s6; "
-"Creates empty unopened FileStream.&][s0;3 &][s4;:`:`:FileStream`:`:operator bool`(`)const: "
-"[%00-00* operator_bool][%00-00 ()_const]&][s1; [*/ Return value]-|True if stream "
-"is open.&][s0;3 &][s4;:`:`:FileStream`:`:GetTime`(`)const: [%00-00 FileTime_][%00-00* "
-"GetTime][%00-00 ()_const]&][s6; Returns last`-write time of st")
+"e][%00-00 )]&][s11; Posix specific.&][s6; Assigns existing file handle to FileStream.&][s1; "
+"[%00-00*C@3 std`_handle]-|File handle of open file. FileStream takes ownership of "
+"this handle.&][s0;3 &][s4;:`:`:FileStream`:`:FileStream`(`): [%00-00* FileStream][%00-00 "
+"()]&][s6; Creates empty unopened FileStream.&][s0;3 &][s4;:`:`:FileStream`:`:operator "
+"bool`(`)const: [%00-00* operator_bool][%00-00 ()_co")
 TOPIC_TEXT(
-"ream.&][s1; [*/ Return value]-|Time.&][s0;3 &][s4;:`:`:FileStream`:`:SetTime`(const`:`:FileTime`&`): "
+"nst]&][s1; [*/ Return value]-|True if stream is open.&][s0;3 &][s4;:`:`:FileStream`:`:GetTime`(`)const: "
+"[%00-00 FileTime_][%00-00* GetTime][%00-00 ()_const]&][s6; Returns last`-write time "
+"of stream.&][s1; [*/ Return value]-|Time.&][s0;3 &][s4;:`:`:FileStream`:`:SetTime`(const`:`:FileTime`&`): "
 "[%00-00 bool_][%00-00* Open][%00-00 (const_char_`*][%00-00*@3 filename][%00-00 , "
-"dword_][%00-00*@3 mode][%00-00 )]&][s6; Opens file stream in specified mode (as defined "
-"in BlockStream).&][s1; [%00-00*C@3 filename]-|The name of the file.&][s6; [%00-00*C@3 "
-"mode]-|Open mode.&][s0;3 &][s4;:`:`:FileStre")
+"dword_][%00-00*@3 mode][%")
 TOPIC_TEXT(
-"am`:`:Open`(const char`*`,`:`:dword`,mode`_t`): [%00-00 bool_][%00-00* Open][%00-00 "
-"(const_char_`*][%00-00*@3 filename][%00-00 , dword_][%00-00*@3 mode][%00-00 , mode`_t_][%00-00*@3 "
-"acm][%00-00 _`=_][%00-00@3 0644][%00-00 )]&][s11; [%00-00 Posix specific.]&][s6; "
-"Opens file stream in specified mode (as defined in BlockStream) and specific POSIX "
-"access rights.&][s1; [%00-00*C@3 filename]-|The name o")
+"00-00 )]&][s6; Opens file stream in specified mode (as defined in BlockStream).&][s1; "
+"[%00-00*C@3 filename]-|The name of the file.&][s6; [%00-00*C@3 mode]-|Open mode.&][s0;3 "
+"&][s4;:`:`:FileStream`:`:Open`(const char`*`,`:`:dword`,mode`_t`): [%00-00 bool_][%00-00* "
+"Open][%00-00 (const_char_`*][%00-00*@3 filename][%00-00 , dword_][%00-00*@3 mode][%00-00 "
+", mode`_t_][%00-00*@3 acm][%00-00 _`=_][%00-00@")
 TOPIC_TEXT(
-"f the file.&][s1; [%00-00*C@3 mode]-|Open mode.&][s6; [%00-00*C@3 acm]-|Access rights.&][s0;3 "
-"&][s4;:`:`:FileStream`:`:GetHandle`(`)const: [%00-00 HANDLE_][%00-00* GetHandle][%00-00 "
-"()_const]&][s11; Win32 specific.&][s1; [*/ Return value]-|File handle.&][s0;3 &][s4;:`:`:FileStream`:`:GetHandle`(`)const: "
+"3 0644][%00-00 )]&][s11; [%00-00 Posix specific.]&][s6; Opens file stream in specified "
+"mode (as defined in BlockStream) and specific POSIX access rights.&][s1; [%00-00*C@3 "
+"filename]-|The name of the file.&][s1; [%00-00*C@3 mode]-|Open mode.&][s6; [%00-00*C@3 "
+"acm]-|Access rights.&][s0;3 &][s4;:`:`:FileStream`:`:GetHandle`(`)const: [%00-00 "
+"HANDLE_][%00-00* GetHandle][%00-00 ()_const]&][s11; Win32 sp")
+TOPIC_TEXT(
+"ecific.&][s1; [*/ Return value]-|File handle.&][s0;3 &][s4;:`:`:FileStream`:`:GetHandle`(`)const: "
 "[%00-00 int_][%00-00* GetHandle][%00-00 ()_const]&][s11; Posix specific.&][s1; [*/ "
-"Return value")
+"Return value]-|File handle.&][s0;3 &][s0;3 &][s0;3 &][s0;3 &][s10;:`:`:FileIn`:`:class:* "
+"[%00-00* class_][%00-00 FileIn]&][s6; &][s6; Simple helper class that represents "
+"FileStream in read mode.&][s6; &][s9;^topic`:`/`/")
 TOPIC_TEXT(
-"]-|File handle.&][s0;3 &][s0;3 &][s0;3 &][s0;3 &][s10;:`:`:FileIn`:`:class:* [%00-00* "
-"class_][%00-00 FileIn]&][s6; &][s6; Simple helper class that represents FileStream "
-"in read mode.&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:FileStream`:`:class "
-"FileStream^ [/^^ Derived from][^^  ][%00-00 FileStream]&][s0;3 &][s4;:`:`:FileIn`:`:FileIn`(const "
-"char`*`): [%00-00* FileIn][%00-00 (const_cha")
+"Core`/src`/Stream`$en`-us`#`:`:FileStream`:`:class FileStream^ [/^^ Derived from][^^ "
+" ][%00-00 FileStream]&][s0;3 &][s4;:`:`:FileIn`:`:FileIn`(const char`*`): [%00-00* "
+"FileIn][%00-00 (const_char_`*][%00-00*@3 fn][%00-00 )]&][s6; Opens file for reading.&][s1; "
+"[%00-00*C@3 fn]-|File name.&][s0;3 &][s4;:`:`:FileIn`:`:FileIn`(`): [%00-00* FileIn][%00-00 "
+"()]&][s6; Constructs empty FileStream.&][s0;3 &][")
 TOPIC_TEXT(
-"r_`*][%00-00*@3 fn][%00-00 )]&][s6; Opens file for reading.&][s1; [%00-00*C@3 fn]-|File "
-"name.&][s0;3 &][s4;:`:`:FileIn`:`:FileIn`(`): [%00-00* FileIn][%00-00 ()]&][s6; Constructs "
-"empty FileStream.&][s0;3 &][s4;:`:`:FileIn`:`:Open`(const char`*`): [%00-00 bool_][%00-00* "
-"Open][%00-00 (const_char_`*][%00-00*@3 fn][%00-00 )]&][s6; Opens file for reading.&][s1; "
-"[%00-00*C@3 fn]-|File name.&][s1; [*/ Ret")
-TOPIC_TEXT(
-"urn value]-|True if open was successful.&][s0;3 &][s0;3 &][s0;3 &][s0;3 &][s10;:`:`:FileOut`:`:class:* "
+"s4;:`:`:FileIn`:`:Open`(const char`*`): [%00-00 bool_][%00-00* Open][%00-00 (const_char_`*][%00-00*@3 "
+"fn][%00-00 )]&][s6; Opens file for reading.&][s1; [%00-00*C@3 fn]-|File name.&][s1; "
+"[*/ Return value]-|True if open was successful.&][s0;3 &][s0;3 &][s0;3 &][s0;3 &][s10;:`:`:FileOut`:`:class:* "
 "[%00-00* class_][%00-00 FileOut]&][s6; &][s6; Simple helper class that represents "
-"FileStream in write mode.&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:FileStream`:`:class "
-"FileStream^ [/^^ Derived from][^^  ][%00-00 FileStream]&][s0;3 &][s4;:`:`:FileOut`:`:FileOut`(const "
-"char`*`): [%00")
+"FileStream in write mo")
 TOPIC_TEXT(
-"-00* FileOut][%00-00 (const_char_`*][%00-00*@3 fn][%00-00 )]&][s6; Opens file for "
-"writing.&][s1; [%00-00*C@3 fn]-|File name.&][s0;3 &][s4;:`:`:FileOut`:`:FileOut`(`): "
-"[%00-00* FileOut][%00-00 ()]&][s6; [%00-00 Constructs non`-opened FileStream.]&][s0;3 "
-"&][s4;:`:`:FileOut`:`:Open`(const char`*`,mode`_t`): [%00-00 bool_][%00-00* Open][%00-00 "
-"(const_char_`*][%00-00*@3 fn][%00-00 )]&][s6; Opens file f")
+"de.&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:FileStream`:`:class FileStream^ "
+"[/^^ Derived from][^^  ][%00-00 FileStream]&][s0;3 &][s4;:`:`:FileOut`:`:FileOut`(const "
+"char`*`): [%00-00* FileOut][%00-00 (const_char_`*][%00-00*@3 fn][%00-00 )]&][s6; "
+"Opens file for writing.&][s1; [%00-00*C@3 fn]-|File name.&][s0;3 &][s4;:`:`:FileOut`:`:FileOut`(`): "
+"[%00-00* FileOut][%00-00 ()]&][s6; [%00-")
 TOPIC_TEXT(
-"or writing.&][s1; [%00-00*C@3 fn]-|File name.&][s1; [*/ Return value]-|True if open "
-"was successful.&][s0;3 &][s0;3 &][s0;3 &][s0;3 &][s10;:`:`:FileAppend`:`:class:* "
-"[%00-00* class_][%00-00 FileAppend]&][s6; &][s6; Simple helper class that represents "
-"FileStream in append mode `- that in fact means in write mode with current position "
-"at the end of the file.&][s6; &][s9; [/ Derived from] [%00-00 File")
+"00 Constructs non`-opened FileStream.]&][s0;3 &][s4;:`:`:FileOut`:`:Open`(const "
+"char`*`,mode`_t`): [%00-00 bool_][%00-00* Open][%00-00 (const_char_`*][%00-00*@3 "
+"fn][%00-00 )]&][s6; Opens file for writing.&][s1; [%00-00*C@3 fn]-|File name.&][s1; "
+"[*/ Return value]-|True if open was successful.&][s0;3 &][s0;3 &][s0;3 &][s0;3 &][s10;:`:`:FileAppend`:`:class:* "
+"[%00-00* class_][%00-00 FileAppend]&][s6; ")
 TOPIC_TEXT(
-"Stream]&][s0;3 &][s4;:`:`:FileAppend`:`:FileAppend`(const char`*`): [%00-00* FileAppend][%00-00 "
-"(const_char_`*][%00-00*@3 fn][%00-00 )]&][s6; Opens file in append mode.&][s1; [%00-00*C@3 "
-"fn]-|File name.&][s0;3 &][s4;:`:`:FileAppend`:`:FileAppend`(`): [%00-00* FileAppend][%00-00 "
-"()]&][s6; Constructs empty FileStream.&][s0;3 &][s4;:`:`:FileAppend`:`:Open`(const "
-"char`*`): [%00-00 bool_][%00-00* Open]")
+"&][s6; Simple helper class that represents FileStream in append mode `- that in "
+"fact means in write mode with current position at the end of the file.&][s6; &][s9; "
+"[/ Derived from] [%00-00 FileStream]&][s0;3 &][s4;:`:`:FileAppend`:`:FileAppend`(const "
+"char`*`): [%00-00* FileAppend][%00-00 (const_char_`*][%00-00*@3 fn][%00-00 )]&][s6; "
+"Opens file in append mode.&][s1; [%00-00*C@3 fn]-|File name.&][s0")
 TOPIC_TEXT(
-"[%00-00 (const_char_`*][%00-00*@3 fn][%00-00 )]&][s6; Opens file in append mode.&][s1; "
-"[%00-00*C@3 fn]-|File name.&][s1; [*/ Return value]-|true when Open was successful.&][s0;3 "
-"&][s0;3 &][s0;3 &][s0;3 &][s10;:`:`:SizeStream`:`:class:* [%00-00* class_][%00-00 "
-"SizeStream]&][s6; &][s6; Special output stream that in fact does not store output "
-"data, only counts the total number of bytes written.&][s6;")
+";3 &][s4;:`:`:FileAppend`:`:FileAppend`(`): [%00-00* FileAppend][%00-00 ()]&][s6; "
+"Constructs empty FileStream.&][s0;3 &][s4;:`:`:FileAppend`:`:Open`(const char`*`): "
+"[%00-00 bool_][%00-00* Open][%00-00 (const_char_`*][%00-00*@3 fn][%00-00 )]&][s6; "
+"Opens file in append mode.&][s1; [%00-00*C@3 fn]-|File name.&][s1; [*/ Return value]-|true "
+"when Open was successful.&][s0;3 &][s0;3 &][s0;3 &][s0;3 &][s1")
 TOPIC_TEXT(
-" &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:BufferStream`:`:class BufferStream^ "
-"[/^^ Derived from][^^  ][%00-00 BufferStream]&][s0;3 &][s4;:`:`:SizeStream`:`:SizeStream`(`): "
-"[%00-00* SizeStream][%00-00 ()]&][s6; Constructor `- co&][s0;3 &][s4;:`:`:SizeStream`:`:`_Put`(int`): "
-"[%00-00* operator_int64][%00-00 ()_const]&][s1; [*/ Return value]-|Current number "
-"of bytes written.&][s0;3 &][s4;:`:`:")
+"0;:`:`:SizeStream`:`:class:* [%00-00* class_][%00-00 SizeStream]&][s6; &][s6; Special "
+"output stream that in fact does not store output data, only counts the total number "
+"of bytes written.&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:BufferStream`:`:class "
+"BufferStream^ [/^^ Derived from][^^  ][%00-00 BufferStream]&][s0;3 &][s4;:`:`:SizeStream`:`:SizeStream`(`): "
+"[%00-00* SizeStream][%00-00")
 TOPIC_TEXT(
-"SizeStream`:`:Open`(`): [%00-00 void_][%00-00* Open][%00-00 ()]&][s6; Reopens data "
-"`- resets the counter of output bytes.&][s0;3 &][s0;3 &][s0;3 &][s0;3 &][s10;:`:`:CompareStream`:`:class:* "
-"[%00-00* class_][%00-00 CompareStream]&][s6; &][s6; Special output stream that instead "
-"of storing data performs their comparison to the data of another stream.&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`")
+" ()]&][s6; Constructor `- co&][s0;3 &][s4;:`:`:SizeStream`:`:`_Put`(int`): [%00-00* "
+"operator_int64][%00-00 ()_const]&][s1; [*/ Return value]-|Current number of bytes "
+"written.&][s0;3 &][s4;:`:`:SizeStream`:`:Open`(`): [%00-00 void_][%00-00* Open][%00-00 "
+"()]&][s6; Reopens data `- resets the counter of output bytes.&][s0;3 &][s0;3 &][s0;3 "
+"&][s0;3 &][s10;:`:`:CompareStream`:`:class:* [%00-00* class_][")
 TOPIC_TEXT(
-"#`:`:BufferStream`:`:class BufferStream^ [/^^ Derived from][^^  ][%00-00 BufferStream]&][s0;3 "
-"&][s4;:`:`:CompareStream`:`:CompareStream`(`): [%00-00* CompareStream][%00-00 ()]&][s6; "
-"Constructs closed CompareStream.&][s0;3 &][s4;:`:`:CompareStream`:`:CompareStream`(`:`:Stream`&`): "
-"[%00-00* CompareStream][%00-00 (Stream`&_][%00-00*@3 aStream][%00-00 )]&][s6; Constructors "
-"CompareStream opened for com")
+"%00-00 CompareStream]&][s6; &][s6; Special output stream that instead of storing "
+"data performs their comparison to the data of another stream.&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:BufferStream`:`:class "
+"BufferStream^ [/^^ Derived from][^^  ][%00-00 BufferStream]&][s0;3 &][s4;:`:`:CompareStream`:`:CompareStream`(`): "
+"[%00-00* CompareStream][%00-00 ()]&][s6; Constructs closed Compare")
 TOPIC_TEXT(
-"parison with specified stream.&][s1; [%00-00*C@3 aStream]-|Stream to compare with.&][s0;3 "
-"&][s4;:`:`:CompareStream`:`:`_Put`(int`): [%00-00 void_][%00-00* Open][%00-00 (Stream`&_][%00-00*@3 "
-"aStream][%00-00 )]&][s6; Opens CompareStream for comparison with the specified stream.&][s1; "
-"[%00-00*C@3 aStream]-|Stream to compare with.&][s0;3 &][s4;:`:`:CompareStream`:`:IsEqual`(`): "
-"[%00-00 bool_][%00-00* ")
+"Stream.&][s0;3 &][s4;:`:`:CompareStream`:`:CompareStream`(`:`:Stream`&`): [%00-00* "
+"CompareStream][%00-00 (Stream`&_][%00-00*@3 aStream][%00-00 )]&][s6; Constructors "
+"CompareStream opened for comparison with specified stream.&][s1; [%00-00*C@3 aStream]-|Stream "
+"to compare with.&][s0;3 &][s4;:`:`:CompareStream`:`:`_Put`(int`): [%00-00 void_][%00-00* "
+"Open][%00-00 (Stream`&_][%00-00*@3 aStream][%00-00 )")
 TOPIC_TEXT(
-"IsEqual][%00-00 ()]&][s1; [*/ Return value]-|true if all bytes written so far match "
-"those in comparison stream.&][s0;3 &][s4;:`:`:CompareStream`:`:operator bool`(`): "
-"[%00-00* operator_bool][%00-00 ()]&][s1; [*/ Return value]-|IsEqual().&][s0;3 ]")
+"]&][s6; Opens CompareStream for comparison with the specified stream.&][s1; [%00-00*C@3 "
+"aStream]-|Stream to compare with.&][s0;3 &][s4;:`:`:CompareStream`:`:IsEqual`(`): "
+"[%00-00 bool_][%00-00* IsEqual][%00-00 ()]&][s1; [*/ Return value]-|true if all bytes "
+"written so far match those in comparison stream.&][s0;3 &][s4;:`:`:CompareStream`:`:operator "
+"bool`(`): [%00-00* operator_bool][%00-00 ()]&][s1; ")
+TOPIC_TEXT(
+"[*/ Return value]-|IsEqual().&][s0;3 ]")

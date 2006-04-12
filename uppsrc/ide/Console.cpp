@@ -1,6 +1,7 @@
 #include "ide.h"
 
 Console::Console() {
+	verbosebuild = false;
 	processes.SetCount(1);
 	console_lock = -1;
 	wrap_text = true;
@@ -89,7 +90,7 @@ int Console::Flush()
 		if(!slot.process->Read(s)) {
 			slot.output.Cat(s);
 			Kill(i);
-			if(slot.exitcode != 0)
+			if(slot.exitcode != 0 && verbosebuild)
 				spooled_output.Cat("Error executing " + slot.cmdline + "\n");
 			if(console_lock == i)
 				console_lock = -1;
@@ -170,7 +171,8 @@ bool Console::Run(const char *cmdline, Stream *out, const char *envptr, bool qui
 bool Console::Run(One<SlaveProcess> process, const char *cmdline, Stream *out, bool quiet, int slot, String key, int blitz_count)
 {
 	if(!process) {
-		spooled_output << "Error running " << cmdline << "\n";
+		if(verbosebuild)
+			spooled_output << "Error running " << cmdline << "\n";
 		FlushConsole();
 		return false;
 	}

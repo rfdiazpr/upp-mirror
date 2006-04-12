@@ -208,8 +208,12 @@ bool            Crosses       (Rectf R, Pointf C, double radius);
 //////////////////////////////////////////////////////////////////////
 // set intersection with polygon
 
+enum { CMP_OUT = -1, CMP_SECT = 0, CMP_IN = +1 };
+
 int             ContainsPoints(const Array<Pointf>& polygon, const Array<Pointf>& points);
-int             ContainsPoints(const Array<Pointf>& polygon, Pointf pt);
+int             ContainsPoints(const Array<Pointf>& polygon, const Vector<int>& polyend, const Array<Pointf>& points);
+int             ContainsPoint (const Array<Pointf>& polygon, Pointf pt);
+int             ContainsPoint (const Array<Pointf>& polygon, const Vector<int>& polyend, Pointf pt);
 int             ContainsPoly  (const Array<Pointf>& chkpoly, const Array<Pointf>& polygon, const Vector<int>& polyend, bool closed);
 int             ContainsPoly  (const Array<Pointf>& chkpoly, const Array<Pointf>& polygon, bool closed);
 

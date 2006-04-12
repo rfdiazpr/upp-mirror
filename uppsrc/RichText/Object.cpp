@@ -110,12 +110,10 @@ bool   RichObject::Read(const String& _type_name, const String& _data, Size sz)
 	if(t) {
 		Clear();
 		type = t;
-		if(type) {
-			data = type->Read(_data);
-			physical_size = type->GetPhysicalSize(data);
-			pixel_size = type->GetPixelSize(data);
-			size = sz;
-		}
+		data = type->Read(_data);
+		physical_size = type->GetPhysicalSize(data);
+		pixel_size = type->GetPixelSize(data);
+		size = sz;
 		return true;
 	}
 	data = _data;

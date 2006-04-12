@@ -99,7 +99,9 @@ bool LayDes::Load(const char *file, byte _charset)
 					p.Id("LAYOUT");
 			}
 			while(!p.IsEof()) {
-				layout.Add().Read(p, charset);
+				LayoutData& ld = layout.Add();
+				ld.SetCharset(charset);
+				ld.Read(p);
 				if(p.Char('#'))
 					p.Id("endif");
 			}
@@ -129,8 +131,10 @@ void LayDes::Save()
 	if(!IsNull(fileerror))
 		return;
 	String r;
-	for(int i = 0; i < layout.GetCount(); i++)
-		r << layout[i].Save(charset) << "\r\n";
+	for(int i = 0; i < layout.GetCount(); i++) {
+		layout[i].SetCharset(charset);
+		r << layout[i].Save() << "\r\n";
+	}
 	layfile = r;
 	if(!SaveChangedFileFinish(filename, r))
 		return;

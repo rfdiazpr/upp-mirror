@@ -1,3 +1,7 @@
+#ifdef  _DEBUG
+#define NEWBLOCKSTREAM
+#endif
+
 enum {
 	STRM_ERROR   =  0x20,
 	STRM_READ    =  0x10,
@@ -265,14 +269,15 @@ public:
 	virtual  bool  IsOpen() const;
 
 protected:
-	bool           writes;
+	bool           writemode;
 	String         data;
 	StringBuffer   wdata;
 	dword          size;
 
-	void           Reads();
-	void           Writes();
-	void           Bufr();
+	void           InitReadMode();
+	void           SetWriteBuffer();
+	void           SetReadMode();
+	void           SetWriteMode();
 
 public:
 	void        Open(const String& data);
@@ -307,8 +312,65 @@ public:
 	MemReadStream(const void *data, int size);
 };
 
-//enum { DEFAULT_STREAM_BUFFER_SIZE = 4096 };
+#ifdef NEWBLOCKSTREAM
 
+class BlockStream : public Stream {
+protected:
+	virtual  void  _Put(int w);
+	virtual  int   _Term();
+	virtual  int   _Get();
+	virtual  void  _Put(const void *data, dword size);
+	virtual  dword _Get(void *data, dword size);
+
+public:
+	virtual  void  Seek(int64 pos);
+	virtual  int64 GetSize() const;
+	virtual  void  SetSize(int64 size);
+	virtual  void  Flush();
+
+private:
+	int           pagesize;
+	int64         pagemask;
+	int64         pagepos;
+	bool          pagedirty;
+
+	int64         streamsize;
+	int64         mediasize;
+
+	void          SetPos(int64 p);
+	void          SyncSize();
+	bool          SyncPage();
+	bool          SyncPos();
+	void          ReadData(void *data, int64 at, int size);
+
+protected:
+	virtual  dword Read(int64 at, void *ptr, dword size);
+	virtual  void  Write(int64 at, const void *data, dword size);
+	virtual  void  SetStreamSize(int64 size);
+
+public:
+	enum {
+		READ, CREATE, APPEND, READWRITE,
+
+		NOWRITESHARE = 0x10,
+		DELETESHARE = 0x20,
+		NOREADSHARE = 0x40,
+		SHAREMASK = 0x70,
+	};
+//	typedef int OpenMode; // obsolete, use dword
+
+	dword     GetBufferSize() const           { return pagesize; }
+	void      SetBufferSize(dword newsize);
+	int64     GetMediaSize() const            { return mediasize; }
+
+	BlockStream();
+	virtual ~BlockStream();
+
+protected:
+	void     OpenInit(dword mode, int64 file_size);
+};
+
+#else
 class BufferStream : public Stream {
 	dword     buffersize;
 
@@ -342,6 +404,7 @@ public:
 private:
 	int64    file_size;
 	dword    wramount;
+	int64    prev_pos;
 
 	void     SetWramount();
 
@@ -366,6 +429,7 @@ public:
 protected:
 	void     OpenInit(dword mode, int64 file_size);
 };
+#endif
 
 class FileStream : public BlockStream {
 protected:
@@ -447,7 +511,7 @@ public:
 	FileIn()                          {}
 };
 
-class SizeStream : public BufferStream {
+class SizeStream : public Stream {
 protected:
 	virtual void  _Put(int w);
 	virtual void  _Put(const void *data, dword size);
@@ -460,6 +524,7 @@ public:
 
 protected:
 	int64   size;
+	byte    h[128];
 
 public:
 	operator int64() const            { return GetSize(); }
@@ -469,7 +534,7 @@ public:
 	SizeStream();
 };
 
-class CompareStream : public BufferStream {
+class CompareStream : public Stream {
 protected:
 	virtual  void  _Put(int w);
 	virtual  void  _Put(const void *data, dword size);
@@ -486,6 +551,7 @@ private:
 	Stream  *stream;
 	bool     equal;
 	int64    size;
+	byte     h[128];
 
 	void     Compare(int64 pos, const void *data, dword size);
 

@@ -1,4 +1,5 @@
 #include "SqlCtrl.h"
+#include "SqlDlg.h"
 
 int SqlError(
 #ifdef PLATFORM_WIN32

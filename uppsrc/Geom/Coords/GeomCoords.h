@@ -387,6 +387,7 @@ public:
 		int                           epsg_code;
 		String                        name;
 		String                        description;
+		String                        coordsys;
 	};
 
 	GisCoords(const Nuller& = Null) {}
@@ -418,10 +419,11 @@ public:
 	Rectf                 LonLatLimits() const                                                 { return data->lonlat_limits; }
 
 //	String                ToString() const                                                     { return data->ToString(); }
-	String                GetIdent() const                                                     { return !!data ? data->ident : String(Null); }
+	String                GetIdent() const                                                     { return !!data ? data->ident : String::GetVoid(); }
 	int                   GetEPSGCode() const                                                  { return !!data ? data->epsg_code : (int)Null; }
-	String                GetName() const                                                      { return !!data ? data->name : String(Null); }
-	String                GetDescription() const                                               { return !!data ? data->description : String(Null); }
+	String                GetName() const                                                      { return !!data ? data->name : String::GetVoid(); }
+	String                GetDescription() const                                               { return !!data ? data->description : String::GetVoid(); }
+	String                GetCoordsys() const                                                  { return !!data ? data->coordsys : String::GetVoid(); }
 	Array<Arg>            EnumArgs()                                                           { return data->EnumArgs(); }
 	Array<ConstArg>       EnumConstArgs() const                                                { return data->EnumConstArgs(); }
 	void                  SyncArgs()                                                           { data->SyncArgs(); }

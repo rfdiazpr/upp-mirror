@@ -1277,7 +1277,7 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 
 					AlphaArray part = AlphaCrop(block.block, Rect(src, part_size));
 					int lin = (int)((px << count) + a.cx + (((py << count) + a.cy) << (count + level)));
-					TIMING("HRR::Write / save (direct)");
+//					TIMING("HRR::Write / save (direct)");
 					if(info.mono || IsNull(info.background))
 					{
 						int kind = GetMaskInfo(part.alpha);
@@ -1366,7 +1366,7 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 			drawback(block);
 		}
 		int lin = px + (py << level);
-		TIMING("HRR::Write / save (indirect)");
+//		TIMING("HRR::Write / save (indirect)");
 		if(info.mono || IsNull(info.background))
 		{
 			int kind = GetMaskInfo(block.block.alpha);
@@ -1409,7 +1409,7 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 	}
 	if(put)
 	{
-		TIMING("HRR::Write / put");
+//		TIMING("HRR::Write / put");
 		Rect org = RectC((px & 1 ) << info.HALF_BITS, (py & 1) << info.HALF_BITS,
 			1 << info.HALF_BITS, 1 << info.HALF_BITS);
 		PixelCopyAntiAliasMaskOut(put -> block, org, block.block, RUNIT, false, false);

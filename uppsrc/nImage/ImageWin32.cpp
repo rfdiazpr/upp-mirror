@@ -1,7 +1,7 @@
 #include "Image.h"
 
 bool ImageFallBack
-= true
+// = true
 ;
 
 class BitmapInfo32__ {
@@ -16,8 +16,8 @@ public:
 };
 
 BitmapInfo32__::BitmapInfo32__(int cx, int cy)
-:	data(sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD)*256)
 {
+	data.Alloc(sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD)*256);
 	BITMAPINFOHEADER *hi = (BITMAPINFOHEADER *) ~data;;
 	memset(hi, 0, sizeof(BITMAPINFOHEADER));
 	hi->biSize = sizeof(BITMAPINFOHEADER);
@@ -28,7 +28,7 @@ BitmapInfo32__::BitmapInfo32__(int cx, int cy)
 	hi->biClrUsed = 0;
 	hi->biClrImportant = 0;
 	hi->biWidth = cx;
-	hi->biHeight = cy;
+	hi->biHeight = -cy;
 }
 
 void SetSurface(HDC dc, int x, int y, int cx, int cy, RGBA *pixels)
@@ -250,20 +250,7 @@ void Image::Data::Paint(Draw& w, int x, int y, byte const_alpha, Color c)
 				himg = CreateDIBSection(ScreenInfo().GetHandle(), bi, DIB_RGB_COLORS,
 				                              (void **)&section, NULL, 0);
 				ResCount++;
-				if(fnAlphaBlend()) {
-					RGBA *s = buffer;
-					RGBA *e = s + len;
-					RGBA *t = section;
-					while(s < e) {
-						int alpha = s->a + (s->a >> 7);
-						t->r = alpha * (s->r) >> 8;
-						t->g = alpha * (s->g) >> 8;
-						t->b = alpha * (s->b) >> 8;
-						t->a = s->a;
-						s++;
-						t++;
-					}
-				}
+				PreMultiplyAlpha(section, buffer, len);
 			}
 			BLENDFUNCTION bf;
 			bf.BlendOp = AC_SRC_OVER;
@@ -369,6 +356,10 @@ Image Win32Icon(LPCSTR id, bool cursor)
 		while(s < e) {
 			if(s->a != 255 && s->a != 0)
 				goto alpha;
+			s++;
+		}
+		s = ~b;
+		while(s < e) {
 			s->a = m->r ? 0 : 255;
 			s++;
 			m++;
@@ -378,8 +369,8 @@ Image Win32Icon(LPCSTR id, bool cursor)
 		len /= 2;
 		RGBA *s = ~b;
 		RGBA *e = s + len;
-		RGBA *c = mask;
-		RGBA *m = mask + len;
+		RGBA *c = mask + len;
+		RGBA *m = mask;
 		while(s < e) {
 			s->a = (m->r & ~c->r) ? 0 : 255;
 			s->r = s->g = s->b = (c->r & ~m->r) ? 255 : 0;
@@ -396,7 +387,7 @@ alpha:
 	return b;
 }
 
-HICON IconWin32(Image img, bool cursor)
+HICON IconWin32(const Image& img, bool cursor)
 {
 	Size sz = img.GetSize();
 	ICONINFO iconinfo;
@@ -404,34 +395,34 @@ HICON IconWin32(Image img, bool cursor)
 	Point p = img.GetHotSpot();
 	iconinfo.xHotspot = p.x;
 	iconinfo.yHotspot = p.y;
+	static Size cursor_size(GetSystemMetrics(SM_CXCURSOR), GetSystemMetrics(SM_CYCURSOR));
+	Size tsz = cursor ? cursor_size : sz;
+	Size csz = Size(min(tsz.cx, sz.cx), min(tsz.cy, sz.cy));
 	if(IsWinXP() && !ImageFallBack) {
 		RGBA *pixels;
-		BitmapInfo32__ bi(sz.cx, sz.cy);
+		BitmapInfo32__ bi(tsz.cx, tsz.cy);
 		HDC dcMem = ::CreateCompatibleDC(NULL);
 		iconinfo.hbmColor = ::CreateDIBSection(dcMem, bi, DIB_RGB_COLORS, (void **)&pixels, NULL, 0);
-		iconinfo.hbmMask = ::CreateBitmap(sz.cx, sz.cy, 1, 1, NULL);
-		memcpy(pixels, ~img, sz.cx * sz.cy * sizeof(RGBA));
+		iconinfo.hbmMask = ::CreateBitmap(tsz.cx, tsz.cy, 1, 1, NULL);
+		memset(pixels, 0, tsz.cx * tsz.cy * sizeof(RGBA));
+		for(int y = 0; y < csz.cy; y++)
+			PreMultiplyAlpha(pixels + y * tsz.cx, img[y], csz.cx);
 		::DeleteDC(dcMem);
 	}
 	else {
-		static Size cursor_size(GetSystemMetrics(SM_CXCURSOR), GetSystemMetrics(SM_CYCURSOR));
-		Size tsz = cursor ? cursor_size : sz;
-		tsz = cursor_size;
-		Size csz = Size(min(tsz.cx, sz.cx), min(tsz.cy, sz.cy));
 		Buffer<RGBA>  h(tsz.cx * tsz.cy);
 		memset(h, 0, tsz.cx * tsz.cy * sizeof(RGBA));
 		int linelen = (tsz.cx + 15) >> 4 << 1;
 		Buffer<byte>  mask(tsz.cy * linelen, 0xff);
 		byte *m = mask;
-		RGBA *ty = h + tsz.cy * tsz.cx;
-		const RGBA *sy = ~img + sz.cy * sz.cx;
+		RGBA *ty = h;
+		const RGBA *sy = ~img;
 		for(int y = 0; y < csz.cy; y++) {
-			ty -= tsz.cx;
-			sy -= sz.cx;
 			const RGBA *s = sy;
 			RGBA *t = ty;
 			for(int x = 0; x < csz.cx; x++) {
-				if(((s->a + 50) >> 6) > ((((x & 1) | ((x & 1) << 1)) + ((y & 1) << 1)) & 3)) {
+//				if(((s->a + 50) >> 6) > ((((x & 1) | ((x & 1) << 1)) + ((y & 1) << 1)) & 3)) {
+				if(s->a > 128) {
 					*t = *s;
 					m[x >> 3] &= ~(0x80 >> (x & 7));
 				}
@@ -442,6 +433,8 @@ HICON IconWin32(Image img, bool cursor)
 				s++;
 			}
 			m += linelen;
+			sy += sz.cx;
+			ty += tsz.cx;
 		}
 		HDC dc = ::GetDC(NULL);
 		BitmapInfo32__ bi(tsz.cx, tsz.cy);

@@ -2,8 +2,8 @@
 
 struct EnumProperty : public EditorProperty<DropList> {
 	virtual void     SetData(const Value& v);
-	virtual String   Save(byte) const              { return ~editor; }
-	virtual void     Read(CParser& p, byte)        { SetData(ReadPropertyParam(p)); }
+	virtual String   Save() const              { return ~editor; }
+	virtual void     Read(CParser& p)          { SetData(ReadPropertyParam(p)); }
 
 	EnumProperty(VectorMap<String, String>& e) {
 		Add(editor.HSizePos(100, 2).TopPos(2));
@@ -69,6 +69,7 @@ void LayoutItem::CreateProperties(const String& classname, int level)
 			}
 			if(!n)
 				n = new RawProperty;
+			n->SetCharset(charset);
 			int q = -1;
 			for(int i = 0; i < property.GetCount(); i++)
 				if(r.name == property[i].name)
@@ -80,7 +81,7 @@ void LayoutItem::CreateProperties(const String& classname, int level)
 			if(!IsNull(r.defval))
 				try {
 					CParser p(r.defval);
-					ip.Read(p, CHARSET_WIN1252);
+					ip.Read(p);
 					ip.defval = ~ip;
 				}
 				catch(CParser::Error e) {
@@ -93,7 +94,14 @@ void LayoutItem::CreateProperties(const String& classname, int level)
 	}
 }
 
-void LayoutItem::ReadProperties(CParser& p, byte charset, bool addunknown)
+void LayoutItem::SetCharset(byte cs)
+{
+	charset = cs;
+	for(int i = 0; i < property.GetCount(); i++)
+		property[i].SetCharset(charset);
+}
+
+void LayoutItem::ReadProperties(CParser& p, bool addunknown)
 {
 	do {
 		if(p.Id("LeftPosZ") || p.Id("LeftPos")) {
@@ -141,7 +149,9 @@ void LayoutItem::ReadProperties(CParser& p, byte charset, bool addunknown)
 			if(q < 0)
 				if(addunknown) {
 					q = property.GetCount();
-					property.Add(new RawProperty).name = name;
+					ItemProperty& new_prop = property.Add(new RawProperty);
+					new_prop.SetCharset(charset);
+					new_prop.name = name;
 				}
 				else {
 					p.PassChar('(');
@@ -150,8 +160,9 @@ void LayoutItem::ReadProperties(CParser& p, byte charset, bool addunknown)
 				}
 			if(q >= 0) {
 				ItemProperty& ip = property[q];
+				ip.SetCharset(charset);
 				p.PassChar('(');
-				ip.Read(p, charset);
+				ip.Read(p);
 				p.PassChar(')');
 			}
 		}
@@ -167,14 +178,14 @@ int  LayoutItem::FindProperty(const String& s) const
 	return -1;
 }
 
-String LayoutItem::SaveProperties(byte charset) const
+String LayoutItem::SaveProperties() const
 {
 	String out;
 	Vector<int> o = GetSortOrder(property, FieldRelation(&ItemProperty::level, StdLess<int>()));
 	for(int i = 0; i < o.GetCount(); i++) {
 		const ItemProperty& ip = property[o[i]];
 		if(ip.GetData() != ip.defval)
-			out << '.' << ip.name << '(' << ip.Save(charset) << ')';
+			out << '.' << ip.name << '(' << ip.Save() << ')';
 	}
 	switch(pos.x.GetAlign()) {
 	case Ctrl::LEFT:   out << Format(".LeftPosZ(%d, %d)", pos.x.GetA(), pos.x.GetB()); break;
@@ -192,7 +203,7 @@ String LayoutItem::SaveProperties(byte charset) const
 	return out;
 }
 
-String LayoutItem::Save(byte charset, int i) const
+String LayoutItem::Save(int i) const
 {
 	String out;
 	if(type.IsEmpty())
@@ -200,7 +211,7 @@ String LayoutItem::Save(byte charset, int i) const
 	else
 		out << "\tITEM(" << type << ", ";
 	String var = variable.IsEmpty() ? Format("dv___%d", i) : variable;
-	out << var << ", " << SaveProperties(charset) << ")\r\n";
+	out << var << ", " << SaveProperties() << ")\r\n";
 	return out;
 }
 

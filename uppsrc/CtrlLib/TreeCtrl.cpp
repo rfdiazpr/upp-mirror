@@ -221,7 +221,7 @@ void  TreeCtrl::Set(int id, Value k, Value v)
 void   TreeCtrl::SetNode(int id, const TreeCtrl::Node& n)
 {
 	(TreeCtrl::Node&)item[id] = n;
-	RefreshItem(id);
+	Dirty(id);
 }
 
 void   TreeCtrl::RemoveChildren(int id)

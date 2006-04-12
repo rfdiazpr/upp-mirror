@@ -66,6 +66,7 @@ protected:
 	bool  invisible:1;
 	byte  mode;
 	int   light;
+	int   height;
 
 	double Denominator() const;
 	void   Reduce(int q, double& delta, double rs, int szcx, bool checkmin);
@@ -110,10 +111,11 @@ public:
 
 	void          StartSplitDrag(int s);
 	int           GetSplit(int x);
-	
+
 	int           GetScroll() const                       { return sb; }
 	bool          IsScroll() const                        { return sb.IsShown(); }
 
+	void          SetHeight(int cy);
 	int           GetHeight() const;
 
 	HeaderCtrl&   Invisible(bool inv);
@@ -125,7 +127,7 @@ public:
 	HeaderCtrl&   Absolute();
 
 	static int GetStdHeight()                             { return Draw::GetStdFontCy() + 4; }
-	
+
 	typedef HeaderCtrl CLASSNAME;
 
 	HeaderCtrl();

@@ -106,6 +106,7 @@ public:
 	Callback WhenSelect;
 	Callback1<Bar&> WhenBar;
 	bool console;
+	bool verbosebuild;
 
 	int  Execute(const char *cmdline, Stream *out = NULL, const char *envptr = NULL, bool quiet = false);
 	int  Execute(One<SlaveProcess> process, const char *cmdline, Stream *out = NULL, bool quiet = false);
@@ -584,7 +585,6 @@ public:
 	String       target;
 	String       cmdout;
 
-	bool         verbosebuild;
 	bool         stoponerrors;
 
 	DataPusher                buildmode;
@@ -850,6 +850,7 @@ public:
 		void  ScanFile();
 		void  SwapS();
 		void  JumpS();
+		void  InsertColor();
 
 
 	void      ConsoleMenu(Bar& menu);

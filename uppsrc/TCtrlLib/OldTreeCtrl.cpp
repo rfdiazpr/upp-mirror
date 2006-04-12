@@ -709,6 +709,7 @@ void OldTreeItem::PaintItem(Draw& draw, Point pos) const
 			switch(type) {
 			case TEXT: {
 					String display = GetTextOrValue();
+					WString wdisplay;
 					if(!IsNull(display)) {
 						Size size;
 						if(*display == '\xFF') {
@@ -718,7 +719,7 @@ void OldTreeItem::PaintItem(Draw& draw, Point pos) const
 							size.cy = doc.GetHeight(SCREEN_ZOOM, draw, size.cx);
 						}
 						else
-							size = GetSmartTextSize(draw, display, owner->font);
+							size = GetTLTextSize(draw, wdisplay = display.ToWString(), owner->font);
 
 						Rect trc = item;
 						trc.left -= TSGAP;
@@ -736,7 +737,7 @@ void OldTreeItem::PaintItem(Draw& draw, Point pos) const
 							doc.Paint(SCREEN_ZOOM, draw, trc.left, trc.top, trc.Width());
 						}
 						else
-							DrawSmartText(draw, trc.left, trc.top, trc.Width(), display, owner->font, ink);
+							DrawTLText(draw, trc.left, trc.top, trc.Width(), wdisplay, owner->font, ink);
 					}
 				}
 				break;

@@ -159,7 +159,7 @@ private:
 	int   anchor;
 	int   linecy;
 	int   virtualcount;
-	int   clickcolumn;
+	Point clickpos;
 
 	mutable int   selectcount;
 
@@ -402,7 +402,9 @@ public:
 	int        GetTotalCy() const;
 	int        GetLineAt(int y) const;
 
-	int        GetClickColumn() const                  { return clickcolumn; }
+	Point      GetClickPos() const                     { return clickpos; }
+	int        GetClickColumn() const                  { return clickpos.x; }
+	int        GetClickRow() const                     { return clickpos.y; }
 
 	bool       StartEdit(int d = 0);
 	int        GetEditColumn() const;

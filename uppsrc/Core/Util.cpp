@@ -1,7 +1,12 @@
 #include "Core.h"
 
+bool PanicMode;
+
+bool    IsPanicMode() { return PanicMode; }
+
 void    Panic(const char *msg)
 {
+	PanicMode = true;
 	LOG(msg);
 	BugLog() << "PANIC: " << msg << "\n";
 	UsrLogT("===== PANIC ================================================");
@@ -32,6 +37,7 @@ void    SetAssertFailedHook(void (*h)(const char *))
 
 void    AssertFailed(const char *file, int line, const char *cond)
 {
+	PanicMode = true;
 	char s[2048];
 	sprintf(s, "Assertion failed in %s, line %d\n%s\n", file, line, cond);
 	LOG(s);

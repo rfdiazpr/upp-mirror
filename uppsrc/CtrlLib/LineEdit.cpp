@@ -280,8 +280,7 @@ void LineEdit::AlignChar() {
 	Point pos = GetColumnLine(c);
 	if(pos.x == 0)
 		return;
-	for(int d = 1; d <= pos.y && d < 100; d++)
-	{
+	for(int d = 1; d <= pos.y && d < 100; d++) {
 		int lny = pos.y - d;
 		WString above = GetWLine(lny);
 		int offset = GetGPos(lny, pos.x) - GetPos(lny);
@@ -580,8 +579,7 @@ void LineEdit::ScrollIntoCursor()
 
 bool LineEdit::Key(dword key, int count) {
 	NextUndo();
-	switch(key)
-	{
+	switch(key) {
 	case K_CTRL_UP:
 		ScrollUp();
 		return true;
@@ -654,12 +652,14 @@ bool LineEdit::Key(dword key, int count) {
 		SelectAll();
 		break;
 	default:
-		if(IsReadOnly()) return false;
+		if(IsReadOnly())
+			return MenuBar::Scan(WhenBar, key);
 		switch(key) {
 		case K_DELETE:
 			DeleteChar();
 			break;
 		case K_BACKSPACE:
+		case K_SHIFT|K_BACKSPACE:
 			Backspace();
 			break;
 	   	case K_SHIFT_TAB:

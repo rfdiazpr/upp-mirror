@@ -154,8 +154,8 @@ public:
 	int    GetItemAtLine(int i);
 	int    GetLineAtItem(int id);
 
-	const Node& GetNode(int id) const                          { return item[id]; }
-	void        SetNode(int id, const Node& n);
+	Node   GetNode(int id) const                               { return item[id]; }
+	void   SetNode(int id, const Node& n);
 
 	bool   IsOpen(int id) const;
 	void   Open(int id, bool open = true);

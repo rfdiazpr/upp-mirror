@@ -49,7 +49,7 @@ TOPIC_TEXT(
 TOPIC_TEXT(
 "][s3; array`[:count`]&][s0; &][s0; is equivalent to&][s0; &][s3; array`[0, count`]&][s0; "
 "&][s0; When slices are used as l`-value, corresponding part of the array is replaced:&][s0; "
-"&][s3; s `= `\"1234`\";&][s3;@4 [@5 s`[1, `-1`] `= `\"xXx`\";-|]// s is now `\"1xXx4`\"&][s0; "
+"&][s3; s `= `\"1234`\";&][s3;@4 [@5 s`[1: `-1`] `= `\"xXx`\";-|]// s is now `\"1xXx4`\"&][s0; "
 "&][s0; Several operators can be applied to arrays&][s0; &][s3; array1 `+ array2&][s0; "
 "&][s0; concatenates two arrays,&][s0; &][s3; ")
 TOPIC_TEXT(
@@ -105,134 +105,134 @@ TOPIC_TEXT(
 "designate variable names) of map whose lambda value is invoked, or can be forced "
 "using binary [@(128.0.255) !] bind operator:&][s0; &][s3; var.x `= 0;&][s3; var.Next "
 "`= `@() `{ .x`+`+; `};&][s3;@4 [@5 var.Next();-|-|-|]// var.x is now 1 &][s3; var1.x "
-"`= 0;&][s3;@4 [@5 var.Next()! x;-|-|-|]// var1.x is now 1&][s0; &][s")
+"`= 0;&][s3;@4 [@5 var.Next()! var1;-|-|]// var1.x is now 1&][s0; &][")
 TOPIC_TEXT(
-"0; To make programmer`'s life easier, one exception applies concerning context `- "
-"when invoking lambda from local variable and lambda is not present in it, instance "
+"s0; To make programmer`'s life easier, one exception applies concerning context "
+"`- when invoking lambda from local variable and lambda is not present in it, instance "
 "and global contexts (in this order) are tried as well:&][s0; &][s3; beta(x)&][s3; "
 "&][s0; Tries to get lambda form local [/ beta] variable first, then (if no lambda "
-"found) from instance [/ beta ]variable and finally (if still no lambda)")
+"found) from instance [/ beta ]variable and finally (if still no lambda")
 TOPIC_TEXT(
-" from global [/ beta]. Of course, [*@(128.0.255) .] and [*@(128.0.255) :] can still "
+") from global [/ beta]. Of course, [*@(128.0.255) .] and [*@(128.0.255) :] can still "
 "be used to designate context:&][s0; &][s3;@4 [@5 :beta(x)-|-|-|-|]// calls global "
 "beta even if local or instance beta is present&][s0; &][s2; Expressions&][s0; &][s0;/ "
 "[/ When expressions are used as logical values, void, zero number and map or array "
-"with zero elements represent ]false[/ , other values are ]true.&]")
+"with zero elements represent ]false[/ , other values are ]true.&")
 TOPIC_TEXT(
-"[s0;/ &][s0; In following table, thick lines divide operators with the same priority, "
+"][s0;/ &][s0; In following table, thick lines divide operators with the same priority, "
 "with topmost items having the highest priority:&][s0; &][ {{4468:5532h1;@(216) [s0; "
 "Operator]:: [s0; Comments]::^@2 [s0;*C [*/ map]`[[*/ key]`]]:: [s0; Map value at "
 "[/ key].]:: [s0;/C map[*/ .]field]:: [s0; Same as [/ map]`[`\"[/ field]`\"`].]:: "
-"[s0;*C [*/ array]`[[*/ index]`]]:: [s0; Array element at position [/ i")
+"[s0;*C [*/ array]`[[*/ index]`]]:: [s0; Array element at position [/ ")
 TOPIC_TEXT(
-"ndex].]:: [s0;*C [*/ array]`[[*/ start], [*/ count]`]]:: [s0; Array slice starting "
+"index].]:: [s0;*C [*/ array]`[[*/ start], [*/ count]`]]:: [s0; Array slice starting "
 "at [/ start] of [/ count] elements.]:: [s0;*C [*/ array]`[[*/ start]:[*/ end]`]]:: "
 "[s0; Array slice of elements [/ start .. end] `- 1]:: [s0;*C [*/ array]`[,[*/ count]`]&][s0;*C "
 "[*/ array]`[:[*/ count]`]]:: [s0; Same as [/ array]`[0, [/ count]`].&][s0; ]:: [s0;*C "
-"[*/ array]`[[*/ start]:`]&][s0;*C [*/ array]`[[*/ sta")
+"[*/ array]`[[*/ start]:`]&][s0;*C [*/ array]`[[*/ st")
 TOPIC_TEXT(
-"rt],`]]:: [s0; Same as [/ array]`[[/ start] : count(array)`]. ]:: [s0;*C [*/ lambda]([*/ "
+"art],`]]:: [s0; Same as [/ array]`[[/ start] : count(array)`]. ]:: [s0;*C [*/ lambda]([*/ "
 "args])]:: [s0; Invokes [/ lambda] with the set of [/ args]. If lambda is subscript "
 "of the map, map becomes instance for [/ lambda] execution (accessible via [* .][/ "
 "name] or [* self]).]:: [s0;/C lambda[*/ (]args[*/ ) ! ]instance]:: [s0; Invokes [/ "
-"lambda], using[/  instance] as instance for lambda execution (a")
+"lambda], using[/  instance] as instance for lambda execution (")
 TOPIC_TEXT(
-"ccessible via [* .][/ name] or [* self]).]:: [s0;*C self]:: [s0; Instance.]::t33/15 "
+"accessible via [* .][/ name] or [* self]).]:: [s0;*C self]:: [s0; Instance.]::t33/15 "
 "[s0;/C [*/ `+`+]l`-number&][s0;/C [*/ `-`-]l`-number]:: [s0; Increments/decrements "
 "number l`-value.]::t0/15 [s0;/C [*/ `-]number]:: [s0; Unary minus.]:: [s0;/C [*/ "
 "`~]number]:: [s0; Bit`-wise complement.]:: [s0;/C [*/ !]value]:: [s0; Logical not. "
-"1 when value represents false, 0 otherwise.]:: [s0;*C [*/ l`-number]`")
+"1 when value represents false, 0 otherwise.]:: [s0;*C [*/ l`-number]")
 TOPIC_TEXT(
-"-`-&][s0;*C [*/ l`-number]`+`+]:: [s0; Post`-increment / post`-decrement of number "
+"`-`-&][s0;*C [*/ l`-number]`+`+]:: [s0; Post`-increment / post`-decrement of number "
 "l`-value.]::t33/15 [s0;/C array[*/  `* ]number&][s0;/C number[*/  `* ]array]:: [s0; "
 "Returns [/ array][*/  ]repeated [/ number] times.]::t0/15 [s0;/C number[*/  `* ]number]:: "
 "[s0; Multiplication.]:: [s0;/C number[*/  / ]number]:: [s0; Division.]:: [s0;/C number[*/ "
-" % ]number]:: [s0; Modulo.]::t33/15 [s0;/C array[*/  ")
+" % ]number]:: [s0; Modulo.]::t33/15 [s0;/C array[*/ ")
 TOPIC_TEXT(
-"`+ ]array]:: [s0; Concatenates [/ array]s.]::t0/15 [s0;/C number[*/  `+ ]number]:: "
+" `+ ]array]:: [s0; Concatenates [/ array]s.]::t0/15 [s0;/C number[*/  `+ ]number]:: "
 "[s0; Addition.]:: [s0;/C number[*/  `- ]number]:: [s0; Subtraction.]::t33/15 [s0;/C "
 "l`-array[*/  << ]array]:: [s0; Concatenates [/ array ]to [/ l`-array], yielding [/ "
 "l`-array ]as l`-value result.]::t0/15 [s0;/C number[*/  << ]number]:: [s0; Shift "
-"left.]:: [s0;/C number[*/  >> ]number]:: [s0; Shift right.]::t33/15 [")
+"left.]:: [s0;/C number[*/  >> ]number]:: [s0; Shift right.]::t33/15 ")
 TOPIC_TEXT(
-"s0;/C number[*/  < ]number&][s0;/C number[*/  > ]number&][s0;/C number[*/  <`= ]number&][s0;/C "
-"number[*/  >`= ]number]:: [s0; Comparison of [/ number]s.]::t0/15 [s0;/C array[*/ "
-" < ]array&][s0;/C array[*/  > ]array&][s0;/C array[*/  <`= ]array&][s0;/C array[*/ "
-" >`= ]array]:: [s0; Comparison of [/ array]s.]::t33/15 [s0;/C value[*/  `=`= ]value]:: "
-"[s0; Equality.]::t0/15 [s0;/C value[*/  !`= ]value]::")
+"[s0;/C number[*/  < ]number&][s0;/C number[*/  > ]number&][s0;/C number[*/  <`= "
+"]number&][s0;/C number[*/  >`= ]number]:: [s0; Comparison of [/ number]s.]::t0/15 "
+"[s0;/C array[*/  < ]array&][s0;/C array[*/  > ]array&][s0;/C array[*/  <`= ]array&][s0;/C "
+"array[*/  >`= ]array]:: [s0; Comparison of [/ array]s.]::t33/15 [s0;/C value[*/  "
+"`=`= ]value]:: [s0; Equality.]::t0/15 [s0;/C value[*/  !`= ]value]:")
 TOPIC_TEXT(
-" [s0; Inequality.]::t33/15 [s0;/C number[*/  `& ]number]:: [s0; Binary and.]:: [s0;/C "
-"number[*/  `^ ]number]:: [s0; Binary xor.]:: [s0;/C number[*/  `| ]number]:: [s0; "
-"Binary or.]:: [s0;/C value[*/  `&`& ]value]:: [s0; Logical and. If first value is "
-"false, second value is not evaluated, just skipped.]:: [s0;/C value[*/  `|`| ]value]:: "
-"[s0; Logical or. If first value is true, second value is not ev")
+": [s0; Inequality.]::t33/15 [s0;/C number[*/  `& ]number]:: [s0; Binary and.]:: "
+"[s0;/C number[*/  `^ ]number]:: [s0; Binary xor.]:: [s0;/C number[*/  `| ]number]:: "
+"[s0; Binary or.]:: [s0;/C value[*/  `&`& ]value]:: [s0; Logical and. If first value "
+"is false, second value is not evaluated, just skipped.]:: [s0;/C value[*/  `|`| ]value]:: "
+"[s0; Logical or. If first value is true, second value is not e")
 TOPIC_TEXT(
-"aluated, just skipped.]:: [s0;/C value [*/ ?] value [*/ :] value]:: [s0; Conditional "
+"valuated, just skipped.]:: [s0;/C value [*/ ?] value [*/ :] value]:: [s0; Conditional "
 "expression. Only necessary expressions are evaluated.]:: [s0;/C l`-value[*/  `= ]value]:: "
 "[s0; Assignment.]::t0/15 [s0;/C l`-array[*/  `+`= ]array]:: [s0; Same as [C l`-array "
 "`= l`-array `+ array].]:: [s0;/C l`-number[*/  `+`= ]number]:: [s0; Same as [C l`-number "
-"`= l`-number `+ number].]:: [s0;/C l`-number[*/  `-")
+"`= l`-number `+ number].]:: [s0;/C l`-number[*/  `")
 TOPIC_TEXT(
-"`= ]number]:: [s0; Same as [C l`-number `= l`-number `- number].]:: [s0;/C l`-number[*/ "
+"-`= ]number]:: [s0; Same as [C l`-number `= l`-number `- number].]:: [s0;/C l`-number[*/ "
 " `*`= ]number]:: [s0; Same as [C l`-number `= l`-number `* number].]:: [s0;/C l`-number[*/ "
 " /`= ]number]:: [s0; Same as [C l`-number `= l`-number / number].]:: [s0;/C l`-number[*/ "
 " %`= ]number]:: [s0; Same as [C l`-number `= l`-number % number].]}}&][s0; &][s0; "
-"&][s2; Statements&][s0; &][ {{4508:5492h1;@(216) [")
+"&][s2; Statements&][s0; &][ {{4508:5492h1;@(216) ")
 TOPIC_TEXT(
-"s0; Statement]:: [s0; Comments]::^@2 [s0;*C ;]:: [s0; Empty statement.]:: [s0;*C "
+"[s0; Statement]:: [s0; Comments]::^@2 [s0;*C ;]:: [s0; Empty statement.]:: [s0;*C "
 "[*/ expression];]:: [s0; Expression. It gets evaluated.]:: [s0;*C `{ [*/ statement]; "
 "... `}]:: [s0; Compound statement.]:: [s0;/C [*/ if(]condition[*/ ) ]statement]:: "
 "[s0; Conditional statement.]:: [s0;/C [*/ if(]condition[*/ ) ]statement&][s0;/C [*/ "
-"else ]statement]:: [s0; Conditional statement with ]:: [s0;/C [*/ wh")
+"else ]statement]:: [s0; Conditional statement with ]:: [s0;/C [*/ w")
 TOPIC_TEXT(
-"ile(]condition[*/ ) ]statement]:: [s0; Loop. Statement is performed as long as the "
-"[/ condition] is true.]:: [s0;/C [*/ do ]statement&][s0;*C while([*/ condition])]:: "
+"hile(]condition[*/ ) ]statement]:: [s0; Loop. Statement is performed as long as "
+"the [/ condition] is true.]:: [s0;/C [*/ do ]statement&][s0;*C while([*/ condition])]:: "
 "[s0; Loop. Statement is performed once and then is repeated as long as the [/ condition] "
 "is true.]:: [s0;*C for([*/ init], [*/ condition], [*/ increment])&][s0;/C [*/ -|]statement]:: "
-"[s0; Same as&][s0;C [/ init];&][s0;C while([/ cond")
+"[s0; Same as&][s0;C [/ init];&][s0;C while([/ con")
 TOPIC_TEXT(
-"ition]) `{&][s0;C -|[/ statement];&][s0;C -|[/ increment];&][s0;C `}]:: [s0;*C for([*/ "
-"l`-value] in [*/ array])&][s0;/C [*/ -|]statement]:: [s0; Same as&][s0;C for([/ l`-value] "
-"`= 0; [/ l`-value] < count([/ array]);&][s0;C     [/ l`-value]`+`+)&][s0;/C [/ -|]statement&][s0; "
-"]:: [s0;*C for([*/ l`-value] in [*/ map])&][s0;/C [*/ -|]statement]:: [s0; Iterates "
-"through [/ map], assigning keys of elemen")
+"dition]) `{&][s0;C -|[/ statement];&][s0;C -|[/ increment];&][s0;C `}]:: [s0;*C "
+"for([*/ l`-value] in [*/ array])&][s0;/C [*/ -|]statement]:: [s0; Same as&][s0;C "
+"for([/ l`-value] `= 0; [/ l`-value] < count([/ array]);&][s0;C     [/ l`-value]`+`+)&][s0;/C "
+"[/ -|]statement&][s0; ]:: [s0;*C for([*/ l`-value] in [*/ map])&][s0;/C [*/ -|]statement]:: "
+"[s0; Iterates through [/ map], assigning keys of eleme")
 TOPIC_TEXT(
-"ts with non`-void value to the [/ l`-value].]:: [s0;*C break;]:: [s0; Causes exit "
+"nts with non`-void value to the [/ l`-value].]:: [s0;*C break;]:: [s0; Causes exit "
 "from innermost loop or switch statement.]:: [s0;/C [*/ switch(]value[*/ ) ]statement]:: "
 "[s0; Matches [/ value] to all case statements inside the [/ statement], continues "
 "at the case with the same value, or with default if no such case exists and default "
-"is present. If neither matching case and default exists, does no")
+"is present. If neither matching case and default exists, does n")
 TOPIC_TEXT(
-"thing.]:: [s0;*C case [*/ value]:]:: [s0; Switch case.]:: [s0;*C default:]:: [s0; "
+"othing.]:: [s0;*C case [*/ value]:]:: [s0; Switch case.]:: [s0;*C default:]:: [s0; "
 "Default switch case.]:: [s0;*C #[*/ name]([*/ args]) `{ ... `}]:: [s0;C [A Same as "
 "][/ name] `= `@([/ args]) `{ ... `};]:: [s0;*C #.[*/ name]([*/ args]) `{ ... `}]:: "
 "[s0;C [A Same as ].[/ name] `= `@([/ args]) `{ ... `};]:: [s0;*C #:[*/ name]([*/ "
-"args]) `{ ... `}]:: [s0;C [A Same as ]:[/ name] `= `@([/ args]) `{ ... ")
+"args]) `{ ... `}]:: [s0;C [A Same as ]:[/ name] `= `@([/ args]) `{ ...")
 TOPIC_TEXT(
-"`};]}}&][s0; &][s2;3 Standard library&][s0;3 &][ {{2479:7521h1;@(216) [s0; Function]:: "
+" `};]}}&][s0; &][s2;3 Standard library&][s0;3 &][ {{2479:7521h1;@(216) [s0; Function]:: "
 "[s0; Comments]::^@2 [s0;*C is`_number([*/ x])]:: [s0; Returns 1 if [/ x] is a number, "
 "0 otherwise.]:: [s0;*C is`_array([*/ x])]:: [s0; Returns 1 if [/ x] is a array, 0 "
 "otherwise.]:: [s0;*C is`_map([*/ x])]:: [s0; Returns 1 if [/ x] is a map, 0 otherwise.]:: "
-"[s0;*C is`_void([*/ x])]:: [s0; Returns 1 if [/ x] is v")
+"[s0;*C is`_void([*/ x])]:: [s0; Returns 1 if [/ x] is ")
 TOPIC_TEXT(
-"oid, 0 otherwise.]:: [s0;*C int([*/ number])]:: [s0; Returns the [/ number] rounded "
+"void, 0 otherwise.]:: [s0;*C int([*/ number])]:: [s0; Returns the [/ number] rounded "
 "towards zero.]:: [s0;*C to`_string([*/ x])]:: [s0; Return [/ x] as array representing "
 "string representation. ]:: [s0;*C count([*/ x])]:: [s0; If [/ x ]is void, returns "
 "0.&][s0; If x is a number, returns 1.&][s0; If x is an array, returns number of elements "
-"of this array.&][s0; If x is an map, returns number of entr")
+"of this array.&][s0; If x is an map, returns number of ent")
 TOPIC_TEXT(
-"ies in this map with non`-void values.]:: [s0;*C keys([*/ map])]:: [s0; Returns "
+"ries in this map with non`-void values.]:: [s0;*C keys([*/ map])]:: [s0; Returns "
 "array of keys of map (ordering is the same as for [* values] function, otherwise "
 "is unspecified).]:: [s0;*C values([*/ map])]:: [s0; Returns array of values of map "
 "(ordering is the same as for [* keys] function, otherwise is unspecified).]:: [s0;*C "
-"rand()]:: [s0; Returns random number in range 0..32767.]:: [s0;*C rever")
+"rand()]:: [s0; Returns random number in range 0..32767.]:: [s0;*C reve")
 TOPIC_TEXT(
-"se([*/ array])]:: [s0; Returns reversed [/ array].]:: [s0;*C sort([*/ array])]:: "
+"rse([*/ array])]:: [s0; Returns reversed [/ array].]:: [s0;*C sort([*/ array])]:: "
 "[s0; Returns sorted [/ array].]:: [s0;*C order([*/ array])]:: [s0; Returns sort order "
 "of elements in the [/ array].]:: [s0;*C IsDate([*/ map])]:: [s0; Returns 1 if map "
 "contains `\"day`\", `\"month`\" and `\"year`\" keys, 0 otherwise.]:: [s0;*C IsTime([*/ "
-"map])]:: [s0; Returns 1 if map contains `\"second`\", `\"minute`\", `\"hour")
+"map])]:: [s0; Returns 1 if map contains `\"second`\", `\"minute`\", `\"hou")
 TOPIC_TEXT(
-"`\", `\"day`\", `\"month`\" and `\"year`\" members, 0 otherwise.]:: [s0;*C GetSysTime()]:: "
+"r`\", `\"day`\", `\"month`\" and `\"year`\" members, 0 otherwise.]:: [s0;*C GetSysTime()]:: "
 "[s0; Returns current time as map with `\"second`\", `\"minute`\", `\"hour`\", `\"day`\", "
 "`\"month`\" and `\"year`\" members.]}}&][s0;3 ]")

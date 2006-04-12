@@ -24,8 +24,10 @@ protected:
 public:
 	void      Set(Ctrl& l, Ctrl& r);
 
-	void      SetPos(int newpos, int index = 0);
+	Splitter& SetPos(int newpos, int index = 0);
 	int       GetPos(int index = 0) const          { return index < pos.GetCount() ? pos[index] : 10000; }
+
+	int       GetCount() const                     { return GetChildCount(); }
 
 	void      Zoom(int i);
 	void      NoZoom()                             { Zoom(-1); }

@@ -735,38 +735,47 @@ void Stream::Magic(dword magic) {
 
 // -------------------------- String stream -----------------------------
 
-void StringStream::Reads()
-{
-	wdata.Clear();
-	buffer = (byte *) ~data;
-	pos = 0;
-	ptr = wrlim = buffer;
-	rdlim = buffer + data.GetCount();
-	writes = false;
-}
-
-void StringStream::Bufr()
+void StringStream::SetWriteBuffer()
 {
 	buffer = (byte *)wdata.Begin();
-	rdlim = wrlim = (byte *)wdata.End();
+	rdlim = buffer;
+	wrlim = (byte *)wdata.End();
 }
 
-void StringStream::Writes()
+void StringStream::SetWriteMode()
 {
-	if(writes) return;
+	if(writemode) return;
 	dword p = ptr - buffer;
+	size = data.GetLength();
 	wdata = data;
-	Bufr();
+	SetWriteBuffer();
 	ptr = buffer + p;
-	writes = true;
-	size = rdlim - buffer;
+	writemode = true;
+}
+
+void   StringStream::SetReadMode()
+{
+	if(!writemode) return;
+	wdata.SetLength((dword)GetSize());
+	dword p = (dword)(uintptr_t)(ptr - buffer);
+	data = wdata;
+	buffer = (byte *) ~data;
+	ptr = buffer + p;
+	wrlim = buffer;
+	rdlim = buffer + data.GetCount();
+	writemode = false;
 }
 
 void  StringStream::Open(const String& adata)
 {
+	pos = 0;
 	data = adata;
 	style = STRM_READ|STRM_WRITE|STRM_SEEK|STRM_LOADING;
-	Reads();
+	wdata.Clear();
+	buffer = (byte *) ~data;
+	ptr = wrlim = buffer;
+	rdlim = buffer + data.GetCount();
+	writemode = false;
 	ClearError();
 }
 
@@ -774,30 +783,24 @@ void  StringStream::Create()
 {
 	Open(String());
 	SetStoring();
-	Writes();
+	SetWriteMode();
 	ClearError();
 }
 
 int64 StringStream::GetSize() const
 {
-	return writes ? max((dword)(uintptr_t)(ptr - buffer), size) : data.GetLength();
+	return writemode ? max<int64>(GetPos(), size) : data.GetLength();
 }
 
 String StringStream::GetResult()
 {
-	if(writes) {
-		wdata.SetLength((dword)GetSize());
-		dword p = ptr - buffer;
-		data = wdata;
-		Reads();
-		ptr = buffer + p;
-	}
+	SetReadMode();
 	return data;
 }
 
 void  StringStream::_Put(const void *d, dword sz)
 {
-	Writes();
+	SetWriteMode();
 	if(ptr + sz >= wrlim) {
 		dword p = ptr - buffer;
 	#ifdef _DEBUG
@@ -805,7 +808,7 @@ void  StringStream::_Put(const void *d, dword sz)
 	#else
 		wdata.SetLength(max((dword)128, max(2 * (dword)GetSize(), (dword)GetSize() + sz)));
 	#endif
-		Bufr();
+		SetWriteBuffer();
 		ptr = buffer + p;
 	}
 	memcpy(ptr, d, sz);
@@ -820,7 +823,8 @@ void  StringStream::_Put(int w)
 
 dword StringStream::_Get(void *data, dword sz)
 {
-	dword read = min(dword(rdlim - ptr), sz);
+	SetReadMode();
+	dword read = min((dword)(uintptr_t)(rdlim - ptr), sz);
 	memcpy(data, ptr, read);
 	ptr += read;
 	return read;
@@ -828,30 +832,32 @@ dword StringStream::_Get(void *data, dword sz)
 
 int  StringStream::_Get()
 {
+	SetReadMode();
 	return ptr < rdlim ? *ptr++ : -1;
 }
 
 int  StringStream::_Term() {
+	SetReadMode();
 	return ptr < rdlim ? *ptr : -1;
 }
 
 void  StringStream::Seek(int64 pos) {
-	size = max(size, (dword)(uintptr_t)(ptr - buffer));
-	if(pos + buffer > rdlim) {
-		Writes();
+	size = max(size, (dword)(uintptr_t)GetPos());
+	if(pos > size) {
+		SetWriteMode();
+		size = (dword)pos;
 		wdata.SetLength((dword)pos + 100);
-		Bufr();
+		SetWriteBuffer();
 	}
 	ptr = buffer + min(GetSize(), pos);
 }
 
 void  StringStream::SetSize(int64 asize) {
-	Writes();
-	dword p = (dword)(uintptr_t)(ptr - buffer);
+	SetWriteMode();
+	dword p = (dword)(uintptr_t)GetPos();
 	Seek(asize);
-	Bufr();
 	size = (dword)asize;
-	ptr = min(buffer + p, buffer + size);
+	Seek(min(p, size));
 }
 
 bool  StringStream::IsOpen() const {
@@ -909,6 +915,8 @@ MemReadStream::MemReadStream(const void *data, int size) : MemStream((void *)dat
 
 // ------------------------ Stream with Buffer --------------------------
 
+#ifndef NEWBLOCKSTREAM
+
 void BufferStream::Init(dword size) {
 	ptr = rdlim = wrlim = buffer = new byte[buffersize = size];
 }
@@ -931,6 +939,7 @@ BufferStream::~BufferStream() {
 }
 
 // ------------- Generic read/write block based stream ------------------
+
 
 BlockStream::BlockStream() {}
 BlockStream::~BlockStream() {}
@@ -1014,6 +1023,7 @@ dword BlockStream::_Get(void *data, dword size) {
 	if(size)
 		if(size < GetBufferSize() / 2) {
 			_Term();
+			prev_pos = pos;
 			int n = min(size, (dword)(rdlim - ptr));
 			memcpy((byte *)data + read, ptr, n);
 			read += n;
@@ -1087,249 +1097,9 @@ void BlockStream::OpenInit(dword mode, int64 filesize) {
 	rdlim = wrlim = ptr = buffer;
 	wramount = 0;
 	ClearError();
-	pos = 0;
+	prev_pos = pos = 0;
 	if(mode == APPEND) SeekEnd();
 }
-
-// ---------------------------- File stream -----------------------------
-
-#ifdef PLATFORM_WIN32
-
-void FileStream::SetStreamSize(int64 pos) {
-	long lo = (dword)pos, hi = (dword)(pos >> 32);
-	if(SetFilePointer(handle, lo, &hi, FILE_BEGIN) == 0xffffffff && GetLastError() != NO_ERROR ||
-	   !SetEndOfFile(handle)) {
-		SetLastError();
-	}
-}
-
-void FileStream::SetPos(int64 pos) {
-	ASSERT(IsOpen());
-	long lo = (dword)pos, hi = (dword)(pos >> 32);
-	if(SetFilePointer(handle, lo, &hi, FILE_BEGIN) == 0xffffffff && GetLastError() != NO_ERROR)
-		SetLastError();
-}
-
-dword FileStream::Read(int64 at, void *ptr, dword size) {
-	ASSERT(IsOpen() && (style & STRM_READ));
-	dword n;
-	SetPos(at);
-	if(IsError()) return 0;
-	if(!ReadFile(handle, ptr, size, (DWORD *)&n, NULL)) {
-		SetLastError();
-		return 0;
-	}
-	return n;
-}
-
-void FileStream::Write(int64 at, const void *ptr, dword size) {
-	ASSERT(IsOpen() && (style & STRM_WRITE));
-	dword n;
-	SetPos(at);
-	if(IsError()) return;
-	if(!WriteFile(handle, ptr, size, &n, NULL)) {
-		SetLastError();
-		return;
-	}
-	if(n != size)
-		SetError(ERROR_NOT_ENOUGH_SPACE);
-}
-
-FileTime FileStream::GetTime() const {
-	ASSERT(IsOpen());
-	FileTime tm;
-	GetFileTime(handle, NULL, NULL, &tm);
-	return tm;
-}
-
-void     FileStream::SetTime(const FileTime& tm) {
-	ASSERT(IsOpen());
-	Flush();
-	if(!SetFileTime(handle, NULL, NULL, &tm))
-		SetLastError();
-}
-
-bool FileStream::Open(const char *name, dword mode) {
-	LLOG("Open " << name << " mode: " << mode);
-	Close();
-	int iomode = mode & ~SHAREMASK;
-	String s = ToSystemCharset(name);
-	LLOGHEXDUMP(s, s.GetLength());
-	handle = CreateFile(ToSystemCharset(name),
-		iomode == READ ? GENERIC_READ : GENERIC_READ|GENERIC_WRITE,
-		(mode & NOREADSHARE ? 0 : FILE_SHARE_READ)
-		| (mode & NOWRITESHARE ? 0 : FILE_SHARE_WRITE)
-		| (mode & DELETESHARE ? FILE_SHARE_DELETE : 0),
-		NULL,
-		iomode == READ ? OPEN_EXISTING : iomode == CREATE ? CREATE_ALWAYS : OPEN_ALWAYS,
-		FILE_ATTRIBUTE_NORMAL|FILE_FLAG_SEQUENTIAL_SCAN,
-		NULL
-	);
-	if(handle == INVALID_HANDLE_VALUE) {
-		SetError();
-		return FALSE;
-	}
-	dword fsz_lo, fsz_hi;
-	fsz_lo = ::GetFileSize(handle, &fsz_hi);
-	int64 fsz;
-	if(fsz_lo == 0xffffffff && GetLastError() != NO_ERROR)
-		fsz = 0;
-	else
-		fsz = fsz_lo | (int64(fsz_hi) << 32);
-	OpenInit(iomode, fsz);
-	LLOG("OPEN " << handle);
-	return TRUE;
-}
-
-void FileStream::Close() {
-	if(!IsOpen()) return;
-	Flush();
-	LLOG("CLOSE " << handle);
-	if(!CloseHandle(handle)) {
-		LLOG("CLOSE ERROR");
-		LDUMP(GetLastErrorMessage());
-		SetLastError();
-	}
-	handle = INVALID_HANDLE_VALUE;
-}
-
-bool FileStream::IsOpen() const {
-	return handle != INVALID_HANDLE_VALUE;
-}
-
-FileStream::FileStream(const char *filename, dword mode) {
-	handle = INVALID_HANDLE_VALUE;
-	Open(filename, mode);
-}
-
-FileStream::FileStream() {
-	handle = INVALID_HANDLE_VALUE;
-}
-
-FileStream::~FileStream() {
-	Close();
-}
-
-#endif
-
-#ifdef PLATFORM_POSIX
-
-void FileStream::SetStreamSize(int64 pos)
-{
-	if(handle < 0) return;
-	loff_t cur = LSEEK64_(handle, 0, SEEK_CUR);
-	if(cur < 0) {
-		SetLastError();
-		return;
-	}
-	loff_t len = LSEEK64_(handle, 0, SEEK_END);
-	if(len < 0) {
-		SetLastError();
-		LSEEK64_(handle, cur, SEEK_SET);
-		return;
-	}
-	while(pos > len) {
-		static char buffer[1024];
-		int64 diff = pos - len;
-		int chunk = (diff > sizeof(buffer) ? sizeof(buffer) : (int)diff);
-		if(write(handle, buffer, chunk) != chunk) {
-			SetLastError();
-			LSEEK64_(handle, cur, SEEK_SET);
-			return;
-		}
-		len += chunk;
-	}
-	if(pos < len) {
-		if(cur > pos)
-			LSEEK64_(handle, cur = pos, SEEK_SET);
-		if(FTRUNCATE64_(handle, pos) < 0)
-			SetLastError();
-	}
-	if(LSEEK64_(handle, cur, SEEK_SET) < 0)
-		SetLastError();
-}
-
-void FileStream::SetPos(int64 pos) {
-	ASSERT(IsOpen());
-	if(LSEEK64_(handle, pos, SEEK_SET) < 0)
-		SetLastError();
-}
-
-dword FileStream::Read(int64 at, void *ptr, dword size) {
-	ASSERT(IsOpen() && (style & STRM_READ));
-	SetPos(at);
-	if(IsError()) return 0;
-	int n = read(handle, ptr, size);
-	if(n < 0) {
-		SetLastError();
-		return 0;
-	}
-	return n;
-}
-
-void FileStream::Write(int64 at, const void *ptr, dword size) {
-	ASSERT(IsOpen() && (style & STRM_WRITE));
-	SetPos(at);
-	if(IsError()) return;
-	int n = write(handle, ptr, size);
-	if(n < 0) {
-		SetLastError();
-		return;
-	}
-	if((dword)n != size)
-		SetError(ERROR_NOT_ENOUGH_SPACE);
-}
-
-FileTime FileStream::GetTime() const {
-	ASSERT(IsOpen());
-	struct stat fst;
-	fstat(handle, &fst);
-	return fst.st_mtime;
-}
-
-bool FileStream::Open(const char *name, dword mode, mode_t tmode) {
-	Close();
-	int iomode = mode & ~SHAREMASK;
-	handle = open(ToSystemCharset(name), iomode == READ ? O_RDONLY :
-	                    iomode == CREATE ? O_CREAT|O_RDWR|O_TRUNC :
-	                    O_RDWR,
-	              tmode);
-	if(handle >= 0) {
-		int64 fsz = LSEEK64_(handle, 0, SEEK_END);
-		if(fsz >= 0) {
-			OpenInit(mode, fsz);
-			return true;
-		}
-	}
-	SetLastError();
-	return false;
-}
-
-void FileStream::Close() {
-	if(!IsOpen()) return;
-	Flush();
-	if(close(handle) < 0)
-		SetLastError();
-	handle = -1;
-}
-
-bool FileStream::IsOpen() const {
-	return handle != -1;
-}
-
-FileStream::FileStream(const char *filename, dword mode, mode_t acm) {
-	handle = -1;
-	Open(filename, mode, acm);
-}
-
-FileStream::FileStream() {
-	handle = -1;
-}
-
-FileStream::~FileStream() {
-	Close();
-}
-
 #endif
 
 // --------------------------- Size stream -----------------------
@@ -1356,7 +1126,7 @@ void SizeStream::SetSize(int64 asize) {
 }
 
 void SizeStream::_Put(const void *, dword sz) {
-	wrlim = buffer + GetBufferSize();
+	wrlim = buffer + 128;
 	pos += ptr - buffer + sz;
 	ptr = buffer;
 }
@@ -1369,9 +1139,10 @@ bool SizeStream::IsOpen() const {
 	return true;
 }
 
-SizeStream::SizeStream() : BufferStream(256) {
+SizeStream::SizeStream() {
 	size = 0;
 	style = STRM_WRITE|STRM_SEEK;
+	buffer = h;
 }
 
 // ------------------------------ Compare stream ----------------------------
@@ -1380,10 +1151,12 @@ CompareStream::CompareStream() {
 	stream = NULL;
 	equal = false;
 	size = 0;
+	buffer = h;
 }
 
 CompareStream::CompareStream(Stream& astream) {
 	stream = NULL;
+	buffer = h;
 	Open(astream);
 }
 
@@ -1393,7 +1166,7 @@ void CompareStream::Open(Stream& astream) {
 	style = STRM_WRITE|STRM_SEEK;
 	stream = &astream;
 	size = pos = 0;
-	wrlim = buffer + GetBufferSize();
+	wrlim = buffer + 128;
 	ptr = buffer;
 	equal = true;
 }
@@ -1449,14 +1222,14 @@ void CompareStream::Flush() {
 }
 
 void CompareStream::_Put(const void *data, dword size) {
-	wrlim = buffer + GetBufferSize();
+	wrlim = buffer + 128;
 	ASSERT(ptr <= wrlim);
 	Flush();
 	pos += ptr - buffer;
 	ptr = buffer;
 	byte *b = (byte *) data;
 	while(size && equal) {
-		int sz = min(size, GetBufferSize());
+		int sz = min<int>(size, 128);
 		Compare(pos, b, sz);
 		pos += sz;
 		b += sz;

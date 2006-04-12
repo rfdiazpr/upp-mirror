@@ -16,8 +16,9 @@ struct LTProperty : public ItemProperty, public Convert {
 	void EditAction();
 	void SyncLid();
 
-	virtual void     Read(CParser& p, byte charset);
-	virtual String   Save(byte charset) const;
+	virtual void     SetCharset(byte charset);
+	virtual void     Read(CParser& p);
+	virtual String   Save() const;
 	virtual void     Set(const WString& text) = 0;
 	virtual WString  Get() const = 0;
 	virtual int      Filter(int chr) const;
@@ -41,7 +42,7 @@ String NoCr(const String& s)
 
 int  LTProperty::Filter(int chr) const
 {
-	return FromUnicode(chr, charset) == DEFAULTCHAR ? 0 : chr;
+	return charset == CHARSET_UNICODE ? chr : FromUnicode(chr, charset) == DEFAULTCHAR ? 0 : chr;
 }
 
 void LTProperty::EditAction()
@@ -55,6 +56,7 @@ LTProperty::LTProperty()
 	context.WhenAction = THISBACK(Context);
 	id = LayImg::Id();
 	id.WhenAction = THISBACK(Id);
+	charset = CHARSET_UNICODE; //!! not good, but better than a crash; TRC 06/04/10
 }
 
 void LTProperty::SyncLid()
@@ -80,9 +82,13 @@ void LTProperty::Context()
 		lid.SetFocus();
 }
 
-void LTProperty::Read(CParser& p, byte _charset)
+void LTProperty::SetCharset(byte cs)
 {
-	charset = _charset;
+	charset = cs;
+}
+
+void LTProperty::Read(CParser& p)
+{
 	lid <<= Null;
 	if(p.Id("t_")) {
 		p.PassChar('(');
@@ -114,7 +120,7 @@ void LTProperty::Read(CParser& p, byte _charset)
 	SyncLid();
 }
 
-String LTProperty::Save(byte charset) const
+String LTProperty::Save() const
 {
 	String px = ~lid;
 	String txt = FromUnicode((WString)Get(), charset);

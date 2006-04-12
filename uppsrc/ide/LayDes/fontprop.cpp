@@ -86,8 +86,8 @@ FontDlg::FontDlg()
 }
 
 struct FontProperty : public EditorProperty<DataPusher> {
-	virtual String   Save(byte) const           { return FormatFont(~editor); }
-	virtual void     Read(CParser& p, byte);
+	virtual String   Save() const           { return FormatFont(~editor); }
+	virtual void     Read(CParser& p);
 
 	One<FontDlg> fdlg;
 
@@ -103,7 +103,7 @@ struct FontProperty : public EditorProperty<DataPusher> {
 	static ItemProperty *Create() { return new FontProperty; }
 };
 
-void FontProperty::Read(CParser& p, byte) {
+void FontProperty::Read(CParser& p) {
 	Font f = StdFont();
 	for(int i = 0; i < __countof(s_fontname); i++)
 		if(p.Id(s_fontname[i])) {

@@ -1,6 +1,11 @@
 #include "SqlCtrl.h"
-#include <TCtrlLib/TCtrlLib.h>
-#include <TCtrlLib/OldTreeCtrl.h>
+#pragma hdrstop
+
+#include <Oracle/Oracle8.h>
+//#include <TCtrlLib/TCtrlLib.h>
+//#include <TCtrlLib/OldTreeCtrl.h>
+
+#include "SqlDlg.h"
 
 static bool StringLessNoCase(String a, String b) { return CompareNoCase(a, b) < 0; }
 
@@ -8,64 +13,209 @@ class DlgSqlExport : public WithSqlExportLayout<TopWindow>
 {
 public:
 	typedef DlgSqlExport CLASSNAME;
-	DlgSqlExport(String table_name);
+	DlgSqlExport();
 
-	Vector<int> Run(const Vector<SqlColumnInfo>& cols);
-	void        Serialize(Stream& stream);
+	void    Run(Sql& cursor, String command, String tablename);
+	void    Serialize(Stream& stream);
+
+private:
+	void    SyncUI();
+	void    Toggle();
 
 private:
 	ArrayOption exp;
+	enum {
+		FMT_TEXT,
+		FMT_SQL,
+	};
+	enum {
+		DELIM_TAB,
+		DELIM_SEMICOLON,
+	};
+	String recent_file;
 };
 
-DlgSqlExport::DlgSqlExport(String table_name)
+void RunDlgSqlExport(Sql& cursor, String command, String tablename)
 {
-	CtrlLayoutOKCancel(*this, table_name + " - data export");
-	columns.AddColumn("Column name");
-	columns.AddColumn("Type");
-	columns.AddColumn("Width");
-	exp.AddColumn(columns, "Export");
-	dialect.Add(SQLD_ORACLE, "Oracle");
-	dialect.Add(SQLD_MYSQL, "MySQL");
-	dialect.Add(SQLD_SQLITE3, "SQLite3");
-	dialect.Add(SQLD_MSSQL, "MS-SQL Server");
-	commit_each <<= 100;
+	DlgSqlExport().Run(cursor, command, tablename);
 }
 
-Vector<int> DlgSqlExport::Run(const Vector<SqlColumnInfo>& info)
+DlgSqlExport::DlgSqlExport()
 {
-	for(int i = 0; i < info.GetCount(); i++)
-		columns.Add(info[i].name, info[i].type, info[i].width, 1);
-	static String cfg;
-	StringStream strm(cfg);
-	if(!strm.IsEof())
-		Serialize(strm);
-	while(TopWindow::Run() == IDOK)
-	{
-		Vector<int> out;
-		for(int i = 0; i < columns.GetCount(); i++)
-			if((int)columns.Get(i, 3))
-				out.Add(i);
-		if(out.IsEmpty())
-		{
-			Exclamation("No columns selected!");
-			continue;
-		}
-		strm.Create();
-		Serialize(strm);
-		cfg = strm;
-		return out;
+	CtrlLayoutOKCancel(*this, "");
+	columns.AddColumn(t_("Column name"));
+	columns.AddColumn(t_("Type"));
+	columns.AddColumn(t_("Width"));
+	HeaderCtrl::Column& hc = exp.AddColumn(columns, "").Margin(0).HeaderTab();
+	hc.SetMargin(0).Fixed(18).SetAlign(ALIGN_CENTER).SetImage(CtrlImg::smallcheck());
+	hc.WhenAction = THISBACK(Toggle);
+	format <<= FMT_TEXT;
+	delimiters <<= DELIM_SEMICOLON;
+	quote <<= true;
+	format <<= THISBACK(SyncUI);
+}
+
+void DlgSqlExport::SyncUI()
+{
+	int f = ~format;
+	delimiters.Enable(f == FMT_TEXT);
+	quote.Enable(f == FMT_TEXT);
+	identity_insert.Enable(f == FMT_SQL);
+	object_name.Enable(f == FMT_SQL);
+}
+
+void DlgSqlExport::Toggle()
+{
+	bool state = true;
+	if(columns.IsCursor())
+		state = !(bool)columns.Get(3);
+	for(int i = 0; i < columns.GetCount(); i++)
+		columns.Set(i, 3, state);
+}
+
+void DlgSqlExport::Run(Sql& cursor, String command, String tablename)
+{
+	Title(Nvl(tablename, t_("SQL query")) + t_(" export"));
+	object_name <<= tablename;
+	if(!cursor.Execute(command)) {
+		Exclamation(NFormat(t_("Error executing [* \1%s\1]: \1%s"), command, cursor.GetLastError()));
+		return;
 	}
-	return Vector<int>();
+	for(int i = 0; i < cursor.GetColumns(); i++) {
+		const SqlColumnInfo& sci = cursor.GetColumnInfo(i);
+		String type;
+		switch(sci.type) {
+			case INT_V: type = t_("integer"); break;
+			case DOUBLE_V: type = t_("real number"); break;
+			case STRING_V:
+			case WSTRING_V: type = t_("string"); break;
+			case DATE_V: type = t_("date"); break;
+			case TIME_V: type = t_("date/time"); break;
+			case ORA_BLOB_V: type = t_("BLOB"); break;
+			case ORA_CLOB_V: type = t_("CLOB"); break;
+			default: type = FormatInt(sci.type); break;
+		}
+		columns.Add(sci.name, sci.type, sci.width, 1);
+	}
+	static String cfg;
+	LoadFromString(*this, cfg);
+	SyncUI();
+	while(TopWindow::Run() == IDOK)
+		try {
+			String out_table = ~object_name;
+			String delim;
+			switch((int)~delimiters) {
+				case DELIM_TAB: delim = "\t"; break;
+				case DELIM_SEMICOLON: delim = ";"; break;
+			}
+			Vector<int> out;
+			String colstr;
+			String title;
+			for(int i = 0; i < columns.GetCount(); i++)
+				if(columns.Get(i, 3)) {
+					out.Add(i);
+					String cname = cursor.GetColumnInfo(i).name;
+					colstr << (i ? ", " : "") << cname;
+					if(i) title << delim;
+					title << cname;
+				}
+			if(out.IsEmpty()) {
+				throw Exc(t_("No columns selected!"));
+				continue;
+			}
+			String rowbegin, rowend;
+			int fmt = ~format;
+			FileSel fsel;
+			String ext;
+			switch(fmt) {
+				case FMT_TEXT: {
+					rowend = "";
+					ext = ".txt";
+					fsel.Type(t_("Text files (*.txt)"), "*.txt");
+					break;
+				}
+				case FMT_SQL: {
+					if(identity_insert)
+						rowbegin << "set identity_insert " << out_table << " on ";
+					rowbegin << "insert into " << out_table << "(" << colstr << ") values (";
+					rowend = ");";
+					ext = ".sql";
+					fsel.Type(t_("SQL scripts (*.sql)"), "*.sql");
+					break;
+				}
+			}
+			fsel.AllFilesType().DefaultExt(ext.Mid(1));
+			if(!IsNull(recent_file))
+				fsel <<= ForceExt(recent_file, ext);
+			if(!fsel.ExecuteSaveAs(t_("Save export as")))
+				continue;
+			recent_file = ~fsel;
+			FileOut fo;
+			if(!fo.Open(recent_file)) {
+				Exclamation(NFormat(t_("Error creating file [* \1%s\1]."), recent_file));
+				continue;
+			}
+			if(fmt == FMT_TEXT)
+				fo.PutLine(title);
+			Progress progress(t_("Exporting row %d"));
+			while(cursor.Fetch()) {
+				String script = rowbegin;
+				for(int i = 0; i < out.GetCount(); i++) {
+					Value v = cursor[out[i]];
+					switch(fmt) {
+						case FMT_TEXT: {
+							if(i)
+								script.Cat(delim);
+							if(IsString(v) && quote) {
+								String s = v;
+								script << '\"';
+								for(const char *p = s, *e = s.End(); p < e; p++)
+									if(*p == '\"')
+										script.Cat("\"\"");
+									else
+										script.Cat(*p);
+								script << '\"';
+							}
+							else
+								script << StdFormat(v);
+							break;
+						}
+						case FMT_SQL: {
+							if(i) script.Cat(", ");
+							script << SqlFormat(v, SQLD_ORACLE);
+							break;
+						}
+					}
+				}
+				script << rowend;
+				fo.PutLine(script);
+/*
+				if(autocommit && --left <= 0) {
+					fo.PutLine("commit;");
+					left = autocommit;
+				}
+*/
+				if(progress.StepCanceled()) {
+					Exclamation(t_("Export aborted!"));
+					return;
+				}
+			}
+			fo.Close();
+			if(fo.IsError())
+				throw Exc(NFormat(t_("Error writing file %s."), recent_file));
+			break;
+		}
+		catch(Exc e) {
+			ShowExc(e);
+		}
+
+	cfg = StoreAsString(*this);
 }
 
 void DlgSqlExport::Serialize(Stream& stream)
 {
 	int version = 1;
-	stream / version
-	% commit_each
-	% dialect
-	% omit_nulls % omit_schema
-	% identity_insert;
+	stream / version % format % recent_file;
 }
 
 class SqlObjectTree : public TopWindow {
@@ -76,20 +226,43 @@ public:
 	void        Run();
 
 private:
-	void        OnSchemas(OldTreeItem& root);
-	void        OnSchemaObjects(OldTreeItem& root);
-	void        OnTables(OldTreeItem& root);
-	void        OnViews(OldTreeItem& root);
-	void        OnSequences(OldTreeItem& root);
-	void        OnTableColumns(OldTreeItem& root);
+	enum OBJTYPE {
+		OBJ_NULL,
+		OBJ_SCHEMA,
+		OBJ_SCHEMA_OBJECTS,
+		OBJ_TABLES,
+		OBJ_VIEWS,
+		OBJ_SEQUENCES,
+		OBJ_TABLE_COLUMNS,
+		OBJ_SEQUENCE,
+		OBJ_COLUMN,
+		OBJ_PRIMARY_KEY,
+		OBJ_ROWID,
+	};
+	struct Item {
+		Item(OBJTYPE type = OBJ_NULL, String schema = Null, String object = Null)
+		: type(type), schema(schema), object(object) {}
+		Item(const Value& v) { if(IsTypeRaw<Item>(v)) *this = ValueTo<Item>(v); }
+		operator Value() const { return RawToValue(*this); }
+
+		int type;
+		String schema;
+		String object;
+	};
+
+	void        Open(int node);
+	void        OpenSchema(int node);
+	void        OpenTables(int node, const Item& item);
+	void        OpenViews(int node, const Item& item);
+	void        OpenSequences(int node, const Item& item);
+	void        OpenTableColumns(int node, const Item& item);
 
 	void        ToolLocal(Bar& bar);
-	void        OnTableExport(String table_name);
+	void        TableExport(String table_name);
 
 private:
-	OldTreeCtrl    schema;
+	TreeCtrl    schema;
 	SqlSession& session;
-	enum { OBJ_ROOT, OBJ_DATABASE, OBJ_TABLE, OBJ_VIEW, OBJ_SEQUENCE, OBJ_COLUMN, OBJ_PRIMARY_KEY, OBJ_ROWID };
 };
 
 void SQLObjectTree(SqlSession& session) { SqlObjectTree(session).Run(); }
@@ -97,11 +270,11 @@ void SQLObjectTree(SqlSession& session) { SqlObjectTree(session).Run(); }
 SqlObjectTree::SqlObjectTree(SqlSession& sess)
 : session(sess)
 {
-	Title("SQL object tree");
+	Title(t_("SQL object tree"));
 	Sizeable().MaximizeBox();
 	Add(schema.SizePos());
-	schema.SetImage(CtrlImg::Computer()).Text("Schemas").Subtree(THISBACK(OnSchemas));
-	schema.AutoSize().TouchLayout();
+	schema.WhenOpen = THISBACK(Open);
+	schema.SetRoot(CtrlImg::Computer(), Item(OBJ_SCHEMA), t_("Schemas"));
 	schema.WhenBar = THISBACK(ToolLocal);
 }
 
@@ -109,107 +282,106 @@ void SqlObjectTree::Run() {
 	TopWindow::Run();
 }
 
-void SqlObjectTree::OnSchemas(OldTreeItem& root) {
+void SqlObjectTree::Open(int node)
+{
+	const Item& item = ValueTo<Item>(schema[node]);
+	switch(item.type) {
+		case OBJ_SCHEMA:         OpenSchema(node); break;
+		case OBJ_TABLES:         OpenTables(node, item); break;
+		case OBJ_VIEWS:          OpenViews(node, item); break;
+		case OBJ_SEQUENCES:      OpenSequences(node, item); break;
+		case OBJ_TABLE_COLUMNS:  OpenTableColumns(node, item); break;
+	}
+}
+
+void SqlObjectTree::OpenSchema(int node) {
 	try {
-		root.Clear();
+		schema.RemoveChildren(node);
 		Vector<String> schemas = session.EnumDatabases();
 		Sort(schemas);
-		for(int i = 0; i < schemas.GetCount(); i++)
-			root.Add().SetImage(CtrlImg::Dir()).Text(schemas[i]).Subtree(THISBACK(OnSchemaObjects));
-	} catch(Exc e) { ShowExc(e); }
+		for(int i = 0; i < schemas.GetCount(); i++) {
+			String sname = schemas[i];
+			int snode = schema.Add(node, CtrlImg::Dir(), Item(OBJ_SCHEMA_OBJECTS, sname), sname, true);
+			schema.Add(snode, CtrlImg::Dir(), Item(OBJ_TABLES, sname), t_("Tables"), true);
+			schema.Add(snode, CtrlImg::Dir(), Item(OBJ_VIEWS, sname), t_("Views"), true);
+			schema.Add(snode, CtrlImg::Dir(), Item(OBJ_SEQUENCES, sname), t_("Sequences"), true);
+		}
+	}
+	catch(Exc e) {
+		ShowExc(e);
+	}
 }
 
-void SqlObjectTree::OnSchemaObjects(OldTreeItem& root) {
-	root.Clear();
-	root.Add().SetImage(CtrlImg::Dir()).Text("Tables").Subtree(THISBACK(OnTables)).Class(OBJ_DATABASE);
-	root.Add().SetImage(CtrlImg::Dir()).Text("Views").Subtree(THISBACK(OnViews)).Class(OBJ_DATABASE);
-	root.Add().SetImage(CtrlImg::Dir()).Text("Sequences").Subtree(THISBACK(OnSequences)).Class(OBJ_DATABASE);
-}
-
-void SqlObjectTree::OnTables(OldTreeItem& root) {
+void SqlObjectTree::OpenTables(int node, const Item& item)
+{
 	try {
-		root.Clear();
-		String schema = root.GetParent()->GetText();
-		Vector<String> tables = session.EnumTables(schema);
+		schema.RemoveChildren(node);
+		Vector<String> tables = session.EnumTables(item.schema);
 		Sort(tables);
 		for(int i = 0; i < tables.GetCount(); i++)
-			root.Add().SetImage(CtrlImg::File()).Text(tables[i]).Subtree(THISBACK(OnTableColumns))
-			.Class(OBJ_TABLE)
-			.SetData(schema + "." + tables[i]);
+			schema.Add(node, CtrlImg::File(),
+				Item(OBJ_TABLE_COLUMNS, item.schema, tables[i]),
+				tables[i], true);
 	} catch(Exc e) { ShowExc(e); }
 }
 
-void SqlObjectTree::OnViews(OldTreeItem& root) {
+void SqlObjectTree::OpenViews(int node, const Item& item) {
 	try {
-		root.Clear();
-		String schema = root.GetParent()->GetText();
-		Vector<String> views = session.EnumViews(schema);
+		schema.RemoveChildren(node);
+		Vector<String> views = session.EnumViews(item.schema);
 		Sort(views);
 		for(int i = 0; i < views.GetCount(); i++)
-			root.Add().SetImage(CtrlImg::File()).Text(views[i])
-			.Class(OBJ_VIEW)
-			.Subtree(THISBACK(OnTableColumns))
-			.SetData(schema + "." + views[i]);
+			schema.Add(node, CtrlImg::File(),
+				Item(OBJ_TABLE_COLUMNS, item.schema, views[i]),
+				views[i], true);
 	} catch(Exc e) { ShowExc(e); }
 }
 
-void SqlObjectTree::OnSequences(OldTreeItem& root) {
+void SqlObjectTree::OpenSequences(int node, const Item& item) {
 	try {
-		root.Clear();
-		String schema = root.GetParent()->GetText();
-		Vector<String> sequences = session.EnumSequences(schema);
+		schema.RemoveChildren(node);
+		Vector<String> sequences = session.EnumSequences(item.schema);
 		Sort(sequences);
 		for(int i = 0; i < sequences.GetCount(); i++)
-			root.Add().SetImage(CtrlImg::File()).Text(sequences[i])
-			.Class(OBJ_SEQUENCE)
-			.SetData(schema + "." + sequences[i]);
+			schema.Add(node, CtrlImg::File(),
+				Item(OBJ_SEQUENCE, item.schema, sequences[i]),
+				sequences[i], true);
 	} catch(Exc e) { ShowExc(e); }
 }
 
-void SqlObjectTree::OnTableColumns(OldTreeItem& root) {
+void SqlObjectTree::OpenTableColumns(int node, const Item& item)
+{
 	try {
-		root.Clear();
-		String schema_table = ~root;
-		int f = schema_table.Find('.');
-		ASSERT(f >= 0);
-		String schema = schema_table.Left(f);
-		String table = schema_table.Mid(f + 1);
-		Vector<SqlColumnInfo> columns = session.EnumColumns(schema, table);
+		schema.RemoveChildren(node);
+		Vector<SqlColumnInfo> columns = session.EnumColumns(item.schema, item.object);
 		for(int i = 0; i < columns.GetCount(); i++)
-			root.Add().SetImage(CtrlImg::Hd()).Text(columns[i].name) //.Subtree(THISBACK(OnSubObjects))
-			.Class(OBJ_COLUMN);
-//			.SetData("COLUMN:" + schema + "." + table + "." + columns[i]);
-		Vector<String> pk = session.EnumPrimaryKey(schema, table);
+			schema.Add(node, CtrlImg::Hd(), Item(OBJ_COLUMN, item.schema, item.object), columns[i].name);
+		Vector<String> pk = session.EnumPrimaryKey(item.schema, item.object);
 		if(!pk.IsEmpty()) {
 			String pklist;
 			for(int i = 0; i < pk.GetCount(); i++)
-				pklist << (i ? "; " : "Primary key: ") << pk[i];
-			root.Add().Text(pklist)
-				.Class(OBJ_PRIMARY_KEY);
+				pklist << (i ? "; " : t_("Primary key: ")) << pk[i];
+			schema.Add(node, Null, Item(OBJ_PRIMARY_KEY, item.schema, item.object), pklist);
 		}
-		String rowid = session.EnumRowID(schema, table);
-		if(!IsNull(rowid)) {
-			root.Add().Text("RowID: " + rowid).Class(OBJ_ROWID);
-		}
+		String rowid = session.EnumRowID(item.schema, item.object);
+		if(!IsNull(rowid))
+			schema.Add(node, Null, Item(OBJ_ROWID, item.schema, item.object), "RowID: " + rowid);
 	} catch(Exc e) { ShowExc(e); }
 }
 
 void SqlObjectTree::ToolLocal(Bar& bar)
 {
-	schema.StdBar(bar);
-	if(!bar.IsEmpty())
-		bar.MenuSeparator();
-	OldTreeItem *item = schema.GetCursorItem();
-	if(item)
-		switch(item->GetClass())
-		{
-		case OBJ_TABLE:
-		case OBJ_VIEW:
-			bar.Add("Export", THISBACK1(OnTableExport, item->GetData()));
+	if(schema.IsCursor()) {
+		const Item& item = ValueTo<Item>(~schema);
+		switch(item.type) {
+			case OBJ_TABLE_COLUMNS: {
+				bar.Add(t_("Export"), THISBACK1(TableExport, item.schema + "." + item.object));
+			}
 		}
+	}
 }
 
-void SqlObjectTree::OnTableExport(String table_name)
+void SqlObjectTree::TableExport(String table_name)
 {
 	String schema, table = table_name;
 	int f = table.Find('.');
@@ -218,67 +390,6 @@ void SqlObjectTree::OnTableExport(String table_name)
 		table = table.Mid(f + 1);
 	}
 	Vector<SqlColumnInfo> info = session.EnumColumns(schema, table);
-	DlgSqlExport expdlg(table_name);
-	Vector<int> cindex = expdlg.Run(info);
-	if(cindex.IsEmpty())
-		return;
-	int dialect = ~expdlg.dialect;
-	String out_table = (expdlg.omit_schema ? table : table_name);
-	Vector<String> colnames;
-	SqlSet column_list;
-	for(int i = 0; i < cindex.GetCount(); i++)
-	{
-		String name = info[cindex[i]].name;
-		colnames.Add(name);
-		column_list |= SqlCol(name);
-	}
-	static String recent_file;
-	FileSel fsel;
-	fsel.Type("SQL scripts (*.sql)", "*.sql")
-		.AllFilesType()
-		.DefaultExt("sql");
-	fsel <<= AppendFileName(recent_file, AppendExt(ToLower(table), ".sql"));
-	if(!fsel.ExecuteSaveAs("Save export as"))
-		return;
-	recent_file = GetFileDirectory(~fsel);
 	Sql cursor(session);
-	if(!Select(column_list).From(SqlSet(SqlCol(table_name))).Execute(cursor))
-	{
-		ShowExc(SqlExc(cursor));
-		return;
-	}
-	FileOut fo;
-	if(!fo.Open(~fsel)) {
-		Exclamation(NFormat("Error creating file [* \1%s\1].", ~fsel));
-		return;
-	}
-	Progress progress("Exporting row %d");
-	int autocommit = ~expdlg.commit_each;
-	int left = autocommit;
-	while(cursor.Fetch()) {
-		String script;
-		SqlSet columns, values;
-		values.Dialect(dialect);
-		for(int i = 0; i < cursor.GetColumns(); i++)
-			if(!expdlg.omit_nulls || !IsNull(cursor[i])) {
-				columns |= SqlCol(colnames[i]);
-				values |= cursor[i];
-			}
-		if(expdlg.identity_insert)
-			script << "set identity_insert " << out_table << " on ";
-		script << "insert into " << out_table << columns() << "\n" "values " << values() << ";";
-		fo.PutLine(script);
-		if(autocommit && --left <= 0) {
-			fo.PutLine("commit;");
-			left = autocommit;
-		}
-		if(progress.StepCanceled()) {
-			Exclamation("Export aborted!");
-			return;
-		}
-	}
-	fo.Close();
-	if(fo.IsError())
-		Exclamation(NFormat("Error writing file [* \1%s\1].", ~fsel));
-	return;
+	RunDlgSqlExport(cursor, "select * from " + schema + "." + table, table);
 }

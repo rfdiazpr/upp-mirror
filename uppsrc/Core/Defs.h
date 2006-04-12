@@ -12,6 +12,8 @@
 	#pragma setlocale("C")
 #endif
 
+bool    IsPanicMode();
+
 void    Panic(const char *msg);
 
 void    AssertFailed(const char *file, int line, const char *cond);
@@ -209,6 +211,10 @@ typedef uint64             qword;
 #define MAKELONG(a, b)   ((dword) (((word) (a)) | ((dword) ((word) (b))) << 16))
 
 #endif
+
+#define MAKEQWORD(a, b)  ((qword) (((dword) (a)) | ((qword) ((dword) (b))) << 32))
+#define HIDWORD(a)       (dword)((a) >> 32)
+#define LODWORD(a)       dword(a)
 
 #ifdef COMPILER_MSC
 #define pick_

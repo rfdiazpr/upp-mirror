@@ -331,13 +331,16 @@ void Ctrl::RemoveFrame(CtrlFrame& frm)
 
 void Ctrl::InsertFrame(int i, CtrlFrame& fr)
 {
+	ASSERT(i >= 0 && i <= frame.GetCount());
 	int n = frame.GetCount();
 	Mitor<Frame> m;
-	if(n > 1)
+	if(n >= 1)
 		for(int q = 0; q < n; q++) {
 			if(q == i) m.Add().frame = &fr;
 			m.Add().frame = frame[q].frame;
 		}
+	if(i == n)
+		m.Add().frame = &fr;
 	frame = m;
 	fr.FrameAdd(*this);
 	SyncLayout();

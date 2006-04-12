@@ -163,8 +163,9 @@ void SqlCommanderApp::Run() {
 #ifdef flagMAIN
 GUI_APP_MAIN
 {
-	SetLanguage(LNG_ENGLISH);
-	SetDefaultCharset(CHARSET_WIN1250);
+//	SetLanguage(LNGC_('E', 'N', 'U', 'S', CHARSET_WIN1252));
+	SetLanguage(LNGC_('C', 'S', 'C', 'Z', CHARSET_WIN1250));
+//	SetDefaultCharset(CHARSET_WIN1250);
 //	Draw::XLFDArialFont = "-*-helvetica-*-*-*-*-*-*-*-*-*-*-*-*";
 //	Draw::SetStdFont(Arial(12));
 #ifdef PLATFORM_POSIX

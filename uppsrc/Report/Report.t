@@ -44,7 +44,7 @@ itIT("&Numero pagine")
 ruRU("&Номера страниц")
 
 T_("PDF export..")
-csCZ("")
+csCZ("PDF export..")
 huHU("")
 itIT("")
 ruRU("")

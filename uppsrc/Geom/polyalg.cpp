@@ -129,8 +129,6 @@ static Rectf SplitPoly(const Array<Pointf>& polygon, const Vector<int>& polyend,
 	return sum;
 }
 
-enum { CMP_OUT = -1, CMP_SECT = 0, CMP_IN = +1 };
-
 int ContainsPoints(const Array<Pointf>& polygon, const Vector<int>& polyend, const Array<Pointf>& points)
 {
 	if(points.IsEmpty() || polygon.GetCount() <= 1)
@@ -186,20 +184,28 @@ int ContainsPoints(const Array<Pointf>& polygon, const Array<Pointf>& points)
 	return ContainsPoints(polygon, polyend, points);
 }
 
-int ContainsPoints(const Array<Pointf>& polygon, Pointf pt)
+int ContainsPoint(const Array<Pointf>& polygon, const Vector<int>& polyend, Pointf pt)
+{
+	if(IsNull(pt) || polygon.GetCount() < 3 || polyend.IsEmpty())
+		return CMP_OUT;
+	Array<Pointf> plist;
+	plist.SetCount(1, pt);
+	return ContainsPoints(polygon, polyend, plist);
+}
+
+int ContainsPoint(const Array<Pointf>& polygon, Pointf pt)
 {
 	if(IsNull(pt) || polygon.GetCount() <= 1)
-		return false;
+		return CMP_OUT;
 	Array<Pointf> plist;
-	plist.SetCount(1);
-	plist[0] = pt;
+	plist.SetCount(1, pt);
 	return ContainsPoints(polygon, plist);
 }
 
 int ContainsPoly(const Array<Pointf>& chkpoly,
 	const Array<Pointf>& polygon, const Vector<int>& polyend, bool closed)
 {
-	RTIMING("Contains(Poly / Poly)");
+//	RTIMING("Contains(Poly / Poly)");
 	if(chkpoly.IsEmpty() || polyend.IsEmpty())
 		return CMP_OUT;
 	if(polyend.GetCount() == polygon.GetCount())
@@ -287,7 +293,7 @@ int ContainsPoly(const Array<Pointf>& chkpoly, const Array<Pointf>& polygon, boo
 	if(chkpoly.GetCount() <= 2 || polygon.IsEmpty())
 		return CMP_OUT;
 	if(polygon.GetCount() == 1)
-		return ContainsPoints(chkpoly, polygon[0]);
+		return ContainsPoint(chkpoly, polygon[0]);
 	Vector<int> polyend;
 	polyend.SetCount(1);
 	polyend[0] = polygon.GetCount();

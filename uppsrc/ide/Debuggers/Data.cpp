@@ -80,7 +80,7 @@ void Pdb::Explore(const Val& val, const VectorMap<String, Value>& prev)
 		Vis(explorer, '.' + t.member.GetKey(i), prev, Visualise(r));
 	}
 	for(int i = 0; i < t.static_member.GetCount(); i++)
-		Vis(explorer, "::" + t.member.GetKey(i), prev, Visualise(t.static_member[i]));
+		Vis(explorer, "::" + t.static_member.GetKey(i), prev, Visualise(t.static_member[i]));
 }
 
 void Pdb::Explorer()

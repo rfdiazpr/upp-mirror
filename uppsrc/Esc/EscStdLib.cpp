@@ -135,7 +135,7 @@ struct ESC_FileOut : public EscHandle {
 
 	typedef ESC_FileOut CLASSNAME;
 
-	ESC_FileOut(EscEscape& e, EscValue& v, BlockStream::OpenMode style) {
+	ESC_FileOut(EscEscape& e, EscValue& v, int style) {
 		file.Open(String(e[0]), style);
 		v.Escape("Put(a)", this, THISBACK(Put));
 		v.Escape("PutLine(a)", this, THISBACK(PutLine));

@@ -155,19 +155,19 @@ public:
 	void   Paint(Draw& w, Size sz) const;
 	Size   GetPhysicalSize() const               { return physical_size; }
 	Size   GetPixelSize() const                  { return pixel_size; }
-	Size   GetDefaultSize(Size maxsize) const    { return type->GetDefaultSize(data, maxsize); }
+	Size   GetDefaultSize(Size maxsize) const    { return type ? type->GetDefaultSize(data, maxsize) : physical_size; }
 
 	void   Set(RichObjectType *type, const Value& data, Size maxsize = Size(3967, 3967));
 	bool   Set(const String& type_name, const Value& data, Size maxsize = Size(3967, 3967));
 
 	String GetTypeName() const;
 	Value  GetData() const                       { return data; }
-	String GetLink(Point pt, Size sz) const      { return type->GetLink(data, pt, sz); }
+	String GetLink(Point pt, Size sz) const      { return type ? type->GetLink(data, pt, sz) : String(); }
 
 	const RichObjectType& GetType() const        { return *type; }
 
 	bool   Read(const String& type, const String& data, Size sz);
-	String Write() const                         { return type->Write(data); }
+	String Write() const                         { return type ? type->Write(data) : (String)data; }
 
 	void   KeepRatio(bool b)                     { keepratio = b; }
 	bool   IsKeepRatio() const                   { return keepratio; }

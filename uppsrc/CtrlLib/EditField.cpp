@@ -131,8 +131,20 @@ void EditField::Finish(bool refresh)
 	if(cursor > text.GetLength()) cursor = text.GetLength();
 	if(cursor < 0) cursor = 0;
 	Size sz = GetSize();
-	if(sz.cx <= 0) return;
+	if(autosize) {
+		Rect r = GetRect();
+		int mw = min(r.Width(), Draw::GetStdFontSize().cx);
+		sz.cx = GetCaret(text.GetLength()) + 4;
+		sz = AddFrameSize(sz);
+		if(GetParent())
+			sz.cx = min(sz.cx, GetParent()->GetSize().cx - r.left);
+		sz.cx = minmax(sz.cx, mw, autosize);
+		if(sz.cx != r.Width())
+			LeftPos(r.left, sz.cx);
+		sz = GetSize();
+	}
 	sz.cx -= 2;
+	if(sz.cx <= 0) return;
 	int x = GetCaret(cursor);
 	if(x > sz.cx + sc - 1) {
 		sc = x - sz.cx + 1;
@@ -296,6 +308,10 @@ int EditField::Insert(int pos, const WString& itext)
 		else
 			break;
 	}
+	if(ins.GetCount() + text.GetCount() > maxlen) {
+		BeepExclamation();
+		return 0;
+	}
 	text.Insert(pos, ins);
 	Update();
 	return ins.GetLength();
@@ -393,6 +409,7 @@ bool EditField::Key(dword key, int rep)
 		UpdateAction();
 		break;
 	case K_BACKSPACE:
+	case K_SHIFT|K_BACKSPACE:
 		if(RemoveSelection()) {
 			Action();
 			break;
@@ -504,6 +521,8 @@ void EditField::Reset()
 	filter = CharFilterUnicode;
 	convert = &NoConvert();
 	initcaps = false;
+	maxlen = INT_MAX;
+	autosize = false;
 }
 
 EditField& EditField::SetFont(Font _font)

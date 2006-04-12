@@ -6,6 +6,10 @@ class SliderCtrl : public Ctrl {
 	int           SliderToClient(int value) const;
 	int           ClientToSlider(int x) const;
 
+	bool          IsVert() const;
+	int           HoVe(int  x, int  y) const;
+	int&          HoVeR(int& x, int& y) const;
+
 public:
 	typedef SliderCtrl CLASSNAME;
 	SliderCtrl();

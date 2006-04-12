@@ -232,7 +232,7 @@ void Ide::EditMacro(int i)
 
 void Ide::Setup(Bar& menu) {
 	menu.Add("Be verbose", THISBACK(ToggleVerboseBuild))
-		.Check(verbosebuild)
+		.Check(console.verbosebuild)
 		.Help("Log detailed description of build and debug");
 	menu.Add("Environment..", THISBACK(SetupFormat))
 		.Help("Fonts, tabs, indentation, status bar");
@@ -402,6 +402,7 @@ void Ide::BrowseMenu(Bar& menu) {
 	menu.Add(AK_VIRTUALS, callback(&editor, &AssistEditor::Virtuals));
 	menu.Add(AK_THISBACKS, callback(&editor, &AssistEditor::Thisbacks));
 	menu.Add(!designer, AK_COMPLETE, callback(&editor, &AssistEditor::Complete));
+//	menu.Add(AK_INSERTCOLOR, THISBACK(InsertColor));
 	menu.Separator();
 	menu.Add("Rescan code", THISBACK(RescanCode));
 	menu.Add("Edit ignore list", THISBACK(DppIgnoreList));

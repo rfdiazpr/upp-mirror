@@ -244,7 +244,7 @@ TimingInspector::TimingInspector(const char *_name) {
 }
 
 TimingInspector::~TimingInspector() {
-	ASSERT(nesting_depth == 0);
+//	ASSERT(nesting_depth == 0); // troubles in MT!
 	if(this == &s_zero()) return;
 	StdLog() << Dump() << "\r\n";
 }
@@ -296,7 +296,9 @@ HitCountInspector::~HitCountInspector()
 }
 
 void  HexDump(Stream& s, const void *ptr, int size, int maxsize) {
-	s << Sprintf("Memory at 0x%lX, size 0x%lX = %d\n", ptr, size, size);
+	char h[256];
+	sprintf(h, "Memory at 0x%lX, size 0x%lX = %d\n", ptr, size, size);
+	s.Putf(h);
 #ifdef PLATFORM_WIN32
 	if(IsBadReadPtr(ptr, size)) {
 		s.Putf("   <MEMORY ACCESS VIOLATION>\n");
@@ -310,13 +312,17 @@ void  HexDump(Stream& s, const void *ptr, int size, int maxsize) {
 	while(a < size) {
 	#ifdef CPU_64
 		uint64 aa = a + (uint64)ptr;
-		s << Sprintf("%+6ld 0x%08X%08X ", a, (int)(aa >> 32), (int)aa);
+		sprintf(h, "%+6ld 0x%08X%08X ", a, (int)(aa >> 32), (int)aa);
+		s.Putf(h);
 	#else
-		s << Sprintf("%+6ld 0x%08lX ", a, a + dword(ptr));
+		sprintf(h, "%+6ld 0x%08lX ", a, a + dword(ptr));
+		s.Putf(h);
 	#endif
 		for(b = 0; b < 16; b++)
-			if(a + b < size)
-				s << Sprintf("%02X ", q[a + b]);
+			if(a + b < size) {
+				sprintf(h, "%02X ", q[a + b]);
+				s.Putf(h);
+			}
 			else
 				s.Putf("   ");
 		s.Putf("    ");

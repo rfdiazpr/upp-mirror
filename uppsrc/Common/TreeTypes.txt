@@ -12,3 +12,5 @@ Lex::Term
 0 0 -1
 String
 0 0 -1
+Dokument
+0 0 -1

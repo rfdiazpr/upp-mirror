@@ -1,8 +1,39 @@
+* Blikani v matrice - v umrtnim listu pridat duplikat a zase ho zrusit....
+
+* Macro menu duplication when *.usc in package
+
+* "Go to line or definition" case insensitive option?
+
+* If I set a bookmark I get no visible indication on the line (e.g. in the gutter) that a bookmark is set there. Am I supposed to see something, if so this is a bug report, if not, it's a feature suggestion.
+
+* If I run "find in files" and doubleclick then in "Edit" menu an item "Edit using designer" Ctrl_T appears. If I try to use it, it does nothing and dissapears. I think, it's a bug.
+
+* Assist++  {
+	- EB\idu.cpp 266 k.[ok.]
+	- jump to operator definition
+	- makra na global scope
+	- ftp/Publi/ParseError.png
+	- nechodi virtuals in nImage App
+	- PesDlg - k_adresa_seq.
+	- Navigate is unable to find the "Alignment" enum in beta4.
+	- Alt+C - inline conversion
+	- public/private, filter by class
+	- Alt+J neskace podle signatury
+	  int Odpady::SlozenkaVars(VectorMap<String, Value>& var,
+	                           Osob0*|*Doklad od, Date datum,
+	                           bool  preplatek, bool nedoplatek,
+	                           bool& dotisk);
+}
+
+* TheIDE: Insert Color Assist function
+
+* Display error when there are two conflicting lang strings
+
+* "Error executing..."
+
 * Then dissable the saving on exit. With optional choice.
 
 * Valgrind
-
-* A jeste porad, uz delsi dobu, je ve WebMapu uplne dementni chyba, ktera netusim, cim muze byt zpusobena: mam v HeaderCtrl::WhenAction vyvolavani lokalniho menu pro sloupce nejake tabulky. To menu se normalne rozbali, muzes v nem jezdit, ale nemuzes nic vybrat
 
 * BTW There is a strange bug in Splitter. It doesn't produce equal results if I change the order of these two lines: splitter.SetPos(9000, 1);	splitter.SetPos(6500, 0);
 
@@ -13,12 +44,6 @@
 * I love to use Virtual Desktop Managers for increased productivity. As of now, the free Microsoft Virtual Desktop Manager is having problems with theIDE. If I switch to a different desktop while running theIDE, the main window does not repaint itself when I return to the Desktop with theIDE in it. I have to close out of the program and reopen it for everything to work properly.
 
 * CppBase Purify speedup (no need for String...Cat)
-
-* Assist++ - ftp/Publi/ParseError.png
-
-* Assist++ - nechodi virtuals in nImage App
-
-* Assist++ - PesDlg - k_adresa_seq.
 
 * CommandLine() function returns a Vector with command line arguments in system enconing. Other parts of U++ uses UTF-8.
 
@@ -34,7 +59,6 @@
 
 * Problem IDE helpfile a CrossPlafrom development tema
 
-* Assist++ Alt+C - inline conversion
 
 * GetDataFile / SDL / Linux
 
@@ -42,8 +66,6 @@
 
 * Have found such an issue. When I start Build 602beta4, on FreeBSD 6.0 under xwm menus in ide disappear very quickly when I click them by mouse so I can't click menu items. When I access menu by pressing F10, everithing works fine with keyboard.
 In KDE works fine.
-
-* Assist++ Navigate is unable to find the "Alignment" enum in beta4.
 
 * The fact that there is key assignments for it should also be shown in the context menu (Assist++)
 
@@ -55,11 +77,6 @@ In KDE works fine.
 
 * Button, Enter, Shift - tlacitko zustane vtlacene
 
-* Alt+J neskace podle signatury
-int Odpady::SlozenkaVars(VectorMap<String, Value>& var,
-                         Osob0*|*Doklad od, Date datum,
-                         bool  preplatek, bool nedoplatek,
-                         bool& dotisk)
 
 * The assembly name editline in the New/Edit assembly dialog should restrict the chars usable in assembly names. Since the name is used as a filename, it should not contain the /;*?"|\ chars.
 
@@ -91,7 +108,6 @@ http://www.arilect.com/upp/forum/index.php?t=msg&th=289&start=0&S=86cb1ba64d5b65
 
 * static DllFn attach_console("AttachConsole", "kernel32.dll");
 
-* Assist++: public/private, filter by class
 
 * String::Find(String)
 

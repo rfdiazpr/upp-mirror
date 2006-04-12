@@ -11,17 +11,37 @@ SliderCtrl::SliderCtrl()
 	NoWantFocus();
 }
 
+bool SliderCtrl::IsVert() const
+{
+	return GetSize().cx < GetSize().cy;
+}
+
+int  SliderCtrl::HoVe(int  x, int  y) const
+{
+	return IsVert() ? y : x;
+}
+
+int& SliderCtrl::HoVeR(int& x, int& y) const
+{
+	return IsVert() ? y : x;
+}
+
 void SliderCtrl::Paint(Draw& w)
 {
 	Size size = GetSize();
-	int half = size.cy >> 1;
-	DrawBorder(w, 2, half - 2, size.cx - 4, 4, InsetBorder);
-	if(!IsNull(value)) {
-		int v = SliderToClient(value);
-		Size thumb = CtrlImg::hthumb().GetSize();
-		int thumb_y = (size.cy - thumb.cy) >> 1;
-		w.DrawImage(v, thumb_y, HasCapture() || HasFocus() ? CtrlImg::hthumb_white()
-		                                                   : CtrlImg::hthumb());
+	if(IsVert()) {
+		int half = size.cx >> 1;
+		DrawBorder(w, half - 2, 2, 4, size.cy - 4, InsetBorder);
+		if(!IsNull(value))
+			w.DrawImage((size.cx - CtrlImg::vthumb().GetSize().cx) >> 1, SliderToClient(value),
+			            HasCapture() || HasFocus() ? CtrlImg::vthumb1() : CtrlImg::vthumb());
+	}
+	else {
+		int half = size.cy >> 1;
+		DrawBorder(w, 2, half - 2, size.cx - 4, 4, InsetBorder);
+		if(!IsNull(value))
+			w.DrawImage(SliderToClient(value), (size.cy - CtrlImg::hthumb().GetSize().cy) >> 1,
+			            HasCapture() || HasFocus() ? CtrlImg::hthumb1() : CtrlImg::hthumb());
 	}
 }
 
@@ -46,15 +66,16 @@ void SliderCtrl::LeftDown(Point pos, dword keyflags)
 	if(!IsEditable())
 		return;
 	int thumb = SliderToClient(value);
+	int p = HoVe(pos.x, pos.y);
 	if(IsNull(thumb)) {
-		value = ClientToSlider(pos.x);
+		value = ClientToSlider(p);
 		UpdateActionRefresh();
 	}
 	else
-	if(pos.x >= thumb && pos.x < thumb + CtrlImg::hthumb().GetWidth())
+	if(p >= thumb && p < thumb + HoVe(CtrlImg::hthumb().GetSize().cx, CtrlImg::vthumb().GetSize().cy))
 		SetCapture();
 	else
-	if(pos.x < thumb)
+	if(p < thumb)
 		Dec();
 	else
 		Inc();
@@ -75,7 +96,7 @@ void SliderCtrl::LeftUp(Point pos, dword keyflags)
 void SliderCtrl::MouseMove(Point pos, dword keyflags)
 {
 	if(HasCapture()) {
-		int n = ClientToSlider(pos.x);
+		int n = ClientToSlider(HoVe(pos.x, pos.y));
 		if(n != value) {
 			value = n;
 			UpdateActionRefresh();
@@ -122,17 +143,20 @@ int SliderCtrl::SliderToClient(int v) const
 		return Null;
 	v = minmax(v, min, max);
 	if(max > min)
-		v = iscale(v - min, GetSize().cx - CtrlImg::hthumb().GetWidth(), max - min);
+		v = iscale(v - min, HoVe(GetSize().cx - CtrlImg::hthumb().GetSize().cx,
+		                         GetSize().cy - CtrlImg::vthumb().GetSize().cy), max - min);
 	else
 		v = 0;
 	return v;
 }
 
-int SliderCtrl::ClientToSlider(int x) const
+int SliderCtrl::ClientToSlider(int p) const
 {
 	if(max <= min)
 		return min;
-	return minmax(min + iscale(x, max - min, GetSize().cx - CtrlImg::hthumb().GetWidth()), min, max);
+	return minmax(min + iscale(p, max - min,
+	                           HoVe(GetSize().cx - CtrlImg::hthumb().GetSize().cx,
+	                                GetSize().cy - CtrlImg::vthumb().GetSize().cy)), min, max);
 }
 
 void SliderCtrl::Dec()

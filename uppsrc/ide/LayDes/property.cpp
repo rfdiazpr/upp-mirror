@@ -17,11 +17,15 @@ int ItemProperty::GetHeight() const
 
 bool ItemProperty::PlaceFocus(dword, int) { return false; }
 
-void     ItemProperty::Read(CParser& p, byte charset)
+void ItemProperty::SetCharset(byte charset)
 {
 }
 
-String   ItemProperty::Save(byte charset) const
+void ItemProperty::Read(CParser& p)
+{
+}
+
+String ItemProperty::Save() const
 {
 	return Null;
 }
@@ -68,12 +72,12 @@ ItemProperty *ItemProperty::Create(const String& name)
 	return NULL;
 }
 
-void RawProperty::Read(CParser& p, byte)
+void RawProperty::Read(CParser& p)
 {
 	editor.SetData(ToUnicode(ReadPropertyParam(p), CHARSET_WIN1252));
 }
 
-String RawProperty::Save(byte) const
+String RawProperty::Save() const
 {
 	String s = ~editor;
 	CParser p(s);
@@ -95,13 +99,13 @@ String RawProperty::Save(byte) const
 }
 
 struct IntProperty : public EditorProperty<EditInt> {
-	virtual void   Read(CParser& p, byte) {
+	virtual void   Read(CParser& p) {
 		if(p.Id("Null"))
 			editor.SetData(Null);
 		else
 			editor.SetData(p.ReadInt());
 	}
-	virtual String Save(byte) const {
+	virtual String Save() const {
 		int q = ~editor;
 		return IsNull(q) ? "Null" : AsString(q);
 	}
@@ -114,13 +118,13 @@ struct IntProperty : public EditorProperty<EditInt> {
 };
 
 struct DoubleProperty : public EditorProperty<EditDouble> {
-	virtual void   Read(CParser& p, byte) {
+	virtual void   Read(CParser& p) {
 		if(p.Id("Null"))
 			editor.SetData(Null);
 		else
 			editor.SetData(p.ReadDouble());
 	}
-	virtual String Save(byte) const {
+	virtual String Save() const {
 		return FormatDouble(~editor, 10);
 	}
 
@@ -132,13 +136,13 @@ struct DoubleProperty : public EditorProperty<EditDouble> {
 };
 
 struct StringProperty : public EditorProperty<EditString> {
-	virtual void     Read(CParser& p, byte) {
+	virtual void     Read(CParser& p) {
 		if(p.Id("Null"))
 			editor.SetData(Null);
 		else
 			editor.SetData(p.ReadString());
 	}
-	virtual String   Save(byte) const {
+	virtual String   Save() const {
 		return AsCString(~editor);
 	}
 	StringProperty() {
@@ -149,7 +153,7 @@ struct StringProperty : public EditorProperty<EditString> {
 };
 
 struct BoolProperty : public EditorProperty<Option> {
-	virtual void Read(CParser& p, byte) {
+	virtual void Read(CParser& p) {
 		if(p.Id("true"))
 			editor.SetData(1);
 		else {
@@ -157,7 +161,7 @@ struct BoolProperty : public EditorProperty<Option> {
 			editor.SetData(0);
 		}
 	}
-	virtual String   Save(byte) const {
+	virtual String   Save() const {
 		return (int)~editor ? "true" : "false";
 	}
 	BoolProperty() {
@@ -168,8 +172,8 @@ struct BoolProperty : public EditorProperty<Option> {
 };
 
 struct ColorProperty : public EditorProperty<ColorPusher> {
-	virtual String   Save(byte) const           { return FormatColor(~editor); }
-	virtual void     Read(CParser& p, byte);
+	virtual String   Save() const           { return FormatColor(~editor); }
+	virtual void     Read(CParser& p);
 
 	void FontChanged();
 	void Perform();
@@ -184,7 +188,7 @@ struct ColorProperty : public EditorProperty<ColorPusher> {
 	static ItemProperty *Create() { return new ColorProperty; }
 };
 
-void ColorProperty::Read(CParser& p, byte)
+void ColorProperty::Read(CParser& p)
 {
 	if(p.Id("Null")) {
 		editor.SetData(Null);

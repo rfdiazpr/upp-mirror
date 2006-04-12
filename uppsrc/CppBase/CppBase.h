@@ -330,9 +330,14 @@ class Parser {
 
 	struct RecursionCounter
 	{
+		int change;
 		int &count;
-		RecursionCounter(int &count_i) : count(count_i) { count++; }
-		~RecursionCounter() { count--; }
+		RecursionCounter(int &count_i, int change_i = 1) :
+		  count(count_i), change(change_i)
+		{
+		  count += change;
+		}
+		~RecursionCounter() { count -= change; }
 	};
 
 	Context     context;

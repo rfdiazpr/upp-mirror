@@ -1,3 +1,10 @@
+* When I open a file with a filename containing white space, UWord complains
+file doesn't exist when I double click it, but loads it anyway when I discard
+the error dialog.
+Something borked with unix filename escaping?
+
+
+
 * Blikani v matrice - v umrtnim listu pridat duplikat a zase ho zrusit....
 
 * Macro menu duplication when *.usc in package

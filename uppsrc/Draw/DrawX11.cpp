@@ -127,7 +127,7 @@ Xshift CalcXShift(dword mask)
 		f.shift += f.bits;
 		f.bits = 0;
 	}
-	LOG("xshift(" << FormatIntHex(mask) << "): mask = "
+	LLOG("xshift(" << FormatIntHex(mask) << "): mask = "
 		<< FormatIntHex(f.mask) << ", bits = " << f.bits << ", shift = " << f.shift);
 	return f;
 }

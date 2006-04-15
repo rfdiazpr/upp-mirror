@@ -1,5 +1,4 @@
 #include "Core.h"
-#pragma hdrstop
 
 #ifdef PLATFORM_POSIX
 #include <sys/mman.h>
@@ -8,18 +7,6 @@
 #define LLOG(x) // RLOG(x)
 #define LDUMP(x) // RDUMP(x)
 #define LLOGHEXDUMP(x, y) // RLOGHEXDUMP(x, y)
-
-#ifdef PLATFORM_POSIX
-#define LSEEK64_     lseek
-#define FTRUNCATE64_ ftruncate
-#endif
-
-#ifdef PLATFORM_LINUX
-#undef  LSEEK64_
-#define LSEEK64_     lseek64
-#undef  FTRUNCATE64_
-#define FTRUNCATE64_ ftruncate64
-#endif
 
 void Stream::_Put(const void *data, dword size) {
 	const byte *s = (const byte *) data;

@@ -194,6 +194,18 @@
 	#endif
 #endif //PLATFORM_POSIX
 
+#ifdef PLATFORM_POSIX
+#define LSEEK64_     lseek
+#define FTRUNCATE64_ ftruncate
+#endif
+
+#ifdef PLATFORM_LINUX
+#undef  LSEEK64_
+#define LSEEK64_     lseek64
+#undef  FTRUNCATE64_
+#define FTRUNCATE64_ ftruncate64
+#endif
+
 #ifdef PLATFORM_WIN32
 	#define DIR_SEP  '\\'
 	#define DIR_SEPS "\\"

@@ -21,7 +21,7 @@ static void WriteLog(const String& s)
 #endif//PLATFORM_POSIX
 }
 
-#define DO_SVRLOG 0
+#define DO_SVRLOG 1
 
 #if DO_SVRLOG
 #define SVRLOG(x) { StringStream ss; ss << x << '\n'; RLOG(ss.GetResult()); WriteLog(ss.GetResult()); }
@@ -370,6 +370,8 @@ bool LocalSlaveProcess::IsRunning() {
 }
 
 int  LocalSlaveProcess::GetExitCode() {
+	LOG("GetExitCode!");
+	DUMP(exit_code);
 #ifdef PLATFORM_WIN32
 	return IsRunning() ? (int)Null : exit_code;
 #endif
@@ -379,10 +381,12 @@ int  LocalSlaveProcess::GetExitCode() {
 	int status;
 	if(waitpid(pid, &status, WNOHANG | WUNTRACED) != pid || !DecodeExitCode(status))
 	{
+		LOG("hang");
 		SVRLOG("GetExitCode() -> -1 (waitpid would hang)");
 		return -1;
 	}
 	exit_code = WEXITSTATUS(status);
+	DUMP(exit_code);
 	SVRLOG("GetExitCode() -> " << exit_code << " (just exited)");
 	return exit_code;
 #endif

@@ -9,7 +9,7 @@
 bool Ctrl::LogMessages;
 #endif
 
-#define LLOG(x)      LOG(x)
+#define LLOG(x)     // LOG(x)
 #define LTIMING(x)  // RTIMING(x)
 #define LDUMP(x)    // RDUMP(x)
 #define LDUMPC(x)   // RDUMPC(x)

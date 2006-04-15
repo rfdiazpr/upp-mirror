@@ -218,7 +218,6 @@ void UpdateSColors()
 		                       .Height(h ? (int)(h * ScreenInfo().GetPixelsPerInch().cy / 72.22 + 0.5) : 13));
 	}
 
-	LOG("SLtBlue = (" << sLtBlue.GetR() << ", " << sLtBlue.GetG() << ", " << sLtBlue.GetB());
 }
 #endif
 

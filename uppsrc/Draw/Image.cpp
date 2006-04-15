@@ -1674,7 +1674,7 @@ Cursor Image::GetCursor() const
 	Point hotspot = GetHotSpot();
 	data -> cursor = XCreatePixmapCursor(Xdisplay, pm_pixel, pm_mask, &cur_bg, &cur_fg,
 		minmax<int>(hotspot.x, 0, cx - 1), minmax<int>(hotspot.y, 0, cy - 1));
-	LOG("XCreatePixmapCursor -> " << FormatIntHex(data->cursor));
+	LLOG("XCreatePixmapCursor -> " << FormatIntHex(data->cursor));
 //	fprintf(stderr, "XCreatePixmapCursor(%08x)", (int)data->cursor);
 
 //	fprintf(stderr, "XFreePixmap(%08x)", (int)pm_pixel);
@@ -1691,7 +1691,7 @@ Image Image::FontCursor(int id)
 {
 	Image img(new Data);
 	img.data->cursor = XCreateFontCursor(Xdisplay, id);
-	LOG("XCreateFontCursor -> " << img.data->cursor);
+	LLOG("XCreateFontCursor -> " << img.data->cursor);
 	return img;
 }
 

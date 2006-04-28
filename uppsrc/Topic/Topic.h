@@ -56,6 +56,7 @@ protected:
 
 	Vector<String>    tablru;
 	int               tabi;
+	bool              allfonts;
 
 	struct FileInfo {
 		Time               time;
@@ -111,9 +112,12 @@ protected:
 	void   Load(const String& path);
 	void   AddLru();
 
+	void   SyncFonts();
+	void   AllFonts();
+
 public:
 	virtual void SyncFile(const String& path, const String& link);
-	
+
 	enum {
 		TIMEID_AUTOSAVE = TopWindow::TIMEID_COUNT,
 	    TIMEID_COUNT
@@ -134,7 +138,7 @@ public:
 	String GetFilePath() const                               { return filepath; }
 	void   Save();
 	void   Flush();
-	
+
 	void   ExportPdf();
 
 	void   SetEditorFocus();

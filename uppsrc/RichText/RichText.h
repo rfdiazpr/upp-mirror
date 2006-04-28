@@ -109,12 +109,12 @@ struct RichObjectExchange;
 class Bar;
 
 struct RichObjectType : Moveable<RichObjectType> {
-	virtual String GetTypeName() const = 0;
+	virtual String GetTypeName(const Value& v) const = 0;
 	virtual String GetCreateName() const;
 	virtual Size   GetDefaultSize(const Value& data, Size maxsize) const;
-	virtual Size   GetPhysicalSize(const Value& data) const = 0;
-	virtual Size   GetPixelSize(const Value& data) const = 0;
-	virtual void   Paint(const Value& data, Draw& w, Size sz) const = 0;
+	virtual Size   GetPhysicalSize(const Value& data) const;
+	virtual Size   GetPixelSize(const Value& data) const;
+	virtual void   Paint(const Value& data, Draw& w, Size sz) const;
 	virtual Value  Read(const String& s) const;
 	virtual String Write(const Value& v) const;
 	virtual Value  ReadClipboard() const;
@@ -135,7 +135,7 @@ class RichObject : Moveable<RichObject> {
 	Size                  pixel_size;
 	bool                  keepratio;
 	const RichObjectType *type;
-	int                   serial;
+	int64                 serial;
 	String                type_name;
 
 	static VectorMap<String, RichObjectType *>& Map();
@@ -143,7 +143,7 @@ class RichObject : Moveable<RichObject> {
 	void                  NewSerial();
 
 public:
-	static void   Register(RichObjectType *type);
+	static void   Register(const char *name, RichObjectType *type);
 	static int    GetTypeCount()                 { return Map().GetCount(); }
 	static int    FindType(const String& name)   { return Map().Find(name); }
 	static RichObjectType& GetType(int i)        { return *Map()[i]; }
@@ -164,7 +164,7 @@ public:
 	Value  GetData() const                       { return data; }
 	String GetLink(Point pt, Size sz) const      { return type ? type->GetLink(data, pt, sz) : String(); }
 
-	const RichObjectType& GetType() const        { return *type; }
+	const RichObjectType& GetType() const;
 
 	bool   Read(const String& type, const String& data, Size sz);
 	String Write() const                         { return type ? type->Write(data) : (String)data; }
@@ -179,7 +179,7 @@ public:
 
 	void   Clear();
 
-	int    GetSerial() const                     { return serial; }
+	int64  GetSerialId() const                   { return serial; }
 
 	RichObject();
 	RichObject(RichObjectType *type, const Value& data, Size maxsize = Size(3967, 3967));

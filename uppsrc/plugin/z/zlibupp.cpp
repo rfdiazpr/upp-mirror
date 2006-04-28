@@ -3,6 +3,7 @@
 #include <Core/Core.h>
 #include "lib/zlib.h"
 #include "lib/zutil.h"
+#include "z.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -298,3 +299,19 @@ void ZGDecompress(Stream& out, Stream& in, bool gzip, Gate2<int, int> progress)
 }
 
 //////////////////////////////////////////////////////////////////////
+
+String ZCompress(const void *data, int len, Gate2<int, int> progress)
+{
+	StringStream out;
+	MemReadStream in(data, len);
+	ZCompress(out, in, progress);
+	return out;
+}
+
+String ZDecompress(const void *data, int len, Gate2<int, int> progress)
+{
+	StringStream out;
+	MemReadStream in(data, len);
+	ZDecompress(out, in, progress);
+	return out;
+}

@@ -3,6 +3,7 @@
 
 #include <Draw/Draw.h>
 
+#ifndef NEWIMAGE
 void PixelCopyAntiAlias(PixelArray& dest, Rect dest_rc, const PixelArray& src, Rect src_rc, Rect clip = Null);
 void PixelCopyAntiAliasMask(PixelArray& dest, Rect dest_rc,
 	const PixelArray& src_pixel, const PixelArray& src_alpha, Rect src_rc, bool inv = false, Rect clip = Null);
@@ -72,6 +73,6 @@ inline void PixelMapBilinearMaskOut(AlphaArray& dest, const Point destpos[4], co
 inline void PixelMapBilinearMaskOut(AlphaArray& dest, const Point destpos[4], const AlphaArray& src,
 	Rect srcrc, Rect clip = Null, bool antialias = false)
 { PixelMapBilinearMaskOut(dest.pixel, dest.alpha, destpos, src.pixel, src.alpha, srcrc, clip, antialias); }
-
+#endif
 
 #endif//__Image__

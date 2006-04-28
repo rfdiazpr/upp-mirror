@@ -1,6 +1,8 @@
 #include "CtrlCore.h"
 #pragma hdrstop
+#ifndef NEWIMAGE
 #include <Draw/PixelUtil.h>
+#endif
 
 #define LLOG(x)  // LOG(x)
 
@@ -101,6 +103,7 @@ void TopWindow::SyncCaption()
 		Ctrl *owner = GetOwner();
 		wm_hints->window_group = owner ? owner->GetWindow() : w;
 		if(!icon.IsEmpty()) {
+		#ifndef NEWIMAGE //FIXIMAGE
 			AlphaArray ia = ImageToAlphaArray(icon, ScreenInfo(), -1);
 			ia.pixel = PixelMono(ia.pixel);
 			PixelInvertMask(ia.alpha);
@@ -129,6 +132,7 @@ void TopWindow::SyncCaption()
 			}
 			XChangeProperty(Xdisplay, w, XA__NET_WM_ICON, XA_CARDINAL, 32, PropModeReplace,
 			                (const unsigned char *)~data, len);
+			#endif
 		}
 		XSetWMHints(Xdisplay, w, wm_hints);
 	}

@@ -138,7 +138,7 @@ enum
 	OCI_DTYPE_TIMESTAMP = 68, // Timestamp
 	OCI_DTYPE_TIMESTAMP_TZ = 69, // Timestamp with timezone
 	OCI_DTYPE_TIMESTAMP_LTZ = 70, // Timestamp with local tz
-	OCI_DTYPE_UCB = 71, // user callback descriptor
+	OCI_DTYPE_UCB = 71, // user callback descdriptor
 	OCI_DTYPE_LAST = 71, // last value of a descriptor type
 
 	OCI_V7_SYNTAX  = 2, // V815 language - for backwards compatibility

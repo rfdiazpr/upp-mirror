@@ -14,6 +14,8 @@ Size RichObjectType::GetDefaultSize(const Value& data, Size maxsize) const
 {
 	if(IsNull(data)) return Size(0, 0);
 	Size psz = GetPhysicalSize(data);
+	if((psz.cx | psz.cy) == 0)
+		psz = 625 * GetPixelSize(data) / 100;
 	Size sz;
 	for(int i = 1; i < 10000; i++) {
 		sz = psz / i;
@@ -41,6 +43,9 @@ Value RichObjectType::ReadClipboard() const
 void RichObjectType::WriteClipboard(const Value& v) const {}
 void RichObjectType::Menu(Bar& bar, RichObjectExchange& data) const {}
 void RichObjectType::DefaultAction(RichObjectExchange& data) const {}
+Size RichObjectType::GetPhysicalSize(const Value& data) const { return Size(0, 0); }
+Size RichObjectType::GetPixelSize(const Value& data) const { return Size(1, 1); }
+void RichObjectType::Paint(const Value& data, Draw& w, Size sz) const {}
 
 String RichObjectType::GetLink(const Value& data, Point pt, Size sz) const
 {
@@ -53,23 +58,40 @@ GLOBAL_VAR(helptype, RichObject::Map)
 
 void RichObject::NewSerial()
 {
-	static int s;
-	serial = ++s;
+	INTERLOCKED {
+		static int64 s;
+		serial = ++s;
+	}
 }
 
-void   RichObject::Register(RichObjectType *type)
+void RichObject::Register(const char *name, RichObjectType *type)
 {
-	Map().FindAdd(type->GetTypeName(), type);
+	Map().FindAdd(name, type);
 }
 
-void   RichObject::Paint(Draw& w, Size sz) const
+void RichObject::Paint(Draw& w, Size sz) const
 {
 	if(type)
 		type->Paint(data, w, sz);
 	else {
 		w.DrawRect(sz, SColorFace());
-		w.DrawText(0, 0, type_name);
+		DrawFrame(w, sz, SColorText());
+		w.DrawText(2, 2, type_name);
 	}
+}
+
+struct UnknownRichObject : RichObjectType {
+	virtual String GetTypeName(const Value&) const;
+};
+
+String UnknownRichObject::GetTypeName(const Value&) const
+{
+	return Null;
+}
+
+const RichObjectType& RichObject::GetType() const
+{
+	return type ? *type : Single<UnknownRichObject>();
 }
 
 void   RichObject::Set(RichObjectType *_type, const Value& _data, Size maxsize)
@@ -123,7 +145,7 @@ bool   RichObject::Read(const String& _type_name, const String& _data, Size sz)
 
 String RichObject::GetTypeName() const
 {
-	return type ? type->GetTypeName() : type_name;
+	return type ? type->GetTypeName(data) : type_name;
 }
 
 void   RichObject::Clear()
@@ -152,10 +174,12 @@ RichObject::RichObject(const String& type, const Value& data, Size maxsize)
 	Set(type, data, maxsize);
 }
 
+#ifndef NEWIMAGE
+
 #ifdef PLATFORM_WIN32
 
 struct RichDib : public RichObjectType {
-	virtual String GetTypeName() const;
+	virtual String GetTypeName(const Value&) const;
 	virtual Size   GetPhysicalSize(const Value& data) const;
 	virtual Size   GetPixelSize(const Value& data) const;
 	virtual void   Paint(const Value& data, Draw& w, Size sz) const;
@@ -165,7 +189,7 @@ struct RichDib : public RichObjectType {
 	typedef RichDib CLASSNAME;
 };
 
-String RichDib::GetTypeName() const
+String RichDib::GetTypeName(const Value&) const
 {
 	return "DIB";
 }
@@ -238,13 +262,13 @@ void   RichDib::Paint(const Value& data, Draw& w, Size sz) const
 
 INITBLOCK
 {
-	RichObject::Register(&Single<RichDib>());
+	RichObject::Register("DIB", &Single<RichDib>());
 };
 
 #endif
 
 struct RichPng : public RichObjectType {
-	virtual String GetTypeName() const;
+	virtual String GetTypeName(const Value&) const;
 	virtual Size   GetPhysicalSize(const Value& data) const;
 	virtual Size   GetPixelSize(const Value& data) const;
 	virtual void   Paint(const Value& data, Draw& w, Size sz) const;
@@ -254,7 +278,7 @@ struct RichPng : public RichObjectType {
 	typedef RichPng CLASSNAME;
 };
 
-String RichPng::GetTypeName() const
+String RichPng::GetTypeName(const Value&) const
 {
 	return "PNG";
 }
@@ -262,8 +286,12 @@ String RichPng::GetTypeName() const
 Value RichPng::ReadClipboard() const
 {
 #ifdef PLATFORM_WIN32
+#ifdef NEWIMAGE
+	//FIXIMAGE
+#else
 	if(IsClipboardAvailable(CF_DIB))
 		return PngEncoder().SaveImage(ClipboardToImage());
+#endif
 #endif
 	return Null;
 }
@@ -272,23 +300,37 @@ void  RichPng::WriteClipboard(const Value& v) const
 {
 	ClearClipboard();
 #ifdef PLATFORM_WIN32
+#ifdef NEWIMAGE
+	//FIXIMAGE
+#else
 	ImageToClipboard(PngEncoder().LoadImage(v));
+#endif
 #endif
 }
 
 Size   RichPng::GetPixelSize(const Value& data) const
 {
+#ifdef NEWIMAGE
+	//FIXIMAGE
+	return Size(0, 0);
+#else
 	return PngEncoder().InfoImage(data).size;
+#endif
 }
 
 Size   RichPng::GetPhysicalSize(const Value& data) const
 {
+#ifdef NEWIMAGE
+	//FIXIMAGE
+	return Size(0, 0);
+#else
 	ImageInfo ii = PngEncoder().InfoImage(data);
 	Size isz = ii.dots;
 	if(isz.cx == 0 || isz.cy == 0)
 		isz = iscale(ii.size, Size(600, 600), ScreenInfo().GetPixelsPerInch());
 	while(isz.cx > 3967 || isz.cy > 3967) isz >>= 1;
 	return isz;
+#endif
 /*
 	Size isz = PngEncoder().InfoImage(data).size;
 	int n = 40;
@@ -305,6 +347,9 @@ Size   RichPng::GetPhysicalSize(const Value& data) const
 
 void   RichPng::Paint(const Value& data, Draw& w, Size sz) const
 {
+#ifdef NEWIMAGE
+	//FIXIMAGE
+#else
 	PixelArray x = PngEncoder().LoadArray(data).pixel;
 	Size outsz(min(sz.cx, 4 * x.GetWidth()), min(sz.cy, 4 * x.GetHeight()));
 	if(w.IsDrawing())
@@ -318,16 +363,18 @@ void   RichPng::Paint(const Value& data, Draw& w, Size sz) const
 		else
 			w.DrawImage(Rect(sz), PixelArrayToImage(dest));
 	}
+#endif
 }
 
-INITBLOCK
-{
-	RichObject::Register(&Single<RichPng>());
+INITBLOCK {
+	RichObject::Register("PNG", &Single<RichPng>());
 };
+
+#endif
 
 struct RichObjectTypeDrawingCls : public RichObjectType
 {
-	virtual String GetTypeName() const;
+	virtual String GetTypeName(const Value&) const;
 	virtual Size   GetPhysicalSize(const Value& data) const;
 	virtual Size   GetPixelSize(const Value& data) const;
 	virtual void   Paint(const Value& data, Draw& w, Size sz) const;
@@ -354,7 +401,7 @@ void RichObjectTypeDrawingCls::Data::Serialize(Stream& stream)
 	stream % version % dot_size % drawing;
 }
 
-String RichObjectTypeDrawingCls::GetTypeName() const
+String RichObjectTypeDrawingCls::GetTypeName(const Value&) const
 {
 	return "Drawing";
 }
@@ -412,7 +459,6 @@ void RichObjectTypeDrawingCls::Paint(const Value& data, Draw& w, Size sz) const
 		w.DrawDrawing(Rect(sz), ValueTo<Data>(data).drawing);
 }
 
-INITBLOCK
-{
-	RichObject::Register(&Single<RichObjectTypeDrawingCls>());
+INITBLOCK {
+	RichObject::Register("Drawing", &Single<RichObjectTypeDrawingCls>());
 };

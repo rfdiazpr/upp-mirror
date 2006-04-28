@@ -1,6 +1,8 @@
 #include "Image.h"
 #pragma hdrstop
 
+#ifndef NEWIMAGE
+
 #include <Draw/PixelUtil.h>
 
 struct SideSegment
@@ -972,3 +974,5 @@ void PixelMapBilinearMaskOut(PixelArray& dest_pixel, PixelArray& dest_alpha, con
 	ExpandRect(sp, srcrc);
 	PixelMapBilinearMaskOut(dest_pixel, dest_alpha, destpos, src_pixel, src_alpha, sp, clip, antialias);
 }
+
+#endif

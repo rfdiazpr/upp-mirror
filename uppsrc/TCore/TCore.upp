@@ -19,8 +19,6 @@ file
 	nls_bw.hpp,
 	globcfg.h,
 	globcfg.cpp,
-	new_lang.hpp,
-	new_fmt.hpp,
 	xmlparse.h,
 	xmlparse.cpp,
 	"Basic help support" readonly separator,

@@ -53,7 +53,7 @@ inline int HashBase::Find(unsigned _hash) const
 	if(hash.GetCount() == 0) return -1;
 	if(link.GetCount() < hash.GetCount() || mcount == 0)
 		DoIndex();
-	return Maph(_hash & ~UNSIGNED_HIBIT);
+	return Maph(_hash);
 }
 
 inline int HashBase::FindNext(int i) const

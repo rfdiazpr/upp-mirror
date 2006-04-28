@@ -14,3 +14,13 @@ String
 0 0 -1
 Dokument
 0 0 -1
+Raster
+0 0 -1
+ImageEncoder
+0 0 -1
+RasterEncoder
+0 0 -1
+ImageBuffer
+0 0 -1
+AString<char,String>
+0 0 -1

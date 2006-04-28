@@ -208,10 +208,18 @@ void RichPara::Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& 
 							draw.DrawRect(sz, SLtGray);
 						else
 							if(pi.usecache) {
+								DUMP(c.GetSize());
+								DUMP(sz);
 								if(c.GetSize() != sz) {
+								#ifdef NEWIMAGE
+									ImageDraw iw(sz);
+									o.Paint(iw, sz);
+									c = iw;
+								#else
 									c = Image(sz);
 									ImageDraw iw(c);
 									o.Paint(iw, sz);
+								#endif
 								}
 								draw.DrawImage(0, 0, c);
 							}

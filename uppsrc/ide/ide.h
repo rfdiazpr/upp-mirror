@@ -764,9 +764,13 @@ public:
 		void  FindInFiles();
 		void  FindFileName();
 		void  FindString(bool back);
-		void  TranslateString();
 		void  FindNextError();
 		void  FindPrevError();
+
+	void      EditSpecial(Bar& menu);
+		void  TranslateString();
+		void  SwapChars()        { editor.SwapChars(); }
+		void  CopyWord()         { editor.CopyWord(); }
 
 	void      MacroMenu(Bar& menu);
 		bool  HasMacros();

@@ -97,7 +97,6 @@ void RegisterIdeVectorDes()
 {
 	RegisterIdeModule(Single<VectorDesModule>());
 	RegisterStdVectorObjects();
-	RichObject::Register(RichObjectTypeVectorImage());
 }
 
 /*

@@ -89,6 +89,16 @@ void Ide::File(Bar& menu) {
 	menu.Add(AK_EXIT, THISBACK(Exit));
 }
 
+void Ide::EditSpecial(Bar& menu)
+{
+	menu.Add(AK_TRANSLATESTRING, THISBACK(TranslateString))
+		.Help("Mark the current selection as translated string");
+	menu.Add(AK_SWAPCHARS, THISBACK(SwapChars))
+	    .Help("Transpose characters");
+	menu.Add(AK_COPYWORD, THISBACK(CopyWord))
+	    .Help("Copy the current identifier to the clipboard");
+}
+
 void Ide::Edit(Bar& menu) {
 	if(designer) {
 		menu.Add(AK_EDITASTEXT, THISBACK(EditAsText))
@@ -153,8 +163,8 @@ void Ide::Edit(Bar& menu) {
 			.Help("Find any ordinary string constant (\"\" - delimited)");
 		menu.Add(AK_FINDSTRINGBACK, THISBACK1(FindString, true))
 			.Help("Find any ordinary string constant (\"\" - delimited) backwards");
-		menu.Add(AK_TRANSLATESTRING, THISBACK(TranslateString))
-			.Help("Mark the current selection as translated string");
+		menu.Separator();
+		menu.Add("Special", THISBACK(EditSpecial));
 	}
 }
 

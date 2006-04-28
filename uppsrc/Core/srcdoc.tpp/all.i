@@ -54,10 +54,6 @@ TOPIC("Packages$en-us")
 #include "Packages$en-us.tpp"
 END_TOPIC
 
-TOPIC("ModularSerialization$en-us")
-#include "ModularSerialization$en-us.tpp"
-END_TOPIC
-
 TOPIC("Tutorial$en-us")
 #include "Tutorial$en-us.tpp"
 END_TOPIC

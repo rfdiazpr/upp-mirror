@@ -5,7 +5,7 @@
 
 struct RichObjectTypeFormulaCls : public RichObjectType
 {
-	virtual String GetTypeName() const;
+	virtual String GetTypeName(const Value&) const;
 	virtual Size   GetPhysicalSize(const Value& data) const;
 	virtual Size   GetPixelSize(const Value& data) const { return Size(0, 0); }
 	virtual void   Paint(const Value& data, Draw& w, Size sz) const;
@@ -43,7 +43,7 @@ RefCon<Formula> RichObjectTypeFormulaCls::Data::Parse() const
 	return ParseFormula(text, font, color);
 }
 
-String RichObjectTypeFormulaCls::GetTypeName() const
+String RichObjectTypeFormulaCls::GetTypeName(const Value&) const
 {
 	return "Formula";
 }

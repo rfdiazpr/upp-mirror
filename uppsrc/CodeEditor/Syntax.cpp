@@ -328,10 +328,8 @@ bool CodeEditor::SyntaxState::MatchHilite(const SyntaxState& st) const
 		&& IsEqual(blk, st.blk)
 		&& IsEqual(bid, st.bid)
 		&& IsEqual(par, st.par)
-		&& ifstack == st.ifstack
+		&& IsEqual(ifstack, st.ifstack)
 		&& uvscolor == st.uvscolor
-//		&& stmtline == st.stmtline
-//		&& endstmtline == st.endstmtline
 		&& seline == st.seline
 		&& spar == st.spar;
 }

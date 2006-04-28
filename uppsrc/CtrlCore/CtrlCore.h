@@ -1,10 +1,6 @@
 #ifndef CTRLCORE_H
 #define CTRLCORE_H
 
-#ifdef _DEBUG
-#define _DESIGNMODE
-#endif
-
 #include <Draw/Draw.h>
 
 enum {
@@ -1351,8 +1347,13 @@ inline bool ReadClipboardFormat(T& object) {
 	return ClipboardFormat<T>::Read(object);
 }
 
+#ifdef NEWIMAGE
+Image      ReadClipboardImage();
+bool       WriteClipboardImage(const Image& img, bool clear = true);
+#else
 PixelArray ClipboardToPixelArray();
 AlphaArray ClipboardToAlphaArray();
+#endif
 
 #include <CtrlCore/TopWindow.h>
 

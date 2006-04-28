@@ -390,7 +390,11 @@ void PdfDraw::DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color)
 
 void PdfDraw::DrawImageOp(const Rect& r, const Image& img, const Rect& src, int fx)
 {
+#ifdef NEWIMAGE
+	image.Add(img);
+#else
 	image.Add(ImageToAlphaArray(img));
+#endif
 	imagerect.Add(src);
 	page << "q "
 	     << Pt(r.Width()) << " 0 0 " << Pt(r.Height()) << ' '
@@ -592,7 +596,63 @@ String PdfDraw::Finish()
 		Size sz = image[i].GetSize();
 		Rect sr = sz & imagerect[i];
 		String data;
-//		AlphaArray a = ImageToAlphaArray(image[i]);
+#ifdef NEWIMAGE
+		const Image& m = image[i];
+		int mask = -1;
+		int smask = -1;
+		if(m.GetKind() == IMAGE_MASK) {
+			for(int y = sr.top; y < sr.bottom; y++) {
+				const RGBA *p = m[y] + sr.left;
+				const RGBA *e = m[y] + sr.right;
+				while(p < e) {
+					int bit = 0x80;
+					byte b = 0;
+					while(bit && p < e) {
+						if(p->a != 255)
+							b |= bit;
+						bit >>= 1;
+						p++;
+					}
+					data.Cat(b);
+				}
+			}
+			mask = PutStream(data, String().Cat()
+			                    << "/Type /XObject /Subtype /Image /Width " << sr.Width()
+				                << " /Height " << sr.Height()
+				                << " /BitsPerComponent 1 /ImageMask true /Decode [0 1]");
+		}
+		if(m.GetKind() == IMAGE_ALPHA) {
+			for(int y = sr.top; y < sr.bottom; y++) {
+				const RGBA *p = m[y] + sr.left;
+				const RGBA *e = m[y] + sr.right;
+				while(p < e)
+					data.Cat((p++)->a);
+			}
+			smask = PutStream(data, String().Cat()
+			                    << "/Type /XObject /Subtype /Image /Width " << sr.Width()
+				                << " /Height " << sr.Height()
+				                << " /BitsPerComponent 8 /ColorSpace /DeviceGray /Decode [0 1]");
+		}
+		data.Clear();
+		for(int y = sr.top; y < sr.bottom; y++) {
+			const RGBA *p = m[y] + sr.left;
+			const RGBA *e = m[y] + sr.right;
+			while(p < e) {
+				data.Cat(p->r);
+				data.Cat(p->g);
+				data.Cat(p->b);
+				p++;
+			}
+		}
+		String imgobj;
+		imgobj << "/Type /XObject /Subtype /Image /Width " << sr.Width()
+		       << " /Height " << sr.Height() << " /BitsPerComponent 8 /ColorSpace /DeviceRGB";
+		if(mask >= 0)
+			imgobj << " /Mask " << mask << " 0 R";
+		if(smask >= 0)
+			imgobj << " /SMask " << smask << " 0 R";
+		imageobj << PutStream(data, imgobj);
+#else
 		const AlphaArray& a = image[i];
 		int mask = -1;
 		if(a.HasAlpha()) {
@@ -633,6 +693,7 @@ String PdfDraw::Finish()
 		if(mask >= 0)
 			imgobj << " /Mask " << mask << " 0 R";
 		imageobj << PutStream(data, imgobj);
+#endif
 	}
 
 	int pages = BeginObj();

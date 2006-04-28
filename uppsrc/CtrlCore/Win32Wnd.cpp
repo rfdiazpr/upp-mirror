@@ -288,12 +288,23 @@ Vector<Ctrl *> Ctrl::GetTopCtrls()
 void  Ctrl::SetMouseCursor(const Image& image)
 {
 	static Image img;
+#ifdef NEWIMAGE
+	if(image.GetSerialId() != img.GetSerialId()) {
+		img = image;
+		HCURSOR hc = IconWin32(img, true);
+		SetCursor(hc);
+		if(hCursor)
+			DestroyCursor(hCursor);
+		hCursor = hc;
+	}
+#else
 	img = image;
 	HCURSOR hc = img.GetCursor();
 	if(hc != hCursor) {
 		hCursor = hc;
 		SetCursor(hCursor);
 	}
+#endif
 }
 
 Ctrl *Ctrl::CtrlFromHWND(HWND hwnd)
@@ -1018,57 +1029,6 @@ bool IsClipboardAvailable(int format)
 bool IsClipboardAvailableText()
 {
 	return IsClipboardAvailable(CF_TEXT);
-}
-
-PixelArray ClipboardToPixelArray()
-{
-	PixelArray out;
-	if(ReadClipboardFormat(out))
-		return out;
-
-	HGLOBAL hmem;
-	if(!OpenClipboard(NULL))
-		return Null;
-	if((hmem = GetClipboardData(CF_DIB)) == NULL)
-	{
-		CloseClipboard();
-		return Null;
-	}
-	const BITMAPINFO *bmi = (const BITMAPINFO *)GlobalLock(hmem);
-	int hdrsize = bmi -> bmiHeader.biSize;
-	if(bmi -> bmiHeader.biCompression != BI_RGB && bmi -> bmiHeader.biCompression != BI_BITFIELDS)
-		return Null;
-	const dword *cmasks = NULL;
-	if(bmi -> bmiHeader.biBitCount <= 8)
-		hdrsize += 4 << bmi -> bmiHeader.biBitCount;
-	else if(bmi -> bmiHeader.biBitCount == 16 || bmi -> bmiHeader.biBitCount == 32)
-	{
-		hdrsize += 12;
-		cmasks = reinterpret_cast<const dword *>(bmi -> bmiColors);
-	}
-	const void *data = (const byte *)bmi + hdrsize;
-	Vector<Color> palette;
-	if(bmi -> bmiHeader.biBitCount <= 8)
-	{
-		palette.SetCount(1 << bmi -> bmiHeader.biBitCount);
-		for(int i = 0; i < palette.GetCount(); i++)
-			palette[i] = Color(bmi -> bmiColors[i].rgbRed, bmi -> bmiColors[i].rgbGreen, bmi -> bmiColors[i].rgbBlue);
-	}
-	out.Create(bmi -> bmiHeader.biWidth, bmi -> bmiHeader.biHeight,
-		bmi -> bmiHeader.biBitCount == 24 ? -3 : bmi -> bmiHeader.biBitCount, 4, cmasks, palette);
-	memcpy(out.Begin(), data, out.GetBytes());
-	GlobalUnlock(hmem);
-	CloseClipboard();
-	return out;
-}
-
-AlphaArray ClipboardToAlphaArray()
-{
-	AlphaArray out;
-	if(ReadClipboardFormat(out))
-		return out;
-	out.pixel = ClipboardToPixelArray();
-	return out;
 }
 
 Vector<String> SplitCmdLine__(const char *cmd)

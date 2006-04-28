@@ -1,38 +1,19 @@
-//////////////////////////////////////////////////////////////////////
-// globcfg: global configuration manager.
-
 #include "TCore.h"
 
-//////////////////////////////////////////////////////////////////////
-// ConfigHeading::
-
 ConfigHeading::ConfigHeading()
-//: version(0)
-//, minor(0)
-//, major(-1)
 {
-	// todo: gcc 2.96 bug? cannot use : x(x) construction syntax
 	version = 0;
 	minor   = 0;
 	major   = -1;
 }
 
-//////////////////////////////////////////////////////////////////////
-
 ConfigHeading::ConfigHeading(const char *key, int version, int minor, int major)
-//: key(key)
-//, version(version)
-//, minor(minor)
-//, major(major)
 {
-	// todo: gcc 2.96 bug? cannot use : x(x) construction syntax
-	this -> key     = key;
-	this -> version = version;
-	this -> minor   = minor;
-	this -> major   = major;
+	this->key     = key;
+	this->version = version;
+	this->minor   = minor;
+	this->major   = major;
 }
-
-//////////////////////////////////////////////////////////////////////
 
 void ConfigHeading::Serialize(Stream& stream)
 {
@@ -40,15 +21,10 @@ void ConfigHeading::Serialize(Stream& stream)
 		stream % key / version;
 }
 
-//////////////////////////////////////////////////////////////////////
-
 bool ConfigHeading::Matches(const ConfigHeading& heading) const
 {
 	return key == heading.key && version >= heading.minor && version <= heading.major;
 }
-
-//////////////////////////////////////////////////////////////////////
-// ConfigItem::
 
 ConfigItem::ConfigItem()
 : current_version(0)
@@ -56,18 +32,14 @@ ConfigItem::ConfigItem()
 {
 }
 
-//////////////////////////////////////////////////////////////////////
-
-ConfigItem::ConfigItem(const char *key, int version, int minor, int major, 
+ConfigItem::ConfigItem(const char *key, int version, int minor, int major,
 					   Configuration* configuration)
 : ConfigHeading(key, 0, minor, major)
 , current_version(0)
 , save_version(version)
 {
-	(configuration ? configuration : &Configuration::Main()) -> Add(*this);
+	(configuration ? configuration : &Configuration::Main())->Add(*this);
 }
-
-//////////////////////////////////////////////////////////////////////
 
 void ConfigItem::Serialize(Stream& stream)
 {
@@ -75,22 +47,16 @@ void ConfigItem::Serialize(Stream& stream)
 	stream % data;
 }
 
-//////////////////////////////////////////////////////////////////////
-
 void ConfigItem::Prepare(bool storing)
 {
 	current_version = (storing ? save_version : version);
 }
-
-//////////////////////////////////////////////////////////////////////
 
 void ConfigItem::Clear()
 {
 	version = 0;
 	data.Clear();
 }
-
-//////////////////////////////////////////////////////////////////////
 
 bool ConfigItem::operator = (const ConfigItem& item)
 {
@@ -101,9 +67,6 @@ bool ConfigItem::operator = (const ConfigItem& item)
 	return true;
 }
 
-//////////////////////////////////////////////////////////////////////
-// ConfigStream::
-
 ConfigStream::ConfigStream(ConfigItem& item, bool storing)
 : item(item)
 {
@@ -111,8 +74,6 @@ ConfigStream::ConfigStream(ConfigItem& item, bool storing)
 	if(!storing)
 		Open(item.data);
 }
-
-//////////////////////////////////////////////////////////////////////
 
 ConfigStream::~ConfigStream()
 {
@@ -123,15 +84,10 @@ ConfigStream::~ConfigStream()
 	}
 }
 
-//////////////////////////////////////////////////////////////////////
-// Configuration::
-
 Configuration::Configuration(const char *key, int version, int minor, int major)
 : ConfigHeading(key, version, minor, major)
 {
 }
-
-//////////////////////////////////////////////////////////////////////
 
 void Configuration::Add(ConfigItem& item)
 {
@@ -139,24 +95,20 @@ void Configuration::Add(ConfigItem& item)
 	items.Add(item.key, &item);
 }
 
-//////////////////////////////////////////////////////////////////////
-
 void Configuration::Serialize(Stream& stream)
 {
 	item_error = false;
 
-	if(stream.IsLoading())
-	{ // clear configuration items
+	if(stream.IsLoading()) { // clear configuration items
 		for(ConfigItem **p = items.Begin(), **e = items.End(); p < e; p++)
-			(*p) -> Clear();
+			(*p)->Clear();
 		if(stream.IsEof())
 			return; // empty configuration file
 	}
 
 	ConfigHeading temp = *this;
 	stream % temp;
-	if(!temp.Matches(*this))
-	{ // whole configuration is invalid
+	if(!temp.Matches(*this)) { // whole configuration is invalid
 		stream.SetError();
 		return;
 	}
@@ -165,8 +117,7 @@ void Configuration::Serialize(Stream& stream)
 	stream % item_count;
 
 	for(int i = 0; i < item_count; i++)
-		if(stream.IsLoading())
-		{
+		if(stream.IsLoading()) {
 			ConfigItem item;
 			stream % item;
 			int index = items.Find(item.key);
@@ -177,12 +128,8 @@ void Configuration::Serialize(Stream& stream)
 			stream % *items[i];
 }
 
-//////////////////////////////////////////////////////////////////////
-
 Configuration& Configuration::Main()
 {
 	static Configuration main_configuration("Application configuration", 1, 1, 1);
 	return main_configuration;
 }
-
-//////////////////////////////////////////////////////////////////////

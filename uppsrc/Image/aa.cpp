@@ -5,6 +5,8 @@
 #include "Image.h"
 #pragma hdrstop
 
+#ifndef NEWIMAGE
+
 #include <Draw/PixelUtil.h>
 
 #if defined(CPU_IA32) && defined(COMPILER_MSC)
@@ -2552,3 +2554,5 @@ void PixelCopyAntiAliasMaskOnly(PixelArray& dest_alpha, Rect dest_rc,
 		}
 	}
 }
+
+#endif

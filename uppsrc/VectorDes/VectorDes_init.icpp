@@ -2,5 +2,5 @@
 
 INITBLOCK {
 	RegisterStdVectorObjects();
-	RichObject::Register(RichObjectTypeVectorImage());
+	RichObject::Register("VectorImage", RichObjectTypeVectorImage());
 }

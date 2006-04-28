@@ -57,6 +57,8 @@ TopicEditor::TopicEditor()
 	ActiveFocus(editor);
 
 	Maximize();
+
+	allfonts = false;
 }
 
 TopicEditor::~TopicEditor()
@@ -65,7 +67,7 @@ TopicEditor::~TopicEditor()
 
 void TopicEditor::Serialize(Stream& s)
 {
-	int version = 1;
+	int version = 2;
 	s / version;
 	SerializePlacement(s);
 	editor.SerializeSettings(s);
@@ -76,6 +78,9 @@ void TopicEditor::Serialize(Stream& s)
 	bool b;
 	if(version >= 1)
 		s % b;
+	if(version >= 2)
+		s % allfonts;
+	SyncFonts();
 }
 
 void TopicEditor::SerializeWspc(Stream& s)
@@ -158,6 +163,26 @@ void TopicEditor::Exit()
 	Close();
 }
 
+void TopicEditor::SyncFonts()
+{
+	Vector<int> ff;
+	ff.Add(Font::ARIAL);
+	ff.Add(Font::ROMAN);
+	ff.Add(Font::COURIER);
+	if(allfonts)
+		for(int i = Font::COURIER + 1; i < Font::GetFaceCount(); i++)
+			if(Font::GetFaceInfo(i) & Font::SCALEABLE &&
+			   !(Font::GetFaceInfo(i) & Font::SYMBOLTYPE))
+				ff.Add(i);
+	editor.FontFaces(ff);
+}
+
+void TopicEditor::AllFonts()
+{
+	allfonts = !allfonts;
+	SyncFonts();
+}
+
 void TopicEditor::GroupMenu(Bar& bar)
 {
 	bar.Add(package.IsCursor(), "New group..", THISBACK(NewGroup));
@@ -198,6 +223,9 @@ void TopicEditor::EditMenu(Bar& bar)
 	editor.RedoTool(bar);
 	bar.Separator();
 	editor.FindReplaceTool(bar);
+	bar.Separator();
+	bar.Add("All fonts", THISBACK(AllFonts))
+	   .Check(allfonts);
 }
 
 void TopicEditor::FormatMenu(Bar& bar)

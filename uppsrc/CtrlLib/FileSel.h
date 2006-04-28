@@ -62,6 +62,11 @@ public:
 
 	const File& Get(int i) const;
 	const File& operator[](int i) const              { return Get(i); }
+	void        Insert(int ii,
+	                const String& name, const Image& icon = Null,
+		            Font font = StdFont(), Color ink = SColorText(),
+	                bool isdir = false, int length = 0, Time time = Null, Color extink = Null,
+	                const String& desc = Null, Font descfont = Null);
 	void        Add(const String& name, const Image& icon = Null,
 		            Font font = StdFont(), Color ink = SColorText(),
 	                bool isdir = false, int length = 0, Time time = Null, Color extink = Null,

@@ -97,8 +97,10 @@ void  Ctrl::ScrollView(const Rect& _r, int dx, int dy)
 	Rect view = GetView();
 	Rect sr = (r + view.TopLeft()) & view;
 	sr += GetScreenRect().TopLeft() - w->GetScreenRect().TopLeft();
-	if(w->AddScroll(sr, dx, dy))
+	if(w->AddScroll(sr, dx, dy)) {
+		LOG("Scroll Refresh");
 		Refresh();
+	}
 	else
 		for(Ctrl *q = GetFirstChild(); q; q = q->GetNext())
 			if(q->InView()) {

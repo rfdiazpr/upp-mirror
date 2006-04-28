@@ -11,6 +11,9 @@ inline String ZDecompress(String s, Gate2<int, int> progress = false)           
 inline void   ZCompress(Stream& out, Stream& in, Gate2<int, int> progress = false)    { ZGCompress(out, in, false, progress); }
 inline void   ZDecompress(Stream& out, Stream& in, Gate2<int, int> progress = false)  { ZGDecompress(out, in, false, progress); }
 
+String ZCompress(const void *data, int len, Gate2<int, int> progress = false);
+String ZDecompress(const void *data, int len, Gate2<int, int> progress = false);
+
 inline String GZCompress(String s, Gate2<int, int> progress = false)                  { return ZGCompress(s, true, progress); }
 inline String GZDecompress(String s, Gate2<int, int> progress = false)                { return ZGDecompress(s, true, progress); }
 inline void   GZCompress(Stream& out, Stream& in, Gate2<int, int> progress = false)   { ZGCompress(out, in, true, progress); }

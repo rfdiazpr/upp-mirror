@@ -28,8 +28,8 @@ bool Date::IsValid() const {
 String DayName(int i, int lang)
 {
 	static char *day[] = {
-		tt_("date\vSaturday"), tt_("date\vMonday"), tt_("date\vTuesday"),
-		tt_("date\vWednesday"), tt_("date\vThursday"), tt_("date\vFriday"), tt_("date\vSunday")
+		tt_("date\vSunday"), tt_("date\vMonday"), tt_("date\vTuesday"),
+		tt_("date\vWednesday"), tt_("date\vThursday"), tt_("date\vFriday"), tt_("date\vSaturday")
 	};
 	return i >= 0 && i < 7 ? Nvl(GetLngString(lang, day[i]), GetENUS(day[i])) : String();
 }
@@ -37,8 +37,8 @@ String DayName(int i, int lang)
 String DyName(int i, int lang)
 {
 	static char *day[] = {
-		tt_("date\vSa"), tt_("date\vMo"), tt_("date\vTu"),
-		tt_("date\vWe"), tt_("date\vTh"), tt_("date\vFr"), tt_("date\vSu")
+		tt_("date\vSu"), tt_("date\vMo"), tt_("date\vTu"),
+		tt_("date\vWe"), tt_("date\vTh"), tt_("date\vFr"), tt_("date\vSa")
 	};
 	return i >= 0 && i < 7 ? Nvl(GetLngString(lang, day[i]), GetENUS(day[i])) : String();
 }
@@ -120,7 +120,7 @@ const char *StrToDate(Date& d, const char *s)
 		}
 		else
 			break;
-		
+
 		switch(*fmt) {
 		case 'd':
 			if(n < 1 || n > 31)

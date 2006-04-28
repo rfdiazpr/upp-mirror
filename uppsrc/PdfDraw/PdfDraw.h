@@ -3,7 +3,10 @@
 
 #include <CtrlLib/CtrlLib.h>
 #include <plugin/z/z.h>
+
+#ifndef NEWIMAGE
 #include <Draw/PixelUtil.h>
+#endif
 
 class TTFReader {
 	struct TTFStream {
@@ -262,7 +265,11 @@ private:
 	VectorMap<Font, OutlineInfo>                outline_info;
 	VectorMap<Font, Vector<wchar> >             pdffont;
 	VectorMap<Font, VectorMap<wchar, CharPos> > fontchars;
+#ifdef NEWIMAGE
+	Array<Image>                                image;
+#else
 	Array<AlphaArray>                           image;
+#endif
 	Vector<Rect>                                imagerect;
 
 	Vector<int>   offset;

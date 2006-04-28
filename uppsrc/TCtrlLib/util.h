@@ -246,6 +246,7 @@ public:
 	void        OnCancel();
 
 	ChoiceList& DropWidth(int _wd)    { dropbutton.Width(_wd); return *this; }
+	ChoiceList& DropShow(bool ds)     { dropbutton.Show(ds); return *this; }
 	ChoiceList& DataItem(int _item)   { item = _item; return *this; }
 	ChoiceList& DataItem(Id _col_id)  { item = GetPos(_col_id); return *this; }
 	int         GetDataItem() const   { return item; }

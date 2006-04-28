@@ -127,6 +127,34 @@ void CodeEditor::CheckBracket(int li, int pos, int ppos, int pos0, WString ln, i
 	}
 }
 
+void CodeEditor::CopyWord() {
+   int p = GetCursor();
+   if(iscid(GetChar(p)) || (p > 0 && iscid(GetChar(--p))))
+   {
+      int e = GetLength();
+      int f = p;
+      while(--p >= 0 && iscid(GetChar(p)));
+      ++p;
+      while(++f < e && iscid(GetChar(f)));
+      WString txt = GetW(p, f - p);
+      WriteClipboardUnicodeText(txt);
+      WriteClipboardText(txt.ToString(), false);
+   }
+}
+
+void CodeEditor::SwapChars() {
+   int i = GetLine(cursor);
+   int j = GetPos(i);
+   if (j < cursor && (cursor-j) < line[i].GetLength())
+   {
+      int p = cursor;
+      WString txt(GetChar(p-1),1);
+      Remove(p-1,1);
+      Insert(p, txt, true);
+      PlaceCaret(p);
+   }
+}
+
 void CodeEditor::CheckLeftBracket(int pos)
 {
 	LTIMING("CheckLeftBracket");

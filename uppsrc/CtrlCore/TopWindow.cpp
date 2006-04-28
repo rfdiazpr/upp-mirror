@@ -438,6 +438,7 @@ TopWindow::TopWindow()
 #ifdef PLATFORM_WIN32
 	style = 0;
 	exstyle = 0;
+	ico = lico = NULL;
 #endif
 #ifdef PLATFORM_X11
 	size_hints = XAllocSizeHints();
@@ -457,6 +458,9 @@ TopWindow::~TopWindow()
 		EndLoop(IDOK);
 	if(!IsChild())
 		Close();
+#ifdef PLATFORM_WIN32
+	DeleteIco();
+#endif
 #ifdef PLATFORM_X11
 	XFree(size_hints);
 	XFree(wm_hints);

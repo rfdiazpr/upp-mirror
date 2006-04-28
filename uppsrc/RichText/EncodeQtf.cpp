@@ -50,7 +50,7 @@ void CharFmt(String& fmt, const RichPara::CharFormat& a, const RichPara::CharFor
 		case Font::STDFONT:   fmt.Cat('G'); break;
 		case Font::SYMBOL:    fmt.Cat('S'); break;
 		default:
-			fmt << "!" << a.GetFaceName() << "!";
+			fmt << "!" << b.GetFaceName() << "!";
 		}
 	if(a.link != b.link)
 		fmt << '^' << DeQtf(b.link) << '^';

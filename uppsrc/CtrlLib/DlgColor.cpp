@@ -4,6 +4,7 @@
 #include "CtrlLib.h"
 #pragma hdrstop
 
+#ifndef NEWIMAGE
 void PixelMultiply2(PixelArray& array, Size from_size)
 {
 	ASSERT(array.GetRawBPP() == -3);
@@ -40,6 +41,7 @@ void PixelMultiply2(PixelArray& array, Size from_size)
 			*--d1 = ((*--d0 = *--se) + *--s1) >> 1;
 	}
 }
+#endif
 
 class FetchColorCtrl : public Button
 {
@@ -333,8 +335,10 @@ WheelRampCtrl::WheelRampCtrl(bool r)
 	normalized_color = White;
 	background = TabCtrl::GetTabColor();
 	h16 = s16 = v16 = 0;
+#ifndef NEWIMAGE
 	wb = NULL;
 	owsize = Size(-1, -1);
+#endif
 /*	Raster raster(256, 256);
 	{
 		RasterDraw rd(raster);
@@ -351,8 +355,10 @@ WheelRampCtrl::WheelRampCtrl(bool r)
 
 WheelRampCtrl::~WheelRampCtrl()
 {
+#ifndef NEWIMAGE
 	if(wb)
 		delete [] wb;
+#endif
 }
 
 void WheelRampCtrl::Layout()
@@ -408,6 +414,16 @@ void WheelRampCtrl::Paint(Draw& draw)
 	if(!cache || cache.GetSize() != GetSize() || cache_level != (ramp ? h16 : v16))
 	{ // create cache for current size
 		Size size = max(GetSize(), Size(1, 1));
+#ifdef NEWIMAGE
+		ImageDraw rd(size);
+		rd.DrawRect(rd.GetClip(), background);
+		if(ramp)
+			PaintRamp(rd);
+		else
+			PaintWheel(rd);
+		PaintColumn(rd);
+		cache = rd;
+#else
 		cache = Image(draw, size);
 		ImageDraw rd(cache);
 		rd.DrawRect(rd.GetClip(), background);
@@ -416,6 +432,7 @@ void WheelRampCtrl::Paint(Draw& draw)
 		else
 			PaintWheel(rd);
 		PaintColumn(rd);
+#endif
 		cache_level = (ramp ? h16 : v16);
 	}
 	draw.DrawImage(0, 0, cache);
@@ -455,8 +472,10 @@ void WheelRampCtrl::SetColor(Color _color, bool set_norm, bool set_hsv)
 	}
 	if(cache && cache.GetSize() == GetSize())
 	{
+	#ifndef NEWIMAGE
 		ImageDraw idraw(cache);
 		PaintColumn(idraw);
+	#endif
 	}
 }
 
@@ -471,6 +490,7 @@ void WheelRampCtrl::LeftUp(Point pt, dword keyflags)
 	firstclick = 0;
 	ReleaseCapture();
 }
+
 void WheelRampCtrl::LeftDown(Point pt, dword keyflags)
 {
 	if(!HasCapture())
@@ -533,8 +553,29 @@ void WheelRampCtrl::MouseMove(Point pt, dword keyflags)
 		LeftDown(pt, keyflags);
 }
 
+enum { PREC = 64 };
+
 void WheelRampCtrl::PaintRamp(Draw& draw)
 {
+#ifdef NEWIMAGE
+	Size rcsize = wheel_rect.Size();
+	ImageBuffer ib(PREC, PREC);
+	for(int y = 0; y < PREC; y++) {
+		RGBA *scan = ib[y];
+		int v16 = iscale(PREC - y - 1, 65535, PREC - 1);
+		for(int x = 0; x < PREC; x++) {
+			int s16 = iscale(x, 65535, PREC - 1);
+			Color c = HSV16toRGB(h16, s16, v16);
+			scan->r = GetRRaw(c);
+			scan->g = GetGRaw(c);
+			scan->b = GetBRaw(c);
+			scan->a = 255;
+			scan++;
+		}
+	}
+	draw.DrawImage(wheel_rect.left, wheel_rect.top, Rescale(Image(ib), rcsize));
+	DrawFrame(draw, wheel_rect, Black, Black);
+#else
 	Size rcsize = wheel_rect.Size();
 	int shift = 0;
 	while((rcsize.cx + rcsize.cy) >> shift > 400)
@@ -561,10 +602,51 @@ void WheelRampCtrl::PaintRamp(Draw& draw)
 		PixelMultiply2(array, wsize << i);
 	array.Paint(draw, wheel_rect.Size(), wheel_rect);
 	DrawFrame(draw, wheel_rect, Black, Black);
+#endif
 }
 
 void WheelRampCtrl::PaintWheel(Draw& draw)
 {
+#ifdef NEWIMAGE
+	Size rcsize = wheel_rect.Size();
+	ImageBuffer ib(PREC, PREC);
+	static WheelBuff wb[PREC * PREC];
+	ONCELOCK {
+		int i = 0;
+		for(int y = 0; y < PREC; y++) {
+			double ny = (PREC / 2 - y) / (double)(PREC / 2);
+			for(int x = 0; x < PREC; x++) {
+				double nx = (x - (PREC / 2)) / (double)(PREC / 2);
+				double arg = fmod(atan2(ny, nx) / (2 * M_PI) + 1, 1);
+				double l = min<double>(hypot(nx, ny), 1);
+				wb[i].arg = fround(arg * 65535);
+				wb[i].l = fround(l * 65535);
+				i++;
+			}
+		}
+	}
+
+	WheelBuff *cwb = wb;
+	for(int y = 0; y < PREC; y++) {
+		RGBA *scan = ib[y];
+		for(int x = 0; x < PREC; x++) {
+			Color color = HSV16toRGB(cwb->arg, cwb->l, v16);
+			scan->r = GetRRaw(color);
+			scan->g = GetGRaw(color);
+			scan->b = GetBRaw(color);
+			scan++;
+			cwb++;
+		}
+	}
+
+	Image wheel = Rescale(ib, rcsize);;
+	ImageDraw iw(rcsize);
+	iw.Alpha().DrawRect(rcsize, GrayColor(0));
+	iw.Alpha().DrawEllipse(rcsize, GrayColor(255), 0, GrayColor(255));
+	wheel = AssignAlpha(wheel, iw);
+	draw.DrawImage(wheel_rect.left, wheel_rect.top, wheel);
+	draw.DrawEllipse(wheel_rect, Null, 0, Black);
+#else
 	Size rcsize = wheel_rect.Size();
 	int shift = 0;
 	while((rcsize.cx + rcsize.cy) >> shift > 400)
@@ -636,6 +718,7 @@ void WheelRampCtrl::PaintWheel(Draw& draw)
 
 	ImageCropMask(wheel);
 	draw.DrawImage(wheel_rect, wheel);
+#endif
 }
 
 void WheelRampCtrl::PaintColumn(Draw& draw)

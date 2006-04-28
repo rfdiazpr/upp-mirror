@@ -162,4 +162,14 @@ bool IsClipboardAvailableText()
 	return IsClipboardAvailable(Ctrl::XA_UTF8_STRING);
 }
 
+Image ReadClipboardImage()
+{
+	return Image(); //TODO!
+}
+
+bool WriteClipboardImage(const Image& img, bool clear)
+{
+	//TODO!
+}
+
 #endif

@@ -108,7 +108,7 @@ void LogStream::Create(const char *path, bool append)
 	WriteFile(hfile, h, strlen(h), &n, NULL);
 	if(part) {
 		sprintf(h, ", #%d", part);
-		WriteFile(hfile, h, strlen(h), &n, NULL);
+		WriteFile(hfile, h, strlen(h) , &n, NULL);
 	}
 	WriteFile(hfile, "\r\n", 2, &n, NULL);
 #else

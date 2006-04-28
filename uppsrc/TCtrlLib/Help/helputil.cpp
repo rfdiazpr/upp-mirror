@@ -964,7 +964,7 @@ struct RichObjectTypeEmptyCls : public RichObjectType
 {
 	RichObjectTypeEmptyCls() {}
 
-	virtual String GetTypeName() const { return "EMPTY"; }
+	virtual String GetTypeName(const Value&) const { return "EMPTY"; }
 	virtual Size   GetPhysicalSize(const Value& data) const { return Size(0, 0); }
 	virtual Size   GetPixelSize(const Value& data) const { return Size(1, 1); }
 	virtual void   Paint(const Value& data, Draw& w, Size sz) const {}
@@ -977,7 +977,7 @@ struct RichObjectTypeGIFCls : public RichObjectType
 {
 	RichObjectTypeGIFCls() {}
 
-	virtual String GetTypeName() const;
+	virtual String GetTypeName(const Value&) const;
 	virtual Size   GetPhysicalSize(const Value& data) const;
 	virtual Size   GetPixelSize(const Value& data) const;
 	virtual void   Paint(const Value& data, Draw& w, Size sz) const;
@@ -990,7 +990,7 @@ struct RichObjectTypeGIFCls : public RichObjectType
 
 RichObjectType *RichObjectTypeGIF() { return &Single<RichObjectTypeGIFCls>(); }
 
-String RichObjectTypeGIFCls::GetTypeName() const
+String RichObjectTypeGIFCls::GetTypeName(const Value&) const
 {
 	return "GIF";
 }

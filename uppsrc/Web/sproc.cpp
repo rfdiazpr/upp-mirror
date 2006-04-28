@@ -18,7 +18,7 @@ static void WriteLog(const String& s)
 	if(fd >= 0)
 		write(fd, s, s.GetLength());
 	close(fd);
-#endif//PLATFORM_POSIX
+#endif
 }
 
 #define DO_SVRLOG 1
@@ -51,7 +51,7 @@ private:
 	void         Free();
 #ifdef PLATFORM_POSIX
 	bool         DecodeExitCode(int code);
-#endif//PLATFORM_POSIX
+#endif
 
 private:
 #ifdef PLATFORM_WIN32
@@ -60,6 +60,8 @@ private:
 	HANDLE       hInputWrite;
 #endif
 #ifdef PLATFORM_POSIX
+	Buffer<char> cmd_buf;
+	Vector<char *> args;
 	pid_t        pid;
 	int          rpipe[2], wpipe[2];
 	String       exit_string;
@@ -170,9 +172,8 @@ void LocalSlaveProcess::Open(const char *command, const char *envptr) {
 #endif
 #ifdef PLATFORM_POSIX
 	// parse command line for execve
-	Buffer<char> cmd_buf(strlen(command) + 1);
+	cmd_buf.Alloc(strlen(command) + 1);
 	char *cmd_out = cmd_buf;
-	Vector<char *> args;
 	const char *p = command;
 	const char *b = p;
 	while(*p && (byte)*p > ' ')
@@ -249,9 +250,9 @@ void LocalSlaveProcess::Open(const char *command, const char *envptr) {
 	}
 
 #if DO_SVRLOG
-	SVRLOG("arguments:");
+	SVRLOG(args.GetCount() << "arguments:");
 	for(int a = 0; a < args.GetCount(); a++)
-		SVRLOG("[" << a << "]: <" << args[a] << ">");
+		SVRLOG("[" << a << "]: <" << (args[a] ? args[a] : "NULL") << ">");
 #endif//DO_SVRLOG
 
 	SVRLOG("running execve, app = " << app << ", #args = " << args.GetCount());
@@ -327,16 +328,16 @@ void LocalSlaveProcess::Kill() {
 	}
 #endif
 #ifdef PLATFORM_POSIX
-	if(!pid)
-		return;
-	SVRLOG("\nLocalSlaveProcess::Kill, pid = " << (int)pid);
-	exit_code = 255;
-	kill(pid, SIGTERM);
-	GetExitCode();
-	int status;
-	if(waitpid(pid, &status, 0) == pid)
-		DecodeExitCode(status);
-	exit_string = "Child process has been killed.\n";
+	if(IsRunning()) {
+		SVRLOG("\nLocalSlaveProcess::Kill, pid = " << (int)pid);
+		exit_code = 255;
+		kill(pid, SIGTERM);
+		GetExitCode();
+		int status;
+		if(waitpid(pid, &status, 0) == pid)
+			DecodeExitCode(status);
+		exit_string = "Child process has been killed.\n";
+	}
 #endif
 	Free();
 }
@@ -379,8 +380,7 @@ int  LocalSlaveProcess::GetExitCode() {
 	if(!IsRunning())
 		return Nvl(exit_code, -1);
 	int status;
-	if(waitpid(pid, &status, WNOHANG | WUNTRACED) != pid || !DecodeExitCode(status))
-	{
+	if(waitpid(pid, &status, WNOHANG | WUNTRACED) != pid || !DecodeExitCode(status)) {
 		LOG("hang");
 		SVRLOG("GetExitCode() -> -1 (waitpid would hang)");
 		return -1;
@@ -416,8 +416,7 @@ bool LocalSlaveProcess::Read(String& res) {
 	if(wpipe[0] < 0) return false;
 	bool was_running = IsRunning();
 //	SVRLOG("output_read = " << (output_read ? "yes" : "no"));
-	if(!was_running && output_read)
-	{
+	if(!was_running && output_read) {
 		if(exit_string.IsEmpty())
 			return false;
 		res = exit_string;
@@ -429,8 +428,7 @@ bool LocalSlaveProcess::Read(String& res) {
 	FD_SET(wpipe[0], set);
 	timeval tval = { 0, 0 };
 	int sv;
-	while((sv = select(wpipe[0] + 1, set, NULL, NULL, &tval)) > 0)
-	{
+	while((sv = select(wpipe[0] + 1, set, NULL, NULL, &tval)) > 0) {
 		SVRLOG("Read() -> select");
 		char buffer[1024];
 		int done = read(wpipe[0], buffer, sizeof(buffer));
@@ -439,8 +437,7 @@ bool LocalSlaveProcess::Read(String& res) {
 		if(done > 0)
 			res.Cat(buffer, done);
 	}
-	if(sv < 0)
-	{
+	if(sv < 0) {
 		SVRLOG("select -> " << sv);
 	}
 	if(!was_running)

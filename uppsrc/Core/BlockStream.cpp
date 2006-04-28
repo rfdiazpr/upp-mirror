@@ -72,9 +72,16 @@ void BlockStream::SetPos(int64 p)
 void BlockStream::Seek(int64 apos) {
 	if(IsError()) return;
 	LLOG("Seek " << apos);
-	SetPos(apos);
-	if(apos > streamsize)
-		SetStreamSize(mediasize = streamsize = apos);
+	if(style & STRM_WRITE) {
+		SetPos(apos);
+		if(apos > streamsize)
+			SetStreamSize(mediasize = streamsize = apos);
+	}
+	else {
+		if(apos > streamsize)
+			apos = streamsize;
+		SetPos(apos);
+	}
 }
 
 bool BlockStream::SyncPage()

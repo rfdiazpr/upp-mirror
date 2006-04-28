@@ -51,6 +51,15 @@ void TopWindow::SyncTitle()
 			::SetWindowText(hwnd, ToSystemCharset(title.ToString()));
 }
 
+void TopWindow::DeleteIco()
+{
+	if(ico)
+		DestroyIcon(ico);
+	if(lico)
+		DestroyIcon(lico);
+	ico = lico = NULL;
+}
+
 void TopWindow::SyncCaption()
 {
 	HWND hwnd = GetHWND();
@@ -80,8 +89,14 @@ void TopWindow::SyncCaption()
 		::SetWindowLong(hwnd, GWL_EXSTYLE, exstyle);
 		SyncTitle();
 	}
+#ifdef NEWIMAGE
+	DeleteIco();
+	::SendMessage(hwnd, WM_SETICON, false, (LPARAM)(ico = IconWin32(icon)));
+	::SendMessage(hwnd, WM_SETICON, true, (LPARAM)(lico = IconWin32(largeicon)));
+#else
 	::SendMessage(hwnd, WM_SETICON, false, (LPARAM)icon.GetIcon());
 	::SendMessage(hwnd, WM_SETICON, true, (LPARAM)largeicon.GetIcon());
+#endif
 }
 
 void TopWindow::CenterRect(HWND hwnd)

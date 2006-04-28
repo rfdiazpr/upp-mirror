@@ -1,8 +1,8 @@
 #include "CtrlCore.h"
 
-#include <locale.h>
-
 #ifdef PLATFORM_X11
+
+#include <locale.h>
 
 #ifdef _DEBUG
 	#define SYNCHRONIZE

@@ -127,7 +127,7 @@ CommandServer::CommandConnection::CommandConnection(Socket _socket, const char *
 			;
 		environment = ASCII85Decode(String(b, _command));
 		for(b = environment; *b; b += strlen(b) + 1)
-			if(!memicmp(b, "PATH=", 5)) {
+			if(!MemICmp(b, "PATH=", 5)) {
 				pathlist = b + 5;
 				break;
 			}
@@ -540,8 +540,8 @@ bool CommandServer::StartServer(int port, const String& cmdline)
 	Socket::Init();
 	String sockerr;
 	String self = Socket::GetHostName();
-	Socket socket = ClientSocket(self, port);
-	if(IsNull(socket))
+	Socket socket;
+	if(!ClientSocket(socket, self, port))
 		throw Exc(NFormat("Error opening server %s:%d: %s", self, port, Socket::GetErrorText()));
 	socket.Write("?\n");
 	String res = socket.ReadUntil('\x1A');
@@ -555,8 +555,8 @@ bool CommandServer::StartServer(int port, const String& cmdline)
 void CommandServer::StopServer(int port)
 {
 	Socket::Init();
-	Socket socket = ClientSocket(Socket::GetHostName(), port);
-	if(IsNull(socket))
+	Socket socket;
+	if(!ClientSocket(socket, Socket::GetHostName(), port))
 		throw Exc(NFormat("Error opening server at port %d", port));
 	socket.Write(".\n");
 	socket.ReadUntil('\x1A');
@@ -571,8 +571,8 @@ void CommandServer::RunServer(int port)
 		puts(NFormat("Creating server socket at port %d ...", port));
 
 	String error;
-	Socket server = ServerSocket(port);
-	if(IsNull(server))
+	Socket server;
+	if(!ServerSocket(server, port))
 	{
 		puts(NFormat("Error creating server socket at port %d: %s", port, Socket::GetErrorText()));
 		return;
@@ -598,8 +598,8 @@ void CommandServer::RunServer(int port)
 	for(quit_flag = false; !quit_flag;)
 	{
 		bool work = false;
-		Socket connection = server.Accept(&ipaddr, true, timer_chunk);
-		if(!IsNull(connection))
+		Socket connection;
+		if(server.Accept(connection, &ipaddr, true, timer_chunk))
 		{
 			work = true;
 			if(logging)

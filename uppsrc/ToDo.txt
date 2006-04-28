@@ -1,9 +1,15 @@
+* .lay po skonceni debugu
+
+* This problem might not be a high priority - in the reference splitter example, buttons B,C,Toggle are arranged vertically. If you drag the top of button "Toggle" up until button C disappears, you can't drag it back down again. You can drag upwards at that point though, and button C reappears, consuming some of button B space. If you drag upwards to make the "Toggle" button take all the right hand vertical space so that B and C disappear, you can't drag down again and buttons B and C have disappeared forever.
+
+* DrawPolygon -> GetBrush!
+
+* PDF fix Image!
+
 * When I open a file with a filename containing white space, UWord complains
 file doesn't exist when I double click it, but loads it anyway when I discard
 the error dialog.
 Something borked with unix filename escaping?
-
-
 
 * Blikani v matrice - v umrtnim listu pridat duplikat a zase ho zrusit....
 
@@ -16,6 +22,7 @@ Something borked with unix filename escaping?
 * If I run "find in files" and doubleclick then in "Edit" menu an item "Edit using designer" Ctrl_T appears. If I try to use it, it does nothing and dissapears. I think, it's a bug.
 
 * Assist++  {
+	- Alt+C over multiple classes
 	- EB\idu.cpp 266 k.[ok.]
 	- jump to operator definition
 	- makra na global scope

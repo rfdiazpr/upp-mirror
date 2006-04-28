@@ -379,6 +379,7 @@ void Ctrl::WndDestroy()
 	if(revertfocus && owner)
 		owner->TakeFocus();
 	delete top;
+	top = NULL;
 }
 
 Vector<Ctrl *> Ctrl::GetTopCtrls()
@@ -516,6 +517,7 @@ static bool s_waitcursor;
 
 void Ctrl::SetMouseCursor(const Image& image)
 {
+#ifndef NEWIMAGE //FIXIMAGE
 	if(!top) return;
 	static Image img;
 	if(s_waitcursor)
@@ -531,17 +533,20 @@ void Ctrl::SetMouseCursor(const Image& image)
 		wnd = top->window;
 		XDefineCursor(Xdisplay, wnd, shc);
 	}
+#endif
 }
 
 void WaitCursor::Show() {
 	if(s_waitcursor) return;
 	s_waitcursor = true;
 	Ctrl::DoCursorShape();
+#ifndef NEWIMAGE //FIXIMAGE
 	Cursor hc = Image::Wait().GetCursor();
 	for(int i = 0; i < Ctrl::Xwindow().GetCount(); i++) {
 		Window w = Ctrl::Xwindow().GetKey(i);
 		if(w) XDefineCursor(Xdisplay, w, hc);
 	}
+#endif
 }
 
 WaitCursor::WaitCursor(bool show) {

@@ -386,64 +386,65 @@ TOPIC_TEXT(
 "&][s4;:`:`:Array`:`:Serialize`(`:`:Stream`&`): void [* Serialize](Stream`& [*@3 s])&][s6; "
 "Serializes the content of the Array to/from the Stream. Work")
 TOPIC_TEXT(
-"s only if NTL is used as part of UPP.&][s11; Requires T to have serialization operator "
+"s only if NTL is used as part of UPP. Does not work with polymorphic Arrays (those "
+"storing objects derived from T).&][s11; Requires T to have serialization operator "
 "defined.&][s1; [*C@3 s]-|Target/source stream.&][s0;3 &][s4;:`:`:Array`:`:Array`(`): "
 "[* Array]()&][s6; Default constructor. Constructs an empty Array.&][s0;3 &][s4;:`:`:Array`:`:`~Array`(`): "
-"`~[* Array]()&][s6; Destructor. Invokes the destructor of every element in the Array.&][s0;3 "
-"&][s4;:`:`:Array`:`:Array`(pi")
+"`~[* Array]()&][s6; Destructor. Invokes the ")
 TOPIC_TEXT(
-"ck`_`:`:Array`&`): [* Array](pick`_ Array`& [*@3 v])&][s6; Pick constructor. Transfers "
-"the source Array in low constant time, but destroys it by picking. &][s1; [*C@3 v]-|Source "
-"Array.&][s0;3 &][s4;:`:`:Array`:`:operator`=`(pick`_`:`:Array`&`):~~~.992; void [* "
-"operator`=](pick`_ Array`& [*@3 v])&][s6; Pick operator. Transfers the source Array "
-"in low constant time, but destroys it by picking.&][s1;")
+"destructor of every element in the Array.&][s0;3 &][s4;:`:`:Array`:`:Array`(pick`_`:`:Array`&`): "
+"[* Array](pick`_ Array`& [*@3 v])&][s6; Pick constructor. Transfers the source Array "
+"in low constant time, but destroys it by picking. &][s1; [*C@3 v]-|Source Array.&][s0;3 "
+"&][s4;:`:`:Array`:`:operator`=`(pick`_`:`:Array`&`):~~~.992; void [* operator`=](pick`_ "
+"Array`& [*@3 v])&][s6; Pick operator. Tran")
 TOPIC_TEXT(
-" [*C@3 v]-|Source Array.&][s0;3 &][s4;:`:`:Array`:`:Array`(const`:`:Array`&`,int`): "
-"[* Array](const Array`& [*@3 v], int)&][s6; Optional deep copy constructor.&][s11; "
-"Requires T to have deep copy constructor or optional deep copy constructor if the "
-"Array stores only objects of type T.&][s11; Requires polymorphic deep copy if the "
-"Array stores also objects of type derived from T.&][s1; [*C@3 v]-|Sou")
+"sfers the source Array in low constant time, but destroys it by picking.&][s1; [*C@3 "
+"v]-|Source Array.&][s0;3 &][s4;:`:`:Array`:`:Array`(const`:`:Array`&`,int`): [* Array](const "
+"Array`& [*@3 v], int)&][s6; Optional deep copy constructor.&][s11; Requires T to "
+"have deep copy constructor or optional deep copy constructor if the Array stores "
+"only objects of type T.&][s11; Requires polymorphic deep cop")
 TOPIC_TEXT(
-"rce Array.&][s0;3 &][s4;:`:`:DeepCopyOption`:`:operator`<`<`=`(T`&`,const T`&`): "
-"void [* operator<<`=](const Array`& [*@3 v])&][s6; Optional deep copy operator. Defined "
+"y if the Array stores also objects of type derived from T.&][s1; [*C@3 v]-|Source "
+"Array.&][s0;3 &][s4;:`:`:DeepCopyOption`:`:operator`<`<`=`(T`&`,const T`&`): void "
+"[* operator<<`=](const Array`& [*@3 v])&][s6; Optional deep copy operator. Defined "
 "using DeepCopyOption base class.&][s11; Requires T to have deep copy constructor "
-"or optional deep copy if the Array stores only objects of type T.&][s11; Requires "
-"polymorphic deep copy if the Array stores also objects of type deriv")
+"or optional deep copy if the Array stores only objects of type T.&][s11;")
 TOPIC_TEXT(
-"ed from T.&][s1; [*C@3 v]-|Source Array.&][s0;3 &][s4;:`:`:Array`:`:ValueType`:`:typedef:* "
+" Requires polymorphic deep copy if the Array stores also objects of type derived "
+"from T.&][s1; [*C@3 v]-|Source Array.&][s0;3 &][s4;:`:`:Array`:`:ValueType`:`:typedef:* "
 "[* typedef T ]ValueType&][s6; Typedef of T for use in templated algorithms.&][s0;3 "
 "&][s4;:`:`:Array`:`:Iterator`:`:class: typedef [/ type] [* Iterator];&][s6; Iterator "
-"type.&][s0;3 &][s4;:`:`:Array`:`:ConstIterator`:`:class: typedef [/ type] [* ConstIterator];&][s6; "
-"Constant iterator type.&][s0;3 &][s4;:`:`:")
+"type.&][s0;3 &][s4;:`:`:Array`:`:ConstIterator`:`:class: typede")
 TOPIC_TEXT(
-"Array`:`:Begin`(`): Iterator [* Begin]()&][s6; Returns a non`-constant iterator "
-"to the first element in the Array. &][s1; [*/ Return value]-|Iterator.&][s0;3 &][s4;:`:`:Array`:`:End`(`): "
+"f [/ type] [* ConstIterator];&][s6; Constant iterator type.&][s0;3 &][s4;:`:`:Array`:`:Begin`(`): "
+"Iterator [* Begin]()&][s6; Returns a non`-constant iterator to the first element "
+"in the Array. &][s1; [*/ Return value]-|Iterator.&][s0;3 &][s4;:`:`:Array`:`:End`(`): "
 "Iterator [* End]()&][s6; Returns a non`-constant iterator to the position just beyond "
-"the last element in Array.&][s1; [*/ Return value]-|Iterator.&][s0;3 &][s4;:`:`:Array`:`:GetIter`(int`): "
-"Iterator [* GetIter](i")
+"the last element in Array.&][s1; [*/ Return value")
 TOPIC_TEXT(
-"nt [*@3 pos])&][s6; Returns a non`-constant iterator to the element at the specified "
+"]-|Iterator.&][s0;3 &][s4;:`:`:Array`:`:GetIter`(int`): Iterator [* GetIter](int "
+"[*@3 pos])&][s6; Returns a non`-constant iterator to the element at the specified "
 "position. Same as [* Begin() `+ pos]. The benefit of this method is that [* pos] "
 "is range checked in debug mode.&][s1; [*C@3 pos]-|Required position.&][s1; [*/ Return "
-"value]-|Iterator.&][s0;3 &][s4;:`:`:Array`:`:Begin`(`)const: ConstIterator [* Begin]() "
-"const&][s6; Returns a constant iterator to the first element ")
+"value]-|Iterator.&][s0;3 &][s4;:`:`:Array`:`:Begin`(`)const: ConstIter")
 TOPIC_TEXT(
-"in Array. &][s1; [*/ Return value]-|Iterator.&][s0;3 &][s4;:`:`:Array`:`:End`(`)const: "
+"ator [* Begin]() const&][s6; Returns a constant iterator to the first element in "
+"Array. &][s1; [*/ Return value]-|Iterator.&][s0;3 &][s4;:`:`:Array`:`:End`(`)const: "
 "ConstIterator [* End]() const&][s6; Returns a constant iterator to the position just "
 "beyond the last element in Array.&][s1; [*/ Return value]-|Iterator.-|&][s0;3 &][s4;:`:`:Array`:`:GetIter`(int`)const: "
-"ConstIterator [* GetIter](int [*@3 pos]) const&][s6; Returns a constant iterator "
-"to the element at the specif")
+"ConstIterator [* GetIter](int [")
 TOPIC_TEXT(
-"ied position. Same as [* Begin() `+ pos]. The benefit of this method is that [* "
-"pos] is range checked in debug mode..&][s1; [*C@3 pos]-|Required position.&][s1; "
-"[*/ Return value]-|Iterator.&][s0;3 &][s4;:`:`:Array`:`:Swap`(`:`:Array`&`,`:`:Array`&`): "
-"friend void [* Swap](Array`& [*@3 a], Array`& [*@3 b])&][s6; Specialization of the "
-"generic [* Swap] for Array. Swaps the arrays in simple constant ti")
+"*@3 pos]) const&][s6; Returns a constant iterator to the element at the specified "
+"position. Same as [* Begin() `+ pos]. The benefit of this method is that [* pos] "
+"is range checked in debug mode..&][s1; [*C@3 pos]-|Required position.&][s1; [*/ Return "
+"value]-|Iterator.&][s0;3 &][s4;:`:`:Array`:`:Swap`(`:`:Array`&`,`:`:Array`&`): friend "
+"void [* Swap](Array`& [*@3 a], Array`& [*@3 b])&][s6; Specializa")
 TOPIC_TEXT(
-"me operation.&][s1; [*C@3 a]-|First Array to swap.&][s1; [*C@3 b]-|Second Array "
-"to swap.&][s0;3 &][s4;:`:`:Array`:`:IterSwap`(`:`:Array`:`:Iterator`,`:`:Array`:`:Iterator`): "
-"friend void [* IterSwap](Iterator [*@3 a], Iterator [*@3 b])&][s6; Specialization "
-"of the generic [* IterSwap] for Array. Swaps the elements in an Array without any "
-"requirements for T.&][s1; [*C@3 a]-|Iterator to first element.")
+"tion of the generic [* Swap] for Array. Swaps the arrays in simple constant time "
+"operation.&][s1; [*C@3 a]-|First Array to swap.&][s1; [*C@3 b]-|Second Array to swap.&][s0;3 "
+"&][s4;:`:`:Array`:`:IterSwap`(`:`:Array`:`:Iterator`,`:`:Array`:`:Iterator`): friend "
+"void [* IterSwap](Iterator [*@3 a], Iterator [*@3 b])&][s6; Specialization of the "
+"generic [* IterSwap] for Array. Swaps the elements in an Ar")
 TOPIC_TEXT(
-"&][s1; [*C@3 b]-|Iterator to second element.&][s0;3 ]")
+"ray without any requirements for T.&][s1; [*C@3 a]-|Iterator to first element.&][s1; "
+"[*C@3 b]-|Iterator to second element.&][s0;3 ]")

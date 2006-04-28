@@ -7,7 +7,7 @@ uses
 	plugin\z;
 
 options
-	-DPNG_NO_STDIO;
+	"-DPNG_NO_STDIO";
 
 file
 	Wrapper readonly separator,
@@ -35,4 +35,3 @@ file
 	lib/pngwtran.c,
 	lib/pngwutil.c,
 	End readonly separator;
-

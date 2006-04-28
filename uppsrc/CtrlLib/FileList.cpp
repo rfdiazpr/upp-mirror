@@ -206,6 +206,26 @@ bool FileList::Key(dword key, int count) {
 	return ColumnList::Key(key, count);
 }
 
+void FileList::Insert(int ii,
+                      const String& name, const Image& icon, Font font, Color ink,
+				      bool isdir, int length, Time time, Color extink,
+				      const String& desc, Font descfont)
+{
+	Value v;
+	File& m = CreateRawValue<File>(v);
+	m.isdir = isdir;
+	m.icon = icon;
+	m.name = name;
+	m.font = font;
+	m.ink = ink;
+	m.length = length;
+	m.time = time;
+	m.extink = IsNull(extink) ? ink : extink;
+	m.desc = desc;
+	m.descfont = descfont;
+	ColumnList::Insert(ii, v, !m.isdir);
+}
+
 void FileList::Add(const String& name, const Image& icon, Font font, Color ink,
 				   bool isdir, int length, Time time, Color extink,
 				   const String& desc, Font descfont)

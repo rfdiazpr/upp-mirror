@@ -39,6 +39,9 @@ private:
 
 	dword       style;
 	dword       exstyle;
+	HICON       ico, lico;
+
+	void        DeleteIco();
 #endif
 
 protected:

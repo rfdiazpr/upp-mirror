@@ -3,7 +3,7 @@
 
 struct RichObjectTypeVectorImageCls : public RichObjectType
 {
-	virtual String GetTypeName() const;
+	virtual String GetTypeName(const Value&) const;
 	virtual String GetCreateName() const;
 	virtual Size   GetPhysicalSize(const Value& data) const;
 	virtual Size   GetPixelSize(const Value& data) const { return Size(0, 0); }
@@ -37,7 +37,7 @@ void RichObjectTypeVectorImageCls::Data::Serialize(Stream& stream)
 	image.SerializeVM(stream);
 }
 
-String RichObjectTypeVectorImageCls::GetTypeName() const
+String RichObjectTypeVectorImageCls::GetTypeName(const Value&) const
 {
 	return "VectorImage";
 }

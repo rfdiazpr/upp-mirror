@@ -146,6 +146,12 @@ protected:
 		WString iftext;
 		short   ifline;
 		char    state;
+
+		bool operator==(const IfState& b) const {
+			return iftext == b.iftext && state == b.state && ifline == b.ifline;
+		}
+
+		IfState()                         { ifline = state = 0; }
 	};
 
 	struct SyntaxState {
@@ -330,6 +336,9 @@ public:
 	int    BlockReplace(WString find, WString replace, bool wholeword, bool ignorecase, bool wildcards);
 	void   MakeTabs();
 	void   MakeTabsOrSpaces(bool tabs);
+
+	void   CopyWord();
+	void   SwapChars();
 
 	void   SerializeFind(Stream& s);
 	bool   IsFindOpen() const                       { return findreplace.IsOpen(); }

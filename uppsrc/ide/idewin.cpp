@@ -320,6 +320,7 @@ Ide::Ide()
 	stat_build_time = 0;
 	build_start_time = Null;
 	hydra1_threads = 1;
+
 #ifdef PLATFORM_WIN32
 	SYSTEM_INFO si;
 	GetSystemInfo(&si);

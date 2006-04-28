@@ -403,6 +403,7 @@ ctrl EditField {
 	Font  SetFont = StdFont();
 	bool  SetEditable = true @1 ? "Editable";
 	bool  WantFocus = true;
+	int   MaxChars;
 //	Qtf   SetInfo @1 ? "Info of control" ;
 
 	Paint(w) {

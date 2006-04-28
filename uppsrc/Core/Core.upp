@@ -13,9 +13,9 @@ library(SOLARIS) "posix4 dl";
 
 library(WIN32 GCC) "ole32 oleaut32 uuid";
 
-options(XGNU) -O0;
+options(XGNU) "-O0";
 
-options(XGNU) -ffunction-sections;
+options(XGNU) "-ffunction-sections";
 
 link(SOLARIS) "-Wl,-R -Wl,/usr/local/lib";
 

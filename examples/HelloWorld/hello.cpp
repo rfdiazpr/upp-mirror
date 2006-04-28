@@ -3,7 +3,7 @@
 class HelloWorld : public TopWindow {
 	MenuBar menu;
 	StatusBar status;
-	
+
 	void FileMenu(Bar& bar);
 	void About();
 

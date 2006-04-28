@@ -1302,7 +1302,7 @@ void ArrayCtrl::KeyMultiSelect(dword key)
 		if(anchor >= 0)
 			Select(min(anchor, cursor), abs(anchor - cursor) + 1);
 	}
-	else {
+	else if(cursor >= 0) {
 		anchor = cursor;
 		Select(anchor);
 	}

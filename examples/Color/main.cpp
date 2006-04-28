@@ -3,6 +3,7 @@
 ColorWindow::ColorWindow()
 {
 	Sizeable().Zoomable();
+	SetRect(100, 100, 100, 100);
 }
 
 void ColorWindow::Paint(Draw& draw)
@@ -16,5 +17,6 @@ void ColorWindow::Paint(Draw& draw)
 
 GUI_APP_MAIN
 {
+	Ctrl::AutoBackPaintAreaSize = 0;
 	ColorWindow().Run();
 }

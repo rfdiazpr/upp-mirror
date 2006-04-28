@@ -286,7 +286,6 @@ Button& Button::SetMonoImage(const Image& _img)
 }
 
 Button::Button() {
-	img = Image::Empty();
 	edgestyle = scrollbutton = false;
 	type = NORMAL;
 }
@@ -416,7 +415,9 @@ void Option::Paint(Draw& w) {
 							                  : (switchimage ? CtrlImg::switch0() : CtrlImg::option0());
 		w.DrawImage(0, iy, m);
 		if(!switchimage)
-			w.DrawImage(0, iy, ds ? CtrlImg::optionedged : blackedge ? CtrlImg::blackoptionedge : CtrlImg::optionedge);
+			w.DrawImage(0, iy, ds ? CtrlImg::optionedged
+			                      : blackedge ? CtrlImg::blackoptionedge
+			                                  : CtrlImg::optionedge);
 	}
 
 	DrawSmartText(w, isz.cx + 4, ty, tsz.cx, label, font, ds ? SGray : SBlack, VisibleAccessKeys() ? accesskey : 0);

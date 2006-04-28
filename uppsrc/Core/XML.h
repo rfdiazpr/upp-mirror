@@ -77,9 +77,9 @@ public:
 	bool   TagE(const char *tag);
 	void   PassTagE(const char *tag);
 
-	int    GetAttrCount() const                               { return attr.GetCount() + (!IsNull(attr1) ? 1 : 0); }
+	int    GetAttrCount() const                               { return attr.GetCount() + !IsNull(attr1); }
 	String GetAttr(int i) const                               { return i ? attr.GetKey(i - 1) : attr1; }
-	String operator[](int i) const                            { return i ? attr[i] : attrval1; }
+	String operator[](int i) const                            { return i ? attr[i - 1] : attrval1; }
 	String operator[](const char *id) const                   { return attr1 == id ? attrval1 : attr.Get(id, Null); }
 	int    Int(const char *id, int def = Null) const;
 	double Double(const char *id, double def = Null) const;

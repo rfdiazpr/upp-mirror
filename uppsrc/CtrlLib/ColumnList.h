@@ -33,7 +33,7 @@ private:
 	CtrlFrame *frame;
 	bool       clickkill;
 	int        mi;
-	
+
 	struct Info : Ctrl {
 		Value          value;
 		Color          paper, ink;
@@ -41,9 +41,9 @@ private:
 		const Display *display;
 		ColumnList    *ctrl;
 		Rect           slim;
-		
+
 		Point   Op(Point p);
-		
+
 		virtual void  Paint(Draw& w);
 		virtual void  LeftDown(Point p, dword);
 		virtual void  LeftDouble(Point p, dword);
@@ -55,9 +55,9 @@ private:
 
 		Info();
 	} info;
-	
+
 	friend struct Info;
-	
+
 	const Display *display;
 
 	struct Item {
@@ -121,6 +121,10 @@ public:
 	int          GetCount() const                     { return item.GetCount();; }
 	const Value& Get(int i) const                     { return item[i].value; }
 	const Value& operator[](int i) const              { return item[i].value; }
+
+	void         Insert(int ii, const Value& val, bool canselect = true);
+	void         Insert(int ii, const Value& val, const Display& display, bool canselect = true);
+	void         Remove(int ii);
 
 	bool         IsSelection() const                  { return isselection; }
 	void         ClearSelection();

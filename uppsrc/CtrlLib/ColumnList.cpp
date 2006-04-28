@@ -598,15 +598,47 @@ void ColumnList::Clear() {
 	Refresh();
 }
 
-void ColumnList::Add(const Value& val, bool canselect)
+void ColumnList::Insert(int ii, const Value& val, bool canselect)
 {
-	Item& m = item.Add();
+	Item& m = item.Insert(ii);
+	int c = -1;
+	if(cursor >= ii) {
+		c = cursor + 1;
+		KillCursor();
+	}
 	m.value = val;
 	m.sel = false;
 	m.canselect = canselect;
 	m.display = NULL;
 	Refresh();
 	SetSb();
+	if(c >= 0)
+		SetCursor(c);
+}
+
+void ColumnList::Insert(int ii, const Value& val, const Display& display, bool canselect)
+{
+	Insert(ii, val, canselect);
+	item[ii].display = &display;
+}
+
+void ColumnList::Remove(int ii)
+{
+	int c = -1;
+	if(cursor >= ii) {
+		c = max(ii, cursor - 1);
+		KillCursor();
+	}
+	item.Remove(ii);
+	Refresh();
+	SetSb();
+	if(c >= 0)
+		SetCursor(c);
+}
+
+void ColumnList::Add(const Value& val, bool canselect)
+{
+	Insert(item.GetCount(), val, canselect);
 }
 
 void ColumnList::Add(const Value& val, const Display& display, bool canselect)

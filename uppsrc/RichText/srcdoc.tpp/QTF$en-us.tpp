@@ -114,218 +114,220 @@ TOPIC_TEXT(
 "%][%00-00 lang]]::= [s0; Language. It is defined in form [@(0.0.255) XX]`-[@(0.0.255) "
 "YY], according to ISO 639 and ISO 3166 standa")
 TOPIC_TEXT(
-"rds. (example: [*C@3 `\"`[%EN`-US_...`]`\"]).]::^ [s1;C [%00-00 :][%00-00/@(0.0.255) "
-"text][%00-00 :]]::= [s0; Paragraph label.]::^ [s1;C [%00-00 <]]::= [s0; Align paragraph "
-"left.]::^ [s1;C [%00-00 `=]]::= [s0; Center paragraph.]::^ [s1;C [%00-00 >]]::= [s0; "
-"Align paragraph right.]::^ [s1;C [%00-00 #]]::= [s0; Justify paragraph.]::^ [s1;/C@(0.0.255) "
-"[%00-00/@(128.0.255) l][%00-00 number]]::= [s0; Lef")
+"rds. (example: [*C@3 `\"`[%EN`-US_...`]`\"]). [*C@3 `\"`[%00`-00_`\"] represents "
+"`\"none`\" language.]::^ [s1;C [%00-00 :][%00-00/@(0.0.255) text][%00-00 :]]::= [s0; "
+"Paragraph label.]::^ [s1;C [%00-00 <]]::= [s0; Align paragraph left.]::^ [s1;C [%00-00 "
+"`=]]::= [s0; Center paragraph.]::^ [s1;C [%00-00 >]]::= [s0; Align paragraph right.]::^ "
+"[s1;C [%00-00 #]]::= [s0; Justify paragraph.]::^ [s1;/C@(0.0.255)")
 TOPIC_TEXT(
-"t margin in dots.]::^ [s1;/C@(0.0.255) [%00-00/@(128.0.255) r][%00-00 number]]::= "
-"[s0; Right margin in dots.]::^ [s1;/C@(0.0.255) [%00-00/@(128.0.255) i][%00-00 number]]::= "
-"[s0; Indent in dots.]::^ [s1;/C@(0.0.255) [%00-00/@(128.0.255) b][%00-00 number]]::= "
-"[s0; Space before paragraph in dots.]::^ [s1;/C@(0.0.255) [%00-00/@(128.0.255) a][%00-00 "
-"number]]::= [s0; Space after paragraph in dots.]::^ [")
+" [%00-00/@(128.0.255) l][%00-00 number]]::= [s0; Left margin in dots.]::^ [s1;/C@(0.0.255) "
+"[%00-00/@(128.0.255) r][%00-00 number]]::= [s0; Right margin in dots.]::^ [s1;/C@(0.0.255) "
+"[%00-00/@(128.0.255) i][%00-00 number]]::= [s0; Indent in dots.]::^ [s1;/C@(0.0.255) "
+"[%00-00/@(128.0.255) b][%00-00 number]]::= [s0; Space before paragraph in dots.]::^ "
+"[s1;/C@(0.0.255) [%00-00/@(128.0.255) a][%00-00 n")
 TOPIC_TEXT(
-"s1;C [%00-00 P]]::= [s0; Page break before paragraph.]::^ [s1;C [%00-00 k]]::= [s0; "
-"Keep paragraph on single page.]::^ [s1;C [%00-00 K]]::= [s0; Keep paragraph on same "
-"page as next one.]::^ [s1;C [%00-00 Q]]::= [s0; Orphan control.]::^ [s1;C [%00-00 "
-"n][%00-00/@(0.0.255) text][%00-00 ;]]::= [s0; Text to insert before paragraph number.]::^ "
-"[s1;C [%00-00 m][%00-00/@(0.0.255) text][%00-00 ;]]::= [s0; ")
+"umber]]::= [s0; Space after paragraph in dots.]::^ [s1;C [%00-00 P]]::= [s0; Page "
+"break before paragraph.]::^ [s1;C [%00-00 k]]::= [s0; Keep paragraph on single page.]::^ "
+"[s1;C [%00-00 K]]::= [s0; Keep paragraph on same page as next one.]::^ [s1;C [%00-00 "
+"Q]]::= [s0; Orphan control.]::^ [s1;C [%00-00 n][%00-00/@(0.0.255) text][%00-00 ;]]::= "
+"[s0; Text to insert before paragraph number.]::^ [s1;C [%")
 TOPIC_TEXT(
-"Text to insert after paragraph number.]::^ [s1;C [%00-00 N]]::= [s0; Numbering. "
-"It is followed by up to 8 characters defining numbering style of each level&][s0; "
-"&][ {{864:9136<342;>861;f4; [s0;=C@(128.0.255) `-]:: [s0; Level is not used.]:: [s0;=C@(128.0.255) "
-"1]:: [s0; Numbers, starting with 1.]:: [s0;=C@(128.0.255) 0]:: [s0; Numbers, starting "
-"with 0.]:: [s0;=C@(128.0.255) a]:: [s0; Lowercase let")
+"00-00 m][%00-00/@(0.0.255) text][%00-00 ;]]::= [s0; Text to insert after paragraph "
+"number.]::^ [s1;C [%00-00 N]]::= [s0; Numbering. It is followed by up to 8 characters "
+"defining numbering style of each level&][s0; &][ {{864:9136<342;>861;f4; [s0;=C@(128.0.255) "
+"`-]:: [s0; Level is not used.]:: [s0;=C@(128.0.255) 1]:: [s0; Numbers, starting with "
+"1.]:: [s0;=C@(128.0.255) 0]:: [s0; Numbers, starting w")
 TOPIC_TEXT(
-"ters, starting with a.]:: [s0;=C@(128.0.255) A]:: [s0; Uppercase letters, starting "
-"with A.]:: [s0;=C@(128.0.255) i]:: [s0; Lowercase roman numbers, starting with i.]:: "
-"[s0;=C@(128.0.255) I]:: [s0; Uppercase roman numbers, starting with I]}}&][s0; ]::^ "
-"[s1;C [%00-00 o]]::= [s0;i150;O0; Bullet style.]::^ [s1;C [%00-00 O`_]]::= [s0; No "
-"bullet.]::^ [s1;C [%00-00 O0]]::= [s0;i150;O0; Bullet style.]::^ ")
+"ith 0.]:: [s0;=C@(128.0.255) a]:: [s0; Lowercase letters, starting with a.]:: [s0;=C@(128.0.255) "
+"A]:: [s0; Uppercase letters, starting with A.]:: [s0;=C@(128.0.255) i]:: [s0; Lowercase "
+"roman numbers, starting with i.]:: [s0;=C@(128.0.255) I]:: [s0; Uppercase roman numbers, "
+"starting with I]}}&][s0; ]::^ [s1;C [%00-00 o]]::= [s0;i150;O0; Bullet style.]::^ "
+"[s1;C [%00-00 O`_]]::= [s0; No bullet.]::^ [")
 TOPIC_TEXT(
-"[s1;C [%00-00 O1]]::= [s0;i150;O1; Bullet style.]::^ [s1;C [%00-00 O2]]::= [s0;i150;O2; "
-"Bullet style.]::^ [s1;C [%00-00 O3]]::= [s0;i150;O3; Bullet style.]::^ [s1;C [%00-00 "
-"O9]]::= [s0; Text bullet style.]::^ [s1;C [%00-00 `~]]::= [s0; Tabulator setting. "
-"Can be followed by character designating type of tabulation&][s0; &][ {{864:9136<342;>861;f4; "
-"[s0;=C@(128.0.255) >]:: [s0; Normal tabulation.]:: ")
+"s1;C [%00-00 O0]]::= [s0;i150;O0; Bullet style.]::^ [s1;C [%00-00 O1]]::= [s0;i150;O1; "
+"Bullet style.]::^ [s1;C [%00-00 O2]]::= [s0;i150;O2; Bullet style.]::^ [s1;C [%00-00 "
+"O3]]::= [s0;i150;O3; Bullet style.]::^ [s1;C [%00-00 O9]]::= [s0; Text bullet style.]::^ "
+"[s1;C [%00-00 `~]]::= [s0; Tabulator setting. Can be followed by character designating "
+"type of tabulation&][s0; &][ {{864:9136<342;>861;f4;")
 TOPIC_TEXT(
-"[s0;=C@(128.0.255) <]:: [s0; Left tabulation.]:: [s0;=C@(128.0.255) `=]:: [s0; Centered "
-"tabulation.]}}&][s0; &][s0; (default is normal) and by filler character &][s0; &][ "
-"{{3312:3436:3252<342;>861;f4; [s0;=C@(128.0.255) .]:: [s0;=C@(128.0.255) `-]:: [s0;=C@(128.0.255) "
-"`_]}}&][s0; &][s0; and must be followed by number specifying tabulator position in "
-"dots.&][s0; &][s0; When followed by [C@(128.0.25")
+" [s0;=C@(128.0.255) >]:: [s0; Normal tabulation.]:: [s0;=C@(128.0.255) <]:: [s0; "
+"Left tabulation.]:: [s0;=C@(128.0.255) `=]:: [s0; Centered tabulation.]}}&][s0; &][s0; "
+"(default is normal) and by filler character &][s0; &][ {{3312:3436:3252<342;>861;f4; "
+"[s0;=C@(128.0.255) .]:: [s0;=C@(128.0.255) `-]:: [s0;=C@(128.0.255) `_]}}&][s0; &][s0; "
+"and must be followed by number specifying tabulator position")
 TOPIC_TEXT(
-"5) `~] ([*C@3 `\"`~`~`\"]), clears all current tab settings (including those inherited "
-"from paragraph style).]::^ [s1;C [%00-00 ;]]::= [s0;*C@3 [*A@0 NOP  separator. In "
-"some cases it is needed to separate command code. Example: ]`\"`[l200;4 `\"]::^ [s1;/C@(0.0.255) "
-"[%00-00/@(128.0.255) s]number&][s0;/C@(0.0.255) [%00-00/@(128.0.255) s]`\"text`\"]:: "
-"[s0; Paragraph style, either defined by style number, o")
+" in dots.&][s0; &][s0; When followed by [C@(128.0.255) `~] ([*C@3 `\"`~`~`\"]), "
+"clears all current tab settings (including those inherited from paragraph style).]::^ "
+"[s1;C [%00-00 ;]]::= [s0;*C@3 [*A@0 NOP  separator. In some cases it is needed to "
+"separate command code. Example: ]`\"`[l200;4 `\"]::^ [s1;/C@(0.0.255) [%00-00/@(128.0.255) "
+"s]number&][s0;/C@(0.0.255) [%00-00/@(128.0.255) s]`\"text`\"]:: [s0")
 TOPIC_TEXT(
-"r style name.]}}&][s0;3 &][s0;3 &][s2; Styles&][s0; &][s0; Paragraph styles are "
-"defined using normal character/paragraph formatting sequence with&][s0; &][s0;@(0.0.255) "
-"[@(128.0.255) `$`$]number[@(128.0.255) ,]nnumber[@(128.0.255) #]uuid[@(128.0.255) "
-":]name&][s0; &][s0; instead of text, where&][s0; &][ {{1879:8121^ [s1;@(0.0.255) "
-"[%00-00 number]]:: [s0; Number of style `- can be used with [@(128.0")
+"; Paragraph style, either defined by style number, or style name.]}}&][s0;3 &][s0;3 "
+"&][s2; Styles&][s0; &][s0; Paragraph styles are defined using normal character/paragraph "
+"formatting sequence with&][s0; &][s0;@(0.0.255) [@(128.0.255) `$`$]number[@(128.0.255) "
+",]nnumber[@(128.0.255) #]uuid[@(128.0.255) :]name&][s0; &][s0; instead of text, where&][s0; "
+"&][ {{1879:8121^ [s1;@(0.0.255) [%00-00 number]]")
 TOPIC_TEXT(
-".255) s] paragraph format command code.]:: [s1;@(0.0.255) [%00-00 nnumber]]:: [s0; "
-"Number of style of next paragraph `- used by RichText editor when inserting paragraphs.]:: "
-"[s1;@(0.0.255) [%00-00 uuid]]:: [s0; 32 digit unique hexadecimal identifier of style.]:: "
-"[s1;@(0.0.255) [%00-00 name]]:: [s0; Name of style, displayed by editors. Can also "
-"be used with [@(128.0.255) s] paragraph format command")
+":: [s0; Number of style `- can be used with [@(128.0.255) s] paragraph format command "
+"code.]:: [s1;@(0.0.255) [%00-00 nnumber]]:: [s0; Number of style of next paragraph "
+"`- used by RichText editor when inserting paragraphs.]:: [s1;@(0.0.255) [%00-00 uuid]]:: "
+"[s0; 32 digit unique hexadecimal identifier of style.]:: [s1;@(0.0.255) [%00-00 name]]:: "
+"[s0; Name of style, displayed by editors. Can also be")
 TOPIC_TEXT(
-" code.]}}&][s0; &][s0; Style with [@(0.0.255) number] `= 0 and [@(0.0.255) uuid "
-"`= ]00000000000000000000000000000000 is [*/ default] style.&][s0; &][s0; Example:&][s0; "
-"&][s0;C@3 `\"`[`*/`+117 `$`$2,0#07143242482611002448121871408047:title`]`\"&][s0;@(0.0.255) "
+" used with [@(128.0.255) s] paragraph format command code.]}}&][s0; &][s0; Style "
+"with [@(0.0.255) number] `= 0 and [@(0.0.255) uuid `= ]00000000000000000000000000000000 "
+"is [*/ default] style.&][s0; &][s0; Example:&][s0; &][s0;C@3 `\"`[`*/`+117 `$`$2,0#07143242482611002448121871408047:title`]`\"&][s0;@(0.0.255) "
 "&][s0;@(0.0.255) &][s2; Objects&][s0;@(0.0.255) &][s0; Object plays the role of the "
-"single character and is displayed according to its type. I")
+"single")
 TOPIC_TEXT(
-"t is started with a header in the form&][s0; &][s0;@(0.0.255) [@(128.0.255) `@`@]format[@(128.0.255) "
-":]cx[@(128.0.255) `&]cy&][s0;@(0.0.255) &][s0; [%00-00 where]&][s0; &][ {{1879:8121^ "
-"[s1;@(0.0.255) format]:: [s0; Format of objects. This format must be recognized by "
-"the application. By default, RichText recognizes the PNG format.]:: [s1;@(0.0.255) "
-"cx]:: [s0; Width of object in dots.]:: [s1;@(0.0")
+" character and is displayed according to its type. It is started with a header in "
+"the form&][s0; &][s0;@(0.0.255) [@(128.0.255) `@`@]format[@(128.0.255) :]cx[@(128.0.255) "
+"`&]cy&][s0;@(0.0.255) &][s0; [%00-00 where]&][s0; &][ {{1879:8121^ [s1;@(0.0.255) "
+"format]:: [s0; Format of objects. This format must be recognized by the application. "
+"By default, RichText recognizes the PNG format.]:: [s1;@(0.0.2")
 TOPIC_TEXT(
-".255) cy]:: [s0; Height of object in dots.]}}&][s0;@(0.0.255) &][s0; Header is followed "
-"by binary data of object, encoded in 7 bit format. Bit 7 of data bytes is always "
-"1, so that actual data bytes are in range 128`-255. First byte in range 32`-127 ends "
-"data sequence.&][s0; &][s0; Data are encoded in 7 byte groups, which corresponds "
-"to 8 bytes of encoded format. First byte of this 8 bytes block al")
+"55) cx]:: [s0; Width of object in dots.]:: [s1;@(0.0.255) cy]:: [s0; Height of object "
+"in dots.]}}&][s0;@(0.0.255) &][s0; Header is followed by binary data of object, encoded "
+"in 7 bit format. Bit 7 of data bytes is always 1, so that actual data bytes are in "
+"range 128`-255. First byte in range 32`-127 ends data sequence.&][s0; &][s0; Data "
+"are encoded in 7 byte groups, which corresponds to 8 bytes of")
 TOPIC_TEXT(
-"ways contains eight bits of following bytes, LSB (that is bit 0) being the eight "
-"bit for first byte in block.&][s0;@(0.0.255) &][s0;@(0.0.255) &][s2; Tables&][s0; "
-"&][s0; Table definition starts with&][s0;3 &][s0;@(128.0.255) `{`{&][s0;@(128.0.255) "
-"&][s0; pair, followed by set of numbers separated with&][s0; &][s0;@(128.0.255) :&][s0;@(128.0.255) "
-"&][s0; Numbers represent ratios of column widths; co")
+" encoded format. First byte of this 8 bytes block always contains eight bits of "
+"following bytes, LSB (that is bit 0) being the eight bit for first byte in block.&][s0;@(0.0.255) "
+"&][s0;@(0.0.255) &][s2; Tables&][s0; &][s0; Table definition starts with&][s0;3 &][s0;@(128.0.255) "
+"`{`{&][s0;@(128.0.255) &][s0; pair, followed by set of numbers separated with&][s0; "
+"&][s0;@(128.0.255) :&][s0;@(128.0.255) ")
 TOPIC_TEXT(
-"unt of numbers is equivalent to count of columns. Next there is [/ table/cell formatting "
-"sequence] ended with single space character. Cells are separated with&][s0; &][s0;@(128.0.255) "
-"`::&][s0;@(128.0.255) &][s0; characters and another table/cell formating sequence "
-"(to setup format for each individual cell). Formating of cells is inherited from "
-"previous cells. Table ends with&][s0; &][s0;@(128.0.2")
+"&][s0; Numbers represent ratios of column widths; count of numbers is equivalent "
+"to count of columns. Next there is [/ table/cell formatting sequence] ended with "
+"single space character. Cells are separated with&][s0; &][s0;@(128.0.255) `::&][s0;@(128.0.255) "
+"&][s0; characters and another table/cell formating sequence (to setup format for "
+"each individual cell). Formating of cells is inherited from p")
 TOPIC_TEXT(
-"55) `}`}&][s0;@(128.0.255) &][s0; pair.&][s0; &][ {{1993:8007^@(229.229.248)-1 [s1;*/@0 "
-"Table/cell formating sequence]::=@2 [s0; ]::^ [s1;/C@(0.0.255) [%00-00/@(128.0.255) "
-"<][%00-00 number]]:: [s0; Left margin of table in dots.]:: [s1;/C@(0.0.255) [%00-00/@(128.0.255) "
-">][%00-00 number]]:: [s0; Right margin of table in dots.]:: [s1;/C@(0.0.255) [%00-00/@(128.0.255) "
-"B][%00-00 number]]:: [s0; Space b")
+"revious cells. Table ends with&][s0; &][s0;@(128.0.255) `}`}&][s0;@(128.0.255) &][s0; "
+"pair.&][s0; &][ {{1993:8007^@(229.229.248)-1 [s1;*/@0 Table/cell formating sequence]::=@2 "
+"[s0; ]::^ [s1;/C@(0.0.255) [%00-00/@(128.0.255) <][%00-00 number]]:: [s0; Left margin "
+"of table in dots.]:: [s1;/C@(0.0.255) [%00-00/@(128.0.255) >][%00-00 number]]:: [s0; "
+"Right margin of table in dots.]:: [s1;/C@(0.0.255) [%")
 TOPIC_TEXT(
-"efore table in dots.]:: [s1;/C@(0.0.255) [%00-00/@(128.0.255) A][%00-00 number]]:: "
-"[s0; Space after table in dots.]:: [s1;/C@(0.0.255) [%00-00/@(128.0.255) f][%00-00 "
-"number]]:: [s0; Frame thickness in dots. Frame is outer border of table.]:: [s1;/C@(0.0.255) "
-"[%00-00/@(128.0.255) F][%00-00 color]]:: [s0; Color of the frame.]:: [s1;C [%00-00 "
-"g]]:: [s0; Grid thickness in dots. Grid are lines dividing")
+"00-00/@(128.0.255) B][%00-00 number]]:: [s0; Space before table in dots.]:: [s1;/C@(0.0.255) "
+"[%00-00/@(128.0.255) A][%00-00 number]]:: [s0; Space after table in dots.]:: [s1;/C@(0.0.255) "
+"[%00-00/@(128.0.255) f][%00-00 number]]:: [s0; Frame thickness in dots. Frame is "
+"outer border of table.]:: [s1;/C@(0.0.255) [%00-00/@(128.0.255) F][%00-00 color]]:: "
+"[s0; Color of the frame.]:: [s1;C [%00-00 g]]:: ")
 TOPIC_TEXT(
-" cells inside table.]:: [s1;/C@(0.0.255) [%00-00/@(128.0.255) G][%00-00 color]]:: "
-"[s0; Color of the grid.]:: [s1;C [%00-00 `~]]:: [s0; Sets grid and frame thickness "
-"to zero. Useful when using tables to organize text.]:: [s1;/C@(0.0.255) [%00-00/@(128.0.255) "
-"h]number]:: [s0; Number of header rows. Header rows are repeated at the beginning "
-"of every page.]:: [s1;C [%00-00 `^]]:: [s0; Cell aligns to t")
+"[s0; Grid thickness in dots. Grid are lines dividing cells inside table.]:: [s1;/C@(0.0.255) "
+"[%00-00/@(128.0.255) G][%00-00 color]]:: [s0; Color of the grid.]:: [s1;C [%00-00 "
+"`~]]:: [s0; Sets grid and frame thickness to zero. Useful when using tables to organize "
+"text.]:: [s1;/C@(0.0.255) [%00-00/@(128.0.255) h]number]:: [s0; Number of header "
+"rows. Header rows are repeated at the beginning of every")
 TOPIC_TEXT(
-"op. Default.]:: [s1;C [%00-00 `=]]:: [s0; Cell aligns to center (vertical).]:: [s1;C "
-"[%00-00 v]]:: [s0; Cell aligns to bottom.]:: [s1;/C@(0.0.255) [%00-00/@(128.0.255) "
-"l]number/number&][s0;/C@(0.0.255) [%00-00/@(128.0.255) l]number&][s0;/C@(0.0.255) "
-"[%00-00/@(128.0.255) l]/number]:: [s0; Sets left cell border (first [/@(0.0.255) "
-"number]) and margin in dots. If any of numbers is missing, sets only ")
+" page.]:: [s1;C [%00-00 `^]]:: [s0; Cell aligns to top. Default.]:: [s1;C [%00-00 "
+"`=]]:: [s0; Cell aligns to center (vertical).]:: [s1;C [%00-00 v]]:: [s0; Cell aligns "
+"to bottom.]:: [s1;/C@(0.0.255) [%00-00/@(128.0.255) l]number/number&][s0;/C@(0.0.255) "
+"[%00-00/@(128.0.255) l]number&][s0;/C@(0.0.255) [%00-00/@(128.0.255) l]/number]:: "
+"[s0; Sets left cell border (first [/@(0.0.255) number]) and marg")
 TOPIC_TEXT(
-"the one present. Default is border: 0, margin: 25.]:: [s1;/C@(0.0.255) [/@(128.0.255) "
-"r]number/number&][s0;/C@(0.0.255) [/@(128.0.255) r]number&][s0;/C@(0.0.255) [/@(128.0.255) "
-"r]/number]:: [s0; Sets right cell border (first [/@(0.0.255) number]) and margin "
-"in dots. If any of numbers is missing, sets only the one present. Default is border: "
-"0, margin: 25.]:: [s1;/C@(0.0.255) [/@(128.0.255) t]numbe")
+"in in dots. If any of numbers is missing, sets only the one present. Default is "
+"border: 0, margin: 25.]:: [s1;/C@(0.0.255) [/@(128.0.255) r]number/number&][s0;/C@(0.0.255) "
+"[/@(128.0.255) r]number&][s0;/C@(0.0.255) [/@(128.0.255) r]/number]:: [s0; Sets right "
+"cell border (first [/@(0.0.255) number]) and margin in dots. If any of numbers is "
+"missing, sets only the one present. Default is border: 0, ma")
 TOPIC_TEXT(
-"r/number&][s0;/C@(0.0.255) [/@(128.0.255) t]number&][s0;/C@(0.0.255) [/@(128.0.255) "
-"t]/number]:: [s0; Sets top cell border (first [/@(0.0.255) number]) and margin in "
-"dots. If any of numbers is missing, sets only the one present. Default is border: "
-"0, margin: 15.]:: [s1;/C@(0.0.255) [/@(128.0.255) b]number/number&][s0;/C@(0.0.255) "
-"[/@(128.0.255) b]number&][s0;/C@(0.0.255) [/@(128.0.255) b]/number]:")
+"rgin: 25.]:: [s1;/C@(0.0.255) [/@(128.0.255) t]number/number&][s0;/C@(0.0.255) [/@(128.0.255) "
+"t]number&][s0;/C@(0.0.255) [/@(128.0.255) t]/number]:: [s0; Sets top cell border "
+"(first [/@(0.0.255) number]) and margin in dots. If any of numbers is missing, sets "
+"only the one present. Default is border: 0, margin: 15.]:: [s1;/C@(0.0.255) [/@(128.0.255) "
+"b]number/number&][s0;/C@(0.0.255) [/@(128.0.255) b")
 TOPIC_TEXT(
-": [s0; Sets bottom cell border (first [/@(0.0.255) number]) and margin in dots. "
-"If any of numbers is missing, sets only the one present. Default is border: 0, margin: "
-"15.]:: [s1;/C@(0.0.255) [/@(128.0.255) a]number/number&][s0;/C@(0.0.255) [/@(128.0.255) "
-"a]number&][s0;/C@(0.0.255) [/@(128.0.255) a]/number]:: [s0; Sets all cell borders "
-"(first [/@(0.0.255) number]) and margins in dots. If any of num")
+"]number&][s0;/C@(0.0.255) [/@(128.0.255) b]/number]:: [s0; Sets bottom cell border "
+"(first [/@(0.0.255) number]) and margin in dots. If any of numbers is missing, sets "
+"only the one present. Default is border: 0, margin: 15.]:: [s1;/C@(0.0.255) [/@(128.0.255) "
+"a]number/number&][s0;/C@(0.0.255) [/@(128.0.255) a]number&][s0;/C@(0.0.255) [/@(128.0.255) "
+"a]/number]:: [s0; Sets all cell borders (first [/@(")
 TOPIC_TEXT(
-"bers is missing, sets only the one present.]:: [s1;/C@(0.0.255) [/@(128.0.255) `@]color]:: "
-"[s0; Cell background color. Default is White.]:: [s1;/C@(0.0.255) [/@(128.0.255) "
-"R]color]:: [s0; Cell border color. Default is Black.]:: [s1;C !]:: [s0; Resets cell "
-"formatting to default values.]:: [s1;/C@(0.0.255) [/@(128.0.255) `-]number]:: [s0; "
-"Horizontal cell span.]:: [s1;/C@(0.0.255) [/@(128.0.255) `|]n")
+"0.0.255) number]) and margins in dots. If any of numbers is missing, sets only the "
+"one present.]:: [s1;/C@(0.0.255) [/@(128.0.255) `@]color]:: [s0; Cell background "
+"color. Default is White.]:: [s1;/C@(0.0.255) [/@(128.0.255) R]color]:: [s0; Cell "
+"border color. Default is Black.]:: [s1;C !]:: [s0; Resets cell formatting to default "
+"values.]:: [s1;/C@(0.0.255) [/@(128.0.255) `-]number]:: [s0; Horizonta")
 TOPIC_TEXT(
-"umber]:: [s0; Vertical cell span.]:: [s1;C ;]::= [s0; NOP  separator. In some cases "
-"it helps to separate command code.]}}&][s0;3 &][s0; Note: There is also legacy support "
-"for old table format (from previous QTF version) that is based on [@(128.0.255) `+`+ "
-"]pair as table start/stop and [@(128.0.255) `|`| `-`-] to divide cells/lines. &][s0;3 "
-"&][s0;3 &][s2;3 Examples&][s0; &][ {{10000 [s0;*C@3;1 `\"No")
+"l cell span.]:: [s1;/C@(0.0.255) [/@(128.0.255) `|]number]:: [s0; Vertical cell "
+"span.]:: [s1;C ;]::= [s0; NOP  separator. In some cases it helps to separate command "
+"code.]}}&][s0;3 &][s0; Note: There is also legacy support for old table format (from "
+"previous QTF version) that is based on [@(128.0.255) `+`+ ]pair as table start/stop "
+"and [@(128.0.255) `|`| `-`-] to divide cells/lines. &][s0;3 &][s0;")
 TOPIC_TEXT(
-"rmal `[`* bold`] `[/ italic`] `[`_ underline`] `[`` superscript`] `[, subscript`]`\"]:: "
-"[s0;, [, Normal ][*, bold][,  ][/, italic][,  ][_, underline][,  ][` superscript][, "
-" ]subscript]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"```[ ```] `\\1`[escaped`]`\\1 `[`* "
-"bold`]`\"]:: [s0;* [* `[ `] `[escaped`] ]bold]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[A "
-"Arial (Sans`-Serif)`] `[R Times New Roman (Serif)`] `[C Courier (Mo")
+"3 &][s2;3 Examples&][s0; &][ {{10000 [s0;*C@3;1 `\"Normal `[`* bold`] `[/ italic`] "
+"`[`_ underline`] `[`` superscript`] `[, subscript`]`\"]:: [s0;, [, Normal ][*, bold][, "
+" ][/, italic][,  ][_, underline][,  ][` superscript][,  ]subscript]}}&][s0; &][ {{10000 "
+"[s0;*C@3;1 `\"```[ ```] `\\1`[escaped`]`\\1 `[`* bold`]`\"]:: [s0;* [* `[ `] `[escaped`] "
+"]bold]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[A Arial (Sans`-Se")
 TOPIC_TEXT(
-"nospace)`]`\"]:: [s0;C [A Arial (Sans`-Serif) ][R Times New Roman (Serif)][A  ]Courier "
-"(Monospace)]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[0 6pt `]`[1 8pt `]`[2 10pt `]`[3 "
-"12pt `]`[4 16pt `]`[5 20pt `]`[6 24pt `]`[7 28pt `]`[8 36pt `]`[9 48pt `]`\"]:: [s0;9 "
-"[0 6pt ][1 8pt ][2 10pt ][3 12pt][2  ][4 16pt ][5 20pt ][6 24pt ][7 28pt ][8 36pt "
-"]48pt ]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[!Tahoma! Tahoma`]`\"]:: ")
+"rif)`] `[R Times New Roman (Serif)`] `[C Courier (Monospace)`]`\"]:: [s0;C [A Arial "
+"(Sans`-Serif) ][R Times New Roman (Serif)][A  ]Courier (Monospace)]}}&][s0; &][ {{10000 "
+"[s0;*C@3;1 `\"`[0 6pt `]`[1 8pt `]`[2 10pt `]`[3 12pt `]`[4 16pt `]`[5 20pt `]`[6 "
+"24pt `]`[7 28pt `]`[8 36pt `]`[9 48pt `]`\"]:: [s0;9 [0 6pt ][1 8pt ][2 10pt ][3 "
+"12pt][2  ][4 16pt ][5 20pt ][6 24pt ][7 28pt ][8 36pt ]48pt ]}}&][s0")
 TOPIC_TEXT(
-"[s0; Tahoma]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[`+500 500dots`]`\"]:: [s0;+500 "
-"500dots]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[`@4 Green text`] `[`$(255.220.200) Pink "
-"background`]`\"]:: [s0;$(255.220.200) [@4$N Green text][$N  ]Pink background]}}&][s0; "
-"&][ {{10000 [s0;*C@3;1 `\"`[%EN`-US English language`] `[%CS`-CZ Czech language`]`\"]:: "
-"[s0; English language [%CS-CZ Czech language]]}}&][s0; &][ {{10000 ")
+"; &][ {{10000 [s0;*C@3;1 `\"`[!Tahoma! Tahoma`]`\"]:: [s0; Tahoma]}}&][s0; &][ {{10000 "
+"[s0;*C@3;1 `\"`[`+500 500dots`]`\"]:: [s0;+500 500dots]}}&][s0; &][ {{10000 [s0;*C@3;1 "
+"`\"`[`@4 Green text`] `[`$(255.220.200) Pink background`]`\"]:: [s0;$(255.220.200) "
+"[@4$N Green text][$N  ]Pink background]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[%EN`-US "
+"English language`] `[%CS`-CZ Czech language`]`\"]:: [s0; English la")
 TOPIC_TEXT(
-"[s0;*C@3;1 `\"`[`^upp.sf.net`^ Hyperlink`] `[Icompiler, linker; Index entry`]`\"]:: "
-"[s0;Icompiler`, linker; [^upp`.sf`.net^I; Hyperlink][I;  ]Index entry]}}&][s0; &][ "
-"{{10000 [s0;*C@3;1 `\"`[:label: Labeled paragraph`]`\"]:: [s0;:label: Labeled paragraph]}}&][s0; "
-"&][ {{10000 [s0;*C@3;1 `\"`[< Left paragraph alignment`]`\"]:: [s0; Left paragraph "
-"alignment]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[`= Center par")
+"nguage [%CS-CZ Czech language]]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[`^upp.sf.net`^ "
+"Hyperlink`] `[Icompiler, linker; Index entry`]`\"]:: [s0;Icompiler`, linker; [^upp`.sf`.net^I; "
+"Hyperlink][I;  ]Index entry]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[:label: Labeled "
+"paragraph`]`\"]:: [s0;:label: Labeled paragraph]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[< "
+"Left paragraph alignment`]`\"]:: [s0; Left paragraph alignme")
 TOPIC_TEXT(
-"agraph alignment`]`\"]:: [s0;= Center paragraph alignment]}}&][s0; &][ {{10000 [s0;*C@3;1 "
-"`\"`[> Right paragraph alignment`]`\"]:: [s0;> Right paragraph alignment]}}&][s0; "
-"&][ {{10000 [s0;*C@3;1 `\"`[# Justify alignment. Just some text to demosntrate it... "
-"Just some text to demonstrate it... Just some text to demonstrate it...`]`\"]:: [s0;# "
-"Justify alignment. Just some text to demosntrate it... Just so")
+"nt]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[`= Center paragraph alignment`]`\"]:: [s0;= "
+"Center paragraph alignment]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[> Right paragraph "
+"alignment`]`\"]:: [s0;> Right paragraph alignment]}}&][s0; &][ {{10000 [s0;*C@3;1 "
+"`\"`[# Justify alignment. Just some text to demosntrate it... Just some text to demonstrate "
+"it... Just some text to demonstrate it...`]`\"]:: [s0;# Justify al")
 TOPIC_TEXT(
-"me text to demonstrate it... Just some text to demonstrate it...]}}&][s0; &][ {{10000 "
-"[s0;*C@3;1 `\"`[l1000 Left margin 1000dots`]`\"]:: [s0;l1000; Left margin 1000dots]}}&][s0; "
-"&][ {{10000 [s0;*C@3;1 `\"`[i1000 Indent 1000 dots.Just some text to demonstrate "
-"it... Just some text to demonstrate it...`]`\"]:: [s0;i1000; Indent 1000 dots.Just "
-"some text to demonstrate it... Just some text to demonstrate i")
+"ignment. Just some text to demosntrate it... Just some text to demonstrate it... "
+"Just some text to demonstrate it...]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[l1000 Left "
+"margin 1000dots`]`\"]:: [s0;l1000; Left margin 1000dots]}}&][s0; &][ {{10000 [s0;*C@3;1 "
+"`\"`[i1000 Indent 1000 dots.Just some text to demonstrate it... Just some text to "
+"demonstrate it...`]`\"]:: [s0;i1000; Indent 1000 dots.Just some text ")
 TOPIC_TEXT(
-"t...]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[r1000 Right margin 1000 dots.Just some "
-"text to demonstrate it... Just some text to demonstrate it...`]`\"]:: [s0;r1000; "
-"Right margin 1000 dots.Just some text to demonstrate it... Just some text to demonstrate "
-"it...]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"Paragraph`&`[b200 Before 200dots`]`\"]:: "
-"[s0; Paragraph&][s0;b200; Before 200dots]}}&][s0; &][ {{10000 [s0;*C@3;")
+"to demonstrate it... Just some text to demonstrate it...]}}&][s0; &][ {{10000 [s0;*C@3;1 "
+"`\"`[r1000 Right margin 1000 dots.Just some text to demonstrate it... Just some text "
+"to demonstrate it...`]`\"]:: [s0;r1000; Right margin 1000 dots.Just some text to "
+"demonstrate it... Just some text to demonstrate it...]}}&][s0; &][ {{10000 [s0;*C@3;1 "
+"`\"Paragraph`&`[b200 Before 200dots`]`\"]:: [s0; Paragraph&][s0")
 TOPIC_TEXT(
-"1 `\"`[a200 After 200dots`]`&Paragraph`\"]:: [s0;a200; After 200dots&][s0; Paragraph]}}&][s0; "
-"&][ {{10000 [s0;*C@3;1 `\"`[i200 `[O0 bullet`&`]`[O1 bullet`&`]`[O2 bullet`&`]`[O3 "
-"bullet`]`]`\"]:: [s0;i200;O0; bullet&][s0;i200;O1; bullet&][s0;i200;O2; bullet&][s0;i200;O3; "
-"bullet]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[O9i500 text bullet`-`|Just some text "
-"to demonstrate it... Just some text to demonstrate it.")
+";b200; Before 200dots]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[a200 After 200dots`]`&Paragraph`\"]:: "
+"[s0;a200; After 200dots&][s0; Paragraph]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[i200 "
+"`[O0 bullet`&`]`[O1 bullet`&`]`[O2 bullet`&`]`[O3 bullet`]`]`\"]:: [s0;i200;O0; bullet&][s0;i200;O1; "
+"bullet&][s0;i200;O2; bullet&][s0;i200;O3; bullet]}}&][s0; &][ {{10000 [s0;*C@3;1 "
+"`\"`[O9i500 text bullet`-`|Just some text to")
 TOPIC_TEXT(
-"..Just some text to demonstrate it... Just some text to demonstrate it...`]`\"]:: "
-"[s0;i500;O9; text bullet-|Just some text to demonstrate it... Just some text to demonstrate "
-"it...Just some text to demonstrate it... Just some text to demonstrate it...]}}&][s0; "
-"&][ {{10000 [s0;*C@3;1 `\"`[O9i200 `[N1m.; `-`|level 1`&`]`[N1a `-`|level 2`&`]`[N1a "
-"`-`|level 2`&`]`[N1 `-`|level 1`&`]`[N1a `-`|level 2`]`]`")
+" demonstrate it... Just some text to demonstrate it...Just some text to demonstrate "
+"it... Just some text to demonstrate it...`]`\"]:: [s0;i500;O9; text bullet-|Just "
+"some text to demonstrate it... Just some text to demonstrate it...Just some text "
+"to demonstrate it... Just some text to demonstrate it...]}}&][s0; &][ {{10000 [s0;*C@3;1 "
+"`\"`[O9i200 `[N1m.; `-`|level 1`&`]`[N1a `-`|level 2`&`]`[N1a `-`|l")
 TOPIC_TEXT(
-"\"]:: [s0;i200;O9;m`.;N1; -|level 1&][s0;i200;O9;N1a; -|level 2&][s0;i200;O9;N1a; "
-"-|level 2&][s0;i200;O9;N1; -|level 1&][s0;i200;O9;N1a; -|level 2]}}&][s0; &][ {{10000 "
-"[s0;*C@3;1 `\"`[`~300`~`=.2000`~>`-3000 `-`|Normal tab`-`|Centered tab`-`|Right tab`]`\"]:: "
-"[s0;~~~300~=.2000~>-3000; -|Normal tab-|Centered tab-|Right tab]}}&][s0; &][ {{10000 "
-"[s0;*C@3;1 `\"`{`{1:2 A1]:: [s0;*C@3;1 A2]:: [s0;*C@3;1 B1]")
+"evel 2`&`]`[N1 `-`|level 1`&`]`[N1a `-`|level 2`]`]`\"]:: [s0;i200;O9;m`.;N1; -|level "
+"1&][s0;i200;O9;N1a; -|level 2&][s0;i200;O9;N1a; -|level 2&][s0;i200;O9;N1; -|level "
+"1&][s0;i200;O9;N1a; -|level 2]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`[`~300`~`=.2000`~>`-3000 "
+"`-`|Normal tab`-`|Centered tab`-`|Right tab`]`\"]:: [s0;~~~300~=.2000~>-3000; -|Normal "
+"tab-|Centered tab-|Right tab]}}&][s0; &][ {{10000 [s0;*C")
 TOPIC_TEXT(
-":: [s0;*C@3;1 B2`}`}`\"]:: [ {{3333:6667 [s0; A1]:: [s0; A2]:: [s0; B1]:: [s0; B2]}}]}}&][s0; "
-"&][ {{10000 [s0;*C@3;1 `\"`{`{2:1G4g100F5f50 A1`:: A2`:: B1`:: B2`}`}`\"]:: [ {{6666:3334f50;F5g100;G4 "
-"[s0; A1]:: [s0; A2]:: [s0; B1]:: [s0; B2]}}]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`{`{1:2 "
-"A1`::l40/60R6`@3 A2`::! B1`:: B2`}`}`\"]:: [ {{3333:6667 [s0; A1]::l40/60@3R6 [s0; "
-"A2]::l0/25@2R0 [s0; B1]:: [s0; B2]}}]}")
+"@3;1 `\"`{`{1:2 A1]:: [s0;*C@3;1 A2]:: [s0;*C@3;1 B1]:: [s0;*C@3;1 B2`}`}`\"]:: "
+"[ {{3333:6667 [s0; A1]:: [s0; A2]:: [s0; B1]:: [s0; B2]}}]}}&][s0; &][ {{10000 [s0;*C@3;1 "
+"`\"`{`{2:1G4g100F5f50 A1`:: A2`:: B1`:: B2`}`}`\"]:: [ {{6666:3334f50;F5g100;G4 [s0; "
+"A1]:: [s0; A2]:: [s0; B1]:: [s0; B2]}}]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`{`{1:2 "
+"A1`::l40/60R6`@3 A2`::! B1`:: B2`}`}`\"]:: [ {{3333:6667 [s0; A1]::l4")
 TOPIC_TEXT(
-"}&][s0; &][ {{10000 [s0;*C@3;1 `\"`{`{1:1:1`|2 A1`::`-2 A2`:: A3`:: B1`:: B2`:: "
-"B3`}`}`\"]:: [ {{3333:3333:3334|1 [s0; A1]::-1 [s0; A2]:: [s0; ]:: [s0; ]:: [s0; "
-"B2]:: [s0; B3]}}]}}&][s0; &][ {{10000 [s0;*C@3;1 `\"`{`{1:2 A1`:: A2`:: B1`:: `{`{1:2 "
-"a1`:: a2`:: a1`:: a2`}`}`}`}`\"]:: [ {{3333:6667 [s0; A1]:: [s0; A2]:: [s0; B1]:: "
-"[ {{3333:6667 [s0; a1]:: [s0; a2]:: [s0; a1]:: [s0; a2]}}]}}]}}&][s0;3 ]")
+"0/60@3R6 [s0; A2]::l0/25@2R0 [s0; B1]:: [s0; B2]}}]}}&][s0; &][ {{10000 [s0;*C@3;1 "
+"`\"`{`{1:1:1`|2 A1`::`-2 A2`:: A3`:: B1`:: B2`:: B3`}`}`\"]:: [ {{3333:3333:3334|1 "
+"[s0; A1]::-1 [s0; A2]:: [s0; ]:: [s0; ]:: [s0; B2]:: [s0; B3]}}]}}&][s0; &][ {{10000 "
+"[s0;*C@3;1 `\"`{`{1:2 A1`:: A2`:: B1`:: `{`{1:2 a1`:: a2`:: a1`:: a2`}`}`}`}`\"]:: "
+"[ {{3333:6667 [s0; A1]:: [s0; A2]:: [s0; B1]:: [ {{3333:6667 [s0; a1]:")
+TOPIC_TEXT(
+": [s0; a2]:: [s0; a1]:: [s0; a2]}}]}}]}}&][s0;3 ]")

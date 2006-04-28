@@ -110,9 +110,9 @@ Report& Report::Header(const char *qtf, int spc)
 
 Report& Report::Footer(const char *qtf, int spc)
 {
-	header = qtf;
-	headerspc = spc;
-	headercy = GetHeightHF(qtf);
+	footer = qtf;
+	footerspc = spc;
+	footercy = GetHeightHF(qtf);
 	RestartPage();
 	return *this;
 }

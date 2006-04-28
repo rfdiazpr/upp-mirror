@@ -47,15 +47,19 @@ private:
 	Image         wheel_cache;
 	Rect          wheel_rect;
 	Rect          column_rect;
-	
-	Size 		  owsize;
+
 	int           firstclick;
-	
+
 	struct WheelBuff
 	{
 		int arg;
 		int l;
-	} * wb;	
+	}
+#ifndef NEWIMAGE
+	 *wb;
+	Size owsize
+#endif
+	;
 };
 
 struct ColorWheelCtrl : public WheelRampCtrl {

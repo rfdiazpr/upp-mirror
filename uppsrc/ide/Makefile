@@ -76,7 +76,7 @@ OutDir_PdfDraw = $(UPPOUT)PdfDraw/GCC32-Gcc-Gui-Linux-Shared/
 Macro_PdfDraw = $(Macro)
 
 OutDir = $(OutDir_ide)
-OutFile = /src/ide
+OutFile = /home/cxl/ide
 
 .PHONY: all
 all: install $(OutFile)
@@ -3112,6 +3112,7 @@ $(OutDir_ide)Help.o: $(UPPDIR1)ide/Help.cpp \
 	$(UPPDIR1)ide/app.tpp/cmdline$$en-us.tpp \
 	$(UPPDIR1)ide/app.tpp/ConfiguringPackagesAssemblies$$en-us.tpp \
 	$(UPPDIR1)ide/app.tpp/Contact$$en-us.tpp \
+	$(UPPDIR1)ide/app.tpp/CrossComp$$en-gb.tpp \
 	$(UPPDIR1)ide/app.tpp/Files$$en-us.tpp \
 	$(UPPDIR1)ide/app.tpp/Flags$$en-us.tpp \
 	$(UPPDIR1)ide/app.tpp/GettingStarted$$en-us.tpp \
@@ -9845,6 +9846,7 @@ $(OutDir_ide_VectorDes)IdeVectorDes.o: $(UPPDIR1)ide/VectorDes/IdeVectorDes.cpp 
 	$(UPPDIR1)RichText/Text.h \
 	$(UPPDIR1)RichText/Txt.h \
 	$(UPPDIR1)VectorDes/VectorDes.h \
+	$(UPPDIR1)VectorDes/VectorDes.iml \
 	$(UPPDIR1)VectorDes/VectorObj.h \
 	$(UPPDIR1)Web/auth.h \
 	$(UPPDIR1)Web/html.h \
@@ -16332,6 +16334,51 @@ $(OutDir_Core)Stream.o: $(UPPDIR1)Core/Stream.cpp \
 	$(UPPDIR1)Core/Xmlize.h
 	$(CPPFLAGS) $(CINC) $(Macro_Core)  $(UPPDIR1)Core/Stream.cpp -o $(OutDir_Core)Stream.o
 
+$(OutDir_Core)BlockStream.o: $(UPPDIR1)Core/BlockStream.cpp \
+	$(UPPDIR1)Core/Algo.h \
+	$(UPPDIR1)Core/App.h \
+	$(UPPDIR1)Core/BiCont.h \
+	$(UPPDIR1)Core/Callback.h \
+	$(UPPDIR1)Core/Cbgen.h \
+	$(UPPDIR1)Core/CharSet.h \
+	$(UPPDIR1)Core/Color.h \
+	$(UPPDIR1)Core/Convert.h \
+	$(UPPDIR1)Core/Core.h \
+	$(UPPDIR1)Core/Defs.h \
+	$(UPPDIR1)Core/Diag.h \
+	$(UPPDIR1)Core/Format.h \
+	$(UPPDIR1)Core/Global.h \
+	$(UPPDIR1)Core/Gtypes.h \
+	$(UPPDIR1)Core/i18n.h \
+	$(UPPDIR1)Core/Index.h \
+	$(UPPDIR1)Core/Index.hpp \
+	$(UPPDIR1)Core/Lang.h \
+	$(UPPDIR1)Core/Lang_s.h \
+	$(UPPDIR1)Core/Map.h \
+	$(UPPDIR1)Core/Mt.h \
+	$(UPPDIR1)Core/Other.h \
+	$(UPPDIR1)Core/Parser.h \
+	$(UPPDIR1)Core/Path.h \
+	$(UPPDIR1)Core/Profile.h \
+	$(UPPDIR1)Core/Ptr.h \
+	$(UPPDIR1)Core/Stream.h \
+	$(UPPDIR1)Core/String.h \
+	$(UPPDIR1)Core/String.hpp \
+	$(UPPDIR1)Core/t_.h \
+	$(UPPDIR1)Core/Thread.h \
+	$(UPPDIR1)Core/TimeDate.h \
+	$(UPPDIR1)Core/Topic.h \
+	$(UPPDIR1)Core/Topt.h \
+	$(UPPDIR1)Core/Util.h \
+	$(UPPDIR1)Core/Uuid.h \
+	$(UPPDIR1)Core/Value.h \
+	$(UPPDIR1)Core/Vcont.h \
+	$(UPPDIR1)Core/Vcont.hpp \
+	$(UPPDIR1)Core/Win32Com.h \
+	$(UPPDIR1)Core/XML.h \
+	$(UPPDIR1)Core/Xmlize.h
+	$(CPPFLAGS) $(CINC) $(Macro_Core)  $(UPPDIR1)Core/BlockStream.cpp -o $(OutDir_Core)BlockStream.o
+
 $(OutDir_Core)Log.o: $(UPPDIR1)Core/Log.cpp \
 	$(UPPDIR1)Core/Algo.h \
 	$(UPPDIR1)Core/App.h \
@@ -17336,6 +17383,7 @@ $(OutDir_Core)Core.a: \
 	$(OutDir_Core)Path.o \
 	$(OutDir_Core)App.o \
 	$(OutDir_Core)Stream.o \
+	$(OutDir_Core)BlockStream.o \
 	$(OutDir_Core)Log.o \
 	$(OutDir_Core)Debug.o \
 	$(OutDir_Core)Util.o \
@@ -17370,6 +17418,7 @@ $(OutDir_Core)Core.a: \
 		$(OutDir_Core)Path.o \
 		$(OutDir_Core)App.o \
 		$(OutDir_Core)Stream.o \
+		$(OutDir_Core)BlockStream.o \
 		$(OutDir_Core)Log.o \
 		$(OutDir_Core)Debug.o \
 		$(OutDir_Core)Util.o \
@@ -21732,7 +21781,8 @@ $(OutDir_plugin_z)zlibupp.o: $(UPPDIR1)plugin/z/zlibupp.cpp \
 	$(UPPDIR1)Core/Xmlize.h \
 	$(UPPDIR1)plugin/z/lib/zconf.h \
 	$(UPPDIR1)plugin/z/lib/zlib.h \
-	$(UPPDIR1)plugin/z/lib/zutil.h
+	$(UPPDIR1)plugin/z/lib/zutil.h \
+	$(UPPDIR1)plugin/z/z.h
 	$(CPPFLAGS) $(CINC) $(Macro_plugin_z)  $(UPPDIR1)plugin/z/zlibupp.cpp -o $(OutDir_plugin_z)zlibupp.o
 
 $(OutDir_plugin_z)adler32.o: $(UPPDIR1)plugin/z/lib/adler32.c \
@@ -22580,7 +22630,6 @@ $(OutDir_VectorDes)VectorDes.o: $(UPPDIR1)VectorDes/VectorDes.cpp \
 	$(UPPDIR1)Draw/DrawWin32.h \
 	$(UPPDIR1)Draw/Image.h \
 	$(UPPDIR1)Draw/ImageDraw.h \
-	$(UPPDIR1)Draw/iml.h \
 	$(UPPDIR1)Draw/iml_header.h \
 	$(UPPDIR1)Draw/iml_source.h \
 	$(UPPDIR1)Draw/PixelArray.h \
@@ -22697,6 +22746,7 @@ $(OutDir_VectorDes)VectorRich.o: $(UPPDIR1)VectorDes/VectorRich.cpp \
 	$(UPPDIR1)RichText/Text.h \
 	$(UPPDIR1)RichText/Txt.h \
 	$(UPPDIR1)VectorDes/VectorDes.h \
+	$(UPPDIR1)VectorDes/VectorDes.iml \
 	$(UPPDIR1)VectorDes/VectorObj.h \
 	$(UPPDIR1)Web/auth.h \
 	$(UPPDIR1)Web/html.h \
@@ -22809,6 +22859,70 @@ $(OutDir_RichText)Object.o: $(UPPDIR1)RichText/Object.cpp \
 	$(UPPDIR1)RichText/Text.h \
 	$(UPPDIR1)RichText/Txt.h
 	$(CPPFLAGS) $(CINC) $(Macro_RichText)  $(UPPDIR1)RichText/Object.cpp -o $(OutDir_RichText)Object.o
+
+$(OutDir_RichText)RichImage.o: $(UPPDIR1)RichText/RichImage.cpp \
+	$(UPPDIR1)Core/Algo.h \
+	$(UPPDIR1)Core/App.h \
+	$(UPPDIR1)Core/BiCont.h \
+	$(UPPDIR1)Core/Callback.h \
+	$(UPPDIR1)Core/Cbgen.h \
+	$(UPPDIR1)Core/CharSet.h \
+	$(UPPDIR1)Core/Color.h \
+	$(UPPDIR1)Core/Convert.h \
+	$(UPPDIR1)Core/Core.h \
+	$(UPPDIR1)Core/Defs.h \
+	$(UPPDIR1)Core/Diag.h \
+	$(UPPDIR1)Core/Format.h \
+	$(UPPDIR1)Core/Global.h \
+	$(UPPDIR1)Core/Gtypes.h \
+	$(UPPDIR1)Core/i18n.h \
+	$(UPPDIR1)Core/Index.h \
+	$(UPPDIR1)Core/Index.hpp \
+	$(UPPDIR1)Core/Lang.h \
+	$(UPPDIR1)Core/Lang_s.h \
+	$(UPPDIR1)Core/Map.h \
+	$(UPPDIR1)Core/Mt.h \
+	$(UPPDIR1)Core/Other.h \
+	$(UPPDIR1)Core/Parser.h \
+	$(UPPDIR1)Core/Path.h \
+	$(UPPDIR1)Core/Profile.h \
+	$(UPPDIR1)Core/Ptr.h \
+	$(UPPDIR1)Core/Stream.h \
+	$(UPPDIR1)Core/String.h \
+	$(UPPDIR1)Core/String.hpp \
+	$(UPPDIR1)Core/t_.h \
+	$(UPPDIR1)Core/Thread.h \
+	$(UPPDIR1)Core/TimeDate.h \
+	$(UPPDIR1)Core/Topic.h \
+	$(UPPDIR1)Core/Topt.h \
+	$(UPPDIR1)Core/Util.h \
+	$(UPPDIR1)Core/Uuid.h \
+	$(UPPDIR1)Core/Value.h \
+	$(UPPDIR1)Core/Vcont.h \
+	$(UPPDIR1)Core/Vcont.hpp \
+	$(UPPDIR1)Core/Win32Com.h \
+	$(UPPDIR1)Core/XML.h \
+	$(UPPDIR1)Core/Xmlize.h \
+	$(UPPDIR1)CtrlCore/CtrlCore.h \
+	$(UPPDIR1)CtrlCore/MKeys.h \
+	$(UPPDIR1)CtrlCore/TopWindow.h \
+	$(UPPDIR1)CtrlCore/Win32Keys.h \
+	$(UPPDIR1)CtrlCore/X11Keys.h \
+	$(UPPDIR1)Draw/Debug.h \
+	$(UPPDIR1)Draw/Display.h \
+	$(UPPDIR1)Draw/Draw.h \
+	$(UPPDIR1)Draw/DrawWin32.h \
+	$(UPPDIR1)Draw/Image.h \
+	$(UPPDIR1)Draw/ImageDraw.h \
+	$(UPPDIR1)Draw/PixelArray.h \
+	$(UPPDIR1)Image/Image.h \
+	$(UPPDIR1)plugin/png/png.h \
+	$(UPPDIR1)RichText/Para.h \
+	$(UPPDIR1)RichText/RichText.h \
+	$(UPPDIR1)RichText/Table.h \
+	$(UPPDIR1)RichText/Text.h \
+	$(UPPDIR1)RichText/Txt.h
+	$(CPPFLAGS) $(CINC) $(Macro_RichText)  $(UPPDIR1)RichText/RichImage.cpp -o $(OutDir_RichText)RichImage.o
 
 $(OutDir_RichText)ParaData.o: $(UPPDIR1)RichText/ParaData.cpp \
 	$(UPPDIR1)Core/Algo.h \
@@ -24252,6 +24366,7 @@ $(OutDir_RichText)Util.o: $(UPPDIR1)RichText/Util.cpp \
 
 $(OutDir_RichText)RichText.a: \
 	$(OutDir_RichText)Object.o \
+	$(OutDir_RichText)RichImage.o \
 	$(OutDir_RichText)ParaData.o \
 	$(OutDir_RichText)ParaType.o \
 	$(OutDir_RichText)ParaPaint.o \
@@ -24276,6 +24391,7 @@ $(OutDir_RichText)RichText.a: \
 	$(OutDir_RichText)Util.o
 	$(AR) $(OutDir_RichText)RichText.a \
 		$(OutDir_RichText)Object.o \
+		$(OutDir_RichText)RichImage.o \
 		$(OutDir_RichText)ParaData.o \
 		$(OutDir_RichText)ParaType.o \
 		$(OutDir_RichText)ParaPaint.o \
@@ -24927,6 +25043,63 @@ $(OutDir_CtrlCore)Win32Wnd.o: $(UPPDIR1)CtrlCore/Win32Wnd.cpp \
 	$(UPPDIR1)Draw/PixelArray.h
 	$(CPPFLAGS) $(CINC) $(Macro_CtrlCore)  $(UPPDIR1)CtrlCore/Win32Wnd.cpp -o $(OutDir_CtrlCore)Win32Wnd.o
 
+$(OutDir_CtrlCore)Win32ImgClip.o: $(UPPDIR1)CtrlCore/Win32ImgClip.cpp \
+	$(UPPDIR1)Core/Algo.h \
+	$(UPPDIR1)Core/App.h \
+	$(UPPDIR1)Core/BiCont.h \
+	$(UPPDIR1)Core/Callback.h \
+	$(UPPDIR1)Core/Cbgen.h \
+	$(UPPDIR1)Core/CharSet.h \
+	$(UPPDIR1)Core/Color.h \
+	$(UPPDIR1)Core/Convert.h \
+	$(UPPDIR1)Core/Core.h \
+	$(UPPDIR1)Core/Defs.h \
+	$(UPPDIR1)Core/Diag.h \
+	$(UPPDIR1)Core/Format.h \
+	$(UPPDIR1)Core/Global.h \
+	$(UPPDIR1)Core/Gtypes.h \
+	$(UPPDIR1)Core/i18n.h \
+	$(UPPDIR1)Core/Index.h \
+	$(UPPDIR1)Core/Index.hpp \
+	$(UPPDIR1)Core/Lang.h \
+	$(UPPDIR1)Core/Lang_s.h \
+	$(UPPDIR1)Core/Map.h \
+	$(UPPDIR1)Core/Mt.h \
+	$(UPPDIR1)Core/Other.h \
+	$(UPPDIR1)Core/Parser.h \
+	$(UPPDIR1)Core/Path.h \
+	$(UPPDIR1)Core/Profile.h \
+	$(UPPDIR1)Core/Ptr.h \
+	$(UPPDIR1)Core/Stream.h \
+	$(UPPDIR1)Core/String.h \
+	$(UPPDIR1)Core/String.hpp \
+	$(UPPDIR1)Core/t_.h \
+	$(UPPDIR1)Core/Thread.h \
+	$(UPPDIR1)Core/TimeDate.h \
+	$(UPPDIR1)Core/Topic.h \
+	$(UPPDIR1)Core/Topt.h \
+	$(UPPDIR1)Core/Util.h \
+	$(UPPDIR1)Core/Uuid.h \
+	$(UPPDIR1)Core/Value.h \
+	$(UPPDIR1)Core/Vcont.h \
+	$(UPPDIR1)Core/Vcont.hpp \
+	$(UPPDIR1)Core/Win32Com.h \
+	$(UPPDIR1)Core/XML.h \
+	$(UPPDIR1)Core/Xmlize.h \
+	$(UPPDIR1)CtrlCore/CtrlCore.h \
+	$(UPPDIR1)CtrlCore/MKeys.h \
+	$(UPPDIR1)CtrlCore/TopWindow.h \
+	$(UPPDIR1)CtrlCore/Win32Keys.h \
+	$(UPPDIR1)CtrlCore/X11Keys.h \
+	$(UPPDIR1)Draw/Debug.h \
+	$(UPPDIR1)Draw/Display.h \
+	$(UPPDIR1)Draw/Draw.h \
+	$(UPPDIR1)Draw/DrawWin32.h \
+	$(UPPDIR1)Draw/Image.h \
+	$(UPPDIR1)Draw/ImageDraw.h \
+	$(UPPDIR1)Draw/PixelArray.h
+	$(CPPFLAGS) $(CINC) $(Macro_CtrlCore)  $(UPPDIR1)CtrlCore/Win32ImgClip.cpp -o $(OutDir_CtrlCore)Win32ImgClip.o
+
 $(OutDir_CtrlCore)Win32Proc.o: $(UPPDIR1)CtrlCore/Win32Proc.cpp \
 	$(UPPDIR1)Core/Algo.h \
 	$(UPPDIR1)Core/App.h \
@@ -25328,6 +25501,63 @@ $(OutDir_CtrlCore)X11Clip.o: $(UPPDIR1)CtrlCore/X11Clip.cpp \
 	$(UPPDIR1)Draw/PixelArray.h
 	$(CPPFLAGS) $(CINC) $(Macro_CtrlCore)  $(UPPDIR1)CtrlCore/X11Clip.cpp -o $(OutDir_CtrlCore)X11Clip.o
 
+$(OutDir_CtrlCore)X11ImgClip.o: $(UPPDIR1)CtrlCore/X11ImgClip.cpp \
+	$(UPPDIR1)Core/Algo.h \
+	$(UPPDIR1)Core/App.h \
+	$(UPPDIR1)Core/BiCont.h \
+	$(UPPDIR1)Core/Callback.h \
+	$(UPPDIR1)Core/Cbgen.h \
+	$(UPPDIR1)Core/CharSet.h \
+	$(UPPDIR1)Core/Color.h \
+	$(UPPDIR1)Core/Convert.h \
+	$(UPPDIR1)Core/Core.h \
+	$(UPPDIR1)Core/Defs.h \
+	$(UPPDIR1)Core/Diag.h \
+	$(UPPDIR1)Core/Format.h \
+	$(UPPDIR1)Core/Global.h \
+	$(UPPDIR1)Core/Gtypes.h \
+	$(UPPDIR1)Core/i18n.h \
+	$(UPPDIR1)Core/Index.h \
+	$(UPPDIR1)Core/Index.hpp \
+	$(UPPDIR1)Core/Lang.h \
+	$(UPPDIR1)Core/Lang_s.h \
+	$(UPPDIR1)Core/Map.h \
+	$(UPPDIR1)Core/Mt.h \
+	$(UPPDIR1)Core/Other.h \
+	$(UPPDIR1)Core/Parser.h \
+	$(UPPDIR1)Core/Path.h \
+	$(UPPDIR1)Core/Profile.h \
+	$(UPPDIR1)Core/Ptr.h \
+	$(UPPDIR1)Core/Stream.h \
+	$(UPPDIR1)Core/String.h \
+	$(UPPDIR1)Core/String.hpp \
+	$(UPPDIR1)Core/t_.h \
+	$(UPPDIR1)Core/Thread.h \
+	$(UPPDIR1)Core/TimeDate.h \
+	$(UPPDIR1)Core/Topic.h \
+	$(UPPDIR1)Core/Topt.h \
+	$(UPPDIR1)Core/Util.h \
+	$(UPPDIR1)Core/Uuid.h \
+	$(UPPDIR1)Core/Value.h \
+	$(UPPDIR1)Core/Vcont.h \
+	$(UPPDIR1)Core/Vcont.hpp \
+	$(UPPDIR1)Core/Win32Com.h \
+	$(UPPDIR1)Core/XML.h \
+	$(UPPDIR1)Core/Xmlize.h \
+	$(UPPDIR1)CtrlCore/CtrlCore.h \
+	$(UPPDIR1)CtrlCore/MKeys.h \
+	$(UPPDIR1)CtrlCore/TopWindow.h \
+	$(UPPDIR1)CtrlCore/Win32Keys.h \
+	$(UPPDIR1)CtrlCore/X11Keys.h \
+	$(UPPDIR1)Draw/Debug.h \
+	$(UPPDIR1)Draw/Display.h \
+	$(UPPDIR1)Draw/Draw.h \
+	$(UPPDIR1)Draw/DrawWin32.h \
+	$(UPPDIR1)Draw/Image.h \
+	$(UPPDIR1)Draw/ImageDraw.h \
+	$(UPPDIR1)Draw/PixelArray.h
+	$(CPPFLAGS) $(CINC) $(Macro_CtrlCore)  $(UPPDIR1)CtrlCore/X11ImgClip.cpp -o $(OutDir_CtrlCore)X11ImgClip.o
+
 $(OutDir_CtrlCore)X11App.o: $(UPPDIR1)CtrlCore/X11App.cpp \
 	$(UPPDIR1)Core/Algo.h \
 	$(UPPDIR1)Core/App.h \
@@ -25397,6 +25627,7 @@ $(OutDir_CtrlCore)CtrlCore.a: \
 	$(OutDir_CtrlCore)LocalLoop.o \
 	$(OutDir_CtrlCore)TopWindow.o \
 	$(OutDir_CtrlCore)Win32Wnd.o \
+	$(OutDir_CtrlCore)Win32ImgClip.o \
 	$(OutDir_CtrlCore)Win32Proc.o \
 	$(OutDir_CtrlCore)TopWin32.o \
 	$(OutDir_CtrlCore)DHCtrl.o \
@@ -25404,6 +25635,7 @@ $(OutDir_CtrlCore)CtrlCore.a: \
 	$(OutDir_CtrlCore)X11Proc.o \
 	$(OutDir_CtrlCore)TopWinX11.o \
 	$(OutDir_CtrlCore)X11Clip.o \
+	$(OutDir_CtrlCore)X11ImgClip.o \
 	$(OutDir_CtrlCore)X11App.o
 	$(AR) $(OutDir_CtrlCore)CtrlCore.a \
 		$(OutDir_CtrlCore)Frame.o \
@@ -25417,6 +25649,7 @@ $(OutDir_CtrlCore)CtrlCore.a: \
 		$(OutDir_CtrlCore)LocalLoop.o \
 		$(OutDir_CtrlCore)TopWindow.o \
 		$(OutDir_CtrlCore)Win32Wnd.o \
+		$(OutDir_CtrlCore)Win32ImgClip.o \
 		$(OutDir_CtrlCore)Win32Proc.o \
 		$(OutDir_CtrlCore)TopWin32.o \
 		$(OutDir_CtrlCore)DHCtrl.o \
@@ -25424,6 +25657,7 @@ $(OutDir_CtrlCore)CtrlCore.a: \
 		$(OutDir_CtrlCore)X11Proc.o \
 		$(OutDir_CtrlCore)TopWinX11.o \
 		$(OutDir_CtrlCore)X11Clip.o \
+		$(OutDir_CtrlCore)X11ImgClip.o \
 		$(OutDir_CtrlCore)X11App.o
 
 $(OutDir_PdfDraw)TTFStream.o: $(UPPDIR1)PdfDraw/TTFStream.cpp \

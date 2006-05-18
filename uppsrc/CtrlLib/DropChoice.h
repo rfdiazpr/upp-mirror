@@ -78,6 +78,7 @@ public:
 
 	bool          HasKey(const Value& k) const  { return key.Find(k) >= 0; }
 	int           FindKey(const Value& k) const { return key.Find(k); }
+	int           Find(const Value& k) const    { return key.Find(k); }
 
 	int           GetCount() const              { return key.GetCount(); }
 	void          Trim(int n);
@@ -87,6 +88,7 @@ public:
 	Value         GetValue() const;
 	void          SetValue(int i, const Value& v);
 	void          SetValue(const Value& v);
+	Value         operator[](int i) const       { return GetValue(i); }
 
 	void          Adjust();
 	void          Adjust(const Value& k);

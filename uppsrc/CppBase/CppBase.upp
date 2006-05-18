@@ -10,7 +10,6 @@ file
 	cpplex.cpp,
 	Parser.cpp,
 	Base.cpp,
-	perf.txt,
 	Info readonly separator,
 	COPYING,
 	COPYING-PLAIN,
@@ -18,3 +17,4 @@ file
 
 mainconfig
 	"" = "";
+

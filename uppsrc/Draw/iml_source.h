@@ -32,7 +32,8 @@
 #ifdef  IMAGENONAMES
 	#define IMAGE_REGISTER(n)
 #else//IMAGENONAMES
-	#define IMAGE_REGISTER(n) static ImageCache::RegisterName IMAGE_RNAME(n)(IMAGE_NAME(n), IMAGE_REF(n)());
+	#define IMAGE_REGISTER(n) \
+		INITBLOCK { RegisterImageName__(IMAGE_NAME(n), IMAGE_REF(n)); } // Improve (once per iml, use vector)
 #endif//IMAGENONAMES
 
 #define IMAGE_NAMEOF(n)    IMAGE_NAMEOF_(n)

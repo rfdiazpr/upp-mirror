@@ -732,8 +732,10 @@ DocType::DocType(DocCtrl *(*create_doc)())
 , default_name(t_("new"))
 , paper(SGray)
 #ifdef PLATFORM_WIN32
+#ifndef NEWIMAGE
 , small_icon(Image::Application())
 , large_icon(Image::Application())
+#endif
 #endif
 , new_list(true)
 {

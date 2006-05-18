@@ -2,6 +2,11 @@
 
 #define LLOG(x) // LOG(x)
 
+void BarPane::LeftDown(Point pt, dword keyflags)
+{
+	WhenLeftClick();
+}
+
 void BarPane::Paint(Draw& w)
 {
 	Size sz = GetSize();
@@ -561,7 +566,6 @@ void BarCtrl::Layout()
 			pane.Repos(true, InFrame() ? GetSize().cx : INT_MAX);
 }
 
-
 BarCtrl::BarCtrl() {
 	align = BAR_TOP;
 	Ctrl::Add(pane.SizePos());
@@ -569,6 +573,7 @@ BarCtrl::BarCtrl() {
 	ssize = 8;
 	sii = zii = 0;
 	NoWantFocus();
+	pane.WhenLeftClick = Proxy(WhenLeftClick);
 }
 
 BarCtrl::~BarCtrl() {}

@@ -10,6 +10,64 @@ class ImageEditAdapter;
 #define IMAGESPACE MiscImg
 #include <Draw/iml_header.h>
 
+// Old Draw stuff
+
+class AlphaImageInfo
+{
+public:
+	enum ENCODING { COLOR_RLE, MONO_RLE, MONO_PACKED };
+
+	AlphaImageInfo(Size size = Size(0, 0), int encoding = COLOR_RLE, Point hotspot = Point(0, 0))
+		: size(size), encoding(encoding), hotspot(hotspot) {}
+
+	void               Serialize(Stream& stream);
+
+public:
+	int                encoding;
+	Size               size;
+	Point              hotspot;
+};
+
+struct IMLImageInfo : AlphaImageInfo
+{
+	IMLImageInfo() {}
+	IMLImageInfo(const AlphaImageInfo& ai, String name = Null, String encoded_data = Null)
+	: AlphaImageInfo(ai), name(name), encoded_data(encoded_data) {}
+
+	String name;
+	String encoded_data;
+};
+
+Image CreateImage(Size sz, Color color);
+void  FloodFill(Image& img, Color color, Point pt, const Rect& rc);
+void  Copy(Image& dest, Point p, const Image& src, const Rect& srect);
+void  Over(Image& dest, Point p, const Image& src, const Rect& srect, byte alpha = 255);
+void  GrayImage(Image& img, const Rect& drect);
+
+void  SwapHorz(Image& img, const Rect& rect);
+void  SwapVert(Image& img, const Rect& rect);
+
+void  SetImageRect(Image& dest, const Rect& drect, Color color);
+void  ChangeColor(Image& img, const Rect& drc, Color src, Color dest, int tolerance);
+void  SetImagePixel(Image& image, int x, int y, Color c);
+Color GetImagePixel(const Image& src, Point p);
+Vector<Color> GetImagePixel(const Image& src, const Vector<Point>& p);
+
+void  InterpolateImage(Image& img, const Rect& _rc);
+
+void ScanIML(CParser& parser, Array<IMLImageInfo>& out_images, VectorMap<String, String>& out_settings);
+
+String AlphaToRLE(const Image& aa);
+Image  RLEToAlpha(const String& src, Size sz);
+
+Image Crop(const Image& src, const Rect& rc);
+
+Vector<Color> GetPixel(const Image& src, const Vector<Point>& p);
+Color GetPixel(const Image& src, Point p);
+
+
+// -------------
+
 class UndoEntry
 {
 public:
@@ -37,7 +95,8 @@ class ImagePreviewCtrl : public Ctrl
 public:
 	ImagePreviewCtrl() : background(LtGray) {}
 
-	void         Set(const AlphaArray& buffer, Color background);
+	void         Set(const Image& img, Color background);
+
 	virtual void Paint(Draw& draw);
 
 private:
@@ -75,7 +134,7 @@ public:
 	Size          GetImageSize() const              { return image.GetSize(); }
 	bool          IsEmpty() const                   { return image.IsEmpty(); }
 
-	void          SetImage(pick_ AlphaArray& _image); // pick
+	void          SetImage(const Image& _image);
 
 	void          SetHotSpot(Point hotspot);
 	Point         GetHotSpot() const                { return hotspot; }
@@ -86,6 +145,7 @@ public:
 	Size         GetZoomedSize() const             { return zoomed_size; }
 
 	void         SetColor(Color _color)            { palette -> Set(_color); }
+	void         SetColor(RGBA c)                  { SetColor(Color(c.r, c.g, c.b)); }
 	Color        GetColor() const                  { return palette -> Get(); }
 	Color        GetTransparentColor() const       { return palette -> GetTransparent(); }
 
@@ -105,9 +165,10 @@ public:
 	Rect         GetSelectionOrImage() const;
 	bool         IsSelectionAvailable() const      { return !selection.IsEmpty(); }
 
-	void         SetSelectionImage(pick_ AlphaArray& sel_image);
-	void         ClearSelectionImage()             { SetSelectionImage(AlphaArray()); }
-	const AlphaArray& GetSelectionImage()          { return selection_image; }
+	void         SetSelectionImage(const Image& sel_image);
+	const Image& GetSelectionImage()               { return selection_image; }
+	void         ClearSelectionImage()             { SetSelectionImage(Null); }
+
 	void         ForceSelectionImage();
 
 	void         SetSelectionCrop(const Rect& rc);
@@ -261,7 +322,8 @@ public:
 	static int   zoom_count;
 
 	// image parameters
-	AlphaArray   image;
+	Image        image;
+
 	Point        hotspot;
 
 	// modes
@@ -297,7 +359,8 @@ private:
 	enum DRAG_STATE { OFF, ON, MAYBE } drag_state;
 
 	Rect         selection, crop;
-	AlphaArray   selection_image;
+	Image        selection_image;
+
 	Rect         restore_on_cancel;
 
 /*

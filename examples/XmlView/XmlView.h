@@ -3,8 +3,6 @@
 
 #include <CtrlLib/CtrlLib.h>
 
-
-
 #define IMAGEFILE  <XmlView/XmlView.iml>
 #define IMAGECLASS XmlImg
 #include <Draw/iml_header.h>
@@ -38,4 +36,3 @@ public:
 };
 
 #endif
-

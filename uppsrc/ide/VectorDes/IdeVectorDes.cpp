@@ -1,7 +1,7 @@
 #include "IdeVectorDes.h"
 
-#define IMAGESPACE IdeVecImg
-#define IMAGEFILE <ide/VectorDes/IdeVectorDes.iml>
+#define IMAGECLASS IdeVecImg
+#define IMAGEFILE  <ide/VectorDes/IdeVectorDes.iml>
 #include <Draw/iml.h>
 
 static const char ctrl_key[] = "vectordes-ctrl";

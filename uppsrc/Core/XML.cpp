@@ -592,8 +592,10 @@ XmlNode& XmlNode::GetAdd(const char *tag)
 const XmlNode& XmlNode::operator[](const char *tag) const
 {
 	int q = FindTag(tag);
-	if(q < 0)
-		throw XmlError(String("Missing tag ") + tag);
+	if(q < 0) {
+		static XmlNode empty; // should really be TLS, but we are using non-public (yet) NTL knowledge to optimize here
+		return empty;
+	}
 	return node[q];
 }
 
@@ -602,6 +604,15 @@ void XmlNode::Remove(const char *tag)
 	int q = FindTag(tag);
 	if(q >= 0)
 		node.Remove(q);
+}
+
+String XmlNode::GatherText() const
+{
+	String r;
+	for(int i = 0; i < GetCount(); i++)
+		if(node[i].IsText())
+			r << node[i].GetText();
+	return r;
 }
 
 int  XmlNode::AttrInt(const char *id, int def) const

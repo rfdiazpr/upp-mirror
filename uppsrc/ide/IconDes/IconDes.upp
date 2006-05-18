@@ -2,7 +2,6 @@ uses
 	ide\Common,
 	plugin\png,
 	plugin\gif,
-	Image,
 	plugin\tif,
 	plugin\jpg;
 
@@ -11,6 +10,7 @@ file
 	Designer readonly separator,
 	editor.iml,
 	ImageEditCtrl.h,
+	ImageOp.cpp,
 	ImageEditCtrl.cpp,
 	ImageEditAdapter.cpp,
 	editor.lay,

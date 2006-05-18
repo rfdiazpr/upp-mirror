@@ -163,7 +163,7 @@ void RichTxt::Paint(PageDraw& pw, RichContext rc, const PaintInfo& _pi) const
 					pp.spellerrors.Clear();
 				}
 				if(IsPainting(pw, pi.zoom, rc.page, rc.py, next))
-					p.Paint(pw, rc.page, rc.py, pi, n, pp.spellerrors, pp.cache, nbefore, nline);
+					p.Paint(pw, rc.page, rc.py, pi, n, pp.spellerrors, nbefore, nline);
 			}
 			rc.py = next;
 		}

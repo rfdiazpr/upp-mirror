@@ -125,7 +125,6 @@ void AssistEditor::TypeOf(const String& id, Vector<String>& r, bool& code)
 			r.Add("::");
 		return;
 	}
-	DUMPC(parser.local);
 	int q = parser.local.FindLast(id);
 	if(q >= 0) {
 		r.Add(parser.local[q]);
@@ -241,7 +240,8 @@ void AssistEditor::GatherItems(const String& type,
 		if(im.IsType())
 			base = im.qptype;
 		LDUMP(name);
-		if(hidden.Find(name) < 0 && (im.IsCode() || im.IsData()) && (nom || im.access == PUBLIC)) {
+		if(hidden.Find(name) < 0 && (im.IsCode() || im.IsData() || im.IsMacro() && type == "::")
+		   && (nom || im.access == PUBLIC)) {
 			names.FindAdd(name);
 			CppItemInfo& f = assist_item.Add();
 			f.name = name;
@@ -461,14 +461,12 @@ void AssistEditor::Assist()
 		q--;
 	String tp;
 	Vector<String> h = ReadBack(q, tp);
-	DUMPC(h);
 	Vector<String> type;
 	bool d;
 	if(h.GetCount() == 0 && IsNull(tp))
 		TypeOf(Null, type, d);
 	else {
 		type = TypeOf(h, tp);
-		DUMPC(type);
 		if(type.GetCount() == 0)
 			return;
 	}

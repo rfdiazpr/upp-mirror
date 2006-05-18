@@ -217,22 +217,23 @@ TOPIC_TEXT(
 TOPIC_TEXT(
 "void, 0 otherwise.]:: [s0;*C int([*/ number])]:: [s0; Returns the [/ number] rounded "
 "towards zero.]:: [s0;*C to`_string([*/ x])]:: [s0; Return [/ x] as array representing "
-"string representation. ]:: [s0;*C count([*/ x])]:: [s0; If [/ x ]is void, returns "
-"0.&][s0; If x is a number, returns 1.&][s0; If x is an array, returns number of elements "
-"of this array.&][s0; If x is an map, returns number of ent")
+"string representation.]:: [s0;*C to`_number([*/ x])]:: [s0; Converts an array (string) "
+"to the number.]:: [s0;*C count([*/ x])]:: [s0; If [/ x ]is void, returns 0.&][s0; "
+"If x is a number, returns 1.&][s0; If x is an array, returns")
 TOPIC_TEXT(
-"ries in this map with non`-void values.]:: [s0;*C keys([*/ map])]:: [s0; Returns "
-"array of keys of map (ordering is the same as for [* values] function, otherwise "
-"is unspecified).]:: [s0;*C values([*/ map])]:: [s0; Returns array of values of map "
-"(ordering is the same as for [* keys] function, otherwise is unspecified).]:: [s0;*C "
-"rand()]:: [s0; Returns random number in range 0..32767.]:: [s0;*C reve")
+" number of elements of this array.&][s0; If x is an map, returns number of entries "
+"in this map with non`-void values.]:: [s0;*C keys([*/ map])]:: [s0; Returns array "
+"of keys of map (ordering is the same as for [* values] function, otherwise is unspecified).]:: "
+"[s0;*C values([*/ map])]:: [s0; Returns array of values of map (ordering is the same "
+"as for [* keys] function, otherwise is unspecified).]::")
 TOPIC_TEXT(
-"rse([*/ array])]:: [s0; Returns reversed [/ array].]:: [s0;*C sort([*/ array])]:: "
-"[s0; Returns sorted [/ array].]:: [s0;*C order([*/ array])]:: [s0; Returns sort order "
-"of elements in the [/ array].]:: [s0;*C IsDate([*/ map])]:: [s0; Returns 1 if map "
-"contains `\"day`\", `\"month`\" and `\"year`\" keys, 0 otherwise.]:: [s0;*C IsTime([*/ "
-"map])]:: [s0; Returns 1 if map contains `\"second`\", `\"minute`\", `\"hou")
+" [s0;*C rand()]:: [s0; Returns random number in range 0..32767.]:: [s0;*C reverse([*/ "
+"array])]:: [s0; Returns reversed [/ array].]:: [s0;*C sort([*/ array])]:: [s0; Returns "
+"sorted [/ array].]:: [s0;*C order([*/ array])]:: [s0; Returns sort order of elements "
+"in the [/ array].]:: [s0;*C IsDate([*/ map])]:: [s0; Returns 1 if map contains `\"day`\", "
+"`\"month`\" and `\"year`\" keys, 0 otherwise.]:: [s0;*C Is")
 TOPIC_TEXT(
-"r`\", `\"day`\", `\"month`\" and `\"year`\" members, 0 otherwise.]:: [s0;*C GetSysTime()]:: "
+"Time([*/ map])]:: [s0; Returns 1 if map contains `\"second`\", `\"minute`\", `\"hour`\", "
+"`\"day`\", `\"month`\" and `\"year`\" members, 0 otherwise.]:: [s0;*C GetSysTime()]:: "
 "[s0; Returns current time as map with `\"second`\", `\"minute`\", `\"hour`\", `\"day`\", "
 "`\"month`\" and `\"year`\" members.]}}&][s0;3 ]")

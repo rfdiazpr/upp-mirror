@@ -165,17 +165,16 @@ void DrawingDraw::DrawRectOp(int x, int y, int cx, int cy, Color color)
 		DrawingOp(DRAWRECT) % x % y % cx % cy % color;
 }
 
-void DrawingDraw::DrawImageOp(const Rect& rect, const Image& img, const Rect& src, int fx)
+void DrawingDraw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, const Rect& src, Color color)
 {
-	DrawingOp(DRAWIMAGE) % const_cast<Image&>(img) % fx
-	% const_cast<Rect&>(rect) % const_cast<Rect&>(src);
+	Rect s = src;
+	DrawingOp(DRAWIMAGE) % x % y % cx % cy % const_cast<Image&>(img) % s % color;
 }
 
-void DrawingDraw::DrawImageOp(const Rect& rect, const Image& img, const Rect& src,
-                              Color fore, Color back, Color doxor)
+void DrawingDraw::DrawDataOp(int x, int y, int cx, int cy, const String& data, const char *id)
 {
-	DrawingOp(DRAWMONOIMAGE) % const_cast<Image&>(img) % fore % back % doxor
-	% const_cast<Rect&>(rect) % const_cast<Rect&>(src);
+	String h = id;
+	DrawingOp(DRAWDATA) % x % y % cx % cy % const_cast<String&>(data) % h;
 }
 
 void DrawingDraw::DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color)
@@ -362,22 +361,23 @@ static void wsDrawRect(Draw& w, Stream& s, const DrawingPos& ps) {
 	w.DrawRect(ps(x, y, cx, cy), color);
 }
 
-#include <plugin/gif/gif.h>
-
 static void wsDrawImage(Draw& w, Stream& s, const DrawingPos& ps) {
+	int x, y, cx, cy;
 	Image img;
-	int fx;
-	Rect rect, src;
-	s % img % fx % rect % src;
-	w.DrawImage(ps(rect), img, src, fx);
+	Rect src;
+	Color color;
+	s % x % y % cx % cy % img % src % color;
+	Rect r = ps(x, y, cx, cy);
+	w.DrawImageOp(r.left, r.top, r.Width(), r.Height(), img, src, color);
 }
 
-static void wsDrawMonoImage(Draw& w, Stream& s, const DrawingPos& ps) {
-	Image img;
-	Color fore, back, doxor;
-	Rect rect, src;
-	s % img % fore % back % doxor % rect % src;
-	w.DrawImage(ps(rect), img, src, fore, back, doxor);
+static void wsDrawData(Draw& w, Stream& s, const DrawingPos& ps)
+{
+	String data, id;
+	int x, y, cx, cy;
+	s % x % y % cx % cy % const_cast<String&>(data) % id;
+	Rect r = ps(x, y, cx, cy);
+	w.DrawData(r, data, id);
 }
 
 static void wsDrawDrawing(Draw& w, Stream& s, const DrawingPos& ps) {
@@ -587,7 +587,6 @@ void Draw::DrawDrawingOp(const Rect& target, const Drawing& w) {
 			Register(END, wsEnd);
 			Register(DRAWRECT, wsDrawRect);
 			Register(DRAWIMAGE, wsDrawImage);
-			Register(DRAWMONOIMAGE, wsDrawMonoImage);
 			Register(DRAWDRAWING, wsDrawDrawing);
 			Register(DRAWLINE, wsDrawLine);
 			Register(DRAWELLIPSE, wsDrawEllipse);
@@ -595,6 +594,7 @@ void Draw::DrawDrawingOp(const Rect& target, const Drawing& w) {
 			Register(DRAWARC, wsDrawArc);
 			Register(DRAWPOLYPOLYLINE, wsDrawPolyPolyline);
 			Register(DRAWPOLYPOLYPOLYGON, wsDrawPolyPolyPolygon);
+			Register(DRAWDATA, wsDrawData);
 		}
 	}
 

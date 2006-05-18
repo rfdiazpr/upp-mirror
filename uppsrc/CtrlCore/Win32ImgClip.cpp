@@ -6,6 +6,9 @@
 
 Image ReadClipboardImage()
 {
+	Image m = ReadClipboardFormat<Image>();
+	if(!m.IsEmpty())
+		return m;
 	HGLOBAL hmem;
 	if(!OpenClipboard(NULL))
 		return Null;
@@ -24,10 +27,11 @@ Image ReadClipboardImage()
 		if(hdr.biClrUsed != 0)
 			bits += hdr.biClrUsed * sizeof(RGBQUAD);
 	}
-	ImageDraw   w(hdr.biWidth, hdr.biHeight);
+	int h = abs(hdr.biHeight);
+	ImageDraw   w(hdr.biWidth, h);
 	::StretchDIBits(w.GetHandle(),
-		0, 0, hdr.biWidth, hdr.biHeight,
-		0, 0, hdr.biWidth, hdr.biHeight,
+		0, 0, hdr.biWidth, h,
+		0, 0, hdr.biWidth, h,
 		bits, lpBI, DIB_RGB_COLORS, SRCCOPY);
 	GlobalUnlock(hmem);
 	CloseClipboard();
@@ -59,6 +63,7 @@ bool WriteClipboardImage(const Image& img, bool clear)
 	GlobalUnlock(hmem);
 	SetClipboardData(CF_DIB, hmem);
 	CloseClipboard();
+	WriteClipboardFormat(img, false);
 	return true;
 }
 

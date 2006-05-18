@@ -91,7 +91,7 @@ void Draw::InitPlatformFonts()
 			if(FcPatternGetBool(fs->fonts[i], FC_SCALABLE, 0, &scaleable) == 0 && scaleable)
 				f.scaleable = true;
 		}
-	}
+   	}
 	FcFontSetDestroy(fs);
 }
 
@@ -146,7 +146,7 @@ XftFont *Draw::CreateXftFont(Font font, int angle)
 		                      XFT_WEIGHT, XftTypeInteger, int(font.IsBold() ? 200 : 0),
 		                      XFT_ANTIALIAS, XftTypeBool, FcBool(!font.IsNonAntiAliased()),
 		                      XFT_MINSPACE, XftTypeBool, (FcBool)1,
-	                          (void *)0);
+		                       (void *)0);
 	}
 	else
 		xftfont = XftFontOpen(Xdisplay, Xscreenno,

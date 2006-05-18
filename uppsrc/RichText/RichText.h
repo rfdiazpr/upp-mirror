@@ -3,7 +3,6 @@
 
 #include <CtrlCore/CtrlCore.h>
 #include <plugin/png/png.h>
-#include <Image/Image.h>
 
 struct Zoom {
 	int m, d;
@@ -104,8 +103,7 @@ struct PageDraw {
 	operator Draw&()       { return Info(); }
 };
 
-struct RichObjectExchange;
-
+class RichObject;
 class Bar;
 
 struct RichObjectType : Moveable<RichObjectType> {
@@ -119,8 +117,8 @@ struct RichObjectType : Moveable<RichObjectType> {
 	virtual String Write(const Value& v) const;
 	virtual Value  ReadClipboard() const;
 	virtual void   WriteClipboard(const Value& v) const;
-	virtual void   Menu(Bar& bar, RichObjectExchange& ex) const;
-	virtual void   DefaultAction(RichObjectExchange& ex) const;
+	virtual void   Menu(Bar& bar, RichObject& ex) const;
+	virtual void   DefaultAction(RichObject& ex) const;
 	virtual String GetLink(const Value& data, Point pt, Size sz) const;
 
 	RichObjectType();
@@ -175,6 +173,9 @@ public:
 	void   SetYDelta(int yd)                     { ydelta = yd; }
 	int    GetYDelta() const                     { return ydelta; }
 
+	void   Menu(Bar& bar)                        { if(type) type->Menu(bar, *this); }
+	void   DefaultAction()                       { if(type) type->DefaultAction(*this); }
+
 	operator bool() const                        { return !IsNull(data); }
 
 	void   Clear();
@@ -187,11 +188,6 @@ public:
 };
 
 RichObject CreateDrawingObject(const Drawing& dwg, Size dot_size, Size out_size);
-
-struct RichObjectExchange {
-	virtual RichObject GetRichObject() const = 0;
-	virtual void       SetRichObject(const RichObject& data) = 0;
-};
 
 struct RichPara;
 

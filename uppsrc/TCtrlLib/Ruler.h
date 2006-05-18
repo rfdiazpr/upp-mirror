@@ -68,6 +68,7 @@ public:
 public:
 	Callback1<Bar&> WhenBar;
 	Callback1<double> WhenSelect;
+	Callback        WhenLeftClick;
 
 private:
 	double          GetRawDelta() const;

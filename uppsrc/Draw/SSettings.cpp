@@ -215,7 +215,7 @@ void UpdateSColors()
 	if(fs.GetCount() > 1) {
 		int h = atoi(fs[1]);
 		Draw::SetStdFont(Font().FaceName(fs[0])
-		                       .Height(h ? (int)(h * ScreenInfo().GetPixelsPerInch().cy / 72.22 + 0.5) : 13));
+		                       .Height(h ? h * 96 / 72 : 13));
 	}
 
 }

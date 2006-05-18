@@ -142,8 +142,8 @@ void Ctrl::ProcessEvent(XEvent *event)
 		return;
 	FocusSync();
 	if(event->type == PropertyNotify &&
-	   (event->xproperty.atom == XA__QT_SETTINGS_TIMESTAMP_ ||
-	    event->xproperty.atom == XA__KDE_NET_USER_TIME)) {
+	   (event->xproperty.atom == XAtom("_QT_SETTINGS_TIMESTAMP_") ||
+	    event->xproperty.atom == XAtom("_KDE_NET_USER_TIME"))) {
 		LLOG("Property notify " << XAtomName(event->xproperty.atom)
 		     << " " << (void *)event->xany.window);
 		for(int i = 0; i < Xwindow().GetCount(); i++) {
@@ -153,13 +153,14 @@ void Ctrl::ProcessEvent(XEvent *event)
 	}
 	if(event->type == SelectionRequest &&
 	   event->xselectionrequest.owner == xclipboard().win &&
-	   event->xselectionrequest.selection == XA_CLIPBOARD) {
+	   event->xselectionrequest.selection == XAtom("CLIPBOARD")) {
+		LOG("Request !");
 		xclipboard().Request(&event->xselectionrequest);
 		return;
 	}
 	if(event->type == SelectionClear &&
 	   event->xselectionclear.window == xclipboard().win &&
-	   event->xselectionclear.selection == XA_CLIPBOARD) {
+	   event->xselectionclear.selection == XAtom("CLIPBOARD")) {
 	   	xclipboard().Clear();
 	   	return;
 	}
@@ -230,14 +231,18 @@ bool Ctrl::ProcessEvent(bool *)
 	return true;
 }
 
+void SweepImageCache();
+
 bool Ctrl::ProcessEvents(bool *)
 {
 	if(ProcessEvent()) {
 		while(ProcessEvent());
 		TimerAndPaint();
+		SweepMkImageCache();
 		return true;
 	}
 	TimerAndPaint();
+	SweepMkImageCache();
 	return false;
 }
 
@@ -517,7 +522,21 @@ static bool s_waitcursor;
 
 void Ctrl::SetMouseCursor(const Image& image)
 {
-#ifndef NEWIMAGE //FIXIMAGE
+#ifdef NEWIMAGE
+	if(!top) return;
+	static Image img;
+	static Cursor shc;
+	static Window wnd;
+	if(img.GetSerialId() != image.GetSerialId() || top->window != wnd) {
+		img = image;
+		Cursor hc = X11Cursor(img);
+		wnd = top->window;
+		XDefineCursor(Xdisplay, wnd, hc);
+		if(shc)
+			XFreeCursor(Xdisplay, shc);
+		shc = hc;
+	}
+#else
 	if(!top) return;
 	static Image img;
 	if(s_waitcursor)

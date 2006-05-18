@@ -102,9 +102,9 @@ class FileSel : public WithFileSelectorLayout<TopWindow> {
 public:
 	virtual bool Key(dword key, int count);
 
-public:
 	FileList    list;
-	DropList    dir;
+
+private:
 	SizeGrip    sizegrip;
 
 	Button      dirup, mkdir, plus, minus, toggle;
@@ -185,6 +185,7 @@ public:
 
 	bool   GetReadOnly() const                   { return readonly; }
 	String GetActiveDir() const                  { return dir.GetData(); }
+	int    GetActiveType() const                 { return ~activetype; }
 
 	void   Filesystem(FileSystemInfo& fsys)      { filesystem = &fsys;}
 	FileSystemInfo& GetFilesystem() const        { return *filesystem; }

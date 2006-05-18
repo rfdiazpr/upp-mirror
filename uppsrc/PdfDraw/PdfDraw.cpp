@@ -388,13 +388,21 @@ void PdfDraw::DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color)
 	}
 }
 
+#ifdef NEWIMAGE
+void PdfDraw::DrawImageOp(int x, int y, const Image& img, const Rect& src, Color)
+{
+	image.Add(img);
+	imagerect.Add(src);
+	page << "q "
+	     << Pt(src.Width()) << " 0 0 " << Pt(src.Height()) << ' '
+	     << Pt(x) << ' ' << Pt(pgsz.cy - x - src.Height())
+	     << " cm /Image" << image.GetCount() << " Do Q\n";
+}
+
+#else
 void PdfDraw::DrawImageOp(const Rect& r, const Image& img, const Rect& src, int fx)
 {
-#ifdef NEWIMAGE
-	image.Add(img);
-#else
 	image.Add(ImageToAlphaArray(img));
-#endif
 	imagerect.Add(src);
 	page << "q "
 	     << Pt(r.Width()) << " 0 0 " << Pt(r.Height()) << ' '
@@ -407,6 +415,7 @@ void PdfDraw::DrawImageOp(const Rect& rect, const Image& img, const Rect& src,
 {
 	DrawImageOp(rect, img, src, 0);
 }
+#endif
 
 void PdfDraw::DrawPolyPolylineOp(const Point *vertices, int vertex_count,
 	                    const int *counts, int count_count,

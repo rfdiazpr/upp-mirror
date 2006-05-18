@@ -2033,7 +2033,7 @@ void ArrayOption::Paint(Draw& w, const Rect& r, const Value& q,
 		Point p = cr.CenterPos(icon.GetSize());
 //		w.DrawRect(p.x, p.y, 8, 8, LtGreen());
 		if(focusCursor && !gray)
-			w.DrawImage(p.x, p.y, icon, White(), Null);
+			w.DrawImage(p.x, p.y, icon, White());
 		else
 			w.DrawImage(p.x, p.y, icon);
 	}

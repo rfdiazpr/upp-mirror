@@ -175,7 +175,7 @@ void Draw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
 		COLORREF old_fg = GetTextColor(hdc);
 		if(!is_xor) {
 			SetROP2(hdc, R2_MASKPEN);
-			SelectObject(hdc, image.GetBrush(Null, Null));
+//			SelectObject(hdc, image.GetBrush(Null, Null));
 			SetTextColor(hdc, Black());
 			SetBkColor(hdc, White());
 			SetDrawPen(PEN_NULL, Black);
@@ -183,9 +183,10 @@ void Draw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
 				subpolygon_counts, subpolygon_count_count,
 				disjunct_polygon_counts, disjunct_polygon_count_count);
 			SetROP2(hdc, R2_MERGEPEN);
-			if(IsNull(color)) // use color fill brush
-				SelectObject(hdc, image.GetBrush(Null, Black));
-			else { // just change text color
+//			if(IsNull(color)) // use color fill brush
+//				SelectObject(hdc, image.GetBrush(Null, Black));
+//			else
+			{ // just change text color
 				SetTextColor(hdc, color);
 				SetBkColor(hdc, Black());
 			}
@@ -193,11 +194,11 @@ void Draw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
 		else if(!IsNull(color)) { // colored xor fill with image mask
 			SetROP2(hdc, R2_XORPEN);
 			SetTextColor(hdc, COLORREF(color) ^ COLORREF(doxor));
-			SelectObject(hdc, image.GetBrush(Null, Null));
+//			SelectObject(hdc, image.GetBrush(Null, Null));
 		}
 		else { // xor fill with image data
 			SetROP2(hdc, R2_XORPEN);
-			SelectObject(hdc, image.GetBrush(Null, Black));
+//			SelectObject(hdc, image.GetBrush(Null, Black));
 		}
 		DrawPolyPolyPolygonRaw(*this, vertices, vertex_count,
 			subpolygon_counts, subpolygon_count_count,

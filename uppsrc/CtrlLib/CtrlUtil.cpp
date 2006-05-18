@@ -53,8 +53,12 @@ void Animate(Ctrl& c, int x, int y, int cx, int cy, int type)
 	Animate(c, RectC(x, y, cx, cy), type);
 }
 
-const Image& GetIBeamCursor() {
+Image GetIBeamCursor() {
+#ifdef NEWIMAGE
+	return Image::IBeam();
+#else
 	return CtrlImg::ibeam0();
+#endif
 }
 
 bool CtrlLibDisplayError(const Value& e) {

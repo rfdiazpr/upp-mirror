@@ -170,7 +170,7 @@ void RichEdit::Copy()
 	}
 	else
 	if(objectpos >= 0) {
-		RichObject o = GetRichObject();
+		RichObject o = GetObject();
 		o.GetType().WriteClipboard(o.GetData());
 	}
 }
@@ -292,28 +292,17 @@ void RichEdit::Paste()
 	}
 }
 
-struct RichObjectExchangeSimple : RichObjectExchange
-{
-	RichObjectExchangeSimple() : write(false) {}
-
-	virtual RichObject GetRichObject() const                  { return object; }
-	virtual void       SetRichObject(const RichObject& data)  { object = data; write = true; }
-
-	RichObject         object;
-	bool               write;
-};
-
 void RichEdit::InsertObject(int type)
 {
 	RichObjectType& richtype = RichObject::GetType(type);
-	RichObjectExchangeSimple simple;
-	simple.object = RichObject(&richtype, Value());
-	richtype.DefaultAction(simple);
-	if(simple.write) {
+	RichObject object = RichObject(&richtype, Value());
+	RichObject o = object;
+	o.DefaultAction();
+	if(o.GetSerialId() != object.GetSerialId()) {
 		RichText::FormatInfo finfo = GetFormatInfo();
 		RemoveSelection();
 		RichPara p;
-		p.Cat(simple.object, finfo);
+		p.Cat(o, finfo);
 		RichText clip;
 		clip.Cat(p);
 		Insert(GetCursor(), clip, false);
@@ -333,14 +322,9 @@ void RichEdit::ReplaceObject(const RichObject& obj)
 	objectrect = GetObjectRect(objectpos);
 }
 
-RichObject RichEdit::GetRichObject() const
+RichObject RichEdit::GetObject() const
 {
 	return text.GetRichPos(objectpos).object;
-}
-
-void RichEdit::SetRichObject(const RichObject& object)
-{
-	ReplaceObject(object);
 }
 
 void RichEdit::Select(int pos, int count)

@@ -122,15 +122,6 @@ void RichTxt::Put(int i, const RichPara& p, const RichStyle& s)
 		pp.number = new RichPara::NumberFormat;
 		*pp.number = p.format;
 	}
-	int oi = 0;
-	for(i = 0; i < p.part.GetCount(); i++)
-		if(p[i].object) {
-			int64 s = p.part[i].object.GetSerialId();
-			if(oi >= pp.oserial.GetCount() || s != pp.oserial[oi])
-				pp.cache.Clear();
-			pp.oserial.At(oi++) = s;
-		}
-	pp.oserial.SetCount(oi);
 }
 
 void RichTxt::Put(int i, const RichPara& p, const RichStyles& s)

@@ -114,9 +114,34 @@ bool RichPara::BreaksPage(PageY py, const Lines& pl, int i, const Rect& page) co
 	return false;
 }
 
+struct RichObjectImageMaker : ImageMaker {
+	RichObject object;
+	Size       sz;
+
+	virtual String Key() const;
+	virtual Image  Make() const;
+};
+
+String RichObjectImageMaker::Key() const
+{
+	StringBuffer b;
+	int64 id = object.GetSerialId();
+	b.Cat((const char *)&id, sizeof(id));
+	b.Cat((const char *)&sz.cx, sizeof(sz.cx));
+	b.Cat((const char *)&sz.cy, sizeof(sz.cy));
+	return b;
+}
+
+Image RichObjectImageMaker::Make() const
+{
+	ImageDraw iw(sz);
+	object.Paint(iw, sz);
+	return iw;
+}
+
 void RichPara::Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& pi,
                      const Number& n, const Bits& spellerror,
-                     Vector<Image>& cache, int nbefore, int nline) const
+                     int nbefore, int nline) const
 {
 	Zoom z = pi.zoom;
 	PageY opy = py;
@@ -199,6 +224,24 @@ void RichPara::Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& 
 				}
 				if(hg->object) {
 					const RichObject& o = *hg->object;
+					if(o) {
+						Size sz = z * o.GetSize();
+						draw.DrawRect(z * x, z * py.y, sz.cx, z * linecy, (*i)->paper);
+						draw.Clipoff(z * x, z * (y0 - hg->ascent), sz.cx, sz.cy);
+						if(pi.sizetracking)
+							draw.DrawRect(sz, SLtGray);
+						else
+							if(pi.usecache) {
+								RichObjectImageMaker im;
+								im.object = o;
+								im.sz = sz;
+								draw.DrawImage(0, 0, MakeImage(im));
+							}
+							else
+								o.Paint(draw, sz);
+						draw.End();
+					}
+#if 0
 					Image& c = cache.At(oi++);
 					if(o) {
 						Size sz = z * o.GetSize();
@@ -208,8 +251,6 @@ void RichPara::Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& 
 							draw.DrawRect(sz, SLtGray);
 						else
 							if(pi.usecache) {
-								DUMP(c.GetSize());
-								DUMP(sz);
 								if(c.GetSize() != sz) {
 								#ifdef NEWIMAGE
 									ImageDraw iw(sz);
@@ -227,6 +268,7 @@ void RichPara::Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& 
 								o.Paint(draw, sz);
 						draw.End();
 					}
+#endif
 					i++;
 					hg++;
 					x += *w++;

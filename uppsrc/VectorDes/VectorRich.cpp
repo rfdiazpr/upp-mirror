@@ -12,7 +12,7 @@ struct RichObjectTypeVectorImageCls : public RichObjectType
 	virtual String Write(const Value& v) const;
 //	virtual Value  ReadClipboard() const;
 //	virtual void   Menu(Bar& bar, RichObjectExchange& ex) const;
-	virtual void   DefaultAction(RichObjectExchange& ex) const;
+	virtual void   DefaultAction(RichObject& ex) const;
 	virtual String GetLink(const Value& data, Point pt, Size sz) const;
 
 	struct Data : DeepCopyOption<Data> {
@@ -105,16 +105,16 @@ void RichObjectTypeVectorImageCls::Paint(const Value& data, Draw& w, Size sz) co
 	}
 }
 
-void RichObjectTypeVectorImageCls::DefaultAction(RichObjectExchange& ex) const
+void RichObjectTypeVectorImageCls::DefaultAction(RichObject& ex) const
 {
 	bool RunDlgVectorImage(String& text, Font& font, Color& color);
 	static Data data;
-	RichObject obj = ex.GetRichObject();
+	RichObject obj = ex;
 	if(IsTypeRaw<Data>(obj.GetData()))
 		data = Data(obj.GetData());
 	data.image.Clone();
 	if(RunVectorImageEditor(data.image)) {
 		RichObject ro(RichObjectTypeVectorImage(), data);
-		ex.SetRichObject(ro);
+		ex = ro;
 	}
 }

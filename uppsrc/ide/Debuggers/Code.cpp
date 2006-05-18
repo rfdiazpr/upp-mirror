@@ -232,7 +232,8 @@ bool Pdb::Step(bool over)
 {
 	TimeStop ts;
 	byte b = Byte(context.Eip);
-	if(b == 0xe8 || b == 0xff || b == 0x9a || b == 0xff) {
+	byte b1 = (Byte(context.Eip + 1) >> 3) & 7;
+	if(b == 0xe8 || b == 0x9a || b == 0xff && (b1 == 2 || b1 == 3)) {
 		if(over) {
 			int l = 5;
 			if(b != 0xe8) {

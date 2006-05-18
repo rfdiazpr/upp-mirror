@@ -38,6 +38,12 @@ void ESC_to_string(EscEscape& e)
 	e = e[0].ToString();
 }
 
+void ESC_to_number(EscEscape& e)
+{
+	if(e[0].IsArray())
+		e = ScanDouble((String)e[0]);
+}
+
 void ESC_rand(EscEscape& e)
 {
 	e = rand();
@@ -226,6 +232,7 @@ void StdLib(ArrayMap<String, EscValue>& global)
 	Escape(global, "is_void(value)", ESC_is_void);
 	Escape(global, "int(value)", ESC_int);
 	Escape(global, "to_string(value)", ESC_to_string);
+	Escape(global, "to_number(value)", ESC_to_number);
 	Escape(global, "count(value)", ESC_count);
 	Escape(global, "keys(map)", ESC_keys);
 	Escape(global, "values(map)", ESC_values);

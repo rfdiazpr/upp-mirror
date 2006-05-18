@@ -339,18 +339,6 @@ WheelRampCtrl::WheelRampCtrl(bool r)
 	wb = NULL;
 	owsize = Size(-1, -1);
 #endif
-/*	Raster raster(256, 256);
-	{
-		RasterDraw rd(raster);
-		wheel_rect = Rect(0, 0, 256, 256);
-		PaintWheel(rd);
-	}
-	if(OpenClipboard(NULL))
-	{
-		SetClipboardData(CF_BITMAP, raster.GetHBITMAP());
-		CloseClipboard();
-	}
-*/
 }
 
 WheelRampCtrl::~WheelRampCtrl()

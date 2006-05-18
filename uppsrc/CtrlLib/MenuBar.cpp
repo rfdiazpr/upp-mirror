@@ -912,6 +912,7 @@ void MenuBar::LeftDown(Point, dword)
 		if(restorefocus)
 			restorefocus->SetFocus();
 	}
+	WhenLeftClick();
 }
 
 bool MenuBar::HotKey(dword key)

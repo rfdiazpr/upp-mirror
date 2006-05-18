@@ -129,6 +129,13 @@ Size DrawLabel::GetSize() const
 	return isz;
 }
 
+#ifdef NEWIMAGE
+Image sDis(const Image& img, bool dis)
+{
+	return dis ? MakeImage(img, "etched") : img;
+}
+#endif
+
 Size DrawLabel::Paint(Draw& w, const Rect& r, bool visibleaccesskey) const
 {
 	Size sz1 = limg.GetSize();
@@ -164,15 +171,24 @@ Size DrawLabel::Paint(Draw& w, const Rect& r, bool visibleaccesskey) const
 		p.x += lspc;
 	}
 	int iy = p.y + push + (isz.cy - sz1.cy) / 2;
+
 	if(IsNull(lcolor))
+#ifdef NEWIMAGE
+		w.DrawImage(ix, iy, sDis(limg, disabled));
+#else
 		w.DrawImage(ix, iy, limg, disabled ? Image::ETCHED : 0);
+#endif
 	else
 		w.DrawImage(ix, iy, limg, lcolor);
 
 	iy = p.y + push + (isz.cy - sz2.cy) / 2;
 	ix = (IsNull(rspc) ? r.right - sz2.cx : p.x + txtsz.cx + rspc) + push;
 	if(IsNull(rcolor))
+#ifdef NEWIMAGE
+		w.DrawImage(ix, iy, sDis(rimg, disabled));
+#else
 		w.DrawImage(ix, iy, rimg, disabled ? Image::ETCHED : 0);
+#endif
 	else
 		w.DrawImage(ix, iy, rimg, rcolor);
 	paintrect.Paint(w, p.x + push, p.y + push, txtsz.cx, isz.cy, color, Null);

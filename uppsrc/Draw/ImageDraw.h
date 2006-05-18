@@ -1,23 +1,35 @@
-class ImageDraw : public Draw
-{
+class ImageDraw : public Draw, NoCopy {
+	Size    size;
+
+#ifdef PLATFORM_WIN32
+	struct  Section {
+		HDC     dc;
+		HBITMAP hbmp, hbmpOld;
+		RGBA   *pixels;
+
+		void Init(int cx, int cy);
+		~Section();
+	};
+
+	Section rgb;
+	Section a;
+	Draw    alpha;
+#endif
+
+#ifdef PLATFORM_X11
+	Draw    alpha;
+#endif
+
+	bool    has_alpha;
+
+	void Init();
+
 public:
-	ImageDraw() {}
-	ImageDraw(Draw& draw, Image& image)  { Open(draw, image); }
-	ImageDraw(Image& image)              { Open(ScreenInfo(), image); }
-	~ImageDraw()                         { Close(); }
+	Draw& Alpha()                         { has_alpha = true; return alpha; }
 
-	void Open(Image& image)              { Open(ScreenInfo(), image); }
-	void Open(Draw& draw, Image& image);
-	void Close();
-};
+	operator Image() const;
 
-class ImageMaskDraw : public Draw
-{
-public:
-	ImageMaskDraw() {}
-	ImageMaskDraw(Image& image) { Open(image); }
-	~ImageMaskDraw()            { Close(); }
-
-	void Open(Image& image);
-	void Close();
+	ImageDraw(Size sz);
+	ImageDraw(int cx, int cy);
+	~ImageDraw();
 };

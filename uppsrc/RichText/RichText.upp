@@ -1,12 +1,11 @@
 uses
-	Image,
 	CtrlCore,
 	plugin\png;
 
 file
 	RichText.h,
 	Object.cpp,
-	RichImage.cpp,
+	RichImage.icpp,
 	Para.h,
 	ParaData.cpp optimize_speed,
 	ParaType.cpp optimize_speed,
@@ -38,3 +37,4 @@ file
 	COPYING,
 	COPYING-PLAIN,
 	AUTHORS;
+

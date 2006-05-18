@@ -21,8 +21,8 @@ Ctrl::Xclipboard::~Xclipboard()
 void Ctrl::Xclipboard::Write(int fmt, const String& _data)
 {
 	data.GetAdd(fmt) = _data;
-	if(XGetSelectionOwner(Xdisplay, Ctrl::XA_CLIPBOARD) != win)
-		XSetSelectionOwner(Xdisplay, Ctrl::XA_CLIPBOARD, win, CurrentTime);
+	if(XGetSelectionOwner(Xdisplay, XAtom("CLIPBOARD") != win))
+		XSetSelectionOwner(Xdisplay, XAtom("CLIPBOARD"), win, CurrentTime);
 }
 
 void Ctrl::Xclipboard::Request(XSelectionRequestEvent *se)
@@ -32,21 +32,23 @@ void Ctrl::Xclipboard::Request(XSelectionRequestEvent *se)
 	e.xselection.type      = SelectionNotify;
 	e.xselection.display   = Xdisplay;
 	e.xselection.requestor = se->requestor;
-	e.xselection.selection = Ctrl::XA_CLIPBOARD;
+	e.xselection.selection = Atom("CLIPBOARD");
 	e.xselection.target    = se->target;
 	e.xselection.time      = se->time;
     e.xselection.property  = se->property;
-	if(se->target == XA_TARGETS) {
+	if(se->target == XAtom("TARGETS")) {
 		Buffer<Atom> x(data.GetCount());
 		for(int i = 0; i < data.GetCount(); i++) {
 			x[i] = data.GetKey(i);
 			LLOG('\t' << XAtomName(x[i]));
 		}
-		XChangeProperty(Xdisplay, se->requestor, se->property, XA_ATOM, 8 * sizeof(Atom), 0, (unsigned char*)~x,
+		XChangeProperty(Xdisplay, se->requestor, se->property, XAtom("ATOM"),
+		                8 * sizeof(Atom), 0, (unsigned char*)~x,
 		                data.GetCount());
 	}
 	else {
 		int i = data.Find(se->target);
+		DUMP(i);
 		if(i >= 0)
 			XChangeProperty(Xdisplay, se->requestor, se->property, se->target, 8, PropModeReplace,
 			                data[i], data[i].GetLength());
@@ -60,29 +62,29 @@ String Ctrl::Xclipboard::Read(int fmt)
 {
 	if(data.GetCount())
 		return data.Get(fmt, Null);
-	XConvertSelection(Xdisplay, Ctrl::XA_CLIPBOARD, fmt, Ctrl::XA_CLIPDATA, win, CurrentTime);
+	XConvertSelection(Xdisplay, XAtom("CLIPBOARD"), fmt, XAtom("CLIPDATA"), win, CurrentTime);
 	XFlush(Xdisplay);
 	XEvent event;
 	for(int i = 0; i < 20; i++) {
 		if(XCheckTypedWindowEvent(Xdisplay, win, SelectionNotify, &event)) {
 			if(event.xselection.property != None) {
-		    	String data = GetProperty(win, event.xselection.property);
-		    	XDeleteProperty(Xdisplay, win, event.xselection.property);
-		    	return data;
+				String data = ReadPropertyData(win, event.xselection.property);
+				XDeleteProperty(Xdisplay, win, event.xselection.property);
+				return data;
 			}
 			return Null;
 		}
 		if(XCheckTypedWindowEvent(Xdisplay, win, SelectionRequest, &event) &&
 		   event.xselectionrequest.owner == win &&
-		   event.xselectionrequest.selection == Ctrl::XA_CLIPBOARD) {
+		   event.xselectionrequest.selection == XAtom("CLIPBOARD")) {
 			Request(&event.xselectionrequest);
 		}
 		if(XCheckTypedWindowEvent(Xdisplay, win, SelectionClear, &event) &&
 		   event.xselectionclear.window == win &&
-		   event.xselectionclear.selection == Ctrl::XA_CLIPBOARD) {
+		   event.xselectionclear.selection == XAtom("CLIPBOARD")) {
 			Clear();
 		}
-		Sleep(50);
+		Sleep(10);
 	}
     return Null;
 }
@@ -118,37 +120,39 @@ bool WriteClipboard(int fmt, const String& data, bool clear)
 
 String  ReadClipboard(int fmt)
 {
-/*	String formats = Ctrl::xclipboard().Read(Ctrl::XA_TARGETS);
+//*
+	String formats = Ctrl::xclipboard().Read(XAtom("TARGETS"));
 	int c = formats.GetCount() / sizeof(Atom);
 	const Atom *m = (Atom *) ~formats;
 	for(int i = 0; i < c; i++)
-		LOG("Available " << XAtomName(m[i]));*/
+		LOG("Available " << XAtomName(m[i]));
+//*/
 	return Ctrl::xclipboard().Read(fmt);
 }
 
 bool WriteClipboardText(const String& s, bool clear)
 {
-	return WriteClipboard(XA_STRING, s, clear);
+	return WriteClipboard(XAtom("STRING"), s, clear);
 }
 
 String ReadClipboardText()
 {
-	return ReadClipboard(XA_STRING);
+	return ReadClipboard(XAtom("STRING"));
 }
 
 bool WriteClipboardUnicodeText(const WString& s, bool clear)
 {
-	return WriteClipboard(Ctrl::XA_UTF8_STRING, ToUtf8(s), clear);
+	return WriteClipboard(XAtom("UTF8_STRING"), ToUtf8(s), clear);
 }
 
 WString ReadClipboardUnicodeText()
 {
-	return FromUtf8(ReadClipboard(Ctrl::XA_UTF8_STRING));
+	return FromUtf8(ReadClipboard(XAtom("UTF8_STRING")));
 }
 
 bool IsClipboardAvailable(int fmt)
 {
-	String formats = Ctrl::xclipboard().Read(Ctrl::XA_TARGETS);
+	String formats = Ctrl::xclipboard().Read(XAtom("TARGETS"));
 	int c = formats.GetCount() / sizeof(Atom);
 	const Atom *m = (Atom *) ~formats;
 	for(int i = 0; i < c; i++)
@@ -159,17 +163,7 @@ bool IsClipboardAvailable(int fmt)
 
 bool IsClipboardAvailableText()
 {
-	return IsClipboardAvailable(Ctrl::XA_UTF8_STRING);
-}
-
-Image ReadClipboardImage()
-{
-	return Image(); //TODO!
-}
-
-bool WriteClipboardImage(const Image& img, bool clear)
-{
-	//TODO!
+	return IsClipboardAvailable(XAtom("UTF8_STRING"));
 }
 
 #endif

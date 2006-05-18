@@ -83,8 +83,7 @@ void Ide::File(Bar& menu) {
 	menu.Add(AK_STATISTICS, THISBACK(Statistics))
 		.Help("Display various statistics");
 
-	menu.Add("Elapsed times..", THISBACK(Times))
-		.Help("Display various statistics");
+	menu.Add("Elapsed times..", THISBACK(Times));
 
 	menu.Add(AK_EXIT, THISBACK(Exit));
 }
@@ -163,8 +162,8 @@ void Ide::Edit(Bar& menu) {
 			.Help("Find any ordinary string constant (\"\" - delimited)");
 		menu.Add(AK_FINDSTRINGBACK, THISBACK1(FindString, true))
 			.Help("Find any ordinary string constant (\"\" - delimited) backwards");
-		menu.Separator();
-		menu.Add("Special", THISBACK(EditSpecial));
+		if(menu.IsMenuBar())
+			menu.Add("Special", THISBACK(EditSpecial));
 	}
 }
 

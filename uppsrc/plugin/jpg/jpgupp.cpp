@@ -1,13 +1,5 @@
-//////////////////////////////////////////////////////////////////////
-// jpgupp.cpp: JPEG image file format.
-
-#pragma hdrstop
 #include <Draw/Draw.h>
-#include <plugin/jpg/jpg.h>
-#include <Draw/PixelUtil.h>
-//#include <tgraph/picture.h>
-//#define __RPCNDR_H__
-//#define __wtypes_h__
+#include "jpg.h"
 #define HAVE_BOOLEAN
 #define boolean int
 #undef FAR
@@ -173,236 +165,292 @@ static void error_exit(j_common_ptr cinfo)
 	throw 0;
 }
 
-JpgEncoder::JpgEncoder(int quality)
-: ImageEncoder(24)
-, quality(quality)
-{
-}
+class JPGRaster::Data {
+	friend class JPGRaster;
 
-JpgEncoder::~JpgEncoder() {}
+public:
+	Data();
+	~Data();
 
-Array<ImageInfo> JpgEncoder::InfoRaw(Stream& stream)
-{
+	bool Create(Stream& stream);
+	Raster::Info GetInfo();
+	Raster::Line GetLine(int line);
+
+private:
+	bool Init();
+
+private:
+	Stream *stream;
+	int64 stream_fpos;
+
 	struct jpeg_decompress_struct cinfo;
 	struct jpeg_error_mgr jerr;
 
-	try
-	{
-		Array<ImageInfo> out;
-		out.SetCount(1);
-		ImageInfo& info = out[0];
-		if(!stream.IsOpen())
-			return Array<ImageInfo>();
-		ASSERT(stream.IsLoading());
+	Size size;
+	Size dot_size;
+	int bypp;
+	bool finish;
 
-		cinfo.err = jpeg_std_error(&jerr);
-		cinfo.err->output_message = &NoOutput;
-		jerr.error_exit = error_exit;
+	int next_line;
+};
 
-		jpeg_create_decompress(&cinfo);
-		jpeg_stream_src(&cinfo, stream);
-		jpeg_read_header(&cinfo, TRUE);
+JPGRaster::Data::Data()
+{
+	stream = NULL;
+	size = dot_size = Null;
+	next_line = 0;
+	finish = false;
 
-		info.size.cx = cinfo.image_width;
-		info.size.cy = cinfo.image_height;
-		info.bits_per_pixel = 8 * cinfo.num_components;
-
-		double dot_scaling = (cinfo.density_unit == 1 ? 600 : cinfo.density_unit == 2 ? 600.0 / 2.54 : 0);
-		if(dot_scaling && cinfo.X_density > 0)
-		{
-			info.dots.cx = fround(cinfo.image_width  * dot_scaling / cinfo.X_density);
-			info.dots.cy = fround(cinfo.image_height * dot_scaling / cinfo.Y_density);
-		}
-
-		jpeg_destroy_decompress(&cinfo);
-		return out;
-	}
-	catch(int)
-	{
-		jpeg_destroy_decompress(&cinfo);
-		return Array<ImageInfo>();
-	}
+	jpeg_create_decompress(&cinfo);
 }
 
-Array<AlphaArray> JpgEncoder::LoadRaw(Stream& stream, const Vector<int>& page_index)
+JPGRaster::Data::~Data()
 {
-	Array<AlphaArray> out;
-	if(!stream.IsOpen())
-		return out;
-	ASSERT(stream.IsLoading());
-
-//	TIMING("JpegFormat::Load");
-	ASSERT(sizeof(JSAMPLE) == sizeof(byte));
-	struct jpeg_decompress_struct cinfo;
-	struct jpeg_error_mgr jerr;
-	try
-	{
-		cinfo.err = jpeg_std_error(&jerr);
-		cinfo.err->output_message = &NoOutput;
-		jerr.error_exit = error_exit;
-
-		jpeg_create_decompress(&cinfo);
-		jpeg_stream_src(&cinfo, stream);
-		jpeg_read_header(&cinfo, TRUE);
-		cinfo.dct_method = JDCT_IFAST;
-		jpeg_start_decompress(&cinfo);
-
-		if(cinfo.output_components != 1 && cinfo.output_components != 3)
-			throw 0; // invalid number of components
-
-		Size size(cinfo.output_width, cinfo.output_height);
-
-		int bypp = cinfo.output_components;
-		PixelArray image(size, bypp == 3 ? - 3 : 8 * bypp);
-		double dot_scaling = (cinfo.density_unit == 1 ? 600 : cinfo.density_unit == 2 ? 600.0 / 2.54 : 0);
-		if(dot_scaling && cinfo.X_density > 0)
-		{
-			Size dots;
-			dots.cx = fround(cinfo.image_width  * dot_scaling / cinfo.X_density);
-			dots.cy = fround(cinfo.image_height * dot_scaling / cinfo.Y_density);
-			image.SetDotSize(dots);
-		}
-
-		Buffer<JSAMPROW> rows(size.cy);
-
-		int i;
-		for(i = 0; i < size.cy; i++)
-			rows[i] = image.GetUpScan(size.cy - 1 - i);
-
-		for(int y = 0, count; y < size.cy && (count = jpeg_read_scanlines(&cinfo, rows + y, size.cy - y)) > 0; y += count)
-			;
-
-		if(bypp == 3)
-		{ // reorder RGB elements
-/*
-			FileOut rawdata(GetExeDirFile("jpeg.raw"));
-			if(rawdata.IsOpen())
-			{
-				for(int i = 0; i < size.cy; i++)
-					rawdata.Put(rows[i], bypp * size.cx);
-				rawdata.Close();
-			}
-
-			for(i = 1; i < size.cy; i += 2)
-				if(memcmp(rows[i - 1], rows[i], bypp * size.cx))
-				{
-					LOG("Row pair mismatch: " << i);
-				}
-*/
-
-			for(i = 0; i < size.cy; i++)
-			{
-				byte *p = rows[i];
-				int n = size.cx;
-				byte t;
-				while(n >= 4)
-				{
-					t = p[0]; p[0] = p[2]; p[2] = t;
-					t = p[3]; p[3] = p[5]; p[5] = t;
-					t = p[6]; p[6] = p[8]; p[8] = t;
-					t = p[9]; p[9] = p[11]; p[11] = t;
-					p += 12;
-					n -= 4;
-				}
-				if(n & 2)
-				{
-					t = p[0]; p[0] = p[2]; p[2] = t;
-					t = p[3]; p[3] = p[5]; p[5] = t;
-					p += 6;
-				}
-				if(n & 1)
-				{
-					t = p[0]; p[0] = p[2]; p[2] = t;
-				}
-			}
-		}
-		else
-		{
-			image.palette.SetCount(256);
-			for(int i = 0; i < 256; i++)
-				image.palette[i] = GrayColor(i);
-		}
-
+	if(finish)
 		jpeg_finish_decompress(&cinfo);
-		jpeg_destroy_decompress(&cinfo);
-
-		out.Add().pixel = image;
-	}
-	catch(int)
-	{
-		jpeg_destroy_decompress(&cinfo);
-	}
-	return out;
+	jpeg_destroy_decompress(&cinfo);
 }
 
-void JpgEncoder::SaveRaw(Stream& stream, const Vector<const AlphaArray *>& pages)
+bool JPGRaster::Data::Create(Stream& stream_)
 {
-	ASSERT(stream.IsOpen() && stream.IsStoring());
-	if(pages.GetCount() != 1)
-	{
-		stream.SetError();
-		return;
-	}
-	const AlphaArray& image = *pages[0];
-	if(image.IsEmpty())
-		return;
+	stream = &stream_;
+	stream_fpos = stream->GetPos();
+	cinfo.err = jpeg_std_error(&jerr);
+	cinfo.err->output_message = &NoOutput;
+	cinfo.dct_method = JDCT_IFAST;
+	jerr.error_exit = error_exit;
 
+	return Init();
+}
+
+bool JPGRaster::Data::Init()
+{
+	jpeg_stream_src(&cinfo, *stream);
+	jpeg_read_header(&cinfo, TRUE);
+	jpeg_start_decompress(&cinfo);
+
+	if(cinfo.output_components != 1 && cinfo.output_components != 3)
+		throw Exc(NFormat("invalid number of components: %d", cinfo.output_components)); // invalid number of components
+
+	size.cx = cinfo.output_width;
+	size.cy = cinfo.output_height;
+
+	bypp = cinfo.output_components;
+
+	double dot_scaling = (cinfo.density_unit == 1 ? 600 : cinfo.density_unit == 2 ? 600.0 / 2.54 : 0);
+	if(dot_scaling && cinfo.X_density > 0) {
+		dot_size.cx = fround(cinfo.image_width  * dot_scaling / cinfo.X_density);
+		dot_size.cy = fround(cinfo.image_height * dot_scaling / cinfo.Y_density);
+	}
+
+	finish = true;
+	return true;
+}
+
+Raster::Info JPGRaster::Data::GetInfo()
+{
+	Raster::Info info;
+	try {
+		info.bpp = 24;
+		info.colors = 0;
+		info.dots = dot_size;
+		info.hotspot = Null;
+		info.kind = IMAGE_OPAQUE;
+	}
+	catch(Exc e) {
+		RLOG(e);
+	}
+	return info;
+}
+
+Raster::Line JPGRaster::Data::GetLine(int line)
+{
+	try {
+		ASSERT(line >= 0 && line < size.cy);
+		if(line < next_line) {
+			stream->Seek(stream_fpos);
+			Init();
+			next_line = 0;
+		}
+		Buffer<byte> rowbuf(bypp * size.cx);
+		JSAMPROW rowptr[] = { (JSAMPROW)~rowbuf };
+		while(next_line++ < line)
+			jpeg_read_scanlines(&cinfo, rowptr, 1);
+		jpeg_read_scanlines(&cinfo, rowptr, 1);
+		RGBA *out = new RGBA[size.cx];
+		const byte *src = ~rowbuf, *end = ~rowbuf + 3 * size.cx;
+		RGBA *dest = out;
+		if(bypp == 3) {
+			for(; src < end; src += 3, dest++) {
+				dest->r = src[0];
+				dest->g = src[1];
+				dest->b = src[2];
+				dest->a = 255;
+			}
+		}
+		else if(bypp == 1) {
+			for(; src < end; src++, dest++) {
+				dest->r = dest->g = dest->b = *src;
+				dest->a = 255;
+			}
+		}
+		else {
+			NEVER();
+		}
+
+		return Raster::Line(out, true);
+	}
+	catch(Exc e) {
+		RLOG(e);
+		return Raster::Line(new RGBA[size.cx], true);
+	}
+}
+
+JPGRaster::JPGRaster()
+{
+}
+
+JPGRaster::~JPGRaster()
+{
+}
+
+bool JPGRaster::Create()
+{
+	try {
+		ASSERT(sizeof(JSAMPLE) == sizeof(byte));
+		data = new Data;
+		return data->Create(GetStream());
+	}
+	catch(Exc e) {
+		RLOG(e);
+		SetError();
+		data.Clear();
+		return false;
+	}
+}
+
+Size JPGRaster::GetSize()
+{
+	return data->size;
+}
+
+Raster::Info JPGRaster::GetInfo()
+{
+	Raster::Info info;
+	try {
+		info.kind = IMAGE_OPAQUE;
+		info.bpp = 24;
+		info.colors = 0;
+		info.dots = data->dot_size;
+		info.hotspot = Null;
+	}
+	catch(Exc e) {
+		RLOG(e);
+	}
+	return info;
+}
+
+Raster::Line JPGRaster::GetLine(int line)
+{
+	ASSERT(data);
+	return data->GetLine(line);
+}
+
+class JPGEncoder::Data {
+public:
+	Data();
+	~Data();
+
+	void Start(Stream& stream, Size size, int quality);
+	void WriteLine(const RGBA *rgba);
+
+private:
 	struct jpeg_compress_struct cinfo;
 	struct jpeg_error_mgr jerr;
+	Size size;
+	Buffer<byte> rowbuf;
+	int line;
+};
 
-	try
-	{
-		cinfo.err = jpeg_std_error(&jerr);
-		cinfo.err->output_message = &NoOutput;
-		jpeg_create_compress(&cinfo);
-		jpeg_stream_dest(&cinfo, stream);
-		cinfo.dct_method = JDCT_IFAST;
-
-		Size size = image.GetSize();
-
-		cinfo.image_width = size.cx;
-		cinfo.image_height = size.cy;
-		cinfo.input_components = 3; // # of color components per pixel
-		cinfo.in_color_space = JCS_RGB; // colorspace of input image
-
-		jpeg_set_defaults(&cinfo);
-
-		if(dot_size.cx || dot_size.cy)
-		{ // set up image density
-			cinfo.density_unit = 1; // dots per inch
-			cinfo.X_density = dot_size.cx ? fround(size.cx * 600.0 / dot_size.cx) : 0;
-			cinfo.Y_density = dot_size.cy ? fround(size.cy * 600.0 / dot_size.cy) : 0;
-		}
-
-		jpeg_set_quality(&cinfo, quality, true); // limit to baseline-JPEG values
-		jpeg_start_compress(&cinfo, true);
-
-		ASSERT(sizeof(JSAMPLE) == sizeof(byte));
-
-		int part_rows = max(1, 300000 / size.cx);
-		int part_bytes = 3 * size.cx;
-		Buffer<byte> data(part_bytes * part_rows);
-		Buffer<JSAMPROW> rows(part_rows);
-		PixelReader24 reader(image.pixel);
-
-		for(int h = 0; h < part_rows; h++)
-			rows[h] = data + h * part_bytes;
-
-		for(int i = 0, n; (n = min(size.cy, i + part_rows) - i) > 0; i += n)
-		{
-			for(int t = 0; t < n; t++)
-				BltSwapRGB(rows[t], reader[i + t], image.GetWidth());
-			jpeg_write_scanlines(&cinfo, rows, n);
-		}
-
-		jpeg_finish_compress(&cinfo);
-		jpeg_destroy_compress(&cinfo);
-	}
-	catch(int)
-	{
-		jpeg_destroy_compress(&cinfo);
-		stream.SetError();
-	}
+JPGEncoder::Data::Data()
+{
+	cinfo.err = jpeg_std_error(&jerr);
+	cinfo.err->output_message = &NoOutput;
+	jpeg_create_compress(&cinfo);
+	cinfo.dct_method = JDCT_IFAST;
 }
 
-//////////////////////////////////////////////////////////////////////
+JPGEncoder::Data::~Data()
+{
+	jpeg_destroy_compress(&cinfo);
+}
+
+void JPGEncoder::Data::Start(Stream& stream, Size size_, int quality)
+{
+	size = size_;
+
+	jpeg_stream_dest(&cinfo, stream);
+
+	cinfo.image_width = size.cx;
+	cinfo.image_height = size.cy;
+	cinfo.input_components = 3; // # of color components per pixel
+	cinfo.in_color_space = JCS_RGB; // colorspace of input image
+
+	jpeg_set_defaults(&cinfo);
+
+/*
+	if(dot_size.cx || dot_size.cy)
+	{ // set up image density
+		cinfo.density_unit = 1; // dots per inch
+		cinfo.X_density = dot_size.cx ? fround(size.cx * 600.0 / dot_size.cx) : 0;
+		cinfo.Y_density = dot_size.cy ? fround(size.cy * 600.0 / dot_size.cy) : 0;
+	}
+*/
+
+	jpeg_set_quality(&cinfo, quality, true); // limit to baseline-JPEG values
+	jpeg_start_compress(&cinfo, true);
+
+	rowbuf.Alloc(3 * size.cx);
+
+	line = 0;
+
+	ASSERT(sizeof(JSAMPLE) == sizeof(byte));
+}
+
+void JPGEncoder::Data::WriteLine(const RGBA *rgba)
+{
+	for(byte *dest = ~rowbuf, *end = dest + 3 * size.cx; dest < end; dest += 3, rgba++) {
+		dest[0] = rgba->r;
+		dest[1] = rgba->g;
+		dest[2] = rgba->b;
+	}
+	JSAMPROW rowptr[] = { ~rowbuf };
+	jpeg_write_scanlines(&cinfo, rowptr, 1);
+	if(++line >= size.cy)
+		jpeg_finish_compress(&cinfo);
+}
+
+JPGEncoder::JPGEncoder(int quality_)
+: quality(quality_)
+{
+}
+
+JPGEncoder::~JPGEncoder()
+{
+}
+
+int JPGEncoder::GetPaletteCount()
+{
+	return 0;
+}
+
+void JPGEncoder::Start(Size sz)
+{
+	data = new Data;
+	data->Start(GetStream(), sz, quality);
+}
+
+void JPGEncoder::WriteLine(const RGBA *s)
+{
+	data->WriteLine(s);
+}

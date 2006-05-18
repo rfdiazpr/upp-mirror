@@ -164,12 +164,12 @@ void Put(const String& name, String& qtf, const FileStat& fs)
 	qtf << "::@W " << DeQtf(Nvl(name, ".<none>"))
 	    << ":: [> " << fs.count
 	    << ":: " << fs.lines
-	    << ":: " << fs.lines / fs.count
+	    << ":: " << (fs.count ? fs.lines / fs.count : 0)
 	    << ":: " << StatLen(fs.len)
-	    << ":: " << StatLen(fs.len / fs.count)
+	    << ":: " << StatLen(fs.len ? fs.len / fs.count : 0)
 	    << ":: " << StatDate(fs.oldest)
 	    << ":: " << StatDate(fs.newest)
-	    << ":: " << fs.days / fs.count << " days]";
+	    << ":: " << (fs.count ? fs.days / fs.count : 0) << " days]";
 }
 
 void Put(String& qtf, ArrayMap<String, FileStat>& pfs, ArrayMap<String, FileStat>& all) {

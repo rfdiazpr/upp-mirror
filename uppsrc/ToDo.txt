@@ -1,3 +1,15 @@
+nDraw {
+	- IconDes - ikony
+
+}
+
+
+* Ide - fixed flags in output mode, ulocked only in "expert" mode
+
+* Fix RTF (Image)
+
+* Fix Expand (no return ""; )
+
 * .lay po skonceni debugu
 
 * This problem might not be a high priority - in the reference splitter example, buttons B,C,Toggle are arranged vertically. If you drag the top of button "Toggle" up until button C disappears, you can't drag it back down again. You can drag upwards at that point though, and button C reappears, consuming some of button B space. If you drag upwards to make the "Toggle" button take all the right hand vertical space so that B and C disappear, you can't drag down again and buttons B and C have disappeared forever.
@@ -15,37 +27,65 @@ Something borked with unix filename escaping?
 
 * Macro menu duplication when *.usc in package
 
-* "Go to line or definition" case insensitive option?
-
 * If I set a bookmark I get no visible indication on the line (e.g. in the gutter) that a bookmark is set there. Am I supposed to see something, if so this is a bug report, if not, it's a feature suggestion.
 
 * If I run "find in files" and doubleclick then in "Edit" menu an item "Edit using designer" Ctrl_T appears. If I try to use it, it does nothing and dissapears. I think, it's a bug.
 
+* TheIDE {
+	- That empty lines forced me to making "ugly" upt files. I had to merge lines into one to avoid producing empty lines. Can you add it to todo list (to not forget)?[
+}
+
+* X11 {
+	- Stuck Alt/Ctrl keys
+	- OO.org BMP pasta, images in richtext paste
+	- Available clipboard formats
+}
+
+* RichEdit {
+	- It would be also nice if one could set distance between lines (like in ms word 1, 1.5, 2..) (I know that I can set before and after values - but it is hard to find values to get the exactely the same distances like in ms word document)
+}
+
+* CtrlLib {
+	- Secondary, there seems to be a bug with horizontal scrollbar. It turns on before my tabs are even close to the right-side edge. Almost like it is adding up all tabs, including those Hidden, to work out when to enable the horizontal scrollbar.
+}
+
+* Core {
+	- TLS
+	- bring Socket to the Core
+}
+
+* Debugger {
+	- Switch problem
+	- Pointer substration in Watch
+	- Linux troubles...
+}
+
 * Assist++  {
+	- PNGEncoder(). (konstruktor)
+    - IconDes, problem s definici lokalnich statickych dat
+	- TDoc.cpp: Alt+V, para.
+		struct IsWatermark : RichText::Iterator
+		{
+			bool operator()(int pos, const RichPara& para) {
+
+			if(para.format.
+
 	- Alt+C over multiple classes
-	- EB\idu.cpp 266 k.[ok.]
 	- jump to operator definition
-	- makra na global scope
 	- ftp/Publi/ParseError.png
-	- nechodi virtuals in nImage App
-	- PesDlg - k_adresa_seq.
 	- Navigate is unable to find the "Alignment" enum in beta4.
 	- Alt+C - inline conversion
 	- public/private, filter by class
-	- Alt+J neskace podle signatury
-	  int Odpady::SlozenkaVars(VectorMap<String, Value>& var,
-	                           Osob0*|*Doklad od, Date datum,
-	                           bool  preplatek, bool nedoplatek,
-	                           bool& dotisk);
 }
 
-* TheIDE: Insert Color Assist function
-
-* Display error when there are two conflicting lang strings
-
-* "Error executing..."
-
-* Then dissable the saving on exit. With optional choice.
+* TheIDE {
+	- Insert Color Assist function
+	- Display error when there are two conflicting lang strings
+	- Then dissable the saving on exit. With optional choice.
+	- CppBase Purify speedup (no need for String...Cat)
+	- New Layout -> |Layout dat do editoru
+	- The fact that there is key assignments for it should also be shown in the context menu (Assist++)
+}
 
 * Valgrind
 
@@ -57,8 +97,6 @@ Something borked with unix filename escaping?
 
 * I love to use Virtual Desktop Managers for increased productivity. As of now, the free Microsoft Virtual Desktop Manager is having problems with theIDE. If I switch to a different desktop while running theIDE, the main window does not repaint itself when I return to the Desktop with theIDE in it. I have to close out of the program and reopen it for everything to work properly.
 
-* CppBase Purify speedup (no need for String...Cat)
-
 * CommandLine() function returns a Vector with command line arguments in system enconing. Other parts of U++ uses UTF-8.
 
 * Cursor blinks in TheIde code editor window even when the window is inactive. It should rather be hidden then.
@@ -66,8 +104,6 @@ Something borked with unix filename escaping?
 * I have found that if some source file is in location which contains a link, then ide considers two different files.
 
 * If I wish to link against some external libraries, outside of the normal library search path, in a project with multiple developers, it would be nice to be able to use EnvVars. Like, -I$SSL/ to point to where openssl is on your OS. However, it does not appear to expand $SSL. Is this definitely the case?
-
-* New Layout -> |Layout dat do editoru
 
 * Je-li app EP Zoomable a je autohide Win panel, tak se neobjevuje (panel)
 
@@ -81,7 +117,7 @@ Something borked with unix filename escaping?
 * Have found such an issue. When I start Build 602beta4, on FreeBSD 6.0 under xwm menus in ide disappear very quickly when I click them by mouse so I can't click menu items. When I access menu by pressing F10, everithing works fine with keyboard.
 In KDE works fine.
 
-* The fact that there is key assignments for it should also be shown in the context menu (Assist++)
+
 
 * Single click breakpoints
 

@@ -34,56 +34,102 @@ Stream& Draw::PutRect(const Rect& r)
 
 // -------------------------------
 
-void Draw::DrawImageOp(const Rect& rect, const Image& img, const Rect& src, int fx)
+void Draw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, const Rect& src, Color color)
 {
-	img.PaintImage(*this, src, rect, fx);
-}
-
-void Draw::DrawImageOp(const Rect& rect, const Image& img, const Rect& src,
-					 Color fore, Color back, Color doxor)
-{
-	img.PaintImage(*this, src, rect, fore, back, doxor);
+	Size sz = Size(cx, cy);
+	if(src.GetSize() == sz) //TODO: RLE for large images
+		img.PaintImage(*this, x, y, src, color);
+	else {
+		Image h = Rescale(img, Size(cx, cy), src);
+		h.PaintImage(*this, x, y, h.GetSize(), color);
+	}
 }
 
 // -------------------------------
 
 void Draw::DrawRect(const Rect& rect, Color color)
 {
-	DrawRect(rect.left, rect.top, rect.Width(), rect.Height(), color);
+	DrawRect(rect.left, rect.top, rect.GetWidth(), rect.GetHeight(), color);
 }
 
-void Draw::DrawImage(const Rect& rect, const Image& img, int fx)
+void Draw::DrawImage(int x, int y, int cx, int cy, const Image& img, const Rect& src)
 {
-	DrawImage(rect, img, img.GetRect(), fx);
+	DrawImageOp(x, y, cx, cy, img, src, Null);
 }
 
-void Draw::DrawImage(int x, int y, int cx, int cy, const Image& img, int fx)
+void Draw::DrawImage(int x, int y, int cx, int cy, const Image& img)
 {
-	DrawImage(RectC(x, y, cx, cy), img, fx);
+	DrawImage(x, y, cx, cy, img, img.GetSize());
 }
 
-void Draw::DrawImage(int x, int y, const Image& img, int fx)
+void Draw::DrawImage(int x, int y, int cx, int cy, const Image& img, const Rect& src, Color color)
+{
+	if(IsNull(color)) return;
+	DrawImageOp(x, y, cx, cy, img, src, color);
+}
+
+void Draw::DrawImage(int x, int y, int cx, int cy, const Image& img, Color color)
+{
+	if(IsNull(color)) return;
+	DrawImage(x, y, cx, cy, img, img.GetSize(), color);
+}
+
+void Draw::DrawImage(const Rect& r, const Image& img, const Rect& src)
+{
+	DrawImage(r.left, r.right, r.Width(), r.Height(), img, src);
+}
+
+void Draw::DrawImage(const Rect& r, const Image& img)
+{
+	DrawImage(r.left, r.right, r.Width(), r.Height(), img);
+}
+
+void Draw::DrawImage(const Rect& r, const Image& img, const Rect& src, Color color)
+{
+	if(IsNull(color)) return;
+	DrawImage(r.left, r.right, r.Width(), r.Height(), img, src, color);
+}
+
+void Draw::DrawImage(const Rect& r, const Image& img, Color color)
+{
+	if(IsNull(color)) return;
+	DrawImage(r.left, r.right, r.Width(), r.Height(), img, color);
+}
+
+void Draw::DrawImage(int x, int y, const Image& img, const Rect& src)
 {
 	Size sz = img.GetSize();
-	DrawImage(x, y, sz.cx, sz.cy, img, fx);
+	DrawImageOp(x, y, sz.cx, sz.cy, img, src, Null);
 }
 
-void Draw::DrawImage(const Rect& rect, const Image& img,
-					 Color fore, Color back, Color doxor)
-{
-	DrawImage(rect, img, img.GetRect(), fore, back, doxor);
-}
-
-void Draw::DrawImage(int x, int y, int cx, int cy, const Image& img,
-					 Color fore, Color back, Color doxor)
-{
-	DrawImage(RectC(x, y, cx, cy), img, fore, back, doxor);
-}
-
-void Draw::DrawImage(int x, int y, const Image& img, Color fore, Color back, Color doxor)
+void Draw::DrawImage(int x, int y, const Image& img)
 {
 	Size sz = img.GetSize();
-	DrawImage(x, y, sz.cx, sz.cy, img, fore, back, doxor);
+	DrawImageOp(x, y, sz.cx, sz.cy, img, img.GetSize(), Null);
+}
+
+void Draw::DrawImage(int x, int y, const Image& img, const Rect& src, Color color)
+{
+	if(IsNull(color)) return;
+	Size sz = img.GetSize();
+	DrawImageOp(x, y, sz.cx, sz.cy, img, src, color);
+}
+
+void Draw::DrawImage(int x, int y, const Image& img, Color color)
+{
+	if(IsNull(color)) return;
+	Size sz = img.GetSize();
+	DrawImageOp(x, y, sz.cx, sz.cy, img, img.GetSize(), color);
+}
+
+void Draw::DrawData(int x, int y, int cx, int cy, const String& data, const char *type)
+{
+	DrawDataOp(x, y, cx, cy, data, type);
+}
+
+void Draw::DrawData(const Rect& r, const String& data, const char *type)
+{
+	DrawDataOp(r.left, r.top, r.GetWidth(), r.GetHeight(), data, type);
 }
 
 void Draw::DrawLine(Point p1, Point p2, int width, Color color)
@@ -219,9 +265,7 @@ Rect NilDraw::GetClipOp() const { return Rect(0, 0, 0, 0); }
 bool NilDraw::IsPaintingOp(const Rect& r) const { return false; }
 
 void NilDraw::DrawRectOp(int x, int y, int cx, int cy, Color color) {}
-void NilDraw::DrawImageOp(const Rect& rect, const Image& img, const Rect& src, int fx) {}
-void NilDraw::DrawImageOp(const Rect& rect, const Image& img, const Rect& src,
-	                   Color fore, Color back, Color doxor) {}
+void NilDraw::DrawImageOp(int x, int y, const Image& img, const Rect& src, Color color) {}
 void NilDraw::DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color) {}
 void NilDraw::DrawEllipseOp(const Rect& r, Color color, int pen, Color pencolor) {}
 void NilDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font,

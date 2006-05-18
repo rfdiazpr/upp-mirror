@@ -1,10 +1,6 @@
 #include "VectorDes.h"
 #pragma hdrstop
 
-#define IMAGEFILE <VectorDes/VectorDes.iml>
-#define IMAGESPACE VecImg
-#include <Draw/iml_header.h>
-
 void DrawHotRect(Draw& draw, int x, int y, int cx, int cy, bool hot, Color color)
 {
 	if(hot)

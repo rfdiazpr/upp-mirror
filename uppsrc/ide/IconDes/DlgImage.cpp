@@ -1,13 +1,6 @@
 #include "IconDes.h"
 #pragma hdrstop
 
-#include <Image/Image.h>
-#include <Draw/PixelUtil.h>
-#include <plugin/gif/gif.h>
-#include <plugin/jpg/jpg.h>
-#include <plugin/png/png.h>
-#include <plugin/tif/tif.h>
-
 #define LAYOUTFILE <ide/IconDes/panel.lay>
 #include <CtrlCore/lay.h>
 
@@ -33,15 +26,6 @@ bool SaveChangedFile(String fn, String data)
 	return LoadFile(fn) == data || SaveFile(fn, data);
 }
 
-INITBLOCK
-{
-	JpgEncoder::Register();
-	PngEncoder::Register();
-	TifEncoder::Register();
-	GifEncoder::Register();
-	BmpEncoder::Register();
-}
-
 template <class T>
 inline void SerializeImageEnum(Stream& stream, T& x)
 {
@@ -50,14 +34,8 @@ inline void SerializeImageEnum(Stream& stream, T& x)
 	x = (T)i;
 }
 
-bool IsPasteAvailable()
-{
-#ifdef PLATFORM_WIN32
-	return ClipboardFormat<AlphaArray>::IsAvailable()
-		|| IsClipboardFormatAvailable(CF_DIB);
-#else
-	return false; // todo
-#endif
+bool IsPasteAvailable() {
+	return true;
 }
 
 class Setup
@@ -106,7 +84,7 @@ Setup::Setup()
 , paste_transparent(true)
 , high_list(true)
 , wince_16bit(false)
-, grid(ImageEditCtrl::SINGLE)
+, grid(true)
 , grid_color(Black)
 , grid_zoom(16)
 {
@@ -318,7 +296,7 @@ void DlgSetup::OnRelPath()
 
 void DlgSetup::OnGridColor()
 {
-	grid <<= ImageEditCtrl::SINGLE;
+	grid = true;
 }
 
 void DlgSetup::OnWrapperKind()
@@ -489,7 +467,7 @@ private:
 	void                SetFileName(String fn);
 	void                UpdateCaption();
 
-	void                SetImage(const AlphaArray& im, const char *command);
+	void                SetImage(const Image& im, const char *command);
 
 	AlphaImageInfo      Get(int row);
 	void                Set(int row, const IMLImageInfo& data);
@@ -611,7 +589,7 @@ private:
 	String              old_name;
 	LRUList             recent_files;
 	String              recent_export;
-	AlphaArray          image_tail;
+	Image               image_tail;
 
 	Array<UndoEntry>    undo;
 	Rect                undo_rc, redo_rc;
@@ -795,30 +773,20 @@ void DlgImageDisplayCls::Paint(Draw& draw, const Rect& rc, const Value& value, C
 		int format = va[4];
 		String data = va[5];
 
-		AlphaArray aa(size);
-		RLEToAlpha(aa, data);
-		AlphaKillMask(aa, paper);
+		Image aa = RLEToAlpha(data, size);
+		ImageDraw iw(size);
+		iw.DrawRect(size, paper);
+		iw.DrawImage(0, 0, aa);
+		aa = iw;
 		Size out_size = min(GetFitSize(size, rc.Size()), size);
 		if(out_size != size)
 		{
-			PixelArray scaled(out_size, -3);
-			PixelSet(scaled, scaled.GetRect(), paper);
-			PixelCopyAntiAlias(scaled, scaled.GetRect(), aa.pixel, aa.GetRect());
-			aa.pixel = scaled;
+			aa = Rescale(aa, out_size);
 			size = out_size;
 		}
 		draw.Clip(rc);
-		Rect dest(rc.CenterPoint() - (size >> 1), size);
-/*
-		if(aa.HasAlpha())
-		{
-			aa.alpha.Paint(draw, dest.OffsetedHorz(-1), White, Null);
-			aa.alpha.Paint(draw, dest.OffsetedHorz(+1), White, Null);
-			aa.alpha.Paint(draw, dest.OffsetedVert(-1), White, Null);
-			aa.alpha.Paint(draw, dest.OffsetedVert(+1), White, Null);
-		}
-*/
-		aa.Paint(draw, dest);
+		Point p = rc.CenterPoint() - (size >> 1);
+		draw.DrawImage(p.x, p.y, aa);
 		draw.End();
 	}
 }
@@ -1445,26 +1413,13 @@ void DlgImage::ToolEditInsertPaste(Bar& bar)
 
 void DlgImage::OnEditInsertPaste()
 {
-#ifdef PLATFORM_WIN32
-	AlphaArray image = ClipboardToAlphaArray();
-	if(image.IsEmpty())
-	{
-		Exclamation(t_("Error reading clipboard image"));
-		return;
-	}
-	PixelSetConvert(image.pixel, -3);
-	if(image.HasAlpha())
-		PixelSetConvert(image.alpha, 8);
-	else
-		image.CreateAlpha();
-
+	Image image = ReadClipboardImage();
 	IMLImageInfo data;
 	data.size = image.GetSize();
 	data.encoded_data = AlphaToRLE(image);
 	One<UndoEntryList> cmd = new UndoEntryList(*this, t_("new from clipboard"));
 	cmd -> Insert(image_list.list.GetCursor() + 1, data);
 	AddUndo(-cmd);
-#endif
 }
 
 void DlgImage::ToolEditInsertFile(Bar& bar)
@@ -1491,7 +1446,7 @@ static String MakeIdent(const char *i)
 
 void DlgImage::OnEditInsertFile()
 {
-	FileSelector fs;
+/*	FileSelector fs;
 	fs.Type(t_("Images (bmp, png, gif, jpeg, tiff, cur, ico)"), t_("*bmp;*.png;*.gif;*.jpg;*.jpeg;*.tif;*.tiff;*.cur;*.ico"))
 		.DefaultExt("bmp")
 		.Multi();
@@ -1508,7 +1463,7 @@ void DlgImage::OnEditInsertFile()
 					break;
 				continue;
 			}
-			Array<AlphaArray> image = StdLoadArray(fi, Vector<int>());
+			Array<Image> image = StdLoadArray(fi, Vector<int>());
 			if(image.IsEmpty())
 			{
 				if(!PromptOKCancel(NFormat(t_("Image [* \1%s\1]: file read or format error.\nContinue?"), fn)))
@@ -1517,12 +1472,7 @@ void DlgImage::OnEditInsertFile()
 			}
 			for(int a = 0; a < image.GetCount(); a++)
 			{
-				AlphaArray& im = image[a];
-				PixelSetConvert(im.pixel, -3);
-				if(im.HasAlpha())
-					PixelSetConvert(im.alpha, 8);
-				else
-					im.CreateAlpha();
+				Image& im = image[a];
 				IMLImageInfo info;
 				info.size = im.GetSize();
 				One<UndoEntryList> cmd = new UndoEntryList(*this, t_("new from file"));
@@ -1536,6 +1486,7 @@ void DlgImage::OnEditInsertFile()
 			}
 		}
 	}
+*/
 }
 
 void DlgImage::ToolEditSplit(Bar& bar)
@@ -1561,12 +1512,12 @@ void DlgImage::OnEditSplit()
 	One<UndoEntryList> cmd = new UndoEntryList(*this, t_("split"));
 	Size item(~dlg.cx, ~dlg.cy);
 	IMLImageInfo data = Get(i);
-	const AlphaArray& org = image_designer.image;
+	const Image& org = image_designer.image;
 	int ni = i;
 	for(int y = 0; y < org.GetSize().cy; y += item.cy)
 		for(int x = 0; x < org.GetSize().cx; x += item.cx)
 		{
-			AlphaArray part = AlphaCrop(org, Rect(x, y, x + item.cx, y + item.cy));
+			Image part = Crop(org, Rect(x, y, x + item.cx, y + item.cy));
 			data.size = part.GetSize();
 			data.encoded_data = AlphaToRLE(part);
 			cmd -> Insert(++ni, data);
@@ -1601,19 +1552,14 @@ void DlgImage::ToolEditPaste(Bar& bar)
 
 void DlgImage::OnEditPaste()
 {
-#ifdef PLATFORM_WIN32
 	if(!image_list.list.IsCursor())
 		return;
-
-	AlphaArray image = ClipboardToAlphaArray();
+	Image image = ReadClipboardImage();
 	if(image.IsEmpty())
 	{
 		Exclamation(t_("Error reading clipboard image."));
 		return;
 	}
-	PixelSetConvert(image.pixel, -3);
-	if(image.HasAlpha())
-		PixelSetConvert(image.alpha, 8);
 
 	Size old_size = image_designer.GetImageSize();
 	Size new_size = image.GetSize();
@@ -1644,7 +1590,6 @@ void DlgImage::OnEditPaste()
 	image_designer.SetLeftButton(&GetAdapterSelect);
 	image_designer.SetSelection(Rect(new_size));
 	image_designer.SetSelectionImage(image);
-#endif
 }
 
 void DlgImage::ToolEditCrop(Bar& bar)
@@ -1663,7 +1608,7 @@ void DlgImage::OnEditCrop()
 		AlphaImageInfo data = Get(c);
 		One<UndoEntryList> cmd = new UndoEntryList(*this, t_("crop"));
 		cmd -> Remove(c, IMLImageInfo(data, ~image_list.name, image_list.list.Get(CDATA)));
-		AlphaArray new_image = AlphaCrop(image_designer.image, image_designer.GetSelection());
+		Image new_image = Crop(image_designer.image, image_designer.GetSelection());
 		data.size = new_image.GetSize();
 		cmd -> Insert(c, IMLImageInfo(data, ~image_list.name, AlphaToRLE(new_image)));
 		AddUndo(-cmd);
@@ -1696,8 +1641,7 @@ void DlgImage::OnSelectRotateClockwise()
 	{
 		if(PromptOKCancel(t_("Rotate image and change its dimensions?")))
 		{
-			AlphaArray rot = AlphaTransform(image_designer.image, IMAGE_TCLOCKWISE);
-			SetImage(rot, t_("rotate 90 degrees right"));
+			SetImage(RotateClockwise(image_designer.image), t_("rotate 90 degrees right"));
 			return;
 		}
 	}
@@ -1719,7 +1663,7 @@ void DlgImage::OnSelectRotateAnticlockwise()
 	{
 		if(PromptOKCancel(t_("Rotate image and change its dimensions?")))
 		{
-			SetImage(AlphaTransform(image_designer.image, IMAGE_TANTICLOCKWISE), t_("rotate 90 degrees left"));
+			SetImage(RotateAntiClockwise(image_designer.image), t_("rotate 90 degrees left"));
 			return;
 		}
 	}
@@ -1836,27 +1780,25 @@ void DlgImage::OnImageSize()
 		Size new_tail = max(tail, old_size);
 		if(new_tail != tail)
 		{
-			AlphaArray larger_buffer(new_tail);
-			AlphaSet(larger_buffer, new_tail, Color(Null));
+			Image larger_buffer = CreateImage(new_tail, Color(Null));
 			if(tail.cx > 0 && tail.cy > 0)
-				AlphaCopy(larger_buffer, image_tail.GetSize(), image_tail, image_tail.GetSize(), false);
+				Copy(larger_buffer, image_tail.GetSize(), image_tail, image_tail.GetSize());
 			image_tail = larger_buffer;
 		}
-		AlphaCopy(image_tail, old_size, image_designer.image, old_size, false);
+		Copy(image_tail, old_size, image_designer.image, old_size);
 		One<UndoEntryList> cmd = new UndoEntryList(*this, t_("image size"));
 		AlphaImageInfo data = Get(c);
 		data.size = old_size;
 		cmd -> Remove(c, IMLImageInfo(data, ~image_list.name, AlphaToRLE(image_designer.image)));
-		AlphaArray new_image(size, -3);
-		AlphaSet(new_image, size, Color(Null));
+		Image new_image = CreateImage(size, Color(Null));
 		data.size = size;
-		AlphaCopy(new_image, size, image_tail, size, false);
+		Copy(new_image, size, image_tail, size);
 		cmd -> Insert(c, IMLImageInfo(data, ~image_list.name, AlphaToRLE(new_image)));
 		AddUndo(-cmd);
 	}
 }
 
-void DlgImage::SetImage(const AlphaArray& im, const char *command)
+void DlgImage::SetImage(const Image& im, const char *command)
 {
 	int c = image_list.list.GetCursor();
 	if(c >= 0 && image_list.list.KillCursor())
@@ -1911,7 +1853,7 @@ void DlgImage::OnImage()
 		AlphaImageInfo data = Get(new_cursor);
 		image_designer.SetImageSize(data.size);
 		image_designer.SetHotSpot(data.hotspot);
-		RLEToAlpha(image_designer.image, (String)image_list.list.Get(new_cursor, CDATA));
+		image_designer.image = RLEToAlpha((String)image_list.list.Get(new_cursor, CDATA), data.size);
 	}
 	else
 		image_designer.SetImageSize(Size(0, 0));
@@ -1964,7 +1906,7 @@ bool DlgImage::DoLoad(String fn, bool warn_ne)
 		CParser parser(s, fn, 1);
 		Array<IMLImageInfo> info;
 		VectorMap<String, String> param;
-		AlphaScanIML(parser, info, param);
+		ScanIML(parser, info, param);
 		image_list.list.SetCount(info.GetCount());
 		for(int i = 0; i < info.GetCount(); i++)
 		{
@@ -2276,10 +2218,8 @@ void DlgImage::WriteFile(Stream& stream, String _filename)
 		String rle = image_list.list.Get(i, CDATA);
 		if(IsNull(name))
 			name = anon_name + IntStr(i);
-		AlphaArray buffer(data.size, -3);
-		AlphaSet(buffer, buffer.GetRect(), Color(Null));
-		RLEToAlpha(buffer, rle);
-		if(setup.wince_16bit)
+		Image buffer = RLEToAlpha(rle, data.size);
+/*		if(setup.wince_16bit)
 		{
 			stream.PutLine(NFormat("IMAGE_BEGIN16(%s)", name));
 			int last = 0;
@@ -2300,14 +2240,13 @@ void DlgImage::WriteFile(Stream& stream, String _filename)
 			stream.PutLine(NFormat("IMAGE_END16(%s, %d, %d, %d, %d)",
 				name, data.size.cx, data.size.cy, data.hotspot.x, data.hotspot.y));
 		}
-		else
+		else*/
 		{
 			stream.PutLine(NFormat("IMAGE_BEGIN(%s)", name));
 			int last = 0;
 			for(int i = 0, h = data.size.cy; i < h; i++)
 			{
-				String scan;
-				AlphaScanToRLE(scan, buffer.GetPixelDownScan(i), buffer.GetAlphaDownScan(i), buffer.GetWidth());
+				String scan = PackRLE(buffer[i], buffer.GetWidth());
 				if(!scan.IsEmpty() || i == 0) // force at least 1 scan
 				{
 					for(; last < i; last++)
@@ -2359,11 +2298,11 @@ void DlgImage::WriteFile(Stream& stream, String _filename)
 
 void DlgImage::WriteJava(String _iml_file, Stream& iml_stream)
 {
-	Size max_size(1, 1);
+/*	Size max_size(1, 1);
 	int i, items = image_list.list.GetCount();
 	for(i = 0; i < items; i++)
 		max_size = max(max_size, Get(i).size);
-	AlphaArray image(max_size.cx * items, 2 * max_size.cy);
+	Image image(max_size.cx * items, 2 * max_size.cy);
 	AlphaSet(image, image.GetRect(), Color(Null));
 
 	String jfn = setup.java_source;
@@ -2467,44 +2406,13 @@ void DlgImage::WriteJava(String _iml_file, Stream& iml_stream)
 		String s = datastrm.GetResult();
 		PutOctalString(iml_stream, s.Begin(), s.End());
 		iml_stream.Put(")\r\n");
-/*
-		jfn = ForceExt(_iml_file, ".cpp");
-
-		StringStream fp;
-		fp << cmt << "\n"
-			<< "// " << clss << "ToString/Stream - generated from file " << _iml_file << "\n"
-			"\n"
-			"#include <Core/Core.h>\n"
-			"\n"
-			"static const char iml_data[] =\n\t";
-		PutOctalString(fp, imp, true);
-		fp << ";\n"
-			"\n"
-			<< cmt << "\n"
-			"\n"
-			"void " << clss << "ToString(String& s)\n"
-			"{\n"
-			"\ts.Cat(iml_data, " << imp.GetLength() << ");\n"
-			"}\n"
-			"\n"
-			<< cmt << "\n"
-			"\n"
-			"void " << clss << "ToStream(Stream& s)\n"
-			"{\n"
-			"\ts.Put(iml_data, " << imp.GetLength() << ");\n"
-			"}\n";
-		if(!SaveChangedFile(jfn, fp))
-		{
-			Exclamation(NFormat("Chyba p?¸i z??pisu do souboru [* \1%s\1].", jfn));
-			return;
-		}
-*/
 	}
+*/
 }
 
 void DlgImage::WriteGif(String _folder, Color _transparent)
 {
-	for(int i = 0; i < image_list.list.GetCount(); i++)
+/*	for(int i = 0; i < image_list.list.GetCount(); i++)
 	{
 		AlphaImageInfo info = Get(i);
 		String name = image_list.list.Get(i, CNAME);
@@ -2513,19 +2421,19 @@ void DlgImage::WriteGif(String _folder, Color _transparent)
 		String fn = AppendFileName(_folder,ForceExt(name, ".gif"));
 		String rle = image_list.list.Get(i, CDATA);
 		AlphaArray buffer(info.size, -3);
-		RLEToAlpha(buffer, rle);
+		Image RLEToAlpha(buffer, rle);
 		if(!IsNull(_transparent))
 			AlphaKillMask(buffer, _transparent);
 		String s = GifEncoder().SaveArray(buffer);
 		if(!SaveChangedFile(fn, s)
 			&& !PromptOKCancel(NFormat(t_("Error saving image [* \1%s\1].\nContinue?"), fn)))
 			break;
-	}
+	}*/
 }
 
 void DlgImage::WriteIcon(String file, String smallicon, String largeicon, int bpp)
 {
-	int si = -1, li = -1;
+/*	int si = -1, li = -1;
 	for(int i = 0; i < image_list.list.GetCount(); i++)
 	{
 		String n = image_list.list.Get(i, CNAME);
@@ -2569,6 +2477,7 @@ void DlgImage::WriteIcon(String file, String smallicon, String largeicon, int bp
 	file = NormalizePath(file, GetFileDirectory(setup.filename));
 	if(!SaveChangedFile(file, icondata))
 		Exclamation(NFormat(t_("Error saving file [* \1%s\1]."), file));
+*/
 }
 
 static const char *scanner;

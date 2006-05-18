@@ -1,26 +1,47 @@
-#ifndef __Plugin_Tif__
-#define __Plugin_Tif__
+#ifndef _plugin_tif_tif_h_
+#define _plugin_tif_tif_h_
 
-class TifEncoder : public ImageEncoder
-{
+class TIFRaster : public StreamRaster {
 public:
-	TifEncoder();
-	virtual ~TifEncoder();
-
-	virtual void              SaveRaw(Stream& stream, const Vector<const AlphaArray *>& pages);
-	virtual Array<AlphaArray> LoadRaw(Stream& stream, const Vector<int>& page_index);
-	virtual Array<ImageInfo>  InfoRaw(Stream& stream);
-
-	static One<ImageEncoder>  New()      { return new TifEncoder; }
-
-	static void               Register() { AddStdMap(&New); }
+	class Data;
+	One<Data> data;
 
 public:
-	String                    errors;
-	String                    warnings;
+	TIFRaster();
+	~TIFRaster();
+
+	virtual bool    Create();
+	virtual Size    GetSize();
+	virtual Info    GetInfo();
+	virtual Line    GetLine(int line);
 
 private:
-	static int                GetBPP(int bits_per_sample, int samples_per_pixel);
+	bool            Init();
 };
 
-#endif//__Plugin_Tif__
+class TIFEncoder : public StreamRasterEncoder {
+public:
+	class Data;
+	One<Data> data;
+
+public:
+	TIFEncoder(int bpp = 24);
+	~TIFEncoder();
+
+	TIFEncoder&  BitsPerPixel(int b) { bpp = b; return *this; }
+
+	virtual int  GetPaletteCount();
+	virtual void Start(Size sz);
+	virtual void WriteLine(const RGBA *s);
+
+private:
+	int bpp;
+};
+
+// StreamRasterEncoder::SaveFile by melo vracet true / false podle toho, jestli se mu podari ulozit soubor
+// RasterEncoder by mel umoznit nastavit fyzickou velikost obrazku pro ulozeni do souboru
+// v Raster::Info bych zmenil flag alpha na ImageKind
+// dotaz: resi se nejak zrychleni toho generatoru palety, kdyz je ten obrazek mrnavy
+//        (typicky ikony 16 x 16 nebo 32 x 32 pixelu) ?
+
+#endif

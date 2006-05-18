@@ -48,6 +48,7 @@ public:
 
 	Callback WhenPrev;
 	Callback WhenNext;
+	Callback WhenLeftClick;
 
 	operator int()                                         { return thumbpos; }
 
@@ -80,6 +81,7 @@ protected:
 public:
 	Callback WhenScroll;
 	Callback WhenVisibility;
+	Callback WhenLeftClick;
 
 	bool    IsHorz() const                  { return slider.IsHorz(); }
 	bool    IsVert() const                  { return slider.IsVert(); }
@@ -181,6 +183,7 @@ public:
 	VScrollBar y;
 
 	Callback   WhenScroll;
+	Callback   WhenLeftClick;
 
 	void    Set(Point pos, Size page, Size total);
 	bool    Set(Point pos);

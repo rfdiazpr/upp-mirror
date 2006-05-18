@@ -5,50 +5,27 @@
 #include <locale.h>
 
 #ifdef _DEBUG
-	#define SYNCHRONIZE
+//	#define SYNCHRONIZE
 #endif
 
 #define LLOG(x) // LOG(x)
 
-Atom      Ctrl::XA_WM_PROTOCOLS;
-Atom      Ctrl::XA_WM_DELETE_WINDOW;
-Atom      Ctrl::XA_WM_TAKE_FOCUS;
-
-Atom      Ctrl::XA_UPP_SYNC;
-
-Atom Ctrl::XA__NET_WM_CONTEXT_HELP;
-Atom Ctrl::XA__MOTIF_WM_HINTS;
-Atom Ctrl::XA_KWIN_RUNNING;
-Atom Ctrl::XA_KWM_RUNNING;
-Atom Ctrl::XA_GNOME_BACKGROUND_PROPERTIES;
-Atom Ctrl::XA__QT_SETTINGS_TIMESTAMP_;
-Atom Ctrl::XA__NET_SUPPORTED;
-Atom Ctrl::XA__NET_VIRTUAL_ROOTS;
-Atom Ctrl::XA__NET_WM_NAME;
-Atom Ctrl::XA__NET_WM_ICON_NAME;
-Atom Ctrl::XA__NET_WM_ICON;
-Atom Ctrl::XA__NET_WM_STATE;
-Atom Ctrl::XA__NET_WM_STATE_MODAL;
-Atom Ctrl::XA__NET_WM_STATE_MAXIMIZED_VERT;
-Atom Ctrl::XA__NET_WM_STATE_MAXIMIZED_HORZ;
-Atom Ctrl::XA__NET_WM_WINDOW_TYPE;
-Atom Ctrl::XA__NET_WM_WINDOW_TYPE_NORMAL;
-Atom Ctrl::XA__NET_WM_WINDOW_TYPE_DIALOG;
-Atom Ctrl::XA__NET_WM_WINDOW_TYPE_TOOLBAR;
-Atom Ctrl::XA__KDE_NET_WM_WINDOW_TYPE_OVERRIDE;
-Atom Ctrl::XA__KDE_NET_WM_FRAME_STRUT;
-Atom Ctrl::XA__KDE_NET_USER_TIME;
-Atom Ctrl::XA__NET_WM_STATE_STAYS_ON_TOP;
-Atom Ctrl::XA__NET_WM_MOVERESIZE;
-Atom Ctrl::XA_ENLIGHTENMENT_DESKTOP;
-Atom Ctrl::XA_WM_STATE;
-Atom Ctrl::XA_CLIPBOARD;
-Atom Ctrl::XA_CLIPDATA;
-Atom Ctrl::XA_TARGETS;
-
-Atom Ctrl::XA_UTF8_STRING;
-
 XIM Ctrl::xim;
+
+Atom XAtom(const char *name)
+{
+	Atom x;
+	INTERLOCKED {
+		static VectorMap<String, int> atoms;
+		int q = atoms.Get(name, Null);
+		if(IsNull(q)) {
+			q = XInternAtom(Xdisplay, name, XFalse);
+			atoms.Add(name, q);
+		}
+		x = q;
+	}
+	return x;
+}
 
 String XAtomName(Atom atom)
 {
@@ -57,24 +34,79 @@ String XAtomName(Atom atom)
 
 String GetProperty(Window w, Atom property, Atom rtype)
 {
+	LOG("GetProperty!");
 	String result;
 	int format;
 	unsigned long nitems, after = 1;
 	long offset = 0;
 	Atom type = None;
-	while (after > 0) {
-		byte *data;
-		XGetWindowProperty(Xdisplay, w, property, offset, 1024, XFalse, rtype,
-		                   &type, &format, &nitems, &after, &data);
-		offset += 256;
+	unsigned char *data;
+	long rsize = XMaxRequestSize(Xdisplay);
+	while(after > 0 &&
+	      XGetWindowProperty(Xdisplay, w, property, offset, rsize, XFalse,
+	                         rtype, &type, &format, &nitems, &after, &data) == Success &&
+	      type != None) {
 		if(data) {
-			result.Cat((const char *)data, format == 32 ? sizeof(unsigned long) * nitems :
-			                               format == 16 ? 2 * nitems :
-			                                                  nitems);
+			int len = format == 32 ? sizeof(unsigned long) * nitems : nitems * (format >> 3);
+			result.Cat(data, len);
 			XFree((char *)data);
+			offset += len >> 2;
 		}
+		else
+			break;
 	}
 	return result;
+}
+
+bool WaitForEvent(Window w, int type, XEvent& event){
+	for(int i = 0; i < 50; i++) {
+		if(XCheckTypedWindowEvent(Xdisplay, w, type, &event))
+			return true;
+		Sleep(10);
+	}
+	LOG("WaitForEvent failed");
+	return false;
+}
+
+
+String ReadPropertyData(Window w, Atom property, Atom rtype)
+{
+	static Atom XA_INCR = XAtom("INCR");
+	Atom type;
+	int format;
+	unsigned long nitems, after;
+	unsigned char *ptr;
+	XEvent event;
+	String r;
+	if(XGetWindowProperty(Xdisplay, w, property, 0, 0, XFalse, AnyPropertyType,
+	                      &type, &format, &nitems, &after, &ptr) == Success && type != None) {
+		XFree(ptr);
+		if(type == XA_INCR) {
+			LOG("Incremental");
+			XDeleteProperty(Xdisplay, w, property);
+			XFlush(Xdisplay);
+			XEvent event;
+			for(;;) {
+				XFlush(Xdisplay);
+				if(!WaitForEvent(w, PropertyNotify, event))
+					break;
+				DUMP(event.xproperty.state);
+				if(event.xproperty.atom == property && event.xproperty.state == PropertyNewValue) {
+					LOG("Reading incremental chunk...");
+					DUMP(XAtomName(event.xproperty.atom));
+					String x = GetProperty(w, property, rtype);
+					DUMP(x.GetLength());
+					if(!x.GetLength())
+						break;
+					r.Cat(x);
+					XDeleteProperty(Xdisplay, w, property);
+				}
+			}
+		}
+		else
+			r = GetProperty(w, property, rtype);
+	}
+	return r;
 }
 
 Vector<int> GetPropertyInts(Window w, Atom property, Atom rtype)
@@ -93,11 +125,6 @@ Index<Atom>& _NET_Supported()
 {
 	static Index<Atom> q;
 	return q;
-}
-
-Atom XAtom(const char *name)
-{
-	return XInternAtom(Xdisplay, name, XFalse);
 }
 
 int X11ErrorHandler(XDisplay *, XErrorEvent *error)
@@ -246,47 +273,13 @@ void Ctrl::InitX11(const char *display)
 	InitTimer();
 	byte dummy[5];
 	Xbuttons = XGetPointerMapping(Xdisplay, dummy, 5);
-	XA_WM_PROTOCOLS = XAtom("WM_PROTOCOLS");
-	XA_WM_DELETE_WINDOW = XAtom("WM_DELETE_WINDOW");
-	XA_WM_TAKE_FOCUS = XAtom("WM_TAKE_FOCUS");
-	XA_UPP_SYNC = XAtom("UPP_SYNC__");
-	XA__MOTIF_WM_HINTS = XAtom("_MOTIF_WM_HINTS");
-	XA_KWIN_RUNNING = XAtom("KWIN_RUNNING");
-	XA_KWM_RUNNING = XAtom("KWM_RUNNING");
-	XA_GNOME_BACKGROUND_PROPERTIES = XAtom("GNOME_BACKGROUND_PROPERTIES");
-	XA__QT_SETTINGS_TIMESTAMP_ = XAtom(String("_QT_SETTINGS_TIMESTAMP_") + Xdisplayname);
-	XA__NET_SUPPORTED = XAtom("_NET_SUPPORTED");
-	XA__NET_VIRTUAL_ROOTS = XAtom("_NET_VIRTUAL_ROOTS");
-	XA__NET_WM_NAME = XAtom("_NET_WM_NAME");
-	XA__NET_WM_ICON_NAME = XAtom("_NET_WM_ICON_NAME");
-	XA__NET_WM_ICON = XAtom("_NET_WM_ICON");
-	XA__NET_WM_CONTEXT_HELP = XAtom("_NET_WM_CONTEXT_HELP");
-	XA__NET_WM_STATE = XAtom("_NET_WM_STATE");
-	XA__NET_WM_STATE_MODAL = XAtom("_NET_WM_STATE_MODAL");
-	XA__NET_WM_STATE_MAXIMIZED_VERT = XAtom("_NET_WM_STATE_MAXIMIZED_VERT");
-	XA__NET_WM_STATE_MAXIMIZED_HORZ = XAtom("_NET_WM_STATE_MAXIMIZED_HORZ");
-	XA__NET_WM_WINDOW_TYPE = XAtom("_NET_WM_WINDOW_TYPE");
-	XA__NET_WM_WINDOW_TYPE_NORMAL = XAtom("_NET_WM_WINDOW_TYPE_NORMAL");
-	XA__NET_WM_WINDOW_TYPE_DIALOG = XAtom("_NET_WM_WINDOW_TYPE_DIALOG");
-	XA__NET_WM_WINDOW_TYPE_TOOLBAR = XAtom("_NET_WM_WINDOW_TYPE_TOOLBAR");
-	XA__KDE_NET_WM_WINDOW_TYPE_OVERRIDE = XAtom("_KDE_NET_WM_WINDOW_TYPE_OVERRIDE");
-	XA__KDE_NET_WM_FRAME_STRUT = XAtom("_KDE_NET_WM_FRAME_STRUT");
-	XA__NET_WM_STATE_STAYS_ON_TOP = XAtom("_NET_WM_STATE_STAYS_ON_TOP");
-	XA__NET_WM_MOVERESIZE = XAtom("XA__NET_WM_MOVERESIZE");
-	XA_ENLIGHTENMENT_DESKTOP = XAtom("ENLIGHTENMENT_DESKTOP");
-	XA_UTF8_STRING = XAtom("UTF8_STRING");
-	XA__KDE_NET_USER_TIME = XAtom("_KDE_NET_USER_TIME");
-	XA_WM_STATE = XAtom("WM_STATE");
-	XA_CLIPBOARD = XAtom("CLIPBOARD");
-	XA_CLIPDATA = XAtom("CLIPDATA");
-	XA_TARGETS = XAtom("TARGETS");
 
 	Xeventtime = CurrentTime;
 	XSetErrorHandler(X11ErrorHandler);
 #ifdef SYNCHRONIZE
 	XSynchronize(Xdisplay, 1);
 #endif
-	Vector<int> nets = GetPropertyInts(Xroot, Ctrl::XA__NET_SUPPORTED);
+	Vector<int> nets = GetPropertyInts(Xroot, XAtom("_NET_SUPPORTED"));
 	for(int i = 0; i < nets.GetCount(); i++)
 		_NET_Supported().Add(nets[i]);
 

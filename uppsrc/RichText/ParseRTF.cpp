@@ -873,8 +873,8 @@ void RTFParser::ReadPict()
 	{
 #ifdef NEWIMAGE
 		//FIXIMAGE
-		Image image;
-		return;
+		Image image = StreamRaster::LoadStringAny(blip_data);
+		dd.DrawImage(0, 0, image);
 #else
 		One<ImageEncoder> encoder;
 		switch(blip_type)
@@ -886,9 +886,9 @@ void RTFParser::ReadPict()
 		if(!encoder)
 			return;
 		Image image = encoder -> LoadImage(blip_data);
-#endif
 		if(!image.IsEmpty())
 			dd.DrawImage(log_size, image);
+#endif
 	}
 	else
 		return;

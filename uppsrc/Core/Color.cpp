@@ -70,6 +70,28 @@ dword Color::Get() const
 	return c & 0xffffff;
 }
 
+Color::operator RGBA() const
+{
+	RGBA color;
+	if(IsNullInstance())
+		Zero(color);
+	else {
+		color.r = GetR();
+		color.g = GetG();
+		color.b = GetB();
+		color.a = 255;
+	}
+	return color;
+}
+
+Color::Color(RGBA rgba)
+{
+	if(rgba.a == 0)
+		color = 0xffffffff;
+	else
+		color = RGB(rgba.r, rgba.g, rgba.b);
+}
+
 template<>
 String AsString(const Color& c) {
 	if(IsNull(c))

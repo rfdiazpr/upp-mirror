@@ -270,8 +270,8 @@ String EscValue::ToString(int maxlen, int indent_step, bool hex, int indent) con
 				  << ":" << map->map[i].ToString(maxlen, indent_step, hex, 0);
 				q = true;
 			}
-			r << " }";
 		}
+		r << " }";
 		if(r.GetLength() >= maxlen) {
 			r.Clear();
 			r << ind << "{\n";

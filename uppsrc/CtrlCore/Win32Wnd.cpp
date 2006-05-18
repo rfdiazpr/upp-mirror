@@ -556,12 +556,16 @@ bool Ctrl::ProcessEvent(bool *quit)
 	return false;
 }
 
+void SweepMkImageCache();
+
 bool Ctrl::ProcessEvents(bool *quit)
 {
 	if(ProcessEvent(quit)) {
 		while(ProcessEvent(quit));
+		SweepMkImageCache();
 		return true;
 	}
+	SweepMkImageCache();
 	return false;
 }
 

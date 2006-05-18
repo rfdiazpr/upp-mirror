@@ -793,12 +793,15 @@ void DrawPolyPolyPolygon(Draw& draw, const Point *vertices, int vertex_count,
 			if(!is_xor)
 			{
 				SetROP2(draw, R2_MASKPEN);
+			#ifndef NEWIMAGE //TODO
 				SelectObject(draw, image.GetBrush(Null, Null));
+			#endif
 				SetTextColor(draw, Black());
 				SetBkColor(draw, White());
 				DrawPolyPolygonRaw(draw, vertices, poly,
 					subpolygon_counts, sub, true, PEN_NULL, Null);
 				SetROP2(draw, R2_MERGEPEN);
+			#ifndef NEWIMAGE //TODO
 				if(IsNull(color)) // use color fill brush
 					SelectObject(draw, image.GetBrush(Null, Black()));
 				else
@@ -806,17 +809,22 @@ void DrawPolyPolyPolygon(Draw& draw, const Point *vertices, int vertex_count,
 					SetTextColor(draw, color);
 					SetBkColor(draw, Black());
 				}
+			#endif
 			}
 			else if(!IsNull(color))
 			{ // colored xor fill with image mask
 				SetROP2(draw, R2_XORPEN);
 				SetTextColor(draw, COLORREF(color) ^ COLORREF(doxor));
+			#ifndef NEWIMAGE //TODO
 				SelectObject(draw, image.GetBrush(Null, Null));
+			#endif
 			}
 			else
 			{ // xor fill with image data
 				SetROP2(draw, R2_XORPEN);
+			#ifndef NEWIMAGE
 				SelectObject(draw, image.GetBrush(Null, Black));
+			#endif
 			}
 			DrawPolyPolygonRaw(draw, vertices, poly,
 				subpolygon_counts, sub, true, PEN_NULL, Null);

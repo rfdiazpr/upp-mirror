@@ -1,11 +1,4 @@
-optimize_speed;
-
-flags(NOTMFC) "!GUI !CONSOLE";
-
-uses
-	Draw;
-
 file
 	gif.h,
-	gif.cpp;
-
+	gifupp.cpp,
+	gif.icpp;

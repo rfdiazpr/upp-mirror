@@ -35,6 +35,7 @@ file
 	X11Proc.cpp,
 	TopWinX11.cpp,
 	X11Clip.cpp,
+	X11ImgClip.cpp,
 	X11App.cpp,
 	X11Event.i,
 	Info readonly separator,

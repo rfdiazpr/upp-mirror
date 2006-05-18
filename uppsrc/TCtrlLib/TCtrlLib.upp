@@ -4,12 +4,11 @@ uses
 	TDraw,
 	CtrlLib,
 	RichEdit,
-	Image,
 	plugin\gif,
 	PdfDraw,
 	DocTypes;
 
-library(WIN32) "shell32";
+library(WIN32) shell32;
 
 file
 	TCtrlLib.h,

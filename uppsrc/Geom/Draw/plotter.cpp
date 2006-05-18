@@ -946,11 +946,15 @@ void PlotterTool::Clear()
 
 void PlotterTool::Line(const Array<Pointf>& points)
 {
-	if(!points.IsEmpty())
-	{
-		MoveTo(points[0]);
-		for(int i = 1; i < points.GetCount(); i++)
-			LineTo(points[i]);
+	if(!points.IsEmpty()) {
+		bool line = false;
+		for(int i = 0; i < points.GetCount(); i++)
+			if(IsNull(points[i]))
+				line = false;
+			else {
+				DrawTo(points[i], line);
+				line = true;
+			}
 	}
 }
 

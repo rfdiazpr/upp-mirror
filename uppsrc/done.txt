@@ -1,3 +1,17 @@
+Assist++ {
+	- global scope macros
+	- EB\idu.cpp 266 k.[ok.] - improved resume & heurestics
+	- Alt+J neskace podle signatury
+	  int Odpady::SlozenkaVars(VectorMap<String, Value>& var,
+	                           Osob0*|*Doklad od, Date datum,
+	                           bool  preplatek, bool nedoplatek,
+	                           bool& dotisk);
+}
+TheIDE {
+	- "Go to line or definition" case insensitive option?
+	- Fixed IconDes
+}
+
 * Prestalo chodit XmlView!!!
 
 * Fixed width editfield

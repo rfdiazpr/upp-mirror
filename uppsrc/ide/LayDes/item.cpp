@@ -361,6 +361,17 @@ Image GetTypeIcon(const String& type, int cx, int cy, int i, Color bg)
 		Size stdsize = m.GetStdSize();
 		if(stdsize.cx == 0 || stdsize.cy == 0)
 			return Null;
+
+#ifdef NEWIMAGE
+		ImageDraw w(stdsize);
+		w.DrawRect(stdsize, bg);
+		m.Paint(w, stdsize, true);
+		if(stdsize.cx * cy > stdsize.cy * cx)
+			cy = stdsize.cy * cx / stdsize.cx;
+		else
+			cx = stdsize.cx * cy / stdsize.cy;
+		icon = Rescale(w, cx, cy);
+#else
 		Image ci = Image(stdsize);
 		ImageDraw w(ci);
 		w.DrawRect(stdsize, bg);
@@ -372,6 +383,7 @@ Image GetTypeIcon(const String& type, int cx, int cy, int i, Color bg)
 		PixelArray dest(cx, cy, -3);
 		PixelCopyAntiAlias(dest, Size(cx, cy), ImageToPixelArray(ci, ScreenInfo(), -3), stdsize);
 		icon = PixelArrayToImage(dest);
+#endif
 	}
 	return icon;
 }

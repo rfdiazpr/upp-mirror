@@ -1,8 +1,8 @@
 #include "IconDes.h"
 #pragma hdrstop
 
-#define IMAGESPACE PalCtrlImg
-#define IMAGEFILE <ide/IconDes/palctrl.iml>
+#define IMAGECLASS PalCtrlImg
+#define IMAGEFILE  <ide/IconDes/palctrl.iml>
 #include <Draw/iml.h>
 
 PaletteCtrl::PaletteCtrl()

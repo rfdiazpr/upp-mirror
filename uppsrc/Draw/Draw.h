@@ -22,6 +22,7 @@
 
 #ifdef PLATFORM_XFT
 #include <X11/Xft/Xft.h>
+#include <X11/extensions/Xrender.h>
 #endif
 
 #undef Picture
@@ -63,6 +64,25 @@ void   XError(const char *s);
 inline dword GetXPixel(int r, int g, int b) { return (*Xgetpixel)(r, g, b); }
 inline dword GetXPixel(Color color)         { return (*Xgetpixel)(color.GetR(), color.GetG(), color.GetB()); }
 
+enum {
+	X11_ROP2_ZERO,
+	X11_ROP2_AND,
+	X11_ROP2_AND_NOT,
+	X11_ROP2_COPY,
+	X11_ROP2_NOT_AND,
+	X11_ROP2_NOP,
+	X11_ROP2_XOR,
+	X11_ROP2_OR,
+	X11_ROP2_NOT_AND_NOT,
+	X11_ROP2_NOT_XOR,
+	X11_ROP2_INVERT,
+	X11_ROP2_OR_NOT,
+	X11_ROP2_NOT_COPY,
+	X11_ROP2_NOT_OR,
+	X11_ROP2_NOT_OR_NOT,
+	X11_ROP2_ONE,
+};
+
 #endif
 
 class Drawing;
@@ -74,7 +94,6 @@ HDC ScreenHDC();
 
 Draw& ScreenInfo();
 
-#include "PixelArray.h"
 #include "Image.h"
 
 const int FONT_V = 40;
@@ -391,6 +410,7 @@ protected:
 	friend bool DrawDrawing(Draw& w, Stream& s, const Rect& target, Size sz);
 
 	friend class  BackRectDraw;
+	friend class  ImageDraw;
 	friend class  FontInfo;
 	friend class  Font;
 
@@ -549,6 +569,7 @@ public:
 		DRAWARC             = 15,
 		DRAWPOLYPOLYLINE    = 16,
 		DRAWPOLYPOLYPOLYGON = 17,
+		DRAWDATA            = 18,
 	};
 	typedef void (*Drawer)(Draw&, Stream&, const DrawingPos&);
 
@@ -571,9 +592,8 @@ public:
 	virtual bool IsPaintingOp(const Rect& r) const;
 
 	virtual	void DrawRectOp(int x, int y, int cx, int cy, Color color);
-	virtual void DrawImageOp(const Rect& rect, const Image& img, const Rect& src, int fx);
-	virtual void DrawImageOp(const Rect& rect, const Image& img, const Rect& src,
-		                     Color fore, Color back, Color doxor);
+	virtual void DrawImageOp(int x, int y, int cx, int cy, const Image& img, const Rect& src, Color color);
+	virtual void DrawDataOp(int x, int y, int cx, int cy, const String& data, const char *id);
 	virtual void DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color);
 	virtual void DrawPolyPolylineOp(const Point *vertices, int vertex_count,
 	                                const int *counts, int count_count,
@@ -615,33 +635,35 @@ public:
 	{ DrawRectOp(x, y, cx, cy, color); }
 	void DrawRect(const Rect& rect, Color color);
 
-	void DrawImage(const Rect& rect, const Image& img, const Rect& src, int fx = 0)
-	{ DrawImageOp(rect, img, src, fx); }
-	void DrawImage(const Rect& rect, const Image& img, int fx = 0);
-	void DrawImage(int x, int y, int cx, int cy, const Image& img, int fx = 0);
-	void DrawImage(int x, int y, const Image& img, int fx = 0);
+	void DrawImage(int x, int y, int cx, int cy, const Image& img, const Rect& src);
+	void DrawImage(int x, int y, int cx, int cy, const Image& img);
+	void DrawImage(int x, int y, int cx, int cy, const Image& img, const Rect& src, Color color);
+	void DrawImage(int x, int y, int cx, int cy, const Image& img, Color color);
 
-	void DrawImage(const Rect& rect, const Image& img, const Rect& src,
-		             Color fore, Color back = Null, Color doxor = Null)
-	{ DrawImageOp(rect, img, src, fore, back, doxor); }
-	void DrawImage(const Rect& rect, const Image& img,
-		           Color fore, Color back = Null, Color doxor = Null);
-	void DrawImage(int x, int y, int cx, int cy, const Image& img,
-		           Color fore, Color back = Null, Color doxor = Null);
-	void DrawImage(int x, int y, const Image& img,
-		           Color fore, Color back = Null, Color doxor = Null);
+	void DrawImage(const Rect& r, const Image& img, const Rect& src);
+	void DrawImage(const Rect& r, const Image& img);
+	void DrawImage(const Rect& r, const Image& img, const Rect& src, Color color);
+	void DrawImage(const Rect& r, const Image& img, Color color);
 
-	void DrawLine(int x1, int y1, int x2, int y2, int width = 0, Color color = SBlack)
+	void DrawImage(int x, int y, const Image& img, const Rect& src);
+	void DrawImage(int x, int y, const Image& img);
+	void DrawImage(int x, int y, const Image& img, const Rect& src, Color color);
+	void DrawImage(int x, int y, const Image& img, Color color);
+
+	void DrawData(int x, int y, int cx, int cy, const String& data, const char *type);
+	void DrawData(const Rect& r, const String& data, const char *type);
+
+	void DrawLine(int x1, int y1, int x2, int y2, int width = 0, Color color = Black)
 	{ DrawLineOp(x1, y1, x2, y2, width, color); }
-	void DrawLine(Point p1, Point p2, int width = 0, Color color = SBlack);
+	void DrawLine(Point p1, Point p2, int width = 0, Color color = Black);
 
-	void DrawEllipse(const Rect& r, Color color = SBlack,
-	                 int pen = Null, Color pencolor = SBlack)
+	void DrawEllipse(const Rect& r, Color color = Black,
+	                 int pen = Null, Color pencolor = Black)
 	{ DrawEllipseOp(r, color, pen, pencolor); }
-	void DrawEllipse(int x, int y, int cx, int cy, Color color = SBlack,
-		             int pen = Null, Color pencolor = SBlack);
+	void DrawEllipse(int x, int y, int cx, int cy, Color color = Black,
+		             int pen = Null, Color pencolor = Black);
 
-	void DrawArc(const Rect& rc, Point start, Point end, int width = 0, Color color = SBlack)
+	void DrawArc(const Rect& rc, Point start, Point end, int width = 0, Color color = Black)
 	{ DrawArcOp(rc, start, end, width, color); }
 
 	void DrawPolyPolyline(const Point *vertices, int vertex_count,
@@ -778,6 +800,22 @@ private:
 	void operator=(const Draw&);
 };
 
+class DataDrawer {
+	typedef DataDrawer *(*Factory)();
+	template <class T> static DataDrawer *FactoryFn() { return new T; }
+	static void AddFormat(const char *id, Factory f);
+	static VectorMap<String, void *>& Map();
+
+public:
+	virtual void  Open(const String& data, int cx, int cy) = 0;
+	virtual Image Render(int lines) = 0;
+	virtual ~DataDrawer();
+
+	static  One<DataDrawer> Create(const String& id);
+
+	template <class T>	static void Register(const char *id)  { AddFormat(id, &DataDrawer::FactoryFn<T>); }
+};
+
 struct DrawingPos {
 	Size    source;
 	Size    target;
@@ -870,9 +908,8 @@ public:
 	virtual bool IsPaintingOp(const Rect& r) const;
 
 	virtual	void DrawRectOp(int x, int y, int cx, int cy, Color color);
-	virtual void DrawImageOp(const Rect& rect, const Image& img, const Rect& src, int fx);
-	virtual void DrawImageOp(const Rect& rect, const Image& img, const Rect& src,
-		                   Color fore, Color back, Color doxor);
+	virtual void DrawImageOp(int x, int y, int cx, int cy, const Image& img, const Rect& src, Color color);
+	virtual void DrawDataOp(int x, int y, int cx, int cy, const String& data, const char *id);
 	virtual void DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color);
 	virtual void DrawPolyPolylineOp(const Point *vertices, int vertex_count,
 	                                const int *counts, int count_count,
@@ -903,7 +940,7 @@ public:
 
 	void     Create(int cx, int cy);
 	void     Create(Size sz);
-	
+
 	Size     GetSize() const                  { return size; }
 
 	Drawing  GetResult();
@@ -928,9 +965,7 @@ public:
 	virtual bool IsPaintingOp(const Rect& r) const;
 
 	virtual	void DrawRectOp(int x, int y, int cx, int cy, Color color);
-	virtual void DrawImageOp(const Rect& rect, const Image& img, const Rect& src, int fx);
-	virtual void DrawImageOp(const Rect& rect, const Image& img, const Rect& src,
-		                   Color fore, Color back, Color doxor);
+	virtual void DrawImageOp(int x, int y, const Image& img, const Rect& src, Color color);
 	virtual void DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color);
 	virtual void DrawEllipseOp(const Rect& r, Color color, int pen, Color pencolor);
 	virtual void DrawTextOp(int x, int y, int angle, const wchar *text, Font font,
@@ -988,8 +1023,8 @@ void SetClip(GC gc, const Vector<Rect>& cl);
 #endif
 #endif
 
-void DrawRect(Draw& w, const Rect& rect, const Image& img, bool ralgn = false, int fx = 0);
-void DrawRect(Draw& w, int x, int y, int cx, int cy, const Image& img, bool ra = false, int fx = 0);
+void DrawRect(Draw& w, const Rect& rect, const Image& img, bool ralgn = false);
+void DrawRect(Draw& w, int x, int y, int cx, int cy, const Image& img, bool ra = false);
 
 void DrawFatFrame(Draw& w, int x, int y, int cx, int cy, Color color, int n);
 void DrawFatFrame(Draw& w, const Rect& r, Color color, int n);
@@ -1032,22 +1067,6 @@ void DrawHighlightImage(Draw& w, int x, int y, const Image& img, bool highlight 
                         bool enabled = true, Color maskcolor = SWhite);
 
 Color GradientColor(Color fc, Color tc, int i, int n);
-
-class SmartStretch
-{
-public:
-	SmartStretch(const Rect& dest, const Rect& src, const Rect& clip, int unit = 2048);
-
-	bool        Get();
-	const Rect& GetSrc() const   { return subsrc; }
-	const Rect& GetDest() const  { return subdest; }
-
-private:
-	Rect dest, src, subdest, subsrc;
-	Size area, dsize, ssize;
-	Rect subarea;
-	Point pos;
-};
 
 void DrawDragRect(Draw& w, const Rect& rect1, const Rect& rect2, const Rect& clip, int n,
                   Color color, const word *pattern);

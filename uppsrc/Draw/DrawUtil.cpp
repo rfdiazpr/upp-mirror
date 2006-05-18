@@ -45,63 +45,6 @@ Vector<Rect> Subtract(const Vector<Rect>& rr, const Rect& sub, bool& changed)
 	return result;
 }
 
-SmartStretch::SmartStretch(const Rect& dest, const Rect& src, const Rect& clip, int unit)
-: dest(dest), src(src)
-, pos(-1, 0)
-{
-	if(!dest.Intersects(clip))
-	{
-		area.cx = area.cy = 0;
-		subarea.Clear();
-		return;
-	}
-	ssize = src.Size();
-	dsize = dest.Size();
-	Size msize = max(ssize, dsize);
-	if(msize.cx <= unit && msize.cy <= unit)
-	{ // just 1 part
-		subarea.right = subarea.bottom = area.cx = area.cy = 1;
-		subarea.top = subarea.left = 0;
-		return;
-	}
-	area = idivceil(msize, unit);
-	subarea = Rect(
-		(Point)iscalefloor(clip.TopLeft() - dest.TopLeft(), area, dsize),
-		(Point)iscaleceil(clip.BottomRight() - dest.TopLeft(), area, dsize));
-	subarea &= Rect(area);
-	if(subarea.IsEmpty())
-	{
-		Zero(subarea);
-		return;
-	}
-	pos.x = subarea.left - 1;
-	pos.y = subarea.top;
-}
-
-bool SmartStretch::Get()
-{
-	do
-	{
-		if(pos.y >= subarea.bottom)
-			return false;
-		if(++pos.x >= subarea.right)
-		{
-			pos.x = subarea.left;
-			if(++pos.y >= subarea.bottom)
-				return false;
-		}
-		Point nos = pos + 1;
-		subdest = Rect(
-			dest.TopLeft() + iscalefloor(dsize, pos, area),
-			dest.TopLeft() + iscalefloor(dsize, nos, area));
-		subsrc = Rect(
-			src.TopLeft() + iscalefloor(ssize, pos, area),
-			src.TopLeft() + iscalefloor(ssize, nos, area));
-	}
-	while(subdest.IsEmpty() || subsrc.IsEmpty());
-	return true;
-}
-
 void DrawFatFrame(Draw& w, int x, int y, int cx, int cy, Color color, int n) {
 	if(n < 0) {
 		x += n;
@@ -302,49 +245,18 @@ void DrawFocus(Draw& w, const Rect& r) {
 	DrawFrame(w, r, SColorShadow, SColorShadow);
 }
 
-/* Commented out before removal
-void DrawTextRect(Draw& w, const Rect& r, const char *text, int n, Font font, Color ink) {
-	font.Height(r.Height());
-	font.Width(0);
-	font.Width(w.GetFontInfo(font).GetAveWidth() * r.Width() / w.GetTextSize(text, font, n).cx);
-	FontInfo fo = w.GetFontInfo(font);
-	Buffer<int> dx(n);
-	const byte *s = (byte *)text;
-	int *ip = dx;
-	int *ipe = dx + n;
-	int  cx = 0;
-	while(ip < ipe) {
-		int chx = fo[*s++];
-		*ip++ = chx;
-		cx += chx;
-	}
-	ip = dx;
-	cx = ((r.Width() - cx) << 12) / n;
-	int q = 0;
-	while(ip < ipe) {
-		*ip++ += (q + cx) >> 12;
-		q = (q + cx) & 4095;
-	}
-	w.DrawText(r.left, r.top + (r.Height() - fo.GetHeight()) / 2, text, font, ink, n, dx);
-}
-
-void DrawTextRect(Draw& w, const Rect& r, const String& text, Font font, Color ink) {
-	DrawTextRect(w, r, text, text.GetLength(), font, ink);
-}
-*/
-
-void DrawRect(Draw& w, int x, int y, int cx, int cy, const Image& img, bool ra, int fx) {
+void DrawRect(Draw& w, int x, int y, int cx, int cy, const Image& img, bool ra) {
 	w.Clip(x, y, cx, cy);
 	Size sz = img.GetSize();
 	for(int a = ra ? x : x / sz.cx * sz.cx; a < x + cx; a += sz.cx)
 		for(int b = ra ? y : y / sz.cy * sz.cy ; b < y + cy; b += sz.cy)
-			w.DrawImage(a, b, img, fx);
+			w.DrawImage(a, b, img);
 	w.End();
 }
 
-void DrawRect(Draw& w, const Rect& rect, const Image& img, bool ralgn, int fx)
+void DrawRect(Draw& w, const Rect& rect, const Image& img, bool ralgn)
 {
-	DrawRect(w, rect.left, rect.top, rect.Width(), rect.Height(), img, ralgn, fx);
+	DrawRect(w, rect.left, rect.top, rect.Width(), rect.Height(), img, ralgn);
 }
 
 void DrawHighlightImage(Draw& w, int x, int y, const Image& img, bool highlight,
@@ -356,7 +268,7 @@ void DrawHighlightImage(Draw& w, int x, int y, const Image& img, bool highlight,
 		w.DrawImage(x, y + 1, img, maskcolor);
 		w.DrawImage(x, y - 1, img, maskcolor);
 	}
-	w.DrawImage(x, y, img, enabled ? 0 : Image::ETCHED);
+	w.DrawImage(x, y, enabled ? img : MakeImage(img, "etched"));
 }
 
 Color GradientColor(Color fc, Color tc, int i, int n)
@@ -565,6 +477,7 @@ void DrawDragRect(Draw& w, const Rect& _rect1, const Rect& _rect2, const Rect& _
 	SelectClipRgn(hdc, rgn);
 	Rect r;
 	GetClipBox(hdc, r);
+	DUMP(r);
 	HBRUSH obrush = (HBRUSH) SelectObject(hdc, brush);
 	PatBlt(hdc, r.left, r.top, r.Width(), r.Height(), PATINVERT);
 	SelectObject(hdc, obrush);

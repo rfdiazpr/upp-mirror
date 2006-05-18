@@ -79,7 +79,10 @@ bool RichEdit::Key(dword key, int count)
 			if(object) {
 				NextUndo();
 				objectpos = c;
-				object.GetType().DefaultAction(*this);
+				RichObject o = object;
+				o.DefaultAction();
+				if(o.GetSerialId() != object.GetSerialId())
+					ReplaceObject(o);
 				return true;
 			}
 		}

@@ -1,7 +1,7 @@
 void Animate(Ctrl& c, const Rect& target, int type = -1);
 void Animate(Ctrl& c, int x, int y, int cx, int cy, int type = -1);
 
-const Image& GetIBeamCursor();
+Image GetIBeamCursor();
 
 bool CtrlLibDisplayError(const Value& ev);
 

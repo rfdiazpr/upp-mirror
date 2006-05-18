@@ -1,52 +1,40 @@
 #include "IconDes.h"
-#include <Draw/PixelUtil.h>
 
 #define IMAGEOBJECT EditImg
 //#define IMAGECLASS EditImg
 #define IMAGEFILE  <ide/IconDes/editor.iml>
 #include <Draw/iml.h>
 
-#define IMAGESPACE  MiscImg
+#define IMAGECLASS  MiscImg
 #define IMAGEFILE   <ide/IconDes/misc.iml>
 #include <Draw/iml_source.h>
 
 #define LAYOUTFILE <ide/IconDes/editor.lay>
 #include <CtrlCore/lay.h>
 
-void ImagePreviewCtrl::Set(const AlphaArray& buffer, Color bg)
+void ImagePreviewCtrl::Set(const Image& img, Color bg)
 {
 	background = bg;
-	if(buffer.IsEmpty())
-	{
-		image = Null;
-		return;
-	}
-	image = Image(buffer.GetSize());
-	image.Set(bg);
-	{
-		ImageDraw idraw(image);
-		buffer.Paint(idraw, Point(0, 0));
-	}
+	ImageDraw iw(img.GetSize());
+	iw.DrawRect(img.GetSize(), background);
+	iw.DrawImage(0, 0, img);
+	image = iw;
 	Refresh();
 }
 
 void ImagePreviewCtrl::Paint(Draw& draw)
 {
-	if(image)
+	draw.DrawRect(GetSize(), background);
+	Size bs = image.GetSize(), ws = GetSize(), ratio = ws / bs;
+	int r = max(1, min(ratio.cx, ratio.cy));
+	Size spart = (r * min(bs, ws)) / r, dpart = spart * r;
+	if(spart.cx > 0 && spart.cy > 0)
 	{
-		Size bs = image.GetSize(), ws = GetSize(), ratio = ws / bs;
-		int r = max(1, min(ratio.cx, ratio.cy));
-		Size spart = (r * min(bs, ws)) / r, dpart = spart * r;
-		if(spart.cx > 0 && spart.cy > 0)
-		{
-			Point pos = (GetSize() - dpart) >> 1;
-			Rect drc(pos, dpart);
-			DrawRectMinusRect(draw, draw.GetClip(), drc, background);
-			draw.DrawImage(drc, image);
-			return;
-		}
+		Point pos = (GetSize() - dpart) >> 1;
+		Rect drc(pos, dpart);
+		DrawRectMinusRect(draw, ws, drc, background);
+		draw.DrawImage(drc.left, drc.top, image);
 	}
-	draw.DrawRect(draw.GetClip(), background);
 }
 
 enum
@@ -58,13 +46,14 @@ enum
 	MIN_GRID_ZOOM = 4,
 };
 
+//$-
 const int ImageEditCtrl::zoom_list[] =
 {
 	1, 2, 3, 4, 6, 8, 10, 12, 16, 20, 24, 28, 32,
 };
 
 int ImageEditCtrl::zoom_count = __countof(zoom_list);
-
+//$+
 ImageSmallCtrl::ImageSmallCtrl()
 : owner(0)
 , offset(0, 0)
@@ -112,12 +101,12 @@ void ImageSmallCtrl::Paint(Draw& draw)
 			Rect drc = src - offset + s;
 
 			Color trans = Nvl(bglist[inst + dd], owner->GetTransparentColor());
-			DrawRectMinusRect(draw, whole, drc, trans);
-			owner->image.Paint(draw, src, drc);
-			if(!IsNull(trans))
-				owner->image.alpha.Paint(draw, src, drc, Color(Null), trans);
 
-			const AlphaArray& sim = owner->GetSelectionImage();
+			draw.DrawRect(whole, trans);
+
+			draw.DrawImage(drc.left, drc.top, owner->image, src);
+
+			const Image& sim = owner->GetSelectionImage();
 			if(owner->IsSelectionAvailable() && !sim.IsEmpty())
 			{
 				Rect org = owner->GetSelection();
@@ -133,9 +122,7 @@ void ImageSmallCtrl::Paint(Draw& draw)
 						Rect rc = src + org.TopLeft() - offset - crop.TopLeft();
 						if(!owner->paste_transparent)
 							draw.DrawRect(rc, trans);
-						sim.pixel.Paint(draw, src, rc, PIXEL_XOR);
-						sim.alpha.Paint(draw, src, rc, Null, Black);
-						sim.pixel.Paint(draw, src, rc, PIXEL_XOR);
+						draw.DrawImage(rc.left, rc.top, sim, src);
 					}
 				}
 			}
@@ -243,6 +230,7 @@ void ImageSmallCtrl::RefreshImage(const Rect& rc)
 	}
 }
 
+//$-
 static const ColorF CommandListBorder[] =
 {
 	(ColorF)5,
@@ -254,6 +242,7 @@ static const ColorF CommandListBorder[] =
 };
 
 static BorderFrame CommandListFrame(CommandListBorder);
+//$+
 
 UndoEntryPaint::UndoEntryPaint(ImageEditCtrl& editor, String command)
 : UndoEntry(editor.GetCursor())
@@ -345,23 +334,24 @@ void ImageEditCtrl::SerializeUndo(Stream& stream)
 	Point hotspot = GetHotSpot();
 	String rle;
 	if(stream.IsStoring())
-		rle = AlphaToRLE(image);
+		rle = StoreImageAsString(image);
 	stream / version % size % hotspot % rle;
 	if(stream.IsLoading())
 	{
 		SetImageSize(size);
 		SetHotSpot(hotspot);
-		RLEToAlpha(image, rle);
+		image = LoadImageFromString(rle);
 	}
 }
 
 void ImageEditCtrl::SetImageSize(Size _size)
 {
-	image.Create(_size, -3);
+	ImageBuffer b(_size);
+	image = b;
 	Layout();
 }
 
-void ImageEditCtrl::SetImage(pick_ AlphaArray& _image)
+void ImageEditCtrl::SetImage(const Image& _image)
 {
 	image = _image;
 	SetHotSpot(Point(0, 0));
@@ -463,19 +453,8 @@ void ImageEditCtrl::Paint(Draw& draw)
 		draw.DrawRect(draw.GetClip(), SLtGray);
 		return;
 	}
-/*
-	if(left_button && drag_state == ON)
-	{
-		left_button->DragClient(start, last, PtNull(), 0);
-		drag_state = MAYBE;
-	}
-*/
-//	DUMP(draw.GetClip());
 
-	Rect src_rc = ClientToImage(draw.GetClip());
-	SmartIntersect(src_rc, Rect(GetImageSize()));
-//	SmartIntersect(out_rc, ImageToClient(Rect(GetImageSize())));
-	Rect out_rc = ImageToClient(src_rc);
+	Rect out_rc = ImageToClient(Rect(im));
 
 	Rect bar_rc = out_rc;
 	if(zoom >= MIN_GRID_ZOOM && grid != NONE)
@@ -484,69 +463,23 @@ void ImageEditCtrl::Paint(Draw& draw)
 		bar_rc.bottom++;
 	}
 
-	DrawRectMinusRect(draw, draw.GetClip(), bar_rc, White);
-//	DUMP(src_rc);
-//	DUMP(out_rc);
+	DrawRectMinusRect(draw, GetSize(), bar_rc, White);
 
-	Image ras(max(src_rc.Size(), Size(1, 1)));
-
-	{
-		ImageDraw mdraw(ras);
-
-		if(selection_image.IsEmpty() || !selection.Contains(src_rc))
-		{
-			image.Paint(mdraw, src_rc, src_rc.Size());
-			image.alpha.Paint(mdraw, src_rc, src_rc.Size(), Color(Null), palette->GetTransparent());
-		}
-
-		if(!selection.IsEmpty() && !selection_image.IsEmpty())
-		{
-			Rect over = src_rc & selection;
-			if(!over.IsEmpty())
-			{
-				AlphaArray aux(over.Size());
-				AlphaSet(aux, aux.GetRect(), Color(Null));
-				if(paste_transparent)
-					AlphaCopy(aux, over.Size(), image, over, true);
-				AlphaCopy(aux, selection - over.TopLeft(), selection_image, crop, paste_transparent);
-				aux.Paint(mdraw, Point(over.TopLeft() - src_rc.TopLeft()));
-				aux.alpha.Paint(mdraw, Point(over.TopLeft() - src_rc.TopLeft()), Null, palette->GetTransparent());
-			}
-		}
-	}
-
-	if(!src_rc.IsEmpty())
-		draw.DrawImage(out_rc, ras);
-//		StretchBlt(draw, out_rc, mdraw, Rect(src_rc.Size()));
-
-	if(zoom >= MIN_GRID_ZOOM && grid != NONE)
-	{
-		int i;
-		Size size = out_rc.Size() + 1;
-#ifdef PLATFORM_WIN32
-		if(grid == DITHERED)
-		{
-			draw.BeginGdi();
-			HBRUSH brush = EditImg().dither.GetBrush();
-			UnrealizeObject(brush);
-			Point org = draw.LPtoDP(-offset);
-			SetBrushOrgEx(draw, org.x & 7, org.y & 7, NULL);
-			SelectObject(draw, brush);
-			for(i = out_rc.left; i <= out_rc.right; i += zoom)
-				PatBlt(draw, i, out_rc.top, 1, size.cy, PATCOPY);
-			for(i = out_rc.top; i <= out_rc.bottom; i += zoom)
-				PatBlt(draw, out_rc.left, i, size.cx, 1, PATCOPY);
-			draw.EndGdi();
-		}
+	Image m = image;
+	if(!selection.IsEmpty())
+		if(paste_transparent)
+			Over(m, selection.TopLeft(), selection_image, selection.GetSize());
 		else
-#endif
-		{ // single color grid is much simpler
-			for(i = out_rc.left; i <= out_rc.right; i += zoom)
-				draw.DrawRect(i, out_rc.top, 1, size.cy, grid_color);
-			for(i = out_rc.top; i <= out_rc.bottom; i += zoom)
-				draw.DrawRect(out_rc.left, i, size.cx, 1, grid_color);
+			Copy(m, selection.TopLeft(), selection_image, selection.GetSize());
+	const RGBA *s = m;
+	for(int y = 0; y < im.cy; y++)
+		for(int x = 0; x < im.cx; x++) {
+			Color c = *s;
+			draw.DrawRect(x * zoom + out_rc.left, y * zoom + out_rc.top, zoom, zoom,
+			              s->a == 255 ? c : palette->GetTransparent());
+			s++;
 		}
-	}
+
 
 	if(!selection.IsEmpty())
 	{
@@ -579,6 +512,15 @@ void ImageEditCtrl::Paint(Draw& draw)
 		DrawButton(draw, ro.left, rc.bottom);
 		DrawButton(draw, cc.x, rc.bottom);
 		DrawButton(draw, rc.right, rc.bottom);
+	}
+
+	if(zoom >= MIN_GRID_ZOOM && grid != NONE) {
+		int i;
+		Size size = out_rc.Size() + 1;
+		for(i = out_rc.left; i <= out_rc.right; i += zoom)
+			draw.DrawRect(i, out_rc.top, 1, size.cy, grid_color);
+		for(i = out_rc.top; i <= out_rc.bottom; i += zoom)
+			draw.DrawRect(out_rc.left, i, size.cx, 1, grid_color);
 	}
 
 	if(left_type == &GetAdapterHotSpot)
@@ -644,6 +586,7 @@ void ImageEditCtrl::RefreshImage(const Rect& rc)
 		if(small_image)
 			small_image->RefreshImage(r);
 	}
+	WhenSyncBar();
 }
 
 void ImageEditCtrl::RefreshSelectionRect(const Rect& rc)
@@ -669,7 +612,7 @@ void ImageEditCtrl::LeftDown(Point pt, dword keyflags)
 		if(rc.Contains(pt))
 		{
 			AddUndo(t_("fill"));
-			AlphaFloodFill(image, GetColor(), pt, rc, keyflags & K_CTRL);
+			FloodFill(image, GetColor(), pt, rc);
 			RefreshImage(rc);
 		}
 		return;
@@ -698,7 +641,7 @@ void ImageEditCtrl::LeftUp(Point pt, dword keyflags)
 void ImageEditCtrl::RightDown(Point pt, dword keyflags)
 {
 	SetFocus();
-	SetColor(AlphaGetPixel(image, ClientToImage(pt)));
+	SetColor(GetImagePixel(image, ClientToImage(pt)));
 }
 
 void ImageEditCtrl::MouseMove(Point pt, dword keyflags)
@@ -722,8 +665,10 @@ void ImageEditCtrl::MouseMove(Point pt, dword keyflags)
 		break;
 
 	case OFF:
-		if(keyflags & K_MOUSERIGHT)
-			SetColor(AlphaGetPixel(image, ClientToImage(pt)));
+		if(keyflags & K_MOUSERIGHT) {
+			pt = ClientToImage(pt);
+			SetColor(GetImagePixel(image, pt));
+		}
 		break;
 	}
 }
@@ -983,7 +928,7 @@ void ImageEditCtrl::OnSelectFillSelection()
 {
 	AddUndo(t_("fill selection"));
 	Rect rc = GetSelectionOrImage();
-	AlphaSet(image, rc, GetColor());
+	SetImageRect(image, rc, GetColor());
 	RefreshImage(rc);
 }
 
@@ -998,7 +943,12 @@ void ImageEditCtrl::OnSelectTransparentSelection()
 {
 	AddUndo(t_("make transparent"));
 	Rect rc = GetSelectionOrImage();
-	AlphaSet(image, rc, Color(Null));
+
+	if(!selection.IsEmpty() && !selection_image.IsEmpty()) // gray selection image
+		SetImageRect(selection_image, selection_image.GetSize(), Null);
+	else
+		SetImageRect(image, rc, Null);
+
 	RefreshImage(rc);
 }
 
@@ -1024,13 +974,13 @@ void ImageEditCtrl::OnSelectChangeColor()
 	dlg.tolerance <<= pal.WhenSetTransparent = pal.WhenSetColor = dlg.Breaker(IDRETRY);
 	for(;;)
 	{
-		AlphaArray converted;
+		Image converted;
 		bool cv_sel = (!selection.IsEmpty() && !selection_image.IsEmpty());
 		if(cv_sel)
-			converted <<= selection_image;
+			converted = selection_image;
 		else
-			converted = AlphaCrop(image, rc);
-		AlphaChangeColor(converted, converted.GetRect(), GetColor(), pal.Get(), ~dlg.tolerance);
+			converted = Crop(image, rc);
+		ChangeColor(converted, converted.GetSize(), GetColor(), pal.Get(), ~dlg.tolerance);
 		dlg.preview.Set(converted, pal.GetTransparent());
 		switch(dlg.Run())
 		{
@@ -1043,7 +993,7 @@ void ImageEditCtrl::OnSelectChangeColor()
 			else
 			{
 				AddUndo(t_("color change"));
-				AlphaCopy(image, Rect(rc.TopLeft(), converted.GetSize()), converted, converted.GetRect(), false);
+				Copy(image, rc.TopLeft(), converted, converted.GetSize());
 			}
 			RefreshImage(rc);
 			return;
@@ -1065,31 +1015,31 @@ void ImageEditCtrl::OnSelectGrayed()
 {
 	Rect rc = GetSelectionOrImage();
 	if(!selection.IsEmpty() && !selection_image.IsEmpty()) // gray selection image
-		AlphaGray(selection_image, selection_image.GetRect());
+		GrayImage(selection_image, selection_image.GetSize());
 	else
 	{
 		AddUndo(t_("grayscale"));
-		AlphaGray(image, rc);
+		GrayImage(image, rc);
 	}
 	RefreshImage(rc);
 }
 
 void ImageEditCtrl::ToolSelectEtched(Bar& bar)
 {
-	bar.Add(t_("Etched"), MiscImg::etched(), THISBACK(OnSelectEtched))
+	bar.Add(t_("Interpolate"), MiscImg::etched(), THISBACK(OnSelectEtched))
 		.Key(K_CTRL_E)
-		.Help(t_("Convert selection to 3D etched outline"));
+		.Help(t_("Perform color interpolation of opaque points"));
 }
 
 void ImageEditCtrl::OnSelectEtched()
 {
 	Rect rc = GetSelectionOrImage();
 	if(!selection.IsEmpty() && !selection_image.IsEmpty()) // etch selection image
-		AlphaEtch(selection_image, selection_image.GetRect());
+		InterpolateImage(selection_image, selection_image.GetSize());
 	else
 	{
 		AddUndo(t_("etched"));
-		AlphaEtch(image, rc);
+		InterpolateImage(image, rc);
 	}
 	RefreshImage(rc);
 }
@@ -1106,13 +1056,13 @@ void ImageEditCtrl::OnSelectMirrorX()
 	Rect rc = GetSelectionOrImage();
 	if(!selection.IsEmpty() && !selection_image.IsEmpty())
 	{ // mirror selection image
-		selection_image = AlphaTransform(selection_image, IMAGE_TX);
+		SwapHorz(selection_image, selection_image.GetSize());
 		crop.OffsetHorz(selection_image.GetSize().cx - crop.left - crop.right);
 	}
 	else
 	{ // mirror image in place
 		AddUndo(t_("reverse sides"));
-		AlphaTransform(image, rc, IMAGE_TX);
+		SwapHorz(image, rc);
 	}
 	RefreshImage(rc);
 }
@@ -1129,13 +1079,13 @@ void ImageEditCtrl::OnSelectMirrorY()
 	Rect rc = GetSelectionOrImage();
 	if(!selection.IsEmpty() && !selection_image.IsEmpty())
 	{ // mirror selection image
-		selection_image = AlphaTransform(selection_image, IMAGE_TY);
+		SwapVert(selection_image, selection_image.GetSize());
 		crop.OffsetHorz(selection_image.GetSize().cy - crop.top - crop.bottom);
 	}
 	else
 	{ // mirror image in place
 		AddUndo(t_("top to bottom"));
-		AlphaTransform(image, rc, IMAGE_TY);
+		SwapVert(image, rc);
 	}
 	RefreshImage(rc);
 }
@@ -1152,11 +1102,14 @@ void ImageEditCtrl::OnSelectMirrorXY()
 	Rect rc = GetSelectionOrImage();
 	if(!selection.IsEmpty() && !selection_image.IsEmpty())
 	{ // mirror selection image
-		selection_image = AlphaTransform(selection_image, IMAGE_TXY);
+		SwapVert(selection_image, selection_image.GetSize());
+		SwapHorz(selection_image, selection_image.GetSize());
 		crop.Offset(selection_image.GetSize() - crop.TopLeft() - crop.BottomRight());
 	}
-	else // mirror image in place
-		AlphaTransform(image, rc, IMAGE_TXY);
+	else {
+		SwapVert(image, rc);
+		SwapHorz(image, rc);
+	}
 	RefreshImage(rc);
 }
 
@@ -1199,11 +1152,14 @@ void ImageEditCtrl::OnSelectMatrix()
 	gap += selection.Size();
 
 	if(selection_image.IsEmpty()) // read selection image
-		SetSelectionImage(AlphaCrop(image, selection));
+		SetSelectionImage(Crop(image, selection));
 
 	for(Size p(0, 0); p.cy < count.cy; p.cy++)
 		for(p.cx = 0; p.cx < count.cx; p.cx++)
-			AlphaCopy(image, Rect(selection.TopLeft() + p * gap, crop.Size()), selection_image, crop, paste_transparent);
+			if(paste_transparent)
+				Over(image, selection.TopLeft() + p * gap, selection_image, crop);
+			else
+				Copy(image, selection.TopLeft() + p * gap, selection_image, crop);
 
 	RefreshImage();
 }
@@ -1227,6 +1183,7 @@ void ImageEditCtrl::OnSetupPasteTransparent()
 	paste_transparent = !paste_transparent;
 	if(!selection_image.IsEmpty())
 		RefreshImage(selection);
+	WhenSyncBar();
 }
 
 void ImageEditCtrl::ToolSetupDrawGrid(Bar& bar)
@@ -1241,7 +1198,7 @@ void ImageEditCtrl::ToolSetupDrawGrid(Bar& bar)
 
 void ImageEditCtrl::OnSetupDrawGrid()
 {
-	grid = (grid == NONE ? SINGLE : grid == SINGLE ? DITHERED : NONE);
+	grid = (GRID)!grid;
 	RefreshImage();
 }
 
@@ -1302,10 +1259,9 @@ bool ImageEditCtrl::Key(dword key, int count)
 			SetSelection(rc + shift);
 		else
 		{ // scroll whole image
-			AlphaArray new_image(GetImageSize(), -3);
-			AlphaSet(new_image, new_image.GetRect(), Color(Null));
+			Image new_image = CreateImage(GetImageSize(), Color(Null));
 			Size sz = GetImageSize();
-			AlphaCopy(new_image, Rect(Point(shift), sz), image, sz, false);
+			Copy(new_image, Point(shift), image, sz);
 			image = new_image;
 			RefreshImage();
 		}
@@ -1319,7 +1275,7 @@ bool ImageEditCtrl::Key(dword key, int count)
 
 void ImageEditCtrl::SetPixel(int x, int y, Color color)
 {
-	AlphaSetPixel(image, x, y, color);
+	SetImagePixel(image, x, y, color);
 	RefreshImage(Point(x, y));
 }
 
@@ -1328,13 +1284,10 @@ void ImageEditCtrl::PaintFrame(Draw& draw, const Rect& rc) const
 	if(!rc.IsEmpty())
 	{
 		Rect out = ImageToClient(rc);
-		Rect plus = out;
-		enum { WD = 3 };
-		plus.Inflate(WD);
-		DrawRect(draw, plus.left, plus.top,   plus.Width(), WD,           MiscImg::dither(), true, Image::XOR);
-		DrawRect(draw, plus.left, out.bottom, plus.Width(), WD,           MiscImg::dither(), true, Image::XOR);
-		DrawRect(draw, plus.left, out.top,    WD,           out.Height(), MiscImg::dither(), true, Image::XOR);
-		DrawRect(draw, out.right, out.top,    WD,           out.Height(), MiscImg::dither(), true, Image::XOR);
+		out.right++;
+		out.bottom++;
+		static word pattern[] = { 0xF0F0, 0x7878, 0x3C3C, 0x1E1E, 0x0F0F, 0x8787, 0xC3C3, 0xE1E1 };
+		DrawDragRect(draw, out, Null, out, 1, SColorPaper, pattern);
 	}
 }
 
@@ -1358,7 +1311,7 @@ Rect ImageEditCtrl::GetSelectionOrImage() const
 	return Rect(GetImageSize());
 }
 
-void ImageEditCtrl::SetSelectionImage(pick_ AlphaArray& _sel_image)
+void ImageEditCtrl::SetSelectionImage(const Image& _sel_image)
 {
 	selection_image = _sel_image;
 	crop = Rect(selection_image.GetSize());
@@ -1372,8 +1325,8 @@ void ImageEditCtrl::ForceSelectionImage()
 	{
 		AddUndo(t_("selection"));
 		Rect rc = GetSelectionOrImage();
-		SetSelectionImage(AlphaCrop(image, rc));
-		AlphaSet(image, rc, Color(Null));
+		SetSelectionImage(Crop(image, rc));
+		SetImageRect(image, rc, Color(Null));
 		restore_on_cancel = rc;
 	}
 }
@@ -1386,22 +1339,11 @@ void ImageEditCtrl::SetSelectionCrop(const Rect& rc)
 
 void ImageEditCtrl::OnSelectCopy()
 {
-#ifdef PLATFORM_WIN32
 	Rect imr = Rect(GetImageSize());
 	Rect rc = GetSelectionOrImage() & imr;
-	AlphaArray part = AlphaCrop(image, rc);
-	if(!WriteClipboardFormat(part, true))
-	{
-		Exclamation(t_("Error storing data on the system clipboard."));
-		return;
-	}
-	AlphaKillMask(part, palette->GetTransparent());
-	if(!PixelArrayToClipboard(part.pixel, false))
-	{
-		Exclamation(t_("Error storing data on the system clipboard."));
-		return;
-	}
-#endif
+	Image part = Crop(image, rc);
+	WriteClipboardFormat(part, true);
+	WriteClipboardImage(part);
 }
 
 void ImageEditCtrl::OnSelectCut()
@@ -1465,7 +1407,10 @@ void ImageEditCtrl::PasteSelection(bool add_undo)
 	{
 		if(add_undo)
 			AddUndo(t_("insert"));
-		AlphaCopy(image, selection, selection_image, crop, paste_transparent);
+		if(paste_transparent)
+			Over(image, selection.TopLeft(), selection_image, crop);
+		else
+			Copy(image, selection.TopLeft(), selection_image, crop);
 		RefreshImage(selection);
 		restore_on_cancel = Null;
 	}
@@ -1486,12 +1431,12 @@ void ImageEditCtrl::DrawCurve(Draw& draw, const Vector<Point>& curve, bool undra
 	int size = zoom - delta;
 	Vector<Color> img_color;
 	if(undraw)
-		img_color = AlphaGetPixel(image, curve);
+		img_color = GetImagePixel(image, curve);
 
 	for(int i = 0; i < curve.GetCount(); i++)
 		if(rc.Contains(curve[i]))
 		{
-			Color c = Nvl(undraw ? AlphaGetPixel(image, curve[i]) : color, trans);
+			Color c = Nvl(undraw ? GetImagePixel(image, curve[i]) : color, trans);
 			Point pt = ImageToClient(curve[i]);
 			if(size <= 1)
 				draw.DrawRect(pt.x, pt.y, 1, 1, c);
@@ -1507,16 +1452,13 @@ void ImageEditCtrl::RotateSelectionAnticlockwise()
 		SetSelection(rc);
 	if(GetSelectionImage().IsEmpty())
 	{ // cut image
-		AlphaArray im(rc.Size(), -3);
-		AlphaCopy(im, rc.Size(), image, rc, false);
-		AlphaSet(image, rc, Color(Null));
-		SetSelectionImage(im);
+		SetSelectionImage(image);
 	}
 	Rect new_sel(rc.left, rc.top, rc.left + rc.Height(), rc.top + rc.Width());
 	int ht = selection_image.GetSize().cx;
 	Rect new_crop(crop.top, ht - crop.right, crop.bottom, ht - crop.left);
 	SetSelection(new_sel);
-	SetSelectionImage(AlphaTransform(selection_image, IMAGE_TANTICLOCKWISE));
+	SetSelectionImage(RotateAntiClockwise(selection_image));
 	SetSelectionCrop(new_crop);
 }
 
@@ -1535,7 +1477,7 @@ void ImageEditCtrl::CropSelection()
 {
 	if(!selection.IsEmpty() && !selection_image.IsEmpty())
 	{ // crop image according to its own crop rectangle
-		SetSelectionImage(AlphaCrop(selection_image, crop));
+		SetSelectionImage(Crop(selection_image, crop));
 		RefreshImage(selection);
 	}
 	else
@@ -1544,17 +1486,17 @@ void ImageEditCtrl::CropSelection()
 		Size size = GetImageSize();
 		Rect rc = GetSelectionOrImage() & Rect(size);
 		if(rc.IsEmpty())
-			AlphaSet(image, image.GetRect(), Color(Null));
+			SetImageRect(image, image.GetSize(), Color(Null));
 		else
 		{
 			if(rc.left > 0)
-				AlphaSet(image, Rect(0, 0, rc.left, size.cy), Color(Null));
+				SetImageRect(image, Rect(0, 0, rc.left, size.cy), Color(Null));
 			if(rc.right < size.cx)
-				AlphaSet(image, Rect(rc.right, 0, size.cx, size.cy), Color(Null));
+				SetImageRect(image, Rect(rc.right, 0, size.cx, size.cy), Color(Null));
 			if(rc.top > 0)
-				AlphaSet(image, Rect(rc.left, 0, rc.right, rc.top), Color(Null));
+				SetImageRect(image, Rect(rc.left, 0, rc.right, rc.top), Color(Null));
 			if(rc.bottom < size.cy)
-				AlphaSet(image, Rect(rc.left, rc.bottom, rc.right, size.cy), Color(Null));
+				SetImageRect(image, Rect(rc.left, rc.bottom, rc.right, size.cy), Color(Null));
 		}
 		RefreshImage();
 	}
@@ -1564,8 +1506,7 @@ void ImageEditCtrl::ClearSelectionAndImage()
 {
 	if(!restore_on_cancel.IsEmpty() && !selection_image.IsEmpty())
 	{
-		AlphaCopy(image, restore_on_cancel, selection_image,
-			Rect(restore_on_cancel.Size()), false);
+		Copy(image, restore_on_cancel.TopLeft(), selection_image, restore_on_cancel.GetSize());
 		RefreshImage(restore_on_cancel);
 	}
 	restore_on_cancel = Null;

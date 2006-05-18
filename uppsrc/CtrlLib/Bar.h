@@ -1,6 +1,7 @@
 class BarPane : public Ctrl {
 public:
 	virtual void Paint(Draw& w);
+	virtual void LeftDown(Point pt, dword keyflags);
 	virtual void MouseMove(Point p, dword);
 
 private:
@@ -21,6 +22,8 @@ private:
 	int&     VeHo(bool horz, Size& sz) const { return horz ? sz.cy : sz.cx; }
 
 public:
+	Callback WhenLeftClick;
+
 	void  IClear();
 	void  Clear();
 	bool  IsEmpty() const                    { return item.IsEmpty(); }
@@ -190,6 +193,7 @@ protected:
 
 public:
 	Callback1<const String&> WhenHelp;
+	Callback WhenLeftClick;
 
 	static BarCtrl *GetBarCtrlParent(Ctrl *child);
 	static void     SendHelpLine(Ctrl *q);

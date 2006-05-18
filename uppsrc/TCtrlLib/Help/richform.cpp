@@ -13,7 +13,7 @@ struct RichObjectTypeFormulaCls : public RichObjectType
 	virtual String Write(const Value& v) const;
 //	virtual Value  ReadClipboard() const;
 //	virtual void   Menu(Bar& bar, RichObjectExchange& ex) const;
-	virtual void   DefaultAction(RichObjectExchange& ex) const;
+	virtual void   DefaultAction(RichObject& ex) const;
 
 	struct Data {
 		Data() : font(Roman(100)), color(SBlack) {}
@@ -100,18 +100,18 @@ void RichObjectTypeFormulaCls::Paint(const Value& data, Draw& w, Size sz) const
 	}
 }
 
-void RichObjectTypeFormulaCls::DefaultAction(RichObjectExchange& ex) const
+void RichObjectTypeFormulaCls::DefaultAction(RichObject& ex) const
 {
 	bool RunDlgFormula(String& text, Font& font, Color& color);
 	static Data data;
 	data.text = Null;
-	RichObject obj = ex.GetRichObject();
+	RichObject obj = ex;
 	if(IsTypeRaw<Data>(obj.GetData()))
 		data = Data(obj.GetData());
 	if(RunDlgFormula(data.text, data.font, data.color)) {
 		RichObject ro(RichObjectTypeFormula(), data);
 		RefCon<Formula> form = data.Parse();
 		ro.SetYDelta(form -> GetDescent() + Formula::GetTextDeltaY(data.font) + 15);
-		ex.SetRichObject(ro);
+		ex = ro;
 	}
 }

@@ -209,27 +209,19 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 					String lname;
 					lname << "L$" << name;
 					Size sz = z * part.object.GetSize();
-				#ifdef NEWIMAGE
-					//FIXIMAGE
-				#else
-					Image img(sz);
-					ImageDraw w(img);
+					ImageDraw w(sz);
 					part.object.Paint(w, sz);
-					PngEncoder::New()->SaveImageFile(AppendFileName(outdir, name), img);
-				#endif
+					PNGEncoder png;
+					png.SaveFile(AppendFileName(outdir, name), w);
 					if(psz.cx * psz.cy)
 						html << "<A HREF=\"" << lname << "\">";
 					html << "<IMG SRC=\"" << name << "\" BORDER=0 ALT=\"\">";
 					if(psz.cx * psz.cy) {
 						html << "</A>";
-					#ifdef NEWIMAGE
-						//FIXIMAGE
-					#else
-						Image img(psz);
-						ImageDraw w(img);
+						ImageDraw w(psz);
 						part.object.Paint(w, psz);
-						PngEncoder::New()->SaveImageFile(AppendFileName(outdir, lname), img);
-					#endif
+						PNGEncoder png;
+						png.SaveFile(AppendFileName(outdir, lname), w);
 					}
 				}
 				else {

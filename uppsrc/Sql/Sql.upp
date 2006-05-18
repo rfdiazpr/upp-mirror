@@ -1,8 +1,8 @@
-uses
-	Core;
-
 acceptflags
 	NOAPPSQL;
+
+uses
+	Core;
 
 file
 	Sql.h,

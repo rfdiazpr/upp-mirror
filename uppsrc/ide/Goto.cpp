@@ -51,15 +51,18 @@ void GotoDlg::SyncList()
 	if(IsDigit(*n))
 		n.Clear();
 	Index<String> nc;
-	for(int i = 0; i < item.GetCount(); i++) {
-		const CppItemInfo& f = item[i];
-		if((n.GetLength() == 0 || memcmp(n, f.name, n.GetLength()) == 0) &&
-		   (IsNull(typei) || typei == f.typei) &&
-		   (IsNull(nesti) || nesti == f.nesti)) {
-			list.Add(RawToValue(CppNestingInfo(f)), RawToValue(f), f.key, f.line, f.fn, f.nesting);
-			nc.FindAdd(f.nesting);
+	for(int ci = 0; ci < 2; ci++)
+		for(int i = 0; i < item.GetCount(); i++) {
+			const CppItemInfo& f = item[i];
+			int q = memcmp(n, f.name, n.GetLength());
+			if((n.GetLength() == 0 ||
+			    (ci ? q && memcmp_i(n, f.name, n.GetLength()) == 0 : q == 0)) &&
+			   (IsNull(typei) || typei == f.typei) &&
+			   (IsNull(nesti) || nesti == f.nesti)) {
+				list.Add(RawToValue(CppNestingInfo(f)), RawToValue(f), f.key, f.line, f.fn, f.nesting);
+				nc.FindAdd(f.nesting);
+			}
 		}
-	}
 	list.HeaderTab(0).SetText(Format("Nesting (%d)", nc.GetCount()));
 	list.HeaderTab(1).SetText(Format("Symbol (%d)", list.GetCount()));
 	SyncOk();

@@ -40,14 +40,14 @@ void TopWindow::EventProc(XWindow& w, XEvent *event)
 	Ptr<Ctrl> this_ = this;
 	if(event->type == ClientMessage)
 		if(event->xclient.format == 32 && event->xclient.message_type)
-			if(event->xclient.message_type == XA_WM_PROTOCOLS) {
+			if(event->xclient.message_type == XAtom("WM_PROTOCOLS")) {
 				Atom a = event->xclient.data.l[0];
-				if(a == XA_WM_DELETE_WINDOW && IsEnabled()) {
+				if(a == XAtom("WM_DELETE_WINDOW") && IsEnabled()) {
 					LLOG("DELETE_WINDOW " << Name());
 					WhenClose();
 					return;
 				}
-				if(a == XA_WM_TAKE_FOCUS) {
+				if(a == XAtom("WM_TAKE_FOCUS")) {
 					LLOG("TAKE_FOCUS serial: " << event->xclient.serial);
 					Xeventtime = event->xclient.data.l[1];
 					TakeFocus();
@@ -68,9 +68,11 @@ void TopWindow::DefSyncTitle()
 		XStoreName(Xdisplay, w, title.ToString());
 		XSetIconName(Xdisplay, w, title.ToString());
 		String utf8title = FromUnicode(title, CHARSET_UTF8);
-		XChangeProperty(Xdisplay, w, XA__NET_WM_NAME, XA_UTF8_STRING, 8, PropModeReplace,
+		XChangeProperty(Xdisplay, w, XAtom("_NET_WM_NAME"), XAtom("UTF8_STRING"),
+		                8, PropModeReplace,
 		                (const unsigned char *)~utf8title, utf8title.GetLength());
-		XChangeProperty(Xdisplay, w, XA__NET_WM_ICON_NAME, XA_UTF8_STRING, 8, PropModeReplace,
+		XChangeProperty(Xdisplay, w, XAtom("_NET_WM_ICON_NAME"), XAtom("XA_UTF8_STRING"),
+		                8, PropModeReplace,
 		                (const unsigned char *)~utf8title, utf8title.GetLength());
 	}
 }
@@ -91,11 +93,11 @@ void TopWindow::SyncCaption()
 		int n = 0;
 		Window w = GetWindow();
 		if(tool)
-			wina[n++] = XA__NET_WM_WINDOW_TYPE_TOOLBAR;
+			wina[n++] = XAtom("_NET_WM_WINDOW_TYPE_TOOLBAR");
 		if(GetOwner())
-			wina[n++] = XA__NET_WM_WINDOW_TYPE_DIALOG;
-		wina[n++] = XA__NET_WM_WINDOW_TYPE_NORMAL;
-		XChangeProperty(Xdisplay, GetWindow(), XA__NET_WM_WINDOW_TYPE, XA_ATOM, 32,
+			wina[n++] = XAtom("_NET_WM_WINDOW_TYPE_DIALOG");
+		wina[n++] = XAtom("_NET_WM_WINDOW_TYPE_NORMAL");
+		XChangeProperty(Xdisplay, GetWindow(), XAtom("_NET_WM_WINDOW_TYPE"), XAtom("ATOM"), 32,
 		                PropModeReplace, (const unsigned char *)wina, n);
 		wm_hints->flags = InputHint|WindowGroupHint|StateHint;
 		wm_hints->initial_state = NormalState;
@@ -103,7 +105,24 @@ void TopWindow::SyncCaption()
 		Ctrl *owner = GetOwner();
 		wm_hints->window_group = owner ? owner->GetWindow() : w;
 		if(!icon.IsEmpty()) {
-		#ifndef NEWIMAGE //FIXIMAGE
+		#ifdef NEWIMAGE
+			Size isz = icon.GetSize();
+			int len = 2 + isz.cx * isz.cy;
+			Buffer<unsigned long> data(len);
+			unsigned long *t = data;
+			*t++ = isz.cx;
+			*t++ = isz.cy;
+			for(int y = 0; y < isz.cy; y++) {
+				const RGBA *q = icon[y];
+				for(int x = isz.cx; x--;) {
+					*t++ = ((dword)q->a << 24) |
+					       (dword)q->b | ((dword)q->g << 8) | ((dword)q->r << 16);
+					q++;
+				}
+			}
+			XChangeProperty(Xdisplay, w, XAtom("_NET_WM_ICON"), XA_CARDINAL, 32, PropModeReplace,
+			                (const unsigned char *)~data, len);
+		#else
 			AlphaArray ia = ImageToAlphaArray(icon, ScreenInfo(), -1);
 			ia.pixel = PixelMono(ia.pixel);
 			PixelInvertMask(ia.alpha);
@@ -130,9 +149,9 @@ void TopWindow::SyncCaption()
 					q += 3;
 				}
 			}
-			XChangeProperty(Xdisplay, w, XA__NET_WM_ICON, XA_CARDINAL, 32, PropModeReplace,
+			XChangeProperty(Xdisplay, w, XAtom("_NET_WM_ICON"), XA_CARDINAL, 32, PropModeReplace,
 			                (const unsigned char *)~data, len);
-			#endif
+		#endif
 		}
 		XSetWMHints(Xdisplay, w, wm_hints);
 	}
@@ -190,8 +209,8 @@ void TopWindow::Open(Ctrl *owner)
 	LLOG("XSetWMNormalHints");
 	XSetWMNormalHints(Xdisplay, GetWindow(), size_hints);
 	Atom protocols[2];
-	protocols[0] = XA_WM_DELETE_WINDOW;
-	protocols[1] = XA_WM_TAKE_FOCUS;
+	protocols[0] = XAtom("WM_DELETE_WINDOW");
+	protocols[1] = XAtom("WM_TAKE_FOCUS");
 	LLOG("XSetWMProtocols");
 	XSetWMProtocols(Xdisplay, GetWindow(), protocols, 2);
 	String x = GetExeTitle().ToString();

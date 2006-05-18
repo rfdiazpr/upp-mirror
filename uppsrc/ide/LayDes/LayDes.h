@@ -3,7 +3,6 @@
 
 #include <ide/Common/Common.h>
 #include <RichEdit/RichEdit.h>
-#include <Image/Image.h>
 #include <CodeEditor/CodeEditor.h>
 
 #define LAYOUTFILE <ide/LayDes/LayDes.lay>

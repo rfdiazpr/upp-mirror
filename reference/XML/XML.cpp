@@ -91,23 +91,19 @@ CONSOLE_APP_MAIN
 	String xml = x.ToXML();
 	LOG("\n---- XmlTag (encoding) -----------------");
 	LOG(xml);
-	try {
-		LOG("\n---- XmlParser -----------------");
-		Data y;
-		XmlParser p(xml);
-		y.LoadXML(p);
-		y.Dump();
 
-		LOG("\n---- XmlNode -----------------");
-		XmlNode x = ParseXML(xml);
-		LOG("Dimension x: " << x["Configuration"]["Dimension"].Attr("x"));
-		x("Configuration").Remove("Scores");
-		XmlNode& n = x("Configuration")("TEST");
-		n.SetAttr("test_attr", "23");
-		LOG(AsXML(x));
-		LOG(x["Configuration"]["MISSING_TAG"].Attr("doesnotmatter"));
-	}
-	catch(XmlError e) {
-		LOG("xml error: " << e);
-	}
+	LOG("\n---- XmlParser -----------------");
+	Data y;
+	XmlParser p(xml);
+	y.LoadXML(p);
+	y.Dump();
+
+	LOG("\n---- XmlNode -----------------");
+	XmlNode xn = ParseXML(xml);
+	LOG("Dimension x: " << xn["Configuration"]["Dimension"].Attr("x"));
+	xn("Configuration").Remove("Scores");
+	XmlNode& n = xn("Configuration")("TEST");
+	n.SetAttr("test_attr", "23");
+	LOG(AsXML(xn));
+	LOG("Missing tag: " << xn["Configuration"]["MISSING_TAG"].Attr("doesnotmatter"));
 }

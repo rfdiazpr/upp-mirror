@@ -702,7 +702,11 @@ void OldTreeItem::PaintItem(Draw& draw, Point pos) const
 			if(image) {
 				Size iconsize = image.GetSize();
 				Point iconpos(item.left, (item.top + item.bottom - iconsize.cy) >> 1);
+			#ifdef NEWIMAGE
+				draw.DrawImage(iconpos.x, iconpos.y, MakeImage(image, enabled ? "" : "etched"));
+			#else
 				draw.DrawImage(iconpos.x, iconpos.y, image, enabled ? 0 : image.ETCHED);
+			#endif
 				item.left += iconsize.cx + TEXTGAP;
 			}
 

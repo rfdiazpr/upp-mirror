@@ -1,18 +1,20 @@
-uses
-	Core;
-
 acceptflags
 	XLFD;
 
+uses
+	Core,
+	plugin\z,
+	plugin/bmp;
+
 library(WIN32) "user32 gdi32";
 
-library(LINUX) "X11";
+library(LINUX) X11;
 
-library(LINUX) "dl";
+library(LINUX) dl;
 
-library(LINUX !XLFD) "Xft";
+library(LINUX !XLFD) Xft;
 
-library(FREEBSD) "X11";
+library(FREEBSD) X11;
 
 library(FREEBSD !XLFD) "Xft fontconfig";
 
@@ -31,6 +33,7 @@ file
 	Draw.cpp,
 	DrawOpWin32.cpp,
 	DrawOpX11.cpp,
+	DrawData.cpp,
 	Drawing.cpp,
 	MetaFile.cpp,
 	DrawUtil.cpp,
@@ -40,18 +43,24 @@ file
 	Debug.h,
 	Debug.cpp,
 	Image readonly separator,
-	PixelArray.h,
-	PixelArray.cpp,
-	PixelBlt.cpp,
-	PixelPal.cpp,
-	PixelUtil.h,
-	PixelUtil.cpp,
 	Image.h,
 	ImageDraw.h,
 	Image.cpp,
-	ImageUtil.cpp,
-	io.cpp,
-	bmp.cpp,
+	ImageBlit.cpp,
+	ImageWin32.cpp,
+	ImageX11.cpp,
+	Raster.h,
+	RasterFormat.cpp,
+	RasterWrite.cpp,
+	Palette.cpp,
+	Raster.cpp,
+	RasterEncoder.cpp,
+	ImageOp.h,
+	ImageOp.cpp,
+	ImageScale.cpp,
+	MakeCache.cpp,
+	Make.cpp,
+	DrawRasterData.cpp,
 	iml.h,
 	iml_header.h,
 	iml_source.h,
@@ -62,4 +71,3 @@ file
 
 mainconfig
 	"Debug" = "MSC GUI DEBUG WIN32";
-

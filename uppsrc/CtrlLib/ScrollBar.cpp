@@ -140,6 +140,7 @@ void Slider::LeftDown(Point p, dword) {
 	}
 	SetCapture();
 	Refresh();
+	WhenLeftClick();
 }
 
 void Slider::MouseMove(Point p, dword) {
@@ -472,10 +473,13 @@ ScrollBar::ScrollBar() {
 	prev.ScrollStyle().NoWantFocus();
 	next.ScrollStyle().NoWantFocus();
 	prev.WhenPush = prev.WhenRepeat = callback(this, &ScrollBar::PrevLine);
+	prev.WhenPush << Proxy(WhenLeftClick);
 	next.WhenPush = next.WhenRepeat = callback(this, &ScrollBar::NextLine);
+	next.WhenPush << Proxy(WhenLeftClick);
 	slider.WhenPrev = callback(this, &ScrollBar::PrevPage);
 	slider.WhenNext = callback(this, &ScrollBar::NextPage);
 	slider.WhenAction = callback(this, &ScrollBar::Position);
+	slider.WhenLeftClick = Proxy(WhenLeftClick);
 	slider.EdgeStyle();
 }
 
@@ -484,7 +488,7 @@ ScrollBar::~ScrollBar() {}
 Image SizeGrip::CursorImage(Point p, dword)
 {
 #ifdef PLATFORM_X11
-	if(_NET_Supported().Find(XA__NET_WM_MOVERESIZE) >= 0) {
+	if(_NET_Supported().Find(XAtom("_NET_WM_MOVERESIZE")) >= 0) {
 #endif
 		TopWindow *q = dynamic_cast<TopWindow *>(GetTopCtrl());
 		if(q && !q->IsMaximized() && q->IsSizeable()) {
@@ -507,7 +511,7 @@ void SizeGrip::Paint(Draw& w)
     if(InFrame())
         w.DrawRect(sz, SLtGray);
 #ifdef PLATFORM_X11
-    if(_NET_Supported().Find(XA__NET_WM_MOVERESIZE) >= 0) {
+    if(_NET_Supported().Find(XAtom("_NET_WM_MOVERESIZE")) >= 0) {
 #endif
         TopWindow *q = dynamic_cast<TopWindow *>(GetTopCtrl());
         if(q && !q->IsMaximized() && q->IsSizeable()) {
@@ -541,11 +545,11 @@ void SizeGrip::LeftDown(Point p, dword flags)
 		::SendMessage(hwnd, WM_SYSCOMMAND, 0xf008, MAKELONG(p.x, p.y));
 #endif
 #ifdef PLATFORM_X11
-	if(_NET_Supported().Find(XA__NET_WM_MOVERESIZE) >= 0) {
+	if(_NET_Supported().Find(XAtom("_NET_WM_MOVERESIZE")) >= 0) {
 		XClientMessageEvent m;
 		m.type = ClientMessage;
 		m.window = q->GetWindow();
-		m.message_type = XA__NET_WM_MOVERESIZE;
+		m.message_type = XAtom("_NET_WM_MOVERESIZE");
 	    m.format = 32;
 	    p = GetMousePos();
 		m.data.l[0] = p.x;
@@ -693,6 +697,7 @@ Size ScrollBars::GetReducedViewSize() const {
 ScrollBars::ScrollBars() {
 	box = &the_box;
 	x.WhenScroll = y.WhenScroll = callback(this, &ScrollBars::Scroll);
+	x.WhenLeftClick = y.WhenLeftClick = Proxy(WhenLeftClick);
 	x.AutoHide();
 	y.AutoHide();
 }

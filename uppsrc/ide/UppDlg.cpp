@@ -300,7 +300,8 @@ void PackageEditor::OptionMenu(Bar& bar)
 			bar.Add(b, "New " + opt_name[j] + "..", THISBACK1(AddOption, j));
 	bar.Separator();
 	b = option.IsCursor() && (int)option.Get(0) >= 0;
-	bar.Add(b, "Edit..", THISBACK(EditOption));
+	bar.Add(b, "Edit..", THISBACK(EditOption))
+		.Key(K_CTRL_ENTER);
 	bar.Add(b, "Remove", THISBACK(RemoveOption))
 	   .Key(K_DELETE);
 	bar.Separator();
@@ -347,13 +348,13 @@ void PackageEditor::AdjustFileOptionCursor()
 void PackageEditor::FileOptionMenu(Bar& bar)
 {
 	bool b = IsActiveFile();
-	bar.Add(b, "Add compiler flags..", THISBACK(AddFileOption));
-	bar.Add(b, "Add dependency..", THISBACK(AddDepends));
+	bar.Add(b, "Add compiler flags..", THISBACK(AddFileOption)).Key(K_INSERT);
+	bar.Add(b, "Add dependency..", THISBACK(AddDepends)).Key(K_CTRL_INSERT);
 	bar.Separator();
 	b = fileoption.IsCursor() && (int)fileoption.Get(0) >= 0;
 	int type = b ? (int)fileoption.Get(0) : -1;
-	bar.Add(b, "Edit..", THISBACK(EditFileOption));
-	bar.Add(b, "Remove", THISBACK(RemoveFileOption));
+	bar.Add(b, "Edit..", THISBACK(EditFileOption)).Key(K_CTRL_ENTER);
+	bar.Add(b, "Remove", THISBACK(RemoveFileOption)).Key(K_DELETE);
 	bar.Separator();
 	int i = -1;
 	Array<OptItem> *m = NULL;
@@ -457,7 +458,7 @@ void PackageEditor::RemoveFileOption()
 	if(type == FILEOPTION && ii >= 0 && ii < f.option.GetCount())
 		f.option.Remove(ii);
 	if(type == FILEDEPENDS && ii >= 0 && ii < f.depends.GetCount())
-		f.option.Remove(ii);
+		f.depends.Remove(ii);
 	SaveLoadPackage();
 }
 

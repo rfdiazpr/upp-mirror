@@ -21,7 +21,7 @@ RichHotPos RichEdit::GetHotPos(Point p)
 void RichEdit::SetObjectPercent(int p)
 {
 	if(objectpos >= 0) {
-		RichObject obj = GetRichObject();
+		RichObject obj = GetObject();
 		obj.SetSize(obj.GetPhysicalSize() * p / 100);
 		obj.KeepRatio(true);
 		ReplaceObject(obj);
@@ -31,7 +31,7 @@ void RichEdit::SetObjectPercent(int p)
 void RichEdit::SetObjectYDelta(int pt)
 {
 	if(objectpos >= 0) {
-		RichObject obj = GetRichObject();
+		RichObject obj = GetObject();
 		obj.SetYDelta(pt * 25 / 3);
 		ReplaceObject(obj);
 	}
@@ -167,6 +167,7 @@ void RichEdit::RightDown(Point p, dword flags)
 	Id field;
 	String fieldparam;
 	String ofieldparam;
+	RichObject object, o;
 	if(GetSelection(l, h)) {
 		if(c >= l && c < h) {
 			CopyTool(menu);
@@ -177,10 +178,11 @@ void RichEdit::RightDown(Point p, dword flags)
 	else {
 		LeftDown(p, flags);
 		if(objectpos >= 0) {
-			RichObject object = GetRichObject();
+			object = GetObject();
 			if(!object) return;
+			o = object;
+			o.Menu(menu);
 			const RichObjectType& t = object.GetType();
-			t.Menu(menu, *this);
 			if(!menu.IsEmpty())
 				menu.Separator();
 			menu.Add(t_("Object position.."), THISBACK(AdjustObjectSize));
@@ -236,6 +238,8 @@ void RichEdit::RightDown(Point p, dword flags)
 	menu.Execute();
 	paintcarect = false;
 	Refresh(r);
+	if(object && o && o.GetSerialId() != object.GetSerialId())
+		ReplaceObject(o);
 	if(fieldpos >= 0 && fieldparam != ofieldparam) {
 		RichText::FormatInfo f = text.GetFormatInfo(fieldpos, 1);
 		Remove(fieldpos, 1);
@@ -254,10 +258,12 @@ void RichEdit::LeftDouble(Point p, dword flags)
 	int c = GetMousePos(p);
 	if(c >= 0) {
 		if(objectpos == c) {
-			RichObject object = GetRichObject();
+			RichObject object = GetObject();
 			if(!object) return;
-			const RichObjectType& t = object.GetType();
-			t.DefaultAction(*this);
+			RichObject o = object;
+			o.DefaultAction();
+			if(object.GetSerialId() != o.GetSerialId())
+				ReplaceObject(o);
 		}
 		else {
 			RichPos rp = cursorp;
@@ -340,4 +346,3 @@ void RichEdit::LeftRepeat(Point p, dword flags)
 			MoveUpDown(1, true);
 	}
 }
-

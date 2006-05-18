@@ -102,8 +102,10 @@ void ImageBrowseCtrl::Paint(Draw& draw)
 	|| out_size.cx <= 0 || out_size.cy <= 0)
 		return;
 	Rect out_rc = Rect(out_size).Offseted(-scrollbars.Get() + GAP);
+#ifndef NEWIMAGE
 	if(!IsNull(image))
 		draw.DrawImage(out_rc, image);
+#endif
 	if(!IsNull(selection)) {
 		Rect area = Transform(selection, Rect(org_size), out_rc);
 
@@ -363,7 +365,9 @@ Image DlgShot::GetTreeImage() const
 			rc = Rect(still.GetSize());
 		else
 			rc = sel_ctrl -> GetScreenRect() - ctrl -> GetScreenRect().TopLeft() + top_frame.TopLeft();
+	#ifndef NEWIMAGE
 		img = ImageCrop(still, rc);
+	#endif
 //		DrawingDraw ddraw(rc.Size());
 //		ddraw.DrawImage(0, 0, ImageCrop(still, rc));
 //		img = ddraw;
@@ -407,7 +411,9 @@ void DlgShot::OnEditCopy()
 		text.Cat(para);
 		WriteClipboard(GetClipboardFormatCode("QTF"), BodyAsQTF(text));
 */
+#ifndef NEWIMAGE
 		ImageToClipboard(img, White(), true);
+#endif
 		BeepInformation();
 	}
 }

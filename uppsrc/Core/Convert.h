@@ -196,8 +196,10 @@ public:
 	MapConvert&  Add(const Value& a, const Value& b)     { map.Add(a, b); return *this; }
 
 	int          GetCount() const                        { return map.GetCount(); }
+	int          Find(const Value& v) const              { return map.Find(v); }
 	const Value& GetKey(int i) const                     { return map.GetKey(i); }
 	const Value& GetValue(int i) const                   { return map[i]; }
+	const Value& operator[](int i) const                 { return map[i]; }
 
 	virtual ~MapConvert() {}
 };
@@ -230,7 +232,7 @@ public:
 
 private:
 	String format;
-	
+
 public:
-	void   SetFormat(const char *fmt)           { format = fmt; }	
+	void   SetFormat(const char *fmt)           { format = fmt; }
 };

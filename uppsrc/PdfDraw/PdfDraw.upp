@@ -10,7 +10,7 @@ file
 	TTFSubset.cpp,
 	PdfDraw.cpp,
 	PdfReport.icpp,
-	Test.cpp,
+	Test.cpp charset "windows-1250",
 	Info readonly separator,
 	COPYING,
 	COPYING-PLAIN,
@@ -18,4 +18,3 @@ file
 
 mainconfig
 	"" = "GUI";
-

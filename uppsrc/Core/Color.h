@@ -1,3 +1,15 @@
+#ifdef PLATFORM_WIN32
+struct RGBA : Moveable<RGBA> {
+	byte b, g, r, a;
+};
+#endif
+
+#ifdef PLATFORM_POSIX
+struct RGBA : Moveable<RGBA> {
+	byte b, g, r, a;
+};
+#endif
+
 #ifndef PLATFORM_WIN32
 inline int        GetRValue(dword c)             { return (byte)(c >> 0); }
 inline int        GetGValue(dword c)             { return (byte)(c >> 8); }
@@ -14,7 +26,7 @@ protected:
 	dword Get() const;
 
 public:
-	static void SetStdColor(int i, dword color);
+	static void SetStdColor(int i, dword color); //TODO: remove (obsolete)
 	static void SetStdColor(int i, Color color)  { SetStdColor(i, color.color); }
 
 	dword    GetRaw() const            { return color; }
@@ -38,7 +50,10 @@ public:
 
 	operator Value() const             { return RichValue<Color>(*this); }
 	Color(const Value& q)              { color = RichValue<Color>::Extract(q).color; }
-	
+
+	operator RGBA() const;
+	Color(RGBA rgba);
+
 	Color(Color (*fn)())               { color = (*fn)().color; }
 
 	static Color FromRaw(dword co)     { Color c; c.color = co; return c; }

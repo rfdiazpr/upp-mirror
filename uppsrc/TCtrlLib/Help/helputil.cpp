@@ -251,7 +251,9 @@ Image CtrlToStillImage(Ctrl *ctrl, Point arrow, Image arrow_image)
 	}
 	HDC sdc = GetWindowDC(0);
 	Draw draw(sdc);
+#ifndef NEWIMAGE
 	img = DrawToImage(draw, rc);
+#endif
 	ReleaseDC(0, sdc);
 	if(!IsNull(arrow)) {
 		Point p(0, 0);
@@ -259,8 +261,10 @@ Image CtrlToStillImage(Ctrl *ctrl, Point arrow, Image arrow_image)
 		arrow += p - wrc.TopLeft();
 		Image im = Nvl(arrow_image, Image::Arrow());
 		arrow -= im.GetHotSpot();
+	#ifndef NEWIMAGE
 		ImageDraw idraw(img);
 		idraw.DrawImage(arrow.x, arrow.y, im);
+	#endif
 	}
 #endif
 	return img;
@@ -316,6 +320,7 @@ void BarHelpItem::HelpList(String& out) const
 
 void BarHelpItem::HelpText(String& out) const
 {
+#ifndef NEWIMAGE
 	RichPara::CharFormat cformat;
 	cformat.Face(Font::ARIAL).Height(84);
 	RichPara para;
@@ -351,6 +356,7 @@ void BarHelpItem::HelpText(String& out) const
 		para.part.Clear();
 	}
 	out.Cat(BodyAsQTF(rtext));
+#endif	
 }
 
 class BarHelpMap
@@ -955,8 +961,12 @@ String AsCStringWrap(const char *s, int linemax, const char *prefix)
 
 RichObject CreateImageObject(Image image, Size dot_size, Size out_size)
 {
+#ifndef NEWIMAGE
 	RichObject out("PNG", PngEncoder().DotSize(dot_size).SaveImage(image));
 	out.SetSize(out_size);
+#else
+	RichObject out("PNG", Null);
+#endif
 	return out;
 }
 

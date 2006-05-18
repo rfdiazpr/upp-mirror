@@ -64,6 +64,7 @@ PlotterCtrl::PlotterCtrl()
 	AddFrame(*this);
 	hscroll <<= THISBACK(OnHScroll);
 	vscroll <<= THISBACK(OnVScroll);
+	hscroll.WhenLeftClick = vscroll.WhenLeftClick = THISBACK(DoSetFocus);
 	hscroll.SetLine(50);
 	vscroll.SetLine(50);
 }

@@ -82,7 +82,15 @@ Image ReportCtrl::GetPage(int i) {
 	int ii = i & pm;
 	if(pagei[ii] != i) {
 		pagei[ii] = i;
+	#ifdef NEWIMAGE
+		Size sz = Size(max(pagesize.cx - 2, 1), max(pagesize.cy - 2, 1));
+		ImageDraw iw(sz);
+		iw.DrawRect(sz, White);
+		iw.DrawDrawing(0, 0, sz.cx, sz.cy, report->GetPage(i));
+		page[ii] = iw;
+	#else
 		page[ii] = Image(pagesize.cx - 2, pagesize.cy - 2, report->GetPage(i), White);
+	#endif
 	}
 	return page[ii];
 }

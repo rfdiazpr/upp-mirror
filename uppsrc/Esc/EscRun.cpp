@@ -283,6 +283,5 @@ String   Expand(const String& doc, ArrayMap<String, EscValue>& global, int oplim
 				out.Cat(*term);
 			term++;
 		}
-	DUMP(out);
 	return out;
 }

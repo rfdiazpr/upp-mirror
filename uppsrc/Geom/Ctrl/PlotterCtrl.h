@@ -159,6 +159,8 @@ public:
 	void                    UpdateMousePos();
 	Pointf                  GetMousePos() const              { return mouse_pos; }
 
+	void                    DoSetFocus()                     { SetWantFocus(); }
+
 	TOOL(View)
 		TOOL(ViewZoomInX)
 		TOOL(ViewZoomOutX)

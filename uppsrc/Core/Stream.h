@@ -312,8 +312,6 @@ public:
 	MemReadStream(const void *data, int size);
 };
 
-#ifdef NEWBLOCKSTREAM
-
 class BlockStream : public Stream {
 protected:
 	virtual  void  _Put(int w);
@@ -369,67 +367,6 @@ public:
 protected:
 	void     OpenInit(dword mode, int64 file_size);
 };
-
-#else
-class BufferStream : public Stream {
-	dword     buffersize;
-
-	void      Init(dword size);
-
-public:
-	dword     GetBufferSize() const              { return buffersize; }
-	void      SetBufferSize(dword newsize);
-
-	BufferStream(dword buffersize = 4096);
-	~BufferStream();
-};
-
-class BlockStream : public BufferStream {
-protected:
-	virtual  void  _Put(int w);
-	virtual  int   _Term();
-	virtual  int   _Get();
-	virtual  void  _Put(const void *data, dword size);
-	virtual  dword _Get(void *data, dword size);
-
-public:
-	virtual  void  Seek(int64 pos);
-	virtual  int64 GetSize() const;
-	virtual  void  SetSize(int64 size);
-	virtual  void  Flush();
-
-	BlockStream();
-	virtual ~BlockStream();
-
-private:
-	int64    file_size;
-	dword    wramount;
-	int64    prev_pos;
-
-	void     SetWramount();
-
-protected:
-	virtual  dword Read(int64 at, void *ptr, dword size);
-	virtual  void  Write(int64 at, const void *data, dword size);
-	virtual  void  SetStreamSize(int64 size);
-
-	int64    GetMediaSize() const                             { return file_size; }
-
-public:
-	enum {
-		READ, CREATE, APPEND, READWRITE,
-
-		NOWRITESHARE = 0x10,
-		DELETESHARE = 0x20,
-		NOREADSHARE = 0x40,
-		SHAREMASK = 0x70,
-	};
-	typedef int OpenMode; // obsolete, use dword
-
-protected:
-	void     OpenInit(dword mode, int64 file_size);
-};
-#endif
 
 class FileStream : public BlockStream {
 protected:

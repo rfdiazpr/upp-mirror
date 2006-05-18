@@ -6,6 +6,15 @@
 #define FNTSIZE 11
 #endif
 
+Image PosixGetDriveImage(String dir)
+{
+	if(dir.Find("cdrom") == 0 || dir.Find("cdrecorder") == 0)
+		return CtrlImg::CdRom();
+	if(dir.Find("floppy") == 0 || dir.Find("zip") == 0)
+		return CtrlImg::Diskette();
+	return CtrlImg::Hd();
+}
+
 bool Load(FileList& list, const String& dir, const char *patterns, bool dirs,
           Callback3<bool, const String&, Image&> WhenIcon, FileSystemInfo& filesystem)
 {
@@ -21,9 +30,17 @@ bool Load(FileList& list, const String& dir, const char *patterns, bool dirs,
 			filesystem.Find(AppendFileName(dir, filesystem.IsWin32() ? "*.*" : "*"));
 		if(ffi.IsEmpty())
 			return false;
+	#ifdef PLATFORM_POSIX
+		bool isdrive = dir == "/media" || dir == "/mnt";
+	#endif
 		for(int t = 0; t < ffi.GetCount(); t++) {
 			const FileSystemInfo::FileInfo& fi = ffi[t];
+		#ifdef PLATFORM_POSIX
+			Image img = fi.is_directory ? (isdrive ? PosixGetDriveImage(fi.filename) : CtrlImg::Dir())
+			                            : CtrlImg::File();
+		#else
 			Image img = fi.is_directory ? CtrlImg::Dir() : CtrlImg::File();
+		#endif
 			WhenIcon(fi.is_directory, fi.filename, img);
 			bool nd = dirs && !fi.is_directory;
 			if(fi.filename != "." && fi.filename != ".." != 0 &&
@@ -593,11 +610,25 @@ struct FolderDisplay : public Display {
 };
 
 void FolderDisplay::Paint(Draw& w, const Rect& r, const Value& q,
-	                   Color ink, Color paper, dword style) const {
+	                   Color ink, Color paper, dword style) const
+{
 	String s = q;
 	w.DrawRect(r, paper);
+#ifdef PLATFORM_POSIX
+	Image img;
+	DUMP(s);
+	if(s.Find("/media") == 0) {
+		if(s.Find("cdrom") > 0 || s.Find("cdrecorder") > 0)
+			img = CtrlImg::CdRom();
+		if(s.Find("floppy") > 0 || s.Find("zip") > 0)
+			img = CtrlImg::Diskette();
+	}
+	else
+	if(s == "/")
+		img = CtrlImg::Hd();
+#else
 	Image img = GetDriveImage(*s.Last());
-
+#endif
 	if(IsNull(img))
 		img = CtrlImg::Dir();
 	w.DrawImage(r.left, r.top + (r.Height() - img.GetSize().cx) / 2, img);
@@ -668,14 +699,24 @@ bool FileSel::Execute(int _mode) {
 		for(i = 0; i < lru.GetCount(); i++)
 			if(IsFullPath(lru[i]) && filesystem->FolderExists(lru[i]))
 				dir.Add(lru[i]);
+	#ifdef PLATFORM_POSIX
+		Array<FileSystemInfo::FileInfo> root = filesystem->Find("/media/*");
+		for(i = 0; i < root.GetCount(); i++) {
+			String ugly = root[i].filename;
+			if(ugly[0] != '.') {
+				dir.Add("/media/" + root[i].filename);
+			}
+		}
+		dir.Add("/");
+	#else
 		Array<FileSystemInfo::FileInfo> root = filesystem->Find(Null);
-		for(i = 0; i < root.GetCount(); i++)
-		{
+		for(i = 0; i < root.GetCount(); i++) {
 			String ugly = root[i].filename;
 			ugly.Cat('\0');
 			ugly.Cat(root[i].root_style);
 			dir.Add(root[i].filename, ugly);
 		}
+	#endif
 		if(filesystem->IsPosix() && String(~dir).IsEmpty())
 			dir <<= "/";
 		dir.SetDisplay(Single<FolderDisplay>(), 14);
@@ -812,7 +853,7 @@ FileSel::FileSel() {
 	dirup <<= THISBACK(DirUp);
 	Add(dirup);
 	sortext <<= THISBACK(Load);
-	Add(sortext);
+ 	Add(sortext);
 	mkdir <<= THISBACK(MkDir);
 	Add(mkdir);
 	plus <<= THISBACK(Plus);

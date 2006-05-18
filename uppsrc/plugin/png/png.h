@@ -1,22 +1,44 @@
-#ifndef __Plugin_Png__
-#define __Plugin_Png__
+#ifndef __nDraw_plugin_png__
+#define __nDraw_plugin_png__
 
-class PngEncoder : public ImageEncoder
-{
-public:
-	PngEncoder(bool interlace = false);
-	virtual ~PngEncoder();
+#include <Draw/Draw.h>
 
-	virtual void              SaveRaw(Stream& stream, const Vector<const AlphaArray *>& pages);
-	virtual Array<AlphaArray> LoadRaw(Stream& stream, const Vector<int>& page_index);
-	virtual Array<ImageInfo>  InfoRaw(Stream& stream);
-
-	static One<ImageEncoder>  New() { return new PngEncoder; }
-
-	static void               Register() { AddStdMap(&New); }
+class PNGRaster : public StreamRaster {
+	class Data;
+	One<Data> data;
 
 public:
-	bool                      interlace;
+	PNGRaster();
+	~PNGRaster();
+
+	virtual bool    Create();
+	virtual Size    GetSize();
+	virtual Info    GetInfo();
+	virtual Line    GetLine(int line);
+
+private:
+	bool            Init();
 };
 
-#endif//__Plugin_Png__
+class PNGEncoder : public StreamRasterEncoder {
+	class Data;
+	One<Data> data;
+
+public:
+	PNGEncoder(int bpp = 32, ImageKind kind = IMAGE_UNKNOWN, bool interlace = false);
+	~PNGEncoder();
+
+	virtual int  GetPaletteCount();
+	virtual void Start(Size sz);
+	virtual void WriteLine(const RGBA *s);
+
+	PNGEncoder&  Bpp(int b)                      { bpp = b; return *this; }
+	PNGEncoder&  Interlace(int b = true)         { interlace = b; return *this; }
+
+private:
+	int          bpp;
+	ImageKind    kind;
+	bool         interlace;
+};
+
+#endif

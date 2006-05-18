@@ -1016,14 +1016,31 @@ inline ValueArray CdistinctASC(CalcPacket& packet, ValueArray a, String ident, c
 }
 FDECLAP(distinct, ASC, &GroupArray)
 
-static Value CwithVSC(CalcPacket& packet, Value v, String id, const CalcNode *lambda)
+static bool CwithVSRC(CalcPacket& packet)
 {
+	if(packet.help) {
+		packet.args.Add(CalcType<Value>::Describe());
+		packet.args.Add(CalcType<String>::Describe());
+		packet.args.Add("...");
+		packet.args.Add(CalcType<const CalcNode *>::Describe());
+		return true;
+	}
+	int nargs = packet.args.GetCount();
+	if(nargs < 3 || !(nargs & 1) || !CalcType<const CalcNode *>::IsType(packet.args[nargs - 1]))
+		return false;
+	int npairs = nargs >> 1;
 	CalcContext::Nesting nesting(packet.context);
-	packet.context.Set(id, v);
-	return lambda->Calc(packet.context);
+	for(int i = 0; i < npairs; i++) {
+		if(!CalcType<Value>::IsType(packet.args[2 * i + 0])
+		|| !CalcType<String>::IsType(packet.args[2 * i + 1]))
+			return false;
+		packet.context.Set(packet.args[2 * i + 1], packet.args[2 * i]);
+	}
+	packet.result = CalcType<const CalcNode *>::ValueTo(packet.args[nargs - 1])->Calc(packet.context);
+	return true;
 }
 
-FDECLAP(with, VSC, &GroupSystem)
+FDECLQ("CwithVSRC", "with", &GroupSystem, &CwithVSRC)
 
 static ValueArray CgroupAASCC(CalcPacket& packet, ValueArray data, ValueArray ctrl, String var,
 	const CalcNode *grp, const CalcNode *val)

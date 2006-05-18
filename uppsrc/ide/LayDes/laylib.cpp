@@ -164,7 +164,11 @@ void SIC_Courier(EscEscape& e)
 void SIC_GetImageSize(EscEscape& e)
 {
 	e.CheckArray(0);
+#ifdef NEWIMAGE
+	e = EscSize(GetImlImage((String)e[0]).GetSize());
+#else
 	e = EscSize(ImageCache::Get()[(String)e[0]].GetSize());
+#endif
 }
 
 void SIC_GetTextSize(EscEscape& e)
@@ -373,7 +377,8 @@ void EscDraw::GetTextSize(EscEscape& e)
 void EscDraw::DrawImage(EscEscape& e)
 {
 	e.CheckArray(2);
-	w.DrawImage(e.Int(0), e.Int(1), ImageCache::Get()[(String)e[2]]);
+	w.DrawImage(e.Int(0), e.Int(1), GetImlImage((String)e[2]));
+	PNGEncoder().SaveFile("d:/png.png", GetImlImage((String)e[2]));
 }
 
 EscDraw::EscDraw(EscValue& v, Draw& w)

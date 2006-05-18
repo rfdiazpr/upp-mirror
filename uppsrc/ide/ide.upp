@@ -16,7 +16,7 @@ uses
 
 library(WIN32) "shell32 ole32";
 
-link(WIN32 MSC) "/MAP";
+link(WIN32 MSC) /MAP;
 
 file
 	IDE readonly separator,
@@ -46,6 +46,7 @@ file
 	idebar.cpp,
 	idewin.cpp,
 	Help.cpp,
+	HelpIndex.cpp,
 	Util.cpp,
 	Macro.cpp,
 	Calc.cpp,

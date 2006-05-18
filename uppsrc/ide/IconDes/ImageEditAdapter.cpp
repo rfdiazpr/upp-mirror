@@ -1,7 +1,6 @@
 #include "IconDes.h"
 #pragma hdrstop
 #include "ImageEditCtrl.h"
-#include <Draw/PixelUtil.h>
 
 static Rect RectSortImage(Point A, Point B)
 {
@@ -136,9 +135,14 @@ Image ImageEditAdapter::Cursor(Point pt, dword keyflags)
 
 void ImageEditAdapter::DragRect(const Rect& last, const Rect& next, dword keyflags)
 {
-	ViewDraw draw(image);
-	image -> PaintFrame(draw, last);
-	image -> PaintFrame(draw, next);
+	{
+		ViewDraw draw(image);
+		image -> PaintFrame(draw, last);
+	}
+	{
+		ViewDraw draw(image);
+		image -> PaintFrame(draw, next);
+	}
 	if(!next.IsEmpty())
 		image -> ShowCoords(next);
 }
@@ -240,9 +244,9 @@ Image ImageEditAdapterSelect::CursorClient(Point pt, dword keyflags)
 	case ImageEditCtrl::TOP_HIT:
 	case ImageEditCtrl::BOTTOM_HIT: return Image::SizeVert();
 	case ImageEditCtrl::LEFT_HIT | ImageEditCtrl::TOP_HIT:
-	case ImageEditCtrl::RIGHT_HIT | ImageEditCtrl::BOTTOM_HIT: return Image::SizeBackSlash();
+	case ImageEditCtrl::RIGHT_HIT | ImageEditCtrl::BOTTOM_HIT: return Image::SizeAll();
 	case ImageEditCtrl::RIGHT_HIT | ImageEditCtrl::TOP_HIT:
-	case ImageEditCtrl::LEFT_HIT | ImageEditCtrl::BOTTOM_HIT: return Image::SizeSlash();
+	case ImageEditCtrl::LEFT_HIT | ImageEditCtrl::BOTTOM_HIT: return Image::SizeAll();
 	}
 	return Image::Arrow();
 }
@@ -273,7 +277,7 @@ void ImageEditAdapterSelect::PushClient(Point pt, dword keyflags)
 			if(hit_test || !(keyflags & K_CTRL))
 				image -> ForceSelectionImage();
 			else
-				image -> SetSelectionImage(AlphaCrop(image -> image, sel));
+				image -> SetSelectionImage(Crop(image -> image, sel));
 		}
 	}
 	scale = (hit_test > 0 && keyflags & K_CTRL);
@@ -369,7 +373,8 @@ void ImageEditAdapterCurve::Drop(Point start, Point end, dword keyflags)
 {
 	image -> AddUndo(command);
 	Vector<Point> curve = GetCurve(start, end, Rect(image -> GetImageSize()));
-	AlphaSetPixel(image -> image, curve, image -> GetColor());
+	for(int i = 0; i < curve.GetCount(); i++)
+		SetImagePixel(image -> image, curve[i].x, curve[i].y, image -> GetColor());
 	{
 		ViewDraw vdraw(image);
 		image -> DrawCurve(vdraw, curve, true);
@@ -428,10 +433,10 @@ ADAPTER(FloodFill)
 
 void ImageEditAdapterFloodFill::Push(Point pt, dword keyflags)
 {
-	if(!image -> image.GetRect().Contains(pt))
+	if(!Rect(image -> image.GetSize()).Contains(pt))
 		return;
 	image -> AddUndo("výplň");
-	AlphaFloodFill(image -> image, image -> GetColor(), pt, image -> GetRect(), keyflags & K_CTRL);
+	FloodFill(image -> image, image -> GetColor(), pt, image -> GetRect());
 	image -> RefreshImage();
 }
 
@@ -469,6 +474,6 @@ ADAPTER(FilledRectangle)
 void ImageEditAdapterFilledRectangle::DropRect(const Rect& rc, dword keyflags)
 {
 	image -> AddUndo("obdélník");
-	AlphaSet(image -> image, rc, image -> GetColor());
+	SetImageRect(image->image, rc, image->GetColor());
 	image -> RefreshImage(rc);
 }

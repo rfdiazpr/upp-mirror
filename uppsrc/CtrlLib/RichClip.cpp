@@ -29,7 +29,11 @@ struct sPlainCt_ : public RichText::ClipboardType {
 };
 
 struct sRTFCt_ : public RichText::ClipboardType {
+#ifdef PLATFORM_WIN32
 	int              GetFormatCode() { return GetClipboardFormatCode("Rich Text Format"); }
+#else
+	int              GetFormatCode() { return GetClipboardFormatCode("text/richtext"); }
+#endif
 	virtual int      Level() { return 5; }
 	virtual RichText ReadClipboard(const RichPara::Format&) {
 		String data = ::ReadClipboard(GetFormatCode());

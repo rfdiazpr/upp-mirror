@@ -259,7 +259,7 @@ void Esc::Subscript(Esc::SRVal& r, Esc::SRVal _self, String id)
 					if(Char(')')) break;
 					PassChar(',');
 				}
-			if(Char('!')) {
+			if(!IsChar2('!', '=') && Char('!')) {
 				Term(_self);
 				EscValue g = Get(_self);
 				if(!_self.lval || (!g.IsVoid() && !g.IsMap()))

@@ -399,8 +399,10 @@ VecArcIterator::VecArcIterator(Pointf start, Pointf end, double bulge, Callback1
 //////////////////////////////////////////////////////////////////////
 
 VecArcIterator::VecArcIterator(const VecArc& arc, Callback1<Pointf> lineto)
-	: arc(arc), lineto(lineto)
+	: clip(Null), arc(arc), lineto(lineto)
 {
+	level = DEFAULT_LEVEL;
+	precision = 1; // default precision
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -484,7 +486,7 @@ int VecArcIterator::GetClip(Pointf point) const
 
 double Vec_tolerance       = 1e-6;
 double Vec_ang_tolerance   = 1e-6;
-double Vec_outer_tolerance = 1e6;
+double Vec_outer_tolerance = 1e30;
 
 //////////////////////////////////////////////////////////////////////
 

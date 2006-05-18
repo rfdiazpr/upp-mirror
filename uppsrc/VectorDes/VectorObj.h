@@ -1,6 +1,10 @@
 #ifndef _VectorDes_VectorObj_h_
 #define _VectorDes_VectorObj_h_
 
+#define IMAGEFILE  <VectorDes/VectorDes.iml>
+#define IMAGECLASS VecImg
+#include <Draw/iml_header.h>
+
 template <class B, class T> struct Newer { static One<B> New() { return new T; } };
 
 template <class T> struct VType          { enum { VTYPE = ERROR_V }; };
@@ -238,7 +242,7 @@ public:
 		RECT_MASK           = 0x040,
 		ARG_MASK            = 0x080,
 		INDEX_SHIFT         = 8,
-		
+
 		TRACK_RECT_LEFT     = 0x01,
 		TRACK_RECT_TOP      = 0x02,
 		TRACK_RECT_RIGHT    = 0x04,

@@ -195,11 +195,14 @@
 #endif //PLATFORM_POSIX
 
 #ifdef PLATFORM_POSIX
+#define	LOFF_T_      off_t
 #define LSEEK64_     lseek
 #define FTRUNCATE64_ ftruncate
 #endif
 
 #ifdef PLATFORM_LINUX
+#undef  LOFF_T_
+#define LOFF_T_      loff_t
 #undef  LSEEK64_
 #define LSEEK64_     lseek64
 #undef  FTRUNCATE64_

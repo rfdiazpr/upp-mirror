@@ -136,13 +136,15 @@ public:
 	XmlNode&       At(int i)                                  { return node.At(i); }
 	const XmlNode& Node(int i) const                          { return node[i]; }
 	const XmlNode& operator[](int i) const                    { return node[i]; }
-	const XmlNode& operator[](const char *tag) const; // throws XmlError
+	const XmlNode& operator[](const char *tag) const;
 	XmlNode&       Add()                                      { return node.Add(); }
 	int            FindTag(const char *tag) const;
 	XmlNode&       Add(const char *tag);
 	XmlNode&       GetAdd(const char *tag);
 	XmlNode&       operator()(const char *tag)                { return GetAdd(tag); }
 	void           Remove(const char *tag);
+
+	String         GatherText() const;
 
 	int            GetAttrCount() const                       { return attr.GetCount(); }
 	String         AttrId(int i) const                        { return attr.GetKey(i); }

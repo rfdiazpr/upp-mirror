@@ -40,7 +40,8 @@ void Ide::MakeTitle()
 }
 
 void Ide::MakeIcon() {
-#ifdef PLATFORM_WIN32
+//TODO
+#ifdef PLATFORM_WIN32_not_yet
 	String mp = main;
 	Image li = IdeImg::PackageLarge();
 	if(!IsNull(mp))

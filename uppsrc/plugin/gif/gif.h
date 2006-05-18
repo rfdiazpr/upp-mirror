@@ -1,23 +1,45 @@
-#ifndef __Plugin_Gif__
-#define __Plugin_Gif__
+#ifndef _plugin_gif_gif_h_
+#define _plugin_gif_gif_h_
 
-class GifEncoder : public ImageEncoder
-{
+#include <Draw/Draw.h>
+
+class GIFRaster : public StreamRaster {
 public:
-	GifEncoder(bool optimize_palette = true, String comment = Null);
-	virtual ~GifEncoder();
+	class Data;
+	One<Data> data;
 
-	virtual void              SaveRaw(Stream& stream, const Vector<const AlphaArray *>& pages);
-	virtual Array<AlphaArray> LoadRaw(Stream& stream, const Vector<int>& page_index);
-	virtual Array<ImageInfo>  InfoRaw(Stream& stream);
+public:
+	GIFRaster();
+	~GIFRaster();
 
-	static One<ImageEncoder>  New()      { return new GifEncoder; }
-
-	static void               Register() { AddStdMap(&New); }
+	virtual bool    Create();
+	virtual Size    GetSize();
+	virtual Info    GetInfo();
+	virtual Line    GetLine(int line);
 
 private:
-	bool                      optimize_palette;
-	String                    comment;
+	bool            Init();
 };
 
-#endif//__Plugin_Gif__
+class GIFEncoder : public StreamRasterEncoder {
+public:
+	class Data;
+	One<Data> data;
+
+public:
+	GIFEncoder(bool ignore_alpha = false, String comment = Null);
+	~GIFEncoder();
+
+	GIFEncoder&  IgnoreAlpha(bool ia = true) { ignore_alpha = ia; return *this; }
+	GIFEncoder&  Comment(String c)           { comment = c; return *this; }
+
+	virtual int  GetPaletteCount();
+	virtual void Start(Size sz);
+	virtual void WriteLine(const RGBA *s);
+
+private:
+	bool         ignore_alpha;
+	String       comment;
+};
+
+#endif

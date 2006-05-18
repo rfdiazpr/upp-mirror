@@ -73,8 +73,6 @@ protected:
 		mutable bool          keepnext;
 		mutable bool          orphan;
 		mutable int           numbering;
-		mutable Vector<Image> cache;
-		mutable Vector<int64> oserial;
 		mutable Bits          spellerrors;
 		mutable bool          checked;
 		mutable bool          haspos;

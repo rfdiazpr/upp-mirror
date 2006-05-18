@@ -149,6 +149,7 @@ Atom   XAtom(const char *name);
 
 String      GetProperty(Window w, Atom property, Atom rtype = AnyPropertyType);
 Vector<int> GetPropertyInts(Window w, Atom property, Atom rtype = AnyPropertyType);
+String      ReadPropertyData(Window w, Atom property, Atom rtype = AnyPropertyType);
 
 Index<Atom>& _NET_Supported();
 #endif
@@ -551,41 +552,6 @@ public:
 	};
 
 	static Xclipboard& xclipboard();
-
-	static Atom XA_WM_PROTOCOLS;
-	static Atom XA_WM_DELETE_WINDOW;
-	static Atom XA_WM_TAKE_FOCUS;
-	static Atom XA_UPP_SYNC;
-	static Atom XA__NET_WM_CONTEXT_HELP;
-	static Atom XA__MOTIF_WM_HINTS;
-	static Atom XA_KWIN_RUNNING;
-	static Atom XA_KWM_RUNNING;
-	static Atom XA_GNOME_BACKGROUND_PROPERTIES;
-	static Atom XA__QT_SETTINGS_TIMESTAMP_;
-	static Atom XA__NET_SUPPORTED;
-	static Atom XA__NET_VIRTUAL_ROOTS;
-	static Atom XA__NET_WM_NAME;
-	static Atom XA__NET_WM_ICON_NAME;
-	static Atom XA__NET_WM_ICON;
-	static Atom XA__NET_WM_STATE;
-	static Atom XA__NET_WM_STATE_MODAL;
-	static Atom XA__NET_WM_STATE_MAXIMIZED_VERT;
-	static Atom XA__NET_WM_STATE_MAXIMIZED_HORZ;
-	static Atom XA__NET_WM_WINDOW_TYPE;
-	static Atom XA__NET_WM_WINDOW_TYPE_NORMAL;
-	static Atom XA__NET_WM_WINDOW_TYPE_DIALOG;
-	static Atom XA__NET_WM_WINDOW_TYPE_TOOLBAR;
-	static Atom XA__KDE_NET_WM_WINDOW_TYPE_OVERRIDE;
-	static Atom XA__KDE_NET_WM_FRAME_STRUT;
-	static Atom XA__NET_WM_STATE_STAYS_ON_TOP;
-	static Atom XA__NET_WM_MOVERESIZE;
-	static Atom XA__KDE_NET_USER_TIME;
-	static Atom XA_ENLIGHTENMENT_DESKTOP;
-	static Atom XA_WM_STATE;
-	static Atom XA_UTF8_STRING;
-	static Atom XA_CLIPBOARD;
-	static Atom XA_TARGETS;
-	static Atom XA_CLIPDATA;
 
 	static int  Xeventtime;
 
@@ -1345,6 +1311,13 @@ inline bool WriteClipboardFormat(const T& object, bool clear = true) {
 template <class T>
 inline bool ReadClipboardFormat(T& object) {
 	return ClipboardFormat<T>::Read(object);
+}
+
+template <class T>
+inline T ReadClipboardFormat() {
+	T object;
+	ClipboardFormat<T>::Read(object);
+	return object;
 }
 
 #ifdef NEWIMAGE

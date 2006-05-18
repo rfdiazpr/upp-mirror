@@ -88,7 +88,7 @@ public:
 
 class OracleBlob : public BlockStream {
 protected:
-	virtual  void  SetStreamSize(dword size);
+	virtual  void  SetStreamSize(int64 size);
 	virtual  dword Read(int64 at, void *ptr, dword size);
 	virtual  void  Write(int64 at, const void *data, dword size);
 

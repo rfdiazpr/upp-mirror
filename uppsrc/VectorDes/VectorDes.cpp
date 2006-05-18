@@ -4,8 +4,8 @@
 #define LLOG(x) // RLOG(x)
 
 #define IMAGEFILE <VectorDes/VectorDes.iml>
-#define IMAGESPACE VecImg
-#include <Draw/iml.h>
+#define IMAGECLASS VecImg
+#include <Draw/iml_source.h>
 
 #define LAYOUTFILE <VectorDes/VectorDes.lay>
 #include <CtrlCore/lay.h>

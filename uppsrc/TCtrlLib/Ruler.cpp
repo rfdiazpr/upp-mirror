@@ -330,6 +330,7 @@ void RulerCtrl::LeftDown(Point pt, dword keyflags)
 		WhenAction();
 		SetCapture();
 	}
+	WhenLeftClick();
 }
 
 void RulerCtrl::LeftUp(Point pt, dword keyflags)

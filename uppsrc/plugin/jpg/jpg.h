@@ -1,22 +1,37 @@
-#ifndef __Plugin_Jpg__
-#define __Plugin_Jpg__
+#ifndef _plugin_jpg_jpg_h_
+#define _plugin_jpg_jpg_h_
 
-class JpgEncoder : public ImageEncoder
-{
+class JPGRaster : public StreamRaster {
 public:
-	JpgEncoder(int quality = 50);
-	virtual ~JpgEncoder();
+	class Data;
+	One<Data> data;
 
-	virtual void              SaveRaw(Stream& stream, const Vector<const AlphaArray *>& pages);
-	virtual Array<AlphaArray> LoadRaw(Stream& stream, const Vector<int>& page_index);
-	virtual Array<ImageInfo>  InfoRaw(Stream& stream);
+public:
+	JPGRaster();
+	~JPGRaster();
 
-	static One<ImageEncoder>  New()      { return new JpgEncoder; }
-
-	static void               Register() { AddStdMap(&New); }
-
-private:
-	int                       quality;
+	virtual bool    Create();
+	virtual Size    GetSize();
+	virtual Info    GetInfo();
+	virtual Line    GetLine(int line);
 };
 
-#endif//__Plugin_Jpg__
+class JPGEncoder : public StreamRasterEncoder {
+	class Data;
+	One<Data> data;
+
+public:
+	JPGEncoder(int quality = 50);
+	~JPGEncoder();
+
+	JPGEncoder&  Quality(int q) { quality = q; return *this; }
+
+	virtual int  GetPaletteCount();
+	virtual void Start(Size sz);
+	virtual void WriteLine(const RGBA *s);
+
+private:
+	int          quality;
+};
+
+#endif

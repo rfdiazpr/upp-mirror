@@ -1,11 +1,5 @@
-optimize_speed;
-
-flags(NOTMFC) "!GUI !CONSOLE";
-
 uses
-	Draw,
-	plugin\jpg,
-	plugin\z;
+	plugin\jpg;
 
 options
 	-DSTDC,
@@ -21,21 +15,23 @@ options
 	-DTHUNDER_SUPPORT,
 	-DLZW_SUPPORT,
 	-DPACKBITS_SUPPORT,
-	-DCCITT_SUPPORT,
-	-DFILLODER_LSB2MSB;
+	-DCCITT_SUPPORT;
 
 file
-	Wrapper readonly separator,
 	tif.h,
 	tifupp.cpp,
-	lib\jerror.h,
-	lib\jpeglib.h,
-	"Original files" readonly separator,
+	lib readonly separator,
 	lib\Copyright,
+	lib\jerror.h,
+	lib\jpeg.patch1,
+	lib\jpeg.patch2,
+	lib\jpeglib.h,
 	lib\libtiff.def,
 	lib\Makefile.am,
 	lib\Makefile.in,
+	lib\Makefile.lcc,
 	lib\Makefile.vc,
+	lib\ojpeg.patch,
 	lib\Readme,
 	lib\Release-date,
 	lib\t4.h,
@@ -72,6 +68,7 @@ file
 	lib\tif_predict.h,
 	lib\tif_print.c,
 	lib\tif_read.c,
+	lib\tif_stream.cxx,
 	lib\tif_strip.c,
 	lib\tif_swab.c,
 	lib\tif_thunder.c,
@@ -81,6 +78,7 @@ file
 	lib\tif_write.c,
 	lib\tif_zip.c,
 	lib\tiff.h,
+	lib\tiffcomp.h,
 	lib\tiffconf.h,
 	lib\tiffconf.h.in,
 	lib\tiffconf.h.vc,
@@ -90,4 +88,5 @@ file
 	lib\tiffvers.h,
 	lib\uvcode.h,
 	lib\Version,
-	End readonly separator;
+	end readonly separator;
+

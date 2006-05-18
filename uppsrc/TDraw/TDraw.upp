@@ -4,7 +4,7 @@ uses
 	TCore,
 	PdfDraw;
 
-library(WIN32) "comdlg32";
+library(WIN32) comdlg32;
 
 file
 	TDraw.h,

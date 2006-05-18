@@ -118,7 +118,7 @@ struct FontHeight : public WithDropChoice<EditDouble> {
 #define LAYOUTFILE <RichEdit/RichEdit.lay>
 #include <CtrlCore/lay.h>
 
-class RichEdit : public Ctrl, public RichObjectExchange {
+class RichEdit : public Ctrl {
 public:
 	virtual void  Layout();
 	virtual void  Paint(Draw& w);
@@ -134,9 +134,6 @@ public:
 	virtual Value GetData() const;
 	virtual void  SetData(const Value& v);
 	virtual void  Serialize(Stream& s);
-
-	virtual RichObject GetRichObject() const;
-	virtual void       SetRichObject(const RichObject& object);
 
 private:
 	Size                     p_size;
@@ -386,6 +383,7 @@ private:
 
 	void       EndSizeTracking();
 
+	RichObject GetObject() const;
 	void       ReplaceObject(const RichObject& obj);
 
 	static bool   IsW(int c);

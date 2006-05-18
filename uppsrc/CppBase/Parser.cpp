@@ -409,7 +409,7 @@ String Parser::SimpleType(Decla& d)
 	   Key(tk___int8) || Key(tk___int16) || Key(tk___int32) || Key(tk___int64)) return Null;
 	if(sgn) return Null;
 	const char *p = lex.Pos();
-	int cs = 0;
+	bool cs = false;
 	Index<int> cix;
 	if(Key(t_dblcolon))
 		d.type << "::";
@@ -424,7 +424,7 @@ String Parser::SimpleType(Decla& d)
 		else {
 			d.type << lex.Id();
 			if(cix.Find(lex) >= 0)
-				cs++;
+				cs = true;
 			else
 				cix.Add(lex);
 			++lex;
@@ -542,7 +542,7 @@ void Parser::Declarator(Decl& d, const char *p)
 				Name();
 	}
 	if(Key('(')) {
-		if((lex < 256 || lex == tk_true || lex == tk_false)
+		if(inbody || (lex < 256 || lex == tk_true || lex == tk_false)
 		   && lex != ')' && lex != t_dblcolon) {
 			int level = 0;
 			for(;;) {
@@ -605,6 +605,11 @@ Parser::Decl Parser::Type() {
 	SimpleType(d);
 	Declarator(d, p);
 	return Finish(d, p);
+}
+
+bool Parser::IsParamList(int q)
+{
+	return true;
 }
 
 Array<Parser::Decl> Parser::Declaration(bool l0, bool more)
@@ -1400,6 +1405,7 @@ void Parser::Do(Stream& in, const Vector<String>& ignore, CppBase& _base, const 
 	file = PreProcess(in);
 	lex.Init(~file.text, ignore);
 	err = _err;
+	current_nest = "::";
 	context.access = PUBLIC;
 	context.noclass = true;
 	context.typenames.Clear();
@@ -1418,7 +1424,7 @@ void Parser::Do(Stream& in, const Vector<String>& ignore, CppBase& _base, const 
 			Do();
 		}
 		catch(Error) {
-			Resume(0);
+			Resume(lex.GetBracesLevel());
 			Key(';');
 		}
 }

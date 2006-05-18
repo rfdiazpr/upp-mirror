@@ -975,7 +975,7 @@ Vector<String> Oracle8::EnumReservedWords()
 	return OracleSchemaReservedWords();
 }
 
-void OracleBlob::SetStreamSize(dword pos) {
+void OracleBlob::SetStreamSize(int64 pos) {
 	ASSERT(pos <= GetMediaSize());
 	if(pos < GetMediaSize())
 		OCI8().OCILobTrim(session->svchp, session->errhp, locp, pos);

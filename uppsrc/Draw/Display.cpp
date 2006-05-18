@@ -165,7 +165,7 @@ public:
 		w.DrawRect(r, paper);
 		Image m = q;
 		if(!IsNull(m))
-			w.DrawImage(r, m);
+			w.DrawImage(r.left, r.top, Rescale(m, r.GetSize()));
 	}
 	virtual Size GetStdSize(const Value& q) const
 	{
@@ -184,7 +184,8 @@ public:
 		Image m = q;
 		if(!IsNull(m)) {
 			Size sz = GetFitSize(m.GetSize(), r.Size());
-			w.DrawImage(r.CenterRect(sz), m);
+			Point p = r.CenterPos(sz);
+			w.DrawImage(p.x, p.y, m);
 		}
 	}
 	virtual Size GetStdSize(const Value& q) const

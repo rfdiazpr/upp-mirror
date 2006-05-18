@@ -61,7 +61,7 @@ void Build(const char *nest)
 CONSOLE_APP_MAIN
 {
 	const Vector<String>& arg = CommandLine();
-	intput = GetDataFile("BuildAll.cpp")[0] + String(":\\");
+	input = GetDataFile("BuildAll.cpp")[0] + String(":\\");
 	output = "C:\\out";
 	for(int i = 0; i < arg.GetCount(); i++)
 		bm.Add(arg[i]);

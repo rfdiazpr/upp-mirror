@@ -4,8 +4,6 @@
 #define LDUMP(x)          // DUMP(x)
 #define LLOGHEXDUMP(x, s) // LOGHEXDUMP(x, s)
 
-#ifdef NEWBLOCKSTREAM
-
 void BlockStream::SetBufferSize(dword size) {
 	int64 p;
 	if(IsOpen()) {
@@ -250,7 +248,6 @@ void BlockStream::OpenInit(dword mode, int64 _filesize) {
 		SetBufferSize(4096);
 	if(mode == APPEND) SeekEnd();
 }
-#endif
 
 // ---------------------------- File stream -----------------------------
 
@@ -378,12 +375,12 @@ FileStream::~FileStream() {
 void FileStream::SetStreamSize(int64 pos)
 {
 	if(handle < 0) return;
-	loff_t cur = LSEEK64_(handle, 0, SEEK_CUR);
+	LOFF_T_ cur = LSEEK64_(handle, 0, SEEK_CUR);
 	if(cur < 0) {
 		SetLastError();
 		return;
 	}
-	loff_t len = LSEEK64_(handle, 0, SEEK_END);
+	LOFF_T_ len = LSEEK64_(handle, 0, SEEK_END);
 	if(len < 0) {
 		SetLastError();
 		LSEEK64_(handle, cur, SEEK_SET);

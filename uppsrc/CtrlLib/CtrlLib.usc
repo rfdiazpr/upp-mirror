@@ -328,13 +328,13 @@ ctrl Button {
 ctrl Option {
 	group "Push";
 
+	Text   SetLabel ? "Option text";
 	>Base;
 	bool   BlackEdge;
 	bool   SwitchImage;
 	bool   SetEditable = true @1 ? "Editable";
 	bool   ThreeState;
 	bool   NotNull;
-	Text   SetLabel ? "Option text";
 
 	Paint(w) {
 		x = self;

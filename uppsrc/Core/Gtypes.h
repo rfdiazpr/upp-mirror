@@ -222,6 +222,10 @@ struct Rect_ : Moveable< Rect_<T> > {
 	T      Height() const                   { return bottom - top; }
 	Sz     Size() const                     { return Sz(right - left, bottom - top); }
 
+	T      GetWidth() const                 { return right - left; }
+	T      GetHeight() const                { return bottom - top; }
+	Sz     GetSize() const                  { return Sz(right - left, bottom - top); }
+
 	Pt     CenterPos(T cx, T cy) const;
 	Pt     CenterPos(Sz sz) const           { return CenterPos(sz.cx, sz.cy); }
 	Rect_  CenterRect(Sz sz) const          { return Rect_(CenterPos(sz), sz); }

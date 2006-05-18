@@ -1,37 +1,29 @@
-optimize_speed;
-
-flags(NOTMFC) "!GUI !CONSOLE";
-
 uses
-	Draw,
 	plugin\z;
 
-options
-	"-DPNG_NO_STDIO";
-
 file
-	Wrapper readonly separator,
 	png.h,
 	pngupp.cpp,
-	"Original files" readonly separator,
-	lib/png.h,
-	lib/pngasmrd.h,
-	lib/pngconf.h,
-	lib/png.c,
-	lib/pngerror.c,
-	lib/pnggccrd.c,
-	lib/pngget.c,
-	lib/pngmem.c,
-	lib/pngpread.c,
-	lib/pngread.c,
-	lib/pngrio.c,
-	lib/pngrtran.c,
-	lib/pngrutil.c,
-	lib/pngset.c,
-	lib/pngtrans.c,
-	lib/pngvcrd.c,
-	lib/pngwio.c,
-	lib/pngwrite.c,
-	lib/pngwtran.c,
-	lib/pngwutil.c,
-	End readonly separator;
+	pngreg.icpp,
+	lib readonly separator,
+	lib\png.c,
+	lib\png.h,
+	lib\pngasmrd.h,
+	lib\pngconf.h,
+	lib\pngerror.c,
+	lib\pnggccrd.c,
+	lib\pngget.c,
+	lib\pngmem.c,
+	lib\pngpread.c,
+	lib\pngread.c,
+	lib\pngrio.c,
+	lib\pngrtran.c,
+	lib\pngrutil.c,
+	lib\pngset.c,
+	lib\pngtrans.c,
+	lib\pngvcrd.c,
+	lib\pngwio.c,
+	lib\pngwrite.c,
+	lib\pngwtran.c,
+	lib\pngwutil.c,
+	end readonly separator;

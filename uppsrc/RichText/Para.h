@@ -217,7 +217,7 @@ struct RichPara {
 	Lines       FormatLines(int cx) const;
 	void        Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& pi,
 	                  const Number& n, const Bits& spellerrors,
-	                  Vector<Image>& cache, int nbefore, int nline) const;
+	                  int nbefore, int nline) const;
 	RichCaret   GetCaret(int pos, const Rect& page, PageY py, int nbefore, int nline) const;
 	int         GetPos(int x, PageY y, const Rect& page, PageY py, int nbefore, int nline) const;
 	void        GatherLabels(Vector<RichValPos>& info, const Rect& page, PageY py,

@@ -738,6 +738,21 @@ SqlSet& SqlSet::NoWait() {
 	return *this;
 }
 
+SqlSet& SqlSet::Limit(const unsigned int limit) {
+	text << " limit " << limit;
+	return *this;
+}
+
+SqlSet& SqlSet::Limit(const unsigned int offset, const unsigned int limit) {
+	text << " limit " << offset << ", " << limit;
+	return *this;
+}
+
+SqlSet& SqlSet::Offset(const unsigned int offset) {
+	text << " offset " << offset;
+	return *this;
+}
+
 bool SqlSet::Execute(Sql& cursor) const {
 	ASSERT(!IsEmpty());
 	return cursor.Execute(text);

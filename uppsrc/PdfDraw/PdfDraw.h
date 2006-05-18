@@ -236,9 +236,13 @@ public:
 	virtual bool IsPaintingOp(const Rect& r) const;
 
 	virtual	void DrawRectOp(int x, int y, int cx, int cy, Color color);
+#ifdef NEWIMAGE
+	virtual void DrawImageOp(int x, int y, const Image& img, const Rect& src, Color color);
+#else
 	virtual void DrawImageOp(const Rect& rect, const Image& img, const Rect& src, int fx);
 	virtual void DrawImageOp(const Rect& rect, const Image& img, const Rect& src,
 		                     Color fore, Color back, Color doxor);
+#endif
 	virtual void DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color);
 	virtual void DrawPolyPolylineOp(const Point *vertices, int vertex_count,
 	                                const int *counts, int count_count,

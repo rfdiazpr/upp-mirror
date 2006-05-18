@@ -5,6 +5,7 @@ class HelloWorld : public TopWindow {
 	StatusBar status;
 
 	void FileMenu(Bar& bar);
+	void MainMenu(Bar& bar);
 	void About();
 
 public:
@@ -25,11 +26,16 @@ void HelloWorld::FileMenu(Bar& bar)
 	bar.Add("Exit", THISBACK(Close));
 }
 
+void HelloWorld::MainMenu(Bar& bar)
+{
+	menu.Add("File", THISBACK(FileMenu));
+}
+
 HelloWorld::HelloWorld()
 {
 	AddFrame(menu);
 	AddFrame(status);
-	menu.Add("File", THISBACK(FileMenu));
+	menu.Set(THISBACK(MainMenu));
 	status = "Welcome to the Ultimate++ !";
 }
 

@@ -24,3 +24,27 @@ ImageBuffer
 0 0 -1
 AString<char,String>
 0 0 -1
+Image
+0 0 -1
+Size_<int>
+0 0 -1
+Parser::Decla
+0 217 -1
+Parser::Decl
+0 0 -1
+CppItem
+0 0 -1
+ImageEditCtrl
+0 0 -1
+Image::Data
+0 0 -1
+Rect_<int>
+0 0 -1
+WString
+0 0 -1
+PNGRaster
+0 0 -1
+StreamRaster
+0 0 -1
+Stream
+0 0 -1

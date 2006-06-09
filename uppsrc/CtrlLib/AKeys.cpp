@@ -45,7 +45,7 @@ struct KeyDisplay : Display {
 		               Color ink, Color paper, dword) const {
 		w.DrawRect(r, paper);
 		String txt = GetKeyDesc(int(q));
-		int tcy = w.GetTextSize(txt).cy;
+		int tcy = GetTextSize(txt, StdFont()).cy;
 		w.DrawText(r.left + 2, r.top + (r.Height() - tcy) / 2, txt, StdFont(), ink);
 	}
 };
@@ -135,7 +135,7 @@ bool KeysDlg::Key(dword key, int count)
 			}
 			qtf << "}}";
 		}
-		ParseQTF(qtf).WriteClipboard();
+		WriteClipboard("QTF", qtf);
 		BeepExclamation();
 		return true;
 	}

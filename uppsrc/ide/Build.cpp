@@ -356,7 +356,7 @@ struct OneFileHost : Host {
 };
 
 bool Ide::BuildPackage(const Workspace& wspc, int pkindex, int pknumber, int pkcount,
-	String mainparam, Vector<String>& linkfile, String& linkopt, bool link)
+	String mainparam, String outfile, Vector<String>& linkfile, String& linkopt, bool link)
 {
 	String package = wspc[pkindex];
 	String mainpackage = wspc[0];
@@ -393,20 +393,24 @@ bool Ide::BuildPackage(const Workspace& wspc, int pkindex, int pknumber, int pkc
 	host->RealizeDir(tout);
 	if(IsNull(mainfn))
 		mainfn = GetFileTitle(mainpackage) + b->GetTargetExt();
-	if(m.target_override && !IsNull(m.target) && IsFolder(m.target))
-		b->target = host->NormalizePath(AppendFileName(m.target, mainfn));
-	else
-	if(m.target_override && (IsFullPath(m.target) || *m.target == '/' || *m.target == '\\'))
-		b->target = m.target;
-	else
-	if(m.target_override && !IsNull(m.target))
-		b->target = host->NormalizePath(AppendFileName(tout, m.target));
-	else
-	if(IsFullPath(mainfn))
-		b->target = mainfn;
-	else
-		b->target = host->NormalizePath(AppendFileName(tout, mainfn));
-	target = b->target;
+	if(!IsNull(outfile))
+		target = NormalizePath(outfile, tout);
+	else {
+		if(m.target_override && !IsNull(m.target) && IsFolder(m.target))
+			target = host->NormalizePath(AppendFileName(m.target, mainfn));
+		else
+		if(m.target_override && (IsFullPath(m.target) || *m.target == '/' || *m.target == '\\'))
+			target = m.target;
+		else
+		if(m.target_override && !IsNull(m.target))
+			target = host->NormalizePath(AppendFileName(tout, m.target));
+		else
+		if(IsFullPath(mainfn))
+			target = mainfn;
+		else
+			target = host->NormalizePath(AppendFileName(tout, mainfn));
+	}
+	b->target = target;
 	if(IsNull(onefile)) {
 		String out;
 		out << "----- " << package << " ( " << Join(b->config.GetKeys(), " ") << " )";
@@ -520,7 +524,7 @@ Vector<String> Ide::GetAllLibraries(const Workspace& wspc, int index,
 	return libraries.PickKeys();
 }
 
-bool Ide::Build(const Workspace& wspc, String mainparam, bool clear_console)
+bool Ide::Build(const Workspace& wspc, String mainparam, String outfile, bool clear_console)
 {
 	BeginBuilding(true, clear_console);
 	bool ok = true;
@@ -560,8 +564,8 @@ bool Ide::Build(const Workspace& wspc, String mainparam, bool clear_console)
 		int ms = msecs();
 		for(int i = 0; i < build_order.GetCount() && (ok || !stoponerrors); i++) {
 			int px = build_order[i];
-			ok = BuildPackage(wspc, px, i, build_order.GetCount() + 1, mainparam, linkfile,
-			                  linkopt) && ok;
+			ok = BuildPackage(wspc, px, i, build_order.GetCount() + 1,
+				mainparam, Null, linkfile, linkopt) && ok;
 			if(msecs() - ms >= 200) {
 				ProcessEvents();
 				ms = msecs();
@@ -569,7 +573,7 @@ bool Ide::Build(const Workspace& wspc, String mainparam, bool clear_console)
 		}
 		if(ok || !stoponerrors)
 			ok = BuildPackage(wspc, 0, build_order.GetCount(), build_order.GetCount() + 1,
-			                  mainparam, linkfile, linkopt, ok) && ok;
+				mainparam, outfile, linkfile, linkopt, ok) && ok;
 	}
 	EndBuilding(ok);
 	ReQualifyBrowserBase();
@@ -588,7 +592,7 @@ bool Ide::Build()
 	                                *host, *CreateBuilder(~host));
 	Workspace wspc;
 	wspc.Scan(main, p.GetKeys());
-	return Build(wspc, mainconfigparam);
+	return Build(wspc, mainconfigparam, Null);
 }
 
 void Ide::DoBuild()
@@ -604,7 +608,7 @@ void Ide::PackageBuild()
 	const Workspace& wspc = IdeWorkspace();
 	Vector<String> linkfile;
 	String linkopt;
-	bool ok = BuildPackage(wspc, pi, 0, 1, mainconfigparam, linkfile, linkopt);
+	bool ok = BuildPackage(wspc, pi, 0, 1, mainconfigparam, Null, linkfile, linkopt);
 	EndBuilding(ok);
 }
 
@@ -693,7 +697,7 @@ void Ide::FileCompile()
 		Vector<String> linkfile;
 		String linkopt;
 		for(int i = 0; i < wspc.GetCount(); i++)
-			BuildPackage(wspc, i, 1, wspc.GetCount(), mainconfigparam, linkfile, linkopt, false);
+			BuildPackage(wspc, i, 1, wspc.GetCount(), mainconfigparam, Null, linkfile, linkopt, false);
 	}
 	onefile.Clear();
 	EndBuilding(ok);

@@ -373,6 +373,10 @@ Draw::Draw(Drawable _dw, GC _gc, const Vector<Rect>& _clip)
 	Init(_clip);
 }
 
+Draw::~Draw()
+{
+}
+
 void BackDraw::Create(Draw& w, int cx, int cy)
 {
 	LLOG("Creating BackDraw " << cx << "x" << cy);

@@ -36,10 +36,11 @@ EscValue Ide::MacroEditor()
 	out.Escape("MoveTextEnd(...)", THISBACK(MacroMoveTextEnd));
 	out.Escape("Input(...)", THISBACK(MacroInput));
 	out.Escape("Build(...)", THISBACK(MacroBuild));
-	out.Escape("BuildProject(project, maincfg)", THISBACK(MacroBuildProject));
+	out.Escape("BuildProject(...)", THISBACK(MacroBuildProject));
 	out.Escape("Execute(cmdline)", THISBACK(MacroExecute));
 	out.Escape("Launch(cmdline)", THISBACK(MacroLaunch));
 	out.Escape("ClearConsole()", THISBACK(MacroClearConsole));
+	out.Escape("EditFile(...)", THISBACK(MacroEditFile));
 	return out;
 }
 
@@ -312,7 +313,7 @@ void Ide::MacroInput(EscEscape& e)
 		BUTTON_WIDTH = 80,
 	};
 	for(int i = 0; i < e.GetCount(); i++)
-		xdim = max(xdim, ScreenInfo().GetTextSize(tags[i] = e[i], StdFont()).cx + 10);
+		xdim = max(xdim, GetTextSize(tags[i] = e[i], StdFont()).cx + 10);
 	dialog.HCenterPos(xdim + 200, 0).VCenterPos(LINE_DIST * tags.GetCount() + 2 * SIDE_GAP + BUTTON_HEIGHT, 0);
 	Array<Label> label;
 	Array<EditField> editors;
@@ -347,17 +348,30 @@ void Ide::MacroInput(EscEscape& e)
 
 void Ide::MacroBuild(EscEscape& e)
 {
-	e = Build(IdeWorkspace(), e.GetCount() ? (String)e[0] : mainconfigparam, false);
+	String outfile;
+	String maincfg = mainconfigparam;
+	switch(e.GetCount()) {
+		case 2: outfile = e[1]; break;
+		case 1: maincfg = e[0]; break;
+		case 0: break;
+		default: e.ThrowError("Build: 0 to 2 arguments expected ([maincfg[, outfile]])");
+	}
+	e = Build(IdeWorkspace(), maincfg, outfile, false);
 }
 
 void Ide::MacroBuildProject(EscEscape& e)
 {
-	if(e.GetCount() != 2)
-		e.ThrowError("BuildProject: 2 arguments expected (uppfile, maincfg)");
+	String outfile;
+	switch(e.GetCount()) {
+		case 3: outfile = e[2];
+		case 2: break;
+		default:  e.ThrowError("BuildProject: 2 or 3 arguments expected (uppfile, maincfg[, outfile])");
+	}
 	String uppfile = e[0];
+	String maincfg = e[1];
 	Workspace wspc;
 	wspc.Scan(uppfile);
-	e = Build(wspc, e[1], false);
+	e = Build(wspc, maincfg, outfile, false);
 }
 
 void Ide::MacroExecute(EscEscape& e)
@@ -385,4 +399,14 @@ void Ide::MacroLaunch(EscEscape& e)
 void Ide::MacroClearConsole(EscEscape& e)
 {
 	console.Clear();
+}
+
+void Ide::MacroEditFile(EscEscape& e)
+{
+	String filename;
+	if(e.GetCount() == 1)
+		filename = e[0];
+	else if(e.GetCount() == 2)
+		filename = SourcePath(e[0], e[1]);
+	EditFile(filename);
 }

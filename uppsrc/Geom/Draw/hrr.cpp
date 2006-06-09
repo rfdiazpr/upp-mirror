@@ -4,13 +4,10 @@
 #include "GeomDraw.h"
 #pragma hdrstop
 
-#include <Image/Image.h>
 #include "hrr.h"
-#include <Draw/PixelUtil.h>
 
 #include <plugin/jpg/jpg.h>
 #include <plugin/gif/gif.h>
-#include <plugin/zim/zim.h>
 #ifndef flagHRRNOPNG
 #include <plugin/png/png.h>
 #endif
@@ -55,7 +52,7 @@ One<ImageEncoder> HRR::StdCreateEncoder(const HRRInfo& info)
 	case HRRInfo::METHOD_JPG: return new JpgEncoder(info.GetQuality());
 	case HRRInfo::METHOD_GIF: return new GifEncoder;
 	case HRRInfo::METHOD_RLE: return new RleEncoder;
-	case HRRInfo::METHOD_ZIM: return new ZImageEncoder;
+//	case HRRInfo::METHOD_ZIM: return new ZImageEncoder;
 #ifndef flagNOHRRPNG
 	case HRRInfo::METHOD_PNG: return new PngEncoder;
 #endif
@@ -66,7 +63,7 @@ One<ImageEncoder> HRR::StdCreateEncoder(const HRRInfo& info)
 Vector<int> HRRInfo::EnumMethods()
 {
 	Vector<int> out;
-	out << METHOD_JPG << METHOD_GIF << METHOD_RLE << METHOD_PNG << METHOD_ZIM;
+	out << METHOD_JPG << METHOD_GIF << METHOD_RLE << METHOD_PNG; // << METHOD_ZIM;
 	return out;
 }
 

@@ -27,21 +27,15 @@ TrayIcon::TrayIcon()
 TrayIcon::~TrayIcon()
 {
 	Hide();
-#ifdef NEWIMAGE
 	if(nid.hIcon)
 		DestroyIcon(nid.hIcon);
-#endif
 }
 
 void TrayIcon::Notify(dword msg)
 {
 	if(visible) {
 		nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-#ifdef NEWIMAGE
 		nid.hIcon = IconWin32(icon);
-#else
-		nid.hIcon = icon.GetIcon();
-#endif
 		int len = min(tip.GetLength(), 60);
 		memcpy(nid.szTip, tip, len);
 		nid.szTip[len] = 0;

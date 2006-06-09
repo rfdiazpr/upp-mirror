@@ -46,13 +46,13 @@ void RichPara::Flush(Draw& draw, const PaintInfo& pi, wchar *text,
 		int ssa;
 		int ssd;
 		if(f.sscript) {
-			FontInfo fi = draw.GetFontInfo(CHARSET_UNICODE, fnt(zht));
+			FontInfo fi = fnt(zht).Info();
 			ssa = fi.GetAscent();
 			ssd = fi.GetDescent();
 			zht = 3 * zht / 5;
 		}
 		fnt.Height(zht ? zht : 1);
-		FontInfo fi = draw.GetFontInfo(CHARSET_UNICODE, fnt);
+		FontInfo fi = fnt.Info();
 		if(f.dashed) {
 			int dx = max(fi.GetAscent() / 5, 2);
 			for(int i = 0; dx * i < width; i++)
@@ -241,34 +241,6 @@ void RichPara::Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& 
 								o.Paint(draw, sz);
 						draw.End();
 					}
-#if 0
-					Image& c = cache.At(oi++);
-					if(o) {
-						Size sz = z * o.GetSize();
-						draw.DrawRect(z * x, z * py.y, sz.cx, z * linecy, (*i)->paper);
-						draw.Clipoff(z * x, z * (y0 - hg->ascent), sz.cx, sz.cy);
-						if(pi.sizetracking)
-							draw.DrawRect(sz, SLtGray);
-						else
-							if(pi.usecache) {
-								if(c.GetSize() != sz) {
-								#ifdef NEWIMAGE
-									ImageDraw iw(sz);
-									o.Paint(iw, sz);
-									c = iw;
-								#else
-									c = Image(sz);
-									ImageDraw iw(c);
-									o.Paint(iw, sz);
-								#endif
-								}
-								draw.DrawImage(0, 0, c);
-							}
-							else
-								o.Paint(draw, sz);
-						draw.End();
-					}
-#endif
 					i++;
 					hg++;
 					x += *w++;
@@ -319,7 +291,7 @@ void RichPara::Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& 
 						CharFormat cf = li.len && *pl.format ? **pl.format : format;
 						cf.Height(z * cf.GetHeight());
 						draw.DrawText(r.left,
-						              z * y0 - draw.GetFontInfo(CHARSET_UNICODE, cf).GetAscent(),
+						              z * y0 - cf.Info().GetAscent(),
 						              s, cf, cf.ink);
 					}
 				}
@@ -412,7 +384,7 @@ RichCaret RichPara::GetCaret(int pos, const Rect& page, PageY py, int nbefore, i
 {
 	Lines pl = Begin(page, py, nbefore, nline);
 	RichCaret pr;
-	FontInfo fi = ScreenInfo().GetFontInfo(format);
+	FontInfo fi = format.Info();
 	pr.caretascent = fi.GetAscent();
 	pr.caretdescent = fi.GetDescent();
 	for(int lni = 0; lni < pl.GetCount(); lni++) {
@@ -566,10 +538,15 @@ void  RichPara::GatherIndexes(Vector<RichValPos>& info, const Rect& page, PageY 
 	}
 }
 
+void FontHeightRound(Font& fnt, Zoom z)
+{
+	fnt.Height((fnt.GetHeight() * z.m + (z.d >> 1)) / z.d);
+}
+
 void operator*=(RichPara::Format& format, Zoom z)
 {
-	(Font&)format *= z;
-	format.before*= z;
+	FontHeightRound(format, z);
+	format.before *= z;
 	int ll = format.lm + format.indent;
 	format.lm *= z;
 	format.indent = z * ll - format.lm;
@@ -585,7 +562,7 @@ void  RichPara::ApplyZoom(Zoom z)
 	format *= z;
 	for(int i = 0; i < part.GetCount(); i++)
 		if(part[i].IsText())
-			part[i].format *= z;
+			FontHeightRound(part[i].format, z);
 		else
 		if(part[i].object)
 			part[i].object.SetSize(z * part[i].object.GetSize());

@@ -2,7 +2,7 @@
 
 int EditField::GetTextCx(const wchar *txt, int n, bool password)
 {
-	FontInfo fi = ScreenInfo().GetFontInfo(CHARSET_UNICODE, font);
+	FontInfo fi = font.Info();
 	if(password)
 		return n * fi['*'];
 	const wchar *s = txt;
@@ -19,12 +19,12 @@ int  EditField::GetCaret(int cursor)
 
 int  EditField::GetStdHeight(Font font)
 {
-	return ScreenInfo().GetFontInfo(font).GetHeight() + 6;
+	return font.Info().GetHeight() + 6;
 }
 
 int  EditField::GetCursor(int posx)
 {
-	FontInfo fi = ScreenInfo().GetFontInfo(font);
+	FontInfo fi = font.Info();
 	const wchar *s = text;
 	int x = 0;
 	int x0 = 0;
@@ -41,7 +41,7 @@ int  EditField::GetCursor(int posx)
 
 Image EditField::CursorImage(Point, dword)
 {
-	return GetIBeamCursor();
+	return Image::IBeam();
 }
 
 bool EditField::HasBorder()
@@ -157,7 +157,7 @@ void EditField::Finish(bool refresh)
 	if(refresh)
 		Refresh();
 	bool f = HasBorder();
-	FontInfo fi = ScreenInfo().GetFontInfo(font);
+	FontInfo fi = font.Info();
 	SetCaret(x - sc + 1 - fi.GetRightSpace('o'), f, 1, min(sz.cy - 2 * f, fi.GetHeight()));
 }
 

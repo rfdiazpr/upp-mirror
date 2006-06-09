@@ -141,9 +141,9 @@ public:
 
 		Rectf         GetExtent() const;
 
-		bool          Write()   { return WriteClipboardFormat(*this); }
+		void          Write()   { WriteClipboardFormat(*this); }
 		bool          Read()    { return ReadClipboardFormat(*this); }
-		static bool   IsAvail() { return ClipboardFormat<Clip>::IsAvailable(); }
+		static bool   IsAvail() { return IsClipboardFormatAvailable<Clip>(); }
 
 		Array<Trace>  traces;
 	};

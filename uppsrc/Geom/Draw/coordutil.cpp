@@ -1,8 +1,6 @@
 #include "GeomDraw.h"
 #pragma hdrstop
 
-#include <Image/Image.h>
-
 static void ExpandSegmentUp(Vector<Point>& src, Vector<Point>& dest, const LinearSegmentTree::Node *node, Point smin, Point dmin)
 {
 	if(node) {
@@ -27,24 +25,24 @@ static void ExpandSegmentDown(Vector<Point>& src, Vector<Point>& dest, const Lin
 	}
 }
 
-static void PaintSplit(PixelArray& out_pixel, PixelArray& out_alpha,
-	const PixelArray& in_pixel, const PixelArray& in_alpha, const PlanarSegmentTree::Node& planar,
+static void PaintSplit(ImageBuffer& out, const Image& in,
+	const PlanarSegmentTree::Node& planar,
 	const LinearSegmentTree::Node *left, const LinearSegmentTree::Node *top,
 	const LinearSegmentTree::Node *right, const LinearSegmentTree::Node *bottom,
 	const SegmentTreeInfo& info, Color background, int index)
 {
 	if(planar.split) {
 		index <<= 2;
-		PaintSplit(out_pixel, out_alpha, in_pixel, in_alpha, planar.split->topleft,
+		PaintSplit(out, in, planar.split->topleft,
 			left ? ~left->below : NULL, top ? ~top->below : NULL, NULL, NULL,
 			info, background, index + 0);
-		PaintSplit(out_pixel, out_alpha, in_pixel, in_alpha, planar.split->topright,
+		PaintSplit(out, in, planar.split->topright,
 			NULL, top ? ~top->above : NULL, right ? ~right->below : NULL, NULL,
 			info, background, index + 1);
-		PaintSplit(out_pixel, out_alpha, in_pixel, in_alpha, planar.split->bottomleft,
+		PaintSplit(out, in, planar.split->bottomleft,
 			left ? ~left->above : NULL, NULL, NULL, bottom ? ~bottom->below : NULL,
 			info, background, index + 2);
-		PaintSplit(out_pixel, out_alpha, in_pixel, in_alpha, planar.split->bottomright,
+		PaintSplit(out, in, planar.split->bottomright,
 			NULL, NULL, right ? ~right->above : NULL, bottom ? ~bottom->above : NULL,
 			info, background, index + 3);
 	}
@@ -59,13 +57,13 @@ static void PaintSplit(PixelArray& out_pixel, PixelArray& out_alpha,
 		destpos[1] = planar.trg_topright + d1;
 		destpos[2] = planar.trg_bottomright + d2;
 		destpos[3] = planar.trg_bottomleft + d3;
-		if(!in_pixel && !in_alpha)
-			PixelMapBilinearSet(out_pixel, out_alpha, destpos, background);
+		if(!in)
+			BilinearSet(out, destpos, background);
 		else
-			PixelMapBilinearMaskOut(out_pixel, out_alpha, destpos, in_pixel, in_alpha, planar.source, Null, info.antialias);
+			BilinearCopy(out, destpos, in, planar.source, NULL, info.antialias);
 	}
 	else {
-		bool empty = !in_pixel && !in_alpha;
+		bool empty = !in;
 		Point msrc = planar.source.CenterPoint();
 		Point mdest = msrc * info;
 		Vector<Point> bsrc;
@@ -84,21 +82,22 @@ static void PaintSplit(PixelArray& out_pixel, PixelArray& out_alpha,
 			Sizef mp = Length(psrc - msrc, 1);
 			Size dp = Length(mp - pn, 2), dn = Length(pn - nm, 2), dm = Length(nm - mp, 2);
 			if(empty)
-				PixelMapLinearSet(out_pixel, out_alpha, mdest + dm, pdest + dp, ndest + dn, background);
+				LinearSet(out, mdest + dm, pdest + dp, ndest + dn, background);
 			else
-				PixelMapLinearMaskOut(out_pixel, out_alpha, mdest + dm, pdest + dp, ndest + dn, in_pixel, in_alpha, msrc + dm, psrc + dp, nsrc + dn, Null, info.antialias);
+				LinearCopy(out, mdest + dm, pdest + dp, ndest + dn, in, msrc + dm, psrc + dp, nsrc + dn, NULL, info.antialias);
 			psrc = nsrc;
 			pdest = ndest;
 		}
 	}
 }
 
-void AlphaTransformPaint(PixelArray& out_pixel, PixelArray& out_alpha,
-	const PixelArray& in_pixel, const PixelArray& in_alpha, const PlanarSegmentTree& planar,
+void AlphaTransformPaint(ImageBuffer& out, const Image& in,
+	const PlanarSegmentTree& planar,
 	const LinearSegmentTree& left, const LinearSegmentTree& top,
-	const LinearSegmentTree& right, const LinearSegmentTree& bottom, const SegmentTreeInfo& info, Color background)
+	const LinearSegmentTree& right, const LinearSegmentTree& bottom,
+	const SegmentTreeInfo& info, Color background)
 {
-	PaintSplit(out_pixel, out_alpha, in_pixel, in_alpha, planar.root, ~left.split, ~top.split, ~right.split, ~bottom.split, info, background, 1);
+	PaintSplit(out, in, planar.root, ~left.split, ~top.split, ~right.split, ~bottom.split, info, background, 1);
 }
 
 static void PaintTreeSplit(Draw& draw, const PlanarSegmentTree::Node& planar,
@@ -122,7 +121,7 @@ static void PaintTreeSplit(Draw& draw, const PlanarSegmentTree::Node& planar,
 		Point center = (planar.trg_topleft + planar.trg_topright + planar.trg_bottomleft + planar.trg_bottomright) >> 2;
 		String fmt = FormatIntHex(index, 4);
 		Font font = StdFont();
-		Size fmtsize = draw.GetTextSize(fmt, font);
+		Size fmtsize = GetTextSize(fmt, font);
 		draw.DrawText(center.x - (fmtsize.cx >> 1), center.y - (fmtsize.cy >> 1), fmt, font, LtGreen());
 		Point pdest = bdest[0];
 		bdest.Add(pdest);

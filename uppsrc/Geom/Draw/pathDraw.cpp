@@ -162,14 +162,10 @@ Image PathStyle::Trace::GetTrackCursor(int style)
 {
 	switch(style)
 	{
-	case LEFT | LEFT_TOP:
-	case RIGHT | RIGHT_BOTTOM:
-		return Image::SizeBackSlash();
-
-	case RIGHT | RIGHT_TOP:
-	case LEFT | LEFT_BOTTOM:
-		return Image::SizeSlash();
-
+	case LEFT | LEFT_TOP:      return Image::SizeTopLeft();
+	case RIGHT | RIGHT_BOTTOM: return Image::SizeBottomRight();
+	case RIGHT | RIGHT_TOP:    return Image::SizeTopRight();
+	case LEFT | LEFT_BOTTOM:   return Image::SizeBottomLeft();
 	case LEFT_TOP | RIGHT_TOP:
 	case LEFT_BOTTOM | RIGHT_BOTTOM:
 		return Image::SizeVert();

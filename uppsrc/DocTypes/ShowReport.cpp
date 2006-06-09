@@ -82,15 +82,11 @@ Image ReportCtrl::GetPage(int i) {
 	int ii = i & pm;
 	if(pagei[ii] != i) {
 		pagei[ii] = i;
-	#ifdef NEWIMAGE
 		Size sz = Size(max(pagesize.cx - 2, 1), max(pagesize.cy - 2, 1));
 		ImageDraw iw(sz);
 		iw.DrawRect(sz, White);
 		iw.DrawDrawing(0, 0, sz.cx, sz.cy, report->GetPage(i));
 		page[ii] = iw;
-	#else
-		page[ii] = Image(pagesize.cx - 2, pagesize.cy - 2, report->GetPage(i), White);
-	#endif
 	}
 	return page[ii];
 }
@@ -129,7 +125,7 @@ void ReportCtrl::Paint(Draw& w) {
 					DrawFrame(w, x, y, pagesize.cx, pagesize.cy, White, LtGray);
 				if(numbers) {
 					String n = Format("%d", i + 1);
-					Size tsz = w.GetTextSize(n);
+					Size tsz = GetTextSize(n, StdFont());
 					tsz += Size(8, 4);
 					int tx = x + pagesize.cx - tsz.cx;
 					DrawFrame(w, tx, y, tsz.cx, tsz.cy, Black, Black);
@@ -204,7 +200,7 @@ int ReportDlg::Perform(DocReport& report, int zoom, const char *caption)
 	this->report = &report;
 	report.EndPage();
 	if(report.dortf)
-		WriteClipboard(GetClipboardFormatCode("Rich text format"), report.rtf.Get());
+		WriteClipboard("Rich text format", report.rtf.Get());
 	pg.Set(report);
 	Size sz;
 	Rect area = Ctrl::GetWorkArea();

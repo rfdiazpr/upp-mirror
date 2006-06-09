@@ -6,7 +6,7 @@
 
 #include <X11/Xlocale.h>
 
-bool Ctrl::LogMessages;
+bool Ctrl::LogMessages;// = true;
 #endif
 
 #define LLOG(x)     // LOG(x)
@@ -45,21 +45,6 @@ int       Ctrl::Xeventtime;
 Point     Ctrl::mousePos;
 
 static int s_starttime;
-
-Point GetMousePos()
-{
-	LTIMING("GetMousePos");
-	if(IsNull(Ctrl::mousePos)) {
-		LTIMING("XQueryPointer");
-		int x, y, xx, yy;
-		unsigned int mask;
-		Window dm1, dm2;
-		if(!XQueryPointer(Xdisplay, Xroot, &dm1, &dm2, &x, &y, &xx, &yy, &mask))
-			return Null;
-		Ctrl::mousePos = Point(x, y);
-	}
-	return Ctrl::mousePos;
-}
 
 void Ctrl::DoPaint(const Vector<Rect>& invalid)
 {
@@ -154,7 +139,6 @@ void Ctrl::ProcessEvent(XEvent *event)
 	if(event->type == SelectionRequest &&
 	   event->xselectionrequest.owner == xclipboard().win &&
 	   event->xselectionrequest.selection == XAtom("CLIPBOARD")) {
-		LOG("Request !");
 		xclipboard().Request(&event->xselectionrequest);
 		return;
 	}
@@ -219,7 +203,6 @@ void Ctrl::TimerAndPaint() {
 				Xwindow().SetKey(i, None);
 		}
 	}
-	mousePos = Null;
 }
 
 bool Ctrl::ProcessEvent(bool *)
@@ -231,7 +214,7 @@ bool Ctrl::ProcessEvent(bool *)
 	return true;
 }
 
-void SweepImageCache();
+void SweepMkImageCache();
 
 bool Ctrl::ProcessEvents(bool *)
 {
@@ -288,6 +271,7 @@ void Ctrl::EventLoop(Ctrl *ctrl)
 		XFlush(Xdisplay);
 		select(Xconnection + 1, &fdset, NULL, NULL, &timeout);
 //		GuiSleep()(granularity);
+		SyncMousePos();
 		while(IsWaitingEvent()) {
 			LTIMING("XNextEvent");
 			XNextEvent(Xdisplay, &event);
@@ -522,7 +506,6 @@ static bool s_waitcursor;
 
 void Ctrl::SetMouseCursor(const Image& image)
 {
-#ifdef NEWIMAGE
 	if(!top) return;
 	static Image img;
 	static Cursor shc;
@@ -536,36 +519,12 @@ void Ctrl::SetMouseCursor(const Image& image)
 			XFreeCursor(Xdisplay, shc);
 		shc = hc;
 	}
-#else
-	if(!top) return;
-	static Image img;
-	if(s_waitcursor)
-		img = Image::Wait();
-	else
-		img = image;
-	static Cursor shc;
-	static Window wnd;
-	Cursor hc = img.GetCursor();
-	if(hc != shc || top->window != wnd) {
-		LTIMING("XDefineCursor");
-		shc = hc;
-		wnd = top->window;
-		XDefineCursor(Xdisplay, wnd, shc);
-	}
-#endif
 }
 
 void WaitCursor::Show() {
 	if(s_waitcursor) return;
 	s_waitcursor = true;
-	Ctrl::DoCursorShape();
-#ifndef NEWIMAGE //FIXIMAGE
-	Cursor hc = Image::Wait().GetCursor();
-	for(int i = 0; i < Ctrl::Xwindow().GetCount(); i++) {
-		Window w = Ctrl::Xwindow().GetKey(i);
-		if(w) XDefineCursor(Xdisplay, w, hc);
-	}
-#endif
+	Ctrl::DoCursorShape(); //TODO - FIXIMAGE
 }
 
 WaitCursor::WaitCursor(bool show) {
@@ -593,6 +552,8 @@ void Ctrl::TakeFocus()
 		return;
 	if(ignoretakefocus) {
 		LLOG("IGNORED TAKE_FOCUS (caused by CreateWindow)");
+		if(focusWindow != top->window)
+			XSetInputFocus(Xdisplay, focusWindow, RevertToParent, CurrentTime);
 		return;
 	}
 	if(w->owner) {
@@ -666,6 +627,7 @@ void Ctrl::FocusSync()
 {
 	Window fw = GetXServerFocusWindow();
 	if(fw != focusWindow) {
+		LLOG("FocusSync to " << FormatIntHex(fw));
 		KillFocus(focusWindow);
 		focusWindow = None;
 		if(fw) {
@@ -753,7 +715,7 @@ void Ctrl::Invalidate(XWindow& xw, const Rect& _r)
 void Ctrl::AddGlobalRepaint()
 {
 	Rect rect = GetRect();
-	rect.Inflate(32, 32);//!!! Not correct !!! should read frame extent instead... - or shift GraphicsExposes /  NoExposes...
+	rect.Inflate(32, 32);//TODO !!! Not correct !!! should read frame extent instead... - or shift GraphicsExposes /  NoExposes...
 	ArrayMap<Window, Ctrl::XWindow>& w = Xwindow();
 	for(int i = 0; i < w.GetCount(); i++)
 		if(w.GetKey(i) && w[i].ctrl) {

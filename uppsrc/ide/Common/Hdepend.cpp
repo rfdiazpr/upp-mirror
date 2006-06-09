@@ -195,6 +195,32 @@ void Hdepend::ScanFile(const String& path, int map_index) {
 				       term = p.GetPtr();
 				}
 			}
+			else if(IsAlpha(*term) || *term == '_') {
+				const char *id = term;
+				while(IsAlNum(*++term) || *term == '_')
+					;
+				bool is_bin = (term - id == 6 && !memcmp(id, "BINARY", 6));
+				bool is_mask = (term - id == 11 && !memcmp(id, "BINARY_MASK", 11));
+				bool is_array = (term - id == 12 && !memcmp(id, "BINARY_ARRAY", 12));
+				if(is_bin || is_mask || is_array) {
+					while(*term && (byte)*term <= ' ')
+						term++;
+					if(*term == '(') {
+						while(*term && *term != ')' && *term != ',')
+							term++;
+						if(is_array && *term == ',') {
+							while(*++term && *term != ')' && *term != ',')
+								;
+						}
+						if(*term == ',') {
+							while(*++term && *term != ')' && (byte)*term <= ' ')
+								;
+							if(*term == '\"')
+								Include(term, info, filedir, false);
+						}
+					}
+				}
+			}
 		}
 		else {
 			if((byte)*term > ' ')

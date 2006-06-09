@@ -76,7 +76,7 @@ int  ParaFormating::ComputeIndent()
 		}
 		String s = n.AsText(f);
 		s.Cat(' ');
-		return ScreenInfo().GetTextSize(s, font).cx;
+		return GetTextSize(s, font).cx;
 	}
 	return 0;
 }

@@ -3,7 +3,7 @@
 IdeQuickTabs::IdeQuickTabs()
 {
 	font = Arial(11);
-	fcy = ScreenInfo().GetFontInfo(font).GetHeight();
+	fcy = font.Info().GetHeight();
 	hl = -1;
 	cursor = -1;
 	sc = 0;
@@ -131,7 +131,7 @@ void IdeQuickTabs::Repos()
 		Tab& t = tab[i];
 		String fn = GetFileName(t.file);
 		Image m = IdeFileImage(fn);
-		t.cx = ScreenInfo().GetTextSize(GetFileName(t.file), font).cx + m.GetSize().cx + 26;
+		t.cx = GetTextSize(GetFileName(t.file), font).cx + m.GetSize().cx + 26;
 		t.x = x;
 		x += t.cx;
 	}

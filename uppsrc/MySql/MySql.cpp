@@ -193,6 +193,7 @@ void MySqlConnection::SetParam(int i, const Value& r) {
 				*q = '\"';
 				int n = mysql_real_escape_string(mysql, q + 1, v, v.GetLength());
 				q[1 + n] = '\"';
+				b.SetCount(2 + n); //TODO - check this fix
 				p = b;
 			}
 			break;

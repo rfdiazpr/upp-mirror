@@ -1782,17 +1782,17 @@ void DlgImage::OnImageSize()
 		{
 			Image larger_buffer = CreateImage(new_tail, Color(Null));
 			if(tail.cx > 0 && tail.cy > 0)
-				Copy(larger_buffer, image_tail.GetSize(), image_tail, image_tail.GetSize());
+				Copy(larger_buffer, Point(0, 0), image_tail, image_tail.GetSize());
 			image_tail = larger_buffer;
 		}
-		Copy(image_tail, old_size, image_designer.image, old_size);
+		Copy(image_tail, Point(0, 0), image_designer.image, old_size);
 		One<UndoEntryList> cmd = new UndoEntryList(*this, t_("image size"));
 		AlphaImageInfo data = Get(c);
 		data.size = old_size;
 		cmd -> Remove(c, IMLImageInfo(data, ~image_list.name, AlphaToRLE(image_designer.image)));
 		Image new_image = CreateImage(size, Color(Null));
 		data.size = size;
-		Copy(new_image, size, image_tail, size);
+		Copy(new_image, Point(0, 0), image_tail, size);
 		cmd -> Insert(c, IMLImageInfo(data, ~image_list.name, AlphaToRLE(new_image)));
 		AddUndo(-cmd);
 	}

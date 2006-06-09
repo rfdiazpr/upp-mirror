@@ -1,3 +1,6 @@
+uses
+	Draw;
+
 file
 	gif.h,
 	gifupp.cpp,

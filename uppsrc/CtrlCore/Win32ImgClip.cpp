@@ -2,8 +2,6 @@
 
 #ifdef PLATFORM_WIN32
 
-#ifdef NEWIMAGE
-
 Image ReadClipboardImage()
 {
 	Image m = ReadClipboardFormat<Image>();
@@ -38,12 +36,10 @@ Image ReadClipboardImage()
 	return w;
 }
 
-bool WriteClipboardImage(const Image& img, bool clear)
+void AppendClipboardImage(const Image& img)
 {
 	if(img.IsEmpty() || !OpenClipboard(NULL))
-		return false;
-	if(clear)
-		EmptyClipboard();
+		return;
 	BITMAPINFOHEADER header;
 	Zero(header);
 	header.biSize = sizeof(header);
@@ -55,7 +51,7 @@ bool WriteClipboardImage(const Image& img, bool clear)
 	HGLOBAL hmem = GlobalAlloc(GMEM_MOVEABLE | GMEM_SHARE, sizeof(header) + 4 * img.GetLength());
 	if(!hmem) {
 		CloseClipboard();
-		return false;
+		return;
 	}
 	byte *p = (byte *)GlobalLock(hmem);
 	memcpy(p, &header, sizeof(header));
@@ -63,63 +59,7 @@ bool WriteClipboardImage(const Image& img, bool clear)
 	GlobalUnlock(hmem);
 	SetClipboardData(CF_DIB, hmem);
 	CloseClipboard();
-	WriteClipboardFormat(img, false);
-	return true;
+	AppendClipboardFormat(img);
 }
-
-#else
-
-PixelArray ClipboardToPixelArray()
-{
-	PixelArray out;
-	if(ReadClipboardFormat(out))
-		return out;
-
-	HGLOBAL hmem;
-	if(!OpenClipboard(NULL))
-		return Null;
-	if((hmem = GetClipboardData(CF_DIB)) == NULL)
-	{
-		CloseClipboard();
-		return Null;
-	}
-	const BITMAPINFO *bmi = (const BITMAPINFO *)GlobalLock(hmem);
-	int hdrsize = bmi -> bmiHeader.biSize;
-	if(bmi -> bmiHeader.biCompression != BI_RGB && bmi -> bmiHeader.biCompression != BI_BITFIELDS)
-		return Null;
-	const dword *cmasks = NULL;
-	if(bmi -> bmiHeader.biBitCount <= 8)
-		hdrsize += 4 << bmi -> bmiHeader.biBitCount;
-	else if(bmi -> bmiHeader.biBitCount == 16 || bmi -> bmiHeader.biBitCount == 32)
-	{
-		hdrsize += 12;
-		cmasks = reinterpret_cast<const dword *>(bmi -> bmiColors);
-	}
-	const void *data = (const byte *)bmi + hdrsize;
-	Vector<Color> palette;
-	if(bmi -> bmiHeader.biBitCount <= 8)
-	{
-		palette.SetCount(1 << bmi -> bmiHeader.biBitCount);
-		for(int i = 0; i < palette.GetCount(); i++)
-			palette[i] = Color(bmi -> bmiColors[i].rgbRed, bmi -> bmiColors[i].rgbGreen, bmi -> bmiColors[i].rgbBlue);
-	}
-	out.Create(bmi -> bmiHeader.biWidth, bmi -> bmiHeader.biHeight,
-		bmi -> bmiHeader.biBitCount == 24 ? -3 : bmi -> bmiHeader.biBitCount, 4, cmasks, palette);
-	memcpy(out.Begin(), data, out.GetBytes());
-	GlobalUnlock(hmem);
-	CloseClipboard();
-	return out;
-}
-
-AlphaArray ClipboardToAlphaArray()
-{
-	AlphaArray out;
-	if(ReadClipboardFormat(out))
-		return out;
-	out.pixel = ClipboardToPixelArray();
-	return out;
-}
-
-#endif
 
 #endif

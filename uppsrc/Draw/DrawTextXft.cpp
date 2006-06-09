@@ -9,6 +9,7 @@ struct XFTFontFaceInfo {
 	String      name;
 	bool        fixed:1;
 	bool        scaleable:1;
+	bool        compose:1;
 
 	XFTFontFaceInfo()
 	{
@@ -57,10 +58,6 @@ void FontInfo::Data::GetMetrics(int page, CharMetrics *t)
 	}
 }
 
-const FontInfo::CharMetrics& FontInfo::Get(wchar c){
-	return GetPage(c >> 8)[c & 0xff];
-}
-
 const char *basic_fonts[] = {
 	"sans-serif",
 	"serif",
@@ -71,6 +68,20 @@ const char *basic_fonts[] = {
 	"monospace",
 };
 
+static bool sCheckComposed(const char *face)
+{
+	XftFont *xftfont = XftFontOpen(Xdisplay, Xscreenno,
+	                               XFT_FAMILY, XftTypeString, (char *)face,
+	                               XFT_PIXEL_SIZE, XftTypeInteger, 20,
+	                               (void *)0);
+	int n = 0;
+	for(int c = 0; c < 128; c++)
+		if(!XftCharExists(Xdisplay, xftfont, c + 256))
+			n++;
+	XftFontClose(Xdisplay, xftfont);
+	return n > 10;
+}
+
 void Draw::InitPlatformFonts()
 {
 	for(int i = 0; i < __countof(basic_fonts); i++) {
@@ -78,8 +89,10 @@ void Draw::InitPlatformFonts()
 		f.name = basic_fonts[i];
 		f.scaleable = true;
 		f.fixed = i == 3 || i == 6;
+		f.compose = sCheckComposed(basic_fonts[i]);
 	}
-	FcFontSet *fs = XftListFonts(Xdisplay, Xscreenno, (void *)0, XFT_FAMILY, XFT_SPACING, XFT_SCALABLE, (void *)0);
+	FcFontSet *fs = XftListFonts(Xdisplay, Xscreenno, (void *)0, XFT_FAMILY, XFT_SPACING,
+	                             XFT_SCALABLE, (void *)0);
 	for(int i = 0; i < fs->nfont; i++) {
 		FcChar8 *family = NULL;
 		if(FcPatternGetString(fs->fonts[i], FC_FAMILY, 0, &family) == 0 && family) {
@@ -90,6 +103,7 @@ void Draw::InitPlatformFonts()
 			FcBool scaleable;
 			if(FcPatternGetBool(fs->fonts[i], FC_SCALABLE, 0, &scaleable) == 0 && scaleable)
 				f.scaleable = true;
+			f.compose = sCheckComposed((char *)family);
 		}
    	}
 	FcFontSetDestroy(fs);
@@ -117,6 +131,8 @@ dword Font::GetFaceInfo(int index) {
 			w |= FIXEDPITCH;
 		if(fi.scaleable)
 			w |= SCALEABLE;
+		if(fi.compose)
+			w |= COMPOSED;
 	}
 	return w;
 }
@@ -197,6 +213,7 @@ FontInfo Draw::Acquire(Font font, int angle, int device)
 	int hg = abs(font.GetHeight());
 	if(hg == 0) hg = 10;
 	f->xftfont = CreateXftFont(font, angle);
+	f->filename = NULL;
 	f->ascent = (int16)f->xftfont->ascent;
 	f->descent = (int16)f->xftfont->descent;
 	f->height = f->ascent + f->descent;
@@ -217,29 +234,41 @@ FontInfo Draw::Acquire(Font font, int angle, int device)
 		f->offset.cy = fround(f->ascent * f->cosa);
 	}
 	FontInfo fi = FontInfo(f);
-	fi.Get('x');
+	fi.GetPage(0);
 	return fi;
+}
+
+String FontInfo::GetFileName() const
+{
+	if(IsNull(ptr->filename)) {
+		char *fn = NULL;
+		XftPatternGetString(ptr->xftfont->pattern, XFT_FILE, 0, &fn);
+		if(fn)
+			ptr->filename = fn;
+	}
+	return ptr->filename;
 }
 
 void Draw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font,
                       Color ink, int n, const int *dx) {
 	LTIMING("DrawText");
 	LLOG("DrawText " << ToUtf8(text) << " color:" << ink << " font:" << font);
+	//TODO - X11 seems to crash when displaying too long strings (?)
 	int ox = x + actual_offset.x;
 	int oy = y + actual_offset.y;
 	SetForeground(ink);
 	SetFont(font, angle);
 	const FontInfo::Data *fd = lastFont.ptr;
+	XftColor c;
+	c.color.red = ink.GetR() << 8;
+	c.color.green = ink.GetG() << 8;
+	c.color.blue = ink.GetB() << 8;
+	c.color.alpha = 0xffff;
+	c.pixel = GetXPixel(ink.GetR(), ink.GetG(), ink.GetB());
 	if(angle) {
 		int xpos = 0;
 		int xpp = 0;
 		int pfi = -1;
-		XftColor c;
-		c.color.red = ink.GetR() << 8;
-		c.color.green = ink.GetG() << 8;
-		c.color.blue = ink.GetB() << 8;
-		c.color.alpha = 0xffff;
-		c.pixel = GetXPixel(ink.GetR(), ink.GetG(), ink.GetB());
 		for(int i = 0; i < n; i++) {
 			wchar h = text[i];
 			XftDrawString16(xftdraw, &c, fd->xftfont,
@@ -273,12 +302,6 @@ void Draw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font,
 		}
 	}
 	else {
-		XftColor c;
-		c.color.red = ink.GetR() << 8;
-		c.color.green = ink.GetG() << 8;
-		c.color.blue = ink.GetB() << 8;
-		c.color.alpha = 0xffff;
-		c.pixel = GetXPixel(ink.GetR(), ink.GetG(), ink.GetB());
 		if(dx) {
 			int xpos = ox;
 			Buffer<XftCharSpec> ch(n);

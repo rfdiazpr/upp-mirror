@@ -462,7 +462,7 @@ static void wsDrawText(Draw& w, Stream& s, const DrawingPos& ps) {
 	byte cs;
 	s % x % y % angle % font % ink / n % cs;
 	if(font.GetHeight() == 0) {
-		FontInfo fi = w.GetFontInfo(font);
+		FontInfo fi = font.Info();
 		font.Height(fi.GetHeight() - fi.GetInternal());
 	}
 	bool unicode = cs == CHARSET_UNICODE;
@@ -495,7 +495,7 @@ static void wsDrawText(Draw& w, Stream& s, const DrawingPos& ps) {
 			w.DrawText(x, y, angle, text, font, ink);
 	}
 	else {
-		FontInfo fi = w.GetFontInfoW(font);
+		FontInfo fi = font.Info();
 		const wchar *wp = ~text;
 		int odd = (angle / 900) & 1;
 		if(angle % 900 == 0) {
@@ -506,7 +506,7 @@ static void wsDrawText(Draw& w, Stream& s, const DrawingPos& ps) {
 				b = ps.source.cy;
 				int ht = ps.GetX(fi.GetFontHeight());
 				font.Width(ps.GetY(fi.GetAveWidth())).Height(ht ? ht : 1);
-				FontInfo nf = w.GetFontInfo(font);
+				FontInfo nf = font.Info();
 				x = angle == 2700 ? ps.GetX(x - fi.GetAscent()) + nf.GetAscent()
 				                  : ps.GetX(x + fi.GetAscent()) - nf.GetAscent();
 				y = ps.GetY(y);
@@ -516,7 +516,7 @@ static void wsDrawText(Draw& w, Stream& s, const DrawingPos& ps) {
 				b = ps.source.cx;
 				int ht = ps.GetY(fi.GetFontHeight());
 				font.Width(ps.GetX(fi.GetAveWidth())).Height(ht ? ht : 1);
-				FontInfo nf = w.GetFontInfo(font);
+				FontInfo nf = font.Info();
 				x = ps.GetX(x);
 				y = angle == 1800 ? ps.GetY(y - fi.GetAscent()) + nf.GetAscent()
 				                  : ps.GetY(y + fi.GetAscent()) - nf.GetAscent();

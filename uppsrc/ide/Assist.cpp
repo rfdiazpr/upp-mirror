@@ -486,14 +486,14 @@ void AssistEditor::Assist()
 
 void AssistEditor::PopUpAssist(const String& header, bool auto_insert)
 {
-	int lcy = ScreenInfo().GetFontInfo(Arial(11)).GetHeight() + 3;
+	int lcy = Arial(11).Info().GetHeight() + 3;
 	Size sz;
 	sz.cx = 0;
 	for(int i = 0; i < assist_item.GetCount() && sz.cx < 600; i++)
 		sz.cx = max(sz.cx,
 		            Single<CppItemInfoDisplay>().GetStdSize(RawToValue(assist_item[i])).cx);
 	sz.cx = min(600, max(sz.cx,
-	                     ScreenInfo().GetTextSize(header).cx + 2 * HeaderCtrl::GetStdHeight()));
+	                     GetTextSize(header, StdFont()).cx + 2 * HeaderCtrl::GetStdHeight()));
 	SyncAssist();
 	if(!assist.GetCount())
 		return;

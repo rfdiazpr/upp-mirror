@@ -6,7 +6,7 @@ void ItemProperty::Paint(Draw& w)
 	w.DrawRect(sz, SWhiteGray);
 	w.DrawRect(0, GetHeight() - 1, sz.cx, 1, SBlack);
 	w.DrawText(2,
-	           (EditField::GetStdHeight() + 6 - w.GetTextSize(name, Arial(11)).cy) / 2, name,
+	           (EditField::GetStdHeight() + 6 - GetTextSize(name, Arial(11)).cy) / 2, name,
 	           GetData() == defval ? Arial(11) : Arial(11).Bold());
 }
 

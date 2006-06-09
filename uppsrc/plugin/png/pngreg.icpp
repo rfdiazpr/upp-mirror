@@ -1,0 +1,5 @@
+#include "png.h"
+
+INITBLOCK {
+	StreamRaster::Register<PNGRaster>();
+}

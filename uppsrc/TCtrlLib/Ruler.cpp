@@ -174,7 +174,7 @@ void RulerCtrl::Paint(Draw& draw)
 	int csize = is_vert ? client.cy : client.cx;
 	int cheight = is_vert ? client.cx : client.cy;
 	Rect clip = draw.GetClip();
-	int cy = draw.GetFontInfo(font).GetHeight();
+	int cy = font.Info().GetHeight();
 	double pos1 = FromClient(0);
 	double pos2 = FromClient(csize);
 	if(pos1 > pos2)
@@ -228,7 +228,7 @@ void RulerCtrl::Paint(Draw& draw)
 	};
 
 	double cl = IsNull(cursor) ? double(Null) : ToClientf(cursor);
-	Size lsize = draw.GetTextSize(label_text, font);
+	Size lsize = GetTextSize(label_text, font);
 	if(is_vert) {
 		int tx = (client.cx - cy) >> 1;
 //		draw.DrawRect(tx - VXGAP, cli2 - lsize.cx - TGAP - HXGAP, lsize.cy + 2 * VXGAP, lsize.cx + 2 * HXGAP, background);
@@ -301,7 +301,7 @@ void RulerCtrl::Paint(Draw& draw)
 					text = StdFormat(text_convert -> Format(value));
 				else
 					text = StdFormat(value);
-				Size tsize = draw.GetTextSize(text, font);
+				Size tsize = GetTextSize(text, font);
 				int half = tsize.cx >> 1;
 				if(is_vert) {
 					draw.DrawRect(0, cli, ppos, 1, SBlack);

@@ -174,6 +174,8 @@ void BlockStream::_Put(const void *data, dword size) {
 dword BlockStream::_Get(void *data, dword size) {
 	if(IsError() || !IsOpen()) return 0;
 	LLOG("Get " << size);
+	if(size == 0) return 0;
+	_Term();
 	byte *t = (byte *)data;
 	int64 pos0 = GetPos();
 	int64 pg0 = pos0 & pagemask;

@@ -314,7 +314,7 @@ struct FontAndColorDisplay : Display {
 		if(txt != ~vt) {
 			String id(~vt, txt - 1);
 			w.DrawText(x, r.top, id, font, txt[-1] == '\a' ? SLtRed : SMagenta);
-			x += w.GetTextSize(id, font).cx + 6;
+			x += GetTextSize(id, font).cx + 6;
 		}
 		w.DrawText(x, r.top, AsCString(txt), font, ink);
 	}

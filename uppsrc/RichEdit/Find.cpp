@@ -101,8 +101,10 @@ void RichEdit::Find()
 			r.bottom = r.top + sz.cy;
 		}
 		findreplace.SetRect(r);
-		if(!findreplace.IsOpen())
+		if(!findreplace.IsOpen()) {
+			LOG("FIND OPEN");
 			findreplace.Open();
+		}
 		SetFocus();
 	}
 	else {

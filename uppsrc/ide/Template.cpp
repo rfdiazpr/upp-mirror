@@ -94,13 +94,13 @@ void AppPreview::MouseWheel(Point p, int zdelta, dword keyflags) {
 void AppPreview::Layout()
 {
 	sb.SetTotal(line.GetCount());
-	sb.SetPage(GetSize().cy / ScreenInfo().GetFontInfo(Courier(12)).GetHeight());
+	sb.SetPage(GetSize().cy / Courier(12).Info().GetHeight());
 }
 
 void AppPreview::Paint(Draw& w)
 {
 	Size sz = GetSize();
-	FontInfo fi = w.GetFontInfo(Courier(12));
+	FontInfo fi = Courier(12).Info();
 	int y = 0;
 	int i = sb;
 	while(y < sz.cy) {

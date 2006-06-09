@@ -95,9 +95,9 @@ Color ColorPopUp::GetColor(int i) const
 
 int ColorPopUp::GetCy()
 {
-	return ((GetColorCount() + 17) / 18) * 16 + 
+	return ((GetColorCount() + 17) / 18) * 16 +
 			(norampwheel ? 0 : 2) +
-	        (notnull ? 0 : ScreenInfo().GetFontInfo(StdFont()).GetHeight() + 3 + 2);
+	        (notnull ? 0 : StdFont().Info().GetHeight() + 3 + 2);
 }
 
 void ColorPopUp::DrawFilledFrame(Draw &w, int x, int y, int cx, int cy, Color fcol, Color bcol)
@@ -122,10 +122,10 @@ void ColorPopUp::Paint(Draw& w)
 	int y = 1;
 
 	if(!notnull) {
-		Size fsz = w.GetTextSize(nulltext);
+		Size fsz = GetTextSize(nulltext, StdFont());
 		Rect r(1, y, sz.cx - 1, fsz.cy + y + 2);
 		DrawFrame(w, r, SBlack);
-		w.DrawText((sz.cx - fsz.cx) / 2, y, nulltext);	
+		w.DrawText((sz.cx - fsz.cx) / 2, y, nulltext);
 		y = r.bottom + 3;
 		if(colori == 998)
 		{
@@ -144,7 +144,7 @@ void ColorPopUp::Paint(Draw& w)
 				if(!norampwheel) {
 					Rect r(8 * 16 + 1, cy + 4, 10 * 16 - 1, sz.cy - 4);
 					DrawFilledFrame(w, r, SColorText, color);
-					
+
 					r.Inflate(1);
 					if(colori == 999)
 						if(GetMouseLeft())
@@ -175,7 +175,7 @@ int ColorPopUp::Get(Point p)
 	if(p.y >= GetCy())
 		return 999;
 	if(!notnull) {
-		int y0 = ScreenInfo().GetFontInfo(StdFont()).GetHeight() + 4;
+		int y0 = StdFont().Info().GetHeight() + 4;
 		if(p.y < y0)
 			return 998;
 		p.y -= y0;

@@ -122,9 +122,6 @@ public:
 
 	static void           Register(ClipboardType& type);
 
-	void                  WriteClipboard();
-	static RichText       ReadClipboard(const RichPara::Format& f);
-
 	//Ugly hacks
 	void                  SetFooter(const String& s)                          { footer = s; }
 	String                GetFooter() const                                   { return footer; }

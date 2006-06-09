@@ -792,13 +792,13 @@ public:
 		                     bool use_target = false);
 		One<Builder>  CreateBuilder(Host *host);
 		bool  BuildPackage(const ::Workspace& wspc, int pkindex, int pknumber, int pktotal,
-		                   String mainparam, Vector<String>& linkfile, String& linkopt,
+		                   String mainparam, String outfile, Vector<String>& linkfile, String& linkopt,
 		                   bool link = false);
 		static Vector<String> GetAllUses(const ::Workspace& wspc, int index);
 		Vector<String> GetAllLibraries(const ::Workspace& wspc, int index,
 			                           const VectorMap<String, String>& bm, String mainparam,
 			                           Host& host, Builder& builder);
-		bool  Build(const Workspace& workspace, String mainparam, bool clear_console = true);
+		bool  Build(const Workspace& workspace, String mainparam, String outfile = Null, bool clear_console = true);
 		bool  Build();
 		void  DoBuild();
 		void  PackageBuild();
@@ -980,6 +980,7 @@ public:
 		void  MacroExecute(EscEscape& e);
 		void  MacroLaunch(EscEscape& e);
 		void  MacroClearConsole(EscEscape& e);
+		void  MacroEditFile(EscEscape& e);
 
 	typedef   Ide CLASSNAME;
 

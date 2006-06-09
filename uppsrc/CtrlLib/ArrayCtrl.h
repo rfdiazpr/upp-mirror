@@ -243,6 +243,8 @@ private:
 
 	void   HeaderScrollVisibility();
 
+	Ctrl&      SetCtrl(int i, int j, Ctrl *newctrl);
+
 protected:
 	virtual bool UpdateRow();
 	virtual void RejectRow();
@@ -391,8 +393,6 @@ public:
 	void            SetDisplay(int i, int j, const Display& d);
 	const Display&  GetDisplay(int row, int col);
 	const Display&  GetDisplay(int col);
-
-	Ctrl&      SetCtrl(int i, int j, Ctrl *newctrl);
 
 	ArrayCtrl& SetLineCy(int cy);
 	void       SetLineCy(int i, int cy);

@@ -152,7 +152,7 @@ void Switch::Paint(Draw& w) {
 	Size sz = GetSize();
 	if(!IsTransparent())
 		w.DrawRect(0, 0, sz.cx, sz.cy, SLtGray);
-	int tcy = w.GetTextSize("W", font).cy;
+	int tcy = GetTextSize("W", font).cy;
 	linecy = max(16, tcy + 2);
 	int y = 0;
 	int x = 0;
@@ -172,7 +172,7 @@ void Switch::Paint(Draw& w) {
 
 		Size isz = (IsXPStyle() ? GetPushImage(I_RADIO0, I_NORMAL) : CtrlImg::option0()).GetSize();
 		Size tsz = GetSmartTextSize(w, v.label, font);
-		int iy = (tsz.cy - isz.cy) / 2;
+		int iy = (linecy - isz.cy) / 2;
 
 		Rect hr = RectC(x, y, horz ? tsz.cx + isz.cx + 4 : sz.cx, linecy);
 		bool mousein = HasMouseIn(hr);
@@ -196,7 +196,7 @@ void Switch::Paint(Draw& w) {
 														 : CtrlImg::switch0();
 		}
 		w.DrawImage(x, y + iy, img);
-		DrawSmartText(w, x + isz.cx + 4, y, sz.cx, v.label, font,
+		DrawSmartText(w, x + isz.cx + 4, y + ty, sz.cx, v.label, font,
 		              dv ? SColorDisabled : IsReadOnly() ? SLtBlue : SColorText,
 		              VisibleAccessKeys() ? v.accesskey : 0);
 		if(horz) {

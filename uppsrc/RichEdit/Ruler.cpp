@@ -15,12 +15,12 @@ RichRuler::~RichRuler()  {}
 
 void RichRuler::FrameLayout(Rect& r)
 {
-	LayoutFrameTop(r, this, ScreenInfo().GetFontInfo(Arial(10)).GetHeight() + 8);
+	LayoutFrameTop(r, this, Arial(10).Info().GetHeight() + 8);
 }
 
 void RichRuler::FrameAddSize(Size& sz)
 {
-	sz.cy += ScreenInfo().GetFontInfo(Arial(10)).GetHeight() + 8;
+	sz.cy += Arial(10).Info().GetHeight() + 8;
 }
 
 void RichRuler::Paint(Draw& w)
@@ -45,7 +45,7 @@ void RichRuler::Paint(Draw& w)
 			int x = fround(i * grid) * zoom;
 			if(x >= cx) break;
 			String n = Format("%d", (int)(i * numbermul + 0.5));
-			Size tsz = w.GetTextSize(n, Arial(10));
+			Size tsz = GetTextSize(n, Arial(10));
 			if(x + tsz.cx - tsz.cx / 2 < cx) {
 				int px = x0 + x - tsz.cx / 2;
 				w.DrawRect(px, 4, tsz.cx, sz.cy - 8, SWhite);

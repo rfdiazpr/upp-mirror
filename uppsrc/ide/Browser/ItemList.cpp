@@ -172,7 +172,7 @@ int CppItemInfoDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 		}
 		if(m.overed)
 			f.Italic();
-		Size fsz = w.GetTextSize(~m.natural + p.pos, f, p.len);
+		Size fsz = GetTextSize(~m.natural + p.pos, f, p.len);
 		w.DrawText(x, y, ~m.natural + p.pos, f, focuscursor ? _ink : ink, p.len);
 		x += fsz.cx;
 	}
@@ -180,7 +180,7 @@ int CppItemInfoDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 		w.DrawRect(x0, r.bottom - 2, x - x0, 1, m.over ? m.virt ? SLtRed : SLtBlue : SBlack);
 	if(m.inherited && m.IsType())
 		w.DrawRect(r.left, r.top, r.Width(), 1, SGray);
-	
+
 	String k = m.nesting;
 	if(k != "::")
 		k << "::";
@@ -193,7 +193,7 @@ int CppItemInfoDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 		DrawHighlightImage(w, xx, yy, BrowserImg::Ref());
 		if(cnt > 1) {
 			String txt = AsString(cnt);
-			Size tsz = w.GetTextSize(txt, StdFont().Bold());
+			Size tsz = GetTextSize(txt, StdFont().Bold());
 			w.DrawText(xx + (sz.cx - tsz.cx) / 2, yy + (sz.cy - tsz.cy) / 2, txt, StdFont().Bold(), SRed);
 		}
 		x += sz.cx + 3;
@@ -255,7 +255,7 @@ ItemList::ItemList()
 {
 	display.htopic = -1;
 	SetDisplay(display);
-	ItemHeight(ScreenInfo().GetFontInfo(Arial(11)).GetHeight() + 3);
+	ItemHeight(Arial(11).Info().GetHeight() + 3);
 	NoRoundSize();
 	NoWantFocus();
 	active_topics = false;

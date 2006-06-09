@@ -1,5 +1,6 @@
 #include "CtrlLib.h"
 
+/*
 struct sQtfCt_ : public RichText::ClipboardType {
 	virtual int      Level() { return 0; }
 	virtual RichText ReadClipboard(const RichPara::Format&)
@@ -54,3 +55,4 @@ void StdRichClipboardFormats()
 		RichText::Register(Single<sRTFCt_>());
 	}
 }
+*/

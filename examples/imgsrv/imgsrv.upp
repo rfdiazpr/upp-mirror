@@ -1,7 +1,8 @@
 uses
 	Web,
 	Draw,
-	plugin\png;
+	plugin\png,
+	plugin\gif;
 
 file
 	imgsrv.cpp;

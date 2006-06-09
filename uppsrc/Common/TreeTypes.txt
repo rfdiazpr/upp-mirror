@@ -48,3 +48,17 @@ StreamRaster
 0 0 -1
 Stream
 0 0 -1
+PrinterJob
+0 0 -1
+FindOsobaDlg
+0 0 -1
+UserRights
+0 0 -1
+S_OI_ROLE
+0 0 -1
+Index<String,StdHash<String> >
+0 0 -1
+LRUCache<String>
+0 0 -1
+Vector<LRUCache<String>::Item>
+0 0 -1

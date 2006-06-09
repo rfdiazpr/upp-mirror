@@ -2,6 +2,8 @@ uses
 	CtrlCore,
 	RichText;
 
+uses(LINUX) PdfDraw;
+
 file
 	CtrlLib.h,
 	CtrlLib readonly separator,
@@ -70,6 +72,7 @@ file
 	FileSel.cpp,
 	Utilities readonly separator,
 	CtrlUtil.h,
+	PrinterJob.cpp,
 	Windows.cpp,
 	Win32.cpp,
 	CtrlUtil.cpp,

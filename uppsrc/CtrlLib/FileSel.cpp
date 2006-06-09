@@ -616,7 +616,6 @@ void FolderDisplay::Paint(Draw& w, const Rect& r, const Value& q,
 	w.DrawRect(r, paper);
 #ifdef PLATFORM_POSIX
 	Image img;
-	DUMP(s);
 	if(s.Find("/media") == 0) {
 		if(s.Find("cdrom") > 0 || s.Find("cdrecorder") > 0)
 			img = CtrlImg::CdRom();
@@ -633,7 +632,7 @@ void FolderDisplay::Paint(Draw& w, const Rect& r, const Value& q,
 		img = CtrlImg::Dir();
 	w.DrawImage(r.left, r.top + (r.Height() - img.GetSize().cx) / 2, img);
 	w.DrawText(r.left + 20,
-	           r.top + (r.Height() - w.GetFontInfo(Arial(FNTSIZE).Bold()).GetHeight()) / 2,
+	           r.top + (r.Height() - Arial(FNTSIZE).Bold().Info().GetHeight()) / 2,
 			   ~s, Arial(FNTSIZE).Bold(), ink);
 }
 
@@ -644,7 +643,7 @@ struct HomeDisplay : public Display {
 		w.DrawImage(r.left, r.top + (r.Height() - CtrlImg::Home().GetSize().cx) / 2,
 			        CtrlImg::Home());
 		w.DrawText(r.left + 20,
-		           r.top + (r.Height() - w.GetFontInfo(Arial(FNTSIZE).Bold()).GetHeight()) / 2,
+		           r.top + (r.Height() - Arial(FNTSIZE).Bold().Info().GetHeight()) / 2,
 				   String(q), Arial(FNTSIZE).Bold(), ink);
 	}
 };

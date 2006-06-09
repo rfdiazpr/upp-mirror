@@ -520,6 +520,7 @@ private:
 	       void     DoPaint(const Vector<Rect>& invalid);
 	       void     SetLastActive(XWindow *w, Ctrl *la);
 	       XWindow *GetXWindow();
+	static void     SyncMousePos();
 
 	friend bool  GetMouseRight();
 	friend bool  GetMouseLeft();
@@ -1067,7 +1068,7 @@ template <class T>
 class FrameCtrl : public T, public CtrlFrame {
 public:
 	virtual void FrameAdd(Ctrl& parent) { parent.Add(*this); }
-	virtual void FrameRemove()          { this->Remove(); }
+	virtual void FrameRemove()          { this->Ctrl::Remove(); }
 
 	FrameCtrl()                         { this->NoWantFocus(); }
 };
@@ -1267,66 +1268,62 @@ public:
 	~AutoWaitCursor();
 };
 
-int     GetClipboardFormatCode(const String& format);
 void    ClearClipboard();
-bool    WriteClipboard(int format, const String& data, bool clear = true);
-String  ReadClipboard(int format);
-bool    WriteClipboardText(const String& s, bool clear = true);
+void    AppendClipboard(const char *format, const String& data);
+String  ReadClipboard(const char *format);
+bool    IsClipboardAvailable(const char *format);
+
+inline  void WriteClipboard(const char *format, const String& data)
+	{ ClearClipboard(); AppendClipboard(format, data); }
+
+void    AppendClipboardText(const String& s);
 String  ReadClipboardText();
-bool    WriteClipboardUnicodeText(const WString& s, bool clear = true);
+void    AppendClipboardUnicodeText(const WString& s);
 WString ReadClipboardUnicodeText();
-bool    IsClipboardAvailable(int format);
 bool    IsClipboardAvailableText();
 
-template <class T>
-class ClipboardFormat {
-public:
-	static bool   Write(const T& object, bool clear = true);
-	static bool   Read(T& object);
-	static bool   IsAvailable();
-	static int    GetFormat()         { return GetClipboardFormatCode(typeid(T).name()); }
-};
+inline  void WriteClipboardText(const String& s)
+	{ ClearClipboard(); AppendClipboardText(s); }
+inline  void WriteClipboardUnicodeText(const WString& s)
+	{ ClearClipboard(); AppendClipboardUnicodeText(s); }
 
 template <class T>
-bool ClipboardFormat<T>::Write(const T& object, bool clear) {
-	return WriteClipboard(GetFormat(), StoreAsString(const_cast<T&>(object)), clear);
+inline void AppendClipboardFormat(const T& object) {
+	AppendClipboard(typeid(T).name(), StoreAsString(const_cast<T&>(object)));
 }
 
 template <class T>
-bool ClipboardFormat<T>::Read(T& object) {
-	String s = ReadClipboard(GetFormat());
+inline void WriteClipboardFormat(const T& object) {
+	ClearClipboard();
+	AppendClipboardFormat(object);
+}
+
+template <class T>
+inline bool ReadClipboardFormat(T& object)
+{
+	String s = ReadClipboard(typeid(T).name());
 	return !IsNull(s) && LoadFromString(object, s);
 }
 
 template <class T>
-bool ClipboardFormat<T>::IsAvailable() {
-	return IsClipboardAvailable(GetFormat());
-}
-
-template <class T>
-inline bool WriteClipboardFormat(const T& object, bool clear = true) {
-	return ClipboardFormat<T>::Write(object, clear);
-}
-
-template <class T>
-inline bool ReadClipboardFormat(T& object) {
-	return ClipboardFormat<T>::Read(object);
+bool IsClipboardFormatAvailable()
+{
+	return IsClipboardAvailable(typeid(T).name());
 }
 
 template <class T>
 inline T ReadClipboardFormat() {
 	T object;
-	ClipboardFormat<T>::Read(object);
+	ReadClipboardFormat(object);
 	return object;
 }
 
-#ifdef NEWIMAGE
-Image      ReadClipboardImage();
-bool       WriteClipboardImage(const Image& img, bool clear = true);
-#else
-PixelArray ClipboardToPixelArray();
-AlphaArray ClipboardToAlphaArray();
-#endif
+Image  ReadClipboardImage();
+void   AppendClipboardImage(const Image& img);
+
+inline void WriteClipboardImage(const Image& img)
+	{ ClearClipboard(); AppendClipboardImage(img); }
+
 
 #include <CtrlCore/TopWindow.h>
 

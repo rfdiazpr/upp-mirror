@@ -4,7 +4,7 @@
 
 #define LLOG(x)        //LOG(x)
 
-#define XTIMING(x)     //TIMING(x)
+#define LTIMING(x)     //TIMING(x)
 
 #define LOGEVENTPROC
 
@@ -14,6 +14,25 @@ static dword sModState;
 void ClearKbdState_()
 {
 	sKbdState = 0;
+}
+
+Point GetMousePos()
+{
+	LTIMING("GetMousePos");
+	if(IsNull(Ctrl::mousePos)) {
+	}
+	return Ctrl::mousePos;
+}
+
+void Ctrl::SyncMousePos()
+{
+	TIMING("XQueryPointer");
+	int x, y, xx, yy;
+	unsigned int mask;
+	Window dm1, dm2;
+	Ctrl::mousePos = Null;
+	if(XQueryPointer(Xdisplay, Xroot, &dm1, &dm2, &x, &y, &xx, &yy, &sKbdState))
+		Ctrl::mousePos = Point(x, y);
 }
 
 bool GetShift() { return sKbdState & ShiftMask; }
@@ -78,7 +97,7 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 	default:
 		if(!IsEnabled()) return;
 	}
-	XTIMING("XUserInput");
+	LTIMING("XUserInput");
 	switch(event->type) {
 	case FocusIn:
 		if(w.xic)
@@ -178,9 +197,9 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 				{ XK_Return, K_ENTER },
 				{ XK_KP_Enter, K_ENTER },
 				{ XK_Escape, K_ESCAPE },
-				{ 0, 0 }
+				{ XK_space, K_SPACE },
 			};
-			for(int i = 0; tab[i].keysym; i++)
+			for(int i = 0; i < __countof(tab); i++)
 				if(tab[i].keysym == keysym) {
 					DispatchKey(KEYtoK(tab[i].key)|up, count);
 					return;

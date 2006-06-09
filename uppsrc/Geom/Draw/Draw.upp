@@ -1,17 +1,18 @@
+acceptflags
+	NOHRRPNG;
+
 uses
 	Image,
 	TDraw,
 	plugin\png,
 	plugin\gif,
 	plugin\jpg,
-	plugin\zim,
 	Geom\Coords;
-
-acceptflags
-	NOHRRPNG;
 
 file
 	GeomDraw.h,
+	imgtran.h,
+	imgtran.cpp,
 	plotter.h,
 	plotter.cpp,
 	pathDraw.h,

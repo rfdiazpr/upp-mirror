@@ -54,12 +54,7 @@ private:
 	{
 		int arg;
 		int l;
-	}
-#ifndef NEWIMAGE
-	 *wb;
-	Size owsize
-#endif
-	;
+	};
 };
 
 struct ColorWheelCtrl : public WheelRampCtrl {

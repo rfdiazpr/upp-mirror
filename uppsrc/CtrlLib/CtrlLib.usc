@@ -328,7 +328,7 @@ ctrl Button {
 ctrl Option {
 	group "Push";
 
-	Text   SetLabel ? "Option text";
+	Text   SetLabel @1 ? "Option text";
 	>Base;
 	bool   BlackEdge;
 	bool   SwitchImage;

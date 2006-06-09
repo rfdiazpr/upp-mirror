@@ -76,24 +76,24 @@ void Draw::DrawImage(int x, int y, int cx, int cy, const Image& img, Color color
 
 void Draw::DrawImage(const Rect& r, const Image& img, const Rect& src)
 {
-	DrawImage(r.left, r.right, r.Width(), r.Height(), img, src);
+	DrawImage(r.left, r.top, r.Width(), r.Height(), img, src);
 }
 
 void Draw::DrawImage(const Rect& r, const Image& img)
 {
-	DrawImage(r.left, r.right, r.Width(), r.Height(), img);
+	DrawImage(r.left, r.top, r.Width(), r.Height(), img);
 }
 
 void Draw::DrawImage(const Rect& r, const Image& img, const Rect& src, Color color)
 {
 	if(IsNull(color)) return;
-	DrawImage(r.left, r.right, r.Width(), r.Height(), img, src, color);
+	DrawImage(r.left, r.top, r.Width(), r.Height(), img, src, color);
 }
 
 void Draw::DrawImage(const Rect& r, const Image& img, Color color)
 {
 	if(IsNull(color)) return;
-	DrawImage(r.left, r.right, r.Width(), r.Height(), img, color);
+	DrawImage(r.left, r.top, r.Width(), r.Height(), img, color);
 }
 
 void Draw::DrawImage(int x, int y, const Image& img, const Rect& src)
@@ -265,7 +265,8 @@ Rect NilDraw::GetClipOp() const { return Rect(0, 0, 0, 0); }
 bool NilDraw::IsPaintingOp(const Rect& r) const { return false; }
 
 void NilDraw::DrawRectOp(int x, int y, int cx, int cy, Color color) {}
-void NilDraw::DrawImageOp(int x, int y, const Image& img, const Rect& src, Color color) {}
+void NilDraw::DrawImageOp(int x, int y, int cx, int cy, const Image& img,
+                          const Rect& src, Color color) {}
 void NilDraw::DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color) {}
 void NilDraw::DrawEllipseOp(const Rect& r, Color color, int pen, Color pencolor) {}
 void NilDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font,

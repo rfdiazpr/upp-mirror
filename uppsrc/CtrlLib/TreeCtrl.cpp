@@ -1031,6 +1031,7 @@ void OptionTree::SetOption(int id)
 				opt->Set(t);
 		}
 	}
+	WhenOption();
 }
 
 OptionTree::OptionTree() { aux.Add(); }

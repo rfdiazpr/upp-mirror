@@ -116,11 +116,7 @@ void  ToolButton::Paint(Draw& w)
 		}
 	}
 	else
-	#ifdef NEWIMAGE
 		w.DrawImage(center.x, center.y, MakeImage(image, "etched"));
-	#else
-		w.DrawImage(center.x, center.y, image, Image::ETCHED);
-	#endif
 }
 
 void  ToolButton::MouseEnter(Point, dword)

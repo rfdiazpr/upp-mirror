@@ -36,11 +36,6 @@ inline void operator*=(int& i, Zoom m)
 	i = m * i;
 }
 
-inline void operator*=(Font& f, Zoom m)
-{
-	f.Height(m * f.GetHeight());
-}
-
 inline void operator*=(Rect& r, Zoom m)
 {
 	r.left *= m;
@@ -342,18 +337,6 @@ struct RichCellPos {
 	String ToString() const;
 #endif
 };
-
-void Print(Draw& w, const RichText& text, const Rect& page,
-           int firstpage = 0, int lastpage = INT_MAX, int copies = 1,
-           bool collate = false);
-
-#ifdef PLATFORM_WIN32
-void Print(HDC hdc, const RichText& text, const Rect& page,
-           int firstpage = 0, int lastpage = INT_MAX, int copies = 1, bool collate = false,
-           const char *name = NULL);
-bool Print(const RichText& text, const Rect& page, int currentpage,
-           const char *name = NULL, HWND hwndOwner = NULL);
-#endif
 
 String DeQtf(const char *s);
 String DeQtfLf(const char *s);

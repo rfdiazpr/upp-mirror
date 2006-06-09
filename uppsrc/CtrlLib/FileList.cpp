@@ -34,7 +34,7 @@ const wchar *strdirsep(const wchar *s) {
 void DrawFileName(Draw& w, int x, int y, int wcx, int cy, const WString& mname, bool isdir, Font font,
                   Color ink, Color extink, const WString& desc, Font descfont, bool justname)
 {
-	FontInfo fi = w.GetFontInfoW(font);
+	FontInfo fi = font.Info();
 	int extpos = (isdir ? -1 : mname.ReverseFind('.'));
 	int slash = isdir ? -1 : max(mname.ReverseFind('\\'), mname.ReverseFind('/'));
 	if(extpos < slash)
@@ -116,7 +116,7 @@ void FileList::Paint(Draw& w, const Rect& r, const Value& q,
 	                   IsSelection() && sel && HasFocus() || atcursor && !IsEdit() && HasFocus());
 	x += iconwidth;
 	x += 2;
-	FontInfo fi = w.GetFontInfo(m.font);
+	FontInfo fi = m.font.Info();
 	bool mi = HasFocus() && (sel || atcursor && !IsSelection());
 	DrawFileName(w, x, r.top + (r.Height() - fi.GetHeight()) / 2,
 	             r.right - x - 2, r.Height(), WString(m.name), m.isdir, m.font,
@@ -128,10 +128,10 @@ void FileList::Paint(Draw& w, const Rect& r, const Value& q,
 Size FileList::GetStdSize(const Value& q) const
 {
 	const File& m = ValueTo<File>(q);
-	FontInfo fi = ScreenInfo().GetFontInfo(m.font);
+	FontInfo fi = m.font.Info();
 	int cx = GetTextSize(fi, WString(m.name)) + 2 + iconwidth + 2 + 3;
 	if(!IsNull(m.desc))
-		cx += GetTextSize(ScreenInfo().GetFontInfo(m.descfont), WString(m.desc)) + fi.GetHeight();
+		cx += GetTextSize(m.descfont.Info(), WString(m.desc)) + fi.GetHeight();
 	return Size(cx, GetItemHeight());
 }
 
@@ -139,7 +139,7 @@ void FileList::StartEdit() {
 	Rect r = GetItemRect(GetCursor());
 	const File& cf = Get(GetCursor());
 	Font f = cf.font;
-	int fcy = ScreenInfo().GetFontInfo(f).GetHeight();
+	int fcy = f.Info().GetHeight();
 	r.left += iconwidth + 2;
 	r.top += (r.Height() - fcy - 4) / 2;
 	r.bottom = r.top + fcy + 2;

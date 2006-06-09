@@ -137,7 +137,7 @@ void CodeEditor::CopyWord() {
 		while(++f < e && iscid(GetChar(f)));
 		WString txt = GetW(p, f - p);
 		WriteClipboardUnicodeText(txt);
-		WriteClipboardText(txt.ToString(), false);
+		AppendClipboardText(txt.ToString());
 	}
 }
 

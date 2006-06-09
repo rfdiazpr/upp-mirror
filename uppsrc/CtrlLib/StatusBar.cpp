@@ -134,7 +134,7 @@ public:
 				text = q;
 			else
 				text = StdFormat(q);
-			w.DrawText(r.left, r.top + (r.Height() - w.GetFontInfo(StdFont()).GetHeight()) / 2,
+			w.DrawText(r.left, r.top + (r.Height() - StdFont().Info().GetHeight()) / 2,
 			           text, StdFont(), ink);
 		}
 	}
@@ -280,7 +280,7 @@ void ProgressInfo::Refresh()
 {
 	if(!info) return;
 	String txt = Format(~text, pos);
-	info->Set(tabi, txt, tw ? tw : ScreenInfo().GetTextSize(txt).cx + 8);
+	info->Set(tabi, txt, tw ? tw : GetTextSize(txt, StdFont()).cx + 8);
 	info->Set(tabi + 1, PaintRect(ProgressDisplay(), 1000.0 * pos / total), cx);
 }
 

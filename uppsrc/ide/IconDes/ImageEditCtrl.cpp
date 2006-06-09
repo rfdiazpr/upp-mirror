@@ -1342,8 +1342,8 @@ void ImageEditCtrl::OnSelectCopy()
 	Rect imr = Rect(GetImageSize());
 	Rect rc = GetSelectionOrImage() & imr;
 	Image part = Crop(image, rc);
-	WriteClipboardFormat(part, true);
-	WriteClipboardImage(part);
+	WriteClipboardFormat(part);
+	AppendClipboardImage(part);
 }
 
 void ImageEditCtrl::OnSelectCut()

@@ -145,7 +145,7 @@ Pdb::Val Pdb::Compute(Pdb::Val v1, Pdb::Val v2, int oper)
 		}
 		return v1;
 	}
-	if(v1.ref) {
+	if(v2.ref) {
 		int q = (int)GetInt(v1) * (v2.ref ? 4 : SizeOfType(v2.type));
 		v2 = GetRVal(v2);
 		if(oper == '+')

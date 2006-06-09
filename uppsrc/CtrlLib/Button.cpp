@@ -381,7 +381,7 @@ void Option::RefreshPush() {
 Size Option::GetMinSize() const {
 	Size isz = (IsXPStyle() ? GetPushImage(I_CHECK0, I_NORMAL) : CtrlImg::option0()).GetSize();
 	return AddFrameSize(isz.cx + GetSmartTextSize(ScreenInfo(), label).cx + 4,
-		                max(isz.cy, ScreenInfo().GetFontInfo().GetHeight()) + 2);
+		                max(isz.cy, StdFont().Info().GetHeight()) + 2);
 }
 
 void Option::Paint(Draw& w) {

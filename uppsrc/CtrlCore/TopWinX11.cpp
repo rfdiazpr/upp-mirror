@@ -1,8 +1,5 @@
 #include "CtrlCore.h"
 #pragma hdrstop
-#ifndef NEWIMAGE
-#include <Draw/PixelUtil.h>
-#endif
 
 #define LLOG(x)  // LOG(x)
 
@@ -105,7 +102,6 @@ void TopWindow::SyncCaption()
 		Ctrl *owner = GetOwner();
 		wm_hints->window_group = owner ? owner->GetWindow() : w;
 		if(!icon.IsEmpty()) {
-		#ifdef NEWIMAGE
 			Size isz = icon.GetSize();
 			int len = 2 + isz.cx * isz.cy;
 			Buffer<unsigned long> data(len);
@@ -122,36 +118,6 @@ void TopWindow::SyncCaption()
 			}
 			XChangeProperty(Xdisplay, w, XAtom("_NET_WM_ICON"), XA_CARDINAL, 32, PropModeReplace,
 			                (const unsigned char *)~data, len);
-		#else
-			AlphaArray ia = ImageToAlphaArray(icon, ScreenInfo(), -1);
-			ia.pixel = PixelMono(ia.pixel);
-			PixelInvertMask(ia.alpha);
-			invert = AlphaArrayToImage(ia);
-			wm_hints->flags |= IconPixmapHint|IconMaskHint;
-			wm_hints->icon_pixmap = invert.GetPixmap();
-			wm_hints->icon_mask = invert.GetMaskPixmap();
-
-			Size isz = icon.GetSize();
-			int len = 2 + isz.cx * isz.cy;
-			Buffer<unsigned long> data(len);
-			PixelArray pixels = ImageToPixelArray(icon, ScreenInfo(), -3);
-			PixelArray mask = MaskToPixelArray(icon);
-			unsigned long *t = data;
-			*t++ = isz.cx;
-			*t++ = isz.cy;
-			for(int y = 0; y < isz.cy; y++) {
-				const byte *q = pixels.GetDownScan(y);
-				const byte *m = mask.GetDownScan(y);
-				for(int x = isz.cx; x--;) {
-					*t++ = (*m ? 0 : 0xff000000) |
-					       (dword)q[0] | ((dword)q[1] << 8) | ((dword)q[2] << 16);
-					m++;
-					q += 3;
-				}
-			}
-			XChangeProperty(Xdisplay, w, XAtom("_NET_WM_ICON"), XA_CARDINAL, 32, PropModeReplace,
-			                (const unsigned char *)~data, len);
-		#endif
 		}
 		XSetWMHints(Xdisplay, w, wm_hints);
 	}
@@ -228,6 +194,14 @@ void TopWindow::Open(Ctrl *owner)
 		SetTimeCallback(500, THISBACK(EndIgnoreTakeFocus));
 		LLOG("SetWndFocus");
 		SetWndFocus();
+		for(int i = 0; i < 50; i++) {
+			if(XCheckTypedWindowEvent(Xdisplay, top->window, FocusIn, &e)) {
+				ProcessEvent(&e);
+				if(e.xfocus.window = top->window)
+					break;
+			}
+			Sleep(10);
+		}
 	}
 	LLOG(">Open NextRequest " << NextRequest(Xdisplay));
 	LLOG(">OPENED " << Name());

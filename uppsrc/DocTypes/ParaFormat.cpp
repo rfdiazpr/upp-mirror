@@ -3,7 +3,7 @@
 FontInfo ParaTypo::Part::Set(Draw& w, Font _font, Color _color) {
 	font = _font;
 	color = _color;
-	FontInfo pf = w.GetFontInfo(font);
+	FontInfo pf = font.Info();
 	external = pf.GetExternal();
 	overhang = pf.GetOverhang();
 	ascent = pf.GetAscent();

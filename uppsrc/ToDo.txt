@@ -1,6 +1,15 @@
+* ArrayCtrl::ColumnWidths -> FontZoom
+
+
 nDraw {
+	- Velky U a Z v IDE s Bitstream Vera (Glyph composing)
 	- IconDes - ikony
 
+	- Otazka Font::GetHeight()... ?
+}
+
+CtrlCore {
+	- small font zoom problem
 }
 
 
@@ -32,6 +41,7 @@ Something borked with unix filename escaping?
 * If I run "find in files" and doubleclick then in "Edit" menu an item "Edit using designer" Ctrl_T appears. If I try to use it, it does nothing and dissapears. I think, it's a bug.
 
 * TheIDE {
+    - In Topic++ "Print" doesn't work - just a blank sheet.
 	- That empty lines forced me to making "ugly" upt files. I had to merge lines into one to avoid producing empty lines. Can you add it to todo list (to not forget)?[
 }
 
@@ -39,6 +49,8 @@ Something borked with unix filename escaping?
 	- Stuck Alt/Ctrl keys
 	- OO.org BMP pasta, images in richtext paste
 	- Available clipboard formats
+	- Paste Firefox -> Ide
+	- Problem with IconDes handles
 }
 
 * RichEdit {
@@ -50,6 +62,7 @@ Something borked with unix filename escaping?
 }
 
 * Core {
+	- !!!!!!! STREAM PROBLEM !!!!!!!
 	- TLS
 	- bring Socket to the Core
 }
@@ -61,6 +74,10 @@ Something borked with unix filename escaping?
 }
 
 * Assist++  {
+	- http://www.arilect.com/upp/forum/index.php?t=msg&goto=3499&#msg_3499
+	- http://www.arilect.com/upp/forum/index.php?t=msg&th=1052&start=0&
+	- operator Draw&();
+	- konstruktor pri Ctrl+Space
 	- PNGEncoder(). (konstruktor)
     - IconDes, problem s definici lokalnich statickych dat
 	- TDoc.cpp: Alt+V, para.

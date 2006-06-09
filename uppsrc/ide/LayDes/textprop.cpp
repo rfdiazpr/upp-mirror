@@ -56,7 +56,7 @@ LTProperty::LTProperty()
 	context.WhenAction = THISBACK(Context);
 	id = LayImg::Id();
 	id.WhenAction = THISBACK(Id);
-	charset = CHARSET_UNICODE; //!! not good, but better than a crash; TRC 06/04/10
+	charset = CHARSET_UNICODE; //!! not good, but better than a crash; TRC 06/04/10//TODO
 }
 
 void LTProperty::SyncLid()

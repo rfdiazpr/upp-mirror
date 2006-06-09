@@ -335,7 +335,7 @@ void Formula::PaintRect(Draw& draw, int x_left, int y_baseline) const
 
 int Formula::GetTextDeltaY(Font font)
 {
-	FontInfo fi = ScreenInfo().GetFontInfo(font);
+	FontInfo fi = font.Info();
 	return Percent(fi.GetHeight(), 32) - fi.GetAscent();
 }
 
@@ -402,8 +402,8 @@ void FormulaSymbol::Paint(Draw& draw, int x_left, int y_baseline) const
 FormulaText::FormulaText(const String& text, Font font, Color color, int dy)
 : text(text), font(font), color(color)
 {
-	width = ScreenInfo().GetTextSize(text, font).cx;
-	FontInfo fi = ScreenInfo().GetFontInfo(font);
+	width = GetTextSize(text, font).cx;
+	FontInfo fi = font.Info();
 	int fht = fi.GetHeight();
 	const char *p = text;
 	while(*p && IsLower(*p))
@@ -783,7 +783,7 @@ FormulaParser::FormulaParser(const char *ptr, Font font, Color color)
 : ptr(ptr)
 {
 	if(font.GetHeight() == 0)
-		font.Height(ScreenInfo().GetFontInfo(font).GetHeight());
+		font.Height(font.Info().GetHeight());
 	state.font = font;
 	state.color = color;
 }
@@ -1450,7 +1450,7 @@ Size FormulaDisplay::GetStdSize(const Value& value) const
 	int ht = std_height;
 	if(!ht)
 	{
-		FontInfo fi = ScreenInfo().GetFontInfo(StdFont());
+		FontInfo fi = StdFont().Info();
 		ht = fi.GetHeight() - fi.GetExternal();
 	}
 	RefCon<Formula> form = Get(value, ht, SBlack);

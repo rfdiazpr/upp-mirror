@@ -288,7 +288,6 @@ Vector<Ctrl *> Ctrl::GetTopCtrls()
 void  Ctrl::SetMouseCursor(const Image& image)
 {
 	static Image img;
-#ifdef NEWIMAGE
 	if(image.GetSerialId() != img.GetSerialId()) {
 		img = image;
 		HCURSOR hc = IconWin32(img, true);
@@ -297,14 +296,6 @@ void  Ctrl::SetMouseCursor(const Image& image)
 			DestroyCursor(hCursor);
 		hCursor = hc;
 	}
-#else
-	img = image;
-	HCURSOR hc = img.GetCursor();
-	if(hc != hCursor) {
-		hCursor = hc;
-		SetCursor(hCursor);
-	}
-#endif
 }
 
 Ctrl *Ctrl::CtrlFromHWND(HWND hwnd)
@@ -928,8 +919,11 @@ ViewDraw::~ViewDraw()
 		ReleaseDC(hwnd, hdc);
 }
 
-int  GetClipboardFormatCode(const String& format_id)
+int  GetClipboardFormatCode(const char *format_id)
 {
+	int x = (int)format_id;
+	if(x >= 0 && x < 65535)
+		return x;
 	static VectorMap<String, int> format_map;
 	int f = format_map.Find(format_id);
 	if(f < 0) {
@@ -947,42 +941,38 @@ void ClearClipboard()
 	}
 }
 
-bool WriteClipboard(int format, const byte *data, int length, bool clear)
+void AppendClipboard(const char *format, const byte *data, int length)
 {
-	if(clear)
-		ClearClipboard();
 	if(!OpenClipboard(NULL))
-		return false;
+		return;
 	HANDLE handle = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, length + 2);
 	byte *ptr;
 	if(!handle || !(ptr = (byte *)GlobalLock(handle))) {
 		CloseClipboard();
-		return false;
+		return;
 	}
 	memcpy(ptr, data, length);
 	ptr[length] = 0;
 	ptr[length + 1] = 0;
 	GlobalUnlock(handle);
-	if(!SetClipboardData(format, handle)) {
+	if(!SetClipboardData(GetClipboardFormatCode(format), handle)) {
 		LLOG("SetClipboardData error: " << GetLastErrorMessage());
 		CloseClipboard();
-		return false;
+		return;
 	}
 	CloseClipboard();
-	return true;
 }
 
-bool WriteClipboard(int format, const String& data, bool clear)
+void AppendClipboard(const char *format, const String& data)
 {
-	return WriteClipboard(format, data, data.GetLength(), clear);
+	AppendClipboard(format, data, data.GetLength());
 }
 
-
-String ReadClipboard(int format)
+String ReadClipboard(const char *format)
 {
 	if(!OpenClipboard(NULL))
 		return Null;
-	HGLOBAL hmem = GetClipboardData(format);
+	HGLOBAL hmem = GetClipboardData(GetClipboardFormatCode(format));
 	if(hmem == 0) {
 		CloseClipboard();
 		return Null;
@@ -1000,39 +990,37 @@ String ReadClipboard(int format)
 	return out;
 }
 
-bool WriteClipboardText(const String& s, bool clear)
+void AppendClipboardText(const String& s)
 {
-	return WriteClipboard(CF_TEXT, ToSystemCharset(s), clear);
+	AppendClipboard((const char *)CF_TEXT, ToSystemCharset(s));
 }
 
-bool WriteClipboardUnicodeText(const WString& s, bool clear)
+void AppendClipboardUnicodeText(const WString& s)
 {
-	if(clear)
-		ClearClipboard();
-	return WriteClipboardText(s.ToString(), false) &&
-	       WriteClipboard(CF_UNICODETEXT, (byte *)~s, 2 * s.GetLength(), false);
+	AppendClipboardText(s.ToString());
+	AppendClipboard((const char *)CF_UNICODETEXT, (byte *)~s, 2 * s.GetLength());
 }
 
 String ReadClipboardText()
 {
-	String s = ReadClipboard(CF_TEXT);
+	String s = ReadClipboard((const char *)CF_TEXT);
 	return String(s, strlen(~s));
 }
 
 WString ReadClipboardUnicodeText()
 {
-	String s = ReadClipboard(CF_UNICODETEXT);
+	String s = ReadClipboard((const char *)CF_UNICODETEXT);
 	return WString((const wchar *)~s, wstrlen((const wchar *)~s));
 }
 
-bool IsClipboardAvailable(int format)
+bool IsClipboardAvailable(const char *id)
 {
-	return ::IsClipboardFormatAvailable(format);
+	return ::IsClipboardFormatAvailable(GetClipboardFormatCode(id));
 }
 
 bool IsClipboardAvailableText()
 {
-	return IsClipboardAvailable(CF_TEXT);
+	return IsClipboardAvailable((const char *)CF_TEXT);
 }
 
 Vector<String> SplitCmdLine__(const char *cmd)

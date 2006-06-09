@@ -99,9 +99,7 @@ int  Paragraph::GetWidth(int zoom, Draw& w) const {
 			cx += pptr->pr && !pptr->sz.cx ? pptr->pr.GetStdSize().cx
 			                               : DocZoom(zoom, pptr->sz.cx);
 		else {
-			FontInfo pf = w.GetFontInfo(
-				Font(pptr->font).Height(DocZoom(zoom, pptr->font.GetHeight()))
-			);
+			FontInfo pf = Font(pptr->font).Height(DocZoom(zoom, pptr->font.GetHeight())).Info();
 			const char *s = pptr->text;
 			int n = pptr->text.GetLength();
 			while(n--) {
@@ -131,7 +129,7 @@ bool Paragraph::Format(ParaTypo& pfmt, Draw& w, int cx, int zoom) const {
 //		pf.Height(max(1, DocZoom(zoom, parafont.GetHeight())));
 		int n = DocZoom(zoom, parafont.GetHeight());
 		pf.Height(n ? n : 1);
-		FontInfo f = w.GetFontInfo(pf);
+		FontInfo f = pf.Info();
 		pfmt.SetMin(f.GetAscent(), f.GetDescent(), f.GetExternal());
 	}
 /*	if(!IsNull(parafont)) {
@@ -408,7 +406,7 @@ void Paragraph::ParaRect::Put(int x, int y, Part *ip, Part **ibeg, Part **i, con
 	ValueRect& r = vr.Add();
 	r.value = p->value;
 	r.rect = RectC(px + x, y, p->pr ? ip->width
-				              : draw.GetTextSize(text + (ibeg - info), ip->font, i - ibeg).cx,
+				              : GetTextSize(text + (ibeg - info), ip->font, i - ibeg).cx,
 			       ascent + descent + external);
 }
 

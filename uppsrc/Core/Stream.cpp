@@ -829,7 +829,7 @@ int  StringStream::_Term() {
 }
 
 void  StringStream::Seek(int64 pos) {
-	size = max(size, (dword)(uintptr_t)GetPos());
+	size = (dword)GetSize();
 	if(pos > size) {
 		SetWriteMode();
 		size = (dword)pos;

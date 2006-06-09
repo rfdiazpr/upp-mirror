@@ -92,22 +92,22 @@ void RichPara::StorePart::Store(Draw& draw, Lines& lines, const Part& part, int 
 		const wchar *s = part.text;
 		const wchar *lim = part.text.End();
 		Font fnt = part.format;
-		FontInfo fi = draw.GetFontInfo(CHARSET_UNICODE, fnt);
+		FontInfo fi = fnt.Info();
 		FontInfo wfi = fi;
 		if(part.format.sscript) {
 			fnt.Height(fnt.GetHeight() * 3 / 5);
-			wfi = draw.GetFontInfo(CHARSET_UNICODE, fnt);
+			wfi = fnt.Info();
 		}
 		if(part.format.capitals) {
 			CharFormat& cfmt = lines.hformat.Add();
 			cfmt = part.format;
 			cfmt.Height(cfmt.GetHeight() * 4 / 5);
-			FontInfo cfi = draw.GetFontInfo(CHARSET_UNICODE, cfmt);
+			FontInfo cfi = cfmt.Info();
 			FontInfo cwfi = cfi;
 			if(part.format.sscript) {
 				Font fnt = cfmt;
 				fnt.Height(fnt.GetHeight() * 3 / 5);
-				cwfi = draw.GetFontInfo(CHARSET_UNICODE, fnt);
+				cwfi = fnt.Info();
 			}
 
 			while(s < lim) {
@@ -195,7 +195,7 @@ RichPara::Lines RichPara::FormatLines(int acx) const
 	if(!format.bullet && !format.IsNumbered())
 		lines.next_indent = 0;
 
-	FontInfo pfi = draw.GetFontInfo(format);
+	FontInfo pfi = format.Info();
 	if(lines.len == 0) {
 		Line& l = lines.line.Add();
 		l.pos = 0;

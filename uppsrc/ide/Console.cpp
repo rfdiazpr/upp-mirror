@@ -38,7 +38,7 @@ void Console::Append(const String& s) {
 	MoveTextEnd();
 	String t = Filter(s, sAppf);
 	if(wrap_text) {
-		int mg = sb.GetReducedViewSize().cx / ScreenInfo().GetFontInfo(GetFont()).GetAveWidth();
+		int mg = sb.GetReducedViewSize().cx / GetFont().Info().GetAveWidth();
 		for(const char *q = t; *q; q++) {
 			if(mg > 2 && GetColumnLine(GetCursor()).x >= mg - 1)
 				Paste(ToUnicode("\n\t", CHARSET_WIN1252));

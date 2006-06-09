@@ -1030,7 +1030,7 @@ int TIFEncoder::GetPaletteCount()
 void TIFEncoder::Start(Size sz)
 {
 	data = new Data(GetStream());
-	data->Start(sz, bpp, bpp <= 8 ? GetPalette() : NULL, bpp <= 8 ? &GetPaletteCv() : NULL);
+	data->Start(sz, bpp, bpp <= 8 ? GetPalette() : NULL, bpp <= 8 ? GetPaletteCv() : NULL);
 }
 
 void TIFEncoder::WriteLine(const RGBA *s)

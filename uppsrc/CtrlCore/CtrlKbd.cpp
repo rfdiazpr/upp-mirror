@@ -324,10 +324,18 @@ String GetKeyDesc(int key)
 			K_INSERT, "Insert", K_DELETE, "Delete", K_BREAK, "Break",
 			K_MULTIPLY, "Num[*]", K_ADD, "Num[+]", K_SUBTRACT, "Num[-]", K_DIVIDE, "Num[/]",
 			K_ALT_KEY, "Alt", K_SHIFT_KEY, "Shift", K_CTRL_KEY, "Ctrl",
+		#ifdef PLATFORM_X11
+			0x10060, "[`]", 0x1002d, "[-]", 0x1003d, "[=]", 0x1005c, "[\\]",
+			0x1005b, "[[]", 0x1005d, "[]]",
+			0x1003b, "[;]", 0x10027, "[']",
+			0x1002c, "[,]", 0x1002e, "[.]", 0x1005f, "[/]",
+		#endif
+		#ifdef PLATFORM_WIN32
 			0x100c0, "[`]", 0x100bd, "[-]", 0x100bb, "[=]", 0x100dc, "[\\]",
 			0x100db, "[[]", 0x100dd, "[]]",
 			0x100ba, "[;]", 0x100de, "[']",
 			0x100bc, "[,]", 0x100be, "[.]", 0x100bf, "[/]",
+		#endif
 			0, NULL
 		};
 		for(int i = 0; nkey[i].key; i++)

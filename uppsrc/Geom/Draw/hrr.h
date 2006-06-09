@@ -84,7 +84,7 @@ public:
 
 		void       Init(Size size, Color color, bool mono);
 
-		AlphaArray block;
+		Image      block;
 		Size       size;
 		Rect       area;
 		Rectf      log_area;
@@ -153,8 +153,7 @@ private:
 	Vector< Vector<int> >      pixel_directory;
 	Vector< Vector<int> >      mask_directory;
 	int                        directory_sizeof;
-	ArrayMap<int, PixelArray>  pixel_cache;
-	ArrayMap<int, PixelArray>  mask_cache;
+	ArrayMap<int, Image>       image_cache;
 	VectorMap<int, Size>       size_cache;
 	int                        cache_sizeof;
 	int                        cache_sizeof_limit;

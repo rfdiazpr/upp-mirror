@@ -55,7 +55,7 @@ LineEdit& LineEdit::SetFont(Font f) {
 }
 
 Size LineEdit::GetFontSize() const {
-	FontInfo fi = ScreenInfo().GetFontInfo(font());
+	FontInfo fi = font.Info();
 	return Size(fi.GetAveWidth(), fi.GetHeight());
 }
 
@@ -75,7 +75,7 @@ void   LineEdit::Paint0(Draw& w) {
 	selh -= cpos;
 	int pos = cpos;
 	Vector<int> dx;
-	int fascent = w.GetFontInfo(font()).GetAscent();
+	int fascent = font.Info().GetAscent();
 	for(int i = sc.y; i < ll; i++) {
 		WString tx = line[i];
 		int len = tx.GetLength();
@@ -139,7 +139,7 @@ void   LineEdit::Paint0(Draw& w) {
 							w.DrawRect((bordercolumn - sc.x) * fsz.cx, y, 1, fsz.cy, bordercolor);
 						dx.At(l, fsz.cx);
 						w.DrawText(gp * fsz.cx - scx,
-						           y + fascent - w.GetFontInfo(h.font).GetAscent(),
+						           y + fascent - h.font.Info().GetAscent(),
 						           ~txt + q, h.font, h.ink, l, dx);
 						q = p;
 						gp += l;
@@ -399,7 +399,7 @@ void LineEdit::LeftRepeat(Point p, dword flags) {
 }
 
 Image LineEdit::CursorImage(Point, dword) {
-	return GetIBeamCursor();
+	return Image::IBeam();
 }
 
 void LineEdit::MoveUpDown(int n, bool sel) {
@@ -533,7 +533,7 @@ void LineEdit::CutLine()
 	int p = GetPos(i);
 	WString txt = Get(p, line[i].GetLength() + 1).ToWString();
 	WriteClipboardUnicodeText(txt);
-	WriteClipboardText(txt.ToString(), false);
+	AppendClipboardText(txt.ToString());
 	ClearSelection();
 	DeleteLine();
 }

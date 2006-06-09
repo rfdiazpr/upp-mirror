@@ -654,9 +654,11 @@ Size Ctrl::Csize;
 inline void Ctrl::Csizeinit()
 {
 	if(Csize.cx == 0)
-		Csize = ScreenInfo().GetTextSize(sZoomText);
+		Csize = GetTextSize(sZoomText, StdFont());
 	if(Dsize.cx == 0)
 		Dsize = Size(99, 13);
+	Csize.cx = max(Csize.cx, Dsize.cx);
+	Csize.cy = max(Csize.cy, Dsize.cy);
 }
 
 void Ctrl::SetZoomSize(Size sz, Size bsz)

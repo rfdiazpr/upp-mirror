@@ -324,7 +324,7 @@ void SqlConsole::Execute(int type) {
 		const SqlColumnInfo& ci = cursor.GetColumnInfo(i);
 		list.AddColumn(ci.name);
 		list.HeaderTab(i).WhenAction = THISBACK1(Hide, i);
-		cw[i] = ScreenInfo().GetTextSize(ci.name).cx + 2 * list.HeaderTab(i).GetMargin();
+		cw[i] = GetTextSize(ci.name, StdFont()).cx + 2 * list.HeaderTab(i).GetMargin();
 		record.Add(ci.name, Null);
 		lob.Add(ci.type == -1 || ci.type == -2); // !! BLOB / CLOB hack
 	}
@@ -340,7 +340,7 @@ void SqlConsole::Execute(int type) {
 				cursor.GetColumn(i, temp);
 				row[i] = temp;
 			}
-			cw[i] = max(cw[i], ScreenInfo().GetTextSize(StdFormat(row[i])).cx +
+			cw[i] = max(cw[i], GetTextSize(StdFormat(row[i]), StdFont()).cx +
 				2 * list.HeaderTab(i).GetMargin());
 		}
 		list.Add(row);
@@ -371,7 +371,7 @@ void SqlConsole::Execute(int type) {
 }
 
 void SqlConsole::ColSize() {
-	int maxw = 18 * ScreenInfo().GetFontInfo(StdFont()).GetAveWidth(); //Stock.GetStdFontAvgCx();
+	int maxw = 18 * StdFont().Info().GetAveWidth();
 	int maxx = list.GetSize().cx;
 	int wx = 0;
 	for(int i = 0; i < cursor.GetColumns(); i++)

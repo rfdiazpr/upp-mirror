@@ -1,0 +1,6 @@
+file
+	bmp.h,
+	bmphdr.h,
+	Bmp.cpp,
+	BmpWrite.cpp,
+	BmpReg.icpp;

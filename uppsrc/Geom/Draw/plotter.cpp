@@ -1,8 +1,6 @@
 #include "GeomDraw.h"
 #pragma hdrstop
 
-#include <Image/Image.h>
-
 #define LLOG(x) // LOG(x)
 
 #define DEBUG_AREA 0
@@ -1696,7 +1694,7 @@ One<MarkTool::Marker> MarkTool::Empty()
 class ImageMarker : public MarkTool::Marker
 {
 public:
-	ImageMarker(const AlphaArray& img, int size, Color color, bool antialias, bool ignore_hotspot);
+	ImageMarker(const Image& img, int size, Color color, bool antialias, bool ignore_hotspot);
 
 	virtual void  Paint(Draw& draw, const Vector<Point>& pt);
 	virtual int   GetSize() const { return linear_size; }
@@ -1708,14 +1706,14 @@ private:
 	Point         hotspot;
 	int           linear_size;
 	Color         color;
-	bool          body;
+//	bool          body;
 	bool          mask;
 	bool          antialias;
 	bool          ignore_hotspot;
 };
 
-ImageMarker::ImageMarker(const AlphaArray& srcimg, int size_, Color color_, bool antialias_, bool ignore_hotspot_)
-: imgsize(max(srcimg.pixel.GetSize(), srcimg.alpha.GetSize()))
+ImageMarker::ImageMarker(const Image& srcimg, int size_, Color color_, bool antialias_, bool ignore_hotspot_)
+: imgsize(srcimg.GetSize())
 , color(color_)
 , antialias(antialias_)
 , ignore_hotspot(ignore_hotspot_)
@@ -1729,115 +1727,35 @@ ImageMarker::ImageMarker(const AlphaArray& srcimg, int size_, Color color_, bool
 		else
 			outsize = Size(iscale(size_, imgsize.cx, imgsize.cy), size_);
 		if(imgsize == outsize || outsize.cx >= imgsize.cx && outsize.cy >= imgsize.cy && !antialias)
-			img = AlphaArrayToImage(srcimg);
+			img = srcimg;
 		else {
 			Size xsize = 2 * imgsize;
 			while(2 * xsize.cx <= outsize.cx && 2 * xsize.cy <= outsize.cy && xsize.cx <= 256 && xsize.cy <= 256)
 				xsize <<= 2;
-			AlphaArray temp(min(outsize, xsize), -3);
-			if(antialias)
-				PixelCopyAntiAliasMaskOut(temp, temp.GetRect(), srcimg, imgsize, false);
-			else
-				AlphaCopy(temp, temp.GetRect(), srcimg, imgsize, false);
-			img = AlphaArrayToImage(temp);
+			Size tmpsize = min(outsize, xsize);
+//			if(antialias)
+			img = Rescale(srcimg, tmpsize);
+			// else RescaleNoAA !! todo
 		}
 		imgsize = img.GetSize();
 	}
 	linear_size = max(
 		max(hotspot.x, outsize.cx - hotspot.x),
 		max(hotspot.y, outsize.cy - hotspot.y));
-	body = !srcimg.pixel.IsEmpty();
-	mask = !srcimg.alpha.IsEmpty();
+	mask = (srcimg.GetKind() == IMAGE_OPAQUE);
 }
 
 void ImageMarker::Paint(Draw& draw, const Vector<Point>& pts)
 {
 	if(img.IsEmpty())
 		return;
-
-#ifdef PLATFORM_WIN32
-	if(!draw.IsDrawing()) {
-		ImageDraw  idraw;
-		if(body)
-			idraw.Open(draw, img);
-		ImageMaskDraw imdraw;
-		if(mask)
-			imdraw.Open(img);
-		draw.BeginGdi();
-		SetTextColor(draw, Black());
-		SetBkColor(draw, White());
-		SetStretchBltMode(draw, COLORONCOLOR);
-		bool resize = (imgsize != outsize);
-		if(body && mask) {
-			if(resize) {
-				for(int t = 0; t < pts.GetCount(); t++) {
-					Point pt = pts[t] - hotspot;
-					StretchBlt(draw, pt.x, pt.y, outsize.cx, outsize.cy, imdraw, 0, 0, imgsize.cx, imgsize.cy, SRCAND);
-					StretchBlt(draw, pt.x, pt.y, outsize.cx, outsize.cy, idraw, 0, 0, imgsize.cx, imgsize.cy, SRCPAINT);
-				}
-			}
-			else {
-				for(int t = 0; t < pts.GetCount(); t++) {
-					Point pt = pts[t] - hotspot;
-					BitBlt(draw, pt.x, pt.y, outsize.cx, outsize.cy, imdraw, 0, 0, SRCAND);
-					BitBlt(draw, pt.x, pt.y, outsize.cx, outsize.cy, idraw, 0, 0, SRCPAINT);
-				}
-			}
-		}
-		else if(body) {
-			if(resize) {
-				for(int t = 0; t < pts.GetCount(); t++) {
-					Point pt = pts[t] - hotspot;
-					StretchBlt(draw, pt.x, pt.y, outsize.cx, outsize.cy, idraw, 0, 0, imgsize.cx, imgsize.cy, SRCCOPY);
-				}
-			}
-			else {
-				for(int t = 0; t < pts.GetCount(); t++) {
-					Point pt = pts[t] - hotspot;
-					BitBlt(draw, pt.x, pt.y, outsize.cx, outsize.cy, idraw, 0, 0, SRCCOPY);
-				}
-			}
-		}
-		else if(mask) {
-			SetTextColor(draw, color);
-			SetBkColor(draw, White());
-			if(resize) {
-				for(int t = 0; t < pts.GetCount(); t++) {
-					Point pt = pts[t] - hotspot;
-					StretchBlt(draw, pt.x, pt.y, outsize.cx, outsize.cy, imdraw, 0, 0, imgsize.cx, imgsize.cy, SRCAND);
-				}
-				SetBkColor(draw, Black());
-				for(int t = 0; t < pts.GetCount(); t++) {
-					Point pt = pts[t] - hotspot;
-					StretchBlt(draw, pt.x, pt.y, outsize.cx, outsize.cy, imdraw, 0, 0, imgsize.cx, imgsize.cy, SRCPAINT);
-				}
-			}
-			else {
-				for(int t = 0; t < pts.GetCount(); t++) {
-					Point pt = pts[t] - hotspot;
-					BitBlt(draw, pt.x, pt.y, outsize.cx, outsize.cy, imdraw, 0, 0, SRCAND);
-				}
-				SetBkColor(draw, Black());
-				for(int t = 0; t < pts.GetCount(); t++) {
-					Point pt = pts[t] - hotspot;
-					BitBlt(draw, pt.x, pt.y, outsize.cx, outsize.cy, imdraw, 0, 0, SRCPAINT);
-				}
-			}
-		}
-		draw.EndGdi();
-		return;
-	}
-#endif
 	for(int t = 0; t < pts.GetCount(); t++) {
 		Point pt = pts[t] - hotspot;
-		if(body)
-			draw.DrawImage(Rect(pt, outsize), img);
-		else if(mask)
-			draw.DrawImage(Rect(pt, outsize), img, color, Null);
+		draw.DrawImage(Rect(pt, outsize), img);
 	}
 }
 
-One<MarkTool::Marker> MarkTool::Picture(const AlphaArray& pic, int size, Color color, bool antialias, bool ignore_hotspot)
+One<MarkTool::Marker> MarkTool::Picture(Image pic, int size, Color color, bool antialias, bool ignore_hotspot)
 {
 	return new ImageMarker(pic, size, color, antialias, ignore_hotspot);
 }
@@ -2238,7 +2156,7 @@ int LetterMarker::GetSize() const
 		raw.Height(-raw.GetHeight());
 	else
 		raw.Height(-DotsToPixels(ScreenInfo(), -raw.GetHeight()));
-	FontInfo info = ScreenInfo().GetFontInfo(raw);
+	FontInfo info = raw.Info();
 	return fceil(hypot(info[(byte)ascii], info.GetHeight())) >> 1;
 }
 
@@ -2257,7 +2175,7 @@ void LetterMarker::Paint(Draw& draw, const Vector<Point>& pt)
 		raw_font.Height(-raw_font.GetHeight());
 	else
 		raw_font.Height(-DotsToPixels(draw, -raw_font.GetHeight()));
-	Size size = draw.GetTextSize(&ascii, raw_font, 1);
+	Size size = GetTextSize(&ascii, raw_font, 1);
 //	offset = Pointf(size).Rotated(-angle * M_PI / 1800.0).AsSize() >> 1;
 
 /*
@@ -2478,7 +2396,7 @@ void TextTool::SetFont(Font _font)
 			Paint();
 		font_index = font_map.GetCount();
 		Type& type = font_map.Add(_font);
-		FontInfo fi = plotter.draw -> GetFontInfo(_font);
+		FontInfo fi = _font.Info();
 		short *out = type.widths;
 		for(int c = 256; --c >= 0; out[c] = fi.GetWidth(c))
 			;

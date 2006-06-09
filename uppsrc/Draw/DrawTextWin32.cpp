@@ -44,6 +44,33 @@ int CALLBACK Draw::AddFace(const LOGFONT *logfont, const TEXTMETRIC *, dword typ
 	if(logfont->lfCharSet == SYMBOL_CHARSET)
 		typ |= Font::SYMBOLTYPE;
 
+	{
+		typedef DWORD (WINAPI *GGIW)(HDC, LPCWSTR, int, LPWORD, DWORD);
+		static GGIW fn;
+		ONCELOCK
+			if(HMODULE hDLL = LoadLibrary("gdi32"))
+				fn = (GGIW) GetProcAddress(hDLL, "GetGlyphIndicesW");
+		if(fn) {
+			HDC hdc = CreateIC("DISPLAY", NULL, NULL, NULL);
+			HFONT hfnt = (HFONT) CreateFontIndirect(logfont);
+			HFONT o = (HFONT) SelectObject(hdc, hfnt);
+			wchar wch[128];
+			WORD  pos[128];
+			for(int i = 0; i < 128; i++)
+				wch[i] = i + 256;
+			(*fn)(hdc,  (LPCWSTR) wch, 128, pos, 1);
+			SelectObject(hdc, o);
+			DeleteObject(hfnt);
+			DeleteDC(hdc);
+			int n = 0;
+			for(int i = 0; i < 128; i++)
+				if(pos[i] == 0xffff)
+					n++;
+			if(n > 10)
+				typ |= Font::COMPOSED;
+		}
+	}
+
 	VectorMap<String, dword>& face = sFontFace();
 	if(facename) {
 		face.Add(logfont->lfFaceName) = typ;
@@ -254,7 +281,7 @@ FontInfo Draw::Acquire(Font font, HDC hdc, int angle, int device)
 }
 
 void Draw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font, Color ink,
-                    int n, const int *dx) {
+                      int n, const int *dx) {
 	COLORREF cr = GetColor(ink);
 	if(cr != lastTextColor) {
 		LLOG("Setting text color: " << ink);

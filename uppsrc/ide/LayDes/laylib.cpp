@@ -164,11 +164,7 @@ void SIC_Courier(EscEscape& e)
 void SIC_GetImageSize(EscEscape& e)
 {
 	e.CheckArray(0);
-#ifdef NEWIMAGE
 	e = EscSize(GetImlImage((String)e[0]).GetSize());
-#else
-	e = EscSize(ImageCache::Get()[(String)e[0]].GetSize());
-#endif
 }
 
 void SIC_GetTextSize(EscEscape& e)
@@ -180,7 +176,7 @@ void SIC_GetTextSize(EscEscape& e)
 	Font font = StdFont();
 	if(e.GetCount() > 1)
 		font = FontEsc(e[1]);
-	e = EscSize(ScreenInfo().GetTextSize(text, font));
+	e = EscSize(GetTextSize(text, font));
 }
 
 void SIC_GetSmartTextSize(EscEscape& e)
@@ -371,7 +367,7 @@ void EscDraw::GetTextSize(EscEscape& e)
 #endif
 	if(e.GetCount() > 1)
 		font = FontEsc(e[1]);
-	e = EscSize(w.GetTextSize(text, font));
+	e = EscSize(::GetTextSize(text, font));
 }
 
 void EscDraw::DrawImage(EscEscape& e)

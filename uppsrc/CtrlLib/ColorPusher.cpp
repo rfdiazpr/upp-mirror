@@ -6,7 +6,7 @@ void ColorPusher::Paint(Draw& w)
 {
 	Size sz = GetSize();
 	w.DrawRect(sz, push ? SYellow : SWhite);
-	int ty = (sz.cy - w.GetFontInfo(StdFont()).GetHeight()) / 2;
+	int ty = (sz.cy - StdFont().Info().GetHeight()) / 2;
 	if(withtext) {
 		w.DrawRect(2, 2, sz.cy - 4, sz.cy - 4, color);
 		DrawFrame(w, 1, 1, sz.cy - 2, sz.cy - 2, SBlack);
@@ -19,7 +19,7 @@ void ColorPusher::Paint(Draw& w)
 		}
 		else
 		if(!withtext)
-			w.DrawText(max(2, (sz.cx - w.GetTextSize(nulltext).cx) / 2), ty, nulltext);
+			w.DrawText(max(2, (sz.cx - GetTextSize(nulltext, StdFont()).cx) / 2), ty, nulltext);
 	}
 	if(HasFocus())
 		DrawFocus(w, GetSize());

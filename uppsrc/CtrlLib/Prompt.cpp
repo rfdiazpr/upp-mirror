@@ -90,65 +90,47 @@ int Prompt(const char *title, const Image& iconbmp, const char *qtf,
 }
 
 void PromptOK(const char *qtf) {
-#ifdef PLATFORM_WIN32
-	MessageBeep(MB_ICONINFORMATION);
-#endif
+	BeepInformation();
 	Prompt(Ctrl::GetAppName(), CtrlImg::information(), qtf, t_("OK"));
 }
 
 void Exclamation(const char *qtf) {
-#ifdef PLATFORM_WIN32
-	MessageBeep(MB_ICONEXCLAMATION);
-#endif
+	BeepExclamation();
 	Prompt(Ctrl::GetAppName(), CtrlImg::exclamation(), qtf, t_("OK"));
 }
 
 void ShowExc(const Exc& exc) {
-#ifdef PLATFORM_WIN32
-	MessageBeep(MB_ICONEXCLAMATION);
-#endif
+	BeepExclamation();
 	Prompt(Ctrl::GetAppName(), CtrlImg::exclamation(), DeQtf(exc), t_("OK"));
 }
 
 int PromptOKCancel(const char *qtf) {
-#ifdef PLATFORM_WIN32
-	MessageBeep(MB_ICONQUESTION);
-#endif
+	BeepQuestion();
 	return Prompt(Ctrl::GetAppName(), CtrlImg::question(), qtf, t_("OK"), t_("Cancel"));
 }
 
 int PromptYesNo(const char *qtf) {
-#ifdef PLATFORM_WIN32
-	MessageBeep(MB_ICONQUESTION);
-#endif
+	BeepQuestion();
 	return Prompt(Ctrl::GetAppName(), CtrlImg::question(), qtf, false, t_("&Yes"), t_("&No"));
 }
 
 int PromptYesNoCancel(const char *qtf) {
-#ifdef PLATFORM_WIN32
-	MessageBeep(MB_ICONQUESTION);
-#endif
+	BeepQuestion();
 	return Prompt(Ctrl::GetAppName(), CtrlImg::question(), qtf, true, t_("&Yes"), t_("&No"), t_("Cancel"));
 }
 
 int PromptAbortRetry(const char *qtf) {
-#ifdef PLATFORM_WIN32
-	MessageBeep(MB_ICONEXCLAMATION);
-#endif
+	BeepExclamation();
 	return Prompt(Ctrl::GetAppName(), CtrlImg::exclamation(), qtf, false, t_("&Abort"), t_("&Retry"));
 }
 
 int PromptRetryCancel(const char *qtf) {
-#ifdef PLATFORM_WIN32
-	MessageBeep(MB_ICONEXCLAMATION);
-#endif
+	BeepExclamation();
 	return Prompt(Ctrl::GetAppName(), CtrlImg::exclamation(), qtf, true, t_("&Retry"), t_("Cancel"));
 }
 
 int PromptAbortRetryIgnore(const char *qtf) {
-#ifdef PLATFORM_WIN32
-	MessageBeep(MB_ICONEXCLAMATION);
-#endif
+	BeepExclamation();
 	return Prompt(Ctrl::GetAppName(), CtrlImg::exclamation(), qtf,
 		          false, t_("&Abort"), t_("&Retry"), t_("&Cancel"));
 }

@@ -349,7 +349,8 @@ void PackageEditor::FileOptionMenu(Bar& bar)
 {
 	bool b = IsActiveFile();
 	bar.Add(b, "Add compiler flags..", THISBACK(AddFileOption)).Key(K_INSERT);
-	bar.Add(b, "Add dependency..", THISBACK(AddDepends)).Key(K_CTRL_INSERT);
+	bar.Add(b, "Add dependence..", THISBACK1(AddDepends, false)).Key(K_CTRL_INSERT);
+	bar.Add(b, "Add external dependence..", THISBACK1(AddDepends, true)).Key(K_SHIFT_INSERT);
 	bar.Separator();
 	b = fileoption.IsCursor() && (int)fileoption.Get(0) >= 0;
 	int type = b ? (int)fileoption.Get(0) : -1;
@@ -388,12 +389,19 @@ void PackageEditor::MoveFileOption(int d)
 
 void DependsDlg::New()
 {
-	FileSel& fs = BasedSourceFs();
-	fs.BaseDir(GetFileFolder(PackagePath(package)));
-	fs.Multi(false);
-	if(fs.ExecuteOpen("Additional file dependency"))
-		text <<= ~fs;
-	fs.Multi();
+	FileSel *fs;
+	if(!IsNull(package)) {
+		fs = &BasedSourceFs();
+		fs->BaseDir(GetFileFolder(PackagePath(package)));
+		fs->Multi(false);
+	}
+	else {
+		fs = &OutputFs();
+		fs->Multi(false);
+	}
+	if(fs->ExecuteOpen("Additional file dependency"))
+		text <<= ~*fs;
+	fs->Multi();
 }
 
 DependsDlg::DependsDlg()
@@ -404,12 +412,13 @@ DependsDlg::DependsDlg()
 	text.WhenPush = THISBACK(New);
 }
 
-void PackageEditor::AddDepends()
+void PackageEditor::AddDepends(bool extdep)
 {
 	if(!IsActiveFile())
 		return;
 	DependsDlg dlg;
-	dlg.package = GetActivePackage();
+	if(!extdep)
+		dlg.package = GetActivePackage();
 	dlg.New();
 	if(dlg.Run() == IDOK)
 		SetOpt(fileoption, FILEDEPENDS, ActiveFile().depends.Add(), ~dlg.when, ~dlg.text);

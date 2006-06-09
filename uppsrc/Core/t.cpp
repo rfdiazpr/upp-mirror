@@ -320,7 +320,7 @@ void LngSetAdd(const char *id, int lang, const char *txt, bool addid)
 	CharS ids;
 	ids.s = PermanentCopy(id);
 	String text = ToCharset(CHARSET_UTF8, txt, GetLNGCharset(lang));
-	lang &= LNGC_(255, 255, 255, 255, 0);
+	lang = SetLNGCharset(lang, CHARSET_UTF8);
 	Array<LngModule>& ma = sMod();
 	for(int i = 0; i < ma.GetCount(); i++) {
 		LngModule& m = ma[i];

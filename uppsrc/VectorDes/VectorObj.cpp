@@ -1758,7 +1758,7 @@ void VectorRectData::Paint(ScalingDraw& draw) const
 	int ow = IsNull(outline_color) ? 0 : outline_width;
 	drc.Deflate(draw.X(ow + hmargin), draw.Y(ow + vmargin));
 	Font font = GetScaledFont(draw);
-	Size sz = draw.draw->GetTextSize(text, font);
+	Size sz = GetTextSize(text, font);
 	int x, y;
 	switch(halign) {
 		case ALIGN_LEFT:  x = drc.left; break;
@@ -1776,7 +1776,7 @@ void VectorRectData::Paint(ScalingDraw& draw) const
 Font VectorRectData::GetScaledFont(const ScalingDraw& draw) const
 {
 	int newht = draw.Y(font.GetHeight());
-	int newwd = draw.X(draw.draw->GetFontInfo(font).GetAveWidth());
+	int newwd = draw.X(font.Info().GetAveWidth());
 	return font().Height(newht ? newht : 1).Width(newwd);
 }
 

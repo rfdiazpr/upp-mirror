@@ -221,7 +221,7 @@ void LayoutItem::UnknownPaint(Draw& w)
 	int q = FindProperty("SetLabel");
 	if(q >= 0 && IsString(~property[q]))
 		DrawSmartText(w, 0, 0, csize.cx, ToUtf8((WString)~property[q]));
-	Size tsz = w.GetTextSize(type, Arial(11));
+	Size tsz = GetTextSize(type, Arial(11));
 	w.DrawRect(csize.cx - tsz.cx, csize.cy - tsz.cy, tsz.cx, tsz.cy, SGray);
 	w.DrawText(csize.cx - tsz.cx, csize.cy - tsz.cy, type, Arial(11), SWhite);
 }
@@ -362,7 +362,6 @@ Image GetTypeIcon(const String& type, int cx, int cy, int i, Color bg)
 		if(stdsize.cx == 0 || stdsize.cy == 0)
 			return Null;
 
-#ifdef NEWIMAGE
 		ImageDraw w(stdsize);
 		w.DrawRect(stdsize, bg);
 		m.Paint(w, stdsize, true);
@@ -371,19 +370,6 @@ Image GetTypeIcon(const String& type, int cx, int cy, int i, Color bg)
 		else
 			cx = stdsize.cx * cy / stdsize.cy;
 		icon = Rescale(w, cx, cy);
-#else
-		Image ci = Image(stdsize);
-		ImageDraw w(ci);
-		w.DrawRect(stdsize, bg);
-		m.Paint(w, stdsize, true);
-		if(stdsize.cx * cy > stdsize.cy * cx)
-			cy = stdsize.cy * cx / stdsize.cx;
-		else
-			cx = stdsize.cx * cy / stdsize.cy;
-		PixelArray dest(cx, cy, -3);
-		PixelCopyAntiAlias(dest, Size(cx, cy), ImageToPixelArray(ci, ScreenInfo(), -3), stdsize);
-		icon = PixelArrayToImage(dest);
-#endif
 	}
 	return icon;
 }

@@ -127,7 +127,7 @@ void EditorBar::LeftDown(Point p, dword flags) {
 }
 
 String& EditorBar::PointBreak(int& y) {
-	y = minmax(y / ScreenInfo().GetFontInfo(editor->GetFont()).GetHeight()
+	y = minmax(y / editor->GetFont().Info().GetHeight()
 		+ editor->GetScrollPos().y, 0, editor->GetLineCount());
 	return li.At(y).breakpoint;
 }

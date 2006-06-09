@@ -12,6 +12,15 @@
 	#define DBF_TIMING(x)
 #endif
 
+inline int DeleteShareFlag()
+{
+#ifdef PLATFORM_WIN32
+	return IsWinNT() ? FileStream::DELETESHARE : 0;
+#else
+	return 0;
+#endif
+}
+
 static int scan_int(const char *p, const char *e = 0)
 {
 	DBF_TIMING("scan_int");
@@ -233,12 +242,12 @@ bool DbfStream::Open(const char *file, bool write, byte _charset, bool _delete_s
 	Close();
 	LLOG("DbfStream::Open(" << file << ", write = " << write << ", charset = " << (int)_charset << ")");
 	if(!dbf.Open(file, (write ? FileStream::READWRITE : FileStream::READ)
-	| (_delete_share && IsWinNT() ? FileStream::DELETESHARE : 0))) {
+	| (_delete_share ? DeleteShareFlag() : 0))) {
 		LLOG("-> open error");
 		return false;
 	}
 	if(dbt.Open(ForceExt(file, ".dbt"),
-		FileStream::READ | (_delete_share && IsWinNT() ? FileStream::DELETESHARE : 0))) // writing MEMO's is not supported yet
+		FileStream::READ | (_delete_share ? DeleteShareFlag() : 0))) // writing MEMO's is not supported yet
 		dbt.SetLoading();
 	dbf.SetLoading();
 	if(DoOpen(_charset))
@@ -251,7 +260,7 @@ bool DbfStream::Open(const char *file, bool write, byte _charset, bool _delete_s
 bool DbfStream::Create(const char *filename, const Array<Field>& _fields, byte _charset, bool _delete_share)
 {
 	Close();
-	if(!dbf.Open(filename, FileStream::CREATE | (_delete_share && IsWinNT() ? FileStream::DELETESHARE : 0)))
+	if(!dbf.Open(filename, FileStream::CREATE | (_delete_share ? DeleteShareFlag() : 0)))
 		return false;
 	if(DoCreate(_fields, _charset))
 		return true;

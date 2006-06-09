@@ -94,7 +94,7 @@ struct VirtualsDlg : public WithVirtualsLayout<TopWindow> {
 		list.AddColumn("Virtual function").SetDisplay(Single<CppItemInfoDisplay>());
 		list.AddColumn("Defined in");
 		list.AddColumn("Last override");
-		list.SetLineCy(ScreenInfo().GetFontInfo(Arial(11)).GetHeight() + 3);
+		list.SetLineCy(Arial(11).Info().GetHeight() + 3);
 		list.ColumnWidths("500 100 100");
 		list.WhenLeftDouble = THISBACK(DblClk);
 		list.MultiSelect();

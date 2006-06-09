@@ -1167,7 +1167,7 @@ void AlignDisplay::Paint(Draw& draw, const Rect& rc, const Value& v, Color ink, 
 {
 	String s = StdFormat(v);
 	Font font = StdFont();
-	Size size = draw.GetTextSize(s, font);
+	Size size = GetTextSize(s, font);
 	draw.DrawRect(rc, paper);
 	int x = rc.left;
 	switch(align)

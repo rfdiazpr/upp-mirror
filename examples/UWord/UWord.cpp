@@ -24,7 +24,7 @@ protected:
 	ToolBar    toolbar;
 	StatusBar  statusbar;
 	String     filename;
-	
+
 	void Load(const String& filename);
 	void New();
 	void Open();
@@ -64,10 +64,8 @@ void UWord::FileBar(Bar& bar)
 	bar.Add("Print..", CtrlImg::print(), THISBACK(Print))
 	   .Key(K_CTRL_P)
 	   .Help("Print document");
-	#ifdef PLATFORM_WIN32
 	bar.Add("Export to PDF..", UWordImg::pdf(), THISBACK(Pdf))
 	   .Help("Export document to PDF file");
-	#endif
 	if(bar.IsMenuBar()) {
 		bar.Separator();
 		bar.Add("Exit", THISBACK(Destroy));
@@ -145,7 +143,6 @@ void UWord::Print()
 
 void UWord::Pdf()
 {
-	#ifdef PLATFORM_WIN32
 	FileSel& fs = PdfFs();
 	if(!fs.ExecuteSaveAs("Output PDF file"))
 		return;
@@ -153,7 +150,6 @@ void UWord::Pdf()
 	PdfDraw pdf;
 	::Print(pdf, editor.Get(), page);
 	SaveFile(~fs, pdf.Finish());
-	#endif
 }
 
 void UWord::About()
@@ -172,7 +168,6 @@ void UWord::Destroy()
 			return;
 		}
 	}
-		
 	delete this;
 }
 

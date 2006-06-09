@@ -356,7 +356,7 @@ void BarHelpItem::HelpText(String& out) const
 		para.part.Clear();
 	}
 	out.Cat(BodyAsQTF(rtext));
-#endif	
+#endif
 }
 
 class BarHelpMap
@@ -1706,7 +1706,7 @@ Vector<Drawing> RichTextPrintSection(const PrintSection& section, Size pagesize,
 		for(int hf = 0; hf < 3; hf++) {
 			if(!IsNull(section.header[hf])) {
 				String s = ExpandHFText(section.header[hf], pageno);
-				Size sz = ddraw.GetTextSize(s, section.charformat);
+				Size sz = GetTextSize(s, section.charformat);
 				int x;
 				switch(hf) {
 				case 0: x = pagerect.left; break;
@@ -1717,7 +1717,7 @@ Vector<Drawing> RichTextPrintSection(const PrintSection& section, Size pagesize,
 			}
 			if(!IsNull(section.footer[hf])) {
 				String s = ExpandHFText(section.footer[hf], pageno);
-				Size sz = ddraw.GetTextSize(s, section.charformat);
+				Size sz = GetTextSize(s, section.charformat);
 				int x;
 				switch(hf) {
 				case 0: x = pagerect.left; break;

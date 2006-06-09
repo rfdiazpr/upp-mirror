@@ -32,9 +32,10 @@ public:
 	T          *operator~()                { Chk(); return ptr; }
 	const T&    operator*() const          { ChkP(); return *ptr; }
 	T&          operator*()                { ChkP(); return *ptr; }
-	
+
 	template <class TT>
 	TT&         Create()                   { TT *q = new TT; Attach(q); return *q; }
+	T&          Create()                   { T *q = new T; Attach(q); return *q; }
 
 	bool        IsPicked() const           { return ptr == (T*)1; }
 	bool        IsEmpty() const            { Chk(); return !ptr; }
@@ -57,12 +58,12 @@ class Any : Moveable<Any> {
 	template <class T>
 	struct Data : BaseData {
 		T        data;
-		
+
 		virtual  int TypeNo()                     { return StaticTypeNo<T>(); }
-		
+
 		Data() {}
 	};
-	
+
 	BaseData *ptr;
 
 	void Chk() const                              { ASSERT(ptr != (void *)1); }
@@ -73,7 +74,7 @@ public:
 	template <class T> bool Is() const            { return ptr && ptr->TypeNo() == StaticTypeNo<T>(); }
 	template <class T> T& Get()                   { ASSERT(Is<T>()); Chk(); return ((Data<T>*)ptr)->data; }
 	template <class T> const T& Get() const       { ASSERT(Is<T>()); Chk(); return ((Data<T>*)ptr)->data; }
-	
+
 	void Clear()                                  { if(ptr) delete ptr; ptr = NULL; }
 
 	bool IsEmpty() const                          { return ptr == NULL; }
@@ -138,7 +139,7 @@ class Mitor : Moveable< Mitor<T> > {
 		mutable Vector<T> *vector;
 	};
 	byte elem0[sizeof(T)];
-	
+
 	T&        Get(int i) const;
 	void      Pick(pick_ Mitor& m);
 	void      Copy(const Mitor& m);
@@ -152,7 +153,7 @@ public:
 	void      Add(const T& x);
 	void      Clear();
 	void      Shrink();
-	
+
 	Mitor(pick_ Mitor& m)               { Pick(m); }
 	void operator=(pick_ Mitor& m)      { Clear(); Pick(m); }
 
@@ -296,3 +297,128 @@ class LinkOwner : public Link<T, N> {
 public:
 	~LinkOwner()                         { Link<T, N>::DeleteList(); }
 };
+
+template <class T>
+struct LRUCache {
+	struct Maker {
+		virtual String Key() const = 0;
+		virtual int    Make(T& object) const = 0;
+		virtual ~Maker() {}
+	};
+
+private:
+	struct Item : Moveable<Item> {
+		int16  prev, next;
+		int    size;
+		One<T> data;
+		bool   flag;
+	};
+
+	Index<String> key;
+	Vector<Item>  data;
+	int  head;
+
+	int  size;
+	int  count;
+
+	int  foundsize;
+	int  newsize;
+	bool flag;
+
+
+	void Unlink(int i);
+	void LinkHead(int i);
+
+public:
+	int  GetSize() const            { return size; }
+
+	void Shrink(int maxsize);
+
+	const T& Get(const Maker& m);
+
+	void ClearCounters();
+	int  GetFoundSize() const       { return foundsize; }
+	int  GetNewSize() const         { return newsize; }
+
+	LRUCache() { head = -1; size = 0; count = 0; ClearCounters(); }
+};
+
+template <class T>
+void LRUCache<T>::LinkHead(int i)
+{
+	Item& m = data[i];
+	if(head >= 0) {
+		int tail = data[head].prev;
+		m.next = head;
+		m.prev = tail;
+		data[head].prev = i;
+		data[tail].next = i;
+	}
+	else
+		m.prev = m.next = i;
+	head = i;
+	count++;
+}
+
+
+template <class T>
+void LRUCache<T>::Unlink(int i)
+{
+	Item& m = data[i];
+	if(m.prev == i)
+		head = -1;
+	else {
+		if(head == i)
+			head = m.next;
+		data[(int)m.next].prev = m.prev;
+		data[(int)m.prev].next = m.next;
+	}
+	count--;
+}
+
+template <class T>
+void LRUCache<T>::Shrink(int maxsize)
+{
+	if(maxsize < 0)
+		return;
+	while((count > 30000 || size > maxsize) && head >= 0) {
+		int tail = data[head].prev;
+		size -= data[tail].size;
+		data[tail].data.Clear();
+		Unlink(tail);
+		key.Unlink(tail);
+	}
+}
+
+template <class T>
+void LRUCache<T>::ClearCounters()
+{
+	flag = !flag;
+	newsize = foundsize = 0;
+}
+
+template <class T>
+const T& LRUCache<T>::Get(const Maker& m)
+{
+	String k = m.Key();
+	k.Cat((const char *)&typeid(m), sizeof(void *));
+	int q = key.Find(k);
+	if(q < 0) {
+		q = key.Put(k);
+		Item& t = data.At(q);
+		t.size = m.Make(t.data.Create());
+		size += t.size;
+		newsize += t.size;
+		t.flag = flag;
+	}
+	else {
+		Item& t = data[q];
+		Unlink(q);
+		if(t.flag != flag) {
+			t.flag = flag;
+			foundsize += t.size;
+		}
+	}
+	LinkHead(q);
+	return *data[q].data;
+}

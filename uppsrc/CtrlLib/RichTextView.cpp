@@ -94,10 +94,10 @@ Image RichTextView::CursorImage(Point p, dword keyflags)
 void RichTextView::Copy()
 {
 	if(anchor == cursor)
-		text.WriteClipboard();
+		WriteClipboardUnicodeText(text.GetPlainText());
 	else {
 		RefreshSel();
-		text.Copy(sell, selh - sell).WriteClipboard();
+		WriteClipboardUnicodeText(text.Copy(sell, selh - sell).GetPlainText());
 	}
 }
 
@@ -383,7 +383,6 @@ RichTextView::RichTextView()
 	WhenLink = callback(LaunchWebBrowser);
 	NoWantFocus();
 	anchor = cursor = sell = selh = 0;
-	StdRichClipboardFormats();
 }
 
 RichTextView::~RichTextView() {}
@@ -395,4 +394,59 @@ RichTextCtrl::RichTextCtrl()
 	Background(Null);
 	SetFrame(NullFrame());
 	AutoHideSb();
+}
+
+void Print(Draw& w, const RichText& text, const Rect& page, const Vector<int>& pg)
+{
+	LOG("Print");
+	int lpage = text.GetHeight(page).page;
+	PrintPageDraw pw(w);
+	Size sz = w.GetPageMMs();
+	Size pgsz = page.Size();
+	int x = (6000 * sz.cx / 254 - pgsz.cx) / 2;
+	int y = (6000 * sz.cy / 254 - pgsz.cy) / 2;
+	for(int pi = 0; pi < pg.GetCount(); pi++) {
+		int i = pg[pi];
+		w.StartPage();
+		w.Offset(x, y);
+		pw.SetPage(i);
+		PaintInfo paintinfo;
+		paintinfo.top = PageY(i, 0);
+		paintinfo.bottom = PageY(i + 1, 0);
+		paintinfo.indexentry = Null;
+		if(text.IsPrintNoLinks())
+			paintinfo.hyperlink = Null;
+		text.Paint(pw, page, paintinfo);
+		w.End();
+		String footer = text.GetFooter();
+		if(!IsNull(footer) && lpage) {
+			String n = Format(footer, i + 1, lpage + 1);
+			Size nsz = GetTextSize(n, Arial(90).Italic());
+			pw.Page(i).DrawText(
+				x + pgsz.cx - nsz.cx, y + pgsz.cy + 100,
+				n, Arial(90).Italic());
+		}
+		w.EndPage();
+	}
+}
+
+void Print(Draw& w, const RichText& text, const Rect& page)
+{
+	int n = text.GetHeight(page).page;
+	Vector<int> pg;
+	for(int i = 0; i <= n; i++)
+		pg.Add(i);
+	Print(w, text, page, pg);
+}
+
+bool Print(const RichText& text, const Rect& page, int currentpage, const char *name)
+{
+	PrinterJob pj(name);
+	pj.CurrentPage(currentpage);
+	pj.PageCount(text.GetHeight(page).page + 1);
+	if(pj.Execute()) {
+		Print(pj, text, page, pj.GetPages());
+		return true;
+	}
+	return false;
 }

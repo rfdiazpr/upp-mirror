@@ -7,7 +7,7 @@ void DbgDisas::MouseWheel(Point, int zdelta, dword)
 
 Size DbgDisas::GetBox() const
 {
-	return ScreenInfo().GetTextSize("12345678", Courier(12));
+	return GetTextSize("12345678", Courier(12));
 }
 
 void DbgDisas::Layout()
@@ -92,7 +92,7 @@ void DbgDisas::Clear()
 	inst.Clear();
 	taddr.Clear();
 	addr.Clear();
-	codecx = ScreenInfo().GetTextSize("movlmo").cx;
+	codecx = GetTextSize("movlmo", StdFont()).cx;
 }
 
 void  DbgDisas::Add(dword adr, const String& code, const String& args)
@@ -107,7 +107,7 @@ void  DbgDisas::Add(dword adr, const String& code, const String& args)
 	n.args = args;
 	sb.SetTotal(inst.GetCount());
 	Refresh();
-	int cx = ScreenInfo().GetTextSize(n.code).cx;
+	int cx = GetTextSize(n.code, StdFont()).cx;
 	if(cx > codecx)
 		codecx = cx;
 }

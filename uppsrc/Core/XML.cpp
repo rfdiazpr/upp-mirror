@@ -100,7 +100,7 @@ String  XmlTag::Text(const char *text, byte charset)
 
 XmlTag& XmlTag::operator()(const char *attr, const char *val)
 {
-	tag << ' ' << attr << "=\"" << val << "\"";
+	tag << ' ' << attr << "=\"" << DeXml(val) << "\"";
 	return *this;
 }
 

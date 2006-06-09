@@ -30,8 +30,8 @@ struct EditPageDraw : public PageDraw {
 	int                x, y;
 	Size               size;
 
-	EditPageDraw(Draw& w) : w(w) { w.Begin(); page = -1; }
-	~EditPageDraw() { w.End(); }
+	EditPageDraw(Draw& w) : w(w) { w.Begin(); w.Begin(); page = -1; }
+	~EditPageDraw() { w.End(); w.End(); }
 };
 
 Draw& EditPageDraw::Page(int _page)
@@ -39,7 +39,9 @@ Draw& EditPageDraw::Page(int _page)
 	if(page == _page) return w;
 	page = _page;
 	w.End();
-	w.Clipoff(x, y + (size.cy + 3) * page + 2, size.cx, size.cy);
+	w.End();
+	w.Clipoff(0, y + (size.cy + 3) * page + 2, 9999, size.cy);
+	w.Offset(x, 0);
 	return w;
 }
 
@@ -323,11 +325,9 @@ Rect RichEdit::GetObjectRect(int pos) const {
 
 bool RichEdit::Print()
 {
-#ifdef PLATFORM_WIN32
 	text.SetFooter(footer);
 	text.PrintNoLinks(nolinks);
 	return ::Print(text, pagesz, cursorc.page);
-#endif
 }
 
 struct DisplayFont : public Display {
@@ -337,7 +337,7 @@ struct DisplayFont : public Display {
 		fnt.Face((int)q);
 		fnt.Height(r.Height() - 4);
 		w.DrawRect(r, paper);
-		w.DrawText(r.left, r.top + (r.Height() - w.GetFontInfo(fnt).GetHeight()) / 2,
+		w.DrawText(r.left, r.top + (r.Height() - fnt.Info().GetHeight()) / 2,
 		           Font::GetFaceName((int)q), fnt, ink);
 	}
 };
@@ -346,7 +346,7 @@ struct ValueDisplayFont : public Display {
 	void Paint(Draw& w, const Rect& r, const Value& q, Color ink, Color paper, dword style) const
 	{
 		w.DrawRect(r, paper);
-		w.DrawText(r.left, r.top + (r.Height() - w.GetFontInfo(StdFont()).GetHeight()) / 2,
+		w.DrawText(r.left, r.top + (r.Height() - StdFont().Info().GetHeight()) / 2,
 		           Font::GetFaceName((int)q), StdFont(), ink);
 	}
 };
@@ -531,8 +531,6 @@ void StdLabelDlg(String& s)
 
 RichEdit::RichEdit()
 {
-	StdRichClipboardFormats();
-
 	Unicode();
 	BackPaint();
 
@@ -656,7 +654,7 @@ RichEdit::RichEdit()
 
 	WhenHyperlink = callback(StdLinkDlg);
 	WhenLabel = callback(StdLabelDlg);
-	
+
 	p_size = Size(-1, -1);
 
 	Finish();

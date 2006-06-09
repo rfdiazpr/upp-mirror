@@ -8,10 +8,15 @@
 #pragma comment(lib, "ws2_32.lib")
 #endif
 
-enum
-{
+enum {
 	NB_TIMEOUT  = 30000,
 	SOCKBUFSIZE = 65536,
+
+#ifdef PLATFORM_WIN32
+	IS_BLOCKED = SOCKERR(EWOULDBLOCK),
+#else
+	IS_BLOCKED = SOCKERR(EINPROGRESS),
+#endif
 };
 
 static bool LogSocketFlag = false;
@@ -202,7 +207,7 @@ bool Socket::Data::OpenClient(const char *host, int port, bool nodelay, dword *m
 		return true;
 
 	int err = GetLastError();
-	if(err != SOCKERR(EWOULDBLOCK)) {
+	if(err != IS_BLOCKED) {
 		SetSockError(NFormat("connect(%s:%d)", host, port));
 		SLOG("Socket::Data::OpenClient -> connect error, returning false");
 		return false;
@@ -274,7 +279,7 @@ int Socket::Data::Read(void *buf, int amount)
 #endif
 	if(res == 0)
 		is_eof = true;
-	else if(res < 0 && GetLastError() != SOCKERR(EWOULDBLOCK))
+	else if(res < 0 && GetLastError() != IS_BLOCKED)
 		SetSockError("recv");
 	return res;
 }
@@ -282,7 +287,7 @@ int Socket::Data::Read(void *buf, int amount)
 int Socket::Data::Write(const void *buf, int amount)
 {
 	int res = send(socket, (const char *)buf, amount, 0);
-	if(res == 0 || res < 0 && GetLastError() != SOCKERR(EWOULDBLOCK))
+	if(res == 0 || res < 0 && GetLastError() != IS_BLOCKED)
 		SetSockError("send");
 	return res;
 }

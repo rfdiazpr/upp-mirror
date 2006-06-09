@@ -39,7 +39,7 @@ void IdeCalc::Execute()
 		if(IsNull(s))
 			return;
 		EscValue v = Evaluatex(s, vars);
-		txt = v.ToString(GetSize().cx / max(1, ScreenInfo().GetFontInfo(GetFont())['x']), 4, true);
+		txt = v.ToString(GetSize().cx / max(1, GetFont().Info()['x']), 4, true);
 		vars.GetAdd("_") = v;
 	}
 	catch(CParser::Error e) {

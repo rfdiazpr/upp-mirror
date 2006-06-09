@@ -154,19 +154,27 @@ void RichEdit::Redo()
 	Move(c);
 }
 
+#ifdef PLATFORM_WIN32
+#define RTFS "Rich Text Format"
+#else
+#define RTFS "text/richtext"
+#endif
+
 void RichEdit::Copy()
 {
 	if(IsSelection()) {
 		ClearClipboard();
+		RichText clip;
 		if(tablesel) {
 			RichTable tab = text.CopyTable(tablesel, cells);
-			RichText h;
-			h.SetStyles(text.GetStyles());
-			h.CatPick(tab);
-			h.WriteClipboard();
+			clip.SetStyles(text.GetStyles());
+			clip.CatPick(tab);
 		}
 		else
-			text.Copy(min(cursor, anchor), abs(cursor - anchor)).WriteClipboard();
+			clip = text.Copy(min(cursor, anchor), abs(cursor - anchor));
+		AppendClipboard("text/QTF", AsQTF(clip));
+		AppendClipboard(RTFS, EncodeRTF(clip, GetDefaultCharset()));
+		AppendClipboardUnicodeText(clip.GetPlainText());
 	}
 	else
 	if(objectpos >= 0) {
@@ -262,34 +270,42 @@ void RichEdit::Paste()
 	if(IsReadOnly())
 		return;
 	int stylei = 0;
-	RichText clip = RichText::ReadClipboard(formatinfo);
-	if(!clip.IsEmpty()) {
-		if(clip.GetPartCount() == 1 && clip.IsTable(0)) {
-			CancelSelection();
-			if(cursorp.table) {
-				NextUndo();
-				SaveTable(cursorp.table);
-				text.PasteTable(cursorp.table, cursorp.cell, clip.GetTable(0));
-				Finish();
-				return;
+	RichText clip;
+	if(IsClipboardAvailable("text/QTF"))
+		clip = ParseQTF(ReadClipboard("text/QTF"));
+	else
+	if(IsClipboardAvailable(RTFS))
+		clip = ParseRTF(ReadClipboard(RTFS));
+	else
+	if(IsClipboardAvailableText())
+		clip = AsRichText(ReadClipboardUnicodeText(), formatinfo);
+	else {
+		for(int i = 0; i < RichObject::GetTypeCount(); i++) {
+			RichObjectType& rt = RichObject::GetType(i);
+			Value data = rt.ReadClipboard();
+			if(!IsNull(data)) {
+				RichPara p;
+				p.Cat(RichObject(&rt, data, pagesz), formatinfo);
+				RichText clip;
+				clip.Cat(p);
+				PasteText(clip);
+				break;
 			}
 		}
-		clip.Normalize();
-		PasteText(clip);
 		return;
 	}
-	for(int i = 0; i < RichObject::GetTypeCount(); i++) {
-		RichObjectType& rt = RichObject::GetType(i);
-		Value data = rt.ReadClipboard();
-		if(!IsNull(data)) {
-			RichPara p;
-			p.Cat(RichObject(&rt, data, pagesz), formatinfo);
-			RichText clip;
-			clip.Cat(p);
-			PasteText(clip);
-			break;
+	if(clip.GetPartCount() == 1 && clip.IsTable(0)) {
+		CancelSelection();
+		if(cursorp.table) {
+			NextUndo();
+			SaveTable(cursorp.table);
+			text.PasteTable(cursorp.table, cursorp.cell, clip.GetTable(0));
+			Finish();
+			return;
 		}
 	}
+	clip.Normalize();
+	PasteText(clip);
 }
 
 void RichEdit::InsertObject(int type)

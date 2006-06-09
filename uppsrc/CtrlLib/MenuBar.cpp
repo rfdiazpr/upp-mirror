@@ -191,8 +191,8 @@ void DrawMnemonicText(Draw& w, int x, int y, const String& s, Font font, Color c
 	if(q < 0 || e >= 0 && e < q) q = e;
 	w.DrawText(x, y, s, font, color);
 	if(q < 0) return;
-	FontInfo f = w.GetFontInfo(font);
-	w.DrawRect(x + w.GetTextSize(~s, font, q).cx, y + f.GetAscent() + 1, f[s[q]], 1, SLtBlue);
+	FontInfo f = font.Info();
+	w.DrawRect(x + GetTextSize(~s, font, q).cx, y + f.GetAscent() + 1, f[s[q]], 1, SLtBlue);
 }
 
 void DrawMenuText(Draw& w, int x, int y, const String& s, Font f, bool enabled,
@@ -220,7 +220,7 @@ void MenuItemBase::PaintTopItem(Draw& w, int state) {
 	if(Ctrl::IsXPStyle()) {
 		w.DrawRect(0, 0, sz.cx, sz.cy, state ? SColorHighlight : SColorFace);
 		String text = GetText();
-		Size isz = ScreenInfo().GetTextSize(text);
+		Size isz = GetTextSize(text, StdFont());
 		DrawMenuText(w, 6, (sz.cy - isz.cy) / 2, text, GetFont(), IsItemEnabled(), state);
 	}
 	else {
@@ -228,7 +228,7 @@ void MenuItemBase::PaintTopItem(Draw& w, int state) {
 		static const ColorF b0[] = { (ColorF)1, SWhite, SWhite, SGray, SGray, };
 		static const ColorF b1[] = { (ColorF)1, SGray, SGray, SWhite, SWhite, };
 		String text = GetText();
-		Size isz = ScreenInfo().GetTextSize(text);
+		Size isz = GetTextSize(text, StdFont());
 		DrawMenuText(w, 6, (sz.cy - isz.cy) / 2, text, GetFont(), IsItemEnabled(), false);
 		if(state)
 			DrawBorder(w, 0, 0, sz.cx, sz.cy, state == 2 ? b1 : b0);
@@ -342,23 +342,23 @@ void MenuItem::Paint(Draw& w)
 	}
 	DrawHighlightImage(w, 2, iy, li, hl || chk, isenabled);
 	int x = max(isz.cx, leftgap) + 6;
-	isz = ScreenInfo().GetTextSize(text);
+	isz = GetTextSize(text, StdFont());
 	DrawMenuText(w, x, (sz.cy - isz.cy) / 2, txt, font, isenabled, hl, SColorMenuText);
 	isz = ricon.GetSize();
 	DrawHighlightImage(w, sz.cx - isz.cx, (sz.cy - isz.cy) / 2, ricon, hl, isenabled);
 	x = sz.cx - max(isz.cx, 16) - 1;
 	if(!IsEmpty(keydesc)) {
-		isz = ScreenInfo().GetTextSize(keydesc);
+		isz = GetTextSize(keydesc, StdFont());
 		::DrawMenuText(w, x - isz.cx - 2, (sz.cy - isz.cy) / 2, keydesc, font, isenabled, hl, 0, SLtBlue);
 	}
 }
 
 Size MenuItem::GetMinSize() const
 {
-	Size sz1 = ScreenInfo().GetTextSize(text, font);
+	Size sz1 = GetTextSize(text, font);
 	Size sz2(0, 0);
 	if(accel) {
-		sz2 = ScreenInfo().GetTextSize(GetKeyDesc(accel), font);
+		sz2 = GetTextSize(GetKeyDesc(accel), font);
 		sz2.cx += 12;
 	}
 	Size lsz = licon.GetSize();
@@ -491,7 +491,7 @@ bool SubMenuItem::HotKey(dword key)
 
 Size TopSubMenuItem::GetMinSize() const
 {
-	return AddFrameSize(ScreenInfo().GetTextSize(text, font) + Size(12, 7));
+	return AddFrameSize(GetTextSize(text, font) + Size(12, 7));
 }
 
 int  TopSubMenuItem::GetState()
@@ -628,12 +628,12 @@ bool TopMenuItem::Key(dword key, int count)
 
 Size TopMenuItem::GetMinSize() const
 {
-	return AddFrameSize(ScreenInfo().GetTextSize(text) + Size(12, 7));
+	return AddFrameSize(GetTextSize(text, StdFont()) + Size(12, 7));
 }
 
 int TopMenuItem::GetStdHeight(Font font)
 {
-	return ScreenInfo().GetFontInfo(font).GetHeight() + 7;
+	return font.Info().GetHeight() + 7;
 }
 
 void TopMenuItem::SyncState()

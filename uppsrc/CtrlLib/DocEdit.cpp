@@ -25,7 +25,7 @@ void DocEdit::RemoveLines(int line, int count)
 
 DocEdit::Fmt DocEdit::Format(const WString& text) const
 {
-	FontInfo fi = ScreenInfo().GetFontInfo(CHARSET_UNICODE, font);
+	FontInfo fi = font.Info();
 	Fmt fmt;
 	int tcx = fi['x'] * 4;
 	fmt.len = text.GetLength();
@@ -218,7 +218,7 @@ int  DocEdit::GetCursor(Point p) {
 
 void DocEdit::PlaceCaret(bool scroll) {
 	Point cr = GetCaret(cursor);
-	int fy = ScreenInfo().GetFontInfo(font).GetLineHeight();
+	int fy = font.Info().GetLineHeight();
 	if(scroll)
 		if(cursor == total)
 			sb.End();
@@ -259,7 +259,7 @@ void DocEdit::MouseMove(Point p, dword flags) {
 }
 
 Image DocEdit::CursorImage(Point, dword) {
-	return GetIBeamCursor();
+	return Image::IBeam();
 }
 
 void DocEdit::GotFocus() {

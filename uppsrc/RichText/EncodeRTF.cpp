@@ -91,12 +91,6 @@ String EncodeRTF(const RichText& richtext, byte charset)
 	StringStream out;
 	EncodeRTF(out, richtext, charset);
 	String s = out.GetResult();
-#ifdef _DEBUG
-	SaveFile("j:\\temp\\clip.rtf", s);
-//	String s = out;
-//	for(int i = 0; i < s.GetLength(); i += 60)
-//		LOG(s.Mid(i, min(s.GetLength() - i, 60)));
-#endif
 	return s;
 }
 

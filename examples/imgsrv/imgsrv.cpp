@@ -1,12 +1,41 @@
 #include <Web/Web.h>
 #include <Draw/Draw.h>
-#include <plugin/png/png.h>
+//#include <plugin/png/png.h>
+#include <plugin/gif/gif.h>
+#ifdef PLATFORM_WIN32
+#include <wincon.h>
+#endif
 
-#define APP_VERSION "1.0.r3"
-#define APP_DATE    Date(2004, 4, 22)
+#define APP_VERSION "1.1"
+#define APP_DATE    Date(2006, 5, 19)
+
+static bool canceled = false;
+
+#ifdef PLATFORM_WIN32
+static BOOL WINAPI ControlBreak(DWORD reason)
+{
+	canceled = true;
+	return TRUE;
+}
+#endif
+#ifdef PLATFORM_POSIX
+static int SignalHandler()
+{
+	canceled = true;
+	return 1;
+}
+#endif
 
 CONSOLE_APP_MAIN
 {
+#ifdef PLATFORM_WIN32
+	SetConsoleCtrlHandler(&ControlBreak, TRUE);
+#endif
+#ifdef PLATFORM_POSIX
+	signal(SIGPIPE, SIG_IGN);
+	signal(SIGKILL, &SignalHandler);
+#endif
+
 	HttpServer server;
 	int next_id = 0;
 	server.Logging();
@@ -23,60 +52,58 @@ CONSOLE_APP_MAIN
 
 	Color bg((color >> 16) & 255, (color >> 8) & 255, color & 255);
 
-	if(!server.Open(port))
-	{
+	if(!server.Open(port, 20)) {
 		puts(Socket::GetErrorText());
 		return;
 	}
 
-	for(;;)
-	{
-		server.Wait(1000);
-		if(server.IsError())
-		{
+	int ticks = msecs();
+	while(!canceled) {
+		server.Wait(100);
+		if(server.IsError()) {
 			puts("Server error: " + Socket::GetErrorText());
 			puts("Reopening socket...");
 			fflush(stdout);
-			if(!server.Reopen())
-			{
+			if(!server.Reopen()) {
 				puts("Reopen on server socket failed: " + Socket::GetErrorText());
 				return;
 			}
 		}
-		fputs(NFormat("\rserver(%d) running at %`", port, GetSysTime()), stdout);
-		fflush(stdout);
+		if(msecs(ticks) >= 1000) {
+			fputs(NFormat("\rserver(%d) running at %`", port, GetSysTime()), stdout);
+			fflush(stdout);
+			ticks = msecs();
+		}
 		One<HttpRequest> request = server.GetRequest();
 		if(!request)
 			continue;
 		HttpQuery query = request->GetQuery();
 		String svr = query.GetString("SVR", "test");
 		String img = query.GetString("IMG");
-		fputs(NFormat("img = %s, svr = %s\n", img, svr), stdout);
+		Size image_size;
+		image_size.cx = query.GetInt("WD", 1, 500, 50);
+		image_size.cy = query.GetInt("HT", 1, 200, 20);
+		fputs(NFormat("img = %s, svr = %s, wd = %d, ht = %d\n",
+			img, svr, image_size.cx, image_size.cy), stdout);
 		String header, body;
-		Size image_size(50, 20);
-		if(!IsNull(img))
-		{
-			Image image(image_size);
-			{
-				ImageDraw draw(image);
-				draw.DrawRect(image_size, bg);
-				DrawFatFrame(draw, image_size, Black, 1);
-				Font font = Arial(10).Bold();
-				Size tsz = draw.GetTextSize(img, font);
-				draw.DrawText((image_size.cx - tsz.cx) >> 1,
-					(image_size.cy - tsz.cy) >> 1, img, font, Black);
-			}
-			header = HttpContentType(HttpImagePng());
-			body = PngEncoder().SaveImage(image);
+		if(!IsNull(img)) {
+			ImageDraw draw(image_size);
+			draw.DrawRect(image_size, bg);
+			DrawFatFrame(draw, image_size, Black, 1);
+			Font font = Arial(10).Bold();
+			Size tsz = draw.GetTextSize(img, font);
+			draw.DrawText((image_size.cx - tsz.cx) >> 1,
+				(image_size.cy - tsz.cy) >> 1, img, font, Black);
+			header = HttpContentType(HttpImageGif());
+			body = GIFEncoder().SaveString(draw);
 		}
-		else
-		{
+		else {
 			int items = query.GetInt("ITEMS", 0, 10000, 10);
 			Htmls image_page;
 			int i;
 			image_page <<
 			"IMGSRV, version " << APP_VERSION << ", release date: " << Format(APP_DATE) << "<br>\n"
-			"Copyright &copy; 2003, 2004 Tomas Rylek<p>\n"
+			"Copyright &copy; 2003-2006 Tomas Rylek, Miroslav Fidler<p>\n"
 			"Program uses the following third-party components:\n"
 			"<ul>\n"
 			"<li>libpng version 1.0.9, Copyright (c) 1998-2001 Glenn Randers-Pehrson "
@@ -91,6 +118,8 @@ CONSOLE_APP_MAIN
 			"<b>svr</b> (" << (IsNull(svr) ? "<i>empty</i>" : "<b>" + svr + "</b>")
 			<< ") = identifier for generated image references in this page (default = test)<br>\n"
 			"<b>img</b> = image identifier (empty = generate this page)<br>\n"
+			"<b>wd</b> = image width (default = 50 pixels)<br>\n"
+			"<b>ht</b> = image height (default = 20 pixels)<br>\n"
 			"Example: <b>http://localhost";
 			String wisapi = GetFileName(query.GetString("$$WISAPI"));
 			String sample_query;
@@ -106,7 +135,8 @@ CONSOLE_APP_MAIN
 			for(i = 0; i < items; i++)
 				image_page << HtmlTag("img").Src(
 					String().Cat() << "?img=" << UrlEncode(svr) << "-" << i << "&svr="
-						<< UrlEncode(svr) << "&id=" << ++next_id)
+						<< UrlEncode(svr) << "&id=" << ++next_id
+						<< "&wd=" << image_size.cx << "&ht=" << image_size.cy)
 						.Alt(ToHtml(String().Cat() << svr << "-" << i))
 						.Width(image_size.cx).Height(image_size.cy)
 				<< "\n" << (i % 15 == 14 ? "<br>\n" : "");
@@ -118,4 +148,6 @@ CONSOLE_APP_MAIN
 		request->Write(header, body);
 		request.Clear();
 	}
+	puts("Server stopped.");
+	fflush(stdout);
 }

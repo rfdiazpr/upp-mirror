@@ -47,7 +47,7 @@ void FontSelectManager::FaceSelect() {
 #ifdef PLATFORM_WIN32
 	int i;
 	for(i = 1; i < 32; i++) {
-		FontInfo fi = ScreenInfo().GetFontInfo(Font(f, i));
+		FontInfo fi = Font(f, i).Info();
 		int hh = fi.GetHeight();
 		if(hh != h) {
 			height->Add(hh);

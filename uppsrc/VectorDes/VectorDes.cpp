@@ -512,10 +512,10 @@ bool VectorCtrl::Copy()
 	clipimg.SetName("clip");
 	for(int i = 0; i < selection.GetCount(); i++)
 		clipimg.Add(image[selection.GetKey(i)].Copy());
-	if(!WriteClipboardText(clipimg.SaveVec(0))) {
-		Exclamation("Error writing system clipboard.");
+	WriteClipboardText(clipimg.SaveVec(0));
+/*	{	Exclamation("Error writing system clipboard.");
 		return false;
-	}
+	}*/
 	BeepInformation();
 	return true;
 }

@@ -1,6 +1,6 @@
 #include "CtrlCore.h"
 
-#define LLOG(x) LOG(x)
+#define LLOG(x) // LOG(x)
 
 #ifdef PLATFORM_X11
 
@@ -48,7 +48,6 @@ void Ctrl::Xclipboard::Request(XSelectionRequestEvent *se)
 	}
 	else {
 		int i = data.Find(se->target);
-		DUMP(i);
 		if(i >= 0)
 			XChangeProperty(Xdisplay, se->requestor, se->property, se->target, 8, PropModeReplace,
 			                data[i], data[i].GetLength());
@@ -111,59 +110,58 @@ void ClearClipboard()
 	Ctrl::xclipboard().Clear();
 }
 
-bool WriteClipboard(int fmt, const String& data, bool clear)
+void AppendClipboard(const char *fmt, const String& data)
 {
-	if(clear) ClearClipboard();
-	Ctrl::xclipboard().Write(fmt, data);
-	return true;
+	Ctrl::xclipboard().Write(XAtom(fmt), data);
 }
 
-String  ReadClipboard(int fmt)
+String  ReadClipboard(const char *fmt)
 {
-//*
+/*
 	String formats = Ctrl::xclipboard().Read(XAtom("TARGETS"));
 	int c = formats.GetCount() / sizeof(Atom);
 	const Atom *m = (Atom *) ~formats;
 	for(int i = 0; i < c; i++)
 		LOG("Available " << XAtomName(m[i]));
 //*/
-	return Ctrl::xclipboard().Read(fmt);
+	return Ctrl::xclipboard().Read(XAtom(fmt));
 }
 
-bool WriteClipboardText(const String& s, bool clear)
+void AppendClipboardText(const String& s)
 {
-	return WriteClipboard(XAtom("STRING"), s, clear);
+	AppendClipboard("STRING", s);
 }
 
 String ReadClipboardText()
 {
-	return ReadClipboard(XAtom("STRING"));
+	return ReadClipboard("STRING");
 }
 
-bool WriteClipboardUnicodeText(const WString& s, bool clear)
+void AppendClipboardUnicodeText(const WString& s)
 {
-	return WriteClipboard(XAtom("UTF8_STRING"), ToUtf8(s), clear);
+	AppendClipboard("UTF8_STRING", ToUtf8(s));
 }
 
 WString ReadClipboardUnicodeText()
 {
-	return FromUtf8(ReadClipboard(XAtom("UTF8_STRING")));
+	return FromUtf8(ReadClipboard("UTF8_STRING"));
 }
 
-bool IsClipboardAvailable(int fmt)
+bool IsClipboardAvailable(const char *fmt)
 {
 	String formats = Ctrl::xclipboard().Read(XAtom("TARGETS"));
 	int c = formats.GetCount() / sizeof(Atom);
 	const Atom *m = (Atom *) ~formats;
+	int xa = XAtom(fmt);
 	for(int i = 0; i < c; i++)
-		if(m[i] == fmt)
+		if(m[i] == xa)
 			return true;
 	return false;
 }
 
 bool IsClipboardAvailableText()
 {
-	return IsClipboardAvailable(XAtom("UTF8_STRING"));
+	return IsClipboardAvailable("UTF8_STRING");
 }
 
 #endif

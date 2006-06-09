@@ -567,8 +567,9 @@ void TextCtrl::Copy() {
 		h = l + line[i].GetLength() + 1;
 	}
 	WString txt = GetW(l, h - l);
-	WriteClipboardUnicodeText(txt);
-	WriteClipboardText(txt.ToString(), false);
+	ClearClipboard();
+	AppendClipboardUnicodeText(txt);
+	AppendClipboardText(txt.ToString());
 }
 
 void TextCtrl::SelectAll() {

@@ -1,8 +1,6 @@
 void Animate(Ctrl& c, const Rect& target, int type = -1);
 void Animate(Ctrl& c, int x, int y, int cx, int cy, int type = -1);
 
-Image GetIBeamCursor();
-
 bool CtrlLibDisplayError(const Value& ev);
 
 bool EditText(String& s, const char *title, const char *label, int (*filter)(int), int maxlen = 0);
@@ -25,7 +23,6 @@ class DelayCallback : public Pte<DelayCallback> {
 	Callback target;
 	int      delay;
 
-
 public:
 	void     Invoke();
 	void     operator<<=(Callback x)  { target = x; }
@@ -37,6 +34,44 @@ public:
 	DelayCallback()                   { delay = 2000; }
 	~DelayCallback()                  { KillTimeCallback(this); }
 };
+
+#ifdef PLATFORM_WIN32
+struct Win32PrintDlg_;
+#endif
+
+class PrinterJob {
+#ifdef PLATFORM_WIN32
+	One<Win32PrintDlg_> pdlg;
+#endif
+#ifdef PLATFORM_X11
+	Size                pgsz;
+#endif
+	One<Draw>           draw;
+	Vector<int>         page;
+	int                 from, to, current;
+	bool                landscape;
+	String              name;
+	String              options;
+	bool                Execute0(bool dodlg);
+
+public:
+	Draw&               GetDraw();
+	operator            Draw&()                         { return GetDraw(); }
+	const Vector<int>&  GetPages() const                { return page; }
+	int                 operator[](int i) const         { return page[i]; }
+	int                 GetPageCount() const            { return page.GetCount(); }
+
+	bool                Execute();
+
+	PrinterJob& Landscape(bool b = true)                { landscape = b; return *this; }
+	PrinterJob& MinMaxPage(int minpage, int maxpage);
+	PrinterJob& PageCount(int n)                        { return MinMaxPage(0, n - 1); }
+	PrinterJob& CurrentPage(int currentpage);
+
+	PrinterJob(const char *name = NULL);
+	~PrinterJob();
+};
+
 
 #ifdef PLATFORM_WIN32
 

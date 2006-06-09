@@ -17,7 +17,7 @@ void FormatHex(char *buffer, int64 number, int n) {
 void HexViewInfo::PrintValue(Draw& w, int x, int y, int bytes, bool be)
 {
 	dword d = 0;
-	Size fsz = w.GetTextSize("X", font);
+	Size fsz = GetTextSize("X", font);
 	for(int i = 0; i < bytes; i++) {
 		int b = data[be ? i : bytes - i - 1];
 		if(b < 0) {
@@ -36,7 +36,7 @@ void HexViewInfo::PrintValue(Draw& w, int x, int y, int bytes, bool be)
 	x += fsz.cx;
 	String txt = FormatUnsigned(d);
 	w.DrawText(x, y, txt, font, SRed);
-	x += w.GetTextSize(txt, font).cx;
+	x += GetTextSize(txt, font).cx;
 	w.DrawText(x, y, "=", font);
 	x += fsz.cx;
 	int q = d;
@@ -54,7 +54,7 @@ void HexViewInfo::Paint(Draw& w)
 	w.DrawRect(sz, SWhiteGray);
 	if(mode < 1)
 		return;
-	Size fsz = w.GetTextSize("X", font);
+	Size fsz = GetTextSize("X", font);
 	char h[17];
 	FormatHex(h, pos, longmode ? 16 : 8);
 	int xx = 0;
@@ -128,7 +128,7 @@ void HexViewInfo::Paint(Draw& w)
 void HexViewInfo::SetMode(int _mode)
 {
 	mode = _mode;
-	Height(mode * ScreenInfo().GetTextSize("X", Courier(12)).cy + 3);
+	Height(mode * GetTextSize("X", Courier(12)).cy + 3);
 	Show(mode);
 }
 
@@ -445,7 +445,7 @@ void HexView::RightDown(Point p, dword w)
 HexView& HexView::SetFont(Font fnt)
 {
 	font = fnt;
-	fsz = ScreenInfo().GetTextSize("X", font);
+	fsz = GetTextSize("X", font);
 	fcx3 = 3 * fsz.cx;
 	Layout();
 	Refresh();

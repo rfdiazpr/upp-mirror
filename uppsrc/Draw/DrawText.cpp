@@ -59,8 +59,14 @@ int  Font::FindFaceNameIndex(const char *name) {
 	return 0;
 }
 
+FontInfo Font::Info() const
+{
+	return ScreenInfo().GetFontInfoW(*this);
+}
+
 void Draw::SetStdFont(Font font)
 {
+	InitFonts();
 	AStdFont = font;
 	StdFontSizeSet = false;
 }
@@ -69,7 +75,7 @@ Size Draw::GetStdFontSize()
 {
 	if(!StdFontSizeSet) {
 		StdFontSizeSet = true;
-		FontInfo fi = ScreenInfo().GetFontInfo(AStdFont);
+		FontInfo fi = AStdFont.Info();
 		StdFontSize = Size(fi.GetAveWidth(), fi.GetHeight());
 	}
 	return StdFontSize;
@@ -189,16 +195,6 @@ bool FontInfo::IsEqual(byte _charset, Font f, int angle, int device) const
 	       charset == _charset;
 }
 
-FontInfo::CharMetrics *FontInfo::GetPage(int page) const
-{
-	CharMetrics *& cm = ptr->width[page];
-	if(!cm) {
-		cm = new CharMetrics[256];
-		ptr->GetMetrics(page, cm);
-	}
-	return cm;
-}
-
 int FontInfo::GetWidth(int c) const {
 	if(c < 0) c = (byte)c;
 	if(charset != CHARSET_UNICODE)
@@ -287,21 +283,6 @@ void Draw::SetFont(Font font, int angle) {
 #endif
 }
 
-Size Draw::GetTextSize(const wchar *text, Font font, int n) {
-	FontInfo fi = GetFontInfoW(font);
-	if(n < 0)
-		n = wstrlen(text);
-	Size sz;
-	sz.cx = 0;
-	const wchar *wtext = (const wchar *)text;
-	while(n > 0) {
-		sz.cx += fi[*wtext++];
-		n--;
-	}
-	sz.cy = fi.GetHeight();
-	return sz;
-}
-
 WString TextUnicode(const char *s, int n, byte cs, Font font)
 {
 	if(n < 0)
@@ -319,13 +300,25 @@ WString TextUnicode(const char *s, int n, byte cs, Font font)
 		return ToUnicode(s, n, cs);
 }
 
+FontInfo::CharMetrics *FontInfo::GetPage(int page) const
+{
+	CharMetrics *& cm = ptr->width[page];
+	if(!cm) {
+		cm = new CharMetrics[256];
+		ptr->GetMetrics(page, cm);
+		if(page == 1)
+			ComposeMetrics(ptr->font, cm);
+	}
+	return cm;
+}
+
 void Draw::DrawText(int x, int y, int angle, const wchar *text, Font font,
 		            Color ink, int n, const int *dx)
 {
 	if(IsNull(ink)) return;
 	if(n < 0)
 		n = wstrlen(text);
-	DrawTextOp(x, y, angle, text, font, ink, n, dx);
+	ComposeText(x, y, angle, text, font, ink, n, dx);
 }
 
 // ----------------------------
@@ -337,11 +330,6 @@ void Draw::DrawText(int x, int y, const wchar *text, Font font,
 }
 
 // ---------------------------
-
-Size Draw::GetTextSize(const WString& text, Font font)
-{
-	return GetTextSize(text, font, text.GetLength());
-}
 
 void Draw::DrawText(int x, int y, int angle, const WString& text, Font font,
                     Color ink, const int *dx)
@@ -355,11 +343,6 @@ void Draw::DrawText(int x, int y, const WString& text, Font font, Color ink, con
 }
 
 // ---------------------------
-
-Size Draw::GetTextSize(const char *text, byte charset, Font font, int n)
-{
-	return GetTextSize(TextUnicode(text, n, charset, font), font);
-}
 
 void Draw::DrawText(int x, int y, int angle, const char *text, byte charset, Font font,
                     Color ink, int n, const int *dx)
@@ -375,11 +358,6 @@ void Draw::DrawText(int x, int y, const char *text, byte charset, Font font,
 
 // ---------------------------
 
-Size Draw::GetTextSize(const char *text, Font font, int n)
-{
-	return GetTextSize(text, CHARSET_DEFAULT, font, n);
-}
-
 void Draw::DrawText(int x, int y, int angle, const char *text,
                     Font font, Color ink, int n, const int *dx)
 {
@@ -394,11 +372,6 @@ void Draw::DrawText(int x, int y, const char *text, Font font,
 
 // ---------------------------
 
-Size Draw::GetTextSize(const String& text, Font font)
-{
-	return GetTextSize(text, font, text.GetLength());
-}
-
 void Draw::DrawText(int x, int y, int angle, const String& text, Font font,
                     Color ink, const int *dx)
 {
@@ -409,6 +382,44 @@ void Draw::DrawText(int x, int y, const String& text, Font font, Color ink, cons
 {
 	WString h = TextUnicode(text, text.GetLength(), CHARSET_DEFAULT, font);
 	DrawText(x, y, h, font, ink, h.GetLength(), dx);
+}
+
+// --------------------------
+
+Size GetTextSize(const wchar *text, Font font, int n)
+{
+	FontInfo fi = font.Info();
+	if(n < 0)
+		n = wstrlen(text);
+	Size sz;
+	sz.cx = 0;
+	const wchar *wtext = (const wchar *)text;
+	while(n > 0) {
+		sz.cx += fi[*wtext++];
+		n--;
+	}
+	sz.cy = fi.GetHeight();
+	return sz;
+}
+
+Size GetTextSize(const WString& text, Font font)
+{
+	return GetTextSize(text, font, text.GetLength());
+}
+
+Size GetTextSize(const char *text, byte charset, Font font, int n)
+{
+	return GetTextSize(TextUnicode(text, n, charset, font), font);
+}
+
+Size GetTextSize(const char *text, Font font, int n)
+{
+	return GetTextSize(text, CHARSET_DEFAULT, font, n);
+}
+
+Size GetTextSize(const String& text, Font font)
+{
+	return GetTextSize(text, font, text.GetLength());
 }
 
 #endif

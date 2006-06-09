@@ -5,11 +5,7 @@
 
 #ifdef PLATFORM_X11
 
-#ifdef flagXLFD
-#define PLATFORM_XLFD
-#else
-#define PLATFORM_XFT
-#endif
+#define PLATFORM_XFT //TODO - remove
 
 #define Time    XTime
 #define Font    XFont
@@ -98,6 +94,8 @@ Draw& ScreenInfo();
 
 const int FONT_V = 40;
 
+class FontInfo;
+
 class Font : AssignValueTypeNo<Font, FONT_V, Moveable<Font> >{
 	word  face;
 	word  flags;
@@ -109,6 +107,7 @@ public:
 		FIXEDPITCH  = 0x0001,
 		SCALEABLE   = 0x0002,
 		SYMBOLTYPE  = 0x0004,
+		COMPOSED    = 0x0008,
 	};
 
 	static int    GetFaceCount();
@@ -143,6 +142,8 @@ public:
 	bool   IsTrueTypeOnly() const   { return flags & 0x400; }
 	String GetFaceName() const;
 	dword  GetFaceInfo() const;
+
+	FontInfo Info() const;
 
 	Font& Face(int n)            { face = n; return *this; }
 	Font& Height(int n)          { height = n; return *this; }
@@ -196,47 +197,13 @@ inline unsigned GetHashValue(const Font& f)  { return f.GetHashValue(); }
 template<>
 String AsString(const Font& f);
 
-struct StdFont   : public Font { StdFont(int n = 0) : Font(STDFONT, n) {} };
-
-struct ScreenSans : public Font  { ScreenSans(int n = 0) : Font(SCREEN_SANS, n) {} };
-struct ScreenSerif : public Font { ScreenSerif(int n = 0) : Font(SCREEN_SERIF, n) {} };
-struct ScreenFixed : public Font { ScreenFixed(int n = 0) : Font(SCREEN_FIXED, n) {} };
-
-struct Roman     : public Font { Roman(int n) : Font(ROMAN, n) {} };
-struct Arial     : public Font { Arial(int n) : Font(ARIAL, n) {} };
-struct Courier   : public Font { Courier(int n) : Font(COURIER, n) {} };
-struct Symbol    : public Font { Symbol(int n) : Font(SYMBOL, n) {} };
-
-#ifdef PLATFORM_WIN32
-struct WingDings : public Font { WingDings(int n) : Font(WINGDINGS, n) {} };
-struct Tahoma    : public Font { Tahoma(int n) : Font(TAHOMA, n) {} };
-#endif
-
-#ifdef PLATFORM_WIN32
-HPALETTE GetQlibPalette();
-#endif
-
-enum {
-	PEN_NULL = -1,
-	PEN_SOLID = -2,
-	PEN_DASH = -3,
-	PEN_DOT = -4,
-	PEN_DASHDOT = -5,
-	PEN_DASHDOTDOT = -6,
-};
-
-class Image;
-
 class FontInfo : Moveable<FontInfo> {
 	struct CharMetrics {
 		int  width;
 		int  lspc;
 		int  rspc;
-	#ifdef PLATFORM_X11
-		byte chr;
-	#endif
-	#ifdef PLATFORM_XLFD
-		byte fonti;
+	#ifdef PLATFORM_X11 //TODO remove
+//		byte chr;
 	#endif
 	};
 	struct Data : public Link<Data, 2> {
@@ -251,9 +218,6 @@ class FontInfo : Moveable<FontInfo> {
 		int          device;
 	#ifdef PLATFORM_WIN32
 		HFONT        hfont;
-	#endif
-	#ifdef PLATFORM_XLFD
-		XFont        xfont[16];
 	#endif
 	#ifdef PLATFORM_XFT
 		XftFont     *xftfont;
@@ -282,6 +246,7 @@ class FontInfo : Moveable<FontInfo> {
 		double       sina;
 		double       cosa;
 		bool         twobyte;
+		String       filename;
 	#endif
 
 		VectorMap<word, int> kerning;
@@ -296,15 +261,18 @@ class FontInfo : Moveable<FontInfo> {
 	friend class Draw;
 
 	CharMetrics       *GetPage(int page) const;
+	void               ComposeMetrics(Font fnt, CharMetrics *m) const;
+
 	#ifdef PLATFORM_X11
-	const CharMetrics& Get(wchar chr);
+//	const CharMetrics& Get(wchar chr); //TODO - remove
 	#endif
 
 	void       Release();
 	void       Retain(const FontInfo& f) { ptr = f.ptr; ptr->count++; charset = f.charset; }
 	FontInfo(Data *ptr) : ptr(ptr)       { charset = CHARSET_UNICODE; }
 
-	bool       IsEqual(byte charset, Font f, int angle, int device) const;
+	bool        IsEqual(byte charset, Font f, int angle, int device) const;
+	CharMetrics GetComposedMetrics(int c);
 
 public:
 	int        GetAscent() const                  { return ptr->ascent; }
@@ -327,6 +295,10 @@ public:
 	Font       GetFont() const                    { return ptr->font; }
 	int        GetFontHeight() const              { return ptr->font.GetHeight(); }
 
+#ifdef PLATFORM_XFT
+	String     GetFileName() const;
+#endif
+
 	void       Clear()                            { Release(); ptr = NULL; }
 	bool       IsEmpty() const                    { return !ptr; }
 	operator   bool() const                       { return ptr; }
@@ -337,6 +309,43 @@ public:
 	FontInfo()                                    { ptr = NULL; charset = CHARSET_UNICODE; }
 	~FontInfo()                                   { Release(); }
 };
+
+struct StdFont   : public Font { StdFont(int n = 0) : Font(STDFONT, n) {} };
+
+struct ScreenSans : public Font  { ScreenSans(int n = 0) : Font(SCREEN_SANS, n) {} };
+struct ScreenSerif : public Font { ScreenSerif(int n = 0) : Font(SCREEN_SERIF, n) {} };
+struct ScreenFixed : public Font { ScreenFixed(int n = 0) : Font(SCREEN_FIXED, n) {} };
+
+struct Roman     : public Font { Roman(int n) : Font(ROMAN, n) {} };
+struct Arial     : public Font { Arial(int n) : Font(ARIAL, n) {} };
+struct Courier   : public Font { Courier(int n) : Font(COURIER, n) {} };
+struct Symbol    : public Font { Symbol(int n) : Font(SYMBOL, n) {} };
+
+#ifdef PLATFORM_WIN32
+struct WingDings : public Font { WingDings(int n) : Font(WINGDINGS, n) {} };
+struct Tahoma    : public Font { Tahoma(int n) : Font(TAHOMA, n) {} };
+#endif
+
+#ifdef PLATFORM_WIN32
+HPALETTE GetQlibPalette();
+#endif
+
+Size GetTextSize(const wchar *text, Font font, int n = -1);
+Size GetTextSize(const WString& text, Font font);
+Size GetTextSize(const char *text, byte charset, Font font, int n = -1);
+Size GetTextSize(const char *text, Font font, int n = -1);
+Size GetTextSize(const String& text, Font font);
+
+enum {
+	PEN_NULL = -1,
+	PEN_SOLID = -2,
+	PEN_DASH = -3,
+	PEN_DOT = -4,
+	PEN_DASHDOT = -5,
+	PEN_DASHDOTDOT = -6,
+};
+
+class Image;
 
 struct DrawingPos;
 
@@ -443,6 +452,10 @@ protected:
 
 	enum FontHashConst { FONTHASH = 97 };
 
+	void ComposeText(int x, int y, int angle, const wchar *text, Font font, Color ink,
+                     int n, const int *dx);
+
+
 #ifdef PLATFORM_WIN32
 	static int CALLBACK AddFace(const LOGFONT *logfont, const TEXTMETRIC *, dword type,
 	                            LPARAM param);
@@ -499,9 +512,7 @@ public:
 
 	Drawable   dw;
 	GC         gc;
-#ifdef PLATFORM_XFT
 	XftDraw   *xftdraw;
-#endif
 
 	int        foreground;
 	int        linewidth;
@@ -708,35 +719,26 @@ public:
 	void DrawDrawing(const Rect& r, const Drawing& iw) { DrawDrawingOp(r, iw); }
 	void DrawDrawing(int x, int y, int cx, int cy, const Drawing& iw);
 
-	FontInfo GetFontInfo(byte charset, Font font = StdFont());
-	FontInfo GetFontInfo(Font font = StdFont());
-	FontInfo GetFontInfoW(Font font = StdFont());
-
-	Size GetTextSize(const wchar *text, Font font = StdFont(), int n = -1);
 	void DrawText(int x, int y, int angle, const wchar *text, Font font = StdFont(),
 		          Color ink = SBlack, int n = -1, const int *dx = NULL);
 	void DrawText(int x, int y, const wchar *text, Font font = StdFont(),
 		          Color ink = SBlack, int n = -1, const int *dx = NULL);
 
-	Size GetTextSize(const WString& text, Font font = StdFont());
 	void DrawText(int x, int y, const WString& text, Font font = StdFont(),
 		          Color ink = SBlack, const int *dx = NULL);
 	void DrawText(int x, int y, int angle, const WString& text, Font font = StdFont(),
 		          Color ink = SBlack, const int *dx = NULL);
 
-	Size GetTextSize(const char *text, byte charset, Font font = StdFont(), int n = -1);
 	void DrawText(int x, int y, int angle, const char *text, byte charset,
 	              Font font = StdFont(), Color ink = SBlack, int n = -1, const int *dx = NULL);
 	void DrawText(int x, int y, const char *text, byte charset, Font font = StdFont(),
 		          Color ink = SBlack, int n = -1, const int *dx = NULL);
 
-	Size GetTextSize(const char *text, Font font = StdFont(), int n = -1);
 	void DrawText(int x, int y, int angle, const char *text,
 	              Font font = StdFont(), Color ink = SBlack, int n = -1, const int *dx = NULL);
 	void DrawText(int x, int y, const char *text, Font font = StdFont(),
 		          Color ink = SBlack, int n = -1, const int *dx = NULL);
 
-	Size GetTextSize(const String& text, Font font = StdFont());
 	void DrawText(int x, int y, const String& text, Font font = StdFont(),
 		          Color ink = SBlack, const int *dx = NULL);
 	void DrawText(int x, int y, int angle, const String& text, Font font = StdFont(),
@@ -765,17 +767,11 @@ public:
 	HDC   Detach()                       { Unselect(); HDC h = handle; handle = NULL; return h; }
 
 	Draw(HDC hdc);
-	~Draw();
+	virtual ~Draw();
 #endif
 
 #ifdef PLATFORM_X11
-	enum {
-		XLFD_ZERO, XLFD_FOUNDRY, XLFD_FAMILY, XLFD_WEIGHT, XLFD_SLANT, XLFD_SET_WIDTH,
-		XLFD_NOTHING, XLFD_PIXELS, XLFD_POINTS, XLFD_HRES, XLFD_VRES, XLFD_SPACING,
-		XLFD_AVG_WIDTH, XLFD_CHARSET1, XLFD_CHARSET2
-	};
 
-	static String MakeXLFD(byte cs, Font f, int height = Null, int angle = 0);
 #ifdef PLATFORM_XFT
 	static XftFont *CreateXftFont(Font f, int angle);
 	XftDraw *GetXftDraw() const               { return xftdraw; }
@@ -793,7 +789,19 @@ public:
 #else
 	Draw(Drawable dw, GC gc, const Vector<Rect>& clip);
 #endif
+	virtual ~Draw();
 #endif
+
+private: //Deprecated
+	FontInfo GetFontInfo(byte charset, Font font = StdFont());
+	FontInfo GetFontInfo(Font font = StdFont());
+	FontInfo GetFontInfoW(Font font = StdFont());
+
+	Size GetTextSize(const wchar *text, Font font = StdFont(), int n = -1) { return ::GetTextSize(text, font, n); }
+	Size GetTextSize(const WString& text, Font font = StdFont()) { return ::GetTextSize(text, font); }
+	Size GetTextSize(const char *text, byte charset, Font font = StdFont(), int n = -1) { return ::GetTextSize(text, charset, font); }
+	Size GetTextSize(const char *text, Font font = StdFont(), int n = -1) { return ::GetTextSize(text, font, n); }
+	Size GetTextSize(const String& text, Font font = StdFont()) { return ::GetTextSize(text, font); }
 
 private:
 	Draw(const Draw&);
@@ -965,7 +973,8 @@ public:
 	virtual bool IsPaintingOp(const Rect& r) const;
 
 	virtual	void DrawRectOp(int x, int y, int cx, int cy, Color color);
-	virtual void DrawImageOp(int x, int y, const Image& img, const Rect& src, Color color);
+	virtual void DrawImageOp(int x, int y, int cx, int cy, const Image& img,
+	                         const Rect& src, Color color);
 	virtual void DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color);
 	virtual void DrawEllipseOp(const Rect& r, Color color, int pen, Color pencolor);
 	virtual void DrawTextOp(int x, int y, int angle, const wchar *text, Font font,

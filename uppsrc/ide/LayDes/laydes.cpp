@@ -718,7 +718,7 @@ void LayDes::Group(Bar& bar, const String& group)
 			type.Add(LayoutTypes().GetKey(i));
 	}
 	Sort(type);
-	int h = ScreenInfo().GetFontInfo(StdFont()).GetHeight();
+	int h = StdFont().Info().GetHeight();
 	int w = 8 * h / 3;
 	((MenuBar&)bar).LeftGap(w + 2);
 	int q = 0;
@@ -740,7 +740,7 @@ void LayDes::TemplateGroup(Bar& bar, TempGroup tg)
 			type.Add(LayoutTypes().GetKey(i));
 	}
 	Sort(type);
-	int h = ScreenInfo().GetFontInfo(StdFont()).GetHeight();
+	int h = StdFont().Info().GetHeight();
 	int w = 8 * h / 3;
 	((MenuBar&)bar).LeftGap(w + 2);
 	int q = 0;
@@ -756,7 +756,7 @@ void LayDes::Template(Bar& bar, const String& temp)
 {
 	Index<String> group;
 	Vector<String> type;
-	int h = ScreenInfo().GetFontInfo(StdFont()).GetHeight();
+	int h = StdFont().Info().GetHeight();
 	int w = 8 * h / 3;
 	((MenuBar&)bar).LeftGap(w + 2);
 	int i;
@@ -809,7 +809,7 @@ void LayDes::RightDown(Point p, dword keyflags)
 	if(currentlayout < 0 || HasCapture()) return;
 	dragbase = Normalize(p);
 	MenuBar menu;
-	int h = ScreenInfo().GetFontInfo(StdFont()).GetHeight();
+	int h = StdFont().Info().GetHeight();
 	int w = 8 * h / 3;
 	menu.LeftGap(w + 2);
 	menu.Add("User class", THISBACK1(CreateCtrl, ""));

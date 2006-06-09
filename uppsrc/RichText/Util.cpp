@@ -10,43 +10,6 @@ Draw& SimplePageDraw::Page(int)
 	return w;
 }
 
-void Print(Draw& w, const RichText& text, const Rect& page, int firstpage, int lastpage,
-           int copies, bool collate)
-{
-	firstpage = max(0, firstpage);
-	int lpage = text.GetHeight(page).page;
-	lastpage = min(lastpage, text.GetHeight(page).page);
-	PrintPageDraw pw(w);
-	Size sz = w.GetPageMMs();
-	Size pgsz = page.Size();
-	int x = (6000 * sz.cx / 254 - pgsz.cx) / 2;
-	int y = (6000 * sz.cy / 254 - pgsz.cy) / 2;
-	for(int c = 0; c < (collate ? copies : 1); c++)
-		for(int i = firstpage; i <= lastpage; i++)
-			for(int c = 0; c < (collate ? 1 : copies); c++) {
-				w.StartPage();
-				w.Offset(x, y);
-				pw.SetPage(i);
-				PaintInfo paintinfo;
-				paintinfo.top = PageY(i, 0);
-				paintinfo.bottom = PageY(i + 1, 0);
-				paintinfo.indexentry = Null;
-				if(text.IsPrintNoLinks())
-					paintinfo.hyperlink = Null;
-				text.Paint(pw, page, paintinfo);
-				w.End();
-				String footer = text.GetFooter();
-				if(!IsNull(footer) && lpage) {
-					String n = Format(footer, i + 1, lpage + 1);
-					Size nsz = w.GetTextSize(n, Arial(90).Italic());
-					pw.Page(i).DrawText(
-						x + pgsz.cx - nsz.cx, y + pgsz.cy + 100,
-						n, Arial(90).Italic());
-				}
-				w.EndPage();
-			}
-}
-
 void RichText::ApplyZoom(Zoom z)
 {
 	RichStyles ostyle(style, 1);
@@ -56,44 +19,9 @@ void RichText::ApplyZoom(Zoom z)
 	RefreshAll();
 }
 
-#ifdef PLATFORM_WIN32
-#include <commdlg.h>
-
-void Print(HDC hdc, const RichText& text, const Rect& page, int firstpage, int lastpage, int copies, bool collate,
-           const char *name)
-{
-	PrintDraw w(hdc, name ? (const char *)name : (const char *)GetExeTitle());
-	Print(w, text, page, firstpage, lastpage, copies, collate);
-}
-
-
-bool Print(const RichText& text, const Rect& page, int currentpage, const char *name, HWND hwndOwner)
-{
-	PRINTDLG dlg;
-	memset(&dlg, 0, sizeof(dlg));
-	dlg.lStructSize = sizeof(dlg);
-	dlg.hwndOwner = hwndOwner ? hwndOwner : ::GetActiveWindow();
-	dlg.Flags = PD_ALLPAGES|PD_DISABLEPRINTTOFILE|PD_NOSELECTION|PD_RETURNDC|
-		        PD_HIDEPRINTTOFILE;
-	dlg.nFromPage = currentpage + 1;
-	dlg.nToPage = currentpage + 1;
-	dlg.nMinPage = 1;
-	dlg.nMaxPage = text.GetHeight(page).page + 1;
-	if(!PrintDlg(&dlg)) return false;
-	if(!(dlg.Flags & PD_PAGENUMS)) {
-		dlg.nFromPage = dlg.nMinPage;
-		dlg.nToPage = dlg.nMaxPage;
-	}
-	Print(dlg.hDC, text, page, dlg.nFromPage - 1, dlg.nToPage - 1, dlg.nCopies,
-	      dlg.Flags & PD_COLLATE, name);
-	return true;
-}
-
-#endif
-
 Zoom GetRichTextStdScreenZoom()
 {
-	return Zoom(Ctrl::VertLayoutZoom(140), 1024);
+	return Zoom(Ctrl::HorzLayoutZoom(96), 600);
 }
 
 struct QTFDisplayCls : Display {

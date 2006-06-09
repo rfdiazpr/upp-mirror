@@ -2,59 +2,26 @@
 
 #define LLOG(x) // LOG(x)
 
-#ifdef PLATFORM_WIN32
-#include <commdlg.h>
-#pragma  comment(lib, "comdlg32.lib")
-#endif
-
 bool Print(Report& r, int i, const char *_name) {
-#ifdef PLATFORM_WIN32
-	PRINTDLG dlg;
-	memset(&dlg, 0, sizeof(dlg));
-	dlg.lStructSize = sizeof(dlg);
-	dlg.hwndOwner = GetActiveWindow();
-	dlg.Flags = PD_ALLPAGES|PD_DISABLEPRINTTOFILE|PD_NOSELECTION|PD_RETURNDC|
-		        PD_HIDEPRINTTOFILE|PD_RETURNDEFAULT;
-	if(!PrintDlg(&dlg)) return false;
+	PrinterJob pd;
+	pd.CurrentPage(i);
+	pd.MinMaxPage(0, r.GetCount() - 1);
 	Size pgsz = r.GetPage(0).GetSize();
-	if(dlg.hDevMode) {
-		DEVMODE *pDevMode = (DEVMODE*)::GlobalLock(dlg.hDevMode);
-		pDevMode->dmOrientation = pgsz.cx > pgsz.cy ? DMORIENT_LANDSCAPE
-		                                            : DMORIENT_PORTRAIT;
-		::GlobalUnlock(dlg.hDevMode);
-	}
-	dlg.Flags = PD_ALLPAGES|PD_DISABLEPRINTTOFILE|PD_NOSELECTION|PD_RETURNDC|
-		        PD_HIDEPRINTTOFILE;
-	dlg.nFromPage = i + 1;
-	dlg.nToPage = i + 1;
-	dlg.nMinPage = 1;
-	dlg.nMaxPage = r.GetCount();
-	if(PrintDlg(&dlg)) {
-		PrintDraw w(dlg.hDC, _name);
-		if(!(dlg.Flags & PD_PAGENUMS)) {
-			dlg.nFromPage = dlg.nMinPage;
-			dlg.nToPage = dlg.nMaxPage;
-		}
+	pd.Landscape(pgsz.cx > pgsz.cy);
+	if(pd.Execute()) {
+		Draw& w = pd;
 		Size sz = w.GetPageMMs();
 		int x = (6000 * sz.cx / 254 - pgsz.cx) / 2;
 		int y = (6000 * sz.cy / 254 - pgsz.cy) / 2;
-		for(int c = 0; c < ((dlg.Flags & PD_COLLATE) ? dlg.nCopies : 1); c++)
-			for(i = dlg.nFromPage - 1; i <= dlg.nToPage - 1; i++)
-				for(int c = 0; c < ((dlg.Flags & PD_COLLATE) ? 1 : dlg.nCopies); c++) {
-					LLOG("Printing Page " << i << " gdi: " << GdiGetFreeSpace());
-					Drawing iw = r.GetPage(i);
-					Size sz = iw.GetSize();
-					w.StartPage();
-					w.DrawDrawing(x, y, sz.cx, sz.cy, iw);
-					w.EndPage();
-				}
+		for(int i = 0; i < pd.GetPageCount(); i++) {
+			Drawing iw = r.GetPage(pd[i]);
+			Size sz = iw.GetSize();
+			w.StartPage();
+			w.DrawDrawing(x, y, sz.cx, sz.cy, iw);
+			w.EndPage();
+		}
+		return true;
 	}
-	else
-		dlg.nToPage = (WORD)-1;
-	::GlobalFree(dlg.hDevMode);
-	::GlobalFree(dlg.hDevNames);
-	return dlg.nFromPage - 1 == 0 && dlg.nToPage == r.GetCount();
-#endif
 	return false;
 }
 
@@ -138,15 +105,11 @@ Image ReportView::GetPage(int i) {
 	int ii = i & pm;
 	if(pagei[ii] != i) {
 		pagei[ii] = i;
-	#ifdef NEWIMAGE
 		Size sz = Size(max(pagesize.cx - 2, 1), max(pagesize.cy - 2, 1));
 		ImageDraw iw(sz);
 		iw.DrawRect(sz, White);
 		iw.DrawDrawing(0, 0, sz.cx, sz.cy, report->GetPage(i));
 		page[ii] = iw;
-	#else
-		page[ii] = Image(pagesize.cx - 2, pagesize.cy - 2, report->GetPage(i), White);
-	#endif
 	}
 	return page[ii];
 }
@@ -180,7 +143,7 @@ void ReportView::Paint(Draw& w) {
 					DrawFrame(w, x, y, pagesize.cx, pagesize.cy, White, LtGray);
 				if(numbers) {
 					String n = Format("%d", i + 1);
-					Size tsz = w.GetTextSize(n);
+					Size tsz = GetTextSize(n, StdFont());
 					tsz += Size(8, 4);
 					int tx = x + pagesize.cx - tsz.cx;
 					DrawFrame(w, tx, y, tsz.cx, tsz.cy, Black, Black);

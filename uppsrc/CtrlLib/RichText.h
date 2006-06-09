@@ -116,8 +116,6 @@ void Exclamation(const char *qtf);
 
 void ShowExc(const Exc& exc);
 
-void StdRichClipboardFormats();
-
 class HelpWindow : public TopWindow {
 public:
 	virtual bool Key(dword key, int);
@@ -170,3 +168,7 @@ public:
 
 	HelpWindow();
 };
+
+void Print(Draw& w, const RichText& text, const Rect& page, const Vector<int>& pagelist);
+void Print(Draw& w, const RichText& text, const Rect& page);
+bool Print(const RichText& text, const Rect& page, int currentpage, const char *name = NULL);

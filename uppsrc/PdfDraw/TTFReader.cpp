@@ -1,7 +1,7 @@
 #include "PdfDraw.h"
 
-#define LLOG(x)   LOG(x)
-#define LDUMP(x)  LLOG(#x << " = " << x);
+#define LLOG(x)   // LOG(x)
+#define LDUMP(x)  // LLOG(#x << " = " << x);
 
 int    TTFReader::Peek8(const char *s)
 {
@@ -117,7 +117,7 @@ String TTFReader::GetTable(const char *tab)
 	return String(~font + table[q].offset, table[q].length);
 }
 
-bool TTFReader::Open(const String& fnt, bool symbol)
+bool TTFReader::Open(const String& fnt, bool symbol, bool justcheck)
 {
 	try {
 		int i;
@@ -167,6 +167,9 @@ bool TTFReader::Open(const String& fnt, bool symbol)
 		LDUMP(post.underlinePosition);
 		LDUMP(post.underlineThickness);
 		LDUMP(post.italicAngle);
+
+		if(justcheck)
+			return true;
 
 		Seek("hhea", is);
 		hhea.Serialize(is);

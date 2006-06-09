@@ -871,24 +871,9 @@ void RTFParser::ReadPict()
 #endif
 	if(blip_type == DIB_BLIP || blip_type == PNG_BLIP || blip_type == JPEG_BLIP)
 	{
-#ifdef NEWIMAGE
 		//FIXIMAGE
 		Image image = StreamRaster::LoadStringAny(blip_data);
 		dd.DrawImage(0, 0, image);
-#else
-		One<ImageEncoder> encoder;
-		switch(blip_type)
-		{
-		case DIB_BLIP:  encoder = new BmpEncoder; break;
-//		case PNG_BLIP:  encoder = new PngEncoder; break;
-//		case JPEG_BLIP: encoder = new JpgEncoder; break;
-		}
-		if(!encoder)
-			return;
-		Image image = encoder -> LoadImage(blip_data);
-		if(!image.IsEmpty())
-			dd.DrawImage(log_size, image);
-#endif
 	}
 	else
 		return;

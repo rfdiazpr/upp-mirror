@@ -4,10 +4,6 @@
 #include <CtrlLib/CtrlLib.h>
 #include <plugin/z/z.h>
 
-#ifndef NEWIMAGE
-#include <Draw/PixelUtil.h>
-#endif
-
 class TTFReader {
 	struct TTFStream {
 		struct Fail {};
@@ -214,7 +210,7 @@ public:
 	word   GetAdvanceWidth(wchar chr)        { return glyphinfo[GetGlyph(chr)].advanceWidth; }
 
 	String Subset(const Vector<wchar>& chars, int first = 0, bool os2 = false);
-	bool   Open(const String& fnt, bool symbol = false);
+	bool   Open(const String& fnt, bool symbol = false, bool justcheck = false);
 
 	TTFReader();
 	~TTFReader();
@@ -236,13 +232,7 @@ public:
 	virtual bool IsPaintingOp(const Rect& r) const;
 
 	virtual	void DrawRectOp(int x, int y, int cx, int cy, Color color);
-#ifdef NEWIMAGE
-	virtual void DrawImageOp(int x, int y, const Image& img, const Rect& src, Color color);
-#else
-	virtual void DrawImageOp(const Rect& rect, const Image& img, const Rect& src, int fx);
-	virtual void DrawImageOp(const Rect& rect, const Image& img, const Rect& src,
-		                     Color fore, Color back, Color doxor);
-#endif
+	virtual void DrawImageOp(int x, int y, int cx, int cy, const Image& img, const Rect& src, Color color);
 	virtual void DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color);
 	virtual void DrawPolyPolylineOp(const Point *vertices, int vertex_count,
 	                                const int *counts, int count_count,
@@ -261,19 +251,14 @@ private:
 	struct CharPos : Moveable<CharPos>   { word fi, ci; };
 
 	struct OutlineInfo : Moveable<OutlineInfo> {
-		bool sbold;
+		bool ttf;
 		bool sitalic;
-		bool sunderline;
 	};
 
 	VectorMap<Font, OutlineInfo>                outline_info;
 	VectorMap<Font, Vector<wchar> >             pdffont;
 	VectorMap<Font, VectorMap<wchar, CharPos> > fontchars;
-#ifdef NEWIMAGE
-	Array<Image>                                image;
-#else
-	Array<AlphaArray>                           image;
-#endif
+	Vector<Image>                               image;
 	Vector<Rect>                                imagerect;
 
 	Vector<int>   offset;
@@ -288,8 +273,9 @@ private:
 	int         fontid;
 	double      textht;
 	double      linewidth;
+	int         margin;
 
-	inline double Pt(double dot)   { return 0.12 * dot; }
+	inline double Pt(double dot)        { return 0.12 * dot; }
 
 	int    Pos()                        { return offset.GetCount() + 1; }
 	int    BeginObj();
@@ -324,14 +310,22 @@ private:
 		M22() : a(1), b(0), c(0), d(1) {}
 	};
 
-	void Init(int pagecx, int pagecy);
+	void Init(int pagecx, int pagecy, int margin);
+
+	struct RGlyph : Moveable<RGlyph> {
+		String data;
+		Size   sz;
+		int    x;
+	};
+
+	RGlyph RasterGlyph(Font fnt, int chr);
 
 public:
 	String Finish();
 	void   Clear();
 
-	PdfDraw(int pagecx, int pagecy)                 { Init(pagecx, pagecy); }
-	PdfDraw(Size pgsz = Size(3968, 6047))           { Init(pgsz.cx, pgsz.cy); }
+	PdfDraw(int pagecx, int pagecy)                { Init(pagecx, pagecy, 0); }
+	PdfDraw(Size pgsz = Size(5100, 6600))          { Init(pgsz.cx, pgsz.cy, 0); }
 };
 
 String Pdf(const Array<Drawing>& report, Size pagesize, int margin);

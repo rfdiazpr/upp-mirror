@@ -479,7 +479,7 @@ void PNGEncoder::Start(Size sz)
 {
 	data = new Data;
 	data->Start(GetStream(), sz, bpp, kind, interlace,
-		bpp > 8 ? NULL : GetPalette(), bpp > 8 ? NULL : &GetPaletteCv());
+	            bpp > 8 ? NULL : GetPalette(), GetPaletteCv());
 }
 
 void PNGEncoder::WriteLine(const RGBA *s)

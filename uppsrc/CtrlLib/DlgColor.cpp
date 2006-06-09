@@ -4,45 +4,6 @@
 #include "CtrlLib.h"
 #pragma hdrstop
 
-#ifndef NEWIMAGE
-void PixelMultiply2(PixelArray& array, Size from_size)
-{
-	ASSERT(array.GetRawBPP() == -3);
-	int w2 = from_size.cx;
-	int h2 = from_size.cy;
-	int i;
-	int e2 = 3 * w2, d2 = 2 * e2;
-	for(i = h2; --i >= 0;)
-	{
-		byte *src = array.GetDownScan(i), *end = src + e2;
-		byte *dest = src + d2;
-		byte r = end[-1], g = end[-2], b = end[-3];
-		for(; end > src; end -= 3, dest -= 6)
-		{
-			dest[-1] = (r + end[-1]) >> 1;
-			dest[-2] = (g + end[-2]) >> 1;
-			dest[-3] = (b + end[-3]) >> 1;
-			dest[-4] = r = end[-1];
-			dest[-5] = g = end[-2];
-			dest[-6] = b = end[-3];
-		}
-	}
-	int ht = array.GetDownRowBytes();
-	byte *top = array.GetDownScan(0), *bot2 = top + ht * h2, *prev = bot2 - ht;
-	byte *drow = top + ht * 2 * h2;
-	while(bot2 != top)
-	{
-		bot2 -= ht;
-		drow -= 2 * ht;
-		byte *d0 = drow + d2, *d1 = d0 + ht;
-		const byte *s0 = bot2, *se = bot2 + d2, *s1 = prev + d2;
-		prev = bot2;
-		while(s0 < se)
-			*--d1 = ((*--d0 = *--se) + *--s1) >> 1;
-	}
-}
-#endif
-
 class FetchColorCtrl : public Button
 {
 public:
@@ -335,18 +296,10 @@ WheelRampCtrl::WheelRampCtrl(bool r)
 	normalized_color = White;
 	background = TabCtrl::GetTabColor();
 	h16 = s16 = v16 = 0;
-#ifndef NEWIMAGE
-	wb = NULL;
-	owsize = Size(-1, -1);
-#endif
 }
 
 WheelRampCtrl::~WheelRampCtrl()
 {
-#ifndef NEWIMAGE
-	if(wb)
-		delete [] wb;
-#endif
 }
 
 void WheelRampCtrl::Layout()
@@ -402,7 +355,6 @@ void WheelRampCtrl::Paint(Draw& draw)
 	if(!cache || cache.GetSize() != GetSize() || cache_level != (ramp ? h16 : v16))
 	{ // create cache for current size
 		Size size = max(GetSize(), Size(1, 1));
-#ifdef NEWIMAGE
 		ImageDraw rd(size);
 		rd.DrawRect(rd.GetClip(), background);
 		if(ramp)
@@ -411,16 +363,6 @@ void WheelRampCtrl::Paint(Draw& draw)
 			PaintWheel(rd);
 		PaintColumn(rd);
 		cache = rd;
-#else
-		cache = Image(draw, size);
-		ImageDraw rd(cache);
-		rd.DrawRect(rd.GetClip(), background);
-		if(ramp)
-			PaintRamp(rd);
-		else
-			PaintWheel(rd);
-		PaintColumn(rd);
-#endif
 		cache_level = (ramp ? h16 : v16);
 	}
 	draw.DrawImage(0, 0, cache);
@@ -457,13 +399,6 @@ void WheelRampCtrl::SetColor(Color _color, bool set_norm, bool set_hsv)
 		h16 = GetH16(color);
 		v16 = GetV16(color);
 		s16 = GetS16(color);
-	}
-	if(cache && cache.GetSize() == GetSize())
-	{
-	#ifndef NEWIMAGE
-		ImageDraw idraw(cache);
-		PaintColumn(idraw);
-	#endif
 	}
 }
 
@@ -545,7 +480,6 @@ enum { PREC = 64 };
 
 void WheelRampCtrl::PaintRamp(Draw& draw)
 {
-#ifdef NEWIMAGE
 	Size rcsize = wheel_rect.Size();
 	ImageBuffer ib(PREC, PREC);
 	for(int y = 0; y < PREC; y++) {
@@ -563,39 +497,10 @@ void WheelRampCtrl::PaintRamp(Draw& draw)
 	}
 	draw.DrawImage(wheel_rect.left, wheel_rect.top, Rescale(Image(ib), rcsize));
 	DrawFrame(draw, wheel_rect, Black, Black);
-#else
-	Size rcsize = wheel_rect.Size();
-	int shift = 0;
-	while((rcsize.cx + rcsize.cy) >> shift > 400)
-		shift++;
-	Size wsize = ((rcsize - 1) >> shift) + 1;
-
-	PixelArray array(wsize << shift, -3);
-	for(int y = 0; y < wsize.cy; y++)
-	{
-		byte *scan = array.GetDownScan(y);
-		int v16 = iscale(wsize.cy - y, 65535, wsize.cy);
-		for(int x = 0; x < wsize.cx; x++)
-		{
-			int s16 = iscale(x, 65535, wsize.cx - 1);
-			Color c = HSV16toRGB(h16, s16, v16);
-			scan[0] = GetBRaw(c);
-			scan[1] = GetGRaw(c);
-			scan[2] = GetRRaw(c);
-			scan += 3;
-		}
-	}
-
-	for(int i = 0; i < shift; i++)
-		PixelMultiply2(array, wsize << i);
-	array.Paint(draw, wheel_rect.Size(), wheel_rect);
-	DrawFrame(draw, wheel_rect, Black, Black);
-#endif
 }
 
 void WheelRampCtrl::PaintWheel(Draw& draw)
 {
-#ifdef NEWIMAGE
 	Size rcsize = wheel_rect.Size();
 	ImageBuffer ib(PREC, PREC);
 	static WheelBuff wb[PREC * PREC];
@@ -634,79 +539,6 @@ void WheelRampCtrl::PaintWheel(Draw& draw)
 	wheel = AssignAlpha(wheel, iw);
 	draw.DrawImage(wheel_rect.left, wheel_rect.top, wheel);
 	draw.DrawEllipse(wheel_rect, Null, 0, Black);
-#else
-	Size rcsize = wheel_rect.Size();
-	int shift = 0;
-	while((rcsize.cx + rcsize.cy) >> shift > 400)
-		shift++;
-	Size wsize = ((rcsize - 1) >> shift) + 1;
-
-	PixelArray array(wsize << shift, -3);
-	Point center = wsize >> 1;
-	Size radius = center;
-
-	if(wsize != owsize || !wb)
-	{
-		if(wb)
-		{
-			delete [] wb;
-			wb = NULL;
-		}
-		wb = new WheelBuff[wsize.cx * wsize.cy];
-		int i = 0;
-		for(int y = 0; y < wsize.cy; y++)
-		{
-			double ny = (center.y - y) / (double)radius.cy;
-			for(int x = 0; x < wsize.cx; x++)
-			{
-				double nx = (x - center.x) / (double)radius.cx;
-				double arg = fmod(atan2(ny, nx) / (2 * M_PI) + 1, 1);
-				double l = min<double>(hypot(nx, ny), 1);
-				wb[i].arg = fround(arg * 65535);
-				wb[i].l = fround(l * 65535);
-				i++;
-			}
-		}
-		owsize = wsize;
-	}
-
-	WheelBuff * cwb = wb;
-	for(int y = 0; y < wsize.cy; y++)
-	{
-		byte *scan = array.GetDownScan(y);
-		for(int x = 0; x < wsize.cx; x++)
-		{
-			Color color = HSV16toRGB(cwb->arg, cwb->l, v16);
-
-			scan[0] = GetBRaw(color);
-			scan[1] = GetGRaw(color);
-			scan[2] = GetRRaw(color);
-			scan += 3;
-			cwb++;
-		}
-	}
-
-	for(int i = 0; i < shift; i++)
-		PixelMultiply2(array, wsize << i);
-
-	Image wheel(rcsize);
-
-	{
-		ImageMaskDraw mdraw(wheel);
-		mdraw.DrawRect(mdraw.GetClip(), White);
-		mdraw.DrawEllipse(rcsize, Black, 0, Black);
-	}
-
-	{
-		ImageDraw idraw(wheel);
-		array.Paint(idraw);
-//		idraw.DrawImage(wsize, PalImg::wheel());
-		idraw.DrawEllipse(rcsize, Null, 0, Black);
-	}
-
-	ImageCropMask(wheel);
-	draw.DrawImage(wheel_rect, wheel);
-#endif
 }
 
 void WheelRampCtrl::PaintColumn(Draw& draw)
@@ -1207,7 +1039,7 @@ void PalCtrl::Paint(Draw& draw)
 
 	GetActive().FindAdd(this);
 	draw.Begin();
-	Size tcell = draw.GetTextSize("256", StdFont());
+	Size tcell = GetTextSize("256", StdFont());
 	bool do_text = (tcell.cx <= cell.cx && tcell.cy <= cell.cy);
 	for(int i = 0, n = cellcount.cx * cellcount.cy; i < n; i++)
 	{

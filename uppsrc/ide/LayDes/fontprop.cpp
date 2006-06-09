@@ -32,8 +32,8 @@ struct FontDisplay : public Display {
 		w.DrawRect(r, paper);
 		Font font = q;
 		String text = FormatFont(font);
-		font.Height(w.GetFontInfo(StdFont()).GetHeight() - 1);
-		w.DrawText(2, (r.Height() - w.GetFontInfo(font).GetHeight()) / 2, text, font, ink);
+		font.Height(StdFont().Info().GetHeight() - 1);
+		w.DrawText(2, (r.Height() - font.Info().GetHeight()) / 2, text, font, ink);
 	}
 };
 

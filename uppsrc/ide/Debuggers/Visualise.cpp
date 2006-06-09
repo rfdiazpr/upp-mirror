@@ -214,7 +214,7 @@ const
 		const Visual& v = ValueTo<Visual>(q);
 		for(int i = 0; i < v.part.GetCount() && x < r.right; i++) {
 			const VisualPart& p = v.part[i];
-			Size sz = w.GetTextSize(p.text);
+			Size sz = GetTextSize(p.text, StdFont());
 			w.DrawRect(x, y, sz.cx, r.Height(), blue || !p.mark ? paper : SYellow);
 //			if(p.mark)
 //				w.DrawRect(x, r.bottom - 1, sz.cx, 1, SLtRed);

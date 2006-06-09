@@ -248,7 +248,7 @@ struct PackageEditor : WorkspaceWork, WithUppLayout<TopWindow> {
 	void FindFileOpt(int type, const String& when, const String& text);
 	void FileOptionMenu(Bar& bar);
 	void MoveFileOption(int d);
-	void AddDepends();
+	void AddDepends(bool external_deps);
 	void AddFileOption();
 	void EditFileOption();
 	void RemoveFileOption();

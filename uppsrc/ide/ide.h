@@ -385,20 +385,23 @@ struct AssistEditor : CodeEditor {
 	virtual void MouseWheel(Point p, int zdelta, dword keyflags);
 	virtual void LeftDown(Point p, dword keyflags);
 
-	ArrayCtrl          assist;
-	Array<CppItemInfo> assist_item;
-	int                assist_cursor;
-	bool               auto_assist;
-	bool               assist_active;
-	bool               commentdp;
-	bool               inbody;
-	Ide               *theide;
+	Splitter       popup;
+	ArrayCtrl      assist;
+	ArrayCtrl      type;
+	Index<String>                 assist_type;
+	ArrayMap<String, CppItemInfo> assist_item;
+	int            assist_cursor;
+	bool           auto_assist;
+	bool           assist_active;
+	bool           commentdp;
+	bool           inbody;
+	Ide           *theide;
 
-	void           PopUpAssist(const String& header, bool auto_insert = false);
+	void           PopUpAssist(bool auto_insert = false);
 	void           CloseAssist();
 	void           Assist();
 	String         ReadIdBack(int q);
-	int            SyncAssist();
+	void           SyncAssist();
 	void           AssistInsert();
 	bool           InCode();
 
@@ -414,8 +417,7 @@ struct AssistEditor : CodeEditor {
 	void           DCopy();
 	void           Virtuals();
 	void           Thisbacks();
-	void           GatherItems(const String& type, const Index<String>& hidden,
-	                           String& header, bool nom, Index<String>& in_types, bool tp);
+	void           GatherItems(const String& type, bool nom, Index<String>& in_types, bool tp);
 
 	void           SelParam();
 	int            Ch(int q);

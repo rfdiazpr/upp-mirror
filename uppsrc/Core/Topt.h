@@ -15,7 +15,7 @@ inline void IterSwap(I a, I b) { if(a != b) Swap(*a, *b); }
 class EmptyClass
 {
 public:
-	void operator=(const EmptyClass&) {} // MSC 6.0 empty base class bug fix
+//	void operator=(const EmptyClass&) {} // MSC 6.0 empty base class bug fix
 };
 
 template <class T, class B = EmptyClass>
@@ -27,7 +27,7 @@ public:
 	friend bool operator <= (const T& a, const T& b)  { return !(b < a); }
 	friend bool operator >= (const T& a, const T& b)  { return !(a < b); }
 
-	void operator=(const RelOps& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
+//	void operator=(const RelOps& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
 };
 
 template <class U, class V, class B = EmptyClass>
@@ -38,7 +38,7 @@ public:
 	friend U  operator +  (const U& a, const V& b)    { U x(a); x += b; return x; }
 	friend U  operator -  (const U& a, const V& b)    { U x(a); x += -b; return x; }
 
-	void operator=(const AddOps& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
+//	void operator=(const AddOps& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
 };
 
 template <class T, class B = EmptyClass>
@@ -48,7 +48,7 @@ public:
 	friend T operator ++ (T& i, int)                  { T x = i; ++i; return x; }
 	friend T operator -- (T& i, int)                  { T x = i; --i; return x; }
 
-	void operator=(const PostfixOps& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
+//	void operator=(const PostfixOps& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
 };
 
 template <class T, int (*compare)(T a, T b), class B = EmptyClass>
@@ -62,7 +62,7 @@ public:
 	friend bool operator <= (T a, T b) { return (*compare)(a, b) <= 0; }
 	friend bool operator >= (T a, T b) { return (*compare)(a, b) >= 0; }
 
-	void operator=(const CompareRelOps& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
+//	void operator=(const CompareRelOps& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
 };
 
 template <class T, class B = EmptyClass>
@@ -200,7 +200,7 @@ template <class T, class B = EmptyClass>
 class Moveable : public B
 {
 public:
-	void operator=(const Moveable& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
+//	void operator=(const Moveable& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
 };
 
 #define NTL_MOVEABLE(T)
@@ -216,7 +216,7 @@ inline void AssertMoveable0(T *t) { AssertMoveablePtr(&**t, *t); }
 template <class T, class B = EmptyClass>
 struct Moveable : public B {
 	friend void AssertMoveable0(T *) {}
-	void operator=(const Moveable& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
+//	void operator=(const Moveable& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
 };
 
 template <class T>
@@ -256,13 +256,13 @@ public:
 	{ ::new (dest) T(src, 0); }
 	friend T *DeepCopyNew(const T& src)
 	{ return ::new T(src, 0); }
-	void operator=(const DeepCopyOption& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
+//	void operator=(const DeepCopyOption& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
 };
 
 template <class T, class B = EmptyClass>
 class MoveableAndDeepCopyOption : public Moveable< T, DeepCopyOption<T, B> > {
 public:
-	void operator=(const MoveableAndDeepCopyOption& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
+//	void operator=(const MoveableAndDeepCopyOption& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
 };
 
 template <class T, class B = EmptyClass>
@@ -270,7 +270,7 @@ class PolyDeepCopyNew : public B
 {
 public:
 	friend T *DeepCopyNew(const T& t)              { return t.Copy(); }
-	void operator=(const PolyDeepCopyNew& b)       { B::operator = (b); } // MSC 6.0 empty base class bug fix
+//	void operator=(const PolyDeepCopyNew& b)       { B::operator = (b); } // MSC 6.0 empty base class bug fix
 };
 
 template <class T>

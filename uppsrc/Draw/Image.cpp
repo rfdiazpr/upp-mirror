@@ -26,6 +26,7 @@ int ImageBuffer::GetKind() const
 
 void ImageBuffer::Create(int cx, int cy)
 {
+	ASSERT(cx >= 0 && cy >= 0);
 	size.cx = cx;
 	size.cy = cy;
 	pixels.Alloc(GetLength());

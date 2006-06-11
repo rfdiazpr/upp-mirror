@@ -82,7 +82,7 @@ void MakeTocTopics(RichText& out, const RichToc& toc);
 
 class RichBook {
 public:
-	RichBook(Size page_size = Size(3968, 6047));
+	RichBook(Size page_size = Size(3968, 6074));
 
 	RichPrintSection&        AddSection();
 

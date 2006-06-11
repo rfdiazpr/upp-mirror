@@ -886,8 +886,6 @@ DlgImage::DlgImage(IconDesigner *owner_)
 
 	image_list.list.WhenCursor = THISBACK(OnImage);
 
-	recent_files.WhenSelect = THISBACK(OnFileRecent);
-
 	image_designer.WhenSyncBar = THISBACK(SetBar);
 }
 

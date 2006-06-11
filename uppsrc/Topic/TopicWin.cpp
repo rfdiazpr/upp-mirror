@@ -152,7 +152,7 @@ void TopicEditor::ExportPdf()
 	  .DefaultExt("pdf");
 	if(!fs.ExecuteSaveAs("Output PDF file"))
 		return;
-	Size page = Size(3968, 6047);
+	Size page = Size(3968, 6074);
 	PdfDraw pdf(page + 400);
 	::Print(pdf, editor.Get(), page);
 	SaveFile(~fs, pdf.Finish());

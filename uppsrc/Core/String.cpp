@@ -47,12 +47,20 @@ struct StringCompare__
 int String::Compare(const String& s) const
 {
 	STRING_STAT_CODE(StringCompare);
-	return IterCompare(Begin(), End(), s.Begin(), s.End(), StringCompare__());
+	int l1 = GetLength();
+	int l2 = s.GetLength();
+	int l = min(l1, l2);
+	int q = memcmp(ptr, ~s, l);
+	return q ? q : l1 - l2;
 }
 
 int String::Compare(const char *s) const
 {
-	return IterCompare(Begin(), End(), s, s + strlen(s), StringCompare__());
+	int l1 = GetLength();
+	int l2 = strlen(s);
+	int l = min(l1, l2);
+	int q = memcmp(ptr, s, l);
+	return q ? q : l1 - l2;
 }
 
 /*

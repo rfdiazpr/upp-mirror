@@ -44,7 +44,7 @@ void FontInfo::Data::GetMetrics(int page, CharMetrics *t)
 	LTIMING("GetMetrics");
 	LLOG("GetMetrics " << font << " char:" << page * 256 << ", 256");
 	if(xftfont) {
-		wchar h[1];//Optimize!!!
+		wchar h[1];//TODO Optimize!!!
 		for(int i = 0; i < 256; i++) {
 			LTIMING("XftTextExtents16");
 			*h = (page << 8) + i;

@@ -583,18 +583,19 @@ void LRUList::Serialize(Stream& stream)
 	StreamContainer(stream, lru);
 }
 
-void LRUList::Select(int i)
+void LRUList::Select(String f, Callback1<const String&> WhenSelect)
 {
-	WhenSelect(lru[i]);
+	WhenSelect(f);
 }
 
-void LRUList::operator()(Bar& bar)
+void LRUList::operator()(Bar& bar, Callback1<const String&> WhenSelect)
 {
 	if(bar.IsMenuBar() && !lru.IsEmpty()) {
 		bar.Separator();
 		char n = '1';
 		for(int i = 0; i < lru.GetCount(); i++) {
-			bar.Add(String("&") + n + ' ' + GetFileName(lru[i]), THISBACK1(Select, i));
+			bar.Add(String("&") + n + ' ' + GetFileName(lru[i]),
+			        THISBACK2(Select, lru[i], WhenSelect));
 			n = n == '9' ? 'A' : n + 1;
 		}
 	}

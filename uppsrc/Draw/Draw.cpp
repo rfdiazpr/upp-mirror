@@ -36,6 +36,8 @@ Stream& Draw::PutRect(const Rect& r)
 
 void Draw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, const Rect& src, Color color)
 {
+	if(IsNull(src))
+		return;
 	Size sz = Size(cx, cy);
 	if(src.GetSize() == sz) //TODO: RLE for large images
 		img.PaintImage(*this, x, y, src, color);
@@ -98,7 +100,7 @@ void Draw::DrawImage(const Rect& r, const Image& img, Color color)
 
 void Draw::DrawImage(int x, int y, const Image& img, const Rect& src)
 {
-	Size sz = img.GetSize();
+	Size sz = src.GetSize();
 	DrawImageOp(x, y, sz.cx, sz.cy, img, src, Null);
 }
 

@@ -310,7 +310,9 @@ public:
 	~FontInfo()                                   { Release(); }
 };
 
-struct StdFont   : public Font { StdFont(int n = 0) : Font(STDFONT, n) {} };
+Font StdFont();
+
+inline Font StdFont(int h)                        { return StdFont().Height(h); }
 
 struct ScreenSans : public Font  { ScreenSans(int n = 0) : Font(SCREEN_SANS, n) {} };
 struct ScreenSerif : public Font { ScreenSerif(int n = 0) : Font(SCREEN_SERIF, n) {} };
@@ -424,6 +426,7 @@ protected:
 	friend class  Font;
 
 	friend void StaticExitDraw_();
+	friend Font StdFont();
 
 	static void      InitColors();
 	static void      InitFonts();

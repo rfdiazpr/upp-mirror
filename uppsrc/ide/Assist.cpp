@@ -6,10 +6,17 @@
 
 AssistEditor::AssistEditor()
 {
-	assist.Header();
+	assist.NoHeader();
 	assist.NoGrid();
 	assist.AddColumn().Margin(0).SetDisplay(Single<CppItemInfoDisplay>());
 	assist.WhenLeftClick = THISBACK(AssistInsert);
+	type.NoHeader();
+	type.NoGrid();
+	type.AddColumn();
+	type.WhenCursor = THISBACK(SyncAssist);
+	type.NoWantFocus();
+	popup.Horz(type, assist);
+	popup.SetPos(2000);
 	auto_assist = true;
 	commentdp = false;
 }
@@ -53,7 +60,8 @@ void SubstituteTpars(Vector<String>& type, const String& tname)
 		}
 }
 
-bool AssistEditor::NestId(const CppNest& n, const String& id, Vector<String>& type, bool& code, String& t)
+bool AssistEditor::NestId(const CppNest& n, const String& id, Vector<String>& type, bool& code,
+                          String& t)
 {
 	int q = n.name.Find(NoTemplatePars(id));
 	if(q >= 0) {
@@ -136,6 +144,18 @@ void AssistEditor::TypeOf(const String& id, Vector<String>& r, bool& code)
 		r.Add(Split(parser.current.qptype, ';', false)[q]);
 		return;
 	}
+	String n = parser.current_nest;
+	for(;;) {
+		String type = n + "::" + id;
+		if(BrowserBase().Find(type)) {
+			code = true;
+			r.Add(type);
+		}
+		int q = n.ReverseFind(':');
+		if(q < 1 || n[q - 1] != ':')
+			break;
+		n.Trim(q - 1);
+	}
 	q = BrowserBase().Find(parser.current_nest);
 	String dummy;
 	if(q >= 0 && NestId(BrowserBase()[q], id, r, code, dummy))
@@ -213,9 +233,7 @@ int CharFilterT(int c)
 	return c >= '0' && c <= '9' ? "TUVWXYZMNO"[c - '0'] : c;
 }
 
-void AssistEditor::GatherItems(const String& type,
-                               const Index<String>& hidden,
-                               String& header, bool nom, Index<String>& in_types, bool tp)
+void AssistEditor::GatherItems(const String& type, bool nom, Index<String>& in_types, bool tp)
 {
 	LLOG("GatherItems " << type);
 	if(in_types.Find(type) >= 0) {
@@ -223,34 +241,15 @@ void AssistEditor::GatherItems(const String& type,
 		return;
 	}
 	in_types.Add(type);
-	if(!IsNull(header))
-		header << ", ";
-	header << Filter(type, CharFilterT);
 	String ntp = NoTemplatePars(type);
 	int q = BrowserBase().Find(ntp);
 	LDUMP(q);
 	if(q < 0)
 		return;
-	const CppNest& m = BrowserBase()[q];
-	Index<String> names;
-	String base;
-	for(int i = 0; i < m.GetCount(); i++) {
-		const CppItem& im = m[i];
-		String name = m.name[i];
-		if(im.IsType())
-			base = im.qptype;
-		LDUMP(name);
-		if(hidden.Find(name) < 0 && (im.IsCode() || im.IsData() || im.IsMacro() && type == "::")
-		   && (nom || im.access == PUBLIC)) {
-			names.FindAdd(name);
-			CppItemInfo& f = assist_item.Add();
-			f.name = name;
-			(CppSimpleItem&)f = im;
-		}
-	}
 	if(tp) {
 		if(ntp != "::")
 			ntp << "::";
+		int typei = assist_type.FindAdd("<types>");
 		for(int i = 0; i < BrowserBase().GetCount(); i++) {
 			String n = BrowserBase().GetKey(i);
 			if(n.GetLength() > ntp.GetLength() && memcmp(~ntp, ~n, ntp.GetLength()) == 0) {
@@ -259,10 +258,10 @@ void AssistEditor::GatherItems(const String& type,
 				for(int i = 0; i < m.GetCount(); i++) {
 					const CppItem& im = m[i];
 					String name = m.name[i];
-					if(im.IsType() && hidden.Find(name) < 0) {
-						names.FindAdd(name);
-						CppItemInfo& f = assist_item.Add();
+					if(im.IsType()) {
+						CppItemInfo& f = assist_item.Add(name);
 						f.name = name;
+						f.typei = typei;
 						(CppSimpleItem&)f = im;
 						break;
 					}
@@ -270,10 +269,35 @@ void AssistEditor::GatherItems(const String& type,
 			}
 		}
 	}
+	const CppNest& m = BrowserBase()[q];
+	String base;
+	int typei = assist_type.FindAdd(ntp);
+	for(int i = 0; i < m.GetCount(); i++) {
+		const CppItem& im = m[i];
+		String name = m.name[i];
+		if(im.IsType())
+			base = im.qptype;
+		LDUMP(name);
+		if((im.IsCode() || im.IsData() || im.IsMacro() && type == "::")
+		   && (nom || im.access == PUBLIC)) {
+			if(im.IsCode()) {
+				int q = assist_item.Find(name);
+				while(q >= 0) {
+					if(assist_item[q].typei != typei)
+						assist_item[q].over = true;
+					q = assist_item.FindNext(q);
+				}
+			}
+			CppItemInfo& f = assist_item.Add(name);
+			f.name = name;
+			f.typei = typei;
+			(CppSimpleItem&)f = im;
+		}
+	}
 	Vector<String> b = Split(base, ';');
 	SubstituteTpars(b, type);
 	for(int i = 0; i < b.GetCount(); i++)
-		GatherItems(b[i], names, header, nom, in_types, tp);
+		GatherItems(b[i], nom, in_types, tp);
 	in_types.Drop();
 }
 
@@ -285,8 +309,8 @@ struct CppItemInfoOrder {
 
 void AssistEditor::CloseAssist()
 {
-	if(assist.IsOpen())
-		assist.Close();
+	if(popup.IsOpen())
+		popup.Close();
 	assist_item.Clear();
 }
 
@@ -431,23 +455,28 @@ int memcmp_i(const char *s, const char *t, int n)
 	return 0;
 }
 
-int AssistEditor::SyncAssist()
+void AssistEditor::SyncAssist()
 {
 	String name;
 	name = ReadIdBack(GetCursor());
-	int cx = 0;
 	assist.Clear();
+	int typei = type.GetCursor() - 1;
+	VectorMap<String, int> over;
 	for(int p = 0; p < 2; p++)
 		for(int i = 0; i < assist_item.GetCount(); i++) {
 			const CppItemInfo& m = assist_item[i];
-			Value v = RawToValue(m);
-			if(p ? memcmp_i(name, m.name, name.GetCount()) == 0
-			       && memcmp(name, m.name, name.GetCount())
-			     : memcmp(name, m.name, name.GetCount()) == 0) {
-				assist.Add(v);
+			if((typei < 0 || m.typei == typei) &&
+			   (p ? memcmp_i(name, m.name, name.GetCount()) == 0
+			        && memcmp(name, m.name, name.GetCount())
+			      : memcmp(name, m.name, name.GetCount()) == 0)) {
+				int q = over.Find(m.name);
+				if(q < 0 || over[q] == m.typei) {
+					assist.Add(RawToValue(m));
+					if(q < 0)
+						over.Add(m.name, m.typei);
+				}
 			}
 		}
-	return cx;
 }
 
 void AssistEditor::Assist()
@@ -470,59 +499,56 @@ void AssistEditor::Assist()
 		if(type.GetCount() == 0)
 			return;
 	}
-	Index<String> hidden;
-	String header;
+	assist_type.Clear();
 	assist_item.Clear();
 	for(int i = 0; i < type.GetCount(); i++) {
 		Index<String> in_types;
-		GatherItems(type[i], hidden, header, h.GetCount() == 0, in_types,
-		            !IsNull(tp) || h.GetCount() == 0);
+		GatherItems(type[i], h.GetCount() == 0, in_types, !IsNull(tp) || h.GetCount() == 0);
 	}
 	if(assist_item.GetCount() == 0)
 		return;
 	Sort(assist_item, CppItemInfoOrder());
-	PopUpAssist(header);
+	PopUpAssist();
 }
 
-void AssistEditor::PopUpAssist(const String& header, bool auto_insert)
+void AssistEditor::PopUpAssist(bool auto_insert)
 {
 	int lcy = Arial(11).Info().GetHeight() + 3;
-	Size sz;
-	sz.cx = 0;
-	for(int i = 0; i < assist_item.GetCount() && sz.cx < 600; i++)
-		sz.cx = max(sz.cx,
-		            Single<CppItemInfoDisplay>().GetStdSize(RawToValue(assist_item[i])).cx);
-	sz.cx = min(600, max(sz.cx,
-	                     GetTextSize(header, StdFont()).cx + 2 * HeaderCtrl::GetStdHeight()));
-	SyncAssist();
+	type.Clear();
+	type.Add(AttrText("<all>").Ink(SColorHighlight()));
+	for(int i = 0; i < assist_type.GetCount(); i++) {
+		String s = assist_type[i];
+		if(s[0] == ':' && s[1] == ':')
+			s = s.Mid(2);
+		s = Nvl(s, "<globals>");
+		if(s[0] == '<')
+			type.Add(AttrText(s).Ink(SColorHighlight()));
+		else
+			type.Add(Nvl(s, "<globals>"));
+	}
+	type.SetCursor(0);
 	if(!assist.GetCount())
 		return;
-	sz.cy = min(300, lcy * assist.GetCount());
-	if(IsNull(header))
-		assist.NoHeader();
-	else {
-		assist.Header();
-		assist.HeaderTab(0).SetText(header);
-	}
-	sz.cx += 4 + (IsNull(header) * ScrollBar::GetStdBox()) + 12 + ScrollBar::GetStdBox();
-	sz.cy += 4;
-	sz.cy += HeaderCtrl::GetStdHeight();
+	int cy = min(300, lcy * max(type.GetCount(), assist.GetCount()));
+	cy += 4;
+	cy += HeaderCtrl::GetStdHeight();
 	assist.SetLineCy(lcy);
 	Point p = GetCaretPoint() + GetScreenView().TopLeft();
-	Rect r(p, sz);
 	Rect wa = GetWorkArea();
-	if(p.x + sz.cx > wa.right)
-		p.x = wa.right - sz.cx;
-	if(p.y + sz.cy + GetFontSize().cy < wa.bottom)
-		assist.SetRect(p.x, p.y + GetFontSize().cy, sz.cx, sz.cy);
+	int cx = min(wa.Width() - 100, HorzLayoutZoom(600));
+	Rect r = RectC(p.x, p.y, cx, cy);
+	if(p.x + cx > wa.right)
+		p.x = wa.right - cx;
+	if(p.y + cy + GetFontSize().cy < wa.bottom)
+		popup.SetRect(p.x, p.y + GetFontSize().cy, cx, cy);
 	else
-		assist.SetRect(p.x, p.y - sz.cy, sz.cx, sz.cy);
+		popup.SetRect(p.x, p.y - cy, cx, cy);
 	if(auto_insert && assist.GetCount() == 1) {
 		assist.GoBegin();
 		AssistInsert();
 	}
 	else
-		assist.Ctrl::PopUp(this, false, false, true);
+		popup.Ctrl::PopUp(this, false, false, true);
 }
 
 void AssistEditor::Complete()
@@ -541,13 +567,13 @@ void AssistEditor::Complete()
 		l--;
 	}
 	for(int i = 0; i < id.GetCount(); i++) {
-		CppItemInfo& f = assist_item.Add();
+		CppItemInfo& f = assist_item.Add(id[i]);
 		f.name = id[i];
 		f.natural = id[i];
 		f.access = 0;
 		f.kind = 100;
 	}
-	PopUpAssist(Null, true);
+	PopUpAssist(true);
 }
 
 void AssistEditor::AssistInsert()
@@ -609,19 +635,21 @@ bool AssistEditor::InCode()
 
 bool AssistEditor::Key(dword key, int count)
 {
-	if(assist.IsOpen()) {
-		if(key == K_UP || key == K_PAGEUP || key == K_CTRL_PAGEUP || key == K_CTRL_END)
-			if(assist.IsCursor())
-				return assist.Key(key, count);
+	if(popup.IsOpen()) {
+		int k = key & ~K_CTRL;
+		ArrayCtrl& kt = key & K_CTRL ? type : assist;
+		if(k == K_UP || k == K_PAGEUP || k == K_CTRL_PAGEUP || k == K_CTRL_END)
+			if(kt.IsCursor())
+				return kt.Key(k, count);
 			else {
-				assist.SetCursor(assist.GetCount() - 1);
+				kt.SetCursor(kt.GetCount() - 1);
 				return true;
 			}
-		if(key == K_DOWN || key == K_PAGEDOWN || key == K_CTRL_PAGEDOWN || key == K_CTRL_HOME)
-			if(assist.IsCursor())
-				return assist.Key(key, count);
+		if(k == K_DOWN || k == K_PAGEDOWN || k == K_CTRL_PAGEDOWN || k == K_CTRL_HOME)
+			if(kt.IsCursor())
+				return kt.Key(k, count);
 			else {
-				assist.SetCursor(0);
+				kt.SetCursor(0);
 				return true;
 			}
 		if(key == K_ENTER && assist.IsCursor()) {

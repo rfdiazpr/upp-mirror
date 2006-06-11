@@ -77,8 +77,6 @@ Something borked with unix filename escaping?
 	- http://www.arilect.com/upp/forum/index.php?t=msg&goto=3499&#msg_3499
 	- http://www.arilect.com/upp/forum/index.php?t=msg&th=1052&start=0&
 	- operator Draw&();
-	- konstruktor pri Ctrl+Space
-	- PNGEncoder(). (konstruktor)
     - IconDes, problem s definici lokalnich statickych dat
 	- TDoc.cpp: Alt+V, para.
 		struct IsWatermark : RichText::Iterator

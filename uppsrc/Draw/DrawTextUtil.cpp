@@ -78,7 +78,8 @@ int GetTLTextHeight(Draw& w, const wchar *s, Font font)
 	return h;
 }
 
-void DrawTLText(Draw& draw, int x, int y, int cx, const wchar *text, Font font, Color ink, int accesskey) {
+void DrawTLText(Draw& draw, int x, int y, int cx, const wchar *text,
+                Font font, Color ink, int accesskey) {
 	int cy = font.Info().GetHeight();
 	const wchar *s = text;
 	const wchar *t = s;

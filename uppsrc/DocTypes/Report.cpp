@@ -3,7 +3,7 @@
 DocReport::DocReport(const char *_name) {
 	name = _name;
 	pgsz.cx = 3968;
-	pgsz.cy = 6047;
+	pgsz.cy = 6074;
 	size = pgsz;
 	pgnformat = NULL;
 	pageno = 1;

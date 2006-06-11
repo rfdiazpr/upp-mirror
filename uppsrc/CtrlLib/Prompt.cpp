@@ -19,11 +19,10 @@ int Prompt(const char *title, const Image& iconbmp, const char *qtf, bool okcanc
 	RichTextCtrl qtfctrl;
 	Icon         icon;
 	icon.SetImage(iconbmp);
-	icon.TopPos(fcy, Ctrl::STDSIZE).LeftPos(fcy, Ctrl::STDSIZE);
 	Button b1, b2, b3;
-	qtfctrl.SetQTF(qtf, GetRichTextStdScreenZoom());
-	int bcy = 2 * fcy;
-	int bcx = 6 * fcy;
+	qtfctrl.SetQTF(String("[G1 ") + qtf, GetRichTextStdScreenZoom());
+	int bcy = Ctrl::VertLayoutZoom(24);
+	int bcx = Ctrl::HorzLayoutZoom(72);
 	Size bsz = icon.GetStdSize();
 	if(cx == 0) {
 		cx = qtfctrl.GetWidth();
@@ -45,37 +44,38 @@ int Prompt(const char *title, const Image& iconbmp, const char *qtf, bool okcanc
 		cx += ScrollBar::GetStdBox();
 	}
 	int mcy = max(qcy, bsz.cy);
-	int cy = mcy + 4 * fcy;
+	int cy = mcy + 48 * fcy / 10;
 	dlg.SetRect(Size(cx, cy));
-	fcy /= 2;
-	dlg << icon.TopPos(fcy + (mcy - bsz.cy) / 2, bsz.cy).LeftPos(fcy, bsz.cx);
+	dlg << icon.TopPos(fcy, bsz.cy).LeftPos(fcy, bsz.cx);
 	dlg << qtfctrl.TopPos(fcy + (mcy - qcy) / 2, qcy).LeftPos(2 * fcy + bsz.cx, qcx);
 	if(okcancel)
 		b1.Ok();
-	b1.SetLabel(button1);
 	b1.WhenAction = dlg.Breaker(1);
 	b2.WhenAction = dlg.Breaker(0);
 	b3.WhenAction = dlg.Breaker(-1);
-	b1.SetFont(Arial(-12));
-	b2.SetFont(Arial(-12));
-	b3.SetFont(Arial(-12));
+//	b1.SetFont(Arial(-12));
+//	b2.SetFont(Arial(-12));
+//	b3.SetFont(Arial(-12));
+	int bx = bcx;
+	int gap = fcy / 2;
+	fcy = 8 * fcy / 10;
+	if(button2)
+		bx += gap + bcx;
+	if(button3)
+		bx += gap + bcx;
+	bx = (cx - bx) / 2;
+	dlg << b1.BottomPos(fcy, bcy).LeftPos(bx, bcx);
+	b1.SetLabel(button1);
 	if(button2) {
+		bx += gap + bcx;
+		dlg << b2.BottomPos(fcy, bcy).LeftPos(bx, bcx);
 		b2.SetLabel(button2);
-		if(button3) {
-			dlg << b2.BottomPos(fcy, bcy).HCenterPos(bcx);
-			dlg << b3.SetLabel(button3).BottomPos(fcy, bcy).RightPos(fcy, bcx);
-			if(okcancel)
-				b3.Cancel();
-		}
-		else {
-			dlg << b2.BottomPos(fcy, bcy).RightPos(fcy, bcx);
-			if(okcancel)
-				b2.Cancel();
-		}
-		dlg << b1.BottomPos(fcy, bcy).LeftPos(fcy, bcx);
 	}
-	else
-		dlg << b1.BottomPos(fcy, bcy).HCenterPos(bcx);
+	if(button3) {
+		bx += gap + bcx;
+		dlg << b3.BottomPos(fcy, bcy).LeftPos(bx, bcx);
+		b3.SetLabel(button3);
+	}
 	dlg.WhenClose = dlg.Breaker(button3 ? -1 : 0);
 	dlg.Open();
 	dlg.Title(title);
@@ -106,7 +106,14 @@ void ShowExc(const Exc& exc) {
 
 int PromptOKCancel(const char *qtf) {
 	BeepQuestion();
-	return Prompt(Ctrl::GetAppName(), CtrlImg::question(), qtf, t_("OK"), t_("Cancel"));
+
+	return Prompt(Ctrl::GetAppName(),
+#ifdef PLATFORM_WIN32
+		Win32Icon(IDI_QUESTION),
+#else
+		CtrlImg::question(),
+#endif
+		qtf, t_("OK"), t_("Cancel"));
 }
 
 int PromptYesNo(const char *qtf) {

@@ -81,6 +81,11 @@ Size Draw::GetStdFontSize()
 	return StdFontSize;
 }
 
+Font StdFont()
+{
+	return Font(0, Draw::AStdFont.GetHeight());
+}
+
 String Font::GetFaceName() const {
 	if(IsNull()) return String();
 	if(GetFace() == 0)

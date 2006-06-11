@@ -468,7 +468,7 @@ void Rescale(RasterEncoder& tgt, Size tsz, Raster& src, const Rect& src_rc)
 
 Image Rescale(const Image& src, Size sz, const Rect& src_rc)
 {
-	if(src.GetSize() == sz)
+	if(src.GetSize() == sz && src_rc == sz)
 		return src;
 	ImageRaster isrc(src);
 	ImageEncoder tgt;

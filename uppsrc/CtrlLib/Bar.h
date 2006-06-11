@@ -482,23 +482,21 @@ public:
 class LRUList {
 	Vector<String> lru;
 	int            limit;
-	void           Select(int index);
+	void           Select(String s, Callback1<const String&> WhenSelect);
 
 public:
 	static int GetStdHeight();
 
-	Callback1<const String&> WhenSelect;
-
 	void        Serialize(Stream& stream);
 
-	void        operator()(Bar& bar);
-	void        operator=(Callback1<const String&> sel) { WhenSelect = sel; }
+	void        operator()(Bar& bar, Callback1<const String&> WhenSelect);
 
 	void        NewEntry(const String& path);
 	void        RemoveEntry(const String& path);
 
-	LRUList&    Limit(byte _limit)                      { limit = _limit; return *this; }
-	byte        GetLimit() const                        { return limit; }
+	LRUList&    Limit(int _limit)                       { limit = _limit; return *this; }
+	int         GetLimit() const                        { return limit; }
+	int         GetCount() const                        { return lru.GetCount(); }
 
 	typedef LRUList CLASSNAME;
 

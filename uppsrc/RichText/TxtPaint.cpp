@@ -121,6 +121,7 @@ bool IsPainting(PageDraw& pw, Zoom z, const Rect& page, PageY top, PageY bottom)
 
 void RichTxt::Paint(PageDraw& pw, RichContext rc, const PaintInfo& _pi) const
 {
+	DUMP(rc.page);
 	PaintInfo pi = _pi;
 	int parti = 0;
 	int pos = 0;

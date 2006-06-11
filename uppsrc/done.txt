@@ -1,3 +1,13 @@
+Weekend {
+	Assist++ {
+		- Constructor call
+		- Type selection (Ctrl+Up/Down)
+	}
+
+	- LRUList & UWord
+}
+
+
 Assist++ {
 	- global scope macros
 	- EB\idu.cpp 266 k.[ok.] - improved resume & heurestics

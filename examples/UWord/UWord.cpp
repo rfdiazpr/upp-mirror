@@ -25,7 +25,10 @@ protected:
 	StatusBar  statusbar;
 	String     filename;
 
+	static LRUList& lrufile() { static LRUList l; return l; }
+
 	void Load(const String& filename);
+	void OpenFile(const String& fn);
 	void New();
 	void Open();
 	void Save();
@@ -42,6 +45,8 @@ protected:
 
 public:
 	typedef UWord CLASSNAME;
+
+	static void SerializeApp(Stream& s);
 
 	UWord();
 };
@@ -68,6 +73,10 @@ void UWord::FileBar(Bar& bar)
 	   .Help("Export document to PDF file");
 	if(bar.IsMenuBar()) {
 		bar.Separator();
+		if(lrufile().GetCount()) {
+			lrufile()(bar, THISBACK(OpenFile));
+			bar.Separator();
+		}
 		bar.Add("Exit", THISBACK(Destroy));
 	}
 }
@@ -94,26 +103,33 @@ void UWord::New()
 
 void UWord::Load(const String& name)
 {
+	lrufile().NewEntry(name);
 	editor.SetQTF(LoadFile(name));
 	filename = name;
 	editor.ClearModify();
 	Title(filename);
 }
 
+void UWord::OpenFile(const String& fn)
+{
+	if(filename.IsEmpty() && !editor.IsModified())
+		Load(fn);
+	else
+		(new UWord)->Load(fn);
+}
+
 void UWord::Open()
 {
 	FileSel& fs = UWordFs();
 	if(fs.ExecuteOpen())
-		if(filename.IsEmpty() && !editor.IsModified())
-			Load(fs);
-		else
-			(new UWord)->Load(fs);
+		OpenFile(fs);
 	else
 		statusbar.Temporary("Loading aborted.");
 }
 
 void UWord::Save()
 {
+	lrufile().NewEntry(filename);
 	if(!editor.IsModified()) return;
 	if(filename.IsEmpty())
 		SaveAs();
@@ -146,7 +162,7 @@ void UWord::Pdf()
 	FileSel& fs = PdfFs();
 	if(!fs.ExecuteSaveAs("Output PDF file"))
 		return;
-	Size page = Size(3968, 6047);
+	Size page = Size(3968, 6074);
 	PdfDraw pdf;
 	::Print(pdf, editor.Get(), page);
 	SaveFile(~fs, pdf.Finish());
@@ -205,12 +221,14 @@ UWord::UWord()
 	ActiveFocus(editor);
 }
 
-void SerializeApp(Stream& s)
+void UWord::SerializeApp(Stream& s)
 {
-	int version = 0;
+	int version = 1;
 	s / version;
 	s % UWordFs()
 	  % PdfFs();
+	if(version >= 1)
+		s % lrufile();
 }
 
 GUI_APP_MAIN
@@ -224,8 +242,8 @@ GUI_APP_MAIN
 	       .AllFilesType()
 	       .DefaultExt("pdf");
 
-	LoadFromFile(callback(SerializeApp));
+	LoadFromFile(callback(UWord::SerializeApp));
 	new UWord;
 	Ctrl::EventLoop();
-	StoreToFile(callback(SerializeApp));
+	StoreToFile(callback(UWord::SerializeApp));
 }

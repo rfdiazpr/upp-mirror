@@ -58,6 +58,7 @@ Something borked with unix filename escaping?
 }
 
 * CtrlLib {
+	- Menu u EditField (Copy, Cut, Paste, Undo....)
 	- Secondary, there seems to be a bug with horizontal scrollbar. It turns on before my tabs are even close to the right-side edge. Almost like it is adding up all tabs, including those Hidden, to work out when to enable the horizontal scrollbar.
 }
 

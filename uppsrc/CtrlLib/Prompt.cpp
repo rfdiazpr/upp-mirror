@@ -106,14 +106,7 @@ void ShowExc(const Exc& exc) {
 
 int PromptOKCancel(const char *qtf) {
 	BeepQuestion();
-
-	return Prompt(Ctrl::GetAppName(),
-#ifdef PLATFORM_WIN32
-		Win32Icon(IDI_QUESTION),
-#else
-		CtrlImg::question(),
-#endif
-		qtf, t_("OK"), t_("Cancel"));
+	return Prompt(Ctrl::GetAppName(), CtrlImg::question(), qtf, t_("OK"), t_("Cancel"));
 }
 
 int PromptYesNo(const char *qtf) {

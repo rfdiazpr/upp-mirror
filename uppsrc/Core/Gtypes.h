@@ -290,7 +290,8 @@ struct Rect_ : Moveable< Rect_<T> > {
 	void   Union(const Rect_& rc);
 	void   Intersect(const Rect_& rc);
 
-	bool   Contains(Pt pt) const;
+	bool   Contains(T x, T y) const;
+	bool   Contains(Pt p) const                 { return Contains(p.x, p.y); }
 	bool   Contains(const Rect_& rc) const;
 	bool   Intersects(const Rect_& rc) const;
 
@@ -454,13 +455,13 @@ void Rect_<T>::Intersect(const Rect_<T>& r) {
 }
 
 template <class T>
-bool Rect_<T>::Contains(Point_<T> p) const {
-	return p.x >= left && p.x < right && p.y >= top && p.y < bottom;
+bool Rect_<T>::Contains(T x, T y) const {
+	return x >= left && x < right && y >= top && y < bottom;
 }
 
 template <>
-inline bool Rect_<double>::Contains(Point_<double> p) const {
-	return p.x >= left && p.x <= right && p.y >= top && p.y <= bottom;
+inline bool Rect_<double>::Contains(double x, double y) const {
+	return x >= left && x <= right && y >= top && y <= bottom;
 }
 
 template <class T>

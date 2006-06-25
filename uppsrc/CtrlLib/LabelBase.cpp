@@ -1,5 +1,13 @@
 #include "CtrlLib.h"
 
+Vector<Value> CtrlElements(int i)
+{
+	Vector<Value> m;
+	for(int q = 0; q < 4; q++)
+		m.Add(CtrlsImg::Get(i + q));
+	return m;
+}
+
 String DeAmp(const char *s)
 {
 	String out;

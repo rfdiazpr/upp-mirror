@@ -7,7 +7,7 @@ struct cDrawRasterData : DataDrawer {
 	RescaleImage       si;
 
 	virtual void Open(const String& data, int cx, int cy);
-	virtual Image Render(int lines);
+	virtual void Render(ImageBuffer& ib);
 };
 
 void cDrawRasterData::Open(const String& data, int _cx, int cy)
@@ -19,13 +19,10 @@ void cDrawRasterData::Open(const String& data, int _cx, int cy)
 		si.Create(Size(cx, cy), *raster, raster->GetSize());
 }
 
-Image cDrawRasterData::Render(int lines)
+void cDrawRasterData::Render(ImageBuffer& ib)
 {
-	RTIMING("Render");
-	ImageBuffer ib(cx, lines);
-	for(int y = 0; y < lines; y++)
+	for(int y = 0; y < ib.GetHeight(); y++)
 		si.Get(ib[y]);
-	return ib;
 }
 
 INITBLOCK

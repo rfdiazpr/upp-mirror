@@ -109,11 +109,14 @@ CtrlFrame& BlackFrame();
 CtrlFrame& XPFieldFrame();
 
 CtrlFrame& FieldFrame();
+CtrlFrame& EditFieldFrame();
 
 CtrlFrame& TopSeparatorFrame();
 CtrlFrame& BottomSeparatorFrame();
 CtrlFrame& LeftSeparatorFrame();
 CtrlFrame& RightSeparatorFrame();
+
+int  FrameButtonWidth();
 
 void LayoutFrameLeft(Rect& r, Ctrl *ctrl, int cx);
 void LayoutFrameRight(Rect& r, Ctrl *ctrl, int cx);
@@ -1091,7 +1094,7 @@ template <class T>
 class FrameLeft : public FrameLR<T> {
 public:
 	virtual void FrameLayout(Rect& r) {
-		LayoutFrameLeft(r, this, this->cx ? this->cx : r.Height());
+		LayoutFrameLeft(r, this, this->cx ? this->cx : FrameButtonWidth());
 	}
 };
 
@@ -1099,7 +1102,7 @@ template <class T>
 class FrameRight : public FrameLR<T> {
 public:
 	virtual void FrameLayout(Rect& r) {
-		LayoutFrameRight(r, this, this->cx ? this->cx : r.Height());
+		LayoutFrameRight(r, this, this->cx ? this->cx : FrameButtonWidth());
 	}
 };
 

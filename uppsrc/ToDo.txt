@@ -1,5 +1,16 @@
 * ArrayCtrl::ColumnWidths -> FontZoom
 
+U++ {
+1. Collapsing like Visual Studio.
+2. #pragma region like in Visual Studio.
+3. A shortcut menu in the project window to add new c,h,hpp,cpp etc file.
+4. When ref a dll, the ability to debug it in the calling application.
+5. A Solution style where you can create more then one project in one solution.
+6. Close a Project and open a new or existing project from the current open IDE.
+7. U++ DLL template for WIN32 and a U++ SO template for Linux
+8. Warnings for Code Porting from WIN32 to Linux and visa versa. In other words, if you write a piece of code it can warn you that the code will not compile in Linux.
+}
+
 
 nDraw {
 	- Velky U a Z v IDE s Bitstream Vera (Glyph composing)
@@ -8,8 +19,15 @@ nDraw {
 	- Otazka Font::GetHeight()... ?
 }
 
+Chameleon {
+	- disabled buttons text should be gray, not black...
+	- left margin in themized EditField..
+	- EditField - moc nahore, selection
+}
+
 CtrlCore {
 	- small font zoom problem
+	- artifacts in IconDes! (when scrolling the list of images)
 }
 
 
@@ -60,6 +78,7 @@ Something borked with unix filename escaping?
 * CtrlLib {
 	- Menu u EditField (Copy, Cut, Paste, Undo....)
 	- Secondary, there seems to be a bug with horizontal scrollbar. It turns on before my tabs are even close to the right-side edge. Almost like it is adding up all tabs, including those Hidden, to work out when to enable the horizontal scrollbar.
+	- Mouse wheel should increment / decrement numbers
 }
 
 * Core {
@@ -75,6 +94,7 @@ Something borked with unix filename escaping?
 }
 
 * Assist++  {
+	- zz.GetAdd Prest/Doc.cpp 41 (nejde vnoreny...)
 	- http://www.arilect.com/upp/forum/index.php?t=msg&goto=3499&#msg_3499
 	- http://www.arilect.com/upp/forum/index.php?t=msg&th=1052&start=0&
 	- operator Draw&();

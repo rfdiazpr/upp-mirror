@@ -5,7 +5,7 @@
 #include           <CtrlCore/lay.h>
 
 #define IMAGEFILE  <Geom/Ctrl/pathedit.iml>
-#define IMAGESPACE PathImg
+#define IMAGECLASS PathImg
 #include           <Draw/iml.h>
 
 class DlgPathStyleSetup
@@ -655,7 +655,9 @@ bool PathEditorCtrl::WriteClipboard()
 	PathStyle::Clip clip;
 	for(int i = 0; i < selection.GetCount(); i++)
 		clip.traces.Add(traces[selection[i]]);
-	return clip.Write();
+	clip.Write();
+	return true;
+//	return clip.Write();
 }
 
 bool PathEditorCtrl::ReadClipboard()

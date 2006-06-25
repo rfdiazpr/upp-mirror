@@ -67,7 +67,7 @@ CONSOLE_APP_MAIN
 		bm.Add(arg[i]);
 	if(bm.GetCount() == 0) {
 		bm.Add("MSC8");
-		bm.Add("MINGW");
+		bm.Add("MINGWI");
 	}
 	Build("examples");
 	Build("reference");

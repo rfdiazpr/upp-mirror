@@ -11,4 +11,3 @@ LAYOUT(IDEFindReplaceLayout, 266, 118)
 	ITEM(Button, ok, SetLabel(t_("Find Next")).RightPosZ(70, 60).BottomPosZ(4, 24))
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).RightPosZ(4, 60).BottomPosZ(4, 24))
 END_LAYOUT
-

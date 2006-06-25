@@ -107,7 +107,7 @@ String ColorToHtml(Color color)
 Color Blend(Color c1, Color c2, int alpha)
 {
 	int a = (alpha >> 7) + alpha;
-	return Color(((a * (c2.GetR() - c1.GetR())) >> 8) + c1.GetR(),
-	             ((a * (c2.GetG() - c1.GetG())) >> 8) + c1.GetG(),
-	             ((a * (c2.GetB() - c1.GetB())) >> 8) + c1.GetB());
+	return Color(min(((a * (c2.GetR() - c1.GetR())) >> 8) + c1.GetR(), 255),
+	             min(((a * (c2.GetG() - c1.GetG())) >> 8) + c1.GetG(), 255),
+	             min(((a * (c2.GetB() - c1.GetB())) >> 8) + c1.GetB(), 255));
 }

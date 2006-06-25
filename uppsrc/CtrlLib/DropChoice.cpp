@@ -1,7 +1,7 @@
 #include "CtrlLib.h"
 
 DropChoice::DropChoice() {
-	drop.SetMonoImage(Ctrl::IsXPStyle() ? CtrlImg::SmallDown() : CtrlImg::smalldown()).NoWantFocus();
+	drop.SetMonoImage(CtrlsImg::DA()).NoWantFocus();
 	drop.WhenPush = callback(this, &DropChoice::Drop);
 	drop.Disable();
 	list.Normal();

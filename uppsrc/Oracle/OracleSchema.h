@@ -52,18 +52,26 @@
 
 #define INDEX                      ATTRIBUTE("create index IDX_@x on @t(@c);", \
                                              "drop index IDX_@x;")
+#ifndef REFERENCES
 #define REFERENCES(x)              ATTRIBUTE("alter table @t add (constraint FK_@x foreign key "\
                                              "(@c) references " #x ");",\
                                              "alter table @t drop constraint FK_@x;")
+#endif
+#ifndef REFERENCES_CASCADE
 #define REFERENCES_CASCADE(x)      ATTRIBUTE("alter table @t add (constraint FK_@x foreign key "\
                                              "(@c) references " #x " on delete cascade);",\
                                              "alter table @t drop constraint FK_@x;")
+#endif
+#ifndef REFERENCES_
 #define REFERENCES_(n, x)          ATTRIBUTE("alter table @t add (constraint FK_@x$" #n " foreign key "\
                                              "(@c) references " #x ");",\
                                              "alter table @t drop constraint FK_@x$" #n ";")
+#endif
+#ifndef REFERENCES_CASCADE_
 #define REFERENCES_CASCADE_(n, x)  ATTRIBUTE("alter table @t add (constraint FK_@x$" #n " foreign key "\
                                              "(@c) references " #x " on delete cascade);",\
                                              "alter table @t drop constraint FK_@x$" #n ";")
+#endif
 
 #define DUAL_PRIMARY_KEY(k1, k2)   INLINE_ATTRIBUTE(", primary key (" #k1 ", " #k2 ")")
 
@@ -126,7 +134,9 @@
 #undef UNIQUE
 #undef SQLDEFAULT
 #undef REFERENCES
+#undef REFERENCES_
 #undef REFERENCES_CASCADE
+#undef REFERENCES_CASCADE_
 #undef DUAL_PRIMARY_KEY
 #undef DUAL_UNIQUE
 #undef UNIQUE_LIST

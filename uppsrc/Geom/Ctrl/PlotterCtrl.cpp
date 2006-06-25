@@ -1,7 +1,7 @@
 #include "GeomCtrl.h"
 #pragma hdrstop
 
-#define IMAGESPACE PlotterImg
+#define IMAGECLASS PlotterImg
 #define IMAGEFILE  <Geom/Ctrl/PlotterCtrl.iml>
 #include           <Draw/iml.h>
 
@@ -483,36 +483,35 @@ ImageDraw& PlotterCtrl::BeginBufferPaint()
 	LLOGBLOCK("PlotterCtrl::BeginBufferPaint");
 	ASSERT(!is_painting);
 	paint_buffer = Null;
-	paint_buffer = Image(max(GetSize(), Size(1, 1)));
+	Size sz = max(GetSize(), Size(1, 1));
+//	paint_buffer = Image(max(GetSize(), Size(1, 1)));
 	LLOG("-> size = " << paint_buffer.GetSize());
-	paint_draw.Open(ScreenInfo(), paint_buffer);
-	paint_draw.DrawRect(GetSize(), background);
+	paint_draw = new ImageDraw(sz);
+	paint_draw->DrawRect(sz, background);
 	is_painting = true;
 	abort_repaint = false;
-	return paint_draw;
+	return *paint_draw;
 }
 
 void PlotterCtrl::EndBufferPaint()
 {
 	LLOGBLOCK("PlotterCtrl::EndBufferPaint");
 	ASSERT(is_painting);
-	Plotter plotter(paint_draw, scale, delta);
+	Plotter plotter(*paint_draw, scale, delta);
 	plotter.PathMap(&PathStyleMap::App());
-	if(drag_drop)
-	{
+	if(drag_drop) {
 		lock_drag_drop = true;
 		drag_drop->Plot(plotter);
 		lock_drag_drop = false;
 	}
-	if(short_drag_drop)
-	{
+	if(short_drag_drop) {
 		lock_short_drag_drop = true;
 		short_drag_drop->Plot(plotter);
 		lock_short_drag_drop = false;
 	}
-	paint_draw.Close();
-	if(abort_repaint)
-		paint_buffer = Null;
+	if(!abort_repaint)
+		paint_buffer = *paint_draw;
+	paint_draw.Clear();
 	is_painting = false;
 	PostRefresh();
 }
@@ -533,7 +532,7 @@ void PlotterCtrl::Paint(Draw& draw)
 #ifdef PLATFORM_WIN32
 		if(!paint_buffer.IsEmpty()) {
 			LLOG("-> blit paint_buffer");
-			if(!BitBlt(draw, Point(0, 0), paint_draw, paint_buffer.GetRect())) {
+			if(!BitBlt(draw, Point(0, 0), *paint_draw, paint_buffer.GetSize())) {
 				LLOG("-> blit error");
 			}
 		}

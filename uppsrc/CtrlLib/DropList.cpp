@@ -123,6 +123,11 @@ PopUpTable::PopUpTable() {
 
 PopUpTable::~PopUpTable() {}
 
+Size DropList::GetMinSize() const
+{
+	return AddFrameSize(0, StdFont().Info().GetHeight() + 4);
+}
+
 void DropList::State(int)
 {
 	drop.Enable(IsEditable() && IsShowEnabled());
@@ -345,14 +350,14 @@ Value DropList::Format(const Value& q) const {
 }
 
 DropList::DropList() {
-	drop.SetMonoImage(IsXPStyle() ? CtrlImg::SmallDown() : CtrlImg::smalldown())
+	drop.SetMonoImage(CtrlsImg::DA())
 		.NoWantFocus();
 	drop.WhenPush = callback(this, &DropList::Drop);
 	Ctrl::AddFrame(drop);
 	list.Normal();
 	list.WhenSelect = callback(this, &DropList::Select);
 	list.WhenCancel = callback(this, &DropList::Cancel);
-	SetFrame(FieldFrame());
+	SetFrame(EditFieldFrame());
 	drop.Disable();
 	displayall = false;
 	valuedisplay = NULL;

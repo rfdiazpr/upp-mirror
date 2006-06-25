@@ -111,7 +111,7 @@ void PreMultiplyAlpha(RGBA *t, const RGBA *s, int len)
 }
 
 void AlphaBlend(RGBA *t, const RGBA *s, int len, byte const_alpha, Color color)
-{
+{//TODO - resolve target alpha problem!
 	const RGBA *e = s + len;
 	if(IsNull(color)) {
 		if(const_alpha == 255) {

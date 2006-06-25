@@ -40,6 +40,7 @@ public:
 	virtual void  GotFocus();
 	virtual void  LostFocus();
 	virtual void  State(int);
+	virtual Size  GetMinSize() const;
 
 	virtual Value Format(const Value& q) const;
 

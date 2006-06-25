@@ -28,6 +28,9 @@ public:
 	int                GetMethod() const     { return method; }
 	int                GetQuality() const    { return quality; }
 
+	One<StreamRaster>  GetDecoder() const;
+	One<StreamRasterEncoder> GetEncoder() const;
+
 	static double      GetEstimatedFileSize(int _levels, int method, int quality);
 
 	static int         Pack(int method, int quality) { return (method << 16) | (quality & 0xFFFF); }

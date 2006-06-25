@@ -51,7 +51,9 @@ void Draw::DrawDataOp(int x, int y, int cx, int cy, const String& data, const ch
 			int imd = 0;
 			while(yy < cy) {
 				int ccy = min(cy - yy, 16);
-				Image m = dd->Render(ccy);
+				ImageBuffer ib(cx, ccy);
+				dd->Render(ib);
+				Image m = ib;
 				int xi = 0;
 				while(xi < cx) {
 					int xi0 = xi;
@@ -74,8 +76,11 @@ void Draw::DrawDataOp(int x, int y, int cx, int cy, const String& data, const ch
 			}
 			// TODO - maybe "fallback" for case where there are not much "rects" ?
 		}
-		else
-			DrawImage(x, y, dd->Render(cy));
+		else {
+			ImageBuffer m(cx, cy);
+			dd->Render(m);
+			DrawImage(x, y, m);
+		}
 	}
 }
 

@@ -17,11 +17,13 @@ protected:
 	bool    track:1;
 	bool    jump:1;
 	bool    edgestyle:1;
-	byte    push:2;
-	bool    light;
+	int8    push;
+	int8    light;
 
-	Rect    GetThumbRect() const;
+	Rect    GetPartRect(int p) const;
+	int     GetMousePart();
 	void    Drag(Point p);
+	int&    HV(int& h, int& v) const;
 	int     GetHV(int h, int v) const;
 	int     GetHV(Point p) const                           { return GetHV(p.x, p.y); }
 	int     GetHV(Size s) const                            { return GetHV(s.cx, s.cy); }
@@ -54,6 +56,9 @@ public:
 
 	Slider();
 };
+
+int ScrollBarSize();
+int ScrollBarArrowSize();
 
 class ScrollBar : public FrameCtrl<Ctrl> {
 public:
@@ -133,8 +138,6 @@ public:
 
 	operator int() const                    { return pagepos; }
 	int operator=(int pagepos)              { Set(pagepos); return pagepos; }
-
-	static int GetStdBox()                  { return 17; }
 
 	ScrollBar();
 	virtual ~ScrollBar();

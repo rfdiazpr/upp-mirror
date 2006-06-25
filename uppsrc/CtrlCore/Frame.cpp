@@ -55,9 +55,21 @@ class XPFieldFrameCls : public CtrlFrame {
 	virtual void FrameAddSize(Size& sz) { sz += 4; }
 };
 
+class XPEditFieldFrameCls : public CtrlFrame {
+	virtual void FrameLayout(Rect& r)                   { r.Deflate(1); }
+	virtual void FramePaint(Draw& w, const Rect& r) {
+		DrawFrame(w, r, Blend(SColorHighlight, SColorShadow));
+	}
+	virtual void FrameAddSize(Size& sz) { sz += 2; }
+};
+
 CtrlFrame& XPFieldFrame() { return Single<XPFieldFrameCls>(); }
+CtrlFrame& XPEditFieldFrame() { return Single<XPEditFieldFrameCls>(); }
+
+CH_INT(EditFieldIsThin, 0);
 
 CtrlFrame& FieldFrame() { return Ctrl::IsXPStyle() ? XPFieldFrame() : InsetFrame(); }
+CtrlFrame& EditFieldFrame() { return EditFieldIsThin() ? XPEditFieldFrame() : FieldFrame(); }
 
 class TopSeparatorFrameCls : public CtrlFrame {
 	virtual void FrameLayout(Rect& r)                   { r.top += 2; }
@@ -99,6 +111,8 @@ CtrlFrame& BottomSeparatorFrame() { return Single<BottomSeparatorFrameCls>(); }
 CtrlFrame& TopSeparatorFrame()    { return Single<TopSeparatorFrameCls>(); }
 CtrlFrame& RightSeparatorFrame()  { return Single<RightSeparatorFrameCls>(); }
 CtrlFrame& LeftSeparatorFrame()   { return Single<LeftSeparatorFrameCls>(); }
+
+CH_INT(FrameButtonWidth, 17);
 
 void LayoutFrameLeft(Rect& r, Ctrl *ctrl, int cx)
 {

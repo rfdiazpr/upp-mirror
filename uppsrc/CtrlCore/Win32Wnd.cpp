@@ -212,6 +212,8 @@ void Ctrl::InitWin32(HINSTANCE hInstance)
 	ILOG("Windows");
 	Windows(); //?? TRC: what's the use of this?
 
+	ChSetStyle("detect");
+
 /* TRC 05/11/14: moved to GuiSleep to avoid thread creation in OCX DllMain
 	DWORD dummy;
 	OverwatchThread = CreateThread(NULL, 0x100000, Win32OverwatchThread, NULL, 0, &dummy);

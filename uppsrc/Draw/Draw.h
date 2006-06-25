@@ -819,7 +819,7 @@ class DataDrawer {
 
 public:
 	virtual void  Open(const String& data, int cx, int cy) = 0;
-	virtual Image Render(int lines) = 0;
+	virtual void  Render(ImageBuffer& ib) = 0;
 	virtual ~DataDrawer();
 
 	static  One<DataDrawer> Create(const String& id);
@@ -1117,5 +1117,6 @@ DrawingToPdfFnType GetDrawingToPdfFn();
 #include "Display.h"
 #include "ImageDraw.h"
 #include "Debug.h"
+#include "Cham.h"
 
 #endif

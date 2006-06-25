@@ -1,13 +1,5 @@
 #include "IconDes.h"
 
-Image CreateImage(Size sz, Color color)
-{
-	ImageBuffer ib(sz);
-	RGBA rgba = color;
-	memsetex(ib, &rgba, sizeof(RGBA), ib.GetLength());
-	return ib;
-}
-
 struct sFloodFill {
 	Rect         rc;
 	Size         sz;
@@ -94,45 +86,6 @@ void ChangeColor(Image& img, const Rect& drc, Color src, Color dest, int toleran
 				c = dc;
 		}
 	img = ib;
-}
-
-Size DstSrc(Image& dest, Point& p, const Image& src, Rect& sr)
-{
-	if(p.x < 0) {
-		sr.left += -p.x;
-		p.x = 0;
-	}
-	if(p.y < 0) {
-		sr.top += -p.y;
-		p.y = 0;
-	}
-	sr = sr & src.GetSize();
-	Size sz = dest.GetSize() - p;
-	sz.cx = min(sz.cx, sr.GetWidth());
-	sz.cy = min(sz.cy, sr.GetHeight());
-	return sz;
-}
-
-void Copy(Image& dest, Point p, const Image& src, const Rect& srect)
-{
-	Rect sr = srect;
-	Size sz = DstSrc(dest, p, src, sr);
-	ImageBuffer ib(dest);
-	if(sz.cx > 0)
-		while(--sz.cy >= 0)
-			memcpy(ib[p.y++] + p.x, src[sr.top++] + sr.left, sz.cx * sizeof(RGBA));
-	dest = ib;
-}
-
-void Over(Image& dest, Point p, const Image& src, const Rect& srect, byte alpha)
-{
-	Rect sr = srect;
-	Size sz = DstSrc(dest, p, src, sr);
-	ImageBuffer ib(dest);
-	if(sz.cx > 0)
-		while(--sz.cy >= 0)
-			AlphaBlend(ib[p.y++] + p.x, src[sr.top++] + sr.left, sz.cx, alpha);
-	dest = ib;
 }
 
 void GrayImage(Image& img, const Rect& drect)
@@ -230,15 +183,6 @@ RGBA InterpolateFilter::operator()(const RGBA **mx)
 			todo++;
 	}
 	return t;
-/*
-	t.r = (mx[0][1].r + mx[1][0].r + mx[1][2].r + mx[2][1].r + 1) >> 2;
-	t.g = (mx[0][1].g + mx[1][0].g + mx[1][2].g + mx[2][1].g + 1) >> 2;
-	t.b = (mx[0][1].b + mx[1][0].b + mx[1][2].b + mx[2][1].b + 1) >> 2;
-	t.a = (mx[0][1].a + mx[1][0].a + mx[1][2].a + mx[2][1].a + 1) >> 2;
-	if(t != mx[1][1])
-		todo++;
-	return t;
-*/
 }
 
 void InterpolateImage(Image& img, const Rect& _rc)

@@ -1,3 +1,9 @@
+Image CreateImage(Size sz, Color color);
+Image SetColor(const Image& img, Color c);
+
+void  Copy(Image& dest, Point p, const Image& src, const Rect& srect);
+void  Over(Image& dest, Point p, const Image& src, const Rect& srect, byte alpha);
+
 void  Crop(RasterEncoder& tgt, Raster& img, const Rect& rc);
 Image Crop(const Image& img, const Rect& rc);
 Image Crop(const Image& img, int x, int y, int cx, int cy);
@@ -59,7 +65,6 @@ Image RotateAntiClockwise(const Image& img);
 // Experimental {
 Image Colorize(const Image& img, Color color, int alpha = 100);
 Image Equalight(const Image& img, int thold = 10);
-Image SetColor(const Image& img, Color c);
 Image Over(const Image& img, const Image& over, byte alpha = 255);
 // }
 

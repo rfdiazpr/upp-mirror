@@ -8,9 +8,7 @@
 
 #include <plugin/jpg/jpg.h>
 #include <plugin/gif/gif.h>
-#ifndef flagHRRNOPNG
 #include <plugin/png/png.h>
-#endif
 
 #define LLOG(x) // LOG(x)
 
@@ -45,6 +43,27 @@ static dword CeilPack64(int64 i)
 	return 0xffffffff;
 }
 
+One<StreamRaster> HRRInfo::GetDecoder() const
+{
+	switch(method) {
+	case METHOD_JPG: return new JPGRaster;
+	case METHOD_GIF: return new GIFRaster;
+	case METHOD_PNG: return new PNGRaster;
+	default:              return 0;
+	}
+}
+
+One<StreamRasterEncoder> HRRInfo::GetEncoder() const
+{
+	switch(method) {
+	case METHOD_JPG: return new JPGEncoder(quality);
+	case METHOD_GIF: return new GIFEncoder;
+	case METHOD_PNG: return new PNGEncoder;
+	default:              return 0;
+	}
+}
+
+/*
 One<ImageEncoder> HRR::StdCreateEncoder(const HRRInfo& info)
 {
 	switch(info.GetMethod())
@@ -59,6 +78,7 @@ One<ImageEncoder> HRR::StdCreateEncoder(const HRRInfo& info)
 	default:              return 0;
 	}
 }
+*/
 
 Vector<int> HRRInfo::EnumMethods()
 {
@@ -67,7 +87,7 @@ Vector<int> HRRInfo::EnumMethods()
 	return out;
 }
 
-
+/*
 enum { wAlphaBlend = 200 };
 
 static void Mask1Blt(byte *dest, const byte *src, const byte *mask, int count)
@@ -94,7 +114,9 @@ static void Mask1Blt(byte *dest, const byte *src, const byte *mask, int count)
 	if(count & 1)
 		if(mask[0]) { dest[0] = src[0]; dest[1] = src[1]; dest[2] = src[2]; }
 }
+*/
 
+/*
 static void Mask1Copy(PixelArray& dest, const PixelArray& src, const PixelArray& mask)
 {
 	ASSERT(mask.bpp == 8 && src.bpp == 24 && dest.bpp == 24);
@@ -103,7 +125,9 @@ static void Mask1Copy(PixelArray& dest, const PixelArray& src, const PixelArray&
 	for(int i = 0; i < size.cy; i++)
 		Mask1Blt(dest.GetUpScan(i), src.GetUpScan(i), mask.GetUpScan(i), size.cx);
 }
+*/
 
+/*
 static void StreamAlphaBlend(Stream& stream, Rect& dest, Rect& src, int& alpha,
 							 AlphaArray& image, Color& blend_bgnd)
 {
@@ -120,7 +144,9 @@ static void StreamAlphaBlend(Stream& stream, Rect& dest, Rect& src, int& alpha,
 		blend_bgnd = Null;
 	}
 }
+*/
 
+/*
 static void DrawAlphaBlend(Draw& draw, Rect dest, Rect src, int alpha, AlphaArray& image, Color blend_bgnd)
 {
 	ASSERT(alpha >= 0);
@@ -215,7 +241,9 @@ static void DrawAlphaBlend(Draw& draw, Rect dest, Rect src, int alpha, AlphaArra
 	}
 //	RTIMING("DrawAlphaBlend (raw)");
 }
+*/
 
+/*
 static void wsAlphaBlend(Draw& draw, Stream& stream, const DrawingPos& pos)
 {
 	Rect src, dest;
@@ -225,10 +253,11 @@ static void wsAlphaBlend(Draw& draw, Stream& stream, const DrawingPos& pos)
 	StreamAlphaBlend(stream, dest, src, alpha, image, blend_bgnd);
 	DrawAlphaBlend(draw, pos(dest), src, alpha, image, blend_bgnd);
 }
+*/
 
-static DrawerRegistrator MK__s(wAlphaBlend, wsAlphaBlend);
+//static DrawerRegistrator MK__s(wAlphaBlend, wsAlphaBlend);
 
-static int GetMaskInfo(const PixelArray& mask)
+static int GetMaskInfo(const RGBA& rgba)
 {
 	ASSERT(mask.bpp == 8);
 	Size size = mask.GetSize();

@@ -19,13 +19,21 @@ int  EditField::GetCaret(int cursor)
 
 int  EditField::GetStdHeight(Font font)
 {
-	return font.Info().GetHeight() + 6;
+	Size sz = Size(font.Info().GetHeight() * 4, font.Info().GetHeight() + 4);
+	EditFieldFrame().FrameAddSize(sz);
+	return sz.cy;
+}
+
+Size EditField::GetMinSize() const
+{
+	return AddFrameSize(10, font.Info().GetHeight() + 4);
 }
 
 int  EditField::GetCursor(int posx)
 {
 	FontInfo fi = font.Info();
 	const wchar *s = text;
+	posx -= 2;
 	int x = 0;
 	int x0 = 0;
 	int i = 0;
@@ -52,20 +60,24 @@ bool EditField::HasBorder()
 	return q.Height() != r.Height();
 }
 
-void EditField::Paints(Draw& w, int& x, int cy, const wchar *&txt,
+int  EditField::GetTy()
+{
+	return (GetSize().cy - font.Info().GetHeight()) / 2;
+}
+
+void EditField::Paints(Draw& w, int& x, int fcy, const wchar *&txt,
 					   Color ink, Color paper, int n, bool password)
 {
 	if(n < 0) return;
 	int cx = GetTextCx(txt, n, password);
-	bool f = HasBorder();
-	w.DrawRect(x + 1, f, cx, cy, paper);
+	w.DrawRect(x, 0, cx, fcy, paper);
 	if(password) {
 		String h;
 		h.Cat('*', n);
-		w.DrawText(x + 1, f, ~h, font, ink, n);
+		w.DrawText(x, 0, ~h, font, ink, n);
 	}
 	else
-		w.DrawText(x + 1, f, txt, font, ink, n);
+		w.DrawText(x, 0, txt, font, ink, n);
 	txt += n;
 	x += cx;
 }
@@ -78,33 +90,31 @@ void EditField::Paint(Draw& w)
 	Color ink = IsShowEnabled() ? SColorText : SColorDisabled;
 	if(convert && convert->Scan(text).IsError())
 		paper = Blend(paper, Color(255, 0, 0), 32);
-	w.DrawRect(0, 0, 1, sz.cy, paper);
-	w.DrawRect(sz.cx - 1, 0, 1, sz.cy, paper);
-	w.Clip(1, 0, sz.cx - 2, sz.cy);
-	if(f) {
-		w.DrawRect(0, 0, sz.cx, 1, paper);
-		w.DrawRect(0, sz.cy - 1, sz.cx, 1, paper);
-		w.End();
-		w.Clip(1, 1, sz.cx - 2, sz.cy - 2);
-	}
+	int fcy = font.Info().GetHeight();
+	int yy = GetTy();
+	w.DrawRect(0, 0, 2, sz.cy, paper);
+	w.DrawRect(0, 0, sz.cx, yy, paper);
+	w.DrawRect(0, yy + fcy, sz.cx, sz.cy - yy - fcy, paper);
+	w.DrawRect(sz.cx - 2, 0, 2, sz.cy, paper);
+	w.Clipoff(2, yy, sz.cx - 4, fcy);
 	int x = -sc;
 	if(IsNull(text) && !IsNull(nulltext)) {
 		const wchar *txt = nulltext;
-		Paints(w, x, sz.cy, txt, nullink, paper, nulltext.GetLength(), false);
+		Paints(w, x, fcy, txt, nullink, paper, nulltext.GetLength(), false);
 	}
 	else {
 		const wchar *txt = text;
 		int l, h;
 		if(GetSelection(l, h)) {
-			Paints(w, x, sz.cy, txt, ink, paper, l, password);
-			Paints(w, x, sz.cy, txt, IsShowEnabled() ? SColorHighlightText() : paper,
-			                         IsShowEnabled() ? SColorHighlight() : ink, h - l, password);
-			Paints(w, x, sz.cy, txt, ink, paper, text.GetLength() - h, password);
+			Paints(w, x, fcy, txt, ink, paper, l, password);
+			Paints(w, x, fcy, txt, IsShowEnabled() ? SColorHighlightText() : paper,
+			                       IsShowEnabled() ? SColorHighlight() : ink, h - l, password);
+			Paints(w, x, fcy, txt, ink, paper, text.GetLength() - h, password);
 		}
 		else
-			Paints(w, x, sz.cy, txt, ink, paper, text.GetLength(), password);
+			Paints(w, x, fcy, txt, ink, paper, text.GetLength(), password);
 	}
-	w.DrawRect(x + 1, 0, sz.cx - x - f, sz.cy, paper);
+	w.DrawRect(x, 0, 9999, fcy, paper);
 	w.End();
 }
 
@@ -156,9 +166,9 @@ void EditField::Finish(bool refresh)
 	}
 	if(refresh)
 		Refresh();
-	bool f = HasBorder();
 	FontInfo fi = font.Info();
-	SetCaret(x - sc + 1 - fi.GetRightSpace('o'), f, 1, min(sz.cy - 2 * f, fi.GetHeight()));
+	SetCaret(x - sc + 2 - fi.GetRightSpace('o'), GetTy(),
+	         1, min(sz.cy - 2 * GetTy(), fi.GetHeight()));
 }
 
 void EditField::Layout()
@@ -544,7 +554,7 @@ EditField::EditField()
 {
 	Unicode();
 	Reset();
-	SetFrame(FieldFrame());
+	SetFrame(EditFieldFrame());
 }
 
 EditField::~EditField() {}

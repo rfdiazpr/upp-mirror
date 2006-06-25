@@ -40,14 +40,14 @@ int Prompt(const char *title, const Image& iconbmp, const char *qtf, bool okcanc
 	int ccy = qtfctrl.GetHeight(qcx);
 	int qcy = min(400, ccy);
 	if(qcy <= ccy) {
-		qcx += ScrollBar::GetStdBox() + fcy;
-		cx += ScrollBar::GetStdBox();
+		qcx += ScrollBarSize() + fcy;
+		cx += ScrollBarSize() + fcy;
 	}
 	int mcy = max(qcy, bsz.cy);
 	int cy = mcy + 48 * fcy / 10;
 	dlg.SetRect(Size(cx, cy));
 	dlg << icon.TopPos(fcy, bsz.cy).LeftPos(fcy, bsz.cx);
-	dlg << qtfctrl.TopPos(fcy + (mcy - qcy) / 2, qcy).LeftPos(2 * fcy + bsz.cx, qcx);
+	dlg << qtfctrl.TopPos(fcy + (mcy - qcy) / 2, qcy).RightPos(fcy, qcx);
 	if(okcancel)
 		b1.Ok();
 	b1.WhenAction = dlg.Breaker(1);

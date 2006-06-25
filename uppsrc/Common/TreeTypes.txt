@@ -62,3 +62,7 @@ LRUCache<String>
 0 0 -1
 Vector<LRUCache<String>::Item>
 0 0 -1
+Image::Init
+0 0 -1
+Point_<int>
+0 0 -1

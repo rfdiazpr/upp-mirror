@@ -293,7 +293,7 @@ Image LayDes::CursorImage(Point p, dword keyflags)
 		hi = draghandle;
 	else
 	 	hi = FindHandle(Normalize(p));
-	const Image& (*id[11])() = {
+	Image (*id[11])() = {
 		CtrlImg::SizeHorz0, CtrlImg::SizeVert0, CtrlImg::SizeHoVe0,
 		CtrlImg::SizeHoVe0, CtrlImg::SizeVert0, CtrlImg::SizeVeHo0,
 		CtrlImg::SizeHorz0, CtrlImg::SizeHorz0,

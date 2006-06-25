@@ -77,10 +77,12 @@ Label::Label() {
 
 Label::~Label() {}
 
+CH_COLOR(LabelBoxTextColor, LtBlue());
+CH_COLOR(LabelBoxColor, SColorShadow());
+
 LabelBox::LabelBox()
 {
-	if(IsXPStyle())
-		SetInk(LtBlue);
+	SetInk(LabelBoxTextColor);
 	SetVAlign(ALIGN_TOP);
 }
 
@@ -126,23 +128,23 @@ void LabelBox::Paint(Draw& w)
 			w.DrawRect(d + 1, 0, 1, sz.cy, SColorLight);
 		}
 		else {
-			w.DrawRect(0, d + 2, 1, sz.cy - d - 4, SColorDisabled);
-			w.DrawRect(sz.cx - 1, d + 2, 1, sz.cy - d - 4, SColorDisabled);
-			w.DrawRect(2, sz.cy - 1, sz.cx - 4, 1, SColorDisabled);
-			w.DrawRect(2, d, d - d / 2, 1, SColorDisabled);
-			w.DrawRect(d + ts.cx + d / 2, d, sz.cx - ts.cx - d - d / 2 - 2, 1, SColorDisabled);
+			w.DrawRect(0, d + 2, 1, sz.cy - d - 4, LabelBoxColor);
+			w.DrawRect(sz.cx - 1, d + 2, 1, sz.cy - d - 4, LabelBoxColor);
+			w.DrawRect(2, sz.cy - 1, sz.cx - 4, 1, LabelBoxColor);
+			w.DrawRect(2, d, d - d / 2, 1, LabelBoxColor);
+			w.DrawRect(d + ts.cx + d / 2, d, sz.cx - ts.cx - d - d / 2 - 2, 1, LabelBoxColor);
 
-			w.DrawRect(1, d + 1, 2, 1, SColorDisabled);
-			w.DrawRect(1, d + 2, 1, 1, SColorDisabled);
+			w.DrawRect(1, d + 1, 2, 1, LabelBoxColor);
+			w.DrawRect(1, d + 2, 1, 1, LabelBoxColor);
 
-			w.DrawRect(sz.cx - 3, d + 1, 2, 1, SColorDisabled);
-			w.DrawRect(sz.cx - 2, d + 2, 1, 1, SColorDisabled);
+			w.DrawRect(sz.cx - 3, d + 1, 2, 1, LabelBoxColor);
+			w.DrawRect(sz.cx - 2, d + 2, 1, 1, LabelBoxColor);
 
-			w.DrawRect(1, sz.cy - 2, 2, 1, SColorDisabled);
-			w.DrawRect(1, sz.cy - 3, 1, 1, SColorDisabled);
+			w.DrawRect(1, sz.cy - 2, 2, 1, LabelBoxColor);
+			w.DrawRect(1, sz.cy - 3, 1, 1, LabelBoxColor);
 
-			w.DrawRect(sz.cx - 3, sz.cy - 2, 2, 1, SColorDisabled);
-			w.DrawRect(sz.cx - 2, sz.cy - 3, 1, 1, SColorDisabled);
+			w.DrawRect(sz.cx - 3, sz.cy - 2, 2, 1, LabelBoxColor);
+			w.DrawRect(sz.cx - 2, sz.cy - 3, 1, 1, LabelBoxColor);
 		}
 	}
 	else {

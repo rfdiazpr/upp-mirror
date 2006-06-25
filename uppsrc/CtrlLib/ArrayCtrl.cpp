@@ -684,7 +684,7 @@ void ArrayCtrl::HeaderLayout() {
 
 void ArrayCtrl::HeaderScrollVisibility()
 {
-	scrollbox.Height(ScrollBar::GetStdBox());
+	scrollbox.Height(ScrollBarSize());
 	if(header.IsScroll())
 		sb.SetFrame(scrollbox);
 	else
@@ -1236,7 +1236,7 @@ Image ArrayCtrl::CursorImage(Point p, dword)
 {
 	if(header.GetSplit(p.x) < 0)
 		return Image::Arrow();
-	static const Image& (*hanipos[])() = {
+	static Image (*hanipos[])() = {
 		CtrlImg::horzpos1, CtrlImg::horzpos2, CtrlImg::horzpos1, CtrlImg::horzpos3
 	};
 	return (*(hanipos)[GetTimeClick() / 200 % 4])();

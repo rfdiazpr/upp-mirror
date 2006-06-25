@@ -77,7 +77,7 @@ Image ColumnList::CursorImage(Point p, dword) {
 	if(HasCapture()) return CtrlImg::horzpos1();
 	int i = GetDragColumn(p.x);
 	if(i < 0) return Image::Arrow();
-	static const Image& (*hanipos[])() = {
+	static Image (*hanipos[])() = {
 		CtrlImg::horzpos1, CtrlImg::horzpos2, CtrlImg::horzpos1, CtrlImg::horzpos3
 	};
 	return (*(hanipos)[GetTimeClick() / 200 % 4])();

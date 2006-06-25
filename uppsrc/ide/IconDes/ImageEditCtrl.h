@@ -7,7 +7,7 @@ class ImageEditCtrl;
 class ImageEditAdapter;
 
 #define IMAGEFILE <ide/IconDes/misc.iml>
-#define IMAGESPACE MiscImg
+#define IMAGECLASS MiscImg
 #include <Draw/iml_header.h>
 
 // Old Draw stuff

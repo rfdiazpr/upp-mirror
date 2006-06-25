@@ -1,6 +1,6 @@
 #include "IconDes.h"
 
-#define IMAGEOBJECT EditImg
+#define IMAGECLASS EditImg
 //#define IMAGECLASS EditImg
 #define IMAGEFILE  <ide/IconDes/editor.iml>
 #include <Draw/iml.h>
@@ -363,7 +363,7 @@ void ImageEditCtrl::SetHotSpot(Point pt)
 {
 	if(hotspot != pt)
 	{
-		Size spot = EditImg().hotspot_image.GetSize(), half = (spot - zoom) >> 1;
+		Size spot = EditImg::hotspot_image().GetSize(), half = (spot - zoom) >> 1;
 		Refresh(Rect(ImageToClient(hotspot) - half, spot));
 		Refresh(Rect(ImageToClient(pt) - half, spot));
 		hotspot = pt;
@@ -484,7 +484,7 @@ void ImageEditCtrl::Paint(Draw& draw)
 	if(!selection.IsEmpty())
 	{
 		Rect rc = ImageToClient(selection);
-		Size ho = EditImg().sel_horz.GetSize(), ve = EditImg().sel_vert.GetSize();
+		Size ho = EditImg::sel_horz().GetSize(), ve = EditImg::sel_vert().GetSize();
 		Rect clip = draw.GetClip();
 		if(rc.left < clip.left)
 			rc.left += (clip.left - rc.left) & -ho.cx;
@@ -496,10 +496,10 @@ void ImageEditCtrl::Paint(Draw& draw)
 			rc.bottom -= (rc.bottom - clip.bottom) & -ve.cy;
 		Rect ro = rc;
 		ro.Inflate(ve.cx, ho.cy);
-		DrawRect(draw, ro.left, ro.top, ro.Width(), ho.cy, EditImg().sel_horz, true);
-		DrawRect(draw, ro.left, rc.bottom, ro.Width(), ho.cy, EditImg().sel_horz, true);
-		DrawRect(draw, ro.left, rc.top, ve.cx, rc.Height(), EditImg().sel_vert, true);
-		DrawRect(draw, rc.right, rc.top, ve.cx, rc.Height(), EditImg().sel_vert, true);
+		DrawRect(draw, ro.left, ro.top, ro.Width(), ho.cy, EditImg::sel_horz(), true);
+		DrawRect(draw, ro.left, rc.bottom, ro.Width(), ho.cy, EditImg::sel_horz(), true);
+		DrawRect(draw, ro.left, rc.top, ve.cx, rc.Height(), EditImg::sel_vert(), true);
+		DrawRect(draw, rc.right, rc.top, ve.cx, rc.Height(), EditImg::sel_vert(), true);
 
 		ro = rc = ImageToClient(selection);
 		ro.Inflate(BUTTONSIZE);
@@ -525,8 +525,8 @@ void ImageEditCtrl::Paint(Draw& draw)
 
 	if(left_type == &GetAdapterHotSpot)
 	{
-		Point pt = ImageToClient(hotspot) - ((EditImg().hotspot_image.GetSize() - zoom) >> 1);
-		draw.DrawImage(pt.x, pt.y, EditImg().hotspot_image);
+		Point pt = ImageToClient(hotspot) - ((EditImg::hotspot_image().GetSize() - zoom) >> 1);
+		draw.DrawImage(pt.x, pt.y, EditImg::hotspot_image());
 //		.Paint(draw, ImageToClient(hotspot)
 //		- ((EditImg::hotspot_image().GetSize() - zoom) >> 1));
 	}
@@ -1390,7 +1390,7 @@ int ImageEditCtrl::GetHitTest(Point pt) const
 			return BOTTOM_HIT | RIGHT_HIT;
 	}
 	lg = cl;
-	lg.Inflate(EditImg().sel_vert.GetSize());
+	lg.Inflate(EditImg::sel_vert().GetSize());
 	if(lg.Contains(pt))
 		return 0;
 	return -1;

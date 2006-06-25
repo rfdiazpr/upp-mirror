@@ -1,5 +1,52 @@
 #include "Draw.h"
 
+Image CreateImage(Size sz, Color color)
+{
+	ImageBuffer ib(sz);
+	RGBA rgba = color;
+	memsetex(ib, &rgba, sizeof(RGBA), ib.GetLength());
+	return ib;
+}
+
+Size DstSrc(Image& dest, Point& p, const Image& src, Rect& sr)
+{
+	if(p.x < 0) {
+		sr.left += -p.x;
+		p.x = 0;
+	}
+	if(p.y < 0) {
+		sr.top += -p.y;
+		p.y = 0;
+	}
+	sr = sr & src.GetSize();
+	Size sz = dest.GetSize() - p;
+	sz.cx = min(sz.cx, sr.GetWidth());
+	sz.cy = min(sz.cy, sr.GetHeight());
+	return sz;
+}
+
+void Copy(Image& dest, Point p, const Image& src, const Rect& srect)
+{
+	Rect sr = srect;
+	Size sz = DstSrc(dest, p, src, sr);
+	ImageBuffer ib(dest);
+	if(sz.cx > 0)
+		while(--sz.cy >= 0)
+			memcpy(ib[p.y++] + p.x, src[sr.top++] + sr.left, sz.cx * sizeof(RGBA));
+	dest = ib;
+}
+
+void Over(Image& dest, Point p, const Image& src, const Rect& srect, byte alpha)
+{
+	Rect sr = srect;
+	Size sz = DstSrc(dest, p, src, sr);
+	ImageBuffer ib(dest);
+	if(sz.cx > 0)
+		while(--sz.cy >= 0)
+			AlphaBlend(ib[p.y++] + p.x, src[sr.top++] + sr.left, sz.cx, alpha);
+	dest = ib;
+}
+
 void Crop(RasterEncoder& tgt, Raster& img, const Rect& rc)
 {
 	Rect r = rc & img.GetSize();

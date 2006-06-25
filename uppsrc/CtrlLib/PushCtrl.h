@@ -27,7 +27,7 @@ protected:
 	Font    font;
 
 	void    KeyPush();
-	bool    IsPush()                                        { return push || keypush; }
+	bool    IsPush() const                                  { return push || keypush; }
 	bool    IsKeyPush()                                     { return keypush; }
 	bool    FinishPush();
 
@@ -42,12 +42,19 @@ public:
 
 	void     PseudoPush();
 
+	int GetVisualState() const;
+
 	Callback WhenPush;
 	Callback WhenRepeat;
 
 	Pusher();
 	virtual ~Pusher();
 };
+
+Value ButtonLook(int i);
+Value OkButtonLook(int i);
+Value EdgeButtonLook(int i);
+Value ScrollButtonLook(int i);
 
 class Button : public Pusher {
 public:
@@ -62,17 +69,17 @@ public:
 protected:
 	enum { NORMAL, OK, CANCEL, EXIT };
 	Image   img;
-	bool    edgestyle;
-	bool    scrollbutton;
+	Value  (*look)(int);
 	bool    monoimg;
 	byte    type;
 
 public:
 	Button&  SetImage(const Image& img);
 	Button&  SetMonoImage(const Image& img);
-	Button&  EdgeStyle(bool b = true)                    { edgestyle = b; return *this; }
-	Button&  ScrollStyle(bool b = true)                  { scrollbutton = b; return *this; }
-	Button&  NoEdgeStyle()                               { return EdgeStyle(false); }
+	Button&  Style(Value (*look)(int));
+	Button&  NormalStyle()                               { return Style(ButtonLook); }
+	Button&  EdgeStyle()                                 { return Style(EdgeButtonLook); }
+	Button&  ScrollStyle()                               { return Style(ScrollButtonLook); }
 	Button&  Ok()                                        { type = OK; return *this; }
 	Button&  Cancel()                                    { type = CANCEL; return *this; }
 	Button&  Exit()                                      { type = EXIT; return *this; }
@@ -81,16 +88,6 @@ public:
 	Button();
 	virtual ~Button();
 };
-
-enum {
-	I_RADIO0, I_RADIO1, I_CHECK0, I_CHECK1, I_CHECK2
-};
-
-enum {
-	I_NORMAL, I_HIGHLIGHT, I_PUSH, I_DISABLED
-};
-
-const Image& GetPushImage(int g, int q);
 
 class SpinButtons : public CtrlFrame {
 private:

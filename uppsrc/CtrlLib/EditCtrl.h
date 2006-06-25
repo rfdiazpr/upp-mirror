@@ -9,6 +9,7 @@ public:
 	virtual bool  Key(dword key, int rep);
 	virtual void  GotFocus();
 	virtual void  LostFocus();
+	virtual Size  GetMinSize() const;
 	virtual void  SetData(const Value& data);
 	virtual Value GetData() const;
 
@@ -35,7 +36,7 @@ protected:
 	bool       clickselect;
 
 	int     GetTextCx(const wchar *text, int n, bool password);
-	void    Paints(Draw& w, int& x, int cy, const wchar *&txt,
+	void    Paints(Draw& w, int& x, int fcy, const wchar *&txt,
 		           Color ink, Color paper, int n, bool pwd);
 	int     GetStringCx(const wchar *text, int n);
 	int     GetCaret(int cursor);
@@ -44,6 +45,7 @@ protected:
 	void    SaveUndo();
 	void    DoAutoFormat();
 	bool    HasBorder();
+	int     GetTy();
 
 public:
 	static  int   GetStdHeight(Font font = StdFont());

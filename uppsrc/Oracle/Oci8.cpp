@@ -230,10 +230,10 @@ sb4 OCI8Connection::Item::Out(ub4 iter, ub4 index, dvoid **bufpp, ub4 **alenp, u
 
 OCI8Connection::Item& OCI8Connection::PrepareParam(int i, int type, int len, int res, int dynamic_vtype) {
 	Item& p = param.At(i);
-	p.dyna_vtype = dynamic_vtype;
-	p.is_dynamic = (dynamic_vtype != VOID_V);
 	if(p.Alloc(session -> envhp, type, len, res))
 		parse = true;
+	p.dyna_vtype = dynamic_vtype;
+	p.is_dynamic = (dynamic_vtype != VOID_V);
 	return p;
 }
 
@@ -417,6 +417,7 @@ bool OCI8Connection::GetColumnInfo() {
 			const Item& p = param[dynamic_param[i]];
 			SqlColumnInfo& ci = info.Add();
 			ci.name = Format("#%d", i + 1);
+			ci.type = p.dyna_vtype;
 			ci.width = p.dyna_width;
 			ci.prec = Null;
 			ci.scale = Null;

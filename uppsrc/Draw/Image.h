@@ -177,10 +177,9 @@ public:
 	int64 GetSerialId() const                 { return data ? data->serial : 0; }
 	bool IsSame(const Image& img) const       { return GetSerialId() == img.GetSerialId(); }
 
-// To be changed soon!
-	bool   operator==(const Image& img) const { return GetSerialId() == img.GetSerialId(); }
-	bool   operator!=(const Image& img) const { return GetSerialId() != img.GetSerialId(); }
-	dword  GetHashValue() const               { return ::GetHashValue(GetSerialId()); }
+	bool   operator==(const Image& img) const;
+	bool   operator!=(const Image& img) const;
+	dword  GetHashValue() const;
 	String ToString() const;
 
 	void  Serialize(Stream& s);
@@ -198,7 +197,7 @@ public:
 	Image(const Nuller&)                { data = NULL; }
 	Image(const Value& src);
 	Image(const Image& img);
-	Image(const Image& (*fn)());
+	Image(Image (*fn)());
 	Image(ImageBuffer& b);
 	~Image();
 
@@ -222,17 +221,47 @@ public:
 	// IML support ("private")
 	struct Init {
 		const char *const *scans;
-		const char *info;
-		short scan_count, info_count;
+		int16 scan_count;
+		const char info[24];
 	};
-	Image(const Init& init);
-
+	explicit Image(const Init& init);
 };
 
+class Iml {
+	struct IImage : Moveable<IImage> {
+		bool  loaded;
+		Image image;
+
+		IImage() { loaded = false; }
+	};
+	VectorMap<String, IImage> map;
+	const Image::Init *img_init;
+	const char **name;
+
+	void  Init(int n);
+
+public:
+	void   Reset();
+	int    GetCount() const                  { return map.GetCount(); }
+	String GetId(int i)                      { return map.GetKey(i); }
+	Image  Get(int i);
+	int    Find(const String& s) const       { return map.Find(s); }
+	void   Set(int i, const Image& img);
+
+#ifdef _DEBUG
+	int    GetBinSize() const;
+#endif
+
+	Iml(const Image::Init *img_init, const char **name, int n);
+};
+
+void   Register(const char *imageclass, Iml& iml);
+
+int    GetImlCount();
+String GetImlName(int i);
+int    FindIml(const char *name);
 Image  GetImlImage(const char *name);
-Image  GetImlImage(int i);
-String GetImlImageName(int i);
-int    GetImlImageCount();
+void   SetImlImage(const char *name, const Image& m);
 
 String StoreImageAsString(const Image& img);
 Image  LoadImageFromString(const String& s);
@@ -255,5 +284,3 @@ HICON IconWin32(const Image& img, bool cursor = false);
 #ifdef PLATFORM_X11
 Cursor X11Cursor(const Image& img);
 #endif
-
-void RegisterImageName__(const char *, const Image& (*)());

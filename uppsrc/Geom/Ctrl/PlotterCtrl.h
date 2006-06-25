@@ -197,7 +197,7 @@ protected:
 	double                  aspect;
 
 	Image                   paint_buffer;
-	ImageDraw               paint_draw;
+	One<ImageDraw>          paint_draw;
 	bool                    is_painting;
 	bool                    abort_repaint;
 	bool                    buffer_paint;

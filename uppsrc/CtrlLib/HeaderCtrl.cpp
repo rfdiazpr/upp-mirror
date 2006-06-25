@@ -469,13 +469,13 @@ Image HeaderCtrl::CursorImage(Point p, dword) {
 	if(q < 0) return Image::Arrow();
 	int ai = GetTimeClick() / 200 % 4;
 	if(GetTabWidth(q) < 4) {
-		static const Image& (*anipos[])() = {
+		static Image (*anipos[])() = {
 			CtrlImg::horzsplit1, CtrlImg::horzsplit2,
 			CtrlImg::horzsplit3, CtrlImg::horzsplit2
 		};
 		return (*anipos[ai])();
 	}
-	static const Image& (*anipos[])() = {
+	static Image (*anipos[])() = {
 		CtrlImg::horzpos1, CtrlImg::horzpos2, CtrlImg::horzpos1, CtrlImg::horzpos3
 	};
 	return split >= 0 ? CtrlImg::horzpos1() : (*anipos[ai])();
@@ -625,7 +625,7 @@ void HeaderCtrl::FrameRemove()
 void HeaderCtrl::FrameLayout(Rect& r)
 {
 	LayoutFrameTop(r, this, invisible ? 0 : GetHeight());
-	LayoutFrameBottom(r, &sb, sb.IsShown() ? sb.GetStdBox() : 0);
+	LayoutFrameBottom(r, &sb, sb.IsShown() ? ScrollBarSize() : 0);
 }
 
 void HeaderCtrl::FrameAddSize(Size& sz)
@@ -633,7 +633,7 @@ void HeaderCtrl::FrameAddSize(Size& sz)
 	if(!invisible)
 		sz.cy += GetHeight();
 	if(sb.IsVisible())
-		sz.cy += sb.GetStdBox();
+		sz.cy += ScrollBarSize();
 }
 
 HeaderCtrl& HeaderCtrl::Invisible(bool inv)

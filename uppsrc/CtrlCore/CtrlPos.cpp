@@ -113,10 +113,12 @@ Size  Ctrl::AddFrameSize(int cx, int cy) const
 	return sz;
 }
 
+int EditFieldIsThin();
+
 Size Ctrl::GetMinSize() const
 {
 	int fcy = Draw::GetStdFontCy();
-	return AddFrameSize(fcy / 2, fcy + 2);
+	return AddFrameSize(fcy / 2, fcy + 2 + 2 * EditFieldIsThin());
 }
 
 Size Ctrl::GetStdSize() const

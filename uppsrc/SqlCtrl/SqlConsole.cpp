@@ -4,6 +4,7 @@
 #include <DocTypes/DocTypes.h>
 
 #define IMAGEFILE <SqlCtrl/SqlCtrl.iml>
+#define IMAGECLASS SqlConsoleImg
 #include <Draw/iml.h>
 
 void RunDlgSqlExport(Sql& cursor, String command, String tablename);
@@ -447,7 +448,7 @@ void SqlConsole::Perform() {
 	const char cfg[] = "SqlConsole.cfg";
 	LoadFromFile(*this, cfg);
 	Title(t_("SQL Commander"));
-	Icon(SqlConsoleIconSmall(), SqlConsoleIconLarge());
+	Icon(SqlConsoleImg::SqlConsoleIconSmall(), SqlConsoleImg::SqlConsoleIconLarge());
 	Sizeable();
 	Zoomable();
 	ActiveFocus(command);

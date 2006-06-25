@@ -291,23 +291,23 @@ void RichEdit::LeftDouble(Point p, dword flags)
 
 Image RichEdit::CursorImage(Point p, dword flags)
 {
-	static const Image& (*anihorz[])() = {
+	static Image (*anihorz[])() = {
 		CtrlImg::SizeHorz0, CtrlImg::SizeHorz1, CtrlImg::SizeHorz0, CtrlImg::SizeHorz2
 	};
-	static const Image& (*anivert[])() = {
+	static Image (*anivert[])() = {
 		CtrlImg::SizeVert0, CtrlImg::SizeVert1, CtrlImg::SizeVert0, CtrlImg::SizeVert2
 	};
-	static const Image& (*anihove[])() = {
+	static Image (*anihove[])() = {
 		CtrlImg::SizeHoVe0, CtrlImg::SizeHoVe1, CtrlImg::SizeHoVe0, CtrlImg::SizeHoVe2
 	};
-	static const Image& (*anipos[])() = {
+	static Image (*anipos[])() = {
 		CtrlImg::horzpos1, CtrlImg::horzpos2, CtrlImg::horzpos1, CtrlImg::horzpos3
 	};
 
 	if(tablesel)
 		return Image::Arrow();
 
-	const Image& (**ani)();
+	Image (**ani)();
 	switch(GetHotSpot(p)) {
 	case 0:
 		ani = anihove;

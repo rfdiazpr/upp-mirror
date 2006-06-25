@@ -46,7 +46,7 @@ Zoom  RichTextView::GetZoom() const
 {
 	int szcx = GetSize().cx;
 	if(!sb.IsShown() && sb.IsAutoHide())
-		szcx -= ScrollBar::GetStdBox();
+		szcx -= ScrollBarSize();
 	return IsNull(zoom) ? Zoom(szcx - margin.left - margin.right, cx) : zoom;
 }
 
@@ -54,7 +54,7 @@ int   RichTextView::GetPageCx(bool reduced) const
 {
 	int szcx = GetSize().cx;
 	if(reduced && !sb.IsShown() && sb.IsAutoHide())
-		szcx -= ScrollBar::GetStdBox();
+		szcx -= ScrollBarSize();
 	return IsNull(zoom) ? cx : (szcx - margin.left - margin.right) / zoom;
 }
 

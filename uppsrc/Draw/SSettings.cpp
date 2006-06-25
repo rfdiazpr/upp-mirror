@@ -1,36 +1,36 @@
 #include "Draw.h"
 
-static Color sBlack;
-static Color sGray;
-static Color sLtGray;
-static Color sWhiteGray;
-static Color sWhite;
-static Color sRed;
-static Color sGreen;
-static Color sBrown;
-static Color sBlue;
-static Color sMagenta;
-static Color sCyan;
-static Color sYellow;
-static Color sLtRed;
-static Color sLtGreen;
-static Color sLtYellow;
-static Color sLtBlue;
-static Color sLtMagenta;
-static Color sLtCyan;
+CH_COLOR(SBlack, Black());
+CH_COLOR(SGray, Gray());
+CH_COLOR(SLtGray, LtGray());
+CH_COLOR(SWhiteGray, WhiteGray());
+CH_COLOR(SWhite, White());
+CH_COLOR(SRed, Red());
+CH_COLOR(SGreen, Green());
+CH_COLOR(SBrown, Brown());
+CH_COLOR(SBlue, Blue());
+CH_COLOR(SMagenta, Magenta());
+CH_COLOR(SCyan, Cyan());
+CH_COLOR(SYellow, Yellow());
+CH_COLOR(SLtRed, LtRed());
+CH_COLOR(SLtGreen, LtGreen());
+CH_COLOR(SLtYellow, LtYellow());
+CH_COLOR(SLtBlue, LtBlue());
+CH_COLOR(SLtMagenta, LtMagenta());
+CH_COLOR(SLtCyan, LtCyan());
 
-static Color sPaper;
-static Color sDialog;
-static Color sText;
-static Color sHighlight;
-static Color sHighlightText;
-static Color sMenu;
-static Color sMenuText;
-static Color sInfo;
-static Color sInfoText;
-static Color sDisabled;
-static Color sLight;
-static Color sShadow;
+CH_COLOR(SColorPaper, White());
+CH_COLOR(SColorFace, LtGray());
+CH_COLOR(SColorText, Black());
+CH_COLOR(SColorHighlight, Blue());
+CH_COLOR(SColorHighlightText, White());
+CH_COLOR(SColorMenu, LtGray());
+CH_COLOR(SColorMenuText, Black());
+CH_COLOR(SColorInfo, LtYellow());
+CH_COLOR(SColorInfoText, Black());
+CH_COLOR(SColorDisabled, Gray());
+CH_COLOR(SColorLight, White());
+CH_COLOR(SColorShadow, Gray());
 
 #ifdef PLATFORM_WIN32
 void UpdateSColors()
@@ -40,53 +40,55 @@ void UpdateSColors()
 	int r0 = GetRValue(c);
 	int g0 = GetGValue(c);
 	int b0 = GetBValue(c);
-	sBlack = Color(r0, g0, b0);
+	ChSet("SBlack", Color(r0, g0, b0));
 	c = GetSysColor(COLOR_3DSHADOW);
 	int r128 = GetRValue(c);
 	int g128 = GetGValue(c);
 	int b128 = GetBValue(c);
-	sGray = Color(r128, g128, b128);
+	ChSet("SGray", Color(r128, g128, b128));
 	c = GetSysColor(COLOR_3DFACE);
 	int r192 = GetRValue(c);
 	int g192 = GetGValue(c);
 	int b192 = GetBValue(c);
-	sLtGray = Color(r192, g192, b192);
+	ChSet("SLtGray", Color(r192, g192, b192));
 	c = GetSysColor(COLOR_WINDOW);
 	int r255 = GetRValue(c);
 	int g255 = GetGValue(c);
 	int b255 = GetBValue(c);
-	sWhite = Color(r255, g255, b255);
+	ChSet("SWhite", Color(r255, g255, b255));
 	int r224 = (r255 * 7 + r0) >> 3;
 	int g224 = (r255 * 7 + r0) >> 3;
 	int b224 = (r255 * 7 + r0) >> 3;
-	sWhiteGray = Color(r224, g224, b224);
-	sBlue = Color::FromCR(GetSysColor(COLOR_HIGHLIGHT));
-	sRed = Color(r128, g0, b0);
-	sGreen = Color(0, g128, b0);
-	sBrown = Color(r128, g128, b0);
-	sMagenta = Color(r128, g0, b255);
-	sCyan = Color(r0, g128, b128);
-	sYellow = Color(r255, g255, b0);
-	sLtRed = Color(r255, g0, b0);
-	sLtGreen = Color(r0, g255, b0);
-	sLtYellow = Color(r255, g255, b192);
-	sLtBlue = Color(0, 0, b255); // TRC 2005/08/05
-	sLtMagenta = Color(r255, g0, b255);
-	sLtCyan = Color(r0, g255, b255);
 
-	sDialog = Color::FromCR(GetSysColor(COLOR_3DFACE));
-	sPaper = Color::FromCR(GetSysColor(COLOR_WINDOW));
-	sText = Color::FromCR(GetSysColor(COLOR_WINDOWTEXT));
-	sHighlight = Color::FromCR(GetSysColor(COLOR_HIGHLIGHT));
-	sHighlightText = Color::FromCR(GetSysColor(COLOR_HIGHLIGHTTEXT));
-	sMenu = Color::FromCR(GetSysColor(COLOR_MENU));
-	sMenuText = Color::FromCR(GetSysColor(COLOR_MENUTEXT));
-	sInfo = Color::FromCR(GetSysColor(COLOR_INFOBK));
-	sInfoText = Color::FromCR(GetSysColor(COLOR_INFOTEXT));
+	ChSet("SWhiteGray", Color(r224, g224, b224));
+	ChSet("SBlue", Color(r0, g0, b128));
+	ChSet("SRed", Color(r128, g0, b0));
+	ChSet("SGreen", Color(0, g128, b0));
+	ChSet("SBrown", Color(r128, g128, b0));
+	ChSet("SMagenta", Color(r128, g0, b255));
+	ChSet("SCyan", Color(r0, g128, b128));
+	ChSet("SYellow", Color(r255, g255, b0));
+	ChSet("SLtRed", Color(r255, g0, b0));
+	ChSet("SLtGreen", Color(r0, g255, b0));
+	ChSet("SLtYellow", Color(r255, g255, b192));
+	ChSet("SLtBlue", Color(0, 0, b255));
+	ChSet("SLtMagenta", Color(r255, g0, b255));
+	ChSet("SLtCyan", Color(r0, g255, b255));
+
 	dword x = GetSysColor(COLOR_GRAYTEXT);
-	sDisabled = x ? Color::FromCR(x) : Color(r192, g192, b192);
-	sLight = Color::FromCR(GetSysColor(COLOR_3DHILIGHT));
-	sShadow = Color::FromCR(GetSysColor(COLOR_3DSHADOW));
+
+	ChSet("SColorFace", Color::FromCR(GetSysColor(COLOR_3DFACE)));
+	ChSet("SColorPaper", Color::FromCR(GetSysColor(COLOR_WINDOW)));
+	ChSet("SColorText", Color::FromCR(GetSysColor(COLOR_WINDOWTEXT)));
+	ChSet("SColorHighlight", Color::FromCR(GetSysColor(COLOR_HIGHLIGHT)));
+	ChSet("SColorHighlightText", Color::FromCR(GetSysColor(COLOR_HIGHLIGHTTEXT)));
+	ChSet("SColorMenu", Color::FromCR(GetSysColor(COLOR_MENU)));
+	ChSet("SColorMenuText", Color::FromCR(GetSysColor(COLOR_MENUTEXT)));
+	ChSet("SColorInfo", Color::FromCR(GetSysColor(COLOR_INFOBK)));
+	ChSet("SColorInfoText", Color::FromCR(GetSysColor(COLOR_INFOTEXT)));
+	ChSet("SColorDisabled", x ? Color::FromCR(x) : Color(r192, g192, b192));
+	ChSet("SColorLight", Color::FromCR(GetSysColor(COLOR_3DHILIGHT)));
+	ChSet("SColorShadow", Color::FromCR(GetSysColor(COLOR_3DSHADOW)));
 }
 #endif
 
@@ -175,41 +177,41 @@ void UpdateSColors()
 	int bg95 = blue.GetG();
 	int bb137 = blue.GetB();
 
-	sBlack = black;
-	sGray = Color(r128, g128, b128);
-	sLtGray = ltgray;
-	sWhiteGray = Color((r255 + r220) / 2, (g255 + g220) / 2, (b255 + b220) / 2);
-	sWhite = white;
-	sRed = Color(r128, g0, b0);
-	sGreen = Color(r0, g128, b0);
-	sBrown = Color(r128, g128, 0);
-	sBlue = blue;
-	sMagenta = Color(r128, g0, b255);
-	sCyan = Color(r0, g128, bb137);
-	sYellow = Color(r255, g255, b0);
-	sLtRed = Color(r255, g0, b0);
-	sLtGreen = Color(r0, g255, b0);
-	sLtYellow = Color(r255, g255, b220);
-	sLtBlue = Color(r0, g0, b255);
-	sLtMagenta = Color(r255, g0, b255);
-	sLtCyan = Color(r0, g255, b255);
+	ChSet("SBlack", black);
+	ChSet("SGray", Color(r128, g128, b128));
+	ChSet("SLtGray", ltgray);
+	ChSet("SWhiteGray", Color((r255 + r220) / 2, (g255 + g220) / 2, (b255 + b220) / 2));
+	ChSet("SWhite", white);
+	ChSet("SRed", Color(r128, g0, b0));
+	ChSet("SGreen", Color(r0, g128, b0));
+	ChSet("SBrown", Color(r128, g128, 0));
+	ChSet("SBlue", blue);
+	ChSet("SMagenta", Color(r128, g0, b255));
+	ChSet("SCyan", Color(r0, g128, bb137));
+	ChSet("SYellow", Color(r255, g255, b0));
+	ChSet("SLtRed", Color(r255, g0, b0));
+	ChSet("SLtGreen", Color(r0, g255, b0));
+	ChSet("SLtYellow", Color(r255, g255, b220));
+	ChSet("SLtBlue", Color(r0, g0, b255));
+	ChSet("SLtMagenta", Color(r255, g0, b255));
+	ChSet("SLtCyan", Color(r0, g255, b255));
 
-	sPaper = KDEColor("windowBackground", white);
-	sDialog = KDEColor("background", ltgray);
-	sText = KDEColor("windowForeground", black);
-	sHighlight = KDEColor("selectBackground", blue);
-	sHighlightText = KDEColor("selectForeground", white);
-	sMenu = Color(
+	ChSet("SColorPaper", KDEColor("windowBackground", white));
+	ChSet("SColorFace", KDEColor("background", ltgray));
+	ChSet("SColorText", KDEColor("windowForeground", black));
+	ChSet("SColorHighlight", KDEColor("selectBackground", blue));
+	ChSet("SColorHighlightText", KDEColor("selectForeground", white));
+	ChSet("SColorMenu", Color(
 				min(sDialog.GetR() * 105 / 100, 255),
 				min(sDialog.GetG() * 105 / 100, 255),
 				min(sDialog.GetB() * 105 / 100, 255)
-			);
-	sMenuText = sText;
-	sInfo = sLtYellow;
-	sInfoText = sText;
-	sDisabled = Blend(sPaper, sText);
-	sLight = Blend(KDEColor("buttonBackground", sLtGray), sPaper);
-	sShadow = Blend(KDEColor("buttonBackground", sLtGray), sDisabled);
+			));
+	ChSet("SColorMenuText", SColorText());
+	ChSet("SColorInfo", SLtYellow());
+	ChSet("SColorInfoText", SColorText());
+	ChSet("SColorDisabled", Blend(SColorPaper(), SColorText()));
+	ChSet("SColorLight", Blend(KDEColor("buttonBackground",SLtGray()), SPaper()));
+	ChSet("SColorShadow", Blend(KDEColor("buttonBackground", SLtGray()), SColorDisabled()));
 
 	Vector<String> fs = Split(GetKDE("font"), ',');
 	if(fs.GetCount() > 1) {
@@ -221,49 +223,6 @@ void UpdateSColors()
 }
 #endif
 
-static volatile bool  sSCInited;
-
-inline void sInitSColorsImpl()
-{
-	ONCELOCK_(sSCInited) {
-		UpdateSColors();
-	}
+INITBLOCK {
+	ChRegister("!", UpdateSColors);
 }
-
-inline void sInitSColors()
-{
-	if(!sSCInited)
-		sInitSColorsImpl();
-}
-
-Color SBlack()     { sInitSColors(); return sBlack; }
-Color SGray()      { sInitSColors(); return sGray; }
-Color SLtGray()    { sInitSColors(); return sLtGray; }
-Color SWhiteGray() { sInitSColors(); return sWhiteGray; }
-Color SWhite()     { sInitSColors(); return sWhite; }
-Color SRed()       { sInitSColors(); return sRed; }
-Color SGreen()     { sInitSColors(); return sGreen; }
-Color SBrown()     { sInitSColors(); return sBrown; }
-Color SBlue()      { sInitSColors(); return sBlue; }
-Color SMagenta()   { sInitSColors(); return sMagenta; }
-Color SCyan()      { sInitSColors(); return sCyan; }
-Color SYellow()    { sInitSColors(); return sYellow; }
-Color SLtRed()     { sInitSColors(); return sLtRed; }
-Color SLtGreen()   { sInitSColors(); return sLtGreen; }
-Color SLtYellow()  { sInitSColors(); return sLtYellow; }
-Color SLtBlue()    { sInitSColors(); return sLtBlue; }
-Color SLtMagenta() { sInitSColors(); return sLtMagenta; }
-Color SLtCyan()    { sInitSColors(); return sLtCyan; }
-
-Color SColorPaper()         { sInitSColors(); return sPaper; }
-Color SColorFace()          { sInitSColors(); return sDialog; }
-Color SColorText()          { sInitSColors(); return sText; }
-Color SColorHighlight()     { sInitSColors(); return sHighlight; }
-Color SColorHighlightText() { sInitSColors(); return sHighlightText; }
-Color SColorMenu()          { sInitSColors(); return sMenu; }
-Color SColorMenuText()      { sInitSColors(); return sMenuText; }
-Color SColorInfo()          { sInitSColors(); return sInfo; }
-Color SColorInfoText()      { sInitSColors(); return sInfoText; }
-Color SColorDisabled()      { sInitSColors(); return sDisabled; }
-Color SColorLight()         { sInitSColors(); return sLight; }
-Color SColorShadow()        { sInitSColors(); return sShadow; }

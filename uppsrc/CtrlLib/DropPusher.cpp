@@ -4,7 +4,7 @@ DropPusher::DropPusher()
 {
 	NoWantFocus();
 	SetConvert(*this);
-	drop.SetMonoImage(IsXPStyle() ? CtrlImg::SmallDown() : CtrlImg::smalldown()).NoWantFocus();
+	drop.SetMonoImage(CtrlsImg::DA()).NoWantFocus();
 	AddFrame(drop);
 	drop.WhenPush = THISBACK(OnDrop);
 	popup.Normal();

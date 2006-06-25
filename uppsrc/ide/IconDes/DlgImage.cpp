@@ -4,6 +4,8 @@
 #define LAYOUTFILE <ide/IconDes/panel.lay>
 #include <CtrlCore/lay.h>
 
+#include <plugin/gif/gif.h>
+
 #define LID(nm) static Id nm(#nm);
 
 LID(CNAME) LID(CWIDTH) LID(CHEIGHT) LID(CFORMAT) LID(CHOTX) LID(CHOTY)
@@ -2296,12 +2298,12 @@ void DlgImage::WriteFile(Stream& stream, String _filename)
 
 void DlgImage::WriteJava(String _iml_file, Stream& iml_stream)
 {
-/*	Size max_size(1, 1);
+	Size max_size(1, 1);
 	int i, items = image_list.list.GetCount();
 	for(i = 0; i < items; i++)
 		max_size = max(max_size, Get(i).size);
-	Image image(max_size.cx * items, 2 * max_size.cy);
-	AlphaSet(image, image.GetRect(), Color(Null));
+	ImageBuffer image(max_size.cx * items, 2 * max_size.cy);
+	Fill(image, RGBAZero(), image.GetLength());
 
 	String jfn = setup.java_source;
 	if(IsNull(jfn))
@@ -2334,25 +2336,22 @@ void DlgImage::WriteJava(String _iml_file, Stream& iml_stream)
 		"\r\n";
 
 	{ // generate combined image
-		for(i = 0; i < items; i++)
-		{
+		for(i = 0; i < items; i++) {
 			AlphaImageInfo data = Get(i);
 			String name = image_list.list.Get(i, CNAME);
 			if(!IsNull(name))
 				java << "\tpublic static final int " << name << " = " << i << ";\r\n";
 
 			String rle = image_list.list.Get(i, CDATA);
-			AlphaArray buffer(data.size, -3);
-			RLEToAlpha(buffer, rle);
-			Rect src(data.size);
-			Rect dest = src;
-			dest.OffsetHorz(i * max_size.cx);
-			AlphaCopy(image, dest, buffer, src, true);
-//			PixelCopy(image.pixel, dest.OffsetedVert(2 * max_size.cy), buffer.alpha, src);
-			AlphaEtch(buffer, src);
-			dest.OffsetVert(max_size.cy);
-			AlphaCopy(image, dest, buffer, src, true);
-//			PixelCopy(image.pixel, dest.OffsetedVert(2 * max_size.cy), buffer.alpha, src);
+			Image buffer = RLEToAlpha(rle, data.size);
+//			Rect src(data.size);
+//			Rect dest = src;
+			int dx = i * max_size.cx;
+			for(int y = 0; y < buffer.GetHeight(); y++)
+				memcpy(&image[y][dx], buffer[y], data.size.cx * sizeof(RGBA));
+			buffer = Etched(buffer);
+			for(int y = 0; y < buffer.GetHeight(); y++)
+				memcpy(&image[y + max_size.cy][dx], buffer[y], data.size.cx * sizeof(RGBA));
 		}
 	}
 
@@ -2360,33 +2359,26 @@ void DlgImage::WriteJava(String _iml_file, Stream& iml_stream)
 		"\t" << cmt << "\r\n"
 		"}\r\n";
 
-	if(!SaveChangedFile(jfn, java))
-	{
-		Exclamation(NFormat("Nelze ulo??it soubor [* \1%s\1].", jfn));
+	if(!SaveChangedFile(jfn, java)) {
+		Exclamation(NFormat("Error saving file [* \1%s\1].", jfn));
 		return;
 	}
 
-	if(setup.java_export == setup.FILE_EXPORT)
-	{ // save gif
-		String imp = GifEncoder(true).SaveArray(image);
+	if(setup.java_export == setup.FILE_EXPORT) { // save gif
+		String imp = GIFEncoder().SaveString(image);
 		jfn = ForceExt(_iml_file, ".gif");
-		if(!SaveChangedFile(jfn, imp))
-		{
+		if(!SaveChangedFile(jfn, imp)) {
 			Exclamation(NFormat(t_("Error saving file [* \1%s\1]."), jfn));
 			return;
 		}
 	}
-	else
-	{ // export gif to iml source
+	else { // export gif to iml source
 		iml_stream.PutLine(NFormat("IMAGE_BEGIN(_java_%s)", clss));
 		AlphaImageInfo data(image.GetSize());
 		int last = 0;
-		for(int i = 0, h = data.size.cy; i < h; i++)
-		{
-			String scan;
-			AlphaScanToRLE(scan, image.GetPixelDownScan(i), image.GetAlphaDownScan(i), image.GetWidth());
-			if(!scan.IsEmpty() || i == 0) // force at least 1 scan
-			{
+		for(int i = 0, h = data.size.cy; i < h; i++) {
+			String scan = PackRLE(image[i], data.size.cx);
+			if(!scan.IsEmpty() || i == 0) { // force at least 1 scan
 				for(; last < i; last++)
 					iml_stream.PutLine("\tIMAGE_SCAN(\"\")");
 				iml_stream.Put("\tIMAGE_SCAN(");
@@ -2405,7 +2397,6 @@ void DlgImage::WriteJava(String _iml_file, Stream& iml_stream)
 		PutOctalString(iml_stream, s.Begin(), s.End());
 		iml_stream.Put(")\r\n");
 	}
-*/
 }
 
 void DlgImage::WriteGif(String _folder, Color _transparent)

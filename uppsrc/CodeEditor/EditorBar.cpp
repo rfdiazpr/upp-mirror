@@ -42,6 +42,10 @@ void EditorBar::sPaintImage(Draw& w, int y, int fy, const Image& img)
 }
 
 void EditorBar::Paint(Draw& w) {
+	static Image (*numeri[])() = {
+		CodeEditorImg::N0, CodeEditorImg::N1, CodeEditorImg::N2, CodeEditorImg::N3, CodeEditorImg::N4,
+		CodeEditorImg::N5, CodeEditorImg::N6, CodeEditorImg::N7, CodeEditorImg::N8, CodeEditorImg::N9,
+	};
 	Size sz = GetSize();
 	w.DrawRect(0, 0, sz.cx, sz.cy, SWhiteGray);
 	if(!editor) return;
@@ -66,11 +70,13 @@ void EditorBar::Paint(Draw& w) {
 		}
 		if(line_numbers && i < editor->GetLineCount()) {
 			String n = AsString(i + 1);
-			for(int q = 0; q < 4 && q < n.GetLength(); q++)
+			for(int q = 0; q < 4 && q < n.GetLength(); q++) {
 				w.DrawImage(sz.cx - 8 - q * 6,
-				            y + (fy - CodeEditorImg::N0().GetSize().cy) / 2,
-				            CodeEditorImg::Vector[n[n.GetLength() - 1 - q] - '0'
-				                                  + CodeEditorImg::I_N0], Brown);
+					y + (fy - CodeEditorImg::N0().GetSize().cy) / 2,
+					numeri[n[n.GetLength() - 1 - q] - '0'],
+					// CodeEditorImg::Vector[n[n.GetLength() - 1 - q] - '0' + CodeEditorImg::I_N0],
+					Brown);
+			}
 		}
 		if(hi_if) {
 			Vector<CodeEditor::IfState> nextif;

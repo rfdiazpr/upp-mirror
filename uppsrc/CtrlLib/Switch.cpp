@@ -114,7 +114,7 @@ Rect  Switch::GetCaseRect(int i) const {
 
 Rect  Switch::GetCheckRect(int i) const {
 	Size sz = GetSize();
-	int cx = IsXPStyle() ? CtrlImg::Radio0().GetSize().cx : CtrlImg::switch0().GetSize().cx;
+	int cx = CtrlsImg::S0().GetSize().cx;
 	if(posx.GetCount())
 		return RectC(i ? posx[i - 1] : 0, 0, cx, sz.cy);
 	else
@@ -170,7 +170,7 @@ void Switch::Paint(Draw& w) {
 		bool fs = HasFocus() && (pushindex == i || v.value == value && pushindex < 0);
 		bool dv = ds || !v.enabled;
 
-		Size isz = (IsXPStyle() ? GetPushImage(I_RADIO0, I_NORMAL) : CtrlImg::option0()).GetSize();
+		Size isz = CtrlsImg::S0().GetSize();
 		Size tsz = GetSmartTextSize(w, v.label, font);
 		int iy = (linecy - isz.cy) / 2;
 
@@ -179,22 +179,12 @@ void Switch::Paint(Draw& w) {
 		if(mousein)
 			light = i;
 		Image img;
-		if(IsXPStyle()) {
-			int q = dv ? I_DISABLED :
-			        pushindex == i ? I_PUSH :
-			        mousein || fs ? I_HIGHLIGHT :
-			        I_NORMAL;
-			fs = false;
-			img = GetPushImage(v.value == value ? I_RADIO1 : I_RADIO0, q);
-		}
-		else {
-			img = v.value == value ? dv ? CtrlImg::switch1d()
-										: pushindex == i ? CtrlImg::switch1f()
-														 : CtrlImg::switch1()
-								   : dv ? CtrlImg::switch0d()
-										: pushindex == i ? CtrlImg::switch0f()
-														 : CtrlImg::switch0();
-		}
+		int q = dv ? CTRL_DISABLED :
+		        pushindex == i ? CTRL_PRESSED :
+		        mousein || fs ? CTRL_HOT :
+		        CTRL_NORMAL;
+		fs = false;
+		img = CtrlsImg::Get((v.value == value ? CtrlsImg::I_S1 : CtrlsImg::I_S0) + q);
 		w.DrawImage(x, y + iy, img);
 		DrawSmartText(w, x + isz.cx + 4, y + ty, sz.cx, v.label, font,
 		              dv ? SColorDisabled : IsReadOnly() ? SLtBlue : SColorText,

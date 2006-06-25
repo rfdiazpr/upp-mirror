@@ -97,10 +97,10 @@ void   Splitter::LeftUp(Point p, dword keyflags) {
 }
 
 Image Splitter::CursorImage(Point p, dword) {
-	static const Image& (*hanipos[])() = {
+	static Image (*hanipos[])() = {
 		CtrlImg::horzpos1, CtrlImg::horzpos2, CtrlImg::horzpos1, CtrlImg::horzpos3
 	};
-	static const Image& (*vanipos[])() = {
+	static Image (*vanipos[])() = {
 		CtrlImg::vertpos1, CtrlImg::vertpos2, CtrlImg::vertpos1, CtrlImg::vertpos3
 	};
 	if(FindIndex(p) < 0)

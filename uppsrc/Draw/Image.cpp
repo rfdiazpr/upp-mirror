@@ -202,6 +202,23 @@ void Image::Serialize(Stream& s)
 		s.Put(~*this, len * sizeof(RGBA));
 }
 
+bool Image::operator==(const Image& img) const
+{
+	if(GetLength() != img.GetLength())
+		return false;
+	return memcmp(~*this, ~img, GetLength() * sizeof(RGBA));
+}
+
+bool Image::operator!=(const Image& img) const
+{
+	return !operator==(img);
+}
+
+dword Image::GetHashValue() const
+{
+	return memhash(~*this, GetLength() * sizeof(RGBA));
+}
+
 Image::Image(const Image& img)
 {
 	data = img.data;
@@ -209,7 +226,7 @@ Image::Image(const Image& img)
 		data->Retain();
 }
 
-Image::Image(const Image& (*fn)())
+Image::Image(Image (*fn)())
 {
 	data = NULL;
 	*this = (*fn)();
@@ -279,32 +296,71 @@ Image::Data::~Data()
 		Unlink();
 	}
 }
+void Iml::Init(int n)
+{
+	for(int i = 0; i < n; i++)
+		map.Add(name[i]);
+}
 
-typedef const Image& (*ImgFn)();
+void Iml::Reset()
+{
+	int n = map.GetCount();
+	map.Clear();
+	Init(n);
+}
+
+void Iml::Set(int i, const Image& img)
+{
+	map[i].image = img;
+	map[i].loaded = true;
+}
+
+Image Iml::Get(int i)
+{
+	IImage& m = map[i];
+	if(!m.loaded) {
+		m.image = Image(img_init[i]);
+		m.loaded = true;
+	}
+	return m.image;
+}
+
+#ifdef _DEBUG
+int  Iml::GetBinSize() const
+{
+	int size = 0;
+	for(int i = 0; i < map.GetCount(); i++) {
+		const Image::Init& init = img_init[i];
+		size += strlen(name[i]) + 1 + 24;
+		for(int q = 0; q < init.scan_count; q++)
+			size += strlen(init.scans[q]);
+	}
+	return size;
+}
+#endif
+
+Iml::Iml(const Image::Init *img_init, const char **name, int n)
+:	img_init(img_init),
+	name(name)
+{
+	Init(n);
+}
 
 static StaticCriticalSection sImgMapLock;
 
-static VectorMap<String, ImgFn>& sImgMap()
+static VectorMap<String, Iml *>& sImgMap()
 {
-	static VectorMap<String, ImgFn> x;
+	static VectorMap<String, Iml *> x;
 	return x;
 }
 
-void RegisterImageName__(const char *name, ImgFn fn)
+void Register(const char *imageclass, Iml& list)
 {
 	INTERLOCKED_(sImgMapLock)
-		sImgMap().GetAdd(name) = fn;
+		sImgMap().GetAdd(imageclass) = &list;
 }
 
-Image GetImlImage(const char *name)
-{
-	ImgFn fn;
-	INTERLOCKED_(sImgMapLock)
-		fn = sImgMap().Get(name, NULL);
-	return fn ? (*fn)() : Image();
-}
-
-int GetImlImageCount()
+int GetImlCount()
 {
 	int q;
 	INTERLOCKED_(sImgMapLock)
@@ -312,20 +368,58 @@ int GetImlImageCount()
 	return q;
 }
 
-Image GetImlImage(int i)
+String GetImlName(int i)
+{
+	String x;
+	INTERLOCKED_(sImgMapLock)
+		x = sImgMap().GetKey(i);
+	return x;
+}
+
+int FindIml(const char *name)
+{
+	int q;
+	INTERLOCKED_(sImgMapLock)
+		q = sImgMap().Find(name);
+	return q;
+}
+
+Image GetImlImage(const char *name)
 {
 	Image m;
-	INTERLOCKED_(sImgMapLock)
-		m = sImgMap()[i];
+	const char *w = strchr(name, ':');
+	if(w) {
+		int q = FindIml(String(name, w));
+		if(q >= 0) {
+			INTERLOCKED_(sImgMapLock) {
+				Iml& iml = *sImgMap()[q];
+				while(*w == ':')
+					w++;
+				q = iml.Find(w);
+				if(q >= 0)
+					m = iml.Get(q);
+			}
+		}
+	}
 	return m;
 }
 
-String GetImlImageName(int i)
+void SetImlImage(const char *name, const Image& m)
 {
-	String s;
-	INTERLOCKED_(sImgMapLock)
-		s = sImgMap().GetKey(i);
-	return s;
+	const char *w = strchr(name, ':');
+	if(w) {
+		int q = FindIml(String(name, w));
+		if(q >= 0) {
+			INTERLOCKED_(sImgMapLock) {
+				Iml& iml = *sImgMap()[q];
+				while(*w == ':')
+					w++;
+				q = iml.Find(w);
+				if(q >= 0)
+					iml.Set(q, m);
+			}
+		}
+	}
 }
 
 String StoreImageAsString(const Image& img)

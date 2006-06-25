@@ -151,9 +151,18 @@ void Pusher::CancelMode() {
 	EndPush();
 }
 
+int Pusher::GetVisualState() const
+{
+	return !IsShowEnabled() ? CTRL_DISABLED :
+	       IsPush() ? CTRL_PRESSED :
+	       HasMouse() || HasFocus() ? CTRL_HOT :
+	       CTRL_NORMAL;
+}
+
 Pusher::Pusher() {
 	keypush = push = false;
 	accesskey = 0;
+	font = Null;
 	NoInitFocus();
 }
 
@@ -161,12 +170,31 @@ Pusher::~Pusher() {}
 
 // ----------------
 
-void Button::Paint(Draw& w) {
+CH_LOOKS(ButtonLook, 4, CtrlElements(CtrlsImg::I_B));
+CH_LOOKS(OkButtonLook, 4, CtrlElements(CtrlsImg::I_OkB));
+CH_LOOKS(EdgeButtonLook, 4, CtrlElements(CtrlsImg::I_EB));
+CH_LOOKS(ScrollButtonLook, 4, CtrlElements(CtrlsImg::I_SB));
+CH_COLORS(ButtonMonoColor, 4, Blend(Blend(SColorHighlight, SColorShadow), SColorText, 80));
+CH_INT(ButtonPressOffsetFlag, 0);
+CH_FONT(ButtonFont, StdFont());
+CH_COLORS(ButtonTextColor, 4, SColorText());
+
+Button& Button::Style(Value (*_look)(int))
+{
+	if(look != _look) {
+		look = _look;
+		Refresh();
+	}
+	return *this;
+}
+
+void Button::Paint(Draw& w)
+{
 	Size sz = GetSize();
 	bool ds = !IsShowEnabled();
 	DrawLabel dl;
 	dl.text = label;
-	dl.font = font;
+	dl.font = Nvl(font, ButtonFont());
 	dl.limg = img;
 	dl.disabled = ds;
 	dl.lspc = !label.IsEmpty() && !img.IsEmpty() ? 4 : 0;
@@ -174,52 +202,30 @@ void Button::Paint(Draw& w) {
 		dl.accesskey = accesskey;
 	if(monoimg)
 		dl.lcolor = SColorText;
-	if(IsXPStyle()) {
-		int t = ds ? BUTTON_DISABLED :
-		        IsPush() ? BUTTON_PUSH :
-		        HasMouse() || HasFocus() ? BUTTON_HIGHLIGHT :
-		        type == OK ? BUTTON_OK :
-		        BUTTON_NORMAL;
-		if(scrollbutton)
-			t |= BUTTON_SCROLL;
-		else
-		if(edgestyle || InFrame())
-			t |= BUTTON_EDGE;
-		DrawXPButton(w, sz, t);
-		if(monoimg && (edgestyle || InFrame() || scrollbutton))
-			dl.lcolor = Blend(Blend(SColorHighlight, SColorShadow), SColorText, 80);
-		dl.Paint(w, 3, 3, sz.cx - 6, sz.cy - 6);
+	Value (*st)(int) = look;
+	if(look == ButtonLook) {
+		if(InFrame())
+			st = EdgeButtonLook;
+		if(type == OK)
+			st = OkButtonLook;
 	}
-	else {
-		if(w.PaletteMode())
-			w.DrawRect(2, 2, sz.cx - 4, sz.cy - 4, SLtGray);
-		else
-			for(int i = 0; i < sz.cy - 4; i++)
-				w.DrawRect(2, 2 + i, sz.cx - 4, 1,
-				           GradientColor(SWhiteGray, SLtGray, i + sz.cy / 2, sz.cy / 2 + sz.cy - 4));
-		dl.push = IsPush();
-		dl.Paint(w, 3, 3, sz.cx - 6, sz.cy - 6);
-		DrawBorder(w, 0, 0, sz.cx, sz.cy,
-			IsPush() ? ButtonPushBorder
-			         : type == OK ? DefButtonBorder
-			                      : edgestyle ? EdgeButtonBorder
-			                                  : ButtonBorder
-		);
-		if(HasFocus() && min(sz.cx, sz.cy) > 8)
-			DrawFocus(w, 4, 4, sz.cx - 8, sz.cy - 8);
-	}
+	int i = GetVisualState();
+	ChPaint(w, sz, (*st)(i));
+	dl.ink = ButtonTextColor(i);
+	if(monoimg)
+		dl.lcolor = ButtonMonoColor(i);
+	int m = IsPush() && ButtonPressOffsetFlag();
+	dl.Paint(w, 3 + m, 3 + m, sz.cx - 6, sz.cy - 6);
 }
 
 void  Button::MouseEnter(Point, dword)
 {
-	if(IsXPStyle())
-		Refresh();
+	Refresh();
 }
 
 void  Button::MouseLeave()
 {
-	if(IsXPStyle())
-		Refresh();
+	Refresh();
 	Pusher::MouseLeave();
 }
 
@@ -286,11 +292,15 @@ Button& Button::SetMonoImage(const Image& _img)
 }
 
 Button::Button() {
-	edgestyle = scrollbutton = false;
+	look = ButtonLook;
 	type = NORMAL;
 }
 
 Button::~Button() {}
+
+CH_LOOKS(SpinUpLook, 4, EdgeButtonLook);
+CH_LOOKS(SpinDownLook, 4, EdgeButtonLook);
+CH_INT(SpinWidth, 12);
 
 void SpinButtons::FrameLayout(Rect& r)
 {
@@ -304,7 +314,7 @@ void SpinButtons::FrameLayout(Rect& r)
 	Size sz = r.Size();
 	int h = r.Height();
 	int h2 = h / 2;
-	int h7 = min(sz.cx / 2, 12);
+	int h7 = min(sz.cx / 2, SpinWidth());
 	inc.SetFrameRect(r.right - h7, r.top, h7, h2);
 	dec.SetFrameRect(r.right - h7, r.top + h2, h7, r.Height() - h2);
 	r.right -= h7;
@@ -328,8 +338,9 @@ void SpinButtons::FrameRemove() {
 
 SpinButtons::SpinButtons() {
 	visible = true;
-	inc.SetMonoImage(CtrlImg::spinup()).NoWantFocus();
-	dec.SetMonoImage(CtrlImg::spindown()).NoWantFocus();
+	inc.Style(SpinUpLook).SetMonoImage(CtrlsImg::SpU()).NoWantFocus();
+	dec.Style(SpinDownLook).SetMonoImage(CtrlsImg::SpD()).NoWantFocus();
+	DUMP(CtrlsImg::SpU().GetLength());
 }
 
 SpinButtons::~SpinButtons() {}
@@ -342,31 +353,14 @@ void SpinButtons::Show(bool s)
 
 // -----------------
 
-const Image& GetPushImage(int g, int q)
-{
-	ASSERT(g >= 0 && q < 5 && q >= 0 && q < 4);
-	const Image& (*im[5][4])() = {
-		{ CtrlImg::Radio0, CtrlImg::Radio0h, CtrlImg::Radio0p, CtrlImg::Radio0d },
-		{ CtrlImg::Radio1, CtrlImg::Radio1h, CtrlImg::Radio1p, CtrlImg::Radio1d },
-		{ CtrlImg::Check0, CtrlImg::Check0h, CtrlImg::Check0p, CtrlImg::Check0d },
-		{ CtrlImg::Check1, CtrlImg::Check1h, CtrlImg::Check1p, CtrlImg::Check1d },
-		{ CtrlImg::Check2, CtrlImg::Check2h, CtrlImg::Check2p, CtrlImg::Check2d },
-	};
-	return (*im[g][q])();
-}
-
-// -----------------
-
 void  Option::MouseEnter(Point, dword)
 {
-	if(IsXPStyle())
-		RefreshPush();
+	RefreshPush();
 }
 
 void  Option::MouseLeave()
 {
-	if(IsXPStyle())
-		RefreshPush();
+	RefreshPush();
 	Pusher::MouseLeave();
 }
 
@@ -375,11 +369,11 @@ void Option::RefreshFocus() {
 }
 
 void Option::RefreshPush() {
-	Refresh(0, 0, (IsXPStyle() ? GetPushImage(I_CHECK0, I_NORMAL) : CtrlImg::option0()).GetSize().cx, GetSize().cy);
+	Refresh(0, 0, CtrlsImg::O0().GetSize().cx, GetSize().cy);
 }
 
 Size Option::GetMinSize() const {
-	Size isz = (IsXPStyle() ? GetPushImage(I_CHECK0, I_NORMAL) : CtrlImg::option0()).GetSize();
+	Size isz = CtrlsImg::O0().GetSize();
 	return AddFrameSize(isz.cx + GetSmartTextSize(ScreenInfo(), label).cx + 4,
 		                max(isz.cy, StdFont().Info().GetHeight()) + 2);
 }
@@ -388,39 +382,20 @@ void Option::Paint(Draw& w) {
 	Size sz = GetSize();
 	if(!IsTransparent())
 		w.DrawRect(0, 0, sz.cx, sz.cy, SColorFace);
-	Size isz = (IsXPStyle() ? GetPushImage(I_CHECK0, I_NORMAL) : CtrlImg::option0()).GetSize();
+	Size isz = CtrlsImg::O0().GetSize();
 	Size tsz = GetSmartTextSize(w, label, font);
 	int ty = (sz.cy - tsz.cy) / 2;
 	int iy = (tsz.cy - isz.cy) / 2 + ty;
 	bool ds = !IsShowEnabled();
-	if(IsXPStyle()) {
-		int q = ds ? I_DISABLED :
-		        IsPush() ? I_PUSH :
-		        HasMouse() || HasFocus()? I_HIGHLIGHT :
-		        I_NORMAL;
-		int g = (!notnull || threestate) && IsNull(option) ? I_CHECK2 : option == 1 ? I_CHECK1 : I_CHECK0;
-		if(switchimage)
-			g = option ? I_RADIO1 : I_RADIO0;
-		w.DrawImage(0, iy, GetPushImage(g, q));
-	}
-	else {
-		Image m = (!notnull || threestate) && IsNull(option) ? ds ? CtrlImg::option2d()
-				                      : IsPush() ? CtrlImg::option2f()
-							                     : CtrlImg::option2() :
-			      option == 1 ? ds ? (switchimage ? CtrlImg::switch1d() : CtrlImg::option1d())
-				                   : IsPush() ? (switchimage ? CtrlImg::switch1f() : CtrlImg::option1f())
-							                  : (switchimage ? CtrlImg::switch1() : CtrlImg::option1())
-				              : ds ? (switchimage ? CtrlImg::switch0d() : CtrlImg::option0d())
-				                   : IsPush() ? (switchimage ? CtrlImg::switch0f() : CtrlImg::option0f())
-							                  : (switchimage ? CtrlImg::switch0() : CtrlImg::option0());
-		w.DrawImage(0, iy, m);
-		if(!switchimage)
-			w.DrawImage(0, iy, ds ? CtrlImg::optionedged
-			                      : blackedge ? CtrlImg::blackoptionedge
-			                                  : CtrlImg::optionedge);
-	}
-
-	DrawSmartText(w, isz.cx + 4, ty, tsz.cx, label, font, ds ? SGray : SBlack, VisibleAccessKeys() ? accesskey : 0);
+	int q = GetVisualState();
+	int g = (!notnull || threestate) && IsNull(option) ? CtrlsImg::I_O2
+	                                                   : option == 1 ? CtrlsImg::I_O1
+	                                                                 : CtrlsImg::I_O0;
+	if(switchimage)
+		g = option ? CtrlsImg::I_S1 : CtrlsImg::I_S0;
+	w.DrawImage(0, iy, CtrlsImg::Get(g + q));
+	DrawSmartText(w, isz.cx + 4, ty, tsz.cx, label, font, ds ? SColorDisabled : SColorText,
+	              VisibleAccessKeys() ? accesskey : 0);
 }
 
 void   Option::SetData(const Value& data) {

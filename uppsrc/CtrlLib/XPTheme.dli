@@ -1,0 +1,11 @@
+FN(HANDLE,  OpenThemeData,(HWND, LPCWSTR))
+FN(HRESULT, CloseThemeData,(HANDLE))
+FN(HRESULT, DrawThemeBackground,(HANDLE, HDC, int, int, const RECT *, const RECT *))
+FN(HRESULT, GetThemePartSize,(HANDLE, HDC, int, int, RECT *, int, SIZE *))
+FN(HRESULT, GetThemeColor,(HANDLE,int,int,int,COLORREF*))
+FN(HRESULT, GetThemeInt,(HANDLE, int, int, int, int *))
+
+WIDGET(BUTTON)
+WIDGET(SPIN)
+WIDGET(COMBOBOX)
+WIDGET(SCROLLBAR)

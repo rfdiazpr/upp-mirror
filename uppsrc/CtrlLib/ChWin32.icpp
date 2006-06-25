@@ -1,0 +1,427 @@
+#include "CtrlLib.h"
+
+#define IMAGECLASS CtrlsImg
+#define IMAGEFILE <CtrlLib/Ctrls.iml>
+#include <Draw/iml_source.h>
+
+#ifdef PLATFORM_WIN32
+
+#include <uxtheme.h>
+#include <tmschema.h>
+
+#define DLLFILENAME "uxtheme.dll"
+#define DLIMODULE   XpTheme
+#define DLIHEADER   <CtrlLib/XpTheme.dli>
+#define DLLCALL     STDAPICALLTYPE
+#define WIDGET(x)
+#include <Core/dli.h>
+
+#define FN(a, b, c)
+#define WIDGET(x)    XP_##x,
+enum {
+#include "XPTheme.dli"
+	XP_COUNT
+};
+
+#undef  WIDGET
+#define WIDGET(x)   #x,
+
+static const char *xp_widget_name[] = {
+#include "XPTheme.dli"
+	NULL
+};
+
+#undef  WIDGET
+#undef  FN
+
+struct XpElement {
+	int   widget;
+	int   part;
+	int   state;
+};
+
+static HANDLE xp_widget_handle[XP_COUNT];
+
+HANDLE XpWidget(int widget)
+{
+	if(xp_widget_handle[widget] == NULL && XpTheme())
+		xp_widget_handle[widget] = XpTheme().OpenThemeData(NULL,
+		                            (WCHAR *)(const wchar *)WString(xp_widget_name[widget]));
+	return xp_widget_handle[widget];
+}
+
+void XpElementPainter(Draw& w, const Rect& r, const Value& v)
+{
+	if(IsTypeRaw<XpElement>(v)) {
+		w.DrawRect(r, SColorFace); //TODO - improve by adding the real transparency support
+		const XpElement& e = ValueTo<XpElement>(v);
+		HANDLE htheme = XpWidget(e.widget);
+		if(htheme) {
+			HDC hdc = w.BeginGdi();
+			XpTheme().DrawThemeBackground(htheme, hdc, e.part, e.state, r, NULL);
+			w.EndGdi();
+		}
+	}
+}
+
+Image XpImage(int widget, int part, int state, Color color = Null, Size sz = Null)
+{
+	HANDLE theme = XpWidget(widget);
+	if(!theme)
+		return Null;
+	if(IsNull(sz))
+		XpTheme().GetThemePartSize(theme, ScreenInfo().GetHandle(), part, state, NULL,
+		                           1 /*TS_TRUE*/, sz);
+	Color c = White;
+	Image m[2];
+	for(int q = 0; q < 2; q++) {
+		ImageDraw iw(sz);
+		iw.DrawRect(sz, Nvl(color, c));
+		HDC hdc = iw.BeginGdi();
+		Rect r(sz);
+		XpTheme().DrawThemeBackground(theme, hdc, part, state, r, NULL);
+		iw.EndGdi();
+		m[q] = iw;
+		c = Black;
+	}
+	ImageBuffer r(sz);
+	const RGBA *ws = m[0];
+	const RGBA *bs = m[1];
+	RGBA *t = r;
+	RGBA *e = t + r.GetLength();
+	while(t < e) {
+		t->a = bs->r - ws->r + 255;
+		if(t->a) {
+			t->r = bs->r * 255 / t->a;
+			t->g = bs->g * 255 / t->a;
+			t->b = bs->b * 255 / t->a;
+		}
+		else
+			t->r = t->g = t->b = 0;
+		t++;
+		bs++;
+		ws++;
+	}
+	return r;
+}
+
+int Diff(RGBA a, RGBA b)
+{
+	return max(abs(a.r - b.r), max(abs(a.b - b.b), abs(a.g - b.g)));
+}
+
+struct InterPoint {
+	ImageBuffer &b;
+	Rect         rc;
+	int          sr, sg, sb;
+	int          sn, in;
+
+	InterPoint(ImageBuffer& b) : b(b) {
+		sr = sg = sb = sn = in = 0;
+	}
+	void Add(int x, int y);
+};
+
+void InterPoint::Add(int y, int x) {
+	if(rc.Contains(x, y)) {
+		RGBA ba = b[y][x];
+		if(ba.a == 0)
+			return;
+		in++;
+		sn++;
+		sr += ba.r;
+		sg += ba.g;
+		sb += ba.b;
+	}
+	else
+		in++;
+}
+
+void Interpolate(ImageBuffer& b, const Rect& rc)
+{
+	int todo;
+	do {
+		todo = 0;
+		for(int x = rc.left; x < rc.right; x++)
+			for(int y = rc.top; y < rc.bottom; y++) {
+				RGBA& p = b[y][x];
+				if(p.a == 0) {
+					InterPoint ip(b);
+					ip.rc = rc;
+					ip.Add(y - 1, x - 1);
+					ip.Add(y - 1, x);
+					ip.Add(y - 1, x + 1);
+					ip.Add(y, x - 1);
+					ip.Add(y, x + 1);
+					ip.Add(y + 1, x - 1);
+					ip.Add(y + 1, x);
+					ip.Add(y + 1, x + 1);
+					if(ip.in >= 2) {
+						if(ip.sn) {
+							p.r = ip.sr / ip.sn;
+							p.g = ip.sg / ip.sn;
+							p.b = ip.sb / ip.sn;
+						}
+						else
+							p = SColorFace();
+						p.a = 255;
+					}
+					else
+						todo++;
+				}
+			}
+	}
+	while(todo);
+}
+
+struct ButtonDecomposer {
+	Image src;
+	Image dst;
+	int   aa[8];
+
+	RGBA GetC(int p) {
+		Size sz = src.GetSize();
+		int xx[3];
+		int yy[3];
+		yy[0] = xx[0] = aa[p];
+		xx[1] = sz.cx - aa[p] - 1;
+		xx[2] = sz.cx / 2;
+		yy[1] = sz.cy - aa[p] - 1;
+		yy[2] = sz.cy / 2;
+		return src[xx[p / 3]][xx[p % 3]];
+	}
+
+	void Do() {
+		Size sz = src.GetSize();
+		int qa = min(4, min(sz.cy / 5, sz.cx / 5));
+		if(qa == 0) {
+			dst = src;
+			return;
+		}
+		int a = 0;
+		for(int p = 0; p < 8; p++) {
+			aa[p] = qa;
+			Color c = GetC(p);
+			while(aa[p] > 0) {
+				Color c1 = GetC(p);
+				if(Diff(c, c1) > 30)
+					break;
+				c = c1;
+				aa[p]--;
+			}
+			if(aa[p] > a)
+				a = aa[p];
+		}
+		if(a < min(sz.cy / 3, sz.cy / 3))
+			a++;
+		dst = src;
+		ImageBuffer b(dst);
+		for(int y = a; y < sz.cy - a; y++) {
+			RGBA *p = b[y];
+			int x = a;
+			Color c = p[x];
+			while(x < sz.cx - a) {
+				if(Diff(p[x], c) > 30)
+					break;
+				c = p[x++];
+			}
+			int xx = sz.cx - a;
+			while(xx > x) {
+				if(Diff(p[xx - 1], c) > 30)
+					break;
+				c = p[--xx];
+			}
+			Fill(p + x, RGBAZero(), xx - x);
+		}
+		if(aa[0] != aa[1] || aa[3] != aa[4]) {//TODO: XP unsymetric...
+			for(int y = 0; y < sz.cy; y++) {
+				RGBA *l = b[y];
+				for(int x = 0; x < sz.cx / 2; x++)
+					l[sz.cx - x - 1] = l[x];
+			}
+		}
+		Interpolate(b, Rect(a, a, sz.cx - a, sz.cy - a));
+		b.SetHotSpot(Point(a, a));
+		dst = b;
+	}
+};
+
+Color XpColor(int widget, int part, int state, int type)
+{
+	COLORREF cref = 0;
+	HANDLE theme = XpWidget(widget);
+	if(!theme)
+		return Null;
+	int r = XpTheme().GetThemeColor(theme, part, state, type, &cref);
+	return r == S_OK ? Color::FromCR(cref) : Null;
+}
+
+int XpInt(int widget, int part, int state, int type)
+{
+	HANDLE theme = XpWidget(widget);
+	if(!theme)
+		return Null;
+	int n = Null;
+	int x = 0;
+	int r = XpTheme().GetThemeInt(theme, part, state, type, &n);
+	return r == S_OK ? n : Null;
+}
+
+void SetXpImages(int uii, int n, int widget, int part, int state)
+{
+	for(int i = 0; i < n; i++) {
+		Image m = XpImage(widget, part, state++);
+		if(!IsNull(m))
+			CtrlsImg::Set(uii++, m);
+	}
+}
+
+void SetXpColors(const char *chcolor, int n, int widget, int part, int state, int type)
+{
+	int ii = 0;
+	for(int i = 0; i < n; i++) {
+		Color c = XpColor(widget, part, state++, type);
+		if(!IsNull(c))
+			ChSet(chcolor, ii++, c);
+	}
+}
+
+void ChInitWin()
+{
+	CtrlImg::Reset();
+	CtrlsImg::Reset();
+
+	CtrlImg::Set(CtrlImg::I_information, Win32Icon(IDI_INFORMATION));
+	CtrlImg::Set(CtrlImg::I_question, Win32Icon(IDI_QUESTION));
+	CtrlImg::Set(CtrlImg::I_exclamation, Win32Icon(IDI_EXCLAMATION));
+
+	ChSet("FrameButtonWidth", GetSystemMetrics(SM_CYHSCROLL));
+	ChSet("ScrollBarArrowSize", GetSystemMetrics(SM_CXHSCROLL));
+}
+
+void ChInitWinClassic()
+{
+	ChInitWin();
+	Ctrl::SetXPStyle(false);
+	Override(CtrlsImg::Iml(), "Wcsw_;Wco_;Wc_;Wcb_;Wca_", CtrlsImg::Iml());
+
+	ChSet("ScrollBarVertThumbImg", Null);
+	ChSet("ScrollBarHorzThumbImg", Null);
+	Color wc = Blend(SColorFace(), SColorPaper(), 170);
+	ChSet("ScrollBarHorzUpper", wc);
+	ChSet("ScrollBarHorzUpper", CTRL_PRESSED, SColorText());
+	ChSet("ScrollBarHorzLower", wc);
+	ChSet("ScrollBarHorzLower", CTRL_PRESSED, SColorText());
+	ChSet("ScrollBarVertUpper", wc);
+	ChSet("ScrollBarVertUpper", CTRL_PRESSED, SColorText());
+	ChSet("ScrollBarVertLower", wc);
+	ChSet("ScrollBarVertLower", CTRL_PRESSED, SColorText());
+
+
+	ChSet("ButtonPressOffsetFlag", 1);
+	ChSet("ButtonMonoColor", SColorText());
+	ChSet("LabelBoxTextColor", SColorText());
+}
+
+void ChInitWin32Detect()
+{
+	ChInitWin();
+	if(XpWidget(XP_BUTTON)) {
+		TIMING("XPTheme");
+		Ctrl::SetXPStyle(true);
+		Override(CtrlsImg::Iml(), "", CtrlsImg::Iml());
+		XpElement e;
+		ChSet("EditFieldIsThin", 1);
+		SetXpImages(CtrlsImg::I_S0, 4, XP_BUTTON, BP_RADIOBUTTON, RBS_UNCHECKEDNORMAL);
+		SetXpImages(CtrlsImg::I_S1, 4, XP_BUTTON, BP_RADIOBUTTON, RBS_CHECKEDNORMAL);
+		SetXpImages(CtrlsImg::I_O0, 4, XP_BUTTON, BP_CHECKBOX, CBS_UNCHECKEDNORMAL);
+		SetXpImages(CtrlsImg::I_O1, 4, XP_BUTTON, BP_CHECKBOX, CBS_CHECKEDNORMAL);
+		SetXpImages(CtrlsImg::I_O2, 4, XP_BUTTON, BP_CHECKBOX, CBS_MIXEDNORMAL);
+		ChSet("ScrollBarUpImg", Null);
+		ChSet("ScrollBarDownImg", Null);
+		ChSet("ScrollBarLeftImg", Null);
+		ChSet("ScrollBarRightImg", Null);
+		for(int i = 0; i < 4; i++) {
+			e.state = i + 1;
+
+			e.widget = XP_BUTTON;
+			e.part = BP_PUSHBUTTON;
+			ChSet("ButtonLook", i, RawToValue(e));
+			ChSet("OkButtonLook", i, RawToValue(e));
+
+			e.widget = XP_SCROLLBAR;
+			e.part = SBP_LOWERTRACKHORZ;
+			ChSet("ScrollBarHorzUpper", i, RawToValue(e));
+			e.part = SBP_THUMBBTNHORZ;
+			ChSet("ScrollBarHorzThumb", i, RawToValue(e));
+			e.part = SBP_UPPERTRACKHORZ;
+			ChSet("ScrollBarHorzLower", i, RawToValue(e));
+			e.part = SBP_LOWERTRACKVERT;
+			ChSet("ScrollBarVertUpper", i, RawToValue(e));
+			e.part = SBP_THUMBBTNVERT;
+			ChSet("ScrollBarVertThumb", i, RawToValue(e));
+			e.part = SBP_UPPERTRACKVERT;
+			ChSet("ScrollBarVertLower", i, RawToValue(e));
+			e.part = SBP_ARROWBTN;
+			e.state = i + ABS_UPNORMAL;
+			ChSet("ScrollBarUp", i, RawToValue(e));
+			e.state = i + ABS_DOWNNORMAL;
+			ChSet("ScrollBarDown", i, RawToValue(e));
+			e.state = i + ABS_LEFTNORMAL;
+			ChSet("ScrollBarLeft", i, RawToValue(e));
+			e.state = i + ABS_RIGHTNORMAL;
+			ChSet("ScrollBarRight", i, RawToValue(e));
+		}
+		e.widget = XP_BUTTON;
+		e.part = BP_PUSHBUTTON;
+		e.state = PBS_DEFAULTED;
+		ChSet("OkButtonLook", 0, RawToValue(e));
+		for(int i = 0; i < 4; i++) {
+			ButtonDecomposer b;
+			Color paper = i == 3 ? SColorFace : SColorPaper;
+			b.src = XpImage(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL + i, paper);
+			b.Do();
+			if(XpInt(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL + i, TMT_BORDERSIZE) == 0) {
+				Image h = CreateImage(b.dst.GetSize() + 2, paper);
+				Copy(h, Point(1, 1), b.dst, b.dst.GetSize());
+				b.dst = h;
+			}
+			ChSet("EdgeButtonLook", i, b.dst);
+			b.src = XpImage(XP_SCROLLBAR, SBP_ARROWBTN, i + ABS_UPNORMAL);
+			b.Do();
+			ChSet("ScrollButtonLook", i, b.dst);
+		}
+//		SetXpColors("ButtonTextColor", 4, BP_PUSHBUTTON, PBS_NORMAL, TMT_TEXTCOLOR);
+		CtrlsImg::Set(CtrlsImg::I_SpU, Null);
+		CtrlsImg::Set(CtrlsImg::I_SpD, Null);
+		for(int i = 0; i < 4; i++) {
+			e.widget = XP_SPIN;
+			e.part = SPNP_UP;
+			e.state = UPS_NORMAL + i;
+			ChSet("SpinUpLook", i, RawToValue(e));
+			e.part = SPNP_DOWN;
+			ChSet("SpinDownLook", i, RawToValue(e));
+		}
+		ChSet("SpinWidth", FrameButtonWidth());
+		ChSet("LabelBoxTextColor", XpColor(XP_BUTTON, BP_GROUPBOX, GBS_NORMAL, TMT_TEXTCOLOR));
+		ChSet("LabelBoxColor", XpColor(XP_BUTTON, BP_GROUPBOX, GBS_NORMAL, TMT_BORDERCOLORHINT));
+
+		ChPainter(XpElementPainter);
+	}
+	else
+		ChInitWinClassic();
+}
+
+void ChInitUpp()
+{
+	CtrlImg::Reset();
+	CtrlsImg::Reset();
+}
+
+INITBLOCK {
+	ChRegister("detect", ChInitWin32Detect);
+	ChRegister("WinClassic", ChInitWinClassic);
+	ChRegister("U++", ChInitUpp);
+}
+
+#endif

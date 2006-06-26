@@ -1,5 +1,10 @@
 #include "CtrlLib.h"
 
+void EditField::CancelMode()
+{
+	keep_selection = false;
+}
+
 int EditField::GetTextCx(const wchar *txt, int n, bool password)
 {
 	FontInfo fi = font.Info();
@@ -135,6 +140,11 @@ bool EditField::GetSelection(int& l, int& h) const
 	return true;
 }
 
+bool EditField::IsSelection() const
+{
+	return anchor >= 0 && anchor != cursor;
+}
+
 void EditField::Finish(bool refresh)
 {
 	if(anchor > text.GetLength()) anchor = text.GetLength();
@@ -180,8 +190,10 @@ void EditField::Layout()
 
 void EditField::GotFocus()
 {
-	anchor = 0;
-	cursor = text.GetLength();
+	if(!keep_selection) {
+		anchor = 0;
+		cursor = text.GetLength();
+	}
 	Finish();
 }
 
@@ -194,8 +206,10 @@ void EditField::LostFocus()
 			if(s != text) text = s;
 		}
 	}
-	anchor = -1;
-	cursor = sc = 0;
+	if(!keep_selection) {
+		anchor = -1;
+		cursor = sc = 0;
+	}
 	Refresh();
 }
 
@@ -355,6 +369,84 @@ static inline bool IsWord(int c)
 	return IsLetter(c) || IsDigit(c);
 }
 
+void EditField::Undo()
+{
+	Swap(undotext, text);
+	Swap(undoanchor, anchor);
+	Swap(undocursor, cursor);
+	anchor = -1;
+	UpdateAction();
+	Finish();
+}
+
+void EditField::Cut()
+{
+	Copy();
+	RemoveSelection();
+	Action();
+	Finish();
+}
+
+void EditField::Paste()
+{
+	Insert(ReadClipboardUnicodeText());
+	Action();
+	Finish();
+}
+
+void EditField::Erase()
+{
+	if(!IsSelection())
+		SelectAll();
+	RemoveSelection();
+	Finish();
+}
+
+void EditField::SelectAll()
+{
+	SetSelection();
+	Finish();
+}
+
+void EditField::MenuBar(Bar& menu) {
+	menu.Add(t_("Undo"), THISBACK(Undo))
+		.Key(K_ALT_BACKSPACE)
+		.Key(K_CTRL_Z);
+	menu.Separator();
+	menu.Add(IsEditable() && IsSelection(),
+			t_("Cut"), CtrlImg::cut(), THISBACK(Cut))
+		.Key(K_SHIFT_DELETE)
+		.Key(K_CTRL_X);
+	menu.Add(IsSelection(),
+			t_("Copy"), CtrlImg::copy(), THISBACK(Copy))
+		.Key(K_CTRL_INSERT)
+		.Key(K_CTRL_C);
+	menu.Add(IsEditable()
+		#ifdef PLATFORM_WIN32
+			&& IsClipboardFormatAvailable(CF_TEXT)
+		#endif
+			,
+			t_("Paste"), CtrlImg::paste(), THISBACK(Paste))
+		.Key(K_SHIFT_INSERT)
+		.Key(K_CTRL_V);
+	menu.Add(IsEditable(),
+			t_("Erase"), CtrlImg::remove(), THISBACK(Erase))
+		.Key(K_DELETE);
+	menu.Separator();
+	menu.Add(GetLength(),
+			t_("Select all"), THISBACK(SelectAll))
+		.Key(K_CTRL_A);
+}
+
+
+void EditField::RightDown(Point p, dword keyflags)
+{
+	keep_selection = true;
+	MenuBar::Execute(THISBACK(MenuBar));
+	SetFocus();
+	keep_selection = false;
+}
+
 bool EditField::Key(dword key, int rep)
 {
 	int q;
@@ -401,23 +493,16 @@ bool EditField::Key(dword key, int rep)
 	switch(key) {
 	case K_CTRL_X:
 	case K_SHIFT_DELETE:
-		Copy();
-		RemoveSelection();
-		Action();
-		break;
+		Cut();
+		return true;
 	case K_CTRL_V:
 	case K_SHIFT_INSERT:
-		Insert(ReadClipboardUnicodeText());
-		Action();
+		Paste();
 		return true;
 	case K_CTRL_Z:
 	case K_ALT_BACKSPACE:
-		Swap(undotext, text);
-		Swap(undoanchor, anchor);
-		Swap(undocursor, cursor);
-		anchor = -1;
-		UpdateAction();
-		break;
+		Undo();
+		return true;
 	case K_BACKSPACE:
 	case K_SHIFT|K_BACKSPACE:
 		if(RemoveSelection()) {
@@ -533,6 +618,7 @@ void EditField::Reset()
 	initcaps = false;
 	maxlen = INT_MAX;
 	autosize = false;
+	keep_selection = false;
 }
 
 EditField& EditField::SetFont(Font _font)
@@ -630,6 +716,14 @@ bool EditIntSpin::Key(dword key, int repcnt)
 	return EditInt::Key(key, repcnt);
 }
 
+void EditIntSpin::MouseWheel(Point, int zdelta, dword)
+{
+	if(zdelta < 0)
+		Dec();
+	else
+		Inc();
+}
+
 EditDoubleSpin::EditDoubleSpin(double inc) : inc(inc) { Init(); }
 EditDoubleSpin::EditDoubleSpin(double min, double max, double inc) : EditDouble(min, max), inc(inc) { Init(); }
 
@@ -685,4 +779,12 @@ bool EditDoubleSpin::Key(dword key, int repcnt)
 	if(key == K_UP)   { Inc(); return true; }
 	if(key == K_DOWN) { Dec(); return true; }
 	return EditDouble::Key(key, repcnt);
+}
+
+void EditDoubleSpin::MouseWheel(Point, int zdelta, dword)
+{
+	if(zdelta < 0)
+		Dec();
+	else
+		Inc();
 }

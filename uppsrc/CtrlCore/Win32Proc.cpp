@@ -351,7 +351,10 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 		}
 		return 0L;
 	case WM_SETTINGCHANGE:
+	case 0x031A: // WM_THEMECHANGED
 		Draw::Win32UpdateSColors();
+		ChSetStyle(ChGetStyle());
+		RefreshLayoutDeep();
 		RefreshFrame();
 		break;
 	}

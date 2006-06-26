@@ -1,18 +1,20 @@
 void  ChPainter(void (*fn)(Draw& w, const Rect& r, const Value& v));
 void  ChSet(const char *id, int i, const Value& v);
 void  ChSet(const char *id, const Value& v);
+void  ChSet(const char *id, const char *ids);
 Value ChGet(const char *name, int i);
 Value ChGet(const char *name);
 
 void  Override(Iml& target, const char *prefixset, Iml& source, bool colored = true);
 
-void  ChRegister(const char *style, void (*fn)());
-void  ChRegister(void (*fn)());
+void   ChRegister(const char *style, void (*fn)());
+void   ChRegister(void (*fn)());
 
-void  ChSetStyle(const char *style);
+void   ChSetStyle(const char *style);
+String ChGetStyle();
 
-void  ChPaint(Draw& w, const Rect& r, const Value& element);
-void  ChPaint(Draw& w, int x, int y, int cx, int cy, const Value& element);
+void   ChPaint(Draw& w, const Rect& r, const Value& element);
+void   ChPaint(Draw& w, int x, int y, int cx, int cy, const Value& element);
 
 //private:
 void ChRegisterVar__(const char *name, int n,

@@ -8,16 +8,8 @@
 #pragma hdrstop
 #include "version.h"
 
-#define LNGFILE "wisapi.lng"
-#define LNGMODULE Web_wisapi_lng
-#define LANGUAGE LNG_CZECH
-#include <Core/lng_header.h>
-#define LNGFILE "wisapi.lng"
-#define LNGMODULE Web_wisapi_lng
-#define LANGUAGE LNG_CZECH
-#include <Core/lng_master.h>
-#define LANGUAGE LNG_ENGLISH
-#include <Core/lng_version.h>
+#define TFILE "wisapi.t"
+#include <Core/t.h>
 
 enum { DEFAULT_PORT = 1571 };
 
@@ -60,13 +52,13 @@ static void AddHeaders(HttpQuery& query, const char *h)
 			h++;
 }
 
-class CheckedSection
-{
+class CheckedSection {
 public:
-	CheckedSection() : lock(0) {}
+	CheckedSection() : lock(0) { InitializeCriticalSection(&section); }
+	~CheckedSection()          { DeleteCriticalSection(&section); }
 
-	void            Enter() { section.Enter(); AtomicInc(lock); }
-	void            Leave() { section.Leave(); AtomicDec(lock); }
+	void            Enter()    { EnterCriticalSection(&section); AtomicInc(lock); }
+	void            Leave()    { LeaveCriticalSection(&section); AtomicDec(lock); }
 
 	int             Get() const { return lock; }
 
@@ -74,15 +66,15 @@ public:
 	{
 	public:
 		Lock(CheckedSection& cs) : cs(cs) { cs.Enter(); }
-		~Lock()                              { cs.Leave(); }
+		~Lock()                           { cs.Leave(); }
 
 	private:
 		CheckedSection& cs;
 	};
 
 private:
-	CriticalSection section;
-	Atomic          lock;
+	CRITICAL_SECTION section;
+	Atomic           lock;
 };
 
 /*
@@ -420,10 +412,8 @@ void WIsapiClient::Connection::Status()
 	ISAPILOG("Connection::Status->OpenClient");
 	dword ticks = GetTickCount();
 	String response;
-	socket = ClientSocket(host, port);
-	ISAPILOG("Connection::Status->OpenClient, done opening socket");
-	if(!IsNull(socket))
-	{
+	ISAPILOG("Connection::Status->OpenClient, opening socket");
+	if(ClientSocket(socket, host, port)) {
 		ISAPILOG("Connection::Status->ClientSocket open, sending STAT");
 		socket.Write("STAT\n");
 		response = socket.ReadUntil('\n');
@@ -442,13 +432,12 @@ void WIsapiClient::Connection::Status()
 				is_error = false;
 				return;
 			}
-			status = s_(WIsapiClientConnStatusResponseError) + response;
+			status = t_("Invalid server response: ") + response;
 		}
 	}
-	else
-	{
+	else {
 		ISAPILOG("Connection::Status->ClientSocket failed to open, " << Socket::GetErrorText());
-		status = NFormat(s_(WIsapiClientConnStatusOpenError), host, port, Socket::GetErrorText());
+		status = NFormat(t_("Error opening socket %s:%d: %s"), host, port, Socket::GetErrorText());
 	}
 	is_error = true;
 	dword new_ticks = GetTickCount();
@@ -532,7 +521,7 @@ bool WIsapiClient::Connection::Run(int cid, const HttpQuery& new_query, EXTENSIO
 String WIsapiClient::Connection::RawRun(const HttpQuery& new_query, EXTENSION_CONTROL_BLOCK *ecb, int& data_length)
 {
 	CONNLOG("OpenClient");
-	if(IsNull(socket = ClientSocket(host, port)))
+	if(!ClientSocket(socket, host, port))
 		return Socket::GetErrorText();
 	CONNLOG(String() << "OpenClient->socket " << socket.GetNumber());
 	query = new_query;
@@ -555,7 +544,8 @@ String WIsapiClient::Connection::RawRun(const HttpQuery& new_query, EXTENSION_CO
 		trim--;
 	line.Trim(trim);
 	if(trim < 5 || memicmp(line, "HTTP/", 5))
-		return NFormat(s_(WIsapiClientConnRunError), HtmlTag("TT") / ToHtml(line));
+		return NFormat(t_("Invalid server response: %s\n"
+	"<br>...\n"), HtmlTag("TT") / ToHtml(line));
 
 	const char *p = line.Begin() + 5;
 	while(*p && *p != ' ')
@@ -787,11 +777,14 @@ dword WIsapiClient::Run(int cid, EXTENSION_CONTROL_BLOCK *ecb)
 
 	CheckedSection::Lock guard(client_lock);
 	if(connections.IsEmpty())
-		out << s_(WIsapiClientNoConnError)
-		<< HtmlLink(query.GetString("$$PATH") + "?configure") / s_(WIsapiClientNoConnConfigRef)
+		out << t_("Currently there are no servers "
+	"connected.\n"
+	"You can connect servers using ")
+		<< HtmlLink(query.GetString("$$PATH") + "?configure") / t_("the configuration page")
 		<< ".";
 	else
-		out << s_(WIsapiClientConnAllError);
+		out << t_("No connected server can process the "
+	"current request.");
 
 	ISAPILOG("WIsapiClient(" << cid << "):->error page: " << out);
 	out = GetHttpErrorPage(query, out, show_headers);
@@ -802,7 +795,7 @@ dword WIsapiClient::Run(int cid, EXTENSION_CONTROL_BLOCK *ecb)
 	return HSE_STATUS_SUCCESS;
 }
 
-static const char *Title() { return s_(WIsapiClientConfigTitle); }
+static const char *Title() { return t_("Web server connector configuration"); }
 
 Htmls WIsapiClient::Config(const HttpQuery& query)
 {
@@ -820,10 +813,10 @@ Htmls WIsapiClient::Body(String eng)
 {
 	Htmls body;
 	body
-		<< HtmlTag("SMALL") / s_(WIsapiClientConfigIsapiPath)
+		<< HtmlTag("SMALL") / t_("Library location: ")
 		<< HtmlTag("TT") / ToHtml(dll_filename) << "<BR>\n"
-		<< HtmlTag("SMALL") / (String() << s_(WIsapiClientConfigVersion)
-			<< WISAPI_VERSION << s_(WIsapiClientConfigReleaseDate)
+		<< HtmlTag("SMALL") / (String() << t_("Version: <B>")
+			<< WISAPI_VERSION << t_("</B>, release date: <B>")
 			<< WISAPI_DATE "</B><BR>\n" WISAPI_COPYRIGHT "<P>\n");
 
 	String s = cfg_query.GetString("CONFIGURE");
@@ -837,13 +830,13 @@ Htmls WIsapiClient::Body(String eng)
 	if(remote_admin)
 	{
 		menu
-			<< HtmlCell() / HtmlMenu(page == CONFIG, s_(WIsapiClientConfigConfiguration), cfg_url, 120)
+			<< HtmlCell() / HtmlMenu(page == CONFIG, t_("Configuration"), cfg_url, 120)
 			<< HtmlCell() / HtmlHardSpace(2);
 	}
 	else
 		page = STAT;
 	menu
-		<< HtmlCell() / HtmlMenu(page == STAT, s_(WIsapiClientConfigStatistics), cfg_url + "=s", 120)
+		<< HtmlCell() / HtmlMenu(page == STAT, t_("Statistics"), cfg_url + "=s", 120)
 //		<< HtmlCell() / HtmlHardSpace(2)
 //		<< HtmlCell() / HtmlMenu(page == SERV, "Služby", cfg_url + "=r", 120)
 	;
@@ -874,7 +867,7 @@ Htmls WIsapiClient::Configuration(String eng)
 //	content // must be the last one as Timing() and Servers() might modify some client data
 //		<< HtmlSimpleRow() << Commit();
 	if(!IsNull(cfg_error))
-		content = HtmlSimpleRow() / HtmlFontColor(LtRed) / (HtmlBig() / (s_(WIsapiClientConfigErrorRow) + HtmlBold() / cfg_error))
+		content = HtmlSimpleRow() / HtmlFontColor(LtRed) / (HtmlBig() / (t_("Error: ") + HtmlBold() / cfg_error))
 		+ HtmlSimpleRow() + content;
 	return HtmlTag("FORM").Attr("METHOD", "POST").Attr("ACTION", cfg_url) % HtmlIsapiTable() % content;
 }
@@ -886,8 +879,7 @@ Htmls WIsapiClient::English()
 		engstate = 1;
 	else if(!cfg_query.IsEmpty("CZECH"))
 		engstate = 0;
-	if(!IsNull(engstate) && CanWrite())
-	{
+	if(!IsNull(engstate) && CanWrite()) {
 		bool new_eng = !!engstate;
 		if(new_eng != isapi_english)
 		{
@@ -896,9 +888,9 @@ Htmls WIsapiClient::English()
 			SetLanguage(isapi_english ? LNG_ENGLISH : LNG_CZECH);
 		}
 	}
-	return HtmlSplitRow(HtmlBig() / (s_(WIsapiClientConfigEnglish)
-		+ HtmlFontColor(LtRed) / (isapi_english ? "english" : "èesky")),
-		HtmlButton(isapi_english ? "  Èesky " : " English ", isapi_english ? "CZECH" : "ENGLISH"));
+	return HtmlSplitRow(HtmlBig() / (t_("ISAPI library language: ")
+		+ HtmlFontColor(LtRed) / t_("english")),
+		HtmlButton(isapi_english ? "  Czech " : " Anglicky ", isapi_english ? "CZECH" : "ENGLISH"));
 }
 
 Htmls WIsapiClient::Logging()
@@ -917,9 +909,9 @@ Htmls WIsapiClient::Logging()
 			SaveConfig();
 		}
 	}
-	return HtmlSplitRow(HtmlBig() / (s_(WIsapiClientConfigLogFile)
-		+ HtmlFontColor(LtRed) / (log_isapi ? s_(WIsapiClientConfigLogYes) : s_(WIsapiClientConfigLogNo))),
-		HtmlButton(log_isapi ? s_(WIsapiClientConfigLogOff) : s_(WIsapiClientConfigLogOn), log_isapi ? "LOGOFF" : "LOGON"));
+	return HtmlSplitRow(HtmlBig() / (t_("Log-file: ")
+		+ HtmlFontColor(LtRed) / (log_isapi ? t_("yes") : t_("no"))),
+		HtmlButton(log_isapi ? t_("Disable") : t_("Enable"), log_isapi ? "LOGOFF" : "LOGON"));
 }
 
 Htmls WIsapiClient::ShowHeaders()
@@ -938,9 +930,9 @@ Htmls WIsapiClient::ShowHeaders()
 			SaveConfig();
 		}
 	}
-	return HtmlSplitRow(HtmlBig() / (s_(WIsapiClientConfigHeaders)
-		+ HtmlFontColor(LtRed) / (show_headers ? s_(WIsapiClientConfigLogYes) : s_(WIsapiClientConfigLogNo))),
-		HtmlButton(show_headers ? s_(WIsapiClientConfigLogOff) : s_(WIsapiClientConfigLogOn), show_headers ? "HDROFF" : "HDRON"));
+	return HtmlSplitRow(HtmlBig() / (t_("Show headers on error: ")
+		+ HtmlFontColor(LtRed) / (show_headers ? t_("yes") : t_("no"))),
+		HtmlButton(show_headers ? t_("Disable") : t_("Enable"), show_headers ? "HDROFF" : "HDRON"));
 }
 
 Htmls WIsapiClient::RemoteAdmin()
@@ -950,13 +942,16 @@ Htmls WIsapiClient::RemoteAdmin()
 	{
 		remote_admin = false;
 		SaveConfig();
-		return HtmlSplitRow(HtmlBig() / (s_(WIsapiClientConfigRemoteAdmin) + HtmlFontColor(LtRed) / s_(WIsapiClientConfigRemoteAdminOff)), Null);
+		return HtmlSplitRow(HtmlBig() / (t_("Remote administration: ") + HtmlFontColor(LtRed) / t_("off")), Null);
 	}
 	if(!cfg_query.IsEmpty("NOADMIN") && CanWrite())
-		return HtmlSplitRow(HtmlBig() / HtmlFontColor(LtRed) / (s_(WIsapiClientConfigRemoteAdminWarn)
-			+ cfg_filename + "."), HtmlButton(s_(WIsapiClientConfigRemoteAdminConfirm), "NOADMIN1"));
-	return HtmlSplitRow(HtmlBig() / (s_(WIsapiClientConfigRemoteAdmin) + HtmlFontColor(LtRed) / s_(WIsapiClientConfigRemoteAdminOn)),
-		HtmlButton(s_(WIsapiClientConfigRemoteAdminDisable), "NOADMIN"));
+		return HtmlSplitRow(HtmlBig() / HtmlFontColor(LtRed) / (t_("After confirmation the remote "
+	"administration option will be disabled. You can re-enable remote "
+	"administration by removing the line ADMIN=0 from the "
+	"configuration file ")
+			+ cfg_filename + "."), HtmlButton(t_(" Confirm "), "NOADMIN1"));
+	return HtmlSplitRow(HtmlBig() / (t_("Remote administration: ") + HtmlFontColor(LtRed) / t_("on")),
+		HtmlButton(t_("  Disable  "), "NOADMIN"));
 }
 
 Htmls WIsapiClient::Timing()
@@ -966,9 +961,9 @@ Htmls WIsapiClient::Timing()
 		isapi_timeout = cfg_query.GetInt("TIMEOUT", 1000, 60000, 1000);
 		SaveConfig();
 	}
-	return HtmlSplitRow(HtmlBig() / (s_(WIsapiClientConfigTimeout)),
+	return HtmlSplitRow(HtmlBig() / (t_("Internal timeout (msec):")),
 		HtmlEdit("TIMEOUT").Data(cfg_query.GetString("TIMEOUT", IntStr(isapi_timeout)))
-		+ "&nbsp;&nbsp;" + HtmlButton(s_(WIsapiClientConfigTimeoutSet), "SAVE_TIMEOUT"));
+		+ "&nbsp;&nbsp;" + HtmlButton(t_(" Commit "), "SAVE_TIMEOUT"));
 }
 
 /*
@@ -1003,7 +998,7 @@ static Htmls HtmlTableRow(const Htmls& host, const Htmls& state, const Htmls& mo
 	return HtmlRow().BgColor(c) % cells;
 }
 
-static const char *NoGenerators() { return s_(WIsapiClientConfigNoGen); }
+static const char *NoGenerators() { return t_("Currently no generators are connected."); }
 
 static Htmls NoGenMsg()
 {
@@ -1063,7 +1058,7 @@ Htmls WIsapiClient::Servers()
 	}
 
 	Htmls table;
-	table << HtmlTableRow(HtmlBold() / s_(WIsapiClientConfigGenerator), HtmlBold() / s_(WIsapiClientConfigState), "", Yellow);
+	table << HtmlTableRow(HtmlBold() / t_("Generator"), HtmlBold() / t_("Active state"), "", Yellow);
 
 	// output connection parameters
 	count = connections.GetCount();
@@ -1075,23 +1070,23 @@ Htmls WIsapiClient::Servers()
 		table << HtmlHidden("HOST" + IntStr(i), conn.raw_host) << "\n";
 		String status;
 		if(conn.is_busy)
-			status = s_(WIsapiClientConfigWorking) + conn.status;
+			status = t_("(working)") + conn.status;
 		else if(conn.is_error)
 			status = conn.status;
 		else
 			status = conn.status;
 		table << HtmlTableRow(conn.raw_host, status,
-			~HtmlSubmit(s_(WIsapiClientConfigRemove)).Name((const char *)("RMHOST" + IntStr(i))), White);
+			~HtmlSubmit(t_("Remove")).Name((const char *)("RMHOST" + IntStr(i))), White);
 	}
 
 	DUMP(cfg_query.GetString("NEW_HOST"));
 	DUMP(cfg_default_host);
 	Htmls new_host;
-	new_host << s_(WIsapiClientConfigAdd) << HtmlEdit("NEW_HOST").Data(cfg_query.GetString("NEW_HOST", cfg_default_host))
-		<< "  " << HtmlSubmit(s_(WIsapiClientConfigAddButton)).Name("ADDHOST");
+	new_host << t_("Add generator: ") << HtmlEdit("NEW_HOST").Data(cfg_query.GetString("NEW_HOST", cfg_default_host))
+		<< "  " << HtmlSubmit(t_("  Insert  ")).Name("ADDHOST");
 
 	Htmls s;
-	s << HtmlSimpleRow() / HtmlBig() / s_(WIsapiClientConfigGenRunnnig);
+	s << HtmlSimpleRow() / HtmlBig() / t_("Active generators");
 	if(count > 0)
 		s << HtmlSimpleRow()
 		% (HtmlTable().CellSpacing(0).CellPadding(0)
@@ -1105,8 +1100,8 @@ Htmls WIsapiClient::Servers()
 Htmls WIsapiClient::Login()
 {
 	Htmls s;
-	s << HtmlSimpleRow() / HtmlBig() / s_(WIsapiClientConfigWritePwd)
-		<< HtmlSplitRow(s_(WIsapiClientConfigPassword), ~HtmlInput("PASSWORD").Name("PASSWORD").Data(cfg_query.GetString("PASSWORD", Null)));
+	s << HtmlSimpleRow() / HtmlBig() / t_("Admin password")
+		<< HtmlSplitRow(t_("Password:"), ~HtmlInput("PASSWORD").Name("PASSWORD").Data(cfg_query.GetString("PASSWORD", Null)));
 	return s;
 }
 
@@ -1148,27 +1143,27 @@ Htmls WIsapiClient::Statistics()
 	int id = fround(duration);
 	String dd;
 	if(id < 60)
-		dd << id << s_(WIsapiClientConfigSec);
+		dd << id << t_(" sec");
 	else if(id < 60 * 60)
-		dd << id / 60 << s_(WIsapiClientConfigMin) << id % 60 << s_(WIsapiClientConfigSec);
+		dd << id / 60 << t_(" min, ") << id % 60 << t_(" hrs, ");
 	else
 	{
 		int hours = ffloor(duration / 3600);
 		id = fround(duration - 3600.0 * hours);
-		dd << hours << s_(WIsapiClientConfigHours) << id / 60 << s_(WIsapiClientConfigMin) << id % 60 << s_(WIsapiClientConfigSec);
+		dd << hours << t_(" hrs, ") << id / 60 << t_(" min, ") << id % 60 << t_(" sec");
 	}
 
 	content
-		<< HtmlSimpleRow() % HtmlBig() / s_(WIsapiClientConfigStatGlobal)
-		<< HtmlValueRow(s_(WIsapiClientConfigRunTime), run_time)
-		<< HtmlValueRow(s_(WIsapiClientConfigElapsedTime), dd)
-		<< HtmlValueRow(s_(WIsapiClientConfigHitCount), hit_count)
-		<< HtmlValueRow(s_(WIsapiClientConfigErrorCount), error_count)
-		<< HtmlValueRow(s_(WIsapiClientConfigDataLength), FormatDouble(total_bytes * 1e-3, 4, FD_REL))
-		<< HtmlValueRow(s_(WIsapiClientConfigResponse), FormatDouble(total_msecs / max<double>(hit_count - error_count, 1), 4, FD_REL))
-		<< HtmlValueRow(s_(WIsapiClientConfigMaxResponse), max_msecs)
+		<< HtmlSimpleRow() % HtmlBig() / t_("Overall statistics")
+		<< HtmlValueRow(t_("Server started:"), run_time)
+		<< HtmlValueRow(t_("Running time:"), dd)
+		<< HtmlValueRow(t_("Hit count:"), hit_count)
+		<< HtmlValueRow(t_("Error count:"), error_count)
+		<< HtmlValueRow(t_("Transferred data (KB):"), FormatDouble(total_bytes * 1e-3, 4, FD_REL))
+		<< HtmlValueRow(t_("Average response (msecs):"), FormatDouble(total_msecs / max<double>(hit_count - error_count, 1), 4, FD_REL))
+		<< HtmlValueRow(t_("Slowest response (msecs):"), max_msecs)
 		<< HtmlSimpleRow()
-		<< HtmlSimpleRow() % HtmlBig() / s_(WIsapiClientConfigGenStat)
+		<< HtmlSimpleRow() % HtmlBig() / t_("Statistics by generators")
 		<< HtmlSimpleRow();
 
 	int count = connections.GetCount();
@@ -1178,11 +1173,11 @@ Htmls WIsapiClient::Statistics()
 	{
 		Htmls table;
 		table << HtmlRow().BgColor(Yellow)
-			% HtmlStatGenRow(s_(WIsapiClientConfigGenerator),
-				s_(WIsapiClientConfigRequests),
-				s_(WIsapiClientConfigDataSize),
-				s_(WIsapiClientConfigResponseTime),
-				s_(WIsapiClientConfigResponseMaxTime), s_(WIsapiClientConfigErrors), HtmlBold());
+			% HtmlStatGenRow(t_("Generator"),
+				t_("Requests"),
+				t_("Data (KB)"),
+				t_("Response (msec)"),
+				t_("Max (msec)"), t_("Errors"), HtmlBold());
 		for(int i = 0; i < count; i++)
 		{
 			Connection& conn = connections[i];
@@ -1208,11 +1203,13 @@ bool WIsapiClient::CanWrite()
 		{
 			DUMP(cfg_query.GetString("PASSWORD"));
 			cfg_can_write = 0;
-			cfg_error = s_(WIsapiClientConfigWritePwdError);
+			cfg_error = t_("To commit changes you must "
+	"enter the password.");
 		}
 		else
 			if(!(cfg_can_write = (pwd == ToLower(cfg_password))))
-				cfg_error = s_(WIsapiClientConfigBadPwdError);
+				cfg_error = t_("Password invalid; check keyboard "
+	"settings.");
 	}
 	return !!cfg_can_write;
 }
@@ -1282,7 +1279,8 @@ void WIsapiClient::AddHost(const String& host)
 {
 	CheckedSection::Lock guard(client_lock);
 	if(FindFieldIndex(connections, &Connection::raw_host, host) >= 0)
-		throw Exc(NFormat(s_(WIsapiClientConfigGenAlreadyPresent), host));
+		throw Exc(NFormat(t_("Generator '%s' is already "
+	"connected."), host));
 	connections.Add(new Connection(*this, host));
 	SaveConfig();
 }
@@ -1292,11 +1290,12 @@ void WIsapiClient::RemoveHost(const String& host)
 	CheckedSection::Lock guard(client_lock);
 	int x = FindFieldIndex(connections, &Connection::raw_host, host);
 	if(x < 0)
-		throw Exc(NFormat(s_(WIsapiClientConfigServerNotFound), host));
+		throw Exc(NFormat(t_("Server '%s' not found."), host));
 	{
 		CheckedSection::Lock conn_guard(connections[x].conn_lock);
 		if(connections[x].is_busy)
-			throw Exc(NFormat(s_(WIsapiClientConfigServerBusy), host));
+			throw Exc(NFormat(t_("Cannot disconnect server '%s' "
+	"while it's processing a request."), host));
 	}
 	connections.Remove(x);
 }
@@ -1318,7 +1317,7 @@ void WIsapiClient::SaveConfig()
 		cfg << "HOST=" << connections[i].raw_host << '\n';
 	DeleteFile(cfg_filename);
 	if(!SaveFile(cfg_filename, cfg))
-		throw Exc(NFormat(s_(WIsapiClientConfigSaveConfigError), cfg_filename));
+		throw Exc(NFormat(t_("Error saving file '%s'."), cfg_filename));
 	SetFileAttributes(cfg_filename, FILE_ATTRIBUTE_HIDDEN);
 }
 
@@ -1375,8 +1374,7 @@ extern "C" BOOL WINAPI GetExtensionVersion(HSE_VERSION_INFO *pVer)
 
 extern "C" BOOL WINAPI DllMain(HANDLE module, DWORD reason, LPVOID lpReserved)
 {
-	if(reason == DLL_PROCESS_ATTACH)
-	{
+	if(reason == DLL_PROCESS_ATTACH) {
 		SetLanguage(LNG_ENGLISH);
 		SetDefaultCharset(CHARSET_WIN1250);
 		dll_module = (HINSTANCE)module;
@@ -1389,18 +1387,15 @@ extern "C" BOOL WINAPI DllMain(HANDLE module, DWORD reason, LPVOID lpReserved)
 		client = new WIsapiClient;
 		ISAPILOG("WISAPI DllMain/DLL_PROCESS_ATTACH: done");
 	}
-	else if(reason == DLL_PROCESS_DETACH)
-	{
+	else if(reason == DLL_PROCESS_DETACH) {
 		ISAPILOG("WISAPI DllMain/DLL_PROCESS_DETACH: destroying WIsapiClient object");
 		client.Clear();
 		ISAPILOG("WISAPI DllMain/DLL_PROCESS_DETACH: done");
 	}
-	else if(reason == DLL_THREAD_ATTACH)
-	{
+	else if(reason == DLL_THREAD_ATTACH) {
 		ISAPILOG("WISAPI DllMain/DLL_THREAD_ATTACH");
 	}
-	else if(reason == DLL_THREAD_DETACH)
-	{
+	else if(reason == DLL_THREAD_DETACH) {
 		ISAPILOG("WISAPI DllMain/DLL_THREAD_DETACH");
 	}
 	return TRUE;

@@ -389,7 +389,7 @@ private:
 	void    SetFocusWnd();
 	void    KillFocusWnd();
 
-	void    SyncLayout(bool force = false);
+	void    SyncLayout(int force = 0);
 	bool    AddScroll(const Rect& sr, int dx, int dy);
 	void    ScrollRefresh(const Rect& r, int dx, int dy);
 	void    SyncScroll();
@@ -774,7 +774,8 @@ public:
 	bool        InView() const                           { return !inframe; }
 	LogPos      GetPos() const                           { return pos; }
 
-	void        RefreshLayout()                          { SyncLayout(true); }
+	void        RefreshLayout()                          { SyncLayout(1); }
+	void        RefreshLayoutDeep()                      { SyncLayout(2); }
 	void        RefreshParentLayout()                    { if(parent) parent->RefreshLayout(); }
 
 	Ctrl&       LeftPos(int a, int size = STDSIZE);

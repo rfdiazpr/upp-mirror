@@ -5,6 +5,7 @@ public:
 	virtual void  LeftDown(Point p, dword keyflags);
 	virtual void  MouseMove(Point p, dword keyflags);
 	virtual void  LeftDouble(Point p, dword keyflags);
+	virtual void  RightDown(Point p, dword keyflags);
 	virtual Image CursorImage(Point p, dword keyflags);
 	virtual bool  Key(dword key, int rep);
 	virtual void  GotFocus();
@@ -12,6 +13,7 @@ public:
 	virtual Size  GetMinSize() const;
 	virtual void  SetData(const Value& data);
 	virtual Value GetData() const;
+	virtual void CancelMode();
 
 protected:
 	WString    text;
@@ -33,7 +35,8 @@ protected:
 	bool       password:1;
 	bool       autoformat:1;
 	bool       initcaps:1;
-	bool       clickselect;
+	bool       keep_selection:1;
+	bool       clickselect:1;
 
 	int     GetTextCx(const wchar *text, int n, bool password);
 	void    Paints(Draw& w, int& x, int fcy, const wchar *&txt,
@@ -46,6 +49,12 @@ protected:
 	void    DoAutoFormat();
 	bool    HasBorder();
 	int     GetTy();
+	void    Undo();
+	void    Cut();
+	void    Paste();
+	void    Erase();
+	void    SelectAll();
+	void    MenuBar(Bar& menu);
 
 public:
 	static  int   GetStdHeight(Font font = StdFont());
@@ -64,6 +73,7 @@ public:
 
 	void    SetSelection(int l = 0, int h = INT_MAX);
 	bool    GetSelection(int& l, int& h) const;
+	bool    IsSelection() const;
 	bool    RemoveSelection();
 	void    Copy();
 
@@ -95,6 +105,8 @@ public:
 	CharFilter     GetFilter() const         { return filter; }
 	const Convert& GetConvert() const        { return *convert; }
 	Font           GetFont() const           { return font; }
+
+	typedef EditField CLASSNAME;
 
 	EditField();
 	virtual ~EditField();
@@ -168,6 +180,11 @@ public:
 };
 
 class EditIntSpin : public EditInt {
+public:
+	virtual void MouseWheel(Point p, int zdelta, dword keyflags);
+	virtual bool Key(dword key, int repcnt);
+
+
 protected:
 	SpinButtons sb;
 
@@ -176,17 +193,28 @@ protected:
 	void   Init();
 
 public:
+	EditIntSpin&    ShowSpin(bool s = true)   { sb.Show(s); return *this; }
+
 	EditIntSpin();
 	EditIntSpin(int min, int max);
 	virtual ~EditIntSpin();
-
-	virtual bool    Key(dword key, int repcnt);
-
-	EditIntSpin&    ShowSpin(bool s = true)   { sb.Show(s); return *this; }
 };
 
 class EditDoubleSpin : public EditDouble
 {
+public:
+	virtual void MouseWheel(Point p, int zdelta, dword keyflags);
+	virtual bool Key(dword key, int repcnt);
+
+protected:
+	void            Inc();
+	void            Dec();
+	void            Init();
+
+private:
+	SpinButtons     spin;
+	double          inc;
+
 public:
 	typedef EditDoubleSpin CLASSNAME;
 	EditDoubleSpin(double inc = 0.1);
@@ -197,17 +225,6 @@ public:
 	double          GetInc() const            { return inc; }
 
 	EditDoubleSpin& ShowSpin(bool s = true)   { spin.Show(s); return *this; }
-
-	virtual bool    Key(dword key, int repcnt);
-
-protected:
-	void            Inc();
-	void            Dec();
-	void            Init();
-
-private:
-	SpinButtons     spin;
-	double          inc;
 };
 
 class EditDoubleNotNullSpin : public EditDoubleSpin

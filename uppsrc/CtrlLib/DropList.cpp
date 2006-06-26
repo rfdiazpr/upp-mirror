@@ -247,6 +247,11 @@ bool DropList::Key(dword k, int) {
 	return true;
 }
 
+void DropList::MouseWheel(Point, int zdelta, dword)
+{
+	Change(zdelta < 0 ? 1 : -1);
+}
+
 void DropList::Drop() {
 	if(IsReadOnly()) return;
 	if(dropfocus)

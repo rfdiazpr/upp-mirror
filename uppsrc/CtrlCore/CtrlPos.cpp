@@ -132,7 +132,7 @@ Size Ctrl::GetMaxSize() const {
 	return GetWorkArea().Size();
 }
 
-void Ctrl::SyncLayout(bool force)
+void Ctrl::SyncLayout(int force)
 {
 	LLOG("SyncLayout " << Name() << " size: " << GetSize());
 	LOGBEGIN();
@@ -147,11 +147,11 @@ void Ctrl::SyncLayout(bool force)
 			refresh = true;
 		}
 	}
-	if(oview.Size() != view.Size()) {
+	if(oview.Size() != view.Size() || force > 1) {
 		for(Ctrl *q = GetFirstChild(); q; q = q->next) {
 			q->rect = q->CalcRect(rect, view);
 			LLOG("Layout set rect " << q->Name() << " " << q->rect);
-			q->SyncLayout();
+			q->SyncLayout(force > 1 ? force : 0);
 		}
 		Refresh();
 	}

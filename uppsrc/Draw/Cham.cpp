@@ -51,6 +51,14 @@ void ChSet(const char *name, const Value& val)
 		ChSet(name, i, val);
 }
 
+void  ChSet(const char *id, const char *ids)
+{
+	VectorMap<String, ChVar>& var = chVar();
+	ChVar& v = var.Get(id);
+	for(int i = 0; i < v.count; i++)
+		ChSet(id, i, ChGet(ids, i));
+}
+
 Value ChGet(const char *name, int i)
 {
 	VectorMap<String, ChVar>& var = chVar();
@@ -102,8 +110,8 @@ void StdChPainter(Draw& w, const Rect& r, const Value& v)
 		w.DrawImage(sz.cx - p.x, sz.cy - p.y, b, RectC(isz.cx - p.x, isz.cy - p.y, p.x, p.y));
 		w.DrawImage(p.x, 0, sz.cx - 2 * p.x, p.y, b, RectC(p.x, 0, isz.cx - 2 * p.x, p.y));
 		w.DrawImage(p.x, sz.cy - p.y, sz.cx - 2 * p.x, p.y, b, RectC(p.x, isz.cy - p.y, isz.cx - 2 * p.x, p.y));
-		w.DrawImage(0, p.y, p.x, sz.cy - 2 * p.y, b, RectC(0, p.y, p.y, isz.cy - 2 * p.y));
-		w.DrawImage(sz.cx - p.x, p.y, p.x, sz.cy - 2 * p.y, b, RectC(isz.cx - p.x, p.y, p.y, isz.cy - 2 * p.y));
+		w.DrawImage(0, p.y, p.x, sz.cy - 2 * p.y, b, RectC(0, p.y, p.x, isz.cy - 2 * p.y));
+		w.DrawImage(sz.cx - p.x, p.y, p.x, sz.cy - 2 * p.y, b, RectC(isz.cx - p.x, p.y, p.x, isz.cy - 2 * p.y));
 		w.DrawImage(p.x, p.y, sz.cx - 2 * p.x, sz.cy - 2 * p.y, b,
 		            RectC(p.x, p.y, isz.cx - 2 * p.x, isz.cy - 2 * p.y));
 		w.End();
@@ -119,6 +127,8 @@ static void sChSync(const String& s)
 	}
 }
 
+String chStyle;
+
 void ChSetStyle(const char *style)
 {
 	ChReset();
@@ -129,6 +139,12 @@ void ChSetStyle(const char *style)
 	for(int i = 0; i < s.GetCount(); i++)
 		sChSync(s[i]);
 	sChSync(".");
+	chStyle = style;
+}
+
+String ChGetStyle()
+{
+	return chStyle;
 }
 
 typedef void (*ChPainterFn)(Draw& w, const Rect& r, const Value& v);

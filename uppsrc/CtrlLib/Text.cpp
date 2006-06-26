@@ -623,6 +623,7 @@ void TextCtrl::StdBar(Bar& menu) {
 	menu.Add(IsEditable() && IsSelection(),
 			t_("Erase"), CtrlImg::remove(), THISBACK(DoRemoveSelection))
 		.Key(K_DELETE);
+	menu.Separator();
 	menu.Add(GetLength(),
 			t_("Select all"), THISBACK(SelectAll))
 		.Key(K_CTRL_A);

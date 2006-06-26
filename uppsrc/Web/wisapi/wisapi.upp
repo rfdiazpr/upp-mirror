@@ -2,14 +2,14 @@ uses
 	Web,
 	TCore;
 
-link(MAIN DLL) "/DEF:wisapi.def";
+link(MAIN DLL) /DEF:wisapi.def;
 
-link(!DEBUG) "/MAP";
+link(!DEBUG) /MAP;
 
 file
 	version.h,
+	wisapi.t charset "UTF-8",
 	wisapi.cpp,
-	wisapi.lng,
 	wisapi.def,
 	Info readonly separator,
 	COPYING,
@@ -19,6 +19,6 @@ file
 mainconfig
 	"" = "DLL MT";
 
-custom "pre-link",
+custom() "pre-link",
 	"restserv w3svc",
 	"";

@@ -125,7 +125,8 @@ void AlphaBlend(RGBA *t, const RGBA *s, int len, byte const_alpha, Color color)
 				t++;
 			}
 		}
-		else {
+		else
+		if(const_alpha > 0) {
 			int ca = const_alpha + (const_alpha >> 7);
 			while(s < e) {
 				int alpha = (ca * s->a) >> 8;

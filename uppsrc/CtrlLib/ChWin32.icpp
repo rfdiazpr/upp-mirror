@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+#define LLOG(x) // LOG(x)
+
 #define IMAGECLASS CtrlsImg
 #define IMAGEFILE <CtrlLib/Ctrls.iml>
 #include <Draw/iml_source.h>
@@ -233,18 +235,48 @@ struct ButtonDecomposer {
 			}
 			Fill(p + x, RGBAZero(), xx - x);
 		}
-		if(aa[0] != aa[1] || aa[3] != aa[4]) {//TODO: XP unsymetric...
-			for(int y = 0; y < sz.cy; y++) {
-				RGBA *l = b[y];
-				for(int x = 0; x < sz.cx / 2; x++)
-					l[sz.cx - x - 1] = l[x];
-			}
-		}
 		Interpolate(b, Rect(a, a, sz.cx - a, sz.cy - a));
 		b.SetHotSpot(Point(a, a));
 		dst = b;
 	}
 };
+
+Image Unglyph(const Image& m)
+{
+	ButtonDecomposer b;
+	b.src = m;
+	b.Do();
+	return b.dst;
+}
+
+Image VertBlend(Image img1, Image img2, int y0, int y1)
+{
+	Size sz = img1.GetSize();
+	Size sz2 = img2.GetSize();
+	sz.cx = min(sz.cx, sz2.cx);
+	sz.cy = min(sz.cy, sz2.cy);
+	ImageBuffer b(sz);
+	for(int y = 0; y < sz.cy; y++)
+		if(y >= y1)
+			memcpy(b[y], img2[y], sz.cx * sizeof(RGBA));
+		else {
+			memcpy(b[y], img1[y], sz.cx * sizeof(RGBA));
+			if(y >= y0 && y1 > y0)
+				AlphaBlend(b[y], img2[y], sz.cx, 255 * (y - y0) / (y1 - y0));
+		}
+	return b;
+}
+
+Image HorzSymm(Image src) {
+	ImageBuffer b(src);
+	Size sz = b.GetSize();
+	for(int y = 0; y < sz.cy; y++) {
+		RGBA *l = b[y];
+		for(int x = 0; x < sz.cx / 2; x++)
+			l[sz.cx - x - 1] = l[x];
+	}
+	return b;
+}
 
 Color XpColor(int widget, int part, int state, int type)
 {
@@ -288,9 +320,7 @@ void SetXpColors(const char *chcolor, int n, int widget, int part, int state, in
 
 void ChInitWin()
 {
-	CtrlImg::Reset();
-	CtrlsImg::Reset();
-
+	LLOG("ChInitWin");
 	CtrlImg::Set(CtrlImg::I_information, Win32Icon(IDI_INFORMATION));
 	CtrlImg::Set(CtrlImg::I_question, Win32Icon(IDI_QUESTION));
 	CtrlImg::Set(CtrlImg::I_exclamation, Win32Icon(IDI_EXCLAMATION));
@@ -301,6 +331,7 @@ void ChInitWin()
 
 void ChInitWinClassic()
 {
+	LLOG("ChInitWinClassic");
 	ChInitWin();
 	Ctrl::SetXPStyle(false);
 	Override(CtrlsImg::Iml(), "Wcsw_;Wco_;Wc_;Wcb_;Wca_", CtrlsImg::Iml());
@@ -310,101 +341,113 @@ void ChInitWinClassic()
 	Color wc = Blend(SColorFace(), SColorPaper(), 170);
 	ChSet("ScrollBarHorzUpper", wc);
 	ChSet("ScrollBarHorzUpper", CTRL_PRESSED, SColorText());
+	ChSet("ScrollBarHorzThumb", "ScrollButtonLook");
 	ChSet("ScrollBarHorzLower", wc);
 	ChSet("ScrollBarHorzLower", CTRL_PRESSED, SColorText());
 	ChSet("ScrollBarVertUpper", wc);
 	ChSet("ScrollBarVertUpper", CTRL_PRESSED, SColorText());
+	ChSet("ScrollBarVertThumb", "ScrollButtonLook");
 	ChSet("ScrollBarVertLower", wc);
 	ChSet("ScrollBarVertLower", CTRL_PRESSED, SColorText());
-
 
 	ChSet("ButtonPressOffsetFlag", 1);
 	ChSet("ButtonMonoColor", SColorText());
 	ChSet("LabelBoxTextColor", SColorText());
 }
 
+struct chCtrlsImg {
+	int id;
+	int count;
+	int widget;
+	int part;
+	int state;
+};
+
+static chCtrlsImg sImgs[] = {
+	{ CtrlsImg::I_S0, 4, XP_BUTTON, BP_RADIOBUTTON, RBS_UNCHECKEDNORMAL },
+	{ CtrlsImg::I_S1, 4, XP_BUTTON, BP_RADIOBUTTON, RBS_CHECKEDNORMAL },
+	{ CtrlsImg::I_O0, 4, XP_BUTTON, BP_CHECKBOX, CBS_UNCHECKEDNORMAL },
+	{ CtrlsImg::I_O1, 4, XP_BUTTON, BP_CHECKBOX, CBS_CHECKEDNORMAL },
+	{ CtrlsImg::I_O2, 4, XP_BUTTON, BP_CHECKBOX, CBS_MIXEDNORMAL },
+};
+
+struct chLooks {
+	const char *id;
+	int   count;
+	int   widget;
+	int   part;
+	int   state;
+};
+
+static chLooks sLooks[] = {
+	{ "ButtonLook", 4, XP_BUTTON, BP_PUSHBUTTON, 1 },
+	{ "OkButtonLook", 4, XP_BUTTON, BP_PUSHBUTTON, 1 },
+	{ "ScrollBarHorzUpper", 4, XP_SCROLLBAR, SBP_LOWERTRACKHORZ, 1 },
+	{ "ScrollBarHorzThumb", 4, XP_SCROLLBAR, SBP_THUMBBTNHORZ, 1 },
+	{ "ScrollBarHorzLower", 4, XP_SCROLLBAR, SBP_UPPERTRACKHORZ, 1 },
+	{ "ScrollBarVertUpper", 4, XP_SCROLLBAR, SBP_LOWERTRACKVERT, 1 },
+	{ "ScrollBarVertThumb", 4, XP_SCROLLBAR, SBP_THUMBBTNVERT, 1 },
+	{ "ScrollBarVertLower", 4, XP_SCROLLBAR, SBP_UPPERTRACKVERT, 1 },
+	{ "ScrollBarUp", 4, XP_SCROLLBAR, SBP_ARROWBTN, ABS_UPNORMAL },
+	{ "ScrollBarDown", 4, XP_SCROLLBAR, SBP_ARROWBTN, ABS_DOWNNORMAL },
+	{ "ScrollBarLeft", 4, XP_SCROLLBAR, SBP_ARROWBTN, ABS_LEFTNORMAL },
+	{ "ScrollBarRight", 4, XP_SCROLLBAR, SBP_ARROWBTN, ABS_RIGHTNORMAL },
+	{ "SpinUpLook", 4, XP_SPIN, SPNP_UP, 1 },
+	{ "SpinDownLook", 4, XP_SPIN, SPNP_DOWN, 1 },
+};
+
 void ChInitWin32Detect()
 {
 	ChInitWin();
 	if(XpWidget(XP_BUTTON)) {
+		LLOG("XP theme !");
 		TIMING("XPTheme");
 		Ctrl::SetXPStyle(true);
 		Override(CtrlsImg::Iml(), "", CtrlsImg::Iml());
-		XpElement e;
 		ChSet("EditFieldIsThin", 1);
-		SetXpImages(CtrlsImg::I_S0, 4, XP_BUTTON, BP_RADIOBUTTON, RBS_UNCHECKEDNORMAL);
-		SetXpImages(CtrlsImg::I_S1, 4, XP_BUTTON, BP_RADIOBUTTON, RBS_CHECKEDNORMAL);
-		SetXpImages(CtrlsImg::I_O0, 4, XP_BUTTON, BP_CHECKBOX, CBS_UNCHECKEDNORMAL);
-		SetXpImages(CtrlsImg::I_O1, 4, XP_BUTTON, BP_CHECKBOX, CBS_CHECKEDNORMAL);
-		SetXpImages(CtrlsImg::I_O2, 4, XP_BUTTON, BP_CHECKBOX, CBS_MIXEDNORMAL);
+		for(chCtrlsImg *m = sImgs; m < sImgs + __countof(sImgs); m++)
+			SetXpImages(m->id, m->count, m->widget, m->part, m->state);
+		XpElement e;
+		for(chLooks *l = sLooks; l < sLooks + __countof(sLooks); l++)
+			for(int i = 0; i < l->count; i++) {
+				e.widget = l->widget;
+				e.part = l->part;
+				e.state = l->state + i;
+				ChSet(l->id, i, RawToValue(e));
+			}
 		ChSet("ScrollBarUpImg", Null);
 		ChSet("ScrollBarDownImg", Null);
 		ChSet("ScrollBarLeftImg", Null);
 		ChSet("ScrollBarRightImg", Null);
-		for(int i = 0; i < 4; i++) {
-			e.state = i + 1;
-
-			e.widget = XP_BUTTON;
-			e.part = BP_PUSHBUTTON;
-			ChSet("ButtonLook", i, RawToValue(e));
-			ChSet("OkButtonLook", i, RawToValue(e));
-
-			e.widget = XP_SCROLLBAR;
-			e.part = SBP_LOWERTRACKHORZ;
-			ChSet("ScrollBarHorzUpper", i, RawToValue(e));
-			e.part = SBP_THUMBBTNHORZ;
-			ChSet("ScrollBarHorzThumb", i, RawToValue(e));
-			e.part = SBP_UPPERTRACKHORZ;
-			ChSet("ScrollBarHorzLower", i, RawToValue(e));
-			e.part = SBP_LOWERTRACKVERT;
-			ChSet("ScrollBarVertUpper", i, RawToValue(e));
-			e.part = SBP_THUMBBTNVERT;
-			ChSet("ScrollBarVertThumb", i, RawToValue(e));
-			e.part = SBP_UPPERTRACKVERT;
-			ChSet("ScrollBarVertLower", i, RawToValue(e));
-			e.part = SBP_ARROWBTN;
-			e.state = i + ABS_UPNORMAL;
-			ChSet("ScrollBarUp", i, RawToValue(e));
-			e.state = i + ABS_DOWNNORMAL;
-			ChSet("ScrollBarDown", i, RawToValue(e));
-			e.state = i + ABS_LEFTNORMAL;
-			ChSet("ScrollBarLeft", i, RawToValue(e));
-			e.state = i + ABS_RIGHTNORMAL;
-			ChSet("ScrollBarRight", i, RawToValue(e));
-		}
+		ChSet("SpinUpImg", Null);
+		ChSet("SpinDownImg", Null);
+		ChSet("ScrollBarVertThumbImg", XpImage(XP_SCROLLBAR, SBP_GRIPPERVERT, 1));
+		ChSet("ScrollBarHorzThumbImg", XpImage(XP_SCROLLBAR, SBP_GRIPPERHORZ, 1));
 		e.widget = XP_BUTTON;
 		e.part = BP_PUSHBUTTON;
 		e.state = PBS_DEFAULTED;
 		ChSet("OkButtonLook", 0, RawToValue(e));
 		for(int i = 0; i < 4; i++) {
-			ButtonDecomposer b;
 			Color paper = i == 3 ? SColorFace : SColorPaper;
-			b.src = XpImage(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL + i, paper);
-			b.Do();
+			Image m = Unglyph(XpImage(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL + i, paper));
 			if(XpInt(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL + i, TMT_BORDERSIZE) == 0) {
-				Image h = CreateImage(b.dst.GetSize() + 2, paper);
-				Copy(h, Point(1, 1), b.dst, b.dst.GetSize());
-				b.dst = h;
+				Image h = CreateImage(m.GetSize() + 2, paper);
+				Copy(h, Point(1, 1), HorzSymm(m), m.GetSize());
+				m = h;
 			}
-			ChSet("EdgeButtonLook", i, b.dst);
-			b.src = XpImage(XP_SCROLLBAR, SBP_ARROWBTN, i + ABS_UPNORMAL);
-			b.Do();
-			ChSet("ScrollButtonLook", i, b.dst);
-		}
-//		SetXpColors("ButtonTextColor", 4, BP_PUSHBUTTON, PBS_NORMAL, TMT_TEXTCOLOR);
-		CtrlsImg::Set(CtrlsImg::I_SpU, Null);
-		CtrlsImg::Set(CtrlsImg::I_SpD, Null);
-		for(int i = 0; i < 4; i++) {
-			e.widget = XP_SPIN;
-			e.part = SPNP_UP;
-			e.state = UPS_NORMAL + i;
-			ChSet("SpinUpLook", i, RawToValue(e));
-			e.part = SPNP_DOWN;
-			ChSet("SpinDownLook", i, RawToValue(e));
+			ChSet("EdgeButtonLook", i, m);
+			m = Unglyph(XpImage(XP_SCROLLBAR, SBP_ARROWBTN, i + ABS_UPNORMAL, paper));
+			Size msz = m.GetSize();
+			ChSet("ScrollButtonLook", i,
+			      VertBlend(m, Unglyph(XpImage(XP_SCROLLBAR, SBP_ARROWBTN, i + ABS_DOWNNORMAL,
+			                                   paper)),
+			                msz.cy / 3, msz.cy * 2 / 3));
 		}
 		ChSet("SpinWidth", FrameButtonWidth());
 		ChSet("LabelBoxTextColor", XpColor(XP_BUTTON, BP_GROUPBOX, GBS_NORMAL, TMT_TEXTCOLOR));
 		ChSet("LabelBoxColor", XpColor(XP_BUTTON, BP_GROUPBOX, GBS_NORMAL, TMT_BORDERCOLORHINT));
+
+//		SetXpColors("ButtonTextColor", 4, BP_PUSHBUTTON, PBS_NORMAL, TMT_TEXTCOLOR); //TODO?!
 
 		ChPainter(XpElementPainter);
 	}
@@ -414,11 +457,19 @@ void ChInitWin32Detect()
 
 void ChInitUpp()
 {
+	Ctrl::SetXPStyle(true);
+}
+
+void ChWin32Reset()
+{
+	LLOG("ChWin32Reset");
 	CtrlImg::Reset();
 	CtrlsImg::Reset();
+	memset(xp_widget_handle, 0, sizeof(xp_widget_handle));
 }
 
 INITBLOCK {
+	ChRegister("", ChWin32Reset);
 	ChRegister("detect", ChInitWin32Detect);
 	ChRegister("WinClassic", ChInitWinClassic);
 	ChRegister("U++", ChInitUpp);

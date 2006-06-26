@@ -427,11 +427,20 @@ void TopWindow::SerializePlacement(Stream& s, bool reminimize)
 	}
 }
 
+CH_LOOK(DialogFaceLook, SColorFace());
+
+struct DialogBackground : public Display {
+	void Paint(Draw& w, const Rect& r, const Value& q, Color ink, Color paper, dword style) const
+	{
+		ChPaint(w, r, DialogFaceLook());
+	}
+};
+
 TopWindow::TopWindow()
 {
 	TransparentBackPaint();
 	overlappedrect = GetDefaultWindowRect();
-	background = PaintRect(ColorDisplay(), SColorFace());
+	background = PaintRect(Single<DialogBackground>(), Null);
 	center = 1;
 	minsize = Size(80, 20);
 

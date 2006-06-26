@@ -30,6 +30,7 @@ public:
 class DropList : public Ctrl, public Convert {
 public:
 	virtual void  Paint(Draw& w);
+	virtual void  MouseWheel(Point p, int zdelta, dword keyflags);
 	virtual void  LeftDown(Point p, dword keyflags);
 	virtual void  MouseMove(Point, dword style);
 	virtual void  MouseLeave();

@@ -177,7 +177,7 @@ CH_LOOKS(ScrollButtonLook, 4, CtrlElements(CtrlsImg::I_SB));
 CH_COLORS(ButtonMonoColor, 4, Blend(Blend(SColorHighlight, SColorShadow), SColorText, 80));
 CH_INT(ButtonPressOffsetFlag, 0);
 CH_FONT(ButtonFont, StdFont());
-CH_COLORS(ButtonTextColor, 4, SColorText());
+CH_COLORS(ButtonTextColor, 4, SColorText() << SColorText() << SColorText() << SColorDisabled());
 
 Button& Button::Style(Value (*_look)(int))
 {
@@ -300,6 +300,8 @@ Button::~Button() {}
 
 CH_LOOKS(SpinUpLook, 4, EdgeButtonLook);
 CH_LOOKS(SpinDownLook, 4, EdgeButtonLook);
+CH_IMAGE(SpinUpImg, CtrlsImg::SpU());
+CH_IMAGE(SpinDownImg, CtrlsImg::SpD());
 CH_INT(SpinWidth, 12);
 
 void SpinButtons::FrameLayout(Rect& r)
@@ -338,9 +340,8 @@ void SpinButtons::FrameRemove() {
 
 SpinButtons::SpinButtons() {
 	visible = true;
-	inc.Style(SpinUpLook).SetMonoImage(CtrlsImg::SpU()).NoWantFocus();
-	dec.Style(SpinDownLook).SetMonoImage(CtrlsImg::SpD()).NoWantFocus();
-	DUMP(CtrlsImg::SpU().GetLength());
+	inc.Style(SpinUpLook).SetMonoImage(SpinUpImg()).NoWantFocus();
+	dec.Style(SpinDownLook).SetMonoImage(SpinDownImg()).NoWantFocus();
 }
 
 SpinButtons::~SpinButtons() {}

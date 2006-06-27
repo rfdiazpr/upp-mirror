@@ -202,15 +202,15 @@ void UpdateSColors()
 	ChSet("SColorHighlight", KDEColor("selectBackground", blue));
 	ChSet("SColorHighlightText", KDEColor("selectForeground", white));
 	ChSet("SColorMenu", Color(
-				min(sDialog.GetR() * 105 / 100, 255),
-				min(sDialog.GetG() * 105 / 100, 255),
-				min(sDialog.GetB() * 105 / 100, 255)
+				min(SColorFace().GetR() * 105 / 100, 255),
+				min(SColorFace().GetG() * 105 / 100, 255),
+				min(SColorFace().GetB() * 105 / 100, 255)
 			));
 	ChSet("SColorMenuText", SColorText());
 	ChSet("SColorInfo", SLtYellow());
 	ChSet("SColorInfoText", SColorText());
 	ChSet("SColorDisabled", Blend(SColorPaper(), SColorText()));
-	ChSet("SColorLight", Blend(KDEColor("buttonBackground",SLtGray()), SPaper()));
+	ChSet("SColorLight", Blend(KDEColor("buttonBackground",SLtGray()), SColorPaper()));
 	ChSet("SColorShadow", Blend(KDEColor("buttonBackground", SLtGray()), SColorDisabled()));
 
 	Vector<String> fs = Split(GetKDE("font"), ',');

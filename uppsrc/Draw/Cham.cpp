@@ -186,7 +186,7 @@ Image AdjustColors(const Image& img) {
 	while(s < e) {
 		*t = *s;
 		if(s->r == s->g && s->g == s->b)
-			if(s->r >= 0 && s->r < 128)
+			if(s->r < 128)
 				*t = Blend(black, shadow, 2 * s->r);
 			else
 			if(s->r >= 128 && s->r < 192)

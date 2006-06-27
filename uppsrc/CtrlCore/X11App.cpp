@@ -283,7 +283,7 @@ void Ctrl::InitX11(const char *display)
 	for(int i = 0; i < nets.GetCount(); i++)
 		_NET_Supported().Add(nets[i]);
 
-	ChSync("X11");
+	ChSetStyle("detect");
 	Ctrl::SetXPStyle();
 	Ctrl::SetFlags(Ctrl::EFFECT_SLIDE | Ctrl::DRAGFULLWINDOW | Ctrl::DROPSHADOWS | Ctrl::ALTACCESSKEYS);
 

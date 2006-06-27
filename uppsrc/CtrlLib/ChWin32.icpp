@@ -476,3 +476,18 @@ INITBLOCK {
 }
 
 #endif
+
+#ifdef PLATFORM_X11
+
+void ChInitUpp()
+{
+	CtrlImg::Reset();
+	CtrlsImg::Reset();
+	Ctrl::SetXPStyle(true);
+}
+
+INITBLOCK {
+	ChRegister("", ChInitUpp);
+}
+
+#endif

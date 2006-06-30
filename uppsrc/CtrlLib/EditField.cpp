@@ -1,5 +1,44 @@
 #include "CtrlLib.h"
 
+void LookFrame::FrameLayout(Rect& r)
+{
+	Rect m = ChMargins((*look)());
+	r.left += m.left;
+	r.right -= m.right;
+	r.top += m.top;
+	r.bottom -= m.bottom;
+}
+
+void LookFrame::FramePaint(Draw& w, const Rect& r)
+{
+	Value v = (*look)();
+	if(IsType<Image>(v))
+		Image m = v;
+	ChPaintEdge(w, r, (*look)());
+}
+
+void LookFrame::FrameAddSize(Size& sz)
+{
+	Rect m = ChMargins((*look)());
+	sz.cx += m.left + m.right;
+	sz.cy += m.top + m.bottom;
+}
+
+CH_LOOK(EditFieldEdge, CtrlsImg::EFE());
+CH_LOOK(ViewEdge, CtrlsImg::VE());
+
+CtrlFrame& EditFieldFrame()
+{
+	static LookFrame m(EditFieldEdge);
+	return m;
+}
+
+CtrlFrame& ViewFrame()
+{
+	static LookFrame m(ViewEdge);
+	return m;
+}
+
 void EditField::CancelMode()
 {
 	keep_selection = false;

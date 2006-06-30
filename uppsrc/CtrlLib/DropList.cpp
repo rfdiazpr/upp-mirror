@@ -128,11 +128,6 @@ Size DropList::GetMinSize() const
 	return AddFrameSize(0, StdFont().Info().GetHeight() + 4);
 }
 
-void DropList::State(int)
-{
-	drop.Enable(IsEditable() && IsShowEnabled());
-}
-
 void DropList::GotFocus() {
 	Refresh();
 }
@@ -180,9 +175,8 @@ void DropList::LeftDown(Point p, dword keyflags) {
 		Refresh();
 	}
 	else {
-		SetWantFocus();
 		if(IsReadOnly()) return;
-		drop.PseudoPush();
+		Push();
 	}
 }
 
@@ -224,7 +218,7 @@ bool DropList::Key(dword k, int) {
 	if(IsReadOnly()) return false;
 	switch(k) {
 	case K_ALT_DOWN:
-		drop.PseudoPush();
+		Push();
 		break;
 	case K_DOWN:
 	case K_RIGHT:
@@ -280,7 +274,7 @@ void DropList::ClearList() {
 	list.Clear();
 	Refresh();
 	list.Refresh();
-	drop.Disable();
+	EnableDrop(false);
 }
 
 void DropList::Clear() {
@@ -294,7 +288,7 @@ DropList& DropList::Add(const Value& _key, const Value& text) {
 	list.Add(text);
 	Refresh();
 	list.Refresh();
-	drop.Enable();
+	EnableDrop();
 	return *this;
 }
 
@@ -305,7 +299,7 @@ void DropList::Trim(int n) {
 	list.SetCount(n);
 	Refresh();
 	list.Refresh();
-	drop.Enable(n);
+	EnableDrop(n);
 }
 
 void DropList::SetData(const Value& data) {
@@ -326,7 +320,7 @@ Value DropList::GetValue() const {
 
 void  DropList::SetValue(int i, const Value& v) {
 	list.Set(i, 0, v);
-	drop.Enable();
+	EnableDrop();
 }
 
 void  DropList::SetValue(const Value& v) {
@@ -355,15 +349,11 @@ Value DropList::Format(const Value& q) const {
 }
 
 DropList::DropList() {
-	drop.SetMonoImage(CtrlsImg::DA())
-		.NoWantFocus();
-	drop.WhenPush = callback(this, &DropList::Drop);
-	Ctrl::AddFrame(drop);
+	WhenPush = callback(this, &DropList::Drop);
 	list.Normal();
 	list.WhenSelect = callback(this, &DropList::Select);
 	list.WhenCancel = callback(this, &DropList::Cancel);
-	SetFrame(EditFieldFrame());
-	drop.Disable();
+	EnableDrop(false);
 	displayall = false;
 	valuedisplay = NULL;
 	dropfocus = true;

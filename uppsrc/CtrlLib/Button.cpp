@@ -170,10 +170,10 @@ Pusher::~Pusher() {}
 
 // ----------------
 
-CH_LOOKS(ButtonLook, 4, CtrlElements(CtrlsImg::I_B));
-CH_LOOKS(OkButtonLook, 4, CtrlElements(CtrlsImg::I_OkB));
-CH_LOOKS(EdgeButtonLook, 4, CtrlElements(CtrlsImg::I_EB));
-CH_LOOKS(ScrollButtonLook, 4, CtrlElements(CtrlsImg::I_SB));
+CH_LOOKS(ButtonLook, 4, CtrlsImgLook(CtrlsImg::I_B));
+CH_LOOKS(OkButtonLook, 4, CtrlsImgLook(CtrlsImg::I_OkB));
+CH_LOOKS(EdgeButtonLook, 4, CtrlsImgLook(CtrlsImg::I_EB));
+CH_LOOKS(ScrollButtonLook, 4, CtrlsImgLook(CtrlsImg::I_SB));
 CH_COLORS(ButtonMonoColor, 4, Blend(Blend(SColorHighlight, SColorShadow), SColorText, 80));
 CH_INT(ButtonPressOffsetFlag, 0);
 CH_FONT(ButtonFont, StdFont());
@@ -318,7 +318,9 @@ void SpinButtons::FrameLayout(Rect& r)
 	int h2 = h / 2;
 	int h7 = min(sz.cx / 2, SpinWidth());
 	inc.SetFrameRect(r.right - h7, r.top, h7, h2);
+	inc.SetMonoImage(SpinUpImg());
 	dec.SetFrameRect(r.right - h7, r.top + h2, h7, r.Height() - h2);
+	dec.SetMonoImage(SpinDownImg());
 	r.right -= h7;
 }
 
@@ -518,13 +520,13 @@ Value ButtonOption::GetData() const
 DataPusher::DataPusher(const Convert& convert, const Display& display)
 : convert(&convert), display(&display)
 {
-	SetFrame(FieldFrame());
+	SetFrame(EditFieldFrame());
 }
 
 DataPusher::DataPusher(const Display& display)
 : convert(&NoConvert()), display(&display)
 {
-	SetFrame(FieldFrame());
+	SetFrame(EditFieldFrame());
 }
 
 DataPusher::~DataPusher() {}

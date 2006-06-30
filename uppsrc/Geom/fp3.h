@@ -178,8 +178,11 @@ extern Matrixf3 Matrixf3Rotate (Pointf3 axis, double angle);
 extern Matrixf3 Matrixf3Scale  (double scale, Pointf3 fix = Pointf3(0, 0, 0));
 extern Matrixf3 Matrixf3Scale  (Pointf3 scale, Pointf3 fix = Pointf3(0, 0, 0));
 //extern Matrixf3  Matrixf3Mirror (Pointf A, Pointf B);
-//extern Matrixf3  Matrixf3Affine (Pointf3 src1, Pointf3 dest1, Pointf3 src2, Pointf3 dest2);
-//extern Matrixf3  Matrixf3Affine (Pointf3 src1, Pointf3 dest1, Pointf3 src2, Pointf3 dest2, Pointf3 src3, Pointf3 dest3);
+extern Matrixf3  Matrixf3Affine(Pointf3 src1, Pointf3 dest1, Pointf3 src2, Pointf3 dest2);
+extern Matrixf3  Matrixf3Affine(Pointf3 src1, Pointf3 dest1, Pointf3 src2, Pointf3 dest2,
+	Pointf3 src3, Pointf3 dest3);
+extern Matrixf3  Matrixf3Affine(Pointf3 src1, Pointf3 dest1, Pointf3 src2, Pointf3 dest2,
+	Pointf3 src3, Pointf3 dest3, Pointf3 src4, Pointf3 dest4);
 
 extern Matrixf3 Matrixf3Inverse(const Matrixf3& mx);
 extern double   Determinant    (const Matrixf3& mx);

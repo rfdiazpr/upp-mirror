@@ -1,7 +1,15 @@
-void  ChPainter(void (*fn)(Draw& w, const Rect& r, const Value& v));
+enum LookOp {
+	LOOK_PAINT,
+	LOOK_PAINTEDGE,
+	LOOK_MARGINS,
+	LOOK_ISOPAQUE,
+};
+
+void  ChLookFn(Value (*fn)(Draw& w, const Rect& r, const Value& look, int lookop));
+
 void  ChSet(const char *id, int i, const Value& v);
 void  ChSet(const char *id, const Value& v);
-void  ChSet(const char *id, const char *ids);
+void  ChSetf(const char *name, Value (*fn)(int));
 Value ChGet(const char *name, int i);
 Value ChGet(const char *name);
 
@@ -13,8 +21,12 @@ void   ChRegister(void (*fn)());
 void   ChSetStyle(const char *style);
 String ChGetStyle();
 
-void   ChPaint(Draw& w, const Rect& r, const Value& element);
-void   ChPaint(Draw& w, int x, int y, int cx, int cy, const Value& element);
+void   ChPaint(Draw& w, const Rect& r, const Value& look);
+void   ChPaint(Draw& w, int x, int y, int cx, int cy, const Value& look);
+void   ChPaintEdge(Draw& w, const Rect& r, const Value& look);
+void   ChPaintEdge(Draw& w, int x, int y, int cx, int cy, const Value& look);
+Rect   ChMargins(const Value& look);
+bool   ChIsOpaque(const Value& look);
 
 //private:
 void ChRegisterVar__(const char *name, int n,

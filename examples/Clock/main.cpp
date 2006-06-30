@@ -8,10 +8,10 @@ struct Clock : TopWindow {
 		           sz2.cy - int(m * cos(pos * 2 * M_PI) * sz2.cy),
 		           d, color);
 	}
-	
+
 	void PaintCenteredText(Draw& w, int x, int y, const char *text, Font fnt, Color c)
 	{
-		Size tsz = w.GetTextSize(text, fnt);
+		Size tsz = GetTextSize(text, fnt);
 		w.DrawText(x - tsz.cx / 2, y - tsz.cy / 2, text, fnt, c);
 	}
 

@@ -459,7 +459,7 @@ DocEdit::DocEdit()
 	after = 0;
 	font = StdFont();
 	AutoHideSb();
-	SetFrame(FieldFrame());
+	SetFrame(ViewFrame());
 	AddFrame(sb);
 	sb.SetLine(8);
 	sb.WhenScroll = THISBACK(Scroll);

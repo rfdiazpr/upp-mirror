@@ -109,7 +109,7 @@ CtrlFrame& BlackFrame();
 CtrlFrame& XPFieldFrame();
 
 CtrlFrame& FieldFrame();
-CtrlFrame& EditFieldFrame();
+// CtrlFrame& EditFieldFrame(); //TODO remove
 
 CtrlFrame& TopSeparatorFrame();
 CtrlFrame& BottomSeparatorFrame();

@@ -60,7 +60,7 @@ TreeCtrl::TreeCtrl()
 	isselection = false;
 	multiselect = false;
 	Clear();
-	SetFrame(FieldFrame());
+	SetFrame(ViewFrame());
 	AddFrame(sb);
 	sb.WhenScroll = THISBACK(Scroll);
 }

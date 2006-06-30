@@ -1609,7 +1609,7 @@ Color DlgSelectColor::Run(Color init_color, bool not_null, const char *title, bo
 ColorCtrl::ColorCtrl(bool not_null)
 : DataPusher(NoConvert(), StdColorDisplayNull())
 {
-	SetFrame(FieldFrame());
+	SetFrame(EditFieldFrame());
 	AddFrame(empty);
 	empty.SetImage(CtrlImg::cross());
 	empty <<= THISBACK(OnClear);

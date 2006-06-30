@@ -7,7 +7,7 @@ LineEdit::LineEdit() {
 	showtabs = false;
 	tabsize = 4;
 	font = Courier(16);
-	SetFrame(FieldFrame());
+	SetFrame(ViewFrame());
 	AddFrame(sb);
 	sb.WhenScroll = THISBACK(Scroll);
 	cutline = true;

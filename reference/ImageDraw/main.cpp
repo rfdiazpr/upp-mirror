@@ -7,13 +7,13 @@ struct App : TopWindow {
 		w.DrawRect(GetSize(), SWhite);
 		w.DrawImage(0, 0, img);
 	}
-	
+
 	App() {
-		img = Image(100, 100);
-		ImageDraw w(img);
+		ImageDraw w(100, 100);
 		w.DrawRect(0, 0, 100, 100, SGray);
 		w.DrawEllipse(0, 0, 100, 100, SGreen);
 		w.DrawText(0, 0, "ImageDraw!", Arial(13).Bold(), SYellow);
+		img = w;
 	}
 };
 

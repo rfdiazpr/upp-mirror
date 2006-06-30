@@ -66,3 +66,7 @@ Image::Init
 0 0 -1
 Point_<int>
 0 0 -1
+Value
+0 0 -1
+Value::Void
+0 0 -1

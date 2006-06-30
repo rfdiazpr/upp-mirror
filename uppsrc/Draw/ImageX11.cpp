@@ -132,7 +132,7 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 			w.DrawRect(x, y, sz.cx, sz.cy, c);
 			return;
 		}
-		if(buffer.GetKind() == IMAGE_OPAQUE && paintcount == 0) {
+		if(buffer.GetKind() == IMAGE_OPAQUE && paintcount == 0 && sr == Rect(sz)) {
 			SetSurface(w, x, y, sz.cx, sz.cy, buffer);
 			paintcount++;
 			return;

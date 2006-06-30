@@ -4,8 +4,8 @@
 #define LAYOUTFILE <CompDir/CompDir.lay>
 #include <CtrlCore/lay.h>
 
-#define IMAGEFILE <CompDir/CompDir.iml>
-#define IMAGESPACE CompDirImg
+#define IMAGEFILE  <CompDir/CompDir.iml>
+#define IMAGECLASS CompDirImg
 #include <Draw/iml.h>
 
 String NormalizePathCase(String fn)

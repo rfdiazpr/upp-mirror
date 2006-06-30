@@ -3,8 +3,9 @@
 #define LAYOUTFILE <Puzzle/Puzzle.lay>
 #include <CtrlCore/lay.h>
 
-#define IMAGEFILE <Puzzle/Puzzle.iml>
-#include <Draw/iml_source.h>
+#define IMAGEFILE  <Puzzle/Puzzle.iml>
+#define IMAGECLASS PuzzleImg
+#include <Draw/iml.h>
 
 #define TFILE <Puzzle/Puzzle.t>
 #include <Core/t.h>
@@ -92,10 +93,11 @@ void Puzzle::Paint(Draw& w)
 			int b = Get(x, y);
 			Point p(x * 32, y * 32);
 			if(b) {
-				w.DrawImage(p.x, p.y, BoxImg());
+				w.DrawImage(p.x, p.y, PuzzleImg::BoxImg());
 				String txt = AsString(b);
-				Size sz = w.GetTextSize(txt, Arial(20).Bold());
-				w.DrawText(p.x + (32 - sz.cx) / 2, p.y + (32 - sz.cy) / 2, txt, Arial(20).Bold(), LtBlue);
+				Size sz = GetTextSize(txt, Arial(20).Bold());
+				w.DrawText(p.x + (32 - sz.cx) / 2, p.y + (32 - sz.cy) / 2, txt,
+				           Arial(20).Bold(), SLtBlue);
 			}
 		}
 }

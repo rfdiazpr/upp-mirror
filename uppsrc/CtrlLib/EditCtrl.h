@@ -1,3 +1,19 @@
+class LookFrame : public CtrlFrame {
+public:
+	virtual void FrameLayout(Rect& r);
+	virtual void FramePaint(Draw& w, const Rect& r);
+	virtual void FrameAddSize(Size& sz);
+
+private:
+	Value (*look)();
+
+public:
+	LookFrame(Value (*look)()) : look(look) {}
+};
+
+CtrlFrame& EditFieldFrame();
+CtrlFrame& ViewFrame();
+
 class EditField : public Ctrl {
 public:
 	virtual void  Layout();

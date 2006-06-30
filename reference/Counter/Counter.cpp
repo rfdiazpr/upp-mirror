@@ -16,7 +16,7 @@ void  CounterCtrl::Paint(Draw& w)
 	Size sz = GetSize();
 	w.DrawRect(sz, paper);
 	String txt = AsString(number);
-	sz = (sz - w.GetTextSize(txt, font)) / 2;
+	sz = (sz - GetTextSize(txt, font)) / 2;
 	w.DrawText(sz.cx, sz.cy, txt, font, ink);
 }
 

@@ -69,7 +69,7 @@ CtrlFrame& XPEditFieldFrame() { return Single<XPEditFieldFrameCls>(); }
 CH_INT(EditFieldIsThin, 0);
 
 CtrlFrame& FieldFrame() { return Ctrl::IsXPStyle() ? XPFieldFrame() : InsetFrame(); }
-CtrlFrame& EditFieldFrame() { return EditFieldIsThin() ? XPEditFieldFrame() : FieldFrame(); }
+// CtrlFrame& EditFieldFrame() { return EditFieldIsThin() ? XPEditFieldFrame() : FieldFrame(); } //TODO remove
 
 class TopSeparatorFrameCls : public CtrlFrame {
 	virtual void FrameLayout(Rect& r)                   { r.top += 2; }

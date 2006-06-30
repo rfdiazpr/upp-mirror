@@ -1928,7 +1928,7 @@ ArrayCtrl::ArrayCtrl() {
 	header.WhenScroll = sb.WhenScroll = THISBACK(Scroll);
 	WhenAcceptRow = true;
 	WhenBar = THISBACK(StdBar);
-	SetFrame(FieldFrame());
+	SetFrame(ViewFrame());
 	oddpaper = evenpaper = SColorPaper;
 	oddink = evenink = SColorText;
 }

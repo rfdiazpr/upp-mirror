@@ -1,6 +1,6 @@
 #include "CtrlLib.h"
 
-Vector<Value> CtrlElements(int i)
+Vector<Value> CtrlsImgLook(int i)
 {
 	Vector<Value> m;
 	for(int q = 0; q < 4; q++)

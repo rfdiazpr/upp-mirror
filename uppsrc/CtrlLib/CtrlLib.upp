@@ -25,6 +25,7 @@ file
 	ArrayCtrl.h,
 	ArrayCtrl.cpp,
 	DropChoice.h,
+	DropBox.cpp,
 	DropList.cpp,
 	DropPusher.cpp,
 	DropChoice.cpp,

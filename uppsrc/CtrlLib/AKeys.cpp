@@ -79,7 +79,7 @@ struct KeyCtrl : Ctrl {
 	}
 
 	KeyCtrl() {
-		SetFrame(FieldFrame());
+		SetFrame(EditFieldFrame());
 		key = 0;
 	}
 };

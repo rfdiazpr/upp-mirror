@@ -64,6 +64,7 @@ Something borked with unix filename escaping?
 }
 
 * X11 {
+	- Guido's Kbd patches
 	- Stuck Alt/Ctrl keys
 	- OO.org BMP pasta, images in richtext paste
 	- Available clipboard formats

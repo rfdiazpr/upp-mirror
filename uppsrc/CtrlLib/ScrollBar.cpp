@@ -7,19 +7,19 @@ CH_INT(ScrollBarArrowSize, ScrollBarSize());
 
 CH_LOOKS(ScrollBarUp, 4, ScrollButtonLook);
 CH_IMAGE(ScrollBarUpImg, CtrlsImg::UA());
-CH_LOOKS(ScrollBarVertUpper, 4, CtrlElements(CtrlsImg::I_SBVU));
-CH_LOOKS(ScrollBarVertThumb, 4, CtrlElements(CtrlsImg::I_SBVT));
+CH_LOOKS(ScrollBarVertUpper, 4, CtrlsImgLook(CtrlsImg::I_SBVU));
+CH_LOOKS(ScrollBarVertThumb, 4, CtrlsImgLook(CtrlsImg::I_SBVT));
 CH_IMAGE(ScrollBarVertThumbImg, CtrlsImg::SBVI());
-CH_LOOKS(ScrollBarVertLower, 4, CtrlElements(CtrlsImg::I_SBVL));
+CH_LOOKS(ScrollBarVertLower, 4, CtrlsImgLook(CtrlsImg::I_SBVL));
 CH_LOOKS(ScrollBarDown, 4, ScrollButtonLook);
 CH_IMAGE(ScrollBarDownImg, CtrlsImg::DA);
 
 CH_LOOKS(ScrollBarLeft, 4, ScrollButtonLook);
 CH_IMAGE(ScrollBarLeftImg, CtrlsImg::LA());
-CH_LOOKS(ScrollBarHorzUpper, 4, CtrlElements(CtrlsImg::I_SBHU));
-CH_LOOKS(ScrollBarHorzThumb, 4, CtrlElements(CtrlsImg::I_SBHT));
+CH_LOOKS(ScrollBarHorzUpper, 4, CtrlsImgLook(CtrlsImg::I_SBHU));
+CH_LOOKS(ScrollBarHorzThumb, 4, CtrlsImgLook(CtrlsImg::I_SBHT));
 CH_IMAGE(ScrollBarHorzThumbImg, CtrlsImg::SBHI());
-CH_LOOKS(ScrollBarHorzLower, 4, CtrlElements(CtrlsImg::I_SBHL));
+CH_LOOKS(ScrollBarHorzLower, 4, CtrlsImgLook(CtrlsImg::I_SBHL));
 CH_LOOKS(ScrollBarRight, 4, ScrollButtonLook);
 CH_IMAGE(ScrollBarRightImg, CtrlsImg::RA);
 
@@ -109,9 +109,17 @@ void Slider::Paint(Draw& w) {
 	Value (**l)(int) = IsHorz() ? hl : vl;
 
 	if(IsShowEnabled()) {
-		for(int i = 0; i < 3; i++)
-			ChPaint(w, GetPartRect(i),
+		for(int i = 0; i < 3; i++) {
+			Rect pr = GetPartRect(i);
+			if(i != 1) {
+				w.Clip(pr);
+				pr = sz;
+			}
+			ChPaint(w, pr,
 			        (*l[i])(p == i ? CTRL_PRESSED : light == i ? CTRL_HOT : CTRL_NORMAL));
+			if(i != 1)
+				w.End();
+		}
 		Image m = IsHorz() ? ScrollBarHorzThumbImg() : ScrollBarVertThumbImg();
 		if(!IsNull(m)) {
 			Rect tr = GetPartRect(1);

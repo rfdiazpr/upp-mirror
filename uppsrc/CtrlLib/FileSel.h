@@ -110,6 +110,7 @@ private:
 	Button      dirup, mkdir, plus, minus, toggle;
 
 protected:
+	Vector<String> mask;
 	Vector<String> path;
 	Vector<String> lru;
 	int            lastsby;
@@ -185,7 +186,7 @@ public:
 
 	bool   GetReadOnly() const                   { return readonly; }
 	String GetActiveDir() const                  { return dir.GetData(); }
-	int    GetActiveType() const                 { return ~activetype; }
+	int    GetActiveType() const                 { return activetype; }
 
 	void   Filesystem(FileSystemInfo& fsys)      { filesystem = &fsys;}
 	FileSystemInfo& GetFilesystem() const        { return *filesystem; }

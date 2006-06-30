@@ -52,20 +52,6 @@ HANDLE XpWidget(int widget)
 	return xp_widget_handle[widget];
 }
 
-void XpElementPainter(Draw& w, const Rect& r, const Value& v)
-{
-	if(IsTypeRaw<XpElement>(v)) {
-		w.DrawRect(r, SColorFace); //TODO - improve by adding the real transparency support
-		const XpElement& e = ValueTo<XpElement>(v);
-		HANDLE htheme = XpWidget(e.widget);
-		if(htheme) {
-			HDC hdc = w.BeginGdi();
-			XpTheme().DrawThemeBackground(htheme, hdc, e.part, e.state, r, NULL);
-			w.EndGdi();
-		}
-	}
-}
-
 Image XpImage(int widget, int part, int state, Color color = Null, Size sz = Null)
 {
 	HANDLE theme = XpWidget(widget);
@@ -299,6 +285,17 @@ int XpInt(int widget, int part, int state, int type)
 	return r == S_OK ? n : Null;
 }
 
+Rect XpMargins(int widget, int part, int state)
+{
+	HANDLE theme = XpWidget(widget);
+	if(!theme)
+		return Rect(0, 0, 0, 0);
+	MARGINS m;
+	int r = XpTheme().GetThemeMargins(theme, NULL, part, state, 3601, NULL, &m);
+	return r == S_OK ? Rect(m.cxLeftWidth, m.cyTopHeight, m.cxRightWidth, m.cyBottomHeight)
+	                 : Rect(0, 0, 0, 0);
+}
+
 void SetXpImages(int uii, int n, int widget, int part, int state)
 {
 	for(int i = 0; i < n; i++) {
@@ -318,6 +315,38 @@ void SetXpColors(const char *chcolor, int n, int widget, int part, int state, in
 	}
 }
 
+Value XpLookFn(Draw& w, const Rect& r, const Value& v, int op)
+{
+	if(IsTypeRaw<XpElement>(v)) {
+		const XpElement& e = ValueTo<XpElement>(v);
+		switch(op) {
+		case LOOK_MARGINS:
+			return XpMargins(e.widget, e.part, e.state);
+		case LOOK_ISOPAQUE:
+			return 1; //TODO - improve by adding the real transparency support
+		}
+		if(op == LOOK_PAINT || op == LOOK_PAINTEDGE) {
+			if(op == LOOK_PAINTEDGE) {
+				Rect m = XpMargins(e.widget, e.part, e.state);
+				w.Begin();
+				w.ExcludeClip(m.left, m.top,
+				              r.Width() - m.left - m.right, r.Height() - m.top - m.bottom);
+			}
+			w.DrawRect(r, SColorFace); //TODO - improve by adding the real transparency support
+			HANDLE htheme = XpWidget(e.widget);
+			if(htheme) {
+				HDC hdc = w.BeginGdi();
+				XpTheme().DrawThemeBackground(htheme, hdc, e.part, e.state, r, NULL);
+				w.EndGdi();
+			}
+			if(op == LOOK_PAINTEDGE)
+				w.End();
+			return 1;
+		}
+	}
+	return Null;
+}
+
 void ChInitWin()
 {
 	LLOG("ChInitWin");
@@ -329,24 +358,37 @@ void ChInitWin()
 	ChSet("ScrollBarArrowSize", GetSystemMetrics(SM_CXHSCROLL));
 }
 
+struct sOverrideImg {
+	int target;
+	int source;
+	int count;
+};
+
+static sOverrideImg oimgs[] = {
+	{ CtrlsImg::I_SBVT, CtrlsImg::I_Wcb_SB, 4 },
+	{ CtrlsImg::I_SBHT, CtrlsImg::I_Wcb_SB, 4 },
+};
+
 void ChInitWinClassic()
 {
 	LLOG("ChInitWinClassic");
 	ChInitWin();
 	Ctrl::SetXPStyle(false);
-	Override(CtrlsImg::Iml(), "Wcsw_;Wco_;Wc_;Wcb_;Wca_", CtrlsImg::Iml());
-
+	Override(CtrlsImg::Iml(), "Wcsw_;Wco_;Wc_;Wcb_;Wca_;Wce_", CtrlsImg::Iml());
+//	for(sOverrideImg *m = oimgs; m < oimgs + __countof(oimgs); m++)
+//		for(int q = 0; q < m->count; q++)
+//			CtrlsImg::Set(m->target + q, CtrlsImg::Get(m->source + q));
 	ChSet("ScrollBarVertThumbImg", Null);
 	ChSet("ScrollBarHorzThumbImg", Null);
 	Color wc = Blend(SColorFace(), SColorPaper(), 170);
 	ChSet("ScrollBarHorzUpper", wc);
 	ChSet("ScrollBarHorzUpper", CTRL_PRESSED, SColorText());
-	ChSet("ScrollBarHorzThumb", "ScrollButtonLook");
+	ChSetf("ScrollBarHorzThumb", ScrollButtonLook);
 	ChSet("ScrollBarHorzLower", wc);
 	ChSet("ScrollBarHorzLower", CTRL_PRESSED, SColorText());
 	ChSet("ScrollBarVertUpper", wc);
 	ChSet("ScrollBarVertUpper", CTRL_PRESSED, SColorText());
-	ChSet("ScrollBarVertThumb", "ScrollButtonLook");
+	ChSetf("ScrollBarVertThumb", ScrollButtonLook);
 	ChSet("ScrollBarVertLower", wc);
 	ChSet("ScrollBarVertLower", CTRL_PRESSED, SColorText());
 
@@ -394,7 +436,22 @@ static chLooks sLooks[] = {
 	{ "ScrollBarRight", 4, XP_SCROLLBAR, SBP_ARROWBTN, ABS_RIGHTNORMAL },
 	{ "SpinUpLook", 4, XP_SPIN, SPNP_UP, 1 },
 	{ "SpinDownLook", 4, XP_SPIN, SPNP_DOWN, 1 },
+	{ "DropBoxBtn", 4, XP_COMBOBOX, CP_DROPDOWNBUTTON, 1 },
+	{ "DropBoxEdge", 1, XP_COMBOBOX, 0, 0 },
 };
+
+Color SimpleColor(const Image& m)
+{
+	const RGBA *s = m;
+	const RGBA *e = m + m.GetLength();
+	if(s >= e)
+		return Null;
+	RGBA c = *s++;
+	while(s < e)
+		if(c != *s++)
+			return Null;
+	return c;
+}
 
 void ChInitWin32Detect()
 {
@@ -415,6 +472,13 @@ void ChInitWin32Detect()
 				e.state = l->state + i;
 				ChSet(l->id, i, RawToValue(e));
 			}
+/*		Image m = XpImage(XP_WINDOW, WP_DIALOG, 0, SColorPaper());
+		if(!IsNull(SimpleColor(m))) {
+			e.widget = XP_WINDOW;
+			e.part = WP_DIALOG;
+			e.state = 0;
+			ChSet("DialogFaceLook", RawToValue(e));
+		}*/
 		ChSet("ScrollBarUpImg", Null);
 		ChSet("ScrollBarDownImg", Null);
 		ChSet("ScrollBarLeftImg", Null);
@@ -427,6 +491,9 @@ void ChInitWin32Detect()
 		e.part = BP_PUSHBUTTON;
 		e.state = PBS_DEFAULTED;
 		ChSet("OkButtonLook", 0, RawToValue(e));
+		ChSet("DropBoxInsideEdge", XpInt(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL,
+		                                 TMT_BORDERSIZE));
+		ChSet("DropImg", Null);
 		for(int i = 0; i < 4; i++) {
 			Color paper = i == 3 ? SColorFace : SColorPaper;
 			Image m = Unglyph(XpImage(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL + i, paper));
@@ -443,13 +510,27 @@ void ChInitWin32Detect()
 			                                   paper)),
 			                msz.cy / 3, msz.cy * 2 / 3));
 		}
+		int ebs = max(1, XpInt(XP_EDIT, EP_EDITTEXT, 1, TMT_BORDERSIZE));
+		Image ee = XpImage(XP_EDIT, EP_EDITTEXT, 1, SColorFace(), Size(3 * ebs, 3 * ebs));
+		ImageBuffer eb(ee);
+		eb.SetHotSpot(Point(ebs, ebs));
+		ee = eb;
+		ChSet("EditFieldEdge", ee);
+
+		ebs = max(1, XpInt(XP_LISTVIEW, 0, 1, TMT_BORDERSIZE));
+		ee = XpImage(XP_LISTVIEW, 0, 1, SColorFace(), Size(3 * ebs, 3 * ebs));
+		eb = ee;
+		eb.SetHotSpot(Point(ebs + 1, ebs + 1));
+		ee = eb;
+		ChSet("ViewEdge", ee);
+
 		ChSet("SpinWidth", FrameButtonWidth());
 		ChSet("LabelBoxTextColor", XpColor(XP_BUTTON, BP_GROUPBOX, GBS_NORMAL, TMT_TEXTCOLOR));
 		ChSet("LabelBoxColor", XpColor(XP_BUTTON, BP_GROUPBOX, GBS_NORMAL, TMT_BORDERCOLORHINT));
 
 //		SetXpColors("ButtonTextColor", 4, BP_PUSHBUTTON, PBS_NORMAL, TMT_TEXTCOLOR); //TODO?!
 
-		ChPainter(XpElementPainter);
+		ChLookFn(XpLookFn);
 	}
 	else
 		ChInitWinClassic();

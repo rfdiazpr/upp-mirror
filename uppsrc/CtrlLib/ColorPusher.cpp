@@ -94,7 +94,7 @@ ColorPusher::ColorPusher()
 	colors.WhenSelect = THISBACK(AcceptColors);
 	colors.WhenCancel = THISBACK(CloseColors);
 	colors.WhenAction = THISBACK(NewColor);
-	SetFrame(FieldFrame());
+	SetFrame(EditFieldFrame());
 }
 
 ColorButton::~ColorButton() {}

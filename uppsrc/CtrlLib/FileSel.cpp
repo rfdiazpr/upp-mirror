@@ -132,7 +132,13 @@ void FileSel::Load() {
 	list.EndEdit();
 	list.Clear();
 	String d = GetDir();
-	if(!::Load(list, d, (String)~type, mode == SELECTDIR, WhenIcon, *filesystem)) {
+	String emask = "*";
+	if(!IsNull(type)) {
+		int q = ~type;
+		if(q >= 0 && q < mask.GetCount())
+			emask = mask[q];
+	}
+	if(!::Load(list, d, emask, mode == SELECTDIR, WhenIcon, *filesystem)) {
 		Exclamation(t_("[A3* Unable to read the directory !]&&") + DeQtf((String)~dir) + "&&" +
 		            GetErrorMessage(GetLastError()));
 		if(!basedir.IsEmpty() && String(~dir).IsEmpty()) {
@@ -308,7 +314,7 @@ void FileSel::Open() {
 		}
 		if(HasWildcards(fn)) {
 			file.Clear();
-			int q = type.FindKey(fn);
+			int q = FindIndex(mask, fn);
 			if(q >= 0)
 				type.SetIndex(q);
 			else {
@@ -594,7 +600,8 @@ void FileSel::Choice() {
 }
 
 FileSel& FileSel::Type(const char *name, const char *ext) {
-	type.Add(ext, name);
+	type.Add(type.GetCount(), name);
+	mask.Add(ext);
 	if(IsNull(type))
 		type.SetIndex(0);
 	return *this;

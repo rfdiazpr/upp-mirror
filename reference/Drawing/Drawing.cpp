@@ -10,7 +10,7 @@ struct App : public TopWindow {
 		w.DrawDrawing(0, 0, 200, 200, dw);
 		w.DrawDrawing(0, sz.cy - 100, 100, 100, dw);
 	}
-	
+
 	App()
 	{
 		Sizeable();
@@ -21,7 +21,7 @@ struct App : public TopWindow {
 			           int(50 + 50 * sin(i * M_PI / 10)),
 			           int(50 + 50 * cos(i * M_PI / 10)),
 			           2, SLtGray);
-		Size sz = w.GetTextSize("DRAWING", Courier(16).Italic());
+		Size sz = GetTextSize("DRAWING", Courier(16).Italic());
 		w.DrawText((100 - sz.cx) / 2, (100 - sz.cy) / 2, "DRAWING", Courier(16).Italic());
 		dw = w;
 	}

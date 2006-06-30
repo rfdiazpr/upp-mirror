@@ -367,7 +367,7 @@ void LinkInRichTextClipboard__();
 
 RichTextView::RichTextView()
 {
-	SetFrame(FieldFrame());
+	SetFrame(ViewFrame());
 	AddFrame(sb);
 	cx = 3968;
 	sizetracking = false;

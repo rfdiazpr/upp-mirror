@@ -91,7 +91,7 @@ CONSOLE_APP_MAIN
 			draw.DrawRect(image_size, bg);
 			DrawFatFrame(draw, image_size, Black, 1);
 			Font font = Arial(10).Bold();
-			Size tsz = draw.GetTextSize(img, font);
+			Size tsz = GetTextSize(img, font);
 			draw.DrawText((image_size.cx - tsz.cx) >> 1,
 				(image_size.cy - tsz.cy) >> 1, img, font, Black);
 			header = HttpContentType(HttpImageGif());

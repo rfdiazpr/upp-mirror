@@ -1,10 +1,10 @@
- #include <CtrlLib/CtrlLib.h>
+#include <CtrlLib/CtrlLib.h>
 
 struct App : TopWindow {
 	ScrollBar      sb;
 	int            count;
-	
-	int GetLineHeight() { return ScreenInfo().GetFontInfo(Arial(20)).GetHeight(); }
+
+	int GetLineHeight() { return Arial(20).Info().GetHeight(); }
 
 	virtual void Paint(Draw& w)
 	{
@@ -18,7 +18,7 @@ struct App : TopWindow {
 			y += fcy;
 		}
 	}
-	
+
 	virtual void Layout()
 	{
 		sb.SetPage(GetSize().cy);
@@ -30,23 +30,23 @@ struct App : TopWindow {
 	}
 
 	bool Key(dword key, int)
-	{	
+	{
 		return sb.VertKey(key);
 	}
-	
+
 	void SetCount(int n)
 	{
 		count = n;
 		sb.SetTotal(n * GetLineHeight());
 	}
-	
+
 	void Scroll()
 	{
 		Refresh();
 	}
-	
+
 	typedef App CLASSNAME;
-	
+
 	App() {
 		Sizeable().Zoomable().BackPaint();
 		AddFrame(sb);

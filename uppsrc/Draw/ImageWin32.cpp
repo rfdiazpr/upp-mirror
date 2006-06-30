@@ -33,6 +33,35 @@ BitmapInfo32__::BitmapInfo32__(int cx, int cy)
 	hi->biHeight = -cy;
 }
 
+HBITMAP CreateBitMask(const RGBA *data, Size sz, Size tsz, Size csz, RGBA *ct)
+{
+	memset(ct, 0, tsz.cx * tsz.cy * sizeof(RGBA));
+	int linelen = (tsz.cx + 15) >> 4 << 1;
+	Buffer<byte>  mask(tsz.cy * linelen, 0xff);
+	byte *m = mask;
+	RGBA *ty = ct;
+	const RGBA *sy = data;
+	for(int y = 0; y < csz.cy; y++) {
+		const RGBA *s = sy;
+		RGBA *t = ty;
+		for(int x = 0; x < csz.cx; x++) {
+			if(s->a > 128) {
+				*t = *s;
+				m[x >> 3] &= ~(0x80 >> (x & 7));
+			}
+			else
+				t->r = t->g = t->b = 0;
+			t->a = 0;
+			t++;
+			s++;
+		}
+		m += linelen;
+		sy += sz.cx;
+		ty += tsz.cx;
+	}
+	return ::CreateBitmap(tsz.cx, tsz.cy, 1, 1, mask);
+}
+
 void SetSurface(HDC dc, int x, int y, int cx, int cy, const RGBA *pixels)
 {
 	BitmapInfo32__ bi(cx, cy);
@@ -160,7 +189,7 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 			w.DrawRect(x, y, sz.cx, sz.cy, c);
 			return;
 		}
-		if(buffer.GetKind() == IMAGE_OPAQUE && paintcount == 0) {
+		if(buffer.GetKind() == IMAGE_OPAQUE && paintcount == 0 && sr == Rect(sz)) {
 			SetSurface(w, x, y, sz.cx, sz.cy, buffer);
 			paintcount++;
 			return;
@@ -182,39 +211,12 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 		if(buffer.GetKind() == IMAGE_MASK) {
 			HDC dcMem = ::CreateCompatibleDC(dc);
 			if(!hmask) {
-				Buffer<RGBA> mask(len);
 				Buffer<RGBA> bmp(len);
-				RGBA *s = buffer;
-				RGBA *e = s + len;
-				RGBA *b = bmp;
-				RGBA *m = mask;
-				while(s < e) {
-					if(s->a) {
-						m->r = m->g = m->b = 0;
-						*b = *s;
-					}
-					else {
-						m->r = m->g = m->b = 255;
-						b->r = b->g = b->b = 0;
-					}
-					b->a = m->a = 0;
-					s++;
-					b++;
-					m++;
-				}
-				BitmapInfo32__ bi(sz.cx, sz.cy);
-				HBITMAP o = (HBITMAP)::SelectObject(dcMem, ::CreateDIBitmap(dc, bi, CBM_INIT, mask, bi,
-				                                    DIB_RGB_COLORS));
-				HDC dcMemMask = ::CreateCompatibleDC(dc);
-				if(!hbmp)
+				hmask = CreateBitMask(buffer, sz, sz, sz, bmp);
+				if(!hbmp) {
+					BitmapInfo32__ bi(sz.cx, sz.cy);
 					hbmp = ::CreateDIBitmap(dc, bi, CBM_INIT, bmp, bi, DIB_RGB_COLORS);
-				hmask = ::CreateBitmap(sz.cx, sz.cy, 1, 1, NULL);
-				ResCount += 2;
-				::SelectObject(dcMemMask, hmask);
-				::SetBkColor(dcMem, RGB(255, 255, 255));
-				::BitBlt(dcMemMask, 0, 0, sz.cx, sz.cy, dcMem, 0, 0, SRCCOPY);
-				::DeleteObject(::SelectObject(dcMem, o));
-				::DeleteDC(dcMemMask);
+				}
 			}
 			HBITMAP o = (HBITMAP)::SelectObject(dcMem, ::CreateCompatibleBitmap(dc, sz.cx, sz.cy));
 			::BitBlt(dcMem, 0, 0, ssz.cx, ssz.cy, dc, x, y, SRCCOPY);
@@ -448,35 +450,10 @@ HICON IconWin32(const Image& img, bool cursor)
 	}
 	else {
 		Buffer<RGBA>  h(tsz.cx * tsz.cy);
-		memset(h, 0, tsz.cx * tsz.cy * sizeof(RGBA));
-		int linelen = (tsz.cx + 15) >> 4 << 1;
-		Buffer<byte>  mask(tsz.cy * linelen, 0xff);
-		byte *m = mask;
-		RGBA *ty = h;
-		const RGBA *sy = ~img;
-		for(int y = 0; y < csz.cy; y++) {
-			const RGBA *s = sy;
-			RGBA *t = ty;
-			for(int x = 0; x < csz.cx; x++) {
-//				if(((s->a + 50) >> 6) > ((((x & 1) | ((x & 1) << 1)) + ((y & 1) << 1)) & 3)) {
-				if(s->a > 128) {
-					*t = *s;
-					m[x >> 3] &= ~(0x80 >> (x & 7));
-				}
-				else
-					t->r = t->g = t->b = 0;
-				t->a = 0;
-				t++;
-				s++;
-			}
-			m += linelen;
-			sy += sz.cx;
-			ty += tsz.cx;
-		}
 		HDC dc = ::GetDC(NULL);
 		BitmapInfo32__ bi(tsz.cx, tsz.cy);
+		iconinfo.hbmMask = CreateBitMask(~img, sz, tsz, csz, h);
 		iconinfo.hbmColor = ::CreateDIBitmap(dc, bi, CBM_INIT, h, bi, DIB_RGB_COLORS);
-		iconinfo.hbmMask = ::CreateBitmap(tsz.cx, tsz.cy, 1, 1, mask);
 		::ReleaseDC(NULL, dc);
 	}
 

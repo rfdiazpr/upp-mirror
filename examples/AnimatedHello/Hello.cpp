@@ -41,13 +41,13 @@ void HelloWorld::Paint(Draw& w)
         0, 38, 71, 92, 100, 92, 71, 38, 0, -38, -71, -92, -100, -92, -71, -38
 	};
 	w.DrawRect(sz, White);
-	Size tsz = w.GetTextSize(text, Roman(32));
+	Size tsz = GetTextSize(text, Roman(32));
 	Point pos = (sz - tsz) / 2;
 	for(int i = 0; i < text.GetLength(); i++) {
 		int q = (i + GetTickCount() / 40) & 15;
 		w.DrawText(pos.x, pos.y + sin_tbl[q] * (sz.cy - 32) / 200,
 		           ~text + i, Roman(32), HsvColorf(q / 15.0, 1, 0.5), 1);
-		pos.x += w.GetFontInfo(Roman(32))[text[i]];
+		pos.x += Roman(32).Info()[text[i]];
 	}
 }
 

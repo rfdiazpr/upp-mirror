@@ -2,7 +2,7 @@ enum {
 	CTRL_NORMAL, CTRL_HOT, CTRL_PRESSED, CTRL_DISABLED
 };
 
-Vector<Value> CtrlElements(int i);
+Vector<Value> CtrlsImgLook(int i);
 
 String DeAmp(const char *s);
 

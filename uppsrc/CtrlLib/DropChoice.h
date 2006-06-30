@@ -27,7 +27,32 @@ public:
 	virtual ~PopUpTable();
 };
 
-class DropList : public Ctrl, public Convert {
+struct DropBox : public Ctrl , public CtrlFrame {
+public:
+	virtual void  CancelMode();
+	virtual Image FrameMouseEvent(int event, Point p, int zdelta, dword keyflags);
+	virtual void  FramePaint(Draw& w, const Rect& r);
+	virtual void  FrameLayout(Rect& r);
+	virtual void  FrameAddSize(Size& sz);
+
+private:
+	bool UserEdge() const;
+	Rect GetDropBoxRect(Rect r) const;
+	int8 light;
+	Rect rect;
+	bool enabled;
+
+protected:
+	void     SyncLook();
+	void     Push();
+	Callback WhenPush;
+	void     EnableDrop(bool b = true) { enabled = b; RefreshFrame(); }
+
+public:
+	DropBox();
+};
+
+class DropList : public DropBox, public Convert {
 public:
 	virtual void  Paint(Draw& w);
 	virtual void  MouseWheel(Point p, int zdelta, dword keyflags);
@@ -40,13 +65,11 @@ public:
 	virtual Value GetData() const;
 	virtual void  GotFocus();
 	virtual void  LostFocus();
-	virtual void  State(int);
 	virtual Size  GetMinSize() const;
 
 	virtual Value Format(const Value& q) const;
 
 protected:
-	FrameRight<Button> drop;
 	PopUpTable         list;
 	Index<Value>       key;
 	Value              value;

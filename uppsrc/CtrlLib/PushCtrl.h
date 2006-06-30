@@ -55,6 +55,8 @@ Value ButtonLook(int i);
 Value OkButtonLook(int i);
 Value EdgeButtonLook(int i);
 Value ScrollButtonLook(int i);
+Color ButtonMonoColor(int i);
+int   ButtonPressOffsetFlag();
 
 class Button : public Pusher {
 public:

@@ -1,6 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
-#define  IMAGEFILE <iml/image.iml>
+#define  IMAGEFILE  <iml/image.iml>
+#define  IMAGECLASS MyImg
 #include <Draw/iml.h>
 
 struct App : TopWindow {
@@ -8,10 +9,10 @@ struct App : TopWindow {
 	{
 		Size sz = GetSize();
 		w.DrawRect(sz, SGray);
-		Size isz = Smiley().GetSize();
-		w.DrawImage((sz.cx - isz.cx) / 2, (sz.cy - isz.cy) / 2, Smiley());
+		Size isz = MyImg::Smiley().GetSize();
+		w.DrawImage((sz.cx - isz.cx) / 2, (sz.cy - isz.cy) / 2, MyImg::Smiley());
 	}
-	
+
 	App()
 	{
 		Sizeable();

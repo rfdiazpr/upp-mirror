@@ -207,6 +207,29 @@ Matrixf3 Matrixf3Inverse(const Matrixf3& mx)
 	return m;
 }
 
+Matrixf3 Matrixf3Affine(Pointf3 src1, Pointf3 dest1, Pointf3 src2, Pointf3 dest2)
+{
+	return Matrixf3Affine(src1, dest1, src2, dest2, src1 + FarthestAxis(src2 - src1),
+		dest1 + FarthestAxis(dest2 - dest1));
+}
+
+Matrixf3 Matrixf3Affine(Pointf3 src1, Pointf3 dest1, Pointf3 src2, Pointf3 dest2,
+	Pointf3 src3, Pointf3 dest3)
+{
+	return Matrixf3Affine(src1, dest1, src2, dest2, src3, dest3,
+		src1 + (src2 - src1) % (src3 - src1),
+		dest1 + (dest2 - dest1) % (dest3 - dest1));
+}
+
+Matrixf3 Matrixf3Affine(Pointf3 src1, Pointf3 dest1, Pointf3 src2, Pointf3 dest2,
+	Pointf3 src3, Pointf3 dest3, Pointf3 src4, Pointf3 dest4)
+{
+	Matrixf3 rev(src2 - src1, src3 - src1, src4 - src1, src1);
+	if(fabs(Determinant(rev)) <= 1e-100)
+		return Matrixf3Move((dest1 - src1 + dest2 - src2 + dest3 - src3 + dest4 - src4) / 4.0);
+	return Matrixf3Inverse(rev) * Matrixf3(dest2 - dest1, dest3 - dest1, dest4 - dest1, dest1);
+}
+
 double Determinant(const Matrixf3& mx)
 {
 	return mx.x.x * mx.y.y * mx.z.z

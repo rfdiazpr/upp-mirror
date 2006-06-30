@@ -51,12 +51,12 @@ void ChSet(const char *name, const Value& val)
 		ChSet(name, i, val);
 }
 
-void  ChSet(const char *id, const char *ids)
+void ChSetf(const char *name, Value (*fn)(int))
 {
 	VectorMap<String, ChVar>& var = chVar();
-	ChVar& v = var.Get(id);
+	ChVar& v = var.Get(name);
 	for(int i = 0; i < v.count; i++)
-		ChSet(id, i, ChGet(ids, i));
+		ChSet(name, i, (*fn)(i));
 }
 
 Value ChGet(const char *name, int i)
@@ -93,29 +93,50 @@ void ChRegister(void (*fn)())
 	ChRegister(NULL, fn);
 }
 
-void StdChPainter(Draw& w, const Rect& r, const Value& v)
+Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 {
 	if(IsType<Color>(v)) {
-		w.DrawRect(r, Color(v));
+		Color c = v;
+		switch(op) {
+		case LOOK_PAINT:
+			w.DrawRect(r, c);
+			return 0;
+		case LOOK_PAINTEDGE:
+			DrawFrame(w, r, c);
+			return 0;
+		case LOOK_MARGINS:
+			return Rect(1, 1, 1, 1);
+		case LOOK_ISOPAQUE:
+			return 1;
+		}
 	}
 	if(IsType<Image>(v)) {
 		Image b = v;
 		Size isz = b.GetSize();
 		Size sz = r.GetSize();
 		Point p = b.GetHotSpot();
-		w.Clipoff(r);
-		w.DrawImage(0, 0, b, RectC(0, 0, p.x, p.y));
-		w.DrawImage(0, sz.cy - p.y, b, RectC(0, isz.cy - p.y, p.x, p.y));
-		w.DrawImage(sz.cx - p.x, 0, b, RectC(isz.cx - p.x, 0, p.x, p.y));
-		w.DrawImage(sz.cx - p.x, sz.cy - p.y, b, RectC(isz.cx - p.x, isz.cy - p.y, p.x, p.y));
-		w.DrawImage(p.x, 0, sz.cx - 2 * p.x, p.y, b, RectC(p.x, 0, isz.cx - 2 * p.x, p.y));
-		w.DrawImage(p.x, sz.cy - p.y, sz.cx - 2 * p.x, p.y, b, RectC(p.x, isz.cy - p.y, isz.cx - 2 * p.x, p.y));
-		w.DrawImage(0, p.y, p.x, sz.cy - 2 * p.y, b, RectC(0, p.y, p.x, isz.cy - 2 * p.y));
-		w.DrawImage(sz.cx - p.x, p.y, p.x, sz.cy - 2 * p.y, b, RectC(isz.cx - p.x, p.y, p.x, isz.cy - 2 * p.y));
-		w.DrawImage(p.x, p.y, sz.cx - 2 * p.x, sz.cy - 2 * p.y, b,
-		            RectC(p.x, p.y, isz.cx - 2 * p.x, isz.cy - 2 * p.y));
-		w.End();
+		if(op == LOOK_ISOPAQUE)
+			return b.GetKind() == IMAGE_OPAQUE;
+		if(op == LOOK_MARGINS)
+			return Rect(p.x, p.y, p.x, p.y);
+		if(op == LOOK_PAINT || op == LOOK_PAINTEDGE) {
+			w.Clipoff(r);
+			w.DrawImage(0, 0, b, RectC(0, 0, p.x, p.y));
+			w.DrawImage(0, sz.cy - p.y, b, RectC(0, isz.cy - p.y, p.x, p.y));
+			w.DrawImage(sz.cx - p.x, 0, b, RectC(isz.cx - p.x, 0, p.x, p.y));
+			w.DrawImage(sz.cx - p.x, sz.cy - p.y, b, RectC(isz.cx - p.x, isz.cy - p.y, p.x, p.y));
+			w.DrawImage(p.x, 0, sz.cx - 2 * p.x, p.y, b, RectC(p.x, 0, isz.cx - 2 * p.x, p.y));
+			w.DrawImage(p.x, sz.cy - p.y, sz.cx - 2 * p.x, p.y, b, RectC(p.x, isz.cy - p.y, isz.cx - 2 * p.x, p.y));
+			w.DrawImage(0, p.y, p.x, sz.cy - 2 * p.y, b, RectC(0, p.y, p.x, isz.cy - 2 * p.y));
+			w.DrawImage(sz.cx - p.x, p.y, p.x, sz.cy - 2 * p.y, b, RectC(isz.cx - p.x, p.y, p.x, isz.cy - 2 * p.y));
+			if(op == LOOK_PAINT)
+				w.DrawImage(p.x, p.y, sz.cx - 2 * p.x, sz.cy - 2 * p.y, b,
+			            RectC(p.x, p.y, isz.cx - 2 * p.x, isz.cy - 2 * p.y));
+			w.End();
+			return 1;
+		}
 	}
+	return Null;
 }
 
 static void sChSync(const String& s)
@@ -133,7 +154,7 @@ void ChSetStyle(const char *style)
 {
 	ChReset();
 	Vector<String> s = Split(style, ';');
-	ChPainter(StdChPainter);
+	ChLookFn(StdChLookFn);
 	sChSync("!");
 	sChSync("");
 	for(int i = 0; i < s.GetCount(); i++)
@@ -147,7 +168,7 @@ String ChGetStyle()
 	return chStyle;
 }
 
-typedef void (*ChPainterFn)(Draw& w, const Rect& r, const Value& v);
+typedef Value (*ChPainterFn)(Draw& w, const Rect& r, const Value& v, int op);
 
 Vector<ChPainterFn>& sChps()
 {
@@ -155,20 +176,52 @@ Vector<ChPainterFn>& sChps()
 	return x;
 }
 
-void ChPainter(void (*fn)(Draw& w, const Rect& r, const Value& v))
+void ChLookFn(Value (*fn)(Draw& w, const Rect& r, const Value& v, int op))
 {
 	sChps().Add(fn);
 }
 
-void ChPaint(Draw& w, const Rect& r, const Value& element)
+Value sChOp(Draw& w, const Rect& r, const Value& v, int op)
 {
-	for(int i = sChps().GetCount() - 1; i >= 0; i--)
-		(*sChps()[i])(w, r, element);
+	Value q;
+	for(int i = sChps().GetCount() - 1; i >= 0; i--) {
+		q = (*sChps()[i])(w, r, v, op);
+		if(!IsNull(q))
+			break;
+	}
+	return q;
 }
 
-void ChPaint(Draw& w, int x, int y, int cx, int cy, const Value& element)
+void ChPaint(Draw& w, const Rect& r, const Value& look)
 {
-	ChPaint(w, RectC(x, y, cx, cy), element);
+	sChOp(w, r, look, LOOK_PAINT);
+}
+
+void ChPaint(Draw& w, int x, int y, int cx, int cy, const Value& look)
+{
+	sChOp(w, RectC(x, y, cx, cy), look, LOOK_PAINT);
+}
+
+void ChPaintEdge(Draw& w, const Rect& r, const Value& look)
+{
+	sChOp(w, r, look, LOOK_PAINTEDGE);
+}
+
+void ChPaintEdge(Draw& w, int x, int y, int cx, int cy, const Value& look)
+{
+	sChOp(w, RectC(x, y, cx, cy), look, LOOK_PAINTEDGE);
+}
+
+Rect ChMargins(const Value& look)
+{
+	NilDraw w;
+	return sChOp(w, Null, look, LOOK_MARGINS);
+}
+
+bool ChIsOpaque(const Value& look)
+{
+	NilDraw w;
+	return sChOp(w, Null, look, LOOK_ISOPAQUE);
 }
 
 Image AdjustColors(const Image& img) {
@@ -218,7 +271,6 @@ void  Override(Iml& target, const char *prefix, Iml& source, bool colored)
 			String n = p[q] + target.GetId(i);
 			int q = source.Find(n);
 			if(q >= 0) {
-				DUMP(n);
 				Image m = source.Get(q);
 				if(colored)
 					m = AdjustColors(m);

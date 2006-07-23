@@ -5,24 +5,6 @@ static struct {
 	ColorF color;
 }
 s_colors[] = {
-	{ "SBlack", &SBlack },
-	{ "SRed", &SRed },
-	{ "SGreen", &SGreen },
-	{ "SBrown", &SBrown },
-	{ "SBlue", &SBlue },
-	{ "SMagenta", &SMagenta },
-	{ "SCyan", &SCyan },
-	{ "SGray", &SGray },
-	{ "SLtGray", &SLtGray },
-	{ "SLtRed", &SLtRed },
-	{ "SLtGreen", &SLtGreen },
-	{ "SLtYellow", &SLtYellow },
-	{ "SLtBlue", &SLtBlue },
-	{ "SLtMagenta", &SLtMagenta },
-	{ "SLtCyan", &SLtCyan },
-	{ "SYellow", &SYellow },
-	{ "SWhiteGray", &SWhiteGray },
-	{ "SWhite", &SWhite },
 	{ "Black", &Black },
 	{ "Red", &Red },
 	{ "Green", &Green },
@@ -41,6 +23,26 @@ s_colors[] = {
 	{ "Yellow", &Yellow },
 	{ "WhiteGray", &WhiteGray },
 	{ "White", &White },
+
+//deprecated: (TODO)
+	{ "SBlack", &Black },
+	{ "SRed", &Red },
+	{ "SGreen", &Green },
+	{ "SBrown", &Brown },
+	{ "SBlue", &Blue },
+	{ "SMagenta", &Magenta },
+	{ "SCyan", &Cyan },
+	{ "SGray", &Gray },
+	{ "SLtGray", &LtGray },
+	{ "SLtRed", &LtRed },
+	{ "SLtGreen", &LtGreen },
+	{ "SLtYellow", &LtYellow },
+	{ "SLtBlue", &LtBlue },
+	{ "SLtMagenta", &LtMagenta },
+	{ "SLtCyan", &LtCyan },
+	{ "SYellow", &Yellow },
+	{ "SWhiteGray", &WhiteGray },
+	{ "SWhite", &White },
 };
 
 String FormatColor(Color c)
@@ -124,7 +126,7 @@ void ColorPopUp::Paint(Draw& w)
 	if(!notnull) {
 		Size fsz = GetTextSize(nulltext, StdFont());
 		Rect r(1, y, sz.cx - 1, fsz.cy + y + 2);
-		DrawFrame(w, r, SBlack);
+		DrawFrame(w, r, SColorText);
 		w.DrawText((sz.cx - fsz.cx) / 2, y, nulltext);
 		y = r.bottom + 3;
 		if(colori == 998)
@@ -157,7 +159,7 @@ void ColorPopUp::Paint(Draw& w)
 
 			DrawFilledFrame(w, x + 1, y, 14, 14, SColorText, GetColor(i));
 			if(i < 18 && scolors)
-				DrawFrame(w, x + 2, y + 1, 12, 12, SLtBlue);
+				DrawFrame(w, x + 2, y + 1, 12, 12, Blend(SColorLight, SColorHighlight));
 
 			if(i == colori)
 				if(GetMouseLeft())
@@ -318,8 +320,6 @@ ColorPopUp::ColorPopUp()
 	Add(wheel);
 	ramp <<= THISBACK(Ramp);
 	wheel <<= THISBACK(Wheel);
-	ramp.Background(SColorMenu);
-	wheel.Background(SColorMenu);
 	ramp.WhenLeftDouble = wheel.WhenLeftDouble = THISBACK(Select);
 	BackPaint();
 	nulltext = t_("(transparent)");

@@ -630,7 +630,7 @@ void TreeCtrl::Paint(Draw& w)
 	Size sz = GetSize();
 	Point org = sb;
 	scroller.Set(org);
-	w.DrawRect(sz, SWhite);
+	w.DrawRect(sz, SColorPaper);
 	int levelcx2 = levelcx >> 1;
 	for(int i = 0; i < line.GetCount(); i++) {
 		Line& l = line[i];
@@ -639,7 +639,7 @@ void TreeCtrl::Paint(Draw& w)
 			int yh = line[l.ll].y + item[line[l.ll].itemi].GetSize().cy / 2 - org.y;
 			if(yh >= 0 && yl < sz.cy) {
 				int x = levelcx + levelcx * l.level + levelcx2 - org.x;
-				w.DrawRect(x, yl, 1, yh - yl, SGray);
+				w.DrawRect(x, yl, 1, yh - yl, SColorShadow);
 			}
 		}
 	}
@@ -659,7 +659,7 @@ void TreeCtrl::Paint(Draw& w)
 			int x = 0;
 			x = levelcx + l.level * levelcx - org.x;
 			Point op = Point(x - levelcx2, y + msz.cy / 2);
-			w.DrawRect(op.x, op.y, levelcx2, 1, SGray);
+			w.DrawRect(op.x, op.y, levelcx2, 1, SColorShadow);
 			if(m.canopen || m.child.GetCount()) {
 				Image im = m.isopen ? CtrlImg::treeminus() : CtrlImg::treeplus();
 				op -= im.GetSize() / 2;
@@ -676,12 +676,13 @@ void TreeCtrl::Paint(Draw& w)
 			if(m.sel) {
 				st |= Display::SELECT;
 				fg = hasfocus ? SColorHighlightText : SColorText;
-				bg = hasfocus ? SColorHighlight : SLtGray;
+				bg = hasfocus ? SColorHighlight : SColorFace;
 			}
 			if(i == cursor && !nocursor) {
 				st |= Display::CURSOR;
 				fg = hasfocus ? SColorHighlightText : SColorText;
-				bg = hasfocus ? (isselection ? SLtBlue : SColorHighlight) : SLtGray;
+				bg = hasfocus ? (isselection ? Blend(SColorLight, SColorHighlight) : SColorHighlight)
+				              : SColorFace;
 			}
 			if(hasfocus) st |= Display::FOCUS;
 			if(!(m.ctrl && m.ctrl->IsWantFocus())) {

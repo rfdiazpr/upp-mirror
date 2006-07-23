@@ -42,6 +42,7 @@ ArrayCtrl::Column& ArrayCtrl::Column::SetDisplay(const Display& d)
 {
 	display = &d;
 	ClearCache();
+	arrayctrl->SyncCtrls();
 	arrayctrl->Refresh();
 	return *this;
 }
@@ -50,6 +51,7 @@ ArrayCtrl::Column& ArrayCtrl::Column::Ctrls(Callback1<One<Ctrl>&> _factory)
 {
 	factory = _factory;
 	arrayctrl->hasctrls = arrayctrl->headerctrls = true;
+	arrayctrl->SyncCtrls();
 	arrayctrl->Refresh();
 	return *this;
 }
@@ -342,17 +344,18 @@ void ArrayCtrl::Set0(int i, int ii, const Value& v) {
 	array.At(i).line.At(ii) = v;
 }
 
-void ArrayCtrl::AfterSet()
+void ArrayCtrl::AfterSet(int i)
 {
 	SetSb();
 	Refresh();
+	SyncCtrls(i);
 	InvalidateCache(cursor);
 }
 
 void ArrayCtrl::Set(int i, int ii, const Value& v)
 {
 	Set0(i, ii, v);
-	AfterSet();
+	AfterSet(i);
 }
 
 void ArrayCtrl::Set(int i, Id id, const Value& v) {
@@ -375,6 +378,7 @@ void  ArrayCtrl::SetCount(int n) {
 	if(cellinfo.GetCount() > array.GetCount())
 		cellinfo.SetCount(array.GetCount());
 	Refresh();
+	SyncCtrls();
 	SetSb();
 	PlaceEdits();
 }
@@ -436,6 +440,7 @@ void ArrayCtrl::Layout() {
 	SetSb();
 	HeaderScrollVisibility();
 	PlaceEdits();
+	SyncCtrls();
 }
 
 void ArrayCtrl::Reline(int i, int y)
@@ -509,7 +514,7 @@ int  ArrayCtrl::GetLineAt(int y) const {
 	return l > 0 ? l - 1 : l;
 }
 
-void  ArrayCtrl::SyncCtrls()
+void  ArrayCtrl::SyncCtrls(int from)
 {
 	LTIMING("SyncCtrls");
 	if(!hasctrls)
@@ -517,7 +522,7 @@ void  ArrayCtrl::SyncCtrls()
 	Ptr<Ctrl> restorefocus = GetFocusChildDeep();
 	Size sz = GetSize();
 	Ctrl *p = NULL;
-	for(int i = 0; i < array.GetCount(); i++)
+	for(int i = from; i < array.GetCount(); i++)
 		for(int j = 0; j < column.GetCount(); j++) {
 			bool ct = IsCtrl(i, j);
 			if(!ct && column[j].factory) {
@@ -584,7 +589,6 @@ void ArrayCtrl::ChildLostFocus()
 
 void  ArrayCtrl::Paint(Draw& w) {
 	LTIMING("Paint");
-	SyncCtrls();
 	Size size = GetSize();
 	Rect r;
 	r.bottom = 0;
@@ -598,6 +602,7 @@ void  ArrayCtrl::Paint(Draw& w) {
 			break;
 		xs += cw;
 	}
+	Color fc = Blend(SColorDisabled, SColorPaper);
 	if(!IsNull(i))
 		while(i < GetCount()) {
 			r.top = GetLineY(i) - sb;
@@ -621,12 +626,13 @@ void  ArrayCtrl::Paint(Draw& w) {
 				if(i < array.GetCount() && array[i].select) {
 					st |= Display::SELECT;
 					fg = hasfocus ? SColorHighlightText : SColorText;
-					bg = hasfocus ? SColorHighlight : SColorFace;
+					bg = hasfocus ? SColorHighlight : fc;
 				}
 				if(i == cursor && !nocursor) {
 					st |= Display::CURSOR;
 					fg = hasfocus ? SColorHighlightText : SColorText;
-					bg = hasfocus ? (GetSelectCount() > 1 ? SLtBlue : SColorHighlight) : SColorFace;
+					bg = hasfocus ? (GetSelectCount() > 1 ? Blend(SColorPaper, SColorHighlight)
+					                                      : SColorHighlight) : fc;
 				}
 				if(hasfocus) st |= Display::FOCUS;
 				const Display& d = ct ? StdDisplay() : GetDisplay(i, j);
@@ -655,7 +661,7 @@ void  ArrayCtrl::Paint(Draw& w) {
 			r.left = x;
 			r.right = size.cx;
 			r.bottom += horzgrid;
-			w.DrawRect(r, SWhite);
+			w.DrawRect(r, SColorPaper);
 			i++;
 		}
 	r.left = 0;
@@ -672,13 +678,14 @@ void  ArrayCtrl::Paint(Draw& w) {
 }
 
 void ArrayCtrl::Scroll() {
+	SyncCtrls();
 	PlaceEdits();
-	bool focusrect = HasFocusDeep() && (GetCount() == 0 || cursor < 0);
-	scroller.Scroll(*this, GetSize(), Point(header.GetScroll(), sb));
+	scroller.Scroll(*this, GetSize(), Point(header.GetScroll(), sb)); //TODO
 }
 
 void ArrayCtrl::HeaderLayout() {
 	Refresh();
+	SyncCtrls();
 	PlaceEdits();
 }
 
@@ -835,6 +842,7 @@ void ArrayCtrl::Remove0(int i) {
 	if(virtualcount > 0) virtualcount--;
 	Refresh();
 	PlaceEdits();
+	SyncCtrls();
 	SetSb();
 	selectiondirty = true;
 }
@@ -1234,12 +1242,7 @@ void ArrayCtrl::MouseMove(Point p, dword)
 
 Image ArrayCtrl::CursorImage(Point p, dword)
 {
-	if(header.GetSplit(p.x) < 0)
-		return Image::Arrow();
-	static Image (*hanipos[])() = {
-		CtrlImg::horzpos1, CtrlImg::horzpos2, CtrlImg::horzpos1, CtrlImg::horzpos3
-	};
-	return (*(hanipos)[GetTimeClick() / 200 % 4])();
+	return header.GetSplit(p.x) < 0 ? Image::Arrow() : CtrlsImg::HorzPos();
 }
 
 void ArrayCtrl::RightDown(Point p, dword flags) {
@@ -1474,7 +1477,7 @@ void  ArrayCtrl::Add(const Vector<Value>& v) {
 void ArrayCtrl::Add(__List##I(E__Value)) { \
 	int q = array.GetCount(); \
 	__List##I(E__Addv); \
-	AfterSet(); \
+	AfterSet(q); \
 }
 __Expand(E__AddF)
 
@@ -1503,6 +1506,7 @@ void  ArrayCtrl::Insert(int i) {
 	Refresh();
 	SetSb();
 	PlaceEdits();
+	SyncCtrls();
 }
 
 void  ArrayCtrl::Insert(int i, const Vector<Value>& v) {
@@ -1518,6 +1522,7 @@ void  ArrayCtrl::Remove(int i) {
 		SetCursor(c - (i < c));
 	anchor = -1;
 	PlaceEdits();
+	SyncCtrls();
 	SetSb();
 	Refresh();
 }
@@ -1861,7 +1866,7 @@ void ArrayCtrl::Reset() {
 	selectcount = 0;
 	bains = 0;
 	row_name = t_("row");
-	gridcolor = SGray;
+	gridcolor = SColorShadow;
 	autoappend = false;
 }
 
@@ -2023,10 +2028,10 @@ void ArrayOption::Paint(Draw& w, const Rect& r, const Value& q,
 	bool gray = false;
 	if(!array || array->IsEnabled()) {
 		gray = threestate && IsNull(q) || !threestate && !IsNull(q) && q != f && q != t;
-		w.DrawRect(cr, gray ? SLtGray() : paper);
+		w.DrawRect(cr, gray ? SColorFace() : paper);
 	}
 	if(frame)
-		DrawFrame(w, cr, focusCursor ? White : SLtBlue);
+		DrawFrame(w, cr, focusCursor ? White : Blend(SColorLight, SColorHighlight));
 	Image icon;
 	if(q != f) {
 		Image icon = CtrlImg::smallcheck();

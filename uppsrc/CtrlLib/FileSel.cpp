@@ -22,7 +22,7 @@ bool Load(FileList& list, const String& dir, const char *patterns, bool dirs,
 		Array<FileSystemInfo::FileInfo> root = filesystem.Find(Null);
 		for(int i = 0; i < root.GetCount(); i++)
 			list.Add(root[i].filename, GetDriveImage(root[i].root_style),
-				Arial(FNTSIZE).Bold(), SBlack, true, -1, Null, SCyan,
+				Arial(FNTSIZE).Bold(), SColorText, true, -1, Null, SColorDisabled,
 				root[i].root_desc, Arial(FNTSIZE));
 	}
 	else {
@@ -47,8 +47,11 @@ bool Load(FileList& list, const String& dir, const char *patterns, bool dirs,
 			   (fi.is_directory || PatternMatchMulti(patterns, fi.filename)))
 				list.Add(fi.filename, img,
 						 fi.is_directory ? Arial(FNTSIZE).Bold() : Arial(FNTSIZE),
-						 nd ? SGray : SBlack, fi.is_directory, fi.is_directory ? -1 : (int)fi.length,
-						 Null, nd ? SGray : fi.is_directory ? SBlack : SLtBlue);
+						 nd ? SColorDisabled : SColorText, fi.is_directory,
+						 fi.is_directory ? -1 : (int)fi.length,
+						 Null, nd ? SColorDisabled
+						          : fi.is_directory ? SColorText
+						                            : LtBlue);
 		}
 	}
 	return true;
@@ -907,7 +910,7 @@ FileSel::FileSel() {
 	multi = false;
 	bidname = false;
 
-	Add(sizegrip);
+	AddChildBefore(GetFirstChild(), &sizegrip);
 }
 
 FileSel::~FileSel() {}

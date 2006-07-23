@@ -118,10 +118,11 @@ void   LineEdit::Paint0(Draw& w) {
 						LLOG("Highlight -> tab[" << q << "] paper = " << h.paper);
 						w.DrawRect(gp * fsz.cx - scx, y, fsz.cx * l, fsz.cy, h.paper);
 						if(showtabs && h.paper != SColorHighlight) {
+							Color c = Blend(SColorLight, SColorHighlight);
 							w.DrawRect(gp * fsz.cx - scx + 2, y + fsz.cy / 2,
-							           l * fsz.cx - 4, 1, SWhiteGray);
+							           l * fsz.cx - 4, 1, c);
 							w.DrawRect(ngp * fsz.cx - scx - 3, y + 3,
-							           1, fsz.cy - 6, SWhiteGray);
+							           1, fsz.cy - 6, c);
 						}
 						if(bordercolumn > 0 && bordercolumn >= gp && bordercolumn < gp + l)
 							w.DrawRect((bordercolumn - sc.x) * fsz.cx, y, 1, fsz.cy, bordercolor);

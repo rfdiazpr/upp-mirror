@@ -27,7 +27,8 @@ public:
 		int         margin;
 		Color       paper;
 
-		void        Paint(Draw& w, int x, int y, int cx, int cy, bool disabled, bool push, bool hl);
+		void        Paint(bool& first, Draw& w,
+		                  int x, int y, int cx, int cy, bool disabled, bool push, bool hl);
 
 		friend class HeaderCtrl;
 

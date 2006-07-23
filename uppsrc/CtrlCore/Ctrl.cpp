@@ -710,9 +710,6 @@ String Ctrl::GetAppName()
 	return appname;
 }
 
-int  Ctrl::AutoBackPaintAreaSize = 100000;
-int  Ctrl::TransparentBackPaintAreaSize = 100000;
-
 static bool _ClickFocus;
 bool Ctrl::ClickFocus() { return _ClickFocus; }
 void Ctrl::ClickFocus(bool cf) { _ClickFocus = cf; }

@@ -1,12 +1,11 @@
 #include "CtrlLib.h"
 
-CH_LOOK(DropBoxEdge, CtrlsImgLook(CtrlsImg::I_EFE));
-CH_LOOKS(DropBoxBtn, 4, EdgeButtonLook);
-CH_IMAGE(DropImg, CtrlsImg::DA());
-CH_LOOKS(DropBoxSquaredBtn, 4, EdgeButtonLook);
-CH_IMAGE(DropSquaredImg, CtrlsImg::DA());
 CH_INT(DropBoxInsideEdge, 1);
 CH_INT(DropBoxWidth, FrameButtonWidth());
+
+CH_LOOK(DropBoxEdge, CtrlsImgLook(CtrlsImg::I_EFE));
+CH_LOOKS(DropBoxBtn, 4, CtrlsImgLook(CtrlsImg::I_EB, CtrlsImg::DA(), ButtonMonoColor));
+CH_LOOKS(DropBoxSquaredBtn, 4, CtrlsImgLook(CtrlsImg::I_EB, CtrlsImg::DA(), ButtonMonoColor));
 
 void DropBox::CancelMode()
 {
@@ -53,7 +52,7 @@ Rect DropBox::GetDropBoxRect(Rect r) const {
 	return r;
 }
 
-void DropBox::FramePaint(Draw& w, const Rect& r)
+void DropBox::ButtonPaint(Draw& w, const Rect& r)
 {
 	int q = CTRL_NORMAL;
 	if(HasMouseInFrame(rect))
@@ -66,22 +65,14 @@ void DropBox::FramePaint(Draw& w, const Rect& r)
 	Image glyph;
 	if(UserEdge()) {
 		ChPaint(w, box, DropBoxSquaredBtn(q));
-		glyph = DropSquaredImg();
 	}
 	else {
 		ChPaintEdge(w, r, DropBoxEdge());
 		ChPaint(w, box, DropBoxBtn(q));
-		glyph = DropImg();
-	}
-	Size isz = glyph.GetSize();
-	if(isz.cx <= box.GetWidth() && isz.cy <= box.GetHeight()) {
-		Point p = box.CenterPos(isz);
-		bool po = HasCapture() && ButtonPressOffsetFlag();
-		w.DrawImage(p.x + po, p.y + po, glyph, ButtonMonoColor(q));
 	}
 }
 
-void DropBox::FrameLayout(Rect& r)
+void DropBox::ButtonLayout(Rect& r)
 {
 	rect = r;
 	r.right -= DropBoxWidth();
@@ -95,7 +86,7 @@ void DropBox::FrameLayout(Rect& r)
 	}
 }
 
-void DropBox::FrameAddSize(Size& sz)
+void DropBox::ButtonAddSize(Size& sz)
 {
 	if(UserEdge()) {
 		sz.cx += DropBoxWidth();
@@ -109,27 +100,50 @@ void DropBox::FrameAddSize(Size& sz)
 	}
 }
 
-struct NoFrameClass__ : public CtrlFrame
+void DropBox::DropButton::FrameLayout(Rect& r)
 {
-	virtual void FrameLayout(Rect& r) {}
-	virtual void FramePaint(Draw& draw, const Rect& r) {}
-	virtual void FrameAddSize(Size& sz) {}
-};
-
-static CtrlFrame& NoFrame__()
-{
-	static NoFrameClass__ x;
-	return x;
+	dropbox->ButtonLayout(r);
 }
+
+void DropBox::DropButton::FramePaint(Draw& draw, const Rect& r)
+{
+	dropbox->ButtonPaint(draw, r);
+}
+
+void DropBox::DropButton::FrameAddSize(Size& sz)
+{
+	dropbox->ButtonAddSize(sz);
+}
+
 
 bool DropBox::UserEdge() const
 {
-	return (&GetFrame() != &NoFrame__());
+	return !dynamic_cast<const DropEdge *>(&GetFrame()) || GetFrameCount() != 2;
+}
+
+void DropBox::DropEdge::FrameLayout(Rect& r)
+{
+	if(dropbox->UserEdge())
+		EditFieldFrame().FrameLayout(r);
+}
+
+void DropBox::DropEdge::FramePaint(Draw& w, const Rect& r)
+{
+	if(dropbox->UserEdge())
+		EditFieldFrame().FramePaint(w, r);
+}
+
+void DropBox::DropEdge::FrameAddSize(Size& sz)
+{
+	if(dropbox->UserEdge())
+		EditFieldFrame().FrameAddSize(sz);
 }
 
 DropBox::DropBox()
 {
-	SetFrame(NoFrame__());
-	AddFrame(*this);
+	edge.dropbox = this;
+	SetFrame(edge);
+	button.dropbox = this;
+	AddFrame(button);
 	light = -1;
 }

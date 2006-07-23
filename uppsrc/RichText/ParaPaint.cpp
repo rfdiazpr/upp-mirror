@@ -229,7 +229,7 @@ void RichPara::Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& 
 						draw.DrawRect(z * x, z * py.y, sz.cx, z * linecy, (*i)->paper);
 						draw.Clipoff(z * x, z * (y0 - hg->ascent), sz.cx, sz.cy);
 						if(pi.sizetracking)
-							draw.DrawRect(sz, SLtGray);
+							draw.DrawRect(sz, SColorFace);
 						else
 							if(pi.usecache) {
 								RichObjectImageMaker im;

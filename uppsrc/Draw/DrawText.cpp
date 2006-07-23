@@ -4,7 +4,7 @@
 #if defined(PLATFORM_WIN32) || defined(PLATFORM_X11)
 
 #define LLOG(x)    // LOG(x)
-#define LTIMING(x) TIMING(x)
+#define LTIMING(x) // TIMING(x)
 
 bool Draw::sFini;
 
@@ -24,11 +24,11 @@ void Draw::SinCos(int angle, double& sina, double& cosa)
 	}
 }
 
-RichValue<Font>::Registrator MK__s;
-
 bool Draw::StdFontSizeSet;
 Size Draw::StdFontSize;
 Font Draw::AStdFont;
+
+RichValue<Font>::Registrator MK__s;
 
 void Draw::InitFonts()
 {

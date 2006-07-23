@@ -10,15 +10,15 @@ void BarPane::LeftDown(Point pt, dword keyflags)
 void BarPane::Paint(Draw& w)
 {
 	Size sz = GetSize();
-	w.DrawRect(sz, menu ? (IsXPStyle() ? SColorMenu : SLtGray) : SColorFace);
+	w.DrawRect(sz, menu ? (IsXPStyle() ? SColorMenu : SColorFace) : SColorFace);
 	for(int i = 0; i < breakpos.GetCount(); i++)
 		if(horz) {
-			w.DrawRect(0, breakpos[i], sz.cx, 1, SGray);
-			w.DrawRect(0, breakpos[i] + 1, sz.cx, 1, SWhite);
+			w.DrawRect(0, breakpos[i], sz.cx, 1, SColorShadow);
+			w.DrawRect(0, breakpos[i] + 1, sz.cx, 1, SColorLight);
 		}
 		else {
-			w.DrawRect(breakpos[i], 0, 1, sz.cy, SGray);
-			w.DrawRect(breakpos[i] + 1, 0, 1, sz.cy, SWhite);
+			w.DrawRect(breakpos[i], 0, 1, sz.cy, SColorShadow);
+			w.DrawRect(breakpos[i] + 1, 0, 1, sz.cy, SColorLight);
 		}
 }
 

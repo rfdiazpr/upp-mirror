@@ -19,8 +19,6 @@ public:
 
 	Callback      WhenLeftDouble;
 
-	WheelRampCtrl& Background(Color _color)      { background = _color; Refresh(); return *this; }
-
 private:
 	void          SetColor(Color color, bool set_norm, bool set_hsv);
 
@@ -36,7 +34,6 @@ private:
 	bool          ramp;
 	Color         color;
 	Color         normalized_color;
-	Color         background;
 	int           h16, s16, v16;
 	int           round_step;
 	int           wheel_style;

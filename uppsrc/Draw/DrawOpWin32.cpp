@@ -2,10 +2,11 @@
 #ifdef PLATFORM_WIN32
 
 #define LLOG(x) // LOG(x)
-#define LTIMING(x)
+#define LTIMING(x) // RTIMING(x)
 
 void Draw::BeginOp()
 {
+	LTIMING("Begin");
 	Cloff& w = cloff.Add();
 	w.org = actual_offset;
 	w.hrgn = CreateRectRgn(0, 0, 0, 0);
@@ -22,18 +23,21 @@ void Draw::OffsetOp(Point p)
 {
 	Begin();
 	actual_offset += p;
+	LTIMING("Offset");
 	SetOrg();
 }
 
 bool Draw::ClipOp(const Rect& r)
 {
 	Begin();
+	LTIMING("Clip");
 	return IntersectClip(r);
 }
 
 bool Draw::ClipoffOp(const Rect& r)
 {
 	Begin();
+	LTIMING("Clipoff");
 	LLOG("ClipoffOp " << r << ", GetClip() = " << GetClip() << ", actual_offset = " << actual_offset);
 	actual_offset += r.TopLeft();
 	bool q = IntersectClip(r);
@@ -44,6 +48,7 @@ bool Draw::ClipoffOp(const Rect& r)
 
 void Draw::EndOp()
 {
+	LTIMING("End");
 	ASSERT(cloff.GetCount());
 	Cloff& w = cloff.Top();
 	actual_offset = w.org;
@@ -56,6 +61,7 @@ void Draw::EndOp()
 
 bool Draw::ExcludeClipOp(const Rect& r)
 {
+	LTIMING("ExcludeClip");
 	Rect rr = LPtoDP(r);
 	HRGN hrgn = ::CreateRectRgnIndirect(rr);
 	int q = ::ExtSelectClipRgn(handle, hrgn, RGN_DIFF);
@@ -65,6 +71,7 @@ bool Draw::ExcludeClipOp(const Rect& r)
 
 bool Draw::IntersectClipOp(const Rect& r)
 {
+	LTIMING("Intersect");
 	Rect rr = LPtoDP(r);
 	HRGN hrgn = ::CreateRectRgnIndirect(rr);
 	int q = ::ExtSelectClipRgn(handle, hrgn, RGN_AND);
@@ -81,6 +88,7 @@ Rect Draw::GetClipOp() const
 
 bool Draw::IsPaintingOp(const Rect& r) const
 {
+	LTIMING("IsPainting");
 	LLOG("Draw::IsPaintingOp r: " << r);
 	return ::RectVisible(handle, r);
 }

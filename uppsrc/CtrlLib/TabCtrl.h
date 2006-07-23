@@ -1,135 +1,137 @@
-class TabCtrl : public Ctrl, public CtrlFrame {
-public:
-	virtual bool   Accept();
-	virtual void   Layout();
-	virtual bool   HotKey(dword key);
-	virtual bool   Key(dword key, int repcnt);
-	virtual void   FrameAdd(Ctrl& ctrl);
-	virtual void   FrameAddSize(Size& sz);
-	virtual void   FrameRemove();
-	virtual void   FrameLayout(Rect& rc);
-	virtual void   FramePaint(Draw& draw, const Rect& rc);
-	virtual Image  FrameMouseEvent(int event, Point p, int zdelta, dword keyflags);
-	virtual void   Paint(Draw& w);
-	virtual void   CancelMode();
+int   TabCtrlMetric(int i);
+Value TabCtrlLook(int i);
 
-	virtual Vector<Rect> GetTransparentFrameRects();
-	virtual Vector<Rect> GetOpaqueFrameRects();
-	virtual Vector<Rect> GetTransparentViewRects();
+class TabCtrl : public Ctrl {
+public:
+	virtual bool  Accept();
+	virtual void  Paint(Draw& draw);
+	virtual void  CancelMode();
+	virtual void  MouseMove(Point p, dword keyflags);
+	virtual void  LeftDown(Point p, dword keyflags);
+	virtual void  MouseLeave();
+	virtual bool  Key(dword key, int count);
+	virtual bool  HotKey(dword key);
+	virtual void  Layout();
+	virtual Rect  GetOpaqueRect();
+	virtual Value GetData() const;
+	virtual void  SetData(const Value& data);
 
 public:
-	class Item
-	{
+	class Item {
+		TabCtrl  *owner;
+
+		int       x;
+		Point     pictpos;
+		Point     textpos;
+		int       cx;
+
+		String    text;
+		PaintRect pict;
+		Ctrl     *ctrl;
+		bool      enabled;
+		Ctrl     *slave;
+		dword     key;
+
 		friend class TabCtrl;
+
+		void Layout(int x, int y, int cy);
+		void Paint(Draw& w);
+		int  Right() { return x + cx; }
 
 	public:
 		Item&          Text(const String& _text);
-		Item&          Help(const String& _help)     { help = _help; return *this; }
 		Item&          Picture(PaintRect d);
-		Item&          Image(const class Image& _im)     { return Picture(PaintRect(ImageDisplay(), _im)); }
-		Item&          Control(Ctrl *_ctrl);
+		Item&          SetImage(const Image& _im)       { return Picture(PaintRect(ImageDisplay(), _im)); }
+		Item&          SetCtrl(Ctrl *_ctrl);
+		Item&          SetCtrl(Ctrl& c)                 { return SetCtrl(&c); }
 		Item&          Slave(Ctrl *_slave);
-		Item&          Key(dword _key)               { key = _key; return *this; }
+		Item&          Key(dword _key)                  { key = _key; return *this; }
 
 		Item&          Enable(bool _en = true);
-		Item&          Disable()                     { return Enable(false); }
-		bool           IsEnabled() const             { return enabled; }
+		Item&          Disable()                        { return Enable(false); }
+		bool           IsEnabled() const                { return enabled; }
 
-	protected:
-		Size           GetSize(Draw& draw) const;
+		Item();
 
-		Item(TabCtrl& owner);
-
-	protected:
-		TabCtrl&       owner;
-		Rect           rect;
-		Size           size;
-		bool           enabled;
-		dword          key;
-		String         text; // IsVoid() -> value is printed here
-		String         help;
-		PaintRect      pict;
-		Ctrl          *ctrl;
-		Ctrl          *slave;
-		Ptr<Ctrl>      activefocus;
+	//deprecated:
+		Item&          Control(Ctrl *c)                 { return SetCtrl(c); }
+		Item&          Image(const class Image& m)      { return SetImage(m); }
 	};
 
-	friend class Item;
-
-protected:
-	Size           GetFrameOffset() const;
-	void           RefreshItem(int item);
-	virtual void   DrawItem(Draw& draw, int item);
-	virtual void   DrawItemFrame(Draw& draw, Rect& rc, bool active, bool light);
-	virtual void   DrawRaggedEdge(Draw& draw, Point pos, int height, bool right = true);
-	void           DrawRaggedEdges(Draw& draw, const Rect& rc, int delta = 2);
-	bool           DrawItemCheck(Draw& draw, const Rect& clip, int item);
-
 private:
-	Button         prev, next;
-	Rect           out_frame, in_frame;
-	Size           frame_size;
-	Size           old_frame_size;
-	Font           font;
-	Array<Item>    items;
-	int            hl;
-	int            sidegap, vertgap;
-	bool           accept_current;
-	int            find_max_x; // maximum x coordinate for Find to work
-	int            top;      // active item
-	int            scroll;
-	int            scroll_limit;
-	int            ragged_left;
-	int            ragged_right;
+	struct Tabs : public Ctrl {
+		virtual void Paint(Draw& w);
+	};
 
-	void           ScrollInto(int _top);
-	void           SetScroll(int _scroll);
-	int            GetScroll() const            { return scroll; }
+	Array<Item> tab;
+	int         x0;
+	int         hot;
+	int         sel;
+	Tabs        tabs;
+	Button      left, right;
+	ParentCtrl  pane;
+	bool        accept_current;
 
-	int            Find(Point pt) const;
+	int       (*metric)(int i);
+	Value     (*look)(int i);
 
-	void           RefreshTabLayout();
+	static Image Fade(int i);
+
+	int        GetTab(Point p);
+	void       PaintTabs(Draw& w);
+	void       ScrollInto(int i);
+	void       Left();
+	void       Right();
+	void       SyncHot();
+	void       SyncTabs();
+	int        TabsRight();
+	void       Go(int d);
 
 public:
-	Callback       WhenSet;
-	Callback1<Bar&> WhenBar;
+	enum ChParam {
+		TABHEIGHT,
+		MARGIN, SELTOP, SELLEFT, SELRIGHT, SELBOTTOM,
+		LEFTEDGE, TOPEDGE, RIGHTEDGE, BOTTOMEDGE,
+		METRIC_COUNT,
 
-	void           Clear();
-	bool           IsEmpty() const                             { return items.IsEmpty(); }
-	int            GetCount() const                            { return items.GetCount(); }
+		FIRST = 0,
+		NEXT = 4,
+		BODY = 8,
+		LOOK_COUNT = 9
+	};
 
-	Item&          Add();
-	Item&          Add(const char *text)                       { return Add().Text(text); }
-	Item&          Add(const ::Image& image, const char *text) { return Add(text).Image(image); }
-	Item&          Add(Ctrl& slave, const char *text)          { return Add(text).Slave(&slave); }
+	Callback WhenSet;
 
-	const Item&    GetItem(int i) const                        { return items[i]; }
-	Item&          GetItem(int i)                              { return items[i]; }
+	TabCtrl::Item& Add();
+	TabCtrl::Item& Add(const char *text);
+	TabCtrl::Item& Add(const Image& m, const char *text);
+	TabCtrl::Item& Add(Ctrl& slave, const char *text);
+	TabCtrl::Item& Add(Ctrl& slave, const Image& m, const char *text);
 
-	void           SetData(const Value& v)                     { Set(v); }
-	Value          GetData() const                             { return Get(); }
+	int   GetCount() const                       { return tab.GetCount(); }
+	Item& GetItem(int i)                         { return tab[i]; }
+	const Item& GetItem(int i) const             { return tab[i]; }
 
-	void           SetFont(Font f)                             { font = f; RefreshTabLayout(); }
-	Font           GetFont() const                             { return font; }
+	void Set(int i);
+	int  Get() const                             { return sel; }
 
-	int            Get() const                                 { return top; }
-	void           Set(int _top, bool focus = false);
+	void GoNext()                                { Go(1); }
+	void GoPrev()                                { Go(-1); }
 
-	void           GoPrev();
-	void           GoNext();
+	Size     ComputeSize(Size pane);
+	void     Add(Ctrl& c)                        { pane.Add(c.SizePos()); }
+	TabCtrl& operator<<(Ctrl& c)                 { Add(c); return *this; }
 
-	TabCtrl&       AcceptCurrent(bool ac = true)         { accept_current = ac; return *this; }
-	void           AcceptAll()                           { AcceptCurrent(false); }
+	TabCtrl& AcceptCurrent(bool ac = true)         { accept_current = ac; return *this; }
+	TabCtrl& AcceptAll()                           { return AcceptCurrent(false); }
+	TabCtrl& Style(Value (*l)(int))                { look = l; Refresh(); return *this; }
+	TabCtrl& Style(Value (*l)(int), int (*m)(int)) { metric = m; RefreshLayout(); return *this; }
 
-	TabCtrl&       SideGap(int gap)                      { sidegap = gap + 2; RefreshTabLayout(); return *this; }
-	TabCtrl&       VertGap(int gap)                      { vertgap = gap + 2; RefreshTabLayout(); return *this; }
-
-	static Color   GetTabColor();
+	void Reset();
 
 	typedef TabCtrl CLASSNAME;
 
 	TabCtrl();
-	~TabCtrl();
 };
 
 class TabDlg : public TopWindow {

@@ -87,7 +87,8 @@ int Console::Flush()
 		if(!slot.process)
 			continue;
 		String s;
-		if(!slot.process->Read(s)) {
+		slot.process->Read(s);
+		if(!slot.process->IsRunning()) {
 			slot.output.Cat(s);
 			Kill(i);
 			if(slot.exitcode != 0 && verbosebuild)
@@ -176,6 +177,8 @@ bool Console::Run(One<SlaveProcess> process, const char *cmdline, Stream *out, b
 		FlushConsole();
 		return false;
 	}
+	else if(verbosebuild)
+		spooled_output << cmdline << "\n";
 	Wait(slot);
 	Slot& pslot = processes[slot];
 	pslot.process = process;

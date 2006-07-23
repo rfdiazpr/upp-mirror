@@ -21,21 +21,21 @@ void HexViewInfo::PrintValue(Draw& w, int x, int y, int bytes, bool be)
 	for(int i = 0; i < bytes; i++) {
 		int b = data[be ? i : bytes - i - 1];
 		if(b < 0) {
-			w.DrawText(x, y, String('?', 2 * bytes), font, SBlue);
+			w.DrawText(x, y, String('?', 2 * bytes), font, SColorHighlight);
 			x += 2 * bytes * fsz.cx;
 			w.DrawText(x, y, "=", font);
 			x += fsz.cx;
-			w.DrawText(x, y, "?", font, SRed);
+			w.DrawText(x, y, "?", font, Red);
 			return;
 		}
 		d = (d << 8) | (byte) b;
 	}
-	w.DrawText(x, y, FormatIntHex(d, 2 * bytes), font, SBlue);
+	w.DrawText(x, y, FormatIntHex(d, 2 * bytes), font, SColorHighlight);
 	x += 2 * bytes * fsz.cx;
 	w.DrawText(x, y, "=", font);
 	x += fsz.cx;
 	String txt = FormatUnsigned(d);
-	w.DrawText(x, y, txt, font, SRed);
+	w.DrawText(x, y, txt, font, Red);
 	x += GetTextSize(txt, font).cx;
 	w.DrawText(x, y, "=", font);
 	x += fsz.cx;
@@ -45,24 +45,24 @@ void HexViewInfo::PrintValue(Draw& w, int x, int y, int bytes, bool be)
 	else
 	if(bytes == 2)
 		q = (int16) d;
-	w.DrawText(x, y, FormatInt(q), font, SMagenta);
+	w.DrawText(x, y, FormatInt(q), font, Magenta);
 }
 
 void HexViewInfo::Paint(Draw& w)
 {
 	Size sz = GetSize();
-	w.DrawRect(sz, SWhiteGray);
+	w.DrawRect(sz, SColorLtFace);
 	if(mode < 1)
 		return;
 	Size fsz = GetTextSize("X", font);
 	char h[17];
 	FormatHex(h, pos, longmode ? 16 : 8);
 	int xx = 0;
-	w.DrawText(xx, 0, h, font, SBlue);
+	w.DrawText(xx, 0, h, font, SColorHighlight);
 	xx += (longmode ? 16 : 8) * fsz.cx;
 	w.DrawText(xx, 0, "=", font);
 	xx += fsz.cx;
-	w.DrawText(xx, 0, Format64(pos), font, SRed);
+	w.DrawText(xx, 0, Format64(pos), font, Red);
 	xx += (longmode ? 22 : 12) * fsz.cx;
 	int y = 0;
 	int x;
@@ -85,7 +85,7 @@ void HexViewInfo::Paint(Draw& w)
 			break;
 		wh[i] = MAKEWORD(data[2 * i], data[2 * i + 1]);
 	}
-	w.DrawText(x, 0, wh, font, SCyan, i);
+	w.DrawText(x, 0, wh, font, Cyan, i);
 	if(mode < 2)
 		return;
 	char sh[80];
@@ -96,7 +96,7 @@ void HexViewInfo::Paint(Draw& w)
 		sh[i] = data[i];
 	}
 	WString ws = FromUtf8(sh, i);
-	w.DrawText(x, fsz.cy, ws, font, SCyan, i);
+	w.DrawText(x, fsz.cy, ws, font, Cyan, i);
 	String txt;
 	String ftxt;
 	i = 0;
@@ -121,8 +121,8 @@ void HexViewInfo::Paint(Draw& w)
 		sh[i] = data[i];
 		i++;
 	}
-	w.DrawText(0, fsz.cy, txt, font, SRed);
-	w.DrawText(18 * fsz.cx, fsz.cy, ftxt, font, SRed);
+	w.DrawText(0, fsz.cy, txt, font, Red);
+	w.DrawText(18 * fsz.cx, fsz.cy, ftxt, font, Red);
 }
 
 void HexViewInfo::SetMode(int _mode)
@@ -148,7 +148,7 @@ int HexView::Byte(int64 adr)
 void HexView::Paint(Draw& w)
 {
 	Size sz = GetSize();
-	w.DrawRect(sz, SWhite);
+	w.DrawRect(sz, SColorPaper);
 	int y = 0;
 	int64 adr = sc;
 	while(y < sz.cy) {
@@ -161,20 +161,20 @@ void HexView::Paint(Draw& w)
 			if(adr >= total)
 				return;
 			if(adr == cursor) {
-				w.DrawRect(x, y, fsz.cx * 2, fsz.cy, SLtCyan);
-				w.DrawRect(tx, y, fsz.cx, fsz.cy, SLtCyan);
+				w.DrawRect(x, y, fsz.cx * 2, fsz.cy, LtCyan);
+				w.DrawRect(tx, y, fsz.cx, fsz.cy, LtCyan);
 			}
 			int b = Byte(adr++);
 			if(b < 0) {
-				w.DrawText(x, y, "??", font, SBrown);
-				w.DrawText(tx, y, "?", font, SBrown);
+				w.DrawText(x, y, "??", font, Brown);
+				w.DrawText(tx, y, "?", font, Brown);
 			}
 			else {
 				h[0] = FormatHexDigit((b & 0xf0) >> 4);
 				h[1] = FormatHexDigit(b & 0x0f);
 				h[2] = '\0';
-				w.DrawText(x, y, h, font, SBlack);
-				Color color = SLtBlue;
+				w.DrawText(x, y, h, font, SColorText);
+				Color color = SColorLtHighlight;
 				switch(b) {
 				case '\a': *h = 'a'; break;
 				case '\b': *h = 'b'; break;
@@ -187,11 +187,11 @@ void HexView::Paint(Draw& w)
 				default:
 					if(b >= 32) {
 						*h = b;
-						color = SBlack;
+						color = SColorText;
 					}
 					else {
 						*h = '.';
-						color = SGray;
+						color = SColorDisabled;
 					}
 				}
 				h[1] = '\0';

@@ -17,7 +17,12 @@ inline RGBA RGBAZero() { RGBA c; c.r = c.g = c.b = c.a = 0; return c; }
 void Fill(RGBA *t, const RGBA& src, int n);
 void FillColor(RGBA *t, const RGBA& src, int n);
 void PreMultiplyAlpha(RGBA *t, const RGBA *s, int len);
-void AlphaBlend(RGBA *t, const RGBA *s, int len, byte const_alpha = 255, Color c = Null);
+
+void AlphaBlendOpaque(RGBA *t, const RGBA *s, int len);
+void AlphaBlendOpaque(RGBA *t, const RGBA *s, int len, Color color);
+void AlphaBlendOpaque(RGBA *t, const RGBA *s, int len, int alpha);
+void AlphaBlend(RGBA *b, const RGBA *f, int len);
+void AlphaBlend(RGBA *b, const RGBA *f, int len, Color color);
 int  GetChMaskPos32(dword mask);
 
 //TODO temporary support for legacy .iml
@@ -35,6 +40,7 @@ enum ImageKind {
 	IMAGE_ALPHA,
 	IMAGE_MASK,
 	IMAGE_OPAQUE,
+	IMAGE_PREMULTIPLIED,
 };
 
 class Image;
@@ -56,7 +62,9 @@ class ImageBuffer : NoCopy {
 
 public:
 	void  SetKind(int k)                { kind = k; }
-	int   GetKind() const;
+	int   GetKind() const               { return kind; }
+	int   ScanKind() const;
+	int   GetScanKind() const           { return kind == IMAGE_UNKNOWN ? ScanKind() : kind; }
 
 	void  SetHotSpot(Point p)           { hotspot = p; }
 	Point GetHotSpot() const            { return hotspot; }
@@ -126,6 +134,7 @@ private:
 
 		void        SysInit();
 		void        SysRelease();
+		int         GetKind();
 		void        Paint(Draw& w, int x, int y, const Rect& src, Color c);
 
 		Data(ImageBuffer& b);

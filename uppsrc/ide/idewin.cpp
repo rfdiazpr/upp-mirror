@@ -331,10 +331,10 @@ Ide::Ide()
 
 	static const ColorF FatInsetBorder[] = {
 		(ColorF)4,
-		&SLtGray, &SLtGray, &SLtGray, &SLtGray,
-		&SLtGray, &SLtGray, &SLtGray, &SLtGray,
-		&SLtGray, &SLtGray, &SLtGray, &SLtGray,
-		&SGray, &SGray, &SWhite, &SWhite,
+		&SColorFace, &SColorFace, &SColorFace, &SColorFace,
+		&SColorFace, &SColorFace, &SColorFace, &SColorFace,
+		&SColorFace, &SColorFace, &SColorFace, &SColorFace,
+		&SColorShadow, &SColorShadow, &SColorLight, &SColorLight,
 	};
 	static BorderFrame fb(FatInsetBorder);
 

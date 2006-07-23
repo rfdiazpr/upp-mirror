@@ -66,12 +66,12 @@ void FileDump::RunStab(int staboff, int stablen, int stabstroff, int stabstrlen)
 	}
 	puts(NFormat("%d B, compressed %d B = %d%%",
 		strtotal, stabstrlen, 100 * (1 - stabstrlen / double(max(strtotal, 1)))));
-	for(NOMSC6(int) i = 0; i < 256; i++)
+	for(int i = 0; i < 256; i++)
 		if(counts[i])
 			puts(NFormat("[%02x]: %6>d times, %8>d B", i, counts[i], sizes[i]));
 	puts("\nHistogram:");
 	Vector<int> order = GetSortOrder(histogram.GetValues(), StdGreater<int>());
-	for(NOMSC6(int) i = 0; i < order.GetCount(); i++)
+	for(int i = 0; i < order.GetCount(); i++)
 		puts(NFormat("%4>d * %s", histogram[order[i]], histogram.GetKey(order[i])));
 	if(!old_histogram.IsEmpty())
 	{
@@ -80,11 +80,11 @@ void FileDump::RunStab(int staboff, int stablen, int stabstroff, int stabstrlen)
 		diff <<= histogram;
 		for(int i = 0; i < old_histogram.GetCount(); i++)
 			diff.GetAdd(old_histogram.GetKey(i), 0) -= old_histogram[i];
-		for(NOMSC6(int) i = diff.GetCount(); --i >= 0;)
+		for(int i = diff.GetCount(); --i >= 0;)
 			if(!diff[i])
 				diff.Remove(i);
 		order = GetSortOrder(diff.GetValues(), StdGreater<int>());
-		for(NOMSC6(int) i = 0; i < order.GetCount(); i++)
+		for(int i = 0; i < order.GetCount(); i++)
 		{
 			String key = diff.GetKey(order[i]);
 			puts(NFormat("(%4>d) %4>~d <- %4>~d * %s", diff[order[i]], histogram.Get(key, Null), old_histogram.Get(key, Null), key));
@@ -97,7 +97,7 @@ void FileDump::RunCOFF()
 {
 	const COFF_IMAGE_FILE_HEADER *hdr = (const COFF_IMAGE_FILE_HEADER *)&mapping[ne_offset + 4];
 	puts(NFormat("File:                 %s", filename));
-	puts(NFormat("File size:            %d B", mapping.GetLength()));
+	puts(NFormat("File size:            %d B", mapping.GetFileSize()));
 	const MachineInfo *mach = COFFMachineList();
 	while(mach->name && mach->code != hdr->Machine)
 		mach++;
@@ -209,7 +209,7 @@ void FileDump::Run(const char *fn)
 	if(!mapping.Open(filename = fn))
 		throw Exc("file failed to open");
 	if(mapping.GetCount() >= 0x40 && mapping[0] == 'M' && mapping[1] == 'Z'
-	&& (ne_offset = PeekIL(&mapping[0x3C])) >= 0x40 && ne_offset < mapping.GetLength()
+	&& (ne_offset = PeekIL(&mapping[0x3C])) >= 0x40 && ne_offset < mapping.GetFileSize()
 	&& PeekIL(&mapping[ne_offset]) == 'P' + 256 * 'E')
 	{
 		RunCOFF();

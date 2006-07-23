@@ -5,17 +5,17 @@ ColorPusher::~ColorPusher() {}
 void ColorPusher::Paint(Draw& w)
 {
 	Size sz = GetSize();
-	w.DrawRect(sz, push ? SYellow : SWhite);
+	w.DrawRect(sz, push ? SColorHighlight : SColorPaper);
 	int ty = (sz.cy - StdFont().Info().GetHeight()) / 2;
 	if(withtext) {
 		w.DrawRect(2, 2, sz.cy - 4, sz.cy - 4, color);
-		DrawFrame(w, 1, 1, sz.cy - 2, sz.cy - 2, SBlack);
+		DrawFrame(w, 1, 1, sz.cy - 2, sz.cy - 2, SColorText);
 		w.DrawText(sz.cy + 2, ty, FormatColor(color));
 	}
 	else {
 		if(!IsNull(color)) {
 			w.DrawRect(2, 2, sz.cx - 4, sz.cy - 4, color);
-			DrawFrame(w, 1, 1, sz.cx - 2, sz.cy - 2, SBlack);
+			DrawFrame(w, 1, 1, sz.cx - 2, sz.cy - 2, SColorText);
 		}
 		else
 		if(!withtext)
@@ -117,12 +117,12 @@ void ColorButton::Paint(Draw& w)
 			DrawXPButton(w, sz, BUTTON_NORMAL|BUTTON_TOOL);
 	}
 	else {
-		w.DrawRect(sz, SLtGray);
+		w.DrawRect(sz, SColorFace);
 		if(push)
-			DrawFrame(w, sz, SGray, SWhite);
+			DrawFrame(w, sz, SColorShadow, SColorLight);
 		else
 		if(HasMouse())
-			DrawFrame(w, sz, SWhite, SGray);
+			DrawFrame(w, sz, SColorLight, SColorShadow);
 	}
 	if(IsNull(color))
 		w.DrawImage(center.x + push, center.y + push, nullimage);

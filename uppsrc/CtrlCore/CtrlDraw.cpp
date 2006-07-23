@@ -1,12 +1,9 @@
 #include "CtrlCore.h"
 #pragma hdrstop
 
-#ifdef _DEBUG
-int  Ctrl::ShowRepaint;
-#endif
-
 #define LLOG(x)    // LOG(x)
 #define LLOGEND()  // LOGEND()
+#define LTIMING(X) // TIMING(x)
 
 void Ctrl::RefreshFrame(const Rect& r) {
 	if(!IsOpen() || !IsVisible() || r.IsEmpty()) return;
@@ -52,6 +49,7 @@ void Ctrl::RefreshFrame() {
 
 void  Ctrl::ScrollRefresh(const Rect& r, int dx, int dy)
 {
+	if(!IsOpen() || !IsVisible() || r.IsEmpty()) return;
 	int tdx = tabs(dx), tdy = tabs(dy);
 	if(dx) WndInvalidateRect(RectC(dx >= 0 ? r.left : r.right - tdx, r.top - tdy, tdx, r.Height()));
 	if(dy) WndInvalidateRect(RectC(r.left - tdx, dy >= 0 ? r.top : r.bottom - tdy, r.Width(), tdy));
@@ -84,6 +82,18 @@ bool Ctrl::AddScroll(const Rect& sr, int dx, int dy)
 	return false;
 }
 
+Rect  Ctrl::GetClippedView()
+{
+	Rect sv = GetScreenView();
+	Rect view = sv;
+	Ctrl *q = parent;
+	while(q) {
+		view &= q->GetScreenView();
+		q = q->parent;
+	}
+	return view - GetScreenRect().TopLeft();
+}
+
 void  Ctrl::ScrollView(const Rect& _r, int dx, int dy)
 {
 	if(IsFullRefresh())
@@ -94,13 +104,11 @@ void  Ctrl::ScrollView(const Rect& _r, int dx, int dy)
 	Rect r = _r & vsz;
 	Ctrl *w = GetTopCtrl();
 	if(!w || !w->top) return;
-	Rect view = GetView();
+	Rect view = InFrame() ? GetView() : GetClippedView();
 	Rect sr = (r + view.TopLeft()) & view;
 	sr += GetScreenRect().TopLeft() - w->GetScreenRect().TopLeft();
-	if(w->AddScroll(sr, dx, dy)) {
-		LOG("Scroll Refresh");
+	if(w->AddScroll(sr, dx, dy))
 		Refresh();
-	}
 	else
 		for(Ctrl *q = GetFirstChild(); q; q = q->GetNext())
 			if(q->InView()) {
@@ -142,250 +150,211 @@ void  Ctrl::SyncScroll()
 	}
 }
 
-Vector<Rect> Ctrl::GetTransparentFrameRects()
+Rect Ctrl::GetOpaqueRect()
 {
-	Vector<Rect> r;
-	Subtract(GetRect().Size(), GetView(), r);
-	return r;
+	return IsTransparent() ? Rect(0, 0, 0, 0) : GetSize();
 }
 
-Vector<Rect> Ctrl::GetOpaqueFrameRects()
-{
-	return Vector<Rect>();
-}
-
-Vector<Rect> Ctrl::GetTransparentViewRects()
-{
-	return Vector<Rect>() << GetSize();
-}
-
-Vector<Rect> Ctrl::GetOpaqueViewRects()
-{
-	return Vector<Rect>();
-}
-
-inline bool In(const Rect& pr, const Rect& vr) {
-	return pr.left >= vr.left && pr.right <= vr.right &&
-		   pr.top >= vr.top && pr.bottom <= vr.bottom;
-}
-
-void  Ctrl::DoCtrlPaint(Draw *w, Ctrl *q, Rect pr) {
-	Rect r = q->GetRect();
-	pr &= r;
-	if(!pr.IsEmpty()) {
-		if(w->Clipoff(r)) {
-			pr -= r.TopLeft();
-			q->CtrlPaint(*w, pr);
-		}
-		w->End();
-	}
-}
-
-bool Ctrl::ShouldPaint(Draw& w)
-{
-	if(!IsTransparent())
-		return true;
-	Point off = GetView().TopLeft();
-	Vector<Rect> op = GetOpaqueViewRects();
-	for(int i = 0; i < op.GetCount(); i++)
-		if(w.IsPainting(op[i] + off))
-			return true;
-	op = GetTransparentViewRects();
-	for(int i = 0; i < op.GetCount(); i++)
-		if(w.IsPainting(op[i] + off))
-			return true;
-	op = GetOpaqueFrameRects();
-	for(int i = 0; i < op.GetCount(); i++)
-		if(w.IsPainting(op[i]))
-			return true;
-	op = GetTransparentFrameRects();
-	for(int i = 0; i < op.GetCount(); i++)
-		if(w.IsPainting(op[i]))
-			return true;
-	return false;
-}
-
-void Ctrl::CtrlPaint(Draw& pw, Rect pr) {
-	if(!IsShown() || GetRect().IsEmpty()) return;
 #ifdef _DEBUG
-	TimeStop();
+struct sDrawLevelCheck {
+	int   lvl;
+	Draw& w;
+	sDrawLevelCheck(Draw& w) : w(w), lvl(w.GetCloffLevel()) {}
+	~sDrawLevelCheck() { ASSERT(lvl == w.GetCloffLevel()); }
+};
+
+#define LEVELCHECK(w)    sDrawLevelCheck __(w)
+#else
+#define LEVELCHECK(w)
 #endif
-	if(backpaint == EXCLUDEPAINT) return;
+
+void Ctrl::CtrlPaint(Draw& w, const Rect& clip) {
+	Rect rect = GetRect().GetSize();
+	if(!IsShown() || rect.IsEmpty() || clip.IsEmpty() || !clip.Intersects(rect))
+		return;
 	Ctrl *q;
-	Draw *w = &pw;
-	BackDraw bw;
-	Rect rect = GetRect();
-	Rect cbox = pw.GetClip();
-	LLOG("CtrlPaint " << Name() << ' ' << pw.GetClip() << ", pr: " << pr << ", cbox: " << cbox
-	     << BeginIndent);
-	if(!pw.IsBack()) {
-		Rect r = pw.GetClip();
-		if(!IsTransparent() && (backpaint == FULLBACKPAINT || r.Width() * r.Height() < AutoBackPaintAreaSize)) {
-			bw.Create(pw, cbox.Size());
-		#ifdef _DEBUG
-			bw.DrawRect(rect.Size(), LtRed);
-		#endif
-			bw.Offset(-cbox.TopLeft());
-			bw.SetPaintingDraw(pw, cbox.TopLeft());
-			w = &bw;
-		}
-	}
-#ifdef _DEBUG
-	if(ShowRepaint && !parent) {
-		pw.DrawRect(pw.GetClip(), w == &bw ? LtGreen : LtBlue);
-		Draw::Flush();
-		Sleep(ShowRepaint);
-	}
-#endif
-	Rect view = GetView();
-	Rect r = rect.Size();
-	bool fp = !In(pr, view);
-	for(q = firstchild; q; q = q->next)
-		if(q->InFrame())
-			DoCtrlPaint(w, q, pr);
+	LLOG("CtrlPaint " << Name() << BeginIndent);
+	LLOG("clip: " << clip);
+	LLOG("GetRect(): " << GetRect());
+	Rect view = rect;
 	for(int i = 0; i < frame.GetCount(); i++) {
-	#ifdef _DEBUG
-		int lvl = w->GetCloffLevel();
-	#endif
-		if(fp) frame[i].frame->FramePaint(*w, r);
-	#ifdef _DEBUG
-		ASSERT(lvl == w->GetCloffLevel());
-	#endif
-		r = frame[i].view;
+		LEVELCHECK(w);
+		frame[i].frame->FramePaint(w, view);
+		view = frame[i].view;
 	}
 	if(!view.IsEmpty()) {
-		pr &= r;
-		if(!pr.IsEmpty()) {
-			if(w->Clipoff(r)) {
-				pr -= r.TopLeft();
-				if(!w->IsBack()) {
-					w->Begin();
-					for(q = firstchild; q; q = q->next)
-						if(q->InView() && q->IsShown())
-							if(q->IsTransparent()) {
-								Point off = q->GetRect().TopLeft();
-								Vector<Rect> op = q->GetOpaqueFrameRects();
-								for(int i = 0; i < op.GetCount(); i++)
-									w->ExcludeClip(op[i] + off);
-								off += q->GetView().TopLeft();
-								op = q->GetOpaqueViewRects();
-								for(int i = 0; i < op.GetCount(); i++)
-									w->ExcludeClip(op[i] + off);
-							}
-							else
-								w->ExcludeClip(q->GetRect());
+		if(view.Intersects(clip) && w.IsPainting(view)) {
+			LOG("Painting: " << Name());
+			LEVELCHECK(w);
+			w.Clipoff(view);
+			Paint(w);
+			w.End();
+		}
+		bool hasviewctrls = false;
+		for(q = firstchild; q; q = q->next)
+			if(q->IsShown())
+				if(q->InFrame()) {
+					LEVELCHECK(w);
+					Point off = q->GetRect().TopLeft();
+					w.Offset(off);
+					q->CtrlPaint(w, clip - off);
+					w.End();
 				}
-			#ifdef _DEBUG
-				int lvl = w->GetCloffLevel();
-			#endif
-				if(ShouldPaint(*w)) {
-					LLOG("Paint " << Name() << ' ' << w->GetClip());
-					LLOG("      pr " << pr);
-					Paint(*w);
+				else
+					hasviewctrls = true;
+		if(hasviewctrls) {
+			Rect cl = clip & view;
+			w.Clip(cl);
+			for(q = firstchild; q; q = q->next)
+				if(q->IsShown() && q->InView()) {
+					LEVELCHECK(w);
+					Point off = q->GetRect().TopLeft() + view.TopLeft();
+					w.Offset(off);
+					q->CtrlPaint(w, cl - off);
+					w.End();
 				}
-			#ifdef _DEBUG
-				ASSERT(lvl == w->GetCloffLevel());
-			#endif
-				if(!w->IsBack())
-					w->End();
-				for(q = firstchild; q; q = q->next)
-					if(q->InView() && q->IsShown())
-						DoCtrlPaint(w, q, pr);
-			}
-			w->End();
+			w.End();
 		}
 	}
-	if(w == &bw)
-		bw.Put(pw, cbox.TopLeft());
-#ifdef _DEBUG
-	LLOG(Name() << " Paint time: " << TimeStop());
-#endif
 	LLOGEND();
 }
 
-void Ctrl::GatherTrect(Point offset, Vector<Rect>& tr, Vector<Rect>& er, bool all) {
-	Point vo = GetView().TopLeft() + offset;
-	for(Ctrl *q = GetFirstChild(); q; q = q->GetNext()) {
-		Rect r = q->GetRect() + (q->inframe ? offset : vo);
-		if(q->IsShown())
-			if(q->backpaint == EXCLUDEPAINT)
-				er.Add(r);
+void Reduce(Rect& r, Rect rr)
+{
+
+	rr = r & rr;
+	if(rr.IsEmpty())
+		return;
+	int width = r.GetWidth();
+	int height = r.GetHeight();
+	int ts = (rr.top - r.top) * width;
+	int bs = (r.bottom - rr.bottom) * width;
+	int ls = (rr.left - r.left) * height;
+	int rs = (r.right - rr.right) * height;
+	if(ls > rs)
+		if(ls > ts)
+			if(ls > bs)
+				r.right = rr.left;
 			else
-			if(q->IsTransparent() && (q->backpaint || all)) {
-				LLOG("GATHER: " << ::Name(q) << "  " << r);
-				Point off = r.TopLeft();
-				Vector<Rect> op = q->GetTransparentFrameRects();
-				for(int i = 0; i < op.GetCount(); i++)
-					tr.Add(op[i] + off);
-				off += q->GetView().TopLeft();
-				op = q->GetTransparentViewRects();
-				for(int i = 0; i < op.GetCount(); i++)
-					tr.Add(op[i] + off);
-			}
+				r.top = rr.bottom;
+		else
+			if(ts > bs)
+				r.bottom = rr.top;
 			else
-				q->GatherTrect(r.TopLeft(), tr, er, all);
+				r.top = rr.bottom;
+	else
+		if(rs > ts)
+			if(rs > bs)
+				r.left = rr.right;
+			else
+				r.top = rr.bottom;
+		else
+			if(ts > bs)
+				r.bottom = rr.top;
+			else
+				r.top = rr.bottom;
+}
+
+int sShowRepaint;
+
+void Ctrl::ShowRepaint(int q)
+{
+	sShowRepaint = q;
+}
+
+void ShowRepaintRect(Draw& w, const Rect& r, Color c)
+{
+	if(sShowRepaint) {
+		w.DrawRect(r, LtBlue());
+		Draw::Flush();
+		Sleep(sShowRepaint);
 	}
 }
 
-void Ctrl::UpdateArea(Draw& draw, const Rect& paintrect)
+void Ctrl::PaintOpaqueAreas(Draw& w, Point offset, const Rect& clip)
+{
+	Rect r = parent ? GetRect() + offset : GetSize();
+	Point off = r.TopLeft();
+	Point viewpos = off + GetView().TopLeft();
+	if(backpaint == EXCLUDEPAINT) {
+		w.ExcludeClip(r);
+		return;
+	}
+	if(!IsShown() || r.IsEmpty() || !w.IsPainting(r))
+		return;
+	Rect cview = clip & (GetView() + off);
+	for(Ctrl *q = firstchild; q; q = q->next)
+		q->PaintOpaqueAreas(w, q->InView() ? viewpos : off, q->InView() ? cview : clip);
+	Rect opaque = (GetOpaqueRect() + viewpos) & clip;
+	if(opaque.IsEmpty())
+		return;
+	Rect reduce = Null;
+	if(parent)
+		for(Ctrl *q = next; q; q = q->next)
+			if(q->IsShown()) {
+				Rect rr = q->GetRect() + offset;
+				if(rr.Intersects(opaque))
+					if(IsNull(reduce))
+						reduce = rr;
+					else
+						reduce.Union(rr);
+			}
+	for(Ctrl *q = firstchild; q; q = q->GetNext())
+		if(q->IsShown() && q->InView()) {
+			Rect rr = q->GetRect() + viewpos;
+			if(IsNull(reduce))
+				reduce = rr;
+			else
+				reduce.Union(rr);
+		}
+	Reduce(opaque, reduce);
+	if(opaque.IsEmpty())
+		return;
+	if(backpaint == FULLBACKPAINT) {
+		ShowRepaintRect(w, opaque, LtBlue());
+		BackDraw bw;
+		bw.Create(w, opaque.GetSize());
+		bw.Offset(viewpos - opaque.TopLeft());
+		bw.SetPaintingDraw(w, opaque.TopLeft());
+		{
+			LEVELCHECK(bw);
+			Paint(bw);
+		}
+		bw.Put(w, opaque.TopLeft());
+	}
+	else {
+		w.Clip(opaque);
+		ShowRepaintRect(w, opaque, Green());
+		w.Offset(viewpos);
+		{
+			LEVELCHECK(w);
+			Paint(w);
+		}
+		w.End();
+		w.End();
+	}
+	w.ExcludeClip(opaque);
+}
+
+void Ctrl::UpdateArea(Draw& draw, const Rect& clip)
 {
 	if(IsPanicMode())
 		return;
-	if(backpaint != FULLBACKPAINT && !draw.IsBack()) {
-		int i;
-		Vector<Rect> tr;
-		Vector<Rect> er;
-		Vector<bool> in;
-		GatherTrect(Point(0, 0), tr, er, backpaint == TRANSPARENTBACKPAINT);
-		in.SetCount(tr.GetCount(), true);
-		Vector<int> sqr;
-		sqr.SetCount(tr.GetCount());
-		for(i = 0; i < tr.GetCount(); i++) {
-			sqr[i] = tr[i].Width() * tr[i].Height();
-			if((tr[i] & paintrect).IsEmpty())
-				in[i] = false;
-		}
-		for(i = 0; i < tr.GetCount(); i++)
-			if(in[i])
-				for(int j = i + 1; j < tr.GetCount(); j++) {
-					Rect r = tr[i] | tr[j];
-					int sq = r.Width() * r.Height();
-					if(sq < TransparentBackPaintAreaSize &&
-					   sq - sqr[i] - sqr[j] < 2 * min(sqr[i], sqr[j])) {
-						sqr[i] = sq;
-						tr[i] = r;
-						in[j] = false;
-					}
-				}
-		for(i = 0; i < er.GetCount(); i++)
-			draw.ExcludeClip(er[i]);
-		for(i = 0; i < tr.GetCount(); i++)
-			if(in[i]) {
-			#ifdef _DEBUG
-				if(ShowRepaint) {
-					draw.DrawRect(tr[i], LtRed);
-					GuiFlush();
-					Sleep(ShowRepaint);
-				}
-			#endif
-				BackDraw bw;
-				bw.Create(draw, tr[i].Size());
-				bw.Offset(-tr[i].TopLeft());
-				LLOG("Transparent backpaint " << tr[i] << BeginIndent);
-				CtrlPaint(bw, paintrect & tr[i]);
-				LLOGEND();
-				bw.Put(draw, tr[i].TopLeft());
-				draw.ExcludeClip(tr[i]);
-			}
-	#ifdef _DEBUG
-		if(ShowRepaint) {
-			draw.DrawRect(0, 0, GetRect().Width(), GetRect().Height(), Magenta);
-			Draw::Flush();
-			Sleep(ShowRepaint);
-		}
-	#endif
+	LTIMING("UpdateArea");
+	if(backpaint != FULLBACKPAINT)
+		PaintOpaqueAreas(draw, Point(0, 0), clip);
+	if(backpaint) {
+		ShowRepaintRect(draw, GetSize(), Magenta());
+		BackDraw bw;
+		bw.Create(draw, clip.GetSize());
+		bw.Offset(-clip.TopLeft());
+		bw.SetPaintingDraw(draw, clip.TopLeft());
+		CtrlPaint(bw, clip);
+		bw.Put(draw, clip.TopLeft());
 	}
-	CtrlPaint(draw, paintrect);
+	else
+		CtrlPaint(draw, clip);
+
 	RemoveFullRefresh();
 }
 
@@ -455,6 +424,6 @@ void Ctrl::DrawCtrlWithParent(Draw& w, int x, int y)
 void Ctrl::DrawCtrl(Draw& w, int x, int y)
 {
 	w.Offset(x, y);
-	UpdateArea(w, Rect(Point(0, 0), GetRect().Size()));
+	UpdateArea(w, GetRect().GetSize());
 	w.End();
 }

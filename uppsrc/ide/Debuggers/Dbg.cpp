@@ -46,7 +46,7 @@ const char *AfterHeading(const char *txt, const char *heading)
 
 void RedDisplay::Paint(Draw& w, const Rect& r, const Value& q, Color ink, Color paper, dword s) const {
 	w.DrawRect(r, paper);
-	DrawSmartText(w, r.left, r.top, r.Width(), String(q), StdFont(), SLtRed());
+	DrawSmartText(w, r.left, r.top, r.Width(), String(q), StdFont(), LtRed());
 }
 
 VectorMap<String, String> DataMap(const ArrayCtrl& data)
@@ -195,7 +195,7 @@ Dbg::Dbg()
 	AddReg("edi", &regs.edi);
 	AddReg("ebp", &regs.ebp);
 	AddReg("esp", &regs.esp);
-	regs.Color(SWhiteGray);
+	regs.Color(SColorLtFace);
 	regs.AddFrame(TopSeparatorFrame());
 	regs.AddFrame(RightSeparatorFrame());
 
@@ -217,7 +217,7 @@ Dbg::Dbg()
 	frame.Ctrl::Add(dlock.SizePos());
 	dlock = "  Running..";
 	dlock.SetFrame(BlackFrame());
-	dlock.SetInk(SRed);
+	dlock.SetInk(Red);
 	dlock.NoTransparent();
 	dlock.Hide();
 

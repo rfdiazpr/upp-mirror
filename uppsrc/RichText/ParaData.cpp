@@ -6,7 +6,7 @@ PaintInfo::PaintInfo()
 	tablesel = 0;
 	top = PageY(0, 0);
 	bottom = PageY(INT_MAX, INT_MAX);
-	hyperlink = SLtBlue;
+	hyperlink = Blend(SColorLight, SColorHighlight);
 	usecache = false;
 	sizetracking = false;
 	showcodes = Null;

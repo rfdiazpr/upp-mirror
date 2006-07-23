@@ -123,9 +123,9 @@ fn DrawSpinButtons(w, r)
 	h7 = int(7 * h / 10);
 	x = r.right - h7;
 	DrawEdgeButton(w, RectC(x, r.top, h7, h2));
-	w.DrawImage((h7 - 5) / 2 + x, (h2 - 3) / 2 + r.top, "CtrlImg::spinup");
+	w.DrawImage((h7 - 5) / 2 + x, (h2 - 3) / 2 + r.top, "CtrlsImg::SpU");
 	DrawEdgeButton(w, RectC(x, r.top + h2, h7, h - h2));
-	w.DrawImage((h7 - 5) / 2 + x, (h - h2 - 3) / 2 + r.top + h2, "CtrlImg::spindown");
+	w.DrawImage((h7 - 5) / 2 + x, (h - h2 - 3) / 2 + r.top + h2, "CtrlsImg::SpD");
 }
 
 subctrl NormalSize {
@@ -314,10 +314,7 @@ ctrl Button {
 		DrawButtonFrame(w, r);
 		sz = Size(r.right - r.left, r.bottom - r.top);
 		n = int(sz.cy / 8);
-		for(i = 0; i < sz.cy; i += n)
-			w.DrawRect(r.left, r.top + i, sz.cx, min(n, sz.cy - i),
-			           GradientColor(:SWhiteGray, :SLtGray,
-			                         i + sz.cy / 2, sz.cy / 2 + sz.cy - 4));
+		w.DrawRect(r.left, r.top, sz.cx, sz.cy, :SLtGray);
 		textsize = GetSmartTextSize(.SetLabel, .SetFont);
 		px = (sz.cx - textsize.cx) / 2;
 		py = (sz.cy - textsize.cy) / 2;
@@ -339,13 +336,11 @@ ctrl Option {
 	Paint(w) {
 		x = self;
 		sz = ViewSize(w);
-		img = .SwitchImage ? "CtrlImg::switch0" : .ThreeState ? "CtrlImg::option2" : "CtrlImg::option0";
+		img = .SwitchImage ? "CtrlsImg::S0" : .ThreeState ? "CtrlsImg::O2" : "CtrlsImg::O0";
 		imagesize = GetImageSize(img);
 		textsize = GetSmartTextSize(.SetLabel, .SetFont);
 		w.DrawImage(0, (sz.cy - imagesize.cy) / 2, img);
-		if(!.SwitchImage)
-			w.DrawImage(0, (sz.cy - imagesize.cy) / 2, "CtrlImg::optionedge");
-		w.DrawSmartText(imagesize.cx + 1, (sz.cy - textsize.cy) / 2, .SetLabel, .SetFont, .SetInk);
+		w.DrawSmartText(imagesize.cx + 4, (sz.cy - textsize.cy) / 2, .SetLabel, .SetFont, .SetInk);
 	}
 }
 
@@ -376,17 +371,17 @@ ctrl Switch {
 		cs[] = ln;
 		tcy = GetTextSize("W", .SetFont).cy;
 		linecy = max(16, tcy + 2);
-		imagesize = GetImageSize("CtrlImg::switch0");
+		imagesize = GetImageSize("CtrlsImg::S0");
 		y = 0;
 		x = 0;
 		setlabel = .SetLabel;
 		for(i = 0; i < count(cs); i++) {
 			textsize = GetSmartTextSize(cs[i], .SetFont);
-			w.DrawImage(x, y, "CtrlImg::switch0");
-			w.DrawSmartText(x + imagesize.cx + 1, y + (imagesize.cy - tcy) / 2,
+			w.DrawImage(x, y, "CtrlsImg::S0");
+			w.DrawSmartText(x + imagesize.cx + 4, y + (imagesize.cy - tcy) / 2,
 			                cs[i], .SetFont);
 			if(linecy * count(cs) > sz.cy)
-				x += imagesize.cx + textsize.cx + max(imagesize.cy, tcy) / 2;
+				x += imagesize.cx + 4 + textsize.cx + max(imagesize.cy, tcy) / 2;
 			else
 				y += linecy;
 		}
@@ -582,7 +577,7 @@ ctrl DropList {
 		w.DrawRect(r, :SWhite);
 		n = r.bottom - r.top;
 		DrawEdgeButton(w, RectC(r.right - n, r.top, n, n));
-		w.DrawImage((n - 7) / 2 + r.right - n, (n - 6) / 2 + r.top, "CtrlImg::smalldown");
+		w.DrawImage((n - 7) / 2 + r.right - n, (n - 6) / 2 + r.top, "CtrlsImg::DA");
 		w.DrawText(3, (GetSize().cy - GetTextSize("", Arial(10)).cy) / 2,
 			(.SetEditable ? "" : "R/O ") + "DropList", Arial(10), :SMagenta);
 	}
@@ -599,7 +594,7 @@ template WithDropChoice {
 		DrawCtrlFrame(w, r, .SetFrame);
 		n = r.bottom - r.top;
 		DrawEdgeButton(w, RectC(r.right - n, r.top, n, n));
-		w.DrawImage((n - 7) / 2 + r.right - n, (n - 6) / 2 + r.top, "CtrlImg::smalldown");
+		w.DrawImage((n - 7) / 2 + r.right - n, (n - 6) / 2 + r.top, "CtrlsImg::DA");
 	}
 };
 
@@ -712,9 +707,9 @@ fn PaintVScrollBar(w, r)
 	down = r;
 	r.bottom = (down.top = down.bottom - wd);
 	DrawButtonFrame(w, up);
-	PaintRcCenterImage(w, up, "CtrlImg::smallup");
+	PaintRcCenterImage(w, up, "CtrlsImg::UA");
 	DrawButtonFrame(w, down);
-	PaintRcCenterImage(w, down, "CtrlImg::smalldown");
+	PaintRcCenterImage(w, down, "CtrlsImg::DA");
 	w.DrawRect(r, :SWhiteGray);
 //	ht = r.bottom - r.top;
 //	r.top += ht / 4;

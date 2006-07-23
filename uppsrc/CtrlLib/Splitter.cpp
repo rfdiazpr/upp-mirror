@@ -97,15 +97,7 @@ void   Splitter::LeftUp(Point p, dword keyflags) {
 }
 
 Image Splitter::CursorImage(Point p, dword) {
-	static Image (*hanipos[])() = {
-		CtrlImg::horzpos1, CtrlImg::horzpos2, CtrlImg::horzpos1, CtrlImg::horzpos3
-	};
-	static Image (*vanipos[])() = {
-		CtrlImg::vertpos1, CtrlImg::vertpos2, CtrlImg::vertpos1, CtrlImg::vertpos3
-	};
-	if(FindIndex(p) < 0)
-		return Image::Arrow();
-	return (*(vert ? vanipos : hanipos)[GetTimeClick() / 200 % 4])();
+	return FindIndex(p) < 0 ? Image::Arrow() : vert ? Image::SizeVert() : Image::SizeHorz();
 }
 
 Splitter& Splitter::SetPos(int p, int i) {

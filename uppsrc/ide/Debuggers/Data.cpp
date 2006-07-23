@@ -102,7 +102,7 @@ void Pdb::Explorer()
 	}
 	catch(CParser::Error e) {
 		Visual v;
-		v.Cat(e, SLtRed);
+		v.Cat(e, LtRed);
 		explorer.Add("", RawPickToValue(v));
 	}
 	exback.Enable(exprev.GetCount());

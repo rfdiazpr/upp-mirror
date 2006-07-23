@@ -1,8 +1,6 @@
 #include "SqlCtrl.h"
 #pragma hdrstop
 
-#include <DocTypes/DocTypes.h>
-
 #define IMAGEFILE <SqlCtrl/SqlCtrl.iml>
 #define IMAGECLASS SqlConsoleImg
 #include <Draw/iml.h>

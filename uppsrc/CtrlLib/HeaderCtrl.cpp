@@ -38,25 +38,33 @@ void  HeaderCtrl::Column::LabelUpdate()
 	}
 }
 
-void HeaderCtrl::Column::Paint(Draw& w, int x, int y, int cx, int cy, bool disabled, bool push, bool hl)
+CH_LOOKS(HeaderTabLook, 4, CtrlsImgLook(CtrlsImg::I_HTB));
+CH_INT(HeaderTabGridAdjustment, 0);
+CH_INT(HeaderTabPressOffsetFlag, ButtonPressOffsetFlag());
+
+void HeaderCtrl::Column::Paint(bool& first, Draw& w,
+                               int x, int y, int cx, int cy, bool disabled, bool push, bool hl)
 {
-	bool p = push;
+	if(first) {
+		if(cx >= -HeaderTabGridAdjustment()) {
+			cx -= HeaderTabGridAdjustment();
+			if(cx < 0)
+				cx = 0;
+			first = false;
+		}
+	}
+	else
+		x -= HeaderTabGridAdjustment();
+	bool p = push && HeaderTabPressOffsetFlag();
 	Color bg = Nvl(paper, SColorFace());
-	if(IsXPStyle()) {
-		Color c = push ? Blend(SColorHighlight, SColorFace, 235)
-		               : hl ? Blend(SColorFace, SColorLight) : bg;
-		w.DrawRect(x + 1, y, cx - 1, cy - 2, c);
-		w.DrawRect(x, y, 1, cy, SColorLight);
-		w.DrawRect(x + cx - 1, y, 1, cy, SColorShadow);
-		c = !push && hl ? Blend(Yellow, LtRed, 100) : Blend(SColorShadow, c);
-		w.DrawRect(x, cy - 2, cx, 1, c);
-		w.DrawRect(x, cy - 1, cx, 1, Blend(c, SColorShadow));
-		p = false;
-	}
-	else {
-		w.DrawRect(x + 2, y + 2, cx - 4, cy - 4, bg);
-		DrawBorder(w, x, y, cx, cy, push ? ButtonPushBorder : ButtonBorder);
-	}
+	int q = CTRL_NORMAL;
+	if(hl)
+		q = CTRL_HOT;
+	if(push)
+		q = CTRL_PRESSED;
+	if(disabled)
+		q = CTRL_DISABLED;
+	ChPaint(w, x, y, cx, cy, HeaderTabLook(q));
 	x += margin;
 	cx -= 2 * margin;
 	w.Clip(x + 2, y, cx - 4, cy);
@@ -368,6 +376,7 @@ void HeaderCtrl::Paint(Draw& w) {
 	double rr = 0;
 	int x = -sb;
 	light = -1;
+	bool first = true;
 	for(int i = 0; i < col.GetCount(); i++) {
 		if(col[i].visible) {
 			Rect r;
@@ -385,12 +394,13 @@ void HeaderCtrl::Paint(Draw& w) {
 			bool mousein = HasMouseIn(r.Deflated(1, 0)) && col[i].WhenAction && pushi < 0;
 			if(mousein)
 				light = i;
-			col[i].Paint(w, r.left, r.top, r.Width(), r.Height(), ds, push && i == pushi, mousein);
+			col[i].Paint(first, w,
+			             r.left, r.top, r.Width(), r.Height(), ds, push && i == pushi, mousein);
 		}
-		if(x >= sz.cx) return;
+		if(x >= sz.cx) break;
 	}
 	Column h;
-	h.Paint(w, x, 0, sz.cx - x, sz.cy, false, false, false);
+	h.Paint(first, w, x, 0, 999, sz.cy, false, false, false);
 }
 
 void HeaderCtrl::Layout()
@@ -464,21 +474,11 @@ int HeaderCtrl::GetSplit(int px) {
 
 Image HeaderCtrl::CursorImage(Point p, dword) {
 	if(HasCapture())
-		return split >= 0 ? CtrlImg::horzpos1() : Image::Arrow();
+		return split >= 0 ? CtrlsImg::HorzPos() : Image::Arrow();
 	int q = GetSplit(p.x);
-	if(q < 0) return Image::Arrow();
-	int ai = GetTimeClick() / 200 % 4;
-	if(GetTabWidth(q) < 4) {
-		static Image (*anipos[])() = {
-			CtrlImg::horzsplit1, CtrlImg::horzsplit2,
-			CtrlImg::horzsplit3, CtrlImg::horzsplit2
-		};
-		return (*anipos[ai])();
-	}
-	static Image (*anipos[])() = {
-		CtrlImg::horzpos1, CtrlImg::horzpos2, CtrlImg::horzpos1, CtrlImg::horzpos3
-	};
-	return split >= 0 ? CtrlImg::horzpos1() : (*anipos[ai])();
+	return q < 0 ? Image::Arrow()
+	             : GetTabWidth(q) < 4 ? CtrlsImg::HorzSplit()
+	                                  : CtrlsImg::HorzPos();
 }
 
 void HeaderCtrl::LeftDown(Point p, dword keyflags) {

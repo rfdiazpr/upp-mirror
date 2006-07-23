@@ -50,7 +50,7 @@ RectTracker::RectTracker(Ctrl& master)
 	maxrect = Rect(-100000, -100000, 100000, 100000);
 	keepratio = false;
 	cursorimage = Image::Arrow();
-	color = SWhite;
+	color = SColorPaper;
 	pattern = RectTracker_normal;
 	animation = 0;
 	rounder = NULL;

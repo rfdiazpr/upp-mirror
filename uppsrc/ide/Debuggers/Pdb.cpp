@@ -145,7 +145,7 @@ Pdb::Pdb()
 	AddReg("edi", &regs.edi);
 	AddReg("ebp", &regs.ebp);
 	AddReg("esp", &regs.esp);
-	regs.Color(SWhiteGray);
+	regs.Color(SColorLtFace);
 	regs.AddFrame(TopSeparatorFrame());
 	regs.AddFrame(RightSeparatorFrame());
 
@@ -199,7 +199,7 @@ Pdb::Pdb()
 
 	dlock = "  Running..";
 	dlock.SetFrame(BlackFrame());
-	dlock.SetInk(SRed);
+	dlock.SetInk(Red);
 	dlock.NoTransparent();
 	dlock.Hide();
 	framelist.Ctrl::Add(dlock.SizePos());

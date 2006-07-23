@@ -37,7 +37,6 @@ public:
 	int     GetPos() const                                 { return thumbpos; }
 	int     GetThumbSize() const                           { return thumbsize; }
 	int     GetRange() const;
-//	int     GetSlideSize() const;
 
 	Slider& Horz(bool b = true)                            { horz = b; return *this; }
 	Slider& Vert()                                         { return Horz(false); }

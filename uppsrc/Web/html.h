@@ -263,7 +263,7 @@ HtmlTag        HtmlImg(String src, String alt = "");
 
 Htmls          HtmlTextArea(String id, Size size, const char *defaultValue = 0);
 
-Htmls          HtmlButton(String id, const char *text);
+HtmlTag        HtmlButton(String id, const char *text);
 HtmlTag        HtmlWarn(Color color = LtRed);
 HtmlTag        HtmlPackedTable();
 HtmlTag        HtmlForm(String action, bool multipart = false, String method = "POST");

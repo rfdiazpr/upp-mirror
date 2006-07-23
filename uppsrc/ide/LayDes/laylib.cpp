@@ -258,24 +258,24 @@ void LayLib()
 	global.Add("LtBlue", EscColor(LtBlue));
 	global.Add("LtMagenta", EscColor(LtMagenta));
 	global.Add("LtCyan", EscColor(LtCyan));
-	global.Add("SBlack", EscColor(SBlack));
-	global.Add("SGray", EscColor(SGray));
-	global.Add("SLtGray", EscColor(SLtGray));
-	global.Add("SWhiteGray", EscColor(SWhiteGray));
-	global.Add("SWhite", EscColor(SWhite));
-	global.Add("SRed", EscColor(SRed));
-	global.Add("SGreen", EscColor(SGreen));
-	global.Add("SBrown", EscColor(SBrown));
-	global.Add("SBlue", EscColor(SBlue));
-	global.Add("SMagenta", EscColor(SMagenta));
-	global.Add("SCyan", EscColor(SCyan));
-	global.Add("SYellow", EscColor(SYellow));
-	global.Add("SLtRed", EscColor(SLtRed));
-	global.Add("SLtGreen", EscColor(SLtGreen));
-	global.Add("SLtYellow", EscColor(SLtYellow));
-	global.Add("SLtBlue", EscColor(SLtBlue));
-	global.Add("SLtMagenta", EscColor(SLtMagenta));
-	global.Add("SLtCyan", EscColor(SLtCyan));
+	global.Add("SBlack", EscColor(Black));
+	global.Add("SGray", EscColor(Gray));
+	global.Add("SLtGray", EscColor(LtGray));
+	global.Add("SWhiteGray", EscColor(WhiteGray));
+	global.Add("SWhite", EscColor(White));
+	global.Add("SRed", EscColor(Red));
+	global.Add("SGreen", EscColor(Green));
+	global.Add("SBrown", EscColor(Brown));
+	global.Add("SBlue", EscColor(Blue));
+	global.Add("SMagenta", EscColor(Magenta));
+	global.Add("SCyan", EscColor(Cyan));
+	global.Add("SYellow", EscColor(Yellow));
+	global.Add("SLtRed", EscColor(LtRed));
+	global.Add("SLtGreen", EscColor(LtGreen));
+	global.Add("SLtYellow", EscColor(LtYellow));
+	global.Add("SLtBlue", EscColor(LtBlue));
+	global.Add("SLtMagenta", EscColor(LtMagenta));
+	global.Add("SLtCyan", EscColor(LtCyan));
 
 	global.Add("IntNull", (int)Null);
 	global.Add("DblNullLim", DOUBLE_NULL_LIM);
@@ -303,7 +303,7 @@ void EscDraw::DrawText(EscEscape& e)
 	Font font = StdFont();
 	if(e.GetCount() > 3)
 		font = FontEsc(e[3]);
-	Color color = SBlack;
+	Color color = SColorText;
 	if(e.GetCount() > 4)
 		color = ColorEsc(e[4]);
 	w.DrawText(x, y, text, Nvl(font, StdFont()), color);
@@ -332,7 +332,7 @@ void EscDraw::DrawSmartText(EscEscape& e)
 #else
 		font.Height(11);
 #endif
-	Color color = SBlack;
+	Color color = SColorText;
 	if(ii < e.GetCount())
 		color = ColorEsc(e[ii++]);
 	::DrawSmartText(w, x, y, INT_MAX, text, font, color, accesskey);
@@ -349,7 +349,7 @@ void EscDraw::DrawQtf(EscEscape& e)
 	WString text = e[3];
 	int cx = e.Int(4);
 	String txt = '\1' + ToUtf8(text);
-	::DrawSmartText(w, x, y, cx, txt, StdFont(), SBlack, 0);
+	::DrawSmartText(w, x, y, cx, txt, StdFont(), SColorText, 0);
 }
 
 void EscDraw::GetTextSize(EscEscape& e)
@@ -374,7 +374,6 @@ void EscDraw::DrawImage(EscEscape& e)
 {
 	e.CheckArray(2);
 	w.DrawImage(e.Int(0), e.Int(1), GetImlImage((String)e[2]));
-	PNGEncoder().SaveFile("d:/png.png", GetImlImage((String)e[2]));
 }
 
 EscDraw::EscDraw(EscValue& v, Draw& w)

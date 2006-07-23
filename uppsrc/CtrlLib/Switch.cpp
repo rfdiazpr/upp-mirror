@@ -151,7 +151,7 @@ void Switch::Paint(Draw& w) {
 	if(cs.GetCount() == 0) return;
 	Size sz = GetSize();
 	if(!IsTransparent())
-		w.DrawRect(0, 0, sz.cx, sz.cy, SLtGray);
+		w.DrawRect(0, 0, sz.cx, sz.cy, SColorFace);
 	int tcy = GetTextSize("W", font).cy;
 	linecy = max(16, tcy + 2);
 	int y = 0;
@@ -187,7 +187,8 @@ void Switch::Paint(Draw& w) {
 		img = CtrlsImg::Get((v.value == value ? CtrlsImg::I_S1 : CtrlsImg::I_S0) + q);
 		w.DrawImage(x, y + iy, img);
 		DrawSmartText(w, x + isz.cx + 4, y + ty, sz.cx, v.label, font,
-		              dv ? SColorDisabled : IsReadOnly() ? SLtBlue : SColorText,
+		              dv ? SColorDisabled : IsReadOnly() ? Blend(SColorHighlight, SColorLight)
+		                                                 : SColorText,
 		              VisibleAccessKeys() ? v.accesskey : 0);
 		if(horz) {
 			x += hr.Width() + sz.cy / 2;

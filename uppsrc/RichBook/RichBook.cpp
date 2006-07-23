@@ -183,7 +183,7 @@ Vector<Drawing> RichPrintSection::Print(Size pagesize, Gate2<int, int> progress,
 		for(int hf = 0; hf < 3; hf++) {
 			if(!IsNull(header[hf])) {
 				String s = ExpandHFText(header[hf], pageno);
-				Size sz = ddraw.GetTextSize(s, charformat);
+				Size sz = ::GetTextSize(s, charformat);
 				int x;
 				switch(hf) {
 				case 0: x = pagerect.left; break;
@@ -194,7 +194,7 @@ Vector<Drawing> RichPrintSection::Print(Size pagesize, Gate2<int, int> progress,
 			}
 			if(!IsNull(footer[hf])) {
 				String s = ExpandHFText(footer[hf], pageno);
-				Size sz = ddraw.GetTextSize(s, charformat);
+				Size sz = ::GetTextSize(s, charformat);
 				int x;
 				switch(hf) {
 				case 0: x = pagerect.left; break;

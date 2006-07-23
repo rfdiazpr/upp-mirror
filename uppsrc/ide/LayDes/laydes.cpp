@@ -38,7 +38,7 @@ Rect CalcRect(Ctrl::LogPos pos, Size sz)
 
 void LayDes::AddHandle(Draw& w, int x, int y)
 {
-	w.DrawRect(x, y, 6, 6, SLtBlue);
+	w.DrawRect(x, y, 6, 6, SColorLtHighlight);
 	handle.Add(Point(x, y));
 }
 
@@ -91,14 +91,14 @@ void LayDes::GetSprings(Rect& l, Rect& t, Rect& r, Rect& b)
 void LayDes::DrawSpring(Draw& w, const Rect& r, bool horz, bool hard)
 {
 	if(hard)
-		w.DrawRect(horz ? r.DeflatedVert(4) : r.DeflatedHorz(4), SRed);
+		w.DrawRect(horz ? r.DeflatedVert(4) : r.DeflatedHorz(4), Red);
 	else
 		if(horz)
 			for(int x = r.left; x < r.right; x += 4)
-				w.DrawRect(x, r.top, 1, r.Height(), SGray);
+				w.DrawRect(x, r.top, 1, r.Height(), SColorShadow);
 		else
 			for(int y = r.top; y < r.bottom; y += 4)
-				w.DrawRect(r.left, y, r.Width(), 1, SGray);
+				w.DrawRect(r.left, y, r.Width(), 1, SColorShadow);
 }
 
 int LayDes::ParseLayoutRef(String cls, String& base) const
@@ -146,7 +146,7 @@ void LayDes::PaintLayoutItems(Draw& w, int layid, Size size, Index<int>& passed,
 		Rect r = ::CalcRect(m.pos, size);
 		String dummy;
 		int lr = ParseLayoutRef(m.type, dummy);
-		DrawFrame(w, r, SWhiteGray);
+		DrawFrame(w, r, SColorLtFace);
 		w.Clipoff(r);
 		if(lr < 0)
 			m.Paint(w, r.Size());
@@ -164,23 +164,23 @@ void LayDes::Paint(Draw& w)
 {
 	LTIMING("Paint");
 	Size sz = GetSize();
-	w.DrawRect(sz, SWhite);
+	w.DrawRect(sz, SColorPaper);
 	if(!IsNull(fileerror))
-		w.DrawText(16, 16, "FILE ERROR: " + fileerror, Arial(14).Bold(), SRed);
+		w.DrawText(16, 16, "FILE ERROR: " + fileerror, Arial(14).Bold(), Red);
 	if(currentlayout < 0)
 		return;
 	w.Offset(-sb.Get());
 	LayoutData& l = CurrentLayout();
 	w.Offset(MARGIN, MARGIN);
-	w.DrawRect(0, 0, l.size.cx, l.size.cy, SLtGray);
+	w.DrawRect(0, 0, l.size.cx, l.size.cy, SColorFace);
 	if(setting.paintgrid) {
 		int gx = minmax((int)~setting.gridx, 1, 32);
 		int gy = minmax((int)~setting.gridy, 1, 32);
 		for(int x = 0; x < l.size.cx; x += gx)
 			for(int y = 0; y < l.size.cy; y += gy)
-				w.DrawRect(x, y, 1, 1, SWhite);
+				w.DrawRect(x, y, 1, 1, SColorPaper);
 	}
-	DrawFrame(w, -1, -1, l.size.cx + 2, l.size.cy + 2, SBlack);
+	DrawFrame(w, -1, -1, l.size.cx + 2, l.size.cy + 2, SColorText);
 	handle.Clear();
 	AddHandle(w, l.size.cx, l.size.cy / 2 - 3);
 	AddHandle(w, l.size.cx / 2 - 3, l.size.cy);
@@ -198,7 +198,7 @@ void LayDes::Paint(Draw& w)
 		for(i = 0; i < cursor.GetCount(); i++) {
 			LayoutItem& m = l.item[cursor[i]];
 			Rect r = ::CalcRect(m.pos, l.size);
-			DrawFatFrame(w, r, i == cursor.GetCount() - 1 ? SCyan : SBrown, -3);
+			DrawFatFrame(w, r, i == cursor.GetCount() - 1 ? Cyan : Brown, -3);
 			if(i == cursor.GetCount() - 1) {
 				int lrm = r.left + r.Width() / 2 - 3;
 				int tbm = r.top + r.Height() / 2 - 3;
@@ -223,7 +223,7 @@ void LayDes::Paint(Draw& w)
 		}
 	}
 	if(HasCapture() && draghandle == 14)
-		DrawFrame(w, dragrect.Normalized(), SLtRed);
+		DrawFrame(w, dragrect.Normalized(), LtRed);
 	w.End();
 	w.End();
 }
@@ -406,15 +406,15 @@ void LayDes::SyncItems()
 void LayDes::SyncItem(int i, int style)
 {
 	if(CurrentLayout().item[i].hide) {
-		static IDisplayH dnormal(SWhite, SBlack);
-		static IDisplayH dselect(SWhiteGray, SBlack);
-		static IDisplayH dcursor(SLtGray, SBlack);
-		static TDisplayH tnormal(SWhite, SBlack);
-		static TDisplayH tselect(SWhiteGray, SBlack);
-		static TDisplayH tcursor(SLtGray, SBlack);
-		static IDisplayH lnormal(SWhite, SGreen);
-		static IDisplayH lselect(SWhiteGray, SGreen);
-		static IDisplayH lcursor(SLtGray, SGreen);
+		static IDisplayH dnormal(SColorPaper, SColorText);
+		static IDisplayH dselect(SColorLtFace, SColorText);
+		static IDisplayH dcursor(SColorFace, SColorText);
+		static TDisplayH tnormal(SColorPaper, SColorText);
+		static TDisplayH tselect(SColorLtFace, SColorText);
+		static TDisplayH tcursor(SColorFace, SColorText);
+		static IDisplayH lnormal(SColorPaper, Green);
+		static IDisplayH lselect(SColorLtFace, Green);
+		static IDisplayH lcursor(SColorFace, Green);
 		const Display *noicon[] = { &dnormal, &dselect, &dcursor };
 		const Display *isicon[] = { &tnormal, &tselect, &tcursor };
 		const Display *label[] = { &lnormal, &lselect, &lcursor };
@@ -423,15 +423,15 @@ void LayDes::SyncItem(int i, int style)
 		item.SetDisplay(i, 1, *(IsNull(CurrentLayout().item[i].variable) ? label : noicon)[style]);
 	}
 	else {
-		static IDisplay dnormal(SWhite, SBlack);
-		static IDisplay dselect(SWhiteGray, SBlack);
-		static IDisplay dcursor(SLtGray, SBlack);
-		static TDisplay tnormal(SWhite, SBlack);
-		static TDisplay tselect(SWhiteGray, SBlack);
-		static TDisplay tcursor(SLtGray, SBlack);
-		static IDisplay lnormal(SWhite, SGreen);
-		static IDisplay lselect(SWhiteGray, SGreen);
-		static IDisplay lcursor(SLtGray, SGreen);
+		static IDisplay dnormal(SColorPaper, SColorText);
+		static IDisplay dselect(SColorLtFace, SColorText);
+		static IDisplay dcursor(SColorFace, SColorText);
+		static TDisplay tnormal(SColorPaper, SColorText);
+		static TDisplay tselect(SColorLtFace, SColorText);
+		static TDisplay tcursor(SColorFace, SColorText);
+		static IDisplay lnormal(SColorPaper, Green);
+		static IDisplay lselect(SColorLtFace, Green);
+		static IDisplay lcursor(SColorFace, Green);
 		const Display *noicon[] = { &dnormal, &dselect, &dcursor };
 		const Display *isicon[] = { &tnormal, &tselect, &tcursor };
 		const Display *label[] = { &lnormal, &lselect, &lcursor };
@@ -723,7 +723,7 @@ void LayDes::Group(Bar& bar, const String& group)
 	((MenuBar&)bar).LeftGap(w + 2);
 	int q = 0;
 	for(i = 0; i < type.GetCount(); i++) {
-		bar.Add(type[i], GetTypeIcon(type[i], w, h, 0, SLtGray),
+		bar.Add(type[i], GetTypeIcon(type[i], w, h, 0, SColorFace),
 		        THISBACK1(CreateCtrl, type[i]));
 		if((q++ + 2) % 16 == 0)
 			bar.Break();
@@ -745,7 +745,7 @@ void LayDes::TemplateGroup(Bar& bar, TempGroup tg)
 	((MenuBar&)bar).LeftGap(w + 2);
 	int q = 0;
 	for(i = 0; i < type.GetCount(); i++) {
-		bar.Add(type[i], GetTypeIcon(type[i], w, h, 0, SLtGray),
+		bar.Add(type[i], GetTypeIcon(type[i], w, h, 0, SColorFace),
 		        THISBACK1(CreateCtrl, tg.temp + '<' + type[i] + '>'));
 		if((q++ + 2) % 16 == 0)
 			bar.Break();
@@ -781,7 +781,7 @@ void LayDes::Template(Bar& bar, const String& temp)
 	if((q++ + 2) % 16 == 0)
 		bar.Break();
 	for(i = 0; i < type.GetCount(); i++) {
-		bar.Add(type[i], GetTypeIcon(type[i], w, h, 0, SLtGray),
+		bar.Add(type[i], GetTypeIcon(type[i], w, h, 0, SColorFace),
 		        THISBACK1(CreateCtrl, temp + '<' + type[i] + '>'));
 		if((q++ + 2) % 16 == 0)
 			bar.Break();
@@ -839,7 +839,7 @@ void LayDes::RightDown(Point p, dword keyflags)
 	if((q++ + 2) % 16 == 0)
 		menu.Break();
 	for(i = 0; i < type.GetCount(); i++) {
-		menu.Add(type[i], GetTypeIcon(type[i], w, h, 0, SLtGray),
+		menu.Add(type[i], GetTypeIcon(type[i], w, h, 0, SColorFace),
 		                  THISBACK1(CreateCtrl, type[i]));
 		if((q++ + 2) % 16 == 0)
 			menu.Break();

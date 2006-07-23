@@ -120,8 +120,8 @@ struct Pdb : Debugger, Ctrl {
 		int                length;
 		Vector<VisualPart> part;
 
-		void   Cat(const String& text, Color ink = SBlack);
-		void   Cat(const char *text, Color ink = SBlack);
+		void   Cat(const String& text, Color ink = SColorText);
+		void   Cat(const char *text, Color ink = SColorText);
 		String GetString() const;
 		void   Clear() { part.Clear(); length = 0; }
 

@@ -40,8 +40,6 @@ struct IMLImageInfo : AlphaImageInfo
 
 Image CreateImage(Size sz, Color color);
 void  FloodFill(Image& img, Color color, Point pt, const Rect& rc);
-void  Copy(Image& dest, Point p, const Image& src, const Rect& srect);
-void  Over(Image& dest, Point p, const Image& src, const Rect& srect, byte alpha = 255);
 void  GrayImage(Image& img, const Rect& drect);
 
 void  SwapHorz(Image& img, const Rect& rect);

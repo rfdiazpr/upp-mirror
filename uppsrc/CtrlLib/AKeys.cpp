@@ -62,7 +62,8 @@ struct KeyCtrl : Ctrl {
 
 	virtual void Paint(Draw& w) {
 		Single<KeyDisplay>().Paint(w, GetSize(), key,
-		                           HasFocus() ? SWhite : SBlack, HasFocus() ? SBlue : SWhite, 0);
+		                           HasFocus() ? SColorLight : SColorText,
+		                           HasFocus() ? SColorHighlight : SColorPaper, 0);
 	}
 
 	virtual bool Key(dword _key, int) {

@@ -55,10 +55,10 @@ void Pdb::Visualise(Visual& result, Pdb::Val val, int expandptr, int slen, int m
 	if(val.ref > 0 || val.type < 0)
 		val = GetRVal(val);
 	if(val.ref > 0) {
-		result.Cat(FormatIntHex(val.address, 0), SLtMagenta);
+		result.Cat(FormatIntHex(val.address, 0), LtMagenta);
 		if(val.type == UINT1 || val.type == SINT1) {
 			if(Byte(val.address) < 0)
-				result.Cat("??", SGray);
+				result.Cat("??", SColorDisabled);
 			else {
 				String x = ReadString(val.address, slen + 1);
 				String dt;
@@ -67,18 +67,18 @@ void Pdb::Visualise(Visual& result, Pdb::Val val, int expandptr, int slen, int m
 					dt = "..";
 				}
 				result.Cat(" ");
-				result.Cat(AsCString(x) + dt, SRed);
+				result.Cat(AsCString(x) + dt, Red);
 			}
 			return;
 		}
 		if(expandptr > 0 && (val.type != UNKNOWN || val.ref > 1) && val.address) {
-			result.Cat("->", SLtBlue);
+			result.Cat("->", SColorLtHighlight);
 			Visualise(result, DeRef(val), expandptr - 1, slen, maxlen);
 		}
 		return;
 	}
 	if(val.type < 0) {
-		#define RESULTINT(x, type) case x: result.Cat(IntFormat((type)val.ival), SRed); break;
+		#define RESULTINT(x, type) case x: result.Cat(IntFormat((type)val.ival), Red); break;
 		switch(val.type) {
 		RESULTINT(BOOL1, bool)
 		RESULTINT(UINT1, byte)
@@ -91,27 +91,27 @@ void Pdb::Visualise(Visual& result, Pdb::Val val, int expandptr, int slen, int m
 		RESULTINT(SINT8, int64)
 		case DBL:
 		case FLT:
-			result.Cat(Format("%.10g", val.fval), SRed); break;
+			result.Cat(Format("%.10g", val.fval), Red); break;
 		case PFUNC: {
-			result.Cat(FormatIntHex(val.address), SRed);
+			result.Cat(FormatIntHex(val.address), Red);
 			FnInfo fi = GetFnInfo(val.address);
 			if(!IsNull(fi.name)) {
-				result.Cat("->", SLtBlue);
-				result.Cat(fi.name, SBlack);
+				result.Cat("->", SColorLtHighlight);
+				result.Cat(fi.name, SColorText);
 			}
 			break;
 		}
 		default:
-			result.Cat("<void>", SLtBlue);
+			result.Cat("<void>", SColorLtHighlight);
 		}
 		return;
 	}
 	const Type& t = GetType(val.type);
 	if(t.vtbl_typeindex == -2) {
-		result.Cat(Nvl(GetFnInfo(val.address).name, "??"), SBlack);
+		result.Cat(Nvl(GetFnInfo(val.address).name, "??"), SColorText);
 		return;
 	}
-	result.Cat("{ ", SLtBlue);
+	result.Cat("{ ", SColorLtHighlight);
 	bool cm = false;
 	for(int i = 0; i < t.member.GetCount(); i++) {
 		if(cm)
@@ -122,14 +122,14 @@ void Pdb::Visualise(Visual& result, Pdb::Val val, int expandptr, int slen, int m
 			break;
 		}
 		result.Cat(t.member.GetKey(i));
-		result.Cat("=", SLtBlue);
+		result.Cat("=", SColorLtHighlight);
 		Val r = t.member[i];
 		r.address += val.address;
 		try {
 			Visualise(result, r, max(expandptr - 1, 0), 20, maxlen);
 		}
 		catch(CParser::Error e) {
-			result.Cat(e, SGray);
+			result.Cat(e, SColorDisabled);
 		}
 	}
 	for(int i = 0; i < t.static_member.GetCount(); i++) {
@@ -141,12 +141,12 @@ void Pdb::Visualise(Visual& result, Pdb::Val val, int expandptr, int slen, int m
 			break;
 		}
 		result.Cat(t.static_member.GetKey(i));
-		result.Cat("=", SLtBlue);
+		result.Cat("=", SColorLtHighlight);
 		try {
 			Visualise(result, t.static_member[i], max(expandptr - 1, 0), 20, maxlen);
 		}
 		catch(CParser::Error e) {
-			result.Cat(e, SGray);
+			result.Cat(e, SColorDisabled);
 		}
 	}
 	for(int i = 0; i < t.base.GetCount(); i++) {
@@ -163,19 +163,19 @@ void Pdb::Visualise(Visual& result, Pdb::Val val, int expandptr, int slen, int m
 					break;
 				}
 				result.Cat(t.member.GetKey(i));
-				result.Cat("=", SLtBlue);
+				result.Cat("=", SColorLtHighlight);
 				Val r = t.member[i];
 				r.address += adr;
 				try {
 					Visualise(result, r, max(expandptr - 1, 0), 32, maxlen);
 				}
 				catch(CParser::Error e) {
-					result.Cat(e, SGray);
+					result.Cat(e, SColorDisabled);
 				}
 			}
 		}
 	}
-	result.Cat(" }", SLtBlue);
+	result.Cat(" }", SColorLtHighlight);
 }
 
 Pdb::Visual Pdb::Visualise(Val v, int maxlen)
@@ -185,7 +185,7 @@ Pdb::Visual Pdb::Visualise(Val v, int maxlen)
 		Visualise(r, v, 2, 150, maxlen);
 	}
 	catch(CParser::Error e) {
-		r.Cat(e, SGray);
+		r.Cat(e, SColorDisabled);
 	}
 	return r;
 }
@@ -199,7 +199,7 @@ Pdb::Visual Pdb::Visualise(const String& exp, int maxlen)
 		Visualise(r, v, 2, 150, maxlen);
 	}
 	catch(CParser::Error e) {
-		r.Cat(e, SGray);
+		r.Cat(e, SColorDisabled);
 	}
 	return r;
 }
@@ -215,7 +215,7 @@ const
 		for(int i = 0; i < v.part.GetCount() && x < r.right; i++) {
 			const VisualPart& p = v.part[i];
 			Size sz = GetTextSize(p.text, StdFont());
-			w.DrawRect(x, y, sz.cx, r.Height(), blue || !p.mark ? paper : SYellow);
+			w.DrawRect(x, y, sz.cx, r.Height(), blue || !p.mark ? paper : SColorLtFace);
 //			if(p.mark)
 //				w.DrawRect(x, r.bottom - 1, sz.cx, 1, SLtRed);
 			w.DrawText(x, y, p.text, StdFont(), blue ? ink : p.ink);

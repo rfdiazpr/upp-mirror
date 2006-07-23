@@ -44,3 +44,34 @@ Image MakeImage(const ImageMaker& m)
 	}
 	return result;
 }
+
+class SimpleImageMaker : public ImageMaker {
+	Image (*make)(const Image& image);
+	Image image;
+
+public:
+	virtual String Key() const;
+	virtual Image  Make() const;
+
+	SimpleImageMaker(const Image& image, Image (*make)(const Image& image))
+	:	image(image), make(make) {}
+};
+
+String SimpleImageMaker::Key() const
+{
+	String key;
+	int64 k = image.GetSerialId();
+	key.Cat((const char *)&k, sizeof(int64));
+	key.Cat((const char *)&make, sizeof(make));
+	return key;
+}
+
+Image SimpleImageMaker::Make() const
+{
+	return (*make)(image);
+}
+
+Image MakeImage(const Image& image, Image (*make)(const Image& image))
+{
+	return MakeImage(SimpleImageMaker(image, make));
+}

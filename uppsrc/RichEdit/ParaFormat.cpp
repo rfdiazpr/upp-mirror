@@ -317,8 +317,7 @@ struct DisplayDefault : public Display {
 	                   Color ink, Color paper, dword style) const {
 		String text = q;
 		w.DrawRect(r, paper);
-		DrawSmartText(w, r.left, r.top, r.Width(), text, StdFont().Bold(),
-		              (style & CURSOR) && (style & FOCUS) ? SLtCyan : SGreen);
+		DrawSmartText(w, r.left, r.top, r.Width(), text, StdFont().Bold(), ink);
 	}
 };
 

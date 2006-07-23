@@ -97,7 +97,7 @@ void LabelBox::Paint(Draw& w)
 {
 	Size sz = GetSize();
 	if(!IsTransparent())
-		w.DrawRect(sz, SLtGray);
+		w.DrawRect(sz, SColorFace);
 	int d = Draw::GetStdFontCy() >> 1;
 
 	Size ts = PaintLabel(w, d, 0, sz.cx, sz.cy, !IsShowEnabled(), false, false, VisibleAccessKeys());
@@ -163,39 +163,21 @@ void LabelBox::Paint(Draw& w)
 			w.DrawRect(d - 1, 1, 0, sz.cy, SColorLight);
 		}
 		else {
-			w.DrawRect(0, d + 2, 1, sz.cy - d - 4, SGray);
-			w.DrawRect(1, d + 2, 1, sz.cy - d - 4, SWhite);
-			w.DrawRect(sz.cx - 2, d, 1, sz.cy - d - 2, SGray);
-			w.DrawRect(sz.cx - 1, d, 1, sz.cy - d - 2, SWhite);
-			w.DrawRect(0, sz.cy - 2, sz.cx - 1, 1, SGray);
-			w.DrawRect(0, sz.cy - 1, sz.cx - 1, 1, SWhite);
+			w.DrawRect(0, d + 2, 1, sz.cy - d - 4, SColorShadow);
+			w.DrawRect(1, d + 2, 1, sz.cy - d - 4, SColorLight);
+			w.DrawRect(sz.cx - 2, d, 1, sz.cy - d - 2, SColorShadow);
+			w.DrawRect(sz.cx - 1, d, 1, sz.cy - d - 2, SColorLight);
+			w.DrawRect(0, sz.cy - 2, sz.cx - 1, 1, SColorShadow);
+			w.DrawRect(0, sz.cy - 1, sz.cx - 1, 1, SColorLight);
 
-			w.DrawRect(sz.cx - 1, sz.cy - 2, 1, 2, SWhite);
-			w.DrawRect(1, d, d - 1, 1, SGray);
-			w.DrawRect(1, d + 1, d - 1, 1, SWhite);
-			w.DrawRect(0, d, 1, 2, SGray);
-			w.DrawRect(d + ts.cx, d, sz.cx - ts.cx - d - 2, 1, SGray);
-			w.DrawRect(d + ts.cx, d + 1, sz.cx - ts.cx - d - 2, 1, SWhite);
+			w.DrawRect(sz.cx - 1, sz.cy - 2, 1, 2, SColorLight);
+			w.DrawRect(1, d, d - 1, 1, SColorShadow);
+			w.DrawRect(1, d + 1, d - 1, 1, SColorLight);
+			w.DrawRect(0, d, 1, 2, SColorShadow);
+			w.DrawRect(d + ts.cx, d, sz.cx - ts.cx - d - 2, 1, SColorShadow);
+			w.DrawRect(d + ts.cx, d + 1, sz.cx - ts.cx - d - 2, 1, SColorLight);
 		}
 	}
-}
-
-Vector<Rect> LabelBox::GetTransparentViewRects()
-{
-	Size sz = GetSize();
-	Vector<Rect> r;
-	int  d = Draw::GetStdFontCy();
-	d >>= 1;
-	Size ts = GetLabelSize();
-	if(sz.cy < 2 * Draw::GetStdFontCy() || sz.cx < 2 * Draw::GetStdFontCy())
-		r.Add(sz);
-	else {
-		r.Add(RectC(0, d + 2, 2, sz.cy - d - 4));
-		r.Add(RectC(sz.cx - 2, d, 2, sz.cy - d - 2));
-		r.Add(RectC(0, sz.cy - 2, sz.cx - 1, 2));
-		r.Add(RectC(0, 0, sz.cx, ts.cy));
-	}
-	return r;
 }
 
 ParentCtrl::ParentCtrl()
@@ -219,7 +201,7 @@ void StaticRect::Paint(Draw& w) {
 }
 
 StaticRect::StaticRect() {
-	color = SLtGray;
+	color = SColorFace;
 	NoWantFocus();
 }
 
@@ -279,15 +261,15 @@ void SeparatorCtrl::Paint(Draw& w) {
 	Size sz = GetSize();
 	if(sz.cx > sz.cy) {
 		int q = sz.cy / 2;
-		w.DrawRect(margin, q - 1, sz.cx - 2 * margin, 1, SGray);
+		w.DrawRect(margin, q - 1, sz.cx - 2 * margin, 1, SColorShadow);
 		if(!IsXPStyle())
-			w.DrawRect(margin, q, sz.cx - 2 * margin, 1, SWhite);
+			w.DrawRect(margin, q, sz.cx - 2 * margin, 1, SColorLight);
 	}
 	else {
 		int q = sz.cx / 2;
-		w.DrawRect(q - 1, margin, 1, sz.cy - 2 * margin, SGray);
+		w.DrawRect(q - 1, margin, 1, sz.cy - 2 * margin, SColorShadow);
 		if(!IsXPStyle())
-			w.DrawRect(q, margin, 1, sz.cy - 2 * margin, SWhite);
+			w.DrawRect(q, margin, 1, sz.cy - 2 * margin, SColorLight);
 	}
 };
 

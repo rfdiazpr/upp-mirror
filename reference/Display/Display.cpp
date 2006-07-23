@@ -7,13 +7,13 @@ struct FontFaceDisplay : Display {
 		Font fnt = Font(q, r.Height() - 2);
 		String txt = Font::GetFaceName(q);
 		w.DrawRect(r, paper);
-		w.DrawText(r.left + 2, r.top + (r.Height() - w.GetTextSize(txt, fnt).cy) / 2, txt, fnt, ink);
+		w.DrawText(r.left + 2, r.top + (r.Height() - GetTextSize(txt, fnt).cy) / 2, txt, fnt, ink);
 	}
 };
 
 struct MyApp : TopWindow {
 	DropList dl;
-	
+
 	MyApp()
 	{
 		Add(dl.HSizePos().TopPos(5, Ctrl::STDSIZE));

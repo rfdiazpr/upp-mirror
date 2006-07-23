@@ -73,14 +73,9 @@ void ColumnList::ShiftSelect(int anchor, int cursor) {
 		SelectOne(i, true);
 }
 
-Image ColumnList::CursorImage(Point p, dword) {
-	if(HasCapture()) return CtrlImg::horzpos1();
-	int i = GetDragColumn(p.x);
-	if(i < 0) return Image::Arrow();
-	static Image (*hanipos[])() = {
-		CtrlImg::horzpos1, CtrlImg::horzpos2, CtrlImg::horzpos1, CtrlImg::horzpos3
-	};
-	return (*(hanipos)[GetTimeClick() / 200 % 4])();
+Image ColumnList::CursorImage(Point p, dword)
+{
+	return HasCapture() || GetDragColumn(p.x) >= 0 ? Image::SizeHorz() : Image::Arrow();
 }
 
 int ColumnList::GetItem(Point p)
@@ -385,8 +380,8 @@ void ColumnList::UpdateSelect() {
 
 void ColumnList::GetItemStyle(int i, Color& ink, Color& paper, dword& style)
 {
-	ink = SBlack;
-	paper = SWhite;
+	ink = SColorText;
+	paper = SColorPaper;
 	const Item& m = item[i];
 	style = 0;
 	if(i == cursor) {
@@ -395,12 +390,12 @@ void ColumnList::GetItemStyle(int i, Color& ink, Color& paper, dword& style)
 		if(HasFocus()) {
 			style |= Display::FOCUS;
 			paper = isselection ? Blend(SColorHighlight, SColorPaper) : SColorHighlight;
-			ink = SWhite;
+			ink = SColorPaper;
 		}
 	}
 	if(m.sel) {
 		style |= Display::SELECT;
-		paper = SGray;
+		paper = SColorShadow;
 		if(HasFocus()) {
 			paper = SColorPaper;
 			ink = SColorText;
@@ -428,7 +423,8 @@ void ColumnList::Paint(Draw& w) {
 					r.right--;
 					const Item& m = item[i];
 					(m.display ? m.display : display)->Paint(w, r, m.value, ink, paper, style);
-					w.DrawRect(rect.right - 1, rect.top, 1, rect.Height(), SGray);
+					w.DrawRect(rect.right - 1, rect.top, 1, rect.Height(),
+					           x + cx < sz.cx ? SColorDisabled : SColorPaper);
 				}
 				i++;
 			}
@@ -552,7 +548,7 @@ void ColumnList::FramePaint(Draw& draw, const Rect& r)
 	frame->FramePaint(draw, rr);
 	rr = r;
 	rr.top = ry;
-	draw.DrawRect(rr, SLtGray);
+	draw.DrawRect(rr, SColorFace);
 }
 
 ColumnList& ColumnList::RoundSize(bool b)

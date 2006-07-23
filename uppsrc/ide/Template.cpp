@@ -105,9 +105,9 @@ void AppPreview::Paint(Draw& w)
 	int i = sb;
 	while(y < sz.cy) {
 		bool hdr = i < line.GetCount() && line[i].header;
-		w.DrawRect(0, y, sz.cx, fi.GetHeight(), hdr ? SLtCyan : SWhite);
+		w.DrawRect(0, y, sz.cx, fi.GetHeight(), hdr ? LtCyan : SColorPaper);
 		if(i < line.GetCount())
-			w.DrawText(0, y, line[i].text, hdr ? Arial(12).Bold().Italic() : Courier(12), SBlack);
+			w.DrawText(0, y, line[i].text, hdr ? Arial(12).Bold().Italic() : Courier(12), SColorText);
 		y += fi.GetHeight();
 		i++;
 	}

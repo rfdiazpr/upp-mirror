@@ -28,10 +28,10 @@ void Pdb::Reg(Label& reg, dword val)
 	String h = Sprintf("%08X", val);
 	if(h != reg.GetText()) {
 		reg.SetLabel(h);
-		reg.SetInk(SLtRed);
+		reg.SetInk(LtRed);
 	}
 	else
-		reg.SetInk(SBlack);
+		reg.SetInk(SColorText);
 }
 
 bool Pdb::IsValidFrame(dword eip)

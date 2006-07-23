@@ -348,10 +348,10 @@ Scaling VectorCtrl::GetImageScaling() const
 void VectorCtrl::Paint(Draw& draw)
 {
 	DragHide();
-	draw.DrawRect(draw.GetClip(), IsEnabled() ? SWhite() : SGray());
+	draw.DrawRect(draw.GetClip(), IsEnabled() ? SColorPaper() : SColorShadow());
 	Rect rc(pixel_size);
 	rc.Offset(Point(GAP, GAP) - scrollbars);
-	draw.DrawRect(rc, SLtGray());
+	draw.DrawRect(rc, SColorFace());
 	draw.Offset(rc.TopLeft());
 	ScalingDraw scaled(&draw, GetImageScaling());
 	if(!setup.grid_above_objects)
@@ -381,9 +381,9 @@ void VectorCtrl::PaintGrid(ScalingDraw& scaled)
 		case Setup::GRID_LINES: {
 			Size sz = image.GetSize();
 			for(int i = 0; i < sz.cx; i += setup.grid_size.cx)
-				scaled.draw->DrawRect(scaled.X(i), clip.top, 1, clip.Height(), SGray());
+				scaled.draw->DrawRect(scaled.X(i), clip.top, 1, clip.Height(), SColorShadow());
 			for(int i = 0; i < sz.cy; i += setup.grid_size.cy)
-				scaled.draw->DrawRect(clip.left, scaled.Y(i), clip.Width(), 1, SGray());
+				scaled.draw->DrawRect(clip.left, scaled.Y(i), clip.Width(), 1, SColorShadow());
 			break;
 		}
 
@@ -396,7 +396,7 @@ void VectorCtrl::PaintGrid(ScalingDraw& scaled)
 				ypos[i] = scaled.Y(i * setup.grid_size.cy);
 			for(int y = 0; y < count.cy; y++)
 				for(int x = 0; x < count.cx; x++)
-					scaled.draw->DrawRect(xpos[x], ypos[y], 1, 1, SGray());
+					scaled.draw->DrawRect(xpos[x], ypos[y], 1, 1, SColorShadow());
 			break;
 		}
 	}

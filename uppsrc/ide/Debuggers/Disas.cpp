@@ -24,13 +24,14 @@ void DbgDisas::Paint(Draw& w)
 	int y = 0;
 	while(i < inst.GetCount() && y < sz.cy) {
 		Inst& n = inst[i];
-		Color ink = HasFocus() && i == cursor ? SWhite : SBlack;
+		Color ink = HasFocus() && i == cursor ? SColorPaper : SColorText;
 		int x = 0;
-		w.DrawRect(0, y, sz.cx, box.cy, i == cursor ? HasFocus() ? SBlue : SLtGray : SWhite);
+		w.DrawRect(0, y, sz.cx, box.cy, i == cursor ? HasFocus() ? SColorHighlight : SColorFace
+		                                            : SColorPaper);
 		if(sz.cx > 3 * box.cx) {
 			w.DrawText(0, y, Sprintf("%08X", addr[i]), Courier(12),
-			           HasFocus() && i == cursor ? SWhite
-			                                     : taddr.Find(addr[i]) >= 0 ? SLtRed : SBlack);
+			           HasFocus() && i == cursor ? SColorPaper
+			                                     : taddr.Find(addr[i]) >= 0 ? LtRed : SColorText);
 			x += box.cx;
 		}
 		if(i == ip)
@@ -41,7 +42,7 @@ void DbgDisas::Paint(Draw& w)
 		y += box.cy;
 		i++;
 	}
-	w.DrawRect(0, y, sz.cx, sz.cy, SWhite);
+	w.DrawRect(0, y, sz.cx, sz.cy, SColorPaper);
 }
 
 void DbgDisas::LeftDown(Point p, dword)

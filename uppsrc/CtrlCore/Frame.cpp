@@ -74,8 +74,8 @@ CtrlFrame& FieldFrame() { return Ctrl::IsXPStyle() ? XPFieldFrame() : InsetFrame
 class TopSeparatorFrameCls : public CtrlFrame {
 	virtual void FrameLayout(Rect& r)                   { r.top += 2; }
 	virtual void FramePaint(Draw& w, const Rect& r) {
-		w.DrawRect(r.left, r.top, r.Width(), 1, SGray);
-		w.DrawRect(r.left, r.top + 1, r.Width(), 1, SWhite);
+		w.DrawRect(r.left, r.top, r.Width(), 1, SColorShadow);
+		w.DrawRect(r.left, r.top + 1, r.Width(), 1, SColorLight);
 	}
 	virtual void FrameAddSize(Size& sz) { sz.cy += 2; }
 };
@@ -83,8 +83,8 @@ class TopSeparatorFrameCls : public CtrlFrame {
 class BottomSeparatorFrameCls : public CtrlFrame {
 	virtual void FrameLayout(Rect& r)                   { r.bottom -= 2; }
 	virtual void FramePaint(Draw& w, const Rect& r) {
-		w.DrawRect(r.left, r.bottom - 2, r.Width(), 1, SGray);
-		w.DrawRect(r.left, r.bottom - 1, r.Width(), 1, SWhite);
+		w.DrawRect(r.left, r.bottom - 2, r.Width(), 1, SColorShadow);
+		w.DrawRect(r.left, r.bottom - 1, r.Width(), 1, SColorLight);
 	}
 	virtual void FrameAddSize(Size& sz) { sz.cy += 2; }
 };
@@ -92,8 +92,8 @@ class BottomSeparatorFrameCls : public CtrlFrame {
 class LeftSeparatorFrameCls : public CtrlFrame {
 	virtual void FrameLayout(Rect& r)                   { r.left += 2; }
 	virtual void FramePaint(Draw& w, const Rect& r) {
-		w.DrawRect(r.left, r.top, 1, r.Height(), SGray);
-		w.DrawRect(r.left + 1, r.top, 1, r.Height(), SWhite);
+		w.DrawRect(r.left, r.top, 1, r.Height(), SColorShadow);
+		w.DrawRect(r.left + 1, r.top, 1, r.Height(), SColorLight);
 	}
 	virtual void FrameAddSize(Size& sz) { sz.cx += 2; }
 };
@@ -101,8 +101,8 @@ class LeftSeparatorFrameCls : public CtrlFrame {
 class RightSeparatorFrameCls : public CtrlFrame {
 	virtual void FrameLayout(Rect& r)                   { r.right -= 2; }
 	virtual void FramePaint(Draw& w, const Rect& r) {
-		w.DrawRect(r.right - 2, r.top, 1, r.Height(), SGray);
-		w.DrawRect(r.right - 1, r.top, 1, r.Height(), SWhite);
+		w.DrawRect(r.right - 2, r.top, 1, r.Height(), SColorShadow);
+		w.DrawRect(r.right - 1, r.top, 1, r.Height(), SColorLight);
 	}
 	virtual void FrameAddSize(Size& sz) { sz.cx += 2; }
 };

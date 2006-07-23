@@ -72,12 +72,6 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 			if(draw.PaletteMode() && Draw::AutoPalette())
 				SelectPalette(dc, hOldPal, TRUE);
 			EndPaint(hwnd, &ps);
-			/*{ // Perfomance test for the new Draw
-				RTIMING("Nil update");
-				NilDrawFull nd;
-				for(int i = 0; i < 100; i++)
-					UpdateArea(nd, Rect(ps.rcPaint) + p);
-			}*/
 		}
 		return 0L;
 	case WM_NCHITTEST:
@@ -352,7 +346,6 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 		return 0L;
 	case WM_SETTINGCHANGE:
 	case 0x031A: // WM_THEMECHANGED
-		Draw::Win32UpdateSColors();
 		ChSetStyle(ChGetStyle());
 		RefreshLayoutDeep();
 		RefreshFrame();

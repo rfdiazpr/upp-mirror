@@ -66,6 +66,7 @@ struct GccBuilder : CppBuilder {
 	virtual bool   Link(const Vector<String>& linkfile, const String& linkoptions, bool createmap);
 	virtual bool   Preprocess(const String& package, const String& file, const String& target);
 
+	String CompilerName() const;
 	String CmdLine();
 	void BinaryToObject(String objfile, CParser& binscript, String basedir);
 };

@@ -70,3 +70,7 @@ Value
 0 0 -1
 Value::Void
 0 0 -1
+NewTabCtrl
+0 0 -1
+Draw
+0 0 -1

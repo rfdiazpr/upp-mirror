@@ -8,6 +8,8 @@ protected:
 	int   pxp;
 	bool  percent:1;
 
+	Size GetMsz();
+
 public:
 	void  Set(int actual, int total);
 	void  Set(int _actual)                     { Set(_actual, total); }

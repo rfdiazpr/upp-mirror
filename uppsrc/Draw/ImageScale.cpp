@@ -31,7 +31,6 @@ static const byte *GetStretchCurve()
 Vector<dword> AAGetMap(int& dmin, int& dmax, int dclipmin, int dclipmax,
 	                   int smin, int smax, int sclipmin, int sclipmax, int times, int avail)
 {
-	RTIMING("AAGetMap");
 	Vector<dword> map;
 	if(dmax == dmin || smax == smin)
 		return map;
@@ -456,7 +455,6 @@ void RescaleImage::Get(RGBA *tgt)
 
 void Rescale(RasterEncoder& tgt, Size tsz, Raster& src, const Rect& src_rc)
 {
-	RTIMING("Rescale");
 	tgt.Create(tsz, src);
 	RescaleImage rs;
 	rs.Create(tsz, src, src_rc);

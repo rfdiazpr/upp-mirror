@@ -17,7 +17,7 @@ void RightInfoFrame::FrameLayout(Rect& r)
 void RightInfoFrame::FramePaint(Draw& w, const Rect& r)
 {
 	w.DrawRect(r.left, r.top, 2, r.Height(), SColorFace);
-	DrawFrame(w, r.left + 2, r.top, r.Width() - 2, r.Height(), SGray, SWhite);
+	DrawFrame(w, r.left + 2, r.top, r.Width() - 2, r.Height(), SColorShadow, SColorLight);
 }
 
 void RightInfoFrame::FrameAddSize(Size& sz)
@@ -43,7 +43,7 @@ void LeftInfoFrame::FrameLayout(Rect& r)
 void LeftInfoFrame::FramePaint(Draw& w, const Rect& r)
 {
 	w.DrawRect(r.right - 2, r.top, 2, r.Height(), SColorFace);
-	DrawFrame(w, r.left, r.top, r.Width() - 2, r.Height(), SGray, SWhite);
+	DrawFrame(w, r.left, r.top, r.Width() - 2, r.Height(), SColorShadow, SColorLight);
 }
 
 void LeftInfoFrame::FrameAddSize(Size& sz)
@@ -262,13 +262,13 @@ void ProgressDisplayCls::Paint(Draw& w, const Rect& _r, const Value& q,
 	r.Deflate(2);
 	int pos = minmax(int((double)q * r.Width() / 1000), 0, r.Width());
 	if(pos) {
-		w.DrawRect(r.left, r.top, 1, r.Height(), SWhite);
-		w.DrawRect(r.left + 1, r.top, pos - 1, 1, SWhite);
-		w.DrawRect(r.left + 1, r.top + 1, pos - 1, r.Height() - 2, SLtBlue);
-		w.DrawRect(r.left + 1, r.top + r.Height() - 1, pos - 1, 1, SWhite);
-		w.DrawRect(r.left + pos - 1, r.top + 1, 1, r.Height() - 1, SWhite);
+		w.DrawRect(r.left, r.top, 1, r.Height(), SColorLight);
+		w.DrawRect(r.left + 1, r.top, pos - 1, 1, SColorLight);
+		w.DrawRect(r.left + 1, r.top + 1, pos - 1, r.Height() - 2, LtBlue);
+		w.DrawRect(r.left + 1, r.top + r.Height() - 1, pos - 1, 1, SColorLight);
+		w.DrawRect(r.left + pos - 1, r.top + 1, 1, r.Height() - 1, SColorLight);
 	}
-	w.DrawRect(r.left + pos, r.top, r.Width() - pos, r.Height(), SWhite);
+	w.DrawRect(r.left + pos, r.top, r.Width() - pos, r.Height(), SColorPaper);
 };
 
 Display& ProgressDisplay()

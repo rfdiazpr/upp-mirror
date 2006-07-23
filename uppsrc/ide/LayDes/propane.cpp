@@ -51,5 +51,5 @@ PropertyPane::PropertyPane()
 	SetFrame(sb);
 	sb.AutoHide();
 	sb.WhenScroll = THISBACK(Scroll);
-	Color(SLtGray);
+	Color(SColorFace);
 }

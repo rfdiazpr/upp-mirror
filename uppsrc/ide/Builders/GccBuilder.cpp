@@ -9,9 +9,15 @@ void   GccBuilder::AddFlags(Index<String>& cfg)
 {
 }
 
+String GccBuilder::CompilerName() const
+{
+	if(!IsNull(compiler)) return compiler;
+	return HasFlag("GCC_ARM") ? "arm-wince-pe-c++" : "c++";
+}
+
 String GccBuilder::CmdLine()
 {
-	String cc = Nvl(compiler, "c++");
+	String cc = CompilerName();
 	cc << " -c ";
 	cc << IncludesDefinesTargetTime();
 	if(HasFlag("GCC32"))
@@ -160,8 +166,9 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 			for(int j = 0; j < srcfile.GetCount(); j++) {
 				String fn = srcfile[j];
 				String ext = ToLower(GetFileExt(fn));
-				if(ext == ".c" || ext == ".cpp" || ext == ".cc" || ext == ".cxx" ||
-				ext == ".brc" || (ext == ".rc" && HasFlag("WIN32"))) {
+				if(ext == ".c" || ext == ".cpp" || ext == ".cc" || ext == ".cxx"
+				|| ext == ".s" || ext == ".S"
+				|| ext == ".brc" || (ext == ".rc" && HasFlag("WIN32"))) {
 					sfile.Add(fn);
 					soptions.Add(gop);
 					optimize.Add(release && pkg[i].optimize_speed && opt == R_OPTIMAL);
@@ -215,10 +222,12 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 			int time = GetTickCount();
 			bool execerr = false;
 			if(rc) {
+				String exec;
+				exec << "windres -i " << GetHostPathQ(fn)
+					<< " -o " << GetHostPathQ(objfile) << Includes(" --include-dir=");
+				PutVerbose(exec);
 				int slot = AllocSlot();
-				execerr = (slot < 0 || !Run("windres -i " + GetHostPathQ(fn)
-					+ " -o " + GetHostPathQ(objfile)
-					+ Includes(" --include-dir="), slot, GetHostPath(objfile), 1));
+				execerr = (slot < 0 || !Run(exec, slot, GetHostPath(objfile), 1));
 			}
 			else if(brc) {
 				try {
@@ -238,9 +247,12 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 				String exec = optimize[i] ? cc_speed : cc;
 				if(ext == ".c")
 					exec << " -x c ";
+				else if(ext == ".s" || ext == ".S")
+					exec << " -x assembler-with-cpp ";
 				else
 					exec << fuse_cxa_atexit << " -x c++ ";
 				exec << GetHostPathQ(fn) << " -o " << GetHostPathQ(objfile);
+				PutVerbose(exec);
 				int slot = AllocSlot();
 				execerr = (slot < 0 || !Run(exec, slot, GetHostPath(objfile), 1));
 			}
@@ -289,7 +301,7 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 			if(GetFileTime(obj[i]) > producttime) {
 				String lib;
 				if(is_shared) {
-					lib = Nvl(compiler, "c++");
+					lib = CompilerName();
 					lib << " -shared -fPIC -fuse-cxa-atexit";
 					if(!HasFlag("SHARED") && !is_shared)
 						lib << " -static";
@@ -350,7 +362,7 @@ bool GccBuilder::Link(const Vector<String>& linkfile, const String& linkoptions,
 	for(int i = 0; i < linkfile.GetCount(); i++)
 		if(GetFileTime(linkfile[i]) >= targettime) {
 			Vector<String> lib;
-			String lnk = Nvl(compiler, "c++");
+			String lnk = CompilerName();
 			if(HasFlag("GCC32"))
 				lnk << " -m32";
 			if(HasFlag("DLL"))
@@ -359,7 +371,9 @@ bool GccBuilder::Link(const Vector<String>& linkfile, const String& linkoptions,
 				lnk << " -static";
 //			else if(!HasFlag("WIN32")) // TRC 05/03/08: see above
 //				lnk << " -dynamic -fPIC"; // TRC 05/03/30: dynamic fPIC doesn't seem to work in GCC either :-)
-			if(HasFlag("WIN32")) {
+			if(HasFlag("WINCE"))
+				lnk << " -mwindowsce";
+			else if(HasFlag("WIN32")) {
 				lnk << " -mwindows";
 				if(!HasFlag("GUI"))
 					lnk << " -mconsole";
@@ -434,4 +448,5 @@ void RegisterGccBuilder()
 {
 	RegisterBuilder("GCC", CreateGccBuilder);
 	RegisterBuilder("GCC32", CreateGccBuilder);
+	RegisterBuilder("GCC_ARM", CreateGccBuilder);
 }

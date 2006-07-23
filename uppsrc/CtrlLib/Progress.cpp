@@ -1,83 +1,48 @@
 #include "CtrlLib.h"
 
+CH_LOOK(ProgressIndicatorLook, CtrlsImg::PI());
+CH_LOOK(VertProgressIndicatorLook, CtrlsImg::VPI());
+CH_LOOK(ProgressIndicatorChunkLook, CtrlsImg::PIC());
+CH_LOOK(VertProgressIndicatorChunkLook, CtrlsImg::VPIC());
+
+Size ProgressIndicator::GetMsz()
+{
+	Size sz = GetSize();
+	Rect mg = ChMargins(ProgressIndicatorLook());
+	sz.cx -= mg.left + mg.right;
+	mg = ChMargins(VertProgressIndicatorLook());
+	sz.cy -= mg.top + mg.bottom;
+	return sz;
+}
+
 void ProgressIndicator::Paint(Draw& w) {
 	Size sz = GetSize();
+	Size msz = GetMsz();
 	int x0 = 0;
 	int p0 = 0;
 	int p = pxp;
 	if(total <= 0) {
-		int l = (max(sz.cx, sz.cy) - 4) & ~7;
+		int l = max(msz.cx, msz.cy) & ~7;
 		p0 = pxp - l / 4;
 		if(p0 < 0) {
 			x0 = (pxp - l / 4 + 65536) & 7;
 			p0 = 0;
 		}
-		p = min(p - p0, max(sz.cx, sz.cy) - 4 - p0);
+		p = min(p - p0, max(msz.cx, msz.cy) - p0);
 	}
 	if(IsXPStyle() && !percent) {
-		Color b = Blend(SColorShadow, SColorText);
-		w.DrawRect(2, 0, sz.cx - 4, 1, b);
-		w.DrawRect(2, 1, sz.cx - 4, 1, SColorPaper);
-		w.DrawRect(2, sz.cy - 1, sz.cx - 4, 1, b);
-		w.DrawRect(2, sz.cy - 2, sz.cx - 4, 1, SColorPaper);
-
-		w.DrawRect(0, 2, 1, sz.cy - 4, b);
-		w.DrawRect(1, 2, 1, sz.cy - 4, SColorPaper);
-		w.DrawRect(sz.cx - 1, 2, 1, sz.cy - 4, b);
-		w.DrawRect(sz.cx - 2, 2, 1, sz.cy - 4, SColorPaper);
-
-		b = Blend(b, SColorShadow);
-
-		w.DrawRect(0, 0, 1, 1, SColorFace);
-		w.DrawRect(1, 0, 1, 1, SColorShadow);
-		w.DrawRect(0, 1, 1, 1, SColorShadow);
-		w.DrawRect(1, 1, 1, 1, b);
-
-		w.DrawRect(sz.cx - 1, 0, 1, 1, SColorFace);
-		w.DrawRect(sz.cx - 2, 0, 1, 1, SColorShadow);
-		w.DrawRect(sz.cx - 1, 1, 1, 1, SColorShadow);
-		w.DrawRect(sz.cx - 2, 1, 1, 1, b);
-
-
-		w.DrawRect(0, sz.cy - 1, 1, 1, SColorFace);
-		w.DrawRect(1, sz.cy - 1, 1, 1, SColorShadow);
-		w.DrawRect(0, sz.cy - 2, 1, 1, SColorShadow);
-		w.DrawRect(1, sz.cy - 2, 1, 1, b);
-
-		w.DrawRect(sz.cx - 1, sz.cy - 1, 1, 1, SColorFace);
-		w.DrawRect(sz.cx - 2, sz.cy - 1, 1, 1, SColorShadow);
-		w.DrawRect(sz.cx - 1, sz.cy - 2, 1, 1, SColorShadow);
-		w.DrawRect(sz.cx - 2, sz.cy - 2, 1, 1, b);
-
-		sz -= 4;
-		if(sz.cx > sz.cy) {
-			int d = sz.cy / 2;
-			int i = 0;
-			for(;i < sz.cy; i++) {
-				Color c = Blend(LtGreen, SColorPaper, abs((i - d) * 255 / (d + 1)));
-				w.DrawRect(2 + p0, i + 2, p, 1, c);
-			}
-			int x = -1 + x0;
-			while(x < p) {
-				w.DrawRect(x + 2 + p0, 2, 2, sz.cy, SColorPaper);
-				x += 8;
-			}
-			w.DrawRect(p + 2 + p0, 2, sz.cx - p - p0, sz.cy, SColorPaper);
-			w.DrawRect(2, 2, p0, sz.cy, SColorPaper);
+		w.DrawRect(sz, SColorPaper);
+		if(sz.cy > sz.cx) {
+			ChPaint(w, sz, VertProgressIndicatorLook());
+			Rect r = ChMargins(VertProgressIndicatorLook());
+			ChPaint(w, r.left, sz.cy - r.bottom - p - p0, sz.cx - r.left - r.right, p,
+			        VertProgressIndicatorChunkLook());
 		}
 		else {
-			int d = sz.cx / 2;
-			int i = 0;
-			for(;i < sz.cx; i++) {
-				Color c = Blend(LtGreen, SColorPaper, abs((i - d) * 255 / (d + 1)));
-				w.DrawRect(i + 2, 2 + sz.cy - p, 1, p, c);
-			}
-			int y = sz.cy + 1;
-			while(y > sz.cy - p) {
-				w.DrawRect(2, y, sz.cx, 2, SColorPaper);
-				y -= 8;
-			}
-			w.DrawRect(2, 2, sz.cx, sz.cy - p, SColorPaper);
+			ChPaint(w, sz, ProgressIndicatorLook());
+			Rect r = ChMargins(ProgressIndicatorLook());
+			ChPaint(w, r.left + p0, r.top, p, sz.cy - r.top - r.bottom,
+			        ProgressIndicatorChunkLook());
 		}
 	}
 	else {
@@ -104,10 +69,10 @@ void ProgressIndicator::Paint(Draw& w) {
 			int px = (sz.cx - psz.cx) / 2 + 2;
 			int py = (sz.cy - psz.cy) / 2 + 2;
 			w.Clip(r1);
-			w.DrawText(px, py, pt, StdFont(), SWhite);
+			w.DrawText(px, py, pt, StdFont(), SColorLight);
 			w.End();
 			w.Clip(r2);
-			w.DrawText(px, py, pt, StdFont(), SBlack);
+			w.DrawText(px, py, pt, StdFont(), SColorText);
 			w.End();
 		}
 	}
@@ -120,10 +85,10 @@ void ProgressIndicator::Layout() {
 void ProgressIndicator::Set(int _actual, int _total) {
 	actual = _actual;
 	total = _total;
-	Size sz = GetSize();
+	Size sz = GetMsz();
 	int p;
 	if(total <= 0) {
-		int l = max(1, (max(sz.cx, sz.cy) - 4) & ~7);
+		int l = max(1, max(sz.cx, sz.cy) & ~7);
 		int p = GetTickCount() / 15 % (l + l / 4);
 		if(pxp != p) {
 			pxp = p;
@@ -132,7 +97,6 @@ void ProgressIndicator::Set(int _actual, int _total) {
 		return;
 	}
 	else {
-		sz -= 4;
 		int l = max(1, max(sz.cx, sz.cy));
 		p = total ? min(actual * l / total, l) : 0;
 	}

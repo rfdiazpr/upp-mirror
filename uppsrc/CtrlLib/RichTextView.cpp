@@ -373,9 +373,8 @@ RichTextView::RichTextView()
 	sizetracking = false;
 	sb.SetLine(100);
 	sb.WhenScroll = THISBACK(Scroll);
-//	BackPaint();
 	zoom = Null;
-	background = SWhite;
+	background = SColorPaper;
 	vcenter = false;
 	margin = Rect(0, 0, 0, 0);
 	highlight = -1;

@@ -473,7 +473,7 @@ Htmls HtmlTextArea(String name, Size size, const char *defaultValue)
 		/ ToHtml(defaultValue ? defaultValue : "");
 }
 
-Htmls HtmlButton(String name, const char *text)
+HtmlTag HtmlButton(String name, const char *text)
 {
 	return HtmlInput("SUBMIT", name).Data(text);
 }

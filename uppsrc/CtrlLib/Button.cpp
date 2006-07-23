@@ -173,6 +173,7 @@ Pusher::~Pusher() {}
 CH_LOOKS(ButtonLook, 4, CtrlsImgLook(CtrlsImg::I_B));
 CH_LOOKS(OkButtonLook, 4, CtrlsImgLook(CtrlsImg::I_OkB));
 CH_LOOKS(EdgeButtonLook, 4, CtrlsImgLook(CtrlsImg::I_EB));
+CH_LOOKS(LeftEdgeButtonLook, 4, EdgeButtonLook);
 CH_LOOKS(ScrollButtonLook, 4, CtrlsImgLook(CtrlsImg::I_SB));
 CH_COLORS(ButtonMonoColor, 4, Blend(Blend(SColorHighlight, SColorShadow), SColorText, 80));
 CH_INT(ButtonPressOffsetFlag, 0);
@@ -183,9 +184,15 @@ Button& Button::Style(Value (*_look)(int))
 {
 	if(look != _look) {
 		look = _look;
+		RefreshLayout();
 		Refresh();
 	}
 	return *this;
+}
+
+void Button::Layout()
+{
+	Transparent(!ChIsOpaque(look(CTRL_NORMAL)));
 }
 
 void Button::Paint(Draw& w)
@@ -204,8 +211,15 @@ void Button::Paint(Draw& w)
 		dl.lcolor = SColorText;
 	Value (*st)(int) = look;
 	if(look == ButtonLook) {
-		if(InFrame())
+		if(InFrame()) {
 			st = EdgeButtonLook;
+			if(GetParent()) {
+				Rect r = GetRect();
+				Size sz = GetParent()->GetRect().GetSize();
+				if(r.right < sz.cx / 2)
+					st = LeftEdgeButtonLook;
+			}
+		}
 		if(type == OK)
 			st = OkButtonLook;
 	}
@@ -298,11 +312,9 @@ Button::Button() {
 
 Button::~Button() {}
 
-CH_LOOKS(SpinUpLook, 4, EdgeButtonLook);
-CH_LOOKS(SpinDownLook, 4, EdgeButtonLook);
-CH_IMAGE(SpinUpImg, CtrlsImg::SpU());
-CH_IMAGE(SpinDownImg, CtrlsImg::SpD());
 CH_INT(SpinWidth, 12);
+CH_LOOKS(SpinUpLook, 4, CtrlsImgLook(CtrlsImg::I_EB, CtrlsImg::SpU(), ButtonMonoColor));
+CH_LOOKS(SpinDownLook, 4, CtrlsImgLook(CtrlsImg::I_EB, CtrlsImg::SpD(), ButtonMonoColor));
 
 void SpinButtons::FrameLayout(Rect& r)
 {
@@ -318,9 +330,7 @@ void SpinButtons::FrameLayout(Rect& r)
 	int h2 = h / 2;
 	int h7 = min(sz.cx / 2, SpinWidth());
 	inc.SetFrameRect(r.right - h7, r.top, h7, h2);
-	inc.SetMonoImage(SpinUpImg());
 	dec.SetFrameRect(r.right - h7, r.top + h2, h7, r.Height() - h2);
-	dec.SetMonoImage(SpinDownImg());
 	r.right -= h7;
 }
 
@@ -342,8 +352,8 @@ void SpinButtons::FrameRemove() {
 
 SpinButtons::SpinButtons() {
 	visible = true;
-	inc.Style(SpinUpLook).SetMonoImage(SpinUpImg()).NoWantFocus();
-	dec.Style(SpinDownLook).SetMonoImage(SpinDownImg()).NoWantFocus();
+	inc.Style(SpinUpLook).NoWantFocus();
+	dec.Style(SpinDownLook).NoWantFocus();
 }
 
 SpinButtons::~SpinButtons() {}
@@ -470,7 +480,7 @@ void  ButtonOption::Paint(Draw& w) {
 	else {
 		DrawBorder(w, r, push || option ? ButtonPushBorder : ButtonBorder);
 		r.Deflate(2, 2);
-		w.DrawRect(r, option != push ? SWhiteGray : SLtGray);
+		w.DrawRect(r, option != push ? Blend(SColorLight, SColorFace) : SColorFace);
 	}
 	Point p = r.CenterPos(image.GetSize());
 	w.DrawImage(p.x, p.y, (option && !IsNull(image1)) ? image1 : image);

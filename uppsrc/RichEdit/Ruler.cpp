@@ -26,18 +26,18 @@ void RichRuler::FrameAddSize(Size& sz)
 void RichRuler::Paint(Draw& w)
 {
 	Size sz = GetSize();
-	w.DrawRect(sz, SLtGray);
-	w.DrawRect(0, sz.cy - 1, sz.cx, 1, SGray);
+	w.DrawRect(sz, SColorFace);
+	w.DrawRect(0, sz.cy - 1, sz.cx, 1, SColorShadow);
 	int cx = zoom * pgcx;
-	w.DrawRect(x0 - 1, 3, cx + 3, sz.cy - 6, SWhite);
+	w.DrawRect(x0 - 1, 3, cx + 3, sz.cy - 6, SColorPaper);
 	int i = 0;
 	for(;;) {
 		int x = fround(++i * grid) * zoom;
 		if(x >= cx) break;
 		if(i % marks == 0)
-			w.DrawRect(x0 + x, 8, 1, 5, SCyan);
+			w.DrawRect(x0 + x, 8, 1, 5, SColorHighlight);
 		else
-			w.DrawRect(x0 + x, 9, 1, 3, SCyan);
+			w.DrawRect(x0 + x, 9, 1, 3, SColorHighlight);
 	}
 	i = 0;
 	for(;;)
@@ -48,7 +48,7 @@ void RichRuler::Paint(Draw& w)
 			Size tsz = GetTextSize(n, Arial(10));
 			if(x + tsz.cx - tsz.cx / 2 < cx) {
 				int px = x0 + x - tsz.cx / 2;
-				w.DrawRect(px, 4, tsz.cx, sz.cy - 8, SWhite);
+				w.DrawRect(px, 4, tsz.cx, sz.cy - 8, SColorPaper);
 				w.DrawText(x0 + x - tsz.cx / 2, 4, n, Arial(10));
 			}
 		}
@@ -65,7 +65,7 @@ void RichRuler::Paint(Draw& w)
 			int x = xp * zoom;
 			if(x >= cx) break;
 			if(xp > tabpos)
-				w.DrawRect(x0 + x, sz.cy - 4, 1, 3, SGray);
+				w.DrawRect(x0 + x, sz.cy - 4, 1, 3, SColorShadow);
 		}
 	w.DrawImage(4, 6, newtabalign == ALIGN_RIGHT  ? RichEditImg::RightTab() :
 	                  newtabalign == ALIGN_CENTER ? RichEditImg::CenterTab() :

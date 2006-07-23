@@ -1,5 +1,32 @@
 * ArrayCtrl::ColumnWidths -> FontZoom
 
+>   /* Compositing non-premultiplied F onto non-premultiplied B:
+>      D_a = B_a + F_a - B_a*F_a
+>      D_r = (1 - (F_a / D_a))*B_r + (F_a / D_a)*F_r
+>      D_g = (1 - (F_a / D_a))*B_g + (F_a / D_a)*F_g
+>      D_b = (1 - (F_a / D_a))*B_b + (F_a / D_a)*F_b
+>    */
+
+
+B - Fa / Da * B + Fa / Da * F
+
+
+
+Da = Fa + Ba - Fa * Ba;
+
+B + Fa / Da * (F - B)
+
+
+Da = Fa + Ba - Fa * Ba / 255;
+
+Da = Fa + Ba - ((Fa + (Fa >> 7)) * Ba >> 8);
+\
+
+SColor(Link)
+
+Tiget TabCtrl
+
+
 U++ {
 1. Collapsing like Visual Studio.
 2. #pragma region like in Visual Studio.

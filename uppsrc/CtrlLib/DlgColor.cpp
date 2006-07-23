@@ -294,8 +294,8 @@ WheelRampCtrl::WheelRampCtrl(bool r)
 	style = S_WHEEL;
 	color = Black;
 	normalized_color = White;
-	background = TabCtrl::GetTabColor();
 	h16 = s16 = v16 = 0;
+	Transparent();
 }
 
 WheelRampCtrl::~WheelRampCtrl()
@@ -356,11 +356,13 @@ void WheelRampCtrl::Paint(Draw& draw)
 	{ // create cache for current size
 		Size size = max(GetSize(), Size(1, 1));
 		ImageDraw rd(size);
-		rd.DrawRect(rd.GetClip(), background);
 		if(ramp)
 			PaintRamp(rd);
-		else
+		else {
+			rd.Alpha().DrawRect(size, GrayColor(0));
+			rd.Alpha().DrawEllipse(size, GrayColor(255));
 			PaintWheel(rd);
+		}
 		PaintColumn(rd);
 		cache = rd;
 		cache_level = (ramp ? h16 : v16);
@@ -591,6 +593,7 @@ private:
 RGBCtrl::RGBCtrl()
 : color(Black)
 {
+	Transparent();
 }
 
 void RGBCtrl::SetData(const Value& value)
@@ -648,7 +651,6 @@ void RGBCtrl::Paint(Draw& draw)
 		DrawFrame(draw, rc, Black, Black);
 		draw.ExcludeClip(rc);
 	}
-	draw.DrawRect(draw.GetClip(), TabCtrl::GetTabColor());
 	for(i = 0; i < 3; i++)
 		PaintArrow(draw, rect[i], comp[i]);
 }
@@ -711,6 +713,7 @@ HSVCtrl::HSVCtrl()
 : color(Black)
 , h16(0), s16(0), v16(0)
 {
+	Transparent();
 }
 
 void HSVCtrl::SetDataRaw(Color new_color)
@@ -781,7 +784,6 @@ void HSVCtrl::Paint(Draw& draw)
 		DrawFrame(draw, rc, Black, Black);
 		draw.ExcludeClip(rc);
 	}
-	draw.DrawRect(draw.GetClip(), TabCtrl::GetTabColor());
 	int comp[] = { h16 >> 8, s16 >> 8, v16 >> 8 };
 	for(i = 0; i < 3; i++)
 		PaintArrow(draw, rect[i], comp[i]);
@@ -928,6 +930,7 @@ PalCtrl::PalCtrl()
 	color_index = -1;
 	swap_index = -1;
 	cellcount = Size(4, 4);
+	Transparent();
 }
 
 PalCtrl::~PalCtrl()
@@ -1046,7 +1049,7 @@ void PalCtrl::Paint(Draw& draw)
 		Rect rc = IndexToClient(i);
 		DrawFrame(draw, rc, White, Black);
 		rc.Deflate(1);
-		Color c = Nvl(GlobalConfig().current[i], SGray);
+		Color c = Nvl(GlobalConfig().current[i], SColorFace);
 		draw.DrawRect(rc, c);
 		if(do_text)
 		{
@@ -1057,12 +1060,11 @@ void PalCtrl::Paint(Draw& draw)
 		rc.Inflate(1);
 		draw.ExcludeClip(rc);
 	}
-	draw.DrawRect(draw.GetClip(), TabCtrl::GetTabColor());
 	if(color_index >= 0)
 	{
 		Rect selected = IndexToClient(color_index);
 		selected.Inflate(3);
-		DrawFatFrame(draw, selected, SLtBlue, 2);
+		DrawFatFrame(draw, selected, Blend(SColorLight, SColorHighlight), 2);
 	}
 	draw.End();
 }

@@ -1,27 +1,24 @@
 #include "Draw.h"
 
-int ImageBuffer::GetKind() const
+#define LTIMING(x) // RTIMING(x)
+
+int ImageBuffer::ScanKind() const
 {
-	if(kind == IMAGE_UNKNOWN) {
-		bool a255 = false;
-		bool a0 = false;
-		const RGBA *s = pixels;
-		const RGBA *e = s + GetLength();
-		while(s < e) {
-			if(s->a == 0)
-				a0 = true;
-			else
-			if(s->a == 255)
-				a255 = true;
-			else {
-				kind = IMAGE_ALPHA;
-				return IMAGE_ALPHA;
-			}
-			s++;
-		}
-		kind = a255 ? a0 ? IMAGE_MASK : IMAGE_OPAQUE : IMAGE_EMPTY;
+	bool a255 = false;
+	bool a0 = false;
+	const RGBA *s = pixels;
+	const RGBA *e = s + GetLength();
+	while(s < e) {
+		if(s->a == 0)
+			a0 = true;
+		else
+		if(s->a == 255)
+			a255 = true;
+		else
+			return IMAGE_ALPHA;
+		s++;
 	}
-	return kind;
+	return a255 ? a0 ? IMAGE_MASK : IMAGE_OPAQUE : IMAGE_EMPTY;
 }
 
 void ImageBuffer::Create(int cx, int cy)
@@ -167,9 +164,19 @@ Size Image::GetDots() const
 	return data ? data->buffer.GetDots() : Size(0, 0);
 }
 
+int Image::Data::GetKind()
+{
+	int k = buffer.GetKind();
+	if(k != IMAGE_UNKNOWN)
+		return k;
+	k = buffer.ScanKind();
+	buffer.SetKind(k);
+	return k;
+}
+
 int Image::GetKind() const
 {
-	return data ? data->buffer.GetKind() : IMAGE_EMPTY;
+	return data ? data->GetKind() : IMAGE_EMPTY;
 }
 
 void Image::PaintImage(Draw& w, int x, int y, const Rect& src, Color c) const
@@ -206,7 +213,7 @@ bool Image::operator==(const Image& img) const
 {
 	if(GetLength() != img.GetLength())
 		return false;
-	return memcmp(~*this, ~img, GetLength() * sizeof(RGBA));
+	return memcmp(~*this, ~img, GetLength() * sizeof(RGBA)) == 0;
 }
 
 bool Image::operator!=(const Image& img) const

@@ -61,15 +61,15 @@ void RichEdit::LeftDown(Point p, dword flags)
 		int tx, ty;
 		switch(c) {
 		case 1:
-			tracker.SetCursorImage(CtrlImg::SizeVert0());
+			tracker.SetCursorImage(Image::SizeHorz());
 			tx = ALIGN_CENTER; ty = ALIGN_BOTTOM;
 			break;
 		case 2:
-			tracker.SetCursorImage(CtrlImg::SizeHorz0());
+			tracker.SetCursorImage(Image::SizeHorz());
 			tx = ALIGN_RIGHT; ty = ALIGN_CENTER;
 			break;
 		default:
-			tracker.SetCursorImage(CtrlImg::SizeHoVe0());
+			tracker.SetCursorImage(Image::SizeBottomRight());
 			tx = ALIGN_RIGHT; ty = ALIGN_RIGHT;
 			break;
 		}
@@ -291,7 +291,7 @@ void RichEdit::LeftDouble(Point p, dword flags)
 
 Image RichEdit::CursorImage(Point p, dword flags)
 {
-	static Image (*anihorz[])() = {
+	static Image (*anihorz[])() = {//TODO
 		CtrlImg::SizeHorz0, CtrlImg::SizeHorz1, CtrlImg::SizeHorz0, CtrlImg::SizeHorz2
 	};
 	static Image (*anivert[])() = {

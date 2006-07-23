@@ -710,10 +710,10 @@ void CodeEditor::DefaultHlStyles()
 	SetHlStyle(INK_UPP, Cyan);
 	SetHlStyle(PAPER_LNG, Color(255, 255, 224));
 	SetHlStyle(INK_ERROR, LtRed);
-	SetHlStyle(INK_PAR0, SBlack);
-	SetHlStyle(INK_PAR1, SGreen);
-	SetHlStyle(INK_PAR2, SMagenta);
-	SetHlStyle(INK_PAR3, SBrown);
+	SetHlStyle(INK_PAR0, Black);
+	SetHlStyle(INK_PAR1, Green);
+	SetHlStyle(INK_PAR2, Magenta);
+	SetHlStyle(INK_PAR3, Brown);
 
 	SetHlStyle(PAPER_BLOCK1, Blend(LtBlue, White, 240));
 	SetHlStyle(PAPER_BLOCK2, Blend(LtGreen, White, 240));

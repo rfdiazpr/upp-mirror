@@ -355,6 +355,7 @@ public:
 	void                  WriteMapFile();
 	void                  WriteMapGlobals(String& map, const Vector<int>& used, String name);
 	void                  BuildLibrary();
+	void                  BuildDefFiles();
 
 	atom_t                Atomize(String atom)            { return atoms.FindAdd(atom); }
 	String                operator [] (atom_t atom) const { return atoms[atom]; }
@@ -423,12 +424,15 @@ public:
 	bool                  static_libraries;
 	bool                  make_lib;
 	bool                  make_dll;
+	bool                  make_def;
 	bool                  auto_dll_base;
 //	bool                  cache_objects;
 	bool                  cache_object_data;
 	bool                  verbose;
 	word                  major_version;
 	word                  minor_version;
+	word                  major_subsystem_version;
+	word                  minor_subsystem_version;
 	enum MODE { MODE_MSLINK, MODE_GNULD };
 	MODE                  linkermode;
 	int                   file_align;
@@ -469,7 +473,12 @@ public:
 	atom_t                rsrc_atom;
 //	int                   mangling_style;
 
-	enum { IMP_STUB_SIZE = 6, IMP_ENTRY_SIZE = 4 };
+	enum {
+		I386_IMP_STUB_SIZE = 6,
+		ARM_IMP_STUB_SIZE = 12,
+		I386_IMP_ENTRY_SIZE = 4,
+		ARM_IMP_ENTRY_SIZE = 4,
+	};
 
 //	Array<Cache>          object_cache;
 //	Index<String>         cache_name_index;
@@ -480,6 +489,7 @@ public:
 
 	Vector<String>        command_args;
 	Vector<String>        user_command_args;
+	Vector<String>        files_to_load;
 	Index<String>         loaded_files;
 	Array<ObjectFile>     objects;
 	VectorMap<atom_t, int> dll_objects; // dll name -> index into objects
@@ -545,6 +555,8 @@ public:
 	bool                              idata_null_found;
 	int                               start_time;
 	String                            stub_filename;
+	int                               imp_stub_size;
+	int                               imp_entry_size;
 };
 
 #endif//_console_uld_obj_h_

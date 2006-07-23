@@ -78,7 +78,7 @@ struct AboutDlg : TopWindow {
 		about.RightPos(0, 1000 - isz.cx).VSizePos();
 		about.HMargins(4);
 		about.SetFrame(NullFrame());
-		Background(PaintRect(ColorDisplay(), SWhite()));
+		Background(PaintRect(ColorDisplay(), SColorPaper()));
 		Add(about);
 		Title("About TheIDE");
 	}

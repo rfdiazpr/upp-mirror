@@ -2,14 +2,21 @@ enum {
 	CTRL_NORMAL, CTRL_HOT, CTRL_PRESSED, CTRL_DISABLED
 };
 
-Vector<Value> CtrlsImgLook(int i);
+struct CtrlsImgLook : Vector<Value> {
+	CtrlsImgLook& operator()(int i, int n = 4);
+	CtrlsImgLook& operator()(int i, const Image& img, Color (*fn)(int i), int n = 4);
+	CtrlsImgLook& operator()(int i, const Image& img, int n = 4);
+	CtrlsImgLook(int i, int n = 4);
+	CtrlsImgLook(int i, const Image& img, Color (*fn)(int i), int n = 4);
+	CtrlsImgLook(int i, const Image& img, int n = 4);
+};
 
 String DeAmp(const char *s);
 
 Size GetSmartTextSize(Draw& w, const char *text, Font font = StdFont());
 int  GetSmartTextHeight(Draw& w, const char *s, int cx, Font font = StdFont());
 void DrawSmartText(Draw& w, int x, int y, int cx, const char *text,
-                   Font font = StdFont(), Color ink = SBlack, int accesskey = 0);
+                   Font font = StdFont(), Color ink = DefaultInk, int accesskey = 0);
 
 byte  ExtractAccessKey(const char *s, String& label);
 bool  CompareAccessKey(byte accesskey, dword key);

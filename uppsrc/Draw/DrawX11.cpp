@@ -222,21 +222,6 @@ void InitX11Draw(const char *dispname)
 	UpdateSColors();
 }
 
-Vector<Rect> Intersect(const Vector<Rect>& b, const Rect& a, bool& changed)
-{
-	Vector<Rect> result;
-	for(int i = 0; i < b.GetCount(); i++) {
-		Rect r = b[i] & a;
-		if(r.IsEmpty())
-			changed = true;
-		else {
-			if(r != b[i]) changed = true;
-			result.Add(r);
-		}
-	}
-	return result;
-}
-
 #ifdef PLATFORM_XFT
 void SetClip(GC gc, XftDraw *xftdraw, const Vector<Rect>& cl)
 #else

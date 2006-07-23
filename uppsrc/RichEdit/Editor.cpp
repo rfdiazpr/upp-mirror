@@ -82,8 +82,8 @@ PageY RichEdit::GetPageY(int y) const
 
 static void sPaintHotSpot(Draw& w, int x, int y)
 {
-	w.DrawRect(x + 1, y + 1, 6, 6, SLtRed);
-	DrawFrame(w, x, y, 8, 8, SBlack);
+	w.DrawRect(x + 1, y + 1, 6, 6, LtRed);
+	DrawFrame(w, x, y, 8, 8, SColorText);
 }
 
 void RichEdit::Paint(Draw& w)
@@ -92,7 +92,7 @@ void RichEdit::Paint(Draw& w)
 	p_size = sz;
 	Rect tr = GetTextRect();
 	Zoom zoom = GetZoom();
-	w.DrawRect(sz, SWhite);
+	w.DrawRect(sz, SColorPaper);
 	PageY py = text.GetHeight(pagesz);
 	{
 		EditPageDraw pw(w);
@@ -100,7 +100,8 @@ void RichEdit::Paint(Draw& w)
 		pw.y = -sb;
 		pw.size = GetZoomedPage();
 		for(int i = 0; i <= py.page; i++)
-			DrawFrame(w, tr.left, i * (pw.size.cy + 3) + 1 - sb, pw.size.cx + 2, pw.size.cy + 2, SLtGray);
+			DrawFrame(w, tr.left, i * (pw.size.cy + 3) + 1 - sb,
+			          pw.size.cx + 2, pw.size.cy + 2, SColorShadow);
 		PaintInfo pi;
 		pi.zoom = zoom;
 		pi.top = GetPageY(sb);
@@ -125,11 +126,11 @@ void RichEdit::Paint(Draw& w)
 	if(objectpos >= 0) {
 		Rect r = objectrect;
 		r.Offset(tr.left, -sb);
-		DrawFrame(w, r, SBlack);
+		DrawFrame(w, r, SColorText);
 		r.Deflate(1);
-		DrawFatFrame(w, r, SLtBlue, 2);
+		DrawFatFrame(w, r, Blend(SColorHighlight, SColorLight), 2);
 		r.Deflate(2);
-		DrawFrame(w, r, SBlack);
+		DrawFrame(w, r, SColorText);
 		r.Deflate(1);
 		sPaintHotSpot(w, r.left + r.Width() / 2 - 3, r.bottom - 7);
 		sPaintHotSpot(w, r.right - 7, r.bottom - 7);
@@ -534,10 +535,10 @@ RichEdit::RichEdit()
 	Unicode();
 	BackPaint();
 
-	face.NoDropFocus().NoWantFocus();
-	height.NoDropFocus().NoWantFocus();
-	style.NoDropFocus().NoWantFocus();
-	language.NoDropFocus().NoWantFocus();
+	face.NoWantFocus();
+	height.NoWantFocus();
+	style.NoWantFocus();
+	language.NoWantFocus();
 
 	pagesz = Size(3968, 6074);
 	unit = UNIT_POINT;

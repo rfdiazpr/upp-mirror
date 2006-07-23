@@ -8,7 +8,7 @@ Image CreateImage(Size sz, Color color)
 	return ib;
 }
 
-Size DstSrc(Image& dest, Point& p, const Image& src, Rect& sr)
+Size DstSrc(ImageBuffer& dest, Point& p, const Image& src, Rect& sr)
 {
 	if(p.x < 0) {
 		sr.left += -p.x;
@@ -25,26 +25,36 @@ Size DstSrc(Image& dest, Point& p, const Image& src, Rect& sr)
 	return sz;
 }
 
-void Copy(Image& dest, Point p, const Image& src, const Rect& srect)
+void Copy(ImageBuffer& dest, Point p, const Image& src, const Rect& srect)
 {
 	Rect sr = srect;
 	Size sz = DstSrc(dest, p, src, sr);
-	ImageBuffer ib(dest);
 	if(sz.cx > 0)
 		while(--sz.cy >= 0)
-			memcpy(ib[p.y++] + p.x, src[sr.top++] + sr.left, sz.cx * sizeof(RGBA));
-	dest = ib;
+			memcpy(dest[p.y++] + p.x, src[sr.top++] + sr.left, sz.cx * sizeof(RGBA));
 }
 
-void Over(Image& dest, Point p, const Image& src, const Rect& srect, byte alpha)
+void Over(ImageBuffer& dest, Point p, const Image& src, const Rect& srect)
 {
 	Rect sr = srect;
 	Size sz = DstSrc(dest, p, src, sr);
-	ImageBuffer ib(dest);
 	if(sz.cx > 0)
 		while(--sz.cy >= 0)
-			AlphaBlend(ib[p.y++] + p.x, src[sr.top++] + sr.left, sz.cx, alpha);
-	dest = ib;
+			AlphaBlend(dest[p.y++] + p.x, src[sr.top++] + sr.left, sz.cx);
+}
+
+void  Copy(Image& dest, Point p, const Image& src, const Rect& srect)
+{
+	ImageBuffer b(dest);
+	Copy(b, p, src, srect);
+	dest = b;
+}
+
+void  Over(Image& dest, Point p, const Image& src, const Rect& srect)
+{
+	ImageBuffer b(dest);
+	Over(b, p, src, srect);
+	dest = b;
 }
 
 void Crop(RasterEncoder& tgt, Raster& img, const Rect& rc)
@@ -407,7 +417,7 @@ Image Etched(const Image& img)
 	return Filter(img, ef);
 }
 
-Image SetColor(const Image& img, Color c)
+Image SetColorKeepAlpha(const Image& img, Color c)
 {
 	RGBA rgba = c;
 	const RGBA *s = ~img;
@@ -419,18 +429,6 @@ Image SetColor(const Image& img, Color c)
 		(t++)->a = (s++)->a;
 	}
 	return w;
-}
-
-Image Over(const Image& img, const Image& over, byte alpha)
-{//Improve!
-	Size sz = img.GetSize();
-	if(sz != over.GetSize())
-		return Image();
-	int n = img.GetLength();
-	ImageBuffer b(img.GetSize());
-	memcpy(~b, img, sizeof(RGBA) * n);
-	AlphaBlend(b, ~over, n, alpha);
-	return b;
 }
 
 Image  RotateClockwise(const Image& img)

@@ -2,6 +2,8 @@
 
 #ifdef PLATFORM_WIN32
 
+#define LTIMING(x) // RTIMING(x)
+
 bool ImageFallBack
 // = true
 ;
@@ -169,6 +171,9 @@ static tAlphaBlend fnAlphaBlend()
 
 void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 {
+//	w.DrawRect(x, y, src.GetSize().cx, src.GetSize().cy, LtBlue);
+//	DrawFrame(w, x, y, src.GetSize().cx, src.GetSize().cy, LtRed);
+//	return;
 	INTERLOCKED_(ResLock) {
 		int max = IsWinNT() ? 250 : 100;
 		while(ResCount > max) {
@@ -183,13 +188,14 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 		Size ssz = sr.Size();
 		if(sr.IsEmpty())
 			return;
-		if(buffer.GetKind() == IMAGE_EMPTY)
+		if(GetKind() == IMAGE_EMPTY)
 			return;
-		if(buffer.GetKind() == IMAGE_OPAQUE && !IsNull(c)) {
+		if(GetKind() == IMAGE_OPAQUE && !IsNull(c)) {
 			w.DrawRect(x, y, sz.cx, sz.cy, c);
 			return;
 		}
-		if(buffer.GetKind() == IMAGE_OPAQUE && paintcount == 0 && sr == Rect(sz)) {
+		if(GetKind() == IMAGE_OPAQUE && paintcount == 0 && sr == Rect(sz)) {
+			LTIMING("Image Opaque direct set");
 			SetSurface(w, x, y, sz.cx, sz.cy, buffer);
 			paintcount++;
 			return;
@@ -197,20 +203,24 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 		Unlink();
 		LinkAfter(ResData);
 		bool hasAlphaBlend = fnAlphaBlend();
-		if(buffer.GetKind() == IMAGE_OPAQUE) {
+		if(GetKind() == IMAGE_OPAQUE) {
 			if(!hbmp) {
+				LTIMING("Image Opaque create");
 				BitmapInfo32__ bi(sz.cx, sz.cy);
 				hbmp = ::CreateDIBitmap(dc, bi, CBM_INIT, buffer, bi, DIB_RGB_COLORS);
 				ResCount++;
 			}
+			LTIMING("Image Opaque blit");
 			HDC dcMem = ::CreateCompatibleDC(dc);
 			::SelectObject(dcMem, hbmp);
 			::BitBlt(dc, x, y, ssz.cx, ssz.cy, dcMem, sr.left, sr.top, SRCCOPY);
 			::DeleteDC(dcMem);
+			return;
 		}
-		if(buffer.GetKind() == IMAGE_MASK) {
+		if(GetKind() == IMAGE_MASK) {
 			HDC dcMem = ::CreateCompatibleDC(dc);
 			if(!hmask) {
+				LTIMING("Image Mask create");
 				Buffer<RGBA> bmp(len);
 				hmask = CreateBitMask(buffer, sz, sz, sz, bmp);
 				if(!hbmp) {
@@ -218,6 +228,7 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 					hbmp = ::CreateDIBitmap(dc, bi, CBM_INIT, bmp, bi, DIB_RGB_COLORS);
 				}
 			}
+			LTIMING("Image Mask blt");
 			HBITMAP o = (HBITMAP)::SelectObject(dcMem, ::CreateCompatibleBitmap(dc, sz.cx, sz.cy));
 			::BitBlt(dcMem, 0, 0, ssz.cx, ssz.cy, dc, x, y, SRCCOPY);
 			HDC dcMem2 = ::CreateCompatibleDC(dc);
@@ -240,12 +251,14 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 		}
 		if(hasAlphaBlend && IsNull(c) && !ImageFallBack) {
 			if(!himg) {
+				LTIMING("Image Alpha create");
 				BitmapInfo32__ bi(sz.cx, sz.cy);
 				himg = CreateDIBSection(ScreenInfo().GetHandle(), bi, DIB_RGB_COLORS,
 				                              (void **)&section, NULL, 0);
 				ResCount++;
 				PreMultiplyAlpha(section, buffer, len);
 			}
+			LTIMING("Image Alpha blit");
 			BLENDFUNCTION bf;
 			bf.BlendOp = AC_SRC_OVER;
 			bf.BlendFlags = 0;
@@ -257,10 +270,14 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 			::DeleteDC(dcMem);
 		}
 		else {
+			LTIMING("Image Alpha sw");
 			DrawSurface sf(w, x, y, ssz.cx, ssz.cy);
 			RGBA *t = sf;
 			for(int i = sr.top; i < sr.bottom; i++) {
-				AlphaBlend(t, buffer[i] + sr.left, ssz.cx, 255, c);
+				if(IsNull(c))
+					AlphaBlendOpaque(t, buffer[i] + sr.left, ssz.cx);
+				else
+					AlphaBlendOpaque(t, buffer[i] + sr.left, ssz.cx, c);
 				t += ssz.cx;
 			}
 		}

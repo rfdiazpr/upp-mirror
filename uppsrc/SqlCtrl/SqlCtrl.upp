@@ -1,7 +1,6 @@
 uses
 	Sql,
-	CtrlLib,
-	DocTypes;
+	CtrlLib;
 
 file
 	SqlCtrl.h,

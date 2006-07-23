@@ -1,11 +1,39 @@
 #include "CtrlLib.h"
 
-Vector<Value> CtrlsImgLook(int i)
+CtrlsImgLook& CtrlsImgLook::operator()(int i, int n)
 {
-	Vector<Value> m;
-	for(int q = 0; q < 4; q++)
-		m.Add(CtrlsImg::Get(i + q));
-	return m;
+	while(n-- > 0)
+		Add(CtrlsImg::Get(i++));
+	return *this;
+}
+
+CtrlsImgLook& CtrlsImgLook::operator()(int i, const Image& img, Color (*fn)(int i), int n)
+{
+	for(int q = 0; q < n; q++)
+		Add(ChLookWith(CtrlsImg::Get(i++), img, fn, q));
+	return *this;
+}
+
+CtrlsImgLook& CtrlsImgLook::operator()(int i, const Image& img, int n)
+{
+	for(int q = 0; q < n; q++)
+		Add(ChLookWith(CtrlsImg::Get(i++), img));
+	return *this;
+}
+
+CtrlsImgLook::CtrlsImgLook(int i, int n)
+{
+	operator()(i, n);
+}
+
+CtrlsImgLook::CtrlsImgLook(int i, const Image& img, Color (*fn)(int i), int n)
+{
+	operator()(i, img, fn, n);
+}
+
+CtrlsImgLook::CtrlsImgLook(int i, const Image& img, int n)
+{
+	operator()(i, img, n);
 }
 
 String DeAmp(const char *s)
@@ -139,7 +167,7 @@ Size DrawLabel::GetSize() const
 
 Image sDis(const Image& img, bool dis)
 {
-	return dis ? MakeImage(img, "etched") : img;
+	return dis ? MakeImage(img, Etched) : img;
 }
 
 Size DrawLabel::Paint(Draw& w, const Rect& r, bool visibleaccesskey) const

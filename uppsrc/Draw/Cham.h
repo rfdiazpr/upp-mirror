@@ -13,6 +13,8 @@ void  ChSetf(const char *name, Value (*fn)(int));
 Value ChGet(const char *name, int i);
 Value ChGet(const char *name);
 
+Image AdjustColors(const Image& img);
+
 void  Override(Iml& target, const char *prefixset, Iml& source, bool colored = true);
 
 void   ChRegister(const char *style, void (*fn)());
@@ -122,3 +124,7 @@ type v() { ch_sync__##v(); return ch##v()[0]; }
 
 void ChPaint(Draw& w, const Rect& r, const Value& element);
 void ChPaint(Draw& w, int x, int y, int cx, int cy, const Value& element);
+
+Value ChLookWith(const Value& look, const Image& img);
+Value ChLookWith(const Value& look, const Image& img, Color color);
+Value ChLookWith(const Value& look, const Image& img, Color (*color)(int i), int i);

@@ -15,7 +15,7 @@ Size ToolTip::GetMinSize() const
 void ToolTip::Paint(Draw& w)
 {
 	Size sz = GetSize();
-	w.DrawRect(sz, SLtYellow);
+	w.DrawRect(sz, SColorInfo);
 	DrawSmartText(w, 2, 2, sz.cx - 4, text);
 }
 
@@ -190,8 +190,8 @@ void QTFPopUp::PopUp(Ctrl *parent) {
 QTFPopUp::QTFPopUp() {
 	static ColorF helpborder[] = {
 		(ColorF)2,
-		&SBlack, &SBlack, &SBlack, &SBlack,
-		&SLtGray, &SLtGray, &SLtGray, &SLtGray,
+		&SColorText, &SColorText, &SColorText, &SColorText,
+		&SColorFace, &SColorFace, &SColorFace, &SColorFace,
 	};
 	static BorderFrame helpframe(helpborder);
 	width = 250;

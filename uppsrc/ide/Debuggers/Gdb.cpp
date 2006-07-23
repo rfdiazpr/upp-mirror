@@ -154,7 +154,7 @@ void Gdb::SyncDisas(bool fr)
 	String s = FastCmd("info registers");
 	StringStream ss(s);
 	for(int i = 0; i < reglbl.GetCount(); i++)
-		reglbl[i]->SetInk(SBlack);
+		reglbl[i]->SetInk(SColorText);
 	while(!ss.IsEof()) {
 		String ln = ss.GetLine();
 		CParser p(ln);
@@ -167,7 +167,7 @@ void Gdb::SyncDisas(bool fr)
 					if(regname[i] == name) {
 						if(reglbl[i]->GetText() != n) {
 							reglbl[i]->SetLabel(n);
-							reglbl[i]->SetInk(SLtRed);
+							reglbl[i]->SetInk(LtRed);
 						}
 					}
 				}

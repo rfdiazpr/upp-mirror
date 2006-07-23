@@ -192,7 +192,8 @@ void DrawMnemonicText(Draw& w, int x, int y, const String& s, Font font, Color c
 	w.DrawText(x, y, s, font, color);
 	if(q < 0) return;
 	FontInfo f = font.Info();
-	w.DrawRect(x + GetTextSize(~s, font, q).cx, y + f.GetAscent() + 1, f[s[q]], 1, SLtBlue);
+	w.DrawRect(x + GetTextSize(~s, font, q).cx, y + f.GetAscent() + 1, f[s[q]], 1,
+	           Blend(SColorLight, SColorHighlight));
 }
 
 void DrawMenuText(Draw& w, int x, int y, const String& s, Font f, bool enabled,
@@ -202,10 +203,10 @@ void DrawMenuText(Draw& w, int x, int y, const String& s, Font f, bool enabled,
 		DrawMnemonicText(w, x, y, s, f, hl ? SColorHighlightText : color, mnemonic);
 	else {
 		if(Ctrl::IsXPStyle())
-			DrawMnemonicText(w, x, y, s, f, SGray, 0);
+			DrawMnemonicText(w, x, y, s, f, SColorDisabled, 0);
 		else {
-			DrawMnemonicText(w, x + 1, y + 1, s, f, SWhite, 0);
-			DrawMnemonicText(w, x, y, s, f, SGray, 0);
+			DrawMnemonicText(w, x + 1, y + 1, s, f, SColorPaper, 0);
+			DrawMnemonicText(w, x, y, s, f, SColorDisabled, 0);
 		}
 	}
 }
@@ -224,9 +225,9 @@ void MenuItemBase::PaintTopItem(Draw& w, int state) {
 		DrawMenuText(w, 6, (sz.cy - isz.cy) / 2, text, GetFont(), IsItemEnabled(), state);
 	}
 	else {
-		w.DrawRect(sz, SLtGray);
-		static const ColorF b0[] = { (ColorF)1, SWhite, SWhite, SGray, SGray, };
-		static const ColorF b1[] = { (ColorF)1, SGray, SGray, SWhite, SWhite, };
+		w.DrawRect(sz, SColorFace);
+		static const ColorF b0[] = { (ColorF)1, SColorLight, SColorLight, SColorShadow, SColorShadow, };
+		static const ColorF b1[] = { (ColorF)1, SColorShadow, SColorShadow, SColorLight, SColorLight, };
 		String text = GetText();
 		Size isz = GetTextSize(text, StdFont());
 		DrawMenuText(w, 6, (sz.cy - isz.cy) / 2, text, GetFont(), IsItemEnabled(), false);
@@ -315,7 +316,7 @@ void MenuItem::Paint(Draw& w)
 	state = GetVisualState();
 	bool hl = state != NORMAL;
 	Size sz = GetSize();
-	w.DrawRect(sz, hl ? SColorHighlight : IsXPStyle() ? SColorMenu : SLtGray);
+	w.DrawRect(sz, hl ? SColorHighlight : IsXPStyle() ? SColorMenu : SColorFace);
 	::Image li = licon;
 	if(li.IsEmpty()) {
 		switch(type) {
@@ -336,7 +337,8 @@ void MenuItem::Paint(Draw& w)
 			}
 		}
 		else {
-			w.DrawRect(1, iy - 1, isz.cx + 2, isz.cy + 2, chk ? SWhiteGray : SLtGray);
+			w.DrawRect(1, iy - 1, isz.cx + 2, isz.cy + 2, chk ? Blend(SColorFace, SColorLight)
+			                                                  : SColorFace);
 			DrawBorder(w, 0, iy - 2, isz.cx + 4, isz.cy + 4, chk ? ThinInsetBorder : ThinOutsetBorder);
 		}
 	}
@@ -349,7 +351,8 @@ void MenuItem::Paint(Draw& w)
 	x = sz.cx - max(isz.cx, 16) - 1;
 	if(!IsEmpty(keydesc)) {
 		isz = GetTextSize(keydesc, StdFont());
-		::DrawMenuText(w, x - isz.cx - 2, (sz.cy - isz.cy) / 2, keydesc, font, isenabled, hl, 0, SLtBlue);
+		::DrawMenuText(w, x - isz.cx - 2, (sz.cy - isz.cy) / 2, keydesc, font, isenabled, hl,
+		               0, Blend(SColorHighlight, SColorLight));
 	}
 }
 
@@ -1004,7 +1007,7 @@ DWORD WINAPI PlaySoundThread(LPVOID)
 
 static ColorF xpmenuborder[] = {
 	(ColorF)3,
-	&SGray, &SGray, &SGray, &SGray,
+	&SColorShadow, &SColorShadow, &SColorShadow, &SColorShadow,
 	&SColorMenu, &SColorMenu, &SColorMenu, &SColorMenu,
 	&SColorMenu, &SColorMenu, &SColorMenu, &SColorMenu,
 };

@@ -32,6 +32,11 @@ CH_COLOR(SColorDisabled, Gray());
 CH_COLOR(SColorLight, White());
 CH_COLOR(SColorShadow, Gray());
 
+CH_COLOR(SColorLtFace, Blend(SColorFace, SColorLight));
+CH_COLOR(SColorLtHighlight, Blend(SColorHighlight, SColorLight));
+CH_COLOR(SColorDkShadow, Blend(SColorShadow, SColorText));
+
+/*
 #ifdef PLATFORM_WIN32
 void UpdateSColors()
 {
@@ -75,22 +80,9 @@ void UpdateSColors()
 	ChSet("SLtMagenta", Color(r255, g0, b255));
 	ChSet("SLtCyan", Color(r0, g255, b255));
 
-	dword x = GetSysColor(COLOR_GRAYTEXT);
-
-	ChSet("SColorFace", Color::FromCR(GetSysColor(COLOR_3DFACE)));
-	ChSet("SColorPaper", Color::FromCR(GetSysColor(COLOR_WINDOW)));
-	ChSet("SColorText", Color::FromCR(GetSysColor(COLOR_WINDOWTEXT)));
-	ChSet("SColorHighlight", Color::FromCR(GetSysColor(COLOR_HIGHLIGHT)));
-	ChSet("SColorHighlightText", Color::FromCR(GetSysColor(COLOR_HIGHLIGHTTEXT)));
-	ChSet("SColorMenu", Color::FromCR(GetSysColor(COLOR_MENU)));
-	ChSet("SColorMenuText", Color::FromCR(GetSysColor(COLOR_MENUTEXT)));
-	ChSet("SColorInfo", Color::FromCR(GetSysColor(COLOR_INFOBK)));
-	ChSet("SColorInfoText", Color::FromCR(GetSysColor(COLOR_INFOTEXT)));
-	ChSet("SColorDisabled", x ? Color::FromCR(x) : Color(r192, g192, b192));
-	ChSet("SColorLight", Color::FromCR(GetSysColor(COLOR_3DHILIGHT)));
-	ChSet("SColorShadow", Color::FromCR(GetSysColor(COLOR_3DSHADOW)));
 }
 #endif
+*/
 
 #ifdef PLATFORM_X11
 GLOBAL_VAR(TextSettings, sKDESettings);
@@ -222,7 +214,3 @@ void UpdateSColors()
 
 }
 #endif
-
-INITBLOCK {
-	ChRegister("!", UpdateSColors);
-}

@@ -5,23 +5,16 @@
 CH_INT(ScrollBarSize, FrameButtonWidth());
 CH_INT(ScrollBarArrowSize, ScrollBarSize());
 
-CH_LOOKS(ScrollBarUp, 4, ScrollButtonLook);
-CH_IMAGE(ScrollBarUpImg, CtrlsImg::UA());
 CH_LOOKS(ScrollBarVertUpper, 4, CtrlsImgLook(CtrlsImg::I_SBVU));
-CH_LOOKS(ScrollBarVertThumb, 4, CtrlsImgLook(CtrlsImg::I_SBVT));
-CH_IMAGE(ScrollBarVertThumbImg, CtrlsImg::SBVI());
+CH_LOOKS(ScrollBarVertThumb, 4, CtrlsImgLook(CtrlsImg::I_SBVT, CtrlsImg::SBVI()));
 CH_LOOKS(ScrollBarVertLower, 4, CtrlsImgLook(CtrlsImg::I_SBVL));
-CH_LOOKS(ScrollBarDown, 4, ScrollButtonLook);
-CH_IMAGE(ScrollBarDownImg, CtrlsImg::DA);
-
-CH_LOOKS(ScrollBarLeft, 4, ScrollButtonLook);
-CH_IMAGE(ScrollBarLeftImg, CtrlsImg::LA());
 CH_LOOKS(ScrollBarHorzUpper, 4, CtrlsImgLook(CtrlsImg::I_SBHU));
-CH_LOOKS(ScrollBarHorzThumb, 4, CtrlsImgLook(CtrlsImg::I_SBHT));
-CH_IMAGE(ScrollBarHorzThumbImg, CtrlsImg::SBHI());
+CH_LOOKS(ScrollBarHorzThumb, 4, CtrlsImgLook(CtrlsImg::I_SBHT, CtrlsImg::SBHI()));
 CH_LOOKS(ScrollBarHorzLower, 4, CtrlsImgLook(CtrlsImg::I_SBHL));
-CH_LOOKS(ScrollBarRight, 4, ScrollButtonLook);
-CH_IMAGE(ScrollBarRightImg, CtrlsImg::RA);
+CH_LOOKS(ScrollBarUp, 4, CtrlsImgLook(CtrlsImg::I_SB, CtrlsImg::UA(), ButtonMonoColor));
+CH_LOOKS(ScrollBarDown, 4, CtrlsImgLook(CtrlsImg::I_SB, CtrlsImg::DA(), ButtonMonoColor));
+CH_LOOKS(ScrollBarLeft, 4, CtrlsImgLook(CtrlsImg::I_SB, CtrlsImg::LA(), ButtonMonoColor));
+CH_LOOKS(ScrollBarRight, 4, CtrlsImgLook(CtrlsImg::I_SB, CtrlsImg::RA(), ButtonMonoColor));
 
 int& Slider::HV(int& h, int& v) const
 {
@@ -120,18 +113,16 @@ void Slider::Paint(Draw& w) {
 			if(i != 1)
 				w.End();
 		}
-		Image m = IsHorz() ? ScrollBarHorzThumbImg() : ScrollBarVertThumbImg();
-		if(!IsNull(m)) {
-			Rect tr = GetPartRect(1);
-			Size isz = m.GetSize();
-			if(min(tr.Width(), tr.Height()) > min(isz.cx, isz.cy) + 4) {
-				Point p = tr.CenterPos(m.GetSize());
-				w.DrawImage(p.x, p.y, m);
-			}
-		}
 	}
 	else
-		ChPaint(w, sz, (*l[0])(CTRL_DISABLED));
+		if(IsHorz()) {
+			ChPaint(w, 0, 0, sz.cx / 2, sz.cy, (*l[0])(CTRL_DISABLED));
+			ChPaint(w, sz.cx / 2, 0, sz.cx - sz.cx / 2, sz.cy, (*l[2])(CTRL_DISABLED));
+		}
+		else {
+			ChPaint(w, 0, 0, sz.cx, sz.cy / 2, (*l[0])(CTRL_DISABLED));
+			ChPaint(w, 0, sz.cy / 2, sz.cx, sz.cy - sz.cy / 2, (*l[2])(CTRL_DISABLED));
+		}
 }
 
 void Slider::LeftDown(Point p, dword) {
@@ -385,9 +376,7 @@ void ScrollBar::Layout() {
 	Size sz = GetSize();
 	if(IsHorz()) {
 		prev.Style(ScrollBarLeft);
-		prev.SetMonoImage(ScrollBarLeftImg());
 		next.Style(ScrollBarRight);
-		next.SetMonoImage(ScrollBarRightImg());
 		int cc = sz.cx > 3 * sz.cy ? sz.cy : 0;
 		prev.SetRect(0, 0, cc, sz.cy);
 		slider.SetRect(cc, 0, sz.cx - 2 * cc, sz.cy);
@@ -395,9 +384,7 @@ void ScrollBar::Layout() {
 	}
 	else {
 		prev.Style(ScrollBarUp);
-		prev.SetMonoImage(ScrollBarUpImg());
 		next.Style(ScrollBarDown);
-		next.SetMonoImage(ScrollBarDownImg());
 		int cc = sz.cy > 3 * sz.cx ? sz.cx : 0;
 		prev.SetRect(0, 0, sz.cx, cc);
 		slider.SetRect(0, cc, sz.cx, sz.cy - 2 * cc);
@@ -500,32 +487,30 @@ Image SizeGrip::CursorImage(Point p, dword)
 	if(_NET_Supported().Find(XAtom("_NET_WM_MOVERESIZE")) >= 0) {
 #endif
 		TopWindow *q = dynamic_cast<TopWindow *>(GetTopCtrl());
-		if(q && !q->IsMaximized() && q->IsSizeable()) {
-			if(GetMouseLeft())
-				return CtrlImg::SizeHoVe0;
-			static Image (*anihove[])() = {
-				CtrlImg::SizeHoVe0, CtrlImg::SizeHoVe1, CtrlImg::SizeHoVe0, CtrlImg::SizeHoVe2
-			};
-			return (*anihove[GetTimeClick() / 200 % 4])();
-		}
+		if(q && !q->IsMaximized() && q->IsSizeable())
+			return Image::SizeBottomRight();
 #ifdef PLATFORM_X11
 	}
 #endif
 	return Image::Arrow();
 }
 
+CH_IMAGE(SizeGripImg, CtrlsImg::SizeGrip());
+
 void SizeGrip::Paint(Draw& w)
 {
     Size sz = GetSize();
     if(InFrame())
-        w.DrawRect(sz, SLtGray);
+        w.DrawRect(sz, SColorFace);
 #ifdef PLATFORM_X11
     if(_NET_Supported().Find(XAtom("_NET_WM_MOVERESIZE")) >= 0)
     {
 #endif
 		TopWindow *q = dynamic_cast<TopWindow *>(GetTopCtrl());
-		if(q && !q->IsMaximized() && q->IsSizeable())
-			w.DrawImage(sz.cx - 12, sz.cy - 12, CtrlsImg::SizeGrip());
+		if(q && !q->IsMaximized() && q->IsSizeable()) {
+			Size isz = CtrlsImg::SizeGrip().GetSize();
+			w.DrawImage(sz.cx - isz.cx, sz.cy - isz.cy, CtrlsImg::SizeGrip());
+		}
 #ifdef PLATFORM_X11
     }
 #endif
@@ -669,7 +654,7 @@ void ScrollBars::FrameRemove() {
 void ScrollBars::FramePaint(Draw& w, const Rect& r) {
 	if(x.IsShown() && y.IsShown() && !box) {
 		int h = ScrollBarSize();
-		w.DrawRect(r.right - h, r.bottom - h, h, h, SLtGray);
+		w.DrawRect(r.right - h, r.bottom - h, h, h, SColorFace);
 	}
 }
 

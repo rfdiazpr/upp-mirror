@@ -89,7 +89,7 @@ void  ToolButton::Paint(Draw& w)
 	paint_checked = checked;
 	Size sz = GetSize();
 	Size isz = image.GetSize();
-	w.DrawRect(sz, checked && !HasMouse() ? SWhiteGray : SColorFace);
+	w.DrawRect(sz, checked && !HasMouse() ? Blend(SColorFace, SColorLight) : SColorFace);
 	Point center = (sz - isz) / 2;
 	if(IsEnabled()) {
 		bool push = HasMouse() && GetMouseLeft();
@@ -109,14 +109,14 @@ void  ToolButton::Paint(Draw& w)
 		else {
 			DrawHighlightImage(w, center.x + push, center.y + push, image, HasMouse());
 			if(checked || HasMouse() && GetMouseLeft())
-				DrawFrame(w, sz, SGray, SWhite);
+				DrawFrame(w, sz, SColorShadow, SColorLight);
 			else
 			if(HasMouse())
-				DrawFrame(w, sz, SWhite, SGray);
+				DrawFrame(w, sz, SColorLight, SColorShadow);
 		}
 	}
 	else
-		w.DrawImage(center.x, center.y, MakeImage(image, "etched"));
+		w.DrawImage(center.x, center.y, MakeImage(image, Etched));
 }
 
 void  ToolButton::MouseEnter(Point, dword)

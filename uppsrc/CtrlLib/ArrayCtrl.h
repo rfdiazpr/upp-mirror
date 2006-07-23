@@ -209,7 +209,7 @@ private:
 	Rect   GetCellRectM(int i, int col);
 
 	Point           FindCellCtrl(Ctrl *c);
-	void            SyncCtrls();
+	void            SyncCtrls(int from = 0);
 	bool            IsCtrl(int i, int j) const;
 	const CellCtrl& GetCtrl(int i, int j) const;
 	CellCtrl&       GetCtrl(int i, int j);
@@ -221,7 +221,7 @@ private:
 	void   CtrlSetData(int col);
 	Value  Get0(int i, int ii) const;
 	void   Set0(int i, int ii, const Value& v);
-	void   AfterSet();
+	void   AfterSet(int i);
 
 	void   Reline(int i, int y);
 	bool   AcceptRow();

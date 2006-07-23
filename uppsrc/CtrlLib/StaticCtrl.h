@@ -12,7 +12,7 @@ public:
 	StaticText& SetText(const char *text)               { LabelBase::SetText(text); return *this; }
 
 	StaticText& operator=(const char *s)                { SetText(s); return *this; }
-	
+
 	StaticText();
 };
 
@@ -39,8 +39,6 @@ class LabelBox : public Label {
 public:
 	virtual void   Paint(Draw& w);
 	virtual void   AssignAccessKeys(dword used);
-
-	virtual Vector<Rect> GetTransparentViewRects();
 
 public:
 	LabelBox();

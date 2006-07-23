@@ -198,6 +198,12 @@ String Point_<T>::ToString() const {
 }
 
 template <class T>
+T GHalf_(T t) { return t >> 1; }
+
+template <>
+inline double GHalf_(double d) { return d / 2; }
+
+template <class T>
 struct Rect_ : Moveable< Rect_<T> > {
 	T      left, top, right, bottom;
 
@@ -210,13 +216,13 @@ struct Rect_ : Moveable< Rect_<T> > {
 	bool   IsNullInstance() const;
 
 	Pt     TopLeft() const                  { return Pt(left, top); }
-	Pt     TopCenter() const                { return Pt((left + right) / 2, top); }
+	Pt     TopCenter() const                { return Pt(GHalf_(left + right), top); }
 	Pt     TopRight() const                 { return Pt(right, top); }
-	Pt     CenterLeft() const               { return Pt(left, (top + bottom) / 2); }
-	Pt     CenterPoint() const              { return Pt((left + right) / 2, (top + bottom) / 2); }
-	Pt     CenterRight() const              { return Pt(right, (top + bottom) / 2); }
+	Pt     CenterLeft() const               { return Pt(left, GHalf_(top + bottom)); }
+	Pt     CenterPoint() const              { return Pt(GHalf_(left + right), GHalf_(top + bottom)); }
+	Pt     CenterRight() const              { return Pt(right, GHalf_(top + bottom)); }
 	Pt     BottomLeft() const               { return Pt(left, bottom); }
-	Pt     BottomCenter() const             { return Pt((left + right) / 2, bottom); }
+	Pt     BottomCenter() const             { return Pt(GHalf_(left + right), bottom); }
 	Pt     BottomRight() const              { return Pt(right, bottom); }
 	T      Width() const                    { return right - left; }
 	T      Height() const                   { return bottom - top; }
@@ -363,7 +369,7 @@ struct Rect_ : Moveable< Rect_<T> > {
 
 template <class T>
 inline Rect_<T>::Rect_(const Nuller&) {
-	Clear();
+	left = top = right = bottom = Null;
 }
 
 template <>
@@ -374,7 +380,7 @@ inline Rect_<double>::Rect_(const Nuller&) {
 
 template <class T>
 bool Rect_<T>::IsNullInstance() const {
-	return !(left || top || right || bottom);
+	return IsNull(left);
 }
 
 template <>
@@ -384,7 +390,7 @@ inline bool Rect_<double>::IsNullInstance() const {
 
 template <class T>
 Point_<T> Rect_<T>::CenterPos(T cx, T cy) const {
-	return Point_<T>(left + (Width() - cx) / 2, top + (Height() - cy) / 2);
+	return Point_<T>(left + GHalf_(Width() - cx), top + GHalf_(Height() - cy));
 }
 
 template <class T>
@@ -450,8 +456,10 @@ template <class T>
 void Rect_<T>::Intersect(const Rect_<T>& r) {
 	if(r.left > left) left = r.left;
 	if(r.top > top) top = r.top;
+	if(right < left) right = left;
 	if(r.right < right) right = r.right;
 	if(r.bottom < bottom) bottom = r.bottom;
+	if(bottom < top) bottom = top;
 }
 
 template <class T>

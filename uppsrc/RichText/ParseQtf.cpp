@@ -5,7 +5,7 @@ Color (*QTFColor[])() = {
 };
 
 Color (*QTFSColor[])()= {
-	SBlack, SLtGray, SWhite, SRed, SGreen, SBlue, SLtRed, SWhiteGray, SLtCyan, SYellow
+	SColorText, SColorFace, SColorPaper, Red, Green, Blue, LtRed, WhiteGray, LtCyan, Yellow
 };
 
 Color NullColorF()
@@ -27,18 +27,18 @@ static Color (*QTFColorL[])() = {
 	/*Y*/LtYellow, /*Z*/White
 };
 
-static Color (*QTFSColorl[])() = {
-	/*a*/SWhite, /*b*/SBlue, /*c*/SCyan, /*d*/SWhite, /*e*/SWhite, /*f*/SWhite, /*g*/ SGreen, /*h*/SWhite,
-	/*i*/SWhite, /*j*/SWhite, /*k*/SBlack, /*l*/SLtGray, /*m*/SMagenta, /*n*/NullColorF, /*o*/SBrown, /*p*/SWhite,
-	/*q*/SWhite, /*r*/SRed, /*s*/SWhite, /*t*/SWhite, /*u*/SWhite, /*v*/SWhite, /*w*/SWhiteGray, /*x*/SWhite,
-	/*y*/SYellow, /*z*/ White
+static Color (*QTFSColorl[])() = { //TODO
+	/*a*/SColorPaper, /*b*/SColorHighlight, /*c*/Cyan, /*d*/SColorPaper, /*e*/SColorPaper, /*f*/SColorPaper, /*g*/ Green, /*h*/SColorPaper,
+	/*i*/SColorPaper, /*j*/SColorPaper, /*k*/SColorText, /*l*/SColorFace, /*m*/Magenta, /*n*/NullColorF, /*o*/Brown, /*p*/SColorPaper,
+	/*q*/SColorPaper, /*r*/Red, /*s*/SColorPaper, /*t*/SColorPaper, /*u*/SColorPaper, /*v*/SColorPaper, /*w*/WhiteGray, /*x*/SColorPaper,
+	/*y*/Yellow, /*z*/ White
 };
 
-static Color (*QTFSColorL[])() = {
-	/*A*/SWhite, /*B*/SLtBlue, /*C*/SLtCyan, /*D*/SWhite, /*E*/SWhite, /*F*/SWhite, /*G*/SLtGreen, /*H*/SWhite,
-	/*I*/SWhite, /*J*/SWhite, /*K*/SGray, /*L*/SWhiteGray, /*M*/SLtMagenta, /*N*/NullColorF, /*O*/SBrown, /*P*/SWhite,
-	/*Q*/SWhite, /*R*/SLtRed, /*S*/SWhite, /*T*/SWhite, /*U*/SWhite, /*V*/SWhite, /*W*/SWhite, /*X*/SWhite,
-	/*Y*/SLtYellow, /*Z*/White
+static Color (*QTFSColorL[])() = { //TODO
+	/*A*/SColorPaper, /*B*/LtBlue, /*C*/LtCyan, /*D*/SColorPaper, /*E*/SColorPaper, /*F*/SColorPaper, /*G*/LtGreen, /*H*/SColorPaper,
+	/*I*/SColorPaper, /*J*/SColorPaper, /*K*/SColorShadow, /*L*/WhiteGray, /*M*/LtMagenta, /*N*/NullColorF, /*O*/Brown, /*P*/SColorPaper,
+	/*Q*/SColorPaper, /*R*/LtRed, /*S*/SColorPaper, /*T*/SColorPaper, /*U*/SColorPaper, /*V*/SColorPaper, /*W*/SColorPaper, /*X*/SColorPaper,
+	/*Y*/LtYellow, /*Z*/White
 };
 
 int QTFFontHeight[] = {

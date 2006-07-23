@@ -78,7 +78,9 @@ int SymbolWidth(FORMSYMBOL symbol, int height, int textheight)
 	default:        NEVER();
 	case FS_EMPTY:        return 0;
 	case FS_LBRACE:
-	case FS_RBRACE:       wd = textheight / 4; break;
+	case FS_RBRACE:
+	case FS_LSHARP:
+	case FS_RSHARP:       wd = textheight / 4; break;
 	case FS_LPAREN:
 	case FS_RPAREN:
 	case FS_LBRACKET:
@@ -121,8 +123,7 @@ void PaintSymbol(Draw& draw, FORMSYMBOL symbol, const Rect& rc, int textheight, 
 
 	bool xmirror = false;
 
-	if(symbol > FS_BRACKET_BEGIN && symbol < FS_BRACKET_END)
-	{
+	if(symbol > FS_BRACKET_BEGIN && symbol < FS_BRACKET_END) {
 		xmirror = (symbol == FS_RBRACKET || symbol == FS_RTBRACKET || symbol == FS_RBBRACKET);
 		bool top = (symbol != FS_LBBRACKET && symbol != FS_RBBRACKET);
 		bool bot = (symbol != FS_LTBRACKET && symbol != FS_RTBRACKET);
@@ -146,8 +147,7 @@ void PaintSymbol(Draw& draw, FORMSYMBOL symbol, const Rect& rc, int textheight, 
 			polygon
 				<< Point(thick, 0);
 	}
-	else if(symbol == FS_LPAREN || symbol == FS_RPAREN || symbol == FS_LBRACE || symbol == FS_RBRACE)
-	{
+	else if(symbol == FS_LPAREN || symbol == FS_RPAREN || symbol == FS_LBRACE || symbol == FS_RBRACE) {
 		bool bra = (symbol == FS_LBRACE || symbol == FS_RBRACE);
 		xmirror = (symbol == FS_RPAREN || symbol == FS_RBRACE);
 		int xo, xv, xs;
@@ -156,8 +156,7 @@ void PaintSymbol(Draw& draw, FORMSYMBOL symbol, const Rect& rc, int textheight, 
 		xs = xv = thick;
 		yo = 0;
 		yi = yj = ys = ht >> 1;
-		if(bra)
-		{
+		if(bra) {
 			xv = (xv + xo) >> 1;
 			yi = max(ht >> 2, ys - textheight / 5);
 			yj = (yi + ys) >> 1;
@@ -166,8 +165,7 @@ void PaintSymbol(Draw& draw, FORMSYMBOL symbol, const Rect& rc, int textheight, 
 		yv = yw >> 1;
 		enum { PREC = 6 };
 		Bezier(polygon, Point(xo, yo), Point(xv, yv), Point(xv, yw), PREC);
-		if(bra)
-		{
+		if(bra) {
 			Bezier(polygon, Point(xv, yi), Point(xv, yj), Point(xs, ys), PREC);
 			Bezier(polygon, Point(xs, ht - ys), Point(xv, ht - yj), Point(xv, ht - yi), PREC);
 		}
@@ -176,24 +174,20 @@ void PaintSymbol(Draw& draw, FORMSYMBOL symbol, const Rect& rc, int textheight, 
 		xv -= thick;
 		xs -= thick;
 		Bezier(polygon, Point(xo, ht - yo), Point(xv, ht - yv), Point(xv, ht - yw), PREC);
-		if(bra)
-		{
+		if(bra) {
 			Bezier(polygon, Point(xv, ht - yi), Point(xv, ht - yj), Point(xs, ht - ys), PREC);
 			Bezier(polygon, Point(xs, ys), Point(xv, yj), Point(xv, yi), PREC);
 		}
 		Bezier(polygon, Point(xv, yw), Point(xv, yv), Point(xo, yo), PREC);
 	}
-	else if(symbol == FS_LSHARP || symbol == FS_RSHARP)
-	{
+	else if(symbol == FS_LSHARP || symbol == FS_RSHARP) {
 	}
-	else if(symbol == FS_VBAR)
-	{
+	else if(symbol == FS_VBAR) {
 		int lw = Formula::GetLineWidth(textheight);
 		draw.DrawRect((rc.left + rc.right - lw) >> 1, rc.top, lw, rc.Height(), color);
 		return;
 	}
-	else if(symbol == FS_SUM)
-	{
+	else if(symbol == FS_SUM) {
 		int tt = (thick * 20) >> 4;
 		int cx = (wd * 8) >> 4;
 		int hh = ht >> 1;
@@ -206,17 +200,13 @@ void PaintSymbol(Draw& draw, FORMSYMBOL symbol, const Rect& rc, int textheight, 
 				<< Point(cx + tt, hh)
 			<< Point(dx, thick) << Point(wd, thick);
 	}
-	else if(symbol == FS_PRODUCT)
-	{
+	else if(symbol == FS_PRODUCT) {
 	}
-	else if(symbol == FS_UNION)
-	{
+	else if(symbol == FS_UNION) {
 	}
-	else if(symbol == FS_INTERSECTION)
-	{
+	else if(symbol == FS_INTERSECTION) {
 	}
-	else if(symbol > FS_INT_BEGIN && symbol < FS_INT_END)
-	{
+	else if(symbol > FS_INT_BEGIN && symbol < FS_INT_END) {
 		int count = (symbol == FS_IIINT ? 3 : symbol == FS_IINT || symbol == FS_OIINT ? 2 : 1);
 		int lw = thick;
 		int rcap = min(textheight / 12, (wd - lw) / (2 * count)), dcap = 2 * rcap, vcap = rcap;
@@ -224,8 +214,7 @@ void PaintSymbol(Draw& draw, FORMSYMBOL symbol, const Rect& rc, int textheight, 
 		int dcl = dcap - lw, rcl = dcl >> 1;
 		int slant = wd - capdist * (count - 1);
 		int comp = dcap - iscale(rcap, slant - 2 * dcap + lw, ht - 2 * rcap);
-		for(int i = 0; i < count; i++)
-		{
+		for(int i = 0; i < count; i++) {
 			int x = i * capdist;
 			int n = polygon.GetCount();
 			BezierEllipse(polygon, Point(x + rcap, ht - rcap), Size(rcap, vcap), 4);
@@ -238,8 +227,7 @@ void PaintSymbol(Draw& draw, FORMSYMBOL symbol, const Rect& rc, int textheight, 
 				<< Point(x + dcap, ht - rcap) << Point(x + dcl, ht - rcap);
 			counts.Add(polygon.GetCount() - n);
 		}
-		if(symbol == FS_OINT || symbol == FS_OIINT)
-		{
+		if(symbol == FS_OINT || symbol == FS_OIINT) {
 			int n = polygon.GetCount();
 			int rad = min(wd >> 1, count * textheight / 4);
 			BezierEllipse(polygon, Point(wd >> 1, ht >> 1), Size(rad, rad), 8);
@@ -247,21 +235,18 @@ void PaintSymbol(Draw& draw, FORMSYMBOL symbol, const Rect& rc, int textheight, 
 			counts.Add(polygon.GetCount() - n);
 		}
 	}
-	else if(symbol == FS_LOG_NOT)
-	{
+	else if(symbol == FS_LOG_NOT) {
 		polygon << Point(0, 0) << Point(wd, 0) << Point(wd, ht)
 		<< Point(wd - thick, ht) << Point(wd - thick, thick) << Point(0, thick);
 	}
-	else if(symbol == FS_LOG_OR)
-	{
+	else if(symbol == FS_LOG_OR) {
 		int top = Percent(30, ht);
 		int bot = Percent(80, ht);
 		int wd2 = wd >> 1;
 		polygon << Point(0, top) << Point(wd2, bot) << Point(wd, top)
 		<< Point(wd - thick, top) << Point(wd2, bot - thick - iscale(thick, bot - top, wd2)) << Point(thick, top);
 	}
-	else if(symbol > FS_SETOP_BEGIN || symbol < FS_SETOP_END)
-	{
+	else if(symbol > FS_SETOP_BEGIN && symbol < FS_SETOP_END) {
 		int ht2 = ht >> 1, ht4 = Percent(30, ht), wd2 = wd >> 1;
 		polygon << Point(wd, ht2 - ht4);
 		Bezier(polygon, Point(wd2, ht2 - ht4), Point(0, ht2 - ht4), Point(0, ht2), 8);
@@ -271,26 +256,22 @@ void PaintSymbol(Draw& draw, FORMSYMBOL symbol, const Rect& rc, int textheight, 
 		Bezier(polygon, Point(thick, ht2), Point(thick, ht2 - ht4 + thick), Point(wd2 + half, ht2 - ht4 + thick), 8);
 		polygon << Point(wd, ht2 - ht4 + thick);
 		counts.Add(polygon.GetCount());
-		if(symbol == FS_MEMBER || symbol == FS_NOT_MEMBER)
-		{
+		if(symbol == FS_MEMBER || symbol == FS_NOT_MEMBER) {
 			Rectangle(polygon, Rect(thick, ht2 - half, wd2, ht2 + half));
 			counts.Add(4);
 		}
-		if(symbol == FS_SUBSET || symbol == FS_NOT_SUBSET)
-		{
+		if(symbol == FS_SUBSET || symbol == FS_NOT_SUBSET) {
 			int y = ht2 + ht4 + 2 * thick;
 			Rectangle(polygon, RectC(0, y, wd, thick));
 			counts.Add(4);
 		}
 
-		if(symbol == FS_NOT_MEMBER || symbol == FS_NOT_SUBSET || symbol == FS_NOT_PROPER_SUBSET)
-		{
+		if(symbol == FS_NOT_MEMBER || symbol == FS_NOT_SUBSET || symbol == FS_NOT_PROPER_SUBSET) {
 			polygon << Point(wd, 0) << Point(thick, ht) << Point(0, ht) << Point(wd - thick, 0);
 			counts.Add(4);
 		}
 	}
-	else
-	{
+	else {
 		ASSERT(symbol == FS_EMPTY);
 		return;
 	}
@@ -311,7 +292,7 @@ void PaintSymbol(Draw& draw, FORMSYMBOL symbol, const Rect& rc, int textheight, 
 void Formula::PaintRect0(RefCon<Formula> f, Draw& draw, int x_left, int y_baseline)
 {
 	if(!!f)
-		f -> PaintRect(draw, x_left, y_baseline);
+		f->PaintRect(draw, x_left, y_baseline);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -358,14 +339,14 @@ Size GetScaledSize(Size from, Size to)
 FormulaBox::FormulaBox(RefCon<Formula> in_, Color color, int flags)
 : in(in_), color(color), flags(flags)
 {
-	textheight = in -> GetTextHeight();
+	textheight = in->GetTextHeight();
 	boxwidth = GetLineWidth(textheight);
 	offset = (flags & INNER ? -boxwidth : flags & TIGHT ? 0 : GetLineOffset(textheight));
 	if(flags & THICK)
 		boxwidth *= 2;
-	ascent = in -> GetAscent() + offset + boxwidth;
-	descent = in -> GetDescent() + offset + boxwidth;
-	width = in -> GetWidth() + 2 * (offset + boxwidth);
+	ascent = in->GetAscent() + offset + boxwidth;
+	descent = in->GetDescent() + offset + boxwidth;
+	width = in->GetWidth() + 2 * (offset + boxwidth);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -373,7 +354,7 @@ FormulaBox::FormulaBox(RefCon<Formula> in_, Color color, int flags)
 void FormulaBox::Paint(Draw& draw, int x_left, int y_baseline) const
 {
 	DrawFatFrame(draw, x_left, y_baseline - ascent, width, ascent + descent, color, boxwidth);
-	in -> PaintRect(draw, x_left + boxwidth + offset, y_baseline);
+	in->PaintRect(draw, x_left + boxwidth + offset, y_baseline);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -385,7 +366,7 @@ FormulaSymbol::FormulaSymbol(FORMSYMBOL symbol_, int height_, int textheight_, C
 	leading = GetLeading(textheight);
 	ascent = height >> 1;
 	descent = height - ascent;
-	width = SymbolWidth(symbol, height, textheight - 2 * leading.cy) + 2 * leading.cx;
+	width = SymbolWidth(symbol, height - 2 * leading.cy, textheight) + 2 * leading.cx;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -399,13 +380,13 @@ void FormulaSymbol::Paint(Draw& draw, int x_left, int y_baseline) const
 
 //////////////////////////////////////////////////////////////////////
 
-FormulaText::FormulaText(const String& text, Font font, Color color, int dy)
+FormulaText::FormulaText(WString text, Font font, Color color, int dy)
 : text(text), font(font), color(color)
 {
 	width = GetTextSize(text, font).cx;
 	FontInfo fi = font.Info();
 	int fht = fi.GetHeight();
-	const char *p = text;
+	const wchar *p = text;
 	while(*p && IsLower(*p))
 		p++;
 	textheight = font.GetHeight();
@@ -449,9 +430,9 @@ FormulaRatio::FormulaRatio(RefCon<Formula> top_, RefCon<Formula> bottom_, Color 
 {
 	textheight = GetTextHeight0(top, bottom);
 	linewidth = GetLineWidth(textheight);
-	width = max(top -> GetWidth(), bottom -> GetWidth());
-	ascent = top -> GetHeight() + (linewidth >> 1);
-	descent = bottom -> GetHeight() + ((linewidth + 1) >> 1);
+	width = max(top->GetWidth(), bottom->GetWidth());
+	ascent = top->GetHeight() + (linewidth >> 1);
+	descent = bottom->GetHeight() + ((linewidth + 1) >> 1);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -459,12 +440,12 @@ FormulaRatio::FormulaRatio(RefCon<Formula> top_, RefCon<Formula> bottom_, Color 
 void FormulaRatio::Paint(Draw& draw, int x_left, int y_baseline) const
 {
 	int half = linewidth >> 1;
-	top -> PaintRect(draw, x_left + ((width - top -> GetWidth()) >> 1),
-		y_baseline - half - top -> GetDescent());
+	top->PaintRect(draw, x_left + ((width - top->GetWidth()) >> 1),
+		y_baseline - half - top->GetDescent());
 	draw.DrawLine(x_left + half, y_baseline, x_left + width - half, y_baseline, linewidth, color);
 	draw.DrawRect(x_left, y_baseline - half, width, linewidth, color);
-	bottom -> PaintRect(draw, x_left + ((width - bottom -> GetWidth()) >> 1),
-		y_baseline + ((linewidth + 1) >> 1) + bottom -> GetAscent());
+	bottom->PaintRect(draw, x_left + ((width - bottom->GetWidth()) >> 1),
+		y_baseline + ((linewidth + 1) >> 1) + bottom->GetAscent());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -472,24 +453,24 @@ void FormulaRatio::Paint(Draw& draw, int x_left, int y_baseline) const
 FormulaSqrt::FormulaSqrt(RefCon<Formula> in_, RefCon<Formula> power_, Color color)
 : in(in_), power(power_), color(color)
 {
-	int ht = in -> GetHeight(), tht = in -> GetTextHeight();
+	int ht = in->GetHeight(), tht = in->GetTextHeight();
 	leading = GetLeading(tht);
 	linewidth = GetLineWidth(tht);
 	half = linewidth >> 1;
-	descent = in -> GetDescent() + leading.cy;
-	ascent = in -> GetAscent() + linewidth + leading.cy;
-	width = in -> GetWidth();
+	descent = in->GetDescent() + leading.cy;
+	ascent = in->GetAscent() + linewidth + leading.cy;
+	width = in->GetWidth();
 	leftpos = -half; //(ht * 6) >> 4;
 	roofpos = -ascent + leading.cy;
 	slashwd = bslashwd = ht / 10;
 	leftwidth = ht / 10;
 	if(!!power)
 	{
-		ascent = max(ascent, -leftpos + power -> GetHeight());
-		leftwidth = max(leftwidth >> 1, power -> GetWidth()) - half;
+		ascent = max(ascent, -leftpos + power->GetHeight());
+		leftwidth = max(leftwidth >> 1, power->GetWidth()) - half;
 	}
 	width += slashwd + bslashwd + leftwidth + half + 2 * leading.cx;
-	textheight = in -> GetTextHeight();
+	textheight = in->GetTextHeight();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -500,16 +481,16 @@ void FormulaSqrt::Paint(Draw& draw, int x_left, int y_baseline) const
 	int by = y_baseline + descent - leading.cy - half;
 	int ty = y_baseline + roofpos;
 	if(!!power)
-		power -> PaintRect(draw, x_left + leading.cx, ly - power -> GetDescent());
+		power->PaintRect(draw, x_left + leading.cx, ly - power->GetDescent());
 	x_left += leading.cx;
-	in -> PaintRect(draw, x_left + leftwidth + slashwd + bslashwd + half, y_baseline);
+	in->PaintRect(draw, x_left + leftwidth + slashwd + bslashwd + half, y_baseline);
 	draw.DrawRect(x_left, ly, leftwidth, linewidth, color);
 	x_left += leftwidth;
 	draw.DrawLine(x_left, ly + half, x_left + bslashwd, by, linewidth, color);
 	x_left += bslashwd;
 	draw.DrawLine(x_left, by, x_left + slashwd, ty + half, linewidth, color);
 	x_left += slashwd;
-	draw.DrawRect(x_left, ty, in -> GetWidth() + half, linewidth, color);
+	draw.DrawRect(x_left, ty, in->GetWidth() + half, linewidth, color);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -527,17 +508,17 @@ RefCon<Formula> topleft_,  RefCon<Formula> bottomleft_)
 	int tw = 0, ta = 0, td = 0, bw = 0, ba = 0, bd = 0;
 	int tlw = 0, tla = 0, tld = 0, blw = 0, bla = 0, bld = 0;
 	tlead = blead = 0;
-	if(!!topright)    { trw = topright    -> GetWidth(); tra = topright    -> GetAscent(); trd = topright    -> GetDescent(); }
-	if(!!bottomright) { brw = bottomright -> GetWidth(); bra = bottomright -> GetAscent(); brd = bottomright -> GetDescent(); }
-	if(!!top)         { tw  = top         -> GetWidth(); ta  = top         -> GetAscent(); td  = top         -> GetDescent(); tlead = GetVertLeading(in -> GetTextHeight()); }
-	if(!!bottom)      { bw  = bottom      -> GetWidth(); ba  = bottom      -> GetAscent(); bd  = bottom      -> GetDescent(); blead = GetVertLeading(in -> GetTextHeight()); }
-	if(!!topleft)     { tlw = topleft     -> GetWidth(); tla = topleft     -> GetAscent(); tld = topleft     -> GetDescent(); }
-	if(!!bottomleft)  { blw = bottomleft  -> GetWidth(); bla = bottomleft  -> GetAscent(); bld = bottomleft  -> GetDescent(); }
+	if(!!topright)    { trw = topright   ->GetWidth(); tra = topright   ->GetAscent(); trd = topright   ->GetDescent(); }
+	if(!!bottomright) { brw = bottomright->GetWidth(); bra = bottomright->GetAscent(); brd = bottomright->GetDescent(); }
+	if(!!top)         { tw  = top        ->GetWidth(); ta  = top        ->GetAscent(); td  = top        ->GetDescent(); tlead = GetVertLeading(in->GetTextHeight()); }
+	if(!!bottom)      { bw  = bottom     ->GetWidth(); ba  = bottom     ->GetAscent(); bd  = bottom     ->GetDescent(); blead = GetVertLeading(in->GetTextHeight()); }
+	if(!!topleft)     { tlw = topleft    ->GetWidth(); tla = topleft    ->GetAscent(); tld = topleft    ->GetDescent(); }
+	if(!!bottomleft)  { blw = bottomleft ->GetWidth(); bla = bottomleft ->GetAscent(); bld = bottomleft ->GetDescent(); }
 	rwidth = max(trw, brw);
 	lwidth = max(tlw, blw);
-	bwidth = max(in -> GetWidth(), max(tw, bw));
-	ltdy = rtdy = -max(in -> GetAscent() - max(tla, tra), max(tld, trd));
-	lbdy = rbdy = +max(in -> GetDescent() - max(bld, brd), max(bla, bra));
+	bwidth = max(in->GetWidth(), max(tw, bw));
+	ltdy = rtdy = -max(in->GetAscent() - max(tla, tra), max(tld, trd));
+	lbdy = rbdy = +max(in->GetDescent() - max(bld, brd), max(bla, bra));
 	int over = trd + brd - (rbdy - rtdy);
 	if(over > 0)
 	{
@@ -551,24 +532,24 @@ RefCon<Formula> topleft_,  RefCon<Formula> bottomleft_)
 		lbdy += over >> 1;
 	}
 	width = lwidth + bwidth + rwidth;
-	ascent = max(in -> GetAscent() + ta + td - tlead, max(!!topleft ? -ltdy + tla : 0, !!topright ? -rtdy + tra : 0));
-	descent = max(in -> GetDescent() + ba + bd - blead, max(!!bottomleft ? lbdy + bld : 0, !!bottomright ? rbdy + brd : 0));
-	textheight = in -> GetTextHeight();
+	ascent = max(in->GetAscent() + ta + td - tlead, max(!!topleft ? -ltdy + tla : 0, !!topright ? -rtdy + tra : 0));
+	descent = max(in->GetDescent() + ba + bd - blead, max(!!bottomleft ? lbdy + bld : 0, !!bottomright ? rbdy + brd : 0));
+	textheight = in->GetTextHeight();
 }
 
 //////////////////////////////////////////////////////////////////////
 
 void FormulaIndex::Paint(Draw& draw, int x_left, int y_baseline) const
 {
-	in -> PaintRect(draw, x_left + lwidth + ((bwidth - in -> GetWidth()) >> 1), y_baseline);
-	if(!!topleft)     topleft     -> PaintRect(draw, x_left + lwidth - topleft     -> GetWidth(), y_baseline + ltdy);
-	if(!!bottomleft)  bottomleft  -> PaintRect(draw, x_left + lwidth - bottomleft  -> GetWidth(), y_baseline + lbdy);
+	in->PaintRect(draw, x_left + lwidth + ((bwidth - in->GetWidth()) >> 1), y_baseline);
+	if(!!topleft)     topleft    ->PaintRect(draw, x_left + lwidth - topleft    ->GetWidth(), y_baseline + ltdy);
+	if(!!bottomleft)  bottomleft ->PaintRect(draw, x_left + lwidth - bottomleft ->GetWidth(), y_baseline + lbdy);
 	x_left += lwidth;
-	if(!!top)         top         -> PaintRect(draw, x_left + ((bwidth - top    -> GetWidth()) >> 1), y_baseline - in -> GetAscent() - top -> GetDescent() + tlead);
-	if(!!bottom)      bottom      -> PaintRect(draw, x_left + ((bwidth - bottom -> GetWidth()) >> 1), y_baseline + in -> GetDescent() + bottom -> GetAscent() - blead);
+	if(!!top)         top        ->PaintRect(draw, x_left + ((bwidth - top   ->GetWidth()) >> 1), y_baseline - in->GetAscent() - top->GetDescent() + tlead);
+	if(!!bottom)      bottom     ->PaintRect(draw, x_left + ((bwidth - bottom->GetWidth()) >> 1), y_baseline + in->GetDescent() + bottom->GetAscent() - blead);
 	x_left += bwidth;
-	if(!!topright)    topright    -> PaintRect(draw, x_left, y_baseline + rtdy);
-	if(!!bottomright) bottomright -> PaintRect(draw, x_left, y_baseline + rbdy);
+	if(!!topright)    topright   ->PaintRect(draw, x_left, y_baseline + rtdy);
+	if(!!bottomright) bottomright->PaintRect(draw, x_left, y_baseline + rbdy);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -576,16 +557,17 @@ void FormulaIndex::Paint(Draw& draw, int x_left, int y_baseline) const
 FormulaParen::FormulaParen(RefCon<Formula> in_, FORMSYMBOL lsym, FORMSYMBOL rsym, Color color)
 : in(in_), lsymbol(lsym), rsymbol(rsym), color(color)
 {
-	textheight = in -> GetTextHeight();
-	int rad = max(in -> GetAscent(), in -> GetDescent());
+	textheight = in->GetTextHeight();
+	int rad = max(in->GetAscent(), in->GetDescent());
 	leading = GetLeading(textheight);
-	height = 2 * rad;
-	if(height <= Percent(300, textheight))
-		height = textheight + leading.cy;
-	ascent = max(height >> 1, in -> GetAscent());
-	descent = max(height >> 1, in -> GetDescent());
-	Size sz = in -> GetSize();
+	Size sz = in->GetSize();
 	sz.cy -= 2 * leading.cy;
+	if(rad <= textheight)
+		height = textheight + 2 * leading.cy;
+	else
+		height = sz.cy;
+	ascent = max(height >> 1, in->GetAscent());
+	descent = max(height >> 1, in->GetDescent());
 	lwidth = SymbolWidth(lsymbol, sz.cy, textheight) + 2 * leading.cx;
 	rwidth = SymbolWidth(rsymbol, sz.cy, textheight) + 2 * leading.cx;
 	width = lwidth + rwidth + sz.cx;
@@ -595,8 +577,8 @@ FormulaParen::FormulaParen(RefCon<Formula> in_, FORMSYMBOL lsym, FORMSYMBOL rsym
 
 void FormulaParen::Paint(Draw& draw, int x_left, int y_baseline) const
 {
-	in -> PaintRect(draw, x_left + lwidth, y_baseline);
-	int x_right = x_left + lwidth + in -> GetWidth();
+	in->PaintRect(draw, x_left + lwidth, y_baseline);
+	int x_right = x_left + lwidth + in->GetWidth();
 	int hh = height >> 1;
 	PaintSymbol(draw, lsymbol, RectC(x_left, y_baseline - hh, lwidth, height).Deflated(leading), textheight, color);
 	PaintSymbol(draw, rsymbol, RectC(x_right, y_baseline - hh, rwidth, height).Deflated(leading), textheight, color);
@@ -635,18 +617,18 @@ void FormulaMatrix::Init(pick_ Vector<Point>& pos_, pick_ Vector< RefCon<Formula
 	formulas = formulas_;
 	sep = sep_;
 	int sw = 0, sa = 0, sd = 0;
-	if(!!sep) { sw = sep -> GetWidth(); sa = sep -> GetAscent(); sd = sep -> GetDescent(); }
+	if(!!sep) { sw = sep->GetWidth(); sa = sep->GetAscent(); sd = sep->GetDescent(); }
 	int i;
 	for(i = 0; i < pos.GetCount(); i++)
 	{
 		const Formula *f = ~formulas[i];
 		int& wd = widths.DoIndex(pos[i].x, 0);
-		wd = max(wd, f -> GetWidth());
+		wd = max(wd, f->GetWidth());
 		int& as = ascents.DoIndex(pos[i].y, sa);
-		as = max(as, f -> GetAscent());
+		as = max(as, f->GetAscent());
 		int& ds = descents.DoIndex(pos[i].y, sd);
-		ds = max(ds, f -> GetDescent());
-		textheight = max(textheight, f -> GetTextHeight());
+		ds = max(ds, f->GetDescent());
+		textheight = max(textheight, f->GetTextHeight());
 	}
 	Size size(0, 0);
 	xpos.SetCount(widths.GetCount());
@@ -686,10 +668,10 @@ void FormulaMatrix::Paint(Draw& draw, int x_left, int y_baseline) const
 		const Formula *f = ~formulas[i];
 		Point xy = pos[i];
 		int y = y_baseline + ypos[xy.y] + ascents[xy.y];
-		f -> PaintRect(draw, x_left + xpos[xy.x] + ((widths[xy.x] - f -> GetWidth()) >> 1), y);
+		f->PaintRect(draw, x_left + xpos[xy.x] + ((widths[xy.x] - f->GetWidth()) >> 1), y);
 		int iitem = xy.y * widths.GetCount() + xy.x;
 		if(!!sep && pos.Find(xy + Size(1, 0)) >= 0)
-			sep -> PaintRect(draw, x_left + xpos[xy.x] + widths[xy.x], y);
+			sep->PaintRect(draw, x_left + xpos[xy.x] + widths[xy.x], y);
 	}
 }
 
@@ -709,7 +691,7 @@ void FormulaIntegral::Paint(Draw& draw, int x_left, int y_baseline) const
 
 inline int GetOperSpace(RefCon<Formula> a, RefCon<Formula> b)
 {
-	return Formula::GetOperSpace(max(a -> GetHeight(), b -> GetHeight()));
+	return Formula::GetOperSpace(max(a->GetHeight(), b->GetHeight()));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -753,8 +735,8 @@ private:
 	void                Push(bool makeindex);
 	bool                Pop();
 
-	RefCon<Formula>  MakeBinary(RefCon<Formula> left, String text,
-		RefCon<Formula> right, int gap = Null, bool symbol = false, int perc_shift = 0) const;
+	RefCon<Formula>  MakeBinary(RefCon<Formula> left, WString text,
+		RefCon<Formula> right, int gap = Null, int perc_shift = 0) const;
 	RefCon<Formula>  MakeUnary(String text, RefCon<Formula> form,
 		int gap = Null, bool symbol = false, int perc_shift = 0) const;
 
@@ -841,7 +823,7 @@ RefCon<Formula> FormulaParser::RunComma()
 	int tht = 0;
 	do
 	{
-		tht = max(tht, formulas.Top().Top() -> GetTextHeight());
+		tht = max(tht, formulas.Top().Top()->GetTextHeight());
 		if(row)
 			formulas.Add();
 		formulas.Top().Add() = RunTextBin();
@@ -885,24 +867,26 @@ RefCon<Formula> FormulaParser::RunComp()
 	int gap = 3 * Formula::GetOperSpace(tht);
 	RefCon<Formula> item = RunMul();
 	for(;;)
-		if(Check('='))
+		if(Check('=', '~'))
+			item = MakeBinary(item, WString(0x2248, 1), RunComp(), gap);
+		else if(Check('='))
 			item = MakeBinary(item, "=", RunComp(), gap);
 		else if(Check('<', '>'))
-			item = MakeBinary(item, "\xB9", RunComp(), gap, true, -11);
+			item = MakeBinary(item, WString(0x2260, 1), RunComp(), gap, -11);
 		else if(Check('<', '='))
-			item = MakeBinary(item, "\xA3", RunComp(), gap, true, -9);
+			item = MakeBinary(item, WString(0x2264, 1), RunComp(), gap, -9);
 		else if(Check('>', '='))
-			item = MakeBinary(item, "\xB3", RunComp(), gap, true, -9);
+			item = MakeBinary(item, WString(0x2265, 1), RunComp(), gap, -9);
 		else if(Check('<', '-', '>'))
-			item = MakeBinary(item, "\xAB", RunComp(), Null, true, -13);
+			item = MakeBinary(item, WString(0x2194, 1), RunComp(), Null, -13);
 		else if(Check('<', '-'))
-			item = MakeBinary(item, "\xAC", RunComp(), Null, true, -13);
+			item = MakeBinary(item, WString(0x2190, 1), RunComp(), Null, -13);
 		else if(Check('-', '>'))
-			item = MakeBinary(item, "\xAE", RunComp(), Null, true, -13);
+			item = MakeBinary(item, WString(0x2192, 1), RunComp(), Null, -13);
 		else if(Check('=', '>'))
-			item = MakeBinary(item, "\xDE", RunComp(), Null, true, -13);
+			item = MakeBinary(item, "\xDE", RunComp(), Null, -13);
 		else if(Check('=', '<'))
-			item = MakeBinary(item, "\xDC", RunComp(), Null, true, -13);
+			item = MakeBinary(item, "\xDC", RunComp(), Null, -13);
 		else if(Check('<'))
 			item = MakeBinary(item, "<", RunComp(), gap);
 		else if(Check('>'))
@@ -910,7 +894,7 @@ RefCon<Formula> FormulaParser::RunComp()
 		else if(Check('+'))
 			item = MakeBinary(item, "+", RunComp());
 		else if(Check('-'))
-			item = MakeBinary(item, "-", RunComp(), Null, true, -11);
+			item = MakeBinary(item, "-", RunComp(), Null, -11);
 		else if(Check('|', '|'))
 		{
 			RefCon<Formula> right = RunComp();
@@ -936,7 +920,7 @@ RefCon<Formula> FormulaParser::RunMul()
 		if(Check('*'))
 			item = MakeBinary(item, "*", RunDiv());
 		else if(Check('.'))
-			item = MakeBinary(item, ".", RunDiv(), Null, false, -20);
+			item = MakeBinary(item, ".", RunDiv(), Null, -20);
 		else if(Check('~'))
 			item = MakeBinary(item, Null, RunDiv());
 		else
@@ -1112,7 +1096,7 @@ RefCon<Formula> FormulaParser::RunTerm()
 		if(*ptr == 0)
 			return GetError("EOF in ':'");
 		String text(ptr++, 1);
-		return new FormulaText(text, font.Face(Font::SYMBOL), state.color);
+		return new FormulaText(text.ToWString(), font.Face(Font::SYMBOL), state.color);
 	}
 	char c = Skip();
 	if(IsAlpha(c))
@@ -1150,10 +1134,10 @@ RefCon<Formula> FormulaParser::RunTerm()
 			RefCon<Formula> topright, bottomright, top, bottom, topleft, bottomleft;
 			RunIndex(topright, bottomright, top, bottom, topleft, bottomleft);
 			RefCon<Formula> arg = RunTerm();
-			int ht = arg -> GetTextHeight();
+			int ht = arg->GetTextHeight();
 			if(group_sym != FS_LOG_NOT)
-				ht = max(ht, Percent(150, max(arg -> GetAscent(), arg -> GetDescent())));
-			RefCon<Formula> body = new FormulaSymbol(group_sym, ht, arg -> GetTextHeight(), state.color);
+				ht = max(ht, Percent(150, max(arg->GetAscent(), arg->GetDescent())));
+			RefCon<Formula> body = new FormulaSymbol(group_sym, ht, arg->GetTextHeight(), state.color);
 			if(!!topright || !!bottomright || !!top || !!bottom || !!topleft || !!bottomleft)
 				body = new FormulaIndex(body, topright, bottomright, top, bottom, topleft, bottomleft);
 			return MakeBinary(body, Null, arg);
@@ -1172,27 +1156,25 @@ RefCon<Formula> FormulaParser::RunTerm()
 			return MakeBinary(
 				new FormulaText("d", font, state.color),
 				Null,
-				new FormulaText(String(b + 1, ptr), Font(font).Italic(), state.color),
+				new FormulaText(String(b + 1, ptr).ToWString(), Font(font).Italic(), state.color),
 				0);
 		if(ptr - b == 1 && (*b < 'd' || *b > 'h'))
 			font.Italic();
 		if(noitalic)
 			font.NoItalic();
-		return new FormulaText(String(b, ptr), font, state.color);
+		return new FormulaText(String(b, ptr).ToWString(), font, state.color);
 	}
 	if(IsDigit(c))
 	{
 		const char *b = ptr;
 		while(IsDigit(*++ptr))
 			;
-		if(*ptr == '.')
-		{
+		if(*ptr == '.' && IsDigit(ptr[1])) {
 			while(IsDigit(*++ptr))
 				;
 		}
-		RefCon<Formula> number = new FormulaText(String(b, ptr), state.font, state.color);
-		if(*ptr == 'e' || *ptr == 'E')
-		{
+		RefCon<Formula> number = new FormulaText(String(b, ptr).ToWString(), state.font, state.color);
+		if(*ptr == 'e' || *ptr == 'E') {
 			b = ++ptr;
 			if(*ptr == '+' || *ptr == '-')
 				ptr++;
@@ -1202,12 +1184,12 @@ RefCon<Formula> FormulaParser::RunTerm()
 			{
 				while(IsDigit(*++ptr))
 					;
-				exp = new FormulaText(String(b, ptr), fx, state.color);
+				exp = new FormulaText(String(b, ptr).ToWString(), fx, state.color);
 			}
 			else
 				exp = GetError("missing exponent", fx);
 			number = MakeBinary(number, ".",
-					new FormulaIndex(new FormulaText("10", font, state.color), exp), Null, false, -20);
+					new FormulaIndex(new FormulaText("10", font, state.color), exp), Null, -20);
 		}
 		return number;
 	}
@@ -1219,7 +1201,7 @@ RefCon<Formula> FormulaParser::RunTerm()
 				out.Cat(*++ptr);
 			else
 				out.Cat(*ptr);
-		RefPtr<Formula> item = new FormulaText(out, font, state.color);
+		RefPtr<Formula> item = new FormulaText(out.ToWString(), font, state.color);
 		Force('\"', item);
 		return item;
 	}
@@ -1327,18 +1309,15 @@ bool FormulaParser::Check(char c1, char c2, char c3)
 //////////////////////////////////////////////////////////////////////
 
 RefCon<Formula> FormulaParser::MakeBinary(RefCon<Formula> left,
-	String text, RefCon<Formula> right, int gap, bool symbol, int perc_shift) const
+	WString text, RefCon<Formula> right, int gap, int perc_shift) const
 {
 	int ht = Formula::GetTextHeight0(left, right);
 	if(IsNull(gap))
 		gap = Formula::GetOperSpace(ht);
 	Vector< RefCon<Formula> > formula;
 	formula.Add() = left;
-	if(!IsNull(text))
-	{
+	if(!IsNull(text)) {
 		Font f = state.font;
-		if(symbol)
-			f.Face(Font::SYMBOL);
 		f.Height(ht);
 		formula.Add() = new FormulaText(text, f, state.color, perc_shift);
 	}
@@ -1353,7 +1332,7 @@ RefCon<Formula> FormulaParser::MakeBinary(RefCon<Formula> left,
 RefCon<Formula> FormulaParser::MakeUnary(String text, RefCon<Formula> form,
 	int gap, bool symbol, int perc_shift) const
 {
-	int ht = form -> GetTextHeight();
+	int ht = form->GetTextHeight();
 	Vector< RefCon<Formula> > formula;
 	if(!IsNull(text))
 	{
@@ -1361,7 +1340,7 @@ RefCon<Formula> FormulaParser::MakeUnary(String text, RefCon<Formula> form,
 		if(symbol)
 			f.Face(Font::SYMBOL);
 		f.Height(ht);
-		formula.Add() = new FormulaText(text, f, state.color, perc_shift);
+		formula.Add() = new FormulaText(text.ToWString(), f, state.color, perc_shift);
 	}
 	formula.Add() = form;
 	return new FormulaMatrix(formula, new FormulaSpace(gap));
@@ -1371,14 +1350,14 @@ RefCon<Formula> FormulaParser::MakeUnary(String text, RefCon<Formula> form,
 
 RefCon<Formula> FormulaParser::GetError(String text, Font font) const
 {
-	return new FormulaText(text, font.Bold(), LtRed);
+	return new FormulaText(text.ToWString(), font.Bold(), LtRed);
 }
 
 //////////////////////////////////////////////////////////////////////
 
 void FormulaParser::AddError(RefCon<Formula>& item, String text) const
 {
-	int ht = item -> GetTextHeight();
+	int ht = item->GetTextHeight();
 	item = MakeBinary(item, Null, GetError(text, Font(state.font).Height(ht)));
 }
 
@@ -1430,12 +1409,12 @@ void FormulaDisplay::Paint(Draw& draw, const Rect& rc, const Value& value, Color
 	if(!!form)
 	{
 		if(std_height)
-			form -> PaintRect(draw, (rc.left + rc.right - form -> GetWidth()) >> 1,
-				(rc.top + rc.bottom - form -> GetHeight() + 2 * form -> GetAscent()) >> 1);
+			form->PaintRect(draw, (rc.left + rc.right - form->GetWidth()) >> 1,
+				(rc.top + rc.bottom - form->GetHeight() + 2 * form->GetAscent()) >> 1);
 		else
 		{
-			DrawingDraw ddraw(form -> GetSize());
-			form -> PaintRect(ddraw, 0, form -> GetAscent());
+			DrawingDraw ddraw(form->GetSize());
+			form->PaintRect(ddraw, 0, form->GetAscent());
 			Drawing dwg = ddraw;
 			Size outsize = GetScaledSize(dwg.GetSize(), rc.Size());
 			draw.DrawDrawing(rc.CenterRect(outsize), dwg);
@@ -1455,7 +1434,7 @@ Size FormulaDisplay::GetStdSize(const Value& value) const
 	}
 	RefCon<Formula> form = Get(value, ht, SBlack);
 	if(!!form)
-		return form -> GetSize();
+		return form->GetSize();
 	return Size(0, 0);
 }
 

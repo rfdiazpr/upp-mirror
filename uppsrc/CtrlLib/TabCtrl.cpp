@@ -1,658 +1,425 @@
-//////////////////////////////////////////////////////////////////////
-// TabCtrl: tab control.
-
 #include "CtrlLib.h"
 
-#define LLOG(x) // RLOG(x)
+CH_FONT(TabCtrlFont, StdFont());
 
-enum
-{
-	ICONGAP = 4,
+CH_INTS(TabCtrlMetric, TabCtrl::METRIC_COUNT,
+       		TabCtrlFont().Info().GetHeight() + 8  // TABHEIGHT
+       		<< 2 // MARGIN
+       		<< 2 << 2 << 2 << 2 // SEL*
+       		<< 6 << 6 << 6 << 6 // *EDGE
+);
 
-	CELLSEP = -4,
-	INITGAP = -1,
-	ENDGAP  = -CELLSEP,
-
-	BUTTON  = 16,
-	BUTTGAP = 2,
-	BUTTSPC = 5,
-
-	RIGHTADD = 2 * BUTTON + BUTTGAP + BUTTSPC,
-	SCROLLADD = 15,
-
-	RAGADD = 5,
-};
-
-TabCtrl::Item::Item(TabCtrl& owner)
-: owner(owner)
-, text(String::GetVoid())
-, enabled(true)
-, slave(0)
-, ctrl(NULL)
-{
-}
+CH_LOOKS(TabCtrlLook, TabCtrl::LOOK_COUNT, CtrlsImgLook
+	(CtrlsImg::I_FTAB)
+	(CtrlsImg::I_TAB)
+	(CtrlsImg::I_TABB, 1)
+);
 
 TabCtrl::Item& TabCtrl::Item::Text(const String& _text)
 {
 	text = _text;
-	owner.RefreshTabLayout();
+	owner->Layout();
 	return *this;
-}
-
-Size TabCtrl::Item::GetSize(Draw& draw) const
-{
-	if(ctrl)
-		return ctrl -> GetRect().Size();
-	Size ts = GetSmartTextSize(draw, text, Font(owner.font).Bold(!IsXPStyle()));
-	Size is(0, 16);
-	if(pict)
-		is = pict.GetStdSize();
-	if(is.cx > 0 && ts.cx > 0)
-		is.cx += ICONGAP;
-	is.cx += ts.cx + 2 * owner.sidegap;
-	is.cy = max(is.cy, ts.cy) + 2 * owner.vertgap;
-	return is;
 }
 
 TabCtrl::Item& TabCtrl::Item::Picture(PaintRect d)
 {
 	pict = d;
-	owner.RefreshTabLayout();
+	owner->Layout();
 	return *this;
 }
 
-TabCtrl::Item& TabCtrl::Item::Control(Ctrl *_ctrl)
+TabCtrl::Item& TabCtrl::Item::SetCtrl(Ctrl *_ctrl)
 {
 	if(ctrl)
-		ctrl -> Remove();
-	if(_ctrl)
-		owner.Ctrl::Add(*_ctrl);
+		ctrl->Remove();
 	ctrl = _ctrl;
-	owner.RefreshTabLayout();
+	owner->Layout();
 	return *this;
 }
 
 TabCtrl::Item& TabCtrl::Item::Slave(Ctrl *_slave)
 {
 	if(slave)
-		slave -> Remove();
-	if(_slave) {
-		_slave -> Hide();
-		owner.Ctrl::Add(*_slave);
-	}
+		slave->Remove();
 	slave = _slave;
-	owner.RefreshTabLayout();
+	if(slave)
+		owner->pane.Add(*slave);
+	int q = owner->sel;
+	owner->sel = -1;
+	owner->Set(q);
 	return *this;
 }
 
 TabCtrl::Item& TabCtrl::Item::Enable(bool _en)
 {
-	if(_en != enabled) {
-		enabled = _en;
-		owner.RefreshFrame();
-	}
+	enabled = _en;
+	owner->Refresh();
 	return *this;
 }
 
-TabCtrl::TabCtrl()
-: scroll(0)
-, top(-1)
-, frame_size(0, 0)
-, old_frame_size(0, 0)
+TabCtrl::Item::Item()
 {
-	font = StdFont();
-	accept_current = false;
-	out_frame = in_frame = Rect(0, 0, 0, 0);
-	Ctrl::Transparent();
-	AddFrame(*this);
-	NoWantFocus();
-	prev.NoWantFocus();
-	prev.SetImage(CtrlImg::left_arrow());
-	next.NoWantFocus();
-	next.SetImage(CtrlImg::right_arrow());
-	prev <<= THISBACK(GoPrev);
-	next <<= THISBACK(GoNext);
-	sidegap = 12;
-	vertgap = 4;
-	hl = -1;
+	ctrl = slave = NULL;
+	enabled = true;
+	key = 0;
 }
 
-TabCtrl::~TabCtrl()
+void TabCtrl::Item::Layout(int xp, int y, int cy)
 {
-}
-
-void TabCtrl::Clear()
-{
-	items.Clear();
-	Set(-1);
-	Refresh();
-}
-
-int TabCtrl::Find(Point pt) const
-{
-	if(prev.IsVisible() && pt.x >= find_max_x)
-		return -1;
-
-	Point16 temp = pt;
-	temp.x += scroll;
-	for(int i = 0; i < items.GetCount(); i++)
-		if(items[i].enabled && items[i].rect.Contains(temp))
-			return i;
-	return -1;
-}
-
-TabCtrl::Item& TabCtrl::Add()
-{
-	return items.Add(new Item(*this));
-}
-
-void TabCtrl::Set(int _top, bool focus)
-{
-	LLOG("TabCtrl::Set(" << _top << "), #items = " << items.GetCount());
-	if(items.IsEmpty())
-		_top = -1;
-	else
-		_top = minmax(_top, 0, items.GetCount() - 1);
-	if(top >= 0 && top < items.GetCount() && items[top].slave) {
-		if(items[top].slave->HasFocusDeep())
-			items[top].activefocus = GetFocusCtrl();
-		LLOG("-> hide slave #" << top);
-		items[top].slave -> Hide();
-	}
-	RefreshItem(top);
-	top = _top;
-	if(top >= 0 && top < items.GetCount() && items[top].slave) {
-		LLOG("-> show slave #" << top);
-		items[top].slave->Show();
-		items[top].slave->AssignAccessKeys(GetTopCtrl()->GetAccessKeysDeep()
-		                                   & ~(GetAccessKeysDeep() & ~1));
-		if(focus) {
-			if(items[top].activefocus)
-				items[top].activefocus->SetWantFocus();
-			if(items[top].slave && !items[top].slave->HasFocusDeep())
-				IterateFocusForward(this, GetTopCtrl());
-		}
-	}
-	RefreshItem(top);
-	ScrollInto(top);
-	prev.Enable(top > 0);
-	next.Enable(top + 1 < GetCount());
-	WhenSet();
-	LLOG("//TabCtrl::Set -> " << top);
-}
-
-void TabCtrl::ScrollInto(int i)
-{
-	if(i < 0 || i >= items.GetCount() || scroll_limit <= 0)
-		return;
-	Rect rc = items[i].rect;
-	Size size = GetSize();
-	if(size.cx - RIGHTADD - 2 * SCROLLADD <= rc.Width())
-		SetScroll(rc.left);
-	else if(rc.left - scroll < SCROLLADD)
-		SetScroll(rc.left - SCROLLADD);
-	else if(rc.right - scroll > size.cx - RIGHTADD - SCROLLADD)
-		SetScroll(rc.right - size.cx + RIGHTADD + SCROLLADD);
-}
-
-void TabCtrl::SetScroll(int _scroll)
-{
-	_scroll = minmax(_scroll, 0, scroll_limit);
-	LLOG("TabCtrl::SetScroll(" << _scroll << ")");
-	if(_scroll != scroll) {
-		scroll = _scroll;
-		RefreshFrame();
-	}
-}
-
-void TabCtrl::RefreshTabLayout()
-{
-	LLOG("TabCtrl::RefreshTabLayout, #items = " << items.GetCount() << ", top = " << top);
-
-	frame_size = Size(INITGAP + ENDGAP, 0);
-
-	int i;
-	Draw& sdraw = ScreenInfo();
-	for(i = 0; i < items.GetCount(); i++) {
-		Item& item = items[i];
-		if(item.slave) {
-			if(item.slave -> GetParent() != this)
-				Ctrl::Add(*item.slave);
-		}
-		item.size = item.GetSize(sdraw);
-		if(item.size.cy > frame_size.cy)
-			frame_size.cy = item.size.cy;
-		frame_size.cx += item.size.cx + CELLSEP;
-	}
-
-	if(frame_size != old_frame_size) {
-		old_frame_size = frame_size;
-		RefreshParentLayout();
-		RefreshLayout();
-		RefreshFrame();
-	}
-
-	int xpos = INITGAP;
-	for(i = 0; i < items.GetCount(); i++) {
-		Item& item = items[i];
-		Rect rc(xpos, 0, xpos + item.size.cx, item.size.cy);
-		rc.top = frame_size.cy - item.size.cy;
-		rc.bottom = frame_size.cy;
-		item.rect = rc;
-		xpos = rc.right + CELLSEP;
-	}
-
-	if(!items.IsEmpty())
-		Set(top);
-
-	prev.Enable(top > 0);
-	next.Enable(top + 1 < GetCount());
-
-	LLOG("//TabCtrl::RefreshTabLayout, top = " << top);
-}
-
-void TabCtrl::FrameAdd(Ctrl& ctrl)
-{
-	ctrl << prev << next;
-}
-
-void TabCtrl::FrameRemove()
-{
-	prev.Remove();
-	next.Remove();
-}
-
-void TabCtrl::FrameAddSize(Size& sz)
-{
-	sz.cx += 2;
-	sz.cy += 1 + frame_size.cy;
-	if(IsXPStyle()) {
-		sz.cx += 2 + 2;
-		sz.cy += 2 + 2;
-	}
-}
-
-void TabCtrl::FrameLayout(Rect& rc)
-{
-	LLOG("TabCtrl::FrameLayout: rc = " << rc << ", frame_size = " << frame_size);
-	out_frame = rc;
-	scroll_limit = max(frame_size.cx - rc.Width(), 0);
-	scroll = minmax(scroll, 0, scroll_limit);
-	bool scr = (scroll_limit > 0);
-	Rect next_rect;
-
-	rc.top += frame_size.cy;
-	rc.bottom -= 1;
-	next_rect = RectC(rc.right - BUTTON, rc.top - BUTTON - 2, BUTTON, BUTTON);
-	if(scr) {
-		next.SetFrameRect(next_rect);
-		prev.SetFrameRect(next_rect.OffsetedHorz(-BUTTON - BUTTGAP));
-	}
-	prev.Show(scr);
-	next.Show(scr);
-	if(scr) {
-		scroll_limit += RIGHTADD;
-		find_max_x = prev.GetRect().left;
+	Size chsz = GetTextSize("M", TabCtrlFont());
+	x = xp;
+	Size sz = pict.GetStdSize();
+	if(sz.cx) {
+		xp += chsz.cx / 2;
+		pictpos.x = xp;
+		pictpos.y = y + (cy - sz.cy) / 2;
+		xp += sz.cx + chsz.cx / 2;
 	}
 	else
-		find_max_x = frame_size.cx;
-	rc.left++;
-	rc.right -= 1;
-	in_frame = rc;
-
-	if(IsXPStyle()) {
-		rc.right -= 2;
-		rc.bottom -= 2;
-		rc.Deflate(1);
+		xp += chsz.cx;
+	sz = GetTextSize(text, TabCtrlFont());
+	if(sz.cx) {
+		textpos.x = xp;
+		textpos.y = y + (cy - sz.cy) / 2;
+		xp += sz.cx;
 	}
-
-	LLOG("//TabCtrl::FrameLayout: scroll = " << scroll << ", scroll_limit = " << scroll_limit);
-}
-
-Vector<Rect> TabCtrl::GetTransparentFrameRects()
-{
-	return Vector<Rect>() << Size(GetRect().Width(), frame_size.cy);
-}
-
-Vector<Rect> TabCtrl::GetOpaqueFrameRects()
-{
-	Rect r = GetRect().Size();
-	r.top = frame_size.cy;
-	return Vector<Rect>() << r;
-}
-
-Vector<Rect> TabCtrl::GetTransparentViewRects()
-{
-	return Vector<Rect>();
-}
-Color TabCtrl::GetTabColor()
-{
-	return IsXPStyle() ? Blend(SColorPaper, SColorFace, 80) : SColorFace;
-}
-
-void TabCtrl::FramePaint(Draw& w, const Rect& rc)
-{
-	int right_lim = rc.right;
-	if(next.IsVisible()) {
-		w.ExcludeClip(next.GetRect());
-		right_lim = next.GetRect().left;
-	}
-	if(prev.IsVisible()) {
-		w.ExcludeClip(prev.GetRect());
-		right_lim = prev.GetRect().left;
-	}
-	if(!IsTransparent())
-		w.DrawRect(rc, SLtGray);
-	Rect clip = w.GetClip();
-	if(clip.right > right_lim)
-		clip.right = right_lim;
-	int sh = rc.top + frame_size.cy - 1;
-	int h = rc.bottom - sh;
-
-	if(IsXPStyle()) {
-		DrawFrame(w, rc.left, sh, rc.Width() - 2, h - 2, Blend(SColorHighlight, SColorShadow));
-		DrawFrame(w, rc.left + 1, sh + 1, rc.Width() - 4, h - 4, GetTabColor());
-		w.DrawRect(rc.left, rc.bottom - 2, rc.Width(), 2, Blend(SColorFace, SColorShadow, 60));
-		w.DrawRect(rc.left + 1, rc.bottom - 2, rc.Width() - 2, 1, Blend(SColorFace, SColorShadow, 120));
-		w.DrawRect(rc.right - 2, sh, 2, h, Blend(SColorFace, SColorShadow, 60));
-		w.DrawRect(rc.right - 2, sh + 1, 1, h - 2, Blend(SColorFace, SColorShadow, 120));
+	if(ctrl) {
+		xp += chsz.cx / 2;
+		sz = ctrl->GetRect().GetSize();
+		ctrl->SetRect(xp, y + (cy - sz.cy) / 2, sz.cx, sz.cy);
+		xp += sz.cx + chsz.cx / 2;
 	}
 	else
-		DrawFrame(w, rc.left, sh, rc.Width(), h, SColorLight, SColorShadow);
-
-	if(items.IsEmpty())
-		return;
-
-	ragged_left = -32767;
-	ragged_right = 32767;
-	if(scroll_limit > 0) {
-		Size client = GetSize();
-		if(top + 1 < items.GetCount() || client.cx - RIGHTADD <= items[top].rect.Width())
-			ragged_right = client.cx - RIGHTADD + scroll;
-		if(top > 0)
-			ragged_left = scroll + 2;
-	}
-
-	w.Offset(-scroll, 0);
-	clip.OffsetHorz(scroll);
-	for(int i = 0; i < items.GetCount(); i++)
-		if(i != top && !DrawItemCheck(w, clip, i))
-			break;
-	if(top >= 0 && top < items.GetCount())
-		DrawItemCheck(w, clip, top);
-	w.End();
+		xp += chsz.cx;
+	cx = xp - x;
 }
 
-void TabCtrl::Paint(Draw& w)
+void TabCtrl::Item::Paint(Draw& w)
 {
-	w.DrawRect(GetSize(), GetTabColor());
+	Size sz = pict.GetStdSize();
+	pict.Paint(w, pictpos.x, pictpos.y, sz.cx, sz.cy, SColorText, Null);
+	w.DrawText(textpos.x, textpos.y, text, TabCtrlFont());
+}
+
+void TabCtrl::SyncTabs()
+{
+	int x = TabCtrlMetric(MARGIN) - x0;
+	for(int i = 0; i < tab.GetCount(); i++) {
+		Item& t = tab[i];
+		t.Layout(x, metric(SELTOP) * (i != sel),
+		            metric(TABHEIGHT) + metric(SELTOP) * (i == sel));
+		x += t.cx;
+	}
+	left.Show(x0 > 0);
+	right.Show(tab.GetCount() && tab.Top().Right() > tabs.GetSize().cx);
 }
 
 void TabCtrl::Layout()
 {
-	Size client = GetSize();
-
-	Set(top);
-	Refresh();
+	for(int i = 0; i < tab.GetCount(); i++)
+		if(tab[i].ctrl)
+			tab[i].ctrl->Remove();
+	for(int i = 0; i < tab.GetCount(); i++)
+		if(tab[i].ctrl)
+			Ctrl::Add(*tab[i].ctrl);
+	Size sz = GetSize();
+	int th = metric(TABHEIGHT) + metric(SELTOP);
+	tabs.TopPos(0, th + metric(SELBOTTOM))
+	    .HSizePos(0, metric(SELLEFT) + metric(SELRIGHT));
+	SyncTabs();
+	SyncHot();
+	pane.VSizePos(metric(TABHEIGHT) + metric(TOPEDGE), metric(BOTTOMEDGE))
+	    .HSizePos(metric(LEFTEDGE), metric(RIGHTEDGE));
+	left.LeftPos(0, 16).TopPos(th - 16, 16);
+	right.RightPos(0, 16).TopPos(th - 16, 16);
 }
 
-bool TabCtrl::DrawItemCheck(Draw& draw, const Rect& clip, int i)
+Size TabCtrl::ComputeSize(Size pane)
 {
-	const Item& item = items[i];
-	if(item.rect.right <= ragged_left)
-		return true;
-	if(item.rect.left >= ragged_right)
-		return false;
-	if(item.rect.Intersects(clip)) {
-		draw.Clip(clip);
-		DrawItem(draw, i);
-		draw.End();
-	}
-	return true;
+	return Size(pane.cx + metric(LEFTEDGE) + metric(RIGHTEDGE),
+	            pane.cy + metric(TABHEIGHT) + metric(TOPEDGE) + metric(BOTTOMEDGE));
 }
 
-void TabCtrl::DrawRaggedEdges(Draw& draw, const Rect& rc, int delta)
+int TabCtrl::TabsRight()
 {
-	if(ragged_left >= rc.left + delta)
-		DrawRaggedEdge(draw, Point(ragged_left, rc.top), rc.Height(), false);
-	if(ragged_right <= rc.right - delta)
-		DrawRaggedEdge(draw, Point(ragged_right, rc.top), rc.Height(), true);
+	return tabs.GetSize().cx - metric(SELLEFT) - metric(SELRIGHT);
 }
 
-void TabCtrl::DrawRaggedEdge(Draw& draw, Point pos, int height, bool right_side)
+void TabCtrl::Tabs::Paint(Draw& w)
 {
-	static const int part[] = { 5, 0, 15, 1, 40, 2, 60, 1, 80, 0, 95, 1, 100, 2 };
-
-	int curr = pos.y;
-	int right = GetSize().cx + scroll;
-
-	for(const int *p = part; p < part + __countof(part); p += 2) {
-		int next = pos.y + iscale(height, *p, 100);
-		int y1, y2;
-		y1 = curr;
-		y2 = next;
-		if(right_side) {
-			int x = pos.x + p[1];
-			draw.DrawRect(x, y1, 1, y2 - y1, IsXPStyle()? Blend(SColorHighlight, SColorShadow) : SColorText);
-			draw.ExcludeClip(Rect(x, y1, right, y2));
-		}
-		else {
-			int x = pos.x - p[1];
-			draw.DrawRect(x, y1, 1, y2 - y1, IsXPStyle()? Blend(SColorHighlight, SColorShadow) : SColorLight);
-			draw.ExcludeClip(Rect(scroll, y1, x + 1, y2));
-		}
-		curr = next;
-	}
+	static_cast<TabCtrl *>(GetParent())->PaintTabs(w);
 }
 
-void TabCtrl::DrawItemFrame(Draw& draw, Rect& rc, bool active, bool light)
+Rect TabCtrl::GetOpaqueRect()
 {
-	Rect temp = rc;
-	Color c = Blend(SColorHighlight, SColorShadow);
-	if(!active) {
-		if(IsXPStyle()) {
-			rc.Deflate(2, 0);
-			rc.top += 2;
-			draw.DrawRect(rc.left + 1, rc.bottom - 1, rc.Width() - 2, 1, c);
-		}
-		else {
-			draw.DrawRect(rc.left, rc.bottom - 1, rc.Width(), 1, SWhite);
-			draw.DrawRect(rc.left, rc.bottom - 2, rc.Width(), 1, SLtGray);
-			rc.Deflate(2);
-		}
-	}
-
-	Size size = rc.Size();
-
-	DrawRaggedEdges(draw, rc);
-
-	if(IsXPStyle()) {
-		Color pc = Blend(SColorPaper, SColorFace, 80);
-		Color hc = active || light ? Blend(Yellow, LtRed, 100) : pc;
-		Color qc = active || light ? Blend(hc, c) : c;
-		draw.DrawRect(rc.left + 2, rc.top + 1, 1, 1, qc);
-		draw.DrawRect(rc.left + 3, rc.top, size.cx - 5, 1, qc);
-		draw.DrawRect(rc.right - 2, rc.top + 1, 1, 1, qc);
-		draw.DrawRect(rc.left + 3, rc.top + 1, size.cx - 5, 1, hc);
-		draw.DrawRect(rc.left + 2, rc.top + 2, size.cx - 3, 1, hc);
-		draw.DrawRect(rc.left + 1, rc.top + 2, 1, size.cy - 2, c);
-		draw.DrawRect(rc.right - 1, rc.top + 2, 1, size.cy - 2, c);
-		if(active)
-			draw.DrawRect(rc.left + 2, rc.top + 3, size.cx - 3, size.cy - 3, pc);
-		else
-			for(int i = 0; i < size.cy - 5; i++)
-				draw.DrawRect(rc.left + 2, rc.top + 3 + i, size.cx - 3, 1,
-				              Blend(pc, SColorFace, 256 * i / (size.cy - 4)));
-	}
-	else {
-		draw.DrawRect(rc.left, rc.top, 1, size.cy - 1, SLtGray);
-		draw.DrawRect(rc.left + 1, rc.top + 2, 1, size.cy - 2, SColorPaper);
-		draw.DrawRect(rc.left + 2, rc.top + 1, 1, 1, SColorPaper);
-		draw.DrawRect(rc.left + 2, rc.top + 2, 1, size.cy - 2, SLtGray);
-		draw.DrawRect(rc.left + 3, rc.top, size.cx - 5, 1, SColorPaper);
-		draw.DrawRect(rc.left + 3, rc.top + 1, size.cx - 5, size.cy - 1, SLtGray);
-		draw.DrawRect(rc.right - 2, rc.top, 1, size.cy, SColorText);
-		draw.DrawRect(rc.right - 1, rc.top + 2, 1, size.cy - 2, SColorText);
-	}
-
-	rc = temp;
-	rc.Deflate(sidegap, vertgap + 1, sidegap, vertgap - 1);
-	if(active)
-		rc.OffsetVert(-1);
+	return pane.GetRect();
 }
 
-void TabCtrl::DrawItem(Draw& draw, int i)
+void TabCtrl::PaintTabs(Draw& w)
 {
-	const Item& item = items[i];
-	Rect rc = item.rect;
-	DrawItemFrame(draw, rc, i == top, i == hl);
-
-	if(item.ctrl) {
-		Rect ctrc = item.ctrl -> GetRect();
-		Size offset = ctrc.TopLeft() - rc.TopLeft();
-		offset.cx -= scroll;
-		ctrc.Offset(offset);
-		item.ctrl -> SetRect(ctrc);
-	}
-	else {
-		if(item.pict) {
-			Size size = item.pict.GetStdSize();
-			Point pos = rc.TopLeft();
-			pos.y += (rc.Height() - size.cy) >> 1;
-			item.pict.Paint(draw, Rect(pos, size), SBlack, SLtGray, 0);
-			rc.left += size.cx + ICONGAP;
-		}
-		Font f = Font(font);
-		if(!IsXPStyle())
-			f.Bold(i == top);
-		String text = item.text; //item.GetTextOrValue();
-		Size size = GetSmartTextSize(draw, text, f);
-		Point pos = rc.TopLeft();
-		pos.y += (rc.Height() - size.cy) >> 1;
-		DrawLabel drawlbl;
-		drawlbl.disabled = !item.enabled;
-		drawlbl.focus = HasFocus();
-		drawlbl.font = f;
-		drawlbl.align = ALIGN_CENTER;
-		drawlbl.text = text;
-		drawlbl.Paint(draw, pos.x, pos.y, rc.right - pos.x, rc.bottom - pos.y);
-	}
-}
-
-void  TabCtrl::CancelMode()
-{
-	hl = -1;
-}
-
-Image TabCtrl::FrameMouseEvent(int event, Point p, int zdelta, dword keyflags)
-{
-	if(IsXPStyle()) {
-		int q = hl;
-		if(event == MOUSELEAVE)
-			q = -1;
-		if(event == MOUSEMOVE)
-			q = Find(p - GetFrameOffset());
-		if(q != hl) {
-			RefreshItem(hl);
-			hl = q;
-			RefreshItem(hl);
-		}
-	}
-	if(event == LEFTDOWN || event == RIGHTDOWN) {
-		if(!IsReadOnly()) {
-			int i = Find(p - GetFrameOffset());
-			if(i >= 0 && i != Get()) {
-				Set(i);
-				Ctrl::Action();
+	int tt = metric(SELTOP);
+	int th = metric(TABHEIGHT) + tt;
+	Size sz = GetSize();
+	ChPaint(w, 0, th, sz.cx, sz.cy - th, look(BODY));
+	Size chsz = GetTextSize("M", TabCtrlFont());
+	for(int phase = 0; phase < 2; phase++) {
+		for(int i = 0; i < tab.GetCount(); i++)
+			if((sel == i) == phase) {
+				Item& t = tab[i];
+				Rect r = RectC(t.x, tt, t.cx, th - tt);
+				if(phase) {
+					r.left -= metric(SELLEFT);
+					r.right += metric(SELRIGHT);
+					r.top -= tt;
+					r.bottom += metric(SELBOTTOM);
+				}
+				ChPaint(w, r, look(
+					(i == 0 ? FIRST : NEXT) +
+					(!IsEnabled() || !t.enabled ? CTRL_DISABLED :
+					 phase ? CTRL_PRESSED :
+					 i == hot ? CTRL_HOT : CTRL_NORMAL)
+				));
+				t.Paint(w);
 			}
-		}
-		if(event == RIGHTDOWN)
-			MenuBar::Execute(WhenBar);
-		return Null;
 	}
-	return Ctrl::FrameMouseEvent(event, p, zdelta, keyflags);
+}
+
+void TabCtrl::Paint(Draw& w)
+{
+	int th = metric(TABHEIGHT) + metric(SELTOP);
+	Size sz = GetSize();
+	ChPaint(w, 0, th, sz.cx, sz.cy - th, look(BODY));
+}
+
+int  TabCtrl::GetTab(Point p)
+{
+	if(p.y < metric(TABHEIGHT))
+		for(int i = 0; i < tab.GetCount(); i++)
+			if(p.x < tab[i].Right())
+				return i;
+	return -1;
+}
+
+void TabCtrl::CancelMode()
+{
+	hot = -1;
+}
+
+void TabCtrl::SyncHot()
+{
+	Point p = GetMousePos() - GetScreenRect().TopLeft();
+	int h = GetTab(p);
+	if(h != hot) {
+		hot = h;
+		tabs.Refresh();
+	}
+}
+
+void TabCtrl::MouseMove(Point p, dword keyflags)
+{
+	SyncHot();
+}
+
+void TabCtrl::LeftDown(Point p, dword keyflags)
+{
+	if(!IsEditable())
+		return;
+	int h = GetTab(p);
+	if(h >= 0 && tab[h].IsEnabled()) {
+		Set(h);
+		Action();
+	}
+}
+
+void TabCtrl::MouseLeave()
+{
+	SyncHot();
+}
+
+void TabCtrl::ScrollInto(int i)
+{
+	if(i < 0)
+		return;
+	Item& t = tab[i];
+	int cx = tabs.GetSize().cx;
+	int tr = TabsRight();
+	if(t.Right() > tr) {
+		x0 += t.Right() - tr;
+		tabs.Refresh();
+		SyncTabs();
+	}
+	if(t.x < metric(MARGIN)) {
+		x0 += t.x - metric(MARGIN);
+		tabs.Refresh();
+		SyncTabs();
+	}
+}
+
+void TabCtrl::Left()
+{
+	if(x0 <= 0)
+		return;
+	for(int i = tab.GetCount() - 1; i >= 0; i--)
+		if(tab[i].x < metric(MARGIN)) {
+			ScrollInto(i);
+			break;
+		}
+}
+
+void TabCtrl::Right()
+{
+	for(int i = 0; i < tab.GetCount(); i++)
+		if(tab[i].Right() > tabs.GetRect().GetWidth() - metric(SELLEFT) - metric(SELRIGHT)) {
+			ScrollInto(i);
+			break;
+		}
+}
+
+void TabCtrl::Set(int i)
+{
+	if(i != sel) {
+		sel = i;
+		tabs.Refresh();
+		SyncTabs();
+		for(int i = 0; i < tab.GetCount(); i++)
+			if(tab[i].slave)
+				tab[i].slave->Show(sel == i);
+		if(sel >= 0)
+			IterateFocusForward(tab[sel].slave, GetTopCtrl(), false, true);
+		WhenSet();
+	}
+	ScrollInto(sel);
+}
+
+void TabCtrl::SetData(const Value& data)
+{
+	Set(data);
+}
+
+Value TabCtrl::GetData() const
+{
+	return Get();
+}
+
+TabCtrl::Item& TabCtrl::Add()
+{
+	Item& t = tab.Add();
+	t.owner = this;
+	if(sel < 0)
+		Set(0);
+	return t;
+}
+
+TabCtrl::Item& TabCtrl::Add(const char *text)
+{
+	return Add().Text(text);
+}
+
+TabCtrl::Item& TabCtrl::Add(const Image& m, const char *text)
+{
+	return Add().Text(text).SetImage(m);
+}
+
+TabCtrl::Item& TabCtrl::Add(Ctrl& slave, const char *text)
+{
+	return Add(text).Slave(&slave);
+}
+
+TabCtrl::Item& TabCtrl::Add(Ctrl& slave, const Image& m, const char *text)
+{
+	return Add(slave, text).SetImage(m);
+}
+
+void TabCtrl::Go(int d)
+{
+	if(IsEditable() && tab.GetCount()) {
+		int i = sel + d;
+		while(i != sel) {
+			if(i < 0)
+				i = tab.GetCount() - 1;
+			if(i >= tab.GetCount())
+				i = 0;
+			if(tab[i].IsEnabled()) {
+				Set(i);
+				break;
+			}
+			i += d;
+		}
+	}
 }
 
 bool TabCtrl::Key(dword key, int repcnt)
 {
 	switch(key) {
-	case K_CTRL_TAB:       GoNext(); Ctrl::Action(); return true;
-	case K_SHIFT_CTRL_TAB: GoPrev(); Ctrl::Action(); return true;
+	case K_CTRL_TAB:
+		GoNext();
+		Action();
+		return true;
+	case K_SHIFT_CTRL_TAB:
+		GoPrev();
+		Action();
+		return true;
 	}
-	return MenuBar::Scan(WhenBar, key);
+	return Ctrl::Key(key, repcnt);
 }
 
 bool TabCtrl::HotKey(dword key)
 {
-	if(Ctrl::HotKey(key))
-		return true;
-
 	switch(key) {
-	case K_CTRL_TAB:       GoNext(); Ctrl::Action(); return true;
-	case K_SHIFT_CTRL_TAB: GoPrev(); Ctrl::Action(); return true;
+	case K_CTRL_TAB:
+		GoNext();
+		Action();
+		return true;
+	case K_SHIFT_CTRL_TAB:
+		GoPrev();
+		Action();
+		return true;
 	}
-
-	for(int i = 0; i < items.GetCount(); i++)
-		if(items[i].IsEnabled() && items[i].key == key) {
-			Set(i);
-			return true;
-		}
-
-	return false;
+	return Ctrl::HotKey(key);
 }
 
 bool TabCtrl::Accept()
 {
-	int old = Get();
+	int ii = Get();
 	if(accept_current)
-		return !items[old].slave || items[old].slave -> Accept();
-	for(int i = 0; i < items.GetCount(); i++)
-		if(items[i].slave) {
+		return !tab[ii].slave || tab[ii].slave -> Accept();
+	for(int i = 0; i < tab.GetCount(); i++)
+		if(tab[i].slave) {
 			Set(i);
-			if(!items[i].slave -> Accept())
+			if(!tab[i].slave->Accept())
 				return false;
 		}
-	Set(old);
+	Set(ii);
 	return true;
 }
 
-Size TabCtrl::GetFrameOffset() const
+void TabCtrl::Reset()
 {
-	return out_frame.TopLeft();
+	tab.Clear();
+	x0 = 0;
+	CancelMode();
+	sel = -1;
+	Refresh();
+	accept_current = false;
 }
 
-void TabCtrl::RefreshItem(int item)
+TabCtrl::TabCtrl()
 {
-	if(item >= 0 && item < items.GetCount())
-		RefreshFrame(items[item].rect + (GetFrameOffset() - Size(scroll, 0)));
-}
-
-void TabCtrl::GoPrev()
-{
-	if(IsEditable()) {
-		int t = top;
-		for(int i = 0; i < GetCount(); i++) {
-			if(--t < 0) t = GetCount() - 1;
-			if(items[t].enabled) {
-				Set(t, true);
-				return;
-			}
-		}
-	}
-}
-
-void TabCtrl::GoNext()
-{
-	if(IsEditable()) {
-		int t = top;
-		for(int i = 0; i < GetCount(); i++) {
-			if(++t >= GetCount()) t = 0;
-			if(items[t].enabled) {
-				Set(t, true);
-				return;
-			}
-		}
-	}
+	hot = -1;
+	sel = -1;
+	x0 = 0;
+	Ctrl::Add(tabs);
+	Ctrl::Add(pane);
+	tabs.BackPaint().IgnoreMouse();
+	Ctrl::Add(left.SetImage(CtrlsImg::SLA()).ScrollStyle().NoWantFocus());
+	left <<= THISBACK(Left);
+	Ctrl::Add(right.SetImage(CtrlsImg::SRA()).ScrollStyle().NoWantFocus());
+	right <<= THISBACK(Right);
+	Transparent().NoWantFocus();
+	tabs.Transparent().NoWantFocus();
+	metric = TabCtrlMetric;
+	look = TabCtrlLook;
 }
 
 // ----------------------------------------------------------------
@@ -674,13 +441,13 @@ void TabDlg::Rearrange()
 	PlaceButton(cancel, r);
 	PlaceButton(exit, r);
 	PlaceButton(ok, r);
-	SetRect(Rect(GetRect().TopLeft(), AddFrameSize(tabctrl.AddFrameSize(sz) + Ctrl::LayoutZoom(Size(8, 40)))));
+	SetRect(Rect(GetRect().TopLeft(), tabctrl.ComputeSize(sz) + Ctrl::LayoutZoom(Size(8, 40))));
 }
 
 TabCtrl::Item& TabDlg::Add0(Ctrl& tab, const char *text)
 {
-	TabCtrl::Item& m = tabctrl.Add(tab, text);
 	Size tsz = max(tab.GetSize(), sz);
+	TabCtrl::Item& m = tabctrl.Add(tab, text);
 	if(tsz != sz) {
 		sz = tsz;
 		Rearrange();

@@ -43,11 +43,11 @@ void WorkspaceWork::ScanWorkspace() {
 	for(int i = 0; i < wspc.package.GetCount(); i++)
 		package.Add(wspc.package.GetKey(i),
 		            wspc.GetPackage(i).optimize_speed ? IdeCommonImg::FastPackage() : IdeImg::Package(),
-		            i == 0 ? ListFont().Bold() : ListFont(), SBlack, false, 0, Null, SLtBlue);
+		            i == 0 ? ListFont().Bold() : ListFont(), SColorText, false, 0, Null, SColorLtHighlight);
 	if(!organizer) {
-		package.Add(prjaux, IdeImg::PrjAux(), ListFont(), SMagenta);
-		package.Add(ideaux, IdeImg::IdeAux(), ListFont(), SMagenta);
-		package.Add(tempaux, IdeImg::TempAux(), ListFont(), SMagenta);
+		package.Add(prjaux, IdeImg::PrjAux(), ListFont(), Magenta);
+		package.Add(ideaux, IdeImg::IdeAux(), ListFont(), Magenta);
+		package.Add(tempaux, IdeImg::TempAux(), ListFont(), Magenta);
 	}
 	package.SetCursor(0);
 }
@@ -117,13 +117,13 @@ void WorkspaceWork::LoadActualPackage()
 		if(f.separator) {
 			open = closed.Find(Sepfo(actualpackage, f)) < 0;
 			filelist.Add(f, open ? IdeImg::SeparatorClose() : IdeImg::SeparatorOpen(),
-			             ListFont().Bold(), open ? SBlue : SBlack, true, 0, Null);
+			             ListFont().Bold(), open ? SColorHighlight : SColorText, true, 0, Null);
 			fileindex.Add(i);
 		}
 		else
 		if(open) {
-			filelist.Add(f, IdeFileImage(f, f.optimize_speed), ListFont(), SBlack, false, 0,
-			             Null, SLtBlue);
+			filelist.Add(f, IdeFileImage(f, f.optimize_speed), ListFont(), SColorText, false, 0,
+			             Null, LtBlue);
 			fileindex.Add(i);
 		}
 	}

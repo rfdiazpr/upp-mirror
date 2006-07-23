@@ -67,6 +67,7 @@ public:
 	virtual void   MouseLeave();
 	virtual dword  GetAccessKeys() const;
 	virtual void   AssignAccessKeys(dword used);
+	virtual void   Layout();
 
 protected:
 	enum { NORMAL, OK, CANCEL, EXIT };

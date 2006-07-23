@@ -142,7 +142,7 @@ int CppItemInfoDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 	if(m.inherited) {
 		w.DrawImage(x + 10, r.top, BrowserImg::inherited());
 		for(int i = 1; i < min(m.inherited, 5); i++)
-			w.DrawRect(x + 10, r.top + 7 + 2 * i, 7, 1, SBlack);
+			w.DrawRect(x + 10, r.top + 7 + 2 * i, 7, 1, SColorText);
 	}
 	x += 20;
 	int y = r.top + 2;
@@ -151,23 +151,23 @@ int CppItemInfoDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 	for(int i = 0; i < n.GetCount(); i++) {
 		ItemTextPart& p = n[i];
 		Font f = Arial(11);
-		Color ink = SBlack;
+		Color ink = SColorText;
 		switch(p.type) {
 		case ITEM_PNAME:
 			f.Bold();
 		case ITEM_NUMBER:
-			ink = SRed;
+			ink = Red;
 			break;
 		case ITEM_TNAME:
-			ink = SGreen;
+			ink = Green;
 		case ITEM_NAME:
 			f.Bold();
 			break;
 		case ITEM_CPP:
-			ink = SLtBlue;
+			ink = LtBlue;
 			break;
 		case ITEM_SIGN:
-			ink = SMagenta;
+			ink = Magenta;
 			break;
 		}
 		if(m.overed)
@@ -177,9 +177,9 @@ int CppItemInfoDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 		x += fsz.cx;
 	}
 	if(m.virt || m.over)
-		w.DrawRect(x0, r.bottom - 2, x - x0, 1, m.over ? m.virt ? SLtRed : SLtBlue : SBlack);
+		w.DrawRect(x0, r.bottom - 2, x - x0, 1, m.over ? m.virt ? LtRed : LtBlue : SColorText);
 	if(m.inherited && m.IsType())
-		w.DrawRect(r.left, r.top, r.Width(), 1, SGray);
+		w.DrawRect(r.left, r.top, r.Width(), 1, SColorDisabled);
 
 	String k = m.nesting;
 	if(k != "::")
@@ -194,7 +194,7 @@ int CppItemInfoDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 		if(cnt > 1) {
 			String txt = AsString(cnt);
 			Size tsz = GetTextSize(txt, StdFont().Bold());
-			w.DrawText(xx + (sz.cx - tsz.cx) / 2, yy + (sz.cy - tsz.cy) / 2, txt, StdFont().Bold(), SRed);
+			w.DrawText(xx + (sz.cx - tsz.cx) / 2, yy + (sz.cy - tsz.cy) / 2, txt, StdFont().Bold(), Red);
 		}
 		x += sz.cx + 3;
 	}

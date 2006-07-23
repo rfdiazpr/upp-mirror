@@ -3,13 +3,13 @@ struct AttrText {
 	Font    font;
 	Color   ink;
 	Color   paper;
-	
+
 	AttrText& Ink(Color c)              { ink = c; return *this; }
 	AttrText& Paper(Color c)            { paper = c; return *this; }
 	AttrText& SetFont(Font f)           { font = f; return *this; }
-	
+
 	operator Value() const;
-	
+
 	AttrText(const char *text);
 	AttrText(const wchar *text);
 	AttrText(const WString& text);
@@ -69,9 +69,9 @@ protected:
 
 public:
 	void     Paint(Draw& w, const Rect& r,
-	               Color ink = SBlack, Color paper = SWhite, dword style = 0) const;
+	               Color ink = SColorText, Color paper = SColorPaper, dword style = 0) const;
 	void     Paint(Draw& w, int x, int y, int cx, int cy,
-		           Color ink = SBlack, Color paper = SWhite, dword style = 0) const;
+		           Color ink = SColorText, Color paper = SColorPaper, dword style = 0) const;
 	Size     GetStdSize() const;
 	Size     RatioSize(int cx, int cy) const;
 	Size     RatioSize(Size sz) const              { return RatioSize(sz.cx, sz.cy); }

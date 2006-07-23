@@ -2,6 +2,7 @@
 #pragma hdrstop
 
 #define LLOG(x) // LOG(x)
+#define LTIMING(x) // RTIMING(x)
 
 #ifdef PLATFORM_WIN32
 
@@ -17,6 +18,7 @@ EXITBLOCK
 	StaticExitDraw_();
 }
 
+/* TODO
 void Draw::Win32UpdateSColors()
 {
 	UpdateSColors();
@@ -62,6 +64,7 @@ void Draw::Win32UpdateSColors()
 	Color::SetStdColor(16, PALETTERGB(r255, g0, b255));
 	Color::SetStdColor(17, PALETTERGB(r0, g255, b255));
 }
+*/
 
 void Add(LOGPALETTE *pal, int r, int g, int b)
 {
@@ -133,9 +136,6 @@ COLORREF Draw::GetColor(Color c) const {
 
 void Draw::InitColors()
 {
-	ONCELOCK {
-		Win32UpdateSColors();
-	}
 }
 
 void Draw::SetColor(Color color)
@@ -348,7 +348,9 @@ void BackDraw::Create(Draw& w, int cx, int cy) {
 }
 
 void BackDraw::Put(Draw& w, int x, int y) {
+
 	ASSERT(handle);
+	LTIMING("BackDraw::Put");
 	::SetWindowOrgEx(handle, 0, 0, NULL);
 	::BitBlt(w, x, y, size.cx, size.cy, *this, 0, 0, SRCCOPY);
 }

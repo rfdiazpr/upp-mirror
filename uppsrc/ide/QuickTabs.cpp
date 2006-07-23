@@ -17,7 +17,7 @@ IdeQuickTabs::IdeQuickTabs()
 
 void IdeQuickTabs::PaintTab(Draw& w, int x, int y, int cx, int cy, Color paper, Color top, bool hlclose)
 {
-	w.DrawRect(x + 1, y + 3, cx - 2, cy - 2, paper);
+	w.DrawRect(x + 1, y + 3, cx - 2, cy - 1, paper);
 	w.DrawRect(x + 1, y + 2, cx - 2, 1, top);
 	w.DrawRect(x + 2, y + 1, cx - 4, 1, top);
 	w.DrawRect(x + 2, y, cx - 6, 1, top);
@@ -28,7 +28,8 @@ void IdeQuickTabs::PaintTab(Draw& w, int x, int y, int cx, int cy, Color paper, 
 	w.DrawRect(x + cx - 2, y + 1, 1, 1, fc);
 	w.DrawRect(x + cx - 1, y + 2, 1, cy - 2, fc);
 	if(tab.GetCount() > 1)
-		w.DrawImage(x + cx - 13, y + (cy - 9) / 2 + 1, hlclose ? IdeImg::miniclose1() : IdeImg::miniclose());
+		w.DrawImage(x + cx - 13, y + (cy - 9) / 2 + 1, hlclose ? IdeImg::miniclose1()
+		                                                       : IdeImg::miniclose());
 }
 
 void IdeQuickTabs::Paint(Draw& w)
@@ -44,7 +45,7 @@ void IdeQuickTabs::Paint(Draw& w)
 	}
 	if(cursor >= 0) {
 		Tab& t = tab[cursor];
-		PaintTab(w, t.x - sc, 1, t.cx + 4, sz.cy - 2, SColorPaper, hc, cursor == hl && hlclose);
+		PaintTab(w, t.x - sc, 1, t.cx + 4, sz.cy - 1, SColorPaper, hc, cursor == hl && hlclose);
 	}
 	for(int i = 0; i < tab.GetCount(); i++) {
 		Tab& t = tab[i];
@@ -202,19 +203,19 @@ void IdeQuickTabs::CancelMode()
 void IdeQuickTabs::FramePaint(Draw& w, const Rect& rr)
 {
 	Rect r = rr;
-	r.top += fcy + HEIGHT - 1;
+	r.top += fcy + HEIGHT;
 	FieldFrame().FramePaint(w, r);
 	if(cursor >= 0) {
 		Tab& t = tab[cursor];
 		int cx = (rr.Width() - 6) / 10;
-		w.DrawRect(rr.left + t.x + 1 - sc, rr.top + fcy + HEIGHT - 1, t.cx + 2, 1, SColorFace);
+		w.DrawRect(rr.left + t.x + 1 - sc, r.top, t.cx + 2, 1, SColorFace);
 	}
 }
 
 void IdeQuickTabs::FrameLayout(Rect& r)
 {
 	LayoutFrameTop(r, this, fcy + HEIGHT);
-	r.top++;
+	r.top += 2;
 	r.left += 2;
 	r.right -= 2;
 	r.bottom -= 2;

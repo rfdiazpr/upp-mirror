@@ -313,7 +313,7 @@ struct FontAndColorDisplay : Display {
 		int x = r.left;
 		if(txt != ~vt) {
 			String id(~vt, txt - 1);
-			w.DrawText(x, r.top, id, font, txt[-1] == '\a' ? SLtRed : SMagenta);
+			w.DrawText(x, r.top, id, font, txt[-1] == '\a' ? LtRed : Magenta);
 			x += GetTextSize(id, font).cx + 6;
 		}
 		w.DrawText(x, r.top, AsCString(txt), font, ink);

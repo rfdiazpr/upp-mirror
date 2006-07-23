@@ -152,7 +152,7 @@ void DropList::Paint(Draw& w) {
 	cr.left = cr.top = 1;
 	cr.right = sz.cx - 1;
 	cr.bottom = sz.cy - 1;
-	DrawRectMinusRect(w, r, cr, SWhite);
+	DrawRectMinusRect(w, r, cr, SColorPaper);
 	w.DrawRect(cr, f ? SColorHighlight
 	                 : push ? Blend(SColorHighlight, SColorFace, 235)
 	                        : IsShowEnabled() && !IsReadOnly() ? SColorPaper
@@ -197,9 +197,11 @@ void DropList::MouseLeave() {
 	Refresh();
 }
 
-void DropList::LeftUp(Point, dword) {
+void DropList::LeftUp(Point p, dword) {
 	push = false;
-	WhenClick();
+	if(Rect(GetSize()).Contains(p))
+		WhenClick();
+	Refresh();
 }
 
 void DropList::Change(int q) {
@@ -356,7 +358,7 @@ DropList::DropList() {
 	EnableDrop(false);
 	displayall = false;
 	valuedisplay = NULL;
-	dropfocus = true;
+	dropfocus = false;
 	push = false;
 }
 

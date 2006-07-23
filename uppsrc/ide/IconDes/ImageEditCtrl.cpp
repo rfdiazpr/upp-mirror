@@ -128,7 +128,7 @@ void ImageSmallCtrl::Paint(Draw& draw)
 			}
 		}
 	else
-		draw.DrawRect(clip, SLtGray);
+		draw.DrawRect(clip, SColorFace);
 }
 
 void ImageSmallCtrl::LeftDown(Point pt, dword keyflags)
@@ -234,11 +234,11 @@ void ImageSmallCtrl::RefreshImage(const Rect& rc)
 static const ColorF CommandListBorder[] =
 {
 	(ColorF)5,
-	&SBlack,  &SBlack,  &SBlack,  &SBlack,
-	&SLtGray, &SLtGray, &SLtGray, &SLtGray,
-	&SLtGray, &SLtGray, &SLtGray, &SLtGray,
-	&SGray,   &SGray,   &SWhite,  &SWhite,
-	&SBlack,  &SBlack,  &SLtGray, &SLtGray,
+	&SColorText,  &SColorText,  &SColorText,  &SColorText,
+	&SColorFace, &SColorFace, &SColorFace, &SColorFace,
+	&SColorFace, &SColorFace, &SColorFace, &SColorFace,
+	&SColorShadow,   &SColorShadow,   &SColorPaper,  &SColorPaper,
+	&SColorText,  &SColorText,  &SColorFace, &SColorFace,
 };
 
 static BorderFrame CommandListFrame(CommandListBorder);
@@ -450,7 +450,7 @@ void ImageEditCtrl::Paint(Draw& draw)
 	Size im = image.GetSize();
 	if(im.cx == 0 || im.cy == 0)
 	{
-		draw.DrawRect(draw.GetClip(), SLtGray);
+		draw.DrawRect(draw.GetClip(), SColorFace);
 		return;
 	}
 

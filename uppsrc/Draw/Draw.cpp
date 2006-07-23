@@ -1,7 +1,7 @@
 #include "Draw.h"
 
 #define LLOG(x)    // RLOG(x)
-#define LTIMING(x) // TIMING(x)
+#define LTIMING(x) // RTIMING(x)
 
 RichValue<Color>::Registrator MK__s;
 
@@ -36,6 +36,7 @@ Stream& Draw::PutRect(const Rect& r)
 
 void Draw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, const Rect& src, Color color)
 {
+	LTIMING("DrawImageOp");
 	if(IsNull(src))
 		return;
 	Size sz = Size(cx, cy);
@@ -285,8 +286,10 @@ void BackDraw::Create(int cx, int cy)
 
 bool BackDraw::IsPaintingOp(const Rect& r) const
 {
-	LLOG("BackDraw::IsPaintingOp r: " << r << "painting_offset: " << painting_offset << ", GetOffset: " << GetOffset());
-	return painting ? painting->IsPainting(r + painting_offset + GetOffset()) : true;
+	Rect rr = r + GetOffset();
+	if(!rr.Intersects(size))
+		return false;
+	return painting ? painting->IsPainting(rr + painting_offset) : true;
 }
 
 BackDraw::BackDraw()

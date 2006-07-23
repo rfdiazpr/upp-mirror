@@ -139,11 +139,11 @@ private:
 class FormulaText : public Formula
 {
 public:
-	FormulaText(const String& text, Font font = StdFont(), Color color = SBlack, int perc_dy = 0);
+	FormulaText(WString text, Font font = StdFont(), Color color = SBlack, int perc_dy = 0);
 	virtual void Paint(Draw& draw, int x_left, int y_baseline) const;
 
 private:
-	String       text;
+	WString      text;
 	Font         font;
 	Color        color;
 	int          deltay;

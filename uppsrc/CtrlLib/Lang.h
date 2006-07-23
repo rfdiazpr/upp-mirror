@@ -20,7 +20,7 @@ private:
 public:
 	typedef LNGCtrl CLASSNAME;
 
-	LNGCtrl& NoDropFocus()               { hi.NoDropFocus(); lo.NoDropFocus(); return *this; }
+	LNGCtrl& DropFocus(bool b = true)    { hi.DropFocus(b); lo.DropFocus(b); return *this; }
 	LNGCtrl& NoWantFocus()               { hi.NoWantFocus(); lo.NoWantFocus(); return *this; }
 
 	LNGCtrl();

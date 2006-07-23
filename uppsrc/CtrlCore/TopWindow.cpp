@@ -119,7 +119,7 @@ void TopWindow::RejectBreak(int ID)
 void TopWindow::SetupRect()
 {
 	Rect r = GetRect();
-	if(IsNull(GetRect()))
+	if(r.IsEmpty())
 	   SetRect(GetDefaultWindowRect());
 	else
 	if(r.left == 0 && r.top == 0 && center == 1) {
@@ -180,7 +180,7 @@ TopWindow& TopWindow::Rejector(Ctrl& m, int ID)
 
 void TopWindow::Paint(Draw& w)
 {
-	background.Paint(w, Rect(GetSize()), SBlack, SGray);
+	background.Paint(w, Rect(GetSize()), SColorText, SColorShadow);
 }
 
 TopWindow& TopWindow::Background(const PaintRect& prect)

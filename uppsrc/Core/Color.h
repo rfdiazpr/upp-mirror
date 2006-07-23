@@ -66,6 +66,8 @@ public:
 #endif
 };
 
+inline RGBA operator*(int alpha, Color c) { RGBA x = c; x.a = alpha; return x; }
+
 typedef Color (*ColorF)();
 
 inline unsigned GetHashValue(Color c)  { return c.GetHashValue(); }
@@ -74,11 +76,15 @@ inline Color    Nvl(Color a, Color b)  { return IsNull(a) ? b : a; }
 template<>
 String AsString(const Color& c);
 
+
+inline Color GrayColor(int a = 128)    { return Color(a, a, a); }
+
 inline Color Black()     { return Color(0, 0, 0); }
 inline Color Gray()      { return Color(128, 128, 128); }
 inline Color LtGray()    { return Color(192, 192, 192); }
 inline Color WhiteGray() { return Color(224, 224, 224); }
 inline Color White()     { return Color(255, 255, 255); }
+
 inline Color Red()       { return Color(128, 0, 0); }
 inline Color Green()     { return Color(0, 128, 0); }
 inline Color Brown()     { return Color(128, 128, 0); }
@@ -92,11 +98,6 @@ inline Color LtYellow()  { return Color(255, 255, 192); }
 inline Color LtBlue()    { return Color(0, 0, 255); }
 inline Color LtMagenta() { return Color(255, 0, 255); }
 inline Color LtCyan()    { return Color(0, 255, 255); }
-
-struct GrayColor : public Color {
-public:
-	GrayColor(int level) : Color(level, level, level) {}
-};
 
 void   RGBtoHSV(double r, double g, double b, double& h, double& s, double& v);
 void   HSVtoRGB(double h, double s, double v, double& r, double& g, double& b);

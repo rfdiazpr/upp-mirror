@@ -27,13 +27,10 @@ public:
 	virtual ~PopUpTable();
 };
 
-struct DropBox : public Ctrl , public CtrlFrame {
+struct DropBox : public Ctrl {
 public:
 	virtual void  CancelMode();
 	virtual Image FrameMouseEvent(int event, Point p, int zdelta, dword keyflags);
-	virtual void  FramePaint(Draw& w, const Rect& r);
-	virtual void  FrameLayout(Rect& r);
-	virtual void  FrameAddSize(Size& sz);
 
 private:
 	bool UserEdge() const;
@@ -41,6 +38,32 @@ private:
 	int8 light;
 	Rect rect;
 	bool enabled;
+
+	struct DropEdge : CtrlFrame {
+		DropBox *dropbox;
+
+		virtual void FrameLayout(Rect& r);
+		virtual void FramePaint(Draw& draw, const Rect& r);
+		virtual void FrameAddSize(Size& sz);
+	};
+
+	struct DropButton : CtrlFrame {
+		DropBox *dropbox;
+
+		virtual void FrameLayout(Rect& r);
+		virtual void FramePaint(Draw& draw, const Rect& r);
+		virtual void FrameAddSize(Size& sz);
+	};
+
+	DropEdge   edge;
+	DropButton button;
+
+	friend struct DropEdge;
+	friend struct DropButton;
+
+	void  ButtonPaint(Draw& w, const Rect& r);
+	void  ButtonLayout(Rect& r);
+	void  ButtonAddSize(Size& sz);
 
 protected:
 	void     SyncLook();
@@ -126,7 +149,7 @@ public:
 	DropList&     SetDisplay(const Display& d, int lcy) { SetDisplay(d); SetLineCy(lcy); return *this; }
 	DropList&     ValueDisplay(const Display& d)        { valuedisplay = &d; return *this; }
 	DropList&     DisplayAll(bool b = true)             { displayall = b; return *this; }
-	DropList&     NoDropFocus()                         { dropfocus = false; return *this; }
+	DropList&     DropFocus(bool b = true)              { dropfocus = b; return *this; }
 
 	DropList();
 	virtual ~DropList();

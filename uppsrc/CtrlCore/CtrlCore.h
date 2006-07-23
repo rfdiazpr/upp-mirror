@@ -391,14 +391,13 @@ private:
 
 	void    SyncLayout(int force = 0);
 	bool    AddScroll(const Rect& sr, int dx, int dy);
+	Rect    GetClippedView();
 	void    ScrollRefresh(const Rect& r, int dx, int dy);
 	void    SyncScroll();
-	void    DoCtrlPaint(Draw *w, Ctrl *q, Rect pr);
-	void    CtrlPaint(Draw& pw, Rect pr);
+	void    CtrlPaint(Draw& w, const Rect& clip);
 	void    RemoveFullRefresh();
-	bool    ShouldPaint(Draw& w);
-	void    GatherTrect(Point offset, Vector<Rect>& tr, Vector<Rect>& er, bool all);
-	void    UpdateArea(Draw& draw, const Rect& paintrect);
+	void    PaintOpaqueAreas(Draw& w, Point offset, const Rect& clip);
+	void    UpdateArea(Draw& draw, const Rect& clip);
 	Ctrl   *GetTopRect(Rect& r, bool inframe);
 	void    DoSync(Ctrl *q, Rect r, bool inframe);
 
@@ -686,10 +685,7 @@ public:
 
 	virtual bool   IsShowEnabled() const;
 
-	virtual Vector<Rect> GetTransparentFrameRects();
-	virtual Vector<Rect> GetOpaqueFrameRects();
-	virtual Vector<Rect> GetTransparentViewRects();
-	virtual Vector<Rect> GetOpaqueViewRects();
+	virtual Rect   GetOpaqueRect();
 
 	virtual void   Updated();
 
@@ -994,8 +990,6 @@ public:
 	static Size LayoutZoom(Size sz);
 	static void NoLayoutZoom();
 
-	static int  AutoBackPaintAreaSize;
-	static int  TransparentBackPaintAreaSize;
 	static bool ClickFocus();
 	static void ClickFocus(bool cf);
 
@@ -1031,8 +1025,9 @@ public:
 	virtual void   Dump(Stream& s) const;
 
 	static bool LogMessages;
-	static int  ShowRepaint;
 #endif
+
+	static void ShowRepaint(int ms);
 
 	static bool MemoryCheck;
 

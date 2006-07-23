@@ -267,11 +267,13 @@ static int sCompare(const Value& v1, const Value& v2)
 	return (String)v1 < (String)v2;
 }
 
+static bool IsGccBuilder(String b) { return b == "GCC" || b == "GCC32" || b == "GCC_ARM"; }
+
 void BuildMethods::NewBuilder()
 {
 	String b = ~builder;
 	if(IsNull(speed_options)) {
-		if(b == "GCC" || b == "GCC32")
+		if(IsGccBuilder(b))
 		#ifdef PLATFORM_WIN32
 			speed_options <<= "-O3 -ffunction-sections";
 		#else
@@ -281,7 +283,7 @@ void BuildMethods::NewBuilder()
 			speed_options <<= "-O2";
 	}
 	if(IsNull(size_options)) {
-		if(b == "GCC" || b == "GCC32")
+		if(IsGccBuilder(b))
 		#ifdef PLATFORM_WIN32
 			size_options <<= "-Os -finline-limit=20 -ffunction-sections";
 		#else
@@ -291,13 +293,13 @@ void BuildMethods::NewBuilder()
 			size_options <<= "-O1";
 	}
 	if(IsNull(debug_options)) {
-		if(b == "GCC" || b == "GCC32")
+		if(IsGccBuilder(b))
 			debug_options <<= "-O0";
 		else
 			debug_options <<= "-Od";
 	}
 	if(IsNull(debugger)) {
-		if(b == "GCC" || b == "GCC32")
+		if(IsGccBuilder(b))
 			debugger <<= "gdb";
 		else
 			debugger <<= "msdev";

@@ -62,7 +62,7 @@ void DrawFileName(Draw& w, int x, int y, int wcx, int cy, const WString& mname, 
 			const wchar *bk = strdirsep(name);
 			if(bk) {
 				wcx -= dircx;
-				w.DrawText(x, y, ".." DIR_SEPS, font, SGray, 3);
+				w.DrawText(x, y, ".." DIR_SEPS, font, SColorDisabled, 3);
 				x += dircx;
 				do {
 					txtcx -= GetTextSize(fi, name, bk + 1);
@@ -83,14 +83,14 @@ void DrawFileName(Draw& w, int x, int y, int wcx, int cy, const WString& mname, 
 				int n = GetTextFitCount(fi, name, wcx);
 				w.DrawText(x, y, name, font, ink, n);
 				x += GetTextSize(fi, name, name + n);
-				w.DrawText(x, y, "...", font, SGray, 3);
+				w.DrawText(x, y, "...", font, SColorDisabled, 3);
 			}
 			else {
 				wcx -= extcx;
 				int n = GetTextFitLim(fi, name, end, wcx) - name;
 				w.DrawText(x, y, name, font, ink, n);
 				x += GetTextSize(fi, name, name + n);
-				w.DrawText(x, y, "...", font, SGray, 3);
+				w.DrawText(x, y, "...", font, SColorDisabled, 3);
 				w.DrawText(x + dot3, y, ext, font, extink, end - ext);
 			}
 		}
@@ -103,14 +103,15 @@ void FileList::Paint(Draw& w, const Rect& r, const Value& q,
 	const File& m = ValueTo<File>(q);
 	bool atcursor = style & Display::CURSOR;
 	bool sel = style & Display::SELECT;
+	Color fc = Blend(SColorDisabled, SColorPaper);
 	w.DrawRect(r, IsSelection() ? sel ? HasFocus() ? SColorHighlight
-	                                               : SColorFace
+	                                               : fc
 	                                  : paper
 	                            : atcursor && !IsEdit() ? HasFocus() ? SColorHighlight
-	                                                                 : SColorFace
+	                                                                 : fc
 	                                                    : paper);
 	if(IsSelection() && atcursor)
-		DrawFrame(w, r, SGray);
+		DrawFrame(w, r, SColorDisabled);
 	int x = r.left + 2;
 	DrawHighlightImage(w, x, r.top + (r.Height() - m.icon.GetSize().cy), m.icon,
 	                   IsSelection() && sel && HasFocus() || atcursor && !IsEdit() && HasFocus());

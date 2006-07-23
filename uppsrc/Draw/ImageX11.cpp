@@ -126,13 +126,13 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 		Size ssz = sr.Size();
 		if(sr.IsEmpty())
 			return;
-		if(buffer.GetKind() == IMAGE_EMPTY)
+		if(GetKind() == IMAGE_EMPTY)
 			return;
-		if(buffer.GetKind() == IMAGE_OPAQUE && !IsNull(c)) {
+		if(GetKind() == IMAGE_OPAQUE && !IsNull(c)) {
 			w.DrawRect(x, y, sz.cx, sz.cy, c);
 			return;
 		}
-		if(buffer.GetKind() == IMAGE_OPAQUE && paintcount == 0 && sr == Rect(sz)) {
+		if(GetKind() == IMAGE_OPAQUE && paintcount == 0 && sr == Rect(sz)) {
 			SetSurface(w, x, y, sz.cx, sz.cy, buffer);
 			paintcount++;
 			return;
@@ -141,7 +141,7 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 		LinkAfter(ResData);
 		if(IsNull(c)) {
 			if(!picture) {
-				bool opaque = buffer.GetKind() == IMAGE_OPAQUE;
+				bool opaque = GetKind() == IMAGE_OPAQUE;
 				Pixmap pixmap = XCreatePixmap(Xdisplay, Xroot, sz.cx, sz.cy, opaque ? 24 : 32);
 				picture = XRenderCreatePicture(
 					Xdisplay, pixmap,

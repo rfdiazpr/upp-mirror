@@ -1,3 +1,4 @@
+
 struct IdConst {
 	const char *text;
 	mutable int ndx;

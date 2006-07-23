@@ -209,7 +209,7 @@ void LayDes::SetBar()
 
 class CVFrame : public CtrlFrame {
 	virtual void FrameLayout(Rect& r) { r.bottom -= 4; r.left += 2; r.right -= 2; }
-	virtual void FramePaint(Draw& w, const Rect& r) { w.DrawRect(r, SLtGray); }
+	virtual void FramePaint(Draw& w, const Rect& r) { w.DrawRect(r, SColorFace); }
 	virtual void FrameAddSize(Size& sz) { sz.cy += 4; sz.cx += 4; }
 };
 

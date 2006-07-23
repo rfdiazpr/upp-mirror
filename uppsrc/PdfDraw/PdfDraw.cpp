@@ -459,7 +459,7 @@ void PdfDraw::DrawImageOp(int x, int y, int cx, int cy, const Image& _img, const
 {
 	Image img = _img;
 	if(!IsNull(c))
-		img = ::SetColor(img, c);
+		img = SetColorKeepAlpha(img, c);
 	image.Add(img);
 	imagerect.Add(src);
 	page << "q "

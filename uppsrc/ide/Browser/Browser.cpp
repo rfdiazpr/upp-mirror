@@ -434,7 +434,7 @@ void CppNestingInfoDisplay::Paint(Draw& w, const Rect& r, const Value& q,
 	const CppNestingInfo& f = ValueTo<CppNestingInfo>(q);
 	bool focuscursor = (style & (FOCUS|CURSOR)) == (FOCUS|CURSOR) || (style & SELECT);
 	int t = r.top + (r.Height() - Draw::GetStdFontCy()) / 2;
-	w.DrawText(r.left, t, f.nesting, StdFont(), focuscursor ? _ink : SMagenta(), f.namespacel);
+	w.DrawText(r.left, t, f.nesting, StdFont(), focuscursor ? _ink : Magenta(), f.namespacel);
 	w.DrawText(r.left + GetTextSize(f.nesting, StdFont(), f.namespacel).cx, t, ~f.nesting + f.namespacel,
 	           StdFont(), _ink);
 }

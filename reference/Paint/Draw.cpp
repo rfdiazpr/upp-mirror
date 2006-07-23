@@ -11,13 +11,13 @@ struct App : public TopWindow {
 		w.DrawEllipse(200, 200, 50, 100, Green);
 		w.DrawImage(200, 10, CtrlImg::HandCursor());
 		const char *text = "This text is centered";
-		Size tsz = w.GetTextSize(text, Arial(25).Bold());
+		Size tsz = GetTextSize(text, Arial(25).Bold());
 		w.DrawText((sz.cx - tsz.cx) / 2, (sz.cy - tsz.cy) / 2, text, Arial(27).Bold(), SBlue);
 		w.Clipoff(200, 50, 95, 100);
 		w.DrawText(0, 80, "CLIPPED", Roman(25));
 		w.End();
 	}
-	
+
 	App()
 	{
 		Sizeable();

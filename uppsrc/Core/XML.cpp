@@ -128,6 +128,8 @@ void XmlParser::Ent(StringBuffer& out)
 				outconst = 10 * outconst + *t++ - '0';
 		}
 		out.Cat(ToUtf8(outconst));
+		if(*t == ';')
+			t++;
 		term = t;
 		return;
 	}

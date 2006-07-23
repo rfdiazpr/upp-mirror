@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+#define LTIMING(x) TIMING(x)
+
 void AddNotEmpty(Vector<Rect>& result, int left, int right, int top, int bottom)
 {
 	if(left < right && top < bottom)
@@ -8,6 +10,7 @@ void AddNotEmpty(Vector<Rect>& result, int left, int right, int top, int bottom)
 
 bool Subtract(const Rect& r, const Rect& sub, Vector<Rect>& result)
 {
+	LTIMING("SubtractRect0");
 	Rect is = r & sub;
 	if(!is.IsEmpty()) {
 		AddNotEmpty(result, r.left, is.left, r.top, is.top);
@@ -28,6 +31,7 @@ bool Subtract(const Rect& r, const Rect& sub, Vector<Rect>& result)
 
 bool Subtract(const Vector<Rect>& rr, const Rect& sub, Vector<Rect>& result)
 {
+	LTIMING("SubtractRect");
 	bool changed = false;
 	for(int i = 0; i < rr.GetCount(); i++) {
 		const Rect& r = rr[i];
@@ -42,6 +46,43 @@ Vector<Rect> Subtract(const Vector<Rect>& rr, const Rect& sub, bool& changed)
 	Vector<Rect> result;
 	if(Subtract(rr, sub, result))
 		changed = true;
+	return result;
+}
+
+void Subtract(Vector<Rect>& rr, const Rect& sub)
+{
+	TIMING("Subtract");
+	if(sub.IsEmpty())
+		return;
+	bool dummy;
+	rr = Subtract(rr, sub, dummy);
+}
+
+void Union(Vector<Rect>& rr, const Rect& add)
+{
+	TIMING("Union");
+	if(add.IsEmpty())
+		return;
+	Vector<Rect> r;
+	r.Add(add);
+	for(int i = 0; i < rr.GetCount() && r.GetCount(); i++)
+		Subtract(r, rr[i]);
+	for(int i = 0; i < r.GetCount(); i++)
+		rr.Add(r[i]);
+}
+
+Vector<Rect> Intersect(const Vector<Rect>& b, const Rect& a, bool& changed)
+{
+	Vector<Rect> result;
+	for(int i = 0; i < b.GetCount(); i++) {
+		Rect r = b[i] & a;
+		if(r.IsEmpty())
+			changed = true;
+		else {
+			if(r != b[i]) changed = true;
+			result.Add(r);
+		}
+	}
 	return result;
 }
 
@@ -119,7 +160,7 @@ const ColorF *BlackBorder()
 {
 	static ColorF data[] = {
 		(ColorF)1,
-		&SBlack, &SBlack, &SBlack, &SBlack,
+		&SColorText, &SColorText, &SColorText, &SColorText,
 	};
 	return data;
 }
@@ -128,9 +169,9 @@ const ColorF *DefButtonBorder()
 {
 	static ColorF data[] = {
 		(ColorF)3,
-		&SBlack, &SBlack, &SBlack, &SBlack,
-		&SWhite, &SWhite, &SBlack, &SBlack,
-		&SWhiteGray, &SWhiteGray, &SGray, &SGray,
+		&SColorText, &SColorText, &SColorText, &SColorText,
+		&SColorLight, &SColorLight, &SColorText, &SColorText,
+		&SColorLtFace, &SColorLtFace, &SColorShadow, &SColorShadow,
 	};
 	return data;
 }
@@ -139,8 +180,8 @@ const ColorF *ButtonBorder()
 {
 	static ColorF data[] = {
 		(ColorF)2,
-		&SWhite, &SWhite, &SBlack, &SBlack,
-		&SWhiteGray, &SWhiteGray, &SGray, &SGray,
+		&SColorLight, &SColorLight, &SColorText, &SColorText,
+		&SColorLtFace, &SColorLtFace, &SColorShadow, &SColorShadow,
 	};
 	return data;
 }
@@ -149,8 +190,8 @@ const ColorF *EdgeButtonBorder()
 {
 	static ColorF data[] = {
 		(ColorF)2,
-		&SWhiteGray, &SWhiteGray, &SBlack, &SBlack,
-		&SWhite, &SWhite, &SGray, &SGray,
+		&SColorLtFace, &SColorLtFace, &SColorText, &SColorText,
+		&SColorLight, &SColorLight, &SColorShadow, &SColorShadow,
 	};
 	return data;
 }
@@ -159,8 +200,8 @@ const ColorF *ButtonPushBorder()
 {
 	static ColorF data[] = {
 		(ColorF)2,
-		&SBlack, &SBlack, &SBlack, &SBlack,
-		&SGray, &SGray, &SBlack, &SBlack
+		&SColorText, &SColorText, &SColorText, &SColorText,
+		&SColorShadow, &SColorShadow, &SColorText, &SColorText
 	};
 	return data;
 }
@@ -169,8 +210,8 @@ const ColorF *InsetBorder()
 {
 	static ColorF data[] = {
 		(ColorF)2,
-		&SGray, &SGray, &SWhite, &SWhite,
-		&SBlack, &SBlack, &SLtGray, &SLtGray
+		&SColorShadow, &SColorShadow, &SColorLight, &SColorLight,
+		&SColorText, &SColorText, &SColorFace, &SColorFace
 	};
 	return data;
 }
@@ -179,8 +220,8 @@ const ColorF *OutsetBorder()
 {
 	static ColorF data[] = {
 		(ColorF)2,
-		&SLtGray, &SLtGray, &SBlack, &SBlack,
-		&SWhite, &SWhite, &SGray, &SGray,
+		&SColorFace, &SColorFace, &SColorText, &SColorText,
+		&SColorLight, &SColorLight, &SColorShadow, &SColorShadow,
 	};
 	return data;
 }
@@ -189,7 +230,7 @@ const ColorF *ThinOutsetBorder()
 {
 	static ColorF data[] = {
 		(ColorF)1,
-		&SWhite, &SWhite, &SGray, &SGray,
+		&SColorLight, &SColorLight, &SColorShadow, &SColorShadow,
 	};
 	return data;
 }
@@ -198,7 +239,7 @@ const ColorF *ThinInsetBorder()
 {
 	static ColorF data[] = {
 		(ColorF)1,
-		&SGray, &SGray, &SWhite, &SWhite,
+		&SColorShadow, &SColorShadow, &SColorLight, &SColorLight,
 	};
 	return data;
 }
@@ -259,6 +300,20 @@ void DrawRect(Draw& w, const Rect& rect, const Image& img, bool ralgn)
 	DrawRect(w, rect.left, rect.top, rect.Width(), rect.Height(), img, ralgn);
 }
 
+void DrawTiles(Draw& w, int x, int y, int cx, int cy, const Image& img) {
+	w.Clip(x, y, cx, cy);
+	Size sz = img.GetSize();
+	for(int a = x; a < x + cx; a += sz.cx)
+		for(int b = y; b < y + cy; b += sz.cy)
+			w.DrawImage(a, b, img);
+	w.End();
+}
+
+void DrawTiles(Draw& w, const Rect& rect, const Image& img)
+{
+	DrawTiles(w, rect.left, rect.top, rect.GetWidth(), rect.GetHeight(), img);
+}
+
 void DrawHighlightImage(Draw& w, int x, int y, const Image& img, bool highlight,
                         bool enabled, Color maskcolor)
 {
@@ -268,7 +323,7 @@ void DrawHighlightImage(Draw& w, int x, int y, const Image& img, bool highlight,
 		w.DrawImage(x, y + 1, img, maskcolor);
 		w.DrawImage(x, y - 1, img, maskcolor);
 	}
-	w.DrawImage(x, y, enabled ? img : MakeImage(img, "etched"));
+	w.DrawImage(x, y, enabled ? img : MakeImage(img, Etched));
 }
 
 Color GradientColor(Color fc, Color tc, int i, int n)
@@ -466,7 +521,7 @@ void DrawDragRect(Draw& w, const Rect& _rect1, const Rect& _rect2, const Rect& _
 	HBRUSH brush = ::CreatePatternBrush(bitmap);
 	DeleteObject(bitmap);
 	SetTextColor(hdc, color);
-	SetBkColor(hdc, SBlack());
+	SetBkColor(hdc, SColorText());
 	Point offset;
 	::GetViewportOrgEx(hdc, offset);
 	HRGN rgn = GetFrameRgn(rect1 + offset, n);

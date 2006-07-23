@@ -1,8 +1,11 @@
 Image CreateImage(Size sz, Color color);
-Image SetColor(const Image& img, Color c);
+Image SetColorKeepAlpha(const Image& img, Color c);
+
+void Over(ImageBuffer& dest, Point p, const Image& src, const Rect& srect);
+void Copy(ImageBuffer& dest, Point p, const Image& src, const Rect& srect);
 
 void  Copy(Image& dest, Point p, const Image& src, const Rect& srect);
-void  Over(Image& dest, Point p, const Image& src, const Rect& srect, byte alpha);
+void  Over(Image& dest, Point p, const Image& src, const Rect& srect);
 
 void  Crop(RasterEncoder& tgt, Raster& img, const Rect& rc);
 Image Crop(const Image& img, const Rect& rc);
@@ -65,9 +68,21 @@ Image RotateAntiClockwise(const Image& img);
 // Experimental {
 Image Colorize(const Image& img, Color color, int alpha = 100);
 Image Equalight(const Image& img, int thold = 10);
-Image Over(const Image& img, const Image& over, byte alpha = 255);
 // }
 
+//Chameleon support
+int   Diff(RGBA a, RGBA b);
+Image Unglyph(const Image& m, Color& c);
+Image Unglyph(const Image& m);
+Image VertBlend(Image img1, Image img2, int y0, int y1);
+Image HorzSymm(Image src);
+
+enum {
+	IMAGECONTENT_VERTDUP = 1,
+	IMAGECONTENT_HORZDUP = 2,
+};
+
+int   ClassifyContent(const Image& m, const Rect& rect);
 
 struct ImageMaker {
 	virtual String Key() const = 0;
@@ -76,14 +91,4 @@ struct ImageMaker {
 };
 
 Image MakeImage(const ImageMaker& m);
-
-void RegisterImageOp(const char *id, void (*op)(Vector<Image>& m, CParser& p, void *fn), void *fn);
-void RegisterImageOp(const char *id, void (*op)(Vector<Image>& m, CParser& p));
-void RegisterImageOp(const char *id, Image (*op0)(CParser& p));
-void RegisterImageOp(const char *id, Image (*opn)(const Image& img));
-void RegisterImageOp(const char *id, Image (*op1)(const Image& img, CParser& p));
-void RegisterImageOp(const char *id, Image (*op2)(const Image& img1, const Image& img2, CParser& p));
-
-Image MakeImage(const Vector<Image>& in, const char *code);
-Image MakeImage(const char *code);
-Image MakeImage(const Image& in, const char *code);
+Image MakeImage(const Image& image, Image (*make)(const Image& image));

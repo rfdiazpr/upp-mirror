@@ -115,10 +115,13 @@ LinkJob::LinkJob()
 	cache_object_data = false;
 	static_libraries = true;
 	make_lib = false;
+	make_def = false;
 	make_dll = false;
 	verbose = false;
 	major_version = 1;
 	minor_version = 1;
+	major_subsystem_version = 4;
+	minor_subsystem_version = 0;
 	auto_dll_base = false;
 	subsystem = COFF_IMAGE_SUBSYSTEM_DEFAULT;
 	atoms.Add(Null);
@@ -366,6 +369,7 @@ String LinkJob::Usage()
 		"-dumpstabtypes .. dump stab collector output\n"
 		"-dumpstat .. dump general linking statistics\n"
 		"-dumptime .. dump linker phase timing\n"
+		"-makedef .. write DEF-file based on given import libraries\n"
 		"-mapall .. write all symbols to map file\n"
 		"-mapout .. write mapfile to <outputfile>.map\n"
 		"-mapxref .. write cross references into map file\n"
@@ -504,6 +508,8 @@ void LinkJob::ReadCommand(const Vector<String>& cmdlist, bool user)
 					ignore_code_alignment = false;
 				else if(lcmd == "collectdata")
 					autocollect_crt_only = false;
+				else if(lcmd == "makedef")
+					make_def = true;
 				else if(lcmd == "dump" && !IsNull(val)) {
 					void DumpFile(String fn);
 					DumpFile(val);
@@ -567,10 +573,14 @@ void LinkJob::ReadCommand(const Vector<String>& cmdlist, bool user)
 						; // automatic for the moment
 					else if(!strcmp(ptr, "major-image-version"))
 						major_version = (word)ScanInt(FetchCmdArg(cmdlist, i));
+					else if(!strcmp(ptr, "major-subsystem-version"))
+						major_subsystem_version = (word)ScanInt(FetchCmdArg(cmdlist, i));
 					else if(!strcmp(ptr, "map-file"))
 						write_mapfile = mapfile_stdout = true;
 					else if(!strcmp(ptr, "minor-image-version"))
 						minor_version = (word)ScanInt(FetchCmdArg(cmdlist, i));
+					else if(!strcmp(ptr, "minor-subsystem-version"))
+						minor_subsystem_version = (word)ScanInt(FetchCmdArg(cmdlist, i));
 					else if(!strcmp(ptr, "start-group") || !strcmp(ptr, "end-group"))
 						; // ignore these for the moment
 					else if(!strcmp(ptr, "static"))
@@ -582,6 +592,9 @@ void LinkJob::ReadCommand(const Vector<String>& cmdlist, bool user)
 						if(sub == "windows") {
 							if(subsystem != COFF_IMAGE_SUBSYSTEM_WINDOWS_CUI)
 								subsystem = COFF_IMAGE_SUBSYSTEM_WINDOWS_GUI;
+						}
+						else if(sub == "windowsce") {
+							subsystem = COFF_IMAGE_SUBSYSTEM_WINDOWS_CE_GUI;
 						}
 						else if(sub == "console")
 							subsystem = COFF_IMAGE_SUBSYSTEM_WINDOWS_CUI;
@@ -614,9 +627,10 @@ void LinkJob::ReadCommand(const Vector<String>& cmdlist, bool user)
 					libpaths.Add(FetchCmdArg(cmdlist, i, ptr));
 					break;
 
-				case 'l':
-					LoadFile(String().Cat() << "lib" << ptr << ".a", false);
+				case 'l': {
+					files_to_load.Add() << "lib" << ptr << ".a";
 					break;
+				}
 
 				case 'M':
 					write_mapfile = true;
@@ -637,6 +651,11 @@ void LinkJob::ReadCommand(const Vector<String>& cmdlist, bool user)
 					image_fixed = true;
 					break;
 
+				case 'x':
+				case 'X':
+					debug_info_raw = 0;
+					break;
+
 				default:
 					eaten = false;
 					break;
@@ -648,7 +667,7 @@ void LinkJob::ReadCommand(const Vector<String>& cmdlist, bool user)
 				PutStdOut(NFormat("Unknown option: %s", arg));
 		}
 		else
-			LoadFile(arg, false);
+			files_to_load.Add(arg);
 	}
 }
 
@@ -739,7 +758,7 @@ void LinkJob::LoadObject(String file, const FileMapping& mapping, ObjectFile::FI
 	if(verbose)
 		PutStdOut(NFormat("%s: loading object file", file));
 	int nobj = objects.GetCount();
-	ObjectFile& obj = objects.Add(new ObjectFile(*this, nobj, Null, file, filetype, 0, mapping.GetTime(), mapping.GetLength()));
+	ObjectFile& obj = objects.Add(new ObjectFile(*this, nobj, Null, file, filetype, 0, mapping.GetTime(), (unsigned)mapping.GetFileSize()));
 	if(cache_object_data) {
 		obj.object_data = String(~mapping, obj.object_size);
 		obj.ReadFile(obj.object_data);
@@ -793,7 +812,7 @@ void LinkJob::LoadLibrary(String file, const FileMapping& mapping, ObjectFile::F
 			const COFF_IMPORT_OBJECT_HEADER *imphdr = (const COFF_IMPORT_OBJECT_HEADER *)ptr;
 			if(imphdr->Sig1 == 0 && imphdr->Sig2 == 0xFFFF) {
 				if(imphdr->Machine != machine)
-					throw Exc(NFormat("%s: invalid machine type (%d) in import library module", file, imphdr->Machine));
+					throw Exc(NFormat("%s: invalid machine type (0x%04x) in import library module", file, imphdr->Machine));
 				const char *pname = (const char *)ptr + sizeof(COFF_IMPORT_OBJECT_HEADER);
 				atom_t impsym_atom = Atomize(pname);
 				atom_t dll_atom = Atomize(NormalizePathCase(pname + strlen(pname) + 1));
@@ -927,8 +946,8 @@ void LinkJob::LoadDLL(String file, const FileMapping& mapping, ObjectFile::FILET
 		if(verbose)
 			PutStdOut(NFormat("%s: loading shared library", file));
 		unsigned header;
-		if(mapping.GetLength() < 0x40 || (header = PeekIL(&mapping[0x3C]))
-			+ 4 + sizeof(COFF_IMAGE_FILE_HEADER) + sizeof(COFF_IMAGE_OPTIONAL_HEADER32) > (unsigned)mapping.GetLength()
+		if(mapping.GetFileSize() < 0x40 || (header = PeekIL(&mapping[0x3C]))
+			+ 4 + sizeof(COFF_IMAGE_FILE_HEADER) + sizeof(COFF_IMAGE_OPTIONAL_HEADER32) > (unsigned)mapping.GetFileSize()
 		|| PeekIL(&mapping[header]) != 'P' + 256 * 'E')
 			throw Exc("not a valid PE file");
 		COFF_IMAGE_FILE_HEADER hdr;
@@ -966,12 +985,15 @@ void LinkJob::LoadDLL(String file, const FileMapping& mapping, ObjectFile::FILET
 		atom_t dll_atom = Atomize(ToUpper(GetFileName(file)));
 		int objn = objects.GetCount();
 		dll_objects.Add(dll_atom, objn);
-		ObjectFile& obj = objects.Add(new ObjectFile(*this, objn, Null, file, filetype, 0, mapping.GetTime(), mapping.GetLength()));
+		ObjectFile& obj = objects.Add(new ObjectFile(*this, objn, Null, file, filetype, 0, mapping.GetTime(), (unsigned)mapping.GetFileSize()));
 		obj.dll_atom = dll_atom;
 		obj.sections.SetCount(ObjectFile::DLL_SECTIONS);
 		ObjectFile::Section& stubsec = obj.sections[ObjectFile::SEC_DLL_STUBS];
 		stubsec.name_atom = stubsec.sec_atom = text_atom;
-		stubsec.flags = COFF_IMAGE_SCN_CNT_CODE | COFF_IMAGE_SCN_ALIGN_1BYTES
+		stubsec.flags = COFF_IMAGE_SCN_CNT_CODE
+			| (machine == COFF_IMAGE_FILE_MACHINE_I386
+				? COFF_IMAGE_SCN_ALIGN_1BYTES
+				: COFF_IMAGE_SCN_ALIGN_4BYTES)
 			| COFF_IMAGE_SCN_MEM_EXECUTE | COFF_IMAGE_SCN_MEM_READ;
 		ObjectFile::Section& namesec = obj.sections[ObjectFile::SEC_DLL_NAMES];
 		namesec.name_atom = idata_names_atom;
@@ -1383,7 +1405,7 @@ void LinkJob::CollectSectionSymbols(Index<ObjSec>& collect_objsec, int referer_i
 					}
 				}
 //				LTIMING("LinkJob::CollectSectionSymbols / symbol references");
-				for(NOMSC6(int) x = ofsec.ref_ext_index; x < ext_end; x++) {
+				for(int x = ofsec.ref_ext_index; x < ext_end; x++) {
 					int sx = obj_static_global_index.Get(Point(objsec.object, of.ref_externals[x]), -1);
 					if(sx >= 0) { // static global
 						const ObjectFile::Section& sec = GetSection(globals[sx].obj_sec);
@@ -1428,7 +1450,7 @@ void LinkJob::CollectSymbols()
 */
 	Index<int> undefined;
 	Vector<ObjSec> undef_ref;
-	for(NOMSC6(int) i = 0; i < collected_symbols.GetCount(); i++) {
+	for(int i = 0; i < collected_symbols.GetCount(); i++) {
 		atom_t ref = collected_symbols.GetKey(i);
 //		if(ref == CTOR_LIST_atom || ref == _CTOR_LIST_atom || ref == CTOR_LIST_END_atom
 //		|| ref == DTOR_LIST_atom || ref == _DTOR_LIST_atom || ref == DTOR_LIST_END_atom)
@@ -1624,7 +1646,7 @@ void LinkJob::CollectSymbols()
 		}
 	}
 
-	for(NOMSC6(int) i = 0; i < collected_symbols.GetCount(); i++)
+	for(int i = 0; i < collected_symbols.GetCount(); i++)
 		if(collected_symbols[i] < 0) {
 			int atom = collected_symbols.GetKey(i);
 			int f = globals.Find(atom);
@@ -1674,7 +1696,7 @@ void LinkJob::CollectSymbols()
 			}
 		}
 
-	for(NOMSC6(int) i = 0; i < weak_externals.GetCount(); i++) {
+	for(int i = 0; i < weak_externals.GetCount(); i++) {
 		int f = collected_symbols.Find(weak_externals.GetKey(i));
 		if(f >= 0 && collected_symbols[f] < 0)
 			collected_symbols[f] = collected_symbols.Get(weak_externals[i], -1);
@@ -1849,7 +1871,7 @@ void LinkJob::CollectImports()
 //				if(of.used_stubs.Find(stubimp.value) < 0)
 //					PutStdOut(NFormat("stub import[%d] = %s", of.used_stubs.GetCount(), atoms[globals.GetKey(g)]));
 				of.used_imports.FindAdd(stubimp.value);
-				stubimp.value = IMP_STUB_SIZE * of.used_stubs.FindAdd(stubimp.value);
+				stubimp.value = imp_stub_size * of.used_stubs.FindAdd(stubimp.value);
 				stubsec.used = impsec.used = true;
 			}
 			for(g = global_obj_sec_index.Find(ObjSec(of.index, ObjectFile::SEC_DLL_BOUND)); g >= 0; g = global_obj_sec_index.FindNext(g)) {
@@ -1858,15 +1880,15 @@ void LinkJob::CollectImports()
 					continue;
 				ObjectFile::Import& import = of.imports[imp.value];
 				of.used_imports.Add(imp.value);
-				imp.value = IMP_ENTRY_SIZE * (1 + of.used_imports.FindAdd(imp.value));
+				imp.value = imp_entry_size * (1 + of.used_imports.FindAdd(imp.value));
 				impsec.used = true;
 			}
-			stubsec.size = IMP_STUB_SIZE * of.used_stubs.GetCount();
+			stubsec.size = imp_stub_size * of.used_stubs.GetCount();
 			if(!of.used_imports.IsEmpty()) {
 				ASSERT(impsec.used);
 				used_dll_objects.Add(of.index);
 				impsec.used = bimpsec.used = true;
-				impsec.size = bimpsec.size = IMP_ENTRY_SIZE * (of.used_imports.GetCount() + 1);
+				impsec.size = bimpsec.size = imp_entry_size * (of.used_imports.GetCount() + 1);
 				impsec.section_data.SetCount(impsec.size, 0);
 				for(g = 0; g < of.used_imports.GetCount(); g++) {
 					const ObjectFile::Import& oi = of.imports[of.used_imports[g]];
@@ -1879,7 +1901,7 @@ void LinkJob::CollectImports()
 						memcpy(&namesec.section_data[offset + 2], ia, ia.GetLength());
 						namesec.size = namesec.section_data.GetCount();
 					}
-					byte *ient = impsec.section_data.GetIter(IMP_ENTRY_SIZE * (g + 1));
+					byte *ient = impsec.section_data.GetIter(imp_entry_size * (g + 1));
 					PokeIL(ient, ival);
 				}
 				bimpsec.section_data <<= impsec.section_data;
@@ -2082,7 +2104,7 @@ void LinkJob::CollectSections()
 	int rva = 0; //, rfa = 0;
 	int prev_sec = 0;
 	int prev_grp = 0;
-	for(NOMSC6(int) i = 0; i < section_map.GetCount(); i++) {
+	for(int i = 0; i < section_map.GetCount(); i++) {
 		Section& section = section_map[i];
 		int rva_align = image_align, rfa_align = image_align;
 		ObjectFile::Section& ofsec = GetSection(section.obj_sec);
@@ -2125,7 +2147,7 @@ void LinkJob::CollectSections()
 		groups[prev_grp++].first_section = section_map.GetCount();
 
 	int rfa = 0, end_rva = 0;
-	for(NOMSC6(int) i = 0; i <= GRP_COUNT; i++) {
+	for(int i = 0; i <= GRP_COUNT; i++) {
 		int first = groups[i].first_section;
 		if(first >= section_map.GetCount()) {
 			groups[i].rva = end_rva;
@@ -2147,7 +2169,7 @@ void LinkJob::CollectSections()
 		rfa = (rfa + groups[i].raw_size + file_align - 1) & -file_align;
 	}
 
-	for(NOMSC6(int) i = 0; i < section_map.GetCount(); i++) {
+	for(int i = 0; i < section_map.GetCount(); i++) {
 		Section& sec = section_map[i];
 		Group& grp = groups[sec.group];
 		if(!sec.udata)
@@ -2495,7 +2517,7 @@ void LinkJob::PrepareImageInfo()
 				last.rva - sec.rva + oflast.size));
 		}
 		PutStdOut(NFormat("Section groups (%d total):", GRP_COUNT));
-		for(NOMSC6(int) i = 0; i <= GRP_COUNT; i++)
+		for(int i = 0; i <= GRP_COUNT; i++)
 			PutStdOut(NFormat("[%d] RVA: %08x RFA %08x RAWSIZE %08x", i, groups[i].rva, groups[i].rfa, groups[i].raw_size));
 	}
 
@@ -2653,8 +2675,8 @@ void LinkJob::PrepareImageInfo()
 	opthdr.MinorOperatingSystemVersion = 0;
 	opthdr.MajorImageVersion = major_version;
 	opthdr.MinorImageVersion = minor_version;
-	opthdr.MajorSubsystemVersion = 4;
-	opthdr.MinorSubsystemVersion = 0;
+	opthdr.MajorSubsystemVersion = major_subsystem_version;
+	opthdr.MinorSubsystemVersion = minor_subsystem_version;
 	opthdr.Win32VersionValue = 0;
 //	opthdr.SizeOfImage = (code_rva + groups[GRP_COUNT].rva + output_fixups.GetCount() + file_align - 1) & -file_align;
 	opthdr.SizeOfImage = code_rva + groups[GRP_COUNT].rva + ((output_fixup_size + image_align - 1) & -image_align);
@@ -2977,19 +2999,35 @@ void LinkJob::RelocateImport(const ObjectFile& of)
 		const ObjectFile::Section& ofsec = of.sections[sec.obj_sec.section];
 		memcpy(sbegin, ofsec.section_data.Begin(), ofsec.section_data.GetCount());
 		if(sec.obj_sec.section == ObjectFile::SEC_DLL_STUBS) {
-			ASSERT(ofsec.size == IMP_STUB_SIZE * of.used_stubs.GetCount());
-			for(int i = 0; i < of.used_stubs.GetCount(); i++, sbegin += IMP_STUB_SIZE) {
-				sbegin[0] = 0xFF; // JMP dword ptr [12345678]
-				sbegin[1] = 0x25;
-				int imp = (1 + of.used_imports.Find(of.used_stubs[i])) * IMP_ENTRY_SIZE;
-				ASSERT(imp >= 0);
-				PokeIL(sbegin + 2, image_base + bimpsec_rva + imp);
-				highlow_fixup_rva.Add(sec_rva + 2 + i * IMP_STUB_SIZE);
+			ASSERT(ofsec.size == imp_stub_size * of.used_stubs.GetCount());
+			for(int i = 0; i < of.used_stubs.GetCount(); i++, sbegin += imp_stub_size) {
+				int imp = (1 + of.used_imports.Find(of.used_stubs[i])) * imp_entry_size;
+				switch(machine) {
+					case COFF_IMAGE_FILE_MACHINE_I386: {
+						sbegin[0] = 0xFF; // JMP dword ptr [12345678]
+						sbegin[1] = 0x25;
+						ASSERT(imp >= 0);
+						PokeIL(sbegin + 2, image_base + bimpsec_rva + imp);
+						highlow_fixup_rva.Add(sec_rva + 2 + i * imp_stub_size);
+						break;
+					}
+					case COFF_IMAGE_FILE_MACHINE_ARM: {
+						PokeIL(sbegin + 0, 0xE59FC000);
+						PokeIL(sbegin + 4, 0xE59CF000);
+						PokeIL(sbegin + 8, image_base + bimpsec_rva + imp);
+						highlow_fixup_rva.Add(sec_rva + 8 + i * imp_stub_size);
+						break;
+					}
+					default: {
+						PutStdOut(NFormat("%s: stub generation for %s not implemented", AsString(of), COFFMachineName(machine)));
+						return;
+					}
+				}
 			}
 		}
 		else if(sec.obj_sec.section == ObjectFile::SEC_DLL_IMPORTS || sec.obj_sec.section == ObjectFile::SEC_DLL_BOUND) {
 			for(int i = 0; i < of.used_imports.GetCount(); i++) {
-				sbegin += IMP_ENTRY_SIZE;
+				sbegin += imp_entry_size;
 				int imptr = PeekIL(sbegin);
 				if(!(imptr & 0x80000000)) {
 					imptr += namesec_rva;
@@ -3001,10 +3039,10 @@ void LinkJob::RelocateImport(const ObjectFile& of)
 		else if(sec.obj_sec.section == ObjectFile::SEC_DLL_DESCRIPTOR) {
 			COFF_IMAGE_IMPORT_DESCRIPTOR idesc;
 			Zero(idesc);
-			idesc.OriginalFirstThunk = impsec_rva + IMP_ENTRY_SIZE;
+			idesc.OriginalFirstThunk = impsec_rva + imp_entry_size;
 			idesc.ForwarderChain = 0;
 			idesc.Name = namesec_rva;
-			idesc.FirstThunk = bimpsec_rva + IMP_ENTRY_SIZE;
+			idesc.FirstThunk = bimpsec_rva + imp_entry_size;
 			memcpy(sbegin, &idesc, sizeof(idesc));
 //			highlow_fixup_rva.Add(sec_rva + __offsetof(COFF_IMAGE_IMPORT_DESCRIPTOR, OriginalFirstThunk));
 //			highlow_fixup_rva.Add(sec_rva + __offsetof(COFF_IMAGE_IMPORT_DESCRIPTOR, Name));
@@ -3108,39 +3146,107 @@ void LinkJob::RelocateObject(const ObjectFile& of, const byte *begin)
 			else
 				PutStdOut(NFormat("%s: invalid relocation to %s (%d)",
 					AsString(of), atoms[ref_atom], relsym.SectionNumber));
-			switch(relptr->Type) {
-			case COFF_IMAGE_REL_I386_ABSOLUTE:
-				break;
-//				case COFF_IMAGE_REL_I386_DIR16:
-//				case COFF_IMAGE_REL_I386_REL16:
-			case COFF_IMAGE_REL_I386_DIR32:
-				PokeIL(target, PeekIL(target) + value + (obj_sec.section >= 0 ? image_base : 0));
-				if(obj_sec.section >= 0)
-					highlow_fixup_rva.Add(target_rva);
-				break;
+			switch(machine) {
+				case COFF_IMAGE_FILE_MACHINE_I386: {
+					switch(relptr->Type) {
+						case COFF_IMAGE_REL_I386_ABSOLUTE: {
+							break;
+						}
+			//			case COFF_IMAGE_REL_I386_DIR16:
+			//			case COFF_IMAGE_REL_I386_REL16:
+						case COFF_IMAGE_REL_I386_DIR32: {
+							PokeIL(target, PeekIL(target) + value + (obj_sec.section >= 0 ? image_base : 0));
+							if(obj_sec.section >= 0)
+								highlow_fixup_rva.Add(target_rva);
+							break;
+						}
 
-			case COFF_IMAGE_REL_I386_DIR32NB:
-				PokeIL(target, PeekIL(target) + value);
-				break;
+						case COFF_IMAGE_REL_I386_DIR32NB: {
+							PokeIL(target, PeekIL(target) + value);
+							break;
+						}
 
-//				case COFF_IMAGE_REL_I386_SEG12:
-			case COFF_IMAGE_REL_I386_SECTION:
-			case COFF_IMAGE_REL_I386_SECREL: {
-					int xsec = obj_sec.section >= 0 ? section_map[GetSection(obj_sec).sec_map_index].app_section : -1;
-					if(relptr->Type == COFF_IMAGE_REL_I386_SECTION)
-						PokeIW(target, PeekIW(target) + xsec);
-					else
-						PokeIL(target, PeekIL(target) + code_rva + sec.rva - (xsec >= 0 ? section_map[section_name_map[xsec]].rva : 0));
+			//			case COFF_IMAGE_REL_I386_SEG12:
+						case COFF_IMAGE_REL_I386_SECTION:
+						case COFF_IMAGE_REL_I386_SECREL: {
+								int xsec = obj_sec.section >= 0 ? section_map[GetSection(obj_sec).sec_map_index].app_section : -1;
+								if(relptr->Type == COFF_IMAGE_REL_I386_SECTION)
+									PokeIW(target, PeekIW(target) + xsec);
+								else
+									PokeIL(target, PeekIL(target) + code_rva + sec.rva - (xsec >= 0 ? section_map[section_name_map[xsec]].rva : 0));
+							}
+							break;
+
+						case COFF_IMAGE_REL_I386_REL32: {
+							PokeIL(target, PeekIL(target) + value - target_rva - 4);
+							break;
+						}
+
+						default: {
+							PutStdOut(NFormat("%s: invalid i386 relocation type %d", AsString(of), relptr->Type));
+							break;
+						}
+					}
+					break;
 				}
-				break;
-
-			case COFF_IMAGE_REL_I386_REL32:
-				PokeIL(target, PeekIL(target) + value - target_rva - 4);
-				break;
-
-			default:
-				PutStdOut(NFormat("%s: invalid relocation type %d", AsString(of), relptr->Type));
-				break;
+				case COFF_IMAGE_FILE_MACHINE_ARM: {
+					switch(relptr->Type) {
+						case COFF_IMAGE_REL_ARM_ABSOLUTE: {
+							break;
+						}
+						case COFF_IMAGE_REL_ARM_ADDR32: {
+							PokeIL(target, PeekIL(target) + value + (obj_sec.section >= 0 ? image_base : 0));
+							if(obj_sec.section >= 0)
+								highlow_fixup_rva.Add(target_rva);
+							break;
+						}
+						case COFF_IMAGE_REL_ARM_ADDR32NB: {
+							PokeIL(target, PeekIL(target) + value);
+							break;
+						}
+						case COFF_IMAGE_REL_ARM_BRANCH24: {
+							int displ = value - target_rva - 8;
+							int trunc = (displ & (1 << 25)) ? (displ | (-1 << 26)) : (displ & ((1 << 26) - 1)) & -4;
+							if(displ & 3)
+								PutStdOut(NFormat("%s: misaligned 24-bit relocation (delta = %08x)", AsString(of), displ));
+							else if(displ != trunc)
+								PutStdOut(NFormat("%s: 24-bit relocation out of range (delta = %08x)", AsString(of), displ));
+							else
+								PokeIL(target, (PeekIL(target) & (-1 << 24)) | ((displ >> 2) & ((1 << 24) - 1)));
+							break;
+						}
+						case COFF_IMAGE_REL_ARM_BRANCH11: {
+							int displ = value - target_rva - 8;
+							int trunc = (displ & (1 << 23)) ? (displ | (-1 << 24)) : (displ & ((1 << 24) - 1)) & -4;
+							if(displ & 3)
+								PutStdOut(NFormat("%s: misaligned 22-bit relocation (delta = %08x)", AsString(of), displ));
+							else if(displ != trunc)
+								PutStdOut(NFormat("%s: 22-bit relocation out of range (delta = %08x)", AsString(of), displ));
+							else {
+								PokeIW(target + 0, (PeekIW(target + 0) & (-1 << 11)) | ((displ >> 2) & ((1 << 11) - 1)));
+								PokeIW(target + 2, (PeekIW(target + 2) & (-1 << 11)) | ((displ >> 13) & ((1 << 11) - 1)));
+							}
+							break;
+						}
+						case COFF_IMAGE_REL_ARM_SECTION:
+						case COFF_IMAGE_REL_ARM_SECREL: {
+							int xsec = obj_sec.section >= 0 ? section_map[GetSection(obj_sec).sec_map_index].app_section : -1;
+							if(relptr->Type == COFF_IMAGE_REL_ARM_SECTION)
+								PokeIW(target, PeekIW(target) + xsec);
+							else
+								PokeIL(target, PeekIL(target) + code_rva + sec.rva - (xsec >= 0 ? section_map[section_name_map[xsec]].rva : 0));
+							break;
+						}
+					default:
+						PutStdOut(NFormat("%s: invalid ARM relocation type %d", AsString(of), relptr->Type));
+						break;
+					}
+					break;
+				}
+				default: {
+					PutStdOut(NFormat("%s: relocations for machine %04x not implemented", AsString(of), machine));
+					break;
+				}
 			}
 		}
 	}
@@ -3584,6 +3690,41 @@ void LinkJob::BuildLibrary()
 		PutStdOut(NFormat("Library '%s' created in %d msecs.", GetFileName(outputfile), msecs(start)));
 }
 
+void LinkJob::BuildDefFiles()
+{
+	for(int i = OBJ_FIRST; i < objects.GetCount(); i++) {
+		const ObjectFile& of = objects[i];
+		if(!of.dll_atom || of.imports.IsEmpty())
+			continue;
+		int start = msecs();
+		String output = ForceExt(of.library_file, ".def");
+		PutStdOut(NFormat("%s -> %s", of.library_file, output));
+		String data;
+		data << "LIBRARY " << AsCString(atoms[of.dll_atom]) << "\n"
+		"EXPORTS\n";
+		Vector<int> order = GetSortOrder(of.imports, FieldRelation(&ObjectFile::Import::ordinal_hint, StdLess<int>()));
+		for(int o = 0; o < order.GetCount(); o++) {
+			const ObjectFile::Import& imp = of.imports[order[o]];
+			String n = atoms[imp.app_atom];
+			const char *p = n;
+			if(IsAlpha(*p) || *p == '_')
+				p++;
+			while(IsAlNum(*p) || *p == '_')
+				p++;
+			if(*p)
+				continue;
+			data << "\t_" << n;
+			if(imp.ordinal_hint)
+				data << " @" << imp.ordinal_hint; // << " NONAME";
+			data << '\n';
+		}
+		if(SaveFile(output, data))
+			PutStdOut(NFormat(" (OK, %d B, %d msecs)\n", data.GetLength(), msecs(start)));
+		else
+			throw Exc(NFormat("Error writing DEF-file '%s' (%d B)\n", output, data.GetLength()));
+	}
+}
+
 void LinkJob::Link()
 {
 	if(dump_flags & DUMP_ENVIRONMENT) {
@@ -3603,6 +3744,27 @@ void LinkJob::Link()
 		PutStdOut(">> End of command line");
 	}
 
+	PutStdOut(NFormat("Target machine: %s", COFFMachineName(machine)));
+	switch(machine) {
+		case COFF_IMAGE_FILE_MACHINE_I386: {
+			imp_stub_size = I386_IMP_STUB_SIZE;
+			imp_entry_size = I386_IMP_ENTRY_SIZE;
+			break;
+		}
+		case COFF_IMAGE_FILE_MACHINE_ARM: {
+			imp_stub_size = ARM_IMP_STUB_SIZE;
+			imp_entry_size = ARM_IMP_ENTRY_SIZE;
+			break;
+		}
+		default: {
+			imp_stub_size = imp_entry_size = 0;
+			break;
+		}
+	}
+
+	for(int i = 0; i < files_to_load.GetCount(); i++)
+		LoadFile(files_to_load[i], false);
+
 	if(objects.GetCount() <= OBJ_FIRST && IsNull(outputfile))
 		return;
 
@@ -3611,8 +3773,15 @@ void LinkJob::Link()
 		return;
 	}
 
+	if(make_def) {
+		BuildDefFiles();
+		return;
+	}
+
 	if(!image_base)
-		if(!make_dll)
+		if(machine == COFF_IMAGE_FILE_MACHINE_ARM)
+			image_base = 0x10000;
+		else if(!make_dll)
 			image_base = 0x400000;
 		else if(!auto_dll_base)
 			image_base = 0x10000000;

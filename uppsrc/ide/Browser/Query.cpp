@@ -30,7 +30,7 @@ void QueryDlg::EnterPackage()
 	int q = package.GetCursor();
 	file.Enable(q);
 	if(q) {
-		file.Add("<all>", BrowserImg::All(), StdFont().Bold(), SGray);
+		file.Add("<all>", BrowserImg::All(), StdFont().Bold(), SColorDisabled);
 		const Package& p = GetIdeWorkspace().GetPackage(q - 1);
 		for(int i = 0; i < p.GetCount(); i++)
 			file.Add(p[i], IdeFileImage(p[i]));
@@ -51,7 +51,7 @@ int QueryDlg::Perform(BrowserQuery& q)
 {
 	const Workspace& wspc = GetIdeWorkspace();
 	package.Clear();
-	package.Add("<all>", BrowserImg::All(), StdFont().Bold(), SGray);
+	package.Add("<all>", BrowserImg::All(), StdFont().Bold(), SColorDisabled);
 	for(int i = 0; i < wspc.GetCount(); i++)
 		package.Add(wspc[i], IdeCommonImg::Package());
 	name <<= q.name;

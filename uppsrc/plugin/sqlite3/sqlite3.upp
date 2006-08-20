@@ -1,7 +1,7 @@
+flags(NOTMFC) "!GUI !CONSOLE";
+
 uses
 	Sql;
-
-flags(NOTMFC) "!GUI !CONSOLE";
 
 file
 	Wrapper readonly separator,
@@ -32,6 +32,7 @@ file
 	lib/opcodes.h,
 	lib/os.h,
 	lib/os_common.h,
+	lib\os.c,
 	lib/os_unix.c,
 	lib/os_unix.h,
 	lib/os_win.c,
@@ -63,7 +64,6 @@ file
 	lib/vdbemem.c,
 	lib/where.c;
 
-Core 
+Core
 
 ;
-

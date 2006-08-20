@@ -51,7 +51,7 @@ const RichTable::TabLayout& RichTable::Realize(RichContext rc) const
 RichTable::Layout RichTable::Realize(RichContext rc, int ny) const
 {
 	Layout tab;
-	
+
 	int nx = format.column.GetCount();
 	tab.row.Alloc(ny);
 	for(int i = 0; i < ny; i++)
@@ -130,10 +130,10 @@ RichTable::Layout RichTable::Realize(RichContext rc, int ny) const
 				PaintCell& pc = pr[j];
 				if(pc.top) {
 					rc.page = pc.page;
-					PageY ty = row[j].GetTop(rc);
+					PageY ty = cell.GetTop(rc);
 					PageY ky = rc.py;
 					if(keep)
-						ky = row[j].GetHeight(rc);
+						ky = cell.GetHeight(rc);
 					if(ty.page != rc.py.page || ky.page != rc.py.page) {
 						rc.Page();
 						pr.gpy = rc.py;
@@ -149,7 +149,7 @@ RichTable::Layout RichTable::Realize(RichContext rc, int ny) const
 			PaintCell& pc = pr[j];
 			rc.page = pc.page;
 			if(pc.top)
-				tab[min(ny - 1, i + cell.vspan)][j].hy = row[j].GetHeight(rc);
+				tab[min(ny - 1, i + cell.vspan)][j].hy = cell.GetHeight(rc);
 			j += cell.hspan + 1;
 		}
 		for(int j = 0; j < nx;) {
@@ -159,7 +159,6 @@ RichTable::Layout RichTable::Realize(RichContext rc, int ny) const
 			j += cell.hspan + 1;
 		}
 		tab.pyy = pr.pyy = rc.py;
-	}	
+	}
 	return tab;
 }
-

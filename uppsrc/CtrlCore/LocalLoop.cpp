@@ -74,9 +74,9 @@ void RectTracker::DrawRect(const Rect& r1, const Rect& r2)
 		word anipat[8];
 		int nanim = (GetTickCount() / animation) % 8;
 		sGetAniPat(anipat, pattern, nanim);
-		DrawDragRect(GetMaster(), Null, r2, c, width, color, anipat);
+		DrawDragRect(GetMaster(), Rect(0, 0, 0, 0), r2, c, width, color, anipat);
 		sGetAniPat(anipat, pattern, panim);
-		DrawDragRect(GetMaster(), r1, Null, c, width, color, anipat);
+		DrawDragRect(GetMaster(), r1, Rect(0, 0, 0, 0), c, width, color, anipat);
 		panim = nanim;
 	}
 	else
@@ -92,9 +92,9 @@ Rect RectTracker::Track(const Rect& r, int _tx, int _ty)
 	o = rect;
 	op = GetMousePos();
 	GetMaster().Sync();
-	DrawRect(Null, rect);
+	DrawRect(Rect(0, 0, 0, 0), rect);
 	Run();
-	DrawRect(o, Null);
+	DrawRect(o, Rect(0, 0, 0, 0));
 	return rect;
 }
 
@@ -133,10 +133,10 @@ void RectTracker::MouseMove(Point, dword)
 			rect.bottom = minmax(rect.bottom, rect.top + minsize.cy, rect.top + maxsize.cy);
 		}
 		if(keepratio) {
+			int cy = org.Width() ? rect.Width() * org.Height() / org.Width() : 0;
+			int cx = org.Height() ? rect.Height() * org.Width() / org.Height() : 0;
 			if(tx == ALIGN_BOTTOM && ty == ALIGN_RIGHT) {
 				Size sz = rect.Size();
-				int cy = rect.Width() * org.Height() / org.Width();
-				int cx = rect.Height() * org.Width() / org.Height();
 				if(cx > sz.cx)
 					rect.right = rect.left + cx;
 				else
@@ -144,10 +144,10 @@ void RectTracker::MouseMove(Point, dword)
 			}
 			else
 			if(tx == ALIGN_RIGHT)
-				rect.bottom = rect.top + rect.Width() * org.Height() / org.Width();
+				rect.bottom = rect.top + cy;
 			else
 			if(ty == ALIGN_BOTTOM)
-				rect.right = rect.left + rect.Height() * org.Width() / org.Height();
+				rect.right = rect.left + cx;
 		}
 	}
 	if(rect != o) {

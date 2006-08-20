@@ -109,15 +109,45 @@ void  Ctrl::ScrollView(const Rect& _r, int dx, int dy)
 	sr += GetScreenRect().TopLeft() - w->GetScreenRect().TopLeft();
 	if(w->AddScroll(sr, dx, dy))
 		Refresh();
-	else
+	else {
+		Top *top = GetTopCtrl()->top;
 		for(Ctrl *q = GetFirstChild(); q; q = q->GetNext())
 			if(q->InView()) {
-				Rect cr = q->GetRect() & r;
-				if(!cr.IsEmpty()) {
-					Refresh(cr);
-					Refresh(cr + Point(dx, dy));
+				Rect cr = q->GetRect();
+				if(top && r.Contains(cr)) {
+					Rect to = cr;
+					GetTopRect(to, false);
+					if(r.Contains(cr.Offseted(-dx, -dy))) {
+						Rect from = cr.Offseted(-dx, -dy);
+						GetTopRect(from, false);
+						MoveCtrl *m = FindMoveCtrlPtr(top->move, q);
+						if(m && m->from == from && m->to == to) {
+							LLOG("ScrollView Matched " << from << " -> " << to);
+							m->ctrl = NULL;
+							goto done;
+						}
+					}
+
+					if(r.Contains(cr.Offseted(dx, dy))) {
+						Rect from = to;
+						to = cr.Offseted(dx, dy);
+						GetTopRect(to, false);
+						MoveCtrl& m = top->scroll_move.Add(q);
+						m.from = from;
+						m.to = to;
+						m.ctrl = q;
+						LLOG("ScrollView Add " << ::Name(q) << from << " -> " << to);
+						goto done;
+					}
+					cr &= r;
+					if(!cr.IsEmpty()) {
+						Refresh(cr);
+						Refresh(cr + Point(dx, dy));
+					}
+				done:;
 				}
 			}
+	}
 }
 
 void  Ctrl::ScrollView(int x, int y, int cx, int cy, int dx, int dy) {
@@ -184,7 +214,7 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip) {
 	}
 	if(!view.IsEmpty()) {
 		if(view.Intersects(clip) && w.IsPainting(view)) {
-			LOG("Painting: " << Name());
+			LLOG("Painting: " << Name());
 			LEVELCHECK(w);
 			w.Clipoff(view);
 			Paint(w);
@@ -221,7 +251,6 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip) {
 
 void Reduce(Rect& r, Rect rr)
 {
-
 	rr = r & rr;
 	if(rr.IsEmpty())
 		return;
@@ -426,4 +455,26 @@ void Ctrl::DrawCtrl(Draw& w, int x, int y)
 	w.Offset(x, y);
 	UpdateArea(w, GetRect().GetSize());
 	w.End();
+}
+
+void Ctrl::SyncMoves()
+{
+	if(parent || !top)
+		return;
+	for(int i = 0; i < top->move.GetCount(); i++) {
+		MoveCtrl& m = top->move[i];
+		if(m.ctrl) {
+			RefreshFrame(m.from);
+			RefreshFrame(m.to);
+		}
+	}
+	for(int i = 0; i < top->scroll_move.GetCount(); i++) {
+		MoveCtrl& s = top->scroll_move[i];
+		if(s.ctrl) {
+			RefreshFrame(s.from);
+			RefreshFrame(s.to);
+		}
+	}
+	top->move.Clear();
+	top->scroll_move.Clear();
 }

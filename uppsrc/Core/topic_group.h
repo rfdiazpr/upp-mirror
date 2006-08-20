@@ -107,39 +107,26 @@
 			#undef TOPIC_VERB
 			#define TOPIC_VERB 20
 		#else
-			#error Too many language files !
+			#error Too many topic files !
 		#endif
 	#endif
 #endif
 
 
 
-#define GROUP(package, group) \
-        { VectorMap<String, VectorMap<int, Topic> >& base = TopicBase().GetAdd(package).GetAdd(group);
+void RegisterTopic__(const char *topicfile, const char *topic, const char *title, const byte *data, int len);
 
-#define TOPIC(id)       { Topic& topic = group.GetAdd(id);
-#define REF(x)
-#define STYLESHEET(x)
-#define TITLE(x)        topic.title = x;// DUMP(topic.title);
-#define TOPIC_TEXT(x)   topic.text << x;// DUMP(strlen(x)); DUMP(topic.text.GetLength());
-#define END_TOPIC       topic.text.Shrink(); topic.title.Shrink(); }
-
-VectorMap<String, Topic>& TopicGroup__(const char *topicfile);
+#define TOPIC(id)       { const char *topic = id;
+#define TITLE(x)          const char *title = x;
+#define COMPRESSED        static const byte data[] = {
+#define END_TOPIC         }; RegisterTopic__(ASSTRING(TOPICFILE), topic, title, data, __countof(data)); }
 
 INITBLOCK_(COMBINE3(TOPIC__, TOPIC_VERB, TOPIC_VERA))
 {
-	VectorMap<String, Topic>& group = TopicGroup__(ASSTRING(TOPICFILE));
-	
 	#include TOPICFILE
 }
 
 #undef TOPIC
-#undef REF
-#undef STYLESHEET
-#undef TITLE
-#undef TOPIC_TEXT
+#undef COMPRESSED
 #undef END_TOPIC
-
-#undef END_GROUP
-
 #undef TOPICFILE

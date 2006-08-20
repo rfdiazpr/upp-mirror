@@ -266,6 +266,12 @@ private:
 		int  dy;
 	};
 
+	struct MoveCtrl : Moveable<MoveCtrl> {
+		Ptr<Ctrl>  ctrl;
+		Rect       from;
+		Rect       to;
+	};
+
 	struct Top {
 #ifdef PLATFORM_WIN32
 		HWND           hwnd;
@@ -274,6 +280,8 @@ private:
 		Window         window;
 #endif
 		Vector<Scroll> scroll;
+		VectorMap<Ctrl *, MoveCtrl> move;
+		VectorMap<Ctrl *, MoveCtrl> scroll_move;
 	};
 
 	union {
@@ -355,13 +363,18 @@ private:
 
 	void    RemoveChild0(Ctrl *q);
 
+	static int       FindMoveCtrl(const VectorMap<Ctrl *, MoveCtrl>& m, Ctrl *x);
+	static MoveCtrl *FindMoveCtrlPtr(VectorMap<Ctrl *, MoveCtrl>& m, Ctrl *x);
+
 	Size    PosVal(int v) const;
 	void    Lay1(int& pos, int& r, int align, int a, int b, int sz) const;
 	Rect    CalcRect(LogPos pos, const Rect& prect, const Rect& pview) const;
 	Rect    CalcRect(const Rect& prect, const Rect& pview) const;
+	void    UpdateRect0();
 	void    UpdateRect();
 	void    SetPos0(LogPos p, bool inframe);
 	void    SetWndRect(const Rect& r);
+	void    SyncMoves();
 
 	static  void  EndIgnore();
 	static  void  LRep();
@@ -571,7 +584,6 @@ private:
 
 protected:
 	static void     TimerProc(dword time);
-	virtual Point   GetSysWindowViewOffset();
 
 			Ctrl&   Unicode()                         { unicode = true; return *this; }
 
@@ -989,6 +1001,7 @@ public:
 	static Size LayoutZoom(int cx, int cy);
 	static Size LayoutZoom(Size sz);
 	static void NoLayoutZoom();
+	static void GetZoomRatio(Size& m, Size& d);
 
 	static bool ClickFocus();
 	static void ClickFocus(bool cf);
@@ -1053,9 +1066,15 @@ String Name(const Ctrl *ctrl);
 String Desc(const Ctrl *ctrl);
 void   Dump(const Ctrl *ctrl);
 
-inline Ctrl *operator<<(Ctrl *parent, Ctrl& child) {
+inline Ctrl *operator<<(Ctrl *parent, Ctrl& child)
+{
 	parent->Add(child);
 	return parent;
+}
+
+inline unsigned GetHashValue(Ctrl *x)
+{
+	return (unsigned)x;
 }
 
 String GetKeyDesc(int key);

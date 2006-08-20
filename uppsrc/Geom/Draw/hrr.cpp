@@ -12,6 +12,72 @@
 
 #define LLOG(x) // LOG(x)
 
+void RasterCopy(RasterEncoder& dest, Raster& src, const Rect& src_rc)
+{
+	dest.Start(src_rc.Size());
+	for(int y = src_rc.top; y < src_rc.bottom; y++)
+		dest.WriteLine((const RGBA *)src.GetLine(y) + src_rc.left);
+}
+
+class ImageWriter : public RasterEncoder {
+public:
+	ImageWriter() : output(NULL) {}
+	ImageWriter(ImageBuffer& output, bool merge = true)                       { Open(output, merge); }
+	ImageWriter(ImageBuffer& output, Point pos, bool merge = true)            { Open(output, pos, merge); }
+	ImageWriter(ImageBuffer& output, Point pos, Rect clip, bool merge = true) { Open(output, pos, clip, merge); }
+
+	void         Open(ImageBuffer& output, bool merge = true)                 { Open(output, Point(0, 0), merge); }
+	void         Open(ImageBuffer& output, Point pos, bool merge = true)      { Open(output, pos, Rect(output.GetSize()), merge); }
+	void         Open(ImageBuffer& output, Point pos, Rect clip, bool merge = true);
+
+	virtual int  GetPaletteCount();
+	virtual void Start(Size sz);
+	virtual void WriteLine(const RGBA *s);
+
+private:
+	ImageBuffer  *output;
+	Point        pos;
+	int          left, width, offset;
+	Rect         clip;
+	int          line;
+	Size         src_size;
+	bool         merge;
+};
+
+void ImageWriter::Open(ImageBuffer& output_, Point pos_, Rect clip_, bool merge_)
+{
+	output = &output_;
+	pos = pos_;
+	clip = clip_;
+	merge = merge_;
+}
+
+int ImageWriter::GetPaletteCount()
+{
+	return 0;
+}
+
+void ImageWriter::Start(Size sz)
+{
+	src_size = sz;
+	line = 0;
+	left = max(pos.x, clip.left);
+	width = max(min(pos.x + src_size.cx, clip.right) - left, 0);
+	offset = (width > 0 ? left - pos.x : 0);
+}
+
+void ImageWriter::WriteLine(const RGBA *s)
+{
+	if(line >= src_size.cy || width <= 0)
+		return;
+	int y = line++ + pos.y;
+	if(y >= clip.top && y < clip.bottom)
+		if(merge)
+			AlphaBlend(&(*output)[y][left], s + offset, width);
+		else
+			memcpy(&(*output)[y][left], s + offset, width * sizeof(RGBA));
+}
+
 inline Stream& operator % (Stream& strm, Color& color)
 {
 	dword dw = color.GetRaw();
@@ -64,7 +130,7 @@ One<StreamRasterEncoder> HRRInfo::GetEncoder() const
 }
 
 /*
-One<ImageEncoder> HRR::StdCreateEncoder(const HRRInfo& info)
+One<StreamRasterEncoder> HRR::StdCreateEncoder(const HRRInfo& info)
 {
 	switch(info.GetMethod())
 	{
@@ -257,36 +323,27 @@ static void wsAlphaBlend(Draw& draw, Stream& stream, const DrawingPos& pos)
 
 //static DrawerRegistrator MK__s(wAlphaBlend, wsAlphaBlend);
 
-static int GetMaskInfo(const RGBA& rgba)
+static int GetMaskInfo(const RGBA *rgba, int count)
 {
-	ASSERT(mask.bpp == 8);
-	Size size = mask.GetSize();
-	if(size.cx == 0 || size.cy == 0)
+	if(count == 0)
 		return 0;
-	if(*mask.GetUpScan(0))
-	{ // check full
-		for(int i = 0; i < size.cy; i++)
-			for(const byte *p = mask.GetUpScan(i), *e = p + size.cx; p < e; p++)
-				if(!*p)
-					return 2;
-		return 1;
+	if(rgba->a == 255) {
+		for(; count > 0 && rgba->a == 255; count--, rgba++)
+			;
+		return (count ? 2 : 1);
 	}
-	else
-	{
-		for(int i = 0; i < size.cy; i++)
-			for(const byte *p = mask.GetUpScan(i), *e = p + size.cx; p < e; p++)
-				if(*p)
-					return 2;
-		return 0;
+	else if(rgba->a == 0) {
+		for(; count > 0 && rgba->a == 0; count--, rgba++)
+			;
+		return (count ? 2 : 0);
 	}
+	return 2;
 }
 
-static String EncodeMask(const PixelArray& mask, bool write_size)
+static String EncodeMask(const ImageBuffer& mask, bool write_size)
 {
-	ASSERT(mask.bpp == 8);
-	String out;
-	if(write_size)
-	{
+	StringBuffer out;
+	if(write_size) {
 		char temp[4];
 		PokeIW(temp + 0, mask.GetWidth());
 		PokeIW(temp + 2, mask.GetHeight());
@@ -294,21 +351,18 @@ static String EncodeMask(const PixelArray& mask, bool write_size)
 	}
 	int full = out.GetLength();
 	Size size = mask.GetSize();
-	for(int i = 0; i < size.cy; i++)
-	{
-		const byte *p = mask.GetUpScan(i), *e = p + size.cx;
+	for(int i = 0; i < size.cy; i++) {
+		const RGBA *p = mask[size.cy - i - 1], *e = p + size.cx;
 		int start = out.GetLength();
-		while(p < e)
-		{
+		while(p < e) {
 			bool init0 = false;
-			if(*p)
+			if(p->a >= 128)
 			{ // full part
-				const byte *b = p;
-				while(++p < e && *p)
+				const RGBA *b = p;
+				while(++p < e && p->a >= 128)
 					;
 				int n = p - b;
-				while(n > 253)
-				{
+				while(n > 253) {
 					out.Cat(255);
 					out.Cat(2);
 					n -= 253;
@@ -318,26 +372,21 @@ static String EncodeMask(const PixelArray& mask, bool write_size)
 			}
 			else
 				init0 = true;
-			if(p < e)
-			{
-				const byte *b = p;
-				while(++p < e && !*p)
+			if(p < e) {
+				const RGBA *b = p;
+				while(++p < e && p->a < 128)
 					;
-				if(p < e)
-				{
+				if(p < e) {
 					if(init0)
 						out.Cat(2);
 					int n = p - b;
-					while(n > 253)
-					{
+					while(n > 253) {
 						out.Cat(255);
 						out.Cat(2);
 						n -= 253;
 					}
 					if(n > 0)
-					{
 						out.Cat(n + 2);
-					}
 				}
 			}
 		}
@@ -346,38 +395,32 @@ static String EncodeMask(const PixelArray& mask, bool write_size)
 		out.Cat(1);
 	}
 	if(full < out.GetLength())
-		out.Trim(full);
+		out.SetLength(full);
 	return out;
 }
 
-static void DecodeMask(PixelArray& mask, String s, bool read_size)
+static void DecodeMask(ImageBuffer& mask, String s, bool read_size)
 {
 	Size size = mask.GetSize();
 	const byte *p = s;
-	if(read_size)
-	{
+	if(read_size) {
 		size.cx = PeekIW(p);
 		size.cy = PeekIW(p + 2);
-		mask.CreateMono(size, 8);
 		p += 4;
 	}
-	ASSERT(mask.bpp == 8);
-	PixelSet(mask, mask.GetRect(), 0);
-	for(int i = 0; i < size.cy && *p; i++)
-	{
-		byte *d = mask.GetUpScan(i), *e = d + size.cx;
-		while(*p >= 2 && d < e)
-		{
+	for(int i = 0; i < size.cy && *p; i++) {
+		RGBA *d = mask[size.cy - i - 1], *e = d + size.cx;
+		while(*p >= 2 && d < e) {
 			int n1 = *p++ - 2;
-			if(e - d <= n1)
-			{
-				memset(d, 1, e - d);
+			if(e - d <= n1) {
+				while(d < e)
+					d++->a = 0;
 				break;
 			}
-			memset(d, 1, n1);
-			d += n1;
-			if(*p >= 2)
-			{
+			RGBA *dd = d + n1;
+			while(d < dd)
+				d++->a = 0;
+			if(*p >= 2) {
 				n1 = *p++ - 2;
 				if(e - d <= n1)
 					break;
@@ -644,27 +687,20 @@ double HRRInfo::GetEstimatedFileSize(int _levels, int method, int quality)
 //////////////////////////////////////////////////////////////////////
 // HRR::Block::
 
-void HRR::Block::Init(Size s, Color color, bool mono)
+void HRR::Block::Init(Size s, RGBA color)
 {
 //	static TimingInspector ti("HRR::Block::Init");
 //	ti.Start();
 	size = s;
-	if(!mono)
-	{
-		block.pixel.Create(size, -3);
-		PixelSet(block.pixel, size, Nvl(color, Black));
-	}
-	if(mono || IsNull(color))
-	{
-		block.alpha.Create(size, 8);
-		PixelSet(block.alpha, size, 1);
-	}
+	block.Create(size);
+	Fill(~block, color, block.GetLength());
 }
 
 //////////////////////////////////////////////////////////////////////
 // HRR::
 
-One<ImageEncoder> (*HRR::CreateEncoder)(const HRRInfo& info) = HRR::StdCreateEncoder;
+One<StreamRaster> (*HRR::CreateDecoder)(const HRRInfo& info) = &HRR::StdCreateDecoder;
+One<StreamRasterEncoder> (*HRR::CreateEncoder)(const HRRInfo& info) = &HRR::StdCreateEncoder;
 
 static const Size SUNIT(HRRInfo::UNIT, HRRInfo::UNIT);
 static const Rect RUNIT(0, 0, HRRInfo::UNIT, HRRInfo::UNIT);
@@ -699,50 +735,31 @@ void HRR::Close()
 {
 	stream.Close();
 	pixel_directory.Clear();
-	pixel_cache.Clear();
 	mask_directory.Clear();
-	mask_cache.Clear();
+	image_cache.Clear();
 	directory_sizeof = 0;
 	cache_sizeof = 0;
 	info = HRRInfo();
 }
 
-void HRR::FlushCache(int limit, int keep_pixel, int keep_mask)
+static int GetImageSize(Size sz)
 {
-	int min_pixel = (keep_pixel >= 0 ? 1 : 0);
-	int min_mask = (keep_mask >= 0 ? 1 : 0);
-	while(cache_sizeof > cache_sizeof_limit
-		&& !(pixel_cache.GetCount() <= min_pixel && mask_cache.GetCount() <= min_mask))
-	{
-		if(pixel_cache.GetCount() > min_pixel)
-		{
-			int ind = 0;
-			if(keep_pixel > 0)
-				keep_pixel--;
-			else if(keep_pixel == 0)
-				ind++;
-			cache_sizeof -= pixel_cache[ind].SizeOfInstance();
-			pixel_cache.Remove(ind);
-			if(cache_sizeof <= cache_sizeof_limit)
-				return;
-		}
-		if(mask_cache.GetCount() > min_mask)
-		{
-			int ind = 0;
-			if(keep_mask > 0)
-				keep_mask--;
-			else if(keep_mask == 0)
-				ind++;
-			cache_sizeof -= mask_cache[ind].SizeOfInstance();
-			mask_cache.Remove(ind);
-		}
+	return sizeof(Image) + 32 + sz.cx * sz.cy * sizeof(RGBA);
+}
+
+inline static int GetImageSize(const Image& im) { return GetImageSize(im.GetSize()); }
+
+void HRR::FlushCache(int limit)
+{
+	while(cache_sizeof > cache_sizeof_limit && !image_cache.IsEmpty()) {
+		cache_sizeof -= GetImageSize(image_cache[0]);
+		image_cache.Remove(0);
 	}
 }
 
 void HRR::ClearCache()
 {
-	pixel_cache.Clear();
-	mask_cache.Clear();
+	image_cache.Clear();
 	cache_sizeof = 0;
 }
 
@@ -771,6 +788,29 @@ static Color BlendColor(Color a, int percent, Color b)
 static int StopMsec(int start = 0)
 {
 	return GetTickCount() - start;
+}
+
+static void DrawAlphaImage(Draw& draw, Rect dest, Image img, Rect src, int alpha)
+{
+	if(alpha <= 0)
+		return;
+	alpha += alpha >> 7;
+	if(alpha >= 256) {
+		draw.DrawImage(dest, img, src);
+		return;
+	}
+	Size outsz = min(src.Size(), dest.Size());
+	ImageBuffer temp(outsz);
+	Rescale(ImageWriter(temp, false), outsz, ImageRaster(img), src);
+	for(RGBA *p = ~temp, *e = ~temp + temp.GetLength(); p < e; p++) {
+//		int a = (p->a + (p->a >> 7)) * alpha;
+//		p->r = p->r * a >> 16;
+//		p->g = p->g * a >> 16;
+//		p->b = p->b * a >> 16;
+		p->a = p->a * alpha >> 8;
+	}
+//	temp.SetKind(IMAGE_PREMULTIPLIED);
+	draw.DrawImage(dest, Image(temp));
 }
 
 void HRR::Paint(Draw& draw, Rect dest, Rectf src,
@@ -854,21 +894,12 @@ void HRR::Paint(Draw& draw, const Matrixf& trg_pix, GisTransform transform,
 	if(!IsNull(mono_white))
 		mono_white = BlendColor(mono_white, alpha, Nvl(info.background, White));
 
-	AlphaArray out_blend;
+	ImageBuffer out_blend;
 	if(use_bg) {
-		if(out_pixel) {
-			out_blend.pixel.Create(cdest.Size(), -3);
-			PixelSet(out_blend.pixel, out_blend.pixel.GetRect(), Nvl(info.background, Black));
-		}
-		if(out_alpha) {
-			out_blend.alpha.CreateMono(cdest.Size());
-			out_blend.alpha.palette[0] = mono_black;
-			out_blend.alpha.palette[1] = mono_white;
-			PixelSet(out_blend.alpha, out_blend.alpha.GetRect(), 1);
-		}
+		out_blend.Create(cdest.Size());
+		Fill(out_blend, info.background, out_blend.GetLength());
 	}
-	LOG("out blend: pixel = " << out_blend.pixel.GetSize() << " / " << out_blend.pixel.GetBPP()
-		<< ", alpha = " << out_blend.alpha.GetSize() << " / " << out_blend.alpha.GetBPP());
+	LOG("out blend: " << out_blend.GetSize());
 
 	// calculate interest area in Q-tree blocks
 	int total = 1 << level;
@@ -878,10 +909,10 @@ void HRR::Paint(Draw& draw, const Matrixf& trg_pix, GisTransform transform,
 
 	// prepare clipping & image loader
 	draw.Clip(cdest);
-	One<ImageEncoder> encoder;
+	One<StreamRaster> decoder;
 	if(!info.mono) {
-		encoder = CreateEncoder(info);
-		if(encoder.IsEmpty()) {
+		decoder = CreateDecoder(info);
+		if(decoder.IsEmpty()) {
 			draw.DrawText(cdest.left, cdest.top,
 				String().Cat() << "Unsupported HRR encoding: " << info.GetMethod(), StdFont());
 			draw.End();
@@ -907,6 +938,7 @@ void HRR::Paint(Draw& draw, const Matrixf& trg_pix, GisTransform transform,
 	seginfo.max_depth = HRRInfo::HALF_BITS - 1;
 	double trg_dv = 2 / sqrt(fabs(Determinant(trg_pix)));
 	Rect rclip = clip - cdest.TopLeft();
+	Font err_font = StdFont();
 	for(int y = rc.top; y < rc.bottom; y++)
 		for(int x = rc.left; x < rc.right; x++)
 		{
@@ -938,24 +970,25 @@ void HRR::Paint(Draw& draw, const Matrixf& trg_pix, GisTransform transform,
 //			src &= RUNIT;
 			int pixel_offset = pixel_directory[level][x + y * total];
 			int cimg = -1;
-			if(pixel_offset && use_pixel && (cimg = pixel_cache.Find(pixel_offset)) < 0) {
+			bool newimg = false;
+			if(pixel_offset && use_pixel && (cimg = image_cache.Find(pixel_offset)) < 0) {
+				newimg = true;
 //				Stream64Stream pixel_stream(stream, Unpack64(pixel_offset));
 				stream.Seek(Unpack64(pixel_offset));
-				PixelArray ni = encoder -> LoadArray(stream).pixel;
-				if(ni.IsEmpty())
-				{
+				Image ni = decoder->Load(stream);
+				if(ni.IsEmpty()) {
 					String warn = NFormat("Failed to load block [%d, %d].", x, y);
-					Size sz = draw.GetTextSize(warn);
+					Size sz = GetTextSize(warn, err_font);
 					draw.DrawRect(Rect(dest.CenterPoint(), Size(1, 1)).Inflated(sz + 2), Color(255, 192, 192));
 					draw.DrawText((dest.left + dest.right - sz.cx) >> 1, (dest.top + dest.bottom - sz.cy) >> 1,
 						warn, StdFont(), Black);
 					continue;
 				}
-				cimg = pixel_cache.GetCount();
-				cache_sizeof += ni.SizeOfInstance();
-				pixel_cache.Add(pixel_offset) = ni;
-				FlushCache(cache_sizeof_limit, cimg, -1);
-				cimg = pixel_cache.Find(pixel_offset);
+				cimg = image_cache.GetCount();
+				FlushCache(cache_sizeof_limit - GetImageSize(ni));
+				cache_sizeof += GetImageSize(ni);
+				cimg = image_cache.GetCount();
+				image_cache.Add(pixel_offset) = ni;
 #ifdef _DEBUG
 //				static int part_id = 0;
 //				JpgEncoder().SaveArrayFile(Format("h:\\temp\\part%d.jpg", ++part_id), new_image);
@@ -963,23 +996,23 @@ void HRR::Paint(Draw& draw, const Matrixf& trg_pix, GisTransform transform,
 //				if(!out_blend.IsEmpty())
 //					PixelSetConvert(new_image.pixel, -3);
 			}
-			int mask_offset = mask_directory[level][x + y * total];
-			int cmask = -1;
-			if(mask_offset && use_alpha) {
-				if((cmask = mask_cache.Find(mask_offset)) < 0) {
+			if(newimg) {
+				int mask_offset = mask_directory[level][x + y * total];
+				int cmask = -1;
+				if(mask_offset && use_alpha && (cmask = image_cache.Find(-mask_offset)) < 0) {
+					Size sz(0, 0);
 					stream.Seek(Unpack64(mask_offset));
-					cmask = mask_cache.GetCount();
-					PixelArray& new_mask = mask_cache.Add(mask_offset);
 					int len = stream.GetIL();
-					String data;
 					ASSERT(len >= 0 && len < HRRInfo::UNIT * (HRRInfo::UNIT + 1) + 1);
-					stream.Get(data.GetBuffer(len), len);
-					data.ReleaseBuffer(len);
+					StringBuffer data(len);
+					stream.Get(data, len);
+//					String s = data;
 					if(version < 5) {
-						Size sz(0, 0);
 						if(cimg >= 0)
-							sz = pixel_cache[cimg].GetSize();
-						else if(pixel_offset) {
+							sz = image_cache[cimg].GetSize();
+						else {
+							if(!pixel_offset)
+								continue;
 							int csize = size_cache.Find(pixel_offset);
 							if(csize < 0) {
 								if(size_cache.GetCount() >= 10000)
@@ -987,118 +1020,75 @@ void HRR::Paint(Draw& draw, const Matrixf& trg_pix, GisTransform transform,
 								int64 pixpos = Unpack64(pixel_offset);
 								if(pixpos > stream.GetSize())
 									stream.SetSize(pixpos);
-//								stream.Seek(pixpos);
+	//								stream.Seek(pixpos);
 								csize = size_cache.GetCount();
-//								Stream64Stream pixel_stream(stream, pixpos);
+	//								Stream64Stream pixel_stream(stream, pixpos);
 								stream.Seek(pixpos);
-								size_cache.Add(pixel_offset, encoder -> InfoImage(stream).size);
+								Size sz = 0;
+								if(decoder->Open(stream))
+									sz = decoder->GetSize();
+								size_cache.Add(pixel_offset, sz);
 							}
 							sz = size_cache[csize];
 						}
-						if(sz.cx <= 0 || sz.cy <= 0)
-							continue;
-						new_mask = PixelArray::Mono(sz);
 					}
-					DecodeMask(new_mask, data, version >= 5);
-					cache_sizeof += new_mask.SizeOfInstance();
-					FlushCache(cache_sizeof_limit, cimg, cmask);
-					if(cimg >= 0) cimg = pixel_cache.Find(pixel_offset);
-					cmask = mask_cache.Find(mask_offset);
+					if(sz.cx > 0 && sz.cy > 0) {
+						if(cimg < 0) {
+							FlushCache(cache_sizeof_limit - GetImageSize(sz));
+							cmask = image_cache.GetCount();
+							cache_sizeof += GetImageSize(sz);
+							ImageBuffer ibuf(sz);
+							Fill(~ibuf, RGBAZero(), ibuf.GetLength());
+							DecodeMask(ibuf, data, version >= 5);
+							image_cache.Add(-mask_offset) = Image(ibuf);
+						}
+						else {
+							ImageBuffer ibuf(image_cache[cimg]);
+							DecodeMask(ibuf, data, version >= 5);
+							image_cache[cimg] = ibuf;
+						}
+					}
 				}
-				mask_cache[cmask].palette[0] = mono_black;
-				mask_cache[cmask].palette[1] = mono_white;
+				if(cimg < 0)
+					cimg = cmask;
 			}
-			if(cimg < 0 && cmask < 0) {
+			if(cimg < 0) {
 				LLOG("[" << StopMsec(ticks) << "] pixel off, mask off");
 				if(!is_straight && !IsNull(info.background))
-					AlphaTransformPaint(out_blend, AlphaArray(), tplanar, tleft, ttop, tright, tbottom, seginfo, info.background);
+					AlphaTransformPaint(out_blend, Image(), tplanar, tleft, ttop, tright, tbottom, seginfo, info.background);
 				else if(use_pixel)
 					draw.DrawRect(dest, info.background);
 			}
-			else if(cimg < 0) {
-				const PixelArray& mask = mask_cache[cmask];
-				LLOG("[" << StopMsec(ticks) << "] pixel off, mask on");
+			else {
+				const Image& img = image_cache[cimg];
 				if(!use_bg) {
 					LLOG("[" << StopMsec(ticks) << "] !use_bg -> direct mask blend");
-					AlphaArray out_part;
-					out_part.pixel <<= mask;
-					DrawAlphaBlend(draw, dest, src, 100, out_part, blend_bgnd);
+					if(alpha >= 100)
+						draw.DrawImage(dest, img, src);
+					else
+						DrawAlphaImage(draw, dest, img, src, minmax(alpha * 256 / 100, 0, 255));
+//					DrawAlphaBlend(draw, dest, src, 100, out_part, blend_bgnd);
 				}
 				else if(!is_straight) {
 					LLOG("[" << StopMsec(ticks) << "] use_bg -> twisted mask blend");
-					AlphaTransformPaint(out_blend.pixel, out_blend.alpha, PixelArray(), mask,
+					AlphaTransformPaint(out_blend, img,
 						tplanar, tleft, ttop, tright, tbottom, seginfo, LtRed());
 				}
-				else if(is_bw) {
+				else {
 					LLOG("[" << StopMsec(ticks) << "] use_bg -> buffered colored mask blend");
-					PixelCopyAntiAlias(out_blend.pixel, rdest, mask, src, rclip);
-				}
-				else {
-					LLOG("[" << StopMsec(ticks) << "] use_bg -> buffered mask only blend");
-					PixelCopyAntiAliasMaskOnly(out_blend.alpha, rdest, mask, src, true, false, rclip);
-				}
-			}
-			else if(cmask < 0) {
-				LLOG("[" << StopMsec(ticks) << "] pixel on, mask off");
-				if(!use_bg) {
-					LLOG("[" << StopMsec(ticks) << "] !use_bg -> direct maskless data blend");
-					AlphaArray out_part;
-					out_part.pixel <<= pixel_cache[cimg];
-					DrawAlphaBlend(draw, dest, src, alpha, out_part, Nvl(info.background, blend_bgnd));
-				}
-				else if(!is_straight) {
-					LLOG("[" << StopMsec(ticks) << "] use_bg -> twisted data only blend");
-					AlphaTransformPaint(out_blend.pixel, out_blend.alpha, pixel_cache[cimg], PixelArray(),
-						tplanar, tleft, ttop, tright, tbottom, seginfo, LtRed());
-				}
-				else {
-					LLOG("[" << StopMsec(ticks) << "] use_bg -> buffered data only blend");
-					PixelCopyAntiAlias(out_blend.pixel, rdest, pixel_cache[cimg], src, rclip);
-					if(!out_blend.alpha.IsEmpty())
-						PixelSet(out_blend.alpha, rdest, 0);
-				}
-			}
-			else {
-				LLOG("[" << StopMsec(ticks) << "] pixel on, mask on");
-				if(!use_bg) {
-					LLOG("[" << StopMsec(ticks) << "] !use_bg -> direct masked data blend");
-					AlphaArray out_part;
-					out_part.pixel <<= pixel_cache[cimg];
-					if(IsNull(blend_bgnd))
-						out_part.alpha <<= mask_cache[cmask];
-					else {
-						PixelSetConvert(out_part.pixel, -3);
-						PixelKillMask(out_part.pixel, mask_cache[cmask], blend_bgnd);
-					}
-					PixelAlphaBlend(out_part.pixel, Nvl(info.background, blend_bgnd), alpha, src);
-					DrawAlphaBlend(draw, dest, src, 100, out_part, blend_bgnd);
-				}
-				else if(!is_straight) {
-					LLOG("[" << StopMsec(ticks) << "] use_bg -> twisted full blend");
-					AlphaTransformPaint(out_blend.pixel, out_blend.alpha, pixel_cache[cimg], mask_cache[cmask],
-						tplanar, tleft, ttop, tright, tbottom, seginfo, LtRed());
-				}
-				else {
-					LLOG("[" << StopMsec(ticks) << "] use_bg -> indirect masked data blend");
-					PixelCopyAntiAliasMaskOut(out_blend.pixel, out_blend.alpha, rdest,
-						pixel_cache[cimg], mask_cache[cmask], src, true, false, rclip);
+					ImageWriter writer(out_blend, rdest.TopLeft(), rclip);
+					Rescale(writer, rdest.Size(), ImageRaster(img), src);
 				}
 			}
 		}
 
-	if(use_bg)
-	{
-		if(!out_pixel)
-		{
-			LLOG("[" << StopMsec(ticks) << "] use_bg, mask flush");
-			out_blend.pixel = out_blend.alpha;
-			out_blend.alpha.Clear();
+	if(use_bg) {
+		if(alpha < 100) {
+			int coef = alpha * 255 / 100;
+			for(RGBA *p = ~out_blend, *e = p + out_blend.GetLength(); p < e; p++)
+				p->a = (p->a * coef) >> 8;
 		}
-		else
-		{
-			LLOG("[" << StopMsec(ticks) << "] use_bg, pixel & mask flush");
-		}
-		DrawAlphaBlend(draw, cdest, out_blend.GetRect(), alpha, out_blend, blend_bgnd);
+		draw.DrawImage(cdest, out_blend);
 	}
 	draw.End();
 	LLOG(EndIndent << "[" << StopMsec(ticks) << "] //HRR::Paint");
@@ -1223,7 +1213,7 @@ void HRR::Write(Writeback drawback, bool downscale)
 		stream.SetSize(mu);
 		map_offset = 0;
 	}
-	One<ImageEncoder> encoder = CreateEncoder(info);
+	One<StreamRasterEncoder> encoder = CreateEncoder(info);
 	if(!encoder)
 		throw Exc(String().Cat() << "Unsupported HRR encoding: " << info.GetMethod());
 
@@ -1268,7 +1258,7 @@ Rectf HRR::GetLogBlockRect(int level, const Rect& rc) const
 }
 
 bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
-				ImageEncoder& format, Block *put)
+				StreamRasterEncoder& format, Block *put)
 {
 	static const Size SUNIT(info.UNIT, info.UNIT);
 	Block block(*this);
@@ -1281,7 +1271,7 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 //		__part.Start();
 		int count = info.levels - level - 1;
 		// step & render individual images
-		block.Init(SUNIT << count, info.background, info.mono);
+		block.Init(SUNIT << count, info.background);
 //		__part.End();
 		block.level = level + count;
 		block.area = RectC(px << count, py << count, 1 << count, 1 << count);
@@ -1300,15 +1290,13 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 					Size part_size = GetLogBlockSize(GetLogBlockRect(level + count, RectC(a.cx, a.cy, 1, 1)), info.log_rect);
 					if(part_size.cx <= 0 || part_size.cy <= 0)
 						continue;
-
-					AlphaArray part = AlphaCrop(block.block, Rect(src, part_size));
+					ImageBuffer part(part_size);
+					RasterCopy(ImageWriter(part), ImageRaster(block.block), Rect(src, part_size));
 					int lin = (int)((px << count) + a.cx + (((py << count) + a.cy) << (count + level)));
 //					TIMING("HRR::Write / save (direct)");
-					if(info.mono || IsNull(info.background))
-					{
-						int kind = GetMaskInfo(part.alpha);
-						if(kind != 1 && !info.mono)
-						{
+					if(info.mono || IsNull(info.background)) {
+						int kind = GetMaskInfo(~part, part.GetLength());
+						if(kind != 1 && !info.mono) {
 							int pixoff = CeilPack64(stream.GetPos());
 							pixel_directory[level + count][lin] = pixoff;
 							int64 pixpos = Unpack64(pixoff);
@@ -1316,11 +1304,10 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 								stream.Put(0, (int)(pixpos - stream.GetSize()));
 							stream.Seek(pixpos);
 //							Stream64Stream pixstream(stream, pixpos);
-							format.SaveArray(stream, part);
+							format.Save(stream, part);
 						}
-						if(kind == 2 || (kind == 1 && info.mono))
-						{
-							String s = EncodeMask(part.alpha, version >= 5);
+						if(kind == 2 || (kind == 1 && info.mono)) {
+							String s = EncodeMask(part, version >= 5);
 							ASSERT(s.GetLength() >= 4);
 							int maskoff = CeilPack64(stream.GetPos());
 							mask_directory[level + count][lin] = maskoff;
@@ -1341,24 +1328,18 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 							stream.Put(0, (int)(pixpos - stream.GetSize()));
 						stream.Seek(pixpos);
 //						Stream64Stream pixstream(stream, pixpos);
-						format.SaveArray(stream, part);
+						format.Save(stream, part);
 					}
 				}
 			if(--count >= 0) // reduce image
-				if(downscale)
-				{
-					AlphaArray new_data;
+				if(downscale) {
 					Size sz = SUNIT << count;
-					if(!info.mono)
-						new_data.pixel.Create(sz, -3);
-					if(info.mono || IsNull(info.background))
-						new_data.alpha.CreateMono(sz);
-					PixelCopyAntiAliasMaskOut(new_data, sz, block.block, block.size, false, false);
+					ImageBuffer new_data(sz);
+					Rescale(ImageWriter(new_data), sz, ImageRaster(block.block), block.size);
 					block.block = new_data;
 				}
-				else
-				{
-					block.Init(SUNIT << count, info.background, info.mono);
+				else {
+					block.Init(SUNIT << count, info.background);
 					block.level = level + count;
 					block.area = RectC(px << count, py << count, 1 << count, 1 << count);
 					drawback(block);
@@ -1369,12 +1350,11 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 	{ // too big - bisect to generate higher level
 //		TIMING("HRR::Write (long step)");
 		Block *ptr = 0;
-		if(downscale)
-		{
+		if(downscale) {
 			Size part_size = GetLogBlockSize(GetLogBlockRect(level, RectC(px, py, 1, 1)), info.log_rect);
 			if(part_size.cx <= 0 || part_size.cy <= 0)
 				return false;
-			block.Init(part_size, info.background, info.mono);
+			block.Init(part_size, info.background);
 			ptr = &block;
 		}
 		bool done = Write(drawback, downscale, level + 1, 2 * px + 0, 2 * py + 0, format, ptr);
@@ -1383,9 +1363,8 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 		done     |= Write(drawback, downscale, level + 1, 2 * px + 1, 2 * py + 1, format, ptr);
 		if(!done && downscale)
 			return false;
-		if(!downscale)
-		{
-			block.Init(SUNIT, info.background, info.mono);
+		if(!downscale) {
+			block.Init(SUNIT, info.background);
 			block.level = level;
 			block.area = RectC(px, py, 1, 1);
 			block.log_area = GetLogBlockRect(block.level, block.area);
@@ -1393,11 +1372,9 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 		}
 		int lin = px + (py << level);
 //		TIMING("HRR::Write / save (indirect)");
-		if(info.mono || IsNull(info.background))
-		{
-			int kind = GetMaskInfo(block.block.alpha);
-			if(kind != 1 && !info.mono)
-			{
+		if(info.mono || IsNull(info.background)) {
+			int kind = GetMaskInfo(block.block, block.block.GetLength());
+			if(kind != 1 && !info.mono) {
 				int pixoff = CeilPack64(stream.GetPos());
 				pixel_directory[level][lin] = pixoff;
 				int64 pixpos = Unpack64(pixoff);
@@ -1405,11 +1382,10 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 					stream.Put(0, (int)(pixpos - stream.GetSize()));
 				stream.Seek(pixpos);
 				//Stream64Stream pixstream(stream, pixpos);
-				format.SaveArray(stream, block.block);
+				format.Save(stream, block.block);
 			}
-			if(kind == 2 || (kind == 1 && info.mono))
-			{
-				String s = EncodeMask(block.block.alpha, version >= 5);
+			if(kind == 2 || (kind == 1 && info.mono)) {
+				String s = EncodeMask(block.block, version >= 5);
 				ASSERT(s.GetLength() >= 4);
 				int maskoff = CeilPack64(stream.GetPos());
 				mask_directory[level][lin] = maskoff;
@@ -1430,15 +1406,14 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 				stream.Put(0, (int)min<int64>(pixpos - stream.GetSize(), 1 << 24));
 			stream.Seek(pixpos);
 			//Stream64Stream pixstream(stream, pixpos);
-			format.SaveArray(stream, block.block);
+			format.Save(stream, block.block);
 		}
 	}
-	if(put)
-	{
+	if(put) {
 //		TIMING("HRR::Write / put");
-		Rect org = RectC((px & 1 ) << info.HALF_BITS, (py & 1) << info.HALF_BITS,
+		Rect org = RectC((px & 1) << info.HALF_BITS, (py & 1) << info.HALF_BITS,
 			1 << info.HALF_BITS, 1 << info.HALF_BITS);
-		PixelCopyAntiAliasMaskOut(put -> block, org, block.block, RUNIT, false, false);
+		Rescale(ImageWriter(put->block, org.TopLeft()), org.Size(), ImageRaster(block.block), RUNIT);
 	}
 	return true;
 }
@@ -1468,4 +1443,24 @@ void HRR::FlushMap()
 int HRR::SizeOfInstance() const
 {
 	return sizeof(*this) + directory_sizeof + cache_sizeof;
+}
+
+One<StreamRaster> HRR::StdCreateDecoder(const HRRInfo& info)
+{
+	switch(info.GetMethod()) {
+		case HRRInfo::METHOD_GIF: return new GIFRaster;
+		case HRRInfo::METHOD_JPG: return new JPGRaster;
+		case HRRInfo::METHOD_PNG: return new PNGRaster;
+		default: return NULL;
+	}
+}
+
+One<StreamRasterEncoder> HRR::StdCreateEncoder(const HRRInfo& info)
+{
+	switch(info.GetMethod()) {
+		case HRRInfo::METHOD_GIF: return new GIFEncoder;
+		case HRRInfo::METHOD_JPG: return new JPGEncoder(info.quality);
+		case HRRInfo::METHOD_PNG: return new PNGEncoder;
+		default: return NULL;
+	}
 }

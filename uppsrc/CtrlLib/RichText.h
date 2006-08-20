@@ -49,6 +49,7 @@ public:
 
 	void            Clear();
 	void            Pick(pick_ RichText& t);
+	void            Pick(pick_ RichText& txt, Zoom z);
 	void            SetQTF(const char *qtf, Zoom z = Zoom(1, 1), bool scolors = false);
 	const RichText& Get() const                               { return text; }
 	String          GetQTF(byte cs = CHARSET_UTF8) const      { return AsQTF(text, cs); }
@@ -144,22 +145,25 @@ private:
 	void FontSize();
 	void Tools(Bar& bar);
 	void TreeCursor();
-	void SetBar();
 	void SetZoom();
 	void Print();
 	Pos  GetPos();
 
 public:
 	virtual Topic AcquireTopic(const String& topic);
+	virtual void  FinishText(RichText& text);
 	virtual void  BarEx(Bar& bar);
 
 	void GoTo(const String& link);
 
+	void SetBar();
 	void Serialize(Stream& s);
 
 	void ClearTree();
 	int  AddTree(int parent, const Image& img, const String& topic, const String& title);
+	void SortTree(int id = 0);
 	void FinishTree();
+	void OpenDeep(int id = 0);
 
 	String GetCurrent() const                     { return topic; }
 	String GetCurrentLabel() const                { return label; }

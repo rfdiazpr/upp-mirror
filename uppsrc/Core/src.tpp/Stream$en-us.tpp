@@ -1,951 +1,481 @@
 TITLE("Streams")
-REF("::Stream::class")
-REF("::Stream::pos")
-REF("::Stream::buffer")
-REF("::Stream::ptr")
-REF("::Stream::rdlim")
-REF("::Stream::wrlim")
-REF("::Stream::_Put(int)")
-REF("::Stream::_Term()")
-REF("::Stream::_Get()")
-REF("::Stream::_Put(const void*,::dword)")
-REF("::Stream::_Get(void*,::dword)")
-REF("::Stream::Seek(::int64)")
-REF("::Stream::GetSize()const")
-REF("::Stream::SetSize(::int64)")
-REF("::Stream::Flush()")
-REF("::Stream::Close()")
-REF("::Stream::IsOpen()const")
-REF("::Stream::IsError()const")
-REF("::Stream::IsOK()const")
-REF("::Stream::SetError(int)")
-REF("::Stream::SetLastError()")
-REF("::Stream::GetError()const")
-REF("::Stream::ClearError()")
-REF("::Stream::GetPos()const")
-REF("::Stream::IsEof()const")
-REF("::Stream::GetLeft()const")
-REF("::Stream::SeekEnd(::int64)")
-REF("::Stream::SeekCur(::int64)")
-REF("::Stream::Put(int)")
-REF("::Stream::Term()")
-REF("::Stream::Get()")
-REF("::Stream::Put(const void*,::dword)")
-REF("::Stream::Get(void*,::dword)")
-REF("::Stream::LoadThrowing()")
-REF("::Stream::LoadError()")
-REF("::Stream::GetAll(void*,::dword)")
-REF("::Stream::Get8()")
-REF("::Stream::Get16()")
-REF("::Stream::Get32()")
-REF("::Stream::Get64()")
-REF("::Stream::Get16le()")
-REF("::Stream::Get32le()")
-REF("::Stream::Get64le()")
-REF("::Stream::Get16be()")
-REF("::Stream::Get32be()")
-REF("::Stream::Get64be()")
-REF("::Stream::GetLine()")
-REF("::Stream::GetUtf8()")
-REF("::Stream::Put16(word)")
-REF("::Stream::Put32(int)")
-REF("::Stream::Put64(::int64)")
-REF("::Stream::Put16le(word)")
-REF("::Stream::Put32le(int)")
-REF("::Stream::Put64le(::int64)")
-REF("::Stream::Put16be(word)")
-REF("::Stream::Put32be(int)")
-REF("::Stream::Put64be(::int64)")
-REF("::Stream::PutUtf8(int)")
-REF("::Stream::Put(const char*)")
-REF("::Stream::Put(const::String&)")
-REF("::Stream::Put(int,int)")
-REF("::Stream::Put0(int)")
-REF("::Stream::PutW(const::wchar*,int)")
-REF("::Stream::GetW(::wchar*,int)")
-REF("::Stream::GetAllW(::wchar*,int)")
-REF("::Stream::PutCrLf()")
-REF("::Stream::PutEol()")
-REF("::Stream::PutLine(const char*)")
-REF("::Stream::PutLine(const::String&)")
-REF("::Stream::Put(::Stream&,::int64,::dword)")
-REF("::Stream::Putf(int)")
-REF("::Stream::Putf(const char*)")
-REF("::Stream::Putf(const::String&)")
-REF("::Stream::Begin()")
-REF("::Stream::End()")
-REF("::Stream::operator<<(BeginIndentEnum)")
-REF("::Stream::operator<<(EndIndentEnum)")
-REF("::Stream::SetLoading()")
-REF("::Stream::SetStoring()")
-REF("::Stream::IsLoading()")
-REF("::Stream::IsStoring()")
-REF("::Stream::SerializeRaw(::byte*,::dword)")
-REF("::Stream::SerializeRaw(word*,::dword)")
-REF("::Stream::SerializeRaw(::dword*,::dword)")
-REF("::Stream::SerializeRaw(::uint64*,::dword)")
-REF("::Stream::operator%(bool&)")
-REF("::Stream::operator%(char&)")
-REF("::Stream::operator%(signed char&)")
-REF("::Stream::operator%(unsigned char&)")
-REF("::Stream::operator%(short&)")
-REF("::Stream::operator%(unsigned short&)")
-REF("::Stream::operator%(int&)")
-REF("::Stream::operator%(unsigned int&)")
-REF("::Stream::operator%(long&)")
-REF("::Stream::operator%(unsigned long&)")
-REF("::Stream::operator%(float&)")
-REF("::Stream::operator%(double&)")
-REF("::Stream::operator%(::int64&)")
-REF("::Stream::operator%(::uint64&)")
-REF("::Stream::operator%(::String&)")
-REF("::Stream::operator/(::String&)")
-REF("::Stream::operator%(::WString&)")
-REF("::Stream::operator/(::WString&)")
-REF("::Stream::Pack(::dword&)")
-REF("::Stream::operator/(int&)")
-REF("::Stream::operator/(unsigned int&)")
-REF("::Stream::Magic(::dword)")
-REF("::Stream::Pack(bool&,bool&,bool&,bool&,bool&,bool&,bool&,bool&)")
-REF("::Stream::Pack(bool&,bool&,bool&,bool&,bool&,bool&,bool&)")
-REF("::Stream::Pack(bool&,bool&,bool&,bool&,bool&,bool&)")
-REF("::Stream::Pack(bool&,bool&,bool&,bool&,bool&)")
-REF("::Stream::Pack(bool&,bool&,bool&,bool&)")
-REF("::Stream::Pack(bool&,bool&,bool&)")
-REF("::Stream::Pack(bool&,bool&)")
-REF("::Stream::Stream()")
-REF("::Stream::~Stream()")
-REF("::StringStream::class")
-REF("::StringStream::Open(const::String&)")
-REF("::StringStream::Create()")
-REF("::StringStream::GetResult()")
-REF("::StringStream::operator::String()")
-REF("::StringStream::StringStream()")
-REF("::StringStream::StringStream(const::String&)")
-REF("::MemStream::class")
-REF("::MemStream::MemStream(void*,int)")
-REF("::MemReadStream::class")
-REF("::MemReadStream::MemReadStream(const void*,int)")
-REF("::BlockStream::class")
-REF("::BlockStream::READ")
-REF("::BlockStream::CREATE")
-REF("::BlockStream::APPEND")
-REF("::BlockStream::READWRITE")
-REF("::BlockStream::NOWRITESHARE")
-REF("::BlockStream::DELETESHARE")
-REF("::BlockStream::NOREADSHARE")
-REF("::BlockStream::Read(::int64,void*,::dword)")
-REF("::BlockStream::Write(::int64,const void*,::dword)")
-REF("::BlockStream::SetStreamSize(::int64)")
-REF("::BlockStream::GetMediaSize()const")
-REF("::BlockStream::OpenInit(::dword,::int64)")
-REF("::BlockStream::SetBufferSize(::dword)")
-REF("::BlockStream::GetBufferSize()const")
-REF("::FileStream::class")
-REF("::FileStream::FileStream(const char*,::dword)")
-REF("::FileStream::FileStream(const char*,::dword,mode_t)")
-REF("::FileStream::FileStream(int)")
-REF("::FileStream::FileStream()")
-REF("::FileStream::operator bool()const")
-REF("::FileStream::GetTime()const")
-REF("::FileStream::SetTime(const::FileTime&)")
-REF("::FileStream::Open(const char*,::dword,mode_t)")
-REF("::FileStream::GetHandle()const")
-REF("::FileIn::class")
-REF("::FileIn::FileIn(const char*)")
-REF("::FileIn::FileIn()")
-REF("::FileIn::Open(const char*)")
-REF("::FileOut::class")
-REF("::FileOut::FileOut(const char*)")
-REF("::FileOut::FileOut()")
-REF("::FileOut::Open(const char*,mode_t)")
-REF("::FileAppend::class")
-REF("::FileAppend::FileAppend(const char*)")
-REF("::FileAppend::FileAppend()")
-REF("::FileAppend::Open(const char*)")
-REF("::SizeStream::class")
-REF("::SizeStream::SizeStream()")
-REF("::SizeStream::_Put(int)")
-REF("::SizeStream::Open()")
-REF("::CompareStream::class")
-REF("::CompareStream::CompareStream()")
-REF("::CompareStream::CompareStream(::Stream&)")
-REF("::CompareStream::_Put(int)")
-REF("::CompareStream::IsEqual()")
-REF("::CompareStream::operator bool()")
-TOPIC_TEXT(
-"[2 $$0,0#00000000000000000000000000000000:Default][l288;i1120;a17;O9;~~~.1408;2 "
-"$$1,0#10431211400427159095818037425705:param][a83;*R6 $$2,5#31310162474203024125188417583966:caption][b83;*4 "
-"$$3,5#07864147445237544204411237157677:title][i288;O9;C2 $$4,6#40027414424643823182269349404212:item][b42;a42;2 "
-"$$5,5#45413000475342174754091244180557:text][l288;b17;a17;2 $$6,6#27521748481378242620020725143825:")
-TOPIC_TEXT(
-"desc][l321;t246;C@5;1 $$7,7#20902679421464641399138805415013:code][b2503; $$8,0#65142375456100023862071332075487:separator][*@(0.0.255)2 "
-"$$9,0#83433469410354161042741608181528:base][t4167;C $$10,0#37138531426314131251341829483380:class][l288;a17;*1 "
-"$$11,11#70004532496200323422659154056402:requirement][i417;b42;a42;O9;~~~.416;2 $$12,12#10566046415157235020018451313112:tparam][b167;C2 "
-"$$13,13#924304")
-TOPIC_TEXT(
-"59443460461911108080531343:item1][i288;a42;O9;C2 $$14,14#77422149456609303542238260500223:item2][*@2$(0.128.128) "
-"$$15,15#34511555403152284025741354420178:NewsDate][l321;*C$7;2 $$16,16#03451589433145915344929335295360:result][l321;b83;a83;*C$7;2 "
-"$$17,17#07531550463529505371228428965313:result`-line][l160;t4167;*C+117 $$18,5#88603949442205825958800053222425:package`-title][ "
-"$$19,0#535800234423355290")
-TOPIC_TEXT(
-"39900623488521:gap][t4167;C2 $$20,20#70211524482531209251820423858195:class`-nested][b50;2 "
-"$$21,21#03324558446220344731010354752573:Par][{_}%EN-US [s2; Streams&][ {{993:993:993:993:995:996:987:1013:1016:1021f0;g33;GNl17/25r17/4t17/0b17/0@7-2 "
-"[s0;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:Stream`:`:class Stream^1 Stream]::l0/25r0/25t0/15b0/15@2-1 "
-"[s0; ]:: [s0; ]::r/4t/0b/0 [s0;1 ]:: [s0;1 ]:: [s0;1")
-TOPIC_TEXT(
-" ]:: [s0;1 ]:: [s0;1 ]:: [s5;1 ]:: [s5;1 ]:: [s0;1 ]::l17/25r17/4t17/0b17/0@7-2 "
-"[s0;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:StringStream`:`:class StringStream^1 "
-"StringStream]::l0/25r0/25t0/15b0/15@2-1 [s0; ]:: [s0; ]::r/4t/0b/0 [s0;1 ]:: [s0;1 "
-"]:: [s0;1 ]:: [s0;1 ]:: [s5;1 ]:: [s5;1 ]:: [s0;1 ]::l17/25r17/4t17/0b17/0@7-2 [s0;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:MemStream`:`:class "
-"MemStrea")
-TOPIC_TEXT(
-"m^1 MemStream]::l0/25r0/25t0/15b0/15@2-1 [s0; ]:: [s0; ]::r/4t/0b/0 [s0;1 ]:: [s0;1 "
-"]:: [s0;1 ]:: [s0;1 ]:: [s5;1 ]:: [s5;1 ]:: [s0;1 ]:: [s0;1 ]::l17/25r17/4t17/0b17/0@7-2 "
-"[s0;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:MemReadStream`:`:class MemReadStream^1 "
-"MemReadStream]::l0/25r0/25t0/15b0/15@2-1 [s0; ]:: [s0; ]::r/4t/0b/0 [s0;1 ]:: [s0;1 "
-"]:: [s0;1 ]:: [s5;1 ]:: [s5;1 ]:: [s0;1 ]::l17/25r17/4t17")
-TOPIC_TEXT(
-"/0b17/0@7-2 [s0;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:BufferStream`:`:class "
-"BufferStream^1 BufferStream]::l0/25r0/25t0/15b0/15@2-1 [s0; ]:: [s0; ]::r/4t/0b/0 "
-"[s0;1 ]:: [s0;1 ]:: [s0;1 ]:: [s0;1 ]:: [s5;1 ]:: [s5;1 ]:: [s0;1 ]:: [s0;1 ]::l17/25r17/4t17/0b17/0@7-2 "
-"[s0;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:BlockStream`:`:class BlockStream^1 "
-"BlockStream]::l0/25r0/25t0/15b0/15@2-1 [s0; ]:: [s")
-TOPIC_TEXT(
-"0; ]::r/4t/0b/0 [s0;1 ]:: [s0;1 ]:: [s0;1 ]:: [s5;1 ]:: [s5;1 ]:: [s0;1 ]:: [s0;1 "
-"]:: [s0;1 ]::l17/25r17/4t17/0b17/0@7-2 [s0;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:FileStream`:`:class "
-"FileStream^1 FileStream]::l0/25r0/25t0/15b0/15@2-1 [s0; ]:: [s0; ]::r/4t/0b/0 [s0;1 "
-"]:: [s0;1 ]:: [s5;1 ]:: [s5;1 ]:: [s0;1 ]:: [s0;1 ]:: [s0;1 ]:: [s0;1 ]::l17/25r17/4t17/0b17/0@7-2 "
-"[s0;^topic`:`/`/Core`/src`/St")
-TOPIC_TEXT(
-"ream`$en`-us`#`:`:FileIn`:`:class FileIn^1 FileIn]::l0/25r0/25t0/15b0/15@2-1 [s0; "
-"]:: [s0; ]::r/4t/0b/0 [s0;1 ]:: [s5;1 ]:: [s5;1 ]:: [s0;1 ]:: [s0;1 ]:: [s0;1 ]:: "
-"[s0;1 ]::l17/25r17/4t17/0b17/0@7-2 [s0;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:FileOut`:`:class "
-"FileOut^1 FileOut]::l0/25r0/25t0/15b0/15@2-1 [s0; ]:: [s0; ]::r/4t/0b/0 [s0;1 ]:: "
-"[s5;1 ]:: [s5;1 ]:: [s0;1 ]:: [s0;1 ]:: [s0;1 ]:: [s0;1")
-TOPIC_TEXT(
-" ]::l17/25r17/4t17/0b17/0@7-2 [s0;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:FileAppend`:`:class "
-"FileAppend^1 FileAppend]::l0/25r0/25t0/15b0/15@2-1 [s0; ]:: [s0; ]::r/4t/0b/0 [s0;1 "
-"]:: [s5;1 ]:: [s5;1 ]:: [s0;1 ]:: [s0;1 ]::l17/25r17/4t17/0b17/0@7-2 [s0;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:SizeStream`:`:class "
-"SizeStream^1 SizeStream]::l0/25r0/25t0/15b0/15@2-1 [s0; ]:: [s0; ]::r/4t/0b/0 [s0;1")
-TOPIC_TEXT(
-" ]:: [s0;1 ]:: [s0;1 ]:: [s5;1 ]:: [s5;1 ]:: [s0;1 ]:: [s0;1 ]::l17/25r17/4t17/0b17/0@7-2 "
-"[s0;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:CompareStream`:`:class CompareStream^1 "
-"CompareStream]::l0/25r0/25t0/15b0/15@2-1 [s0; ]:: [s0; ]::r/4t/0b/0 [s0;1 ]:: [s0;1 "
-"]:: [s0;1 ]:: [s5;1 ]:: [s5;1 ]}}&][s5; &][s0;3 &][s10;:`:`:Stream`:`:class:* [%00-00* "
-"class_][%00-00 Stream]&][s6; &][s6; Stream is the bas")
-TOPIC_TEXT(
-"e class of all U`+`+ streams.&][s6; U`+`+ streams generally serve in three different "
-"roles:&][s6;i150;O0; As basic raw binary streams.&][s6;i150;O0; As text output with "
-"enhanced indentation feature. This is realized by storing indentation level in the "
-"stream and inserting the corresponding number of `'`\\t`' characters at the beginning "
-"of each line (Putf method must be used instead of Put).&][s6;i1")
-TOPIC_TEXT(
-"50;O0; As binary serialization target/source. This mainly needs to store flag indicating "
-"serialization direction.&][s6; In order to achieve optimal performance of buffered "
-"stream operations, the most frequent operations have a little bit more complicated "
-"implementation that demands proper definition of virtual methods, as they must correctly "
-"adjust some protected data members of Stream. Therefore ")
-TOPIC_TEXT(
-"the implementation of some method can be considered a part of interface definition:&][s7; "
-"void  Stream`::Put(int c)&][s7; `{&][s7; -|if(ptr < wrlim)&][s7; -|-|`*ptr`+`+ `= "
-"c;&][s7; -|else&][s7; -|-|`_Put(c);&][s7; `}&][s7; &][s7; int  Stream`::Term()&][s7; "
-"`{&][s7; -|return ptr < rdlim ? `*ptr : `_Term();&][s7; `}&][s7; &][s7; int  Stream`::Get()&][s7; "
-"`{&][s7; -|return ptr < rdlim ? `*ptr`+`+ : `")
-TOPIC_TEXT(
-"_Get();&][s7; `}&][s7; &][s7; int64 Stream`::GetPos() const&][s7; `{&][s7; -|return "
-"dword(ptr `- buffer) `+ pos;&][s7; `}&][s7; &][s0;3 &][s3; [%00-00 Protected members "
-"for Stream implementation]&][s4; &][s4;:`:`:Stream`:`:pos:* [%00-00* int64_][%00-00 "
-"pos]&][s11; [%00-00 Protected.]&][s6; Position of buffer in the stream.&][s0;3 &][s4;:`:`:Stream`:`:buffer:* "
-"[%00-00* byte_`*][%00-00 buffer]&][s11")
-TOPIC_TEXT(
-"; Protected.&][s6; Pointer to beginning of buffer.&][s0;3 &][s4;:`:`:Stream`:`:ptr:* "
-"[%00-00* byte_`*][%00-00 ptr]&][s11; Protected.&][s6; Pointer to current input/output "
-"byte.&][s0;3 &][s4;:`:`:Stream`:`:rdlim:* [%00-00* byte_`*][%00-00 rdlim]&][s11; "
-"Protected.&][s6; Read limit. [* Get] method returns values from buffer as long as "
-"[* ptr < rdlim].&][s0;3 &][s4;:`:`:Stream`:`:wrlim:* [%00-00* byte")
-TOPIC_TEXT(
-"_`*][%00-00 wrlim]&][s11; Protected.&][s6; Write limit. [* Put] method returns values "
-"from buffer as long as [* ptr < wrlim].&][s0;3 &][s4;:`:`:Stream`:`:`_Put`(int`): "
-"[%00-00 virtual void_][%00-00* `_Put][%00-00 (int_][%00-00*@3 w][%00-00 )]&][s6; "
-"Called by [* Put] method in case that output byte cannot be stored into buffer ([* "
-"ptr >`= wrlim]). If Stream wants to use buffering, this method shoul")
-TOPIC_TEXT(
-"d adjust [* buffer], [* ptr] and [* wrlim].&][s1; [%00-00*C@3 w]-|Byte to store.&][s0;3 "
-"&][s4;:`:`:Stream`:`:`_Term`(`): [%00-00 virtual int_][%00-00* `_Term][%00-00 ()]&][s6; "
-"Called by [* Term] method in case that input byte is not in buffer ([* ptr >`= rdlim]). "
-"If Stream wants to use buffering, this method should adjust [* buffer], [* ptr] and "
-"[* rdlim].&][s1; [*/ Return value]-|Value at current")
-TOPIC_TEXT(
-" position in the stream. Current position is not advanced.&][s0;3 &][s4;:`:`:Stream`:`:`_Get`(`): "
-"[%00-00 virtual int_][%00-00* `_Get][%00-00 ()]&][s6; Called by [* Get] method in "
-"case that input byte is not in buffer ([* ptr >`= rdlim]). If Stream wants to use "
-"buffering, this method should adjust [* buffer], [* ptr] and [* rdlim].&][s1; [*/ "
-"Return value]-|Value read from the stream.&][s0;3 &][s4;")
-TOPIC_TEXT(
-":`:`:Stream`:`:`_Put`(const void`*`,`:`:dword`): [%00-00 virtual void_][%00-00* "
-"`_Put][%00-00 (const_void_`*][%00-00*@3 data][%00-00 , dword_][%00-00*@3 size][%00-00 "
-")]&][s6; Directly called by [* Put] method. Writes a block of binary data.&][s1; "
-"[%00-00*C@3 data]-|Pointer to data.&][s1; [%00-00*C@3 size]-|Size.&][s0;3 &][s4;:`:`:Stream`:`:`_Get`(void`*`,`:`:dword`): "
-"[%00-00 virtual dword_][%00-00")
-TOPIC_TEXT(
-"* `_Get][%00-00 (void_`*][%00-00*@3 data][%00-00 , dword_][%00-00*@3 size][%00-00 "
-")]&][s6; Directly called by [* Get] method. &][s1; [%00-00*C@3 data]-|&][s1; [%00-00*C@3 "
-"size]-|&][s1; [*/ Return value]-|&][s6; &][s3; Raw stream&][s0;3 &][s4;:`:`:Stream`:`:Seek`(`:`:int64`): "
-"[%00-00 virtual void_][%00-00* Seek][%00-00 (int64_][%00-00*@3 pos][%00-00 )]&][s6; "
-"Seeks to given position.&][s1; [%00-00*C")
-TOPIC_TEXT(
-"@3 pos]-|Position.&][s0;3 &][s4;:`:`:Stream`:`:GetSize`(`)const: [%00-00 virtual "
-"int64_][%00-00* GetSize][%00-00 ()_const]&][s1; [*/ Return value]-|Size of stream.&][s0;3 "
-"&][s4;:`:`:Stream`:`:SetSize`(`:`:int64`): [%00-00 virtual void_][%00-00* SetSize][%00-00 "
-"(int64_][%00-00*@3 size][%00-00 )]&][s6; Alters the size of the stream.&][s1; [%00-00*C@3 "
-"size]-|New size.&][s0;3 &][s4;:`:`:Stream`:`:Flus")
-TOPIC_TEXT(
-"h`(`): [%00-00 virtual void_][%00-00* Flush][%00-00 ()]&][s6; If stream has any "
-"internal buffers (like FileStream), writes these bufers to OS.&][s0;3 &][s4;:`:`:Stream`:`:Close`(`): "
-"[%00-00 virtual void_][%00-00* Close][%00-00 ()]&][s6; Closes stream.&][s0;3 &][s4;:`:`:Stream`:`:IsOpen`(`)const:@3 "
-"[%00-00@0 virtual bool_][%00-00*@0 IsOpen][%00-00@0 ()_const_`=_][%00-00 0]&][s1; "
-"[*/ Return value]-|")
-TOPIC_TEXT(
-"true if stream is open.&][s0;3 &][s4;:`:`:Stream`:`:IsError`(`)const: [%00-00 bool_][%00-00* "
-"IsError][%00-00 ()_const]&][s1; [*/ Return value]-|true if error was encountered "
-"during stream operations since opening it or last ClearError call `- error code is "
-"non`-zero.&][s0;3 &][s4;:`:`:Stream`:`:IsOK`(`)const: [%00-00 bool_][%00-00* IsOK][%00-00 "
-"()_const]&][s1; [*/ Return value]-|!IsError().&][s0;3")
-TOPIC_TEXT(
-" &][s4;:`:`:Stream`:`:SetError`(int`): [%00-00 void_][%00-00* SetError][%00-00 (int_][%00-00*@3 "
-"c][%00-00 _`=_][%00-00@3 0][%00-00 )]&][s6; Sets stream error code.&][s1; [%00-00*C@3 "
-"c]-|Error code.&][s0;3 &][s4;:`:`:Stream`:`:SetLastError`(`): [%00-00 void_][%00-00* "
-"SetLastError][%00-00 ()]&][s6; Sets stream error to last OS`-specific error (obtained "
-"e.g. by GetLastError call in Win32 or in errno ")
-TOPIC_TEXT(
-"in Posix). This error can be interpreted by GetErrorMessage function.&][s0;3 &][s4;:`:`:Stream`:`:GetError`(`)const: "
-"[%00-00 int_][%00-00* GetError][%00-00 ()_const]&][s1; [*/ Return value]-|Current "
-"error`-code. Zero indicates no error.&][s0;3 &][s4;:`:`:Stream`:`:ClearError`(`): "
-"[%00-00 void_][%00-00* ClearError][%00-00 ()]&][s6; Clears error code.&][s0;3 &][s4;:`:`:Stream`:`:GetPos`(`)const: "
-"[%0")
-TOPIC_TEXT(
-"0-00 int64_][%00-00* GetPos][%00-00 ()_const]&][s1; [*/ Return value]-|Current position "
-"in the stream.&][s0;3 &][s4;:`:`:Stream`:`:IsEof`(`)const: [%00-00 bool_][%00-00* "
-"IsEof][%00-00 ()_const]&][s1; [*/ Return value]-|There are no more byte to be read "
-"from the stream. Is also true in case of error.&][s0;3 &][s4;:`:`:Stream`:`:GetLeft`(`)const: "
-"[%00-00 int64_][%00-00* GetLeft][%00-00 ()_const]&][s")
-TOPIC_TEXT(
-"1; [*/ Return value]-|Bytes between current position and the end of stream `- equivalent "
-"to GetSize() `- GetPos().&][s0;3 &][s4;:`:`:Stream`:`:SeekEnd`(`:`:int64`): [%00-00 "
-"void_][%00-00* SeekEnd][%00-00 (int64_][%00-00*@3 rel][%00-00 _`=_][%00-00@3 0][%00-00 "
-")]&][s6; Sets current position in the stream relative to the end of stream. Same "
-"as Seek(GetSize() `+ rel).&][s1; [%00-00*C@3 rel]-|Position")
-TOPIC_TEXT(
-" `- should be less or equal to zero.&][s0;3 &][s4;:`:`:Stream`:`:SeekCur`(`:`:int64`): "
-"[%00-00 void_][%00-00* SeekCur][%00-00 (int64_][%00-00*@3 rel][%00-00 )]&][s6; Sets "
-"current position in the stream relative to the current position. Same as Seek(GetPos() "
-"`+ rel).&][s1; [%00-00*C@3 rel]-|Relative offset.&][s0;3 &][s4;:`:`:Stream`:`:Put`(int`): "
-"[%00-00 void_][%00-00* Put][%00-00 (int_][%00-00*@3 ")
-TOPIC_TEXT(
-"c][%00-00 )]&][s6; Puts single byte into the output stream.&][s1; [%00-00*C@3 c]-|Byte.&][s0;3 "
-"&][s4;:`:`:Stream`:`:Term`(`): [%00-00 int_][%00-00* Term][%00-00 ()]&][s6; Peeks "
-"byte from input stream not advancing current position. If there are no more bytes "
-"in input stream or error occurred, negative value is returned.&][s1; [*/ Return value]-|Byte "
-"at current position in the stream.&][s0;3 &][s4;")
-TOPIC_TEXT(
-":`:`:Stream`:`:Get`(`): [%00-00 int_][%00-00* Get][%00-00 ()]&][s6; Reads single "
-"byte from input stream, advancing current position. If there are no more bytes in "
-"input stream or error occurred, negative value is returned.&][s1; [*/ Return value]-|Byte "
-"read from input stream.&][s0;3 &][s4;:`:`:Stream`:`:Put`(const void`*`,`:`:dword`): "
-"[%00-00 void_][%00-00* Put][%00-00 (const_void_`*][%00-00*@3 da")
-TOPIC_TEXT(
-"ta][%00-00 , dword_][%00-00*@3 size][%00-00 )]&][s6; Writes a block of raw binary "
-"data to the output stream.&][s1; [%00-00*C@3 data]-|Pointer to data.&][s1; [%00-00*C@3 "
-"size]-|Number of bytes to write.&][s0;3 &][s4;:`:`:Stream`:`:Get`(void`*`,`:`:dword`): "
-"[%00-00 dword_][%00-00* Get][%00-00 (void_`*][%00-00*@3 data][%00-00 , dword_][%00-00*@3 "
-"size][%00-00 )]&][s6; Reads a block of raw binary data ")
-TOPIC_TEXT(
-"from the input stream.&][s1; [%00-00*C@3 data]-|Pointer to buffer to receive the "
-"data.&][s1; [%00-00*C@3 size]-|Number of bytes to read.&][s1; [*/ Return value]-|Number "
-"of bytes actually read (lower or equal to the requested [*@3 size]).&][s0;3 &][s4;:`:`:Stream`:`:LoadThrowing`(`): "
-"void_[* LoadThrowing]()&][s6; Sets stream into the mode that throws LoadingError "
-"exception when LoadError is invoked")
-TOPIC_TEXT(
-". This mode is typical for serialization usage of stream.&][s0;3 &][s4;:`:`:Stream`:`:LoadError`(`): "
-"void_[* LoadError]()&][s6; Performs SetError(ERROR`_LOADING`_FAILED). If Stream set "
-"to the LoadThrowing mode (by LoadThrowing() method), LoadingError exception is thrown.&][s0;3 "
-"&][s4;:`:`:Stream`:`:GetAll`(void`*`,`:`:dword`): [%00-00 bool_][%00-00* GetAll][%00-00 "
-"(void_`*][%00-00*@3 data][%00-00 ")
-TOPIC_TEXT(
-", dword_][%00-00*@3 size][%00-00 )]&][s6; Reads a block of raw binary data from "
-"the stream. If there is not enough data in the stream, LoadError is invoked (that "
-"in turn might throw an exception).&][s1; [%00-00*C@3 data]-|Pointer to buffer to "
-"receive the data.&][s1; [%00-00*C@3 size]-|Number of bytes to read.&][s1; [*/ Return "
-"value]-|true if required number of bytes was read.&][s0;3 &][s4;:`:`:Str")
-TOPIC_TEXT(
-"eam`:`:Get8`(`): [%00-00 int_][%00-00* Get8][%00-00 ()]&][s6; Reads a single byte "
-"from the stream. If there is not enough data in the stream, LoadError is invoked "
-"(that in turn might throw an exception) `- this is the difference from Get() method.&][s1; "
-"[*/ Return value]-|Byte from stream or `-1.&][s0;3 &][s4;:`:`:Stream`:`:Get16`(`): "
-"[%00-00 int_][%00-00* Get16][%00-00 ()]&][s6; Reads 16`-bit val")
-TOPIC_TEXT(
-"ue from the stream in platform specific format (either little`-endian or big`-endian). "
-"If there is not enough data in the stream, LoadError is invoked (that in turn might "
-"throw an exception).&][s1; [*/ Return value]-|16`-bit value.&][s0;3 &][s4;:`:`:Stream`:`:Get32`(`): "
-"[%00-00 int_][%00-00* Get32][%00-00 ()]&][s6; Reads 32`-bit value from the stream "
-"in platform specific format (either little`-end")
-TOPIC_TEXT(
-"ian or big`-endian). If there is not enough data in the stream, LoadError is invoked "
-"(that in turn might throw an exception).&][s1; [*/ Return value]-|32`-bit value.&][s0;3 "
-"&][s4;:`:`:Stream`:`:Get64`(`): [%00-00 int64_][%00-00* Get64][%00-00 ()]&][s6; Reads "
-"64`-bit value from the stream in platform specific format (either little`-endian "
-"or big`-endian). If there is not enough data in the stream, ")
-TOPIC_TEXT(
-"LoadError is invoked (that in turn might throw an exception).&][s1; [*/ Return value]-|64`-bit "
-"value.&][s0;3 &][s4;:`:`:Stream`:`:Get16le`(`): [%00-00 int_][%00-00* Get16le][%00-00 "
-"()]&][s6; Reads 16`-bit value from the stream in the little`-endian mode. If there "
-"is not enough data in the stream, LoadError is invoked (that in turn might throw "
-"an exception).&][s1; [*/ Return value]-|16`-bit value.&")
-TOPIC_TEXT(
-"][s0;3 &][s4;:`:`:Stream`:`:Get32le`(`): [%00-00 int_][%00-00* Get32le][%00-00 ()]&][s6; "
-"Reads 32`-bit value from the stream in the little`-endian mode. If there is not enough "
-"data in the stream, LoadError is invoked (that in turn might throw an exception).&][s1; "
-"[*/ Return value]-|32`-bit value.&][s0;3 &][s4;:`:`:Stream`:`:Get64le`(`): [%00-00 "
-"int64_][%00-00* Get64le][%00-00 ()]&][s6; Reads 64`-b")
-TOPIC_TEXT(
-"it value from the stream in the little`-endian mode. If there is not enough data "
-"in the stream, LoadError is invoked (that in turn might throw an exception).&][s1; "
-"[*/ Return value]-|64`-bit value.&][s0;3 &][s4;:`:`:Stream`:`:Get16be`(`): [%00-00 "
-"int_][%00-00* Get16be][%00-00 ()]&][s6; Reads 16`-bit value from the stream in the "
-"big`-endian mode. If there is not enough data in the stream, LoadError")
-TOPIC_TEXT(
-" is invoked (that in turn might throw an exception).&][s1; [*/ Return value]-|16`-bit "
-"value.&][s0;3 &][s4;:`:`:Stream`:`:Get32be`(`): [%00-00 int_][%00-00* Get32be][%00-00 "
-"()]&][s6; Reads 32`-bit value from the stream in the big`-endian mode. If there is "
-"not enough data in the stream, LoadError is invoked (that in turn might throw an "
-"exception).&][s1; [*/ Return value]-|32`-bit value.&][s0;3 &][s4")
-TOPIC_TEXT(
-";:`:`:Stream`:`:Get64be`(`): [%00-00 int64_][%00-00* Get64be][%00-00 ()]&][s6; Reads "
-"32`-bit value from the stream in the big`-endian mode. If there is not enough data "
-"in the stream, LoadError is invoked (that in turn might throw an exception).&][s1; "
-"[*/ Return value]-|64`-bit value.&][s0;3 &][s4;:`:`:Stream`:`:GetLine`(`): [%00-00 "
-"String_][%00-00* GetLine][%00-00 ()]&][s6; Reads single line from ")
-TOPIC_TEXT(
-"the stream. Line is delimited by `'`\\n`' character or the end of file (or error). "
-"`'`\\r`' characters are ignored.&][s1; [*/ Return value]-|Line from the stream.&][s0;3 "
-"&][s4;:`:`:Stream`:`:GetUtf8`(`): int_[* GetUtf8]()&][s6; Reads single utf`-8 encoded "
-"value from the stream.&][s1; [*/ Return value]-|Utf`-8 value.&][s0;3 &][s4;:`:`:Stream`:`:Put16`(word`): "
-"[%00-00 void_][%00-00* Put16][%00-00 (wor")
-TOPIC_TEXT(
-"d_][%00-00*@3 q][%00-00 )]&][s6; Writes 16`-bit value in platform specific format "
-"(either little`-endian or big`-endian).&][s1; [%00-00*C@3 q]-|Value to write.&][s0;3 "
-"&][s4;:`:`:Stream`:`:Put32`(int`): [%00-00 void_][%00-00* Put32][%00-00 (int_][%00-00*@3 "
-"q][%00-00 )]&][s6; Writes 32`-bit value in platform specific format (either little`-endian "
-"or big`-endian).&][s1; [%00-00*C@3 q]-|Value to write")
-TOPIC_TEXT(
-".&][s0;3 &][s4;:`:`:Stream`:`:Put64`(`:`:int64`): [%00-00 void_][%00-00* Put64][%00-00 "
-"(int64_][%00-00*@3 q][%00-00 )]&][s6; Writes 64`-bit value in platform specific format "
-"(either little`-endian or big`-endian).&][s1; [%00-00*C@3 q]-|Value to write.&][s0;3 "
-"&][s4;:`:`:Stream`:`:Put16le`(word`): [%00-00 void_][%00-00* Put16le][%00-00 (word_][%00-00*@3 "
-"q][%00-00 )]&][s6; Writes 16`-bit value in lit")
-TOPIC_TEXT(
-"tle`-endian mode.&][s1; [%00-00*C@3 q]-|Value to write.&][s0;3 &][s4;:`:`:Stream`:`:Put32le`(int`): "
-"[%00-00 void_][%00-00* Put32le][%00-00 (int_][%00-00*@3 q][%00-00 )]&][s6; Writes "
-"32`-bit value in little`-endian mode.&][s1; [%00-00*C@3 q]-|Value to write.&][s0;3 "
-"&][s4;:`:`:Stream`:`:Put64le`(`:`:int64`): [%00-00 void_][%00-00* Put64le][%00-00 "
-"(int64_][%00-00*@3 q][%00-00 )]&][s6; Writes 64`-bit ")
-TOPIC_TEXT(
-"value in little`-endian mode.&][s1; [%00-00*C@3 q]-|Value to write.&][s0;3 &][s4;:`:`:Stream`:`:Put16be`(word`): "
-"[%00-00 void_][%00-00* Put16be][%00-00 (word_][%00-00*@3 q][%00-00 )]&][s6; Writes "
-"16`-bit value in big`-endian mode.&][s1; [%00-00*C@3 q]-|Value to write.&][s0;3 &][s4;:`:`:Stream`:`:Put32be`(int`): "
-"[%00-00 void_][%00-00* Put32be][%00-00 (int_][%00-00*@3 q][%00-00 )]&][s6; Writes "
-"32`-b")
-TOPIC_TEXT(
-"it value in big`-endian mode.&][s1; [%00-00*C@3 q]-|Value to write.&][s0;3 &][s4;:`:`:Stream`:`:Put64be`(`:`:int64`): "
-"[%00-00 void_][%00-00* Put64be][%00-00 (int64_][%00-00*@3 q][%00-00 )]&][s6; Writes "
-"64`-bit value in big`-endian mode.&][s1; [%00-00*C@3 q]-|Value to write.&][s0;3 &][s4;:`:`:Stream`:`:PutUtf8`(int`): "
-"[%00-00 void_][%00-00* PutUtf8][%00-00 (int_][%00-00*@3 c][%00-00 )]&][s6; Puts a")
-TOPIC_TEXT(
-" single utf`-8 value to the stream.&][s1; [%00-00*C@3 c]-|Value.&][s0; &][s0;3 &][s4;:`:`:Stream`:`:Put`(const "
-"char`*`): [%00-00 void_][%00-00* Put][%00-00 (const_char_`*][%00-00*@3 s][%00-00 "
-")]&][s6; Writes zero terminated string to the stream (zero is not written).&][s1; "
-"[%00-00*C@3 s]-|String to write.&][s0;3 &][s4;:`:`:Stream`:`:Put`(const`:`:String`&`): "
-"[%00-00 void_][%00-00* Put][%00-00 (con")
-TOPIC_TEXT(
-"st_String`&_][%00-00*@3 s][%00-00 )]&][s6; Writes String to the the stream. String "
-"can contain zero characters.&][s1; [%00-00*C@3 s]-|String to write.&][s0;3 &][s4;:`:`:Stream`:`:Put`(int`,int`): "
-"[%00-00 void_][%00-00* Put][%00-00 (int_][%00-00*@3 c][%00-00 , int_][%00-00*@3 count][%00-00 "
-")]&][s6; Writes single byte to the stream requested number of times.&][s1; [%00-00*C@3 "
-"c]-|Byte to write.&][s1")
-TOPIC_TEXT(
-"; [%00-00*C@3 count]-|Repeat count.&][s0;3 &][s4;:`:`:Stream`:`:Put0`(int`): [%00-00 "
-"void_][%00-00* Put0][%00-00 (int_][%00-00*@3 count][%00-00 )]&][s6; Writes zero byte "
-"to the stream requested number of times. This variation is mainly provided because "
-"Put(0, count) causes ambiguity as 0 is considered as NULL pointer too...&][s1; [%00-00*C@3 "
-"count]-|Repeat count.&][s0; &][s0;3 &][s4;:`:`:Stream`:`")
-TOPIC_TEXT(
-":PutW`(const`:`:wchar`*`,int`): [%00-00 void_][%00-00* PutW][%00-00 (const_wchar_`*][%00-00*@3 "
-"s][%00-00 , int_][%00-00*@3 count][%00-00 )]&][s6; Writes a specified number of wchars "
-"(16`-bit character values) to the stream in platform specific format (little`-endian "
-"or big`-endian).&][s1; [%00-00*C@3 s]-|String to write.&][s1; [%00-00*C@3 count]-|Length "
-"of string.&][s0;3 &][s4;:`:`:Stream`:`:GetW`")
-TOPIC_TEXT(
-"(`:`:wchar`*`,int`): [%00-00 dword_][%00-00* GetW][%00-00 (wchar_`*][%00-00*@3 s][%00-00 "
-", int_][%00-00*@3 count][%00-00 )]&][s6; Reads a specified number of wchars (16`-bit "
-"character values) from the stream in platform specific format.&][s1; [%00-00*C@3 "
-"s]-|Pointer to buffer to receive wchars.&][s1; [%00-00*C@3 count]-|Number of wchars.&][s1; "
-"[*/ Return value]-|Number of wchars actually read.&][s")
-TOPIC_TEXT(
-"0;3 &][s4;:`:`:Stream`:`:GetAllW`(`:`:wchar`*`,int`): [%00-00 bool_][%00-00* GetAllW][%00-00 "
-"(wchar_`*][%00-00*@3 s][%00-00 , int_][%00-00*@3 count][%00-00 )]&][s6; Reads a specified "
-"number of wchars (16`-bit character values) from the stream in platform specific "
-"format. If there is not enough data in the stream, LoadError is invoked (that in "
-"turn might throw an exception).&][s1; [%00-00*C@3 s]-|&")
-TOPIC_TEXT(
-"][s1; [%00-00*C@3 count]-|&][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:Stream`:`:PutCrLf`(`): "
-"[%00-00 void_][%00-00* PutCrLf][%00-00 ()]&][s6; Writes CR`-LF pair to the stream. "
-"&][s0;3 &][s4;:`:`:Stream`:`:PutEol`(`): [%00-00 void_][%00-00* PutEol][%00-00 ()]&][s6; "
-"Writes platform specific `\"end of line`\" to the stream. It is CR`-LF pair on Win32 "
-"platform or single LF on Posix platform.&][s0;3 &][")
-TOPIC_TEXT(
-"s4;:`:`:Stream`:`:PutLine`(const char`*`): [%00-00 void_][%00-00* PutLine][%00-00 "
-"(const_char_`*][%00-00*@3 s][%00-00 )]&][s6; Writes a line to stream `- equivalent "
-"of Put(s); PutEol();&][s1; [%00-00*C@3 s]-|Zero`-terminated string.&][s0;3 &][s4;:`:`:Stream`:`:PutLine`(const`:`:String`&`): "
-"[%00-00 void_][%00-00* PutLine][%00-00 (const_String`&_][%00-00*@3 s][%00-00 )]&][s6; "
-"Writes a line to stream")
-TOPIC_TEXT(
-" `- equivalent of Put(s); PutEol();&][s1; [%00-00*C@3 s]-|String.&][s0;3 &][s4;:`:`:Stream`:`:Put`(`:`:Stream`&`,`:`:int64`,`:`:dword`): "
-"[%00-00 void_][%00-00* Put][%00-00 (Stream`&_][%00-00*@3 s][%00-00 , int64_][%00-00*@3 "
-"size][%00-00 _`=_INT64`_MAX, dword_][%00-00*@3 click][%00-00 _`=_][%00-00@3 4096][%00-00 "
-")]&][s6; Writes a content of specified stream to the stream.&][s1; [%00-00*C@3 s]-|Inpu")
-TOPIC_TEXT(
-"t stream.&][s1; [%00-00*C@3 size]-|Maximum number of bytes to write. Default value "
-"INT64`_MAX means whole input stream from current position to the end is written.&][s1; "
-"[%00-00*C@3 click]-|Size of buffer used for copying.&][s3; Formated output&][s0;3 "
-"&][s4;:`:`:Stream`:`:Putf`(int`): [%00-00 void_][%00-00* Putf][%00-00 (int_][%00-00*@3 "
-"c][%00-00 )]&][s6; Formated output `- each start of line (tha")
-TOPIC_TEXT(
-"t is, byte passed by Putf after `'`\\n`') is indented using `'`\\t`' characters, "
-"as controlled by Begin/End methods. Also, `'`\\n`' are translated by PutEol and `'`\\r`' "
-"are ignored.&][s1; [%00-00*C@3 c]-|Byte to write.&][s0;3 &][s4;:`:`:Stream`:`:Putf`(const "
-"char`*`): [%00-00 void_][%00-00* Putf][%00-00 (const_char_`*][%00-00*@3 s][%00-00 "
-")]&][s6; Outputs zero terminated string using Putf method.&][s")
-TOPIC_TEXT(
-"1; [%00-00*@3 s]-|String to write.&][s0;3 &][s4;:`:`:Stream`:`:Putf`(const`:`:String`&`): "
-"[%00-00 void_][%00-00* Putf][%00-00 (const_String`&_][%00-00*@3 s][%00-00 )]&][s6; "
-"Outputs String using Putf.&][s1; [%00-00*C@3 s]-|String.&][s0;3 &][s4;:`:`:Stream`:`:Begin`(`): "
-"[%00-00 void_][%00-00* Begin][%00-00 ()]&][s6; Increases Putf line indentation level "
-"by 1.&][s0;3 &][s4;:`:`:Stream`:`:End`(`): [%0")
-TOPIC_TEXT(
-"0-00 void_][%00-00* End][%00-00 ()]&][s6; Decreases Putf line indentation level "
-"by 1.&][s0;3 &][s4;:`:`:Stream`:`:operator`<`<`(BeginIndentEnum`): [%00-00 Stream`&_][%00-00* "
-"operator<<][%00-00 (BeginIndentEnum)]&][s6; Calls Begin() `- BeginIndentEnum has "
-"single value `- `\"BeginIndent`\".&][s1; [*/ Return value]-|Stream for operator<< "
-"chaining.&][s0;3 &][s4;:`:`:Stream`:`:operator`<`<`(EndIndentEnum")
-TOPIC_TEXT(
-"`): [%00-00 Stream`&_][%00-00* operator<<][%00-00 (EndIndentEnum)]&][s6; Calls End() "
-"`- EndIndentEnum has single value `- `\"EndIndent`\".&][s1; [*/ Return value]-|Stream "
-"for operator<< chaining.&][s0; &][s3; Serialization support&][s0;3 &][s4;:`:`:Stream`:`:SetLoading`(`): "
-"[%00-00 void_][%00-00* SetLoading][%00-00 ()]&][s6; Sets the stream into the loading "
-"mode.&][s0;3 &][s4;:`:`:Stream`:`:SetStori")
-TOPIC_TEXT(
-"ng`(`): [%00-00 void_][%00-00* SetStoring][%00-00 ()]&][s6; Sets the stream into "
-"the storing mode.&][s0;3 &][s4;:`:`:Stream`:`:IsLoading`(`): [%00-00 bool_][%00-00* "
-"IsLoading][%00-00 ()]&][s1; [*/ Return value]-|true if stream is in loading mode.&][s0;3 "
-"&][s4;:`:`:Stream`:`:IsStoring`(`): [%00-00 bool_][%00-00* IsStoring][%00-00 ()]&][s1; "
-"[*/ Return value]-|true if stream is in storing mode.&][s0;")
-TOPIC_TEXT(
-"3 &][s4;:`:`:Stream`:`:SerializeRaw`(`:`:byte`*`,`:`:dword`): [%00-00 void_][%00-00* "
-"SerializeRaw][%00-00 (byte_`*][%00-00*@3 data][%00-00 , dword_][%00-00*@3 count][%00-00 "
-")]&][s6; Serializes raw 8`-bit data. Might invoke LoadError if there is not enough "
-"data to load.&][s1; [%00-00*C@3 data]-|Pointer to data to store or buffer to receive "
-"loaded data.&][s1; [%00-00*C@3 count]-|Number of bytes to l")
-TOPIC_TEXT(
-"oad/store.&][s0;3 &][s4;:`:`:Stream`:`:SerializeRaw`(word`*`,`:`:dword`): [%00-00 "
-"void_][%00-00* SerializeRaw][%00-00 (word_`*][%00-00*@3 data][%00-00 , dword_][%00-00*@3 "
-"count][%00-00 )]&][s6; Serializes raw 16`-bit data. Might invoke LoadError if there "
-"is not enough data to load.&][s1; [%00-00*C@3 data]-|Pointer to data to store or "
-"buffer to receive loaded data.&][s1; [%00-00*C@3 count]-|Number ")
-TOPIC_TEXT(
-"of values to load/store.&][s0;3 &][s4;:`:`:Stream`:`:SerializeRaw`(`:`:dword`*`,`:`:dword`): "
-"[%00-00 void_][%00-00* SerializeRaw][%00-00 (dword_`*][%00-00*@3 data][%00-00 , dword_][%00-00*@3 "
-"count][%00-00 )]&][s6; Serializes raw 32`-bit data. Might invoke LoadError if there "
-"is not enough data to load.&][s1; [%00-00*C@3 data]-|Pointer to data to store or "
-"buffer to receive loaded data.&][s1; [%00-00")
-TOPIC_TEXT(
-"*C@3 count]-|Number of values to load/store.&][s0;3 &][s4;:`:`:Stream`:`:SerializeRaw`(`:`:uint64`*`,`:`:dword`): "
-"[%00-00 void_][%00-00* SerializeRaw][%00-00 (uint64_`*][%00-00*@3 data][%00-00 , "
-"dword_][%00-00*@3 count][%00-00 )]&][s6; Serializes raw 64`-bit data. Might invoke "
-"LoadError if there is not enough data to load.&][s1; [%00-00*C@3 data]-|Pointer to "
-"data to store or buffer to receive load")
-TOPIC_TEXT(
-"ed data.&][s1; [%00-00*C@3 count]-|Number of values to load/store.&][s0;3 &][s4;:`:`:Stream`:`:SerializeRaw`(word`*`,`:`:dword`): "
-"[%00-00 void_][%00-00* SerializeRLE][%00-00 (byte_`*][%00-00*@3 data][%00-00 , dword_][%00-00*@3 "
-"count][%00-00 )]&][s6; Serializes raw 8`-bit data. Simple RLE compression is used. "
-"Might invoke LoadError if there is not enough data to load or input data are invalid.&][s1")
-TOPIC_TEXT(
-"; [%00-00*C@3 data]-|Pointer to data to store or buffer to receive loaded data.&][s1; "
-"[%00-00*C@3 count]-|Number of bytes to load/store.&][s0;3 &][s4;:`:`:Stream`:`:operator`%`(bool`&`): "
-"[%00-00 Stream`&_][%00-00* operator%][%00-00 (bool`&_][%00-00*@3 d][%00-00 )]&][s6; "
-"Serializes bool variable. Might invoke LoadError if there is not enough data to load.&][s1; "
-"[%00-00*C@3 d]-|Variable to serialize")
-TOPIC_TEXT(
-".&][s1; [*/ Return value]-|`*this for chaining.&][s0;3 &][s4;:`:`:Stream`:`:operator`%`(char`&`): "
-"[%00-00 Stream`&_][%00-00* operator%][%00-00 (char`&_][%00-00*@3 d][%00-00 )]&][s6; "
-"Serializes char variable. Might invoke LoadError if there is not enough data to load.&][s1; "
-"[%00-00*C@3 d]-|Variable to serialize.&][s1; [*/ Return value]-|`*this for chaining.&][s0;3 "
-"&][s4;:`:`:Stream`:`:operator`%`(s")
-TOPIC_TEXT(
-"igned char`&`): [%00-00 Stream`&_][%00-00* operator%][%00-00 (signed_char`&_][%00-00*@3 "
-"d][%00-00 )]&][s6; Serializes signed char variable. Might invoke LoadError if there "
-"is not enough data to load.&][s1; [%00-00*C@3 d]-|Variable to serialize.&][s1; [*/ "
-"Return value]-|`*this for chaining.&][s0;3 &][s4;:`:`:Stream`:`:operator`%`(unsigned "
-"char`&`): [%00-00 Stream`&_][%00-00* operator%][%00-00 (unsi")
-TOPIC_TEXT(
-"gned_char`&_][%00-00*@3 d][%00-00 )]&][s6; Serializes unsigned char variable. Might "
-"invoke LoadError if there is not enough data to load.&][s1; [%00-00*C@3 d]-|Variable "
-"to serialize.&][s1; [*/ Return value]-|`*this for chaining.&][s0;3 &][s4;:`:`:Stream`:`:operator`%`(short`&`): "
-"[%00-00 Stream`&_][%00-00* operator%][%00-00 (short`&_][%00-00*@3 d][%00-00 )]&][s6; "
-"Serializes short variable. Might in")
-TOPIC_TEXT(
-"voke LoadError if there is not enough data to load.&][s1; [%00-00*C@3 d]-|Variable "
-"to serialize.&][s1; [*/ Return value]-|`*this for chaining.&][s0;3 &][s4;:`:`:Stream`:`:operator`%`(unsigned "
-"short`&`): [%00-00 Stream`&_][%00-00* operator%][%00-00 (unsigned_short`&_][%00-00*@3 "
-"d][%00-00 )]&][s6; Serializes unsigned short variable. Might invoke LoadError if "
-"there is not enough data to load.&][s1; [")
-TOPIC_TEXT(
-"%00-00*C@3 d]-|Variable to serialize.&][s1; [*/ Return value]-|`*this for chaining.&][s0;3 "
-"&][s4;:`:`:Stream`:`:operator`%`(int`&`): [%00-00 Stream`&_][%00-00* operator%][%00-00 "
-"(int`&_][%00-00*@3 d][%00-00 )]&][s6; Serializes int variable. Might invoke LoadError "
-"if there is not enough data to load.&][s1; [%00-00*C@3 d]-|Variable to serialize.&][s1; "
-"[*/ Return value]-|`*this for chaining.&][s0;3 &")
-TOPIC_TEXT(
-"][s4;:`:`:Stream`:`:operator`%`(unsigned int`&`): [%00-00 Stream`&_][%00-00* operator%][%00-00 "
-"(unsigned_int`&_][%00-00*@3 d][%00-00 )]&][s6; Serializes unsigned int variable. "
-"Might invoke LoadError if there is not enough data to load.&][s1; [%00-00*C@3 d]-|Variable "
-"to serialize.&][s1; [*/ Return value]-|`*this for chaining.&][s0;3 &][s4;:`:`:Stream`:`:operator`%`(long`&`): "
-"[%00-00 Stream`&_][%00-")
-TOPIC_TEXT(
-"00* operator%][%00-00 (long`&_][%00-00*@3 d][%00-00 )]&][s6; Serializes long variable. "
-"Might invoke LoadError if there is not enough data to load.&][s1; [%00-00*C@3 d]-|Variable "
-"to serialize.&][s1; [*/ Return value]-|`*this for chaining.&][s0;3 &][s4;:`:`:Stream`:`:operator`%`(unsigned "
-"long`&`): [%00-00 Stream`&_][%00-00* operator%][%00-00 (unsigned_long`&_][%00-00*@3 "
-"d][%00-00 )]&][s6; Serializes")
-TOPIC_TEXT(
-" unsigned long variable. Might invoke LoadError if there is not enough data to load.&][s1; "
-"[%00-00*C@3 d]-|Variable to serialize.&][s1; [*/ Return value]-|`*this for chaining.&][s0;3 "
-"&][s4;:`:`:Stream`:`:operator`%`(float`&`): [%00-00 Stream`&_][%00-00* operator%][%00-00 "
-"(float`&_][%00-00*@3 d][%00-00 )]&][s6; Serializes float variable. Might invoke LoadError "
-"if there is not enough data to load.&]")
-TOPIC_TEXT(
-"[s1; [%00-00*C@3 d]-|Variable to serialize.&][s1; [*/ Return value]-|`*this for "
-"chaining.&][s0;3 &][s4;:`:`:Stream`:`:operator`%`(double`&`): [%00-00 Stream`&_][%00-00* "
-"operator%][%00-00 (double`&_][%00-00*@3 d][%00-00 )]&][s6; Serializes double variable. "
-"Might invoke LoadError if there is not enough data to load.&][s1; [%00-00*C@3 d]-|Variable "
-"to serialize.&][s1; [*/ Return value]-|`*this for cha")
-TOPIC_TEXT(
-"ining.&][s0;3 &][s4;:`:`:Stream`:`:operator`%`(`:`:int64`&`): [%00-00 Stream`&_][%00-00* "
-"operator%][%00-00 (int64`&_][%00-00*@3 d][%00-00 )]&][s6; Serializes int64 variable. "
-"Might invoke LoadError if there is not enough data to load.&][s1; [%00-00*C@3 d]-|Variable "
-"to serialize.&][s1; [*/ Return value]-|`*this for chaining.&][s0;3 &][s4;:`:`:Stream`:`:operator`%`(`:`:uint64`&`): "
-"[%00-00 Stream`&_][")
-TOPIC_TEXT(
-"%00-00* operator%][%00-00 (uint64`&_][%00-00*@3 d][%00-00 )]&][s6; Serializes uint64 "
-"variable. Might invoke LoadError if there is not enough data to load.&][s1; [%00-00*C@3 "
-"d]-|Variable to serialize.&][s1; [*/ Return value]-|`*this for chaining.&][s0;3 &][s4;:`:`:Stream`:`:operator`%`(`:`:String`&`): "
-"[%00-00 Stream`&_][%00-00* operator%][%00-00 (String`&_][%00-00*@3 s][%00-00 )]&][s6; "
-"Serializes S")
-TOPIC_TEXT(
-"tring variable. Might invoke LoadError if there is not enough data to load or input "
-"data are invalid.&][s1; [%00-00*C@3 d]-|Variable to serialize.&][s1; [*/ Return value]-|`*this "
-"for chaining.&][s0;3 &][s4;:`:`:Stream`:`:operator`/`(`:`:String`&`): [%00-00 Stream`&_][%00-00* "
-"operator/][%00-00 (String`&_][%00-00*@3 s][%00-00 )]&][s6; Serializes String variable "
-"using RLE compression and packed forma")
-TOPIC_TEXT(
-"t for length. Might invoke LoadError if there is not enough data to load or input "
-"data are invalid.&][s1; [%00-00*C@3 s]-|Variable to serialize.&][s1; [*/ Return value]-|`*this "
-"for chaining.&][s0;3 &][s4;:`:`:Stream`:`:operator`%`(`:`:WString`&`): [%00-00 Stream`&_][%00-00* "
-"operator%][%00-00 (WString`&_][%00-00*@3 s][%00-00 )]&][s6; Serializes WString variable. "
-"Might invoke LoadError if there is n")
-TOPIC_TEXT(
-"ot enough data to load or input data are invalid.&][s1; [%00-00*C@3 d]-|Variable "
-"to serialize.&][s1; [*/ Return value]-|`*this for chaining.&][s0;3 &][s4;:`:`:Stream`:`:operator`/`(`:`:WString`&`): "
-"[%00-00 Stream`&_][%00-00* operator/][%00-00 (WString`&_][%00-00*@3 s][%00-00 )]&][s6; "
-"Serializes String variable using RLE compression and packed format for length. Might "
-"invoke LoadError if there is n")
-TOPIC_TEXT(
-"ot enough data to load or input data are invalid.&][s1; [%00-00*C@3 s]-|Variable "
-"to serialize.&][s1; [*/ Return value]-|`*this for chaining.&][s0;3 &][s4;:`:`:Stream`:`:Pack`(`:`:dword`&`): "
-"[%00-00 void_][%00-00* Pack][%00-00 (dword`&_][%00-00*@3 i][%00-00 )]&][s6; Serializes "
-"dword value using format optimized for storing small values. Values 0..254 are stored "
-"as serializes as single byte, other v")
-TOPIC_TEXT(
-"alues result in 5 bytes. Might invoke LoadError if there is not enough data to load "
-"or input data are invalid.&][s1; [%00-00*C@3 i]-|Variable to serialize.&][s0;3 &][s4;:`:`:Stream`:`:operator`/`(int`&`): "
-"[%00-00 Stream`&_][%00-00* operator/][%00-00 (int`&_][%00-00*@3 i][%00-00 )]&][s6; "
-"Serializes int value using format optimized for storing small values. Might invoke "
-"LoadError if there is not eno")
-TOPIC_TEXT(
-"ugh data to load or input data are invalid.&][s1; [%00-00*C@3 i]-|Variable to serialize.&][s1; "
-"[*/ Return value]-|`*this for chaining.&][s0;3 &][s4;:`:`:Stream`:`:operator`/`(unsigned "
-"int`&`): [%00-00 Stream`&_][%00-00* operator/][%00-00 (unsigned_int`&_][%00-00*@3 "
-"i][%00-00 )]&][s6; Serializes unsigned int value using format optimized for storing "
-"small values. Might invoke LoadError if there is n")
-TOPIC_TEXT(
-"ot enough data to load or input data are invalid.&][s1; [%00-00*C@3 i]-|Variable "
-"to serialize.&][s1; [*/ Return value]-|`*this for chaining.&][s0;3 &][s4;:`:`:Stream`:`:Magic`(`:`:dword`): "
-"[%00-00 void_][%00-00* Magic][%00-00 (dword_][%00-00*@3 magic][%00-00 _`=_][%00-00@3 "
-"0][%00-00 x7d674d7b)]&][s6; Serializes `\"magic value`\" to ensure stream integrity. "
-"When loading, this value is loaded and chec")
-TOPIC_TEXT(
-"ked `- mismatch results in invoking LoadError.&][s1; [%00-00*C@3 magic]-|Magic value.&][s0;3 "
-"&][s4;:`:`:Stream`:`:Pack`(bool`&`,bool`&`,bool`&`,bool`&`,bool`&`,bool`&`,bool`&`,bool`&`): "
-"[%00-00 void_][%00-00* Pack][%00-00 (bool`&_][%00-00*@3 a][%00-00 , bool`&_][%00-00*@3 "
-"b][%00-00 , bool`&_][%00-00*@3 c][%00-00 , bool`&_][%00-00*@3 d][%00-00 , bool`&_][%00-00*@3 "
-"e][%00-00 , bool`&_][%00-00*@3 f][")
-TOPIC_TEXT(
-"%00-00 , bool`&_][%00-00*@3 g][%00-00 , bool`&_][%00-00*@3 h][%00-00 )]&][s6; Serializes "
-"a set of boolean values compressed into single byte.&][s0;3 &][s4;:`:`:Stream`:`:Pack`(bool`&`,bool`&`,bool`&`,bool`&`,bool`&`,bool`&`,bool`&`): "
-"[%00-00 void_][%00-00* Pack][%00-00 (bool`&_][%00-00*@3 a][%00-00 , bool`&_][%00-00*@3 "
-"b][%00-00 , bool`&_][%00-00*@3 c][%00-00 , bool`&_][%00-00*@3 d][%00-00 , bool`")
-TOPIC_TEXT(
-"&_][%00-00*@3 e][%00-00 , bool`&_][%00-00*@3 f][%00-00 , bool`&_][%00-00*@3 g][%00-00 "
-")]&][s6; Serializes a set of boolean values compressed into single byte.&][s0;3 &][s4;:`:`:Stream`:`:Pack`(bool`&`,bool`&`,bool`&`,bool`&`,bool`&`,bool`&`): "
-"[%00-00 void_][%00-00* Pack][%00-00 (bool`&_][%00-00*@3 a][%00-00 , bool`&_][%00-00*@3 "
-"b][%00-00 , bool`&_][%00-00*@3 c][%00-00 , bool`&_][%00-00*@3 d][%00-0")
-TOPIC_TEXT(
-"0 , bool`&_][%00-00*@3 e][%00-00 , bool`&_][%00-00*@3 f][%00-00 )]&][s6; Serializes "
-"a set of boolean values compressed into single byte.&][s0;3 &][s4;:`:`:Stream`:`:Pack`(bool`&`,bool`&`,bool`&`,bool`&`,bool`&`): "
-"[%00-00 void_][%00-00* Pack][%00-00 (bool`&_][%00-00*@3 a][%00-00 , bool`&_][%00-00*@3 "
-"b][%00-00 , bool`&_][%00-00*@3 c][%00-00 , bool`&_][%00-00*@3 d][%00-00 , bool`&_][%00-00*@3 "
-"e][%00-")
-TOPIC_TEXT(
-"00 )]&][s6; Serializes a set of boolean values compressed into single byte.&][s0;3 "
-"&][s4;:`:`:Stream`:`:Pack`(bool`&`,bool`&`,bool`&`,bool`&`): [%00-00 void_][%00-00* "
-"Pack][%00-00 (bool`&_][%00-00*@3 a][%00-00 , bool`&_][%00-00*@3 b][%00-00 , bool`&_][%00-00*@3 "
-"c][%00-00 , bool`&_][%00-00*@3 d][%00-00 )]&][s6; Serializes a set of boolean values "
-"compressed into single byte.&][s0;3 &][s4;:`:`:Stream")
-TOPIC_TEXT(
-"`:`:Pack`(bool`&`,bool`&`,bool`&`): [%00-00 void_][%00-00* Pack][%00-00 (bool`&_][%00-00*@3 "
-"a][%00-00 , bool`&_][%00-00*@3 b][%00-00 , bool`&_][%00-00*@3 c][%00-00 )]&][s6; "
-"Serializes a set of boolean values compressed into single byte.&][s0;3 &][s4;:`:`:Stream`:`:Pack`(bool`&`,bool`&`): "
-"[%00-00 void_][%00-00* Pack][%00-00 (bool`&_][%00-00*@3 a][%00-00 , bool`&_][%00-00*@3 "
-"b][%00-00 )]&][s6; Seria")
-TOPIC_TEXT(
-"lizes a set of boolean values compressed into single byte.&][s0;3 &][s4;:`:`:Stream`:`:Stream`(`): "
-"[* Stream]()&][s6; Constructor. Sets stream into Loading serialization mode and zero "
-"level indentation. All protected variables are set to 0 / NULL.&][s0;3 &][s4;:`:`:Stream`:`:`~Stream`(`): "
-"`~[* Stream]()&][s6; Destructor.&][s0;3 &][s0;3 &][s0;3 &][s0;3 &][s10;:`:`:StringStream`:`:class:* "
-"[%00-00* c")
-TOPIC_TEXT(
-"lass_][%00-00 StringStream]&][s0;* &][s6; StringStream is stream that uses String "
-"as storage medium.&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:Stream`:`:class "
-"Stream^ [/^^ Derived from][^^  ][%00-00 Stream]&][s0;3 &][s4;:`:`:StringStream`:`:Open`(const`:`:String`&`): "
-"[%00-00 void_][%00-00* Open][%00-00 (const_String`&_][%00-00*@3 data][%00-00 )]&][s6; "
-"[%00-00 Sets the content of strea")
-TOPIC_TEXT(
-"m to specified String and sets it into the Loading serialization mode.]&][s1; [%00-00*C@3 "
-"data]-|Content of stream.&][s0;3 &][s4;:`:`:StringStream`:`:Create`(`): [%00-00 void_][%00-00* "
-"Create][%00-00 ()]&][s6; Creates empty StringStream and sets it into Storing serialization "
-"mode.&][s0;3 &][s4;:`:`:StringStream`:`:GetResult`(`): [%00-00 String_][%00-00* GetResult][%00-00 "
-"()]&][s6; Returns resultin")
-TOPIC_TEXT(
-"g String.&][s1; [*/ Return value]-|Result.&][s0;3 &][s4;:`:`:StringStream`:`:operator`:`:String`(`): "
-"[%00-00* operator_String][%00-00 ()]&][s1; [*/ Return value]-|GetResult().&][s0;3 "
-"&][s4;:`:`:StringStream`:`:StringStream`(`): [%00-00* StringStream][%00-00 ()]&][s6; "
-"Consructs empty stream and sets it into Storing serialization mode (like [* Create]).&][s0;3 "
-"&][s4;:`:`:StringStream`:`:StringStream")
-TOPIC_TEXT(
-"`(const`:`:String`&`): [%00-00* StringStream][%00-00 (const_String`&_][%00-00*@3 "
-"data][%00-00 )]&][s6; Constructs stream with specified content and sets it into Loading "
-"serialization mode (like [* Open]).&][s1; [%00-00*C@3 data]-|Content of stream.&][s0;3 "
-"&][s0;3 &][s0;3 &][s0;3 &][s10;:`:`:MemStream`:`:class:* [%00-00* class_][%00-00 "
-"MemStream]&][s6; &][s6; Stream that is using raw memory as its ")
-TOPIC_TEXT(
-"content.&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:Stream`:`:class "
-"Stream^ [/^^ Derived from][^^  ][%00-00 Stream]&][s0;3 &][s4;:`:`:MemStream`:`:MemStream`(void`*`,int`): "
-"[%00-00* MemStream][%00-00 (void_`*][%00-00*@3 data][%00-00 , int_][%00-00*@3 size][%00-00 "
-")]&][s6; Constructs [* MemStream] at specified memory buffer.&][s1; [%00-00*C@3 data]-|Pointer "
-"to the stream content.&][s1; ")
-TOPIC_TEXT(
-"[%00-00*C@3 size]-|Size.&][s0;3 &][s0;3 &][s0;3 &][s0;3 &][s10;:`:`:MemReadStream`:`:class:* "
-"[%00-00* class_][%00-00 MemReadStream]&][s6; &][s6; Read`-only stream using raw memory "
-"as content.&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:MemStream`:`:class "
-"MemStream^ [/^^ Derived from][^^  ][%00-00 MemStream]&][s0;3 &][s4;:`:`:MemReadStream`:`:MemReadStream`(const "
-"void`*`,int`): [%00-00* ")
-TOPIC_TEXT(
-"MemReadStream][%00-00 (const_void_`*][%00-00*@3 data][%00-00 , int_][%00-00*@3 size][%00-00 "
-")]&][s6; Constructs [* MemStream] at specified memory buffer.&][s1; [%00-00*C@3 data]-|Pointer "
-"to the stream content.&][s1; [%00-00*C@3 size]-|Size.&][s0;3 &][s0;3 &][s0;3 &][s0;3 "
-"&][s10;:`:`:BlockStream`:`:class:* [%00-00* class_][%00-00 BlockStream]&][s6; &][s6; "
-"BlockStream implements operations needed to")
-TOPIC_TEXT(
-" manage streams that are able to read or write a block of data at random positon. "
-"BlockStream provides buffered implementation of such stream. It implements all virtual "
-"methods of Stream, with exception of [* IsOpen] and [* Close], using new virtual "
-"methods [* Read], [* Write] and [* SetStreamSize].&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:BufferStream`:`:class "
-"BufferStream^ [/^^ Der")
-TOPIC_TEXT(
-"ived from][^^  ][%00-00 BufferStream]&][s0;3 &][s4; [%00-00 enum_`{_][%00-00*@3 "
-"READ][%00-00 , ][%00-00*@3 CREATE][%00-00 , ][%00-00*@3 APPEND][%00-00 , ][%00-00*@3 "
-"READWRITE][%00-00 , ][%00-00*@3 NOWRITESHARE][%00-00 , ][%00-00*@3 DELETESHARE][%00-00 "
-", ][%00-00*@3 NOREADSHARE][%00-00 , ][%00-00*@3 SHAREMASK][%00-00 _`}]&][s6; This "
-"enum defines basic operation modes of BlockStream (used combined w")
-TOPIC_TEXT(
-"ith binary or).&][s1;:`:`:BlockStream`:`:READ: [%00-00*C@3 READ]-|Read mode.&][s1;:`:`:BlockStream`:`:CREATE: "
-"[%00-00*C@3 CREATE]-|Write mode.&][s1;:`:`:BlockStream`:`:APPEND: [%00-00*C@3 APPEND]-|Append "
-"mode `- means that initial position in the stream is at the end of it.&][s1;:`:`:BlockStream`:`:READWRITE: "
-"[%00-00*C@3 READWRITE]-|Enables subsequent streams full access to stream.&][s1;:`:`:Block")
-TOPIC_TEXT(
-"Stream`:`:NOWRITESHARE: [%00-00*C@3 NOWRITESHARE]-|Disables subsequent streams to "
-"write to the stream.&][s1;:`:`:BlockStream`:`:DELETESHARE: [%00-00*C@3 DELETESHARE]-|Enables "
-"subsequent streams to delete the stream.&][s1;:`:`:BlockStream`:`:NOREADSHARE: [%00-00*C@3 "
-"NOREADSHARE]-|Disables subsequent streams to read the stream.&][s0;3 &][s4;:`:`:BlockStream`:`:Read`(`:`:int64`,void`*`,`:`:dword`): "
-"[")
-TOPIC_TEXT(
-"%00-00 virtual dword_][%00-00* Read][%00-00 (int64_][%00-00*@3 at][%00-00 , void_`*][%00-00*@3 "
-"ptr][%00-00 , dword_][%00-00*@3 size][%00-00 )]&][s11; [%00-00 Protected.]&][s6; "
-"Implementation of this virtual method in derived class should read a block of data "
-"at specified position in media.&][s1; [%00-00*C@3 at]-|Position in media.&][s1; [%00-00*C@3 "
-"ptr]-|Pointer to buffer to receive data.&][s1; [%")
-TOPIC_TEXT(
-"00-00*C@3 size]-|Requested size of data.&][s1; [*/ Return value]-|Size of data read.&][s0;3 "
-"&][s4;:`:`:BlockStream`:`:Write`(`:`:int64`,const void`*`,`:`:dword`): [%00-00 virtual "
-"void_][%00-00* Write][%00-00 (int64_][%00-00*@3 at][%00-00 , const_void_`*][%00-00*@3 "
-"data][%00-00 , dword_][%00-00*@3 size][%00-00 )]&][s11; Protected.&][s6; Implementation "
-"of this virtual method in derived method should")
-TOPIC_TEXT(
-" write a block of data at specified position in media.&][s1; [%00-00*C@3 at]-|Position "
-"in media.&][s1; [%00-00*C@3 data]-|Pointer to  data.&][s1; [%00-00*C@3 size]-|Size "
-"of data.&][s0;3 &][s4;:`:`:BlockStream`:`:SetStreamSize`(`:`:int64`): [%00-00 virtual "
-"void_][%00-00* SetStreamSize][%00-00 (int64_][%00-00*@3 size][%00-00 )]&][s11; Protected.&][s6; "
-"Implementation of this virtual method in derived")
-TOPIC_TEXT(
-" class should adjust the size of media.&][s1; [%00-00*C@3 size]-|Requested new size "
-"of media.&][s0;3 &][s4;:`:`:BlockStream`:`:GetMediaSize`(`)const: [%00-00 int64_][%00-00* "
-"GetMediaSize][%00-00 ()_const]&][s11; Protected.&][s6; Returns current media size. "
-"Note that this might be different from current stream`-size `- size of media adjusting "
-"can be deffered to flushing the buffer.&][s1; [*/ Return")
-TOPIC_TEXT(
-" value]-|Current media size.&][s0;3 &][s4;:`:`:BlockStream`:`:OpenInit`(`:`:dword`,`:`:int64`): "
-"[%00-00 void_][%00-00* OpenInit][%00-00 (dword_][%00-00*@3 mode][%00-00 , int64_][%00-00*@3 "
-"file`_size][%00-00 )]&][s11; Protected.&][s6; Initializes the BlockStream to specified "
-"mode and actual media size.&][s1; [%00-00*C@3 mode]-|Mode.&][s1; [%00-00*C@3 file`_size]-|Actual "
-"media size.&][s0;3 &][s4;:`:")
-TOPIC_TEXT(
-"`:BlockStream`:`:SetBufferSize`(`:`:dword`): [%00-00 void_][%00-00* SetBufferSize][%00-00 "
-"(dword_][%00-00*@3 newsize][%00-00 )]&][s6; Sets a new size of internal buffer.&][s1; "
-"[%00-00*C@3 newsize]-|The new size of buffer.&][s0;3 &][s4;:`:`:BlockStream`:`:GetBufferSize`(`)const: "
-"[%00-00 dword_][%00-00* GetBufferSize][%00-00 ()_const]&][s1; [*/ Return value]-|Size "
-"of buffer.&][s0;3 &][s0;3 &][s0;3 &")
-TOPIC_TEXT(
-"][s0;3 &][s10;:`:`:FileStream`:`:class:* [%00-00* class_][%00-00 FileStream]&][s6; "
-"&][s6; Classical file stream.&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:BlockStream`:`:class "
-"BlockStream^ [/^^ Derived from][^^  ][%00-00 BlockStream]&][s0;3 &][s4;:`:`:FileStream`:`:FileStream`(const "
-"char`*`,`:`:dword`): [%00-00* FileStream][%00-00 (const_char_`*][%00-00*@3 filename][%00-00 "
-", dword_][%")
-TOPIC_TEXT(
-"00-00*@3 mode][%00-00 )]&][s6; Opens file stream in specified mode (as defined in "
-"BlockStream).&][s1; [%00-00*C@3 filename]-|The name of the file.&][s1; [%00-00*C@3 "
-"mode]-|Open mode.&][s0;3 &][s4;:`:`:FileStream`:`:FileStream`(const char`*`,`:`:dword`,mode`_t`): "
-"[%00-00* FileStream][%00-00 (const_char_`*][%00-00*@3 filename][%00-00 , dword_][%00-00*@3 "
-"mode][%00-00 , mode`_t_][%00-00*@3 acm][%00-00")
-TOPIC_TEXT(
-" _`=_][%00-00@3 0644][%00-00 )]&][s11; [%00-00 Posix specific.]&][s6; Opens file "
-"stream in specified mode (as defined in BlockStream) and specific POSIX access rights.&][s1; "
-"[%00-00*C@3 filename]-|The name of the file.&][s1; [%00-00*C@3 mode]-|Open mode.&][s1; "
-"[%00-00*C@3 acm]-|Access rights.&][s0;3 &][s4;:`:`:FileStream`:`:FileStream`(int`): "
-"[%00-00* FileStream][%00-00 (int_][%00-00*@3 std`_handl")
-TOPIC_TEXT(
-"e][%00-00 )]&][s11; Posix specific.&][s6; Assigns existing file handle to FileStream.&][s1; "
-"[%00-00*C@3 std`_handle]-|File handle of open file. FileStream takes ownership of "
-"this handle.&][s0;3 &][s4;:`:`:FileStream`:`:FileStream`(`): [%00-00* FileStream][%00-00 "
-"()]&][s6; Creates empty unopened FileStream.&][s0;3 &][s4;:`:`:FileStream`:`:operator "
-"bool`(`)const: [%00-00* operator_bool][%00-00 ()_co")
-TOPIC_TEXT(
-"nst]&][s1; [*/ Return value]-|True if stream is open.&][s0;3 &][s4;:`:`:FileStream`:`:GetTime`(`)const: "
-"[%00-00 FileTime_][%00-00* GetTime][%00-00 ()_const]&][s6; Returns last`-write time "
-"of stream.&][s1; [*/ Return value]-|Time.&][s0;3 &][s4;:`:`:FileStream`:`:SetTime`(const`:`:FileTime`&`): "
-"[%00-00 bool_][%00-00* Open][%00-00 (const_char_`*][%00-00*@3 filename][%00-00 , "
-"dword_][%00-00*@3 mode][%")
-TOPIC_TEXT(
-"00-00 )]&][s6; Opens file stream in specified mode (as defined in BlockStream).&][s1; "
-"[%00-00*C@3 filename]-|The name of the file.&][s6; [%00-00*C@3 mode]-|Open mode.&][s0;3 "
-"&][s4;:`:`:FileStream`:`:Open`(const char`*`,`:`:dword`,mode`_t`): [%00-00 bool_][%00-00* "
-"Open][%00-00 (const_char_`*][%00-00*@3 filename][%00-00 , dword_][%00-00*@3 mode][%00-00 "
-", mode`_t_][%00-00*@3 acm][%00-00 _`=_][%00-00@")
-TOPIC_TEXT(
-"3 0644][%00-00 )]&][s11; [%00-00 Posix specific.]&][s6; Opens file stream in specified "
-"mode (as defined in BlockStream) and specific POSIX access rights.&][s1; [%00-00*C@3 "
-"filename]-|The name of the file.&][s1; [%00-00*C@3 mode]-|Open mode.&][s6; [%00-00*C@3 "
-"acm]-|Access rights.&][s0;3 &][s4;:`:`:FileStream`:`:GetHandle`(`)const: [%00-00 "
-"HANDLE_][%00-00* GetHandle][%00-00 ()_const]&][s11; Win32 sp")
-TOPIC_TEXT(
-"ecific.&][s1; [*/ Return value]-|File handle.&][s0;3 &][s4;:`:`:FileStream`:`:GetHandle`(`)const: "
-"[%00-00 int_][%00-00* GetHandle][%00-00 ()_const]&][s11; Posix specific.&][s1; [*/ "
-"Return value]-|File handle.&][s0;3 &][s0;3 &][s0;3 &][s0;3 &][s10;:`:`:FileIn`:`:class:* "
-"[%00-00* class_][%00-00 FileIn]&][s6; &][s6; Simple helper class that represents "
-"FileStream in read mode.&][s6; &][s9;^topic`:`/`/")
-TOPIC_TEXT(
-"Core`/src`/Stream`$en`-us`#`:`:FileStream`:`:class FileStream^ [/^^ Derived from][^^ "
-" ][%00-00 FileStream]&][s0;3 &][s4;:`:`:FileIn`:`:FileIn`(const char`*`): [%00-00* "
-"FileIn][%00-00 (const_char_`*][%00-00*@3 fn][%00-00 )]&][s6; Opens file for reading.&][s1; "
-"[%00-00*C@3 fn]-|File name.&][s0;3 &][s4;:`:`:FileIn`:`:FileIn`(`): [%00-00* FileIn][%00-00 "
-"()]&][s6; Constructs empty FileStream.&][s0;3 &][")
-TOPIC_TEXT(
-"s4;:`:`:FileIn`:`:Open`(const char`*`): [%00-00 bool_][%00-00* Open][%00-00 (const_char_`*][%00-00*@3 "
-"fn][%00-00 )]&][s6; Opens file for reading.&][s1; [%00-00*C@3 fn]-|File name.&][s1; "
-"[*/ Return value]-|True if open was successful.&][s0;3 &][s0;3 &][s0;3 &][s0;3 &][s10;:`:`:FileOut`:`:class:* "
-"[%00-00* class_][%00-00 FileOut]&][s6; &][s6; Simple helper class that represents "
-"FileStream in write mo")
-TOPIC_TEXT(
-"de.&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:FileStream`:`:class FileStream^ "
-"[/^^ Derived from][^^  ][%00-00 FileStream]&][s0;3 &][s4;:`:`:FileOut`:`:FileOut`(const "
-"char`*`): [%00-00* FileOut][%00-00 (const_char_`*][%00-00*@3 fn][%00-00 )]&][s6; "
-"Opens file for writing.&][s1; [%00-00*C@3 fn]-|File name.&][s0;3 &][s4;:`:`:FileOut`:`:FileOut`(`): "
-"[%00-00* FileOut][%00-00 ()]&][s6; [%00-")
-TOPIC_TEXT(
-"00 Constructs non`-opened FileStream.]&][s0;3 &][s4;:`:`:FileOut`:`:Open`(const "
-"char`*`,mode`_t`): [%00-00 bool_][%00-00* Open][%00-00 (const_char_`*][%00-00*@3 "
-"fn][%00-00 )]&][s6; Opens file for writing.&][s1; [%00-00*C@3 fn]-|File name.&][s1; "
-"[*/ Return value]-|True if open was successful.&][s0;3 &][s0;3 &][s0;3 &][s0;3 &][s10;:`:`:FileAppend`:`:class:* "
-"[%00-00* class_][%00-00 FileAppend]&][s6; ")
-TOPIC_TEXT(
-"&][s6; Simple helper class that represents FileStream in append mode `- that in "
-"fact means in write mode with current position at the end of the file.&][s6; &][s9; "
-"[/ Derived from] [%00-00 FileStream]&][s0;3 &][s4;:`:`:FileAppend`:`:FileAppend`(const "
-"char`*`): [%00-00* FileAppend][%00-00 (const_char_`*][%00-00*@3 fn][%00-00 )]&][s6; "
-"Opens file in append mode.&][s1; [%00-00*C@3 fn]-|File name.&][s0")
-TOPIC_TEXT(
-";3 &][s4;:`:`:FileAppend`:`:FileAppend`(`): [%00-00* FileAppend][%00-00 ()]&][s6; "
-"Constructs empty FileStream.&][s0;3 &][s4;:`:`:FileAppend`:`:Open`(const char`*`): "
-"[%00-00 bool_][%00-00* Open][%00-00 (const_char_`*][%00-00*@3 fn][%00-00 )]&][s6; "
-"Opens file in append mode.&][s1; [%00-00*C@3 fn]-|File name.&][s1; [*/ Return value]-|true "
-"when Open was successful.&][s0;3 &][s0;3 &][s0;3 &][s0;3 &][s1")
-TOPIC_TEXT(
-"0;:`:`:SizeStream`:`:class:* [%00-00* class_][%00-00 SizeStream]&][s6; &][s6; Special "
-"output stream that in fact does not store output data, only counts the total number "
-"of bytes written.&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:BufferStream`:`:class "
-"BufferStream^ [/^^ Derived from][^^  ][%00-00 BufferStream]&][s0;3 &][s4;:`:`:SizeStream`:`:SizeStream`(`): "
-"[%00-00* SizeStream][%00-00")
-TOPIC_TEXT(
-" ()]&][s6; Constructor `- co&][s0;3 &][s4;:`:`:SizeStream`:`:`_Put`(int`): [%00-00* "
-"operator_int64][%00-00 ()_const]&][s1; [*/ Return value]-|Current number of bytes "
-"written.&][s0;3 &][s4;:`:`:SizeStream`:`:Open`(`): [%00-00 void_][%00-00* Open][%00-00 "
-"()]&][s6; Reopens data `- resets the counter of output bytes.&][s0;3 &][s0;3 &][s0;3 "
-"&][s0;3 &][s10;:`:`:CompareStream`:`:class:* [%00-00* class_][")
-TOPIC_TEXT(
-"%00-00 CompareStream]&][s6; &][s6; Special output stream that instead of storing "
-"data performs their comparison to the data of another stream.&][s6; &][s9;^topic`:`/`/Core`/src`/Stream`$en`-us`#`:`:BufferStream`:`:class "
-"BufferStream^ [/^^ Derived from][^^  ][%00-00 BufferStream]&][s0;3 &][s4;:`:`:CompareStream`:`:CompareStream`(`): "
-"[%00-00* CompareStream][%00-00 ()]&][s6; Constructs closed Compare")
-TOPIC_TEXT(
-"Stream.&][s0;3 &][s4;:`:`:CompareStream`:`:CompareStream`(`:`:Stream`&`): [%00-00* "
-"CompareStream][%00-00 (Stream`&_][%00-00*@3 aStream][%00-00 )]&][s6; Constructors "
-"CompareStream opened for comparison with specified stream.&][s1; [%00-00*C@3 aStream]-|Stream "
-"to compare with.&][s0;3 &][s4;:`:`:CompareStream`:`:`_Put`(int`): [%00-00 void_][%00-00* "
-"Open][%00-00 (Stream`&_][%00-00*@3 aStream][%00-00 )")
-TOPIC_TEXT(
-"]&][s6; Opens CompareStream for comparison with the specified stream.&][s1; [%00-00*C@3 "
-"aStream]-|Stream to compare with.&][s0;3 &][s4;:`:`:CompareStream`:`:IsEqual`(`): "
-"[%00-00 bool_][%00-00* IsEqual][%00-00 ()]&][s1; [*/ Return value]-|true if all bytes "
-"written so far match those in comparison stream.&][s0;3 &][s4;:`:`:CompareStream`:`:operator "
-"bool`(`): [%00-00* operator_bool][%00-00 ()]&][s1; ")
-TOPIC_TEXT(
-"[*/ Return value]-|IsEqual().&][s0;3 ]")
+COMPRESSED
+120,156,237,93,9,119,219,70,146,254,43,189,185,134,82,68,
+137,167,206,100,55,138,44,39,122,145,37,63,201,25,207,91,
+175,36,64,96,83,196,24,4,24,0,148,226,137,147,223,190,
+85,213,13,160,27,104,128,167,14,59,154,55,145,73,2,221,
+93,245,213,217,247,187,22,251,234,171,198,90,227,203,198,132,
+255,237,190,224,125,123,236,197,23,239,220,78,103,123,207,110,
+117,247,222,255,114,186,179,183,250,67,109,179,179,2,149,52,
+161,146,246,86,179,189,221,109,55,59,173,77,248,211,108,55,
+91,221,86,187,211,220,110,237,116,182,219,237,237,198,174,227,
+217,81,116,241,206,107,109,111,239,97,203,45,40,212,218,234,
+182,154,91,157,237,206,118,179,189,181,221,130,178,173,70,163,
+213,216,106,117,155,157,246,118,171,187,219,227,145,115,241,206,
+222,110,239,173,158,109,66,161,54,182,4,149,55,154,155,173,
+206,86,167,213,104,55,90,29,104,170,185,189,221,105,110,117,
+183,219,59,155,155,187,142,61,138,221,192,151,109,185,205,102,
+171,185,119,221,220,218,3,146,255,250,235,175,245,102,167,33,
+40,232,64,101,205,70,7,72,109,194,111,141,78,107,171,217,
+221,105,236,116,183,155,219,141,54,84,222,221,106,116,119,71,
+118,104,15,205,156,99,29,221,137,172,111,53,118,221,152,67,
+21,171,223,54,155,91,80,100,115,109,243,203,102,103,11,24,
+221,110,119,186,219,91,13,104,188,213,106,181,219,173,102,187,
+181,179,211,234,110,118,183,118,7,220,238,241,80,178,96,3,
+241,171,77,40,186,181,182,245,37,20,108,116,186,237,86,103,
+7,193,106,67,75,173,214,102,119,167,217,237,52,186,155,80,
+211,110,200,127,27,187,33,31,114,31,36,246,199,213,159,95,
+31,158,212,127,61,103,239,162,246,30,59,143,67,110,15,163,
+111,46,222,177,63,254,216,217,105,239,234,255,117,225,191,205,
+221,157,237,173,93,64,184,141,127,54,225,79,171,217,111,236,
+221,180,219,123,63,157,120,205,173,141,86,55,132,191,157,24,
+254,52,174,241,207,15,91,245,22,84,223,216,187,140,131,145,
+235,88,187,214,134,181,113,16,132,220,218,136,66,199,218,16,
+141,90,95,113,223,170,143,35,235,75,120,97,87,254,6,159,
+72,47,36,97,151,77,249,225,98,119,215,107,96,75,248,39,
+110,108,52,187,215,248,231,135,86,189,73,45,49,120,33,253,
+16,2,49,64,202,70,131,126,105,166,207,22,254,180,76,110,
+93,255,198,192,115,250,171,224,60,253,250,152,252,47,141,235,
+87,124,152,103,57,253,9,248,77,63,127,102,194,6,190,206,
+192,122,13,172,103,63,11,246,179,239,15,15,193,210,216,253,
+113,220,239,243,48,207,173,250,43,48,171,126,253,204,196,253,
+163,23,56,239,11,236,103,63,34,247,217,183,207,140,249,151,
+174,199,243,188,103,191,1,235,217,151,207,144,243,35,95,231,
+250,200,151,28,31,249,159,133,3,71,86,78,199,177,206,36,
+252,32,185,132,79,159,13,155,251,163,17,247,123,58,167,226,
+55,201,172,248,242,80,252,46,47,243,112,255,83,48,208,236,
+55,204,58,210,47,159,133,44,15,130,33,100,236,5,150,181,
+159,129,107,237,251,195,48,254,231,159,144,117,99,37,226,159,
+54,253,219,221,251,229,7,168,233,235,70,163,222,104,252,80,
+107,172,55,214,91,221,238,10,147,157,165,228,119,236,102,93,
+37,95,147,20,25,203,183,68,117,173,36,179,103,110,196,226,
+1,103,215,118,196,69,37,44,232,51,219,243,216,175,214,183,
+214,183,44,18,249,255,186,44,164,253,200,110,184,207,67,120,
+247,3,139,120,120,203,153,235,67,93,33,231,172,231,98,244,
+134,254,4,11,3,143,71,187,162,180,219,236,54,246,78,129,
+161,253,8,219,115,29,22,218,119,236,218,245,237,240,67,174,
+33,245,213,152,255,30,179,96,28,143,198,49,187,115,227,1,
+227,254,192,246,29,222,131,246,122,208,134,141,125,55,214,231,
+118,60,14,249,58,123,51,0,150,224,255,80,157,7,170,218,
+99,215,88,121,128,169,178,86,192,227,183,220,19,36,115,217,
+58,179,125,172,20,152,137,241,109,124,224,4,97,200,163,81,
+224,247,240,23,127,60,188,230,33,34,100,253,195,250,191,216,
+250,7,115,6,208,221,115,98,30,70,204,142,5,146,252,198,
+245,125,124,27,94,227,182,51,96,158,235,115,86,123,61,142,
+251,108,200,227,65,208,99,195,113,20,195,139,108,28,17,23,
+81,12,121,29,190,14,239,172,24,16,72,32,226,161,139,60,
+9,250,99,59,188,225,241,70,20,140,67,39,97,123,104,187,
+62,72,195,231,188,7,184,5,196,55,103,125,207,38,214,93,
+199,38,190,244,122,122,208,245,115,240,83,34,227,35,159,5,
+33,244,37,177,2,32,223,5,156,88,0,29,228,161,237,177,
+17,15,251,65,56,68,248,145,222,107,202,210,128,7,137,95,
+0,207,169,214,104,141,176,24,6,192,103,31,251,151,168,11,
+217,83,54,176,161,82,27,144,137,99,15,32,115,99,120,53,
+68,180,135,35,15,201,68,88,224,35,245,73,37,187,3,192,
+183,199,161,105,96,109,20,98,93,240,181,239,250,46,61,6,
+98,110,221,48,30,3,141,2,99,160,192,38,213,254,32,208,
+38,65,58,49,160,99,247,254,141,63,68,193,144,99,69,49,
+252,10,205,245,236,216,134,162,40,95,50,1,97,30,136,43,
+48,216,71,226,144,161,28,81,240,30,85,35,197,234,216,62,
+74,213,1,14,221,30,225,98,51,240,26,49,190,231,250,160,
+36,125,27,112,203,168,222,149,6,126,27,184,61,198,18,23,
+180,11,90,80,131,215,153,179,34,159,91,127,200,15,245,143,
+110,191,54,138,67,246,29,187,11,61,119,184,146,254,94,255,
+104,173,194,3,50,79,235,123,230,236,165,79,184,23,113,245,
+181,43,172,222,89,73,94,176,116,47,131,116,42,164,188,225,
+225,176,102,32,35,228,96,108,62,19,164,132,61,32,133,253,
+15,35,10,216,46,179,174,68,177,233,154,248,137,199,179,181,
+64,60,98,43,84,178,162,145,205,142,214,202,235,32,170,173,
+144,112,226,210,230,122,119,160,250,132,176,85,151,218,189,194,
+160,185,81,16,149,52,212,78,26,76,156,237,235,84,165,18,
+109,2,237,73,189,173,166,63,23,74,77,154,99,191,196,64,
+68,28,92,10,95,78,159,203,220,59,16,119,81,70,196,122,
+226,245,129,251,212,82,4,99,186,239,91,47,141,50,68,204,
+245,135,152,75,90,240,99,142,20,107,53,37,70,212,157,208,
+147,209,145,146,65,134,128,190,69,115,148,162,216,178,136,0,
+1,78,67,129,51,14,41,72,185,62,196,150,13,25,98,176,
+230,101,209,65,122,91,74,9,246,230,193,5,14,221,120,157,
+189,91,101,160,162,23,137,39,17,234,24,177,91,219,27,115,
+208,160,48,24,38,82,3,175,230,5,0,26,252,11,133,20,
+251,184,88,22,213,228,90,74,169,126,27,186,49,87,200,6,
+119,50,47,217,162,161,60,217,169,18,39,14,253,162,152,238,
+160,199,76,233,77,45,1,24,38,247,150,62,169,25,138,186,
+126,108,40,217,102,119,233,175,43,137,205,28,64,110,35,18,
+136,28,159,96,57,14,38,76,20,148,20,189,193,8,224,7,
+20,218,41,244,226,155,168,233,2,130,154,100,252,191,193,65,
+11,214,87,214,217,81,18,106,216,157,237,199,20,181,33,43,
+144,69,192,56,48,144,98,100,23,13,71,131,96,236,245,146,
+16,6,245,73,115,91,147,160,94,80,10,3,159,21,104,59,
+169,91,88,61,32,62,235,31,127,68,90,147,252,96,30,252,
+205,32,54,164,235,207,240,55,67,73,239,24,177,36,75,20,
+80,2,211,8,37,60,54,192,39,20,254,254,224,83,12,10,
+225,91,221,0,99,165,0,65,154,13,8,254,19,255,197,148,
+47,241,33,163,196,191,234,94,149,29,20,158,11,190,236,222,
+45,37,177,203,69,31,125,200,4,240,85,55,243,41,99,31,
+162,247,36,15,83,30,196,238,217,149,80,46,97,40,91,86,
+121,230,99,193,14,49,225,76,31,173,165,148,145,171,166,52,
+228,82,100,35,70,103,21,65,207,166,232,175,94,184,50,197,
+117,74,28,215,186,240,222,208,87,97,215,56,196,72,145,87,
+116,46,144,28,147,187,32,50,235,31,149,168,89,246,38,209,
+84,255,136,227,3,83,203,97,26,110,11,122,253,68,113,86,
+12,107,157,149,35,89,142,92,185,198,43,61,119,8,201,103,
+208,107,22,250,190,76,117,63,231,252,125,17,99,37,19,213,
+147,80,13,38,204,64,11,40,97,133,228,20,110,220,91,238,
+167,14,208,164,58,88,30,117,76,121,67,205,99,50,234,181,
+156,197,168,76,211,102,205,192,49,8,236,92,145,175,120,161,
+182,146,37,214,194,190,203,197,130,165,169,15,184,124,231,115,
+174,211,54,171,64,204,122,187,239,209,64,5,249,75,73,122,
+206,119,154,21,243,132,223,209,199,165,114,248,210,27,71,3,
+67,176,58,74,240,100,3,200,21,109,255,131,232,58,251,80,
+189,136,24,17,171,121,238,123,174,204,20,172,172,65,190,67,
+126,13,216,17,17,136,248,12,216,233,249,82,105,62,240,130,
+136,27,104,166,223,163,178,158,84,187,90,109,149,134,175,131,
+192,43,215,215,163,232,116,196,253,82,117,45,11,76,73,130,
+255,125,166,216,141,10,165,142,67,8,174,110,42,4,8,224,
+1,180,58,217,38,39,18,127,24,134,65,56,191,177,37,116,
+113,172,6,50,142,136,113,223,9,198,168,27,56,124,51,166,
+1,190,194,56,20,232,45,141,85,1,11,52,0,8,233,122,
+200,60,27,50,144,3,143,219,33,209,68,110,28,59,252,162,
+106,39,232,201,12,200,183,234,255,225,97,176,4,222,79,127,
+153,159,241,255,146,208,213,86,202,116,121,74,135,162,9,96,
+166,190,145,163,196,214,239,213,7,13,147,219,143,19,75,80,
+0,53,121,23,7,152,59,212,223,152,159,185,99,144,105,142,
+193,10,146,192,53,144,18,156,158,91,245,104,196,29,183,239,
+58,242,81,45,184,142,109,215,7,157,226,235,55,235,24,219,
+127,82,106,23,186,2,137,241,91,215,111,183,80,153,224,51,
+20,244,3,252,128,17,236,247,21,57,24,43,153,23,99,130,
+228,195,70,208,63,22,233,194,79,82,26,175,120,20,217,55,
+156,245,199,190,51,93,232,83,101,100,12,105,11,154,89,210,
+95,33,234,173,58,73,134,253,47,88,65,50,130,204,209,50,
+196,227,69,68,150,153,159,209,159,194,195,40,175,62,149,184,
+204,17,252,95,7,209,226,56,149,244,251,150,224,46,131,254,
+252,212,209,168,53,179,225,63,144,21,13,173,95,203,46,255,
+117,73,207,9,90,100,182,23,5,76,248,89,217,49,12,250,
+102,73,47,5,255,99,222,143,231,103,17,199,48,34,96,39,
+190,227,144,93,22,186,225,216,153,68,246,184,223,203,82,52,
+114,242,191,141,93,168,3,95,6,56,100,14,88,91,193,71,
+201,32,241,98,174,136,191,63,244,123,69,55,59,93,226,22,
+114,111,86,95,91,61,2,129,53,66,40,188,37,225,23,0,
+89,103,231,246,144,227,160,28,210,93,83,208,248,22,11,174,
+152,220,54,146,152,37,235,136,155,236,218,131,106,121,28,39,
+16,67,4,25,50,28,104,209,20,63,103,133,19,76,109,25,
+112,46,132,90,254,245,34,112,98,122,97,34,110,103,73,197,
+65,191,31,241,120,17,108,230,29,233,116,138,144,64,85,148,
+42,221,120,210,83,208,184,37,50,46,71,55,203,251,8,142,
+180,197,41,56,41,27,183,42,25,51,124,77,29,72,34,135,
+188,149,24,160,146,2,202,198,208,48,175,43,138,231,136,250,
+54,6,39,24,161,164,181,170,80,95,41,210,4,14,213,211,
+91,99,62,191,17,82,34,111,35,166,147,209,251,200,241,186,
+114,143,52,197,144,224,252,56,153,71,247,112,26,65,23,94,
+1,173,181,39,9,85,22,135,212,54,238,211,34,158,218,128,
+93,113,52,78,89,17,65,51,210,211,90,225,204,195,116,39,
+233,82,6,33,105,40,65,125,232,50,248,167,27,169,123,90,
+227,116,194,50,42,208,77,147,160,130,2,78,132,87,14,140,
+195,167,144,59,156,34,5,212,51,59,232,104,4,21,134,146,
+47,97,59,56,118,224,125,16,198,83,243,130,59,124,170,4,
+92,164,130,22,92,68,216,213,120,183,154,52,190,80,82,115,
+28,216,189,55,131,48,184,3,7,50,161,127,149,6,142,33,
+118,163,105,98,33,198,146,17,85,2,229,69,55,138,255,238,
+112,218,116,193,238,6,144,190,225,51,241,0,23,239,248,183,
+193,123,112,31,114,77,139,236,142,199,31,70,208,253,240,104,
+54,93,95,193,50,166,46,212,196,113,184,105,25,45,235,148,
+188,22,107,95,162,180,43,93,59,60,59,59,61,179,174,142,
+79,247,95,28,157,252,100,93,189,220,63,58,62,124,161,205,
+140,64,136,79,164,162,130,40,184,170,65,79,80,253,21,242,
+7,49,126,188,178,86,134,22,45,215,130,183,11,61,69,3,
+151,106,15,35,111,165,251,158,247,73,26,106,218,91,73,98,
+150,156,170,226,126,48,190,25,136,151,181,112,187,102,212,45,
+86,147,83,94,140,172,109,232,222,12,164,158,66,199,33,131,
+219,152,199,61,154,47,72,70,192,228,126,157,158,178,28,77,
+84,129,131,98,105,29,115,167,24,219,165,57,134,93,204,50,
+30,65,38,216,227,136,229,34,63,194,89,46,54,116,36,73,
+180,44,40,153,136,153,144,130,80,129,44,183,177,234,205,197,
+176,107,110,150,130,215,220,180,234,184,208,77,164,73,57,240,
+144,235,17,116,12,208,193,176,116,64,138,150,218,197,172,198,
+93,196,85,174,150,179,234,208,131,115,109,92,164,7,38,114,
+147,124,93,121,120,155,40,98,170,241,184,24,146,237,86,41,
+146,237,214,231,143,164,198,99,101,78,54,161,15,76,96,42,
+79,242,96,110,118,62,127,48,53,30,23,53,112,207,52,1,
+52,165,137,227,183,28,92,67,26,96,125,124,140,150,106,186,
+21,24,77,52,222,39,140,209,178,141,178,2,166,137,102,249,
+132,97,90,170,185,93,47,104,110,138,47,122,50,0,45,213,
+214,42,0,154,202,214,158,34,64,203,54,180,207,17,163,169,
+172,236,50,219,76,126,41,247,139,151,161,116,236,250,229,40,
+201,188,159,118,178,20,242,126,44,137,188,245,56,173,10,22,
+51,156,184,65,198,87,55,200,96,98,160,204,63,244,93,168,
+175,150,140,39,66,154,128,5,194,220,142,26,196,247,198,199,
+133,180,21,64,28,155,136,90,200,168,126,141,251,229,157,32,
+9,197,56,238,91,245,109,90,131,208,3,142,141,234,83,65,
+244,175,162,248,180,30,160,106,196,83,237,115,164,157,113,209,
+15,47,237,134,255,86,58,22,169,59,213,37,228,127,134,30,
+240,111,233,34,206,73,163,142,83,66,160,118,22,102,152,8,
+41,71,65,247,10,159,8,10,106,150,63,219,52,89,57,16,
+122,30,242,137,0,161,39,233,247,96,19,166,196,235,97,244,
+220,196,216,114,53,253,177,120,211,211,225,123,211,223,199,98,
+79,207,100,239,65,39,11,57,202,195,40,164,137,171,229,42,
+228,163,48,166,231,140,247,166,141,143,194,155,158,222,204,32,
+180,178,133,3,118,46,41,186,77,168,173,94,93,236,36,140,
+73,126,242,27,221,31,118,230,23,243,206,146,25,15,195,226,
+118,41,80,92,222,194,32,87,29,186,62,109,90,142,40,197,
+214,89,103,53,122,75,118,20,80,128,49,55,7,66,92,4,
+127,158,214,176,12,81,207,131,73,85,159,193,250,230,106,42,
+92,206,53,28,212,206,130,124,130,203,34,161,125,92,105,41,
+64,204,210,254,39,128,204,100,3,88,155,126,95,22,20,195,
+101,202,165,88,169,115,42,186,226,100,243,184,217,76,79,236,
+14,185,17,162,100,29,142,14,80,254,37,162,4,87,33,141,
+56,174,84,193,175,11,2,217,152,15,201,74,72,72,35,102,
+2,68,204,21,223,218,161,107,39,243,164,242,48,132,81,24,
+220,186,216,69,187,230,142,141,251,211,112,255,123,99,77,80,
+0,70,128,191,129,11,27,130,43,30,187,241,7,92,210,213,
+192,226,234,46,254,136,157,252,122,124,204,70,233,148,95,176,
+190,62,35,188,11,58,183,183,115,91,242,29,90,22,164,24,
+83,249,183,37,170,181,157,244,16,52,105,17,25,17,171,37,
+233,75,54,60,32,246,12,175,228,36,94,217,227,152,189,171,
+81,230,71,74,228,120,204,253,155,120,32,151,22,64,161,133,
+23,199,24,196,248,56,66,74,39,116,231,146,209,12,211,68,
+101,82,168,156,62,23,20,84,73,230,36,71,237,84,75,104,
+36,99,218,26,154,197,215,81,252,13,101,250,152,203,47,34,
+243,30,202,68,49,202,245,96,49,7,124,16,30,247,51,65,
+231,157,221,193,153,85,63,126,201,70,182,27,230,242,222,5,
+253,254,161,162,122,133,86,139,242,177,190,144,195,171,56,82,
+107,125,145,167,229,40,70,33,168,196,6,201,78,150,180,46,
+92,94,37,50,18,120,39,144,123,90,210,199,11,38,11,250,
+32,243,195,229,233,182,24,186,166,35,15,12,27,1,196,209,
+75,181,104,101,79,98,46,207,149,49,168,30,110,133,177,234,
+133,148,255,145,112,89,70,174,190,60,108,206,151,1,69,137,
+55,149,39,177,37,103,153,77,98,114,205,180,43,120,218,13,
+179,184,241,226,232,228,13,244,214,175,94,237,255,107,214,37,
+110,142,231,58,239,181,186,148,135,157,198,206,102,133,36,176,
+75,36,65,207,188,184,20,203,196,254,52,138,224,104,194,66,
+86,185,248,236,149,253,187,59,28,15,11,43,200,210,164,136,
+201,35,188,101,95,62,67,131,13,185,237,71,236,110,16,120,
+250,178,89,17,64,10,107,223,149,93,39,224,122,100,239,215,
+24,217,9,182,108,83,181,204,10,232,136,180,62,109,3,27,
+125,200,180,139,189,164,72,4,207,196,210,232,197,116,174,95,
+105,123,51,12,135,228,168,34,83,194,35,224,162,88,30,3,
+38,206,130,19,209,47,90,19,125,156,145,29,69,98,210,140,
+206,136,179,251,24,150,229,252,217,138,136,154,120,108,29,188,
+50,70,207,108,56,123,142,206,58,67,221,9,131,228,64,130,
+31,241,116,165,141,67,191,151,156,135,182,206,246,189,40,88,
+75,39,230,112,114,45,14,65,150,158,29,167,173,131,121,211,
+206,169,100,50,206,52,3,55,177,207,121,95,114,88,118,108,
+56,37,25,149,14,226,8,176,149,99,251,242,8,220,203,184,
+196,92,16,44,20,6,18,24,206,243,108,87,119,160,22,225,
+147,148,211,144,215,28,249,14,184,18,236,143,19,236,100,44,
+197,51,27,65,85,167,89,166,89,218,186,182,61,47,59,212,
+131,47,218,246,180,113,170,33,247,167,7,225,119,223,25,162,
+29,129,115,68,45,31,130,127,190,100,185,31,138,18,196,243,
+125,34,241,154,216,200,152,43,65,39,41,200,164,78,248,115,
+120,199,250,66,121,203,250,162,162,3,37,151,178,163,19,206,
+8,71,91,115,253,73,125,226,197,209,0,97,169,88,104,95,
+203,144,128,151,4,14,218,219,37,40,164,239,44,142,65,114,
+64,203,185,182,61,33,26,143,70,65,184,72,132,194,237,237,
+98,59,128,65,111,105,243,133,214,111,147,33,215,19,69,178,
+121,133,249,91,63,23,231,167,206,210,122,114,228,234,148,173,
+151,246,177,143,162,18,214,167,61,189,2,231,252,102,67,162,
+130,150,18,32,102,160,101,70,92,42,164,34,116,140,159,217,
+119,6,179,73,15,252,211,206,250,91,230,78,142,146,65,136,
+148,174,136,54,113,108,139,225,6,218,11,193,94,81,63,95,
+140,1,168,227,2,21,131,9,120,80,67,96,27,147,15,243,
+150,183,236,216,91,28,14,44,140,44,97,101,242,180,215,233,
+134,151,210,188,24,75,110,84,30,152,183,4,177,153,166,131,
+31,90,100,201,16,209,167,43,51,121,252,228,67,9,173,28,
+251,135,22,93,50,119,254,44,186,25,68,55,150,131,3,227,
+220,232,192,67,11,47,89,28,240,44,188,79,200,89,106,241,
+237,156,142,119,102,103,199,135,116,146,121,200,163,72,206,69,
+226,40,198,34,50,21,7,13,225,136,2,253,74,221,114,31,
+224,118,63,141,200,56,123,95,224,235,202,110,176,150,161,233,
+29,220,94,165,200,176,160,152,37,190,246,248,210,141,140,214,
+179,136,186,9,236,164,221,138,126,133,181,74,91,25,105,128,
+107,233,29,170,106,16,181,193,146,89,64,196,130,207,32,10,
+16,35,247,198,231,38,7,178,4,156,69,221,207,112,43,88,
+142,253,251,4,60,169,253,25,114,85,195,7,65,24,207,167,
+191,88,242,25,198,25,52,119,126,172,83,213,125,6,189,100,
+230,102,22,52,241,134,146,103,8,167,215,219,121,113,78,181,
+246,25,240,20,75,188,37,99,46,48,233,122,141,103,16,167,
+215,218,185,145,78,213,246,25,242,12,205,62,240,49,159,23,
+160,146,207,48,10,24,123,193,248,90,217,8,53,11,142,162,
+232,223,26,200,242,197,62,51,134,255,205,206,51,142,37,3,
+163,51,121,202,103,40,23,90,155,161,64,41,151,103,44,3,
+202,25,71,19,159,26,200,27,15,6,178,92,12,147,31,208,
+197,21,82,35,219,121,47,86,166,225,86,4,100,212,163,205,
+2,15,39,151,232,169,201,165,76,249,223,38,130,121,187,128,
+100,222,62,235,255,36,253,95,10,206,207,22,48,219,138,61,
+219,41,187,53,201,56,195,164,139,194,173,206,231,176,164,92,
+170,36,196,32,177,166,219,120,233,110,99,58,12,85,174,40,
+137,134,120,53,133,152,131,91,103,255,20,115,113,141,117,96,
+160,67,64,202,27,9,113,17,84,214,134,173,237,63,92,99,
+1,157,225,32,39,242,64,218,184,4,216,245,89,87,204,246,
+60,156,104,221,74,209,222,151,25,77,53,164,81,45,52,49,
+146,49,151,200,158,6,182,79,195,161,45,111,4,170,90,92,
+185,17,168,191,179,220,166,113,119,175,236,27,215,153,197,223,
+169,146,24,106,133,75,111,183,248,125,171,183,185,213,233,109,
+93,155,228,101,125,65,181,8,254,196,6,39,238,71,227,80,
+93,128,200,111,66,55,254,176,206,222,226,201,210,114,237,159,
+188,139,50,61,163,94,206,118,99,28,115,6,156,2,153,85,
+103,67,23,36,27,59,3,233,249,228,249,247,32,87,20,122,
+42,89,147,108,4,111,184,177,34,165,110,249,97,101,186,25,
+112,211,146,135,233,74,94,207,93,114,194,198,248,169,230,235,
+103,45,201,231,46,217,159,187,228,205,220,37,179,171,238,76,
+106,109,211,65,225,184,168,2,106,224,182,159,68,224,36,231,
+74,110,18,86,98,245,179,122,125,206,234,245,172,36,127,27,
+37,121,22,245,39,38,234,103,129,61,138,192,158,97,95,0,
+246,103,240,238,5,130,198,222,110,214,219,85,62,213,172,149,
+93,188,19,92,118,127,107,43,178,233,3,220,191,25,142,29,
+232,71,174,23,175,205,145,59,157,114,215,219,208,85,49,216,
+81,161,125,170,98,27,162,178,49,17,247,245,122,120,202,81,
+204,157,152,78,162,21,61,68,113,124,174,188,127,166,193,54,
+232,8,163,106,226,173,191,84,242,173,191,12,12,188,224,41,
+253,122,85,230,127,65,69,180,225,0,41,139,203,75,117,185,
+158,103,71,233,152,228,229,165,178,171,245,18,215,128,211,120,
+164,62,140,128,47,237,170,175,101,149,141,198,215,94,214,201,
+84,107,75,88,17,228,173,178,68,25,148,250,177,99,152,108,
+182,199,29,218,116,50,148,28,16,197,129,50,224,26,111,26,
+26,242,158,59,22,187,235,211,75,217,47,227,96,228,58,192,
+234,134,181,113,16,132,220,218,136,66,199,218,144,120,126,197,
+125,171,62,142,172,47,117,188,137,115,150,98,179,1,228,190,
+0,209,223,114,113,45,218,197,59,248,129,153,233,159,203,2,
+213,235,163,239,103,123,177,182,226,62,53,184,148,131,100,179,
+160,122,204,65,122,184,65,118,224,65,2,57,232,124,132,69,
+220,56,219,87,88,110,35,235,233,86,60,209,156,186,20,254,
+32,223,224,34,142,236,0,42,136,77,103,101,139,7,17,227,
+195,81,252,65,215,172,2,47,231,201,80,82,145,143,9,227,
+106,83,156,229,125,70,195,23,6,10,197,232,80,50,178,139,
+237,43,155,185,205,35,72,162,174,50,162,210,49,188,43,81,
+81,229,134,200,148,178,220,21,171,153,35,74,1,43,124,23,
+30,85,74,214,232,21,84,65,128,30,163,151,74,68,17,205,
+44,4,121,199,60,120,64,41,237,57,40,38,107,202,126,182,
+190,153,130,5,42,115,149,20,72,197,186,90,106,91,105,68,
+73,93,215,157,27,15,20,99,74,108,173,192,124,69,180,73,
+153,39,143,81,117,11,86,181,97,221,95,88,120,197,135,75,
+142,9,210,149,139,144,144,134,0,218,187,131,40,225,102,159,
+33,31,6,33,157,16,232,198,81,2,236,83,136,3,82,29,
+83,80,244,47,53,244,100,214,170,181,6,98,215,84,176,0,
+34,163,87,149,77,84,5,189,91,67,221,209,212,210,124,163,
+155,162,150,239,212,134,240,126,212,76,55,37,160,98,51,210,
+116,59,153,148,189,230,170,0,204,199,220,156,231,39,140,38,
+41,100,74,232,156,58,137,71,176,45,67,47,51,192,116,213,
+196,250,173,122,128,231,90,74,16,76,218,185,168,102,106,122,
+36,148,83,5,102,130,126,234,180,23,85,52,195,168,248,131,
+240,127,172,66,97,139,8,39,78,243,111,174,186,243,235,237,
+143,120,235,226,189,121,83,165,118,70,251,35,135,192,120,36,
+243,6,136,56,17,243,57,199,185,24,64,104,104,251,152,96,
+11,144,34,225,129,177,23,147,204,120,133,92,204,153,209,65,
+59,234,125,145,98,250,44,6,59,240,123,193,80,156,62,133,
+93,35,181,113,121,16,108,36,101,134,93,187,132,28,17,250,
+48,134,141,233,176,166,48,61,45,47,35,152,102,252,220,16,
+143,142,76,142,84,194,18,231,242,152,67,138,186,217,61,157,
+240,4,148,231,40,162,0,74,177,23,83,9,47,136,248,197,
+154,180,89,159,223,21,42,132,151,80,193,225,29,248,68,167,
+130,165,133,233,24,14,108,11,53,227,98,110,219,254,145,152,
+207,155,183,250,235,100,11,87,223,206,25,121,154,23,114,127,
+60,188,178,254,208,236,237,236,112,255,133,161,35,143,143,14,
+224,217,155,195,146,135,251,175,95,31,158,148,149,196,74,223,
+158,29,149,22,62,57,165,167,231,63,239,159,149,189,242,226,
+240,248,176,250,141,147,83,108,166,234,13,122,246,106,255,252,
+151,44,39,183,254,76,76,129,14,39,70,68,88,143,247,93,
+31,117,208,142,92,39,51,2,74,187,72,159,84,141,173,209,
+225,103,78,48,188,118,113,138,154,84,76,222,138,138,87,230,
+8,231,65,110,85,41,133,95,145,216,93,205,171,16,244,152,
+204,131,1,41,7,205,155,10,11,81,232,197,165,120,234,31,
+73,39,39,213,32,228,165,215,32,101,88,255,184,63,26,225,
+97,112,148,103,226,148,43,29,39,39,143,3,117,99,200,68,
+75,238,77,199,84,140,46,19,78,175,16,114,227,9,16,144,
+224,139,56,8,109,169,127,60,244,197,56,73,52,190,142,240,
+96,105,63,78,61,79,127,12,214,110,59,14,143,162,236,96,
+196,138,214,84,37,211,27,212,212,175,254,241,133,27,149,54,
+154,156,32,102,60,233,207,212,170,162,183,122,163,170,66,87,
+242,137,91,195,185,199,99,62,93,131,138,25,228,185,204,236,
+99,34,147,228,197,39,223,213,148,58,71,109,24,98,226,41,
+203,228,63,11,131,28,211,157,2,169,108,96,48,142,51,86,
+220,138,60,138,67,67,217,185,47,69,86,60,233,235,100,104,
+111,61,61,38,173,16,183,196,226,6,45,152,160,245,244,164,
+15,23,78,62,26,4,99,175,39,224,55,196,206,44,183,81,
+13,16,7,187,140,7,2,216,49,101,55,83,188,137,208,76,
+56,240,121,194,93,201,103,233,185,239,145,60,29,82,43,96,
+56,174,75,121,173,242,152,231,130,146,77,51,0,36,2,243,
+61,233,216,228,83,14,31,240,110,110,80,195,76,253,230,213,
+62,249,139,84,191,210,220,237,222,244,175,152,137,79,210,183,
+243,188,150,45,75,115,244,36,110,78,13,186,47,57,105,94,
+194,238,253,123,28,137,112,155,216,92,41,192,5,43,197,212,
+182,88,74,1,81,193,170,200,250,15,181,205,206,138,206,191,
+248,41,55,202,249,10,107,86,129,20,111,213,86,178,30,137,
+48,166,50,132,146,209,208,228,208,90,34,149,8,95,103,39,
+1,5,69,202,56,240,50,9,90,227,119,157,221,54,30,235,
+231,221,138,80,102,213,137,107,72,107,52,238,37,152,201,189,
+39,88,11,151,93,16,80,198,190,55,142,6,116,130,40,222,
+52,169,247,39,139,158,237,160,72,235,130,51,2,71,144,118,
+149,168,226,228,37,125,144,197,149,249,155,137,122,140,87,64,
+90,87,211,106,179,72,14,105,214,14,129,82,243,100,109,242,
+32,157,46,19,199,252,231,129,202,175,219,67,6,234,31,95,
+149,220,189,164,144,8,153,171,177,194,249,79,85,148,221,168,
+114,79,48,17,126,176,51,243,24,6,205,180,216,154,29,146,
+243,243,129,254,242,33,139,164,186,250,199,55,128,176,90,88,
+41,51,217,138,5,217,194,24,53,218,141,86,92,68,161,202,
+140,171,195,189,129,204,73,195,38,138,30,205,51,118,242,18,
+20,100,25,67,39,234,24,140,62,126,114,128,237,187,14,8,
+142,174,76,85,114,230,185,186,255,122,66,47,123,255,26,6,
+147,58,255,57,74,115,3,124,25,32,185,111,114,104,15,143,
+86,193,161,189,84,81,180,1,190,34,156,201,232,30,150,203,
+141,238,33,30,190,61,84,29,16,213,168,141,57,104,30,42,
+59,243,24,252,94,164,2,74,71,115,234,62,164,102,71,178,
+187,78,81,82,225,219,56,33,146,82,35,173,7,62,138,152,
+203,233,81,133,243,65,98,138,51,127,115,227,185,134,85,89,
+87,241,67,2,187,198,100,163,218,43,182,147,181,150,95,238,
+189,217,233,20,189,126,218,229,161,59,39,146,91,45,214,151,
+36,53,49,5,150,92,149,241,250,244,252,232,95,73,31,63,
+196,240,110,188,112,102,89,98,205,103,175,0,13,70,148,124,
+235,83,75,63,63,52,110,18,112,97,188,59,238,89,87,3,
+64,193,51,69,92,29,115,9,249,126,132,251,35,34,198,127,
+119,69,2,67,232,139,58,48,238,102,205,26,19,67,165,193,
+250,199,151,74,81,128,48,64,124,8,67,165,22,22,219,239,
+113,32,236,206,231,33,100,69,163,52,109,21,229,102,195,104,
+34,64,37,51,247,99,31,105,3,5,202,113,87,25,250,68,
+212,74,167,195,211,70,212,181,73,179,71,182,55,133,51,132,
+145,180,41,3,49,146,255,198,29,114,25,139,147,175,149,225,
+184,248,130,153,92,37,125,134,24,18,91,117,57,116,229,10,
+251,136,116,157,48,48,6,47,46,152,63,169,164,206,188,156,
+37,197,166,0,75,110,73,75,108,56,102,252,145,194,71,107,
+134,240,49,227,209,214,243,46,13,154,238,242,5,67,64,89,
+78,63,67,70,157,203,36,252,152,71,92,158,195,80,170,30,
+173,217,194,144,217,183,252,188,127,242,226,248,80,122,21,241,
+165,210,167,252,172,133,156,9,189,116,113,29,149,22,135,204,
+30,68,9,39,143,77,179,33,118,206,70,243,164,94,74,22,
+136,230,237,164,28,249,234,227,217,59,40,74,248,212,251,39,
+242,208,219,1,247,32,244,201,49,36,26,55,9,57,46,161,
+165,185,83,37,190,131,49,132,218,36,212,60,189,24,61,228,
+139,54,53,136,38,244,97,114,204,24,18,138,35,95,249,164,
+167,218,249,164,226,72,113,156,229,41,181,159,115,51,186,31,
+193,253,153,8,139,186,20,79,181,126,63,209,29,52,252,178,
+36,72,167,185,146,78,211,98,7,145,251,148,167,60,79,40,
+156,44,27,204,234,220,139,18,213,59,92,0,60,38,71,217,
+31,123,15,108,188,167,217,181,104,143,110,189,119,250,12,240,
+211,52,95,0,76,253,88,109,192,167,234,165,115,139,88,48,
+66,179,144,5,231,201,174,38,181,176,190,90,49,102,63,0,
+188,139,189,152,41,86,143,63,190,77,223,111,126,183,168,216,
+158,186,175,16,235,43,158,140,187,176,245,229,30,201,189,175,
+125,219,137,229,218,15,205,167,136,69,46,133,91,4,245,133,
+31,249,78,81,146,182,111,232,78,131,149,176,99,48,60,1,
+90,238,91,181,215,208,113,158,223,113,232,24,205,239,59,204,
+44,76,36,251,179,206,4,230,194,182,226,50,167,59,60,81,
+226,116,65,19,159,223,188,113,154,227,254,86,189,99,239,197,
+246,146,155,43,35,117,17,188,180,215,94,192,197,81,38,242,
+26,9,241,38,78,146,175,49,90,147,76,151,68,136,249,185,
+56,136,161,178,252,253,162,234,253,159,79,112,245,162,216,212,
+145,162,156,251,150,219,130,82,16,134,201,152,32,188,128,215,
+115,130,18,11,154,107,17,129,117,101,188,38,183,228,52,28,
+53,28,222,229,172,165,122,138,185,74,120,75,217,129,166,108,
+75,10,200,104,105,41,8,224,133,161,36,221,42,54,166,85,
+27,56,96,44,244,77,156,68,245,48,22,119,16,12,71,118,
+248,72,70,23,197,180,220,185,159,30,59,68,240,64,224,197,
+179,137,8,29,55,164,157,170,118,232,70,217,85,187,244,22,
+148,178,125,113,152,215,162,51,134,15,96,114,26,204,197,31,
+116,195,51,202,196,28,200,28,92,112,221,211,75,152,226,231,
+196,246,179,237,58,223,76,67,75,242,174,62,27,150,123,203,
+228,44,34,189,70,38,51,120,113,255,113,42,232,220,14,175,
+220,88,187,18,221,146,38,211,251,43,65,69,68,61,34,209,
+90,234,218,166,229,185,165,52,136,235,96,152,80,160,245,73,
+247,136,196,116,215,66,30,254,6,96,229,85,177,250,82,72,
+220,78,160,185,85,22,5,16,101,67,38,14,160,138,7,160,
+185,24,120,21,134,39,44,151,45,76,61,149,209,94,73,159,
+100,70,217,161,121,241,255,127,169,187,102,

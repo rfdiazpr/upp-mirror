@@ -354,6 +354,9 @@ bool LocalSlaveProcess::IsRunning() {
 		return false;
 	if(GetExitCodeProcess(hProcess, &exitcode) && exitcode == STILL_ACTIVE)
 		return true;
+	dword n;
+	if(PeekNamedPipe(hOutputRead, NULL, 0, NULL, &n, NULL) && n)
+		return true;
 	exit_code = exitcode;
 	return false;
 #endif
@@ -397,19 +400,12 @@ bool LocalSlaveProcess::Read(String& res) {
 #ifdef PLATFORM_WIN32
 	if(!hOutputRead) return false;
 	dword n;
-	if(!PeekNamedPipe(hOutputRead, NULL, 0, NULL, &n, NULL))
-		return false;
-	if(n == 0) {
-		if(IsRunning())
-			return true;
-		if(!PeekNamedPipe(hOutputRead, NULL, 0, NULL, &n, NULL) || n == 0)
-			return false;
-	}
+	if(!PeekNamedPipe(hOutputRead, NULL, 0, NULL, &n, NULL) || n == 0)
+		return IsRunning();
 	char buffer[1024];
 	if(!ReadFile(hOutputRead, buffer, sizeof(buffer), &n, NULL))
 		return false;
-	res = String(buffer, n);
-	return true;
+	res.Cat(buffer, n);
 #endif
 #ifdef PLATFORM_POSIX
 //??!

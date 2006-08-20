@@ -1,1895 +1,1685 @@
 TITLE("ArrayCtrl")
-REF("::ArrayCtrl::class")
-REF("::ArrayCtrl::GetLineCy(int)const")
-REF("::ArrayCtrl::Reset()")
-REF("::ArrayCtrl::ShowAppendLine()")
-REF("::ArrayCtrl::IsEdit()const")
-REF("::ArrayCtrl::IsInsert()const")
-REF("::ArrayCtrl::SetLineCy(int)")
-REF("::ArrayCtrl::SetLineCy(int,int)")
-REF("::ArrayCtrl::GetLineCy()const")
-REF("::ArrayCtrl::GetLineY(int)const")
-REF("::ArrayCtrl::AppendLine(bool)")
-REF("::ArrayCtrl::NoAppendLine()")
-REF("::ArrayCtrl::IsAppendLine()const")
-REF("::ArrayCtrl::Inserting(bool)")
-REF("::ArrayCtrl::NoInserting()")
-REF("::ArrayCtrl::IsInserting()const")
-REF("::ArrayCtrl::Appending(bool)")
-REF("::ArrayCtrl::IsAppending()const")
-REF("::ArrayCtrl::AutoAppending(bool)")
-REF("::ArrayCtrl::IsAutoAppending()const")
-REF("::ArrayCtrl::BeforeAfterInserting(int)")
-REF("::ArrayCtrl::AfterBeforeInserting(int)")
-REF("::ArrayCtrl::Duplicating(bool)")
-REF("::ArrayCtrl::NoDuplicating()")
-REF("::ArrayCtrl::IsDuplicating()const")
-REF("::ArrayCtrl::NoInsertAppend(bool)")
-REF("::ArrayCtrl::IsEditing()const")
-REF("::ArrayCtrl::Removing(bool)")
-REF("::ArrayCtrl::NoRemoving()")
-REF("::ArrayCtrl::IsRemoving()const")
-REF("::ArrayCtrl::AskRemove(bool)")
-REF("::ArrayCtrl::NoAskRemove()")
-REF("::ArrayCtrl::IsAskRemove()const")
-REF("::ArrayCtrl::Moving(bool)")
-REF("::ArrayCtrl::IsMoving()const")
-REF("::ArrayCtrl::Header(bool)")
-REF("::ArrayCtrl::NoHeader()")
-REF("::ArrayCtrl::Track(bool)")
-REF("::ArrayCtrl::NoTrack()")
-REF("::ArrayCtrl::VertGrid(bool)")
-REF("::ArrayCtrl::NoVertGrid()")
-REF("::ArrayCtrl::HorzGrid(bool)")
-REF("::ArrayCtrl::NoHorzGrid()")
-REF("::ArrayCtrl::Grid(bool)")
-REF("::ArrayCtrl::NoGrid()")
-REF("::ArrayCtrl::GridColor(::Color)")
-REF("::ArrayCtrl::EvenRowColor(::Color")
-REF("::ArrayCtrl::OddRowColor(::Color,::Color)")
-REF("::ArrayCtrl::NoCursor(bool)")
-REF("::ArrayCtrl::MouseMoveCursor(bool)")
-REF("::ArrayCtrl::NoMouseMoveCursor()")
-REF("::ArrayCtrl::AutoHideSb(bool)")
-REF("::ArrayCtrl::NoAutoHideSb()")
-REF("::ArrayCtrl::MultiSelect(bool)")
-REF("::ArrayCtrl::ColumnWidths(const char*)")
-REF("::ArrayCtrl::RowFormat(const char*)")
-REF("::ArrayCtrl::RowName(const char*)")
-REF("::ArrayCtrl::IndexInfo(int)")
-REF("::ArrayCtrl::IndexInfo(::Id)")
-REF("::ArrayCtrl::AddIndex(::Id)")
-REF("::ArrayCtrl::AddIndex()")
-REF("::ArrayCtrl::GetIndexCount()const")
-REF("::ArrayCtrl::GetId(int)const")
-REF("::ArrayCtrl::GetPos(::Id)const")
-REF("::ArrayCtrl::SetId(int,::Id)")
-REF("::ArrayCtrl::AddKey(::Id)")
-REF("::ArrayCtrl::AddKey()")
-REF("::ArrayCtrl::GetKeyId()const")
-REF("::ArrayCtrl::AddColumn(const char*,int)")
-REF("::ArrayCtrl::AddColumn(::Id,const char*,int)")
-REF("::ArrayCtrl::AddColumnAt(int,const char*,int)")
-REF("::ArrayCtrl::AddColumnAt(::Id,const char*,int)")
-REF("::ArrayCtrl::AddRowNumColumn(const char*,int)")
-REF("::ArrayCtrl::AddCtrl(::Ctrl&)")
-REF("::ArrayCtrl::AddCtrl(::Id,::Ctrl&)")
-REF("::ArrayCtrl::AddCtrlAt(int,::Ctrl&)")
-REF("::ArrayCtrl::AddCtrlAt(::Id,::Ctrl&)")
-REF("::ArrayCtrl::AddRowNumCtrl(::Ctrl&)")
-REF("::ArrayCtrl::GetColumnCount()const")
-REF("::ArrayCtrl::FindColumnWithPos(int)const")
-REF("::ArrayCtrl::FindColumnWithId(::Id)const")
-REF("::ArrayCtrl::ColumnAt(int)")
-REF("::ArrayCtrl::ColumnAt(int)const")
-REF("::ArrayCtrl::ColumnAt(::Id)")
-REF("::ArrayCtrl::ColumnAt(::Id)const")
-REF("::ArrayCtrl::HeaderTab(int)")
-REF("::ArrayCtrl::HeaderTab(int)const")
-REF("::ArrayCtrl::HeaderTab(::Id)")
-REF("::ArrayCtrl::HeaderTab(::Id)const")
-REF("::ArrayCtrl::HeaderObject()")
-REF("::ArrayCtrl::HeaderObject()const")
-REF("::ArrayCtrl::SerializeHeader(::Stream&)")
-REF("::ArrayCtrl::SetDisplay(int,int,const::Display&)")
-REF("::ArrayCtrl::GetDisplay(int,int)")
-REF("::ArrayCtrl::GetDisplay(int)")
-REF("::ArrayCtrl::SetCtrl(int,int,::Ctrl*)")
-REF("::ArrayCtrl::GetTotalCy()const")
-REF("::ArrayCtrl::GetLineAt(int)const")
-REF("::ArrayCtrl::GetClickColumn()const")
-REF("::ArrayCtrl::GetClickRow()const")
-REF("::ArrayCtrl::GetClickPos()const")
-REF("::ArrayCtrl::SetCount(int)")
-REF("::ArrayCtrl::SetVirtualCount(int)")
-REF("::ArrayCtrl::GetCount()const")
-REF("::ArrayCtrl::Clear()")
-REF("::ArrayCtrl::Shrink()")
-REF("::ArrayCtrl::Get(int,int)const")
-REF("::ArrayCtrl::Get(int,::Id)const")
-REF("::ArrayCtrl::Get(int)const")
-REF("::ArrayCtrl::Get(::Id)const")
-REF("::ArrayCtrl::GetOriginal(int)const")
-REF("::ArrayCtrl::GetOriginal(::Id)const")
-REF("::ArrayCtrl::GetKey()const")
-REF("::ArrayCtrl::GetOriginalKey()const")
-REF("::ArrayCtrl::Set(int,int,const::Value&)")
-REF("::ArrayCtrl::Set(int,::Id,const::Value&)")
-REF("::ArrayCtrl::Set(int,const::Value&)")
-REF("::ArrayCtrl::Set(::Id,const::Value&)")
-REF("::ArrayCtrl::GetColumn(int,int)const")
-REF("::ArrayCtrl::GetConvertedColumn(int,int)")
-REF("::ArrayCtrl::ReadRow(int)const")
-REF("::ArrayCtrl::Set(int,const::Vector<::Value>&)")
-REF("::ArrayCtrl::Add()")
-REF("::ArrayCtrl::Add(const::Vector<::Value>&)")
-REF("::ArrayCtrl::Add(const::Value&[,const::Value&]...)")
-REF("::ArrayCtrl::Insert(int)")
-REF("::ArrayCtrl::Insert(int,const::Vector<::Value>&)")
-REF("::ArrayCtrl::Remove(int)")
-REF("::ArrayCtrl::SwapUp()")
-REF("::ArrayCtrl::SwapDown()")
-REF("::ArrayCtrl::Sort(const::ArrayCtrl::Order&)")
-REF("::ArrayCtrl::Sort(int,int,const::ArrayCtrl::Order&)")
-REF("::ArrayCtrl::Sort(int(*)(const::Vector<::Value>&v1,const::Vector<::Value>&v2))")
-REF("::ArrayCtrl::Sort(int,int(*)(const::Value&v1,const::Value&v2))")
-REF("::ArrayCtrl::Sort(::Id,int(*)(const::Value&v1,const::Value&v2))")
-REF("::ArrayCtrl::Sort()")
-REF("::ArrayCtrl::ClearCache()")
-REF("::ArrayCtrl::InvalidateCache(int)")
-REF("::ArrayCtrl::GetSelectCount()const")
-REF("::ArrayCtrl::IsSelection()const")
-REF("::ArrayCtrl::Select(int,bool)")
-REF("::ArrayCtrl::Select(int,int,bool)")
-REF("::ArrayCtrl::IsSelected(int)const")
-REF("::ArrayCtrl::ClearSelection()")
-REF("::ArrayCtrl::IsCursor()const")
-REF("::ArrayCtrl::SetCursor(int)")
-REF("::ArrayCtrl::KillCursor()")
-REF("::ArrayCtrl::CancelCursor()")
-REF("::ArrayCtrl::GetCursor()const")
-REF("::ArrayCtrl::GoBegin()")
-REF("::ArrayCtrl::GoEnd()")
-REF("::ArrayCtrl::GetCursorSc()const")
-REF("::ArrayCtrl::ScCursor(int)")
-REF("::ArrayCtrl::CenterCursor()")
-REF("::ArrayCtrl::ScrollInto(int)")
-REF("::ArrayCtrl::ScrollIntoCursor()")
-REF("::ArrayCtrl::GetScroll()const")
-REF("::ArrayCtrl::ScrollTo(int)")
-REF("::ArrayCtrl::Find(const::Value&,int,int)const")
-REF("::ArrayCtrl::Find(const::Value&,::Id,int)const")
-REF("::ArrayCtrl::FindSetCursor(const::Value&,int,int)")
-REF("::ArrayCtrl::FindSetCursor(const::Value&,::Id,int)")
-REF("::ArrayCtrl::StdBar(::Bar&)")
-REF("::ArrayCtrl::IsModified(int)const")
-REF("::ArrayCtrl::IsModified(::Id)const")
-REF("::ArrayCtrl::StartEdit(int)")
-REF("::ArrayCtrl::GetEditColumn()const")
-REF("::ArrayCtrl::DoEdit()")
-REF("::ArrayCtrl::DoInsert(int)")
-REF("::ArrayCtrl::DoInsertBefore()")
-REF("::ArrayCtrl::DoInsertAfter()")
-REF("::ArrayCtrl::DoAppend()")
-REF("::ArrayCtrl::DoRemove()")
-REF("::ArrayCtrl::DoDuplicate()")
-REF("::ArrayCtrl::DoSelectAll()")
-REF("::ArrayCtrl::AcceptEnter()")
-REF("::ArrayCtrl::WhenLeftClick")
-REF("::ArrayCtrl::WhenLeftDouble")
-REF("::ArrayCtrl::WhenBar")
-REF("::ArrayCtrl::WhenEnterRow")
-REF("::ArrayCtrl::WhenAcceptRow")
-REF("::ArrayCtrl::WhenUpdateRow")
-REF("::ArrayCtrl::WhenKillCursor")
-REF("::ArrayCtrl::WhenCursor")
-REF("::ArrayCtrl::WhenArrayAction")
-REF("::ArrayCtrl::WhenStartEdit")
-REF("::ArrayCtrl::WhenAcceptEdit")
-REF("::ArrayCtrl::WhenSelection")
-REF("::ArrayCtrl::WhenCtrlsAction")
-REF("::ArrayCtrl::IdInfo::struct")
-REF("::ArrayCtrl::IdInfo::InsertValue(const::Value&)")
-REF("::ArrayCtrl::IdInfo::InsertValue(::ValueGen&)")
-REF("::ArrayCtrl::IdInfo::Accel(int(*)(int))")
-REF("::ArrayCtrl::IdInfo::Accel()")
-REF("::ArrayCtrl::IdInfo::GetInsertValue()")
-REF("::ArrayCtrl::Column::class")
-REF("::ArrayCtrl::Column::Add(int)")
-REF("::ArrayCtrl::Column::Add(::Id)")
-REF("::ArrayCtrl::Column::AddIndex(::Id)")
-REF("::ArrayCtrl::Column::AddIndex()")
-REF("::ArrayCtrl::Column::SetConvert(const::Convert&)")
-REF("::ArrayCtrl::Column::SetFormat(const char*)")
-REF("::ArrayCtrl::Column::SetDisplay(const::Display&)")
-REF("::ArrayCtrl::Column::Edit(::Ctrl&)")
-REF("::ArrayCtrl::Column::Ctrls(::Callback1<::One<::Ctrl>&>)")
-REF("::ArrayCtrl::Column::Ctrls(void(*)(::One<::Ctrl>&))")
-REF("::ArrayCtrl::Column::Ctrls()")
-REF("::ArrayCtrl::Column::InsertValue(const::Value&)")
-REF("::ArrayCtrl::Column::InsertValue(::ValueGen&)")
-REF("::ArrayCtrl::Column::NoClickEdit()")
-REF("::ArrayCtrl::Column::Cache()")
-REF("::ArrayCtrl::Column::Accel(int(*)(int))")
-REF("::ArrayCtrl::Column::Accel()")
-REF("::ArrayCtrl::Column::Margin(int)")
-REF("::ArrayCtrl::Column::HeaderTab()")
-REF("::ArrayCtrl::Order::struct")
-REF("::ArrayCtrl::Order::operator()(const::Vector<::Value>&,const::Vector<::Value>&)const")
-TOPIC_TEXT(
-"[2 $$0,0#00000000000000000000000000000000:Default][l288;i1120;a17;O9;~~~.1408;2 "
-"$$1,0#10431211400427159095818037425705:param][a83;*R6 $$2,5#31310162474203024125188417583966:caption][b83;*4 "
-"$$3,5#07864147445237544204411237157677:title][i288;O9;C2 $$4,6#40027414424643823182269349404212:item][b42;a42;2 "
-"$$5,5#45413000475342174754091244180557:text][l288;a17;2 $$6,6#27521748481378242620020725143825:desc")
-TOPIC_TEXT(
-"][l321;t246;C@5;1 $$7,7#20902679421464641399138805415013:code][b2503; $$8,0#65142375456100023862071332075487:separator][*@(0.0.255)2 "
-"$$9,0#83433469410354161042741608181528:base][t4167;C $$10,0#37138531426314131251341829483380:class][l288;a17;*1 "
-"$$11,11#70004532496200323422659154056402:requirement][i417;b42;a42;O9;~~~.416;2 $$12,12#10566046415157235020018451313112:tparam][b167;C2 "
-"$$13,13#9243045944")
-TOPIC_TEXT(
-"3460461911108080531343:item1][i288;a42;O9;C2 $$14,14#77422149456609303542238260500223:item2][*@2$(0.128.128) "
-"$$15,15#34511555403152284025741354420178:NewsDate][l321;*C$7;2 $$16,16#03451589433145915344929335295360:result][l321;b83;a83;*C$7;2 "
-"$$17,17#07531550463529505371228428965313:result`-line][l160;t4167;*C+117 $$18,5#88603949442205825958800053222425:package`-title][ "
-"$$19,0#5358002344233552903990")
-TOPIC_TEXT(
-"0623488521:gap][t4167;C2 $$20,20#70211524482531209251820423858195:class`-nested][b50;2 "
-"$$21,21#03324558446220344731010354752573:Par][{_}%EN-US [s2;:`:`:ArrayCtrl`:`:class: "
-"ArrayCtrl&][s0; &][s0; &][s0; @@VectorImage:1668&1002\236\202\377\377\377\377\326\311\240\315\341\356\300\363\277\226\203\276\247\357\313\341\362\300\346\300\276\240\324\343\376\363\203\363\363\365\302\346\205\314\200\300\200\364\311\301\362\362\200\341\371\303\364\362\354\350\200\301\355\304\342\362\374\332\363\276\352\360\343\376\363\363\201\363\365\302\346\205\314\300\200\200\364\312\320\357\360\365\200\360\324\341\342\354\345\350\200\301\355\304\310\354\303\324\200\322\324\344\374\344\315\354\322\303\276\322\356\276\322\276\212\300\276\372\276\300\342\362\251\276\372\366\277\212\276\314\236\343\376\363\363\363\365\302\200\346\205\314\300\200\364\310\200\304\362\357\360\314\351\363\200\364\350\301\355\304\345\362\325\276\372\276\322\277\212")
-TOPIC_TEXT(
-"\276\274\350\343\376\363\363\363\365\200\302\346\205\314\300\200\364\200\312\304\362\357\360\303\350\200\357\351\343\345\350\301\355\320\304\316\354\303\276\322\276\252\300\276\322\276\334\276\372\201\276\334\312\354\303\324\340\222\324\276\370\374\276\370\313\310\354\303\324\276\366\324\276\215\224\374\276\224\342\362\374\275\276\356\276\352\276\204\343\217\376\363\363\363\365\302\346\200\205\314\300\200\364\310\323\200\361\354\301\362\362\341\371\200\350\301\355\304\343\362\374\277\276\212\276\352\276\240\343\217\376\363\363\363\365\302\346\200\205\314\300\200\364\311\301\200\362\362\341\371\320\341\351\200\362\350\301\355\304\256&][s0; "
-"&][s10;* [* class_]ArrayCtrl&][s0;* &][s0;* @@PNG:1843&731\201\211\320\316\307\215\212\232\200\212\200\200\200\215\311\310\200\304\322\200\200\201\247\200\200\200\200\365\210\202\200\200\212\200\203\211\260\336\200\200\202\212\265\311\304\301\324\370\307\234\355\235\317\354\235\305\276\235\307\347\375\361\306\256\226\311\236\343\220\223\212\221\316\334\251\246\250\247\240\276\247\242\266\250\302\215\342\300\215\204\304\256\255\224\245\252\303\212\375\214\211\221\234\332\240\312\325\205\355\222\374\207\327\251\210\322\203\225\270\241\242\212\221\223\321\271\224\277\347\271\320\310\301\275\225\266\322\271\225\270\322\352\264\261\370\215\301\211\266\364\266\207\204\361\306\363\346\346\347\347\357\336\233\335\235\267\363\375\357\310\262\366\375\366\376")
-TOPIC_TEXT(
-"\357\230\374\367\346\377\314\357\353\307\377\373\357\277\211\200\240\342\304\352\325\227\200\200\350\262\350\362\277\376\375\247\377\360\324\325\216\200\202\347\227\212\277\375\276\335\350\212\273\220\226\317\236\254\275\260\200\215\204\317\373\324\373\354\333\374\324\235\345\372\312\277\312\360\252\314\345\374\364\341\307\200\317\237\272\222\303\315\355\372\301\313\350\370\350\303\217\366\377\370\243\237\330\306\332\232\275\376\275\376\247\332\365\320\200\200\275\347\317\337\271\236\372\343\366\312\352\267\331\222\201\306\367\355\333\273\266\377\374\324\243\367\312\273\240\244\272\200\254\271\373\376\212\216\241\344\231\307\237\236\353\212\355\337\275\272\303\216\360\226\375\355\253\233\353\267\277\336\331\372\374\354\371\253\262\221\360\314\325\367\367\275\217\255\362\277\315\237\267\334\375\357\317\203\203\365\360\202\257\247\251\276\344\203\327\265\276\362\321\266\214\355\204\330\232\337\342\352\215\333\317\274\376\273\360\362\332\262\274\266\301\341\376\363\275\243\324\362\310\306\203\243\357\377\372\325\336\234\341\261\326\361\315\232\366\270\253\213\335\252\332\302\370\334\305\326\313\320\355\370\232\374\353\345\365\233\261\326\366\237\313\253\267\365\301\332\367\314\215\251\247\240\370\336\247\317\203\236\305\253\256\205\360\327\221\335\243\273\322\356\346\361\346\337\225\254\255\355\211\254\262\356\277\327\365\254\323\371\362\347\301\301\302\354\232\246\260\362\354\245\253\235\212\247\311\255\254\320\307\241\242\377\304\247\272\270\205\257\254\272\360\252\212\265\312\204\220\224\302\322\266\265\277\260\317\312\210\231\337\230\373\356\366\223\271\334\350\226\252\323")
-TOPIC_TEXT(
-"\266\271\245\346\376\237\265\235\233\324\313\237\267\252\224\305\312\346\255\244\362\334\263\270\344\245\236\212\345\346\251\247\340\227\225\220\246\333\252\333\330\374\334\340\306\371\205\371\331\263\366\254\276\342\217\327\365\344\214\315\263\352\372\244\311\317\301\360\360\200\371\330\244\303\222\261\272\225\372\362\272\274\254\216\252\272\305\327\226\227\351\317\366\314\233\356\257\364\254\256\264\347\332\232\210\254\375\335\327\321\346\245\377\335\232\340\302\224\303\274\226\332\311\260\262\361\260\310\336\346\222\274\344\210\241\204\244\243\234\344\346\210\311\333\263\356\263\364\347\342\353\213\374\335\374\323\240\300\273\251\302\277\214\264\347\201\242\302\221\230\306\263\357\314\215\330\314\305\211\206\203\270\244\307\322\356\264\235\231\236\246\204\314\244\314\317\263\273\250\274\245\200\253\342\337\367\323\344\255\375\361\226\241\335\331\365\233\340\276\326\356\272\245\240\314\370\332\331\244\301\302\302\310\244\233\341\240\277\250\374\245\213\272\207\267\303\212\240\245\243\204\314\314\237\223\206\265\351\331\242\340\252\272\375\325\377\263\306\242\274\211\242\211\376\325\371\321\322\344\253\251\211\232\354\324\336\360\362\323\257\304\212\320\324\327\250\354\275\320\312\333\342\372\332\327\340\311\343\323\237\346\375\346\217\206\322\356\305\233\341\201\211\337\350\216\270\352\261\263\375\276\353\333\215\365\233\303\307\271\252\373\372\363\374\327\336\266\331\356\205\352\202\356\341\216\201\327\255\346\366\216\234\215\377\262\364\371\243\217\207\214\266\356\232\322\276\212\376\337\277\271\261\376\365\346\212\347\377\336\333\273\266\254\375\357\325\250\356\342\337")
-TOPIC_TEXT(
-"\376\217\342\276\230\376\261\261\361\310\377\244\265\265\205\255\243\244\341\342\342\376\302\310\323\373\217\336\373\366\374\225\367\366\277\275\352\354\315\301\352\207\352\232\303\322\202\220\230\352\223\337\241\204\220\245\234\234\214\321\250\356\307\277\271\361\324\363\362\203\304\273\357\317\274\371\364\241\243\325\227\245\302\307\320\262\232\336\375\335\347\315\272\201\365\365\316\257\340\227\331\307\203\334\366\335\330\322\322\372\272\370\210\265\255\213\306\371\242\351\223\277\266\276\356\362\352\355\264\315\275\305\310\326\243\362\272\244\301\310\232\264\266\207\233\275\233\216\326\327\201\201\340\317\351\322\372\305\313\337\232\313\204\334\277\271\363\352\262\370\325\364\371\202\204\256\257\220\333\336\323\277\216\343\344\357\255\257\203\352\302\343\342\225\245\257\367\317\356\264\214\276\351\256\272\251\251\243\246\357\301\226\226\376\340\230\340\243\240\263\373\364\307\366\252\205\362\255\212\332\337\207\274\367\244\323\351\224\221\354\333\262\357\317\222\302\352\365\372\351\275\336\247\204\264\233\315\212\306\243\301\267\211\241\311\355\222\274\361\304\257\212\310\340\267\274\314\325\327\253\325\343\204\267\271\345\213\360\204\200\264\255\304\365\331\244\311\226\322\220\316\303\305\324\365\212\220\330\200\221\366\212\271\260\330\364\330\373\351\317\257\223\311\273\336\277\374\372\221\232\271\206\212\374\246\204\310\376\247\355\320\277\337\374\356\366\214\333\226\255\266\311\262\307\271\245\325\256\240\343\332\312\322\265\332\215\355\320\370\342\335\202\205\324\213\275\213\347\375\362\251\271\302\310\313\257\247\346\330\322\257\301\342\245\233\354\275\336\357\265")
-TOPIC_TEXT(
-"\262\243\357\276\214\215\215\365\323\247\346\250\260\273\277\321\353\316\271\376\230\361\226\210\317\272\223\350\340\366\342\361\255\234\247\202\257\234\236\317\273\271\235\327\316\317\323\237\257\264\236\357\323\200\266\311\342\254\264\363\205\203\366\304\330\341\347\233\354\216\371\362\371\334\351\352\371\355\253\333\216\260\206\316\276\277\335\363\214\343\263\321\350\354\354\250\237\356\320\215\214\214\300\223\346\310\270\350\251\336\201\340\377\307\251\201\376\311\273\251\373\264\373\341\366\230\263\277\260\266\373\214\337\345\233\254\306\236\327\270\256\263\302\345\313\276\341\270\363\204\224\327\326\225\332\271\321\376\226\220\362\227\242\375\254\340\357\241\345\231\334\315\361\202\335\323\362\357\371\342\215\267\340\254\363\362\204\371\300\234\237\371\271\357\352\350\330\235\245\233\315\214\246\241\344\215\243\357\220\276\302\352\365\372\320\320\320\357\235\243\347\322\306\210\365\315\363\272\371\340\301\354\276\370\321\317\363\374\357\337\341\224\333\275\246\337\257\267\232\327\215\336\342\202\202\267\302\203\202\244\311\262\227\375\365\266\343\247\272\247\237\374\325\202\217\205\201\262\320\335\350\267\354\237\334\371\361\222\351\352\310\363\344\343\371\255\271\276\204\240\272\320\230\232\354\216\341\375\216\347\300\365\242\352\330\345\211\212\206\252\353\236\242\266\205\344\240\222\224\333\252\273\374\315\360\216\330\301\300\223\317\315\355\301\313\354\224\212\306\272\256\316\274\346\365\256\352\242\324\300\211\215\237\235\250\272\210\361\201\267\325\211\304\266\311\304\365\222\354\371\300\365\241\201\357\232\305\376\203\325\205\306\301\223\336\212\216\236\320\375")
-TOPIC_TEXT(
-"\374\257\224\361\336\271\305\303\204\204\343\206\252\213\220\370\253\355\362\234\323\227\326\367\215\343\217\344\332\264\241\331\237\202\355\371\300\217\210\353\213\223\262\376\334\345\227\244\211\240\375\261\232\230\342\332\330\256\337\254\334\352\255\203\375\221\343\243\374\334\341\247\250\270\202\370\253\362\234\262\227\200\350\300\362\245\200\357\305\371\236\343\275\303\224\347\212\217\202\345\213\225\333\246\263\370\311\241\226\377\323\304\256\240\314\301\216\223\247\360\326\211\344\271\366\347\247\272\277\275\244\377\262\305\274\273\253\206\343\261\237\246\366\345\212\332\362\334\270\201\267\242\317\236\361\320\216\362\350\327\325\217\277\307\364\225\202\357\305\377\236\343\240\245\330\230\203\252\316\357\211\360\326\344\271\264\256\333\312\344\270\213\374\251\356\327\216\360\326\344\271\202\366\217\331\344\255\211\227\262\340\271\321\350\230\334\330\204\326\245\301\230\253\200\357\332\305\236\343\375\274\316\356\205\342\331\235\336\223\305\266\327\312\201\231\276\365\201\224\304\211\306\256\303\370\253\362\242\234\274\322\220\240\360\326\301\344\271\320\335\350\224\344\305\255\210\257\265\273\204\252\320\213\215\370\253\362\237\250\244\316\204\253\274\301\321\300\214\365\335\300\227\201\250\201\217\205\352\356\333\263\334\376\306\271\312\347\302\264\265\265\274\205\255\243\341\202\213\304\262\260\326\365\221\347\364\262\350\266\327\261\225\203\325\211\253\304\326\205\343\274\321\324\320\213\324\227\232\360\326\344\340\277\320\335\350\224\344\255\214\350\352\352\250\311\260\374\313\204\304\204\250\256\300\340\303\255\310\363\314\325\327\253\347\325\204\327\347\345\213")
-TOPIC_TEXT(
-"\322\351\236\225\314\237\227\333\306\230\247\251\373\300\241\247\242\342\223\222\244\251\310\347\241\316\342\375\255\326\362\340\331\301\365\240\332\200\357\305\236\323\343\373\202\215\371\313\350\320\240\227\370\253\362\234\323\211\226\342\335\277\366\207\376\230\227\357\261\321\211\220\305\355\336\260\214\310\254\206\265\321\210\204\370\253\362\234\273\375\363\223\235\357\361\307\214\257\267\230\367\376\236\242\250\321\363\342\226\210\217\207\336\345\212\274\307\301\273\312\343\352\317\256\214\344\250\275\345\315\305\262\302\265\237\217\274\234\225\371\216\203\226\312\271\206\314\302\313\203\346\277\371\336\341\240\223\201\267\242\317\222\361\331\322\326\303\235\217\226\215\254\274\335\251\371\276\243\301\376\303\370\202\360\326\361\344\271\366\317\311\345\376\315\315\333\262\306\256\301\215\270\331\242\221\236\362\311\306\264\271\257\314\260\225\300\333\263\221\347\330\277\257\223\217\364\336\326\217\347\302\320\244\247\246\317\313\344\227\364\246\250\203\357\305\236\323\375\233\214\341\230\254\234\203\357\305\335\236\323\275\352\240\267\267\226\224\344\255\210\257\265\273\265\244\372\325\201\267\300\333\303\221\377\300\365\242\330\345\332\211\212\206\252\353\242\266\347\205\344\240\222\224\252\273\266\374\315\360\216\330\300\223\220\317\315\355\301\313\224\212\333\306\272\256\316\274\365\256\321\352\242\324\200\374\221\226\220\214\324\247\222\333\244\223\267\327\261\345\203\325\205\206\205\274\225\371\217\324\227\232\240\205\371\253\272\370\240\355\300\222\214\237\241\261\201\252\320\213\220\370\253\362\234\323\205\227\326\345\257\233\347\375\335\353\330\260\367\371\311")
-TOPIC_TEXT(
-"\344\272\375\343\243\354\257\237\364\361\242\302\330\333\220\365\347\362\252\273\244\311\350\213\321\265\300\220\353\357\265\226\217\255\313\372\337\370\310\344\237\230\341\265\204\336\212\274\347\211\220\226\350\310\337\305\207\256\312\340\255\310\363\254\347\323\230\362\374\317\260\350\264\245\221\233\227\356\230\316\247\351\263\322\263\254\321\300\300\376\333\221\347\330\235\237\350\316\234\217\376\311\226\375\217\311\227\303\252\343\262\343\317\251\251\301\370\360\326\344\271\302\216\332\321\236\363\362\273\277\276\346\362\314\374\312\255\256\353\214\305\265\237\274\225\216\371\216\203\226\342\343\316\213\311\335\335\316\227\203\235\226\205\336\212\274\307\345\313\311\231\217\367\275\351\243\353\264\236\246\233\341\346\346\233\312\211\360\326\344\271\366\217\252\331\344\276\315\333\364\343\325\235\234\322\260\256\262\214\364\246\265\314\260\341\255\310\236\363\254\237\327\311\375\272\203\253\227\263\261\350\302\212\314\226\271\260\325\225\240\364\266\306\201\267\242\317\301\253\240\205\201\202\357\305\236\203\363\325\205\306\301\336\212\360\372\332\263\303\240\272\320\200\335\267\242\377\201\352\304\260\235\312\223\230\363\330\303\373\262\344\343\207\313\313\372\330\310\320\335\227\360\345\200\254\377\370\353\337\257\235\370\243\360\342\302\277\367\370\333\232\334\330\212\325\335\267\347\330\212\331\241\274\346\302\264\265\331\265\205\255\243\341\302\367\373\317\307\236\332\363\331\357\237\305\341\356\203\245\345\302\264\266\265\211\340\254\353\242\223\316\351\345\354\256\342\234\375\342\354\254\213\234\330\272\302\340\234\247\232\327\340\254\246\203\204\300\333\321\271")
-TOPIC_TEXT(
-"\340\265\254\203\204\224\346\255\350\266\352\352\250\311\260\330\276\206\302\202\261\216\354\201\357\212\305\245\321\354\330\247\377\255\251\330\363\355\342\345\327\316\327\211\366\243\331\264\226\210\371\256\300\203\303\317\304\260\246\244\311\322\220\316\207\317\202\323\207\277\373\347\371\340\376\312\267\210\311\335\214\202\365\375\364\375\226\327\243\324\241\310\313\241\360\326\344\244\271\330\240\221\240\360\326\325\344\271\246\255\305\246\212\315\265\273\360\273\370\213\235\274\250\232\246\306\266\205\250\203\271\271\344\355\203\202\357\242\305\336\343\367\376\242\323\376\304\376\230\361\226\254\256\221\317\204\343\370\244\215\363\245\241\373\331\256\210\217\201\334\357\305\236\343\240\235\345\224\361\311\320\300\256\254\373\245\313\305\310\213\327\206\214\334\370\253\362\234\377\203\340\266\336\377\351\223\344\301\355\200\200\200\200\200\311\305\316\222\304\256\302\340\202&][s0;* "
-"&][s0; [* ArrayCtrl] implements basic grid functionality. It is typically used for "
-"display and editation of arrays of values or (heterogeneous) records. The records "
-"corr")
-TOPIC_TEXT(
-"espond to rows in the array, the individual fields within each record can be either "
-"bound to columns or to any generic [* Ctrl]`'s, thus supporting basic master`-detail "
-"functionality with practically no additional cost.&][s0; &][s0; The standard derived "
-"classes extend various aspects of the ArrayCtrl functionality. [* SqlArray] adds "
-"the nuts and bolts needed for editing SQL`-based tables, whereas ")
-TOPIC_TEXT(
-"[* PopupTable] couples the ArrayCtrl functionality with the drop`-down mechanism "
-"very similar to the one used in popup menus. This opens the door for implementing "
-"drop`-down controls like [* DropList] (aka [/ combo box]) or [* DropChoice] (usually "
-"used together with a control of the [* EditField ]or [* DataPusher] family to support "
-"coupling native data editation with drop`-down selection, widely u")
-TOPIC_TEXT(
-"sed for history or commonly used predefined values. The [* ArrayPair] is, as its "
-"name implies, a pair of [* ArrayCtrl]`'s with arrow buttons between them allowing "
-"to visually select subsets of a certain set by moving its elements between the two "
-"lists.&][s0; &][s0;*+117 The array data organization: indices and columns&][s0; &][s0; "
-"There is a great deal of genericity supported by the ArrayCtrl with")
-TOPIC_TEXT(
-" respect both to its source data and its visual presentation. Conceptually, the "
-"source array data is a matrix of [* Value]`'s. There is a series of methods for accessing "
-"this source data, the basic ones being [* Set] and [* Get]. The rows are addressed "
-"by integer indices (zero based), the columns can be addressed either by integer indices "
-"as well, or alternatively any source column can be assigned")
-TOPIC_TEXT(
-" an [* Id] identifier and addressed by it. This is especially helpful in SQL`-based "
-"tables, where the table column names can be used for the [* Id]`'s. A pair of methods, "
-"[* GetPos] and [* GetId], can be used to translate these two column addressing modes. "
-"In the code terminology, the columns in the source data matrix are called [/ indices] "
-"whereas the visual (output) columns are called simply [/ ")
-TOPIC_TEXT(
-"columns].&][s0; &][s0; The visual ArrayCtrl structure can be entirely independent "
-"of the source data strucrure (although it`'s seldom helpful to make the mapping completely "
-"arbitrary). Basically, each column can have an arbitrary number of indices defining "
-"its source data. Of course, the most common case is one index per column. This is "
-"also simplest to address, because the column indices are equa")
-TOPIC_TEXT(
-"l to the source data indices. However, many other combinations are possible, each "
-"of which can be handy in certain situations:&][s0; &][s0;i150;O0; Index without a "
-"column: the most common of the `\"special`\" cases is used mainly for row id`'s or "
-"other internally important data without visual representation. The same behaviour "
-"can be obtained by making a column invisible.&][s0;i150;O0; Column withou")
-TOPIC_TEXT(
-"t an index (a [/ rownum column]): this less common case can be used to display external "
-"data (not stored in the table). &][s0;i150;O0; Multiple columns sharing the same "
-"index: this can be used to display various aspects of a complex data object or to "
-"display the same source data in multiple ways (e.g., a temperature reading in Celsius "
-"and Fahrenheit degrees).&][s0;i150;O0; Column with multiple ind")
-TOPIC_TEXT(
-"ices: can be used to display information gathered from multiple source data columns. "
-"This is used for instance in IconDes in TheIDE to display image identifiers together "
-"with their sizes in the list. This is the most complicated case because you have "
-"to implement a specific [* Display] for such a multi`-index column.&][s0; &][s0; "
-"[* Note:] in the current U`+`+ version, the implementation of index`")
-TOPIC_TEXT(
-"-less columns (arrays with external data not stored in the source matrix) is rather "
-"awkward. It is planned to enhance this feature in the future by adding support for "
-"access to external data via a data accessor interface object. &][s0; &][s0;*+117 "
-"ArrayCtrl GUI: selection, editation, and local menu&][s0; &][s0; Array rows can be "
-"selected using the mouse or keyboard. ArrayCtrl`'s support both singl")
-TOPIC_TEXT(
-"e`-selection (plain cursor) and multiselection model. Of course, row selection can "
-"be controlled via the programmatic array interface as well. The selection and cursor "
-"always spans entire rows, it is not possible (without substantical patchwork) to "
-"select only certain columns or individual cells.&][s0; &][s0; The ArrayCtrl rows "
-"can be inserted, edited and deleted either programmatically, or via co")
-TOPIC_TEXT(
-"mmon GUI elements (mouse and keyboard selection, local menu). It is possible to "
-"alter the standard ArrayCtrl local menu using the [* WhenBar] callback.&][s0; &][s0; "
-"[* Note:] it is worth noting that the standard editation keys ([* Insert] `= row "
-"insertion, [* Ctrl`+Enter] `= editation and [* Ctrl`+Delete] `= deletion) are not "
-"hardcoded in the ArrayCtrl`'s [* Key] method, they are mere hotkeys for ")
-TOPIC_TEXT(
-"the relevant local menu items. When you change the ArrayCtrl`'s local menu, the "
-"editation hotkeys change accordingly.&][s0; &][s0; A special but rather important "
-"case of array editation is [/ sorting]: there is no specific standard GUI for that. "
-"If you aren`'t content with programmatic sorting (e.g. after opening a dialog or "
-"after loading the array data), you have to implement some GUI for that as")
-TOPIC_TEXT(
-" well. In certain cases, it is cool to use the [* HeaderCtrl] [* WhenAction] method "
-"to allow sorting the array by clicking on the header columns; alternatively you can "
-"add a sort function to the array local menu or possibly somewhere else (like a standalone "
-"button in the dialog).&][s0; &][s0;* Insertion tricks: before, after, and the secrets "
-"of the AppendLine&][s0; &][s0; In todays text editors, w")
-TOPIC_TEXT(
-"hen you type a new letter, it is trivial to see where in the text will the new letter "
-"go. This is so because the caret is always positioned between a pair of successive "
-"letters and thus is well defines the insertion spot. Additionally, the caret can "
-"be placed in front of the first letter or after the last letter, which naturally "
-"allows typing some text at the very beginning or end.&][s0; &][s0; Wh")
-TOPIC_TEXT(
-"en inserting new rows into the array controls, things are a bit more tricky. This "
-"is so because, unlike in the text editor, the cursor is not placed [/ between] two "
-"successive rows, but [/ over] a certain row. This is of course necessary to make "
-"row editing possible (note that in the aforementioned text editor analogy, a single "
-"letter is an atomic object whereas in the array it is a potentially co")
-TOPIC_TEXT(
-"mplex structure consisting of many columns and data items). However, when it comes "
-"to row insertion, it has two main troubles as its implication:&][s0; &][s0;i150;O9; "
-"[* 1.]-|It is necessary to decide somehow whether the new row will go [/ above] or "
-"[/ below] the cursor row.&][s0;i150;O9; [* 2.]-|In an array with [/ n] rows, there "
-"are [/ n`+1] possible locations for a new row (before the row #0, #")
-TOPIC_TEXT(
-"1 ... #([/ n`-1]) and after the last row), but only [/ n] distinct cursor locations.&][s0; "
-"&][s0; Over the years, during the development of U`+`+, we experimented with multiple "
-"ways to overcome these logical problems. As a result of this, the ArrayCtrl supports "
-"a few methods allowing to fine`-tune the row insertion mechanism. It is also worth "
-"noting that there are cases, like in the case of SQL`-b")
-TOPIC_TEXT(
-"ased tables, where the row ordering is arbitrary or implicit and the exact `'location`' "
-"of a new row doesn`'t make any sense. In such cases, it is possible to replace array "
-"[/ insertion] function with the [/ append] function emphasizing the fact that the "
-"visual row order is unimportant and that insertion means merely adding a new record "
-"to the record set.&][s0; &][s0; For arrays in which the order")
-TOPIC_TEXT(
-" is important, there are two ways to solve the [/ n`+1] row positions dilemma:&][s0; "
-"&][s0;i150;O9; [* 1.]-|Replacing the Insert function with a pair of functions for "
-"inserting a new row [/ before] / [/ after] the current row.&][s0;i150;O9; [* 2.]-|Visually "
-"extending the array by adding a pseudo`-row with no real data at its end; this creates "
-"the [/ n`+1]`-th cursor position necessary to denote al")
-TOPIC_TEXT(
-"l the available row insertion locations.&][s0; &][s0; In the first case, it is also "
-"possible to select which of the insertion functions (before / after) takes precedence "
-"(which of the two actions should be bound to the standard [* Insert] hotkey). This "
-"corresponds to the [* BeforeAfterInserting] and [* AfterBeforeInserting] methods. "
-"The second case is called the [* AppendLine] and is activated by ")
-TOPIC_TEXT(
-"setting the property with the same name.&][s0; &][s0; To make all this even more "
-"interesting, a special mechanism called [* InsertAppend] is available to make array "
-"filling as easy as possible. When activated and the user appends a new row at the "
-"table end, after pressing [* Enter] (to commit the inserted row) another row is automatically "
-"added after it and opened for editing. This mechanism is tu")
-TOPIC_TEXT(
-"rned on by default, but it can be disable by setting the [* NoInsertAppend] property "
-"to true.&][s0; &][s0;*+117 Categorized method summary&][s0; &][s0; The following "
-"table summarizes ArrayCtrl methods according to the aspect of functionality they "
-"support together with a very brief description. For more thorough documentation of "
-"the individual methods see below.&][s0; &][ {{2337:7663-1 [s0;* Initia")
-TOPIC_TEXT(
-"lization and configuration]:: [s0; ]:: [s0; Reset]:: [s0; clears column `& index "
-"definition and restores all ArrayCtrl default properties]:: [s0; IsEdit]:: [s0; true "
-"`= array state automaton is currently in row editing mode]:: [s0; IsInsert]:: [s0; "
-"true `= array state automaton is currently in row insertion mode]:: [s0; SetLineCy]:: "
-"[s0; sets array row height (global or individual for a single row")
-TOPIC_TEXT(
-")]:: [s0; GetLineCy]:: [s0; returns logical array row height (value set by preceding "
-"SetLineCy)]:: [s0;:`:`:ArrayCtrl`:`:GetLineCy`(int`)const: GetLineY]:: [s0; returns "
-"[/ y] position of given row (relative to table beginning)]:: [s0; `[No`]AppendLine]:: "
-"[s0; `[do not`] display an additional pseudo`-row used for row insertion]:: [s0; "
-"IsAppendLine]:: [s0; returns actual value of the [* AppendLine] ")
-TOPIC_TEXT(
-"property]:: [s0; ShowAppendLine]:: [s0; scrolls the table view to display the appending "
-"line]:: [s0; `[No`]Inserting]:: [s0; `[do not`] allow inserting new rows]:: [s0; "
-"IsInserting]:: [s0; returns actual value of the [* Inserting] property]:: [s0; BeforeAfterInserting]:: "
-"[s0; allow inserting rows before / after current row (default `= before)]:: [s0; "
-"AfterBeforeInserting]:: [s0; allow inserting ro")
-TOPIC_TEXT(
-"ws before / after current row (default `= after)]:: [s0; NoInsertAppend]:: [s0; "
-"do not autoinsert another row after committing last row insertion]:: [s0; IsEditing]:: "
-"[s0; true `= (at least one column of the) ArrayCtrl supports editing]:: [s0; `[No`]Duplicating]:: "
-"[s0; `[do not`] allow row duplication]:: [s0; IsDuplicating]:: [s0; returns actual "
-"value of the [* Duplicating] property]:: [s0; Append")
-TOPIC_TEXT(
-"ing]:: [s0; allow appending new row at the table end]:: [s0; IsAppending]:: [s0; "
-"returns actual state of the [* Appending] property]:: [s0; AutoAppending]:: [s0; "
-"allow appending new row at the table end, Enter appends another one]:: [s0; IsAutoAppending]:: "
-"[s0; returns actual state of [* AutoAppending] property]:: [s0; `[No`]Removing]:: "
-"[s0; `[do not`] allow table row removing]:: [s0; IsRemoving]:")
-TOPIC_TEXT(
-": [s0; returns actual state of the [* Removing] property]:: [s0; `[No`]AskRemove]:: "
-"[s0; `[do not`] prompt user to confirm row removal]:: [s0; IsAskRemove]:: [s0; returns "
-"actual state of the [* AskRemove] property]:: [s0; Moving]:: [s0; allow row swapping "
-"(moving a row before / after neighbouring row)]:: [s0; IsMoving]:: [s0; returns actual "
-"state of the [* Moving] property]:: [s0; `[No`]Header]:: ")
-TOPIC_TEXT(
-"[s0; `[do not`] display table header]:: [s0; `[No`]Track]:: [s0; `[do not`] animate "
-"tracking table column widths]:: [s0; `[No`]VertGrid]:: [s0; `[do not`] display column "
-"breaks]:: [s0; `[No`]HorzGrid]:: [s0; `[do not`] display row breaks]:: [s0; `[No`]Grid]:: "
-"[s0; `[do not`] display both grids (VertGrid `+ HorzGrid)]:: [s0; GridColor]:: [s0; "
-"set grid line color]:: [s0; EvenRowColor]:: [s0; backgro")
-TOPIC_TEXT(
-"und color for even rows]:: [s0; OddRowColor]:: [s0; background color for odd rows]:: "
-"[s0; RowFormat]:: [s0; formats menu items substituting given word for the term `'row`']:: "
-"[s0; RowName]:: [s0; sets the context`-relevant word to substitute for `'row`' in "
-"the local menu texts]:: [s0; NoCursor]:: [s0; do not highlight cursor row]:: [s0; "
-"`[No`]MouseMoveCursor]:: [s0; automatically move cursor as th")
-TOPIC_TEXT(
-"e mouse moves (used e.g. in PopupTable)]:: [s0; `[No`]AutoHideSb]:: [s0; `[do not`] "
-"display scroll bar only when necessary]:: [s0; MultiSelect]:: [s0; enable selecting "
-"multiple rows at the same time]:: [s0; ColumnWidths]:: [s0; sets logical column widths "
-"using a formatted string, e.g. `\"1 5 10 10 5 1`\"]}}&][s0; &][ {{2337:7663-1 [s0;* "
-"Array index `& column structure management]:: [s0; ]:: [s0; Ind")
-TOPIC_TEXT(
-"exInfo]:: [s0; returns the [* IdInfo] structure describing an index (see below)]:: "
-"[s0; AddIndex]:: [s0; adds a new index to the source data matrix]:: [s0; GetIndexCount]:: "
-"[s0; returns number of index columns (columns in the source data matrix)]:: [s0; "
-"GetId]:: [s0; returns identifier of a given index (given by its integral index)]:: "
-"[s0; GetPos]:: [s0;* [* returns integral index of source matrix")
-TOPIC_TEXT(
-" column (][*/ index][* ) identified by an ]Id]:: [s0; SetId]:: [s0; sets the [* "
-"Id] identifier for a given index (column of the source matrix)]:: [s0; AddKey]:: "
-"[s0; sets up the first index to act as primary key (often used for SQL tables)]:: "
-"[s0; GetKeyId]:: [s0; returns primary key identifier (equal to [* GetId(0)])]:: [s0; "
-"AddColumn]:: [s0; adds a column`-index pair to the table (one data colum")
-TOPIC_TEXT(
-"n, one output column)]:: [s0; AddColumnAt]:: [s0; adds a column bound to a given "
-"index]:: [s0; AddRowNumColumn]:: [s0; adds a column without an index (used for external "
-"data)]:: [s0; GetColumnCount]:: [s0; returns number of (visual) columns in the table]:: "
-"[s0; FindColumnWithPos]:: [s0; locates table column according to given index number]:: "
-"[s0; FindColumnWithId]:: [s0; locates table column accor")
-TOPIC_TEXT(
-"ding to index identifier]:: [s0; ColumnAt]:: [s0; returns the [* ArrayCtrl`::Column] "
-"structure describing given column]:: [s0; HeaderTab]:: [s0; returns the [* HeaderCtrl`::Column] "
-"structure for the given column]:: [s0; HeaderObject]:: [s0; returns a reference to "
-"the [* HeaderCtrl] object for this table]:: [s0; SerializeHeader]:: [s0; serialize "
-"header layout information (column widths etc.)]:: [s0")
-TOPIC_TEXT(
-"; AddCtrl]:: [s0; adds an outer control`-index pair to the table (one data column, "
-"one outer Ctrl)]:: [s0; AddCtrlAt]:: [s0; adds an outer control bound to a given "
-"index]:: [s0; AddRowNumCtrl]:: [s0; adds an outer control without an index `- used "
-"([/ seldom])  for external data]:: [s0; SetDisplay]:: [s0; sets display for a given "
-"table column or cell]:: [s0; GetDisplay]:: [s0; returns column / cell")
-TOPIC_TEXT(
-" display]:: [s0; SetCtrl]:: [s0; sets a [* Ctrl] object for custom editation of "
-"a given cell]:: [s0; GetTotalCy]:: [s0; returns total row height]:: [s0; GetLineAt]:: "
-"[s0; locate table row when given an [/ y] position (relative to table top)]:: [s0; "
-"GetClickColumn]:: [s0; returns column number of last clicked column (Null if clicked "
-"outside existing rows)]:: [s0; GetClickRow]:: [s0; returns row num")
-TOPIC_TEXT(
-"ber of last clicked row (Null if clicked outside existing rows)]:: [s0; GetClickPos]:: "
-"[s0; returns Point(GetClickColumn(), GetClickRow())]}}&][s0; &][ {{2337:7663-1 [s0;* "
-"Data setting `& retrieval]:: [s0; ]:: [s0; SetCount]:: [s0; sets number of rows in "
-"the array]:: [s0; SetVirtualCount]:: [s0; sets number of rows in the array with external "
-"data]:: [s0; GetCount]:: [s0; returns number of rows]:: ")
-TOPIC_TEXT(
-"[s0; Clear]:: [s0;* [* clears array data, identical to ]SetCount(0)]:: [s0; Shrink]:: "
-"[s0; shrinks source data matrix to the minimum necessary size]:: [s0; Get]:: [s0; "
-"returns given Value element of the source data matrix]:: [s0; GetOriginal]:: [s0; "
-"returns given element of source data matrix before editation]:: [s0; Set]:: [s0; "
-"sets given element of the source data matrix]:: [s0; GetKey]:: [s0; r")
-TOPIC_TEXT(
-"eturns given primary key (column #0 in the data matrix)]:: [s0; GetOriginalKey]:: "
-"[s0; returns `'old`' value of primary key before editation]:: [s0; GetColumn]:: [s0; "
-"returns value of a given output column (according to its index mapping)]:: [s0; GetConvertedColumn]:: "
-"[s0;* [* returns value of a given output column after applying its ]Convert]:: [s0; "
-"ReadRow]:: [s0; returns a row of the source dat")
-TOPIC_TEXT(
-"a matrix]:: [s0; Add]:: [s0; adds a new row at the end of table]:: [s0; Insert]:: "
-"[s0; inserts a new row into the table]:: [s0; Remove]:: [s0; removes a given table "
-"row]:: [s0; SwapUp]:: [s0; exchanges a table row with the preceding row]:: [s0; SwapDown]:: "
-"[s0; exchanges a table row with the next row]:: [s0; Sort]:: [s0; sorts table rows "
-"using a given predicate]:: [s0; ClearCache]:: [s0; clears da")
-TOPIC_TEXT(
-"ta conversion cache]:: [s0; InvalidateCache]:: [s0; invalidates given table row "
-"in the conversion cache]}}&][s0; &][ {{2337:7663-1 [s0;* Cursor `& selection management]:: "
-"[s0; ]:: [s0; GetSelectCount]:: [s0; returns number of currently selected rows]:: "
-"[s0; IsSelection]:: [s0; checks whether any rows are selected (identical to [* GetSelectCount() "
-"> 0])]:: [s0; Select]:: [s0; selects / unselects gi")
-TOPIC_TEXT(
-"ven row or a series of rows]:: [s0; IsSelected]:: [s0; checks whether given row "
-"is selected]:: [s0; ClearSelection]:: [s0; clears the current selection]:: [s0; SetCursor]:: "
-"[s0; moves array cursor to a new row]:: [s0; KillCursor]:: [s0; removes the cursor "
-"away from the table]:: [s0; CancelCursor]:: [s0; cancels editation of current row]:: "
-"[s0; IsCursor]:: [s0; checks whether cursor is in the table")
-TOPIC_TEXT(
-" (identical to [* GetCursor() >`= 0])]:: [s0; GetCursor]:: [s0; returns current "
-"cursor row, `-1 when none]:: [s0; GoBegin]:: [s0; moves the cursor to the first table "
-"row]:: [s0; GoEnd]:: [s0; moves the cursor to the last table row]:: [s0; GetCursorSc]:: "
-"[s0; returns the location of the cursor row within the table view area]:: [s0; ScCursor]:: "
-"[s0; scrolls the table to move the cursor row to given ")
-TOPIC_TEXT(
-"location within the table view]:: [s0; CenterCursor]:: [s0; scrolls the table to "
-"move cursor into the middle of the current view]:: [s0; ScrollInto]:: [s0; scrolls "
-"the table by minimum amount necessary to make given row visible]:: [s0; ScrollIntoCursor]:: "
-"[s0; scrolls the table by minimum amount necessary to make cursor row visible]:: "
-"[s0; GetScroll]:: [s0; returns current table scrollbar location")
-TOPIC_TEXT(
-"]:: [s0; ScrollTo]:: [s0; sets table scrollbar location]:: [s0; Find]:: [s0; locates "
-"table row containing a given element]:: [s0; FindSetCursor]:: [s0; moves the cursor "
-"to table row containing a given element]}}&][s0;3 &][s0; &][s0; &][ {{2337:7663-1 "
-"[s0;* GUI elements]:: [s0; ]:: [s0; StdBar]:: [s0; the default array local menu]:: "
-"[s0; IsModified]:: [s0; checks modification state of given array c")
-TOPIC_TEXT(
-"ell]:: [s0; StartEdit]:: [s0; open current array row for editing]:: [s0; GetEditColumn]:: "
-"[s0; returns the column being currently edited]:: [s0; DoEdit]:: [s0; corresponds "
-"to the local menu `'Edit`' function]:: [s0; DoInsert]:: [s0; corresponds to the local "
-"menu `'Insert`' function]:: [s0; DoInsertBefore]:: [s0; corresponds to the local "
-"menu `'Insert before`' function]:: [s0; DoInsertAfter]:: [s0;")
-TOPIC_TEXT(
-" corresponds to the local menu `'Insert after`' function]:: [s0; DoAppend]:: [s0; "
-"corresponds to the local menu `'Append`' function]:: [s0; DoRemove]:: [s0; corresponds "
-"to the local menu `'Remove`' function]:: [s0; DoDuplicate]:: [s0; corresponds to "
-"the local menu `'Duplicate`' function]:: [s0; DoSelectAll]:: [s0; selects the entire "
-"array]:: [s0; AcceptEnter]:: [s0; commits the currently edited ro")
-TOPIC_TEXT(
-"w and possibly begins insertion of another row]}}&][s0; &][ {{2337:7663-1 [s0;* "
-"Notification callbacks]:: [s0; ]:: [s0; WhenLeftClick]:: [s0; left mouse click within "
-"the array]:: [s0; WhenLeftDouble]:: [s0; left mouse doubleclick within the array]:: "
-"[s0; WhenCursor]:: [s0; called whenever the cursor location changes]:: [s0; WhenKillCursor]:: "
-"[s0; called when the cursor moves away from the table]::")
-TOPIC_TEXT(
-" [s0; WhenSelection]:: [s0; called whenever current selection changes]:: [s0; WhenEnterRow]:: "
-"[s0; called whenever the cursor moves to a new row]:: [s0; WhenUpdateRow]:: [s0; "
-"called after updating a row]:: [s0; WhenAcceptRow]:: [s0; additional row validation "
-"callback]:: [s0; WhenStartEdit]:: [s0; called after initiating row editation]:: [s0; "
-"WhenAcceptEdit]:: [s0; called after accepting changes to")
-TOPIC_TEXT(
-" a given row]:: [s0; WhenArrayAction]:: [s0; called whenever array source data changes "
-"(after insert / delete / edit)]:: [s0; WhenBar]:: [s0; can be used to supply custom "
-"local menu for the array]:: [s0; WhenCtrlsAction]:: [s0; called by [* WhenAction] "
-"callbacks of internally created controls]}}&][s0; &][s0;*+117 Detailed method description&][s0; "
-"&][s0;* Initialization and configuration&][s0;3 &][")
-TOPIC_TEXT(
-"s4;:`:`:ArrayCtrl`:`:Reset`(`): void_[* Reset]()&][s6; Clears table rows and resets "
-"all array properties to their default values.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ShowAppendLine`(`): "
-"void_[* ShowAppendLine]()&][s6; Show an additional pseudo`-row at the table end. "
-"When clicked, a new row is appended to the array.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsEdit`(`)const: "
-"bool_[* IsEdit]()_const&][s6; Checks whe")
-TOPIC_TEXT(
-"ther the array is currently being edited.&][s1; [*/ Return value]-|[* true] `= a "
-"row is currently open for editing, [* false] `= array is in normal browsing mode&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:IsInsert`(`)const: bool_[* IsInsert]()_const&][s6; Checks "
-"whether a new row is currently being inserted.&][s1; [*/ Return value]-|[* true] "
-"`= newly inserted row is currently being edited, [* false] when not&")
-TOPIC_TEXT(
-"][s0;* &][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetLineCy`(int`): [%00-00 void_][%00-00* "
-"SetLineCy][%00-00 (int_][%00-00*@3 cy][%00-00 )]&][s6; Sets the (default) array row "
-"height. For certain rows, this can be overriden by the two`-parameter version of "
-"this method.&][s1; [%00-00*C@3 cy]-|row height in pixels&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetLineCy`(int`,int`): "
-"[%00-00 void_][%00-00* SetLineCy][%00-00 (in")
-TOPIC_TEXT(
-"t_][%00-00*@3 i][%00-00 , int_][%00-00*@3 cy][%00-00 )]&][s6; Sets row height for "
-"a given row. This overrides the default value set by the one`-parameter version of "
-"this method.&][s1; [%00-00*C@3 i]-|row index (zero based)&][s1; [%00-00*C@3 cy]-|row "
-"height in pixels, [* Null] `= use default row height&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetLineCy`(`)const: "
-"[%00-00 int_][%00-00* GetLineCy][%00-00 ()_con")
-TOPIC_TEXT(
-"st]&][s6; Returns default array row height.&][s1; [*/ Return value]-|row height "
-"in pixels&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetLineY`(int`)const: [%00-00 int_][%00-00* "
-"GetLineY][%00-00 (int_][%00-00*@3 i][%00-00 )_const]&][s6; Returns [/ y] position "
-"of given array row (the pixel distance between the top of first array row and [/ "
-"i]`-th row, i.e. sum of heights of all rows above this row).&][s1; [%00-")
-TOPIC_TEXT(
-"00*C@3 i]-|row index (zero based)&][s1; [*/ Return value]-|Vertical position of "
-"row top in pixels (relative to array beginning)&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetLineCy`(int`)const: "
-"[%00-00 int_][%00-00* GetLineCy][%00-00 (int_][%00-00*@3 i][%00-00 )_const]&][s6; "
-"Returns the height of a given row (either the row`-specific row height, or, when "
-"Null, the default row height).&][s1; [%00-00*C@3 i]-|ro")
-TOPIC_TEXT(
-"w index (zero based)&][s1; [*/ Return value]-|row height in pixels&][s0;* &][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:AppendLine`(bool`): [%00-00 ArrayCtrl`&_][%00-00* AppendLine][%00-00 "
-"(bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; The AppendLine property controls whether "
-"the array displays an additional `'append`' row after its last (real) row. &][s1; "
-"[%00-00*C@3 b]-|[* true] `= display appending row, [* fal")
-TOPIC_TEXT(
-"se] `= hide it&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoAppendLine`(`): "
-"[%00-00 ArrayCtrl`&_][%00-00* NoAppendLine][%00-00 ()]&][s6; Hide the appending line "
-"(identical to [* AppendLine(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:IsAppendLine`(`)const: [%00-00 bool_][%00-00* IsAppendLine][%00-00 "
-"()_const]&][s6; Returns current state of th")
-TOPIC_TEXT(
-"e [* AppendLine] property.&][s1; [*/ Return value]-|[* true] `= display appending "
-"pseudo`-row at the end of the array&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Inserting`(bool`): "
-"[%00-00 ArrayCtrl`&_][%00-00* Inserting][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
-"Enable / disable inserting new rows in the array (no matter which insertion mechanism "
-"is selected).&][s1; [%00-00*C@3 b]-|[* true] `= enabl")
-TOPIC_TEXT(
-"e insertion, [* false] `= disable it&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:NoInserting`(`): [%00-00 ArrayCtrl`&_][%00-00* NoInserting][%00-00 "
-"()]&][s6; Disables row insertion (identical to [* Inserting(false)]).&][s1;* [/ Return "
-"value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsInserting`(`)const: bool_[* IsInserting]()_const&][s6; "
-"Returns current state of the [* Ins")
-TOPIC_TEXT(
-"erting] property.&][s1; [*/ Return value]-|[* true] `= row insertion is enabled, "
-"[* false] when not&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Appending`(bool`): [%00-00 ArrayCtrl`&_][%00-00* "
-"Appending][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Enable / disable adding "
-"new rows at the table end.&][s1; [%00-00*C@3 b]-|[* true] `= enable row appending, "
-"[* false] `= disable it&][s1;* [/ Return value][* ")
-TOPIC_TEXT(
-"-|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsAppending`(`)const: [%00-00 bool_][%00-00* "
-"IsAppending][%00-00 ()_const]&][s6; Returns current state of the [* Appending] property.&][s1; "
-"[*/ Return value]-|[* true] `= appending rows is enabled, [* false] when not.&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:AutoAppending`(bool`): [%00-00 ArrayCtrl`&_][%00-00* AutoAppending][%00-00 "
-"(bool_][%00-00*@3 b][%00-00 _`=_tru")
-TOPIC_TEXT(
-"e)]&][s6; Same as [* Appending] but Enter pressed when editing a new row accepts "
-"it and adds another one at the table end.&][s1; [%00-00*C@3 b]-|[* true ]to enable "
-"the mode&][s1;* [/ Return value][* -|]`*this&][s0; &][s4;:`:`:ArrayCtrl`:`:IsAutoAppending`(`)const: "
-"[%00-00 bool_][%00-00* IsAutoAppending][%00-00 ()_const]&][s6; Returns current state "
-"of [* AutoAppending] property.&][s1; [*/ Return va")
-TOPIC_TEXT(
-"lue]-|[* true] `= [* AutoAppending ]is active&][s0; &][s4;:`:`:ArrayCtrl`:`:BeforeAfterInserting`(int`): "
-"[%00-00 ArrayCtrl`&_][%00-00* BeforeAfterInserting][%00-00 ()]&][s6; Activate before "
-"/ after row insertion mechanism ([* Insert] hotkey `= before).&][s1;* [/ Return value][* "
-"-|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AfterBeforeInserting`(int`): [%00-00 ArrayCtrl`&_][%00-00* "
-"AfterBeforeInserting]")
-TOPIC_TEXT(
-"[%00-00 ()]&][s6; Activate before / after row insertion mechanism ([* Insert] hotkey "
-"`= after)&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Duplicating`(bool`): "
-"[%00-00 ArrayCtrl`&_][%00-00* Duplicating][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
-"Enable / disable row duplication. Note that this property only controls whether the "
-"`'Duplicate`' item should be present i")
-TOPIC_TEXT(
-"n the array local menu. Of course, nothing can prevent you from supporting duplication "
-"in some other way, or from calling the [* DoDuplicate] method as you see fit.&][s1; "
-"[%00-00*C@3 b]-|[* true] `= enable duplication, [* false] `= disable it&][s1;* [/ "
-"Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoDuplicating`(`): ArrayCtrl`&_[* "
-"NoDuplicating]()&][s6; Disable row duplication (identica")
-TOPIC_TEXT(
-"l to [* Duplicating(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsDuplicating`(`)const: "
-"bool_[* IsDuplicating]()_const&][s6; Returns the state of the [* Duplicating] property.&][s1; "
-"[*/ Return value]-|[* true] `= local menu offers row duplication, [* false] when "
-"not&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoInsertAppend`(bool`): [%00-00 ArrayCtrl`&_][%00-00* "
-"NoInsertAppend]")
-TOPIC_TEXT(
-"[%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Enables / disables the auto`-append "
-"mechanism (see above section on inserting rows).&][s1; [%00-00*C@3 b]-|[* true] `= "
-"disable InsertAppend mechanism, [* false] `= enable it (the default)&][s1;* [/ Return "
-"value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsEditing`(`)const: bool_[* IsEditing]()_const&][s6; "
-"Checks whether at least one array colum")
-TOPIC_TEXT(
-"n supports editing (whether it is possible to [/ open] a row for editation).&][s1; "
-"[*/ Return value]-|[* true] `= row editing is possible, [* false] when not&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:Removing`(bool`): [%00-00 ArrayCtrl`&_][%00-00* Removing][%00-00 "
-"(bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Enable / disable deleting rows from "
-"the table.&][s1; [%00-00*C@3 b]-|[* true] `= enable deletion, [* ")
-TOPIC_TEXT(
-"false] `= disable it&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoRemoving`(`): "
-"[%00-00 ArrayCtrl`&_][%00-00* NoRemoving][%00-00 ()]&][s6; Disable deleting table "
-"rows (identical to [* Removing(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:IsRemoving`(`)const: [%00-00 bool_][%00-00* IsRemoving][%00-00 "
-"()_const]&][s6; Returns current state of th")
-TOPIC_TEXT(
-"e [* Removing] property.&][s1; [*/ Return value]-|[* true] `= row deletion is enabled, "
-"[* false ]when not&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AskRemove`(bool`): [%00-00 ArrayCtrl`&_][%00-00* "
-"AskRemove][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Sets whether the user "
-"must manually confirm array row deletion. When set to [* true], every time a row "
-"is to be deleted, a confirmation dialog pops up.")
-TOPIC_TEXT(
-" When set to [* false], rows are deleted automatically without any further confirmation.&][s1; "
-"[%00-00*C@3 b]-|[* true] `= prompt user to confirm row deletion, [* false] `= delete "
-"rows instantly&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoAskRemove`(`): "
-"[%00-00 ArrayCtrl`&_][%00-00* NoAskRemove][%00-00 ()]&][s6; Disables user confirmation "
-"of row deletion (equivalent to [* ")
-TOPIC_TEXT(
-"AskRemove(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsAskRemove`(`)const: "
-"[%00-00 bool_][%00-00* IsAskRemove][%00-00 ()_const]&][s6; Returns current state "
-"of the [* AskRemove] property.&][s1; [*/ Return value]-|[* true] `= user confirmation "
-"is needed to delete rows, [* false] `= rows are deleted immediately&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Moving`(bool`): "
-"[%00-00 A")
-TOPIC_TEXT(
-"rrayCtrl`&_][%00-00* Moving][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
-"Enable / disable row swapping. When set to [* true], it is possible to move an array "
-"row up and down by swapping it with the previous / next row. This can be used to "
-"reorder array rows in a visually straightforward manner.&][s1; [%00-00*C@3 b]-|[* "
-"true] `= offer row moving in the local menu, [* false] `= don`'t&][s1;*")
-TOPIC_TEXT(
-" [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsMoving`(`)const: "
-"[%00-00 bool_][%00-00* IsMoving][%00-00 ()_const]&][s6; Returns current state of "
-"the [* Moving] property.&][s1; [*/ Return value]-|[* true] `= local menu supports "
-"row swapping, [* false] `= it doesn`'t&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Header`(bool`): "
-"[%00-00 ArrayCtrl`&_][%00-00* Header][%00-00 (bool_][%00-00*@3 b][%00-0")
-TOPIC_TEXT(
-"0 _`=_true)]&][s6; Show / hide the [*^topic`:`/`/CtrlLib`/src`/HeaderCtrl`$en`-us^ "
-"HeaderCtrl] object for this table.&][s1; [%00-00*C@3 b]-|[* true] `= show table header, "
-"[* false] `= hide it&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoHeader`(`): "
-"[%00-00 ArrayCtrl`&_][%00-00* NoHeader][%00-00 ()]&][s6; Hide table header (equivalent "
-"to [* Header(false)]).&][s1;* [/ Return ")
-TOPIC_TEXT(
-"value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Track`(bool`): [%00-00 ArrayCtrl`&_][%00-00* "
-"Track][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Animate array column resizing. "
-"This is equivalent to setting the [*^topic`:`/`/CtrlLib`/src`/HeaderCtrl`$en`-us`#`:`:HeaderCtrl`:`:Track`(bool`)^ "
-"Track] property in the array HeaderCtrl.&][s1; [%00-00*C@3 b]-|[* true] `= repaint "
-"the array repeate")
-TOPIC_TEXT(
-"dly while dragging column widths, [* false] `= regenerate everything only after "
-"drag `& drop is finished.&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoTrack`(`): "
-"[%00-00 ArrayCtrl`&_][%00-00* NoTrack][%00-00 ()]&][s6; Do not animate array column "
-"resizing (equivalent to [* Track(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:VertGrid`(bool`): [%")
-TOPIC_TEXT(
-"00-00 ArrayCtrl`&_][%00-00* VertGrid][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
-"Show / hide vertical array grid lines (separating array columns).&][s1; [%00-00*C@3 "
-"b]-|[* true] `= show vertical grid lines, [* false] `= hide them&][s1;* [/ Return "
-"value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoVertGrid`(`): [%00-00 ArrayCtrl`&_][%00-00* "
-"NoVertGrid][%00-00 ()]&][s6; Hide vertical grid ")
-TOPIC_TEXT(
-"lines (equivalent to [* VertGrid(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:HorzGrid`(bool`): [%00-00 ArrayCtrl`&_][%00-00* HorzGrid][%00-00 "
-"(bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Show / hide horizontal grid lines (separating "
-"array rows).&][s1; [%00-00*C@3 b]-|[* true] `= show horizontal grid lines, [* false] "
-"`= hide them&][s1;* [/ Return value][* -|]`*this&")
-TOPIC_TEXT(
-"][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoHorzGrid`(`): [%00-00 ArrayCtrl`&_][%00-00* NoHorzGrid][%00-00 "
-"()]&][s6; Hide horizontal grid lines (equivalent to [* HorzGrid(false)]).&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Grid`(bool`): [%00-00 "
-"ArrayCtrl`&_][%00-00* Grid][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Show "
-"/ hide both horizontal and vertical grid lines (equivale")
-TOPIC_TEXT(
-"nt to [* HorzGrid(b).VertGrid(b)]).&][s1; [%00-00*C@3 b]-|[* true] `= show grid "
-"line matrix, [* false] `= hide all grid lines&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:NoGrid`(`): [%00-00 ArrayCtrl`&_][%00-00* NoGrid][%00-00 "
-"()]&][s6; Hide horizontal and vertical grid lines (equivalent to [* Grid(false)]).&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:")
-TOPIC_TEXT(
-"GridColor`(`:`:Color`): [%00-00 ArrayCtrl`&_][%00-00* GridColor][%00-00 (Color_][%00-00*@3 "
-"c][%00-00 )]&][s6; Sets the color for grid lines.&][s1; [%00-00*C@3 c]-|new grid "
-"line color&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:EvenRowColor`(`:`:Color: "
-"[%00-00 ArrayCtrl`&_][%00-00* EvenRowColor][%00-00 (Color_][%00-00*@3 paper][%00-00 "
-"_`=_Blend(SColorHighlight, SColorPaper, ]")
-TOPIC_TEXT(
-"[%00-00@3 220][%00-00 ), Color_][%00-00*@3 ink][%00-00 _`=_SColorText)]&][s6; Sets "
-"the paper and ink (background and foreground) color for even array rows. In certain "
-"cases setting a different background color for odd and even rows helps to simplify "
-"visual orientation in the arrays (especially when the array has many columns).&][s6; "
-"[* Note:] the even / odd row terminology refers to the natural ar")
-TOPIC_TEXT(
-"ray row numbering, so first array row is [/ odd] and the second is [/ even]. This "
-"is in contrast to the zero`-baesd integral row indexing, where the first array row "
-"has index 0.&][s1; [%00-00*C@3 paper]-|background color to use for second, fourth, "
-"sixth etc. array row&][s1; [%00-00*C@3 ink]-|foreground color for even rows&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:OddRowCol")
-TOPIC_TEXT(
-"or`(`:`:Color`,`:`:Color`): [%00-00 ArrayCtrl`&_][%00-00* OddRowColor][%00-00 (Color_][%00-00*@3 "
-"paper][%00-00 _`=_SColorInfo, Color_][%00-00*@3 ink][%00-00 _`=_SColorText)]&][s6; "
-"Sets the paper and ink (background and foreground) color for odd array rows.&][s1; "
-"[%00-00*C@3 paper]-|background color to use for first, third, fifth etc. array row&][s1; "
-"[%00-00*C@3 ink]-|foreground color for odd rows&")
-TOPIC_TEXT(
-"][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:NoCursor`(bool`): "
-"[%00-00 ArrayCtrl`&_][%00-00* NoCursor][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
-"Turns on / off highlighting cursor row.&][s1; [%00-00*C@3 b]-|[* true] `= do not "
-"highlight cursor row, [* false] `= default behaviour (cursor row is shown in inverse "
-"colors)&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;")
-TOPIC_TEXT(
-":`:`:ArrayCtrl`:`:MouseMoveCursor`(bool`): [%00-00 ArrayCtrl`&_][%00-00* MouseMoveCursor][%00-00 "
-"(bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Enables / disables automatical cursor "
-"row switching as the mouse cursor moves over the array rows.&][s1; [%00-00*C@3 b]-|[* "
-"true] `= automatically switch cursor row, [* false] `= only upon clicks and keyboard "
-"navigation&][s1;* [/ Return value][* -|]`*this&][")
-TOPIC_TEXT(
-"s0;3 &][s4;:`:`:ArrayCtrl`:`:NoMouseMoveCursor`(`): [%00-00 ArrayCtrl`&_][%00-00* "
-"NoMouseMoveCursor][%00-00 ()]&][s6; Disable automatical cursor row switching (equivalent "
-"to [* MouseMoveCursor(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AutoHideSb`(bool`): "
-"[%00-00 ArrayCtrl`&_][%00-00* AutoHideSb][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
-"When set to [* t")
-TOPIC_TEXT(
-"rue], the vertical scrollbar at the right array edge is displayed only when the "
-"total row height exceeds the array view height. When set to [* false], the scrollbar "
-"is shown all the time.&][s1; [%00-00*C@3 b]-|[* true] `= show / hide the scrollbar "
-"as necessary, [* false] `= display it unconditionally&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:NoAutoHideSb`(`): [%00-00 Array")
-TOPIC_TEXT(
-"Ctrl`&_][%00-00* NoAutoHideSb][%00-00 ()]&][s6; Display vertical scrollbar all the "
-"time (equivalent to [* AutoHideSb(false)]).&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:MultiSelect`(bool`): [%00-00 ArrayCtrl`&_][%00-00* MultiSelect][%00-00 "
-"(bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Enable / disable multiple row selection. "
-"&][s1; [%00-00*C@3 b]-|[* true] `= allow selectin")
-TOPIC_TEXT(
-"g multiple rows at the same time, [* false] `= only one row at a time&][s1;* [/ "
-"Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ColumnWidths`(const char`*`): "
-"[%00-00 ArrayCtrl`&_][%00-00* ColumnWidths][%00-00 (const_char_`*][%00-00*@3 s][%00-00 "
-")]&][s6; Initializes column widths based on a text string containing blank`-separated "
-"decimal numbers, e.g. `\"1 4 6 4 1`\".&][s1; [%00-00*C@3 s]-|c")
-TOPIC_TEXT(
-"ontrol string defining column widths&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:RowFormat`(const char`*`): [%00-00 String_][%00-00* RowFormat][%00-00 "
-"(const_char_`*][%00-00*@3 s][%00-00 )]&][s6; Formats a text by substituting [* %s] "
-"with the array`-specific term for `'row`' (as set by the [* RowName] property). This "
-"is used for array local menu items.&][s1; [%00-00*C@3 s]-|")
-TOPIC_TEXT(
-"[* Format]`-like string to substitute.&][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:ArrayCtrl`:`:RowName`(const "
-"char`*`): [%00-00 ArrayCtrl`&_][%00-00* RowName][%00-00 (const_char_`*][%00-00*@3 "
-"s][%00-00 )]&][s6; Sets the array`-specific term for `'row`'. This can be used to "
-"customize the local menu terminology according to the logical content of the array. "
-"For instance, when you have an array with")
-TOPIC_TEXT(
-" the list of employees, you can call [* RowName(`\"employee`\")] and the menu items "
-"will then read [/ `'Insert new employee`', `'Delete employee`'] etc.&][s1; [%00-00*C@3 "
-"s]-|the term to substitute for `'array row`' in menu items&][s1;* [/ Return value][* "
-"-|]`*this&][s0;* &][s0;* &][s0;* Column structure programming&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IndexInfo`(int`): "
-"[%00-00 IdInfo`&_][%00-00* IndexInf")
-TOPIC_TEXT(
-"o][%00-00 (int_][%00-00*@3 ii][%00-00 )]&][s6; Returns a reference to the [* IdInfo] "
-"structure describing a given array index (column in the source data matrix).&][s1; "
-"[%00-00*C@3 ii]-|zero`-based ordinal number of the array index&][s1; [*/ Return value]-|IdInfo "
-"reference for the given index&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IndexInfo`(`:`:Id`): "
-"[%00-00 IdInfo`&_][%00-00* IndexInfo][%00-00 (Id_][%00-")
-TOPIC_TEXT(
-"00*@3 id][%00-00 )]&][s6; Returns a reference to the [* IdInfo] structure describing "
-"a given array index.&][s1; [%00-00*C@3 id]-|the [* Id] index identifier&][s1; [*/ "
-"Return value]-|IdInfo reference for the given index&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddIndex`(`:`:Id`): "
-"[%00-00 IdInfo`&_][%00-00* AddIndex][%00-00 (Id_][%00-00*@3 id][%00-00 )]&][s6; Adds "
-"a new index to the array and assign it a give")
-TOPIC_TEXT(
-"n [* Id] identifier.&][s1; [%00-00*C@3 id]-|new index identifier&][s1; [*/ Return "
-"value]-|A reference to the [* IdInfo ]structure describing the newly added index. "
-"The reference can be used to set additional index properties.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddIndex`(`): "
-"[%00-00 IdInfo`&_][%00-00* AddIndex][%00-00 ()]&][s6; Adds a new index (without an "
-"identifier) to the array.&][s1; [*/ Return val")
-TOPIC_TEXT(
-"ue]-|A reference to the [* IdInfo] structure describing the newly added index.&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:GetIndexCount`(`)const: [%00-00 int_][%00-00* GetIndexCount][%00-00 "
-"()_const]&][s6; Returns number of indices in the array.&][s1; [*/ Return value]-|index "
-"count&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetId`(int`)const: [%00-00 Id_][%00-00* GetId][%00-00 "
-"(int_][%00-00*@3 ii][%00-00 )_const]&][s6; R")
-TOPIC_TEXT(
-"eturns the identifier of a given index (addresses by its zero`-based ordinal number).&][s1; "
-"[%00-00*C@3 ii]-|zero`-based ordinal number of the queried index&][s1; [*/ Return "
-"value]-|index identifier or [* Null] if the index has no identifier&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetPos`(`:`:Id`)const: "
-"[%00-00 int_][%00-00* GetPos][%00-00 (Id_][%00-00*@3 id][%00-00 )_const]&][s6; Returns "
-"the zero`-based p")
-TOPIC_TEXT(
-"ositional number of the array index with a given identifier.&][s1; [%00-00*C@3 id]-|array "
-"index identifier&][s1; [*/ Return value]-|zero`-based index number, `-1 when not "
-"found&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetId`(int`,`:`:Id`): [%00-00 IdInfo`&_][%00-00* "
-"SetId][%00-00 (int_][%00-00*@3 ii][%00-00 , Id_][%00-00*@3 id][%00-00 )]&][s6; Sets "
-"the identifier for a given array index. This can be used to")
-TOPIC_TEXT(
-" set or modify the identifier for a previously added index.&][s1; [%00-00*C@3 ii]-|zero`-based "
-"ordinal number of the index to set the identifier for&][s1; [%00-00*C@3 id]-|new "
-"index identifier ([* Null] when none)&][s1; [*/ Return value]-|A reference to the "
-"[* IdInfo] descriptive structure for the [/ ii]`-th index. The reference can be used "
-"to set additional properties of the altered index.&][s0;3")
-TOPIC_TEXT(
-" &][s4;:`:`:ArrayCtrl`:`:AddKey`(`:`:Id`): [%00-00 IdInfo`&_][%00-00* AddKey][%00-00 "
-"(Id_][%00-00*@3 id][%00-00 )]&][s6; Adds a [/ primary key] index to the table. The "
-"[/ primary key] is just another name for the first index (index with ordinal number "
-"0). This is just a handy convention often used for SQL`-based tables. [* AddKey] "
-"must be called only once after array initialization or [* Reset] an")
-TOPIC_TEXT(
-"d before calling any other functions adding indices (like [* AddIndex], [* AddColumn] "
-"or [* AddCtrl]). When [* GetIndexCount() > 0 ]before the call to this function, this "
-"method fails with an [* ASSERT].&][s1; [%00-00*C@3 id]-|primary key identifier&][s1; "
-"[*/ Return value]-|A reference to the descriptive [* IdInfo] structure for the primary "
-"key index.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddKey`(`): [%0")
-TOPIC_TEXT(
-"0-00 IdInfo`&_][%00-00* AddKey][%00-00 ()]&][s6; Adds a primary key index without "
-"an identifier to the table. This is equivalent to [* AddKey(Null)].&][s1; [*/ Return "
-"value]-|A reference to the [* IdInfo] structure describing the primary key index.&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:GetKeyId`(`)const: [%00-00 Id_][%00-00* GetKeyId][%00-00 "
-"()_const]&][s6; Returns primary key identifier for this table. ")
-TOPIC_TEXT(
-"This is equivalent to calling [* GetId(0)].&][s1; [*/ Return value]-|primary key "
-"index identifier&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddColumn`(const char`*`,int`): [%00-00 "
-"Column`&_][%00-00* AddColumn][%00-00 (const_char_`*][%00-00*@3 text][%00-00 _`=_NULL, "
-"int_][%00-00*@3 w][%00-00 _`=_][%00-00@3 0][%00-00 )]&][s6; Add a new column`-index "
-"pair to the table. The function adds a (source) index and an ")
-TOPIC_TEXT(
-"(output) column and sets the index as the data source for the column. This is the "
-"most common method for adding columns to the array.&][s1; [%00-00*C@3 text]-|column "
-"name (displayed in the array header)&][s1; [%00-00*C@3 w]-|logical relative column "
-"width&][s1; [*/ Return value]-|A reference to the [* Column] structure describing "
-"the newly added column. This can be used to set additional properties")
-TOPIC_TEXT(
-" for the newly added column and the corresponding header tab.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddColumn`(`:`:Id`,const "
-"char`*`,int`): [%00-00 Column`&_][%00-00* AddColumn][%00-00 (Id_][%00-00*@3 id][%00-00 "
-", const_char_`*][%00-00*@3 text][%00-00 , int_][%00-00*@3 w][%00-00 _`=_][%00-00@3 "
-"0][%00-00 )]&][s6; Adds a new column`-index pair to the table. This is equivalent "
-"to the above two`-parameter ve")
-TOPIC_TEXT(
-"rsion but, in addition, the method sets the [* Id] identifier for the newly created "
-"index.&][s1; [%00-00*C@3 id]-|new index identifier&][s1; [%00-00*C@3 text]-|column "
-"name (displayed in the header)&][s1; [%00-00*C@3 w]-|logical relative column width&][s1; "
-"[*/ Return value]-|A reference to the [* Column] structure describing the newly added "
-"array column.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddColumnAt`(")
-TOPIC_TEXT(
-"int`,const char`*`,int`): [%00-00 Column`&_][%00-00* AddColumnAt][%00-00 (int_][%00-00*@3 "
-"ii][%00-00 , const_char_`*][%00-00*@3 text][%00-00 , int_][%00-00*@3 w][%00-00 _`=_][%00-00@3 "
-"0][%00-00 )]&][s6; Adds a new column to the table and binds it to a given source "
-"data index.&][s1; [%00-00*C@3 ii]-|zero`-based ordinal number of the index to use "
-"as source for this column&][s1; [%00-00*C@3 text]-|co")
-TOPIC_TEXT(
-"lumn name (displayed in the header)&][s1; [%00-00*C@3 w]-|logical relative column "
-"width&][s1; [*/ Return value]-|A reference to the [* Column] structure describing "
-"the newly added array column.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddColumnAt`(`:`:Id`,const "
-"char`*`,int`): [%00-00 Column`&_][%00-00* AddColumnAt][%00-00 (Id_][%00-00*@3 id][%00-00 "
-", const_char_`*][%00-00*@3 text][%00-00 , int_][%00-00*@3 w")
-TOPIC_TEXT(
-"][%00-00 _`=_][%00-00@3 0][%00-00 )]&][s6; Adds a new column to the table and binds "
-"it to a given source data index.&][s1; [%00-00*C@3 id]-|identifier of the index to "
-"use as source for the newly added column&][s1; [%00-00*C@3 text]-|column name (displayed "
-"in the header)&][s1; [%00-00*C@3 w]-|logical relative column width&][s1; [*/ Return "
-"value]-|A reference to the [* Column] structure describing t")
-TOPIC_TEXT(
-"he newly added array column.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddRowNumColumn`(const "
-"char`*`,int`): [%00-00 Column`&_][%00-00* AddRowNumColumn][%00-00 (const_char_`*][%00-00*@3 "
-"text][%00-00 , int_][%00-00*@3 w][%00-00 _`=_][%00-00@3 0][%00-00 )]&][s6; Adds a "
-"new column to the table. The newly added column has no source index, it is assumed "
-"to have an external data source. Instead of the source data ")
-TOPIC_TEXT(
-"[* Value] object, the current zero`-based row number is passed to the column`'s "
-"[* Convert] / [* Display]. This allows the host application to decode somehow the "
-"external data based on the row number. In the current U`+`+ version, the [/ RowNum "
-"columns] cannot be edited (using the standard array inline editation mechanism).&][s1; "
-"[%00-00*C@3 text]-|column name (displayed in the header)&][s1; [%00-")
-TOPIC_TEXT(
-"00*C@3 w]-|logical relative column width&][s1; [*/ Return value]-|A reference to "
-"the [* Column] structure describing the newly added array column.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddCtrl`(`:`:Ctrl`&`): "
-"[%00-00 IdInfo`&_][%00-00* AddCtrl][%00-00 (Ctrl`&_][%00-00*@3 ctrl][%00-00 )]&][s6; "
-"Adds a new index`-control pair to the table; the index keeps the source data and "
-"the external control is used to e")
-TOPIC_TEXT(
-"dit it. The ArrayCtrl handles data transfer between the source data matrix and the "
-"external control. The method returns a reference the [* IdInfo] descriptive structure "
-"for the newly added index.&][s6; [* Note:] it is good to keep in mind that there "
-"are a few differences between the ordinary array cell editors and the freestanding "
-"edit controls. In contrast with the cell editors, which appear only")
-TOPIC_TEXT(
-" when the row is opened for editing, the freestanding controls are present all the "
-"time. For instance, the ArrayCtrl automatically disables the controls when the cursor "
-"moves away from the table (using [* KillCursor]) and re`-enables them after it comes "
-"back. This is important e.g. if you want to implement an additional logic enabling "
-"some of the controls only depending on the circumstances; in su")
-TOPIC_TEXT(
-"ch case, you have to use one of the notification callbacks (like  [* WhenEnterRow]) "
-"to force your additional behaviour on the controls.&][s1; [%00-00*C@3 ctrl]-|control "
-"to attach to the given index&][s1; [*/ Return value]-|a reference to the IdInfo structure "
-"describing the newly added index&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddCtrl`(`:`:Id`,`:`:Ctrl`&`): "
-"[%00-00 IdInfo`&_][%00-00* AddCtrl][%00-00 (Id")
-TOPIC_TEXT(
-"_][%00-00*@3 id][%00-00 , Ctrl`&_][%00-00*@3 ctrl][%00-00 )]&][s6; Adds a new index`-control "
-"pair to the table. This is identical to the above version with the only difference "
-"that the newly added index is assigned an [* Id] identifier at the same time.&][s1; "
-"[%00-00*C@3 id]-|the identifier to assign to the newly created index&][s1; [%00-00*C@3 "
-"ctrl]-|freestanding control used to edit the given in")
-TOPIC_TEXT(
-"dex&][s1; [*/ Return value]-|a reference to the IdInfo structure describing the "
-"newly added index&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddCtrlAt`(int`,`:`:Ctrl`&`): [%00-00 "
-"void_][%00-00* AddCtrlAt][%00-00 (int_][%00-00*@3 ii][%00-00 , Ctrl`&_][%00-00*@3 "
-"ctrl][%00-00 )]&][s6; Adds a new control to the table and binds it to the index with "
-"given ordinal number. You can use this method to create the bindin")
-TOPIC_TEXT(
-"g between the control and an arbitrary source index.&][s1; [%00-00*C@3 ii]-|zero`-based "
-"ordinal number of the index to bind to this control&][s1; [%00-00*C@3 ctrl]-|freestanding "
-"control used to edit the [/ ii]`-th data index&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AddCtrlAt`(`:`:Id`,`:`:Ctrl`&`): "
-"[%00-00 void_][%00-00* AddCtrlAt][%00-00 (Id_][%00-00*@3 id][%00-00 , Ctrl`&_][%00-00*@3 "
-"ctrl][%00-00 )]&][s6; ")
-TOPIC_TEXT(
-"Adds a new control to the table and binds it to the index with given identifier.&][s1; "
-"[%00-00*C@3 id]-|identifier of the index to bind to this control&][s1;/ [%00-00*/C@3 "
-"ctrl][/ -|freestanding control used to edit the index with identifier ]id&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:AddRowNumCtrl`(`:`:Ctrl`&`): [%00-00 void_][%00-00* AddRowNumCtrl][%00-00 "
-"(Ctrl`&_][%00-00*@3 ctrl][%00-00 )]&][s6; Adds a ")
-TOPIC_TEXT(
-"new freestanding control to the table. The control is not bound to any source data "
-"index. During cursor movement in the array, array uses the control`'s [* SetData] "
-"method to set it to the current row number. The control must be ready for that and "
-"it can use the row number value to decode some externally located data for display. "
-"In the current U`+`+ version, such controls cannot be used for edita")
-TOPIC_TEXT(
-"tion (there is currently no clean way to store the edited data back to its external "
-"storage).&][s1; [%00-00*C@3 ctrl]-|[/ RowNum]`-based freestanding editor control&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:GetColumnCount`(`)const: [%00-00 int_][%00-00* GetColumnCount][%00-00 "
-"()_const]&][s6; Returns the current number of (output) columns in the array.&][s1; "
-"[*/ Return value]-|number of columns&][s0;3 &][s4;:")
-TOPIC_TEXT(
-"`:`:ArrayCtrl`:`:FindColumnWithPos`(int`)const: [%00-00 int_][%00-00* FindColumnWithPos][%00-00 "
-"(int_][%00-00*@3 pos][%00-00 )_const]&][s6; Returns the zero`-based index of a column "
-"based on its source data index.&][s1; [%00-00*C@3 pos]-|ordinal number of the source "
-"index&][s1; [*/ Return value]-|ordinal number of the column having the given index "
-"as its source, `-1 when not found&][s0;3 &][s4;:`:")
-TOPIC_TEXT(
-"`:ArrayCtrl`:`:FindColumnWithId`(`:`:Id`)const: [%00-00 int_][%00-00* FindColumnWithId][%00-00 "
-"(Id_][%00-00*@3 id][%00-00 )_const]&][s6; Returns the zero`-based index of a column "
-"based on its source data index.&][s1; [%00-00*C@3 id]-|source index identifier&][s1; "
-"[*/ Return value]-|ordinal number of the column having the given index as its source, "
-"`-1 when not found&][s0;3 &][s4;:`:`:ArrayCtrl`:`:")
-TOPIC_TEXT(
-"ColumnAt`(int`): [%00-00 Column`&_][%00-00* ColumnAt][%00-00 (int_][%00-00*@3 i][%00-00 "
-")]&][s6; Returns the [* Column] structure describing a given column.&][s1; [%00-00*C@3 "
-"i]-|zero`-based column index&][s1; [*/ Return value]-|a reference to the [* Column] "
-"structure describing the given column&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ColumnAt`(int`)const: "
-"[%00-00 const_Column`&_][%00-00* ColumnAt][%00-00 ")
-TOPIC_TEXT(
-"(int_][%00-00*@3 i][%00-00 )_const]&][s6; Returns the [* Column] structure describing "
-"a given column. This is merely the const version of the above method; it can be used "
-"to query properties for the column.&][s1; [%00-00*C@3 i]-|zero`-based column index&][s1; "
-"[*/ Return value]-|a constant reference to the [* Column] structure describing the "
-"given column&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ColumnAt`(`:`")
-TOPIC_TEXT(
-":Id`): [%00-00 Column`&_][%00-00* ColumnAt][%00-00 (Id_][%00-00*@3 id][%00-00 )]&][s6; "
-"Returns the [* Column] structure describing a column with given source index.&][s1; "
-"[%00-00*C@3 id]-|identifier of the index used as source for the column&][s1; [*/ "
-"Return value]-|a reference to the [* Column] structure describing the given column&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:ColumnAt`(`:`:Id`)const: [%00-00 c")
-TOPIC_TEXT(
-"onst_Column`&_][%00-00* ColumnAt][%00-00 (Id_][%00-00*@3 id][%00-00 )_const]&][s6; "
-"Returns a constant reference to the [* Column] structure describing a column with "
-"given source index. This is the constant version of the above method; it can be used "
-"to query properties for the column.&][s1; [%00-00*C@3 id]-|identifier of the index "
-"used as source for the column&][s1; [*/ Return value]-|a constant r")
-TOPIC_TEXT(
-"eference to the [* Column] structure describing the given column&][s0;3 &][s4;:`:`:ArrayCtrl`:`:HeaderTab`(int`): "
-"[%00-00 HeaderCtrl`::Column`&_][%00-00* HeaderTab][%00-00 (int_][%00-00*@3 i][%00-00 "
-")]&][s6; Returns the [*^topic`:`/`/CtrlLib`/src`/HeaderCtrl`$en`-us`#`:`:HeaderCtrl`:`:Column`:`:Min`(int`)^ "
-"HeaderCtrl`::Column] descriptive structure for the given column. The correspondence "
-"between ")
-TOPIC_TEXT(
-"the array columns and the header tabs is 1:1, so that the indices of both are always "
-"the same ([* array.GetColumnCount() `=`= array.HeaderObject().GetCount()] holds all "
-"the time).&][s1; [%00-00*C@3 i]-|zero`-based column index&][s1; [*/ Return value]-|a "
-"reference to the [* HeaderCtrl`::Column] structure. This can be used to set additional "
-"properties of the header column (e.g. column width constrai")
-TOPIC_TEXT(
-"nts, font and icon for the column title etc.)&][s0;3 &][s4;:`:`:ArrayCtrl`:`:HeaderTab`(int`)const: "
-"[%00-00 const_HeaderCtrl`::Column`&_][%00-00* HeaderTab][%00-00 (int_][%00-00*@3 "
-"i][%00-00 )_const]&][s6; Returns a constant reference to the [* HeaderCtrl`::Column] "
-"structure for the given column.&][s1; [%00-00*C@3 i]-|zero`-based column index&][s1; "
-"[*/ Return value]-|a reference to the [* HeaderCt")
-TOPIC_TEXT(
-"rl`::Column] structure. This can be used to set additional properties of the header "
-"column (e.g. column width constraints, font and icon for the column title etc.)&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:HeaderTab`(`:`:Id`): [%00-00 HeaderCtrl`::Column`&_][%00-00* "
-"HeaderTab][%00-00 (Id_][%00-00*@3 id][%00-00 )]&][s6; Returns the [* HeaderCtrl`::Column] "
-"descriptive structure for the column bound to a given ")
-TOPIC_TEXT(
-"source index.&][s1; [%00-00*C@3 id]-|identifier of the index used as source for "
-"the column&][s1; [*/ Return value]-|a reference to the [* HeaderCtrl`::Column] structure&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:HeaderTab`(`:`:Id`)const: [%00-00 const_HeaderCtrl`::Column`&_][%00-00* "
-"HeaderTab][%00-00 (Id_][%00-00*@3 id][%00-00 )_const]&][s6; Returns a constant reference "
-"to the [* HeaderCtrl`::Column] descript")
-TOPIC_TEXT(
-"ive structure for the column bound to a given source index.&][s1; [%00-00*C@3 id]-|identifier "
-"of the index used as source for the column&][s1; [*/ Return value]-|a constant reference "
-"to the [* HeaderCtrl`::Column] structure&][s0;3 &][s4;:`:`:ArrayCtrl`:`:HeaderObject`(`): "
-"[%00-00 HeaderCtrl`&_][%00-00* HeaderObject][%00-00 ()]&][s6; Returns a non`-constant "
-"reference to the [* HeaderCtrl] object fo")
-TOPIC_TEXT(
-"r this table. The reference can be further used to alter properties of the table "
-"header (tab visibility, header visual mode and so on).&][s1; [*/ Return value]-|A "
-"non`-constant reference to the table HeaderCtrl object.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:HeaderObject`(`)const: "
-"const_HeaderCtrl`&_[* HeaderObject]()_const&][s6; This is just the constant version "
-"of the above method; when called on a const")
-TOPIC_TEXT(
-"ant [* ArrayCtrl] reference, it returns a constant reference to its underlying HeaderCtrl "
-"object which can be then used to query additional header information.&][s1; [*/ Return "
-"value]-|A constant reference to the table HeaderCtrl object.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SerializeHeader`(`:`:Stream`&`): "
-"[%00-00 void_][%00-00* SerializeHeader][%00-00 (Stream`&_][%00-00*@3 s][%00-00 )]&][s6; "
-"Serializes")
-TOPIC_TEXT(
-" all information pertaining to the array header (mainly the user`-set column widths). "
-"This is equivalent to calling [* HeaderObject().Serialize(s)]. The main purpose of "
-"this function is to allow storing header configuration to be restored upon opening "
-"the dialog or the application for the next time. &][s1; [%00-00*C@3 s]-|the [*^topic`:`/`/Core`/src`/Stream`$en`-us^ "
-"Stream] object to serialize the")
-TOPIC_TEXT(
-" header to/from&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetDisplay`(int`,int`,const`:`:Display`&`): "
-"[%00-00 void_][%00-00* SetDisplay][%00-00 (int_][%00-00*@3 i][%00-00 , int_][%00-00*@3 "
-"j][%00-00 , const_Display`&_][%00-00*@3 d][%00-00 )]&][s6; Sets the [* Display] object "
-"for a given array cell.&][s6;* &][s6; [* Note:] the ownership to the Display object "
-"is not transferred by this call. The ArrayCtrl stor")
-TOPIC_TEXT(
-"es a mere pointer to it and it is the responsibility of the programmer to keep the "
-"Display object alive as long as necessary (until the array is shut down or the cell "
-"display changed via another call to SetDisplay). In fact, most Display`-based objects "
-"don`'t support data copying at all. In any case, copying Displays is not a very good "
-"practice and is very prone to slicing (as most actual Displays")
-TOPIC_TEXT(
-" are actually derived classes with additional data members).&][s6; &][s6; In many "
-"cases it would be relatively safe to assume that the Display is not used unless the "
-"array is actually painted (e.g., when the control is not bound to a parent or when "
-"its view has zero size), but it is not a very wise practice and it can fail in very "
-"weird ways under special circumstances (like making screenshots or ")
-TOPIC_TEXT(
-"graphical exports from the array control).&][s6; &][s1; [%00-00*C@3 i]-|zero`-based "
-"row index&][s1; [%00-00*C@3 j]-|zero`-based column index&][s1; [%00-00*C@3 d]-|display "
-"to use&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetDisplay`(int`,int`): [%00-00 const_Display`&_][%00-00* "
-"GetDisplay][%00-00 (int_][%00-00*@3 row][%00-00 , int_][%00-00*@3 col][%00-00 )]&][s6; "
-"Returns a reference to the Display object for ")
-TOPIC_TEXT(
-"the given array cell.&][s1; [%00-00*C@3 row]-|zero`-based row index&][s1; [%00-00*C@3 "
-"col]-|zero`-based column index&][s1; [*/ Return value]-|a reference to the Display "
-"object.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetDisplay`(int`): [%00-00 const_Display`&_][%00-00* "
-"GetDisplay][%00-00 (int_][%00-00*@3 col][%00-00 )]&][s6; Returns a reference to the "
-"Display object for the given array column.&][s1; [%00-0")
-TOPIC_TEXT(
-"0*C@3 col]-|zero`-based column index&][s1; [*/ Return value]-|constant reference "
-"to the column Display&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetCtrl`(int`,int`,`:`:Ctrl`*`): "
-"[%00-00 Ctrl`&_][%00-00* SetCtrl][%00-00 (int_][%00-00*@3 i][%00-00 , int_][%00-00*@3 "
-"j][%00-00 , Ctrl_`*][%00-00*@3 newctrl][%00-00 )]&][s6; Sets an external control "
-"to use as the editor for a single array cell. This function transf")
-TOPIC_TEXT(
-"ers the ownership to the control (from now on, it is stored within the array and "
-"destroyed as necessary `- upon destruction of the array, deletion of the relevant "
-"row or another call to [* SetCtrl]). Naturally, the same Ctrl object cannot be used "
-"as the editor for multiple array cells. If you need to edit large number of array "
-"cells, you have to implement a control creation factory.and use the [* ")
-TOPIC_TEXT(
-"Ctrls] method of the [* Column] subobject to program the array to construct the "
-"controls on`-the`-fly.&][s1; [%00-00*C@3 i]-|zero`-based row index&][s1; [%00-00*C@3 "
-"j]-|zero`-based column index&][s1; [%00-00*C@3 newctrl]-|the control to bind to the "
-"given array cell&][s1;* [/ Return value][* -|]`*newctrl&][s0;* &][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetTotalCy`(`)const: "
-"[%00-00 int_][%00-00* GetTotalCy][%")
-TOPIC_TEXT(
-"00-00 ()_const]&][s6; Returns total height of the array (sum of the individual line "
-"heights for all array rows)&][s1; [*/ Return value]-|array height in pixels&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:GetLineAt`(int`)const: [%00-00 int_][%00-00* GetLineAt][%00-00 "
-"(int_][%00-00*@3 y][%00-00 )_const]&][s6; Locates the array row according to given "
-"[/ y] coordinate (such array row [/ r] for which [* GetLineY(r)")
-TOPIC_TEXT(
-" <`= y `&`& GetLineY(r) `+ GetLineCy(r) > y]).&][s1; [%00-00*C@3 y]-|vertical pixel "
-"coordinate to locate&][s1; [*/ Return value]-|zero`-based row number or `-1 when "
-"not found&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetClickColumn`(`)const: [%00-00 int_][%00-00* "
-"GetClickColumn][%00-00 ()_const]&][s6; Returns column index of the last clicked column "
-"in the array. If the click happens past the last row of arra")
-TOPIC_TEXT(
-"y, returns Null.&][s1; [*/ Return value]-|zero`-based index of the relevant column&][s0;* "
-"&][s4;:`:`:ArrayCtrl`:`:GetClickRow`(`)const: [%00-00 int_][%00-00* GetClickRow][%00-00 "
-"()_const]&][s6; Returns column index of the last clicked row in the array. If the "
-"click happens past the last row of array, returns Null.&][s1; [*/ Return value]-|zero`-based "
-"index of the relevant column&][s0; &][s4;:`:`:A")
-TOPIC_TEXT(
-"rrayCtrl`:`:GetClickPos`(`)const: [%00-00 Point_][%00-00* GetClickPos][%00-00 ()_const]&][s1; "
-"[*/ Return value]-|[* Point(GetClickColumn(), GetClickRow())].&][s0; &][s0;* &][s0;* "
-"Data setting and retrieval&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetCount`(int`): [%00-00 "
-"void_][%00-00* SetCount][%00-00 (int_][%00-00*@3 c][%00-00 )]&][s6; Sets the number "
-"of rows in the array. This extends or trims the source")
-TOPIC_TEXT(
-" matrix as necessary. When using the Ctrl`-based individual cell editors, as a side`-effect "
-"of this call some controls can be constructed or destroyed.&][s1; [%00-00*C@3 c]-|new "
-"row count&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetVirtualCount`(int`): [%00-00 void_][%00-00* "
-"SetVirtualCount][%00-00 (int_][%00-00*@3 c][%00-00 )]&][s6; Sets the number of rows "
-"in an array with external data. This makes sense o")
-TOPIC_TEXT(
-"nly when all the [/ Column`'s] and [/ Ctrl`'s] of the array are [/ rownum]`-based. "
-"The function doesn`'t physically allocate any source data matrix space, it just makes "
-"the array `'think`' it has [/ c] rows (this is of course necessary for the Paint "
-"routine, for cursor / selection management and so on).&][s6; [* Note:] in the current "
-"implementation, selection flags for the individual rows are kept")
-TOPIC_TEXT(
-" in the row objects. Therefore it is not very wise to use multiselection for arrays "
-"with external data, because as soon as the last row is selected, all row storage "
-"structures are allocated as a side effect to keep the selection flags.&][s1; [%00-00*C@3 "
-"c]-|new `'virtual`' number of rows&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetCount`(`)const: "
-"[%00-00 int_][%00-00* GetCount][%00-00 ()_const]&][s6; Return")
-TOPIC_TEXT(
-"s the number of rows in the array. In fact, this returns the maximum of the number "
-"of `'real`' source matrix rows (as set by the SetCount / Add / Insert methods) and "
-"the `'virtual`' row count (as se by SetVirtualCount). By checking the implementation "
-"of this method, you can easily find that, simply,&][s6; &][s6;C int ArrayCtrl`::GetCount() "
-"const `{&][s6;C -|-|return max(virtualcount, array.GetCoun")
-TOPIC_TEXT(
-"t());&][s6;C `}&][s6; &][s1; [*/ Return value]-|Number of rows in the array.&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:Clear`(`): [%00-00 void_][%00-00* Clear][%00-00 ()]&][s6; "
-"Clears the array source data matrix and sets the virtual row count to 0.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Shrink`(`): "
-"[%00-00 void_][%00-00* Shrink][%00-00 ()]&][s6; Shrinks the source data array, i.e. "
-"reallocates the data to the minimu")
-TOPIC_TEXT(
-"m required memory space.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Get`(int`,int`)const: [%00-00 "
-"Value_][%00-00* Get][%00-00 (int_][%00-00*@3 i][%00-00 , int_][%00-00*@3 ii][%00-00 "
-")_const]&][s6; Returns the value at a given location in the source data matrix.&][s1; "
-"[%00-00*C@3 i]-|zero`-based row number&][s1; [%00-00*C@3 ii]-|zero`-based index ordinal "
-"number&][s1; [*/ Return value]-|value at the given locat")
-TOPIC_TEXT(
-"ion in the source data matrix&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Get`(int`,`:`:Id`)const: "
-"[%00-00 Value_][%00-00* Get][%00-00 (int_][%00-00*@3 i][%00-00 , Id_][%00-00*@3 id][%00-00 "
-")_const]&][s6; Returns the value at a given location in the source data matrix. In "
-"this version, the source indices are addressed by their identifiers.&][s1; [%00-00*C@3 "
-"i]-|zero`-based row number&][s1; [%00-00*C@3 id]-|sou")
-TOPIC_TEXT(
-"rce index identifier&][s1; [*/ Return value]-|value at the given location in the "
-"source data matrix&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Get`(int`)const: [%00-00 Value_][%00-00* "
-"Get][%00-00 (int_][%00-00*@3 ii][%00-00 )_const]&][s6; Returns the value of a given "
-"source index at the currently active cursor row. This is equivalent to [* Get(GetCursor(), "
-"ii)]. When the row is currently being edited, the fun")
-TOPIC_TEXT(
-"ction returns the `'new`' value (the current value of the respective editor control, "
-"i.e. potentially edited).&][s6; [* Note:] when the cursor row is not set (when [* "
-"!IsCursor()]), the function fails with an [* ASSERT].&][s1; [%00-00*C@3 ii]-|zero`-based "
-"index ordinal number&][s1; [*/ Return value]-|value at a given location in the cursor "
-"row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Get`(`:`:Id`)const: [%0")
-TOPIC_TEXT(
-"0-00 Value_][%00-00* Get][%00-00 (Id_][%00-00*@3 id][%00-00 )_const]&][s6; Returns "
-"the value of a given source index at the currently active cursor row. This is equivalent "
-"to [* Get(GetCursor(), id)].&][s1; [%00-00*C@3 id]-|source index identifier&][s1; "
-"[*/ Return value]-|value at the given location in the cursor row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetOriginal`(int`)const: "
-"[%00-00 Value_][%00-00* G")
-TOPIC_TEXT(
-"etOriginal][%00-00 (int_][%00-00*@3 ii][%00-00 )_const]&][s6; Returns the `'original`' "
-"value of a given source index at the currently active cursor row. When the row is "
-"open for editing, this function returns the `'old`' value before any editation took "
-"place.&][s1; [%00-00*C@3 ii]-|zero`-based index ordinal number&][s1; [*/ Return value]-|value "
-"at the given location in the cursor row&][s0;3 &][s4;")
-TOPIC_TEXT(
-":`:`:ArrayCtrl`:`:GetOriginal`(`:`:Id`)const: [%00-00 Value_][%00-00* GetOriginal][%00-00 "
-"(Id_][%00-00*@3 id][%00-00 )_const]&][s6; Returns the `'original`' value (i.e., without "
-"any editing changed applied) of a given source index at the currently active cursor "
-"row.&][s1; [%00-00*C@3 id]-|source index identifier&][s1; [*/ Return value]-|value "
-"at the given location in the cursor row&][s0;3 &][s4;:`")
-TOPIC_TEXT(
-":`:ArrayCtrl`:`:GetKey`(`)const: [%00-00 Value_][%00-00* GetKey][%00-00 ()_const]&][s6; "
-"Returns the value of the current row`'s primary key. This is equivalent to [* Get(0)].&][s1; "
-"[*/ Return value]-|value at the index #0 in the cursor row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetOriginalKey`(`)const: "
-"[%00-00 Value_][%00-00* GetOriginalKey][%00-00 ()_const]&][s6; Returns the original "
-"value of the current")
-TOPIC_TEXT(
-" row`'s primary key. During editation, the function returns the value at the time "
-"of opening the row for editing, i.e. without any editing changes applied. This is "
-"equivalent to [* GetOriginal(0)].&][s1; [*/ Return value]-|value at the index #0 "
-"in the cursor row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Set`(int`,int`,const`:`:Value`&`): "
-"[%00-00 void_][%00-00* Set][%00-00 (int_][%00-00*@3 i][%00-00 , int_][%")
-TOPIC_TEXT(
-"00-00*@3 ii][%00-00 , const_Value`&_][%00-00*@3 v][%00-00 )]&][s6; Sets the value "
-"at a given location in the source data matrix.&][s1; [%00-00*C@3 i]-|zero`-based "
-"row number&][s1; [%00-00*C@3 ii]-|zero`-based index ordinal number&][s1; [%00-00*C@3 "
-"v]-|value to set to the given cell&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Set`(int`,`:`:Id`,const`:`:Value`&`): "
-"[%00-00 void_][%00-00* Set][%00-00 (int_][%00-00")
-TOPIC_TEXT(
-"*@3 i][%00-00 , Id_][%00-00*@3 id][%00-00 , const_Value`&_][%00-00*@3 v][%00-00 "
-")]&][s6; Sets the value at a given location in the source data matrix. &][s1; [%00-00*C@3 "
-"i]-|zero`-based row number&][s1; [%00-00*C@3 id]-|source index identifier&][s1; [%00-00*C@3 "
-"v]-|value to set to the given cell&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Set`(int`,const`:`:Value`&`): "
-"[%00-00 void_][%00-00* Set][%00-00 (int_][")
-TOPIC_TEXT(
-"%00-00*@3 ii][%00-00 , const_Value`&_][%00-00*@3 v][%00-00 )]&][s6; Modifies the "
-"value at a given location in the cursor row. When the row is open for editing, the "
-"function immediately changes the value in the appropriate editor control.&][s1; [%00-00*C@3 "
-"ii]-|zero`-based index ordinal number&][s1; [%00-00*C@3 v]-|value to set&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Set`(`:`:Id`,const`:`:Value`&`): "
-"[%00-00")
-TOPIC_TEXT(
-" void_][%00-00* Set][%00-00 (Id_][%00-00*@3 id][%00-00 , const_Value`&_][%00-00*@3 "
-"v][%00-00 )]&][s6; Modifies the value at a given location in the cursor row. This "
-"overloaded version uses the [* Id] identifier to address the relevant index.&][s1; "
-"[%00-00*C@3 id]-|index identifier&][s1; [%00-00*C@3 v]-|value to set&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetColumn`(int`,int`)const: "
-"[%00-00 Value_][%00-00* ")
-TOPIC_TEXT(
-"GetColumn][%00-00 (int_][%00-00*@3 row][%00-00 , int_][%00-00*@3 col][%00-00 )_const]&][s6; "
-"Returns the value of a given column. This depends on the column`-index mapping established "
-"when adding columns to the table. When the column is a [/ rownum] type (it is bound "
-"to no source indices), the function just returns the [/ row] parameter. For columns "
-"with a single source index, the function returns ")
-TOPIC_TEXT(
-"the value of the mapped source index. For columns with multiple source indices, "
-"the function returns a [* ValueArray ]containing the values of its source indices.&][s1; "
-"[%00-00*C@3 row]-|zero`-based row index&][s1; [%00-00*C@3 col]-|zero`-based column "
-"index&][s1; [*/ Return value]-|value of the given column&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetConvertedColumn`(int`,int`): "
-"[%00-00 Value_][%00-00* GetC")
-TOPIC_TEXT(
-"onvertedColumn][%00-00 (int_][%00-00*@3 row][%00-00 , int_][%00-00*@3 col][%00-00 "
-")]&][s6; Returns the value of a given column after application of its [* Convert]. "
-"For performance reasons, the values obtained by calls to the [* Convert`::Format] "
-"methods are cached internally within the ArrayCtrl object. You can manipulate the "
-"conversion cache using the methods [*^topic`:`/`/CtrlLib`/src`/ArrayCtr")
-TOPIC_TEXT(
-"l`$en`-us`#`:`:ArrayCtrl`:`:ClearCache`(`)^ ClearCache] and[*  ][*^topic`:`/`/CtrlLib`/src`/ArrayCtrl`$en`-us`#`:`:ArrayCtrl`:`:InvalidateCache`(int`)^ "
-"InvalidateCache].&][s1; [%00-00*C@3 row]-|zero`-based row index&][s1; [%00-00*C@3 "
-"col]-|zero`-based column index&][s1; [*/ Return value]-|the converted cell value&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:ReadRow`(int`)const: [%00-00 Vector<Value>_][%00-00* R")
-TOPIC_TEXT(
-"eadRow][%00-00 (int_][%00-00*@3 i][%00-00 )_const]&][s6; Returns a [* Vector] containing "
-"the values of all source indices in the given row. Invariantly, the [* GetCount()] "
-"of the returned array is equal to the [* GetIndexCount()] of the source ArrayCtrl.&][s1; "
-"[%00-00*C@3 i]-|zero`-based row index&][s1; [*/ Return value]-|an array of all source "
-"values in the given row&][s0;3 &][s4;:`:`:ArrayCtrl`:")
-TOPIC_TEXT(
-"`:Set`(int`,const`:`:Vector`<`:`:Value`>`&`): [%00-00 void_][%00-00* Set][%00-00 "
-"(int_][%00-00*@3 i][%00-00 , const_Vector<Value>`&_][%00-00*@3 v][%00-00 )]&][s6; "
-"Modified a given row by setting all source index values to values passed in the parameter "
-"[/ v].&][s1; [%00-00*C@3 i]-|zero`-based row index&][s1; [%00-00*C@3 v]-|an array "
-"of values to set to the source data matrix row&][s0;3 &][s4;:`:`:")
-TOPIC_TEXT(
-"ArrayCtrl`:`:Add`(`): [%00-00 void_][%00-00* Add][%00-00 ()]&][s6; Adds an empty "
-"row to the source data matrix.&][s6; [* Note:] the [* InsertValue] property of the "
-"[* IdInfo] structure defines a method to generate / retrieve default values for newly "
-"inserted rows. However, these values are only used during the GUI`-based [* DoInsert] "
-"method and do not apply to the [* Add] method. If you need to se")
-TOPIC_TEXT(
-"t the newly added source matrix row to some non`-null defaults, you have to modify "
-"the relevant cells manually.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Add`(const`:`:Vector`<`:`:Value`>`&`): "
-"[%00-00 void_][%00-00* Add][%00-00 (const_Vector<Value>`&_][%00-00*@3 v][%00-00 )]&][s6; "
-"Adds a new row at the end of the source data matrix. The [*^topic`:`/`/Core`/src`/Vector`$en`-us^ "
-"Vector] parameter contains the ")
-TOPIC_TEXT(
-"values to be used to initialize the new row of the matrix.&][s1; [%00-00*C@3 v]-|new "
-"matrix row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Add`(const`:`:Value`&`[`,const`:`:Value`&`]`.`.`.`): "
-"[%00-00 void_][%00-00* Add][%00-00 (const_Value`&_`[, const_Value`&_`]...)]&][s6; "
-"Adds a new row at the bottom of the source data matrix. This is in fact a series "
-"of functions (generated automatically using the [* Expand")
-TOPIC_TEXT(
-"] macro) which takes an arbitrary number of arguments. Its arguments are used to "
-"initialize the source indices in the newly added row.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Insert`(int`): "
-"[%00-00 void_][%00-00* Insert][%00-00 (int_][%00-00*@3 i][%00-00 )]&][s6; Inserts "
-"a new row into the source array. All indices are initialized to [* Null] values. "
-"The [* InsertValue] property doesn`'t apply; if you need")
-TOPIC_TEXT(
-" to set the newly created row to some non`-trivial values, you have to do so manually.&][s1; "
-"[%00-00*C@3 i]-|zero`-based position of the newly created row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Insert`(int`,const`:`:Vector`<`:`:Value`>`&`): "
-"[%00-00 void_][%00-00* Insert][%00-00 (int_][%00-00*@3 i][%00-00 , const_Vector<Value>`&_][%00-00*@3 "
-"v][%00-00 )]&][s6; Inserts a new row into the array at a given pos")
-TOPIC_TEXT(
-"ition. The second parameter, [/ v], is used to initialize the source indices of "
-"the newly created row.&][s1; [%00-00*C@3 i]-|zero`-based row index&][s1; [%00-00*C@3 "
-"v]-|a vector of values used to initialize the source indices of the given row&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:Remove`(int`): [%00-00 void_][%00-00* Remove][%00-00 (int_][%00-00*@3 "
-"i][%00-00 )]&][s6; Removes the given source data row.&][")
-TOPIC_TEXT(
-"s6; [* Note:] the [* AskRemove] property of the [* ArrayCtrl] object tells whether "
-"a confirmation dialog should pop up every time the user wants to remove a row. However, "
-"this method applies only to the GUI`-based row removal; the [* Remove] method always "
-"removes the requested row unconditionally without popping up any confirmation dialog.&][s1; "
-"[%00-00*C@3 i]-|zero`-based index of the row to remo")
-TOPIC_TEXT(
-"ve&][s0;* &][s0;3 &][s4;:`:`:ArrayCtrl`:`:SwapUp`(`): [%00-00 void_][%00-00* SwapUp][%00-00 "
-"()]&][s6; Exchanges the cursor row with the preceding row, effectively moving it "
-"up.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SwapDown`(`): [%00-00 void_][%00-00* SwapDown][%00-00 "
-"()]&][s6; Exchanges the cursor row with following row, effectively moving it down.&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:Sort`(const`:`:ArrayCtrl")
-TOPIC_TEXT(
-"`:`:Order`&`): [%00-00 void_][%00-00* Sort][%00-00 (const_ArrayCtrl`::Order`&_][%00-00*@3 "
-"order][%00-00 )]&][s6; Sorts the array rows according to a given ordering predicate. "
-"The [* ArrayCtrl`::Order] object defines the ordering predicate; its [* operator "
-"()] should return [* true] whenever its first parameter (a vector containing the "
-"values of all source indices in a row) is less than its second ")
-TOPIC_TEXT(
-"parameter.&][s1; [%00-00*C@3 order]-|&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Sort`(int`,int`,const`:`:ArrayCtrl`:`:Order`&`): "
-"[%00-00 void_][%00-00* Sort][%00-00 (int_][%00-00*@3 from][%00-00 , int_][%00-00*@3 "
-"count][%00-00 , const_ArrayCtrl`::Order`&_][%00-00*@3 order][%00-00 )]&][s6; Sorts "
-"a portion of the array using a given ordering predicate.&][s1; [%00-00*C@3 from]-|zero`-based "
-"index of the first ro")
-TOPIC_TEXT(
-"w to sort&][s1; [%00-00*C@3 count]-|number of rows to be sorted&][s1; [%00-00*C@3 "
-"order]-|the ordering predicate object. The object should be derived from [* ArrayCtrl`::Order] "
-"and should override the [* operator ()] method. This method should return [* true "
-"]whenever its first parameter (a vector containing all source index values for a "
-"certain row) is less than its second parameter.&][s0;3 &][s4")
-TOPIC_TEXT(
-";:`:`:ArrayCtrl`:`:Sort`(int`(`*`)`(const`:`:Vector`<`:`:Value`>`&v1`,const`:`:Vector`<`:`:Value`>`&v2`)`): "
-"[%00-00 void_][%00-00* Sort][%00-00 (int_(`*][%00-00*@3 compare][%00-00 )(const_Vector<Value>`&_v1, "
-"const_Vector<Value>`&_v2))]&][s6; Sorts the array rows according to the order defined "
-"by the specified ordering predicate [/ compare]. This is supposed to be a global "
-"function returning [* tru")
-TOPIC_TEXT(
-"e] whenever its first parameter ([/ v1], an array consisting of all source indices "
-"within a row) is less than the second parameter [/ v2] (according to the desired "
-"ordering).&][s1; [%00-00*C@3 compare]-|the ordering predicate; _the function is supposed "
-"to return [* true] whenever its first parameter ([/ v1]) is less than the second "
-"parameter ([/ v2]) according to the desired ordering.&][s0;3 &][s4")
-TOPIC_TEXT(
-";:`:`:ArrayCtrl`:`:Sort`(int`,int`(`*`)`(const`:`:Value`&v1`,const`:`:Value`&v2`)`): "
-"[%00-00 void_][%00-00* Sort][%00-00 (int_][%00-00*@3 ii][%00-00 , int_(`*][%00-00*@3 "
-"compare][%00-00 )(const_Value`&_v1, const_Value`&_v2)_`=_StdValueCompare)]&][s6; "
-"Sorts the array rows according to the given ordering predicate for the source index "
-"with a given ordinal number. When not explicitly specified, the [")
-TOPIC_TEXT(
-"* StdValueCompare] function is used as the default comparison predicate.&][s1; [%00-00*C@3 "
-"ii]-|zero`-based ordinal number of the source index used for sorting&][s1; [%00-00*C@3 "
-"compare]-|the sorting predicate function: the function is supposed to return [* true] "
-"whenever its first parameter ([/ v1]) is less than the second parameter ([/ v2]) "
-"according to the desired ordering.&][s0;3 &][s4;:`:`:Ar")
-TOPIC_TEXT(
-"rayCtrl`:`:Sort`(`:`:Id`,int`(`*`)`(const`:`:Value`&v1`,const`:`:Value`&v2`)`): "
-"[%00-00 void_][%00-00* Sort][%00-00 (Id_][%00-00*@3 id][%00-00 , int_(`*][%00-00*@3 "
-"compare][%00-00 )(const_Value`&_v1, const_Value`&_v2)_`=_StdValueCompare)]&][s6; "
-"Sorts the array rows according to the given ordering predicate for the source index "
-"with a given identifier. When not explicitly specified, the [* StdValue")
-TOPIC_TEXT(
-"Compare] function is used as the default comparison predicate.&][s1; [%00-00*C@3 "
-"id]-|identifier of the source index used for sorting&][s1; [%00-00*C@3 compare]-|the "
-"sorting predicate function: the function is supposed to return [* true] whenever "
-"its first parameter ([/ v1]) is less than the second parameter ([/ v2]) according "
-"to the desired ordering .&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Sort`(`): [%00")
-TOPIC_TEXT(
-"-00 void_][%00-00* Sort][%00-00 ()]&][s6; Sorts the array according to the default "
-"ordering predicate for the first source index. This is equivalent to calling [* Sort(0)].&][s0;* "
-"&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ClearCache`(`): void_[* ClearCache]()&][s6; Invalidates "
-"the whole [/ convert cache]. The convert cache keeps the results of the [* Convert`::Format] "
-"method applied to individual array data")
-TOPIC_TEXT(
-" cells for performance reasons. Whenever you call the [* ClearCache] method, all "
-"cache entries are marked as obsolete and the [* Convert]`'s [* Format] method will "
-"be called as soon as the converted value of a table cell is required (usually during "
-"the next [* Paint]).&][s0;3 &][s4;:`:`:ArrayCtrl`:`:InvalidateCache`(int`): void_[* "
-"InvalidateCache](int_[*@3 i])&][s6; Invalidates a given row in the ")
-TOPIC_TEXT(
-"[/ convert cache]. For performance reasons, the results of the [* Convert`::Format] "
-"method applied to the individual data cells are kept in a cache. This function marks "
-"a given row of the cache as obsolete; this means the next time the converted values "
-"are to be used (usually within the [* Paint] routine or when setting up the row editor "
-"controls), the [* Convert] objects are used again to generat")
-TOPIC_TEXT(
-"e the actualized output values.&][s1; [*C@3 i]-|zero`-based row index&][s0;* &][s0;* "
-"Cursor and selection management&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetSelectCount`(`)const: "
-"[%00-00 int_][%00-00* GetSelectCount][%00-00 ()_const]&][s6; Returns the number of "
-"selected row within the table.&][s1; [*/ Return value]-|number of selected records "
-"(in the range [/ `[0 .. GetCount()`]])&][s0;3 &][s4;:`:`:Arra")
-TOPIC_TEXT(
-"yCtrl`:`:IsSelection`(`)const: [%00-00 bool_][%00-00* IsSelection][%00-00 ()_const]&][s6; "
-"Checks whether any rows are selected. Equivalent to [* GetSelectCount() > 0].&][s1; "
-"[*/ Return value]-|[* true] `= there is at least one selected row, [* false] `= there "
-"is none.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Select`(int`,bool`): [%00-00 void_][%00-00* "
-"Select][%00-00 (int_][%00-00*@3 i][%00-00 , bool_][%00-0")
-TOPIC_TEXT(
-"0*@3 sel][%00-00 _`=_true)]&][s6; Selects / unselects a given row.&][s1; [%00-00*C@3 "
-"i]-|zero`-based row index&][s1; [%00-00*C@3 sel]-|[* true] `= add row to the current "
-"selection, [* false] `= remove row from selection&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Select`(int`,int`,bool`): "
-"[%00-00 void_][%00-00* Select][%00-00 (int_][%00-00*@3 i][%00-00 , int_][%00-00*@3 "
-"count][%00-00 , bool_][%00-00*@3 sel][%0")
-TOPIC_TEXT(
-"0-00 _`=_true)]&][s6; Selects / unselects a given row range.&][s1; [%00-00*C@3 i]-|zero`-based "
-"index of the first row to select / unselect&][s1; [%00-00*C@3 count]-|number of rows "
-"to select / unselect&][s1; [%00-00*C@3 sel]-|[* true] `= select the rows, [* false] "
-"`= unselect the rows&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsSelected`(int`)const: [%00-00 "
-"bool_][%00-00* IsSelected][%00-00 (int_][%00-00*@3 i")
-TOPIC_TEXT(
-"][%00-00 )_const]&][s6; Checks whether a given row is selected. For tables without "
-"the multiselection option, this is equal to the check [* GetCursor() `=`= i].&][s1; "
-"[%00-00*C@3 i]-|zero`-based row index to check for selection&][s1; [*/ Return value]-|[* "
-"true] `= row is selected, [* false] `= not selected&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ClearSelection`(`): "
-"[%00-00 void_][%00-00* ClearSelection][%0")
-TOPIC_TEXT(
-"0-00 ()]&][s6; Clears the current selection (unselects all selected rows).&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:IsCursor`(`)const: [%00-00 bool_][%00-00* IsCursor][%00-00 "
-"()_const]&][s6; Checks whether the cursor is within the table. This is equivalent "
-"to [* GetCursor()_>`=_0].&][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:ArrayCtrl`:`:SetCursor`(int`): "
-"[%00-00 bool_][%00-00* SetCursor][%00-00 (int_][%00-")
-TOPIC_TEXT(
-"00*@3 i][%00-00 )]&][s6; Sets the current cursor row. When an array row is open "
-"for editing, the function first commits the edited row, then moved the cursor to "
-"the new row. When the edited row cannot be commited, the function returns [* false] "
-"and doesn`'t change the cursor location.&][s1; [%00-00*C@3 i]-|zero`-based row index&][s1; "
-"[*/ Return value]-|[* true] `= cursor has been moved, [* false ]")
-TOPIC_TEXT(
-"when not (when committing the previously edited row failed)&][s0;3 &][s4;:`:`:ArrayCtrl`:`:KillCursor`(`): "
-"[%00-00 bool_][%00-00* KillCursor][%00-00 ()]&][s6; Moves the cursor away from the "
-"array. When an array row is open for editing, the function first commits the edited "
-"row, then moved the cursor away from the array. When the edited row cannot be commited, "
-"the function returns [* false] and doe")
-TOPIC_TEXT(
-"sn`'t change the cursor location.&][s1; [*/ Return value]-|[* true] `= cursor has "
-"been moved away from the array, [* false] when not (when committing the previously "
-"edited row failed)&][s0;3 &][s4;:`:`:ArrayCtrl`:`:CancelCursor`(`): [%00-00 void_][%00-00* "
-"CancelCursor][%00-00 ()]&][s6; Cancels editation of the row being currently edited. "
-"All changes made in the individual column editors are reject")
-TOPIC_TEXT(
-"ed.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetCursor`(`)const: [%00-00 int_][%00-00* GetCursor][%00-00 "
-"()_const]&][s6; Returns the current cursor row, `-1 when none.&][s1; [*/ Return value]-|zero`-based "
-"cursor row index, `-1 `= cursor is not in the array&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GoBegin`(`): "
-"[%00-00 void_][%00-00* GoBegin][%00-00 ()]&][s6; Moves the cursor to the first row "
-"in the array (equivalent t")
-TOPIC_TEXT(
-"o [* SetCursor(0)]).&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GoEnd`(`): [%00-00 void_][%00-00* "
-"GoEnd][%00-00 ()]&][s6; Moves the cursor to the last array row (equivalent to [* "
-"SetCursor(GetCount() `- 1)]).&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetCursorSc`(`)const: "
-"[%00-00 int_][%00-00* GetCursorSc][%00-00 ()_const]&][s6; Returns the visual vertical "
-"position of the cursor row relative to the current view. This me")
-TOPIC_TEXT(
-"thod, in combination with [* ScCursor], can be used to reposition the cursor row "
-"while maintaining the same visual position of the row within the array view.&][s1; "
-"[*/ Return value]-|an integer describing the vertical position of the cursor row "
-"relative to the array view&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ScCursor`(int`): [%00-00 "
-"void_][%00-00* ScCursor][%00-00 (int_][%00-00*@3 a][%00-00 )]&][s6; Modi")
-TOPIC_TEXT(
-"fies the scrollbar position so that the current cursor row appears at a given vertical "
-"position relative to the array view. By doing the following sequence of operations: "
-"[* GetCursorSc], then reposition the cursor row, then [* ScCursor], you can achieve "
-"cursor relocation while maintaining its visual location within the array view.&][s1; "
-"[%00-00*C@3 a]-|an integer describing the vertical position ")
-TOPIC_TEXT(
-"of the cursor row (typically a number returned by a previous call to [* GetCursorSc])&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:CenterCursor`(`): [%00-00 void_][%00-00* CenterCursor][%00-00 "
-"()]&][s6; Modifies the scrollbar position so that the current cursor row appears "
-"in the middle of the array view.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ScrollInto`(int`): "
-"[%00-00 void_][%00-00* ScrollInto][%00-00 (int_][%00-00*@")
-TOPIC_TEXT(
-"3 line][%00-00 )]&][s6; Moves the scrollbar by the least possible amount in order "
-"to make the given array row visible. When the given array row is already visible, "
-"the function does nothing.&][s1; [%00-00*C@3 line]-|zero`-based row index of the "
-"array row to make visible&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ScrollIntoCursor`(`): [%00-00 "
-"void_][%00-00* ScrollIntoCursor][%00-00 ()]&][s6; Moves the scrollba")
-TOPIC_TEXT(
-"r by the least possible amount in order to make the cursor row visible. This is "
-"equivalent to [* ScrollInto(GetCursor())].&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetScroll`(`)const: "
-"[%00-00 int_][%00-00* GetScroll][%00-00 ()_const]&][s6; Returns the current vertical "
-"scrollbar position.&][s1; [*/ Return value]-|Pixel position of the vertical scrollbar. "
-"Position 0 is at the very top (the top row of the arra")
-TOPIC_TEXT(
-"y is fully visible).&][s0;3 &][s4;:`:`:ArrayCtrl`:`:ScrollTo`(int`): [%00-00 void_][%00-00* "
-"ScrollTo][%00-00 (int_][%00-00*@3 sc][%00-00 )]&][s6; Moves the vertical array scrollbar "
-"to a given position.&][s1; [%00-00*C@3 sc]-|Pixel position of the scrollbar. The "
-"visible portion of the array can be obtained conceptually by taking the stack of "
-"array rows with its top aligned at the top of the view an")
-TOPIC_TEXT(
-"d moving it [/ sc] pixels upwards.&][s0;* &][s0;3 &][s4;:`:`:ArrayCtrl`:`:Find`(const`:`:Value`&`,int`,int`)const: "
-"[%00-00 int_][%00-00* Find][%00-00 (const_Value`&_][%00-00*@3 v][%00-00 , int_][%00-00*@3 "
-"ii][%00-00 _`=_][%00-00@3 0][%00-00 , int_][%00-00*@3 from][%00-00 _`=_][%00-00@3 "
-"0][%00-00 )_const]&][s6; &][s1; [%00-00*C@3 v]-|value to look for in the given source "
-"index&][s1; [%00-00*C@3 ii]")
-TOPIC_TEXT(
-"-|zero`-based ordinal number of the source index to search&][s1; [%00-00*C@3 from]-|zero`-based "
-"row index to start the search from&][s1; [*/ Return value]-|zero`-based number of "
-"the matched row, `-1 when none&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Find`(const`:`:Value`&`,`:`:Id`,int`)const: "
-"[%00-00 int_][%00-00* Find][%00-00 (const_Value`&_][%00-00*@3 v][%00-00 , Id_][%00-00*@3 "
-"id][%00-00 , int_][%00-00*@")
-TOPIC_TEXT(
-"3 from][%00-00 _`=_][%00-00@3 0][%00-00 )_const]&][s6; Locates the row (using linear "
-"search beginning at the row [/ from]) in which the source index value identified "
-"by [/ id] equals [/ val]. If such a row is found, the function returns its zero`-based "
-"index. When not matched, the function returns `-1.&][s1; [%00-00*C@3 v]-|value to "
-"look for in the given source index&][s1; [%00-00*C@3 id]-|source ")
-TOPIC_TEXT(
-"index identifier&][s1; [%00-00*C@3 from]-|zero`-based row index to start the search "
-"from&][s1; [*/ Return value]-|zero`-based number of the matched row, `-1 when none&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:FindSetCursor`(const`:`:Value`&`,int`,int`): [%00-00 bool_][%00-00* "
-"FindSetCursor][%00-00 (const_Value`&_][%00-00*@3 val][%00-00 , int_][%00-00*@3 ii][%00-00 "
-"_`=_][%00-00@3 0][%00-00 , int_][%00-00*@3 f")
-TOPIC_TEXT(
-"rom][%00-00 _`=_][%00-00@3 0][%00-00 )]&][s6; Locates the row (using linear search "
-"beginning at the row [/ from]) in which the source index value identified by its "
-"ordinal number [/ ii] equals [/ val]. If such a row is found, the [* SetCursor] is "
-"called automatically to move the cursor to such a row.&][s1; [%00-00*C@3 val]-|value "
-"to look for in the given source index&][s1; [%00-00*C@3 ii]-|zero`-b")
-TOPIC_TEXT(
-"ased ordinal number of the source index to search&][s1; [%00-00*C@3 from]-|zero`-based "
-"row index to start the search from&][s1; [*/ Return value]-|zero`-based number of "
-"the matched row, `-1 when none&][s0;3 &][s4;:`:`:ArrayCtrl`:`:FindSetCursor`(const`:`:Value`&`,`:`:Id`,int`): "
-"[%00-00 bool_][%00-00* FindSetCursor][%00-00 (const_Value`&_][%00-00*@3 val][%00-00 "
-", Id_][%00-00*@3 id][%00-00 , int_][%")
-TOPIC_TEXT(
-"00-00*@3 from][%00-00 _`=_][%00-00@3 0][%00-00 )]&][s6; Locates the row (using linear "
-"search beginning at the row [/ from]) in which the source index value identified "
-"by [/ id] equals [/ val]. If such a row is found, the [* SetCursor] is called automatically "
-"to move the cursor to such a row.&][s1; [%00-00*C@3 val]-|value to look for in the "
-"given source index&][s1; [%00-00*C@3 id]-|source index ide")
-TOPIC_TEXT(
-"ntifier&][s1; [%00-00*C@3 from]-|zero`-based row index to start the search from&][s1; "
-"[*/ Return value]-|[* true] `= the desired row was found (and the cursor set), [* "
-"false] when not&][s0;* &][s0;* &][s0;* User interface elements&][s0;3 &][s4;:`:`:ArrayCtrl`:`:StdBar`(`:`:Bar`&`): "
-"void_[* StdBar](Bar`&_[*@3 menu])&][s6; The default array local menu. The default "
-"local menu consists of the standard")
-TOPIC_TEXT(
-" editation actions (inserting / appending / duplicating a row, editing a row, removing "
-"a row, moving a row, select all rows) filtered by the array properties enabling / "
-"disabling the various GUI elements (item insertion / deletion etc.). &][s1; [*C@3 "
-"menu]-|the [* Bar] object representing the menu being generated&][s0;* &][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsModified`(int`)const: "
-"[%00-00 bool_][%00-00*")
-TOPIC_TEXT(
-" IsModified][%00-00 (int_][%00-00*@3 ii][%00-00 )_const]&][s6; Checks a source index "
-"in the currently edited row for changes.&][s1; [%00-00*C@3 ii]-|zero`-based row index&][s1; "
-"[*/ Return value]-|[* true] `= the index has been modified, [* false] `= the index "
-"is in its original state&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IsModified`(`:`:Id`)const: "
-"[%00-00 bool_][%00-00* IsModified][%00-00 (Id_][%00-00*@3")
-TOPIC_TEXT(
-" id][%00-00 )_const]&][s6; Checks a source index in the currently edited array row "
-"for changes.&][s1; [%00-00*C@3 id]-|source index identifier&][s1; [*/ Return value]-|[* "
-"true] `= the source index has been modified, [* false ]when not&][s0;3 &][s4;:`:`:ArrayCtrl`:`:StartEdit`(int`): "
-"[%00-00 bool_][%00-00* StartEdit][%00-00 (int_][%00-00*@3 d][%00-00 _`=_][%00-00@3 "
-"0][%00-00 )]&][s6; Opens the curr")
-TOPIC_TEXT(
-"ent cursor row for editing and sets focus to the [/ d]`-th column.&][s1; [%00-00*C@3 "
-"d]-|zero`-based column index&][s1; [*/ Return value]-|[* true] `= editation successfully "
-"initiated, [* false] when not (when the array is in [* ReadOnly] mode or it has no "
-"editable columns)&][s0;3 &][s4;:`:`:ArrayCtrl`:`:GetEditColumn`(`)const: [%00-00 "
-"int_][%00-00* GetEditColumn][%00-00 ()_const]&][s6; Returns th")
-TOPIC_TEXT(
-"e column being currently edited.&][s1; [*/ Return value]-|zero`-based index of the "
-"column being edited, `-1 `= none&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoEdit`(`): [%00-00 "
-"void_][%00-00* DoEdit][%00-00 ()]&][s6; Opens the current cursor row for editing.&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:DoInsert`(int`): [%00-00 void_][%00-00* DoInsert][%00-00 "
-"(int_][%00-00*@3 cursor][%00-00 )]&][s6; Begins the GUI inserti")
-TOPIC_TEXT(
-"on of a new row at a given location.&][s1; [%00-00*C@3 cursor]-|zero`-based location "
-"of the new row&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoInsertBefore`(`): [%00-00 void_][%00-00* "
-"DoInsertBefore][%00-00 ()]&][s6; Begins the GUI insertion of a new row above the "
-"current row.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoInsertAfter`(`): [%00-00 void_][%00-00* "
-"DoInsertAfter][%00-00 ()]&][s6; Begins the GUI insertion of")
-TOPIC_TEXT(
-" a new row below the current row.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoAppend`(`): [%00-00 "
-"void_][%00-00* DoAppend][%00-00 ()]&][s6; Begins the GUI insertion of a new row at "
-"the end of the array.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoRemove`(`): [%00-00 bool_][%00-00* "
-"DoRemove][%00-00 ()]&][s6; Performs the GUI`-based removal of the current cursor "
-"row. When the [* AskRemove] property is set to [* true] and")
-TOPIC_TEXT(
-" the user cancels the confirmation dialog, the function returns [* false] and the "
-"current row is not removed.&][s1; [*/ Return value]-|[* true] `= row has been removed "
-"successfully, [* false] `=  user has canceled the row removal&][s0;3 &][s4;:`:`:ArrayCtrl`:`:DoDuplicate`(`): "
-"[%00-00 void_][%00-00* DoDuplicate][%00-00 ()]&][s6; Duplicates the current row and "
-"opens it for editing.&][s0;3 &][s4;:`:")
-TOPIC_TEXT(
-"`:ArrayCtrl`:`:DoSelectAll`(`): [%00-00 void_][%00-00* DoSelectAll][%00-00 ()]&][s6; "
-"Marks all array row as selected.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:AcceptEnter`(`): "
-"bool_[* AcceptEnter]()&][s6; Performs all necessary GUI actions equivalent to when "
-"the user presses the [* Enter] key. The row being currently edited is committed and, "
-"in the case it was a newly appended line and the [* NoInsertAppend")
-TOPIC_TEXT(
-"] property is not set, an additional row is added to the array and opened for editation.&][s1; "
-"[*/ Return value]-|[* true] `= the current row has been successfully committed, [* "
-"false] when not&][s0;* &][s0;* Notification callbacks&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenLeftClick:* "
-"[* Callback_]WhenLeftClick&][s6; This callback is called whenever the user clicks "
-"an array cell.&][s0;3 &][s4;:`:`:ArrayC")
-TOPIC_TEXT(
-"trl`:`:WhenLeftDouble:* [%00-00* Callback_][%00-00 WhenLeftDouble]&][s6; This callback "
-"is called whenever the user doubleclicks an array cell.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenBar:* "
-"[%00-00* Callback1<Bar`&>_][%00-00 WhenBar]&][s6; This callback is called whenever "
-"the local array menu has to be regenerated. By setting this callback to a different "
-"function / method you can supply a custom local m")
-TOPIC_TEXT(
-"enu for the array. The [* Bar`&] argument is a reference to the menu to be generated.&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:WhenEnterRow:* [%00-00* Callback_][%00-00 WhenEnterRow]&][s6; "
-"This callback is called every time the cursor location changes to a different row "
-"of the array.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenAcceptRow:* [%00-00* Gate_][%00-00 "
-"WhenAcceptRow]&][s6; This gate is called every time an ")
-TOPIC_TEXT(
-"array row (open for editing) needs to be validated. When the gate returns [* false], "
-"the validation process is assumed to have failed, when it returns [* true], it is "
-"assumed to have succeeded. You can use this callback to add your own validation algorithms "
-"relevant to the array context within your application.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenUpdateRow:* "
-"[%00-00* Callback_][%00-00 WhenUpdateRow")
-TOPIC_TEXT(
-"]&][s6; This callback is called whenever an array row has been updated. You can "
-"use this callback e.g. to project the changes to a database or generally to an external "
-"data source.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenKillCursor:* [%00-00* Callback_][%00-00 "
-"WhenKillCursor]&][s6; This callback is called whenever the cursor is moved away from "
-"the table.&][s6; [* Note:] internally, when moving the curs")
-TOPIC_TEXT(
-"or (e.g. by calling the [* SetCursor ]method), after committing the previous row "
-"the cursor is removed from the table using [* KillCursor] and placed to the new location "
-"afterwards. Therefore every time the cursor is moved, the [* WhenKillCursor] callback "
-"is called as a by`-product.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenCursor:* [%00-00* "
-"Callback_][%00-00 WhenCursor]&][s6; This callback is called eve")
-TOPIC_TEXT(
-"ry time the cursor row number changes (either when the cursor is removed from the "
-"table, or when it has been moved to a different row).&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenArrayAction:* "
-"[%00-00* Callback_][%00-00 WhenArrayAction]&][s6; This callback is called every time "
-"the source array data changes (typically after accepting changes to a certain row "
-"or after deleting a row).&][s0;3 &][s4;:`:`:Arra")
-TOPIC_TEXT(
-"yCtrl`:`:WhenStartEdit:* [%00-00* Callback_][%00-00 WhenStartEdit]&][s6; This callback "
-"is called whenever the array row editation process is initiated. It can be used e.g. "
-"to set up some additional properties of the column editor objects, to fill in drop`-down "
-"lists pertaining to certain column editors etc.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenAcceptEdit:* "
-"[%00-00* Callback_][%00-00 WhenAcceptEdit]&")
-TOPIC_TEXT(
-"][s6; This callback is called whenever the currently edited line has been committed.&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:WhenSelection:* [%00-00* Callback_][%00-00 WhenSelection]&][s6; "
-"This callback is called whenever the current array selection changes. This includes "
-"changes to the cursor location as the cursor is automatically considered part of "
-"the selection.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:WhenCtrls")
-TOPIC_TEXT(
-"Action:* [%00-00* Callback_][%00-00 WhenCtrlsAction]&][s6; This callback is called "
-"whenever some of the editor controls constructed automatically via the column editation "
-"[/ factory] calls its [* WhenAction] method. It can be used to watch out for changes "
-"in the cell editors and react to specific situations accordingly.&][s6; &][s0;3 &][s10;:`:`:ArrayCtrl`:`:IdInfo`:`:struct:* "
-"[%00-00* struct_][%0")
-TOPIC_TEXT(
-"0-00 ArrayCtrl`::IdInfo]&][s0; &][s0; The [* IdInfo] structure contains properties "
-"of all source array indices. It can be used to set additional properties pertaining "
-"to source array data.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IdInfo`:`:InsertValue`(const`:`:Value`&`): "
-"[%00-00 IdInfo`&_][%00-00* InsertValue][%00-00 (const_Value`&_][%00-00*@3 v][%00-00 "
-")]&][s6; The method sets up the default source index ")
-TOPIC_TEXT(
-"value for newly created rows. This is used only when the row insertion is GUI`-based "
-"(like using the [* DoInsert] method for instance). When a row is added to the array "
-"programmatically (e.g. using [* Add] or [* Insert]), these default values are not "
-"used.&][s1; [%00-00*C@3 v]-|default source index value&][s1;* [/ Return value][* "
-"-|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IdInfo`:`:InsertValue`(`:`:")
-TOPIC_TEXT(
-"ValueGen`&`): [%00-00 IdInfo`&_][%00-00* InsertValue][%00-00 (ValueGen`&_][%00-00*@3 "
-"g][%00-00 )]&][s6; The method sets up a factory for generating default index values "
-"for newly created rows. This is used only when the row insertion is GUI`-based (like "
-"using the [* DoInsert] method for instance). When a row is added to the array programmatically "
-"(e.g. using [* Add] or [* Insert]), the [* InserVal")
-TOPIC_TEXT(
-"ue] property is not consulted.&][s1; [%00-00*C@3 g]-|a reference to the value generation "
-"factory. The ownership to the factory is not passed by this call; the caller must "
-"insure the existence of the factory object throughout the array duration.&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IdInfo`:`:Accel`(int`(`*`)`(int`)`): "
-"[%00-00 IdInfo`&_][%00-00* Accel][%00-00 (int_(`*][")
-TOPIC_TEXT(
-"%00-00*@3 filter][%00-00 )(int))]&][s6; This method sets up the source index accelerator "
-"function. The accelerator is used to quickly locate rows using the keyboard key presses.&][s1; "
-"[%00-00*C@3 filter]-|a [* CharFilter ]function for keypress filtering&][s1;* [/ Return "
-"value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:IdInfo`:`:Accel`(`): [%00-00 IdInfo`&_][%00-00* "
-"Accel][%00-00 ()]&][s6; This me")
-TOPIC_TEXT(
-"thod sets up keyboard acceleration for the given source index. The `'trivial`' [/ "
-"CharConvert] is used for character translation.&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:IdInfo`:`:GetInsertValue`(`): [%00-00 Value_][%00-00* GetInsertValue][%00-00 "
-"()]&][s6; Uses the [* InsertValue] property to generate a new source index value "
-"(either using a fixed default value or the va")
-TOPIC_TEXT(
-"lue creation factory).&][s1; [*/ Return value]-|the generated value to be used as "
-"the default for the newly inserted row.&][s6; &][s0;3 &][s10;:`:`:ArrayCtrl`:`:Column`:`:class:* "
-"[%00-00* class_][%00-00 Column]&][s6; &][s9; [/ Derived from] [%00-00 FormatConvert]&][s0;3 "
-"&][s0;* &][s0; [%00-00 The ][%00-00* ArrayCtrl`::Column][%00-00  structure describes "
-"an output array column. Its methods can be u")
-TOPIC_TEXT(
-"sed to set or query its properties, some of which are also settable via ArrayCtrl "
-"methods.]&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Add`(int`): [%00-00 Column`&_][%00-00* "
-"Add][%00-00 (int_][%00-00*@3 `_pos][%00-00 )]&][s6; Adds another source data index "
-"to the list of source indices used as the data for the given output column.&][s1; "
-"[%00-00*C@3 `_pos]-|zero`-based ordinal number of the source in")
-TOPIC_TEXT(
-"dex&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Add`(`:`:Id`): "
-"[%00-00 Column`&_][%00-00* Add][%00-00 (Id_][%00-00*@3 id][%00-00 )]&][s6; Adds another "
-"source data index to the list of source indices used as the data for the given output "
-"column.&][s1; [%00-00*C@3 id]-|the [* Id] identifier of the source index&][s1;* [/ "
-"Return value][* -|]`*this&][s0;3 &][s4;:`:`:Arr")
-TOPIC_TEXT(
-"ayCtrl`:`:Column`:`:AddIndex`(`:`:Id`): [%00-00 Column`&_][%00-00* AddIndex][%00-00 "
-"(Id_][%00-00*@3 id][%00-00 )]&][s6; Adds another source index to the array and adds "
-"it to the list of source indices bound to this output column. The newly created index "
-"is assigned the given identifier.&][s1; [%00-00*C@3 id]-|the identifier for the newly "
-"created index&][s1;* [/ Return value][* -|]`*this&][s0;3 &][")
-TOPIC_TEXT(
-"s4;:`:`:ArrayCtrl`:`:Column`:`:AddIndex`(`): [%00-00 Column`&_][%00-00* AddIndex][%00-00 "
-"()]&][s6; Adds another source index to the array and adds it to the list of source "
-"indices bound to this output column.&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:SetConvert`(const`:`:Convert`&`): "
-"[%00-00 Column`&_][%00-00* SetConvert][%00-00 (const_Convert`&_][%00-00*@3 c][%0")
-TOPIC_TEXT(
-"0-00 )]&][s6; Sets the [* Convert] object for the given column. This object is used "
-"to convert the source values (obtained from the source data matrix) to the values "
-"displayable and/or editable by the respective column display / editor object.&][s6; "
-"[* Note:] the ownership of the [* Convert] object is not transferred by this function. "
-"The array merely stores a pointer to the Convert object. It is ")
-TOPIC_TEXT(
-"up to the host application to keep the Convert object alive as long as necessary "
-"(until the ArrayCtrl object is destroyed or all references to the Convert object "
-"obliterated by new calls to the [* SetConvert] method). In any case, most Convert`-based "
-"object do not support copying at all; moreover, as the Convert`-based objects are "
-"mostly derived from the basic class, their copying is normally pron")
-TOPIC_TEXT(
-"e to slicing.&][s1; [%00-00*C@3 c]-|a constant reference to the Convert object to "
-"use for the given column&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:SetFormat`(const "
-"char`*`): [%00-00 Column`&_][%00-00* SetFormat][%00-00 (const_char_`*][%00-00*@3 "
-"fmt][%00-00 )]&][s6; Sets the format string to use for the default value formatting. "
-"When no Convert object is set for")
-TOPIC_TEXT(
-" the column, the source value is normally passed to the [* NFormat] function where "
-"the [/ fmt] argument defines the desired formatting pattern.&][s1; [%00-00*C@3 fmt]-|a "
-"[* NFormat]`-compatible formatting pattern&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:Column`:`:SetDisplay`(const`:`:Display`&`): [%00-00 Column`&_][%00-00* "
-"SetDisplay][%00-00 (const_Display`&_][%00-00*@3 d")
-TOPIC_TEXT(
-"][%00-00 )]&][s6; Sets the default Display to use for this column. The column Display "
-"can be overridden for certain array cells by calls to the [*^topic`:`/`/CtrlLib`/src`/ArrayCtrl`$en`-us`#`:`:ArrayCtrl`:`:SetDisplay`(int`,int`,const "
-"Display`&`)^ ArrayCtrl`::SetDisplay] method.&][s6; [* Note:] the ownership to the "
-"Display object is not transferred by this function. The array merely stores a poin")
-TOPIC_TEXT(
-"ter to the Display; it is up to the host application to keep the Display object "
-"alive as long as necessary.&][s1; [%00-00*C@3 d]-|a reference to the Display object&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Edit`(`:`:Ctrl`&`): "
-"[%00-00 Column`&_][%00-00* Edit][%00-00 (Ctrl`&_][%00-00*@3 e][%00-00 )]&][s6; Sets "
-"up the Ctrl`-based object to use for inline array colum")
-TOPIC_TEXT(
-"n editing.&][s1; [%00-00*C@3 e]-|a reference to the editor control object&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Ctrls`(`:`:Callback1`<`:`:One`<`:`:Ctrl`>`&`>`): "
-"[%00-00 Column`&_][%00-00* Ctrls][%00-00 (Callback1<One<Ctrl>`&>_][%00-00*@3 factory][%00-00 "
-")]&][s6; The methods sets up a factory which the ArrayCtrl uses as necessary to create "
-"new Ctrl`'s for edit")
-TOPIC_TEXT(
-"ing a given column. The argument of this function is a callback, which, upon execution, "
-"should allocate (normally using the [* new] operator) the desired editor object and "
-"set it to its argument.&][s1; [%00-00*C@3 factory]-|callback used for new control "
-"creation&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Ctrls`(void`(`*`)`(`:`:One`<`:`:Ctrl`>`&`)`): "
-"[%00-00 Column")
-TOPIC_TEXT(
-"`&_][%00-00* Ctrls][%00-00 (void_(`*][%00-00*@3 factory][%00-00 )(One<Ctrl>`&))]&][s6; "
-"This method sets up a factory which the ArrayCtrl uses as necessary to create new "
-"Ctrl`'s for editing a given column. The argument, a global function, is supposed "
-"to allocate a new editor control (normally using the [* new] operator) and set it "
-"to its argument.&][s1; [%00-00*C@3 factory]-|a global function used ")
-TOPIC_TEXT(
-"for editor control creation&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Ctrls`(`): "
-"[%00-00 Column`&_][%00-00* Ctrls][%00-00 ()]&][s6; This member template sets up a "
-"default factory for creating editor controls of a given type. Every time the ArrayCtrl "
-"needs to create a new editor control, an object of the type [* T] is created automatically "
-"(using the [* new] opera")
-TOPIC_TEXT(
-"tor).&][s1; [*C@4 T]-|the desired object editor type &][s1;* [/ Return value][* "
-"-|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:InsertValue`(const`:`:Value`&`): "
-"[%00-00 Column`&_][%00-00* InsertValue][%00-00 (const_Value`&_][%00-00*@3 v][%00-00 "
-")]&][s6; Instructs the ArrayCtrl object to initialize this column in newly created "
-"rows to the given value [/ v]. (This applies only to GUI`-based row i")
-TOPIC_TEXT(
-"nsertion using methods like [* DoInsert] etc., the low`-level, programmer`-controlled "
-"row insertion methods like [* Add] or [* Insert] always initialize the source data "
-"matrix with [* Null]`'s).&][s1; [%00-00*C@3 v]-|the value to use as the default for "
-"newly inserted rows&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:InsertValue`(`:`:ValueGen`&`): "
-"[%00-00 Column`&_][")
-TOPIC_TEXT(
-"%00-00* InsertValue][%00-00 (ValueGen`&_][%00-00*@3 g][%00-00 )]&][s6; Programs "
-"the ArrayCtrl object to use the given [* ValueGen] factory for default value generation "
-"for newly created rows. This can be used e.g. to generate unique UUID`'s or primary "
-"keys using an Oracle SEQUENCE object for a primary key column.&][s1; [%00-00*C@3 "
-"g]-|a reference to the ValueGen object used for default value gener")
-TOPIC_TEXT(
-"ation&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:NoClickEdit`(`): "
-"[%00-00 Column`&_][%00-00* NoClickEdit][%00-00 ()]&][s6; Disables entering the editation "
-"mode when clicking the respective column.&][s1;* [/ Return value][* -|]`*this&][s0;3 "
-"&][s4;:`:`:ArrayCtrl`:`:Column`:`:Cache`(`): [%00-00 Column`&_][%00-00* Cache][%00-00 "
-"()]&][s6; Enables using the cache to sto")
-TOPIC_TEXT(
-"re the converted values of this column. By default, converted value caching is turned "
-"off to make cell value conversion entirely dynamic; however, very often it is advisable "
-"to enable using the cache, especially when the conversion is relatively slow (for "
-"instance, when the conversion queries a database connection to convert the value).&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCt")
-TOPIC_TEXT(
-"rl`:`:Column`:`:Accel`(int`(`*`)`(int`)`): [%00-00 Column`&_][%00-00* Accel][%00-00 "
-"(int_(`*][%00-00*@3 filter][%00-00 )(int))]&][s6; Sets up the accelerator for the "
-"given column. A given filtering function is used to convert keystrokes before acceleration.&][s1; "
-"[%00-00*C@3 filter]-|a [* CharConvert]`-style function to use for keystroke conversion&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;")
-TOPIC_TEXT(
-":`:`:ArrayCtrl`:`:Column`:`:Accel`(`): [%00-00 Column`&_][%00-00* Accel][%00-00 "
-"()]&][s6; Sets up the accelerator for the given column. No keystroke conversion is "
-"performed.&][s1;* [/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:Margin`(int`): "
-"[%00-00 Column`&_][%00-00* Margin][%00-00 (int_][%00-00*@3 m][%00-00 )]&][s6; Sets "
-"up the margin width for the given column. This is e")
-TOPIC_TEXT(
-"quivalent to calling the [*^topic`:`/`/CtrlLib`/src`/HeaderCtrl`$en`-us`#`:`:HeaderCtrl`:`:Column`:`:SetMargin`(int`)^ "
-"SetMargin] method of the underlying [* HeaderTab].&][s1; [%00-00*C@3 m]-|&][s1;* "
-"[/ Return value][* -|]`*this&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Column`:`:HeaderTab`(`): "
-"[%00-00 HeaderCtrl`::Column`&_][%00-00* HeaderTab][%00-00 ()]&][s6; Returns the [* "
-"HeaderCtrl`::Column] object desc")
-TOPIC_TEXT(
-"ribing the given column. This object can be used to set up additional column properties "
-"(like column width constraints or the [*^topic`:`/`/CtrlLib`/src`/HeaderCtrl`$en`-us`#`:`:HeaderCtrl`:`:Column`:`:Callback "
-"WhenAction^ WhenAction] callback).&][s0; &][s0;3 &][s10;:`:`:ArrayCtrl`:`:Order`:`:struct:* "
-"[%00-00* struct_][%00-00 Order]&][s0; &][s0; The [* Order] object is used for array "
-"row sorting. ")
-TOPIC_TEXT(
-"The overloaded [* operator ()] acts as the sorting predicate, which is consulted "
-"within the sorting method to determine which of a given pair of row is `'less`' according "
-"to the desired sorting.&][s0;3 &][s4;:`:`:ArrayCtrl`:`:Order`:`:operator`(`)`(const`:`:Vector`<`:`:Value`>`&`,const`:`:Vector`<`:`:Value`>`&`)const:@3 "
-"[%00-00@0 virtual bool_][%00-00*@0 operator()][%00-00@0 (const_Vector<Value>`&")
-TOPIC_TEXT(
-"_][%00-00* row1][%00-00@0 , const_Vector<Value>`&_][%00-00* row2][%00-00@0 )_const_`=_][%00-00 "
-"0]&][s6; The sorting predicate. This method should return [* true] when its first "
-"argument ([/ row1]) is less than the second argument ([/ row2]) according to the "
-"desired ordering.&][s1; [%00-00*C@3 row1]-|an array of source data index values for "
-"the first of the rows to compare&][s1; [%00-00*C@3 row2]-|")
-TOPIC_TEXT(
-"an array of source data index values for the other row to compare&][s1; [*/ Return "
-"value]-|[* true] `= row1 < row2, [* false] `= row1 >`= row2&][s0;3 ]")
+COMPRESSED
+120,156,237,189,137,151,20,85,150,56,252,175,228,215,61,211,
+102,217,69,81,5,184,52,116,247,105,26,108,155,211,182,58,
+162,61,103,142,167,236,140,202,140,170,138,38,51,35,59,34,
+179,202,234,113,230,148,178,40,130,136,162,130,45,32,40,138,
+162,160,162,52,136,2,178,184,176,8,136,32,173,136,10,168,
+128,202,94,174,184,124,119,121,239,197,123,17,145,75,45,20,
+206,204,111,22,169,204,140,120,203,221,222,189,247,221,229,250,
+97,137,127,249,151,198,250,198,159,54,86,249,159,145,99,237,
+86,171,148,45,54,95,239,140,24,113,233,40,107,216,69,163,
+38,252,225,170,95,140,186,240,55,201,139,71,212,193,32,77,
+48,200,240,75,154,134,95,122,209,240,166,17,195,46,134,255,
+52,13,111,26,118,209,176,225,35,154,46,29,246,139,17,151,
+14,31,126,105,227,200,116,214,242,253,230,235,179,195,46,189,
+116,20,206,60,12,94,26,118,201,69,195,154,46,25,113,233,
+136,75,155,134,95,114,233,48,120,119,88,99,227,176,198,75,
+134,93,212,52,98,248,165,195,46,26,153,177,253,116,243,245,
+214,165,195,71,93,120,205,197,240,210,112,156,9,6,111,108,
+186,120,216,136,75,70,12,107,28,222,56,108,4,76,213,116,
+233,165,35,154,46,185,232,210,225,191,184,248,226,145,105,171,
+80,116,220,188,152,203,105,106,26,214,52,170,165,233,146,81,
+176,228,255,254,239,255,110,104,26,209,200,43,24,1,131,53,
+53,142,128,165,54,193,119,141,35,134,93,210,116,209,47,26,
+127,113,209,165,77,151,54,14,135,193,47,186,164,241,162,145,
+5,203,179,114,241,59,199,49,46,170,186,245,75,26,71,58,
+69,27,134,184,240,231,77,77,151,192,43,23,215,95,252,211,
+166,17,151,192,70,47,29,62,226,162,75,47,105,132,201,135,
+13,27,54,124,248,176,166,225,195,126,241,139,97,23,93,124,
+209,37,35,219,109,43,99,123,205,215,255,231,159,255,235,95,
+47,187,114,200,117,227,19,215,251,23,141,250,195,111,26,19,
+215,255,107,99,227,144,198,198,196,104,207,179,186,198,20,189,
+108,243,207,154,175,247,27,71,37,204,127,126,243,155,63,217,
+233,162,235,141,203,89,109,246,200,166,139,47,190,244,103,77,
+48,229,252,91,126,128,255,121,107,243,130,215,15,28,127,233,
+204,186,251,38,174,93,124,98,235,129,211,47,125,252,210,218,
+5,187,15,125,127,102,226,153,51,159,111,248,120,242,182,238,
+151,186,123,54,175,63,125,186,251,192,215,27,123,78,127,118,
+164,123,253,177,77,7,79,127,251,206,153,181,159,156,132,199,
+206,220,204,143,189,212,221,221,179,101,231,137,147,159,119,159,
+220,125,224,224,103,31,209,115,175,125,182,113,119,247,174,221,
+31,126,251,225,235,159,237,218,184,118,215,241,181,187,214,222,
+254,210,218,111,214,190,116,240,244,227,107,191,249,98,221,237,
+107,183,205,199,65,96,140,110,26,164,231,181,238,77,167,79,
+156,220,118,244,76,119,207,17,24,225,163,211,123,224,241,93,
+240,224,139,71,248,193,110,158,173,167,123,11,62,184,241,72,
+247,137,163,135,62,130,71,119,110,218,254,25,76,177,118,201,
+75,240,159,119,215,126,115,243,218,119,183,192,244,31,220,189,
+123,237,87,223,174,253,106,43,174,101,237,23,187,215,222,113,
+207,183,107,239,129,13,172,89,123,124,237,39,107,39,29,186,
+147,167,255,184,155,167,127,179,251,212,103,176,219,3,95,119,
+227,244,135,78,127,187,110,237,237,240,220,130,208,115,155,215,
+119,227,67,59,15,28,237,62,141,15,46,211,96,222,52,42,
+65,36,254,103,133,24,254,241,194,132,252,247,55,191,113,24,
+25,151,142,24,254,179,75,134,55,117,79,92,124,243,231,221,
+221,221,19,167,253,0,255,237,254,106,221,220,99,243,118,204,
+120,119,211,140,153,175,28,190,119,231,252,135,39,45,126,175,
+251,225,91,103,188,187,249,76,247,201,3,119,116,159,186,173,
+251,249,77,239,206,252,97,195,162,215,102,78,189,109,203,242,
+133,175,127,187,255,161,167,31,154,250,192,203,175,127,188,116,
+230,203,183,173,154,60,249,227,39,63,223,182,247,203,7,94,
+88,114,118,245,214,101,63,60,243,224,150,39,78,44,221,255,
+236,180,239,158,255,97,223,154,103,191,152,254,250,151,47,190,
+191,112,230,109,159,77,186,229,153,25,95,157,153,247,244,157,
+119,221,182,233,145,219,214,31,251,242,150,91,22,220,254,247,
+73,155,182,127,183,253,216,204,217,219,127,88,183,242,238,249,
+27,238,223,255,230,223,103,157,186,103,193,3,239,254,115,223,
+230,29,7,182,29,127,253,232,209,149,107,87,157,60,122,108,
+225,151,235,182,60,249,232,254,247,231,237,95,251,221,246,238,
+227,39,31,59,241,200,154,201,207,190,176,226,133,197,251,238,
+62,124,240,248,137,173,119,174,94,55,255,214,217,179,190,95,
+118,226,251,119,78,188,245,209,252,13,43,191,94,247,213,142,
+93,155,159,59,115,232,203,71,207,174,254,114,231,178,21,61,
+143,190,255,143,158,79,94,222,57,247,203,55,95,255,226,224,
+140,199,159,90,123,108,215,236,103,190,220,191,116,229,225,189,
+159,117,239,63,184,119,211,182,47,122,122,22,77,185,239,204,
+230,29,207,255,227,211,165,243,14,236,251,232,179,135,191,57,
+242,253,195,71,238,60,116,120,246,241,117,155,95,125,106,233,
+186,239,247,62,59,229,200,148,103,190,188,253,236,234,125,203,
+86,236,62,57,101,231,243,211,214,190,255,226,11,243,95,125,
+123,239,246,175,87,220,255,253,142,227,123,119,78,254,124,239,
+3,135,182,125,246,217,166,99,51,182,60,247,226,153,47,23,
+189,186,243,229,249,7,190,153,244,241,193,165,91,239,125,120,
+226,234,3,235,15,127,117,104,253,254,251,238,127,255,205,53,
+147,142,159,154,57,99,255,170,181,175,108,94,54,103,245,153,
+231,102,245,28,59,49,111,198,154,15,30,126,244,206,135,14,
+127,243,192,202,227,155,127,88,243,225,139,167,142,61,178,125,
+210,219,79,29,125,242,200,173,179,119,125,116,215,243,235,247,
+63,254,248,236,19,243,62,127,241,153,153,123,95,157,121,226,
+139,143,87,191,249,242,246,77,59,191,152,249,207,229,95,221,
+243,221,222,231,111,121,240,200,170,29,103,151,63,251,250,15,
+143,221,127,244,238,237,239,188,125,219,51,61,15,238,255,246,
+195,39,15,126,240,250,190,47,222,216,179,185,123,217,154,87,
+14,126,125,244,173,127,46,61,252,222,23,219,102,175,220,123,
+215,35,211,55,204,123,233,203,149,247,108,255,120,206,155,107,
+102,77,58,126,114,211,219,7,30,156,124,104,219,222,185,171,
+159,122,243,187,85,219,159,56,48,255,200,254,215,182,30,61,
+60,251,133,25,91,79,45,220,183,101,199,153,109,71,95,220,
+190,249,235,158,87,78,44,219,54,247,253,239,94,153,185,241,
+209,71,63,93,254,226,220,195,187,14,255,115,201,23,187,159,
+156,247,247,227,79,110,94,183,248,129,111,183,239,255,230,182,
+149,155,38,158,153,126,247,202,29,71,167,188,63,123,207,71,
+123,238,122,126,255,214,35,243,31,189,227,225,39,38,46,123,
+251,185,23,150,189,126,236,169,23,254,185,229,182,3,155,238,
+125,252,232,153,213,111,126,186,227,232,178,19,243,22,61,252,
+221,201,51,171,151,44,60,125,231,202,103,94,223,249,206,193,
+31,190,93,242,210,236,127,44,126,97,205,67,103,63,250,244,
+133,117,139,30,62,121,255,237,247,156,189,121,225,228,195,43,
+79,111,59,186,253,169,53,61,95,108,123,254,249,39,87,61,
+176,117,221,11,235,78,63,181,230,197,175,23,126,55,107,210,
+45,119,77,155,127,248,190,253,239,125,116,242,212,161,245,103,
+110,155,244,208,125,247,159,57,242,240,225,175,159,159,242,249,
+180,45,143,221,118,251,246,69,187,79,28,252,126,245,138,199,
+86,61,183,123,207,214,35,143,77,122,245,254,199,214,238,93,
+115,246,232,91,11,230,188,215,115,236,193,169,203,186,231,221,
+247,218,123,223,245,0,9,156,125,251,189,157,39,191,58,184,
+244,203,135,143,61,242,254,173,251,238,60,250,242,131,239,189,
+247,194,204,181,167,207,62,63,229,237,201,199,95,89,177,255,
+240,137,239,123,186,103,125,114,124,199,236,238,237,143,157,218,
+127,184,103,214,206,169,107,23,127,177,111,226,147,27,246,190,
+185,105,202,212,149,135,167,253,163,231,240,157,219,95,220,62,
+245,190,53,187,159,218,243,213,237,247,108,62,178,250,141,205,
+247,62,254,233,204,3,71,166,173,125,251,135,45,83,31,239,
+153,187,238,216,138,117,235,126,248,242,135,39,38,78,156,120,
+246,203,19,239,174,123,113,207,169,83,207,44,184,127,223,210,
+158,7,94,255,120,249,215,207,62,121,255,148,227,223,236,56,
+57,111,241,23,147,231,109,60,246,233,145,35,183,237,92,49,
+231,232,39,221,251,95,252,104,231,55,223,156,122,117,214,246,
+215,22,238,123,127,239,39,123,86,190,247,200,205,71,190,234,
+158,247,234,148,133,47,124,113,243,198,83,15,30,126,255,133,
+149,111,125,246,230,244,123,86,127,127,203,244,105,27,14,223,
+246,194,243,207,191,120,115,207,189,247,205,62,244,196,146,175,
+214,108,251,110,254,137,93,15,194,195,223,124,119,104,246,131,
+27,247,223,243,221,83,207,61,188,99,242,241,247,214,156,157,
+177,108,250,156,158,29,243,215,76,236,89,178,98,193,3,179,
+238,221,250,228,247,47,79,89,120,246,147,237,15,191,187,118,
+202,150,23,143,173,93,52,107,231,243,179,79,117,31,127,244,
+214,157,111,60,127,226,174,229,211,159,218,63,251,253,239,215,
+78,218,187,233,217,195,223,46,126,188,231,187,251,247,61,186,
+254,200,252,19,147,87,30,121,103,71,207,214,187,15,44,62,
+178,236,179,53,115,95,125,105,246,220,217,179,55,236,253,225,
+185,249,51,39,29,223,177,180,123,222,153,251,102,31,133,13,
+158,158,181,244,236,123,171,14,30,89,62,127,226,234,141,27,
+55,46,232,153,243,195,177,201,71,78,190,178,101,237,59,48,
+239,193,143,79,156,153,59,115,195,151,207,237,57,181,243,173,
+197,139,23,31,127,121,110,207,190,93,171,167,110,63,240,197,
+71,59,222,234,158,177,119,209,162,69,31,205,89,253,196,202,
+47,158,255,252,174,59,230,61,124,252,232,155,211,22,119,207,
+216,185,249,163,57,91,225,219,227,39,111,217,187,234,189,143,
+111,219,121,239,107,75,230,247,172,218,186,96,73,247,254,135,
+167,62,185,97,241,189,11,102,61,58,117,231,189,183,125,57,
+227,206,199,215,159,154,242,201,228,35,91,222,156,180,240,222,
+89,115,55,63,246,213,221,61,119,206,255,118,205,148,251,78,
+30,127,124,221,173,95,79,217,51,119,243,3,19,143,108,121,
+119,222,195,155,63,191,119,254,150,147,143,207,93,63,253,227,
+238,213,119,47,252,242,200,233,61,211,62,123,111,125,247,246,
+213,32,91,166,158,60,251,220,209,238,213,211,239,156,52,125,
+213,246,5,83,206,116,111,216,63,149,190,121,120,250,134,77,
+115,15,207,121,240,169,25,79,60,248,214,148,141,83,246,238,
+188,119,213,171,179,254,177,224,241,89,247,61,122,112,213,198,
+39,55,108,91,244,253,59,15,76,127,96,249,199,59,143,253,
+227,129,205,219,190,57,184,99,253,39,143,222,177,127,234,195,
+155,31,216,185,121,218,172,91,78,205,61,112,223,163,187,214,
+237,95,122,199,148,59,14,110,123,117,222,164,101,223,61,177,
+236,236,115,47,29,157,184,250,232,129,135,102,124,241,236,182,
+13,155,62,89,188,226,225,245,79,191,61,183,231,204,212,141,
+27,241,173,83,115,23,208,91,75,239,184,99,202,235,103,63,
+122,100,255,19,179,118,61,114,232,179,125,159,62,125,224,173,
+219,22,63,248,217,205,199,39,207,250,226,206,71,143,189,180,
+120,247,210,109,155,78,77,121,123,206,220,215,230,221,254,206,
+27,243,87,63,185,229,205,153,79,109,62,114,247,188,99,59,
+111,219,245,245,173,11,239,125,119,213,187,247,79,217,254,206,
+222,57,183,29,154,254,236,211,119,45,90,125,207,138,67,143,
+238,156,252,246,251,139,55,223,249,195,150,157,75,38,239,219,
+129,27,122,115,1,111,232,195,39,183,45,154,241,242,177,57,
+211,167,246,76,253,238,208,11,221,143,172,254,102,203,99,48,
+197,71,48,7,78,241,238,51,43,143,188,184,112,254,162,131,
+167,151,207,123,105,239,99,211,79,17,120,38,79,157,189,123,
+225,99,243,158,253,238,225,93,31,157,158,249,205,61,247,172,
+254,96,211,180,59,223,186,115,222,115,147,158,190,235,213,251,
+63,62,240,208,204,207,31,251,228,214,101,175,61,126,75,15,
+45,123,233,18,94,246,107,135,190,123,238,31,115,254,209,189,
+236,216,166,53,127,127,238,102,241,252,187,103,159,95,49,7,
+177,246,240,230,47,38,238,60,176,108,226,59,27,151,77,33,
+192,79,121,98,193,172,219,119,110,190,245,142,163,11,158,56,
+117,231,163,91,79,220,181,225,189,131,39,1,167,159,35,82,
+191,220,253,224,215,27,95,156,184,125,209,235,143,255,253,230,
+253,91,38,253,125,239,51,139,215,223,63,9,208,187,115,234,
+151,167,111,155,241,236,206,167,22,188,180,247,161,221,95,29,
+159,188,240,200,166,91,122,30,89,126,251,252,121,107,137,174,
+62,5,186,154,253,198,156,215,222,253,244,230,247,223,153,53,
+115,193,55,79,220,117,224,200,162,201,83,167,190,120,223,193,
+157,167,110,159,117,98,197,145,133,75,118,175,157,186,100,197,
+93,83,63,62,244,194,35,183,60,183,246,165,119,190,121,242,
+253,197,83,22,2,224,78,191,115,96,230,134,149,203,182,237,
+126,104,221,173,75,118,205,59,186,100,195,201,189,167,87,189,
+9,191,237,198,31,111,91,255,234,139,143,195,143,183,46,121,
+167,123,98,207,215,75,79,126,56,231,105,196,254,83,147,231,
+188,210,51,119,195,166,165,223,60,246,241,146,123,1,205,103,
+223,184,245,145,15,62,220,253,242,190,57,147,78,44,90,48,
+109,237,91,243,119,220,203,19,108,193,65,96,140,87,97,144,
+79,238,156,247,200,67,143,191,54,251,135,239,142,172,216,119,
+247,148,101,167,142,220,255,238,114,68,242,156,215,62,125,109,
+225,148,121,139,159,126,99,218,174,249,75,62,1,52,191,127,
+236,203,215,14,125,48,111,195,173,219,150,173,218,177,229,221,
+23,238,93,75,187,130,77,209,174,86,28,217,184,112,201,199,
+183,236,63,248,195,203,31,204,152,53,235,190,195,143,30,155,
+182,226,181,217,240,204,226,201,188,243,111,241,33,120,166,123,
+202,254,153,247,205,232,121,106,221,247,63,236,154,126,230,244,
+204,91,183,110,157,179,252,246,89,95,111,91,186,104,193,3,
+79,110,219,253,32,172,235,239,199,30,120,252,153,67,27,15,
+126,186,97,211,146,219,159,89,245,222,29,107,222,58,121,203,
+202,25,211,55,46,94,186,109,223,135,43,102,78,156,241,230,
+156,3,143,189,124,231,158,143,142,222,62,251,158,207,102,127,
+252,246,242,233,47,204,123,238,233,187,246,110,88,244,74,207,
+84,130,195,166,37,15,236,252,104,199,158,201,159,45,159,78,
+191,220,119,203,178,53,219,94,155,210,179,235,157,229,183,207,
+59,190,252,177,167,151,0,2,159,216,185,121,195,100,66,224,
+134,103,231,29,218,120,114,238,205,223,60,116,243,234,187,15,
+28,121,121,210,201,195,119,111,88,241,244,134,229,247,109,255,
+100,199,129,249,55,31,126,98,23,17,198,145,233,187,190,123,
+100,241,221,115,15,175,158,57,241,249,238,101,155,214,236,249,
+251,187,123,110,121,97,246,130,133,179,102,60,240,210,222,131,
+243,239,121,253,239,221,51,222,255,104,231,146,179,255,164,231,
+159,217,213,221,115,255,228,169,171,38,110,255,96,223,89,144,
+7,183,144,60,152,184,250,8,50,45,240,236,90,100,218,245,
+79,31,253,100,202,254,71,191,127,249,137,163,51,191,253,108,
+229,199,211,159,250,126,226,123,207,27,207,29,220,180,122,211,
+115,183,237,191,255,232,178,251,123,94,248,228,246,213,127,71,
+225,1,8,125,4,133,199,182,69,183,28,220,176,245,159,15,
+244,124,180,244,248,215,199,223,88,116,199,145,69,211,96,206,
+237,79,79,155,117,248,241,238,157,203,119,223,55,123,73,207,
+154,87,103,255,48,245,216,15,171,23,239,221,61,115,209,173,
+79,62,187,239,208,11,26,191,46,98,126,61,114,15,208,4,
+144,196,179,203,239,223,182,179,251,232,155,175,237,88,249,202,
+135,219,159,238,217,37,249,115,49,241,231,205,203,22,126,245,
+222,173,47,47,248,238,173,175,166,223,250,201,83,43,62,152,
+59,233,137,211,134,28,217,134,76,254,204,172,35,187,238,62,
+123,235,202,35,107,191,221,255,197,226,175,55,156,94,254,176,
+228,227,85,192,199,175,190,187,96,218,7,183,60,180,255,189,
+229,251,94,157,119,122,249,163,40,34,191,199,73,96,142,135,
+80,8,60,242,218,134,249,39,119,108,250,102,230,178,247,191,
+63,122,118,253,91,95,29,127,99,13,110,14,246,118,23,110,
+238,241,141,111,204,124,225,228,203,91,22,70,229,224,161,245,
+79,223,220,243,72,240,252,131,219,63,120,103,235,250,185,47,
+61,4,56,66,20,125,248,229,253,187,231,131,188,120,4,229,
+69,247,188,221,82,126,47,56,251,220,219,223,207,254,226,238,
+137,19,15,77,63,248,244,225,233,111,237,63,249,195,156,5,
+91,87,77,91,252,253,220,143,239,63,249,232,55,199,102,172,
+124,115,205,233,87,38,173,248,251,99,83,238,187,231,147,135,
+222,123,121,210,225,187,151,60,55,237,205,165,155,30,59,251,
+252,164,71,64,167,152,253,241,234,187,39,46,220,112,230,169,
+151,22,223,189,11,254,126,123,242,140,247,231,124,180,115,207,
+156,163,91,62,156,113,239,106,216,230,123,211,78,124,245,214,
+252,73,79,191,121,239,253,175,1,112,225,139,231,166,61,115,
+100,213,228,169,239,44,236,217,185,103,233,225,213,175,175,56,
+189,111,250,172,175,79,221,123,120,235,212,181,159,205,121,255,
+222,205,47,238,35,206,124,230,181,79,215,223,190,127,213,211,
+75,222,152,54,127,201,150,47,167,125,188,233,171,157,175,207,
+191,251,159,159,220,188,115,243,189,32,119,102,126,202,140,251,
+57,252,124,59,28,120,211,121,248,105,239,240,240,61,183,193,
+240,11,31,152,178,238,197,253,203,118,237,57,244,225,63,222,
+125,253,155,173,91,55,191,58,117,251,177,105,239,226,81,243,
+1,156,26,95,47,221,180,224,174,67,247,60,250,201,27,27,
+247,204,90,113,235,178,41,91,87,109,188,127,214,220,37,19,
+143,156,90,254,250,250,91,63,194,37,47,196,65,97,204,105,
+56,232,206,61,207,238,185,121,217,29,123,94,217,246,234,182,
+175,239,121,99,201,138,199,54,174,223,201,3,61,188,128,7,
+186,125,207,177,73,171,127,184,249,240,173,147,214,62,111,218,
+46,137,235,47,212,236,205,132,147,43,100,237,156,157,47,250,
+137,22,203,119,210,137,54,207,201,36,90,75,249,52,218,221,
+86,214,41,118,53,36,198,21,19,142,159,40,118,21,156,180,
+149,205,118,37,74,190,13,207,184,94,34,227,248,133,172,213,
+149,176,242,153,132,157,113,138,22,190,148,112,91,19,22,206,
+224,227,95,29,86,182,100,195,95,94,34,217,110,23,109,207,
+109,179,243,182,91,242,235,18,158,157,118,189,140,223,144,184,
+182,221,150,31,18,240,95,207,246,11,46,12,88,116,19,158,
+219,233,39,156,124,162,8,79,208,144,245,244,167,147,207,56,
+29,78,166,100,101,19,173,142,157,133,215,58,157,98,59,60,
+103,91,233,118,49,84,34,109,229,19,45,118,194,134,95,108,
+47,209,226,150,120,200,180,155,45,229,242,180,32,248,100,229,
+187,18,184,32,15,118,14,128,33,152,164,46,240,113,154,146,
+159,240,75,133,130,235,21,157,124,155,0,78,206,242,97,11,
+169,33,25,187,104,57,89,19,76,180,134,68,193,179,224,43,
+6,83,30,198,207,0,84,232,9,152,216,47,54,152,134,61,
+110,220,47,2,240,44,88,111,6,22,209,1,112,37,203,19,
+32,102,223,88,180,97,201,29,150,231,0,184,18,150,95,176,
+211,69,2,41,130,64,161,48,140,43,216,197,248,191,102,233,
+231,102,156,222,167,199,243,37,120,21,177,212,226,102,225,175,
+188,109,103,4,10,17,109,184,193,241,255,118,69,106,8,236,
+18,190,46,90,45,89,27,96,208,9,128,179,45,31,135,188,
+218,45,148,10,215,226,247,205,176,145,18,208,140,95,105,25,
+12,11,124,32,227,185,5,128,151,219,153,79,228,236,116,187,
+149,119,252,92,162,195,246,186,18,190,147,115,178,22,97,1,
+31,116,243,54,211,21,160,177,128,179,193,243,249,18,81,7,
+208,158,91,176,243,60,99,198,133,69,227,194,21,229,226,234,
+181,105,210,110,190,232,185,89,63,145,117,38,216,184,246,177,
+240,219,21,142,95,108,78,36,173,9,86,226,250,161,240,72,
+174,197,5,80,220,216,92,135,116,32,158,25,211,238,58,105,
+216,95,178,228,151,2,50,47,2,193,18,5,209,150,44,57,
+188,196,3,188,123,25,64,240,119,72,134,137,102,49,152,85,
+180,174,46,249,240,82,115,162,213,130,93,118,225,38,5,49,
+49,248,112,205,121,224,150,14,216,16,60,173,49,15,77,163,
+109,199,183,179,54,1,22,240,225,100,108,157,251,0,48,69,
+23,32,9,127,194,142,114,110,94,254,88,240,0,189,173,78,
+222,206,8,246,99,30,147,156,127,181,229,192,202,28,192,48,
+32,215,65,114,176,114,54,193,211,65,180,91,137,2,60,128,
+27,52,68,5,176,133,128,129,7,108,153,104,41,21,139,46,
+224,164,197,46,118,218,54,177,104,46,1,96,115,59,113,111,
+176,223,14,71,128,145,119,0,251,111,241,109,38,96,128,162,
+237,1,7,225,238,138,137,150,174,68,206,237,192,183,112,45,
+182,18,71,193,192,137,98,167,11,232,244,139,190,201,64,236,
+134,187,86,10,7,6,165,235,181,1,149,253,141,160,57,146,
+68,69,218,102,218,23,172,31,225,65,207,70,241,102,129,232,
+179,173,34,240,161,69,216,21,98,1,169,89,160,14,192,9,
+107,53,201,158,32,130,18,11,183,216,226,34,213,187,180,15,
+223,45,121,105,129,93,156,28,191,99,144,32,122,124,216,34,
+173,176,33,49,198,205,167,237,66,145,96,197,226,77,188,170,
+237,137,150,151,179,138,158,115,163,192,203,159,16,175,136,147,
+6,125,7,62,172,216,38,16,231,128,104,93,96,126,164,19,
+43,13,16,240,9,45,200,75,218,202,120,62,150,109,192,128,
+8,116,124,12,101,136,13,252,130,235,134,191,47,135,191,133,
+148,70,121,108,193,108,32,88,96,19,62,67,196,201,23,237,
+54,224,16,9,235,228,223,64,204,39,72,150,212,241,12,82,
+232,10,153,28,188,45,165,115,116,16,32,205,78,59,155,173,
+71,234,182,178,32,117,153,93,178,93,36,179,197,30,120,92,
+53,44,108,178,13,137,30,62,194,178,199,101,128,200,51,40,
+32,224,144,240,104,51,230,178,139,66,184,192,255,17,2,29,
+34,215,118,59,91,104,45,101,81,14,149,147,137,76,147,248,
+141,92,1,114,144,218,158,98,80,33,32,96,33,132,168,209,
+138,177,4,118,234,5,116,175,118,125,29,216,240,124,189,49,
+22,138,72,207,202,251,89,171,72,115,251,204,17,98,110,177,
+41,68,92,206,205,32,179,143,203,11,168,103,224,65,219,203,
+57,121,55,235,182,117,153,184,16,199,170,78,167,130,194,16,
+193,120,130,193,204,32,44,5,66,154,213,113,128,111,9,74,
+78,186,165,98,161,84,172,83,131,106,175,250,40,80,186,88,
+220,210,143,205,49,167,159,24,39,224,39,191,232,149,210,197,
+18,13,195,231,55,224,207,67,180,195,58,108,56,5,16,161,
+82,248,234,107,167,23,61,124,49,9,228,210,238,150,218,218,
+1,195,40,180,64,254,100,220,156,194,43,0,51,103,77,96,
+28,230,172,66,1,225,6,226,19,14,147,34,81,151,215,226,
+0,176,189,174,186,134,196,111,145,49,152,47,73,179,208,200,
+173,221,2,209,13,255,170,199,225,136,205,181,216,132,93,73,
+194,36,131,165,92,211,214,218,144,184,170,21,143,1,207,183,
+25,37,57,80,13,132,8,135,193,125,98,102,60,15,113,203,
+55,38,10,182,39,102,14,232,213,202,250,46,67,216,134,87,
+139,174,36,130,122,0,89,218,42,249,182,134,234,128,165,0,
+56,246,95,17,222,226,204,213,225,39,30,106,72,252,222,237,
+180,225,128,174,7,224,0,163,185,196,159,120,96,58,121,18,
+88,60,76,193,5,130,3,250,23,128,129,77,119,182,59,8,
+33,70,26,156,243,25,196,88,32,231,29,16,112,244,250,72,
+131,8,156,166,139,26,71,93,5,31,199,209,86,81,154,2,
+73,209,49,139,75,31,25,1,143,192,124,234,39,130,97,83,
+63,33,136,17,80,136,87,114,48,29,160,17,217,15,143,41,
+39,131,36,0,31,120,35,40,101,64,146,32,159,3,240,64,
+166,91,64,77,180,127,57,181,160,72,207,54,165,52,169,106,
+120,76,182,216,128,122,208,200,60,185,87,183,5,119,200,34,
+5,8,11,241,109,5,144,135,225,16,78,13,161,237,142,225,
+223,213,126,243,2,215,73,210,79,96,225,64,77,98,144,230,
+186,145,44,183,1,213,190,65,37,33,17,33,149,113,84,28,
+113,143,188,175,100,222,133,179,23,244,4,86,173,148,228,2,
+242,14,173,233,143,165,108,209,41,100,3,9,225,183,131,238,
+73,167,134,216,59,173,81,172,166,204,228,49,234,170,37,216,
+235,70,113,62,183,252,5,207,74,214,191,229,107,106,10,147,
+36,19,57,185,166,78,52,39,146,118,67,91,3,42,40,69,
+59,7,92,97,145,156,0,153,148,33,38,203,39,198,216,89,
+223,41,241,97,255,59,171,221,179,243,237,112,192,0,31,194,
+201,110,251,117,21,144,16,76,36,248,96,100,185,13,58,121,
+32,173,28,235,106,109,22,18,21,10,123,15,4,140,26,66,
+223,131,128,101,192,185,234,112,112,242,168,250,167,113,198,196,
+56,208,42,199,218,36,147,129,208,198,141,189,204,152,17,111,
+154,180,147,204,15,233,164,240,23,156,42,190,243,55,91,9,
+117,212,149,130,41,117,30,2,29,47,109,161,38,67,20,36,
+133,69,151,91,98,137,134,202,139,212,171,81,159,64,38,107,
+101,219,104,44,47,167,153,22,239,151,210,168,12,211,150,83,
+67,152,118,133,140,50,133,60,188,120,165,91,180,71,54,203,
+165,165,75,96,224,193,224,215,165,126,158,250,57,90,2,62,
+233,182,100,214,201,153,149,25,73,3,167,134,8,202,103,170,
+76,10,219,146,246,110,210,122,148,212,5,42,248,96,171,67,
+96,120,132,179,132,213,57,161,19,172,46,105,219,194,206,242,
+121,70,52,16,13,161,133,168,188,213,102,34,19,195,181,150,
+232,19,112,58,26,118,64,116,82,169,15,212,44,26,194,88,
+85,135,3,26,160,80,4,233,17,87,200,161,86,43,109,11,
+118,104,72,196,40,182,193,169,120,249,117,227,70,234,150,128,
+50,23,234,137,214,179,46,156,82,100,47,153,192,167,1,88,
+105,19,212,204,99,192,70,75,190,228,236,156,139,20,0,107,
+154,96,119,181,184,4,19,53,49,29,159,98,139,164,220,226,
+91,89,59,53,68,173,37,145,4,208,161,160,135,211,204,245,
+234,104,57,68,21,193,19,168,148,100,141,51,15,5,115,240,
+187,88,154,48,172,80,117,64,136,225,210,10,158,219,230,89,
+57,228,182,180,80,135,3,192,9,5,81,136,102,53,26,41,
+250,180,24,56,36,73,106,248,5,80,157,132,30,65,192,168,
+135,3,25,145,142,228,34,15,178,68,82,202,98,180,83,240,
+88,192,147,31,20,182,98,186,189,211,245,38,212,145,9,199,
+150,12,25,90,242,100,211,252,9,154,91,34,13,43,243,99,
+244,157,0,165,58,86,64,20,216,104,94,48,98,73,129,69,
+127,0,106,36,74,69,214,97,193,42,9,204,136,128,18,39,
+2,144,72,96,59,37,25,169,56,140,196,170,78,62,1,189,
+212,41,6,144,112,64,93,2,213,109,102,31,233,156,8,214,
+29,188,171,209,16,112,249,191,183,219,249,223,90,96,87,226,
+234,90,172,244,132,242,130,128,38,4,160,2,61,1,10,120,
+12,48,188,140,9,3,131,24,54,0,27,66,53,154,160,212,
+156,72,253,138,79,118,250,72,251,17,158,155,212,207,47,67,
+234,160,39,130,247,133,94,205,15,140,37,160,210,19,4,95,
+120,160,142,20,26,164,5,56,238,50,168,51,43,233,97,240,
+1,140,241,7,27,196,31,235,238,36,177,186,232,213,28,90,
+4,237,110,145,22,42,213,126,80,89,237,14,84,46,52,120,
+97,236,8,156,4,8,41,146,184,232,14,105,179,163,51,5,
+175,176,92,12,246,34,103,17,111,130,56,113,61,148,67,217,
+174,16,180,71,39,132,126,132,118,186,148,121,129,198,67,194,
+95,186,233,180,241,1,47,160,126,248,236,243,106,38,237,139,
+77,203,188,27,156,5,10,71,72,114,188,95,11,4,216,184,
+86,218,20,64,36,159,186,160,72,236,140,114,94,120,197,52,
+70,22,195,243,105,158,176,90,145,216,208,191,195,154,83,6,
+22,237,182,145,213,71,191,100,93,62,222,149,11,144,36,41,
+216,149,241,103,150,239,130,18,161,47,44,144,19,227,2,117,
+148,84,70,41,6,210,174,75,26,177,212,154,1,209,191,167,
+144,29,246,144,10,218,30,77,188,35,209,207,108,146,69,57,
+38,118,19,172,15,78,135,52,156,178,164,9,186,76,72,28,
+2,36,101,197,168,144,65,75,180,96,145,33,135,103,46,157,
+39,194,155,38,53,117,30,89,163,37,216,157,96,217,46,218,
+51,219,165,160,255,128,36,35,199,151,37,240,148,69,67,130,
+157,53,146,172,25,196,117,33,95,138,224,47,154,212,131,229,
+131,10,212,98,3,20,65,94,19,38,248,168,33,38,181,211,
+158,173,185,34,11,104,150,93,1,58,176,73,131,104,133,186,
+25,148,192,69,56,16,137,202,92,143,77,104,166,255,98,87,
+1,215,153,183,59,65,183,45,210,20,140,17,152,191,195,97,
+51,197,183,109,97,115,75,229,21,199,234,116,178,89,246,107,
+170,119,19,109,110,160,241,128,113,100,216,65,64,148,69,54,
+155,232,68,0,200,145,87,22,149,118,225,101,10,156,94,160,
+218,144,187,4,40,139,71,246,197,198,75,52,52,210,18,91,
+118,194,5,170,228,16,112,136,11,124,48,90,185,124,165,63,
+135,167,23,178,30,142,203,52,75,24,80,26,3,83,182,213,
+241,64,65,19,91,81,196,79,186,156,165,126,168,23,86,86,
+30,149,18,50,98,136,6,217,53,143,218,8,18,63,1,72,
+136,83,114,180,182,216,109,78,158,184,11,221,189,249,76,72,
+84,144,56,18,155,64,175,36,64,84,184,221,13,218,147,110,
+85,220,18,60,39,220,64,9,176,126,225,128,71,151,8,210,
+76,87,28,10,234,19,165,60,145,164,142,65,166,134,122,169,
+18,146,78,36,78,100,6,16,200,33,129,155,102,114,118,104,
+104,225,51,28,5,27,60,228,118,160,196,15,60,138,240,99,
+176,8,87,234,28,176,45,124,27,237,116,105,255,227,25,34,
+157,223,129,22,0,43,176,89,110,200,107,7,100,1,114,51,
+19,189,104,139,7,178,176,216,173,98,9,189,72,226,15,41,
+13,72,170,232,230,208,175,198,246,142,244,158,232,183,25,130,
+220,129,246,92,148,149,236,127,146,198,146,230,9,1,179,25,
+20,122,194,96,43,155,229,202,223,130,138,2,217,74,120,182,
+212,105,214,59,113,153,67,58,191,237,139,187,20,253,204,116,
+240,188,243,9,180,104,50,3,254,220,18,186,184,164,79,216,
+17,166,2,122,81,99,76,246,95,208,137,222,212,208,60,228,
+38,86,32,12,0,103,224,168,200,216,68,143,237,48,45,172,
+133,14,32,201,177,184,20,98,225,54,23,81,104,181,0,18,
+155,201,19,143,72,7,138,110,214,233,2,49,26,157,122,24,
+77,157,103,31,12,194,146,14,26,24,0,232,133,9,132,15,
+47,36,83,252,54,245,243,166,230,0,207,40,73,217,155,65,
+154,187,90,85,146,69,30,31,225,240,249,167,141,245,137,159,
+54,37,26,26,26,18,63,77,210,48,67,154,154,89,203,13,
+113,40,60,93,199,68,73,234,33,47,36,67,104,3,236,139,
+173,168,105,67,60,120,85,135,24,170,203,182,80,68,102,74,
+202,240,206,0,58,179,110,33,39,220,94,100,54,1,118,65,
+214,223,8,38,176,131,223,3,89,154,54,44,9,57,64,3,
+242,70,154,100,2,249,12,129,88,89,169,245,92,128,1,170,
+34,163,145,248,60,219,135,23,89,16,57,12,55,221,33,199,
+234,63,62,216,10,64,146,126,101,221,211,143,178,48,53,164,
+88,202,7,112,11,132,162,186,245,145,154,38,185,174,98,181,
+63,129,45,113,56,235,34,67,234,43,21,29,178,56,47,168,
+67,54,129,14,39,82,174,57,113,91,132,206,124,117,136,217,
+55,90,128,151,212,5,18,37,169,11,216,87,33,41,33,227,
+218,62,41,50,36,44,200,231,108,195,166,72,141,32,235,215,
+208,33,116,245,217,179,73,132,9,178,36,15,170,0,70,115,
+112,174,171,11,50,164,127,58,64,181,31,237,92,1,120,211,
+249,155,164,129,86,92,170,210,145,165,135,74,110,151,188,10,
+249,64,185,227,29,146,4,11,144,128,38,16,42,170,89,101,
+186,138,173,242,101,169,16,245,226,147,111,135,111,42,127,135,
+92,194,118,55,160,132,79,33,186,181,147,11,80,211,235,124,
+135,194,69,210,162,239,102,59,108,185,99,230,70,220,129,60,
+138,125,224,21,160,201,156,85,69,216,92,67,192,149,128,97,
+149,37,4,213,224,40,151,223,251,210,225,34,206,184,0,203,
+36,112,144,227,155,19,67,9,21,173,100,64,232,142,138,10,
+226,231,79,242,138,139,239,106,35,106,160,130,116,193,183,75,
+25,55,53,132,5,31,81,62,250,173,132,131,0,81,133,55,
+95,249,204,40,225,91,195,139,40,161,94,72,104,1,131,181,
+75,49,34,129,22,22,186,116,120,89,66,53,178,58,44,39,
+75,119,20,38,67,150,147,65,226,210,128,21,17,36,110,73,
+219,196,176,58,129,11,51,152,169,64,232,47,193,248,1,208,
+165,48,21,96,5,19,26,88,201,199,235,47,56,224,109,244,
+177,36,141,49,144,92,44,241,174,15,182,120,22,213,179,224,
+230,222,176,15,53,123,144,141,162,58,113,234,7,1,4,190,
+124,9,158,253,45,173,100,52,46,99,156,36,3,117,229,66,
+95,243,19,218,143,66,210,73,255,66,26,67,18,164,115,94,
+92,113,136,193,3,5,152,135,68,152,193,54,58,44,113,99,
+8,236,164,76,4,144,189,32,182,245,27,114,114,123,226,253,
+81,216,93,32,244,20,198,39,222,81,117,216,121,214,181,200,
+9,98,147,70,80,47,189,116,100,24,200,11,118,121,123,35,
+129,52,90,72,24,92,153,34,11,169,8,49,185,182,194,121,
+76,196,10,19,89,126,23,254,43,113,46,76,214,96,79,82,
+134,130,114,231,9,233,229,107,76,37,228,20,95,144,193,111,
+194,128,160,123,79,95,220,47,10,75,61,73,17,25,185,156,
+83,212,168,8,102,192,211,20,166,97,167,61,209,47,76,80,
+2,133,74,186,63,144,183,108,121,8,11,177,142,70,164,25,
+213,32,104,34,0,12,26,23,37,15,159,2,74,5,212,100,
+56,29,134,15,110,71,41,233,112,110,211,226,67,200,35,31,
+134,9,81,133,79,186,163,43,217,113,23,212,99,0,104,109,
+174,231,252,13,175,39,216,124,244,75,32,234,188,174,168,131,
+168,213,85,7,43,173,128,31,36,223,110,112,38,171,67,88,
+218,255,202,76,228,123,104,77,244,113,56,6,249,42,164,35,
+47,28,209,192,70,130,231,216,173,9,204,209,241,156,2,95,
+121,160,204,103,213,190,221,245,232,62,45,227,166,75,134,127,
+182,104,6,227,200,117,161,209,70,122,156,6,141,196,127,254,
+231,176,225,195,47,25,121,201,197,23,15,31,210,148,144,38,
+167,131,90,175,184,173,23,151,244,249,86,167,13,204,27,58,
+48,71,142,164,39,19,234,143,107,64,145,41,170,79,233,44,
+234,75,242,182,37,245,51,113,139,194,23,111,106,72,100,21,
+216,7,41,45,26,20,5,238,37,10,29,219,87,227,142,243,
+49,168,67,125,68,196,162,203,136,57,5,100,16,138,89,166,
+70,118,154,136,179,130,110,41,13,195,2,125,159,218,168,66,
+100,245,125,92,237,72,215,71,30,111,23,81,252,140,233,82,
+223,80,168,133,37,253,191,137,118,219,105,107,47,38,146,109,
+89,183,5,195,27,12,103,37,171,192,194,132,65,206,83,163,
+92,30,25,23,44,89,224,31,95,233,146,209,41,40,226,68,
+6,118,176,172,167,248,34,57,148,26,125,100,10,254,55,112,
+124,193,7,53,93,42,9,34,46,85,135,134,79,113,164,92,
+197,127,68,22,1,103,99,87,115,112,26,98,208,134,131,66,
+146,52,121,208,117,56,192,6,121,131,185,89,26,194,193,6,
+83,215,95,233,166,154,53,1,30,252,144,113,81,63,77,53,
+107,65,110,122,56,151,126,164,171,59,29,3,69,26,222,99,
+38,144,123,0,169,138,56,96,168,5,65,69,250,153,34,101,
+76,128,110,48,170,98,134,4,222,5,233,225,107,194,183,195,
+1,145,28,186,102,99,121,141,40,201,154,27,70,72,4,231,
+95,12,32,216,225,21,117,21,68,8,92,127,191,202,62,181,
+3,55,178,205,216,67,91,254,24,94,12,249,44,76,133,67,
+87,225,18,73,201,238,192,111,252,88,64,5,177,10,192,64,
+76,196,122,143,26,42,116,120,200,175,25,192,196,249,60,141,
+113,242,137,25,232,144,164,5,72,115,51,150,210,46,99,193,
+19,17,49,73,11,157,72,248,38,250,3,133,192,100,52,212,
+197,89,123,118,104,28,38,143,177,37,225,20,168,68,32,100,
+61,149,148,247,64,91,92,220,235,85,232,67,127,37,74,33,
+163,37,45,135,176,21,208,120,57,157,36,194,156,21,214,196,
+130,57,204,155,101,86,4,72,236,251,170,234,89,47,10,116,
+42,65,7,110,94,63,69,226,231,40,183,104,92,176,241,66,
+116,209,140,220,107,108,14,195,43,143,217,162,50,39,188,240,
+179,227,252,200,235,85,160,168,158,47,183,158,209,254,4,122,
+38,86,40,195,59,185,66,145,53,80,210,33,65,107,240,114,
+193,218,172,172,14,176,200,72,213,48,172,94,136,46,238,143,
+230,46,3,154,247,59,69,52,81,82,132,51,90,244,117,72,
+84,228,241,152,4,155,198,19,178,164,78,91,231,31,123,5,
+192,63,86,6,31,223,97,84,58,208,24,157,237,225,231,240,
+229,107,61,43,61,33,150,16,242,78,142,162,208,240,129,64,
+77,77,203,80,138,76,177,221,15,141,245,39,88,220,229,158,
+147,169,180,20,241,126,11,24,190,19,194,239,255,222,245,254,
+86,237,125,2,116,220,203,213,94,164,91,109,140,121,7,115,
+85,46,52,145,250,121,66,78,170,233,66,240,105,140,155,117,
+3,80,161,142,67,225,242,120,144,226,22,180,223,46,3,61,
+228,26,183,211,124,1,175,69,219,60,178,103,233,105,54,85,
+132,198,18,172,252,170,76,166,182,87,221,76,198,124,19,94,
+251,29,69,167,168,111,56,88,197,215,46,32,249,130,219,41,
+150,232,48,97,133,169,19,189,62,242,234,18,35,6,19,169,
+11,96,224,212,5,250,200,87,130,141,106,234,151,28,99,150,
+71,159,56,40,66,242,198,179,83,56,148,212,60,54,13,45,
+70,84,33,42,193,93,22,190,31,236,225,74,119,12,121,57,
+194,199,99,59,240,77,150,84,204,192,47,28,66,246,31,241,
+214,27,216,194,14,141,96,90,142,200,215,42,68,64,70,199,
+224,85,17,254,224,99,248,55,222,186,227,221,36,44,53,8,
+124,143,40,141,48,232,239,157,140,61,190,165,18,125,177,78,
+6,232,243,216,47,76,110,121,229,182,9,132,10,186,110,199,
+147,95,69,125,103,231,217,2,228,123,123,52,38,164,127,151,
+195,112,139,129,251,160,232,104,168,225,176,166,127,55,89,145,
+240,37,149,118,131,91,197,53,190,37,72,5,173,111,191,232,
+145,107,129,128,144,250,73,83,226,162,68,83,35,254,31,252,
+155,250,73,243,127,253,87,21,179,110,180,8,213,64,91,12,
+140,50,49,93,112,161,145,179,242,86,27,93,170,68,13,60,
+10,4,28,151,111,117,35,98,80,106,140,25,250,85,27,142,
+173,214,22,218,133,10,164,83,54,168,166,230,101,50,52,122,
+64,23,25,229,183,224,183,98,226,34,57,116,72,183,136,104,
+140,49,192,138,197,200,18,141,24,80,21,18,5,52,85,53,
+232,214,176,185,198,101,34,35,107,129,204,228,166,102,190,21,
+123,229,15,20,210,236,115,32,181,103,101,249,71,99,92,140,
+51,22,31,47,68,80,170,193,141,87,232,18,84,143,155,146,
+8,76,54,95,127,225,80,126,6,254,74,212,5,139,34,55,
+23,192,190,89,91,249,120,99,31,74,94,68,3,179,217,252,
+52,54,100,232,167,161,32,46,29,157,24,144,97,204,80,42,
+104,78,76,133,83,116,159,163,63,203,115,208,233,130,17,37,
+137,164,11,167,113,62,176,220,198,255,219,21,226,74,193,128,
+24,76,16,131,12,125,32,109,35,73,21,92,43,227,184,147,
+141,117,205,198,130,153,55,195,4,200,219,149,113,116,228,189,
+22,148,200,167,107,18,117,118,45,156,176,158,148,120,142,189,
+22,95,197,204,50,186,24,63,79,224,81,53,160,174,15,128,
+210,190,148,171,180,216,152,208,85,5,75,35,252,205,0,39,
+143,88,141,119,146,124,195,17,68,149,235,113,171,234,189,223,
+193,180,82,212,21,219,53,210,102,15,55,186,207,117,213,196,
+240,149,233,196,198,243,150,25,86,67,126,245,81,121,188,128,
+32,66,18,121,116,116,207,82,221,12,156,32,35,5,208,227,
+197,27,175,59,109,226,133,21,61,56,163,202,13,31,68,179,
+196,142,47,207,253,10,131,95,69,119,216,81,197,20,254,106,
+181,61,114,229,7,190,118,61,120,70,92,126,243,20,142,31,
+66,225,120,219,35,239,159,29,210,85,125,249,189,12,156,129,
+147,20,105,77,143,189,77,154,135,152,93,76,55,152,60,128,
+243,155,164,155,71,150,33,91,154,66,25,250,192,111,240,50,
+142,27,153,40,194,106,161,169,106,103,185,170,171,142,50,94,
+106,8,139,49,188,159,230,92,135,230,186,68,148,17,117,193,
+44,99,121,13,217,41,85,22,93,30,27,196,142,121,102,118,
+54,171,51,116,120,32,73,25,226,141,161,244,130,28,89,95,
+129,177,81,118,86,170,4,76,157,106,210,37,31,116,183,80,
+114,169,36,213,208,98,174,117,139,86,54,198,87,89,196,239,
+53,31,101,216,189,169,97,143,153,92,51,116,73,95,227,233,
+48,171,200,116,56,198,248,24,139,110,193,148,120,24,9,22,
+18,164,33,32,5,130,143,60,59,20,59,102,103,212,161,123,
+101,9,32,232,180,170,239,1,247,62,6,87,216,55,138,152,
+16,212,6,163,115,94,163,105,199,114,66,220,80,153,217,200,
+115,213,199,169,116,217,43,167,186,218,5,165,34,105,2,32,
+89,87,175,47,47,89,87,87,93,149,28,75,185,61,226,14,
+6,116,73,24,223,115,108,221,188,55,168,202,56,89,136,172,
+130,253,70,146,137,245,55,255,228,120,104,100,247,110,128,152,
+24,116,243,180,171,124,206,25,166,219,24,188,202,48,180,51,
+113,185,17,4,61,214,139,179,37,205,74,70,179,220,48,106,
+25,106,43,237,160,186,7,150,187,79,31,253,184,44,47,33,
+241,114,14,88,244,165,156,118,149,140,153,4,250,54,34,59,
+96,118,160,12,68,25,114,28,151,145,21,213,156,175,242,156,
+54,39,175,225,206,28,81,27,43,102,189,194,143,162,36,129,
+142,61,19,99,145,209,170,175,76,87,36,205,69,25,74,163,
+224,201,159,54,170,80,202,50,26,188,220,105,220,184,169,11,
+220,108,6,12,97,229,234,212,167,40,187,75,165,61,69,198,
+83,227,72,185,104,40,134,137,164,169,163,144,133,128,199,134,
+200,125,11,233,103,249,14,186,128,53,167,50,140,133,42,211,
+177,151,11,198,206,118,201,212,183,102,49,108,224,76,128,83,
+61,78,62,177,195,172,58,194,224,184,140,179,225,52,143,42,
+102,206,227,56,134,186,17,186,125,99,247,185,254,178,10,121,
+52,223,139,248,14,217,81,96,158,145,186,55,98,124,167,85,
+184,174,16,24,242,55,114,188,54,190,162,157,44,50,0,32,
+184,35,11,143,49,214,237,204,215,58,74,30,3,19,141,1,
+92,109,175,62,57,245,213,107,129,209,47,137,28,22,128,39,
+159,41,142,198,88,233,246,224,43,33,143,132,94,148,23,169,
+59,137,180,241,208,184,60,208,135,3,207,216,230,203,142,250,
+222,15,131,77,5,121,133,199,172,122,56,176,155,7,143,5,
+45,219,164,130,111,1,40,156,125,44,213,36,115,112,239,170,
+18,102,66,23,93,227,229,132,1,120,218,237,52,72,90,25,
+235,136,17,99,42,93,90,141,146,52,36,56,155,137,218,146,
+146,117,137,95,39,26,53,147,49,228,18,226,113,124,208,171,
+74,121,249,119,112,229,201,215,184,42,5,60,118,197,118,166,
+220,130,131,113,28,95,45,216,164,135,152,77,51,77,232,241,
+82,126,228,33,60,167,76,135,156,96,32,14,44,102,36,146,
+110,44,24,81,61,247,7,39,155,13,189,42,185,79,11,16,
+181,58,81,107,197,20,188,40,239,142,193,92,174,240,24,105,
+250,210,55,181,74,237,14,79,131,90,248,77,19,102,65,228,
+178,110,162,198,98,153,7,66,4,167,126,101,160,248,242,8,
+116,148,126,40,86,20,248,59,235,65,217,111,18,62,68,253,
+78,232,114,247,183,120,183,29,130,175,6,34,33,215,216,47,
+18,21,88,151,187,151,105,87,98,229,222,38,133,49,230,101,
+185,129,241,233,88,11,84,6,156,73,193,30,108,71,150,109,
+9,93,88,3,199,104,214,74,58,4,157,232,45,55,6,50,
+185,34,184,80,27,92,217,249,106,1,177,211,5,164,130,161,
+180,94,205,179,73,220,231,149,34,149,201,100,109,109,147,132,
+59,99,134,241,52,216,56,120,163,194,248,152,70,44,116,50,
+43,135,66,33,38,118,61,224,85,145,95,28,51,69,213,141,
+212,50,145,6,206,240,76,40,185,104,204,178,116,43,34,152,
+232,33,116,128,75,60,132,22,123,173,6,13,91,157,82,21,
+94,67,23,77,25,183,12,46,20,13,101,203,201,235,231,155,
+208,5,141,17,202,73,165,16,221,215,50,172,60,168,134,135,
+10,247,150,59,183,244,92,189,24,59,166,152,249,109,96,10,
+136,32,112,14,41,8,167,1,105,130,234,143,110,134,60,177,
+97,81,149,163,239,5,3,168,43,68,97,209,178,0,214,205,
+232,241,69,203,43,26,193,79,24,85,167,80,26,132,251,104,
+81,118,58,73,224,171,101,244,84,62,227,217,3,73,101,70,
+130,83,150,211,30,213,27,99,93,99,5,49,33,157,218,237,
+81,234,2,124,24,244,105,25,242,166,13,19,210,248,170,13,
+196,143,87,26,138,131,68,122,57,160,80,234,43,141,75,17,
+40,189,29,150,84,237,248,81,67,17,38,213,6,228,199,227,
+135,10,105,191,213,134,226,199,227,135,146,193,28,181,143,166,
+222,136,31,144,21,146,209,89,221,149,196,90,17,27,1,148,
+242,107,218,250,163,211,88,109,135,195,79,131,85,96,112,141,
+161,198,40,162,100,171,2,204,9,149,110,71,97,100,190,22,
+138,135,182,80,16,176,83,93,109,189,210,45,6,44,41,211,
+101,99,4,1,70,221,94,97,183,178,195,36,16,120,240,141,
+184,176,36,63,141,126,170,153,91,149,239,143,165,204,158,184,
+1,50,244,75,13,195,68,20,40,138,47,70,69,196,150,169,
+43,161,20,23,145,163,234,27,195,196,232,115,218,80,250,48,
+66,67,172,160,217,225,120,49,10,105,104,101,17,173,52,118,
+93,68,14,186,69,90,97,131,226,148,136,83,87,113,168,235,
+10,104,228,196,140,197,134,113,9,127,86,193,33,198,155,76,
+153,250,155,90,184,33,157,192,108,65,233,84,99,66,35,34,
+187,141,169,41,36,214,146,126,188,24,23,67,176,136,242,131,
+88,244,59,73,111,97,141,106,78,237,200,142,144,142,70,87,
+70,144,136,125,213,75,102,136,129,147,114,217,36,236,134,138,
+132,120,248,3,87,94,103,76,164,159,151,161,186,29,24,209,
+134,89,117,236,71,214,132,139,188,246,136,33,246,162,151,245,
+227,151,13,58,83,40,31,88,241,47,223,250,170,242,50,156,
+195,145,81,121,147,134,88,240,101,104,248,88,42,36,24,196,
+133,107,1,216,145,236,220,202,161,210,186,6,114,209,168,63,
+200,222,2,191,73,54,54,52,54,12,187,232,162,186,68,135,
+235,100,154,101,203,129,63,203,191,126,211,40,98,170,229,47,
+201,58,234,66,48,76,216,124,134,215,64,68,83,147,187,62,
+43,131,127,131,248,105,33,194,29,79,41,44,162,252,92,63,
+22,23,138,117,141,174,18,31,168,16,155,27,14,177,19,201,
+12,194,197,93,175,123,127,124,17,119,103,171,116,19,218,96,
+120,245,218,170,229,106,90,92,55,171,214,76,157,52,244,45,
+136,104,114,227,247,100,157,122,130,242,59,139,10,232,166,133,
+25,248,154,141,112,112,86,160,248,132,162,245,141,192,172,164,
+161,128,74,212,181,24,236,205,67,110,2,90,197,0,80,170,
+119,96,201,77,6,163,144,106,167,41,114,84,73,161,213,202,
+250,226,13,57,175,131,230,166,151,195,106,2,72,6,50,176,
+189,255,112,17,250,89,159,32,99,32,46,12,25,153,72,82,
+35,108,96,36,138,177,15,178,79,202,131,91,7,146,176,196,
+139,102,137,213,190,209,185,10,181,87,36,222,28,125,29,4,
+76,204,219,195,19,233,224,181,128,49,100,200,133,140,72,174,
+139,68,235,115,146,135,150,58,205,233,221,170,48,9,38,144,
+122,232,204,144,133,15,139,157,192,86,212,71,5,107,185,202,
+242,61,50,119,84,72,49,5,116,94,209,133,99,120,129,67,
+110,210,210,4,176,202,167,115,163,157,245,207,27,200,28,245,
+109,125,98,32,32,173,109,78,191,65,13,242,209,37,48,125,
+195,164,51,210,37,40,165,18,147,105,251,2,98,71,64,88,
+132,99,104,69,24,123,131,15,34,111,188,8,36,198,32,37,
+81,172,52,120,186,58,227,107,208,139,242,253,229,97,188,85,
+97,252,107,132,1,105,90,193,26,21,151,103,242,26,40,174,
+143,171,255,143,208,226,155,107,120,89,35,58,254,169,218,142,
+203,37,184,4,16,72,210,13,2,238,139,146,205,169,114,149,
+81,57,213,45,80,58,24,57,254,130,215,40,243,113,40,44,
+135,210,74,201,179,232,52,216,13,152,110,134,143,51,200,184,
+122,91,86,212,42,162,44,125,166,65,12,91,238,27,5,70,
+49,132,65,183,156,149,174,237,146,221,119,133,0,103,230,85,
+187,72,176,85,233,60,231,136,30,207,9,74,17,41,130,34,
+181,59,52,66,165,168,244,84,228,92,246,212,16,85,113,39,
+160,98,172,250,36,106,59,32,143,214,27,162,36,120,108,192,
+176,83,158,127,202,30,118,55,24,105,93,55,104,21,132,37,
+92,82,63,211,161,31,167,220,197,200,99,93,149,48,224,223,
+18,124,155,250,213,159,241,72,87,114,25,19,42,131,225,131,
+92,77,85,34,58,170,101,137,80,21,63,164,81,166,46,176,
+164,139,36,200,201,65,151,1,249,196,147,152,203,93,199,162,
+62,6,240,45,33,109,67,37,148,169,124,16,98,64,67,247,
+106,199,184,11,167,200,163,93,136,188,106,96,6,158,29,114,
+83,115,234,66,100,199,1,194,195,149,110,69,53,27,67,157,
+99,242,199,162,119,29,193,40,73,218,78,93,179,164,198,94,
+109,163,15,218,100,116,253,53,30,44,202,73,16,155,232,99,
+38,225,213,168,81,70,113,28,99,148,200,91,106,73,125,3,
+132,201,32,135,109,160,25,234,50,14,73,31,170,18,164,99,
+235,6,105,236,148,204,227,69,2,21,197,225,84,255,152,194,
+32,250,125,99,172,224,10,243,143,8,140,55,11,192,5,172,
+163,214,54,184,220,19,3,117,5,183,177,188,36,63,148,195,
+27,225,29,53,198,96,179,78,100,241,253,228,156,152,180,206,
+26,25,199,132,16,150,61,32,108,87,48,187,6,232,4,26,
+20,126,17,21,65,20,179,68,188,19,181,147,191,167,103,20,
+14,36,11,244,89,242,14,28,249,196,36,43,214,234,229,208,
+207,84,191,10,253,148,243,75,245,154,128,140,252,202,129,38,
+162,241,152,225,195,109,56,52,184,96,193,10,78,22,45,136,
+146,246,180,43,89,120,64,139,136,34,143,173,47,139,100,136,
+160,98,149,87,218,91,18,76,52,83,141,92,190,10,167,212,
+41,118,4,213,70,100,253,161,177,56,32,247,149,206,202,39,
+197,214,72,103,225,1,18,205,178,234,139,109,238,180,175,52,
+21,155,252,30,61,89,70,139,162,44,225,52,211,80,177,8,
+117,214,234,133,84,185,112,142,150,16,223,151,195,166,207,60,
+19,151,115,127,174,246,199,121,248,131,184,59,61,109,253,156,
+31,42,161,132,251,6,42,180,155,16,245,194,176,56,153,180,
+123,184,112,113,156,241,99,222,180,98,158,168,86,129,73,84,
+194,55,53,187,224,38,197,40,237,140,130,133,110,135,44,138,
+42,236,192,247,176,214,39,93,226,105,253,148,180,245,226,184,
+84,185,146,101,82,167,197,181,141,233,13,188,93,209,170,239,
+232,87,200,242,202,4,36,35,78,128,249,126,173,78,177,23,
+7,168,182,132,31,135,6,25,75,52,97,29,50,140,237,168,
+18,169,13,51,216,106,100,204,14,106,148,208,69,46,238,85,
+172,90,251,161,70,249,172,151,202,109,109,197,34,174,33,184,
+157,67,125,50,84,230,227,220,240,191,31,8,0,134,30,38,
+57,167,134,176,254,163,11,68,100,12,246,221,249,226,6,220,
+213,235,189,82,74,71,45,92,35,153,66,223,91,48,79,136,
+131,164,137,86,100,7,165,188,128,24,28,42,148,53,80,106,
+163,192,240,181,146,94,39,69,150,190,229,252,229,80,109,20,
+172,94,199,239,68,107,64,98,97,218,2,150,174,181,140,96,
+41,162,188,186,94,88,66,114,42,109,248,115,72,184,170,36,
+199,57,63,178,184,248,186,212,210,205,8,143,222,136,112,81,
+195,253,199,33,191,163,224,139,8,111,181,111,237,82,61,34,
+192,229,56,131,45,189,195,235,239,167,17,23,45,240,210,11,
+194,151,152,141,181,224,18,205,3,237,1,80,245,94,6,220,
+120,195,171,65,93,211,162,138,53,185,146,143,133,101,243,37,
+81,241,153,139,215,4,215,51,114,247,34,88,1,111,7,153,
+52,8,70,245,88,51,4,131,116,29,52,12,229,109,117,209,
+165,202,133,220,53,162,158,59,21,226,176,172,37,136,178,250,
+5,183,128,73,242,145,113,153,119,234,131,140,5,217,125,194,
+44,157,17,228,158,118,37,90,75,30,199,192,107,211,212,194,
+186,21,42,247,148,99,103,14,252,17,222,69,106,206,145,237,
+26,92,207,120,148,62,162,190,61,218,145,1,116,113,147,165,
+104,25,11,4,128,53,147,165,224,104,215,40,52,52,232,190,
+242,240,142,250,235,177,137,86,76,170,145,219,163,96,115,84,
+131,82,170,106,171,144,31,34,139,8,173,58,185,28,156,151,
+22,182,113,27,32,204,255,113,144,142,67,189,124,84,57,158,
+143,42,25,148,134,96,233,183,193,165,2,87,132,199,198,161,
+88,187,84,86,164,114,138,70,186,89,7,181,232,26,170,114,
+198,100,233,92,51,114,206,179,185,186,179,26,158,124,251,150,
+214,216,179,232,89,120,53,8,218,13,246,82,66,129,150,183,
+189,90,100,0,169,228,180,98,217,249,51,92,20,40,44,2,
+176,64,247,32,57,51,255,56,144,135,96,184,72,87,239,205,
+23,165,118,234,68,18,2,15,54,57,19,245,202,7,136,242,
+69,69,134,1,63,14,49,88,111,40,223,110,50,132,110,40,
+186,5,39,13,171,27,154,26,138,235,185,194,105,73,13,245,
+189,116,106,168,86,182,226,95,236,124,106,72,201,191,161,122,
+109,137,90,168,207,111,87,181,236,184,190,196,143,224,238,53,
+12,239,208,189,171,182,216,152,83,132,95,238,215,17,210,215,
+149,115,161,184,129,38,147,209,162,202,156,97,127,121,54,151,
+196,215,186,182,26,128,48,43,53,247,134,174,82,63,197,93,
+235,101,82,82,35,105,99,169,36,174,62,85,119,131,216,103,
+224,74,51,124,97,193,155,181,144,159,103,23,44,39,95,212,
+222,135,111,40,88,152,234,131,57,104,38,120,86,91,27,185,
+209,244,34,39,225,243,207,166,22,197,8,39,210,7,217,241,
+70,62,62,246,145,226,40,152,28,139,221,164,17,92,88,20,
+217,111,87,65,145,131,68,217,33,10,9,244,38,81,245,180,
+18,170,99,104,157,134,59,47,164,174,234,24,158,75,161,216,
+33,195,161,24,30,170,188,160,143,142,28,140,10,228,219,29,
+13,88,181,121,111,72,230,169,193,131,97,227,68,31,16,102,
+110,80,73,36,10,89,83,252,197,172,59,134,50,228,40,231,
+133,56,84,145,202,115,73,28,237,88,68,30,211,16,179,149,
+9,163,102,159,30,81,69,236,168,63,10,186,136,2,213,164,
+139,50,240,136,158,143,98,156,243,66,25,231,156,42,168,132,
+169,6,10,180,0,106,227,24,5,151,150,186,6,197,61,45,
+1,124,170,211,78,80,254,148,75,116,196,145,13,70,144,6,
+203,24,84,2,170,145,120,106,135,216,121,165,34,174,8,27,
+33,37,26,138,126,187,33,97,62,98,196,173,171,111,163,9,
+2,65,69,217,96,243,177,65,252,64,2,24,86,16,42,122,
+219,123,48,68,75,255,235,245,114,83,73,181,163,145,176,117,
+195,16,11,94,250,217,159,245,119,146,244,95,125,195,5,171,
+160,41,212,200,65,191,5,68,102,146,227,233,201,223,203,106,
+178,245,9,254,226,106,124,92,203,4,24,158,24,54,172,49,
+128,89,125,34,50,1,214,89,210,135,231,113,174,5,155,58,
+10,97,90,12,55,135,201,79,72,36,181,106,190,248,29,222,
+108,243,199,186,112,97,224,64,160,71,27,88,42,141,23,187,
+102,182,82,33,190,98,249,66,193,56,145,170,53,12,182,68,
+182,192,125,153,168,51,86,107,151,108,43,5,92,161,58,124,
+232,74,46,114,131,104,52,35,203,216,6,10,44,118,146,211,
+251,210,49,107,12,211,187,190,82,188,35,78,63,84,150,45,
+166,66,195,78,222,197,30,122,92,72,80,229,0,139,6,135,
+154,103,131,107,179,144,229,235,187,145,112,118,238,91,10,227,
+54,235,77,42,93,238,197,3,191,224,196,205,129,221,64,109,
+123,243,69,143,234,89,240,140,24,13,141,173,197,108,63,19,
+148,67,85,209,210,52,111,208,105,44,60,125,187,37,139,42,
+53,198,177,13,83,226,144,155,34,168,17,77,71,169,161,54,
+45,183,30,254,70,183,42,108,210,185,17,75,139,21,211,13,
+193,60,49,67,35,13,14,185,41,160,159,184,186,210,131,40,
+165,244,202,213,125,148,83,81,182,101,190,194,162,191,1,123,
+214,54,214,185,230,80,98,171,128,65,251,136,122,162,38,202,
+187,242,144,0,156,214,126,34,94,86,5,31,212,147,86,100,
+117,15,180,158,115,45,57,215,92,146,26,173,173,65,13,112,
+81,62,66,111,15,89,237,250,186,124,21,241,200,117,3,167,
+83,180,216,237,22,122,74,189,68,82,43,131,226,80,111,178,
+78,18,142,14,21,172,18,167,160,63,152,241,69,225,74,231,
+231,198,67,109,196,24,104,55,65,122,89,24,191,211,41,166,
+201,243,96,212,82,55,146,229,221,14,35,199,162,28,179,132,
+81,102,222,61,241,68,229,209,70,142,143,82,193,21,185,189,
+190,217,253,60,15,168,108,83,137,210,131,198,22,101,241,20,
+185,25,174,10,222,168,50,26,26,252,188,232,165,90,21,252,
+129,166,193,248,107,16,36,35,165,171,7,69,130,68,20,171,
+71,172,205,100,102,103,218,168,89,159,72,197,160,158,111,186,
+234,18,46,11,139,21,246,108,59,227,107,148,74,229,168,100,
+170,108,153,43,83,82,54,212,58,148,120,144,109,24,241,146,
+182,102,115,74,243,140,107,91,211,154,235,70,3,29,40,203,
+196,41,38,74,121,84,32,84,231,233,193,189,30,141,33,2,
+157,192,105,141,113,72,211,96,20,119,57,170,134,61,47,164,
+173,247,100,56,55,242,85,187,1,212,123,59,4,197,74,106,
+74,39,19,125,232,107,108,19,17,39,53,49,212,73,164,37,
+89,244,208,32,66,217,232,86,81,9,204,124,237,22,133,179,
+246,68,187,165,107,142,23,106,168,8,134,86,40,80,5,53,
+108,223,116,179,115,82,36,42,29,22,183,251,230,118,24,122,
+1,176,150,172,149,159,144,26,34,28,111,118,134,26,94,99,
+125,4,54,83,124,173,117,198,136,196,197,240,255,77,169,159,
+196,9,1,31,80,41,235,122,139,89,184,119,97,216,245,223,
+95,132,140,167,193,111,72,240,191,49,80,108,212,122,199,12,
+38,22,126,39,250,211,8,80,227,165,181,222,158,6,246,247,
+175,126,115,112,121,77,98,89,203,140,165,94,53,122,119,153,
+164,229,235,201,244,24,134,36,58,215,168,187,155,186,192,16,
+84,45,11,194,49,205,220,42,167,28,202,96,84,1,170,212,
+16,106,83,45,112,103,52,189,169,112,211,59,64,172,35,119,
+54,152,248,82,246,82,53,76,196,199,20,112,25,30,172,236,
+31,42,245,165,251,2,34,109,77,131,190,53,96,153,7,37,
+157,185,58,11,149,176,224,176,160,180,45,114,163,49,32,28,
+148,119,45,58,66,81,80,214,241,105,0,59,87,200,186,93,
+54,122,186,241,105,92,39,234,153,26,197,36,83,63,145,15,
+165,126,82,23,120,22,180,86,74,212,196,190,136,51,122,182,
+69,25,245,170,56,27,250,201,212,235,23,212,99,132,61,71,
+178,4,95,54,147,153,87,134,198,232,92,68,152,198,117,82,
+82,122,52,247,83,10,86,84,187,156,144,249,219,193,191,99,
+194,109,122,128,97,218,60,43,7,120,105,171,137,98,241,3,
+119,231,185,65,118,233,137,39,220,160,199,79,37,210,45,91,
+184,195,137,146,165,12,195,136,239,72,81,185,101,144,81,83,
+193,108,64,83,190,93,79,108,130,61,102,216,75,71,18,29,
+33,72,197,234,84,48,200,150,39,42,47,34,120,201,218,110,
+204,46,29,234,237,24,164,136,237,214,12,242,27,24,111,136,
+179,120,120,103,206,53,188,99,129,153,17,76,112,189,104,24,
+20,106,174,50,120,160,83,109,163,6,4,114,163,203,244,156,
+98,112,80,134,158,239,59,109,121,202,215,19,75,190,62,220,
+51,169,44,192,130,97,107,129,212,232,10,216,75,52,199,98,
+143,188,179,84,45,137,27,112,51,254,168,210,66,48,86,184,
+4,27,156,199,90,45,5,209,117,197,147,85,195,106,203,194,
+172,89,184,68,209,85,30,246,73,189,153,138,2,88,93,180,
+252,87,239,225,87,134,250,227,225,23,130,64,31,10,152,104,
+77,201,140,199,170,6,174,25,45,203,28,48,51,13,175,127,
+133,205,203,14,103,48,101,213,229,75,70,225,53,5,220,18,
+191,149,208,207,181,214,97,233,67,33,150,138,93,213,0,65,
+148,89,235,203,206,106,229,69,123,127,142,131,191,150,176,98,
+123,166,218,129,16,230,106,76,145,187,94,86,106,114,84,43,
+118,120,6,111,35,242,110,72,0,244,143,186,176,195,75,60,
+78,106,197,172,46,12,107,199,143,14,61,89,31,168,210,121,
+42,91,218,11,60,86,151,151,250,187,181,72,76,125,65,122,
+251,48,163,48,59,198,36,150,242,153,222,156,49,227,117,178,
+175,174,13,57,78,232,42,164,151,135,144,210,226,203,180,225,
+211,207,230,88,61,30,69,58,185,119,51,120,117,24,59,146,
+140,51,142,17,117,125,99,20,117,92,146,15,46,50,101,111,
+142,68,74,19,102,214,81,197,244,43,84,65,170,44,231,85,
+205,206,14,59,166,171,26,86,217,18,101,182,250,112,86,106,
+181,53,37,181,103,193,42,40,119,112,244,255,232,196,134,53,
+3,169,231,192,246,181,246,54,205,166,206,195,17,187,4,144,
+200,115,126,226,47,152,36,35,43,21,228,209,127,37,97,170,
+183,119,76,106,140,31,162,155,70,205,210,231,193,64,54,230,
+51,93,220,105,36,47,82,52,194,109,32,37,17,114,55,200,
+6,114,68,50,92,56,109,167,197,150,197,96,133,239,12,144,
+40,106,227,10,174,49,10,181,178,152,230,18,171,164,222,137,
+68,118,153,217,140,183,230,188,69,89,223,218,151,85,66,228,
+129,156,36,31,3,175,131,85,155,122,241,73,54,243,227,73,
+100,215,187,58,225,171,190,254,66,83,51,224,238,34,137,102,
+177,2,138,252,32,23,172,203,1,212,114,1,245,122,165,193,
+68,171,229,96,178,56,9,86,26,115,244,248,241,151,93,115,
+109,115,89,153,26,223,29,179,87,220,165,179,84,172,70,37,
+41,193,152,107,16,56,34,76,222,145,249,19,177,26,101,132,
+224,227,226,151,21,161,81,31,182,186,230,129,87,60,171,66,
+171,159,154,27,119,75,237,157,254,89,166,151,106,40,170,191,
+12,200,36,19,93,175,245,91,173,0,182,40,182,202,42,73,
+229,233,134,121,238,6,225,46,41,79,55,161,223,7,220,57,
+135,254,82,227,130,225,202,235,174,184,162,87,165,76,59,141,
+215,181,31,26,99,197,185,176,156,170,52,171,101,113,46,69,
+137,108,207,149,100,23,74,157,0,59,153,185,249,68,146,91,
+135,201,70,175,244,181,106,20,44,158,20,213,82,169,13,32,
+187,97,36,239,243,75,1,105,240,229,51,246,52,116,115,57,
+42,10,194,242,11,181,17,22,168,178,159,108,172,121,167,137,
+49,2,45,122,230,185,63,35,30,61,201,224,22,209,8,253,
+231,156,140,184,10,171,157,48,130,116,92,170,226,149,186,83,
+191,183,236,93,177,51,108,216,174,52,128,83,179,142,33,65,
+27,29,73,121,63,131,142,13,56,173,72,73,1,204,151,19,
+188,98,217,53,179,71,47,116,141,88,98,31,56,158,58,151,
+188,228,215,206,76,113,114,143,232,143,235,177,198,23,100,110,
+41,21,235,41,91,79,160,185,94,120,174,137,35,170,244,226,
+14,8,64,214,176,175,236,164,171,228,115,234,45,83,253,88,
+217,73,79,184,168,93,197,232,221,81,49,186,242,205,91,13,
+238,240,255,53,12,97,182,99,38,173,217,193,22,49,78,81,
+111,55,161,187,229,7,204,184,196,224,37,203,55,207,26,71,
+222,16,255,95,36,235,202,2,60,142,104,255,47,138,240,129,
+164,88,20,170,166,103,178,42,133,198,29,217,255,23,137,181,
+239,50,248,26,238,191,62,152,74,251,121,162,78,214,208,99,
+84,60,225,56,22,132,69,244,38,203,14,88,190,95,202,177,
+246,40,239,213,141,182,215,226,37,204,81,240,139,120,21,30,
+211,196,23,83,244,136,26,68,230,54,235,36,50,113,94,23,
+209,65,192,63,149,60,176,124,63,104,201,34,52,166,11,124,
+166,31,110,44,156,24,74,245,194,68,155,121,161,53,81,92,
+148,40,184,142,102,1,246,36,150,69,211,168,176,68,218,205,
+216,84,121,142,242,193,49,63,193,216,146,10,3,162,192,66,
+181,36,202,195,208,87,126,93,234,231,169,159,75,205,171,94,
+58,253,152,158,164,201,129,125,130,242,232,25,110,177,101,95,
+177,36,183,224,45,114,225,179,124,6,163,84,165,7,137,114,
+107,130,238,164,170,202,86,236,61,195,255,122,166,46,119,43,
+107,132,198,132,210,12,40,128,166,108,236,204,240,68,90,255,
+169,236,5,97,106,136,140,206,138,168,230,163,52,161,60,193,
+182,11,126,132,222,165,197,164,168,74,142,37,3,143,176,144,
+106,6,249,171,200,44,169,228,22,185,41,49,230,154,198,41,
+122,86,222,199,122,25,122,95,135,152,6,233,229,230,227,193,
+133,238,239,197,93,220,247,198,159,29,127,121,105,164,250,176,
+200,104,115,93,218,34,2,135,130,84,28,90,31,199,35,82,
+91,62,44,94,212,10,160,150,201,75,232,235,212,247,200,154,
+154,215,165,245,169,36,128,185,158,175,54,219,234,217,54,177,
+143,108,208,163,234,91,114,190,148,76,243,81,241,63,250,40,
+245,162,40,57,22,205,179,188,80,120,176,8,246,199,50,110,
+194,57,172,186,36,69,38,86,53,53,45,47,40,151,105,68,
+0,135,162,148,138,6,186,205,64,119,163,170,159,94,173,179,
+182,6,121,82,176,0,62,180,118,123,117,162,119,87,106,136,
+157,87,163,231,84,35,3,244,153,32,244,173,244,4,45,77,
+42,135,133,71,44,216,10,69,51,58,173,20,41,213,105,177,
+13,138,121,99,212,194,52,212,42,129,100,9,215,236,194,101,
+112,101,207,86,115,51,4,233,140,45,107,231,10,25,155,118,
+188,116,41,199,32,242,71,81,89,208,18,70,252,91,88,88,
+84,133,116,9,13,8,99,86,197,176,249,216,126,138,194,109,
+46,251,181,169,22,127,116,187,15,232,4,194,239,194,228,14,
+109,233,65,198,135,92,145,164,165,24,185,73,18,36,8,223,
+68,45,175,88,180,96,189,66,74,132,162,77,226,37,104,76,
+252,140,8,191,168,61,122,96,224,164,102,111,117,246,65,18,
+181,26,69,234,149,242,2,39,136,244,122,40,38,103,250,82,
+98,69,137,157,40,240,132,114,227,180,33,147,91,49,161,54,
+145,0,234,138,193,74,166,203,95,68,242,200,164,198,168,79,
+165,60,89,197,137,23,243,212,248,49,208,88,45,93,186,4,
+201,13,164,119,99,128,232,78,99,221,242,166,91,112,202,19,
+117,49,196,77,31,66,67,226,63,68,4,41,10,38,253,238,
+12,175,40,8,223,52,12,14,75,209,227,218,25,39,215,32,
+60,226,150,215,226,192,129,229,117,25,90,248,64,248,53,90,
+232,248,117,165,55,131,102,237,47,249,105,119,219,129,73,123,
+110,72,229,124,202,167,190,211,73,13,17,40,21,12,253,242,
+40,27,170,198,25,170,144,6,200,168,21,111,218,58,181,233,
+155,157,114,33,43,53,226,78,152,208,231,82,43,143,221,95,
+212,184,213,52,109,50,186,40,67,22,5,114,190,43,198,7,
+147,24,91,242,180,132,82,212,172,114,225,122,231,245,66,9,
+45,249,166,98,38,12,209,241,118,113,44,12,216,172,49,62,
+222,178,4,164,33,141,69,221,142,212,87,42,67,11,48,142,
+188,75,40,219,22,119,108,64,237,76,201,22,221,18,21,189,
+3,77,91,86,169,255,89,206,103,160,236,20,220,43,142,41,
+204,194,106,38,44,171,93,82,89,11,44,87,21,38,17,152,
+166,73,86,230,141,110,153,121,144,122,89,27,150,140,202,41,
+66,162,40,195,13,132,233,43,204,235,244,4,210,35,177,162,
+178,52,89,240,81,171,205,142,181,115,133,104,82,182,117,179,
+148,124,17,27,192,245,116,118,233,95,232,27,91,179,125,137,
+172,212,1,28,8,229,208,157,103,205,225,150,193,8,226,197,
+126,110,237,119,64,251,50,247,170,216,94,62,192,175,114,208,
+101,33,252,94,111,163,250,88,20,81,240,165,240,57,40,183,
+11,18,70,77,14,83,92,196,144,155,226,207,63,253,24,45,
+15,220,248,119,149,91,172,67,234,69,122,124,40,214,124,80,
+43,172,33,254,175,127,8,42,27,20,59,120,1,152,3,129,
+42,58,242,116,156,212,20,33,52,24,232,233,167,7,185,127,
+87,120,209,51,79,71,66,53,159,154,188,93,208,188,104,49,
+173,31,117,84,170,244,150,222,26,14,181,184,247,244,197,84,
+231,1,195,157,30,34,218,178,184,224,231,76,132,240,119,149,
+177,114,174,27,123,246,18,83,202,174,205,1,148,179,93,82,
+175,0,77,192,232,250,43,205,92,214,45,70,73,133,64,139,
+232,192,24,242,174,184,64,142,129,39,9,90,31,186,128,6,
+154,54,206,25,3,246,39,191,169,54,164,42,111,185,82,252,
+171,90,111,149,84,127,194,106,244,134,207,188,213,251,63,200,
+174,231,238,168,235,15,89,87,69,191,17,160,166,230,25,4,
+14,63,39,52,54,56,252,111,214,226,149,2,64,255,118,100,
+69,105,192,79,94,107,85,174,74,210,231,243,184,191,197,133,
+69,72,5,252,245,71,39,159,74,194,58,176,198,112,220,246,
+170,220,198,132,143,19,61,62,207,14,247,2,55,170,198,170,
+27,148,32,132,143,136,180,105,100,19,149,88,83,46,83,25,
+133,14,228,67,149,38,233,222,38,219,137,21,225,148,95,20,
+211,41,216,128,49,45,166,36,112,248,175,176,68,5,253,198,
+251,187,138,46,127,147,117,252,40,61,132,173,218,178,25,223,
+184,49,41,219,194,122,160,244,152,88,104,43,8,247,54,114,
+82,48,151,0,166,88,87,146,238,77,244,187,84,102,31,15,
+235,63,251,88,236,45,47,76,124,248,58,196,131,0,132,34,
+54,100,44,166,27,106,232,111,94,85,44,199,50,20,63,88,
+129,171,226,132,116,132,181,206,165,82,85,69,222,84,198,97,
+60,151,252,63,178,42,67,86,131,37,128,7,64,31,235,131,
+164,148,38,171,114,5,254,232,52,181,202,148,243,63,74,6,
+156,55,77,237,127,60,97,244,67,220,213,198,206,70,15,141,
+74,188,203,231,116,192,190,49,181,31,242,110,158,174,109,107,
+89,113,185,126,29,241,233,144,178,185,148,148,144,148,245,24,
+35,24,205,198,24,240,9,203,216,130,186,153,117,138,93,245,
+242,123,81,217,22,59,21,115,138,137,155,168,220,133,111,116,
+181,157,241,180,193,230,196,222,106,200,227,239,5,147,70,88,
+179,58,71,154,56,171,226,167,54,82,35,107,183,77,200,139,
+166,50,32,117,134,196,4,54,85,178,40,0,26,197,16,122,
+85,248,23,125,117,192,128,182,151,237,66,91,33,2,90,17,
+169,35,200,163,216,46,147,54,149,105,164,157,159,2,237,78,
+190,213,13,247,37,139,195,117,191,209,220,155,107,178,241,182,
+199,69,199,202,53,216,145,229,186,108,43,71,229,186,224,223,
+50,151,101,177,213,153,60,89,210,12,117,105,13,2,137,2,
+87,142,214,170,42,233,9,76,137,100,14,126,20,46,40,236,
+200,133,197,205,138,102,13,178,186,26,178,240,66,42,190,90,
+79,210,175,107,22,113,104,88,190,186,80,242,10,174,47,2,
+120,180,204,83,209,199,78,84,180,43,186,158,150,99,68,45,
+194,218,74,158,10,224,164,219,50,186,91,202,112,221,79,12,
+213,146,134,166,232,119,39,228,174,30,250,25,4,178,221,88,
+20,177,89,49,210,93,150,96,10,217,122,48,153,48,244,24,
+53,65,103,34,129,42,73,174,164,213,137,205,27,102,150,59,
+20,195,181,250,69,65,69,25,232,218,63,219,182,87,225,199,
+127,169,252,90,153,160,104,34,102,177,218,27,18,225,101,155,
+228,92,169,76,129,22,220,171,31,35,102,185,2,140,236,19,
+193,136,92,212,42,82,127,220,237,204,131,100,107,119,10,146,
+5,100,109,74,49,166,184,46,150,1,151,72,88,84,71,142,
+52,246,108,54,28,165,73,180,135,34,13,221,183,137,130,139,
+117,195,61,22,102,242,226,86,120,125,216,34,151,7,147,148,
+171,178,190,22,191,68,113,146,49,139,2,18,234,160,128,255,
+172,203,69,118,85,49,208,68,18,172,103,39,171,49,51,85,
+31,45,21,185,1,156,212,57,48,224,81,22,10,197,56,226,
+54,216,86,135,99,169,212,122,153,3,30,16,86,29,93,16,
+183,90,24,163,77,25,149,226,123,21,106,66,43,243,69,87,
+54,217,161,140,175,126,210,110,129,36,184,69,1,144,52,16,
+21,134,167,32,62,249,163,24,207,151,16,183,18,212,208,146,
+66,70,11,30,204,235,164,249,168,134,223,59,132,227,43,79,
+98,217,7,62,166,106,184,88,113,158,162,186,65,247,1,153,
+175,70,36,247,4,125,71,33,134,30,0,15,12,186,172,69,
+133,92,56,139,61,56,41,56,124,214,166,154,141,170,102,189,
+248,7,22,158,147,43,167,32,143,78,217,15,93,70,73,99,
+81,98,171,213,22,145,94,165,156,22,103,38,113,40,246,71,
+71,85,41,159,5,188,153,216,82,43,165,150,80,24,21,142,
+182,93,189,22,237,89,46,146,1,222,160,155,101,192,50,61,
+140,7,40,151,171,181,184,82,77,194,7,209,83,87,143,169,
+128,130,18,53,72,119,58,190,29,130,52,187,28,49,219,31,
+175,164,249,41,219,241,50,9,114,245,208,217,156,16,13,0,
+204,72,77,17,104,153,179,38,80,188,103,218,179,237,188,223,
+238,194,122,168,161,132,85,104,167,136,61,251,70,110,99,167,
+162,85,165,59,138,54,104,64,191,138,121,174,202,242,199,60,
+251,151,26,76,121,237,113,212,225,37,111,112,96,105,117,201,
+220,111,89,71,113,5,253,145,225,0,128,190,73,241,180,27,
+19,94,83,161,150,91,72,20,153,254,148,144,212,13,65,22,
+215,88,59,218,112,97,3,228,131,49,215,92,131,174,118,254,
+241,121,46,208,82,214,217,213,87,80,151,87,147,197,251,98,
+85,149,204,208,42,1,96,164,220,196,199,143,13,174,102,83,
+110,177,102,50,87,222,238,140,15,88,35,189,69,79,145,210,
+34,213,68,246,158,140,134,114,101,185,36,140,217,207,218,58,
+83,177,182,173,84,99,169,149,248,241,170,140,156,34,73,242,
+53,15,188,134,145,92,44,248,133,146,140,167,159,81,188,128,
+122,197,130,10,237,185,93,236,174,8,84,139,212,16,214,169,
+233,231,82,186,168,155,131,28,15,167,186,26,139,175,225,84,
+180,59,44,17,226,134,91,10,169,23,28,37,39,11,212,92,
+201,29,94,178,93,245,193,45,130,110,238,133,130,206,162,16,
+83,85,174,3,136,97,202,7,231,40,96,251,96,21,241,152,
+181,188,54,91,139,29,209,94,48,211,10,180,140,6,5,78,
+10,223,37,179,1,206,74,215,235,106,64,152,201,80,60,188,
+241,130,53,251,42,236,47,232,251,170,188,51,165,150,192,34,
+16,10,159,134,129,162,43,92,183,165,116,81,71,35,166,72,
+96,92,173,157,26,210,154,141,173,81,113,14,15,69,73,215,
+108,1,105,180,27,4,164,70,207,0,30,167,124,229,89,49,
+40,75,7,89,116,182,63,129,121,215,98,249,254,49,93,230,
+51,213,131,242,168,232,191,40,248,111,20,144,75,130,6,167,
+57,241,156,14,39,131,138,37,165,226,241,243,124,233,138,228,
+172,181,217,171,112,54,9,251,154,166,66,163,215,185,209,206,
+246,55,108,15,54,126,5,172,168,143,33,45,33,104,149,3,
+214,21,20,55,170,171,170,84,29,94,47,203,44,10,147,14,
+133,33,225,93,14,208,42,218,8,68,204,167,82,239,192,3,
+94,51,129,141,253,55,92,168,7,119,240,31,73,175,46,241,
+203,212,175,18,32,107,126,150,250,153,241,117,234,231,242,227,
+152,46,252,252,107,152,37,246,62,176,11,192,172,250,10,16,
+124,245,197,192,50,57,2,182,60,142,202,100,157,98,145,229,
+129,142,231,195,235,78,108,76,18,231,93,175,222,94,90,227,
+88,73,164,89,204,107,163,94,39,58,75,107,193,164,40,13,
+137,131,241,25,144,114,133,130,157,167,116,218,98,240,62,9,
+235,86,41,211,165,151,14,11,80,85,240,153,197,70,5,26,
+103,128,126,195,127,97,127,33,118,77,160,238,14,20,184,88,
+90,254,248,96,85,165,16,215,213,232,99,16,126,97,250,187,
+58,240,162,145,189,177,192,43,219,146,156,166,73,154,196,155,
+4,179,82,67,78,178,78,84,221,18,235,215,139,138,143,165,
+228,112,217,167,142,82,16,139,158,3,27,15,135,102,247,210,
+5,102,4,100,247,78,217,174,224,103,10,148,4,217,238,94,
+163,16,82,199,80,165,195,164,15,84,185,61,39,103,100,253,
+202,60,92,77,143,18,149,248,130,84,111,186,188,9,200,65,
+158,50,102,86,170,229,147,66,152,193,108,205,214,86,84,30,
+164,163,148,148,41,10,243,215,195,243,169,38,161,84,35,40,
+21,40,80,235,42,245,113,68,130,142,43,224,219,75,92,252,
+201,241,208,139,49,88,40,49,107,250,27,57,251,2,73,57,
+107,2,117,71,204,251,182,150,212,43,163,75,224,76,26,35,
+139,8,112,73,70,252,6,241,130,159,13,157,0,157,73,120,
+132,129,182,29,228,27,132,42,156,101,92,219,39,55,88,161,
+189,203,23,41,188,232,192,78,83,87,235,80,194,137,32,17,
+191,96,137,123,17,186,124,225,245,6,211,194,104,160,168,79,
+192,226,254,69,242,231,192,26,210,205,12,128,100,81,248,224,
+41,19,160,132,237,199,2,173,93,90,130,87,83,131,113,207,
+197,38,26,118,61,125,45,146,91,134,6,205,101,208,189,101,
+181,201,20,94,227,90,204,76,231,54,115,69,148,150,108,113,
+97,169,96,188,214,172,213,22,4,166,105,212,205,141,104,0,
+150,19,236,130,74,171,33,105,202,142,68,130,168,199,85,41,
+3,87,85,224,168,18,102,19,169,252,218,116,178,111,135,31,
+67,9,245,192,19,105,75,149,74,193,139,42,223,148,228,104,
+23,209,88,118,166,158,104,195,19,119,14,0,147,224,82,85,
+56,20,179,50,149,70,177,102,66,112,166,238,185,13,129,162,
+18,235,165,46,232,96,174,1,36,155,36,62,16,41,43,125,
+75,86,169,40,253,148,67,152,232,207,211,94,203,89,55,58,
+185,64,119,14,70,73,93,0,198,19,110,208,148,143,76,198,
+102,159,22,41,209,129,62,177,210,224,208,132,232,162,193,118,
+149,95,167,162,213,116,184,41,241,37,70,195,193,66,226,8,
+44,205,223,162,215,219,78,79,144,18,216,164,95,37,89,121,
+166,160,25,136,109,249,14,112,114,171,172,90,80,207,157,82,
+187,234,13,47,241,24,68,134,214,148,118,228,200,32,170,77,
+132,114,167,254,83,62,58,228,166,33,55,49,224,16,102,73,
+177,17,218,65,189,30,62,71,111,215,141,146,175,165,254,43,
+228,26,141,158,211,87,86,192,92,63,100,251,152,172,109,197,
+245,172,163,239,117,129,85,166,26,133,42,52,39,182,170,97,
+12,216,166,177,95,247,168,237,158,222,221,51,88,27,255,16,
+83,141,131,181,54,167,193,110,192,36,59,193,208,90,117,73,
+97,215,230,156,60,81,179,135,119,156,232,53,201,217,57,23,
+243,113,81,100,215,88,47,149,202,220,8,53,141,75,222,84,
+98,215,62,89,114,161,56,186,192,117,85,229,181,62,36,53,
+112,150,161,21,180,163,32,208,105,253,129,163,216,175,213,97,
+193,178,34,238,225,240,211,66,117,54,18,129,202,243,131,90,
+114,224,169,168,190,232,31,63,110,207,109,174,87,95,240,204,
+137,164,124,75,23,148,63,10,66,167,40,114,152,78,80,209,
+76,65,220,168,218,142,167,101,126,197,158,148,189,163,151,62,
+229,149,253,15,39,147,62,243,178,214,235,194,128,153,128,68,
+144,201,139,247,131,29,182,222,105,183,124,237,106,216,6,153,
+137,220,139,20,44,68,199,193,152,143,127,15,213,211,9,6,
+111,177,101,190,46,106,96,69,93,167,214,213,139,212,5,160,
+47,193,105,207,75,79,234,170,168,218,141,188,99,183,121,189,
+102,14,176,16,250,5,23,123,135,113,251,114,158,52,70,215,
+13,87,217,17,139,70,117,20,181,149,100,167,168,171,254,255,
+141,243,229,70,155,235,66,139,239,85,193,244,1,146,115,229,
+88,54,216,198,32,146,237,96,136,169,65,34,225,76,93,249,
+58,247,231,66,220,156,91,124,93,229,57,109,72,87,131,38,
+110,82,23,184,98,74,197,192,253,65,92,88,150,96,192,87,
+184,50,151,126,101,102,138,17,55,155,81,171,16,45,16,208,
+60,15,106,25,20,93,119,66,162,144,149,122,222,160,171,36,
+231,21,249,231,150,105,99,8,33,137,82,185,94,235,151,208,
+37,209,168,162,148,40,108,15,228,116,127,136,230,127,15,247,
+106,141,40,122,97,212,27,103,164,86,133,4,11,151,104,253,
+16,170,72,197,202,125,21,12,208,48,68,127,218,56,184,84,
+221,55,224,72,162,172,29,74,162,84,140,18,26,21,20,23,
+3,42,212,226,26,198,215,99,84,81,138,25,210,139,244,148,
+242,12,225,75,134,168,140,44,9,146,115,130,180,94,186,134,
+7,51,144,163,143,133,208,53,162,51,233,45,20,159,218,81,
+193,73,253,163,55,145,181,247,58,20,238,101,43,45,253,66,
+95,94,229,255,8,80,126,142,202,136,159,47,124,215,26,217,
+216,47,27,247,71,143,231,65,231,209,63,98,139,58,199,174,
+17,111,189,213,54,53,209,239,228,114,240,131,85,196,176,96,
+41,175,131,57,165,75,182,128,57,76,30,62,22,178,82,251,
+173,114,86,64,253,64,35,250,199,199,153,125,199,50,157,164,
+110,135,237,101,93,11,203,93,202,220,39,85,232,45,90,17,
+20,195,175,217,157,101,94,228,87,73,21,236,61,203,158,11,
+133,41,54,252,164,54,11,208,11,199,97,212,234,117,214,226,
+91,251,97,231,27,69,115,184,120,176,31,20,234,213,251,232,
+228,128,205,72,75,243,49,131,203,241,219,49,248,145,174,128,
+99,251,64,137,68,196,127,15,98,238,57,122,68,244,47,20,
+183,191,137,98,87,1,173,22,186,159,84,113,248,70,189,124,
+244,118,134,189,65,116,193,171,171,133,60,98,115,66,53,237,
+225,218,208,114,77,162,131,169,8,7,53,107,241,87,81,53,
+133,250,138,187,183,51,161,26,36,145,41,84,252,164,185,252,
+50,147,4,213,251,233,174,43,209,140,82,75,166,147,201,5,
+208,157,180,86,10,76,12,121,254,162,195,13,176,212,90,122,
+36,86,0,69,152,136,250,14,216,181,52,121,27,220,32,254,
+10,156,35,187,84,106,185,112,2,95,90,39,5,166,148,130,
+237,81,230,32,6,121,123,182,229,3,143,214,27,120,110,65,
+228,179,51,31,35,30,20,43,5,35,165,70,142,252,29,37,
+31,202,224,88,190,7,72,91,233,118,58,200,84,145,74,45,
+42,57,72,173,18,193,251,170,176,46,44,197,41,148,178,178,
+146,46,53,240,100,57,77,3,106,1,54,114,178,74,69,90,
+130,251,90,163,70,139,89,186,8,239,56,199,224,224,169,36,
+22,103,9,62,83,204,8,108,20,112,214,207,57,198,229,1,
+158,14,40,137,182,152,72,20,130,9,125,31,235,130,28,28,
+14,10,128,141,193,15,20,165,68,63,213,120,50,217,24,51,
+45,143,38,250,96,158,3,191,140,57,250,203,30,100,191,214,
+153,240,26,219,202,68,227,2,107,244,100,246,238,48,98,217,
+199,171,79,148,149,123,28,152,101,220,123,9,170,102,30,36,
+101,3,17,11,202,31,186,170,234,37,191,232,101,112,212,85,
+6,206,172,186,99,176,157,31,20,61,143,246,117,85,111,138,
+21,40,42,235,83,228,120,76,40,179,12,185,50,55,42,118,
+31,222,231,143,196,126,172,85,225,100,34,13,209,103,44,105,
+134,14,133,95,215,170,150,102,148,36,70,88,131,204,84,1,
+145,6,209,128,230,34,32,10,136,22,127,137,230,55,2,196,
+65,163,63,208,34,58,226,175,38,122,33,21,58,66,168,13,
+102,215,236,197,152,216,142,254,225,120,116,70,235,116,30,42,
+242,156,79,216,185,66,145,99,199,203,206,31,189,182,147,122,
+58,5,13,137,38,67,162,88,132,202,182,45,211,32,183,21,
+206,49,206,225,149,133,155,219,236,188,237,225,73,51,84,6,
+171,210,115,22,40,76,18,66,104,5,114,141,124,135,166,100,
+56,251,13,137,223,187,157,240,184,71,204,237,43,6,193,131,
+143,226,16,41,151,37,195,46,68,92,211,229,215,141,147,120,
+194,20,103,151,55,160,210,73,40,63,199,229,188,77,56,181,
+187,52,1,128,64,20,143,69,178,94,100,127,116,189,138,127,
+36,4,139,30,196,64,82,42,117,145,47,97,146,48,111,50,
+148,21,163,245,120,15,66,150,49,121,6,15,101,74,94,237,
+79,28,143,65,12,63,34,206,213,106,142,83,238,3,67,20,
+76,142,184,206,86,210,195,115,109,123,133,130,1,188,202,160,
+96,128,60,81,2,158,22,103,139,175,159,44,92,231,64,150,
+186,80,189,197,109,137,96,25,148,206,138,127,57,199,98,135,
+136,58,28,120,254,29,32,235,62,117,253,128,57,10,82,205,
+13,13,13,85,240,216,226,22,139,110,174,50,42,69,199,17,
+14,123,68,139,204,246,68,225,153,160,81,123,82,202,138,76,
+168,135,79,160,143,2,175,94,118,99,1,56,25,216,213,74,
+123,110,157,200,132,41,82,204,175,209,242,65,79,81,107,43,
+97,136,34,102,180,97,42,161,252,72,146,164,12,49,196,43,
+31,186,12,144,215,97,125,196,187,16,78,253,59,158,21,98,
+120,52,29,55,240,178,33,241,69,224,233,104,42,100,18,68,
+18,5,219,206,136,59,15,204,192,104,22,12,35,153,176,204,
+89,160,130,181,73,158,142,146,61,141,226,37,167,108,213,18,
+145,150,64,34,29,142,188,53,10,137,203,12,62,104,138,198,
+42,39,116,193,245,29,61,145,50,50,249,249,198,217,143,74,
+165,170,64,55,34,102,63,240,251,73,200,50,81,248,54,172,
+57,19,200,219,122,86,162,234,245,126,108,149,121,170,28,130,
+6,68,15,75,116,16,180,52,61,172,87,139,26,8,237,251,
+26,27,123,95,12,20,135,243,104,190,182,58,93,208,74,176,
+197,233,113,163,253,9,98,41,113,90,156,86,99,74,166,214,
+146,58,210,217,14,234,16,58,56,184,84,144,44,124,36,42,
+1,249,237,84,190,163,224,22,18,165,66,194,166,228,2,186,
+148,45,182,115,197,35,106,108,70,7,174,71,115,39,120,141,
+186,74,23,52,246,225,139,88,209,200,76,144,159,166,204,33,
+178,105,20,43,59,74,46,91,238,72,142,192,37,84,61,13,
+72,24,114,108,251,82,226,192,33,131,77,214,185,82,137,240,
+147,224,189,48,236,128,156,155,176,11,42,79,18,221,107,45,
+228,104,166,162,177,128,227,181,48,253,68,50,116,123,101,197,
+117,90,133,235,10,49,74,254,101,55,234,55,35,90,140,157,
+234,220,85,240,236,180,77,78,90,248,186,94,36,89,112,173,
+21,88,28,126,239,20,97,235,253,10,29,135,213,141,117,59,
+243,189,94,95,171,139,117,169,170,172,13,75,239,244,107,117,
+110,21,121,93,73,240,26,222,165,171,188,140,13,66,88,79,
+78,160,175,202,220,170,184,198,111,193,157,39,21,109,9,196,
+43,231,242,232,169,192,82,218,210,0,248,29,224,48,131,30,
+70,91,29,198,209,53,72,214,149,6,24,71,99,132,7,24,
+37,221,147,40,4,44,148,142,232,235,16,172,44,82,41,224,
+87,48,231,108,142,221,68,78,165,119,128,39,252,162,166,91,
+39,149,124,237,165,7,135,164,64,29,158,17,162,122,143,37,
+218,93,132,78,147,56,166,99,144,14,185,233,92,146,67,57,
+129,140,101,32,250,234,95,214,243,248,122,125,248,159,51,26,
+180,18,88,64,40,92,136,66,168,218,21,136,48,6,49,4,
+156,10,2,145,169,71,233,125,94,49,214,165,138,96,210,27,
+243,16,107,176,193,134,239,216,153,10,36,17,79,239,202,239,
+141,124,35,56,68,80,123,139,173,170,89,81,133,143,120,174,
+162,172,27,126,1,239,52,61,76,84,19,231,143,193,66,210,
+115,112,173,118,166,197,178,85,162,185,247,108,85,206,171,197,
+133,78,210,92,136,176,55,108,53,40,188,147,52,106,187,164,
+221,28,22,216,10,104,177,6,81,204,234,238,47,73,163,69,
+69,182,163,169,22,230,137,188,53,172,174,23,194,87,209,145,
+144,164,50,191,130,75,117,145,239,49,134,204,48,159,84,108,
+48,48,117,169,140,155,80,57,91,80,253,105,203,186,45,96,
+229,132,46,3,69,165,199,90,100,46,234,215,77,160,96,91,
+65,85,162,188,239,248,228,250,140,23,184,226,50,40,78,232,
+22,99,84,120,210,224,135,53,3,25,134,97,146,177,125,202,
+222,146,155,143,239,40,38,96,80,142,29,71,37,254,108,134,
+120,152,64,234,221,1,196,192,168,101,83,73,222,85,93,20,
+211,225,93,13,30,119,232,170,126,111,226,243,6,128,171,144,
+49,106,231,38,249,244,176,186,63,167,126,245,231,241,197,12,
+125,51,134,39,238,37,99,149,59,82,84,142,179,33,229,196,
+205,125,124,135,208,127,151,165,68,236,27,241,250,213,193,96,
+101,197,162,234,46,40,180,220,102,131,244,244,66,72,210,31,
+205,0,117,124,44,240,90,233,192,171,177,91,168,177,31,213,
+237,15,15,51,216,127,85,6,18,207,233,112,18,203,31,153,
+248,191,198,71,253,13,145,250,127,76,100,182,79,61,239,12,
+20,95,237,253,255,42,195,36,6,142,99,202,146,83,204,34,
+24,103,21,104,137,55,31,223,126,169,108,209,106,156,88,5,
+203,247,211,245,161,133,137,68,119,24,196,117,240,62,59,219,
+221,172,80,198,40,196,130,131,89,154,85,103,216,224,59,170,
+49,161,106,9,227,37,157,81,107,46,62,226,70,166,11,176,
+15,81,85,227,96,232,114,177,94,114,156,181,198,71,252,48,
+207,17,93,113,81,4,89,63,229,66,35,24,70,22,78,192,
+159,121,173,0,97,186,42,65,111,125,206,242,38,48,215,185,
+45,62,236,182,104,171,82,14,90,212,145,232,162,27,90,126,
+167,3,67,98,105,27,46,54,31,42,228,17,132,165,104,241,
+78,92,177,157,226,84,168,74,133,200,225,79,150,124,81,16,
+56,184,123,165,250,223,88,224,8,107,165,136,242,98,125,246,
+178,155,241,58,3,228,64,213,201,69,15,32,16,87,59,49,
+116,83,49,118,171,111,132,131,143,106,196,163,145,141,94,208,
+197,226,37,132,107,86,34,246,205,181,203,20,27,34,20,141,
+42,70,73,247,170,37,139,145,200,242,236,113,200,230,201,181,
+187,81,133,96,45,154,76,225,86,22,194,81,181,146,101,248,
+69,169,160,220,159,102,48,182,140,226,212,72,84,21,189,86,
+87,112,86,27,154,177,122,192,0,201,46,170,232,76,183,83,
+220,233,87,94,76,169,232,154,170,183,3,122,253,44,206,69,
+21,213,52,162,133,123,170,198,97,85,45,22,51,158,70,237,
+127,201,24,89,75,71,185,75,5,22,56,184,182,124,104,81,
+220,8,54,10,126,63,145,148,149,130,208,37,139,228,158,186,
+190,49,209,208,160,69,76,165,154,155,107,104,142,213,226,134,
+227,143,13,230,245,199,75,192,214,8,128,49,88,78,70,187,
+111,200,75,213,199,179,213,38,26,18,151,197,164,102,105,192,
+78,98,89,195,198,74,9,90,234,120,79,253,10,193,192,93,
+182,173,34,28,226,88,194,8,235,161,235,48,175,199,41,90,
+173,172,31,122,33,15,15,246,175,97,69,214,104,3,51,112,
+55,136,58,90,140,247,96,91,193,247,160,127,34,20,180,28,
+156,44,177,225,208,68,41,239,139,191,53,1,211,223,171,56,
+156,219,4,189,149,81,55,192,226,82,128,146,3,21,55,134,
+0,47,46,143,40,183,15,253,116,234,185,31,37,14,250,225,
+3,62,39,232,99,94,239,245,5,150,233,175,165,97,181,25,
+122,229,188,173,229,237,40,145,136,183,196,105,226,135,104,66,
+14,165,126,31,40,153,101,151,235,10,62,32,1,176,97,57,
+167,171,32,190,38,233,80,235,32,49,239,171,75,74,10,71,
+50,203,181,185,5,153,47,171,212,241,32,164,149,42,116,201,
+104,88,81,126,129,91,71,58,189,139,114,36,213,158,6,35,
+67,76,103,190,234,82,54,82,22,206,192,34,23,1,225,159,
+250,107,33,68,142,156,248,234,90,17,97,131,45,63,20,219,
+160,251,84,59,1,252,136,14,219,7,186,98,224,247,237,32,
+212,238,76,29,63,170,3,84,76,90,150,72,255,243,175,65,
+98,84,60,22,171,131,190,140,100,226,186,161,198,254,250,171,
+161,171,132,80,137,168,72,254,160,114,125,215,150,68,200,130,
+44,237,230,114,78,49,40,121,46,79,248,34,142,136,199,75,
+70,135,181,96,33,17,14,163,229,49,5,175,106,229,212,121,
+236,178,21,119,2,138,231,224,83,17,46,197,215,226,250,172,
+50,167,110,128,34,204,117,54,20,51,96,225,203,22,91,238,
+56,96,70,190,146,34,118,228,122,60,188,165,162,52,236,10,
+158,221,225,184,37,95,213,249,225,195,216,114,192,136,44,215,
+243,178,22,234,249,3,152,163,97,242,209,34,189,59,204,168,
+1,171,19,144,110,246,58,25,60,146,40,63,249,224,211,69,
+31,112,29,183,126,93,24,159,83,252,151,23,220,104,82,151,
+167,0,254,217,215,234,201,104,209,53,92,235,42,168,83,194,
+11,227,224,70,25,114,146,179,50,42,79,88,47,13,204,137,
+58,162,56,48,25,25,158,253,23,62,122,251,111,254,245,74,
+222,235,150,95,84,226,213,235,53,211,243,149,108,62,35,15,
+73,43,180,197,89,142,56,74,64,25,162,250,150,94,210,178,
+31,56,188,220,253,173,221,230,196,157,186,17,6,22,98,53,
+80,45,141,214,25,201,200,33,166,14,23,116,37,246,203,157,
+116,185,123,89,62,46,69,162,220,18,169,164,109,32,82,42,
+45,77,171,78,154,26,146,104,138,89,104,159,105,104,124,186,
+15,84,36,90,115,6,53,252,67,177,176,26,117,200,174,91,
+97,67,12,155,94,25,129,12,245,136,41,144,9,45,216,5,
+0,199,162,59,5,4,67,90,80,123,125,184,1,179,103,171,
+137,195,129,95,237,32,54,168,105,161,30,52,68,237,74,196,
+218,195,75,14,249,63,24,47,180,200,242,12,129,193,15,249,
+162,221,70,215,248,216,172,182,69,133,39,245,1,50,193,148,
+253,177,57,211,253,80,149,172,168,170,100,100,232,195,22,221,
+108,182,197,242,130,109,233,45,231,163,178,5,61,146,164,21,
+107,209,189,81,208,148,7,4,149,1,206,184,18,170,65,36,
+159,143,49,151,232,42,229,218,60,220,93,210,31,105,104,165,
+64,217,226,160,45,75,39,226,119,147,200,100,41,97,43,221,
+78,73,68,242,113,91,213,35,136,82,23,183,113,35,194,10,
+158,170,72,77,154,222,101,245,155,148,146,197,174,130,172,97,
+46,157,123,42,27,177,5,191,148,167,171,222,215,71,135,84,
+191,78,88,27,211,130,43,232,88,3,66,66,2,148,57,39,
+147,201,218,102,44,153,2,108,159,153,6,23,53,46,95,116,
+251,196,54,216,107,38,142,115,58,34,123,22,65,62,236,10,
+4,0,248,14,222,123,88,57,170,173,236,136,235,86,202,222,
+178,38,216,218,53,108,112,74,80,159,100,163,236,65,248,9,
+244,54,102,61,219,202,116,201,135,67,186,33,106,129,120,56,
+183,203,27,244,16,57,210,118,202,217,233,6,220,133,231,134,
+22,43,230,26,16,44,212,160,174,247,7,166,26,113,41,112,
+150,53,114,131,85,233,53,38,213,173,99,191,124,248,52,116,
+63,148,56,37,26,162,92,85,225,212,186,154,26,238,132,165,
+73,116,172,134,196,213,242,153,70,225,195,22,15,98,236,124,
+129,107,186,226,31,218,5,145,202,124,110,45,161,48,18,224,
+237,151,90,197,80,186,182,111,172,233,199,244,168,8,136,72,
+237,89,148,67,87,80,212,194,163,35,0,213,29,138,233,178,
+224,212,160,120,109,187,226,142,248,80,88,161,213,168,234,12,
+128,247,180,93,16,29,70,145,188,45,85,5,223,47,90,233,
+9,65,55,52,242,126,146,158,68,70,38,224,194,202,58,109,
+148,130,46,234,215,193,87,18,193,216,101,20,173,192,32,232,
+253,250,161,184,5,209,225,42,81,42,116,90,94,198,47,119,
+157,222,91,2,255,157,147,47,235,230,172,218,78,189,74,77,
+129,50,233,70,253,43,170,142,78,111,237,231,198,94,140,138,
+54,111,229,215,203,177,117,12,85,25,229,132,178,88,220,20,
+189,12,70,182,190,30,41,49,64,97,99,228,67,183,188,116,
+123,109,113,215,134,231,22,168,210,43,138,216,20,28,34,33,
+123,101,87,183,35,205,21,229,172,34,213,25,137,154,165,255,
+243,137,177,239,149,90,207,17,233,233,237,226,72,137,228,144,
+124,60,254,45,79,98,178,5,237,238,188,232,12,45,159,4,
+185,65,36,129,114,87,230,197,134,233,73,212,79,147,161,87,
+164,134,194,123,176,55,190,66,160,238,56,240,80,51,229,193,
+115,255,57,169,191,80,223,182,50,30,45,20,116,145,11,37,
+45,206,76,144,80,153,183,129,166,202,37,90,247,147,229,122,
+87,229,239,199,199,81,189,113,169,34,55,213,230,148,239,111,
+201,184,160,238,113,159,139,138,150,99,142,26,6,172,196,91,
+129,62,49,248,124,228,80,147,110,67,164,35,107,57,189,99,
+45,221,195,212,156,16,93,202,34,41,241,84,74,162,195,80,
+156,145,62,213,160,177,236,100,101,255,223,25,246,191,137,227,
+6,52,44,250,199,202,85,125,56,157,126,228,44,116,94,207,
+164,80,28,148,138,69,38,71,171,37,192,152,72,202,176,82,
+1,24,223,46,214,197,221,25,133,3,236,228,191,215,97,10,
+56,149,165,107,181,96,155,54,247,8,11,71,106,244,202,222,
+44,102,126,107,197,240,24,241,0,252,114,67,66,255,217,228,
+30,152,187,20,37,229,107,219,131,32,104,182,219,208,71,152,
+165,167,27,140,95,131,239,101,206,149,138,251,196,38,238,25,
+176,207,180,139,42,75,150,51,225,106,70,200,6,67,201,93,
+150,207,240,223,153,146,168,25,72,153,150,156,253,44,74,147,
+139,143,20,246,164,125,54,63,137,240,23,209,101,207,175,75,
+180,58,89,128,116,144,173,198,187,17,201,254,232,226,179,243,
+88,185,147,39,119,124,241,55,89,159,150,71,238,199,203,175,
+27,167,144,132,85,57,237,156,168,197,132,27,26,26,116,39,
+183,139,233,134,186,160,248,50,17,40,65,151,67,240,129,64,
+16,11,50,217,210,179,11,158,237,35,109,171,114,130,0,66,
+190,189,83,181,94,106,183,107,171,69,91,200,250,96,229,44,
+138,1,105,200,33,162,52,44,83,112,153,93,29,67,119,165,
+24,9,203,183,146,53,37,19,245,242,126,95,92,112,194,34,
+180,107,223,140,72,228,8,71,49,202,229,146,223,150,245,21,
+81,179,31,8,185,88,131,57,215,79,28,12,124,95,140,222,
+225,35,112,144,86,195,74,159,186,90,132,241,98,12,80,1,
+61,65,16,70,127,226,113,240,32,184,12,246,217,39,151,156,
+38,117,171,42,1,87,81,59,231,50,23,3,90,236,69,208,
+182,176,213,77,151,130,178,166,32,80,154,83,67,138,237,178,
+8,113,12,252,51,125,42,176,169,195,63,16,200,112,164,99,
+75,87,246,125,114,249,151,80,60,90,40,4,194,112,153,58,
+121,174,55,98,101,174,202,103,187,154,17,123,20,251,46,154,
+201,230,93,158,137,50,37,184,36,112,13,65,212,213,124,208,
+136,198,62,181,54,39,164,48,172,202,68,73,212,166,60,27,
+215,10,198,128,178,197,152,8,44,168,77,131,46,123,172,143,
+117,77,138,237,53,141,245,199,135,173,74,4,246,133,97,210,
+166,210,175,22,78,33,17,188,114,60,85,131,99,148,82,106,
+180,210,105,225,122,234,177,57,213,60,137,137,27,117,149,25,
+84,80,234,103,169,34,9,136,223,82,35,167,24,108,212,184,
+169,22,77,159,150,77,95,6,2,65,163,177,214,114,159,151,
+213,98,103,241,70,108,32,151,53,154,212,185,190,3,42,82,
+0,177,214,238,178,101,165,255,88,55,92,111,74,173,233,106,
+206,97,82,171,82,138,6,215,84,10,55,234,137,237,218,80,
+166,142,148,227,203,226,166,74,244,74,203,129,170,64,165,69,
+24,23,75,145,72,109,165,154,194,227,66,136,147,49,76,156,
+26,80,73,158,133,131,145,213,1,44,94,53,14,134,144,174,
+196,203,199,55,120,11,34,34,80,43,69,213,47,250,25,43,
+76,128,56,116,169,223,252,200,214,17,28,46,9,70,56,125,
+6,76,8,114,248,244,232,224,206,83,191,218,229,156,179,108,
+86,83,157,44,45,92,189,31,20,59,58,141,215,105,151,229,
+227,89,91,17,45,206,29,244,100,71,166,146,6,150,121,41,
+172,78,110,194,92,129,250,163,170,158,19,60,139,108,205,85,
+41,138,144,220,5,28,2,105,83,205,216,122,165,76,2,211,
+32,220,59,45,81,47,15,195,58,72,14,160,76,198,140,56,
+45,23,243,74,41,185,88,80,24,28,35,250,95,114,37,143,
+140,44,74,166,162,4,168,186,164,89,132,79,160,93,36,68,
+43,205,166,246,116,39,131,138,20,31,24,138,145,218,116,45,
+118,254,149,46,170,194,226,24,66,119,74,139,5,90,120,88,
+239,105,52,234,151,143,17,143,9,229,95,126,44,163,7,145,
+232,185,194,110,45,142,1,102,152,16,216,236,194,155,131,111,
+106,158,29,149,179,29,72,30,124,205,215,138,165,216,217,108,
+36,56,96,64,22,56,214,45,129,242,215,251,21,102,232,189,
+126,172,179,41,180,208,38,115,165,191,4,83,60,245,179,95,
+155,11,70,243,188,55,43,101,215,7,47,141,172,119,36,30,
+78,21,245,108,101,195,83,64,152,204,3,45,26,227,210,157,
+61,216,59,173,54,209,159,146,245,67,101,118,172,140,235,194,
+148,124,10,148,2,75,1,203,201,106,78,23,153,143,46,66,
+175,175,85,158,134,212,207,154,85,57,87,238,48,226,217,52,
+81,90,69,173,209,0,188,224,96,185,3,78,7,36,95,174,
+113,59,171,193,54,84,41,49,20,229,29,116,58,50,129,22,
+142,228,168,178,254,203,97,143,98,237,151,107,71,76,220,186,
+89,6,135,23,222,134,233,183,177,139,54,162,237,147,225,88,
+251,58,42,253,42,233,67,166,91,103,244,168,40,28,57,114,
+204,171,110,24,248,188,67,197,35,92,20,76,132,82,223,7,
+244,146,64,164,162,176,28,121,94,207,146,201,41,234,131,145,
+192,171,79,112,79,153,240,123,36,235,236,12,174,70,182,193,
+0,46,140,33,214,12,145,164,151,112,59,243,250,146,172,108,
+155,235,57,197,246,156,31,20,238,54,132,52,38,59,99,150,
+181,136,47,164,49,180,238,32,3,79,115,215,21,16,186,53,
+16,157,98,104,3,123,234,20,40,21,4,150,202,195,197,110,
+104,107,192,221,2,94,254,34,51,239,76,90,181,192,2,198,
+243,17,136,129,217,76,120,216,177,6,253,141,220,157,132,179,
+221,217,37,50,240,208,208,242,73,122,35,223,130,184,248,184,
+92,137,32,221,218,40,172,26,244,91,17,116,40,252,179,218,
+128,73,2,153,104,232,162,85,175,86,247,18,137,102,150,127,
+117,245,162,147,76,153,188,11,142,230,51,86,42,213,87,115,
+153,162,116,31,204,161,129,130,84,7,106,194,171,84,10,180,
+65,148,192,161,169,57,190,8,197,170,199,141,124,227,165,148,
+132,145,186,99,9,129,61,14,214,164,42,181,116,165,134,0,
+229,100,74,233,226,192,227,189,54,156,199,239,200,83,13,2,
+21,53,39,109,96,95,219,139,180,46,47,11,246,122,85,7,
+65,56,132,180,196,155,168,24,143,38,8,244,27,0,84,183,
+112,52,167,63,246,14,10,122,101,112,81,138,66,66,65,11,
+92,230,54,71,116,78,232,205,83,105,111,90,245,65,4,3,
+63,203,151,5,242,186,226,28,236,56,112,116,246,134,211,3,
+201,23,120,6,181,115,70,249,5,177,72,188,145,209,32,133,
+31,26,186,165,2,23,46,215,212,118,237,154,197,116,151,137,
+34,24,162,210,69,61,14,209,234,80,249,245,68,6,222,73,
+13,193,226,182,96,56,224,109,82,129,1,41,202,243,72,176,
+134,146,149,240,242,101,224,201,135,173,176,222,66,51,98,54,
+145,1,164,232,95,25,19,231,0,251,42,217,183,15,235,149,
+33,165,42,3,88,94,1,136,72,227,124,58,91,202,0,38,
+53,42,143,211,211,44,63,36,27,204,155,101,186,36,204,208,
+141,92,1,47,103,229,93,161,156,245,28,72,193,162,151,245,
+107,19,2,10,44,68,200,98,105,161,130,45,236,91,198,182,
+46,145,91,243,14,199,10,19,57,195,4,239,247,45,44,190,
+217,213,44,186,152,137,106,195,76,101,180,180,160,199,138,201,
+98,104,190,99,124,6,22,121,209,111,102,148,233,141,37,136,
+84,206,94,30,93,87,216,70,2,153,146,139,150,165,19,190,
+83,44,113,186,73,80,234,74,116,12,16,241,156,149,221,20,
+188,221,192,81,161,151,131,21,157,110,120,16,49,150,234,140,
+16,233,130,163,26,143,152,146,65,171,207,41,238,22,68,67,
+191,24,96,160,168,137,23,49,166,160,136,72,240,114,254,152,
+104,45,97,94,247,13,114,253,113,23,231,141,70,219,135,74,
+62,242,129,111,65,122,109,187,173,42,233,226,5,146,40,46,
+36,111,228,99,162,70,130,46,66,90,47,1,63,72,33,32,
+216,82,133,121,117,182,243,77,171,244,208,58,190,238,28,77,
+102,157,9,182,217,121,36,210,81,136,35,63,48,4,32,109,
+215,201,124,228,10,126,28,192,99,155,103,229,2,102,98,45,
+81,41,110,212,134,8,198,84,13,55,154,235,100,239,163,80,
+203,36,204,91,69,55,18,110,170,92,228,100,121,88,241,11,
+23,34,203,26,110,35,152,119,200,77,205,169,11,81,249,31,
+68,66,10,200,228,114,59,47,40,5,254,42,67,44,109,53,
+17,139,37,133,17,33,73,88,254,8,102,9,149,72,45,229,
+255,165,180,163,190,8,55,111,17,142,72,100,93,128,71,60,
+25,181,81,43,141,136,79,133,25,78,2,213,205,75,88,139,
+74,219,157,240,189,223,238,20,84,210,175,192,132,152,81,52,
+97,163,88,21,113,44,141,18,14,86,56,160,188,68,14,123,
+188,2,104,80,150,210,217,116,35,168,72,50,171,80,31,79,
+246,171,104,247,220,82,155,42,148,34,132,97,201,211,93,164,
+131,73,235,168,81,101,43,138,203,10,229,72,57,148,39,32,
+241,106,175,215,213,25,231,125,140,200,52,216,31,245,248,172,
+168,92,46,93,113,140,53,253,23,173,133,203,95,75,78,122,
+66,150,67,163,138,92,110,71,35,236,9,118,87,139,139,209,
+79,240,135,116,185,199,86,136,231,93,33,49,97,17,184,118,
+203,251,29,125,147,104,14,10,51,192,188,48,10,13,34,158,
+87,69,63,207,35,246,42,130,87,109,95,1,79,238,36,62,
+24,144,33,157,186,64,116,60,74,93,128,251,66,104,168,178,
+120,18,242,66,7,242,128,210,81,129,245,172,188,159,29,24,
+122,174,165,33,111,172,180,86,144,184,78,239,229,29,219,23,
+74,175,226,199,151,158,49,231,181,180,180,101,199,129,86,231,
+70,216,184,113,206,37,4,36,249,3,137,102,77,218,212,85,
+184,254,32,248,171,110,98,42,94,83,170,88,161,178,181,18,
+99,209,38,132,101,244,199,64,97,215,149,160,44,8,182,114,
+74,186,8,230,48,134,67,28,142,213,186,16,52,171,240,16,
+46,32,41,169,66,159,60,184,132,81,15,35,77,201,121,204,
+54,6,161,126,202,70,167,70,74,102,230,158,105,162,178,162,
+116,99,114,95,112,236,148,38,187,255,198,104,167,0,177,191,
+150,208,155,128,74,126,160,159,214,43,171,130,35,124,81,79,
+177,178,62,189,195,94,42,180,31,130,206,196,98,134,134,230,
+154,153,152,247,116,67,34,180,183,16,19,87,105,170,87,46,
+166,35,245,231,130,235,71,245,11,209,77,211,37,122,213,219,
+46,169,32,92,186,42,113,124,50,245,66,69,248,13,130,195,
+151,76,249,32,128,95,62,18,138,215,212,219,160,251,1,21,
+156,125,135,121,47,34,212,127,28,208,166,184,63,41,220,64,
+163,170,92,164,250,188,64,153,90,21,159,59,80,27,80,14,
+238,159,45,124,212,41,86,1,127,11,69,143,211,51,88,139,
+201,128,54,9,42,83,203,86,209,168,32,57,57,65,54,64,
+149,86,174,188,18,158,52,4,153,98,220,152,227,199,128,168,
+243,3,245,126,236,92,108,208,220,23,94,96,136,115,169,175,
+30,1,241,254,13,137,240,64,166,161,23,147,35,174,42,196,
+69,75,9,135,24,61,160,57,132,8,63,161,169,181,178,212,
+179,198,208,194,20,76,170,124,111,229,231,143,118,52,173,51,
+44,33,31,131,234,11,89,171,139,14,56,64,219,80,25,164,
+129,159,91,100,183,95,116,85,81,61,21,225,58,19,47,37,
+134,154,158,226,248,62,126,129,81,21,41,56,221,172,237,15,
+237,43,210,22,193,98,243,52,35,43,164,235,139,235,124,15,
+155,173,249,48,181,205,253,160,232,94,75,110,77,140,174,154,
+40,141,99,0,42,171,174,221,245,139,250,5,39,126,143,117,
+213,99,94,198,244,247,14,42,80,157,117,81,215,243,181,128,
+158,100,9,216,151,75,161,7,106,65,176,33,80,84,138,158,
+219,69,103,30,103,60,72,99,212,143,95,40,252,147,117,138,
+66,241,131,237,163,246,201,238,200,160,221,179,70,195,66,3,
+169,195,110,242,220,1,16,14,88,76,184,128,205,201,130,222,
+242,208,21,61,214,184,133,52,117,16,192,98,225,110,161,75,
+100,58,145,33,155,3,104,186,212,225,80,156,66,177,163,136,
+114,238,48,11,150,81,215,59,81,225,43,240,164,147,102,125,
+146,108,120,199,83,211,16,142,65,57,68,15,0,168,93,121,
+82,107,125,108,225,16,95,53,36,77,70,23,113,35,222,88,
+71,76,249,16,240,224,91,188,253,141,227,165,193,23,161,128,
+38,81,73,189,15,146,70,127,162,93,203,12,250,179,105,110,
+231,138,21,164,12,85,126,47,162,218,44,252,173,58,108,76,
+75,133,31,165,88,60,153,244,28,134,173,136,149,148,239,51,
+84,235,35,34,200,68,49,251,74,2,210,189,82,214,150,87,
+134,115,39,213,166,166,159,135,210,126,130,136,24,189,29,160,
+204,243,10,22,10,131,23,241,30,59,214,96,207,21,165,181,
+46,103,76,13,161,118,27,69,42,152,17,29,229,28,156,51,
+99,89,64,246,249,156,17,239,223,144,8,15,100,158,51,49,
+122,145,162,0,137,100,49,130,73,3,20,41,24,168,54,66,
+172,203,71,101,249,16,110,28,151,17,145,50,242,106,47,8,
+246,242,101,148,128,38,161,140,166,231,192,50,87,56,45,162,
+239,121,192,69,162,245,121,234,167,17,230,10,64,151,74,130,
+72,79,213,211,127,8,82,114,117,169,159,165,234,204,70,130,
+26,188,229,45,77,149,131,72,172,86,238,247,156,28,66,98,
+240,81,34,168,167,198,211,39,180,164,242,167,79,185,204,147,
+24,159,167,57,230,64,83,123,124,218,14,107,75,128,31,16,
+148,216,161,55,158,126,99,138,92,141,215,252,127,132,95,243,
+8,211,168,216,201,115,228,170,102,251,27,65,197,33,224,216,
+241,192,49,175,15,207,17,140,232,142,179,28,144,84,72,100,
+52,26,50,212,41,251,170,188,125,67,226,42,173,52,216,47,
+171,129,251,215,24,69,41,157,78,209,59,7,63,230,210,33,
+200,111,14,148,154,18,250,205,12,221,7,21,81,178,82,72,
+75,33,68,93,224,155,9,84,17,117,214,14,196,59,105,130,
+122,131,16,138,128,148,87,190,245,188,136,122,88,24,38,110,
+222,104,167,75,92,50,92,116,166,132,199,216,167,155,84,167,
+141,113,99,1,75,106,86,109,46,235,140,51,196,208,87,101,
+146,151,48,83,28,210,109,120,133,177,39,139,184,35,30,114,
+147,186,155,86,30,79,210,213,4,13,73,111,223,224,171,29,
+101,232,172,108,44,125,200,129,47,246,23,120,240,129,214,126,
+137,99,2,25,85,246,214,15,46,249,212,71,123,82,214,135,
+91,99,41,26,97,47,110,136,205,107,35,156,190,146,71,180,
+99,166,162,147,208,58,126,52,164,18,198,46,57,231,138,118,
+14,14,142,162,173,161,89,249,157,181,43,74,222,132,200,175,
+211,67,49,40,113,136,209,88,236,42,216,13,137,203,204,40,
+174,128,66,84,240,173,160,138,56,164,81,210,129,180,148,216,
+146,196,81,17,111,215,114,169,4,225,54,49,163,62,146,21,
+48,172,247,226,25,1,163,176,95,70,245,56,227,185,196,42,
+104,174,129,62,24,206,95,148,194,56,17,37,227,199,219,175,
+212,41,12,195,202,176,131,145,174,48,98,92,75,244,190,217,
+236,241,199,198,0,214,187,104,110,72,36,137,162,184,145,148,
+207,55,209,240,176,158,203,101,92,71,51,182,228,241,68,183,
+209,198,29,52,70,146,213,139,248,254,206,212,144,172,221,97,
+3,101,200,43,102,219,67,93,159,200,37,27,25,58,60,104,
+244,222,25,164,70,167,213,229,155,91,143,243,162,168,82,194,
+87,150,178,89,236,90,22,219,86,182,67,16,148,186,196,65,
+213,37,230,2,39,122,121,227,15,42,161,245,59,138,225,106,
+6,127,121,90,226,184,108,73,31,176,9,53,135,33,73,76,
+195,84,191,165,175,20,229,16,23,241,168,46,241,74,121,231,
+175,48,214,117,215,141,27,139,71,12,246,69,243,156,28,158,
+65,19,236,46,121,33,12,3,92,229,89,105,176,14,199,95,
+246,111,215,93,118,229,152,203,116,215,156,165,191,82,193,1,
+95,38,228,64,110,85,14,169,206,130,114,187,29,252,195,224,
+74,151,82,149,202,228,51,143,165,186,27,84,139,131,175,182,
+149,226,204,200,161,180,114,46,192,143,163,200,7,34,110,195,
+129,13,104,168,237,148,43,211,128,241,178,60,239,40,56,27,
+184,17,29,21,165,113,189,50,189,230,164,214,42,117,18,44,
+37,205,56,172,143,116,33,196,241,132,215,75,84,77,118,91,
+91,85,209,88,138,10,20,15,210,139,62,149,40,201,23,29,
+178,41,51,93,121,43,231,164,71,129,173,216,105,147,71,142,
+14,78,183,181,200,193,218,20,103,211,193,104,193,49,169,72,
+138,29,222,77,125,130,48,224,112,63,60,21,21,30,204,71,
+145,225,92,41,27,13,89,76,53,78,234,193,61,245,177,111,
+225,229,41,117,117,12,82,39,224,215,188,136,74,13,121,168,
+105,143,117,231,1,243,231,41,148,69,55,95,141,136,149,88,
+23,255,104,241,89,5,141,68,219,212,106,240,68,129,5,39,
+219,4,188,54,225,108,7,61,120,163,182,224,21,213,104,115,
+136,95,236,202,106,9,204,154,97,173,230,209,176,126,222,17,
+216,71,8,95,233,198,110,7,193,43,250,99,170,240,177,193,
+220,220,31,193,144,208,187,79,244,226,162,63,87,217,103,146,
+163,145,65,63,201,128,130,82,225,98,169,108,31,220,106,110,
+188,223,219,86,198,246,162,126,60,237,123,5,5,225,210,227,
+221,178,71,175,238,134,132,250,70,69,20,10,117,190,148,135,
+17,178,93,34,44,144,7,188,214,106,137,109,252,149,19,29,
+160,250,131,183,184,37,223,144,208,191,13,199,161,152,88,12,
+86,24,37,83,189,170,137,218,140,57,168,186,150,49,203,243,
+151,191,5,140,9,102,65,163,44,136,182,22,42,186,22,116,
+205,241,156,226,123,38,10,14,144,199,86,3,190,140,82,26,
+72,124,75,39,150,22,60,127,131,17,72,47,157,39,50,189,
+166,166,8,37,51,198,61,28,162,116,21,86,100,143,15,114,
+231,159,194,247,168,164,214,169,172,26,209,126,91,196,128,130,
+136,200,186,22,70,177,194,235,210,84,68,204,98,246,190,47,
+245,247,72,203,110,225,180,226,36,124,17,152,170,119,108,144,
+47,8,146,7,252,101,176,215,118,14,125,152,252,166,102,46,
+23,44,71,54,35,196,1,83,23,96,195,238,212,5,229,251,
+113,203,45,132,97,57,60,97,128,172,195,241,138,212,103,133,
+255,141,187,114,170,92,38,75,194,3,192,97,60,83,213,104,
+141,45,131,108,163,234,47,235,32,211,7,243,113,211,191,89,
+165,106,242,175,53,230,68,192,133,114,202,171,247,187,31,252,
+37,14,51,127,174,139,189,2,140,89,162,86,230,42,209,168,
+187,117,35,84,217,96,186,235,216,127,26,215,54,94,107,25,
+175,188,180,216,6,158,0,89,190,103,124,248,217,154,154,198,
+199,201,115,154,135,186,150,48,95,6,161,34,90,0,149,22,
+243,78,151,156,180,220,160,221,14,123,144,240,170,207,179,227,
+167,24,214,219,41,56,210,69,180,165,8,13,93,181,108,75,
+83,226,151,52,105,184,51,44,254,242,107,254,99,152,100,216,
+230,255,31,39,130,164,182,

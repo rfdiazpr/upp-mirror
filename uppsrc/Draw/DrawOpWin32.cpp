@@ -65,6 +65,7 @@ bool Draw::ExcludeClipOp(const Rect& r)
 	Rect rr = LPtoDP(r);
 	HRGN hrgn = ::CreateRectRgnIndirect(rr);
 	int q = ::ExtSelectClipRgn(handle, hrgn, RGN_DIFF);
+	ASSERT(q != ERROR);
 	::DeleteObject(hrgn);
 	return q == SIMPLEREGION || q == COMPLEXREGION;
 }
@@ -75,6 +76,7 @@ bool Draw::IntersectClipOp(const Rect& r)
 	Rect rr = LPtoDP(r);
 	HRGN hrgn = ::CreateRectRgnIndirect(rr);
 	int q = ::ExtSelectClipRgn(handle, hrgn, RGN_AND);
+	ASSERT(q != ERROR);
 	::DeleteObject(hrgn);
 	return q == SIMPLEREGION || q == COMPLEXREGION;
 }

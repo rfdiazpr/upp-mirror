@@ -145,4 +145,5 @@ ColorButton::ColorButton()
 {
 	SetFrame(NullFrame());
 	NoTrack();
+	Transparent();
 }

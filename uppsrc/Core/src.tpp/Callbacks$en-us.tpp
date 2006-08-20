@@ -1,446 +1,260 @@
 TITLE("Callbacks")
-REF("::Callback1::Callback1()")
-REF("::Callback1::~Callback1()")
-REF("::Callback1::Clear()")
-REF("::Gate::ClearTrue()")
-REF("::Gate::ClearFalse()")
-REF("::Callback1::operator bool()const")
-REF("::Callback1::Execute(P1)const")
-REF("::Callback1::operator()(P1)const")
-REF("::Callback1::Empty()")
-REF("::Callback4Action::Callback4Action()")
-REF("::Callback4Action::~Callback4Action()")
-REF("::Callback4Action::Execute(P1,P2,P3,P4)")
-REF("::callback(OBJECT*,void(METHOD::*)(P1 p1))")
-REF("::pteback(OBJECT*,void(METHOD::*)(P1 p1))")
-REF("::callback(void(*)(P1 p1))")
-REF("::callback1(Object*,void(M::*)(P),T)")
-REF("::callback1(const Object*,void(M::*)(P)const,T)")
-REF("::pteback1(Object*,void(M::*)(P),T)")
-REF("::callback1(void(*)(P),T)")
-REF("::callback1(Object*,void(M::*)(P1,P),T)")
-REF("::callback1(const Object*,void(M::*)(P1,P)const,T)")
-REF("::pteback1(Object*,void(M::*)(P1,P),T)")
-REF("::callback1(void(*)(P1,P),T)")
-REF("::callback2(Object*,R(O::*)(A,B),T1,T2)")
-REF("::callback2(const Object*,R(O::*)(A,B)const,T1,T2)")
-REF("::pteback2(Object*,R(O::*)(A,B),T1,T2)")
-REF("::callback2(R(*)(A,B),T1,T2)")
-REF("::THISBACK(x)")
-REF("::THISBACK1(x, arg)")
-REF("::THISBACK2(m, a, b)")
-REF("::PTEBACK(x)")
-REF("::PTEBACK1(x, arg)")
-REF("::PTEBACK2(m, a, b)")
-REF("::CallbackArgTarget::CallbackArgTarget()")
-REF("::CallbackArgTarget::operator const T&()")
-REF("::CallbackArgTarget::IsNullInstance()const")
-REF("::CallbackArgTarget::operator[](const T&)")
-TOPIC_TEXT(
-"[2 $$0,0#00000000000000000000000000000000:Default][l288;i1120;a17;O9;~~~.1408;2 "
-"$$1,0#10431211400427159095818037425705:param][a83;*R6 $$2,5#31310162474203024125188417583966:caption][b83;*4 "
-"$$3,5#07864147445237544204411237157677:title][i288;O9;C2 $$4,6#40027414424643823182269349404212:item][b42;a42;2 "
-"$$5,5#45413000475342174754091244180557:text][l288;b42;a17;2 $$6,6#27521748481378242620020725143825:")
-TOPIC_TEXT(
-"desc][l321;t246;C@5;1 $$7,7#20902679421464641399138805415013:code][b2503; $$8,0#65142375456100023862071332075487:separator][*@(0.0.255)2 "
-"$$9,0#83433469410354161042741608181528:base][t4167;C $$10,0#37138531426314131251341829483380:class][l288;a17;*1 "
-"$$11,11#70004532496200323422659154056402:requirement][i417;b42;a42;O9;~~~.416;2 $$12,12#10566046415157235020018451313112:tparam][b167;C2 "
-"$$13,13#924304")
-TOPIC_TEXT(
-"59443460461911108080531343:item1][i288;a42;O9;C2 $$14,14#77422149456609303542238260500223:item2][*@2$(0.128.128) "
-"$$15,15#34511555403152284025741354420178:NewsDate][l321;*C$7;2 $$16,16#03451589433145915344929335295360:result][l321;b83;a83;*C$7;2 "
-"$$17,17#07531550463529505371228428965313:result`-line][l160;t4167;*C+117 $$18,5#88603949442205825958800053222425:package`-title][ "
-"$$19,0#535800234423355290")
-TOPIC_TEXT(
-"39900623488521:gap][t4167;C2 $$20,20#70211524482531209251820423858195:class`-nested][b50;2 "
-"$$21,21#03324558446220344731010354752573:Par][{_}%EN-US [s2; Callbacks&][s5; Callbacks "
-"can be described as a very generalized form of function pointers. Each Callback represents "
-"some kind of action (usually calling a certain function or a certain object method) "
-"that can be invoked at any time.&][s5; There ar")
-TOPIC_TEXT(
-"e several basic callback types, depending on number of parameters passed and return "
-"value. In order to keep description of callbacks short, all these types are described "
-"in a single `\"parametrized`\" description, with parameters [*/@(128.0.255) highlighted].&][s3; "
-"Callback types&][s6; &][ {{1514:5185:1933:1368h1;t/17b/17@(204) [s12;i0;b0;a0;~~*/@(128.0.255)1 "
-"[%00-00 CallbackType]]:: [s12;b0;a0;*/@(")
-TOPIC_TEXT(
-"128.0.255)1 [%00-00 parameters]]:: [s12;b0;a0;*/@(128.0.255)1 [%00-00 arguments]]:: "
-"[s12;b0;a0;*/@(128.0.255)1 [%00-00 return`_type]]::@2 [s12;i0;b0;a0;*C+75 [%00-00 "
-"Callback]]:: [s12;b0;a0;*/C@(0.0.255)+75 [%00-00 none]]:: [s12;b0;a0;*/C@(0.0.255)+75 "
-"[%00-00 none]]:: [s12;b0;a0;*/C+75 [%00-00 void]]:: [s12;b0;a0;*C+75 [%00-00 Callback1]]:: "
-"[s12;b0;a0;*/C+75 [%00-00 class P1]]:: [s12;b0;a0;*/C+75 ")
-TOPIC_TEXT(
-"[%00-00 P1]]:: [s12;b0;a0;*/C+75 [%00-00 void]]:: [s12;b0;a0;*C+75 Callback2]:: "
-"[s12;b0;a0;*/C+75 class P1, class P2]:: [s12;b0;a0;*/C+75 P1, P2]:: [s12;b0;a0;*/C+75 "
-"void]:: [s12;b0;a0;*C+75 Callback3]:: [s12;i0;b0;a0;~~*/C+75 class P1, class P2, "
-"class P3]:: [s12;i0;b0;a0;~~*/C+75 P1, P2, P3]:: [s12;i0;b0;a0;~~*/C+75 void]:: [s12;b0;a0;*C+75 "
-"Callback4]:: [s12;i0;b0;a0;~~*/C+75 class P1, class P2, ")
-TOPIC_TEXT(
-"class P3, class P4]:: [s12;i0;b0;a0;~~*/C+75 P1, P2, P3, P4]:: [s12;i0;b0;a0;~~*/C+75 "
-"void]:: [s12;b0;a0;*C+75 Gate]:: [s12;b0;a0;*/C@(0.0.255)+75 none]:: [s12;b0;a0;*/C@(0.0.255)+75 "
-"none]:: [s12;b0;a0;*/C+75 bool]:: [s12;b0;a0;*C+75 Gate1]:: [s12;b0;a0;*/C+75 class "
-"P1]:: [s12;b0;a0;*/C+75 P1]:: [s12;b0;a0;*/C+75 bool]:: [s12;b0;a0;*C+75 Gate2]:: "
-"[s12;b0;a0;*/C+75 class P1, class P2]:: [s12;b0;a0;")
-TOPIC_TEXT(
-"*/C+75 P1, P2]:: [s12;b0;a0;*/C+75 bool]:: [s12;b0;a0;*C+75 Gate3]:: [s12;i0;b0;a0;~~*/C+75 "
-"class P1, class P2, class P3]:: [s12;i0;b0;a0;~~*/C+75 P1, P2, P3]:: [s12;i0;b0;a0;~~*/C+75 "
-"bool]}}&][s0; &][s0; &][s10; `[ template_<[*/@(128.0.255) parameters]> `]&][s10;*/@(128.0.255) "
-"[%00-00*/@0 class_]CallbackType&][s6; &][s6; Callback type. Callbacks are moveable "
-"types with fast deep copy (using refer")
-TOPIC_TEXT(
-"ence counting).&][s6; &][s0; &][s4; [%00-00 explicit_][*/@(128.0.255) CallbackType][%00-00 "
-"(][*/@(128.0.255) CallbackType][%00-00 Action<][*/@(128.0.255) arguments>][%00-00 "
-"_`*][%00-00*@3 newaction][%00-00 )]&][s6; Constructs callback based from new action.&][s1; "
-"[%00-00*C@3 newaction]-|Action. Must be created using [* new] operator. Callback "
-"takes over its ownership.&][s0; &][s4;:`:`:Callback1`:`")
-TOPIC_TEXT(
-":Callback1`(`): [*/@(128.0.255) CallbackType][%00-00 ()]&][s6; Creates an empty "
-"callback.&][s0; &][s4; [*/@(128.0.255) CallbackType][%00-00 (const_][*/@(128.0.255) "
-"CallbackType][%00-00 `&_][%00-00*@3 c][%00-00 )]&][s6; Copy constructor. &][s1; [%00-00*C@3 "
-"c]-|Source callback.&][s0; &][s4;:`:`:Callback1`:`:`~Callback1`(`): [%00-00 `~][*/@(128.0.255) "
-"CallbackType][%00-00 ()]&][s6; Destructor.&][s0; ")
-TOPIC_TEXT(
-"&][s4;:`:`:Callback1`:`:Clear`(`): [%00-00 void_][%00-00* Clear][%00-00 ()]&][s6; "
-"Empties the callback.&][s0; &][s4;:`:`:Gate`:`:ClearTrue`(`): [%00-00 void_][%00-00* "
-"ClearTrue][%00-00 ()]&][s11; Only in Gate callbacks.&][s6; Clears Gate. After this "
-"method is invoked, the Gate performs no actions but returns true.&][s0; &][s4;:`:`:Gate`:`:ClearFalse`(`): "
-"[%00-00 void_][%00-00* ClearFalse][%00-00 (")
-TOPIC_TEXT(
-")]&][s11; Only in Gate callbacks.&][s6; Clears Gate. After this method is invoked, "
-"the Gate performs no actions and returns false. This is the same as Clear.&][s0; "
-"&][s4;:`:`:Callback1`:`:operator bool`(`)const: [%00-00* operator_bool][%00-00 ()_const]&][s1; "
-"[*/ Return value]-|True if the callback is valid. Invoking a valid callback invokes "
-"an action.&][s0; &][s4;:`:`:Callback1`:`:Execute`(P1`)con")
-TOPIC_TEXT(
-"st: [%00-00*/@(128.0.255) return`_type][%00-00 _][%00-00* Execute][%00-00 (][*/@(128.0.255) "
-"arguments][%00-00 )_const]&][s6; Executes the callback with given set of arguments.&][s0; "
-"&][s4;:`:`:Callback1`:`:operator`(`)`(P1`)const: [*/@(128.0.255) return`_type][%00-00 "
-"_][%00-00* operator()][%00-00 (][*/@(128.0.255) arguments][%00-00 )_const]&][s6; "
-"Same as the Execute method.&][s0; &][s4;:`:`:Callba")
-TOPIC_TEXT(
-"ck1`:`:Empty`(`):*/@(128.0.255) &][s10; [%00-00 `[ template_<][%00-00*/@(128.0.255) "
-"parameters][%00-00 > `]]&][s10;* [%00-00* struct_][%00-00/@(128.0.255) CallbackType][%00-00 "
-"Action]&][s6; This is the abstract base class for callback action implementations. "
-"Callback holds reference counted pointer to instance of class derived from this class.&][s0; "
-"&][s4;:`:`:Callback4Action`:`:Callback4Action`(`")
-TOPIC_TEXT(
-"): [%00-00*/@(128.0.255) CallbackType][%00-00* Action][%00-00 ()]&][s6; Constructor. "
-"Assigns 1 to the reference count.&][s0; &][s4;:`:`:Callback4Action`:`:`~Callback4Action`(`): "
-"[%00-00 `~][%00-00*/@(128.0.255) CallbackType][%00-00* Action][%00-00 ()]&][s6; Virtual "
-"destructor.&][s0; &][s4;:`:`:Callback4Action`:`:Execute`(P1`,P2`,P3`,P4`):@3 [%00-00@0 "
-"virtual ][*/@(128.0.255) return`_type][%00-00@0")
-TOPIC_TEXT(
-" _][%00-00*@0 Execute][%00-00@0 (][%00-00*/@(128.0.255) arguments][%00-00@0 )_`=_][%00-00 "
-"0]&][s6; Performs the action with specified set of arguments.&][s0; &][s4; [%00-00 "
-"virtual bool_][%00-00* IsValid][%00-00 ()_const]&][s1; [*/ Return value]-|true if "
-"the Action is valid. Default implementation returns true.&][s0; &][s4;* [%00-00* "
-"Atomic_][%00-00 count]&][s6; Member variable used as reference c")
-TOPIC_TEXT(
-"ount.&][s0; &][s3; Common functions creating callbacks&][s13;:`:`:callback`(OBJECT`*`,void`(METHOD`:`:`*`)`(P1 "
-"p1`)`): template_<class [*@4 OBJECT], class [*@4 METHOD][*@(128.0.255) ,][*@4  ][*/@(128.0.255) "
-"parameters]>&][s14; [%00-00*/@(128.0.255) CallbackType][%00-00 <][%00-00*/@(128.0.255) "
-"arguments][%00-00 > ][%00-00* callback][%00-00 (][%00-00*@4 OBJECT][%00-00 _`*][%00-00*@3 "
-"object][%00-00 ,")
-TOPIC_TEXT(
-" void_(][%00-00*@4 METHOD][%00-00 `::`*][%00-00*@3 method][%00-00 )(][*/@(128.0.255) "
-"arguments][%00-00 ))]&][s6; Creates a callback that invokes the specified method "
-"of the specified object.&][s1; [%00-00*C@3 object]-|Pointer to the object.&][s1; "
-"[%00-00*C@3 method]-|Pointer to the method.&][s1; [*/ Return value]-|Created callback.&][s0; "
-"&][s13;:`:`:callback`(OBJECT`*`,void`(METHOD`:`:`*`)`(P1 p1`")
-TOPIC_TEXT(
-")`): template_<class [*@4 OBJECT], class [*@4 METHOD][*@(128.0.255) ,][*@4  ][*/@(128.0.255) "
-"parameters]>&][s14; [%00-00*/@(128.0.255) CallbackType][%00-00 <][%00-00*/@(128.0.255) "
-"arguments][%00-00 > ][%00-00* callback][%00-00 (const ][%00-00*@4 OBJECT][%00-00 "
-"_`*][%00-00*@3 object][%00-00 , void_(][%00-00*@4 METHOD][%00-00 `::`*][%00-00*@3 "
-"method][%00-00 )(][*/@(128.0.255) arguments][%00-00 ) con")
-TOPIC_TEXT(
-"st)]&][s6; Constant variant of callback. The created Callback object invokes a constant "
-"method of the object.&][s1; [%00-00*C@3 object]-|Pointer to the object.&][s1; [%00-00*C@3 "
-"method]-|Pointer to the constant method to invoke.&][s1; [*/ Return value]-|Created "
-"callback.&][s0; &][s13;:`:`:pteback`(OBJECT`*`,void`(METHOD`:`:`*`)`(P1 p1`)`): `[ "
-"template_<[*/@(128.0.255) parameters]> `]&][s14; [%00-0")
-TOPIC_TEXT(
-"0*/@(128.0.255) CallbackType]<[*/@(128.0.255) arguments]> [%00-00* pteback][%00-00 "
-"(][%00-00*@4 OBJECT][%00-00 _`*][%00-00*@3 object][%00-00 , void_(][%00-00*@4 METHOD][%00-00 "
-"`::`*][%00-00*@3 method][%00-00 )(][*/@(128.0.255) arguments][%00-00 ))]&][s6; Creates "
-"a Callback object which is similar to the one created by callback, but which can "
-"be safely invoked even after destruction of [@3 object] ")
-TOPIC_TEXT(
-"(results in no operation).&][s1; [%00-00*C@3 object]-|Pointer to the object. Must "
-"be an ancestor of the [^topic`:`/`/Core`/src`/PtePtr`$en`-us`#`:`:Pte`:`:template "
-"`<class T`> class Pte^ Pte] class.&][s1; [%00-00*C@3 method]-|Pointer to the method.&][s1; "
-"[*/ Return value]-|Created callback.&][s0; &][s13;:`:`:callback`(void`(`*`)`(P1 p1`)`): "
-"`[ template_<[*/@(128.0.255) parameters]> `]&][s14; [%00-")
-TOPIC_TEXT(
-"00*/@(128.0.255) CallbackType]<[*/@(128.0.255) arguments]> [%00-00* callback][%00-00 "
-"(void_(`*][%00-00*@3 fn][%00-00 )(][*/@(128.0.255) arguments][%00-00 ))]&][s6; Creates "
-"a Callback object that invokes a non`-member function.&][s1; [%00-00*C@3 fn]-|Pointer "
-"to the function.&][s1; [*/ Return value]-|Created callback.&][s0; &][s13; `[ template_<[*/@(128.0.255) "
-"parameters]> `]&][s14; [%00-00*/@(128.0")
-TOPIC_TEXT(
-".255) CallbackType]<[*/@(128.0.255) arguments]>[%00-00  ][%00-00* Proxy][%00-00 "
-"(][%00-00*/@(128.0.255) CallbackType]<[*/@(128.0.255) arguments]>[%00-00 `&_][%00-00*@3 "
-"cb][%00-00 )]&][s6; Creates a Callback object that invokes another Callback object. "
-"Useful for callback routing (e.g. when some parent Ctrl wants to reroute some of "
-"its child callbacks via its interface). Note that this function sto")
-TOPIC_TEXT(
-"res a reference to the target callback in the created callback `- storing callbacks "
-"that are used as Proxy targets in Vector flavor of containers is not a good idea.&][s1; "
-"[%00-00*C@3 cb]-|Target callback.&][s1; [*/ Return value]-|Created callback.&][s0; "
-"&][s13; `[ template_<[*/@(128.0.255) parameters]> `]&][s14; [*/@(128.0.255) CallbackType]<[*/@(128.0.255) "
-"arguments]> [%00-00* callback][%00-00 (")
-TOPIC_TEXT(
-"][*/@(128.0.255) CallbackType]<[*/@(128.0.255) arguments]> [%00-00 _][%00-00*@3 "
-"cb1][%00-00 , ][*/@(128.0.255) CallbackType]<[*/@(128.0.255) arguments]> [%00-00 "
-"_][%00-00*@3 cb2][%00-00 )]&][s6; Creates a Callback object that invokes two other "
-"callbacks. Note that this function stores a reference to the target callbacks in "
-"the created callback `- storing callbacks that are used as targets here in ")
-TOPIC_TEXT(
-"Vector flavor of containers is not a good idea. For Gate callbacks, the result of "
-"this operation is the boolean value returned by [*@3 cb2].&][s1; [%00-00*C@3 cb1]-|First "
-"target callback.&][s1; [%00-00*C@3 cb2]-|Second target callback.&][s1; [*/ Return "
-"value]-|Created callback.&][s0; &][s13; `[ template_<[*/@(128.0.255) parameters]> "
-"`]&][s14; [*/@(128.0.255) CallbackType]<[*/@(128.0.255) arguments")
-TOPIC_TEXT(
-"]>[%00-00 `&_][%00-00* operator<<][%00-00 (][*/@(128.0.255) CallbackType]<[*/@(128.0.255) "
-"arguments]> [%00-00 `&_][%00-00*@3 a][%00-00 , ][*/@(128.0.255) CallbackType]<[*/@(128.0.255) "
-"arguments]>[%00-00 _][%00-00*@3 b][%00-00 )]&][s6; Operator variant of the previous "
-"function. Allows chaining thus imitating callback insertion.&][s1; [%00-00*C@3 a]-|First "
-"callback. Its value is replaced by a callba")
-TOPIC_TEXT(
-"ck that calls both the first and the second callback.&][s1; [%00-00*C@3 b]-|Second "
-"callback.&][s1; [*/ Return value]-|Reference to the first callback.&][s0;3 &][s3; "
-"Special functions creating callbacks&][s0; &][s4;:`:`:callback1`(Object`*`,void`(M`:`:`*`)`(P`)`,T`): "
-"[%00-00 template_<class_][%00-00*@4 Object][%00-00 , class_][%00-00*@4 M][%00-00 "
-", class_][%00-00*@4 P][%00-00 , class_][%00-00*@4 T]")
-TOPIC_TEXT(
-"[%00-00 >]&][s4;:`:`:callback1`(Object`*`,void`(M`:`:`*`)`(P`)`,T`): [%00-00 Callback_][%00-00* "
-"callback1][%00-00 (][%00-00*@4 Object][%00-00 _`*][%00-00*@3 object][%00-00 , void_(][%00-00*@4 "
-"M][%00-00 `::`*][%00-00*@3 method][%00-00 )(][%00-00*@4 P][%00-00 ), ][%00-00*@4 "
-"T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; Returns a no`-parameter callback for "
-"a method expecting a single parameter. The par")
-TOPIC_TEXT(
-"ameter is supplied as [@3 arg] and stored in the Callback.&][s1; [%00-00*C@3 object]-|Object.&][s1; "
-"[%00-00*C@3 method]-|Method pointer.&][s1; [%00-00*C@3 arg]-|Argument&][s1; [*/ Return "
-"value]-|Created callback.&][s0; &][s4;:`:`:callback1`(const Object`*`,void`(M`:`:`*`)`(P`)const`,T`): "
-"[%00-00 template_<class_][%00-00*@4 Object][%00-00 , class_][%00-00*@4 M][%00-00 "
-", class_][%00-00*@4 P][%00-00 ")
-TOPIC_TEXT(
-", class_][%00-00*@4 T][%00-00 >]&][s4;:`:`:callback1`(const Object`*`,void`(M`:`:`*`)`(P`)const`,T`): "
-"[%00-00 Callback_][%00-00* callback1][%00-00 (const_][%00-00*@4 Object][%00-00 _`*][%00-00*@3 "
-"object][%00-00 , void_(][%00-00*@4 M][%00-00 `::`*][%00-00*@3 method][%00-00 )(][%00-00*@4 "
-"P][%00-00 )_const, ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; Constant "
-"variant of the previous callb")
-TOPIC_TEXT(
-"ack1 routine.&][s1; [%00-00*C@3 object]-|Object.&][s1; [%00-00*C@3 method]-|Method "
-"pointer.&][s1; [%00-00*C@3 arg]-|Argument&][s1; [*/ Return value]-|Created callback.&][s0;*C@4 "
-"&][s4;:`:`:pteback1`(Object`*`,void`(M`:`:`*`)`(P`)`,T`): [%00-00 template_<class_][%00-00*@4 "
-"Object][%00-00 , class_][%00-00*@4 M][%00-00 , class_][%00-00*@4 P][%00-00 , class_][%00-00*@4 "
-"T][%00-00 >]&][s4;:`:`:pteback1`(")
-TOPIC_TEXT(
-"Object`*`,void`(M`:`:`*`)`(P`)`,T`): [%00-00 Callback_][%00-00* pteback1][%00-00 "
-"(][%00-00*@4 Object][%00-00 _`*][%00-00*@3 object][%00-00 , void_(][%00-00*@4 M][%00-00 "
-"`::`*][%00-00*@3 method][%00-00 )(][%00-00*@4 P][%00-00 ), ][%00-00*@4 T][%00-00 "
-"_][%00-00*@3 arg][%00-00 )]&][s6; Returns a no`-parameter callback for a method expecting "
-"a single parameter. Parameter is supplied as [@3 arg] and st")
-TOPIC_TEXT(
-"ored in the Callback. The created Callback object can be safely invoked even after "
-"the object instance is destructed.&][s1; [%00-00*C@3 object]-|Object. Must be an "
-"ancestor of [^topic`:`/`/Core`/src`/PtePtr`$en`-us`#`:`:Pte`:`:template `<class T`> "
-"class Pte^ Pte].&][s1; [%00-00*C@3 method]-|Method pointer.&][s1; [%00-00*C@3 arg]-|Argument&][s1; "
-"[*/ Return value]-|Created callback.&][s0; &][s4;:`:`")
-TOPIC_TEXT(
-":callback1`(void`(`*`)`(P`)`,T`): [%00-00 template_<class_][%00-00*@4 T][%00-00 "
-", class_][%00-00*@4 P][%00-00 >]&][s4;:`:`:callback1`(void`(`*`)`(P`)`,T`): [%00-00 "
-"Callback_][%00-00* callback1][%00-00 (void_(`*][%00-00*@3 fn][%00-00 )(][%00-00*@4 "
-"P][%00-00 ), ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; Returns a no`-parameter "
-"callback for a non`-member function expecting a single param")
-TOPIC_TEXT(
-"eter. Parameter is supplied as [@3 arg] and stored in the Callback.&][s1; [%00-00*C@3 "
-"fn]-|Function.&][s1; [%00-00*C@3 arg]-|Argument.&][s1; [*/ Return value]-|Created "
-"callback.&][s0; &][s4;:`:`:callback1`(Object`*`,void`(M`:`:`*`)`(P1`,P`)`,T`): [%00-00 "
-"template_<class_][%00-00*@4 Object][%00-00 , class_][%00-00*@4 M][%00-00 , class_][%00-00*@4 "
-"P1][%00-00 , class_][%00-00*@4 P][%00-00 , class_][%")
-TOPIC_TEXT(
-"00-00*@4 T][%00-00 >]&][s4;:`:`:callback1`(Object`*`,void`(M`:`:`*`)`(P1`,P`)`,T`): "
-"[%00-00 Callback1<][%00-00*@4 P1][%00-00 >_][%00-00* callback1][%00-00 (][%00-00*@4 "
-"Object][%00-00 _`*][%00-00*@3 object][%00-00 , void_(][%00-00*@4 M][%00-00 `::`*][%00-00*@3 "
-"method][%00-00 )(][%00-00*@4 P1][%00-00 , ][%00-00*@4 P][%00-00 ), ][%00-00*@4 T][%00-00 "
-"_][%00-00*@3 arg][%00-00 )]&][s6; Returns a single`")
-TOPIC_TEXT(
-"-parameter callback for a method expecting two parameters. Additional parameter "
-"is supplied as [@3 arg] and stored in the Callback.&][s1; [%00-00*C@3 object]-|Object.&][s1; "
-"[%00-00*C@3 method]-|Method pointer.&][s1; [%00-00*C@3 arg]-|Second argument to the "
-"method.&][s1; [*/ Return value]-|Created callback.&][s0; &][s4;:`:`:callback1`(const "
-"Object`*`,void`(M`:`:`*`)`(P1`,P`)const`,T`): [%00-00 temp")
-TOPIC_TEXT(
-"late_<class_][%00-00*@4 Object][%00-00 , class_][%00-00*@4 M][%00-00 , class_][%00-00*@4 "
-"P1][%00-00 , class_][%00-00*@4 P][%00-00 , class_][%00-00*@4 T][%00-00 >]&][s4;:`:`:callback1`(const "
-"Object`*`,void`(M`:`:`*`)`(P1`,P`)const`,T`): [%00-00 Callback1<][%00-00*@4 P1][%00-00 "
-">_][%00-00* callback1][%00-00 (const_][%00-00*@4 Object][%00-00 _`*][%00-00*@3 object][%00-00 "
-", void_(][%00-00*@4 M][%00-00")
-TOPIC_TEXT(
-" `::`*][%00-00*@3 method][%00-00 )(][%00-00*@4 P1][%00-00 , ][%00-00*@4 P][%00-00 "
-")_const, ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; Constant variant "
-"of the previous callback.&][s1; [%00-00*C@3 object]-|Object.&][s1; [%00-00*C@3 method]-|Method "
-"pointer.&][s1; [%00-00*C@3 arg]-|Second argument to the method.&][s1; [*/ Return "
-"value]-|Created callback.&][s0; &][s4;:`:`:pteback1`(Object`")
-TOPIC_TEXT(
-"*`,void`(M`:`:`*`)`(P1`,P`)`,T`): [%00-00 template_<class_][%00-00*@4 Object][%00-00 "
-", class_][%00-00*@4 M][%00-00 , class_][%00-00*@4 P1][%00-00 , class_][%00-00*@4 "
-"P][%00-00 , class_][%00-00*@4 T][%00-00 >]&][s4;:`:`:pteback1`(Object`*`,void`(M`:`:`*`)`(P1`,P`)`,T`): "
-"[%00-00 Callback1<][%00-00*@4 P1][%00-00 >_][%00-00* pteback1][%00-00 (][%00-00*@4 "
-"Object][%00-00 _`*][%00-00*@3 object][%00-00 , ")
-TOPIC_TEXT(
-"void_(][%00-00*@4 M][%00-00 `::`*][%00-00*@3 method][%00-00 )(][%00-00*@4 P1][%00-00 "
-", ][%00-00*@4 P][%00-00 ), ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; "
-"Returns a single`-parameter callback for a method expecting two parameters. Additional "
-"parameter is supplied as [@3 arg] and stored in the Callback. The created Callback "
-"can be safely invoked even after the object instance is destru")
-TOPIC_TEXT(
-"cted.&][s1; [%00-00*C@3 object]-|Object. Must be an ancestor of [^topic`:`/`/Core`/src`/PtePtr`$en`-us`#`:`:Pte`:`:template "
-"`<class T`> class Pte^ Pte].&][s1; [%00-00*C@3 method]-|Method pointer.&][s1; [%00-00*C@3 "
-"arg]-|Second argument to the method.&][s0; &][s4;:`:`:callback1`(void`(`*`)`(P1`,P`)`,T`): "
-"[%00-00 template_<class_][%00-00*@4 T][%00-00 , class_][%00-00*@4 P1][%00-00 , class_][%00-00*@")
-TOPIC_TEXT(
-"4 P][%00-00 >]&][s4;:`:`:callback1`(void`(`*`)`(P1`,P`)`,T`): [%00-00 Callback1<][%00-00*@4 "
-"P1][%00-00 >_][%00-00* callback1][%00-00 (void_(`*][%00-00*@3 fn][%00-00 )(][%00-00*@4 "
-"P1][%00-00 , ][%00-00*@4 P][%00-00 ), ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 "
-")]&][s6; Returns a single`-parameter callback for a non`-member function expecting "
-"two parameters. Additional parameter is supplied as [")
-TOPIC_TEXT(
-"@3 arg] and stored in the Callback.&][s1; [%00-00*C@3 fn]-|Function.&][s1; [%00-00*C@3 "
-"arg]-|Method pointer.&][s1; [*/ Return value]-|Created callback.&][s0; &][s4; [%00-00 "
-"template_<class_][%00-00*@4 T][%00-00 , class_][%00-00*@4 P][%00-00 >]&][s4; [%00-00 "
-"Callback_][%00-00* callback1][%00-00 (Callback1<][%00-00*@4 P][%00-00 >_][%00-00*@3 "
-"cb][%00-00 , ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-0")
-TOPIC_TEXT(
-"0 )]&][s6; Combines a single`-parameter callback and an argument into a no`-parameter "
-"callback.&][s1; [%00-00*C@3 cb]-|Single`-parameter callback.&][s1; [%00-00*C@3 arg]-|Argument.&][s1; "
-"[*/ Return value]-|Created callback.&][s0; &][s4; [%00-00 template_<class_][%00-00*@4 "
-"T][%00-00 , class_][%00-00*@4 P1][%00-00 , class_][%00-00*@4 P][%00-00 >]&][s4; [%00-00 "
-"Callback1<][%00-00*@4 P1][%00-00 >_][%0")
-TOPIC_TEXT(
-"0-00* callback1][%00-00 (Callback2<][%00-00*@4 P1][%00-00 , ][%00-00*@4 P][%00-00 "
-">_][%00-00*@3 cb][%00-00 , ][%00-00*@4 T][%00-00 _][%00-00*@3 arg][%00-00 )]&][s6; "
-"Combines a double`-parameter callback and an argument into a single parameter callback.&][s1; "
-"[%00-00*C@3 cb]-|Double`-parameter callback.&][s1; [%00-00*C@3 arg]-|Argument.&][s1; "
-"[*/ Return value]-|Created callback.&][s0; &][s4;:`:`:ca")
-TOPIC_TEXT(
-"llback2`(Object`*`,R`(O`:`:`*`)`(A`,B`)`,T1`,T2`): [%00-00 template_<class_][%00-00*@4 "
-"Object][%00-00 , class_][%00-00*@4 R][%00-00 , class_][%00-00*@4 O][%00-00 , class_][%00-00*@4 "
-"A][%00-00 , class_][%00-00*@4 B][%00-00 , class_][%00-00*@4 T1][%00-00 , class_][%00-00*@4 "
-"T2][%00-00 >]&][s4;:`:`:callback2`(Object`*`,R`(O`:`:`*`)`(A`,B`)`,T1`,T2`): [%00-00 "
-"Callback_][%00-00* callback2][%00-00 (][%0")
-TOPIC_TEXT(
-"0-00*@4 Object][%00-00 _`*][%00-00*@3 object][%00-00 , ][%00-00*@4 R][%00-00 _(][%00-00*@4 "
-"O][%00-00 `::`*][%00-00*@3 method][%00-00 )(][%00-00*@4 A][%00-00 , ][%00-00*@4 B][%00-00 "
-"), ][%00-00*@4 T1][%00-00 _][%00-00*@3 arg1][%00-00 , ][%00-00*@4 T2][%00-00 _][%00-00*@3 "
-"arg2][%00-00 )]&][s6; Returns a no`-parameter callback for a method taking two parameters. "
-"Parameters are supplied as [@3 arg1] a")
-TOPIC_TEXT(
-"nd [@3 arg2. ]They are stored in the created callback object.&][s1; [%00-00*C@3 "
-"object]-|Object.&][s1; [%00-00*C@3 method]-|Method pointer.&][s1; [%00-00*C@3 arg1]-|First "
-"argument.&][s1; [%00-00*C@3 arg2]-|Second argument.&][s1; [*/ Return value]-|Created "
-"callback.&][s0; &][s4;:`:`:callback2`(const Object`*`,R`(O`:`:`*`)`(A`,B`)const`,T1`,T2`): "
-"[%00-00 template_<class_][%00-00*@4 Object][%00-00 , ")
-TOPIC_TEXT(
-"class_][%00-00*@4 R][%00-00 , class_][%00-00*@4 O][%00-00 , class_][%00-00*@4 A][%00-00 "
-", class_][%00-00*@4 B][%00-00 , class_][%00-00*@4 T1][%00-00 , class_][%00-00*@4 "
-"T2][%00-00 >]&][s4;:`:`:callback2`(const Object`*`,R`(O`:`:`*`)`(A`,B`)const`,T1`,T2`): "
-"[%00-00 Callback_][%00-00* callback2][%00-00 (const_][%00-00*@4 Object][%00-00 _`*][%00-00*@3 "
-"object][%00-00 , ][%00-00*@4 R][%00-00 _(][%00-00")
-TOPIC_TEXT(
-"*@4 O][%00-00 `::`*][%00-00*@3 method][%00-00 )(][%00-00*@4 A][%00-00 , ][%00-00*@4 "
-"B][%00-00 )_const, ][%00-00*@4 T1][%00-00 _][%00-00*@3 arg1][%00-00 , ][%00-00*@4 "
-"T2][%00-00 _][%00-00*@3 arg2][%00-00 )]&][s6; Constant version of the previous callback.&][s1; "
-"[%00-00*C@3 object]-|Object.&][s1; [%00-00*C@3 method]-|Method.&][s1; [%00-00*C@3 "
-"arg1]-|First argument.&][s1; [%00-00*C@3 arg2]-|Second ar")
-TOPIC_TEXT(
-"gument.&][s1; [*/ Return value]-|Created callback.&][s1;*C@3 &][s4;:`:`:pteback2`(Object`*`,R`(O`:`:`*`)`(A`,B`)`,T1`,T2`): "
-"[%00-00 template_<class_][%00-00*@4 Object][%00-00 , class_][%00-00*@4 R][%00-00 "
-", class_][%00-00*@4 O][%00-00 , class_][%00-00*@4 A][%00-00 , class_][%00-00*@4 B][%00-00 "
-", class_][%00-00*@4 T1][%00-00 , class_][%00-00*@4 T2][%00-00 >]&][s4;:`:`:pteback2`(Object`*`,R`(O`:`:`*")
-TOPIC_TEXT(
-"`)`(A`,B`)`,T1`,T2`): [%00-00 Callback_][%00-00* pteback2][%00-00 (][%00-00*@4 Object][%00-00 "
-"_`*][%00-00*@3 object][%00-00 , ][%00-00*@4 R][%00-00 _(][%00-00*@4 O][%00-00 `::`*][%00-00*@3 "
-"method][%00-00 )(][%00-00*@4 A][%00-00 , ][%00-00*@4 B][%00-00 ), ][%00-00*@4 T1][%00-00 "
-"_][%00-00*@3 arg1][%00-00 , ][%00-00*@4 T2][%00-00 _][%00-00*@3 arg2][%00-00 )]&][s6; "
-"Returns a no`-parameter callback for")
-TOPIC_TEXT(
-" a method taking two parameters. Parameter are supplied as [@3 arg1] and [@3 arg2. "
-"]They are stored in the created callback. The created Callback can be safely invoked "
-"even after the object instance is destructed.&][s1; [%00-00*C@3 object]-|Object.&][s1; "
-"[%00-00*C@3 method]-|Method pointer.&][s1; [%00-00*C@3 arg1]-|First argument.&][s1; "
-"[%00-00*C@3 arg2]-|Second argument.&][s1; [*/ Return value]-|")
-TOPIC_TEXT(
-"Created callback.&][s0; &][s0; &][s4;:`:`:callback2`(R`(`*`)`(A`,B`)`,T1`,T2`): "
-"[%00-00 template_<class_][%00-00*@4 R][%00-00 , class_][%00-00*@4 A][%00-00 , class_][%00-00*@4 "
-"B][%00-00 , class_][%00-00*@4 T1][%00-00 , class_][%00-00*@4 T2][%00-00 >]&][s4;:`:`:callback2`(R`(`*`)`(A`,B`)`,T1`,T2`): "
-"[%00-00 Callback_][%00-00* callback2][%00-00 (][%00-00*@4 R][%00-00 _(`*][%00-00*@3 "
-"fn][%00-00 )(][%0")
-TOPIC_TEXT(
-"0-00*@4 A][%00-00 , ][%00-00*@4 B][%00-00 ), ][%00-00*@4 T1][%00-00 _][%00-00*@3 "
-"arg1][%00-00 , ][%00-00*@4 T2][%00-00 _][%00-00*@3 arg2][%00-00 )]&][s6; Returns "
-"a no`-parameter callback for a non`-member function taking two parameters. Parameter "
-"are supplied as [@3 arg1] and [@3 arg2. ]They are stored in the created callback.&][s1; "
-"[%00-00*C@3 fn]-|Function pointer.&][s1; [%00-00*C@3 arg1]-|First")
-TOPIC_TEXT(
-" argument.&][s1; [%00-00*C@3 arg2]-|Second argument.&][s1; [*/ Return value]-|Created "
-"callback.&][s0; &][s4; [%00-00 template_<class_][%00-00*@4 A][%00-00 , class_][%00-00*@4 "
-"B][%00-00 , class_][%00-00*@4 T1][%00-00 , class_][%00-00*@4 T2][%00-00 >]&][s4; "
-"[%00-00 Callback_][%00-00* callback2][%00-00 (Callback2<][%00-00*@4 A][%00-00 , ][%00-00*@4 "
-"B][%00-00 >_][%00-00*@3 cb][%00-00 , ][%00-00*@4 T1]")
-TOPIC_TEXT(
-"[%00-00 _][%00-00*@3 arg1][%00-00 , ][%00-00*@4 T2][%00-00 _][%00-00*@3 arg2][%00-00 "
-")]&][s6; Combines a two`-parameter callback and two arguments into a no`-parameter "
-"callback.&][s1; [%00-00*C@3 cb]-|Two`-parameter callback.&][s1; [%00-00*C@3 arg1]-|First "
-"argument.&][s1; [%00-00*C@3 arg2]-|Second argument.&][s1; [*/ Return value]-|Created "
-"callback.&][s0;*C@3 &][s3; Callback macros&][s0; &][s0; Ca")
-TOPIC_TEXT(
-"llback macros reduce verbosity of instance method callbacks. They expect CLASSNAME "
-"to be typedef`-ed as the type of current class and return method callbacks bound "
-"to the [*@(0.0.255) this] pointer.&][s0; &][s4;:`:`:THISBACK`(x`): [%00-00* THISBACK][%00-00 "
-"(][%00-00*@3 x][%00-00 )]&][s6; Expands to callback(this, `&CLASSNAME`::[@3 x]).&][s1; "
-"[%00-00*C@3 x]-|Name of method.&][s0; &][s4;:`:`:THISBAC")
-TOPIC_TEXT(
-"K1`(x`, arg`): [%00-00* THISBACK1][%00-00 (][%00-00*@3 x][%00-00 , ][%00-00*@3 arg][%00-00 "
-")]&][s6; Expands to callback1(this, `&CLASSNAME`::[@3 x], [@3 arg]).&][s1; [%00-00*C@3 "
-"x]-|Name of method.&][s1; [%00-00*C@3 arg]-|Additional parameter.&][s0; &][s4;:`:`:THISBACK2`(m`, "
-"a`, b`): [%00-00* THISBACK2][%00-00 (][%00-00*@3 m][%00-00 , ][%00-00*@3 a][%00-00 "
-", ][%00-00*@3 b][%00-00 )]&][s6; Expands ")
-TOPIC_TEXT(
-"to callback2(this, `&CLASSNAME`::[@3 x], [@3 a],[@3  b]).&][s1; [%00-00*C@3 m]-|Name "
-"of method.&][s1; [%00-00*C@3 a]-|First additional parameter.&][s1; [%00-00*C@3 b]-|Second "
-"additional parameter.&][s0; &][s4;:`:`:PTEBACK`(x`): [%00-00* PTEBACK][%00-00 (][%00-00*@3 "
-"x][%00-00 )]&][s6; Expands to pteback(this, `&CLASSNAME`::[@3 x]).&][s1; [%00-00*C@3 "
-"x]-|Name of method.&][s0; &][s4;:`:`:PTEBACK1`(x`")
-TOPIC_TEXT(
-", arg`): [%00-00* PTEBACK1][%00-00 (][%00-00*@3 x][%00-00 , ][%00-00*@3 arg][%00-00 "
-")]&][s6; Expands to pteback1(this, `&CLASSNAME`::[@3 x], [@3 arg]).&][s1; [%00-00*C@3 "
-"x]-|Name of method.&][s1; [%00-00*C@3 arg]-|Additional parameter.&][s0; &][s4;:`:`:PTEBACK2`(m`, "
-"a`, b`): [%00-00* PTEBACK2][%00-00 (][%00-00*@3 m][%00-00 , ][%00-00*@3 a][%00-00 "
-", ][%00-00*@3 b][%00-00 )]&][s6; Expands to pteback")
-TOPIC_TEXT(
-"2(this, `&CLASSNAME`::[@3 x], [@3 a],[@3  b]).&][s1; [%00-00*C@3 m]-|Name of method.&][s1; "
-"[%00-00*C@3 a]-|First additional parameter.&][s1; [%00-00*C@3 b]-|Second additional "
-"parameter.&][s6; &][s0; &][s3; [%00-00 CallbackArgTarget]&][s0; &][s10; [%00-00 template_<class_][%00-00*@4 "
-"T][%00-00 >]&][s10;* [%00-00* class_][%00-00 CallbackArgTarget]&][s6; This helper "
-"class is useful in a situation when")
-TOPIC_TEXT(
-" a set of callbacks define some output value. Example is pop`-up menu that provides "
-"selection of one character `- in that case, CallbackArgTarget can be used instead "
-"of dedicated method to obtain result of user selection.&][s12; [%00-00*C@4 T]-|Type "
-"of output value. Must be able to be assigned Null.&][s6; &][s4;:`:`:CallbackArgTarget`:`:CallbackArgTarget`(`): "
-"[%00-00* CallbackArgTarget][%00-00 ()]")
-TOPIC_TEXT(
-"&][s6; Constructor. Assigns Null to the output value.&][s6; &][s4;:`:`:CallbackArgTarget`:`:operator "
-"const T`&`(`): [%00-00* operator_const_T`&][%00-00 ()]&][s1; [*/ Return value]-|Result.&][s0; "
-"&][s4;:`:`:CallbackArgTarget`:`:IsNullInstance`(`)const: [%00-00 bool_][%00-00* IsNullInstance][%00-00 "
-"()_const]&][s1; [*/ Return value]-|True if there is not Null in output value.&][s0; "
-"&][s4;:`:`:Callbac")
-TOPIC_TEXT(
-"kArgTarget`:`:operator`[`]`(const T`&`): [%00-00 Callback_][%00-00* operator`[`]][%00-00 "
-"(const_T`&_][%00-00*@3 value][%00-00 )]&][s6; Returns a Callback that, when invoked, "
-"assigns [@3 value] to the output value.&][s1; [%00-00*C@3 value]-|Value.&][s1; [*/ "
-"Return value]-|Callback.&][s0;3 ]")
+COMPRESSED
+120,156,237,93,121,119,218,72,18,255,42,253,230,200,179,25,
+76,144,0,131,113,54,207,196,113,118,178,179,73,252,98,38,
+255,240,24,75,64,99,180,17,18,171,195,177,119,50,249,236,
+91,213,135,206,150,16,54,190,118,51,243,108,131,212,71,85,
+245,175,206,150,58,35,157,252,244,83,179,222,252,177,185,230,
+191,254,107,58,55,67,59,24,143,172,118,187,119,104,234,157,
+195,207,191,125,56,56,172,29,237,236,183,119,97,16,13,6,
+105,117,181,86,175,211,210,218,250,62,252,210,90,154,222,209,
+91,109,173,167,31,180,123,173,86,175,217,159,218,166,239,143,
+71,182,222,235,29,226,204,58,116,210,187,29,93,235,182,123,
+237,158,214,234,246,116,232,171,55,155,122,179,171,119,180,118,
+171,167,119,250,51,234,79,199,35,179,215,58,172,125,220,135,
+78,45,156,9,6,111,106,251,122,187,219,214,155,173,166,222,
+134,169,180,94,175,173,117,59,189,214,193,254,126,127,106,174,
+2,203,117,196,92,150,166,233,218,225,68,235,30,2,201,223,
+190,125,107,104,237,38,167,160,13,131,105,205,54,144,170,193,
+181,102,91,239,106,157,131,230,65,167,167,245,154,45,24,188,
+211,109,118,250,43,211,51,151,106,206,113,140,206,90,214,187,
+205,190,21,80,24,162,246,139,166,117,161,203,126,125,255,71,
+173,221,5,70,123,173,118,167,215,109,194,228,186,174,183,90,
+186,214,210,15,14,244,206,126,167,219,95,80,115,70,61,193,
+130,9,196,215,52,232,218,173,119,127,132,142,205,118,167,165,
+183,15,80,88,45,152,73,215,247,59,7,90,167,221,236,236,
+195,72,125,143,254,59,180,60,186,164,14,172,216,159,231,127,
+253,124,242,126,239,247,51,50,242,91,135,228,216,180,237,137,
+57,253,236,63,27,143,252,102,226,59,153,154,14,153,80,130,
+2,247,172,9,157,17,211,39,38,185,164,222,53,185,160,14,
+245,76,219,250,15,92,157,187,222,146,184,115,50,15,157,41,
+10,153,172,92,203,9,168,231,55,200,137,57,93,68,3,18,
+143,174,60,234,3,13,62,241,221,37,37,159,45,103,134,29,
+77,222,109,39,244,67,104,122,13,243,218,182,229,92,192,92,
+83,234,5,166,229,196,67,187,94,226,170,59,249,23,157,6,
+100,73,131,133,59,219,37,193,194,12,36,205,150,115,233,126,
+70,138,3,98,58,215,36,176,150,180,33,248,27,46,168,71,
+137,9,63,62,189,68,38,200,196,244,173,41,155,149,145,25,
+92,175,168,95,7,182,87,212,153,33,29,48,175,19,46,39,
+212,67,98,217,226,83,100,15,62,250,62,206,1,92,120,52,
+8,61,135,92,154,118,72,27,228,45,18,10,107,69,2,151,
+124,166,116,37,68,184,226,44,204,163,169,64,14,11,215,11,
+234,4,190,3,249,32,27,62,57,163,46,22,59,176,106,18,
+31,40,177,41,49,126,16,4,120,40,123,227,135,228,208,117,
+242,197,10,22,73,10,71,181,231,71,59,154,222,107,52,27,
+122,167,179,75,22,214,197,194,134,159,128,206,198,141,204,122,
+243,169,241,162,126,72,224,15,249,243,79,13,116,174,15,138,
+212,233,107,7,173,86,95,107,237,247,22,218,97,240,92,235,
+78,224,231,104,71,111,130,174,227,32,233,105,52,50,250,185,
+217,220,107,54,163,177,135,48,244,120,220,239,151,54,142,233,
+94,219,212,244,46,66,4,243,250,150,124,97,140,243,64,80,
+112,164,243,230,199,191,116,59,57,50,19,163,29,31,237,52,
+197,96,201,150,142,235,208,205,91,37,239,93,186,214,44,190,
+167,36,67,43,234,203,236,37,57,45,188,95,124,71,49,171,
+156,77,207,116,145,147,212,229,167,108,3,188,149,187,200,38,
+80,142,223,90,59,126,244,41,219,148,207,84,207,223,40,158,
+173,189,193,108,209,167,108,167,120,222,122,254,102,126,238,191,
+155,1,45,196,4,195,66,197,155,120,105,226,186,118,126,120,
+173,128,173,28,225,149,70,219,206,146,171,199,190,139,229,102,
+51,253,245,151,48,88,233,63,198,136,128,43,93,217,48,245,
+249,139,172,189,75,152,148,151,196,24,243,46,153,54,66,69,
+224,170,80,176,243,113,210,108,197,6,17,255,164,140,101,35,
+225,43,209,98,47,221,75,106,78,108,105,196,153,49,158,155,
+126,0,54,26,124,192,212,93,93,163,143,67,143,226,209,57,
+56,33,103,74,225,106,232,4,112,105,183,145,152,40,230,78,
+234,47,189,90,217,214,212,10,206,199,89,22,83,38,86,54,
+223,169,214,108,192,156,234,139,92,227,200,188,190,140,154,158,
+27,53,249,185,118,212,34,14,253,194,189,118,212,96,119,44,
+69,228,58,126,224,133,211,192,143,93,42,120,88,12,20,60,
+119,137,61,133,195,103,28,183,35,30,107,199,169,113,247,190,
+114,234,26,228,93,8,34,4,159,62,245,40,44,242,140,112,
+17,142,106,216,120,76,220,21,248,240,192,245,26,137,181,49,
+63,131,248,97,49,60,98,1,21,238,23,136,85,252,133,181,
+106,164,100,219,55,224,255,200,228,166,191,236,24,187,253,156,
+243,84,75,58,230,155,145,7,72,112,8,224,49,184,142,184,
+111,100,150,180,210,176,83,148,98,197,213,54,158,157,39,215,
+102,170,90,19,192,222,84,46,12,10,75,33,251,41,200,252,
+204,13,61,68,165,146,244,188,196,140,111,89,153,73,146,190,
+85,4,106,68,226,107,26,17,183,110,153,108,106,122,233,233,
+208,38,199,50,32,172,133,98,142,19,88,23,11,150,8,66,
+173,50,22,209,140,69,19,13,189,144,174,159,12,91,101,39,
+132,65,63,56,16,206,66,248,134,35,198,81,159,84,117,214,
+211,103,55,27,100,48,15,48,96,92,88,190,8,104,9,124,
+18,97,108,157,81,204,6,1,180,99,188,237,131,235,16,106,
+228,147,73,24,136,56,7,88,3,66,214,177,244,198,180,253,
+10,60,177,102,15,198,84,28,85,251,96,68,129,146,6,68,
+238,216,155,47,159,15,118,29,243,17,54,221,58,196,72,27,
+193,28,9,50,206,84,33,226,190,22,25,145,115,230,105,98,
+150,207,89,195,177,84,150,218,115,242,49,17,232,131,190,224,
+186,19,107,158,66,20,146,8,247,173,25,38,2,192,42,79,
+101,216,149,68,27,38,4,102,45,18,214,176,132,135,147,43,
+58,13,97,17,119,78,181,28,253,105,69,75,133,188,145,253,
+142,23,87,140,84,226,44,226,240,58,178,36,9,73,160,34,
+241,33,210,154,196,29,222,133,117,73,29,72,173,2,150,217,
+201,129,170,174,16,46,78,154,197,13,153,147,3,1,92,111,
+193,223,153,64,23,178,39,120,21,0,94,187,76,104,250,153,
+110,101,230,204,56,244,84,216,50,86,47,100,34,122,145,221,
+48,138,145,97,76,12,95,110,57,35,41,84,246,252,146,221,
+164,98,153,19,24,13,32,201,124,182,136,212,64,57,227,85,
+22,217,186,5,196,179,130,130,201,244,53,225,126,23,174,61,
+243,179,33,14,248,109,81,22,192,164,216,2,89,155,120,15,
+147,97,54,5,100,203,0,28,17,35,48,131,193,174,151,136,
+187,205,121,80,93,74,154,182,10,94,168,38,197,161,112,234,
+73,159,57,240,125,235,2,204,145,134,44,160,172,50,60,86,
+35,54,246,153,42,114,153,231,220,6,229,159,44,47,8,77,
+27,235,3,235,253,106,130,188,164,157,169,159,234,240,211,130,
+159,54,144,8,33,130,152,6,34,229,75,49,124,78,183,84,
+10,122,148,84,81,248,146,177,64,71,76,71,149,76,231,52,
+245,8,117,213,248,91,52,28,105,74,134,79,165,19,97,40,
+230,32,101,22,201,95,209,169,53,183,0,92,229,86,41,118,
+134,130,55,116,6,9,211,242,214,255,132,54,124,19,247,16,
+36,220,195,64,232,77,228,28,68,9,53,163,73,37,158,60,
+161,241,131,192,93,90,211,88,10,12,127,82,18,239,40,43,
+86,93,154,158,197,210,145,208,231,181,187,82,184,2,212,151,
+75,55,46,181,249,60,222,70,231,21,249,248,4,114,228,53,
+99,231,195,171,127,156,28,15,141,154,81,199,32,194,216,121,
+119,50,252,245,195,107,134,244,26,55,230,100,5,246,28,49,
+30,91,60,174,244,163,218,81,155,240,254,99,153,21,178,107,
+124,12,192,86,10,12,245,49,187,153,199,92,50,205,75,175,
+101,149,24,180,200,252,230,189,196,75,18,163,65,10,32,233,
+102,36,194,35,166,10,178,39,94,184,140,238,214,121,248,149,
+26,64,74,64,90,133,126,63,61,4,247,70,177,255,170,228,
+228,242,185,74,162,234,137,213,83,25,149,176,8,43,82,27,
+17,186,185,243,204,117,206,134,42,141,19,12,238,125,61,141,
+109,62,246,45,238,33,248,201,245,72,120,93,181,138,29,139,
+172,176,36,158,255,142,213,28,86,153,225,34,143,31,177,60,
+105,77,187,99,211,9,184,109,115,130,100,49,29,243,131,184,
+72,16,69,35,98,147,32,138,183,249,136,216,55,13,235,251,
+0,115,118,106,22,9,33,93,183,195,247,42,160,27,195,123,
+243,178,89,21,152,230,70,138,151,244,101,236,188,4,189,79,
+220,114,102,17,246,101,97,77,23,232,222,125,107,105,217,102,
+12,19,39,70,229,36,174,10,213,89,218,206,59,137,77,43,
+223,156,83,150,90,243,189,43,138,137,148,201,50,104,25,196,
+137,253,163,81,44,9,178,227,81,31,162,8,76,171,49,125,
+230,249,15,180,219,189,1,148,163,82,27,102,165,16,39,248,
+152,51,11,253,24,253,17,184,43,107,10,80,122,110,60,63,
+118,61,106,60,247,189,169,241,252,52,160,167,129,103,252,68,
+29,99,47,244,141,31,17,109,167,188,216,32,1,70,12,97,
+67,135,198,75,89,251,13,232,31,248,107,156,8,243,31,196,
+35,112,69,121,84,234,145,183,214,28,228,105,24,207,157,237,
+67,56,21,3,152,184,59,97,236,45,121,48,41,195,66,213,
+74,205,157,252,42,229,218,111,186,78,15,176,4,82,84,9,
+207,121,234,185,87,215,10,67,117,203,25,178,21,219,137,162,
+100,91,113,149,28,23,196,237,101,27,53,200,239,62,157,135,
+118,58,117,247,220,144,5,244,59,180,113,209,0,219,131,133,
+26,220,136,7,105,2,125,228,56,240,108,242,197,196,253,121,
+88,69,143,98,115,202,91,128,17,192,82,250,116,97,217,179,
+196,246,245,165,101,178,235,108,233,231,230,148,238,54,200,123,
+23,58,49,26,89,26,31,109,221,163,49,97,252,196,105,136,
+192,74,0,18,162,65,178,54,198,189,101,6,31,196,216,99,
+131,164,82,18,62,19,238,190,200,44,135,45,153,24,147,89,
+197,79,20,179,95,50,183,205,75,110,206,192,13,227,243,3,
+184,65,110,97,205,17,250,147,11,23,139,147,51,106,170,0,
+14,235,179,247,117,152,166,242,126,129,125,23,86,165,188,66,
+95,101,84,146,65,177,150,112,204,219,31,93,191,177,146,4,
+95,192,49,50,53,137,203,213,183,199,169,127,75,160,74,136,
+178,231,81,54,199,41,121,3,173,210,53,248,186,168,74,97,
+64,192,253,54,244,139,34,2,89,225,195,178,6,53,5,92,
+69,185,129,199,38,35,41,104,181,18,104,128,237,55,150,7,
+33,66,80,160,11,169,230,58,238,39,81,96,98,86,216,254,
+81,235,142,202,88,71,245,229,23,47,182,170,72,25,135,96,
+110,69,145,148,122,164,112,53,31,228,246,72,34,171,66,160,
+172,60,122,105,185,97,172,27,13,50,176,109,247,11,250,1,
+192,37,194,59,88,192,109,136,119,131,116,165,8,11,188,212,
+43,138,23,204,8,71,113,238,246,54,240,5,32,45,44,84,
+193,10,79,57,38,179,37,10,252,230,3,134,131,5,143,51,
+216,56,184,89,196,106,19,28,110,101,184,156,196,168,172,0,
+199,143,89,27,48,79,211,205,49,214,146,240,60,195,218,136,
+105,87,40,162,169,162,81,13,50,56,102,189,18,25,92,34,
+121,131,95,245,97,178,84,156,41,81,156,167,210,168,108,162,
+148,111,242,174,244,238,105,233,221,56,65,123,57,222,2,39,
+18,210,9,69,139,134,42,72,19,211,252,221,32,77,220,40,
+67,84,201,101,183,78,212,34,73,171,178,119,145,215,184,143,
+162,198,139,49,182,177,23,217,173,24,234,115,246,160,163,40,
+19,208,43,128,85,192,183,17,197,99,128,81,23,94,245,136,
+71,192,252,51,92,173,108,139,251,152,145,160,128,105,8,243,
+108,51,233,181,142,75,148,36,202,19,63,172,175,113,188,227,
+68,138,221,29,165,190,3,1,123,95,7,194,48,109,37,113,
+3,128,241,18,86,57,204,88,155,167,164,53,55,101,170,154,
+2,201,135,74,30,151,26,241,93,148,155,43,147,170,40,152,
+114,95,145,36,68,2,68,31,61,228,97,140,182,162,194,247,
+244,29,196,13,25,81,192,91,142,244,221,61,148,187,135,211,
+219,184,134,210,146,250,218,170,101,92,89,140,55,252,45,63,
+42,102,210,89,21,61,44,170,73,222,81,61,242,81,186,186,
+84,145,114,35,45,31,86,84,225,34,127,84,62,115,53,175,
+83,161,122,249,48,250,163,170,111,222,165,54,21,149,78,223,
+148,212,86,211,128,218,78,213,123,141,245,197,231,62,238,217,
+149,104,21,97,186,253,84,68,201,108,244,68,215,139,2,42,
+95,62,133,68,37,93,141,187,51,21,227,74,178,137,155,194,
+114,92,92,171,105,144,193,108,102,33,254,33,113,126,10,137,
+140,168,30,200,66,203,93,236,75,85,202,4,56,116,239,63,
+197,185,91,101,189,13,223,183,213,219,199,148,31,85,208,222,
+123,75,156,254,7,52,171,90,226,241,191,225,250,110,193,235,
+70,26,244,88,83,176,255,59,199,167,78,211,190,231,103,55,
+183,51,213,82,177,141,205,197,154,116,172,170,45,168,148,173,
+221,73,100,187,89,46,247,88,20,113,77,162,119,143,241,104,
+197,124,175,0,200,27,111,151,110,1,147,57,208,109,152,253,
+23,32,78,5,184,244,147,48,183,137,107,150,19,203,161,107,
+160,129,11,135,54,75,26,1,16,181,91,88,49,40,124,42,
+228,172,112,130,59,204,230,31,194,214,108,205,132,200,254,122,
+81,255,34,91,113,183,72,153,185,225,100,51,164,100,171,67,
+235,193,242,186,112,142,251,42,253,232,201,152,240,35,124,137,
+3,194,129,81,127,197,252,5,56,142,161,190,197,0,248,99,
+233,221,15,165,119,7,165,119,95,149,71,199,229,16,31,234,
+57,140,223,94,84,37,54,49,158,238,54,97,178,90,176,233,
+192,57,22,233,102,129,243,160,96,158,88,204,89,119,29,75,
+56,171,107,69,234,156,144,122,182,139,226,249,174,205,54,66,
+2,243,179,202,157,71,53,91,126,74,131,194,139,107,220,141,
+139,111,122,131,140,33,160,190,230,173,83,174,61,247,164,87,
+133,183,6,182,149,31,199,79,95,153,89,147,144,110,168,231,
+35,220,173,25,143,108,117,70,165,23,178,50,243,221,142,108,
+69,106,213,76,202,173,75,87,15,108,88,148,181,172,187,54,
+47,113,1,12,140,131,120,183,226,14,11,96,143,64,177,219,
+135,108,176,124,177,232,123,96,176,86,161,111,35,169,226,7,
+24,190,135,5,15,29,22,108,61,42,120,208,122,220,211,140,
+51,10,194,141,143,178,154,117,51,27,84,110,96,30,54,38,
+168,192,218,230,201,68,82,245,43,22,233,158,172,118,43,139,
+122,247,175,235,235,138,124,143,82,219,170,40,207,253,170,199,
+134,160,87,23,145,214,99,185,106,13,233,238,35,207,168,240,
+4,88,45,172,58,33,142,163,23,58,110,88,161,28,170,199,
+127,20,120,76,4,163,177,159,92,154,83,207,77,191,38,145,
+189,73,64,35,67,240,142,16,183,79,92,223,10,174,217,11,
+138,210,103,10,191,159,120,215,139,41,51,47,248,147,227,127,
+14,206,206,222,15,222,157,224,182,207,132,31,214,56,163,115,
+99,79,188,149,181,224,151,216,11,88,161,199,94,140,228,123,
+80,137,115,126,179,51,144,137,27,58,51,185,143,132,71,65,
+200,83,62,217,59,88,227,148,17,72,123,187,225,175,111,207,
+94,13,142,127,51,118,174,146,167,22,17,121,93,101,232,91,
+228,42,15,169,147,171,21,80,200,94,221,148,116,237,224,228,
+117,98,60,139,120,134,200,111,196,186,43,95,15,191,130,149,
+122,111,242,215,61,11,55,195,36,97,26,82,92,199,197,87,
+210,173,220,21,78,18,158,84,159,130,242,172,130,37,173,132,
+167,122,180,43,179,9,119,234,170,171,98,11,168,68,22,224,
+207,151,40,11,248,153,40,165,161,244,215,16,153,21,73,163,
+224,186,226,229,45,133,140,244,245,50,26,215,241,15,140,167,
+148,212,178,154,164,98,83,81,36,173,226,119,175,10,187,164,
+5,124,58,60,81,41,135,184,124,19,221,16,105,215,157,168,
+134,32,171,64,51,228,221,237,42,134,124,8,227,81,233,133,
+96,181,80,45,228,253,251,208,10,153,103,63,101,165,40,60,
+23,88,250,197,129,119,193,223,79,31,171,219,85,219,40,148,
+193,88,226,160,177,116,243,130,249,228,17,130,11,106,175,48,
+196,96,238,18,190,135,252,12,2,113,126,125,16,242,215,144,
+217,185,3,166,60,140,45,246,161,224,132,33,36,18,231,13,
+132,193,42,12,228,121,250,39,87,38,158,145,134,67,174,220,
+149,177,23,174,96,5,156,144,191,16,186,242,220,75,11,114,
+100,24,208,166,209,17,41,236,212,149,133,137,39,25,2,69,
+198,30,143,223,217,251,163,62,173,231,249,144,217,57,123,57,
+27,35,9,106,178,163,129,102,116,102,77,89,232,18,159,217,
+227,78,216,63,63,16,191,103,13,157,188,120,250,70,90,246,
+236,93,158,33,6,98,34,170,72,243,22,61,62,195,14,142,
+102,17,137,201,206,25,132,41,223,135,182,157,94,255,212,169,
+125,17,241,234,139,169,83,16,21,43,23,233,94,249,105,135,
+72,68,116,78,76,146,244,138,132,69,135,175,242,42,248,208,
+120,150,161,44,58,124,149,215,176,161,65,150,180,162,119,115,
+81,254,37,167,26,166,200,120,235,35,35,111,69,140,152,63,
+4,54,127,218,95,178,125,130,162,77,206,132,245,168,124,115,
+159,73,17,255,205,138,172,4,43,144,30,29,142,58,50,198,
+114,51,1,197,88,94,42,72,246,138,201,143,100,156,74,82,
+56,233,37,153,120,20,127,163,14,213,185,10,71,231,248,154,
+2,41,163,104,164,66,188,100,108,159,20,217,167,84,3,69,
+250,144,125,223,122,252,95,159,182,99,227,

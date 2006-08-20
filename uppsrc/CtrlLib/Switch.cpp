@@ -187,8 +187,7 @@ void Switch::Paint(Draw& w) {
 		img = CtrlsImg::Get((v.value == value ? CtrlsImg::I_S1 : CtrlsImg::I_S0) + q);
 		w.DrawImage(x, y + iy, img);
 		DrawSmartText(w, x + isz.cx + 4, y + ty, sz.cx, v.label, font,
-		              dv ? SColorDisabled : IsReadOnly() ? Blend(SColorHighlight, SColorLight)
-		                                                 : SColorText,
+		              dv || IsReadOnly() ? SColorDisabled : SColorText,
 		              VisibleAccessKeys() ? v.accesskey : 0);
 		if(horz) {
 			x += hr.Width() + sz.cy / 2;

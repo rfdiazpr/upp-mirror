@@ -11,9 +11,48 @@ bool IsCppKeyword(const String& id)
 	return kw.Find(id) >= 0;
 }
 
+bool IsCppType(const String& id)
+{
+	static const char *t[] = {
+		"int", "long", "short", "void", "float", "double", "char", "signed", "unsigned", "bool",
+	    "const", "mutable", "struct", "class", "union", "public", "private", "protected"
+	};
+	static Index<String> kt;
+	if(kt.GetCount() == 0) {
+		for(int i = 0; i < __countof(t); i++)
+			kt.Add(t[i]);
+	}
+	return kt.Find(id) >= 0;
+}
+
+int InScListIndext(const char *s, const char *list)
+{
+	int ii = 0;
+	for(;;) {
+		const char *q = s;
+		while(*list == ' ') list++;
+		for(;;) {
+			if(*q == '\0' && *list == '\0') return ii;
+			if(*q != *list) {
+				if(*q == '\0' && (*list == '<' || *list == ';' || *list == ',' || *list == '>'))
+					return ii;
+				if(*list == '\0') return -1;
+				break;
+			}
+			q++;
+			list++;
+		}
+		while(*list && *list != ';' && *list != '<' && *list != '>' && *list != ',') list++;
+		if(*list == '\0') return -1;
+		list++;
+		ii++;
+	}
+}
+
 Vector<ItemTextPart> ParseItemNatural(const CppItemInfo& m, const char *s)
 {
 	Vector<ItemTextPart> part;
+	bool param = false;
 	while(*s) {
 		ItemTextPart& p = part.Add();
 		p.pos = s - ~m.natural;
@@ -25,18 +64,20 @@ Vector<ItemTextPart> ParseItemNatural(const CppItemInfo& m, const char *s)
 			p.type = ITEM_NUMBER;
 		}
 		else
-		if(iscid(*s)) {
+		if(iscid(*s) || *s == ':') {
 			if(strncmp(s, m.name, m.name.GetLength()) == 0 && !iscid(s[m.name.GetLength()])) {
 				p.type = ITEM_NAME;
 				n = m.name.GetLength();
+				param = true;
 			}
 			else {
 				String id;
 				n = 0;
-				while(IsAlNum(s[n]) || s[n] == '_') {
-					id.Cat(s[n]);
-					n++;
-				}
+				while(IsAlNum(s[n]) || s[n] == '_' || s[n] == ':')
+					id.Cat(s[n++]);
+				if(IsCppType(id))
+					p.type = ITEM_CPP_TYPE;
+				else
 				if(IsCppKeyword(id))
 					p.type = ITEM_CPP;
 				else
@@ -45,6 +86,16 @@ Vector<ItemTextPart> ParseItemNatural(const CppItemInfo& m, const char *s)
 				else
 				if(InScList(id, m.tname))
 					p.type = ITEM_TNAME;
+				if(param) {
+					int ii = InScListIndext(id, m.ptype);
+					if(ii >= 0)
+						p.type = ITEM_PTYPE + ii;
+				}
+				else {
+					int ii = InScListIndext(id, m.type);
+					if(ii >= 0)
+						p.type = ITEM_TYPE + ii;
+				}
 			}
 		}
 		else {
@@ -163,6 +214,7 @@ int CppItemInfoDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 		case ITEM_NAME:
 			f.Bold();
 			break;
+		case ITEM_CPP_TYPE:
 		case ITEM_CPP:
 			ink = LtBlue;
 			break;
@@ -185,7 +237,7 @@ int CppItemInfoDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 	if(k != "::")
 		k << "::";
 	k << m.key;
-	int cnt = GetRefInfo(k).GetCount();
+	int cnt = GetRefLinks(k).GetCount();
 	if(cnt) {
 		Size sz = BrowserImg::Ref().GetSize();
 		int xx = r.right - sz.cx - 1;
@@ -193,8 +245,13 @@ int CppItemInfoDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 		DrawHighlightImage(w, xx, yy, BrowserImg::Ref());
 		if(cnt > 1) {
 			String txt = AsString(cnt);
-			Size tsz = GetTextSize(txt, StdFont().Bold());
-			w.DrawText(xx + (sz.cx - tsz.cx) / 2, yy + (sz.cy - tsz.cy) / 2, txt, StdFont().Bold(), Red);
+			Font fnt = Arial(10).Bold();
+			Size tsz = GetTextSize(txt, fnt);
+			Point p(xx + (sz.cx - tsz.cx) / 2, yy + (sz.cy - tsz.cy) / 2);
+			for(int ax = -1; ax <= 1; ax++)
+				for(int ay = -1; ay <= 1; ay++)
+					w.DrawText(p.x + ax, p.y + ay, txt, fnt, White);
+			w.DrawText(p.x, p.y, txt, fnt, Blue);
 		}
 		x += sz.cx + 3;
 	}
@@ -231,7 +288,7 @@ int ItemList::GetTopic(Point p, String& key)
 	if(i < 0)
 		return -1;
 	String m = Item(i);
-	int c = GetRefInfo(m).GetCount();
+	int c = GetRefLinks(m).GetCount();
 	Size sz = BrowserImg::Ref().GetSize();
 	Rect r = GetItemRect(i);
 	p.y -= r.top + (r.Height() - sz.cy) / 2;

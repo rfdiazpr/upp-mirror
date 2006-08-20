@@ -3,7 +3,6 @@ acceptflags
 
 uses
 	Core,
-	plugin\z,
 	plugin/bmp;
 
 library(WIN32) "user32 gdi32";

@@ -59,6 +59,12 @@ struct RichPara {
 		NUMBER_I,
 	};
 
+	enum LINESPACING {
+		LSP10 = 0,
+		LSP15 = -1,
+		LSP20 = -2,
+	};
+
 	struct CharFormat : public Font {
 		int     language;
 		Color   ink, paper;
@@ -97,6 +103,7 @@ struct RichPara {
 		int         before, lm, indent, rm, after;
 		int         tabsize;
 		int         bullet;
+		int         linespacing;
 		bool        newpage, keep, keepnext, orphan;
 		WithDeepCopy< Vector<Tab> > tab;
 		String      label;
@@ -242,7 +249,7 @@ struct RichPara {
 
 private:
 	Tab         GetNextTab(int pos) const;
-	void        Smh(Lines& lines, const HeightInfo *th, int cx) const;
+	void        Smh(Lines& lines, HeightInfo *th, int cx) const;
 	Lines       Begin(const Rect& page, PageY& py, int nbefore, int nline) const;
 	bool        BreaksPage(PageY py, const Lines& pl, int i, const Rect& page) const;
 	void        PackParts(Stream& out, const CharFormat& chrstyle,

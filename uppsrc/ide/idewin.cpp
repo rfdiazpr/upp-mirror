@@ -39,7 +39,7 @@ void Ide::ConsolePaste()
 }
 
 void Ide::Serialize(Stream& s) {
-	int version = 3;
+	int version = 4;
 	s.Magic(0x12346);
 	s / version;
 	s % main;
@@ -98,6 +98,9 @@ void Ide::Serialize(Stream& s) {
 		s % hydra1_threads;
 		if(s.IsLoading())
 			console.SetSlots(hydra1_threads);
+	}
+	if(version >= 4) {
+		s % doc;
 	}
 	s.Magic();
 }
@@ -580,7 +583,7 @@ void AppMain___()
 #endif
 
 #ifdef _DEBUG
-//	Ctrl::ShowRepaint = 30;
+//	Ctrl::ShowRepaint(50);
 #endif
 
 #ifdef PLATFORM_WIN32
@@ -805,6 +808,7 @@ void AppMain___()
 		ActivateUsrLog();
 		if(clset || ide.OpenMainPackage()) {
 			StoreToFile(ide);
+			SyncRefs();
 			ide.FileSelected();
 			ide.Run();
 		}

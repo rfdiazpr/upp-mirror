@@ -248,7 +248,7 @@ void PathEditorCtrl::FrameLayout(Rect& rc)
 	inner_sample = rc;
 
 	Size avail = rc.Size();
-	int box = ScrollBar::GetStdBox();
+	int box = ScrollBarSize();
 	int rsz = RulerCtrl::GetStdWidth();
 	if(setup.do_ruler)
 		avail -= rsz;
@@ -280,7 +280,7 @@ void PathEditorCtrl::FrameAddSize(Size& sz)
 {
 	if(!style)
 		return;
-	int box = ScrollBar::GetStdBox();
+	int box = ScrollBarSize();
 	int rsz = RulerCtrl::GetStdWidth();
 	if(setup.do_ruler)
 		sz += rsz;

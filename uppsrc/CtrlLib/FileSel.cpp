@@ -51,7 +51,7 @@ bool Load(FileList& list, const String& dir, const char *patterns, bool dirs,
 						 fi.is_directory ? -1 : (int)fi.length,
 						 Null, nd ? SColorDisabled
 						          : fi.is_directory ? SColorText
-						                            : LtBlue);
+						                            : SColorMark);
 		}
 	}
 	return true;

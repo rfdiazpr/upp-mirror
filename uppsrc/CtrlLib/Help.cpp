@@ -8,21 +8,21 @@ Topic HelpWindow::AcquireTopic(const String& topic)
 void HelpWindow::BarEx(Bar& bar)
 {}
 
+void HelpWindow::FinishText(RichText& text)
+{}
+
 bool HelpWindow::GoTo0(const String& link)
 {
-	int q = link.Find('#');
-	if(q >= 0) {
-		topic = link.Mid(0, q);
-		label = link.Mid(q + 1);
-	}
-	else {
-		topic = link;
-		label = Null;
-	}
-	Topic t = AcquireTopic(topic);
+	if(IsNull(link))
+		return false;
+	Topic t = AcquireTopic(link);
 	if(!IsNull(t.text)) {
+		label = t.label;
+		topic = t.link;
 		Title(t.title.ToWString());
-		view.SetQTF(t.text, zoom);
+		RichText txt = ParseQTF(t.text);
+		FinishText(txt);
+		view.Pick(txt, zoom);
 		view.GotoLabel(label, true);
 		tree.FindSetCursor(topic);
 		return true;
@@ -143,9 +143,19 @@ int HelpWindow::AddTree(int parent, const Image& img, const String& topic, const
 	return tree.Add(parent, img, topic, title, false);
 }
 
+void HelpWindow::SortTree(int id)
+{
+	tree.SortDeep(id);
+}
+
 void HelpWindow::FinishTree()
 {
 	tree.FindSetCursor(topic);
+}
+
+void HelpWindow::OpenDeep(int id)
+{
+	tree.OpenDeep(id);
 }
 
 void HelpWindow::Serialize(Stream& s)

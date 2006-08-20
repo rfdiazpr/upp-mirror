@@ -227,7 +227,6 @@ private:
 	bool   AcceptRow();
 	void   Remove0(int i);
 	void   DisableCtrls();
-	void   ClearModify();
 	void   SetCtrls();
 	void   DoRemovem();
 	bool   KillCursor0();
@@ -243,11 +242,14 @@ private:
 
 	void   HeaderScrollVisibility();
 
+public: // temporary (TRC 06/07/28)
 	Ctrl&      SetCtrl(int i, int j, Ctrl *newctrl);
 
 protected:
 	virtual bool UpdateRow();
 	virtual void RejectRow();
+
+	void   ClearModify();
 
 public:
 	Callback          WhenLeftDouble;

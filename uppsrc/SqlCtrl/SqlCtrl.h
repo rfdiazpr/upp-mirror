@@ -67,8 +67,11 @@ private:
 	SqlBool     where;
 	SqlSet      orderby;
 	int         querytime;
+	int         count;
+	int64       offset;
 	bool        lateinsert;
 	bool        goendpostquery;
+	bool        autoinsertid;
 
 	SqlBool     GetWhere();
 #ifndef NOAPPSQL
@@ -100,6 +103,9 @@ public:
 	void      AppendQuery(SqlBool where);
 	void      Query(SqlBool where)                         { SetWhere(where); Query(); }
 
+	void      Limit(int offset, int count);
+	void      Limit(int count)                             { Limit(0, count); }
+
 	SqlArray& SetTable(SqlId _table)                       { table = _table; return *this; }
 	SqlArray& SetWhere(SqlBool _where)                     { where = _where; return *this;  }
 	SqlArray& SetOrderBy(SqlSet _orderby)                  { orderby = _orderby; return *this; }
@@ -108,6 +114,8 @@ public:
 	SqlArray& SetOrderBy(const SqlVal& a, const SqlVal& b, const SqlVal& c)
 	                                                       { return SetOrderBy(SqlSet(a, b, c)); }
 	SqlArray& GoEndPostQuery(bool b = true)                { goendpostquery = b; return *this; }
+	SqlArray& AutoInsertId(bool b = true)                  { autoinsertid = b; return *this; }
+	SqlArray& AppendingAuto()                              { Appending(); return AutoInsertId(); }
 
 	void      Clear();
 	void      Reset();
@@ -133,6 +141,14 @@ public:
 	bool      Fetch(Sql& sql);
 #ifndef NOAPPSQL
 	bool      Fetch()                                { return Fetch(SQL); }
+#endif
+	bool      Load(Sql& sql, SqlSet set)             { sql * set; return Fetch(sql); }
+#ifndef NOAPPSQL
+	bool      Load(SqlSet set)                       { return Load(SQL, set); }
+#endif
+	bool      Load(Sql& sql, SqlId table, SqlBool where);
+#ifndef NOAPPSQL
+	bool      Load(SqlId table, SqlBool where);
 #endif
 	void      Insert(SqlInsert& insert) const;
 	void      Update(SqlUpdate& update) const;

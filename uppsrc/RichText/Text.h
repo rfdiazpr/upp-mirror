@@ -103,6 +103,7 @@ public:
 	void                  AdjustTableSel(int table, Rect& sel) const        { return GetConstTable(table).AdjustSel(sel); }
 
 	bool                  Iterate(Iterator& r) const                        { return RichTxt::Iterate(r, 0, style); }
+	bool                  Iterate(UpdateIterator& r)                        { return RichTxt::Iterate(r, 0, style); }
 
 	bool                  EvaluateFields(VectorMap<String, Value>& vars)    { return RichTxt::EvaluateFields(style, vars); }
 

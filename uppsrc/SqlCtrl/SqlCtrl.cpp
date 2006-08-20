@@ -149,3 +149,14 @@ Callback SqlCtrls::operator<<=(Callback cb)
 		item[i].ctrl->WhenAction = cb;
 	return cb;
 }
+
+bool SqlCtrls::Load(Sql& sql, SqlId table, SqlBool where)
+{
+	sql * Select(*this).From(table).Where(where);
+	return Fetch(sql);
+}
+
+bool SqlCtrls::Load(SqlId table, SqlBool set)
+{
+	return Load(SQL, table, set);
+}

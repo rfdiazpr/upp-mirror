@@ -330,6 +330,7 @@ static chLooks sLooks[] = {
 	{ "SpinUpLook", 4, XP_SPIN, SPNP_UP, 1 },
 	{ "SpinDownLook", 4, XP_SPIN, SPNP_DOWN, 1 },
 	{ "DropBoxBtn", 4, XP_COMBOBOX, CP_DROPDOWNBUTTON, 1 },
+	{ "DropBoxSquaredBtn", 4, XP_COMBOBOX, CP_DROPDOWNBUTTON, 1 },
 	{ "DropBoxEdge", 1, XP_COMBOBOX, 0, 0 },
 	{ "HeaderTabLook", 4, XP_HEADER, HP_HEADERITEM, 1 },
 	{ "ProgressIndicatorLook", 1, XP_PROGRESS, PP_BAR, 0, true },
@@ -436,6 +437,7 @@ void ChInitWin32Detect()
 			m = Unglyph(m, c);
 			ChSet("ButtonMonoColor", i, c);
 			ChSet("EdgeButtonLook", i, m);
+			ChSet("DropBoxSquaredBtn", i, ChLookWith(m, CtrlsImg::DA(), c));
 			m = Unglyph(XpImage(XP_SCROLLBAR, SBP_ARROWBTN, i + ABS_UPNORMAL, paper));
 			Size msz = m.GetSize();
 			ChSet("ScrollButtonLook", i,

@@ -235,7 +235,7 @@ public:
 	void      Pack(bool& a, bool& b, bool& c);
 	void      Pack(bool& a, bool& b);
 
-//* obsolete
+//* deprecated
 	int       GetW()                 { return Get16(); }
 	int       GetL()                 { return Get32(); }
 	int       GetIW()                { return Get16le(); }

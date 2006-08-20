@@ -66,6 +66,12 @@ String SqlConnection::GetUser() const {
 	return Null;
 }
 
+Value SqlConnection::GetInsertedId() const
+{
+	NEVER();
+	return Null;
+}
+
 void Sql::Clear() {
 	if(cn) {
 		cn->Cancel();

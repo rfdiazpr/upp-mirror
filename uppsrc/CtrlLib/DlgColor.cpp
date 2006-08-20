@@ -352,22 +352,14 @@ int WheelRampCtrl::LevelToClient(int l) const
 
 void WheelRampCtrl::Paint(Draw& draw)
 {
-	if(!cache || cache.GetSize() != GetSize() || cache_level != (ramp ? h16 : v16))
-	{ // create cache for current size
+	if(!cache || cache.GetSize() != wheel_rect.GetSize() || cache_level != (ramp ? h16 : v16)) {
 		Size size = max(GetSize(), Size(1, 1));
-		ImageDraw rd(size);
-		if(ramp)
-			PaintRamp(rd);
-		else {
-			rd.Alpha().DrawRect(size, GrayColor(0));
-			rd.Alpha().DrawEllipse(size, GrayColor(255));
-			PaintWheel(rd);
-		}
-		PaintColumn(rd);
-		cache = rd;
+		cache = ramp ? PaintRamp(wheel_rect.GetSize()) : PaintWheel(wheel_rect.GetSize());
 		cache_level = (ramp ? h16 : v16);
 	}
-	draw.DrawImage(0, 0, cache);
+
+	draw.DrawImage(wheel_rect.left, wheel_rect.top, cache);
+	PaintColumn(draw);
 
 	Point mark = wheel_rect.CenterPoint();
 	if(ramp)
@@ -480,8 +472,9 @@ void WheelRampCtrl::MouseMove(Point pt, dword keyflags)
 
 enum { PREC = 64 };
 
-void WheelRampCtrl::PaintRamp(Draw& draw)
+Image WheelRampCtrl::PaintRamp(Size size)
 {
+	ImageDraw iw(size);
 	Size rcsize = wheel_rect.Size();
 	ImageBuffer ib(PREC, PREC);
 	for(int y = 0; y < PREC; y++) {
@@ -497,13 +490,13 @@ void WheelRampCtrl::PaintRamp(Draw& draw)
 			scan++;
 		}
 	}
-	draw.DrawImage(wheel_rect.left, wheel_rect.top, Rescale(Image(ib), rcsize));
-	DrawFrame(draw, wheel_rect, Black, Black);
+	iw.DrawImage(0, 0, Rescale(ib, size));
+	DrawFrame(iw, size, Black, Black);
+	return iw;
 }
 
-void WheelRampCtrl::PaintWheel(Draw& draw)
+Image WheelRampCtrl::PaintWheel(Size size)
 {
-	Size rcsize = wheel_rect.Size();
 	ImageBuffer ib(PREC, PREC);
 	static WheelBuff wb[PREC * PREC];
 	ONCELOCK {
@@ -525,22 +518,17 @@ void WheelRampCtrl::PaintWheel(Draw& draw)
 	for(int y = 0; y < PREC; y++) {
 		RGBA *scan = ib[y];
 		for(int x = 0; x < PREC; x++) {
-			Color color = HSV16toRGB(cwb->arg, cwb->l, v16);
-			scan->r = GetRRaw(color);
-			scan->g = GetGRaw(color);
-			scan->b = GetBRaw(color);
-			scan++;
+			*scan++ = HSV16toRGB(cwb->arg, cwb->l, v16);
 			cwb++;
 		}
 	}
 
-	Image wheel = Rescale(ib, rcsize);;
-	ImageDraw iw(rcsize);
-	iw.Alpha().DrawRect(rcsize, GrayColor(0));
-	iw.Alpha().DrawEllipse(rcsize, GrayColor(255), 0, GrayColor(255));
-	wheel = AssignAlpha(wheel, iw);
-	draw.DrawImage(wheel_rect.left, wheel_rect.top, wheel);
-	draw.DrawEllipse(wheel_rect, Null, 0, Black);
+	ImageDraw iw(size);
+	iw.DrawImage(size, Rescale(ib, size));
+	iw.DrawEllipse(size, Null, 0, Black);
+	iw.Alpha().DrawRect(size, GrayColor(0));
+	iw.Alpha().DrawEllipse(size, GrayColor(255), 0, GrayColor(255));
+	return iw;
 }
 
 void WheelRampCtrl::PaintColumn(Draw& draw)
@@ -1064,7 +1052,7 @@ void PalCtrl::Paint(Draw& draw)
 	{
 		Rect selected = IndexToClient(color_index);
 		selected.Inflate(3);
-		DrawFatFrame(draw, selected, Blend(SColorLight, SColorHighlight), 2);
+		DrawFatFrame(draw, selected, SColorMark(), 2);
 	}
 	draw.End();
 }

@@ -139,11 +139,7 @@ void SIC_StdFont(EscEscape& e)
 	if(e.GetCount() == 1)
 		e = EscFont(StdFont()(e.Int(0)));
 	else
-#ifdef PLATFORM_XFT
-		e = EscFont(StdFont()(0));
-#else
-		e = EscFont(StdFont()(0));
-#endif
+		e = EscFont(StdFont());
 }
 
 void SIC_Arial(EscEscape& e)

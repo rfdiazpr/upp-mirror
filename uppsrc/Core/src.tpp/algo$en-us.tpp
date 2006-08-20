@@ -1,276 +1,140 @@
 TITLE("Algorithms")
-REF("::Swap(T&,T&)")
-REF("::IterSwap(I,I)")
-REF("::FindLowerBound(const C&,int,int,const T&,const L&)")
-REF("::FindLowerBound(const C&,const T&,const L&)")
-REF("::FindLowerBound(const C&,const T&)")
-REF("::FindUpperBound(const C&,int,int,const T&,const L&)")
-REF("::FindUpperBound(const C&,const T&,const L&)")
-REF("template<class C, class T> int FindUpperBound(const C& v, const T& val)")
-REF("::FindUpperBound(const C&,const T&)")
-REF("::FindBinary(const C&,const T&,int,int,const L&)")
-REF("::FindBinary(const C&,const T&,const L&)")
-REF("::FindBinary(const C&,const T&)")
-REF("::AppendSorted(C&,const C&,const L&)")
-REF("::AppendSorted(C&,const C&)")
-REF("::UnionSorted(C&,const C&,const L&)")
-REF("::UnionSorted(C&,const C&)")
-REF("::RemoveSorted(C&,const C&,const L&)")
-REF("::RemoveSorted(C&,const C&)")
-REF("::IntersectSorted(D&,const S&,const L&)")
-REF("::IntersectSorted(D&,const S&)")
-REF("::Sort(T&,const Less&)")
-REF("::Sort(T&)")
-REF("::IndexSort(KC&,VC&,const Less&)")
-REF("::IndexSort(KC&,VC&)")
-REF("::GetSortOrder(const C&,const Less&)")
-REF("::GetSortOrder(const C&)")
-REF("::FieldRelation(O(T::*),const R&)")
-REF("::MethodRelation(O(T::*)(),const R&)")
-REF("::MethodRelation(O(T::*)()const,const R&)")
-TOPIC_TEXT(
-"[2 $$0,0#00000000000000000000000000000000:Default][l288;i704;a17;O9;~~~.992;2 $$1,0#10431211400427159095818037425705:param][a83;*R6 "
-"$$2,5#31310162474203024125188417583966:caption][b83;* $$3,5#07864147445237544204411237157677:title][b167;a42;C2 "
-"$$4,6#40027414424643823182269349404212:item][b42;a42;2 $$5,5#45413000475342174754091244180557:text][l288;a17;2 "
-"$$6,6#27521748481378242620020725143825:desc][")
-TOPIC_TEXT(
-"l321;t246;C@5;1 $$7,7#20902679421464641399138805415013:code][b2503; $$8,0#65142375456100023862071332075487:separator][*@(0.0.255)2 "
-"$$9,0#83433469410354161042741608181528:base][t4167;C $$10,0#37138531426314131251341829483380:class][l288;a17;*1 "
-"$$11,11#70004532496200323422659154056402:requirement][i417;b42;a42;O9;~~~.416;2 $$12,12#10566046415157235020018451313112:tparam][b167;C2 "
-"$$13,13#924304594434")
-TOPIC_TEXT(
-"60461911108080531343:item1][i288;a42;O9;C2 $$14,14#77422149456609303542238260500223:item2][*@2$(0.128.128) "
-"$$15,15#34511555403152284025741354420178:NewsDate][l321;*C$7;2 $$16,16#03451589433145915344929335295360:result][l321;b83;a83;*C$7;2 "
-"$$17,17#07531550463529505371228428965313:result`-line][l160;t4167;*C+117 $$18,5#88603949442205825958800053222425:package`-title][{_}%EN-US "
-"[s2; Algorithms&][s13;")
-TOPIC_TEXT(
-" template<class [*@4 T]>&][s14;:`:`:Swap`(T`&`,T`&`): void [* Swap]([*@4 T]`& [*@3 "
-"a], [*@4 T]`& [*@3 b])&][s6; Swaps values. Specific types might specialize [* Swap] "
-"with more effective variants.&][s11; T must have either deep copy operator or pick "
-"operator.&][s1; [*C@4 T]-|Type of values.&][s1; [*C@3 a]-|First value to swap.&][s1; "
-"[*C@3 b]-|Second value to swap.&][s13; template<class [*@4 I]>&][")
-TOPIC_TEXT(
-"s14;:`:`:IterSwap`(I`,I`): void [* IterSwap]([*@4 I][*  ][*@3 a], [*@4 I][*  ][*@3 "
-"b])&][s6; Swaps values pointed to by iterators. Specific types might specialize [* "
-"IterSwap] with more effective variants.&][s11; Swap must be defined for type pointed "
-"to by I.&][s1; [*C@4 I]-|Iterator type.&][s1; [*C@3 a]-|Iterator pointing to first "
-"value.&][s1; [*C@3 b]-|Iterator pointing to second value.&][s13; t")
-TOPIC_TEXT(
-"emplate<class [*@4 C], class [*@4 T], class [*@4 L]>&][s14;:`:`:FindLowerBound`(const "
-"C`&`,int`,int`,const T`&`,const L`&`): int [* FindLowerBound](const [*@4 C]`& [*@3 "
-"v], int [*@3 pos], int [*@3 count], const [*@4 T]`& [*@3 val], const [*@4 L]`& [*@3 "
-"less])&][s6; Finds first position in range of container sorted by [* less] predicate "
-"where [* val] can be inserted without breaking the ordering.&]")
-TOPIC_TEXT(
-"[s1; [*C@4 C]-|Type of container.&][s1; [*C@4 T]-|Type of value.&][s1; [*C@3 v]-|Container.&][s1; "
-"[*C@3 pos]-|Beginning of range.&][s1; [*C@3 count]-|Number of elements in range.&][s1; "
-"[*C@3 val]-|Value to find.&][s1; [*C@3 less]-|Ordering predicate.&][s1; [*/ Return "
-"value]-|Position in container.&][s13; template<class [*@4 C], class [*@4 T], class "
-"[*@4 L]>&][s14;:`:`:FindLowerBound`(const C`&`,co")
-TOPIC_TEXT(
-"nst T`&`,const L`&`): int [* FindLowerBound](const [*@4 C]`& [*@3 v], const [*@4 "
-"T]`& [*@3 val], const [*@4 L]`& [*@3 less])&][s6; Finds first position in sorted "
-"by [* less] predicate where [* val] can be inserted without breaking the ordering.&][s1; "
-"[*C@4 C]-|Type of container.&][s1; [*C@4 T]-|Type of value.&][s1; [*C@3 v]-|Container.&][s1; "
-"[*C@3 val]-|Value to find.&][s1; [*C@3 less]-|Ordering p")
-TOPIC_TEXT(
-"redicate.&][s1; [*/ Return value]-|Position in container.&][s13; template<class "
-"[*@4 C], class [*@4 T]>&][s14;:`:`:FindLowerBound`(const C`&`,const T`&`): int [* "
-"FindLowerBound](const [*@4 C]`& [*@3 v], const [*@4 T]`& [*@3 val])&][s6; Finds first "
-"position in sorted by [*/ operator<] predicate where [* val] can be inserted without "
-"breaking the ordering.&][s1; [*C@4 C]-|Type of container.&][s1; [*C")
-TOPIC_TEXT(
-"@4 T]-|Type of value.&][s1; [*C@3 v]-|Container.&][s1; [*C@3 val]-|Value to find.&][s1; "
-"[*/ Return value]-|Position in container.&][s13; template<class [*@4 C], class [*@4 "
-"T], class [*@4 L]>&][s14;:`:`:FindUpperBound`(const C`&`,int`,int`,const T`&`,const "
-"L`&`): int [* FindUpperBound](const [*@4 C]`& [*@3 v], int [*@3 pos], int [*@3 count], "
-"const [*@4 T]`& [*@3 val], const [*@4 L]`& [*@3 less])&][")
-TOPIC_TEXT(
-"s6; Finds last position in range of container sorted by [* less] predicate where "
-"[* val] can be inserted without breaking the ordering.&][s1; [*C@4 C]-|Type of container.&][s1; "
-"[*C@4 T]-|Type of value.&][s1; [*C@3 v]-|Container.&][s1; [*C@3 pos]-|Beginning of "
-"range.&][s1; [*C@3 count]-|Number of elements in range.&][s1; [*C@3 val]-|Value to "
-"find.&][s1; [*C@3 less]-|Ordering predicate.&][s1; [*/ Re")
-TOPIC_TEXT(
-"turn value]-|Position in container.&][s13; template<class [*@4 C], class [*@4 T], "
-"class [*@4 L]>&][s14;:`:`:FindUpperBound`(const C`&`,const T`&`,const L`&`): int "
-"[* FindUpperBound](const [*@4 C]`& [*@3 v], const [*@4 T]`& [*@3 val], const [*@4 "
-"L]`& [*@3 less])&][s6; Finds last position in sorted by [* less] predicate where "
-"[* val] can be inserted without breaking the ordering.&][s1; [*C@4 C]-|Typ")
-TOPIC_TEXT(
-"e of container.&][s1; [*C@4 T]-|Type of value.&][s1; [*C@3 v]-|Container.&][s1; "
-"[*C@3 val]-|Value to find.&][s1; [*C@3 less]-|Ordering predicate.&][s1; [*/ Return "
-"value]-|Position in container.&][s13;:template`<class C`, class T`> int FindUpperBound`(const "
-"C`& v`, const T`& val`): template<class [*@4 C], class [*@4 T]>&][s14;:`:`:FindUpperBound`(const "
-"C`&`,const T`&`): int [* FindUpperBound](const")
-TOPIC_TEXT(
-" [*@4 C]`& [*@3 v], const [*@4 T]`& [*@3 val])&][s6; Finds last position in sorted "
-"by [*/ operator<] predicate where [* val] can be inserted without breaking the ordering.&][s1; "
-"[*C@4 C]-|Type of container.&][s1; [*C@4 T]-|Type of value.&][s1; [*C@3 v]-|Container.&][s1; "
-"[*C@3 val]-|Value to find.&][s1; [*/ Return value]-|Position in container.&][s13; "
-"template<class [*@4 C], class [*@4 T], class [*")
-TOPIC_TEXT(
-"@4 L]>&][s14;:`:`:FindBinary`(const C`&`,const T`&`,int`,int`,const L`&`): int [* "
-"FindBinary](const [*@4 C]`& [*@3 v], const [*@4 T]`& [*@3 val], int [*@3 pos], int "
-"[*@3 count], const [*@4 L]`& [*@3 less])&][s6; Finds position of element with specified "
-"value in a range of container sorted by [* less] predicate. If no such element exists, "
-"a negative value is returned.&][s1; [*C@4 C]-|Type of contai")
-TOPIC_TEXT(
-"ner.&][s1; [*C@4 T]-|Type of value.&][s1; [*C@3 v]-|Container.&][s1; [*C@3 pos]-|Beginning "
-"of range.&][s1; [*C@3 count]-|Number of elements in range.&][s1; [*C@3 val]-|Value "
-"to find.&][s1; [*C@3 less]-|Ordering predicate.&][s1; [*/ Return value]-|Position "
-"in container.&][s13; template<class [*@4 C], class [*@4 T], class [*@4 L]>&][s14;:`:`:FindBinary`(const "
-"C`&`,const T`&`,const L`&`): int [* Find")
-TOPIC_TEXT(
-"Binary](const [*@4 C]`& [*@3 v], const [*@4 T]`& [*@3 val], const [*@4 L]`& [*@3 "
-"less])&][s6; Finds position of element with specified value in the container sorted "
-"by [* less] predicate. If no such element exists, a negative value is returned.&][s1; "
-"[*C@4 C]-|Type of container.&][s1; [*C@4 T]-|Type of value.&][s1; [*C@3 v]-|Container.&][s1; "
-"[*C@3 val]-|Value to find.&][s1; [*C@3 less]-|Ordering p")
-TOPIC_TEXT(
-"redicate.&][s1; [*/ Return value]-|Position in container.&][s13; template<class "
-"[*@4 C], class [*@4 T]>&][s14;:`:`:FindBinary`(const C`&`,const T`&`): int [* FindBinary](const "
-"[*@4 C]`& [*@3 v], const [*@4 T]`& [*@3 val])&][s6; Finds position of element with "
-"specified value in the container sorted by [*/ operator<] predicate. If no such element "
-"exists, a negative value is returned.&][s1; [*C@4 C]-")
-TOPIC_TEXT(
-"|Type of container.&][s1; [*C@4 T]-|Type of value.&][s1; [*C@3 v]-|Container.&][s1; "
-"[*C@3 val]-|Value to find.&][s1; [*/ Return value]-|Position in container.&][s13;~~~.992; "
-"template<class [*@4 C]>&][s14;:`:`:AppendSorted`(C`&`,const C`&`,const L`&`):~~~.992; "
-"[*@4 C]`& [* AppendSorted]([*@4 C]`& [*@3 dest], const [*@4 C]`& [*@3 src], const "
-"[*@4 L]`& [*@3 less])&][s6; Merges source NTL container to")
-TOPIC_TEXT(
-" destination NTL container. Both containers must be sorted in ascending order. After "
-"the operation, destination container is sorted in ascending order and contains values "
-"from both containers. Duplicate values are preserved. Ordering predicate is determined "
-"by [* less].&][s1; [*C@4 C]-|Type of container.&][s1; [*C@3 dest]-|Destination container.&][s1; "
-"[*C@3 src]-|Source container.&][s1; [*C@3 less")
-TOPIC_TEXT(
-"]-|Ordering predicate.&][s1;C [*/A Return value][A -|Destination container.]template<class "
-"[*@4 C]>&][s13;~~~.992; template<class [*@4 C]>&][s14;:`:`:AppendSorted`(C`&`,const "
-"C`&`):~~~.992; [*@4 C]`& [* AppendSorted]([*@4 C]`& [*@3 dest], const [*@4 C]`& [*@3 "
-"src])&][s6;~~~.992; Merges source NTL container to destination NTL container. Both "
-"containers must be sorted in ascending order. After the o")
-TOPIC_TEXT(
-"peration, destination container is sorted in ascending order and contains values "
-"from both containers. Duplicate values are preserved. Ordering is determined by [*/ "
-"operator<].&][s1; [*C@4 C]-|Type of container.&][s1; [*C@3 dest]-|Destination container.&][s1; "
-"[*C@3 src]-|Source container.&][s1;C [*/A Return value][A -|Destination container.]template<class "
-"[*@4 C]>&][s13; template<class [*@4 C], cl")
-TOPIC_TEXT(
-"ass [*@4 L]>&][s14;:`:`:UnionSorted`(C`&`,const C`&`,const L`&`):~~~736; [*@4 C]`& "
-"[* UnionSorted]([*@4 C]`& [*@3 dest], const [*@4 C]`& [*@3 src], const [*@4 L]`& "
-"[*@3 less])&][s6; Merges source NTL container to destination NTL container. Both "
-"containers must be sorted in ascending order and values must be unique. After the "
-"operation, destination container is sorted in ascending order and contain")
-TOPIC_TEXT(
-"s unique values from both containers. Ordering is determined by [* less].&][s1; "
-"[*C@4 C]-|Type of container.&][s1; [*C@3 dest]-|Destination container.&][s1; [*C@3 "
-"src]-|Source container.&][s1; [*C@3 less]-|Ordering predicate.&][s1; [*/ Return value]-|Destination "
-"container.&][s13; template<class [*@4 C]>&][s14;:`:`:UnionSorted`(C`&`,const C`&`):~~~.992; "
-"[*@4 C]`& [* UnionSorted]([*@4 C]`& [*@3 dest")
-TOPIC_TEXT(
-"], const [*@4 C]`& [*@3 src])&][s6; Merges the source NTL container to the destination "
-"NTL container. Both containers must be sorted in ascending order and values must "
-"be unique. After the operation, destination container is sorted in ascending order "
-"and contains unique values from both containers. Ordering is determined by [*/ operator<].&][s1; "
-"[*C@4 C]-|Type of container.&][s1; [*C@3 dest]-|Dest")
-TOPIC_TEXT(
-"ination container.&][s1; [*C@3 src]-|Source container.&][s1; [*/ Return value]-|Destination "
-"container.&][s13; template<class [*@4 C], class [*@4 L]>&][s14;:`:`:RemoveSorted`(C`&`,const "
-"C`&`,const L`&`): [*@4 C]`& [* RemoveSorted]([*@4 C]`& [*@3 from], const [*@4 C]`& "
-"[*@3 what], const [*@4 L]`& [*@3 less])&][s6; Removes elements of source container "
-"from destination container. Both containers must ")
-TOPIC_TEXT(
-"be sorted in ascending order and values must be unique. Ordering is determined by "
-"[* less].&][s1; [*C@4 C]-|Type of container.&][s1; [*C@3 from]-|Destination container.&][s1; "
-"[*C@3 what]-|Source container.&][s1; [*C@3 less]-|Ordering predicate.&][s1; [*/ Return "
-"value]-|Destination container.&][s13; template<class [*@4 C]>&][s14;:`:`:RemoveSorted`(C`&`,const "
-"C`&`): [*@4 C]`& [* RemoveSorted]([*@4 C")
-TOPIC_TEXT(
-"]`& [*@3 from], const [*@4 C]`& [*@3 what])&][s6; Removes elements of source container "
-"from destination container. Both containers must be sorted in ascending order and "
-"values must be unique. Ordering is determined by [*/ operator<].&][s1; [*C@4 C]-|Type "
-"of container.&][s1; [*C@3 from]-|Destination container.&][s1; [*C@3 what]-|Source "
-"container.&][s1; [*/ Return value]-|Destination container.&][s1")
-TOPIC_TEXT(
-"3; template<class [*@4 D], class [*@4 S], class [*@4 L]>&][s14;:`:`:IntersectSorted`(D`&`,const "
-"S`&`,const L`&`): [*@4 D]`& [* IntersectSorted]([*@4 D]`& [*@3 dest], const [*@4 "
-"S]`& [*@3 src], const [*@4 L]`& [*@3 less])&][s6; Removes elements from destination "
-"container that are not contained in source container. Both containers must be sorted "
-"in ascending order and values must be unique. Ordering")
-TOPIC_TEXT(
-" is determined by [* less].&][s1; [*C@4 D]-|Type of destination container.&][s1; "
-"[*C@4 S]-|Type of source container.&][s1; [*C@3 dest]-|Destination container.&][s1; "
-"[*C@3 src]-|Source container.&][s1; [*C@3 less]-|Destination container.&][s13; template<class "
-"[*@4 D], class [*@4 S]>&][s14;:`:`:IntersectSorted`(D`&`,const S`&`): [*@4 D]`& [* "
-"IntersectSorted]([*@4 D]`& [*@3 dest], const [*@4 S]`& [*@")
-TOPIC_TEXT(
-"3 src])&][s6; Removes elements from destination container that are not contained "
-"in source container. Both containers must be sorted in ascending order and values "
-"must be unique. Ordering is determined by [*/ operator<].&][s1; [*C@4 D]-|Type of "
-"destination container.&][s1; [*C@4 S]-|Type of source container.&][s1; [*C@3 dest]-|Destination "
-"container.&][s1; [*C@3 src]-|Source container.&][s1; [*/ Re")
-TOPIC_TEXT(
-"turn value]-|Destination container.&][s13; template<class [*@4 T], class [*@4 Less]>&][s14;:`:`:Sort`(T`&`,const "
-"Less`&`): void [* Sort]([*@4 T]`& [*@3 c], const [*@4 Less]`& [*@3 less])&][s6; Sorts "
-"container. Ordering is determined by [* less].&][s11; IterSwap must be defined for "
-"T`::Iterator.&][s1; [*C@4 T]-|Type of container.&][s1; [*C@3 c]-|Container.&][s1; "
-"[*C@3 less]-|Ordering predicate.&][s")
-TOPIC_TEXT(
-"13; template<class [*@4 T]>&][s14;:`:`:Sort`(T`&`): void [* Sort]([*@4 T]`& [*@3 "
-"c])&][s6; Sorts container. Ordering is determined by [*/ operator<].&][s6;*1 IterSwap "
-"must be defined for T`::Iterator.&][s1; [*C@4 T]-|Type of container.&][s1; [*C@3 "
-"c]-|Container.&][s13; template<class [*@4 KC], class [*@4 VC], class [*@4 Less]>&][s14;:`:`:IndexSort`(KC`&`,VC`&`,const "
-"Less`&`): void [* IndexSort]([*")
-TOPIC_TEXT(
-"@4 KC]`& [*@3 keys], [*@4 VC]`& [*@3 values], const [*@4 Less]`& [*@3 less])&][s6; "
-"Sorts pair of containers. Both containers must have same number of items. Resulting "
-"order is determined by the [* keys] container. Ordering is determined by [* less].&][s1; "
-"[*C@4 KC]-|Type of keys container.&][s1; [*C@4 VC]-|Type of values.&][s1; [*C@3 keys]-|Container "
-"of keys.&][s1; [*C@3 values]-|Container of valu")
-TOPIC_TEXT(
-"es.&][s1; [*C@3 less]-|Ordering predicate.&][s13; template<class [*@4 KC], class "
-"[*@4 VC]>&][s14;:`:`:IndexSort`(KC`&`,VC`&`): void [* IndexSort]([*@4 KC]`& [*@3 "
-"keys], [*@4 VC]`& [*@3 values])&][s6; Sorts pair of containers. Both containers must "
-"have same number of items. Resulting order is determined by the [* keys] container. "
-"Ordering is determined by [*/ operator<].&][s1; [*C@4 KC]-|Type of ke")
-TOPIC_TEXT(
-"ys container.&][s1; [*C@4 VC]-|Type of values container.&][s1; [*C@3 keys]-|Container "
-"of keys.&][s1; [*C@3 values]-|Container of values.&][s13; template<class [*@4 C], "
-"class [*@4 Less]>&][s14;:`:`:GetSortOrder`(const C`&`,const Less`&`): Vector<int> "
-"[* GetSortOrder](const [*@4 C]`& [*@3 container], const [*@4 Less]`& [*@3 less])&][s6; "
-"Creates ascending order of values in container. Ordering is det")
-TOPIC_TEXT(
-"ermined by [* less].&][s1; [*C@4 C]-|Type of container.&][s1; [*C@3 container]-|Source "
-"container.&][s1; [*C@3 less]-|Ordering predicate.&][s1; [*/ Return value]-|Vector "
-"of positions of source container in sorted order.&][s13; template<class [*@4 C]>&][s14;:`:`:GetSortOrder`(const "
-"C`&`): Vector<int> [* GetSortOrder](const [*@4 C]`& [*@3 container])&][s6; Creates "
-"ascending order of values in contain")
-TOPIC_TEXT(
-"er. Ordering is determined by [*/ operator<].&][s1; [*C@4 C]-|Type of container.&][s1; "
-"[*C@3 container]-|Source container.&][s1; [*/ Return value]-|Vector of positions "
-"of source container in sorted order.&][s13; template<class [*@4 O], class [*@4 T], "
-"class [*@4 R]>&][s14;:`:`:FieldRelation`(O`(T`:`:`*`)`,const R`&`): [/ type] [* FieldRelation]([*@4 "
-"O] ([*@4 T]`::`*[*@3 member]), const [*@4 R]`& [*")
-TOPIC_TEXT(
-"@3 relation])&][s6; Creates ordering predicate for [* T] based on the value of member "
-"variable of[*  T].&][s1; [*C@4 T]-|Type of element.&][s1; [*C@3 member]-|Member variable "
-"of T.&][s1; [*C@3 relation]-|Ordering relation for [* member].&][s1; [*/ Return value]-|Ordering "
-"predicate.&][s13; template<class [*@4 O], class [*@4 T], class [*@4 R]>&][s14;:`:`:MethodRelation`(O`(T`:`:`*`)`(`)`,const "
-"R`&`)")
-TOPIC_TEXT(
-": [/ type] [* MethodRelation]([*@4 O] ([*@4 T]`::`*[*@3 method])(), const [*@4 R]`& "
-"[*@3 relation])&][s6; Creates ordering predicate for [* T] based on the value returned "
-"by non`-const method of [* T].&][s1; [*C@4 T]-|Type of element.&][s1; [*C@3 method]-|Method "
-"of T.&][s1; [*C@3 relation]-|Ordering relation for value returned by method.&][s1; "
-"[*/ Return value]-|Ordering predicate.&][s13; template")
-TOPIC_TEXT(
-"<class [*@4 O], class [*@4 T], class [*@4 R]>&][s14;:`:`:MethodRelation`(O`(T`:`:`*`)`(`)const`,const "
-"R`&`): [/ type] [* MethodRelation]([*@4 O] ([*@4 T]`::`*[*@3 method])() const, const "
-"[*@4 R]`& [*@3 relation])&][s6; Creates ordering predicate for [* T] based on the "
-"value returned by const method of [* T].&][s1; [*C@4 T]-|Type of element.&][s1; [*C@3 "
-"method]-|Method of T.&][s1; [*C@3 relation]-|")
-TOPIC_TEXT(
-"Ordering relation for value returned by method.&][s1; [*/ Return value]-|Ordering "
-"predicate.]")
+COMPRESSED
+120,156,237,92,249,111,218,72,20,254,87,70,234,161,36,27,
+168,79,108,160,170,154,146,237,10,37,109,87,129,230,23,4,
+193,216,67,98,21,108,234,49,73,179,203,246,111,223,55,227,
+3,27,219,36,156,225,170,170,166,177,223,188,99,222,247,189,
+55,99,15,52,4,244,250,53,119,202,189,226,158,248,83,58,
+199,93,109,216,115,155,13,83,146,212,178,38,200,229,31,23,
+223,138,229,147,143,71,5,233,24,148,240,160,68,84,120,81,
+149,69,94,18,10,240,15,47,242,130,44,136,18,175,10,69,
+73,21,69,149,43,233,61,141,144,102,163,39,168,106,153,90,
+22,78,149,87,130,34,11,188,34,169,146,202,139,138,42,192,
+88,129,227,4,78,17,100,94,18,85,65,46,25,152,232,205,
+134,166,138,229,147,171,2,12,18,169,37,80,206,241,5,65,
+82,36,129,19,57,65,2,83,188,170,74,188,34,171,98,177,
+80,40,233,218,192,53,109,203,183,101,242,188,192,151,59,188,
+82,6,151,127,255,254,157,231,37,206,243,64,2,101,60,39,
+129,171,60,92,227,36,65,225,229,34,87,148,85,94,229,68,
+80,46,43,156,92,26,104,142,214,79,143,156,234,144,159,12,
+93,225,74,166,139,65,197,201,31,60,175,192,144,194,105,225,
+21,47,41,16,168,42,74,178,170,112,96,92,16,4,81,20,
+120,81,40,22,5,185,32,43,165,59,172,25,216,241,67,208,
+192,249,19,30,134,42,48,103,48,144,147,100,81,144,138,116,
+178,68,176,36,8,5,185,200,203,18,39,23,64,83,201,193,
+63,135,166,131,251,216,130,140,253,123,243,223,155,63,191,230,
+190,215,80,131,136,101,116,214,187,181,29,211,189,235,147,183,
+205,6,225,202,136,254,144,203,23,168,241,134,227,114,28,135,
+192,211,65,79,115,241,205,251,166,127,233,227,17,151,231,242,
+130,44,31,35,63,133,190,232,77,40,33,161,122,120,245,195,
+205,77,202,200,123,219,52,82,6,114,168,246,160,13,194,27,
+71,193,255,90,245,86,68,101,251,237,120,132,136,180,240,250,
+41,122,142,124,39,188,126,220,164,209,10,101,102,148,160,123,
+173,55,196,36,143,106,3,172,155,93,83,71,238,227,0,19,
+212,55,111,239,92,68,232,69,173,103,254,131,81,227,196,243,
+18,61,192,196,161,190,237,96,132,187,93,172,187,230,61,6,
+37,142,169,89,46,201,83,213,74,25,213,81,127,72,92,116,
+167,193,61,12,242,216,65,6,198,3,164,219,131,71,100,15,
+176,163,185,182,131,224,239,192,212,127,132,23,216,104,169,12,
+166,42,108,50,115,163,58,248,130,236,110,224,100,228,62,157,
+129,220,232,179,233,128,25,118,23,185,54,34,224,96,92,168,
+3,66,53,172,219,150,145,34,181,188,196,87,231,77,124,213,
+197,78,70,242,171,173,136,218,39,83,159,41,253,68,226,209,
+192,54,45,23,27,116,98,58,143,8,56,202,82,241,60,64,
+132,222,63,11,20,84,210,195,69,7,3,28,186,166,5,102,
+187,0,2,106,96,194,143,106,28,11,85,72,99,213,119,141,
+137,39,161,16,222,102,138,76,235,150,106,234,142,241,145,196,
+69,234,8,18,1,203,146,65,82,73,201,219,140,101,101,198,
+129,151,79,192,210,164,181,49,5,149,159,77,203,184,180,31,
+176,243,201,30,90,70,18,155,81,227,182,69,82,148,180,42,
+173,72,188,241,82,116,63,61,156,116,167,68,200,18,153,111,
+160,14,65,184,79,76,97,70,20,83,10,42,32,100,62,157,
+151,173,72,94,226,58,123,56,146,200,144,174,52,27,196,135,
+50,76,130,73,187,58,4,139,28,205,186,101,213,17,44,185,
+26,176,201,65,196,118,40,135,128,64,192,78,166,13,13,28,
+108,152,58,160,21,61,64,25,102,180,165,174,35,93,179,40,
+15,77,139,96,54,134,50,216,30,2,55,29,172,253,96,100,
+184,3,229,14,180,95,248,37,206,198,74,164,50,135,182,159,
+40,222,113,250,221,195,237,74,218,72,47,205,185,209,39,124,
+107,90,22,117,3,20,176,64,227,82,94,78,115,163,175,195,
+126,7,226,6,33,220,99,189,158,132,51,51,97,17,98,206,
+141,174,131,30,0,197,199,136,11,176,217,202,141,190,249,17,
+143,231,109,44,246,14,93,97,119,232,88,94,68,32,252,119,
+36,27,241,137,56,84,141,53,87,141,173,100,240,14,208,117,
+159,121,181,63,244,152,9,201,239,194,5,253,251,29,195,243,
+182,2,117,141,13,224,251,96,112,88,54,110,80,211,129,36,
+31,86,141,135,85,227,161,104,236,12,129,119,128,173,107,167,
+85,41,160,81,251,61,67,48,170,180,79,61,44,163,122,251,
+3,197,230,4,14,219,71,44,141,32,247,22,221,83,89,246,
+91,157,254,166,245,218,199,165,13,226,233,254,208,109,22,102,
+28,22,161,123,220,79,62,153,150,230,60,110,23,184,55,126,
+81,59,103,255,10,9,58,94,109,121,111,11,136,247,126,1,
+7,111,102,0,189,218,172,171,211,60,170,118,145,101,35,50,
+212,239,66,237,248,151,73,92,114,10,218,44,124,171,249,175,
+34,152,5,130,28,70,29,108,28,150,166,135,82,178,95,165,
+228,5,105,77,187,232,238,240,121,159,137,183,31,252,89,9,
+212,211,23,164,91,15,248,153,144,76,207,29,21,139,194,114,
+16,29,199,199,50,90,66,54,226,56,116,6,123,38,203,168,
+177,132,38,209,60,13,171,6,38,115,174,184,166,40,37,142,
+190,166,114,255,5,59,183,152,0,148,135,142,142,209,215,250,
+101,4,223,128,6,26,29,80,156,101,60,118,51,143,62,217,
+192,145,240,119,18,30,253,240,89,65,215,123,68,135,73,101,
+139,34,90,44,243,232,172,235,82,181,116,215,197,200,2,90,
+79,99,38,198,182,77,146,173,8,105,150,17,136,134,7,93,
+186,142,221,71,157,184,79,121,116,62,28,244,188,173,161,47,
+166,193,254,16,232,9,59,194,123,96,25,74,86,113,106,217,
+192,224,103,159,29,96,137,244,177,25,57,233,67,35,55,58,
+79,11,48,46,73,243,157,27,213,188,36,100,200,60,213,119,
+42,148,174,103,113,190,54,206,80,150,253,102,64,74,255,145,
+73,227,132,5,245,97,229,84,222,126,70,6,228,9,39,233,
+64,34,15,146,41,212,137,246,197,151,34,208,82,153,177,133,
+205,237,187,5,1,110,36,147,118,166,183,49,54,249,236,8,
+132,135,150,249,19,214,97,171,33,172,167,124,58,111,167,241,
+114,43,90,90,218,2,52,219,244,74,184,185,245,20,155,100,
+3,197,97,22,35,232,189,189,102,197,38,116,171,13,0,253,
+170,27,210,21,238,219,247,120,30,186,208,148,46,157,46,15,
+119,218,186,30,154,123,145,147,241,211,95,128,19,153,192,129,
+135,219,84,42,44,153,131,43,104,16,44,65,207,34,1,155,
+245,253,233,16,155,140,249,45,132,231,66,149,122,137,32,125,
+1,244,157,183,208,249,188,165,186,182,220,26,31,115,37,142,
+247,170,5,9,35,88,119,51,33,159,57,120,145,85,81,173,
+21,137,241,165,54,30,9,26,101,83,6,86,64,154,203,54,
+212,150,237,134,151,13,239,188,195,4,232,94,182,248,159,71,
+120,149,206,254,152,120,45,34,158,136,100,245,123,138,109,161,
+225,78,176,105,119,128,159,221,86,182,0,254,235,239,69,11,
+189,182,143,150,206,89,63,80,13,121,79,225,192,148,23,128,
+243,150,126,112,178,21,119,245,57,13,128,250,71,162,0,126,
+102,177,85,202,225,135,110,83,63,74,91,111,151,74,193,231,
+90,179,223,255,101,192,71,207,126,7,56,125,153,189,9,159,
+160,95,32,225,243,101,37,81,9,4,250,237,4,235,204,206,
+242,166,253,98,238,173,253,245,252,15,5,22,160,119,213,50,
+240,175,140,148,95,192,166,230,34,107,87,243,3,63,166,157,
+156,107,93,195,160,235,172,65,94,155,120,129,250,48,208,76,
+39,134,8,146,209,233,216,23,45,16,173,15,189,50,60,63,
+70,191,110,3,228,175,48,25,246,220,113,223,75,32,153,62,
+97,131,26,195,102,102,142,138,20,66,248,34,186,175,162,218,
+178,58,223,117,84,48,237,155,29,152,43,17,176,7,10,19,
+199,18,104,86,38,228,210,244,173,171,120,45,133,69,219,196,
+132,109,129,107,246,162,109,17,208,102,21,234,37,193,119,3,
+14,126,101,149,232,86,187,212,46,93,195,102,195,118,0,44,
+236,103,40,22,186,214,50,45,183,21,59,27,246,33,10,220,
+191,48,219,170,176,180,37,177,187,216,179,171,48,49,107,173,
+217,21,7,67,110,72,98,167,49,6,76,236,72,212,42,30,
+174,142,3,95,197,115,83,47,211,212,124,112,36,46,253,249,
+223,248,163,24,222,137,132,85,161,121,171,17,185,18,216,44,
+244,208,243,121,224,217,68,84,180,190,181,208,183,185,138,92,
+124,131,48,211,200,171,22,186,202,132,226,103,19,247,140,43,
+220,99,91,235,74,15,202,201,228,149,20,120,102,68,145,229,
+227,164,7,17,40,199,140,165,172,12,98,150,110,142,232,190,
+164,125,18,129,107,31,211,182,60,198,234,76,229,51,230,86,
+156,6,206,164,75,9,22,216,137,130,196,118,78,80,17,235,
+77,212,209,8,133,143,119,204,214,59,18,11,72,243,156,245,
+190,110,170,211,163,151,64,26,196,179,119,88,254,211,167,56,
+252,253,152,115,163,47,9,125,168,30,23,13,195,136,20,208,
+224,90,224,174,175,110,10,113,86,190,30,221,44,74,124,193,
+238,157,29,231,68,226,82,146,20,177,48,2,164,30,31,29,
+47,68,143,184,221,185,248,65,21,140,81,124,180,193,12,9,
+78,140,211,14,97,217,86,59,199,188,242,67,160,224,102,35,
+103,38,11,155,0,74,150,64,205,172,28,73,122,231,41,61,
+48,102,53,140,73,219,86,198,1,186,105,156,154,197,227,77,
+102,221,78,17,174,249,63,12,57,110,59,

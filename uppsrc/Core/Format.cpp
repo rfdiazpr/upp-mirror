@@ -838,6 +838,7 @@ String NFormat(int language, const char *s, const Vector<Value>& v)
 		RegisterNumberFormatter("R", &IntUpperRomanFormatter);
 
 		RegisterValueFormatter("vt", &StdFormatFormatter);
+		RegisterValueFormatter("", &StdFormatFormatter);
 	}
 	Formatting f;
 	f.language = language;

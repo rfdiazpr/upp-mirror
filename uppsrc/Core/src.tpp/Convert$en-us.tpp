@@ -1,325 +1,190 @@
 TITLE("Convert")
-REF("::Convert::class")
-REF("::Convert::Format(const::Value&)const")
-REF("::Convert::Scan(const::Value&)const")
-REF("::Convert::Filter(int)const")
-REF("::Convert::operator()(const::Value&)const")
-REF("::ConvertDate::class")
-REF("::ConvertDate::Scan(const::Value&)const")
-REF("::ConvertDate::Min(::Date)")
-REF("::ConvertDate::Max(::Date)")
-REF("::ConvertDate::NotNull(bool)")
-REF("::ConvertDate::NoNotNull()")
-REF("::ConvertDate::GetMin()const")
-REF("::ConvertDate::GetMax()const")
-REF("::ConvertDate::IsNotNull()const")
-REF("::ConvertDate::::ConvertDate(::Date,::Date,bool)")
-REF("::ConvertDouble::class")
-REF("::ConvertDouble::Pattern(const char*)")
-REF("::ConvertDouble::MinMax(double,double)")
-REF("::ConvertDouble::Min(double)")
-REF("::ConvertDouble::Max(double)")
-REF("::ConvertDouble::NotNull(bool)")
-REF("::ConvertDouble::NoNotNull()")
-REF("::ConvertDouble::GetMin()const")
-REF("::ConvertDouble::GetMax()const")
-REF("::ConvertDouble::IsNotNull()const")
-REF("::ConvertDouble::::ConvertDouble(double,double,bool)")
-REF("::ConvertInt::class")
-REF("::ConvertInt::MinMax(int,int)")
-REF("::ConvertInt::Min(int)")
-REF("::ConvertInt::Max(int)")
-REF("::ConvertInt::NotNull(bool)")
-REF("::ConvertInt::NoNotNull()")
-REF("::ConvertInt::GetMin()const")
-REF("::ConvertInt::GetMax()const")
-REF("::ConvertInt::IsNotNull()const")
-REF("::ConvertInt::::ConvertInt(int,int,bool)")
-REF("::ConvertString::class")
-REF("::ConvertString::MaxLen(int)")
-REF("::ConvertString::GetMaxLength()const")
-REF("::ConvertString::NotNull(bool)")
-REF("::ConvertString::NoNotNull()")
-REF("::ConvertString::IsNotNull()const")
-REF("::ConvertString::::ConvertString(int,bool)")
-REF("::ConvertTime::class")
-REF("::ConvertTime::MinMax(::Time,::Time)")
-REF("::ConvertTime::NotNull(bool)")
-REF("::ConvertTime::NoNotNull()")
-REF("::ConvertTime::GetMin()const")
-REF("::ConvertTime::GetMax()const")
-REF("::ConvertTime::IsNotNull()const")
-REF("::ConvertTime::::ConvertTime(::Time,::Time,bool)")
-REF("::FormatConvert::class")
-REF("::FormatConvert::SetFormat(const char*)")
-REF("::JoinConvert::class")
-REF("::JoinConvert::Add(const char*)")
-REF("::JoinConvert::Add(int,const::Convert&)")
-REF("::JoinConvert::Add(int)")
-REF("::JoinConvert::Add(const::Convert&)")
-REF("::JoinConvert::Add()")
-TOPIC_TEXT(
-"[2 $$0,0#00000000000000000000000000000000:Default][l288;i1120;a17;O9;~~~.1408;2 "
-"$$1,0#10431211400427159095818037425705:param][a83;*R6 $$2,5#31310162474203024125188417583966:caption][b83;*4 "
-"$$3,5#07864147445237544204411237157677:title][i288;O9;C2 $$4,6#40027414424643823182269349404212:item][b42;a42;2 "
-"$$5,5#45413000475342174754091244180557:text][l288;b17;a17;2 $$6,6#27521748481378242620020725143825:")
-TOPIC_TEXT(
-"desc][l321;t246;C@5;1 $$7,7#20902679421464641399138805415013:code][b2503; $$8,0#65142375456100023862071332075487:separator][*@(0.0.255)2 "
-"$$9,0#83433469410354161042741608181528:base][t4167;C $$10,0#37138531426314131251341829483380:class][l288;a17;*1 "
-"$$11,11#70004532496200323422659154056402:requirement][i417;b42;a42;O9;~~~.416;2 $$12,12#10566046415157235020018451313112:tparam][b167;C2 "
-"$$13,13#924304")
-TOPIC_TEXT(
-"59443460461911108080531343:item1][i288;a42;O9;C2 $$14,14#77422149456609303542238260500223:item2][*@2$(0.128.128) "
-"$$15,15#34511555403152284025741354420178:NewsDate][l321;*C$7;2 $$16,16#03451589433145915344929335295360:result][l321;b83;a83;*C$7;2 "
-"$$17,17#07531550463529505371228428965313:result`-line][l160;t4167;*C+117 $$18,5#88603949442205825958800053222425:package`-title][ "
-"$$19,0#535800234423355290")
-TOPIC_TEXT(
-"39900623488521:gap][t4167;C2 $$20,20#70211524482531209251820423858195:class`-nested][b50;2 "
-"$$21,21#03324558446220344731010354752573:Par][{_}%EN-US [s2; Convert&][s10;:`:`:Convert`:`:class:* "
-"[%00-00* class_][%00-00 Convert]&][s6; Convert`-derived classes serve as bidirectional "
-"Value`-Value converters. One direction is represented by Format method and usually "
-"converts the Value to the textual repres")
-TOPIC_TEXT(
-"entation. Reverse direction is represented by the Scan method.&][s6; If the conversion "
-"is not possible (e.g. due to invalid textual representation), convert methods should "
-"return `\"ErrorValue`\" to indicate the problem.&][s0; &][s4;:`:`:Convert`:`:Format`(const`:`:Value`&`)const: "
-"[%00-00 virtual Value_][%00-00* Format][%00-00 (const_Value`&_][%00-00*@3 q][%00-00 "
-")_const]&][s6; [%00-00 Converts the ")
-TOPIC_TEXT(
-"Value. Default ]implementation uses Value`::ToString to convert the Value.&][s1; "
-"[%00-00*C@3 q]-|Value.&][s1; [*/ Return value]-|Converted Value.&][s0; &][s4;:`:`:Convert`:`:Scan`(const`:`:Value`&`)const: "
-"[%00-00 virtual Value_][%00-00* Scan][%00-00 (const_Value`&_][%00-00*@3 text][%00-00 "
-")_const]&][s6; Converts the Value in reverse direction. Default implementation returns "
-"[@3 text] (no conversio")
-TOPIC_TEXT(
-"n is performed).&][s1; [%00-00*C@3 text]-|Value.&][s1; [*/ Return value]-|Converted "
-"Value.&][s0; &][s4;:`:`:Convert`:`:Filter`(int`)const: [%00-00 virtual int_][%00-00* "
-"Filter][%00-00 (int_][%00-00*@3 chr][%00-00 )_const]&][s6; Adjusts characters allowed "
-"in textual representation of Value.&][s1; [%00-00*C@3 chr]-|Character to adjust.&][s1; "
-"[*/ Return value]-|Adjusted character. Zero indicates that")
-TOPIC_TEXT(
-" character is rejected. Filter is allowed to alter the input character (e.g. by "
-"upper`-casing it, changing `',`' to `'.`' etc..). Default implementation returns "
-"unaltered [@3 chr].&][s0; &][s4;:`:`:Convert`:`:operator`(`)`(const`:`:Value`&`)const: "
-"[%00-00 Value_][%00-00* operator()][%00-00 (const_Value`&_][%00-00*@3 q][%00-00 )_const]&][s6; "
-"Invokes the Format method. Helper functor`-like syntax.&]")
-TOPIC_TEXT(
-"[s1; [%00-00*C@3 q]-|Value.&][s1; [*/ Return value]-|Converted Value.&][s0; &][s0;3 "
-"&][s10;:`:`:ConvertDate`:`:class:* [%00-00* class_][%00-00 ConvertDate]&][s6; Date "
-"Converter. Textual date format depends on actual regional settings.&][s9; [/ Derived "
-"from] [%00-00 Convert]&][s0; &][s4;:`:`:ConvertDate`:`:Scan`(const`:`:Value`&`)const: "
-"[%00-00 ConvertDate`&_][%00-00* MinMax][%00-00 (Date_][%00-00*")
-TOPIC_TEXT(
-"@3 `_min][%00-00 , Date_][%00-00*@3 `_max][%00-00 )]&][s6; Sets the range of Dates "
-"allowed.&][s1; [%00-00*C@3 `_min]-|Minimal Date.&][s1; [%00-00*C@3 `_max]-|Maximal "
-"Date.&][s1; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:ConvertDate`:`:Min`(`:`:Date`): "
-"[%00-00 ConvertDate`&_][%00-00* Min][%00-00 (Date_][%00-00*@3 `_min][%00-00 )]&][s6; "
-"Sets minimal allowed Date.&][s1; [%00-00*C@3 `_min]-|Minimal ")
-TOPIC_TEXT(
-"Date.&][s1; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:ConvertDate`:`:Max`(`:`:Date`): "
-"[%00-00 ConvertDate`&_][%00-00* Max][%00-00 (Date_][%00-00*@3 `_max][%00-00 )]&][s6; "
-"Sets maximal allowed Date.&][s1; [%00-00*C@3 `_max]-|Maximal Date.&][s1; [*/ Return "
-"value]-|`*this.&][s0; &][s4;:`:`:ConvertDate`:`:NotNull`(bool`): [%00-00 ConvertDate`&_][%00-00* "
-"NotNull][%00-00 (bool_][%00-00*@3 b][%00-00 _`")
-TOPIC_TEXT(
-"=_true)]&][s6; Allows/disallows Null dates. (Null dates are represented by the empty "
-"text).&][s1; [%00-00*C@3 b]-|true to disallow Null dates.&][s1; [*/ Return value]-|`*this.&][s0; "
-"&][s4;:`:`:ConvertDate`:`:NoNotNull`(`): [%00-00 ConvertDate`&_][%00-00* NoNotNull][%00-00 "
-"()]&][s6; Same as NotNull(false).&][s0; &][s4;:`:`:ConvertDate`:`:GetMin`(`)const: "
-"[%00-00 Date_][%00-00* GetMin][%00-00 ()_con")
-TOPIC_TEXT(
-"st]&][s1; [*/ Return value]-|Minimal allowed date.&][s0; &][s4;:`:`:ConvertDate`:`:GetMax`(`)const: "
-"[%00-00 Date_][%00-00* GetMax][%00-00 ()_const]&][s1; [*/ Return value]-|Maximal "
-"allowed date.&][s0; &][s4;:`:`:ConvertDate`:`:IsNotNull`(`)const: [%00-00 bool_][%00-00* "
-"IsNotNull][%00-00 ()_const]&][s1; [*/ Return value]-|true is Nulls are disallowed.&][s0; "
-"&][s4;:`:`:ConvertDate`:`:`:`:ConvertDate")
-TOPIC_TEXT(
-"`(`:`:Date`,`:`:Date`,bool`): [%00-00* ConvertDate][%00-00 (Date_][%00-00*@3 minval][%00-00 "
-"_`=_Date(][%00-00@3 0][%00-00 , ][%00-00@3 0][%00-00 , ][%00-00@3 0][%00-00 ), Date_][%00-00*@3 "
-"maxval][%00-00 _`=_Date(][%00-00@3 9999][%00-00 , ][%00-00@3 12][%00-00 , ][%00-00@3 "
-"31][%00-00 ), bool_][%00-00*@3 notnull][%00-00 _`=_false)]&][s6; Constructor.&][s1; "
-"[%00-00*C@3 minval]-|Minimum Date allowed.&")
-TOPIC_TEXT(
-"][s1; [%00-00*C@3 maxval]-|Maximum Date allowed.&][s1; [%00-00*C@3 notnull]-|Disallow "
-"Nulls.&][s0; &][s0;3 &][s10;:`:`:ConvertDouble`:`:class:* [%00-00* class_][%00-00 "
-"ConvertDouble]&][s6; Floating point number converter.&][s6; &][s9; [/ Derived from] "
-"[%00-00 Convert]&][s0; &][s4;:`:`:ConvertDouble`:`:Pattern`(const char`*`): [%00-00 "
-"ConvertDouble`&_][%00-00* Pattern][%00-00 (const_char_`*][%00-00")
-TOPIC_TEXT(
-"*@3 p][%00-00 )]&][s6; Formatting tag used for conversion to textual representation "
-"(includes standard printf formatting tags, see Format function for description). "
-"Default tag is [@4 %.10g].&][s1; [%00-00*C@3 p]-|Pattern.&][s1; [*/ Return value]-|`*this.&][s0; "
-"&][s4;:`:`:ConvertDouble`:`:MinMax`(double`,double`): [%00-00 ConvertDouble`&_][%00-00* "
-"MinMax][%00-00 (double_][%00-00*@3 `_min][%00-00 ,")
-TOPIC_TEXT(
-" double_][%00-00*@3 `_max][%00-00 )]&][s6; Sets minimal and maximal allowed numbers.&][s1; "
-"[%00-00*C@3 `_min]-|Lower limit.&][s1; [%00-00*C@3 `_max]-|Upper limit.&][s1; [*/ "
-"Return value]-|`*this.&][s0; &][s4;:`:`:ConvertDouble`:`:Min`(double`): [%00-00 ConvertDouble`&_][%00-00* "
-"Min][%00-00 (double_][%00-00*@3 `_min][%00-00 )]&][s6; Sets minimal allowed number.&][s1; "
-"[%00-00*C@3 `_min]-|Lower limit")
-TOPIC_TEXT(
-".&][s1; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:ConvertDouble`:`:Max`(double`): "
-"[%00-00 ConvertDouble`&_][%00-00* Max][%00-00 (double_][%00-00*@3 `_max][%00-00 )]&][s6; "
-"Sets maximal allowed number.&][s1; [%00-00*C@3 `_max]-|Upper limit.&][s1; [*/ Return "
-"value]-|`*this.&][s0; &][s4;:`:`:ConvertDouble`:`:NotNull`(bool`): [%00-00 ConvertDouble`&_][%00-00* "
-"NotNull][%00-00 (bool_][%00-00*@3 b][%00-")
-TOPIC_TEXT(
-"00 _`=_true)]&][s6; Allows/disallows Nulls. (Nulls are represented by the empty "
-"text).&][s1; [%00-00*C@3 b]-|true to disallow.&][s1; [*/ Return value]-|`*this.&][s0; "
-"&][s4;:`:`:ConvertDouble`:`:NoNotNull`(`): [%00-00 ConvertDouble`&_][%00-00* NoNotNull][%00-00 "
-"()]&][s6; Equivalent to NotNull(false).&][s0; &][s4;:`:`:ConvertDouble`:`:GetMin`(`)const: "
-"[%00-00 double_][%00-00* GetMin][%00-00 ()_const")
-TOPIC_TEXT(
-"]&][s1; [*/ Return value]-|Lower limit.&][s0; &][s4;:`:`:ConvertDouble`:`:GetMax`(`)const: "
-"[%00-00 double_][%00-00* GetMax][%00-00 ()_const]&][s1; [*/ Return value]-|Upper "
-"limit.&][s0; &][s4;:`:`:ConvertDouble`:`:IsNotNull`(`)const: [%00-00 bool_][%00-00* "
-"IsNotNull][%00-00 ()_const]&][s1; [*/ Return value]-|true is Nulls are disallowed.&][s0; "
-"&][s4;:`:`:ConvertDouble`:`:`:`:ConvertDouble`(double`,")
-TOPIC_TEXT(
-"double`,bool`): [%00-00* ConvertDouble][%00-00 (double_][%00-00*@3 minval][%00-00 "
-"_`=_DOUBLE`_NULL`_LIM, double_][%00-00*@3 maxval][%00-00 _`=_`-DOUBLE`_NULL`_LIM, "
-"bool_][%00-00*@3 notnull][%00-00 _`=_false)]&][s6; Constructor.&][s1; [%00-00*C@3 "
-"minval]-|Lower limit `- default value means there is no limit.&][s1; [%00-00*C@3 "
-"maxval]-|Upper limit `- default value means there is no limit.&][s1; [%00")
-TOPIC_TEXT(
-"-00*C@3 notnull]-|If true, Nulls are not allowed.&][s0; &][s0; &][s0; &][s10;:`:`:ConvertInt`:`:class:*@3 "
-"[%00-00*@0 class_][%00-00@0 ConvertInt][%00-00*@0 _:_public_][%00-00 Convert]&][s6; "
-"Integer converter.&][s6; &][s9; [/ Derived from] [%00-00 Convert]&][s0; &][s4;:`:`:ConvertInt`:`:MinMax`(int`,int`): "
-"[%00-00 ConvertInt`&_][%00-00* MinMax][%00-00 (int_][%00-00*@3 `_min][%00-00 , int_][%00-00*@")
-TOPIC_TEXT(
-"3 `_max][%00-00 )]&][s6; Sets minimal and maximal allowed numbers.&][s1; [%00-00*C@3 "
-"`_min]-|Lower limit.&][s1; [%00-00*C@3 `_max]-|Upper limit.&][s1; [*/ Return value]-|`*this.&][s0; "
-"&][s4;:`:`:ConvertInt`:`:Min`(int`): [%00-00 ConvertInt`&_][%00-00* Min][%00-00 (int_][%00-00*@3 "
-"`_min][%00-00 )]&][s6; Sets minimal allowed number.&][s1; [%00-00*C@3 `_min]-|Lower "
-"limit.&][s1; [*/ Return value]-|`*t")
-TOPIC_TEXT(
-"his.&][s0; &][s4;:`:`:ConvertInt`:`:Max`(int`): [%00-00 ConvertInt`&_][%00-00* Max][%00-00 "
-"(int_][%00-00*@3 `_max][%00-00 )]&][s6; Sets maximal allowed number.&][s1; [%00-00*C@3 "
-"`_max]-|Upper limit.&][s1; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:ConvertInt`:`:NotNull`(bool`): "
-"[%00-00 ConvertInt`&_][%00-00* NotNull][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
-"Allows/disallows Nulls. (Nul")
-TOPIC_TEXT(
-"ls are represented by the empty text).&][s1; [%00-00*C@3 b]-|true to disallow.&][s1; "
-"[*/ Return value]-|`*this.&][s0; &][s4;:`:`:ConvertInt`:`:NoNotNull`(`): [%00-00 "
-"ConvertInt`&_][%00-00* NoNotNull][%00-00 ()]&][s6; Equivalent to NotNull(false).&][s1; "
-"[*/ Return value]-|`*this.&][s0; &][s4;:`:`:ConvertInt`:`:GetMin`(`)const: [%00-00 "
-"int_][%00-00* GetMin][%00-00 ()_const]&][s1; [*/ Return value]-|")
-TOPIC_TEXT(
-"Lower limit.&][s0; &][s4;:`:`:ConvertInt`:`:GetMax`(`)const: [%00-00 int_][%00-00* "
-"GetMax][%00-00 ()_const]&][s1; [*/ Return value]-|Upper limit.&][s0; &][s4;:`:`:ConvertInt`:`:IsNotNull`(`)const: "
-"[%00-00 bool_][%00-00* IsNotNull][%00-00 ()_const]&][s1; [*/ Return value]-|true "
-"if null are not allowed.&][s0; &][s4;:`:`:ConvertInt`:`:`:`:ConvertInt`(int`,int`,bool`): "
-"[%00-00* ConvertInt][%00-00 (int")
-TOPIC_TEXT(
-"_][%00-00*@3 minval][%00-00 _`=_`-INT`_MAX, int_][%00-00*@3 maxval][%00-00 _`=_INT`_MAX, "
-"bool_][%00-00*@3 notnull][%00-00 _`=_false)]&][s6; Constructor.&][s1; [%00-00*C@3 "
-"minval]-|Lower limit. Default value results in no limit.&][s1; [%00-00*C@3 maxval]-|Upper "
-"limit. Default value results in no limit.&][s1; [%00-00*C@3 notnull]-|If true, Nulls "
-"are not allowed.&][s0; &][s0; &][s0; &][s10;:`:`:Conve")
-TOPIC_TEXT(
-"rtString`:`:class:*@3 [%00-00*@0 class_][%00-00@0 ConvertString][%00-00*@0 _:_public_][%00-00 "
-"Convert]&][s6; String `\"converter`\". Of course, String already is textual representation "
-"of itself, the real purpose of this class is to introduce constraints of String value.&][s6; "
-"&][s9; [/ Derived from] [%00-00 Convert]&][s0; &][s4;:`:`:ConvertString`:`:MaxLen`(int`): "
-"[%00-00 ConvertString`&_][%00-00* ")
-TOPIC_TEXT(
-"MaxLen][%00-00 (int_][%00-00*@3 `_maxlen][%00-00 )]&][s6; Sets maximum length of "
-"String allowed.&][s1; [%00-00*C@3 `_maxlen]-|Length.&][s1; [*/ Return value]-|`*this.&][s0; "
-"&][s4;:`:`:ConvertString`:`:GetMaxLength`(`)const: [%00-00 int_][%00-00* GetMaxLength][%00-00 "
-"()_const]&][s1; [*/ Return value]-|Maximum length of String allowed.&][s0; &][s4;:`:`:ConvertString`:`:NotNull`(bool`): "
-"[%00-00 Conve")
-TOPIC_TEXT(
-"rtString`&_][%00-00* NotNull][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; "
-"Disallows empty Strings.&][s1; [%00-00*C@3 b]-|true to disallow.&][s1; [*/ Return "
-"value]-|`*this.&][s0; &][s4;:`:`:ConvertString`:`:NoNotNull`(`): [%00-00 ConvertString`&_][%00-00* "
-"NoNotNull][%00-00 ()]&][s6; Same as NotNull(false).&][s0; &][s4;:`:`:ConvertString`:`:IsNotNull`(`)const: "
-"[%00-00 bool_][%00-00* IsNotNul")
-TOPIC_TEXT(
-"l][%00-00 ()_const]&][s1; [*/ Return value]-|true mean empty Strings are not allowed.&][s0; "
-"&][s4;:`:`:ConvertString`:`:`:`:ConvertString`(int`,bool`): [%00-00* ConvertString][%00-00 "
-"(int_][%00-00*@3 maxlen][%00-00 _`=_INT`_MAX, bool_][%00-00*@3 notnull][%00-00 _`=_false)]&][s6; "
-"Constructor.&][s1; [%00-00*C@3 maxlen]-|Maximum length `- default is unlimited.&][s1; "
-"[%00-00*C@3 notnull]-|If true, emp")
-TOPIC_TEXT(
-"ty strings are not allowed.&][s0; &][s0; &][s0; &][s10;:`:`:ConvertTime`:`:class:* "
-"[%00-00* class_][%00-00 ConvertTime]&][s6; Time converter.&][s6; &][s9; [/ Derived "
-"from] [%00-00 Convert]&][s0; &][s4;:`:`:ConvertTime`:`:MinMax`(`:`:Time`,`:`:Time`): "
-"[%00-00 ConvertTime`&_][%00-00* MinMax][%00-00 (Time_][%00-00*@3 `_min][%00-00 , "
-"Time_][%00-00*@3 `_max][%00-00 )]&][s6; [%00-00 Time limeits.]&][s1;")
-TOPIC_TEXT(
-" [%00-00*C@3 `_min]-|Lower limit.&][s1; [%00-00*C@3 `_max]-|Upper limit.&][s1; [*/ "
-"Return value]-|`*this.&][s0; &][s4;:`:`:ConvertTime`:`:NotNull`(bool`): [%00-00 ConvertTime`&_][%00-00* "
-"NotNull][%00-00 (bool_][%00-00*@3 b][%00-00 _`=_true)]&][s6; Disallows empty Strings.&][s1; "
-"[%00-00*C@3 b]-|true to disallow.&][s1; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:ConvertTime`:`:NoNotNull`(`): "
-"[%00-00")
-TOPIC_TEXT(
-" ConvertTime`&_][%00-00* NoNotNull][%00-00 ()]&][s6; Same as NotNull(false).&][s0; "
-"&][s4;:`:`:ConvertTime`:`:GetMin`(`)const: [%00-00 Time_][%00-00* GetMin][%00-00 "
-"()_const]&][s1; [*/ Return value]-|Lower limit.&][s0; &][s4;:`:`:ConvertTime`:`:GetMax`(`)const: "
-"[%00-00 Time_][%00-00* GetMax][%00-00 ()_const]&][s1; [*/ Return value]-|Upper limit.&][s0; "
-"&][s4;:`:`:ConvertTime`:`:IsNotNull`(`)const: [")
-TOPIC_TEXT(
-"%00-00 bool_][%00-00* IsNotNull][%00-00 ()_const]&][s1; [*/ Return value]-|true "
-"means Nulls are disallowed.&][s0; &][s4;:`:`:ConvertTime`:`:`:`:ConvertTime`(`:`:Time`,`:`:Time`,bool`): "
-"[%00-00* ConvertTime][%00-00 (Time_][%00-00*@3 minval][%00-00 _`=_Null, Time_][%00-00*@3 "
-"maxval][%00-00 _`=_Null, bool_][%00-00*@3 notnull][%00-00 _`=_false)]&][s6; [%00-00 "
-"Constructor.]&][s1; [%00-00*C@3 minval]-|L")
-TOPIC_TEXT(
-"ower limit. Default means there is no limit.&][s1; [%00-00*C@3 maxval]-|Upper limit. "
-"Default means there is no limit.&][s1; [%00-00*C@3 notnull]-|true disallows Nulls.&][s0; "
-"&][s0; &][s0; &][s10;:`:`:FormatConvert`:`:class:* [%00-00* class_][%00-00 FormatConvert]&][s6; "
-"This unidirectional Convert class (only Format direction implemented) converts single "
-"Value or ValueArray using Format function an")
-TOPIC_TEXT(
-"d specified formatter pattern.&][s9; [/ Derived from] [%00-00 Convert]&][s0; &][s4;:`:`:FormatConvert`:`:SetFormat`(const "
-"char`*`): [%00-00 void_][%00-00* SetFormat][%00-00 (const_char_`*][%00-00*@3 fmt][%00-00 "
-")]&][s6; Sets formatting pattern.&][s1; [%00-00*C@3 fmt]-|The pattern.&][s0; &][s0;3 "
-"&][s0;3 &][s10;:`:`:JoinConvert`:`:class:*@3 [%00-00*@0 class_][%00-00@0 JoinConvert][%00-00*@0 "
-"_:_publi")
-TOPIC_TEXT(
-"c_][%00-00 Convert]&][s6; This unidirectional Convert class (only Format direction "
-"is implemented) converts ValueArray using a set of other Convert instances. Resulting "
-"textual representation is created by joining a set of defined elements `- some of "
-"them static texts, others referring to elements of input ValueArray, converted using "
-"specified Convert.&][s6; &][s9; [/ Derived from] [%00-00 Convert")
-TOPIC_TEXT(
-"]&][s0; &][s4;:`:`:JoinConvert`:`:Add`(const char`*`): [%00-00 JoinConvert`&_][%00-00* "
-"Add][%00-00 (const_char_`*][%00-00*@3 text][%00-00 )]&][s6; Adds static text to the "
-"list of elements.&][s1; [%00-00*C@3 text]-|Text.&][s1; [*/ Return value]-|`*this.&][s0; "
-"&][s4;:`:`:JoinConvert`:`:Add`(int`,const`:`:Convert`&`): [%00-00 JoinConvert`&_][%00-00* "
-"Add][%00-00 (int_][%00-00*@3 pos][%00-00 , const_Co")
-TOPIC_TEXT(
-"nvert`&_][%00-00*@3 cv][%00-00 )]&][s6; Add element referring to input value, to "
-"be converted using specified Convert.&][s1; [%00-00*C@3 pos]-|Index of input ValueArray "
-"element.&][s1; [%00-00*C@3 cv]-|Convert.&][s1; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:JoinConvert`:`:Add`(int`): "
-"[%00-00 JoinConvert`&_][%00-00* Add][%00-00 (int_][%00-00*@3 pos][%00-00 )]&][s6; "
-"Add element referring to input ")
-TOPIC_TEXT(
-"value, to be converted using default Convert.&][s1; [%00-00*C@3 pos]-|Index of input "
-"ValueArray element.&][s1; [*/ Return value]-|`*this.&][s0; &][s4;:`:`:JoinConvert`:`:Add`(const`:`:Convert`&`): "
-"[%00-00 JoinConvert`&_][%00-00* Add][%00-00 (const_Convert`&_][%00-00*@3 cv][%00-00 "
-")]&][s6; Add element referring to input value, to be converted using specified Convert. "
-"Index of input element is the i")
-TOPIC_TEXT(
-"ndex of previous input element plus 1.&][s1; [%00-00*C@3 cv]-|Convert.&][s1; [*/ "
-"Return value]-|`*this.&][s0; &][s4;:`:`:JoinConvert`:`:Add`(`): [%00-00 JoinConvert`&_][%00-00* "
-"Add][%00-00 ()]&][s6; Add element referring to input value, to be converted using "
-"default Convert. Index of input element is the index of previous input element plus "
-"1.&][s1; [*/ Return value]-|`*this.&][s0;3 &][s0;3 &][s0;")
-TOPIC_TEXT(
-"3 &][s3;3 Standard Converts&][s5; Standard converts are simple global functions "
-"returning a constant reference to the single global variable representing the particular "
-"Convert class. Following table lists names of these functions and respective constructors "
-"of Convert classes used to create global variable&][s0;3 &][ {{3310:6690h1;@(204) "
-"[s0;1 Function name]:: [s0;1 Definition]::@2 [s0;*C1 StdCon")
-TOPIC_TEXT(
-"vert]:: [s0;C1 Convert]:: [s0;*C1 StdConvertInt]:: [s0;C1 ConvertInt]:: [s0;*C1 "
-"StdConvertIntNotNull]:: [s0;C1 ConvertInt(`-INT`_MAX, INT`_MAX, true)]:: [s0;*C1 "
-"StdConvertDouble]:: [s0;C1 ConvertDouble]:: [s0;*C1 StdConvertDoubleNotNull]:: [s0;C1 "
-"ConvertDouble(`-DOUBLE`_NULL`_LIM, DOUBLE`_NULL`_LIM, true)]:: [s0;*C1 StdConvertDate]:: "
-"[s0;C1 ConvertDate]:: [s0;*C1 StdConvertDateNotNull]:: [s0;C1 Co")
-TOPIC_TEXT(
-"nvertDate(Date(0, 0, 0), Date(3000, 12, 31), true)]:: [s0;*C1 StdConvertTime]:: "
-"[s0;C1 ConvertTime]:: [s0;*C1 StdConvertTimeNotNull]:: [s0;C1 ConvertTime(Null, Null, "
-"true)]:: [s0;*C1 StdConvertString]:: [s0;C1 ConvertString]:: [s0;*C1 StdConvertStringNotNull]:: "
-"[s0;C1 ConvertString(INT`_MAX, true)]}}&][s0;3 ]")
+COMPRESSED
+120,156,237,92,13,115,218,60,18,254,43,154,246,237,91,200,
+1,245,7,95,129,185,153,246,154,246,46,247,166,237,77,63,
+110,110,46,3,193,193,34,113,107,108,215,178,185,100,250,241,
+219,111,87,146,141,108,4,129,4,104,218,187,78,39,4,89,
+90,173,30,173,118,159,149,165,156,90,228,183,223,140,154,241,
+208,184,225,95,239,136,78,156,212,79,6,167,94,179,217,237,
+59,86,171,255,233,143,55,135,253,131,167,149,118,179,10,66,
+76,16,98,119,76,187,219,178,205,166,213,134,31,166,109,90,
+45,203,110,154,93,235,176,217,181,237,174,209,27,251,14,99,
+131,83,223,234,118,251,216,179,5,141,172,78,203,50,59,205,
+110,179,107,218,157,174,5,109,45,195,176,140,142,213,50,155,
+118,215,106,245,92,202,198,131,83,167,107,247,15,222,182,161,
+145,141,61,129,112,195,108,91,205,78,211,50,108,195,106,66,
+87,102,183,219,52,59,173,174,125,216,110,247,198,78,148,120,
+97,32,251,242,76,211,50,251,231,102,167,15,42,127,255,254,
+189,97,54,13,161,65,19,132,153,70,19,84,53,161,204,104,
+90,29,179,117,104,28,182,186,102,215,176,65,120,171,99,180,
+122,145,19,59,83,253,200,81,70,235,198,161,119,140,158,151,
+80,16,113,240,39,211,236,64,147,118,173,253,208,108,118,96,
+160,93,187,217,234,118,12,232,220,178,44,219,182,76,219,58,
+60,180,90,237,86,167,119,73,29,151,198,114,8,14,40,127,
+96,66,211,78,173,243,16,26,26,205,150,109,53,15,17,44,
+27,122,178,172,118,235,208,108,53,141,86,27,36,245,98,250,
+57,245,98,58,165,1,204,216,151,179,111,143,94,188,174,127,
+120,71,78,153,221,39,207,195,96,70,227,228,247,193,41,107,
+245,255,120,106,144,211,71,134,81,55,140,167,21,163,97,52,
+172,86,171,74,228,60,101,229,56,195,103,217,215,172,253,0,
+5,88,185,184,81,29,116,245,102,212,21,141,41,35,140,198,
+51,74,28,70,206,61,23,116,25,227,124,56,62,249,167,227,
+167,116,84,231,31,100,44,26,211,152,53,200,155,128,146,188,
+34,241,24,137,105,20,83,6,67,0,161,231,215,228,101,24,
+79,157,132,76,105,114,25,186,196,9,92,146,178,212,241,253,
+235,76,10,35,201,37,21,242,73,18,242,47,9,189,74,160,
+206,92,148,131,194,27,228,45,133,6,108,117,127,216,254,221,
+216,9,100,143,13,57,222,227,9,127,34,250,100,178,105,16,
+38,36,10,25,243,206,125,74,42,180,113,209,32,174,208,194,
+11,102,142,239,185,75,52,169,214,50,229,101,47,0,219,101,
+152,250,46,212,75,210,56,32,163,7,47,226,56,140,5,104,
+15,132,64,215,27,59,9,229,90,68,113,8,61,78,185,110,
+70,159,100,115,58,159,201,194,28,206,188,152,235,144,77,229,
+112,212,27,245,184,232,161,168,192,127,95,50,239,96,40,98,
+6,138,207,43,185,93,192,64,88,178,164,241,58,61,141,126,
+159,247,101,147,207,197,135,213,179,82,63,114,54,74,70,169,
+152,64,131,72,151,69,6,222,52,242,249,90,224,152,131,217,
+128,117,10,68,123,189,247,225,187,36,246,130,11,132,54,155,
+138,185,12,236,165,153,247,114,240,156,43,86,255,90,124,120,
+240,4,236,137,207,214,140,143,170,254,85,106,3,118,52,175,
+185,251,233,65,99,221,207,228,160,49,175,55,63,139,243,2,
+6,12,198,93,90,126,243,201,42,205,149,88,6,140,156,102,
+189,146,74,16,150,22,95,68,227,9,88,38,117,171,186,249,
+226,173,246,53,101,48,184,101,40,227,250,241,252,4,29,186,
+126,138,86,52,181,201,248,50,94,15,240,103,238,199,148,1,
+222,227,75,8,90,99,244,172,4,124,100,248,31,24,24,0,
+175,247,66,36,156,44,183,119,236,25,224,201,196,225,58,113,
+120,31,43,192,20,74,96,44,200,154,53,200,191,105,60,119,
+94,104,15,224,203,243,199,194,253,126,4,99,160,110,67,226,
+132,101,153,234,216,41,47,67,51,242,130,40,85,219,10,127,
+11,30,59,141,192,20,70,245,177,195,112,65,123,73,13,43,
+5,23,248,101,244,184,54,122,140,98,70,143,27,240,11,77,
+198,141,70,245,70,171,75,3,222,43,40,112,42,145,184,209,
+46,54,93,180,33,168,236,36,97,92,169,222,43,191,122,28,
+204,194,79,84,44,219,66,224,109,144,191,81,31,116,38,147,
+52,24,131,222,163,186,239,125,162,132,93,3,118,87,59,240,
+151,70,223,206,192,230,131,149,85,135,57,222,195,101,188,101,
+56,84,112,26,62,205,99,196,17,216,159,90,167,167,214,154,
+203,138,210,115,223,27,235,132,149,25,16,10,204,202,208,210,
+223,203,69,230,98,249,68,128,231,210,136,6,16,221,193,184,
+192,104,197,18,188,16,132,136,209,36,1,19,101,217,168,79,
+159,128,89,10,42,53,137,195,233,160,28,227,6,255,187,209,
+228,29,149,145,36,134,101,77,209,109,29,113,103,34,221,132,
+206,252,70,103,83,47,0,19,123,229,5,222,20,224,192,6,
+75,234,57,87,88,207,185,90,172,183,104,177,163,131,228,210,
+99,37,111,80,240,1,138,181,13,117,166,87,0,193,32,160,
+95,254,164,82,192,82,72,40,52,85,209,19,3,204,158,84,
+11,80,77,229,160,51,55,186,98,240,203,65,218,199,224,1,
+250,219,14,94,105,90,26,188,156,201,53,6,255,67,103,254,
+117,152,188,78,125,127,17,0,101,101,159,135,161,175,5,224,
+124,94,58,250,243,89,18,167,52,7,225,25,142,155,61,113,
+61,198,17,96,4,123,225,78,9,146,173,202,252,11,113,98,
+170,203,125,232,52,74,174,249,226,212,242,170,115,192,2,251,
+195,160,154,245,161,118,177,87,4,23,48,156,155,130,51,229,
+73,168,172,81,153,56,62,163,213,245,194,56,239,95,120,36,
+181,247,69,95,249,87,154,40,235,87,122,75,173,19,211,35,
+242,170,180,78,221,204,4,183,171,226,124,169,220,66,197,210,
+106,90,75,197,130,221,46,234,116,204,74,243,182,185,90,220,
+2,61,97,219,194,146,51,91,148,225,96,209,194,244,76,96,
+51,191,51,229,105,125,97,237,221,212,188,162,52,55,242,210,
+26,217,164,184,90,35,27,105,233,92,221,69,203,67,248,167,
+215,200,180,244,229,182,169,83,117,29,63,22,132,73,160,46,
+96,212,85,44,85,37,147,100,48,219,200,57,117,238,72,206,
+136,92,75,233,84,176,178,21,196,64,130,35,45,123,141,6,
+153,138,245,175,71,170,187,99,59,102,171,33,240,208,237,242,
+213,151,126,232,32,227,36,81,8,57,39,9,210,233,57,240,
+249,124,43,46,219,232,186,29,29,213,250,113,62,134,161,126,
+72,37,95,254,15,39,1,29,52,92,72,5,78,165,159,138,
+25,41,53,32,57,84,108,233,64,177,180,104,145,46,136,4,
+135,67,146,56,23,184,63,228,34,111,87,183,25,112,63,81,
+159,59,87,188,96,236,167,46,110,120,38,78,224,58,177,75,
+162,24,112,157,72,234,159,137,101,53,96,250,121,50,197,179,
+39,108,142,253,224,14,119,236,241,13,107,37,39,69,85,60,
+220,249,104,146,71,13,211,184,24,232,140,50,2,115,148,144,
+109,37,226,110,48,83,176,208,180,188,77,153,6,183,216,126,
+57,109,213,58,139,213,173,151,243,190,44,152,6,238,2,7,
+20,182,206,86,113,224,19,168,24,19,223,155,122,201,42,182,
+248,1,247,26,74,213,246,7,252,118,80,95,157,44,8,172,
+54,133,106,95,24,220,201,242,214,206,25,86,98,240,163,237,
+96,175,137,67,150,51,108,51,93,216,63,96,203,243,132,23,
+159,83,15,58,135,33,161,134,27,102,11,37,115,219,126,130,
+80,94,105,119,86,230,46,169,64,217,228,127,230,12,160,104,
+46,27,122,18,77,22,112,244,230,195,95,78,94,140,206,94,
+127,56,57,25,157,157,28,191,218,52,178,105,56,251,168,190,
+158,212,61,144,107,197,14,201,168,14,196,69,80,21,62,23,
+100,74,157,128,111,207,197,84,188,19,93,30,69,115,242,173,
+216,210,157,4,206,201,57,190,159,5,147,168,41,6,129,111,
+103,53,22,81,252,216,30,101,63,158,191,200,217,10,95,7,
+121,244,98,183,12,29,186,24,106,212,223,156,241,41,47,177,
+54,165,123,43,154,254,90,92,111,109,176,183,128,244,61,163,
+120,107,14,253,246,70,118,127,153,221,122,67,255,63,167,219,
+0,170,59,176,185,13,52,212,144,154,149,111,249,247,202,245,
+110,212,228,87,35,122,19,130,113,126,85,88,215,18,61,213,
+140,54,113,41,26,138,55,170,31,191,126,63,58,123,245,236,
+95,27,133,49,13,177,91,41,103,191,108,110,190,237,36,168,
+23,120,2,248,194,240,204,200,166,60,238,150,162,238,19,131,
+19,71,194,182,74,226,228,41,179,209,131,156,197,141,30,52,
+200,155,9,152,125,26,51,24,172,172,224,248,49,117,220,107,
+228,187,203,15,235,120,9,163,254,164,38,94,133,83,168,18,
+165,113,20,50,254,70,28,61,152,24,37,151,129,103,110,146,
+56,116,211,49,21,43,44,118,160,128,97,77,217,227,44,63,
+114,177,85,74,41,164,15,245,144,46,6,252,19,122,107,186,
+227,92,249,116,41,227,145,155,251,80,227,34,185,84,70,189,
+250,200,128,16,9,43,132,55,219,71,196,224,8,64,95,183,
+247,143,175,214,25,234,246,230,108,87,76,229,40,167,40,130,
+125,8,37,180,52,126,87,252,99,51,24,182,254,238,121,79,
+161,20,179,235,34,198,27,71,213,18,50,27,5,214,226,170,
+253,145,225,48,91,236,165,5,164,108,71,120,120,20,144,71,
+174,155,94,13,230,177,75,0,203,110,6,118,87,49,236,189,
+55,221,238,107,67,20,184,203,61,8,148,63,212,105,191,230,
+46,4,151,37,132,20,90,175,179,13,177,102,91,93,118,153,
+21,112,120,192,70,40,4,231,198,64,31,86,126,224,166,195,
+186,232,254,194,110,125,125,8,118,115,156,136,247,47,156,181,
+218,251,143,205,32,55,215,236,23,203,40,197,38,243,173,222,
+30,20,108,104,35,63,164,73,43,81,131,205,28,146,38,163,
+44,10,217,78,248,84,60,121,30,70,117,254,109,117,90,121,
+199,151,3,183,18,52,15,203,124,166,203,155,95,187,12,194,
+226,152,71,22,252,182,26,134,47,57,27,41,220,169,147,85,
+100,218,87,9,3,63,191,46,167,220,112,203,238,56,80,183,
+58,191,50,135,87,37,252,236,106,78,24,139,95,158,197,177,
+115,77,82,126,141,162,124,96,5,183,218,89,68,199,222,196,
+19,199,100,166,252,248,9,137,148,83,40,183,39,4,10,36,
+179,208,115,53,38,107,96,98,87,188,137,182,253,67,66,147,
+233,188,105,49,161,84,14,245,68,165,115,55,138,229,97,251,
+250,215,247,120,67,175,8,139,248,176,183,125,88,236,239,161,
+23,220,47,99,99,75,236,109,193,190,28,188,0,129,217,106,
+136,107,58,151,238,5,120,156,106,140,103,149,223,242,13,36,
+126,140,74,191,35,130,27,30,49,117,228,198,245,71,192,162,
+32,24,88,188,23,192,51,42,212,97,200,236,89,56,149,187,
+37,116,138,7,183,18,111,204,165,179,154,208,3,175,35,77,
+104,156,221,12,204,155,226,230,11,191,126,52,31,71,126,133,
+147,186,114,72,243,229,33,71,179,69,178,172,204,244,80,55,
+237,37,46,243,204,117,119,183,74,212,139,27,243,101,2,93,
+50,21,210,236,46,174,239,49,62,29,25,150,43,46,235,225,
+13,154,59,49,190,45,163,180,44,137,141,194,124,73,234,223,
+105,46,129,183,184,220,87,233,102,147,241,76,11,113,6,99,
+209,78,133,109,114,156,106,248,253,156,174,105,156,229,99,133,
+48,48,72,102,3,151,94,233,76,62,235,92,123,95,112,54,
+191,208,245,179,205,225,86,0,206,54,13,182,8,239,61,128,
+239,167,176,100,82,130,52,147,236,49,121,113,84,62,133,232,
+49,243,194,148,149,170,69,62,20,153,247,214,168,119,98,157,
+219,133,236,6,72,108,45,255,193,207,119,217,217,105,169,23,
+147,24,230,229,57,129,192,28,141,113,110,65,46,252,240,28,
+216,64,70,77,153,188,183,43,130,63,55,88,39,67,136,2,
+149,200,2,145,164,188,178,245,204,137,61,7,255,108,67,78,
+42,56,152,156,186,197,16,195,82,223,137,139,156,167,1,116,
+7,243,8,113,176,27,155,98,104,131,84,196,153,82,38,73,
+5,163,138,90,72,153,65,116,132,220,104,150,189,134,225,137,
+20,175,94,16,14,18,248,249,115,252,115,4,156,211,148,245,
+84,144,35,95,190,216,182,105,244,218,237,67,227,210,236,63,
+173,88,6,100,192,248,216,36,47,51,190,142,90,13,122,61,
+89,124,132,92,200,227,127,26,165,215,123,106,241,210,131,231,
+38,224,236,102,150,40,235,66,97,169,164,88,15,223,168,46,
+84,85,10,23,106,103,233,186,174,81,69,125,169,58,255,77,
+236,32,105,5,202,147,123,11,194,138,229,186,54,75,245,16,
+143,43,218,227,118,154,162,85,202,225,149,154,69,249,74,233,
+98,253,229,106,193,195,10,255,97,212,8,254,175,214,248,93,
+149,138,109,24,240,213,180,106,196,54,171,43,245,225,91,8,
+11,130,213,210,197,250,75,245,193,135,21,177,209,32,126,174,
+232,88,190,32,88,144,81,44,215,181,89,218,189,120,92,41,
+27,201,183,111,217,194,24,252,23,29,226,198,34,

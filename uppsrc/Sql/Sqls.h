@@ -30,6 +30,7 @@ protected:
 	virtual void        SetParam(int i, const Value& r) = 0;
 	virtual bool        Execute() = 0;
 	virtual int         GetRowsProcessed() const;
+	virtual Value       GetInsertedId() const;
 	virtual bool        Fetch() = 0;
 	virtual void        GetColumn(int i, Ref r) const = 0;
 	virtual void        Cancel() = 0;
@@ -157,6 +158,8 @@ public:
 	void   operator=(SqlSource& s);
 	SqlSession& GetSession() const                     { return cn->GetSession(); }
 	int    GetDialect() const;
+
+	Value  GetInsertedId() const                       { return cn->GetInsertedId(); }
 
 	String GetUser() const                             { return cn->GetUser(); }
 

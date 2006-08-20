@@ -57,15 +57,15 @@ void   Splitter::Layout() {
 
 void   Splitter::Paint(Draw& w) {
 	Size sz = GetSize();
-	Color c = IsXPStyle() ? Blend(SColorHighlight, SColorFace) : SColorShadow;
-	w.DrawRect(sz, SColorFace());
+	w.Begin();
 	if(HasCapture() && mouseindex >= 0 && mouseindex < pos.GetCount()) {
 		int p = PosToClient(pos[mouseindex]) - (width >> 1);
-		if(vert)
-			w.DrawRect(0, p, sz.cx, width, c);
-		else
-			w.DrawRect(p, 0, width, sz.cy, c);
+		Rect r = vert ? RectC(0, p, sz.cx, width) : RectC(p, 0, width, sz.cy);
+		w.DrawRect(r, IsXPStyle() ? Blend(SColorHighlight, SColorFace) : SColorShadow);
+		w.ExcludeClip(r);
 	}
+	w.DrawRect(sz, SColorFace());
+	w.End();
 }
 
 void   Splitter::MouseMove(Point p, dword) {

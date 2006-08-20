@@ -359,7 +359,6 @@ CharFilterTextTest::~CharFilterTextTest() {}
 
 const char *CharFilterTextTest::Accept(const char *s) const {
 	if(!(*filter)((byte)*s++)) return NULL;
-	while((*filter)((byte)*s)) s++;
 	return s;
 }
 

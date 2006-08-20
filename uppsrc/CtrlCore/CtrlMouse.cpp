@@ -340,7 +340,7 @@ Image Ctrl::DispatchMouseEvent(int e, Point p, int zd) {
 		Ctrl *w = GetFocusCtrl();
 		if(w) {
 			top = w->GetTopCtrl();
-			p = GetMousePos() - top->GetScreenRect().TopLeft() + top->GetSysWindowViewOffset();
+			p = GetMousePos() - top->GetScreenRect().TopLeft();
 		}
 	}
 	Ctrl *q = top->ChildFromPoint(p);

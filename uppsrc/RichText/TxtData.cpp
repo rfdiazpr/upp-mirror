@@ -357,11 +357,11 @@ RichCellPos RichTxt::GetCellPos(int table, Point p) const
 	return GetCellPos(table, p.y, p.x);
 }
 
-bool RichTxt::Iterate(Iterator& r, int gpos, const RichStyles& s) const
+bool RichTxt::Iterate(UpdateIterator& r, int gpos, const RichStyles& s)
 {
 	for(int pi = 0; pi < part.GetCount(); pi++)
 		if(IsTable(pi)) {
-			const RichTable& tab = GetTable(pi);
+			RichTable& tab = part[pi].Get<RichTable>();
 			for(int i = 0; i < tab.GetRows(); i++)
 				for(int j = 0; j < tab.GetColumns(); j++)
 					if(tab(i, j)) {
@@ -371,11 +371,29 @@ bool RichTxt::Iterate(Iterator& r, int gpos, const RichStyles& s) const
 					}
 		}
 		else {
-			if(r(gpos, Get(pi, s)))
+			RichPara p = Get(pi, s);
+			int q = r(gpos, p);
+			if(q & UpdateIterator::UPDATE)
+				Set(pi, p, s);
+			if(q & UpdateIterator::STOP)
 				return true;
 			gpos += GetPartLength(pi) + 1;
 		}
 	return false;
+}
+
+struct sIter__ : RichTxt::UpdateIterator {
+	RichTxt::Iterator *iter;
+	virtual int operator()(int pos, RichPara& para) {
+		return iter->operator()(pos, para) ? STOP : CONTINUE;
+	}
+};
+
+bool RichTxt::Iterate(Iterator& r, int gpos, const RichStyles& s) const
+{
+	sIter__ it;
+	it.iter = &r;
+	return const_cast<RichTxt *>(this)->Iterate(it, gpos, s);
 }
 
 void RichTxt::Init()

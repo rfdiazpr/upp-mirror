@@ -11,8 +11,9 @@ bool Print(Report& r, int i, const char *_name) {
 	if(pd.Execute()) {
 		Draw& w = pd;
 		Size sz = w.GetPageMMs();
-		int x = (6000 * sz.cx / 254 - pgsz.cx) / 2;
-		int y = (6000 * sz.cy / 254 - pgsz.cy) / 2;
+		Point mg = r.GetMargins();
+		int x = Nvl(mg.x, (6000 * sz.cx / 254 - pgsz.cx) / 2);
+		int y = Nvl(mg.y, (6000 * sz.cy / 254 - pgsz.cy) / 2);
 		for(int i = 0; i < pd.GetPageCount(); i++) {
 			Drawing iw = r.GetPage(pd[i]);
 			Size sz = iw.GetSize();

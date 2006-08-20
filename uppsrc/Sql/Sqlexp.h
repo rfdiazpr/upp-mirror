@@ -177,6 +177,7 @@ public:
 		                                    : SqlS(a, o, b, p) {}
 
 	SqlVal(int x);
+	SqlVal(int64 x);
 	SqlVal(double x);
 	SqlVal(const String& x);
 	SqlVal(const char *x);
@@ -401,9 +402,9 @@ public:
 	SqlSet&          OrderBy(SqlVal val)                    { return OrderBy(SqlSet(val)); }
 	SqlSet&          OrderBy(SqlVal a, SqlVal b)            { return OrderBy(SqlSet(a, b)); }
 	SqlSet&          OrderBy(SqlVal a, SqlVal b, SqlVal c)  { return OrderBy(SqlSet(a, b, c)); }
-	SqlSet&          Limit(const unsigned int limit);
-	SqlSet&          Limit(const unsigned int offset, const unsigned int limit);
-	SqlSet&          Offset(const unsigned int offset);
+	SqlSet&          Limit(int limit);
+	SqlSet&          Limit(int64 offset, int limit);
+	SqlSet&          Offset(int64 offset);
 	bool             Execute(Sql& cursor) const;
 	void             Force(Sql& cursor) const; // throw SqlExc() on error
 	Value            Fetch(Sql& cursor) const; // returns void value on error

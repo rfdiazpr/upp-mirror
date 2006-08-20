@@ -72,7 +72,7 @@ void Pdb::Visualise(Visual& result, Pdb::Val val, int expandptr, int slen, int m
 			return;
 		}
 		if(expandptr > 0 && (val.type != UNKNOWN || val.ref > 1) && val.address) {
-			result.Cat("->", SColorLtHighlight);
+			result.Cat("->", SColorMark);
 			Visualise(result, DeRef(val), expandptr - 1, slen, maxlen);
 		}
 		return;
@@ -96,13 +96,13 @@ void Pdb::Visualise(Visual& result, Pdb::Val val, int expandptr, int slen, int m
 			result.Cat(FormatIntHex(val.address), Red);
 			FnInfo fi = GetFnInfo(val.address);
 			if(!IsNull(fi.name)) {
-				result.Cat("->", SColorLtHighlight);
+				result.Cat("->", SColorMark);
 				result.Cat(fi.name, SColorText);
 			}
 			break;
 		}
 		default:
-			result.Cat("<void>", SColorLtHighlight);
+			result.Cat("<void>", SColorMark);
 		}
 		return;
 	}
@@ -111,7 +111,7 @@ void Pdb::Visualise(Visual& result, Pdb::Val val, int expandptr, int slen, int m
 		result.Cat(Nvl(GetFnInfo(val.address).name, "??"), SColorText);
 		return;
 	}
-	result.Cat("{ ", SColorLtHighlight);
+	result.Cat("{ ", SColorMark);
 	bool cm = false;
 	for(int i = 0; i < t.member.GetCount(); i++) {
 		if(cm)
@@ -122,7 +122,7 @@ void Pdb::Visualise(Visual& result, Pdb::Val val, int expandptr, int slen, int m
 			break;
 		}
 		result.Cat(t.member.GetKey(i));
-		result.Cat("=", SColorLtHighlight);
+		result.Cat("=", SColorMark);
 		Val r = t.member[i];
 		r.address += val.address;
 		try {
@@ -141,7 +141,7 @@ void Pdb::Visualise(Visual& result, Pdb::Val val, int expandptr, int slen, int m
 			break;
 		}
 		result.Cat(t.static_member.GetKey(i));
-		result.Cat("=", SColorLtHighlight);
+		result.Cat("=", SColorMark);
 		try {
 			Visualise(result, t.static_member[i], max(expandptr - 1, 0), 20, maxlen);
 		}
@@ -163,7 +163,7 @@ void Pdb::Visualise(Visual& result, Pdb::Val val, int expandptr, int slen, int m
 					break;
 				}
 				result.Cat(t.member.GetKey(i));
-				result.Cat("=", SColorLtHighlight);
+				result.Cat("=", SColorMark);
 				Val r = t.member[i];
 				r.address += adr;
 				try {
@@ -175,7 +175,7 @@ void Pdb::Visualise(Visual& result, Pdb::Val val, int expandptr, int slen, int m
 			}
 		}
 	}
-	result.Cat(" }", SColorLtHighlight);
+	result.Cat(" }", SColorMark);
 }
 
 Pdb::Visual Pdb::Visualise(Val v, int maxlen)

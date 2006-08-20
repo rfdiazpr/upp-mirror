@@ -61,6 +61,12 @@ int  EditField::GetCaret(int cursor)
 	return GetTextCx(text, cursor, password);
 }
 
+int  EditField::GetViewHeight(Font font)
+{
+	Size sz = Size(font.Info().GetHeight() * 4, font.Info().GetHeight() + 4);
+	return sz.cy;
+}
+
 int  EditField::GetStdHeight(Font font)
 {
 	Size sz = Size(font.Info().GetHeight() * 4, font.Info().GetHeight() + 4);

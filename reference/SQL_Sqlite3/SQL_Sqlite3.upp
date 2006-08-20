@@ -2,9 +2,9 @@ uses
 	plugin\Sqlite3;
 
 file
-	simple.sch,
 	simple.h,
-	simple.cpp;
+	simple.cpp,
+	simple.sch;
 
 mainconfig
 	"" = "";

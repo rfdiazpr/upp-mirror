@@ -384,8 +384,7 @@ void CppBuilder::AddMakeFile(MakeFile& makefile, String package,
 		makefile.outfile << (win32 && HasFlag("MSC") ? ".lib" : ".a");
 	makefile.output << (main ? String("$(OutDir)") : makefile.outdir) << makefile.outfile;
 
-	if(main)
-	{
+	if(main) {
 		String cc = "c++ -c";
 		if(HasFlag("DEBUG"))
 			cc << " -D_DEBUG " << debug_options;
@@ -459,7 +458,9 @@ void CppBuilder::AddMakeFile(MakeFile& makefile, String package,
 			String ext = ToLower(GetFileExt(fn));
 			bool isc = ext == ".c";
 			bool isrc = (ext == ".rc" && HasFlag("WIN32"));
-			if(isc || isrc || ext == ".cpp" || ext == ".cc" || ext == ".cxx") {
+			bool iscpp = (ext == ".cpp" || ext == ".cc" || ext == ".cxx");
+			bool isicpp = (ext == ".icpp");
+			if(isc || isrc || iscpp || isicpp) {
 				String outfile;
 				outfile << makefile.outdir << AdjustMakePath(GetFileTitle(fn)) << (isrc ? "_rc" : "") << objext;
 				String srcfile = GetMakePath(MakeSourcePath(src, fn, false));
@@ -474,7 +475,7 @@ void CppBuilder::AddMakeFile(MakeFile& makefile, String package,
 				makefile.rules << "\n"
 					"\t" << (isc ? "$(CFLAGS)" : "$(CPPFLAGS)") << " $(CINC) $(" << macros << ") "
 						<< gop << " " << srcfile << " -o " << outfile << "\n\n";
-				if(!libout) {
+				if(!libout || isicpp) {
 					makefile.linkdep << " \\\n\t" << outfile;
 					makefile.linkfiles << " \\\n\t\t" << outfile;
 				}

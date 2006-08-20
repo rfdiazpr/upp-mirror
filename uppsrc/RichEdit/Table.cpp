@@ -195,7 +195,7 @@ void RichEdit::TableInsertRow()
 
 void RichEdit::TableRemoveRow()
 {
-	
+
 	if(IsSelection() || !cursorp.table)
 		return;
 	NextUndo();
@@ -223,7 +223,7 @@ void RichEdit::TableInsertColumn()
 
 void RichEdit::TableRemoveColumn()
 {
-	
+
 	if(IsSelection() || !cursorp.table)
 		return;
 	NextUndo();
@@ -283,6 +283,7 @@ void RichEdit::CellProperties()
 		(dlg.topm.SetUnit(unit), fmt.margin.top)
 		(dlg.bottomm.SetUnit(unit), fmt.margin.bottom)
 		(dlg.align, fmt.align)
+		(dlg.minheight.SetUnit(unit), fmt.minheight)
 		(dlg.color, fmt.color)
 		(dlg.border, fmt.bordercolor)
 		(dlg.keep, fmt.keep)

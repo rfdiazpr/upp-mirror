@@ -9,4 +9,3 @@ END_TOPIC
 TOPIC("TimerAndModalTrap$en-us")
 #include "TimerAndModalTrap$en-us.tpp"
 END_TOPIC
-

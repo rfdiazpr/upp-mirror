@@ -1,274 +1,211 @@
 TITLE("LabelBase - basic label routines")
-REF("::DeAmp(const char*)")
-REF("::GetSmartTextSize(::Draw&,const char*,::Font")
-REF("::GetSmartTextHeight(::Draw&,const char*,int,::Font")
-REF("::DrawSmartText(::Draw&,int,int,int,const char*,::Font")
-REF("::ExtractAccessKey(const char*,::String&)")
-REF("::CompareAccessKey(::byte,::dword)")
-REF("::ChooseAccessKey(const char*,::dword)")
-REF("::DrawLabel::struct")
-REF("::DrawLabel::DrawLabel()")
-REF("::DrawLabel::GetSize()const")
-REF("::DrawLabel::Paint(::Draw&,const::Rect&,bool)const")
-REF("::DrawLabel::Paint(::Draw&,int,int,int,int,bool)const")
-REF("::DrawLabel::push")
-REF("::DrawLabel::focus")
-REF("::DrawLabel::disabled")
-REF("::DrawLabel::paintrect")
-REF("::DrawLabel::limg")
-REF("::DrawLabel::lcolor")
-REF("::DrawLabel::lspc")
-REF("::DrawLabel::text")
-REF("::DrawLabel::font")
-REF("::DrawLabel::ink")
-REF("::DrawLabel::rimg")
-REF("::DrawLabel::rcolor")
-REF("::DrawLabel::rspc")
-REF("::DrawLabel::align")
-REF("::DrawLabel::valign")
-REF("::DrawLabel::accesskey")
-REF("::LabelBase::class")
-REF("::LabelBase::LabelUpdate()")
-REF("::LabelBase::SetLeftImage(const::Image&,int)")
-REF("::LabelBase::SetPaintRect(const::PaintRect&)")
-REF("::LabelBase::SetText(const char*)")
-REF("::LabelBase::SetFont(::Font)")
-REF("::LabelBase::SetInk(::Color)")
-REF("::LabelBase::SetRightImage(const::Image&,int)")
-REF("::LabelBase::SetAlign(int)")
-REF("::LabelBase::SetVAlign(int)")
-REF("::LabelBase::SetImage(const::Image&,int)")
-REF("::LabelBase::GetAlign()const")
-REF("::LabelBase::GetVAlign()const")
-REF("::LabelBase::GetPaintRect()const")
-REF("::LabelBase::GetText()const")
-REF("::LabelBase::GetFont()const")
-REF("::LabelBase::GetInk()const")
-REF("::LabelBase::PaintLabel(::Draw&,const::Rect&,bool,bool,bool,bool)")
-REF("::LabelBase::PaintLabel(::Draw&,int,int,int,int,bool,bool,bool,bool)")
-REF("::LabelBase::GetLabelSize()const")
-TOPIC_TEXT(
-"[2 $$0,0#00000000000000000000000000000000:Default][l288;i1120;a17;O9;~~~.1408;2 "
-"$$1,0#10431211400427159095818037425705:param][a83;*R6 $$2,5#31310162474203024125188417583966:caption][b83;*4 "
-"$$3,5#07864147445237544204411237157677:title][i288;O9;C2 $$4,6#40027414424643823182269349404212:item][b42;a42;2 "
-"$$5,5#45413000475342174754091244180557:text][l288;b17;a17;2 $$6,6#27521748481378242620020725143825:")
-TOPIC_TEXT(
-"desc][l321;t246;C@5;1 $$7,7#20902679421464641399138805415013:code][b2503; $$8,0#65142375456100023862071332075487:separator][*@(0.0.255)2 "
-"$$9,0#83433469410354161042741608181528:base][t4167;C $$10,0#37138531426314131251341829483380:class][l288;a17;*1 "
-"$$11,11#70004532496200323422659154056402:requirement][i417;b42;a42;O9;~~~.416;2 $$12,12#10566046415157235020018451313112:tparam][b167;C2 "
-"$$13,13#924304")
-TOPIC_TEXT(
-"59443460461911108080531343:item1][i288;a42;O9;C2 $$14,14#77422149456609303542238260500223:item2][*@2$(0.128.128) "
-"$$15,15#34511555403152284025741354420178:NewsDate][l321;*C$7;2 $$16,16#03451589433145915344929335295360:result][l321;b83;a83;*C$7;2 "
-"$$17,17#07531550463529505371228428965313:result`-line][l160;t4167;*C+117 $$18,5#88603949442205825958800053222425:package`-title][ "
-"$$19,0#535800234423355290")
-TOPIC_TEXT(
-"39900623488521:gap][t4167;C2 $$20,20#70211524482531209251820423858195:class`-nested][b50;2 "
-"$$21,21#03324558446220344731010354752573:Par][{_}%EN-US [s2; LabelBase `- basic label "
-"routines&][s5; LabelBase.h contains functions and simple helper classes used to implement "
-"Ctrls with text, images and accelerator keys.&][s5; Generally, format of text used "
-"by LabelBase facilities is either simple multi`-li")
-TOPIC_TEXT(
-"ne or [^topic`:`/`/RichText`/srcdoc`/QTF`$en`-us^ QTF]:&][s5;i150;O2; If first character "
-"of text is `'`\\1`', text is QTF (starting with next character).&][s5;i150;O2; If "
-"first character is NOT `'`\\1`', text is simple multi`-line text with `'`\\n`' used "
-"as line separator.&][s5; In both cases, `'`&`' or `'`\\b`' are used as access`-key "
-"flags. If `'`&`' should be the part of text, it must be escaped as")
-TOPIC_TEXT(
-" `\"`&`&`\". This format is formally named `\"SmartText`\".&][s5; Note also that "
-"U`+`+ normally distributes access`-keys automatically. Providing access`-key is thus "
-"usually unnecessary.&][s0;3 &][s4;:`:`:DeAmp`(const char`*`): [%00-00 String_][%00-00* "
-"DeAmp][%00-00 (const_char_`*][%00-00*@3 s][%00-00 )]&][s6; This routine escapes all "
-"occurrences of `'`&`' character in source string with `\"`&`&`\" stri")
-TOPIC_TEXT(
-"ng to avoid using it as access`-key flag.&][s1; [%00-00*C@3 s]-|Input string.&][s1; "
-"[*/ Return value]-|Escaped string.&][s0;3 &][s4;:`:`:GetSmartTextSize`(`:`:Draw`&`,const "
-"char`*`,`:`:Font: [%00-00 Size_][%00-00* GetSmartTextSize][%00-00 (Draw`&_][%00-00*@3 "
-"w][%00-00 , const_char_`*][%00-00*@3 text][%00-00 , Font_][%00-00*@3 font][%00-00 "
-"_`=_StdFont())]&][s6; Returns the minimal size of SmartText")
-TOPIC_TEXT(
-". If text is multi`-paragraph QTF text, width of text is the width of widest paragraph "
-"without doing any line breaks (paragraphs are formatted for infinite width).&][s1; "
-"[%00-00*C@3 w]-|Draw.&][s1; [%00-00*C@3 text]-|SmartText string.&][s1; [%00-00*C@3 "
-"font]-|Font for non`-QTF text.&][s1; [*/ Return value]-|Size of SmartText.&][s0;3 "
-"&][s4;:`:`:GetSmartTextHeight`(`:`:Draw`&`,const char`*`,int`,`:`")
-TOPIC_TEXT(
-":Font: [%00-00 int_][%00-00* GetSmartTextHeight][%00-00 (Draw`&_][%00-00*@3 w][%00-00 "
-", const_char_`*][%00-00*@3 s][%00-00 , int_][%00-00*@3 cx][%00-00 , Font_][%00-00*@3 "
-"font][%00-00 _`=_StdFont())]&][s6; Returns the height of given SmartText for given "
-"width. QTF paragraphs are formatted for this width.&][s1; [%00-00*C@3 w]-|Draw.&][s1; "
-"[%00-00*C@3 s]-|SmartText string.&][s1; [%00-00*C@3 cx]-|Req")
-TOPIC_TEXT(
-"uired width.&][s1; [%00-00*C@3 font]-|Font for non`-QTF text.&][s1; [*/ Return value]-|Height "
-"of SmartText.&][s0;3 &][s4;:`:`:DrawSmartText`(`:`:Draw`&`,int`,int`,int`,const char`*`,`:`:Font: "
-"[%00-00 void_][%00-00* DrawSmartText][%00-00 (Draw`&_][%00-00@3 w][%00-00 , int_][%00-00@3 "
-"x][%00-00 , int_][%00-00@3 y][%00-00 , int_][%00-00@3 cx][%00-00 , const_char_`*][%00-00@3 "
-"text][%00-00 , Font_][%00-")
-TOPIC_TEXT(
-"00@3 font][%00-00 _`=_StdFont(), Color_][%00-00@3 ink][%00-00 _`=_SBlack, int_][%00-00@3 "
-"accesskey][%00-00 _`=_][%00-00@3 0][%00-00 )]&][s6; Paints SmartText to target Draw.&][s1; "
-"[%00-00*C@3 w]-|Draw.&][s1; [%00-00*C@3 x, y]-|Position.&][s1; [%00-00*C@3 cx]-|Required "
-"width.&][s1; [%00-00*C@3 text]-|SmartText.&][s1; [%00-00*C@3 font]-|Font for non`-QTF "
-"SmartText.&][s1; [%00-00*C@3 ink]-|Text color")
-TOPIC_TEXT(
-" for non`-QTF SmartText.&][s1; [%00-00*C@3 accesskey]-|Access`-key `- first corresponding "
-"character will be painted with underline.&][s0;3 &][s4;:`:`:ExtractAccessKey`(const "
-"char`*`,`:`:String`&`): [%00-00 byte_][%00-00* ExtractAccessKey][%00-00 (const_char_`*][%00-00*@3 "
-"s][%00-00 , String`&_][%00-00*@3 label][%00-00 )]&][s6; Scans input string for access`-key.&][s1; "
-"[%00-00*C@3 s]-|Input string.&")
-TOPIC_TEXT(
-"][s1; [%00-00*C@3 label]-|Output string `- with access`-key removed.&][s1; [*/ Return "
-"value]-|Access`-key.&][s0;3 &][s4;:`:`:CompareAccessKey`(`:`:byte`,`:`:dword`): [%00-00 "
-"bool_][%00-00* CompareAccessKey][%00-00 (byte_][%00-00*@3 accesskey][%00-00 , dword_][%00-00*@3 "
-"key][%00-00 )]&][s6; Compares access key to U`+`+ event key value as received by "
-"Key virtual method.&][s1; [%00-00*C@3 accesskey]-")
-TOPIC_TEXT(
-"|Access`-key.&][s1; [%00-00*C@3 key]-|U`+`+ event key value.&][s1; [*/ Return value]-|True "
-"if values match.&][s0;3 &][s4;:`:`:ChooseAccessKey`(const char`*`,`:`:dword`): [%00-00 "
-"byte_][%00-00* ChooseAccessKey][%00-00 (const_char_`*][%00-00*@3 s][%00-00 , dword_][%00-00*@3 "
-"used][%00-00 )]&][s6; Scans input string for suitable access`-key.&][s1; [%00-00*C@3 "
-"s]-|Input string.&][s1; [%00-00*C@3 used]-")
-TOPIC_TEXT(
-"|Bit`-set of already used access`-keys. Bit`-mask of specific access`-key is defined "
-"by [^topic`:`/`/CtrlCore`/src`/Ctrl`$en`-us`#`:`:Ctrl`:`:AccessKeyBit`(byte`)^ Ctrl`::AccessKeyBit] "
-"class method.&][s1; [*/ Return value]-|Access`-key or 0 if no suitable access`-key "
-"found.&][s5; &][s5; &][s0;3 &][s10;:`:`:DrawLabel`:`:struct:* [%00-00* struct_][%00-00 "
-"DrawLabel]&][s6; &][s6; This structure in fac")
-TOPIC_TEXT(
-"t just encapsulates generic label painting routine that otherwise would have way "
-"too much parameters.&][s0;3 &][s4;:`:`:DrawLabel`:`:DrawLabel`(`): [%00-00* DrawLabel][%00-00 "
-"()]&][s6; Default constructor. Default values are documented in attributes descriptions.&][s0;3 "
-"&][s4;:`:`:DrawLabel`:`:GetSize`(`)const: [%00-00 Size_][%00-00* GetSize][%00-00 "
-"()_const]&][s6; Returns the size of label based ")
-TOPIC_TEXT(
-"on current set of attributes.&][s1; [*/ Return value]-|Size of label.&][s0;3 &][s4;:`:`:DrawLabel`:`:Paint`(`:`:Draw`&`,const`:`:Rect`&`,bool`)const: "
-"[%00-00 Size_][%00-00* Paint][%00-00 (Draw`&_][%00-00*@3 w][%00-00 , const_Rect`&_][%00-00*@3 "
-"r][%00-00 , bool_][%00-00*@3 visibleacckey][%00-00 _`=_true)_const]&][s6; Paints "
-"the label in given rectangle.&][s1; [%00-00*C@3 w]-|Draw.&][s1; [%00-00*C@3")
-TOPIC_TEXT(
-" r]-|Rectangle.&][s1; [%00-00*C@3 visibleacckey]-|Access`-keys should be graphically "
-"highlighted (underlined).&][s1; [*/ Return value]-|Size of label.&][s0;3 &][s4;:`:`:DrawLabel`:`:Paint`(`:`:Draw`&`,int`,int`,int`,int`,bool`)const: "
-"[%00-00 Size_][%00-00* Paint][%00-00 (Draw`&_][%00-00*@3 w][%00-00 , int_][%00-00*@3 "
-"x][%00-00 , int_][%00-00*@3 y][%00-00 , int_][%00-00*@3 cx][%00-00 , int_][%00-00")
-TOPIC_TEXT(
-"*@3 cy][%00-00 , bool_][%00-00*@3 visibleacckey][%00-00 _`=_true)_const]&][s6; Paints "
-"the label in given rectangle.&][s1; [%00-00*C@3 w]-|Draw.&][s1; [%00-00*C@3 x, y, "
-"cx, cy]-|Position and size of rectangle.&][s1; [%00-00*C@3 visibleacckey]-|Access`-keys "
-"should be graphically highlighted (underlined).&][s1; [*/ Return value]-|Size of "
-"label.&][s0;3 &][s4;:`:`:DrawLabel`:`:push:* [%00-00* bool_][%0")
-TOPIC_TEXT(
-"0-00 push]&][s6; Label should be painted as `\"pushed`\" (means paint offset one "
-"pixel right and down). Default is false.&][s0;3 &][s4;:`:`:DrawLabel`:`:focus:* [%00-00* "
-"bool_][%00-00 focus]&][s6; Label should be painted as `\"with input focus`\" (light "
-"blue rectangle is drawn around label). Default is false.&][s0;3 &][s4;:`:`:DrawLabel`:`:disabled:* "
-"[%00-00* bool_][%00-00 disabled]&][s6; Label should")
-TOPIC_TEXT(
-" be painted as `\"disable`\" (affects the way how images and text are painted, disabled "
-"mean they are gray).&][s0;3 &][s4;:`:`:DrawLabel`:`:paintrect:* [%00-00* PaintRect_][%00-00 "
-"paintrect]&][s6; This paintrect is painted behind the label text. If label text is "
-"empty, size of text area is determined as paintrect.GetSize().&][s0;3 &][s4;:`:`:DrawLabel`:`:limg:* "
-"[%00-00* Image_][%00-00 limg]&][s6; Le")
-TOPIC_TEXT(
-"ft image.&][s0;3 &][s4;:`:`:DrawLabel`:`:lcolor:* [%00-00* Color_][%00-00 lcolor]&][s6; "
-"Color of left monochromatic image. Null means that the image is color.&][s0;3 &][s4;:`:`:DrawLabel`:`:lspc:* "
-"[%00-00* int_][%00-00 lspc]&][s6; Space between left image and text. If Null, image "
-"is placed at left edge of Label.&][s0;3 &][s4;:`:`:DrawLabel`:`:text:* [%00-00* String_][%00-00 "
-"text]&][s6; Text of lab")
-TOPIC_TEXT(
-"el.&][s0;3 &][s4;:`:`:DrawLabel`:`:font:* [%00-00* Font_][%00-00 font]&][s6; Font "
-"used to paint non`-QTF text.&][s0;3 &][s4;:`:`:DrawLabel`:`:ink:* [%00-00* Color_][%00-00 "
-"ink]&][s6; Color used to paint non`-QTF text.&][s0;3 &][s4;:`:`:DrawLabel`:`:rimg:* "
-"[%00-00* Image_][%00-00 rimg]&][s6; Right image.&][s0;3 &][s4;:`:`:DrawLabel`:`:rcolor:* "
-"[%00-00* Color_][%00-00 rcolor]&][s6; Color of monochro")
-TOPIC_TEXT(
-"matic right image. Null means that the image is color.&][s0;3 &][s4;:`:`:DrawLabel`:`:rspc:* "
-"[%00-00* int_][%00-00 rspc]&][s6; Space between the right image and text. If Null, "
-"image is placed at the right size of Label.&][s0;3 &][s4;:`:`:DrawLabel`:`:align:* "
-"[%00-00* int_][%00-00 align]&][s6; Horizontal alignment. Can be ALIGN`_LEFT, ALIGN`_RIGHT "
-"or ALIGN`_CENTER.&][s0;3 &][s4;:`:`:DrawLabel`:`:va")
-TOPIC_TEXT(
-"lign:* [%00-00* int_][%00-00 valign]&][s6; Vertical alignment. Can be ALIGN`_TOP, "
-"ALIGN`_BOTTOM or ALIGN`_CENTER.&][s0;3 &][s4;:`:`:DrawLabel`:`:accesskey:* [%00-00* "
-"int_][%00-00 accesskey]&][s6; Access`-key.&][s5; &][s5; &][s0;3 &][s10;:`:`:LabelBase`:`:class:* "
-"[%00-00* class_][%00-00 LabelBase]&][s6; &][s6; This class encapsulates basic DrawLabel "
-"struct into form suitable to play a role of base ")
-TOPIC_TEXT(
-"class of GUI elements.&][s0;3 &][s4;:`:`:LabelBase`:`:LabelUpdate`(`): [%00-00 virtual "
-"void_][%00-00* LabelUpdate][%00-00 ()]&][s6; This virtual method is called each time "
-"when any of attributes changes.&][s0;3 &][s4;:`:`:LabelBase`:`:SetLeftImage`(const`:`:Image`&`,int`): "
-"[%00-00 LabelBase`&_][%00-00* SetLeftImage][%00-00 (const_Image`&_][%00-00*@3 bmp1][%00-00 "
-", int_][%00-00*@3 spc][%00-00 _`=_]")
-TOPIC_TEXT(
-"[%00-00@3 0][%00-00 )]&][s6; Sets the left image.&][s1; [%00-00*C@3 bmp1]-|Image.&][s1; "
-"[%00-00*C@3 spc]-|Space between left image and text. If Null, image is placed at "
-"left size of Label.&][s1; [*/ Return value]-|`*this for chaining.&][s0;3 &][s4;:`:`:LabelBase`:`:SetPaintRect`(const`:`:PaintRect`&`): "
-"[%00-00 LabelBase`&_][%00-00* SetPaintRect][%00-00 (const_PaintRect`&_][%00-00*@3 "
-"pr][%00-00 )]&")
-TOPIC_TEXT(
-"][s6; Sets PaintRect to be drawn behind or instead of label text.&][s1; [%00-00*C@3 "
-"pr]-|PaintRect&][s1; [*/ Return value]-|`*this for chaining.&][s0;3 &][s4;:`:`:LabelBase`:`:SetText`(const "
-"char`*`): [%00-00 LabelBase`&_][%00-00* SetText][%00-00 (const_char_`*][%00-00*@3 "
-"text][%00-00 )]&][s6; Sets text of the label.&][s1; [%00-00*C@3 text]-|Text.&][s1; "
-"[*/ Return value]-|`*this for chaining.&][s0")
-TOPIC_TEXT(
-";3 &][s4;:`:`:LabelBase`:`:SetFont`(`:`:Font`): [%00-00 LabelBase`&_][%00-00* SetFont][%00-00 "
-"(Font_][%00-00*@3 font][%00-00 )]&][s6; Sets font of non`-QTF text.&][s1; [%00-00*C@3 "
-"font]-|Font.&][s1; [*/ Return value]-|`*this for chaining.&][s0;3 &][s4;:`:`:LabelBase`:`:SetInk`(`:`:Color`): "
-"[%00-00 LabelBase`&_][%00-00* SetInk][%00-00 (Color_][%00-00*@3 color][%00-00 )]&][s6; "
-"Sets the color of non`")
-TOPIC_TEXT(
-"-QTF text .&][s1; [%00-00*C@3 color]-|Color.&][s1; [*/ Return value]-|`*this for "
-"chaining.&][s0;3 &][s4;:`:`:LabelBase`:`:SetRightImage`(const`:`:Image`&`,int`): "
-"[%00-00 LabelBase`&_][%00-00* SetRightImage][%00-00 (const_Image`&_][%00-00*@3 bmp2][%00-00 "
-", int_][%00-00*@3 spc][%00-00 _`=_][%00-00@3 0][%00-00 )]&][s6; Sets the right image.&][s1; "
-"[%00-00*C@3 bmp2]-|Image.&][s1; [%00-00*C@3 spc]-|Spac")
-TOPIC_TEXT(
-"e between left image and text. If Null, image is placed at left size of Label.&][s1; "
-"[*/ Return value]-|`*this for chaining.&][s0;3 &][s4;:`:`:LabelBase`:`:SetAlign`(int`): "
-"[%00-00 LabelBase`&_][%00-00* SetAlign][%00-00 (int_][%00-00*@3 align][%00-00 )]&][s6; "
-"Sets horizontal alignment.&][s1; [%00-00*C@3 align]-|One of ALIGN`_TOP, ALIGN`_BOTTOM "
-"or ALIGN`_CENTER.&][s1; [*/ Return value]-|`*this for ")
-TOPIC_TEXT(
-"chaining.&][s0;3 &][s4;:`:`:LabelBase`:`:SetVAlign`(int`): [%00-00 LabelBase`&_][%00-00* "
-"SetVAlign][%00-00 (int_][%00-00*@3 align][%00-00 )]&][s6; Sets vertical alignment.&][s1; "
-"[%00-00*C@3 align]-|One of ALIGN`_TOP, ALIGN`_BOTTOM or ALIGN`_CENTER.&][s1; [*/ "
-"Return value]-|`*this for chaining.&][s0;3 &][s4;:`:`:LabelBase`:`:SetImage`(const`:`:Image`&`,int`): "
-"[%00-00 LabelBase`&_][%00-00* SetImage]")
-TOPIC_TEXT(
-"[%00-00 (const_Image`&_][%00-00*@3 bmp][%00-00 , int_][%00-00*@3 spc][%00-00 _`=_][%00-00@3 "
-"0][%00-00 )]&][s6; Same as SetLeftImage(bmp, spc).&][s0;3 &][s4;:`:`:LabelBase`:`:GetAlign`(`)const: "
-"[%00-00 int_][%00-00* GetAlign][%00-00 ()_const]&][s1; [*/ Return value]-|Current "
-"horizontal alignment.&][s0;3 &][s4;:`:`:LabelBase`:`:GetVAlign`(`)const: [%00-00 "
-"int_][%00-00* GetVAlign][%00-00 ()_const]&][")
-TOPIC_TEXT(
-"s1; [*/ Return value]-|Current vertical alignment.&][s0;3 &][s4;:`:`:LabelBase`:`:GetPaintRect`(`)const: "
-"[%00-00 PaintRect_][%00-00* GetPaintRect][%00-00 ()_const]&][s1; [*/ Return value]-|Current "
-"PaintRect.&][s0;3 &][s4;:`:`:LabelBase`:`:GetText`(`)const: [%00-00 String_][%00-00* "
-"GetText][%00-00 ()_const]&][s1; [*/ Return value]-|Current label text.&][s0;3 &][s4;:`:`:LabelBase`:`:GetFont`(`)const")
-TOPIC_TEXT(
-": [%00-00 Font_][%00-00* GetFont][%00-00 ()_const]&][s1; [*/ Return value]-|Current "
-"font.&][s0;3 &][s4;:`:`:LabelBase`:`:GetInk`(`)const: [%00-00 Color_][%00-00* GetInk][%00-00 "
-"()_const]&][s1; [*/ Return value]-|Current text color.&][s0;3 &][s4;:`:`:LabelBase`:`:PaintLabel`(`:`:Draw`&`,const`:`:Rect`&`,bool`,bool`,bool`,bool`): "
-"[%00-00 Size_][%00-00* PaintLabel][%00-00 (Draw`&_][%00-00*@3 w][%00-0")
-TOPIC_TEXT(
-"0 , const_Rect`&_][%00-00*@3 r][%00-00 , bool_][%00-00*@3 disabled][%00-00 _`=_false, "
-"bool_][%00-00*@3 push][%00-00 _`=_false, bool_][%00-00*@3 focus][%00-00 _`=_false, "
-"bool_][%00-00*@3 vak][%00-00 _`=_true)]&][s6; Paints label in the given rectangle.&][s1; "
-"[%00-00*C@3 w]-|Draw.&][s1; [%00-00*C@3 r]-|Rectangle.&][s1; [%00-00*C@3 disabled]-|Disable "
-"flag.&][s1; [%00-00*C@3 push]-|Push flag.&][s1; [%")
-TOPIC_TEXT(
-"00-00*C@3 focus]-|Focus flag.&][s1; [%00-00*C@3 vak]-|If true, accelerator should "
-"be highlighted.&][s1; [*/ Return value]-|Size of label.&][s0;3 &][s4;:`:`:LabelBase`:`:PaintLabel`(`:`:Draw`&`,int`,int`,int`,int`,bool`,bool`,bool`,bool`): "
-"[%00-00 Size_][%00-00* PaintLabel][%00-00 (Draw`&_][%00-00*@3 w][%00-00 , int_][%00-00*@3 "
-"x][%00-00 , int_][%00-00*@3 y][%00-00 , int_][%00-00*@3 cx][%00-00 , in")
-TOPIC_TEXT(
-"t_][%00-00*@3 cy][%00-00 , bool_][%00-00*@3 disabled][%00-00 _`=_false, bool_][%00-00*@3 "
-"push][%00-00 _`=_false, bool_][%00-00*@3 focus][%00-00 _`=_false, bool_][%00-00*@3 "
-"vak][%00-00 _`=_true)]&][s6; Paints label in the given rectangle.&][s1; [%00-00*C@3 "
-"w]-|Draw.&][s1; [%00-00*C@3 x, y, cx, cy]-|Rectangle.&][s1; [%00-00*C@3 disabled]-|Disable "
-"flag.&][s1; [%00-00*C@3 push]-|Push flag.&][s1; [%00-")
-TOPIC_TEXT(
-"00*C@3 focus]-|Focus flag.&][s1; [%00-00*C@3 vak]-|If true, accelerator should be "
-"highlighted.&][s1; [*/ Return value]-|Size of label.&][s0;3 &][s4;:`:`:LabelBase`:`:GetLabelSize`(`)const: "
-"[%00-00 Size_][%00-00* GetLabelSize][%00-00 ()_const]&][s1; [*/ Return value]-|Size "
-"of label.&][s0;3 ]")
+COMPRESSED
+120,156,237,27,105,119,219,54,242,175,224,165,151,236,74,10,
+73,73,150,108,191,125,175,137,155,195,47,217,56,107,59,253,
+226,181,67,136,130,44,108,40,82,75,64,62,186,222,254,246,
+157,25,144,20,40,145,58,124,52,125,237,230,131,69,18,192,
+204,96,46,204,129,156,121,236,219,111,157,186,243,141,179,226,
+223,222,207,98,200,167,161,62,63,147,237,118,111,159,123,157,
+253,47,239,142,118,247,183,127,170,237,180,183,0,136,11,64,
+90,93,183,213,235,180,220,182,183,3,127,220,150,235,117,188,
+86,219,237,121,187,237,94,171,213,115,246,130,144,43,117,126,
+22,122,189,222,62,98,246,96,145,215,237,120,110,183,221,107,
+247,220,86,183,231,193,90,207,113,60,167,235,117,220,118,171,
+231,117,246,6,66,5,231,103,188,215,218,223,62,222,129,69,
+45,196,4,192,29,119,199,107,119,219,158,211,114,188,54,160,
+114,123,189,182,219,237,244,90,187,59,59,123,1,159,104,25,
+71,41,46,233,186,158,187,223,119,187,251,64,242,111,191,253,
+214,116,219,142,161,160,13,192,92,167,13,164,186,240,205,105,
+123,93,183,179,235,236,118,122,110,207,105,1,240,78,215,233,
+236,77,120,194,199,229,59,71,24,157,149,91,239,58,123,82,
+11,0,177,253,163,235,118,97,201,78,125,231,27,183,221,133,
+141,246,90,237,78,175,235,0,114,207,243,90,45,207,109,121,
+187,187,94,103,167,211,221,27,9,62,16,201,249,217,127,62,
+255,247,187,87,31,26,159,78,216,153,106,237,179,247,188,47,
+194,151,92,9,230,55,88,159,43,25,176,16,63,177,36,158,
+106,25,9,245,253,249,153,114,172,121,205,17,11,226,72,115,
+25,41,54,156,70,1,50,70,49,30,13,152,146,227,73,40,
+216,72,132,19,145,48,146,142,80,108,170,196,128,233,152,209,
+224,88,68,154,29,232,36,84,236,90,234,17,211,226,70,215,
+97,136,95,10,3,131,7,129,8,69,194,117,156,176,47,226,
+86,53,83,244,111,68,4,95,195,240,182,206,134,113,50,230,
+154,197,67,90,109,224,247,111,173,141,12,121,32,67,169,37,
+128,148,138,9,192,3,228,164,196,141,65,235,164,223,8,97,
+103,12,80,156,93,232,120,34,3,127,207,127,238,63,63,150,
+193,232,20,64,250,207,85,18,12,226,192,127,254,143,211,215,
+254,183,34,242,27,83,117,193,224,229,124,207,144,35,221,142,
+179,127,228,237,179,195,33,27,202,68,105,22,140,64,170,129,
+6,68,25,93,128,218,255,193,255,167,235,255,80,207,63,0,
+8,86,83,154,39,192,217,75,195,129,8,135,242,213,91,205,
+213,8,0,206,135,163,211,69,224,37,59,164,33,66,131,179,
+35,255,7,195,45,174,24,13,43,129,186,8,172,206,184,124,
+24,177,126,12,179,3,96,163,170,227,162,239,97,13,240,9,
+151,247,225,145,39,34,7,129,162,82,202,111,128,152,216,48,
+228,151,170,137,212,166,107,212,40,158,134,32,23,160,97,36,
+24,160,201,5,6,226,214,64,36,108,9,6,193,24,249,196,
+128,243,159,193,194,239,253,103,77,118,58,130,221,164,82,206,
+158,64,242,44,226,99,152,234,63,59,25,3,56,18,212,179,
+140,240,15,177,22,140,135,42,6,116,176,234,147,255,163,255,
+35,139,178,133,3,169,116,34,251,83,45,10,84,195,203,84,
+199,128,69,6,56,173,201,62,38,241,149,28,160,104,236,189,
+1,9,122,52,69,69,158,18,180,105,20,9,28,229,201,109,
+138,190,197,240,183,179,255,142,157,125,231,56,13,199,185,0,
+133,218,59,1,156,209,229,5,51,191,231,233,16,251,156,61,
+253,228,176,159,197,139,241,36,31,169,229,35,53,167,233,52,
+189,78,103,11,77,77,233,146,181,214,12,80,140,217,4,127,
+59,159,210,98,42,255,190,117,142,20,130,62,17,111,83,211,
+78,185,15,108,8,67,22,7,193,52,73,68,4,59,67,73,
+165,98,180,180,46,98,42,158,38,1,104,13,237,39,85,171,
+84,104,217,71,176,115,126,21,203,1,48,11,95,65,210,37,
+138,66,92,107,239,103,204,218,62,32,82,27,119,135,209,100,
+170,83,72,249,156,237,231,236,88,232,105,18,177,43,30,78,
+5,76,123,149,234,140,53,49,19,129,179,191,135,156,127,35,
+116,174,35,39,242,87,225,215,240,235,207,9,191,6,90,235,
+196,82,218,153,191,237,215,113,228,53,248,179,189,140,28,134,
+43,114,70,111,179,121,96,51,113,25,128,179,169,176,141,235,
+124,180,110,68,247,25,241,88,82,193,73,104,5,214,60,196,
+94,0,50,132,15,150,68,255,246,249,68,15,112,82,109,43,
+23,163,97,137,34,227,26,203,8,28,104,8,246,255,171,64,
+209,229,212,146,61,102,222,33,117,11,104,240,151,9,159,140,
+200,23,25,123,188,150,3,16,165,229,183,16,106,254,17,30,
+4,240,107,182,16,5,15,10,196,6,49,89,74,116,107,156,
+73,63,17,252,139,98,181,124,162,34,111,97,236,88,131,188,
+224,9,180,104,8,212,234,20,252,86,153,38,92,131,136,145,
+179,101,99,196,185,198,93,190,195,121,101,177,166,18,19,27,
+119,200,55,194,28,197,224,198,179,61,47,209,174,147,5,46,
+174,80,176,183,66,94,142,244,50,21,147,145,46,211,51,105,
+139,157,45,130,124,184,162,41,107,146,156,83,178,224,230,17,
+85,112,68,4,35,219,46,229,149,136,102,204,35,214,155,111,
+36,241,38,169,221,82,21,209,232,161,204,228,13,181,67,173,
+169,26,176,245,198,221,177,248,247,84,38,128,179,18,213,125,
+53,232,109,206,140,165,58,132,187,152,157,100,5,245,33,133,
+153,253,89,229,176,208,225,90,154,84,0,92,169,68,115,58,
+100,171,7,12,221,84,15,221,86,15,21,116,170,84,43,87,
+120,191,165,154,87,103,7,113,24,39,246,100,25,125,41,206,
+125,25,242,224,203,2,93,230,0,130,227,167,48,217,154,224,
+44,30,148,31,33,192,213,202,210,100,56,218,32,112,187,20,
+154,85,233,223,50,221,188,169,3,227,26,119,31,99,37,49,
+96,126,128,90,206,251,192,141,84,119,233,42,228,102,227,142,
+54,27,32,167,55,88,58,227,112,227,238,133,117,220,67,78,
+145,134,175,49,4,23,106,18,71,20,94,205,194,138,107,9,
+177,71,31,35,68,96,55,109,27,78,157,105,4,153,10,30,
+42,75,227,171,254,173,22,23,12,255,150,198,86,175,110,52,
+226,48,212,188,179,100,255,132,97,86,157,157,219,20,86,68,
+128,69,43,164,108,107,81,255,78,2,14,206,85,90,33,17,
+137,195,138,165,54,10,163,172,57,6,97,227,238,104,170,45,
+224,32,41,226,189,29,172,37,98,28,95,137,193,18,95,247,
+98,142,156,18,89,89,60,236,199,113,88,42,171,131,120,12,
+103,130,88,34,171,213,18,47,51,243,57,121,12,174,227,100,
+112,193,232,167,20,130,189,54,151,68,74,92,22,199,226,36,
+116,6,38,199,16,87,152,209,226,39,98,9,134,187,9,100,
+7,112,226,81,82,250,14,7,100,162,33,115,96,99,1,113,
+211,96,3,235,41,155,106,38,149,226,94,34,166,211,4,72,
+147,67,243,14,177,32,215,193,232,33,182,117,48,138,99,181,
+76,92,15,50,45,181,169,216,48,35,93,219,130,212,84,106,
+222,135,68,249,17,76,137,16,55,238,94,74,237,55,148,160,
+51,159,135,16,7,15,110,211,44,217,74,54,155,140,166,141,
+185,250,130,243,212,68,4,114,40,131,249,84,115,32,32,66,
+54,202,83,40,78,96,209,228,32,78,4,21,39,204,107,86,
+154,240,191,65,46,209,23,248,205,165,130,232,106,40,66,127,
+235,130,153,209,194,224,185,41,209,204,235,229,82,35,199,90,
+128,131,154,20,197,165,140,4,14,131,243,206,178,242,194,79,
+174,104,160,63,139,58,0,60,158,6,122,166,28,88,6,204,
+69,76,39,46,213,119,50,217,218,217,172,89,58,133,64,18,
+114,212,33,184,124,246,47,172,46,64,42,203,39,106,26,114,
+204,250,47,177,124,148,151,182,232,176,65,125,200,18,97,42,
+26,196,88,39,186,150,10,146,19,170,93,140,248,21,60,114,
+52,246,24,210,167,96,68,113,43,112,75,36,170,42,160,35,
+34,139,47,53,127,43,15,213,182,173,157,228,54,147,43,108,
+90,20,53,22,131,123,138,147,102,254,49,53,93,140,151,7,
+113,48,197,66,26,104,9,236,24,34,231,172,182,129,181,205,
+68,82,169,82,205,155,183,197,235,194,17,5,233,206,133,97,
+183,157,220,206,9,0,68,134,249,201,194,132,218,214,76,70,
+198,206,75,146,131,44,47,53,188,239,115,52,140,56,98,166,
+220,0,214,149,218,77,190,141,53,146,51,2,245,216,59,164,
+136,111,110,127,5,63,132,178,75,33,225,99,113,106,69,104,
+109,6,103,14,173,232,14,231,136,32,44,199,34,208,41,22,
+124,92,134,37,169,196,98,159,180,41,146,43,169,36,88,43,
+24,43,216,41,198,191,160,98,162,74,126,105,244,139,226,51,
+98,3,69,51,105,28,156,110,154,71,151,161,216,52,2,78,
+40,186,93,178,184,64,96,209,237,40,171,158,72,137,163,169,
+216,177,17,100,90,33,102,91,160,82,181,60,106,28,108,253,
+185,85,104,1,71,105,230,182,217,178,219,251,45,11,238,137,
+46,168,198,247,7,84,93,76,222,32,161,133,159,192,78,226,
+210,166,135,209,167,165,192,255,8,170,93,118,234,150,240,58,
+103,234,100,170,70,25,79,233,196,178,8,205,178,53,42,219,
+227,68,49,240,159,177,218,88,96,196,69,131,64,199,144,60,
+59,156,174,19,121,131,253,36,170,138,32,203,6,241,117,180,
+53,59,217,176,196,207,67,181,144,236,109,76,241,16,206,69,
+181,22,201,148,233,152,200,144,22,33,241,196,108,214,199,32,
+62,151,37,5,100,160,20,32,234,4,3,27,195,218,167,160,
+125,32,21,198,82,131,181,200,79,39,35,213,124,56,4,98,
+211,146,45,196,42,163,248,218,110,167,81,69,23,99,134,116,
+125,61,71,196,80,88,184,236,150,198,65,245,110,183,170,119,
+65,206,139,44,203,58,158,242,247,74,21,194,9,200,204,66,
+247,33,255,202,178,23,12,119,197,72,34,189,185,213,234,172,
+128,61,123,165,110,222,120,162,193,22,51,171,203,246,199,77,
+232,12,161,217,152,162,103,110,161,105,166,161,75,109,213,254,
+14,145,111,233,222,232,185,106,95,161,28,95,230,130,18,67,
+109,56,190,2,58,21,175,82,232,244,92,9,157,138,47,179,
+236,19,43,49,104,213,136,104,28,71,113,48,74,76,211,42,
+69,203,62,76,195,144,25,219,163,64,22,153,72,67,200,20,
+2,182,150,122,86,59,108,22,170,73,144,167,85,19,30,8,
+144,151,190,22,224,83,195,124,251,185,190,145,212,144,166,250,
+140,138,73,8,139,64,44,218,44,16,131,75,18,223,251,229,
+158,202,46,162,164,199,111,161,146,50,79,38,149,198,50,85,
+67,205,88,237,12,47,178,114,106,138,224,117,92,205,5,170,
+170,165,224,169,180,150,181,182,141,199,91,172,15,63,130,50,
+96,77,174,160,9,247,199,185,182,122,39,150,122,31,147,87,
+124,84,253,78,202,245,187,168,218,137,133,247,119,80,240,164,
+82,193,17,151,69,204,154,90,62,91,149,121,170,21,170,190,
+30,153,28,14,169,40,163,243,109,156,200,95,241,38,70,104,
+190,99,74,216,100,7,224,213,225,188,120,241,254,240,205,7,
+255,243,251,87,175,79,235,217,203,241,225,155,183,167,152,193,
+167,239,7,175,62,156,190,58,126,40,77,87,5,162,126,17,
+9,181,211,171,73,58,61,250,152,83,244,242,232,244,244,232,
+239,143,78,210,172,158,150,82,181,88,166,220,164,54,145,222,
+51,42,199,149,95,59,41,43,77,152,2,75,161,18,97,174,
+216,228,101,128,180,122,129,187,137,169,17,54,43,171,160,145,
+135,112,164,115,150,196,33,233,16,230,206,41,76,120,123,243,
+233,144,9,115,165,102,33,219,159,245,134,210,226,99,250,91,
+86,126,195,246,81,105,149,143,8,252,52,25,112,171,10,88,
+43,222,36,40,214,54,201,28,33,122,5,27,128,88,119,196,
+180,28,67,84,50,18,17,117,137,11,73,62,22,253,162,75,
+81,73,56,185,148,156,183,23,22,155,51,74,236,108,201,97,
+39,66,227,73,92,240,107,155,148,35,45,15,89,116,142,136,
+167,63,158,184,179,12,165,92,7,11,233,13,122,147,252,251,
+202,86,19,208,158,230,43,197,88,98,46,137,64,42,176,38,
+89,53,142,72,33,9,120,132,227,121,209,103,149,39,28,254,
+182,78,175,234,160,56,101,52,127,29,227,97,242,92,8,47,
+55,150,231,44,96,93,140,85,17,223,36,41,202,32,159,132,
+182,7,30,203,132,254,105,104,74,183,23,148,22,124,48,43,
+102,233,138,118,216,4,139,29,57,180,175,197,192,98,255,247,
+81,74,243,150,34,23,250,184,115,186,156,198,94,121,52,191,
+164,143,121,186,188,153,254,180,28,178,163,189,185,74,13,197,
+132,133,112,176,96,225,133,54,117,113,247,56,132,187,47,191,
+47,96,113,192,234,210,126,53,14,28,90,29,244,34,3,76,
+60,87,12,229,216,103,138,182,22,61,87,144,69,113,133,77,
+179,210,54,55,1,108,220,29,228,113,219,215,216,55,197,181,
+79,118,90,120,191,199,105,145,204,133,230,139,199,133,247,87,
+58,46,94,80,24,186,76,152,85,252,231,133,149,69,70,143,
+202,130,236,178,22,46,193,104,220,29,69,196,138,13,99,221,
+175,193,175,95,158,134,97,87,139,9,192,159,130,93,79,227,
+43,44,166,246,173,155,192,79,233,62,248,152,110,41,216,1,
+115,13,112,215,17,206,98,133,108,161,33,178,172,174,79,93,
+194,130,90,45,107,19,150,75,241,32,109,11,86,26,222,195,
+168,251,229,145,200,171,80,243,213,189,164,77,139,168,134,236,
+138,89,247,161,60,7,181,110,243,107,237,250,155,33,213,142,
+58,239,79,229,92,124,189,154,204,245,106,120,134,196,197,9,
+247,33,113,24,175,45,244,117,107,99,134,60,43,38,187,63,
+117,58,191,198,183,252,63,41,96,107,179,208,213,92,108,104,
+206,221,87,40,56,54,106,104,22,122,153,85,109,204,114,167,
+182,204,105,154,204,109,62,105,179,96,39,203,97,87,92,55,
+107,205,154,45,182,219,164,62,206,102,112,168,69,246,64,24,
+166,105,245,64,32,87,188,120,15,150,250,163,115,13,209,188,
+25,138,177,227,83,247,242,115,14,3,12,243,88,249,63,63,
+136,137,144,45,195,79,229,28,195,36,76,149,224,183,114,22,
+114,1,2,94,200,59,97,251,245,194,127,37,155,53,210,172,
+190,234,125,91,169,127,40,3,170,138,10,110,238,183,172,236,
+238,228,26,203,130,123,162,11,86,224,251,191,9,63,149,9,
+207,221,105,248,235,90,243,35,92,140,35,251,94,247,118,220,
+38,36,158,255,15,128,52,40,221,

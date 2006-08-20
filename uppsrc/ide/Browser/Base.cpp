@@ -47,7 +47,7 @@ void BrowserScanError(int line, const String& text)
 
 int NoSlash(int c)
 {
-	return c == '/' || c == '\\' ? '$' : c;
+	return c == '/' || c == '\\' || c == ':' ? '$' : c;
 }
 
 void SaveBrowserBase()
@@ -169,13 +169,6 @@ void FinishBase(const CppWordsHash& w)
 {
 	TimeStop tm;
 	Qualify(BrowserBase(), w);
-	QLOG("FinishBase1 " << tm << " s");
-/*	Vector<Browser *>& rb = RBrowser();
-	for(int i = 0; i < rb.GetCount(); i++)
-		rb[i]->Reload();
-*/	QLOG("FinishBase2 " << tm << " s");
-	SyncRefs();
-	QLOG("FinishBase total " << tm << " s");
 }
 
 void ReQualifyBrowserBase()

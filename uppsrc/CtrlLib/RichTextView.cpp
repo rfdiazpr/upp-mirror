@@ -294,13 +294,16 @@ void  RichTextView::Pick(pick_ RichText& rt)
 	highlight = -1;
 }
 
-void  RichTextView::SetQTF(const char *qtf, Zoom z, bool scolors)
-{
-	RichText txt = ParseQTF(qtf, scolors);
+void  RichTextView::Pick(pick_ RichText& txt, Zoom z) {
 	if(z.m != z.d)
-		txt.ApplyZoom(z);
+		const_cast<RichText&>(txt).ApplyZoom(z);
 	Pick(txt);
 	sb.SetLine(z * 100);
+}
+
+void  RichTextView::SetQTF(const char *qtf, Zoom z, bool scolors)
+{
+	Pick(ParseQTF(qtf, scolors), z);
 }
 
 RichTextView& RichTextView::PageWidth(int _cx)

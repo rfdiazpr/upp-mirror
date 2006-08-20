@@ -112,6 +112,9 @@ void RichTxt::FormatInfo::Combine(const RichPara::Format& fmt)
 			}
 	if(styleid != fmt.styleid)
 		paravalid &= ~STYLE;
+	if(linespacing != fmt.linespacing) {
+		paravalid &= ~SPACING;
+	}
 }
 
 void RichTxt::FormatInfo::ApplyTo(RichPara::CharFormat& fmt) const
@@ -187,4 +190,6 @@ void RichTxt::FormatInfo::ApplyTo(RichPara::Format& fmt) const
 		fmt.tab = tab;
 	if(paravalid & STYLE)
 		fmt.styleid = styleid;
+	if(paravalid & SPACING)
+		fmt.linespacing = linespacing;
 }

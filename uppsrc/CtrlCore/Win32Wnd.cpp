@@ -392,7 +392,7 @@ void Ctrl::WndDestroy()
 Image Ctrl::DoMouse(int e, Point p, int zd)
 {
 //	LLOG("Ctrl::DoMouse(" << p << ", " << e << ")");
-	Image img = DispatchMouse(e, p + GetSysWindowViewOffset(), zd);
+	Image img = DispatchMouse(e, p, zd);
 	SyncCaret();
 	return img;
 }
@@ -476,6 +476,7 @@ LRESULT CALLBACK Ctrl::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			String wname = w->Name();
 #endif
 			l = w->WindowProc(message, wParam, lParam);
+			w->SyncMoves();
 #if defined(_DEBUG) && LOGTIMING
 			String msgname;
 			for(WinMsg *m = sWinMsg; m->ID; m++)
@@ -786,7 +787,7 @@ void Ctrl::WndInvalidateRect(const Rect& r)
 {
 	HWND hwnd = GetHWND();
 	if(hwnd)
-		::InvalidateRect(hwnd, r - GetSysWindowViewOffset(), false);
+		::InvalidateRect(hwnd, r, false);
 }
 
 void Ctrl::WndSetPos(const Rect& rect) {
@@ -811,18 +812,16 @@ void Ctrl::WndUpdate(const Rect& r)
 	if(top->IsOpen()) {
 		HWND hwnd = top->GetHWND();
 		HDC hdc = GetDC(hwnd);
-		Point p = top->GetSysWindowViewOffset();
 		HRGN hrgn = CreateRectRgn(0, 0, 0, 0);
 		if(GetUpdateRgn(hwnd, hrgn, FALSE) != NULLREGION) {
 			SelectClipRgn(hdc, hrgn);
 			Draw draw(hdc);
 			bool hcr = focusCtrl && focusCtrl->GetTopCtrl() == top &&
-			           caretRect.Intersects(r + p + top->GetRect().TopLeft());
+			           caretRect.Intersects(r + top->GetRect().TopLeft());
 			if(hcr) ::HideCaret(hwnd);
-			draw.Offset(-p);
 			draw.Clip(r);
 			top->UpdateArea(draw, r);
-			ValidateRect(hwnd, r - p);
+			ValidateRect(hwnd, r);
 			SelectClipRgn(hdc, NULL);
 			if(hcr) ::ShowCaret(hwnd);
 		}

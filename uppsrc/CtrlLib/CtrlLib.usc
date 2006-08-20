@@ -256,15 +256,16 @@ ctrl LabelBox {
 
 	Paint(w) {
 		sz = GetSize();
-		d = GetSmartTextSize("X").cy / 2;
-		w.DrawSmartText(d, 0, .SetLabel, .SetFont, .SetInk);
 		ts = GetSmartTextSize(.SetLabel, .SetFont);
+		d = ts.cy / 2;
 		if(2 * GetSmartTextSize("X").cy > sz.cy) {
 			d = sz.cy / 2;
+			w.DrawSmartText(d, (sz.cy - ts.cy) / 2, .SetLabel, .SetFont, .SetInk);
 			w.DrawRect(1, d, d - 1, 1, :SGray);
 			w.DrawRect(1, d + 1, d - 1, 1, :SWhite);
 		}
 		else {
+			w.DrawSmartText(d, 0, .SetLabel, .SetFont, .SetInk);
 			w.DrawRect(0, d + 2, 1, sz.cy - d - 4, :SGray);
 			w.DrawRect(1, d + 2, 1, sz.cy - d - 4, :SWhite);
 			w.DrawRect(sz.cx - 2, d, 1, sz.cy - d - 2, :SGray);
@@ -336,7 +337,7 @@ ctrl Option {
 	Paint(w) {
 		x = self;
 		sz = ViewSize(w);
-		img = .SwitchImage ? "CtrlsImg::S0" : .ThreeState ? "CtrlsImg::O2" : "CtrlsImg::O0";
+		img = .SwitchImage ? "CtrlsImg::Wcsw_S0" : .ThreeState ? "CtrlsImg::Wco_O2" : "CtrlsImg::Wco_O0";
 		imagesize = GetImageSize(img);
 		textsize = GetSmartTextSize(.SetLabel, .SetFont);
 		w.DrawImage(0, (sz.cy - imagesize.cy) / 2, img);
@@ -371,13 +372,13 @@ ctrl Switch {
 		cs[] = ln;
 		tcy = GetTextSize("W", .SetFont).cy;
 		linecy = max(16, tcy + 2);
-		imagesize = GetImageSize("CtrlsImg::S0");
+		imagesize = GetImageSize("CtrlsImg::Wcsw_S0");
 		y = 0;
 		x = 0;
 		setlabel = .SetLabel;
 		for(i = 0; i < count(cs); i++) {
 			textsize = GetSmartTextSize(cs[i], .SetFont);
-			w.DrawImage(x, y, "CtrlsImg::S0");
+			w.DrawImage(x, y, "CtrlsImg::Wcsw_S0");
 			w.DrawSmartText(x + imagesize.cx + 4, y + (imagesize.cy - tcy) / 2,
 			                cs[i], .SetFont);
 			if(linecy * count(cs) > sz.cy)
@@ -577,7 +578,7 @@ ctrl DropList {
 		w.DrawRect(r, :SWhite);
 		n = r.bottom - r.top;
 		DrawEdgeButton(w, RectC(r.right - n, r.top, n, n));
-		w.DrawImage((n - 7) / 2 + r.right - n, (n - 6) / 2 + r.top, "CtrlsImg::DA");
+		w.DrawImage((n - 7) / 2 + r.right - n, (n - 6) / 2 + r.top, "CtrlsImg::Wca_DA");
 		w.DrawText(3, (GetSize().cy - GetTextSize("", Arial(10)).cy) / 2,
 			(.SetEditable ? "" : "R/O ") + "DropList", Arial(10), :SMagenta);
 	}
@@ -594,7 +595,7 @@ template WithDropChoice {
 		DrawCtrlFrame(w, r, .SetFrame);
 		n = r.bottom - r.top;
 		DrawEdgeButton(w, RectC(r.right - n, r.top, n, n));
-		w.DrawImage((n - 7) / 2 + r.right - n, (n - 6) / 2 + r.top, "CtrlsImg::DA");
+		w.DrawImage((n - 7) / 2 + r.right - n, (n - 6) / 2 + r.top, "CtrlsImg::Wca_DA");
 	}
 };
 
@@ -707,9 +708,9 @@ fn PaintVScrollBar(w, r)
 	down = r;
 	r.bottom = (down.top = down.bottom - wd);
 	DrawButtonFrame(w, up);
-	PaintRcCenterImage(w, up, "CtrlsImg::UA");
+	PaintRcCenterImage(w, up, "CtrlsImg::Wca_UA");
 	DrawButtonFrame(w, down);
-	PaintRcCenterImage(w, down, "CtrlsImg::DA");
+	PaintRcCenterImage(w, down, "CtrlsImg::Wca_DA");
 	w.DrawRect(r, :SWhiteGray);
 //	ht = r.bottom - r.top;
 //	r.top += ht / 4;

@@ -41,7 +41,7 @@ public:
 	public:
 		Item&          Text(const String& _text);
 		Item&          Picture(PaintRect d);
-		Item&          SetImage(const Image& _im)       { return Picture(PaintRect(ImageDisplay(), _im)); }
+		Item&          SetImage(const ::Image& _im)     { return Picture(PaintRect(ImageDisplay(), _im)); }
 		Item&          SetCtrl(Ctrl *_ctrl);
 		Item&          SetCtrl(Ctrl& c)                 { return SetCtrl(&c); }
 		Item&          Slave(Ctrl *_slave);
@@ -55,7 +55,7 @@ public:
 
 	//deprecated:
 		Item&          Control(Ctrl *c)                 { return SetCtrl(c); }
-		Item&          Image(const class Image& m)      { return SetImage(m); }
+		Item&          Image(const ::Image& m)          { return SetImage(m); }
 	};
 
 private:

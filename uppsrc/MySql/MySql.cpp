@@ -10,6 +10,7 @@ protected:
 	virtual bool        Fetch();
 	virtual void        GetColumn(int i, Ref f) const;
 	virtual void        Cancel();
+	virtual Value       GetInsertedId() const;
 	virtual SqlSession& GetSession() const;
 	virtual String      GetUser() const;
 	virtual String      ToString() const;
@@ -298,6 +299,11 @@ bool MySqlConnection::Execute() {
 
 int  MySqlConnection::GetRowsProcessed() const {
 	return rows;
+}
+
+Value MySqlConnection::GetInsertedId() const
+{
+	return lastid;
 }
 
 bool MySqlConnection::Fetch() {

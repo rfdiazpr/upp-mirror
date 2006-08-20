@@ -1,765 +1,881 @@
 TITLE("Copyright © 1999-2005 Ultimate++ team")
-TOPIC_TEXT(
-"[ $$0,0#00000000000000000000000000000000:Default][{_}%EN-US [s0;*+117 &][s0;*+117 "
-"Copyright \302\251 1999`-2006 Ultimate`+`+ team&][s0;i640;O9;*+117 [*3 Authors:][* "
-"-|]Mirek_F\303\255dler,[*  ]Tom\303\241\305\241_Rylek&][s0;i640;O9;*+117 [*3 Contributors:][* "
-"-|]Daniel_Kos, Sandor_Hojtsy, Zsolt_Debre, Guido_Schimmels, Augusto_Roman, Michael_Albert "
-", Marcus_Mauhart, Jan_Wilmans, Graeme_Prentice, Victor_Berchet, Ivica_Pulji")
-TOPIC_TEXT(
-"c, Mathiass_Sund, Andrew Barilla, Michal Mierzejewski, Damien Porquet&][s0;i640;O9;*+117 "
-"[*3 Translators:-|]Mauro_Bottizzo, Mikl\303\263s_Somogyi, Arlen_Albert, Ivica_Puljic, "
-"Richard_Gill, Werner Wenzel&][s0;i640;O9;*+117 [*3 PR `& SEO:-|]Pavel_Stratil&][s0;i640;O9;*+117 "
-"[*3 U`+`+ Logo:][* -|]Robert_Vroemisse&][s0;+108 &][ {{3333:6667 [s0; Ultimate`+`+ "
-"team email]:: [s0;^mailto`:upp`@ntllib`.org^ upp`@n")
-TOPIC_TEXT(
-"tllib.org]:: [s0; Ultimate`+`+ home page]:: [s0;^http`:`/`/upp`.sf`.net^ upp.sourceforge.net]:: "
-"[s0; Ultimate`+`+ forum]:: [s0;^http`:`/`/www`.arilect`.com`/upp`/forum^ http://www.arilect.com/upp/forum]:: "
-"[s0; Ultimate`+`+ mailing list]:: [s0;^http`:`/`/lists`.sourceforge`.net`/lists`/listinfo`/upp`-main^ "
-"lists.sourceforge.net/lists/listinfo/upp`-main]:: [s0; Ultimate`+`+ change`-log list]:: "
-"[s0;^")
-TOPIC_TEXT(
-"http`:`/`/lists`.sourceforge`.net`/lists`/listinfo`/change`-log^ lists.sourceforge.net/lists/listinfo/change`-log]}}&][s0;+108 "
-"&][s0;+108 &][s0;+108 Ultimate`+`+ has BSD license:&][ {{10000@(254.255.232) [s0;2 "
-"Copyright (C) 2005 Mirek Fidler, Tomas Rylek and various contributors (see AUTHORS)&][s0;2 "
-"&][s0;2 Permission is hereby granted, free of charge, to any person obtaining a copy "
-"of this softwa")
-TOPIC_TEXT(
-"re and associated documentation files (the `\"Software`\"), to deal in the Software "
-"without restriction, including without limitation the rights to use, copy, modify, "
-"merge, publish, distribute, sublicense, and/or sell copies of the Software, and to "
-"permit persons to whom the Software is furnished to do so, subject to the following "
-"conditions:&][s0;2 &][s0;2 The above copyright notice and this permi")
-TOPIC_TEXT(
-"ssion notice shall be included in all copies of the Software and its Copyright notices. "
-"In addition publicly documented acknowledgment must be given that this software has "
-"been used if no source code of this software is made available publicly. This includes&][s0;2 "
-"acknowledgments in either Copyright notices, Manuals, Publicity and Marketing documents "
-"or any documentation provided with any product")
-TOPIC_TEXT(
-" containing this software. This License does not apply to any software that links "
-"to the libraries provided by this software (statically or dynamically), but only "
-"to&][s0;2 the software provided.&][s0;2 &][s0;*2 THE SOFTWARE IS PROVIDED `\"AS IS`\", "
-"WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE "
-"WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND N")
-TOPIC_TEXT(
-"ONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR "
-"OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, "
-"OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.]}}&][s0;+108 "
-"&][s0;+92 &][s0;+92 Ultimate`+`+ includes sources of following libraries:&][ {{2168:7832h1;@(204) "
-"[s0;+75 Library]:: [s0;+75 Authors]")
-TOPIC_TEXT(
-"::^@2 [s0;+75 zlib]::= [s0;+75 Jean`-loup Gailly and Mark Adler]::^ [s0;+75 IJG "
-"JPEG library]::= [s0;+75 Tom Lane, Philip Gladstone, Jim Boucher, Lee Crocker, Julian "
-"Minguillon, Luis Ortiz, George Phillips, Davide Rossi, Guido Vollbeding, Ge`' Weijers, "
-"and other members of the Independent JPEG Group]::^ [s0;+75 bzip2]::= [s0;+75 Julian "
-"Seward]::^ [s0;+75 ndisasm]::= [s0;+75 Julian Hall, Simon Tath")
-TOPIC_TEXT(
-"am, Nelson Rush, Frank Kotler, Stephen Silver, John Coffman, Yuri Zaporogets, H. "
-"Peter Anvin, John Fine, Kendall Bennet, Gary Clark, Andrew Crabtree, Rafael R. Sevilla,, "
-"Jaime Tejedor G\303\263mez, James Seter, Edward J. Beroset, Stanislav Karchebny, "
-"Debbie Wiles, Trevor Woerner, Michael K. Ter Louw, Martin Wawro, Alexei Frounze]::^ "
-"[s0;+75 PNG]::= [s0;+75 Glenn Randers`-Pehrson, Andreas Dilger, Guy Eri")
-TOPIC_TEXT(
-"c Schalnat]::^ [s0;+75 Sqlite]::= [s0;+75 D. Richard Hipp]::^ [s0;+75 tif]::= [s0;+75 "
-"Sam Leffler, Silicon Graphics, Inc.]}}&][s0;+92 &][s0;+92 All those sources are contained "
-"in `\"plugin`\" directory. Refer there for licenses, however all libraries have BSD`-compatible "
-"license with exception of LGPL licensed ndisasm.&][s0;+92 &][s0;+92 &][ {{10000@(191) "
-"[s0;+92 [* MinGW] compiler system (included ")
-TOPIC_TEXT(
-"with upp`-mingw releases)]::@(255.255.150)R(255.255.150) [s0;l128;+92 [* gcc 3.4.2] "
-"toolchain Copyright (C) 2004 Free Software Foundation, Inc.&][s0;l128;+92 [* MinGW] "
-"by Mumith Khan, Danny Smiths, Earnie Boyd, Luke Dunstan, J.J. Van Der Heidjen, Colin "
-"Hendrix and others&][s0;l128;+92 &][s0;+108 [2 MinGW contains GCC compiler suite "
-"and BINUTILS with GPL license]:&][ {{10000@(254.255.232) [s0;=*R+2")
-TOPIC_TEXT(
-"17 GNU GENERAL PUBLIC LICENSE&][s0;=/ Version 2, June 1991&][s0; &][s0;/ Copyright "
-"(C) 1989, 1991 Free Software Foundation, Inc.&][s0;/ 59 Temple Place, Suite 330, "
-"Boston, MA  02111`-1307  USA&][s0;b83;2 Everyone is permitted to copy and distribute "
-"verbatim copies of this license document, but changing it is not allowed.&][s0;=b83;*/R4 "
-"Preamble&][s0;b83;2 The licenses for most software are designe")
-TOPIC_TEXT(
-"d to take away your freedom to share and change it.  By contrast, the GNU General "
-"Public License is intended to guarantee your freedom to share and change free software`-`-to "
-"make sure the software is free for all its users.  This General Public License applies "
-"to most of the Free Software Foundation`'s software and to any other program whose "
-"authors commit to using it.  (Some other Free Software ")
-TOPIC_TEXT(
-"Foundation software is covered by the GNU Library General Public License instead.) "
-" You can apply it to your programs, too.&][s0;b83;2 When we speak of free software, "
-"we are referring to freedom, not price.  Our General Public Licenses are designed "
-"to make sure that you have the freedom to distribute copies of free software (and "
-"charge for this service if you wish), that you receive source code or")
-TOPIC_TEXT(
-" can get it if you want it, that you can change the software or use pieces of it "
-"in new free programs; and that you know you can do these things.&][s0;b83;2 To protect "
-"your rights, we need to make restrictions that forbid anyone to deny you these rights "
-"or to ask you to surrender the rights. These restrictions translate to certain responsibilities "
-"for you if you distribute copies of the software, ")
-TOPIC_TEXT(
-"or if you modify it.&][s0;b83;2 For example, if you distribute copies of such a "
-"program, whether gratis or for a fee, you must give the recipients all the rights "
-"that you have.  You must make sure that they, too, receive or can get the source "
-"code.  And you must show them these terms so they know their rights.&][s0;b83;2 We "
-"protect your rights with two steps: (1) copyright the software, and (2) of")
-TOPIC_TEXT(
-"fer you this license which gives you legal permission to copy, distribute and/or "
-"modify the software.&][s0;b83;2 Also, for each author`'s protection and ours, we "
-"want to make certain that everyone understands that there is no warranty for this "
-"free software.  If the software is modified by someone else and passed on, we want "
-"its recipients to know that what they have is not the original, so that a")
-TOPIC_TEXT(
-"ny problems introduced by others will not reflect on the original authors`' reputations.&][s0;b83;2 "
-"Finally, any free program is threatened constantly by software patents.  We wish "
-"to avoid the danger that redistributors of a free program will individually obtain "
-"patent licenses, in effect making the program proprietary.  To prevent this, we have "
-"made it clear that any patent must be licensed for ")
-TOPIC_TEXT(
-"everyone`'s free use or not licensed at all.&][s0;b83;2 The precise terms and conditions "
-"for copying, distribution and modification follow.&][s0;=b83;*R5 GNU GENERAL PUBLIC "
-"LICENSE&][s0;=R TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION&][s0;i128;b83;O9;2 "
-"[*+150 0][3 .-|]This License applies to any program or other work which contains "
-"a notice placed by the copyright holder saying ")
-TOPIC_TEXT(
-"it may be distributed under the terms of this General Public License.  The `\"Program`\", "
-"below, refers to any such program or work, and a `\"work based on the Program`\" "
-"means either the Program or any derivative work under copyright law:&][s0;l128;b83;/2 "
-"that is to say, a work containing the Program or a portion of it, either verbatim "
-"or with modifications and/or translated into another language.  (")
-TOPIC_TEXT(
-"Hereinafter, translation is included without limitation in the term `\"modification`\".) "
-" Each licensee is addressed as `\"you`\".&][s0;l128;b83;2 Activities other than copying, "
-"distribution and modification are not covered by this License; they are outside its "
-"scope.  The act of running the Program is not restricted, and the output from the "
-"Program is covered only if its contents constitute a work ba")
-TOPIC_TEXT(
-"sed on the Program (independent of having been made by running the Program). Whether "
-"that is true depends on what the Program does.&][s0;i128;b83;O9;2 [*5 1][3 .-|]You "
-"may copy and distribute verbatim copies of the Program`'s source code as you receive "
-"it, in any medium, provided that you conspicuously and appropriately publish on each "
-"copy an appropriate copyright notice and disclaimer of warrant")
-TOPIC_TEXT(
-"y; keep intact all the notices that refer to this License and to the absence of "
-"any warranty; and give any other recipients of the Program a copy of this License "
-"along with the Program.&][s0;l128;b83;2 You may charge a fee for the physical act "
-"of transferring a copy, and you may at your option offer warranty protection in exchange "
-"for a fee.&][s0;i128;b83;O9;2 [*5 2][3 .-|]You may modify your copy")
-TOPIC_TEXT(
-" or copies of the Program or any portion of it, thus forming a work based on the "
-"Program, and copy and distribute such modifications or work under the terms of Section "
-"1 above, provided that you also meet all of these conditions:&][s0;l128;i150;b83;O9;2 "
-"a)-|You must cause the modified files to carry prominent notices stating that you "
-"changed the files and the date of any change.&][s0;l128;i150;b83")
-TOPIC_TEXT(
-";O9;2 b)-|You must cause any work that you distribute or publish, that in whole "
-"or in part contains or is derived from the Program or any part thereof, to be licensed "
-"as a whole at no charge to all third parties under the terms of this License.&][s0;l128;i150;b83;O9;2 "
-"c)-|If the modified program normally reads commands interactively when run, you must "
-"cause it, when started running for such intera")
-TOPIC_TEXT(
-"ctive use in the most ordinary way, to print or display an announcement including "
-"an appropriate copyright notice and a notice that there is no warranty (or else, "
-"saying that you provide a warranty) and that users may redistribute the program under "
-"these conditions, and telling the user how to view a copy of this License.  (Exception: "
-"if the Program itself is interactive but does not normally prin")
-TOPIC_TEXT(
-"t such an announcement, your work based on the Program is not required to print "
-"an announcement.)&][s0;l128;b83;2 These requirements apply to the modified work as "
-"a whole.  If identifiable sections of that work are not derived from the Program, "
-"and can be reasonably considered independent and separate works in themselves, then "
-"this License, and its terms, do not apply to those sections when you di")
-TOPIC_TEXT(
-"stribute them as separate works.  But when you distribute the same sections as part "
-"of a whole which is a work based on the Program, the distribution of the whole must "
-"be on the terms of this License, whose permissions for other licensees extend to "
-"the entire whole, and thus to each and every part regardless of who wrote it.&][s0;l128;b83;2 "
-"Thus, it is not the intent of this section to claim right")
-TOPIC_TEXT(
-"s or contest your rights to work written entirely by you; rather, the intent is "
-"to exercise the right to control the distribution of derivative or collective works "
-"based on the Program.&][s0;l128;b83;2 In addition, mere aggregation of another work "
-"not based on the Program with the Program (or with a work based on the Program) on "
-"a volume of a storage or distribution medium does not bring the other")
-TOPIC_TEXT(
-" work under the scope of this License.&][s0;i128;b83;O9;2 [*5 3][3 .-|]You may copy "
-"and distribute the Program (or a work based on it, under Section 2) in object code "
-"or executable form under the terms of Sections 1 and 2 above provided that you also "
-"do one of the following:&][s0;l128;i150;b83;O9;2 a)-|Accompany it with the complete "
-"corresponding machine`-readable source code, which must be distri")
-TOPIC_TEXT(
-"buted under the terms of Sections 1 and 2 above on a medium customarily used for "
-"software interchange; or,&][s0;l128;i150;b83;O9;2 b)-|Accompany it with a written "
-"offer, valid for at least three years, to give any third party, for a charge no more "
-"than your cost of physically performing source distribution, a complete machine`-readable "
-"copy of the corresponding source code, to be distributed under")
-TOPIC_TEXT(
-" the terms of Sections 1 and 2 above on a medium customarily used for software interchange; "
-"or,&][s0;l128;i150;b83;O9;2 c)-|Accompany it with the information you received as "
-"to the offer to distribute corresponding source code.  (This alternative is allowed "
-"only for noncommercial distribution and only if you received the program in object "
-"code or executable form with such an offer, in accord with ")
-TOPIC_TEXT(
-"Subsection b above.)&][s0;l128;b83;2 The source code for a work means the preferred "
-"form of the work for making modifications to it.  For an executable work, complete "
-"source code means all the source code for all modules it contains, plus any associated "
-"interface definition files, plus the scripts used to control compilation and installation "
-"of the executable.  However, as a special exception, the")
-TOPIC_TEXT(
-" source code distributed need not include anything that is normally distributed "
-"(in either source or binary form) with the major components (compiler, kernel, and "
-"so on) of the operating system on which the executable runs, unless that component "
-"itself accompanies the executable.&][s0;l128;b83;2 If distribution of executable "
-"or object code is made by offering access to copy from a designated place")
-TOPIC_TEXT(
-", then offering equivalent access to copy the source code from the same place counts "
-"as distribution of the source code, even though third parties are not compelled to "
-"copy the source along with the object code.&][s0;i128;b83;O9;2 [*5 4][3 .]-|You may "
-"not copy, modify, sublicense, or distribute the Program except as expressly provided "
-"under this License.  Any attempt otherwise to copy, modify, sub")
-TOPIC_TEXT(
-"license or distribute the Program is void, and will automatically terminate your "
-"rights under this License. However, parties who have received copies, or rights, "
-"from you under this License will not have their licenses terminated so long as such "
-"parties remain in full compliance.&][s0;i128;b83;O9;2 [*5 5][3 .-|]You are not required "
-"to accept this License, since you have not signed it.  However, no")
-TOPIC_TEXT(
-"thing else grants you permission to modify or distribute the Program or its derivative "
-"works.  These actions are prohibited by law if you do not accept this License.  Therefore, "
-"by modifying or distributing the Program (or any work based on the Program), you "
-"indicate your acceptance of this License to do so, and all its terms and conditions "
-"for copying, distributing or modifying the Program or wor")
-TOPIC_TEXT(
-"ks based on it.&][s0;i128;b83;O9;2 [*5 6].-|Each time you redistribute the Program "
-"(or any work based on the Program), the recipient automatically receives a license "
-"from the original licensor to copy, distribute or modify the Program subject to these "
-"terms and conditions.  You may not impose any further restrictions on the recipients`' "
-"exercise of the rights granted herein. You are not responsibl")
-TOPIC_TEXT(
-"e for enforcing compliance by third parties to this License.&][s0;i128;b83;O9;2 "
-"[*5 7].-|If, as a consequence of a court judgment or allegation of patent infringement "
-"or for any other reason (not limited to patent issues), conditions are imposed on "
-"you (whether by court order, agreement or otherwise) that contradict the conditions "
-"of this License, they do not excuse you from the conditions of this")
-TOPIC_TEXT(
-" License.  If you cannot distribute so as to satisfy simultaneously your obligations "
-"under this License and any other pertinent obligations, then as a consequence you "
-"may not distribute the Program at all.  For example, if a patent license would not "
-"permit royalty`-free redistribution of the Program by all those who receive copies "
-"directly or indirectly through you, then the only way you could sat")
-TOPIC_TEXT(
-"isfy both it and this License would be to refrain entirely from distribution of "
-"the Program.&][s0;l128;b83;2 If any portion of this section is held invalid or unenforceable "
-"under any particular circumstance, the balance of the section is intended to apply "
-"and the section as a whole is intended to apply in other circumstances.&][s0;l128;b83;2 "
-"It is not the purpose of this section to induce you to i")
-TOPIC_TEXT(
-"nfringe any patents or other property right claims or to contest validity of any "
-"such claims; this section has the sole purpose of protecting the integrity of the "
-"free software distribution system, which is implemented by public license practices. "
-" Many people have made generous contributions to the wide range of software distributed "
-"through that system in reliance on consistent application of tha")
-TOPIC_TEXT(
-"t system; it is up to the author/donor to decide if he or she is willing to distribute "
-"software through any other system and a licensee cannot impose that choice.&][s0;l128;b83;2 "
-"This section is intended to make thoroughly clear what is believed to be a consequence "
-"of the rest of this License.&][s0;i128;b83;O9;2 [*5 8].-|If the distribution and/or "
-"use of the Program is restricted in certain countr")
-TOPIC_TEXT(
-"ies either by patents or by copyrighted interfaces, the original copyright holder "
-"who places the Program under this License may add an explicit geographical distribution "
-"limitation excluding those countries, so that distribution is permitted only in or "
-"among countries not thus excluded.  In such case, this License incorporates the limitation "
-"as if written in the body of this License.&][s0;i128;b83")
-TOPIC_TEXT(
-";O9;2 [*5 9].-|The Free Software Foundation may publish revised and/or new versions "
-"of the General Public License from time to time.  Such new versions will be similar "
-"in spirit to the present version, but may differ in detail to address new problems "
-"or concerns.&][s0;l128;b83;2 Each version is given a distinguishing version number. "
-" If the Program specifies a version number of this License which ")
-TOPIC_TEXT(
-"applies to it and `\"any later version`\", you have the option of following the "
-"terms and conditions either of that version or of any later version published by "
-"the Free Software Foundation.  If the Program does not specify a version number of "
-"this License, you may choose any version ever published by the Free Software Foundation.&][s0;i160;b83;O9;2 "
-"[*5 10]. If you wish to incorporate parts of the P")
-TOPIC_TEXT(
-"rogram into other free programs whose distribution conditions are different, write "
-"to the author to ask for permission.  For software which is copyrighted by the Free "
-"Software Foundation, write to the Free Software Foundation; we sometimes make exceptions "
-"for this.  Our decision will be guided by the two goals of preserving the free status "
-"of all derivatives of our free software and of promoting t")
-TOPIC_TEXT(
-"he sharing and reuse of software generally.&][s0;i160;b83;O9; &][s0;=b83;*/R+150 "
-"NO WARRANTY&][s0;i256;b83;O9;c2 [*c5 11][c3 .][c  ]Because the program is licensed "
-"free of charge, there is no warranty for the program, to the extent permitted by "
-"applicable law._ Except when otherwise stated in writing the copyright holders and[c "
-"/]or other parties provide the program `\"[/ as is]`\" without warranty ")
-TOPIC_TEXT(
-"of any kind, either expressed or implied, including, but not limited to, the implied "
-"warranties of merchantability and fitness for a particular purpose._ The entire risk "
-"as to the quality and performance of the program is with you._ Should the program "
-"prove defective, you assume the cost of all necessary servicing, repair or correction.&][s0;i256;b83;O9;c2 "
-"[*c5 12][c .]-|In no event unless require")
-TOPIC_TEXT(
-"d by applicable law or agreed to in writing will any copyright holder, or any other "
-"party who may modify and[c /]or redistribute the program as permitted above, be liable "
-"to you for damages, including any general, special, incidental or consequential damages "
-"arising out of the use or inability to use the program [c (]including but not limited "
-"to loss of data or data being rendered inaccurate or lo")
-TOPIC_TEXT(
-"sses sustained by you or third parties or a failure of the program to operate with "
-"any other programs[c )], even if such holder or other party has been advised of the "
-"possibility of such damages.&][s0;b83; &][s0;=*R4 END OF TERMS AND CONDITIONS&][s0; "
-"&][s0; &][s0;*/ How to Apply These Terms to Your New Programs&][s0;2 &][s0;/1 If "
-"you develop a new program, and you want it to be of the greatest pos")
-TOPIC_TEXT(
-"sible use to the public, the best way to achieve this is to make it free software "
-"which everyone can redistribute and change under these terms.&][s0;/1 &][s0;/1 To "
-"do so, attach the following notices to the program.  It is safest to attach them "
-"to the start of each source file to most effectively convey the exclusion of warranty; "
-"and each file should have at least the `\"copyright`\" line and a poin")
-TOPIC_TEXT(
-"ter to where the full notice is found.&][s0;/2 &][s0;C1     <one line to give the "
-"program`'s name and a brief idea of what it does.>&][s0;C1     Copyright (C) <year> "
-" <name of author>&][s0;C1 &][s0;C1     This program is free software; you can redistribute "
-"it and/or modify&][s0;C1     it under the terms of the GNU General Public License "
-"as published by&][s0;C1     the Free Software Foundation; eit")
-TOPIC_TEXT(
-"her version 2 of the License, or&][s0;C1     (at your option) any later version.&][s0;C1 "
-"&][s0;C1     This program is distributed in the hope that it will be useful,&][s0;C1 "
-"    but WITHOUT ANY WARRANTY; without even the implied warranty of&][s0;C1     MERCHANTABILITY "
-"or FITNESS FOR A PARTICULAR PURPOSE.  See the&][s0;C1     GNU General Public License "
-"for more details.&][s0;C1 &][s0;C1     You sho")
-TOPIC_TEXT(
-"uld have received a copy of the GNU General Public License&][s0;C1     along with "
-"this program; if not, write to the Free Software&][s0;C1     Foundation, Inc., 59 "
-"Temple Place, Suite 330, Boston, MA  02111`-1307  USA&][s0;C1 &][s0;1 &][s0;/1 Also "
-"add information on how to contact you by electronic and paper mail.&][s0;/1 &][s0;/1 "
-"If the program is interactive, make it output a short notice like t")
-TOPIC_TEXT(
-"his when it starts in an interactive mode:&][s0;1 &][s0;C1     Gnomovision version "
-"69, Copyright (C) year  name of author&][s0;C1     Gnomovision comes with ABSOLUTELY "
-"NO WARRANTY; for details type ``show w`'.&][s0;C1     This is free software, and "
-"you are welcome to redistribute it&][s0;C1     under certain conditions; type ``show "
-"c`' for details.&][s0;C1 &][s0;/1 The hypothetical commands ``show")
-TOPIC_TEXT(
-" w`' and ``show c`' should show the appropriate parts of the General Public License. "
-" Of course, the commands you use may be called something other than ``show w`' and "
-"``show c`'; they could even be mouse`-clicks or menu items`-`-whatever suits your "
-"program.&][s0;/1 &][s0;/1 You should also get your employer (if you work as a programmer) "
-"or your school, if any, to sign a `\"copyright disclaimer`\" f")
-TOPIC_TEXT(
-"or the program, if necessary.  Here is a sample; alter the names:&][s0;1 &][s0;C1 "
-"  Yoyodyne, Inc., hereby disclaims all copyright interest in the program&][s0;C1 "
-"  ``Gnomovision`' (which makes passes at compilers) written by James Hacker.&][s0;C1 "
-"&][s0;C1   <signature of Ty Coon>, 1 April 1989&][s0;C1   Ty Coon, President of Vice&][s0;C1 "
-"&][s0;/1 This General Public License does not permit incorp")
-TOPIC_TEXT(
-"orating your program into proprietary programs.  If your program is a subroutine "
-"library, you may consider it more useful to permit linking proprietary applications "
-"with the library.  If this is what you want to do, use the GNU Library General Public "
-"License instead of this License.]}}]}}&][s0;/1 &][s0;+92 &][s0;+92 SDL library shipped "
-"with windows releases as .dll has LGPL license:&][ {{10000@(25")
-TOPIC_TEXT(
-"5.255.235) [s0;C2 GNU LIBRARY GENERAL PUBLIC LICENSE&][s0;C2 -|-|       Version "
-"2, June 1991&][s0;C2 &][s0;C2  Copyright (C) 1991 Free Software Foundation, Inc.&][s0;C2 "
-"    -|-|    59 Temple Place, Suite 330, Boston, MA  02111`-1307  USA&][s0;C2  Everyone "
-"is permitted to copy and distribute verbatim copies&][s0;C2  of this license document, "
-"but changing it is not allowed.&][s0;C2 &][s0;C2 `[This i")
-TOPIC_TEXT(
-"s the first released version of the library GPL.  It is&][s0;C2  numbered 2 because "
-"it goes with version 2 of the ordinary GPL.`]&][s0;C2 &][s0;C2 -|-|-|    Preamble&][s0;C2 "
-"&][s0;C2   The licenses for most software are designed to take away your&][s0;C2 "
-"freedom to share and change it.  By contrast, the GNU General Public&][s0;C2 Licenses "
-"are intended to guarantee your freedom to share and change&")
-TOPIC_TEXT(
-"][s0;C2 free software`-`-to make sure the software is free for all its users.&][s0;C2 "
-"&][s0;C2   This license, the Library General Public License, applies to some&][s0;C2 "
-"specially designated Free Software Foundation software, and to any&][s0;C2 other "
-"libraries whose authors decide to use it.  You can use it for&][s0;C2 your libraries, "
-"too.&][s0;C2 &][s0;C2   When we speak of free software, we are")
-TOPIC_TEXT(
-" referring to freedom, not&][s0;C2 price.  Our General Public Licenses are designed "
-"to make sure that you&][s0;C2 have the freedom to distribute copies of free software "
-"(and charge for&][s0;C2 this service if you wish), that you receive source code or "
-"can get it&][s0;C2 if you want it, that you can change the software or use pieces "
-"of it&][s0;C2 in new free programs; and that you know you can do t")
-TOPIC_TEXT(
-"hese things.&][s0;C2 &][s0;C2   To protect your rights, we need to make restrictions "
-"that forbid&][s0;C2 anyone to deny you these rights or to ask you to surrender the "
-"rights.&][s0;C2 These restrictions translate to certain responsibilities for you "
-"if&][s0;C2 you distribute copies of the library, or if you modify it.&][s0;C2 &][s0;C2 "
-"  For example, if you distribute copies of the library, whether ")
-TOPIC_TEXT(
-"gratis&][s0;C2 or for a fee, you must give the recipients all the rights that we "
-"gave&][s0;C2 you.  You must make sure that they, too, receive or can get the source&][s0;C2 "
-"code.  If you link a program with the library, you must provide&][s0;C2 complete "
-"object files to the recipients so that they can relink them&][s0;C2 with the library, "
-"after making changes to the library and recompiling&][s0;C2 ")
-TOPIC_TEXT(
-"it.  And you must show them these terms so they know their rights.&][s0;C2 &][s0;C2 "
-"  Our method of protecting your rights has two steps: (1) copyright&][s0;C2 the library, "
-"and (2) offer you this license which gives you legal&][s0;C2 permission to copy, "
-"distribute and/or modify the library.&][s0;C2 &][s0;C2   Also, for each distributor`'s "
-"protection, we want to make certain&][s0;C2 that everyone u")
-TOPIC_TEXT(
-"nderstands that there is no warranty for this free&][s0;C2 library.  If the library "
-"is modified by someone else and passed on, we&][s0;C2 want its recipients to know "
-"that what they have is not the original&][s0;C2 version, so that any problems introduced "
-"by others will not reflect on&][s0;C2 the original authors`' reputations.&][s0;C2 "
-"&][s0;C2   Finally, any free program is threatened constantly b")
-TOPIC_TEXT(
-"y software&][s0;C2 patents.  We wish to avoid the danger that companies distributing "
-"free&][s0;C2 software will individually obtain patent licenses, thus in effect&][s0;C2 "
-"transforming the program into proprietary software.  To prevent this,&][s0;C2 we "
-"have made it clear that any patent must be licensed for everyone`'s&][s0;C2 free "
-"use or not licensed at all.&][s0;C2 &][s0;C2   Most GNU software, ")
-TOPIC_TEXT(
-"including some libraries, is covered by the ordinary&][s0;C2 GNU General Public "
-"License, which was designed for utility programs.  This&][s0;C2 license, the GNU "
-"Library General Public License, applies to certain&][s0;C2 designated libraries. "
-" This license is quite different from the ordinary&][s0;C2 one; be sure to read it "
-"in full, and don`'t assume that anything in it is&][s0;C2 the same as in th")
-TOPIC_TEXT(
-"e ordinary license.&][s0;C2 &][s0;C2   The reason we have a separate public license "
-"for some libraries is that&][s0;C2 they blur the distinction we usually make between "
-"modifying or adding to a&][s0;C2 program and simply using it.  Linking a program "
-"with a library, without&][s0;C2 changing the library, is in some sense simply using "
-"the library, and is&][s0;C2 analogous to running a utility program")
-TOPIC_TEXT(
-" or application program.  However, in&][s0;C2 a textual and legal sense, the linked "
-"executable is a combined work, a&][s0;C2 derivative of the original library, and "
-"the ordinary General Public License&][s0;C2 treats it as such.&][s0;C2 &][s0;C2  "
-" Because of this blurred distinction, using the ordinary General&][s0;C2 Public License "
-"for libraries did not effectively promote software&][s0;C2 sharing")
-TOPIC_TEXT(
-", because most developers did not use the libraries.  We&][s0;C2 concluded that "
-"weaker conditions might promote sharing better.&][s0;C2 &][s0;C2   However, unrestricted "
-"linking of non`-free programs would deprive the&][s0;C2 users of those programs of "
-"all benefit from the free status of the&][s0;C2 libraries themselves.  This Library "
-"General Public License is intended to&][s0;C2 permit developers ")
-TOPIC_TEXT(
-"of non`-free programs to use free libraries, while&][s0;C2 preserving your freedom "
-"as a user of such programs to change the free&][s0;C2 libraries that are incorporated "
-"in them.  (We have not seen how to achieve&][s0;C2 this as regards changes in header "
-"files, but we have achieved it as regards&][s0;C2 changes in the actual functions "
-"of the Library.)  The hope is that this&][s0;C2 will lead to fas")
-TOPIC_TEXT(
-"ter development of free libraries.&][s0;C2 &][s0;C2   The precise terms and conditions "
-"for copying, distribution and&][s0;C2 modification follow.  Pay close attention to "
-"the difference between a&][s0;C2 `\"work based on the library`\" and a `\"work that "
-"uses the library`\".  The&][s0;C2 former contains code derived from the library, "
-"while the latter only&][s0;C2 works together with the library.&][s0;C")
-TOPIC_TEXT(
-"2 &][s0;C2   Note that it is possible for a library to be covered by the ordinary&][s0;C2 "
-"General Public License rather than by this special one.&][s0;C2 &][s0;C2 -|-|  GNU "
-"LIBRARY GENERAL PUBLIC LICENSE&][s0;C2    TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION "
-"AND MODIFICATION&][s0;C2 &][s0;C2   0. This License Agreement applies to any software "
-"library which&][s0;C2 contains a notice placed by th")
-TOPIC_TEXT(
-"e copyright holder or other authorized&][s0;C2 party saying it may be distributed "
-"under the terms of this Library&][s0;C2 General Public License (also called `\"this "
-"License`\").  Each licensee is&][s0;C2 addressed as `\"you`\".&][s0;C2 &][s0;C2  "
-" A `\"library`\" means a collection of software functions and/or data&][s0;C2 prepared "
-"so as to be conveniently linked with application programs&][s0;C2 (which")
-TOPIC_TEXT(
-" use some of those functions and data) to form executables.&][s0;C2 &][s0;C2   The "
-"`\"Library`\", below, refers to any such software library or work&][s0;C2 which has "
-"been distributed under these terms.  A `\"work based on the&][s0;C2 Library`\" means "
-"either the Library or any derivative work under&][s0;C2 copyright law: that is to "
-"say, a work containing the Library or a&][s0;C2 portion of it, either ")
-TOPIC_TEXT(
-"verbatim or with modifications and/or translated&][s0;C2 straightforwardly into "
-"another language.  (Hereinafter, translation is&][s0;C2 included without limitation "
-"in the term `\"modification`\".)&][s0;C2 &][s0;C2   `\"Source code`\" for a work "
-"means the preferred form of the work for&][s0;C2 making modifications to it.  For "
-"a library, complete source code means&][s0;C2 all the source code for all mod")
-TOPIC_TEXT(
-"ules it contains, plus any associated&][s0;C2 interface definition files, plus the "
-"scripts used to control compilation&][s0;C2 and installation of the library.&][s0;C2 "
-"&][s0;C2   Activities other than copying, distribution and modification are not&][s0;C2 "
-"covered by this License; they are outside its scope.  The act of&][s0;C2 running "
-"a program using the Library is not restricted, and output from&")
-TOPIC_TEXT(
-"][s0;C2 such a program is covered only if its contents constitute a work based&][s0;C2 "
-"on the Library (independent of the use of the Library in a tool for&][s0;C2 writing "
-"it).  Whether that is true depends on what the Library does&][s0;C2 and what the "
-"program that uses the Library does.&][s0;C2   &][s0;C2   1. You may copy and distribute "
-"verbatim copies of the Library`'s&][s0;C2 complete source co")
-TOPIC_TEXT(
-"de as you receive it, in any medium, provided that&][s0;C2 you conspicuously and "
-"appropriately publish on each copy an&][s0;C2 appropriate copyright notice and disclaimer "
-"of warranty; keep intact&][s0;C2 all the notices that refer to this License and to "
-"the absence of any&][s0;C2 warranty; and distribute a copy of this License along "
-"with the&][s0;C2 Library.&][s0;C2 &][s0;C2   You may charge a fee")
-TOPIC_TEXT(
-" for the physical act of transferring a copy,&][s0;C2 and you may at your option "
-"offer warranty protection in exchange for a&][s0;C2 fee.&][s0;C2 &][s0;C2   2. You "
-"may modify your copy or copies of the Library or any portion&][s0;C2 of it, thus "
-"forming a work based on the Library, and copy and&][s0;C2 distribute such modifications "
-"or work under the terms of Section 1&][s0;C2 above, provided that y")
-TOPIC_TEXT(
-"ou also meet all of these conditions:&][s0;C2 &][s0;C2     a) The modified work "
-"must itself be a software library.&][s0;C2 &][s0;C2     b) You must cause the files "
-"modified to carry prominent notices&][s0;C2     stating that you changed the files "
-"and the date of any change.&][s0;C2 &][s0;C2     c) You must cause the whole of the "
-"work to be licensed at no&][s0;C2     charge to all third parties und")
-TOPIC_TEXT(
-"er the terms of this License.&][s0;C2 &][s0;C2     d) If a facility in the modified "
-"Library refers to a function or a&][s0;C2     table of data to be supplied by an "
-"application program that uses&][s0;C2     the facility, other than as an argument "
-"passed when the facility&][s0;C2     is invoked, then you must make a good faith "
-"effort to ensure that,&][s0;C2     in the event an application does not ")
-TOPIC_TEXT(
-"supply such function or&][s0;C2     table, the facility still operates, and performs "
-"whatever part of&][s0;C2     its purpose remains meaningful.&][s0;C2 &][s0;C2    "
-" (For example, a function in a library to compute square roots has&][s0;C2     a "
-"purpose that is entirely well`-defined independent of the&][s0;C2     application. "
-" Therefore, Subsection 2d requires that any&][s0;C2     application`-s")
-TOPIC_TEXT(
-"upplied function or table used by this function must&][s0;C2     be optional: if "
-"the application does not supply it, the square&][s0;C2     root function must still "
-"compute square roots.)&][s0;C2 &][s0;C2 These requirements apply to the modified "
-"work as a whole.  If&][s0;C2 identifiable sections of that work are not derived from "
-"the Library,&][s0;C2 and can be reasonably considered independent and")
-TOPIC_TEXT(
-" separate works in&][s0;C2 themselves, then this License, and its terms, do not "
-"apply to those&][s0;C2 sections when you distribute them as separate works.  But "
-"when you&][s0;C2 distribute the same sections as part of a whole which is a work "
-"based&][s0;C2 on the Library, the distribution of the whole must be on the terms "
-"of&][s0;C2 this License, whose permissions for other licensees extend to the&")
-TOPIC_TEXT(
-"][s0;C2 entire whole, and thus to each and every part regardless of who wrote&][s0;C2 "
-"it.&][s0;C2 &][s0;C2 Thus, it is not the intent of this section to claim rights or "
-"contest&][s0;C2 your rights to work written entirely by you; rather, the intent is "
-"to&][s0;C2 exercise the right to control the distribution of derivative or&][s0;C2 "
-"collective works based on the Library.&][s0;C2 &][s0;C2 In additi")
-TOPIC_TEXT(
-"on, mere aggregation of another work not based on the Library&][s0;C2 with the Library "
-"(or with a work based on the Library) on a volume of&][s0;C2 a storage or distribution "
-"medium does not bring the other work under&][s0;C2 the scope of this License.&][s0;C2 "
-"&][s0;C2   3. You may opt to apply the terms of the ordinary GNU General Public&][s0;C2 "
-"License instead of this License to a given copy of t")
-TOPIC_TEXT(
-"he Library.  To do&][s0;C2 this, you must alter all the notices that refer to this "
-"License, so&][s0;C2 that they refer to the ordinary GNU General Public License, version "
-"2,&][s0;C2 instead of to this License.  (If a newer version than version 2 of the&][s0;C2 "
-"ordinary GNU General Public License has appeared, then you can specify&][s0;C2 that "
-"version instead if you wish.)  Do not make any other ch")
-TOPIC_TEXT(
-"ange in&][s0;C2 these notices.&][s0;C2 &][s0;C2   Once this change is made in a "
-"given copy, it is irreversible for&][s0;C2 that copy, so the ordinary GNU General "
-"Public License applies to all&][s0;C2 subsequent copies and derivative works made "
-"from that copy.&][s0;C2 &][s0;C2   This option is useful when you wish to copy part "
-"of the code of&][s0;C2 the Library into a program that is not a library.")
-TOPIC_TEXT(
-"&][s0;C2 &][s0;C2   4. You may copy and distribute the Library (or a portion or&][s0;C2 "
-"derivative of it, under Section 2) in object code or executable form&][s0;C2 under "
-"the terms of Sections 1 and 2 above provided that you accompany&][s0;C2 it with the "
-"complete corresponding machine`-readable source code, which&][s0;C2 must be distributed "
-"under the terms of Sections 1 and 2 above on a&][s0;C2 me")
-TOPIC_TEXT(
-"dium customarily used for software interchange.&][s0;C2 &][s0;C2   If distribution "
-"of object code is made by offering access to copy&][s0;C2 from a designated place, "
-"then offering equivalent access to copy the&][s0;C2 source code from the same place "
-"satisfies the requirement to&][s0;C2 distribute the source code, even though third "
-"parties are not&][s0;C2 compelled to copy the source along with the")
-TOPIC_TEXT(
-" object code.&][s0;C2 &][s0;C2   5. A program that contains no derivative of any "
-"portion of the&][s0;C2 Library, but is designed to work with the Library by being "
-"compiled or&][s0;C2 linked with it, is called a `\"work that uses the Library`\". "
-" Such a&][s0;C2 work, in isolation, is not a derivative work of the Library, and&][s0;C2 "
-"therefore falls outside the scope of this License.&][s0;C2 &][s0;C2 ")
-TOPIC_TEXT(
-"  However, linking a `\"work that uses the Library`\" with the Library&][s0;C2 creates "
-"an executable that is a derivative of the Library (because it&][s0;C2 contains portions "
-"of the Library), rather than a `\"work that uses the&][s0;C2 library`\".  The executable "
-"is therefore covered by this License.&][s0;C2 Section 6 states terms for distribution "
-"of such executables.&][s0;C2 &][s0;C2   When a `\"work ")
-TOPIC_TEXT(
-"that uses the Library`\" uses material from a header file&][s0;C2 that is part of "
-"the Library, the object code for the work may be a&][s0;C2 derivative work of the "
-"Library even though the source code is not.&][s0;C2 Whether this is true is especially "
-"significant if the work can be&][s0;C2 linked without the Library, or if the work "
-"is itself a library.  The&][s0;C2 threshold for this to be true is n")
-TOPIC_TEXT(
-"ot precisely defined by law.&][s0;C2 &][s0;C2   If such an object file uses only "
-"numerical parameters, data&][s0;C2 structure layouts and accessors, and small macros "
-"and small inline&][s0;C2 functions (ten lines or less in length), then the use of "
-"the object&][s0;C2 file is unrestricted, regardless of whether it is legally a derivative&][s0;C2 "
-"work.  (Executables containing this object code plus p")
-TOPIC_TEXT(
-"ortions of the&][s0;C2 Library will still fall under Section 6.)&][s0;C2 &][s0;C2 "
-"  Otherwise, if the work is a derivative of the Library, you may&][s0;C2 distribute "
-"the object code for the work under the terms of Section 6.&][s0;C2 Any executables "
-"containing that work also fall under Section 6,&][s0;C2 whether or not they are linked "
-"directly with the Library itself.&][s0;C2 &][s0;C2   6. As an ex")
-TOPIC_TEXT(
-"ception to the Sections above, you may also compile or&][s0;C2 link a `\"work that "
-"uses the Library`\" with the Library to produce a&][s0;C2 work containing portions "
-"of the Library, and distribute that work&][s0;C2 under terms of your choice, provided "
-"that the terms permit&][s0;C2 modification of the work for the customer`'s own use "
-"and reverse&][s0;C2 engineering for debugging such modifications.&]")
-TOPIC_TEXT(
-"[s0;C2 &][s0;C2   You must give prominent notice with each copy of the work that "
-"the&][s0;C2 Library is used in it and that the Library and its use are covered by&][s0;C2 "
-"this License.  You must supply a copy of this License.  If the work&][s0;C2 during "
-"execution displays copyright notices, you must include the&][s0;C2 copyright notice "
-"for the Library among them, as well as a reference&][s0;C2 dir")
-TOPIC_TEXT(
-"ecting the user to the copy of this License.  Also, you must do one&][s0;C2 of these "
-"things:&][s0;C2 &][s0;C2     a) Accompany the work with the complete corresponding&][s0;C2 "
-"    machine`-readable source code for the Library including whatever&][s0;C2     "
-"changes were used in the work (which must be distributed under&][s0;C2     Sections "
-"1 and 2 above); and, if the work is an executable linked&][")
-TOPIC_TEXT(
-"s0;C2     with the Library, with the complete machine`-readable `\"work that&][s0;C2 "
-"    uses the Library`\", as object code and/or source code, so that the&][s0;C2  "
-"   user can modify the Library and then relink to produce a modified&][s0;C2     "
-"executable containing the modified Library.  (It is understood&][s0;C2     that the "
-"user who changes the contents of definitions files in the&][s0;C2     L")
-TOPIC_TEXT(
-"ibrary will not necessarily be able to recompile the application&][s0;C2     to "
-"use the modified definitions.)&][s0;C2 &][s0;C2     b) Accompany the work with a "
-"written offer, valid for at&][s0;C2     least three years, to give the same user "
-"the materials&][s0;C2     specified in Subsection 6a, above, for a charge no more&][s0;C2 "
-"    than the cost of performing this distribution.&][s0;C2 &][s0;C2 ")
-TOPIC_TEXT(
-"    c) If distribution of the work is made by offering access to copy&][s0;C2   "
-"  from a designated place, offer equivalent access to copy the above&][s0;C2     "
-"specified materials from the same place.&][s0;C2 &][s0;C2     d) Verify that the "
-"user has already received a copy of these&][s0;C2     materials or that you have "
-"already sent this user a copy.&][s0;C2 &][s0;C2   For an executable, the requ")
-TOPIC_TEXT(
-"ired form of the `\"work that uses the&][s0;C2 Library`\" must include any data "
-"and utility programs needed for&][s0;C2 reproducing the executable from it.  However, "
-"as a special exception,&][s0;C2 the source code distributed need not include anything "
-"that is normally&][s0;C2 distributed (in either source or binary form) with the major&][s0;C2 "
-"components (compiler, kernel, and so on) of the operatin")
-TOPIC_TEXT(
-"g system on&][s0;C2 which the executable runs, unless that component itself accompanies&][s0;C2 "
-"the executable.&][s0;C2 &][s0;C2   It may happen that this requirement contradicts "
-"the license&][s0;C2 restrictions of other proprietary libraries that do not normally&][s0;C2 "
-"accompany the operating system.  Such a contradiction means you cannot&][s0;C2 use "
-"both them and the Library together in an exec")
-TOPIC_TEXT(
-"utable that you&][s0;C2 distribute.&][s0;C2 &][s0;C2   7. You may place library "
-"facilities that are a work based on the&][s0;C2 Library side`-by`-side in a single "
-"library together with other library&][s0;C2 facilities not covered by this License, "
-"and distribute such a combined&][s0;C2 library, provided that the separate distribution "
-"of the work based on&][s0;C2 the Library and of the other library")
-TOPIC_TEXT(
-" facilities is otherwise&][s0;C2 permitted, and provided that you do these two things:&][s0;C2 "
-"&][s0;C2     a) Accompany the combined library with a copy of the same work&][s0;C2 "
-"    based on the Library, uncombined with any other library&][s0;C2     facilities. "
-" This must be distributed under the terms of the&][s0;C2     Sections above.&][s0;C2 "
-"&][s0;C2     b) Give prominent notice with the combi")
-TOPIC_TEXT(
-"ned library of the fact&][s0;C2     that part of it is a work based on the Library, "
-"and explaining&][s0;C2     where to find the accompanying uncombined form of the "
-"same work.&][s0;C2 &][s0;C2   8. You may not copy, modify, sublicense, link with, "
-"or distribute&][s0;C2 the Library except as expressly provided under this License. "
-" Any&][s0;C2 attempt otherwise to copy, modify, sublicense, link with,")
-TOPIC_TEXT(
-" or&][s0;C2 distribute the Library is void, and will automatically terminate your&][s0;C2 "
-"rights under this License.  However, parties who have received copies,&][s0;C2 or "
-"rights, from you under this License will not have their licenses&][s0;C2 terminated "
-"so long as such parties remain in full compliance.&][s0;C2 &][s0;C2   9. You are "
-"not required to accept this License, since you have not&][s0;C2")
-TOPIC_TEXT(
-" signed it.  However, nothing else grants you permission to modify or&][s0;C2 distribute "
-"the Library or its derivative works.  These actions are&][s0;C2 prohibited by law "
-"if you do not accept this License.  Therefore, by&][s0;C2 modifying or distributing "
-"the Library (or any work based on the&][s0;C2 Library), you indicate your acceptance "
-"of this License to do so, and&][s0;C2 all its terms and cond")
-TOPIC_TEXT(
-"itions for copying, distributing or modifying&][s0;C2 the Library or works based "
-"on it.&][s0;C2 &][s0;C2   10. Each time you redistribute the Library (or any work "
-"based on the&][s0;C2 Library), the recipient automatically receives a license from "
-"the&][s0;C2 original licensor to copy, distribute, link with or modify the Library&][s0;C2 "
-"subject to these terms and conditions.  You may not impose any ")
-TOPIC_TEXT(
-"further&][s0;C2 restrictions on the recipients`' exercise of the rights granted "
-"herein.&][s0;C2 You are not responsible for enforcing compliance by third parties "
-"to&][s0;C2 this License.&][s0;C2 &][s0;C2   11. If, as a consequence of a court judgment "
-"or allegation of patent&][s0;C2 infringement or for any other reason (not limited "
-"to patent issues),&][s0;C2 conditions are imposed on you (whether b")
-TOPIC_TEXT(
-"y court order, agreement or&][s0;C2 otherwise) that contradict the conditions of "
-"this License, they do not&][s0;C2 excuse you from the conditions of this License. "
-" If you cannot&][s0;C2 distribute so as to satisfy simultaneously your obligations "
-"under this&][s0;C2 License and any other pertinent obligations, then as a consequence "
-"you&][s0;C2 may not distribute the Library at all.  For example, if ")
-TOPIC_TEXT(
-"a patent&][s0;C2 license would not permit royalty`-free redistribution of the Library "
-"by&][s0;C2 all those who receive copies directly or indirectly through you, then&][s0;C2 "
-"the only way you could satisfy both it and this License would be to&][s0;C2 refrain "
-"entirely from distribution of the Library.&][s0;C2 &][s0;C2 If any portion of this "
-"section is held invalid or unenforceable under any&][s0;C2")
-TOPIC_TEXT(
-" particular circumstance, the balance of the section is intended to apply,&][s0;C2 "
-"and the section as a whole is intended to apply in other circumstances.&][s0;C2 &][s0;C2 "
-"It is not the purpose of this section to induce you to infringe any&][s0;C2 patents "
-"or other property right claims or to contest validity of any&][s0;C2 such claims; "
-"this section has the sole purpose of protecting the&][s0;C2 in")
-TOPIC_TEXT(
-"tegrity of the free software distribution system which is&][s0;C2 implemented by "
-"public license practices.  Many people have made&][s0;C2 generous contributions to "
-"the wide range of software distributed&][s0;C2 through that system in reliance on "
-"consistent application of that&][s0;C2 system; it is up to the author/donor to decide "
-"if he or she is willing&][s0;C2 to distribute software through any o")
-TOPIC_TEXT(
-"ther system and a licensee cannot&][s0;C2 impose that choice.&][s0;C2 &][s0;C2 This "
-"section is intended to make thoroughly clear what is believed to&][s0;C2 be a consequence "
-"of the rest of this License.&][s0;C2 &][s0;C2   12. If the distribution and/or use "
-"of the Library is restricted in&][s0;C2 certain countries either by patents or by "
-"copyrighted interfaces, the&][s0;C2 original copyright holder")
-TOPIC_TEXT(
-" who places the Library under this License may add&][s0;C2 an explicit geographical "
-"distribution limitation excluding those countries,&][s0;C2 so that distribution is "
-"permitted only in or among countries not thus&][s0;C2 excluded.  In such case, this "
-"License incorporates the limitation as if&][s0;C2 written in the body of this License.&][s0;C2 "
-"&][s0;C2   13. The Free Software Foundation may publis")
-TOPIC_TEXT(
-"h revised and/or new&][s0;C2 versions of the Library General Public License from "
-"time to time.&][s0;C2 Such new versions will be similar in spirit to the present "
-"version,&][s0;C2 but may differ in detail to address new problems or concerns.&][s0;C2 "
-"&][s0;C2 Each version is given a distinguishing version number.  If the Library&][s0;C2 "
-"specifies a version number of this License which applies to it ")
-TOPIC_TEXT(
-"and&][s0;C2 `\"any later version`\", you have the option of following the terms "
-"and&][s0;C2 conditions either of that version or of any later version published by&][s0;C2 "
-"the Free Software Foundation.  If the Library does not specify a&][s0;C2 license "
-"version number, you may choose any version ever published by&][s0;C2 the Free Software "
-"Foundation.&][s0;C2 &][s0;C2   14. If you wish to incorporate p")
-TOPIC_TEXT(
-"arts of the Library into other free&][s0;C2 programs whose distribution conditions "
-"are incompatible with these,&][s0;C2 write to the author to ask for permission.  "
-"For software which is&][s0;C2 copyrighted by the Free Software Foundation, write "
-"to the Free&][s0;C2 Software Foundation; we sometimes make exceptions for this.  "
-"Our&][s0;C2 decision will be guided by the two goals of preserving the fre")
-TOPIC_TEXT(
-"e status&][s0;C2 of all derivatives of our free software and of promoting the sharing&][s0;C2 "
-"and reuse of software generally.&][s0;C2 &][s0;C2 -|-|-|    NO WARRANTY&][s0;C2 &][s0;C2 "
-"  15. BECAUSE THE LIBRARY IS LICENSED FREE OF CHARGE, THERE IS NO&][s0;C2 WARRANTY "
-"FOR THE LIBRARY, TO THE EXTENT PERMITTED BY APPLICABLE LAW.&][s0;C2 EXCEPT WHEN OTHERWISE "
-"STATED IN WRITING THE COPYRIGHT HOLDERS AND/")
-TOPIC_TEXT(
-"OR&][s0;C2 OTHER PARTIES PROVIDE THE LIBRARY `\"AS IS`\" WITHOUT WARRANTY OF ANY&][s0;C2 "
-"KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE&][s0;C2 IMPLIED "
-"WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR&][s0;C2 PURPOSE.  THE "
-"ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE&][s0;C2 LIBRARY IS WITH YOU. "
-" SHOULD THE LIBRARY PROVE DEFECTIVE, YOU ASSUME&][s0;C2 THE COST")
-TOPIC_TEXT(
-" OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.&][s0;C2 &][s0;C2   16. IN NO "
-"EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN&][s0;C2 WRITING WILL ANY "
-"COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY&][s0;C2 AND/OR REDISTRIBUTE THE "
-"LIBRARY AS PERMITTED ABOVE, BE LIABLE TO YOU&][s0;C2 FOR DAMAGES, INCLUDING ANY GENERAL, "
-"SPECIAL, INCIDENTAL OR&][s0;C2 CONSEQUENTIAL DAMAGES ARISING OUT O")
-TOPIC_TEXT(
-"F THE USE OR INABILITY TO USE THE&][s0;C2 LIBRARY (INCLUDING BUT NOT LIMITED TO "
-"LOSS OF DATA OR DATA BEING&][s0;C2 RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU "
-"OR THIRD PARTIES OR A&][s0;C2 FAILURE OF THE LIBRARY TO OPERATE WITH ANY OTHER SOFTWARE), "
-"EVEN IF&][s0;C2 SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF "
-"SUCH&][s0;C2 DAMAGES.&][s0;C2 &][s0;C2 -|-|     END OF TERMS AND C")
-TOPIC_TEXT(
-"ONDITIONS&][s0;+92 ]}}&][s0; ]")
+COMPRESSED
+120,156,205,125,219,118,27,71,146,224,175,228,209,206,140,73,
+27,132,68,202,146,45,169,187,79,131,36,68,193,166,0,54,
+0,74,173,209,97,11,5,32,65,148,89,168,130,235,66,26,
+238,238,143,153,199,125,216,167,249,131,233,179,255,181,113,201,
+107,93,120,17,248,176,58,221,38,9,84,69,102,70,198,61,
+34,35,63,139,127,251,183,103,173,103,255,235,217,29,255,94,
+31,203,69,80,68,249,197,231,191,127,249,231,191,119,251,123,
+231,35,241,57,123,246,230,219,239,246,247,127,16,255,113,97,
+127,63,74,214,155,52,188,92,230,226,127,254,183,216,127,245,
+234,213,100,239,224,217,179,151,226,60,202,195,85,144,203,201,
+119,147,239,68,46,131,21,191,20,190,252,254,217,155,193,43,
+245,242,231,111,159,139,78,145,47,147,52,123,125,241,249,91,
+177,247,143,139,247,97,42,175,190,188,253,215,255,153,71,50,
+109,193,103,226,98,156,172,254,245,95,255,247,191,190,12,55,
+145,188,106,2,115,148,196,121,26,78,139,220,129,117,28,196,
+161,140,190,252,156,100,45,49,10,226,121,146,126,121,151,252,
+146,103,155,150,248,207,44,137,242,47,199,114,154,202,150,56,
+41,194,121,242,101,52,91,134,171,149,140,224,225,78,113,89,
+100,121,242,101,152,172,130,24,254,76,195,95,138,76,28,202,
+52,78,242,0,190,127,31,206,150,1,64,238,68,83,153,230,
+2,62,8,210,89,145,125,121,31,20,203,32,205,91,226,167,
+32,254,242,49,140,224,109,120,250,36,13,228,74,126,57,75,
+101,156,135,51,24,239,67,56,131,105,126,1,120,179,165,132,
+167,123,215,225,44,248,114,86,68,191,132,51,132,149,47,195,
+32,203,190,140,138,120,14,131,199,243,84,222,136,195,32,13,
+163,40,80,99,71,240,67,166,191,203,95,228,77,118,21,182,
+196,113,176,10,101,44,206,146,244,215,66,230,77,56,26,167,
+48,159,40,32,20,33,170,131,34,77,190,28,38,121,30,254,
+254,123,130,144,175,162,127,253,55,140,155,172,146,203,77,136,
+235,142,100,172,22,89,158,229,16,167,145,206,191,156,192,172,
+90,226,35,160,70,166,240,35,254,93,70,77,195,159,13,197,
+228,63,196,168,59,192,193,207,130,107,64,224,40,79,131,60,
+108,124,227,156,168,231,52,185,76,244,150,14,19,156,204,151,
+15,105,34,87,97,150,73,126,243,187,253,103,63,34,85,138,
+191,255,253,57,252,123,253,242,229,203,31,136,94,171,100,40,
+228,42,8,163,139,215,175,233,251,191,225,31,121,50,121,93,
+172,215,147,63,199,121,20,133,211,73,59,73,47,255,38,156,
+79,240,3,253,134,15,113,153,172,164,88,7,151,210,0,92,
+230,249,122,242,122,242,116,242,20,1,180,179,197,164,29,203,
+156,192,181,179,164,72,103,114,1,208,36,126,88,15,18,190,
+46,86,53,224,110,110,110,38,109,36,2,57,203,39,237,89,
+178,226,17,158,210,243,127,19,248,224,235,167,248,148,126,8,
+159,193,71,158,122,16,253,193,112,249,97,124,41,162,48,203,
+107,198,196,143,179,137,59,111,90,141,254,130,126,132,241,34,
+225,169,236,1,180,248,111,4,43,43,175,149,223,48,47,216,
+231,235,231,5,180,21,195,96,123,81,242,8,115,115,128,221,
+115,118,206,27,23,255,252,167,79,99,53,191,250,36,17,128,
+164,24,29,195,64,51,25,103,242,53,147,229,62,74,213,63,
+239,28,188,248,190,125,240,226,69,251,224,249,193,46,45,232,
+192,17,160,59,71,187,2,100,231,11,65,50,80,188,13,73,
+4,10,16,127,0,146,132,159,0,33,38,174,97,127,19,16,
+71,51,71,226,137,157,76,74,209,57,31,191,27,12,71,187,
+60,181,3,161,127,158,201,20,153,37,76,98,17,102,98,41,
+83,57,221,136,75,16,6,185,4,1,179,72,225,213,100,129,
+56,7,116,180,68,158,192,48,27,177,150,105,6,47,36,211,
+28,118,9,105,36,128,17,215,27,124,18,228,83,38,178,100,
+145,223,4,169,164,57,129,184,74,102,33,160,96,46,230,201,
+172,88,129,164,3,190,134,215,23,64,138,48,187,124,41,197,
+228,201,72,189,50,121,178,75,195,204,37,8,178,48,22,248,
+173,254,78,220,132,160,15,138,92,164,50,131,229,205,16,74,
+11,30,154,69,197,28,103,161,191,142,194,85,168,198,192,215,
+9,131,25,2,45,50,88,3,206,180,37,86,201,60,92,224,
+79,73,11,91,23,83,216,225,101,75,204,195,140,49,7,31,
+102,248,33,237,84,11,87,242,52,73,69,38,163,8,33,132,
+48,115,90,173,157,29,61,131,163,172,17,165,185,66,18,141,
+123,3,178,192,95,9,32,105,81,164,49,12,41,233,157,121,
+2,72,163,17,127,1,246,196,79,240,241,69,18,69,201,13,
+46,13,54,116,30,226,138,178,215,229,29,28,195,131,193,52,
+185,150,180,50,38,23,208,69,48,113,158,16,110,200,218,238,
+178,250,42,3,69,17,137,169,84,232,131,89,0,178,131,198,
+197,17,168,16,176,120,84,26,35,107,139,30,188,56,231,217,
+49,30,103,209,198,108,53,0,14,102,87,113,114,19,201,249,
+37,126,32,86,160,62,113,224,203,240,90,226,6,5,121,137,
+104,144,75,166,18,190,131,237,130,65,23,48,146,96,166,132,
+201,205,101,149,202,224,247,85,0,95,4,215,32,178,130,105,
+36,205,52,218,128,29,248,86,173,49,211,40,243,103,132,223,
+11,9,180,3,90,170,178,60,212,185,113,17,160,230,63,35,
+160,97,190,33,100,128,90,191,146,57,238,141,94,42,32,45,
+37,246,240,201,124,157,38,215,33,34,24,201,147,217,39,77,
+230,5,236,50,114,169,98,32,111,65,106,214,167,76,123,0,
+14,246,3,166,35,130,245,26,48,171,120,208,172,158,48,8,
+146,250,42,211,100,3,106,41,5,65,0,111,153,177,129,169,
+125,156,237,100,56,189,25,236,248,6,167,61,223,196,96,38,
+208,159,192,127,64,254,34,137,105,44,141,50,132,107,94,214,
+96,219,62,45,126,11,196,248,174,43,70,131,183,227,143,157,
+97,87,244,70,160,215,7,31,122,199,221,99,224,240,206,8,
+62,152,60,1,131,160,7,162,232,124,44,224,153,97,167,63,
+254,36,6,111,69,167,255,73,252,220,235,31,183,68,247,175,
+103,195,238,104,36,6,67,209,123,127,118,218,235,194,103,189,
+254,209,233,249,113,175,127,34,14,225,189,254,96,44,78,123,
+239,123,99,0,59,30,208,144,10,84,175,59,66,96,239,187,
+195,163,119,240,103,231,176,119,218,27,127,106,137,183,189,113,
+31,97,190,5,160,29,113,214,25,142,123,71,231,167,157,161,
+56,59,31,158,13,70,93,24,254,24,192,246,123,253,183,67,
+24,165,251,190,219,31,3,93,247,225,51,209,253,0,127,136,
+209,187,206,233,41,13,165,4,169,56,236,194,36,58,135,167,
+93,134,10,243,63,58,237,244,222,131,189,213,121,223,57,233,
+210,2,6,240,194,144,30,83,19,249,248,174,75,31,1,232,
+14,252,239,104,220,27,244,113,198,71,131,254,120,8,127,130,
+68,31,12,199,230,213,143,189,81,23,76,173,97,111,132,107,
+127,59,28,0,120,196,28,188,49,32,32,240,94,191,203,80,
+16,171,62,250,225,17,252,251,124,212,181,115,57,238,118,78,
+1,214,8,95,118,31,110,215,234,178,87,7,206,111,158,38,
+211,28,165,24,147,228,133,149,86,134,0,149,134,59,216,127,
+249,227,235,31,126,124,126,176,220,127,3,138,238,217,247,172,
+224,190,251,225,5,16,57,62,186,209,74,28,63,82,86,63,
+124,244,183,63,31,152,79,127,7,160,240,209,31,205,7,63,
+201,32,70,53,92,172,197,9,240,125,100,217,82,116,80,59,
+226,251,230,225,222,79,39,226,167,179,238,137,154,218,198,131,
+4,90,84,156,6,49,72,240,179,37,216,60,0,47,10,230,
+96,227,227,39,63,133,43,113,152,20,96,140,131,186,61,5,
+109,120,148,38,179,43,252,227,167,34,10,131,24,20,114,124,
+89,192,240,168,138,78,11,96,177,65,10,54,51,88,246,18,
+45,8,130,8,32,51,180,195,145,103,196,48,1,57,172,252,
+10,241,1,80,54,149,168,188,240,133,201,55,96,37,135,191,
+128,222,96,93,146,144,72,90,201,21,216,181,70,34,247,226,
+185,92,75,248,15,136,82,90,209,73,10,40,240,22,59,253,
+61,92,31,248,184,226,185,142,36,176,239,220,123,22,212,74,
+22,100,171,186,167,223,5,104,190,143,194,21,8,177,49,56,
+30,193,170,37,250,224,3,193,159,195,2,117,229,91,48,19,
+174,196,207,73,78,182,200,40,151,235,37,72,237,81,24,93,
+19,126,146,101,12,242,116,177,32,63,233,83,145,134,226,63,
+131,117,146,38,151,50,135,5,190,107,131,237,145,195,250,58,
+241,117,24,171,199,223,134,136,243,159,97,121,168,138,14,101,
+28,163,15,116,2,27,38,142,34,216,89,227,242,28,165,193,
+52,7,227,4,156,141,96,1,238,150,24,182,97,117,215,228,
+6,161,139,21,130,237,61,6,23,8,252,58,113,242,175,255,
+94,201,223,241,211,21,16,234,8,7,5,49,51,71,84,136,
+159,218,232,186,37,25,14,51,202,193,39,4,31,232,90,252,
+28,160,247,53,141,193,62,0,55,112,26,74,241,17,109,21,
+224,206,84,94,3,196,143,9,249,52,198,217,19,63,131,200,
+134,165,156,38,197,13,57,124,160,23,196,199,224,38,5,149,
+222,137,228,111,50,4,92,37,5,56,64,30,238,207,250,39,
+30,222,79,192,165,2,220,194,214,195,126,79,246,206,228,18,
+45,8,181,102,80,138,199,97,116,137,163,158,20,27,209,5,
+251,71,140,208,221,139,131,220,131,58,250,53,10,115,233,1,
+62,110,107,159,76,188,11,215,62,177,228,225,194,123,118,4,
+126,208,169,92,44,120,79,129,29,64,75,161,155,186,94,134,
+51,192,64,47,158,57,178,194,19,16,29,216,50,224,220,76,
+26,161,128,186,66,41,57,54,48,38,79,214,81,113,25,198,
+147,39,96,104,165,18,93,93,208,209,67,185,0,228,33,177,
+163,201,147,106,243,24,70,91,38,55,18,136,137,12,19,171,
+213,150,224,31,162,29,61,217,3,55,102,13,106,12,85,190,
+122,137,181,172,252,109,38,215,164,125,129,107,78,79,206,78,
+245,215,115,77,240,237,186,21,120,246,248,254,171,125,37,166,
+224,27,240,48,129,209,79,62,94,8,28,18,136,1,76,193,
+77,150,203,149,216,49,6,20,141,204,206,11,48,244,13,88,
+169,17,236,154,204,118,1,191,104,222,191,32,243,126,255,197,
+179,221,161,247,23,13,18,237,31,252,168,71,186,156,205,196,
+243,54,120,3,23,160,128,147,8,54,46,140,171,190,192,247,
+64,83,210,177,208,222,2,129,205,3,182,137,113,151,120,89,
+46,92,181,2,176,5,222,23,43,156,236,207,75,100,205,227,
+32,6,123,98,132,159,0,202,187,1,152,165,128,222,100,51,
+71,129,118,37,197,113,17,131,177,128,44,218,6,118,249,0,
+146,225,24,150,255,78,134,243,95,36,124,122,148,128,241,1,
+127,2,145,134,191,89,185,149,149,198,119,180,203,231,3,158,
+138,166,141,76,156,28,29,57,136,45,128,126,9,208,97,175,
+127,62,238,157,142,24,181,206,54,94,220,225,58,253,241,219,
+225,119,7,251,63,136,147,254,185,56,233,246,187,195,206,41,
+232,250,195,211,222,17,104,227,163,110,127,212,229,233,252,241,
+169,248,0,83,69,66,57,64,137,30,75,140,83,237,243,151,
+106,202,79,75,168,223,127,245,227,171,22,61,118,175,13,120,
+42,94,188,2,225,176,90,3,141,158,69,1,198,120,70,180,
+192,231,207,159,181,0,205,168,103,64,102,116,132,120,118,176,
+191,191,63,217,219,127,254,236,7,1,90,187,195,239,79,127,
+124,14,6,86,23,184,96,3,10,73,104,99,62,207,217,113,
+32,191,11,113,101,29,23,1,207,78,97,30,43,207,150,135,
+23,35,99,80,178,125,202,134,30,57,180,168,181,193,103,9,
+149,161,137,138,220,152,119,127,196,41,124,251,116,248,189,56,
+3,49,180,2,102,115,103,54,94,26,222,203,136,123,87,176,
+36,199,3,132,255,131,157,16,94,198,60,223,60,0,138,10,
+110,130,141,216,128,144,32,7,115,142,206,81,130,30,137,242,
+51,216,197,134,249,180,133,56,220,176,51,27,100,48,93,212,
+127,180,165,18,164,47,248,135,108,145,27,67,153,44,253,28,
+117,35,13,117,89,4,228,199,202,187,135,34,63,87,207,121,
+178,55,217,131,135,86,56,211,172,32,11,91,122,206,6,61,
+141,75,69,177,132,78,17,56,42,41,56,66,108,182,55,76,
+14,141,119,220,12,132,140,24,82,234,188,137,132,38,223,148,
+220,104,101,246,179,77,0,6,56,248,232,43,116,44,17,52,
+27,76,200,65,232,120,146,163,203,27,10,115,218,25,97,28,
+138,95,107,26,204,91,221,12,92,201,84,187,12,140,111,101,
+164,53,226,29,228,131,12,230,237,93,33,62,37,133,152,129,
+132,96,87,133,39,67,216,87,51,206,208,185,79,218,46,1,
+125,68,163,225,6,48,188,150,193,21,217,145,238,102,180,240,
+43,156,89,138,74,34,37,95,41,209,123,217,34,106,93,131,
+42,4,159,73,12,96,152,250,25,102,21,50,116,55,23,220,
+39,152,34,107,21,242,186,45,161,56,76,101,121,201,155,159,
+216,81,100,132,198,30,210,4,187,89,50,189,70,47,27,156,
+87,4,125,3,126,62,134,53,244,80,160,249,36,120,191,190,
+87,155,18,226,192,56,34,70,84,47,2,253,194,159,206,171,
+248,140,34,90,143,44,225,117,160,66,1,115,84,214,56,2,
+1,111,31,108,37,154,175,198,255,27,21,20,80,224,208,15,
+54,112,231,228,62,102,8,25,240,156,121,187,52,78,16,68,
+142,193,9,218,79,14,170,208,238,196,210,193,169,19,154,201,
+120,24,64,202,52,156,35,241,162,252,162,208,78,76,220,175,
+6,83,225,25,68,29,144,120,118,197,95,37,184,59,41,242,
+114,234,4,113,208,51,166,119,188,81,84,232,154,128,207,100,
+138,42,5,159,88,195,151,225,20,44,152,60,84,162,9,33,
+43,204,214,238,172,139,209,22,206,72,61,204,193,34,228,39,
+23,37,111,225,1,249,91,128,146,189,117,43,216,12,220,7,
+17,232,45,0,156,45,37,177,227,37,6,184,105,229,36,76,
+196,2,237,89,26,15,67,36,24,31,225,165,203,89,8,160,
+48,192,16,144,137,101,67,90,46,237,182,153,251,232,221,18,
+121,195,43,27,98,188,150,33,61,135,220,120,213,134,18,1,
+14,24,156,118,30,25,24,97,248,204,74,19,7,168,31,148,
+77,4,149,9,8,126,11,53,73,248,188,45,235,168,134,213,
+121,126,3,123,12,62,67,246,90,236,128,165,101,131,87,254,
+46,32,185,238,128,90,7,71,66,166,138,108,28,93,118,3,
+102,233,146,112,149,209,151,145,188,4,246,119,226,93,74,71,
+186,145,61,29,204,83,219,234,142,231,205,190,19,97,76,14,
+247,70,6,184,131,36,102,81,48,171,53,33,120,178,119,138,
+148,57,129,216,85,115,130,166,68,218,1,169,245,119,65,198,
+61,152,83,243,204,236,13,203,221,56,129,247,83,212,88,27,
+43,72,60,89,3,59,211,243,137,148,66,95,184,138,144,5,
+118,6,178,30,71,1,47,141,181,198,58,200,208,232,69,19,
+67,207,15,21,150,67,82,48,93,181,135,48,153,27,77,45,
+44,13,149,57,128,35,38,176,55,97,28,128,67,72,59,15,
+143,169,72,22,152,3,43,210,187,20,212,226,105,176,1,8,
+219,12,228,138,0,64,118,99,214,65,168,128,172,134,165,21,
+23,248,189,169,92,23,28,47,243,9,232,45,62,23,109,90,
+52,154,43,200,112,110,249,18,236,17,208,247,48,40,216,8,
+136,212,28,148,206,212,137,141,173,241,107,20,27,72,137,40,
+133,73,198,92,39,225,156,38,50,71,57,154,242,114,64,229,
+105,2,73,216,219,14,252,1,105,53,33,184,15,224,198,23,
+28,55,163,248,183,26,196,241,90,48,156,8,212,58,35,62,
+228,232,158,5,3,63,65,97,201,60,64,207,135,197,42,16,
+71,204,65,80,218,37,66,61,5,52,65,134,207,192,135,72,
+29,132,243,88,58,134,106,188,26,34,82,69,99,72,161,52,
+115,84,8,240,57,238,128,121,48,32,235,174,93,182,224,214,
+72,17,134,185,73,165,153,136,51,1,71,30,162,48,133,193,
+146,166,126,166,191,153,138,233,83,12,200,51,28,135,47,238,
+54,195,135,98,220,29,190,31,81,28,238,104,208,63,238,97,
+72,139,227,117,71,131,179,79,189,254,9,184,41,189,209,120,
+216,59,60,167,104,23,62,248,126,112,220,123,219,59,234,224,
+7,42,75,136,206,6,14,58,120,245,6,61,158,239,192,189,
+18,207,46,62,63,23,237,189,127,92,120,65,85,199,28,83,
+132,76,187,3,43,101,83,233,38,73,175,148,112,49,94,74,
+160,131,231,107,180,227,141,133,100,37,215,50,137,80,95,101,
+193,70,217,211,43,176,115,97,155,172,232,153,179,0,160,247,
+24,215,218,56,175,183,92,200,168,196,252,200,25,79,16,227,
+167,83,9,40,110,177,65,100,22,64,58,198,89,5,206,159,
+133,103,0,111,211,106,166,1,139,2,26,220,192,19,43,9,
+234,83,199,191,157,175,76,52,91,166,225,53,236,46,16,37,
+129,225,5,216,69,71,193,205,107,199,215,67,244,63,61,96,
+138,13,105,122,128,14,152,9,191,236,133,188,253,161,196,58,
+73,181,203,142,38,143,154,145,113,102,112,81,168,55,92,122,
+203,180,40,55,54,0,134,25,8,37,188,141,17,112,120,17,
+92,34,30,119,222,129,160,5,113,178,160,248,143,126,65,37,
+190,60,39,190,148,67,82,89,40,220,46,64,165,59,252,228,
+9,218,188,93,84,14,138,193,72,102,6,243,57,152,31,196,
+109,25,188,1,106,9,30,44,161,8,180,11,40,144,107,182,
+77,18,133,123,180,237,238,199,103,40,220,144,175,61,99,221,
+146,247,27,22,226,100,24,22,121,22,146,44,1,165,13,208,
+53,73,5,51,242,65,210,34,174,236,134,18,251,218,200,194,
+68,32,27,141,4,13,4,53,136,23,149,208,114,94,209,83,
+161,196,65,184,160,1,113,187,73,203,144,124,14,115,82,190,
+162,145,26,49,152,98,163,155,48,59,16,133,56,57,202,6,
+145,68,132,117,214,204,120,183,141,94,132,70,34,211,93,90,
+160,197,143,176,50,28,69,107,54,51,20,102,85,218,245,98,
+227,133,216,215,50,131,44,170,96,115,127,55,219,114,214,55,
+153,103,223,7,153,103,250,35,133,99,198,13,24,108,5,154,
+167,0,179,208,36,107,172,177,15,88,91,135,179,34,41,50,
+21,222,6,177,69,250,3,40,29,62,81,89,75,92,31,89,
+40,106,150,238,83,245,73,65,88,197,44,194,32,105,138,179,
+214,102,199,27,113,37,229,26,25,8,137,67,219,154,42,17,
+166,181,36,133,234,18,143,218,180,127,154,83,38,50,147,241,
+140,146,116,184,54,11,26,159,33,147,214,122,177,142,21,226,
+227,174,156,79,54,227,68,137,74,243,186,79,87,89,203,236,
+26,187,101,100,89,43,155,10,132,247,114,147,97,166,75,115,
+0,73,2,237,91,6,202,88,12,180,5,12,80,2,101,188,
+38,58,162,136,40,48,166,154,99,11,162,222,255,77,71,20,
+180,69,223,72,99,7,101,26,83,230,40,141,197,203,79,235,
+73,75,75,230,146,192,204,151,5,233,234,21,47,164,145,203,
+90,74,191,87,41,154,148,136,47,95,149,42,169,83,91,35,
+181,236,125,78,63,215,17,112,0,22,52,208,183,100,106,226,
+85,100,178,154,205,166,189,11,65,91,91,20,5,187,123,255,
+48,254,204,44,40,50,118,134,140,181,203,213,3,104,221,195,
+78,208,54,192,186,81,108,104,122,165,4,39,201,9,205,77,
+180,51,44,199,248,109,45,213,230,200,40,138,98,249,169,118,
+227,188,166,213,121,17,161,35,146,204,80,14,78,1,129,166,
+184,128,133,19,10,163,36,162,111,200,122,76,115,107,98,224,
+103,25,171,92,92,99,89,204,234,141,199,119,200,113,72,22,
+84,45,225,154,130,1,26,42,60,66,128,216,208,92,128,90,
+145,88,58,76,231,4,1,9,171,201,26,209,230,71,35,26,
+102,128,6,229,140,152,45,209,230,71,12,52,72,6,50,152,
+231,115,14,75,145,191,131,193,185,52,64,181,135,194,235,6,
+227,62,32,204,29,151,151,209,137,180,76,95,194,14,166,168,
+209,181,196,71,158,34,18,117,0,145,145,171,52,52,199,213,
+210,57,40,249,20,69,15,249,188,24,30,66,101,146,226,166,
+128,225,198,2,50,142,147,2,196,20,21,36,216,2,146,251,
+136,78,99,4,54,123,111,59,104,140,71,88,53,162,44,65,
+67,23,138,67,112,131,212,195,187,54,30,67,81,68,146,4,
+142,47,34,61,231,193,108,151,199,68,74,61,203,40,210,122,
+17,65,9,242,219,19,113,29,202,155,6,129,138,86,81,87,
+167,74,94,163,210,246,116,122,158,201,104,161,163,170,26,223,
+24,50,54,21,9,102,167,25,201,28,232,240,209,219,98,129,
+214,172,243,141,181,241,107,17,166,28,73,98,104,37,64,237,
+221,138,156,215,193,32,122,147,75,48,76,141,132,71,153,52,
+186,101,12,118,164,67,180,50,224,123,170,24,201,164,138,38,
+17,138,208,21,166,87,148,153,213,196,144,74,148,194,76,167,
+56,143,32,75,98,128,70,33,107,52,186,82,50,71,173,69,
+131,15,103,18,120,15,169,11,7,200,20,233,174,0,211,215,
+232,58,230,75,170,137,177,91,212,50,149,55,196,160,45,12,
+210,121,181,32,42,227,166,167,79,140,83,18,65,20,188,9,
+178,210,208,24,92,47,242,166,23,128,116,87,14,88,120,155,
+132,14,185,197,44,92,216,57,10,179,219,85,13,137,87,215,
+148,85,170,140,97,104,63,54,137,155,101,80,75,69,185,109,
+76,135,61,82,101,224,43,187,27,60,152,223,48,244,175,183,
+30,183,54,85,195,104,243,181,32,125,193,177,28,248,128,252,
+101,94,86,42,47,131,116,14,42,129,70,135,151,196,13,170,
+117,27,241,243,136,174,64,31,63,119,163,35,148,118,200,109,
+101,146,210,140,168,157,208,204,114,98,156,100,17,103,126,56,
+12,43,196,200,221,76,49,173,19,171,185,115,40,3,158,123,
+35,96,211,168,254,192,25,138,93,43,249,155,76,217,111,215,
+65,65,142,119,97,52,38,170,197,189,227,205,209,108,34,12,
+204,104,223,46,171,221,196,42,10,156,138,47,170,160,3,129,
+118,121,137,56,212,163,104,247,139,150,133,72,170,229,252,178,
+33,71,130,147,171,164,154,73,106,23,255,14,196,117,18,21,
+43,86,218,160,39,146,20,124,60,37,227,237,114,217,176,182,
+210,106,154,106,249,232,204,206,106,64,242,142,26,52,96,213,
+124,123,126,31,23,161,188,184,242,186,80,213,241,4,180,49,
+117,176,139,34,33,225,50,64,157,24,128,109,158,21,57,201,
+41,180,239,110,49,198,50,180,198,96,14,7,170,36,176,193,
+36,3,33,130,97,66,197,139,166,112,231,118,107,172,51,163,
+116,123,76,121,29,179,119,248,89,36,73,91,166,28,116,39,
+85,186,2,46,3,123,108,178,135,54,0,75,88,235,12,181,
+148,240,208,236,127,71,124,164,97,109,68,7,106,143,103,88,
+147,191,194,234,230,13,151,13,146,173,96,162,164,168,191,216,
+176,123,3,248,108,221,106,220,85,151,25,24,206,36,219,191,
+37,174,131,40,228,33,176,244,14,196,126,78,177,72,41,54,
+50,72,41,197,101,93,29,107,111,109,90,202,43,80,6,89,
+140,153,64,14,209,199,218,234,231,196,160,118,81,34,42,181,
+213,38,189,66,160,75,226,45,82,236,106,3,170,40,183,58,
+191,188,61,222,102,176,1,249,255,205,38,204,26,105,13,11,
+176,193,224,32,70,113,156,105,178,121,149,220,103,239,172,156,
+186,107,88,58,218,63,20,21,12,34,152,91,204,98,145,254,
+164,252,55,135,50,22,20,66,141,209,138,69,97,11,142,99,
+37,52,163,67,30,222,156,92,187,237,110,150,166,53,106,251,
+73,145,25,198,7,0,15,169,42,45,25,21,83,173,88,166,
+140,253,122,147,200,11,59,44,172,212,225,64,31,79,139,146,
+169,188,67,43,163,146,241,33,202,224,115,212,218,119,4,1,
+165,148,79,126,75,62,136,59,127,14,53,26,50,116,71,231,
+33,117,36,161,50,47,248,28,6,41,208,21,11,173,19,4,
+142,100,84,100,196,60,78,237,56,145,207,34,64,6,144,139,
+48,14,109,9,185,122,158,69,120,26,174,57,33,63,119,53,
+33,215,150,4,102,195,48,99,13,163,7,174,69,98,87,4,
+171,124,199,133,71,45,54,26,179,181,164,141,55,101,69,173,
+202,122,92,238,161,132,40,42,28,21,85,196,165,80,74,213,
+68,167,140,221,236,190,182,99,203,144,21,100,192,209,148,157,
+25,220,167,93,203,8,171,224,23,210,222,43,32,106,50,123,
+119,116,245,76,75,92,97,109,90,196,54,79,134,114,126,87,
+175,16,212,91,202,62,177,170,93,162,184,24,10,98,127,253,
+232,112,101,168,152,200,32,162,57,155,161,180,87,16,40,6,
+165,24,186,143,189,170,185,176,168,152,33,206,96,104,202,57,
+188,161,139,185,49,141,132,108,64,126,217,108,70,51,81,229,
+46,100,133,7,42,159,79,196,177,230,194,26,178,158,205,91,
+232,22,128,164,38,195,219,7,80,33,70,109,214,147,209,75,
+192,224,139,130,252,137,172,214,124,245,228,167,228,66,246,164,
+184,92,150,220,107,27,166,93,173,193,61,115,74,118,28,32,
+165,168,150,131,140,70,227,227,123,50,62,46,84,36,2,140,
+15,30,196,61,216,224,30,94,112,13,35,223,40,97,138,198,
+85,202,223,214,24,180,38,95,78,217,12,90,11,120,14,99,
+7,217,18,148,225,10,94,35,51,234,134,236,207,164,113,248,
+91,70,7,192,152,139,99,90,165,252,90,80,160,6,209,133,
+233,168,124,66,220,97,207,92,174,155,150,225,87,141,121,180,
+225,41,145,102,228,49,135,210,8,25,186,120,129,246,29,133,
+118,21,164,77,94,234,186,144,208,22,38,218,137,17,139,209,
+254,161,127,69,57,24,53,129,20,15,147,81,76,112,81,68,
+44,129,176,170,118,214,188,169,47,92,139,82,83,142,235,22,
+35,21,175,243,146,115,148,133,24,110,53,5,44,248,142,42,
+115,33,113,109,16,131,22,57,113,5,166,134,233,128,15,7,
+164,253,84,185,138,65,54,111,25,6,168,242,172,156,20,226,
+226,39,116,198,3,237,48,242,49,129,101,56,13,115,206,79,
+68,193,141,169,146,80,62,108,117,61,12,39,197,227,87,176,
+182,169,14,138,226,196,61,235,190,148,177,216,81,129,177,102,
+175,129,163,76,152,190,157,25,122,226,241,3,21,174,246,118,
+223,30,201,161,152,143,170,243,122,72,118,148,103,108,167,95,
+66,98,201,221,50,142,102,149,44,94,94,0,77,80,142,41,
+199,170,102,182,49,110,243,49,238,192,67,238,150,148,148,24,
+78,49,11,234,60,205,189,70,54,154,172,61,127,195,245,58,
+149,210,10,191,172,66,207,203,63,215,212,144,103,214,5,44,
+74,156,133,160,113,84,112,117,81,164,42,97,224,148,253,232,
+211,93,38,137,48,249,198,250,195,74,76,43,137,161,206,179,
+209,241,182,48,110,11,159,193,84,161,16,91,98,224,124,195,
+127,103,124,230,74,179,172,74,175,57,130,189,148,1,105,220,
+188,31,112,243,122,11,101,71,96,88,8,248,217,36,72,80,
+201,164,185,248,165,80,71,163,216,38,114,252,104,149,238,7,
+187,23,53,154,212,15,45,212,54,235,52,10,198,157,196,14,
+231,249,87,161,170,12,213,239,102,89,33,179,221,150,75,178,
+100,142,19,122,137,62,144,164,118,116,81,210,116,163,102,5,
+118,39,25,64,224,216,155,129,141,192,223,213,102,1,150,102,
+2,79,229,202,199,48,67,84,130,56,148,144,84,140,15,90,
+7,195,182,56,174,33,175,230,119,57,90,167,138,212,40,26,
+231,100,44,18,101,251,103,88,74,5,84,151,133,171,34,2,
+158,150,156,51,227,196,13,168,162,75,101,198,214,72,122,226,
+112,91,90,41,177,122,159,214,107,95,83,166,69,101,19,55,
+14,189,54,176,164,42,184,16,149,114,177,160,84,56,2,76,
+91,68,108,55,170,19,132,105,178,1,199,100,51,217,163,106,
+14,135,233,29,67,68,15,3,219,22,152,250,123,84,126,58,
+209,168,50,72,92,110,207,135,189,80,10,170,191,192,109,37,
+179,5,22,98,130,143,146,253,25,85,163,139,212,0,211,210,
+248,157,2,150,208,88,55,71,11,79,189,217,79,73,116,130,
+252,78,81,249,153,64,22,237,242,45,211,175,181,25,75,41,
+46,47,178,70,103,85,35,52,228,217,23,199,242,199,152,89,
+87,146,85,201,251,172,147,37,225,172,136,2,16,211,97,58,
+43,86,25,137,124,22,132,211,32,178,242,95,186,224,221,74,
+98,14,182,234,108,145,126,200,73,180,212,62,143,78,31,145,
+148,59,108,86,179,84,47,148,184,46,82,146,123,53,177,68,
+216,183,66,17,29,253,197,66,193,169,11,202,108,253,10,102,
+49,128,146,55,42,42,72,97,72,93,100,169,99,144,132,58,
+60,207,168,82,95,100,191,240,147,111,252,193,241,72,38,91,
+172,145,55,67,157,252,84,250,13,113,112,153,42,136,249,178,
+84,87,237,19,0,187,32,45,27,70,14,145,51,212,145,209,
+169,202,109,207,12,115,172,41,255,64,231,77,241,68,38,6,
+70,18,44,169,183,197,82,151,88,64,227,29,126,214,126,43,
+57,183,152,118,73,41,53,139,21,153,149,41,145,195,158,42,
+19,30,120,86,121,72,84,73,170,148,64,18,115,92,63,35,
+174,165,2,162,153,227,65,154,151,222,168,224,112,177,54,73,
+113,170,115,123,58,79,98,222,128,57,232,172,57,85,7,147,
+94,21,217,146,72,8,77,78,85,224,236,137,56,115,208,147,
+231,103,101,149,154,36,167,165,76,5,138,146,146,74,127,178,
+156,94,38,225,172,198,51,27,151,120,202,37,98,42,98,196,
+121,227,160,152,211,160,74,180,27,229,193,78,1,43,242,154,
+159,156,202,170,110,99,213,156,229,21,97,222,164,41,127,100,
+77,89,13,90,171,10,159,194,106,117,199,125,176,53,42,184,
+85,186,228,146,124,55,58,42,164,252,233,169,199,33,211,141,
+77,237,185,145,5,22,243,214,208,169,20,118,161,92,37,239,
+48,243,230,81,163,83,168,110,96,62,231,72,201,154,142,13,
+3,129,226,227,120,142,170,28,67,114,138,141,64,53,170,100,
+36,139,114,179,20,91,120,233,189,234,157,7,225,56,84,76,
+118,196,42,33,19,70,35,130,197,75,145,169,1,228,28,181,
+106,172,88,62,96,5,237,204,31,156,138,4,184,28,179,69,
+188,86,103,138,32,11,128,114,117,72,84,229,94,167,201,188,
+154,94,108,218,235,87,184,215,24,169,106,60,144,128,248,211,
+213,45,169,188,14,41,177,205,132,128,37,237,215,124,104,199,
+20,70,52,28,76,96,227,2,173,102,100,68,248,9,139,30,
+225,138,61,24,228,233,1,13,131,233,16,162,150,128,21,101,
+235,48,13,205,49,124,116,140,145,229,213,27,124,108,6,103,
+8,118,46,70,27,225,133,185,4,194,139,72,246,115,241,23,
+13,97,202,99,57,241,3,228,25,215,200,127,178,237,21,108,
+220,79,62,24,31,208,62,211,225,210,140,28,55,253,68,92,
+224,121,80,91,11,108,108,108,12,82,45,40,234,80,122,182,
+226,221,176,204,117,74,32,149,66,159,60,65,217,130,101,116,
+169,6,129,5,135,222,233,8,83,5,227,156,247,181,129,226,
+146,111,164,216,79,203,71,61,173,36,213,42,199,27,75,239,
+184,45,173,108,162,143,234,234,77,146,135,209,176,185,19,9,
+45,99,188,129,112,212,142,134,126,133,14,29,222,127,54,154,
+206,95,62,43,149,145,61,187,104,107,219,85,87,31,59,156,
+69,166,73,165,184,135,234,23,89,190,123,39,55,84,26,212,
+227,254,146,77,207,244,72,73,119,100,79,233,235,31,125,190,
+2,189,7,235,245,43,203,212,104,25,163,143,93,17,121,7,
+2,74,195,53,61,246,134,142,249,36,43,137,172,152,177,130,
+49,33,213,204,20,189,171,163,60,168,36,105,51,52,127,2,
+39,204,237,92,240,248,192,101,18,68,25,219,33,146,142,220,
+40,90,100,179,3,196,85,193,133,220,240,190,13,88,208,71,
+250,64,152,127,198,138,45,154,85,98,12,26,60,40,198,133,
+33,115,16,67,74,5,153,87,46,89,234,68,155,26,2,16,
+254,217,57,170,68,238,15,76,207,3,245,194,193,139,151,250,
+133,25,146,204,12,104,102,255,226,243,12,131,123,159,103,66,
+92,28,74,91,250,228,84,190,219,186,239,114,131,150,230,211,
+4,6,64,203,228,200,127,35,75,198,234,15,116,34,216,172,
+161,19,181,193,77,251,139,224,250,16,46,19,176,241,62,68,
+46,235,92,220,121,141,174,178,194,36,121,0,235,120,122,97,
+237,82,229,64,235,74,24,119,97,147,39,159,159,146,118,201,
+46,38,79,76,37,174,89,134,18,25,87,33,182,190,82,146,
+69,69,45,37,121,0,104,65,134,88,173,106,42,122,88,84,
+251,142,177,74,163,243,179,26,186,42,178,91,113,134,42,15,
+232,216,16,155,252,139,48,143,81,160,115,38,197,241,38,148,
+29,12,56,26,219,130,131,52,204,174,156,116,212,175,69,96,
+0,169,84,158,235,111,56,91,74,241,95,16,20,0,110,180,
+36,95,202,125,0,209,69,153,15,206,214,179,240,10,192,181,
+95,73,133,121,54,181,144,212,99,60,2,150,97,214,128,143,
+161,17,30,82,185,14,194,148,21,81,154,178,197,215,190,133,
+10,15,144,254,48,194,220,195,150,49,130,143,40,168,140,128,
+137,73,86,232,133,44,15,12,24,204,89,212,25,234,224,224,
+110,188,169,144,72,75,120,177,12,202,147,146,157,229,84,68,
+58,68,212,88,25,21,184,118,144,170,71,164,170,56,154,26,
+159,66,164,45,156,7,171,224,146,79,105,216,178,175,141,230,
+229,150,206,245,208,247,84,33,4,102,5,171,111,54,111,115,
+202,0,50,16,16,186,33,157,180,68,58,85,91,170,14,93,
+128,1,169,104,136,251,14,121,147,133,213,236,92,216,241,171,
+52,42,162,132,75,81,64,112,6,20,249,196,159,83,137,79,
+243,161,56,98,190,96,54,43,72,145,224,161,121,120,3,171,
+30,139,76,29,183,231,226,17,193,66,213,9,93,113,97,42,
+88,43,120,60,172,68,135,168,121,40,73,36,109,183,26,239,
+196,105,6,83,223,189,80,41,143,80,29,109,83,214,177,199,
+227,27,219,198,39,152,179,253,166,199,194,6,24,10,55,250,
+112,156,194,167,115,44,69,203,207,111,135,223,139,110,255,24,
+91,158,212,29,17,241,78,106,235,54,52,79,49,234,141,107,
+233,144,31,206,129,233,49,217,39,240,225,39,148,253,125,176,
+206,148,194,53,93,129,212,121,237,125,173,177,231,176,200,40,
+89,99,197,31,219,114,182,226,203,57,155,169,28,32,181,184,
+75,58,145,4,188,200,171,140,152,30,180,29,73,214,169,10,
+60,224,67,24,98,161,184,254,18,125,41,54,79,184,176,135,
+116,99,152,151,116,20,235,102,115,150,12,235,206,60,134,112,
+78,52,187,149,130,100,154,181,205,242,204,47,99,27,228,206,
+243,64,165,1,173,85,103,10,191,19,151,70,208,244,34,15,
+48,11,22,184,6,156,191,121,123,165,31,166,210,77,74,244,
+225,55,42,209,133,217,90,115,254,153,79,72,113,41,40,48,
+215,181,220,40,157,4,92,145,41,11,211,175,30,39,80,4,
+35,99,1,73,54,169,83,129,129,231,100,140,124,1,13,2,
+206,180,174,217,92,39,228,229,113,51,46,169,206,116,83,98,
+70,85,115,226,89,59,52,84,52,154,52,57,28,237,11,252,
+247,7,196,55,193,211,181,29,14,74,176,212,63,198,204,33,
+143,53,5,135,139,170,11,3,46,38,11,136,76,232,188,193,
+159,60,160,126,95,129,63,96,241,200,159,96,40,2,133,178,
+156,172,54,251,138,247,46,121,238,142,250,240,8,229,141,57,
+210,235,145,7,91,249,246,228,163,7,48,204,235,139,129,111,
+61,113,143,82,215,177,146,61,128,183,91,130,246,116,15,119,
+95,208,131,157,218,156,165,7,109,199,175,194,223,173,122,15,
+237,251,33,202,141,248,40,223,117,137,117,95,185,218,39,109,
+109,2,223,2,125,180,60,88,40,168,117,247,42,236,248,164,
+173,185,55,198,88,81,169,224,138,125,129,162,206,3,85,234,
+81,133,194,243,174,46,85,232,188,74,34,60,15,210,45,219,
+195,237,24,232,232,59,186,167,89,3,138,48,29,226,178,148,
+45,171,241,42,136,154,7,242,160,121,233,108,139,251,55,220,
+201,173,236,154,120,20,226,193,41,183,211,104,109,217,72,195,
+172,218,145,128,120,194,151,226,52,110,101,17,198,59,89,127,
+80,69,10,159,93,70,117,42,177,86,50,77,98,88,56,159,
+173,93,99,123,38,64,108,141,108,237,85,12,60,167,136,186,
+101,228,187,58,79,21,32,254,83,83,103,30,133,87,74,27,
+144,217,13,207,145,60,205,248,196,144,87,142,13,156,44,95,
+251,235,210,116,17,131,39,115,205,46,148,102,179,151,175,90,
+37,169,131,66,71,8,95,228,52,130,153,37,232,183,209,214,
+118,14,71,131,211,243,113,247,244,147,235,214,188,97,19,139,
+169,77,228,27,224,171,201,132,14,144,223,76,190,105,87,249,
+178,44,184,172,118,37,117,39,35,28,145,51,10,158,28,243,
+32,169,3,137,38,246,167,93,226,55,222,4,102,147,111,220,
+201,149,89,1,213,33,138,130,205,26,109,24,202,135,218,131,
+11,118,13,28,38,177,16,21,219,232,51,242,222,241,1,207,
+187,111,60,222,57,88,80,190,77,165,200,236,152,84,150,160,
+34,137,83,212,245,84,62,66,222,51,133,131,156,51,131,141,
+211,83,199,0,57,131,67,162,105,138,20,3,96,39,123,51,
+152,198,21,89,131,43,25,23,128,83,185,202,176,243,9,234,
+43,10,127,96,27,158,204,107,222,81,67,230,142,232,160,194,
+82,236,39,64,175,32,159,38,27,0,179,163,91,89,152,18,
+124,5,13,124,173,93,193,77,25,96,48,12,194,68,156,23,
+139,249,220,6,86,49,208,225,85,235,50,216,99,107,160,221,
+43,94,45,202,23,237,250,96,229,131,242,132,3,172,234,1,
+161,241,134,171,252,232,29,164,247,172,142,109,62,37,155,100,
+190,193,38,100,44,114,84,67,84,61,112,166,91,100,170,9,
+17,39,162,21,164,52,137,154,139,3,112,50,113,24,8,54,
+104,71,85,190,2,255,103,124,58,63,19,170,190,10,203,183,
+178,93,19,88,133,97,185,99,217,187,0,27,206,213,202,238,
+63,112,5,148,178,228,199,27,96,238,36,254,83,75,128,100,
+3,34,140,168,87,145,243,184,122,160,133,141,124,178,80,31,
+178,252,0,180,88,199,13,205,189,108,76,176,77,37,42,109,
+76,11,41,211,37,25,142,102,57,103,222,141,35,97,178,186,
+169,43,36,3,44,21,72,19,172,159,208,125,44,55,78,164,
+78,29,171,160,163,213,168,215,88,73,59,77,87,177,15,38,
+206,193,29,209,201,212,100,182,204,74,1,215,145,68,22,70,
+55,186,74,90,119,114,152,131,113,172,189,183,251,119,194,169,
+4,194,47,254,249,79,211,52,205,176,143,223,123,108,116,124,
+170,231,4,28,21,174,215,186,163,24,216,226,243,228,38,51,
+237,196,144,137,218,115,32,67,116,176,220,222,102,229,158,88,
+47,84,79,172,23,220,19,235,232,128,87,208,59,28,118,134,
+159,110,61,143,15,143,238,253,99,239,31,130,255,53,119,200,
+58,50,86,242,65,217,154,189,119,127,44,124,21,254,233,241,
+182,212,241,0,108,155,86,89,22,202,150,61,179,92,204,76,
+62,107,93,71,78,71,152,102,185,222,204,185,13,137,47,92,
+170,196,94,103,218,209,178,115,226,64,182,196,226,235,169,212,
+103,229,196,101,162,117,114,197,152,54,103,225,16,220,228,162,
+58,53,196,58,227,221,111,237,229,109,236,118,45,190,12,156,
+199,104,245,101,128,121,141,157,190,174,233,151,55,177,173,155,
+127,213,227,205,18,80,75,121,55,183,137,143,150,155,146,65,
+77,111,96,169,160,20,22,12,219,162,215,59,187,121,153,142,
+212,160,82,13,40,125,108,74,55,83,244,91,136,169,204,180,
+138,89,209,182,232,150,94,138,220,22,137,221,82,66,177,1,
+229,182,246,242,17,177,109,139,47,3,234,113,90,125,25,112,
+143,211,242,203,128,123,148,214,95,6,218,99,180,0,179,192,
+30,165,21,88,137,188,183,108,9,102,64,61,78,107,48,3,
+110,188,125,139,48,151,194,155,91,133,25,251,164,185,83,152,
+143,177,123,119,12,243,160,251,237,194,44,35,111,215,54,12,
+118,233,18,200,223,93,233,35,116,16,51,224,212,241,26,21,
+74,69,179,204,90,254,21,35,204,153,190,202,11,57,112,212,
+177,18,85,22,111,142,253,151,150,168,139,35,216,225,9,184,
+108,39,190,162,160,164,1,86,29,151,186,193,232,3,47,204,
+84,165,54,234,27,149,252,99,11,29,30,179,60,149,63,78,
+171,52,159,70,80,180,161,143,151,232,116,164,46,176,114,75,
+224,169,30,171,161,127,154,35,142,220,133,126,69,27,53,43,
+118,31,218,78,77,27,215,117,11,44,117,85,115,186,110,249,
+173,213,26,59,170,57,11,220,178,179,154,129,84,114,6,236,
+222,63,168,191,154,165,179,237,251,172,25,88,166,232,100,171,
+190,107,30,81,220,171,255,90,73,114,109,213,135,205,18,210,
+253,251,177,217,227,69,94,77,189,183,109,54,49,114,239,222,
+108,84,3,101,26,180,89,180,80,19,24,117,208,210,11,220,
+149,253,87,167,25,95,185,121,155,221,255,71,105,226,230,27,
+168,119,54,115,243,55,236,61,154,232,104,64,91,43,203,38,
+28,145,140,93,187,173,218,245,85,123,14,6,98,115,240,87,
+151,112,222,224,81,41,109,119,225,82,96,195,40,201,231,120,
+252,104,17,59,76,231,88,198,119,59,215,158,117,92,22,5,
+142,89,108,214,213,246,45,112,92,229,175,228,76,154,50,25,
+247,112,67,105,189,176,5,111,168,40,140,84,96,66,173,76,
+84,79,85,76,27,177,64,157,99,72,39,183,121,120,222,95,
+142,207,133,49,59,135,30,231,209,249,178,64,119,125,176,254,
+89,228,21,204,85,189,47,85,226,175,233,42,176,173,28,74,
+101,178,124,226,214,221,93,102,208,192,83,11,192,156,81,193,
+198,19,23,153,113,1,232,13,82,25,179,15,201,219,169,204,
+111,168,243,150,123,6,7,15,254,179,133,30,56,102,185,74,
+194,227,145,67,204,124,108,220,14,196,167,42,38,83,210,255,
+129,99,225,112,246,196,42,125,237,94,123,42,140,98,232,188,
+186,140,22,235,13,85,209,118,14,234,3,16,94,201,101,194,
+253,31,116,55,153,160,76,160,180,58,167,170,215,38,60,205,
+33,42,135,226,2,208,238,191,229,5,74,81,24,140,219,142,
+102,150,158,209,248,0,98,116,206,57,134,124,120,96,53,165,
+236,188,234,207,231,16,176,237,203,176,240,165,180,183,42,223,
+173,191,45,27,131,66,13,196,50,29,173,85,135,211,106,233,
+75,151,24,233,136,7,146,6,74,2,135,50,90,14,142,203,
+131,27,72,53,185,39,75,132,243,144,79,54,184,89,95,46,
+181,146,85,45,161,170,174,90,38,202,65,241,6,149,142,71,
+5,167,161,233,200,156,203,242,31,93,219,81,119,245,83,22,
+47,16,117,234,214,204,173,40,92,101,230,161,138,189,128,236,
+115,27,111,245,112,101,8,161,136,157,202,99,29,116,76,48,
+193,21,171,227,26,182,108,143,162,227,115,185,78,149,101,110,
+224,113,195,31,194,59,53,56,209,111,168,58,158,41,32,120,
+17,58,66,170,84,214,230,130,178,152,206,77,55,25,45,255,
+238,138,89,122,101,223,190,205,231,97,189,126,121,42,84,64,
+31,58,42,5,116,130,19,76,114,234,243,188,176,12,229,3,
+168,89,145,174,4,113,225,58,78,110,141,181,22,234,158,116,
+28,2,50,85,149,58,173,139,140,187,243,81,58,199,34,81,
+150,169,204,158,42,185,240,93,247,32,83,141,96,50,227,10,
+0,168,37,72,126,172,197,228,163,230,24,253,51,98,152,129,
+204,21,135,169,119,125,41,38,141,176,15,102,36,45,22,69,
+236,118,26,50,49,33,236,36,57,214,201,232,208,152,176,142,
+20,35,35,39,66,61,132,225,145,32,67,207,69,109,207,74,
+133,242,253,93,104,84,39,95,223,237,213,0,170,235,250,42,
+196,25,6,233,35,10,40,97,14,67,31,92,97,69,195,74,
+119,102,245,138,149,126,117,29,74,149,216,155,60,241,187,152,
+234,86,89,153,255,16,31,28,181,38,19,152,114,204,235,220,
+87,141,207,232,151,187,56,57,46,54,149,166,224,71,56,241,
+148,42,233,45,226,233,172,102,142,23,215,80,219,152,114,10,
+161,14,205,253,36,183,53,5,24,137,214,245,64,236,179,107,
+255,130,139,135,238,52,190,234,57,151,219,2,113,14,208,92,
+240,165,90,21,128,253,82,51,47,142,246,62,32,13,128,4,
+243,24,157,121,125,228,60,43,221,112,214,49,103,12,75,109,
+121,141,129,175,241,69,166,166,43,224,31,214,153,215,148,168,
+177,231,19,254,46,45,69,115,213,218,87,245,238,85,44,124,
+215,126,237,80,138,84,101,114,39,79,220,12,209,228,201,110,
+187,218,73,214,26,27,205,29,101,75,206,53,124,107,25,71,
+181,223,48,109,158,56,207,96,144,106,69,145,242,224,177,202,
+208,149,217,128,18,62,225,206,5,173,68,169,49,248,59,232,
+209,70,27,109,227,176,53,87,53,156,236,244,85,210,179,200,
+184,252,219,170,60,111,6,52,252,46,9,55,236,74,98,77,
+167,102,65,54,121,114,170,23,123,91,95,228,10,25,169,3,
+216,150,195,105,126,166,98,177,118,207,77,33,29,99,185,34,
+176,156,220,132,143,127,167,181,242,169,29,191,177,181,178,67,
+221,110,139,101,113,191,142,202,238,8,118,43,31,165,179,178,
+181,207,224,51,156,23,108,19,94,162,69,103,142,30,222,115,
+217,137,77,127,109,239,229,58,178,192,171,68,77,104,93,149,
+9,60,176,1,142,85,114,119,54,194,177,42,164,185,255,141,
+229,226,71,232,131,227,96,237,113,250,225,56,78,82,125,95,
+156,91,99,121,143,208,195,218,161,247,237,122,89,27,64,214,
+195,51,125,51,179,50,127,52,244,184,118,250,91,91,114,247,
+174,239,248,218,86,215,78,100,193,155,72,185,229,117,174,107,
+200,23,254,124,177,22,6,111,3,243,8,84,151,215,135,57,
+170,143,123,247,192,214,64,177,142,195,219,127,243,132,41,8,
+247,172,45,247,61,55,125,239,252,186,223,182,221,151,239,223,
+51,91,139,76,39,232,85,203,79,15,108,162,237,165,113,190,
+178,153,182,197,207,35,52,213,174,136,130,109,154,107,59,225,
+102,183,76,218,13,204,59,245,155,141,109,180,203,122,171,150,
+209,183,238,168,237,145,217,246,157,181,173,161,47,235,163,102,
+7,150,14,239,238,171,93,82,203,74,93,90,142,189,103,127,
+237,83,55,80,163,169,223,70,120,182,238,179,109,113,184,109,
+191,109,31,87,66,128,217,133,114,212,239,151,75,241,105,213,
+238,139,142,120,151,205,168,90,196,11,49,221,181,105,68,123,
+122,141,19,119,102,132,230,198,221,30,172,199,104,226,93,158,
+223,172,118,126,170,39,183,99,9,148,251,106,227,12,125,64,
+91,55,214,46,79,109,190,75,141,47,192,187,159,113,104,210,
+116,182,86,104,211,148,234,24,185,198,136,246,109,62,42,193,
+231,6,107,234,24,17,175,39,43,214,92,153,62,213,87,5,
+148,237,118,43,244,125,96,136,113,53,175,150,171,238,49,136,
+131,218,252,146,10,164,116,74,236,70,55,19,209,239,120,192,
+40,232,116,157,92,161,222,205,117,7,98,155,120,14,196,101,
+146,204,241,148,18,94,230,185,88,96,109,52,182,187,141,77,
+70,186,229,131,227,161,56,23,83,90,149,61,25,92,208,113,
+32,98,62,7,103,85,140,181,188,121,3,13,98,224,69,157,
+139,82,205,182,213,89,62,174,24,228,211,194,124,224,197,159,
+86,158,153,110,25,220,15,44,35,147,16,40,122,81,212,231,
+109,192,102,246,170,4,156,237,37,19,192,9,28,160,134,36,
+105,242,107,65,213,51,73,194,153,97,159,179,205,4,180,85,
+96,154,178,220,200,40,154,236,145,245,88,234,83,93,10,46,
+18,28,139,81,191,71,151,211,149,242,96,174,143,6,234,200,
+92,188,105,2,50,217,51,132,232,210,47,83,44,153,171,218,
+12,52,95,35,121,248,130,70,159,70,15,34,211,188,252,182,
+157,15,85,93,25,35,204,3,133,200,243,71,82,219,94,135,
+228,58,199,99,188,77,43,114,107,212,111,209,146,92,107,31,
+79,211,110,215,154,220,205,25,109,219,162,220,154,211,91,183,
+42,175,83,169,38,187,246,224,150,229,13,134,249,87,182,46,
+247,35,202,219,180,48,55,144,30,165,149,185,37,177,186,210,
+164,71,233,105,238,90,219,219,247,54,183,203,223,174,199,185,
+227,80,220,214,235,188,217,248,221,178,217,121,57,54,104,162,
+199,198,1,188,173,233,185,122,168,220,244,220,201,66,110,223,
+252,220,229,242,91,155,160,251,154,234,185,181,176,147,117,110,
+219,94,149,108,30,55,99,120,103,61,111,83,1,61,27,58,
+220,24,197,61,146,166,119,77,240,89,86,143,249,156,162,50,
+62,248,113,127,159,11,139,109,28,88,186,86,199,121,246,214,
+85,89,48,166,34,219,74,101,119,133,165,38,130,160,251,201,
+250,139,229,141,115,52,146,108,172,114,105,183,21,90,119,79,
+131,226,154,176,55,18,163,185,142,185,133,186,65,117,75,241,
+23,107,122,209,168,169,58,165,172,152,165,58,102,241,206,134,
+154,57,32,174,43,185,61,165,145,25,108,215,215,186,197,51,
+117,206,77,191,173,154,255,146,169,99,183,91,139,166,48,197,
+114,155,212,36,82,252,105,243,147,217,189,183,199,75,54,68,
+54,145,157,161,69,67,71,253,181,155,72,110,117,169,227,41,
+79,84,105,95,53,122,115,21,184,242,112,195,76,31,89,49,
+202,79,87,65,17,89,107,133,197,201,139,185,244,21,138,27,
+13,34,134,240,12,118,125,14,225,86,239,236,251,219,195,51,
+101,185,228,92,202,103,145,237,151,42,124,221,21,6,6,216,
+86,87,25,232,38,241,142,114,123,148,139,9,108,0,120,235,
+11,10,44,168,7,246,200,175,221,190,154,78,218,15,235,157,
+109,227,38,143,208,67,219,114,204,29,189,180,185,121,164,110,
+21,238,24,201,174,158,47,27,115,15,234,176,237,133,13,191,
+190,211,182,143,237,23,109,209,241,121,204,36,28,227,164,196,
+6,149,102,149,149,184,26,215,14,132,153,119,56,129,109,163,
+178,73,48,221,168,94,31,234,88,224,220,101,63,55,235,70,
+1,208,76,167,20,27,114,228,38,31,165,187,159,89,162,228,
+42,36,44,85,203,146,72,29,205,50,114,164,156,157,242,117,
+110,203,11,110,229,218,33,4,183,57,194,158,76,42,82,255,
+48,147,194,148,215,68,166,100,236,246,21,85,80,103,233,128,
+27,113,148,174,42,208,130,50,168,169,183,50,114,207,158,173,
+114,168,74,237,187,218,226,114,228,112,183,229,37,227,235,167,
+237,236,160,87,180,80,42,18,179,168,108,72,136,88,212,105,
+137,251,146,251,49,233,6,213,139,178,45,168,139,107,238,74,
+169,210,57,157,59,113,78,31,173,176,245,2,22,26,40,65,
+226,84,201,248,90,57,204,60,173,230,121,87,174,236,210,193,
+100,14,61,114,238,189,182,60,174,134,22,75,242,193,207,25,
+48,61,219,245,218,44,137,58,148,135,89,18,140,139,216,67,
+86,200,159,20,155,69,103,196,137,8,178,55,93,199,137,152,
+182,244,150,199,71,66,204,155,56,148,186,56,193,41,54,31,
+47,93,100,129,146,194,50,5,91,162,206,1,59,61,63,58,
+111,203,133,59,116,14,108,161,187,252,96,159,174,6,101,97,
+46,20,177,135,39,120,251,40,115,21,131,51,145,82,224,30,
+157,237,21,232,74,188,188,198,43,2,0,34,42,102,116,190,
+56,10,54,200,212,156,56,33,85,144,164,42,24,150,173,40,
+131,25,204,210,36,115,62,8,99,108,152,98,53,142,201,245,
+239,160,35,136,223,145,247,72,174,42,136,32,80,50,151,57,
+159,149,82,145,67,39,13,198,11,176,176,66,230,21,183,12,
+175,85,113,125,121,159,217,116,164,2,77,204,251,56,164,228,
+137,65,190,11,207,240,135,159,87,71,11,206,161,85,202,175,
+150,68,65,89,220,115,185,22,7,145,80,38,150,140,164,151,
+245,217,235,65,174,58,172,181,202,228,115,139,200,50,7,164,
+155,116,105,35,159,221,146,109,120,105,105,10,175,124,144,77,
+168,49,113,41,76,61,212,45,212,41,139,87,59,162,202,216,
+77,90,87,241,145,105,74,93,209,135,204,58,181,68,254,18,
+116,180,146,242,170,145,160,118,208,140,81,166,178,37,38,233,
+68,69,56,172,88,203,122,245,225,10,71,240,241,0,106,204,
+236,235,85,23,77,13,106,163,85,181,191,21,58,203,246,177,
+222,29,78,98,81,55,223,114,254,199,238,34,151,110,90,203,
+211,77,186,151,74,29,216,82,38,155,84,210,249,155,228,134,
+79,122,242,161,39,116,182,220,64,212,37,48,45,27,134,220,
+74,99,90,92,82,157,118,53,161,213,156,69,52,135,212,202,
+153,31,198,173,205,189,122,185,24,181,194,10,151,133,170,184,
+129,203,237,205,129,70,119,135,116,116,146,150,229,169,213,218,
+96,157,123,10,78,5,142,27,111,207,236,217,41,90,222,43,
+216,114,38,134,161,48,52,223,59,234,116,212,212,78,177,19,
+162,208,87,5,185,107,172,100,153,245,134,153,149,81,147,95,
+140,153,210,5,3,24,208,231,208,50,69,42,48,85,236,72,
+132,212,105,212,77,37,183,138,79,26,150,198,199,180,204,252,
+248,198,56,55,37,154,59,231,67,155,211,138,246,34,47,179,
+151,119,120,104,30,132,91,189,181,10,62,236,9,23,157,150,
+41,231,235,168,32,247,70,166,210,80,141,153,214,206,29,119,
+210,121,160,234,61,190,93,202,192,87,69,183,103,131,178,180,
+243,160,149,133,74,171,6,71,85,76,56,146,202,131,86,149,
+90,68,29,174,18,80,181,93,158,143,229,156,160,44,131,227,
+147,158,206,249,62,151,181,72,93,235,211,150,142,48,52,41,
+15,15,154,131,136,82,229,90,57,199,73,225,48,110,164,206,
+39,251,146,196,7,101,24,157,102,136,145,110,115,128,115,41,
+109,61,14,5,132,117,133,84,166,146,198,97,92,89,167,167,
+183,233,114,91,213,76,6,93,117,52,70,85,35,73,125,20,
+148,85,171,147,111,242,39,103,187,62,154,133,57,211,168,215,
+254,148,59,111,226,152,91,111,33,244,128,220,114,35,161,113,
+204,89,2,224,236,148,33,95,202,187,171,102,210,196,34,78,
+138,239,101,208,210,250,180,238,46,195,242,254,196,106,43,212,
+181,134,246,46,67,18,54,174,143,210,156,171,175,137,121,184,
+204,117,223,128,7,254,107,12,122,112,229,201,237,23,134,209,
+178,27,144,100,144,88,23,254,104,206,245,127,128,151,136,163,
+92,66,166,104,109,132,92,110,238,227,41,117,98,203,100,73,
+70,234,193,147,212,6,199,248,132,130,130,147,233,51,138,60,
+68,208,28,173,172,92,239,167,47,12,82,45,95,221,122,201,
+91,157,92,167,10,214,213,111,84,246,138,213,8,40,58,202,
+39,4,169,111,0,15,98,224,164,146,37,138,22,19,110,32,
+17,113,237,223,114,213,112,93,159,159,226,216,250,218,190,26,
+59,251,225,215,247,121,33,171,45,175,241,115,76,236,173,175,
+243,243,112,85,185,214,175,228,98,114,153,252,18,179,11,177,
+166,227,48,243,66,124,246,142,32,125,100,195,63,165,230,95,
+234,180,112,238,47,209,71,110,75,231,125,84,122,185,178,25,
+129,39,56,203,88,50,193,47,103,66,156,39,195,162,96,123,
+187,144,181,188,51,201,183,221,228,75,117,199,134,111,246,171,
+211,32,220,146,175,28,99,170,207,82,215,226,240,7,27,146,
+231,104,169,46,241,80,5,40,222,57,167,154,28,97,197,36,
+198,192,219,100,111,186,153,236,113,177,44,134,116,176,254,53,
+146,78,245,136,123,150,197,109,9,227,68,136,237,240,124,187,
+96,109,48,170,226,194,100,26,201,124,208,177,28,244,170,243,
+90,76,178,191,81,206,235,245,214,38,67,84,231,246,220,164,
+54,107,16,24,102,182,121,185,1,98,186,67,169,154,158,74,
+130,193,118,65,185,73,30,104,233,154,131,158,230,228,10,235,
+112,215,179,33,21,225,249,14,100,2,212,150,20,22,177,61,
+58,234,119,102,46,239,27,41,58,179,114,125,8,240,158,153,
+140,178,81,228,59,209,205,5,127,39,205,14,93,45,54,20,
+6,22,110,77,172,177,233,116,188,48,204,155,174,151,247,252,
+103,188,96,133,237,72,223,168,230,62,191,9,88,124,138,119,
+141,128,64,169,224,32,212,213,105,102,79,106,215,250,99,219,
+187,162,174,249,198,77,178,134,113,249,165,203,55,107,9,248,
+171,46,225,180,98,239,33,151,113,150,102,214,20,48,114,188,
+235,7,92,208,105,69,122,243,69,157,15,184,169,211,58,155,
+219,223,216,105,241,190,253,205,157,62,73,188,42,95,39,248,
+224,251,58,109,176,245,17,238,237,188,107,71,31,112,127,167,
+149,147,219,223,227,233,7,163,26,239,243,244,114,207,117,247,
+88,150,149,221,86,247,122,90,22,218,254,126,207,90,198,190,
+229,158,79,159,136,246,159,181,197,29,87,124,126,13,106,216,
+114,127,240,85,159,14,227,221,227,202,79,71,164,148,110,255,
+44,231,228,30,231,22,208,6,195,241,171,111,3,53,240,30,
+227,86,208,250,136,98,237,150,239,227,213,64,219,93,12,106,
+192,61,198,5,161,110,178,115,219,139,66,45,5,105,165,180,
+213,133,161,54,2,189,213,197,161,117,178,113,139,11,68,29,
+134,123,140,139,68,173,136,172,191,80,212,152,187,119,93,40,
+234,152,220,91,92,44,106,107,17,60,49,185,245,5,163,158,
+160,220,242,162,81,71,20,220,247,194,209,91,234,60,31,235,
+198,81,171,55,31,233,230,81,191,164,219,125,122,171,43,72,
+189,197,111,127,7,169,179,236,237,239,34,117,116,198,118,119,
+146,58,34,242,161,119,147,154,114,113,11,99,187,43,74,13,
+156,109,175,42,117,120,104,203,43,75,45,158,31,229,234,82,
+59,177,199,184,194,212,197,123,253,85,166,71,94,13,123,184,
+253,93,166,6,218,87,220,105,90,210,239,7,109,157,30,188,
+227,58,83,199,217,242,174,51,181,10,249,49,174,53,173,26,
+117,119,93,111,170,231,213,124,189,169,35,151,30,237,154,83,
+75,145,143,113,221,169,107,57,60,198,181,167,54,208,122,239,
+235,79,75,100,241,188,77,53,95,95,121,243,169,129,84,190,
+1,245,142,38,79,213,155,80,13,164,71,184,16,213,114,205,
+246,23,163,186,232,218,242,102,212,138,255,177,245,13,169,6,
+212,163,220,148,90,103,113,111,113,99,170,103,89,221,125,115,
+170,123,152,223,191,57,181,98,64,250,200,122,216,205,169,247,
+155,85,45,171,124,127,255,203,83,189,194,120,123,121,170,27,
+194,184,239,37,170,56,198,10,196,42,249,126,58,130,9,146,
+194,99,253,173,174,86,117,246,125,155,43,86,45,7,111,121,
+213,170,245,139,30,229,202,85,171,105,30,225,234,85,207,244,
+189,251,10,86,151,130,236,229,6,149,139,87,75,132,246,162,
+45,14,187,71,157,243,81,87,140,223,117,77,111,172,222,72,
+247,195,58,22,111,135,221,46,94,66,120,244,174,51,60,233,
+182,240,185,97,23,159,232,15,12,36,61,6,117,199,114,0,
+193,211,3,250,187,251,215,113,183,63,22,103,221,225,251,222,
+120,12,80,15,63,137,206,217,25,12,210,57,60,133,199,59,
+31,237,50,186,127,61,234,158,141,197,199,119,221,190,24,224,
+104,31,123,48,189,209,184,131,239,245,250,226,227,176,55,238,
+245,79,8,46,118,226,26,246,78,222,141,197,187,193,233,113,
+119,72,237,186,158,14,134,6,24,1,224,43,197,186,35,113,
+54,28,124,232,29,251,107,157,60,233,140,96,57,147,39,230,
+130,51,179,26,88,117,167,111,17,247,115,175,127,220,18,221,
+30,129,236,254,245,108,216,29,33,130,96,201,189,247,176,148,
+46,124,217,235,31,157,158,31,83,111,176,67,128,212,31,140,
+97,28,88,50,60,54,30,16,238,172,227,193,239,232,209,112,
+122,48,94,249,118,52,108,42,214,116,61,154,1,101,175,73,
+35,92,3,48,216,161,97,111,244,179,128,165,169,29,248,203,
+121,199,0,132,109,0,88,239,59,253,35,218,89,119,86,14,
+5,32,58,196,167,193,57,230,15,1,47,167,199,30,218,16,
+149,93,113,220,125,219,61,26,247,62,0,93,192,147,48,220,
+232,252,189,5,198,59,52,26,19,34,79,79,69,191,123,4,
+235,192,183,71,221,225,135,222,17,225,105,216,61,235,244,134,
+130,218,170,13,135,8,109,208,175,151,138,47,219,184,253,64,
+210,221,15,72,76,231,253,83,196,202,176,251,151,115,88,111,
+13,73,33,204,206,9,144,47,34,31,94,181,228,170,40,232,
+99,15,38,133,215,217,149,201,168,69,175,194,23,150,124,62,
+1,65,14,196,251,206,39,238,241,102,169,130,9,14,166,97,
+154,193,249,244,5,91,96,201,190,115,56,64,92,29,226,215,
+52,77,152,24,32,206,0,195,45,62,238,188,239,156,116,71,
+14,49,209,84,84,191,186,150,24,157,117,143,122,248,11,124,
+15,196,12,180,114,42,28,138,63,26,0,219,254,229,28,169,
+0,190,80,192,68,7,200,1,33,33,125,243,150,11,100,122,
+164,221,190,166,53,152,139,18,4,21,114,216,177,115,169,210,
+181,56,29,140,136,120,143,59,227,142,160,21,192,207,195,46,
+60,109,0,13,187,125,192,43,49,112,231,232,232,124,8,204,
+140,79,226,155,48,187,209,57,176,119,175,207,155,136,132,68,
+98,164,55,60,54,156,139,251,97,177,212,233,157,158,15,53,
+237,154,73,194,76,6,128,106,4,77,180,107,55,112,52,120,
+59,6,62,235,238,182,136,118,68,239,173,85,33,231,71,239,
+212,174,227,32,238,134,191,131,173,59,236,194,227,157,227,15,
+61,226,116,30,15,120,109,212,83,56,131,143,16,130,1,167,
+240,221,216,129,16,254,221,121,169,43,94,138,100,46,77,18,
+23,255,15,136,29,168,176,

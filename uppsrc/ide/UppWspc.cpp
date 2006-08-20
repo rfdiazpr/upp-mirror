@@ -43,7 +43,7 @@ void WorkspaceWork::ScanWorkspace() {
 	for(int i = 0; i < wspc.package.GetCount(); i++)
 		package.Add(wspc.package.GetKey(i),
 		            wspc.GetPackage(i).optimize_speed ? IdeCommonImg::FastPackage() : IdeImg::Package(),
-		            i == 0 ? ListFont().Bold() : ListFont(), SColorText, false, 0, Null, SColorLtHighlight);
+		            i == 0 ? ListFont().Bold() : ListFont(), SColorText, false, 0, Null, SColorMark);
 	if(!organizer) {
 		package.Add(prjaux, IdeImg::PrjAux(), ListFont(), Magenta);
 		package.Add(ideaux, IdeImg::IdeAux(), ListFont(), Magenta);
@@ -123,7 +123,7 @@ void WorkspaceWork::LoadActualPackage()
 		else
 		if(open) {
 			filelist.Add(f, IdeFileImage(f, f.optimize_speed), ListFont(), SColorText, false, 0,
-			             Null, LtBlue);
+			             Null, SColorMark);
 			fileindex.Add(i);
 		}
 	}

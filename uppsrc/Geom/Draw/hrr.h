@@ -85,14 +85,14 @@ public:
 	{
 		Block(const HRR& hrr) : hrr(hrr) {}
 
-		void       Init(Size size, Color color, bool mono);
+		void        Init(Size size, RGBA color);
 
-		Image      block;
-		Size       size;
-		Rect       area;
-		Rectf      log_area;
-		int        level;
-		const HRR& hrr;
+		ImageBuffer block;
+		Size        size;
+		Rect        area;
+		Rectf       log_area;
+		int         level;
+		const HRR&  hrr;
 	};
 
 	enum
@@ -114,7 +114,7 @@ public:
 	Matrixf                    GetPixMapMatrix(int level, int x, int y) const;
 	int64                      GetFileWriteSize() const;
 
-	void                       SetCacheSizeLimit(int cl)       { FlushCache(cache_sizeof_limit = cl, -1, -1); }
+	void                       SetCacheSizeLimit(int cl)       { FlushCache(cache_sizeof_limit = cl); }
 	int                        GetCacheSizeLimit() const       { return cache_sizeof_limit; }
 	int                        GetCacheSize() const            { return cache_sizeof + directory_sizeof; }
 	void                       ClearCache();
@@ -140,14 +140,16 @@ public:
 
 	const HRRInfo&             GetInfo() const                 { return info; }
 
-	static One<ImageEncoder> (*CreateEncoder)(const HRRInfo& info);
-	static One<ImageEncoder>   StdCreateEncoder(const HRRInfo& info);
+	static One<StreamRasterEncoder> (*CreateEncoder)(const HRRInfo& info);
+	static One<StreamRaster>        (*CreateDecoder)(const HRRInfo& info);
+	static One<StreamRasterEncoder> StdCreateEncoder(const HRRInfo& info);
+	static One<StreamRaster>        StdCreateDecoder(const HRRInfo& info);
 
 private:
 	bool                       Write(Writeback drawback, bool downscale, int level, int px, int py,
-		ImageEncoder& format, Block *put);
+		StreamRasterEncoder& format, Block *put);
 	void                       Serialize();
-	void                       FlushCache(int limit, int keep_pixel, int keep_mask);
+	void                       FlushCache(int limit);
 
 private:
 	HRRInfo                    info;

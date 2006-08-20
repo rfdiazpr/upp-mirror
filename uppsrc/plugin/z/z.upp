@@ -2,9 +2,6 @@ optimize_speed;
 
 flags(NOTMFC) "!GUI !CONSOLE";
 
-uses
-	Core;
-
 file
 	Wrapper readonly separator,
 	z.h,

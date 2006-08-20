@@ -1532,14 +1532,8 @@ void ArrayCtrl::PlaceEdits() {
 		Column& m = column[i];
 		if(m.edit) {
 			m.edit->Show(editmode);
-			if(editmode) {
-				Rect r = GetCellRect(cursor, i);
-				const HeaderCtrl::Column& col = header.Tab(i);
-				int cm = col.GetMargin();
-				r.left += cm;
-				r.right -= cm + vertgrid;
-				m.edit->SetRect(r);
-			}
+			if(editmode)
+				m.edit->SetRect(GetCellRectM(cursor, i));
 		}
 	}
 }

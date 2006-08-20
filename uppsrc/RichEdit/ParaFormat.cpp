@@ -131,6 +131,10 @@ void ParaFormating::Set(int unit, const RichText::FormatInfo& formatinfo)
 		bullet <<= formatinfo.bullet;
 	else
 		bullet <<= Null;
+	if(RichText::SPACING & formatinfo.paravalid)
+		linespacing <<= formatinfo.linespacing;
+	else
+		linespacing <<= Null;
 	if(RichText::NUMBERING & formatinfo.paravalid) {
 		before_number = formatinfo.before_number.ToWString();
 		after_number = formatinfo.after_number.ToWString();
@@ -205,6 +209,10 @@ dword ParaFormating::Get(RichText::FormatInfo& formatinfo)
 		formatinfo.bullet = ~bullet;
 		v |= RichText::BULLET;
 	}
+	if(!IsNull(linespacing)) {
+		formatinfo.linespacing = ~linespacing;
+		v |= RichText::SPACING;
+	}
 	if(IsNumbering()) {
 		(RichPara::NumberFormat&)formatinfo = GetNumbering();
 		v |= RichText::NUMBERING;
@@ -240,8 +248,12 @@ ParaFormating::ParaFormating()
 	tabs.AddColumn(t_("Tab position"), 2).Edit(tabpos).SetConvert(tabpos);
 	tabs.AddColumn(t_("Type"), 2).Edit(tabtype).SetConvert(tabtype).InsertValue(ALIGN_LEFT);
 	tabs.AddColumn(t_("Fill"), 1).Edit(tabfill).SetConvert(tabfill).InsertValue(0);
+	tabs.ColumnWidths("71 101 98");
 	tabs.Appending().Removing().NoAskRemove();
 	tabs.WhenAcceptEdit = tabs.WhenArrayAction = THISBACK(SetMod);
+	linespacing.Add(0, "1.0");
+	linespacing.Add(-1, "1.5");
+	linespacing.Add(-2, "2.0");
 	bullet.Add(RichPara::BULLET_NONE, RichEditImg::NoneBullet());
 	bullet.Add(RichPara::BULLET_ROUND, RichEditImg::RoundBullet());
 	bullet.Add(RichPara::BULLET_ROUNDWHITE, RichEditImg::RoundWhiteBullet());

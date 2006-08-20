@@ -98,6 +98,12 @@ void QTFEncodeParaFormat(String& qtf, const RichPara::Format& format, const Rich
 		qtf << 'K';
 	if(style.orphan != format.orphan)
 		qtf << 'Q';
+	if(style.linespacing != format.linespacing)
+		switch(format.linespacing) {
+		case RichPara::LSP15: qtf << "ph"; break;
+		case RichPara::LSP20: qtf << "pd"; break;
+		default:              qtf << "po"; break;
+		}
 	if(style.bullet != format.bullet) {
 		qtf << 'O';
 		switch(format.bullet) {
@@ -371,6 +377,7 @@ void QTFEncodeTxt(String& qtf, const RichTxt& text, const RichStyles& styles, co
 					FmtNumber2(qtf, 'r', cf.border.right, f.border.right, cf.margin.right, f.margin.right);
 					FmtNumber2(qtf, 't', cf.border.top, f.border.top, cf.margin.top, f.margin.top);
 					FmtNumber2(qtf, 'b', cf.border.bottom, f.border.bottom, cf.margin.bottom, f.margin.bottom);
+					FmtNumber(qtf, 'H', cf.minheight, f.minheight);
 					if(f.color != cf.color)
 						qtf << '@' << FmtColor(f.color);
 					if(f.bordercolor != cf.bordercolor)

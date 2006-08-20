@@ -192,4 +192,14 @@ TopWindow& TopWindow::ExStyle(dword _exstyle)
 	return *this;
 }
 
+TopWindow& TopWindow::TopMost(bool b)
+{
+	return ExStyle(b ? GetExStyle() | WS_EX_TOPMOST : GetExStyle() & ~WS_EX_TOPMOST);
+}
+
+bool TopWindow::IsTopMost() const
+{
+	return GetExStyle() & WS_EX_TOPMOST;
+}
+
 #endif

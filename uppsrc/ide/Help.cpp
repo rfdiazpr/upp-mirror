@@ -6,8 +6,6 @@
 
 #define TOPICFILE <ide/app.tpp/all.i>
 #include <Core/topic_group.h>
-#define TOPICFILE <Esc/srcdoc.tpp/all.i>
-#include <Core/topic_group.h>
 
 Size MakeLogo(Ctrl& parent, Array<Ctrl>& ctrl)
 {
@@ -89,58 +87,139 @@ void Ide::About()
 	AboutDlg().Execute();
 }
 
-void Ide::SyncDocTree()
-{
-	SyncRefs();
-	doc.ClearTree();
-	VectorMap<String, VectorMap<String, Vector<String> > > map;
-	const Workspace& wspc = IdeWorkspace();
-	for(int i = 0; i < wspc.GetCount(); i++) {
-		String package = wspc[i];
-		String pdir = PackageDirectory(package);
-		for(FindFile ff(AppendFileName(pdir, "*.tpp")); ff; ff.Next())
-			if(ff.IsFolder()) {
-				String group = GetFileTitle(ff.GetName());
-				String dir = AppendFileName(pdir, ff.GetName());
-				for(FindFile ft(AppendFileName(dir, "*.tpp")); ft; ft.Next())
-					if(ft.IsFile())
-						map.GetAdd(group).GetAdd(package).Add(GetFileTitle(ft.GetName()));
-			}
+struct GatherLinksIterator : RichText::Iterator {
+	Index<String> link;
+
+	virtual bool operator()(int pos, const RichPara& para)
+	{
+		for(int i = 0; i < para.GetCount(); i++) {
+			String l = para[i].format.link;
+			if(!IsNull(l))
+				link.FindAdd(l);
+		}
+		return false;
 	}
-	for(int i = 0; i < map.GetCount(); i++) {
+};
+
+void GatherLinks(Index<String>& link, const char *topic)
+{
+	if(link.Find(topic) < 0) {
+		Topic p = GetTopic(topic);
+		if(IsNull(p.text))
+			return;
+		link.Add(topic);
+		RichText txt = ParseQTF(p.text);
+		SyncTopicFile(txt, topic, ":ide:", p.title);
+		GatherLinksIterator ti;
+		txt.Iterate(ti);
+		for(int i = 0; i < ti.link.GetCount(); i++)
+			GatherLinks(link, ti.link[i]);
+	}
+}
+
+void TopicWindow::SyncDocTree()
+{
+	Vector<String> ss = Split((String)~search, ' ');
+	Vector<int> sdx;
+	for(int i = 0; i < ss.GetCount(); i++)
+		sdx.Add(TopicWordIndex(ToUtf8(ToLower(FromUtf8(ss[i])))));
+
+	ClearTree();
+
+	static Index<String> idelink;
+	String hdx = "topic://ide/app/index$en-us";
+	if(idelink.GetCount() == 0)
+		GatherLinks(idelink, hdx);
+	int ide = AddTree(0, IdeImg::Package(), hdx, "TheIDE help");
+	for(int i = 0; i < idelink.GetCount(); i++)
+		if(idelink[i] != hdx && MatchTopicLink(idelink[i], sdx))
+			AddTree(ide, TopicImg::Topic(), idelink[i], GetTopic(idelink[i]).title);
+
+	Index<String> used;
+	const Workspace& wspc = GetIdeWorkspace();
+	for(int i = 0; i < wspc.GetCount(); i++)
+		used.Add(wspc[i]);
+
+	VectorMap<String, VectorMap<String, Vector<String> > > map;
+	Vector<String> upp = GetUppDirs();
+	String lng = ~lang;
+	lang.Clear();
+	lang.Add("All");
+	Index<String> li;
+	for(int i = 0; i < upp.GetCount(); i++) {
 		TopicLink tl;
-		tl.group = map.GetKey(i);
-		VectorMap<String, Vector<String> >& group = map[i];
-		int gid = doc.AddTree(0, Null, "\1" + tl.group, tl.group);
-		for(int i = 0; i < group.GetCount(); i++) {
-			Vector<String>& package = group[i];
-			int q = FindIndex(package, "index$en-us");
-			tl.package = group.GetKey(i);
-			int pid;
-			if(q >= 0) {
-				tl.topic = "index$en-us";
-				pid = doc.AddTree(gid, TopicImg::Package(), '\2' + TopicLinkString(tl),
-				                  group.GetKey(i));
-			}
-			else
-				pid = doc.AddTree(gid, TopicImg::Package(), Null, group.GetKey(i));
-			for(int i = 0; i < package.GetCount(); i++) {
-				tl.topic = package[i];
-				String p = TopicLinkString(tl);
-				String t = GetTopicTitle(p);
-				doc.AddTree(pid, TopicImg::Topic(), p, t);
+		for(FindFile pff(AppendFileName(upp[i], "*.*")); pff; pff.Next()) {
+			if(pff.IsFolder()) {
+				String pdir = AppendFileName(upp[i], pff.GetName());
+				tl.package = pff.GetName();
+				for(FindFile ff(AppendFileName(pdir, "*.tpp")); ff; ff.Next())
+					if(ff.IsFolder()) {
+						tl.group = GetFileTitle(ff.GetName());
+						String dir = AppendFileName(pdir, ff.GetName());
+						for(FindFile ft(AppendFileName(dir, "*.tpp")); ft; ft.Next())
+							if(ft.IsFile()) {
+								tl.topic = GetFileTitle(ft.GetName());
+								int q = tl.topic.ReverseFind('$');
+								String l;
+								if(q >= 0) {
+									l = ToUpper(tl.topic.Mid(q + 1));
+									li.FindAdd(l);
+								}
+								String link = TopicLinkString(tl);
+								if(idelink.Find(link) < 0 && MatchTopicLink(link, sdx) &&
+								   (lng == "All" || lng == l))
+									map.GetAdd(tl.package).GetAdd(tl.group).Add(tl.topic);
+							}
+					}
 			}
 		}
 	}
-	doc.FinishTree();
-//	SetBar();
+	Vector<String> sli = li.PickKeys();
+	Sort(sli);
+	for(int i = 0; i < sli.GetCount(); i++)
+		lang.Add(sli[i]);
+	if(lang.Find(lng))
+		lang <<= lng;
+
+	int usid = AddTree(0, IdeImg::Package(), Null, "Used packages");
+	int otid = AddTree(0, IdeImg::Package(), Null, "Other packages");
+
+	for(int i = 0; i < map.GetCount(); i++) {
+		TopicLink tl;
+		tl.package = map.GetKey(i);
+		int pid = AddTree(used.Find(tl.package) >= 0 ? usid : otid,
+		                      TopicImg::Package(), Null, tl.package);
+		VectorMap<String, Vector<String> >& package = map[i];
+		for(int i = 0; i < package.GetCount(); i++) {
+			tl.group = package.GetKey(i);
+			if(all || tl.group == "src" || tl.group == "srcdoc") {
+				int gid = AddTree(pid, Null, "\1" + tl.group, tl.group);
+				Vector<String> group = package[i];
+				for(int i = 0; i < group.GetCount(); i++) {
+					tl.topic = group[i];
+					String p = TopicLinkString(tl);
+					String t = GetTopicTitle(p);
+					AddTree(gid, TopicImg::Topic(), p, t);
+				}
+			}
+		}
+	}
+	SortTree(ide);
+	SortTree(usid);
+	SortTree(otid);
+	FinishTree();
+	if(sdx.GetCount())
+		OpenDeep();
 }
 
 void Ide::ShowTopics()
 {
 	if(!doc.IsOpen()) {
 		doc.OpenMain();
-		SyncDocTree();
+		GetRefLinks("");
+		doc.SyncDocTree();
+		if(doc.GetCurrent().IsEmpty())
+			doc.GoTo("topic://ide/app/index$en-us");
 	}
 	else
 		doc.SetForeground();
@@ -149,7 +228,7 @@ void Ide::ShowTopics()
 void Ide::RefreshBrowser()
 {
 	browser.Refresh();
-	SyncDocTree();
+	doc.SyncDocTree();
 }
 
 void Ide::ShowTopic(String link)
@@ -158,9 +237,25 @@ void Ide::ShowTopic(String link)
 	doc.GoTo(link + '#' + browser.GetItem());
 }
 
+Vector<String> GetTypeRefLinks(const String& t, String &label)
+{
+	const char *tp[] = { "", "::struct", "::class", "::union", "::typedef", "::enum" };
+	Vector<String> f;
+	for(int i = 0; i < __countof(tp); i++) {
+		label = t + tp[i];
+		f = GetRefLinks(label);
+		if(f.GetCount())
+			break;
+	}
+	return f;
+}
+
 Topic TopicWindow::AcquireTopic(const String& t)
 {
 	String topic = t;
+	Topic it = GetTopic(topic.Mid(1));
+	if(it.text.GetCount())
+		return it;
 	if(*topic == '\1') {
 		Topic t;
 		t.title = "Summary";
@@ -177,14 +272,86 @@ Topic TopicWindow::AcquireTopic(const String& t)
 	}
 	if(*topic == '\2')
 		topic = topic.Mid(1);
+	if(topic[0] == ':' && topic[1] == ':') {
+		String lbl;
+		Vector<String> link = GetTypeRefLinks(topic, lbl);
+		if(link.GetCount() == 0)
+			return Topic();
+		if(link.GetCount() == 1)
+			topic = link[0];
+		else {
+			WithSimpleListLayout<TopWindow> dlg;
+			CtrlLayoutOKCancel(dlg, "Choose one of more link targets");
+			dlg.list.AddKey();
+			dlg.list.AddColumn("Topic");
+			for(int i = 0; i < link.GetCount(); i++)
+				dlg.list.Add(link[i], GetTopicTitle(link[i]));
+			dlg.list.SetCursor(0);
+			if(dlg.Run() != IDOK || !dlg.list.IsCursor())
+				return Topic();
+			topic = dlg.list.GetKey();
+		}
+		if(lbl.GetCount())
+			topic << '#' << lbl;
+	}
 	TopicLink tl = ParseTopicLink(topic);
 	if(!IsNull(tl.package)) {
 		String path = AppendFileName(
 						AppendFileName(PackageDirectory(tl.package), tl.group + ".tpp"),
 						tl.topic + ".tpp");
-		return ReadTopic(LoadFile(path));
+		Topic t = ReadTopic(LoadFile(path));
+		t.label = tl.label;
+		tl.label.Clear();
+		t.link = TopicLinkString(tl);
+		return t;
 	}
 	return Topic();
+}
+
+struct HighlightWords : RichText::Iterator {
+	Index<String> words;
+	struct Pos : Moveable<Pos> { int pos, len; };
+	Vector<Pos>   pos;
+
+	virtual bool operator()(int tpos, const RichPara& para) {
+		WString text = para.GetText();
+		const wchar *s = text;
+		for(;;) {
+			while(!IsLetter(*s) && *s)
+				s++;
+			if(*s == '\0')
+				break;
+			WStringBuffer wb;
+			const wchar *b = s;
+			while(IsLetter(*s))
+				wb.Cat(ToLower(*s++));
+			if(words.Find(FromUnicode(wb)) >= 0) {
+				Pos& p = pos.Add();
+				p.pos = b - ~text + tpos;
+				p.len = s - b;
+			}
+		}
+		return false;
+	}
+};
+
+void TopicWindow::FinishText(RichText& text)
+{
+	if(!showwords)
+		return;
+	Vector<String> ss = Split((String)~search, ' ');
+	if(ss.GetCount() == 0)
+		return;
+	HighlightWords hw;
+	hw.words = ss;
+	text.Iterate(hw);
+	RichText::FormatInfo fi;
+	fi.charvalid = RichText::PAPER|RichText::INK;
+	fi.paravalid = 0;
+	fi.paper = SColorHighlight();
+	fi.ink = SColorHighlightText();
+	for(int i = 0; i < hw.pos.GetCount(); i++)
+		text.ApplyFormatInfo(hw.pos[i].pos, fi, hw.pos[i].len);
 }
 
 void TopicWindow::OpenTopic()
@@ -192,22 +359,87 @@ void TopicWindow::OpenTopic()
 	WhenTopic();
 }
 
+void TopicWindow::Search()
+{
+	if(issearch) {
+		search <<= Null;
+		issearch = false;
+	}
+	else {
+		search.AddHistory(20);
+		issearch = true;
+	}
+	SyncDocTree();
+	SetBar();
+}
+
+void TopicWindow::ShowWords()
+{
+	showwords = !showwords;
+	SetBar();
+	GoTo(GetCurrent());
+}
+
+void TopicWindow::All()
+{
+	all = !all;
+	SyncDocTree();
+	SetBar();
+}
+
+void TopicWindow::Lang()
+{
+	SyncDocTree();
+	SetBar();
+}
+
+bool TopicWindow::Key(dword key, int count)
+{
+	if(key == K_ENTER && search.HasFocus()) {
+		Search();
+		return true;
+	}
+	return HelpWindow::Key(key, count);
+}
+
 void  TopicWindow::BarEx(Bar& bar)
 {
+	bar.Gap();
+	bar.Add(lang, HorzLayoutZoom(60));
+	bar.Add("All topics", IdeImg::HelpAll(), THISBACK(All))
+	   .Check(all);
+	bar.Gap(HorzLayoutZoom(30));
+	bar.Add(search_label, HorzLayoutZoom(50));
+	bar.Add(search, HorzLayoutZoom(300));
+	bar.Add("Full text search", IdeImg::HelpSearch(), THISBACK(Search))
+	   .Check(issearch);
+	bar.Add("Highlight search keywords in topic", IdeImg::ShowWords(), THISBACK(ShowWords))
+	   .Check(showwords);
 	bar.GapRight();
+	bar.Separator();
 	bar.Add(IdeKeys::AK_TOPICEDITOR, TopicImg::Topic(), THISBACK(OpenTopic));
+}
+
+void TopicWindow::Serialize(Stream& s)
+{
+	int version = 2;
+	s / version;
+	search.SerializeList(s);
+	if(version >= 1)
+		s % showwords;
+	if(version >= 2)
+		s % all;
 }
 
 TopicWindow::TopicWindow()
 {
 	Icon(IdeImg::doc());
-}
-
-void Ide::OpenHelp()
-{
-	if(!help.IsOpen())
-		help.OpenMain();
-	else
-		help.SetForeground();
-	help.GoTo("topic://ide/app/HelpPage$en-us");
+	search_label = "Search: ";
+	showwords = issearch = all = false;
+	lang.Add("All");
+	lang.Add("EN-US");
+	lang <<= "EN-US";
+	lang <<= THISBACK(Lang);
+	lang.Tip("Language"),
+	search.Tip("Full text search");
 }

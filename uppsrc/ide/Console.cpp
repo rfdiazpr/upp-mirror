@@ -88,18 +88,7 @@ int Console::Flush()
 			continue;
 		String s;
 		slot.process->Read(s);
-		if(!slot.process->IsRunning()) {
-			slot.output.Cat(s);
-			Kill(i);
-			if(slot.exitcode != 0 && verbosebuild)
-				spooled_output.Cat("Error executing " + slot.cmdline + "\n");
-			if(console_lock == i)
-				console_lock = -1;
-			FlushConsole();
-			CheckEndGroup();
-			continue;
-		}
-		running = true;
+		RLOG(slot.cmdline << "->" << s << "\n\n");
 		if(!IsNull(s)) {
 			done_output = true;
 			if(slot.outfile)
@@ -113,6 +102,17 @@ int Console::Flush()
 					slot.output.Cat(s);
 			}
 		}
+		if(!slot.process->IsRunning()) {
+			Kill(i);
+			if(slot.exitcode != 0 && verbosebuild)
+				spooled_output.Cat("Error executing " + slot.cmdline + "\n");
+			if(console_lock == i)
+				console_lock = -1;
+			FlushConsole();
+			CheckEndGroup();
+			continue;
+		}
+		running = true;
 	}
 	return !running ? -1 : done_output ? 1 : 0;
 }

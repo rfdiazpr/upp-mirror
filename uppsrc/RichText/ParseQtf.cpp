@@ -121,7 +121,7 @@ RichQtfParser::RichQtfParser(bool _scolors)
 	format.Face(Font::ARIAL);
 	format.Height(100);
 	format.charset = GetDefaultCharset();
-	format.language = LNG_ENGLISH;
+	format.language = 0;
 	breakpage = false;
 	istable = false;
 	oldtab = false;
@@ -292,7 +292,7 @@ void RichQtfParser::ReadObject()
 		int yd = 0;
 		if(Key('/'))
 			yd = GetNumber();
-		String data;
+		StringBuffer data;
 		for(;;) {
 			while(*term < 32 && *term > 0) term++;
 			if((byte)*term >= ' ' && (byte)*term <= 127 || *term == '\0') break;
@@ -392,6 +392,7 @@ void RichQtfParser::TableFormat(bool bw)
 		case 'r': Number2(a, b); S(t.format.border.right, a); S(t.format.margin.right, b); break;
 		case 't': Number2(a, b); S(t.format.border.top, a); S(t.format.margin.top, b); break;
 		case 'b': Number2(a, b); S(t.format.border.bottom, a); S(t.format.margin.bottom, b); break;
+		case 'H': t.format.minheight = ReadNumber(); break;
 		case '@': t.format.color = GetColor(); break;
 		case 'R': t.format.bordercolor = GetColor(); break;
 		case '!': t.format = RichCell::Format(); break;
@@ -673,12 +674,22 @@ void RichQtfParser::Parse(const char *qtf, byte _accesskey)
 							format.bullet = RichPara::BULLET_NONE;
 						else {
 							int c = *term++;
+							if(!c)
+								Error("Unexpected end of text");
 							format.bullet =
 							                c == '1' ? RichPara::BULLET_ROUNDWHITE :
 							                c == '2' ? RichPara::BULLET_BOX :
 							                c == '3' ? RichPara::BULLET_BOXWHITE :
 							                c == '9' ? RichPara::BULLET_TEXT :
 							                           RichPara::BULLET_ROUND;
+						}
+						break;
+					case 'p':
+						switch(*term++) {
+						case 0:   Error("Unexpected end of text");
+						case 'h': format.linespacing = RichPara::LSP15; break;
+						case 'd': format.linespacing = RichPara::LSP20; break;
+						default:  format.linespacing = RichPara::LSP10;
 						}
 						break;
 					case 't':

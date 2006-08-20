@@ -5,6 +5,8 @@
 #define IMAGECLASS SqlConsoleImg
 #include <Draw/iml.h>
 
+#include <Report/Report.h>
+
 void RunDlgSqlExport(Sql& cursor, String command, String tablename);
 
 class MacroSet {
@@ -530,9 +532,9 @@ void SqlConsole::ListPrintRow()
 			"||::30@(255.255.255) \1" << StdFormat(record.Get(i, 1)) << "\1";
 	}
 	qtf << "++";
-	DocReport report;
+	Report report;
 	report << qtf;
-	report.Perform();
+	::Perform(report);
 }
 
 void SqlConsole::ListPrintList()
@@ -548,9 +550,9 @@ void SqlConsole::ListPrintList()
 		for(int j = 0; j < list.GetIndexCount(); j++)
 			qtf << (j ? "||" : "--") << "::@(255.255.255) \1" << StdFormat(list.Get(i, j)) << '\1';
 	qtf << "++";
-	DocReport report;
+	Report report;
 	report << qtf;
-	report.Perform();
+	::Perform(report);
 }
 
 void SqlConsole::ListExport()

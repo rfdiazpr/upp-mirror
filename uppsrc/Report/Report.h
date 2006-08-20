@@ -18,6 +18,7 @@ private:
 	int            y;
 	String         header, footer;
 	int            headercy, headerspc, footercy, footerspc;
+	Point          mg;
 
 	void    Flush();
 	String  FormatHF(const char *s, int pageno);
@@ -33,26 +34,30 @@ public:
 	const Array<Drawing>& GetPages()                  { Flush(); return page; }
 
 	void                  Clear();
-	
+
 	Rect                  GetPageRect();
+	Size                  GetPageSize()               { return GetPageRect().Size(); }
 
 	void                  SetY(int _y)                { y = _y; }
 	int                   GetY() const                { return y; }
-	
+
 	void                  NewPage()                   { Page(pagei + 1); }
-	
+
 	void                  Put(const RichText& txt);
 	void                  Put(const char *qtf);
 	Report&               operator<<(const char *qtf) { Put(qtf); return *this; }
 
+	Point                 GetMargins() const          { return mg; }
+
 	Report&               SetPageSize(Size sz);
 	Report&               SetPageSize(int cx, int cy) { return SetPageSize(Size(cx, cy)); }
 	Report&               Landscape();
+	Report&               Margins(int top, int left)  { mg.x = top; mg.y = left; return *this; }
 	Report&               Header(const char *qtf, int spc = 150);
 	Report&               Footer(const char *qtf, int spc = 150);
 	Report&               NoHeader()                  { return Header(NULL, 0); }
 	Report&               NoFooter()                  { return Footer(NULL, 0); }
-	
+
 	Report();
 	Report(int cx, int cy);
 	Report(const Size &sz);

@@ -86,7 +86,7 @@ bool RichEdit::Key(dword key, int count)
 				return true;
 			}
 		}
-		break;
+		return false;
 	case K_F9:
 		EvaluateFields();
 		break;
@@ -118,8 +118,13 @@ bool RichEdit::Key(dword key, int count)
 		if(key == K_SHIFT_SPACE)
 			key = ' ';
 		if(key == 9 || key >= 32 && key < 65536) {
-			RichText::FormatInfo f = formatinfo;
-			RemoveSelection();
+			RichPara::Format f;
+			if(IsSelection()) {
+				f = text.GetRichPos(min(cursor, anchor)).format;
+				RemoveSelection();
+			}
+			else
+				f = formatinfo;
 			RichPara p;
 			p.format = f;
 			p.Cat(WString(key, count), f);

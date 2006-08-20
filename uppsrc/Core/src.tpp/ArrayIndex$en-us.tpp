@@ -1,138 +1,138 @@
 TITLE("ArrayIndex")
-REF("::ArrayIndex::class")
-REF("::ArrayIndex::Add(const T&,unsigned)")
-REF("::ArrayIndex::Add(const T&)")
-REF("::ArrayIndex::Set(int,const T&,unsigned)")
-REF("::ArrayIndex::Set(int,const T&)")
-REF("::ArrayIndex::Add(T*,unsigned)")
-REF("::ArrayIndex::Add(T*)")
-REF("::ArrayIndex::Set(int,T*,unsigned)")
-REF("::ArrayIndex::Set(int,T*)")
-REF("::ArrayIndex::ArrayIndex()")
-REF("::ArrayIndex::ArrayIndex(pick_::ArrayIndex&)")
-REF("::ArrayIndex::ArrayIndex(const::ArrayIndex&,int)")
-REF("::ArrayIndex::ArrayIndex(pick_::Array<T>&)")
-REF("::ArrayIndex::ArrayIndex(const::Array<T>&,int)")
-REF("::ArrayIndex::operator=(pick_::Array<T>&)")
-TOPIC_TEXT(
-"[2 $$0,0#00000000000000000000000000000000:Default][l288;i1120;a17;O9;~~~.1408;2 "
-"$$1,0#10431211400427159095818037425705:param][a83;*R6 $$2,5#31310162474203024125188417583966:caption][b83;*4 "
-"$$3,5#07864147445237544204411237157677:title][i288;O9;C2 $$4,6#40027414424643823182269349404212:item][b42;a42;2 "
-"$$5,5#45413000475342174754091244180557:text][l288;b17;a17;2 $$6,6#27521748481378242620020725143825:")
-TOPIC_TEXT(
-"desc][l321;t246;C@5;1 $$7,7#20902679421464641399138805415013:code][b2503; $$8,0#65142375456100023862071332075487:separator][*@(0.0.255)2 "
-"$$9,0#83433469410354161042741608181528:base][t4167;C $$10,0#37138531426314131251341829483380:class][l288;a17;*1 "
-"$$11,11#70004532496200323422659154056402:requirement][i417;b42;a42;O9;~~~.416;2 $$12,12#10566046415157235020018451313112:tparam][b167;C2 "
-"$$13,13#924304")
-TOPIC_TEXT(
-"59443460461911108080531343:item1][i288;a42;O9;C2 $$14,14#77422149456609303542238260500223:item2][*@2$(0.128.128) "
-"$$15,15#34511555403152284025741354420178:NewsDate][l321;*C$7;2 $$16,16#03451589433145915344929335295360:result][l321;b83;a83;*C$7;2 "
-"$$17,17#07531550463529505371228428965313:result`-line][l160;t4167;*C+117 $$18,5#88603949442205825958800053222425:package`-title][ "
-"$$19,0#535800234423355290")
-TOPIC_TEXT(
-"39900623488521:gap][t4167;C2 $$20,20#70211524482531209251820423858195:class`-nested][b50;2 "
-"$$21,21#03324558446220344731010354752573:Par][{_}%EN-US [s2;:`:`:ArrayIndex`:`:class:~~~64; "
-"ArrayIndex&][s10;~~~64; template <class [*@4 T], class [*@4 HashFn] `= StdHash<[*@4 "
-"T]> >&][s0;3 &][s10;:`:`:ArrayIndex`:`:class:~~~64;* [* class ]ArrayIndex&][s0; &][s12;i480;~~~.480; "
-"[*C@4 T]-|Type or base class of ")
-TOPIC_TEXT(
-"elements stored in Array. There is no common requirement for T.&][s12;i480;~~~.480; "
-"[*C@4 HashFn]-|Hashing class. Must have defined [*C unsigned operator()(const T`& "
-"x)] method returning hash value for elements. Defaults to[*  ][*C StdHash<T>] which "
-"requires [*C unsigned GetHashValue(const T`&)][C  ]function returning hash value "
-"of elements to be defined.&][s3; Base class&][s9;^topic`:`/`/Core`/sr")
-TOPIC_TEXT(
-"c`/AIndex`$en`-us^ AIndex<T, Array<T>, HashFn>&][s0; &][s5; Array flavor of index. "
-"Inherits most of its functionality from [^topic`:`/`/Core`/src`/AIndex`$en`-us^ AIndex] "
-"and adds only members specific for its flavor.&][s5; Like any other NTL container, "
-"ArrayIndex is a [*/^topic`:`/`/Core`/srcdoc`/Moveable`$en`-us^ moveable][*/  ]type "
-"with [*/^topic`:`/`/Core`/srcdoc`/pick`_`$en`-us^ pick and opti")
-TOPIC_TEXT(
-"onal deep copy] transfer semantics. Calling methods of a picked ArrayIndex is logic "
-"error with the exceptions of&][s0;/+75 [/C void ][*/C operator`=][/C (pick`_ ArrayIndex`& "
-"][*/C@3 v][/C ) ](defined by composition)&][s0;/+75 [/C void ][*/C operator<<`=][/C "
-"(const AIndex`& ][*/C@3 v][/C )][/  ](defined in AIndex)&][s0;C+75 void [* Clear]()&][s0;C+75 "
-"bool [* IsPicked]() const&][s5; Optional deep co")
-TOPIC_TEXT(
-"py operator is inherited from AIndex class. Pick operator is implicitly defined "
-"by composition.&][s0;3 &][s4;:`:`:ArrayIndex`:`:Add`(const T`&`,unsigned`): void "
-"[* Add](const T`& [*@3 x], unsigned [*@3 `_hash])&][s6; Adds a new element with a "
-"precomputed hash value. The precomputed hash value must be the same as the hash value "
-"that would be the result of HashFn. The benefit of using a precomputed ")
-TOPIC_TEXT(
-"hash value is that sometimes you can compute hash`-value as the part of an other "
-"process, like fetching a string from an input stream. This method has to be reimplemented "
-"in ArrayIndex (using simple forwarding) due to overloading of [* Add] in other forms.&][s11; "
-"Requires T to have deep copy constructor.&][s11; Invalidates iterators to the ArrayIndex.&][s1; "
-"[*C@3 x]-|Element to add.&][s1; [*C@3 `_")
-TOPIC_TEXT(
-"hash]-|Precomputed hash value.&][s0;3 &][s4;:`:`:ArrayIndex`:`:Add`(const T`&`): "
-"void [* Add](const T`& [*@3 x])&][s6; Adds a new element to Index. This method has "
-"to be reimplemented in ArrayIndex (using simple forwarding) due to overloading of "
-"[* Add] in other forms.&][s11; Requires T to have deep copy constructor.&][s11; Invalidates "
-"iterators to the ArrayIndex.&][s1; [*C@3 x]-|Element to add.&]")
-TOPIC_TEXT(
-"[s0;3 &][s4;:`:`:ArrayIndex`:`:Set`(int`,const T`&`,unsigned`): void [* Set](int "
-"[*@3 i], const T`& [*@3 x], unsigned [*@3 `_hash])&][s6; Replaces the element at "
-"the specified position with a new element with the specified value, using a precomputed "
-"hash`-value. Speed of this operation depends on the total number of elements with "
-"the same value as the specified one in ArrayIndex. This method has t")
-TOPIC_TEXT(
-"o be reimplemented in ArrayIndex (using simple redirection) due to overloading of "
-"[* Set] in other forms.&][s11; Requires T to have deep copy constructor.&][s11; Invalidates "
-"iterators to the ArrayIndex.&][s1; [*C@3 i]-|Position of element.&][s1; [*C@3 x]-|Value "
-"to set.&][s1; [*C@3 `_hash]-|Precomputed hash value.&][s0;3 &][s4;:`:`:ArrayIndex`:`:Set`(int`,const "
-"T`&`): void [* Set](int [*@3 i], cons")
-TOPIC_TEXT(
-"t T`& [*@3 x])&][s6; Replaces element at specified position with new element with "
-"specified value. Speed of this operation depends on the total number of elements "
-"with the same value as the specified one in ArrayIndex. This method has to be reimplemented "
-"in ArrayIndex (using simple redirection) due to overloading of [* Set] in other forms.&][s11; "
-"Requires T to have deep copy constructor.&][s11; In")
-TOPIC_TEXT(
-"validates iterators to the ArrayIndex.&][s1; [*C@3 i]-|Position of element.&][s1; "
-"[*C@3 x]-|Value to set.&][s0;3 &][s4;:`:`:ArrayIndex`:`:Add`(T`*`,unsigned`): void "
-"[* Add](T `*[*@3 newt], unsigned [*@3 `_hash])&][s6; Adds a new element created on "
-"the heap to the ArrayIndex using a precomputed hash value. The element is specified "
-"by a pointer to the object. ArrayIndex takes over ownership of the p")
-TOPIC_TEXT(
-"ointed element. This variant allows the use of an ArrayIndex as a polymorphic container, "
-"because the type of the added element can be either T or a type derived from T. No "
-"constructor is applied. &][s1; [*C@3 newt]-|Element created on the heap.&][s0;3 &][s4;:`:`:ArrayIndex`:`:Add`(T`*`): "
-"void [* Add](T `*[*@3 newt])&][s6; Adds a new element to the ArrayIndex. The element "
-"is specified by a pointer ")
-TOPIC_TEXT(
-"to the object. ArrayIndex takes over ownership of the pointed element. This variant "
-"allows the use of an ArrayIndex as a polymorphic container, because the type of the "
-"added element can be either T or a type derived from T. No constructor is applied. "
-"&][s1; [*C@3 newt]-|Object to be added.&][s0;3 &][s4;:`:`:ArrayIndex`:`:Set`(int`,T`*`,unsigned`): "
-"void [* Set](int [*@3 i], T `*[*@3 newt], unsigned")
-TOPIC_TEXT(
-" [*@3 `_hash])&][s6; &][s1; [*C@3 i]-|Position.&][s1; [*C@3 newt]-|New element created "
-"on heap.&][s1; [*C@3 `_hash]-|Hash value&][s0;3 &][s4;:`:`:ArrayIndex`:`:Set`(int`,T`*`): "
-"void [* Set](int [*@3 i], T `*[*@3 newt])&][s6; Replaces the element at the specified "
-"position by an element previously created on the heap. ArrayIndex takes over ownership "
-"of the element.&][s0; &][s1; [*C@3 i]-|Position.&]")
-TOPIC_TEXT(
-"[s1; [*C@3 newt]-|New element created on heap.&][s1; [*/ Return value]-|&][s0;3 "
-"&][s4;:`:`:ArrayIndex`:`:ArrayIndex`(`): [* ArrayIndex]()&][s6; Constructor. Constructs "
-"an empty ArrayIndex.&][s0;3 &][s4;:`:`:ArrayIndex`:`:ArrayIndex`(pick`_`:`:ArrayIndex`&`): "
-"[* ArrayIndex](pick`_ [* ArrayIndex]`& [*@3 s])&][s6; Pick constructor. Transfers "
-"source Index in low constant time, but destroys it by picki")
-TOPIC_TEXT(
-"ng.&][s1; [*C@3 s]-|Source ArrayIndex.&][s0;3 &][s4;:`:`:ArrayIndex`:`:ArrayIndex`(const`:`:ArrayIndex`&`,int`): "
-"[* ArrayIndex](const [* ArrayIndex]`& [*@3 s], int)&][s6; Optional deep copy constructor.&][s11; "
-"Requires T to have deep copy constructor or optional deep copy constructor.&][s1; "
-"[*C@3 s]-|Source ArrayIndex.&][s0;3 &][s4;:`:`:ArrayIndex`:`:ArrayIndex`(pick`_`:`:Array`<T`>`&`): "
-"[* ArrayI")
-TOPIC_TEXT(
-"ndex](pick`_ [* Array]<T>`& [*@3 s])&][s6; Pick`-constructs ArrayIndex from an Array. "
-"Transfers source container in low constant time, but destroys it by picking.&][s1; "
-"[*C@3 s]-|Source Array.&][s0;3 &][s4;:`:`:ArrayIndex`:`:ArrayIndex`(const`:`:Array`<T`>`&`,int`): "
-"[* ArrayIndex](const [* Array]<T>`& [*@3 s], int)&][s6; Deep`-copy constructs ArrayIndex "
-"from Array.&][s11; Requires T to have deep c")
-TOPIC_TEXT(
-"opy constructor or optional deep copy constructor.&][s1; [*C@3 s]-|Source Vector.&][s0;3 "
-"&][s4;:`:`:ArrayIndex`:`:operator`=`(pick`_`:`:Array`<T`>`&`): ArrayIndex`& [* operator]`=(pick`_ "
-"Array<T>`& [*@3 x])&][s6; Pick operator. Transfers source Array to the ArrayIndex, "
-"but destroys it by picking.&][s1; [*C@3 x]-|Source Array.]")
+COMPRESSED
+120,156,237,89,91,115,219,54,22,254,43,152,73,154,145,92,
+89,230,85,164,37,71,19,175,219,221,102,218,38,157,88,155,
+23,141,44,66,36,20,161,161,8,46,47,178,53,155,230,183,
+247,28,128,20,73,139,178,157,52,77,178,179,241,131,37,129,
+7,231,250,157,11,192,169,65,30,63,214,122,218,35,237,158,
+191,225,15,108,73,243,48,155,77,185,101,185,35,106,216,163,
+183,63,191,60,29,29,61,235,12,172,46,48,209,129,137,233,
+232,166,107,155,186,101,12,224,159,110,234,134,109,152,150,238,
+26,167,150,107,154,174,54,244,67,154,166,179,105,104,184,238,
+8,37,27,176,201,112,108,67,119,44,215,114,117,211,113,13,
+216,107,104,154,161,57,134,173,91,166,107,216,195,128,165,254,
+108,74,93,115,116,244,106,0,155,76,148,4,204,53,125,96,
+88,142,101,104,166,102,88,32,74,119,93,75,119,108,215,60,
+29,12,134,62,141,51,46,162,66,22,215,117,67,31,45,116,
+103,4,42,191,127,255,190,175,91,154,210,192,2,102,186,102,
+129,170,58,172,105,150,225,232,246,169,118,106,187,186,171,153,
+192,220,118,52,123,24,211,132,174,219,45,71,30,246,189,166,
+59,218,144,103,12,88,28,125,175,235,14,108,25,244,6,143,
+116,203,1,67,93,211,178,93,71,3,225,134,97,152,166,161,
+155,198,233,169,97,15,108,103,184,98,52,96,73,97,2,5,
+229,143,116,216,234,244,156,71,176,81,179,108,211,176,78,209,
+89,38,72,50,140,129,125,170,219,150,102,15,128,211,48,97,
+255,201,121,194,214,44,130,136,253,119,254,199,119,63,190,56,
+254,247,37,153,166,246,232,103,50,253,78,211,142,53,141,128,
+70,113,72,51,54,63,155,21,75,207,58,90,95,235,27,182,
+221,37,69,168,10,210,249,142,194,34,147,221,106,143,124,208,
+198,159,104,186,250,103,84,61,242,158,206,47,179,0,87,207,
+90,217,143,231,227,249,252,3,36,104,228,60,73,232,246,121,
+20,176,155,234,241,176,141,69,156,240,13,88,190,207,228,202,
+27,122,195,95,197,134,209,69,200,206,163,224,7,198,226,11,
+17,111,95,74,56,93,145,131,143,118,172,206,238,81,168,221,
+214,154,43,247,29,5,142,104,117,117,156,47,66,238,31,48,
+226,92,138,189,34,231,31,38,94,237,69,181,175,148,246,247,
+236,28,223,165,249,120,62,123,50,155,166,26,230,220,192,26,
+237,16,71,206,100,12,201,244,72,242,234,145,218,207,130,5,
+241,158,146,18,29,5,217,152,140,21,55,147,224,231,55,40,
+127,131,242,23,128,50,81,31,220,114,37,172,251,248,9,200,
+189,144,172,142,223,77,182,49,35,34,33,11,154,178,2,214,
+98,73,88,40,107,113,74,210,76,36,44,32,60,82,26,245,
+201,100,197,18,70,120,74,34,65,124,177,94,139,136,212,138,
+55,89,2,171,73,255,176,200,66,203,227,119,248,133,71,111,
+148,200,62,249,53,79,51,178,162,27,70,2,182,228,17,136,
+4,122,146,71,41,127,131,63,68,204,18,10,170,116,186,29,
+95,68,64,58,241,158,144,155,238,140,172,89,182,18,1,168,
+144,229,73,132,252,86,192,151,108,104,152,51,169,75,105,72,
+159,20,3,65,74,50,49,61,34,224,57,224,95,230,192,100,
+60,35,215,43,238,175,74,91,210,166,248,127,177,12,233,94,
+35,219,74,129,238,108,122,1,140,150,121,228,35,12,219,149,
+168,59,51,19,100,177,51,176,112,18,249,199,206,241,106,225,
+42,19,49,247,1,10,39,222,201,5,56,223,59,73,19,223,
+59,81,88,242,30,179,200,59,206,211,18,91,103,147,158,10,
+12,152,208,43,156,59,110,196,93,61,38,203,144,110,192,29,
+160,13,199,125,125,242,60,130,64,114,80,106,45,192,26,92,
+135,239,165,41,52,228,25,236,73,196,154,76,63,72,159,25,
+161,81,64,104,16,0,138,162,112,11,225,89,47,88,2,48,
+138,153,207,151,220,151,49,145,146,164,62,165,15,126,225,111,
+25,236,220,18,145,129,86,228,197,228,23,192,86,148,81,240,
+83,210,171,101,50,226,142,66,104,78,90,149,10,4,232,85,
+86,137,74,179,117,177,2,17,63,129,112,101,8,248,107,158,
+173,238,230,3,203,111,189,121,197,5,127,75,227,68,172,60,
+4,113,100,49,168,25,111,103,36,75,104,148,46,65,243,148,
+173,105,148,113,31,240,118,65,195,16,177,160,16,42,179,138,
+74,46,128,167,166,69,161,120,3,158,97,73,2,190,145,138,
+129,19,8,187,241,153,148,132,59,149,155,78,190,119,108,50,
+61,185,32,27,193,3,4,48,124,45,19,195,123,58,195,39,
+29,165,118,77,0,228,137,164,124,102,146,141,36,233,146,89,
+167,204,177,197,22,115,56,22,41,71,73,221,251,197,156,157,
+149,130,84,22,156,31,144,1,255,73,77,14,150,15,73,89,
+136,184,64,17,146,61,164,226,69,200,104,50,235,212,31,45,
+132,8,241,209,243,244,55,233,48,120,74,164,192,2,47,47,
+247,98,176,211,16,29,202,21,182,65,176,132,176,18,93,86,
+26,228,216,164,134,86,204,125,158,1,92,219,253,210,63,208,
+197,107,237,0,109,105,111,139,65,181,222,105,107,168,104,85,
+181,19,170,74,181,219,36,55,109,77,170,218,92,214,167,22,
+201,38,241,230,88,133,118,143,186,178,29,24,35,212,8,147,
+40,98,215,101,97,82,160,3,112,38,12,173,206,209,113,85,
+5,147,37,255,192,51,178,198,178,13,53,13,17,155,210,53,
+36,113,42,191,215,72,178,21,5,9,34,15,131,146,16,202,
+43,20,98,76,8,85,176,148,132,5,139,192,251,114,57,79,
+49,113,14,41,132,49,147,76,83,1,185,197,215,80,172,183,
+34,39,62,141,72,65,45,137,189,99,69,93,104,4,103,34,
+201,27,168,84,145,137,19,225,179,52,237,145,16,139,207,146,
+101,254,74,73,77,179,4,191,72,232,0,53,143,128,37,46,
+50,186,70,77,65,122,209,116,86,180,44,233,9,67,16,73,
+103,214,154,165,130,93,71,89,147,74,10,172,127,215,52,9,
+96,165,75,2,244,142,32,80,158,146,80,80,92,67,5,1,
+246,8,26,228,162,20,133,45,235,84,98,208,25,145,87,101,
+127,154,224,214,162,97,150,57,32,193,148,228,126,86,84,86,
+160,127,30,129,23,120,0,3,23,0,61,83,160,151,90,163,
+79,42,45,37,185,165,154,52,194,238,248,221,143,5,54,128,
+20,202,121,243,121,1,173,227,119,191,181,35,230,43,200,151,
+187,224,14,38,41,163,255,175,163,249,145,1,186,100,217,157,
+1,226,81,214,90,142,248,61,71,151,207,94,7,95,49,56,
+129,65,5,80,221,182,240,15,84,21,89,202,212,184,2,209,
+47,123,64,89,35,247,202,102,147,92,226,191,119,176,128,21,
+53,169,79,46,99,134,83,237,18,182,3,2,85,55,66,41,
+1,139,89,36,135,39,201,56,19,25,52,185,40,199,33,170,
+49,73,86,162,177,232,54,10,93,165,140,136,88,19,189,127,
+29,240,112,22,0,188,202,25,241,14,196,35,70,190,36,226,
+57,150,166,50,112,149,219,246,211,226,181,234,80,2,230,182,
+236,179,149,184,47,156,65,251,9,80,3,255,33,224,239,193,
+254,22,228,191,33,250,107,69,244,39,237,195,245,219,135,185,
+119,84,195,23,0,36,251,27,138,116,75,247,246,97,16,203,
+36,22,212,164,201,104,188,239,189,123,70,72,53,113,150,28,
+121,90,131,24,140,254,176,75,64,18,66,160,11,190,98,241,
+59,32,164,95,231,159,209,183,16,63,4,10,17,215,112,74,
+77,87,60,86,232,103,197,238,96,23,36,133,209,13,77,56,
+197,44,11,67,113,173,128,157,167,172,24,73,107,156,105,42,
+21,8,183,107,145,196,43,56,24,214,78,194,11,230,83,220,
+36,51,73,94,220,40,137,208,211,43,121,114,18,134,28,96,
+92,130,117,130,183,59,84,145,7,112,44,218,148,199,162,73,
+159,188,16,117,132,202,211,117,12,135,33,22,244,73,3,89,
+50,186,213,20,209,18,130,47,134,181,123,6,189,91,73,245,
+45,238,31,19,247,151,210,15,69,105,149,50,191,154,254,247,
+217,43,210,193,178,220,111,243,220,139,246,194,181,203,152,253,
+121,227,167,93,145,250,31,115,241,199,14,214,152,120,209,142,
+14,234,245,134,139,60,13,183,173,85,230,161,169,88,239,143,
+218,223,18,180,19,176,19,175,123,85,172,96,87,61,92,218,
+104,184,187,203,87,55,100,205,95,29,175,59,148,71,195,234,
+29,133,186,255,2,247,93,212,70,134,234,71,42,157,180,142,
+179,237,237,25,225,193,50,139,27,205,230,234,147,22,77,138,
+59,196,230,170,247,4,95,119,153,36,157,149,138,202,139,180,
+250,128,67,38,197,53,40,212,85,145,39,62,35,197,21,103,
+68,160,244,41,82,172,132,120,103,3,53,45,207,160,46,193,
+102,177,197,65,8,113,128,130,161,109,55,131,146,130,111,47,
+21,187,143,181,92,74,222,51,188,7,89,208,98,189,186,216,
+60,100,124,15,115,167,244,64,203,53,100,203,192,247,208,1,
+17,235,245,254,229,242,30,199,79,233,152,91,144,240,206,38,
+222,248,33,144,152,157,77,198,237,128,240,142,253,10,178,181,
+100,45,111,211,202,183,72,183,145,178,107,118,159,24,45,127,
+5,40,165,59,30,4,148,166,75,26,48,193,183,149,232,151,
+122,48,247,157,83,169,251,121,48,243,154,237,30,183,116,153,
+171,166,107,174,218,94,167,214,79,152,90,227,77,68,217,122,
+20,108,110,189,28,189,243,5,231,213,228,170,254,134,243,222,
+67,108,227,54,191,5,87,234,237,215,222,32,248,112,64,221,
+220,6,212,236,79,201,116,98,200,

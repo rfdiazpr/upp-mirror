@@ -4,6 +4,7 @@ RightTabs::RightTabs()
 {
 	cx = 3;
 	cursor = -1;
+	Transparent();
 }
 
 void RightTabs::Clear()
@@ -61,11 +62,11 @@ void RightTabs::Paint(Draw& w)
 	for(int i = 0; i < tab.GetCount(); i++) {
 		Tab& t = tab[i];
 		if(i != cursor)
-			PaintTab(w, 0, t.y + 2, cx, t.GetHeight() - 1, inactive, t.img, i == hl ? hc : Null);
+			PaintTab(w, 0, t.y + 2, cx - 1, t.GetHeight() - 1, inactive, t.img, i == hl ? hc : Null);
 	}
 	if(cursor >= 0) {
 		Tab& t = tab[cursor];
-		PaintTab(w, 0, t.y, cx + 1, t.GetHeight() + 3, SColorPaper, t.img, cursor == hl ? hc : Null);
+		PaintTab(w, 0, t.y, cx, t.GetHeight() + 3, SColorPaper, t.img, cursor == hl ? hc : Null);
 	}
 }
 
@@ -90,6 +91,8 @@ void RightTabs::LeftDown(Point p, dword)
 	if(c >= 0 && c != cursor) {
 		cursor = c;
 		UpdateActionRefresh();
+		if(GetParent())
+			GetParent()->RefreshFrame();
 	}
 }
 
@@ -112,13 +115,16 @@ void RightTabs::CancelMode()
 {
 	hl = -1;
 	Refresh();
+	if(GetParent())
+		GetParent()->RefreshFrame();
 }
 
 void RightTabs::FramePaint(Draw& w, const Rect& rr)
 {
 	Rect r = rr;
 	r.right -= cx;
-	FieldFrame().FramePaint(w, r);
+	DrawFrame(w, r, Blend(SColorHighlight, SColorShadow));
+	DrawFrame(w, r.Deflated(1), SColorPaper);
 	if(cursor >= 0) {
 		Tab& t = tab[cursor];
 		w.DrawRect(r.right - 1, t.y + 1, 1, t.GetHeight() + 1, SColorFace);
@@ -127,8 +133,9 @@ void RightTabs::FramePaint(Draw& w, const Rect& rr)
 
 void RightTabs::FrameLayout(Rect& r)
 {
-	LayoutFrameRight(r, this, cx + 2);
+	LayoutFrameRight(r, this, cx);
 	r.top += 2;
+	r.right -= 2;
 	r.left += 2;
 	r.bottom -= 2;
 }

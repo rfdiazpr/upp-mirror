@@ -1,18 +1,38 @@
 uses
 	CppBase,
-	ide\Common;
+	ide\Common,
+	PdfDraw;
 
 file
 	Browser.h,
-	Ref.cpp,
+	Browser readonly separator,
 	Lay.cpp,
 	Base.cpp optimize_speed,
 	ItemList.cpp,
 	Query.cpp,
 	Browser.cpp,
 	Browser.lay,
-	Browser.iml;
+	Browser.iml,
+	Topic readonly separator,
+	TopicBase.cpp,
+	Reference.cpp,
+	File.cpp optimize_speed,
+	Topic.cpp,
+	Stylesheet.cpp,
+	Link.cpp,
+	TopicWin.cpp,
+	IdeTopic.cpp,
+	Topic.lay,
+	Topic.iml,
+	Info readonly separator,
+	COPYING,
+	COPYING-PLAIN,
+	AUTHORS;
 
 mainconfig
 	"" = "GUI";
 
+RichEdit
+
+,
+	PdfDraw;

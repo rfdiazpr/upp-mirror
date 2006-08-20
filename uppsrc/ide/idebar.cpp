@@ -420,9 +420,8 @@ void Ide::BrowseMenu(Bar& menu) {
 	     .Check(IsBottomShown() && btabs.GetCursor() == BCALC);
 	menu.MenuSeparator();
 	menu.Add(AK_TOPICEDITOR, TopicImg::Topic(), THISBACK(OpenTopic));
-	menu.Add(AK_BROWSETOPICS, IdeImg::doc(), THISBACK(ShowTopics));
 	menu.MenuSeparator();
-	menu.Add("Help index..", IdeImg::help(), THISBACK(OpenHelp));
+	menu.Add(AK_BROWSETOPICS, IdeImg::help(), THISBACK(ShowTopics));
 	menu.Add("About..", THISBACK(About));
 }
 

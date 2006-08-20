@@ -507,11 +507,6 @@ bool Ctrl::IsOcxChild()
 	return false;
 }
 
-Point Ctrl::GetSysWindowViewOffset()
-{
-	return Point(0, 0);
-}
-
 Ctrl::Ctrl() {
 	LLOG("Ctrl::Ctrl");
 	destroying = false;
@@ -670,6 +665,12 @@ void Ctrl::SetZoomSize(Size sz, Size bsz)
 void Ctrl::NoLayoutZoom()
 {
 	Csize = Dsize = Size(1, 1);
+}
+
+void Ctrl::GetZoomRatio(Size& m, Size& d)
+{
+	m = Csize;
+	d = Dsize;
 }
 
 int  Ctrl::HorzLayoutZoom(int cx)

@@ -91,6 +91,13 @@ void RichEdit::Insert(int pos, const RichText& txt, bool typing)
 {
 	if(IsReadOnly())
 		return;
+	Index<int> lng;
+	for(int i = 0; i < language.GetCount(); i++)
+		lng.Add(language.GetKey(i));
+	Vector<int> lngn = txt.GetAllLanguages();
+	for(int i = 0; i < lngn.GetCount(); i++)
+		lng.FindAdd(lngn[i]);
+	SetupLanguage(lng.PickKeys());
 	int l = text.GetLength();
 	text.Insert(pos, txt);
 	l = text.GetLength() - l;

@@ -1,6 +1,6 @@
 #include "RichText.h"
 
-void RichPara::Smh(Lines& lines, const HeightInfo *th, int cx) const
+void RichPara::Smh(Lines& lines, HeightInfo *th, int cx) const
 {
 	Line& l = lines.line.Top();
 	l.ascent = l.descent = l.external = 0;
@@ -9,6 +9,14 @@ void RichPara::Smh(Lines& lines, const HeightInfo *th, int cx) const
 		if(h->ascent > l.ascent) l.ascent = h->ascent;
 		if(h->descent > l.descent) l.descent = h->descent;
 		if(h->external > l.external) l.external = h->external;
+	}
+	if(format.linespacing == LSP15) {
+		l.ascent = (3 * l.ascent) >> 1;
+		l.descent = (3 * l.descent) >> 1;
+	}
+	if(format.linespacing == LSP20) {
+		l.ascent = 2 * l.ascent;
+		l.descent = 2 * l.descent;
 	}
 	l.xpos = format.lm;
 	cx -= format.lm + format.rm;

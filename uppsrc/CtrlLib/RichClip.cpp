@@ -1,5 +1,6 @@
 #include "CtrlLib.h"
 
+//TODO
 /*
 struct sQtfCt_ : public RichText::ClipboardType {
 	virtual int      Level() { return 0; }

@@ -4,17 +4,18 @@ public:
 		Rect     border;
 		Rect     margin;
 		int      align;
+		int      minheight;
 		Color    color;
 		Color    bordercolor;
 		bool     keep;
-		
+
 		Format();
 	};
-	
+
 	Format   format;
 	int      vspan, hspan;
 	RichTxt  text;
-	
+
 private:
 	bool     Reduce(RichContext& rc) const;
 	PageY    Align(const RichContext& rc, PageY npy) const;
@@ -34,7 +35,7 @@ private:
 	RichHotPos  GetHotPos(int x, PageY y, int tolerance, RichContext rc, PageY pyy) const;
 
 	void        GatherValPos(Vector<RichValPos>& f, RichContext rc, PageY pyy, int pos, int type) const;
-	
+
 	friend class RichTable;
 	friend class RichText;
 
@@ -53,19 +54,19 @@ public:
 		Color gridcolor;
 		WithDeepCopy< Vector<int> > column;
 		int   header;
-		
+
 		Format();
 	};
 
 	struct CellInfo {
 		bool  valid;
 		Point master;
-		
+
 		operator bool() const { return valid; }
-		
+
 		CellInfo()            { valid = true; }
 	};
-	
+
 	Format format;
 	Array< Array<RichCell> > cell;
 
@@ -77,7 +78,7 @@ private:
 		PageY hy;
 		bool  top;
 		bool  bottom;
-		
+
 		PaintCell()    { top = true; }
 	};
 
@@ -86,22 +87,22 @@ private:
 		PageY             py, pyy;
 		Buffer<PaintCell> cell;
 		bool              first;
-		
+
 		PaintCell& operator[](int i)                { return cell[i]; }
 		const PaintCell& operator[](int i) const    { return cell[i]; }
 	};
-	
+
 	struct Layout {
 		Buffer<Rect>      col;
 		Buffer<PaintRow>  row;
 		int               frame;
 		int               grid;
 		PageY             pyy;
-		
+
 		PaintRow& operator[](int i)                 { return row[i]; }
 		const PaintRow& operator[](int i) const     { return row[i]; }
 	};
-	
+
 	struct TabLayout : Layout {
 		bool              hasheader;
 		Layout            header;
@@ -109,11 +110,11 @@ private:
 		int               page0;
 		Size              sz;
 	};
-	
+
 	mutable TabLayout clayout;
 	mutable Rect      cpage;
 	mutable PageY     cpy;
-	
+
 	Buffer< Buffer<CellInfo> > ci;
 	int              r_row, r_column;
 	Rect             r_page;
@@ -130,7 +131,7 @@ private:
 	                          PaintInfo& pi, int pd, bool sel) const;
 
 	const TabLayout& Realize(RichContext rc) const;
-	
+
 	mutable int  length, tabcount;
 
 	static void  ExpandFrr(VectorMap<int, Rect>& frr, int pi, int l, int r, int t, int b);
@@ -154,7 +155,7 @@ private:
 	int           GetTableCount() const;
 
 	void          Normalize0();
-	
+
 	RichTable     Copy(const Rect& sel) const;
 	void          Paste(Point pos, const RichTable& tab);
 	void          RemoveRow0(int rowi);
@@ -183,9 +184,9 @@ private:
 
 	Point         FindCell(int& pos) const;
 	RichPos       GetRichPos(int pos, const RichStyles& st) const;
-	
+
 	CellInfo      GetCellInfo(int i, int j)              { return ci[i][j]; }
-	
+
 	int           GetInvalid(PageY& top, PageY& bottom, RichContext rc) const;
 	void          Validate();
 
@@ -207,9 +208,9 @@ public:
 	int                     GetColumns() const                     { return format.column.GetCount(); }
 	int                     GetRows() const                        { return cell.GetCount(); }
 	Size                    GetSize() const                        { return Size(GetColumns(), GetRows()); }
-	
+
 	void          Normalize();
 
-	RichTable(const RichTable& src, int);	
+	RichTable(const RichTable& src, int);
 	RichTable();
 };

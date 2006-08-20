@@ -397,6 +397,14 @@ void TreeCtrl::Open(int id, bool open)
 	}
 }
 
+void TreeCtrl::OpenDeep(int id, bool open)
+{
+	Open(id);
+	Item& m = item[id];
+	for(int i = 0; i < m.child.GetCount(); i++)
+		OpenDeep(m.child[i], open);
+}
+
 void TreeCtrl::MakeVisible(int id)
 {
 	id = GetParent(id);
@@ -811,51 +819,74 @@ void TreeCtrl::ChildRemoved(Ctrl *)
 struct TreeCtrl::SortOrder {
 	TreeCtrl         *tree;
 	const ValueOrder *order;
+	bool              byvalue;
 
 	bool operator()(int a, int b) const {
-		return (*order)(tree->Get(a), tree->Get(b));
+		return byvalue ? (*order)(tree->GetValue(a), tree->GetValue(b))
+		               : (*order)(tree->Get(a), tree->Get(b));
 	}
 
 };
 
-void TreeCtrl::Sort0(int id, const ValueOrder& order)
+void TreeCtrl::Sort0(int id, const ValueOrder& order, bool byvalue)
 {
 	SortOrder so;
 	so.tree = this;
 	so.order = &order;
+	so.byvalue = byvalue;
 	::Sort(item[id].child, so);
 }
 
-void TreeCtrl::Sort(int id, const ValueOrder& order)
+void TreeCtrl::Sort(int id, const ValueOrder& order, bool byvalue)
 {
 	SyncTree();
-	Sort0(id, order);
+	Sort0(id, order, byvalue);
 	Dirty(id);
 }
 
-void TreeCtrl::SortDeep0(int id, const ValueOrder& order)
+void TreeCtrl::SortDeep0(int id, const ValueOrder& order, bool byvalue)
 {
-	Sort0(id, order);
+	Sort0(id, order, byvalue);
 	Item& m = item[id];
 	for(int i = 0; i < m.child.GetCount(); i++)
-		SortDeep0(m.child[i], order);
+		SortDeep0(m.child[i], order, byvalue);
 }
 
-void TreeCtrl::SortDeep(int id, const ValueOrder& order)
+void TreeCtrl::SortDeep(int id, const ValueOrder& order, bool byvalue)
 {
 	SyncTree();
-	SortDeep0(id, order);
+	SortDeep0(id, order, byvalue);
 	Dirty(id);
 }
 
-void TreeCtrl::Sort(int id, int (*compare)(const Value& v1, const Value& v2))
+void TreeCtrl::Sort(int id, int (*compare)(const Value& v1, const Value& v2), bool byvalue)
 {
-	Sort(id, FnValueOrder(compare));
+	Sort(id, FnValueOrder(compare), byvalue);
 }
 
-void TreeCtrl::SortDeep(int id, int (*compare)(const Value& v1, const Value& v2))
+void TreeCtrl::SortDeep(int id, int (*compare)(const Value& v1, const Value& v2), bool byvalue)
 {
-	SortDeep(id, FnValueOrder(compare));
+	SortDeep(id, FnValueOrder(compare), byvalue);
+}
+
+void TreeCtrl::SortByValue(int id, const ValueOrder& order)
+{
+	Sort(id, order, true);
+}
+
+void TreeCtrl::SortDeepByValue(int id, const ValueOrder& order)
+{
+	SortDeep(id, order, true);
+}
+
+void TreeCtrl::SortByValue(int id, int (*compare)(const Value& v1, const Value& v2))
+{
+	Sort(id, compare, true);
+}
+
+void TreeCtrl::SortDeepByValue(int id, int (*compare)(const Value& v1, const Value& v2))
+{
+	SortDeep(id, compare, true);
 }
 
 void  TreeCtrl::SetData(const Value& data)

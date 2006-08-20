@@ -107,3 +107,18 @@ Color  HsvColorf(double h, double s, double v);
 Color  Blend(Color c1, Color c2, int alpha = 128);
 
 String ColorToHtml(Color color);
+
+inline bool operator==(const Value& v, Color x)        { return v == x.operator Value(); }
+inline bool operator==(Color x, const Value& v)        { return v == x.operator Value(); }
+inline bool operator!=(const Value& v, Color x)        { return v != x.operator Value(); }
+inline bool operator!=(Color x, const Value& v)        { return v != x.operator Value(); }
+
+inline bool operator==(const Value& v, Color (*x)())   { return v == (*x)(); }
+inline bool operator==(Color (*x)(), const Value& v)   { return v == (*x)(); }
+inline bool operator!=(const Value& v, Color (*x)())   { return v != (*x)(); }
+inline bool operator!=(Color (*x)(), const Value& v)   { return v != (*x)(); }
+
+inline bool operator==(Color c, Color (*x)())          { return c == (*x)(); }
+inline bool operator==(Color (*x)(), Color c)          { return c == (*x)(); }
+inline bool operator!=(Color c, Color (*x)())          { return c != (*x)(); }
+inline bool operator!=(Color (*x)(), Color c)          { return c != (*x)(); }

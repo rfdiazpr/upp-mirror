@@ -1,1595 +1,1270 @@
 TITLE("Draw")
-REF("::Draw::class::Draw")
-REF("::Draw::Draw()")
-REF("::Draw::Draw(::Draw able,GC,XftDraw*,const::Vector<::Rect>&)")
-REF("::Draw::Draw(::Draw able,GC,const::Vector<::Rect>&)")
-REF("::Draw::Draw(Drawable,GC,XftDraw*,const::Vector<::Rect>&)")
-REF("::Draw::Init(const::Vector<::Rect>&,::Point")
-REF("::Draw::PaletteMode()const")
-REF("::Draw::IsMono()const")
-REF("::Draw::GetPagePixels()const")
-REF("::Draw::GetPageMMs()const")
-REF("::Draw::GetPixelsPerInch()const")
-REF("::Draw::GetSheetPixels()const")
-REF("::Draw::GetPageOffset()const")
-REF("::Draw::Pixels()const")
-REF("::Draw::Dots()const")
-REF("::Draw::IsPrinter()const")
-REF("::Draw::IsAborted()const")
-REF("::Draw::IsBack()const")
-REF("::Draw::IsDrawing()const")
-REF("::Draw::IsMetaFile()const")
-REF("::Draw::AutoPalette()")
-REF("::Draw::SetAutoPalette(bool)")
-REF("::Draw::Win32UpdateSColors()")
-REF("::Draw::AddFace(const LOGFONT*,const TEXTMETRIC*,::dword,LPARAM)")
-REF("::Draw::SetStdFont(::Font)")
-REF("::Draw::GetStdFont()")
-REF("::Draw::GetStdFontSize()")
-REF("::Draw::GetStdFontCy()")
-REF("::Draw::GetFontInfo(::byte,::Font")
-REF("::Draw::GetFontInfo(::Font")
-REF("::Draw::GetFontInfoW(::Font")
-REF("::Draw::Begin()")
-REF("::Draw::End()")
-REF("::Draw::Offset(::Point)")
-REF("::Draw::Offset(int,int)")
-REF("::Draw::Clip(const::Rect&)")
-REF("::Draw::Clip(int,int,int,int)")
-REF("::Draw::Clipoff(const::Rect&)")
-REF("::Draw::Clipoff(int,int,int,int)")
-REF("::Draw::ExcludeClip(const::Rect&)")
-REF("::Draw::ExcludeClip(int,int,int,int)")
-REF("::Draw::IntersectClip(const::Rect&)")
-REF("::Draw::IntersectClip(int,int,int,int)")
-REF("::Draw::GetClip()const")
-REF("::Draw::GetOffset()const")
-REF("::Draw::GetCloffLevel()const")
-REF("::Draw::LPtoDP(::Point)const")
-REF("::Draw::DPtoLP(::Point)const")
-REF("::Draw::LPtoDP(const::Rect&)const")
-REF("::Draw::DPtoLP(const::Rect&)const")
-REF("::Draw::DrawRect(int,int,int,int,::Color)")
-REF("::Draw::DrawRect(const::Rect&,::Color)")
-REF("::Draw::DrawLine(int,int,int,int,int,::Color)")
-REF("::Draw::enum{ BEGIN, OFFSET, CLIP, CLIPOFF, EXCLUDECLIP, INTERSECTCLIP, END, DRAWRECT, DRAWIMAGE, DRAWMONOIMAGE, DRAWDRAWING, DRAWLINE, DRAWELLIPSE, DRAWTEXT, DRAWARC, DRAWPOLYPOLYLINE}")
-REF("::Draw::DrawLine(::Point,::Point,int,::Color)")
-REF("::Draw::DrawEllipse(const::Rect&,::Color,int,::Color)")
-REF("::Draw::DrawEllipse(int,int,int,int,::Color,int,::Color)")
-REF("::Draw::DrawArc(const::Rect&,::Point,::Point,int,::Color)")
-REF("::Draw::DrawPolyPolyline(const::Point*,int,const int*,int,int,::Color,::Color)")
-REF("::Draw::DrawPolyPolyline(const::Vector<::Point>&,const::Vector<int>&,int,::Color,::Color)")
-REF("::Draw::DrawPolyline(const::Point*,int,int,::Color,::Color)")
-REF("::Draw::DrawPolyline(const::Vector<::Point>&,int,::Color,::Color)")
-REF("::Draw::DrawPolyPolyPolygon(const::Point*,int,const int*,int,const int*,int,::Color,int,::Color,::Image,::Color)")
-REF("::Draw::DrawImage(const::Rect&,const::Image&,const::Rect&,int)")
-REF("::Image::enum{ EFFECT_MASK, STANDARD, GRAYED, ETCHED, XOR}")
-REF("::Draw::DrawImage(const::Rect&,const::Image&,int)")
-REF("::Draw::DrawImage(int,int,int,int,const::Image&,int)")
-REF("::Draw::DrawImage(int,int,const::Image&,int)")
-REF("::Draw::DrawImage(const::Rect&,const::Image&,const::Rect&,::Color,::Color,::Color)")
-REF("::Draw::DrawImage(const::Rect&,const::Image&,::Color,::Color,::Color)")
-REF("::Draw::DrawImage(int,int,int,int,const::Image&,::Color,::Color,::Color)")
-REF("::Draw::DrawImage(int,int,const::Image&,::Color,::Color,::Color)")
-REF("::Draw::GetTextSize(const::wchar*,::Font")
-REF("::Draw::DrawText(int,int,int,const::wchar*,::Font")
-REF("::Draw::DrawText(int,int,const::wchar*,::Font")
-REF("::Draw::GetTextSize(const::WString&,::Font")
-REF("::Draw::DrawText(int,int,const::WString&,::Font")
-REF("::Draw::DrawText(int,int,int,const::WString&,::Font")
-REF("::Draw::GetTextSize(const char*,::byte,::Font")
-REF("::Draw::DrawText(int,int,int,const char*,::byte,::Font")
-REF("::Draw::DrawText(int,int,const char*,::byte,::Font")
-REF("::Draw::GetTextSize(const char*,::Font")
-REF("::Draw::DrawText(int,int,int,const char*,::Font")
-REF("::Draw::DrawText(int,int,const char*,::Font")
-REF("::Draw::GetTextSize(const::String&,::Font")
-REF("::Draw::DrawText(int,int,const::String&,::Font")
-REF("::Draw::DrawText(int,int,int,const::String&,::Font")
-REF("::Draw::SinCos(int,double&,double&)")
-REF("::Draw::DrawDrawing(const::Rect&,const::Drawing&)")
-REF("::Draw::DrawDrawing(int,int,int,int,const::Drawing&)")
-REF("::Draw::DrawingOp(int)")
-REF("::Draw::PutRect(const::Rect&)")
-REF("::Draw::BeginOp()")
-REF("::Draw::EndOp()")
-REF("::Draw::OffsetOp(::Point)")
-REF("::Draw::ClipOp(const::Rect&)")
-REF("::Draw::ClipoffOp(const::Rect&)")
-REF("::Draw::ExcludeClipOp(const::Rect&)")
-REF("::Draw::IntersectClipOp(const::Rect&)")
-REF("::Draw::GetClipOp()const")
-REF("::Draw::DrawRectOp(int,int,int,int,::Color)")
-REF("::Draw::DrawImageOp(const::Rect&,const::Image&,const::Rect&,int)")
-REF("::Draw::DrawImageOp(const::Rect&,const::Image&,const::Rect&,::Color,::Color,::Color)")
-REF("::Draw::DrawLineOp(int,int,int,int,int,::Color)")
-REF("::Draw::DrawPolyPolylineOp(const::Point*,int,const int*,int,int,::Color,::Color)")
-REF("::Draw::DrawEllipseOp(const::Rect&,::Color,int,::Color)")
-REF("::Draw::DrawArcOp(const::Rect&,::Point,::Point,int,::Color)")
-REF("::Draw::DrawTextOp(int,int,int,const::wchar*,::Font,::Color,int,const int*)")
-REF("::Draw::DrawDrawingOp(const::Rect&,const::Drawing&)")
-REF("::Draw::GetColor(::Color)const")
-REF("::Draw::SetColor(::Color)")
-REF("::Draw::SetDrawPen(int,::Color)")
-REF("::Draw::BeginGdi()")
-REF("::Draw::EndGdi()")
-REF("::Draw::GetHandle()")
-REF("::Draw::operator HDC()const")
-REF("::Draw::Unselect()")
-REF("::Draw::Attach(HDC)")
-REF("::Draw::Detach()")
-REF("::Draw::GetSizeCaps(int,int)const")
-REF("::Draw::Flush()")
-REF("::Draw::MakeXLFD(::byte,::Font,int,int)")
-REF("::Draw::CreateXftFont(::Font,int)")
-REF("::Draw::GetXftDraw()const")
-REF("::Draw::SetForeground(::Color)")
-REF("::Draw::SetLineStyle(int)")
-REF("::Draw::SetFont(::Font,int)")
-REF("::Draw::SetClip()")
-REF("::Draw::GetDrawable()const")
-REF("::Draw::GetGC()const")
-REF("::Draw::GetClipList()const")
-REF("::Draw::GetFontInfo(::byte,::Font)")
-REF("::Draw::StartPage()")
-REF("::Draw::EndPage()")
-REF("::Draw::Register(int,::Draw::Drawer)")
-REF("::ScreenDraw::class::ScreenDraw")
-REF("::ScreenInfo()")
-REF("::ViewDraw::class::ViewDraw")
-REF("::ViewDraw::ViewDraw(::Ctrl*)")
-REF("::ImageDraw::class::ImageDraw")
-REF("::ImageDraw::ImageDraw()")
-REF("::ImageDraw::ImageDraw(::Draw&,::Image&)")
-REF("::ImageDraw::ImageDraw(::Image&)")
-REF("::ImageDraw::Open(::Image&)")
-REF("::ImageDraw::Open(::Draw&,::Image&)")
-REF("::ImageDraw::Close()")
-REF("::ImageMaskDraw::class::ImageMaskDraw")
-REF("::ImageMaskDraw::ImageMaskDraw()")
-REF("::ImageMaskDraw::ImageMaskDraw(::Image&)")
-REF("::ImageMaskDraw::Open(::Image&)")
-REF("::ImageMaskDraw::Close()")
-REF("::DrawingDraw::class::DrawingDraw")
-REF("::DrawingDraw::DrawingDraw()")
-REF("::DrawingDraw::DrawingDraw(int,int)")
-REF("::DrawingDraw::DrawingDraw(::Size)")
-REF("::DrawingDraw::SetPixels(bool)")
-REF("::DrawingDraw::Create(int,int)")
-REF("::DrawingDraw::Create(::Size)")
-REF("::DrawingDraw::GetResult()const")
-REF("::DrawingDraw::operator::Drawing()const")
-REF("::WinMetaFileDraw::WinMetaFileDraw(HDC,int,int,const char*,const char*,const char*)")
-REF("::WinMetaFileDraw::WinMetaFileDraw(int,int,const char*,const char*,const char*)")
-REF("::WinMetaFileDraw::Create(HDC,int,int,const char*,const char*,const char*)")
-REF("::WinMetaFileDraw::Create(int,int,const char*,const char*,const char*)")
-REF("::WinMetaFileDraw::Close()")
-REF("::PrintDraw::class::PrintDraw")
-REF("::PrintDraw::PrintDraw(HDC,const char*)")
-REF("::PrintDraw::StartPage()")
-REF("::PrintDraw::EndPage()")
-REF("::PrintDraw::InitPrinter()")
-REF("::PrintDraw::Abort()")
-REF("::PageDraw::struct::PageDraw")
-TOPIC_TEXT(
-"[2 $$0,0#00000000000000000000000000000000:Default][l288;i1120;a17;O9;~~~.1408;2 "
-"$$1,0#10431211400427159095818037425705:param][a83;*R6 $$2,5#31310162474203024125188417583966:caption][b83;*4 "
-"$$3,5#07864147445237544204411237157677:title][i288;O9;C2 $$4,6#40027414424643823182269349404212:item][b42;a42;2 "
-"$$5,5#45413000475342174754091244180557:text][l288;b17;a17;2 $$6,6#27521748481378242620020725143825:")
-TOPIC_TEXT(
-"desc][l321;t246;C@5;1 $$7,7#20902679421464641399138805415013:code][b2503; $$8,0#65142375456100023862071332075487:separator][*@(0.0.255)2 "
-"$$9,0#83433469410354161042741608181528:base][t4167;C $$10,0#37138531426314131251341829483380:class][l288;a17;*1 "
-"$$11,11#70004532496200323422659154056402:requirement][i417;b42;a42;O9;~~~.416;2 $$12,12#10566046415157235020018451313112:tparam][b167;C2 "
-"$$13,13#924304")
-TOPIC_TEXT(
-"59443460461911108080531343:item1][i288;a42;O9;C2 $$14,14#77422149456609303542238260500223:item2][*@2$(0.128.128) "
-"$$15,15#34511555403152284025741354420178:NewsDate][l321;*C$7;2 $$16,16#03451589433145915344929335295360:result][l321;b83;a83;*C$7;2 "
-"$$17,17#07531550463529505371228428965313:result`-line][l160;t4167;*C+117 $$18,5#88603949442205825958800053222425:package`-title][ "
-"$$19,0#535800234423355290")
-TOPIC_TEXT(
-"39900623488521:gap][t4167;C2 $$20,20#70211524482531209251820423858195:class`-nested][b50;2 "
-"$$21,21#03324558446220344731010354752573:Par][{_}%EN-US [s2;:`:`:Draw`:`:class`:`:Draw: "
-"Draw&][s10;* [* class_]Draw&][s6; &][s0; @@VectorImage:1668&2304\236\202\377\377\377\377\326\311\240\315\341\356\300\363\277\226\203\277\200\357\333\334\362\300\346\300\276\240\324\343\376\363\203\363\363\365\302\346\205\314\200\300\200\364\304\304\362\341\240\367\350\301\355\304\276\302\230\362\374\332\276\352\360\343\217\376\363\363\363\365\302\346\200\205\314\300\200\364\312\323\200\343\362\345\345\356\304\362\200\341\367\350\301\355\304\372\200\336\272\272\323\343\362\345\200\345\356\304\362\341\367\272\200\272\343\354\341\363\363\240\200\323\343\362\345\345\356\304\200\362\341\367\310\354\303\324\200\322\324\344\374\344\316\354\272\303\276\322\276\270\276\322\267\276\312\276\372")
-TOPIC_TEXT(
-"\276\312\365\272\362\276\372\276\300\277\212\373\276\326\343\376\363\363\363\200\365\302\346\205\314\300\200\200\364\332\322\345\360\357\362\200\364\240\250\363\354\351\347\200\350\364\354\371\240\357\342\200\363\357\354\345\364\345\251\300\350\301\355\304\351\362\276\252\372\277\256\277\212\277\304\236\343\376\363\363\363\365\302\200\346\205\314\300\200\364\316\200\323\351\355\360\354\345\320\200\341\347\345\304\362\341\367\200\350\301\355\304\316\354\303\325\276\322\277\250\276\322\277\212\270\276\372\277\270\350\362\325\276\372\277\310\277\212\277\274\336\343\376\363\363\363\365\200\302\346\205\314\300\200\364\200\315\320\362\351\356\364\320\200\341\347\345\304\362\341\367\200\350\301\355\304\316\354\303\325\276\322\277\266\276\322\277\212\322\276\372\277\322\312\354\220\303\324\342\324\276\300\374\201\276\300\312\354\303\324\376\222\324\276\334\374\276\334\313\310\354\303\324\276\332\324\276\204\370\374\276\370\313\354\303\262\324\276\366\324\276\224\374\303\276\224\313\354\303\324\276\355\222\324\276\260\374\276\260\260\313\354\303\324\276\260\324\233\276\346\374\276\346\343\362\234\374\366\276\352\276\314\343\217\376\363\363\363\365\302\346\200\205\314\300\200\364\312\323\200\343\362\345\345\356\311\356\200\346\357\350\301\355\304\342\364\362\374\276\322\276\352\276\274\350\343\376\363\363\363\365\200\302\346\205\314\300\200\364\200\310\326\351\345\367\304\362\200\341\367\350\301\355\304\343\364\362\374\276\356\276\352\276\275\204\343\376\363\363\363\365\200\302\346\205\314\300\200\364\200\311\311\355\341\347\345\304\200\362\341\367\350\301\355\304\370\347\362\374\276")
-TOPIC_TEXT(
-"\212\276\352\373\276\240\343\376\363\363\363\200\365\302\346\205\314\300\200\200\364\315\311\355\341\347\345\200\315\341\363\353\304\362\341\200\367\350\301\355\304\345\362\376\374\276\246\276\352\276\274\236\343\376\363\363\363\365\302\200\346\205\314\300\200\364\313\200\304\362\341\367\351\356\347\200\304\362\341\367\350\301\355\340\304\313\354\303\324\276\344\222\324\277\202\374\277\202\343\374\362\374\276\370\276\352\277\274\216\343\376\363\363\363\365\200\302\346\205\314\300\200\364\200\311\320\362\351\356\364\304\200\362\341\367\350\301\355\304\220\313\354\303\324\277\200\324\211\277\236\374\277\236\360\362\272\374\277\224\276\352\277\252\236\343\376\363\363\363\365\302\200\346\205\314\300\200\364\326\200\320\341\347\345\304\362\341\200\367\240\250\351\356\240\322\200\351\343\350\324\345\370\364\200\251\350\301\355\304\313\354\244\303\324\277\236\324\277\356\302\374\277\356\366\362\374\277\316\344\276\352\277\372\343\376\207\363\363\363\365\302\346\205\200\314\300\200\364\334\320\344\200\346\304\362\341\367\240\250\200\351\356\240\320\344\346\254\200\240\327\351\356\263\262\240\200\357\356\354\371\251\350\301\340\355\304\366\362\374\276\334\357\276\352\276\362\343\376\363\203\363\363\365\302\346\205\314\200\300\200\364\334\327\351\356\200\315\345\364\341\306\351\354\200\345\304\362\341\367\240\250\200\327\351\356\263\262\240\357\200\356\354\371\251\350\301\355\200\304\256&][s0; "
-"&][s0; The class encapsulates system`-depen")
-TOPIC_TEXT(
-"dent internals of graphical output. Whenever you need to paint something in a window, "
-"you need a Draw object for it. The standard Paint method of the Ctrl class takes "
-"a Draw`& parameter as well. In that case the underlying mechanism passes a Draw which "
-"is already initialized for output into the respective control, knows about the current "
-"clipping, resolution etc. In a similar manner you can create")
-TOPIC_TEXT(
-" your own Draw objects to draw onto Images, Drawings (vector metafiles used for "
-"serialization of graphical operations) or to perform printer output. You can also "
-"use a Draw to query graphics`-related properties of various output devices, like "
-"pixel size, resolution, supported color model, available fonts etc.&][s0; &][s0; "
-"Although the internals of graphical output are very system`-dependent, the D")
-TOPIC_TEXT(
-"raw class is designed so as to hide most of the OS`-specific details and present "
-"a unified portable interface regardless of the actual target device or object. The "
-"downside of this approach is that Draw capabilities are somewhat limited to cover "
-"most frequently used graphical objects and attributes. It is quite possible (and "
-"in certain situations rather common) that its interface lacks some advanc")
-TOPIC_TEXT(
-"ed capabilities, although they are supported in the target operating system. For "
-"these situations the Draw object supports also methods which allow you to extend "
-"its capabilities by utilizing low`-level, system specific code, and accessing the "
-"output device at the native system level. Of course, heavy use of such capabilities "
-"makes writing portable code very difficult.&][s0;= &][s0; The operations")
-TOPIC_TEXT(
-" supported by the Draw class can be divided into several categories:&][s0; &][s0;i150;O0; "
-"initialization and configuration of the output device&][s0;i150;O0; querying output "
-"device properties&][s0;i150;O0; managing colors&][s0;i150;O0; managing text styles&][s0;i150;O0; "
-"controlling current clipping region and drawing offset&][s0;i150;O0; drawing basic "
-"vector primitives (lines, polygons)&][s0;i150;")
-TOPIC_TEXT(
-"O0; drawing raster primitives&][s0;i150;O0; drawing text&][s0;i150;O0; accessing "
-"[*/ Drawing]`-specific functions&][s0;i150;O0; accessing unified virtual output interface&][s0;i150;O0; "
-"accessing the underlying physical output device interface&][s0;i150;O0; accessing "
-"device`-secific functions&][s0; &][s0; Initialization and configuration of the output "
-"device&][s0;3 &][s4;:`:`:Draw`:`:Draw`(`): [* D")
-TOPIC_TEXT(
-"raw](HDC_[*@3 hdc])&][s6; Win32`-specific: initializes the Draw object to output "
-"on a Window device context (HDC). This is the usual Windows method to paint into "
-"windows, on memory`-mapped bitmaps and on the printer.&][s6; [* Note:] it is seldom "
-"necessary to construct the Draw object in this way. System`-independent U`+`+ layer "
-"hides such system`-specific internals within upper`-level abstract obj")
-TOPIC_TEXT(
-"ects (PrintDraw, ImageDraw, ViewDraw). Remember that, by directly handling device "
-"contexts, you are depraved of a multitude of U`+`+ internal housekeeping chores and "
-"checks which ensure that the device context and potentially its attributes are properly "
-"allocated and destroyed as necessary. For a complete set of rules for working with "
-"device contexts, see Microsoft Windows documentation.&][s1; [*C")
-TOPIC_TEXT(
-"@3 hdc]-|handle to output device context&][s0;3 &][s4;:`:`:Draw`:`:Draw`(`:`:Draw "
-"able`,GC`,XftDraw`*`,const`:`:Vector`<`:`:Rect`>`&`): [* Draw](Drawable_[*@3 dw], "
-"GC_[*@3 gc], XftDraw_`*[*@3 xftdraw], const_Vector<Rect>`&_[*@3 clip])&][s6; X11`-specific: "
-"initializes the draw object to output on a X`-Windows drawable using a given graphics "
-"context (GC). This is the usual X`-Windows method to paint")
-TOPIC_TEXT(
-" into windows and on memory`-mapped bitmaps.&][s6; [* Note:] it is seldom necessary "
-"to construct the Draw object in this way. System`-independent U`+`+ layer hides such "
-"system`-specific internals within upper`-level abstract objects (ImageDraw, ViewDraw). "
-"Remember that, by directly handling device contexts, you are depraved of a multitude "
-"of U`+`+ internal housekeeping chores and checks which ensu")
-TOPIC_TEXT(
-"re that the device context and potentially its attributes are properly allocated "
-"and destroyed as necessary. For a complete set of rules for working with device contexts, "
-"see X Windows documentation.&][s1; [*C@3 dw]-|output drawable&][s1; [*C@3 gc]-|output "
-"graphic context&][s1; [*C@3 xftdraw]-|XFT interface object&][s1; [*C@3 clip]-|clipping "
-"region&][s0;3 &][s4;:`:`:Draw`:`:Draw`(`:`:Draw able`,GC")
-TOPIC_TEXT(
-"`,const`:`:Vector`<`:`:Rect`>`&`): [* Draw](Drawable_[*@3 dw], GC_[*@3 gc], const_Vector<Rect>`&_[*@3 "
-"clip])&][s6; X11`-specific: initializes the draw object to output on a X`-Windows "
-"drawable using a given graphics context (GC). This is the usual X`-Windows method "
-"to paint into windows and on memory`-mapped bitmaps.&][s6; [* Note:] it is seldom "
-"necessary to construct the Draw object in this way. ")
-TOPIC_TEXT(
-"System`-independent U`+`+ layer hides such system`-specific internals within upper`-level "
-"abstract objects (ImageDraw, ViewDraw). Remember that, by directly handling device "
-"contexts, you are depraved of a multitude of U`+`+ internal housekeeping chores and "
-"checks which ensure that the device context and potentially its attributes are properly "
-"allocated and destroyed as necessary. For a complete se")
-TOPIC_TEXT(
-"t of rules for working with device contexts, see X Windows documentation.&][s1; "
-"[*C@3 dw]-|output drawable&][s1; [*C@3 gc]-|output graphic context&][s1; [*C@3 clip]-|clipping "
-"region&][s0;3 &][s4;:`:`:Draw`:`:Draw`(Drawable`,GC`,XftDraw`*`,const`:`:Vector`<`:`:Rect`>`&`): "
-"void_[* Init]()&][s6; Initializes internal variables for output on a previously set "
-"output device.&][s6; [* Note:] this is norma")
-TOPIC_TEXT(
-"lly not necessary. This function is called only from derived classes which need "
-"to set the output device handle (HDC under Win32, GC under X Windows) manually.&][s0;3 "
-"&][s4;:`:`:Draw`:`:Init`(const`:`:Vector`<`:`:Rect`>`&`,`:`:Point: void_[* Init](const_Vector<Rect>`&_[*@3 "
-"clip], Point_[*@3 offset]_`=_Point([@3 0], [@3 0]))&][s6; X Windows`-specific: initializes "
-"Draw internals for output on a prev")
-TOPIC_TEXT(
-"iously set output device. The parameters give clipping region and output offset "
-"to initialize the clipping stack with.&][s1; [*C@3 clip]-|clipping region of the "
-"output device (in device coordinates)&][s1; [*C@3 offset]-|initial output offset "
-"(device coordinates)&][s0; &][s0; Querying output device properties&][s0;3 &][s4;:`:`:Draw`:`:PaletteMode`(`)const: "
-"bool_[* PaletteMode]()_const&][s6; Checks ")
-TOPIC_TEXT(
-"whether the current output device is palette`-based or RGB`-based. Monochrome devices "
-"are treated as RGB`-based.&][s1; [*/ Return value]-|[/ true] `= device uses palette`-based "
-"color management, [/ false] `= device pixels contain direct RGB color values.&][s0;3 "
-"&][s4;:`:`:Draw`:`:IsMono`(`)const: bool_[* IsMono]()_const&][s6; Check whether the "
-"current output device is monochrome.&][s1; [*/ Return ")
-TOPIC_TEXT(
-"value]-|[/ true] `= monochrome, [/ false] `= grayscale or color device.&][s0;3 &][s4;:`:`:Draw`:`:GetPagePixels`(`)const: "
-"Size_[* GetPagePixels]()_const&][s6; Returns pixel page size. For virtual output "
-"devices (like Drawings), this is the same as dot page size.&][s1; [*/ Return value]-|Pixel "
-"width and height of the output page.&][s0;3 &][s4;:`:`:Draw`:`:GetPageMMs`(`)const: "
-"Size_[* GetPageMMs]()_")
-TOPIC_TEXT(
-"const&][s6; Returns physical output page size in millimeters.&][s1; [*/ Return value]-|Output "
-"page width and height in millimeters.&][s0;3 &][s4;:`:`:Draw`:`:GetPixelsPerInch`(`)const: "
-"Size_[* GetPixelsPerInch]()_const&][s6; Returns the resolution of the output device.&][s1; "
-"[*/ Return value]-|Number of pixels horizontally and vertically across a squared "
-"inch.&][s0;3 &][s4;:`:`:Draw`:`:GetSheetPix")
-TOPIC_TEXT(
-"els`(`)const: Size_[* GetSheetPixels]()_const&][s6; Returns pixel size of the output "
-"page including physical margins. This is meaningful only for printers for which the "
-"printable area is sometimes smaller than the actual paper size. For such devices "
-"[* GetSheetPixels] returns pixel size of the original (full) paper including the "
-"margins unsuitable for printing, whereas [* GetPagePixels] returns th")
-TOPIC_TEXT(
-"e printable area size (paper size minus physically enforced margins).&][s1; [*/ "
-"Return value]-|Pixel width and height of the physical output medium (paper in printer)&][s0;3 "
-"&][s4;:`:`:Draw`:`:GetPageOffset`(`)const: Point_[* GetPageOffset]()_const&][s6; "
-"Returns pixel offset of the topleft corner of the printable output area from the "
-"topleft corner of the physical output medium (printer paper). Th")
-TOPIC_TEXT(
-"is is meaningful only for printers where the printable area is sometimes smaller "
-"than the actual paper size (see also [* GetSheetPixels]). By subtracting [* GetPageOffset()] "
-"from a pair of coordinates it is possible to position objects absolutely with respect "
-"to the paper edges.&][s1; [*/ Return value]-|Horizontal and vertical displacement "
-"from the topleft corner of the physical output medium to t")
-TOPIC_TEXT(
-"he topleft corner of the printable area. &][s0;3 &][s4;:`:`:Draw`:`:Pixels`(`)const: "
-"bool_[* Pixels]()_const&][s6; Checks whether the output device coordinates are pixel`-based "
-"or dot`-based. This is the negation of the [* Dots()] function. Window and image "
-"draws are pixel`-based, whereas printer and Drawing draws are normally dot`-based.&][s1; "
-"[*/ Return value]-|[/ true] `= device is pixel`-based")
-TOPIC_TEXT(
-", [/ false] `= device is dot`-based.&][s0;3 &][s4;:`:`:Draw`:`:Dots`(`)const: bool_[* "
-"Dots]()_const&][s6; Checks whether the output device coordinates are pixel`-based "
-"or dot`-based. This is the negation of the [* Pixels()] function. Window and image "
-"draws are pixel`-based, whereas printer and Drawing draws are normally dot`-based.&][s1; "
-"[*/ Return value]-|[/ true] `= device is dot`-based, [/ fals")
-TOPIC_TEXT(
-"e] `= device is pixel`-based.&][s0;3 &][s4;:`:`:Draw`:`:IsPrinter`(`)const: bool_[* "
-"IsPrinter]()_const&][s6; Checks whether the output device is a printer.&][s1; [*/ "
-"Return value]-|[/ true] `= device is a printer.&][s0;3 &][s4;:`:`:Draw`:`:IsAborted`(`)const: "
-"bool_[* IsAborted]()_const&][s6; Checks whether the output job has been aborted. "
-"This is meaningful mainly for printers.&][s1; [*/ Return va")
-TOPIC_TEXT(
-"lue]-|[/ true] `= job has been aborted.&][s0;3 &][s4;:`:`:Draw`:`:IsBack`(`)const: "
-"bool_[* IsBack]()_const&][s6; Checks whether output device supports double`-buffering. "
-"For devices with double`-buffering it is not necessary (and is usually counterproductive) "
-"to take measures to prevent flickering as the whole output is composed offscreen. "
-"Output devices without direct video output (like Drawings ")
-TOPIC_TEXT(
-"or Images) are return [/ true] (as there is no direct video output, it is not necessary "
-"to prevent flickering).&][s1; [*/ Return value]-|[/ true] `= device is double`-buffered, "
-"[/ false] `= output goes directly to video&][s0;3 &][s4;:`:`:Draw`:`:IsDrawing`(`)const: "
-"bool_[* IsDrawing]()_const&][s6; Checks whether the output device is a Drawing.&][s1; "
-"[*/ Return value]-|[/ true] `= device is a Drawi")
-TOPIC_TEXT(
-"ng.&][s0;3 &][s4;:`:`:Draw`:`:IsMetaFile`(`)const: bool_[* IsMetaFile]()_const&][s6; "
-"Win32`-specific: Checks whether the output device is a Windows Metafile.&][s1; [*/ "
-"Return value]-|[/ true `= ]device is a Windows Enhanced Metafile.&][s0; &][s0; Managing "
-"colors&][s0; &][s0; Different output devices and their technologies pose natural "
-"limitations on producing color output. The basic classes of dev")
-TOPIC_TEXT(
-"ices with respect to their color management are:&][s0; &][s0;i150;O0; Monochrome "
-"devices (like monochrome laser printers or certains specialized displays) support "
-"no color at all. Every pixel of the output device can be black or white.&][s0;i150;O0; "
-"Palette`-based devices (like old 16`- or 256`-color displays) support a fixed set "
-"of distinct color slots, called a [/ palette]. Colors of the individ")
-TOPIC_TEXT(
-"ual slots can be either user`-settable or fixed (system`-set). Every pixel of the "
-"output device is an index into the palette.&][s0;i150;O0; RGB`-based devices (HiColor "
-"or TrueColor displays), in which every pixel of the output device can be set to any "
-"of the colors displayable by the device. Typically each pixel has at least 16 bits "
-"comprising of 5`- or 8`-bit subfields for the red, green, and blu")
-TOPIC_TEXT(
-"e color component.&][s0; &][s0; Logical color model used by the Draw class communicates "
-"colors using device`-independent color values (as represented by the [* Color] class). "
-"Graphical output functions convert these colors on`-the`-fly to physical colors supported "
-"by the system. Pixel`- and line`-oriented output objects (lines, polylines, ellipses) "
-"paint the requested objects with the nearest avai")
-TOPIC_TEXT(
-"lable physical color to the requested logical color, whereas area`- and raster`-oriented "
-"output objects (rectangles, polygons, and images) use dithering to approximate logical "
-"colors not directly produceable by the device.&][s0; &][s0; Draw supports two ways "
-"of using palette`-based output devices:&][s0; &][s0;i150;O0; [* Automatic palette]: "
-"upon initialization Draw sets up the system palette to co")
-TOPIC_TEXT(
-"ntain a matrix of 6x6x6 RGB triplets for all combinations of 6 equidistant intensities "
-"of the color components, a 16`-level gray scale plus 16 basic system colors. This "
-"fixed color palette enables the system to closely mimic the behaviour of RGB`-based "
-"color systems.&][s0;i150;O0; [* User palette]: Draw works with the current palette "
-"as set by the system / user. Nearest match is used for logical c")
-TOPIC_TEXT(
-"olor mapping.&][s0;3 &][s4;:`:`:Draw`:`:AutoPalette`(`): bool_[* AutoPalette]()&][s6; "
-"Checks palette mode of the active output device.&][s1; [*/ Return value]-|[* true] "
-"`= automatic palette mode, [* false] `= user palette mode&][s0;3 &][s4;:`:`:Draw`:`:SetAutoPalette`(bool`): "
-"void_[* SetAutoPalette](bool_[*@3 ap])&][s6; Turns automatic palette mode on or off.&][s1; "
-"[*C@3 ap]-|[* true] `= activate ")
-TOPIC_TEXT(
-"automatic palette, [* false] `= activate user palette mode&][s0;3 &][s4;:`:`:Draw`:`:Win32UpdateSColors`(`): "
-"void_[* Win32UpdateSColors]()&][s6; Updates logical palette of basic system`-dependent "
-"colors ([* SLtGray], [* SWhite], [* SBlack] etc.).&][s0; &][s0; Managing text styles&][s0;3 "
-"&][s4;:`:`:Draw`:`:AddFace`(const LOGFONT`*`,const TEXTMETRIC`*`,`:`:dword`,LPARAM`): "
-"FontInfo_[* Acquire](Font_")
-TOPIC_TEXT(
-"[*@3 font], int_[*@3 angle], int_[*@3 device])&][s6; &][s1; [*C@3 font]-|&][s1; "
-"[*C@3 angle]-|&][s1; [*C@3 device]-|&][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:Draw`:`:SetStdFont`(`:`:Font`): "
-"void_[* SetStdFont](Font_[*@3 font])&][s6; Sets the font to be used as the standard "
-"font (StdFont, Font`::STDFONT).&][s1; [*C@3 font]-|new standard font&][s0;3 &][s4;:`:`:Draw`:`:GetStdFont`(`): "
-"Font_[* GetS")
-TOPIC_TEXT(
-"tdFont]()&][s6; Returns the current standard font.&][s1; [*/ Return value]-|previously "
-"set or system`-default standard font&][s0;3 &][s4;:`:`:Draw`:`:GetStdFontSize`(`): "
-"Size_[* GetStdFontSize]()&][s6; Returns the letter box width and height of the current "
-"standard font.&][s1; [*/ Return value]-|[/ cx `= GetWidth(), cy `= GetHeight()] of "
-"the current standard font. When [/ cx `=`= 0], standard font")
-TOPIC_TEXT(
-" has default width.&][s0;3 &][s4;:`:`:Draw`:`:GetStdFontCy`(`): int_[* GetStdFontCy]()&][s6; "
-"Returns letter box width and height of the current standard font&][s1; [*/ Return "
-"value]-|[/ cx `= GetWidth(), cy `= GetHeight()] of the current standard font. When "
-"[/ cx `=`= 0], standard font has default width.&][s0;3 &][s4;:`:`:Draw`:`:GetFontInfo`(`:`:byte`,`:`:Font: "
-"FontInfo_[* GetFontInfo](byte_[*@3 ")
-TOPIC_TEXT(
-"charset], Font_[*@3 font]_`=_StdFont())&][s6; Returns font information object describing "
-"given font and charset.&][s1; [*C@3 charset]-|character set to use (from the CHARSET`_xxx "
-"enumeration)&][s1; [*C@3 font]-|font to retrieve information for.&][s1; [*/ Return "
-"value]-|FontInfo structure describing metrics of system`-allocated font for the given "
-"font object.&][s0;3 &][s4;:`:`:Draw`:`:GetFontInfo`(")
-TOPIC_TEXT(
-"`:`:Font: FontInfo_[* GetFontInfo](Font_[*@3 font]_`=_StdFont())&][s6; Returns font "
-"information object describing given font.&][s1; [*C@3 font]-|font to retrieve information "
-"for.&][s1; [*/ Return value]-|FontInfo structure describing metrics of system`-allocated "
-"font for the given Font object.&][s0;3 &][s4;:`:`:Draw`:`:GetFontInfoW`(`:`:Font: "
-"FontInfo_[* GetFontInfoW](Font_[*@3 font]_`=_StdFont())")
-TOPIC_TEXT(
-"&][s6; Returns Unicode font information for a given font.&][s1; [*C@3 font]-|font "
-"to retrieve information for.&][s1; [*/ Return value]-|FontInfo structure describing "
-"Unicode metrics of system`-allocated font for the given Font object.&][s0; &][s0; "
-"Controlling current clipping region and drawing offset&][s0; Sometimes it is necessary "
-"or at least handy to move the logical coordinate origin and limit")
-TOPIC_TEXT(
-" output clipping for a part of the drawing process. For this reason, coordinate "
-"origin displacement together with current clipping region is kept as a stack in the "
-"Draw object. Certain function push a new offset / clipping entry to the stack, other "
-"functions manipulate the current top of stack. Actual coordinate origin and clipping "
-"in effect while drawing corresponds to the entry on top of the sta")
-TOPIC_TEXT(
-"ck. At the beginning the coordinate origin is usually set to topleft corner of the "
-"output medium and the clipping box encapsulates all available output area (or, like "
-"in case of [* Ctrl`::Paint], the current `\"dirty`\" area that needs to be repainted "
-"in a window).&][s0;3 &][s4;:`:`:Draw`:`:Begin`(`): void_[* Begin]()&][s6; Duplicates "
-"the current entry on the top of the coordinate / clipping stack. ")
-TOPIC_TEXT(
-"This effectively doesn`'t change the current coordinate / clipping setting but creates "
-"a new entry which can be further manipulated by other methods like [* IntersectClip] "
-"or [* ExcludeClip].&][s0;3 &][s4;:`:`:Draw`:`:End`(`): void_[* End]()&][s6; Discards "
-"one coordinate / clipping entry from top of the stack.&][s0;3 &][s4;:`:`:Draw`:`:Offset`(`:`:Point`): "
-"void_[* Offset](Point_[*@3 p])&][s6; Crea")
-TOPIC_TEXT(
-"tes a new coordinate / clipping entry on top of the stack equal to the previous "
-"entry with coordinate origin shifted by [* p] pixels.&][s1; [*C@3 p]-|number of pixels "
-"to add to coordinate origin ([/ p.x_>_0] `= right, [/ p.x_<_0] `= left, [/ p.y_>_0] "
-"`= down, [/ p.y_<_0] `= up).&][s0;3 &][s4;:`:`:Draw`:`:Offset`(int`,int`): void_[* "
-"Offset](int_[*@3 x], int_[*@3 y])&][s6; Creates a new coordinate /")
-TOPIC_TEXT(
-" clipping entry on top of the stack equal to the previous entry with coordinate "
-"origin shifted by [/ (x, y)] pixels.&][s1; [*C@3 x]-|number of pixels to add to horizontal "
-"coordinate origin ([/ x_>_0] `= right, [/ x_<_0] `= left).&][s1; [*C@3 y]-|number "
-"of pixels to add to vertical coordinate origin ([/ y_>_0] `= down, [/ y_<_0] `= up).&][s0;3 "
-"&][s4;:`:`:Draw`:`:Clip`(const`:`:Rect`&`): bool_[* Cli")
-TOPIC_TEXT(
-"p](const_Rect`&_[*@3 r])&][s6; Creates a new coordinate / clipping entry on top "
-"of the stack with coordinate origin equal to the previous value and clipping equal "
-"to the intersection of the previous clipping region with the rectangle [/ r].&][s1; "
-"[*C@3 r]-|rectangle to intersect with current clipping region (relative to the current "
-"coordinate origin)&][s1; [*/ Return value]-|[/ true] `= the new cl")
-TOPIC_TEXT(
-"ipping region is non`-empty, [/ false] `= the new clipping is empty (it is not necessary "
-"to draw anything as nothing is visible)&][s0;3 &][s4;:`:`:Draw`:`:Clip`(int`,int`,int`,int`): "
-"bool_[* Clip](int_[*@3 x], int_[*@3 y], int_[*@3 cx], int_[*@3 cy])&][s6; Creates "
-"a new coordinate / clipping entry on top of the stack with coordinate origin equal "
-"to the previous value and clipping equal to the inte")
-TOPIC_TEXT(
-"rsection of the previous clipping region with the rectangle given by its topleft "
-"origin (relative to the current coordinate origin) [/ (x, y)], width [/ cx] and height "
-"[/ cy].&][s6; &][s1; [*C@3 x]-|left side of rectangle to intersect with current clipping "
-"region (relative to current coordinate origin)&][s1; [*C@3 y]-|top side of rectangle "
-"to intersect with current clipping region (relative to cur")
-TOPIC_TEXT(
-"rent coordinate origin)&][s1; [*C@3 cx]-|rectangle width&][s1; [*C@3 cy]-|rectangle "
-"height&][s1; [*/ Return value]-|[/ true] `= the new clipping region is non`-empty, "
-"[/ false] `= the new clipping is empty (it is not necessary to draw anything as nothing "
-"is visible)&][s0;3 &][s4;:`:`:Draw`:`:Clipoff`(const`:`:Rect`&`): bool_[* Clipoff](const_Rect`&_[*@3 "
-"r])&][s6; Creates a new coordinate / clippin")
-TOPIC_TEXT(
-"g entry on top of the stack with clipping equal to the intersection of the previous "
-"clipping region with the rectangle [/ r] and with the coordinate origin shifted by "
-"[/ r.TopLeft()] pixels. For further drawing operations the current pixel [/ r.TopLeft()] "
-"will correspond to [/ (0,_0) ]and [/ r.BottomRight()] to [/ (r.Width(),_r.Height())].&][s1; "
-"[*C@3 r]-|rectangle to intersect with current clippi")
-TOPIC_TEXT(
-"ng region (relative to current coordinate origin); [/ r.left] is added to the horizontal "
-"coordinate origin and [/ r.top] to the vertical coordinate origin.&][s1; [*/ Return "
-"value]-|[/ true] `= the new clipping region is non`-empty, [/ false] `= the new clipping "
-"is empty (it is not necessary to draw anything as nothing is visible)&][s0;3 &][s4;:`:`:Draw`:`:Clipoff`(int`,int`,int`,int`): "
-"bool_[* Cli")
-TOPIC_TEXT(
-"poff](int_[*@3 x], int_[*@3 y], int_[*@3 cx], int_[*@3 cy])&][s6; Creates a new "
-"coordinate / clipping entry on top of the stack with clipping equal to the intersection "
-"of the previous clipping region with the rectangle [/ r] and with the coordinate "
-"origin shifted by [/ (x,_y)] pixels. For further drawing operations the current pixel "
-"[/ (x, y)] will correspond to [/ (0,_0)].&][s6; &][s1; [*C@3 x]-|")
-TOPIC_TEXT(
-"left side of rectangle to intersect with current clipping region (relative to current "
-"coordinate origin) and the amount to add to horizontal coordinate origin&][s1; [*C@3 "
-"y]-|top side of rectangle to intersect with current clipping region (relative to "
-"current coordinate origin) and the amount to add to vertical coordinate origin&][s1; "
-"[*C@3 cx]-|rectangle width&][s1; [*C@3 cy]-|rectangle height&][")
-TOPIC_TEXT(
-"s1; [*/ Return value]-|[/ true] `= the new clipping region is non`-empty, [/ false] "
-"`= the new clipping is empty (it is not necessary to draw anything as nothing is "
-"visible)&][s0;3 &][s4;:`:`:Draw`:`:ExcludeClip`(const`:`:Rect`&`): bool_[* ExcludeClip](const_Rect`&_[*@3 "
-"r])&][s6; Updates the current clipping region on top of the coordinate / clipping "
-"stack by subtracting the rectangle [/ r] from t")
-TOPIC_TEXT(
-"he current clipping region.&][s1; [*C@3 r]-|rectangle to subtract from current clipping "
-"region (relative to current coordinate origin)&][s1; [*/ Return value]-|[/ true] "
-"`= the new clipping region is non`-empty, [/ false] `= the new clipping is empty "
-"(it is not necessary to draw anything as nothing is visible)&][s0;3 &][s4;:`:`:Draw`:`:ExcludeClip`(int`,int`,int`,int`): "
-"bool_[* ExcludeClip](int_[*@")
-TOPIC_TEXT(
-"3 x], int_[*@3 y], int_[*@3 cx], int_[*@3 cy])&][s6; Updates the current clipping "
-"region on top of the coordinate / clipping stack by subtracting the rectangle [/ "
-"RectC(x,_y,_cx,_cy)] from the current clipping region.&][s1; [*C@3 x]-|left side "
-"of rectangle to subtract from current clipping region (relative to current coordinate "
-"origin)&][s1; [*C@3 y]-|top side of rectangle to subtract from current")
-TOPIC_TEXT(
-" clipping region (relative to current coordinate origin)&][s1; [*C@3 cx]-|rectangle "
-"width&][s1; [*C@3 cy]-|rectangle height&][s1; [*/ Return value]-|[/ true] `= the "
-"new clipping region is non`-empty, [/ false] `= the new clipping is empty (it is "
-"not necessary to draw anything as nothing is visible)&][s0;3 &][s4;:`:`:Draw`:`:IntersectClip`(const`:`:Rect`&`): "
-"bool_[* IntersectClip](const_Rect`&_[*@3")
-TOPIC_TEXT(
-" r])&][s6; Updates the current clipping region on top of the coordinate / clipping "
-"stack by intersecting the rectangle [/ r] with the current clipping region.&][s1; "
-"[*C@3 r]-|rectangle to intersect with current clipping region (relative to current "
-"coordinate origin)&][s1; [*/ Return value]-|[/ true] `= the new clipping region is "
-"non`-empty, [/ false] `= the new clipping is empty (it is not necessa")
-TOPIC_TEXT(
-"ry to draw anything as nothing is visible)&][s0;3 &][s4;:`:`:Draw`:`:IntersectClip`(int`,int`,int`,int`): "
-"bool_[* IntersectClip](int_[*@3 x], int_[*@3 y], int_[*@3 cx], int_[*@3 cy])&][s6; "
-"Updates the current clipping region on top of the coordinate / clipping stack by "
-"intersecting the rectangle [/ RectC(x,_y,_cx,_cy)] with the current clipping region.&][s1; "
-"[*C@3 x]-|left side of rectangle to int")
-TOPIC_TEXT(
-"ersect with current clipping region (relative to current coordinate origin)&][s1; "
-"[*C@3 y]-|top side of rectangle to intersect with current clipping region (relative "
-"to current coordinate origin)&][s1; [*C@3 cx]-|rectangle width&][s1; [*C@3 cy]-|rectangle "
-"height&][s1; [*/ Return value]-|[/ true] `= the new clipping region is non`-empty, "
-"[/ false] `= the new clipping is empty (it is not necessary t")
-TOPIC_TEXT(
-"o draw anything as nothing is visible)&][s0;3 &][s4;:`:`:Draw`:`:GetClip`(`)const: "
-"Rect_[* GetClip]()_const&][s6; Returns the smallest rectangle fully covering the "
-"current clipping region. The value can be used to limit output to the visible area. "
-"Take care not to mix the current clipping region with the output rectangle as the "
-"clipping region can be just a subset of this output rectangle (like in")
-TOPIC_TEXT(
-" case of [* Ctrl`::Paint] when a part of the window is obscured).&][s1; [*/ Return "
-"value]-|Smallest rectangle fully covering the current clipping region (relative to "
-"current coordinate origin)&][s0;3 &][s4;:`:`:Draw`:`:GetOffset`(`)const: Point_[* "
-"GetOffset]()_const&][s6; Returns the current coordinate origin. This is naturally "
-"in absolute coordinates relative to the topleft corner of the output m")
-TOPIC_TEXT(
-"edium.&][s1; [*/ Return value]-|Current coordinate origin (relative to topleft corner "
-"of the output medium)&][s0;3 &][s4;:`:`:Draw`:`:GetCloffLevel`(`)const: int_[* GetCloffLevel]()_const&][s6; "
-"Returns the number of entries on the coordinate / clipping stack. This is normally "
-"used for self`-consistency check where the drawing routine ASSERTs that after drawing "
-"something the stack depth is the same")
-TOPIC_TEXT(
-" as it was before (to check whether there is not a stack `'leak`' when the drawing "
-"routine forgets to [* End] some coordinate / clipping entries it has previously pushed "
-"on the stack).&][s1; [*/ Return value]-|number of entries on the coordinate / clipping "
-"stack&][s0;3 &][s4;:`:`:Draw`:`:LPtoDP`(`:`:Point`)const: Point_[* LPtoDP](Point_[*@3 "
-"p])_const&][s6; Converts a point from coordinates relativ")
-TOPIC_TEXT(
-"e to current coordinate origin to absolute coordinates from the topleft corner of "
-"the output medium. This effectively adds the current coordinate origin to the given "
-"point [/ p].&][s1; [*C@3 p]-|Point to convert (relative to current coordinate origin)&][s1; "
-"[*/ Return value]-|Absolute coordinates of point [/ p] from the topleft corner of "
-"the output medium&][s0;3 &][s4;:`:`:Draw`:`:DPtoLP`(`:`:Poin")
-TOPIC_TEXT(
-"t`)const: Point_[* DPtoLP](Point_[*@3 p])_const&][s6; Converts a point from the "
-"absolute coordinates (from the topleft corner of the output medium) to coordinates "
-"relative to current coordinate origin. This effectively subtracts the current coordinate "
-"origin from the point [/ p].&][s1; [*C@3 p]-|Point to convert (absolute coordinates)&][s1; "
-"[*/ Return value]-|Relative coordinates of [/ p] with res")
-TOPIC_TEXT(
-"pect to the current coordinate origin&][s0;3 &][s4;:`:`:Draw`:`:LPtoDP`(const`:`:Rect`&`)const: "
-"Rect_[* LPtoDP](const_Rect`&_[*@3 r])_const&][s6; Converts a rectangle from coordinates "
-"relative to current coordinate origin to absolute coordinates from the topleft corner "
-"of the output medium. This effectively offsets the rectangle [/ r] by the amount "
-"given by the current coordinate origin.&][s1; [*C")
-TOPIC_TEXT(
-"@3 r]-|Rectangle to convert (relative to current coordinate origin)&][s1; [*/ Return "
-"value]-|Rectangle [/ r] in absolute coordinates with respect to the topleft corner "
-"of the output medium&][s0;3 &][s4;:`:`:Draw`:`:DPtoLP`(const`:`:Rect`&`)const: Rect_[* "
-"DPtoLP](const_Rect`&_[*@3 r])_const&][s6; Converts a rectangle from the absolute "
-"coordinates (with respect to the topleft corner of the output me")
-TOPIC_TEXT(
-"dium) to coordinates relative to current coordinate origin. This effectively offsets "
-"the rectangle [/ r] by the negative value of the current coordinate origin.&][s1; "
-"[*C@3 r]-|Rectangle to convert (absolute coordinates)&][s1; [*/ Return value]-|Rectangle "
-"[/ r] in coordinates relative to current coordinate origin&][s0; &][s0; Drawing basic "
-"vector primitives (lines, polygons)&][s0;3 &][s4;:`:`:Draw")
-TOPIC_TEXT(
-"`:`:DrawRect`(int`,int`,int`,int`,`:`:Color`): void_[* DrawRect](int_[*@3 x], int_[*@3 "
-"y], int_[*@3 cx], int_[*@3 cy], Color_[*@3 color])&][s6; Fills rectangle [/ RectC(x,_y,_cx,_cy)] "
-"with the color [/ color]. On palette`-based devices dithering is sometimes used for "
-"approximation when the given color doesn`'t closely correnspond to one of the available "
-"colors (see [* Managing colors]).&][s1; [*C@")
-TOPIC_TEXT(
-"3 x]-|left side to rectangle to fill (relative to coordinate origin)&][s1; [*C@3 "
-"y]-|top side of rectangle to fill&][s1; [*C@3 cx]-|rectangle width&][s1; [*C@3 cy]-|rectangle "
-"height&][s1; [*C@3 color]-|color used for filling. When [/ color `=`= Null], nothing "
-"is done. The special color [* InvertColor()] can be used to logically invert all "
-"pixel bits within the given area. This has the effect of ch")
-TOPIC_TEXT(
-"anging white to black and vice versa and changing color hues to their complements. "
-"Note, however, that due to [/ gamma]`-correction, the output image is not a photometrical "
-"complement of the original image. &][s0;3 &][s4;:`:`:Draw`:`:DrawRect`(const`:`:Rect`&`,`:`:Color`): "
-"void_[* DrawRect](const_Rect`&_[*@3 rect], Color_[*@3 color])&][s6; Fills rectangle "
-"[/ rect] with the color [/ color]. On pale")
-TOPIC_TEXT(
-"tte`-based devices dithering is sometimes used for approximation when the given "
-"color doesn`'t closely correnspond to one of the available colors (see [* Managing "
-"colors]).&][s1; [*C@3 rect]-|area to fill (relative to coordinate origin)&][s1; [*C@3 "
-"color]-|color used for filling. When [/ color `=`= Null], nothing is done. The special "
-"color [* InvertColor()] can be used to logically invert all pixe")
-TOPIC_TEXT(
-"l bits within the given area.&][s0;3 &][s4;:`:`:Draw`:`:DrawLine`(int`,int`,int`,int`,int`,`:`:Color`): "
-"void_[* DrawLine](int_[*@3 x1], int_[*@3 y1], int_[*@3 x2], int_[*@3 y2], int_[*@3 "
-"width]_`=_[@3 0], Color_[*@3 color]_`=_SBlack)&][s6; Draws a line from the point "
-"[/ (x1,_y1)] to [/ (x2,_y2)] with color [/ color]. When [/ width] is positive, solid "
-"line [/ width] pixels wide is drawn. When [/ wi")
-TOPIC_TEXT(
-"dth] is negative, function draws a dashed line 1 pixel wide. [/ width] is then one "
-"of the [/ PEN`_...] enumeration constants defining the desired line pattern. The "
-"fact that the function doesn`'t support wide dashed lines is a sad limitation of "
-"the older Win32 GDI which under Windows 95, 98 and ME doesn`'t support this. When "
-"wide dashed lines are needed, it is necessary to generate the segments ma")
-TOPIC_TEXT(
-"nually and split the line patterns into individual line segments or into polygonal "
-"patches (depending on the precision requirements and time issues in given context). "
-"Under Win32 GDI the point [/ (x1,_y1)] is not drawn.&][s1; [*C@3 x1, y1]-|line beginning "
-"(relative to current coordinate origin)&][s1; [*C@3 x2, y2]-|line end&][s1; [*C@3 "
-"width]-|line width or one of the [/ PEN`_] constants for dashe")
-TOPIC_TEXT(
-"d lines&][s1; [*C@3 color]-|line color. When [/ color `=`= Null], nothing is drawn. "
-"On palette`-based devices the nearest palette color is used (no dithering is made).&][s0; "
-"&][s0;3 &][s4;:`:`:Draw`:`:enum`{ BEGIN`, OFFSET`, CLIP`, CLIPOFF`, EXCLUDECLIP`, "
-"INTERSECTCLIP`, END`, DRAWRECT`, DRAWIMAGE`, DRAWMONOIMAGE`, DRAWDRAWING`, DRAWLINE`, "
-"DRAWELLIPSE`, DRAWTEXT`, DRAWARC`, DRAWPOLYPOLYLINE`}:* en")
-TOPIC_TEXT(
-"um `{ PEN`_NULL, PEN`_SOLID, PEN`_DASH, PEN`_DOT, PEN`_DASHDOT, PEN`_DASHDOTDOT "
-"`}&][s6; &][s1; [%00-00*C@3 PEN`_NULL]-|empty pen (nothing is drawn)&][s1; [%00-00*C@3 "
-"PEN`_SOLID]-|solid pen&][s1; [%00-00*C@3 PEN`_DASH]-|dashed pen `- `- `-&][s1; [%00-00*C@3 "
-"PEN`_DOT]-|dotted pen (dashes are shorter) . . .&][s1; [%00-00*C@3 PEN`_DASHDOT]-|dash "
-"`- dot `- dash `- dot pattern&][s1; [%00-00*C@3 PEN`_DA")
-TOPIC_TEXT(
-"SHDOTDOT]-|dash `- dot `- dot `- dash `- dot `- dot pattern&][s0; &][s0;3 &][s4;:`:`:Draw`:`:DrawLine`(`:`:Point`,`:`:Point`,int`,`:`:Color`): "
-"void_[* DrawLine](Point_[*@3 p1], Point_[*@3 p2], int_[*@3 width]_`=_[@3 0], Color_[*@3 "
-"color]_`=_SBlack)&][s6; Draws a line from the point [/ p1] to [/ p2] with color [/ "
-"color]. [/ width] gives line width (positive) or dash pattern (negative). Under Win32 ")
-TOPIC_TEXT(
-"GDI the point [/ (x1,_y1)] is not drawn.&][s6; &][s1; [*C@3 p1]-|line beginning "
-"(relative to coordinate origin)&][s1; [*C@3 p2]-|line end&][s1; [*C@3 width]-|line "
-"width or dash pattern&][s1; [*C@3 color]-|line color&][s0;3 &][s4;:`:`:Draw`:`:DrawEllipse`(const`:`:Rect`&`,`:`:Color`,int`,`:`:Color`): "
-"void_[* DrawEllipse](const_Rect`&_[*@3 r], Color_[*@3 color]_`=_SBlack, int_[*@3 "
-"pen]_`=_Null, Colo")
-TOPIC_TEXT(
-"r_[*@3 pencolor]_`=_SBlack)&][s6; Draws the largest ellipse with both axes parallel "
-"to coordinate axes fully within rectangle [/ r], i.e. with center point at [/ r.CenterPoint()], "
-"semi major axis and semi minor axis equal to [/ r.Width() / 2] and [/ r.Height() "
-"/ 2].&][s1; [*C@3 r]-|ellipse`'s bounding rectangle&][s1; [*C@3 color]-|color to "
-"fill the ellipse inside with ([/ Null] `= no filling)&][s1")
-TOPIC_TEXT(
-"; [*C@3 pen]-|pen width / dash style to used for drawing the ellipse circumference&][s1; "
-"[*C@3 pencolor]-|pen color for drawing the ellipse circumference ([/ Null] `= circumference "
-"is not drawn)&][s0;3 &][s4;:`:`:Draw`:`:DrawEllipse`(int`,int`,int`,int`,`:`:Color`,int`,`:`:Color`): "
-"void_[* DrawEllipse](int_[*@3 x], int_[*@3 y], int_[*@3 cx], int_[*@3 cy], Color_[*@3 "
-"color]_`=_SBlack, int_[*@3 pen]")
-TOPIC_TEXT(
-"_`=_Null, Color_[*@3 pencolor]_`=_SBlack)&][s6; Draws the largest ellipse with both "
-"axes parallel to coordinate axes fully within rectangle [/ RectC(x, y, cx, cy)], "
-"i.e. with center point at [/ x_`+_cx_/_2] and [/ y_`+_cy_/_2], semi major axis and "
-"semi minor axis equal to [/ cx / 2] and [/ cy / 2].&][s6; &][s1; [*C@3 x]-|left side "
-"of ellipse`'s bounding rectangle&][s1; [*C@3 y]-|top side of ellips")
-TOPIC_TEXT(
-"e`'s bounding rectangle&][s1; [*C@3 cx]-|rectangle width&][s1; [*C@3 cy]-|rectangle "
-"height&][s1; [*C@3 color]-|color to fill ellipse inside with ([/ Null] `= interior "
-"is not filled)&][s1; [*C@3 pen]-|pen width / dash style for drawing ellipse circumference&][s1; "
-"[*C@3 pencolor]-|pen color for drawing ellipse circumference ([/ Null] `= not drawn)&][s0;3 "
-"&][s4;:`:`:Draw`:`:DrawArc`(const`:`:Rect`&`,")
-TOPIC_TEXT(
-"`:`:Point`,`:`:Point`,int`,`:`:Color`): void_[* DrawArc](const_Rect`&_[*@3 rc], "
-"Point_[*@3 start], Point_[*@3 end], int_[*@3 width]_`=_[@3 0], Color_[*@3 color]_`=_SBlack)&][s6; "
-"Draws elliptic arc corresponding to the largest ellipse fully within the rectangle "
-"[/ rc] and running counterclockwise from the direction corresponding to the line "
-"connecting the centre of the ellipse ([/ rc.CenterPoint()]")
-TOPIC_TEXT(
-") with the point [/ start] and ending at direction of the point [/ end] from the "
-"ellipse centre. When [/ start `=`= end], the full ellipse is drawn.&][s1; [*C@3 rc]-|ellipse`'s "
-"bounding rectangle&][s1; [*C@3 start]-|direction at which to start the arc&][s1; "
-"[*C@3 end]-|direction of arc end (from the ellipsec centre)&][s1; [*C@3 width]-|pen "
-"width or dash style&][s1; [*C@3 color]-|color to used for ")
-TOPIC_TEXT(
-"drawing. On palette`-based devices the nearest palette color is used (no dithering).&][s0;3 "
-"&][s4;:`:`:Draw`:`:DrawPolyPolyline`(const`:`:Point`*`,int`,const int`*`,int`,int`,`:`:Color`,`:`:Color`): "
-"void_[* DrawPolyPolyline](const_Point_`*[*@3 vertices], int_[*@3 vertex`_count], "
-"const_int_`*[*@3 counts], int_[*@3 count`_count], int_[*@3 width]_`=_[@3 0], Color_[*@3 "
-"color]_`=_SBlack, Color_[*@3 dox")
-TOPIC_TEXT(
-"or]_`=_Null)&][s6; Draws a series of polylines. Polyline vertices are kept in the "
-"array [/ vertices]. The parameter [/ vertext`_count] gives the total number of vertices "
-"of all polylines in the array. The array [/ counts] gives numbers of points defining "
-"the individual polylines and [/ count`_count] gives number of entries in this array "
-"(i.e. the number of connected polylines). The first polyline ")
-TOPIC_TEXT(
-"comprises vertices [/ vertices`[0`], vertices`[1`]] ... [/ vertices`[counts`[0`] "
-"`- 1`]], the second polyline [/ vertices`[counts`[0`]`], vertices`[counts`[0`] `+ "
-"1`] ... vertices`[counts`[0`] `+ counts`[1`] `- 1`]], etc.&][s1; [*C@3 vertices]-|array "
-"of polyline vertices (relative to coordinate origin)&][s1; [*C@3 vertex`_count]-|total "
-"number of vertices of all polylines&][s1; [*C@3 counts]-|array")
-TOPIC_TEXT(
-" of polyline vertex counts&][s1; [*C@3 count`_count]-|number of entries in the [/ "
-"counts] array, i.e. the number of polylines&][s1; [*C@3 width]-|pen width or dash "
-"style.&][s1; [*C@3 color]-|polyline color.&][s1; [*C@3 doxor]-|used to draw a xor`'ed "
-"polyline set. Useful for drag `& drop animations where it is needed to draw and undraw "
-"the rubber rectangle or line repeatedly without having to repai")
-TOPIC_TEXT(
-"nt the whole display image. When set to non`-[/ Null] value, it gives the `'background`' "
-"color on which polyline pixels will have color [/ color] after xoring.&][s0;3 &][s4;:`:`:Draw`:`:DrawPolyPolyline`(const`:`:Vector`<`:`:Point`>`&`,const`:`:Vector`<int`>`&`,int`,`:`:Color`,`:`:Color`): "
-"void_[* DrawPolyPolyline](const_Vector<Point>`&_[*@3 vertices], const_Vector<int>`&_[*@3 "
-"counts], int_[*@3 wi")
-TOPIC_TEXT(
-"dth]_`=_[@3 0], Color_[*@3 color]_`=_SBlack, Color_[*@3 doxor]_`=_Null)&][s6; Draws "
-"a series of polylines. Polyline vertices are kept in the array [/ vertices]. The "
-"array [/ counts] gives numbers of points defining the individual polylines (i.e. "
-"the number of connected polylines is equal to [/ counts.GetCount()]). The first polyline "
-"comprises vertices [/ vertices`[0`], vertices`[1`]] ... [/ vertic")
-TOPIC_TEXT(
-"es`[counts`[0`] `- 1`]], the second polyline [/ vertices`[counts`[0`]`], vertices`[counts`[0`] "
-"`+ 1`] ... vertices`[counts`[0`] `+ counts`[1`] `- 1`]], etc.&][s6; &][s1; [*C@3 "
-"vertices]-|vertices of all polylines to draw&][s1; [*C@3 counts]-|vertex counts in "
-"individual polyline segments&][s1; [*C@3 width]-|pen width / dash style&][s1; [*C@3 "
-"color]-|polyline color&][s1; [*C@3 doxor]-|background val")
-TOPIC_TEXT(
-"ue for xor`'ed drawing ([/ Null] `= draw normally)&][s0;3 &][s4;:`:`:Draw`:`:DrawPolyline`(const`:`:Point`*`,int`,int`,`:`:Color`,`:`:Color`): "
-"void_[* DrawPolyline](const_Point_`*[*@3 vertices], int_[*@3 count], int_[*@3 width]_`=_[@3 "
-"0], Color_[*@3 color]_`=_SBlack, Color_[*@3 doxor]_`=_Null)&][s6; Draws a single "
-"polyline connecting all [/ count] [/ vertices].&][s1; [*C@3 vertices]-|Polyline vert")
-TOPIC_TEXT(
-"ices&][s1; [*C@3 count]-|number of vertices&][s1; [*C@3 width]-|pen width / dash "
-"style&][s1; [*C@3 color]-|polyline color&][s1; [*C@3 doxor]-|background value for "
-"xor`'ed drawing ([/ Null] `= draw normally)&][s0;3 &][s4;:`:`:Draw`:`:DrawPolyline`(const`:`:Vector`<`:`:Point`>`&`,int`,`:`:Color`,`:`:Color`): "
-"void_[* DrawPolyline](const_Vector<Point>`&_[*@3 vertices], int_[*@3 width]_`=_[@3 "
-"0], Color")
-TOPIC_TEXT(
-"_[*@3 color]_`=_SBlack, Color_[*@3 doxor]_`=_Null)&][s6; Draws a single polyline "
-"connecting all [/ vertices].&][s1; [*C@3 vertices]-|polyline vertices&][s1; [*C@3 "
-"width]-|pen width / dash style&][s1; [*C@3 color]-|polyline color&][s1; [*C@3 doxor]-|background "
-"value for xor`'ed drawing ([/ Null] `= draw normally)&][s0;3 &][s4;:`:`:Draw`:`:DrawPolyPolyPolygon`(const`:`:Point`*`,int`,const "
-"int`*`,int")
-TOPIC_TEXT(
-"`,const int`*`,int`,`:`:Color`,int`,`:`:Color`,`:`:Image`,`:`:Color`): void_[* DrawPolyPolyPolygon](const_Point_`*[*@3 "
-"vertices], int_[*@3 vertex`_count], const_int_`*[*@3 subpolygon`_counts], int_[*@3 "
-"subpolygon`_count`_count], const_int_`*[*@3 disjunct`_polygon`_counts], int_[*@3 "
-"disjunct`_polygon`_count`_count], Color_[*@3 color]_`=_Black, int_[*@3 width]_`=_[@3 "
-"0], Color_[*@3 outline]_`=_Null,")
-TOPIC_TEXT(
-" Image_[*@3 image]_`=_Null, Color_[*@3 doxor]_`=_Null)&][s6; Draws a series of complex "
-"polygons (i.e. polygons which may contain holes). The [/ vertices] array holds all "
-"polygon defining vertices. The array is divided into sections corresponding to the "
-"whole complex polygons (parameters [/ disjunct`_polygon`_counts] and [/ disjunct`_polygon`_count`_count]) "
-"and these sections are further divided in")
-TOPIC_TEXT(
-"to the individual polygons defining one complex polygon (i.e. outer boundary and "
-"holes). Numbers of vertices in the individual polygons are held in the array [/ subpolygon`_counts] "
-"(total number of simple polygons `= [/ subpolygon`_count`_count]).&][s1; [*C@3 vertices]-|all "
-"polygon vertices&][s1; [*C@3 vertex`_count]-|number of polygon vertices&][s1; [*C@3 "
-"subpolygon`_counts]-|vertex counts in ind")
-TOPIC_TEXT(
-"ividual simple polygons&][s1;/ [*/C@3 subpolygon`_count`_count][/ -|number of entries "
-"in ]subpolygon`_counts&][s1; [*C@3 disjunct`_polygon`_counts]-|vertex counts of the "
-"whole complex polygons&][s1;/ [*/C@3 disjunct`_polygon`_count`_count][/ -|number "
-"of ]disjunct`_polygon`_counts&][s1; [*C@3 color]-|polygon fill color ([/ Null] `= "
-"no fill)&][s1; [*C@3 width]-|pen width / dash style to draw polygon")
-TOPIC_TEXT(
-" boundary with&][s1; [*C@3 outline]-|pen color for drawing polygon boundary ([/ "
-"Null] `= no boundary)&][s1; [*C@3 image]-|pattern for filling polygon interior. Due "
-"to Win32 GDI limitations [/ image] must be 8 pixels wide and high.&][s1; [*C@3 doxor]-|Background "
-"color for xor`'ed drawing.&][s0; &][s0; Drawing raster primitives&][s0; &][s0; Ultimate`+`+ "
-"supports two different kinds of bitmaps: clien")
-TOPIC_TEXT(
-"t (physical) and server (logical) bitmaps. Client, or physical bitmaps are actual "
-"bit arrays defining color contents of a rectangular area with a defined pixel and "
-"color resolution. Their bits can be programmatically manipulated, which is handy "
-"to execute customized transforms or drawing operations. On the other hand, server "
-"bitmaps are allocated using system API and then manipulated using standar")
-TOPIC_TEXT(
-"d GDI operations. This allows the programmer to utilize a rich set of GDI drawing "
-"operations, but with the drawback of being unable to manipulate the bitmap pixels "
-"directly.&][s0; &][s0; In the [* Draw] package, the client (physical) bitmaps are "
-"represented by the objects [* PixelArray] and [* AlphaArray] (for images without "
-"and with a mask channel, respectively). Server bitmaps are represented by")
-TOPIC_TEXT(
-" the class [* Image]. Images and Pixel/AlphaArrays can be converted to one another "
-"(and indeed they are even within the Image implementation itself), but this conversion "
-"process can be time consuming and sometimes lossy (depending on the color resolution "
-"of the bitmaps being converted). Remember also, that whereas under Microsoft Windows "
-"series the client and server usually resides on the same mac")
-TOPIC_TEXT(
-"hine and transport times are negligible, X servers under Linux natively support "
-"running the server on a different machine than the client, which imposes serious "
-"limitations on the bandwidth of the client`-server channel.&][s0; &][s0; To sum it "
-"all up, Pixel/AlphaArrays are more low`-level image objects, ideal for situations "
-"when you intend to do most of the drawing, image conversion or filtering y")
-TOPIC_TEXT(
-"ourself (perhaps using specialized graphical output routines, as is usual e.g. in "
-"certain types of computer games). On the other hand, Images are less well suited "
-"to direct pixel`-wise manipulation, but support a plentiful supply of standard graphical "
-"operations (ranging from clipping, linear and polygonal objects to drawing text or "
-"playing back Windows Metafiles). The standard Draw interface supp")
-TOPIC_TEXT(
-"orts only Images (which in U`+`+ applications are often used for icons).&][s0;3 "
-"&][s4;:`:`:Draw`:`:DrawImage`(const`:`:Rect`&`,const`:`:Image`&`,const`:`:Rect`&`,int`): "
-"void_[* DrawImage](const_Rect`&_[*@3 rect], const_Image`&_[*@3 img], const_Rect`&_[*@3 "
-"src], int_[*@3 fx]_`=_[@3 0])&][s6; Draws a portion of the image [/ img] (as defined "
-"by the source rectangle [/ src], given in image coordinates")
-TOPIC_TEXT(
-") into the rectangle [/ rect ](relative to current coordinate origin).&][s1; [*C@3 "
-"rect]-|Destination (output) rectangle (relative to current origin)&][s1; [*C@3 img]-|Image "
-"to draw at the specified location.&][s1; [*C@3 src]-|Source rectangle (part of the "
-"image to paint).&][s1; [*C@3 fx]-|Special drawing effects.&][s0; &][s0; Currently, "
-"the following drawing effects are defined:&][s0;3 &][s4;:`:`")
-TOPIC_TEXT(
-":Image`:`:enum`{ EFFECT`_MASK`, STANDARD`, GRAYED`, ETCHED`, XOR`}: [%00-00 enum_`{_][%00-00*@3 "
-"EFFECT`_MASK][%00-00 , ][%00-00*@3 STANDARD][%00-00 , ][%00-00*@3 GRAYED][%00-00 "
-", ][%00-00*@3 ETCHED][%00-00 , ][%00-00*@3 XOR][%00-00 _`}]&][s6; &][s1; [%00-00*C@3 "
-"EFFECT`_MASK]-|bit mask covering all values of supported drawing effects&][s1; [%00-00*C@3 "
-"STANDARD]-|Displays the image with its usual co")
-TOPIC_TEXT(
-"lors.&][s1; [%00-00*C@3 GRAYED]-|Draws a grayed image, i.e. discards color information.&][s1; "
-"[%00-00*C@3 ETCHED]-|Draws an `'etched`' image outline (used e.g. in toolbars to "
-"mark `'disabled`' buttons).&][s1; [%00-00*C@3 XOR]-|Draws the image using the XOR "
-"bitwise operator. This is sometimes used for drag `& drop where, during dragging, "
-"the desired image is being repeatedly displayed and removed u")
-TOPIC_TEXT(
-"sing the same logical operation.&][s0; &][s0;3 &][s4;:`:`:Draw`:`:DrawImage`(const`:`:Rect`&`,const`:`:Image`&`,int`): "
-"void_[* DrawImage](const_Rect`&_[*@3 rect], const_Image`&_[*@3 img], int_[*@3 fx]_`=_[@3 "
-"0])&][s6; Draws the whole image [/ img] into the rectangle [/ rect] relative to current "
-"coordinate origin.&][s1; [*C@3 rect]-|Destination (output) rectangle (relative to "
-"current origin)&][s1; ")
-TOPIC_TEXT(
-"[*C@3 img]-|Image to draw at the specified location.&][s1; [*C@3 fx]-|Special drawing "
-"effects (see above).&][s0;3 &][s4;:`:`:Draw`:`:DrawImage`(int`,int`,int`,int`,const`:`:Image`&`,int`): "
-"void_[* DrawImage](int_[*@3 x], int_[*@3 y], int_[*@3 cx], int_[*@3 cy], const_Image`&_[*@3 "
-"img], int_[*@3 fx]_`=_[@3 0])&][s6; Draws the whole image [/ img] into the rectangle "
-"RectC(x, y, cx, cy) relative to cu")
-TOPIC_TEXT(
-"rrent coordinate origin.&][s1; [*C@3 x]-|left side of output rectangle&][s1; [*C@3 "
-"y]-|top side of output rectangle&][s1; [*C@3 cx]-|rectangle width&][s1; [*C@3 cy]-|rectangle "
-"height&][s1; [*C@3 img]-|image to draw&][s1; [*C@3 fx]-|drawing effects (see above).&][s0;3 "
-"&][s4;:`:`:Draw`:`:DrawImage`(int`,int`,const`:`:Image`&`,int`): void_[* DrawImage](int_[*@3 "
-"x], int_[*@3 y], const_Image`&_[*@3 img")
-TOPIC_TEXT(
-"], int_[*@3 fx]_`=_[@3 0])&][s6; Draws the image [/ img] in its original size at "
-"the position `[[/ x], [/ y]`]. &][s1; [*C@3 x]-|left side of output rectangle&][s1; "
-"[*C@3 y]-|top side of output rectangle&][s1; [*C@3 img]-|image to draw&][s1; [*C@3 "
-"fx]-|drawing effects (see above)&][s0;3 &][s4;:`:`:Draw`:`:DrawImage`(const`:`:Rect`&`,const`:`:Image`&`,const`:`:Rect`&`,`:`:Color`,`:`:Color`,`:`:Colo")
-TOPIC_TEXT(
-"r`): void_[* DrawImage](const_Rect`&_[*@3 rect], const_Image`&_[*@3 img], const_Rect`&_[*@3 "
-"src], Color_[*@3 fore], Color_[*@3 back]_`=_Null, Color_[*@3 doxor]_`=_Null)&][s6; "
-"Draws a portion of the image mask [/ img] (as defined by the [/ src] rectangle in "
-"image mask coordinate system) into the rectangle [/ rect ](relative to current coordinate "
-"origin) using foreground (`'black`') color [/ fore] a")
-TOPIC_TEXT(
-"nd background color [/ back]. When either [/ fore] or [/ back] is null, the respective "
-"mask bit (`'black`' / `'white`') is not painted (the image then acts like an ordinary "
-"mask).&][s6; &][s1; [*C@3 rect]-|output rectangle (relative to coordinate origin)&][s1; "
-"[*C@3 img]-|image to draw&][s1; [*C@3 src]-|portion of image to draw (image coordinates)&][s1; "
-"[*C@3 fore]-|foreground (black) color&][s1; ")
-TOPIC_TEXT(
-"[*C@3 back]-|background (white) color&][s1; [*C@3 doxor]-|background color for xor`'ed "
-"drawing.&][s0; &][s0;l288; When you want to draw the image using the XOR bit operator, "
-"set [/ doxor] to a not`-null value. In such case [/ doxor] is assumed to contain "
-"the overall background color (the color, on top of which any `'xor`'`-ed color will "
-"look unchanged).&][s0;3 &][s4;:`:`:Draw`:`:DrawImage`(const`:")
-TOPIC_TEXT(
-"`:Rect`&`,const`:`:Image`&`,`:`:Color`,`:`:Color`,`:`:Color`): void_[* DrawImage](const_Rect`&_[*@3 "
-"rect], const_Image`&_[*@3 img], Color_[*@3 fore], Color_[*@3 back]_`=_Null, Color_[*@3 "
-"doxor]_`=_Null)&][s6; Draws the image mask [/ img ]into the rectangle [/ rect ](relative "
-"to current coordinate origin) using foreground (`'black`') color [/ fore] and background "
-"color [/ back]. When either [/ fore")
-TOPIC_TEXT(
-"] or [/ back] is null, the respective mask bit (`'black`' / `'white`') is not painted "
-"(the image then acts like an ordinary mask).&][s6; &][s1; [*C@3 rect]-|output rectangle "
-"(relative to coordinate origin)&][s1; [*C@3 img]-|image to draw&][s1; [*C@3 fore]-|foreground "
-"(black) color, Null `= do not paint foreground&][s1; [*C@3 back]-|background (white) "
-"color, Null `= do not paint background&][s1; [*")
-TOPIC_TEXT(
-"C@3 doxor]-|background color for xor`'ed drawing&][s0; &][s0;l288; When you want "
-"to draw the image using the XOR bit operator, set [/ doxor] to a not`-null value. "
-"In such case [/ doxor] is assumed to contain the overall background color (the color, "
-"on top of which any `'xor`'`-ed color will look unchanged).&][s0;3 &][s4;:`:`:Draw`:`:DrawImage`(int`,int`,int`,int`,const`:`:Image`&`,`:`:Color`,`:`:C")
-TOPIC_TEXT(
-"olor`,`:`:Color`): void_[* DrawImage](int_[*@3 x], int_[*@3 y], int_[*@3 cx], int_[*@3 "
-"cy], const_Image`&_[*@3 img], Color_[*@3 fore], Color_[*@3 back]_`=_Null, Color_[*@3 "
-"doxor]_`=_Null)&][s6; Draws the image mask [/ img ]into the rectangle [/ RectC(x, "
-"y, cx, cy) ](relative to current coordinate origin) using foreground (`'black`') "
-"color [/ fore] and background color [/ back]. When either [/ fore")
-TOPIC_TEXT(
-"] or [/ back] is null, the respective mask bit (`'black`' / `'white`') is not painted "
-"(the image then acts like an ordinary mask).&][s6; &][s1; [*C@3 x]-|left side of "
-"output rectangle&][s1; [*C@3 y]-|top side of output rectangle&][s1; [*C@3 cx]-|rectangle "
-"width&][s1; [*C@3 cy]-|rectangle height&][s1; [*C@3 img]-|image to draw&][s1; [*C@3 "
-"fore]-|foreground (black) color, Null `= do not paint foregr")
-TOPIC_TEXT(
-"ound&][s1; [*C@3 back]-|background (white) color, Null `= do not paint background&][s1; "
-"[*C@3 doxor]-|background color for xor`'ed drawing&][s0;3 &][s4;:`:`:Draw`:`:DrawImage`(int`,int`,const`:`:Image`&`,`:`:Color`,`:`:Color`,`:`:Color`): "
-"void_[* DrawImage](int_[*@3 x], int_[*@3 y], const_Image`&_[*@3 img], Color_[*@3 "
-"fore], Color_[*@3 back]_`=_Null, Color_[*@3 doxor]_`=_Null)&][s6; Draws the imag")
-TOPIC_TEXT(
-"e mask [/ img ]at the coordinates [/ `[x, y`]] (relative to current coordinate origin) "
-"in its natural pixel size using foreground (`'black`') color [/ fore] and background "
-"(`'white`') color [/ back]. When either [/ fore] or [/ back] is null, the respective "
-"mask bit (`'black`' / `'white`') is not painted (the image then acts like an ordinary "
-"mask).&][s6; &][s1; [*C@3 x]-|left side of image&][s1; [*")
-TOPIC_TEXT(
-"C@3 y]-|top side of image&][s1; [*C@3 img]-|image to draw&][s1; [*C@3 fore]-|foreground "
-"(black) color, Null `= do not paint foreground&][s1; [*C@3 back]-|background (white) "
-"color, Null `= do not paint background&][s1; [*C@3 doxor]-|background color for xor`'ed "
-"drawing&][s0; &][s0; Drawing text&][s0;3 &][s4;:`:`:Draw`:`:GetTextSize`(const`:`:wchar`*`,`:`:Font: "
-"Size_[* GetTextSize](const_wchar_`*[*@")
-TOPIC_TEXT(
-"3 text], Font_[*@3 font]_`=_StdFont(), int_[*@3 n]_`=_`-[@3 1])&][s6; Measures width "
-"and height of a Unicode text (as when painted using given font).&][s1; [*C@3 text]-|Unicode "
-"text to measure&][s1; [*C@3 font]-|font to use for the metrics measurements&][s1; "
-"[*C@3 n]-|number of letters in the array [/ text]. When [/ n < 0], [/ text] length "
-"is counted using [/ wcslen].&][s1; [*/ Return value]-|[/ c")
-TOPIC_TEXT(
-"x `=] output text pixel width[/ , cy `= ]line height of given font&][s0;3 &][s4;:`:`:Draw`:`:DrawText`(int`,int`,int`,const`:`:wchar`*`,`:`:Font: "
-"void_[* DrawText](int_[*@3 x], int_[*@3 y], int_[*@3 angle], const_wchar_`*[*@3 text], "
-"Font_[*@3 font]_`=_StdFont(), Color_[*@3 ink]_`=_SBlack, int_[*@3 n]_`=_`-[@3 1], "
-"const_int_`*[*@3 dx]_`=_NULL)&][s6; Draws text on the output device.&][s6; [* Note:] ")
-TOPIC_TEXT(
-"when working with rotated texts, always remember that [/ `[x, y`]] define the topleft "
-"corner of the text box. Box size is that returned by the function [/ GetTextSize]. "
-"In case of rotated texts, the text box is naturally not aligned with the coordinate "
-"axes. Also, some system fonts do not support rotation (bitmap fonts). Unfortunately "
-"there is currently no reliable way to detect if a font supports")
-TOPIC_TEXT(
-" rotation. FontInfo`::IsScaleable should provide a good guess as to whether a given "
-"font supports rotation.&][s1; [*C@3 x]-|x coordinate of the topleft corner of the "
-"text box&][s1; [*C@3 y]-|y coordinate of the topleft corner of the text box&][s1; "
-"[*C@3 angle]-|angle for the text in tenths of degrees (full circle `= 3600). 0 `= "
-"to the right (normal text orientation), 900 `= upwards, 1800 `= head d")
-TOPIC_TEXT(
-"own left, 2700 downwards. &][s1; [*C@3 text]-|Unicode text to draw&][s1; [*C@3 font]-|font "
-"to use for drawing text&][s1; [*C@3 ink]-|text color; the text is always drawn as "
-"transparent. To set the background under the text to a given color, you must first "
-"measure the text size using [/ GetTextSize] and then call [/ DrawRect] to set the "
-"text box to a given color. When using rotated text ([/ angle !")
-TOPIC_TEXT(
-"`= 0]) the situation is naturally much more complicated and a [/ DrawPolygon] would "
-"be needed to clear the rotated text box.&][s1; [*C@3 n]-|number of letters in the "
-"array [/ text]. When [/ n < 0], [/ text] length is counted using [/ wcslen].&][s1; "
-"[*C@3 dx]-|array of letter widths. This can be used to set explicit spacings for "
-"the individual letters in the text. When NULL, default letters widths ")
-TOPIC_TEXT(
-"are used. When not NULL, it must contain (at least) as many entries as are being "
-"painted from the given [/ text].&][s0;3 &][s4;:`:`:Draw`:`:DrawText`(int`,int`,const`:`:wchar`*`,`:`:Font: "
-"void_[* DrawText](int_[*@3 x], int_[*@3 y], const_wchar_`*[*@3 text], Font_[*@3 font]_`=_StdFont(), "
-"Color_[*@3 ink]_`=_SBlack, int_[*@3 n]_`=_`-[@3 1], const_int_`*[*@3 dx]_`=_NULL)&][s6; "
-"Draws text on the output")
-TOPIC_TEXT(
-" device. This is a simplified version of the above function for the most common "
-"case when [/ angle `=`= 0] (i.e. the text is being painted in the ordinary direction "
-"from left to right).&][s1; [*C@3 x]-|x coordinate of the topleft corner of the text "
-"box&][s1; [*C@3 y]-|y coordinate of the topleft corner of the text box&][s1; [*C@3 "
-"text]-|Unicode text to draw&][s1; [*C@3 font]-|font to use for drawi")
-TOPIC_TEXT(
-"ng text&][s1; [*C@3 ink]-|text color; the text is always drawn as transparent. To "
-"set the background under the text to a given color, you must first measure the text "
-"size using [/ GetTextSize] and then call [/ DrawRect] to set the text box to a given "
-"color.&][s1; [*C@3 n]-|number of letters in the array [/ text]. When [/ n < 0], [/ "
-"text] length is counted using [/ wcslen].&][s1; [*C@3 dx]-|array o")
-TOPIC_TEXT(
-"f letter widths. This can be used to set explicit spacings for the individual letters "
-"in the text. When NULL, default letters widths are used. When not NULL, it must contain "
-"(at least) as many entries as are being painted from the given [/ text].&][s0;3 &][s4;:`:`:Draw`:`:GetTextSize`(const`:`:WString`&`,`:`:Font: "
-"Size_[* GetTextSize](const_WString`&_[*@3 text], Font_[*@3 font]_`=_StdFont())&][s6;")
-TOPIC_TEXT(
-" Measures width and height of a Unicode text (as when painted using given font).&][s1; "
-"[*C@3 text]-|text string to measure&][s1; [*C@3 font]-|font to use for metrics measurements&][s1; "
-"[*/ Return value]-|[/ cx `= ]text box width, [/ cy `= ] text box height (font ascent "
-"`+ descent).&][s0;3 &][s4;:`:`:Draw`:`:DrawText`(int`,int`,const`:`:WString`&`,`:`:Font: "
-"void_[* DrawText](int_[*@3 x], int_[*@3 y")
-TOPIC_TEXT(
-"], const_WString`&_[*@3 text], Font_[*@3 font]_`=_StdFont(), Color_[*@3 ink]_`=_SBlack, "
-"const_int_`*[*@3 dx]_`=_NULL)&][s6; Draws text on the output device (from left to "
-"right). This is a variation of one of the above function for the case when the input "
-"parameter is a WString. In such situation the number of letters is known ([/ text.GetLength()]) "
-"and doesn`'t (indeed shoudn`'t) be measured using")
-TOPIC_TEXT(
-" [/ wcslen].&][s1; [*C@3 x]-|x coordinate of the topleft corner of the text box&][s1; "
-"[*C@3 y]-|y coordinate of the topleft corner of the text box&][s1; [*C@3 text]-|Unicode "
-"text to draw&][s1; [*C@3 font]-|font to use for drawing text&][s1; [*C@3 ink]-|text "
-"color; the text is always drawn as transparent.&][s1; [*C@3 dx]-|array of letter "
-"widths. This can be used to set explicit spacings for the ind")
-TOPIC_TEXT(
-"ividual letters in the text. When NULL, default letters widths are used. When not "
-"NULL, it must contain (at least) as many entries as are being painted from the given "
-"[/ text].&][s0;3 &][s4;:`:`:Draw`:`:DrawText`(int`,int`,int`,const`:`:WString`&`,`:`:Font: "
-"void_[* DrawText](int_[*@3 x], int_[*@3 y], int_[*@3 angle], const_WString`&_[*@3 "
-"text], Font_[*@3 font]_`=_StdFont(), Color_[*@3 ink]_`=_SBla")
-TOPIC_TEXT(
-"ck, const_int_`*[*@3 dx]_`=_NULL)&][s6; Draws text on the output device. A variation "
-"of the above function allowing text rotation. See above notes concerning text rotation "
-"issues.&][s1; [*C@3 x]-|x coordinate of the topleft corner of the text box&][s1; "
-"[*C@3 y]-|y coordinate of the topleft corner of the text box&][s1; [*C@3 angle]-|angle "
-"for the text in tenths of degrees (full circle `= 3600). 0 `")
-TOPIC_TEXT(
-"= to the right (normal text orientation), 900 `= upwards, 1800 `= head down left, "
-"2700 downwards. &][s1; [*C@3 text]-|Unicode text to draw&][s1; [*C@3 font]-|font "
-"to use for drawing text&][s1; [*C@3 ink]-|text color; the text is always drawn as "
-"transparent.&][s1; [*C@3 dx]-|array of letter widths. This can be used to set explicit "
-"spacings for the individual letters in the text. When NULL, default ")
-TOPIC_TEXT(
-"letters widths are used. When not NULL, it must contain (at least) as many entries "
-"as are being painted from the given [/ text].&][s0;3 &][s4;:`:`:Draw`:`:GetTextSize`(const "
-"char`*`,`:`:byte`,`:`:Font: Size_[* GetTextSize](const_char_`*[*@3 text], byte_[*@3 "
-"charset], Font_[*@3 font]_`=_StdFont(), int_[*@3 n]_`=_`-[@3 1])&][s6; Measures text "
-"box size for text in given character set.&][s1; [*C@3 tex")
-TOPIC_TEXT(
-"t]-|text to measure&][s1; [*C@3 charset]-|text character set&][s1; [*C@3 font]-|font "
-"to use for the metrics measurements&][s1; [*C@3 n]-|number of letters in [/ text]. "
-"When [/ n < 0], [/ text] length is counted using [/ strlen] (or [/ utf8len], when "
-"[/ charset `=`= CHARSET`_UTF8]).&][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:Draw`:`:DrawText`(int`,int`,int`,const "
-"char`*`,`:`:byte`,`:`:Font: void_[")
-TOPIC_TEXT(
-"* DrawText](int_[*@3 x], int_[*@3 y], int_[*@3 angle], const_char_`*[*@3 text], "
-"byte_[*@3 charset], Font_[*@3 font]_`=_StdFont(), Color_[*@3 ink]_`=_SBlack, int_[*@3 "
-"n]_`=_`-[@3 1], const_int_`*[*@3 dx]_`=_NULL)&][s6; Draw given text in a given character "
-"set to the ouput device. This variant allows text rotation.&][s1; [*C@3 x]-|x coordinate "
-"of the topleft corner of the text box&][s1; [*C@3 y]-|y ")
-TOPIC_TEXT(
-"coordinate of the topleft corner of the text box&][s1; [*C@3 angle]-|angle for the "
-"text in tenths of degrees (full circle `= 3600). 0 `= to the right (normal text orientation), "
-"900 `= upwards, 1800 `= head down left, 2700 downwards. &][s1; [*C@3 text]-|text "
-"to draw&][s1; [*C@3 charset]-|output text character set (from the CHARSET`_xxx enumeration)&][s1; "
-"[*C@3 font]-|font to use for drawing text&][")
-TOPIC_TEXT(
-"s1; [*C@3 ink]-|text color; the text is always drawn as transparent.&][s1; [*C@3 "
-"n]-|number of letters in [/ text]. When [/ n < 0], [/ text] length is counted using "
-"[/ strlen].&][s1; [*C@3 dx]-|array of letter widths. This can be used to set explicit "
-"spacings for the individual letters in the text. When NULL, default letters widths "
-"are used. When not NULL, it must contain (at least) as many entrie")
-TOPIC_TEXT(
-"s as are being painted from the given [/ text].&][s0;3 &][s4;:`:`:Draw`:`:DrawText`(int`,int`,const "
-"char`*`,`:`:byte`,`:`:Font: void_[* DrawText](int_[*@3 x], int_[*@3 y], const_char_`*[*@3 "
-"text], byte_[*@3 charset], Font_[*@3 font]_`=_StdFont(), Color_[*@3 ink]_`=_SBlack, "
-"int_[*@3 n]_`=_`-[@3 1], const_int_`*[*@3 dx]_`=_NULL)&][s6; Draws text in given "
-"character set to the output device (from left")
-TOPIC_TEXT(
-" to right).&][s1; [*C@3 x]-|x coordinate of the topleft corner of the text box&][s1; "
-"[*C@3 y]-|y coordinate of the topleft corner of the text box&][s1; [*C@3 text]-|text "
-"to draw&][s1; [*C@3 charset]-|output text character set (from the CHARSET`_xxx enumeration)&][s1; "
-"[*C@3 font]-|font to use for drawing text&][s1; [*C@3 ink]-|text color; the text "
-"is always drawn as transparent.&][s1; [*C@3 n]-|num")
-TOPIC_TEXT(
-"ber of letters in [/ text]. When [/ n < 0], [/ text] length is counted using [/ "
-"strlen] (or [/ utf8len], when [/ charset `=`= CHARSET`_UTF8]).&][s1; [*C@3 dx]-|array "
-"of letter widths. This can be used to set explicit spacings for the individual letters "
-"in the text. When NULL, default letters widths are used. When not NULL, it must contain "
-"(at least) as many entries as are being painted from the gi")
-TOPIC_TEXT(
-"ven [/ text].&][s0;3 &][s4;:`:`:Draw`:`:GetTextSize`(const char`*`,`:`:Font: Size_[* "
-"GetTextSize](const_char_`*[*@3 text], Font_[*@3 font]_`=_StdFont(), int_[*@3 n]_`=_`-[@3 "
-"1])&][s6; Measures text box size for a text encoded in system`-default character "
-"set. &][s1; [*C@3 text]-|text to measure (in default character set, CHARSET`_DEFAULT)&][s1; "
-"[*C@3 font]-|font to use for the metrics measurements")
-TOPIC_TEXT(
-"&][s1; [*C@3 n]-|number of letters in [/ text]. When [/ n < 0], [/ text] length "
-"is counted using [/ strlen] (or [/ utf8len], when the default charset is [/ CHARSET`_UTF8]).&][s1; "
-"[*/ Return value]-|&][s0;3 &][s4;:`:`:Draw`:`:DrawText`(int`,int`,int`,const char`*`,`:`:Font: "
-"void_[* DrawText](int_[*@3 x], int_[*@3 y], int_[*@3 angle], const_char_`*[*@3 text], "
-"Font_[*@3 font]_`=_StdFont(), Color_[*@3")
-TOPIC_TEXT(
-" ink]_`=_SBlack, int_[*@3 n]_`=_`-[@3 1], const_int_`*[*@3 dx]_`=_NULL)&][s6; Draws "
-"text encoded in system`-default character set on the output device. This variant "
-"allows text rotation.&][s1; [*C@3 x]-|x coordinate of the topleft corner of the text "
-"box&][s1; [*C@3 y]-|y coordinate of the topleft corner of the text box&][s1; [*C@3 "
-"angle]-|angle for the text in tenths of degrees (full circle `= 360")
-TOPIC_TEXT(
-"0). 0 `= to the right (normal text orientation), 900 `= upwards, 1800 `= head down "
-"left, 2700 downwards. &][s1; [*C@3 text]-|text to draw (in default character set, "
-"CHARSET`_DEFAULT)&][s1; [*C@3 font]-|font to use for drawing text&][s1; [*C@3 ink]-|text "
-"color; the text is always drawn as transparent.&][s1; [*C@3 n]-|number of letters "
-"in [/ text]. When [/ n < 0], [/ text] length is counted using [/")
-TOPIC_TEXT(
-" strlen] (or [/ utf8len], when the default character set is [/ CHARSET`_UTF8]).&][s1; "
-"[*C@3 dx]-|array of letter widths. This can be used to set explicit spacings for "
-"the individual letters in the text. When NULL, default letters widths are used. When "
-"not NULL, it must contain (at least) as many entries as are being painted from the "
-"given [/ text].&][s0;3 &][s4;:`:`:Draw`:`:DrawText`(int`,int`,con")
-TOPIC_TEXT(
-"st char`*`,`:`:Font: void_[* DrawText](int_[*@3 x], int_[*@3 y], const_char_`*[*@3 "
-"text], Font_[*@3 font]_`=_StdFont(), Color_[*@3 ink]_`=_SBlack, int_[*@3 n]_`=_`-[@3 "
-"1], const_int_`*[*@3 dx]_`=_NULL)&][s6; Draws text encoded in system`-default character "
-"set on the output device (from left to right).&][s1; [*C@3 x]-|x coordinate of the "
-"topleft corner of the text box&][s1; [*C@3 y]-|y coordinate o")
-TOPIC_TEXT(
-"f the topleft corner of the text box&][s1; [*C@3 text]-|text to draw (in default "
-"character set, CHARSET`_DEFAULT)&][s1; [*C@3 font]-|font to use for drawing text&][s1; "
-"[*C@3 ink]-|text color; the text is always drawn as transparent.&][s1; [*C@3 n]-|number "
-"of letters in [/ text]. When [/ n < 0], [/ text] length is counted using [/ strlen] "
-"(or [/ utf8len], when the default character set is [/ CHARSE")
-TOPIC_TEXT(
-"T`_UTF8]).&][s1; [*C@3 dx]-|array of letter widths. This can be used to set explicit "
-"spacings for the individual letters in the text. When NULL, default letters widths "
-"are used. When not NULL, it must contain (at least) as many entries as are being "
-"painted from the given [/ text].&][s0;3 &][s4;:`:`:Draw`:`:GetTextSize`(const`:`:String`&`,`:`:Font: "
-"Size_[* GetTextSize](const_String`&_[*@3 text], Fo")
-TOPIC_TEXT(
-"nt_[*@3 font]_`=_StdFont())&][s6; Measures text size (default character set). This "
-"is a variant of the above function for the case when [/ text] i a [/ String] when "
-"the text length is known ([/ text.GetLength()]) and it needn`'t and shouldn`'t be "
-"measured using [/ strlen]. However, when the current system`-default character set "
-"it CHARSET`_UTF8, the text length must still be measured using [/ utf8")
-TOPIC_TEXT(
-"len] because the number of UTF8 letters can differ from the number of bytes in the "
-"string.&][s1; [*C@3 text]-|text to measure (in default character set, CHARSET`_DEFAULT)&][s1; "
-"[*C@3 font]-|font to use for the metrics measurements&][s1; [*/ Return value]-|&][s0;3 "
-"&][s4;:`:`:Draw`:`:DrawText`(int`,int`,const`:`:String`&`,`:`:Font: void_[* DrawText](int_[*@3 "
-"x], int_[*@3 y], const_String`&_[*@3 text")
-TOPIC_TEXT(
-"], Font_[*@3 font]_`=_StdFont(), Color_[*@3 ink]_`=_SBlack, const_int_`*[*@3 dx]_`=_NULL)&][s6; "
-"Draws text encoded in system`-default character set on the output device (from left "
-"to right).&][s1; [*C@3 x]-|x coordinate of the topleft corner of the text box&][s1; "
-"[*C@3 y]-|y coordinate of the topleft corner of the text box&][s1; [*C@3 text]-|text "
-"to draw (in default character set, CHARSET`_DEFAULT")
-TOPIC_TEXT(
-")&][s1; [*C@3 font]-|font to use for drawing text&][s1; [*C@3 ink]-|text color; "
-"the text is always drawn as transparent.&][s1; [*C@3 dx]-|array of letter widths. "
-"This can be used to set explicit spacings for the individual letters in the text. "
-"When NULL, default letters widths are used. When not NULL, it must contain (at least) "
-"as many entries as are being painted from the given [/ text].&][s0;3 &")
-TOPIC_TEXT(
-"][s4;:`:`:Draw`:`:DrawText`(int`,int`,int`,const`:`:String`&`,`:`:Font: void_[* "
-"DrawText](int_[*@3 x], int_[*@3 y], int_[*@3 angle], const_String`&_[*@3 text], Font_[*@3 "
-"font]_`=_StdFont(), Color_[*@3 ink]_`=_SBlack, const_int_`*[*@3 dx]_`=_NULL)&][s6; "
-"Draws text encoded in system`-default character set on the output device. This variant "
-"supports text rotation. See above for notes concerning text ")
-TOPIC_TEXT(
-"rotation issues.&][s1; [*C@3 x]-|x coordinate of the topleft corner of the text "
-"box&][s1; [*C@3 y]-|y coordinate of the topleft corner of the text box&][s1; [*C@3 "
-"angle]-|angle for the text in tenths of degrees (full circle `= 3600). 0 `= to the "
-"right (normal text orientation), 900 `= upwards, 1800 `= head down left, 2700 downwards. "
-"&][s1; [*C@3 text]-|text to draw&][s1; [*C@3 font]-|font to use f")
-TOPIC_TEXT(
-"or drawing text&][s1; [*C@3 ink]-|text color; the text is always drawn as transparent.&][s1; "
-"[*C@3 dx]-|array of letter widths. This can be used to set explicit spacings for "
-"the individual letters in the text. When NULL, default letters widths are used. When "
-"not NULL, it must contain (at least) as many entries as are being painted from the "
-"given [/ text].&][s0;3 &][s4;:`:`:Draw`:`:SinCos`(int`,dou")
-TOPIC_TEXT(
-"ble`&`,double`&`): void_[* SinCos](int_[*@3 angle], double`&_[*@3 sina], double`&_[*@3 "
-"cosa])&][s6; A simple utility function which calculates the sine and cosine of given "
-"angle (in tenths of degrees). This function is used internally to calculate metrics "
-"of rotated text. &][s1; [*C@3 angle]-|angle in tenths of degrees. 0 `= right, 900 "
-"`= up, 1800 `= left, 2700 `= down.&][s1;/ [*/C@3 sina][/ -|sin")
-TOPIC_TEXT(
-"e of the angle, or ]sin(angle `* 2 `* M`_PI / 3600)&][s1;/ [*/C@3 cosa][/ -|cosine "
-"of the angle, or ]cos(angle `* 2 `* M`_PI / 3600)&][s0; &][s0; Accessing [/ Drawing]`-specific "
-"functions&][s0;3 &][s4;:`:`:Draw`:`:DrawDrawing`(const`:`:Rect`&`,const`:`:Drawing`&`): "
-"void_[* DrawDrawing](const_Rect`&_[*@3 r], const_Drawing`&_[*@3 iw])&][s6; Draws "
-"drawing scaled into given rectangle. The coordinate t")
-TOPIC_TEXT(
-"ransform equations are&][s6; &][s6; x[, out]`=x[, dwg] `* r.Width() / iw.GetSize().cx "
-"`+ r.left&][s6; y[, out]`=y[, dwg] `* r.Height() / iw.GetSize().cy `+ r.top&][s6; "
-"&][s1; [*C@3 r]-|destination rectangle in logical device units&][s1; [*C@3 iw]-|drawing "
-"object to draw&][s0;3 &][s4;:`:`:Draw`:`:DrawDrawing`(int`,int`,int`,int`,const`:`:Drawing`&`): "
-"void_[* DrawDrawing](int_[*@3 x], int_[*@3 y], i")
-TOPIC_TEXT(
-"nt_[*@3 cx], int_[*@3 cy], const_Drawing`&_[*@3 iw])&][s6; Draws drawing scaled "
-"into rectangle [* cx] `* [* cy] pixels starting at `[x, y`]. The equations used to "
-"scale the drawing are&][s6; &][s6; x[, out]`=x[, dwg] `* cx / iw.GetSize().cx `+ "
-"x&][s6; y[, out]`=y[, dwg] `* cy / iw.GetSize().cy `+ y&][s6; &][s1; [*C@3 x]-|left "
-"edge of output rectangle&][s1; [*C@3 y]-|top edge of output rectangle&][")
-TOPIC_TEXT(
-"s1; [*C@3 cx]-|rectangle width&][s1; [*C@3 cy]-|rectangle height&][s1; [*C@3 iw]-|drawing "
-"to draw at the specified location&][s0;3 &][s4;:`:`:Draw`:`:DrawingOp`(int`): Stream`&_[* "
-"DrawingOp](int_[*@3 code])&][s6; &][s1; [*C@3 code]-|&][s1; [*/ Return value]-|&][s0;3 "
-"&][s4;:`:`:Draw`:`:PutRect`(const`:`:Rect`&`): Stream`&_[* PutRect](const_Rect`&_[*@3 "
-"r])&][s6; &][s1; [*C@3 r]-|&][s1; [*/ Return va")
-TOPIC_TEXT(
-"lue]-|&][s0; &][s0; Accessing unified virtual output interface&][s0;3 &][s4;:`:`:Draw`:`:BeginOp`(`): "
-"virtual void_[* BeginOp]()&][s6; &][s0;3 &][s4;:`:`:Draw`:`:EndOp`(`): virtual void_[* "
-"EndOp]()&][s6; &][s0;3 &][s4;:`:`:Draw`:`:OffsetOp`(`:`:Point`): virtual void_[* "
-"OffsetOp](Point_[*@3 p])&][s6; &][s1; [*C@3 p]-|&][s0;3 &][s4;:`:`:Draw`:`:ClipOp`(const`:`:Rect`&`): "
-"virtual bool_[* ClipOp](cons")
-TOPIC_TEXT(
-"t_Rect`&_[*@3 r])&][s6; &][s1; [*C@3 r]-|&][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:Draw`:`:ClipoffOp`(const`:`:Rect`&`): "
-"virtual bool_[* ClipoffOp](const_Rect`&_[*@3 r])&][s6; &][s1; [*C@3 r]-|&][s1; [*/ "
-"Return value]-|&][s0;3 &][s4;:`:`:Draw`:`:ExcludeClipOp`(const`:`:Rect`&`): virtual "
-"bool_[* ExcludeClipOp](const_Rect`&_[*@3 r])&][s6; &][s1; [*C@3 r]-|&][s1; [*/ Return "
-"value]-|&][s0;3 &][s4;:")
-TOPIC_TEXT(
-"`:`:Draw`:`:IntersectClipOp`(const`:`:Rect`&`): virtual bool_[* IntersectClipOp](const_Rect`&_[*@3 "
-"r])&][s6; &][s1; [*C@3 r]-|&][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:Draw`:`:GetClipOp`(`)const: "
-"virtual Rect_[* GetClipOp]()_const&][s6; &][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:Draw`:`:DrawRectOp`(int`,int`,int`,int`,`:`:Color`): "
-"virtual void_[* DrawRectOp](int_[*@3 x], int_[*@3 y], int_[*@3")
-TOPIC_TEXT(
-" cx], int_[*@3 cy], Color_[*@3 color])&][s6; &][s1; [*C@3 x]-|&][s1; [*C@3 y]-|&][s1; "
-"[*C@3 cx]-|&][s1; [*C@3 cy]-|&][s1; [*C@3 color]-|&][s0;3 &][s4;:`:`:Draw`:`:DrawImageOp`(const`:`:Rect`&`,const`:`:Image`&`,const`:`:Rect`&`,int`): "
-"virtual void_[* DrawImageOp](const_Rect`&_[*@3 rect], const_Image`&_[*@3 img], const_Rect`&_[*@3 "
-"src], int_[*@3 fx])&][s6; &][s1; [*C@3 rect]-|&][s1; [*C@3 img]-|&][")
-TOPIC_TEXT(
-"s1; [*C@3 src]-|&][s1; [*C@3 fx]-|&][s0;3 &][s4;:`:`:Draw`:`:DrawImageOp`(const`:`:Rect`&`,const`:`:Image`&`,const`:`:Rect`&`,`:`:Color`,`:`:Color`,`:`:Color`): "
-"virtual void_[* DrawImageOp](const_Rect`&_[*@3 rect], const_Image`&_[*@3 img], const_Rect`&_[*@3 "
-"src], Color_[*@3 fore], Color_[*@3 back], Color_[*@3 doxor])&][s6; &][s1; [*C@3 rect]-|&][s1; "
-"[*C@3 img]-|&][s1; [*C@3 src]-|&][s1; [*C@3 fore")
-TOPIC_TEXT(
-"]-|&][s1; [*C@3 back]-|&][s1; [*C@3 doxor]-|&][s0;3 &][s4;:`:`:Draw`:`:DrawLineOp`(int`,int`,int`,int`,int`,`:`:Color`): "
-"virtual void_[* DrawLineOp](int_[*@3 x1], int_[*@3 y1], int_[*@3 x2], int_[*@3 y2], "
-"int_[*@3 width], Color_[*@3 color])&][s6; &][s1; [*C@3 x1]-|&][s1; [*C@3 y1]-|&][s1; "
-"[*C@3 x2]-|&][s1; [*C@3 y2]-|&][s1; [*C@3 width]-|&][s1; [*C@3 color]-|&][s0;3 &][s4;:`:`:Draw`:`:DrawPolyPoly")
-TOPIC_TEXT(
-"lineOp`(const`:`:Point`*`,int`,const int`*`,int`,int`,`:`:Color`,`:`:Color`): virtual "
-"void_[* DrawPolyPolylineOp](const_Point_`*[*@3 vertices], int_[*@3 vertex`_count], "
-"const_int_`*[*@3 counts], int_[*@3 count`_count], int_[*@3 width], Color_[*@3 color], "
-"Color_[*@3 doxor])&][s6; &][s1; [*C@3 vertices]-|&][s1; [*C@3 vertex`_count]-|&][s1; "
-"[*C@3 counts]-|&][s1; [*C@3 count`_count]-|&][s1; [*C@3 widt")
-TOPIC_TEXT(
-"h]-|&][s1; [*C@3 color]-|&][s1; [*C@3 doxor]-|&][s0;3 &][s4;:`:`:Draw`:`:DrawEllipseOp`(const`:`:Rect`&`,`:`:Color`,int`,`:`:Color`): "
-"virtual void_[* DrawEllipseOp](const_Rect`&_[*@3 r], Color_[*@3 color], int_[*@3 "
-"pen], Color_[*@3 pencolor])&][s6; &][s1; [*C@3 r]-|&][s1; [*C@3 color]-|&][s1; [*C@3 "
-"pen]-|&][s1; [*C@3 pencolor]-|&][s0;3 &][s4;:`:`:Draw`:`:DrawArcOp`(const`:`:Rect`&`,`:`:Point`,`:`:")
-TOPIC_TEXT(
-"Point`,int`,`:`:Color`): virtual void_[* DrawArcOp](const_Rect`&_[*@3 rc], Point_[*@3 "
-"start], Point_[*@3 end], int_[*@3 width], Color_[*@3 color])&][s6; &][s1; [*C@3 rc]-|&][s1; "
-"[*C@3 start]-|&][s1; [*C@3 end]-|&][s1; [*C@3 width]-|&][s1; [*C@3 color]-|&][s0;3 "
-"&][s4;:`:`:Draw`:`:DrawTextOp`(int`,int`,int`,const`:`:wchar`*`,`:`:Font`,`:`:Color`,int`,const "
-"int`*`): virtual void_[* DrawTextOp](int_[*")
-TOPIC_TEXT(
-"@3 x], int_[*@3 y], int_[*@3 angle], const_wchar_`*[*@3 text], Font_[*@3 font], "
-"Color_[*@3 ink], int_[*@3 n], const_int_`*[*@3 dx])&][s6; &][s1; [*C@3 x]-|&][s1; "
-"[*C@3 y]-|&][s1; [*C@3 angle]-|&][s1; [*C@3 text]-|&][s1; [*C@3 font]-|&][s1; [*C@3 "
-"ink]-|text color&][s1; [*C@3 n]-|number of letters in [/ text]. When [/ n < 0], [/ "
-"text] length is counted using [/ wcslen].&][s1; [*C@3 dx]-|array of let")
-TOPIC_TEXT(
-"ter widths. This can be used to set explicit spacings for the individual letters "
-"in the text. When NULL, default letters widths are used. When not NULL, it must contain "
-"(at least) as many entries as are being painted from the given [/ text].&][s0;3 &][s4;:`:`:Draw`:`:DrawDrawingOp`(const`:`:Rect`&`,const`:`:Drawing`&`): "
-"virtual void_[* DrawDrawingOp](const_Rect`&_[*@3 target], const_Drawing`&_[*@3")
-TOPIC_TEXT(
-" w])&][s6; &][s1; [*C@3 target]-|&][s1; [*C@3 w]-|&][s0; &][s0; Accessing the underlying "
-"physical output device interface&][s0;3 &][s4;:`:`:Draw`:`:GetColor`(`:`:Color`)const: "
-"COLORREF_[* GetColor](Color_[*@3 color])_const&][s6; &][s1; [*C@3 color]-|&][s1; "
-"[*/ Return value]-|&][s0;3 &][s4;:`:`:Draw`:`:SetColor`(`:`:Color`): void_[* SetColor](Color_[*@3 "
-"color])&][s6; &][s1; [*C@3 color]-|&][s0;3 &]")
-TOPIC_TEXT(
-"[s4;:`:`:Draw`:`:SetDrawPen`(int`,`:`:Color`): void_[* SetDrawPen](int_[*@3 width], "
-"Color_[*@3 color])&][s6; &][s1; [*C@3 width]-|&][s1; [*C@3 color]-|&][s0;3 &][s4;:`:`:Draw`:`:BeginGdi`(`): "
-"HDC_[* BeginGdi]()&][s6; &][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:Draw`:`:EndGdi`(`): "
-"void_[* EndGdi]()&][s6; &][s0;3 &][s4;:`:`:Draw`:`:GetHandle`(`): HDC_[* GetHandle]()&][s6; "
-"&][s1; [*/ Return value]-|")
-TOPIC_TEXT(
-"&][s0;3 &][s4;:`:`:Draw`:`:operator HDC`(`)const: [* operator_HDC]()_const&][s6; "
-"[* Win32`-specific:] retrieves the device context handle for the output device (in "
-"Win32, device context handles are used to paint into windows, images, printer and "
-"Windows metafile). When the device doesn`'t correspond to a Windows context handle "
-"(e.g. for DrawingDraw, PdfDraw and the like), the function returns NULL")
-TOPIC_TEXT(
-".&][s1; [*/ Return value]-|handle of device context (NULL `= not available or applicable)&][s0;3 "
-"&][s4;:`:`:Draw`:`:Unselect`(`): void_[* Unselect]()&][s6; [* Win32`-specific:] restores "
-"all drawing objects originally selected in the Windows device context. When drawing "
-"using different line and filll styles, the Draw object internally modifies the state "
-"automaton of the device context to allocate t")
-TOPIC_TEXT(
-"he necessary brushes and pens. This functions unselects all objects created internally "
-"by Draw during painting and restores the objects originally selected into the context. "
-"This is sometimes necessary when you need to access and manipulate the device context "
-"manually using specific Windows API calls.&][s0;3 &][s4;:`:`:Draw`:`:Attach`(HDC`): "
-"void_[* Attach](HDC_[*@3 ahandle])&][s6; [* Win32`-speci")
-TOPIC_TEXT(
-"fic:] attaches the Draw object to a given Windows device handle. The function stores "
-"the given handle and performs certain initializations (like determining the color "
-"model and other characteristics of the output device). This is normally used only "
-"internally by objects deriving from the Draw object to perform specific drawing tasks "
-"(see ImageDraw and PrintDraw).&][s1; [*C@3 ahandle]-|windows devi")
-TOPIC_TEXT(
-"ce context handle to connect to the Draw object&][s0;3 &][s4;:`:`:Draw`:`:Detach`(`): "
-"HDC_[* Detach]()&][s6; [* Win32`-specific:] detaches the Windows device context handle "
-"from the Draw object. The function unselects all device objects selected previously "
-"by the internal implementation of the drawing operations. After calling this function "
-"the device context handle is freed from the Draw and can ")
-TOPIC_TEXT(
-"be used to perform Win32`-specific drawing tasks.&][s1; [*/ Return value]-|The Windows "
-"device context being detached&][s0;3 &][s4;:`:`:Draw`:`:GetSizeCaps`(int`,int`)const: "
-"Size_[* GetSizeCaps](int_[*@3 i], int_[*@3 j])_const&][s6; [* Win32`-specific:] returns "
-"a pair of Windows device context capabilities forming an `[x, y`] pair. It is quite "
-"common for device context characteristics to come in pa")
-TOPIC_TEXT(
-"irs, like HORZRES / VERTRES, PHYSICALWIDTH / PHYSICALHEIGHT etc. In a few such cases "
-"it is handy to have a funcion which reads the given two capabilities (i and j) and "
-"returns the result in the form of a Size object.&][s1; [*C@3 i]-|1st capability (its "
-"value is returned in Size`::cx)&][s1; [*C@3 j]-|2nd capability (its value is returned "
-"in Size`::cy)&][s1; [*/ Return value]-|Size formed from the r")
-TOPIC_TEXT(
-"esults of call to GetDeviceCaps for the HDC of the Draw object and the capabilities "
-"[* i] and [* j].&][s0;3 &][s4;:`:`:Draw`:`:Flush`(`): void_[* Flush]()&][s6; &][s0;3 "
-"&][s4;:`:`:Draw`:`:MakeXLFD`(`:`:byte`,`:`:Font`,int`,int`): String_[* MakeXLFD](byte_[*@3 "
-"cs], Font_[*@3 f], int_[*@3 height]_`=_Null, int_[*@3 angle]_`=_[@3 0])&][s6; &][s1; "
-"[*C@3 cs]-|&][s1; [*C@3 f]-|&][s1; [*C@3 height]-|&][s1")
-TOPIC_TEXT(
-"; [*C@3 angle]-|&][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:Draw`:`:CreateXftFont`(`:`:Font`,int`): "
-"XftFont_`*[* CreateXftFont](Font_[*@3 f], int_[*@3 angle])&][s6; &][s1; [*C@3 f]-|&][s1; "
-"[*C@3 angle]-|&][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:Draw`:`:GetXftDraw`(`)const: "
-"XftDraw_`*[* GetXftDraw]()_const&][s6; &][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:Draw`:`:SetForeground`(`:`:Color`): "
-"vo")
-TOPIC_TEXT(
-"id_[* SetForeground](Color_[*@3 color])&][s6; &][s1; [*C@3 color]-|&][s0;3 &][s4;:`:`:Draw`:`:SetLineStyle`(int`): "
-"void_[* SetLineStyle](int_[*@3 width])&][s6; &][s1; [*C@3 width]-|&][s0;3 &][s4;:`:`:Draw`:`:SetFont`(`:`:Font`,int`): "
-"void_[* SetFont](Font_[*@3 font], int_[*@3 angle])&][s6; &][s1; [*C@3 font]-|&][s1; "
-"[*C@3 angle]-|&][s0;3 &][s4;:`:`:Draw`:`:SetClip`(`): void_[* SetClip]()&][s6; &][")
-TOPIC_TEXT(
-"s0;3 &][s4;:`:`:Draw`:`:GetDrawable`(`)const: Drawable_[* GetDrawable]()_const&][s6; "
-"&][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:Draw`:`:GetGC`(`)const: GC_[* GetGC]()_const&][s6; "
-"&][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:Draw`:`:GetClipList`(`)const: const_Vector<Rect>`&_[* "
-"GetClipList]()_const&][s6; &][s1; [*/ Return value]-|&][s0;3 &][s4;:`:`:Draw`:`:GetFontInfo`(`:`:byte`,`:`:Font`): "
-"void_")
-TOPIC_TEXT(
-"[* Init](const_Vector<Rect>`&_[*@3 `_clip], Point_[*@3 `_offset])&][s6; &][s1; [*C@3 "
-"`_clip]-|&][s1; [*C@3 `_offset]-|&][s0; &][s0; Accessing device`-secific functions&][s0;3 "
-"&][s4;:`:`:Draw`:`:StartPage`(`): virtual void_[* StartPage]()&][s6; &][s0;3 &][s4;:`:`:Draw`:`:EndPage`(`): "
-"virtual void_[* EndPage]()&][s6; &][s0;3 &][s4;:`:`:Draw`:`:Register`(int`,`:`:Draw`:`:Drawer`): "
-"void_[* Register](i")
-TOPIC_TEXT(
-"nt_[*@3 code], Drawer_[*@3 drawer])&][s6; &][s1; [*C@3 code]-|&][s1; [*C@3 drawer]-|&][s0;3 "
-"&][s2;3 Important derived classes&][s0;3 &][s10;:`:`:ScreenDraw`:`:class`:`:ScreenDraw:* "
-"[* class_]ScreenDraw[*  : public ]Draw&][s0;3 &][s0; Used for determining screen "
-"characteristics like pixel `& physical resolution, supported color model, and for "
-"retrieving physical screen data. This is needed in situa")
-TOPIC_TEXT(
-"tion when you must access the whole screen not depending on the logical window system "
-"(e.g. when writing an utility showing in its window a magnified part of the screen).&][s0; "
-"&][s0;3 &][s10;:`:`:ScreenInfo`(`):* [* class_]ScreenInfo[*  : public ]Draw&][s0; "
-"&][s0; Used for determining screen characteristics like pixel `& physical resolution, "
-"supported color model. Instead of [* ScreenDraw], Scree")
-TOPIC_TEXT(
-"nInfo cannot be used to read physical display data, only for retrieving device configuration "
-"information.&][s0; &][s0;3 &][s10;:`:`:ViewDraw`:`:class`:`:ViewDraw:* [* class_]ViewDraw[* "
-" : public ]Draw&][s0; &][s0; Used to paint into a control`'s view area. This is usually "
-"needed only in special situations (like for `\"animated`\" display in drag `& drop "
-"operations), because usually the controls are ")
-TOPIC_TEXT(
-"repainted automatically upon Windows request via the event loop (see [^topic`:`/`/CtrlCore`/src`/Ctrl`$en`-us`#`:`:Ctrl`:`:Paint`(Draw`&`)^ "
-"Ctrl`::Paint]).&][s0;3 &][s4;:`:`:ViewDraw`:`:ViewDraw`(`:`:Ctrl`*`): [* ViewDraw](Ctrl "
-"`*[*@3 ctrl])&][s6; Initializes the ViewDraw object to paint into the window area "
-"of a given Ctrl. See [^topic`:`/`/CtrlCore`/src`/Ctrl`$en`-us^ CtrlCore] for greater "
-"detai")
-TOPIC_TEXT(
-"l on controls.&][s0; &][s0;3 &][s10;:`:`:ImageDraw`:`:class`:`:ImageDraw:* [* class_]ImageDraw[* "
-" : public ]Draw&][s0; &][s0; Used to paint into images. This is needed when you generate "
-"an image (to be later stored as a PNG, for example) using Windows GDI functions like "
-"DrawLine, DrawText etc. You create an image object, construct an ImageDraw using "
-"this object (and possibly a reference Draw to sp")
-TOPIC_TEXT(
-"ecify the image color format), then perform a series of GDI operations on the ImageDraw "
-"object. After you Close the ImageDraw object, you can further process the Image which "
-"now contains the object painted using the GDI output.&][s0; &][s0;3 &][s4;:`:`:ImageDraw`:`:ImageDraw`(`): "
-"[%00-00* ImageDraw][%00-00 ()]&][s6; Constructs an empty ImageDraw. You can later "
-"Open the ImageDraw with a given Image")
-TOPIC_TEXT(
-".&][s0;3 &][s4;:`:`:ImageDraw`:`:ImageDraw`(`:`:Draw`&`,`:`:Image`&`): [%00-00* "
-"ImageDraw][%00-00 (Draw`&_][%00-00*@3 draw][%00-00 , Image`&_][%00-00*@3 image][%00-00 "
-")]&][s6; Constructs an ImageDraw and Opens it for painting into the given [* image].&][s1; "
-"[%00-00*C@3 draw]-|reference draw defining the image`'s color format.&][s1; [%00-00*C@3 "
-"image]-|image to write into&][s0;3 &][s4;:`:`:ImageDra")
-TOPIC_TEXT(
-"w`:`:ImageDraw`(`:`:Image`&`): [%00-00* ImageDraw][%00-00 (Image`&_][%00-00*@3 image][%00-00 "
-")]&][s6; Constructs and ImageDraw and Opens it for painting into the given [* image]. "
-"The image is considered to be in the color format defined by [* ScreenDraw].&][s1; "
-"[%00-00*C@3 image]-|image to write into&][s0;3 &][s4;:`:`:ImageDraw`:`:Open`(`:`:Image`&`): "
-"[%00-00 void_][%00-00* Open][%00-00 (Image`&_]")
-TOPIC_TEXT(
-"[%00-00*@3 image][%00-00 )]&][s6; Opens the ImageDraw for painting into given [* "
-"image ](assumed to have color format compatible with ScreenDraw). If an image was "
-"opened in the ImageDraw before, it is automatically closed.&][s1; [%00-00*C@3 image]-|image "
-"to write into&][s0;3 &][s4;:`:`:ImageDraw`:`:Open`(`:`:Draw`&`,`:`:Image`&`): [%00-00 "
-"void_][%00-00* Open][%00-00 (Draw`&_][%00-00*@3 draw][%00-0")
-TOPIC_TEXT(
-"0 , Image`&_][%00-00*@3 image][%00-00 )]&][s6; Opens the ImageDraw for painting "
-"into given [* image]. The [* draw] parameter defines the [* image]`'s color model. "
-"This is needed because in Win32, standard GDI is not completely generic as concerns "
-"image color models. To process a bitmap, you must create a CompatibleDC suitable "
-"for processing the image, and this is not generally possible to determin")
-TOPIC_TEXT(
-"e and create solely using the information in the image. (E.g. when a printer has "
-"different color model than the screen, which is quite often the case, an image created "
-"using the PrintDraw as its compatible draw will not be processable by another ImageDraw "
-"based on ScreenDraw).&][s1; [%00-00*C@3 draw]-|draw compatible with image color model&][s1; "
-"[%00-00*C@3 image]-|image to write into&][s0;3 &][s4")
-TOPIC_TEXT(
-";:`:`:ImageDraw`:`:Close`(`): [%00-00 void_][%00-00* Close][%00-00 ()]&][s6; Shuts "
-"down writing into the (previously Open`-ed) image. Between the Open (or the non`-empty "
-"contructor) and a Close the image itself must not be manipulated, otherwise the results "
-"may be inpredictable. You had best consider the image locked (although in reality, "
-"no physical lock is currently done) and leave it alone unti")
-TOPIC_TEXT(
-"l the Close, after which you can process it further (encoder it using an ImageEncoder "
-"and save it to the disk, store it in a VectorMap`-based cache for web server throughput "
-"acceleration, assign it to the system cursor using [^topic`:`/`/CtrlCore`/src`/Ctrl`$en`-us`#`:`:Ctrl`:`:CursorImage`(Point`,dword`)^ "
-"CursorImage] etc.).&][s0; &][s0;3 &][s10;:`:`:ImageMaskDraw`:`:class`:`:ImageMaskDraw:* "
-"[%00")
-TOPIC_TEXT(
-"-00* class_][%00-00 ImageMaskDraw]&][s6; Used to paint into image masks. Images "
-"can be either unmasked (considered to have mask equal to opaque everywhere in the "
-"image area), or masked. Full alpha channel is currently not supported, but is planned "
-"(hopefully soon, written on June 29, 2005). Mask can be either `\"off`\" for the "
-"pixel (then the pixel is transparent and nothing is painted) or `\"on`\" (t")
-TOPIC_TEXT(
-"hen the pixel is painted and the original pixel is overwritten). This applies to "
-"standard functions like the simpler form of DrawImage, other functions manipulate "
-"the pixel `& mask data otherwise.&][s9; [/ Derived from] [%00-00 Draw]&][s0;3 &][s4;:`:`:ImageMaskDraw`:`:ImageMaskDraw`(`): "
-"[%00-00* ImageMaskDraw][%00-00 ()]&][s6; Constructs an empty ImageMaskDraw. You can "
-"later Open the ImageMaskDraw")
-TOPIC_TEXT(
-" for processing an Image.&][s0;3 &][s4;:`:`:ImageMaskDraw`:`:ImageMaskDraw`(`:`:Image`&`): "
-"[%00-00* ImageMaskDraw][%00-00 (Image`&_][%00-00*@3 image][%00-00 )]&][s6; Creates "
-"an ImageMaskDraw and opens it for writing into an Image.&][s1; [%00-00*C@3 image]-|image "
-"to write to&][s0;3 &][s4;:`:`:ImageMaskDraw`:`:Open`(`:`:Image`&`): [%00-00 void_][%00-00* "
-"Open][%00-00 (Image`&_][%00-00*@3 image][%00-0")
-TOPIC_TEXT(
-"0 )]&][s6; Opens the ImageMaskDraw to write into given Image. When the ImageMaskDraw "
-"was previously opened with another image, it is automatically closed. It is an error "
-"to open the same Image in two ImageMaskDraws at once. It is, however, legal to open "
-"an Image simultaneously in an ImageDraw together with the ImageMaskDraw. It is often "
-"handy to be able to paint the data and mask at once, because ")
-TOPIC_TEXT(
-"they often correlate.&][s1; [%00-00*C@3 image]-|image to write to&][s0;3 &][s4;:`:`:ImageMaskDraw`:`:Close`(`): "
-"[%00-00 void_][%00-00* Close][%00-00 ()]&][s6; Finishes writing into the image mask. "
-"After this operation you can further process the newly modified image (paint it, "
-"encode it or anything else).&][s0;3 &][s10;:`:`:DrawingDraw`:`:class`:`:DrawingDraw: "
-"&][s10;* [%00-00* class_][%00-00 Draw")
-TOPIC_TEXT(
-"ingDraw]&][s6; Used to create an internal linearized representation of the executed "
-"drawing operations, called a [* Drawing]. The Drawing can later be painted using "
-"DrawDrawing or serialized into a stream (to be later read back). Please consider "
-"the DrawingDraw an optimized internal short`-term image storage format (like when "
-"preparing the output for printer or for caches), not a completely `\"offi")
-TOPIC_TEXT(
-"cial`\" or stable format suitable e.g. for documents or distributable images. It "
-"tends to change from time to time. We plan to implement a specialized `\"stable`\" "
-"Drawing`-like vector format which will be suitable for long`-term data storage.&][s9; "
-"[/ Derived from] [%00-00 Draw]&][s0;3 &][s4;:`:`:DrawingDraw`:`:DrawingDraw`(`): "
-"[%00-00* DrawingDraw][%00-00 ()]&][s6; Constructs an empty DrawingDraw. ")
-TOPIC_TEXT(
-"The DrawingDraw can be initialized later using [* Create].&][s0;3 &][s4;:`:`:DrawingDraw`:`:DrawingDraw`(int`,int`): "
-"[%00-00* DrawingDraw][%00-00 (int_][%00-00*@3 cx][%00-00 , int_][%00-00*@3 cy][%00-00 "
-")]&][s6; Creates a DrawingDraw and initializes it with given dimensions. Pixels are "
-"set as default Drawing units, although you can change the units to dots using SetPixels.&][s1; "
-"[%00-00*C@3 cx]-|d")
-TOPIC_TEXT(
-"rawing width&][s1; [%00-00*C@3 cy]-|drawing height&][s0;3 &][s4;:`:`:DrawingDraw`:`:DrawingDraw`(`:`:Size`): "
-"[%00-00* DrawingDraw][%00-00 (Size_][%00-00*@3 sz][%00-00 )]&][s6; Creates a DrawingDraw "
-"with given size (with pixels as default units).&][s1; [%00-00*C@3 sz]-|desired drawing "
-"size&][s0;3 &][s4;:`:`:DrawingDraw`:`:SetPixels`(bool`): [%00-00 void_][%00-00* SetPixels][%00-00 "
-"(bool_][%00-00*@3")
-TOPIC_TEXT(
-" b][%00-00 _`=_true)]&][s6; Switches to pixel units (b `= true) or to dot units "
-"(b `= false).&][s1; [%00-00*C@3 b]-|unit mode: true `= pixels, false `= dots&][s0;3 "
-"&][s4;:`:`:DrawingDraw`:`:Create`(int`,int`): [%00-00 void_][%00-00* Create][%00-00 "
-"(int_][%00-00*@3 cx][%00-00 , int_][%00-00*@3 cy][%00-00 )]&][s6; Initializes the "
-"DrawingDraw to record drawing operations into a Drawing of given size.")
-TOPIC_TEXT(
-" After performing the requested set of operations, you can GetResult to retrieve "
-"the Drawing containing the recording of the performed operations. Default drawing "
-"units are pixels, use SetPixels(false) to switch them to dots.&][s1; [%00-00*C@3 "
-"cx]-|drawing width&][s1; [%00-00*C@3 cy]-|drawing height&][s0;3 &][s4;:`:`:DrawingDraw`:`:Create`(`:`:Size`): "
-"[%00-00 void_][%00-00* Create][%00-00 (Size_][")
-TOPIC_TEXT(
-"%00-00*@3 sz][%00-00 )]&][s6; Initializes the DrawingDraw to create a Drawing of "
-"given size.&][s1; [%00-00*C@3 sz]-|drawing size&][s0;3 &][s4;:`:`:DrawingDraw`:`:GetResult`(`)const: "
-"[%00-00 Drawing_][%00-00* GetResult][%00-00 ()_const]&][s6; Returns the Drawing containing "
-"the recorded operations. (Before you use GetResult, you must first use the constructor "
-"with parameters or call Create to initia")
-TOPIC_TEXT(
-"lize the Drawing and set its size).&][s1; [*/ Return value]-|a Drawing representing "
-"the recorded set of drawing operations. You can later replay this set of operations "
-"using [^topic`:`/`/Draw`/src`/Draw`$en`-us`#`:`:Draw`:`:DrawDrawing`(const Rect`&`,const "
-"Drawing`&`)^ DrawDrawing] or Serialize it for storage.&][s0;3 &][s4;:`:`:DrawingDraw`:`:operator`:`:Drawing`(`)const: "
-"[%00-00* operator_Drawing")
-TOPIC_TEXT(
-"][%00-00 ()_const]&][s6; Returns the recorded Drawing (just like GetResult).&][s1; "
-"[*/ Return value]-|the recorded drawing operations&][s0; &][s0; &][s10;* [* class_]Report&][s0; "
-"The Report can be used for generating documents for printing. Is is currently considered "
-"slightly obsolete as it is based on the old Document object instead on RichText. "
-"It is planned to be removed sometimes in the future")
-TOPIC_TEXT(
-", but is currently needed for not breaking our older projects.&][s10; &][s10;* [* "
-"class_]WinMetaFileDraw (Win32 only)&][s0; Used to create Windows metafiles. &][s0;3 "
-"&][s4;:`:`:WinMetaFileDraw`:`:WinMetaFileDraw`(HDC`,int`,int`,const char`*`,const "
-"char`*`,const char`*`): [%00-00* WinMetaFileDraw][%00-00 (HDC_][%00-00*@3 hdc][%00-00 "
-", int_][%00-00*@3 cx][%00-00 , int_][%00-00*@3 cy][%00-00 , const_")
-TOPIC_TEXT(
-"char_`*][%00-00*@3 app][%00-00 , const_char_`*][%00-00*@3 name][%00-00 , const_char_`*][%00-00*@3 "
-"file][%00-00 )]&][s6; Constructs a WinMetaFileDraw to generate a metafile in color "
-"format compatible with given device.&][s1; [%00-00*C@3 hdc]-|reference device to "
-"use for initializing metafile color model&][s1; [%00-00*C@3 cx]-|metafile width&][s1; "
-"[%00-00*C@3 cy]-|metafile height&][s1; [%00-00*C@3 a")
-TOPIC_TEXT(
-"pp]-|application name (stored in the metafile header)&][s1; [%00-00*C@3 name]-|metafile "
-"name (stored in the metafile header)&][s1; [%00-00*C@3 file]-|optional file name "
-"(when not given, the metafile is memory`-only)&][s0;3 &][s4;:`:`:WinMetaFileDraw`:`:WinMetaFileDraw`(int`,int`,const "
-"char`*`,const char`*`,const char`*`): [%00-00* WinMetaFileDraw][%00-00 (int_][%00-00*@3 "
-"cx][%00-00 , int_][%00-00*")
-TOPIC_TEXT(
-"@3 cy][%00-00 , const_char_`*][%00-00*@3 app][%00-00 , const_char_`*][%00-00*@3 "
-"name][%00-00 , const_char_`*][%00-00*@3 file][%00-00 )]&][s6; Constructs a WinMetaFileDraw "
-"to generate a metafile in color format compatible with ScreenDraw.&][s1; [%00-00*C@3 "
-"cx]-|metafile width&][s1; [%00-00*C@3 cy]-|metafile height&][s1; [%00-00*C@3 app]-|application "
-"name&][s1; [%00-00*C@3 name]-|metafile name&][s1;")
-TOPIC_TEXT(
-" [%00-00*C@3 file]-|optional file name (empty causes a memory`-only metafile to "
-"be created)&][s0;3 &][s4;:`:`:WinMetaFileDraw`:`:Create`(HDC`,int`,int`,const char`*`,const "
-"char`*`,const char`*`): [%00-00 bool_][%00-00* Create][%00-00 (HDC_][%00-00*@3 hdc][%00-00 "
-", int_][%00-00*@3 cx][%00-00 , int_][%00-00*@3 cy][%00-00 , const_char_`*][%00-00*@3 "
-"app][%00-00 , const_char_`*][%00-00*@3 name][%00-00 ")
-TOPIC_TEXT(
-", const_char_`*][%00-00*@3 file][%00-00 )]&][s6; Creates a new metafile compatible "
-"with given reference device context.&][s1; [%00-00*C@3 hdc]-|reference device context "
-"to copy color format from&][s1; [%00-00*C@3 cx]-|metafile width&][s1; [%00-00*C@3 "
-"cy]-|metafile height&][s1; [%00-00*C@3 app]-|application name&][s1; [%00-00*C@3 name]-|metafile "
-"name&][s1; [%00-00*C@3 file]-|optional file name (whe")
-TOPIC_TEXT(
-"n not given, is memory`-only)&][s1; [*/ Return value]-|[* true] on success, [* false] "
-"on failure&][s0;3 &][s4;:`:`:WinMetaFileDraw`:`:Create`(int`,int`,const char`*`,const "
-"char`*`,const char`*`): [%00-00 bool_][%00-00* Create][%00-00 (int_][%00-00*@3 cx][%00-00 "
-", int_][%00-00*@3 cy][%00-00 , const_char_`*][%00-00*@3 app][%00-00 , const_char_`*][%00-00*@3 "
-"name][%00-00 , const_char_`*][%00-00*@3 fil")
-TOPIC_TEXT(
-"e][%00-00 )]&][s6; Creates a new metafile compatible with the screen.&][s1; [%00-00*C@3 "
-"cx]-|metafile width&][s1; [%00-00*C@3 cy]-|metafile height&][s1; [%00-00*C@3 app]-|application "
-"name&][s1; [%00-00*C@3 name]-|metafile name&][s1; [%00-00*C@3 file]-|optional file "
-"name&][s1; [*/ Return value]-|[* true] on success, [* false] on failure&][s0;3 &][s4;:`:`:WinMetaFileDraw`:`:Close`(`): "
-"[%00-00 WinMet")
-TOPIC_TEXT(
-"aFile_][%00-00* Close][%00-00 ()]&][s6; Finishes metafile creation and returns the "
-"created [* WinMetaFile] object.&][s1; [*/ Return value]-|the recorded metafile&][s0; "
-"&][s0;3 &][s10;:`:`:PrintDraw`:`:class`:`:PrintDraw:* [%00-00* class_][%00-00 PrintDraw "
-"(Win32`-only)]&][s6; Used for generating printer output. This is currently Win32`-only, "
-"we hope to make a Linux version soon (volunteers needed)")
-TOPIC_TEXT(
-". Currently we have also a Win32`-compatible PdfDraw which should be ported to Linux. "
-"Perhaps then the PrintDraw on Linux will be more or less derived from PdfDraw.&][s9; "
-"[/ Derived from] [%00-00 Draw]&][s0;3 &][s4;:`:`:PrintDraw`:`:PrintDraw`(HDC`,const "
-"char`*`): [%00-00* PrintDraw][%00-00 (HDC_][%00-00*@3 hdc][%00-00 , const_char_`*][%00-00*@3 "
-"jobname][%00-00 )]&][s6; Creates a PrintDraw object.")
-TOPIC_TEXT(
-" Prior to constructing a PrintDraw, you must create the printer HDC using PrintDlg "
-"or CreateDC.&][s1; [%00-00*C@3 hdc]-|printer DC&][s1; [%00-00*C@3 jobname]-|printer "
-"job name&][s0;3 &][s4;:`:`:PrintDraw`:`:StartPage`(`): [%00-00 virtual void_][%00-00* "
-"StartPage][%00-00 ()]&][s6; Begins a new page.&][s0;3 &][s4;:`:`:PrintDraw`:`:EndPage`(`): "
-"[%00-00 virtual void_][%00-00* EndPage][%00-00 ()]&][s6;")
-TOPIC_TEXT(
-" Ends current page.&][s0;3 &][s4;:`:`:PrintDraw`:`:InitPrinter`(`): [%00-00 void_][%00-00* "
-"InitPrinter][%00-00 ()]&][s6; Sends an initialization sequence to the printer.&][s0;3 "
-"&][s4;:`:`:PrintDraw`:`:Abort`(`): [%00-00 void_][%00-00* Abort][%00-00 ()]&][s6; "
-"Aborts current print job.&][s10; &][s10;* [* struct_]PageDraw&][s0; The PageDraw "
-"is an abstract interface used to draw formatted text using t")
-TOPIC_TEXT(
-"he RichText objects. It is derived from Draw and captures drawing operations on "
-"the currently selected output page. After the painting is finished, you can access "
-"the generated pages. The user must derive the Page and Info methods and support their "
-"routines to manage the output pages.&][s0; &][s0;3 &][s10;:`:`:PageDraw`:`:struct`:`:PageDraw:* "
-"[* struct_]PdfDraw (Win32`-only)&][s0; Used to create P")
-TOPIC_TEXT(
-"DF files. Volunteers are needed to implement a Linux version (some font hackery "
-"will perhaps be needed, current version works only with TrueType fonts).&][s0;3 ]")
+COMPRESSED
+120,156,237,125,251,143,36,199,121,216,191,210,145,109,113,230,
+52,187,183,187,119,71,30,151,146,161,229,222,222,221,198,247,
+216,220,30,69,42,135,185,157,222,238,154,157,230,245,116,143,
+186,123,110,119,232,147,177,241,3,65,252,67,18,4,70,16,
+32,129,192,31,130,192,14,130,192,72,128,196,16,156,61,198,
+18,2,75,178,12,65,166,29,192,17,12,203,20,101,81,161,
+40,131,164,109,89,62,40,249,30,85,213,85,61,221,243,218,
+217,227,145,90,61,110,103,166,171,235,241,213,247,174,239,251,
+234,206,138,243,179,63,187,212,88,250,153,165,49,255,89,189,
+36,218,110,63,204,154,119,130,243,231,47,62,231,174,92,120,
+238,222,47,220,124,246,185,51,159,174,61,125,190,14,157,44,
+67,39,231,158,89,62,119,241,194,185,229,243,43,79,195,63,
+203,231,150,87,46,172,156,59,191,124,113,229,217,243,23,207,
+157,187,184,180,234,133,110,154,54,239,132,43,23,47,62,135,
+35,175,192,75,43,207,92,88,89,126,230,252,197,243,23,151,
+207,61,115,113,5,222,93,89,90,90,89,122,102,229,194,242,
+249,115,23,87,46,172,250,34,245,154,119,220,139,231,158,59,
+115,235,105,120,233,28,142,4,157,47,45,63,189,114,254,153,
+243,43,75,231,150,86,206,195,80,203,23,47,158,95,126,230,
+194,197,115,207,62,253,244,170,231,246,178,32,142,228,88,193,
+242,242,202,242,115,187,203,207,60,7,83,254,165,95,250,165,
+197,229,243,75,60,131,243,208,217,242,210,121,152,234,50,252,
+182,116,126,229,153,229,11,207,46,61,123,225,226,242,197,165,
+115,208,249,133,103,150,46,172,246,220,196,237,150,175,28,251,
+184,48,118,233,207,44,173,6,153,128,46,206,124,98,121,249,
+25,120,229,233,198,211,63,179,124,254,25,88,232,197,115,231,
+47,92,124,102,9,6,95,89,89,57,119,110,101,249,220,202,
+179,207,174,92,120,250,194,51,171,29,225,250,34,105,222,249,
+197,157,207,255,220,198,141,133,23,182,157,59,233,185,231,86,
+91,240,223,75,137,187,143,127,9,160,234,135,85,7,255,253,
+120,243,78,186,244,220,25,231,206,25,135,158,238,52,213,175,
+43,207,57,252,208,249,244,167,63,35,188,44,78,54,187,238,
+158,88,93,126,250,233,139,31,95,57,183,116,254,11,191,252,
+255,224,63,127,242,149,87,191,254,237,119,94,123,239,225,191,
+254,149,135,135,63,252,63,223,122,247,181,239,190,118,244,234,
+235,111,252,228,189,95,121,239,189,191,254,189,239,254,218,31,
+28,190,118,248,254,151,191,252,238,183,95,253,219,239,253,207,
+31,124,249,232,247,254,205,187,143,254,244,232,251,127,245,198,
+191,248,201,123,212,226,240,215,254,0,90,124,245,143,14,223,
+120,247,205,55,223,249,242,187,135,223,166,134,63,62,252,179,
+47,126,241,143,224,183,67,252,241,219,127,251,197,195,47,190,
+241,246,183,223,123,239,213,195,63,226,134,135,240,227,239,191,
+253,165,215,15,191,249,250,119,30,125,231,15,223,254,226,151,
+142,190,121,244,59,71,223,252,239,71,95,61,250,241,209,87,
+255,250,139,239,194,159,215,30,254,250,223,31,253,201,27,56,
+212,33,205,230,181,195,195,247,255,244,155,111,254,213,15,223,
+61,124,255,213,223,124,239,237,183,254,242,240,123,239,191,253,
+119,175,254,240,47,14,223,251,225,219,111,190,255,230,111,189,
+134,163,191,245,238,209,127,252,241,195,255,252,240,215,31,126,
+249,11,111,240,68,15,233,237,247,255,240,240,143,222,250,193,
+95,189,253,230,55,14,191,253,151,111,226,196,14,177,253,31,
+190,253,165,63,62,250,230,195,223,132,255,255,250,239,28,253,
+248,225,239,124,239,221,63,134,63,191,15,29,252,238,159,113,
+7,135,60,252,251,135,95,255,198,187,111,189,243,126,233,251,
+255,13,223,255,38,188,248,205,175,190,253,47,191,244,250,95,
+188,126,244,218,163,127,114,244,218,87,97,153,63,249,87,175,
+31,125,235,209,209,183,190,134,107,62,250,211,215,143,126,245,
+71,143,142,126,244,181,183,191,244,95,94,63,250,155,215,143,
+126,227,209,151,142,126,227,107,248,232,7,208,240,183,31,29,
+253,246,111,211,183,223,126,253,223,30,125,247,209,209,119,223,
+120,247,223,61,250,155,163,239,31,253,65,5,220,191,242,206,
+225,119,127,136,51,249,139,247,223,125,4,128,252,254,209,239,
+126,175,48,239,223,255,147,183,222,252,91,189,63,111,96,187,
+119,160,221,255,248,213,66,187,175,124,229,7,184,52,220,31,
+108,248,163,191,132,134,191,126,244,253,191,63,122,181,176,15,
+95,167,134,135,95,255,246,123,255,23,0,113,72,173,223,124,
+247,39,143,142,254,3,14,95,128,251,215,14,17,88,111,189,
+243,151,244,23,154,254,249,151,105,129,223,249,87,175,63,252,
+229,71,15,127,249,141,71,48,204,143,142,190,255,240,119,255,
+121,113,62,4,111,61,159,127,137,175,61,60,124,253,159,61,
+252,194,163,135,95,248,171,119,191,248,232,225,111,192,107,255,
+177,48,222,159,28,126,131,55,232,240,111,95,253,205,183,222,
+121,245,155,135,111,189,241,189,215,223,252,209,251,135,191,133,
+189,124,237,237,127,15,189,124,225,245,135,239,252,222,163,135,
+239,252,205,187,143,30,254,225,119,160,151,31,191,241,147,127,
+202,224,253,181,67,236,229,91,223,248,206,225,119,113,194,175,
+254,230,33,116,242,141,239,124,247,63,29,190,250,191,223,122,
+231,191,254,151,87,15,127,248,206,219,127,7,125,253,249,15,
+190,12,175,31,125,235,135,176,232,119,11,116,243,45,104,122,
+248,245,55,223,255,246,255,122,235,237,195,55,101,63,252,250,
+15,15,249,245,31,28,126,249,63,75,66,149,127,110,119,4,
+19,179,35,34,224,108,105,63,116,51,145,58,233,32,5,174,
+210,90,240,69,79,68,190,136,50,39,136,50,145,68,110,152,
+58,113,219,217,75,220,94,39,240,220,208,137,251,89,175,159,
+45,58,47,118,68,36,238,139,196,25,196,125,39,18,194,119,
+178,216,233,185,240,150,147,198,93,145,117,130,104,15,250,112,
+92,103,63,136,252,120,191,145,55,116,137,185,56,241,238,203,
+192,57,156,118,156,56,1,116,136,19,75,51,55,242,221,196,
+119,182,168,35,236,38,246,113,252,12,30,174,103,73,40,167,
+158,185,247,96,206,220,79,235,227,14,49,85,1,211,117,220,
+212,217,23,97,184,232,108,70,240,142,155,57,158,155,10,122,
+187,15,171,74,194,1,206,170,43,188,142,27,5,105,23,94,
+76,83,221,145,179,15,43,236,56,1,124,15,19,224,151,3,
+152,126,144,5,110,24,188,2,147,198,105,242,218,17,50,49,
+245,153,136,180,7,75,8,238,3,72,227,40,75,226,176,225,
+220,139,226,125,232,97,23,218,82,27,175,159,36,8,78,47,
+12,122,61,24,189,129,111,197,97,31,69,138,35,50,143,166,
+234,58,105,208,13,66,55,113,186,110,20,73,160,122,110,228,
+120,48,145,76,224,87,24,125,63,50,1,151,34,192,125,250,
+142,243,33,254,155,54,168,5,12,147,58,181,251,196,151,17,
+136,110,59,8,97,153,253,84,174,35,21,9,45,203,165,73,
+216,219,219,19,9,253,156,214,29,104,137,123,42,18,120,7,
+96,149,16,70,104,4,248,172,156,34,96,72,140,93,43,40,
+194,43,159,235,139,100,160,58,77,91,11,137,64,36,243,161,
+11,236,62,11,4,225,212,125,55,9,226,126,170,160,234,139,
+251,129,135,43,8,131,123,194,233,5,7,34,4,168,188,34,
+76,128,53,156,180,223,235,197,9,118,230,197,33,174,46,246,
+5,64,221,189,239,2,248,118,67,1,235,139,0,52,8,88,
+27,239,215,66,192,165,254,94,135,54,101,36,110,59,110,34,
+156,251,184,130,33,162,104,208,219,180,76,70,68,64,22,208,
+41,130,189,8,38,4,96,112,105,83,58,129,47,96,98,105,
+166,48,247,230,118,107,1,49,37,104,7,30,180,207,96,174,
+128,34,17,2,68,164,136,28,46,160,39,60,68,16,193,226,
+104,29,52,197,182,235,33,150,237,1,73,192,6,166,170,63,
+215,203,250,48,221,204,77,246,132,2,28,238,22,35,6,147,
+18,144,92,148,226,68,232,29,68,234,30,128,223,101,4,39,
+210,224,101,184,61,119,55,8,3,218,20,92,56,18,239,62,
+62,14,1,35,51,38,107,47,70,66,167,21,181,19,1,187,
+27,101,225,128,209,201,0,158,196,74,92,151,155,101,73,176,
+219,7,198,2,232,157,225,136,159,235,67,103,176,186,52,13,
+112,117,53,108,5,220,193,3,116,0,82,135,141,134,21,17,
+218,57,128,126,29,24,205,139,187,221,56,170,243,84,3,232,
+55,7,72,232,122,247,82,154,168,227,250,247,221,200,67,108,
+48,214,1,232,96,108,246,128,151,165,241,38,136,8,134,18,
+120,18,223,129,43,240,102,47,58,151,17,237,59,176,47,230,
+164,244,182,75,166,37,187,75,25,251,153,79,165,146,129,184,
+97,24,239,19,5,3,232,196,65,38,112,169,208,212,2,245,
+46,192,47,131,47,175,224,208,208,190,181,16,2,55,5,76,
+230,105,56,26,93,60,64,240,6,3,213,3,242,72,177,61,
+206,198,162,26,0,56,253,24,185,196,140,100,31,212,227,162,
+115,179,13,157,244,147,20,186,1,53,240,62,109,28,98,69,
+218,135,201,90,147,234,18,91,221,79,2,2,136,70,69,156,
+2,19,132,31,180,97,78,160,187,75,226,250,148,41,85,114,
+214,97,64,27,214,89,32,25,228,25,187,128,159,193,125,192,
+78,159,153,105,138,146,4,112,200,3,54,177,23,39,48,151,
+85,139,122,131,229,11,75,207,221,132,175,154,35,51,235,66,
+176,0,231,109,7,123,253,68,51,179,33,232,20,250,32,238,
+132,11,180,65,152,51,167,66,123,96,201,238,30,182,39,142,
+83,249,52,131,173,6,1,54,8,135,58,144,178,33,164,62,
+10,226,0,169,91,173,196,103,214,13,107,104,167,34,43,116,
+162,30,238,186,41,96,133,228,237,192,147,129,72,97,203,129,
+221,67,247,136,250,189,56,28,236,33,251,174,120,63,113,83,
+228,226,249,155,21,237,112,57,133,71,57,2,222,57,115,86,
+9,154,166,193,218,218,253,200,35,4,168,124,81,177,185,251,
+65,66,44,44,151,168,76,219,149,47,22,68,120,175,51,72,
+77,150,45,247,112,124,63,220,16,230,92,62,101,133,207,155,
+179,227,217,57,217,135,101,92,209,223,90,171,190,138,182,20,
+126,105,214,174,94,90,223,185,115,230,211,231,156,142,239,53,
+235,210,168,122,49,136,206,173,228,16,93,53,84,144,97,38,
+4,132,35,199,199,41,226,187,192,244,21,40,16,233,16,35,
+113,156,58,138,132,32,101,206,15,112,76,17,244,220,60,85,
+74,150,214,222,136,32,89,103,3,116,130,158,187,162,27,39,
+131,214,66,23,36,8,82,116,144,193,39,230,243,49,243,82,
+169,26,44,202,69,192,18,111,196,153,88,109,2,219,195,49,
+83,17,250,113,23,116,63,220,4,23,216,8,137,148,40,205,
+146,190,151,13,173,138,248,51,188,181,239,14,22,157,109,41,
+129,97,58,90,49,125,161,245,137,214,39,64,8,12,0,141,
+81,212,166,204,201,148,176,214,216,152,11,249,253,0,213,81,
+7,152,146,72,36,163,5,13,13,198,7,65,170,229,86,109,
+11,87,129,51,105,176,50,197,31,63,19,136,125,252,4,48,
+188,37,0,20,187,34,33,153,212,64,214,230,7,9,188,11,
+178,16,244,73,63,204,241,75,65,63,101,173,23,5,16,204,
+63,113,239,11,210,102,93,167,11,60,20,164,11,139,103,94,
+144,154,174,3,146,43,21,247,132,32,246,224,117,226,68,48,
+176,189,142,64,185,199,66,70,68,105,63,17,44,29,17,130,
+133,93,39,229,2,246,32,66,228,129,249,161,252,201,133,50,
+77,136,249,29,60,67,121,229,145,126,70,76,72,0,92,226,
+1,126,75,243,45,99,177,232,162,84,238,133,160,105,195,158,
+146,118,147,244,81,177,68,157,114,63,78,238,225,132,17,214,
+195,80,72,133,112,174,7,94,18,167,113,59,211,168,231,199,
+94,191,11,115,36,146,34,236,57,143,216,179,46,137,98,225,
+1,129,85,24,136,110,119,60,158,224,228,39,7,229,88,171,
+113,101,189,213,120,169,77,123,220,58,211,106,16,14,98,19,
+246,96,180,62,137,159,111,193,231,214,207,183,62,110,209,42,
+254,139,93,48,193,250,251,205,134,115,69,82,239,158,7,95,
+100,167,59,173,51,244,219,65,59,67,54,10,15,104,136,29,
+238,255,147,216,53,244,204,239,161,0,208,100,255,210,242,242,
+40,162,247,171,137,254,165,214,130,134,166,156,36,208,55,110,
+132,235,236,1,123,143,180,26,158,115,132,43,229,12,193,232,
+106,20,79,80,132,95,206,22,62,228,60,224,148,240,79,128,
+240,95,154,132,224,129,168,22,30,40,42,151,152,108,53,216,
+243,242,6,18,167,77,62,160,219,41,226,91,120,240,210,229,
+219,134,213,192,123,108,53,37,26,92,120,80,208,197,102,225,
+42,243,99,37,167,28,227,148,99,156,114,140,199,202,49,102,
+100,3,138,146,167,215,43,238,199,129,15,52,77,86,70,179,
+166,72,122,211,160,97,189,195,232,36,195,65,82,211,1,73,
+116,220,75,0,114,176,255,176,45,4,97,83,65,26,166,169,
+76,18,111,20,39,93,218,230,40,206,204,61,35,226,86,198,
+16,54,4,227,42,68,20,140,160,109,59,1,66,4,219,43,
+64,164,36,43,94,40,228,82,158,95,156,194,176,91,66,234,
+111,104,131,176,245,198,6,14,178,60,249,93,239,116,29,45,
+233,62,78,109,113,4,228,17,70,173,218,104,0,55,240,219,
+86,12,32,44,66,122,12,111,109,56,244,22,255,194,70,120,
+115,167,245,169,29,250,181,118,7,126,92,130,54,252,183,174,
+25,177,90,64,21,59,38,46,149,115,149,169,182,145,252,42,
+218,187,157,18,127,46,117,29,168,30,105,210,184,31,249,12,
+216,11,173,222,73,51,215,187,71,148,183,56,1,13,148,154,
+185,78,13,184,162,38,219,56,241,131,8,143,16,234,86,127,
+18,124,11,15,228,68,10,51,172,85,188,159,91,224,255,104,
+50,47,13,99,201,133,231,126,225,211,181,165,197,165,197,149,
+11,23,234,206,157,159,91,90,90,88,90,114,118,227,56,108,
+202,47,124,182,188,163,191,46,57,91,46,112,167,76,92,143,
+125,97,55,170,213,117,51,22,56,77,185,213,235,138,171,10,
+242,80,154,222,253,130,27,34,133,77,163,222,91,11,187,46,
+186,73,97,211,111,93,121,94,126,91,116,174,199,81,236,117,
+18,244,96,74,183,55,241,217,140,188,253,196,78,141,214,26,
+174,103,65,172,100,253,36,2,166,16,246,5,192,246,206,89,
+120,5,62,57,173,79,169,161,251,72,154,133,193,165,167,28,
+29,85,162,75,94,108,120,177,13,200,104,189,73,30,119,150,
+249,232,145,101,121,133,243,144,239,211,160,233,226,113,193,190,
+153,226,226,167,129,248,100,0,239,106,144,78,8,176,252,133,
+2,60,64,84,12,82,96,127,228,82,231,181,27,92,117,228,
+218,239,34,235,217,6,162,187,203,11,195,143,213,160,184,34,
+178,45,216,146,45,2,252,132,16,225,5,165,242,124,164,7,
+175,211,33,9,11,221,130,87,77,161,86,141,78,84,212,193,
+80,189,161,133,1,2,52,117,209,141,142,130,54,51,186,171,
+6,33,205,22,24,136,15,178,27,57,79,71,4,123,157,172,
+192,40,176,163,19,130,214,245,235,83,131,170,224,43,212,171,
+68,165,177,27,132,97,192,220,117,196,162,111,26,111,14,45,
+189,164,151,57,47,155,16,100,75,36,155,145,215,153,114,241,
+242,152,82,29,56,150,241,243,17,235,190,209,39,37,22,222,
+146,220,1,84,204,224,21,228,16,168,66,32,12,238,35,51,
+246,248,43,186,119,240,48,53,253,92,31,184,25,186,246,189,
+206,9,128,99,187,35,20,76,102,34,26,218,250,97,124,197,
+233,134,125,223,242,46,119,221,100,47,136,210,220,246,233,10,
+55,130,22,237,126,40,53,35,118,194,71,36,157,73,183,37,
+173,72,59,69,201,186,2,96,184,100,209,224,185,56,160,9,
+124,66,29,140,173,131,200,60,209,235,185,32,220,12,130,38,
+19,69,145,49,168,49,133,213,195,206,86,46,44,9,96,230,
+208,101,13,230,26,214,101,207,249,18,177,141,92,29,104,98,
+105,63,200,228,233,169,92,15,157,84,3,227,133,169,171,145,
+13,94,165,7,46,89,40,205,162,150,175,4,136,35,234,231,
+84,8,64,19,17,12,131,135,118,114,2,245,153,217,77,145,
+180,187,194,15,250,93,53,58,16,166,220,155,250,100,88,72,
+138,158,68,67,250,60,150,27,221,100,53,103,22,52,148,154,
+144,92,73,22,131,177,212,206,224,133,36,98,138,179,65,155,
+31,77,187,172,142,143,120,169,10,40,242,0,159,128,83,159,
+16,167,9,5,230,128,207,78,13,237,58,58,45,29,198,99,
+152,204,243,160,254,246,119,201,182,230,3,38,27,194,181,122,
+147,151,237,162,127,129,150,106,168,142,210,99,160,79,151,209,
+11,17,167,1,115,60,117,44,189,75,76,80,192,2,201,238,
+148,177,27,142,12,229,224,153,10,127,79,140,146,3,87,53,
+251,179,152,31,40,75,105,47,116,61,210,174,102,220,30,57,
+143,113,120,128,176,95,116,142,173,251,78,195,61,75,212,222,
+162,55,62,223,9,114,23,96,239,134,230,11,170,133,214,124,
+77,39,82,36,246,172,195,52,244,145,197,89,74,123,45,45,
+209,69,117,170,69,241,2,232,106,33,83,127,120,156,156,89,
+41,52,199,55,164,206,99,188,163,237,95,99,82,83,41,216,
+65,90,24,183,76,151,14,210,98,255,199,217,45,4,202,19,
+184,87,140,68,79,252,110,229,175,86,238,149,57,181,57,24,
+56,91,188,166,121,109,25,198,238,88,71,172,211,172,222,126,
+243,120,235,90,219,165,152,142,99,175,235,229,120,215,233,192,
+222,239,10,17,97,164,28,118,90,42,142,186,96,136,22,4,
+210,132,0,40,29,226,248,16,120,222,245,238,205,182,124,123,
+75,117,248,144,31,247,209,131,184,176,219,111,183,5,44,113,
+143,245,62,165,242,177,135,180,216,70,138,59,203,131,39,35,
+170,82,246,204,3,208,188,184,143,0,235,37,177,223,167,16,
+197,58,137,24,23,44,65,128,48,122,132,41,86,13,221,79,
+36,180,194,192,187,199,189,187,76,241,251,157,56,215,59,208,
+33,24,119,65,168,146,87,186,157,122,9,0,118,209,185,105,
+27,154,56,93,140,123,148,190,3,12,240,209,103,15,182,17,
+138,172,134,35,22,235,68,232,172,79,58,122,11,107,60,137,
+68,240,66,203,122,108,148,130,161,116,73,163,20,204,42,166,
+97,194,124,136,117,40,167,114,12,139,214,142,125,24,154,230,
+119,124,52,83,161,53,243,100,32,178,207,25,24,136,249,230,
+49,61,63,34,115,47,7,225,164,254,182,161,96,152,201,86,
+170,142,14,174,203,192,215,241,75,198,21,55,203,186,216,136,
+58,28,94,104,245,149,59,41,175,151,133,134,169,135,151,2,
+194,157,162,179,138,79,104,96,238,160,198,102,194,235,68,240,
+234,30,70,223,33,117,97,4,95,31,35,225,40,250,82,70,
+211,197,104,199,32,25,235,145,116,16,46,250,135,57,34,76,
+185,229,65,62,91,220,195,214,115,131,100,200,27,136,244,87,
+17,109,87,226,166,100,50,206,125,103,14,12,43,12,123,1,
+93,102,28,211,153,114,12,163,12,159,102,13,121,0,228,46,
+121,31,82,53,79,197,205,240,92,105,209,217,160,16,67,101,
+28,149,233,46,28,57,184,139,241,159,14,219,218,153,218,17,
+61,231,45,219,247,105,207,59,14,125,103,249,233,214,2,190,
+189,114,1,62,72,247,222,208,228,192,200,130,121,248,234,236,
+10,26,128,89,226,101,114,198,105,24,227,73,149,60,34,113,
+145,55,72,151,107,115,209,89,39,84,80,43,0,68,194,64,
+71,52,134,232,45,181,8,17,16,10,247,83,60,91,132,81,
+164,149,151,200,113,107,250,92,82,100,245,9,64,131,88,27,
+225,96,226,32,15,79,151,115,42,66,40,119,45,231,208,185,
+26,172,51,94,37,206,109,32,136,117,27,44,13,52,165,229,
+97,226,132,155,36,143,33,220,104,160,154,49,137,168,78,105,
+185,50,56,84,31,118,12,122,202,67,128,113,202,60,8,74,
+113,140,70,6,153,149,193,222,225,169,49,203,162,36,72,57,
+88,210,185,192,27,122,17,86,21,96,104,238,110,59,16,161,
+207,254,24,246,127,1,255,222,67,137,197,129,180,187,64,252,
+114,39,73,168,69,64,5,5,194,190,6,36,137,54,154,17,
+100,206,241,206,37,241,172,113,183,219,143,2,143,84,106,185,
+200,190,21,107,104,30,67,155,190,116,146,114,137,144,65,224,
+121,231,160,91,211,6,52,121,4,216,255,43,197,16,117,29,
+182,136,28,19,205,80,25,178,44,199,143,163,214,2,252,208,
+90,104,179,92,210,54,167,124,62,20,159,171,130,159,183,88,
+19,38,48,97,64,105,107,1,163,113,105,114,234,0,71,29,
+124,27,241,166,242,163,8,195,160,151,162,72,231,24,0,134,
+253,231,96,165,244,190,124,145,184,18,155,20,192,121,96,83,
+243,216,125,123,154,202,36,206,187,8,205,93,201,109,8,180,
+137,229,156,57,186,117,196,172,81,86,187,209,94,104,134,202,
+54,114,123,5,230,142,209,209,62,81,39,249,201,98,14,156,
+63,128,199,153,176,103,192,186,135,150,255,204,163,69,9,102,
+23,228,2,226,142,214,0,179,253,24,131,22,136,97,48,218,
+20,143,142,44,225,81,193,169,1,101,214,250,89,12,115,4,
+81,160,120,209,170,211,239,225,97,174,29,203,202,195,11,24,
+186,223,51,246,94,189,37,195,44,232,12,200,5,49,145,37,
+193,1,206,237,233,3,248,47,29,7,193,47,120,176,207,244,
+5,228,138,20,176,139,38,37,11,43,104,234,192,142,5,200,
+51,93,153,71,20,165,129,202,250,208,172,32,167,61,220,0,
+98,203,28,99,129,231,47,14,31,192,244,194,126,74,68,79,
+34,78,78,148,97,175,142,172,137,93,114,135,106,5,34,226,
+19,115,99,113,184,168,16,228,43,108,83,23,36,171,71,207,
+118,69,199,197,179,87,114,179,24,92,81,50,121,122,51,45,
+114,79,128,244,11,36,241,52,144,57,119,40,78,238,25,184,
+173,142,169,212,148,220,148,56,162,69,109,206,89,98,255,139,
+206,13,73,8,0,108,78,207,208,137,58,161,205,134,92,58,
+155,45,42,98,90,253,74,51,218,254,92,187,210,10,154,169,
+152,89,58,25,34,141,148,152,250,57,88,244,182,102,169,22,
+129,108,208,72,65,193,179,232,73,15,18,0,106,90,183,116,
+139,136,74,29,55,16,178,185,134,221,55,96,76,207,167,95,
+52,158,253,151,46,122,91,100,165,235,158,28,112,231,128,41,
+232,159,53,184,110,147,119,183,124,121,168,196,161,124,109,183,
+237,115,119,183,87,132,14,2,22,89,205,80,63,5,8,233,
+134,35,65,85,136,159,32,149,250,133,158,15,239,109,179,162,
+194,81,233,42,78,98,248,121,30,159,194,63,167,26,41,213,
+144,128,17,38,125,154,57,132,146,77,214,160,231,237,107,25,
+72,177,65,147,86,177,253,34,170,110,242,243,243,168,207,53,
+41,101,171,94,165,95,15,37,87,76,131,8,134,35,223,217,
+89,95,187,118,237,249,181,245,95,176,168,192,247,47,187,222,
+104,76,96,203,100,8,21,238,94,187,121,229,242,205,27,183,
+239,58,242,67,222,164,117,198,192,23,0,26,102,166,233,167,
+141,178,137,86,141,113,123,227,165,219,215,55,110,223,218,92,
+191,235,228,159,205,145,242,238,232,32,195,7,118,228,223,117,
+232,79,41,250,102,131,158,40,153,203,221,107,91,107,183,214,
+174,195,98,232,111,233,171,50,131,189,136,252,22,86,211,82,
+23,30,216,152,142,82,183,248,35,51,14,243,215,33,214,49,
+95,194,223,206,252,203,230,62,212,44,184,225,163,187,142,213,
+192,92,186,181,131,122,229,219,40,11,145,39,226,99,148,52,
+187,130,57,184,116,164,232,164,86,122,94,147,51,104,208,48,
+173,213,213,237,219,151,16,111,234,139,101,16,140,196,190,253,
+254,132,208,24,191,26,62,74,45,66,163,94,118,126,172,132,
+153,53,145,17,204,190,24,210,148,24,156,129,42,63,204,190,
+36,58,39,182,142,136,43,150,100,53,41,95,22,113,175,4,
+88,252,65,229,249,226,180,43,7,67,208,59,64,230,12,19,
+121,17,251,172,129,237,228,13,228,47,87,169,111,116,152,143,
+236,158,82,171,29,213,21,188,138,81,103,54,18,161,81,164,
+96,73,115,159,65,39,8,198,162,197,250,96,4,4,103,133,
+222,147,14,188,130,192,132,145,17,20,155,81,59,230,192,239,
+221,1,168,230,13,69,94,171,142,122,186,195,71,150,234,107,
+179,134,13,101,112,97,199,77,240,148,152,73,158,127,35,250,
+198,224,66,9,235,154,14,40,84,0,166,185,6,120,84,222,
+117,141,147,76,140,186,245,146,96,23,165,34,135,107,83,67,
+142,250,165,113,10,129,125,114,240,133,7,248,9,148,6,60,
+144,101,227,28,45,157,154,62,173,92,191,186,118,107,123,227,
+118,107,231,224,224,0,84,232,126,87,102,115,214,203,248,146,
+98,117,137,0,107,0,180,118,107,162,240,105,4,141,40,8,
+57,28,201,221,167,128,103,189,164,46,118,232,145,165,160,152,
+70,30,116,76,163,42,171,222,88,188,204,123,158,102,27,199,
+108,222,137,109,84,41,151,127,98,160,121,121,106,104,190,56,
+1,56,95,156,14,158,47,68,1,101,28,15,193,149,236,205,
+15,12,150,106,90,199,135,169,210,110,215,143,145,23,236,108,
+235,224,11,121,12,162,143,64,216,165,202,14,51,12,192,38,
+15,80,55,190,207,97,28,185,73,169,14,130,101,172,144,244,
+249,116,3,237,175,214,115,97,192,131,226,167,89,187,154,82,
+47,137,113,88,149,53,31,160,63,203,77,177,80,195,112,255,
+86,144,68,22,239,177,19,159,76,230,170,213,67,127,247,68,
+47,67,77,202,149,161,203,50,125,223,200,253,88,116,214,101,
+21,1,29,191,222,235,167,32,144,28,212,158,100,152,205,217,
+188,111,24,136,15,138,164,114,230,221,107,56,49,205,37,247,
+170,117,221,40,232,81,105,20,75,214,100,113,143,246,29,95,
+90,116,214,56,200,165,28,146,122,56,248,46,218,109,100,8,
+251,157,32,204,65,231,197,9,250,230,227,200,79,213,100,120,
+102,152,84,203,227,232,9,194,88,153,116,89,64,255,145,10,
+224,26,30,217,56,0,148,76,190,60,160,196,142,61,145,7,
+18,249,156,81,170,91,229,97,208,205,147,251,233,204,96,164,
+26,122,226,200,185,142,229,28,92,46,45,128,30,204,44,9,
+65,187,165,66,46,205,134,5,197,214,199,252,32,201,6,173,
+143,113,15,148,152,130,121,4,169,84,158,19,65,254,67,174,
+213,160,234,199,212,171,84,156,73,20,255,231,17,108,37,202,
+204,165,126,47,148,158,91,115,130,249,62,112,68,78,238,183,
+210,240,62,91,8,169,151,238,40,222,105,160,123,138,89,16,
+105,212,122,42,67,17,28,237,217,136,84,209,19,232,84,4,
+126,36,62,138,5,79,37,22,243,140,216,5,47,61,236,237,
+126,66,72,155,163,42,121,115,25,147,85,69,10,218,24,202,
+127,192,211,25,152,218,58,198,249,35,139,128,31,55,14,48,
+26,80,208,79,199,129,238,70,228,151,193,54,72,61,208,185,
+208,25,93,5,57,94,21,107,32,69,140,63,198,124,236,160,
+188,130,137,199,49,126,118,120,159,109,223,14,91,120,235,214,
+94,140,90,75,9,237,162,51,20,139,181,200,51,25,105,27,
+169,29,37,238,55,68,198,105,39,104,203,253,132,125,130,13,
+227,240,91,91,224,161,231,40,42,6,232,162,191,218,151,69,
+91,138,189,214,240,156,106,241,96,231,231,119,150,200,131,148,
+160,70,77,39,219,248,235,39,229,175,200,45,228,143,3,221,
+20,171,201,232,31,85,203,126,239,88,68,89,181,77,99,109,
+148,115,206,193,104,63,74,213,107,131,39,108,107,207,58,181,
+131,134,51,168,151,239,239,193,232,253,205,67,177,43,182,186,
+108,163,237,109,46,248,28,6,163,7,212,209,142,229,195,149,
+32,203,180,168,82,233,166,38,22,53,139,119,78,37,134,221,
+117,240,95,221,160,245,113,19,45,146,121,163,69,197,214,151,
+99,11,105,159,182,202,96,53,12,20,235,54,162,239,244,203,
+69,133,73,31,64,232,115,46,220,135,164,105,111,116,2,27,
+157,55,160,108,49,57,198,104,117,172,70,133,188,208,239,47,
+231,86,34,206,120,173,245,106,45,219,12,51,225,99,192,253,
+50,189,47,194,51,76,209,237,101,131,66,236,205,208,59,40,
+118,177,157,83,171,8,8,162,100,104,55,26,112,77,58,151,
+90,116,228,155,247,3,10,25,46,6,136,207,21,57,79,140,
+139,77,245,154,55,227,112,222,220,185,230,19,69,30,108,164,
+237,114,222,179,82,150,21,91,155,28,223,13,102,222,144,14,
+49,114,66,53,77,191,24,254,50,104,170,228,220,33,102,79,
+67,171,154,109,199,166,207,9,104,83,49,125,220,161,199,61,
+174,119,96,49,33,2,153,221,96,96,53,96,16,254,148,177,
+21,48,94,63,116,98,239,228,132,24,145,82,126,196,62,70,
+181,74,22,111,199,189,107,64,82,181,92,191,34,55,133,50,
+156,180,91,37,175,91,103,29,221,83,248,81,177,163,253,128,
+2,30,148,233,142,235,67,202,95,106,236,44,213,157,38,78,
+144,222,120,62,206,178,184,123,75,185,172,101,171,100,81,249,
+181,119,146,69,229,208,174,159,132,112,174,38,194,231,120,130,
+200,107,154,20,54,230,251,156,193,143,107,31,169,83,234,197,
+193,198,55,213,27,213,74,225,132,145,166,63,53,180,122,170,
+5,60,201,220,2,100,247,206,224,152,140,66,25,115,163,120,
+196,7,47,253,181,183,207,237,98,138,192,132,22,229,7,165,
+51,84,207,182,154,243,156,234,25,211,240,46,211,11,248,56,
+117,13,21,78,100,233,213,197,242,35,22,223,24,225,126,69,
+42,54,243,71,203,248,129,62,233,172,24,109,140,24,86,221,
+115,63,243,82,133,79,241,235,163,43,31,31,47,134,35,245,
+173,147,24,107,236,120,240,199,27,212,167,197,249,209,98,232,
+100,8,96,172,60,57,185,97,79,69,195,24,210,181,79,141,
+62,212,194,33,87,41,43,164,195,80,232,246,116,210,225,132,
+60,37,167,56,118,42,32,230,134,229,165,18,98,58,188,63,
+117,83,254,52,200,136,138,242,56,196,200,57,103,215,228,230,
+165,197,113,76,106,158,162,84,21,23,146,73,51,99,127,177,
+126,17,166,179,223,151,9,89,35,80,149,210,97,249,192,64,
+6,73,80,28,54,0,193,138,107,82,174,43,94,188,44,169,
+114,27,51,227,61,46,58,65,77,186,193,193,72,194,212,132,
+35,123,205,103,44,227,190,139,47,200,41,189,220,199,156,55,
+84,107,116,249,159,32,29,238,164,54,46,166,6,211,223,162,
+66,88,22,135,202,224,206,198,187,41,76,92,248,163,82,223,
+183,143,3,236,105,168,105,222,149,151,102,170,186,52,242,252,
+38,47,63,33,19,176,177,16,110,164,139,6,89,101,83,138,
+135,66,19,68,88,141,216,132,245,170,41,21,78,159,198,15,
+50,30,212,206,56,192,174,135,113,187,125,13,179,240,102,0,
+110,30,58,128,78,63,74,247,139,38,12,155,50,11,211,26,
+183,84,133,109,204,208,142,210,32,205,68,228,13,184,172,177,
+81,146,74,223,105,2,112,8,34,225,172,109,111,111,220,186,
+45,175,55,114,219,153,225,187,203,239,36,203,61,144,190,232,
+101,157,98,29,68,96,19,251,84,56,4,166,0,84,136,184,
+93,44,66,169,170,82,100,58,40,177,245,84,40,220,123,173,
+167,152,38,203,166,6,189,237,9,190,179,11,35,175,34,191,
+201,23,24,85,123,77,3,14,237,236,80,145,28,157,80,129,
+145,141,66,95,188,65,163,143,34,241,89,246,100,238,20,123,
+109,43,139,47,109,21,48,170,57,83,103,70,120,22,63,170,
+44,138,193,105,209,84,0,7,59,148,214,99,5,25,87,242,
+5,242,55,150,49,129,49,69,190,108,234,31,142,13,116,125,
+127,12,71,82,220,133,207,167,121,13,24,127,213,28,14,2,
+35,136,201,188,93,202,5,63,182,149,177,86,182,100,140,9,
+202,167,49,21,4,230,142,82,151,0,165,174,61,17,40,69,
+190,233,50,112,213,166,1,80,221,142,216,155,16,59,75,16,
+75,121,75,198,97,151,158,220,148,152,85,182,212,17,136,116,
+75,45,163,128,72,140,66,101,133,248,42,167,60,103,29,117,
+36,83,178,253,25,133,151,199,143,83,225,222,152,24,189,12,
+125,236,137,226,90,28,75,175,138,202,218,254,19,153,218,46,
+143,105,116,84,205,104,173,107,200,167,114,203,52,235,230,198,
+206,110,21,230,90,165,217,149,225,227,220,184,219,196,152,57,
+146,183,61,89,152,89,205,252,102,4,229,220,248,224,4,168,
+202,37,13,239,43,139,177,144,86,56,51,178,78,205,33,135,
+112,115,234,245,219,105,69,170,140,226,148,55,5,206,20,195,
+141,99,89,158,221,143,180,227,174,144,101,79,5,18,238,202,
+90,61,165,175,90,79,180,219,239,114,16,134,233,84,174,57,
+42,255,129,209,131,212,225,162,115,51,42,86,137,81,149,156,
+242,202,53,86,129,94,109,84,229,197,108,200,135,161,204,21,
+230,215,178,26,150,206,91,145,21,83,40,148,33,210,177,12,
+152,207,161,170,128,232,148,32,85,233,1,171,252,130,129,83,
+40,140,214,172,143,114,35,82,182,158,65,74,109,140,159,176,
+153,254,49,156,131,216,219,60,93,122,235,122,99,23,30,48,
+192,52,112,113,40,170,225,168,147,144,233,57,229,33,223,232,
+135,97,179,97,58,223,124,0,164,188,246,154,11,165,169,125,
+198,116,29,228,37,132,88,24,62,86,116,102,113,10,31,185,
+40,136,231,96,118,22,71,161,80,117,44,121,113,81,190,175,
+210,195,133,60,178,35,157,83,50,37,13,235,40,99,118,18,
+78,137,202,169,81,10,22,21,88,163,2,199,88,209,11,134,
+72,93,149,96,28,229,187,234,116,250,66,165,174,5,92,206,
+39,164,228,190,116,145,110,157,105,56,157,120,31,235,133,53,
+216,32,247,251,66,134,194,236,185,221,174,219,68,219,62,73,
+56,202,167,97,138,2,174,28,171,77,236,94,39,206,98,206,
+186,36,24,169,97,134,74,157,211,123,67,197,145,231,206,206,
+142,119,214,101,62,58,57,126,66,195,124,132,25,8,173,111,
+225,1,231,15,206,192,49,62,140,4,124,76,188,190,6,82,
+127,54,49,189,60,163,156,158,241,189,131,149,25,199,155,241,
+61,18,0,249,147,214,167,204,135,75,115,34,86,236,246,18,
+23,157,216,140,238,229,73,146,92,234,154,106,237,149,216,228,
+181,131,101,80,9,150,243,8,226,131,21,248,190,162,116,131,
+33,178,86,104,203,75,146,53,241,73,237,107,0,45,135,1,
+23,245,51,90,200,36,175,125,20,156,1,95,8,24,149,117,
+163,116,229,70,158,99,45,171,116,59,190,75,30,73,234,120,
+89,98,49,246,183,104,247,144,97,159,6,229,195,195,173,141,
+27,173,157,197,197,197,166,89,110,130,217,171,27,101,84,164,
+35,208,185,206,190,72,131,68,141,211,115,177,248,136,60,240,
+105,187,116,31,160,188,221,46,159,159,226,66,170,166,39,45,
+210,152,109,202,181,94,83,215,55,170,173,106,161,18,234,219,
+202,156,43,151,54,101,234,173,190,195,140,170,195,62,123,161,
+225,60,123,145,36,227,245,141,225,241,240,92,71,194,114,120,
+104,58,104,18,194,199,210,148,197,4,126,216,235,61,17,33,
+60,216,205,157,138,61,18,171,250,134,52,26,50,237,133,1,
+47,217,4,73,202,229,63,141,178,163,244,84,119,17,39,220,
+64,42,255,84,198,43,243,58,104,22,112,217,46,10,116,85,
+215,58,3,87,75,17,40,88,130,17,160,207,93,80,68,38,
+8,5,152,116,218,167,187,234,52,247,167,187,245,234,139,206,
+11,145,13,189,10,164,150,34,158,177,206,86,16,151,27,200,
+63,64,75,196,217,231,89,239,179,28,225,2,205,32,111,144,
+125,193,18,173,167,140,161,242,33,39,238,96,157,182,97,68,
+109,26,152,137,178,194,220,206,82,217,66,61,210,151,73,229,
+9,83,95,181,108,102,171,149,139,5,170,234,107,220,163,42,
+26,88,163,90,217,134,4,239,186,190,40,84,85,43,45,233,
+129,20,216,250,69,231,249,141,43,155,55,90,13,231,230,229,
+203,88,11,166,225,172,95,219,220,146,127,224,55,248,180,241,
+210,250,181,23,46,109,200,223,55,111,220,222,184,181,189,177,
+126,91,126,223,184,113,9,254,189,116,107,237,197,91,240,163,
+252,184,121,125,237,202,134,252,124,253,230,141,155,230,119,122,
+126,227,138,252,118,109,243,134,122,176,113,13,122,220,86,223,
+176,234,153,252,184,118,107,93,126,218,186,121,237,179,248,127,
+122,235,243,171,103,136,141,56,176,10,218,175,27,47,92,187,
+214,224,143,219,55,175,109,94,146,159,47,173,109,95,85,31,
+111,222,54,126,28,250,6,255,115,90,159,47,132,107,51,59,
+167,125,214,163,192,94,243,17,60,208,15,238,128,189,161,245,
+170,87,105,86,240,46,51,102,120,183,170,33,206,7,218,73,
+132,195,65,90,11,252,191,202,55,110,222,198,23,226,44,147,
+47,212,232,101,102,59,105,7,75,191,38,117,103,17,255,59,
+106,80,217,13,188,138,195,225,13,97,248,199,248,42,153,206,
+152,62,202,187,25,238,109,184,211,2,206,206,77,235,153,176,
+18,64,153,2,51,225,171,31,61,93,4,160,33,181,16,88,
+92,133,254,145,75,252,61,114,53,25,76,181,166,52,145,186,
+35,153,167,218,104,32,25,169,93,28,67,114,20,51,42,122,
+99,133,199,104,161,209,155,82,96,152,11,26,35,13,142,137,
+209,27,92,101,249,4,77,212,19,65,179,169,200,0,88,150,
+213,13,202,202,105,39,3,125,76,129,246,164,71,185,201,30,
+138,86,89,199,154,113,124,55,198,218,118,7,116,171,38,198,
+133,136,176,128,61,244,140,227,102,164,221,86,240,55,131,130,
+183,8,218,48,83,140,224,43,184,8,163,221,140,243,233,214,
+233,71,190,101,22,211,135,83,209,13,64,112,191,140,214,246,
+65,192,10,23,255,22,68,234,55,157,47,69,61,200,180,66,
+231,172,179,210,204,243,244,84,134,33,253,60,236,190,150,203,
+108,61,149,194,34,251,172,249,233,169,143,176,150,149,189,77,
+110,36,9,170,32,34,223,27,173,17,139,65,144,114,131,241,
+106,81,172,140,234,2,125,193,14,47,60,232,177,110,12,47,
+157,101,10,162,18,175,14,215,166,99,147,92,5,82,152,163,
+121,65,226,245,187,116,185,130,39,138,221,170,201,246,180,63,
+98,162,110,236,105,219,143,76,110,115,92,111,249,36,228,123,
+234,48,63,101,32,67,71,3,206,160,1,91,130,21,49,235,
+227,88,202,193,78,235,19,59,222,193,206,217,157,156,29,12,
+232,183,1,253,54,61,139,241,14,44,222,226,13,114,158,50,
+54,151,113,114,62,83,244,227,79,193,161,230,237,211,87,76,
+110,44,131,163,216,227,128,77,48,100,18,248,150,240,167,96,
+118,38,119,154,3,131,155,128,185,205,141,151,173,37,222,9,
+170,33,94,21,27,25,171,125,131,149,158,84,122,217,199,190,
+45,140,114,102,31,50,229,157,54,31,235,253,186,137,103,100,
+32,147,224,139,75,89,148,197,119,134,15,203,61,38,249,164,
+207,26,180,188,84,204,11,99,239,222,126,144,26,102,2,223,
+130,193,254,187,178,97,89,251,141,34,35,55,1,25,87,162,
+221,44,106,66,53,26,182,160,19,213,243,163,12,109,12,240,
+38,211,244,164,219,202,205,140,105,168,180,113,213,28,119,53,
+159,174,166,18,154,67,238,159,161,78,217,63,131,47,52,164,
+75,209,100,4,105,153,191,10,0,53,141,66,197,115,7,155,
+88,79,215,205,212,213,193,177,156,4,29,143,36,158,245,30,
+206,201,124,11,22,137,59,13,63,27,225,102,114,26,158,92,
+92,189,212,122,201,153,145,50,94,136,27,141,230,136,69,165,
+108,142,190,170,99,85,146,67,228,223,138,195,193,150,188,139,
+102,102,166,84,206,27,172,66,254,156,118,46,210,217,88,4,
+190,45,14,90,59,68,72,163,187,168,152,103,213,32,214,36,
+169,251,25,167,72,239,78,52,195,39,136,15,78,219,151,31,
+31,20,250,66,233,56,228,10,73,69,18,168,200,87,121,205,
+209,162,163,176,76,163,2,121,213,168,78,173,228,161,110,130,
+87,216,0,59,209,200,194,39,21,116,117,2,222,18,175,158,
+137,3,13,105,233,49,225,56,41,44,193,144,135,110,235,113,
+144,220,241,164,80,205,197,26,143,135,208,67,75,20,144,221,
+114,103,121,12,111,225,112,197,56,46,200,59,87,186,158,137,
+15,86,119,102,88,57,205,4,21,73,26,191,70,234,169,157,
+20,32,185,63,58,36,213,16,117,121,128,19,36,200,36,20,
+88,229,229,94,208,169,94,184,1,202,214,157,165,22,240,229,
+252,235,114,171,217,116,22,23,23,237,70,188,124,106,140,126,
+69,108,212,144,135,41,30,30,67,235,209,170,222,178,7,177,
+186,251,4,118,71,67,86,54,80,95,151,205,225,241,134,19,
+139,193,106,244,192,147,108,132,155,129,104,249,226,167,113,91,
+217,252,5,181,233,9,81,169,192,248,9,119,170,102,37,14,
+100,139,225,151,242,145,43,80,68,152,184,73,221,75,91,198,
+70,150,242,121,141,17,94,139,165,210,203,192,171,208,44,255,
+189,174,217,192,194,3,117,48,207,185,114,14,252,216,122,202,
+64,84,44,204,187,136,215,62,225,165,180,82,254,237,129,186,
+10,127,193,90,113,35,25,13,161,110,75,87,231,121,194,55,
+123,5,164,3,157,0,63,146,154,213,223,197,165,230,218,22,
+222,246,132,67,37,162,135,85,117,124,169,149,225,117,170,120,
+75,21,171,82,178,50,50,231,122,209,253,172,242,58,61,21,
+251,66,122,140,172,252,76,57,132,90,239,167,120,67,58,107,
+204,25,77,235,169,93,215,187,183,151,160,178,210,122,74,138,
+231,88,93,245,167,87,175,15,137,67,188,142,239,254,80,56,
+137,76,181,1,168,5,213,183,83,61,86,57,254,25,10,122,
+188,235,240,95,221,232,147,227,133,253,207,219,70,200,100,210,
+254,88,83,161,73,140,152,66,165,44,31,126,243,84,8,79,
+32,132,231,40,33,39,20,115,78,209,153,66,3,47,98,190,
+29,126,66,251,230,167,83,16,22,93,71,134,60,172,214,121,
+36,67,45,23,88,150,120,66,76,40,217,55,29,12,49,70,
+182,156,29,103,23,217,146,165,84,176,228,252,85,70,153,163,
+244,80,226,69,185,108,44,231,12,73,8,149,12,121,92,7,
+205,147,111,16,157,154,25,200,225,2,82,1,12,124,210,142,
+18,196,125,197,50,154,54,55,171,34,157,33,214,56,76,42,
+150,126,86,218,236,148,28,158,0,189,226,20,243,39,193,247,
+33,139,233,167,3,145,213,255,247,226,104,102,124,254,168,248,
+187,210,254,174,12,104,148,67,205,56,221,161,126,78,124,230,
+96,191,189,140,17,171,173,157,185,44,160,170,187,234,117,60,
+230,131,217,19,98,93,96,38,91,140,189,226,204,119,19,173,
+228,187,14,253,41,237,39,176,159,204,120,114,60,181,97,195,
+73,45,7,58,37,79,90,22,250,43,27,228,93,119,224,168,
+171,185,209,248,87,254,51,147,75,74,243,6,30,251,169,86,
+156,247,48,28,90,89,51,170,169,105,13,225,161,6,170,201,
+116,229,18,158,64,8,125,187,124,201,97,14,123,30,134,231,
+172,221,155,100,167,84,99,182,242,44,142,67,86,93,252,53,
+21,249,140,208,204,211,133,121,205,57,151,88,105,52,45,189,
+240,56,26,154,180,132,51,96,15,93,101,217,199,91,34,57,
+186,90,193,247,70,110,22,106,147,68,26,152,101,131,225,236,
+58,34,244,135,140,208,18,14,133,197,69,108,239,92,26,224,
+236,242,222,64,108,148,189,170,225,83,237,77,52,54,190,84,
+42,22,253,132,182,231,173,242,181,146,85,140,182,185,10,43,
+226,206,206,98,30,108,105,119,154,77,157,117,42,60,136,205,
+225,41,216,2,186,18,235,138,19,85,37,147,74,145,185,48,
+209,177,108,213,158,111,179,114,22,149,250,6,130,188,205,117,
+163,209,183,86,22,67,53,238,32,175,24,66,69,26,135,234,
+91,35,55,58,21,173,142,20,235,172,10,40,24,234,161,56,
+55,245,192,158,31,115,82,232,84,6,121,26,233,85,186,75,
+21,59,177,232,92,226,220,192,60,238,51,207,200,32,102,194,
+189,57,93,172,157,181,43,156,139,86,226,10,209,107,176,215,
+41,247,237,62,159,171,106,249,226,10,170,90,225,98,70,149,
+65,157,184,41,133,214,232,220,105,187,217,11,97,134,158,95,
+209,250,68,235,19,42,235,35,117,178,125,60,214,108,83,228,
+69,230,220,11,240,126,63,188,34,61,200,186,110,47,93,197,
+98,59,248,160,214,235,12,82,204,2,171,203,224,155,4,208,
+211,169,201,212,176,186,106,191,136,181,229,5,94,23,141,73,
+220,242,21,245,144,216,141,203,183,16,194,79,204,109,12,142,
+199,235,165,180,12,137,241,58,131,191,31,186,9,95,191,71,
+39,235,46,191,132,94,43,74,224,113,53,180,128,253,99,58,
+187,42,175,22,36,156,162,38,51,218,122,73,188,151,96,54,
+103,38,19,218,140,219,232,26,82,108,81,214,169,188,134,82,
+28,8,143,114,227,97,35,227,110,240,10,58,200,19,55,74,
+241,138,78,74,78,25,174,181,78,135,204,148,146,67,60,31,
+187,106,40,112,89,112,208,151,112,246,83,170,101,68,151,115,
+58,107,91,155,74,140,68,214,93,121,178,149,186,26,24,145,
+206,28,148,178,101,177,79,25,219,165,86,42,248,36,60,11,
+66,152,61,194,19,151,40,43,185,97,31,195,11,104,208,125,
+126,58,128,1,27,160,249,64,72,33,176,105,63,162,12,72,
+172,57,103,95,59,201,203,83,184,206,199,254,225,160,128,172,
+155,242,88,229,12,161,109,211,233,65,223,64,44,13,85,131,
+174,128,108,38,200,18,209,131,237,21,145,44,131,79,64,166,
+43,53,83,236,110,11,135,93,67,148,146,18,251,140,179,22,
+246,58,174,252,169,134,116,68,116,153,234,147,10,93,114,223,
+133,165,164,247,40,97,56,18,160,63,201,74,16,84,155,1,
+164,234,246,240,246,149,204,197,11,221,148,102,194,250,218,34,
+255,229,131,73,154,220,217,124,62,26,35,101,29,6,161,51,
+77,221,136,17,167,134,175,1,53,10,65,200,48,160,81,197,
+125,17,153,209,47,155,156,122,172,82,140,57,37,12,240,93,
+132,237,58,239,35,157,114,242,32,148,26,37,111,64,85,195,
+83,98,20,26,4,253,46,25,177,72,218,58,137,54,140,211,
+116,80,146,104,85,164,52,37,155,20,124,24,77,244,202,0,
+128,183,96,122,36,109,220,48,141,101,126,53,29,62,185,169,
+76,82,187,30,120,73,156,198,237,76,167,171,73,117,211,64,
+11,131,241,168,91,67,97,18,192,82,117,153,48,170,138,214,
+117,189,78,16,49,159,37,106,229,244,54,90,18,231,177,237,
+133,193,30,214,82,108,56,47,201,14,213,52,174,5,81,255,
+0,139,234,169,242,68,156,27,167,2,138,216,17,77,51,192,
+32,24,131,113,170,65,97,105,145,49,103,205,84,186,189,24,
+61,227,184,40,188,21,194,148,23,114,238,187,48,95,121,74,
+216,54,122,104,45,200,1,37,114,22,200,233,54,86,156,238,
+226,57,25,42,81,253,94,163,4,213,112,209,93,44,15,7,
+220,161,181,16,98,189,60,153,180,46,201,167,225,0,16,93,
+62,43,76,3,224,207,250,120,48,114,6,113,159,4,31,231,
+66,251,120,53,111,90,188,87,183,33,187,51,240,140,197,103,
+198,137,93,208,71,130,56,9,132,45,146,14,162,136,228,102,
+156,135,76,124,21,184,85,175,67,210,66,213,150,228,82,116,
+48,57,55,213,23,197,58,98,113,111,145,138,142,200,59,116,
+179,65,47,183,73,72,47,222,3,28,64,85,184,132,13,43,
+130,68,80,32,17,236,11,128,89,218,15,36,249,49,199,98,
+254,213,90,160,128,49,205,225,40,233,31,9,74,161,132,235,
+0,209,69,89,128,103,172,248,27,21,113,201,249,179,177,156,
+252,26,142,90,34,11,18,112,157,36,89,198,174,65,39,169,
+40,223,228,249,6,39,58,42,214,38,85,35,66,63,113,144,
+145,96,13,221,1,151,76,1,190,172,232,229,186,200,92,0,
+185,54,179,244,84,232,238,97,210,93,218,174,39,114,201,31,
+71,48,103,9,146,154,68,211,200,121,129,212,3,183,199,55,
+205,106,27,6,40,19,144,65,71,84,5,200,51,236,32,168,
+66,134,30,254,165,206,91,53,114,56,168,32,202,214,199,91,
+13,253,3,55,48,127,81,77,96,190,173,250,42,185,149,118,
+164,172,96,182,202,189,237,112,59,190,163,155,178,235,27,236,
+215,216,145,93,242,147,160,187,167,31,152,111,164,137,135,65,
+201,250,146,239,3,186,226,251,14,217,244,245,130,217,139,192,
+50,152,28,99,58,233,120,123,32,85,220,84,171,34,82,12,
+164,128,236,94,33,48,145,199,227,180,83,180,56,36,181,228,
+5,119,114,155,112,168,46,130,211,156,48,139,180,180,228,192,
+37,145,102,216,138,74,160,50,101,213,205,178,173,101,93,151,
+69,106,224,106,23,30,176,188,209,49,2,124,178,79,84,220,
+14,48,185,52,102,148,177,103,146,82,180,225,118,17,44,53,
+179,18,108,160,58,166,128,129,194,82,218,24,45,189,45,107,
+22,232,192,97,170,8,146,22,239,40,231,37,132,3,25,10,
+25,163,70,132,205,11,175,17,78,203,141,91,45,193,98,198,
+162,60,209,116,227,242,101,76,16,221,185,190,182,253,11,173,
+134,179,125,123,237,198,165,181,91,152,60,122,229,214,218,103,
+55,240,195,198,237,245,171,244,225,165,155,183,90,159,95,213,
+69,76,177,135,157,214,47,106,135,11,34,156,217,93,137,19,
+9,155,168,33,42,30,243,176,21,15,121,42,21,15,97,122,
+134,175,231,243,202,203,83,146,20,105,205,114,225,1,170,236,
+172,38,169,122,187,40,114,200,159,204,215,203,51,99,49,60,
+202,18,216,37,93,235,213,1,134,114,72,72,106,224,1,233,
+100,168,182,51,207,231,154,26,101,169,159,18,10,208,137,36,
+86,96,187,3,244,176,116,73,165,36,111,137,175,46,118,150,
+225,156,17,42,239,54,154,154,107,102,208,233,30,35,7,12,
+47,204,56,199,136,19,41,52,217,2,117,106,196,13,149,64,
+202,226,56,220,117,147,148,245,226,4,139,172,194,200,168,41,
+227,155,32,57,50,205,49,11,67,226,134,168,241,114,24,176,
+132,196,239,240,28,85,43,146,71,44,76,208,4,85,133,104,
+75,106,158,88,225,62,164,102,53,28,191,159,72,50,216,219,
+35,153,99,22,41,208,21,108,88,115,51,98,122,100,188,14,
+180,161,184,106,209,133,173,247,141,185,145,194,37,141,192,92,
+210,77,144,192,61,157,120,152,167,52,152,132,235,231,158,22,
+155,221,87,115,233,230,132,165,223,158,80,30,61,138,197,114,
+145,27,119,55,190,47,38,149,248,184,95,141,194,63,211,236,
+170,222,163,3,115,195,6,230,23,207,122,228,13,30,227,150,
+151,164,56,205,178,251,67,153,71,197,162,234,35,147,141,70,
+54,158,67,126,17,35,83,96,34,211,48,198,204,19,83,230,
+131,31,199,198,129,226,238,147,28,210,53,187,82,242,162,100,
+50,87,3,51,196,129,102,91,119,48,137,173,201,119,136,55,
+91,205,197,49,25,102,243,219,231,227,110,210,201,233,239,250,
+224,169,226,227,73,235,246,52,138,220,112,48,125,237,95,208,
+110,106,230,167,101,198,19,246,194,234,35,176,73,76,1,82,
+137,70,216,3,82,253,55,248,135,182,0,164,54,165,185,4,
+251,0,231,98,12,72,25,141,107,151,222,228,90,235,41,170,
+148,215,122,170,158,71,196,18,108,72,182,239,22,253,206,240,
+148,224,36,163,116,5,165,190,228,239,24,45,40,124,152,32,
+201,115,86,190,51,94,31,170,141,249,216,206,89,80,140,168,
+116,31,206,67,38,33,146,210,143,41,54,134,41,64,183,69,
+32,186,210,197,18,46,122,20,112,133,201,128,122,173,151,6,
+228,73,121,58,124,57,197,20,33,233,227,72,138,173,25,3,
+19,172,166,78,109,216,182,179,41,18,129,183,240,192,220,23,
+130,76,189,36,122,131,128,107,5,111,212,8,114,101,109,75,
+34,61,38,60,62,8,87,46,94,124,142,247,24,125,61,251,
+46,151,208,214,161,223,21,234,168,86,69,27,228,78,198,243,
+81,154,2,21,115,198,93,109,45,32,78,176,125,176,136,110,
+223,180,239,117,248,122,144,188,49,58,173,211,180,223,101,7,
+140,58,45,38,191,13,216,24,104,95,12,45,168,166,93,144,
+13,227,182,33,246,95,184,209,0,208,139,150,219,90,16,234,
+13,138,4,15,227,248,158,211,143,168,38,164,186,103,100,46,
+172,239,113,113,186,19,224,104,165,76,204,105,158,178,159,39,
+151,253,140,225,31,13,58,234,164,0,174,56,95,155,177,15,
+211,48,152,138,206,242,230,51,115,160,83,6,52,95,75,106,
+54,30,52,103,43,235,131,102,80,101,102,217,41,191,26,193,
+175,62,228,6,232,71,136,19,30,199,74,158,55,237,63,1,
+244,45,13,108,243,98,1,120,212,186,131,180,141,89,67,147,
+18,181,180,222,229,29,105,50,86,132,76,248,99,144,123,205,
+32,200,143,14,233,83,95,35,233,125,184,197,79,19,133,22,
+99,173,240,40,118,4,237,94,17,217,109,104,177,13,184,102,
+24,17,251,32,252,147,214,25,166,206,203,160,107,172,58,216,
+2,73,211,120,65,25,7,212,122,167,117,134,168,8,199,3,
+138,195,151,20,9,70,25,81,213,118,230,227,175,181,186,65,
+199,17,61,105,45,160,147,107,89,59,185,174,11,55,237,39,
+20,255,130,97,6,20,135,70,124,151,67,173,94,136,2,47,
+198,251,13,240,148,25,29,25,116,254,175,48,142,41,134,143,
+48,113,236,194,25,29,205,111,225,129,213,7,158,132,240,144,
+5,180,160,24,78,252,35,171,116,16,216,17,163,185,108,126,
+170,94,27,78,123,139,172,224,79,42,211,145,216,117,5,144,
+214,104,50,121,149,148,200,249,164,179,196,238,57,122,2,239,
+69,123,124,149,30,87,136,81,171,195,122,144,94,10,79,141,
+236,141,178,43,81,189,3,64,180,166,190,159,19,215,170,11,
+73,103,29,104,128,202,7,226,98,147,14,138,114,32,231,224,
+27,195,247,17,23,134,148,191,81,120,100,178,120,124,121,34,
+237,142,100,175,102,249,211,227,155,193,229,131,136,217,255,246,
+243,72,225,149,168,168,198,194,199,114,36,159,253,177,88,153,
+182,32,28,40,218,65,42,227,12,106,174,214,162,56,26,44,
+23,47,110,88,149,119,139,238,199,201,61,186,24,130,238,242,
+137,51,10,155,195,78,48,132,36,220,199,35,198,68,197,33,
+81,4,146,37,83,216,107,39,11,90,148,93,252,67,211,217,
+141,15,22,157,231,227,3,150,34,129,188,187,49,33,12,201,
+93,126,186,168,55,140,96,18,54,89,33,234,130,212,194,12,
+205,33,236,139,61,233,90,137,48,216,195,1,140,43,18,172,
+130,108,139,206,26,69,86,209,37,141,50,148,16,119,44,85,
+236,80,71,50,197,50,74,172,38,163,245,168,21,85,50,5,
+34,204,250,216,99,72,171,224,107,35,61,117,160,142,161,179,
+32,118,3,138,253,3,96,18,199,23,25,58,5,2,228,30,
+68,206,58,182,68,13,179,72,24,180,9,125,183,86,87,55,
+211,109,207,13,5,245,144,118,226,126,232,99,56,218,125,138,
+137,117,246,226,216,119,246,250,24,150,227,210,33,170,186,193,
+210,53,168,166,100,128,33,177,118,96,105,2,237,9,118,116,
+72,236,13,142,215,5,147,213,194,3,121,243,148,228,109,212,
+20,57,21,128,179,67,7,230,62,200,57,65,87,239,161,232,
+194,10,104,208,28,184,198,185,167,151,150,96,71,150,232,2,
+101,105,232,16,7,169,113,66,150,138,3,10,84,200,31,144,
+226,179,75,212,188,223,219,199,179,238,134,179,124,145,127,232,
+8,23,36,89,188,31,57,56,251,134,179,242,12,252,142,223,
+169,93,225,164,162,130,137,151,8,246,82,14,238,23,100,99,
+174,40,68,40,186,169,59,18,179,207,25,0,73,21,109,82,
+153,42,218,123,138,217,115,17,237,22,41,190,77,100,50,64,
+78,11,107,14,214,211,157,144,197,111,92,233,209,32,71,2,
+69,95,115,142,186,148,39,249,27,134,18,88,160,209,60,250,
+214,147,41,125,250,150,21,42,118,37,39,163,73,181,56,182,
+20,59,220,183,73,227,20,136,206,40,241,15,96,99,150,154,
+117,62,153,85,241,118,54,209,119,209,87,65,65,123,20,235,
+31,112,168,48,206,205,85,115,82,217,116,192,248,144,148,118,
+133,81,195,3,48,201,101,0,89,83,64,246,245,1,203,211,
+117,102,249,70,177,22,30,149,101,167,138,100,46,220,64,130,
+80,23,7,8,6,80,145,1,55,60,232,61,213,148,101,222,
+30,96,175,0,167,39,231,205,245,213,125,78,3,211,237,120,
+80,138,6,194,177,100,91,100,152,220,30,67,94,16,141,148,
+99,168,230,226,187,110,154,213,17,83,187,232,238,81,217,30,
+46,119,195,33,20,74,107,210,85,206,24,67,52,44,167,20,
+255,243,146,252,31,54,65,175,163,92,92,78,205,225,16,6,
+29,99,42,47,229,193,163,204,92,230,106,93,50,166,125,235,
+118,99,41,115,247,37,250,50,13,82,209,188,165,166,81,20,
+67,241,35,123,7,149,55,80,217,84,121,53,59,218,91,146,
+9,88,234,6,25,116,201,181,97,31,188,52,58,101,234,115,
+96,234,167,76,243,201,102,154,229,246,246,139,219,25,70,189,
+41,47,217,88,139,91,183,223,153,148,53,62,70,211,154,81,
+156,38,56,165,101,61,210,170,174,180,111,157,166,38,7,90,
+84,67,86,82,198,39,57,165,200,85,214,104,76,55,197,26,
+158,88,71,199,23,244,113,236,41,71,165,160,43,221,186,233,
+69,221,244,59,58,82,216,205,65,166,201,202,167,5,185,97,
+8,186,251,110,18,232,187,157,204,187,231,202,197,92,46,218,
+152,170,113,164,188,112,35,245,40,129,144,159,129,229,58,103,
+102,21,131,210,140,32,117,238,69,104,51,212,36,237,97,241,
+167,107,196,175,168,186,45,162,183,190,63,170,38,147,148,208,
+162,243,241,151,58,50,33,137,107,227,152,218,169,136,44,23,
+145,167,156,255,56,234,242,156,89,73,133,191,236,201,227,45,
+139,206,154,205,62,74,248,134,171,50,34,168,151,220,79,179,
+173,130,2,113,59,5,229,12,122,34,137,134,90,202,107,212,
+158,68,50,62,245,187,156,242,159,39,64,243,116,76,27,125,
+119,144,137,9,181,207,18,171,28,223,150,161,23,240,16,192,
+58,183,35,32,173,192,145,209,68,91,35,233,68,154,61,48,
+158,235,225,70,99,49,217,74,125,180,66,17,85,179,85,200,
+103,118,118,242,103,65,199,51,190,64,197,70,61,197,169,241,
+185,109,63,107,95,196,239,13,237,63,144,139,99,15,194,250,
+213,181,91,120,245,224,206,11,183,47,95,52,75,156,12,233,
+213,51,203,176,145,248,52,7,57,54,23,188,59,73,15,145,
+68,73,133,160,110,25,138,42,134,29,247,135,220,71,36,17,
+163,76,87,71,176,228,222,169,24,155,187,24,171,20,95,57,
+87,48,79,78,237,109,204,239,133,208,148,117,112,112,96,222,
+184,91,140,167,254,64,68,226,201,242,158,83,241,123,124,111,
+249,220,184,230,135,132,73,166,163,4,120,206,29,199,122,34,
+158,64,134,120,202,87,158,16,157,230,148,27,29,207,24,152,
+197,4,56,41,117,223,229,223,240,126,54,174,73,40,195,70,
+90,11,10,206,182,9,48,82,212,171,163,24,96,163,78,233,
+235,141,28,169,46,109,92,94,123,225,218,237,137,200,237,201,
+181,3,50,74,159,207,87,138,88,30,80,152,234,227,182,8,
+78,210,14,248,192,197,217,164,232,57,234,248,248,84,255,255,
+224,244,255,185,115,132,143,164,0,46,50,147,28,173,199,176,
+148,83,129,60,23,243,96,142,70,193,135,155,99,126,152,77,
+130,83,86,115,202,106,158,44,221,31,127,157,50,2,229,248,
+1,40,28,38,130,90,126,173,116,159,135,99,13,34,93,133,
+109,108,136,129,198,191,128,195,80,121,186,205,28,181,104,244,
+28,57,199,70,17,192,62,97,208,42,5,18,80,121,79,10,
+11,167,175,165,65,4,202,65,230,92,141,247,197,125,145,24,
+88,173,242,192,70,115,61,24,208,66,241,198,208,180,9,111,
+210,12,83,118,75,167,160,8,10,158,122,46,242,10,59,134,
+2,59,213,104,138,228,192,53,66,115,140,202,155,162,3,73,
+163,60,71,246,76,114,210,242,248,173,172,227,90,46,35,169,
+97,122,177,251,129,158,187,159,202,215,15,139,124,61,149,86,
+199,10,155,57,161,168,153,15,47,241,22,220,9,121,5,253,
+170,64,26,196,156,211,96,154,39,192,11,113,202,141,158,52,
+110,100,92,34,134,133,170,179,192,43,187,149,169,242,82,177,
+237,32,90,143,243,59,167,202,238,17,11,42,110,116,98,188,
+30,121,91,149,31,247,119,141,54,246,85,120,160,6,186,199,
+120,221,139,211,252,117,125,197,210,154,186,121,134,46,106,200,
+6,185,14,206,101,101,60,55,244,232,158,133,84,230,140,201,
+242,246,208,91,192,17,194,12,107,89,111,168,140,64,149,222,
+175,123,14,100,197,88,220,180,36,162,164,51,76,28,83,35,
+105,141,176,144,170,90,160,54,155,77,148,13,44,121,0,17,
+191,65,226,57,117,27,52,77,233,251,251,202,43,155,95,188,
+67,48,199,75,107,212,114,201,90,193,33,233,162,145,38,252,
+92,147,105,61,103,156,21,252,231,122,107,103,107,211,57,203,
+108,168,208,29,239,1,118,151,195,175,208,33,60,24,215,97,
+94,19,96,205,195,43,21,164,121,32,11,4,52,91,11,178,
+230,170,167,65,158,86,80,192,164,215,232,169,174,103,189,62,
+15,243,93,238,82,153,156,10,228,76,70,35,246,168,190,229,
+220,238,58,197,73,218,35,4,251,195,200,207,242,89,241,223,
+20,83,132,229,29,89,140,212,186,74,12,215,181,55,164,154,
+190,139,133,238,43,214,197,234,101,191,242,207,193,157,6,202,
+241,102,235,83,248,201,223,7,115,21,182,51,89,124,17,217,
+96,173,14,91,26,236,163,101,138,102,120,173,190,136,185,15,
+159,128,199,136,149,178,135,129,238,97,96,245,112,149,114,31,
+74,186,24,112,23,32,109,141,169,228,101,194,176,38,167,81,
+242,215,42,12,169,106,41,75,123,161,31,5,133,211,46,128,
+96,94,210,147,239,8,48,197,220,9,163,87,21,87,61,152,
+237,254,191,193,108,175,121,51,14,231,141,25,239,177,35,184,
+81,191,234,12,174,10,241,10,63,13,154,234,22,29,16,142,
+9,223,47,154,233,98,5,76,7,57,202,107,141,1,123,102,
+15,159,28,107,66,98,0,156,47,165,130,131,145,4,0,104,
+94,138,248,131,50,164,215,5,103,132,191,55,121,173,169,137,
+26,207,163,214,148,73,84,99,75,103,87,208,217,93,105,53,
+9,183,123,215,225,191,165,72,178,164,80,232,102,111,38,90,
+67,19,102,24,201,236,21,99,19,118,211,140,119,224,204,180,
+132,173,126,102,9,146,19,148,69,229,75,76,38,88,223,176,
+128,6,126,202,41,196,65,66,215,144,73,196,10,212,237,40,
+85,58,170,106,63,141,146,250,188,216,11,34,115,143,173,133,
+204,107,148,141,200,159,102,140,73,186,188,217,110,131,241,81,
+134,157,35,110,225,53,182,174,55,102,235,122,213,8,104,76,
+111,55,142,195,210,233,173,135,65,111,12,233,124,224,152,55,
+243,194,226,118,251,35,185,182,141,3,47,236,251,226,35,187,
+119,155,200,65,240,214,215,15,213,10,141,73,233,105,62,125,
+190,62,196,136,242,169,241,115,115,126,252,139,9,11,80,8,
+108,40,112,147,90,93,55,146,32,40,206,127,134,13,25,169,
+209,226,52,103,20,178,31,98,133,118,150,43,178,203,113,233,
+192,196,37,165,151,13,235,94,195,202,86,65,25,225,123,99,
+199,120,163,169,226,228,205,222,241,174,11,147,120,59,84,240,
+18,176,224,132,46,14,171,151,18,33,87,130,182,117,76,170,
+150,104,253,196,181,228,109,239,228,193,9,67,106,146,114,161,
+143,7,138,227,235,137,150,212,17,157,55,184,185,68,165,245,
+155,172,52,105,123,111,101,193,200,99,50,164,107,65,36,102,
+101,72,203,51,114,164,25,223,59,88,153,113,188,25,223,227,
+11,162,79,148,155,45,15,177,179,161,95,96,213,197,54,67,
+191,168,171,172,199,50,185,25,16,4,107,122,225,255,195,241,
+136,50,74,139,40,87,209,91,103,12,136,233,235,215,103,218,
+45,251,66,246,145,93,84,204,179,106,16,107,146,242,46,244,
+217,100,163,117,227,249,7,141,146,211,190,205,12,103,52,66,
+235,45,44,224,162,189,57,67,136,42,175,151,31,254,181,226,
+141,177,248,62,111,46,185,17,130,246,152,30,7,255,103,242,
+116,31,111,91,79,28,159,122,120,120,61,158,203,13,109,74,
+233,78,65,103,37,63,205,137,137,173,37,222,137,238,157,87,
+5,195,177,158,9,242,166,206,252,182,136,252,15,98,227,39,
+218,245,33,205,134,151,90,248,17,87,48,7,105,54,147,163,
+74,197,140,124,40,12,178,9,78,137,71,225,48,85,88,188,
+235,208,159,10,209,70,103,226,21,40,129,129,47,119,41,40,
+166,116,114,237,184,84,162,77,134,77,24,206,48,19,72,162,
+147,19,243,126,190,185,179,26,162,234,28,218,250,81,134,130,
+20,52,254,97,9,87,12,241,176,30,158,80,152,246,105,141,
+191,169,130,68,102,229,56,147,29,181,28,75,30,1,163,221,
+19,179,41,193,211,156,44,150,28,44,218,200,206,211,40,178,
+247,17,135,33,8,126,42,186,25,210,109,242,189,206,32,229,
+123,124,173,144,213,170,179,145,97,223,225,221,245,155,215,110,
+222,186,181,113,89,122,9,213,215,28,30,101,158,66,147,83,
+73,71,97,9,71,147,61,14,55,182,36,165,253,104,172,191,
+177,84,61,154,167,19,114,187,176,190,210,165,29,83,244,207,
+65,105,131,105,146,241,41,162,145,84,242,193,169,55,179,40,
+41,119,175,94,90,191,235,192,63,165,75,166,195,185,43,126,
+144,47,120,120,228,121,98,194,70,228,87,143,54,245,236,129,
+110,174,186,145,111,168,40,51,76,191,202,249,175,238,85,219,
+129,209,43,125,246,119,206,56,47,6,209,185,149,60,204,105,
+21,175,56,69,142,127,95,70,169,73,254,129,18,2,37,107,
+135,38,172,101,83,33,46,30,68,8,245,215,40,127,45,151,
+68,40,245,248,110,23,138,160,0,134,233,199,251,105,131,175,
+167,129,191,189,132,24,22,133,199,189,200,15,49,148,205,109,
+7,161,168,75,49,102,204,78,151,177,244,226,4,239,227,137,
+35,159,171,255,170,119,11,211,175,209,125,239,184,8,201,173,
+241,79,195,217,242,219,84,169,72,214,25,166,171,120,234,156,
+91,162,3,238,248,150,136,148,4,232,136,172,112,57,16,5,
+208,89,144,168,225,139,24,34,71,23,66,220,119,131,144,110,
+82,192,92,254,30,85,136,135,111,245,99,160,232,11,81,42,
+66,235,76,191,62,102,183,83,192,18,220,154,48,191,51,156,
+35,146,242,27,147,195,129,195,189,230,165,180,21,100,237,229,
+201,173,81,253,176,158,196,185,51,152,213,19,170,144,71,216,
+71,24,46,205,6,161,144,183,102,16,224,101,36,148,17,204,
+216,141,125,60,235,151,17,147,25,221,148,209,207,226,46,160,
+182,174,141,88,128,48,110,124,72,81,30,50,171,71,160,168,
+196,170,223,187,73,63,237,224,82,97,6,96,40,167,133,96,
+202,20,228,40,47,147,161,161,160,224,37,194,205,236,24,203,
+221,1,79,216,239,39,90,31,162,80,29,232,89,67,148,8,
+100,36,36,101,72,181,6,158,202,233,194,11,64,178,160,11,
+125,228,147,223,87,87,43,98,170,21,45,146,84,0,26,18,
+52,181,160,199,1,159,37,0,129,167,125,26,153,183,67,71,
+52,170,45,92,219,218,164,138,218,105,149,222,54,9,222,173,
+101,153,235,117,74,68,228,8,22,8,10,127,199,102,128,163,
+113,213,165,49,36,100,77,132,49,42,125,23,240,146,251,231,
+88,43,77,195,198,254,240,75,146,90,25,47,18,140,69,132,
+93,23,9,233,196,65,20,100,129,27,6,175,200,56,173,26,
+93,208,133,151,166,36,221,32,82,26,24,95,60,5,216,42,
+66,234,38,206,240,214,19,157,142,16,164,153,140,194,29,226,
+154,70,42,31,199,212,211,70,193,22,199,17,124,178,113,78,
+97,19,104,123,96,18,224,221,103,74,1,47,64,67,174,34,
+223,107,29,22,229,166,247,228,229,225,116,200,163,249,221,22,
+114,92,252,86,200,100,82,59,180,240,96,191,148,226,21,236,
+248,222,205,72,142,95,152,210,76,226,241,146,176,49,106,52,
+110,248,194,192,141,114,230,164,133,87,9,208,10,24,98,51,
+2,217,141,130,190,38,224,94,2,15,226,126,202,155,195,182,
+26,111,151,67,129,224,93,149,21,161,57,149,226,175,61,89,
+174,8,175,252,105,163,160,67,250,99,92,50,163,187,171,5,
+48,182,74,132,105,130,233,157,44,24,151,10,21,10,32,179,
+49,98,132,36,187,93,13,79,54,6,37,228,253,241,150,5,
+197,165,5,175,8,105,7,80,202,236,40,171,2,27,172,187,
+189,212,110,164,89,139,169,202,14,155,17,129,253,40,87,104,
+71,191,246,242,100,214,71,149,230,68,186,129,139,2,129,28,
+13,21,128,243,220,158,187,139,57,2,40,217,112,119,88,118,
+232,216,80,122,127,209,217,164,228,148,207,245,131,140,46,144,
+233,202,108,222,98,103,5,38,67,148,216,165,56,100,236,6,
+228,43,113,172,171,55,111,253,227,91,27,219,206,89,231,51,
+27,183,110,195,39,208,119,174,126,118,123,115,125,237,218,139,
+155,151,110,95,133,7,234,251,213,141,205,43,87,111,59,34,
+243,168,218,184,235,180,197,126,126,239,110,138,110,3,152,23,
+98,34,101,27,116,220,251,120,247,19,98,109,158,236,0,50,
+211,55,89,108,182,31,219,203,174,5,132,173,47,215,165,208,
+100,208,81,134,145,72,209,137,33,21,13,66,94,170,191,143,
+232,160,200,213,246,252,0,154,46,167,6,88,7,208,123,150,
+50,10,227,84,245,213,94,208,39,165,118,175,174,122,7,118,
+122,227,203,208,199,10,81,207,20,125,12,234,213,116,179,45,
+107,52,117,77,34,229,165,145,32,160,59,44,0,122,128,231,
+151,104,67,17,211,181,98,13,76,81,49,13,147,181,43,205,
+212,130,36,224,98,192,151,99,192,167,151,231,154,162,115,57,
+4,141,105,140,189,83,136,109,184,238,222,19,47,93,187,124,
+169,85,27,174,217,103,164,40,214,87,101,222,57,198,38,168,
+119,154,53,163,28,95,106,167,20,154,17,27,28,252,107,220,
+84,90,72,83,196,7,88,121,99,169,60,210,192,27,58,57,
+107,23,127,144,35,140,243,79,78,106,92,22,97,127,247,165,
+118,198,254,97,249,161,212,167,186,228,172,147,234,89,108,99,
+251,31,198,249,153,231,225,59,47,55,232,135,160,54,53,124,
+74,132,4,44,22,81,73,202,8,249,173,192,175,45,24,1,
+1,149,182,122,188,145,106,219,2,246,72,221,121,250,228,123,
+138,48,134,101,27,205,175,57,248,138,198,123,123,142,3,211,
+153,241,190,252,124,101,94,168,95,114,0,97,98,255,49,92,
+141,97,48,65,36,120,9,225,32,5,160,247,64,82,142,250,
+58,82,195,42,111,116,124,202,41,153,222,149,117,57,177,43,
+235,35,167,84,124,124,18,147,177,61,249,133,105,16,114,125,
+6,164,173,118,88,243,23,187,249,39,173,230,35,163,106,127,
+222,78,186,144,129,181,215,130,226,12,230,199,176,52,125,224,
+157,157,119,245,237,157,85,94,200,161,231,54,161,161,76,190,
+75,117,78,202,153,150,44,220,58,76,107,83,147,169,93,20,
+167,148,240,90,59,30,18,72,129,244,90,59,49,165,59,140,
+56,39,97,173,25,244,245,9,243,57,103,58,172,218,198,243,
+250,45,188,155,125,98,31,241,172,249,34,83,142,50,131,242,
+119,75,236,1,142,138,146,115,143,105,243,155,10,40,97,134,
+193,138,132,143,204,68,69,4,149,253,104,178,68,169,245,252,
+69,155,68,206,193,223,205,46,22,124,192,218,15,228,69,1,
+237,220,11,221,20,204,154,18,157,118,219,3,27,59,82,211,
+165,118,246,207,171,156,233,135,15,118,154,249,207,240,155,179,
+234,244,250,187,33,130,252,82,33,171,19,208,242,5,52,206,
+217,150,203,253,72,41,189,63,100,207,145,245,198,55,83,183,
+62,158,159,239,129,41,17,135,125,196,224,134,170,98,33,124,
+211,15,213,96,79,43,124,149,30,125,235,120,80,14,230,187,
+153,107,56,160,248,234,81,44,172,161,47,151,210,126,71,58,
+41,150,78,71,180,65,246,59,49,94,1,204,253,160,55,219,
+23,61,17,249,228,223,96,211,77,165,193,178,231,72,221,104,
+204,206,119,190,236,57,9,164,219,84,231,204,167,29,190,216,
+6,61,111,89,170,94,117,157,174,187,39,179,190,122,64,98,
+202,54,226,209,213,5,101,149,199,48,10,217,24,213,52,54,
+217,124,153,183,207,230,131,140,111,57,59,121,28,251,134,54,
+55,0,202,245,113,145,128,73,57,90,129,9,148,79,18,253,
+60,8,117,195,213,131,54,119,62,144,31,164,189,208,29,208,
+22,55,216,155,88,64,134,220,145,208,14,246,250,137,44,102,
+130,87,72,119,243,186,170,75,165,214,222,103,2,177,63,68,
+23,234,71,139,42,212,143,85,52,97,129,214,62,22,114,201,
+199,145,196,97,235,41,48,196,161,31,60,63,50,208,181,159,
+178,95,91,162,173,116,152,178,211,19,81,92,225,176,114,218,
+226,242,91,31,115,163,160,139,254,252,214,199,52,136,2,58,
+178,216,195,125,242,147,184,103,248,231,234,13,93,33,76,141,
+166,60,246,48,47,62,208,74,132,138,135,144,71,19,8,126,
+244,226,246,226,220,31,157,136,207,245,5,16,208,253,192,165,
+30,196,125,58,16,137,97,52,242,198,222,185,155,197,189,192,
+3,48,158,109,157,93,207,146,112,29,172,137,214,217,52,241,
+248,107,235,103,69,212,90,232,167,173,159,33,75,2,127,193,
+104,55,28,184,85,163,157,248,120,171,14,182,5,61,224,223,
+155,165,23,247,153,59,167,63,215,116,167,103,208,50,135,189,
+82,143,154,53,252,217,145,133,121,60,248,172,109,234,77,229,
+25,151,94,87,245,138,233,135,206,55,147,88,134,164,102,216,
+69,118,233,176,111,8,71,224,146,59,147,66,129,23,138,15,
+155,180,171,123,100,39,19,89,186,65,136,252,71,237,208,8,
+28,214,14,112,11,137,245,175,22,22,235,95,103,64,99,62,
+212,28,226,178,154,177,238,137,8,209,13,207,31,184,173,83,
+131,183,128,174,67,90,19,157,86,248,20,128,227,108,221,184,
+210,160,5,139,3,23,61,204,117,121,166,163,176,236,202,165,
+77,227,56,139,144,94,101,44,52,116,236,30,59,246,62,11,
+35,243,201,86,62,46,111,156,76,246,72,250,228,112,50,206,
+9,250,169,118,81,203,45,174,209,145,73,12,26,214,46,32,
+188,11,88,78,39,125,158,244,90,97,108,19,185,71,165,119,
+156,6,97,86,199,76,134,79,87,35,237,164,118,157,84,80,
+184,17,96,7,174,37,39,68,37,83,242,217,40,199,61,59,
+208,17,144,235,97,44,43,249,21,91,241,181,179,232,25,111,
+247,19,58,154,233,37,177,150,100,212,90,250,45,35,192,79,
+25,14,101,158,224,21,174,249,196,7,52,63,58,201,153,20,
+199,242,47,53,162,50,150,50,103,242,217,150,232,115,235,106,
+43,240,164,207,17,221,30,200,72,221,94,238,34,60,96,84,
+185,217,19,69,40,237,7,120,147,169,36,52,250,185,140,41,
+84,78,83,105,107,50,231,72,101,36,141,153,61,191,162,133,
+235,25,169,143,25,250,160,202,48,50,155,16,122,12,171,122,
+54,4,236,83,43,92,48,249,163,145,38,244,41,172,230,55,
+50,44,237,140,236,90,123,141,229,152,74,79,164,194,2,10,
+113,169,106,128,47,218,249,217,30,189,140,34,200,196,220,178,
+190,120,148,133,7,140,231,24,215,144,160,235,30,167,51,37,
+204,39,132,243,172,80,244,143,7,70,58,43,227,69,82,80,
+100,148,6,160,75,51,223,219,21,202,113,111,66,139,1,10,
+45,118,7,5,149,102,206,112,196,149,84,129,144,83,225,52,
+172,104,213,51,193,146,193,101,211,217,48,228,108,168,57,205,
+26,8,146,126,151,161,68,71,38,22,128,188,184,219,3,78,
+183,75,181,47,128,100,115,16,213,65,33,108,231,60,122,31,
+4,1,176,197,40,15,197,200,39,177,43,48,21,174,33,15,
+104,108,109,196,67,230,232,159,24,184,71,115,137,209,160,159,
+43,187,152,101,115,36,74,195,87,26,215,184,122,151,241,150,
+251,211,173,115,94,32,21,246,130,100,87,26,99,30,14,5,
+214,119,228,187,137,79,66,131,78,250,121,199,67,24,4,246,
+134,52,0,208,39,92,93,100,48,181,132,37,13,147,210,149,
+235,74,110,185,206,110,144,117,221,158,113,161,186,146,230,64,
+235,10,151,46,173,131,141,17,100,20,98,68,64,224,183,45,
+206,214,144,167,74,42,6,33,147,10,9,34,141,20,237,132,
+21,202,228,145,69,203,120,48,176,101,132,142,44,225,19,112,
+109,62,40,252,164,81,22,157,218,134,182,251,92,29,224,213,
+129,37,231,241,65,102,20,69,214,113,35,195,198,107,72,249,
+172,15,68,99,16,251,145,174,108,220,200,9,68,133,235,228,
+115,210,177,13,8,96,180,42,13,98,243,89,72,134,161,35,
+141,41,9,34,2,25,112,43,55,226,80,14,131,200,92,142,
+206,176,72,180,90,178,208,0,69,234,30,218,220,249,146,37,
+41,66,150,146,81,36,64,106,81,162,110,108,119,250,24,95,
+130,85,26,149,113,174,197,64,205,136,119,32,194,95,16,126,
+93,237,238,243,34,219,23,114,67,72,13,169,201,147,204,40,
+198,134,164,183,144,78,222,71,95,42,31,250,186,134,198,38,
+197,73,150,138,176,205,232,44,247,35,143,109,242,27,28,86,
+179,31,200,119,212,105,106,23,76,56,146,59,48,65,63,240,
+8,221,89,53,234,184,72,141,28,225,78,66,202,24,43,140,
+189,123,176,145,53,55,204,58,113,127,175,131,232,10,168,131,
+94,136,6,12,158,27,210,216,144,4,29,215,166,134,213,251,
+113,36,120,9,161,64,78,30,224,189,36,120,203,119,31,88,
+76,72,99,208,202,0,43,73,57,101,212,85,42,168,34,97,
+148,183,82,27,173,113,77,211,4,127,99,188,85,170,206,134,
+124,64,117,181,229,88,114,63,192,122,189,215,96,243,128,56,
+62,210,21,187,170,175,187,189,214,2,227,169,135,177,25,68,
+251,251,98,23,181,235,251,4,132,4,87,140,65,72,232,208,
+9,165,146,13,211,5,114,223,139,140,49,164,207,6,150,158,
+66,23,50,239,97,38,83,117,157,186,96,70,94,163,244,172,
+86,195,223,143,19,159,204,214,252,97,147,204,147,82,151,142,
+137,234,215,221,244,94,185,237,166,158,160,253,166,208,93,90,
+113,10,223,173,118,10,245,171,44,55,64,47,140,144,225,151,
+116,238,134,8,104,227,250,17,62,69,52,178,213,32,18,240,
+248,136,42,124,209,65,127,220,115,63,215,39,195,63,25,0,
+23,76,132,197,31,201,40,174,83,221,66,238,113,209,185,140,
+181,88,221,176,215,113,209,183,20,69,192,20,45,44,68,2,
+209,30,164,134,179,219,39,169,223,11,177,41,76,168,3,90,
+2,150,115,29,0,147,198,189,69,122,70,150,9,156,235,31,
+246,1,87,87,158,109,56,43,75,75,23,64,191,64,80,20,
+22,214,250,88,220,110,183,62,166,3,18,216,145,85,203,84,
+228,45,127,15,172,90,169,132,164,200,47,137,109,164,202,102,
+170,59,228,119,1,62,240,177,178,14,180,243,68,198,54,168,
+80,201,188,69,12,32,147,179,87,209,114,20,44,43,40,216,
+69,203,214,130,225,203,53,54,81,198,38,58,136,68,23,65,
+144,172,196,120,167,16,67,169,29,119,180,137,232,67,203,153,
+143,194,77,44,20,41,125,200,24,225,209,212,204,86,163,213,
+56,204,181,127,40,177,10,53,146,78,97,25,170,119,70,91,
+135,170,85,81,47,112,199,153,137,163,230,63,202,116,25,94,
+202,52,230,11,9,245,220,2,212,179,167,96,75,211,124,177,
+196,150,181,152,201,228,107,181,116,53,23,254,65,216,25,122,
+205,150,46,96,153,246,121,100,188,253,6,26,13,134,244,150,
+246,3,251,6,164,130,35,117,193,17,166,131,140,71,67,100,
+75,18,100,11,49,117,196,132,6,250,178,244,163,4,28,236,
+101,77,32,197,58,124,168,217,202,78,26,78,71,93,253,16,
+138,61,197,31,169,246,173,236,5,40,23,100,187,27,9,158,
+113,16,217,198,127,22,239,9,154,54,173,97,104,193,106,174,
+172,36,234,72,181,93,44,234,205,218,44,115,121,18,163,72,
+219,28,69,13,148,46,231,217,48,47,134,24,200,126,40,187,
+0,105,105,238,232,52,187,194,118,57,136,2,10,106,31,82,
+215,114,225,165,124,100,236,185,83,46,181,145,46,177,72,236,
+231,209,247,190,114,75,74,209,152,53,100,13,118,196,22,204,
+92,136,6,204,243,193,72,17,165,78,103,35,205,194,18,216,
+198,239,171,178,125,181,212,54,26,23,101,182,225,200,84,17,
+184,152,107,224,38,193,43,2,131,11,1,247,211,98,48,174,
+56,16,94,31,5,207,112,84,110,131,162,243,80,38,57,178,
+114,14,102,244,177,145,40,191,25,124,21,141,6,203,59,104,
+164,44,34,120,208,165,73,110,114,95,29,107,164,84,148,209,
+118,243,210,225,13,86,173,1,17,183,133,73,152,194,86,90,
+141,213,227,58,227,94,22,116,85,159,188,226,180,3,154,64,
+107,1,173,52,185,97,168,27,226,95,233,99,224,83,16,178,
+192,122,120,104,145,40,3,73,6,164,179,36,96,195,140,61,
+19,172,62,226,41,8,165,171,152,54,43,41,8,1,30,180,
+128,88,199,85,106,43,19,135,210,86,167,206,180,241,99,175,
+79,23,146,96,99,80,93,179,36,0,141,133,218,40,7,249,
+38,94,250,26,249,28,194,10,68,187,167,98,181,131,46,81,
+20,254,5,22,39,72,199,113,72,63,147,81,214,8,83,62,
+245,33,144,180,62,198,179,129,153,73,176,181,22,104,237,247,
+73,61,86,147,100,181,124,95,94,18,99,25,202,160,205,239,
+73,80,18,127,144,144,156,89,242,23,8,192,252,106,75,125,
+19,201,39,147,249,198,27,22,134,18,166,72,165,78,39,49,
+96,1,84,66,55,169,202,159,145,146,181,242,154,137,170,73,
+155,129,156,163,39,143,177,153,166,176,179,202,164,13,61,28,
+140,144,253,5,26,240,141,101,145,248,39,89,192,226,208,7,
+84,1,226,161,8,251,45,46,194,139,71,117,152,105,141,30,
+7,153,39,173,136,148,10,52,131,245,163,44,65,197,25,37,
+18,114,138,45,58,14,208,13,18,103,169,132,222,182,200,184,
+239,50,121,64,69,213,20,107,177,202,217,154,141,6,70,163,
+188,164,237,52,200,35,99,234,199,239,3,93,88,101,194,58,
+125,101,82,88,27,128,229,75,169,232,7,89,220,216,128,39,
+1,169,212,25,2,99,81,189,236,32,49,24,46,246,117,188,
+96,57,6,255,200,0,149,138,98,143,231,156,93,43,236,8,
+168,74,228,94,16,88,31,39,147,196,210,16,224,237,175,237,
+210,69,24,216,212,97,5,8,176,193,122,214,118,181,8,44,
+64,96,23,0,128,45,201,223,179,74,157,224,11,12,196,6,
+191,200,165,243,179,227,148,152,151,228,60,83,200,206,241,235,
+23,106,8,22,207,134,77,108,226,146,217,96,249,151,72,94,
+37,33,181,248,108,27,120,167,244,24,121,90,168,164,151,60,
+90,7,196,162,75,95,218,150,32,87,164,124,69,100,183,56,
+175,128,134,231,20,87,115,106,234,212,47,239,213,163,18,245,
+123,74,95,144,163,10,223,74,223,185,36,81,223,55,89,9,
+241,26,181,179,168,68,106,84,173,49,130,144,221,74,72,134,
+93,119,21,95,57,41,62,50,39,28,202,19,120,172,220,29,
+187,56,79,9,83,25,131,12,218,111,93,190,233,149,220,164,
+130,139,148,51,77,189,255,40,111,233,124,123,213,18,218,152,
+137,144,107,219,186,181,33,131,119,172,152,204,91,70,194,202,
+72,12,42,224,75,237,121,58,163,33,188,68,204,208,35,25,
+142,252,118,144,164,153,163,110,165,211,135,241,177,180,118,244,
+233,4,169,82,148,71,194,59,70,42,145,134,181,53,53,114,
+31,210,205,121,41,1,108,212,141,214,249,70,104,197,121,104,
+73,146,210,134,9,184,232,116,128,46,48,194,134,76,143,33,
+242,44,115,40,210,134,177,51,145,62,90,206,68,83,4,42,
+205,78,94,209,110,85,207,212,106,31,5,197,24,173,155,8,
+178,109,165,144,43,159,129,173,221,141,66,35,149,86,111,60,
+26,70,168,51,121,246,189,26,118,18,52,210,192,85,224,175,
+189,140,216,64,138,171,70,147,81,27,103,117,50,188,53,118,
+160,138,182,182,180,157,117,75,160,43,81,62,70,69,146,127,
+176,18,10,41,216,134,227,85,40,130,76,43,245,218,118,128,
+159,65,147,79,109,87,165,225,28,77,67,228,78,232,132,216,
+197,195,35,36,124,149,81,166,79,86,200,38,9,1,16,178,
+251,60,49,92,6,198,69,206,45,80,221,111,83,210,244,166,
+229,246,100,147,42,17,221,24,149,243,60,145,90,101,147,245,
+1,98,66,59,75,13,103,42,31,221,201,219,190,156,93,32,
+168,123,4,190,126,130,83,97,243,152,242,63,23,43,1,248,
+98,16,93,23,153,123,57,8,217,73,81,163,211,63,138,75,
+83,151,205,20,12,214,98,109,3,121,13,86,1,7,11,253,
+150,253,84,187,122,105,189,250,134,249,17,223,76,181,177,208,
+105,142,180,208,185,165,57,118,124,179,122,219,172,10,126,225,
+2,102,179,149,219,235,77,210,44,2,62,56,73,59,4,237,
+232,144,136,226,218,113,143,242,184,44,189,63,136,70,35,143,
+237,165,245,193,87,205,149,72,46,132,156,21,109,194,33,152,
+198,21,102,154,129,35,246,233,113,71,31,21,146,142,160,219,
+142,84,18,116,43,251,2,13,163,25,194,30,132,0,87,163,
+32,135,9,130,217,169,201,56,52,73,72,70,63,46,80,71,
+189,164,35,218,29,99,196,25,187,161,205,91,120,128,14,143,
+24,221,28,70,95,251,170,156,21,129,189,97,247,24,32,89,
+117,227,100,208,90,48,40,112,106,194,58,41,154,58,165,154,
+178,96,151,74,13,248,100,177,123,66,236,157,14,59,229,161,
+55,122,145,83,130,70,142,140,57,104,88,94,201,152,133,9,
+10,191,84,223,59,81,165,180,143,44,192,97,115,242,199,107,
+44,206,88,129,112,68,57,70,147,0,212,5,162,243,31,197,
+162,159,147,27,198,34,63,125,29,234,176,163,38,18,251,166,
+156,40,147,71,67,242,70,85,156,153,92,66,25,213,117,188,
+184,55,176,233,25,125,160,31,33,194,45,138,149,50,73,82,
+174,129,131,46,136,142,157,38,106,168,105,159,114,101,26,168,
+32,146,213,79,191,182,221,32,236,39,19,184,189,166,38,244,
+83,162,253,168,16,109,30,245,246,209,17,135,39,71,51,119,
+11,106,219,93,83,43,41,167,160,113,103,169,249,206,224,134,
+33,84,138,53,74,84,144,225,29,75,195,107,14,149,39,25,
+109,163,171,113,170,99,157,116,232,162,117,108,170,127,29,17,
+227,148,7,61,214,100,165,26,226,93,214,201,105,193,154,215,
+103,127,156,213,160,195,90,115,43,217,232,169,225,236,3,94,
+197,61,82,97,186,238,61,84,248,174,5,81,255,0,43,215,
+167,84,102,43,134,127,106,247,227,16,139,230,162,183,138,109,
+236,250,34,134,123,201,14,177,15,42,31,19,166,178,94,31,
+246,111,16,132,170,201,199,103,117,105,39,238,135,62,157,184,
+114,222,28,140,77,131,46,58,91,34,233,96,5,21,29,96,
+148,3,0,166,193,51,83,71,125,93,244,192,225,41,31,30,
+119,251,198,65,158,26,110,230,115,62,107,191,242,47,108,158,
+87,26,9,186,225,164,38,119,165,206,254,114,188,107,113,186,
+18,214,99,192,69,102,208,192,47,124,154,161,93,141,228,50,
+204,91,14,7,25,147,67,92,162,11,214,170,97,71,30,191,
+16,210,169,55,15,120,105,189,90,199,80,239,95,90,47,105,
+162,22,146,55,131,95,52,39,121,28,249,218,84,92,84,241,
+234,94,209,61,120,114,25,220,27,120,2,46,73,110,228,184,
+147,12,131,174,247,45,6,96,201,80,219,116,218,238,22,139,
+220,57,41,158,168,68,236,151,48,118,250,88,245,1,119,227,
+164,172,40,37,253,110,172,23,71,194,173,46,241,178,49,106,
+238,52,183,100,16,144,225,169,84,63,201,248,36,119,23,218,
+186,158,113,37,164,206,145,245,101,200,27,168,173,234,50,108,
+35,82,92,121,21,85,173,55,229,93,180,120,132,62,126,246,
+220,30,122,19,211,178,115,44,233,197,204,89,167,174,26,39,
+131,45,104,103,117,96,142,48,242,19,82,167,205,130,200,207,
+143,175,140,188,107,101,96,251,212,69,202,103,254,176,188,132,
+9,148,167,202,28,144,226,74,49,219,7,243,133,65,216,116,
+98,159,211,127,100,216,40,182,10,18,39,129,41,113,150,3,
+114,242,200,149,71,222,198,68,71,165,81,42,216,227,103,222,
+34,243,215,85,123,235,36,55,183,68,82,185,107,116,235,210,
+101,71,186,68,63,147,139,16,60,88,147,174,218,66,252,135,
+45,123,106,232,249,165,226,18,32,95,188,123,2,11,104,34,
+243,239,73,41,177,171,186,105,104,212,83,175,238,199,201,189,
+148,147,137,73,27,187,13,202,201,237,65,143,123,75,243,240,
+166,230,255,7,180,208,212,131,

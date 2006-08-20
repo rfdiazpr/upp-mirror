@@ -243,6 +243,7 @@ protected:
 	int    PlaceCaretNoG(int newcursor, bool sel = false);
 
 	void   Scroll();
+	void   SetHBar();
 
 	struct RefreshDraw;
 

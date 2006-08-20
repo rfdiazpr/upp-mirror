@@ -380,13 +380,13 @@ Color SColorMenu();
 Color SColorMenuText();
 Color SColorInfo();
 Color SColorInfoText();
+Color SColorMark();
 Color SColorDisabled();
 Color SColorLight();
 Color SColorFace();
 Color SColorShadow();
 
 Color SColorLtFace();
-Color SColorLtHighlight();
 Color SColorDkShadow();
 
 inline Color InvertColor() { return Color(255, 0); }
@@ -551,6 +551,7 @@ public:
 	bool  IsMono() const                                { return is_mono; }
 
 	Size  GetPagePixels() const                         { return pagePixels; }
+	Size  GetPageDots() const                           { return pagePixels; }
 	Size  GetPageMMs() const                            { return pageMMs; }
 	Size  GetPixelsPerInch() const                      { return inchPixels; }
 	Size  GetSheetPixels() const                        { return sheetPixels; }

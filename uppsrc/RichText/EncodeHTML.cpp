@@ -106,8 +106,9 @@ void TabBorder(String& style, const char *txt, int border, Color bordercolor, co
 
 
 String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
-              const VectorMap<String, String>& links, const String& outdir, const String& namebase,
-              Zoom z, int& im)
+              const VectorMap<String, String>& links,
+              const VectorMap<String, String>& labels,
+              const String& outdir, const String& namebase, Zoom z, int& im)
 {
 	String html;
 	for(int i = 0; i < text.GetPartCount(); i++)
@@ -163,7 +164,7 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 						if(c.vspan)
 							html << " rowspan=" << c.vspan + 1;
 						html << '>';
-						html << AsHtml(c.text, styles, css, links, outdir, namebase, z, im);
+						html << AsHtml(c.text, styles, css, links, labels, outdir, namebase, z, im);
 						html << "</TD>\r\n";
 					}
 				}
@@ -178,6 +179,14 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 		else
 		if(text.IsPara(i)) {
 			RichPara p = text.Get(i, styles);
+			String lbl;
+			if(!IsNull(p.format.label)) {
+				DUMP(p.format.label);
+				lbl = labels.Get(p.format.label, Null);
+				DUMP(lbl);
+				if(lbl.GetCount())
+					html << "<A NAME=\"" << lbl << "\">";
+			}
 			bool bultext = false;
 			if(p.format.bullet == RichPara::BULLET_TEXT)
 				for(int i = 0; i < p.part.GetCount(); i++) {
@@ -226,14 +235,19 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 				}
 				else {
 					String lnk = part.format.link;
-					int q = lnk.ReverseFind('#');
-					if(q >= 0) {
-						String l = lnk.Left(q);
-						lnk = links.Get(l, l) + '#' + lnk.Mid(q + 1);
+					if(lnk.GetCount()) {
+						int q = links.Find(lnk);
+						if(q < 0) {
+							int q = lnk.ReverseFind('#');
+							if(q >= 0) {
+								String l = lnk.Left(q);
+								lnk = links.Get(l, l) + '#' + lnk.Mid(q + 1);
+							}
+						}
+						else
+							lnk = links[q];
 					}
-					else
-						lnk = links.Get(lnk, lnk);
-					if(!lnk.IsEmpty())
+					if(!lnk.IsEmpty() && lnk[0] != ':')
 						html << "<A HREF=\"" << lnk << "\">";
 					String cs;
 					if(part.text[0] != 9)
@@ -289,17 +303,21 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 			html << "</P>";
 			if(bultext)
 				html << "</TD></TR></TABLE>";
+			if(lbl.GetCount())
+				html << "</A>";
 			html << "\r\n";
 		}
 	}
 	return html;
 }
 
-String EncodeHtml(const RichText& text, Index<String>& css, const VectorMap<String, String>& links,
+String EncodeHtml(const RichText& text, Index<String>& css,
+                  const VectorMap<String, String>& links,
+                  const VectorMap<String, String>& labels,
                   const String& outdir, const String& namebase, Zoom z)
 {
 	int im = 0;
-	return AsHtml(text, text.GetStyles(), css, links, outdir, namebase, z, im);
+	return AsHtml(text, text.GetStyles(), css, links, labels, outdir, namebase, z, im);
 }
 
 String AsCss(Index<String>& ss)

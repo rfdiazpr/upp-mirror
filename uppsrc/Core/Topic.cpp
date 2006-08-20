@@ -1,19 +1,41 @@
 #include "Core.h"
 
-VectorMap<String, VectorMap<String, VectorMap<String, Topic > > >& TopicBase()
+struct TopicData__ : Moveable<TopicData__> {
+	String      title;
+	const byte *data;
+	int         len;
+};
+
+VectorMap<String, VectorMap<String, VectorMap<String, TopicData__ > > >& Topics__()
 {
-	static VectorMap<String, VectorMap<String, VectorMap<String, Topic> > > tb;
+	static VectorMap<String, VectorMap<String, VectorMap<String, TopicData__ > > > x;
+	return x;
+}
+
+VectorMap<String, VectorMap<String, Vector<String> > >& TopicBase()
+{
+	static VectorMap<String, VectorMap<String, Vector<String> > > tb;
 	return tb;
 }
 
 String TopicLinkString(const TopicLink& tl)
 {
-	return String().Cat() << "topic://" << tl.package << '/' << tl.group << '/' << tl.topic;
+	String s;
+	s << "topic://" << tl.package << '/' << tl.group << '/' << tl.topic;
+	if(tl.label.GetCount())
+		s << '#' << tl.label;
+	return s;
 }
 
 TopicLink ParseTopicLink(const char *link)
 {
 	TopicLink tl;
+	const char *end = link + strlen(link);
+	const char *lbl = strchr(link, '#');
+	if(lbl) {
+		end = lbl;
+		tl.label = lbl + 1;
+	}
 	if(memcmp(link, "topic://", 8) == 0)
 		link += 8;
 	do {
@@ -22,11 +44,11 @@ TopicLink ParseTopicLink(const char *link)
 		tl.package.Cat(tl.group);
 		tl.group = tl.topic;
 		const char *b = link;
-		while(*link && *link != '/')
+		while(link < end && *link != '/')
 			link++;
 		tl.topic = String(b, link);
 	}
-	while(*link++);
+	while(link++ < end);
 	return tl;
 }
 
@@ -34,12 +56,20 @@ static StaticCriticalSection sTopicLock;
 
 Topic GetTopic(const String& package, const String& group, const String& topic)
 {
-	CriticalSection::Lock __(sTopicLock);
-	VectorMap<String, VectorMap<String, Topic> > *p = TopicBase().FindPtr(package);
-	if(p) {
-		VectorMap<String, Topic> *g = p->FindPtr(group);
-		if(g)
-			return g->Get(topic, Topic());
+	INTERLOCKED_(sTopicLock) {
+		VectorMap<String, VectorMap<String, TopicData__> > *p = Topics__().FindPtr(package);
+		if(p) {
+			VectorMap<String, TopicData__> *g = p->FindPtr(group);
+			if(g) {
+				const TopicData__ *d = g->FindPtr(topic);
+				if(d) {
+					Topic t;
+					t.title = d->title;
+					t.text = ZDecompress(d->data, d->len);
+					return t;
+				}
+			}
+		}
 	}
 	return Topic();
 }
@@ -47,16 +77,26 @@ Topic GetTopic(const String& package, const String& group, const String& topic)
 Topic GetTopic(const char *path)
 {
 	TopicLink tl = ParseTopicLink(path);
-	return GetTopic(tl.package, tl.group, tl.topic);
+	Topic t = GetTopic(tl.package, tl.group, tl.topic);
+	t.label = tl.label;
+	tl.label.Clear();
+	t.link = TopicLinkString(tl);
+	return t;
 }
 
-VectorMap<String, Topic>& TopicGroup__(const char *topicfile)
+void RegisterTopic__(const char *topicfile, const char *topic, const char *title,
+                     const byte *data, int len)
 {
-	CriticalSection::Lock __(sTopicLock);
-	ASSERT(*topicfile == '<');
-	ASSERT(*GetFileName(topicfile).Last() == '>');
-	String q = GetFileFolder(topicfile + 1);
-	String group = GetFileTitle(q);
-	String package = UnixPath(GetFileFolder(q));
-	return TopicBase().GetAdd(package).GetAdd(group);
+	INTERLOCKED_(sTopicLock) {
+		ASSERT(*topicfile == '<');
+		ASSERT(*GetFileName(topicfile).Last() == '>');
+		String q = GetFileFolder(topicfile + 1);
+		String group = GetFileTitle(q);
+		String package = UnixPath(GetFileFolder(q));
+		TopicData__& d = Topics__().GetAdd(package).GetAdd(group).GetAdd(topic);
+		d.title = title;
+		d.data = data;
+		d.len = len;
+		TopicBase().GetAdd(package).GetAdd(group).Add(topic);
+	}
 }

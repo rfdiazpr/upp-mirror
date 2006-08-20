@@ -422,7 +422,9 @@ void ColumnList::Paint(Draw& w) {
 					Rect r = rect;
 					r.right--;
 					const Item& m = item[i];
+					w.Clip(r);
 					(m.display ? m.display : display)->Paint(w, r, m.value, ink, paper, style);
+					w.End();
 					w.DrawRect(rect.right - 1, rect.top, 1, rect.Height(),
 					           x + cx < sz.cx ? SColorDisabled : SColorPaper);
 				}

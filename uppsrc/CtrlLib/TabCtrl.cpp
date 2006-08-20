@@ -446,7 +446,7 @@ void TabDlg::Rearrange()
 
 TabCtrl::Item& TabDlg::Add0(Ctrl& tab, const char *text)
 {
-	Size tsz = max(tab.GetSize(), sz);
+	Size tsz = max(tab.GetRect().GetSize(), sz);
 	TabCtrl::Item& m = tabctrl.Add(tab, text);
 	if(tsz != sz) {
 		sz = tsz;

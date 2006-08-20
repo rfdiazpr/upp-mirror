@@ -30,9 +30,8 @@ String JoinNestKey(const String& nest, const String& key)
 
 bool MatchDocumented(const String& nest, const String& key, const String& name, const BrowserQuery& q)
 {
-	return q.notdocumented && q.documented ||
-	       q.notdocumented && GetRefInfo(JoinNestKey(nest, key)).GetCount() == 0 ||
-	       q.documented && GetRefInfo(JoinNestKey(nest, key)).GetCount();
+	int n = GetRefLinks(JoinNestKey(nest, key)).GetCount();
+	return q.notdocumented && q.documented || q.notdocumented && n == 0 || q.documented && n;
 }
 
 bool MatchItem(const String& nest, const CppItem& m, const String& key, const String& name, const BrowserQuery& q, bool all)
@@ -132,10 +131,10 @@ int ItemCompare(const Value& v1, const Value& v2)
 {
 	const CppItemInfo& a = ValueTo<CppItemInfo>(v1);
 	const CppItemInfo& b = ValueTo<CppItemInfo>(v2);
-	int ak = a.kind >= FUNCTION && a.kind <= CLASSFUNCTIONTEMPLATE ? FUNCTION : a.kind;
+/*	int ak = a.kind >= FUNCTION && a.kind <= CLASSFUNCTIONTEMPLATE ? FUNCTION : a.kind;
 	int bk = b.kind >= FUNCTION && b.kind <= CLASSFUNCTIONTEMPLATE ? FUNCTION : b.kind;
 	if(ak != bk)
-		return ak - bk;
+	return ak - bk;*/
 	int q = a.fn.Compare(b.fn);
 	return q ? q : a.line - b.line;
 }
@@ -169,23 +168,25 @@ void Browser::LoadNest(const String& nest, ArrayMap<String, CppItemInfo>& item, 
 			String hfn;
 			for(int i = 0; i < im.pos.GetCount(); i++) {
 				const CppPos& p = im.pos[i];
+				String fn = p.GetFile();
 				if(ToUpper(GetFileExt(p.GetFile())) == ".H") {
 					if(p.line > hline) {
 						hline = p.line;
-						hfn = p.GetFile();
+						hfn = fn;
 					}
 				}
 				else
 					if(p.line > cline) {
 						cline = p.line;
-						cfn = p.GetFile();
+						cfn = fn;
 					}
 			}
-			if(hline) {
+			if(!IsNull(hfn)) {
 				f.fn = hfn;
 				f.line = hline;
 			}
-			else {
+			else
+			if(IsNull(f.fn)) {
 				f.fn = cfn;
 				f.line = cline;
 			}
@@ -215,7 +216,7 @@ void Browser::EnterNesting()
 		LoadNest(nesting.GetKey(), m, false);
 		for(int i = 0; i < m.GetCount(); i++)
 			item.Add(RawToValue(m[i]));
-//		item.Sort(FnValueOrder(ItemCompare));
+		item.Sort(FnValueOrder(ItemCompare));
 //		if(item.GetCount())
 //			item.SetCursor(0);
 	}
@@ -341,10 +342,10 @@ void Browser::ItemMenu(Bar& bar)
 				bar.Separator();
 		}
 		if(WhenShowTopic) {
-			const Vector<RefInfo>& ref = GetRefInfo(GetItem());
-			for(int i = 0; i < ref.GetCount(); i++)
-				bar.Add(ref[i].title, BrowserImg::Ref(), THISBACK1(ShowTopic, ref[i].link));
-			if(ref.GetCount())
+			Vector<String> link = GetRefLinks(GetItem());
+			for(int i = 0; i < link.GetCount(); i++)
+				bar.Add(GetTopicTitle(link[i]), BrowserImg::Ref(), THISBACK1(ShowTopic, link[i]));
+			if(link.GetCount())
 				bar.Separator();
 		}
 	}
@@ -403,9 +404,9 @@ void Browser::ShowTopic(String w)
 
 void Browser::ShowHelp()
 {
-	const Vector<RefInfo>& ref = GetRefInfo(GetItem());
-	if(ref.GetCount())
-		ShowTopic(ref[0].link);
+	Vector<String> link = GetRefLinks(GetItem());
+	if(link.GetCount())
+		ShowTopic(link[0]);
 }
 
 void Browser::SerializeWspc(Stream& s)
@@ -454,7 +455,7 @@ Browser::Browser()
 	item.WhenBar = THISBACK(ItemMenu);
 	item.active_topics = false;
 	item.Columns(2);
-	split.SetPos(1500);
+	split.SetPos(2000);
 	Add(split.Horz(nesting, item).SizePos());
 	Register(this);
 	Reload();

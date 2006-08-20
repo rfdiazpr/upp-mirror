@@ -74,3 +74,17 @@ NewTabCtrl
 0 0 -1
 Draw
 0 0 -1
+CppItemInfo
+0 0 -1
+RichPara
+0 0 -1
+RichPara::Format
+0 0 -1
+TopicData__
+0 0 -1
+PageDraw
+0 0 -1
+EditPageDraw
+0 0 -1
+RichPos
+0 0 -1

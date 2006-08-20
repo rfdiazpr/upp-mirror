@@ -36,7 +36,12 @@ bool SqlArray::PerformInsert() {
 	Session().Begin();
 	Sql cursor(Session());
 	cursor * insert;
-	return OkCommit(Session(), t_("Can't insert record."));
+	if(OkCommit(Session(), t_("Can't insert record."))) {
+		if(IsNull(Get(0)))
+			Set(0, cursor.GetInsertedId());
+		return true;
+	}
+	return false;
 }
 
 bool SqlArray::PerformDelete() {
@@ -88,7 +93,7 @@ void SqlArray::RejectRow() {
 void SqlArray::StartInsert() {
 	if(!CanInsert()) return;
 	DoAppend();
-	if(IsNull(GetKey()))
+	if(IsNull(GetKey()) && !autoinsertid)
 		lateinsert = true;
 	else
 		PerformInsert();
@@ -123,7 +128,7 @@ Value SqlArray::GetData() const {
 
 bool  SqlArray::Accept() {
 	bool b = ArrayCtrl::Accept();
-	Ctrl::ClearModify();
+	if(b) Ctrl::ClearModify();
 	return b;
 }
 
@@ -170,7 +175,10 @@ void SqlArray::AppendQuery(SqlBool where)
 		Sql sql(Session());
 		Session().ClearError();
 //		AutoWaitCursor awc(querytime); // todo: Fidler -> WaitCursor
-		sql * ::Select(cols).From(table).Where(wh).OrderBy(orderby);
+		if(IsNull(count))
+			sql * ::Select(cols).From(table).Where(wh).OrderBy(orderby);
+		else
+			sql * ::Select(cols).From(table).Where(wh).Limit(count).Offset(offset).OrderBy(orderby);
 		if(ShowError(sql)) {
 //			awc.Cancel(); // todo: Fidler -> WaitCursor
 			return;
@@ -202,5 +210,8 @@ SqlArray::SqlArray() {
 	WhenBar = THISBACK(StdBar);
 	goendpostquery = false;
 	lateinsert = false;
+	autoinsertid = false;
 	RowName(t_("record"));
+	offset = 0;
+	count = Null;
 }

@@ -217,11 +217,11 @@ void DlgHelpTopicTab::OnTab()
 					String package = TopicBase().GetKey(p);
 					if(TopicBase()[p].Find("appdoc") >= 0) {
 						bool first = true;
-						const VectorMap<String, Topic>& group = TopicBase()[p].Get("appdoc");
-						Vector<int> gorder = GetSortOrder(group.GetKeys(), GetLanguageInfo());
+						const Vector<String>& group = TopicBase()[p].Get("appdoc");
+						Vector<int> gorder = GetSortOrder(group, GetLanguageInfo());
 						for(int io = 0; io < gorder.GetCount(); io++) {
 							int i = gorder[io];
-							String t = group.GetKey(i);
+							String t = group[i];
 							String topic;
 							topic << "topic://" << package << "/appdoc/" << t;
 							int l = t.Find('$');

@@ -1,228 +1,204 @@
 TITLE("Segtor")
-REF("::Segtor::class")
-REF("::Segtor::Add()")
-REF("::Segtor::Add(const T&)")
-REF("::Segtor::AddPick(pick_ T&)")
-REF("::Segtor::operator[](int)")
-REF("::Segtor::operator[](int)const")
-REF("::Segtor::GetCount()const")
-REF("::Segtor::IsEmpty()const")
-REF("::Segtor::SetCount(int)")
-REF("::Segtor::SetCount(int,const T&)")
-REF("::Segtor::Clear()")
-REF("::Segtor::At(int)")
-REF("::Segtor::At(int,const T&)")
-REF("::Segtor::Shrink()")
-REF("::Segtor::Reserve(int)")
-REF("::Segtor::GetAlloc()const")
-REF("::Segtor::Set(int,const T&,int)")
-REF("::Segtor::Drop(int)")
-REF("::Segtor::Top()")
-REF("::Segtor::Top()const")
-REF("::Segtor::Pop()")
-REF("::Segtor::operator<<(const T&)")
-REF("::Segtor::operator|(pick_ T&)")
-REF("::Segtor::Serialize(::Stream&)")
-REF("::Segtor::IsPicked()const")
-REF("::Segtor::Segtor()")
-REF("::Segtor::Segtor(pick_::Segtor&)")
-REF("::Segtor::Segtor(const::Segtor&,int)")
-REF("::Segtor::~Segtor()")
-REF("::Segtor::ValueType::typedef")
-REF("::Segtor::Iterator::typedef")
-REF("::Segtor::ConstIterator::typedef")
-REF("::Segtor::Begin()const")
-REF("::Segtor::End()const")
-REF("::Segtor::GetIter(int)const")
-REF("::Segtor::Begin()")
-REF("::Segtor::End()")
-REF("::Segtor::GetIter(int)")
-REF("::Segtor::Swap(::Segtor&,::Segtor&)")
-TOPIC_TEXT(
-"[2 $$0,0#00000000000000000000000000000000:Default][l288;i1120;a17;O9;~~~.1408;2 "
-"$$1,0#10431211400427159095818037425705:param][a83;*R6 $$2,5#31310162474203024125188417583966:caption][b83;*4 "
-"$$3,5#07864147445237544204411237157677:title][i288;O9;C2 $$4,6#40027414424643823182269349404212:item][b42;a42;2 "
-"$$5,5#45413000475342174754091244180557:text][l288;b17;a17;2 $$6,6#27521748481378242620020725143825:")
-TOPIC_TEXT(
-"desc][l321;t246;C@5;1 $$7,7#20902679421464641399138805415013:code][b2503; $$8,0#65142375456100023862071332075487:separator][*@(0.0.255)2 "
-"$$9,0#83433469410354161042741608181528:base][t4167;C $$10,0#37138531426314131251341829483380:class][l288;a17;*1 "
-"$$11,11#70004532496200323422659154056402:requirement][i417;b42;a42;O9;~~~.416;2 $$12,12#10566046415157235020018451313112:tparam][b167;C2 "
-"$$13,13#924304")
-TOPIC_TEXT(
-"59443460461911108080531343:item1][i288;a42;O9;C2 $$14,14#77422149456609303542238260500223:item2][*@2$(0.128.128) "
-"$$15,15#34511555403152284025741354420178:NewsDate][l321;*C$7;2 $$16,16#03451589433145915344929335295360:result][l321;b83;a83;*C$7;2 "
-"$$17,17#07531550463529505371228428965313:result`-line][l160;t4167;*C+117 $$18,5#88603949442205825958800053222425:package`-title][ "
-"$$19,0#535800234423355290")
-TOPIC_TEXT(
-"39900623488521:gap][t4167;C2 $$20,20#70211524482531209251820423858195:class`-nested][b50;2 "
-"$$21,21#03324558446220344731010354752573:Par][{_}%EN-US [s2;~~~64; Segtor&][s10;~~~64; "
-"template <class [*@4 T], int [*@4 NBLK] `= 16>&][s0;3 &][s10;:`:`:Segtor`:`:class:~~~64;* "
-"[* class ]Segtor&][s12; [*C@4 T]-|Type of elements stored in Segtor. T  must have "
-"either [*/ deep copy constructor], [*/ pick constr")
-TOPIC_TEXT(
-"uctor] or [*/ default constructor].&][s12; [*C@4 NBLK]-|Size of segments.&][s5;~~~.416; "
-"Segtor is special flavor of random access container that can be sometimes used to "
-"improve memory consumption. It never invalidates iterators nor references to elements, "
-"but it also lacks operations to insert and remove elements at any position. Segtor "
-"is designed to be used in situations where size of each elem")
-TOPIC_TEXT(
-"ent is small, but it is either non`-moveable or references to elements must be never "
-"invalidated.&][s5;~~~.416; Typical implementation stores elements in segments of "
-"fixed size. This fixed size is determined by template parameter NBLK.&][s5;~~~.416; "
-"Iterators to Segtor satisfy all C`+`+ standard library requirements for random access "
-"iterator plus they allow assignment (and copy constructor) and t")
-TOPIC_TEXT(
-"esting for 0 (that is NULL) pointer.&][s5; Like any other NTL container, Segtor "
-"is [*/^topic`:`/`/Core`/srcdoc`/Moveable`$en`-us^ moveable][*/  ]type with [*/^topic`:`/`/Core`/srcdoc`/pick`_`$en`-us^ "
-"pick and optional deep copy] transfer semantics. Calling methods of picked Segtor "
-"is logic error with exception of&][s0;C+75 void [* operator`=](pick`_ Array`& [*@3 "
-"v])&][s0;/+75 [/C void ][*/C operat")
-TOPIC_TEXT(
-"or<<`=][/C (const Array`& ][*/C@3 v][/C )][/  ](defined using DeepCopyOptionTemplate)&][s0;C+75 "
-"void [* Clear]()&][s0;C+75 bool [* IsPicked]() const&][s0;b42;a42; Optional deep "
-"copy is implemented through DeepCopyOptionTemplate macro.&][s3; Members&][s0;3 &][s4;:`:`:Segtor`:`:Add`(`): "
-"T`& [* Add]()&][s6; Adds a new default constructed element to Segtor.&][s11; Requires "
-"T to have default constructo")
-TOPIC_TEXT(
-"r.&][s1; [*/ Return value]-|Reference to the newly added default constructed element.&][s0;3 "
-"&][s4;:`:`:Segtor`:`:Add`(const T`&`): void [* Add](const T`& [*@3 x])&][s6; Adds "
-"a new element with the specified value to Segtor.&][s11; Requires T to have deep "
-"copy constructor.&][s1; [*C@3 x]-|The value that is copied to the newly created element.&][s0;3 "
-"&][s4;:`:`:Segtor`:`:AddPick`(pick`_ T`&`): void")
-TOPIC_TEXT(
-" [* AddPick](pick`_ T`& [*@3 x])&][s6; Adds a new element to Segtor and picks value "
-"of parameter x. &][s11; Requires T to have pick constructor.&][s1; [*C@3 x]-|Source "
-"instance of T that is to be picked.&][s0;3 &][s4;:`:`:Segtor`:`:operator`[`]`(int`): "
-"T`& [* operator]`[`](int [*@3 i])&][s6; Returns a reference to the element at the "
-"specified position.&][s1; [*C@3 i]-|Position of the element.&][s1")
-TOPIC_TEXT(
-"; [*/ Return value]-|Reference to the element.&][s0;3 &][s4;:`:`:Segtor`:`:operator`[`]`(int`)const: "
-"const T`& [* operator]`[`](int [*@3 i]) const&][s6; Returns a reference to the element "
-"at the specified position.&][s1; [*C@3 i]-|Position of the element.&][s1; [*/ Return "
-"value]-|Constant reference to the element.&][s0;3 &][s4;:`:`:Segtor`:`:GetCount`(`)const: "
-"int [* GetCount]() const&][s6; Return")
-TOPIC_TEXT(
-" the number of elements in Segtor.&][s1; [*/ Return value]-|Actual number of elements.&][s0;3 "
-"&][s4;:`:`:Segtor`:`:IsEmpty`(`)const: bool [* IsEmpty]() const&][s6; Tests whether "
-"Segtor is empty. Same as GetCount() `=`= 0.&][s1; [*/ Return value]-|true if Segtor "
-"is empty, false otherwise.&][s0;3 &][s4;:`:`:Segtor`:`:SetCount`(int`): void [* SetCount](int "
-"[*@3 n])&][s6; Changes count of elements in ")
-TOPIC_TEXT(
-"Segtor to specified value. If required number of elements is greater than actual "
-"number, newly added elements are default constructed.&][s11; Requires T to have default "
-"constructor.&][s1; [*C@3 n]-|Required number of elements.&][s0;3 &][s4;:`:`:Segtor`:`:SetCount`(int`,const "
-"T`&`): void [* SetCount](int [*@3 n], const T`& [*@3 init])&][s6; Changes count of "
-"elements in Segtor to specified value. If")
-TOPIC_TEXT(
-" required number of elements is greater than actual number, newly added elements "
-"are initialized to the specified value using copy constructor.&][s11; Requires T "
-"to have deep copy constructor.&][s1; [*C@3 n]-|Required number of elements.&][s1; "
-"[*C@3 init]-|Initialization value of newly added elements.&][s0;3 &][s4;:`:`:Segtor`:`:Clear`(`): "
-"void [* Clear]()&][s6; Removes all elements from Segtor. C")
-TOPIC_TEXT(
-"apacity is also cleared to zero.&][s0;3 &][s4;:`:`:Segtor`:`:At`(int`): T`& [* At](int "
-"[*@3 i])&][s6; If specified position is lower than number of elements in Segtor ([* "
-"i < GetCount()]), returns reference to element at specified position. Otherwise increases "
-"number of elements in Segtor to [* i `+ 1]. Newly added elements are default constructed. "
-"&][s11; Requires T to have default constructor.&]")
-TOPIC_TEXT(
-"[s1; [*C@3 i]-|Position of required element.&][s1; [*/ Return value]-|Reference "
-"to required element.&][s0;3 &][s4;:`:`:Segtor`:`:At`(int`,const T`&`): T`& [* At](int "
-"[*@3 i], const T`& [*@3 x])&][s6; If the specified position is lower than number "
-"of elements in Segtor ([* i < GetCount()]), returns reference to element at specified "
-"position. Otherwise increases number of elements in Segtor to [* i ")
-TOPIC_TEXT(
-"`+ 1]. Newly added elements are deep`-copy constructed from [* x].&][s11; Requires "
-"T to have deep copy constructor.&][s1; [*C@3 i]-|Position of the required element.&][s1; "
-"[*C@3 x]-|Initialization value of the newly added elements.&][s1; [*/ Return value]-|Reference "
-"to the required element.&][s0;3 &][s4;:`:`:Segtor`:`:Shrink`(`): void [* Shrink]()&][s6; "
-"Minimizes memory consumption of Segtor.&][s1")
-TOPIC_TEXT(
-"; [*/ Return value]-|&][s0;3 &][s4;:`:`:Segtor`:`:Reserve`(int`): void [* Reserve](int "
-"[*@3 xtra])&][s6; Reserves capacity. If the required capacity is greater than the "
-"current capacity, capacity is increased to the required value.&][s1; [*C@3 xtra]-|Required "
-"capacity.&][s0;3 &][s4;:`:`:Segtor`:`:GetAlloc`(`)const: int [* GetAlloc]() const&][s6; "
-"Returns current capacity of Segtor.&][s1; [*/ Return")
-TOPIC_TEXT(
-" value]-|Capacity of Segtor.&][s0;3 &][s4;:`:`:Segtor`:`:Set`(int`,const T`&`,int`): "
-"void [* Set](int [*@3 i], const T`& [*@3 x], int [*@3 count] `= 1)&][s6; Sets requested "
-"number of elements starting at the position [* i] to the specified value. If required "
-"number of elements exceeds existing elements of Segtor then elements are added to "
-"Segtor.&][s11; Requires T to have deep copy constructor.&][")
-TOPIC_TEXT(
-"s1; [*C@3 i]-|Starting position.&][s1; [*C@3 x]-|Value.&][s1; [*C@3 count]-|Number "
-"of elements.&][s0;3 &][s4;:`:`:Segtor`:`:Drop`(int`): void [* Drop](int [*@3 n] `= "
-"1)&][s6; Drops specified number of last elements in the Segtor.&][s1; [*C@3 n]-|Number "
-"of elements.&][s0;3 &][s4;:`:`:Segtor`:`:Top`(`): [* T]`& [* Top]()&][s6; Returns "
-"reference to the last element in the Segtor.&][s1; [*/ Return val")
-TOPIC_TEXT(
-"ue]-|Reference of last element in the Segtor.&][s0;3 &][s4;:`:`:Segtor`:`:Top`(`)const: "
-"const [* T]`& [* Top]() const&][s6; Returns a constant reference to the last element "
-"in the Segtor.&][s1; [*/ Return value]-|Reference of last element in the Segtor.&][s0;3 "
-"&][s4;:`:`:Segtor`:`:Pop`(`): T [* Pop]()&][s6; Drops the last element of the Segtor "
-"and returns its value.&][s11; Requires T to have deep ")
-TOPIC_TEXT(
-"copy constructor.&][s1; [*/ Return value]-|Value of the dropped element.&][s0;3 "
-"&][s4;:`:`:Segtor`:`:operator`<`<`(const T`&`): Segtor`& [* operator]<<(const T`& "
-"[*@3 x])&][s6; Operator variant of [* void Add(const T`&x)]. Returning a reference "
-"to the Segtor enables adding more elements in a single expression, thus e.g. allowing "
-"to construct a temporary Segtor as part of an expression like Foo((Se")
-TOPIC_TEXT(
-"gtor<int>() << 1 << 2 << 4)).&][s11; Requires T to have deep copy constructor.&][s1; "
-"[*C@3 x]-|The value that is copied to the newly created element.&][s1; [*/ Return "
-"value]-|Reference to Segtor (`*this).&][s0;3 &][s4;:`:`:Segtor`:`:operator`|`(pick`_ "
-"T`&`): Segtor`& [* operator]`|(pick`_ T`& [*@3 x])&][s6; Operator replacement of "
-"[* void AddPick(pick`_ T`&x)]. By returning reference to to Segtor ")
-TOPIC_TEXT(
-"allows adding more elements in single expression, thus e.g. allowing to construct "
-"temporary Segtor as part of expression.&][s11; Requires T to have pick constructor.&][s1; "
-"[*C@3 x]-|Source instance of T that is to be picked.&][s1; [*/ Return value]-|Reference "
-"to Segtor (`*this).&][s0;3 &][s4;:`:`:Segtor`:`:Serialize`(`:`:Stream`&`): void [* "
-"Serialize](Stream`& [*@3 s])&][s6; Serializes the content")
-TOPIC_TEXT(
-" of the Segtor to/from the Stream. Works only if NTL is used as part of UPP.&][s11; "
-"Requires T to have serialization operator defined.&][s1; [*C@3 s]-|Target/source "
-"stream.&][s0;3 &][s4;:`:`:Segtor`:`:IsPicked`(`)const:~~~.992; bool [* IsPicked]() "
-"const&][s6; Returns [* true] if Segtor is in picked state.&][s1; [*/ Return value]-|[* "
-"true] if Segtor is in picked state, [* false] otherwise.&][s0;3 &")
-TOPIC_TEXT(
-"][s4;:`:`:Segtor`:`:Segtor`(`): [* Segtor]()&][s6; Default constructor. Constructs "
-"an empty Segtor.&][s0;3 &][s4;:`:`:Segtor`:`:Segtor`(pick`_`:`:Segtor`&`): [* Segtor](pick`_ "
-"[* Segtor]`& [*@3 s])&][s6; Pick constructor. Transfers source Segtor in low constant "
-"time, but destroys it by picking.&][s1; [*C@3 v]-|Source Segtor.&][s0;3 &][s4;:`:`:Segtor`:`:Segtor`(const`:`:Segtor`&`,int`): "
-"[* Segtor](")
-TOPIC_TEXT(
-"const [* Segtor]`& [*@3 s], int)&][s6; Optional deep copy constructor.&][s11; Requires "
-"T to have deep copy constructor or optional deep copy constructor.&][s1; [*C@3 v]-|Source "
-"array.&][s0;3 &][s4;:`:`:Segtor`:`:`~Segtor`(`): `~[* Segtor]()&][s6; Destructor. "
-"Invokes the destructor of all elements in the Segtor.&][s0;3 &][s4;:`:`:Segtor`:`:ValueType`:`:typedef:* "
-"[* typedef T ]ValueType&][s6; Typede")
-TOPIC_TEXT(
-"f of T for use in templated algorithms.&][s0;3 &][s4;:`:`:Segtor`:`:Iterator`:`:typedef: "
-"typedef [/ type] [* Iterator];&][s6; Iterator type.&][s0;3 &][s4;:`:`:Segtor`:`:ConstIterator`:`:typedef: "
-"typedef [/ type] [* ConstIterator];&][s6; Constant iterator type.&][s0;3 &][s4;:`:`:Segtor`:`:Begin`(`)const: "
-"ConstIterator [* Begin]() const&][s6; Returns a constant iterator to the first element "
-"in Segto")
-TOPIC_TEXT(
-"r.&][s1; [*/ Return value]-|Iterator.&][s0;3 &][s4;:`:`:Segtor`:`:End`(`)const: "
-"ConstIterator [* End]() const&][s6; Returns a constant iterator to the position just "
-"beyond the last element in Segtor.&][s1; [*/ Return value]-|Iterator.&][s0;3 &][s4;:`:`:Segtor`:`:GetIter`(int`)const: "
-"ConstIterator [* GetIter](int [*@3 i]) const&][s6; Returns a constant iterator to "
-"the element at the specified posit")
-TOPIC_TEXT(
-"ion. Same as [* Begin() `+ pos]. The benefit of this method is that in debug mode "
-"[* pos] is range checked.&][s1; [*C@3 i]-|Required position.&][s1; [*/ Return value]-|Iterator.&][s0;3 "
-"&][s4;:`:`:Segtor`:`:Begin`(`): Iterator [* Begin]()&][s6; Returns a non`-constant "
-"iterator to the first element in Segtor.&][s1; [*/ Return value]-|Iterator.&][s0;3 "
-"&][s4;:`:`:Segtor`:`:End`(`): Iterator [* End]()&")
-TOPIC_TEXT(
-"][s6; Returns a non`-constant iterator to the position just beyond the last element "
-"in Segtor.&][s1; [*/ Return value]-|Iterator.&][s0;3 &][s4;:`:`:Segtor`:`:GetIter`(int`): "
-"Iterator [* GetIter](int [*@3 i])&][s6; Returns a non`-constant iterator to the element "
-"at specified position. Same as [* Begin() `+ pos]. The benefit of this methods is "
-"that in debug mode [* pos] is range checked.&][s1; [*C@3")
-TOPIC_TEXT(
-" i]-|Required position.&][s1; [*/ Return value]-|Iterator.&][s0;3 &][s4;:`:`:Segtor`:`:Swap`(`:`:Segtor`&`,`:`:Segtor`&`): "
-"friend void [* Swap](Segtor`& [*@3 a], Segtor`& [*@3 b])&][s6; Specialization of "
-"generic [* Swap] for Segtor. Swaps array in simple constant time operation.&][s1; "
-"[*C@3 a]-|First Segtor to swap.&][s1; [*C@3 b]-|Second Segtor to swap.]")
+COMPRESSED
+120,156,221,91,233,110,27,57,18,126,21,2,201,4,82,34,
+203,125,233,176,164,4,73,148,204,192,200,137,196,153,253,97,
+200,86,171,155,146,56,110,117,107,201,150,143,217,108,158,125,
+171,200,190,15,73,62,54,27,236,2,235,140,155,100,177,206,
+175,170,72,250,212,32,143,31,107,45,237,145,182,227,127,131,
+55,116,110,111,188,112,114,202,44,171,63,180,141,206,240,226,
+221,167,163,225,211,151,141,174,213,4,34,58,16,49,123,186,
+217,239,152,186,101,116,225,135,110,234,70,199,48,45,189,111,
+28,89,125,211,236,107,3,199,179,133,152,156,122,70,191,63,
+196,157,13,88,100,244,58,134,222,179,250,86,95,55,123,125,
+3,214,26,154,102,104,61,163,163,91,102,223,232,12,92,42,
+156,201,169,221,55,135,79,191,116,97,145,137,59,1,113,77,
+239,26,86,207,50,52,83,51,44,216,74,239,247,45,189,215,
+233,155,71,221,238,192,177,215,33,11,252,104,47,166,235,134,
+62,156,233,189,33,176,252,227,199,143,182,110,105,138,3,11,
+136,233,154,5,172,234,240,77,179,140,158,222,57,210,142,58,
+125,189,175,153,64,188,211,211,58,131,181,205,237,85,181,228,
+72,163,179,83,244,158,54,96,33,5,18,79,159,233,122,15,
+150,116,91,221,71,186,213,3,65,251,166,213,233,247,52,216,
+220,48,12,211,52,116,211,56,58,50,58,221,78,111,176,164,
+182,75,121,36,130,13,204,63,213,97,105,175,213,123,4,11,
+53,171,99,26,214,17,42,203,132,157,12,163,219,57,210,59,
+150,214,233,2,165,1,167,255,220,48,78,87,212,7,139,253,
+235,252,223,191,189,253,120,240,237,43,57,21,38,138,223,181,
+134,228,43,93,132,1,127,50,57,21,90,252,9,56,92,123,
+118,72,201,72,218,137,156,62,125,105,145,147,73,139,48,63,
+84,191,124,124,253,254,221,132,76,159,19,189,251,66,45,53,
+9,254,219,25,190,35,167,191,105,218,129,166,37,84,206,71,
+147,232,211,203,134,214,214,218,70,167,211,36,145,3,68,83,
+207,147,25,184,79,252,181,69,42,22,50,20,164,98,153,228,
+40,25,152,62,79,199,76,96,50,25,121,113,126,126,11,110,
+180,72,59,233,208,160,106,249,122,51,243,152,83,94,127,54,
+29,76,7,31,130,75,106,207,60,250,202,119,223,80,186,30,
+7,235,155,79,210,37,207,72,237,80,66,106,180,133,151,209,
+14,165,157,161,74,206,242,138,121,113,254,226,124,162,12,6,
+134,28,203,149,7,223,79,110,214,148,4,115,66,61,233,40,
+130,8,216,135,186,160,235,104,207,54,57,33,100,181,17,33,
+89,218,151,148,80,22,46,41,7,2,135,196,5,190,137,3,
+140,195,15,95,132,124,227,32,139,45,57,182,102,206,69,238,
+51,9,226,69,18,66,114,99,237,28,87,146,233,131,239,95,
+217,223,146,49,65,23,146,177,118,226,166,109,75,239,198,190,
+75,24,112,188,166,14,179,61,50,247,236,75,248,2,107,184,
+237,187,193,138,216,142,67,193,133,97,171,208,102,62,112,29,
+46,109,216,217,246,201,140,18,17,172,104,200,86,84,144,141,
+0,121,195,128,176,213,154,131,85,200,138,174,2,174,132,218,
+172,164,77,218,228,56,36,62,189,4,18,204,191,180,61,230,
+130,111,11,2,225,204,109,96,66,16,31,246,229,116,78,57,
+245,97,75,36,22,235,179,69,102,155,16,102,18,219,19,1,
+241,108,231,66,144,96,141,235,128,174,156,201,124,65,57,140,
+251,46,144,88,33,3,137,45,108,252,124,67,214,129,96,138,
+141,84,104,0,68,182,240,21,227,32,141,148,1,108,6,19,
+55,17,233,43,176,19,136,25,169,145,218,206,50,38,44,149,
+182,178,61,47,97,14,62,68,134,245,3,127,122,176,138,156,
+147,212,138,165,60,2,54,46,106,197,45,218,9,28,140,57,
+96,29,208,174,90,43,217,83,110,38,82,122,200,123,100,105,
+100,119,206,174,65,32,100,30,252,111,9,236,165,31,148,244,
+160,250,21,67,249,103,55,41,102,73,140,198,33,233,68,69,
+78,142,19,115,129,32,145,38,5,112,35,230,55,96,29,143,
+140,167,207,166,207,128,49,176,132,205,93,226,177,25,183,193,
+15,50,48,10,108,160,70,114,222,21,59,1,89,123,27,160,
+188,164,146,88,112,69,0,86,192,66,82,223,13,52,110,49,
+82,154,210,228,224,71,33,243,23,146,176,70,26,210,67,65,
+192,143,223,222,191,7,112,9,0,242,40,143,227,227,61,187,
+160,210,33,2,105,170,143,39,239,83,223,110,101,124,3,226,
+236,44,12,64,237,128,65,135,211,195,49,104,122,122,40,184,
+227,6,206,244,48,6,158,233,99,10,150,222,136,51,18,91,
+123,130,241,73,38,33,34,194,21,120,195,118,58,24,225,211,
+243,148,138,140,120,148,40,144,33,3,22,79,240,97,66,66,
+208,153,0,63,2,27,175,108,63,100,142,104,147,49,168,9,
+37,7,131,45,3,87,90,29,105,128,73,83,73,188,96,193,
+28,66,57,135,95,37,75,244,218,161,146,62,76,87,90,25,
+63,235,117,200,101,192,92,96,55,138,172,128,79,159,79,26,
+138,65,242,138,115,251,102,250,4,115,151,73,46,39,77,181,
+234,16,87,157,30,142,213,74,148,124,156,44,30,141,96,57,
+142,53,164,181,18,10,114,150,36,130,131,77,248,9,218,106,
+0,160,73,63,220,8,20,38,143,229,39,145,99,54,43,88,
+29,123,212,230,147,70,118,104,22,4,30,14,29,139,207,82,
+17,48,170,28,70,205,153,89,198,208,134,255,147,79,37,13,
+163,174,146,0,67,80,88,242,96,179,88,214,176,67,86,182,
+195,131,216,171,62,208,213,140,114,81,151,202,79,166,79,178,
+137,232,149,235,38,25,165,209,148,249,4,56,130,175,128,86,
+0,6,87,101,128,7,118,98,220,73,226,78,238,221,27,146,
+47,42,182,4,228,24,24,147,9,166,34,65,200,217,214,80,
+230,143,47,52,220,112,159,0,220,108,40,100,137,47,49,58,
+225,122,136,10,100,193,131,8,116,93,216,118,11,43,237,26,
+113,51,153,29,13,85,89,23,228,84,80,85,81,224,118,233,
+202,156,2,77,114,157,140,84,105,47,214,148,116,118,148,71,
+38,183,57,3,206,165,200,123,170,176,34,49,167,74,28,75,
+46,32,245,3,249,136,104,132,58,176,134,169,148,146,170,210,
+225,212,126,56,197,161,99,167,202,83,33,122,55,13,165,24,
+142,160,131,148,68,36,13,2,73,146,8,174,219,164,94,81,
+197,42,165,172,163,175,193,134,131,115,65,142,134,180,224,72,
+218,39,137,186,84,234,85,160,85,167,151,98,252,36,8,117,
+58,157,108,245,162,234,98,215,36,172,172,29,21,19,168,32,
+94,12,135,88,91,192,112,222,155,146,154,34,39,50,3,145,
+63,71,35,40,107,134,196,109,130,176,198,87,50,210,197,50,
+228,98,69,181,145,231,123,104,76,205,76,212,150,85,86,68,
+164,74,99,106,168,153,140,69,187,255,34,90,28,7,210,201,
+194,218,237,247,80,231,22,61,104,228,15,26,142,131,77,113,
+70,99,187,62,20,18,108,48,69,228,218,132,180,63,168,151,
+232,149,3,197,168,87,177,122,15,73,48,23,214,139,114,44,
+222,66,101,126,179,167,36,39,80,99,201,122,88,150,77,105,
+117,65,145,6,20,213,0,21,80,173,37,250,129,172,59,125,
+14,253,173,182,69,52,0,12,64,133,121,145,88,139,204,161,
+206,167,170,64,187,98,130,222,7,46,191,22,236,117,43,152,
+240,203,48,49,94,218,254,130,34,202,3,209,106,99,162,199,
+21,50,14,244,62,243,184,6,118,43,61,65,144,133,204,17,
+178,191,242,161,46,206,88,189,149,75,200,105,99,195,43,18,
+125,4,162,119,40,11,198,82,96,4,162,90,54,127,1,67,
+84,158,105,20,138,133,202,190,62,159,30,153,207,194,95,222,
+184,200,36,244,228,208,174,37,229,68,177,146,81,5,115,101,
+153,114,231,178,102,31,39,72,97,26,21,121,240,253,56,102,
+85,53,166,73,13,81,37,219,125,188,72,21,252,229,218,249,
+139,108,250,133,108,65,19,29,206,57,116,152,241,1,204,216,
+94,219,14,11,101,149,47,143,17,28,36,165,52,251,55,77,
+42,249,221,181,251,221,60,184,162,226,0,175,41,39,65,213,
+176,93,197,174,178,45,105,144,6,180,57,140,140,50,152,59,
+105,182,192,19,85,10,206,101,192,76,242,173,72,188,228,83,
+12,181,64,29,107,85,1,170,220,186,53,144,148,155,67,175,
+175,79,218,228,227,109,240,105,75,45,185,19,160,138,85,65,
+18,118,183,44,176,42,215,253,12,235,239,131,95,187,75,249,
+227,121,77,13,245,127,231,62,116,61,61,200,195,21,204,145,
+129,13,4,174,39,247,67,186,170,26,179,222,163,226,118,166,
+14,235,138,157,115,25,48,119,23,253,251,250,229,94,25,119,
+201,153,127,81,1,150,31,0,180,87,144,85,68,197,41,45,
+10,178,179,38,189,7,83,95,168,160,252,146,222,41,138,174,
+67,110,87,53,110,146,34,100,237,8,225,219,113,120,36,202,
+116,50,216,159,203,196,56,203,217,112,142,190,29,79,106,229,
+166,199,14,237,150,44,164,114,127,222,59,144,193,76,242,76,
+56,186,127,211,241,202,243,2,39,63,99,71,211,33,74,146,
+237,101,219,113,245,228,187,87,125,63,1,48,247,40,248,174,
+183,19,172,227,195,201,149,172,197,107,177,178,51,130,188,66,
+186,8,116,75,213,197,32,180,167,92,30,86,71,125,112,130,
+220,8,136,147,154,58,111,103,137,137,71,186,212,197,127,153,
+58,10,79,70,18,51,34,93,63,15,175,10,167,30,232,52,
+12,193,244,107,44,92,117,79,143,232,249,103,57,108,148,146,
+15,190,127,124,208,134,227,13,15,214,247,108,54,118,219,27,
+55,17,25,107,165,166,241,108,17,230,82,31,154,181,24,125,
+113,185,189,191,228,197,130,228,36,43,100,233,48,171,116,10,
+146,229,170,142,169,45,89,170,32,87,5,133,123,159,84,101,
+4,218,19,230,108,245,185,242,212,231,103,202,155,154,40,43,
+207,231,74,3,41,191,41,113,24,85,17,153,51,217,184,28,
+99,161,200,100,156,59,5,105,73,206,63,179,149,139,11,28,
+173,119,23,30,242,74,94,241,119,86,188,80,175,62,114,28,
+141,182,70,225,173,107,223,79,17,93,16,131,51,91,41,13,
+176,83,94,9,189,114,221,232,190,9,232,92,55,161,180,84,
+34,75,188,45,123,71,164,103,234,227,205,157,64,56,148,119,
+105,1,167,185,200,181,9,118,217,30,124,188,94,131,198,5,
+224,90,11,214,111,0,110,219,139,182,186,169,196,133,64,53,
+81,60,44,194,27,213,64,222,126,198,246,20,120,166,46,25,
+134,218,35,37,70,60,188,147,252,61,8,26,13,53,115,4,
+208,244,162,209,36,163,17,209,241,135,129,63,172,102,243,127,
+121,93,177,71,1,27,247,21,211,167,225,146,137,230,195,185,
+208,244,251,29,174,59,18,63,225,116,237,217,78,18,96,25,
+95,193,139,148,248,138,51,118,152,215,55,81,204,161,69,243,
+30,147,94,150,160,197,235,253,229,14,222,178,205,87,82,58,
+91,236,255,208,183,48,15,103,238,253,202,68,174,14,186,202,
+80,161,188,37,4,143,92,129,183,200,127,107,74,60,81,246,
+129,132,174,194,90,188,232,47,195,108,24,28,202,134,82,126,
+146,27,180,201,63,2,142,111,76,124,8,6,54,151,143,4,
+88,244,198,37,99,152,111,159,63,111,177,136,136,246,86,93,
+98,236,202,36,186,234,206,219,71,96,104,218,124,65,195,67,
+161,204,36,20,35,247,63,227,143,110,193,111,151,82,33,70,
+240,112,126,146,63,157,7,215,142,30,23,128,11,133,116,139,
+159,236,181,30,31,57,169,163,254,73,205,89,191,54,28,164,
+88,145,249,175,198,180,57,192,197,17,120,168,251,127,204,170,
+21,199,71,100,28,255,34,36,234,226,13,67,85,2,175,221,
+43,122,163,145,126,121,82,216,61,2,144,244,75,252,80,66,
+76,98,198,62,23,163,147,156,68,143,57,160,120,84,6,143,
+213,228,227,249,77,90,209,224,235,42,245,194,200,133,150,130,
+7,55,88,10,224,123,29,220,21,96,36,239,71,151,105,156,
+223,70,68,185,91,78,194,22,100,160,130,152,42,175,86,73,
+41,223,53,54,19,216,45,189,171,184,199,201,52,62,158,42,
+191,133,169,7,186,140,2,108,124,113,178,93,254,233,143,172,
+67,77,127,84,186,84,106,179,99,255,50,184,136,160,196,165,
+41,139,243,252,177,243,246,162,88,35,185,80,196,135,66,0,
+9,231,105,205,72,100,89,134,79,10,147,171,55,53,71,33,
+54,190,113,218,200,147,182,228,201,22,128,146,183,8,56,11,
+151,171,242,173,96,205,126,57,120,61,142,95,117,157,169,73,
+201,239,121,216,24,77,42,50,184,26,202,167,113,245,237,69,
+42,82,66,47,62,191,140,223,123,33,59,119,98,89,70,117,
+145,239,252,199,135,98,94,81,45,72,144,92,52,179,173,162,
+148,240,250,44,239,129,57,218,57,41,42,133,200,66,251,107,
+186,96,254,45,113,61,211,42,165,124,171,202,111,206,120,190,
+209,217,217,38,197,44,254,76,161,223,250,183,77,101,91,68,
+78,142,94,254,82,239,48,111,2,124,75,88,209,53,254,146,
+170,248,131,202,73,5,117,36,202,216,250,154,3,36,207,15,
+222,67,139,187,223,117,36,143,3,0,95,165,215,226,227,128,
+103,146,9,124,152,74,65,245,62,84,69,81,93,198,68,244,
+154,81,214,165,178,62,245,1,110,103,27,172,180,93,138,68,
+112,37,142,114,188,174,37,206,146,230,203,214,248,52,42,57,
+135,45,159,70,237,109,193,26,187,37,38,35,69,67,213,199,
+104,197,249,140,173,158,10,255,132,160,188,159,28,153,176,187,
+131,20,255,253,56,187,159,116,133,72,186,213,97,97,38,146,
+170,222,146,109,87,204,142,107,181,187,133,141,248,165,226,134,
+204,57,163,190,91,245,87,31,245,221,224,149,93,113,114,187,
+239,177,129,73,210,75,162,204,31,115,236,189,122,86,209,70,
+170,63,142,72,122,185,57,89,128,234,57,115,100,57,140,220,
+202,178,44,126,106,128,95,132,170,63,213,113,0,62,42,206,
+151,244,233,159,47,228,213,143,215,71,191,203,160,207,60,55,
+1,114,249,89,51,172,114,169,131,97,84,152,54,249,15,121,
+84,29,23,

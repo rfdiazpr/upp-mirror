@@ -1,31 +1,31 @@
+
+* Syntax highlight '¸'
+
+* ArrayCtrl::SetDisplay vs Ctrls!
+
+* Speed problem in Linux!
+
+* Sql dialekty predelat!
+
+* Exclude unused TheIDE topics...
+
+* Fix Sql package english!!!!
+
+* Fix MySql connect
+
+* Image without GUI
+
+* Paint bug - only black masks in assist images
+
+* Alt+J on HelpWindow opens code-browser. Why?
+
+* EO -> pri vyvolani "vyzva" blbe button...
+
+* Sql - fields (and remove Fields)
+
 * ArrayCtrl::ColumnWidths -> FontZoom
 
->   /* Compositing non-premultiplied F onto non-premultiplied B:
->      D_a = B_a + F_a - B_a*F_a
->      D_r = (1 - (F_a / D_a))*B_r + (F_a / D_a)*F_r
->      D_g = (1 - (F_a / D_a))*B_g + (F_a / D_a)*F_g
->      D_b = (1 - (F_a / D_a))*B_b + (F_a / D_a)*F_b
->    */
-
-
-B - Fa / Da * B + Fa / Da * F
-
-
-
-Da = Fa + Ba - Fa * Ba;
-
-B + Fa / Da * (F - B)
-
-
-Da = Fa + Ba - Fa * Ba / 255;
-
-Da = Fa + Ba - ((Fa + (Fa >> 7)) * Ba >> 8);
-\
-
-SColor(Link)
-
 Tiget TabCtrl
-
 
 U++ {
 1. Collapsing like Visual Studio.
@@ -121,6 +121,8 @@ Something borked with unix filename escaping?
 }
 
 * Assist++  {
+	- Alt+V (virtual methods) in TopicWindow does not show HelpWindow
+	- RichEdit ink. (line 623), Alt+J for NotNull
 	- zz.GetAdd Prest/Doc.cpp 41 (nejde vnoreny...)
 	- http://www.arilect.com/upp/forum/index.php?t=msg&goto=3499&#msg_3499
 	- http://www.arilect.com/upp/forum/index.php?t=msg&th=1052&start=0&

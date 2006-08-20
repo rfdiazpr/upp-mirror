@@ -170,8 +170,11 @@ void Ctrl::ProcessEvent(XEvent *event)
 #endif
 	if(q < 0) return;
 	XWindow& w = Xwindow()[q];
-	if(w.ctrl)
+	if(w.ctrl) {
 		w.ctrl->EventProc(w, event);
+		if(w.ctrl)
+			w.ctrl->SyncMoves();
+	}
 	else
 		Xwindow().SetKey(q, None);
 	DefferedFocusSync();

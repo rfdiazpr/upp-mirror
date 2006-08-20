@@ -459,3 +459,9 @@ LAYOUT(ThisbacksLayout, 712, 496)
 	ITEM(Button, ok, SetLabel(t_("OK")).RightPosZ(80, 64).BottomPosZ(8, 24))
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).RightPosZ(12, 64).BottomPosZ(8, 24))
 END_LAYOUT
+
+LAYOUT(SimpleListLayout, 408, 212)
+	ITEM(ArrayCtrl, list, LeftPosZ(8, 392).TopPosZ(8, 164))
+	ITEM(Button, ok, SetLabel(t_("OK")).LeftPosZ(268, 64).TopPosZ(180, 24))
+	ITEM(Button, cancel, SetLabel(t_("Cancel")).LeftPosZ(336, 64).TopPosZ(180, 24))
+END_LAYOUT

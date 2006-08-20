@@ -28,7 +28,7 @@ static void sLay1(int& pos, int& r, int align, int a, int b, int sz)
 	r = pos + max(size, 0);
 }
 
-Rect CalcRect(Ctrl::LogPos pos, Size sz)
+Rect LayDes::CtrlRect(Ctrl::LogPos pos, Size sz)
 {
 	Rect r;
 	sLay1(r.left, r.right, pos.x.GetAlign(), pos.x.GetA(), pos.x.GetB(), sz.cx);
@@ -36,9 +36,19 @@ Rect CalcRect(Ctrl::LogPos pos, Size sz)
 	return r;
 }
 
+Rect LayDes::CtrlRectZ(Ctrl::LogPos pos, Size sz)
+{
+	Rect r = CtrlRect(pos, sz);
+	r.left = HorzLayoutZoom(r.left);
+	r.right = HorzLayoutZoom(r.right);
+	r.top = VertLayoutZoom(r.top);
+	r.bottom = VertLayoutZoom(r.bottom);
+	return r;
+}
+
 void LayDes::AddHandle(Draw& w, int x, int y)
 {
-	w.DrawRect(x, y, 6, 6, SColorLtHighlight);
+	w.DrawRect(x, y, 6, 6, SColorMark);
 	handle.Add(Point(x, y));
 }
 
@@ -49,6 +59,17 @@ Point LayDes::Normalize(Point p)
 	return p;
 }
 
+Point LayDes::ZPoint(Point p)
+{
+	Size csz, dsz;
+	GetZoomRatio(csz, dsz);
+	if(csz.cx && csz.cy && dsz.cx && dsz.cy) {
+		p.x = p.x * dsz.cx / csz.cx;
+		p.y = p.y * dsz.cy / csz.cy;
+	}
+	return p;
+}
+
 void LayDes::SetSb()
 {
 	Size sz = Size(0, 0);
@@ -56,7 +77,7 @@ void LayDes::SetSb()
 		LayoutData& l = CurrentLayout();
 		sz = l.size;
 		for(int i = 0; i < l.item.GetCount(); i++)
-			sz = max(sz, (Size)::CalcRect(l.item[i].pos, l.size).BottomRight());
+			sz = max(sz, (Size)CtrlRect(l.item[i].pos, l.size).BottomRight());
 	}
 	sb.SetTotal(sz + Size(MARGIN, MARGIN));
 	sb.SetPage(sb.GetReducedViewSize());
@@ -79,7 +100,7 @@ void LayDes::GetSprings(Rect& l, Rect& t, Rect& r, Rect& b)
 		l = t = r = b = Null;
 		return;
 	}
-	Rect ir = ::CalcRect(CurrentItem().pos, CurrentLayout().size);
+	Rect ir = CtrlRectZ(CurrentItem().pos, CurrentLayout().size);
 	int h4 = ir.Height() / 4;
 	int w4 = ir.Width() / 4;
 	l = RectC(-MARGIN, ir.top + h4 - 5, ir.left + MARGIN, 10);
@@ -143,10 +164,10 @@ void LayDes::PaintLayoutItems(Draw& w, int layid, Size size, Index<int>& passed,
 		LayoutItem& m = l.item[i];
 		if(m.hide)
 			continue;
-		Rect r = ::CalcRect(m.pos, size);
+		Rect r = CtrlRectZ(m.pos, size);
 		String dummy;
 		int lr = ParseLayoutRef(m.type, dummy);
-		DrawFrame(w, r, SColorLtFace);
+		DrawFrame(w, r, WhiteGray);
 		w.Clipoff(r);
 		if(lr < 0)
 			m.Paint(w, r.Size());
@@ -172,7 +193,8 @@ void LayDes::Paint(Draw& w)
 	w.Offset(-sb.Get());
 	LayoutData& l = CurrentLayout();
 	w.Offset(MARGIN, MARGIN);
-	w.DrawRect(0, 0, l.size.cx, l.size.cy, SColorFace);
+	Size lsz = LayoutZoom(l.size);
+	w.DrawRect(0, 0, lsz.cx, lsz.cy, SLtGray);
 	if(setting.paintgrid) {
 		int gx = minmax((int)~setting.gridx, 1, 32);
 		int gy = minmax((int)~setting.gridy, 1, 32);
@@ -180,11 +202,11 @@ void LayDes::Paint(Draw& w)
 			for(int y = 0; y < l.size.cy; y += gy)
 				w.DrawRect(x, y, 1, 1, SColorPaper);
 	}
-	DrawFrame(w, -1, -1, l.size.cx + 2, l.size.cy + 2, SColorText);
+	DrawFrame(w, -1, -1, lsz.cx + 2, lsz.cy + 2, SColorText);
 	handle.Clear();
-	AddHandle(w, l.size.cx, l.size.cy / 2 - 3);
-	AddHandle(w, l.size.cx / 2 - 3, l.size.cy);
-	AddHandle(w, l.size.cx, l.size.cy);
+	AddHandle(w, lsz.cx, lsz.cy / 2 - 3);
+	AddHandle(w, lsz.cx / 2 - 3, lsz.cy);
+	AddHandle(w, lsz.cx, lsz.cy);
 	int i;
 	Index<int> passed;
 	Vector<bool> cursorflags;
@@ -197,7 +219,7 @@ void LayDes::Paint(Draw& w)
 	if(!HasCapture() || draghandle == 14) {
 		for(i = 0; i < cursor.GetCount(); i++) {
 			LayoutItem& m = l.item[cursor[i]];
-			Rect r = ::CalcRect(m.pos, l.size);
+			Rect r = CtrlRectZ(m.pos, l.size);
 			DrawFatFrame(w, r, i == cursor.GetCount() - 1 ? Cyan : Brown, -3);
 			if(i == cursor.GetCount() - 1) {
 				int lrm = r.left + r.Width() / 2 - 3;
@@ -243,7 +265,7 @@ void  LayDes::SetStatus(bool down)
 		Size sz = CurrentLayout().size;
 		s << sz;
 		if(cursor.GetCount()) {
-			Rect r = ::CalcRect(CurrentItem().pos, sz);
+			Rect r = CtrlRect(CurrentItem().pos, sz);
 			s << ": " << r << " - {" << sz.cx - r.right << ", " << sz.cy - r.bottom << '}';
 		}
 	}
@@ -274,7 +296,7 @@ int   LayDes::FindItem(Point p)
 		LayoutItem& m = l.item[i];
 		if(m.hide)
 			continue;
-		Rect r = ::CalcRect(m.pos, l.size);
+		Rect r = CtrlRect(m.pos, l.size);
 		if(r.Contains(p)) {
 			int mm = r.Width() * r.Height();
 			if(mm < min) {
@@ -500,7 +522,7 @@ void LayDes::StoreItemRects()
 	LayoutData& l = CurrentLayout();
 	itemrect.SetCount(cursor.GetCount());
 	for(int i = 0; i < cursor.GetCount(); i++)
-		itemrect[i] = ::CalcRect(l.item[cursor[i]].pos, l.size);
+		itemrect[i] = CtrlRect(l.item[cursor[i]].pos, l.size);
 }
 
 void  LayDes::LeftDown(Point p, dword keyflags)
@@ -513,12 +535,12 @@ void  LayDes::LeftDown(Point p, dword keyflags)
 	LayoutData& l = CurrentLayout();
 	draglayoutsize = l.size;
 	p = Normalize(p);
-	dragbase = p;
-	draghandle = FindHandle(dragbase);
+	draghandle = FindHandle(p);
+	dragbase = ZPoint(p);
 	if(draghandle >= 0)
 		StoreItemRects();
 	else {
-		int ii = FindItem(p);
+		int ii = FindItem(dragbase);
 		if(ii >= 0) {
 			if(GetShift() || GetCtrl() || FindIndex(cursor, ii) < 0)
 				SelectOne(ii, keyflags);
@@ -574,19 +596,21 @@ void  LayDes::MouseMove(Point p, dword keyflags)
 {
 	if(!HasCapture() || currentlayout < 0)
 		return;
-	p = Normalize(p);
+	Point pz = Normalize(p);
+	p = ZPoint(pz);
 	LayoutData& l = CurrentLayout();
 	bool smallmove = max(abs(p.x - dragbase.x), abs(p.y - dragbase.y)) < 4;
 	if(draghandle == 14) {
-		dragrect.right = p.x;
-		dragrect.bottom = p.y;
+		dragrect.right = pz.x;
+		dragrect.bottom = pz.y;
 		cursor.SetCount(basesel);
 		Rect r = dragrect.Normalized();
+		r = Rect(ZPoint(r.TopLeft()), ZPoint(r.BottomRight()));
 		int mind = INT_MAX;
 		int mini = -1;
 		for(int i = 0; i < l.item.GetCount(); i++) {
 			LayoutItem& m = l.item[i];
-			Rect ir = ::CalcRect(m.pos, l.size);
+			Rect ir = CtrlRect(m.pos, l.size);
 			if(r.Contains(ir) && FindIndex(cursor, i) < 0) {
 				Point ip = ir.CenterPoint();
 				int mm = (ip.x - dragrect.left) * (ip.x - dragrect.left)
@@ -638,6 +662,7 @@ void  LayDes::MouseMove(Point p, dword keyflags)
 	for(int i = 0; i < cursor.GetCount(); i++) {
 		LayoutItem& m = l.item[cursor[i]];
 		Rect r = itemrect[i];
+		DUMP(r);
 		Size minsize = ignoreminsize ? Size(0, 0) : m.GetMinSize();
 		if(keyflags & K_CTRL)
 			minsize = Size(0, 0);
@@ -661,7 +686,11 @@ void  LayDes::MouseMove(Point p, dword keyflags)
 				r += md;
 			r.SetSize(sz);
 		}
+		DUMP(draglayoutsize);
+		DUMP(r);
+		DUMP(CtrlRect(m.pos, draglayoutsize));
 		m.pos = MakeLogPos(m.pos, r, draglayoutsize);
+		DUMP(CtrlRect(m.pos, draglayoutsize));
 //		if(i == cursor.GetCount() - 1)
 //			sb.ScrollInto(r.Offseted(MARGIN, MARGIN));
 	}
@@ -672,7 +701,7 @@ void  LayDes::MouseMove(Point p, dword keyflags)
 void  LayDes::LeftUp(Point p, dword keyflags)
 {
 	if(draghandle == 11 && (keyflags & (K_SHIFT|K_CTRL)) == 0)
-		SelectOne(FindItem(Normalize(p)), 0);
+		SelectOne(FindItem(ZPoint(Normalize(p))), 0);
 	draghandle = -1;
 	SyncItems();
 }
@@ -979,7 +1008,7 @@ void LayDes::Duplicate()
 	cursor.Clear();
 	for(int i = 0; i < d.item.GetCount(); i++) {
 		LayoutItem& m = d.item[i];
-		d.item[i].pos = MakeLogPos(m.pos, ::CalcRect(m.pos, l.size).Offseted(20, 20), l.size);
+		d.item[i].pos = MakeLogPos(m.pos, CtrlRect(m.pos, l.size).Offseted(20, 20), l.size);
 		cursor.Add(q + i);
 	}
 	CurrentLayout().item.InsertPick(q, d.item);
@@ -994,9 +1023,9 @@ void LayDes::Matrix()
 	if(matrix.Execute() != IDOK)
 		return;
 	LayoutData& l = CurrentLayout();
-	Rect r = ::CalcRect(l.item[cursor[0]].pos, l.size);
+	Rect r = CtrlRect(l.item[cursor[0]].pos, l.size);
 	for(int i = 1; i < cursor.GetCount(); i++)
-		r.Union(::CalcRect(l.item[cursor[i]].pos, l.size));
+		r.Union(CtrlRect(l.item[cursor[i]].pos, l.size));
 	String ls = SaveSelection();
 	int q = Max(cursor) + 1;
 	for(int x = 0; x < Nvl((int)~matrix.nx, 1); x++)
@@ -1005,7 +1034,7 @@ void LayDes::Matrix()
 				LayoutData d = LoadLayoutData(ls);
 				for(int i = 0; i < d.item.GetCount(); i++) {
 					LayoutItem& m = d.item[i];
-					Rect r = ::CalcRect(m.pos, l.size);
+					Rect r = CtrlRect(m.pos, l.size);
 					r.Offset((r.Width() + Nvl((int)~matrix.dx)) * x,
 					         (r.Height() + Nvl((int)~matrix.dy)) * y);
 					d.item[i].pos = MakeLogPos(m.pos, r, l.size);
@@ -1047,10 +1076,10 @@ void LayDes::Align(int type)
 		return;
 	SaveState();
 	LayoutData& l = CurrentLayout();
-	Rect cr = ::CalcRect(l.item[cursor.Top()].pos, l.size);
+	Rect cr = CtrlRect(l.item[cursor.Top()].pos, l.size);
 	for(int i = 0; i < cursor.GetCount(); i++) {
 		LayoutItem& m = l.item[cursor[i]];
-		Rect r = ::CalcRect(m.pos, l.size);
+		Rect r = CtrlRect(m.pos, l.size);
 		switch(type) {
 		case A_LEFT:
 			r.OffsetHorz(cr.left - r.left);
@@ -1097,7 +1126,7 @@ void LayDes::Align(int type)
 				int q = cursor[i] - 1;
 				while(q >= 0) {
 					if(l.item[q].type != "Label") {
-						rr = ::CalcRect(l.item[q].pos, l.size);
+						rr = CtrlRect(l.item[q].pos, l.size);
 						break;
 					}
 					q--;
@@ -1105,7 +1134,7 @@ void LayDes::Align(int type)
 				q = cursor[i] + 1;
 				while(q < l.item.GetCount()) {
 					if(l.item[q].type != "Label") {
-						rr = ::CalcRect(l.item[q].pos, l.size);
+						rr = CtrlRect(l.item[q].pos, l.size);
 						break;
 					}
 					q++;
@@ -1131,7 +1160,7 @@ void LayDes::SetSprings(dword s)
 	int ya = (int16)HIWORD(s);
 	for(int i = 0; i < cursor.GetCount(); i++) {
 		Ctrl::LogPos& pos = l.item[cursor[i]].pos;
-		Rect r = ::CalcRect(pos, l.size);
+		Rect r = CtrlRect(pos, l.size);
 		if(xa >= 0)
 			pos.x = MakeLogc(xa, r.left, r.right, l.size.cx);
 		if(ya >= 0)
@@ -1448,13 +1477,13 @@ bool LayDes::Key(dword key, int count)
 				grid.cy = minmax<int>(~setting.gridy, 1, 32);
 			}
 			LayoutData& l = CurrentLayout();
-			Rect master = ::CalcRect(l.item[cursor.Top()].pos, l.size);
+			Rect master = CtrlRect(l.item[cursor.Top()].pos, l.size);
 			Size shift;
 			shift.cx = RoundStep(key & K_CTRL ? master.Width()  : master.left, move.x, grid.cx);
 			shift.cy = RoundStep(key & K_CTRL ? master.Height() : master.top,  move.y, grid.cy);
 			for(int i = 0; i < cursor.GetCount(); i++) {
 				LayoutItem& item = l.item[cursor[i]];
-				Rect rc = ::CalcRect(item.pos, l.size);
+				Rect rc = CtrlRect(item.pos, l.size);
 				rc.right  += shift.cx;
 				rc.bottom += shift.cy;
 				if(!(key & K_CTRL)) {

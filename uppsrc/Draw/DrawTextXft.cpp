@@ -58,7 +58,7 @@ void FontInfo::Data::GetMetrics(int page, CharMetrics *t)
 	}
 }
 
-const char *basic_fonts[] = {
+char *basic_fonts[] = {
 	"sans-serif",
 	"serif",
 	"sans-serif",
@@ -105,7 +105,25 @@ void Draw::InitPlatformFonts()
 				f.scaleable = true;
 			f.compose = sCheckComposed((char *)family);
 		}
-   	}
+	}
+	static const char *replacements[] = {
+		"Bitstream Vera Sans",
+		"Times New Roman;Bitstream Vera Serif",
+		"Bitstream Vera Sans;Arial",
+		"Courier New;Bitstream Vera Sans Mono",
+		"Times New Roman;Bitstream Vera Serif",
+		"Arial;Bitstream Vera Sans",
+		"Courier New;Bitstream Vera Sans Mono",
+	};
+	for(int i = 0; i < 7; i++) {
+		Vector<String> f = Split(replacements[i], ';');
+		for(int q = 0; q < f.GetCount(); q++)
+			if(XFTFontFace().Find(f[q]) >= 0) {
+				basic_fonts[i] = PermanentCopy(f[q]);
+				XFTFontFace()[i].compose = sCheckComposed(basic_fonts[i]);
+				break;
+			}
+	}
 	FcFontSetDestroy(fs);
 }
 
@@ -147,6 +165,9 @@ XftFont *Draw::CreateXftFont(Font font, int angle)
 	int i = font.GetFace();
 	if(i < 0 || i >= XFTFontFace().GetCount())
 		i = 0;
+	const char *face = i < 7 ? basic_fonts[i] : ~XFTFontFace().GetKey(i);
+	DUMP(i);
+	DUMP(face);
 	if(angle) {
 		XftMatrix mx;
 		SinCos(angle, sina, cosa);
@@ -155,18 +176,18 @@ XftFont *Draw::CreateXftFont(Font font, int angle)
 		mx.yx = sina;
 		mx.yy = cosa;
 		xftfont = XftFontOpen(Xdisplay, Xscreenno,
-		                      XFT_FAMILY, XftTypeString, ~XFTFontFace().GetKey(i),
+		                      XFT_FAMILY, XftTypeString, face,
 		                      XFT_SLANT, XftTypeInteger, int(font.IsItalic() ? 110 : 0),
 		                      XFT_PIXEL_SIZE, XftTypeInteger, hg,
 		                      XFT_MATRIX, XftTypeMatrix, &mx,
 		                      XFT_WEIGHT, XftTypeInteger, int(font.IsBold() ? 200 : 0),
 		                      XFT_ANTIALIAS, XftTypeBool, FcBool(!font.IsNonAntiAliased()),
 		                      XFT_MINSPACE, XftTypeBool, (FcBool)1,
-		                       (void *)0);
+		                      (void *)0);
 	}
 	else
 		xftfont = XftFontOpen(Xdisplay, Xscreenno,
-		                      XFT_FAMILY, XftTypeString, ~XFTFontFace().GetKey(i),
+		                      XFT_FAMILY, XftTypeString, face,
 		                      XFT_SLANT, XftTypeInteger, int(font.IsItalic() ? 110 : 0),
 		                      XFT_PIXEL_SIZE, XftTypeInteger, hg,
 		                      XFT_WEIGHT, XftTypeInteger, int(font.IsBold() ? 200 : 0),

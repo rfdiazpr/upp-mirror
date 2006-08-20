@@ -2,16 +2,19 @@
 
 Report::Report()
 {
+	mg.x = mg.y = Null;
 	Clear();
 }
 
 Report::Report(int cx, int cy)
 {
+	mg.x = mg.y = Null;
 	SetPageSize(cx, cy);
 }
 
 Report::Report(const Size &sz)
 {
+	mg.x = mg.y = Null;
 	SetPageSize(sz);
 }
 
@@ -103,7 +106,7 @@ Report& Report::Header(const char *qtf, int spc)
 {
 	header = qtf;
 	headerspc = spc;
-	headercy = GetHeightHF(qtf);
+	headercy = qtf ? GetHeightHF(qtf) : 0;
 	RestartPage();
 	return *this;
 }
@@ -112,7 +115,7 @@ Report& Report::Footer(const char *qtf, int spc)
 {
 	footer = qtf;
 	footerspc = spc;
-	footercy = GetHeightHF(qtf);
+	footercy = qtf ? GetHeightHF(qtf) : 0;
 	RestartPage();
 	return *this;
 }

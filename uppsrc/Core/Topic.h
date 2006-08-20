@@ -4,7 +4,9 @@
 struct Topic : Moveable<Topic> {
 	String title;
 	String text;
-	
+	String link;
+	String label;
+
 	operator const String&() const { return text; }
 	operator const char *() const  { return text; }
 };
@@ -13,6 +15,7 @@ struct TopicLink {
 	String package;
 	String group;
 	String topic;
+	String label;
 
 	operator bool() const { return !IsNull(topic); }
 };
@@ -20,9 +23,9 @@ struct TopicLink {
 String     TopicLinkString(const TopicLink& tl);
 TopicLink  ParseTopicLink(const char *link);
 
-Topic          GetTopic(const String& package, const String& group, const String& topic);
-Topic          GetTopic(const char *path);
+Topic      GetTopic(const String& package, const String& group, const String& topic);
+Topic      GetTopic(const char *path);
 
-VectorMap<String, VectorMap<String, VectorMap<String, Topic> > >& TopicBase();
+VectorMap<String, VectorMap<String, Vector<String> > >& TopicBase();
 
 #endif

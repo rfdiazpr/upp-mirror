@@ -1,6 +1,9 @@
 acceptflags
 	USEMALLOC;
 
+uses
+	plugin\z;
+
 library(MSC) "kernel32 user32";
 
 library(WIN32 !GUI !GNU !GCC) "ole32 oleaut32 oldnames";
@@ -96,6 +99,8 @@ file
 	Uuid.cpp optimize_speed,
 	Ptr.h,
 	Ptr.cpp optimize_speed,
+	z.h,
+	z.cpp,
 	Topic.h,
 	topic_group.h,
 	Topic.cpp,

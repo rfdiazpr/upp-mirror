@@ -315,8 +315,11 @@ private:
 		TempGroup(const String& temp, const String& group) : temp(temp), group(group) {}
 	};
 
+	Rect   CtrlRect(Ctrl::LogPos pos, Size sz);
+	Rect   CtrlRectZ(Ctrl::LogPos pos, Size sz);
 	void   AddHandle(Draw& w, int x, int y);
 	Point  Normalize(Point p);
+	Point  ZPoint(Point p);
 	int    FindHandle(Point p);
 	int    FindItem(Point p);
 	void   GetSprings(Rect& l, Rect& t, Rect& r, Rect& b);

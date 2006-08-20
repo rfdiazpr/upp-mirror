@@ -453,6 +453,7 @@ TopWindow::TopWindow()
 	size_hints = XAllocSizeHints();
 	wm_hints = XAllocWMHints();
 	class_hint = XAllocClassHint();
+	topmost = false;
 #endif
 	maximizebox = minimizebox = sizeable = tool = false;
 	state = OVERLAPPED;

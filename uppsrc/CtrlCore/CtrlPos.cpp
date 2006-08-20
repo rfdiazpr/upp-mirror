@@ -135,7 +135,6 @@ Size Ctrl::GetMaxSize() const {
 void Ctrl::SyncLayout(int force)
 {
 	LLOG("SyncLayout " << Name() << " size: " << GetSize());
-	LOGBEGIN();
 	bool refresh = false;
 	Rect oview = GetView();
 	Rect view = GetRect().Size();
@@ -161,19 +160,54 @@ void Ctrl::SyncLayout(int force)
 	}
 	if(refresh)
 		RefreshFrame();
-	LOGEND();
+}
+
+int Ctrl::FindMoveCtrl(const VectorMap<Ctrl *, MoveCtrl>& m, Ctrl *x)
+{
+	int q = m.Find(x);
+	return q >= 0 && m[q].ctrl ? q : -1;
+}
+
+Ctrl::MoveCtrl *Ctrl::FindMoveCtrlPtr(VectorMap<Ctrl *, MoveCtrl>& m, Ctrl *x)
+{
+	int q = FindMoveCtrl(m, x);
+	return q >= 0 ? &m[q] : NULL;
 }
 
 void Ctrl::SetPos0(LogPos p, bool _inframe)
 {
 	if(p == pos && inframe == _inframe) return;
-	if(parent) RefreshFrame();
+	if(parent) {
+		Rect from = GetRect().Size();
+		Top *top = GetTopRect(from, true)->top;
+		if(top) {
+			pos = p;
+			inframe = _inframe;
+			Rect to = GetRect().Size();
+			UpdateRect0();
+			GetTopRect(to, true);
+			MoveCtrl *s = FindMoveCtrlPtr(top->scroll_move, this);
+			if(s && s->from == from && s->to == to) {
+				s->ctrl = NULL;
+				LLOG("SetPos Matched " << from << " -> " << to);
+			}
+			else {
+				MoveCtrl& m = top->move.Add(this);
+				m.ctrl = this;
+				m.from = from;
+				m.to = to;
+				LLOG("SetPos Add " << ::Name(this) << from << " -> " << to);
+			}
+			return;
+		}
+		RefreshFrame();
+	}
 	pos = p;
 	inframe = _inframe;
 	UpdateRect();
 }
 
-void Ctrl::UpdateRect()
+void Ctrl::UpdateRect0()
 {
 	if(parent)
 		rect = CalcRect(parent->GetRect(), parent->GetView());
@@ -182,6 +216,12 @@ void Ctrl::UpdateRect()
 		rect = CalcRect(r, r);
 	}
 	SyncLayout();
+}
+
+
+void Ctrl::UpdateRect()
+{
+	UpdateRect0();
 	if(parent) RefreshFrame();
 }
 

@@ -392,7 +392,7 @@ void RescaleImage::Create(Size _tsz, Raster& _src, const Rect& src_rc)
 
 void RescaleImage::Get(RGBA *tgt)
 {
-	if(y < 0) {
+	if(y < 0 || offsets >= vert.End()) {
 		memset(tgt, 0, sizeof(RGBA) * tsz.cx);
 		return;
 	}

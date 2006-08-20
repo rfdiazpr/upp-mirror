@@ -303,10 +303,11 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 	int uvsn;
 	Color c = GetUvsHighlight(text, uvsn);
 	if(uvsn) {
-		hls.SetInk(0, uvsn, Yellow);
-		hls.SetPaper(0, uvsn, Gray);
+		hls.SetInk(0, text.GetLength() + 1, Yellow);
+		hls.SetPaper(0, text.GetLength() + 1, Gray);
 		hls.pos += uvsn;
 		p += uvsn;
+		return;
 	}
 	else
 	if(highlight == HIGHLIGHT_CALC) {

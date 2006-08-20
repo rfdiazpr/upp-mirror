@@ -14,6 +14,7 @@ RichCell::Format::Format()
 	color = White;
 	bordercolor = Black;
 	keep = false;
+	minheight = 0;
 }
 
 void  RichCell::ClearText()
@@ -61,9 +62,14 @@ PageY RichCell::GetTop(RichContext rc) const
 PageY RichCell::GetHeight(RichContext rc) const
 {
 	if(Reduce(rc)) {
+		PageY py = rc.py;
 		rc.py.y += format.margin.top + format.border.top;
 		rc.py = text.GetHeight(rc);
 		rc.py.y += format.margin.bottom + format.border.bottom;
+		py.y += format.margin.top + format.border.top +
+		        format.minheight +
+		        format.margin.bottom + format.border.bottom;
+		return py.y <= rc.page.bottom && py > rc.py ? py : rc.py;
 	}
 	else {
 		rc.py.y += format.margin.top + format.border.top;
@@ -123,7 +129,7 @@ void RichCell::Paint(PageDraw& pw, RichContext rc, PageY npy,
 
 	rc.py = Align(rc, npy);
 	text.Paint(pw, rc, pi);
-	
+
 	if(select) {
 		int cx = xpg.right - xpg.left;
 		if(rc.py.page == npy.page)

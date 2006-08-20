@@ -12,16 +12,16 @@
 ** This file contains C code routines that are called by the parser
 ** to handle UPDATE statements.
 **
-** $Id: update.c,v 1.112 2005/09/20 17:42:23 drh Exp $
+** $Id: update.c,v 1.123 2006/02/24 02:53:50 drh Exp $
 */
 #include "sqliteInt.h"
 
 /*
-** The most recently coded instruction was an OP_Column to retrieve column
-** 'i' of table pTab. This routine sets the P3 parameter of the 
+** The most recently coded instruction was an OP_Column to retrieve the
+** i-th column of table pTab. This routine sets the P3 parameter of the
 ** OP_Column to the default value, if any.
 **
-** The default value of a column is specified by a DEFAULT clause in the 
+** The default value of a column is specified by a DEFAULT clause in the
 ** column definition. This was either supplied by the user when the table
 ** was created, or added later to the table definition by an ALTER TABLE
 ** command. If the latter, then the row-records in the table btree on disk
@@ -30,9 +30,9 @@
 ** If the former, then all row-records are guaranteed to include a value
 ** for the column and the P3 value is not required.
 **
-** Column definitions created by an ALTER TABLE command may only have 
+** Column definitions created by an ALTER TABLE command may only have
 ** literal default values specified: a number, null or a string. (If a more
-** complicated default expression value was provided, it is evaluated 
+** complicated default expression value was provided, it is evaluated
 ** when the ALTER TABLE is executed and one of the literal values written
 ** into the sqlite_master table.)
 **
@@ -44,7 +44,7 @@
 void sqlite3ColumnDefault(Vdbe *v, Table *pTab, int i){
   if( pTab && !pTab->pSelect ){
     sqlite3_value *pValue;
-    u8 enc = sqlite3VdbeDb(v)->enc;
+    u8 enc = ENC(sqlite3VdbeDb(v));
     Column *pCol = &pTab->aCol[i];
     sqlite3ValueFromExpr(pCol->pDflt, enc, pCol->affinity, &pValue);
     if( pValue ){
@@ -89,6 +89,7 @@ void sqlite3Update(
   int openAll = 0;       /* True if all indices need to be opened */
   AuthContext sContext;  /* The authorization context */
   NameContext sNC;       /* The name-context to resolve expressions in */
+  int iDb;               /* Database containing the table being updated */
 
 #ifndef SQLITE_OMIT_TRIGGER
   int isView;                  /* Trying to update a view */
@@ -99,14 +100,17 @@ void sqlite3Update(
   int oldIdx      = -1;  /* index of trigger "old" temp table       */
 
   sContext.pParse = 0;
-  if( pParse->nErr || sqlite3_malloc_failed ) goto update_cleanup;
+  if( pParse->nErr || sqlite3MallocFailed() ){
+    goto update_cleanup;
+  }
   db = pParse->db;
   assert( pTabList->nSrc==1 );
 
-  /* Locate the table which we want to update. 
+  /* Locate the table which we want to update.
   */
   pTab = sqlite3SrcListLookup(pParse, pTabList);
   if( pTab==0 ) goto update_cleanup;
+  iDb = sqlite3SchemaToIndex(pParse->db, pTab->pSchema);
 
   /* Figure out if we have any triggers and if the table being
   ** updated is a view
@@ -192,7 +196,7 @@ void sqlite3Update(
     {
       int rc;
       rc = sqlite3AuthCheck(pParse, SQLITE_UPDATE, pTab->zName,
-                           pTab->aCol[j].zName, db->aDb[pTab->iDb].zName);
+                           pTab->aCol[j].zName, db->aDb[iDb].zName);
       if( rc==SQLITE_DENY ){
         goto update_cleanup;
       }else if( rc==SQLITE_IGNORE ){
@@ -231,7 +235,6 @@ void sqlite3Update(
       }
     }
     if( i<pIdx->nColumn ){
-      if( sqlite3CheckIndexCollSeq(pParse, pIdx) ) goto update_cleanup;
       apIdx[nIdx++] = pIdx;
       aIdxUsed[j] = 1;
     }else{
@@ -257,7 +260,7 @@ void sqlite3Update(
   v = sqlite3GetVdbe(pParse);
   if( v==0 ) goto update_cleanup;
   if( pParse->nested==0 ) sqlite3VdbeCountChanges(v);
-  sqlite3BeginWriteOperation(pParse, 1, pTab->iDb);
+  sqlite3BeginWriteOperation(pParse, 1, iDb);
 
   /* If we are trying to update a view, realize that view into
   ** a ephemeral table.
@@ -307,7 +310,7 @@ void sqlite3Update(
       /* Open a cursor and make it point to the record that is
       ** being updated.
       */
-      sqlite3OpenTableForReading(v, iCur, pTab);
+      sqlite3OpenTable(pParse, iCur, iDb, pTab, OP_OpenRead);
     }
     sqlite3VdbeAddOp(v, OP_MoveGe, iCur, 0);
 
@@ -356,15 +359,13 @@ void sqlite3Update(
   }
 
   if( !isView ){
-    /* 
+    /*
     ** Open every index that needs updating.  Note that if any
-    ** index could potentially invoke a REPLACE conflict resolution 
+    ** index could potentially invoke a REPLACE conflict resolution
     ** action, then we need to open all indices because we might need
     ** to be deleting some records.
     */
-    sqlite3VdbeAddOp(v, OP_Integer, pTab->iDb, 0);
-    sqlite3VdbeAddOp(v, OP_OpenWrite, iCur, pTab->tnum);
-    sqlite3VdbeAddOp(v, OP_SetNumColumns, iCur, pTab->nCol);
+    sqlite3OpenTable(pParse, iCur, iDb, pTab, OP_OpenWrite);
     if( onError==OE_Replace ){
       openAll = 1;
     }else{
@@ -378,9 +379,10 @@ void sqlite3Update(
     }
     for(i=0, pIdx=pTab->pIndex; pIdx; pIdx=pIdx->pNext, i++){
       if( openAll || aIdxUsed[i] ){
-        sqlite3VdbeAddOp(v, OP_Integer, pIdx->iDb, 0);
+        KeyInfo *pKey = sqlite3IndexKeyinfo(pParse, pIdx);
+        sqlite3VdbeAddOp(v, OP_Integer, iDb, 0);
         sqlite3VdbeOp3(v, OP_OpenWrite, iCur+i+1, pIdx->tnum,
-                       (char*)&pIdx->keyInfo, P3_KEYINFO);
+                       (char*)pKey, P3_KEYINFO_HANDOFF);
         assert( pParse->nTab>iCur+i+1 );
       }
     }
@@ -406,7 +408,7 @@ void sqlite3Update(
       sqlite3VdbeAddOp(v, OP_MustBeInt, 0, 0);
     }
 
-    /* Compute new data for this record.  
+    /* Compute new data for this record.
     */
     for(i=0; i<pTab->nCol; i++){
       if( i==pTab->iPKey ){
@@ -429,7 +431,7 @@ void sqlite3Update(
 
     /* Delete the old indices for the current record.
     */
-    sqlite3GenerateRowIndexDelete(db, v, pTab, iCur, aIdxUsed);
+    sqlite3GenerateRowIndexDelete(v, pTab, iCur, aIdxUsed);
 
     /* If changing the record number, delete the old record.
     */
@@ -442,7 +444,7 @@ void sqlite3Update(
     sqlite3CompleteInsertion(pParse, pTab, iCur, aIdxUsed, chngRowid, 1, -1);
   }
 
-  /* Increment the row counter 
+  /* Increment the row counter
   */
   if( db->flags & SQLITE_CountRows && !pParse->trigStack){
     sqlite3VdbeAddOp(v, OP_AddImm, 1, 0);
@@ -459,7 +461,7 @@ void sqlite3Update(
       }
       sqlite3VdbeAddOp(v, OP_Close, iCur, 0);
     }
-    if( sqlite3CodeRowTrigger(pParse, TK_UPDATE, pChanges, TRIGGER_AFTER, pTab, 
+    if( sqlite3CodeRowTrigger(pParse, TK_UPDATE, pChanges, TRIGGER_AFTER, pTab,
           newIdx, oldIdx, onError, addr) ){
       goto update_cleanup;
     }
@@ -485,14 +487,14 @@ void sqlite3Update(
   }
 
   /*
-  ** Return the number of rows that were changed. If this routine is 
+  ** Return the number of rows that were changed. If this routine is
   ** generating code because of a call to sqlite3NestedParse(), do not
   ** invoke the callback function.
   */
   if( db->flags & SQLITE_CountRows && !pParse->trigStack && pParse->nested==0 ){
     sqlite3VdbeAddOp(v, OP_Callback, 1, 0);
     sqlite3VdbeSetNumCols(v, 1);
-    sqlite3VdbeSetColName(v, 0, "rows updated", P3_STATIC);
+    sqlite3VdbeSetColName(v, 0, COLNAME_NAME, "rows updated", P3_STATIC);
   }
 
 update_cleanup:

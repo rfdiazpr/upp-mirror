@@ -193,7 +193,7 @@ void DrawMnemonicText(Draw& w, int x, int y, const String& s, Font font, Color c
 	if(q < 0) return;
 	FontInfo f = font.Info();
 	w.DrawRect(x + GetTextSize(~s, font, q).cx, y + f.GetAscent() + 1, f[s[q]], 1,
-	           Blend(SColorLight, SColorHighlight));
+	           SColorMark());
 }
 
 void DrawMenuText(Draw& w, int x, int y, const String& s, Font f, bool enabled,
@@ -352,7 +352,7 @@ void MenuItem::Paint(Draw& w)
 	if(!IsEmpty(keydesc)) {
 		isz = GetTextSize(keydesc, StdFont());
 		::DrawMenuText(w, x - isz.cx - 2, (sz.cy - isz.cy) / 2, keydesc, font, isenabled, hl,
-		               0, Blend(SColorHighlight, SColorLight));
+		               0, SColorMark());
 	}
 }
 

@@ -40,7 +40,10 @@ Draw& EditPageDraw::Page(int _page)
 	page = _page;
 	w.End();
 	w.End();
-	w.Clipoff(0, y + (size.cy + 3) * page + 2, 9999, size.cy);
+	if(size.cy < INT_MAX)
+		w.Clipoff(0, y + (size.cy + 3) * page + 2, 9999, size.cy);
+	else
+		w.Offset(0, y + 2);
 	w.Offset(x, 0);
 	return w;
 }
@@ -99,9 +102,14 @@ void RichEdit::Paint(Draw& w)
 		pw.x = tr.left;
 		pw.y = -sb;
 		pw.size = GetZoomedPage();
-		for(int i = 0; i <= py.page; i++)
-			DrawFrame(w, tr.left, i * (pw.size.cy + 3) + 1 - sb,
-			          pw.size.cx + 2, pw.size.cy + 2, SColorShadow);
+		if(pagesz.cy == INT_MAX) {
+			pw.size.cy = INT_MAX;
+			DrawFrame(w, tr.left, (int)sb ? -1 : 0, pw.size.cx + 2, 9999, SColorShadow);
+		}
+		else
+			for(int i = 0; i <= py.page; i++)
+				DrawFrame(w, tr.left, i * (pw.size.cy + 3) + 1 - sb,
+				          pw.size.cx + 2, pw.size.cy + 2, SColorShadow);
 		PaintInfo pi;
 		pi.zoom = zoom;
 		pi.top = GetPageY(sb);
@@ -366,8 +374,9 @@ void RichEdit::Clear()
 	ReadStyles();
 }
 
-void RichEdit::SetupLanguage(Vector<int>& lng)
+void RichEdit::SetupLanguage(pick_ Vector<int>& _lng)
 {
+	Vector<int>& lng = const_cast<Vector<int>&>(_lng);
 	Sort(lng);
 	language.ClearList();
 	for(int i = 0; i < lng.GetCount(); i++)
@@ -628,7 +637,6 @@ RichEdit::RichEdit()
 	ink.Tip(t_("Text color"));
 	paper <<= THISBACK(SetPaper);
 	paper.Tip(t_("Background color"));
-	paper.Transparent();
 
 	setstyle.SetMonoImage(CtrlImg::smallleft());
 	setstyle <<= THISBACK(SetStyle);

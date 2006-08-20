@@ -532,7 +532,6 @@ void DrawDragRect(Draw& w, const Rect& _rect1, const Rect& _rect2, const Rect& _
 	SelectClipRgn(hdc, rgn);
 	Rect r;
 	GetClipBox(hdc, r);
-	DUMP(r);
 	HBRUSH obrush = (HBRUSH) SelectObject(hdc, brush);
 	PatBlt(hdc, r.left, r.top, r.Width(), r.Height(), PATINVERT);
 	SelectObject(hdc, obrush);

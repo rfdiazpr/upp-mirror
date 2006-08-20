@@ -72,8 +72,8 @@ private:
 	bool           StdMode()   { return  tmode == NORMAL; }
 
 public:
-	bool Login(const char *name, const char *password, const char *connect);
-	bool Open(const String& connect_string);
+	bool Login(const char *name, const char *password, const char *connect, String *warn = NULL);
+	bool Open(const String& connect_string, String *warn = NULL);
 	void Logoff();
 
 	enum TransactionMode {

@@ -6,7 +6,7 @@ PaintInfo::PaintInfo()
 	tablesel = 0;
 	top = PageY(0, 0);
 	bottom = PageY(INT_MAX, INT_MAX);
-	hyperlink = Blend(SColorLight, SColorHighlight);
+	hyperlink = SColorMark();
 	usecache = false;
 	sizetracking = false;
 	showcodes = Null;
@@ -136,6 +136,7 @@ RichPara::Format::Format()
 	tabsize = 296;
 	memset(number, 0, sizeof(number));
 	reset_number = false;
+	linespacing = 0;
 	tab.Clear();
 	styleid = RichStyle::GetDefaultId();
 }
@@ -273,21 +274,22 @@ String RichPara::Pack(const RichPara::Format& style, Array<RichObject>& obj) con
 {
 	StringStream out;
 	word pattr = 0;
-	if(format.align != style.align)       pattr |= 1;
-	if(format.before != style.before)     pattr |= 2;
-	if(format.lm != style.lm)             pattr |= 4;
-	if(format.indent != style.indent)     pattr |= 8;
-	if(format.rm != style.rm)             pattr |= 0x10;
-	if(format.after != style.after)       pattr |= 0x20;
-	if(format.bullet != style.bullet)     pattr |= 0x40;
-	if(format.keep != style.keep)         pattr |= 0x80;
-	if(format.newpage != style.newpage)   pattr |= 0x100;
-	if(format.tabsize != style.tabsize)   pattr |= 0x200;
-	if(!IsNull(format.label))             pattr |= 0x400;
-	if(format.keepnext != style.keepnext) pattr |= 0x800;
-	if(format.orphan != style.orphan)     pattr |= 0x1000;
-	if(NumberingDiffers(format, style))   pattr |= 0x2000;
-	if(format.tab != style.tab)           pattr |= 0x8000;
+	if(format.align != style.align)             pattr |= 1;
+	if(format.before != style.before)           pattr |= 2;
+	if(format.lm != style.lm)                   pattr |= 4;
+	if(format.indent != style.indent)           pattr |= 8;
+	if(format.rm != style.rm)                   pattr |= 0x10;
+	if(format.after != style.after)             pattr |= 0x20;
+	if(format.bullet != style.bullet)           pattr |= 0x40;
+	if(format.keep != style.keep)               pattr |= 0x80;
+	if(format.newpage != style.newpage)         pattr |= 0x100;
+	if(format.tabsize != style.tabsize)         pattr |= 0x200;
+	if(!IsNull(format.label))                   pattr |= 0x400;
+	if(format.keepnext != style.keepnext)       pattr |= 0x800;
+	if(format.orphan != style.orphan)           pattr |= 0x1000;
+	if(NumberingDiffers(format, style))         pattr |= 0x2000;
+	if(format.linespacing != style.linespacing) pattr |= 0x4000;
+	if(format.tab != style.tab)                 pattr |= 0x8000;
 	out.Put16(pattr);
 	if(pattr & 1)      out.Put16(format.align);
 	if(pattr & 2)      out.Put16(format.before);
@@ -308,6 +310,8 @@ String RichPara::Pack(const RichPara::Format& style, Array<RichObject>& obj) con
 		out.Put(format.reset_number);
 		out.Put(format.number, 8);
 	}
+	if(pattr & 0x4000)
+		out.Put(format.linespacing);
 	if(pattr & 0x8000) {
 		int c = 0;
 		int i;
@@ -498,6 +502,9 @@ void RichPara::Unpack(const String& data, const Array<RichObject>& obj,
 		in % format.after_number;
 		format.reset_number = in.Get();
 		in.Get(format.number, 8);
+	}
+	if(pattr & 0x4000) {
+		format.linespacing = (int8)in.Get();
 	}
 	if(pattr & 0x8000) {
 		format.tab.Clear();

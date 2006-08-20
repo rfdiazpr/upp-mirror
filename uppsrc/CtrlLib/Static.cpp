@@ -98,30 +98,23 @@ void LabelBox::Paint(Draw& w)
 	Size sz = GetSize();
 	if(!IsTransparent())
 		w.DrawRect(sz, SColorFace);
-	int d = Draw::GetStdFontCy() >> 1;
-
-	Size ts = PaintLabel(w, d, 0, sz.cx, sz.cy, !IsShowEnabled(), false, false, VisibleAccessKeys());
-
+	Size lsz = GetLabelSize();
+	int d = lsz.cy >> 1;
+	bool hline = sz.cy < 2 * Draw::GetStdFontCy();
+	bool vline = sz.cx < 2 * Draw::GetStdFontCy();
+	int ty = hline ? (sz.cy - lsz.cy) / 2 : 0;
+	Size ts = PaintLabel(w, d + 2, ty, sz.cx, sz.cy, !IsShowEnabled(), false, false, VisibleAccessKeys());
+	w.Begin();
+	w.ExcludeClip(d, ty, ts.cx + 4, ts.cy);
 	if(IsXPStyle()) {
-		if(sz.cy < 2 * Draw::GetStdFontCy()) {
+		if(hline) {
 			d = sz.cy / 2;
-			if(ts.cx) {
-				w.DrawRect(0, d - 1, d - d / 2, 1, SColorLight);
-				w.DrawRect(0, d, d - d / 2, 1, SColorShadow);
-				w.DrawRect(0, d + 1, d - d / 2, 1, SColorLight);
-
-				w.DrawRect(d + ts.cx + d / 2, d - 1, sz.cx - ts.cx - d - d / 2, 1, SColorLight);
-				w.DrawRect(d + ts.cx + d / 2, d, sz.cx - ts.cx - d - d / 2, 1, SColorShadow);
-				w.DrawRect(d + ts.cx + d / 2, d + 1, sz.cx - ts.cx - d - d / 2, 1, SColorLight);
-			}
-			else {
-				w.DrawRect(0, d - 1, sz.cx, 1, SColorLight);
-				w.DrawRect(0, d, sz.cx, 1, SColorShadow);
-				w.DrawRect(0, d + 1, sz.cx, 1, SColorLight);
-			}
+			w.DrawRect(0, d - 1, sz.cx, 1, SColorLight);
+			w.DrawRect(0, d, sz.cx, 1, SColorShadow);
+			w.DrawRect(0, d + 1, sz.cx, 1, SColorLight);
 		}
 		else
-		if(sz.cx < 2 * Draw::GetStdFontCy()) {
+		if(vline) {
 			d = sz.cx / 2;
 			w.DrawRect(d - 1, 0, 1, sz.cy, SColorLight);
 			w.DrawRect(d, 0, 1, sz.cy, SColorShadow);
@@ -131,8 +124,7 @@ void LabelBox::Paint(Draw& w)
 			w.DrawRect(0, d + 2, 1, sz.cy - d - 4, LabelBoxColor);
 			w.DrawRect(sz.cx - 1, d + 2, 1, sz.cy - d - 4, LabelBoxColor);
 			w.DrawRect(2, sz.cy - 1, sz.cx - 4, 1, LabelBoxColor);
-			w.DrawRect(2, d, d - d / 2, 1, LabelBoxColor);
-			w.DrawRect(d + ts.cx + d / 2, d, sz.cx - ts.cx - d - d / 2 - 2, 1, LabelBoxColor);
+			w.DrawRect(2, d, sz.cx - 4, 1, LabelBoxColor);
 
 			w.DrawRect(1, d + 1, 2, 1, LabelBoxColor);
 			w.DrawRect(1, d + 2, 1, 1, LabelBoxColor);
@@ -148,36 +140,32 @@ void LabelBox::Paint(Draw& w)
 		}
 	}
 	else {
-		if(sz.cy < 2 * Draw::GetStdFontCy()) {
+		if(hline) {
 			d = sz.cy / 2;
-			w.DrawRect(0, d, d - d / 2, 1, SColorShadow);
-			w.DrawRect(0, d + 1, d - d / 2, 1, SColorLight);
-
-			w.DrawRect(d + ts.cx + d / 2, d, sz.cx - ts.cx - d - d / 2, 1, SColorShadow);
-			w.DrawRect(d + ts.cx + d / 2, d + 1, sz.cx - ts.cx - d - d / 2, 1, SColorLight);
+			w.DrawRect(0, d, sz.cx, 1, SColorShadow);
+			w.DrawRect(0, d + 1, sz.cx, 1, SColorLight);
 		}
 		else
-		if(sz.cx < 2 * Draw::GetStdFontCy()) {
+		if(vline) {
 			d = sz.cx / 2;
 			w.DrawRect(d, 0, 1, sz.cy, SColorShadow);
 			w.DrawRect(d - 1, 1, 0, sz.cy, SColorLight);
 		}
 		else {
-			w.DrawRect(0, d + 2, 1, sz.cy - d - 4, SColorShadow);
-			w.DrawRect(1, d + 2, 1, sz.cy - d - 4, SColorLight);
-			w.DrawRect(sz.cx - 2, d, 1, sz.cy - d - 2, SColorShadow);
-			w.DrawRect(sz.cx - 1, d, 1, sz.cy - d - 2, SColorLight);
-			w.DrawRect(0, sz.cy - 2, sz.cx - 1, 1, SColorShadow);
-			w.DrawRect(0, sz.cy - 1, sz.cx - 1, 1, SColorLight);
+			w.DrawRect(1, d, sz.cx - 2, 1, SColorShadow);
+			w.DrawRect(1, d + 1, sz.cx - 2, 1, SColorLight);
 
-			w.DrawRect(sz.cx - 1, sz.cy - 2, 1, 2, SColorLight);
-			w.DrawRect(1, d, d - 1, 1, SColorShadow);
-			w.DrawRect(1, d + 1, d - 1, 1, SColorLight);
-			w.DrawRect(0, d, 1, 2, SColorShadow);
-			w.DrawRect(d + ts.cx, d, sz.cx - ts.cx - d - 2, 1, SColorShadow);
-			w.DrawRect(d + ts.cx, d + 1, sz.cx - ts.cx - d - 2, 1, SColorLight);
+			w.DrawRect(0, d, 1, sz.cy - d - 1, SColorShadow);
+			w.DrawRect(1, d + 1, 1, sz.cy - d - 2, SColorLight);
+
+			w.DrawRect(sz.cx - 2, d, 1, sz.cy - d, SColorShadow);
+			w.DrawRect(sz.cx - 1, d, 1, sz.cy - d, SColorLight);
+
+			w.DrawRect(1, sz.cy - 2, sz.cx - 2, 1, SColorShadow);
+			w.DrawRect(1, sz.cy - 1, sz.cx - 2, 1, SColorLight);
 		}
 	}
+	w.End();
 }
 
 ParentCtrl::ParentCtrl()

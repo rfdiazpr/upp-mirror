@@ -1,4 +1,14 @@
+* struc ArrayCtrl - why it is not first in class browser?
 
+* Crashed DrawOpWin32.cpp line 15 in debug mode ide -> Assist Window
+
+* ide - bottom pane - paint bug
+
+* RichText: Set minimal cell height
+
+* IntersectClip //	ASSERT(q != ERROR);
+
+- Child position - missing parent refresh (splitter)
 
 Option, Switch in LayDes
 

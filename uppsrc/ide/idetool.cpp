@@ -68,6 +68,7 @@ void Ide::RescanCode()
 	TimeStop t;
 	console.Clear();
 	RescanBrowserBase();
+	SyncRefs();
 	SetBottom(BBROWSER);
 //*/
 }
@@ -101,6 +102,7 @@ void Ide::OpenTopic()
 		TopicPackages();
 		topic.OpenMain();
 	}
+	topic.SetForeground();
 	topic.SetEditorFocus();
 }
 

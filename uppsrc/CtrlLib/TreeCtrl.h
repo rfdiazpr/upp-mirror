@@ -107,8 +107,8 @@ private:
 	void   RemoveCtrls(int itemi);
 	void   SyncCtrls(bool add, Ctrl *restorefocus);
 	bool   Tab(int d);
-	void   Sort0(int id, const ValueOrder& order);
-	void   SortDeep0(int id, const ValueOrder& order);
+	void   Sort0(int id, const ValueOrder& order, bool byvalue);
+	void   SortDeep0(int id, const ValueOrder& order, bool byvalue);
 	void   GatherOpened(int id, Vector<int>& o);
 	void   UpdateSelect();
 	void   ClearSelTree(int id);
@@ -161,6 +161,9 @@ public:
 	void   Open(int id, bool open = true);
 	void   Close(int id)                                       { Open(id, false); }
 
+	void   OpenDeep(int id, bool open = true);
+	void   CloseDeep(int id)                                   { OpenDeep(id, false); }
+
 	void   MakeVisible(int id);
 
 	void   SetCursorLine(int i);
@@ -179,11 +182,19 @@ public:
 	int    Find(Value key);
 	bool   FindSetCursor(Value key);
 
-	void   Sort(int id, const ValueOrder& order);
-	void   SortDeep(int id, const ValueOrder& order);
+	void   Sort(int id, const ValueOrder& order, bool byvalue = false);
+	void   SortDeep(int id, const ValueOrder& order, bool byvalue = false);
 
-	void   Sort(int id, int (*compare)(const Value& v1, const Value& v2) = StdValueCompare);
-	void   SortDeep(int id, int (*compare)(const Value& v1, const Value& v2) = StdValueCompare);
+	void   Sort(int id, int (*compare)(const Value& v1, const Value& v2) = StdValueCompare,
+	            bool byvalue = false);
+	void   SortDeep(int id, int (*compare)(const Value& v1, const Value& v2) = StdValueCompare,
+	                bool byvalue = false);
+
+	void   SortByValue(int id, const ValueOrder& order);
+	void   SortDeepByValue(int id, const ValueOrder& order);
+
+	void   SortByValue(int id, int (*compare)(const Value& v1, const Value& v2) = StdValueCompare);
+	void   SortDeepByValue(int id, int (*compare)(const Value& v1, const Value& v2) = StdValueCompare);
 
 	void   Clear();
 

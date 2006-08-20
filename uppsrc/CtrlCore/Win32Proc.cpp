@@ -30,7 +30,10 @@ class NilDrawFull : public NilDraw {
 	virtual bool IsPaintingOp(const Rect& r) const { return true; }
 };
 
+static bool sPainting;
+
 LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
+	ASSERT(!sPainting); // WindowProc invoked while in Paint routine
 //	LLOG("Ctrl::WindowProc(" << message << ") in " << ::Name(this) << ", focus " << (void *)::GetFocus());
 	Ptr<Ctrl> _this = this;
 	HWND hwnd = GetHWND();
@@ -65,10 +68,9 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 				int n = RealizePalette(dc);
 				LLOG("In paint realized " << n << " colors");
 			}
-			Point p = GetSysWindowViewOffset();
-			if(p.x || p.y)
-				draw.Offset(-p);
-			UpdateArea(draw, Rect(ps.rcPaint) + p);
+			sPainting = true;
+			UpdateArea(draw, Rect(ps.rcPaint));
+			sPainting = false;
 			if(draw.PaletteMode() && Draw::AutoPalette())
 				SelectPalette(dc, hOldPal, TRUE);
 			EndPaint(hwnd, &ps);

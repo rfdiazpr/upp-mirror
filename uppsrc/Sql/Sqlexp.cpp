@@ -50,6 +50,11 @@ String SqlFormat(double x) {
 	return Format("%.10g", x);
 }
 
+String SqlFormat(int64 x) {
+	if(IsNull(x)) return "NULL";
+	return FormatInt64(x);
+}
+
 static String SqlFormat__(const char *s, int res, int dialect) {
 	if(!s || !*s) return "NULL";
 	String result;
@@ -113,6 +118,8 @@ String SqlFormat(const Value& x, int dialect) {
 	switch(x.GetType()) {
 	case INT_V:
 		return SqlFormat((int) x);
+	case INT64_V:
+		return SqlFormat((int64) x);
 	case DOUBLE_V:
 		return SqlFormat((double) x);
 	case STRING_V:
@@ -201,6 +208,13 @@ SqlVal::SqlVal(const char *s) {
 }
 
 SqlVal::SqlVal(int x) {
+	if(::IsNull(x))
+		SetNull();
+	else
+		SetHigh(SqlFormat(x));
+}
+
+SqlVal::SqlVal(int64 x) {
 	if(::IsNull(x))
 		SetNull();
 	else
@@ -592,7 +606,7 @@ SqlBool SqlFirstRow() {
 
 SqlBool Like(const SqlVal& a, const SqlVal& b) {
 	int sqld = GetSqlDialect(a, b);
-	return SqlBool(a, sqld == SQLD_MYSQL || sqld == SQLD_SQLITE3 ? " like binary " : " like ", b, SqlS::COMP);
+	return SqlBool(a, sqld == SQLD_MYSQL ? " like binary " : " like ", b, SqlS::COMP);
 }
 
 SqlBool LikeUpperAscii(const SqlVal& a, const SqlVal& b) {
@@ -738,17 +752,17 @@ SqlSet& SqlSet::NoWait() {
 	return *this;
 }
 
-SqlSet& SqlSet::Limit(const unsigned int limit) {
+SqlSet& SqlSet::Limit(int limit) {
 	text << " limit " << limit;
 	return *this;
 }
 
-SqlSet& SqlSet::Limit(const unsigned int offset, const unsigned int limit) {
+SqlSet& SqlSet::Limit(int64 offset, int limit) {
 	text << " limit " << offset << ", " << limit;
 	return *this;
 }
 
-SqlSet& SqlSet::Offset(const unsigned int offset) {
+SqlSet& SqlSet::Offset(int64 offset) {
 	text << " offset " << offset;
 	return *this;
 }

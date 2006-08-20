@@ -291,6 +291,8 @@
 
 #include <Core/Thread.h>
 
+#include <Core/z.h>
+
 #include <Core/Parser.h>
 #include <Core/XML.h>
 #include <Core/Lang.h>

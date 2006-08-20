@@ -131,7 +131,7 @@ void PlotterCtrl::FrameRemove()
 
 void PlotterCtrl::FrameLayout(Rect& rc)
 {
-	int box = (show_scroll ? ScrollBar::GetStdBox() : 0);
+	int box = (show_scroll ? ScrollBarSize() : 0);
 	Rect out = rc;
 	rc.right -= box;
 	rc.bottom -= box;
@@ -153,7 +153,7 @@ void PlotterCtrl::FrameLayout(Rect& rc)
 
 void PlotterCtrl::FrameAddSize(Size& sz)
 {
-	int box = (show_scroll ? ScrollBar::GetStdBox() : 0);
+	int box = (show_scroll ? ScrollBarSize() : 0);
 	sz += box;
 }
 

@@ -295,6 +295,11 @@ void Ide::SaveFile(bool always)
 		}
 	}
 
+	if(!designer) {
+		FindFile ff(editfile);
+		fd.filetime = edittime = ff.GetLastWriteTime();
+	}
+
 	if(editor.IsDirty())
 		ScanFile();
 
@@ -304,10 +309,6 @@ void Ide::SaveFile(bool always)
 		SyncUsc();
 
 	MakeTitle();
-	if(!designer) {
-		FindFile ff(editfile);
-		fd.filetime = edittime = ff.GetLastWriteTime();
-	}
 }
 
 void Ide::FlushFile() {

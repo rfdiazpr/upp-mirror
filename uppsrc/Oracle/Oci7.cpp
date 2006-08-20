@@ -740,19 +740,20 @@ OCI7Connection::~OCI7Connection() {
 	Clear();
 }
 
-bool Oracle7::Open(const String& connect) {
+bool Oracle7::Open(const String& connect)
+{
 	Close();
 	::memset(lda, 0, sizeof(lda));
 	::memset(hda, 0, sizeof(hda));
 	if(!OCI7().Load()) {
-		SetError("Nelze spustit knihovnu OCI7 pro pøipojení k databázi Oracle.",
-			     "Pøipojení k databázovému serveru.");
+		SetError(t_("Error loading the OCI7 library needed to connect to the Oracle database."),
+			t_("Connecting to database server."));
 		return false;
 	}
 	int code = OCI7().olog((cda_def *)lda, hda, (OraText *)(const char *)connect, -1,
 	                     NULL, -1, NULL, -1, OCI_LM_DEF);
 	if(code) {
-		SetError(GetErrorMsg(code), "Pøipojení k databázovému serveru.");
+		SetError(GetErrorMsg(code), t_("Connecting to database server."));
 		return false;
 	}
 	connected = true;

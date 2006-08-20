@@ -319,7 +319,7 @@ bool RichEdit::RemoveSelection(bool joinnext)
 			Remove(c, abs(cursor - anchor), joinnext);
 			found = notfoundfw = false;
 			CloseFindReplace();
-			Move(c, false);
+			Move(c);
 		}
 		return true;
 	}

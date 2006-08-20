@@ -73,6 +73,7 @@ protected:
 	virtual void        SetParam(int i, const Value& r);
 	virtual bool        Execute();
 	virtual int         GetRowsProcessed() const;
+	virtual Value       GetInsertedId() const;
 	virtual bool        Fetch();
 	virtual void        GetColumn(int i, Ref f) const;
 	virtual void        Cancel();
@@ -131,34 +132,38 @@ void Sqlite3Connection::FlushStatements()
 
 void Sqlite3Connection::SetParam(int i, const Value& r) {
 	LLOG(Format("SetParam(%d,%s)",i,r.ToString()));
-	param.At(i,r);
+	param.At(i) = r;
 }
+
 void Sqlite3Connection::BindParam(int i, const Value& r) {
 	if (IsNull(r))
 		sqlite3_bind_null(current_stmt,i);
 	else switch (r.GetType()) {
-		case WSTRING_V:
-		case STRING_V: {
-				String p = r;
-				sqlite3_bind_text(current_stmt,i,p,p.GetLength(),SQLITE_TRANSIENT);
-			}
+		case STRING_V:
+		case WSTRING_V: {
+			WString p = r;
+			sqlite3_bind_text16(current_stmt,i,p,2*p.GetLength(),SQLITE_TRANSIENT);
 			break;
+		}
 		case INT_V:
 			sqlite3_bind_int(current_stmt, i, int(r));
+			break;
+		case INT64_V:
+			sqlite3_bind_int64(current_stmt, i, int64(r));
 			break;
 		case DOUBLE_V:
 			sqlite3_bind_double(current_stmt, i, double(r));
 			break;
 		case DATE_V: {
 				Date d = r;
-				String p = Format("\'%04d-%02d-%02d\'", d.year, d.month, d.day);
+				String p = Format("%02d-%02d-%04d", d.month, d.day, d.year);
 				sqlite3_bind_text(current_stmt,i,p,p.GetLength(),SQLITE_TRANSIENT);
 			}
 			break;
 		case TIME_V: {
 				Time t = r;
-				String p = Format("\'%04d-%02d-%02d %02d:%02d:%02d\'",
-						   t.year, t.month, t.day, t.hour, t.minute, t.second);
+				String p = Format("%02d-%02d-%04d %02d:%02d:%02d",
+						   t.month, t.day, t.year, t.hour, t.minute, t.second);
 				sqlite3_bind_text(current_stmt,i,p,p.GetLength(),SQLITE_TRANSIENT);
 			}
 			break;
@@ -211,7 +216,7 @@ bool Sqlite3Connection::Execute() {
 					field.type = DOUBLE_V;
 					break;
 				case SQLITE_TEXT:
-					field.type = STRING_V;
+					field.type = WSTRING_V;
 					break;
 				case SQLITE_NULL:
 					field.type = VOID_V;
@@ -227,9 +232,17 @@ bool Sqlite3Connection::Execute() {
 	}
 	return true;
 }
-int Sqlite3Connection::GetRowsProcessed() const {
+
+int Sqlite3Connection::GetRowsProcessed() const
+{
 	LLOG("GetRowsProcessed()");
 	return sqlite3_changes(db);
+}
+
+Value Sqlite3Connection::GetInsertedId() const
+{
+	LLOG("GetInsertedId()");
+	return sqlite3_last_insert_rowid(db);
 }
 
 bool Sqlite3Connection::Fetch() {
@@ -247,6 +260,7 @@ bool Sqlite3Connection::Fetch() {
 	got_row_data = (retcode==SQLITE_ROW);
 	return got_row_data;
 }
+
 void Sqlite3Connection::GetColumn(int i, Ref f) const {
 	ASSERT(NULL != current_stmt);
 	if(i == -1) {
@@ -257,13 +271,13 @@ void Sqlite3Connection::GetColumn(int i, Ref f) const {
 	ASSERT(got_row_data);
 	switch (sqlite3_column_type(current_stmt,i)) {
 		case SQLITE_INTEGER:
-			f = sqlite3_column_int(current_stmt,i);
+			f = sqlite3_column_int64(current_stmt,i);
 			break;
 		case SQLITE_FLOAT:
 			f = sqlite3_column_double(current_stmt,i);
 			break;
 		case SQLITE_TEXT:
-			f = Value(String((const char*)sqlite3_column_text(current_stmt,i)));
+			f = Value(WString((const wchar*)sqlite3_column_text16(current_stmt,i)));
 			break;
 		case SQLITE_NULL:
 			f = Null;

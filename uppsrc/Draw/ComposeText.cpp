@@ -184,6 +184,7 @@ void Draw::ComposeText(int x, int y, int angle, const wchar *text, Font font, Co
 		for(int i = 0; i < n; i++)
 			if(text[i] >= 256 && text[i] < 256 + 128) {
 				FontInfo fi = GetFontInfoW(font);
+				Clip(x, y, 9999, fi.GetHeight());
 				Buffer<wchar> ntext(n);
 				double sina;
 				double cosa;
@@ -232,9 +233,10 @@ void Draw::ComposeText(int x, int y, int angle, const wchar *text, Font font, Co
 							else
 							if(mark != CG_STROKE) {
 								if(f.mark != CG_OGONEK && f.mark != CG_CEDILLA && f.type == CG_CAPITAL) {
-									mfnt = font(5 * font.GetHeight() / 6);
+									mfnt = font(9 * font.GetHeight() / 10);
 									mfi = GetFontInfoW(mfnt);
-									my -= font.GetHeight() / 10;
+									my -= mark == CG_RING_ABOVE ? font.GetHeight() / 19
+									                            : font.GetHeight() / 13;
 								}
 								mw = mfi[f.mark];
 								mx += (cw - mw) / 2;
@@ -259,6 +261,7 @@ void Draw::ComposeText(int x, int y, int angle, const wchar *text, Font font, Co
 				}
 				if(!angle)
 					DrawTextOp(x, y, angle, ntext, font, ink, n, dx);
+				End();
 				return;
 			}
 	}

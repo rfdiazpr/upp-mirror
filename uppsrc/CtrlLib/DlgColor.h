@@ -22,8 +22,8 @@ public:
 private:
 	void          SetColor(Color color, bool set_norm, bool set_hsv);
 
-	void          PaintWheel(Draw& draw);
-	void          PaintRamp(Draw& draw);
+	Image         PaintRamp(Size size);
+	Image         PaintWheel(Size size);
 	void          PaintColumn(Draw& draw);
 
 	int           ClientToLevel(int y) const;

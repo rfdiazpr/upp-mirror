@@ -139,6 +139,8 @@ dword GetTrueColorPixel(int r, int g, int b)
 
 inline int ssq(int x) { return x * x; }
 
+void UpdateSColors();
+
 void InitX11Draw(const char *dispname)
 {
 	if(!dispname || !*dispname) {
@@ -217,7 +219,7 @@ void InitX11Draw(const char *dispname)
 	}
 //	XFree(v);
 
-	Draw::SetStdFont(Arial(13));
+	Draw::SetStdFont(ScreenSans(12));
 
 	UpdateSColors();
 }

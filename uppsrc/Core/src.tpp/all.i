@@ -10,6 +10,10 @@ TOPIC("Convert$en-us")
 #include "Convert$en-us.tpp"
 END_TOPIC
 
+TOPIC("Format$en-us")
+#include "Format$en-us.tpp"
+END_TOPIC
+
 TOPIC("Segtor$en-us")
 #include "Segtor$en-us.tpp"
 END_TOPIC

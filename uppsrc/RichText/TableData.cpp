@@ -35,7 +35,7 @@ void RichTable::Normalize0()
 	Invalidate();
 	r_py.page = -1;
 	r_row = -1;
-	
+
 	ci.Alloc(ny);
 	for(int i = 0; i < ny; i++)
 		ci[i].Alloc(nx);
@@ -401,7 +401,7 @@ void  RichTable::SplitCell(Point cl, Size sz, const RichStyles& style)
 			else
 			if(cf.master.x == i)
 				cell[cf.master.y][cf.master.x].vspan += ext;
-		}		
+		}
 	}
 
 	cell[cl.y][cl.x].vspan = 0;
@@ -517,10 +517,12 @@ void  RichTable::SetCellFormat(const Rect& sel, const RichCell::Format& fmt, boo
 					f.color = fmt.color;
 				if(!IsNull(fmt.bordercolor))
 					f.bordercolor = fmt.bordercolor;
+				if(!IsNull(fmt.minheight))
+					f.minheight = fmt.minheight;
 				if(setkeep)
 					f.keep = fmt.keep;
 			}
-	
+
 	Normalize();
 }
 

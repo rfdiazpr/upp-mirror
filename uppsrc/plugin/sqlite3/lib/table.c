@@ -16,9 +16,11 @@
 ** These routines are in a separate files so that they will not be linked
 ** if they are not used.
 */
+#include "sqliteInt.h"
 #include <stdlib.h>
 #include <string.h>
-#include "sqliteInt.h"
+
+#ifndef SQLITE_OMIT_GET_TABLE
 
 /*
 ** This structure is used to pass data from sqlite3_get_table() through
@@ -113,7 +115,7 @@ malloc_failed:
 ** at the conclusion of the call.
 **
 ** The result that is written to ***pazResult is held in memory obtained
-** from malloc().  But the caller cannot free this memory directly.  
+** from malloc().  But the caller cannot free this memory directly.
 ** Instead, the entire table should be passed to sqlite3_free_table() when
 ** the calling procedure is finished using it.
 */
@@ -143,6 +145,7 @@ int sqlite3_get_table(
   res.azResult[0] = 0;
   rc = sqlite3_exec(db, zSql, sqlite3_get_table_cb, &res, pzErrMsg);
   if( res.azResult ){
+    assert( sizeof(res.azResult[0])>= sizeof(res.nData) );
     res.azResult[0] = (char*)res.nData;
   }
   if( rc==SQLITE_ABORT ){
@@ -193,3 +196,5 @@ void sqlite3_free_table(
     free(azResult);
   }
 }
+
+#endif /* SQLITE_OMIT_GET_TABLE */

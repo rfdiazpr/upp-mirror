@@ -73,6 +73,7 @@ protected:
 	void    MenuBar(Bar& menu);
 
 public:
+	static  int   GetViewHeight(Font font = StdFont());
 	static  int   GetStdHeight(Font font = StdFont());
 
 	int     Insert(int pos, const WString& text);

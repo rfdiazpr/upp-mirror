@@ -57,6 +57,7 @@ private:
 	XWMHints   *wm_hints;
 	XClassHint *class_hint;
 	Size        xminsize, xmaxsize;
+	bool        topmost;
 #endif
 
 private:
@@ -183,6 +184,9 @@ public:
 	TopWindow& ToolWindow(bool b = true);
 	TopWindow& NoToolWindow()                         { return ToolWindow(false); }
 	bool       IsToolWindow() const                   { return tool; }
+	TopWindow& TopMost(bool b = true);
+	TopWindow& NoTopMost()                            { return TopMost(false); }
+	bool       IsTopMost() const;
 	TopWindow& NoAccessKeysDistribution()             { dokeys = false; return *this; }
 
 	TopWindow& Icon(const Image& m);

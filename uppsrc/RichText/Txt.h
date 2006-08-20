@@ -35,6 +35,7 @@ public:
 		KEEPNEXT  = 0x00040000,
 		ORPHAN    = 0x00020000,
 		NUMBERING = 0x00010000,
+		SPACING   = 0x00008000,
 	};
 
 	struct FormatInfo : RichPara::Format {
@@ -138,7 +139,6 @@ protected:
 	struct ParaOp {
 		virtual bool operator()(RichTxt::Para& p) = 0;
 	};
-
 	bool             Update(ParaOp& op);
 	RichTxt&         GetText0(int& pos, bool update);
 	RichTxt&         GetUpdateText(int& pos);
@@ -216,10 +216,15 @@ public:
 	Vector<int>           GetAllLanguages() const;
 	WString               GetPlainText() const;
 
+	struct UpdateIterator {
+		enum { CONTINUE = 0, STOP = 1, UPDATE = 2 };
+		virtual int operator()(int pos, RichPara& para) = 0;
+	};
+	bool                  Iterate(UpdateIterator& r, int gpos, const RichStyles& s);
+
 	struct Iterator {
 		virtual bool operator()(int pos, const RichPara& para) = 0;
 	};
-
 	bool                  Iterate(Iterator& r, int gpos, const RichStyles& s) const;
 
 	RichTxt(const RichTxt& src, int);

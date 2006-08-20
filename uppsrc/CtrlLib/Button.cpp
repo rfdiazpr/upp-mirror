@@ -407,7 +407,8 @@ void Option::Paint(Draw& w) {
 	if(switchimage)
 		g = option ? CtrlsImg::I_S1 : CtrlsImg::I_S0;
 	w.DrawImage(0, iy, CtrlsImg::Get(g + q));
-	DrawSmartText(w, isz.cx + 4, ty, tsz.cx, label, font, ds ? SColorDisabled : SColorText,
+	DrawSmartText(w, isz.cx + 4, ty, tsz.cx, label, font,
+	              ds || IsReadOnly() ? SColorDisabled : SColorText,
 	              VisibleAccessKeys() ? accesskey : 0);
 }
 

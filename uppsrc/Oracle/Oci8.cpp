@@ -746,7 +746,8 @@ bool   Oracle8::IsOpen() const {
 	return svchp;
 }
 
-bool Oracle8::Open(const String& connect_string) {
+bool Oracle8::Open(const String& connect_string, String *warn)
+{
 	String name, pwd, server;
 	const char *b = connect_string, *p = b;
 	while(*p && *p != '/' && *p != '@')
@@ -760,19 +761,20 @@ bool Oracle8::Open(const String& connect_string) {
 	}
 	if(*p == '@')
 		server = ++p;
-	return Login(name, pwd, server);
+	return Login(name, pwd, server, warn);
 }
 
-bool Oracle8::Login(const char *name, const char *pwd, const char *db) {
+bool Oracle8::Login(const char *name, const char *pwd, const char *db, String *warn)
+{
 	LLOG("Oracle8::Login");
 	level = 0;
 	Logoff();
 	ClearError();
 	user = ToUpper(String(name));
 //	puts("Loading library"); fflush(stdout);
-	if(!OCI8().Load())
-	{
-		SetError(t_("Error running OCI8 Oracle connection dynamic library."), t_("Connecting to Oracle database."));
+	if(!OCI8().Load()) {
+		SetError(t_("Error running OCI8 Oracle connection dynamic library."),
+			t_("Connecting to Oracle database."));
 		return false;
 	}
 //	puts("OCI8 loaded"); fflush(stdout);
@@ -784,7 +786,8 @@ bool Oracle8::Login(const char *name, const char *pwd, const char *db) {
 	|| !AllocOciHandle(&seshp, OCI_HTYPE_SESSION))
 	{
 		Logoff();
-		SetError(t_("Error initializing OCI8 library."), t_("Connecting to Oracle database."));
+		SetError(t_("Error initializing OCI8 library."),
+			t_("Connecting to Oracle database."));
 		return false;
 	}
 //	puts("Attributes allocated"); fflush(stdout);
@@ -796,16 +799,20 @@ bool Oracle8::Login(const char *name, const char *pwd, const char *db) {
 	}
 //	puts("In server"); fflush(stdout);
 	in_server = true;
+	sword retcode;
 	if(OCI8().OCIAttrSet(svchp, OCI_HTYPE_SVCCTX, srvhp, 0, OCI_ATTR_SERVER, errhp)
 	|| OCI8().OCIAttrSet(seshp, OCI_HTYPE_SESSION, (byte *)name, strlen(name), OCI_ATTR_USERNAME, errhp)
 	|| OCI8().OCIAttrSet(seshp, OCI_HTYPE_SESSION, (byte *)pwd, strlen(pwd), OCI_ATTR_PASSWORD, errhp)
 	|| OCI8().OCIAttrSet(svchp, OCI_HTYPE_SVCCTX, seshp, 0, OCI_ATTR_SESSION, errhp)
-	|| OCI8().OCISessionBegin(svchp, errhp, seshp, OCI_CRED_RDBMS, OCI_DEFAULT))
+	|| (retcode = OCI8().OCISessionBegin(svchp, errhp, seshp, OCI_CRED_RDBMS, OCI_DEFAULT)) != OCI_SUCCESS
+		&& retcode != OCI_SUCCESS_WITH_INFO)
 	{
 		SetError(OciError(errhp), t_("Connecting to Oracle database."));
 		Logoff();
 		return false;
 	}
+	if(retcode == OCI_SUCCESS_WITH_INFO && warn)
+		*warn = OciError(errhp);
 //	puts("In session, user = " + GetUser()); fflush(stdout);
 	in_session = true;
 	return true;

@@ -86,15 +86,20 @@ void TopWindow::SyncCaption()
 	LLOG("SyncCaption");
 	SyncTitle();
 	if(IsOpen() && GetWindow()) {
-		unsigned long wina[4];
+		unsigned long wina[5];
 		int n = 0;
 		Window w = GetWindow();
-		if(tool)
-			wina[n++] = XAtom("_NET_WM_WINDOW_TYPE_TOOLBAR");
 		if(GetOwner())
 			wina[n++] = XAtom("_NET_WM_WINDOW_TYPE_DIALOG");
+		if(tool)
+			wina[n++] = XAtom("_NET_WM_WINDOW_TYPE_TOOLBAR");
 		wina[n++] = XAtom("_NET_WM_WINDOW_TYPE_NORMAL");
 		XChangeProperty(Xdisplay, GetWindow(), XAtom("_NET_WM_WINDOW_TYPE"), XAtom("ATOM"), 32,
+		                PropModeReplace, (const unsigned char *)wina, n);
+		n = 0;
+		if(topmost)
+			wina[n++] = XAtom("_NET_WM_STATE_ABOVE");
+		XChangeProperty(Xdisplay, GetWindow(), XAtom("_NET_WM_STATE"), XAtom("ATOM"), 32,
 		                PropModeReplace, (const unsigned char *)wina, n);
 		wm_hints->flags = InputHint|WindowGroupHint|StateHint;
 		wm_hints->initial_state = NormalState;
@@ -233,6 +238,17 @@ void TopWindow::Overlap(bool effect)
 {
 	state = OVERLAPPED;
 
+}
+
+TopWindow& TopWindow::TopMost(bool b)
+{
+	topmost = b;
+	return *this;
+}
+
+bool TopWindow::IsTopMost() const
+{
+	return topmost;
 }
 
 #endif

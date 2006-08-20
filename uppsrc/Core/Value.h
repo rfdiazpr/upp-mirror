@@ -130,6 +130,9 @@ public:
 	bool     IsVoid() const          { return GetType() == VOID_V || IsError(); }
 	bool     IsNull() const          { return ptr->IsNull(); }
 
+	template <class T>
+	bool     Is() const;
+
 	operator String() const;
 	operator WString() const;
 	operator Date() const;
@@ -168,6 +171,31 @@ public:
 	Value(Void *p)                        { ptr = p; }
 	const Void *GetVoidPtr() const        { return ptr; }
 };
+
+#define VALUE_COMPARE(T) \
+inline bool operator==(const Value& v, T x)   { return (T)v == x; } \
+inline bool operator==(T x, const Value& v)   { return (T)v == x; } \
+inline bool operator!=(const Value& v, T x)   { return (T)v != x; } \
+inline bool operator!=(T x, const Value& v)   { return (T)v != x; } \
+
+VALUE_COMPARE(int)
+VALUE_COMPARE(int64)
+VALUE_COMPARE(double)
+VALUE_COMPARE(bool)
+VALUE_COMPARE(Date)
+VALUE_COMPARE(Time)
+VALUE_COMPARE(String)
+VALUE_COMPARE(WString)
+
+inline bool operator==(const Value& v, const char *x)   { return (String)v == x; }
+inline bool operator==(const char *x, const Value& v)   { return (String)v == x; }
+inline bool operator!=(const Value& v, const char *x)   { return (String)v != x; }
+inline bool operator!=(const char *x, const Value& v)   { return (String)v != x; }
+
+inline bool operator==(const Value& v, const wchar *x)  { return (WString)v == x; }
+inline bool operator==(const wchar *x, const Value& v)  { return (WString)v == x; }
+inline bool operator!=(const Value& v, const wchar *x)  { return (WString)v != x; }
+inline bool operator!=(const wchar *x, const Value& v)  { return (WString)v != x; }
 
 inline bool IsVoid(const Value& v)     { return v.GetType() == VOID_V; }
 inline bool IsError(const Value& v)    { return v.GetType() == ERROR_V; }
@@ -210,10 +238,16 @@ inline dword ValueTypeNo(const T&)            { return StaticTypeNo<T>() + 0x800
 template <class T>
 bool IsType(const Value& x, T* = 0)           { return ValueTypeNo(*(T *)NULL) == x.GetType(); }
 
+template <class T>
+inline bool Value::Is() const
+{
+	return IsType<T>(*this);
+}
+
 template <class T, dword type, class B = EmptyClass>
 class AssignValueTypeNo : B {
 public:
-	friend dword ValueTypeNo(const T&)        { return type; }
+	friend dword ValueTypeNo(const T&)                  { return type; }
 
 	void operator=(const AssignValueTypeNo&) {} // MSC 6.0 empty base class bug fix
 };
@@ -478,6 +512,7 @@ public:
 	Ref(String& s);
 	Ref(WString& s);
 	Ref(int& i);
+	Ref(int64& i);
 	Ref(double& d);
 	Ref(Date& d);
 	Ref(Time& t);
@@ -495,6 +530,7 @@ T& GetRef(Ref r, T *x = NULL) {
 inline String&  RefString(Ref f)  { return GetRef<String>(f); }
 inline WString& RefWString(Ref f) { return GetRef<WString>(f); }
 inline int&     RefInt(Ref f)     { return GetRef<int>(f); }
+inline int64&   RefInt64(Ref f)   { return GetRef<int64>(f); }
 inline double&  RefDouble(Ref f)  { return GetRef<double>(f); }
 inline Date&    RefDate(Ref f)    { return GetRef<Date>(f); }
 inline Time&    RefTime(Ref f)    { return GetRef<Time>(f); }

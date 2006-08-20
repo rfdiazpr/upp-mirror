@@ -398,9 +398,18 @@ Zoom  GetRichTextStdScreenZoom();
 const Display& QTFDisplay();
 const Display& QTFDisplayVCenter();
 
-String EncodeHtml(const RichText& text, Index<String>& css, const VectorMap<String, String>& links,
+String EncodeHtml(const RichText& text, Index<String>& css,
+                  const VectorMap<String, String>& links,
+                  const VectorMap<String, String>& labels,
                   const String& path, const String& base = Null, Zoom z = Zoom(8, 40));
 String AsCss(Index<String>& ss);
+
+inline //BW - no labels
+String EncodeHtml(const RichText& text, Index<String>& css,
+                  const VectorMap<String, String>& links,
+                  const String& path, const String& base = Null, Zoom z = Zoom(8, 40)) {
+	return EncodeHtml(text, css, links, VectorMap<String, String>(), path, base, z);
+}
 
 struct SimplePageDraw : PageDraw {
 	Draw& w;

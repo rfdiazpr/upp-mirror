@@ -20,7 +20,6 @@
 #include <Web/Web.h>
 
 #include <ide/Browser/Browser.h>
-#include <ide/Topic/Topic.h>
 #include <CodeEditor/CodeEditor.h>
 
 #include "UppDlg.h"
@@ -245,12 +244,28 @@ class TopicWindow : public HelpWindow {
 public:
 	virtual Topic AcquireTopic(const String& topic);
 	virtual void  BarEx(Bar& bar);
+	virtual bool  Key(dword key, int count);
+	virtual void  FinishText(RichText& text);
 
 private:
 	void OpenTopic();
+	void Search();
+	void ShowWords();
+	void All();
+	void Lang();
+
+	Label    search_label;
+	WithDropChoice<EditString> search;
+	DropList lang;
+	bool     showwords, issearch, all;
+
 
 public:
 	Callback WhenTopic;
+
+	void SyncDocTree();
+
+	void Serialize(Stream& s);
 
 	typedef TopicWindow CLASSNAME;
 
@@ -665,8 +680,7 @@ public:
 	} ff;
 	int                              iwc;
 
-	IdeTopicEditor  topic;
-	HelpWindow      help;
+	TopicEditor     topic;
 	TopicWindow     doc;
 
 	String          lasttopicpath;
@@ -850,7 +864,6 @@ public:
 		void  OpenTopic();
 		void  OpenATopic();
 		void  TopicPackages();
-		void  OpenHelp();
 		void  Goto();
 		void  GotoGlobal();
 		void  ScanFile();
@@ -937,7 +950,6 @@ public:
 
 	void      ShowTopics();
 	void      ShowTopic(String topic);
-	void      SyncDocTree();
 
 	void      TopicBack();
 

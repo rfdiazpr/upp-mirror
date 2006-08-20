@@ -13,10 +13,9 @@ LAYOUT(QueryLayout, 612, 416)
 	ITEM(LabelBox, dv___11, SetLabel(t_("Documentation")).LeftPosZ(8, 164).TopPosZ(260, 60))
 	ITEM(Option, documented, SetLabel(t_("Documented")).LeftPosZ(20, 100).TopPosZ(280, 15))
 	ITEM(Option, notdocumented, SetLabel(t_("Not documented")).LeftPosZ(20, 100).TopPosZ(296, 15))
-	ITEM(FileList, package, HSizePosZ(184, 220).VSizePosZ(8, 44))
-	ITEM(FileList, file, RightPosZ(8, 204).VSizePosZ(8, 44))
+	ITEM(FileList, package, LeftPosZ(184, 208).VSizePosZ(8, 44))
+	ITEM(FileList, file, HSizePosZ(400, 8).VSizePosZ(8, 44))
 	ITEM(Button, clear, SetLabel(t_("Clear")).LeftPosZ(12, 64).BottomPosZ(8, 24))
 	ITEM(Button, ok, SetLabel(t_("OK")).RightPosZ(8, 64).BottomPosZ(8, 24))
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).RightPosZ(80, 64).BottomPosZ(8, 24))
 END_LAYOUT
-

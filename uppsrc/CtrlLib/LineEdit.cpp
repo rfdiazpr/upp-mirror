@@ -200,6 +200,7 @@ void   LineEdit::Layout() {
 	if(nohbar)
 		sz.cy = GetSize().cy;
 	sb.SetPage(sz / GetFontSize());
+	SetHBar();
 }
 
 int   LineEdit::GetGPos(int ln, int cl) const {
@@ -269,6 +270,7 @@ Rect LineEdit::GetLineScreenRect(int line) const {
 
 void LineEdit::SetSb() {
 	sb.SetTotalY(line.GetCount());
+	SetHBar();
 }
 
 void LineEdit::NewScrollPos() {}
@@ -356,7 +358,7 @@ void LineEdit::CenterCursor() {
 void LineEdit::Scroll() {
 	PlaceCaret0(GetColumnLine(cursor));
 	scroller.Scroll(*this, GetSize(), sb.Get(), GetFontSize());
-//	Refresh();
+	SetHBar();
 	NewScrollPos();
 }
 
@@ -562,19 +564,32 @@ void LineEdit::SetEditPosSb(const LineEdit::EditPos& pos) {
 	sb.SetY(minmax(pos.sby, 0, line.GetCount() - 1));
 }
 
+void LineEdit::SetHBar()
+{
+	int mpos = 0;
+	if(!nohbar) {
+		int m = min(sb.y + sb.GetPage().cy + 2, line.GetCount());
+		for(int i = sb.y; i < m; i++) {
+			int pos = 0;
+			WString l = line[i];
+			const wchar *s = l;
+			const wchar *e = l.End();
+			while(s < e)
+				if(*s++ == '\t')
+					pos = (pos + tabsize) / tabsize * tabsize;
+				else
+					pos++;
+			mpos = max(mpos, pos);
+		}
+	}
+	sb.SetTotalX(mpos + 1);
+}
+
 void LineEdit::ScrollIntoCursor()
 {
 	Point p = GetColumnLine(GetCursor());
-	int pos = 0;
-	WString l = line[p.y];
-	const wchar *s = l;
-	const wchar *e = l.End();
-	while(s < e)
-		if(*s++ == '\t')
-			pos = (pos + tabsize) / tabsize * tabsize;
-		else
-			pos++;
-	sb.SetTotalX(nohbar ? 0 : pos + 1);
+	sb.ScrollInto(p);
+	SetHBar();
 	sb.ScrollInto(p);
 }
 

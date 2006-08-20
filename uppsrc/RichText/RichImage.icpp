@@ -36,7 +36,10 @@ Size   RichImage::GetPixelSize(const Value& data) const
 
 Size   RichImage::GetPhysicalSize(const Value& data) const
 {
-	return GetImageStringDots(data);
+	Size sz = GetImageStringDots(data);
+	if(sz.cx == 0 || sz.cy == 0)
+		sz = 600 * GetPixelSize(data) / 96;
+	return sz;
 }
 
 void   RichImage::Paint(const Value& data, Draw& w, Size sz) const

@@ -174,7 +174,7 @@ void HexView::Paint(Draw& w)
 				h[1] = FormatHexDigit(b & 0x0f);
 				h[2] = '\0';
 				w.DrawText(x, y, h, font, SColorText);
-				Color color = SColorLtHighlight;
+				Color color = SColorMark;
 				switch(b) {
 				case '\a': *h = 'a'; break;
 				case '\b': *h = 'b'; break;

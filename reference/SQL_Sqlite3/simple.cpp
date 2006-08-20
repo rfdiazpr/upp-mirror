@@ -21,7 +21,6 @@ CONSOLE_APP_MAIN
 		return;
 	}
 
-	// What does this do?
 	SQL = sqlite3;
 
 	// Update the schema to match the schema described in "simple.sch"
@@ -76,7 +75,7 @@ CONSOLE_APP_MAIN
 	LOG(sql.ToString());
 
 	// Test insertion with args
-	Sql insert("insert into SIMPLE_TEST1(name,date) values(?,?)",sqlite3);
+	Sql insert("insert into SIMPLE_TEST1(name,bdate) values(?,?)",sqlite3);
 	insert.Run("joseph",19990101);
 	insert.Run(  "neel",19990102);
 	insert.Run(   "bob",19990103);

@@ -1,0 +1,13 @@
+#include <CtrlLib/CtrlLib.h>
+
+GUI_APP_MAIN
+{
+	TopWindow  app;
+	app.SetRect(0, 0, 200, 20);
+	EditString text;
+	app.Add(text.TopPosZ(0, 20).HSizePos());
+
+	text <<= "Some text - operator version";
+	app.Run();
+	PromptOK((String)~text);
+}

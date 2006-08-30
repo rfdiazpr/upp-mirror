@@ -3,8 +3,6 @@
 struct MyAppWindow : TopWindow {
 	Button lt, rt, lb, rb, lv, ht, hv, cb, rc;
 
-	typedef MyAppWindow CLASSNAME;
-
 	MyAppWindow() {
 		Title("My application with button").Sizeable();
 		*this

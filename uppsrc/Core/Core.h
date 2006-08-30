@@ -8,6 +8,38 @@
 	#define _MULTITHREADED
 #endif
 
+#ifdef flagMSC8ARM
+	#define PLATFORM_WIN32
+	#define PLATFORM_PDA
+	#define PLATFORM_WINCE
+	#define CPU_ARM
+	#define COMPILER_MSC
+	#define COMPILER_MSC8
+
+	#ifndef _WIN32_WCE
+		#define ARM
+		#define _ARM_
+		#define _WIN32_WCE 0x420
+		#define WIN32_PLATFORM_PSPC
+		#define _UNICODE
+		#define UNICODE
+		#define UNDER_CE
+	#endif
+
+	#define CPU_32
+	#define CPU_ARM
+	#define CPU_LE
+	#define CPU_LITTLE_ENDIAN // is it really?
+	#define CPU_ALIGNED
+
+	#ifndef _CPPRTTI
+		#error RTTI must be enabled !!!
+	#endif // _CPPRTTI
+	#pragma warning(disable: 4786)
+
+	#define NO_ERRNO_H
+#endif
+
 #ifdef flagLINUX
 	#define PLATFORM_LINUX
 	#define PLATFORM_POSIX
@@ -52,18 +84,6 @@
 	#endif
 #endif
 
-#ifdef flagWINCE_PPC
-	#define PLATFORM_WIN32
-	#define PLATFORM_WINCE
-	#define PLATFORM_WINCE_PPC
-#endif
-
-#ifdef flagWINCE_SP
-	#define PLATFORM_WIN32
-	#define PLATFORM_WINCE
-	#define PLATFORM_WINCE_SP
-#endif
-
 #ifdef _MSC_VER
 	#define COMPILER_MSC
 	#ifndef _CPPRTTI
@@ -74,15 +94,6 @@
 	#endif
 	#pragma warning(disable: 4786)
 	#define _CRT_SECURE_NO_DEPRECATE // we really need strcpy etc. to work with MSC 8.0
-#endif
-
-#ifdef flagEVC
-	#define COMPILER_EVC
-	#define COMPILER_MSC
-	#ifndef _CPPRTTI
-		#error RTTI must be enabled !!!
-	#endif // _CPPRTTI
-	#pragma warning(disable: 4786)
 #endif
 
 #ifdef flagGNU
@@ -142,7 +153,7 @@
 	#define CPU_BE
 	#define CPU_BIG_ENDIAN
 	#define CPU_ALIGNED
-#elif defined(flagARM)
+#elif defined(flagARM) || defined(ARM)
 	#define CPU_32
 	#define CPU_ARM
 	#define CPU_LE
@@ -213,11 +224,15 @@
 	#define DIR_SEP  '\\'
 	#define DIR_SEPS "\\"
 	#define PLATFORM_PATH_HAS_CASE 0
-	#include <io.h>
+	#ifndef PLATFORM_WINCE
+		#include <io.h>
+	#endif
 	#ifndef PLATFORM_MFC // just mini Windows headers
 		#ifdef COMPILER_MSC
-			#ifndef _X86_
-				#define _X86_
+			#ifndef CPU_ARM
+				#ifndef _X86_
+					#define _X86_
+				#endif
 			#endif
 			#ifndef _WINDOWS_
 				#define _WINDOWS_
@@ -247,6 +262,10 @@
 			#include <windows.h>
 			#include <stdint.h>
 		#endif
+	#endif
+
+	#ifdef RGBA
+		#undef RGBA
 	#endif
 #endif
 

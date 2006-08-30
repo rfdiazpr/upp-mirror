@@ -202,10 +202,11 @@ class FontInfo : Moveable<FontInfo> {
 		int  width;
 		int  lspc;
 		int  rspc;
-	#ifdef PLATFORM_X11 //TODO remove
-//		byte chr;
-	#endif
+
+		bool operator==(const CharMetrics& b)
+		     { return width = b.width && lspc == b.lspc && rspc == b.rspc; }
 	};
+
 	struct Data : public Link<Data, 2> {
 		void         GetMetrics(int page, CharMetrics *t);
 	#ifdef PLATFORM_X11
@@ -236,6 +237,7 @@ class FontInfo : Moveable<FontInfo> {
 		int          charcount;
 		int          default_char;
 		CharMetrics *width[256];
+		CharMetrics *default_width;
 		bool         fixedpitch;
 		bool         scaleable;
 		int          spacebefore;
@@ -329,7 +331,9 @@ struct Tahoma    : public Font { Tahoma(int n) : Font(TAHOMA, n) {} };
 #endif
 
 #ifdef PLATFORM_WIN32
+#ifndef PLATFORM_WINCE
 HPALETTE GetQlibPalette();
+#endif
 #endif
 
 Size GetTextSize(const wchar *text, Font font, int n = -1);
@@ -342,9 +346,11 @@ enum {
 	PEN_NULL = -1,
 	PEN_SOLID = -2,
 	PEN_DASH = -3,
+#ifndef PLATFORM_WINCE
 	PEN_DOT = -4,
 	PEN_DASHDOT = -5,
 	PEN_DASHDOTDOT = -6,
+#endif
 };
 
 class Image;
@@ -541,7 +547,11 @@ public:
 	static int  GetStdFontCy()                          { return GetStdFontSize().cy; }
 
 #ifdef PLATFORM_WIN32
+#ifdef PLATFORM_WINCE
+	static void Flush()                                 {}
+#else
 	static void Flush()                                 { GdiFlush(); }
+#endif
 #endif
 #ifdef PLATFORM_X11
 	static void Flush()                                 { XSync(Xdisplay, false); }
@@ -615,6 +625,8 @@ public:
 	virtual void DrawImageOp(int x, int y, int cx, int cy, const Image& img, const Rect& src, Color color);
 	virtual void DrawDataOp(int x, int y, int cx, int cy, const String& data, const char *id);
 	virtual void DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color);
+
+#ifndef PLATFORM_WINCE
 	virtual void DrawPolyPolylineOp(const Point *vertices, int vertex_count,
 	                                const int *counts, int count_count,
 	                                int width, Color color, Color doxor);
@@ -623,11 +635,11 @@ public:
 	                                   const int *disjunct_polygon_counts, int dpcc,
 	                                   Color color, int width, Color outline,
 	                                   Image image, Color doxor);
-	virtual void DrawEllipseOp(const Rect& r, Color color, int pen, Color pencolor);
 	virtual void DrawArcOp(const Rect& rc, Point start, Point end, int width, Color color);
+#endif
+	virtual void DrawEllipseOp(const Rect& r, Color color, int pen, Color pencolor);
 	virtual void DrawTextOp(int x, int y, int angle, const wchar *text, Font font,
 		                    Color ink, int n, const int *dx);
-
 	virtual void DrawDrawingOp(const Rect& target, const Drawing& w);
 
 	void  Begin()                                       { BeginOp(); }
@@ -683,6 +695,7 @@ public:
 	void DrawEllipse(int x, int y, int cx, int cy, Color color = DefaultInk,
 		             int pen = Null, Color pencolor = DefaultInk);
 
+#ifndef PLATFORM_WINCE
 	void DrawArc(const Rect& rc, Point start, Point end, int width = 0, Color color = DefaultInk)
 	{ DrawArcOp(rc, start, end, width, color); }
 
@@ -724,6 +737,7 @@ public:
 	                   Color color = DefaultInk, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
 	void   DrawPolygon(const Vector<Point>& vertices,
 	                   Color color = DefaultInk, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+#endif
 
 	void DrawDrawing(const Rect& r, const Drawing& iw) { DrawDrawingOp(r, iw); }
 	void DrawDrawing(int x, int y, int cx, int cy, const Drawing& iw);
@@ -757,11 +771,12 @@ public:
 	bool         IsMetaFile() const                     { return device == -1; }
 
 	COLORREF GetColor(Color color) const;
+#ifndef PLATFORM_WINCE
 	Point LPtoDP(Point p) const;
 	Point DPtoLP(Point p) const;
 	Rect  LPtoDP(const Rect& r) const;
 	Rect  DPtoLP(const Rect& r) const;
-
+#endif
 	void SetColor(Color color);
 	void SetFont(Font font, int angle = 0);
 	void SetDrawPen(int width, Color color);
@@ -904,11 +919,14 @@ public:
 	Drawing()                      { size = Null; }
 
 #ifdef PLATFORM_WIN32
+#ifndef PLATFORM_WINCE
+	// deprecated
 	static Drawing FromWMF(const WinMetaFile& wmf);
 	static Drawing LoadWMF(const char *file);
 	static Drawing ReadClipboardWMF();
 	WinMetaFile AsWMF() const;
 	void        WriteClipboardWMF() const;
+#endif
 #endif
 };
 

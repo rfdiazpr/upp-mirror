@@ -1,7 +1,7 @@
 uses
 	Draw;
 
-library(WIN32) "advapi32 comdlg32 comctl32";
+library(WIN32 !MSC8ARM) "advapi32 comdlg32 comctl32";
 
 file
 	Core readonly separator,

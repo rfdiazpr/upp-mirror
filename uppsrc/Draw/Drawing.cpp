@@ -394,6 +394,8 @@ static void wsDrawLine(Draw& w, Stream& s, const DrawingPos& ps) {
 	w.DrawLine(ps(x1, y1), ps(x2, y2), width > 0 ? ps.GetW(width) : width, color);
 }
 
+#ifndef PLATFORM_WINCE
+
 static void wsDrawPolyPolyline(Draw& w, Stream& stream, const DrawingPos& dp)
 {
 	int width, vertex_count, count_count;
@@ -436,15 +438,6 @@ static void wsDrawPolyPolyPolygon(Draw& w, Stream& stream, const DrawingPos& dp)
 		                  color, width, outline, image, doxor);
 }
 
-static void wsDrawEllipse(Draw& w, Stream& s, const DrawingPos& ps) {
-	Rect r;
-	s % r;
-	Color color, pencolor;
-	int pen;
-	s % color / pen % pencolor;
-	w.DrawEllipse(ps(r), color, pen > 0 ? ps.GetW(pen) : pen, pencolor);
-}
-
 static void wsDrawArc(Draw& w, Stream& s, const DrawingPos& ps)
 {
 	Rect r;
@@ -453,6 +446,17 @@ static void wsDrawArc(Draw& w, Stream& s, const DrawingPos& ps)
 	int width;
 	s % r % start % end % color % width;
 	w.DrawArc(r, start, end, width, color);
+}
+
+#endif
+
+static void wsDrawEllipse(Draw& w, Stream& s, const DrawingPos& ps) {
+	Rect r;
+	s % r;
+	Color color, pencolor;
+	int pen;
+	s % color / pen % pencolor;
+	w.DrawEllipse(ps(r), color, pen > 0 ? ps.GetW(pen) : pen, pencolor);
 }
 
 static void wsDrawText(Draw& w, Stream& s, const DrawingPos& ps) {
@@ -591,9 +595,11 @@ void Draw::DrawDrawingOp(const Rect& target, const Drawing& w) {
 			Register(DRAWLINE, wsDrawLine);
 			Register(DRAWELLIPSE, wsDrawEllipse);
 			Register(DRAWTEXT, wsDrawText);
+#ifndef PLATFORM_WINCE
 			Register(DRAWARC, wsDrawArc);
 			Register(DRAWPOLYPOLYLINE, wsDrawPolyPolyline);
 			Register(DRAWPOLYPOLYPOLYGON, wsDrawPolyPolyPolygon);
+#endif
 			Register(DRAWDATA, wsDrawData);
 		}
 	}
@@ -713,7 +719,7 @@ void Drawing::Serialize(Stream& s)
 }
 
 #ifdef PLATFORM_WIN32
-
+#ifndef PLATFORM_WINCE
 Drawing Drawing::FromWMF(const WinMetaFile& wmf) {
 	if(!wmf) return Drawing();
 	Size sz = wmf.GetSize();
@@ -743,5 +749,5 @@ void Drawing::WriteClipboardWMF() const {
 	WinMetaFile wmf = AsWMF();
 	wmf.WriteClipboard();
 }
-
+#endif
 #endif

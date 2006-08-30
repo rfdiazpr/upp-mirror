@@ -12,9 +12,11 @@ bool EditText(WString& s, const char *title, const char *label, int maxlen = 0);
 void Show2(Ctrl& ctrl1, Ctrl& ctrl, bool show = true);
 void Hide2(Ctrl& ctrl1, Ctrl& ctrl);
 
+#ifndef PLATFORM_WINCE //TODO?
 void UpdateFile(const char *filename);
 void SelfUpdate();
 bool SelfUpdateSelf();
+#endif
 
 void WindowsList();
 void WindowsMenu(Bar& bar);
@@ -38,6 +40,8 @@ public:
 #ifdef PLATFORM_WIN32
 struct Win32PrintDlg_;
 #endif
+
+#ifndef PLATFORM_WINCE
 
 class PrinterJob {
 #ifdef PLATFORM_WIN32
@@ -72,8 +76,11 @@ public:
 	~PrinterJob();
 };
 
+#endif
+
 
 #ifdef PLATFORM_WIN32
+#ifndef PLATFORM_WINCE
 
 #include <ShellAPI.h>
 
@@ -163,7 +170,7 @@ public:
 	FileSelector();
 };
 
-
+#endif
 #endif
 
 #ifdef PLATFORM_X11

@@ -398,9 +398,11 @@ RichTextCtrl::RichTextCtrl()
 	AutoHideSb();
 }
 
+#ifndef PLATFORM_PDA
+
 void Print(Draw& w, const RichText& text, const Rect& page, const Vector<int>& pg)
 {
-	LOG("Print");
+	LLOG("Print");
 	int lpage = text.GetHeight(page).page;
 	PrintPageDraw pw(w);
 	Size sz = w.GetPageMMs();
@@ -452,3 +454,5 @@ bool Print(const RichText& text, const Rect& page, int currentpage, const char *
 	}
 	return false;
 }
+
+#endif

@@ -653,7 +653,7 @@ ZEXTERN int ZEXPORT uncompress OF((Bytef *dest,   uLongf *destLen,
    buffer, or Z_DATA_ERROR if the input data was corrupted.
 */
 
-
+#if 0 // not needed, not supported by WIN CE
 typedef voidp gzFile;
 
 ZEXTERN gzFile ZEXPORT gzopen  OF((const char *path, const char *mode));
@@ -817,6 +817,7 @@ ZEXTERN const char * ZEXPORT gzerror OF((gzFile file, int *errnum));
    anyway because they might be useful in applications using the
    compression library.
 */
+#endif
 
 ZEXTERN uLong ZEXPORT adler32 OF((uLong adler, const Bytef *buf, uInt len));
 

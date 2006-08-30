@@ -368,6 +368,7 @@ public:
 	void       CenterCursor();
 	void       ScrollInto(int line);
 	void       ScrollIntoCursor();
+	void       SetCursorEditFocus();
 	int        GetScroll() const;
 	void       ScrollTo(int sc);
 	void       ShowAppendLine();

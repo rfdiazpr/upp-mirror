@@ -9,8 +9,11 @@ void    TopWindow::SyncSizeHints() {}
 LRESULT TopWindow::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd = GetHWND();
+#ifndef PLATFORM_WINCE
 	bool inloop;
+#endif
 	switch(message) {
+#ifndef PLATFORM_WINCE
 	case WM_QUERYENDSESSION:
 		inloop = InLoop();
 		WhenClose();
@@ -19,17 +22,21 @@ LRESULT TopWindow::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 		EndSession() = true;
 		PostQuitMessage(0);
 		return 0;
+#endif
 	case WM_CLOSE:
 		IgnoreMouseUp();
 		WhenClose();
 		return 0;
 	case WM_WINDOWPOSCHANGED:
+#ifndef PLATFORM_WINCE
 		if(IsIconic(hwnd))
 			state = MINIMIZED;
 		else
 		if(IsZoomed(hwnd))
 			state = MAXIMIZED;
-		else {
+		else
+#endif
+		{
 			state = OVERLAPPED;
 			overlapped = GetScreenClient(hwnd);
 		}
@@ -42,12 +49,14 @@ LRESULT TopWindow::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 void TopWindow::SyncTitle()
 {
 	HWND hwnd = GetHWND();
+#ifndef PLATFORM_WINCE
 	if(hwnd)
 		if(IsWindowUnicode(hwnd)) { // TRC 04/10/17: ActiveX Unicode patch
 //			ASSERT(IsWindowUnicode(hwnd));
 			::SetWindowTextW(hwnd, (const WCHAR*)~title);
 		}
 		else
+#endif
 			::SetWindowText(hwnd, ToSystemCharset(title.ToString()));
 }
 
@@ -76,11 +85,13 @@ void TopWindow::SyncCaption()
 		style |= WS_MAXIMIZEBOX;
 	if(sizeable)
 		style |= WS_THICKFRAME;
+#ifndef PLATFORM_WINCE
 	if(IsNull(icon) && !maximizebox && !minimizebox) {
 		style |= WS_POPUPWINDOW|WS_DLGFRAME;
 		exstyle |= WS_EX_DLGMODALFRAME;
 	}
 	else
+#endif
 		style |= WS_SYSMENU;
 	if(tool)
 		exstyle |= WS_EX_TOOLWINDOW;
@@ -90,8 +101,12 @@ void TopWindow::SyncCaption()
 		SyncTitle();
 	}
 	DeleteIco();
-	::SendMessage(hwnd, WM_SETICON, false, (LPARAM)(ico = IconWin32(icon)));
-	::SendMessage(hwnd, WM_SETICON, true, (LPARAM)(lico = IconWin32(largeicon)));
+#ifndef PLATFORM_WINCE //TODO!!!
+	if(hwnd) {
+		::SendMessage(hwnd, WM_SETICON, false, (LPARAM)(ico = IconWin32(icon)));
+		::SendMessage(hwnd, WM_SETICON, true, (LPARAM)(lico = IconWin32(largeicon)));
+	}
+#endif
 }
 
 void TopWindow::CenterRect(HWND hwnd)
@@ -100,7 +115,9 @@ void TopWindow::CenterRect(HWND hwnd)
 	if(hwnd && center == 1 || center == 2) {
 		Size sz = GetRect().Size();
 		Rect frmrc(sz);
+	#ifndef PLATFORM_WINCE
 		::AdjustWindowRect(frmrc, WS_OVERLAPPEDWINDOW, FALSE);
+	#endif
 		Rect r, wr;
 		wr = Ctrl::GetWorkArea().Deflated(-frmrc.left, -frmrc.top,
 			frmrc.right - sz.cx, frmrc.bottom - sz.cy);
@@ -129,6 +146,9 @@ void TopWindow::Open(HWND hwnd)
 	LLOG("TopWindow::Open, HWND = " << FormatIntHex((int)hwnd, 8) << ", Active = " << FormatIntHex((int)::GetActiveWindow(), 8));
 	IgnoreMouseUp();
 	SyncCaption();
+#ifdef PLATFORM_WINCE
+	if(!GetRect().IsEmpty())
+#endif
 	CenterRect(hwnd);
 	Create(hwnd, style, exstyle, false, state == OVERLAPPED ? SW_SHOWNORMAL :
 	                                    state == MINIMIZED  ? SW_MINIMIZE :
@@ -157,7 +177,11 @@ void TopWindow::Minimize(bool effect)
 {
 	state = MINIMIZED;
 	if(IsOpen())
+#ifdef PLATFORM_WINCE
+		::ShowWindow(GetHWND(), SW_MINIMIZE);
+#else
 		::ShowWindow(GetHWND(), effect ? SW_MINIMIZE : SW_SHOWMINIMIZED);
+#endif
 }
 
 void TopWindow::Maximize(bool effect)

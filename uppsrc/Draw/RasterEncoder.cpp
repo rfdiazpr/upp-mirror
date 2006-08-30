@@ -121,6 +121,7 @@ void ImageEncoder::WriteLine()
 
 void StreamRasterEncoder::Save(Stream& s, Raster& raster)
 {
+	RTIMING("StreamRasterEncoder::Save");
 	SetStream(s);
 	Size sz = raster.GetSize();
 	Create(sz, raster);

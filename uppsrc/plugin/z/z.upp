@@ -2,6 +2,8 @@ optimize_speed;
 
 flags(NOTMFC) "!GUI !CONSOLE";
 
+options(MSC8ARM) -DNO_ERRNO_H;
+
 file
 	Wrapper readonly separator,
 	z.h,

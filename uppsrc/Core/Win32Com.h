@@ -2,9 +2,13 @@
 
 #include <winreg.h>
 
+#ifdef PLATFORM_WINCE
+inline bool IsWinNT() { return false; }
+inline bool IsWinXP() { return false; }
+#else
 inline bool IsWinNT() { return GetVersion() < 0x80000000; }
-
 bool IsWinXP();
+#endif
 
 HINSTANCE AppGetHandle();
 void      AppSetHandle(HINSTANCE dll_instance);
@@ -19,8 +23,10 @@ bool   SetWinRegString(const String& string, const char *value, const char *path
 bool   SetWinRegInt(int data, const char *value, const char *path, HKEY base_key = HKEY_LOCAL_MACHINE);
 void   DeleteWinReg(const String& key, HKEY base = HKEY_LOCAL_MACHINE);
 
+#ifndef PLATFORM_WINCE
 String GetSystemDirectory();
 String GetWindowsDirectory();
+#endif
 String GetModuleFileName(HINSTANCE instance = AppGetHandle());
 
 #endif

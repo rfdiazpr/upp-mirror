@@ -303,8 +303,7 @@ void TopicEditor::RemoveGroup()
 
 void CreateTopic(const char *fn, int lang, const String& ss)
 {
-	SaveFile(fn, "TITLE(\"\")\r\nTOPIC_TEXT(" + AsCString(ss) + ")"
-	             + "TOPIC_TEXT(\"[{_}%" + LNGAsText(lang) + " &]\")");
+	SaveFile(fn,  WriteTopic("", ParseQTF(ss + "[{_}%" + LNGAsText(lang) + " ")));
 }
 
 template <class T>

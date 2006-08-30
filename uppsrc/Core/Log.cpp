@@ -1,5 +1,21 @@
 #include "Core.h"
 
+#ifdef PLATFORM_WINCE
+const char *FromSysChrSet(const wchar *s)
+{
+	static char out[256];
+	FromUnicode(out, s, wstrlen(s), CHARSET_DEFAULT);
+	return out;
+}
+
+const wchar *ToSysChrSet(const char *s)
+{
+	static wchar out[1024];
+	ToUnicode(out, s, strlen(s), CHARSET_DEFAULT);
+	return out;
+}
+#endif
+
 LogStream::LogStream()
 {
 #ifdef PLATFORM_POSIX
@@ -31,7 +47,7 @@ bool LogStream::Delete()
 {
 	Close();
 	if(*filename) {
-		if(!DeleteFile(filename)) {
+		if(!FileDelete(filename)) {
 			BugLog() << "Error deleting " << filename << ": " << GetLastErrorMessage();
 			return false;
 		}
@@ -49,7 +65,7 @@ void LogStream::Create(const char *path, bool append)
 	strcat(backup, ".old");
 
 #if defined(PLATFORM_WIN32)
-	::DeleteFile(backup);
+	FileDelete(backup);
 #elif defined(PLATFORM_POSIX)
 	unlink(backup);
 #else
@@ -57,7 +73,7 @@ void LogStream::Create(const char *path, bool append)
 #endif
 
 #if defined(PLATFORM_WIN32)
-	::MoveFile(filename, backup);
+	FileMove(filename, backup);
 #elif defined(PLATFORM_POSIX)
 	!rename(filename, backup);
 #else
@@ -67,7 +83,7 @@ void LogStream::Create(const char *path, bool append)
 	filesize = 0;
 
 #ifdef PLATFORM_WIN32
-	hfile = CreateFile(filename,
+	hfile = CreateFile(ToSysChrSet(filename),
 		GENERIC_READ|GENERIC_WRITE,
 		FILE_SHARE_READ|FILE_SHARE_WRITE,
 		NULL,
@@ -86,14 +102,20 @@ void LogStream::Create(const char *path, bool append)
 	p = buffer;
 
 	Time t = GetSysTime();
+#ifdef PLATFORM_WINCE
+	wchar exe[512];
+#else
 	char exe[512];
+#endif
 	char user[500];
 	*user = 0;
 
 #ifdef PLATFORM_WIN32
 	GetModuleFileName(AppGetHandle(), exe, 512);
+#ifndef PLATFORM_WINCE
 	dword w = 2048;
 	GetUserName(user, &w);
+#endif
 #else //#
 	const char *GetExeTitleCharPtr();
 	strcpy(exe, GetExeTitleCharPtr());
@@ -102,7 +124,8 @@ void LogStream::Create(const char *path, bool append)
 
 	char h[1000];
 	sprintf(h, "* %s %02d.%02d.%04d %02d:%02d:%02d, user: %s\n",
-	           exe, t.day, t.month, t.year, t.hour, t.minute, t.second, user, part);
+	           FromSysChrSet(exe),
+	           t.day, t.month, t.year, t.hour, t.minute, t.second, user);
 	dword n;
 #ifdef PLATFORM_WIN32
 	WriteFile(hfile, h, strlen(h), &n, NULL);

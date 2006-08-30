@@ -1,6 +1,6 @@
 #include "CtrlCore.h"
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)  // LOG(x)
 
 Ptr<Ctrl> Ctrl::mouseCtrl;
 Ptr<Ctrl> Ctrl::captureCtrl;
@@ -286,7 +286,7 @@ bool    Ctrl::HasMouseIn(const Rect& r)
 }
 
 void    Ctrl::DoCursorShape() {
-	LLOG("DoCursorShape " << ::Name(mouseCtrl));
+//	LLOG("DoCursorShape " << ::Name(mouseCtrl));
 	if(mouseCtrl)
 		mouseCtrl->GetTopCtrl()->SetMouseCursor(mouseCtrl->MEvent0(CURSORIMAGE, mousepos, 0));
 }

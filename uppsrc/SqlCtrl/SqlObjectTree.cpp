@@ -182,7 +182,7 @@ void DlgSqlExport::Run(Sql& cursor, String command, String tablename)
 						}
 						case FMT_SQL: {
 							if(i) script.Cat(", ");
-							script << SqlFormat(v, SQLD_ORACLE);
+//							script << SqlCompile(SQLD_ORACLE, SqlFormat(v));
 							break;
 						}
 					}

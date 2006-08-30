@@ -584,7 +584,7 @@ void FileSel::FileUpdate() {
 
 void FileSel::Rename(const String& on, const String& nn) {
 #ifdef PLATFORM_WIN32
-	if(MoveFile(FilePath(on), FilePath(nn)))
+	if(FileMove(FilePath(on), FilePath(nn)))
 #endif
 #ifdef PLATFORM_X11
 	if(rename(FilePath(on), FilePath(nn)) == 0)

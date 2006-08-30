@@ -1,13 +1,11 @@
 #include <CtrlLib/CtrlLib.h>
 
 struct MyAppWindow : TopWindow {
-	MenuBar menu;
-
 	void Exit() {
 		if(PromptOKCancel("Exit MyApp?"))
 			Break();
 	}
-	
+
 	void RightDown(Point, dword) {
 		CallbackArgTarget<int> result;
 		MenuBar menu;

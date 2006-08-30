@@ -821,7 +821,9 @@ void RTFParser::ReadPict()
 	enum BLIPTYPE { UNK_BLIP, EMF_BLIP, PNG_BLIP, JPEG_BLIP, WMF_BLIP, DIB_BLIP };
 	BLIPTYPE blip_type = UNK_BLIP;
 #ifdef PLATFORM_WIN32
+#ifndef PLATFORM_WINCE
 	int wmf_mode = MM_ANISOTROPIC;
+#endif
 #endif
 	String blip_data;
 	char odd = 0;
@@ -843,7 +845,9 @@ void RTFParser::ReadPict()
 			else if(PassQ("pngblip"))    blip_type    = PNG_BLIP;
 			else if(PassQ("jpegblip"))   blip_type    = JPEG_BLIP;
 #ifdef PLATFORM_WIN32
+#ifndef PLATFORM_WINCE
 			else if(PassQ("wmetafile"))  { blip_type = WMF_BLIP; wmf_mode = command_arg; }
+#endif
 #endif
 			else if(PassQ("dibitmap"))   blip_type = DIB_BLIP;
 			else Skip();
@@ -852,6 +856,7 @@ void RTFParser::ReadPict()
 			Skip();
 	DrawingDraw dd(log_size);
 #ifdef PLATFORM_WIN32
+#ifndef PLATFORM_WINCE
 	if(blip_type == EMF_BLIP || blip_type == WMF_BLIP)
 	{
 		WinMetaFile wmf;
@@ -868,6 +873,7 @@ void RTFParser::ReadPict()
 		wmf.Paint(dd, log_size);
 	}
 	else
+#endif
 #endif
 	if(blip_type == DIB_BLIP || blip_type == PNG_BLIP || blip_type == JPEG_BLIP)
 	{

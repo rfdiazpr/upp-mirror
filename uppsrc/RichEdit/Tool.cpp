@@ -110,7 +110,8 @@ void RichEdit::PaperTool(Bar& bar)
 
 void RichEdit::LanguageTool(Bar& bar, int width)
 {
-	bar.Add(!IsReadOnly(), language, width);
+	if(!fixedlang)
+		bar.Add(!IsReadOnly(), language, width);
 }
 
 void RichEdit::SpellCheckTool(Bar& bar)

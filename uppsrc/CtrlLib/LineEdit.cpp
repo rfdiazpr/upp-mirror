@@ -74,7 +74,7 @@ void   LineEdit::Paint0(Draw& w) {
 	sell -= cpos;
 	selh -= cpos;
 	int pos = cpos;
-	Vector<int> dx;
+	Vector<int> dx, dx2;
 	int fascent = font.Info().GetAscent();
 	for(int i = sc.y; i < ll; i++) {
 		WString tx = line[i];
@@ -130,20 +130,25 @@ void   LineEdit::Paint0(Draw& w) {
 						gp = ngp;
 					}
 					else {
+						bool cjk = IsCJKIdeograph(txt[q]);
 						int p = q + 1;
-						while(p < len && h == hl[p] && txt[p] != '\t')
+						while(p < len && h == hl[p] && txt[p] != '\t' && IsCJKIdeograph(txt[p]) == cjk)
 							p++;
 						int l = p - q;
+						int ll = cjk ? 2 * l : l;
 						LLOG("Highlight -> paper[" << q << "] = " << h.paper);
-						w.DrawRect(gp * fsz.cx - scx, y, fsz.cx * l, fsz.cy, h.paper);
-						if(bordercolumn > 0 && bordercolumn >= gp && bordercolumn < gp + l)
+						w.DrawRect(gp * fsz.cx - scx, y, fsz.cx * ll, fsz.cy, h.paper);
+						if(bordercolumn > 0 && bordercolumn >= gp && bordercolumn < gp + ll)
 							w.DrawRect((bordercolumn - sc.x) * fsz.cx, y, 1, fsz.cy, bordercolor);
-						dx.At(l, fsz.cx);
+						if(cjk)
+							dx2.At(l, 2 * fsz.cx);
+						else
+							dx.At(l, fsz.cx);
 						w.DrawText(gp * fsz.cx - scx,
 						           y + fascent - h.font.Info().GetAscent(),
-						           ~txt + q, h.font, h.ink, l, dx);
+						           ~txt + q, h.font, h.ink, l, cjk ? dx2 : dx);
 						q = p;
-						gp += l;
+						gp += ll;
 					}
 				}
 			}
@@ -214,7 +219,7 @@ int   LineEdit::GetGPos(int ln, int cl) const {
 		if(*s == '\t')
 			gl = (gl + tabsize) / tabsize * tabsize;
 		else
-			gl++;
+			gl += 1 + IsCJKIdeograph(*s);
 		if(cl < gl) break;
 		s++;
 	}
@@ -229,10 +234,11 @@ Point LineEdit::GetColumnLine(int pos) const {
 	WString txt = line[p.y];
 	const wchar *s = txt;
 	while(pos--) {
-		if(*s++ == '\t')
+		if(*s == '\t')
 			p.x = (p.x + tabsize) / tabsize * tabsize;
 		else
-			p.x++;
+			p.x += 1 + IsCJKIdeograph(*s);
+		s++;
 	}
 	return p;
 }
@@ -574,11 +580,13 @@ void LineEdit::SetHBar()
 			WString l = line[i];
 			const wchar *s = l;
 			const wchar *e = l.End();
-			while(s < e)
-				if(*s++ == '\t')
+			while(s < e) {
+				if(*s == '\t')
 					pos = (pos + tabsize) / tabsize * tabsize;
 				else
-					pos++;
+					pos += 1 + IsCJKIdeograph(*s);
+				s++;
+			}
 			mpos = max(mpos, pos);
 		}
 	}

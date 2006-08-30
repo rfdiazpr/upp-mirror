@@ -2,7 +2,7 @@
 
 // iscale: computes x * y / z.
 
-#if defined(PLATFORM_WIN32) && defined(COMPILER_MSC)
+#if defined(PLATFORM_WIN32) && defined(COMPILER_MSC) && defined(CPU_X86)
 #pragma warning(disable: 4035)
 #else
 #define __NOASSEMBLY__

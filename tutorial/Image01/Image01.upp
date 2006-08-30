@@ -3,7 +3,7 @@ uses
 
 file
 	main.cpp,
-	Image01.iml;
+	images.iml;
 
 mainconfig
 	"" = "GUI";

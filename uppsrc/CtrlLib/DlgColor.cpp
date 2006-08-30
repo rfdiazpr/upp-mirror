@@ -408,6 +408,10 @@ void WheelRampCtrl::LeftUp(Point pt, dword keyflags)
 	ReleaseCapture();
 }
 
+#ifdef PLATFORM_WINCE
+inline double hypot(double a, double b) { return _hypot(a, b); }
+#endif
+
 void WheelRampCtrl::LeftDown(Point pt, dword keyflags)
 {
 	if(!HasCapture())
@@ -1162,6 +1166,7 @@ void PalCtrl::OnStandard()
 
 void PalCtrl::OnSave()
 {
+#ifndef PLATFORM_WINCE //TODO?
 	FileSelector fsel;
 	fsel.Type(t_("Palette (*.pal)"), t_("*.pal"));
 	fsel.DefaultExt(t_("pal"));
@@ -1174,10 +1179,12 @@ void PalCtrl::OnSave()
 		if(!SaveFile(recent_file, stream))
 			Exclamation(NFormat(t_("Error writing file [* \1%s\1]."), recent_file));
 	}
+#endif
 }
 
 void PalCtrl::OnLoad()
 {
+#ifndef PLATFORM_WINCE //TODO?
 	FileSelector fsel;
 	fsel.Type(t_("Palette (*.pal)"), t_("*.pal"))
 		.DefaultExt(t_("pal"));
@@ -1200,6 +1207,7 @@ void PalCtrl::OnLoad()
 		}
 		Refresh();
 	}
+#endif
 }
 
 void PalCtrl::OnSizeSmall()

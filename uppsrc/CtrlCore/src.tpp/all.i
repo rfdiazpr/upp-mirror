@@ -17,3 +17,7 @@ END_TOPIC
 TOPIC("Layout$en-us")
 #include "Layout$en-us.tpp"
 END_TOPIC
+
+TOPIC("RectTracker$en-us")
+#include "RectTracker$en-us.tpp"
+END_TOPIC

@@ -1,6 +1,9 @@
 #include "CtrlLib.h"
 
 #ifdef PLATFORM_WIN32
+
+#ifndef PLATFORM_WINCE
+
 #include <commdlg.h>
 #include <cderr.h>
 
@@ -256,4 +259,5 @@ bool FileSelector::Execute(bool open, const char *dlgtitle) {
 	return true;
 }
 
+#endif
 #endif

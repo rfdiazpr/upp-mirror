@@ -40,8 +40,10 @@ String  ForceExt(const char *fn, const char *ext);
 
 String  GetFileOnPath(const char *file, const char *paths, bool current = true, const char *curdir = NULL);
 
+#ifndef PLATFORM_WINCE
 String  GetFullPath(const char *path);
 String  GetCurrentDirectory();
+#endif
 
 struct FileTime;
 
@@ -70,7 +72,10 @@ public:
 	FileTime    GetCreationTime() const  { return ftCreationTime; }
 	FileTime    GetLastAccessTime() const{ return ftLastAccessTime; }
 	FileTime    GetLastWriteTime() const { return ftLastWriteTime; }
+
+#ifndef PLATFORM_WINCE
 	const char *GetMSDOSName() const     { return cAlternateFileName; }
+#endif
 
 	bool        IsDirectory() const      { return dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY; }
 	bool        IsFolder() const;
@@ -185,8 +190,10 @@ inline bool DeleteFile(const char *fn)      { return unlink(fn) == 0; }
 
 bool    DeleteFolderDeep(const char *dir);
 
+#ifndef PLATFORM_WINCE
 String  GetTempPath();
 String  GetTempFileName(const char *prefix = NULL);
+#endif
 
 template <class T>
 class Array;

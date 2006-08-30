@@ -1,6 +1,7 @@
 #include "CtrlCore.h"
 
 #ifdef PLATFORM_WIN32
+#ifndef PLATFORM_WINCE
 
 void DHCtrl::NcCreate(HWND _hwnd)
 {
@@ -72,4 +73,5 @@ DHCtrl::~DHCtrl()
 	BackPaint(EXCLUDEPAINT);
 }
 
+#endif
 #endif

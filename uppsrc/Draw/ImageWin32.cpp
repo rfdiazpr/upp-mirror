@@ -26,8 +26,17 @@ BitmapInfo32__::BitmapInfo32__(int cx, int cy)
 	memset(hi, 0, sizeof(BITMAPINFOHEADER));
 	hi->biSize = sizeof(BITMAPINFOHEADER);
 	hi->biPlanes = 1;
+#ifdef PLATFORM_WINCE
+	hi->biBitCount = 32;
+	hi->biCompression = BI_BITFIELDS;
+	dword *x = (dword *)(~data + sizeof(BITMAPINFOHEADER));
+	x[2] = 0xff;
+	x[1] = 0xff00;
+	x[0] = 0xff0000;
+#else
 	hi->biBitCount = 32;
 	hi->biCompression = BI_RGB;
+#endif
 	hi->biSizeImage = 0;
 	hi->biClrUsed = 0;
 	hi->biClrImportant = 0;
@@ -152,6 +161,7 @@ void Image::Data::SysRelease()
 	himg = hbmp = hmask = NULL;
 }
 
+#ifndef PLATFORM_WINCE
 typedef BOOL (WINAPI *tAlphaBlend)(HDC hdcDest, int nXOriginDest, int nYOriginDest,
                                    int nWidthDest, int nHeightDest,
                                    HDC hdcSrc, int nXOriginSrc, int nYOriginSrc,
@@ -168,6 +178,7 @@ static tAlphaBlend fnAlphaBlend()
 	}
 	return pSet;
 }
+#endif
 
 void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 {
@@ -202,12 +213,21 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 		}
 		Unlink();
 		LinkAfter(ResData);
-		bool hasAlphaBlend = fnAlphaBlend();
 		if(GetKind() == IMAGE_OPAQUE) {
 			if(!hbmp) {
 				LTIMING("Image Opaque create");
 				BitmapInfo32__ bi(sz.cx, sz.cy);
+#ifdef PLATFORM_WINCE
+				HDC dcMem = ::CreateCompatibleDC(dc);
+				RGBA *pixels;
+				hbmp = CreateDIBSection(dcMem, bi, DIB_RGB_COLORS, (void **)&pixels, NULL, 0);
+				HDC hbmpOld = (HDC) ::SelectObject(dcMem, hbmp);
+				memcpy(pixels, buffer, buffer.GetLength() * sizeof(RGBA));
+				::SelectObject(dcMem, hbmpOld);
+				::DeleteDC(dcMem);
+#else
 				hbmp = ::CreateDIBitmap(dc, bi, CBM_INIT, buffer, bi, DIB_RGB_COLORS);
+#endif
 				ResCount++;
 			}
 			LTIMING("Image Opaque blit");
@@ -225,7 +245,17 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 				hmask = CreateBitMask(buffer, sz, sz, sz, bmp);
 				if(!hbmp) {
 					BitmapInfo32__ bi(sz.cx, sz.cy);
+#ifdef PLATFORM_WINCE
+					HDC dcMem = ::CreateCompatibleDC(dc);
+					RGBA *pixels;
+					hbmp = CreateDIBSection(dcMem, bi, DIB_RGB_COLORS, (void **)&pixels, NULL, 0);
+					HDC hbmpOld = (HDC) ::SelectObject(dcMem, hbmp);
+					memcpy(pixels, bmp, buffer.GetLength() * sizeof(RGBA));
+					::SelectObject(dcMem, hbmpOld);
+					::DeleteDC(dcMem);
+#else
 					hbmp = ::CreateDIBitmap(dc, bi, CBM_INIT, bmp, bi, DIB_RGB_COLORS);
+#endif
 				}
 			}
 			LTIMING("Image Mask blt");
@@ -249,7 +279,8 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 			::DeleteDC(dcMem);
 			return;
 		}
-		if(hasAlphaBlend && IsNull(c) && !ImageFallBack) {
+#ifndef PLATFORM_WINCE
+		if(fnAlphaBlend() && IsNull(c) && !ImageFallBack) {
 			if(!himg) {
 				LTIMING("Image Alpha create");
 				BitmapInfo32__ bi(sz.cx, sz.cy);
@@ -269,7 +300,9 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 			::fnAlphaBlend()(dc, x, y, ssz.cx, ssz.cy, dcMem, sr.left, sr.top, ssz.cx, ssz.cy, bf);
 			::DeleteDC(dcMem);
 		}
-		else {
+		else
+#endif
+		{
 			LTIMING("Image Alpha sw");
 			DrawSurface sf(w, x, y, ssz.cx, ssz.cy);
 			RGBA *t = sf;
@@ -347,6 +380,26 @@ ImageDraw::~ImageDraw()
 	Detach();
 	alpha.Detach();
 }
+
+#ifdef PLATFORM_WINCE
+
+Image Image::Arrow() { return Null; }
+Image Image::Wait() { return Null; }
+Image Image::IBeam() { return Null; }
+Image Image::No() { return Null; }
+Image Image::SizeAll() { return Null; }
+Image Image::SizeHorz() { return Null; }
+Image Image::SizeVert() { return Null; }
+Image Image::SizeTopLeft() { return Null; }
+Image Image::SizeTop() { return Null; }
+Image Image::SizeTopRight() { return Null; }
+Image Image::SizeLeft() { return Null; }
+Image Image::SizeRight() { return Null; }
+Image Image::SizeBottomLeft() { return Null; }
+Image Image::SizeBottom() { return Null; }
+Image Image::SizeBottomRight() { return Null; }
+
+#else
 
 Image Win32IconCursor(LPCSTR id, int iconsize, bool cursor)
 {
@@ -498,5 +551,7 @@ Image Image::SizeRight() WCURSOR_(IDC_SIZEWE)
 Image Image::SizeBottomLeft() WCURSOR_(IDC_SIZENESW)
 Image Image::SizeBottom() WCURSOR_(IDC_SIZENS)
 Image Image::SizeBottomRight()  WCURSOR_(IDC_SIZENWSE)
+
+#endif
 
 #endif

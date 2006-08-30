@@ -66,11 +66,13 @@ CONSOLE_APP_MAIN
 	for(int i = 0; i < arg.GetCount(); i++)
 		bm.Add(arg[i]);
 	if(bm.GetCount() == 0) {
+		bm.Add("MSC71");
 		bm.Add("MSC8");
 		bm.Add("MINGWI");
 	}
 	Build("examples");
 	Build("reference");
+	Build("tutorial");
 	if(failed.GetCount()) {
 		Cout() << "***** Failed builds: \n";
 		for(int i = 0; i < failed.GetCount(); i++)

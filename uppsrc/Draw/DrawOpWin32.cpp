@@ -61,23 +61,31 @@ void Draw::EndOp()
 
 bool Draw::ExcludeClipOp(const Rect& r)
 {
+#ifdef PLATFORM_WINCE
+	int q = ExcludeClipRect(handle, r.left, r.top, r.right, r.bottom);
+#else
 	LTIMING("ExcludeClip");
 	Rect rr = LPtoDP(r);
 	HRGN hrgn = ::CreateRectRgnIndirect(rr);
 	int q = ::ExtSelectClipRgn(handle, hrgn, RGN_DIFF);
 	ASSERT(q != ERROR);
 	::DeleteObject(hrgn);
+#endif
 	return q == SIMPLEREGION || q == COMPLEXREGION;
 }
 
 bool Draw::IntersectClipOp(const Rect& r)
 {
+#ifdef PLATFORM_WINCE
+	int q = IntersectClipRect(handle, r.left, r.top, r.right, r.bottom);
+#else
 	LTIMING("Intersect");
 	Rect rr = LPtoDP(r);
 	HRGN hrgn = ::CreateRectRgnIndirect(rr);
 	int q = ::ExtSelectClipRgn(handle, hrgn, RGN_AND);
 	ASSERT(q != ERROR);
 	::DeleteObject(hrgn);
+#endif
 	return q == SIMPLEREGION || q == COMPLEXREGION;
 }
 
@@ -116,6 +124,8 @@ void Draw::DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color)
 	::MoveToEx(handle, x1, y1, NULL);
 	::LineTo(handle, x2, y2);
 }
+
+#ifndef PLATFORM_WINCE
 
 void Draw::DrawPolyPolylineOp(const Point *vertices, int vertex_count,
                             const int *counts, int count_count,
@@ -243,17 +253,19 @@ void Draw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
 	}
 }
 
+void Draw::DrawArcOp(const Rect& rc, Point start, Point end, int width, Color color)
+{
+	SetDrawPen(width, color);
+	::Arc(GetHandle(), rc.left, rc.top, rc.right, rc.bottom, start.x, start.y, end.x, end.y);
+}
+
+#endif
+
 void Draw::DrawEllipseOp(const Rect& r, Color color, int width, Color pencolor)
 {
 	SetColor(color);
 	SetDrawPen(width, pencolor);
 	::Ellipse(GetHandle(), r.left, r.top, r.right, r.bottom);
-}
-
-void Draw::DrawArcOp(const Rect& rc, Point start, Point end, int width, Color color)
-{
-	SetDrawPen(width, color);
-	::Arc(GetHandle(), rc.left, rc.top, rc.right, rc.bottom, start.x, start.y, end.x, end.y);
 }
 
 #endif

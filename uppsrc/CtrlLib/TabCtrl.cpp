@@ -194,7 +194,7 @@ void TabCtrl::Paint(Draw& w)
 
 int  TabCtrl::GetTab(Point p)
 {
-	if(p.y < metric(TABHEIGHT))
+	if(p.y >= 0 && p.y < metric(TABHEIGHT))
 		for(int i = 0; i < tab.GetCount(); i++)
 			if(p.x < tab[i].Right())
 				return i;

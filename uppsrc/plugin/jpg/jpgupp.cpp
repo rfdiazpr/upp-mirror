@@ -10,6 +10,8 @@ extern "C" {
 }
 #undef XINT32
 
+#define LLOG(x) // LOG(x)
+
 static void NoOutput(j_common_ptr cinfo)
 {
 }
@@ -162,7 +164,8 @@ static void jpeg_stream_src(j_decompress_ptr cinfo, Stream& stream)
 static void error_exit(j_common_ptr cinfo)
 {
 	(*cinfo -> err -> output_message)(cinfo);
-	throw 0;
+	LOG("Error exit!");
+	throw Exc();
 }
 
 class JPGRaster::Data {
@@ -173,6 +176,8 @@ public:
 	~Data();
 
 	bool Create(Stream& stream);
+	void Construct();
+	void Free();
 	Raster::Info GetInfo();
 	Raster::Line GetLine(int line);
 
@@ -194,7 +199,7 @@ private:
 	int next_line;
 };
 
-JPGRaster::Data::Data()
+void JPGRaster::Data::Construct()
 {
 	stream = NULL;
 	size = dot_size = Null;
@@ -204,11 +209,24 @@ JPGRaster::Data::Data()
 	jpeg_create_decompress(&cinfo);
 }
 
-JPGRaster::Data::~Data()
+JPGRaster::Data::Data()
+{
+	Construct();
+}
+
+void JPGRaster::Data::Free()
 {
 	if(finish)
-		jpeg_finish_decompress(&cinfo);
+		jpeg_abort_decompress(&cinfo);
 	jpeg_destroy_decompress(&cinfo);
+}
+
+JPGRaster::Data::~Data()
+{
+	try {
+		Free();
+	}
+	catch(Exc) {}
 }
 
 bool JPGRaster::Data::Create(Stream& stream_)
@@ -258,19 +276,24 @@ Raster::Info JPGRaster::Data::GetInfo()
 		info.kind = IMAGE_OPAQUE;
 	}
 	catch(Exc e) {
-		RLOG(e);
+		LLOG(e);
 	}
 	return info;
 }
 
 Raster::Line JPGRaster::Data::GetLine(int line)
 {
+	DUMP(line);
 	try {
 		ASSERT(line >= 0 && line < size.cy);
 		if(line < next_line) {
 			stream->Seek(stream_fpos);
-			Init();
+			Stream *s = stream;
+			Free();
+			Construct();
+			Create(*s);
 			next_line = 0;
+			LOG("Seek back");
 		}
 		Buffer<byte> rowbuf(bypp * size.cx);
 		JSAMPROW rowptr[] = { (JSAMPROW)~rowbuf };
@@ -297,11 +320,10 @@ Raster::Line JPGRaster::Data::GetLine(int line)
 		else {
 			NEVER();
 		}
-
 		return Raster::Line(out, true);
 	}
 	catch(Exc e) {
-		RLOG(e);
+		LLOG(e);
 		return Raster::Line(new RGBA[size.cx], true);
 	}
 }
@@ -322,7 +344,7 @@ bool JPGRaster::Create()
 		return data->Create(GetStream());
 	}
 	catch(Exc e) {
-		RLOG(e);
+		LLOG(e);
 		SetError();
 		data.Clear();
 		return false;

@@ -81,9 +81,15 @@ int LNGFromText(const char *s)
 
 String GetUserLocale(dword type)
 {
+#ifdef PLATFORM_WINCE
+	wchar h[256];
+	int n = GetLocaleInfo(GetUserDefaultLCID(), type, h, 256);
+	return n ? WString(h, n - 1).ToString() : String();
+#else
 	char h[256];
 	int n = GetLocaleInfo(GetUserDefaultLCID(), type, h, 256);
 	return n ? String(h, n - 1) : String();
+#endif
 }
 
 int GetSystemLNG()
@@ -143,15 +149,25 @@ int  GetCurrentLanguage() {
 }
 
 #ifdef PLATFORM_WIN32
+
 typedef VectorMap<int, LCID> LCIDMap;
 GLOBAL_VAR(LCIDMap, GetLCIDMap)
 
+#ifdef PLATFORM_WINCE //TODO?
+String GetLocaleInfoA(LCID lcid, LCTYPE lctype)
+{
+	wchar cbuf[1000];
+	GetLocaleInfoW(lcid, lctype, cbuf, __countof(cbuf));
+	return FromSystemCharset(cbuf);
+}
+#else
 String GetLocaleInfoA(LCID lcid, LCTYPE lctype)
 {
 	char cbuf[1000];
 	GetLocaleInfoA(lcid, lctype, cbuf, __countof(cbuf));
 	return cbuf;
 }
+#endif
 
 WString GetLocaleInfoW(LCID lcid, LCTYPE lctype)
 {
@@ -162,15 +178,27 @@ WString GetLocaleInfoW(LCID lcid, LCTYPE lctype)
 	Zero(wbuf);
 	if(GetLocaleInfoW(lcid, lctype, (WCHAR *)wbuf, __countof(wbuf)))
 		return wbuf;
+#ifdef PLATFORM_WINCE
+	return Null;
+#else
 	GetLocaleInfoA(lcid, lctype, abuf, __countof(abuf));
 	return ToUnicode(abuf, CHARSET_DEFAULT);
+#endif
 }
 
+#ifdef PLATFORM_WINCE
+static BOOL CALLBACK sEnumLocale(wchar *locale_string)
+#else
 static BOOL CALLBACK sEnumLocale(char *locale_string)
+#endif
 {
 	LLOG(locale_string);
 	LCID lcid = stou(locale_string, NULL, 16);
+#ifdef PLATFORM_WINCE
+	wchar buffer[10];
+#else
 	char buffer[10];
+#endif
 	GetLocaleInfo(lcid, LOCALE_SISO639LANGNAME, buffer, 10);
 	int language = (ToUpper(buffer[0]) << 24) + (ToUpper(buffer[1]) << 16);
 	GetLocaleInfo(lcid, LOCALE_SISO3166CTRYNAME, buffer, 10);

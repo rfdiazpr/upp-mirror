@@ -884,11 +884,14 @@ Array<ImageInfo> GifEncoder::InfoRaw(Stream& stream)
 
 class GIFRaster::Data {
 public:
-	Data(Stream& stream);
+	Data(GIFRaster& owner, Stream& stream);
 	~Data();
 
-	bool Create();
-	Raster::Line GetLine(int line);
+	bool               Create();
+	Raster::Line       GetLine(int line);
+	const RasterFormat *GetFormat() const  { return &format; }
+	int                GetPaletteCount()   { return 256; }
+	RGBA               *GetPalette()       { return palette; }
 
 public:
 	Size size;
@@ -901,10 +904,13 @@ private:
 	bool Fetch(byte *&cptr, const byte *cend);
 
 private:
+	GIFRaster& owner;
 	Stream& stream;
 	RasterFormat format;
 	RGBA palette[256];
+	GifGlobalInfo ggi;
 	Vector<byte> temp;
+	bool first_row;
 
 	static const int MAX_BITS = 12;
 	static const int MAX_COUNT = 1 << MAX_BITS;
@@ -934,8 +940,8 @@ private:
 	int               old_shift;
 };
 
-GIFRaster::Data::Data(Stream& stream)
-: stream(stream)
+GIFRaster::Data::Data(GIFRaster& owner, Stream& stream)
+: owner(owner), stream(stream)
 {
 }
 
@@ -1199,40 +1205,47 @@ bool GIFRaster::Data::LoadSubimage(int& transparent_index)
 
 bool GIFRaster::Data::Create()
 {
-	int transparent_index = -1;
-	GifGlobalInfo g;
-	stream % g;
-	if(stream.IsError() || g.width <= 0 || g.height <= 0)
+	stream % ggi;
+	if(stream.IsError() || ggi.width <= 0 || ggi.height <= 0)
 		return false;
-	size.cx = g.width;
-	size.cy = g.height;
-	temp.SetCount(size.cx * size.cy, 0);
+	size.cx = ggi.width;
+	size.cy = ggi.height;
+	info.bpp = 8;
+	info.colors = ggi.gct_recs;
+	info.dots = size;
+	info.hotspot = Null;
+	info.kind = IMAGE_UNKNOWN;
+	temp.Clear();
+	first_row = true;
 
-	stream.Seek(g.gct_fpos);
-	for(int i = 0; i < g.gct_recs; i++) {
+	stream.Seek(ggi.gct_fpos);
+	for(int i = 0; i < ggi.gct_recs; i++) {
 		palette[i].r = stream.Get();
 		palette[i].g = stream.Get();
 		palette[i].b = stream.Get();
 		palette[i].a = 255;
 	}
-	stream.Seek(g.loc_fpos);
-	while(LoadSubimage(transparent_index))
-		;
-	if(stream.Term() == 0x3B)
-		stream.Get();
-
-	if(transparent_index >= 0)
-		palette[transparent_index] = RGBAZero();
-
 	format.Set8();
 	return true;
 }
 
 Raster::Line GIFRaster::Data::GetLine(int line)
 {
-	RGBA *lbuf = new RGBA[size.cx];
-	format.Read(lbuf, &temp[size.cx * line], size.cx, palette);
-	return Raster::Line(lbuf, true);
+	if(first_row) {
+		first_row = false;
+		temp.SetCount(size.cx * size.cy, 0);
+
+		stream.Seek(ggi.loc_fpos);
+		int transparent_index = -1;
+		while(LoadSubimage(transparent_index))
+			;
+		if(stream.Term() == 0x3B)
+			stream.Get();
+
+		if(transparent_index >= 0 && transparent_index < 256)
+			palette[transparent_index] = RGBAZero();
+	}
+	return Raster::Line(&temp[size.cx * line], &owner, false);
 }
 
 GIFRaster::GIFRaster()
@@ -1245,7 +1258,7 @@ GIFRaster::~GIFRaster()
 
 bool GIFRaster::Create()
 {
-	data = new Data(GetStream());
+	data = new Data(*this, GetStream());
 	return data->Create();
 }
 
@@ -1262,6 +1275,21 @@ Raster::Info GIFRaster::GetInfo()
 Raster::Line GIFRaster::GetLine(int line)
 {
 	return data->GetLine(line);
+}
+
+const RasterFormat *GIFRaster::GetFormat()
+{
+	return data->GetFormat();
+}
+
+int GIFRaster::GetPaletteCount()
+{
+	return data->GetPaletteCount();
+}
+
+RGBA *GIFRaster::GetPalette()
+{
+	return data->GetPalette();
 }
 
 class GIFEncoder::Data {

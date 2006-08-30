@@ -838,6 +838,14 @@ void RichQtfParser::Parse(const char *qtf, byte _accesskey)
 			}
 			target.SetStyle(id, style);
 			styleid.At(i, RichStyle::GetDefaultId()) = id;
+			if(id == RichStyle::GetDefaultId()) {
+				bool p = format.newpage;
+				int lng = format.language;
+				(RichPara::Format&) format = style.format;
+				format.styleid = id;
+				format.language = lng;
+				format.newpage = p;
+			}
 		}
 		else
 		if(*term == '_') {

@@ -2,7 +2,6 @@ acceptflags
 	NOHRRPNG;
 
 uses
-	Image,
 	TDraw,
 	plugin\png,
 	plugin\gif,

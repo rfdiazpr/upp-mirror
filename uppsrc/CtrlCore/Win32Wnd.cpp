@@ -3,9 +3,12 @@
 
 #ifdef PLATFORM_WIN32
 
-#define LLOG(x)     //LOG(x)
+#define LLOG(x)   //  LOG(x)
 #define LOGTIMING 0
+
+#ifdef _DEBUG
 #define LOGMESSAGES 0
+#endif
 
 template<>
 unsigned GetHashValue(const HWND& h)
@@ -30,7 +33,11 @@ static BOOL CALLBACK sDumpWindow(HWND hwnd, LPARAM lParam) {
 		return TRUE;
 	else
 	{
+#ifdef PLATFORM_WINCE
+		wchar clsname[256], title[1024];
+#else
 		char clsname[256], title[1024];
+#endif
 		::GetClassName(hwnd, clsname, __countof(clsname));
 		::GetWindowText(hwnd, title, __countof(title));
 		dump << "HWND: " << Sprintf("0x%x", hwnd) << ", class = "
@@ -41,30 +48,38 @@ static BOOL CALLBACK sDumpWindow(HWND hwnd, LPARAM lParam) {
 }
 
 void DumpWindowOrder(bool aliens) {
+#ifndef PLATFORM_WINCE
 	LLOG("DumpWindowOrder" << BeginIndent);
 	EnumChildWindows(NULL, &sDumpWindow, (LPARAM)(aliens ? 1 : 0));
 	LLOG(EndIndent << "//DumpWindowOrder");
+#endif
 }
 
+#ifndef PLATFORM_WINCE
 Point GetMousePos() {
 	Point p;
+	return ::GetCursorPos(p) ? p : Null;
 	::GetCursorPos(p);
 	return p;
 }
+#endif
 
 HCURSOR   Ctrl::hCursor;
 HINSTANCE Ctrl::hInstance;
 #ifndef flagDLL
+#ifndef PLATFORM_WINCE
 HANDLE    Ctrl::OverwatchThread;
 HWND      Ctrl::OverwatchHWND;
 
 Event Ctrl::OverwatchEndSession;
 GLOBAL_VAR(Event, Ctrl::ExitLoopEvent)
 #endif
+#endif
 
 GLOBAL_VAR(bool, Ctrl::EndSession)
 
 #ifndef flagDLL
+#ifndef PLATFORM_WINCE
 LRESULT CALLBACK Ctrl::OverwatchWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	if(msg == WM_USER)
@@ -101,6 +116,7 @@ DWORD WINAPI Ctrl::Win32OverwatchThread(LPVOID)
     return 0;
 }
 #endif
+#endif
 
 static HWND  timerHWND = 0;
 
@@ -112,7 +128,7 @@ EXITBLOCK
 LRESULT CALLBACK Ctrl::SysTimerProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if(message == WM_TIMER) {
-		LLOG("[" << msecs() << "]: WM_TIMER");
+//		LLOG("[" << msecs() << "]: WM_TIMER");
 		TimerProc(GetTickCount());
 		return 0;
 	}
@@ -125,6 +141,12 @@ bool IsSysFlag(dword flag)
 	return SystemParametersInfo(flag, 0, &b, 0) && b;
 }
 
+#ifdef PLATFORM_WINCE
+#define L_(x)  L##x
+#else
+#define L_(x)  x
+#endif
+
 void Ctrl::InitWin32(HINSTANCE hInstance)
 {
 //	RLOGBLOCK("Ctrl::InitWin32");
@@ -133,8 +155,10 @@ void Ctrl::InitWin32(HINSTANCE hInstance)
 	SetXPStyle(IsWinXP() && !ScreenInfo().PaletteMode() && IsSysFlag(0x1022 /*SPI_GETFLATMENU*/));
 	dword flags = 0;
 	ILOG("SPI_GETDRAGFULLWINDOWS");
+#ifndef PLATFORM_WINCE
 	if(IsSysFlag(SPI_GETDRAGFULLWINDOWS))
 		flags |= DRAGFULLWINDOW;
+#endif
 	ILOG("SPI_GETKEYBOARDCUES");
 	if(!IsSysFlag(0x100A /*SPI_GETKEYBOARDCUES*/))
 		flags |= ALTACCESSKEYS;
@@ -152,7 +176,10 @@ void Ctrl::InitWin32(HINSTANCE hInstance)
 
 	Ctrl::hInstance = hInstance;
 	ILOG("RegisterClassW");
-	if(IsWinNT()) {
+#ifndef PLATFORM_WINCE
+	if(IsWinNT())
+#endif
+	{
 	    WNDCLASSW  wc;
 	    Zero(wc);
 		wc.style         = CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW;
@@ -174,30 +201,30 @@ void Ctrl::InitWin32(HINSTANCE hInstance)
 	}
 
 	ILOG("RegisterClassA");
-    WNDCLASS  wc;
-    Zero(wc);
+	WNDCLASS  wc;
+	Zero(wc);
 	wc.style         = CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW;
 	wc.lpfnWndProc   = (WNDPROC)Ctrl::WndProc;
 	wc.hInstance     = hInstance;
 	wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = NULL; //(HBRUSH)(COLOR_WINDOW+1);
-	wc.lpszClassName = "UPP-CLASS-A";
+	wc.lpszClassName = L_("UPP-CLASS-A");
 	RegisterClass(&wc);
 	if(IsWinXP()) {
 		wc.style         = 0x20000|CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW;
-		wc.lpszClassName = "UPP-CLASS-DS-A";
+		wc.lpszClassName = L_("UPP-CLASS-DS-A");
 		RegisterClass(&wc);
 	}
 	wc.style         = CS_SAVEBITS|CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW;
-	wc.lpszClassName = "UPP-CLASS-SB-A";
+	wc.lpszClassName = L_("UPP-CLASS-SB-A");
 	RegisterClass(&wc);
 	if(IsWinXP()) {
 		wc.style         = 0x20000|CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW|CS_SAVEBITS;
-		wc.lpszClassName = "UPP-CLASS-SB-DS-A";
+		wc.lpszClassName = L_("UPP-CLASS-SB-DS-A");
 		RegisterClass(&wc);
 	}
 	wc.style         = 0;
-	wc.lpszClassName = "UPP-TIMER";
+	wc.lpszClassName = L_("UPP-TIMER");
 	wc.hCursor       = NULL;
 	wc.lpfnWndProc   = &Ctrl::SysTimerProc;
 	RegisterClass(&wc);
@@ -205,7 +232,7 @@ void Ctrl::InitWin32(HINSTANCE hInstance)
 	ILOG("InitTimer");
 	InitTimer();
 	ILOG("SetTimer");
-	timerHWND = CreateWindow("UPP-TIMER", "", WS_OVERLAPPED,
+	timerHWND = CreateWindow(L_("UPP-TIMER"), L_(""), WS_OVERLAPPED,
 		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 		NULL, NULL, NULL, NULL);
 	SetTimer(timerHWND, 1, 10, NULL);
@@ -229,12 +256,14 @@ typedef DWORD (WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);
 static PSLWA SetLayeredWindowAttributes()
 {
 	static PSLWA pSet;
+#ifndef PLATFORM_WINCE
 	static bool inited = false;
 	if(!inited) {
 		inited = true;
 		if(HMODULE hDLL = LoadLibrary ("user32"))
 			pSet = (PSLWA) GetProcAddress(hDLL, "SetLayeredWindowAttributes");
 	}
+#endif
 	return pSet;
 }
 
@@ -255,11 +284,13 @@ void Ctrl::ExitWin32()
 	while(GetMessage(&msg, NULL, 0, 0))
 		::PostQuitMessage(0);
 #ifndef flagDLL
+#ifndef PLATFORM_WINCE
 	OverwatchEndSession.Set();
 	PostMessage(OverwatchHWND, WM_USER, 0, 0);
 	LLOG("Waiting for overwatch thread to finish...");
 	WaitForSingleObject(OverwatchThread, INFINITE);
 	LLOG("...overwatch thread finished");
+#endif
 #endif
 }
 
@@ -289,6 +320,7 @@ Vector<Ctrl *> Ctrl::GetTopCtrls()
 
 void  Ctrl::SetMouseCursor(const Image& image)
 {
+#ifndef PLATFORM_WINCE
 	static Image img;
 	if(image.GetSerialId() != img.GetSerialId()) {
 		img = image;
@@ -298,6 +330,7 @@ void  Ctrl::SetMouseCursor(const Image& image)
 			DestroyCursor(hCursor);
 		hCursor = hc;
 	}
+#endif
 }
 
 Ctrl *Ctrl::CtrlFromHWND(HWND hwnd)
@@ -348,6 +381,19 @@ void Ctrl::Create(HWND parent, DWORD style, DWORD exstyle, bool savebits, int sh
 	ASSERT(!parent || IsWindow(parent));
 	if(!IsWinXP())
 		dropshadow = false;
+#ifdef PLATFORM_WINCE
+		if(parent)
+			top->hwnd = CreateWindowExW(exstyle,
+			                            savebits ? dropshadow ? L"UPP-CLASS-SB-DS-W" : L"UPP-CLASS-SB-W"
+			                                     : dropshadow ? L"UPP-CLASS-DS-W"    : L"UPP-CLASS-W",
+			                            L"", style, r.left, r.top, r.Width(), r.Height(),
+			                            parent, NULL, hInstance, this);
+		else {
+			top->hwnd = CreateWindowW(L"UPP-CLASS-W",
+			                          L"", WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+			                          parent, NULL, hInstance, this);
+		}
+#else
 	if(IsWinNT() && (!parent || IsWindowUnicode(parent)))
 		top->hwnd = CreateWindowExW(exstyle,
 		                            savebits ? dropshadow ? L"UPP-CLASS-SB-DS-W" : L"UPP-CLASS-SB-W"
@@ -360,6 +406,8 @@ void Ctrl::Create(HWND parent, DWORD style, DWORD exstyle, bool savebits, int sh
 		                                    : dropshadow ? "UPP-CLASS-DS-A"    : "UPP-CLASS-A",
 		                           "", style, r.left, r.top, r.Width(), r.Height(),
 		                           parent, NULL, hInstance, this);
+#endif
+
 	inloop = false;
 
 	ASSERT(top->hwnd);
@@ -430,7 +478,12 @@ LRESULT CALLBACK Ctrl::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 {
 	if(sFinished)
 		return DefWindowProc(hWnd, message, wParam, lParam);
-	if(message == WM_NCCREATE) {
+#ifdef PLATFORM_WINCE
+	if(message == WM_CREATE)
+#else
+	if(message == WM_NCCREATE)
+#endif
+	{
 		Ctrl *w = (Ctrl *)((LPCREATESTRUCT) lParam)->lpCreateParams;
 		if(w) {
 			w->NcCreate(hWnd);
@@ -444,7 +497,12 @@ LRESULT CALLBACK Ctrl::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		}
 	}
 	Ctrl *w = Windows().Get(hWnd, NULL);
-	if(message == WM_NCDESTROY) {
+#ifdef PLATFORM_WINCE
+	if(message == WM_DESTROY)
+#else
+	if(message == WM_NCDESTROY)
+#endif
+	{
 		if(w) w->NcDestroy();
 		int i = Windows().Find(hWnd);
 		if(i >= 0)
@@ -452,10 +510,13 @@ LRESULT CALLBACK Ctrl::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 	}
 	#if LOGMESSAGES
 	bool logblk = false;
-	if(message != WM_NCHITTEST && message != WM_SETCURSOR && message != WM_CTLCOLORBTN &&
+	if(message != WM_SETCURSOR && message != WM_CTLCOLORBTN && message != WM_TIMER &&
+#ifndef PLATFORM_WINCE
+	   message != WM_NCHITTEST  && message != WM_ENTERIDLE &&
+#endif
 	   message != WM_CTLCOLORDLG && message != WM_CTLCOLOREDIT && message != WM_CTLCOLORLISTBOX &&
 	   message != WM_CTLCOLORMSGBOX && message != WM_CTLCOLORSCROLLBAR &&
-	   message != WM_CTLCOLORSTATIC && message != WM_ENTERIDLE && message != WM_CANCELMODE &&
+	   message != WM_CTLCOLORSTATIC && message != WM_CANCELMODE &&
 	   message != 0x0118)
 		for(WinMsg *m = sWinMsg; m->ID; m++)
 			if(m->ID == message) {
@@ -596,7 +657,8 @@ void Ctrl::EventLoop(Ctrl *ctrl)
 
 void Ctrl::GuiSleep(int ms)
 {
-#ifndef flagDLL
+#if !defined(flagDLL) && !defined(PLATFORM_WINCE)
+
 	if(!OverwatchThread) {
 		DWORD dummy;
 		OverwatchThread = CreateThread(NULL, 0x100000, Win32OverwatchThread, NULL, 0, &dummy);
@@ -688,16 +750,24 @@ Rect Ctrl::GetWorkArea()
 
 int Ctrl::GetKbdDelay()
 {
+#ifdef PLATFORM_WINCE
+	return 500;
+#else
 	int a;
 	SystemParametersInfo(SPI_GETKEYBOARDDELAY, 0, &a, 0);
 	return 250 + a * 750 / 4;
+#endif
 }
 
 int Ctrl::GetKbdSpeed()
 {
+#ifdef PLATFORM_WINCE
+	return 1000 / 32;
+#else
 	int a;
 	SystemParametersInfo(SPI_GETKEYBOARDSPEED, 0, &a, 0);
 	return 1000 / (a + 2);
+#endif
 }
 
 void Ctrl::SetWndForeground()
@@ -836,7 +906,11 @@ void  Ctrl::WndScrollView(const Rect& r, int dx, int dy)
 		WndDestroyCaret();
 		caretRect.Clear();
 	}
+#ifdef PLATFORM_WINCE
+	::ScrollWindowEx(GetHWND(), dx, dy, r, r, NULL, NULL, 0);
+#else
 	::ScrollWindow(GetHWND(), dx, dy, r, r);
+#endif
 	SyncCaret();
 }
 
@@ -872,9 +946,12 @@ Rect Ctrl::GetScreenClient(HWND hwnd)
 }
 
 Rect Ctrl::GetDefaultWindowRect() {
+#ifdef PLATFORM_WINCE
+	return Rect(0, 0, 100, 100);
+#else
 	HWND hwnd = ::CreateWindow("UPP-CLASS-A", "", WS_OVERLAPPED,
-		                     CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-							 NULL, NULL, NULL, NULL);
+		                       CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+							   NULL, NULL, NULL, NULL);
 	Rect sr;
 	if(hwnd) {
 		::ShowWindow(hwnd, SW_HIDE);
@@ -884,6 +961,7 @@ Rect Ctrl::GetDefaultWindowRect() {
 	else
 		sr = RectC(20, 20, 500, 350);
 	return sr;
+#endif
 }
 
 void WaitCursor::Show() {
@@ -929,7 +1007,13 @@ int  GetClipboardFormatCode(const char *format_id)
 	int f = format_map.Find(format_id);
 	if(f < 0) {
 		f = format_map.GetCount();
-		format_map.Add(format_id, ::RegisterClipboardFormat(format_id));
+		format_map.Add(format_id,
+#ifdef PLATFORM_WINCE
+			::RegisterClipboardFormat(ToSystemCharset(format_id))
+#else
+			::RegisterClipboardFormat(format_id)
+#endif
+		);
 	}
 	return format_map[f];
 }
@@ -993,19 +1077,29 @@ String ReadClipboard(const char *format)
 
 void AppendClipboardText(const String& s)
 {
+#ifdef PLATFORM_WINCE
+	AppendClipboardUnicodeText(s.ToWString());
+#else
 	AppendClipboard((const char *)CF_TEXT, ToSystemCharset(s));
+#endif
 }
 
 void AppendClipboardUnicodeText(const WString& s)
 {
+#ifndef PLATFORM_WINCE
 	AppendClipboardText(s.ToString());
+#endif
 	AppendClipboard((const char *)CF_UNICODETEXT, (byte *)~s, 2 * s.GetLength());
 }
 
 String ReadClipboardText()
 {
+#ifdef PLATFORM_WINCE
+	return ReadClipboardUnicodeText().ToString();
+#else
 	String s = ReadClipboard((const char *)CF_TEXT);
 	return String(s, strlen(~s));
+#endif
 }
 
 WString ReadClipboardUnicodeText()

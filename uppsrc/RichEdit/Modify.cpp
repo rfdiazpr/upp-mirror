@@ -369,11 +369,18 @@ void RichEdit::InsertLine()
 	h.Cat(p);
 	h.Cat(p);
 	bool st = cursorp.paralen == cursorp.posinpara;
+	bool f = cursorp.posinpara == 0 && formatinfo.label.GetCount();
 	Insert(cursor, h, false);
+	if(f) {
+		String lbl = formatinfo.label;
+		formatinfo.label.Clear();
+		ApplyFormat(0, RichText::LABEL);
+		formatinfo.label = lbl;
+	}
 	anchor = cursor = cursor + 1;
 	formatinfo.newpage = false;
-	formatinfo.label.Clear();
 	if(st) {
+		formatinfo.label.Clear();
 		formatinfo.styleid = text.GetStyle(b.styleid).next;
 		ApplyFormat(0, RichText::STYLE|RichText::NEWPAGE|RichText::LABEL);
 		return;

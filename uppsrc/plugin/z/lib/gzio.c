@@ -53,12 +53,12 @@ typedef struct gz_stream {
 } gz_stream;
 
 
-local gzFile gz_open      OF((const char *path, const char *mode, int  fd));
-local int do_flush        OF((gzFile file, int flush));
+// local gzFile gz_open      OF((const char *path, const char *mode, int  fd));
+// local int do_flush        OF((gzFile file, int flush));
 local int    get_byte     OF((gz_stream *s));
 local void   check_header OF((gz_stream *s));
 local int    destroy      OF((gz_stream *s));
-local void   putLong      OF((FILE *file, uLong x));
+//local void   putLong      OF((FILE *file, uLong x));
 local uLong  getLong      OF((gz_stream *s));
 
 /* ===========================================================================
@@ -70,6 +70,7 @@ local uLong  getLong      OF((gz_stream *s));
    can be checked to distinguish the two cases (if errno is zero, the
    zlib error is Z_MEM_ERROR).
 */
+#if 0
 local gzFile gz_open (path, mode, fd)
     const char *path;
     const char *mode;
@@ -227,6 +228,7 @@ int ZEXPORT gzsetparams (file, level, strategy)
 
     return deflateParams (&(s->stream), level, strategy);
 }
+#endif
 
 /* ===========================================================================
      Read a byte from a gz_stream; update next_in and avail_in. Return EOF
@@ -352,6 +354,8 @@ local int destroy (s)
      Reads the given number of uncompressed bytes from the compressed file.
    gzread returns the number of bytes actually read (0 for end of file).
 */
+
+#if 0
 int ZEXPORT gzread (file, buf, len)
     gzFile file;
     voidp buf;
@@ -796,7 +800,7 @@ local void putLong (file, x)
         x >>= 8;
     }
 }
-
+#endif
 /* ===========================================================================
    Reads a long in LSB order from the given gz_stream. Sets z_err in case
    of error.
@@ -819,6 +823,7 @@ local uLong getLong (s)
      Flushes all pending output if necessary, closes the compressed file
    and deallocates all the (de)compression state.
 */
+#if 0
 int ZEXPORT gzclose (file)
     gzFile file;
 {
@@ -873,3 +878,4 @@ const char*  ZEXPORT gzerror (file, errnum)
     strcat(s->msg, m);
     return (const char*)s->msg;
 }
+#endif

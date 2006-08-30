@@ -4,8 +4,6 @@ struct MyApp : TopWindow {
 	Button ok, cancel;
 	EditDate date;
 
-	typedef MyApp CLASSNAME;
-	
 	MyApp() {
 		SetRect(0, 0, 200, 90);
 		Add(date.LeftPosZ(10, 80).TopPosZ(10, 20));

@@ -6,7 +6,7 @@
 
 #include <X11/Xlocale.h>
 
-bool Ctrl::LogMessages;// = true;
+bool Ctrl::LogMessages = true;
 #endif
 
 #define LLOG(x)     // LOG(x)

@@ -184,6 +184,7 @@ int ComparePath(String fa, String fb) {
 	return r ? r : cmp(la, lb);
 }
 
+#ifndef PLATFORM_WINCE
 String GetCurrentDirectory() {
 #if defined(PLATFORM_WIN32)
 	DWORD dwCount = GetCurrentDirectory(0, 0);
@@ -199,8 +200,9 @@ String GetCurrentDirectory() {
 	return Null;
 #endif//PLATFORM
 }
+#endif
 
-#ifdef PLATFORM_WIN32
+#if defined(PLATFORM_WIN32) && !defined(PLATFORM_WINCE)
 
 String GetTempPath()
 {
@@ -220,10 +222,12 @@ String GetTempPath()
 
 #endif
 
+#ifndef PLATFORM_WINCE
 String GetTempFileName(const char *prefix) {
 	Uuid id = Uuid::Create();
 	return AppendFileName(GetTempPath(), String(prefix) + Format(id) + ".tmp");
 }
+#endif
 
 String FromUnixName(const char* fn, const char* stop = NULL) {
 	String s;
@@ -241,6 +245,7 @@ String ToUnixName(const char* fn, const char* stop = NULL) {
 	return s;
 }
 
+#ifndef PLATFORM_WINCE
 String GetFullPath(const char *file) {
 #ifdef PLATFORM_WIN32
 	String ufn = FromUnixName(file);
@@ -251,17 +256,23 @@ String GetFullPath(const char *file) {
 	return NormalizePath(file);
 #endif
 }
+#endif
 
 String GetFileOnPath(const char* file, const char* paths, bool current, const char *curdir) {
 	String ufn = NativePath(file);
 	if(IsFullPath(ufn))
 		return ufn;
 	String fn;
+#ifdef PLATFORM_WINCE
+	if(current && curdir && FileExists(fn = NormalizePath(ufn, curdir)))
+		;
+#else
 	String cd = curdir;
 	if(!curdir)
 		cd = GetCurrentDirectory();
 	if(current && FileExists(fn = NormalizePath(ufn, cd)))
 		;
+#endif
 	else if(paths)
 	{
 		fn = Null;
@@ -276,7 +287,11 @@ String GetFileOnPath(const char* file, const char* paths, bool current, const ch
 #endif
 			String dir(start, paths - start);
 			if(!dir.IsEmpty()) {
+#ifdef PLATFORM_WINCE
+				dir = NormalizePath(AppendFileName(NativePath(dir), ufn));
+#else
 				dir = NormalizePath(AppendFileName(NativePath(dir), ufn), cd);
+#endif
 				if(FileExists(dir)) {
 					fn = dir;
 					break;
@@ -540,7 +555,11 @@ bool IsFolder(String path)
 }
 
 String NormalizePath(const char *path) {
+#ifdef PLATFORM_WINCE
+	return NormalizePath(path, "");
+#else
 	return NormalizePath(path, GetCurrentDirectory());
+#endif
 }
 
 bool FileCopy(const char *oldname, const char *newname)
@@ -686,7 +705,6 @@ FileTime TimeToFileTime(Time time)
 #ifdef PLATFORM_POSIX
 bool DirectoryCreate(const char *path, int mode)
 {
-	DUMP(path);
 	return ::mkdir(ToSystemCharset(path), mode) == 0;
 }
 #else
@@ -726,7 +744,7 @@ bool DeleteFolderDeep(const char *dir)
 			String name = ff.GetName();
 			String p = AppendFileName(dir, name);
 			if(ff.IsFile())
-				DeleteFile(p);
+				FileDelete(p);
 			else
 			if(ff.IsFolder())
 				DeleteFolderDeep(p);
@@ -760,7 +778,11 @@ Array<FileSystemInfo::FileInfo> FileSystemInfo::Find(String mask, int max_count)
 	Array<FileInfo> fi;
 	if(IsNull(mask))
 	{ // root
-#ifdef PLATFORM_WIN32
+#ifdef PLATFORM_WINCE
+		FileInfo& f = fi.Add();
+		f.filename = "\\";
+		f.root_style = ROOT_FIXED;
+#elif defined(PLATFORM_WIN32)
 		char drive[4] = "?:\\";
 		for(int c = 'A'; c <= 'Z'; c++) {
 			*drive = c;
@@ -787,8 +809,7 @@ Array<FileSystemInfo::FileInfo> FileSystemInfo::Find(String mask, int max_count)
 			case DRIVE_RAMDISK:     f.root_style = ROOT_RAMDISK; break;
 			}
 		}
-#endif
-#ifdef PLATFORM_POSIX
+#elif defined(PLATFORM_POSIX)
 		FileInfo& f = fi.Add();
 		f.filename = "/";
 		f.root_style = ROOT_FIXED;
@@ -803,7 +824,9 @@ Array<FileSystemInfo::FileInfo> FileSystemInfo::Find(String mask, int max_count)
 				FileInfo& f = fi.Add();
 				f.filename = ff.GetName();
 #ifdef PLATFORM_WIN32
+#ifndef PLATFORM_WINCE
 				f.msdos_name = ff.GetMSDOSName();
+#endif
 				f.is_archive = ff.IsArchive();
 				f.is_compressed = ff.IsCompressed();
 				f.is_hidden = ff.IsHidden();
@@ -835,7 +858,7 @@ Array<FileSystemInfo::FileInfo> FileSystemInfo::Find(String mask, int max_count)
 
 bool FileSystemInfo::CreateFolder(String path, String& error) const
 {
-	if(::DirectoryCreate(ToSystemCharset(path)))
+	if(::DirectoryCreate(path))
 		return true;
 	error = GetErrorMessage(GetLastError());
 	return false;

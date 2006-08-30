@@ -12,13 +12,16 @@ public:
 	GIFRaster();
 	~GIFRaster();
 
-	virtual bool    Create();
-	virtual Size    GetSize();
-	virtual Info    GetInfo();
-	virtual Line    GetLine(int line);
+	virtual bool               Create();
+	virtual Size               GetSize();
+	virtual Info               GetInfo();
+	virtual Line               GetLine(int line);
+	virtual const RasterFormat *GetFormat();
+	virtual int                GetPaletteCount();
+	virtual RGBA               *GetPalette();
 
 private:
-	bool            Init();
+	bool                       Init();
 };
 
 class GIFEncoder : public StreamRasterEncoder {

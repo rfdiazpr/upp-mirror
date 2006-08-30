@@ -18,54 +18,7 @@ EXITBLOCK
 	StaticExitDraw_();
 }
 
-/* TODO
-void Draw::Win32UpdateSColors()
-{
-	UpdateSColors();
-	dword c;
-//	c = GetSysColor(COLOR_3DDKSHADOW);
-	c = GetSysColor(COLOR_WINDOWTEXT);
-	int r0 = GetRValue(c);
-	int g0 = GetGValue(c);
-	int b0 = GetBValue(c);
-	Color::SetStdColor(0, c);
-	c = GetSysColor(COLOR_3DSHADOW);
-	Color::SetStdColor(1, c);
-	int r128 = GetRValue(c);
-	int g128 = GetGValue(c);
-	int b128 = GetBValue(c);
-	c = GetSysColor(COLOR_3DFACE);
-	sLightGray = c;
-	Color::SetStdColor(2, c);
-	int r192 = GetRValue(c);
-	int g192 = GetGValue(c);
-	int b192 = GetBValue(c);
-	c = GetSysColor(COLOR_WINDOW);
-	Color::SetStdColor(4, c);
-//	c = GetSysColor(COLOR_3DHILIGHT);
-	int r255 = GetRValue(c);
-	int g255 = GetGValue(c);
-	int b255 = GetBValue(c);
-	int r224 = (r255 * 7 + r0) >> 3;
-	int g224 = (r255 * 7 + r0) >> 3;
-	int b224 = (r255 * 7 + r0) >> 3;
-	Color::SetStdColor(3, RGB(r224, g224, b224));
-	Color::SetStdColor(5, PALETTERGB(r128, g0, b0));
-	Color::SetStdColor(6, PALETTERGB(0, g128, b0));
-	Color::SetStdColor(7, PALETTERGB(r128, g128, b0));
-	Color::SetStdColor(8, GetSysColor(COLOR_HIGHLIGHT));
-	Color::SetStdColor(9, PALETTERGB(r128, g0, b255));
-	Color::SetStdColor(10, PALETTERGB(r0, g128, b128));
-	Color::SetStdColor(11, PALETTERGB(r255, g255, b0));
-	Color::SetStdColor(12, PALETTERGB(r255, g0, b0));
-	Color::SetStdColor(13, PALETTERGB(r0, g255, b0));
-	Color::SetStdColor(14, PALETTERGB(r255, g255, b192));
-	Color::SetStdColor(15, PALETTERGB(r0, g0, b255));
-	Color::SetStdColor(16, PALETTERGB(r255, g0, b255));
-	Color::SetStdColor(17, PALETTERGB(r0, g255, b255));
-}
-*/
-
+#ifndef PLATFORM_WINCE
 void Add(LOGPALETTE *pal, int r, int g, int b)
 {
 	pal->palPalEntry[pal->palNumEntries].peRed   = min(r, 255);
@@ -93,6 +46,7 @@ HPALETTE GetQlibPalette()
 	delete[] pal;
 	return hQlibPalette;
 }
+#endif
 
 HDC ScreenHDC()
 {
@@ -105,6 +59,9 @@ void Draw::SetAutoPalette(bool ap) { _AutoPalette = ap; }
 
 COLORREF Draw::GetColor(Color c) const {
 	COLORREF color = c;
+#ifdef PLATFORM_WINCE
+	return color;
+#else
 	if(!palette)
 		return color;
 	static Index<dword> *SColor;
@@ -132,6 +89,7 @@ COLORREF Draw::GetColor(Color c) const {
 		                                 : (r + 25) / 51 * 36 +
 		                                   (g + 25) / 51 * 6 +
 		                                   (b + 25) / 51);
+#endif
 }
 
 void Draw::InitColors()
@@ -166,7 +124,10 @@ void Draw::SetDrawPen(int width, Color color) {
 		width = PEN_NULL;
 	if(width != lastPen || color != lastPenColor) {
 		static int penstyle[] = {
-			PS_NULL, PS_SOLID, PS_DASH, PS_DOT, PS_DASHDOT, PS_DASHDOTDOT
+			PS_NULL, PS_SOLID, PS_DASH,
+		#ifndef PLATFORM_WINCE
+			PS_DOT, PS_DASHDOT, PS_DASHDOTDOT
+		#endif
 		};
 		HPEN oldPen = actPen;
 		actPen = CreatePen(width < 0 ? penstyle[-width - 1] : PS_SOLID,
@@ -181,18 +142,16 @@ void Draw::SetDrawPen(int width, Color color) {
 
 
 void Draw::SetOrg() {
-//	if(Dots()) {
-//		Point p = GetPixelsPerInch();
-//		p.x = iscale(actual_offset.x, p.x, 600);
-//		p.y = iscale(actual_offset.y, p.y, 600);
-//		::SetViewportOrgEx(handle, p.x, p.y, 0);
-//	else
-//		::SetViewportOrgEx(handle, actual_offset.x, actual_offset.y, 0);
+#ifdef PLATFORM_WINCE
+	::SetViewportOrgEx(handle, actual_offset.x, actual_offset.y, 0);
+#else
 	LLOG("Draw::SetOrg: clip = " << GetClip() << ", offset = " << actual_offset);
 	::SetWindowOrgEx(handle, -actual_offset.x, -actual_offset.y, 0);
 	LLOG("//Draw::SetOrg: clip = " << GetClip());
+#endif
 }
 
+#ifndef PLATFORM_WINCE
 Point Draw::LPtoDP(Point p) const {
 	::LPtoDP(handle, p, 1);
 	return p;
@@ -214,6 +173,7 @@ Rect  Draw::DPtoLP(const Rect& r) const {
 	::LPtoDP(handle, reinterpret_cast<POINT *>(&w), 2);
 	return w;
 }
+#endif
 
 Size Draw::GetSizeCaps(int i, int j) const {
 	return Size(GetDeviceCaps(handle, i), GetDeviceCaps(handle, j));
@@ -265,7 +225,11 @@ void Draw::Init() {
 	Cinit();
 	SetBkMode(handle, TRANSPARENT);
 	::SetTextAlign(handle, TA_BASELINE);
+#ifdef PLATFORM_WINCE
+	actual_offset = Point(0, 0);
+#else
 	::GetViewportOrgEx(handle, actual_offset);
+#endif
 	LoadCaps();
 }
 
@@ -338,10 +302,12 @@ void BackDraw::Create(Draw& w, int cx, int cy) {
 	handle = ::CreateCompatibleDC(w.GetHandle());
 	ASSERT(hbmp);
 	ASSERT(handle);
+#ifndef PLATFORM_WINCE
 	if(w.PaletteMode() && AutoPalette()) {
 		::SelectPalette(handle, GetQlibPalette(), FALSE);
 		::RealizePalette(handle);
 	}
+#endif
 	hbmpold = (HBITMAP) ::SelectObject(handle, hbmp);
 	Init();
 	backdraw = true;
@@ -351,7 +317,11 @@ void BackDraw::Put(Draw& w, int x, int y) {
 
 	ASSERT(handle);
 	LTIMING("BackDraw::Put");
+#ifdef PLATFORM_WINCE
+	::SetViewportOrgEx(handle, 0, 0, 0);
+#else
 	::SetWindowOrgEx(handle, 0, 0, NULL);
+#endif
 	::BitBlt(w, x, y, size.cx, size.cy, *this, 0, 0, SRCCOPY);
 }
 
@@ -366,13 +336,15 @@ void BackDraw::Destroy() {
 }
 
 ScreenDraw::ScreenDraw(bool ic) {
+#ifdef PLATFORM_WINCE
+	Attach(CreateDC(NULL, NULL, NULL, NULL));
+#else
 	Attach((ic ? CreateIC : CreateDC)("DISPLAY", NULL, NULL, NULL));
-//BUGFIX tohle jsem si dovolil pripsat :)
 	if(PaletteMode() && AutoPalette()) {
 		SelectPalette(handle, GetQlibPalette(), TRUE);
 		RealizePalette(handle);
 	}
-//ENDOFBUGFIX
+#endif
 }
 
 ScreenDraw::~ScreenDraw() {
@@ -381,6 +353,8 @@ ScreenDraw::~ScreenDraw() {
 }
 
 Draw& GLOBAL_VP(ScreenDraw, ScreenInfo, (true))
+
+#ifndef PLATFORM_WINCE
 
 void PrintDraw::InitPrinter()
 {
@@ -434,5 +408,6 @@ PrintDraw::~PrintDraw() {
 	else
 		::EndDoc(handle);
 }
+#endif
 
 #endif

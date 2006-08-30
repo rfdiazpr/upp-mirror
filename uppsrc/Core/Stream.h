@@ -333,7 +333,6 @@ private:
 	bool          pagedirty;
 
 	int64         streamsize;
-	int64         mediasize;
 
 	void          SetPos(int64 p);
 	void          SyncSize();
@@ -359,7 +358,7 @@ public:
 
 	dword     GetBufferSize() const           { return pagesize; }
 	void      SetBufferSize(dword newsize);
-	int64     GetMediaSize() const            { return mediasize; }
+	int64     GetStreamSize() const           { return streamsize; }
 
 	BlockStream();
 	virtual ~BlockStream();
@@ -566,8 +565,10 @@ bool   SaveStream(Stream& out, const String& data);
 int64        CopyStream(Stream& dest, Stream& src, int64 count);
 inline int64 CopyStream(Stream& dest, Stream& src) { return CopyStream(dest, src, src.GetLeft()); }
 
+#ifndef PLATFORM_WINCE
 Stream& Cout();
 String  ReadStdIn();
+#endif
 
 Stream& NilStream();
 

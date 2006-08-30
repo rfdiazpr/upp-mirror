@@ -17,6 +17,7 @@ HINSTANCE AppGetHandle()
 
 void AppSetHandle(HINSTANCE dll_instance) { app_instance = dll_instance; }
 
+#ifndef PLATFORM_WINCE
 bool IsWinXP()
 {
 	OSVERSIONINFO of;
@@ -24,6 +25,7 @@ bool IsWinXP()
 	GetVersionEx(&of);
 	return of.dwMajorVersion >= 5 && of.dwMinorVersion >= 1;
 }
+#endif
 
 String AsString(const wchar_t *buffer) {
 	if(!buffer)
@@ -46,6 +48,7 @@ String AsString(const wchar_t *buffer, const wchar_t *end) {
 	return AsString(buffer, end - buffer);
 }
 
+#ifndef PLATFORM_WINCE
 String GetWinRegString(const char *value, const char *path, HKEY base_key) {
 	HKEY key = 0;
 	if(RegOpenKeyEx(base_key, path, 0, KEY_READ, &key) != ERROR_SUCCESS)
@@ -116,24 +119,29 @@ void DeleteWinReg(const String& key, HKEY base) {
 	RegDeleteKey(base, key);
 }
 
-String GetModuleFileName(HINSTANCE instance) {
-	char h[_MAX_PATH];
-	GetModuleFileName(instance, h, _MAX_PATH);
-	return h;
-}
-
 String GetSystemDirectory() {
 	char temp[MAX_PATH];
 	*temp = 0;
 	GetSystemDirectory(temp, sizeof(temp));
-	return temp;
+	return FromSystemCharset(temp);
 }
 
 String GetWindowsDirectory() {
 	char temp[MAX_PATH];
 	*temp = 0;
 	GetWindowsDirectory(temp, sizeof(temp));
-	return temp;
+	return FromSystemCharset(temp);
+}
+#endif
+
+String GetModuleFileName(HINSTANCE instance) {
+#ifdef PLATFORM_WINCE
+	wchar h[_MAX_PATH];
+#else
+	char h[_MAX_PATH];
+#endif
+	GetModuleFileName(instance, h, _MAX_PATH);
+	return FromSystemCharset(h);
 }
 
 #endif

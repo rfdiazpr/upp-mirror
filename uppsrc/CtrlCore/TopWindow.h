@@ -30,6 +30,7 @@ public:
 	virtual bool     Key(dword key, int count);
 	virtual void     Close();
 	virtual String   GetDesc() const;
+	virtual void     ChildGotFocus();
 
 #ifdef PLATFORM_WIN32
 public:

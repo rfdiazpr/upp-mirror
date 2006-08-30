@@ -108,33 +108,44 @@ Splitter& Splitter::SetPos(int p, int i) {
 	return *this;
 }
 
-void   Splitter::Zoom(int i) {
+void   Splitter::Zoom(int i)
+{
 	style = i;
 	Layout();
 }
 
-Splitter& Splitter::BarWidth(int w) {
+Splitter& Splitter::BarWidth(int w)
+{
 	width = w;
 	Layout();
 	return *this;
 }
 
-Splitter& Splitter::Vert(Ctrl& top, Ctrl& bottom) {
+Splitter& Splitter::Vert(Ctrl& top, Ctrl& bottom)
+{
 	vert = true;
 	Set(top, bottom);
 	return *this;
 }
 
-Splitter& Splitter::Horz(Ctrl& left, Ctrl& right) {
+Splitter& Splitter::Horz(Ctrl& left, Ctrl& right)
+{
 	vert = false;
 	Set(left, right);
 	return *this;
 }
 
-void Splitter::Set(Ctrl& l, Ctrl& r) {
+void Splitter::Set(Ctrl& l, Ctrl& r)
+{
 	while(GetFirstChild())
 		RemoveChild(GetFirstChild());
 	*this << l << r;
+	Layout();
+}
+
+void Splitter::Add(Ctrl& pane)
+{
+	Ctrl::Add(pane);
 	Layout();
 }
 

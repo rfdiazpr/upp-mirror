@@ -1,13 +1,11 @@
 #include <CtrlLib/CtrlLib.h>
 
 struct MyAppWindow : TopWindow {
-	MenuBar menu;
-
 	void Exit() {
 		if(PromptOKCancel("Exit MyApp?"))
 			Break();
 	}
-	
+
 	void LocalMenu(Bar& bar) {
 		bar.Add("Exit", THISBACK(Exit));
 	}

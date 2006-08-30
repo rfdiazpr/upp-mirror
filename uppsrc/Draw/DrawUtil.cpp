@@ -523,7 +523,11 @@ void DrawDragRect(Draw& w, const Rect& _rect1, const Rect& _rect2, const Rect& _
 	SetTextColor(hdc, color);
 	SetBkColor(hdc, SColorText());
 	Point offset;
+#ifdef PLATFORM_WINCE
+	offset = Point(0, 0);
+#else
 	::GetViewportOrgEx(hdc, offset);
+#endif
 	HRGN rgn = GetFrameRgn(rect1 + offset, n);
 	HRGN rgn2 = GetFrameRgn(rect2 + offset, n);
 	HRGN cliprgn = CreateRectRgnIndirect(clip + offset);

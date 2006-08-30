@@ -1,5 +1,9 @@
 #include "Core.h"
 
+#ifdef PLATFORM_WIN32
+#include <winnls.h>
+#endif
+
 bool PanicMode;
 
 bool    IsPanicMode() { return PanicMode; }
@@ -15,8 +19,12 @@ void    Panic(const char *msg)
 	UsrLogT("===== PANIC ================================================");
 	UsrLogT(msg);
 #ifdef PLATFORM_WIN32
+#ifdef PLATFORM_WINCE
+	MessageBox(::GetActiveWindow(), ToSysChrSet(msg), L"Panic", MB_ICONSTOP | MB_OK | MB_APPLMODAL);
+#else
 	MessageBox(::GetActiveWindow(), msg, "Panic", MB_ICONSTOP | MB_OK | MB_APPLMODAL);
-#ifdef _DEBUG
+#endif
+#if defined(_DEBUG) && defined(CPU_X86)
 #ifdef COMPILER_MSC
 	_asm int 3
 #endif
@@ -54,12 +62,18 @@ void    AssertFailed(const char *file, int line, const char *cond)
 	UsrLogT("===== ASSERT FAILED ================================================");
 	UsrLogT(s);
 #ifdef PLATFORM_WIN32
+#ifdef PLATFORM_WINCE
+	MessageBox(::GetActiveWindow(), ToSysChrSet(s), L"Assertion failed", MB_ICONSTOP | MB_OK | MB_APPLMODAL);
+#else
 	MessageBox(::GetActiveWindow(), s, "Assertion failed", MB_ICONSTOP | MB_OK | MB_APPLMODAL);
+#endif
+#ifdef CPU_X86
 #ifdef COMPILER_MSC
 	_asm int 3
 #endif
 #ifdef COMPILER_GCC
 	asm("int $3");
+#endif
 #endif
 #else
 	write(2, s, strlen(s));
@@ -123,7 +137,7 @@ int PeekIL(const void *ptr) {
 #endif
 
 #ifndef CPU_X86
-int PeekI64(const void *ptr) {
+int64 PeekI64(const void *ptr) {
 	const byte *p = (const byte *)ptr;
 	dword a = p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
 	dword b = p[4] | (p[5] << 8) | (p[6] << 16) | (p[7] << 24);
@@ -639,6 +653,41 @@ int ChNoInvalid(int c)
 	return c == DEFAULTCHAR ? '_' : c;
 }
 
+#ifdef PLATFORM_WINCE
+WString ToSystemCharset(const String& src)
+{
+	return src.ToWString();
+}
+
+String FromSystemCharset(const WString& src)
+{
+	return src.ToString();
+}
+#else
+
+#ifdef PLATFORM_WIN32
+String ToSystemCharset(const String& src)
+{
+	WString s = src.ToWString();
+	int l = s.GetLength() * 5;
+	StringBuffer b(l);
+	int q = WideCharToMultiByte(CP_ACP, 0, (const WCHAR *)~s, s.GetLength(), b, l, NULL, NULL);
+	if(q <= 0)
+		return src;
+	b.SetCount(q);
+	return b;
+}
+
+String FromSystemCharset(const String& src)
+{
+	WStringBuffer b(src.GetLength());
+	int q = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, ~src, src.GetLength(), (WCHAR*)~b, src.GetLength());
+	if(q <= 0)
+		return src;
+	b.SetCount(q);
+	return WString(b).ToString();
+}
+#else
 String ToSystemCharset(const String& src)
 {
 	return IsMainRunning() ? Filter(ToCharset(GetLNGCharset(GetSystemLNG()), src), ChNoInvalid)
@@ -649,7 +698,8 @@ String FromSystemCharset(const String& src)
 {
 	return IsMainRunning() ? Filter(ToCharset(CHARSET_DEFAULT, src, GetLNGCharset(GetSystemLNG())), ChNoInvalid) : src;
 }
-
+#endif
+#endif
 
 static VectorMap<String, String>& sGCfg()
 {
@@ -751,8 +801,11 @@ AbortExc::AbortExc() :
 String GetErrorMessage(DWORD dwError) {
 	char h[2048];
 	sprintf(h, "%08x", dwError);
+#ifdef PLATFORM_WINCE //TODO
+	return h;
+#else
 	FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL, dwError, 0, h, 2048, NULL);
+		          NULL, dwError, 0, h, 2048, NULL);
 	String result = h;
 	String modf;
 	const char* s = result;
@@ -771,6 +824,7 @@ String GetErrorMessage(DWORD dwError) {
 	const char* p = modf;
 	for(s = p + modf.GetLength(); s > p && s[-1] == ' '; s--);
 	return FromSystemCharset(modf.Left(s - p));
+#endif
 }
 
 String GetLastErrorMessage() {
@@ -830,4 +884,8 @@ void BeepQuestion()
 //hack for linking libraries built using VC7 with VC6 standard lib's
 extern "C" long _ftol( double );
 extern "C" long _ftol2( double dblSource ) { return _ftol( dblSource ); }
+#endif
+
+#ifdef PLATFORM_WINCE
+int errno; // missing and zlib needs it
 #endif

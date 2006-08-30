@@ -178,7 +178,7 @@ void SqlArray::AppendQuery(SqlBool where)
 		if(IsNull(count))
 			sql * ::Select(cols).From(table).Where(wh).OrderBy(orderby);
 		else
-			sql * ::Select(cols).From(table).Where(wh).Limit(count).Offset(offset).OrderBy(orderby);
+			sql * ::Select(cols).From(table).Where(wh).OrderBy(orderby).Limit(count).Offset(offset);
 		if(ShowError(sql)) {
 //			awc.Cancel(); // todo: Fidler -> WaitCursor
 			return;

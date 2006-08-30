@@ -303,6 +303,7 @@ Image::Data::~Data()
 		Unlink();
 	}
 }
+
 void Iml::Init(int n)
 {
 	for(int i = 0; i < n; i++)

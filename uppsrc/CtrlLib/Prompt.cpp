@@ -23,6 +23,12 @@ int Prompt(const char *title, const Image& iconbmp, const char *qtf, bool okcanc
 	qtfctrl.SetQTF(String("[G1 ") + qtf, GetRichTextStdScreenZoom());
 	int bcy = Ctrl::VertLayoutZoom(24);
 	int bcx = Ctrl::HorzLayoutZoom(72);
+	if(button1)
+		bcx = max(2 * fcy + GetTextSize(button1, Draw::GetStdFont()).cx, bcx);
+	if(button2)
+		bcx = max(2 * fcy + GetTextSize(button2, Draw::GetStdFont()).cx, bcx);
+	if(button3)
+		bcx = max(2 * fcy + GetTextSize(button3, Draw::GetStdFont()).cx, bcx);
 	Size bsz = icon.GetStdSize();
 	if(cx == 0) {
 		cx = qtfctrl.GetWidth();
@@ -53,9 +59,6 @@ int Prompt(const char *title, const Image& iconbmp, const char *qtf, bool okcanc
 	b1.WhenAction = dlg.Breaker(1);
 	b2.WhenAction = dlg.Breaker(0);
 	b3.WhenAction = dlg.Breaker(-1);
-//	b1.SetFont(Arial(-12));
-//	b2.SetFont(Arial(-12));
-//	b3.SetFont(Arial(-12));
 	int bx = bcx;
 	int gap = fcy / 2;
 	fcy = 8 * fcy / 10;

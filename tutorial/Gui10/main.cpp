@@ -1,7 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
 #define IMAGECLASS TutorialImg
-#define IMAGEFILE <gui_tutorial/ch10/images.iml>
+#define IMAGEFILE <Gui10/images.iml>
 #include <Draw/iml.h>
 
 struct MyAppWindow : TopWindow {
@@ -15,7 +15,7 @@ struct MyAppWindow : TopWindow {
 	void SubMenu(Bar& bar) {
 		bar.Add("Exit", TutorialImg::Exit(), THISBACK(Exit));
 	}
-	
+
 	void MainMenu(Bar& bar) {
 		bar.Add("Menu", THISBACK(SubMenu));
 	}

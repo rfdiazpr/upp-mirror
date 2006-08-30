@@ -9,6 +9,21 @@
 
 #ifdef PLATFORM_WIN32
 
+#ifdef PLATFORM_WINCE
+
+void ChInitUpp()
+{
+	CtrlImg::Reset();
+	CtrlsImg::Reset();
+	Ctrl::SetXPStyle(true);
+}
+
+INITBLOCK {
+	ChRegister("", ChInitUpp);
+}
+
+#else
+
 #include <uxtheme.h>
 #include <tmschema.h>
 
@@ -515,6 +530,8 @@ INITBLOCK {
 	ChRegister("classic", ChInitWinClassic);
 	ChRegister("upp", ChInitUpp);
 }
+
+#endif
 
 #endif
 

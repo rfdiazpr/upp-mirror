@@ -1,3 +1,4 @@
+#ifndef PLATFORM_WINCE
 class WinMetaFile {
 	Size size;
 	mutable HENHMETAFILE hemf;
@@ -55,6 +56,7 @@ public:
 	WinMetaFileDraw(int cx, int cy, const char *app = NULL, const char *name = NULL, const char *file = NULL);
 	~WinMetaFileDraw();
 };
+#endif
 
 class ScreenDraw : public Draw {
 public:
@@ -62,6 +64,7 @@ public:
 	~ScreenDraw();
 };
 
+#ifndef PLATFORM_WINCE
 class PrintDraw : public Draw {
 public:
 	virtual void StartPage();
@@ -75,6 +78,7 @@ public:
 	PrintDraw(HDC hdc, const char *jobname);
 	~PrintDraw();
 };
+#endif
 
 inline bool     BitBlt(HDC ddc, Point d, HDC sdc, const Rect& s, dword rop = SRCCOPY)
 { return BitBlt(ddc, d.x, d.y, s.Width(), s.Height(), sdc, s.left, s.top, rop); }
@@ -91,7 +95,9 @@ inline void     LineTo(HDC hdc, Point pt)                         { LineTo(hdc, 
 inline void     DrawLine(HDC hdc, Point p, Point q)               { MoveTo(hdc, p); LineTo(hdc, q); }
 inline void     DrawLine(HDC hdc, int px, int py, int qx, int qy) { MoveToEx(hdc, px, py, 0); LineTo(hdc, qx, qy); }
 
+#ifndef PLATFORM_WINCE
 inline void     DrawArc(HDC hdc, const Rect& rc, Point p, Point q){ Arc(hdc, rc.left, rc.top, rc.right, rc.bottom, p.x, p.y, q.x, q.y); }
+#endif
 inline void     DrawCircle(HDC hdc, int x, int y, int radius)     { Ellipse(hdc, x - radius, y - radius, x + radius + 1, y + radius + 1); }
 inline void     DrawCircle(HDC hdc, Point centre, int radius)     { DrawCircle(hdc, centre.x, centre.y, radius); }
 inline void     DrawEllipse(HDC hdc, const Rect& rc)              { Ellipse(hdc, rc.left, rc.top, rc.right, rc.bottom); }

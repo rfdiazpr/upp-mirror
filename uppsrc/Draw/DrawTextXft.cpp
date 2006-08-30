@@ -29,6 +29,7 @@ FontInfo::Data::Data()
 	for(int i = 0; i < 256; i++)
 		width[i] = NULL;
 	xftfont = NULL;
+	default_width = NULL;
 }
 
 FontInfo::Data::~Data()
@@ -36,7 +37,9 @@ FontInfo::Data::~Data()
 	if(xftfont)
 		XftFontClose(Xdisplay, xftfont);
 	for(int i = 0; i < 256; i++)
-		if(width[i]) delete[] width[i];
+		if(width[i] && width[i] != default_width) delete[] width[i];
+	if(default_width)
+		delete[] default_width;
 }
 
 void FontInfo::Data::GetMetrics(int page, CharMetrics *t)

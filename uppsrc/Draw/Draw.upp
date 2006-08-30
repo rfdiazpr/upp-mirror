@@ -5,7 +5,7 @@ uses
 	Core,
 	plugin/bmp;
 
-library(WIN32) "user32 gdi32";
+library(WIN32 !MSC8ARM) "user32 gdi32";
 
 library(LINUX) X11;
 

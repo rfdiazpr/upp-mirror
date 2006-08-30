@@ -53,7 +53,7 @@ void BlockStream::Flush() {
 		int size = (int)min<int64>(streamsize - pagepos, pagesize);
 		LLOG("Write: " << pagepos << ", " << size);
 		Write(pagepos, buffer, size);
-		mediasize = max(mediasize, pagepos + size);
+		streamsize = max(streamsize, pagepos + size);
 	}
 	wrlim = buffer;
 	pagedirty = false;
@@ -72,8 +72,10 @@ void BlockStream::Seek(int64 apos) {
 	LLOG("Seek " << apos);
 	if(style & STRM_WRITE) {
 		SetPos(apos);
-		if(apos > streamsize)
-			SetStreamSize(mediasize = streamsize = apos);
+		if(apos > streamsize) {
+			SetStreamSize(apos);
+			streamsize = apos;
+		}
 	}
 	else {
 		if(apos > streamsize)
@@ -159,7 +161,7 @@ void BlockStream::_Put(const void *data, dword size) {
 		s += n;
 		n = dword(pg1 - pg0) - pagesize;
 		Write(pos + pagesize, s, n);
-		mediasize = max(pos + pagesize + n, mediasize);
+		streamsize = max(pos + pagesize + n, streamsize);
 		s += n;
 		SetPos(pos0 + size);
 		SyncPage();
@@ -216,7 +218,9 @@ void BlockStream::SetSize(int64 size)
 	int64 pos = GetPos();
 	Flush();
 	Seek(0);
-	SetStreamSize(mediasize = streamsize = size);
+	SetStreamSize(/*mediasize = streamsize =*/ size); // 06-08-29 TRC
+	// during call to SetStreamSize, mediasize must still contain the old file size
+	streamsize = size;
 	Seek(pos < size ? pos : size);
 }
 
@@ -234,7 +238,7 @@ void  BlockStream::SetStreamSize(int64 pos) {
 }
 
 void BlockStream::OpenInit(dword mode, int64 _filesize) {
-	mediasize = streamsize = _filesize;
+	streamsize = _filesize;
 	style = STRM_READ|STRM_SEEK;
 	SetLoading();
 	mode &= ~SHAREMASK;
@@ -313,8 +317,6 @@ bool FileStream::Open(const char *name, dword mode) {
 	LLOG("Open " << name << " mode: " << mode);
 	Close();
 	int iomode = mode & ~SHAREMASK;
-	String s = ToSystemCharset(name);
-	LLOGHEXDUMP(s, s.GetLength());
 	handle = CreateFile(ToSystemCharset(name),
 		iomode == READ ? GENERIC_READ : GENERIC_READ|GENERIC_WRITE,
 		(mode & NOREADSHARE ? 0 : FILE_SHARE_READ)

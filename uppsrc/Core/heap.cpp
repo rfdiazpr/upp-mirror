@@ -773,7 +773,7 @@ void MemoryProbeRaw(const char *name, dword flags)
 #ifdef PLATFORM_WIN32
 	int lused = 0;
 	int lfree = 0;
-#ifdef COMPILER_MSC //!!MINGW
+#if defined(COMPILER_MSC) && !defined(PLATFORM_WINCE) //!!MINGW
 	if(flags & MEMORY_PROBE_LARGE)
 		RLOG("Free large pages");
 	_HEAPINFO hinfo;

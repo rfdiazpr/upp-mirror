@@ -33,8 +33,13 @@ String Garble(const String& s);
 String Encode64(const String& s);
 String Decode64(const String& s);
 
+#ifdef PLATFORM_WINCE
+WString ToSystemCharset(const String& src);
+String  FromSystemCharset(const WString& src);
+#else
 String ToSystemCharset(const String& src);
 String FromSystemCharset(const String& src);
+#endif
 
 #ifdef PLATFORM_WIN32
 String GetErrorMessage(dword dwError);
@@ -120,8 +125,8 @@ inline int    Peek32le(const void *ptr)  { return MAKEWORD(Peek16le(ptr), Peek16
 inline int64  Peek64le(const void *ptr)  { return MAKEQWORD(Peek32le(ptr), Peek32le((byte *)ptr + 4)); }
 
 inline void   Poke16le(const void *ptr, int val)    { ((byte *)ptr)[0] = LOBYTE(val); ((byte *)ptr)[1] = HIBYTE(val); }
-inline void   Poke32le(const void *ptr, int val)    { Poke16le(pte, LOWORD(val)); Poke16le((byte *)ptr + 2, HIWORD(val)); }
-inline void   Poke64le(const void *ptr, int64 val)  { Poke32le(pte, LODWORD(val)); Poke32le((byte *)ptr + 4, HIDWORD(val)); }
+inline void   Poke32le(const void *ptr, int val)    { Poke16le(ptr, LOWORD(val)); Poke16le((byte *)ptr + 2, HIWORD(val)); }
+inline void   Poke64le(const void *ptr, int64 val)  { Poke32le(ptr, LODWORD(val)); Poke32le((byte *)ptr + 4, HIDWORD(val)); }
 #endif
 
 inline int    Peek16be(const void *ptr)  { return MAKEWORD(((byte *)ptr)[1], ((byte *)ptr)[0]); }
@@ -389,3 +394,7 @@ void StoreToGlobal(T& x, const char *name)
 }
 
 void SerializeGlobalConfigs(Stream& s);
+
+#ifdef PLATFORM_WINCE
+inline void abort() { TerminateProcess(NULL, -1); }
+#endif

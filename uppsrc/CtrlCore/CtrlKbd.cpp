@@ -1,6 +1,6 @@
 #include "CtrlCore.h"
 
-#define LLOG(x)  //  LOG(x)
+#define LLOG(x)   // LOG(x)
 
 Ptr<Ctrl> Ctrl::focusCtrl;
 Ptr<Ctrl> Ctrl::focusCtrlWnd;

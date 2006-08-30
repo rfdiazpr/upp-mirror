@@ -227,6 +227,7 @@ bool RTFEncoder::PutCharFormat(const RichPara::CharFormat& cf, const RichPara::C
 void RTFEncoder::PutObject(const RichObject& object)
 {
 #ifdef PLATFORM_WIN32
+#ifndef PLATFORM_WINCE
 	Size log_size = object.GetPixelSize(), out_size = object.GetSize();
 	if(log_size.cx <= 0 || log_size.cy <= 0) log_size = out_size;
 	Size scale = out_size * 100 / log_size;
@@ -260,6 +261,7 @@ void RTFEncoder::PutObject(const RichObject& object)
 			}
 		}
 	}
+#endif
 #endif
 }
 

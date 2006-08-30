@@ -129,6 +129,15 @@ Point GetMousePos();
 dword GetMouseFlags();
 
 #ifdef PLATFORM_WIN32
+#ifdef PLATFORM_WINCE
+bool GetShift();
+bool GetCtrl();
+bool GetAlt();
+bool GetCapsLock();
+bool GetMouseLeft();
+bool GetMouseRight();
+bool GetMouseMiddle();
+#else
 inline bool GetShift()       { return !!(GetKeyState(VK_SHIFT) & 0x8000); }
 inline bool GetCtrl()        { return !!(GetKeyState(VK_CONTROL) & 0x8000); }
 inline bool GetAlt()         { return !!(GetKeyState(VK_MENU) & 0x8000); }
@@ -136,6 +145,7 @@ inline bool GetCapsLock()    { return !!(GetKeyState(VK_CAPITAL) & 1); }
 inline bool GetMouseLeft()   { return !!(GetKeyState(VK_LBUTTON) & 0x8000); }
 inline bool GetMouseRight()  { return !!(GetKeyState(VK_RBUTTON) & 0x8000); }
 inline bool GetMouseMiddle() { return !!(GetKeyState(VK_MBUTTON) & 0x8000); }
+#endif
 #endif
 
 #ifdef PLATFORM_X11
@@ -1047,7 +1057,11 @@ public:
 #ifdef PLATFORM_WIN32
 	static void InitWin32(HINSTANCE hinst);
 	static void ExitWin32();
+#ifdef PLATFORM_WINCE
+	static void GuiFlush()                              {}
+#else
 	static void GuiFlush()                              { ::GdiFlush(); }
+#endif
 #endif
 
 #ifdef PLATFORM_X11
@@ -1201,6 +1215,7 @@ void DrawDragRect(Ctrl& q, const Rect& rect1, const Rect& rect2, const Rect& cli
                   Color color, const word *pattern);
 
 bool PointLoop(Ctrl& ctrl, const Vector<Image>& ani, int ani_ms);
+bool PointLoop(Ctrl& ctrl, const Image& img);
 
 class RectTracker : public LocalLoop {
 public:
@@ -1235,7 +1250,7 @@ protected:
 
 	Rect            Round(const Rect& r)           { return rounder ? rounder->Round(r) : r; }
 
-	virtual void    DrawRect(const Rect& r1, const Rect& r2);
+	virtual void    DrawRect(Rect r1, Rect r2);
 
 public:
 	Callback1<Rect> sync;
@@ -1257,6 +1272,8 @@ public:
 	Rect            Get()                          { return rect; }
 
 	Rect Track(const Rect& r, int tx = ALIGN_RIGHT, int ty = ALIGN_BOTTOM);
+	int  TrackHorzLine(int x0, int y0, int cx, int line);
+	int  TrackVertLine(int x0, int y0, int cy, int line);
 
 	RectTracker(Ctrl& master);
 	virtual ~RectTracker();
@@ -1352,6 +1369,30 @@ inline bool DisplayError(const Value& v) { return DisplayErrorFn()(v); }
 
 Vector<String>& coreCmdLine__();
 
+#ifdef PLATFORM_WINCE
+
+#define GUI_APP_MAIN \
+Vector<String> SplitCmdLine__(const char *cmd);\
+void GuiMainFn_();\
+\
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR lpCmdLine, int nCmdShow) \
+{ \
+	Ctrl::InitWin32(hInstance); \
+	coreCmdLine__() = SplitCmdLine__(FromSystemCharset(lpCmdLine)); \
+	AppInitEnvironment__(); \
+	GuiMainFn_(); \
+	Ctrl::CloseTopCtrls(); \
+	UsrLog("---------- About to delete this log..."); \
+	DeleteUsrLog(); \
+	Ctrl::ExitWin32(); \
+	AppExit__(); \
+	return GetExitCode(); \
+} \
+\
+void GuiMainFn_()
+
+#else
+
 #define GUI_APP_MAIN \
 Vector<String> SplitCmdLine__(const char *cmd);\
 void GuiMainFn_();\
@@ -1372,6 +1413,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdSh
 \
 void GuiMainFn_()
 
+#endif
 #endif
 
 #ifdef PLATFORM_POSIX
@@ -1396,6 +1438,7 @@ void GuiMainFn_()
 #endif
 
 #ifdef PLATFORM_WIN32
+#ifndef PLATFORM_WINCE
 
 class DHCtrl : public Ctrl {
 public:
@@ -1418,6 +1461,7 @@ public:
 	~DHCtrl();
 };
 
+#endif
 #endif
 
 #endif

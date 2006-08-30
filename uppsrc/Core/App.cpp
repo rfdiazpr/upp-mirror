@@ -8,7 +8,7 @@
 
 String GetExeFilePath()
 {
-	return FromSystemCharset(GetModuleFileName());
+	return GetModuleFileName();
 }
 
 String GetExeDirFile(const char *filename)
@@ -199,6 +199,7 @@ void AppInit__(int argc, const char **argv, const char **envptr)
 
 void AppInitEnvironment__()
 {
+#ifndef PLATFORM_WINCE
 	char *env = GetEnvironmentStrings();
 	for(char *ptr = env; *ptr; ptr++)
 	{
@@ -216,6 +217,7 @@ void AppInitEnvironment__()
 		coreEnvPtr__().GetAdd(ToUpper(varname)) = String(b, ptr);
 	}
 	FreeEnvironmentStrings(env);
+#endif
 	sCriticalSectionLock();
 	CommonInit();
 }
@@ -237,7 +239,7 @@ void AppExit__()
 
 void    LaunchWebBrowser(const String& url)
 {
-#ifdef PLATFORM_WIN32
+#if defined(PLATFORM_WIN32) && !defined(PLATFORM_WINCE)
 	ShellExecute(NULL, "open", url, NULL, ".", SW_SHOWDEFAULT);
 #endif
 #ifdef PLATFORM_POSIX

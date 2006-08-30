@@ -164,6 +164,8 @@ inline bool IsPunct(int c)         { return c != ' ' && !IsAlNum(c); }
 inline bool IsSpace(int c)         { return c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\v' || c == '\t'; }
 inline bool IsXDigit(int c)        { return IsDigit(c) || c >= 'A' && c <= 'F' || c >= 'a' && c <= 'f'; }
 
+inline bool IsCJKIdeograph(int c)  { return c >= 0x2e80 && c <= 0xdfaf || c >= 0xf900 && c <= 0xfaff; }
+
 word UnicodeCombine(word chr, word combine);
 
 void ToUpper(wchar *t, const char *s, int len);

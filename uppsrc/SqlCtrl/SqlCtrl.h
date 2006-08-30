@@ -103,7 +103,7 @@ public:
 	void      AppendQuery(SqlBool where);
 	void      Query(SqlBool where)                         { SetWhere(where); Query(); }
 
-	void      Limit(int offset, int count);
+	void      Limit(int _offset, int _count)               { offset = _offset; count = _count; }
 	void      Limit(int count)                             { Limit(0, count); }
 
 	SqlArray& SetTable(SqlId _table)                       { table = _table; return *this; }

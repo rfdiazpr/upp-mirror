@@ -1,5 +1,4 @@
 uses
-	Image,
 	Geom\Draw,
 	TCtrlLib;
 

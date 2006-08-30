@@ -41,6 +41,15 @@ class RescaleImage {
 	int           offset;
 	int           y;
 
+	struct Ln {
+		RasterLine line;
+		int        ii;
+	};
+
+	Ln            cache[4];
+	int           cii;
+	const RGBA   *GetLine(int i);
+
 public:
 	void Create(Size sz, Raster& src, const Rect& src_rc);
 	void Get(RGBA *line);

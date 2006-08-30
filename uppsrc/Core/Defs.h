@@ -145,7 +145,7 @@ static void COMBINE(x, _fn)()
 #undef max
 #endif
 
-#if defined(_MSC_VER) && (_MSC_VER < 1300)
+#if defined(_MSC_VER) && (_MSC_VER < 1300)// || defined(PLATFORM_WINCE)
 	template <class T> inline const T& min(const T& a, const T& b) { return a < b ? a : b; }
 	template <class T> inline const T& max(const T& a, const T& b) { return a > b ? a : b; }
 #else
@@ -175,7 +175,11 @@ typedef int                int32;
 typedef unsigned int       uint32;
 #endif
 
+#ifdef PLATFORM_WINCE
+typedef WCHAR              wchar;
+#else
 typedef word               wchar;
+#endif
 
 #ifdef COMPILER_MSC
 typedef __int64            int64;
@@ -326,4 +330,14 @@ inline void  *MemoryAllocDebug(dword size) {}
 inline void   MemoryFreeDebug(void *p) {}
 inline void   MemoryCheck() {}
 
+#endif
+
+
+//Quick fix....
+#ifdef PLATFORM_WINCE
+const char *FromSysChrSet(const wchar *s);
+const wchar *ToSysChrSet(const char *s);
+#else
+inline const char *FromSysChrSet(const char *s) { return s; }
+inline const char *ToSysChrSet(const char *s) { return s; }
 #endif

@@ -1,7 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
 #define IMAGECLASS TutorialImg
-#define IMAGEFILE <gui_tutorial/ch11/images.iml>
+#define IMAGEFILE <Gui11/images.iml>
 #include <Draw/iml.h>
 
 struct MyAppWindow : TopWindow {
@@ -15,7 +15,7 @@ struct MyAppWindow : TopWindow {
 	void BarFn() {
 		PromptOK("Fn2 activated!");
 	}
-	
+
 	void Exit() {
 		if(PromptOKCancel("Exit MyApp?"))
 			Break();

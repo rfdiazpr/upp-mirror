@@ -71,6 +71,9 @@ String MscBuilder::CmdLine()
 	if(HasFlag("SH4"))
 		cc = "shcl /Qsh4";
 	else
+	if(HasFlag("MSC8ARM"))
+		cc = "cl -GS- ";
+	else
 		cc = HasFlag("INTEL") ? "icl" : "cl";
 	cc << " -c -nologo -W3 -GR";
 	cc << IncludesDefinesTargetTime();
@@ -79,11 +82,12 @@ String MscBuilder::CmdLine()
 
 String MscBuilder::MachineName() const
 {
-	if(HasFlag("ARM"))  return "ARM";
-	if(HasFlag("MIPS")) return "MIPS";
-	if(HasFlag("SH3"))  return "SH3";
-	if(HasFlag("SH4"))  return "SH4";
-	if(HasFlag("WIN32")) return "I386";
+	if(HasFlag("ARM"))     return "ARM";
+	if(HasFlag("MIPS"))    return "MIPS";
+	if(HasFlag("SH3"))     return "SH3";
+	if(HasFlag("SH4"))     return "SH4";
+	if(HasFlag("MSC8ARM")) return "ARM";
+	if(HasFlag("WIN32"))   return "I386";
 	return "IX86";
 }
 
@@ -113,7 +117,7 @@ String MscBuilder::PdbPch(String package, int slot, bool do_pch) const
 	String pdb = GetHostPathQ(CatAnyPath(outdir, pkg_slot + ".pdb"));
 	String cc;
 	cc << " -Gy -Fd" << pdb;
-	if(do_pch && !HasFlag("MSC8")) // MSC8 does not support automatic precompiled headers...
+	if(do_pch && !HasFlag("MSC8") && !HasFlag("MSC8ARM")) // MSC8 does not support automatic precompiled headers...
 		cc << " -YX -Fp" << GetHostPathQ(CatAnyPath(outdir, pkg_slot + ".pch")) << ' ';
 	return cc;
 }
@@ -141,7 +145,7 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 		      " -GX-"; // turn off exception handling
 	}
 	else
-	if(HasFlag("MSC8"))
+	if(HasFlag("MSC8") || HasFlag("MSC8ARM"))
 		cc << " -EHsc";
 	else
 		cc << " -GX";
@@ -155,7 +159,7 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 	if(HasFlag("DEBUG_FULL"))
 		cc << " -Zi";
 	cc << ' ' << Gather(pkg.option, config.GetKeys());
-	cc << (HasFlag("SHARED") || is_shared ? " -MD" : (HasFlag("MT") || HasFlag("MSC8")) ? " -MT" : " -ML");
+	cc << (HasFlag("SHARED") || is_shared ? " -MD" : (HasFlag("MT") || HasFlag("MSC8") || HasFlag("MSC8ARM")) ? " -MT" : " -ML");
 
 	String cc_size = cc;
 	String cc_speed = cc;
@@ -341,8 +345,12 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 						lib << " -debug -OPT:NOREF";
 					else
 						lib << " -OPT:REF";
+					if(HasFlag("MSC8ARM"))
+						lib <<  " -subsystem:windowsce,4.20 /ARMPADCODE";
+					else
 					if(HasFlag("GUI"))
-						lib << (HasFlag("WIN32") ? " -subsystem:windows" : " -subsystem:windowsce");
+						lib << (HasFlag("WIN32") ? " -subsystem:windows"
+						                         : " -subsystem:windowsce");
 					else
 						lib << " -subsystem:console";
 					Index<String> exports;
@@ -419,6 +427,9 @@ bool MscBuilder::Link(const Vector<String>& linkfile, const String& linkoptions,
 				link << " -incremental:yes -debug -OPT:NOREF";
 			else
 				link << " -incremental:no -OPT:REF";
+			if(HasFlag("MSC8ARM"))
+				link <<  " -subsystem:windowsce,4.20 /ARMPADCODE";
+			else
 			if(HasFlag("GUI"))
 				link << (HasFlag("WIN32") ? " -subsystem:windows" : " -subsystem:windowsce");
 			else
@@ -465,6 +476,7 @@ void RegisterMscBuilder()
 {
 	RegisterBuilder("MSC71", CreateMscBuilder);
 	RegisterBuilder("MSC8", CreateMscBuilder);
+	RegisterBuilder("MSC8ARM", CreateMscBuilder);
 	RegisterBuilder("EVC_ARM", CreateMscBuilder);
 	RegisterBuilder("EVC_MIPS", CreateMscBuilder);
 	RegisterBuilder("EVC_SH3", CreateMscBuilder);

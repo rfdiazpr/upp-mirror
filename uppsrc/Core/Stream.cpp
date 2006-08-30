@@ -1052,6 +1052,7 @@ Stream& NilStream()
 	return Single<NilStreamClass>();
 }
 
+#ifndef PLATFORM_WINCE
 class CoutStream : public Stream {
 	virtual void    _Put(int w) {
 	#ifdef PLATFORM_WIN32
@@ -1071,6 +1072,7 @@ Stream& Cout()
 {
 	return Single<CoutStream>();
 }
+#endif
 
 static int sMappingGranularity_()
 {

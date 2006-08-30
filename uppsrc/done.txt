@@ -1,3 +1,13 @@
+Weekend {
+	New ImageView example
+	Fixed JPEG seeking
+	Fixed Image scaler to be linear (non-seeking)
+	Documented Format
+	RectTracker lines
+	reference/RectTracker
+}
+
+
 * struc ArrayCtrl - why it is not first in class browser?
 
 * Crashed DrawOpWin32.cpp line 15 in debug mode ide -> Assist Window

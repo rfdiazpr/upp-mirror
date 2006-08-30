@@ -5,7 +5,7 @@ GUI_APP_MAIN
 	TopWindow  app;
 	app.SetRect(0, 0, 200, 60);
 	EditDate  date1, date2, date3;
-	date1 = date2 = date3 <<= GetSysDate();
+	date1 <<= date2 <<= date3 <<= GetSysDate();
 	date1.ClearModify();
 	app.Add(date1.TopPosZ(0, 20).HSizePos());
 	date2.Disable();

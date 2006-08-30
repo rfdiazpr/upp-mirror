@@ -1,7 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
 #define IMAGECLASS MyImages
-#define IMAGEFILE  <Image01/Image01.iml>
+#define IMAGEFILE  <Image01/images.iml>
 #include <Draw/iml.h>
 
 class MyApp : public TopWindow {

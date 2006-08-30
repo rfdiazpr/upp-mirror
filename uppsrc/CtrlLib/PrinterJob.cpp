@@ -1,6 +1,9 @@
 #include "CtrlLib.h"
 
 #ifdef PLATFORM_WIN32
+
+#ifndef PLATFORM_WINCE
+
 #include <commdlg.h>
 #pragma  comment(lib, "comdlg32.lib")
 
@@ -94,6 +97,8 @@ PrinterJob& PrinterJob::CurrentPage(int i)
 	current = i + 1;
 	return *this;
 }
+
+#endif
 
 #endif
 

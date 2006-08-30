@@ -226,25 +226,25 @@ inline double CroundN(double a)          { return floor(a + 0.5); }
 inline double CroundNN(double a, int c)  { double t = GetTimes(c); return floor(a * t + 0.5) / t; }
 inline double CroundrNN(double a, int c) { ChkDigits(c); return roundr(a, c); }
 
-FDECLP(round, N, &GroupArith)
-FDECLP(round, NN, &GroupArith)
-FDECLP(roundr, NN, &GroupArith)
+FDECLP0(round, N, &GroupArith)
+FDECLP0(round, NN, &GroupArith)
+FDECLP0(roundr, NN, &GroupArith)
 
 inline double CfloorN(double a)          { return floor(a); }
 inline double CfloorNN(double a, int c)  { double t = GetTimes(c); return floor(a * t) / t; }
 inline double CfloorrNN(double a, int c) { ChkDigits(c); return floorr(a, c); }
 
-FDECLP(floor, N, &GroupArith)
-FDECLP(floor, NN, &GroupArith)
-FDECLP(floorr, NN, &GroupArith)
+FDECLP0(floor, N, &GroupArith)
+FDECLP0(floor, NN, &GroupArith)
+FDECLP0(floorr, NN, &GroupArith)
 
 inline double CceilN(double a)          { return ceil(a); }
 inline double CceilNN(double a, int c)  { double t = GetTimes(c); return ceil(a * t) / t; }
 inline double CceilrNN(double a, int c) { ChkDigits(c); return ceilr(a, c); }
 
-FDECLP(ceil, N, &GroupArith)
-FDECLP(ceil, NN, &GroupArith)
-FDECLP(ceilr, NN, &GroupArith)
+FDECLP0(ceil, N, &GroupArith)
+FDECLP0(ceil, NN, &GroupArith)
+FDECLP0(ceilr, NN, &GroupArith)
 
 inline double CminNN(double a, double b) { return min(a, b); }
 inline double CmaxNN(double a, double b) { return max(a, b); }

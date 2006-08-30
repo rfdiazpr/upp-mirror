@@ -11,7 +11,13 @@ int msecs(int from) { return (int)GetTickCount() - from; }
 #ifdef PLATFORM_WIN32
 static void sLogFile(char *fn, const char *app = ".log")
 {
+#ifdef PLATFORM_WINCE
+	wchar wfn[256];
+	GetModuleFileName(NULL, wfn, 512);
+	strcpy(fn, FromSysChrSet(wfn));
+#else
 	GetModuleFileName(NULL, fn, 512);
+#endif
 	char *e = fn + strlen(fn), *s = e;
 	while(s > fn && *--s != '\\' && *s != '.')
 		;
@@ -208,9 +214,13 @@ String GetTypeName(const char *s)
 
 bool TimingInspector::active = true;
 
-#ifdef PLATFORM_POSIX
-inline int timeGetTime() {
+#if defined(PLATFORM_POSIX) || defined(PLATFORM_WINCE)
+inline int tmGetTime() {
 	return GetTickCount();
+}
+#else
+inline int tmGetTime() {
+	return timeGetTime();
 }
 #endif
 
@@ -236,7 +246,7 @@ TimingInspector::TimingInspector(const char *_name) {
 	all_count = call_count = max_nesting = nesting_depth = min_time = max_time = total_time = 0;
 	static bool init;
 	if(!init) {
-#ifdef PLATFORM_WIN32
+#if defined(PLATFORM_WIN32) && !defined(PLATFORM_WINCE)
 		timeBeginPeriod(1);
 #endif
 		init = true;
@@ -252,7 +262,7 @@ TimingInspector::~TimingInspector() {
 void TimingInspector::Start() {
 	if(!active) return;
 	if(!nesting_depth++)
-		start_time = timeGetTime();
+		start_time = tmGetTime();
 	if(nesting_depth > max_nesting)
 		max_nesting = nesting_depth;
 }
@@ -261,7 +271,7 @@ void TimingInspector::End() {
 	if(!active) return;
 	all_count++;
 	if(!--nesting_depth) {
-		dword time = timeGetTime() - start_time;
+		dword time = tmGetTime() - start_time;
 		total_time += time;
 		if(call_count++ == 0)
 			min_time = max_time = time;
@@ -336,7 +346,7 @@ void  HexDump(Stream& s, const void *ptr, int size, int maxsize) {
 	}
 }
 
-#ifdef PLATFORM_WIN32
+#if defined(PLATFORM_WIN32) && !defined(PLATFORM_WINCE)
 
 template <class T>
 void Put(HANDLE file, T& data) {

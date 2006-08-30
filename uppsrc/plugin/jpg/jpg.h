@@ -1,6 +1,8 @@
 #ifndef _plugin_jpg_jpg_h_
 #define _plugin_jpg_jpg_h_
 
+#include <Draw/Draw.h>
+
 class JPGRaster : public StreamRaster {
 public:
 	class Data;

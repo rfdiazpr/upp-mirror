@@ -35,6 +35,11 @@ inline int stricmp(const char *a, const char *b)         { return strcasecmp(a, 
 inline int strnicmp(const char *a, const char *b, int n) { return strncasecmp(a, b, n); }
 #endif
 
+#ifdef PLATFORM_WINCE
+inline int stricmp(const char *a, const char *b)         { return _stricmp(a, b); }
+inline int strnicmp(const char *a, const char *b, int n) { return _strnicmp(a, b, n); }
+#endif
+
 template <class T, class St>
 class AStringBuffer;
 

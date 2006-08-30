@@ -171,6 +171,7 @@ private:
 	Size                     pagesz;
 	String                   footer;
 	bool                     nolinks;
+	static int               fixedlang;
 
 	WithRichFindReplaceLayout<TopWindow> findreplace;
 
@@ -480,6 +481,7 @@ public:
 	static double DotToPt(int dot);
 	static int    PtToDot(double pt);
 	static Bits   SpellParagraph(const RichPara& p);
+	static void   FixedLang(int lang)              { fixedlang = lang; }
 
 	Callback                     WhenRefreshBar;
 	Callback                     WhenStartEvaluating;

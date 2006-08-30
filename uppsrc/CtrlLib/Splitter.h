@@ -15,6 +15,7 @@ protected:
 	int         style;
 	int         mouseindex;
 	bool        vert;
+	int         inset;
 
 	int       ClientToPos(Point client) const;
 	int       PosToClient(int pos) const;
@@ -34,6 +35,9 @@ public:
 	int       GetZoom() const                      { return style; }
 
 	void      SetMin(int i, int w)                 { mins.At(i, 0) = w; }
+
+	void      Add(Ctrl& pane);
+	Splitter& operator<<(Ctrl& pane)               { Add(pane); return *this; }
 
 	Splitter& Vert(Ctrl& top, Ctrl& bottom);
 	Splitter& Horz(Ctrl& left, Ctrl& right);

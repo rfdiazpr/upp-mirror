@@ -25,7 +25,7 @@ void AlphaBlend(RGBA *b, const RGBA *f, int len);
 void AlphaBlend(RGBA *b, const RGBA *f, int len, Color color);
 int  GetChMaskPos32(dword mask);
 
-//TODO temporary support for legacy .iml
+//temporary support for legacy .iml (TODO remove)
 const byte *UnpackRLE(RGBA *t, const byte *src, int len);
 String      PackRLE(const RGBA *s, int len);
 
@@ -40,7 +40,6 @@ enum ImageKind {
 	IMAGE_ALPHA,
 	IMAGE_MASK,
 	IMAGE_OPAQUE,
-	IMAGE_PREMULTIPLIED,
 };
 
 class Image;
@@ -157,10 +156,12 @@ private:
 	void PaintImage(Draw& w, int x, int y, const Rect& src, Color c) const;
 
 #ifdef PLATFORM_WIN32
+#ifndef PLATFORM_WINCE
 	void         SetCursorCheat(LPCSTR id)   { data->cursor_cheat = id; }
 	LPCSTR       GetCursorCheat() const      { return data ? data->cursor_cheat : NULL; }
 	friend Image Win32IconCursor(LPCSTR id, int iconsize, bool cursor);
 	friend HICON IconWin32(const Image& img, bool cursor);
+#endif
 #endif
 
 #ifdef PLATFORM_X11
@@ -184,7 +185,7 @@ public:
 	int   GetKind() const;
 
 	int64 GetSerialId() const                 { return data ? data->serial : 0; }
-	bool IsSame(const Image& img) const       { return GetSerialId() == img.GetSerialId(); }
+	bool  IsSame(const Image& img) const      { return GetSerialId() == img.GetSerialId(); }
 
 	bool   operator==(const Image& img) const;
 	bool   operator!=(const Image& img) const;
@@ -281,6 +282,7 @@ Size   GetImageStringDots(const String& src);
 #include "ImageOp.h"
 
 #ifdef PLATFORM_WIN32
+#ifndef PLATFORM_WINCE
 
 Image Win32Icon(LPCSTR id, int iconsize = 0);
 Image Win32Icon(int id, int iconsize = 0);
@@ -288,6 +290,7 @@ Image Win32Cursor(LPCSTR id);
 Image Win32Cursor(int id);
 HICON IconWin32(const Image& img, bool cursor = false);
 
+#endif
 #endif
 
 #ifdef PLATFORM_X11

@@ -1026,7 +1026,7 @@ int ToUnicode(int chr, byte charset)
 	return s_cset(charset).ToUnicode(chr);
 }
 
-int FromUnicode(word wchr, byte charset, int def)
+int FromUnicode(wchar wchr, byte charset, int def)
 {
 	return s_cset(charset).FromUnicode(wchr, def);
 }

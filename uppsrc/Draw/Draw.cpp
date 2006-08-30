@@ -140,6 +140,7 @@ void Draw::DrawLine(Point p1, Point p2, int width, Color color)
 	DrawLine(p1.x, p1.y, p2.x, p2.y, width, color);
 }
 
+#ifndef PLATFORM_WINCE
 void Draw::DrawPolyPolyline(const Vector<Point>& vertices, const Vector<int>& counts,
                             int width, Color color, Color doxor)
 {
@@ -219,7 +220,7 @@ void Draw::DrawPolygon(const Vector<Point>& vertices,
 {
 	DrawPolygon(vertices.Begin(), vertices.GetCount(), color, width, outline, image, doxor);
 }
-
+#endif
 void Draw::DrawEllipse(int x, int y, int cx, int cy, Color color, int pen, Color pencolor)
 {
 	DrawEllipse(RectC(x, y, cx, cy), color, pen, pencolor);

@@ -1,6 +1,6 @@
 #include "CtrlCore.h"
 
-#define LLOG(x)  //LOG(x)
+#define LLOG(x)  // LOG(x)
 
 String TopWindow::GetDesc() const
 {
@@ -28,8 +28,14 @@ void TopWindow::Activate()
 	LLOG("Activate End");
 }
 
+void TopWindow::ChildGotFocus()
+{
+	activefocus = GetFocusCtrl();
+}
+
 void TopWindow::Deactivate()
 {
+	LLOG("DeActivate current focus " << ::Name(GetFocusCtrl()));
 	if(HasFocusDeep())
 		activefocus = GetFocusCtrl();
 	UsrLogT(3, "DEACTIVATE " + Desc(this));
@@ -370,6 +376,7 @@ TopWindow& TopWindow::ToolWindow(bool b)
 
 void TopWindow::SerializePlacement(Stream& s, bool reminimize)
 {
+#ifndef PLATFORM_WINCE
 	int version = 0;
 	s / version;
 	Rect rect = GetRect();
@@ -425,6 +432,7 @@ void TopWindow::SerializePlacement(Stream& s, bool reminimize)
 	#endif
 		}
 	}
+#endif
 }
 
 CH_LOOK(DialogFaceLook, SColorFace());

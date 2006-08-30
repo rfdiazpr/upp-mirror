@@ -6,9 +6,9 @@ struct MyApp : TopWindow {
 	void Exit() {
 		Break(999);
 	}
-	
+
 	typedef MyApp CLASSNAME;
-	
+
 	MyApp() {
 		SetRect(0, 0, 100, 100);
 		Add(exit.SetLabel("exit").LeftPosZ(10, 64).TopPosZ(10, 24));

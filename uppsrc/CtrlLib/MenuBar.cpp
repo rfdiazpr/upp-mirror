@@ -375,7 +375,11 @@ void MenuItem::LeftUp(Point, dword)
 {
 	if(!isenabled) return;
 #ifdef PLATFORM_WIN32
+#ifdef PLATFORM_WINCE
+	PlaySound(L"MenuCommand", NULL, SND_ASYNC|SND_NODEFAULT); //TODO?
+#else
 	PlaySound("MenuCommand", NULL, SND_ASYNC|SND_NODEFAULT);
+#endif
 #endif
 	LLOG("Menu Item pre Action");
 	WhenAction();
@@ -999,7 +1003,11 @@ void MenuBar::Post(Callback1<Bar&> bar)
 
 DWORD WINAPI PlaySoundThread(LPVOID)
 {
+#ifdef PLATFORM_WINCE
+	PlaySound(L"MenuPopup", NULL, SND_ASYNC|SND_NODEFAULT);
+#else
 	PlaySound("MenuPopup", NULL, SND_ASYNC|SND_NODEFAULT);
+#endif
 	return 0;
 }
 

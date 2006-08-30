@@ -192,7 +192,7 @@ Button& Button::Style(Value (*_look)(int))
 
 void Button::Layout()
 {
-	Transparent(!ChIsOpaque(look(CTRL_NORMAL)));
+	Transparent(!ChIsOpaque(look ? look(CTRL_NORMAL) : ButtonLook(CTRL_NORMAL)));
 }
 
 void Button::Paint(Draw& w)
@@ -210,7 +210,8 @@ void Button::Paint(Draw& w)
 	if(monoimg)
 		dl.lcolor = SColorText;
 	Value (*st)(int) = look;
-	if(look == ButtonLook) {
+	if(!st) {
+		st = ButtonLook;
 		if(InFrame()) {
 			st = EdgeButtonLook;
 			if(GetParent()) {
@@ -306,7 +307,7 @@ Button& Button::SetMonoImage(const Image& _img)
 }
 
 Button::Button() {
-	look = ButtonLook;
+	look = NULL;
 	type = NORMAL;
 }
 

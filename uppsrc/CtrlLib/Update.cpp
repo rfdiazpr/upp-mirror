@@ -1,6 +1,8 @@
 #include "CtrlLib.h"
 
 #ifdef PLATFORM_WIN32
+#ifndef PLATFORM_WINCE
+
 Time FileTimeToTime(const FILETIME& time) {
 	SYSTEMTIME t;
 	FileTimeToSystemTime(&time, &t);
@@ -53,7 +55,7 @@ void UpdateFile(String dst, String src)
 		if(pi.Canceled() && PromptYesNo(t_("Aborting update is likely to cause trouble when running the application for the next time.\nContinue?")))
 		{
 			out.Close();
-			DeleteFile(tmp);
+			FileDelete(tmp);
 			return;
 		}
 	}
@@ -156,4 +158,6 @@ bool SelfUpdateSelf()
 	RLOG("SelfUpdateSelf (running updater): " << commandline);
 	return WinExec(commandline, SW_SHOWNORMAL) >= 32;
 }
+
+#endif
 #endif

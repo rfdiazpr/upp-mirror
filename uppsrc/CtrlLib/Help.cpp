@@ -99,7 +99,7 @@ void HelpWindow::FontSize()
 
 void HelpWindow::Print()
 {
-#ifdef PLATFORM_WIN32
+#ifndef PLATFORM_PDA
 	::Print(view.Get(), Size(3968, 6074), 0);
 #endif
 }
@@ -113,7 +113,9 @@ void HelpWindow::Tools(Bar& bar)
 	bar.Gap();
 	bar.Add(t_("Font size"), CtrlImg::font_size(), THISBACK(FontSize));
 	bar.Gap();
+#ifndef PLATFORM_PDA
 	bar.Add(t_("Print"), CtrlImg::print(), THISBACK(Print));
+#endif
 	BarEx(bar);
 }
 

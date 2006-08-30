@@ -7,11 +7,11 @@ struct MyAppWindow : TopWindow {
 		if(PromptOKCancel("Exit MyApp?"))
 			Break();
 	}
-	
+
 	void SubMenu(Bar& bar) {
 		bar.Add("Exit", THISBACK(Exit));
 	}
-	
+
 	void MainMenu(Bar& bar) {
 		bar.Add("Menu", THISBACK(SubMenu));
 	}

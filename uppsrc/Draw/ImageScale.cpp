@@ -388,6 +388,25 @@ void RescaleImage::Create(Size _tsz, Raster& _src, const Rect& src_rc)
 	offsets = vert.GetIter(4);
 	offset = 0;
 	y = 0;
+	cii = 0;
+	cache[0].ii = cache[1].ii = cache[2].ii = cache[3].ii = -1;
+}
+
+const RGBA *RescaleImage::GetLine(int ii)
+{
+	if(cache[0].ii == ii)
+		return cache[0].line;
+	if(cache[1].ii == ii)
+		return cache[1].line;
+	if(cache[2].ii == ii)
+		return cache[2].line;
+	if(cache[3].ii == ii)
+		return cache[3].line;
+	cache[cii].line = (*src)[ii];
+	cache[cii].ii = ii;
+	const RGBA *l = cache[cii].line;
+	cii = (cii + 1) % 4;
+	return l;
 }
 
 void RescaleImage::Get(RGBA *tgt)
@@ -399,10 +418,10 @@ void RescaleImage::Get(RGBA *tgt)
 	offset += *offsets++;
 	ASSERT(offset >= 0 && offset + segspan <= size.cy);
 	if(bigseg) {
-		row_proc(&row_buffers[0 * cx4], (*src)[offset + 0 * step], horz);
-		row_proc(&row_buffers[1 * cx4], (*src)[offset + 1 * step], horz);
-		row_proc(&row_buffers[2 * cx4], (*src)[offset + 2 * step], horz);
-		row_proc(&row_buffers[3 * cx4], (*src)[offset + 3 * step], horz);
+		row_proc(&row_buffers[0 * cx4], GetLine(offset + 0 * step), horz);
+		row_proc(&row_buffers[1 * cx4], GetLine(offset + 1 * step), horz);
+		row_proc(&row_buffers[2 * cx4], GetLine(offset + 2 * step), horz);
+		row_proc(&row_buffers[3 * cx4], GetLine(offset + 3 * step), horz);
 		BltAASet4Fix(tgt, &row_buffers[0 * cx4], &row_buffers[1 * cx4],
 			              &row_buffers[2 * cx4], &row_buffers[3 * cx4], tsz.cx);
 	}
@@ -413,13 +432,13 @@ void RescaleImage::Get(RGBA *tgt)
 				first++;
 			else
 				full++;
-			row_proc(&row_buffers[next % segment * cx4], (*src)[next], horz);
+			row_proc(&row_buffers[next % segment * cx4], GetLine(next), horz);
 		}
 		while(first > offset) {
 			if(full < segment)
 				full++;
 			--first;
-			row_proc(&row_buffers[first % segment * cx4], (*src)[first], horz);
+			row_proc(&row_buffers[first % segment * cx4], GetLine(first), horz);
 		}
 		ASSERT(offset >= first && endoff <= first + full);
 		switch(segment) {

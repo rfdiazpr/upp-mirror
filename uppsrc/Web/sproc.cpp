@@ -406,6 +406,7 @@ bool LocalSlaveProcess::Read(String& res) {
 	if(!ReadFile(hOutputRead, buffer, sizeof(buffer), &n, NULL))
 		return false;
 	res.Cat(buffer, n);
+	return true;
 #endif
 #ifdef PLATFORM_POSIX
 //??!

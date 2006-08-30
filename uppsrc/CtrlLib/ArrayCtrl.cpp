@@ -1017,6 +1017,14 @@ void ArrayCtrl::ScrollIntoCursor()
 		ScrollInto(cursor);
 }
 
+void ArrayCtrl::SetCursorEditFocus()
+{
+	if(!IsEdit() && cursor >= 0 && hasctrls)
+		for(int j = 0; j < column.GetCount(); j++)
+			if(IsCtrl(cursor, j) && GetCtrl(cursor, j).ctrl->SetWantFocus())
+				break;
+}
+
 bool ArrayCtrl::SetCursor0(int i, bool dosel) {
 	if(nocursor || GetCount() == 0)
 		return false;
@@ -1038,10 +1046,7 @@ bool ArrayCtrl::SetCursor0(int i, bool dosel) {
 		for(int j = 0; j < column.GetCount(); j++)
 			if(IsCtrl(cursor, j) && GetCtrl(cursor, j).ctrl->HasFocus())
 				goto nosetfocus;
-		if(!IsEdit() && cursor >= 0 && hasctrls)
-			for(int j = 0; j < column.GetCount(); j++)
-				if(IsCtrl(cursor, j) && GetCtrl(cursor, j).ctrl->SetWantFocus())
-					break;
+		SetCursorEditFocus();
 	nosetfocus:
 		ClearModify();
 		Action();
@@ -1587,6 +1592,7 @@ void ArrayCtrl::GotFocus() {
 		RefreshRow(cursor);
 	else
 		GoBegin();
+	SetCursorEditFocus();
 }
 
 void ArrayCtrl::DoEdit() {

@@ -100,7 +100,11 @@ const char *PeFile::FindExportRaw(const char *name, bool case_sensitive) const
 
 HMODULE CheckDll(const char *fn, const char *const *names, Vector<void *>& plist)
 {
+#ifdef PLATFORM_WINCE
+	HMODULE hmod = LoadLibrary(ToSysChrSet(fn));
+#else
 	HMODULE hmod = LoadLibrary(fn);
+#endif
 	if(!hmod)
 		return 0;
 
@@ -114,7 +118,11 @@ HMODULE CheckDll(const char *fn, const char *const *names, Vector<void *>& plist
 	for(const char *const *p = names; *p; p++) {
 		const char *name = pe.FindExportRaw(*p);
 		void *proc = 0;
+#ifdef PLATFORM_WINCE
+		if(!name || !(proc = (void *)GetProcAddress(hmod, ToSysChrSet(name))))
+#else
 		if(!name || !(proc = (void *)GetProcAddress(hmod, name)))
+#endif
 			missing++;
 		plist.Add(proc);
 	}

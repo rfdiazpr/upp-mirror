@@ -222,7 +222,8 @@ void RichEdit::RightDown(Point p, dword flags)
 			else {
 				int c = cursor;
 				WString w = GetWordAtCursor();
-				if(!w.IsEmpty() && !SpellWord(w, w.GetLength(), formatinfo.language)) {
+				if(!w.IsEmpty() && !SpellWord(w, w.GetLength(),
+				                              fixedlang ? fixedlang : formatinfo.language)) {
 					menu.Add(t_("Add to user dictionary"), THISBACK(AddUserDict));
 					menu.Separator();
 				}

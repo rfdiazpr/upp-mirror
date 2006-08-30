@@ -70,18 +70,34 @@ private:
 class Raster {
 public:
 	class Line {
-		const RGBA *data;
-		bool        free;
+		mutable const RGBA *data;
+		const byte         *fmtdata;
+		Raster             *raster;
+		mutable bool        free;
+		bool                fmtfree;
 
-		friend class Raster;
+		friend class       Raster;
+
+		void               MakeRGBA() const;
+
 	public:
-		operator const RGBA *() const                              { return data; }
-		const RGBA *operator~() const                              { return data; }
+		const RGBA         *GetRGBA() const     { if(!data) MakeRGBA(); return data; }
+		const byte         *GetRawData() const  { return fmtdata; }
+		operator const RGBA *() const           { return GetRGBA(); }
+		const RGBA *operator~() const           { return GetRGBA(); }
 
-		Line(const RGBA *data, bool free) : data(data), free(free) {}
-		Line(pick_ Line& b);
-		Line()                                                     { data = NULL; free = false; }
-		~Line()                                                    { if(free) delete[] data; }
+		Line(const RGBA *data, bool free)
+			: data(data), fmtdata((byte *)data), raster(NULL), free(free), fmtfree(false) {}
+		Line(const byte *fmtdata, Raster *raster, bool fmtfree)
+			: data(NULL), fmtdata(fmtdata), raster(raster), free(false), fmtfree(fmtfree) {}
+		Line(pick_ Line& b)                     { Pick(b); }
+		Line()                                  { data = NULL; fmtdata = NULL; raster = NULL; free = fmtfree = false; }
+		~Line()                                 { Free(); }
+
+		void Free()                             { if(free) delete[] data; if(fmtfree) delete[] fmtdata; }
+		void Pick(pick_ Line& b);
+
+		void operator=(pick_ Line& b)           { Free(); Pick(b); }
 	};
 
 	struct Info {
@@ -103,13 +119,14 @@ public:
 	virtual bool    IsError();
 	virtual int     GetPaletteCount();
 	virtual RGBA   *GetPalette();
+	virtual const RasterFormat *GetFormat();
 
 	int    GetWidth()                              { return GetSize().cx; }
 	int    GetHeight()                             { return GetSize().cy; }
 	Line   operator[](int i)                       { return GetLine(i); }
 
-	Image  GetImage(int x, int y, int cx, int cy);
-	Image  GetImage();
+	Image  GetImage(int x, int y, int cx, int cy, const Gate2<int, int> progress = false);
+	Image  GetImage(const Gate2<int, int> progress = false);
 
 	virtual ~Raster();
 };
@@ -132,6 +149,29 @@ public:
 	ImageRaster(const Image& img) : img(img) {}
 };
 
+class MemoryRaster : public Raster {
+public:
+	MemoryRaster();
+	MemoryRaster(Raster& raster)                 { Load(raster); }
+
+	virtual Size               GetSize()         { return size; }
+	virtual Info               GetInfo()         { return info; }
+	virtual Line               GetLine(int line);
+	virtual int                GetPaletteCount() { return palette.GetCount(); }
+	virtual RGBA               *GetPalette()     { return palette.Begin(); }
+	virtual const RasterFormat *GetFormat()      { return &format; }
+
+	void                       Load(Raster& raster);
+	int                        GetLength() const;
+
+private:
+	RasterFormat    format;
+	Info            info;
+	Size            size;
+	Vector< Buffer<byte> > lines;
+	Vector<RGBA>    palette;
+};
+
 class StreamRaster : public Raster {
 	Stream *s;
 	bool    error;
@@ -148,17 +188,17 @@ public:
 
 	void    SetError()                  { error = true; }
 
-	Image Load(Stream& s);
-	Image LoadFile(const char *fn);
-	Image LoadString(const String& s);
+	Image Load(Stream& s, const Gate2<int, int> progress = false);
+	Image LoadFile(const char *fn, const Gate2<int, int> progress = false);
+	Image LoadString(const String& s, const Gate2<int, int> progress = false);
 
 	template <class T>
 	static void Register()              { AddFormat(&StreamRaster::FactoryFn<T>); }
 
 	static One<StreamRaster> OpenAny(Stream& s);
-	static Image LoadAny(Stream& s);
-	static Image LoadFileAny(const char *fn);
-	static Image LoadStringAny(const String& s);
+	static Image LoadAny(Stream& s, const Gate2<int, int> progress = false);
+	static Image LoadFileAny(const char *fn, const Gate2<int, int> progress = false);
+	static Image LoadStringAny(const String& s, const Gate2<int, int> progress = false);
 
 	StreamRaster()                      { error = true; }
 };

@@ -19,31 +19,6 @@ void RasterCopy(RasterEncoder& dest, Raster& src, const Rect& src_rc)
 		dest.WriteLine((const RGBA *)src.GetLine(y) + src_rc.left);
 }
 
-class ImageWriter : public RasterEncoder {
-public:
-	ImageWriter() : output(NULL) {}
-	ImageWriter(ImageBuffer& output, bool merge = true)                       { Open(output, merge); }
-	ImageWriter(ImageBuffer& output, Point pos, bool merge = true)            { Open(output, pos, merge); }
-	ImageWriter(ImageBuffer& output, Point pos, Rect clip, bool merge = true) { Open(output, pos, clip, merge); }
-
-	void         Open(ImageBuffer& output, bool merge = true)                 { Open(output, Point(0, 0), merge); }
-	void         Open(ImageBuffer& output, Point pos, bool merge = true)      { Open(output, pos, Rect(output.GetSize()), merge); }
-	void         Open(ImageBuffer& output, Point pos, Rect clip, bool merge = true);
-
-	virtual int  GetPaletteCount();
-	virtual void Start(Size sz);
-	virtual void WriteLine(const RGBA *s);
-
-private:
-	ImageBuffer  *output;
-	Point        pos;
-	int          left, width, offset;
-	Rect         clip;
-	int          line;
-	Size         src_size;
-	bool         merge;
-};
-
 void ImageWriter::Open(ImageBuffer& output_, Point pos_, Rect clip_, bool merge_)
 {
 	output = &output_;
@@ -76,6 +51,27 @@ void ImageWriter::WriteLine(const RGBA *s)
 			AlphaBlend(&(*output)[y][left], s + offset, width);
 		else
 			memcpy(&(*output)[y][left], s + offset, width * sizeof(RGBA));
+}
+
+Size ImageBufferRaster::GetSize()
+{
+	return buffer.GetSize();
+}
+
+Raster::Info ImageBufferRaster::GetInfo()
+{
+	Info info;
+	info.bpp = 32;
+	info.colors = 0;
+	info.dots = Null;
+	info.hotspot = Null;
+	info.kind = buffer.GetKind();
+	return info;
+}
+
+Raster::Line ImageBufferRaster::GetLine(int line)
+{
+	return Line(buffer[line], false);
 }
 
 inline Stream& operator % (Stream& strm, Color& color)
@@ -149,7 +145,7 @@ One<StreamRasterEncoder> HRR::StdCreateEncoder(const HRRInfo& info)
 Vector<int> HRRInfo::EnumMethods()
 {
 	Vector<int> out;
-	out << METHOD_JPG << METHOD_GIF << METHOD_RLE << METHOD_PNG; // << METHOD_ZIM;
+	out << METHOD_JPG << METHOD_GIF /* << METHOD_RLE*/ << METHOD_PNG; // << METHOD_ZIM;
 	return out;
 }
 
@@ -618,17 +614,18 @@ String HRRInfo::GetName(int method, int quality)
 		break;
 
 	case METHOD_GIF:
-		out << "PAL";
+		out << "GIF";
 		break;
-
+/*
 	case METHOD_RLE:
 		out << "RLE";
 		break;
-
+*/
 	case METHOD_PNG:
 		out << "PNG";
 		break;
 
+/*
 	case METHOD_ZIM:
 		out << "ZIM";
 		break;
@@ -636,7 +633,7 @@ String HRRInfo::GetName(int method, int quality)
 	case METHOD_BZM:
 		out << "BZM";
 		break;
-
+*/
 	default:
 		out << "?? (" << method << ")";
 	}
@@ -1291,7 +1288,7 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 					if(part_size.cx <= 0 || part_size.cy <= 0)
 						continue;
 					ImageBuffer part(part_size);
-					RasterCopy(ImageWriter(part), ImageRaster(block.block), Rect(src, part_size));
+					RasterCopy(ImageWriter(part), ImageBufferRaster(block.block), Rect(src, part_size));
 					int lin = (int)((px << count) + a.cx + (((py << count) + a.cy) << (count + level)));
 //					TIMING("HRR::Write / save (direct)");
 					if(info.mono || IsNull(info.background)) {
@@ -1304,7 +1301,7 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 								stream.Put(0, (int)(pixpos - stream.GetSize()));
 							stream.Seek(pixpos);
 //							Stream64Stream pixstream(stream, pixpos);
-							format.Save(stream, part);
+							format.Save(stream, ImageBufferRaster(part));
 						}
 						if(kind == 2 || (kind == 1 && info.mono)) {
 							String s = EncodeMask(part, version >= 5);
@@ -1328,14 +1325,14 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 							stream.Put(0, (int)(pixpos - stream.GetSize()));
 						stream.Seek(pixpos);
 //						Stream64Stream pixstream(stream, pixpos);
-						format.Save(stream, part);
+						format.Save(stream, ImageBufferRaster(part));
 					}
 				}
 			if(--count >= 0) // reduce image
 				if(downscale) {
 					Size sz = SUNIT << count;
 					ImageBuffer new_data(sz);
-					Rescale(ImageWriter(new_data), sz, ImageRaster(block.block), block.size);
+					Rescale(ImageWriter(new_data), sz, ImageBufferRaster(block.block), block.size);
 					block.block = new_data;
 				}
 				else {
@@ -1382,7 +1379,7 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 					stream.Put(0, (int)(pixpos - stream.GetSize()));
 				stream.Seek(pixpos);
 				//Stream64Stream pixstream(stream, pixpos);
-				format.Save(stream, block.block);
+				format.Save(stream, ImageBufferRaster(block.block));
 			}
 			if(kind == 2 || (kind == 1 && info.mono)) {
 				String s = EncodeMask(block.block, version >= 5);
@@ -1406,14 +1403,14 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 				stream.Put(0, (int)min<int64>(pixpos - stream.GetSize(), 1 << 24));
 			stream.Seek(pixpos);
 			//Stream64Stream pixstream(stream, pixpos);
-			format.Save(stream, block.block);
+			format.Save(stream, ImageBufferRaster(block.block));
 		}
 	}
 	if(put) {
 //		TIMING("HRR::Write / put");
 		Rect org = RectC((px & 1) << info.HALF_BITS, (py & 1) << info.HALF_BITS,
 			1 << info.HALF_BITS, 1 << info.HALF_BITS);
-		Rescale(ImageWriter(put->block, org.TopLeft()), org.Size(), ImageRaster(block.block), RUNIT);
+		Rescale(ImageWriter(put->block, org.TopLeft()), org.Size(), ImageBufferRaster(block.block), RUNIT);
 	}
 	return true;
 }

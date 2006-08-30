@@ -17,6 +17,5 @@ void ColorWindow::Paint(Draw& draw)
 
 GUI_APP_MAIN
 {
-	Ctrl::AutoBackPaintAreaSize = 0;
 	ColorWindow().Run();
 }

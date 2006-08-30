@@ -83,7 +83,7 @@ bool Speller::Check(const wchar *wrd, int wlen) const
 		wchar *wt = wh;
 		while(ws < we)
 			*wt++ = ToLower(*ws++);
-	
+
 		char w[64];
 		char wl[64];
 		FromUnicode(w, wrd, len, charset);
@@ -183,6 +183,8 @@ void RichEdit::SpellerAdd(const WString& w, int lang)
 	}
 }
 
+int RichEdit::fixedlang;
+
 Bits RichEdit::SpellParagraph(const RichPara& para)
 {
 	int len = para.GetLength();
@@ -195,7 +197,7 @@ Bits RichEdit::SpellParagraph(const RichPara& para)
 		if(p.IsText()) {
 			int l = p.text.GetLength();
 			memcpy(s, p.text, l * sizeof(wchar));
-			Fill(g, g + l, p.format.language);
+			Fill(g, g + l, fixedlang ? fixedlang : p.format.language);
 			s += l;
 			g += l;
 		}

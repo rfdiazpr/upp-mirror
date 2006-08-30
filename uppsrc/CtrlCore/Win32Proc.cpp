@@ -30,6 +30,37 @@ class NilDrawFull : public NilDraw {
 	virtual bool IsPaintingOp(const Rect& r) const { return true; }
 };
 
+#ifdef PLATFORM_WINCE
+
+
+bool GetShift() { return false; }
+bool GetCtrl() { return false; }
+bool GetAlt() { return false; }
+bool GetCapsLock() { return false; }
+
+bool wince_mouseleft;
+bool wince_mouseright;
+
+bool GetMouseLeft() { return wince_mouseleft; }
+bool GetMouseRight() { return wince_mouseright; }
+bool GetMouseMiddle() { return false; }
+
+Point wince_mousepos = Null;
+
+Point GetMousePos() {
+	return wince_mousepos;
+}
+
+void  SetWinceMouse(HWND hwnd, LPARAM lparam)
+{
+	Point p(lparam);
+	ClientToScreen(hwnd, p);
+	wince_mousepos = p;
+}
+#else
+void  SetWinceMouse(HWND hwnd, LPARAM lparam) {}
+#endif
+
 static bool sPainting;
 
 LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
@@ -41,6 +72,7 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 	case WM_PALETTECHANGED:
 		if((HWND)wParam == hwnd)
 			break;
+#ifndef PLATFORM_WINCE
 	case WM_QUERYNEWPALETTE:
 		if(!Draw::AutoPalette()) break;
 		{
@@ -54,6 +86,7 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 			if(i) InvalidateRect(hwnd, NULL, TRUE);
 			return i;
 		}
+#endif
 	case WM_PAINT:
 		ASSERT(hwnd);
 		if(IsVisible() && hwnd) {
@@ -62,27 +95,36 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 			HDC dc = BeginPaint(hwnd, &ps);
 			fullrefresh = false;
 			Draw draw(dc);
+#ifndef PLATFORM_WINCE
 			HPALETTE hOldPal;
 			if(draw.PaletteMode() && Draw::AutoPalette()) {
 				hOldPal = SelectPalette(dc, GetQlibPalette(), TRUE);
 				int n = RealizePalette(dc);
 				LLOG("In paint realized " << n << " colors");
 			}
+#endif
 			sPainting = true;
 			UpdateArea(draw, Rect(ps.rcPaint));
 			sPainting = false;
+#ifndef PLATFORM_WINCE
 			if(draw.PaletteMode() && Draw::AutoPalette())
 				SelectPalette(dc, hOldPal, TRUE);
+#endif
 			EndPaint(hwnd, &ps);
 		}
 		return 0L;
+#ifndef PLATFORM_WINCE
 	case WM_NCHITTEST:
 		CheckMouseCtrl();
 		if(ignoremouse) return HTTRANSPARENT;
 		break;
+#endif
 	case WM_LBUTTONDOWN:
-//		LLOG("WM_LBUTTONDOWN, ignoreclick = " << ignoreclick);
 	case WM_MBUTTONDOWN:
+#ifdef PLARFORM_WINCE
+		wince_mouseleft = true;
+#endif
+		SetWinceMouse(hwnd, lParam);
 		ClickActivateWnd();
 		if(ignoreclick) return 0L;
 		DoMouse(LEFTDOWN, Point(lParam), message == WM_MBUTTONDOWN ? MIDDLEBUTTON : 0);
@@ -94,7 +136,16 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 			EndIgnore();
 		else
 			DoMouse(LEFTUP, Point(lParam), message == WM_MBUTTONUP ? MIDDLEBUTTON : 0);
-		if(!GetMouseRight() && !GetMouseMiddle() && !GetMouseLeft()) ReleaseCtrlCapture();
+#ifdef PLATFORM_WINCE
+		wince_mouseleft = false;
+#endif
+		if(!GetMouseRight() && !GetMouseMiddle() && !GetMouseLeft())
+			ReleaseCtrlCapture();
+#ifdef PLATFORM_WINCE
+		wince_mousepos = Point(-99999, -99999);
+		if(!ignoreclick)
+			if(_this) DoMouse(MOUSEMOVE, Point(-99999, -99999));
+#endif
 		if(_this) PostInput();
 		return 0L;
 	case WM_LBUTTONDBLCLK:
@@ -110,11 +161,13 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 		DoMouse(RIGHTDOWN, Point(lParam));
 		if(_this) PostInput();
 		return 0L;
+#ifndef PLATFORM_WINCE
 	case WM_NCLBUTTONDOWN:
 	case WM_NCRBUTTONDOWN:
 	case WM_NCMBUTTONDOWN:
 		ClickActivateWnd();
 		break;
+#endif
 	case WM_RBUTTONUP:
 		if(ignoreclick)
 			EndIgnore();
@@ -130,6 +183,7 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 		if(_this) PostInput();
 		return 0L;
 	case WM_MOUSEMOVE:
+		SetWinceMouse(hwnd, lParam);
 		LLOG("WM_MOUSEMOVE: ignoreclick = " << ignoreclick);
 		if(ignoreclick) {
 			EndIgnore();
@@ -192,6 +246,9 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 				keycode = KEYtoK(wParam) | K_KEYUP;
 			else
 			if(message == WM_CHAR && wParam != 127 && wParam > 32) {
+#ifdef PLATFORM_WINCE
+				keycode = wParam;
+#else
 				if(IsWindowUnicode(hwnd)) // TRC 04/10/17: ActiveX Unicode patch
 					keycode = wParam;
 				else {
@@ -204,6 +261,7 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 					else
 						keycode = wParam;
 				}
+#endif
 			}
 			bool b = false;
 			if(keycode) {
@@ -221,12 +279,14 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 		break;
 //	case WM_GETDLGCODE:
 //		return wantfocus ? 0 : DLGC_STATIC;
-	case WM_DESTROY:
-		PreDestroy();
-		break;
 	case WM_ERASEBKGND:
 		return 1L;
+	case WM_DESTROY:
+		PreDestroy();
+#ifndef PLATFORM_WINCE
+		break;
 	case WM_NCDESTROY:
+#endif
 		if(!hwnd) break;
 		if(HasChildDeep(mouseCtrl) || this == ~mouseCtrl) mouseCtrl = NULL;
 		if(HasChildDeep(focusCtrl) || this == ~focusCtrl) focusCtrl = NULL;
@@ -240,10 +300,14 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 			if(owner && (owner->IsForeground() || IsForeground()) && !owner->SetWantFocus())
 				IterateFocusForward(owner, owner);
 		}
+#ifdef PLATFORM_WINCE
+		DefWindowProc(hwnd, message, wParam, lParam);
+#else
 		if(IsWindowUnicode(hwnd)) // TRC 04/10/17: ActiveX unicode patch
 			DefWindowProcW(hwnd, message, wParam, lParam);
 		else
 			DefWindowProc(hwnd, message, wParam, lParam);
+#endif
 		hwnd = NULL;
 		return 0L;
 	case WM_CANCELMODE:
@@ -254,6 +318,7 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 		visible = (BOOL) wParam;
 		StateH(SHOW);
 		break;
+#ifndef PLATFORM_WINCE
 	case WM_MOUSEACTIVATE:
 		LLOG("WM_MOUSEACTIVATE " << Name() << ", focusCtrlWnd = " << ::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
 		if(!IsEnabled()) {
@@ -267,10 +332,12 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 		}
 		if(IsPopUp()) return MA_NOACTIVATE;
 		break;
+#endif
 	case WM_SIZE:
 	case WM_MOVE:
 		if(hwnd) {
 			Rect rect;
+#ifndef PLATFORM_WINCE
 			if(activex) {
 				WINDOWPLACEMENT wp;
 				wp.length = sizeof(WINDOWINFO);
@@ -278,6 +345,7 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 				rect = wp.rcNormalPosition;
 			}
 			else
+#endif
 				rect = GetScreenClient(hwnd);
 			LLOG("WM_MOVE / WM_SIZE: screen client = " << rect);
 			if(GetRect() != rect)
@@ -331,6 +399,7 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 			StateH(ENABLE);
 		}
 		return 0L;
+#ifndef PLATFORM_WINCE
 	case WM_GETMINMAXINFO:
 		{
 			MINMAXINFO *mmi = (MINMAXINFO *)lParam;
@@ -346,6 +415,7 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 			LLOG("ptMaxSize = " << Point(mmi->ptMaxSize) << ", ptMaxPosition = " << Point(mmi->ptMaxPosition));
 		}
 		return 0L;
+#endif
 	case WM_SETTINGCHANGE:
 	case 0x031A: // WM_THEMECHANGED
 		ChSetStyle(ChGetStyle());
@@ -354,10 +424,14 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 		break;
 	}
 	if(hwnd)
-		if(IsWindowUnicode(hwnd)) // TRC 04/10/17: ActiveX Unicode patch
+#ifdef PLATFORM_WINCE
+		return DefWindowProc(hwnd, message, wParam, lParam);
+#else
+		if(IsWindowUnicode(hwnd)) // TRC 04/10/17: ActiveX unicode patch
 			return DefWindowProcW(hwnd, message, wParam, lParam);
 		else
 			return DefWindowProc(hwnd, message, wParam, lParam);
+#endif
 	return 0L;
 }
 

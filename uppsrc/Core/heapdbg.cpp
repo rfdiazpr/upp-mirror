@@ -125,10 +125,17 @@ void MemoryDumpLeaks()
 		if(p == &dbg_live) break;
 	}
 #ifdef PLATFORM_WIN32
+#ifdef PLATFORM_WINCE
+	MessageBox(::GetActiveWindow(),
+	           L"Heap leaks detected !",
+	           L"Warning",
+	           MB_ICONSTOP|MB_OK|MB_APPLMODAL);
+#else
 	MessageBox(::GetActiveWindow(),
 	           "Heap leaks detected !",
 	           "Warning",
 	           MB_ICONSTOP|MB_OK|MB_APPLMODAL);
+#endif
 #else
 	static const char leaks[] = "Heap leaks detected!\n";
 	write(2, leaks, sizeof(leaks) - 1);

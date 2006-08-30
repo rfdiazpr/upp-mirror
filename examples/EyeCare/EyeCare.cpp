@@ -154,8 +154,8 @@ void EyeCare::Exit()
 	trayicon.Break();
 #ifdef PLATFORM_WIN32
 	HKEY hkey;
-	if(RegOpenKeyEx(HKEY_CURRENT_USER, regpath, 0, KEY_READ, &hkey) == ERROR_SUCCESS) {
-		RegDeleteKey(hkey, regname);
+	if(RegOpenKeyEx(HKEY_CURRENT_USER, regpath, 0, KEY_ALL_ACCESS, &hkey) == ERROR_SUCCESS) {
+		RegDeleteValue(hkey, regname);
 		RegCloseKey(hkey);
 	}
 #endif

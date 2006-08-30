@@ -4,17 +4,19 @@ acceptflags
 uses
 	plugin\z;
 
-library(MSC) "kernel32 user32";
+library(MSC !MSC8ARM) "kernel32 user32";
 
 library(WIN32 !GUI !GNU !GCC) "ole32 oleaut32 oldnames";
 
 library(LINUX) "pthread dl";
 
-library(WIN32) "advapi32 shell32 winmm";
+library(WIN32 !MSC8ARM) "advapi32 shell32 winmm";
 
 library(SOLARIS) "posix4 dl";
 
 library(WIN32 GCC) "ole32 oleaut32 uuid";
+
+library(MSC8ARM WIN32) "coredll.lib corelibc.lib ole32.lib oleaut32.lib uuid.lib commctrl.lib ccrtrtti.lib";
 
 options(XGNU) -O0;
 

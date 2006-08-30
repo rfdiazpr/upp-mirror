@@ -3,6 +3,43 @@
 
 //#include "Stream.h"
 
+class ImageWriter : public RasterEncoder {
+public:
+	ImageWriter() : output(NULL) {}
+	ImageWriter(ImageBuffer& output, bool merge = true)                       { Open(output, merge); }
+	ImageWriter(ImageBuffer& output, Point pos, bool merge = true)            { Open(output, pos, merge); }
+	ImageWriter(ImageBuffer& output, Point pos, Rect clip, bool merge = true) { Open(output, pos, clip, merge); }
+
+	void         Open(ImageBuffer& output, bool merge = true)                 { Open(output, Point(0, 0), merge); }
+	void         Open(ImageBuffer& output, Point pos, bool merge = true)      { Open(output, pos, Rect(output.GetSize()), merge); }
+	void         Open(ImageBuffer& output, Point pos, Rect clip, bool merge = true);
+
+	virtual int  GetPaletteCount();
+	virtual void Start(Size sz);
+	virtual void WriteLine(const RGBA *s);
+
+private:
+	ImageBuffer  *output;
+	Point        pos;
+	int          left, width, offset;
+	Rect         clip;
+	int          line;
+	Size         src_size;
+	bool         merge;
+};
+
+class ImageBufferRaster : public Raster {
+public:
+	ImageBufferRaster(const ImageBuffer& buffer) : buffer(buffer) {}
+
+	virtual Size    GetSize();
+	virtual Info    GetInfo();
+	virtual Line    GetLine(int line);
+
+private:
+	const ImageBuffer& buffer;
+};
+
 class HRRInfo
 {
 	friend class HRR;

@@ -307,12 +307,30 @@ WString TextUnicode(const char *s, int n, byte cs, Font font)
 
 FontInfo::CharMetrics *FontInfo::GetPage(int page) const
 {
+	if(page >= 46 && !ptr->default_width) {
+		ptr->default_width = new CharMetrics[256];
+		ptr->GetMetrics(140, ptr->default_width);
+		for(int i = 0; i < 256; i++)
+			if(ptr->default_width[i].width) {
+				for(int j = 0; j < 256; j++)
+					ptr->default_width[j] = ptr->default_width[i];
+				break;
+			}
+	}
 	CharMetrics *& cm = ptr->width[page];
 	if(!cm) {
 		cm = new CharMetrics[256];
 		ptr->GetMetrics(page, cm);
 		if(page == 1)
 			ComposeMetrics(ptr->font, cm);
+		if(page >= 46) {
+			for(int i = 0; i < 256; i++) {
+				if(!(cm[i] == ptr->default_width[i]) && cm[i].width)
+					return cm;
+			}
+			delete[] cm;
+			cm = ptr->default_width;
+		}
 	}
 	return cm;
 }

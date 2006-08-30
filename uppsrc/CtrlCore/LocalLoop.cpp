@@ -67,8 +67,16 @@ static void sGetAniPat(word *anipat, const word *src, int pos)
 		anipat[i] = word(MAKELONG(src[(i + pos) % 8], src[(i + pos) % 8]) >> pos);
 }
 
-void RectTracker::DrawRect(const Rect& r1, const Rect& r2)
+void RectTracker::DrawRect(Rect r1, Rect r2)
 {
+	if(ty < 0) {
+		r1.left = r1.right - 1;
+		r2.left = r2.right - 1;
+	}
+	if(tx < 0) {
+		r1.top = r1.bottom - 1;
+		r2.top = r2.bottom - 1;
+	}
 	Rect c = clip & GetMaster().GetSize();
 	if(animation) {
 		word anipat[8];
@@ -96,6 +104,16 @@ Rect RectTracker::Track(const Rect& r, int _tx, int _ty)
 	Run();
 	DrawRect(o, Rect(0, 0, 0, 0));
 	return rect;
+}
+
+int RectTracker::TrackHorzLine(int x0, int y0, int cx, int line)
+{
+	return Track(RectC(x0, y0, cx, line + 1), -1, ALIGN_BOTTOM).bottom - 1;
+}
+
+int RectTracker::TrackVertLine(int x0, int y0, int cy, int line)
+{
+	return Track(RectC(x0, y0, line + 1, cy), ALIGN_RIGHT, -1).right - 1;
 }
 
 void RectTracker::MouseMove(Point, dword)
@@ -201,4 +219,11 @@ bool PointLoop(Ctrl& ctrl, const Vector<Image>& ani, int ani_ms)
 	PointLooper p(ctrl, ani, ani_ms);
 	p.Run();
 	return p;
+}
+
+bool PointLoop(Ctrl& ctrl, const Image& img)
+{
+	Vector<Image> m;
+	m.Add(img);
+	return PointLoop(ctrl, m, 1);
 }

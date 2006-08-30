@@ -1,7 +1,8 @@
-uses Core;
+uses
+	Core;
 
-file 
-	"Ntl01cpp.cpp";
+file
+	Ntl01.cpp;
 
 mainconfig
 	"" = "";

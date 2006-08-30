@@ -35,7 +35,6 @@ void XmlView::Load(int parent, XmlParser& p)
 
 void XmlView::Load(const char *filename)
 {
-	Title(filename);
 	int64 l = GetFileLength(filename);
 	if(l < 0 || l > 16000000)
 		return;
@@ -48,7 +47,6 @@ void XmlView::Load(const char *filename)
 	}
 	catch(XmlError e) {
 		error = "XML parsing error: " + e;
-		DUMP(error.GetScreenRect());
 		view.Show();
 		view <<= txt;
 		view.SetCursor(view.GetPos(p.GetLine() - 1, p.GetColumn() - 1));
@@ -63,6 +61,7 @@ void XmlView::LoadDir(const char *d)
 {
 	files.Clear();
 	dir = d;
+	Title(dir);
 #ifdef PLATFORM_WIN32
 	if(dir.GetLength())
 #else
@@ -75,13 +74,21 @@ void XmlView::LoadDir(const char *d)
 
 void XmlView::Enter()
 {
-	if(!files.IsCursor())
+	if(!files.IsCursor()) {
+		Title(dir);
 		return;
+	}
 	const FileList::File& f = files.Get(files.GetCursor());
 	xml.Hide();
 	view.Hide();
+	if(f.name == "..") {
+		Title(dir);
+		return;
+	}
+	String p = AppendFileName(dir, f.name);
+	Title(p);
 	if(!f.isdir)
-		Load(AppendFileName(dir, f.name));
+		Load(p);
 }
 
 void XmlView::DoDir()
@@ -94,7 +101,7 @@ void XmlView::DoDir()
 	if(f.name == "..") {
 		String n = DirectoryUp(dir);
 		LoadDir(dir);
-		files.FindSetCursor(n);	
+		files.FindSetCursor(n);
 	}
 	else
 		LoadDir(AppendFileName(dir, f.name));
@@ -138,14 +145,14 @@ XmlView::XmlView()
 	splitter.Horz(files, data.SizePos());
 	splitter.SetPos(2700);
 	Add(splitter.SizePos());
-	
+
 	files.WhenEnterItem = THISBACK(Enter);
 	files.WhenLeftDouble = THISBACK(DoDir);
 
-	Sizeable().Zoomable();	
-	
+	Sizeable().Zoomable();
+
 	dir = GetCurrentDirectory();
-	
+
 	Icon(XmlImg::Icon());
 }
 

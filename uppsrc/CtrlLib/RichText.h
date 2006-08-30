@@ -173,6 +173,10 @@ public:
 	HelpWindow();
 };
 
+#ifndef PLATFORM_PDA
+
 void Print(Draw& w, const RichText& text, const Rect& page, const Vector<int>& pagelist);
 void Print(Draw& w, const RichText& text, const Rect& page);
 bool Print(const RichText& text, const Rect& page, int currentpage, const char *name = NULL);
+
+#endif

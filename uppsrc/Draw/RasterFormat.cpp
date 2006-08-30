@@ -103,7 +103,7 @@ static byte bits[16] = { 1, 2, 4, 8, 16, 16, 24, 32, 32 };
 int RasterFormat::GetByteCount(int cx) const
 {
 	int b = bits[type & 15];
-	return (cx * b + 7) / 8;
+	return (cx * b + 7) >> 8;
 }
 
 int RasterFormat::GetBpp() const

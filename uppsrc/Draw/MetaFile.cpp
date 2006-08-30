@@ -1,6 +1,7 @@
 #include "Draw.h"
 
 #ifdef PLATFORM_WIN32
+#ifndef PLATFORM_WINCE
 
 static void wsMetaDraw(Draw& w, Stream& s, const DrawingPos& ps) {
 	Rect r;
@@ -258,4 +259,5 @@ WinMetaFileDraw::WinMetaFileDraw(int cx, int cy, const char *app, const char *na
 	Create(cx, cy, app, name, file);
 }
 
+#endif
 #endif

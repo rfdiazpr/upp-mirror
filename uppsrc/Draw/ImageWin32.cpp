@@ -180,11 +180,21 @@ static tAlphaBlend fnAlphaBlend()
 }
 #endif
 
+void Image::Data::CreateHBMP(HDC dc)
+{
+	BitmapInfo32__ bi(buffer.GetWidth(), buffer.GetHeight());
+	HDC dcMem = ::CreateCompatibleDC(dc);
+	RGBA *pixels;
+	hbmp = CreateDIBSection(dcMem, bi, DIB_RGB_COLORS, (void **)&pixels, NULL, 0);
+	HDC hbmpOld = (HDC) ::SelectObject(dcMem, hbmp);
+	memcpy(pixels, buffer, buffer.GetLength() * sizeof(RGBA));
+	::SelectObject(dcMem, hbmpOld);
+	::DeleteDC(dcMem);
+	ResCount++;
+}
+
 void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 {
-//	w.DrawRect(x, y, src.GetSize().cx, src.GetSize().cy, LtBlue);
-//	DrawFrame(w, x, y, src.GetSize().cx, src.GetSize().cy, LtRed);
-//	return;
 	INTERLOCKED_(ResLock) {
 		int max = IsWinNT() ? 250 : 100;
 		while(ResCount > max) {
@@ -205,7 +215,7 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 			w.DrawRect(x, y, sz.cx, sz.cy, c);
 			return;
 		}
-		if(GetKind() == IMAGE_OPAQUE && paintcount == 0 && sr == Rect(sz)) {
+		if(GetKind() == IMAGE_OPAQUE && paintcount == 0 && sr == Rect(sz) && IsWinNT()) {//TODO !IsWinNT
 			LTIMING("Image Opaque direct set");
 			SetSurface(w, x, y, sz.cx, sz.cy, buffer);
 			paintcount++;
@@ -216,19 +226,7 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 		if(GetKind() == IMAGE_OPAQUE) {
 			if(!hbmp) {
 				LTIMING("Image Opaque create");
-				BitmapInfo32__ bi(sz.cx, sz.cy);
-#ifdef PLATFORM_WINCE
-				HDC dcMem = ::CreateCompatibleDC(dc);
-				RGBA *pixels;
-				hbmp = CreateDIBSection(dcMem, bi, DIB_RGB_COLORS, (void **)&pixels, NULL, 0);
-				HDC hbmpOld = (HDC) ::SelectObject(dcMem, hbmp);
-				memcpy(pixels, buffer, buffer.GetLength() * sizeof(RGBA));
-				::SelectObject(dcMem, hbmpOld);
-				::DeleteDC(dcMem);
-#else
-				hbmp = ::CreateDIBitmap(dc, bi, CBM_INIT, buffer, bi, DIB_RGB_COLORS);
-#endif
-				ResCount++;
+				CreateHBMP(dc);
 			}
 			LTIMING("Image Opaque blit");
 			HDC dcMem = ::CreateCompatibleDC(dc);
@@ -243,20 +241,9 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 				LTIMING("Image Mask create");
 				Buffer<RGBA> bmp(len);
 				hmask = CreateBitMask(buffer, sz, sz, sz, bmp);
-				if(!hbmp) {
-					BitmapInfo32__ bi(sz.cx, sz.cy);
-#ifdef PLATFORM_WINCE
-					HDC dcMem = ::CreateCompatibleDC(dc);
-					RGBA *pixels;
-					hbmp = CreateDIBSection(dcMem, bi, DIB_RGB_COLORS, (void **)&pixels, NULL, 0);
-					HDC hbmpOld = (HDC) ::SelectObject(dcMem, hbmp);
-					memcpy(pixels, bmp, buffer.GetLength() * sizeof(RGBA));
-					::SelectObject(dcMem, hbmpOld);
-					::DeleteDC(dcMem);
-#else
-					hbmp = ::CreateDIBitmap(dc, bi, CBM_INIT, bmp, bi, DIB_RGB_COLORS);
-#endif
-				}
+				ResCount++;
+				if(!hbmp)
+					CreateHBMP(dc);
 			}
 			LTIMING("Image Mask blt");
 			HBITMAP o = (HBITMAP)::SelectObject(dcMem, ::CreateCompatibleBitmap(dc, sz.cx, sz.cy));

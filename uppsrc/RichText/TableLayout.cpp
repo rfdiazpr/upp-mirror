@@ -44,6 +44,14 @@ const RichTable::TabLayout& RichTable::Realize(RichContext rc) const
 		}
 		clayout.page0 = rc.py.page;
 		(Layout&)clayout = Realize(rc, cell.GetCount());
+		if(format.keep && cell.GetCount()) {
+			if(clayout[0].py.page != clayout[cell.GetCount() - 1].pyy.page) {
+				rc.py.page++;
+				rc.py.y = rc.page.top;
+			}
+			clayout.page0 = rc.py.page;
+			(Layout&)clayout = Realize(rc, cell.GetCount());
+		}
 	}
 	return clayout;
 }
@@ -106,7 +114,7 @@ RichTable::Layout RichTable::Realize(RichContext rc, int ny) const
 			}
 			j += cell.hspan + 1;
 		}
-		bool keep = i < format.header;
+		bool keep = i < format.header || format.keep;
 		for(int j = 0; j < nx;) {
 			const RichCell& cell = row[j];
 			if(pr[j].top && cell.format.keep) {

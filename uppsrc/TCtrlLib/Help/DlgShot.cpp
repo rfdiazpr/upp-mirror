@@ -102,10 +102,8 @@ void ImageBrowseCtrl::Paint(Draw& draw)
 	|| out_size.cx <= 0 || out_size.cy <= 0)
 		return;
 	Rect out_rc = Rect(out_size).Offseted(-scrollbars.Get() + GAP);
-#ifndef NEWIMAGE
 	if(!IsNull(image))
 		draw.DrawImage(out_rc, image);
-#endif
 	if(!IsNull(selection)) {
 		Rect area = Transform(selection, Rect(org_size), out_rc);
 
@@ -355,6 +353,20 @@ Value DlgShot::GetData() const
 	return GetTreeImage();
 }
 
+static Image ImageCrop(Image src, Rect rc)
+{
+	rc &= Rect(src.GetSize());
+	if(rc.IsEmpty())
+		return Null;
+	if(rc.Size() == src.GetSize())
+		return src;
+	Size sz = rc.Size();
+	ImageBuffer buffer(sz);
+	for(int y = 0; y < sz.cy; y++)
+		memcpy(buffer[y], &src[y + rc.top][rc.left], sz.cx * sizeof(RGBA));
+	return Image(buffer);
+}
+
 Image DlgShot::GetTreeImage() const
 {
 	Image img;
@@ -365,9 +377,7 @@ Image DlgShot::GetTreeImage() const
 			rc = Rect(still.GetSize());
 		else
 			rc = sel_ctrl -> GetScreenRect() - ctrl -> GetScreenRect().TopLeft() + top_frame.TopLeft();
-	#ifndef NEWIMAGE
 		img = ImageCrop(still, rc);
-	#endif
 //		DrawingDraw ddraw(rc.Size());
 //		ddraw.DrawImage(0, 0, ImageCrop(still, rc));
 //		img = ddraw;
@@ -411,9 +421,7 @@ void DlgShot::OnEditCopy()
 		text.Cat(para);
 		WriteClipboard(GetClipboardFormatCode("QTF"), BodyAsQTF(text));
 */
-#ifndef NEWIMAGE
-		ImageToClipboard(img, White(), true);
-#endif
+		WriteClipboardImage(img); //TODO, White(), true);
 		BeepInformation();
 	}
 }

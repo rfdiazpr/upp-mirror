@@ -107,6 +107,7 @@ void ProgressIndicator::Set(int _actual, int _total) {
 }
 
 ProgressIndicator::ProgressIndicator() {
+	Transparent();
 	NoWantFocus();
 	total = actual = 0;
 	percent = false;

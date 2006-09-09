@@ -1,8 +1,8 @@
 #include "Draw.h"
 #ifdef PLATFORM_WIN32
 
-#define LLOG(x) // LOG(x)
-#define LTIMING(x) // RTIMING(x)
+#define LLOG(x)      // LOG(x)
+#define LTIMING(x)   // RTIMING(x)
 
 void Draw::BeginOp()
 {
@@ -182,20 +182,26 @@ static void DrawPolyPolyPolygonRaw(
 void Draw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
 	const int *subpolygon_counts, int subpolygon_count_count,
 	const int *disjunct_polygon_counts, int disjunct_polygon_count_count,
-	Color color, int width, Color outline, Image image, Color doxor)
+	Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
 	if(vertex_count == 0)
 		return;
 	bool is_xor = !IsNull(doxor);
 	HDC hdc = GetHandle();
-	if(image) {
+	if(pattern) {
 		int old_rop = GetROP2(hdc);
 		HGDIOBJ old_brush = GetCurrentObject(hdc, OBJ_BRUSH);
+		word wpat[8] = {
+			(byte)(pattern >> 56), (byte)(pattern >> 48), (byte)(pattern >> 40), (byte)(pattern >> 32),
+			(byte)(pattern >> 24), (byte)(pattern >> 16), (byte)(pattern >> 8), (byte)(pattern >> 0),
+		};
+		HBITMAP bitmap = CreateBitmap(8, 8, 1, 1, wpat);
+		HBRUSH brush = ::CreatePatternBrush(bitmap);
 		COLORREF old_bk = GetBkColor(hdc);
 		COLORREF old_fg = GetTextColor(hdc);
 		if(!is_xor) {
 			SetROP2(hdc, R2_MASKPEN);
-//			SelectObject(hdc, image.GetBrush(Null, Null));
+			SelectObject(hdc, brush);
 			SetTextColor(hdc, Black());
 			SetBkColor(hdc, White());
 			SetDrawPen(PEN_NULL, Black);
@@ -203,22 +209,13 @@ void Draw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
 				subpolygon_counts, subpolygon_count_count,
 				disjunct_polygon_counts, disjunct_polygon_count_count);
 			SetROP2(hdc, R2_MERGEPEN);
-//			if(IsNull(color)) // use color fill brush
-//				SelectObject(hdc, image.GetBrush(Null, Black));
-//			else
-			{ // just change text color
-				SetTextColor(hdc, color);
-				SetBkColor(hdc, Black());
-			}
+			SetTextColor(hdc, color);
+			SetBkColor(hdc, Black());
 		}
-		else if(!IsNull(color)) { // colored xor fill with image mask
+		else {
 			SetROP2(hdc, R2_XORPEN);
 			SetTextColor(hdc, COLORREF(color) ^ COLORREF(doxor));
-//			SelectObject(hdc, image.GetBrush(Null, Null));
-		}
-		else { // xor fill with image data
-			SetROP2(hdc, R2_XORPEN);
-//			SelectObject(hdc, image.GetBrush(Null, Black));
+			SelectObject(hdc, brush);
 		}
 		DrawPolyPolyPolygonRaw(*this, vertices, vertex_count,
 			subpolygon_counts, subpolygon_count_count,
@@ -227,6 +224,8 @@ void Draw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
 		SetTextColor(hdc, old_fg);
 		SetBkColor(hdc, old_bk);
 		SetROP2(hdc, old_rop);
+		DeleteObject(brush);
+		DeleteObject(bitmap);
 		if(!IsNull(outline)) {
 			SetColor(Null);
 			SetDrawPen(width, outline);

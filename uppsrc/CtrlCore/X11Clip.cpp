@@ -1,6 +1,6 @@
 #include "CtrlCore.h"
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)  LOG(x)
 
 #ifdef PLATFORM_X11
 
@@ -20,6 +20,7 @@ Ctrl::Xclipboard::~Xclipboard()
 
 void Ctrl::Xclipboard::Write(int fmt, const String& _data)
 {
+	LLOG("SetSelectionOwner " << XAtomName(fmt));
 	data.GetAdd(fmt) = _data;
 	if(XGetSelectionOwner(Xdisplay, XAtom("CLIPBOARD") != win))
 		XSetSelectionOwner(Xdisplay, XAtom("CLIPBOARD"), win, CurrentTime);
@@ -32,11 +33,12 @@ void Ctrl::Xclipboard::Request(XSelectionRequestEvent *se)
 	e.xselection.type      = SelectionNotify;
 	e.xselection.display   = Xdisplay;
 	e.xselection.requestor = se->requestor;
-	e.xselection.selection = Atom("CLIPBOARD");
+	e.xselection.selection = XAtom("CLIPBOARD");
 	e.xselection.target    = se->target;
 	e.xselection.time      = se->time;
-    e.xselection.property  = se->property;
+	e.xselection.property  = se->property;
 	if(se->target == XAtom("TARGETS")) {
+		LLOG("Request targets:");
 		Buffer<Atom> x(data.GetCount());
 		for(int i = 0; i < data.GetCount(); i++) {
 			x[i] = data.GetKey(i);
@@ -48,6 +50,7 @@ void Ctrl::Xclipboard::Request(XSelectionRequestEvent *se)
 	}
 	else {
 		int i = data.Find(se->target);
+		LLOG("Request data " << i);
 		if(i >= 0)
 			XChangeProperty(Xdisplay, se->requestor, se->property, se->target, 8, PropModeReplace,
 			                data[i], data[i].GetLength());
@@ -85,24 +88,13 @@ String Ctrl::Xclipboard::Read(int fmt)
 		}
 		Sleep(10);
 	}
-    return Null;
+	return Null;
 }
 
 Ctrl::Xclipboard& Ctrl::xclipboard()
 {
 	static Xclipboard xc;
 	return xc;
-}
-
-int  GetClipboardFormatCode(const String& format_id)
-{
-	static VectorMap<String, int> format_map;
-	int f = format_map.Find(format_id);
-	if(f < 0) {
-		f = format_map.GetCount();
-		format_map.Add(format_id, XAtom(format_id));
-	}
-	return format_map[f];
 }
 
 void ClearClipboard()

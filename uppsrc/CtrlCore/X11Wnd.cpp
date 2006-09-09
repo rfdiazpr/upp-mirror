@@ -9,7 +9,7 @@
 bool Ctrl::LogMessages = true;
 #endif
 
-#define LLOG(x)     // LOG(x)
+#define LLOG(x)      LOG(x)
 #define LTIMING(x)  // RTIMING(x)
 #define LDUMP(x)    // RDUMP(x)
 #define LDUMPC(x)   // RDUMPC(x)
@@ -60,16 +60,11 @@ void Ctrl::DoPaint(const Vector<Rect>& invalid)
 					break;
 				}
 		GC gc = XCreateGC(Xdisplay, (Drawable)top->window, 0, 0);
-	#ifdef PLATFORM_XFT
 		XftDraw *xftdraw = XftDrawCreate(Xdisplay, (Drawable) top->window,
 		                                 DefaultVisual(Xdisplay, Xscreenno), Xcolormap);
 		Draw draw(top->window, gc, xftdraw, invalid);
 		UpdateArea(draw, draw.GetClip());
 		XftDrawDestroy(xftdraw);
-	#else
-		Draw draw(top->window, gc, invalid);
-		UpdateArea(draw, draw.GetClip());
-	#endif
 		XFreeGC(Xdisplay, gc);
 		if(caret)
 			XorCaret();
@@ -190,7 +185,7 @@ void Ctrl::ProcessEvent(XEvent *event)
 
 void Ctrl::TimerAndPaint() {
 	LTIMING("TimerAndPaint");
-	LLOG("TIMER AND PAINT");
+//	LLOG("TIMER AND PAINT");
 	AnimateCaret();
 	TimerProc(GetTickCount());
 	for(int i = 0; i < Xwindow().GetCount(); i++) {

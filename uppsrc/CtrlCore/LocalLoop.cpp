@@ -13,7 +13,7 @@ void LocalLoop::Run()
 }
 
 void DrawDragRect(Ctrl& q, const Rect& rect1, const Rect& rect2, const Rect& clip, int n,
-                  Color color, const word *pattern)
+                  Color color, uint64 pattern)
 {
 	ViewDraw w(&q);
 	DrawDragRect(w, rect1, rect2, clip, n, color, pattern);
@@ -36,9 +36,9 @@ Image RectTracker::CursorImage(Point, dword)
 	return Image::Arrow();
 }
 
-static word RectTracker_normal[] = { 0x5555, 0xaaaa, 0x5555, 0xaaaa, 0x5555, 0xaaaa, 0x5555, 0xaaaa };
-static word RectTracker_dashed[] = { 0xF0F0, 0x7878, 0x3C3C, 0x1E1E, 0x0F0F, 0x8787, 0xC3C3, 0xE1E1 };
-static word RectTracker_solid[]  = { 0, 0, 0, 0, 0, 0, 0, 0 };
+static uint64 RectTracker_normal = INT64(0x55aa55aa55aa55aa);
+static uint64 RectTracker_dashed = INT64(0xf0783c1e0f87c3e1);
+static uint64 RectTracker_solid  = INT64(0);
 
 RectTracker::RectTracker(Ctrl& master)
 {
@@ -61,10 +61,15 @@ RectTracker::~RectTracker() {}
 RectTracker& RectTracker::Dashed() { pattern = RectTracker_dashed; return *this; }
 RectTracker& RectTracker::Solid()  { pattern = RectTracker_solid; return *this; }
 
-static void sGetAniPat(word *anipat, const word *src, int pos)
+static uint64 sGetAniPat(uint64 src, int pos)
 {
-	for(int i = 0; i < 8; i++)
-		anipat[i] = word(MAKELONG(src[(i + pos) % 8], src[(i + pos) % 8]) >> pos);
+	uint64 out = 0;
+	pos &= 7;
+	for(int i = 8; --i >= 0;) {
+		byte sr = (byte)(src >> (8 * ((7 - i - pos) & 7)));
+		out = (out << 8) | (byte)((sr | (sr << 8)) >> pos);
+	}
+	return out;
 }
 
 void RectTracker::DrawRect(Rect r1, Rect r2)
@@ -79,12 +84,9 @@ void RectTracker::DrawRect(Rect r1, Rect r2)
 	}
 	Rect c = clip & GetMaster().GetSize();
 	if(animation) {
-		word anipat[8];
 		int nanim = (GetTickCount() / animation) % 8;
-		sGetAniPat(anipat, pattern, nanim);
-		DrawDragRect(GetMaster(), Rect(0, 0, 0, 0), r2, c, width, color, anipat);
-		sGetAniPat(anipat, pattern, panim);
-		DrawDragRect(GetMaster(), r1, Rect(0, 0, 0, 0), c, width, color, anipat);
+		DrawDragRect(GetMaster(), Rect(0, 0, 0, 0), r2, c, width, color, sGetAniPat(pattern, nanim));
+		DrawDragRect(GetMaster(), r1, Rect(0, 0, 0, 0), c, width, color, sGetAniPat(pattern, panim));
 		panim = nanim;
 	}
 	else

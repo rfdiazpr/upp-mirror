@@ -350,6 +350,8 @@ void QTFEncodeTxt(String& qtf, const RichTxt& text, const RichStyles& styles, co
 			FmtNumber(qtf, 'B', d.before, f.before);
 			FmtNumber(qtf, 'A', d.after, f.after);
 			FmtNumber(qtf, 'f', d.frame, f.frame);
+			if(f.keep)
+				qtf << "K";
 			if(f.framecolor != d.framecolor)
 				qtf << 'F' << FmtColor(f.framecolor);
 			FmtNumber(qtf, 'g', d.grid, f.grid);
@@ -387,6 +389,8 @@ void QTFEncodeTxt(String& qtf, const RichTxt& text, const RichStyles& styles, co
 						qtf << '-' << c.hspan;
 					if(c.vspan)
 						qtf << '|' << c.vspan;
+					if(f.keep)
+						qtf << "k";
 					qtf << ' ';
 					QTFEncodeTxt(qtf, c.text, styles, defstyle, options, sm, charset, lang);
 				}

@@ -40,7 +40,22 @@ void Draw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, const Rec
 	if(IsNull(src))
 		return;
 	Size sz = Size(cx, cy);
-	if(src.GetSize() == sz) //TODO: RLE for large images
+	if((cx > 2000 || cy > 2000) && IsNull(color)) {
+		int yy = 0;
+		ImageRaster ir(img);
+		RescaleImage rm;
+		rm.Create(Size(cx, cy), ir, src);
+		while(yy < cy) {//TODO Color!!!
+			int ccy = min(cy - yy, 16);
+			ImageBuffer ib(cx, ccy);
+			for(int q = 0; q < ccy; q++)
+				rm.Get(ib[q]);
+			DrawImageBandRLE(*this, x, y + yy, ib, 16);
+			yy += ccy;
+		}
+		return;
+	}
+	if(src.GetSize() == sz)
 		img.PaintImage(*this, x, y, src, color);
 	else {
 		Image h = Rescale(img, Size(cx, cy), src);
@@ -165,60 +180,60 @@ void Draw::DrawPolyPolyPolygon(const Vector<Point>& vertices,
                            const Vector<int>& subpolygon_counts,
                            const Vector<int>& disjunct_polygon_counts,
                            Color color, int width, Color outline,
-                           Image image, Color doxor)
+                           uint64 pattern, Color doxor)
 {
 	DrawPolyPolyPolygon(vertices.Begin(), vertices.GetCount(),
 	                    subpolygon_counts.Begin(), subpolygon_counts.GetCount(),
 	                    disjunct_polygon_counts.Begin(), disjunct_polygon_counts.GetCount(),
-	                    color, width, outline, image, doxor);
+	                    color, width, outline, pattern, doxor);
 }
 
 void Draw::DrawPolyPolygon(const Point *vertices, int vertex_count,
                        const int *subpolygon_counts, int subpolygon_count_count,
-                       Color color, int width, Color outline, Image image, Color doxor)
+                       Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
 	DrawPolyPolyPolygon(vertices, vertex_count,
 	                    subpolygon_counts, subpolygon_count_count, &vertex_count, 1,
-	                    color, width, outline, image, doxor);
+	                    color, width, outline, pattern, doxor);
 }
 
 void Draw::DrawPolyPolygon(const Vector<Point>& vertices, const Vector<int>& subpolygon_counts,
-                       Color color, int width, Color outline, Image image, Color doxor)
+                       Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
 	DrawPolyPolygon(vertices.Begin(), vertices.GetCount(),
 	                subpolygon_counts.Begin(), subpolygon_counts.GetCount(),
-	                color, width, outline, image, doxor);
+	                color, width, outline, pattern, doxor);
 }
 
 void Draw::DrawPolygons(const Point *vertices, int vertex_count,
                     const int *polygon_counts, int polygon_count_count,
-                    Color color, int width, Color outline, Image image, Color doxor)
+                    Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
 	DrawPolyPolyPolygon(vertices, vertex_count,
 	                    polygon_counts, polygon_count_count,
 	                    polygon_counts, polygon_count_count,
-	                    color, width, outline, image, doxor);
+	                    color, width, outline, pattern, doxor);
 }
 
 void Draw::DrawPolygons(const Vector<Point>& vertices, const Vector<int>& polygon_counts,
-                    Color color, int width, Color outline, Image image, Color doxor)
+                    Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
 	DrawPolygons(vertices.Begin(), vertices.GetCount(),
                  polygon_counts.Begin(), polygon_counts.GetCount(),
-                 color, width, outline, image, doxor);
+                 color, width, outline, pattern, doxor);
 }
 
 void Draw::DrawPolygon(const Point *vertices, int vertex_count,
-                   Color color, int width, Color outline, Image image, Color doxor)
+                   Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
 	DrawPolyPolyPolygon(vertices, vertex_count, &vertex_count, 1, &vertex_count, 1,
-	                    color, width, outline, image, doxor);
+	                    color, width, outline, pattern, doxor);
 }
 
 void Draw::DrawPolygon(const Vector<Point>& vertices,
-                       Color color, int width, Color outline, Image image, Color doxor)
+                       Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
-	DrawPolygon(vertices.Begin(), vertices.GetCount(), color, width, outline, image, doxor);
+	DrawPolygon(vertices.Begin(), vertices.GetCount(), color, width, outline, pattern, doxor);
 }
 #endif
 void Draw::DrawEllipse(int x, int y, int cx, int cy, Color color, int pen, Color pencolor)

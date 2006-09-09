@@ -21,6 +21,7 @@ public:
 	virtual Line    GetLine(int line);
 	virtual int     GetPaletteCount();
 	virtual RGBA   *GetPalette();
+	virtual const RasterFormat *GetFormat();
 
 	BMPRaster()     { file = true; }
 	~BMPRaster();

@@ -79,6 +79,10 @@
 #define lvLV(text)  { LNGC_('L','V','L','V', CHARSET_UTF8), text },
 #define ltLT(text)  { LNGC_('L','T','L','T', CHARSET_UTF8), text },
 #define ukUA(text)  { LNGC_('U','K','U','A', CHARSET_UTF8), text },
+#define zhCN(text)  { LNGC_('Z','H','C','N', CHARSET_UTF8), text },
+#define koKR(text)  { LNGC_('K','O','K','R', CHARSET_UTF8), text },
+#define jaJP(text)  { LNGC_('J','A','J','P', CHARSET_UTF8), text },
+
 
 #define T_(text)    { 1, text },
 

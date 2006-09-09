@@ -1281,7 +1281,7 @@ void PathDraw::FlushSplit(double keep_length)
 		poly[px++] = next_bot; \
 	} \
 	poly[px++] = new_bot; \
-	DrawPolygon(*draw, poly, px, col, 0, Null, Null);
+	DrawPolygon(*draw, poly, px, col, 0, Null, 0);
 
 #define DRAW_BOTTOM_ROUND(b, col) \
 	if(top_sharp && arc_path.IsEmpty()) \
@@ -1307,7 +1307,7 @@ void PathDraw::FlushSplit(double keep_length)
 		Copy(&arc_path[pos], poly, poly + px); \
 	} \
 	arc_path.Add(new_top); \
-	DrawPolygon(*draw, arc_path, col, 0, Null, Null);
+	DrawPolygon(*draw, arc_path, col, 0, Null, 0);
 
 enum { LEADER_DELTA = 0 };
 
@@ -1572,7 +1572,7 @@ void PathDraw::LineToRaw()
 					Point new_bot = pos[1] + (up * bottom).AsSize();
 					poly[2] = new_top;
 					poly[3] = new_bot;
-					DrawPolygon(*draw, poly, 4, t.color, 0, Null, Null);
+					DrawPolygon(*draw, poly, 4, t.color, 0, Null, 0);
 					t.last_bottom = new_bot;
 				}
 				t.last_top = new_top;
@@ -1594,7 +1594,7 @@ void PathDraw::LineToRaw()
 					CALC_SHARP_LEADER(new_bot, t.right_bottom, end_pos);
 					poly[2] = new_top;
 					poly[3] = new_bot;
-					DrawPolygon(*draw, poly, 4, t.color, 0, Null, Null);
+					DrawPolygon(*draw, poly, 4, t.color, 0, Null, 0);
 				}
 				open_traces.Remove(o);
 			}
@@ -1628,7 +1628,7 @@ void PathDraw::LineToRaw()
 					CALC_SHARP_LEADER(poly[1], t.left_bottom, aindex);
 					poly[2] = old_top;
 					poly[3] = new_top;
-					DrawPolygon(*draw, poly, 4, t.color, 0, Null, Null);
+					DrawPolygon(*draw, poly, 4, t.color, 0, Null, 0);
 				}
 			}
 			else
@@ -1668,7 +1668,7 @@ void PathDraw::LineToRaw()
 					CALC_SHARP_LEADER(poly[1], t.left_bottom, aindex);
 					poly[2] = old_top;
 					poly[3] = new_top;
-					DrawPolygon(*draw, poly, 4, t.color, 0, Null, Null);
+					DrawPolygon(*draw, poly, 4, t.color, 0, Null, 0);
 					t.last_bottom = poly[0];
 				}
 				t.last_top = new_top;
@@ -1757,7 +1757,7 @@ void PathDraw::LineToRaw()
 					poly[1] = t.last_top;
 					int px = 2;
 					CALC_END_BOTTOM_LEADER(rem);
-					DrawPolygon(*draw, poly, px, t.color, 0, Null, Null);
+					DrawPolygon(*draw, poly, px, t.color, 0, Null, 0);
 				}
 //				if(al > segment - t.pos + 1)
 //				{ // repeat segment
@@ -1803,7 +1803,7 @@ void PathDraw::LineToRaw()
 					int px = 0;
 					CALC_START_BOTTOM_LEADER();
 					CALC_END_BOTTOM_LEADER(t.width);
-					DrawPolygon(*draw, poly, px, t.color, 0, Null, Null);
+					DrawPolygon(*draw, poly, px, t.color, 0, Null, 0);
 				}
 			}
 			else
@@ -1951,7 +1951,7 @@ void PathDraw::LineToRaw()
 					}
 					else
 						poly[px++] = sl.last_bottom = pos[1] + PointfToSize(up * double(sl.bottom));
-					DrawPolygon(*draw, poly, px, sl.color, 0, Null, Null);
+					DrawPolygon(*draw, poly, px, sl.color, 0, Null, 0);
 				}
 				sl.last_top = next_top;
 			}

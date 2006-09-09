@@ -39,6 +39,7 @@ class LabelBox : public Label {
 public:
 	virtual void   Paint(Draw& w);
 	virtual void   AssignAccessKeys(dword used);
+	virtual Rect   GetVoidRect();
 
 public:
 	LabelBox();
@@ -47,6 +48,8 @@ public:
 };
 
 struct ParentCtrl : public Ctrl {
+	virtual Rect   GetVoidRect();
+
 	ParentCtrl();
 };
 

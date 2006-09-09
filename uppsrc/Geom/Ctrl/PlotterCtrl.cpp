@@ -504,11 +504,6 @@ void PlotterCtrl::EndBufferPaint()
 		drag_drop->Plot(plotter);
 		lock_drag_drop = false;
 	}
-	if(short_drag_drop) {
-		lock_short_drag_drop = true;
-		short_drag_drop->Plot(plotter);
-		lock_short_drag_drop = false;
-	}
 	if(!abort_repaint)
 		paint_buffer = *paint_draw;
 	paint_draw.Clear();
@@ -565,11 +560,6 @@ void PlotterCtrl::Paint(Draw& draw)
 				drag_drop->Plot(plotter);
 				lock_drag_drop = false;
 			}
-			if(short_drag_drop) {
-				lock_short_drag_drop = true;
-				short_drag_drop->Plot(plotter);
-				lock_short_drag_drop = false;
-			}
 		}
 	}
 	if(shown)
@@ -618,14 +608,7 @@ void PlotterCtrl::RefreshBuffer(const Rect& rc)
 Image PlotterCtrl::CursorImage(Point pt, dword keyflags)
 {
 	Image out = Image::Arrow();
-	if(short_drag_drop)
-	{
-		lock_short_drag_drop = true;
-		out = short_drag_drop->Cursor(FromClient(pt), keyflags, IsDragging());
-		lock_short_drag_drop = false;
-	}
-	else if(drag_drop)
-	{
+	if(drag_drop) {
 		lock_drag_drop = true;
 		out = drag_drop->Cursor(FromClient(pt), keyflags, IsDragging());
 		lock_drag_drop = false;
@@ -644,14 +627,7 @@ bool PlotterCtrl::Push(Point pt, dword keyflags)
 	bool push = false;
 	SyncPush();
 	drag_start = FromPushClient(pt);
-	if(short_drag_drop)
-	{
-//		lock_short_drag_drop = true;
-		push = short_drag_drop->Push(drag_start, keyflags);
-//		lock_short_drag_drop = false;
-	}
-	else if(drag_drop)
-	{
+	if(drag_drop) {
 //		lock_drag_drop = true;
 		push = drag_drop->Push(drag_start, keyflags);
 //		lock_drag_drop = false;
@@ -665,15 +641,7 @@ void PlotterCtrl::Drag(Point start, Point prev, Point curr, dword keyflags)
 //	RLOG("PlotterCtrl::Drag, short = " << ~short_drag_drop << ", " << (~short_drag_drop
 //		? typeid(*short_drag_drop).name() : "NULL") << ", long = " << ~drag_drop << ", "
 //		<< (~drag_drop ? typeid(*drag_drop).name() : "NULL"));
-	if(short_drag_drop)
-	{
-		lock_short_drag_drop = true;
-//		RDUMP(~short_drag_drop);
-		short_drag_drop->Drag(drag_start, FromPushClientNull(prev), FromPushClientNull(curr), keyflags);
-		lock_short_drag_drop = false;
-	}
-	else if(drag_drop)
-	{
+	if(drag_drop) {
 		lock_drag_drop = true;
 //		RLOG("PlotterCtrl::Drag->drag_drop::Drag");
 		drag_drop->Drag(drag_start, FromPushClientNull(prev), FromPushClientNull(curr), keyflags);
@@ -685,14 +653,7 @@ void PlotterCtrl::Drag(Point start, Point prev, Point curr, dword keyflags)
 
 void PlotterCtrl::Drop(Point start, Point end, dword keyflags)
 {
-	if(short_drag_drop)
-	{
-//		lock_short_drag_drop = true;
-		short_drag_drop->Drop(drag_start, FromPushClient(end), keyflags);
-//		lock_short_drag_drop = false;
-	}
-	else if(drag_drop)
-	{
+	if(drag_drop) {
 		lock_drag_drop = true;
 		drag_drop->Drop(drag_start, FromPushClient(end), keyflags);
 		lock_drag_drop = false;
@@ -701,14 +662,7 @@ void PlotterCtrl::Drop(Point start, Point end, dword keyflags)
 
 void PlotterCtrl::Click(Point pt, dword keyflags)
 {
-	if(short_drag_drop)
-	{
-//		lock_short_drag_drop = true;
-		short_drag_drop->Click(FromPushClient(pt), keyflags);
-//		lock_short_drag_drop = false;
-	}
-	else if(drag_drop)
-	{
+	if(drag_drop) {
 		lock_drag_drop = true;
 		drag_drop->Click(FromPushClient(pt), keyflags);
 		lock_drag_drop = false;
@@ -717,14 +671,7 @@ void PlotterCtrl::Click(Point pt, dword keyflags)
 
 void PlotterCtrl::Cancel()
 {
-	if(short_drag_drop)
-	{
-		lock_short_drag_drop = true;
-		short_drag_drop->Cancel();
-		lock_short_drag_drop = false;
-	}
-	else if(drag_drop)
-	{
+	if(drag_drop) {
 		lock_drag_drop = true;
 		drag_drop->Cancel();
 		lock_drag_drop = false;
@@ -734,14 +681,7 @@ void PlotterCtrl::Cancel()
 bool PlotterCtrl::Key(dword key, int repcnt)
 {
 	bool dd_key = false;
-	if(short_drag_drop)
-	{
-		lock_short_drag_drop = true;
-		dd_key = short_drag_drop->Key(key);
-		lock_short_drag_drop = false;
-	}
-	else if(drag_drop)
-	{
+	if(drag_drop) {
 		lock_drag_drop = true;
 		dd_key = drag_drop->Key(key);
 		lock_drag_drop = false;
@@ -793,36 +733,10 @@ void PlotterCtrl::UpdateMousePos()
 	WhenMousePos();
 }
 
-void PlotterCtrl::PickShortDragDrop(One<PlotterDragDrop> sdd)
-{
-	ASSERT(!lock_short_drag_drop);
-	DragStop();
-	short_drag_drop = sdd;
-	RefreshDragDrop();
-	WhenRescan();
-}
-
-One<PlotterDragDrop> PlotterCtrl::ClearShortDragDrop()
-{
-	ASSERT(!lock_short_drag_drop);
-	One<PlotterDragDrop> sdd = short_drag_drop;
-	short_drag_drop.Clear();
-	RefreshDragDrop();
-	WhenRescan();
-	return sdd;
-}
-
-void PlotterCtrl::EndShortDragDrop()
-{
-	if(drag_drop && short_drag_drop)
-		ClearShortDragDrop();
-}
-
 void PlotterCtrl::PickDragDrop(One<PlotterDragDrop> dd)
 {
 	ASSERT(!lock_short_drag_drop && !lock_drag_drop);
 	DragStop();
-	short_drag_drop.Clear();
 	drag_drop = dd;
 	RefreshDragDrop();
 	WhenRescan();
@@ -940,9 +854,7 @@ void PlotterCtrl::ToolViewZoomOut(Bar& bar)
 void PlotterCtrl::OnViewZoomOut()
 {
 	if(!IsDragDrop<ZoomOutDragDrop>(this))
-		PickShortDragDrop(new ZoomOutDragDrop(*this));
-	else if(drag_drop)
-		EndShortDragDrop();
+		PickDragDrop(new ZoomOutDragDrop(*this));
 	else
 		UserZoomOut();
 }
@@ -968,9 +880,7 @@ void PlotterCtrl::ToolViewZoomIn(Bar& bar)
 void PlotterCtrl::OnViewZoomIn()
 {
 	if(!IsDragDrop<ZoomInDragDrop>(this))
-		PickShortDragDrop(new ZoomInDragDrop(*this));
-	else if(drag_drop)
-		EndShortDragDrop();
+		PickDragDrop(new ZoomInDragDrop(*this));
 	else
 		UserZoomIn();
 }
@@ -985,9 +895,9 @@ void PlotterCtrl::ToolViewPan(Bar& bar)
 void PlotterCtrl::OnViewPan()
 {
 	if(!IsDragDrop<PanDragDrop>(this))
-		PickShortDragDrop(new PanDragDrop(*this));
+		PickDragDrop(new PanDragDrop(*this));
 	else
-		EndShortDragDrop();
+		ClearDragDrop();
 }
 
 void PlotterCtrl::UserZoomInX()
@@ -1107,7 +1017,6 @@ void ZoomInDragDrop::DropRect(const Rectf& rc, dword keyflags)
 {
 	owner.Zoom(rc, !(keyflags & K_CTRL) || owner.IsAspectRatio());
 	owner.WhenUserZoom();
-	owner.EndShortDragDrop();
 }
 
 void ZoomInDragDrop::Click(Pointf pt, dword keyflags)
@@ -1132,7 +1041,6 @@ bool ZoomOutDragDrop::Push(Pointf pt, dword keyflags)
 	rc.Inflate(rc.Size() * 0.5);
 	owner.Zoom(rc + pt - rc.CenterPoint());
 	owner.WhenUserZoom();
-	owner.EndShortDragDrop();
 	return false;
 }
 
@@ -1169,7 +1077,6 @@ void PanDragDrop::Drop(Pointf start, Pointf end, dword keyflags)
 	PlotterCtrl& owner = GetOwner();
 //	owner.SetDelta(GetDelta(start, end));
 	owner.WhenUserZoom();
-	owner.EndShortDragDrop();
 }
 
 void PanDragDrop::Cancel()

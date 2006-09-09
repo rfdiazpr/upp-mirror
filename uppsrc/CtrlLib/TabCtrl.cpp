@@ -279,13 +279,14 @@ void TabCtrl::Right()
 void TabCtrl::Set(int i)
 {
 	if(i != sel) {
+		bool refocus = HasFocusDeep();
 		sel = i;
 		tabs.Refresh();
 		SyncTabs();
 		for(int i = 0; i < tab.GetCount(); i++)
 			if(tab[i].slave)
 				tab[i].slave->Show(sel == i);
-		if(sel >= 0)
+		if(sel >= 0 && refocus)
 			IterateFocusForward(tab[sel].slave, GetTopCtrl(), false, true);
 		WhenSet();
 	}

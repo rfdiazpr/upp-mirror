@@ -296,7 +296,7 @@ void LineDraw::AddVectorArea(Point a, Point b)
 	polygon[7].x = b.x + vector.cx; polygon[7].y = b.y + vector.cy;
 	polygon[8].x = b.x + larger.cy; polygon[8].y = b.y + larger.cx;
 	polygon[9].x = b.x + vector.cy; polygon[9].y = b.y - vector.cx;
-	DrawPolygon(*draw, polygon, 10, pen_color, PEN_NULL, Black, Null);
+	DrawPolygon(*draw, polygon, 10, pen_color, PEN_NULL, Black, 0);
 //	draw -> SetColor(pen_color);
 //	draw -> SetDrawPen(PEN_NULL, Black);
 //	Polygon(*draw, polygon, 10);
@@ -1490,7 +1490,7 @@ AreaTool& AreaTool::Vert(int y)
 	return *this;
 }
 
-void AreaTool::Set(const Plotter& _info, Color _fill_color, const Image& _fill_pattern,
+void AreaTool::Set(const Plotter& _info, Color _fill_color, uint64 _fill_pattern,
 	const String& outline_pattern, Color outline_color, int outline_width, double outline_dash)
 {
 	if(outline_width < 0)
@@ -1507,7 +1507,7 @@ void AreaTool::Set(const Plotter& _info, Color _fill_color, const Image& _fill_p
 	pw *= outline_width;
 	is_line = !path.IsEmpty();
 	std_pen = !is_line || IsNull(outline_color)
-	|| (ghost_lines.IsEmpty() && is_solid && pw < (_info.draw -> Dots() ? 20 : 2.5) /*&& !IsNull(fill_color)*/ && IsNull(fill_pattern));
+	|| (ghost_lines.IsEmpty() && is_solid && pw < (_info.draw -> Dots() ? 20 : 2.5) /*&& !IsNull(fill_color)*/ && !fill_pattern);
 	if(std_pen)
 //		|| *outline_pattern == 0 && !fill_pattern && outline_width <= 1)
 	{

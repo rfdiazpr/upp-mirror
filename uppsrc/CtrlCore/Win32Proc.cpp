@@ -418,7 +418,7 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 #endif
 	case WM_SETTINGCHANGE:
 	case 0x031A: // WM_THEMECHANGED
-		ChSetStyle(ChGetStyle());
+		ChSync();
 		RefreshLayoutDeep();
 		RefreshFrame();
 		break;

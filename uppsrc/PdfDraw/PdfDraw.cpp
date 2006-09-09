@@ -530,7 +530,7 @@ void PdfDraw::DrawArcOp(const Rect& rc, Point start, Point end, int width, Color
 void PdfDraw::DrawPolyPolyPolygon(const Point *vertices, int vertex_count,
 	const int *subpolygon_counts, int subpolygon_count_count,
 	const int *disjunct_polygon_counts, int disjunct_polygon_count_count,
-	Color color, int width, Color outline, Image image, Color doxor)
+	Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
 	bool fill = !IsNull(color), stroke = !IsNull(outline) && !IsNull(width);
 	if(fill)   PutrgColor(color);

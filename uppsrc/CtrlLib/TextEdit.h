@@ -81,6 +81,7 @@ protected:
 	int    Insert(int pos, const WString& txt, bool typing);
 	void   DoPaste() { Paste(); }
 	void   DoRemoveSelection() { RemoveSelection(); }
+	void   RefreshLines(int l1, int l2);
 
 public:
 	virtual void   RefreshLine(int i);
@@ -88,7 +89,6 @@ public:
 	Callback1<Bar&> WhenBar;
 	Callback        WhenState;
 
-	void   RefreshLines(int l1, int l2);
 	void   CachePos(int pos);
 
 	void   Load(Stream& s, byte charset = CHARSET_DEFAULT);

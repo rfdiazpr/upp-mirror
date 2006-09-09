@@ -25,7 +25,7 @@ void   Splitter::Layout() {
 	if(count == 0)
 		return;
 	count--;
-	if(pos.GetCount() != count) {
+	if(pos.GetCount() < count) {
 		pos.SetCount(count, 0);
 		for(int i = 0; i < count; i++)
 			pos[i] = (i + 1) * 10000 / (count + 1);

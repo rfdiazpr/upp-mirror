@@ -176,6 +176,7 @@ public:
 protected:
 	Ctrl      *box;
 	StaticRect the_box;
+	int        box_type;
 	SizeGrip   grip;
 
 	void    Scroll();
@@ -262,6 +263,10 @@ public:
 	ScrollBars& NoAutoHide()                         { return AutoHide(false); }
 	ScrollBars& AutoDisable(bool b = true);
 	ScrollBars& NoAutoDisable()                      { return AutoDisable(false); }
+
+	ScrollBars& NormalBox();
+	ScrollBars& NoBox();
+	ScrollBars& FixedBox();
 
 	ScrollBars& Box(Ctrl& box);
 	ScrollBars& WithSizeGrip()                       { the_box.Add(grip); return *this; }

@@ -4,3 +4,9 @@ Ctrl
 0 0 -1
 Array<ArrayCtrl::Column>
 0 0 -1
+Size_<int>
+0 0 -1
+Rect_<int>
+0 0 -1
+Image::Data
+0 0 -1

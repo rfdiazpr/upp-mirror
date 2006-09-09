@@ -535,7 +535,7 @@ void PathEditorCtrl::Paint(Draw& draw)
 		}
 		else
 		{
-			area.Set(plotter, Nvl(trace.color, Black), PathImg::fill_dither(), Null, outline, 3);
+			area.Set(plotter, Nvl(trace.color, Black), INT64(0xaa55aa55aa55aa55), Null, outline, 3);
 			if(area.SetExtent(trace.GetExtent()))
 				trace.Paint(area, false, outline);
 		}
@@ -544,7 +544,7 @@ void PathEditorCtrl::Paint(Draw& draw)
 	{ // draw begin & end bar
 		Pointf size = Pointf(16, 16) / GetScale();
 		AreaTool area;
-		area.Set(plotter, LtGreen, Null, Null, Green, 2);
+		area.Set(plotter, LtGreen, 0, Null, Green, 2);
 		double x = style->begin;
 		double h = style->width / 2;
 		PaintSizeBreak(area, x, h, size);

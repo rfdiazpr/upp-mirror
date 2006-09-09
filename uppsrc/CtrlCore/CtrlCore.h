@@ -373,6 +373,8 @@ private:
 
 	void    RemoveChild0(Ctrl *q);
 
+	static  void ChSync();
+
 	static int       FindMoveCtrl(const VectorMap<Ctrl *, MoveCtrl>& m, Ctrl *x);
 	static MoveCtrl *FindMoveCtrlPtr(VectorMap<Ctrl *, MoveCtrl>& m, Ctrl *x);
 
@@ -419,7 +421,8 @@ private:
 	void    SyncScroll();
 	void    CtrlPaint(Draw& w, const Rect& clip);
 	void    RemoveFullRefresh();
-	void    PaintOpaqueAreas(Draw& w, Point offset, const Rect& clip);
+	bool    PaintOpaqueAreas(Draw& w, Point offset, const Rect& clip);
+	void    GatherTransparentAreas(Vector<Rect>& area, Draw& w, Point offset, const Rect& clip);
 	void    UpdateArea(Draw& draw, const Rect& clip);
 	Ctrl   *GetTopRect(Rect& r, bool inframe);
 	void    DoSync(Ctrl *q, Rect r, bool inframe);
@@ -708,6 +711,7 @@ public:
 	virtual bool   IsShowEnabled() const;
 
 	virtual Rect   GetOpaqueRect();
+	virtual Rect   GetVoidRect();
 
 	virtual void   Updated();
 
@@ -1239,7 +1243,7 @@ protected:
 	Color           color;
 	Image           cursorimage;
 	int             width;
-	const word     *pattern;
+	uint64          pattern;
 	int             animation;
 	int             panim;
 	Rounder        *rounder;
@@ -1262,7 +1266,7 @@ public:
 	RectTracker&    Clip(const Rect& c)            { clip = c; return *this; }
 	RectTracker&    Width(int n)                   { width = n; return *this; }
 	RectTracker&    SetColor(Color c)              { color = c; return *this; }
-	RectTracker&    Pattern(const word *p)         { pattern = p; return *this; }
+	RectTracker&    Pattern(uint64 p)              { pattern = p; return *this; }
 	RectTracker&    Dashed();
 	RectTracker&    Solid();
 	RectTracker&    Animation(int step_ms = 40)    { animation = step_ms; return *this; }

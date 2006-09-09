@@ -818,3 +818,16 @@ void Modality::End()
 	enable.Clear();
 	active = NULL;
 }
+
+void (*s_chsync)();
+
+void CtrlSetChSync(void (*fn)())
+{
+	s_chsync = fn;
+}
+
+void Ctrl::ChSync()
+{
+	if(s_chsync)
+		(*s_chsync)();
+}

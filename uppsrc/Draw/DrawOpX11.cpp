@@ -2,8 +2,8 @@
 
 #ifdef PLATFORM_X11
 
-#define LLOG(x) // LOG(x)
-#define LTIMING(x) // TIMING(x)
+#define LLOG(x)     // LOG(x)
+#define LTIMING(x)  // TIMING(x)
 
 void Draw::BeginOp()
 {
@@ -266,7 +266,7 @@ static void DrawPolyPolyPolygonRaw(Draw& draw, const Point *vertices, int vertex
 void Draw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
 	 const int *subpolygon_counts, int subpolygon_count_count,
 	const int *disjunct_polygon_counts, int disjunct_polygon_count_count,
-	Color color, int width, Color outline, Image image, Color doxor)
+	Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
 	if(vertex_count == 0)
 		return;

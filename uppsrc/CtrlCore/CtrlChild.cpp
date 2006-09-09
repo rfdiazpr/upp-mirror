@@ -110,6 +110,7 @@ bool Ctrl::HasChildDeep(Ctrl *q) const
 
 static bool IterateFocusFw(Ctrl *ctrl, bool noframe, bool init)
 {
+	LLOG("IterateFocusFw(" << ::Name(ctrl) << ")");
 	while(ctrl) {
 		if(ctrl->IsOpen() && ctrl->IsVisible() && ctrl->IsEnabled()) {
 			if(!(noframe && ctrl->InFrame()) && (!init || ctrl->IsInitFocus()) && ctrl->SetWantFocus())
@@ -124,6 +125,7 @@ static bool IterateFocusFw(Ctrl *ctrl, bool noframe, bool init)
 
 bool Ctrl::IterateFocusForward(Ctrl *ctrl, Ctrl *top, bool noframe, bool init)
 {
+	LLOG("IterateFocusForward(" << ::Name(ctrl) << ", top " << ::Name(top) << ", noframe " << noframe << ", init " << init << ")");
 	if(!ctrl) return false;
 	if(IterateFocusFw(ctrl->GetFirstChild(), noframe, init))
 		return true;

@@ -12,6 +12,13 @@ void DropBox::CancelMode()
 	light = -1;
 }
 
+DropBox& DropBox::AlwaysDrop(bool e)
+{
+	always_drop = e;
+	EnableDrop(enabled);
+	return *this;
+}
+
 void DropBox::SyncLook()
 {
 	int q = HasMouseInFrame(rect);
@@ -141,6 +148,7 @@ void DropBox::DropEdge::FrameAddSize(Size& sz)
 
 DropBox::DropBox()
 {
+	always_drop = false;
 	edge.dropbox = this;
 	SetFrame(edge);
 	button.dropbox = this;

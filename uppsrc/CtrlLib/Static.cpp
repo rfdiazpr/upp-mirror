@@ -93,6 +93,16 @@ void  LabelBox::AssignAccessKeys(dword used)
 
 LabelBox::~LabelBox() {}
 
+Rect LabelBox::GetVoidRect()
+{
+	Rect r = GetSize();
+	r.left += 2;
+	r.top += max(GetLabelSize().cy, 2);
+	r.bottom -= 2;
+	r.right -= 2;
+	return r;
+}
+
 void LabelBox::Paint(Draw& w)
 {
 	Size sz = GetSize();
@@ -166,6 +176,11 @@ void LabelBox::Paint(Draw& w)
 		}
 	}
 	w.End();
+}
+
+Rect ParentCtrl::GetVoidRect()
+{
+	return GetSize();
 }
 
 ParentCtrl::ParentCtrl()

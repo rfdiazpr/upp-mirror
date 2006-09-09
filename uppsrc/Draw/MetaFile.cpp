@@ -10,8 +10,11 @@ static void wsMetaDraw(Draw& w, Stream& s, const DrawingPos& ps) {
 	wmf.Paint(w, ps(r));
 }
 
-void WinMetaFile::Init() {
+INITBLOCK {
 	Draw::Register(555, wsMetaDraw);
+};
+
+void WinMetaFile::Init() {
 	hemf = NULL;
 }
 

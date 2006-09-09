@@ -27,13 +27,6 @@ void ChRegisterVar__(const char *name, int n,
 	ch.set = set;
 }
 
-void ChReset()
-{
-	VectorMap<String, ChVar>& var = chVar();
-	for(int i = 0; i < var.GetCount(); i++)
-		*var[i].state = 0;
-}
-
 void ChSet(const char *name, int i, const Value& val)
 {
 	VectorMap<String, ChVar>& var = chVar();
@@ -80,29 +73,6 @@ Value ChGet(const char *name, int i)
 Value ChGet(const char *name)
 {
 	return ChGet(name, 0);
-}
-
-struct sChRoutine : Moveable<sChRoutine> {
-	String style;
-	void  (*fn)();
-};
-
-static Vector<sChRoutine>& s_r()
-{
-	static Vector<sChRoutine> x;
-	return x;
-}
-
-void ChRegister(const char *style, void (*fn)())
-{
-	sChRoutine& r = s_r().Add();
-	r.style = style;
-	r.fn = fn;
-}
-
-void ChRegister(void (*fn)())
-{
-	ChRegister(NULL, fn);
 }
 
 struct ChImageMaker : ImageMaker {
@@ -316,35 +286,6 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 	return Null;
 }
 
-static void sChSync(const String& s)
-{
-	for(int i = 0; i < s_r().GetCount(); i++) {
-		sChRoutine& r = s_r()[i];
-		if(s == r.style)
-			(*r.fn)();
-	}
-}
-
-String chStyle;
-
-void ChSetStyle(const char *style)
-{
-	ChReset();
-	Vector<String> s = Split(style, ';');
-	ChLookFn(StdChLookFn);
-	sChSync("!");
-	sChSync("");
-	for(int i = 0; i < s.GetCount(); i++)
-		sChSync(s[i]);
-	sChSync(".");
-	chStyle = style;
-}
-
-String ChGetStyle()
-{
-	return chStyle;
-}
-
 typedef Value (*ChPainterFn)(Draw& w, const Rect& r, const Value& v, int op);
 
 Vector<ChPainterFn>& sChps()
@@ -355,7 +296,16 @@ Vector<ChPainterFn>& sChps()
 
 void ChLookFn(Value (*fn)(Draw& w, const Rect& r, const Value& v, int op))
 {
-	sChps().Add(fn);
+	if(FindIndex(sChps(), fn) < 0)
+		sChps().Add(fn);
+}
+
+void ChReset()
+{
+	VectorMap<String, ChVar>& var = chVar();
+	for(int i = 0; i < var.GetCount(); i++)
+		*var[i].state = 0;
+	ChLookFn(StdChLookFn);
 }
 
 Value sChOp(Draw& w, const Rect& r, const Value& v, int op)
@@ -440,20 +390,20 @@ Image AdjustColors(const Image& img) {
 	return w;
 }
 
-void  Override(Iml& target, const char *prefix, Iml& source, bool colored)
+void  Override(Iml& target, Iml& source, bool colored)
 {
-	Vector<String> p = Split(prefix, ';');
-	if(p.GetCount() == 0)
-		p.Add("");
-	for(int q = 0; q < p.GetCount(); q++)
-		for(int i = 0; i < target.GetCount(); i++) {
-			String n = p[q] + target.GetId(i);
-			int q = source.Find(n);
-			if(q >= 0) {
-				Image m = source.Get(q);
-				if(colored)
-					m = AdjustColors(m);
-				target.Set(i, m);
-			}
+	for(int i = 0; i < target.GetCount(); i++) {
+		int q = source.Find(target.GetId(i));
+		if(q >= 0) {
+			Image m = source.Get(q);
+			if(colored)
+				m = AdjustColors(m);
+			target.Set(i, m);
 		}
+	}
+}
+
+void ColoredOverride(Iml& target, Iml& source)
+{
+	Override(target, source, true);
 }

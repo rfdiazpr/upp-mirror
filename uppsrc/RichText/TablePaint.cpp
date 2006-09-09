@@ -8,6 +8,7 @@ RichTable::Format::Format()
 	framecolor = Black;
 	before = after = lm = rm = 0;
 	header = 0;
+	keep = false;
 }
 
 #include "RichText.h"
@@ -126,7 +127,7 @@ void RichTable::Paint(PageDraw& pw, RichContext rc, const PaintInfo& _pi) const
 	for(int i = 0; i < ny; i++)
 		if(RowPaint(pw, rc.styles, tab, i, ny, pg, frr, pi, 0, sel))
 			break;
-	
+
 	Color gc = format.gridcolor;
 	Color fc = format.framecolor;
 	int fl = frameln;

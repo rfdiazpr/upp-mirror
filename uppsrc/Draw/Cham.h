@@ -15,13 +15,10 @@ Value ChGet(const char *name);
 
 Image AdjustColors(const Image& img);
 
-void  Override(Iml& target, const char *prefixset, Iml& source, bool colored = true);
+void   Override(Iml& target, Iml& source, bool colored = false);
+void   ColoredOverride(Iml& target, Iml& source);
 
-void   ChRegister(const char *style, void (*fn)());
-void   ChRegister(void (*fn)());
-
-void   ChSetStyle(const char *style);
-String ChGetStyle();
+void   ChReset();
 
 void   ChPaint(Draw& w, const Rect& r, const Value& look);
 void   ChPaint(Draw& w, int x, int y, int cx, int cy, const Value& look);

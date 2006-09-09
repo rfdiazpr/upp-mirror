@@ -4,6 +4,14 @@
 #define IMAGEFILE  <ide/ide.iml>
 #include <Draw/iml_source.h>
 
+void Ide::SyncCh()
+{
+	if(ChGetStyle() != chstyle) {
+		ChSetStyle(chstyle);
+		RefreshLayout();
+	}
+}
+
 void Ide::ToggleVerboseBuild() {
 	console.verbosebuild = !console.verbosebuild;
 }
@@ -39,7 +47,7 @@ void Ide::ConsolePaste()
 }
 
 void Ide::Serialize(Stream& s) {
-	int version = 4;
+	int version = 5;
 	s.Magic(0x12346);
 	s / version;
 	s % main;
@@ -101,6 +109,9 @@ void Ide::Serialize(Stream& s) {
 	}
 	if(version >= 4) {
 		s % doc;
+	}
+	if(version >= 5) {
+		s % chstyle;
 	}
 	s.Magic();
 }
@@ -323,6 +334,8 @@ Ide::Ide()
 	stat_build_time = 0;
 	build_start_time = Null;
 	hydra1_threads = 1;
+
+	chstyle = 0;
 
 #ifdef PLATFORM_WIN32
 	SYSTEM_INFO si;
@@ -793,6 +806,8 @@ void AppMain___()
 		}
 
 		LoadFromFile(ide);
+
+		ide.SyncCh();
 
 		DelTemps();
 		if(splash_screen) {

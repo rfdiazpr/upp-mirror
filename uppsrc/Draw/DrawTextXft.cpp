@@ -2,8 +2,8 @@
 
 #ifdef PLATFORM_XFT
 
-#define LLOG(x)    // LOG(x)
-#define LTIMING(x) // RTIMING(x)
+#define LLOG(x)       //LOG(x)
+#define LTIMING(x)    //TIMING(x)
 
 struct XFTFontFaceInfo {
 	String      name;
@@ -169,8 +169,6 @@ XftFont *Draw::CreateXftFont(Font font, int angle)
 	if(i < 0 || i >= XFTFontFace().GetCount())
 		i = 0;
 	const char *face = i < 7 ? basic_fonts[i] : ~XFTFontFace().GetKey(i);
-	DUMP(i);
-	DUMP(face);
 	if(angle) {
 		XftMatrix mx;
 		SinCos(angle, sina, cosa);
@@ -276,7 +274,7 @@ String FontInfo::GetFileName() const
 void Draw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font,
                       Color ink, int n, const int *dx) {
 	LTIMING("DrawText");
-	LLOG("DrawText " << ToUtf8(text) << " color:" << ink << " font:" << font);
+	LLOG("DrawText " << ToUtf8(WString(text, n)) << " color:" << ink << " font:" << font);
 	//TODO - X11 seems to crash when displaying too long strings (?)
 	int ox = x + actual_offset.x;
 	int oy = y + actual_offset.y;

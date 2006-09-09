@@ -1,6 +1,7 @@
 #include "CtrlLib.h"
 
 DropChoice::DropChoice() {
+	always_drop = false;
 	drop.SetMonoImage(CtrlsImg::DA()).NoWantFocus();
 	drop.WhenPush = callback(this, &DropChoice::Drop);
 	drop.Disable();
@@ -89,7 +90,7 @@ void DropChoice::Add(const Value& s) {
 
 void DropChoice::Clear() {
 	list.Clear();
-	drop.Enable(always_enabled);
+	drop.Enable(always_drop);
 }
 
 void DropChoice::Serialize(Stream& s) {
@@ -121,13 +122,13 @@ void DropChoice::AddHistory(const Value& v, int max) {
 	list.Insert(0, Vector<Value>() << v);
 	if(list.GetCount() > max)
 		list.SetCount(max);
-	drop.Enable(list.GetCount() || always_enabled);
+	drop.Enable(list.GetCount() || always_drop);
 	list.KillCursor();
 }
 
-DropChoice& DropChoice::AlwaysEnabled(bool e)
+DropChoice& DropChoice::AlwaysDrop(bool e)
 {
-	always_enabled = e;
-	drop.Enable(list.GetCount() || always_enabled);
+	always_drop = e;
+	drop.Enable(list.GetCount() || always_drop);
 	return *this;
 }

@@ -54,6 +54,7 @@ public:
 		Color gridcolor;
 		WithDeepCopy< Vector<int> > column;
 		int   header;
+		bool  keep;
 
 		Format();
 	};

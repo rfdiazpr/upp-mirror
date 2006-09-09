@@ -165,7 +165,7 @@ String GetLocaleInfoA(LCID lcid, LCTYPE lctype)
 {
 	char cbuf[1000];
 	GetLocaleInfoA(lcid, lctype, cbuf, __countof(cbuf));
-	return cbuf;
+	return FromSystemCharset(cbuf);
 }
 #endif
 
@@ -306,6 +306,9 @@ const int *GetAllLanguages() {
 		LNG_('L', 'V', 'L', 'V'),
 		LNG_('L', 'T', 'L', 'T'),
 		LNG_('U', 'K', 'U', 'A'),
+		LNG_('Z', 'H', 'C', 'N'),
+		LNG_('K', 'O', 'K', 'R'),
+		LNG_('J', 'A', 'J', 'P'),
 		0
 	};
 	return all_langs;

@@ -32,12 +32,15 @@ public:
 	virtual void  CancelMode();
 	virtual Image FrameMouseEvent(int event, Point p, int zdelta, dword keyflags);
 
+	DropBox&      AlwaysDrop(bool e = true);
+
 private:
 	bool UserEdge() const;
 	Rect GetDropBoxRect(Rect r) const;
 	int8 light;
 	Rect rect;
 	bool enabled;
+	bool always_drop;
 
 	struct DropEdge : CtrlFrame {
 		DropBox *dropbox;
@@ -69,7 +72,7 @@ protected:
 	void     SyncLook();
 	void     Push();
 	Callback WhenPush;
-	void     EnableDrop(bool b = true) { enabled = b; RefreshFrame(); }
+	void     EnableDrop(bool b = true) { enabled = b || always_drop; RefreshFrame(); }
 
 public:
 	DropBox();
@@ -99,6 +102,7 @@ protected:
 	bool               displayall;
 	bool               dropfocus;
 	bool               push;
+	const Convert     *valueconvert;
 	const Display     *valuedisplay;
 
 	void          Select();
@@ -143,11 +147,12 @@ public:
 
 	const PopUpTable& GetList() const           { return list; }
 
-	DropList&     SetDisplay(int i, const Display& d)   { list.SetDisplay(i, 0, d); return *this; }
-	DropList&     SetDisplay(const Display& d)          { list.ColumnAt(0).SetDisplay(d); return *this; }
+	DropList&     SetConvert(const Convert& cv);
+	DropList&     SetDisplay(int i, const Display& d);
+	DropList&     SetDisplay(const Display& d);
 	DropList&     SetLineCy(int lcy)                    { list.SetLineCy(lcy); return *this; }
-	DropList&     SetDisplay(const Display& d, int lcy) { SetDisplay(d); SetLineCy(lcy); return *this; }
-	DropList&     ValueDisplay(const Display& d)        { valuedisplay = &d; return *this; }
+	DropList&     SetDisplay(const Display& d, int lcy);
+	DropList&     ValueDisplay(const Display& d);
 	DropList&     DisplayAll(bool b = true)             { displayall = b; return *this; }
 	DropList&     DropFocus(bool b = true)              { dropfocus = b; return *this; }
 
@@ -195,7 +200,7 @@ protected:
 	Ctrl              *owner;
 	bool               appending;
 	bool               dropfocus;
-	bool               always_enabled;
+	bool               always_drop;
 
 	void        Select();
 	void        Drop();
@@ -227,7 +232,7 @@ public:
 	DropChoice& SetDisplay(const Display& d, int lcy) { SetDisplay(d); SetLineCy(lcy); return *this; }
 	DropChoice& SetDropLines(int n)                   { list.SetDropLines(n); return *this; }
 	DropChoice& Appending()                           { appending = true; return *this; }
-	DropChoice& AlwaysEnabled(bool e = true);
+	DropChoice& AlwaysDrop(bool e = true);
 	DropChoice& NoDropFocus()                         { dropfocus = false; return *this; }
 
 	DropChoice();
@@ -266,7 +271,7 @@ public:
 	WithDropChoice& SetDisplay(const Display& d)          { select.SetDisplay(d); return *this; }
 	WithDropChoice& SetLineCy(int lcy)                    { select.SetLineCy(lcy); return *this; }
 	WithDropChoice& SetDisplay(const Display& d, int lcy) { select.SetDisplay(d, lcy); return *this; }
-	WithDropChoice& AlwaysEnabled(bool b = true)          { select.AlwaysEnabled(b); return *this; }
+	WithDropChoice& AlwaysDrop(bool b = true)             { select.AlwaysDrop(b); return *this; }
 
 	WithDropChoice();
 };

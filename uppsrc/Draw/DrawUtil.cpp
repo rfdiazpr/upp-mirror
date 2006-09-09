@@ -509,15 +509,18 @@ HRGN GetFrameRgn(const Rect& rect, int n) {
 	return rgn;
 }
 
-void DrawDragRect(Draw& w, const Rect& _rect1, const Rect& _rect2, const Rect& _clip, int n,
-                  Color color, const word *pattern)
+void DrawDragRect(Draw& w, const Rect& _rect1, const Rect& _rect2, const Rect& _clip, int n, Color color, uint64 pattern)
 {
 	Point o = w.GetOffset();
 	Rect rect1 = _rect1 + o;
 	Rect rect2 = _rect2 + o;
 	Rect clip = _clip + o;
 	HDC hdc = w.BeginGdi();
-	HBITMAP bitmap = CreateBitmap(8, 8, 1, 1, pattern);
+	word wpat[8] = {
+		(byte)(pattern >> 56), (byte)(pattern >> 48), (byte)(pattern >> 40), (byte)(pattern >> 32),
+		(byte)(pattern >> 24), (byte)(pattern >> 16), (byte)(pattern >> 8), (byte)(pattern >> 0),
+	};
+	HBITMAP bitmap = CreateBitmap(8, 8, 1, 1, wpat);
 	HBRUSH brush = ::CreatePatternBrush(bitmap);
 	DeleteObject(bitmap);
 	SetTextColor(hdc, color);
@@ -601,11 +604,11 @@ Vector<Rect> GetFrameRgn(const Rect& rect, int n) {
 }
 
 void DrawDragRect(Draw& w, const Rect& rect1, const Rect& rect2, const Rect& clip, int n,
-                  Color color, const word *pattern)
+                  Color color, uint64 pattern)
 {
 	char bd[8];
 	for(int i = 0; i < 8; i++)
-		bd[i] = pattern[i];
+		bd[i] = (byte)(pattern >> (8 * (7 - i)));
 	Pixmap stipple = XCreateBitmapFromData(Xdisplay, w.GetDrawable(), bd, 8, 8);
 	Point offset = w.GetOffset();
 	GC gc = XCreateGC(Xdisplay, w.GetDrawable(), 0, 0);

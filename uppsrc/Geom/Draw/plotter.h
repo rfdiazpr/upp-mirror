@@ -308,7 +308,7 @@ public:
 	virtual void   Paint(); // flush & clear paint buffer
 	virtual void   Clear(); // clear paint buffer
 
-	void           Set(const Plotter& info, Color fill_color = Black, const Image& fill_pattern = Image(),
+	void           Set(const Plotter& info, Color fill_color = Black, uint64 fill_pattern = 0,
 		const String& outline_pattern = Null, Color outline_color = Black,
 		int outline_width = -10, double outline_dash = Null);
 
@@ -369,7 +369,7 @@ private:
 	Color          fill_outline_color;
 	int            fill_outline_style;
 	Color          thick_outline_color;
-	Image          fill_pattern;
+	uint64         fill_pattern;
 	Color          fill_color;
 };
 

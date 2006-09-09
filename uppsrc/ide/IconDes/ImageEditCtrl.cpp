@@ -1286,8 +1286,7 @@ void ImageEditCtrl::PaintFrame(Draw& draw, const Rect& rc) const
 		Rect out = ImageToClient(rc);
 		out.right++;
 		out.bottom++;
-		static word pattern[] = { 0xF0F0, 0x7878, 0x3C3C, 0x1E1E, 0x0F0F, 0x8787, 0xC3C3, 0xE1E1 };
-		DrawDragRect(draw, out, Null, out, 1, SColorPaper, pattern);
+		DrawDragRect(draw, out, Null, out, 1, SColorPaper, INT64(0xF0783C1E0F87C3E1));
 	}
 }
 

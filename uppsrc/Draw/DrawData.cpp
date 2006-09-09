@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+#define LTIMING(x)
+
 VectorMap<String, void *>& DataDrawer::Map()
 {
 	static VectorMap<String, void *> x;
@@ -26,7 +28,7 @@ One<DataDrawer> DataDrawer::Create(const String& id)
 
 bool IsEqColumn(const Image& m, int x, RGBA c)
 {
-	RTIMING("IsEqColumn");
+	LTIMING("IsEqColumn");
 	Size sz = m.GetSize();
 	const RGBA *s = ~m + x;
 	if(c.a != 255)
@@ -40,41 +42,49 @@ bool IsEqColumn(const Image& m, int x, RGBA c)
 	return true;
 }
 
+void DrawImageBandRLE(Draw& w, int x, int y, const Image& m, int minp)
+{
+	int xi = 0;
+	int cx = m.GetWidth();
+	int ccy = m.GetHeight();
+	Buffer<bool> todo(cx, true);
+	while(xi < cx) {
+		int xi0 = xi;
+		RGBA c = m[0][xi0];
+		while(w.Dots() && IsEqColumn(m, xi, c) && xi < cx)
+			xi++;
+		if(xi - xi0 >= 16) {
+			w.DrawRect(x + xi0, y, xi - xi0, ccy, c);
+			Fill(~todo + xi0, ~todo + xi, false);
+		}
+		xi++;
+	}
+	xi = 0;
+	while(xi < cx)
+		if(todo[xi]) {
+			int xi0 = xi;
+			while(xi < cx && todo[xi] && xi - xi0 < 2000)
+				xi++;
+			w.DrawImage(x + xi0, y, Crop(m, xi0, 0, xi - xi0, ccy));
+		}
+		else
+			xi++;
+}
+
 void Draw::DrawDataOp(int x, int y, int cx, int cy, const String& data, const char *id)
 {
 	One<DataDrawer> dd = DataDrawer::Create(id);
 	if(dd) {
 		dd->Open(data, cx, cy);
-		if(cx * cy > 2048*2048) {
+		if(cx > 2048 || cy > 2048) {
 			int yy = 0;
-			int rcd = 0;
-			int imd = 0;
 			while(yy < cy) {
 				int ccy = min(cy - yy, 16);
 				ImageBuffer ib(cx, ccy);
 				dd->Render(ib);
-				Image m = ib;
-				int xi = 0;
-				while(xi < cx) {
-					int xi0 = xi;
-					RGBA c = m[0][xi0];
-					while(IsEqColumn(m, xi, c) && xi < cx)
-						xi++;
-					if(xi - xi0 >= 16) {
-						DrawRect(x + xi0, y + yy, xi - xi0, ccy, Color(c.r, c.g, c.b)); //TODO - Color RGBA conversion
-						rcd += xi - xi0;
-						xi0 = xi;
-					}
-					while(!IsEqColumn(m, xi, m[0][xi]) && xi < cx)
-						xi++;
-					if(xi - xi0 > 0) {
-						DrawImage(x + xi0, y + yy, Crop(m, xi0, 0, xi - xi0, ccy));
-						imd += xi - xi0;
-					}
-				}
+				DrawImageBandRLE(*this, x, y + yy, ib, 16);
 				yy += ccy;
 			}
-			// TODO - maybe "fallback" for case where there are not much "rects" ?
 		}
 		else {
 			ImageBuffer m(cx, cy);

@@ -34,7 +34,6 @@ String XAtomName(Atom atom)
 
 String GetProperty(Window w, Atom property, Atom rtype)
 {
-	LOG("GetProperty!");
 	String result;
 	int format;
 	unsigned long nitems, after = 1;
@@ -283,7 +282,7 @@ void Ctrl::InitX11(const char *display)
 	for(int i = 0; i < nets.GetCount(); i++)
 		_NET_Supported().Add(nets[i]);
 
-	ChSetStyle("detect");
+	ChSync();
 	Ctrl::SetXPStyle();
 	Ctrl::SetFlags(Ctrl::EFFECT_SLIDE | Ctrl::DRAGFULLWINDOW | Ctrl::DROPSHADOWS | Ctrl::ALTACCESSKEYS);
 

@@ -145,12 +145,6 @@ public:
 	virtual void            UserZoomFull();
 	void                    UserZoom(const Rectf& rc, bool keep_ratio = true);
 
-	void                    PickShortDragDrop(One<PlotterDragDrop> sdd);
-	One<PlotterDragDrop>    ClearShortDragDrop();
-	PlotterDragDrop        *GetShortDragDrop()               { return ~short_drag_drop; }
-	const PlotterDragDrop  *GetShortDragDrop() const         { return ~short_drag_drop; }
-	void                    EndShortDragDrop();
-
 	void                    PickDragDrop(One<PlotterDragDrop> dd);
 	One<PlotterDragDrop>    ClearDragDrop();
 	PlotterDragDrop        *GetDragDrop()                    { return ~drag_drop; }
@@ -209,7 +203,6 @@ private:
 private:
 	TimeCallback            tcb_refresh;
 	Size                    old_size;
-	One<PlotterDragDrop>    short_drag_drop;
 	One<PlotterDragDrop>    drag_drop;
 	Pointf                  drag_start;
 	HScrollBar              hscroll;
@@ -225,25 +218,21 @@ private:
 template <class T>
 inline const T *GetDragDrop(const PlotterCtrl *ctrl, T * = 0)
 {
-	if(const T *p = dynamic_cast<const T *>(ctrl -> GetShortDragDrop()))
+	if(const T *p = dynamic_cast<const T *>(ctrl->GetShortDragDrop()))
 		return p;
-	return dynamic_cast<const T *>(ctrl -> GetDragDrop());
+	return dynamic_cast<const T *>(ctrl->GetDragDrop());
 }
 
 template <class T>
 inline T *GetDragDrop(PlotterCtrl *ctrl, T * = 0)
 {
-	if(T *p = dynamic_cast<T *>(ctrl -> GetShortDragDrop()))
-		return p;
-	return dynamic_cast<T *>(ctrl -> GetDragDrop());
-
+	return dynamic_cast<T *>(ctrl->GetDragDrop());
 }
 
 template <class T>
 inline bool IsDragDrop(const PlotterCtrl *ctrl, T * = 0)
 {
-	return dynamic_cast<const T *>(ctrl -> GetShortDragDrop())
-	|| dynamic_cast<const T *>(ctrl -> GetDragDrop());;
+	return dynamic_cast<const T *>(ctrl->GetDragDrop());;
 }
 // make member template as soon as possible
 

@@ -245,7 +245,7 @@ public:
 	void         DrawPolyPolyPolygon(const Point *vertices, int vertex_count,
 		const int *subpolygon_counts, int subpolygon_count_count,
 		const int *disjunct_polygon_counts, int disjunct_polygon_count_count,
-		Color color = Black, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+		Color color = Black, int width = 0, Color outline = Null, uint64 pattern = 0, Color doxor = Null);
 
 private:
 	struct CharPos : Moveable<CharPos>   { word fi, ci; };

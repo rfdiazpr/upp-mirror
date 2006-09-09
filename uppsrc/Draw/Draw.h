@@ -634,7 +634,7 @@ public:
 	                                   const int *subpolygon_counts, int scc,
 	                                   const int *disjunct_polygon_counts, int dpcc,
 	                                   Color color, int width, Color outline,
-	                                   Image image, Color doxor);
+	                                   uint64 pattern, Color doxor);
 	virtual void DrawArcOp(const Rect& rc, Point start, Point end, int width, Color color);
 #endif
 	virtual void DrawEllipseOp(const Rect& r, Color color, int pen, Color pencolor);
@@ -714,29 +714,29 @@ public:
 		                       const int *subpolygon_counts, int subpolygon_count_count,
 		                       const int *disjunct_polygon_counts, int disjunct_polygon_count_count,
 		                       Color color = DefaultInk, int width = 0, Color outline = Null,
-		                       Image image = Null, Color doxor = Null)
+		                       uint64 pattern = 0, Color doxor = Null)
 	{ DrawPolyPolyPolygonOp(vertices, vertex_count, subpolygon_counts, subpolygon_count_count,
 		                  disjunct_polygon_counts, disjunct_polygon_count_count,
-		                  color, width, outline, image, doxor); }
+		                  color, width, outline, pattern, doxor); }
 
 	void   DrawPolyPolyPolygon(const Vector<Point>& vertices,
 	                           const Vector<int>& subpolygon_counts,
 	                           const Vector<int>& disjunct_polygon_counts,
-	                           Color color = DefaultInk, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	                           Color color = DefaultInk, int width = 0, Color outline = Null, uint64 pattern = 0, Color doxor = Null);
 	void   DrawPolyPolygon(const Point *vertices, int vertex_count,
 	                       const int *subpolygon_counts, int subpolygon_count_count,
-	                       Color color = DefaultInk, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	                       Color color = DefaultInk, int width = 0, Color outline = Null, uint64 pattern = 0, Color doxor = Null);
 	void   DrawPolyPolygon(const Vector<Point>& vertices, const Vector<int>& subpolygon_counts,
-	                       Color color = DefaultInk, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	                       Color color = DefaultInk, int width = 0, Color outline = Null, uint64 pattern = 0, Color doxor = Null);
 	void   DrawPolygons(const Point *vertices, int vertex_count,
 	                    const int *polygon_counts, int polygon_count_count,
-	                    Color color = DefaultInk, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	                    Color color = DefaultInk, int width = 0, Color outline = Null, uint64 pattern = 0, Color doxor = Null);
 	void   DrawPolygons(const Vector<Point>& vertices, const Vector<int>& polygon_counts,
-	                    Color color = DefaultInk, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	                    Color color = DefaultInk, int width = 0, Color outline = Null, uint64 pattern = 0, Color doxor = Null);
 	void   DrawPolygon(const Point *vertices, int vertex_count,
-	                   Color color = DefaultInk, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	                   Color color = DefaultInk, int width = 0, Color outline = Null, uint64 pattern = 0, Color doxor = Null);
 	void   DrawPolygon(const Vector<Point>& vertices,
-	                   Color color = DefaultInk, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	                   Color color = DefaultInk, int width = 0, Color outline = Null, uint64 pattern = 0, Color doxor = Null);
 #endif
 
 	void DrawDrawing(const Rect& r, const Drawing& iw) { DrawDrawingOp(r, iw); }
@@ -831,6 +831,8 @@ private:
 	Draw(const Draw&);
 	void operator=(const Draw&);
 };
+
+void DrawImageBandRLE(Draw& w, int x, int y, const Image& m, int minp);
 
 class DataDrawer {
 	typedef DataDrawer *(*Factory)();
@@ -953,7 +955,7 @@ public:
 	                                   const int *subpolygon_counts, int scc,
 	                                   const int *disjunct_polygon_counts, int dpcc,
 	                                   Color color, int width, Color outline,
-	                                   Image image, Color doxor);
+	                                   uint64 pattern, Color doxor);
 	virtual void DrawEllipseOp(const Rect& r, Color color, int pen, Color pencolor);
 	virtual void DrawArcOp(const Rect& rc, Point start, Point end, int pen, Color pencolor);
 	virtual void DrawTextOp(int x, int y, int angle, const wchar *text, Font font,
@@ -1107,8 +1109,7 @@ void DrawHighlightImage(Draw& w, int x, int y, const Image& img, bool highlight 
 
 Color GradientColor(Color fc, Color tc, int i, int n);
 
-void DrawDragRect(Draw& w, const Rect& rect1, const Rect& rect2, const Rect& clip, int n,
-                  Color color, const word *pattern);
+void DrawDragRect(Draw& w, const Rect& rect1, const Rect& rect2, const Rect& clip, int n, Color color, uint64 pattern);
 
 enum {
 	BUTTON_NORMAL, BUTTON_OK, BUTTON_HIGHLIGHT, BUTTON_PUSH, BUTTON_DISABLED, BUTTON_CHECKED,

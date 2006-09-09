@@ -145,6 +145,7 @@ void DropList::Paint(Draw& w) {
 	const Display& d = valuedisplay ? *valuedisplay : i >= 0 ? list.GetDisplay(i, 0)
 	                                                         : list.GetDisplay(0);
 	if(i >= 0) v = list.Get(i, 0);
+	v = valueconvert->Format(v);
 	Size sz = GetSize();
 	bool f = HasFocus() && !push;
 	Rect r = Rect(sz);
@@ -331,6 +332,43 @@ void  DropList::SetValue(const Value& v) {
 		SetValue(i, v);
 }
 
+DropList& DropList::SetConvert(const Convert& cv)
+{
+	list.ColumnAt(0).SetConvert(cv);
+	valueconvert = &cv;
+	Refresh();
+	return *this;
+}
+
+DropList& DropList::SetDisplay(int i, const Display& d)
+{
+	list.SetDisplay(i, 0, d);
+	Refresh();
+	return *this;
+}
+
+DropList& DropList::SetDisplay(const Display& d)
+{
+	list.ColumnAt(0).SetDisplay(d);
+	Refresh();
+	return *this;
+}
+
+DropList& DropList::SetDisplay(const Display& d, int lcy)
+{
+	SetDisplay(d);
+	SetLineCy(lcy);
+	Refresh();
+	return *this;
+}
+
+DropList& DropList::ValueDisplay(const Display& d)
+{
+	valuedisplay = &d;
+	Refresh();
+	return *this;
+}
+
 void  DropList::Adjust()
 {
 	int i = FindKey(value);
@@ -347,7 +385,7 @@ void DropList::Adjust(const Value& k)
 
 Value DropList::Format(const Value& q) const {
 	int i = FindKey(q);
-	return i < 0 ? Null : GetValue(i);
+	return valueconvert->Format(i < 0 ? Null : GetValue(i));
 }
 
 DropList::DropList() {
@@ -357,6 +395,7 @@ DropList::DropList() {
 	list.WhenCancel = callback(this, &DropList::Cancel);
 	EnableDrop(false);
 	displayall = false;
+	valueconvert = &NoConvert();
 	valuedisplay = NULL;
 	dropfocus = false;
 	push = false;

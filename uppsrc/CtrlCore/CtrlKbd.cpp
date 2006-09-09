@@ -198,6 +198,7 @@ bool Ctrl::SetFocus0(bool activate)
 
 bool Ctrl::SetFocus()
 {
+	LLOG("Ctrl::SetFocus(" << Name() << ")");
 	return SetFocus0(true);
 }
 

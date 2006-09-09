@@ -396,6 +396,8 @@ void RichQtfParser::TableFormat(bool bw)
 		case '@': t.format.color = GetColor(); break;
 		case 'R': t.format.bordercolor = GetColor(); break;
 		case '!': t.format = RichCell::Format(); break;
+		case 'k': t.format.keep = true;
+		case 'K': tab.format.keep = true;
 		case 'a':
 			Number2(a, b);
 			if(a >= 0)
@@ -438,6 +440,7 @@ void RichQtfParser::FinishCell()
 		b.vspan = 0;
 		b.hspan = oldtab;
 	}
+	b.format.keep = false;
 }
 
 void RichQtfParser::FinishTable()

@@ -19,14 +19,12 @@ void ClearKbdState_()
 Point GetMousePos()
 {
 	LTIMING("GetMousePos");
-	if(IsNull(Ctrl::mousePos)) {
-	}
 	return Ctrl::mousePos;
 }
 
 void Ctrl::SyncMousePos()
 {
-	TIMING("XQueryPointer");
+	LTIMING("XQueryPointer");
 	int x, y, xx, yy;
 	unsigned int mask;
 	Window dm1, dm2;

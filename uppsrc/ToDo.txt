@@ -1,3 +1,21 @@
+* Output mode in Linux should have better settings!
+
+* ImageView in Linuxu does not work
+
+* uppsrc/TCtrlLib/appdoc.tpp/DlgCalc$cs-cz.tpp
+
+* DrawingObject storage
+
+* BinFindIndex!!!
+
+* Chinesse font names
+
+* uvs2 - save version
+
+* Class browser - ArrayCtrl at the end, starts with Ctrl
+
+* PLPL?
+
 * ' ' in compiler options:
 	gcc -P -w -O0 -g3 -Wall -fmessage-length=0 -c eggtrayicon.c -o bin/eggtrayicon.o `pkg-config gtk+-2.0 --cflags`
 	http://www.arilect.com/upp/forum/index.php?t=msg&goto=4963&#msg_4963

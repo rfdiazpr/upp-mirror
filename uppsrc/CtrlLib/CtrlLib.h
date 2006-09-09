@@ -42,5 +42,6 @@ class Bar;
 #include <CtrlLib/CtrlUtil.h>
 #include <CtrlLib/Lang.h>
 
+#include <CtrlLib/Ch.h>
 
 #endif

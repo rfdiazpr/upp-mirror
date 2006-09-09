@@ -130,19 +130,17 @@ Raster::Info BMPRaster::GetInfo()
 
 Raster::Line BMPRaster::GetLine(int line)
 {
-	RGBA *l = new RGBA[size.cx];
+	byte *ptr = new byte[row_bytes];
 	if(!IsError()) {
 		Stream& stream = GetStream();
 		topdown = false;
 		stream.Seek(soff + (topdown ? line * row_bytes : (size.cy - line - 1) * row_bytes));
-		if(stream.GetAll(scanline, row_bytes)) {
-			fmt.Read(l, scanline, size.cx, palette);
-			return Line(l, true);
-		}
+		if(stream.GetAll(ptr, row_bytes))
+			return Line(ptr, this, true);
 		SetError();
 	}
-	memset(l, 0, size.cx * sizeof(RGBA));
-	return Line(l, true);
+	memset(ptr, 0, row_bytes);
+	return Line(ptr, this, true);
 }
 
 int BMPRaster::GetPaletteCount()
@@ -153,6 +151,11 @@ int BMPRaster::GetPaletteCount()
 RGBA *BMPRaster::GetPalette()
 {
 	return fmt.GetPaletteCount() ? ~palette : NULL;
+}
+
+const RasterFormat *BMPRaster::GetFormat()
+{
+	return &fmt;
 }
 
 BMPRaster::~BMPRaster()

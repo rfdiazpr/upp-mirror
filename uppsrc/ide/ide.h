@@ -514,6 +514,8 @@ public:
 	int        debuglock;
 	int        hydra1_threads;
 
+	int        chstyle;
+
 	One<IdeDesigner> designer;
 	AssistEditor     editor;
 	CodeEditor       editor2;
@@ -954,6 +956,8 @@ public:
 	void      TopicBack();
 
 	void      SetupBars();
+
+	void      SyncCh();
 
 	EscValue  MacroEditor();
 		void  MacroGetLength(EscEscape& e);

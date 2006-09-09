@@ -551,13 +551,13 @@ static void StreamPolyPolyPolygon(Stream& stream,
 	Vector<Point>& out_vertices, const Point *in_vertices, int vertex_count,
 	Vector<int>& out_subpolygon_counts, const int *in_subpolygon_counts, int subpolygon_count_count,
 	Vector<int>& out_polygon_counts, const int *in_polygon_counts, int polygon_count_count,
-	Color& color, int& width, Color& outline, Image& image, Color& doxor)
+	Color& color, int& width, Color& outline, uint64& pattern, Color& doxor)
 {
 //	static TimingInspector ti("StreamPolyPolygon");
 //	ti.Start();
 	int version = 2;
 	stream / version;
-	stream % color % width % outline % image % doxor;
+	stream % color % width % outline % pattern % doxor;
 //	ti.End();
 	stream % vertex_count % subpolygon_count_count % polygon_count_count;
 	if(polygon_count_count <= 0 || polygon_count_count > subpolygon_count_count
@@ -596,10 +596,8 @@ static void DrawPolyPolygonRaw(Draw& draw, const Point *vertices, int vertex_cou
 		Polygon(draw, (const POINT *)vertices, vertex_count);
 	else if(vertex_count < MAX_POLY)
 		PolyPolygon(draw, (const POINT *)vertices, subpolygon_counts, subpolygon_count_count);
-	else
-	{
-		if(is_inside)
-		{
+	else {
+		if(is_inside) {
 			draw.SetDrawPen(PEN_NULL, Black);
 			Vector<Point> split_vertices;
 			Vector<int> split_counts;
@@ -607,14 +605,12 @@ static void DrawPolyPolygonRaw(Draw& draw, const Point *vertices, int vertex_cou
 				split_vertices, split_counts, draw.GetClip());
 			//!! todo: maxcount for splitpolygon
 			const Point *sv = split_vertices.Begin();
-			for(const int *sc = split_counts.Begin(), *se = split_counts.End(); sc < se; sc++)
-			{
+			for(const int *sc = split_counts.Begin(), *se = split_counts.End(); sc < se; sc++) {
 				Polygon(draw, (const POINT *)sv, *sc);
 				sv += *sc;
 			}
 		}
-		if(outline_width != PEN_NULL)
-		{
+		if(outline_width != PEN_NULL) {
 			draw.DrawPolyPolyline(vertices, vertex_count, subpolygon_counts, subpolygon_count_count,
 				outline_width, outline_color, Null);
 			Buffer<Point> finish(2 * subpolygon_count_count);
@@ -641,8 +637,7 @@ static void FillPolyPolygonRaw(GC gc, Drawable drawable, Rect clip, Point offset
 {
 	enum { MAX_VERTEX_COUNT = 10000 };
 
-	if(subpolygon_count_count == 1 && vertex_count <= MAX_VERTEX_COUNT)
-	{
+	if(subpolygon_count_count == 1 && vertex_count <= MAX_VERTEX_COUNT) {
 		Buffer<XPoint> out_points(vertex_count);
 		const Point *in = vertices;
 		for(XPoint *out = out_points, *end = out + vertex_count; out < end; out++, in++)
@@ -653,8 +648,7 @@ static void FillPolyPolygonRaw(GC gc, Drawable drawable, Rect clip, Point offset
 		XFillPolygon(Xdisplay, drawable, gc,
 			out_points, vertex_count, Nonconvex, CoordModeOrigin);
 	}
-	else
-	{
+	else {
 		Vector<Point> split_vertices;
 		ASSERT(sizeof(XPoint) <= sizeof(Point)); // modify algorithm when not
 		Vector<int> split_counts;
@@ -662,10 +656,8 @@ static void FillPolyPolygonRaw(GC gc, Drawable drawable, Rect clip, Point offset
 			split_vertices, split_counts, clip);
 		const Point *sv = split_vertices.Begin();
 		XPoint *dv = reinterpret_cast<XPoint *>(split_vertices.Begin());
-		for(const int *sc = split_counts.Begin(), *se = split_counts.End(); sc < se; sc++)
-		{
-			for(XPoint *db = dv, *de = dv + *sc; db < de; db++, sv++)
-			{
+		for(const int *sc = split_counts.Begin(), *se = split_counts.End(); sc < se; sc++) {
+			for(XPoint *db = dv, *de = dv + *sc; db < de; db++, sv++) {
 				db -> x = (short)(sv -> x + offset.x);
 				db -> y = (short)(sv -> y + offset.y);
 			}
@@ -678,8 +670,7 @@ static void DrawPolyPolygonRaw(GC gc, Drawable drawable, Point offset,
 	const Point *vertices, int vertex_count,
 	const int *subpolygon_counts, int subpolygon_count_count)
 {
-	for(const int *sp = subpolygon_counts, *se = sp + subpolygon_count_count; sp < se; sp++)
-	{
+	for(const int *sp = subpolygon_counts, *se = sp + subpolygon_count_count; sp < se; sp++) {
 		Buffer<XPoint> segment(*sp + 1);
 		XPoint *out = segment;
 		for(const Point *end = vertices + *sp; vertices < end; vertices++, out++)
@@ -696,7 +687,7 @@ static void DrawPolyPolygonRaw(GC gc, Drawable drawable, Point offset,
 void DrawPolyPolyPolygon(Draw& draw, const Point *vertices, int vertex_count,
 	const int *subpolygon_counts, int subpolygon_count_count,
 	const int *disjunct_polygon_counts, int disjunct_polygon_count_count,
-	Color color, int width, Color outline, Image image, Color doxor)
+	Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
 	if(vertex_count == 0)
 		return;
@@ -704,7 +695,7 @@ void DrawPolyPolyPolygon(Draw& draw, const Point *vertices, int vertex_count,
 #ifdef PLATFORM_WIN32
 	if(PdfDraw *pdf = dynamic_cast<PdfDraw *>(&draw)) {
 		pdf->DrawPolyPolyPolygon(vertices, vertex_count, subpolygon_counts, subpolygon_count_count,
-			disjunct_polygon_counts, disjunct_polygon_count_count, color, width, outline, image, doxor);
+			disjunct_polygon_counts, disjunct_polygon_count_count, color, width, outline, pattern, doxor);
 		return;
 	}
 #endif
@@ -716,7 +707,7 @@ void DrawPolyPolyPolygon(Draw& draw, const Point *vertices, int vertex_count,
 //	LOG("#vertices = " << vertex_count << ", #subpolygons = " << subpolygon_count_count
 //	<< ", #disjunct polygons = " << disjunct_polygon_count_count);
 //	LOG("color = " << Dump(color) << ", width = " << width << ", outline = " << Dump(outline)
-//	<< ", image = " << Dump(image) << ", doxor = " << doxor);
+//	<< ", pattern = " << Dump(pattern) << ", doxor = " << doxor);
 
 #ifdef _DEBUG
 //	for(int v = 0; v < vertex_count; v++)
@@ -733,7 +724,7 @@ void DrawPolyPolyPolygon(Draw& draw, const Point *vertices, int vertex_count,
 			out_vertices, vertices, vertex_count,
 			out_subpolygon_counts, subpolygon_counts, subpolygon_count_count,
 			out_polygon_counts, disjunct_polygon_counts, disjunct_polygon_count_count,
-			color, width, outline, image, doxor);
+			color, width, outline, pattern, doxor);
 		return;
 	}
 //	TIMING("DrawPolyPolygon/hdc");
@@ -759,13 +750,11 @@ void DrawPolyPolyPolygon(Draw& draw, const Point *vertices, int vertex_count,
 	}
 #endif
 
-	for(int i = 0; i < disjunct_polygon_count_count; i++, disjunct_polygon_counts++)
-	{
+	for(int i = 0; i < disjunct_polygon_count_count; i++, disjunct_polygon_counts++) {
 		int poly = *disjunct_polygon_counts;
 		int sub = 1;
 		if(*subpolygon_counts < poly)
-			if(disjunct_polygon_count_count > 1)
-			{
+			if(disjunct_polygon_count_count > 1) {
 				const int *se = subpolygon_counts;
 				int total = 0;
 				while(total < poly)
@@ -775,8 +764,7 @@ void DrawPolyPolyPolygon(Draw& draw, const Point *vertices, int vertex_count,
 			else
 				sub = subpolygon_count_count;
 
-		if(sub > poly)
-		{
+		if(sub > poly) {
 			vertices += poly;
 			subpolygon_counts += sub;
 			continue;
@@ -784,47 +772,31 @@ void DrawPolyPolyPolygon(Draw& draw, const Point *vertices, int vertex_count,
 
 
 #if defined(PLATFORM_WIN32)
-		if(image)
-		{
+		if(pattern) {
 			int old_rop = GetROP2(draw);
 			HGDIOBJ old_brush = GetCurrentObject(draw, OBJ_BRUSH);
+			word wpat[8] = {
+				(byte)(pattern >> 56), (byte)(pattern >> 48), (byte)(pattern >> 40), (byte)(pattern >> 32),
+				(byte)(pattern >> 24), (byte)(pattern >> 16), (byte)(pattern >> 8), (byte)(pattern >> 0),
+			};
+			HBITMAP bitmap = CreateBitmap(8, 8, 1, 1, wpat);
+			HBRUSH brush = ::CreatePatternBrush(bitmap);
 			COLORREF old_bk = GetBkColor(draw);
 			COLORREF old_fg = GetTextColor(draw);
-			if(!is_xor)
-			{
+			if(!is_xor) {
 				SetROP2(draw, R2_MASKPEN);
-			#ifndef NEWIMAGE //TODO
-				SelectObject(draw, image.GetBrush(Null, Null));
-			#endif
+				SelectObject(draw, brush);
 				SetTextColor(draw, Black());
 				SetBkColor(draw, White());
 				DrawPolyPolygonRaw(draw, vertices, poly,
 					subpolygon_counts, sub, true, PEN_NULL, Null);
 				SetROP2(draw, R2_MERGEPEN);
-			#ifndef NEWIMAGE //TODO
-				if(IsNull(color)) // use color fill brush
-					SelectObject(draw, image.GetBrush(Null, Black()));
-				else
-				{ // just change text color
-					SetTextColor(draw, color);
-					SetBkColor(draw, Black());
-				}
-			#endif
+				SetTextColor(draw, color);
+				SetBkColor(draw, Black());
 			}
-			else if(!IsNull(color))
-			{ // colored xor fill with image mask
+			else { // xor fill with pattern data
 				SetROP2(draw, R2_XORPEN);
-				SetTextColor(draw, COLORREF(color) ^ COLORREF(doxor));
-			#ifndef NEWIMAGE //TODO
-				SelectObject(draw, image.GetBrush(Null, Null));
-			#endif
-			}
-			else
-			{ // xor fill with image data
-				SetROP2(draw, R2_XORPEN);
-			#ifndef NEWIMAGE
-				SelectObject(draw, image.GetBrush(Null, Black));
-			#endif
+				SelectObject(draw, brush);
 			}
 			DrawPolyPolygonRaw(draw, vertices, poly,
 				subpolygon_counts, sub, true, PEN_NULL, Null);
@@ -832,6 +804,8 @@ void DrawPolyPolyPolygon(Draw& draw, const Point *vertices, int vertex_count,
 			SetTextColor(draw, old_fg);
 			SetBkColor(draw, old_bk);
 			SetROP2(draw, old_rop);
+			DeleteObject(brush);
+			DeleteObject(bitmap);
 			if(!IsNull(outline))
 			{
 				draw.SetColor(Null);
@@ -893,11 +867,11 @@ static void wsPolyPolyPolygon(Draw& draw, Stream& stream, const DrawingPos& dp)
 //	TIMING("wsPolyPolygon")
 	Color color, outline, doxor;
 	int width;
-	Image image;
+	uint64 pattern;
 	Vector<Point> vertices;
 	Vector<int> subpolygon_counts, polygon_counts;
 	StreamPolyPolyPolygon(stream, vertices, 0, 0,
-		subpolygon_counts, 0, 0, polygon_counts, 0, 0, color, width, outline, image, doxor);
+		subpolygon_counts, 0, 0, polygon_counts, 0, 0, color, width, outline, pattern, doxor);
 	if(!dp.Identity()) {
 		for(int i = 0; i < vertices.GetCount(); i++)
 			dp.Transform(vertices[i]);
@@ -905,65 +879,65 @@ static void wsPolyPolyPolygon(Draw& draw, Stream& stream, const DrawingPos& dp)
 			dp.TransformW(width);
 	}
 	DrawPolyPolyPolygon(draw, vertices, subpolygon_counts, polygon_counts,
-		color, width, outline, image, doxor);
+		color, width, outline, pattern, doxor);
 }
 
 static DrawerRegistrator MK__s(wPolyPolyPolygon, wsPolyPolyPolygon);
 
 void DrawPolyPolyPolygon(Draw& draw, const Vector<Point>& vertices,
 	const Vector<int>& subpolygon_counts, const Vector<int>& disjunct_polygon_counts,
-	Color color, int width, Color outline, Image image, Color doxor)
+	Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
 	DrawPolyPolyPolygon(draw, vertices.Begin(), vertices.GetCount(),
 		subpolygon_counts.Begin(), subpolygon_counts.GetCount(),
 		disjunct_polygon_counts.Begin(), disjunct_polygon_counts.GetCount(),
-		color, width, outline, image, doxor);
+		color, width, outline, pattern, doxor);
 }
 
 void DrawPolyPolygon(Draw& draw, const Point *vertices, int vertex_count,
 	const int *subpolygon_counts, int subpolygon_count_count,
-	Color color, int width, Color outline, Image image, Color doxor)
+	Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
 	DrawPolyPolyPolygon(draw, vertices, vertex_count,
 		subpolygon_counts, subpolygon_count_count, &vertex_count, 1,
-		color, width, outline, image, doxor);
+		color, width, outline, pattern, doxor);
 }
 
 void DrawPolyPolygon(Draw& draw, const Vector<Point>& vertices, const Vector<int>& subpolygon_counts,
-	Color color, int width, Color outline, Image image, Color doxor)
+	Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
 	DrawPolyPolygon(draw, vertices.Begin(), vertices.GetCount(),
 		subpolygon_counts.Begin(), subpolygon_counts.GetCount(),
-		color, width, outline, image, doxor);
+		color, width, outline, pattern, doxor);
 }
 
 void DrawPolygons(Draw& draw, const Point *vertices, int vertex_count, const int *polygon_counts, int polygon_count_count,
-	Color color, int width, Color outline, Image image, Color doxor)
+	Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
 	DrawPolyPolyPolygon(draw, vertices, vertex_count,
 		polygon_counts, polygon_count_count, polygon_counts, polygon_count_count,
-		color, width, outline, image, doxor);
+		color, width, outline, pattern, doxor);
 }
 
 void DrawPolygons(Draw& draw, const Vector<Point>& vertices, const Vector<int>& polygon_counts,
-	Color color, int width, Color outline, Image image, Color doxor)
+	Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
 	DrawPolygons(draw, vertices.Begin(), vertices.GetCount(),
 		polygon_counts.Begin(), polygon_counts.GetCount(),
-		color, width, outline, image, doxor);
+		color, width, outline, pattern, doxor);
 }
 
 void DrawPolygon(Draw& draw, const Point *vertices, int vertex_count,
-	Color color, int width, Color outline, Image image, Color doxor)
+	Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
 	DrawPolyPolyPolygon(draw, vertices, vertex_count,
-		&vertex_count, 1, &vertex_count, 1, color, width, outline, image, doxor);
+		&vertex_count, 1, &vertex_count, 1, color, width, outline, pattern, doxor);
 }
 
 void DrawPolygon(Draw& draw, const Vector<Point>& vertices,
-	Color color, int width, Color outline, Image image, Color doxor)
+	Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
-	DrawPolygon(draw, vertices.Begin(), vertices.GetCount(), color, width, outline, image, doxor);
+	DrawPolygon(draw, vertices.Begin(), vertices.GetCount(), color, width, outline, pattern, doxor);
 }
 
 /*

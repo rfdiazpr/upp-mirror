@@ -121,6 +121,8 @@ private:
 		HBITMAP     hmask;
 		HBITMAP     himg;
 		RGBA       *section;
+
+		void CreateHBMP(HDC dc);
 #endif
 
 #ifdef PLATFORM_X11

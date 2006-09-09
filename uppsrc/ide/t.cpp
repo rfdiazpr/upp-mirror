@@ -83,6 +83,12 @@ bool LngParseTFile(const String& fn, VectorMap<String, LngEntry>& lng)
 	String data = LoadFile(fn);
 	CParser p(data, fn);
 	try {
+		if(p.Char('#'))
+			while(!p.IsEof())
+				if(p.IsChar2('T', '_'))
+					break;
+				else
+					p.SkipTerm();
 		String id;
 		while(!p.IsEof()) {
 			if(p.Id("T_")) {
@@ -126,6 +132,7 @@ String CreateTFile(const VectorMap<String, LngEntry>& map, const Vector<int>& ln
 {
 	String out;
 	String cfile;
+	out << "#ifdef _MSC_VER\r\n#pragma setlocale(\"C\")\r\n#endif";
 	for(int i = 0; i < map.GetCount(); i++) {
 		if(i) out << "\r\n";
 		const LngEntry& e = map[i];

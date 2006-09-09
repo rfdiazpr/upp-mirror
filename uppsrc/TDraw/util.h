@@ -59,24 +59,24 @@ void   DrawPolyPolyPolygon(Draw& draw,
 	const Point *vertices, int vertex_count,
 	const int *subpolygon_counts, int subpolygon_count_count,
 	const int *disjunct_polygon_counts, int disjunct_polygon_count_count,
-	Color color = Black, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	Color color = Black, int width = 0, Color outline = Null, uint64 pattern = 0, Color doxor = Null);
 void   DrawPolyPolyPolygon(Draw& draw,
 	const Vector<Point>& vertices, const Vector<int>& subpolygon_counts, const Vector<int>& disjunct_polygon_counts,
-	Color color = Black, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	Color color = Black, int width = 0, Color outline = Null, uint64 pattern = 0, Color doxor = Null);
 void   DrawPolyPolygon(Draw& draw,
 	const Point *vertices, int vertex_count, const int *subpolygon_counts, int subpolygon_count_count,
-	Color color = Black, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	Color color = Black, int width = 0, Color outline = Null, uint64 pattern = 0, Color doxor = Null);
 void   DrawPolyPolygon(Draw& draw, const Vector<Point>& vertices, const Vector<int>& subpolygon_counts,
-	Color color = Black, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	Color color = Black, int width = 0, Color outline = Null, uint64 pattern = 0, Color doxor = Null);
 void   DrawPolygons(Draw& draw,
 	const Point *vertices, int vertex_count, const int *polygon_counts, int polygon_count_count,
-	Color color = Black, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	Color color = Black, int width = 0, Color outline = Null, uint64 pattern = 0, Color doxor = Null);
 void   DrawPolygons(Draw& draw, const Vector<Point>& vertices, const Vector<int>& polygon_counts,
-	Color color = Black, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	Color color = Black, int width = 0, Color outline = Null, uint64 pattern = 0, Color doxor = Null);
 void   DrawPolygon(Draw& draw, const Point *vertices, int vertex_count,
-	Color color = Black, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	Color color = Black, int width = 0, Color outline = Null, uint64 pattern = 0, Color doxor = Null);
 void   DrawPolygon(Draw& draw, const Vector<Point>& vertices,
-	Color color = Black, int width = 0, Color outline = Null, Image image = Null, Color doxor = Null);
+	Color color = Black, int width = 0, Color outline = Null, uint64 pattern = 0, Color doxor = Null);
 
 //////////////////////////////////////////////////////////////////////
 

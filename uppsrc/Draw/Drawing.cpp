@@ -201,14 +201,14 @@ void DrawingDraw::DrawPolyPolylineOp(const Point *vertices, int vertex_count,
 void DrawingDraw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
 	                   const int *subpolygon_counts, int subpolygon_count_count,
 	                   const int *disjunct_polygon_counts, int disjunct_polygon_count_count,
-	                   Color color, int width, Color outline, Image image, Color doxor)
+	                   Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
 	if(vertex_count == 0)
 		return;
 	DrawingOp(DRAWPOLYPOLYPOLYGON);
 	int version = 2;
 	drawing / version;
-	drawing % color % width % outline % image % doxor;
+	drawing % color % width % outline % pattern % doxor;
 	drawing % vertex_count % subpolygon_count_count % disjunct_polygon_count_count;
 	StreamPackPoints(drawing, vertices, vertex_count);
 	StreamPackInts(drawing, subpolygon_counts, subpolygon_count_count);
@@ -420,11 +420,11 @@ static void wsDrawPolyPolyline(Draw& w, Stream& stream, const DrawingPos& dp)
 static void wsDrawPolyPolyPolygon(Draw& w, Stream& stream, const DrawingPos& dp)
 {
 	Color color, outline, doxor;
-	Image image;
+	uint64 pattern;
 	int width, vertex_count, subpolygon_count_count, disjunct_polygon_count_count;
 	int version = 2;
 	stream / version;
-	stream % color % width % outline % image % doxor;
+	stream % color % width % outline % pattern % doxor;
 	stream % vertex_count % subpolygon_count_count % disjunct_polygon_count_count;
 	Buffer<Point> vertices(vertex_count);
 	Buffer<int> subpolygon_counts(subpolygon_count_count);
@@ -435,7 +435,7 @@ static void wsDrawPolyPolyPolygon(Draw& w, Stream& stream, const DrawingPos& dp)
 	w.DrawPolyPolyPolygon(vertices, vertex_count,
 		                  subpolygon_counts, subpolygon_count_count,
 		                  disjunct_polygon_counts, disjunct_polygon_count_count,
-		                  color, width, outline, image, doxor);
+		                  color, width, outline, pattern, doxor);
 }
 
 static void wsDrawArc(Draw& w, Stream& s, const DrawingPos& ps)

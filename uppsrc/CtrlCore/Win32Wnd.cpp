@@ -239,7 +239,7 @@ void Ctrl::InitWin32(HINSTANCE hInstance)
 	ILOG("Windows");
 	Windows(); //?? TRC: what's the use of this?
 
-	ChSetStyle("detect");
+	ChSync();
 
 /* TRC 05/11/14: moved to GuiSleep to avoid thread creation in OCX DllMain
 	DWORD dummy;
@@ -536,8 +536,10 @@ LRESULT CALLBACK Ctrl::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			int ticks = msecs();
 			String wname = w->Name();
 #endif
+			Ptr<Ctrl> pw = w;
 			l = w->WindowProc(message, wParam, lParam);
-			w->SyncMoves();
+			if(pw)
+				pw->SyncMoves();
 #if defined(_DEBUG) && LOGTIMING
 			String msgname;
 			for(WinMsg *m = sWinMsg; m->ID; m++)

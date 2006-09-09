@@ -164,7 +164,7 @@ static void jpeg_stream_src(j_decompress_ptr cinfo, Stream& stream)
 static void error_exit(j_common_ptr cinfo)
 {
 	(*cinfo -> err -> output_message)(cinfo);
-	LOG("Error exit!");
+	LLOG("Error exit!");
 	throw Exc();
 }
 
@@ -283,7 +283,6 @@ Raster::Info JPGRaster::Data::GetInfo()
 
 Raster::Line JPGRaster::Data::GetLine(int line)
 {
-	DUMP(line);
 	try {
 		ASSERT(line >= 0 && line < size.cy);
 		if(line < next_line) {

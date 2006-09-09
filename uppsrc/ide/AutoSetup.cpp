@@ -57,7 +57,7 @@ void AutoSetup()
 
 	dlg.sdk <<= NormalizePathNN(GetWinRegString("Install Dir", "SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3"));
 	dlg.mysql <<= NormalizePathNN(GetWinRegString("Location", "SOFTWARE\\MySQL AB\\MySQL Server 4.1"));
-	
+
 	String sdl = NormalizePathNN(ConfigFile("SDL-1.2.9"));
 	if(DirectoryExists(sdl))
 		dlg.sdl <<= sdl;

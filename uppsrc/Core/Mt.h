@@ -107,7 +107,7 @@ inline void AtomicWrite(volatile Atomic& t, int data) { t = data; }
 
 inline int  AtomicInc(volatile Atomic& t)             { ++t; return t; }
 inline int  AtomicDec(volatile Atomic& t)             { --t; return t; }
-inline int  AtomicXAdd(volatile Atomic& t, int incr)  { Atomic x = t; t += incr; return t; }
+inline int  AtomicXAdd(volatile Atomic& t, int incr)  { Atomic x = t; t += incr; return x; }
 
 class CriticalSection {
 public:

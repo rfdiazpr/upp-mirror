@@ -199,6 +199,7 @@ void HelpDialogFrame::FrameRemove()
 	close.Remove();
 }
 
+/*
 Drawing CtrlToDrawing(Ctrl *ctrl, Point arrow, Image arrow_image)
 {
 	Size size = ctrl->GetRect().Size();
@@ -228,6 +229,7 @@ Drawing CtrlToDrawing(Ctrl *ctrl, Point arrow, Image arrow_image)
 
 	return dwg;
 }
+*/
 
 Image CtrlToStillImage(Ctrl *ctrl, Point arrow, Image arrow_image)
 {
@@ -250,10 +252,8 @@ Image CtrlToStillImage(Ctrl *ctrl, Point arrow, Image arrow_image)
 		rc = Rect(lt, rb);
 	}
 	HDC sdc = GetWindowDC(0);
-	Draw draw(sdc);
-#ifndef NEWIMAGE
-	img = DrawToImage(draw, rc);
-#endif
+	ImageDraw idraw(rc.Size());
+	BitBlt(idraw, 0, 0, rc.Width(), rc.Height(), sdc, rc.left, rc.top, SRCCOPY);
 	ReleaseDC(0, sdc);
 	if(!IsNull(arrow)) {
 		Point p(0, 0);
@@ -261,11 +261,9 @@ Image CtrlToStillImage(Ctrl *ctrl, Point arrow, Image arrow_image)
 		arrow += p - wrc.TopLeft();
 		Image im = Nvl(arrow_image, Image::Arrow());
 		arrow -= im.GetHotSpot();
-	#ifndef NEWIMAGE
-		ImageDraw idraw(img);
 		idraw.DrawImage(arrow.x, arrow.y, im);
-	#endif
 	}
+	img = idraw;
 #endif
 	return img;
 }

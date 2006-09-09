@@ -660,13 +660,18 @@ void ScrollBars::FramePaint(Draw& w, const Rect& r) {
 
 void ScrollBars::FrameLayout(Rect& r) {
 	int h = ScrollBarSize();
-	int b = x.IsShown() && y.IsShown() ? h : 0;
+	int by = 0;
+	int bx = x.IsShown() && y.IsShown() ? h : 0;
+	if(box_type == 1)
+		by = bx;
+	if(box_type == 2)
+		by = h;
 	int dx = x.IsShown() * h;
 	int dy = y.IsShown() * h;
-	y.SetFrameRect(r.right - dy, r.top, dy, r.Height() - b);
-	x.SetFrameRect(r.left, r.bottom - dx, r.Width() - b, dx);
+	y.SetFrameRect(r.right - dy, r.top, dy, r.Height() - by);
+	x.SetFrameRect(r.left, r.bottom - dx, r.Width() - bx, dx);
 	if(box)
-		box->SetFrameRect(r.right - b, r.bottom - b, b, b);
+		box->SetFrameRect(r.right - by, r.bottom - by, by, by);
 	r.right -= dy;
 	r.bottom -= dx;
 }
@@ -685,12 +690,34 @@ Size ScrollBars::GetReducedViewSize() const {
 	return Size(y.GetReducedViewSize().cx, x.GetReducedViewSize().cy);
 }
 
+ScrollBars& ScrollBars::NormalBox()
+{
+	box_type = 1;
+	y.RefreshParentLayout();
+	return *this;
+}
+
+ScrollBars& ScrollBars::NoBox()
+{
+	box_type = 0;
+	y.RefreshParentLayout();
+	return *this;
+}
+
+ScrollBars& ScrollBars::FixedBox()
+{
+	box_type = 2;
+	y.RefreshParentLayout();
+	return *this;
+}
+
 ScrollBars::ScrollBars() {
 	box = &the_box;
 	x.WhenScroll = y.WhenScroll = callback(this, &ScrollBars::Scroll);
 	x.WhenLeftClick = y.WhenLeftClick = Proxy(WhenLeftClick);
 	x.AutoHide();
 	y.AutoHide();
+	box_type = 1;
 }
 
 ScrollBars::~ScrollBars() {}

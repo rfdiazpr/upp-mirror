@@ -1,8 +1,8 @@
 #include "Draw.h"
 #pragma hdrstop
 
-#define LLOG(x)    // LOG(x)
-#define LTIMING(x) // TIMING(x)
+#define LLOG(x)     //LOG(x)
+#define LTIMING(x)  //TIMING(x)
 
 #ifdef PLATFORM_X11
 
@@ -265,7 +265,8 @@ void Draw::SetForeground(Color color)
 	if(IsDrawing()) return;
 	int p = GetXPixel(color.GetR(), color.GetG(), color.GetB());
 	if(p == foreground) return;
-	LTIMING("SetForeground");
+	LTIMING("XSetForeground");
+	LLOG("XSetForeground " << color);
 	foreground = p;
 	XSetForeground(Xdisplay, gc, foreground);
 }
@@ -351,7 +352,6 @@ Draw::Draw(Drawable _dw, GC _gc, const Vector<Rect>& _clip)
 #endif
 {
 	LLOG("Draw");
-//	LLOG(_clip);
 	dw = _dw;
 	gc = _gc;
 #ifdef PLATFORM_XFT

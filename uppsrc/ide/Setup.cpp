@@ -225,6 +225,7 @@ void Ide::SetupFormat() {
 		(ide.assist, editor.auto_assist)
 		(ide.commentdp, editor.commentdp)
 		(ide.hydra1_threads, hydra1_threads)
+		(ide.chstyle, chstyle)
 	;
 	hlt.hlstyle.AddColumn("Style");
 	hlt.hlstyle.AddColumn("Color").Ctrls(HlPusherFactory);
@@ -239,6 +240,8 @@ void Ide::SetupFormat() {
 		hlt.hlstyle.WhenCtrlsAction = ed.WhenAction =
 		con.WhenAction = f1.WhenAction = f2.WhenAction = dlg.Breaker(222);
 	hlt.hl_restore <<= dlg.Breaker(333);
+	for(int i = 0; i < ChGetStyleCount(); i++)
+		ide.chstyle.Add(i, ChGetStyleName(i));
 	for(;;) {
 		int c = dlg.Run();
 		editorfont = ed.Get();
@@ -276,6 +279,7 @@ void Ide::SetupFormat() {
 	}
 	if(editor.auto_assist)
 		StartBrowserBase();
+	SyncCh();
 }
 
 struct MainConfigDlg : public WithConfigLayout<TopWindow> {

@@ -2,3 +2,9 @@
 
 #define  TFILE <CtrlLib/CtrlLib.t>
 #include <Core/t.h>
+
+void CtrlSetChSync(void (*fn)());
+
+INITBLOCK {
+	CtrlSetChSync(ChSync);
+};

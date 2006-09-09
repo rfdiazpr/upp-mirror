@@ -364,4 +364,3 @@ Vector<String> Workspace::GetAllAccepts(int pk) const
 	}
 	return accepts.PickKeys();
 }
-

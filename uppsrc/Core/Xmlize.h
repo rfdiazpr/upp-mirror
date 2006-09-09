@@ -19,11 +19,11 @@ class XmlIO {
 public:
 	bool IsLoading() const { return loading; }
 	bool IsStoring() const { return !loading; }
-	
+
 	XmlNode *operator->()  { return &node; }
-	
+
 	template <class T> XmlIO operator()(const char *tag, T& var);
-	
+
 	template <class T> XmlIO Attr(const char *id, T& var) {
 		if(IsLoading())
 			XmlAttrLoad(var, node.Attr(id));
@@ -31,12 +31,12 @@ public:
 			node.SetAttr(id, XmlAttrStore(var));
 		return *this;
 	}
-	
+
 	XmlIO At(int i)                                    { XmlIO m(node.At(i), IsLoading()); return m; }
 	XmlIO Add()                                        { XmlIO m(node.Add(), IsLoading()); return m; }
 	XmlIO Add(const char *id)                          { XmlIO m(node.Add(id), IsLoading()); return m; }
 	XmlIO GetAdd(const char *id)                       { XmlIO m(node.GetAdd(id), IsLoading()); return m; }
-	
+
 	XmlIO(XmlNode& xml, bool loading) : node(xml), loading(loading) {}
 	XmlIO(XmlIO xml, const char *tag) : node(xml.node.GetAdd(tag)), loading(xml.loading) {}
 };

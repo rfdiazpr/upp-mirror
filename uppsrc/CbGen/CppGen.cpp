@@ -220,7 +220,7 @@ void CallbackGen(String name, String rettype, int n, String extension, String at
 	LOGEND();
 	LOG("};");
 	LOG("");
-	
+
 	if(!IsNull(classdef))
 		LOG("template <" << classdef << ">");
 	LOG("inline " << name_cl << " Proxy(" << name_cl << "& cb)");

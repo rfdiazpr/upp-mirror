@@ -58,4 +58,3 @@ private:
 	{ static HitCountInspector hitcount(n); hitcount.Step(); }
 #define RACTIVATE_TIMING()    TimingInspector::Activate(true);
 #define RDEACTIVATE_TIMING()  TimingInspector::Activate(false);
-

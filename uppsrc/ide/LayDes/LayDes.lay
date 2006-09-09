@@ -71,3 +71,4 @@ LAYOUT(VisGenLayout, 724, 488)
 	ITEM(Button, ok, SetLabel(t_("Copy to clipboard")).LeftPosZ(552, 96).TopPosZ(456, 24))
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).LeftPosZ(652, 64).TopPosZ(456, 24))
 END_LAYOUT
+

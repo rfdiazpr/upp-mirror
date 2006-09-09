@@ -535,7 +535,7 @@ Linux:
 	cxa-at-exit do bm
 
 ======================
-PDF:
+PDF:  
 	Symbol font a ostatni unicode...
 
 ----------------------
@@ -547,3 +547,5 @@ Format
 Qtf
 Frame
 Modal dialog (Breaker, OK, Cancel, for(;;))
+
+

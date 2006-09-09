@@ -114,4 +114,3 @@ void QtfCtrl::Pick(pick_ Document& _doc) {
 	Layout();
 	Refresh();
 }
-

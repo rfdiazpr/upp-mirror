@@ -97,7 +97,7 @@ public:
 
 	const ValueRect& GetValueRect(int i) const        { return vr[i]; }
 	int              GetValueRectCount() const        { return vr.GetCount(); }
-
+	
 	String           GetRtf()                         { return rtf.Get(); }
 
 	DocReport&       Rtf(bool b = true)               { dortf = b; return *this; }

@@ -140,7 +140,7 @@ void LogStream::Create(const char *path, bool append)
 		sprintf(h, ", #%d", part);
 		write(hfile, h, strlen(h));
 	}
-	write(hfile, "\r\n", strlen(h));
+	write(hfile, "\r\n", 2);
 #endif
 }
 

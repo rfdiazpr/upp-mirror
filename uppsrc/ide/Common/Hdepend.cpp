@@ -244,8 +244,8 @@ void Hdepend::ScanFile(const String& path, int map_index) {
 				term++;
 				while(*term && *term != '\n' && (byte)*term <= ' ')
 					term++;
-				if(PeekIL(term) == 'd' + ('e' << 8) + ('f' << 16) + ('i' << 24)
-				&& PeekIW(term + 4) == 'n' + ('e' << 8)) {
+				if(Peek32le(term) == 'd' + ('e' << 8) + ('f' << 16) + ('i' << 24)
+				&& Peek16le(term + 4) == 'n' + ('e' << 8)) {
 					term += 6;
 					while(*term && *term != '\n' && (byte)*term <= ' ')
 						term++;

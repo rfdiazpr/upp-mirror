@@ -47,9 +47,9 @@ bool Speller::Set(const String& _data)
 			data.Clear();
 			return false;
 		}
-		int code = PeekIL(s);
+		int code = Peek32le(s);
 		s += 4;
-		int len = PeekIL(s);
+		int len = Peek32le(s);
 		s += 4;
 		Line& l = line.Add(code);
 		l.begin = (const byte *)s;

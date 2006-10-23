@@ -72,6 +72,8 @@
                                              "(" ct ");",\
                                              "alter table @t drop constraint CHK_@t$" #n ";")
 
+#define SQLDEFAULT(v)              INLINE_ATTRIBUTE("default " #v)
+
 #define TIMESTAMP(ts)              SCHEMA("-- " ts "\n\n", NULL)
 
 #define COMMENT(txt)               SCHEMA("-- " #txt "\n", NULL)

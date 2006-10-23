@@ -6,7 +6,7 @@ void SqlLoad(MapConvert& cv, Sql& sql) {
 		cv.Add(sql[0], sql[1]);
 }
 
-void SqlLoad(MapConvert& cv, const SqlSet& set, SqlSession& ss) {
+void SqlLoad(MapConvert& cv, const SqlSelect& set, SqlSession& ss) {
 	Sql sql(ss);
 	ss.ClearError();
 	sql * set;
@@ -15,7 +15,7 @@ void SqlLoad(MapConvert& cv, const SqlSet& set, SqlSession& ss) {
 }
 
 #ifndef NOAPPSQL
-void operator*=(MapConvert& cv, const SqlSet& set) {
+void operator*=(MapConvert& cv, const SqlSelect& set) {
 	SqlLoad(cv, set);
 }
 #endif
@@ -29,7 +29,7 @@ void SqlLoad(DropList& dl, Sql& sql) {
 			dl.Add(sql[0], sql[1]);
 }
 
-void SqlLoad(DropList& dl, const SqlSet& set, SqlSession& ss) {
+void SqlLoad(DropList& dl, const SqlSelect& set, SqlSession& ss) {
 	Sql sql(ss);
 	ss.ClearError();
 	sql * set;
@@ -38,7 +38,7 @@ void SqlLoad(DropList& dl, const SqlSet& set, SqlSession& ss) {
 }
 
 #ifndef NOAPPSQL
-void operator*=(DropList& dl, const SqlSet& set) {
+void operator*=(DropList& dl, const SqlSelect& set) {
 	SqlLoad(dl, set);
 }
 #endif

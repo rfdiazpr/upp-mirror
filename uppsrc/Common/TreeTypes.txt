@@ -10,3 +10,23 @@ Rect_<int>
 0 0 -1
 Image::Data
 0 0 -1
+String
+0 0 -1
+AString<char,String>
+0 0 -1
+ImageBuffer
+0 0 -1
+ScrollBars
+0 0 -1
+CppItem
+0 0 -1
+CppSimpleItem
+0 0 -1
+Vector<Iml::Data>
+0 0 -1
+Buffer<RGBA>
+0 0 -1
+RGBA
+0 0 -1
+Vector<Image>
+0 0 -1

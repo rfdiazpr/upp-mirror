@@ -126,7 +126,7 @@ bool LayDes::Load(const char *file, byte _charset)
 
 void LayDes::Save()
 {
-	StoreToGlobal(*this, cfgname);
+	StoreToGlobal(*this, "laydes-ctrl");
 
 	if(!IsNull(fileerror))
 		return;

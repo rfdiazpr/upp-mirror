@@ -183,6 +183,7 @@ public:
 };
 
 RichObject CreateDrawingObject(const Drawing& dwg, Size dot_size, Size out_size);
+RichObject CreateImageObject(const Image& img);
 
 struct RichPara;
 
@@ -349,6 +350,8 @@ public:
 
 	QtfRichObject(const RichObject& o);
 };
+
+String AsQTF(const RichObject& obj);
 
 RichText ParseQTF(const char *qtf, bool scolors = false, byte accesskey = 0);
 

@@ -125,7 +125,7 @@ public:
 	TabCtrl& AcceptCurrent(bool ac = true)         { accept_current = ac; return *this; }
 	TabCtrl& AcceptAll()                           { return AcceptCurrent(false); }
 	TabCtrl& Style(Value (*l)(int))                { look = l; Refresh(); return *this; }
-	TabCtrl& Style(Value (*l)(int), int (*m)(int)) { metric = m; RefreshLayout(); return *this; }
+	TabCtrl& Style(Value (*l)(int), int (*m)(int)) { metric = m; RefreshLayout(); return Style(l); }
 
 	void Reset();
 

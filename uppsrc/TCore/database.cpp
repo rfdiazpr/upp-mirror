@@ -418,12 +418,12 @@ void DataColumnVar::SetCount(int count)
 				block.total = 3 * SHORT_BYTES + SHORT_BYTES * to_add + data.GetLength();
 				CDB_ASSERT(block.total >= 4 * SHORT_BYTES && block.total <= MAX_BYTES);
 				char *p = block.buffer.GetBuffer(block.total);
-				PokeIW(p, data.GetLength() + SHORT_BYTES);
+				Poke16le(p, data.GetLength() + SHORT_BYTES);
 				memcpy(p += SHORT_BYTES, data, data.GetLength());
-				PokeIW(p += data.GetLength(), SHORT_BYTES);
+				Poke16le(p += data.GetLength(), SHORT_BYTES);
 				block.offsets = SHORT_BYTES + data.GetLength();
 				for(int i = 0; i <= to_add; i++)
-					PokeIW(p += SHORT_BYTES, block.offsets);
+					Poke16le(p += SHORT_BYTES, block.offsets);
 				block.buffer.ReleaseBuffer(block.total);
 				current_size += block.total;
 				row_count += to_add;
@@ -439,7 +439,7 @@ void DataColumnVar::SetCount(int count)
 				CDB_ASSERT(old_total >= 3 * SHORT_BYTES && old_total <= MAX_BYTES);
 				char *p = block.buffer.GetBuffer(old_total) + block.offsets + SHORT_BYTES * span;
 				for(int i = 0; i < to_add; i++)
-					PokeIW(p += SHORT_BYTES, block.offsets);
+					Poke16le(p += SHORT_BYTES, block.offsets);
 				block.buffer.ReleaseBuffer(old_total);
 				block.raw_dirty = true;
 				current_size += block.total;
@@ -457,9 +457,9 @@ void DataColumnVar::SetCount(int count)
 				block.total = SHORT_BYTES * (batch + 2);
 				CDB_ASSERT(block.total >= 3 * SHORT_BYTES && block.total <= MAX_BYTES);
 				char *p = block.buffer.GetBuffer(block.total);
-				PokeIW(p, block.offsets = SHORT_BYTES);
+				Poke16le(p, block.offsets = SHORT_BYTES);
 				for(int i = 0; i <= batch; i++)
-					PokeIW(p += SHORT_BYTES, SHORT_BYTES);
+					Poke16le(p += SHORT_BYTES, SHORT_BYTES);
 				block.buffer.ReleaseBuffer(block.total);
 				block.raw_dirty = true;
 				current_size += block.total;
@@ -538,8 +538,8 @@ String DataColumnVar::GetRaw(int index)
 		return block.dirty[pos];
 	index -= index_index[last_index];
 	const char *p = block.buffer.Begin() + block.offsets + SHORT_BYTES * index;
-	int offset = PeekIW(p);
-	return String(block.buffer.Begin() + offset, PeekIW(p + SHORT_BYTES) - offset);
+	int offset = Peek16le(p);
+	return String(block.buffer.Begin() + offset, Peek16le(p + SHORT_BYTES) - offset);
 }
 
 void DataColumnVar::SetRaw(int index, String value)
@@ -560,8 +560,8 @@ void DataColumnVar::SetRaw(int index, String value)
 			int offset = SHORT_BYTES;
 			memcpy(buffer + offset, value, value.GetLength());
 			offset += value.GetLength() + GetDataLength(last_index + 1);
-			PokeIW(buffer + offset, SHORT_BYTES);
-			PokeIW(buffer + offset + SHORT_BYTES, SHORT_BYTES + value.GetLength());
+			Poke16le(buffer + offset, SHORT_BYTES);
+			Poke16le(buffer + offset + SHORT_BYTES, SHORT_BYTES + value.GetLength());
 			JoinBlock(last_index, buffer, offset, 1);
 			if(current_size >= cache_size)
 				ClearCache();
@@ -588,8 +588,8 @@ void DataColumnVar::SetRaw(int index, String value)
 	}
 	else {
 		int dx = (index - index_index[last_index]) * SHORT_BYTES + block.offsets;
-		int delta = value.GetLength() - (PeekIW(block.buffer.Begin() + dx + SHORT_BYTES)
-			- PeekIW(block.buffer.Begin() + dx));
+		int delta = value.GetLength() - (Peek16le(block.buffer.Begin() + dx + SHORT_BYTES)
+			- Peek16le(block.buffer.Begin() + dx));
 		current_size += delta;
 		block.total += delta;
 		CDB_ASSERT(block.total >= 3 * SHORT_BYTES);
@@ -626,13 +626,13 @@ void DataColumnVar::FlushCache(int i, int set_span)
 		CDB_ASSERT(offset >= SHORT_BYTES && offset <= MAX_BYTES);
 		if(CanJoin(index, block.total)) {
 			offset += GetDataLength(index + 1);
-			PokeIW(buffer + offset, SHORT_BYTES);
+			Poke16le(buffer + offset, SHORT_BYTES);
 			int count = AddBlock(index, buffer, offset, 0);
 			JoinBlock(index, buffer, offset, count);
 		}
 		else {
-			PokeIW(buffer, offset);
-			PokeIW(buffer + offset, SHORT_BYTES);
+			Poke16le(buffer, offset);
+			Poke16le(buffer + offset, SHORT_BYTES);
 			int count = AddBlock(index, buffer, offset, 0);
 			CDB_ASSERT(offset + (count + 1) * SHORT_BYTES <= MAX_BYTES);
 			datafile->Set(block_index[index], String(buffer, offset + (count + 1) * SHORT_BYTES), id);
@@ -656,9 +656,9 @@ void DataColumnVar::FlushCache(int i, int set_span)
 				}
 				else { // normal block
 					const char *p = block.buffer.Begin() + block.offsets + i * SHORT_BYTES;
-					int off = PeekIW(p);
+					int off = Peek16le(p);
 					CDB_ASSERT(off >= SHORT_BYTES && off < block.buffer.GetLength());
-					length[i] = PeekIW(p + SHORT_BYTES) - off;
+					length[i] = Peek16le(p + SHORT_BYTES) - off;
 					data[i] = block.buffer.Begin() + off;
 				}
 		}
@@ -691,13 +691,13 @@ void DataColumnVar::FlushCache(int i, int set_span)
 					char *p = buffer + dtotal;
 					int sum = SHORT_BYTES * (subspan + 1) + dtotal;
 					int offset = SHORT_BYTES;
-					PokeIW(buffer, dtotal);
-					PokeIW(p, SHORT_BYTES);
+					Poke16le(buffer, dtotal);
+					Poke16le(p, SHORT_BYTES);
 					while(old < i) {
 						int len = length[old];
 						memcpy(buffer + offset, data[old], len);
 						offset += len;
-						PokeIW(p += 2, offset);
+						Poke16le(p += 2, offset);
 						old++;
 					}
 					s = String(buffer, sum);
@@ -752,7 +752,7 @@ int DataColumnVar::FetchCache(int block)
 	Block& new_block = cache.Add();
 //	datafile->CheckIntegrity();
 	new_block.buffer = datafile->Get(block_index[block]);
-	new_block.offsets = PeekIW(new_block.buffer);
+	new_block.offsets = Peek16le(new_block.buffer);
 	CDB_ASSERT(new_block.offsets >= SHORT_BYTES && new_block.offsets < new_block.buffer.GetLength());
 	new_block.total = new_block.buffer.GetLength();
 	new_block.raw_dirty = false;
@@ -790,7 +790,7 @@ int DataColumnVar::GetDataLength(int index) const
 void DataColumnVar::JoinBlock(int index, char *buffer, int offset, int count)
 {
 	CDB_ASSERT(index >= 0 && index + 1 < block_index.GetCount());
-	PokeIW(buffer, offset);
+	Poke16le(buffer, offset);
 	count = AddBlock(index + 1, buffer, offset, count);
 	datafile->Set(block_index[index], String(buffer, offset + (count + 1) * SHORT_BYTES), id);
 	CDB_ASSERT(datafile->GetLength(block_index[index]) >= SHORT_BYTES * (count + 2));
@@ -820,7 +820,7 @@ int DataColumnVar::AddBlock(int index, char *buffer, int offset, int count)
 	CDB_ASSERT(count >= 0 && count < MAX_BYTES);
 
 	int pos_pos = offset + count * SHORT_BYTES;
-	int data_offset = PeekIW(buffer + pos_pos);
+	int data_offset = Peek16le(buffer + pos_pos);
 	int start = index_index[index];
 	int span = index_index[index + 1] - start;
 	int cpos;
@@ -828,17 +828,17 @@ int DataColumnVar::AddBlock(int index, char *buffer, int offset, int count)
 		String singleton = datafile->Get(block_index[index]);
 		memcpy(buffer + data_offset, singleton, singleton.GetLength());
 		CDB_ASSERT(data_offset + singleton.GetLength() == offset);
-		PokeIW(buffer + pos_pos + SHORT_BYTES, offset);
+		Poke16le(buffer + pos_pos + SHORT_BYTES, offset);
 	}
 	else if((cpos = cache_index.Find(index)) < 0) { // non-cached item
 		String item = datafile->Get(block_index[index]);
-		int poff = PeekIW(item);
+		int poff = Peek16le(item);
 		memcpy(buffer + data_offset, item.Begin() + SHORT_BYTES, poff - SHORT_BYTES);
 		const char *src = item.Begin() + poff;
 		char *dest = buffer + pos_pos;
 		int delta = data_offset - SHORT_BYTES;
 		for(int i = 0; i < span; i++)
-			PokeIW(dest += SHORT_BYTES, delta + PeekIW(src += SHORT_BYTES));
+			Poke16le(dest += SHORT_BYTES, delta + Peek16le(src += SHORT_BYTES));
 	}
 	else { // cached item
 		const Block& block = cache[cpos];
@@ -849,20 +849,20 @@ int DataColumnVar::AddBlock(int index, char *buffer, int offset, int count)
 			int c = n - x;
 			if(c > 0) { // unchanged part
 				const char *src = block.buffer.Begin() + block.offsets + SHORT_BYTES * x;
-				int start = PeekIW(src);
+				int start = Peek16le(src);
 				CDB_ASSERT(start >= SHORT_BYTES && start < block.buffer.GetLength());
-				int part = PeekIW(src + SHORT_BYTES * c) - start;
+				int part = Peek16le(src + SHORT_BYTES * c) - start;
 				int delta = data_offset - start;
 				memcpy(buffer + data_offset, block.buffer.Begin() + start, part);
 				for(int i = x; i < n; i++)
-					PokeIW(dest += SHORT_BYTES, delta + PeekIW(src += SHORT_BYTES));
+					Poke16le(dest += SHORT_BYTES, delta + Peek16le(src += SHORT_BYTES));
 				data_offset += part;
 				x = n;
 			}
 			while(x < span && op < order.GetCount() && block.dirty.GetKey(order[op]) == x + start) { // add dirty string
 				const String& s = block.dirty[order[op++]];
 				memcpy(buffer + data_offset, s, s.GetLength());
-				PokeIW(dest += SHORT_BYTES, data_offset += s.GetLength());
+				Poke16le(dest += SHORT_BYTES, data_offset += s.GetLength());
 				x++;
 			}
 		}
@@ -872,7 +872,7 @@ int DataColumnVar::AddBlock(int index, char *buffer, int offset, int count)
 
 void DataColumnVar::CheckBlock(const Block& blk, int index) const
 {
-	int blk_span = (blk.buffer.GetLength() - PeekIW(blk.buffer.Begin())) / SHORT_BYTES - 1;
+	int blk_span = (blk.buffer.GetLength() - Peek16le(blk.buffer.Begin())) / SHORT_BYTES - 1;
 	int ind_span = index_index[index + 1] - index_index[index];
 	CDB_ASSERT(blk_span == ind_span);
 }
@@ -1003,8 +1003,8 @@ Vector<int> DataRowIndex::Add(int count)
 		block_index.Add(x);
 		String content;
 		char *bp = content.GetBuffer(2 * INDEX_BYTES);
-		PokeIL(bp, 0);
-		PokeIL(bp + INDEX_BYTES, count);
+		Poke32le(bp, 0);
+		Poke32le(bp + INDEX_BYTES, count);
 		content.ReleaseBuffer(2 * INDEX_BYTES);
 		datafile->Set(x, content, id);
 		int pos = items.GetCount();
@@ -1036,8 +1036,8 @@ void DataRowIndex::AddAt(int index)
 		block_index.Add(x);
 		String content;
 		char *bp = content.GetBuffer(2 * INDEX_BYTES);
-		PokeIL(bp, 0);
-		PokeIL(bp + INDEX_BYTES, 0);
+		Poke32le(bp, 0);
+		Poke32le(bp + INDEX_BYTES, 0);
 		content.ReleaseBuffer(2 * INDEX_BYTES);
 		datafile->Set(x, content, id);
 		master_dirty = true;

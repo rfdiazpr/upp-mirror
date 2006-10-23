@@ -168,7 +168,7 @@ inline void GetIL(int *ip, int count, const byte *data)
 	}
 #endif
 	for(; --count >= 0; data += 4)
-		*ip++ = PeekIL(data);
+		*ip++ = Peek32le(data);
 }
 
 inline void PutIL(Stream& strm, const int *ip, int count)

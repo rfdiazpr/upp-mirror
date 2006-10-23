@@ -61,6 +61,8 @@ private:
 	bool        topmost;
 #endif
 
+	static  Rect      windowFrameMargin;
+
 private:
 	struct Abreak : Pte<Abreak> {
 		int         ID;
@@ -134,7 +136,7 @@ public:
 	Callback    Acceptor(int ID);
 	Callback    Rejector(int ID);
 
-	TopWindow&  Breaker(Ctrl& m, int ID);
+	TopWindow&  Breaker(Ctrl& m, int ID = -1);
 	TopWindow&  Acceptor(Ctrl& m, int ID);
 	TopWindow&  Rejector(Ctrl& m, int ID);
 
@@ -185,7 +187,7 @@ public:
 	TopWindow& ToolWindow(bool b = true);
 	TopWindow& NoToolWindow()                         { return ToolWindow(false); }
 	bool       IsToolWindow() const                   { return tool; }
-	TopWindow& TopMost(bool b = true);
+	TopWindow& TopMost(bool b = true, bool stay_top = true);
 	TopWindow& NoTopMost()                            { return TopMost(false); }
 	bool       IsTopMost() const;
 	TopWindow& NoAccessKeysDistribution()             { dokeys = false; return *this; }

@@ -6,8 +6,6 @@
 
 #define LTIMING(x)     //TIMING(x)
 
-#define LOGEVENTPROC
-
 static dword sKbdState;
 static dword sModState;
 

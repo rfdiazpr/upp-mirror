@@ -642,8 +642,8 @@ bool DataFile::ReadIndex()
 	for(int i = 0; i < index.GetCount(); i++) {
 		const char *p = raw_index.Begin() + OBJECT_BYTES * i;
 		Object& obj = index[i];
-		if((obj.length = PeekIL(p + OFFSET_BYTES)) > 0) {
-			obj.offset = PeekIL(p);
+		if((obj.length = Peek32le(p + OFFSET_BYTES)) > 0) {
+			obj.offset = Peek32le(p);
 			if(obj.offset < Header::TOTAL || obj.offset >= file_length)
 				return false; // block damaged
 			sum_length += GetBlockSize(obj.length);
@@ -690,7 +690,7 @@ String DataFile::ReadBlock(foff_t offset, int length)
 			ThrowRead();
 		char *od = off = (depth ? ptr + reserve - dl : ptr);
 		while(dl > 0) {
-			foff_t foff = PeekIL(os);
+			foff_t foff = Peek32le(os);
 			os += OFFSET_BYTES;
 			int part = min<int>(dl, BLOCK_BYTES);
 			Read(od, foff, part);
@@ -743,7 +743,7 @@ void DataFile::EnumBlock(Array<Object>& dest, foff_t offset, int length)
 		while(layers[current].index >= layers[current].avail) // finished layer - step up one layer
 			if(++current > layer)
 				return; // done
-		offset = PeekIL(layers[current].Begin() + OFFSET_BYTES * layers[current].index++);
+		offset = Peek32le(layers[current].Begin() + OFFSET_BYTES * layers[current].index++);
 		if(current == 1) { // final block - add to block list
 			length = min<int>(layers[0].count, BLOCK_BYTES);
 			layers[0].count -= length;
@@ -963,7 +963,7 @@ int DataFile::WriteBlock(const String& data)
 			Vector<byte>& v = offset_map[pix];
 			int q = v.GetCount();
 			v.InsertN(q, OFFSET_BYTES);
-			PokeIL(&v[q], poff);
+			Poke32le(&v[q], poff);
 			if(v.GetCount() < BLOCK_BYTES)
 				break;
 			poff = AllocatePart(BLOCK_BYTES);
@@ -988,7 +988,7 @@ int DataFile::WriteBlock(const String& data)
 			return poff;
 		int q = offset_map[t].GetCount();
 		offset_map[t].InsertN(q, OFFSET_BYTES);
-		PokeIL(&offset_map[t][q], poff);
+		Poke32le(&offset_map[t][q], poff);
 	}
 }
 

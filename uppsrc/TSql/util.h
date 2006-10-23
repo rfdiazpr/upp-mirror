@@ -2,7 +2,6 @@ void __sqltempl__instantiation__(Gate2<int, int>); // a weird compiler bug
 
 #define DEFID(x)    const Id x(#x);
 #define _DEFID(x)   const Id _##x(#x);
-#define SQLID(x)    const SqlId x(#x);
 #define _SQLID(x)   const SqlId _##x(#x);
 
 const SqlId& ALL(); // <*>
@@ -39,8 +38,8 @@ String                GetSchemaInsertString(Fields nf, bool optimize = true);
 void                  InsertScript(SqlSchema& schema, Fields nf, bool optimize = true);
 void                  InsertSchemaScript(SqlSchema& schema, Fields nf, bool optimize = true);
 
-SqlSet                SelectTable(Fields nf);
-SqlSet                SelectSchemaTable(Fields nf);
+SqlSelect             SelectTable(Fields nf);
+SqlSelect             SelectSchemaTable(Fields nf);
 SqlSelect             SelectColumns(Fields nf);
 
 Value                 GetValue(Fields nf, SqlId field);
@@ -67,7 +66,7 @@ void                  ForceSchemaUpdate(Fields nf, SqlId key, const Value& keyva
 void                  ForceSchemaUpdate(SqlId table, Fields nf, SqlId key, const Value& keyval, Sql& cursor APPSQLCURSOR);
 void                  ForceSchemaDelete(SqlId table, SqlId key, const Value& keyval, Sql& cursor APPSQLCURSOR);
 
-bool                  IsNotEmpty(const SqlSet& select, Sql& cursor APPSQLCURSOR);
+bool                  IsNotEmpty(const SqlSelect& select, Sql& cursor APPSQLCURSOR);
 bool                  IsNotEmpty(const SqlVal& table, const SqlBool& cond, Sql& cursor APPSQLCURSOR);
 bool                  IsNotEmpty(const SqlVal& table, SqlId column, const Value& value, Sql& cursor APPSQLCURSOR);
 bool                  IsNotSchemaEmpty(const SqlVal& table, const SqlBool& cond, Sql& cursor APPSQLCURSOR);
@@ -87,14 +86,14 @@ SqlVal                SchemaAlias(const SqlVal& table);
 
 inline SqlInsert      InsertSchema(SqlId table) { return SqlInsert(SqlId(SchemaTableName(~table))); }
 inline SqlUpdate      UpdateSchema(SqlId table) { return SqlUpdate(SqlId(SchemaTableName(~table))); }
-inline SqlSet         DeleteSchema(SqlId table) { return Delete(SqlId(SchemaTableName(~table))); }
-
+inline SqlDelete      DeleteSchema(SqlId table) { return Delete(SqlId(SchemaTableName(~table))); }
+/* use .Hint instead...
 SqlSelect             SelectHint(const char *hint, SqlSet set);
 
 #define E__SelectHint(I)\
 SqlSelect             SelectHint(const char *hint, __List##I(E__SqlVal));
 __Expand(E__SelectHint);
-
+*/
 SqlSet                DeleteHint(const char *hint, const SqlVal& table);
 SqlSet                DeleteSchemaHint(const char *hint, const SqlVal& table);
 

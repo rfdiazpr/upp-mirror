@@ -73,7 +73,7 @@ static String ToQuotedHtml(String s)
 String FormatIP(dword _ip)
 {
 	byte ip[4];
-	PokeML(ip, _ip);
+	Poke32be(ip, _ip);
 	return Format("%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
 }
 

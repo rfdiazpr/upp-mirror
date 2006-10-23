@@ -2,6 +2,8 @@
 
 #define LLOG(x)  // LOG(x)
 
+Rect TopWindow::windowFrameMargin;
+
 String TopWindow::GetDesc() const
 {
 	return title.ToString();
@@ -397,6 +399,15 @@ void TopWindow::SerializePlacement(Stream& s, bool reminimize)
 		limit.top    += rect.top    - outer.top;
 		limit.right  += rect.right  - outer.right;
 		limit.bottom += rect.bottom - outer.bottom;
+#endif
+#ifdef PLATFORM_X11
+		Rect fm = windowFrameMargin;
+		if((fm.left|fm.right|fm.top|fm.bottom) == 0)
+			fm = Rect(8, 32, 8, 8);
+		limit.left += fm.left;
+		limit.right -= fm.right;
+		limit.top += fm.top;
+		limit.bottom -= fm.bottom;
 #endif
 		Size sz = min(rect.Size(), limit.Size());
 		rect = RectC(

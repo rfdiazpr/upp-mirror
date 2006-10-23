@@ -1,6 +1,6 @@
 #include "CtrlCore.h"
 
-#define LLOG(x)  LOG(x)
+#define LLOG(x) // LOG(x)
 
 #ifdef PLATFORM_X11
 
@@ -22,7 +22,7 @@ void Ctrl::Xclipboard::Write(int fmt, const String& _data)
 {
 	LLOG("SetSelectionOwner " << XAtomName(fmt));
 	data.GetAdd(fmt) = _data;
-	if(XGetSelectionOwner(Xdisplay, XAtom("CLIPBOARD") != win))
+//	if(XGetSelectionOwner(Xdisplay, XAtom("CLIPBOARD") != win)) // 20060926 Nicomeseas&cxl
 		XSetSelectionOwner(Xdisplay, XAtom("CLIPBOARD"), win, CurrentTime);
 }
 

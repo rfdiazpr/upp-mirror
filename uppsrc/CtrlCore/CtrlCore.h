@@ -893,8 +893,8 @@ public:
 
 	static Ctrl *GetFocusCtrl()                { return FocusCtrl(); }
 
-	static bool  IterateFocusForward(Ctrl *ctrl, Ctrl *top, bool noframe = false, bool init = false);
-	static bool  IterateFocusBackward(Ctrl *ctrl, Ctrl *top, bool noframe = false);
+	static bool  IterateFocusForward(Ctrl *ctrl, Ctrl *top, bool noframe = false, bool init = false, bool all = false);
+	static bool  IterateFocusBackward(Ctrl *ctrl, Ctrl *top, bool noframe = false, bool all = false);
 
 	static dword AccessKeyBit(byte accesskey);
 	dword   GetAccessKeysDeep() const;

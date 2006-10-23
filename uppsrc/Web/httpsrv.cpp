@@ -396,7 +396,7 @@ One<HttpRequest> HttpServer::GetRequest()
 				p += left;
 				break;
 			} {
-				int four = PeekIL(first_line);
+				int four = Peek32le(first_line);
 				if(four == FOURCHAR('S', 'A', 'P', 'I')) {
 					if(first_line.GetLength() < 8) {
 						int left = min<int>(e - p, 8 - first_line.GetLength());
@@ -404,7 +404,7 @@ One<HttpRequest> HttpServer::GetRequest()
 						p += left;
 						break;
 					}
-					sapi_length = PeekIL(first_line.GetIter(4));
+					sapi_length = Peek32le(first_line.GetIter(4));
 					if(sapi_length < 0 || sapi_length > max_post_size) {
 						LogTime(NFormat("Invalid SAPI request length (%d), request trashed", sapi_length), 1);
 						conn.Close();

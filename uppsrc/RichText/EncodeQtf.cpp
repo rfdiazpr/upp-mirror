@@ -519,3 +519,13 @@ String DeQtfLf(const char *s) {
 	}
 	return r;
 }
+
+String AsQTF(const RichObject& obj)
+{
+	RichText x;
+	RichPara p;
+	RichPara::Format fmt;
+	p.Cat(obj, fmt);
+	x.Cat(p);
+	return AsQTF(x);
+}

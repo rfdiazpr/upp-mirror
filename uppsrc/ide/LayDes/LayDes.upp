@@ -1,7 +1,8 @@
 uses
 	ide\Common,
 	RichEdit,
-	Esc;
+	Esc,
+	IconDes;
 
 file
 	LayDes.h,
@@ -14,11 +15,10 @@ file
 	fontprop.cpp,
 	propane.cpp,
 	item.cpp,
-	layout.cpp,
+	layout.cpp optimize_speed,
 	visgen.cpp,
 	laydes.cpp,
 	layfile.cpp,
 	laywin.cpp,
 	LayDes.lay,
 	LayDes.iml;
-

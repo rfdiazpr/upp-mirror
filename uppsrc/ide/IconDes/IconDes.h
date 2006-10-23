@@ -1,12 +1,30 @@
-#ifndef __iw_iw__
-#define __iw_iw__
+#ifndef _ide_IconDes_IconDes_h_
+#define _ide_IconDes_IconDes_h_
 
-#include <CtrlLib/CtrlLib.h>
 #include <ide/Common/Common.h>
+#include <IconDes/IconDes.h>
 
-class DlgImage;
+struct IdeIconDes : IdeDesigner, IconDes {
+	virtual String GetFileName() const;
+	virtual void   Save();
+	virtual void   SaveEditPos();
+	virtual void   EditMenu(Bar& menu);
+	virtual Ctrl&  DesignerCtrl()             { return *this; }
 
-#include "ImageEditCtrl.h"
-#include "PaletteCtrl.h"
+	virtual void Serialize(Stream& s);
 
-#endif//__iw_iw__
+	int     format;
+	String  filename;
+	Time    filetime;
+
+	virtual void   ToolEx(Bar& bar);
+
+	bool   Load(const char *filename);
+	void   FileProperties();
+
+	typedef IdeIconDes CLASSNAME;
+
+	IdeIconDes()                              { format = 0; }
+};
+
+#endif

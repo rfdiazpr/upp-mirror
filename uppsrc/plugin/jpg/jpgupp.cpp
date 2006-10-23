@@ -10,7 +10,7 @@ extern "C" {
 }
 #undef XINT32
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)  // LOG(x)
 
 static void NoOutput(j_common_ptr cinfo)
 {

@@ -19,7 +19,7 @@ C& FetchContainer(C& container, Sql& cursor, Gate2<int, int> progress = false)
 }
 
 template <class C>
-C& FetchContainerExc(C& container, const SqlSet& set, SqlSession& session APPSQLSESSION, Gate2<int, int> progress = false)
+C& FetchContainerExc(C& container, const SqlSelect& set, SqlSession& session APPSQLSESSION, Gate2<int, int> progress = false)
 {
 	Sql cursor(session);
 	set.Force(cursor);
@@ -27,7 +27,7 @@ C& FetchContainerExc(C& container, const SqlSet& set, SqlSession& session APPSQL
 }
 
 template <class C>
-C& FetchContainer(C& container, const SqlSet& set, SqlSession& session, Gate2<int, int> progress = false)
+C& FetchContainer(C& container, const SqlSelect& set, SqlSession& session, Gate2<int, int> progress = false)
 {
 	try
 	{
@@ -42,7 +42,7 @@ C& FetchContainer(C& container, const SqlSet& set, SqlSession& session, Gate2<in
 
 #ifndef NOAPPSQL
 template <class C>
-C& FetchContainer(C& container, const SqlSet& set, Gate2<int, int> progress = false)
+C& FetchContainer(C& container, const SqlSelect& set, Gate2<int, int> progress = false)
 {
 	return FetchContainer(container, set, SQL.GetSession(), progress);
 }
@@ -148,13 +148,13 @@ inline T FetchSchemaSeq(SqlId key, Value value, Sql& cursor APPSQLCURSOR, T * = 
 }
 
 template <class T>
-SqlSet SelectWhere(SqlBool cond = true, T * = 0)
+SqlSelect SelectWhere(SqlBool cond = true, T * = 0)
 {
 	return Select(T::ColumnSet()).From(SqlCol(T::TableName)).Where(cond);
 }
 
 template <class T>
-SqlSet SelectSchemaWhere(SqlBool cond = true, T * = 0)
+SqlSelect SelectSchemaWhere(SqlBool cond = true, T * = 0)
 {
 	return Select(T::ColumnSet()).FromSchema(SqlCol(T::TableName)).Where(cond);
 }

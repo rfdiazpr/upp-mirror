@@ -180,14 +180,14 @@ static tAlphaBlend fnAlphaBlend()
 }
 #endif
 
-void Image::Data::CreateHBMP(HDC dc)
+void Image::Data::CreateHBMP(HDC dc, const RGBA *data)
 {
 	BitmapInfo32__ bi(buffer.GetWidth(), buffer.GetHeight());
 	HDC dcMem = ::CreateCompatibleDC(dc);
 	RGBA *pixels;
 	hbmp = CreateDIBSection(dcMem, bi, DIB_RGB_COLORS, (void **)&pixels, NULL, 0);
 	HDC hbmpOld = (HDC) ::SelectObject(dcMem, hbmp);
-	memcpy(pixels, buffer, buffer.GetLength() * sizeof(RGBA));
+	memcpy(pixels, data, buffer.GetLength() * sizeof(RGBA));
 	::SelectObject(dcMem, hbmpOld);
 	::DeleteDC(dcMem);
 	ResCount++;
@@ -215,7 +215,7 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 			w.DrawRect(x, y, sz.cx, sz.cy, c);
 			return;
 		}
-		if(GetKind() == IMAGE_OPAQUE && paintcount == 0 && sr == Rect(sz) && IsWinNT()) {//TODO !IsWinNT
+		if(GetKind() == IMAGE_OPAQUE && paintcount == 0 && sr == Rect(sz) && !w.IsMetaFile() && IsWinNT()) {//TODO !IsWinNT
 			LTIMING("Image Opaque direct set");
 			SetSurface(w, x, y, sz.cx, sz.cy, buffer);
 			paintcount++;
@@ -226,7 +226,7 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 		if(GetKind() == IMAGE_OPAQUE) {
 			if(!hbmp) {
 				LTIMING("Image Opaque create");
-				CreateHBMP(dc);
+				CreateHBMP(dc, buffer);
 			}
 			LTIMING("Image Opaque blit");
 			HDC dcMem = ::CreateCompatibleDC(dc);
@@ -243,7 +243,7 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 				hmask = CreateBitMask(buffer, sz, sz, sz, bmp);
 				ResCount++;
 				if(!hbmp)
-					CreateHBMP(dc);
+					CreateHBMP(dc, bmp);
 			}
 			LTIMING("Image Mask blt");
 			HBITMAP o = (HBITMAP)::SelectObject(dcMem, ::CreateCompatibleBitmap(dc, sz.cx, sz.cy));

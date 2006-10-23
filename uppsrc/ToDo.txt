@@ -1,3 +1,19 @@
+TRC {
+	* TIFF !
+
+}
+
+* Bug in
+
+* SqlCtrl in linux: http://www.arilect.com/upp/forum/index.php?t=msg&goto=5409&#msg_5409
+
+* TreeCtrl Add problem in GCC - void SqlObjectTree::OpenTableColumns(int node, const Item& item)
+  need Value casts
+
+* SO builds
+
+* Alt+C
+
 * Output mode in Linux should have better settings!
 
 * ImageView in Linuxu does not work

@@ -212,6 +212,7 @@ One<StreamRaster> StreamRaster::OpenAny(Stream& s)
 			s.ClearError();
 			if(raster->Open(s))
 				return raster;
+			s.ClearError();
 			s.Seek(p);
 		}
 	return NULL;

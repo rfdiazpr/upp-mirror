@@ -84,6 +84,8 @@ bool OkCommit(SqlSession& session, const char *msg) {
 	if(ErrorRollback(session, msg))
 		return false;
 	session.Commit();
+	if(ShowError(session, msg ? msg : t_("SQL error!")))
+		return false;
 	return true;
 }
 

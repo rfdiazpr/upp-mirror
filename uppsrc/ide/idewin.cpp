@@ -662,7 +662,7 @@ void AppMain___()
 	try {
 		void RegisterLayDes(); RegisterLayDes();
 		void RegisterIconDes(); RegisterIconDes();
-		void RegisterIdeVectorDes(); RegisterIdeVectorDes();
+	//	void RegisterIdeVectorDes(); RegisterIdeVectorDes();
 		void RegisterGccBuilder(); RegisterGccBuilder();
 		void RegisterMscBuilder(); RegisterMscBuilder();
 		void RegisterJavaBuilder(); RegisterJavaBuilder();

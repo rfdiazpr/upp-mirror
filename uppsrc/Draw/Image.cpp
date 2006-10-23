@@ -40,26 +40,38 @@ void ImageBuffer::Create(int cx, int cy)
 	}
 #endif
 	kind = IMAGE_UNKNOWN;
-	hotspot = Point(0, 0);
+	spot2 = hotspot = Point(0, 0);
 	dots = Size(0, 0);
+}
+
+void ImageBuffer::DeepCopy(const ImageBuffer& img)
+{
+	Create(img.GetSize());
+	SetHotSpot(img.GetHotSpot());
+	SetDots(img.GetDots());
+	memcpy(pixels, img.pixels, GetLength() * sizeof(RGBA));
 }
 
 void ImageBuffer::Set(Image& img)
 {
-	if(img.data->refcount == 1) {
-		size = img.GetSize();
-		kind = IMAGE_UNKNOWN;
-		hotspot = img.GetHotSpot();
-		dots = img.GetDots();
-		pixels = img.data->buffer.pixels;
-		img.Clear();
-	}
-	else {
-		Create(img.GetSize());
-		memcpy(pixels, img.data->buffer.pixels, GetLength() * sizeof(RGBA));
-		img.Clear();
-	}
+	if(img.data)
+		if(img.data->refcount == 1) {
+			size = img.GetSize();
+			kind = IMAGE_UNKNOWN;
+			hotspot = img.GetHotSpot();
+			spot2 = img.Get2ndSpot();
+			dots = img.GetDots();
+			pixels = img.data->buffer.pixels;
+			img.Clear();
+		}
+		else {
+			DeepCopy(img.data->buffer);
+			img.Clear();
+		}
+	else
+		Create(0, 0);
 }
+
 
 void ImageBuffer::operator=(Image& img)
 {
@@ -92,6 +104,7 @@ ImageBuffer::ImageBuffer(ImageBuffer& b)
 	dots = b.dots;
 	pixels = b.pixels;
 	hotspot = b.hotspot;
+	spot2 = b.spot2;
 }
 
 void Image::Set(ImageBuffer& b)
@@ -157,6 +170,11 @@ int Image::GetLength() const
 Point Image::GetHotSpot() const
 {
 	return data ? data->buffer.GetHotSpot() : Point(0, 0);
+}
+
+Point Image::Get2ndSpot() const
+{
+	return data ? data->buffer.Get2ndSpot() : Point(0, 0);
 }
 
 Size Image::GetDots() const
@@ -261,8 +279,8 @@ Image::Image(const Init& init)
 {
 	ASSERT(init.info[0] >= 1);
 	Size sz;
-	sz.cx = PeekIL(init.info + 1);
-	sz.cy = PeekIL(init.info + 5);
+	sz.cx = Peek32le(init.info + 1);
+	sz.cy = Peek32le(init.info + 5);
 	ImageBuffer b(sz);
 	int i = 0;
 	while(i < init.scan_count) {
@@ -271,7 +289,7 @@ Image::Image(const Init& init)
 	}
 	while(i < sz.cy)
 		memset(b[i++], 0, sizeof(RGBA) * sz.cx);
-	b.SetHotSpot(Point(PeekIL(init.info + 9), PeekIL(init.info + 13)));
+	b.SetHotSpot(Point(Peek32le(init.info + 9), Peek32le(init.info + 13)));
 	Set(b);
 }
 
@@ -323,11 +341,34 @@ void Iml::Set(int i, const Image& img)
 	map[i].loaded = true;
 }
 
+static StaticCriticalSection sImgImlLock;
+
 Image Iml::Get(int i)
 {
 	IImage& m = map[i];
 	if(!m.loaded) {
-		m.image = Image(img_init[i]);
+		INTERLOCKED_(sImgImlLock) {
+			if(data.GetCount()) {
+				int ii = 0;
+				for(;;) {
+					const Data& d = data[ii];
+					if(i < d.count) {
+						static const char   *cached_data;
+						static Vector<Image> cached;
+						if(cached_data != d.data) {
+							cached_data = d.data;
+							cached = UnpackImlData(String(d.data, d.len));
+						}
+						m.image = cached[i];
+						break;
+					}
+					i -= d.count;
+					ii++;
+				}
+			}
+			else
+				m.image = Image(img_init[i]);
+		}
 		m.loaded = true;
 	}
 	return m.image;
@@ -352,6 +393,15 @@ Iml::Iml(const Image::Init *img_init, const char **name, int n)
 	name(name)
 {
 	Init(n);
+}
+
+void Iml::AddData(const byte *_data, int len, int count)
+{
+	Data& d = data.Add();
+	d.data = (const char *)_data;
+	d.len = len;
+	d.count = count;
+	data.Shrink();
 }
 
 static StaticCriticalSection sImgMapLock;
@@ -449,7 +499,6 @@ String StoreImageAsString(const Image& img)
 	const RGBA *s = img;
 	const RGBA *e = s + img.GetLength();
 	Buffer<byte> b(type * img.GetLength());
-	s = img;
 	byte *t = b;
 	if(type == 3)
 		while(s < e) {

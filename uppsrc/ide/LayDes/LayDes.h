@@ -4,6 +4,7 @@
 #include <ide/Common/Common.h>
 #include <RichEdit/RichEdit.h>
 #include <CodeEditor/CodeEditor.h>
+#include <IconDes/IconDes.h>
 
 #define LAYOUTFILE <ide/LayDes/LayDes.lay>
 #include <CtrlCore/lay.h>
@@ -305,8 +306,6 @@ private:
 	WithMatrixLayout<TopWindow>  matrix;
 	WithSettingLayout<TopWindow> setting;
 
-	const char       *cfgname;
-
 	struct TempGroup {
 		String temp;
 		String group;
@@ -424,36 +423,33 @@ private:
 	void        RestoreEditPos();
 
 	bool           Load(const char *filename, byte charset);
-	void           Set(LayDesigner *frame);
 
 	typedef LayDes CLASSNAME;
 
 	LayDes();
 
 public:
+	Ctrl&          DesignerCtrl()             { return lsplit; }
 	void           Serialize(Stream& s);
 };
 
 class LayDesigner : public IdeDesigner {
 	LayDes         designer;
+	ParentCtrl     parent;
 
 public:
-	virtual void   Close()                    { designer.CloseDesigner(); }
-	virtual void   ChildGotFocus()            { designer.FrameFocus(); }
-	virtual bool   Key(dword key, int repcnt);
 	virtual String GetFileName() const        { return designer.filename; }
 	virtual void   Save()                     { designer.Save(); }
 	virtual void   SyncUsc()                  { designer.SyncUsc(); }
-	virtual void   ActivateDesigner()         { SetForeground(); }
 	virtual void   SaveEditPos()              { designer.SaveEditPos(); }
 	virtual void   EditMenu(Bar& menu)        { designer.EditMenu(menu); }
 	virtual int    GetCharset() const         { return designer.charset; }
+	virtual Ctrl&  DesignerCtrl()             { return parent; }
 
 	void Serialize(Stream& s)                 { designer.Serialize(s); }
 	bool Load(const char *filename, byte cs)  { return designer.Load(filename, cs); }
-	void SetConfigName(const char *name)      { designer.cfgname = name; }
 
-	LayDesigner()                             { designer.Set(this); }
+	LayDesigner()                             { parent.Add(designer.DesignerCtrl().SizePos()); }
 };
 
 #endif

@@ -121,6 +121,8 @@ void TopWindow::CenterRect(HWND hwnd)
 		Rect r, wr;
 		wr = Ctrl::GetWorkArea().Deflated(-frmrc.left, -frmrc.top,
 			frmrc.right - sz.cx, frmrc.bottom - sz.cy);
+		sz.cx = min(sz.cx, wr.Width());
+		sz.cy = min(sz.cy, wr.Height());
 		if(center == 1) {
 			::GetClientRect(hwnd, r);
 			Point p = r.TopLeft();
@@ -216,8 +218,13 @@ TopWindow& TopWindow::ExStyle(dword _exstyle)
 	return *this;
 }
 
-TopWindow& TopWindow::TopMost(bool b)
+TopWindow& TopWindow::TopMost(bool b, bool stay_top)
 {
+   HWND hwnd;
+	if(hwnd = GetHWND())
+	{
+		SetWindowPos(hwnd, b ? HWND_TOPMOST : (stay_top ? HWND_NOTOPMOST : HWND_BOTTOM),0,0,0,0,SWP_NOMOVE|SWP_NOSIZE );
+	}
 	return ExStyle(b ? GetExStyle() | WS_EX_TOPMOST : GetExStyle() & ~WS_EX_TOPMOST);
 }
 

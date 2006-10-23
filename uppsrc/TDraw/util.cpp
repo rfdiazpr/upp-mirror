@@ -261,8 +261,8 @@ static void StreamUnpackPoints(Stream& stream, Point *out, int count)
 	stream.Get(top, count * 8);
 	for(; out < end; out++, top += 8)
 	{
-		out -> x = PeekIL(top + 0);
-		out -> y = PeekIL(top + 4);
+		out -> x = Peek32le(top + 0);
+		out -> y = Peek32le(top + 4);
 	}
 }
 
@@ -279,8 +279,8 @@ static void StreamPackPoints(Stream& stream, const Point *in, int count)
 	while(count > 0) {
 		int part_count = min<int>(count, PART);
 		for(byte *pp = part, *pe = pp + 8 * part_count; pp < pe; pp += 8, in++) {
-			PokeIL(pp + 0, in -> x);
-			PokeIL(pp + 4, in -> y);
+			Poke32le(pp + 0, in -> x);
+			Poke32le(pp + 4, in -> y);
 		}
 		stream.Put(part, part_count * 8);
 		count -= part_count;
@@ -296,7 +296,7 @@ static void StreamUnpackInts(Stream& stream, int *out, int count)
 	if(sizeof(int) > 4)
 	{
 		for(; out < end; out++, top += 4)
-			*out = PeekIL(top);
+			*out = Peek32le(top);
 	}
 	else
 	{
@@ -321,7 +321,7 @@ static void StreamPackInts(Stream& stream, const int *in, int count)
 	{
 		int part_count = min<int>(count, PART);
 		for(byte *pp = part, *pe = pp + 4 * part_count; pp < pe; pp += 4)
-			PokeIL(pp, *in++);
+			Poke32le(pp, *in++);
 		stream.Put(part, part_count * 4);
 		count -= part_count;
 	}

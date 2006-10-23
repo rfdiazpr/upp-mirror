@@ -31,7 +31,6 @@ void TopWindow::EndIgnoreTakeFocus()
 	ignoretakefocus = false;
 }
 
-
 void TopWindow::EventProc(XWindow& w, XEvent *event)
 {
 	Ptr<Ctrl> this_ = this;
@@ -135,16 +134,28 @@ void TopWindow::CenterRect(Ctrl *owner)
 		Size sz = GetRect().Size();
 		Rect r, wr;
 		wr = Ctrl::GetWorkArea();
+		Rect fm = windowFrameMargin;
+		if((fm.left|fm.right|fm.top|fm.bottom) == 0)
+			fm = Rect(8, 32, 8, 8);
 		if(center == 1)
 			r = owner->GetRect();
 		else
 			r = wr;
 		Point p = r.CenterPos(sz);
-		if(p.x + sz.cx > wr.right) p.x = wr.right - sz.cx;
-		if(p.y + sz.cy > wr.bottom) p.y = wr.bottom - sz.cy;
-		if(p.x < wr.left) p.x = wr.left;
-		if(p.y < wr.top) p.y = wr.top;
-		SetRect(p.x, p.y, sz.cx, sz.cy);
+		r = RectC(p.x, p.y, sz.cx, sz.cy);
+		wr.left += fm.left;
+		wr.right -= fm.right;
+		wr.top += fm.top;
+		wr.bottom -= fm.bottom;
+		if(r.top < wr.top) {
+			r.bottom += wr.top - r.top;
+			r.top = wr.top;
+		}
+		if(r.bottom > wr.bottom)
+			r.bottom = wr.bottom;
+		minsize.cx = min(minsize.cx, r.GetWidth());
+		minsize.cy = min(minsize.cy, r.GetHeight());
+		SetRect(r);
 	}
 }
 
@@ -211,6 +222,11 @@ void TopWindow::Open(Ctrl *owner)
 	LLOG(">Open NextRequest " << NextRequest(Xdisplay));
 	LLOG(">OPENED " << Name());
 	PlaceFocus();
+	Vector<int> fe = GetPropertyInts(top->window, XAtom("_NET_FRAME_EXTENTS"));
+	windowFrameMargin.left = max(windowFrameMargin.left, fe[0]);
+	windowFrameMargin.right = max(windowFrameMargin.right, fe[1]);
+	windowFrameMargin.top = max(windowFrameMargin.top, fe[2]);
+	windowFrameMargin.bottom = max(windowFrameMargin.bottom, fe[3]);
 }
 
 void TopWindow::Open()
@@ -240,7 +256,7 @@ void TopWindow::Overlap(bool effect)
 
 }
 
-TopWindow& TopWindow::TopMost(bool b)
+TopWindow& TopWindow::TopMost(bool b, bool)
 {
 	topmost = b;
 	return *this;

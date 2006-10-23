@@ -1,6 +1,6 @@
 #include "Draw.h"
 
-#define LTIMING(x) TIMING(x)
+#define LTIMING(x) // TIMING(x)
 
 void AddNotEmpty(Vector<Rect>& result, int left, int right, int top, int bottom)
 {

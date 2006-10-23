@@ -30,7 +30,6 @@ String MySqlTextType(int n);
 class MySqlSession : public SqlSession {
 public:
 	virtual bool           IsOpen() const;
-	virtual int            GetDialect() const               { return SQLD_MYSQL; }
 	virtual RunScript      GetRunScript() const             { return &MySqlPerformScript; }
 	virtual Vector<String> EnumUsers();
 	virtual Vector<String> EnumDatabases();
@@ -58,7 +57,7 @@ public:
 	virtual void   Commit();
 	virtual void   Rollback();
 
-	MySqlSession()       { mysql = NULL; }
+	MySqlSession()       { mysql = NULL; Dialect(MY_SQL); }
 	~MySqlSession()      { Close(); }
 };
 

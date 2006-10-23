@@ -32,15 +32,15 @@ bool   OkCommit(const char *emsg = NULL);
 #endif
 
 void SqlLoad(MapConvert& cv, Sql& sql);
-void SqlLoad(MapConvert& cv, const SqlSet& set, SqlSession& ss APPSQLSESSION);
+void SqlLoad(MapConvert& cv, const SqlSelect& set, SqlSession& ss APPSQLSESSION);
 #ifndef NOAPPSQL
-void operator*=(MapConvert& cv, const SqlSet& set);
+void operator*=(MapConvert& cv, const SqlSelect& set);
 #endif
 
 void SqlLoad(DropList& dl, Sql& sql);
-void SqlLoad(DropList& dl, const SqlSet& set, SqlSession& ss APPSQLSESSION);
+void SqlLoad(DropList& dl, const SqlSelect& set, SqlSession& ss APPSQLSESSION);
 #ifndef NOAPPSQL
-void operator*=(DropList& cv, const SqlSet& set);
+void operator*=(DropList& cv, const SqlSelect& set);
 #endif
 
 class SqlOption : public Option {
@@ -142,9 +142,9 @@ public:
 #ifndef NOAPPSQL
 	bool      Fetch()                                { return Fetch(SQL); }
 #endif
-	bool      Load(Sql& sql, SqlSet set)             { sql * set; return Fetch(sql); }
+	bool      Load(Sql& sql, SqlSelect set)          { sql * set; return Fetch(sql); }
 #ifndef NOAPPSQL
-	bool      Load(SqlSet set)                       { return Load(SQL, set); }
+	bool      Load(SqlSelect set)                    { return Load(SQL, set); }
 #endif
 	bool      Load(Sql& sql, SqlId table, SqlBool where);
 #ifndef NOAPPSQL

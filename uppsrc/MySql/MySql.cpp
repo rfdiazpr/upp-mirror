@@ -157,7 +157,7 @@ Vector<String> MySqlSession::EnumDatabases()
 	Vector<String> out;
 	Sql cursor(*this);
 	if(cursor.Execute("show databases"))
-		out = FetchList(cursor, true);
+		out = FetchList(cursor); // 06-09-12 cxl: was false; In Linux, names are case sensitive
 	return out;
 }
 
@@ -166,7 +166,7 @@ Vector<String> MySqlSession::EnumTables(String database)
 	Vector<String> out;
 	Sql cursor(*this);
 	if(cursor.Execute("show tables from " + database))
-		out = FetchList(cursor, true);
+		out = FetchList(cursor); // 06-09-12 cxl: was false; In Linux, names are case sensitive
 	return out;
 }
 

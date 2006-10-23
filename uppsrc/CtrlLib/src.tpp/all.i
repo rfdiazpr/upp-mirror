@@ -81,3 +81,11 @@ END_TOPIC
 TOPIC("TextCtrl$en-us")
 #include "TextCtrl$en-us.tpp"
 END_TOPIC
+
+TOPIC("DocEdit$en-us")
+#include "DocEdit$en-us.tpp"
+END_TOPIC
+
+TOPIC("SplitterFrame$en-us")
+#include "SplitterFrame$en-us.tpp"
+END_TOPIC

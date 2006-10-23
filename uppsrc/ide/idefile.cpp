@@ -356,11 +356,11 @@ void Ide::EditFile0(const String& path, byte charset, bool astext, const String&
 		for(int i = 0; i < GetIdeModuleCount() && !designer; i++)
 			designer = GetIdeModule(i).CreateDesigner(path, charset);
 		if(designer) {
-			editpane.Add(*designer);
+			editpane.Add(designer->DesignerCtrl().SizePos());
 			designer->SetFocus();
 			if(filetabs) {
 				dtabs.Set(tabs);
-				designer->SetFrame(dtabs);
+				designer->DesignerCtrl().SetFrame(dtabs);
 				dtabs.SetAddFile(editfile);
 			}
 			MakeTitle();

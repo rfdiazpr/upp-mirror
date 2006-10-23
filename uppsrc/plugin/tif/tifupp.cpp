@@ -61,7 +61,7 @@ void TiffAllocStat()
 extern "C" tdata_t _TIFFmalloc(tsize_t s)
 {
 	byte *p = new byte[s + 4];
-	PokeIL(p, s);
+	Poke32le(p, s);
 #if DBGALLOC
 	alloc_calls++;
 	dbgAddAlloc(s);
@@ -83,9 +83,9 @@ extern "C" void    _TIFFfree(tdata_t p)
 
 extern "C" tdata_t _TIFFrealloc(tdata_t p, tsize_t s)
 {
-	int oldsize = (p ? PeekIL((const byte *)p - 4) : 0);
+	int oldsize = (p ? Peek32le((const byte *)p - 4) : 0);
 	if(s <= oldsize) {
-		PokeIL((byte *)p - 4, s);
+		Poke32le((byte *)p - 4, s);
 		return p;
 	}
 	byte *newptr = new byte[s + 4];
@@ -101,7 +101,7 @@ extern "C" tdata_t _TIFFrealloc(tdata_t p, tsize_t s)
 #endif
 		delete[] ((byte *)p - 4);
 	}
-	PokeIL(newptr, s);
+	Poke32le(newptr, s);
 	return (tdata_t)(newptr + 4);
 }
 

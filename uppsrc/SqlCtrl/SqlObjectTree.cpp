@@ -355,17 +355,17 @@ void SqlObjectTree::OpenTableColumns(int node, const Item& item)
 		schema.RemoveChildren(node);
 		Vector<SqlColumnInfo> columns = session.EnumColumns(item.schema, item.object);
 		for(int i = 0; i < columns.GetCount(); i++)
-			schema.Add(node, CtrlImg::Hd(), Item(OBJ_COLUMN, item.schema, item.object), columns[i].name);
+			schema.Add(node, CtrlImg::Hd(), Item(OBJ_COLUMN, item.schema, item.object), (Value)columns[i].name);
 		Vector<String> pk = session.EnumPrimaryKey(item.schema, item.object);
 		if(!pk.IsEmpty()) {
 			String pklist;
 			for(int i = 0; i < pk.GetCount(); i++)
 				pklist << (i ? "; " : t_("Primary key: ")) << pk[i];
-			schema.Add(node, Null, Item(OBJ_PRIMARY_KEY, item.schema, item.object), pklist);
+			schema.Add(node, Null, Item(OBJ_PRIMARY_KEY, item.schema, item.object), (Value)pklist);
 		}
 		String rowid = session.EnumRowID(item.schema, item.object);
 		if(!IsNull(rowid))
-			schema.Add(node, Null, Item(OBJ_ROWID, item.schema, item.object), "RowID: " + rowid);
+			schema.Add(node, Null, Item(OBJ_ROWID, item.schema, item.object), Value("RowID: " + rowid));
 	} catch(Exc e) { ShowExc(e); }
 }
 

@@ -136,6 +136,7 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 //	else if(!HasFlag("WIN32")) // TRC 05/03/08: dynamic fPIC doesn't seem to work in MinGW
 //		cc << " -dynamic -fPIC "; // TRC 05/03/30: dynamic fPIC doesn't seem to work in GCC either :-)
 	cc << ' ' << Gather(pkg.option, config.GetKeys());
+	cc << " -fexceptions ";
 
 	String cc_speed = cc;
 	bool   release = false;

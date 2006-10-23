@@ -204,6 +204,7 @@ void  TreeCtrl::Set(int id, Value v)
 		m.value = m.key = v;
 		RefreshItem(id);
 	}
+	SetOption(id);
 }
 
 void  TreeCtrl::Set(int id, Value k, Value v)
@@ -216,12 +217,14 @@ void  TreeCtrl::Set(int id, Value k, Value v)
 		m.value = v;
 		RefreshItem(id);
 	}
+	SetOption(id);
 }
 
 void   TreeCtrl::SetNode(int id, const TreeCtrl::Node& n)
 {
 	(TreeCtrl::Node&)item[id] = n;
 	Dirty(id);
+	SetOption(id);
 }
 
 void   TreeCtrl::RemoveChildren(int id)
@@ -958,6 +961,10 @@ void TreeCtrl::SelectOne(int id, bool sel)
 	RefreshItem(id);
 }
 
+void TreeCtrl::SetOption(int id)
+{
+}
+
 void OptionTree::SetRoot(const Image& img, Option& opt, const char *text)
 {
 	if(text)
@@ -999,6 +1006,7 @@ int OptionTree::Add(int parentid, const Image& img, Option& opt, const char *tex
 	option.At(id, NULL) = &opt;
 	opt.NoNotNull().BlackEdge();
 	opt <<= THISBACK1(SetOption, id);
+	SetOption(id);
 	return id;
 }
 

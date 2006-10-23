@@ -108,14 +108,20 @@ bool Ctrl::HasChildDeep(Ctrl *q) const
 	return false;
 }
 
-static bool IterateFocusFw(Ctrl *ctrl, bool noframe, bool init)
+static bool IterateFocusFw(Ctrl *ctrl, bool noframe, bool init, bool all)
 {
 	LLOG("IterateFocusFw(" << ::Name(ctrl) << ")");
 	while(ctrl) {
 		if(ctrl->IsOpen() && ctrl->IsVisible() && ctrl->IsEnabled()) {
-			if(!(noframe && ctrl->InFrame()) && (!init || ctrl->IsInitFocus()) && ctrl->SetWantFocus())
-				return true;
-			if(IterateFocusFw(ctrl->GetFirstChild(), noframe, init))
+			if(!(noframe && ctrl->InFrame())) {
+				if(all) {
+					ctrl->SetFocus();
+					return true;
+				}
+				if((!init || ctrl->IsInitFocus()) && ctrl->SetWantFocus())
+					return true;
+			}
+			if(IterateFocusFw(ctrl->GetFirstChild(), noframe, init, all))
 				return true;
 		}
 		ctrl = ctrl->GetNext();
@@ -123,44 +129,50 @@ static bool IterateFocusFw(Ctrl *ctrl, bool noframe, bool init)
 	return false;
 }
 
-bool Ctrl::IterateFocusForward(Ctrl *ctrl, Ctrl *top, bool noframe, bool init)
+bool Ctrl::IterateFocusForward(Ctrl *ctrl, Ctrl *top, bool noframe, bool init, bool all)
 {
 	LLOG("IterateFocusForward(" << ::Name(ctrl) << ", top " << ::Name(top) << ", noframe " << noframe << ", init " << init << ")");
 	if(!ctrl) return false;
-	if(IterateFocusFw(ctrl->GetFirstChild(), noframe, init))
+	if(IterateFocusFw(ctrl->GetFirstChild(), noframe, init, all))
 		return true;
-	if(ctrl->GetNext() && IterateFocusFw(ctrl->GetNext(), noframe, init))
+	if(ctrl->GetNext() && IterateFocusFw(ctrl->GetNext(), noframe, init, all))
 		return true;
 	while(ctrl->GetParent() != top && (ctrl = ctrl->GetParent()) != NULL)
-		if(IterateFocusFw(ctrl->GetNext(), noframe, init))
+		if(IterateFocusFw(ctrl->GetNext(), noframe, init, all))
 			return true;
 	return false;
 }
 
-static bool IterateFocusBw(Ctrl *ctrl, bool noframe)
+static bool IterateFocusBw(Ctrl *ctrl, bool noframe, bool all)
 {
 	while(ctrl) {
 		if(ctrl->IsOpen() && ctrl->IsVisible() && ctrl->IsEnabled()) {
-			if(IterateFocusBw(ctrl->GetLastChild(), noframe))
+			if(IterateFocusBw(ctrl->GetLastChild(), noframe, all))
 				return true;
-			if(!(noframe && ctrl->InFrame()) && ctrl->SetWantFocus())
-				return true;
+			if(!(noframe && ctrl->InFrame())) {
+				if(all) {
+					ctrl->SetFocus();
+					return true;
+				}
+				if(ctrl->SetWantFocus())
+					return true;
+			}
 		}
 		ctrl = ctrl->GetPrev();
 	}
 	return false;
 }
 
-bool Ctrl::IterateFocusBackward(Ctrl *ctrl, Ctrl *top, bool noframe)
+bool Ctrl::IterateFocusBackward(Ctrl *ctrl, Ctrl *top, bool noframe, bool all)
 {
 	if(!ctrl || ctrl == top) return false;
-	if(IterateFocusBw(ctrl->GetPrev(), noframe))
+	if(IterateFocusBw(ctrl->GetPrev(), noframe, all))
 		return true;
 	while(ctrl->GetParent() != top) {
 		ctrl = ctrl->GetParent();
 		if(ctrl->SetWantFocus())
 			return true;
-		if(IterateFocusBw(ctrl->GetPrev(), noframe))
+		if(IterateFocusBw(ctrl->GetPrev(), noframe, all))
 			return true;
 	}
 	return false;

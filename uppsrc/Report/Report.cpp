@@ -85,11 +85,15 @@ String  Report::FormatHF(const char *s, int pageno)
 	String result;
 	while(*s) {
 		if(s[0] == '$' && s[1] == '$') {
-			if(s[2] == 'P')
+			if(s[2] == 'P') {
 				result.Cat(Format("%d", pageno + 1));
-			if(s[2] == 'D')
+				s += 3;
+			}
+			else
+			if(s[2] == 'D') {
 				result.Cat(Format(GetSysDate()));
-			s += 3;
+				s += 3;
+			}
 		}
 		result.Cat(*s++);
 	}

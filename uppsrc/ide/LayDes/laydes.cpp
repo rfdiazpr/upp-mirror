@@ -79,7 +79,14 @@ void LayDes::SetSb()
 		for(int i = 0; i < l.item.GetCount(); i++)
 			sz = max(sz, (Size)CtrlRect(l.item[i].pos, l.size).BottomRight());
 	}
-	sb.SetTotal(sz + Size(MARGIN, MARGIN));
+	sz += Size(MARGIN, MARGIN);
+	Size csz, dsz;
+	GetZoomRatio(csz, dsz);
+	if(csz.cx && csz.cy && dsz.cx && dsz.cy) {
+		sz.cx = sz.cx * csz.cx / dsz.cx;
+		sz.cy = sz.cy * csz.cy / dsz.cy;
+	}
+	sb.SetTotal(sz);
 	sb.SetPage(sb.GetReducedViewSize());
 }
 
@@ -1279,16 +1286,17 @@ void LayDes::SyncLayoutList()
 	LayoutCursor();
 }
 
-int CharFilterCid(int c)
-{
-	return IsAlNum(c) || c == '_' ? c : 0;
-}
-
 void LayDes::AddLayout()
 {
 	String name;
-	if(!EditText(name, "Add new layout", "Layout", CharFilterCid))
-		return;
+	for(;;) {
+		if(!EditText(name, "Add new layout", "Layout", CharFilterCid))
+			return;
+		CParser p(name);
+		if(p.IsId())
+			break;
+		Exclamation("Invalid name!");
+	}
 	int q = layout.GetCount();
 	layout.Add().name = name;
 	SyncLayoutList();

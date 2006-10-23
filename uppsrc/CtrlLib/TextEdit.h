@@ -372,23 +372,20 @@ protected:
 	void   Scroll();
 	void   PlaceCaret(bool scroll);
 	int    GetY(int parai);
-	int    GetCursor(Point p);
+	int    GetCursorPos(Point p);
 	Point  GetCaret(int pos);
 	void   VertMove(int delta, bool select, bool scs);
 	void   HomeEnd(int x, bool select);
 	void   RefreshStyle();
 
 public:
-	int      GetCursor() const           { return cursor; }
-	void     SetCursor(int c)            { SetSelection(c, c); }
-
-	DocEdit& After(int a)                { after = a; RefreshStyle(); return *this; }
-	DocEdit& SetFont(Font f)             { font = f; RefreshStyle(); return *this; }
-	DocEdit& Filter(CharFilter f)        { filter = f; return *this; }
-	DocEdit& AutoHideSb(bool b = true)   { sb.AutoHide(b); return *this; }
-	DocEdit& UpDownLeave(bool u = true)  { updownleave = u; return *this; }
-	DocEdit& NoUpDownLeave()             { return UpDownLeave(false); }
-	bool     IsUpDownLeave() const       { return updownleave; }
+	DocEdit& After(int a)               { after = a; RefreshStyle(); return *this; }
+	DocEdit& SetFont(Font f)            { font = f; RefreshStyle(); return *this; }
+	DocEdit& SetFilter(int (*f)(int c)) { filter = f; return *this; }
+	DocEdit& AutoHideSb(bool b = true)  { sb.AutoHide(b); return *this; }
+	DocEdit& UpDownLeave(bool u = true) { updownleave = u; return *this; }
+	DocEdit& NoUpDownLeave()            { return UpDownLeave(false); }
+	bool     IsUpDownLeave() const      { return updownleave; }
 
 	typedef DocEdit CLASSNAME;
 

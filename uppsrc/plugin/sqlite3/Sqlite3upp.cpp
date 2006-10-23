@@ -1,72 +1,9 @@
-//////////////////////////////////////////////////////////////////////
-
 #include <Core/Core.h>
 #include <Sql/Sql.h>
 #include "lib/sqlite3.h"
 #include "Sqlite3.h"
 
 #define LLOG(x) // LOG(x)
-
-//////////////////////////////////////////////////////////////////////
-
-const char *Sqlite3ReadString(const char *s, String& stmt) {
-	stmt.Cat(*s);
-	int c = *s++;
-	for(;;) {
-		if(*s == '\0') break;
-		else
-		if(*s == '\'' && s[1] == '\'') {
-			stmt.Cat('\'');
-			s += 2;
-		}
-		else
-		if(*s == c) {
-			stmt.Cat(c);
-			s++;
-			break;
-		}
-		else
-		if(*s == '\\') {
-			stmt.Cat('\\');
-			if(*++s)
-				stmt.Cat(*s++);
-		}
-		else
-			stmt.Cat(*s++);
-	}
-	return s;
-}
-
-bool Sqlite3PerformScript(const String& txt, StatementExecutor& se, Gate2<int, int> progress_canceled) {
-	const char *text = txt;
-	for(;;) {
-		String stmt;
-		while(*text <= 32 && *text > 0) text++;
-		if(*text == '\0') break;
-		for(;;) {
-			if(*text == '\0')
-				break;
-			if(*text == ';')
-				break;
-			else
-			if(*text == '\'')
-				text = Sqlite3ReadString(text, stmt);
-			else
-			if(*text == '\"')
-				text = Sqlite3ReadString(text, stmt);
-			else
-				stmt.Cat(*text++);
-		}
-		if(progress_canceled(text - txt.Begin(), txt.GetLength()))
-			return false;
-		if(!se.Execute(stmt))
-			return false;
-		if(*text) text++;
-	}
-	return true;
-}
-
-//////////////////////////////////////////////////////////////////////
 
 class Sqlite3Connection : public SqlConnection {
 protected:
@@ -93,44 +30,37 @@ private:
 	bool             got_first_row;
 	bool             got_row_data;
 
-	VectorMap<String,sqlite3_stmt*> prepared_statements;
-	int              prep_stmt_size;
-
 	friend class Sqlite3Session;
-	sqlite3_stmt*    GetCurrentStatement() { return current_stmt; }
 	void             BindParam(int i, const Value& r);
-	void             FlushStatements();
-	sqlite3_stmt*    Compile(String statement);
 
 public:
 	Sqlite3Connection(Sqlite3Session& the_session, sqlite3 *the_db);
 	virtual ~Sqlite3Connection();
 };
 
-Sqlite3Connection::Sqlite3Connection(Sqlite3Session& the_session, sqlite3 *the_db) :
-	session(the_session), db(the_db), current_stmt(NULL), got_first_row(false), got_row_data(false)
+Sqlite3Connection::Sqlite3Connection(Sqlite3Session& the_session, sqlite3 *the_db)
+:	session(the_session), db(the_db), current_stmt(NULL), got_first_row(false), got_row_data(false)
+{}
+
+Sqlite3Connection::~Sqlite3Connection()
 {
-	prep_stmt_size = 0;
-}
-Sqlite3Connection::~Sqlite3Connection() {
 	Cancel();
-	FlushStatements();
 }
 
-void Sqlite3Connection::FlushStatements()
+void Sqlite3Connection::Cancel()
 {
-	LLOG("Sqlite3Connection::FlushStatements(" << prepared_statements.GetCount() << " total)");
-	for (int i = 0; i < prepared_statements.GetCount(); ++i) {
-		LLOG("Sqlite3Connection::FlushStatements(" << FormatIntHex(prepared_statements[i]) << ") - " << prepared_statements.GetKey(i));
-		int retval = sqlite3_finalize(prepared_statements[i]);
-		if (SQLITE_OK != retval)
-			session.SetError(sqlite3_errmsg(db),String("Finalizing statement: ")+prepared_statements.GetKeys()[i]);
+	if (current_stmt) {
+		if (sqlite3_reset(current_stmt) != SQLITE_OK)
+			session.SetError(sqlite3_errmsg(db), "Resetting statement: " + current_stmt_string);
+		if (sqlite3_finalize(current_stmt) != SQLITE_OK)
+			session.SetError(sqlite3_errmsg(db), "Finalizing statement: "+ current_stmt_string);
+		current_stmt = NULL;
+		current_stmt_string.Clear();
 	}
-	prepared_statements.Clear();
-	prep_stmt_size = 0;
 }
 
-void Sqlite3Connection::SetParam(int i, const Value& r) {
+void Sqlite3Connection::SetParam(int i, const Value& r)
+{
 	LLOG(Format("SetParam(%d,%s)",i,r.ToString()));
 	param.At(i) = r;
 }
@@ -171,7 +101,9 @@ void Sqlite3Connection::BindParam(int i, const Value& r) {
 			NEVER();
 	}
 }
-int ParseForArgs(const char* sqlcmd) {
+
+int ParseForArgs(const char* sqlcmd)
+{
 	int numargs = 0;
 	const char* ptr = sqlcmd;
 	while (*ptr)
@@ -182,13 +114,15 @@ int ParseForArgs(const char* sqlcmd) {
 			++numargs;
 	return numargs;
 }
+
 bool Sqlite3Connection::Execute() {
 	Cancel();
-	current_stmt_string = statement;
-	current_stmt = Compile(current_stmt_string);
-	// Error compiling statement
-	if (NULL == current_stmt)
+	if (SQLITE_OK != sqlite3_prepare(db,statement,statement.GetLength(),&current_stmt,NULL)) {
+		LLOG("Sqlite3Connection::Compile(" << statement << ") -> error");
+		session.SetError(sqlite3_errmsg(db), String("Preparing: ") + statement);
 		return false;
+	}
+	current_stmt_string = statement;
 	int nparams = ParseForArgs(current_stmt_string);
 	ASSERT(nparams == param.GetCount());
 	for (int i = 0; i < nparams; ++i)
@@ -292,37 +226,10 @@ void Sqlite3Connection::GetColumn(int i, Ref f) const {
 	}
 	return;
 }
-void Sqlite3Connection::Cancel() {
-	if (NULL != current_stmt) {
-		int retcode = sqlite3_reset(current_stmt);
-		if (retcode != SQLITE_OK)
-			session.SetError(sqlite3_errmsg(db),String("Resetting statement: ")+current_stmt_string);
-		//ASSERT(SQLITE_OK == retcode);
-		current_stmt = NULL;
-	}
-}
 SqlSession& Sqlite3Connection::GetSession() const { return session; }
 String Sqlite3Connection::ToString() const {
 	return statement;
 }
-sqlite3_stmt *Sqlite3Connection::Compile(String statement) {
-	int index = prepared_statements.Find(statement);
-	if(index >= 0)
-		return prepared_statements[index];
-	if(prep_stmt_size + statement.GetLength() >= 1000000)
-		FlushStatements();
-	sqlite3_stmt* stmt = NULL;
-	if (SQLITE_OK != sqlite3_prepare(db,statement,statement.GetLength(),&stmt,NULL)) {
-		LLOG("Sqlite3Connection::Compile(" << statement << ") -> error");
-		session.SetError(sqlite3_errmsg(db), String("Preparing: ")+statement );
-		return NULL;
-	}
-	prepared_statements.Add(statement,stmt);
-	LLOG("Sqlite3Connection::Compile(" << statement << ") = " << FormatIntHex(stmt));
-	prep_stmt_size += statement.GetLength();
-	return stmt;
-}
-
 
 //////////////////////////////////////////////////////////////////////
 
@@ -341,6 +248,8 @@ bool Sqlite3Session::Open(const char* filename) {
 void Sqlite3Session::Close() {
 	if (NULL != db) {
 		int retval;
+		if(&SQL.GetSession() == this)
+			SQL.Cancel();
 		retval = sqlite3_close(db);
 		// If this function fails, that means that some of the
 		// prepared statements have not been finalized.
@@ -389,6 +298,7 @@ Vector<String> Sqlite3Session::EnumTables(String database) {
 		out.Add(sql[0]);
 	return out;
 }
+/*
 Vector<SqlColumnInfo> Sqlite3Session::EnumColumns(String database, String table) {
 	Vector<SqlColumnInfo> out;
 	Sqlite3Connection sql(*this,db);
@@ -413,22 +323,65 @@ Vector<SqlColumnInfo> Sqlite3Session::EnumColumns(String database, String table)
 	}
 	sqlite3_reset(s);
 
-	/*
-	String cmd = Format("select * from %s limit 0;",table);
-	sqlite3_stmt* s = // sql.Compile(); // doesn't work
-	int retcode = sqlite3_step(s);
-	ASSERT(SQLITE_DONE == retcode);
-	for (int i = 0; i < sqlite3_column_count(s); i++) {
-		SqlColumnInfo info;
-		info.name = sqlite3_column_name(s,i);
-		info.type = STRING_V;
-		info.width = info.decimals = info.scale = info.prec = 0;
-		out.Add(info);
-	}
-	sqlite3_reset(s);
-	*/
 	return out;
 }
-
+*/
 
 //////////////////////////////////////////////////////////////////////
+
+const char *Sqlite3ReadString(const char *s, String& stmt) {
+	stmt.Cat(*s);
+	int c = *s++;
+	for(;;) {
+		if(*s == '\0') break;
+		else
+		if(*s == '\'' && s[1] == '\'') {
+			stmt.Cat('\'');
+			s += 2;
+		}
+		else
+		if(*s == c) {
+			stmt.Cat(c);
+			s++;
+			break;
+		}
+		else
+		if(*s == '\\') {
+			stmt.Cat('\\');
+			if(*++s)
+				stmt.Cat(*s++);
+		}
+		else
+			stmt.Cat(*s++);
+	}
+	return s;
+}
+
+bool Sqlite3PerformScript(const String& txt, StatementExecutor& se, Gate2<int, int> progress_canceled) {
+	const char *text = txt;
+	for(;;) {
+		String stmt;
+		while(*text <= 32 && *text > 0) text++;
+		if(*text == '\0') break;
+		for(;;) {
+			if(*text == '\0')
+				break;
+			if(*text == ';')
+				break;
+			else
+			if(*text == '\'')
+				text = Sqlite3ReadString(text, stmt);
+			else
+			if(*text == '\"')
+				text = Sqlite3ReadString(text, stmt);
+			else
+				stmt.Cat(*text++);
+		}
+		if(progress_canceled(text - txt.Begin(), txt.GetLength()))
+			return false;
+		if(!se.Execute(stmt))
+			return false;
+		if(*text) text++;
+	}
+	return true;
+}

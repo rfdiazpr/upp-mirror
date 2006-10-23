@@ -9,18 +9,14 @@ class VectorDesigner : public IdeDesigner, public VectorDesHost
 	One<VectorDes> designer;
 
 public:
-	VectorDesigner()                               { designer = new VectorDes(*this); Add(designer->SizePos()); }
-	~VectorDesigner()                              { Shutdown(); }
+	VectorDesigner()                               { designer = new VectorDes(*this); }
+	~VectorDesigner()                              { designer->Shutdown(); }
 
-	virtual void   Close()                         { designer->CloseDesigner(); }
-	virtual void   ChildGotFocus()                 { if(!IsShutdown()) designer->FrameFocus(); }
-	virtual bool   Key(dword key, int repcnt)      { return designer->Key(key, repcnt); }
 	virtual String GetFileName() const             { return filename; }
 	virtual void   Save();
-	virtual void   SyncUsc()                       {}
-	virtual void   ActivateDesigner()              { SetForeground(); }
 	virtual void   SaveEditPos();
 	virtual void   EditMenu(Bar& menu)             { designer->EditMenu(menu); }
+	virtual Ctrl&  DesignerCtrl()                  { return *designer; }
 
 	void           Serialize(Stream& s)            { designer->Serialize(s); }
 	bool           Load(const char *fn);

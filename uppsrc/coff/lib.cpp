@@ -319,19 +319,19 @@ void ArchiveJob::WriteArchive(String libraryfile, bool keep_archive_backups)
 void ArchiveJob::WriteIndex(byte *first, byte *second)
 {
 	int nsym = symbol_names.GetCount();
-	PokeML(first, nsym);
+	Poke32be(first, nsym);
 	first += 4;
 	for(int i = 0; i < nsym; i++, first += 4)
-		PokeML(first, objects[symbol_objects[i]].header_offset);
+		Poke32be(first, objects[symbol_objects[i]].header_offset);
 	memcpy(first, symbolnames, symbolnames.GetLength());
-	PokeIL(second, objects.GetCount());
+	Poke32le(second, objects.GetCount());
 	second += 4;
 	for(int i = 0; i < objects.GetCount(); i++, second += 4)
-		PokeIL(second, objects[i].header_offset);
-	PokeIL(second, nsym);
+		Poke32le(second, objects[i].header_offset);
+	Poke32le(second, nsym);
 	second += 4;
 	for(int i = 0; i < symbol_names.GetCount(); i++, second += 2)
-		PokeIW(second, symbol_objects[i] + 1);
+		Poke16le(second, symbol_objects[i] + 1);
 	memcpy(second, symbolnames, symbolnames.GetLength());
 }
 

@@ -184,7 +184,7 @@ Point DocEdit::GetCaret(int pos) {
 	return Point(x, GetY(i) + l * fmt.fi.GetHeight());
 }
 
-int  DocEdit::GetCursor(Point p) {
+int  DocEdit::GetCursorPos(Point p) {
 	int pos = 0;
 	for(int i = 0; i < para.GetCount(); i++) {
 		int h = GetHeight(i);
@@ -249,13 +249,13 @@ void DocEdit::PlaceCaret(int newpos, bool select) {
 
 void DocEdit::LeftDown(Point p, dword flags) {
 	SetFocus();
-	PlaceCaret(GetCursor(Point(p.x - 1, p.y + sb - 1)), flags & K_SHIFT);
+	PlaceCaret(GetCursorPos(Point(p.x - 1, p.y + sb - 1)), flags & K_SHIFT);
 	SetCapture();
 }
 
 void DocEdit::MouseMove(Point p, dword flags) {
 	if(!HasCapture()) return;
-	PlaceCaret(GetCursor(Point(p.x - 1, p.y + sb - 1)), true);
+	PlaceCaret(GetCursorPos(Point(p.x - 1, p.y + sb - 1)), true);
 }
 
 Image DocEdit::CursorImage(Point, dword) {
@@ -279,7 +279,7 @@ void DocEdit::VertMove(int delta, bool select, bool scs) {
 		p.y += delta;
 		if(p.y > hy) p.y = hy - 1;
 		if(p.y < 0) p.y = 0;
-		int q = GetCursor(p);
+		int q = GetCursorPos(p);
 		if(q >= 0 && q != cursor && delta < 0 == q < cursor && GetCaret(q).y != yy) {
 			PlaceCaret(q, select);
 			break;
@@ -298,7 +298,7 @@ void DocEdit::VertMove(int delta, bool select, bool scs) {
 void DocEdit::HomeEnd(int x, bool select) {
 	Point p = GetCaret(cursor);
 	p.x = x;
-	PlaceCaret(GetCursor(p), select);
+	PlaceCaret(GetCursorPos(p), select);
 }
 
 bool DocEdit::Key(dword key, int cnt)
@@ -444,7 +444,7 @@ void  DocEdit::RefreshStyle()
 void DocEdit::RightDown(Point p, dword w)
 {
 	SetFocus();
-	int c = GetCursor(Point(p.x - 1, p.y + sb - 1));
+	int c = GetCursorPos(Point(p.x - 1, p.y + sb - 1));
 	int l, h;
 	if(!GetSelection(l, h) || c < l || c >= h)
 		PlaceCaret(c, false);

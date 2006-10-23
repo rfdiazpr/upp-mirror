@@ -318,7 +318,15 @@ Rect Ctrl::GetDefaultWindowRect()
 
 Rect Ctrl::GetWorkArea()
 {
-	return RectC(0, 0, Xwidth, Xheight);
+	static Rect r;
+	if(r.right == 0) {
+		Vector<int> x = GetPropertyInts(Xroot, XAtom("_NET_WORKAREA"));
+		if(x.GetCount())
+			r = RectC(x[0], x[1], x[2], x[3]);
+		else
+			r = RectC(0, 0, Xwidth, Xheight);
+	}
+	return r;
 }
 
 int Ctrl::GetKbdDelay()

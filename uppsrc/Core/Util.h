@@ -143,6 +143,8 @@ inline void   EndianSwap(dword& v) { byte *x = (byte *)&v; Swap(x[0], x[3]); Swa
 inline void   EndianSwap(int& v)   { EndianSwap(*(dword *)&v); }
 inline void   EndianSwap(long& v)  { EndianSwap(*(dword *)&v); }
 
+/*
+//deprecated
 #ifdef CPU_X86
 inline int    PeekIW(const void *ptr)           { return *(const word *)ptr; }
 inline int    PeekIL(const void *ptr)           { return *(const int *)ptr; }
@@ -171,7 +173,7 @@ int           PeekMW(const void *ptr);
 int           PeekML(const void *ptr);
 void          PokeMW(void *ptr, int value);
 void          PokeML(void *ptr, int value);
-
+*/
 // Math utils
 
 inline double  sqr          (double a)                      { return a * a; }

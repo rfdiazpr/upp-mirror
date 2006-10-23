@@ -80,8 +80,6 @@ struct VectorDesModule : public IdeModule {
 	virtual IdeDesigner *CreateDesigner(const char *path, byte cs) {
 		if(IsVecFile(path)) {
 			VectorDesigner *d = CreateVectorDesigner(path, ctrl_key);
-			if(d)
-				d->SizePos();
 			return d;
 		}
 		return false;

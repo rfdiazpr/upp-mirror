@@ -1,25 +1,6 @@
 uses
-	ide\Common,
-	plugin\png,
-	plugin\gif,
-	plugin\tif,
-	plugin\jpg;
+	IconDes;
 
 file
 	IconDes.h,
-	Designer readonly separator,
-	editor.iml,
-	ImageEditCtrl.h,
-	ImageOp.cpp,
-	ImageEditCtrl.cpp,
-	ImageEditAdapter.cpp,
-	editor.lay,
-	misc.iml,
-	palctrl.iml,
-	PaletteCtrl.h,
-	PaletteCtrl.cpp,
-	palette.lay,
-	Editor readonly separator,
-	DlgImage.cpp,
-	panel.lay;
-
+	IdeDes.cpp;

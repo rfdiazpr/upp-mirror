@@ -25,10 +25,8 @@ void AlphaBlend(RGBA *b, const RGBA *f, int len);
 void AlphaBlend(RGBA *b, const RGBA *f, int len, Color color);
 int  GetChMaskPos32(dword mask);
 
-//temporary support for legacy .iml (TODO remove)
 const byte *UnpackRLE(RGBA *t, const byte *src, int len);
 String      PackRLE(const RGBA *s, int len);
-
 
 inline int  Grayscale(int r, int g, int b) { return (77 * r + 151 * b + 28 * r) >> 8; }
 inline int  Grayscale(const RGBA& c)       { return Grayscale(c.r, c.g, c.b); }
@@ -51,9 +49,11 @@ class ImageBuffer : NoCopy {
 	Size         size;
 	Buffer<RGBA> pixels;
 	Point        hotspot;
+	Point        spot2;
 	Size         dots;
 
 	void         Set(Image& img);
+	void         DeepCopy(const ImageBuffer& img);
 
 	RGBA*        Line(int i) const      { ASSERT(i >= 0 && i < size.cy); return (RGBA *)~pixels + i * size.cx; }
 
@@ -67,6 +67,9 @@ public:
 
 	void  SetHotSpot(Point p)           { hotspot = p; }
 	Point GetHotSpot() const            { return hotspot; }
+
+	void  Set2ndSpot(Point p)           { spot2 = p; }
+	Point Get2ndSpot() const            { return spot2; }
 
 	void  SetDots(Size sz)              { dots = sz; }
 	Size  GetDots() const               { return dots; }
@@ -122,7 +125,7 @@ private:
 		HBITMAP     himg;
 		RGBA       *section;
 
-		void CreateHBMP(HDC dc);
+		void CreateHBMP(HDC dc, const RGBA *data);
 #endif
 
 #ifdef PLATFORM_X11
@@ -183,6 +186,7 @@ public:
 	int   GetHeight() const                   { return GetSize().cy; }
 	int   GetLength() const;
 	Point GetHotSpot() const;
+	Point Get2ndSpot() const;
 	Size  GetDots() const;
 	int   GetKind() const;
 
@@ -230,14 +234,16 @@ public:
 	static Image SizeBottom();
 	static Image SizeBottomRight();
 
-	// IML support ("private")
+	// IML support ("private"), deprecated - legacy .iml
 	struct Init {
 		const char *const *scans;
 		int16 scan_count;
-		const char info[24];
+		char info[24];
 	};
 	explicit Image(const Init& init);
 };
+
+Vector<Image> UnpackImlData(const String& data);
 
 class Iml {
 	struct IImage : Moveable<IImage> {
@@ -246,6 +252,11 @@ class Iml {
 
 		IImage() { loaded = false; }
 	};
+	struct Data : Moveable<Data> {
+		const char *data;
+		int   len, count;
+	};
+	Vector<Data> data;
 	VectorMap<String, IImage> map;
 	const Image::Init *img_init;
 	const char **name;
@@ -264,7 +275,8 @@ public:
 	int    GetBinSize() const;
 #endif
 
-	Iml(const Image::Init *img_init, const char **name, int n);
+	Iml(const Image::Init *img_init, const char **name, int n);//Deprecated - legacy .iml
+	void AddData(const byte *data, int len, int count);
 };
 
 void   Register(const char *imageclass, Iml& iml);

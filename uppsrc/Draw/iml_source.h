@@ -3,10 +3,20 @@
 //$
 
 #define IMAGE_META(k, v)
+
+#define IMAGE_ID(n)
+#define IMAGE_BEGIN_DATA
+#define IMAGE_END_DATA(n, c)
+#define IMAGE_DATA(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,aa,ab,ac,ad,ae,af,b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,ba,bb,bc,bd,be,bf)
+
 #define IMAGE_BEGIN(n) const char *COMBINE(COMBINE(IMAGECLASS, _), n##__scans__)[] = {
 #define IMAGE_SCAN(s)  s,
 #define IMAGE_PACKED(n, d) };
+#define IMAGE_DATA_BEGIN
+
+
 #include IMAGEFILE
+
 #undef  IMAGE_BEGIN
 #undef  IMAGE_SCAN
 #undef  IMAGE_PACKED
@@ -20,18 +30,45 @@
 
 
 Iml& IMAGECLASS::Iml() {
-	static Image::Init init[IMAGECLASS::COUNT] = {
+	static Image::Init init[] = {
 	#define IMAGE_PACKED(n, d) { COMBINE(COMBINE(IMAGECLASS, _), n##__scans__), __countof(COMBINE(COMBINE(IMAGECLASS, _), n##__scans__)), d },
-	#include IMAGEFILE
+
+		#include IMAGEFILE
+
+		{ NULL }
 	#undef  IMAGE_PACKED
 	};
 
 	static const char *name[IMAGECLASS::COUNT] = {
 	#define IMAGE_PACKED(n, d) #n,
-	#include IMAGEFILE
+	#undef  IMAGE_ID
+	#define IMAGE_ID(n) #n,
+
+		#include IMAGEFILE
+
 	#undef  IMAGE_PACKED
+	#undef  IMAGE_ID
+	#define IMAGE_ID(n)
+	#define IMAGE_PACKED(n, d)
 	};
 	static ::Iml iml(init, name, COUNT);
+	static bool imlinit;
+	if(!imlinit) {
+		imlinit = true;
+
+	#undef  IMAGE_BEGIN_DATA
+	#undef  IMAGE_DATA
+	#undef  IMAGE_END_DATA
+
+	#define IMAGE_BEGIN_DATA { static const byte data[] = {
+	#define IMAGE_DATA(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,aa,ab,ac,ad,ae,af,b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,ba,bb,bc,bd,be,bf)\
+	                   a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,aa,ab,ac,ad,ae,af,b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,ba,bb,bc,bd,be,bf,
+
+	#define IMAGE_END_DATA(n, c)   }; iml.AddData(data, n, c); }
+
+		#include IMAGEFILE
+
+	}
 	return iml;
 }
 
@@ -73,8 +110,17 @@ struct COMBINE(IMAGECLASS, __Reg) {
 
 static COMBINE(IMAGECLASS, __Reg) COMBINE(IMAGECLASS, ___Reg);
 
+#undef  IMAGE_BEGIN_DATA
+#undef  IMAGE_DATA
+#undef  IMAGE_END_DATA
+#undef  IMAGE_PACKED
+#undef  IMAGE_ID
+
+#undef  IMAGE_SCAN
+#undef  IMAGE_BEGIN
+
 #ifndef IMAGE_KEEP
-#undef  CLASSNAME
+#undef  IMAGECLASS
 #undef  IMAGEFILE
 #endif
 

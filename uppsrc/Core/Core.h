@@ -159,6 +159,12 @@
 	#define CPU_LE
 	#define CPU_LITTLE_ENDIAN // is it really?
 	#define CPU_ALIGNED
+#elif defined(flagPPC)
+	#define CPU_32
+	#define CPU_PPC
+	#define CPU_BE
+	#define CPU_BIG_ENDIAN
+	#define CPU_ALIGNED
 #else
 	#define CPU_X86
 	#if defined(__amd64) || defined(_WIN64)

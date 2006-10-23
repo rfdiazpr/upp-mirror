@@ -870,6 +870,7 @@ String OleDBConnection::ToString() const
 OleDBSession::OleDBSession()
 {
 	level = -1;
+	Dialect(MSSQL);
 }
 
 OleDBSession::~OleDBSession()
@@ -1022,7 +1023,6 @@ bool OleDBSession::OpenProp(String propset)
 		}
 		CoTaskMemFree(propset);
 		dialect = DBGUID_DEFAULT; // todo
-		ntl_dialect = SQLD_NEUTRAL;
 		level = 0;
 		return true;
 	}
@@ -1123,11 +1123,6 @@ void OleDBSession::RollbackTo(const String& savepoint)
 bool OleDBSession::IsOpen() const
 {
 	return !!dbinit;
-}
-
-int OleDBSession::GetDialect() const
-{
-	return ntl_dialect;
 }
 
 SqlConnection *OleDBSession::CreateConnection()

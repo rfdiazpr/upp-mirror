@@ -4,23 +4,23 @@ void SqlSchema::FlushColumn() {
 	if(column.IsEmpty()) return;
 	for(int i = items ? 0 : Null; items ? i < items : IsNull(i); i++) {
 		String cn = Format("\t%-20s ", ~Expand("@c", i)) + CurrentType();
-		if (dialect == SQLD_SQLITE3)
+		if(dialect == SQLITE3)
 			cn = Format(" %s ", ~Expand("@c", i)) + CurrentType();
 		String attr = Expand(attribute, i);
 		String cd = cn + attr;
 		if(firstcolumn) {
-			if (dialect == SQLD_SQLITE3)
+			if (dialect == SQLITE3)
 				Upgrade() << Expand("create table @t ( ") << cd << " )" << table_suffix << ";\n";
 			else
 				Upgrade() << Expand("create table @t (\n") << cd << "\n)" << table_suffix << ";\n\n";
 		}
 		else
 		{
-			if(dialect == SQLD_MSSQL) {
+			if(dialect == MSSQL) {
 				Upgrade() << Expand("alter table @t add ") << cn << ";\n";
 				Upgrade() << Expand("alter table @t alter column ") << cd << ";\n";
 			}
-			else if (dialect == SQLD_SQLITE3)
+			else if (dialect == SQLITE3)
 				Upgrade() << Expand("alter table @t add ") << cd << ";\n";
 			else
 				Upgrade() << Expand("alter table @t add (\n") << cd << "\n);\n\n";
@@ -198,14 +198,16 @@ void SqlSchema::SaveNormal(const char *dir, const char *name) const {
 SqlSchema::SqlSchema(int dialect_)
 {
 	dialect = dialect_;
-	if(dialect == SQLD_MSSQL)
+	if(dialect == MSSQL)
 		maxidlen = 128;
 	else
 		maxidlen = 24;
 }
 
 void operator*(SqlSchema& schema, const SqlInsert& insert) {
-	schema.Config() << ~insert.Get() << ";\n";
-	schema.ConfigDrop() << ~Delete(insert.GetTable())
-		                    .Where(insert.GetKeyColumn() == insert.GetKeyValue()) << ";\n";
+	schema.Config() << SqlStatement(insert).Get(schema.GetDialect()) << ";\n";
+	schema.ConfigDrop() << SqlStatement(Delete(insert.GetTable())
+		                                .Where(insert.GetKeyColumn() == insert.GetKeyValue()))
+		                   .Get(schema.GetDialect())
+	                    << ";\n";
 }

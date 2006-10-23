@@ -52,3 +52,39 @@ public:
 	Splitter();
 	virtual ~Splitter();
 };
+
+class SplitterFrame : public CtrlFrame, private Ctrl {
+public:
+	virtual void FrameAdd(Ctrl& parent);
+	virtual void FrameRemove();
+	virtual void FrameAddSize(Size& sz);
+	virtual void FrameLayout(Rect& r);
+
+	virtual void Paint(Draw& draw);
+	virtual void LeftDown(Point p, dword keyflags);
+	virtual void MouseMove(Point p, dword keyflags);
+	virtual void LeftUp(Point p, dword keyflags);
+	virtual Image CursorImage(Point p, dword keyflags);
+
+private:
+	int type, size, maxsize;
+	Point ref;
+	int   size0;
+
+public:
+	enum { LEFT, TOP, RIGHT, BOTTOM };
+
+	void Serialize(Stream& s);
+
+	SplitterFrame& Set(Ctrl& c, int size, int type);
+	SplitterFrame& Left(Ctrl& c, int size)    { return Set(c, size, LEFT); }
+	SplitterFrame& Top(Ctrl& c, int size)     { return Set(c, size, TOP); }
+	SplitterFrame& Right(Ctrl& c, int size)   { return Set(c, size, RIGHT); }
+	SplitterFrame& Bottom(Ctrl& c, int size)  { return Set(c, size, BOTTOM); }
+
+	int  GetType() const            { return type; }
+	int  GetSize() const            { return size; }
+	void SetSize(int sz)            { size = sz; RefreshParentLayout(); }
+
+	SplitterFrame();
+};

@@ -275,7 +275,7 @@ void BinObj::FixAuxSymbols(int data_size)
 		memcpy(symbol_table.GetIter(aux_data_scn), &dsecaux, COFF_IMAGE_SIZEOF_SYMBOL);
 	}
 
-	PokeIL(symbol_table_strtbl.Begin(), symbol_table_strtbl.GetCount());
+	Poke32le(symbol_table_strtbl.Begin(), symbol_table_strtbl.GetCount());
 }
 
 void BinObj::WriteFile(String objectfile)
@@ -316,8 +316,8 @@ void BinObj::WriteFile(String objectfile)
 				int align = Align(data.GetLength() + 1);
 				fo.Put('\0', align - data.GetLength());
 				ASSERT(b.len_meta_offset >= 0);
-				PokeIL(&metadata[b.len_meta_offset], data.GetLength());
-				PokeIL(&metadata[b.off_meta_offset], offset);
+				Poke32le(&metadata[b.len_meta_offset], data.GetLength());
+				Poke32le(&metadata[b.off_meta_offset], offset);
 				data_size += align;
 			}
 		}
@@ -394,7 +394,7 @@ int BinObj::AddMetaData(int value, int reloc_symbol)
 {
 	int len = metadata.GetCount();
 	metadata.SetCountR(len + 4);
-	PokeIL(metadata.GetIter(len), value);
+	Poke32le(metadata.GetIter(len), value);
 	if(reloc_symbol >= 0) {
 		COFF_IMAGE_RELOCATION reloc;
 		reloc.VirtualAddress = len;

@@ -341,8 +341,8 @@ static String EncodeMask(const ImageBuffer& mask, bool write_size)
 	StringBuffer out;
 	if(write_size) {
 		char temp[4];
-		PokeIW(temp + 0, mask.GetWidth());
-		PokeIW(temp + 2, mask.GetHeight());
+		Poke16le(temp + 0, mask.GetWidth());
+		Poke16le(temp + 2, mask.GetHeight());
 		out.Cat(temp, 4);
 	}
 	int full = out.GetLength();
@@ -400,8 +400,8 @@ static void DecodeMask(ImageBuffer& mask, String s, bool read_size)
 	Size size = mask.GetSize();
 	const byte *p = s;
 	if(read_size) {
-		size.cx = PeekIW(p);
-		size.cy = PeekIW(p + 2);
+		size.cx = Peek16le(p);
+		size.cy = Peek16le(p + 2);
 		p += 4;
 	}
 	for(int i = 0; i < size.cy && *p; i++) {

@@ -99,6 +99,7 @@ MenuItemBase::MenuItemBase()
 	font = StdFont();
 	leftgap = 16;
 	accesskey = 0;
+	NoWantFocus();
 }
 
 Bar::Item& MenuItemBase::Text(const char *s)
@@ -844,11 +845,15 @@ bool MenuBar::Key(dword key, int count)
 		LLOG("MenuBar::Key(" << key << ") -> IterateFocusForward for " << ::Name(ctrl) << ", pane " << ::Name(&pane));
 		if(HasMouseDeep())
 			GetMouseCtrl()->Refresh();
-		if(ctrl && IterateFocusForward(ctrl, &pane))
+		if(ctrl && IterateFocusForward(ctrl, &pane, false, false, true))
 			return true;
-		if(!pane.GetFirstChild()) return true;
-		if(pane.GetFirstChild()->SetWantFocus()) return true;
-		if(IterateFocusForward(pane.GetFirstChild(), &pane)) return true;
+		Ctrl *f = pane.GetFirstChild();
+		if(!f) return true;
+		if(f->IsEnabled()) {
+			f->SetFocus();
+			return true;
+		}
+		if(IterateFocusForward(pane.GetFirstChild(), &pane, false, false, true)) return true;
 	}
 	else
 	if((horz ? key == K_LEFT : key == K_UP)) {
@@ -856,11 +861,15 @@ bool MenuBar::Key(dword key, int count)
 		LLOG("MenuBar::Key(" << key << ") -> IterateFocusBackward for " << ::Name(ctrl) << ", pane " << ::Name(&pane));
 		if(HasMouseDeep())
 			GetMouseCtrl()->Refresh();
-		if(ctrl && IterateFocusBackward(ctrl, &pane))
+		if(ctrl && IterateFocusBackward(ctrl, &pane, false, true))
 			return true;
-		if(!pane.GetFirstChild()) return true;
-		if(pane.GetLastChild()->SetWantFocus()) return true;
-		if(IterateFocusBackward(pane.GetLastChild(), &pane)) return true;
+		Ctrl *f = pane.GetLastChild();
+		if(!f) return true;
+		if(f->IsEnabled()) {
+			f->SetFocus();
+			return true;
+		}
+		if(IterateFocusBackward(pane.GetLastChild(), &pane, false, true)) return true;
 	}
 	else
 	if(parentmenu && !parentmenu->IsChild() && key == K_LEFT || key == K_ESCAPE) {

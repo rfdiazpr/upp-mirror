@@ -188,7 +188,7 @@ bool Socket::Data::OpenClient(const char *host, int port, bool nodelay, dword *m
 
 	while(bind(socket, (const sockaddr *)&sin, sizeof(sin))) {
 		if(::GetLastError() != SOCKERR(EINPROGRESS) || !IsNull(timeout) && msecs(ticks) >= timeout) {
-			SetSockError(NFormat("bind(host=%s, port=%d)", FormatIP(PeekML(&addr.sin_addr)), port));
+			SetSockError(NFormat("bind(host=%s, port=%d)", FormatIP(Peek32be(&addr.sin_addr)), port));
 			return false;
 		}
 		Sleep(500);
@@ -319,8 +319,8 @@ SOCKET Socket::Data::AcceptRaw(dword *ipaddr, int timeout_msec)
 	}
 //	puts("Socket::Accept: socket accepted...");
 	if(ipaddr)
-		*ipaddr = PeekML(&addr.sin_addr);
-	SLOG("Socket::Accept() -> " << (int)connection << " &" << FormatIP(PeekML(&addr.sin_addr)));
+		*ipaddr = Peek32be(&addr.sin_addr);
+	SLOG("Socket::Accept() -> " << (int)connection << " &" << FormatIP(Peek32be(&addr.sin_addr)));
 	return connection;
 }
 

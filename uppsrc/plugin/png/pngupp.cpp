@@ -2,7 +2,7 @@
 #include "png.h"
 #include <plugin/png/lib/png.h>
 
-#define LLOG(x)  LOG(x)
+#define LLOG(x)  // LOG(x)
 
 static void png_read_stream(png_structp png_ptr, png_bytep buffer, png_size_t length)
 {

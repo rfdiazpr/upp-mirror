@@ -249,7 +249,6 @@ public:
 	Oracle7RefCursorStub(SqlConnection *cn) : cn(cn) {}
 
 	virtual SqlConnection *CreateConnection() { return cn; }
-	virtual int            GetDialect() const { return SQLD_ORACLE; }
 
 private:
 	SqlConnection         *cn;
@@ -875,6 +874,7 @@ Oracle7::Oracle7() {
 	autocommit = false;
 	level = 0;
 	tmode = NORMAL;
+	Dialect(ORACLE);
 }
 
 Oracle7::~Oracle7() {

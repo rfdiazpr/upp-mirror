@@ -72,6 +72,13 @@ Value SqlConnection::GetInsertedId() const
 	return Null;
 }
 
+String Sql::Compile(const SqlStatement& s)
+{
+	byte dialect = GetDialect();
+	ASSERT(dialect);
+	return s.Get(dialect);
+}
+
 void Sql::Clear() {
 	if(cn) {
 		cn->Cancel();
@@ -372,12 +379,9 @@ bool Sql::Update(Fields nf) {
 	return Execute(String ("update ") + w.table + " set " + w.list + " where " + w.key + " = ?");
 }
 
-void Sql::operator=(SqlSource& s) {
+void Sql::Assign(SqlSource& s) {
 	if(cn) delete cn;
 	cn = s.CreateConnection();
-#ifndef NOAPPSQL
-	if(this == &SQL) SetDefaultSQLDialect(s.GetDialect());
-#endif
 }
 
 void   Sql::SetError(const String& err, const String& stmt) { GetSession().SetError(err, stmt); }
@@ -397,7 +401,7 @@ void   Sql::RollbackTo(const String& savepoint)   { GetSession().RollbackTo(save
 bool   Sql::IsOpen()                              { return cn && GetSession().IsOpen(); }
 
 #ifndef NOAPPSQL
-GLOBAL_VARP(Sql, AppCursor, (NULLSQL))
+GLOBAL_VAR(AppSql, AppCursor)
 #endif
 
 #ifndef NOAPPSQL
@@ -424,6 +428,18 @@ Sql::Sql(const char *stmt, SqlSource& s) {
 	SetStatement(stmt);
 }
 
+#ifndef NOAPPSQL
+Sql::Sql(const SqlStatement& stmt) {
+	cn = SQL.GetSession().CreateConnection();
+	SetStatement(stmt);
+}
+#endif
+
+Sql::Sql(const SqlStatement& stmt, SqlSource& s) {
+	cn = s.CreateConnection();
+	SetStatement(stmt);
+}
+
 Sql::Sql(SqlConnection *connection)
 : cn(connection)
 {}
@@ -439,6 +455,7 @@ SqlSession::SqlSession()
 	logerrors = false;
 	usrlog = false;
 	tracetime = false;
+	dialect = 255;
 }
 
 SqlSession::~SqlSession() {}
@@ -465,9 +482,8 @@ Vector<SqlColumnInfo> SqlSession::EnumColumns(String database, String table)
 	Sql cursor(*this);
 	Vector<SqlColumnInfo> info;
 	SqlBool none;
-	none.Dialect(GetDialect());
 	none.SetFalse();
-	if(Select(SqlAll()).From(SqlSet(SqlCol(database + '.' + table))).Where(none).Execute(cursor)) {
+	if(cursor.Execute(Select(SqlAll()).From(SqlSet(SqlCol(database + '.' + table))).Where(none))) {
 		info.SetCount(cursor.GetColumns());
 		for(int i = 0; i < info.GetCount(); i++)
 			info[i] = cursor.GetColumnInfo(i);

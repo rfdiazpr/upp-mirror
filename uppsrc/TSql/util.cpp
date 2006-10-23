@@ -60,22 +60,26 @@ public:
 
 	virtual void Field(const char *name, Ref f)
 	{
-		columns.Cat(SqlCol(name));
-		values.Cat(Value(f));
+		columns.Add(SqlId(name));
+		values.Add(Value(f));
 	}
 
-	SqlSet       Get(const SqlVal& from_table) const       { return GetRaw(Nvl(~from_table, table)); }
-	SqlSet       GetSchema(const SqlVal& from_table) const { return GetRaw(SchemaTableName(Nvl(~from_table, table))); }
+	SqlInsert    Get(const SqlVal& from_table) const       { return GetRaw(Nvl(~from_table, table)); }
+	SqlInsert    GetSchema(const SqlVal& from_table) const { return GetRaw(SchemaTableName(Nvl(~from_table, table))); }
 
 private:
-	SqlSet       GetRaw(const String& dest) const
+	SqlInsert    GetRaw(const String& dest) const
 	{
-		return SqlSet(NFormat("insert into %s %s values %s", dest, columns(), values()), SqlSet::SETOP);
+		SqlId d = SqlId(dest);
+		SqlInsert ins(d);
+		for(int i = 0; i < columns.GetCount(); i++)
+			ins(columns[i], values[i]);
+		return ins;
 	}
 
 private:
-	SqlSet       columns;
-	SqlSet       values;
+	Vector<SqlId>  columns;
+	Vector<SqlVal>  values;
 };
 
 class UpdateColumns : public FieldOperator
@@ -85,25 +89,27 @@ public:
 
 	virtual void Field(const char *name, Ref f)
 	{
-		if(!list.IsEmpty())
-			list.Cat(", ");
-		list.Cat(name);
-		list.Cat(" = ");
-		list.Cat(~SqlVal(f));
+		columns.Add(SqlId(name));
+		values.Add(Value(f));
 	}
 
-	operator     bool () const                             { return !list.IsEmpty(); }
-	SqlSet       Get(const SqlVal& from_table) const       { return GetRaw(Nvl(~from_table, table)); }
-	SqlSet       GetSchema(const SqlVal& from_table) const { return GetRaw(SchemaTableName(Nvl(~from_table, table))); }
+	operator     bool () const                             { return columns.GetCount(); }
+	SqlUpdate    Get(const SqlVal& from_table) const       { return GetRaw(Nvl(~from_table, table)); }
+	SqlUpdate    GetSchema(const SqlVal& from_table) const { return GetRaw(SchemaTableName(Nvl(~from_table, table))); }
 
 private:
-	SqlSet       GetRaw(const String& dest) const
+	SqlUpdate    GetRaw(const String& dest) const
 	{
-		return SqlSet(NFormat("update %s set %s", dest, list), SqlSet::SETOP);
+		SqlId d = SqlId(dest);
+		SqlUpdate u(d);
+		for(int i = 0; i < columns.GetCount(); i++)
+			u(columns[i], values[i]);
+		return u;
 	}
 
 private:
-	String       list;
+	Vector<SqlId>   columns;
+	Vector<SqlVal>  values;
 };
 
 class GetValue : public FieldOperator
@@ -237,7 +243,7 @@ SqlSelect SelectColumns(Fields nf)
 	return Select(helper.columns);
 }
 
-SqlSet SelectTable(Fields nf)
+SqlSelect SelectTable(Fields nf)
 {
 	SqlUtil::SelectColumns helper;
 	nf(helper);
@@ -245,7 +251,7 @@ SqlSet SelectTable(Fields nf)
 	return Select(helper.columns).From(SqlId(helper.table));
 }
 
-SqlSet SelectSchemaTable(Fields nf)
+SqlSelect SelectSchemaTable(Fields nf)
 {
 	SqlUtil::SelectColumns helper;
 	nf(helper);
@@ -295,14 +301,19 @@ void FetchSeq(Fields fields, Sql& cursor)
 }
 */
 
-String ForceInsertRowid(const SqlSet& insert, Sql& cursor)
+String ForceInsertRowid(const String& insert, Sql& cursor)
 {
-	if(!cursor.Execute(~insert + " returning ROWID into ?%s"))
+	if(!cursor.Execute(insert + " returning ROWID into ?%s"))
 		throw SqlExc(cursor.GetSession());
 	if(!cursor.Fetch())
 		throw Exc(t_("FETCH internal error (ForceInsertRowid)"));
 	ASSERT(!IsNull(cursor[0]));
 	return cursor[0];
+}
+
+String ForceInsertRowid(const SqlInsert& insert, Sql& cursor)
+{
+	return ForceInsertRowid(SqlStatement(insert).Get(cursor.GetDialect()), cursor);
 }
 
 String ForceInsertRowid(Fields nf, Sql& cursor)
@@ -338,7 +349,7 @@ void ForceInsert(SqlId table, Fields nf, Sql& cursor)
 {
 	SqlUtil::InsertColumns helper;
 	nf(helper);
-	helper.Get(table).Force(cursor);
+	cursor & SqlStatement(helper.Get(table));
 }
 
 void ForceUpdate(Fields nf, SqlId key, const Value& keyval, Sql& cursor)
@@ -350,7 +361,7 @@ void ForceUpdate(SqlId table, Fields nf, SqlId key, const Value& keyval, Sql& cu
 {
 	SqlUtil::UpdateColumns helper;
 	nf(helper);
-	helper.Get(table).Where(key == keyval).Force(cursor);
+	cursor & helper.Get(table).Where(key == keyval);
 }
 
 void ForceDelete(SqlId table, SqlId key, const Value& keyval, Sql& cursor)
@@ -426,9 +437,9 @@ Vector<String>& SyncSchemaStrColumn(Vector<String>& dest, SqlId col, const SqlVa
 	return dest;
 }
 
-bool IsNotEmpty(const SqlSet& select, Sql& cursor)
+bool IsNotEmpty(const SqlSelect& select, Sql& cursor)
 {
-	return select.Execute(cursor) && cursor.Fetch();
+	return cursor * select && cursor.Fetch();
 }
 
 bool IsNotEmpty(const SqlVal& table, const SqlBool& cond, Sql& cursor)
@@ -439,7 +450,6 @@ bool IsNotEmpty(const SqlVal& table, const SqlBool& cond, Sql& cursor)
 bool IsNotEmpty(const SqlVal& table, SqlId column, const Value& value, Sql& cursor)
 {
 	return IsNotEmpty(table, column == value, cursor);
-
 }
 
 bool IsNotSchemaEmpty(const SqlVal& table, const SqlBool& cond, Sql& cursor)
@@ -510,13 +520,15 @@ bool LockSchemaSql(const SqlVal& table, SqlId column, const Value& value, Sql& c
 #endif
 */
 
-SqlSelect SelectHint(const char *hint, SqlSet set)
-{
-	return hint && *hint ? SqlSelect(SqlSetC(String().Cat() << "/*+ " << hint << " */ " << ~set)) : SqlSelect(set);
-}
+//SqlSelect SelectHint(const char *hint, SqlSet set)
+//{
+//	return hint && *hint ? SqlSelect(SqlSet(String().Cat() << "/*+ " << hint << " */ " << ~set), SqlSet::SET)
+//	                     : SqlSelect(set);
+//}
 
 static inline void sCat(SqlSet& s, SqlVal v) { s.Cat(v); }
 
+/*
 #define E__SCat(I)       sCat(set, p##I)
 
 #define E__QSelectF(I) \
@@ -526,7 +538,7 @@ SqlSelect SelectHint(const char *hint, __List##I(E__SqlVal)) { \
 	return SelectHint(hint, set); \
 }
 __Expand(E__QSelectF);
-
+*/
 SqlSet DeleteHint(const char *hint, const SqlVal& table)
 {
 	return SqlSet(String().Cat() << "delete /*+ " << hint << " */ from " << ~table, SqlSet::SETOP);
@@ -539,26 +551,17 @@ SqlSet DeleteSchemaHint(const char *hint, const SqlVal& table)
 
 SqlVal Alias(const SqlVal& value, const SqlVal& alias)
 {
-	if(GetSqlDialect(value, alias) == SQLD_MSSQL)
-		return SqlCol(~value + " as " + ~alias);
-	else
-		return SqlCol(~value + " " + ~alias);
+	return SqlCol(~value + SqlCase(MSSQL, " as ")(" ") + ~alias);
 }
 
 SqlVal SchemaAlias(const SqlVal& table, const SqlVal& alias)
 {
-	if(GetSqlDialect(table, alias) == SQLD_MSSQL)
-		return SqlCol(~SchemaTable(table) + " as " + ~alias);
-	else
-		return SqlCol(~SchemaTable(table) + " " + ~alias);
+	return SqlCol(~SchemaTable(table) + SqlCase(MSSQL, " as ")(" ") + ~alias);
 }
 
 SqlVal SchemaAlias(const SqlVal& table)
 {
-	if(GetSqlDialect(table) == SQLD_MSSQL)
-		return SqlCol(~SchemaTable(table) + " as " + ~table);
-	else
-		return SqlCol(~SchemaTable(table) + " " + ~table);
+	return SqlCol(~SchemaTable(table) + SqlCase(MSSQL, " as ")(" ") + ~table);
 }
 
 VectorMap<String, SqlColumnInfo> Describe(const SqlVal& table, Sql& cursor)

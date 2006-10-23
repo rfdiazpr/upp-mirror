@@ -351,7 +351,8 @@ void ColumnList::ClearSelection() {
 			upd = true;
 			RefreshItem(i);
 		}
-	UpdateSelect();
+	if(upd)
+		UpdateSelect();
 }
 
 void ColumnList::SelectOne(int i, bool sel) {

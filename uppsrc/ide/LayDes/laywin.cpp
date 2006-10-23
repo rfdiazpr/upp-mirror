@@ -215,30 +215,27 @@ class CVFrame : public CtrlFrame {
 
 void LayDes::Serialize(Stream& s)
 {
-	int version = 1;
+	int version = 0;
 	s / version;
 	s % setting.gridx % setting.gridy;
 	s % setting.paintgrid % setting.showicons;
 	s % ignoreminsize % usegrid;
-	frame->SerializePlacement(s);
 	s % lsplit % isplit % rsplit;
 	item.SerializeHeader(s);
 	SetBar();
 }
 
+/* TODO remove
 void LayDes::Set(LayDesigner *f)
 {
 	frame = f;
-	frame->Icon(LayImg::RwIconSmall());
-	frame->SetRect(GetDefaultWindowRect());
-	frame->Maximize();
-	frame->Sizeable().Zoomable();
 	frame->Add(lsplit);
 	frame->AddFrame(TopSeparatorFrame());
 	toolbar.AddFrame(LeftSeparatorFrame());
 	frame->Title("Layout designer");
 	frame->ActiveFocus(*this);
 }
+*/
 
 LayDes::LayDes()
 {
@@ -311,24 +308,10 @@ LayDes::LayDes()
 	setting.gridy <<= 4;
 }
 
-void LayDes::CloseDesigner()
-{
-	Save();
-	delete frame;
-}
-
-bool LayDesigner::Key(dword key, int repcnt)
-{
-	if(designer.Key(key, repcnt))
-		return true;
-	return false;
-}
-
 LayDesigner *CreateLayDesigner(const char *filename, byte charset, const char *cfgname)
 {
 	LayDesigner *q = new LayDesigner();
-	LoadFromGlobal(*q, cfgname);
-	q->SetConfigName(cfgname);
+	LoadFromGlobal(*q, "laydes-ctrl");
 	if(q->Load(filename, charset))
 		return q;
 	delete q;
@@ -357,8 +340,6 @@ struct LayDesModule : public IdeModule {
 	virtual IdeDesigner *CreateDesigner(const char *path, byte cs) {
 		if(IsLayFile(path)) {
 			LayDesigner *d = CreateLayDesigner(path, cs, "laydes-ctrl");
-			if(d)
-				d->SizePos();
 			return d;
 		}
 		return false;

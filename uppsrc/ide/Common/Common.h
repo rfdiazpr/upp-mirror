@@ -9,6 +9,8 @@
 #define IMAGEFILE  <ide/Common/common.iml>
 #include <Draw/iml_header.h>
 
+int CharFilterCid(int c);
+
 int    ReadLNG(CParser& p);
 String MakeLNG(int lang);
 
@@ -99,14 +101,15 @@ bool      IdeIsDebugLock();
 
 void      IdeSetBar();
 
-struct IdeDesigner : TopWindow {
+struct IdeDesigner  {
 	virtual String GetFileName() const = 0;
 	virtual void   Save() = 0;
-	virtual void   SyncUsc() = 0;
-	virtual void   ActivateDesigner() = 0;
+	virtual void   SyncUsc()                                        {}
 	virtual void   SaveEditPos() = 0;
 	virtual void   EditMenu(Bar& menu) = 0;
-	virtual int    GetCharset() const                                        { return -1; }
+	virtual int    GetCharset() const                               { return -1; }
+	virtual Ctrl&  DesignerCtrl() = 0;
+	virtual void   SetFocus()                                       { DesignerCtrl().SetFocus(); }
 
 	virtual ~IdeDesigner() {}
 };

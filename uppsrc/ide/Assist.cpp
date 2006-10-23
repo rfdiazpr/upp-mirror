@@ -141,7 +141,9 @@ void AssistEditor::TypeOf(const String& id, Vector<String>& r, bool& code)
 	Vector<String> p = Split(parser.current.pname, ';', false);
 	q = FindIndex(p, id);
 	if(q >= 0) {
-		r.Add(Split(parser.current.qptype, ';', false)[q]);
+		p = Split(parser.current.qptype, ';');
+		if(q < p.GetCount())
+			r.Add(p[q]);
 		return;
 	}
 	String n = parser.current_nest;

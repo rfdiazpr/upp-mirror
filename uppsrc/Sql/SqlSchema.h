@@ -71,7 +71,13 @@ public:
 	SqlSchema& SchemaName(String sch)                          { schemaname = sch; return *this; }
 	SqlSchema& MaxIDLen(int n)                                 { maxidlen = n; return *this; }
 
-	SqlSchema(int dialect = GetDefaultSQLDialect());
+	int        GetDialect() const                              { return dialect; }
+
+#ifndef NOAPPSQL
+	SqlSchema(int dialect = SQL.GetDialect());
+#else
+	SqlSchema(int dialect);
+#endif
 	virtual ~SqlSchema() {}
 };
 

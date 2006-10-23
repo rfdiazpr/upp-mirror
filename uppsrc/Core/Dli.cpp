@@ -36,7 +36,7 @@ bool PeFile::Open(const char *_data)
 	data = _data;
 	if(!data || data[0] != 'M' || data[1] != 'Z')
 		return false;
-	int pe = PeekIL(data + 0x3C);
+	int pe = Peek32le(data + 0x3C);
 	if(IsBadReadPtr(data + pe, sizeof(IMAGE_NT_HEADERS)))
 		return false;
 	if(memcmp(data + pe, "PE\0\0", 4))

@@ -3,7 +3,7 @@
 #define LLOG(x) // LOG(x)
 
 bool Print(Report& r, int i, const char *_name) {
-	PrinterJob pd;
+	PrinterJob pd(_name);
 	pd.CurrentPage(i);
 	pd.MinMaxPage(0, r.GetCount() - 1);
 	Size pgsz = r.GetPage(0).GetSize();

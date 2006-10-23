@@ -84,7 +84,7 @@ String::String(const String& s) : B(s)
 }
 
 String::String(const char *s) : B(s) {}
-String::String(const String& s, int n) : B(~s, s.GetLength()) {}
+String::String(const String& s, int n) : B(~s, n) { ASSERT(n <= s.GetLength() + 1); }
 String::String(const char *s, int n) : B(s, n) {}
 String::String(const byte *s, int n) : B((char *)s, n) {}
 String::String(const char *s, const char *lim) : B(s, lim - s) {}
@@ -260,7 +260,7 @@ WString::WString(const WString& s) : B(s) {}
 
 WString::WString(const wchar *s) : B(s) {}
 //WString::WString(wchar *s) : B(s) {}
-WString::WString(const WString& s, int n) : B(~s, s.GetLength()) {}
+WString::WString(const WString& s, int n) : B(~s, n) { ASSERT(n <= s.GetLength() + 1); }
 WString::WString(const wchar *s, int n) : B(s, n) {}
 WString::WString(const wchar *s, const wchar *lim) : B(s, lim - s) {}
 WString::WString(const char *s) : B(ToUnicode(s, s ? strlen(s) : 0, CHARSET_DEFAULT)) {}

@@ -275,7 +275,7 @@ public:
 	Oracle8RefCursorStub(SqlConnection *cn) : cn(cn) {}
 	virtual SqlConnection *CreateConnection() { return cn; }
 
-	virtual int            GetDialect() const { return SQLD_ORACLE; }
+	virtual int            GetDialect() const { return ORACLE; }
 
 private:
 	SqlConnection *cn;
@@ -930,6 +930,7 @@ Oracle8::Oracle8() {
 	svchp = NULL;
 	tmode = NORMAL;
 	in_session = in_server = false;
+	Dialect(ORACLE);
 }
 
 Oracle8::~Oracle8() {

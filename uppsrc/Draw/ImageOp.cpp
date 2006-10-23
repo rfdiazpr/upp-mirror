@@ -43,15 +43,17 @@ void Over(ImageBuffer& dest, Point p, const Image& src, const Rect& srect)
 			AlphaBlend(dest[p.y++] + p.x, src[sr.top++] + sr.left, sz.cx);
 }
 
-void  Copy(Image& dest, Point p, const Image& src, const Rect& srect)
+void  Copy(Image& dest, Point p, const Image& _src, const Rect& srect)
 {
+	Image src = _src;
 	ImageBuffer b(dest);
 	Copy(b, p, src, srect);
 	dest = b;
 }
 
-void  Over(Image& dest, Point p, const Image& src, const Rect& srect)
+void  Over(Image& dest, Point p, const Image& _src, const Rect& srect)
 {
+	Image src = _src;
 	ImageBuffer b(dest);
 	Over(b, p, src, srect);
 	dest = b;
@@ -240,8 +242,6 @@ Image Contrast(const Image& img, int amount)
 	const RGBA *e = s + img.GetLength();
 	ImageBuffer w(img.GetSize());
 	RGBA *t = w;
-	amount += 256;
-	int na = 256 - amount;
 	while(s < e) {
 		t->r = ContrastCh(amount, s->r);
 		t->g = ContrastCh(amount, s->g);
@@ -341,10 +341,6 @@ static void sGetS(RGBA q, RGBAI& p, int mul)
 	p.a += mul * q.a;
 }
 
-static void sSetP(RGBA& t, const RGBA& s, const RGBAI& q, int amount)
-{
-}
-
 struct sSharpenFilter : ImageFilter9 {
 	int amount;
 
@@ -437,7 +433,7 @@ Image  RotateClockwise(const Image& img)
 	ImageBuffer ib(sz.cy, sz.cx);
 	for(int x = 0; x < sz.cx; x++)
 		for(int y = 0; y < sz.cy; y++)
-			ib[x][y] = img[y][x];
+			ib[x][y] = img[sz.cy - y - 1][x];
 	return ib;
 }
 

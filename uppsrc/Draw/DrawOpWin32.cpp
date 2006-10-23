@@ -2,7 +2,7 @@
 #ifdef PLATFORM_WIN32
 
 #define LLOG(x)      // LOG(x)
-#define LTIMING(x)   // RTIMING(x)
+#define LTIMING(x)    RTIMING(x)
 
 void Draw::BeginOp()
 {

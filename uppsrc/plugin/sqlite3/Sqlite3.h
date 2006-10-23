@@ -16,12 +16,11 @@ bool Sqlite3PerformScript(const String& text,
 class Sqlite3Session : public SqlSession {
 public:
 	virtual bool           IsOpen() const               { return NULL != db; }
-	virtual int            GetDialect() const           { return SQLD_SQLITE3; }
 	virtual RunScript      GetRunScript() const         { return &Sqlite3PerformScript; }
 	virtual Vector<String> EnumUsers()                  { NEVER(); return Vector<String>(); } // No users in sqlite!
 	virtual Vector<String> EnumDatabases();				// Currently does not detect attached DBs, just returns current filename
 	virtual Vector<String> EnumTables(String database);	// Currently ignores database string
-	virtual Vector<SqlColumnInfo> EnumColumns(String database, String table);	// Currently ignores database string
+//	virtual Vector<SqlColumnInfo> EnumColumns(String database, String table);	// Currently ignores database string
 
 	// Some opaque structures used by the sqlite3 library
 	typedef struct sqlite3 sqlite3;
@@ -45,7 +44,7 @@ public:
 	virtual void   Commit();
 	virtual void   Rollback();
 
-	Sqlite3Session()       { db = NULL; }
+	Sqlite3Session()       { db = NULL; Dialect(SQLITE3); }
 	~Sqlite3Session()      { Close(); }
 };
 

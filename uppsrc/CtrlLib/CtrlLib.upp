@@ -33,6 +33,7 @@ file
 	Static.cpp,
 	Splitter.h,
 	Splitter.cpp,
+	FrameSplitter.cpp,
 	SliderCtrl.h,
 	SliderCtrl.cpp,
 	ColumnList.h,

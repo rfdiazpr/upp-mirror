@@ -466,3 +466,8 @@ bool OldLang() {
 		q = FileExists(ConfigFile("oldlang"));
 	return q;
 }
+
+int CharFilterCid(int c)
+{
+	return IsAlNum(c) || c == '_' ? c : 0;
+}

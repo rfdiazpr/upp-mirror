@@ -111,8 +111,8 @@ String ZGCompress(String s, bool gzip, Gate2<int, int> progress)
 		long crc = crc32(0, NULL, 0);
 		crc = crc32(crc, (const Bytef *)s.Begin(), s.GetLength());
 		char temp[8];
-		PokeIL(temp, crc);
-		PokeIL(temp + 4, s.GetLength());
+		Poke32le(temp, crc);
+		Poke32le(temp + 4, s.GetLength());
 		out.Cat(temp, 8);
 	}
 
@@ -234,8 +234,8 @@ void ZGCompress(Stream& out, Stream& in, bool gzip, Gate2<int, int> progress)
 	deflateEnd(&z);
 	if(gzip) {
 		char temp[8];
-		PokeIL(temp, crc);
-		PokeIL(temp + 4, done);
+		Poke32le(temp, crc);
+		Poke32le(temp + 4, done);
 		out.Put(temp, 8);
 	}
 }

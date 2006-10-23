@@ -2,6 +2,32 @@
 
 #define LLOG(x) // LOG(x)
 
+struct ImlImageMaker : ImageMaker {
+	String id;
+	virtual String Key() const {
+		return id;
+	}
+	virtual Image Make() const {
+		Vector<String> s = Split(id, ':');
+		if(s.GetCount() != 3)
+			return LayImg::ImageError();
+		VectorMap<String, Image> iml;
+		int f;
+		LoadIml(LoadFile(SourcePath(s[0], s[1])), iml, f);
+		return iml.Get(s[2], LayImg::ImageError());
+	}
+};
+
+Image GetUscImage(const String& id)
+{
+	Image m = GetImlImage(id);
+	if(!IsNull(m))
+		return m;
+	ImlImageMaker q;
+	q.id = id;
+	return MakeImage(q);
+}
+
 EscValue EscColor(Color c)
 {
 	EscValue v;
@@ -160,7 +186,7 @@ void SIC_Courier(EscEscape& e)
 void SIC_GetImageSize(EscEscape& e)
 {
 	e.CheckArray(0);
-	e = EscSize(GetImlImage((String)e[0]).GetSize());
+	e = EscSize(GetUscImage((String)e[0]).GetSize());
 }
 
 void SIC_GetTextSize(EscEscape& e)
@@ -369,7 +395,7 @@ void EscDraw::GetTextSize(EscEscape& e)
 void EscDraw::DrawImage(EscEscape& e)
 {
 	e.CheckArray(2);
-	w.DrawImage(e.Int(0), e.Int(1), GetImlImage((String)e[2]));
+	w.DrawImage(e.Int(0), e.Int(1), AdjustColors(GetUscImage((String)e[2])));
 }
 
 EscDraw::EscDraw(EscValue& v, Draw& w)

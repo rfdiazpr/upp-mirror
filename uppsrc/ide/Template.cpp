@@ -169,12 +169,34 @@ int FilenameFilter(int c)
 	return c == '_' || IsAlNum(c) || c == '.' ? c : 0;
 }
 
+String ToUpper_Caps(const String& name)
+{
+	String output("");
+	int str_len = name.GetLength();
+	for (int i = 0; i < str_len; ++i)
+	{
+		int ch = name[i];
+		if (IsAlNum(ch))
+		{
+			output += ToUpper(ch);
+			if (i < str_len - 1)
+				if (IsLower(ch) && IsUpper(name[i + 1]))
+					output += '_';
+		}
+		else
+			output += '_';
+	}
+	return output;
+}
+
 ArrayMap<String, EscValue> TemplateDlg::MakeVars0()
 {
 	ArrayMap<String, EscValue> var;
 	String n = ~package;
 	int q = n.ReverseFind('/');
 	var.Add("PACKAGE", q >= 0 ? n.Mid(q + 1) : n);
+	var.Add("PACKAGE_TOUPPER", ToUpper(n));
+	var.Add("PACKAGE_TOUPPER_CAPS", ToUpper_Caps(n));
 	return var;
 }
 
@@ -182,7 +204,6 @@ ArrayMap<String, EscValue> TemplateDlg::MakeVars()
 {
 	const PackageTemplate& tp = ActualTemplate();
 	ArrayMap<String, EscValue> var = MakeVars0();
-	var.Add("PACKAGE", (String)~package);
 	for(int i = 0; i < tp.item.GetCount(); i++)
 		var.Add(tp.item[i].id, EscFromStdValue(~ctrl[i]));
 	StdLib(var);

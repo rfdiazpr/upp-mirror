@@ -6,10 +6,10 @@
 
 #include <X11/Xlocale.h>
 
-bool Ctrl::LogMessages = true;
+bool Ctrl::LogMessages/* = true*/;
 #endif
 
-#define LLOG(x)      LOG(x)
+#define LLOG(x)     // LOG(x)
 #define LTIMING(x)  // RTIMING(x)
 #define LDUMP(x)    // RDUMP(x)
 #define LDUMPC(x)   // RDUMPC(x)

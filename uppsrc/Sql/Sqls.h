@@ -4,6 +4,19 @@ const String& BoolToSql(bool b);
 
 class SqlSession;
 
+class SqlExc : public Exc {
+public:
+#ifndef NOAPPSQL
+	SqlExc();
+#endif
+	SqlExc(const SqlSession& session);
+	SqlExc(const Sql& sql);
+	SqlExc(const String& desc) : Exc(desc) {}
+	SqlExc(const char *desc) : Exc(desc) {}
+
+	void SetSessionError(const SqlSession& session);
+};
+
 class SqlRaw : public String, AssignValueTypeNo<SqlRaw, 34> {
 public:
 	operator Value() const              { return RawValue<SqlRaw>(*this); }
@@ -55,12 +68,10 @@ protected:
 class SqlSource {
 protected:
 	virtual SqlConnection *CreateConnection() = 0;
-	virtual int            GetDialect() const = 0;
 	virtual ~SqlSource() {}
 	friend class Sql;
 };
 
-enum _NULLSQL { NULLSQL };
 
 class Sql {
 protected:
@@ -69,13 +80,18 @@ protected:
 	friend class SqlSession;
 
 	Value       Select0(const String& what);
+	void        Assign(SqlSource& src);
+	enum _NULLSQL { NULLSQL };
+	Sql(_NULLSQL) { cn = NULL; }
 
 public:
+	String Compile(const SqlStatement& s);
+
 	void   Clear();
 
 	void   SetParam(int i, const Value& val);
 	void   SetStatement(const String& s);
-	void   SetStatement(const SqlSet& s)               { Execute(~s); }
+	void   SetStatement(const SqlStatement& s)         { SetStatement(Compile(s)); }
 
 	bool   Execute();
 	void   ExecuteX();
@@ -85,8 +101,8 @@ public:
 	bool   Execute(const String& s);
 	void   ExecuteX(const String& s);
 
-	bool   Execute(const SqlSet& s)                    { return Execute(~s); }
-	void   ExecuteX(const SqlSet& s)                   { ExecuteX(~s); }
+	bool   Execute(const SqlStatement& s)              { return Execute(Compile(s)); }
+	void   ExecuteX(const SqlStatement& s)             { ExecuteX(Compile(s)); }
 //$-
 #define  E__Run(I)       bool Run(__List##I(E__Value));
 	__Expand(E__Run)
@@ -151,11 +167,10 @@ public:
 
 	String      ToString() const                       { return cn->ToString(); }
 
-	bool   operator*(const SqlSet& q)                  { return Execute(q); }
-	Sql&   operator&(const SqlSet& q)                  { ExecuteX(q); return *this; }
-	Value  operator%(const SqlSet& q)                  { return Select0(~q); }
+	bool   operator*(const SqlStatement& q)            { return Execute(q); }
+	Sql&   operator&(const SqlStatement& q)            { ExecuteX(q); return *this; }
+	Value  operator%(const SqlStatement& q)            { return Select0(Compile(q)); }
 
-	void   operator=(SqlSource& s);
 	SqlSession& GetSession() const                     { return cn->GetSession(); }
 	int    GetDialect() const;
 
@@ -179,19 +194,24 @@ public:
 
 	bool   WasError() const;
 
-	Sql(_NULLSQL) { cn = NULL; }
 	Sql(SqlSource&);
 #ifndef NOAPPSQL
 	Sql();
 	Sql(const char *stmt);
+	Sql(const SqlStatement& s);
 #endif
 	Sql(const char *stmt, SqlSource& session);
+	Sql(const SqlStatement& s, SqlSource& session);
 	Sql(SqlConnection *connection);
 	~Sql();
 };
 
 #ifndef NOAPPSQL
-Sql& AppCursor();
+struct AppSql : Sql {
+	void   operator=(SqlSource& s) { Assign(s); }
+	AppSql() : Sql(NULLSQL) {}
+};
+AppSql& AppCursor();
 #define SQL AppCursor()
 // Assist++ cheat:
 //$ Sql& SQL;
@@ -215,6 +235,7 @@ protected:
 	bool                          tracetime;
 	bool                          usrlog;
 	int                           traceslow;
+	int                           dialect;
 
 	String                        lasterror;
 	String                        errorstatement;
@@ -229,8 +250,6 @@ public:
 
 	virtual bool                  IsOpen() const;
 
-	virtual int                   GetDialect() const = 0;
-
 	virtual RunScript             GetRunScript() const;
 
 	virtual Vector<String>        EnumUsers();
@@ -243,6 +262,8 @@ public:
 	virtual String                EnumRowID(String database, String table);
 	virtual Vector<String>        EnumReservedWords();
 
+	SqlSession&                   Dialect(int q)                          { dialect = q; return *this; }
+	int                           GetDialect() const                      { ASSERT(dialect != 255); return dialect; }
 
 	void                          SetTrace(Stream& s = VppLog())          { trace = &s; }
 	Stream                       *GetTrace() const                        { return trace; }

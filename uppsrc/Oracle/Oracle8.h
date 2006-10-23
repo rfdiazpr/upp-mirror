@@ -31,7 +31,7 @@ public:
 	virtual void                  RollbackTo(const String& savepoint);
 
 	virtual bool                  IsOpen() const;
-	virtual int                   GetDialect() const               { return SQLD_ORACLE; }
+	virtual int                   GetDialect() const            { return ORACLE; }
 
 	virtual RunScript             GetRunScript() const          { return &OraclePerformScript; }
 

@@ -1,40 +1,18 @@
-class SqlSession;
-class Sql;
-
-enum SQLDialect {
-	SQLD_NEUTRAL,
-	SQLD_ORACLE,
-	SQLD_MYSQL,
-	SQLD_MSSQL,
-	SQLD_SQLITE3,
+enum {
+	ORACLE    = 1,
+	SQLITE3   = 2,
+	MY_SQL    = 4,
+	MSSQL     = 8,
+	POSTGRESS = 16, // not implemented yet
+	FIREBIRD  = 32, // not implemented yet
+	DB2       = 64, // not implemented yet
 };
 
-void SetDefaultSQLDialect(int dialect);
-int  GetDefaultSQLDialect();
-int  GetSqlDialect(int dialect);
-int  GetSqlDialect(int dialect1, int dialect2);
-int  GetSqlDialect(int dialect1, int dialect2, int dialect3);
+class SqlBool;
+class SqlVal;
+class SqlSet;
 
-class SqlExc : public Exc {
-public:
-#ifndef NOAPPSQL
-	SqlExc();
-#endif
-	SqlExc(const SqlSession& session);
-	SqlExc(const Sql& sql);
-	SqlExc(const String& desc) : Exc(desc) {}
-	SqlExc(const char *desc) : Exc(desc) {}
-
-	void SetSessionError(const SqlSession& session);
-};
-
-String SqlFormat(int x);
-String SqlFormat(double x);
-String SqlFormat(const char *s, int dialect = SQLD_NEUTRAL);
-String SqlFormat(const String& x, int dialect = SQLD_NEUTRAL);
-String SqlFormat(Date x, int dialect = SQLD_NEUTRAL);
-String SqlFormat(Time x, int dialect = SQLD_NEUTRAL);
-String SqlFormat(const Value& x, int dialect = SQLD_NEUTRAL);
+// ----------
 
 struct FieldOperator {
 	String table;
@@ -56,6 +34,48 @@ struct FieldOperator {
 };
 
 typedef Callback1<FieldOperator&> Fields;
+
+struct FieldDumper : public FieldOperator {
+	String s;
+	virtual void Field(const char *name, Ref f);
+};
+
+template <class T>
+String DumpFields(T& s) {
+	FieldDumper dump;
+	s.FieldLayout(dump);
+	return dump.s;
+}
+
+void td_scalar(SqlSet& set, const String& prefix, const char *x);
+void td_array(SqlSet& set, const String& prefix, const char *x, int cnt);
+void td_var(SqlSet& set, const String& prefix, const char *x, SqlSet (*f)(const String&));
+void td_shrink(String *array, int cnt);
+
+// ----------
+
+class SqlCase {
+	String s;
+
+public:
+	SqlCase(byte cond, const String& text);
+	SqlCase operator()(byte cond, const String& text);
+
+	String operator()(const String& text);
+	String operator()();
+};
+
+String SqlCompile(byte dialect, const String& s);
+
+String SqlFormat(int x);
+String SqlFormat(double x);
+String SqlFormat(int64 x);
+String SqlFormat(const char *s, int len);
+String SqlFormat(const char *s);
+String SqlFormat(const String& x);
+String SqlFormat(Date x);
+String SqlFormat(Time x);
+String SqlFormat(const Value& x);
 
 class SqlCol : Moveable<SqlCol> {
 	String name;
@@ -93,31 +113,12 @@ public:
 	SqlId(Id id) : id(id)                    {}
 };
 
-
-template <class T>
-struct FieldDumper : public FieldOperator {
-	int i;
-	String s;
-	virtual void Field(const char *name, Ref f) {
-		if(!s.IsEmpty())
-			s.Cat(", ");
-		s << name << " = " << Value(f);
-	}
-};
-
-template <class T>
-String DumpFields(T& s) {
-	FieldDumper<T> dump;
-	dump.i = 0;
-	s.FieldLayout(dump);
-	return dump.s;
-}
+#define SQLID(x)    const SqlId x(#x);
 
 class SqlS : Moveable<SqlS> {
 protected:
 	String text;
-	byte   prior;
-	byte   dialect;
+	byte   priority;
 
 public:
 	enum PRIORITY {
@@ -141,33 +142,20 @@ public:
 	String        operator()() const;
 	String        operator()(int at) const;
 	const String& operator~() const         { return text; }
-	bool          IsEmpty() const           { return prior == EMPTY; }
+	bool          IsEmpty() const           { return priority == EMPTY; }
 
-	void          SetDialect(int _dialect)  { dialect = (byte)_dialect; }
-	int           GetDialect() const        { return dialect; }
-
-	SqlS()                               : prior(EMPTY), dialect(SQLD_NEUTRAL) {}
-	SqlS(const char *s, int pr)          : text(s), prior(pr), dialect(SQLD_NEUTRAL) {}
-	SqlS(const String& s, int pr)        : text(s), prior(pr), dialect(SQLD_NEUTRAL) {}
-	SqlS(const SqlS& a, const char *o, const SqlS& b, int pr, int prb);
-	SqlS(const SqlS& a, const char *o, const SqlS& b, int pr);
+	SqlS()                                  : priority(EMPTY) {}
+	SqlS(const char *s, int pr)             : text(s), priority(pr) {}
+	SqlS(const String& s, int pr)           : text(s), priority(pr) {}
+	SqlS(const SqlS& a, const char *op, const SqlS& b, int pr, int prb);
+	SqlS(const SqlS& a, const char *op, const SqlS& b, int pr);
 };
-
-int  GetSqlDialect(const SqlS& a);
-int  GetSqlDialect(const SqlS& a, const SqlS& b);
-int  GetSqlDialect(const SqlS& a, const SqlS& b, const SqlS& c);
-
-class SqlBool;
-class SqlVal;
-class SqlSet;
 
 class SqlVal : public SqlS, Moveable<SqlVal> {
 public:
-	void SetNull()                          { text = "NULL"; prior = NULLVAL; }
-	void SetHigh(const String& s)           { text = s; prior = HIGH; }
-	bool IsNull() const                     { return prior == NULLVAL; }
-
-	SqlVal& Dialect(int dialect)            { SetDialect(dialect); return *this; }
+	void SetNull()                          { text = "NULL"; priority = NULLVAL; }
+	void SetHigh(const String& s)           { text = s; priority = HIGH; }
+	bool IsNull() const                     { return priority == NULLVAL; }
 
 	SqlVal()                                {}
 	SqlVal(const String& s, int pr)         : SqlS(s, pr) {}
@@ -184,9 +172,6 @@ public:
 	SqlVal(Date x);
 	SqlVal(Time x);
 	SqlVal(const Value& x);
-	SqlVal(Date x, int dialect);
-	SqlVal(Time x, int dialect);
-	SqlVal(const Value& x, int dialect);
 	SqlVal(const Nuller&);
 	SqlVal(SqlId id);
 	SqlVal(const SqlId& (*id)());
@@ -199,7 +184,7 @@ SqlVal operator-(const SqlVal& a, const SqlVal& b);
 SqlVal operator*(const SqlVal& a, const SqlVal& b);
 SqlVal operator/(const SqlVal& a, const SqlVal& b);
 SqlVal operator%(const SqlVal& a, const SqlVal& b);
-SqlVal operator|(const SqlVal& a, const SqlVal& b); // Oracle string concatenation
+SqlVal operator|(const SqlVal& a, const SqlVal& b); // String concatenation
 
 SqlVal& operator+=(SqlVal& a, const SqlVal& b);
 SqlVal& operator-=(SqlVal& a, const SqlVal& b);
@@ -285,12 +270,10 @@ public:
 	void     SetFalse();
 	void     SetBool(bool b);
 
-	bool     IsTrue()  const                { return prior == TRUEVAL; }
-	bool     IsFalse() const                { return prior == FALSEVAL; }
+	bool     IsTrue()  const                { return priority == TRUEVAL; }
+	bool     IsFalse() const                { return priority == FALSEVAL; }
 	bool     IsBool()  const                { return IsTrue() || IsFalse(); }
 	bool     AsBool()  const                { ASSERT(IsBool()); return IsTrue(); }
-
-	SqlBool& Dialect(int dialect)           { SetDialect(dialect); return *this; }
 
 	SqlBool(const String& s, int pr)        : SqlS(s, pr) {}
 	SqlBool(const SqlS& a, const char *o, const SqlS& b, int pa, int pb)
@@ -367,8 +350,7 @@ SqlSet operator-(const SqlSet& s1, const SqlSet& s2); // difference
 class SqlSet : Moveable<SqlSet> {
 protected:
 	String text;
-	byte   prior;
-	byte   dialect;
+	byte   priority;
 
 public:
 	enum PRIORITY {
@@ -389,34 +371,6 @@ public:
 	SqlSet&          operator&=(const SqlSet& set)  { return *this = *this & set; }
 	SqlSet&          operator-=(const SqlSet& set)  { return *this = *this - set; }
 
-	SqlSet&          Where(const SqlBool& where);
-	SqlSet&          StartWith(const SqlBool& exp);
-	SqlSet&          ConnectBy(const SqlBool& exp);
-	SqlSet&          GroupBy(const SqlSet& columnset);
-	SqlSet&          Having(const SqlBool& exp);
-	SqlSet&          OrderBy(const SqlSet& set);
-	SqlSet&          ForUpdate();
-	SqlSet&          NoWait();
-
-	SqlSet&          GroupBy(SqlVal column)                 { return GroupBy(SqlSet(column)); }
-	SqlSet&          OrderBy(SqlVal val)                    { return OrderBy(SqlSet(val)); }
-	SqlSet&          OrderBy(SqlVal a, SqlVal b)            { return OrderBy(SqlSet(a, b)); }
-	SqlSet&          OrderBy(SqlVal a, SqlVal b, SqlVal c)  { return OrderBy(SqlSet(a, b, c)); }
-	SqlSet&          Limit(int limit);
-	SqlSet&          Limit(int64 offset, int limit);
-	SqlSet&          Offset(int64 offset);
-	bool             Execute(Sql& cursor) const;
-	void             Force(Sql& cursor) const; // throw SqlExc() on error
-	Value            Fetch(Sql& cursor) const; // returns void value on error
-#ifndef NOAPPSQL
-	bool             Execute() const;
-	void             Force() const; // throw SqlExc() on error
-	Value            Fetch() const; // returns void value on error
-#endif
-
-	SqlSet&          Dialect(int _dialect)                  { dialect = _dialect; return *this; }
-	int              GetDialect() const                     { return dialect; }
-
 	void             Clear()                                { text.Clear(); }
 
 	SqlSet() {}
@@ -427,46 +381,115 @@ public:
 
 	explicit SqlSet(Fields nfields);
 
-	SqlSet(const String& s, PRIORITY p)   { text = s; prior = p; }
-
-private:
-	SqlSet&          StartWith(const char *cond);
-	SqlSet&          Where(const char *cond);
-	SqlSet&          ConnectBy(const char *cond);
-	SqlSet&          GroupBy(const char *column_list);
-	SqlSet&          Having(const char *cond);
-	SqlSet&          OrderBy(const char *column_list);
+	SqlSet(const String& s, PRIORITY p)   { text = s; priority = p; }
 };
 
 class SqlSetC : public SqlSet {
 public:
-	SqlSetC(const String& s)      { text = s; prior = SET; }
-	SqlSetC(const char* s)        { text = s; prior = SET; }
+	SqlSetC(const String& s)      { text = s; priority = SET; }
+	SqlSetC(const char* s)        { text = s; priority = SET; }
+};
+
+class SqlStatement {
+	String text;
+
+public:
+	SqlStatement() {}
+	explicit SqlStatement(const String& s) : text(s) {}
+
+	String Get(int dialect) const;
+	String GetText() const                           { return text; }
+
+//Deprecated!!!
+	bool  Execute(Sql& cursor) const;
+	void  Force(Sql& cursor) const;
+	Value Fetch(Sql& cursor) const;
+	bool  Execute() const;
+	void  Force() const;
+	Value Fetch() const;
 };
 
 class SqlSelect {
-	SqlSet set;
+	String  text;
 
 public:
-	operator bool() const                       { return !set.IsEmpty(); }
+	operator bool() const                             { return text.GetCount(); }
 
 	SqlSelect& Hint(const char *hint);
 
-	SqlSet From(const SqlSet& set);
-	SqlSet From(SqlId table);
-	SqlSet From(SqlId table1, SqlId table2);
-	SqlSet From(SqlId table1, SqlId table2, SqlId table3);
-	SqlSet From(const SqlVal& a)                                   { return From(SqlSet(a)); }
+	SqlSelect& From(const SqlSet& set);
+	SqlSelect& From(SqlId table);
+	SqlSelect& From(SqlId table1, SqlId table2);
+	SqlSelect& From(SqlId table1, SqlId table2, SqlId table3);
+	SqlSelect& From(const SqlVal& a)                  { return From(SqlSet(a)); }
 
-	SqlSelect(const SqlSet& s)                  { set = s; }
+	SqlSelect& Where(const SqlBool& where);
+	SqlSelect& StartWith(const SqlBool& exp);
+	SqlSelect& ConnectBy(const SqlBool& exp);
+	SqlSelect& GroupBy(const SqlSet& columnset);
+	SqlSelect& Having(const SqlBool& exp);
+	SqlSelect& OrderBy(const SqlSet& columnset);
+	SqlSelect& ForUpdate();
+	SqlSelect& NoWait();
+
+	SqlSelect& GroupBy(SqlVal column)                 { return GroupBy(SqlSet(column)); }
+	SqlSelect& OrderBy(SqlVal val)                    { return OrderBy(SqlSet(val)); }
+	SqlSelect& OrderBy(SqlVal a, SqlVal b)            { return OrderBy(SqlSet(a, b)); }
+	SqlSelect& OrderBy(SqlVal a, SqlVal b, SqlVal c)  { return OrderBy(SqlSet(a, b, c)); }
+	SqlSelect& Limit(int limit);
+	SqlSelect& Limit(int64 offset, int limit);
+	SqlSelect& Offset(int64 offset);
+
+	operator SqlSet() const                           { return SqlSet(text, SqlSet::SETOP); }
+	operator SqlStatement() const                     { return SqlStatement(text); }
+
+	SqlSelect(const SqlSet& s)                        { text = ~s; }
+	SqlSelect()                                       {}
+
+	bool IsEmpty()                                    { return text.IsEmpty(); }
+
+	SqlSelect& operator|=(const SqlSelect& s2);
+	SqlSelect& operator&=(const SqlSelect& s2);
+	SqlSelect& operator-=(const SqlSelect& s2);
+
+//Deprecated!!!
+	bool  Execute(Sql& sql) const                     { return SqlStatement(*this).Execute(sql); }
+	void  Force(Sql& sql) const                       { return SqlStatement(*this).Force(sql); }
+	Value Fetch(Sql& sql) const                       { return SqlStatement(*this).Fetch(sql); }
+	bool  Execute() const                             { return SqlStatement(*this).Execute(); }
+	void  Force() const                               { return SqlStatement(*this).Force(); }
+	Value Fetch() const                               { return SqlStatement(*this).Fetch(); }
 };
+
+SqlSelect operator|(const SqlSelect& s1, const SqlSelect& s2);
+SqlSelect operator&(const SqlSelect& s1, const SqlSelect& s2);
+SqlSelect operator-(const SqlSelect& s1, const SqlSelect& s2);
 
 inline SqlSelect Select(const SqlSet& set)  { return SqlSelect(set); }
 
 #define E__QSelect(I)   SqlSelect Select(__List##I(E__SqlVal));
 __Expand(E__QSelect);
 
-SqlSet Delete(SqlVal table);
+class SqlDelete {
+	String text;
+
+public:
+	SqlDelete& Where(const SqlBool& b);
+
+	operator SqlStatement() const                     { return SqlStatement(text); }
+
+	SqlDelete(SqlVal table);
+
+//Deprecated!!!
+	bool  Execute(Sql& sql) const                     { return SqlStatement(*this).Execute(sql); }
+	void  Force(Sql& sql) const                       { return SqlStatement(*this).Force(sql); }
+	Value Fetch(Sql& sql) const                       { return SqlStatement(*this).Fetch(sql); }
+	bool  Execute() const                             { return SqlStatement(*this).Execute(); }
+	void  Force() const                               { return SqlStatement(*this).Force(); }
+	Value Fetch() const                               { return SqlStatement(*this).Fetch(); }
+};
+
+inline SqlDelete Delete(SqlVal table) { return SqlDelete(table); }
 
 class SqlInsert {
 	SqlId   table;
@@ -474,49 +497,65 @@ class SqlInsert {
 	SqlVal  keyvalue;
 	SqlSet  set1;
 	SqlSet  set2;
+	SqlSet  from;
+	SqlBool where;
 
 public:
 	void Column(SqlId column, SqlVal val);
 	void Column(SqlId column)                        { Column(column, column); }
 	SqlInsert& operator()(SqlId column, SqlVal val)  { Column(column, val); return *this; }
 	SqlInsert& operator()(SqlId column)              { Column(column, column); return *this; }
-	SqlSet   Get() const;
-	SqlSet   From(SqlId from) const;
-	SqlSet   From(SqlSet from) const;
-	SqlSet   From(SqlVal from) const                 { return From(SqlSet(from)); }
+	SqlInsert& From(SqlId from);
+	SqlInsert& From(SqlSet _from)                    { from = _from; return *this; }
+	SqlInsert& From(SqlVal from)                     { return From(SqlSet(from)); }
+	SqlInsert& Where(SqlBool w)                      { where = w; return *this; }
 
 	SqlId    GetTable() const                        { return table; }
 	SqlId    GetKeyColumn() const                    { return keycolumn; }
 	SqlVal   GetKeyValue() const                     { return keyvalue; }
 
-	operator SqlSet() const                          { return Get(); }
+	operator SqlStatement() const;
 	operator bool() const                            { return !set1.IsEmpty(); }
 
 	SqlInsert(SqlId table) : table(table) {}
 	SqlInsert(SqlId table, SqlSet set1, SqlSet set2) : table(table), set1(set1), set2(set2) {}
 	SqlInsert(Fields f);
+
+//Deprecated!!!
+	bool  Execute(Sql& sql) const                     { return SqlStatement(*this).Execute(sql); }
+	void  Force(Sql& sql) const                       { return SqlStatement(*this).Force(sql); }
+	Value Fetch(Sql& sql) const                       { return SqlStatement(*this).Fetch(sql); }
+	bool  Execute() const                             { return SqlStatement(*this).Execute(); }
+	void  Force() const                               { return SqlStatement(*this).Force(); }
+	Value Fetch() const                               { return SqlStatement(*this).Fetch(); }
 };
 
-inline SqlInsert Insert(SqlId table)                 { return SqlInsert(table); }
-inline SqlInsert Insert(Fields f)                    { return SqlInsert(f); }
+inline SqlInsert Insert(SqlId table)                  { return SqlInsert(table); }
+inline SqlInsert Insert(Fields f)                     { return SqlInsert(f); }
 
 class SqlUpdate {
-	SqlId  table;
-	SqlSet set;
+	SqlId   table;
+	SqlSet  set;
+	SqlBool where;
 
 public:
 	void Column(SqlId column, SqlVal val);
 	SqlUpdate& operator()(SqlId column, SqlVal val)  { Column(column, val); return *this; }
-	SqlSet Where(SqlBool where);
+	SqlUpdate& Where(SqlBool w)                      { where = w; return *this; }
+
+	operator SqlStatement() const;
 
 	operator bool() const                            { return !set.IsEmpty(); }
 
 	SqlUpdate(SqlId table) : table(table) {}
+
+//Deprecated!!!
+	bool  Execute(Sql& sql) const                     { return SqlStatement(*this).Execute(sql); }
+	void  Force(Sql& sql) const                       { return SqlStatement(*this).Force(sql); }
+	Value Fetch(Sql& sql) const                       { return SqlStatement(*this).Fetch(sql); }
+	bool  Execute() const                             { return SqlStatement(*this).Execute(); }
+	void  Force() const                               { return SqlStatement(*this).Force(); }
+	Value Fetch() const                               { return SqlStatement(*this).Fetch(); }
 };
 
 inline SqlUpdate Update(SqlId table) { return SqlUpdate(table); }
-
-void td_scalar(SqlSet& set, const String& prefix, const char *x);
-void td_array(SqlSet& set, const String& prefix, const char *x, int cnt);
-void td_var(SqlSet& set, const String& prefix, const char *x, SqlSet (*f)(const String&));
-void td_shrink(String *array, int cnt);

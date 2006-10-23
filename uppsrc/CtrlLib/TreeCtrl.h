@@ -115,6 +115,9 @@ private:
 	bool   UpdateSelTree(int id);
 	void   ShiftSelect(int l1, int l2);
 
+protected:
+	virtual void SetOption(int id);
+
 public:
 	Callback1<int>  WhenOpen;
 	Callback1<int>  WhenClose;

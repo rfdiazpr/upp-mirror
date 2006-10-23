@@ -242,12 +242,12 @@ bool DlgLogin::StdSetPassword(SqlSession& session, String new_pwd)
 	String cmd;
 	switch(session.GetDialect())
 	{
-	case SQLD_ORACLE:
+	case ORACLE:
 		cmd = NFormat("alter user %s identified by %s", session.GetUser(), new_pwd);
 		break;
 
-	case SQLD_MYSQL:
-	case SQLD_SQLITE3:
+	case MY_SQL:
+	case SQLITE3:
 		cmd = NFormat("set password for %s=PASSWORD('%s')", session.GetUser(), new_pwd);
 		break;
 

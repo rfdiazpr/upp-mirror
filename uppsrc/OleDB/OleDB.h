@@ -38,7 +38,6 @@ public:
 	virtual void           RollbackTo(const String& savepoint);
 
 	virtual bool           IsOpen() const;
-	virtual int            GetDialect() const;
 	virtual RunScript      GetRunScript() const { return &OleDBPerformScript; }
 
 	virtual Vector<String> EnumUsers();
@@ -69,7 +68,6 @@ protected:
 	IRef<ITransactionObject> transaction_object;
 	Link<OleDBConnection>  clink;
 	Guid                   dialect;
-	int                    ntl_dialect;
 	String                 user;
 	int                    level;
 };

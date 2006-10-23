@@ -18,8 +18,6 @@ void IdeFileIcon0(bool dir, const String& filename, Image& img, bool fast = fals
 		img = IdeCommonImg::Script();
 	if(ext == ".lng" || ext == ".lngj" || ext == ".t" || ext == ".jt")
 		img = IdeCommonImg::Language();
-	if(ext == ".iml")
-		img = IdeCommonImg::Images();
 	if(fast)
 		img = IdeCommonImg::Fast();
 	if(ext == ".icpp")

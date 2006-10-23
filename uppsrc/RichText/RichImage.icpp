@@ -45,8 +45,8 @@ Size   RichImage::GetPhysicalSize(const Value& data) const
 void   RichImage::Paint(const Value& data, Draw& w, Size sz) const
 {
 	Image x = LoadImageFromString(data);
-	Size outsz(min(sz.cx, 4 * x.GetWidth()), min(sz.cy, 4 * x.GetHeight()));
-	w.DrawImage(0, 0, outsz.cx, outsz.cy, x);
+//	Size outsz(min(sz.cx, 4 * x.GetWidth()), min(sz.cy, 4 * x.GetHeight()));
+	w.DrawImage(0, 0, sz.cx, sz.cy, x);
 }
 
 INITBLOCK {
@@ -112,5 +112,10 @@ void RichPNG::Paint(const Value& data, Draw& w, Size sz) const
 INITBLOCK {
 	RichObject::Register("PNG", &Single<RichPNG>());
 };
+
+RichObject CreateImageObject(const Image& img)
+{
+	return RichObject("image", StoreImageAsString(img));
+}
 
 #endif

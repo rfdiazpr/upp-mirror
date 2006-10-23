@@ -92,6 +92,6 @@ String WriteTopic(const char *title, const RichText& text)
 		if((++q & 255) == 0)
 			r << "\r\n";
 	}
-	r << "\r\n";
+	r << "\r\n\r\n";
 	return r;
 }

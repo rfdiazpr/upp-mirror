@@ -89,8 +89,10 @@ Rect  Ctrl::GetClippedView()
 	Rect sv = GetScreenView();
 	Rect view = sv;
 	Ctrl *q = parent;
+	Ctrl *w = this;
 	while(q) {
-		view &= q->GetScreenView();
+		view &= w->InFrame() ? q->GetScreenRect() : q->GetScreenView();
+		w = q;
 		q = q->parent;
 	}
 	return view - GetScreenRect().TopLeft();

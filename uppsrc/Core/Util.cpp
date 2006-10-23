@@ -853,12 +853,24 @@ String GetLastErrorMessage() {
 
 #endif
 
+#ifdef PLATFORM_POSIX
+static void LinuxBeep(const char *fn)
+{
+	char h[100];
+	strcpy(h, "aplay /usr/share/sounds/");
+	strcat(h, fn);
+	if(fork()) return;
+	system(h);
+	abort();
+}
+#endif
+
 void BeepInformation()
 {
 #ifdef PLATFORM_WIN32
 	MessageBeep(MB_ICONINFORMATION);
 #else
-	write(1, "\a", 1); //??
+	LinuxBeep("info.wav");
 #endif
 }
 
@@ -867,7 +879,7 @@ void BeepExclamation()
 #ifdef PLATFORM_WIN32
 	MessageBeep(MB_ICONEXCLAMATION);
 #else
-	write(1, "\a", 1); //??
+	LinuxBeep("warning.wav");
 #endif
 }
 
@@ -876,7 +888,8 @@ void BeepQuestion()
 #ifdef PLATFORM_WIN32
 	MessageBeep(MB_ICONQUESTION);
 #else
-	write(1, "\a", 1); //??
+	LinuxBeep("question.wav");
+//	write(1, "\a", 1); //??
 #endif
 }
 

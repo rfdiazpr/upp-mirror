@@ -1,0 +1,10 @@
+uses
+	CtrlLib;
+
+file
+	gui21.usc,
+	main.cpp,
+	Gui21.lay;
+
+mainconfig
+	"" = "GUI";

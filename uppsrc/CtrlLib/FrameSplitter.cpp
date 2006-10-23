@@ -47,7 +47,7 @@ void SplitterFrame::Paint(Draw& draw)
 {
 	draw.DrawRect(
 		Ctrl::GetSize(),
-		HasCapture() ? IsXPStyle() ? Blend(SColorHighlight, SColorFace) : SColorShadow
+		HasCapture() ? GUI_GlobalStyle() >= GUISTYLE_XP ? Blend(SColorHighlight, SColorFace) : SColorShadow
 		             : SColorFace()
 	);
 }

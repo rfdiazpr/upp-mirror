@@ -113,9 +113,12 @@ INITBLOCK {
 	RichObject::Register("PNG", &Single<RichPNG>());
 };
 
-RichObject CreateImageObject(const Image& img)
+RichObject CreateImageObject(const Image& img, int cx, int cy)
 {
-	return RichObject("image", StoreImageAsString(img));
+	RichObject o = RichObject("image", StoreImageAsString(img));
+	if(cx || cy)
+		o.SetSize(GetRatioSize(o.GetPixelSize(), cx, cy));
+	return o;
 }
 
 #endif

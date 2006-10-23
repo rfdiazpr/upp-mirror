@@ -221,6 +221,12 @@ RichObject CreateDrawingObject(const Drawing& dwg, Size dot_size, Size out_size)
 	return obj;
 }
 
+RichObject CreateDrawingObject(const Drawing& dwg, int cx, int cy)
+{
+	Size dsz = dwg.GetSize();
+	return CreateDrawingObject(dwg, dsz, cx || cy ? GetRatioSize(dsz, cx, cy) : dsz);
+}
+
 Size RichObjectTypeDrawingCls::GetPixelSize(const Value& data) const
 {
 	if(IsTypeRaw<Data>(data))

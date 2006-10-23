@@ -116,7 +116,7 @@ void LabelBox::Paint(Draw& w)
 	Size ts = PaintLabel(w, d + 2, ty, sz.cx, sz.cy, !IsShowEnabled(), false, false, VisibleAccessKeys());
 	w.Begin();
 	w.ExcludeClip(d, ty, ts.cx + 4, ts.cy);
-	if(IsXPStyle()) {
+	if(GUI_GlobalStyle() >= GUISTYLE_XP) {
 		if(hline) {
 			d = sz.cy / 2;
 			w.DrawRect(0, d - 1, sz.cx, 1, SColorLight);
@@ -265,13 +265,13 @@ void SeparatorCtrl::Paint(Draw& w) {
 	if(sz.cx > sz.cy) {
 		int q = sz.cy / 2;
 		w.DrawRect(margin, q - 1, sz.cx - 2 * margin, 1, SColorShadow);
-		if(!IsXPStyle())
+		if(GUI_GlobalStyle() < GUISTYLE_XP)
 			w.DrawRect(margin, q, sz.cx - 2 * margin, 1, SColorLight);
 	}
 	else {
 		int q = sz.cx / 2;
 		w.DrawRect(q - 1, margin, 1, sz.cy - 2 * margin, SColorShadow);
-		if(!IsXPStyle())
+		if(GUI_GlobalStyle() < GUISTYLE_XP)
 			w.DrawRect(q, margin, 1, sz.cy - 2 * margin, SColorLight);
 	}
 };

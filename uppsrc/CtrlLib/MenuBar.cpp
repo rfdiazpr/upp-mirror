@@ -203,7 +203,7 @@ void DrawMenuText(Draw& w, int x, int y, const String& s, Font f, bool enabled,
 	if(enabled)
 		DrawMnemonicText(w, x, y, s, f, hl ? SColorHighlightText : color, mnemonic);
 	else {
-		if(Ctrl::IsXPStyle())
+		if(GUI_GlobalStyle() >= GUISTYLE_XP)
 			DrawMnemonicText(w, x, y, s, f, SColorDisabled, 0);
 		else {
 			DrawMnemonicText(w, x + 1, y + 1, s, f, SColorPaper, 0);
@@ -219,7 +219,7 @@ void MenuItemBase::DrawMenuText(Draw& w, int x, int y, const String& s, Font f, 
 
 void MenuItemBase::PaintTopItem(Draw& w, int state) {
 	Size sz = GetSize();
-	if(Ctrl::IsXPStyle()) {
+	if(GUI_GlobalStyle() >= GUISTYLE_XP) {
 		w.DrawRect(0, 0, sz.cx, sz.cy, state ? SColorHighlight : SColorFace);
 		String text = GetText();
 		Size isz = GetTextSize(text, StdFont());
@@ -317,7 +317,7 @@ void MenuItem::Paint(Draw& w)
 	state = GetVisualState();
 	bool hl = state != NORMAL;
 	Size sz = GetSize();
-	w.DrawRect(sz, hl ? SColorHighlight : IsXPStyle() ? SColorMenu : SColorFace);
+	w.DrawRect(sz, hl ? SColorHighlight : GUI_GlobalStyle() >= GUISTYLE_XP ? SColorMenu : SColorFace);
 	::Image li = licon;
 	if(li.IsEmpty()) {
 		switch(type) {
@@ -332,7 +332,7 @@ void MenuItem::Paint(Draw& w)
 	bool chk = false;
 	if(!licon.IsEmpty() && type) {
 		chk = type == CHECK1 || type == RADIO1;
-		if(IsXPStyle()) {
+		if(GUI_GlobalStyle() >= GUISTYLE_XP) {
 			if(chk && !hl) {
 				DrawXPButton(w, RectC(0, iy - 2, isz.cx + 4, isz.cy + 4), BUTTON_EDGE|BUTTON_CHECKED);
 			}
@@ -523,7 +523,7 @@ void TopSubMenuItem::Pull()
 	if(parentmenu && parentmenu->IsChild() && !parentmenu->submenu)
 		parentmenu->SetupRestoreFocus();
 	Point p = r.BottomLeft();
-	if(IsXPStyle())
+	if(GUI_GlobalStyle() >= GUISTYLE_XP)
 		p.y -= 1;
 	SubMenuBase::Pull(this, p, Size(r.Width(), -r.Height()));
 	if(parentmenu)
@@ -1033,7 +1033,7 @@ GLOBAL_VARP(BorderFrame, XPMenuFrame, (xpmenuborder));
 
 CtrlFrame& MenuFrame()
 {
-	return Ctrl::IsXPStyle() ? (CtrlFrame&)XPMenuFrame() : (CtrlFrame&)OutsetFrame();
+	return GUI_GlobalStyle() >= GUISTYLE_XP ? (CtrlFrame&)XPMenuFrame() : (CtrlFrame&)OutsetFrame();
 }
 
 void MenuBar::PopUp(Ctrl *owner, Point p, Size rsz)
@@ -1070,7 +1070,7 @@ void MenuBar::PopUp(Ctrl *owner, Point p, Size rsz)
 		pane.TopPos(0, sz.cy);
 	}
 	bool eff = parentmenu == NULL || parentmenu->doeffect;
-	if(eff && IsFlag(EFFECT_SLIDE))
+	if(eff && GUI_PopUpEffect() == GUIEFFECT_SLIDE)
 		SetRect(szx ? p.x + sz.cx : p.x, szy ? p.y + sz.cy : p.y, parentmenu ? sz.cx : 1, 1);
 	else
 		SetRect(p.x, p.y, sz.cx, sz.cy);
@@ -1079,7 +1079,7 @@ void MenuBar::PopUp(Ctrl *owner, Point p, Size rsz)
 	CreateThread(NULL, 0, PlaySoundThread, NULL, 0, &dummy);
 #endif
 	doeffect = true;
-	Ctrl::PopUp(owner, true, true, IsFlag(DROPSHADOWS), !owner);
+	Ctrl::PopUp(owner, true, true, GUI_DropShadows(), !owner);
 #ifdef PLATFORM_X11
 	XSync(Xdisplay, false);
 	ProcessEvents();

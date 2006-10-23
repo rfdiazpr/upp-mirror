@@ -49,13 +49,24 @@ void AutoSetup()
 	dlg.visualcppmethod <<= "MSC71";
 	dlg.dovisualcpp <<= !IsNull(dlg.visualcpp);
 
-	dlg.visualcpp8 <<= NormalizePathNN(
-		GetWinRegString("8.0", "SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7")
-	);
+	String sdk = GetWinRegString("InstallationFolder",
+	                             "Software\\Microsoft\\Microsoft SDKs\\Windows\\v6.0",
+	                             HKEY_CURRENT_USER);
+	if(!IsNull(sdk)) {
+		sdk = NormalizePath(sdk);
+		dlg.sdk <<= sdk;
+		dlg.visualcpp8 <<= sdk;
+	}
+	else {
+		dlg.visualcpp8 <<= NormalizePathNN(
+			GetWinRegString("8.0", "SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7")
+		);
+		dlg.sdk <<= NormalizePathNN(GetWinRegString("Install Dir", "SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3"));
+	}
+
 	dlg.visualcppmethod8 <<= "MSC8";
 	dlg.dovisualcpp8 <<= !IsNull(dlg.visualcpp8);
 
-	dlg.sdk <<= NormalizePathNN(GetWinRegString("Install Dir", "SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3"));
 	dlg.mysql <<= NormalizePathNN(GetWinRegString("Location", "SOFTWARE\\MySQL AB\\MySQL Server 4.1"));
 
 	String sdl = NormalizePathNN(ConfigFile("SDL-1.2.9"));

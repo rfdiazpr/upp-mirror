@@ -2,7 +2,7 @@
 
 int ReadTemplateType(CParser& p)
 {
-	static char *nm[] = { "id", "filename", "option", "select" };
+	static char *nm[] = { "id", "filename", "option", "select", "text" };
 	for(int i = 0; i < __countof(nm); i++)
 		if(p.Id(nm[i]))
 			return i;
@@ -296,6 +296,11 @@ void TemplateDlg::EnterTemplate()
 					d->SetIndex(0);
 				ctrl.Add(d);
 				break;
+			}
+			case TEMPLATEITEM_TEXT: {
+			    EditField *e = new EditField;
+			    ctrl.Add(e);
+			    break;
 			}
 			}
 		}

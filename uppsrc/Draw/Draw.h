@@ -381,11 +381,11 @@ Color SLtCyan();
 Color SColorPaper();
 Color SColorText();
 Color SColorHighlight();
-Color SColorHighlightText();
+Color SColorHighlightText();//
 Color SColorMenu();
 Color SColorMenuText();
 Color SColorInfo();
-Color SColorInfoText();
+Color SColorInfoText();//
 Color SColorMark();
 Color SColorDisabled();
 Color SColorLight();

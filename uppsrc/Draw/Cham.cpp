@@ -199,14 +199,33 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 		Size isz = b.GetSize();
 		Size sz = r.GetSize();
 		Point p = b.GetHotSpot();
+		Point p2 = b.Get2ndSpot();
 		int tile = 0;
-		if(p.x > isz.cx / 2) {
-			tile = 1;
-			p.x = isz.cx - p.x - 1;
+		if(p2.x || p2.y) {
+			if(p2.x < p.x) {
+				Swap(p2.x, p.x);
+				tile = 1;
+			}
+			if(p2.y < p.y) {
+				Swap(p2.y, p.y);
+				tile += 2;
+			}
+			p2.x++;
+			p2.y++;
 		}
-		if(p.y > isz.cy / 2) {
-			tile += 2;
-			p.y = isz.cy - p.y - 1;
+		else {
+			p2.x = isz.cx - p.x;
+			p2.y = isz.cy - p.y;
+			if(p.x > isz.cx / 2) {
+				tile = 1;
+				p2.x = p.x;
+				p.x = isz.cx - p.x - 1;
+			}
+			if(p.y > isz.cy / 2) {
+				tile += 2;
+				p2.y = p.y;
+				p.y = isz.cy - p.y - 1;
+			}
 		}
 		if(op == LOOK_ISOPAQUE)
 			return b.GetKind() == IMAGE_OPAQUE;
@@ -217,17 +236,19 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 			w.Clipoff(r);
 			if(p.x >= 0 && 2 * p.x < min(isz.cx, sz.cx) &&
 			   p.y >= 0 && 2 * p.y < min(isz.cy, sz.cy)) {
+				Rect sr(p, p2);
+				Size sz2(isz.cx - sr.right, isz.cy - sr.bottom);
+				Rect r = RectC(p.x, p.y, sz.cx - sr.left - sz2.cx, sz.cy - sr.top - sz2.cy);
 				w.DrawImage(0, 0, b, RectC(0, 0, p.x, p.y));
-				w.DrawImage(0, sz.cy - p.y, b, RectC(0, isz.cy - p.y, p.x, p.y));
-				w.DrawImage(sz.cx - p.x, 0, b, RectC(isz.cx - p.x, 0, p.x, p.y));
-				w.DrawImage(sz.cx - p.x, sz.cy - p.y, b, RectC(isz.cx - p.x, isz.cy - p.y, p.x, p.y));
-				ChDraw(w, p.x, 0, sz.cx - 2 * p.x, p.y, b, RectC(p.x, 0, isz.cx - 2 * p.x, p.y));
-				ChDraw(w, p.x, sz.cy - p.y, sz.cx - 2 * p.x, p.y, b, RectC(p.x, isz.cy - p.y, isz.cx - 2 * p.x, p.y));
-				ChDraw(w, 0, p.y, p.x, sz.cy - 2 * p.y, b, RectC(0, p.y, p.x, isz.cy - 2 * p.y));
-				ChDraw(w, sz.cx - p.x, p.y, p.x, sz.cy - 2 * p.y, b, RectC(isz.cx - p.x, p.y, p.x, isz.cy - 2 * p.y));
+				w.DrawImage(0, r.bottom, b, RectC(0, sr.bottom, p.x, sz2.cy));
+				w.DrawImage(r.right, 0, b, RectC(sr.right, 0, sz2.cx, p.y));
+				w.DrawImage(r.right, r.bottom, b, RectC(sr.right, sr.bottom, sz2.cx, sz2.cy));
+				ChDraw(w, p.x, 0, r.Width(), p.y, b, RectC(p.x, 0, sr.Width(), p.y));
+				ChDraw(w, p.x, r.bottom, r.Width(), sz2.cy, b, RectC(p.x, sr.bottom, sr.Width(), sz2.cy));
+				ChDraw(w, 0, p.y, p.x, r.Height(), b, RectC(0, p.y, p.x, sr.Height()));
+				ChDraw(w, r.right, p.y, sz2.cx, r.Height(), b,
+				       RectC(sr.right, p.y, sz2.cx, sr.Height()));
 				if(op == LOOK_PAINT) {
-					Rect r = RectC(p.x, p.y, sz.cx - 2 * p.x, sz.cy - 2 * p.y);
-					Rect sr = RectC(p.x, p.y, isz.cx - 2 * p.x, isz.cy - 2 * p.y);
 					if(IsNull(r) || IsNull(sr))
 						return 1;
 					if(tile) {
@@ -387,6 +408,7 @@ Image AdjustColors(const Image& img) {
 		s++;
 	}
 	w.SetHotSpot(img.GetHotSpot());
+	w.Set2ndSpot(img.Get2ndSpot());
 	return w;
 }
 

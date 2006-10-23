@@ -167,35 +167,9 @@ String      ReadPropertyData(Window w, Atom property, Atom rtype = AnyPropertyTy
 Index<Atom>& _NET_Supported();
 #endif
 
-class Data {
-public:
-	virtual bool   Accept();
-	virtual void   Reject();
-	virtual void   SetData(const Value& data);
-	virtual Value  GetData() const;
-	virtual void   Serialize(Stream& s);
-	virtual void   SetModify();
-	virtual void   ClearModify();
-	virtual bool   IsModified() const;
-
-	Value        operator~() const             { return GetData(); }
-	const Value& operator<<=(const Value& v)   { SetData(v); return v; }
-	bool         IsNullInstance() const        { return GetData().IsNull(); }
-
-	virtual ~Data() {}
-};
-
 class TopWindow;
 
-class Ctrl : public Data, public Pte<Ctrl> {
-public:
-	virtual bool   Accept();
-	virtual void   Reject();
-	virtual void   Serialize(Stream& s);
-	virtual void   SetModify();
-	virtual void   ClearModify();
-	virtual bool   IsModified() const;
-
+class Ctrl : public Pte<Ctrl> {
 public:
 	enum PlacementConstants {
 		CENTER   = 0,
@@ -660,6 +634,15 @@ public:
 	static  void   InstallStateHook(StateHook hook);
 	static  void   DeinstallStateHook(StateHook hook);
 
+	virtual bool   Accept();
+	virtual void   Reject();
+	virtual void   SetData(const Value& data);
+	virtual Value  GetData() const;
+	virtual void   Serialize(Stream& s);
+	virtual void   SetModify();
+	virtual void   ClearModify();
+	virtual bool   IsModified() const;
+
 	virtual void   Paint(Draw& draw);
 
 	virtual void   CancelMode();
@@ -955,7 +938,9 @@ public:
 
 	void    Remove();
 
+	Value        operator~() const             { return GetData(); }
 	const Value& operator<<=(const Value& v)   { SetData(v); return v; }
+	bool         IsNullInstance() const        { return GetData().IsNull(); }
 
 	Callback     operator<<=(Callback action)  { WhenAction = action; return action; }
 	Callback&    operator<<(Callback action)   { return WhenAction << action; }
@@ -1028,23 +1013,6 @@ public:
 	static String GetAppName();
 	static void   SetAppName(const String& appname);
 
-	static bool   IsXPStyle();
-	static void   SetXPStyle(bool b = true);
-
-	enum {
-		DRAGFULLWINDOW   = 0x00000001,
-		EFFECT_SLIDE     = 0x00000002,
-		EFFECT_FADE      = 0x00000004,
-		DROPSHADOWS      = 0x00000008,
-		ALTACCESSKEYS    = 0x00000010,
-		AKD_CONSERVATIVE = 0x00000020,
-	};
-
-	static dword  GetFlags();
-	static bool   IsFlag(dword w);
-	static void   SetFlags(dword w);
-	static void   AddFlags(dword w);
-
 	String      Name() const;
 
 #ifdef _DEBUG
@@ -1079,6 +1047,18 @@ public:
 	Ctrl();
 	virtual ~Ctrl();
 };
+
+enum { GUISTYLE_FLAT, GUISTYLE_CLASSIC, GUISTYLE_XP, GUISTYLE_X };
+int GUI_GlobalStyle();
+
+int GUI_DragFullWindow();
+
+enum { GUIEFFECT_NONE, GUIEFFECT_SLIDE, GUIEFFECT_FADE };
+int GUI_PopUpEffect();
+
+int GUI_DropShadows();
+int GUI_AltAccessKeys();
+int GUI_AKD_Conservative();
 
 String Name(const Ctrl *ctrl);
 String Desc(const Ctrl *ctrl);

@@ -30,7 +30,7 @@ void Ctrl::RefreshAccessKeys()
 
 void Ctrl::RefreshAccessKeysDo(bool vis)
 {
-	if(IsFlag(ALTACCESSKEYS) && vis != akv) {
+	if(GUI_AltAccessKeys() && vis != akv) {
 		akv = vis;
 		RefreshAccessKeys();
 	}
@@ -38,7 +38,7 @@ void Ctrl::RefreshAccessKeysDo(bool vis)
 
 bool Ctrl::DispatchKey(dword keycode, int count)
 {
-	if(IsFlag(ALTACCESSKEYS)) {
+	if(GUI_AltAccessKeys()) {
 		bool alt = GetAlt();
 		Ctrl *c = GetActiveCtrl();
 		if(c)

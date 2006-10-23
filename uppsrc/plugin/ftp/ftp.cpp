@@ -3,8 +3,8 @@
 
 #include "lib/ftplib.h"
 
-#define LLOGBLOCK(x)  LOGBLOCK(x)
-#define LLOG(x)       LOG(x)
+#define LLOGBLOCK(x)  // LOGBLOCK(x)
+#define LLOG(x)       // LOG(x)
 
 static bool ftpinit = false;
 

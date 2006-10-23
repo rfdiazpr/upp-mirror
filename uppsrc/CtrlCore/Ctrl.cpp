@@ -32,29 +32,8 @@ int   Ctrl::LoopLevel;
 
 bool Ctrl::MemoryCheck;
 
-bool   Data::Accept()
-{
-	return true;
-}
-
-void   Data::Reject() {}
-
-void   Data::SetData(const Value&) {}
-Value  Data::GetData() const       { return Value(); }
-
-void   Data::Serialize(Stream& s)
-{
-	Value x;
-	if(s.IsStoring())
-		x = GetData();
-	s % x;
-	if(s.IsLoading())
-		SetData(x);
-}
-
-void Data::SetModify() {}
-void Data::ClearModify() {}
-bool Data::IsModified() const { return false; }
+void   Ctrl::SetData(const Value&) {}
+Value  Ctrl::GetData() const       { return Value(); }
 
 void Ctrl::Paint(Draw& draw)                        {}
 void Ctrl::Activate()                               {}
@@ -152,7 +131,7 @@ void Ctrl::DistributeAccessKeys()
 
 bool Ctrl::VisibleAccessKeys()
 {
-	if(GetFlags() & ALTACCESSKEYS)
+	if(GUI_AltAccessKeys())
 		return GetAlt() && GetTopCtrl() == GetActiveCtrl();
 	return true;
 }
@@ -198,7 +177,12 @@ void   Ctrl::Reject()
 
 void   Ctrl::Serialize(Stream& s)
 {
-	Data::Serialize(s);
+	Value x;
+	if(s.IsStoring())
+		x = GetData();
+	s % x;
+	if(s.IsLoading())
+		SetData(x);
 	for(Ctrl *q = GetFirstChild(); q; q = q->GetNext())
 		q->Serialize(s);
 }
@@ -739,38 +723,6 @@ void Ctrl::CloseTopCtrls()
 
 bool xpstyle;
 
-bool Ctrl::IsXPStyle()
-{
-	return xpstyle;
-}
-
-void Ctrl::SetXPStyle(bool b)
-{
-	xpstyle = b;
-}
-
-static dword sFlags;
-
-dword  Ctrl::GetFlags()
-{
-	return sFlags;
-}
-
-void   Ctrl::SetFlags(dword w)
-{
-	sFlags = w;
-}
-
-void   Ctrl::AddFlags(dword w)
-{
-	sFlags |= w;
-}
-
-bool   Ctrl::IsFlag(dword w)
-{
-	return sFlags & w;
-}
-
 bool IsOrOwnedBy(Ctrl *q, Ctrl *window)
 {
 	while(q) {
@@ -831,3 +783,10 @@ void Ctrl::ChSync()
 	if(s_chsync)
 		(*s_chsync)();
 }
+
+CH_INT(GUI_GlobalStyle, GUISTYLE_CLASSIC);
+CH_INT(GUI_DragFullWindow, 1);
+CH_INT(GUI_PopUpEffect, GUIEFFECT_SLIDE);
+CH_INT(GUI_DropShadows, 1);
+CH_INT(GUI_AltAccessKeys, 1);
+CH_INT(GUI_AKD_Conservative, 0);

@@ -182,8 +182,9 @@ public:
 	RichObject(const String& type, const Value& data, Size maxsize = Size(3967, 3967));
 };
 
-RichObject CreateDrawingObject(const Drawing& dwg, Size dot_size, Size out_size);
-RichObject CreateImageObject(const Image& img);
+RichObject CreateDrawingObject(const Drawing& dwg, Size dot_size, Size size);
+RichObject CreateDrawingObject(const Drawing& dwg, int cx = 0, int cy = 0);
+RichObject CreateImageObject(const Image& img, int cx = 0, int cy = 0);
 
 struct RichPara;
 

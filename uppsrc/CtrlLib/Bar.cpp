@@ -10,7 +10,7 @@ void BarPane::LeftDown(Point pt, dword keyflags)
 void BarPane::Paint(Draw& w)
 {
 	Size sz = GetSize();
-	w.DrawRect(sz, menu ? (IsXPStyle() ? SColorMenu : SColorFace) : SColorFace);
+	w.DrawRect(sz, menu ? (GUI_GlobalStyle() >= GUISTYLE_XP ? SColorMenu : SColorFace) : SColorFace);
 	for(int i = 0; i < breakpos.GetCount(); i++)
 		if(horz) {
 			w.DrawRect(0, breakpos[i], sz.cx, 1, SColorShadow);

@@ -9,18 +9,14 @@
 void Animate(Ctrl& c, const Rect& target, int type)
 {
 	if(type < 0)
-		if(Ctrl::IsFlag(Ctrl::EFFECT_FADE))
-			type = Ctrl::EFFECT_FADE;
-		else
-		if(Ctrl::IsFlag(Ctrl::EFFECT_SLIDE))
-			type = Ctrl::EFFECT_SLIDE;
+		type = GUI_PopUpEffect();
 	Rect r0 = c.GetRect();
 	dword time0 = GetTickCount();
 	for(;;) {
 		dword t = GetTickCount() - time0;
 		if(t > 200)
 			break;
-		if(type == Ctrl::EFFECT_SLIDE) {
+		if(type == GUIEFFECT_SLIDE) {
 			int q = 25 * t / 200;
 			q *= q;
 			Rect r = r0;
@@ -37,7 +33,7 @@ void Animate(Ctrl& c, const Rect& target, int type)
 			c.SetRect(r);
 		}
 		else
-		if(type == Ctrl::EFFECT_FADE)
+		if(type == GUIEFFECT_FADE)
 			c.SetAlpha((byte)(255 * t / 200));
 		else
 			break;

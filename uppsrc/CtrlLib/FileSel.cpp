@@ -695,7 +695,8 @@ bool FileSel::Execute(int _mode) {
 	}
 	else {
 		for(Ctrl *q = GetFirstChild(); q; q = q->GetNext())
-			q->Show();
+			if(q != &mkdir)
+				q->Show();
 		Rect r = GetRect();
 		CtrlLayout(*this);
 		SetRect(r);
@@ -755,14 +756,21 @@ bool FileSel::Execute(int _mode) {
 		minus.Hide();
 		plus.Hide();
 	}
-	mkdir.RightPos(px, 20).TopPos(dr.top, 20);
-	dirup.RightPos(px + 20, 20).TopPos(dr.top, 20);
-	dir.HSizePos(dr.left, px + 44);
+	if(mkdir.IsShown()) {
+		mkdir.RightPos(px, 20).TopPos(dr.top, 20);
+		dirup.RightPos(px + 20, 20).TopPos(dr.top, 20);
+		px += 44;
+	}
+	else {
+		dirup.RightPos(px, 20).TopPos(dr.top, 20);
+		px += 24;
+	}
+	dir.HSizePos(dr.left, px);
 	if(activetype >= 0 && activetype < type.GetCount())
 		type.SetIndex(activetype);
 	int dlc = type.GetCount();
 	Load();
-	ActiveFocus(file);
+	ActiveFocus(file.IsEditable() ? (Ctrl&)file : (Ctrl&)list);
 	if(bidname) {
 		String s;
 		for(int i = 0; i < fn.GetCount(); i++)

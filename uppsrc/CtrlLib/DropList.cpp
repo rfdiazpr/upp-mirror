@@ -68,7 +68,7 @@ void PopUpTable::PopUp(Ctrl *owner, int x, int top, int bottom, int width) {
 	}
 	open = false;
 	Ctrl popup;
-	if(IsFlag(EFFECT_SLIDE|EFFECT_FADE)) {
+	if(GUI_PopUpEffect()) {
 		if(up) {
 			popup.SetRect(Rect(rt.left, rt.bottom - 1, rt.right, rt.bottom));
 			popup.Add(TopPos(0, rt.Height()).LeftPos(0, rt.Width()));
@@ -78,15 +78,15 @@ void PopUpTable::PopUp(Ctrl *owner, int x, int top, int bottom, int width) {
 			popup.Add(BottomPos(0, rt.Height()).LeftPos(0, rt.Width()));
 		}
 		CenterCursor();
-		popup.PopUp(owner, true, true, IsXPStyle());
+		popup.PopUp(owner, true, true, GUI_GlobalStyle() >= GUISTYLE_XP);
 		SetFocus();
 		Ctrl::ProcessEvents();
-		Animate(popup, rt, EFFECT_SLIDE);
+		Animate(popup, rt, GUIEFFECT_SLIDE);
 		Ctrl::Remove();
 	}
 	CenterCursor();
 	SetRect(rt);
-	Ctrl::PopUp(owner, true, true, IsXPStyle());
+	Ctrl::PopUp(owner, true, true, GUI_GlobalStyle() >= GUISTYLE_XP);
 	SetFocus();
 	open = true;
 }

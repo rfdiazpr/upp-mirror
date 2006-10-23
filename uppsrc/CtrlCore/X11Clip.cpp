@@ -70,9 +70,8 @@ String Ctrl::Xclipboard::Read(int fmt)
 	for(int i = 0; i < 20; i++) {
 		if(XCheckTypedWindowEvent(Xdisplay, win, SelectionNotify, &event)) {
 			if(event.xselection.property != None) {
-				String data = ReadPropertyData(win, event.xselection.property);
-				XDeleteProperty(Xdisplay, win, event.xselection.property);
-				return data;
+				XSync(Xdisplay, false);
+				return ReadPropertyData(win, event.xselection.property);
 			}
 			return Null;
 		}

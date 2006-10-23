@@ -135,7 +135,7 @@ void ColorPopUp::Paint(Draw& w)
 			if(GetMouseLeft())
 				DrawFrame(w, r, SColorShadow, SColorLight);
 			else
-				DrawFrame(w, r, IsXPStyle() ? SColorText : SColorHighlight);
+				DrawFrame(w, r, GUI_GlobalStyle() >= GUISTYLE_XP ? SColorText : SColorHighlight);
 		}
 	}
 
@@ -152,7 +152,7 @@ void ColorPopUp::Paint(Draw& w)
 						if(GetMouseLeft())
 							DrawFrame(w, r, SColorShadow, SColorLight);
 						else
-							DrawFrame(w, r, IsXPStyle() ? SColorText : SColorHighlight);
+							DrawFrame(w, r, GUI_GlobalStyle() >= GUISTYLE_XP ? SColorText : SColorHighlight);
 				}
 				return;
 			}
@@ -165,7 +165,7 @@ void ColorPopUp::Paint(Draw& w)
 				if(GetMouseLeft())
 					DrawFrame(w, x, y - 1, 16, 16, SColorShadow, SColorLight);
 				else
-					DrawFrame(w, x, y - 1, 16, 16, IsXPStyle() ? SColorText : SColorHighlight);
+					DrawFrame(w, x, y - 1, 16, 16, GUI_GlobalStyle() >= GUISTYLE_XP ? SColorText : SColorHighlight);
 			i++;
 		}
 		y += 16;
@@ -279,14 +279,14 @@ void ColorPopUp::PopUp(Ctrl *owner, Color c)
 		y = r.top - sz.cy;
 
 	Rect rt = RectC(x, y, sz.cx, sz.cy);
-	if(IsFlag(EFFECT_SLIDE|EFFECT_FADE)) {
+	if(GUI_PopUpEffect()) {
 		Ctrl popup;
 		popup.Add(BottomPos(0, rt.Height()).LeftPos(0, rt.Width()));
 		popup.SetRect(RectC(rt.left, rt.top, 3, 3));
-		popup.PopUp(owner, true, true, IsXPStyle());
+		popup.PopUp(owner, true, true, GUI_GlobalStyle() >= GUISTYLE_XP);
 		SetFocus();
 		Ctrl::ProcessEvents();
-		Animate(popup, rt, EFFECT_SLIDE);
+		Animate(popup, rt, GUIEFFECT_SLIDE);
 	}
 
 	SetRect(rt);

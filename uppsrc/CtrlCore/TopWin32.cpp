@@ -142,7 +142,7 @@ void TopWindow::CenterRect(HWND hwnd)
 
 void TopWindow::Open(HWND hwnd)
 {
-	if(dokeys && ((GetFlags() & AKD_CONSERVATIVE) == 0 || GetAccessKeysDeep() <= 1))
+	if(dokeys && (!GUI_AKD_Conservative() || GetAccessKeysDeep() <= 1))
 		DistributeAccessKeys();
 	UsrLogT(3, "OPEN " + Desc(this));
 	LLOG("TopWindow::Open, HWND = " << FormatIntHex((int)hwnd, 8) << ", Active = " << FormatIntHex((int)::GetActiveWindow(), 8));

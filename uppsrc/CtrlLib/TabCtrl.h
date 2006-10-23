@@ -94,10 +94,12 @@ public:
 		LEFTEDGE, TOPEDGE, RIGHTEDGE, BOTTOMEDGE,
 		METRIC_COUNT,
 
-		FIRST = 0,
-		NEXT = 4,
-		BODY = 8,
-		LOOK_COUNT = 9
+		NORMAL = 0,
+		FIRST = 4,
+		LAST = 8,
+		BOTH = 12,
+		BODY = 16,
+		LOOK_COUNT = 17
 	};
 
 	Callback WhenSet;

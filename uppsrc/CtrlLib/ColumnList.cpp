@@ -111,9 +111,10 @@ void ColumnList::LeftDown(Point p, dword flags) {
 		PointDown(p);
 		p.y %= cy;
 		p.x %= GetColumnCx(0);
-		if(cursor >= 0) {
+		if(multi && cursor >= 0) {
 			if(flags & K_SHIFT && anchor >= 0) {
 				ShiftSelect(anchor, cursor);
+				WhenLeftClick();
 				WhenLeftClickPos(p);
 				return;
 			}
@@ -122,11 +123,13 @@ void ColumnList::LeftDown(Point p, dword flags) {
 				if(anchor >= 0 && !IsSelection())
 					SelectOne(anchor, true);
 				SelectOne(cursor, !IsSelected(cursor));
+				WhenLeftClick();
 				WhenLeftClickPos(p);
 				return;
 			}
 		}
 		ClearSelection();
+		WhenLeftClick();
 		WhenLeftClickPos(p);
 	}
 }
@@ -397,10 +400,8 @@ void ColumnList::GetItemStyle(int i, Color& ink, Color& paper, dword& style)
 	if(m.sel) {
 		style |= Display::SELECT;
 		paper = SColorShadow;
-		if(HasFocus()) {
-			paper = SColorPaper;
-			ink = SColorText;
-		}
+		if(HasFocus())
+			style |= Display::FOCUS;
 	}
 }
 
@@ -667,7 +668,6 @@ ColumnList::ColumnList() {
 	display = &StdDisplay();
 	multi = false;
 	isselection = false;
-	WhenLeftClickPos = THISBACK(StdLeftClickPos);
 	mi = -1;
 }
 

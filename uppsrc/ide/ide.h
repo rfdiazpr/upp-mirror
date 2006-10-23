@@ -589,8 +589,7 @@ public:
 	ArrayMap<String, TransferFileInfo> transferfilecache;
 	Index<String> editastext;
 
-//	Label      mainconfiglist_tag;
-	DropPusher mainconfiglist;
+	DropList   mainconfiglist;
 	String     mainconfigname;
 	String     mainconfigparam;
 

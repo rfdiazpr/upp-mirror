@@ -32,8 +32,6 @@ public:
 	virtual void  CancelMode();
 	virtual Image FrameMouseEvent(int event, Point p, int zdelta, dword keyflags);
 
-	DropBox&      AlwaysDrop(bool e = true);
-
 private:
 	bool UserEdge() const;
 	Rect GetDropBoxRect(Rect r) const;
@@ -73,6 +71,8 @@ protected:
 	void     Push();
 	Callback WhenPush;
 	void     EnableDrop(bool b = true) { enabled = b || always_drop; RefreshFrame(); }
+	void     AlwaysDrop(bool e = true);
+
 
 public:
 	DropBox();
@@ -113,7 +113,7 @@ public:
 	Callback      WhenDrop;
 	Callback      WhenClick;
 
-	DropList&     Add(const Value& key, const Value& text);
+	DropList&     Add(const Value& key, const Value& value);
 	DropList&     Add(const Value& value)       { return Add(value, value); }
 	void          ClearList();
 	void          Clear();
@@ -155,6 +155,7 @@ public:
 	DropList&     ValueDisplay(const Display& d);
 	DropList&     DisplayAll(bool b = true)             { displayall = b; return *this; }
 	DropList&     DropFocus(bool b = true)              { dropfocus = b; return *this; }
+	DropList&     AlwaysDrop(bool e = true)             { DropBox::AlwaysDrop(e); return *this; }
 
 	DropList();
 	virtual ~DropList();
@@ -165,6 +166,7 @@ void Add(MapConvert& convert, const VectorMap<Value, Value>& values);
 void Add(DropList& list, const MapConvert& convert);
 
 class DropPusher : public DataPusher, public Convert {
+// Deprecated; use DropList instead!!!
 public:
 	virtual Value      Format(const Value& v) const;
 

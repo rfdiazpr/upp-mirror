@@ -180,6 +180,13 @@ bool IsCd(const String& cmd) {
 	return false;
 }
 
+static void AddPath(VectorMap<String, String>& out, String key, String path)
+{
+	out.Add(key, path);
+	out.Add(key + "_WIN", WinPath(path));
+	out.Add(key + "_UNIX", UnixPath(path));
+}
+
 Vector<String> CppBuilder::CustomStep(const String& path)
 {
 	String file = GetHostPath(path);
@@ -190,12 +197,12 @@ Vector<String> CppBuilder::CustomStep(const String& path)
 			const ::CustomStep& m = mv[j];
 			if(MatchWhen(m.when, config.GetKeys()) && m.MatchExt(ext)) {
 				VectorMap<String, String> mac;
-				mac.Add("PATH", file);
-				mac.Add("DIR", GetFileFolder(file));
+				AddPath(mac, "PATH", file);
+				AddPath(mac, "DIR", GetFileFolder(file));
 				mac.Add("FILE", GetFileName(file));
 				mac.Add("TITLE", GetFileTitle(file));
-				mac.Add("OUTPATH", GetHostPath(target));
-				mac.Add("OUTDIR", GetHostPath(outdir));
+				AddPath(mac, "OUTPATH", GetHostPath(target));
+				AddPath(mac, "OUTDIR", GetHostPath(outdir));
 				mac.Add("OUTFILE", GetFileName(target));
 				mac.Add("OUTTITLE", GetFileTitle(target));
 				mac.Add("INCLUDE", Join(include, ";"));

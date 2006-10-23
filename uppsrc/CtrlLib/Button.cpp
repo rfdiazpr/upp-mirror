@@ -469,7 +469,7 @@ void  ButtonOption::Paint(Draw& w) {
 	Size sz = GetSize();
 	Size isz = image.GetSize();
 	Rect r = sz;
-	if(IsXPStyle()) {
+	if(GUI_GlobalStyle() >= GUISTYLE_XP) {
 		int t = !IsEnabled() ? BUTTON_DISABLED :
 		        push ? BUTTON_PUSH :
 		        option ? BUTTON_CHECKED :
@@ -575,7 +575,7 @@ void DataPusher::Paint(Draw& draw)
 	                        : IsShowEnabled() && !IsReadOnly() ? SColorPaper : SColorFace);
 	draw.DrawRect(rc, paper);
 	rc.Deflate(2, 1);
-	if(IsPush() && !IsXPStyle())
+	if(IsPush() && GUI_GlobalStyle() < GUISTYLE_XP)
 		rc += Size(1, 1);
 	display -> Paint(draw, rc, convert -> Format(data),
 		(IsEnabled() ? SColorText : SColorDisabled), Color(paper),

@@ -61,7 +61,7 @@ void   Splitter::Paint(Draw& w) {
 	if(HasCapture() && mouseindex >= 0 && mouseindex < pos.GetCount()) {
 		int p = PosToClient(pos[mouseindex]) - (width >> 1);
 		Rect r = vert ? RectC(0, p, sz.cx, width) : RectC(p, 0, width, sz.cy);
-		w.DrawRect(r, IsXPStyle() ? Blend(SColorHighlight, SColorFace) : SColorShadow);
+		w.DrawRect(r, GUI_GlobalStyle() >= GUISTYLE_XP ? Blend(SColorHighlight, SColorFace) : SColorShadow);
 		w.ExcludeClip(r);
 	}
 	w.DrawRect(sz, SColorFace());

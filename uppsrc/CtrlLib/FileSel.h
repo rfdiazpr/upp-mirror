@@ -198,9 +198,13 @@ public:
 	FileSel& DefaultExt(const char *ext)         { defext = ext; return *this; }
 	FileSel& Multi(bool b = true)                { multi = b; return *this; }
 	FileSel& ReadOnlyOption(bool b = true)       { rdonly = b; return *this; }
+	FileSel& MkDirOption(bool b = true)          { mkdir.Show(b); return *this; }
+	FileSel& NoMkDirOption()                     { return MkDirOption(false); }
 	FileSel& BaseDir(const char *dir)            { basedir = dir; return *this; }
 	FileSel& Asking(bool b = true)               { asking = b; return *this; }
 	FileSel& NoAsking()                          { return Asking(false); }
+	FileSel& EditFileName(bool b)                { file.SetEditable(b); return *this; }
+	FileSel& NoEditFileName()                    { return EditFileName(false); }
 
 	FileSel();
 	virtual ~FileSel();

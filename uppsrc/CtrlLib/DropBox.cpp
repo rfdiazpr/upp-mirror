@@ -12,11 +12,10 @@ void DropBox::CancelMode()
 	light = -1;
 }
 
-DropBox& DropBox::AlwaysDrop(bool e)
+void DropBox::AlwaysDrop(bool e)
 {
 	always_drop = e;
 	EnableDrop(enabled);
-	return *this;
 }
 
 void DropBox::SyncLook()

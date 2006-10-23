@@ -1,7 +1,3 @@
-TOPIC("Data$en-us")
-#include "Data$en-us.tpp"
-END_TOPIC
-
 TOPIC("Ctrl$en-us")
 #include "Ctrl$en-us.tpp"
 END_TOPIC

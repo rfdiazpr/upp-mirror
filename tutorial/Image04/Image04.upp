@@ -1,9 +1,11 @@
 uses
-	CtrlLib;
+	CtrlLib,
+	plugin\jpg,
+	plugin\gif,
+	plugin\tif;
 
 file
-
-	"main.cpp";
+	main.cpp;
 
 mainconfig
 	"" = "GUI";

@@ -429,12 +429,10 @@ GLOBALDEF int FtpConnect(const char *host, netbuf **nControl, char perror[],
 #if defined(VMS)
 		sin.sin_port = htons(21);
 #else
-		if ((pse = getservbyname("ftp","tcp")) == NULL)
-		{
-			strcpy(perror, "getservbyname");
-			return 0;
-		}
-		sin.sin_port = pse->s_port;
+		if(pse = getservbyname("ftp", "tcp"))
+			sin.sin_port = pse->s_port;
+		else
+			sin.sin_port = htons(21);
 #endif
 	}
 	else

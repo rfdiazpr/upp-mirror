@@ -19,16 +19,19 @@ bool IdeIconDes::Load(const char *_filename)
 void IdeIconDes::Save()
 {
 	if(format == 1) {
-		for(int i = 0; i < GetCount(); i++)
-			if(GetImage(i).GetKind() == IMAGE_ALPHA) {
+		for(int i = 0; i < GetCount(); i++) {
+			Image m = GetImage(i);
+			Point p = m.Get2ndSpot();
+			if(m.GetKind() == IMAGE_ALPHA || p.x || p.y) {
 				if(PromptYesNo("Legacy file format does not support images "
-				               "with full alpha channel - "
+				               "with full alpha channel or 2nd hotspot - "
 				               "the information would be lost.&"
 				               "Do you wish to convert the file to the new format?")) {
 					format = 0;
 				}
 				break;
 			}
+		}
 	}
 	StoreToGlobal(*this, "icondes-ctrl");
 	VectorMap<String, Image> m;

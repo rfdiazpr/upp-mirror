@@ -233,7 +233,6 @@ void UWord::SerializeApp(Stream& s)
 
 GUI_APP_MAIN
 {
-	Ctrl::ShowRepaint(50);
 	SetLanguage(LNG_ENGLISH);
 
 	UWordFs().Type("QTF files", "*.qtf")

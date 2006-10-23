@@ -2,6 +2,8 @@
 
 #define LTIMING(x)  // TIMING(x)
 
+CH_LOOKS(ToolButtonLook, 6, CtrlsImgLook(CtrlsImg::I_TB, 6));
+
 void ToolButton::UpdateTip()
 {
 	LTIMING("UpdateTip");
@@ -91,30 +93,12 @@ void  ToolButton::Paint(Draw& w)
 	Size isz = image.GetSize();
 	w.DrawRect(sz, checked && !HasMouse() ? Blend(SColorFace, SColorLight) : SColorFace);
 	Point center = (sz - isz) / 2;
-	if(IsEnabled()) {
-		bool push = HasMouse() && GetMouseLeft();
-		if(IsXPStyle()) {
-			if(push)
-				DrawXPButton(w, sz, BUTTON_PUSH|BUTTON_TOOL);
-			else
-			if(HasMouse())
-				DrawXPButton(w, sz, BUTTON_NORMAL|BUTTON_TOOL);
-			else
-			if(checked)
-				DrawXPButton(w, sz, BUTTON_TOOL|BUTTON_CHECKED);
-			else
-				w.DrawRect(sz, SColorFace);
-			DrawHighlightImage(w, center.x, center.y, image, HasMouse());
-		}
-		else {
-			DrawHighlightImage(w, center.x + push, center.y + push, image, HasMouse());
-			if(checked || HasMouse() && GetMouseLeft())
-				DrawFrame(w, sz, SColorShadow, SColorLight);
-			else
-			if(HasMouse())
-				DrawFrame(w, sz, SColorLight, SColorShadow);
-		}
-	}
+	ChPaint(w, sz, ToolButtonLook((IsEnabled() ? HasMouse() ? GetMouseLeft() ? CTRL_PRESSED
+						                                                     : checked ? 5 : CTRL_HOT
+				                                            : checked ? 4 : CTRL_NORMAL
+					                           : CTRL_DISABLED)));
+	if(IsEnabled())
+		DrawHighlightImage(w, center.x, center.y, image, HasMouse());
 	else
 		w.DrawImage(center.x, center.y, MakeImage(image, Etched));
 }
@@ -192,6 +176,7 @@ ToolButton::ToolButton()
 	Reset();
 	checked = false;
 	paint_checked = false;
+	Transparent();
 }
 
 String ToolButton::GetDesc() const

@@ -784,7 +784,8 @@ void ForwardSort(T& c)
 
 enum
 {
-	__SORT_THRESHOLD = 16
+	__SORT_THRESHOLD = 16,
+	__SORT_MEDIAN_PASSES = 3,
 };
 
 template <class I, class Less>
@@ -793,16 +794,28 @@ void Sort(I begin, I end, const Less& less)
 	int count;
 	while((count = end - begin) > __SORT_THRESHOLD) {
 		I b = begin, e = end, m = b + (count >> 1);
-		for(;; ++b) {
-			while(less(*m, *--e))
-				;
-			while(less(*b, *m))
-				++b;
-			if(!(b < e))
+		int median_error = (int)sqrt((double)count);
+		for(int pass = 1;; pass++) {
+			for(;; ++b) {
+				while(less(*m, *--e))
+					;
+				while(less(*b, *m))
+					++b;
+				if(!(b < e))
+					break;
+				if(m == b) m = e;
+				else if(m == e) m = b;
+				IterSwap(b, e);
+			}
+			if(pass >= __SORT_MEDIAN_PASSES)
 				break;
-			if(m == b) m = e;
-			else if(m == e) m = b;
-			IterSwap(b, e);
+			if(b - begin <= median_error)
+				e = end;
+			else if(end - e <= median_error)
+				b = begin;
+			else
+				break;
+			m = b + (int)((unsigned)rand() % ((e - b) >> 1));
 		}
 		if(b - begin < end - e) {
 			Sort(begin, b, less);
@@ -847,7 +860,7 @@ struct IndexSortIterator
 
 	Iter&       operator ++ ()               { ++ii; ++vi; return *this; }
 	Iter&       operator -- ()               { --ii; --vi; return *this; }
-	const K&    operator *  () /*const*/     { return *ii; } //!! Fidler's bug in Array::Iterator
+	const K&    operator *  () const         { return *ii; }
 	Iter        operator +  (int i) const    { return Iter(ii + i, vi + i); }
 	Iter        operator -  (int i) const    { return Iter(ii - i, vi - i); }
 	int         operator -  (Iter b) const   { return (int)(ii - b.ii); }

@@ -83,7 +83,6 @@ private:
 	void    ShiftSelect(int anchor, int cursor);
 	void    RefreshItem(int i);
 	void    RefreshCursor()                    { RefreshItem(cursor); }
-	void    StdLeftClickPos(Point pos)         { WhenLeftClick(); }
 	void    GetItemStyle(int i, Color& ink, Color& paper, dword& style);
 	void    SyncInfoStyle();
 

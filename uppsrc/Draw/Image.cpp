@@ -48,6 +48,7 @@ void ImageBuffer::DeepCopy(const ImageBuffer& img)
 {
 	Create(img.GetSize());
 	SetHotSpot(img.GetHotSpot());
+	Set2ndSpot(img.Get2ndSpot());
 	SetDots(img.GetDots());
 	memcpy(pixels, img.pixels, GetLength() * sizeof(RGBA));
 }
@@ -424,6 +425,21 @@ int GetImlCount()
 	INTERLOCKED_(sImgMapLock)
 		q = sImgMap().GetCount();
 	return q;
+}
+
+Iml& GetIml(int i)
+{
+	return *sImgMap()[i];
+}
+
+void Iml::Enter()
+{
+	sImgMapLock.Enter();
+}
+
+void Iml::Leave()
+{
+	sImgMapLock.Leave();
 }
 
 String GetImlName(int i)

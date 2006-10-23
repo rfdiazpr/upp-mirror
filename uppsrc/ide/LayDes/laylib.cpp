@@ -14,7 +14,13 @@ struct ImlImageMaker : ImageMaker {
 		VectorMap<String, Image> iml;
 		int f;
 		LoadIml(LoadFile(SourcePath(s[0], s[1])), iml, f);
-		return iml.Get(s[2], LayImg::ImageError());
+		bool recolor = false;
+		if(*s[2].Last() == '*') {
+			s[2].Trim(s[2].GetLength() - 1);
+			recolor = true;
+		}
+		Image m = iml.Get(s[2], LayImg::ImageError());
+		return recolor ? AdjustColors(m) : m;
 	}
 };
 
@@ -22,7 +28,7 @@ Image GetUscImage(const String& id)
 {
 	Image m = GetImlImage(id);
 	if(!IsNull(m))
-		return m;
+		return AdjustColors(m);
 	ImlImageMaker q;
 	q.id = id;
 	return MakeImage(q);
@@ -395,7 +401,7 @@ void EscDraw::GetTextSize(EscEscape& e)
 void EscDraw::DrawImage(EscEscape& e)
 {
 	e.CheckArray(2);
-	w.DrawImage(e.Int(0), e.Int(1), AdjustColors(GetUscImage((String)e[2])));
+	w.DrawImage(e.Int(0), e.Int(1), GetUscImage((String)e[2]));
 }
 
 EscDraw::EscDraw(EscValue& v, Draw& w)

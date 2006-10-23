@@ -15,7 +15,10 @@ void IconDes::SyncList()
 		Slot& c = slot[i];
 		list.Add(sFormatImageName(c.name, c.image), c.image);
 	}
-	list.ScCursor(a);
+	if(ii >= 0) {
+		list.SetCursor(ii);
+		list.ScCursor(a);
+	}
 }
 
 static int sCharFilterCid(int c)

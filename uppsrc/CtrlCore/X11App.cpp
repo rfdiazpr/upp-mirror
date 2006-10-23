@@ -34,34 +34,47 @@ String XAtomName(Atom atom)
 
 String GetProperty(Window w, Atom property, Atom rtype)
 {
+	LOG("GetProperty");
 	String result;
 	int format;
 	unsigned long nitems, after = 1;
 	long offset = 0;
 	Atom type = None;
 	unsigned char *data;
-	long rsize = XMaxRequestSize(Xdisplay);
-	while(after > 0 &&
-	      XGetWindowProperty(Xdisplay, w, property, offset, rsize, XFalse,
-	                         rtype, &type, &format, &nitems, &after, &data) == Success &&
-	      type != None) {
+	long rsize = minmax((long)(XMaxRequestSize(Xdisplay) - 100), (long)256, (long)65536);
+	DUMP(XAtomName(property));
+	DUMP(XAtomName(rtype));
+	DUMP(rsize);
+	while(after > 0) {
+		if(XGetWindowProperty(Xdisplay, w, property, offset, rsize, XFalse,
+	                          rtype, &type, &format, &nitems, &after, &data) != Success)
+	    	break;
+	    DUMP(format);
+	    DUMP(type);
+	    DUMP(after);
+	    DUMP(nitems);
+	    if(type == None)
+	        break;
 		if(data) {
 			int len = format == 32 ? sizeof(unsigned long) * nitems : nitems * (format >> 3);
 			result.Cat(data, len);
 			XFree((char *)data);
-			offset += len >> 2;
+			offset += nitems / (32 / format);
 		}
 		else
 			break;
 	}
+	result.Shrink();
+	XFlush(Xdisplay);
 	return result;
 }
 
 bool WaitForEvent(Window w, int type, XEvent& event){
-	for(int i = 0; i < 50; i++) {
+	for(int i = 0; i < 80; i++) {
 		if(XCheckTypedWindowEvent(Xdisplay, w, type, &event))
 			return true;
-		Sleep(10);
+		XFlush(Xdisplay);
+		Sleep(50);
 	}
 	LOG("WaitForEvent failed");
 	return false;
@@ -80,20 +93,20 @@ String ReadPropertyData(Window w, Atom property, Atom rtype)
 	if(XGetWindowProperty(Xdisplay, w, property, 0, 0, XFalse, AnyPropertyType,
 	                      &type, &format, &nitems, &after, &ptr) == Success && type != None) {
 		XFree(ptr);
+		DUMP(type);
+		DUMP(nitems);
 		if(type == XA_INCR) {
 			LOG("Incremental");
 			XDeleteProperty(Xdisplay, w, property);
-			XFlush(Xdisplay);
 			XEvent event;
 			for(;;) {
 				XFlush(Xdisplay);
 				if(!WaitForEvent(w, PropertyNotify, event))
 					break;
-				DUMP(event.xproperty.state);
 				if(event.xproperty.atom == property && event.xproperty.state == PropertyNewValue) {
 					LOG("Reading incremental chunk...");
 					DUMP(XAtomName(event.xproperty.atom));
-					String x = GetProperty(w, property, rtype);
+					String x = GetProperty(w, property);
 					DUMP(x.GetLength());
 					if(!x.GetLength())
 						break;
@@ -102,8 +115,10 @@ String ReadPropertyData(Window w, Atom property, Atom rtype)
 				}
 			}
 		}
-		else
-			r = GetProperty(w, property, rtype);
+		else {
+			r = GetProperty(w, property);
+			XDeleteProperty(Xdisplay, w, property);
+		}
 	}
 	return r;
 }
@@ -283,8 +298,13 @@ void Ctrl::InitX11(const char *display)
 		_NET_Supported().Add(nets[i]);
 
 	ChSync();
-	Ctrl::SetXPStyle();
-	Ctrl::SetFlags(Ctrl::EFFECT_SLIDE | Ctrl::DRAGFULLWINDOW | Ctrl::DROPSHADOWS | Ctrl::ALTACCESSKEYS);
+
+	ChSet("GUI_GlobalStyle", GUISTYLE_XP);
+	ChSet("GUI_DragFullWindow", 1);
+	ChSet("GUI_PopUpEffect", GUIEFFECT_SLIDE);
+	ChSet("GUI_DropShadows", 1);
+	ChSet("GUI_AltAccessKeys", 1);
+	ChSet("GUI_AKD_Conservative", 0);
 
 	setlocale(LC_ALL, "en_US.utf8");
 	if(XSupportsLocale()) {

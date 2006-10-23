@@ -25,7 +25,7 @@ CONSOLE_APP_MAIN
 
 	// Update the schema to match the schema described in "simple.sch"
 	#ifdef _DEBUG
-	SqlSchema sch(SQLD_SQLITE3);
+	SqlSchema sch(SQLITE3);
 	StdStatementExecutor se(sqlite3);
 	All_Tables(sch);
 	if(sch.ScriptChanged(SqlSchema::UPGRADE))

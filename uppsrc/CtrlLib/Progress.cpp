@@ -30,7 +30,7 @@ void ProgressIndicator::Paint(Draw& w) {
 		}
 		p = min(p - p0, max(msz.cx, msz.cy) - p0);
 	}
-	if(IsXPStyle() && !percent) {
+	if(GUI_GlobalStyle() >= GUISTYLE_XP && !percent) {
 		w.DrawRect(sz, SColorPaper);
 		if(sz.cy > sz.cx) {
 			ChPaint(w, sz, VertProgressIndicatorLook());

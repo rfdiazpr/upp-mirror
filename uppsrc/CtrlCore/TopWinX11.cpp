@@ -161,7 +161,7 @@ void TopWindow::CenterRect(Ctrl *owner)
 
 void TopWindow::Open(Ctrl *owner)
 {
-	if(dokeys && ((GetFlags() & AKD_CONSERVATIVE) == 0 || GetAccessKeysDeep() <= 1))
+	if(dokeys && (!GUI_AKD_Conservative() || GetAccessKeysDeep() <= 1))
 		DistributeAccessKeys();
 	UsrLogT(3, "OPEN " + Desc(this));
 	LLOG("OPEN " << Name() << " owner: " << ::Name(owner));
@@ -223,10 +223,12 @@ void TopWindow::Open(Ctrl *owner)
 	LLOG(">OPENED " << Name());
 	PlaceFocus();
 	Vector<int> fe = GetPropertyInts(top->window, XAtom("_NET_FRAME_EXTENTS"));
-	windowFrameMargin.left = max(windowFrameMargin.left, fe[0]);
-	windowFrameMargin.right = max(windowFrameMargin.right, fe[1]);
-	windowFrameMargin.top = max(windowFrameMargin.top, fe[2]);
-	windowFrameMargin.bottom = max(windowFrameMargin.bottom, fe[3]);
+	if(fe.GetCount() >= 4) {
+		windowFrameMargin.left = max(windowFrameMargin.left, fe[0]);
+		windowFrameMargin.right = max(windowFrameMargin.right, fe[1]);
+		windowFrameMargin.top = max(windowFrameMargin.top, fe[2]);
+		windowFrameMargin.bottom = max(windowFrameMargin.bottom, fe[3]);
+	}
 }
 
 void TopWindow::Open()

@@ -90,6 +90,7 @@ file
 	Ch readonly separator,
 	Ch.h,
 	Ch.cpp,
+	XPTheme.dli,
 	ChWin32.cpp,
 	Ctrls.iml,
 	ClassicCtrls.iml,

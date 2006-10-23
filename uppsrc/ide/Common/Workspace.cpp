@@ -200,8 +200,12 @@ String CatAnyPath(String path, const char *more)
 	if(!more || !*more)
 		return path;
 	if(!path.IsEmpty() && *path.Last() != '\\' && *path.Last() != '/' &&
-	   *more != '\\' && *more != '/')
+	*more != '\\' && *more != '/')
+#ifdef PLATFORM_WIN32
+		path.Cat('\\');
+#else
 		path.Cat('/');
+#endif
 	path.Cat(more);
 	return path;
 }

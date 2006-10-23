@@ -26,7 +26,7 @@ void ToolTip::PopUp(Ctrl *owner, Point p, bool effect)
 	Size sz = GetMinSize();
 	p.x = max(p.x + sz.cx > r.right ? r.right - sz.cx : p.x, 0);
 	p.y = max(p.y + sz.cy > r.bottom ? r.bottom - sz.cy : p.y, 0);
-	if(IsFlag(EFFECT_SLIDE) && effect)
+	if(GUI_PopUpEffect() == GUIEFFECT_SLIDE && effect)
 		SetRect(p.x, p.y, sz.cx, 1);
 	else
 		SetRect(p.x, p.y, sz.cx, sz.cy);

@@ -1,6 +1,6 @@
 #include "CtrlLib.h"
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)  // RLOG(x)
 
 #define IMAGECLASS CtrlsImg
 #define IMAGEFILE <CtrlLib/Ctrls.iml>
@@ -13,7 +13,7 @@
 void ChSetStyleStd()
 {
 	ChSysInit();
-	Ctrl::SetXPStyle(true);
+	ChSet("GUI_GlobalStyle", GUISTYLE_XP);
 	ColoredOverride(CtrlsImg::Iml(), CtrlsImg::Iml());
 }
 
@@ -21,7 +21,7 @@ void ChSetStyleClassic()
 {
 	LLOG("ChInitWinClassic");
 	ChSysInit();
-	Ctrl::SetXPStyle(false);
+	ChSet("GUI_GlobalStyle", GUISTYLE_CLASSIC);
 	ColoredOverride(CtrlsImg::Iml(), ClassicCtrlsImg::Iml());
 	for(int q = 0; q < 4; q++)
 		CtrlsImg::Set(CtrlsImg::I_HTB + q, AdjustColors(CtrlsImg::Get(ClassicCtrlsImg::I_B + q)));

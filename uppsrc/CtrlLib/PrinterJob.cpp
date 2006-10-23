@@ -182,11 +182,11 @@ PrinterDlg::PrinterDlg()
 	copies <<= 1;
 	landscape <<= 0;
 	range <<= 0;
-	Vector<String> l = Split(System("lpstat -p"), '\n');
+	Vector<String> l = Split(System("lpstat -a"), '\n');
 	for(int i = 0; i < l.GetCount(); i++) {
 		Vector<String> w = Split(l[i], ' ');
-		if(w[0] == "printer" && w.GetCount() > 1)
-			printer.Add(w[1]);
+		if(w.GetCount())
+			printer.Add(w[0]);
 	}
 	String h = System("lpstat -d");
 	int q = h.Find(':');

@@ -394,7 +394,8 @@ PrintDraw::PrintDraw(HDC hdc, const char *docname)
 	DOCINFO di;
 	memset(&di, 0, sizeof(di));
 	di.cbSize = sizeof(di);
-	di.lpszDocName = docname;
+	String sys_docname = ToSystemCharset(docname);
+	di.lpszDocName = ~sys_docname;
 	if(::StartDoc(hdc, &di) <= 0) {
 		Abort();
 		return;

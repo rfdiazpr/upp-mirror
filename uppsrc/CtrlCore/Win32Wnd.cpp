@@ -10,6 +10,8 @@
 #define LOGMESSAGES 0
 #endif
 
+#define ELOG(x)  // RLOG(GetSysTime() << ": " << x)
+
 template<>
 unsigned GetHashValue(const HWND& h)
 {
@@ -82,12 +84,17 @@ GLOBAL_VAR(bool, Ctrl::EndSession)
 #ifndef PLATFORM_WINCE
 LRESULT CALLBACK Ctrl::OverwatchWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if(msg == WM_USER)
+	if(msg == WM_USER) {
+		ELOG("WM_USER");
 		PostQuitMessage(0);
+	}
 	if(msg == WM_ENDSESSION) {
 		EndSession() = true;
+		ELOG("WM_ENDSESSION 1");
 		ExitLoopEvent().Set();
+		ELOG("WM_ENDSESSION 2");
 		OverwatchEndSession.Wait();
+		ELOG("WM_ENDSESSION 3");
 	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
@@ -106,13 +113,16 @@ DWORD WINAPI Ctrl::Win32OverwatchThread(LPVOID)
 
 	OverwatchHWND = CreateWindowEx(0, "UPP-OVERWATCH", "", WS_OVERLAPPEDWINDOW,
 	                               -1000, -1000, 50, 50, NULL, NULL, hInstance, NULL);
-	ExitLoopEvent().Set();
 
+	ELOG("OverWatch 1");
+	ExitLoopEvent().Set();
+	ELOG("OverWatch 2");
     MSG Msg;
     while(GetMessage(&Msg, NULL, 0, 0) > 0) {
         TranslateMessage(&Msg);
         DispatchMessage(&Msg);
     }
+	ELOG("OverWatch 3");
     return 0;
 }
 #endif
@@ -152,27 +162,21 @@ void Ctrl::InitWin32(HINSTANCE hInstance)
 //	RLOGBLOCK("Ctrl::InitWin32");
 #define ILOG(x) // RLOG(x)
 	ILOG("SetXPStyle; hInstance = " << FormatIntHex(hInstance));
-	SetXPStyle(IsWinXP() && !ScreenInfo().PaletteMode() && IsSysFlag(0x1022 /*SPI_GETFLATMENU*/));
-	dword flags = 0;
-	ILOG("SPI_GETDRAGFULLWINDOWS");
+	ChSet("GUI_GlobalStyle", IsWinXP() && !ScreenInfo().PaletteMode() && IsSysFlag(0x1022 /*SPI_GETFLATMENU*/)
+	                         ? GUISTYLE_XP : GUISTYLE_CLASSIC);
 #ifndef PLATFORM_WINCE
-	if(IsSysFlag(SPI_GETDRAGFULLWINDOWS))
-		flags |= DRAGFULLWINDOW;
+	ILOG("SPI_GETDRAGFULLWINDOWS");
+	ChSet("GUI_DragFullWindow", IsSysFlag(SPI_GETDRAGFULLWINDOWS));
 #endif
-	ILOG("SPI_GETKEYBOARDCUES");
-	if(!IsSysFlag(0x100A /*SPI_GETKEYBOARDCUES*/))
-		flags |= ALTACCESSKEYS;
 	ILOG("SPI_GETMENUANIMATION");
-	if(IsSysFlag(0x1002 /*SPI_GETMENUANIMATION*/))
-		if(IsSysFlag(0x1012 /*SPI_GETMENUFADE*/))
-			flags |= EFFECT_FADE;
-		else
-			flags |= EFFECT_SLIDE;
+	ChSet("GUI_PopUpEffect", IsSysFlag(0x1002 /*SPI_GETMENUANIMATION*/) ?
+	                               IsSysFlag(0x1012 /*SPI_GETMENUFADE*/) ? GUIEFFECT_FADE : GUIEFFECT_SLIDE
+	                               : GUIEFFECT_NONE);
 	ILOG("SPI_GETDROPSHADOW");
-	if(IsSysFlag(0x1024 /*SPI_GETDROPSHADOW*/))
-		flags |= DROPSHADOWS;
-	ILOG("SetFlags");
-	SetFlags(flags);
+	ChSet("GUI_DropShadows", IsSysFlag(0x1024 /*SPI_GETDROPSHADOW*/));
+	ILOG("SPI_GETKEYBOARDCUES");
+	ChSet("GUI_AltAccessKeys", !IsSysFlag(0x100A /*SPI_GETKEYBOARDCUES*/));
+	ChSet("GUI_AKD_Conservative", 0);
 
 	Ctrl::hInstance = hInstance;
 	ILOG("RegisterClassW");
@@ -281,14 +285,19 @@ void Ctrl::ExitWin32()
 			::DestroyWindow(hwnd);
 	}
 	MSG msg;
-	while(GetMessage(&msg, NULL, 0, 0))
-		::PostQuitMessage(0);
+	while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		if(msg.message != WM_QUIT)
+			::PostQuitMessage(0);
 #ifndef flagDLL
 #ifndef PLATFORM_WINCE
+	ELOG("ExitWin32 1");
 	OverwatchEndSession.Set();
+	ELOG("ExitWin32 2");
 	PostMessage(OverwatchHWND, WM_USER, 0, 0);
+	ELOG("ExitWin32 3");
 	LLOG("Waiting for overwatch thread to finish...");
 	WaitForSingleObject(OverwatchThread, INFINITE);
+	ELOG("ExitWin32 4");
 	LLOG("...overwatch thread finished");
 #endif
 #endif
@@ -659,15 +668,20 @@ void Ctrl::EventLoop(Ctrl *ctrl)
 
 void Ctrl::GuiSleep(int ms)
 {
+	ELOG("GuiSleep");
+	if(EndSession())
+		return;
+	ELOG("GuiSleep 2");
 #if !defined(flagDLL) && !defined(PLATFORM_WINCE)
-
 	if(!OverwatchThread) {
 		DWORD dummy;
 		OverwatchThread = CreateThread(NULL, 0x100000, Win32OverwatchThread, NULL, 0, &dummy);
+		ELOG("ExitLoopEventWait 1");
 		ExitLoopEvent().Wait();
 	}
 	HANDLE h[1];
 	*h = ExitLoopEvent().GetHandle();
+	ELOG("ExitLoopEventWait 2 " << (void *)*h);
 	MsgWaitForMultipleObjects(1, h, FALSE, ms, QS_ALLINPUT);
 #else
 	MsgWaitForMultipleObjects(0, NULL, FALSE, ms, QS_ALLINPUT);

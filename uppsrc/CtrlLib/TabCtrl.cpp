@@ -10,9 +10,7 @@ CH_INTS(TabCtrlMetric, TabCtrl::METRIC_COUNT,
 );
 
 CH_LOOKS(TabCtrlLook, TabCtrl::LOOK_COUNT, CtrlsImgLook
-	(CtrlsImg::I_FTAB)
-	(CtrlsImg::I_TAB)
-	(CtrlsImg::I_TABB, 1)
+	(CtrlsImg::I_TAB, 4 * 4 + 1)
 );
 
 TabCtrl::Item& TabCtrl::Item::Text(const String& _text)
@@ -175,11 +173,12 @@ void TabCtrl::PaintTabs(Draw& w)
 					r.bottom += metric(SELBOTTOM);
 				}
 				ChPaint(w, r, look(
-					(i == 0 ? FIRST : NEXT) +
+					(tab.GetCount() == 1 ? BOTH : i == 0 ? FIRST :
+					 i == tab.GetCount() - 1 ? LAST : NORMAL)
+					+
 					(!IsEnabled() || !t.enabled ? CTRL_DISABLED :
 					 phase ? CTRL_PRESSED :
-					 i == hot ? CTRL_HOT : CTRL_NORMAL)
-				));
+					 i == hot ? CTRL_HOT : CTRL_NORMAL)));
 				t.Paint(w);
 			}
 	}

@@ -1,18 +1,21 @@
 #include "CtrlLib.h"
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)   // RLOG(x)
 #define LTIMING(x) // RTIMING(x)
 
 #ifdef PLATFORM_WIN32
 
 #ifdef PLATFORM_WINCE
 
-void ChInitUpp()
+void ChSysInit()
 {
 	CtrlImg::Reset();
 	CtrlsImg::Reset();
-	Ctrl::SetXPStyle(true);
+	ChReset();
+	ChSet("GUI_GlobalStyle", GUISTYLE_CLASSIC);
 }
+
+void ChDetectStyle() {}
 
 #else
 
@@ -65,6 +68,13 @@ struct XpElement : Moveable<XpElement> {
 static HANDLE xp_widget_handle[XP_COUNT];
 static VectorMap<XpElement, int> xp_margin;
 static VectorMap<XpElement, int> xp_opaque;
+
+void XpClear()
+{
+	memset(xp_widget_handle, 0, sizeof(xp_widget_handle));
+	xp_margin.Clear();
+	xp_opaque.Clear();
+}
 
 HANDLE XpWidget(int widget)
 {
@@ -295,9 +305,12 @@ static chLooks sLooks[] = {
 	{ "VertProgressIndicatorLook", 1, XP_PROGRESS, PP_BARVERT, 0, true },
 	{ "ProgressIndicatorChunkLook", 1, XP_PROGRESS, PP_CHUNK },
 	{ "VertProgressIndicatorChunkLook", 1, XP_PROGRESS, PP_CHUNKVERT },
-	{ "TabCtrlLook", 4, XP_TAB, TABP_TABITEMLEFTEDGE, 1 },
-	{ "TabCtrlLook", MAKELONG(4, 4), XP_TAB, TABP_TABITEMBOTHEDGE, 1 },
-	{ "TabCtrlLook", MAKELONG(1, 8), XP_TAB, TABP_PANE, 1 },
+	{ "TabCtrlLook", 4, XP_TAB, TABP_TABITEM, 1 },
+	{ "TabCtrlLook", MAKELONG(4, 4), XP_TAB, TABP_TABITEMLEFTEDGE, 1 },
+	{ "TabCtrlLook", MAKELONG(4, 8), XP_TAB, TABP_TABITEMRIGHTEDGE, 1 },
+	{ "TabCtrlLook", MAKELONG(4, 12), XP_TAB, TABP_TABITEMBOTHEDGE, 1 },
+	{ "TabCtrlLook", MAKELONG(1, 16), XP_TAB, TABP_PANE, 1 },
+	{ "ToolButtonLook", 6, XP_TOOLBAR, 1, 1 },
 };
 
 void ChSet(const char *id, int i, const XpElement& e)
@@ -307,10 +320,11 @@ void ChSet(const char *id, int i, const XpElement& e)
 
 void ChDetectStyle()
 {
+	ChSysInit();
 	if(XpWidget(XP_BUTTON)) {
 		LLOG("XP theme !");
 		ChSysInit();
-		Ctrl::SetXPStyle(true);
+		ChSet("GUI_GlobalStyle", GUISTYLE_XP);
 		ColoredOverride(CtrlsImg::Iml(), CtrlsImg::Iml());
 		CtrlsImg::Reset();
 		ChSet("EditFieldIsThin", 1);
@@ -453,9 +467,7 @@ void ChSysInit()
 	CtrlImg::Reset();
 	CtrlsImg::Reset();
 	ChReset();
-	memset(xp_widget_handle, 0, sizeof(xp_widget_handle));
-	xp_margin.Clear();
-	xp_opaque.Clear();
+	XpClear();
 
 	CtrlImg::Set(CtrlImg::I_information, Win32Icon(IDI_INFORMATION));
 	CtrlImg::Set(CtrlImg::I_question, Win32Icon(IDI_QUESTION));

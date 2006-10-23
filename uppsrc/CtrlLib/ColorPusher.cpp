@@ -109,7 +109,7 @@ void ColorButton::Paint(Draw& w)
 	Size sz = GetSize();
 	Size isz = image.GetSize();
 	Point center = (sz - isz) / 2;
-	if(IsXPStyle()) {
+	if(GUI_GlobalStyle() >= GUISTYLE_XP) {
 		if(push)
 			DrawXPButton(w, sz, BUTTON_PUSH|BUTTON_TOOL);
 		else

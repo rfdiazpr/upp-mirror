@@ -264,6 +264,8 @@ class Iml {
 	void  Init(int n);
 
 public:
+	void   Enter();
+	void   Leave();
 	void   Reset();
 	int    GetCount() const                  { return map.GetCount(); }
 	String GetId(int i)                      { return map.GetKey(i); }
@@ -283,6 +285,7 @@ void   Register(const char *imageclass, Iml& iml);
 
 int    GetImlCount();
 String GetImlName(int i);
+Iml&   GetIml(int i);
 int    FindIml(const char *name);
 Image  GetImlImage(const char *name);
 void   SetImlImage(const char *name, const Image& m);

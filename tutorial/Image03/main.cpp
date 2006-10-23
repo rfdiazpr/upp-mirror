@@ -39,7 +39,7 @@ void MyApp::Paint(Draw& w)
 
 void MyApp::LeftDown(Point p, dword keyflags)
 {
-	ImageBuffer ib = img;
+	ImageBuffer ib(img);
 	for(int y = 15; y < 35; y++) {
 		RGBA *l = ib[y];
 		for(int x = 15; x < 35; x++)

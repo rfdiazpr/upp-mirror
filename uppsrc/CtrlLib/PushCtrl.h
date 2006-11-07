@@ -180,7 +180,7 @@ public:
 	void operator=(bool b)                                    { Set(b); }
 	operator bool() const                                     { return Get(); }
 
-	ButtonOption()                                            { option = push = false; }
+	ButtonOption();
 };
 
 class Switch : public Ctrl {

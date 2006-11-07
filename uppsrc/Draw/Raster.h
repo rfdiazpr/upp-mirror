@@ -118,7 +118,7 @@ public:
 	virtual Line    GetLine(int line) = 0;
 	virtual bool    IsError();
 	virtual int     GetPaletteCount();
-	virtual RGBA   *GetPalette();
+	virtual const RGBA *GetPalette();
 	virtual const RasterFormat *GetFormat();
 
 	int    GetWidth()                              { return GetSize().cx; }
@@ -207,6 +207,8 @@ class RasterEncoder {
 	Size           size, dots;
 	Point          hotspot;
 	RGBA          *line;
+	Buffer<byte>   scanline;
+	int            line_bytes;
 	Buffer<RGBA>   h;
 	Buffer<RGBA>   palette;
 	One<PaletteCv> palette_cv;
@@ -214,16 +216,20 @@ class RasterEncoder {
 	RGBA          *Pal();
 
 protected:
-	void SetLine(RGBA *_line);
+	RasterFormat   format;
+	void           SetLine(RGBA *_line);
 
 public:
 	virtual int  GetPaletteCount();
 	virtual void Start(Size sz) = 0;
-	virtual void WriteLine();
-	virtual void WriteLine(const RGBA *s);
+	virtual void WriteLineRaw(const byte *data) = 0;
 
-	const RGBA       *GetPalette();
-	const PaletteCv  *GetPaletteCv()             { return ~palette_cv; }
+	void WriteLine();
+	void WriteLine(const RGBA *s);
+
+	const RasterFormat& GetFormat() const        { return format; }
+	const RGBA         *GetPalette();
+	const PaletteCv    *GetPaletteCv()           { return ~palette_cv; }
 
 	operator RGBA *()                            { return line; }
 	RGBA *operator~()                            { return line; }
@@ -258,7 +264,7 @@ class ImageEncoder : public RasterEncoder {
 
 public:
 	virtual void Start(Size sz);
-	virtual void WriteLine();
+	virtual void WriteLineRaw(const byte *data);
 
 	Size GetSize() const                { return ib.GetSize(); }
 	int  GetWidth() const               { return GetSize().cx; }

@@ -399,6 +399,8 @@ public:
 
 	String Get(int dialect) const;
 	String GetText() const                           { return text; }
+	bool   IsEmpty() const                           { return text.IsEmpty(); }
+	operator bool() const                            { return !IsEmpty(); }
 
 //Deprecated!!!
 	bool  Execute(Sql& cursor) const;

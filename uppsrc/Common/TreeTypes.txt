@@ -30,3 +30,5 @@ RGBA
 0 0 -1
 Vector<Image>
 0 0 -1
+Vector<int>
+0 0 -1

@@ -290,7 +290,6 @@ bool PrinterJob::Execute0(bool dodlg)
 		if((String)~dlg.paper == pg[i].name) {
 			pgsz.cx = 6000 * pg[i].cx / 254;
 			pgsz.cy = 6000 * pg[i].cy / 254;
-			DUMP(pgsz);
 		}
 	return true;
 }

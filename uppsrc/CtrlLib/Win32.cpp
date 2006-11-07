@@ -105,7 +105,7 @@ FileSelector& FileSelector::Type(const char *name, const char *ext) {
 }
 
 FileSelector& FileSelector::AllFilesType() {
-	return Type(ToSystemCharset(t_("All files")), "*.*");
+	return Type(t_("All files"), "*.*");
 }
 
 void FileSelector::Serialize(Stream& s) {

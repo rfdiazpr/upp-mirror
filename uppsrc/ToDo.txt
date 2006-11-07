@@ -1,3 +1,11 @@
+* Problem with menu fade in settings...
+
+Icon paste:
+
+http://www.arilect.com/upp/forum/index.php?t=msg&th=1596&start=0&
+
+callback2 for Callback1
+
 http://www.arilect.com/upp/forum/index.php?t=msg&goto=5808&#msg_5808
 
 TRC {

@@ -6,9 +6,16 @@
 #define LLOG(x)     //  LOG(x)
 #define LTIMING(x)
 
-static VectorMap<String, dword>& sFontFace()
+struct FontFaceInfo : Moveable<FontFaceInfo> {
+	String name;
+	dword  info;
+
+	FontFaceInfo() { info = 0; }
+};
+
+static VectorMap<String, FontFaceInfo>& sFontFace()
 {
-	static VectorMap<String, dword> s;
+	static VectorMap<String, FontFaceInfo> s;
 	return s;
 }
 
@@ -20,13 +27,13 @@ int    Font::GetFaceCount()
 
 String Font::GetFaceName(int index) {
 	if(!Draw::sFini) Draw::InitFonts();
-	return index >= 0 && index < sFontFace().GetCount() ? sFontFace().GetKey(index)
+	return index >= 0 && index < sFontFace().GetCount() ? sFontFace()[index].name
 	                                                    : Null;
 }
 
 dword Font::GetFaceInfo(int index) {
 	if(!Draw::sFini) Draw::InitFonts();
-	return index >= 0 && index < sFontFace().GetCount() ? sFontFace()[index]
+	return index >= 0 && index < sFontFace().GetCount() ? sFontFace()[index].info
 	                                                    : 0;
 }
 
@@ -77,12 +84,15 @@ int CALLBACK Draw::AddFace(const LOGFONT *logfont, const TEXTMETRIC *, dword typ
 		}
 	}
 #endif
-	VectorMap<String, dword>& face = sFontFace();
 	if(facename) {
-		face.Add(FromSystemCharset(logfont->lfFaceName)) = typ;
+		FontFaceInfo& f = sFontFace().Add(logfont->lfFaceName);
+		f.name = facename;
+		f.info = typ;
 		return 0;
 	}
-	face.GetAdd(FromSystemCharset(logfont->lfFaceName), 0) |= typ;
+	FontFaceInfo& f = sFontFace().Add(logfont->lfFaceName);
+	f.name = FromSystemCharset(logfont->lfFaceName);
+	f.info |= typ;
 	return 1;
 }
 
@@ -257,10 +267,10 @@ FontInfo Draw::Acquire(Font font, HDC hdc, int angle, int device)
 	f->device = device;
 
 	byte chrset;
-	if((sFontFace()[font.GetFace()] & Font::SCALEABLE) == 0)
+	if((sFontFace()[font.GetFace()].info & Font::SCALEABLE) == 0)
 		chrset = DEFAULT_CHARSET;
 	else
-	if(sFontFace()[font.GetFace()] & Font::SYMBOLTYPE)
+	if(sFontFace()[font.GetFace()].info & Font::SYMBOLTYPE)
 		chrset = SYMBOL_CHARSET;
 	else
 		chrset = DEFAULT_CHARSET;
@@ -284,7 +294,7 @@ FontInfo Draw::Acquire(Font font, HDC hdc, int angle, int device)
 						  font.IsNonAntiAliased() ? NONANTIALIASED_QUALITY
 						                          : DEFAULT_QUALITY,
 						  DEFAULT_PITCH|FF_DONTCARE,
-						  font.GetFaceName());
+						  sFontFace().GetKey(font.GetFace()));
 #endif
 	ASSERT(f->hfont);
 	TEXTMETRIC tm;

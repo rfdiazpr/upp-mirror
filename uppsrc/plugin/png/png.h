@@ -15,6 +15,8 @@ public:
 	virtual Size    GetSize();
 	virtual Info    GetInfo();
 	virtual Line    GetLine(int line);
+	virtual const RGBA *GetPalette();
+	virtual const RasterFormat *GetFormat();
 
 private:
 	bool            Init();
@@ -30,7 +32,7 @@ public:
 
 	virtual int  GetPaletteCount();
 	virtual void Start(Size sz);
-	virtual void WriteLine(const RGBA *s);
+	virtual void WriteLineRaw(const byte *data);
 
 	PNGEncoder&  Bpp(int b)                      { bpp = b; return *this; }
 	PNGEncoder&  Interlace(int b = true)         { interlace = b; return *this; }

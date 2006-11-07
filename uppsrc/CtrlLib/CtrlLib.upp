@@ -4,6 +4,8 @@ uses
 
 uses(LINUX) PdfDraw;
 
+uses(FREEBSD) PdfDraw;
+
 file
 	CtrlLib.h,
 	CtrlLib readonly separator,

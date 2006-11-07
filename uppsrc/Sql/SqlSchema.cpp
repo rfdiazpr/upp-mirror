@@ -149,16 +149,6 @@ String& SqlSchema::ConfigDrop()     { return Script(DROPCONFIG); }
 
 String SqlSchema::NormalFileName(int i, const char *dir, const char *name) const {
 	ASSERT(i >= 0 && i <= DROPCONFIG);
-	String p;
-	if(dir)
-		p = dir;
-	else
-#ifdef PLATFORM_WIN32
-		p = GetFileDirectory(GetExeFilePath());
-#endif
-#ifdef PLATFORM_POSIX
-		p = GetHomeDirectory();
-#endif
 	String n;
 	if(name)
 		n = name;
@@ -172,7 +162,7 @@ String SqlSchema::NormalFileName(int i, const char *dir, const char *name) const
 	const char *pfx[] = {
 		"S_", "SD_", "A_", "AD_", "U_", "UD_", "C_", "CD_"
 	};
-	return AppendFileName(p, pfx[i] + n);
+	return dir ? AppendFileName(dir, pfx[i] + n) : ConfigFile(pfx[i] + n);
 }
 
 bool SqlSchema::ScriptChanged(int i, const char *dir, const char *name) const {

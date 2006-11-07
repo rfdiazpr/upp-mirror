@@ -4,15 +4,16 @@
 #include <Draw/Draw.h>
 
 class BMPRaster : public StreamRaster {
-	Size         size;
-	int          row_bytes;
-	Buffer<RGBA> palette;
-	Buffer<byte> scanline;
-	bool         topdown;
-	int64        soff;
-	RasterFormat fmt;
-	Raster::Info info;
-	bool         file;
+	Size             size;
+	int              row_bytes;
+	Buffer<RGBA>     palette;
+	Buffer<byte>     scanline;
+	bool             topdown;
+	int64            soff;
+	RasterFormat     fmt;
+	Raster::Info     info;
+	One<ImageRaster> rle;
+	bool             file;
 
 public:
 	virtual bool    Create();
@@ -31,8 +32,8 @@ class BMPEncoder : public StreamRasterEncoder {
 	int          row_bytes;
 	int          linei;
 	int64        soff;
-	RasterFormat fmt;
 	Buffer<byte> scanline;
+	int          linebytes;
 
 	int       bpp;
 	bool      grayscale;
@@ -40,7 +41,7 @@ class BMPEncoder : public StreamRasterEncoder {
 public:
 	virtual int  GetPaletteCount();
 	virtual void Start(Size sz);
-	virtual void WriteLine(const RGBA *s);
+	virtual void WriteLineRaw(const byte *data);
 
 	BMPEncoder& Bpp(int _bpp)                  { bpp = _bpp; return *this; }
 	BMPEncoder& Mono(bool gs = true)           { grayscale = gs; return *this; }

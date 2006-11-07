@@ -52,7 +52,7 @@ class SimpleImageMaker : public ImageMaker {
 public:
 	virtual String Key() const;
 	virtual Image  Make() const;
-
+	
 	SimpleImageMaker(const Image& image, Image (*make)(const Image& image))
 	:	image(image), make(make) {}
 };

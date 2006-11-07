@@ -861,7 +861,7 @@ static void LinuxBeep(const char *fn)
 	strcat(h, fn);
 	if(fork()) return;
 	system(h);
-	abort();
+	_exit(EXIT_SUCCESS);
 }
 #endif
 

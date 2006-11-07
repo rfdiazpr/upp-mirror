@@ -20,12 +20,12 @@ void BMPEncoder::Start(Size size)
 	header.biCompression = 0;
 	int ncolors = 0;
 	switch(bpp) {
-	case 1:  fmt.Set1mf(); ncolors = 2; break;
-	case 4:  fmt.Set4mf(); ncolors = 16; break;
-	case 8:  fmt.Set8(); ncolors = 256; break;
-	case 16: fmt.Set16le(0xf800, 0x07E0, 0x001f); break;
-	case 32: fmt.Set32le(0xff0000, 0x00ff00, 0x0000ff); break;
-	default: fmt.Set24le(0xff0000, 0x00ff00, 0x0000ff); break;
+	case 1:  format.Set1mf(); ncolors = 2; break;
+	case 4:  format.Set4mf(); ncolors = 16; break;
+	case 8:  format.Set8(); ncolors = 256; break;
+	case 16: format.Set16le(0xf800, 0x07E0, 0x001f); break;
+	case 32: format.Set32le(0xff0000, 0x00ff00, 0x0000ff); break;
+	default: format.Set24le(0xff0000, 0x00ff00, 0x0000ff); break;
 	}
 	if(ncolors) {
 		if(grayscale)
@@ -51,7 +51,7 @@ void BMPEncoder::Start(Size size)
 		header.biCompression = 3/* BI_BITFIELDS */;
 		ncolors = 3;
 	}
-	row_bytes = (fmt.GetByteCount(size.cx) + 3) & ~3;
+	row_bytes = (format.GetByteCount(size.cx) + 3) & ~3;
 	scanline.Alloc(row_bytes);
 	header.biSizeImage = size.cy * row_bytes;
 	Size dots = GetDots();
@@ -72,11 +72,12 @@ void BMPEncoder::Start(Size size)
 	soff = GetStream().GetPos();
 	GetStream().SetSize(sizeof(bmfh) + h + size.cy * row_bytes);
 	linei = size.cy;
+	linebytes = format.GetByteCount(size.cx);
 }
 
-void BMPEncoder::WriteLine(const RGBA *s)
+void BMPEncoder::WriteLineRaw(const byte *s)
 {
 	GetStream().Seek(soff + row_bytes * --linei);
-	fmt.Write(scanline, s, GetSize().cx, grayscale ? NULL : GetPaletteCv());
+	memcpy(scanline, s, linebytes);
 	GetStream().Put(scanline, row_bytes);
 }

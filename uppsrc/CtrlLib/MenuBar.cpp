@@ -7,6 +7,90 @@
 #include <mmsystem.h>
 #endif
 
+class MenuItemBase : public Ctrl, public Bar::Item
+{
+public:
+	virtual Bar::Item& Text(const char *text);
+	virtual Bar::Item& Key(dword key);
+	virtual Bar::Item& Image(const ::Image& img);
+	virtual Bar::Item& Enable(bool _enable);
+	virtual Bar::Item& Tip(const char *tip);
+	virtual Bar::Item& Help(const char *help);
+	virtual Bar::Item& Topic(const char *help);
+	virtual Bar::Item& Description(const char *desc);
+	virtual Bar::Item& Check(bool check);
+	virtual Bar::Item& Radio(bool check);
+
+	virtual String GetDesc() const;
+	virtual dword  GetAccessKeys() const;
+	virtual void   AssignAccessKeys(dword used);
+
+protected:
+	enum {
+		NOTHING, CHECK0, CHECK1, RADIO0, RADIO1
+	};
+
+	enum {
+		NORMAL, HIGHLIGHT, PUSH
+	};
+
+	String  text;
+	dword   accel;
+	int     state;
+	int     leftgap;
+	Font    font;
+	bool    isenabled;
+	byte    type;
+	byte    accesskey;
+
+public:
+	virtual void SyncState() = 0;
+
+	void           DrawMenuText(Draw& w, int x, int y, const String& s, Font f, bool enabled, bool hl,
+	                            Color color = SColorMenuText);
+	void           PaintTopItem(Draw& w, int state);
+
+	bool           IsItemEnabled() const         { return isenabled; }
+	String         GetText() const               { return text; }
+	MenuItemBase&  LeftGap(int cx)               { leftgap = cx; return *this; }
+	MenuItemBase&  SetFont(Font f)               { font = f; return *this; }
+	Font           GetFont() const               { return font; }
+
+	MenuItemBase();
+};
+
+void DrawMenuText(Draw& w, int x, int y, const String& s, Font f, bool enabled,
+                  bool highlight, int mn, Color color = SColorMenuText);
+
+class MenuItem : public MenuItemBase {
+public:
+	virtual void  Paint(Draw& w);
+	virtual void  MouseEnter(Point, dword);
+	virtual void  MouseLeave();
+	virtual Size  GetMinSize() const;
+	virtual void  LeftUp(Point, dword);
+	virtual void  RightUp(Point, dword);
+	virtual void  GotFocus();
+	virtual void  LostFocus();
+	virtual bool  Key(dword key, int count);
+	virtual bool  HotKey(dword key);
+	virtual void  SyncState();
+
+	virtual Bar::Item& Image(const ::Image& img);
+
+private:
+	::Image licon, ricon;
+
+	void  SendHelpLine();
+	void  ClearHelpLine();
+
+protected:
+	virtual int  GetVisualState();
+
+public:
+	MenuItem& RightImage(const ::Image& img);
+};
+
 class SubMenuBase {
 protected:
 	MenuBar  menu;

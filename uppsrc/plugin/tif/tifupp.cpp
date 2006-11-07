@@ -346,6 +346,9 @@ public:
 	static void      Warning(const char* module, const char* fmt, va_list ap);
 	static void      Error(const char* module, const char* fmt, va_list ap);
 
+public:
+	RasterFormat     format;
+
 private:
 	Stream&          stream;
 	TIFF             *tiff;
@@ -368,8 +371,6 @@ private:
 	};
 	Array<Page>      pages;
 	int              page_index;
-
-	RasterFormat     format;
 
 public:
 	byte *MapDown(int x, int y, int count, bool read);
@@ -817,13 +818,6 @@ Raster::Info TIFRaster::Data::GetInfo()
 	return out;
 }
 
-Raster::Line TIFRaster::Data::GetLine(int i)
-{
-	RGBA *rgba = new RGBA[size.cx];
-	format.Read(rgba, &imagebuf[row_bytes * i], size.cx, palette);
-	return Raster::Line(rgba, true);
-}
-
 TIFRaster::TIFRaster()
 {
 }
@@ -850,16 +844,26 @@ Raster::Info TIFRaster::GetInfo()
 
 Raster::Line TIFRaster::GetLine(int line)
 {
-	return data->GetLine(line);
+	return Raster::Line(&data->imagebuf[data->row_bytes * line], this, false);
+}
+
+const RGBA *TIFRaster::GetPalette()
+{
+	return data->palette;
+}
+
+const RasterFormat *TIFRaster::GetFormat()
+{
+	return &data->format;
 }
 
 class TIFEncoder::Data {
 public:
-	Data(Stream& stream);
+	Data(Stream& stream, RasterFormat& format);
 	~Data();
 
-	void             Start(Size size, int bpp, const RGBA *palette, const PaletteCv *pal_cv);
-	void             WriteLine(const RGBA *line);
+	void             Start(Size size, int bpp, const RGBA *palette);
+	void             WriteLineRaw(const byte *line);
 
 private:
 	Stream&          stream;
@@ -867,9 +871,9 @@ private:
 	Size             size;
 	int              bpp;
 	const RGBA       *palette;
-	const PaletteCv  *pal_cv;
 	Vector<byte>     rowbuf;
-	RasterFormat     format;
+	int              linebytes;
+	RasterFormat&    format;
 	int              line;
 
 	static tsize_t   ReadStream(thandle_t fd, tdata_t buf, tsize_t size);
@@ -881,8 +885,8 @@ private:
 	static void      UnmapStream(thandle_t fd, tdata_t base, toff_t size);
 };
 
-TIFEncoder::Data::Data(Stream& stream)
-: stream(stream)
+TIFEncoder::Data::Data(Stream& stream, RasterFormat& format)
+: stream(stream), format(format)
 {
 	tiff = NULL;
 }
@@ -952,12 +956,11 @@ void TIFEncoder::Data::UnmapStream(thandle_t fd, tdata_t base, toff_t size)
 {
 }
 
-void TIFEncoder::Data::Start(Size sz, int bpp_, const RGBA *palette, const PaletteCv *pal_cv_)
+void TIFEncoder::Data::Start(Size sz, int bpp_, const RGBA *palette)
 {
 	size = sz;
 	bpp = bpp_;
 	line = 0;
-	pal_cv = pal_cv_;
 
 	tiff = TIFFClientOpen("tiff@" + Format64((intptr_t)this), "w", reinterpret_cast<thandle_t>(this),
 		ReadStream, WriteStream, SeekStream, CloseStream, SizeStream, MapStream, UnmapStream);
@@ -979,7 +982,7 @@ void TIFEncoder::Data::Start(Size sz, int bpp_, const RGBA *palette, const Palet
 //	TIFFSetField(tiff, TIFFTAG_RESOLUTIONUNIT, RESUNIT_NONE);
 	switch(bpp) {
 		case 1: format.Set1mf(); break;
-//		case 2: format.Set2mf(); break; // RasterFormat doesn't implement 2-bit write
+		case 2: format.Set2mf(); break;
 		case 4: format.Set4mf(); break;
 		case 8: format.Set8(); break;
 		default: NEVER();
@@ -1001,11 +1004,12 @@ void TIFEncoder::Data::Start(Size sz, int bpp_, const RGBA *palette, const Palet
 	}
 	int rowbytes = (bpp * size.cx + 31) >> 5 << 2;
 	rowbuf.SetCount(rowbytes);
+	linebytes = format.GetByteCount(size.cx);
 }
 
-void TIFEncoder::Data::WriteLine(const RGBA *s)
+void TIFEncoder::Data::WriteLineRaw(const byte *s)
 {
-	format.Write(rowbuf.Begin(), s, size.cx, pal_cv);
+	memcpy(rowbuf.Begin(), s, linebytes);
 	TIFFWriteScanline(tiff, rowbuf.Begin(), line, 0);
 	if(++line >= size.cy) {
 		TIFFClose(tiff);
@@ -1029,11 +1033,11 @@ int TIFEncoder::GetPaletteCount()
 
 void TIFEncoder::Start(Size sz)
 {
-	data = new Data(GetStream());
-	data->Start(sz, bpp, bpp <= 8 ? GetPalette() : NULL, bpp <= 8 ? GetPaletteCv() : NULL);
+	data = new Data(GetStream(), format);
+	data->Start(sz, bpp, bpp <= 8 ? GetPalette() : NULL);
 }
 
-void TIFEncoder::WriteLine(const RGBA *s)
+void TIFEncoder::WriteLineRaw(const byte *s)
 {
-	data->WriteLine(s);
+	data->WriteLineRaw(s);
 }

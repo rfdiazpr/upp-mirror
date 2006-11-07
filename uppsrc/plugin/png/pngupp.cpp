@@ -57,10 +57,9 @@ public:
 	Info         info;
 	Size         size;
 	RasterFormat fmt;
+	RGBA         palette[256];
 	int          out_bpp;
 	int          row_bytes;
-	Vector<RGBA> palette;
-	Vector<byte> scanline;
 	Vector<byte> preimage;
 	Buffer<png_bytep> row_pointers;
 	bool         preload;
@@ -165,12 +164,12 @@ bool PNGRaster::Create()
 //	ASSERT(im.GetRowBytes() >= png_get_rowbytes(png_ptr, info_ptr));
 
 //	if((color_type & PNG_COLOR_MASK_PALETTE) || !(color_type & PNG_COLOR_MASK_COLOR))
+	Fill(data->palette, RGBAZero(), 256);
 	if(color_type & PNG_COLOR_MASK_PALETTE) {
 		png_colorp ppal = 0;
 		int pal_count = 0;
 		png_get_PLTE(data->png_ptr, data->info_ptr, &ppal, &pal_count);
 		pal_count = min(pal_count, 1 << min(bit_depth, 8));
-		data->palette.SetCount(pal_count);
 		for(int i = 0; i < pal_count; i++) {
 			png_color c = ppal[i];
 			RGBA rgba;
@@ -183,14 +182,13 @@ bool PNGRaster::Create()
 		if(trans_colors) {
 			data->info.kind = IMAGE_MASK;
 			for(int i = 0; i < num_trans; i++)
-				if(trans_colors[i] < data->palette.GetCount())
+				if(trans_colors[i] < 256)
 					data->palette[(int)trans_colors[i]] = RGBAZero();
 		}
 
 	}
 	else if(!(color_type & PNG_COLOR_MASK_COLOR)) { // grayscale
 		int colors = 1 << min(bit_depth, 8);
-		data->palette.SetCount(colors);
 		for(int i = 0; i < colors; i++) {
 			int level = i * 255 / (colors - 1);
 			RGBA rgba;
@@ -201,7 +199,7 @@ bool PNGRaster::Create()
 		if(trans_colors) {
 			data->info.kind = IMAGE_MASK;
 			for(int i = 0; i < num_trans; i++)
-				if(trans_colors[i] < data->palette.GetCount())
+				if(trans_colors[i] < 256)
 					data->palette[(int)trans_colors[i]] = RGBAZero();
 		}
 	}
@@ -226,8 +224,6 @@ bool PNGRaster::Create()
 		case 32: data->fmt.SetRGBA(); break;
 		default: NEVER(); return false; // invalid bpp
 	}
-	if(!data->preload)
-		data->scanline.SetCount(data->row_bytes);
 
 	return true;
 }
@@ -245,9 +241,11 @@ Raster::Info PNGRaster::GetInfo()
 Raster::Line PNGRaster::GetLine(int line)
 {
 	ASSERT(data && line >= 0 && line < data->size.cy);
+	byte *scanline = new byte[data->row_bytes];
 	if(setjmp(png_jmpbuf(data->png_ptr)))
-		return Raster::Line(new RGBA[data->size.cx], true);
+		return Raster::Line(scanline, this, true);
 	if(data->preload) {
+		delete[] scanline;
 		if(!data->loaded) {
 			data->loaded = true;
 			data->preimage.SetCount(data->row_bytes * data->size.cy);
@@ -257,11 +255,7 @@ Raster::Line PNGRaster::GetLine(int line)
 			png_read_image(data->png_ptr, data->row_pointers);
 		}
 		const byte *rowdata = &data->preimage[data->row_bytes * line];
-		if(data->out_bpp == 32)
-			return Raster::Line(reinterpret_cast<const RGBA *>(rowdata), false);
-		RGBA *linebuf = new RGBA[data->size.cx];
-		data->fmt.Read(linebuf, rowdata, data->size.cx, data->palette);
-		return Raster::Line(linebuf, true);
+		return Raster::Line(rowdata, this, false);
 	}
 	else {
 		if(line < data->next_row) {
@@ -277,30 +271,38 @@ Raster::Line PNGRaster::GetLine(int line)
 			data->next_row = 0;
 		}
 		while(data->next_row < line) {
-			png_read_row(data->png_ptr, data->scanline, NULL);
+			png_read_row(data->png_ptr, scanline, NULL);
 			data->next_row++;
 		}
-		png_read_row(data->png_ptr, data->scanline, NULL);
+		png_read_row(data->png_ptr, scanline, NULL);
 		data->next_row++;
-		RGBA *linebuf = new RGBA[data->size.cx];
-		data->fmt.Read(linebuf, data->scanline, data->size.cx, data->palette);
-		return Raster::Line(linebuf, true);
+		return Raster::Line(scanline, this, true);
 	}
+}
+
+const RGBA *PNGRaster::GetPalette()
+{
+	ASSERT(data);
+	return data->palette;
+}
+
+const RasterFormat *PNGRaster::GetFormat()
+{
+	ASSERT(data);
+	return &data->fmt;
 }
 
 class PNGEncoder::Data {
 public:
-	Data();
+	Data(RasterFormat& format);
 	~Data();
 
-	void Start(Stream& stream, Size size, int bpp, ImageKind kind, bool interlace,
-		const RGBA *palette, const PaletteCv *pal_cv);
-	void WriteLine(const RGBA *rgba);
+	void Start(Stream& stream, Size size, int bpp, ImageKind kind, bool interlace, const RGBA *palette);
+	void WriteLineRaw(const byte *data);
 
 private:
-	RasterFormat format;
+	RasterFormat& format;
 
-	const PaletteCv *pal_cv;
 	ImageKind kind;
 
 	png_structp png_ptr;
@@ -314,16 +316,17 @@ private:
 	Vector<byte> rowbuf;
 	Size size;
 	int rowbytes;
+	int linebytes;
 	int passes;
 
 	int line;
 };
 
-PNGEncoder::Data::Data()
+PNGEncoder::Data::Data(RasterFormat& format)
+:	format(format)
 {
 	png_ptr = NULL;
 	info_ptr = NULL;
-	pal_cv = NULL;
 }
 
 PNGEncoder::Data::~Data()
@@ -332,11 +335,10 @@ PNGEncoder::Data::~Data()
 }
 
 void PNGEncoder::Data::Start(Stream& stream, Size size_, int bpp, ImageKind kind_, bool interlace_,
-	const RGBA *imgpal, const PaletteCv *pal_cv_)
+	const RGBA *imgpal)
 {
 	size = size_;
 	kind = kind_;
-	pal_cv = pal_cv_;
 	interlace = interlace_;
 
 	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, png_user_error_fn, png_user_warning_fn);
@@ -439,12 +441,13 @@ void PNGEncoder::Data::Start(Stream& stream, Size size_, int bpp, ImageKind kind
 		imagebuf.SetCount(rowbytes * size.cy);
 
 	line = 0;
+	linebytes = format.GetByteCount(size.cx);
 }
 
-void PNGEncoder::Data::WriteLine(const RGBA *rgba)
+void PNGEncoder::Data::WriteLineRaw(const byte *s)
 {
 	byte *dest = (passes > 1 ? &imagebuf[line * rowbytes] : rowbuf.Begin());
-	format.Write(dest, rgba, size.cx, pal_cv);
+	memcpy(dest, s, linebytes);
 	png_write_row(png_ptr, dest);
 	if(++line >= size.cy) {
 		for(int p = 1; p < passes; p++)
@@ -477,12 +480,11 @@ int PNGEncoder::GetPaletteCount()
 
 void PNGEncoder::Start(Size sz)
 {
-	data = new Data;
-	data->Start(GetStream(), sz, bpp, kind, interlace,
-	            bpp > 8 ? NULL : GetPalette(), GetPaletteCv());
+	data = new Data(format);
+	data->Start(GetStream(), sz, bpp, kind, interlace, bpp > 8 ? NULL : GetPalette());
 }
 
-void PNGEncoder::WriteLine(const RGBA *s)
+void PNGEncoder::WriteLineRaw(const byte *s)
 {
-	data->WriteLine(s);
+	data->WriteLineRaw(s);
 }

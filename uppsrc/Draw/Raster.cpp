@@ -61,7 +61,7 @@ bool Raster::IsError() { return false; }
 
 int   Raster::GetPaletteCount() { return 0; }
 
-RGBA *Raster::GetPalette() { return NULL; }
+const RGBA *Raster::GetPalette() { return NULL; }
 
 Image Raster::GetImage(int x, int y, int cx, int cy, const Gate2<int, int> progress)
 {

@@ -70,3 +70,7 @@ mainconfig
 	"" = "GUI USEMALLOC",
 	"" = "GUI MT",
 	"" = "GUI NOLIB";
+
+custom() "",
+	"",
+	"$(OUTDIR)/$(FILE).obj";

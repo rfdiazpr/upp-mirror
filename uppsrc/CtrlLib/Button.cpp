@@ -180,6 +180,23 @@ CH_INT(ButtonPressOffsetFlag, 0);
 CH_FONT(ButtonFont, StdFont());
 CH_COLORS(ButtonTextColor, 4, SColorText() << SColorText() << SColorText() << SColorDisabled());
 
+typedef Value (*sLookfn)(int);
+
+sLookfn GetButtonLook(Ctrl *q)
+{
+	Value (*st)(int) = ButtonLook;
+	if(q->InFrame()) {
+		st = EdgeButtonLook;
+		if(q->GetParent()) {
+			Rect r = q->GetRect();
+			Size sz = q->GetParent()->GetRect().GetSize();
+			if(r.right < sz.cx / 2)
+				st = LeftEdgeButtonLook;
+		}
+	}
+	return st;
+}
+
 Button& Button::Style(Value (*_look)(int))
 {
 	if(look != _look) {
@@ -211,16 +228,7 @@ void Button::Paint(Draw& w)
 		dl.lcolor = SColorText;
 	Value (*st)(int) = look;
 	if(!st) {
-		st = ButtonLook;
-		if(InFrame()) {
-			st = EdgeButtonLook;
-			if(GetParent()) {
-				Rect r = GetRect();
-				Size sz = GetParent()->GetRect().GetSize();
-				if(r.right < sz.cx / 2)
-					st = LeftEdgeButtonLook;
-			}
-		}
+		st = GetButtonLook(this);
 		if(type == OK)
 			st = OkButtonLook;
 	}
@@ -455,6 +463,12 @@ Option::~Option() {}
 
 // --------
 
+ButtonOption::ButtonOption()
+{
+	option = push = false;
+	Transparent();
+}
+
 void ButtonOption::Serialize(Stream& s) {
 	int version = 0;
 	s / version;
@@ -469,21 +483,12 @@ void  ButtonOption::Paint(Draw& w) {
 	Size sz = GetSize();
 	Size isz = image.GetSize();
 	Rect r = sz;
-	if(GUI_GlobalStyle() >= GUISTYLE_XP) {
-		int t = !IsEnabled() ? BUTTON_DISABLED :
-		        push ? BUTTON_PUSH :
-		        option ? BUTTON_CHECKED :
-		        HasMouse() || HasFocus() ? BUTTON_HIGHLIGHT :
-		        BUTTON_NORMAL;
-		if(InFrame())
-			t |= BUTTON_EDGE;
-		DrawXPButton(w, sz, t);
-	}
-	else {
-		DrawBorder(w, r, push || option ? ButtonPushBorder : ButtonBorder);
-		r.Deflate(2, 2);
-		w.DrawRect(r, option != push ? Blend(SColorLight, SColorFace) : SColorFace);
-	}
+	int i = !IsShowEnabled() ? CTRL_DISABLED :
+	         push ? CTRL_PRESSED :
+	         HasMouse() || HasFocus() ? CTRL_HOT :
+	         CTRL_NORMAL;
+	if(option) i = CTRL_PRESSED;
+	ChPaint(w, sz, GetButtonLook(this)(i));
 	Point p = r.CenterPos(image.GetSize());
 	w.DrawImage(p.x, p.y, (option && !IsNull(image1)) ? image1 : image);
 }

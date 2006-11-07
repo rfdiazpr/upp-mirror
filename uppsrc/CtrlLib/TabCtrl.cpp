@@ -381,6 +381,8 @@ bool TabCtrl::HotKey(dword key)
 
 bool TabCtrl::Accept()
 {
+	if(tab.GetCount() == 0)
+		return true;
 	int ii = Get();
 	if(accept_current)
 		return !tab[ii].slave || tab[ii].slave -> Accept();

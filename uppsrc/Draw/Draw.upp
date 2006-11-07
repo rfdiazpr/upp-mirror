@@ -15,7 +15,7 @@ library(LINUX !XLFD) Xft;
 
 library(FREEBSD) X11;
 
-library(FREEBSD !XLFD) "Xft fontconfig";
+library(FREEBSD !XLFD) "Xft fontconfig Xrender freetype expat";
 
 library(LINUX !XLFD !SHARED) "fontconfig Xrender freetype expat";
 

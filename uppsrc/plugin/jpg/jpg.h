@@ -16,6 +16,8 @@ public:
 	virtual Size    GetSize();
 	virtual Info    GetInfo();
 	virtual Line    GetLine(int line);
+	virtual const RGBA *GetPalette();
+	virtual const RasterFormat *GetFormat();
 };
 
 class JPGEncoder : public StreamRasterEncoder {
@@ -30,7 +32,7 @@ public:
 
 	virtual int  GetPaletteCount();
 	virtual void Start(Size sz);
-	virtual void WriteLine(const RGBA *s);
+	virtual void WriteLineRaw(const byte *s);
 
 private:
 	int          quality;

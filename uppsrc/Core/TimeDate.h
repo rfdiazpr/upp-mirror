@@ -50,7 +50,7 @@ Date AddYears(Date date, int years);
 Date GetSysDate();
 
 String DayName(int i, int lang = 0);
-String DyName(int i, int lange = 0);
+String DyName(int i, int lang = 0);
 String MonthName(int i, int lang = 0);
 String MonName(int i, int lang = 0);
 

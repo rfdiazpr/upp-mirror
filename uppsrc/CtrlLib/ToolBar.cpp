@@ -91,7 +91,9 @@ void  ToolButton::Paint(Draw& w)
 	paint_checked = checked;
 	Size sz = GetSize();
 	Size isz = image.GetSize();
-	w.DrawRect(sz, checked && !HasMouse() ? Blend(SColorFace, SColorLight) : SColorFace);
+	Ctrl *q = GetParent()->GetParent();
+	if(!q || !q->IsTransparent())
+		w.DrawRect(sz, checked && !HasMouse() ? Blend(SColorFace, SColorLight) : SColorFace);
 	Point center = (sz - isz) / 2;
 	ChPaint(w, sz, ToolButtonLook((IsEnabled() ? HasMouse() ? GetMouseLeft() ? CTRL_PRESSED
 						                                                     : checked ? 5 : CTRL_HOT

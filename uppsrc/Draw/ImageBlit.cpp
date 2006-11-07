@@ -65,7 +65,7 @@ String PackRLE(const RGBA *s, int len)
 		const RGBA *q = s;
 		if(s->a == 0) {
 			s++;
-			while(s->a == 0 && s < e && s - q < 0x3f)
+			while(s < e && s->a == 0 && s - q < 0x3f)
 				s++;
 			r.Cat((0x80|0x40) + (s - q));
 		}

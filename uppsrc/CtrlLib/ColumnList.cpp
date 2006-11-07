@@ -593,7 +593,7 @@ void ColumnList::Clear() {
 	CancelMode();
 	KillCursor();
 	item.Clear();
-	ClearSelection();
+	isselection = false;
 	Update();
 	Refresh();
 }

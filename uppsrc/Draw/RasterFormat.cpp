@@ -66,7 +66,6 @@ void RasterFormat::Set32be(dword rmask, dword gmask, dword bmask, dword amask)
 		type = RASTER_32;
 }
 
-#ifdef PLATFORM_WIN32
 void RasterFormat::SetRGBA()
 {
 	type = RASTER_32ALPHA;
@@ -80,23 +79,6 @@ int RasterFormat::IsRGBA() const
 {
 	return (type & 31) == RASTER_32ALPHA && bpos == 0 && gpos == 1 && rpos == 2 && apos == 3;
 }
-#endif
-
-#ifdef PLATFORM_X11
-void RasterFormat::SetRGBA()
-{
-	type = RASTER_32ALPHA;
-	rpos = 0;
-	gpos = 1;
-	bpos = 2;
-	apos = 3;
-}
-
-int RasterFormat::IsRGBA() const
-{
-	return (type & 31) == RASTER_32ALPHA && rpos == 0 && gpos == 1 && bpos == 2 && apos == 3;
-}
-#endif
 
 static byte bits[16] = { 1, 2, 4, 8, 16, 16, 24, 32, 32 };
 
@@ -305,7 +287,6 @@ void RasterFormat::Read(RGBA *t, const byte *s, int cx, const RGBA *palette) con
 		break;
 	case RASTER_32:
 	case RASTER_32|RASTER_MSBFIRST:
-	#ifdef PLATFORM_WIN32
 		if(bpos == 0 && gpos == 1 && rpos == 2) {
 			RGBA *e = t + cx;
 			while(t < e) {
@@ -316,7 +297,6 @@ void RasterFormat::Read(RGBA *t, const byte *s, int cx, const RGBA *palette) con
 			}
 		}
 		else
-	#endif
 		{
 			RGBA *e = t + cx;
 			while(t < e) {
@@ -331,11 +311,9 @@ void RasterFormat::Read(RGBA *t, const byte *s, int cx, const RGBA *palette) con
 		break;
 	case RASTER_32ALPHA:
 	case RASTER_32ALPHA|RASTER_MSBFIRST:
-	#ifdef PLATFORM_WIN32
 		if(bpos == 0 && gpos == 1 && rpos == 2 && apos == 3)
 			memcpy(t, s, cx * sizeof(RGBA));
 		else
-	#endif
 		{
 			RGBA *e = t + cx;
 			while(t < e) {

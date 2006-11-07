@@ -10,7 +10,9 @@ void BarPane::LeftDown(Point pt, dword keyflags)
 void BarPane::Paint(Draw& w)
 {
 	Size sz = GetSize();
-	w.DrawRect(sz, menu ? (GUI_GlobalStyle() >= GUISTYLE_XP ? SColorMenu : SColorFace) : SColorFace);
+	Ctrl *q = GetParent();
+	if(!q || !q->IsTransparent())
+		w.DrawRect(sz, menu ? (GUI_GlobalStyle() >= GUISTYLE_XP ? SColorMenu : SColorFace) : SColorFace);
 	for(int i = 0; i < breakpos.GetCount(); i++)
 		if(horz) {
 			w.DrawRect(0, breakpos[i], sz.cx, 1, SColorShadow);
@@ -242,6 +244,11 @@ Bar::Item&  Bar::Add(bool enable, KeyInfo& (*key)(), const ::Image& image, Callb
 Bar::Item&  Bar::Add(const char *text, const ::Image& image, Callback callback)
 {
 	return Add(true, text, image, callback);
+}
+
+Bar::Item& Bar::Add(const String& text, const ::Image& image, Callback callback)
+{
+	return Add(~text, image, callback);
 }
 
 Bar::Item&  Bar::Add(KeyInfo& (*key)(), const ::Image& image, Callback callback)

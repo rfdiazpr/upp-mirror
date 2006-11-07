@@ -5,6 +5,7 @@ RasterEncoder::RasterEncoder()
 	size = Size(0, 0);
 	dots = Size(0, 0);
 	hotspot = Point(0, 0);
+	format.SetRGBA();
 }
 
 void RasterEncoder::SetLine(RGBA *_line)
@@ -13,15 +14,21 @@ void RasterEncoder::SetLine(RGBA *_line)
 	h.Clear();
 }
 
+void RasterEncoder::WriteLine(const RGBA *s)
+{
+	if(format.IsRGBA())
+		WriteLineRaw((byte *)s);
+	else {
+		if(!scanline)
+			scanline.Alloc(format.GetByteCount(size.cx));
+		format.Write(scanline, s, size.cx, GetPaletteCv());
+		WriteLineRaw(scanline);
+	}
+}
+
 void RasterEncoder::WriteLine()
 {
 	WriteLine(line);
-}
-
-void RasterEncoder::WriteLine(const RGBA *s)
-{
-	memcpy(line, s, size.cx * sizeof(s));
-	WriteLine();
 }
 
 void RasterEncoder::Create(Size sz)
@@ -30,6 +37,8 @@ void RasterEncoder::Create(Size sz)
 	h.Alloc(sz.cx);
 	line = h;
 	Start(sz);
+	scanline.Clear();
+	line_bytes = format.GetByteCount(size.cx);
 }
 
 RGBA *RasterEncoder::Pal()
@@ -113,7 +122,7 @@ void ImageEncoder::Start(Size sz)
 		SetLine(ib[0]);
 }
 
-void ImageEncoder::WriteLine()
+void ImageEncoder::WriteLineRaw(const byte *data)
 {
 	if(++ii < GetHeight())
 		SetLine(ib[ii]);
@@ -121,7 +130,6 @@ void ImageEncoder::WriteLine()
 
 void StreamRasterEncoder::Save(Stream& s, Raster& raster)
 {
-	RTIMING("StreamRasterEncoder::Save");
 	SetStream(s);
 	Size sz = raster.GetSize();
 	Create(sz, raster);

@@ -1,6 +1,7 @@
+String  GetExeFilePath();
+
 #ifdef PLATFORM_WIN32
 String  GetExeDirFile(const char *fp);
-String  GetExeFilePath();
 #endif
 
 #ifdef PLATFORM_POSIX

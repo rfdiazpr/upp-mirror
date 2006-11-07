@@ -115,6 +115,124 @@ bool BMPRaster::Create()
 	row_bytes = (fmt.GetByteCount(size.cx) + 3) & ~3;
 	scanline.Alloc(row_bytes);
 	soff = stream.GetPos();
+
+	if(header.biBitCount == 8 && header.biCompression == 1 /* BI_RLE8 */) {
+		ImageBuffer ib(size);
+		int x = 0;
+		int y = 0;
+		RGBA *t = ib[header.biHeight < 0 ? 0 : size.cy - 1];
+		while(!stream.IsEof()) {
+			int c = stream.Get();
+			if(stream.IsEof())
+				return false;
+			if(c) {
+				c = min(c, size.cx - c);
+				int q = stream.Get();
+				if(q < 0)
+					return false;
+				Fill(t, palette[q], c);
+				t += c;
+				x += c;
+			}
+			else {
+				c = stream.Get();
+				if(c < 0 || c == 1)
+					break;
+				if(c == 0) {
+					x = 0;
+					++y;
+					if(y == size.cy)
+						break;
+					t = ib[header.biHeight < 0 ? y : size.cy - 1 - y];
+				}
+				else
+				if(c == 2) {
+					x += stream.Get();
+					y += stream.Get();
+					if(x < 0 || x >= size.cx || y < 0 || y >= size.cy)
+						return false;
+					t = ib[header.biHeight < 0 ? y : size.cy - 1 - y];
+				}
+				else {
+					int al = c & 1;
+					while(c--) {
+						int q = stream.Get();
+						if(q < 0 || x >= size.cx)
+							return false;
+						*t++ = palette[q];
+						x++;
+					}
+					if(al)
+						stream.Get();
+				}
+			}
+		}
+		rle = new ImageRaster(ib);
+		return true;
+	}
+	if(header.biBitCount == 4 && header.biCompression == 2 /* BI_RLE4 */) {
+		ImageBuffer ib(size);
+		int x = 0;
+		int y = 0;
+		RGBA *t = ib[header.biHeight < 0 ? 0 : size.cy - 1];
+		while(!stream.IsEof()) {
+			int c = stream.Get();
+			if(stream.IsEof())
+				return false;
+			if(c) {
+				c = min(c, size.cx - x);
+				int q = stream.Get();
+				if(q < 0)
+					return false;
+				int q1 = q & 15;
+				q = (q >> 4) & 15;
+				x += c;
+				while(c--) {
+					*t++ = palette[q];
+					Swap(q, q1);
+				}
+			}
+			else {
+				c = stream.Get();
+				if(c < 0 || c == 1)
+					break;
+				if(c == 0) {
+					x = 0;
+					++y;
+					if(y == size.cy)
+						break;
+					t = ib[header.biHeight < 0 ? y : size.cy - 1 - y];
+				}
+				else
+				if(c == 2) {
+					x += stream.Get();
+					y += stream.Get();
+					if(x < 0 || x >= size.cx || y < 0 || y >= size.cy)
+						return false;
+					t = ib[header.biHeight < 0 ? y : size.cy - 1 - y];
+				}
+				else {
+					if(x + c >= size.cx)
+						return false;
+					x += c;
+					int i = 0;
+					while(i < c) {
+						int q = stream.Get();
+						if(q < 0)
+							return false;
+						*t++ = palette[(q >> 4) & 15];
+						if(++i >= c) break;
+						*t++ = palette[q & 15];
+						++i;
+					}
+					c = 3 - (c & 3);
+					while(c--)
+						stream.Get();
+				}
+			}
+		}
+		rle = new ImageRaster(ib);
+	}
 	return true;
 }
 
@@ -130,6 +248,8 @@ Raster::Info BMPRaster::GetInfo()
 
 Raster::Line BMPRaster::GetLine(int line)
 {
+	if(rle)
+		return rle->GetLine(line);
 	byte *ptr = new byte[row_bytes];
 	if(!IsError()) {
 		Stream& stream = GetStream();

@@ -677,6 +677,7 @@ public:
 
 	virtual void   PostInput();
 
+	virtual void   ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags);
 	virtual void   ChildGotFocus();
 	virtual void   ChildLostFocus();
 	virtual void   ChildAdded(Ctrl *child);
@@ -1072,7 +1073,7 @@ inline Ctrl *operator<<(Ctrl *parent, Ctrl& child)
 
 inline unsigned GetHashValue(Ctrl *x)
 {
-	return (unsigned)x;
+	return (unsigned)(long)x;
 }
 
 String GetKeyDesc(int key);

@@ -117,6 +117,10 @@ int ParseForArgs(const char* sqlcmd)
 
 bool Sqlite3Connection::Execute() {
 	Cancel();
+	if(statement.GetLength() == 0) {
+		session.SetError("Empty statement", String("Preparing: ") + statement);
+		return false;
+	}
 	if (SQLITE_OK != sqlite3_prepare(db,statement,statement.GetLength(),&current_stmt,NULL)) {
 		LLOG("Sqlite3Connection::Compile(" << statement << ") -> error");
 		session.SetError(sqlite3_errmsg(db), String("Preparing: ") + statement);

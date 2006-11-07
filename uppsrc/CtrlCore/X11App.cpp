@@ -8,7 +8,7 @@
 //	#define SYNCHRONIZE
 #endif
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)  LOG(x)
 
 XIM Ctrl::xim;
 
@@ -29,12 +29,13 @@ Atom XAtom(const char *name)
 
 String XAtomName(Atom atom)
 {
+	LLOG("GetAtomName");
 	return XGetAtomName(Xdisplay, atom);
 }
 
 String GetProperty(Window w, Atom property, Atom rtype)
 {
-	LOG("GetProperty");
+	LLOG("GetProperty");
 	String result;
 	int format;
 	unsigned long nitems, after = 1;
@@ -42,17 +43,10 @@ String GetProperty(Window w, Atom property, Atom rtype)
 	Atom type = None;
 	unsigned char *data;
 	long rsize = minmax((long)(XMaxRequestSize(Xdisplay) - 100), (long)256, (long)65536);
-	DUMP(XAtomName(property));
-	DUMP(XAtomName(rtype));
-	DUMP(rsize);
 	while(after > 0) {
 		if(XGetWindowProperty(Xdisplay, w, property, offset, rsize, XFalse,
 	                          rtype, &type, &format, &nitems, &after, &data) != Success)
 	    	break;
-	    DUMP(format);
-	    DUMP(type);
-	    DUMP(after);
-	    DUMP(nitems);
 	    if(type == None)
 	        break;
 		if(data) {
@@ -93,10 +87,7 @@ String ReadPropertyData(Window w, Atom property, Atom rtype)
 	if(XGetWindowProperty(Xdisplay, w, property, 0, 0, XFalse, AnyPropertyType,
 	                      &type, &format, &nitems, &after, &ptr) == Success && type != None) {
 		XFree(ptr);
-		DUMP(type);
-		DUMP(nitems);
 		if(type == XA_INCR) {
-			LOG("Incremental");
 			XDeleteProperty(Xdisplay, w, property);
 			XEvent event;
 			for(;;) {
@@ -104,10 +95,7 @@ String ReadPropertyData(Window w, Atom property, Atom rtype)
 				if(!WaitForEvent(w, PropertyNotify, event))
 					break;
 				if(event.xproperty.atom == property && event.xproperty.state == PropertyNewValue) {
-					LOG("Reading incremental chunk...");
-					DUMP(XAtomName(event.xproperty.atom));
 					String x = GetProperty(w, property);
-					DUMP(x.GetLength());
 					if(!x.GetLength())
 						break;
 					r.Cat(x);
@@ -281,6 +269,11 @@ int X11ErrorHandler(XDisplay *, XErrorEvent *error)
 	return 0;
 }
 
+void SetX11ErrorHandler()
+{
+	XSetErrorHandler(X11ErrorHandler);
+}
+
 void Ctrl::InitX11(const char *display)
 {
 	InitX11Draw(display);
@@ -289,7 +282,7 @@ void Ctrl::InitX11(const char *display)
 	Xbuttons = XGetPointerMapping(Xdisplay, dummy, 5);
 
 	Xeventtime = CurrentTime;
-	XSetErrorHandler(X11ErrorHandler);
+	SetX11ErrorHandler();
 #ifdef SYNCHRONIZE
 	XSynchronize(Xdisplay, 1);
 #endif

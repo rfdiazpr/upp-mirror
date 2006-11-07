@@ -785,7 +785,7 @@ void ForwardSort(T& c)
 enum
 {
 	__SORT_THRESHOLD = 16,
-	__SORT_MEDIAN_PASSES = 3,
+	__SORT_MEDIAN_PASSES = 2,
 };
 
 template <class I, class Less>
@@ -793,8 +793,8 @@ void Sort(I begin, I end, const Less& less)
 {
 	int count;
 	while((count = end - begin) > __SORT_THRESHOLD) {
-		I b = begin, e = end, m = b + (count >> 1);
-		int median_error = (int)sqrt((double)count);
+		int expected = count >> 1, deviation = expected - (expected >> 8);
+		I b = begin, e = end, m = b + expected;
 		for(int pass = 1;; pass++) {
 			for(;; ++b) {
 				while(less(*m, *--e))
@@ -809,13 +809,16 @@ void Sort(I begin, I end, const Less& less)
 			}
 			if(pass >= __SORT_MEDIAN_PASSES)
 				break;
-			if(b - begin <= median_error)
+			int pos = (b - begin);
+			if(pos <= expected - deviation)
 				e = end;
-			else if(end - e <= median_error)
+			else if(pos >= expected + deviation) {
+				e = b;
 				b = begin;
+			}
 			else
 				break;
-			m = b + (int)((unsigned)rand() % ((e - b) >> 1));
+			m = b + 1 + (int)((unsigned)rand() % (e - b - 2));
 		}
 		if(b - begin < end - e) {
 			Sort(begin, b, less);

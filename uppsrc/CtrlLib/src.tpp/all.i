@@ -22,16 +22,8 @@ TOPIC("Option$en-us")
 #include "Option$en-us.tpp"
 END_TOPIC
 
-TOPIC("ButtonOption$en-us")
-#include "ButtonOption$en-us.tpp"
-END_TOPIC
-
 TOPIC("DataPusher$en-us")
 #include "DataPusher$en-us.tpp"
-END_TOPIC
-
-TOPIC("ArrayCtrl$en-us")
-#include "ArrayCtrl$en-us.tpp"
 END_TOPIC
 
 TOPIC("HeaderCtrl$en-us")
@@ -44,6 +36,14 @@ END_TOPIC
 
 TOPIC("StatusBar$en-us")
 #include "StatusBar$en-us.tpp"
+END_TOPIC
+
+TOPIC("ArrayCtrl$en-us")
+#include "ArrayCtrl$en-us.tpp"
+END_TOPIC
+
+TOPIC("ButtonOption$en-us")
+#include "ButtonOption$en-us.tpp"
 END_TOPIC
 
 TOPIC("TabCtrl$en-us")
@@ -104,4 +104,28 @@ END_TOPIC
 
 TOPIC("ColumnList$en-us")
 #include "ColumnList$en-us.tpp"
+END_TOPIC
+
+TOPIC("FileList$en-us")
+#include "FileList$en-us.tpp"
+END_TOPIC
+
+TOPIC("FileSel$en-us")
+#include "FileSel$en-us.tpp"
+END_TOPIC
+
+TOPIC("Bar$en-us")
+#include "Bar$en-us.tpp"
+END_TOPIC
+
+TOPIC("BarCtrl$en-us")
+#include "BarCtrl$en-us.tpp"
+END_TOPIC
+
+TOPIC("MenuBar$en-us")
+#include "MenuBar$en-us.tpp"
+END_TOPIC
+
+TOPIC("ToolBar$en-us")
+#include "ToolBar$en-us.tpp"
 END_TOPIC

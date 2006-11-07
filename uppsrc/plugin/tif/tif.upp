@@ -20,6 +20,7 @@ options
 file
 	tif.h,
 	tifupp.cpp,
+	tifreg.icpp,
 	lib readonly separator,
 	lib\Copyright,
 	lib\jerror.h,
@@ -89,4 +90,3 @@ file
 	lib\uvcode.h,
 	lib\Version,
 	end readonly separator;
-

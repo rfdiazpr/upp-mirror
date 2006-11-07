@@ -1,5 +1,5 @@
 LAYOUT(LoginLayout, 384, 220)
-	ITEM(RichTextCtrl, app, NoSb(true).AutoHideSb(false).HSizePosZ(4, 4).TopPosZ(4, 42))
+	ITEM(RichTextCtrl, app, NoSb(true).HSizePosZ(4, 4).TopPosZ(4, 42))
 	ITEM(RichTextCtrl, version, NoSb(true).HSizePosZ(4, 4).TopPosZ(52, 13))
 	ITEM(RichTextCtrl, date, NoSb(true).HSizePosZ(4, 4).TopPosZ(66, 13))
 	ITEM(RichTextCtrl, copyright, NoSb(true).HSizePosZ(4, 4).TopPosZ(80, 29))

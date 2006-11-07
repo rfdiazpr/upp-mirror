@@ -33,14 +33,14 @@ __attribute__((packed))
 struct BMP_INFOHEADER
 {
 	dword      biSize;
-	long       biWidth;
-	long       biHeight;
+	int32      biWidth;
+	int32      biHeight;
 	word       biPlanes;
 	word       biBitCount;
 	dword      biCompression;
 	dword      biSizeImage;
-	long       biXPelsPerMeter;
-	long       biYPelsPerMeter;
+	int32      biXPelsPerMeter;
+	int32      biYPelsPerMeter;
 	dword      biClrUsed;
 	dword      biClrImportant;
 

@@ -1,6 +1,8 @@
 #ifndef _plugin_tif_tif_h_
 #define _plugin_tif_tif_h_
 
+#include <Draw/Draw.h>
+
 class TIFRaster : public StreamRaster {
 public:
 	class Data;
@@ -14,6 +16,8 @@ public:
 	virtual Size    GetSize();
 	virtual Info    GetInfo();
 	virtual Line    GetLine(int line);
+	virtual const RGBA *GetPalette();
+	virtual const RasterFormat *GetFormat();
 
 private:
 	bool            Init();
@@ -28,11 +32,11 @@ public:
 	TIFEncoder(int bpp = 24);
 	~TIFEncoder();
 
-	TIFEncoder&  BitsPerPixel(int b) { bpp = b; return *this; }
+	TIFEncoder&  Bpp(int b)       { bpp = b; return *this; }
 
 	virtual int  GetPaletteCount();
 	virtual void Start(Size sz);
-	virtual void WriteLine(const RGBA *s);
+	virtual void WriteLineRaw(const byte *s);
 
 private:
 	int bpp;

@@ -98,6 +98,10 @@ void TopWindow::SyncCaption()
 		n = 0;
 		if(topmost)
 			wina[n++] = XAtom("_NET_WM_STATE_ABOVE");
+		if(state == MAXIMIZED) {
+			wina[n++] = XAtom("_NET_WM_STATE_MAXIMIZED_HORZ");
+			wina[n++] = XAtom("_NET_WM_STATE_MAXIMIZED_VERT");
+		}
 		XChangeProperty(Xdisplay, GetWindow(), XAtom("_NET_WM_STATE"), XAtom("ATOM"), 32,
 		                PropModeReplace, (const unsigned char *)wina, n);
 		wm_hints->flags = InputHint|WindowGroupHint|StateHint;
@@ -222,6 +226,7 @@ void TopWindow::Open(Ctrl *owner)
 	LLOG(">Open NextRequest " << NextRequest(Xdisplay));
 	LLOG(">OPENED " << Name());
 	PlaceFocus();
+	StateH(OPEN);
 	Vector<int> fe = GetPropertyInts(top->window, XAtom("_NET_FRAME_EXTENTS"));
 	if(fe.GetCount() >= 4) {
 		windowFrameMargin.left = max(windowFrameMargin.left, fe[0]);

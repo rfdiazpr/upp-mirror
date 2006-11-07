@@ -14,6 +14,10 @@ TOPIC("Keys$en-us")
 #include "Keys$en-us.tpp"
 END_TOPIC
 
+TOPIC("index$en-us")
+#include "index$en-us.tpp"
+END_TOPIC
+
 TOPIC("ChangeLog$en-us")
 #include "ChangeLog$en-us.tpp"
 END_TOPIC
@@ -28,6 +32,10 @@ END_TOPIC
 
 TOPIC("GPL$en-us")
 #include "GPL$en-us.tpp"
+END_TOPIC
+
+TOPIC("IconDes$en-us")
+#include "IconDes$en-us.tpp"
 END_TOPIC
 
 TOPIC("install$en-us")
@@ -52,10 +60,6 @@ END_TOPIC
 
 TOPIC("macros$en-us")
 #include "macros$en-us.tpp"
-END_TOPIC
-
-TOPIC("Assist$en-us")
-#include "Assist$en-us.tpp"
 END_TOPIC
 
 TOPIC("Topic$en-us")
@@ -86,8 +90,8 @@ TOPIC("CrossComp$en-gb")
 #include "CrossComp$en-gb.tpp"
 END_TOPIC
 
-TOPIC("index$en-us")
-#include "index$en-us.tpp"
+TOPIC("Assist$en-us")
+#include "Assist$en-us.tpp"
 END_TOPIC
 
 TOPIC("esc$en-us")
@@ -96,8 +100,4 @@ END_TOPIC
 
 TOPIC("PackageTemplates$en-us")
 #include "PackageTemplates$en-us.tpp"
-END_TOPIC
-
-TOPIC("IconDes$en-us")
-#include "IconDes$en-us.tpp"
 END_TOPIC

@@ -511,6 +511,7 @@ public:
 
 	GisCoords    Source() const                                  { return data->source; }
 	GisCoords    Target() const                                  { return data->target; }
+	GisTransform Reverse() const                                 { return GisTransform(Target(), Source()); }
 
 	Data        *operator ~ () const                             { return ~data; }
 

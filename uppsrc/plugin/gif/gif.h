@@ -38,7 +38,7 @@ public:
 
 	virtual int  GetPaletteCount();
 	virtual void Start(Size sz);
-	virtual void WriteLine(const RGBA *s);
+	virtual void WriteLineRaw(const byte *s);
 
 private:
 	bool         ignore_alpha;

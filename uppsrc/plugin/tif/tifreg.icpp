@@ -1,0 +1,5 @@
+#include "tif.h"
+
+INITBLOCK {
+	StreamRaster::Register<TIFRaster>();
+}

@@ -1294,11 +1294,11 @@ RGBA *GIFRaster::GetPalette()
 
 class GIFEncoder::Data {
 public:
-	Data(Stream& stream);
+	Data(Stream& stream, RasterFormat& format);
 	~Data();
 
-	void Start(Size sz, bool ignore_alpha, String comment, const RGBA *palette, const PaletteCv *pal_cv);
-	void WriteLine(const RGBA *s);
+	void Start(Size sz, bool ignore_alpha, String comment, const RGBA *palette);
+	void WriteLineRaw(const byte *s);
 
 private:
 	void FlushDataBlock();
@@ -1309,8 +1309,7 @@ private:
 	static const int MAX_COUNT = 1 << MAX_BITS;
 	static const int HASH_COUNT = 5331;
 
-	RasterFormat      format;
-	const PaletteCv *pal_cv;
+	RasterFormat&    format;
 	Stream& stream;
 
 	struct Item {
@@ -1339,7 +1338,6 @@ private:
 	int               restart_code;
 
 	Size              size;
-	Buffer<byte>      rowbuf;
 	int               ypos;
 
 	Item              *i;
@@ -1347,8 +1345,8 @@ private:
 	Item              *new_item;
 };
 
-GIFEncoder::Data::Data(Stream& stream)
-: stream(stream)
+GIFEncoder::Data::Data(Stream& stream, RasterFormat& format)
+: stream(stream), format(format)
 {
 }
 
@@ -1390,9 +1388,8 @@ void GIFEncoder::Data::ClearTable()
 	}
 }
 
-void GIFEncoder::Data::Start(Size sz, bool ignore_alpha, String comment, const RGBA *palette, const PaletteCv *pal_cv_)
+void GIFEncoder::Data::Start(Size sz, bool ignore_alpha, String comment, const RGBA *palette)
 {
-	pal_cv = pal_cv_;
 	size = sz;
 	format.Set8();
 
@@ -1496,19 +1493,14 @@ void GIFEncoder::Data::Start(Size sz, bool ignore_alpha, String comment, const R
 	} \
 	while(false)
 
-	rowbuf.Alloc(size.cx);
-
 	restart_code = 1 << start_bpp;
 	PUT_CODE(restart_code);
 
 	i = new_item = NULL;
 }
 
-void GIFEncoder::Data::WriteLine(const RGBA *rgba)
+void GIFEncoder::Data::WriteLineRaw(const byte *sp)
 {
-	format.Write(rowbuf, rgba, size.cx, pal_cv);
-
-	const byte *sp = ~rowbuf;
 	const byte *se = sp + size.cx;
 
 	if(!i) {
@@ -1602,11 +1594,11 @@ int GIFEncoder::GetPaletteCount()
 
 void GIFEncoder::Start(Size sz)
 {
-	data = new Data(GetStream());
-	data->Start(sz, ignore_alpha, comment, GetPalette(), GetPaletteCv());
+	data = new Data(GetStream(), format);
+	data->Start(sz, ignore_alpha, comment, GetPalette());
 }
 
-void GIFEncoder::WriteLine(const RGBA *s)
+void GIFEncoder::WriteLineRaw(const byte *s)
 {
-	data->WriteLine(s);
+	data->WriteLineRaw(s);
 }

@@ -1,7 +1,8 @@
 uses
 	CtrlLib,
 	plugin\tif,
-	plugin\jpg;
+	plugin\jpg,
+	plugin\gif;
 
 file
 	main.cpp;

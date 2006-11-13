@@ -21,7 +21,7 @@ void SQLApp::Query()
 void SQLApp::ClearQuery()
 {
 	query.status = 0;
-	query.borrowed_from = query.borrowed_to = Null;
+	query.borrowed_from <<= query.borrowed_to <<= Null;
 }
 
 void SQLApp::SetupQuery()

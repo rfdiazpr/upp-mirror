@@ -2,7 +2,7 @@
 #define _SQLApp_SQLApp_h
 
 #include <SqlCtrl/SqlCtrl.h>
-#include <plugin/Sqlite3/Sqlite3.h>
+#include <plugin/sqlite3/sqlite3.h>
 
 #define LAYOUTFILE <SQLApp/SQLApp.lay>
 #include <CtrlCore/lay.h>

@@ -1,6 +1,6 @@
 #include "SQLApp.h"
 
-#define SCHEMADIALECT <plugin/Sqlite3/Sqlite3Schema.h>
+#define SCHEMADIALECT <plugin/sqlite3/Sqlite3Schema.h>
 #include "Sql/sch_source.h"
 
 void SQLApp::MainMenu(Bar& bar)
@@ -43,7 +43,7 @@ SQLApp::SQLApp()
 }
 
 #ifdef _DEBUG
-#define SCHEMADIALECT <plugin/Sqlite3/Sqlite3Schema.h>
+#define SCHEMADIALECT <plugin/sqlite3/Sqlite3Schema.h>
 #include "Sql/sch_schema.h"
 #endif
 

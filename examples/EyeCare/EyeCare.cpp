@@ -18,7 +18,7 @@ void EyeCare::About()
 	dismiss.Kill();
 	ignore++;
 	WithAboutDialogLayout<TopWindow> dlg;
-	dlg.text = GetTopic("topic://EyeCareAris/app/about$en-us").text;
+	dlg.text = GetTopic("topic://EyeCare/app/about$en-us").text;
 	CtrlLayoutOK(dlg, "About");
 	dlg.CenterScreen();
 	dlg.Run();

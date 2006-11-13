@@ -117,8 +117,8 @@ void LogStream::Create(const char *path, bool append)
 	GetUserName(user, &w);
 #endif
 #else //#
-	const char *GetExeTitleCharPtr();
-	strcpy(exe, GetExeTitleCharPtr());
+	const char *procexepath_();
+	strcpy(exe, procexepath_());
 	strcpy(user, getenv("USER"));
 #endif
 

@@ -1,9 +1,5 @@
 #include "Core.h"
 
-#ifdef PLATFORM_POSIX
-static const char clipboard_file[] = "/tmp/clipboard";
-#endif//PLATFORM_POSIX
-
 #ifdef PLATFORM_WIN32
 
 static HINSTANCE app_instance;

@@ -26,10 +26,6 @@ TOPIC("NewProject$en-us")
 #include "NewProject$en-us.tpp"
 END_TOPIC
 
-TOPIC("Organization$en-us")
-#include "Organization$en-us.tpp"
-END_TOPIC
-
 TOPIC("GPL$en-us")
 #include "GPL$en-us.tpp"
 END_TOPIC

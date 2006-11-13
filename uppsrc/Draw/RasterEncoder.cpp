@@ -124,6 +124,8 @@ void ImageEncoder::Start(Size sz)
 
 void ImageEncoder::WriteLineRaw(const byte *data)
 {
+	if((RGBA *)data != ~*this)
+		memcpy(~*this, data, GetSize().cx * sizeof(RGBA));
 	if(++ii < GetHeight())
 		SetLine(ib[ii]);
 }

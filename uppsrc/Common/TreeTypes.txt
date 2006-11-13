@@ -32,3 +32,9 @@ Vector<Image>
 0 0 -1
 Vector<int>
 0 0 -1
+Vector<Value>
+0 0 -1
+S_MATRIKA
+0 0 -1
+Color
+0 0 -1

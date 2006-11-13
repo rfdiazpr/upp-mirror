@@ -33,7 +33,6 @@
 #define XTrue  1
 
 extern XDisplay   *Xdisplay;
-extern const char *Xdisplayname;
 extern int         Xscreenno;
 extern Window      Xroot;
 extern Screen     *Xscreen;
@@ -50,6 +49,7 @@ extern int         Xconnection;
 extern dword   (*Xgetpixel)(int r, int g, int b);
 
 void          InitX11Draw(const char *dispname = NULL);
+void          InitX11Draw(XDisplay *display);
 
 void                UpdateSystemSettings();
 const TextSettings& KDESettings();

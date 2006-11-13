@@ -40,12 +40,12 @@ void Draw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, const Rec
 	if(IsNull(src))
 		return;
 	Size sz = Size(cx, cy);
-	if((cx > 2000 || cy > 2000) && IsNull(color)) {
+	if((cx > 2000 || cy > 2000) && IsNull(color)) { //TODO Color!!!
 		int yy = 0;
 		ImageRaster ir(img);
 		RescaleImage rm;
 		rm.Create(Size(cx, cy), ir, src);
-		while(yy < cy) {//TODO Color!!!
+		while(yy < cy) {
 			int ccy = min(cy - yy, 16);
 			ImageBuffer ib(cx, ccy);
 			for(int q = 0; q < ccy; q++)

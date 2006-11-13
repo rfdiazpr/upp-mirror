@@ -36,7 +36,7 @@ bool PrinterJob::Execute0(bool dodlg)
 {
 	pdlg = new Win32PrintDlg_;
 	PRINTDLG& dlg = *pdlg;
-	dlg.Flags = PD_DISABLEPRINTTOFILE|PD_NOSELECTION|PD_RETURNDC|PD_HIDEPRINTTOFILE;
+	dlg.Flags = PD_DISABLEPRINTTOFILE|PD_NOSELECTION|PD_HIDEPRINTTOFILE|PD_RETURNDEFAULT;
 	dlg.nFromPage = current;
 	dlg.nToPage = current;
 	dlg.nMinPage = from;
@@ -51,11 +51,30 @@ bool PrinterJob::Execute0(bool dodlg)
 		pDevMode->dmOrientation = landscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT;
 		::GlobalUnlock(dlg.hDevMode);
 	}
-	if(dodlg)
-		dlg.Flags &= ~PD_RETURNDEFAULT;
-	bool b = PrintDlg(&dlg);
-	if(b) {
-		draw = new PrintDraw(dlg.hDC, Nvl(name, Ctrl::GetAppName()));
+	HDC hdc;
+	if(dodlg) {
+		dlg.Flags = PD_DISABLEPRINTTOFILE|PD_NOSELECTION|PD_HIDEPRINTTOFILE|PD_RETURNDC;
+		if(!PrintDlg(&dlg)) return false;
+		hdc = dlg.hDC;
+	}
+	else {
+		DEVNAMES *p = (DEVNAMES *)::GlobalLock(dlg.hDevNames);
+		const char *driver = (const char *)p + p->wDriverOffset;
+		const char *device = (const char *)p + p->wDeviceOffset;
+		if(dlg.hDevMode) {
+			DEVMODE *pDevMode = (DEVMODE*)::GlobalLock(dlg.hDevMode);
+			hdc = CreateDC(driver, device, NULL, pDevMode);
+			::GlobalUnlock(dlg.hDevMode);
+		}
+		else
+			hdc = CreateDC(driver, device, NULL, NULL);
+	}
+	if(dlg.hDevMode)
+		::GlobalFree(dlg.hDevMode);
+	if(dlg.hDevNames)
+		::GlobalFree(dlg.hDevNames);
+	if(hdc) {
+		draw = new PrintDraw(hdc, Nvl(name, Ctrl::GetAppName()));
 		page.Clear();
 		if(!(dlg.Flags & PD_PAGENUMS)) {
 			dlg.nFromPage = dlg.nMinPage;

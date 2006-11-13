@@ -98,14 +98,14 @@ void Sql::SetStatement(const String& s) {
 bool Sql::Execute() {
 	if(GetSession().traceslow < INT_MAX)
 		cn->starttime = GetTickCount();
-	bool b = cn->Execute();
 	if(GetSession().usrlog)
 		UsrLogT(9, cn->statement);
-	if(Stream *s = GetSession().GetTrace()) {
+	Stream *s = GetSession().GetTrace();
+	if(s)
 		*s << cn->statement << '\n';
-		if(!b)
-			*s << "## ERROR: " << GetSession().GetLastError() << '\n';
-	}
+	bool b = cn->Execute();
+	if(s && !b)
+		*s << "## ERROR: " << GetSession().GetLastError() << '\n';
 	return b;
 }
 

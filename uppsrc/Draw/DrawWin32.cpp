@@ -408,6 +408,8 @@ PrintDraw::~PrintDraw() {
 		::AbortDoc(handle);
 	else
 		::EndDoc(handle);
+	DeleteDC(handle);
+	handle = NULL;
 }
 #endif
 

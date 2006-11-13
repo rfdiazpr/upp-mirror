@@ -307,7 +307,7 @@ static chLooks sLooks[] = {
 	{ "VertProgressIndicatorChunkLook", 1, XP_PROGRESS, PP_CHUNKVERT },
 	{ "TabCtrlLook", 4, XP_TAB, TABP_TABITEM, 1 },
 	{ "TabCtrlLook", MAKELONG(4, 4), XP_TAB, TABP_TABITEMLEFTEDGE, 1 },
-	{ "TabCtrlLook", MAKELONG(4, 8), XP_TAB, TABP_TABITEMRIGHTEDGE, 1 },
+	{ "TabCtrlLook", MAKELONG(4, 8), XP_TAB, TABP_TABITEM/*RIGHTEDGE*/, 1 },
 	{ "TabCtrlLook", MAKELONG(4, 12), XP_TAB, TABP_TABITEMBOTHEDGE, 1 },
 	{ "TabCtrlLook", MAKELONG(1, 16), XP_TAB, TABP_PANE, 1 },
 	{ "ToolButtonLook", 6, XP_TOOLBAR, 1, 1 },
@@ -406,8 +406,10 @@ void ChDetectStyle()
 					ChSet("DropBoxBtn", i, e);
 			}
 			Color c;
-			Image g = m;
-			m = Unglyph(m, c);
+			double gf;
+			m = Unglyph(m, c, gf);
+			if(i == 0 && gf > 150)
+				CtrlsImg::Set(CtrlsImg::I_DA, ClassicCtrlsImg::DA());
 			ChSet("ButtonMonoColor", i, c);
 			ChSet("EdgeButtonLook", i, m);
 			ChSet("DropBoxSquaredBtn", i, ChLookWith(m, CtrlsImg::DA(), c));

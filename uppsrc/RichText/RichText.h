@@ -405,7 +405,8 @@ const Display& QTFDisplayVCenter();
 String EncodeHtml(const RichText& text, Index<String>& css,
                   const VectorMap<String, String>& links,
                   const VectorMap<String, String>& labels,
-                  const String& path, const String& base = Null, Zoom z = Zoom(8, 40));
+                  const String& path, const String& base = Null, Zoom z = Zoom(8, 40),
+                  const VectorMap<String, String>& escape = VectorMap<String, String>());
 String AsCss(Index<String>& ss);
 
 inline //BW - no labels

@@ -123,9 +123,9 @@ fn DrawSpinButtons(w, r)
 	h7 = int(7 * h / 10);
 	x = r.right - h7;
 	DrawEdgeButton(w, RectC(x, r.top, h7, h2));
-	w.DrawImage((h7 - 5) / 2 + x, (h2 - 3) / 2 + r.top, "ClassicCtrlsImg::SpU");
+	w.DrawImage((h7 - 5) / 2 + x, (h2 - 3) / 2 + r.top, "CtrlsImg::SpU");
 	DrawEdgeButton(w, RectC(x, r.top + h2, h7, h - h2));
-	w.DrawImage((h7 - 5) / 2 + x, (h - h2 - 3) / 2 + r.top + h2, "ClassicCtrlsImg::SpD");
+	w.DrawImage((h7 - 5) / 2 + x, (h - h2 - 3) / 2 + r.top + h2, "CtrlsImg::SpD");
 }
 
 subctrl NormalSize {

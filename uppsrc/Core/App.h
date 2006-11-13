@@ -1,17 +1,11 @@
 String  GetExeFilePath();
-
-#ifdef PLATFORM_WIN32
 String  GetExeDirFile(const char *fp);
-#endif
 
 #ifdef PLATFORM_POSIX
 String  GetHomeDirFile(const char *fp);
 String  GetHomeDirectory();
 
-void    SetExeTitle(const char *argv0);
 void    SetHomeDirectory(const char *dir);
-
-const char *GetExeTitleCharPtr();
 
 #endif
 

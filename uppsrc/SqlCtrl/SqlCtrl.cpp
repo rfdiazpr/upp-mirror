@@ -156,7 +156,9 @@ bool SqlCtrls::Load(Sql& sql, SqlId table, SqlBool where)
 	return Fetch(sql);
 }
 
+#ifndef NOAPPSQL
 bool SqlCtrls::Load(SqlId table, SqlBool set)
 {
 	return Load(SQL, table, set);
 }
+#endif

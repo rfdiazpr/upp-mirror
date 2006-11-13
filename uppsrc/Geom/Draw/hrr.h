@@ -14,9 +14,8 @@ public:
 	void         Open(ImageBuffer& output, Point pos, bool merge = true)      { Open(output, pos, Rect(output.GetSize()), merge); }
 	void         Open(ImageBuffer& output, Point pos, Rect clip, bool merge = true);
 
-	virtual int  GetPaletteCount();
 	virtual void Start(Size sz);
-	virtual void WriteLine(const RGBA *s);
+	virtual void WriteLineRaw(const byte *data);
 
 private:
 	ImageBuffer  *output;

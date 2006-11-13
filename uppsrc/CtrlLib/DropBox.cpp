@@ -68,7 +68,7 @@ void DropBox::ButtonPaint(Draw& w, const Rect& r)
 	if(!IsShowEnabled() || !enabled)
 		q = CTRL_DISABLED;
 	Rect box = GetDropBoxRect(r);
-	Image glyph;
+	w.DrawRect(box, enabled ? SColorPaper : SColorFace);
 	if(UserEdge()) {
 		ChPaint(w, box, DropBoxSquaredBtn(q));
 	}

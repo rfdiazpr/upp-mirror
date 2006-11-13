@@ -75,6 +75,8 @@ struct ButtonDecomposer {
 	int   aa[8];
 	int   maxdiff;
 	Color color;
+	int   gdiff;
+	int   gcount;
 
 	RGBA GetC(int p) {
 		Size sz = src.GetSize();
@@ -114,7 +116,7 @@ struct ButtonDecomposer {
 		dst = src;
 		ImageBuffer b(dst);
 		color = SColorText;
-		maxdiff = 0;
+		maxdiff = gdiff = gcount = 0;
 		for(int y = a; y < sz.cy - a; y++) {
 			RGBA *p = b[y];
 			int x = a;
@@ -131,7 +133,9 @@ struct ButtonDecomposer {
 				c = p[--xx];
 			}
 			for(int q = x; q < xx; q++) {
-				int d = Diff(p[q], color);
+				int d = Diff(p[q], c);
+				gcount++;
+				gdiff += d;
 				if(d >= maxdiff) {
 					maxdiff = d;
 					color = p[q];
@@ -145,13 +149,20 @@ struct ButtonDecomposer {
 	}
 };
 
-Image Unglyph(const Image& m, Color& c)
+Image Unglyph(const Image& m, Color& c, double& gfactor)
 {
 	ButtonDecomposer b;
 	b.src = m;
 	b.Do();
 	c = b.color;
+	gfactor = (double)b.gdiff / b.gcount;
 	return b.dst;
+}
+
+Image Unglyph(const Image& m, Color& c)
+{
+	double dummy;
+	return Unglyph(m, c, dummy);
 }
 
 Image Unglyph(const Image& m)

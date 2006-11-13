@@ -1,3 +1,7 @@
+2006-11-08 22:40 - 200000!
+
+* TabCtrl - rightedge problem (?)
+
 * Problem with menu fade in settings...
 
 Icon paste:

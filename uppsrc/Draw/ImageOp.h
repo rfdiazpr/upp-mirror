@@ -81,6 +81,7 @@ Image Equalight(const Image& img, int thold = 10);
 
 //Chameleon support
 int   Diff(RGBA a, RGBA b);
+Image Unglyph(const Image& m, Color& c, double& factor);
 Image Unglyph(const Image& m, Color& c);
 Image Unglyph(const Image& m);
 Image VertBlend(Image img1, Image img2, int y0, int y1);

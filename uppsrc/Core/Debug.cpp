@@ -26,18 +26,30 @@ static void sLogFile(char *fn, const char *app = ".log")
 #endif
 
 #ifdef PLATFORM_POSIX
+const char *procexepath_();
+extern char Argv0__[_MAX_PATH + 1];
+
 static void sLogFile(char *fn, const char *app = ".log")
 {
+	char *path = fn;
 	strcpy(fn, getenv("HOME"));
 	if(!*fn || (fn += strlen(fn))[-1] != '/')
 		*fn++ = '/';
 	*fn++ = '.';
-	strcpy(fn, GetExeTitleCharPtr());
-	mkdir(fn, 0644);
-	char *e = fn + strlen(fn), *s = e;
-	while(s > fn && *--s != '/' && *s != '.')
-		;
-	strcpy(*s == '.' ? s : e, app);
+	const char *exe = procexepath_();
+	if(!exe) {
+		exe = Argv0__;
+	}
+	const char *q = strrchr(exe, '/');
+	if(q)
+		exe = q + 1;
+	if(!exe)
+		exe = "upp";
+	strcpy(fn, exe);
+	mkdir(path, 0755);
+	strcat(path, "/");
+	strcat(path, exe);
+	strcat(path, app);
 }
 #endif
 

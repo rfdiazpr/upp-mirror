@@ -108,7 +108,8 @@ void TabBorder(String& style, const char *txt, int border, Color bordercolor, co
 String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
               const VectorMap<String, String>& links,
               const VectorMap<String, String>& labels,
-              const String& outdir, const String& namebase, Zoom z, int& im)
+              const String& outdir, const String& namebase, Zoom z, int& im,
+              const VectorMap<String, String>& escape)
 {
 	String html;
 	for(int i = 0; i < text.GetPartCount(); i++)
@@ -164,7 +165,7 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 						if(c.vspan)
 							html << " rowspan=" << c.vspan + 1;
 						html << '>';
-						html << AsHtml(c.text, styles, css, links, labels, outdir, namebase, z, im);
+						html << AsHtml(c.text, styles, css, links, labels, outdir, namebase, z, im, escape);
 						html << "</TD>\r\n";
 					}
 				}
@@ -181,9 +182,7 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 			RichPara p = text.Get(i, styles);
 			String lbl;
 			if(!IsNull(p.format.label)) {
-				DUMP(p.format.label);
 				lbl = labels.Get(p.format.label, Null);
-				DUMP(lbl);
 				if(lbl.GetCount())
 					html << "<A NAME=\"" << lbl << "\">";
 			}
@@ -211,6 +210,7 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 			html << par;
 			for(int i = 0; i < p.part.GetCount(); i++) {
 				const RichPara::Part& part = p.part[i];
+				int q;
 				if(part.object) {
 					String name;
 					name << namebase << "_" << im++ << ".png";
@@ -233,6 +233,10 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 						png.SaveFile(AppendFileName(outdir, lname), w);
 					}
 				}
+				else
+				if(part.format.indexentry.GetCount() &&
+				   (q = escape.Find(part.format.indexentry.ToString())) >= 0)
+					html << escape[q];
 				else {
 					String lnk = part.format.link;
 					if(lnk.GetCount()) {
@@ -314,10 +318,11 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 String EncodeHtml(const RichText& text, Index<String>& css,
                   const VectorMap<String, String>& links,
                   const VectorMap<String, String>& labels,
-                  const String& outdir, const String& namebase, Zoom z)
+                  const String& outdir, const String& namebase, Zoom z,
+                  const VectorMap<String, String>& escape)
 {
 	int im = 0;
-	return AsHtml(text, text.GetStyles(), css, links, labels, outdir, namebase, z, im);
+	return AsHtml(text, text.GetStyles(), css, links, labels, outdir, namebase, z, im, escape);
 }
 
 String AsCss(Index<String>& ss)

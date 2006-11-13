@@ -8,7 +8,7 @@
 
 #define IMAGECLASS ClassicCtrlsImg
 #define IMAGEFILE <CtrlLib/ClassicCtrls.iml>
-#include <Draw/iml.h>
+#include <Draw/iml_source.h>
 
 void ChSetStyleStd()
 {

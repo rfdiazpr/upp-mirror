@@ -248,11 +248,20 @@ void LocalHost::Launch(const char *_cmdline, bool console)
 	}
 
 	pid_t pid = fork();
-	int status;
 	if(pid == 0)
-		execvp(args[0], args);
+	{
+		const char *from = environment;
+		Vector<const char *> env;
+		while(*from)
+		{
+			env.Add(from);
+			from += strlen(from) + 1;
+		}
+		env.Add(NULL);
+		const char **envp = env.Begin();
+		execve(args[0], args, (char *const *)envp);
+	}
 	sPid().Add(pid);
-
 #endif
 }
 

@@ -524,7 +524,7 @@ void  ButtonOption::MouseLeave() {
 
 void  ButtonOption::SetData(const Value& v)
 {
-	Set(IsString(v) ? String(v) == "1" : (int)v);
+	Set(IsNull(v) ? 0 : IsString(v) ? String(v) == "1" : (int)v);
 }
 
 Value ButtonOption::GetData() const

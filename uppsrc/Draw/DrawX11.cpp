@@ -7,7 +7,6 @@
 #ifdef PLATFORM_X11
 
 XDisplay   *Xdisplay;
-const char *Xdisplayname;
 int         Xscreenno;
 Visual     *Xvisual;
 Window      Xroot;
@@ -141,16 +140,11 @@ inline int ssq(int x) { return x * x; }
 
 void UpdateSColors();
 
-void InitX11Draw(const char *dispname)
+void InitX11Draw(XDisplay *display)
 {
-	if(!dispname || !*dispname) {
-		int f = Environment().Find("DISPLAY");
-		dispname = (f >= 0 ? ~Environment()[f] : ":0.0");
-	}
-	Xdisplay = XOpenDisplay(dispname);
-	Xdisplayname = XDisplayName(dispname);
+	Xdisplay = display;
 	if(!Xdisplay) {
-		puts(NFormat("Xdisplayname = %s, errno = %d, %s", Xdisplayname, errno, strerror(errno)));
+		puts(NFormat("No X11 display, errno = %d, %s", errno, strerror(errno)));
 		fflush(stdout);
 		XError();
 	}
@@ -223,6 +217,16 @@ void InitX11Draw(const char *dispname)
 
 	UpdateSColors();
 }
+
+void InitX11Draw(const char *dispname)
+{
+	if(!dispname || !*dispname) {
+		int f = Environment().Find("DISPLAY");
+		dispname = (f >= 0 ? ~Environment()[f] : ":0.0");
+	}
+	InitX11Draw(XOpenDisplay(dispname));
+}
+
 
 #ifdef PLATFORM_XFT
 void SetClip(GC gc, XftDraw *xftdraw, const Vector<Rect>& cl)

@@ -11,6 +11,66 @@ String GetExeFilePath()
 	return GetModuleFileName();
 }
 
+#endif
+
+#ifdef PLATFORM_POSIX
+
+char Argv0__[_MAX_PATH + 1];
+
+static void sSetArgv0__(const char *title)
+{
+	strcpy(Argv0__, title);
+}
+
+extern char Argv0__[];
+
+const char *procexepath_() {
+	static char h[_MAX_PATH + 1];
+	ONCELOCK {
+		char link[100];
+#ifdef PLATFORM_FREEBSD
+		sprintf(link, "/proc/%d/file", getpid());
+#else
+		sprintf(link, "/proc/%d/exe", getpid());
+#endif
+		int ret = readlink(link, h, _MAX_PATH);
+		if(ret > 0 && ret < _MAX_PATH)
+			h[ret] = '\0';
+		else
+			*h = '\0';
+	}
+	return h;
+}
+
+String GetExeFilePath()
+{
+	static String exepath;
+	ONCELOCK {
+		const char *exe = procexepath_();
+		if(*exe)
+			exepath = exe;
+		else {
+			String x = Argv0__;
+			if(IsFullPath(x) && FileExists(x))
+				exepath = x;
+			else {
+				exepath = GetHomeDirFile("upp");
+				Vector<String> p = Split(FromSystemCharset(Environment().Get("PATH")), ':');
+				if(x.Find('/') >= 0)
+					p.Add(GetCurrentDirectory());
+				for(int i = 0; i < p.GetCount(); i++) {
+					String ep = NormalizePath(AppendFileName(p[i], x));
+					if(FileExists(ep))
+						exepath = ep;
+				}
+			}
+		}
+	}
+	return exepath;
+}
+
+#endif
+
 String GetExeDirFile(const char *filename)
 {
 	return AppendFileName(GetFileFolder(GetExeFilePath()), filename);
@@ -21,39 +81,24 @@ String GetExeTitle()
 	return GetFileTitle(GetExeFilePath());
 }
 
-#endif
-
 #ifdef PLATFORM_POSIX
 
-static char sExeTitle[60] = "upp";
+static StaticCriticalSection sHlock;
 
-void    SetExeTitle(const char *title) {
-	strcpy(sExeTitle, GetFileName(title));
-}
-
-String  GetExeTitle() {
-	return sExeTitle;
-}
-
-const char *GetExeTitleCharPtr()
-{
-	return sExeTitle;
-}
-
-#endif
-
-#ifdef PLATFORM_POSIX
-
-String& sHomeDir() {//!!! Add MT locks
+String& sHomeDir() {
 	static String s;
 	return s;
 }
 
 String  GetHomeDirectory() {
-	String& s = sHomeDir();
-	if(s.IsEmpty())
-		s = FromSystemCharset(getenv("HOME"));
-	return s;
+	String r;
+	INTERLOCKED_(sHlock) {
+		String& s = sHomeDir();
+		if(s.IsEmpty())
+			s = FromSystemCharset(getenv("HOME"));
+		r = s;
+	}
+	return r;
 }
 
 String  GetHomeDirFile(const char *fp) {
@@ -62,7 +107,9 @@ String  GetHomeDirFile(const char *fp) {
 
 void    SetHomeDirectory(const char *dir)
 {
-	sHomeDir() = dir;
+	INTERLOCKED_(sHlock) {
+		sHomeDir() = dir;
+	}
 }
 
 #endif//PLATFORM_POSIX
@@ -176,7 +223,7 @@ CriticalSection& sCriticalSectionLock();
 void AppInit__(int argc, const char **argv, const char **envptr)
 {
 	SetLanguage(LNG_ENGLISH);
-	SetExeTitle(argv[0]);
+	sSetArgv0__(argv[0]);
 	for(const char *var; var = *envptr; envptr++)
 	{
 		const char *b = var;

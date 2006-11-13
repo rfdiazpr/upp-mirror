@@ -21,15 +21,11 @@ void RasterCopy(RasterEncoder& dest, Raster& src, const Rect& src_rc)
 
 void ImageWriter::Open(ImageBuffer& output_, Point pos_, Rect clip_, bool merge_)
 {
+	format.SetRGBA();
 	output = &output_;
 	pos = pos_;
 	clip = clip_;
 	merge = merge_;
-}
-
-int ImageWriter::GetPaletteCount()
-{
-	return 0;
 }
 
 void ImageWriter::Start(Size sz)
@@ -41,16 +37,18 @@ void ImageWriter::Start(Size sz)
 	offset = (width > 0 ? left - pos.x : 0);
 }
 
-void ImageWriter::WriteLine(const RGBA *s)
+void ImageWriter::WriteLineRaw(const byte *s)
 {
 	if(line >= src_size.cy || width <= 0)
 		return;
 	int y = line++ + pos.y;
-	if(y >= clip.top && y < clip.bottom)
+	if(y >= clip.top && y < clip.bottom) {
+		const RGBA *l = (const RGBA *)s;
 		if(merge)
-			AlphaBlend(&(*output)[y][left], s + offset, width);
+			AlphaBlend(&(*output)[y][left], l + offset, width);
 		else
-			memcpy(&(*output)[y][left], s + offset, width * sizeof(RGBA));
+			memcpy(&(*output)[y][left], l + offset, width * sizeof(RGBA));
+	}
 }
 
 Size ImageBufferRaster::GetSize()

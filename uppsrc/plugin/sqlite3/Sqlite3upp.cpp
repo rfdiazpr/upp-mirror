@@ -252,8 +252,10 @@ bool Sqlite3Session::Open(const char* filename) {
 void Sqlite3Session::Close() {
 	if (NULL != db) {
 		int retval;
+#ifndef flagNOAPPSQL
 		if(&SQL.GetSession() == this)
 			SQL.Cancel();
+#endif
 		retval = sqlite3_close(db);
 		// If this function fails, that means that some of the
 		// prepared statements have not been finalized.

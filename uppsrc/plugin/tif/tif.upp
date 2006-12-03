@@ -1,3 +1,5 @@
+description "TIFF image file format";
+
 uses
 	plugin\jpg;
 

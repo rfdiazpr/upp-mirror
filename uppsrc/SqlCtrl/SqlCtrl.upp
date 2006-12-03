@@ -1,3 +1,5 @@
+description "GUI widgets and routines for SQL";
+
 uses
 	Sql,
 	CtrlLib,

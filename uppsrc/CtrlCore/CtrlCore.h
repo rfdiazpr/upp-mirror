@@ -65,6 +65,7 @@ public:
 	virtual void FramePaint(Draw& w, const Rect& r);
 	virtual void FrameAdd(Ctrl& parent);
 	virtual void FrameRemove();
+	virtual int  OverPaint() const;
 
 #ifdef flagSO
 	CtrlFrame();
@@ -283,6 +284,8 @@ private:
 	String       info;//4
 	int16        caretx, carety, caretcx, caretcy;//8
 
+	byte         overpaint;
+
 	bool         unicode:1;
 
 #ifdef PLATFORM_WIN32
@@ -447,6 +450,13 @@ private:
 	static void InitTimer();
 
 	static String appname;
+
+	static Size Dsize;
+	static Size Csize;
+	static void Csizeinit();
+	static void (*skin)();
+
+	friend void CtrlSetDefaultSkin(void (*fn1)(), void (*fn2)());
 
 	friend class ViewDraw;
 	friend class TopWindow;
@@ -644,6 +654,7 @@ public:
 	virtual bool   IsModified() const;
 
 	virtual void   Paint(Draw& draw);
+	virtual int    OverPaint() const;
 
 	virtual void   CancelMode();
 
@@ -988,12 +999,9 @@ public:
 
 	void SetMinSize(Size sz) {} // see CtrlLayout template and WindowCtrl...
 
-protected:
-	static Size Dsize;
-	static Size Csize;
-	static void Csizeinit();
-
 public:
+	static void SetSkin(void (*skin)());
+
 	static const char *GetZoomText();
 	static void SetZoomSize(Size sz, Size bsz = Size(0, 0));
 	static int  HorzLayoutZoom(int cx);
@@ -1048,6 +1056,8 @@ public:
 	Ctrl();
 	virtual ~Ctrl();
 };
+
+Color FieldFrameColor();
 
 enum { GUISTYLE_FLAT, GUISTYLE_CLASSIC, GUISTYLE_XP, GUISTYLE_X };
 int GUI_GlobalStyle();

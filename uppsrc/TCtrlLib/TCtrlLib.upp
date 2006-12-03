@@ -1,3 +1,5 @@
+description "Experimental (sometimes obsolete) GUI code";
+
 charset "windows-1250";
 
 uses
@@ -57,4 +59,3 @@ file
 	COPYING,
 	COPYING-PLAIN,
 	AUTHORS;
-

@@ -769,7 +769,7 @@ bool HttpServer::IsDelayedWrite() const
 
 double HttpServer::GetElapsedTime() const
 {
-	return (GetSysTime() - start_time) * 1000;
+	return int(GetSysTime() - start_time) * 1000;
 }
 
 double HttpServer::GetAvgTime() const

@@ -1,4 +1,3 @@
-#include <plugin/Sqlite3/Sqlite3.h>
 #include "simple.h"
 
 #ifdef _DEBUG

@@ -8,6 +8,6 @@ LAYOUT(IDEFindReplaceLayout, 266, 118)
 	ITEM(Option, wildcards, SetLabel(t_("Wild&cards")).LeftPosZ(192, 68).TopPosZ(58, 18))
 	ITEM(Button, amend, SetLabel(t_("R&eplace")).LeftPosZ(4, 60).BottomPosZ(4, 24))
 	ITEM(Button, findback, SetLabel(t_("Find &Prev.")).LeftPosZ(70, 60).BottomPosZ(4, 24))
-	ITEM(Button, ok, SetLabel(t_("Find Next")).RightPosZ(70, 60).BottomPosZ(4, 24))
+	ITEM(Button, ok, SetLabel(t_("Find")).RightPosZ(70, 60).BottomPosZ(4, 24))
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).RightPosZ(4, 60).BottomPosZ(4, 24))
 END_LAYOUT

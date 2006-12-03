@@ -94,6 +94,11 @@ enum {
 
 int   ClassifyContent(const Image& m, const Rect& rect);
 
+Image  RecreateAlpha(const Image& overwhite, const Image& overblack);
+int    ImageMargin(const Image& m, int p, int dist);
+
+// Image cache
+
 struct ImageMaker {
 	virtual String Key() const = 0;
 	virtual Image  Make() const = 0;
@@ -102,3 +107,5 @@ struct ImageMaker {
 
 Image MakeImage(const ImageMaker& m);
 Image MakeImage(const Image& image, Image (*make)(const Image& image));
+
+Image MakeImagePaintOnly(const ImageMaker& m);

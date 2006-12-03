@@ -25,6 +25,31 @@ byte       *Xunmapcolor;
 
 dword   (*Xgetpixel)(int r, int g, int b);
 
+#define DLLFILENAME "libgtk-x11-2.0.so"
+#define DLIMODULE   GTK
+#define DLIHEADER   <Draw/gtk.dli>
+#include <Core/dli_source.h>
+
+#define DLLFILENAME "libgdk-x11-2.0.so"
+#define DLIMODULE   GDK
+#define DLIHEADER   <Draw/gdk.dli>
+#include <Core/dli_source.h>
+
+#define DLLFILENAME "libgdk_pixbuf-2.0.so"
+#define DLIMODULE   GPIXBUF
+#define DLIHEADER   <Draw/gpixbuf.dli>
+#include <Core/dli_source.h>
+
+#define DLLFILENAME "libgobject-2.0.so"
+#define DLIMODULE   GOBJ
+#define DLIHEADER   <Draw/gobj.dli>
+#include <Core/dli_source.h>
+
+#define DLLFILENAME "libgnome-2.so"
+#define DLIMODULE   GNOME
+#define DLIHEADER   <Draw/gnome.dli>
+#include <Core/dli_source.h>
+
 void StaticExitDraw_()
 {
 	Draw::FreeFonts();
@@ -152,6 +177,7 @@ void InitX11Draw(XDisplay *display)
 	Xroot = RootWindow(Xdisplay, Xscreenno);
 	Xscreen = ScreenOfDisplay(Xdisplay, Xscreenno);
 	Xcolormap = DefaultColormap(Xdisplay, Xscreenno);
+//	Xcolormap = (Colormap)GDK().gdk_x11_colormap_get_xcolormap(GDK().gdk_rgb_get_colormap());
 	Xheight = DisplayHeight(Xdisplay, Xscreenno);
 	Xwidth = DisplayWidth(Xdisplay, Xscreenno);
 	XheightMM = DisplayHeightMM(Xdisplay, Xscreenno);
@@ -165,12 +191,6 @@ void InitX11Draw(XDisplay *display)
 	Xvisual = DefaultVisual(Xdisplay, Xscreenno);
 	Visual *v = Xvisual;
 	if(v->c_class == TrueColor) {
-//		XVisualInfo vtempl;
-//		vtempl.visualid = XVisualIDFromVisual(v);
-//		int nfound = 0;
-//		XVisualInfo *v = XGetVisualInfo(Xdisplay, VisualIDMask, &vtempl, &nfound);
-//		if(!nfound || !v)
-//			XError();
 		Xred = CalcXShift(v->red_mask);
 		Xgreen = CalcXShift(v->green_mask);
 		Xblue = CalcXShift(v->blue_mask);
@@ -220,13 +240,27 @@ void InitX11Draw(XDisplay *display)
 
 void InitX11Draw(const char *dispname)
 {
-	if(!dispname || !*dispname) {
-		int f = Environment().Find("DISPLAY");
-		dispname = (f >= 0 ? ~Environment()[f] : ":0.0");
+	if(GTK() && GDK() && GOBJ()) {
+		const Vector<String>& cmd = CommandLine();
+		char **argv = (char**) MemoryAllocPermanent(sizeof(char *) * cmd.GetCount());
+		for(int i = 0; i < cmd.GetCount(); i++)
+		    argv[i] = PermanentCopy(cmd[i]);
+		int argc = cmd.GetCount();
+		GTK().gtk_init (&argc, &argv);
+		G_obj *w = GTK().gtk_window_new(0);
+		G_obj *d = GTK().gtk_widget_get_display(w);
+		GDK().gdk_x11_display_get_xdisplay(d);
+		InitX11Draw((XDisplay *)GDK().gdk_x11_display_get_xdisplay(d));
+		GTK().gtk_widget_destroy(w);
 	}
-	InitX11Draw(XOpenDisplay(dispname));
+	else {
+		if(!dispname || !*dispname) {
+			int f = Environment().Find("DISPLAY");
+			dispname = (f >= 0 ? ~Environment()[f] : ":0.0");
+		}
+		InitX11Draw(XOpenDisplay(dispname));
+	}
 }
-
 
 #ifdef PLATFORM_XFT
 void SetClip(GC gc, XftDraw *xftdraw, const Vector<Rect>& cl)

@@ -138,6 +138,7 @@ void Ctrl::SyncLayout(int force)
 	bool refresh = false;
 	Rect oview = GetView();
 	Rect view = GetRect().Size();
+	overpaint = OverPaint();
 	for(int i = 0; i < frame.GetCount(); i++) {
 		Frame& f = frame[i];
 		f.frame->FrameLayout(view);
@@ -145,6 +146,8 @@ void Ctrl::SyncLayout(int force)
 			f.view = view;
 			refresh = true;
 		}
+		int q = f.frame->OverPaint();
+		if(q > overpaint) overpaint = q;
 	}
 	if(oview.Size() != view.Size() || force > 1) {
 		for(Ctrl *q = GetFirstChild(); q; q = q->next) {

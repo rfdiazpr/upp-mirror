@@ -1,3 +1,5 @@
+description "Simple SQL console utility";
+
 uses
 	SqlCtrl,
 	Oracle,

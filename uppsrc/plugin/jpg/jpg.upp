@@ -1,3 +1,5 @@
+description "JPEG image file format";
+
 file
 	jpg.h,
 	jpgupp.cpp,

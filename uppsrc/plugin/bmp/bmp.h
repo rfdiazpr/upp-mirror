@@ -49,4 +49,16 @@ public:
 	BMPEncoder(int _bpp = 24, bool gs = false) { bpp = _bpp; grayscale = gs; }
 };
 
+enum {
+	WI_MONO   = 0x01,
+	WI_4BIT   = 0x02,
+	WI_8BIT   = 0x04,
+	WI_32BIT  = 0x08,
+	WI_COLOR  = WI_4BIT | WI_8BIT | WI_32BIT, // recommended for XP
+	WI_CURSOR = 0x10,
+};
+
+Vector<Image> ReadIcon(String data);
+String        WriteIcon(const Vector<Image>& icons, int flags = WI_COLOR);
+
 #endif

@@ -1,4 +1,5 @@
 #include "bmp.h"
+#pragma hdrstop
 
 #include "bmphdr.h"
 

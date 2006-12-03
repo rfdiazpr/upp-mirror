@@ -195,8 +195,6 @@ String MacroSet::Get(int i) const {
 }
 
 class SqlConsole : public TopWindow {
-	typedef SqlConsole CLASSNAME;
-
 public:
 	virtual bool Key(dword key, int count);
 	virtual void Serialize(Stream& s);

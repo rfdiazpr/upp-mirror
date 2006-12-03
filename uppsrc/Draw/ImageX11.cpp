@@ -59,12 +59,12 @@ void Image::Data::SysRelease()
 {
 	if(picture) {
 		XRenderFreePicture(Xdisplay, picture);
-		ResCount--;
+		ResCount -= !paintonly;
 		picture = 0;
 	}
 	if(picture8) {
 		XRenderFreePicture(Xdisplay, picture8);
-		ResCount--;
+		ResCount -= !paintonly;
 		picture8 = 0;
 	}
 }
@@ -176,12 +176,14 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 				XPutImage(Xdisplay, pixmap, gc, &ximg, 0, 0, 0, 0, sz.cx, sz.cy);
 				XFreeGC(Xdisplay, gc);
 				XFreePixmap(Xdisplay, pixmap);
+				PaintOnlyShrink();
 			}
 			XRenderComposite(Xdisplay, PictOpOver,
 			                 picture, 0, XftDrawPicture(w.GetXftDraw()),
 			                 sr.left, sr.top, 0, 0, x, y, ssz.cx, ssz.cy);
 		}
 		else {
+			ASSERT(!paintonly);
 			if(!picture8) {
 				Pixmap pixmap = XCreatePixmap(Xdisplay, Xroot, sz.cx, sz.cy, 8);
 				picture8 = XRenderCreatePicture(Xdisplay, pixmap,
@@ -235,7 +237,7 @@ void ImageDraw::Init()
 
 ImageDraw::operator Image() const
 {
-	XImage *xim = XGetImage(Xdisplay, dw, 0, 0, size.cx, size.cy, AllPlanes, ZPixmap);
+	XImage *xim = XGetImage(Xdisplay, dw, 0, 0, max(size.cx, 1), max(size.cy, 1), AllPlanes, ZPixmap);
 	Visual *v = DefaultVisual(Xdisplay, Xscreenno);
 	RasterFormat fmt;
 

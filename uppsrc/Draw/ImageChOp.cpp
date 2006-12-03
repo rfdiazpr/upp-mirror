@@ -224,3 +224,38 @@ int ClassifyContent(const Image& m, const Rect& rect)
 	}
 	return 2 + vdup;
 }
+
+Image RecreateAlpha(const Image& overwhite, const Image& overblack)
+{
+	Size sz = overwhite.GetSize();
+	ASSERT(overblack.GetSize() == sz);
+	ImageBuffer r(sz);
+	const RGBA *ws = overwhite;
+	const RGBA *bs = overblack;
+	RGBA *t = r;
+	RGBA *e = t + r.GetLength();
+	while(t < e) {
+		t->a = bs->r - ws->r + 255;
+		if(t->a) {
+			t->r = bs->r * 255 / t->a;
+			t->g = bs->g * 255 / t->a;
+			t->b = bs->b * 255 / t->a;
+		}
+		else
+			t->r = t->g = t->b = 0;
+		t++;
+		bs++;
+		ws++;
+	}
+	return r;
+}
+
+int ImageMargin(const Image& m, int p, int dist)
+{
+	Color c = m[4][4];
+	int d;
+	for(d = 4; d > 0; d--)
+		if(Diff(m[d][d], c) > 10)
+			break;
+	return d + 1;
+}

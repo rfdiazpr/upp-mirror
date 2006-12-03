@@ -8,6 +8,8 @@ CtrlFrame::~CtrlFrame() {}
 void CtrlFrame::FramePaint(Draw& draw, const Rect& r) {}
 void CtrlFrame::FrameAdd(Ctrl& ctrl) {}
 void CtrlFrame::FrameRemove() {}
+int CtrlFrame::OverPaint() const { return 0; }
+
 
 struct NullFrameClass : public CtrlFrame
 {
@@ -46,10 +48,12 @@ CtrlFrame& GLOBAL_VP(BorderFrame, BlackFrame, (BlackBorder()));
 CtrlFrame& GLOBAL_VP(BorderFrame, OutsetFrame, (OutsetBorder()));
 CtrlFrame& GLOBAL_VP(BorderFrame, ThinOutsetFrame, (ThinOutsetBorder()));
 
+CH_COLOR(FieldFrameColor, Blend(SColorHighlight, SColorShadow));
+
 class XPFieldFrameCls : public CtrlFrame {
 	virtual void FrameLayout(Rect& r)                   { r.Deflate(2); }
 	virtual void FramePaint(Draw& w, const Rect& r) {
-		DrawFrame(w, r, Blend(SColorHighlight, SColorShadow));
+		DrawFrame(w, r, FieldFrameColor());
 		DrawFrame(w, r.Deflated(1), SColorPaper);
 	}
 	virtual void FrameAddSize(Size& sz) { sz += 4; }
@@ -58,7 +62,7 @@ class XPFieldFrameCls : public CtrlFrame {
 class XPEditFieldFrameCls : public CtrlFrame {
 	virtual void FrameLayout(Rect& r)                   { r.Deflate(1); }
 	virtual void FramePaint(Draw& w, const Rect& r) {
-		DrawFrame(w, r, Blend(SColorHighlight, SColorShadow));
+		DrawFrame(w, r, FieldFrameColor());
 	}
 	virtual void FrameAddSize(Size& sz) { sz += 2; }
 };
@@ -69,7 +73,6 @@ CtrlFrame& XPEditFieldFrame() { return Single<XPEditFieldFrameCls>(); }
 CH_INT(EditFieldIsThin, 0);
 
 CtrlFrame& FieldFrame() { return GUI_GlobalStyle() >= GUISTYLE_XP ? XPFieldFrame() : InsetFrame(); }
-// CtrlFrame& EditFieldFrame() { return EditFieldIsThin() ? XPEditFieldFrame() : FieldFrame(); } //TODO remove
 
 class TopSeparatorFrameCls : public CtrlFrame {
 	virtual void FrameLayout(Rect& r)                   { r.top += 2; }

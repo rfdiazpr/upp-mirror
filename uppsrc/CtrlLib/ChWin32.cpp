@@ -3,6 +3,8 @@
 #define LLOG(x)   // RLOG(x)
 #define LTIMING(x) // RTIMING(x)
 
+void ChSysInit();
+
 #ifdef PLATFORM_WIN32
 
 #ifdef PLATFORM_WINCE
@@ -15,7 +17,10 @@ void ChSysInit()
 	ChSet("GUI_GlobalStyle", GUISTYLE_CLASSIC);
 }
 
-void ChDetectStyle() {}
+void ChHostSkin()
+{
+	ChClassicSkin();
+}
 
 #else
 
@@ -106,25 +111,7 @@ Image XpImage(int widget, int part, int state, Color color = Null, Size sz = Nul
 			return m[q];
 		c = Black;
 	}
-	ImageBuffer r(sz);
-	const RGBA *ws = m[0];
-	const RGBA *bs = m[1];
-	RGBA *t = r;
-	RGBA *e = t + r.GetLength();
-	while(t < e) {
-		t->a = bs->r - ws->r + 255;
-		if(t->a) {
-			t->r = bs->r * 255 / t->a;
-			t->g = bs->g * 255 / t->a;
-			t->b = bs->b * 255 / t->a;
-		}
-		else
-			t->r = t->g = t->b = 0;
-		t++;
-		bs++;
-		ws++;
-	}
-	return r;
+	return RecreateAlpha(m[0], m[1]);
 }
 
 int XpMargin(const XpElement& e)
@@ -132,13 +119,8 @@ int XpMargin(const XpElement& e)
 	int q = xp_margin.Find(e);
 	if(q >= 0)
 		return xp_margin[q];
-	Image m = XpImage(e.widget, e.part, e.state, White, Size(30, 30));
-	Color c = m[4][4];
-	int d;
-	for(d = 4; d > 0; d--)
-		if(Diff(m[d][d], c) > 10)
-			break;
-	q = d + 1;
+
+	q = ImageMargin(XpImage(e.widget, e.part, e.state, White, Size(30, 30)), 4, 10);
 	xp_margin.Add(e, q);
 	return q;
 }
@@ -318,7 +300,7 @@ void ChSet(const char *id, int i, const XpElement& e)
 	ChSet(id, i, RawToValue(e));
 }
 
-void ChDetectStyle()
+void ChHostSkin()
 {
 	ChSysInit();
 	if(XpWidget(XP_BUTTON)) {
@@ -441,7 +423,7 @@ void ChDetectStyle()
 		ChLookFn(XpLookFn);
 	}
 	else
-		ChSetStyleClassic();
+		ChClassicSkin();
 }
 
 struct sysColor {
@@ -465,7 +447,6 @@ static sysColor sSysColor[] = {
 
 void ChSysInit()
 {
-	LLOG("ChInitWin");
 	CtrlImg::Reset();
 	CtrlsImg::Reset();
 	ChReset();

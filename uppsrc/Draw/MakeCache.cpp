@@ -12,9 +12,19 @@ static LRUCache<Image>& sImageCache()
 
 struct scImageMaker : LRUCache<Image>::Maker {
 	const ImageMaker *m;
+	bool  paintonly;
 
-	virtual String Key() const               { return m->Key(); }
-	virtual int    Make(Image& object) const { object = m->Make(); return object.GetLength() + 100; }
+	virtual String Key() const {
+		return m->Key();
+	}
+	virtual int    Make(Image& object) const {
+		object = m->Make();
+		if(paintonly) {
+			SetPaintOnly___(object);
+			return object.GetLength() + 20000;
+		}
+		return object.GetLength() + 100;
+	}
 };
 
 int sMaxSize;
@@ -27,13 +37,14 @@ void SweepMkImageCache()
 	}
 }
 
-Image MakeImage(const ImageMaker& m)
+Image MakeImage__(const ImageMaker& m, bool paintonly)
 {
 	Image result;
 	INTERLOCKED_(sMakeImage) {
 		LRUCache<Image>& cache = sImageCache();
 		scImageMaker cm;
 		cm.m = &m;
+		cm.paintonly = paintonly;
 		result = cache.Get(cm);
 		int q = min(cache.GetFoundSize() + cache.GetNewSize(), 4000000);
 		if(q > sMaxSize) {
@@ -45,6 +56,16 @@ Image MakeImage(const ImageMaker& m)
 	return result;
 }
 
+Image MakeImage(const ImageMaker& m)
+{
+	return MakeImage__(m, false);
+}
+
+Image MakeImagePaintOnly(const ImageMaker& m)
+{
+	return MakeImage__(m, true);
+}
+
 class SimpleImageMaker : public ImageMaker {
 	Image (*make)(const Image& image);
 	Image image;
@@ -52,7 +73,7 @@ class SimpleImageMaker : public ImageMaker {
 public:
 	virtual String Key() const;
 	virtual Image  Make() const;
-	
+
 	SimpleImageMaker(const Image& image, Image (*make)(const Image& image))
 	:	image(image), make(make) {}
 };

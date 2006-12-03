@@ -261,9 +261,18 @@ public:
 	virtual void   LeftUp(Point p, dword keyflags);
 	virtual void   RightDown(Point p, dword keyflags);
 	virtual void   Layout();
-	virtual bool   Key(dword key, int count);
 
 private:
+	bool   DoKey(dword key, int count);
+
+	struct KeyMaster : public ParentCtrl {
+		LayDes *d;
+
+		virtual bool   Key(dword key, int count) {
+			return d->DoKey(key, count);
+		}
+	};
+
 	String   filename;
 	byte     charset;
 	String   layfile;
@@ -283,6 +292,7 @@ private:
 	WithDropChoice<EditString> type;
 	EditString                 variable;
 
+	KeyMaster          km;
 	Splitter           lsplit, isplit, rsplit;
 	FrameTop<Splitter> twsplit;
 	ScrollBars        sb;
@@ -429,7 +439,7 @@ private:
 	LayDes();
 
 public:
-	Ctrl&          DesignerCtrl()             { return lsplit; }
+	Ctrl&          DesignerCtrl()             { return km; }
 	void           Serialize(Stream& s);
 };
 

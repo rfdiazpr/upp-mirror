@@ -2,7 +2,6 @@
 #pragma hdrstop
 
 #include <coff/binobj/binobj.h>
-#include <plugin/z/z.h>
 #include <plugin/bz2/bz2.h>
 
 void   GccBuilder::AddFlags(Index<String>& cfg)

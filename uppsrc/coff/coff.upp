@@ -1,3 +1,5 @@
+description "Library for handling with COFF object file format (used by GCC toolchain)";
+
 optimize_speed;
 
 uses

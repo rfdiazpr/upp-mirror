@@ -144,14 +144,14 @@ FDECL0("+", CaddNN, &GroupArith)
 inline WString CaddSS(WString a, WString b)             { return a + b; }
 FDECL ("+", CaddSS, &GroupString)
 
-inline Time    CaddDN(Time a, double b)                 { return a + b * 86400.0; }
+inline Time    CaddDN(Time a, double b)                 { return a + fround64(b * 86400.0 + 0.5); }
 FDECL0("+", CaddDN, &GroupDate)
 
-inline Time    CaddND(double a, Time b)                 { return b + a * 86400.0; }
+inline Time    CaddND(double a, Time b)                 { return b + fround64(a * 86400.0 + 0.5); }
 FDECL0("+", CaddND, &GroupDate)
 
 inline double CsubNN(double a, double b)               { return a - b; }
-inline Time   CsubDN(Time a, double b)                 { return a - b * 86400.0; }
+inline Time   CsubDN(Time a, double b)                 { return a - fround64(b * 86400.0); }
 inline double CsubDD(Time a, Time b)                   { return (a - b) / 86400.0; }
 
 FDECL0("-", CsubNN, &GroupArith)

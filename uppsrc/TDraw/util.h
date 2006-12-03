@@ -134,23 +134,6 @@ protected:
 //const ImageDisplay& StretchImageDisplay();
 //const ImageDisplay& TileImageDisplay();
 
-class AlignDisplay : public Display
-{
-public:
-	AlignDisplay(Alignment align = ALIGN_CENTER) : align(align) {}
-
-	void         Align(Alignment a) { align = a; }
-	Alignment    GetAlign() const   { return align; }
-
-	virtual void Paint(Draw& draw, const Rect& rc, const Value& v, Color ink, Color paper, dword style) const;
-
-private:
-	Alignment    align;
-};
-
-const Display& StdCenterDisplay();
-const Display& StdRightDisplay();
-
 //////////////////////////////////////////////////////////////////////
 
 class GradientDisplay : public Display

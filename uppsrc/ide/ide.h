@@ -630,7 +630,7 @@ public:
 
 	Time      start_time;
 	Time      build_start_time;
-	double    stat_build_time;
+	int       stat_build_time;
 
 	Font      editorfont;
 	Font      veditorfont;

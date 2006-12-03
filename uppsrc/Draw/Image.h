@@ -1,7 +1,5 @@
 #define NEWIMAGE
 
-#include <plugin/z/z.h>
-
 inline bool operator==(const RGBA& a, const RGBA& b)
 {
 	return a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
@@ -40,9 +38,8 @@ enum ImageKind {
 	IMAGE_OPAQUE,
 };
 
-class Image;
-
-class ImageDraw;
+class  Image;
+class  ImageDraw;
 
 class ImageBuffer : NoCopy {
 	mutable int  kind;
@@ -56,6 +53,7 @@ class ImageBuffer : NoCopy {
 	void         DeepCopy(const ImageBuffer& img);
 
 	RGBA*        Line(int i) const      { ASSERT(i >= 0 && i < size.cy); return (RGBA *)~pixels + i * size.cx; }
+	friend void  DropPixels___(ImageBuffer& b) { b.pixels.Clear(); }
 
 	friend class Image;
 
@@ -126,20 +124,24 @@ private:
 		RGBA       *section;
 
 		void CreateHBMP(HDC dc, const RGBA *data);
+		int  GetResCount() const { return !!hbmp + !!hmask + !!himg; }
 #endif
 
 #ifdef PLATFORM_X11
 		int         cursor_cheat;
 		XPicture    picture;
 		XPicture    picture8;
+		int  GetResCount() const { return !!picture; }
 #endif
 
 		ImageBuffer buffer;
+		bool        paintonly;
 
 		void        SysInit();
 		void        SysRelease();
 		int         GetKind();
 		void        Paint(Draw& w, int x, int y, const Rect& src, Color c);
+		void        PaintOnlyShrink();
 
 		Data(ImageBuffer& b);
 		~Data();
@@ -159,6 +161,8 @@ private:
 	friend class Draw;
 
 	void PaintImage(Draw& w, int x, int y, const Rect& src, Color c) const;
+
+	friend void SetPaintOnly___(Image& m);
 
 #ifdef PLATFORM_WIN32
 #ifndef PLATFORM_WINCE

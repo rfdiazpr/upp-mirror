@@ -1,3 +1,5 @@
+description "Oracle interface";
+
 uses
 	Sql;
 

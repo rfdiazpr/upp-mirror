@@ -794,6 +794,15 @@ void RichQtfParser::Parse(const char *qtf, byte _accesskey)
 			ReadObject();
 		}
 		else
+		if(Key2('@', '$')) {
+			String xu;
+			while(isxdigit(*term))
+				xu.Cat(*term++);
+			Cat(stou(~xu, NULL, 16));
+			if(*term == ';')
+				term++;
+		}
+		else
 		if(Key2('{', ':')) {
 			Flush();
 			String field = GetText(':');

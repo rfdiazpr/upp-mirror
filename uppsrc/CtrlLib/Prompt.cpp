@@ -12,7 +12,8 @@ struct PromptDlgWnd__ : TopWindow {
 
 int Prompt(const char *title, const Image& iconbmp, const char *qtf, bool okcancel,
            const char *button1, const char *button2, const char *button3,
-		   int cx)
+		   int cx,
+		   Image im1, Image im2, Image im3)
 {
 	int fcy = Draw::GetStdFontCy();
 	PromptDlgWnd__ dlg;
@@ -54,8 +55,13 @@ int Prompt(const char *title, const Image& iconbmp, const char *qtf, bool okcanc
 	dlg.SetRect(Size(cx, cy));
 	dlg << icon.TopPos(fcy, bsz.cy).LeftPos(fcy, bsz.cx);
 	dlg << qtfctrl.TopPos(fcy + (mcy - qcy) / 2, qcy).RightPos(fcy, qcx);
-	if(okcancel)
+	if(okcancel) {
 		b1.Ok();
+		if(nbtn == 2)
+			b2.Cancel();
+		if(nbtn == 3)
+			b3.Cancel();
+	}
 	b1.WhenAction = dlg.Breaker(1);
 	b2.WhenAction = dlg.Breaker(0);
 	b3.WhenAction = dlg.Breaker(-1);
@@ -69,15 +75,21 @@ int Prompt(const char *title, const Image& iconbmp, const char *qtf, bool okcanc
 	bx = (cx - bx) / 2;
 	dlg << b1.BottomPos(fcy, bcy).LeftPos(bx, bcx);
 	b1.SetLabel(button1);
+	if(!IsNull(im1))
+		b1.SetImage(im1);
 	if(button2) {
 		bx += gap + bcx;
 		dlg << b2.BottomPos(fcy, bcy).LeftPos(bx, bcx);
 		b2.SetLabel(button2);
+		if(!IsNull(im2))
+			b2.SetImage(im2);
 	}
 	if(button3) {
 		bx += gap + bcx;
 		dlg << b3.BottomPos(fcy, bcy).LeftPos(bx, bcx);
 		b3.SetLabel(button3);
+		if(!IsNull(im3))
+			b3.SetImage(im3);
 	}
 	dlg.WhenClose = dlg.Breaker(button3 ? -1 : 0);
 	dlg.Open();
@@ -85,11 +97,18 @@ int Prompt(const char *title, const Image& iconbmp, const char *qtf, bool okcanc
 	return dlg.RunAppModal();
 }
 
-int Prompt(const char *title, const Image& iconbmp, const char *qtf,
+int Prompt(const char *title, const Image& icon, const char *qtf, bool okcancel,
            const char *button1, const char *button2, const char *button3,
 		   int cx)
 {
-	return Prompt(title, iconbmp, qtf, true, button1, button2, button3, cx);
+	return Prompt(title, icon, qtf, okcancel, button1, button2, button3, cx, Null, Null, Null);
+}
+
+int Prompt(const char *title, const Image& icon, const char *qtf,
+           const char *button1, const char *button2, const char *button3,
+		   int cx)
+{
+	return Prompt(title, icon, qtf, true, button1, button2, button3, cx);
 }
 
 void PromptOK(const char *qtf) {
@@ -112,28 +131,42 @@ int PromptOKCancel(const char *qtf) {
 	return Prompt(Ctrl::GetAppName(), CtrlImg::question(), qtf, t_("OK"), t_("Cancel"));
 }
 
+CH_IMAGE(YesButtonImage, Null);
+CH_IMAGE(NoButtonImage, Null);
+CH_IMAGE(AbortButtonImage, Null);
+CH_IMAGE(RetryButtonImage, Null);
+
 int PromptYesNo(const char *qtf) {
 	BeepQuestion();
-	return Prompt(Ctrl::GetAppName(), CtrlImg::question(), qtf, false, t_("&Yes"), t_("&No"));
+	return Prompt(Ctrl::GetAppName(), CtrlImg::question(), qtf, false,
+	              t_("&Yes"), t_("&No"), NULL, 0,
+	              YesButtonImage(), NoButtonImage(), Null);
 }
 
 int PromptYesNoCancel(const char *qtf) {
 	BeepQuestion();
-	return Prompt(Ctrl::GetAppName(), CtrlImg::question(), qtf, true, t_("&Yes"), t_("&No"), t_("Cancel"));
+	return Prompt(Ctrl::GetAppName(), CtrlImg::question(), qtf, true,
+	              t_("&Yes"), t_("&No"), t_("Cancel"), 0,
+	              YesButtonImage(), NoButtonImage(), Null);
 }
 
 int PromptAbortRetry(const char *qtf) {
 	BeepExclamation();
-	return Prompt(Ctrl::GetAppName(), CtrlImg::exclamation(), qtf, false, t_("&Abort"), t_("&Retry"));
+	return Prompt(Ctrl::GetAppName(), CtrlImg::exclamation(), qtf, false,
+	              t_("&Abort"), t_("&Retry"), NULL, 0,
+	              AbortButtonImage(), RetryButtonImage(), Null);
 }
 
 int PromptRetryCancel(const char *qtf) {
 	BeepExclamation();
-	return Prompt(Ctrl::GetAppName(), CtrlImg::exclamation(), qtf, true, t_("&Retry"), t_("Cancel"));
+	return Prompt(Ctrl::GetAppName(), CtrlImg::exclamation(), qtf, true,
+	              t_("&Retry"), t_("Cancel"), NULL, 0,
+	              RetryButtonImage(), Null, Null);
 }
 
 int PromptAbortRetryIgnore(const char *qtf) {
 	BeepExclamation();
-	return Prompt(Ctrl::GetAppName(), CtrlImg::exclamation(), qtf,
-		          false, t_("&Abort"), t_("&Retry"), t_("&Cancel"));
+	return Prompt(Ctrl::GetAppName(), CtrlImg::exclamation(), qtf, false,
+	              t_("&Abort"), t_("&Retry"), t_("&Ignore"), 0,
+	              AbortButtonImage(), RetryButtonImage(), Null);
 }

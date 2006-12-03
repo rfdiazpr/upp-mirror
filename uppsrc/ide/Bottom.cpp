@@ -36,7 +36,7 @@ void RightTabs::Add(const Image& img, const String& tip)
 
 void RightTabs::PaintTab(Draw& w, int x, int y, int cx, int cy, Color paper, const Image& img, Color hl)
 {
-	Color fc = Blend(SColorHighlight, SColorShadow);
+	Color fc = FieldFrameColor();
 	w.DrawRect(x, y + 1, cx - 1, cy - 2, paper);
 	w.DrawRect(x, y, cx - 1, 1, fc);
 	w.DrawRect(x + cx - 1, y + 1, 1, cy - 2, fc);
@@ -123,7 +123,7 @@ void RightTabs::FramePaint(Draw& w, const Rect& rr)
 {
 	Rect r = rr;
 	r.right -= cx;
-	DrawFrame(w, r, Blend(SColorHighlight, SColorShadow));
+	DrawFrame(w, r, FieldFrameColor());
 	DrawFrame(w, r.Deflated(1), SColorPaper);
 	if(cursor >= 0) {
 		Tab& t = tab[cursor];

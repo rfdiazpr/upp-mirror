@@ -111,6 +111,7 @@ private:
 		String          undo;
 		String          redo;
 		bool            supersampling;
+		bool            exp;
 
 		Slot();
 	};
@@ -252,7 +253,7 @@ private:
 	void  SyncList();
 	void  ListCursor();
 	void  PrepareImageDlg(WithImageLayout<TopWindow>& dlg);
-	void  ImageInsert(const String& name, const Image& m);
+	void  ImageInsert(const String& name, const Image& m, bool exp = false);
 	void  InsertImage();
 	void  InsertRemoved(int ii);
 	void  EditImage();
@@ -285,10 +286,11 @@ public:
 	};
 
 	void   Clear();
-	void   AddImage(const String& name, const Image& image);
+	void   AddImage(const String& name, const Image& image, bool exp = false);
 	int    GetCount() const;
 	Image  GetImage(int ii) const;
 	String GetName(int ii) const;
+	bool   GetExport(int ii) const;
 
 	EditPos GetEditPos();
 	void    SetEditPos(const EditPos& o);
@@ -300,7 +302,13 @@ public:
 	IconDes();
 };
 
-bool   LoadIml(const String& data, VectorMap<String, Image>& img, int& format);
-String SaveIml(const VectorMap<String, Image>& iml, int format);
+struct ImlImage {
+	String name;
+	Image  image;
+	bool   exp;
+};
+
+bool   LoadIml(const String& data, Array<ImlImage>& img, int& format);
+String SaveIml(const Array<ImlImage>& iml, int format);
 
 #endif

@@ -26,13 +26,13 @@ void Ctrl::RefreshFrame(const Rect& r) {
 void Ctrl::Refresh(const Rect& area) {
 	if(fullrefresh || !IsVisible() || !IsOpen()) return;
 	LLOG("Refresh " << Name() << ' ' <<  area);
-	RefreshFrame((area + GetView().TopLeft()) & GetView());
+	RefreshFrame((area + GetView().TopLeft()) & GetView().Inflated(OverPaint()));
 }
 
 void Ctrl::Refresh() {
 	if(fullrefresh || !IsVisible() || !IsOpen()) return;
 	LLOG("Refresh " << Name() << " full:" << fullrefresh);
-	Refresh(Rect(GetSize()));
+	Refresh(Rect(GetSize()).Inflated(OverPaint()));
 	fullrefresh = true;
 }
 
@@ -46,7 +46,7 @@ void Ctrl::RefreshFrame(int x, int y, int cx, int cy) {
 
 void Ctrl::RefreshFrame() {
 	LLOG("RefreshFrame " << Name());
-	RefreshFrame(Rect(GetRect().Size()));
+	RefreshFrame(Rect(GetRect().Size()).Inflated(overpaint));
 }
 
 void  Ctrl::ScrollRefresh(const Rect& r, int dx, int dy)
@@ -100,7 +100,7 @@ Rect  Ctrl::GetClippedView()
 
 void  Ctrl::ScrollView(const Rect& _r, int dx, int dy)
 {
-	if(IsFullRefresh())
+	if(IsFullRefresh() || !IsVisible())
 		return;
 	Size vsz = GetSize();
 	dx = sgn(dx) * min(abs(dx), vsz.cx);
@@ -121,7 +121,7 @@ void  Ctrl::ScrollView(const Rect& _r, int dx, int dy)
 				if(top && r.Contains(cr)) {
 					Rect to = cr;
 					GetTopRect(to, false);
-					if(r.Contains(cr.Offseted(-dx, -dy))) {
+					if(r.Intersects(cr.Offseted(-dx, -dy))) { // Uno's suggestion 06/11/26 Contains -> Intersetcs
 						Rect from = cr.Offseted(-dx, -dy);
 						GetTopRect(from, false);
 						MoveCtrl *m = FindMoveCtrlPtr(top->move, q);
@@ -132,7 +132,7 @@ void  Ctrl::ScrollView(const Rect& _r, int dx, int dy)
 						}
 					}
 
-					if(r.Contains(cr.Offseted(dx, dy))) {
+					if(r.Intersects(cr.Offseted(dx, dy))) { // Uno's suggestion 06/11/26 Contains -> Intersetcs
 						Rect from = to;
 						to = cr.Offseted(dx, dy);
 						GetTopRect(to, false);
@@ -210,7 +210,8 @@ struct sDrawLevelCheck {
 
 void Ctrl::CtrlPaint(Draw& w, const Rect& clip) {
 	Rect rect = GetRect().GetSize();
-	if(!IsShown() || rect.IsEmpty() || clip.IsEmpty() || !clip.Intersects(rect))
+	Rect orect = rect.Inflated(overpaint);
+	if(!IsShown() || orect.IsEmpty() || clip.IsEmpty() || !clip.Intersects(orect))
 		return;
 	Ctrl *q;
 	Rect view = rect;
@@ -219,13 +220,23 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip) {
 		frame[i].frame->FramePaint(w, view);
 		view = frame[i].view;
 	}
+	Rect oview = view.Inflated(overpaint);
 	if(!view.IsEmpty()) {
-		if(view.Intersects(clip) && w.IsPainting(view)) {
+		if(oview.Intersects(clip) && w.IsPainting(oview)) {
 			LLOG("Painting: " << Name());
 			LEVELCHECK(w);
-			w.Clipoff(view);
-			Paint(w);
-			w.End();
+			if(overpaint) {
+				w.Clip(oview);
+				w.Offset(view.left, view.top);
+				Paint(w);
+				w.End();
+				w.End();
+			}
+			else {
+				w.Clipoff(view);
+				Paint(w);
+				w.End();
+			}
 		}
 		bool hasviewctrls = false;
 		for(q = firstchild; q; q = q->next)
@@ -341,6 +352,7 @@ void Ctrl::GatherTransparentAreas(Vector<Rect>& area, Draw& w, Point offset, con
 	Rect r = parent ? GetRect() + offset : GetRect().GetSize();
 	Point off = r.TopLeft();
 	Point viewpos = off + GetView().TopLeft();
+	r.Inflate(overpaint);
 	Rect notr = GetVoidRect();
 	if(notr.IsEmpty())
 		notr = GetOpaqueRect();
@@ -420,7 +432,7 @@ Ctrl *Ctrl::GetTopRect(Rect& r, bool inframe)
 void  Ctrl::DoSync(Ctrl *q, Rect r, bool inframe)
 {
 	ASSERT(q);
-	LOG("DoSync " << ::Name(q) << " " << r);
+	LLOG("DoSync " << ::Name(q) << " " << r);
 	Ctrl *top = q->GetTopRect(r, inframe);
 	top->SyncScroll();
 	top->WndUpdate(r);

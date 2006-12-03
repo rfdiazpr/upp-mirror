@@ -323,10 +323,10 @@ Image LayDes::CursorImage(Point p, dword keyflags)
 	else
 	 	hi = FindHandle(Normalize(p));
 	Image (*id[11])() = {
-		CtrlImg::SizeHorz0, CtrlImg::SizeVert0, CtrlImg::SizeHoVe0,
-		CtrlImg::SizeHoVe0, CtrlImg::SizeVert0, CtrlImg::SizeVeHo0,
-		CtrlImg::SizeHorz0, CtrlImg::SizeHorz0,
-		CtrlImg::SizeVeHo0, CtrlImg::SizeVert0, CtrlImg::SizeHoVe0,
+		Image::SizeHorz, Image::SizeVert, Image::SizeBottomRight,
+		Image::SizeTopLeft, Image::SizeVert, Image::SizeTopRight,
+		Image::SizeHorz, Image::SizeHorz,
+		Image::SizeBottomLeft, Image::SizeVert, Image::SizeBottomRight,
 	};
 	if(hi >= 0 && hi < 11)
 		return (*id[hi])();
@@ -693,13 +693,7 @@ void  LayDes::MouseMove(Point p, dword keyflags)
 				r += md;
 			r.SetSize(sz);
 		}
-		DUMP(draglayoutsize);
-		DUMP(r);
-		DUMP(CtrlRect(m.pos, draglayoutsize));
 		m.pos = MakeLogPos(m.pos, r, draglayoutsize);
-		DUMP(CtrlRect(m.pos, draglayoutsize));
-//		if(i == cursor.GetCount() - 1)
-//			sb.ScrollInto(r.Offseted(MARGIN, MARGIN));
 	}
 	SetStatus(true);
 	Sync();
@@ -717,6 +711,7 @@ void LayDes::CreateCtrl(const String& _type)
 {
 	if(currentlayout < 0)
 		return;
+	LOG("CreateCtrl");
 	LayoutData& l = CurrentLayout();
 	int c = l.item.GetCount();
 	if(cursor.GetCount())
@@ -742,6 +737,8 @@ void LayDes::CreateCtrl(const String& _type)
 		else
 			variable.SetFocus();
 	}
+	LOG("Create " << ::Name(GetFocusCtrl()));
+
 }
 
 void LayDes::Group(Bar& bar, const String& group)
@@ -764,6 +761,7 @@ void LayDes::Group(Bar& bar, const String& group)
 		if((q++ + 2) % 16 == 0)
 			bar.Break();
 	}
+	LOG("End " << ::Name(GetFocusCtrl()));
 }
 
 void LayDes::TemplateGroup(Bar& bar, TempGroup tg)
@@ -1467,7 +1465,7 @@ static int RoundStep(int org, int d, int g)
 	return d ? itimesfloor(org + d * g + (d > 0 ? 0 : g - 1), g) - org : 0;
 }
 
-bool LayDes::Key(dword key, int count)
+bool LayDes::DoKey(dword key, int count)
 {
 	SaveState();
 	Point move(0, 0);

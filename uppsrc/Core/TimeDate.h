@@ -75,6 +75,9 @@ struct Time : Date, RelOps< Time, Moveable<Time> > {
 	static Time High()       { return Time(9999, 1, 1); }
 	static Time Low()        { return Time(-9999, 12, 31); }
 
+	void   Set(int64 scalar);
+	int64  Get();
+
 	Time()                   { hour = minute = second = 0; }
 	Time(const Nuller&)      { hour = minute = second = 0; }
 	Time(int y, int m, int d, int h = 0, int n = 0, int s = 0)
@@ -96,17 +99,22 @@ inline unsigned GetHashValue(Time t) {
 bool operator==(Time a, Time b);
 bool operator<(Time a, Time b);
 
-double operator-(Time a, Time b);
-Time   operator+(Time a, double seconds);
-Time   operator+(double seconds, Time a);
-Time   operator-(Time a, double secs);
-Time&  operator+=(Time& a, double secs);
-Time&  operator-=(Time& a, double secs);
+int64  operator-(Time a, Time b);
+Time   operator+(Time a, int64 seconds);
+Time   operator+(int64 seconds, Time a);
+Time   operator-(Time a, int64 secs);
+Time&  operator+=(Time& a, int64 secs);
+Time&  operator-=(Time& a, int64 secs);
 
-inline Time   operator+(Time a, int i)   { return a +  double(i); }
-inline Time   operator-(Time a, int i)   { return a -  double(i); }
-inline Time&  operator+=(Time& a, int i) { return a += double(i); }
-inline Time&  operator-=(Time& a, int i) { return a -= double(i); }
+inline Time   operator+(Time a, int i)   { return a +  int64(i); }
+inline Time   operator-(Time a, int i)   { return a -  int64(i); }
+inline Time&  operator+=(Time& a, int i) { return a += int64(i); }
+inline Time&  operator-=(Time& a, int i) { return a -= int64(i); }
+
+inline Time   operator+(Time a, double i)   { return a +  int64(i); }
+inline Time   operator-(Time a, double i)   { return a -  int64(i); }
+inline Time&  operator+=(Time& a, double i) { return a += int64(i); }
+inline Time&  operator-=(Time& a, double i) { return a -= int64(i); }
 
 Time  GetSysTime();
 

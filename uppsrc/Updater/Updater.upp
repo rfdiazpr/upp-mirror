@@ -1,3 +1,5 @@
+description "Utility for U++ enterprise application update system";
+
 uses
 	CtrlLib;
 

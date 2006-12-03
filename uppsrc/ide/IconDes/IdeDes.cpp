@@ -1,17 +1,20 @@
 #include "IconDes.h"
 
+#include <plugin/bmp/bmp.h>
+#include <plugin/png/png.h>
+
 bool IdeIconDes::Load(const char *_filename)
 {
 	Clear();
 	filename = _filename;
 	filetime = FileGetTime(filename);
-	VectorMap<String, Image> m;
+	Array<ImlImage> m;
 	int f;
 	if(!LoadIml(LoadFile(filename), m, f))
 		return false;
 	format = f;
 	for(int i = 0; i < m.GetCount(); i++)
-		AddImage(m.GetKey(i), m[i]);
+		AddImage(m[i].name, m[i].image, m[i].exp);
 	return true;
 }
 
@@ -34,12 +37,25 @@ void IdeIconDes::Save()
 		}
 	}
 	StoreToGlobal(*this, "icondes-ctrl");
-	VectorMap<String, Image> m;
-	for(int i = 0; i < GetCount(); i++)
-		m.Add(GetName(i), GetImage(i));
+	Array<ImlImage> m;
+	VectorMap<Size, Image> exp;
+	String folder = GetFileFolder(filename);
+	for(int i = 0; i < GetCount(); i++) {
+		ImlImage& c = m.Add();
+		c.name = GetName(i);
+		c.image = GetImage(i);
+		c.exp = GetExport(i);
+		if(c.exp) {
+			Size sz = c.image.GetSize();
+			exp.GetAdd(sz) = c.image;
+			PNGEncoder png;
+			png.SaveFile(AppendFileName(folder, String().Cat() << "icon" << sz.cx << 'x' << sz.cy << ".png"), c.image);
+		}
+	}
 	if(!SaveChangedFileFinish(filename, SaveIml(m, format)))
 		return;
 	filetime = FileGetTime(filename);
+	SaveFile(AppendFileName(folder, "icon.ico"), WriteIcon(exp.GetValues()));
 }
 
 void IdeIconDes::ToolEx(Bar& bar)

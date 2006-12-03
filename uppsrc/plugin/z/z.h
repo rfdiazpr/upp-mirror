@@ -1,5 +1,6 @@
-#ifndef __Plugin_Z__
-#define __Plugin_Z__
+#ifndef _plugin_z_z_h_
+#define _plugin_z_z_h_
 
+// empty - moved to Core
 
-#endif//__Plugin_Z__
+#endif

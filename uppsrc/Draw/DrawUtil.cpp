@@ -51,7 +51,7 @@ Vector<Rect> Subtract(const Vector<Rect>& rr, const Rect& sub, bool& changed)
 
 void Subtract(Vector<Rect>& rr, const Rect& sub)
 {
-	TIMING("Subtract");
+	LTIMING("Subtract");
 	if(sub.IsEmpty())
 		return;
 	bool dummy;
@@ -60,7 +60,7 @@ void Subtract(Vector<Rect>& rr, const Rect& sub)
 
 void Union(Vector<Rect>& rr, const Rect& add)
 {
-	TIMING("Union");
+	LTIMING("Union");
 	if(add.IsEmpty())
 		return;
 	Vector<Rect> r;
@@ -268,22 +268,6 @@ void DrawRectMinusRect(Draw& w, const Rect& rect, const Rect& inner, Color color
 	r = rect;
 	r.top = inner.bottom;
 	w.DrawRect(r, color);
-}
-
-void DrawFocus(Draw& w, int x, int y, int cx, int cy, Color color) {
-	DrawFrame(w, x, y, cx, cy, color);
-}
-
-void DrawFocus(Draw& w, const Rect& r, Color color) {
-	DrawFocus(w, r.top, r.left, r.Width(), r.Height(), color);
-}
-
-void DrawFocus(Draw& w, int x, int y, int cx, int cy) {
-	DrawFrame(w, x, y, cx, cy, SColorShadow, SColorShadow);
-}
-
-void DrawFocus(Draw& w, const Rect& r) {
-	DrawFrame(w, r, SColorShadow, SColorShadow);
 }
 
 void DrawRect(Draw& w, int x, int y, int cx, int cy, const Image& img, bool ra) {

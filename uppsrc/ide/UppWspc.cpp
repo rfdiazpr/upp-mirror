@@ -117,7 +117,7 @@ void WorkspaceWork::LoadActualPackage()
 		if(f.separator) {
 			open = closed.Find(Sepfo(actualpackage, f)) < 0;
 			filelist.Add(f, open ? IdeImg::SeparatorClose() : IdeImg::SeparatorOpen(),
-			             ListFont().Bold(), open ? SColorHighlight : SColorText, true, 0, Null);
+			             ListFont().Bold(), open ? SColorMark : SColorText, true, 0, Null);
 			fileindex.Add(i);
 		}
 		else

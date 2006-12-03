@@ -92,6 +92,9 @@ public:
 
 class RichTextCtrl : public RichTextView {
 public:
+	virtual void  SetData(const Value& v);
+
+public:
 	void            SetQTF(const char *qtf, Zoom z = GetRichTextStdScreenZoom()) { RichTextView::SetQTF(qtf, z, true); }
 	void            operator=(const char *qtf)                                   { SetQTF(qtf); }
 	RichTextCtrl();

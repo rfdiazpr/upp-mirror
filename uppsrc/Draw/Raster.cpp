@@ -121,7 +121,6 @@ MemoryRaster::MemoryRaster()
 
 void MemoryRaster::Load(Raster& raster)
 {
-	RTIMING("MemoryRaster::Load");
 	info = raster.GetInfo();
 	size = raster.GetSize();
 	palette.SetCount(raster.GetPaletteCount());

@@ -1,3 +1,5 @@
+description "GUI core system";
+
 uses
 	Draw;
 

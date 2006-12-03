@@ -570,7 +570,7 @@ RichEdit::RichEdit()
 
 	undosteps = 500;
 
-	AddFrame(FieldFrame());
+	AddFrame(ViewFrame());
 	AddFrame(ruler);
 	AddFrame(sb);
 	RefreshBar();

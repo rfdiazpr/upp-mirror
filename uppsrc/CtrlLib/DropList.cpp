@@ -234,7 +234,7 @@ bool DropList::Key(dword k, int) {
 	default:
 		if(k >= 32 && k < 256) {
 			bool b = list.Key(k, 1);
-			if(list.GetCursor() >= 0 && list.GetCount() < key.GetCount() && key[list.GetCursor()] != value)
+			if(list.GetCursor() >= 0 && list.GetCursor() < key.GetCount() && key[list.GetCursor()] != value)
 				Select();
 			return b;
 		}

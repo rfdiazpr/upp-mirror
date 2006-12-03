@@ -1,3 +1,5 @@
+description "The source files edit, derived from CtrlLib's LineEdit";
+
 optimize_speed;
 
 uses

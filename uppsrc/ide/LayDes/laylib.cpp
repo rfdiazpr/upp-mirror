@@ -11,7 +11,7 @@ struct ImlImageMaker : ImageMaker {
 		Vector<String> s = Split(id, ':');
 		if(s.GetCount() != 3)
 			return LayImg::ImageError();
-		VectorMap<String, Image> iml;
+		Array<ImlImage> iml;
 		int f;
 		LoadIml(LoadFile(SourcePath(s[0], s[1])), iml, f);
 		bool recolor = false;
@@ -19,7 +19,12 @@ struct ImlImageMaker : ImageMaker {
 			s[2].Trim(s[2].GetLength() - 1);
 			recolor = true;
 		}
-		Image m = iml.Get(s[2], LayImg::ImageError());
+		Image m = LayImg::ImageError();
+		for(int i = 0; i < iml.GetCount(); i++)
+			if(iml[i].name == s[2]) {
+				m = iml[i].image;
+				break;
+			}
 		return recolor ? AdjustColors(m) : m;
 	}
 };
@@ -326,15 +331,29 @@ void EscDraw::DrawText(EscEscape& e)
 		e.ThrowError("wrong number of arguments in call to 'DrawText'");
 	int x = e.Int(0);
 	int y = e.Int(1);
-	e.CheckArray(2);
-	WString text = e[2];
 	Font font = StdFont();
-	if(e.GetCount() > 3)
-		font = FontEsc(e[3]);
 	Color color = SColorText;
-	if(e.GetCount() > 4)
-		color = ColorEsc(e[4]);
-	w.DrawText(x, y, text, Nvl(font, StdFont()), color);
+	if(e[2].IsInt())
+	{
+		int z = e.Int(2);
+		e.CheckArray(3);
+		WString text = e[3];
+		if(e.GetCount() > 4)
+			font = FontEsc(e[4]);
+		if(e.GetCount() > 5)
+			color = ColorEsc(e[5]);
+		w.DrawText(x, y, z, text, Nvl(font, StdFont()), color);
+	}
+	else
+	{
+		e.CheckArray(2);
+		WString text = e[2];
+		if(e.GetCount() > 3)
+			font = FontEsc(e[3]);
+		if(e.GetCount() > 4)
+			color = ColorEsc(e[4]);
+		w.DrawText(x, y, text, Nvl(font, StdFont()), color);
+	}
 }
 
 void EscDraw::DrawSmartText(EscEscape& e)

@@ -12,6 +12,7 @@ void AttrText::Init()
 	ink = Null;
 	paper = Null;
 	font = Null;
+	align = Null;
 }
 
 AttrText::AttrText(const char *_text)
@@ -43,11 +44,38 @@ void Display::PaintBackground(Draw& w, const Rect& r, const Value& q,
 	w.DrawRect(r, paper);
 }
 
-void Display::Paint(Draw& w, const Rect& r, const Value& q,
+void Display::Paint(Draw& w, const Rect& r, const Value& q, Color ink, Color paper, dword style) const
+{
+	StdDisplay().Paint(w, r, q, ink, paper, style);
+}
+
+Size Display::RatioSize(const Value& q, int cx, int cy) const {
+	return Size(cx, cy);
+}
+
+Size Display::GetStdSize(const Value& q) const
+{
+	return Size(8, 8);
+}
+
+class StdDisplayClass : public Display
+{
+public:
+	StdDisplayClass(int align = ALIGN_LEFT) : align(align) {}
+
+	virtual void Paint(Draw& draw, const Rect& rc, const Value& v, Color ink, Color paper, dword style) const;
+	virtual Size GetStdSize(const Value& q) const;
+
+private:
+	int    align;
+};
+
+void StdDisplayClass::Paint(Draw& w, const Rect& r, const Value& q,
                     Color ink, Color paper, dword s) const {
 	LLOG("Display::Paint: " << q << " ink:" << ink << " paper:" << paper);
 	WString txt;
 	Font font = StdFont();
+	int a = align;
 	if(IsType<AttrText>(q)) {
 		const AttrText& t = ValueTo<AttrText>(q);
 		txt = t.text;
@@ -57,21 +85,24 @@ void Display::Paint(Draw& w, const Rect& r, const Value& q,
 			ink = t.ink;
 		if(!IsNull(t.font))
 			font = t.font;
+		if(!IsNull(t.align))
+			a = t.align;
 	}
 	else
 		txt = IsString(q) ? q : StdConvert().Format(q);
+	int x = r.left;
+	if(a == ALIGN_RIGHT)
+		x = r.right - GetStdSize(q).cx;
+	if(a == ALIGN_CENTER)
+		x += (r.Width() - GetStdSize(q).cx) / 2;
 	PaintBackground(w, r, q, ink, paper, s);
 	int tcy = GetTLTextHeight(w, txt, font);
-	DrawTLText(w, r.left, r.top + max((r.Height() - tcy) / 2, 0), r.Width(), txt, font, ink);
+	DrawTLText(w, x, r.top + max((r.Height() - tcy) / 2, 0), r.Width(), txt, font, ink);
 }
 
-Size Display::GetStdSize(const Value& q) const
+Size StdDisplayClass::GetStdSize(const Value& q) const
 {
 	return GetTLTextSize(ScreenInfo(), WString(IsString(q) ? q : StdConvert().Format(q)), StdFont());
-}
-
-Size Display::RatioSize(const Value& q, int cx, int cy) const {
-	return Size(cx, cy);
 }
 
 #ifdef flagSO
@@ -80,7 +111,9 @@ Display::Display() {}
 
 Display::~Display() {}
 
-GLOBAL_VAR(const Display, StdDisplay)
+const Display& GLOBAL_V(StdDisplayClass, StdDisplay)
+const Display& GLOBAL_VP(StdDisplayClass, StdCenterDisplay, (ALIGN_CENTER))
+const Display& GLOBAL_VP(StdDisplayClass, StdRightDisplay, (ALIGN_RIGHT))
 
 #ifdef flagSO
 ColorDisplayNull::ColorDisplayNull(String nulltext) : nulltext(nulltext) {}
@@ -91,7 +124,7 @@ void  ColorDisplayNull::Paint(Draw& w, const Rect& r, const Value& q,
 							 Color ink, Color paper, dword style) const
 {
 	if(IsNull(q))
-		Display::Paint(w, r, nulltext, ink, paper, style);
+		PaintBackground(w, r, q, ink, paper, style);
 	else
 		w.DrawRect(r, Color(q));
 }

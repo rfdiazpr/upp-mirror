@@ -21,7 +21,7 @@ void IdeQuickTabs::PaintTab(Draw& w, int x, int y, int cx, int cy, Color paper, 
 	w.DrawRect(x + 1, y + 2, cx - 2, 1, top);
 	w.DrawRect(x + 2, y + 1, cx - 4, 1, top);
 	w.DrawRect(x + 2, y, cx - 6, 1, top);
-	Color fc = Blend(SColorHighlight, SColorShadow);
+	Color fc = FieldFrameColor();
 	w.DrawRect(x + 0, y + 2, 1, cy - 2, fc);
 	w.DrawRect(x + 1, y + 1, 1, 1, fc);
 	w.DrawRect(x + 2, y, cx - 4, 1, fc);

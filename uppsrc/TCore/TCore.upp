@@ -1,3 +1,5 @@
+description "Experimental (sometimes obsolete) non-GUI code";
+
 charset "windows-1250";
 
 uses

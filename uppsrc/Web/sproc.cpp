@@ -256,22 +256,14 @@ void LocalSlaveProcess::Open(const char *command, const char *envptr) {
 #endif//DO_SVRLOG
 
 	SVRLOG("running execve, app = " << app << ", #args = " << args.GetCount());
-	String envstrlist;
-	const VectorMap<String, String>& env = Environment();
-	int e;
-	for(e = 0; e < env.GetCount(); e++)
-		envstrlist << env.GetKey(e) << '=' << env[e] << '\0';
-	int len = envstrlist.GetLength() + 1;
-	Buffer<char> charbuf(len);
-	memcpy(charbuf, envstrlist, len);
-	Vector<char *> envlist;
-	envlist.SetCount(env.GetCount() + 1);
-	int offset = 0;
-	for(e = 0; e < env.GetCount(); e++)
-		offset += strlen(envlist[e] = &charbuf[offset]) + 1;
-	envlist[env.GetCount()] = 0;
-
-	execve(app_full, args.Begin(), envlist.Begin());
+	const char *from = envptr;
+	Vector<const char *> env;
+	while(*from) {
+		env.Add(from);
+		from += strlen(from) + 1;
+	}
+	env.Add(NULL);
+	execve(app_full, args.Begin(), (char *const *)env.Begin());
 	SVRLOG("execve failed, errno = " << errno);
 	printf("Error running '%s', error code %d\n", command, errno);
 	exit(-errno);

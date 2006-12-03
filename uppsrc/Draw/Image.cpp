@@ -307,6 +307,7 @@ Image::Data::Data(ImageBuffer& b)
 :	buffer(b)
 {
 	paintcount = 0;
+	paintonly = false;
 	refcount = 1;
 	INTERLOCKED {
 		static int64 gserial;
@@ -321,6 +322,21 @@ Image::Data::~Data()
 		SysRelease();
 		Unlink();
 	}
+}
+
+void Image::Data::PaintOnlyShrink()
+{
+	if(paintonly) {
+		DropPixels___(buffer);
+		ResCount -= GetResCount();
+		Unlink();
+	}
+}
+
+void SetPaintOnly___(Image& m)
+{
+	if(m.data && m.data->refcount == 1)
+		m.data->paintonly = true;
 }
 
 void Iml::Init(int n)

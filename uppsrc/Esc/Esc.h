@@ -20,7 +20,7 @@ class EscValue : Moveable<EscValue> {
 
 	int              type;
 	mutable unsigned hash;
-	
+
 	struct EscMap;
 	struct EscArray;
 
@@ -38,7 +38,7 @@ class EscValue : Moveable<EscValue> {
 	Vector<EscValue>&     CloneArray();
 
 	VectorMap<EscValue, EscValue>& CloneMap();
-	
+
 	static int             total;
 	static int             max_total;
 
@@ -65,7 +65,7 @@ public:
 	void                    SetEmptyArray();
 	void                    ArrayAdd(EscValue val);
 	bool                    Append(EscValue a);
-	
+
 	operator WString() const;
 	operator String() const                     { return operator WString().ToString(); }
 
@@ -119,7 +119,7 @@ struct EscValue::EscMap : EscValue::RefCount {
 
 	void     Retain()        { AtomicInc(refcount); }
 	void     Release()       { if(AtomicDec(refcount) == 0) delete this; }
-	
+
 	EscMap()                 { count = 0; }
 };
 
@@ -203,12 +203,12 @@ struct Esc : public CParser {
 	double     DoCompare(const SRVal& a, const char *op);
 	String     ReadName();
 	EscValue   ExecuteLambda(const String& id, EscValue lambda, SRVal self, Vector<SRVal>& arg);
-	                    
+
 	void       Assign(EscValue& val, const Vector<EscValue>& sbs, int si, const EscValue& src);
 
 	EscValue   Get(const SRVal& val);
 	void       Assign(const SRVal& val, const EscValue& src);
-	
+
 	EscValue   GetExp();
 
 	double Number(const EscValue& a, const char *oper);
@@ -271,7 +271,7 @@ struct EscEscape {
 	void         CheckNumber(int i);
 	void         CheckArray(int i);
 	void         CheckMap(int i);
-	
+
 	double       Number(int i);
 	int          Int(int i);
 
@@ -302,6 +302,7 @@ void     StdValueLib(ArrayMap<String, EscValue>& global);
 bool     IsDate(const EscValue& v);
 bool     IsTime(const EscValue& v);
 
-String   Expand(const String& doc, ArrayMap<String, EscValue>& global, int oplimit = 50000);
+String   Expand(const String& doc, ArrayMap<String, EscValue>& global,
+                int oplimit = 50000, String (*format)(const Value& v) = StdFormat);
 
 #endif

@@ -233,7 +233,8 @@ EscValue Evaluate(const char *expression, ArrayMap<String, EscValue>& global, in
 	return EscValue();
 }
 
-String   Expand(const String& doc, ArrayMap<String, EscValue>& global, int oplimit)
+String   Expand(const String& doc, ArrayMap<String, EscValue>& global,
+                int oplimit, String (*format)(const Value& v))
 {
 	String out;
 	const char *term = doc;
@@ -267,7 +268,7 @@ String   Expand(const String& doc, ArrayMap<String, EscValue>& global, int oplim
 				else
 					v = sub.GetExp();
 				if(cond)
-					out << StdFormat(StdValueFromEsc(v));
+					out << format(StdValueFromEsc(v));
 				sub.Spaces();
 				term = sub.GetPtr();
 				if(term[0] != ':' || term[1] != '>')

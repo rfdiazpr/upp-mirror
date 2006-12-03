@@ -447,7 +447,6 @@ static void putContig1(TIFFRGBAImage *img, tif_uint32 *cp,
 	tif_uint32 x, tif_uint32 y, tif_uint32 w, tif_uint32 h,
 	tif_int32 fromskew, tif_int32 toskew, byte *pp)
 {
-	RTIMING("PutContig1");
 	TIFRaster::Data *helper = (TIFRaster::Data *)img;
 	Size size = helper->size;
 	int iw = toskew + w;
@@ -468,7 +467,6 @@ static void putContig4(TIFFRGBAImage *img, tif_uint32 *cp,
 	tif_uint32 x, tif_uint32 y, tif_uint32 w, tif_uint32 h,
 	tif_int32 fromskew, tif_int32 toskew, byte *pp)
 {
-	RTIMING("putContig4");
 	TIFRaster::Data *helper = (TIFRaster::Data *)img;
 	Size size = helper->size; //dest.GetSize();
 	int iw = toskew + w;
@@ -490,7 +488,6 @@ static void putContig8(TIFFRGBAImage *img, tif_uint32 *cp,
 	tif_uint32 x, tif_uint32 y, tif_uint32 w, tif_uint32 h,
 	tif_int32 fromskew, tif_int32 toskew, byte *pp)
 {
-	RTIMING("PutContig8");
 	TIFRaster::Data *helper = (TIFRaster::Data *)img;
 	Size size = helper->size;
 	int iw = toskew + w;
@@ -507,7 +504,6 @@ static void putContig8(TIFFRGBAImage *img, tif_uint32 *cp,
 static void putContigRGB(TIFFRGBAImage *img, tif_uint32 *cp, tif_uint32 x, tif_uint32 y, tif_uint32 w, tif_uint32 h,
 	tif_int32 fromskew, tif_int32 toskew, byte *pp)
 {
-	RTIMING("PutContigRGB");
 	TIFRaster::Data *helper = (TIFRaster::Data *)img;
 	Size size = helper->size;
 	int iw = toskew + w;
@@ -543,7 +539,6 @@ byte *TIFRaster::Data::MapUp(int x, int y, int count, bool read)
 
 byte *TIFRaster::Data::MapDown(int x, int y, int count, bool read)
 {
-	RTIMING("MapDown");
 	if(!imagebuf.IsEmpty())
 		return &imagebuf[row_bytes * y] + x;
 	else {
@@ -613,7 +608,6 @@ void TIFRaster::Data::Error(const char *fn, const char *fmt, va_list ap)
 
 tsize_t TIFRaster::Data::ReadStream(thandle_t fd, tdata_t buf, tsize_t size)
 {
-	RTIMING("TIFRaster::Data::TIFRaster::Data");
 	Data& wrapper = *reinterpret_cast<Data *>(fd);
 	ASSERT(wrapper.stream.IsOpen());
 //	RLOG("TiffStream::TIFRaster::Data & " << (int)wrapper.stream.GetPos() << ", count = " << size
@@ -629,7 +623,6 @@ tsize_t TIFRaster::Data::WriteStream(thandle_t fd, tdata_t buf, tsize_t size)
 
 toff_t TIFRaster::Data::SeekStream(thandle_t fd, toff_t off, int whence)
 {
-	RTIMING("TIFRaster::Data::SeekStream");
 	Data& wrapper = *reinterpret_cast<Data *>(fd);
 	ASSERT(wrapper.stream.IsOpen());
 	toff_t size = (toff_t)wrapper.stream.GetSize();
@@ -898,7 +891,6 @@ TIFEncoder::Data::~Data()
 
 tsize_t TIFEncoder::Data::ReadStream(thandle_t fd, tdata_t buf, tsize_t size)
 {
-	RTIMING("TIFEncoder::Data::ReadStream");
 	Data& wrapper = *reinterpret_cast<Data *>(fd);
 	ASSERT(wrapper.stream.IsOpen());
 //	RLOG("TiffStream::ReadStream & " << (int)wrapper.stream.GetPos() << ", count = " << size
@@ -919,7 +911,6 @@ tsize_t TIFEncoder::Data::WriteStream(thandle_t fd, tdata_t buf, tsize_t size)
 
 toff_t TIFEncoder::Data::SeekStream(thandle_t fd, toff_t off, int whence)
 {
-	RTIMING("TIFRaster::Data::SeekStream");
 	Data& wrapper = *reinterpret_cast<Data *>(fd);
 	ASSERT(wrapper.stream.IsOpen());
 	toff_t size = (toff_t)wrapper.stream.GetSize();

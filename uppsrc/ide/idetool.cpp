@@ -259,8 +259,8 @@ void Ide::Times()
 	statdlg.SetTimeCallback(-1000, statdlg.Breaker(IDRETRY), 50);
 	do
 	{
-		double session_time = GetSysTime() - start_time;
-		double idle_time = session_time - editor.GetStatEditTime() - stat_build_time;
+		int session_time = int(GetSysTime() - start_time);
+		int idle_time = int(session_time - editor.GetStatEditTime() - stat_build_time);
 		statdlg.session_time <<= FormatElapsedTime(session_time);
 		statdlg.edit_time    <<= FormatElapsedTime(editor.GetStatEditTime());
 		statdlg.build_time   <<= FormatElapsedTime(stat_build_time);

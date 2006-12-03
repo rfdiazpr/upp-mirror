@@ -1,3 +1,5 @@
+description "TheIDE main package";
+
 uses
 	ide\Common,
 	ide\LayDes,

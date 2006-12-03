@@ -1,3 +1,5 @@
+description "Widget to display hexadecimal dumps (e.g. memory in debugger)";
+
 uses
 	CtrlLib;
 

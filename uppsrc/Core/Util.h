@@ -193,6 +193,10 @@ int            fround(double x);
 int            ffloor(double x);
 int            fceil(double x);
 
+int64          fround64(double x);
+int64          ffloor64(double x);
+int64          fceil64(double x);
+
 String         AsString(double x, int nDigits);
 double         modulo(double x, double y);
 

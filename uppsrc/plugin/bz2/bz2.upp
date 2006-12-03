@@ -1,3 +1,5 @@
+description "BZ2 compressor/decompressor";
+
 uses
 	Core;
 

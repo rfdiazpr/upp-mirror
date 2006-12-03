@@ -168,9 +168,6 @@ GUI_APP_MAIN
 //	SetDefaultCharset(CHARSET_WIN1250);
 //	Draw::XLFDArialFont = "-*-helvetica-*-*-*-*-*-*-*-*-*-*-*-*";
 //	Draw::SetStdFont(Arial(12));
-#ifdef PLATFORM_POSIX
-	SetExeTitle("SqlCommander");
-#endif
 	SqlCommanderApp().Run();
 }
 #endif//flagMAIN

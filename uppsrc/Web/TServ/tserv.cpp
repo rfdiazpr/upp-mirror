@@ -745,10 +745,6 @@ void TryMain()
 	bool stop = false;
 	int port = -1;
 
-#ifdef PLATFORM_POSIX
-	SetExeTitle("tserv");
-#endif
-
 	CommandServer server;
 	Vector<String> cmdline;
 	cmdline <<= CommandLine();

@@ -15,7 +15,7 @@ bool NoUpdate(const char *dsf, const char *srf, int& len) {
 	if(!src) return true;
 	len = (int)src.GetLength();
 	if(!dst) return false;
-	return fabs(FileTimeToTime(dst.GetLastWriteTime()) - FileTimeToTime(src.GetLastWriteTime()))
+	return abs(FileTimeToTime(dst.GetLastWriteTime()) - FileTimeToTime(src.GetLastWriteTime()))
 		    < 100 && len == dst.GetLength();
 }
 

@@ -47,10 +47,11 @@ void AlphaImageInfo::Serialize(Stream& stream)
 		stream % size % hotspot % encoding;
 }
 
-void ScanIML(CParser& parser, ArrayMap<String, Image>& out_images,
+void ScanIML(CParser& parser, Array<ImlImage>& out_images,
              VectorMap<String, String>& out_settings)
 {
 	String name, bid;
+	bool exp = false;
 	while(!parser.IsEof())
 	{
 		if((bid = parser.ReadId()) == "IMAGE_META" && parser.Char('(') && !IsNull(name = parser.ReadId()))
@@ -59,6 +60,8 @@ void ScanIML(CParser& parser, ArrayMap<String, Image>& out_images,
 			String value = parser.ReadString();
 			parser.PassChar(')');
 			out_settings.Add(name, value);
+			if(value == "exp")
+				exp = true;
 		}
 		else if(bid == "IMAGE_BEGIN" && parser.Char('(') && !IsNull(name = parser.ReadId()) && parser.Char(')'))
 		{
@@ -113,7 +116,11 @@ void ScanIML(CParser& parser, ArrayMap<String, Image>& out_images,
 				ImageBuffer ib(m);
 				ib.SetHotSpot(image.hotspot);
 				m = ib;
-				out_images.Add(name, m);
+				ImlImage& c = out_images.Add();
+				c.name = name;
+				c.image = m;
+				c.exp = exp;
+				exp = false;
 			}
 		}
 		else if(bid == "IMAGE_BEGIN16" && parser.Char('(') && !IsNull(name = parser.ReadId()) && parser.Char(')'))
@@ -162,7 +169,11 @@ void ScanIML(CParser& parser, ArrayMap<String, Image>& out_images,
 				ImageBuffer ib(m);
 				ib.SetHotSpot(idata.hotspot);
 				m = ib;
-				out_images.Add(name, m);
+				ImlImage& c = out_images.Add();
+				c.name = name;
+				c.image = m;
+				c.exp = exp;
+				exp = false;
 			}
 		}
 		else
@@ -170,12 +181,13 @@ void ScanIML(CParser& parser, ArrayMap<String, Image>& out_images,
 	}
 }
 
-bool LoadIml(const String& data, VectorMap<String, Image>& img, int& format)
+bool LoadIml(const String& data, Array<ImlImage>& img, int& format)
 {
 	CParser p(data);
 	format = 0;
 	try {
 		Vector<String> name;
+		Vector<bool> exp;
 		while(p.Id("IMAGE_ID")) {
 			p.PassChar('(');
 			String n = p.ReadId();
@@ -183,6 +195,13 @@ bool LoadIml(const String& data, VectorMap<String, Image>& img, int& format)
 				n = Null;
 			name.Add(n);
 			p.PassChar(')');
+			bool e = false;
+			if(p.Id("IMAGE_META")) {
+				p.PassChar('(');
+				e = p.ReadString() == "exp";
+				p.PassChar(')');
+			}
+			exp.Add(e);
 		}
 		int ii = 0;
 		while(p.Id("IMAGE_BEGIN_DATA")) {
@@ -206,8 +225,12 @@ bool LoadIml(const String& data, VectorMap<String, Image>& img, int& format)
 			Vector<Image> m = UnpackImlData(data);
 			if(m.GetCount() != count || ii + count > name.GetCount())
 				p.ThrowError("");
-			for(int i = 0; i < count; i++)
-				img.Add(name[ii++], m[i]);
+			for(int i = 0; i < count; i++) {
+				ImlImage& c = img.Add();
+				c.name = name[ii];
+				c.exp = exp[ii++];
+				c.image = m[i];
+			}
 		}
 		if(!p.IsEof())
 			p.ThrowError("");
@@ -215,13 +238,11 @@ bool LoadIml(const String& data, VectorMap<String, Image>& img, int& format)
 	catch(CParser::Error) {
 		try {
 			CParser p(data);
-			ArrayMap<String, Image> m;
+			Array<ImlImage> m;
 			VectorMap<String, String> s;
-			ScanIML(p, m, s);
-			if(m.GetCount())
+			ScanIML(p, img, s);
+			if(img.GetCount())
 				format = 1;
-			for(int i = 0; i < m.GetCount(); i++)
-				img.Add(m.GetKey(i), m[i]);
 		}
 		catch(...) {
 			return false;
@@ -257,14 +278,17 @@ static void PutOctalString(Stream& out, const String& s, bool split = false)
 	PutOctalString(out, s.Begin(), s.End(), split);
 }
 
-String SaveIml(const VectorMap<String, Image>& iml, int format) {
+String SaveIml(const Array<ImlImage>& iml, int format) {
 	StringStream out;
 	if(format == 1) {
 		for(int i = 0; i < iml.GetCount(); i++) {
-			String name = iml.GetKey(i);
+			const ImlImage& c = iml[i];
+			if(c.exp)
+				out.PutLine("IMAGE_META(\"exp\")");
+			String name = c.name;
+			Image buffer = c.image;
 			if(IsNull(name))
 				name = "im__" + IntStr(i);
-			Image buffer = iml[i];
 			out.PutLine(NFormat("IMAGE_BEGIN(%s)", name));
 			int last = 0;
 			for(int i = 0; i < buffer.GetHeight(); i++) {
@@ -296,17 +320,22 @@ String SaveIml(const VectorMap<String, Image>& iml, int format) {
 		}
 	}
 	else {
-		for(int i = 0; i < iml.GetCount(); i++)
-			out << "IMAGE_ID(" << iml.GetKey(i) << ")\r\n";
+		for(int i = 0; i < iml.GetCount(); i++) {
+			const ImlImage& c = iml[i];
+			out << "IMAGE_ID(" << c.name << ")";
+			if(c.exp)
+				out.PutLine(" IMAGE_META(\"exp\")");
+			out << "\r\n";
+		}
 		int ii = 0;
 		while(ii < iml.GetCount()) {
 			int bl = 0;
 			int bn = 0;
 			Vector<Image> bimg;
 			while(bl < 4096 && ii < iml.GetCount()) {
-				Image img = iml[ii++];
-				bimg.Add(img);
-				bl += img.GetLength();
+				const ImlImage& c = iml[ii++];
+				bimg.Add(c.image);
+				bl += c.image.GetLength();
 				bn++;
 			}
 			String bs = PackImlData(bimg);

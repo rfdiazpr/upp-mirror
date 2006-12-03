@@ -827,16 +827,18 @@ Image VectorObject::Cursor(int track, dword keyflags) const
 		switch(track & TRACK_RECT_SIDES) {
 			case TRACK_RECT_LEFT:
 			case TRACK_RECT_RIGHT:
-				return CtrlImg::SizeHorz0();
+				return Image::SizeHorz();
 			case TRACK_RECT_TOP:
 			case TRACK_RECT_BOTTOM:
-				return CtrlImg::SizeVert0();
+				return Image::SizeVert();
 			case TRACK_RECT_LEFT | TRACK_RECT_TOP:
+				return Image::SizeTopLeft();
 			case TRACK_RECT_RIGHT | TRACK_RECT_BOTTOM:
-				return CtrlImg::SizeHoVe0();
+				return Image::SizeBottomRight();
 			case TRACK_RECT_LEFT | TRACK_RECT_BOTTOM:
+				return Image::SizeBottomLeft();
 			case TRACK_RECT_RIGHT | TRACK_RECT_TOP:
-				return CtrlImg::SizeVeHo0();
+				return Image::SizeTopRight();
 		}
 	}
 
@@ -1178,9 +1180,9 @@ Image VectorImage::Cursor(Point track, dword keyflags) const
 	switch((track.y & VectorObject::TRACK_MASK)) {
 		case VectorObject::TRACK_IMAGE_SIZE: {
 			switch(track.y >> VectorObject::INDEX_SHIFT) {
-				case 1: return CtrlImg::SizeHorz0();
-				case 2: return CtrlImg::SizeVert0();
-				case 3: return CtrlImg::SizeHoVe0();
+				case 1: return Image::SizeHorz();
+				case 2: return Image::SizeVert();
+				case 3: return Image::SizeBottomRight();
 			}
 			break;
 		}

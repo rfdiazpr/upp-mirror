@@ -39,6 +39,7 @@ private:
 
 	bool           renaming;
 	bool           justname;
+	bool           accelkey;
 
 	void        UpdateSelect();
 	void        Update();
@@ -83,6 +84,7 @@ public:
 	int         GetIconWidth() const                 { return iconwidth; }
 	FileList&   Renaming(bool b = true)              { renaming = b; return *this; }
 	FileList&   JustName()                           { justname = true; return *this; }
+	FileList&   NoAccelKey()                         { accelkey = false; return *this; }
 
 	typedef FileList CLASSNAME;
 

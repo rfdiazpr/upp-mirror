@@ -112,7 +112,6 @@ void PreMultiplyAlpha(RGBA *t, const RGBA *s, int len)
 
 void AlphaBlendOpaque(RGBA *t, const RGBA *s, int len)
 {
-	RTIMING("Opaque");
 	const RGBA *e = s + len;
 	while(s < e) {
 		int alpha = s->a + (s->a >> 7);
@@ -166,7 +165,6 @@ sBlends *sblends;
 void sOnceInitBlends()
 {
 	ONCELOCK {
-		RTIMING("InitBlends");
 		sblends = (sBlends *)MemoryAllocPermanent(256 * 256 * sizeof(sBlends));
 		for(int Fa = 0; Fa <= 255; Fa++)
 			for(int Ba = 0; Ba <= 255; Ba++) {
@@ -186,7 +184,6 @@ inline void sInitBlends()
 
 void AlphaBlend(RGBA *b, const RGBA *f, int len)
 {
-	RTIMING("Full");
 	sInitBlends();
 	const RGBA *e = f + len;
 	while(f < e) {

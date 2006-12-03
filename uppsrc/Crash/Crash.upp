@@ -1,3 +1,5 @@
+description "Utility to examine content of .crash and .map files";
+
 uses
 	CtrlLib;
 

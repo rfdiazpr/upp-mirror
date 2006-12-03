@@ -160,7 +160,7 @@ void Draw::InitPlatformFonts() {
 	ncm.cbSize = sizeof(ncm);
 	::SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(ncm), &ncm, 0);
 	SetStdFont(Font(Font::FindFaceNameIndex(ncm.lfMenuFont.lfFaceName),
-	                abs(ncm.lfMenuFont.lfHeight)));
+	                abs((int)ncm.lfMenuFont.lfHeight)));
 #endif
 }
 

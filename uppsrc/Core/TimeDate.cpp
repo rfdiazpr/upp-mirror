@@ -340,31 +340,35 @@ bool operator<(Time a, Time b) {
 	return a.second < b.second;
 }
 
-double operator-(Time a, Time b) {
-	return double(Date(a) - Date(b)) * (24 * 3600) +
-		   (a.hour * 3600 + a.minute * 60 + a.second) -
-		   (b.hour * 3600 + b.minute * 60 + b.second);
+void Time::Set(int64 scalar)
+{
+	int q = (int)(scalar / (24 * 3600));
+	Date::Set(q);
+	int n = int(scalar - (int64)q * 24 * 3600);
+	hour = n / 3600;
+	n %= 3600;
+	minute = n / 60;
+	second = n % 60;
 }
 
-Time operator+(Time time, double secs) {
-	Date date = Date(time);
-	secs += time.hour * 3600 + time.minute * 60 + time.second;
-	int n = ffloor(secs / (24 * 3600));
-	date += n;
-	secs = secs - (double) n * 24 * 3600;
-	n = int(secs);
-	time = ToTime(date);
-	time.hour = n / 3600;
-	n %= 3600;
-	time.minute = n / 60;
-	time.second = n % 60;
+int64 Time::Get()
+{
+	return Date::Get() * (int64)24 * 3600 + hour * 3600 + minute * 60 + second;
+}
+
+int64 operator-(Time a, Time b) {
+	return a.Get() - b.Get();
+}
+
+Time operator+(Time time, int64 secs) {
+	time.Set(time.Get() + secs);
 	return time;
 }
 
-Time  operator+(double seconds, Time a)          { return a + seconds; }
-Time  operator-(Time a, double secs)             { return a + (-secs); }
-Time& operator+=(Time& a, double secs)           { a = a + secs; return a; }
-Time& operator-=(Time& a, double secs)           { a = a - secs; return a; }
+Time  operator+(int64 seconds, Time a)          { return a + seconds; }
+Time  operator-(Time a, int64 secs)             { return a + (-secs); }
+Time& operator+=(Time& a, int64 secs)           { a = a + secs; return a; }
+Time& operator-=(Time& a, int64 secs)           { a = a - secs; return a; }
 
 String Format(Time time) {
 	if(IsNull(time)) return String();

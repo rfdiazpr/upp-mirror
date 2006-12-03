@@ -225,18 +225,6 @@ void LayDes::Serialize(Stream& s)
 	SetBar();
 }
 
-/* TODO remove
-void LayDes::Set(LayDesigner *f)
-{
-	frame = f;
-	frame->Add(lsplit);
-	frame->AddFrame(TopSeparatorFrame());
-	toolbar.AddFrame(LeftSeparatorFrame());
-	frame->Title("Layout designer");
-	frame->ActiveFocus(*this);
-}
-*/
-
 LayDes::LayDes()
 {
 	charset = CHARSET_UTF8;
@@ -252,6 +240,8 @@ LayDes::LayDes()
 	status.Width(400);
 	status.NoTransparent();
 
+	km.d = this;
+	km.Add(lsplit.SizePos());
 	lsplit.Horz(rsplit, *this).SetPos(2000);
 	rsplit.Vert(layoutlist, isplit);
 	rsplit.SetPos(1000);

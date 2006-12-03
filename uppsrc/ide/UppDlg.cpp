@@ -85,6 +85,7 @@ UsesDlg::UsesDlg()
 
 void PackageEditor::SaveOptions() {
 	if(!actualpackage.IsEmpty()) {
+		actual.description = ~description;
 		actual.charset = (byte)(int)~charset;
 		actual.accepts = Split(accepts.GetText().ToString(), ' ');
 		actual.optimize_speed = optimize_speed;
@@ -107,6 +108,7 @@ void PackageEditor::Empty()
 {
 	FileEmpty();
 	charset.Disable();
+	description.Disable();
 	optimize_speed.Disable();
 	filelist.Clear();
 	filelist.Disable();
@@ -149,6 +151,7 @@ void PackageEditor::PackageCursor()
 	if(IsNull(actualpackage))
 		Empty();
 	else {
+		description <<= actual.description;
 		charset <<= (int)actual.charset;
 		optimize_speed = actual.optimize_speed;
 		String s;
@@ -157,6 +160,7 @@ void PackageEditor::PackageCursor()
 			s << actual.accepts[i];
 		}
 		accepts = s.ToWString();
+		description.Enable();
 		charset.Enable();
 		optimize_speed.Enable();
 		accepts.Enable();
@@ -504,10 +508,23 @@ void PackageEditor::SaveOptionsLoad()
 	SaveLoadPackage();
 }
 
+void PackageEditor::Description()
+{
+	WithDescriptionLayout<TopWindow> dlg;
+	CtrlLayoutOKCancel(dlg, "Package description");
+	dlg.text <<= ~description;
+	if(dlg.Run() != IDOK)
+		return;
+	description <<= ~dlg.text;
+	SaveOptions();
+}
+
 PackageEditor::PackageEditor()
 {
 	organizer = true;
 	CtrlLayoutOKCancel(*this, "Package organizer");
+	description.Disable();
+	description <<= THISBACK(Description);
 	DlCharsetD(charset);
 	charset.Disable();
 	optimize_speed.Disable();

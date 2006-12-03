@@ -198,11 +198,13 @@ bool FileList::Key(dword key, int count) {
 		OkEdit();
 		return true;
 	}
-	int c = ToUpper((int)key);
-	if(key < 256 && IsAlNum(c)) {
-		if(!FindChar(GetCursor() + 1, c))
-			FindChar(0, c);
-		return true;
+	if(accelkey) {
+		int c = ToUpper((int)key);
+		if(key < 256 && IsAlNum(c)) {
+			if(!FindChar(GetCursor() + 1, c))
+				FindChar(0, c);
+			return true;
+		}
 	}
 	return ColumnList::Key(key, count);
 }
@@ -299,6 +301,7 @@ FileList::FileList() {
 	edit.SetFrame(BlackFrame());
 	renaming = false;
 	justname = false;
+	accelkey = true;
 	SetDisplay(*this);
 }
 

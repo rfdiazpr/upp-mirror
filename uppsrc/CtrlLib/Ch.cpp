@@ -10,14 +10,16 @@
 #define IMAGEFILE <CtrlLib/ClassicCtrls.iml>
 #include <Draw/iml_source.h>
 
-void ChSetStyleStd()
+void ChSysInit();
+
+void ChStdSkin()
 {
 	ChSysInit();
 	ChSet("GUI_GlobalStyle", GUISTYLE_XP);
 	ColoredOverride(CtrlsImg::Iml(), CtrlsImg::Iml());
 }
 
-void ChSetStyleClassic()
+void ChClassicSkin()
 {
 	LLOG("ChInitWinClassic");
 	ChSysInit();
@@ -42,53 +44,7 @@ void ChSetStyleClassic()
 	ChSet("LabelBoxTextColor", SColorText());
 }
 
-struct ChStyleInfo {
-	const char *name;
-	void (*set)();
-};
-
-static ChStyleInfo s_chs[] = {
-	"host", ChDetectStyle,
-	"standard", ChSetStyleStd,
-	"classic", ChSetStyleClassic,
-};
-
-int ch_style;
-
-void ChSetStyle(int q)
-{
-	if(q < 0 || q >= __countof(s_chs))
-		q = 0;
-	ch_style = q;
-	(*s_chs[q].set)();
-}
-
-int ChGetStyle()
-{
-	return ch_style;
-}
-
-int ChGetStyleCount()
-{
-	return __countof(s_chs);
-}
-
-String ChGetStyleName(int q)
-{
-	return s_chs[q].name;
-}
-
-void ChSync()
-{
-	ChSetStyle(ChGetStyle());
-}
-
 #ifdef PLATFORM_X11
-
-void ChDetectStyle()
-{
-	ChSetStyleStd();
-}
 
 void ChSysInit()
 {

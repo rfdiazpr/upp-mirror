@@ -1,3 +1,5 @@
+description "Disassembler (GPL license - used in TheIDE)";
+
 uses
 	Core;
 

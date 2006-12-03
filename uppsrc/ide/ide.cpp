@@ -740,7 +740,7 @@ void Ide::SetIdeState(int newstate) {
 		else
 		{
 			if(idestate == BUILDING && !IsNull(build_start_time))
-				stat_build_time += GetSysTime() - build_start_time;
+				stat_build_time += int(GetSysTime() - build_start_time);
 			build_start_time = Null;
 		}
 	}

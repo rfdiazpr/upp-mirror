@@ -33,6 +33,7 @@
 #define XTrue  1
 
 extern XDisplay   *Xdisplay;
+extern Visual     *Xvisual;
 extern int         Xscreenno;
 extern Window      Xroot;
 extern Screen     *Xscreen;
@@ -47,6 +48,28 @@ extern dword       Xwhite;
 extern int         Xconnection;
 
 extern dword   (*Xgetpixel)(int r, int g, int b);
+
+struct G_obj { int d; };
+
+#define DLIMODULE   GTK
+#define DLIHEADER   <Draw/gtk.dli>
+#include <Core/dli_header.h>
+
+#define DLIMODULE   GDK
+#define DLIHEADER   <Draw/gdk.dli>
+#include <Core/dli_header.h>
+
+#define DLIMODULE   GPIXBUF
+#define DLIHEADER   <Draw/gpixbuf.dli>
+#include <Core/dli_header.h>
+
+#define DLIMODULE   GOBJ
+#define DLIHEADER   <Draw/gobj.dli>
+#include <Core/dli_header.h>
+
+#define DLIMODULE   GNOME
+#define DLIHEADER   <Draw/gnome.dli>
+#include <Core/dli_header.h>
 
 void          InitX11Draw(const char *dispname = NULL);
 void          InitX11Draw(XDisplay *display);
@@ -1098,11 +1121,6 @@ void DrawBorder(Draw& w, int x, int y, int cx, int cy, const ColorF *(*colors_lt
 void DrawBorder(Draw& w, const Rect& r, const ColorF *(*colors_ltrd)());
 
 void DrawRectMinusRect(Draw& w, const Rect& rect, const Rect& inner, Color color);
-
-void DrawFocus(Draw& w, int x, int y, int cx, int cy, Color color);
-void DrawFocus(Draw& w, const Rect& r, Color color);
-void DrawFocus(Draw& w, int x, int y, int cx, int cy);
-void DrawFocus(Draw& w, const Rect& r);
 
 void DrawHighlightImage(Draw& w, int x, int y, const Image& img, bool highlight = true,
                         bool enabled = true, Color maskcolor = SColorPaper);

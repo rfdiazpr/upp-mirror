@@ -123,6 +123,8 @@ private:
 		bool           IsDisplay() const          { return !ptr.GetBit() && ptr.GetPtr(); }
 		const Display& GetDisplay() const         { ASSERT(IsDisplay()); return *(const Display *)ptr.GetPtr(); }
 
+		CellInfo(pick_ CellInfo& s);
+		CellInfo() {}
 		~CellInfo();
 	};
 
@@ -468,7 +470,7 @@ public:
 	ArrayCtrl& Grid(bool b = true)                     { return VertGrid(b).HorzGrid(b); }
 	ArrayCtrl& NoGrid()                                { return Grid(false); }
 	ArrayCtrl& GridColor(Color c)                      { gridcolor = c; return *this; }
-	ArrayCtrl& EvenRowColor(Color paper = Blend(SColorHighlight, SColorPaper, 220), Color ink = SColorText);
+	ArrayCtrl& EvenRowColor(Color paper = Blend(SColorMark, SColorPaper, 220), Color ink = SColorText);
 	ArrayCtrl& OddRowColor(Color paper = SColorInfo, Color ink = SColorText);
 	ArrayCtrl& NoCursor(bool b = true)                 { nocursor = b; return *this; }
 	ArrayCtrl& MouseMoveCursor(bool b = true)          { mousemove = b; return *this; }

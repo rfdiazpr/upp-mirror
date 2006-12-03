@@ -1137,24 +1137,6 @@ const ImageDisplay& TileImageDisplay()
 }
 */
 
-void AlignDisplay::Paint(Draw& draw, const Rect& rc, const Value& v, Color ink, Color paper, dword style) const
-{
-	String s = StdFormat(v);
-	Font font = StdFont();
-	Size size = GetTextSize(s, font);
-	draw.DrawRect(rc, paper);
-	int x = rc.left;
-	switch(align)
-	{
-	case ALIGN_CENTER: x += (rc.Width() - size.cx) >> 1; break;
-	case ALIGN_RIGHT:  x = rc.right - size.cx; break;
-	}
-	draw.DrawText(x, rc.top, s, font, ink);
-}
-
-const Display& GLOBAL_VP(AlignDisplay, StdCenterDisplay, (ALIGN_CENTER))
-const Display& GLOBAL_VP(AlignDisplay, StdRightDisplay, (ALIGN_RIGHT))
-
 GradientDisplay::GradientDisplay(Point a, Color ca, Point b, Color cb, double gamma)
 : a(a), ca(ca), b(b), cb(cb), gamma(gamma)
 {

@@ -1,3 +1,5 @@
+description "TheIDE - .lay designer";
+
 uses
 	ide\Common,
 	RichEdit,

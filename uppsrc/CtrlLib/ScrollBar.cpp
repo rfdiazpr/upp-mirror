@@ -4,6 +4,7 @@
 
 CH_INT(ScrollBarSize, FrameButtonWidth());
 CH_INT(ScrollBarArrowSize, ScrollBarSize());
+CH_INT(ScrollBarThumbMin, 1);
 
 CH_LOOKS(ScrollBarVertUpper, 4, CtrlsImgLook(CtrlsImg::I_SBVU));
 CH_LOOKS(ScrollBarVertThumb, 4, CtrlsImgLook(CtrlsImg::I_SBVT, CtrlsImg::SBVI()));
@@ -15,6 +16,9 @@ CH_LOOKS(ScrollBarUp, 4, CtrlsImgLook(CtrlsImg::I_SB, CtrlsImg::UA(), ButtonMono
 CH_LOOKS(ScrollBarDown, 4, CtrlsImgLook(CtrlsImg::I_SB, CtrlsImg::DA(), ButtonMonoColor));
 CH_LOOKS(ScrollBarLeft, 4, CtrlsImgLook(CtrlsImg::I_SB, CtrlsImg::LA(), ButtonMonoColor));
 CH_LOOKS(ScrollBarRight, 4, CtrlsImgLook(CtrlsImg::I_SB, CtrlsImg::RA(), ButtonMonoColor));
+
+CH_INT(ScrollBarTrough, 0);
+CH_INT(ScrollBarOverThumb, 0);
 
 int& Slider::HV(int& h, int& v) const
 {
@@ -28,16 +32,18 @@ int Slider::GetHV(int h, int v) const {
 Rect Slider::GetPartRect(int p) const {
 	Size sz = GetSize();
 	Rect h(0, 0, sz.cx, sz.cy);
+	int sbo = ScrollBarOverThumb();
 	switch(p) {
 	case 0:
-		HV(h.right, h.bottom) = thumbpos;
+		HV(h.right, h.bottom) = thumbpos - sbo + thumbsize / 2;
 		break;
 	case 1:
-		HV(h.left, h.top) = thumbpos;
-		HV(h.right, h.bottom) = thumbpos + thumbsize;
+		HV(h.left, h.top) = thumbpos + thumbsize / 2 + sbo;
 		break;
 	case 2:
-		HV(h.left, h.top) = thumbpos + thumbsize;
+		HV(h.left, h.top) = thumbpos - sbo;
+		HV(h.right, h.bottom) = thumbpos + thumbsize + sbo;
+		break;
 	}
 	return h;
 }
@@ -45,7 +51,7 @@ Rect Slider::GetPartRect(int p) const {
 int  Slider::GetMousePart()
 {
 	int q = -1;
-	for(int i = 0; i < 3; i++)
+	for(int i = 2; i >= 0; i--)
 		if(HasMouseIn(GetPartRect(i))) {
 			q = i;
 			break;
@@ -96,38 +102,49 @@ void Slider::Paint(Draw& w) {
 	int p = push;
 	if(!HasCapture())
 		p = -1;
-	static Value (*hl[])(int) = { ScrollBarHorzUpper, ScrollBarHorzThumb, ScrollBarHorzLower };
-	static Value (*vl[])(int) = { ScrollBarVertUpper, ScrollBarVertThumb, ScrollBarVertLower };
+	static Value (*hl[])(int) = { ScrollBarHorzUpper, ScrollBarHorzLower, ScrollBarHorzThumb };
+	static Value (*vl[])(int) = { ScrollBarVertUpper, ScrollBarVertLower, ScrollBarVertThumb };
 
 	Value (**l)(int) = IsHorz() ? hl : vl;
 
 	if(IsShowEnabled()) {
 		for(int i = 0; i < 3; i++) {
 			Rect pr = GetPartRect(i);
-			if(i != 1) {
+			if(i != 2) {
 				w.Clip(pr);
 				pr = sz;
+				if(ScrollBarTrough()) {
+					HV(pr.left, pr.top) -= ScrollBarArrowSize();
+					HV(pr.right, pr.bottom) += ScrollBarArrowSize();
+				}
 			}
 			ChPaint(w, pr,
 			        (*l[i])(p == i ? CTRL_PRESSED : light == i ? CTRL_HOT : CTRL_NORMAL));
-			if(i != 1)
+			if(i != 2)
 				w.End();
 		}
 	}
 	else
+		if(ScrollBarTrough()) {
+			Rect r = sz;
+			HV(r.left, r.top) -= ScrollBarArrowSize();
+			HV(r.right, r.bottom) += ScrollBarArrowSize();
+			ChPaint(w, r, (*l[0])(CTRL_DISABLED));
+		}
+		else
 		if(IsHorz()) {
 			ChPaint(w, 0, 0, sz.cx / 2, sz.cy, (*l[0])(CTRL_DISABLED));
-			ChPaint(w, sz.cx / 2, 0, sz.cx - sz.cx / 2, sz.cy, (*l[2])(CTRL_DISABLED));
+			ChPaint(w, sz.cx / 2, 0, sz.cx - sz.cx / 2, sz.cy, (*l[1])(CTRL_DISABLED));
 		}
 		else {
 			ChPaint(w, 0, 0, sz.cx, sz.cy / 2, (*l[0])(CTRL_DISABLED));
-			ChPaint(w, 0, sz.cy / 2, sz.cx, sz.cy - sz.cy / 2, (*l[2])(CTRL_DISABLED));
+			ChPaint(w, 0, sz.cy / 2, sz.cx, sz.cy - sz.cy / 2, (*l[1])(CTRL_DISABLED));
 		}
 }
 
 void Slider::LeftDown(Point p, dword) {
 	push = GetMousePart();
-	if(push == 1)
+	if(push == 2)
 		delta = GetHV(p.x, p.y) - thumbpos;
 	else {
 		if(jump) {
@@ -146,7 +163,7 @@ void Slider::LeftDown(Point p, dword) {
 }
 
 void Slider::MouseMove(Point p, dword) {
-	if(HasCapture() && push == 1) {
+	if(HasCapture() && push == 2) {
 		int opos = thumbpos;
 		Drag(p);
 	}
@@ -174,7 +191,7 @@ void Slider::LeftUp(Point p, dword) {
 }
 
 void Slider::LeftRepeat(Point p, dword) {
-	if(jump || push < 0 || push == 1) return;
+	if(jump || push < 0 || push == 2) return;
 	if(push == 0)
 		WhenPrev();
 	else
@@ -195,6 +212,20 @@ Slider::Slider() {
 	horz = false;
 	NoWantFocus();
 	push = light = -1;
+	Transparent();
+}
+
+void ScrollBar::Paint(Draw& w)
+{
+	Size sz = GetSize();
+	if(IsHorz()) {
+		ChPaint(w, 0, 0, sz.cx / 2, sz.cy, ScrollBarHorzUpper(0));
+		ChPaint(w, sz.cx / 2, 0, sz.cx - sz.cx / 2, sz.cy, ScrollBarHorzLower(0));
+	}
+	else {
+		ChPaint(w, 0, 0, sz.cx, sz.cy / 2, ScrollBarVertUpper(0));
+		ChPaint(w, 0, sz.cy / 2, sz.cx, sz.cy - sz.cy / 2, ScrollBarVertLower(0));
+	}
 }
 
 bool  ScrollBar::Set(int apagepos) {
@@ -203,6 +234,7 @@ bool  ScrollBar::Set(int apagepos) {
 	if(pagepos > totalsize - pagesize) pagepos = totalsize - pagesize;
 	if(pagepos < 0) pagepos = 0;
 	int slsize = slider.GetRange();
+	int mint = max(minthumb, ScrollBarThumbMin());
 	if(totalsize <= 0)
 		slider.Set(0, slsize);
 	else {
@@ -214,9 +246,9 @@ bool  ScrollBar::Set(int apagepos) {
 			ps = 0;
 		}
 		else
-		if(thumbsize <= minthumb) {
-			ps = ((slsize - minthumb) * (double)pagepos + rest) / (double) (totalsize - pagesize);
-			ts = minthumb;
+		if(thumbsize <= mint) {
+			ps = ((slsize - mint) * (double)pagepos + rest) / (double) (totalsize - pagesize);
+			ts = mint;
 		}
 		else {
 			ps = (slsize * (double)pagepos + rest) / (double) totalsize;
@@ -260,14 +292,15 @@ void ScrollBar::Position() {
 	int thumbpos = slider.GetPos();
 	int thumbsize = slider.GetThumbSize();
 	int slsize = slider.GetRange();
-	if(slsize < minthumb || totalsize <= pagesize)
+	int mint = max(minthumb, ScrollBarThumbMin());
+	if(slsize < mint || totalsize <= pagesize)
 		pagepos = 0;
 	else
 	if(thumbpos == slsize - thumbsize)
 		pagepos = totalsize - pagesize;
 	else
-	if(thumbsize == minthumb)
-		pagepos = iscale(thumbpos, (totalsize - pagesize), (slsize - minthumb));
+	if(thumbsize == mint)
+		pagepos = iscale(thumbpos, (totalsize - pagesize), (slsize - mint));
 	else
 		pagepos = iscale(thumbpos, totalsize, slsize);
 	Action();
@@ -463,11 +496,11 @@ ScrollBar::ScrollBar() {
 	linesize = 1;
 	autohide = false;
 	autodisable = true;
-	Add(prev);
 	Add(slider);
+	Add(prev);
 	Add(next);
-	prev.ScrollStyle().NoWantFocus();
-	next.ScrollStyle().NoWantFocus();
+	prev.ScrollStyle().NoWantFocus().Transparent();
+	next.ScrollStyle().NoWantFocus().Transparent();
 	prev.WhenPush = prev.WhenRepeat = callback(this, &ScrollBar::PrevLine);
 	prev.WhenPush << Proxy(WhenLeftClick);
 	next.WhenPush = next.WhenRepeat = callback(this, &ScrollBar::NextLine);

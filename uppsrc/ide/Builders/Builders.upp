@@ -1,3 +1,5 @@
+description "TheIDE - builders - routines to compile programs";
+
 uses
 	ide\Common,
 	coff\binobj;

@@ -292,49 +292,32 @@ void RichEdit::LeftDouble(Point p, dword flags)
 
 Image RichEdit::CursorImage(Point p, dword flags)
 {
-	static Image (*anihorz[])() = {//TODO
-		CtrlImg::SizeHorz0, CtrlImg::SizeHorz1, CtrlImg::SizeHorz0, CtrlImg::SizeHorz2
-	};
-	static Image (*anivert[])() = {
-		CtrlImg::SizeVert0, CtrlImg::SizeVert1, CtrlImg::SizeVert0, CtrlImg::SizeVert2
-	};
-	static Image (*anihove[])() = {
-		CtrlImg::SizeHoVe0, CtrlImg::SizeHoVe1, CtrlImg::SizeHoVe0, CtrlImg::SizeHoVe2
-	};
-	static Image (*anipos[])() = {
-		CtrlImg::horzpos1, CtrlImg::horzpos2, CtrlImg::horzpos1, CtrlImg::horzpos3
-	};
-
 	if(tablesel)
 		return Image::Arrow();
 
-	Image (**ani)();
 	switch(GetHotSpot(p)) {
 	case 0:
-		ani = anihove;
-		break;
+		return Image::SizeBottomRight();
 	case 1:
-		ani = anivert;
-		break;
+		return Image::SizeVert();
 	case 2:
-		ani = anihorz;
-		break;
+		return Image::SizeHorz();
 	default:
 		if(text.GetRichPos(GetMousePos(p)).object) {
 			return Image::Arrow();
 		}
 		else
 		if(HasCapture() && tabmove.table && tabmove.column >= -2)
-			return CtrlImg::horzpos1();
+			return Image::SizeHorz();
 		else {
 			RichHotPos hp = GetHotPos(p);
 			if(hp.table > 0)
-				ani = anipos;
+				return Image::SizeHorz();
 			else
 				return CtrlImg::ibeam0;
 		}
 	}
-	return (*ani[GetTimeClick() / 200 % 4])();
+	return Image::Arrow();
 }
 
 void RichEdit::LeftRepeat(Point p, dword flags)

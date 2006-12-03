@@ -1,3 +1,5 @@
+description "PDF output as Draw derived class";
+
 uses
 	Draw;
 

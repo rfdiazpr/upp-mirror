@@ -36,54 +36,6 @@ CH_COLOR(SColorMark, LtBlue());
 CH_COLOR(SColorLtFace, Blend(SColorFace, SColorLight));
 CH_COLOR(SColorDkShadow, Blend(SColorShadow, SColorText));
 
-/*
-#ifdef PLATFORM_WIN32
-void UpdateSColors()
-{
-	dword c;
-	c = GetSysColor(COLOR_WINDOWTEXT);
-	int r0 = GetRValue(c);
-	int g0 = GetGValue(c);
-	int b0 = GetBValue(c);
-	ChSet("SBlack", Color(r0, g0, b0));
-	c = GetSysColor(COLOR_3DSHADOW);
-	int r128 = GetRValue(c);
-	int g128 = GetGValue(c);
-	int b128 = GetBValue(c);
-	ChSet("SGray", Color(r128, g128, b128));
-	c = GetSysColor(COLOR_3DFACE);
-	int r192 = GetRValue(c);
-	int g192 = GetGValue(c);
-	int b192 = GetBValue(c);
-	ChSet("SLtGray", Color(r192, g192, b192));
-	c = GetSysColor(COLOR_WINDOW);
-	int r255 = GetRValue(c);
-	int g255 = GetGValue(c);
-	int b255 = GetBValue(c);
-	ChSet("SWhite", Color(r255, g255, b255));
-	int r224 = (r255 * 7 + r0) >> 3;
-	int g224 = (r255 * 7 + r0) >> 3;
-	int b224 = (r255 * 7 + r0) >> 3;
-
-	ChSet("SWhiteGray", Color(r224, g224, b224));
-	ChSet("SBlue", Color(r0, g0, b128));
-	ChSet("SRed", Color(r128, g0, b0));
-	ChSet("SGreen", Color(0, g128, b0));
-	ChSet("SBrown", Color(r128, g128, b0));
-	ChSet("SMagenta", Color(r128, g0, b255));
-	ChSet("SCyan", Color(r0, g128, b128));
-	ChSet("SYellow", Color(r255, g255, b0));
-	ChSet("SLtRed", Color(r255, g0, b0));
-	ChSet("SLtGreen", Color(r0, g255, b0));
-	ChSet("SLtYellow", Color(r255, g255, b192));
-	ChSet("SLtBlue", Color(0, 0, b255));
-	ChSet("SLtMagenta", Color(r255, g0, b255));
-	ChSet("SLtCyan", Color(r0, g255, b255));
-
-}
-#endif
-*/
-
 #ifdef PLATFORM_X11
 GLOBAL_VAR(TextSettings, sKDESettings);
 

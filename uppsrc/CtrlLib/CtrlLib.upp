@@ -1,3 +1,5 @@
+description "Basic library of GUI elements";
+
 uses
 	CtrlCore,
 	RichText;
@@ -94,6 +96,7 @@ file
 	Ch.cpp,
 	XPTheme.dli,
 	ChWin32.cpp,
+	ChGtk.cpp,
 	Ctrls.iml,
 	ClassicCtrls.iml,
 	Meta readonly separator,

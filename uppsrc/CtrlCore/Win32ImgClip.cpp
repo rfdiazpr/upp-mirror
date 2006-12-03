@@ -25,7 +25,7 @@ Image ReadClipboardImage()
 		if(hdr.biClrUsed != 0)
 			bits += hdr.biClrUsed * sizeof(RGBQUAD);
 	}
-	int h = abs(hdr.biHeight);
+	int h = abs((int)hdr.biHeight);
 	ImageDraw   w(hdr.biWidth, h);
 	::StretchDIBits(w.GetHandle(),
 		0, 0, hdr.biWidth, h,

@@ -1,9 +1,9 @@
 #include <CtrlLib/CtrlLib.h>
 
-#define IMAGECLASS MyButtonImg
 #define LAYOUTFILE <Chameleon/Chameleon.lay>
 #include <CtrlCore/lay.h>
 
+#define IMAGECLASS MyButtonImg
 #define IMAGEFILE <Chameleon/Chameleon.iml>
 #include <Draw/iml.h>
 

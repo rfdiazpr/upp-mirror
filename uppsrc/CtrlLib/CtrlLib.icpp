@@ -3,8 +3,8 @@
 #define  TFILE <CtrlLib/CtrlLib.t>
 #include <Core/t.h>
 
-void CtrlSetChSync(void (*fn)());
+void CtrlSetDefaultSkin(void (*fn1)(), void (*fn2)());
 
 INITBLOCK {
-	CtrlSetChSync(ChSync);
+	CtrlSetDefaultSkin(ChStdSkin, ChHostSkin);
 };

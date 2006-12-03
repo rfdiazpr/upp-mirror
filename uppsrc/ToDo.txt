@@ -1,3 +1,9 @@
+* RTF import chyba - zaporne souradnice
+
+TopWindow::FULLSCREEN!
+
+http://www.arilect.com/upp/forum/index.php?t=msg&th=1673&start=0&
+
 2006-11-08 22:40 - 200000!
 
 * TabCtrl - rightedge problem (?)

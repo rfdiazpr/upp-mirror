@@ -8,7 +8,7 @@ ctrl CounterCtrl {
 	Font   SetFont = StdFont();
 	Color  Ink = :SBlack;
 	Color  Paper = :SWhite;
-	
+
 	Paint(w) {
 		r = GetRect();
 		DrawCtrlFrame(w, r, .SetFrame);

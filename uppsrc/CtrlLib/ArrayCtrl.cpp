@@ -119,6 +119,13 @@ void ArrayCtrl::CellInfo::Set(Ctrl *ctrl)
 	ptr.Set1(cc);
 }
 
+ArrayCtrl::CellInfo::CellInfo(pick_ CellInfo& s)
+{
+	ptr = s.ptr;
+	const_cast<CellInfo&>(s).ptr.SetPtr(NULL);
+	const_cast<CellInfo&>(s).ptr.SetBit(0);
+}
+
 ArrayCtrl::CellInfo::~CellInfo()
 {
 	if(ptr.GetBit()) {
@@ -1762,10 +1769,44 @@ void ArrayCtrl::Sort(const ArrayCtrl::Order& order) {
 	ClearCache();
 	SortPredicate sp;
 	sp.order = &order;
-	if(ln.GetCount()) {
-		ln.SetCount(array.GetCount());
-		::StableIndexSort(array, ln, sp);
+	if(ln.GetCount() || cellinfo.GetCount()) {
+		if(hasctrls) {
+			for(int i = 0; i < array.GetCount(); i++)
+				for(int j = 0; j < column.GetCount(); j++)
+					if(IsCtrl(i, j)) {
+						const Column& m = column[j];
+						ASSERT(m.pos.GetCount() == 1);
+						array[i].line[m.pos[0]] = GetCtrl(i, j).ctrl->GetData();
+					}
+		}
+		Vector<int> o = GetStableSortOrder(array, sp);
+		Vector<Line> narray;
+		narray.SetCount(array.GetCount());
+		Vector<Ln> nln;
+		Vector< Vector<CellInfo> > ncellinfo;
+		for(int i = 0; i < o.GetCount(); i++) {
+			int oi = o[i];
+			narray[i] = array[oi];
+			if(oi < cellinfo.GetCount())
+				ncellinfo.At(i) = cellinfo[oi];
+			if(oi < ln.GetCount())
+				nln.At(i) = ln[oi];
+		}
+		array = narray;
+		cellinfo = ncellinfo;
+		ln = nln;
 		Reline(0, 0);
+		if(hasctrls) {
+			for(int i = 0; i < array.GetCount(); i++)
+				for(int j = 0; j < column.GetCount(); j++)
+					if(IsCtrl(i, j)) {
+						const Column& m = column[j];
+						ASSERT(m.pos.GetCount() == 1);
+						array[i].line[m.pos[0]] = Null;
+					}
+			SyncCtrls(0);
+			ChildGotFocus();
+		}
 	}
 	else
 		StableSort(array, sp);

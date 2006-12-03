@@ -1,7 +1,9 @@
+description "Ultimate++ COFF archiver (GNU binutils compatible, faster)";
+
 uses
 	coff;
 
-target(!DEBUG !TEST) "ar.exe";
+target(!DEBUG !TEST) ar.exe;
 
 link(GCC) "-Xlinker -dumpcommand";
 
@@ -14,8 +16,7 @@ file
 	Info readonly separator,
 	COPYING,
 	COPYING-PLAIN,
-	AUTHORS
-;
+	AUTHORS;
 
 mainconfig
 	"" = "",

@@ -64,7 +64,7 @@ void ShowToolTip()
 		String text = tipctrl->GetTip();
 		LLOG("-> showing tip: " << text);
 		Ctrl *top = tipctrl->GetTopCtrl(); //GetTopWindow();
-		if(!text.IsEmpty() && top && top->IsForeground()) {
+		if(!text.IsEmpty() && top && (top->IsForeground() || top->IsPopUp())) {
 			LLOG("-> foreground");
 			ToolTip& q = AppToolTip();
 			q.Set(text);

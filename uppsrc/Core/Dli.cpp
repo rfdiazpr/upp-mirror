@@ -146,11 +146,17 @@ void FreeDll(HMODULE hmod)
 
 void *CheckDll(const char *fn, const char *const *names, Vector<void *>& plist)
 {
+
 	void *hmod = dlopen(fn, RTLD_LAZY);
 	if(!hmod) {
-		fputs(NFormat("Failed to open DLL %s.\n", fn), stderr);
-		fflush(stderr);
-		return 0;
+		for(int i = 0; i < 100; i++) {
+			hmod = dlopen(fn + ("." + AsString(i)), RTLD_LAZY);
+			if(hmod)
+				break;
+		}
+
+		if(!hmod)
+			return 0;
 	}
 
 	for(const char *const *p = names; *p; p++) {
@@ -163,8 +169,7 @@ void *CheckDll(const char *fn, const char *const *names, Vector<void *>& plist)
 		}
 		plist.Add(proc);
 	}
-//	fputs(NFormat("All %d symbols found in library %s.\n", plist.GetCount(), fn), stderr);
-//	fflush(stderr);
+
 	return hmod;
 }
 

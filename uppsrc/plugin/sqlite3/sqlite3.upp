@@ -1,3 +1,5 @@
+description "Sqlite3 database engine and U++ interface";
+
 flags(NOTMFC) "!GUI !CONSOLE";
 
 uses

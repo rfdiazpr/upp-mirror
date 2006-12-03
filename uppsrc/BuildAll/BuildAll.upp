@@ -1,3 +1,5 @@
+description "Utility that builds all U++ examples";
+
 uses
 	Core;
 

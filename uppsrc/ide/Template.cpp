@@ -139,6 +139,7 @@ TemplateDlg::TemplateDlg()
 {
 	CtrlLayoutOKCancel(*this, "Create new package");
 	Sizeable().Zoomable();
+	description <<= THISBACK(Preview);
 	delay <<= THISBACK(Preview);
 	delay.SetDelay(300);
 	templist.AddColumn("Template");
@@ -197,6 +198,7 @@ ArrayMap<String, EscValue> TemplateDlg::MakeVars0()
 	var.Add("PACKAGE", q >= 0 ? n.Mid(q + 1) : n);
 	var.Add("PACKAGE_TOUPPER", ToUpper(n));
 	var.Add("PACKAGE_TOUPPER_CAPS", ToUpper_Caps(n));
+	var.Add("DESCRIPTION", String(~description));
 	return var;
 }
 
@@ -241,6 +243,11 @@ void TemplateDlg::Create()
 			}
 		}
 	}
+	Package p;
+	String f = AppendFileName(AppendFileName(~nest, (String)~package), (String)~package + ".upp");
+	p.Load(f);
+	p.description = ~description;
+	p.Save(f);
 }
 
 void TemplateDlg::Inits()

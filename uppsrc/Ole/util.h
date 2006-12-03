@@ -96,7 +96,7 @@ inline LARGE_INTEGER  AsLarge(int64 value)  { LARGE_INTEGER i; i.QuadPart = valu
 double                GetCurrency(const CY& currency);
 inline DATE           ToDATE(Date date)     { return date - Date(1899, 12, 30); }
 inline DATE           ToDATE(Time time)     { return (time - Time(1899, 12, 30)) / 86400.0; }
-inline Time           FromDATE(DATE date)   { return Time(1899, 12, 30) + floor(date * 86400.0 + 0.5); }
+inline Time           FromDATE(DATE date)   { return Time(1899, 12, 30) + (int64)date * (int64)86400; }
 
 OleVariant            ValueToVariant(Value v);
 void                  ReturnVariant(VARIANT *var, Value v);

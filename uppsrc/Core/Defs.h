@@ -204,6 +204,8 @@ typedef uint64             qword;
 #define INT64_MAX          INT64(+0x7FFFFFFFFFFFFFFF)
 #endif
 
+inline int64 abs(int64 x)       { return x < 0 ? -x : x; }
+
 #if !defined(PLATFORM_WIN32)
 
 #define HIBYTE(a)        (byte)((a) >> 8)
@@ -219,6 +221,8 @@ typedef uint64             qword;
 #define MAKEQWORD(a, b)  ((qword) (((dword) (a)) | ((qword) ((dword) (b))) << 32))
 #define HIDWORD(a)       (dword)((a) >> 32)
 #define LODWORD(a)       dword(a)
+
+#define OFFSETOF(clss, mbr) ((int)(uintptr_t)&(((clss *)1)->mbr) - 1)
 
 #ifdef COMPILER_MSC
 #define pick_

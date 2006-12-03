@@ -771,6 +771,9 @@ void Ide::CreateMakefile()
 		makefile << "UPPDIR" << (i + 1) << " = " << srcdir << "\n";
 		inclist << " -I$(UPPDIR" << (i + 1) << ")";
 	}
+	Vector<String> includes = SplitDirs(bm.Get("INCLUDE",""));
+	for(int i = 0; i < includes.GetCount(); i++)
+		inclist << " -I" << includes[i];
 
 	makefile << "\n"
 		"UPPOUT = " << GetMakePath(AdjustMakePath(host->GetHostPath(AppendFileName(uppout, ""))), win32) << "\n"

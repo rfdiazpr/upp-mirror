@@ -68,6 +68,9 @@ public:
 	virtual dword  GetAccessKeys() const;
 	virtual void   AssignAccessKeys(dword used);
 	virtual void   Layout();
+	virtual void   GotFocus();
+	virtual void   LostFocus();
+	virtual int    OverPaint() const;
 
 protected:
 	enum { NORMAL, OK, CANCEL, EXIT };
@@ -76,6 +79,8 @@ protected:
 	bool    monoimg;
 	byte    type;
 
+	void RefreshOK(Ctrl *p);
+
 public:
 	Button&  SetImage(const Image& img);
 	Button&  SetMonoImage(const Image& img);
@@ -83,9 +88,9 @@ public:
 	Button&  NormalStyle()                               { return Style(ButtonLook); }
 	Button&  EdgeStyle()                                 { return Style(EdgeButtonLook); }
 	Button&  ScrollStyle()                               { return Style(ScrollButtonLook); }
-	Button&  Ok()                                        { type = OK; return *this; }
-	Button&  Cancel()                                    { type = CANCEL; return *this; }
-	Button&  Exit()                                      { type = EXIT; return *this; }
+	Button&  Ok();
+	Button&  Cancel();
+	Button&  Exit();
 	Button&  Normal()                                    { type = NORMAL; return *this; }
 
 	Button();

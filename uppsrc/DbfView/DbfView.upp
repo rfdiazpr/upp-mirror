@@ -1,3 +1,5 @@
+description "Viewer of DBF files";
+
 uses
 	TCtrlLib;
 
@@ -10,4 +12,3 @@ file
 
 mainconfig
 	"NORMAL" = "GUI";
-

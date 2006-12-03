@@ -137,6 +137,7 @@ void MQTFCat(RichPara& para, const char *p, const RichPara::CharFormat& basefmt)
 		para.Cat(WString(b, p), stack.Top());
 }
 
+/*
 class HelpDialogFrame : public CtrlFrame
 {
 public:
@@ -198,6 +199,7 @@ void HelpDialogFrame::FrameRemove()
 	maximize.Remove();
 	close.Remove();
 }
+*/
 
 /*
 Drawing CtrlToDrawing(Ctrl *ctrl, Point arrow, Image arrow_image)

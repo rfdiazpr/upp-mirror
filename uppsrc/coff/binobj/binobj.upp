@@ -1,3 +1,5 @@
+description "Converts binary data to COFF object files";
+
 optimize_speed;
 
 uses

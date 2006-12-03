@@ -1,3 +1,5 @@
+description "Experimental (sometimes obsolete) SQL code";
+
 uses
 	Sql,
 	TCore;

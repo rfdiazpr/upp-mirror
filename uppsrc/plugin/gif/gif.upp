@@ -1,3 +1,5 @@
+description "GIF image file format";
+
 uses
 	Draw;
 

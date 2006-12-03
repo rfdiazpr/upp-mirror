@@ -1,8 +1,10 @@
+description "OLEDB interface";
+
 uses
 	Ole,
 	Sql;
 
-link(MT DEBUG) "/nodefaultlib:LIBCMT";
+link(MT DEBUG) /nodefaultlib:LIBCMT;
 
 file
 	OleDB.h,

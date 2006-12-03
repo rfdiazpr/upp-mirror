@@ -1,6 +1,11 @@
+#ifdef flagWIN32
+#include <plugin/png/lib/png.h>
+#else
+#include <png.h>
+#endif
+
 #include <Draw/Draw.h>
 #include "png.h"
-#include <plugin/png/lib/png.h>
 
 #define LLOG(x)  // LOG(x)
 
@@ -182,8 +187,7 @@ bool PNGRaster::Create()
 		if(trans_colors) {
 			data->info.kind = IMAGE_MASK;
 			for(int i = 0; i < num_trans; i++)
-				if(trans_colors[i] < 256)
-					data->palette[(int)trans_colors[i]] = RGBAZero();
+				data->palette[(int)trans_colors[i]] = RGBAZero();
 		}
 
 	}
@@ -199,8 +203,7 @@ bool PNGRaster::Create()
 		if(trans_colors) {
 			data->info.kind = IMAGE_MASK;
 			for(int i = 0; i < num_trans; i++)
-				if(trans_colors[i] < 256)
-					data->palette[(int)trans_colors[i]] = RGBAZero();
+				data->palette[(int)trans_colors[i]] = RGBAZero();
 		}
 	}
 

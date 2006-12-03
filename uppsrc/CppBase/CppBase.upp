@@ -1,3 +1,5 @@
+description "Partly heurestic (imprecise) C++ parser for purposes of Assist++ (intellisense)";
+
 optimize_speed;
 
 uses

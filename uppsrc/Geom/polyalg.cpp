@@ -87,7 +87,6 @@ struct PolyPart : public Rectf
 static Rectf SplitPoly(const Array<Pointf>& polygon, const Vector<int>& polyend, bool closed,
 	Array<PolyPart>& parts)
 {
-	RTIMING("SplitPoly");
 	if(polyend.IsEmpty())
 		return Null;
 	unsigned c = polygon.GetCount();

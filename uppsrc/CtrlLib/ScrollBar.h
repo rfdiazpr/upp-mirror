@@ -63,6 +63,7 @@ class ScrollBar : public FrameCtrl<Ctrl> {
 public:
 	virtual void Layout();
 	virtual Size GetStdSize() const;
+	virtual void Paint(Draw& draw);
 
 	virtual void FrameLayout(Rect& r);
 	virtual void FrameAddSize(Size& sz);

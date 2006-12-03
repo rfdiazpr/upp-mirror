@@ -1,23 +1,3 @@
-struct AttrText {
-	WString text;
-	Font    font;
-	Color   ink;
-	Color   paper;
-
-	AttrText& Ink(Color c)              { ink = c; return *this; }
-	AttrText& Paper(Color c)            { paper = c; return *this; }
-	AttrText& SetFont(Font f)           { font = f; return *this; }
-
-	operator Value() const;
-
-	AttrText(const char *text);
-	AttrText(const wchar *text);
-	AttrText(const WString& text);
-
-private:
-	void Init();
-};
-
 class Display {
 public:
 	enum {
@@ -39,6 +19,43 @@ public:
 	virtual ~Display();
 };
 
+struct AttrText {
+	WString text;
+	Font    font;
+	Color   ink;
+	Color   paper;
+	int     align;
+
+	AttrText& Ink(Color c)              { ink = c; return *this; }
+	AttrText& Paper(Color c)            { paper = c; return *this; }
+	AttrText& SetFont(Font f)           { font = f; return *this; }
+	AttrText& Align(int a)              { align = a; return *this; }
+	AttrText& Left()                    { return Align(ALIGN_LEFT); }
+	AttrText& Center()                  { return Align(ALIGN_CENTER); }
+	AttrText& Right()                   { return Align(ALIGN_RIGHT); }
+
+	operator Value() const;
+
+	AttrText(const char *text);
+	AttrText(const wchar *text);
+	AttrText(const WString& text);
+
+private:
+	void Init();
+};
+
+const Display& StdDisplay();
+const Display& StdCenterDisplay();
+const Display& StdRightDisplay();
+
+const Display& ColorDisplay();
+const Display& SizeTextDisplay();
+const Display& ImageDisplay();
+const Display& FittedImageDisplay();
+const Display& CenteredImageDisplay();
+const Display& CenteredHighlightImageDisplay();
+const Display& DrawingDisplay();
+
 class ColorDisplayNull : public Display {
 public:
 #ifdef flagSO
@@ -52,15 +69,6 @@ public:
 private:
 	String nulltext;
 };
-
-const Display& StdDisplay();
-const Display& ColorDisplay();
-const Display& SizeTextDisplay();
-const Display& ImageDisplay();
-const Display& FittedImageDisplay();
-const Display& CenteredImageDisplay();
-const Display& CenteredHighlightImageDisplay();
-const Display& DrawingDisplay();
 
 class PaintRect : Moveable<PaintRect> {
 protected:

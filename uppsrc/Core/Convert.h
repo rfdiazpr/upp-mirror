@@ -119,7 +119,7 @@ public:
 	Date         GetMax() const                    { return maxval; }
 	bool         IsNotNull() const                 { return notnull; }
 
-	ConvertDate(Date minval = Date(0, 0, 0), Date maxval = Date(9999, 12, 31), bool notnull = false);
+	ConvertDate(Date minval = Date::Low(), Date maxval = Date::High(), bool notnull = false);
 	virtual ~ConvertDate();
 };
 
@@ -143,7 +143,7 @@ public:
 	Time         GetMax() const                    { return maxval; }
 	bool         IsNotNull() const                 { return notnull; }
 
-	ConvertTime(Time minval = Null, Time maxval = Null, bool notnull = false);
+	ConvertTime(Time minval = ToTime(Date::Low()), Time maxval = ToTime(Date::High()), bool notnull = false);
 	virtual ~ConvertTime();
 };
 

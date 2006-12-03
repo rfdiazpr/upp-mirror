@@ -75,28 +75,17 @@ struct BMP_RGB
     byte    rgbReserved;
 };
 
-struct ICONDIR
-{
+struct BMP_ICONDIR {
 	word           idReserved;   // Reserved (must be 0)
 	word           idType;       // Resource Type (1 for icons)
 	word           idCount;      // How many images?
-
-	void    EndianSwap()
-	{
-#ifdef CPU_BIG_ENDIAN
-		EndianSwap(idReserved);
-		EndianSwap(idType);
-		EndianSwap(idCount);
-#endif
-	}
 }
 #ifdef COMPILER_GCC
 __attribute__((packed))
 #endif
 ;
 
-struct ICONDIRENTRY
-{
+struct BMP_ICONDIRENTRY {
 	byte        bWidth;          // Width, in pixels, of the image
 	byte        bHeight;         // Height, in pixels, of the image
 	byte        bColorCount;
@@ -105,17 +94,6 @@ struct ICONDIRENTRY
 	short       wHotSpotY;
 	dword       dwBytesInRes;    // How many bytes in this resource?
 	dword       dwImageOffset;   // Where in the file is this image?
-
-	void    EndianSwap()
-	{
-#ifdef CPU_BIG_ENDIAN
-		EndianSwap(wHotSpotX);
-		EndianSwap(wHotSpotY);
-		EndianSwap(dwBytesInRes);
-		EndianSwap(dwImageOffset);
-
-#endif
-	}
 }
 #ifdef COMPILER_GCC
 __attribute__((packed))

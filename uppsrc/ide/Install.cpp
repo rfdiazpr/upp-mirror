@@ -237,7 +237,7 @@ bool CopyFolder(Progress& pi, const char *dst, const char *src)
 
 void ChkSupp(const char *s, String& dir)
 {
-	if(IsNull(dir) && FileExists(AppendFileName(s, "GCC32.bm")))
+	if(IsNull(dir) && FileExists(AppendFileName(s, "GCC.bm")))
 		dir = s;
 }
 
@@ -316,9 +316,9 @@ bool Install()
 		u = AppendFileName(supp, "examples");
 	SaveFile(ConfigFile("examples.var"), "UPP = " + AsCString(u + ';' + uppsrc) + pp);
 	SaveFile(ConfigFile("MyApps.var"), "UPP = " + AsCString(AppendFileName(upp, "MyApps;" + uppsrc)) + pp);
-	String bm = ConfigFile("GCC32.bm");
+	String bm = ConfigFile("GCC.bm");
 	if(IsNull(LoadFile(bm)))
-		SaveFile(bm, LoadFile(AppendFileName(supp, "GCC32.bm")));
+		SaveFile(bm, LoadFile(AppendFileName(supp, "GCC.bm")));
 	PromptOK("Ultimate`+`+ user setup was finished.&Press OK to launch TheIDE.");
 	return true;
 }

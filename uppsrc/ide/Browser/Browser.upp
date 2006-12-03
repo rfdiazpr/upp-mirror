@@ -1,3 +1,5 @@
+description "TheIDE - code browser and Topic++";
+
 uses
 	CppBase,
 	ide\Common,

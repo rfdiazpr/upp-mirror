@@ -235,7 +235,8 @@ void RichPara::Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& 
 								RichObjectImageMaker im;
 								im.object = o;
 								im.sz = sz;
-								draw.DrawImage(0, 0, MakeImage(im));
+								draw.DrawImage(0, 0, MakeImagePaintOnly(im));
+//								draw.DrawImage(0, 0, MakeImage(im));
 							}
 							else
 								o.Paint(draw, sz);

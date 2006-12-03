@@ -177,6 +177,7 @@ void Package::Load(const char *path) {
 		config.Clear();
 		custom.Clear();
 		unknown.Clear();
+		description.Clear();
 		String f = LoadFile(path);
 		time = FileGetTime(path);
 		CParser p(f);
@@ -190,6 +191,9 @@ void Package::Load(const char *path) {
 				   !LoadOpt(p, "uses", uses))
 				if(p.Id("charset"))
 					charset = CharsetByName(p.ReadString());
+				else
+				if(p.Id("description"))
+					description = p.ReadString();
 				else
 				if(p.Id("acceptflags")) {
 					do
@@ -351,6 +355,8 @@ void putfopt(Stream& out, const char *key, const Array<OptItem>& m)
 
 bool Package::Save(const char *path) const {
 	StringStream out;
+	if(description.GetCount())
+		out << "description " << AsCString(description) << ";\n\n";
 	if(charset > 0 && charset < CharsetCount() || charset == CHARSET_UTF8)
 		out << "charset " << AsCString(CharsetName(charset)) << ";\n\n";
 	if(optimize_speed)

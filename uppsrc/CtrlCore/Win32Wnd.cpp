@@ -159,6 +159,7 @@ bool IsSysFlag(dword flag)
 
 void Ctrl::InitWin32(HINSTANCE hInstance)
 {
+	LLOG("InitWin32");
 //	RLOGBLOCK("Ctrl::InitWin32");
 #define ILOG(x) // RLOG(x)
 	ILOG("SetXPStyle; hInstance = " << FormatIntHex(hInstance));
@@ -180,6 +181,7 @@ void Ctrl::InitWin32(HINSTANCE hInstance)
 
 	Ctrl::hInstance = hInstance;
 	ILOG("RegisterClassW");
+
 #ifndef PLATFORM_WINCE
 	if(IsWinNT())
 #endif

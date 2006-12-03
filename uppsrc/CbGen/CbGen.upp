@@ -1,3 +1,5 @@
+description "Utility to generate (long and repetitive) callback C++ source files";
+
 uses
 	Core;
 
@@ -10,4 +12,3 @@ file
 
 mainconfig
 	"Normal" = "";
-

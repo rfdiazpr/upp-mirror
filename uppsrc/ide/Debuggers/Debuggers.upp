@@ -1,3 +1,5 @@
+description "TheIDE - debuggers";
+
 uses
 	ide\Common,
 	plugin\ndisasm,

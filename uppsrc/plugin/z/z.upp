@@ -1,3 +1,5 @@
+description "zlib compressor/decompressor and its U++ encapsulation";
+
 optimize_speed;
 
 flags(NOTMFC) "!GUI !CONSOLE";
@@ -5,9 +7,7 @@ flags(NOTMFC) "!GUI !CONSOLE";
 options(MSC8ARM) -DNO_ERRNO_H;
 
 file
-	Wrapper readonly separator,
 	z.h,
-	zlibupp.cpp,
 	"Original files" readonly separator,
 	lib/adler32.c,
 	lib/compress.c,

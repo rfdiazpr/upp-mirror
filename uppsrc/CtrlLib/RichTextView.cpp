@@ -389,6 +389,11 @@ RichTextView::RichTextView()
 
 RichTextView::~RichTextView() {}
 
+void RichTextCtrl::SetData(const Value& v)
+{
+	SetQTF(String(v));
+}
+
 RichTextCtrl::RichTextCtrl()
 {
 	SetZoom(Zoom(1, 1));

@@ -148,15 +148,15 @@ void Image::Data::SysRelease()
 {
 	if(hbmp) {
 		DeleteObject(hbmp);
-		ResCount--;
+		ResCount -= !paintonly;
 	}
 	if(hmask) {
 		DeleteObject(hmask);
-		ResCount--;
+		ResCount -= !paintonly;
 	}
 	if(himg) {
 		DeleteObject(himg);
-		ResCount--;
+		ResCount -= !paintonly;
 	}
 	himg = hbmp = hmask = NULL;
 }
@@ -196,6 +196,7 @@ void Image::Data::CreateHBMP(HDC dc, const RGBA *data)
 void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 {
 	INTERLOCKED_(ResLock) {
+		ASSERT(!paintonly || IsNull(c));
 		int max = IsWinNT() ? 250 : 100;
 		while(ResCount > max) {
 			Image::Data *l = ResData->GetPrev();
@@ -233,6 +234,7 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 			::SelectObject(dcMem, hbmp);
 			::BitBlt(dc, x, y, ssz.cx, ssz.cy, dcMem, sr.left, sr.top, SRCCOPY);
 			::DeleteDC(dcMem);
+			PaintOnlyShrink();
 			return;
 		}
 		if(GetKind() == IMAGE_MASK) {
@@ -264,6 +266,7 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 			::DeleteObject(::SelectObject(dcMem, o));
 			::DeleteDC(dcMem2);
 			::DeleteDC(dcMem);
+			PaintOnlyShrink();
 			return;
 		}
 #ifndef PLATFORM_WINCE
@@ -286,6 +289,7 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 			::SelectObject(dcMem, himg);
 			::fnAlphaBlend()(dc, x, y, ssz.cx, ssz.cy, dcMem, sr.left, sr.top, ssz.cx, ssz.cy, bf);
 			::DeleteDC(dcMem);
+			PaintOnlyShrink();
 		}
 		else
 #endif

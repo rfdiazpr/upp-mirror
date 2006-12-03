@@ -36,6 +36,8 @@ void   Ctrl::SetData(const Value&) {}
 Value  Ctrl::GetData() const       { return Value(); }
 
 void Ctrl::Paint(Draw& draw)                        {}
+int  Ctrl::OverPaint() const                        { return 0; }
+
 void Ctrl::Activate()                               {}
 void Ctrl::Deactivate()                             {}
 void Ctrl::CancelMode()                             {}
@@ -771,17 +773,34 @@ void Modality::End()
 	active = NULL;
 }
 
-void (*s_chsync)();
+void (*s_chdefault)();
 
-void CtrlSetChSync(void (*fn)())
+void (*Ctrl::skin)();
+
+void CtrlSetDefaultSkin(void (*fn1)(), void (*fn2)())
 {
-	s_chsync = fn;
+	s_chdefault = fn1;
+	Ctrl::skin = fn2;
+}
+
+void Ctrl::SetSkin(void (*_skin)())
+{
+	skin = _skin;
+	ChSync();
+	Vector<Ctrl *> ctrl = GetTopCtrls();
+	for(int i = 0; i < ctrl.GetCount(); i++) {
+		ctrl[i]->RefreshLayoutDeep();
+		ctrl[i]->RefreshFrame();
+	}
 }
 
 void Ctrl::ChSync()
 {
-	if(s_chsync)
-		(*s_chsync)();
+	if(s_chdefault)
+		(*s_chdefault)();
+	if(skin)
+		(*skin)();
+	Csize.cx = Dsize.cx = 0;
 }
 
 CH_INT(GUI_GlobalStyle, GUISTYLE_CLASSIC);

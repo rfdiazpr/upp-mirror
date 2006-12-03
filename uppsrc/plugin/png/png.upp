@@ -1,28 +1,11 @@
+description "PNG image file format U++ encapsulation";
+
+library(!WIN32) png;
+
 options(MSC8ARM) "-D_WIN32_WCE -DARM -D_ARM_ -DUNDER_CE -DUNICODE -D_UNICODE";
 
 file
 	png.h,
+	pnglib.c,
 	pngupp.cpp,
-	pngreg.icpp,
-	lib readonly separator,
-	lib\png.c,
-	lib\png.h,
-	lib\pngasmrd.h,
-	lib\pngconf.h,
-	lib\pngerror.c,
-	lib\pnggccrd.c,
-	lib\pngget.c,
-	lib\pngmem.c,
-	lib\pngpread.c,
-	lib\pngread.c,
-	lib\pngrio.c,
-	lib\pngrtran.c,
-	lib\pngrutil.c,
-	lib\pngset.c,
-	lib\pngtrans.c,
-	lib\pngvcrd.c,
-	lib\pngwio.c,
-	lib\pngwrite.c,
-	lib\pngwtran.c,
-	lib\pngwutil.c,
-	end readonly separator;
+	pngreg.icpp;

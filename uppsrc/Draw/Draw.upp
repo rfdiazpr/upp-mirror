@@ -1,3 +1,5 @@
+description "Fundamental graphics operations, include raster image processing";
+
 acceptflags
 	XLFD;
 
@@ -66,6 +68,12 @@ file
 	Cham.h,
 	Cham.cpp,
 	SSettings.cpp,
+	GTK-dli readonly separator,
+	gobj.dli,
+	gdk.dli,
+	gpixbuf.dli,
+	gtk.dli,
+	gnome.dli,
 	Info readonly separator,
 	COPYING,
 	COPYING-PLAIN,

@@ -590,41 +590,40 @@ String RealFormatter(const Formatting& f)
 	double value = f.arg;
 	const char *s = f.format;
 	int digits = 6, fill_exp = 0;
-	int flags = (*f.id == 'v' ? FD_REL : 0);
-	char idx = f.id[1];
-	if(*s == '+')
-	{
+	const char *id = f.id;
+	int flags = (*id++ == 'v' ? FD_REL : 0);
+	if(*s == '+') {
 		flags |= FD_SIGN;
 		s++;
 	}
-	if(IsDigit(*s) || *s == '-' && IsDigit(s[1]))
-	{
+	if(IsDigit(*s) || *s == '-' && IsDigit(s[1])) {
 		digits = (int)strtol(s, NULL, 10);
 		while(IsDigit(*++s))
 			;
 	}
 	if(*s == '!') { s++; flags |= FD_ZERO; }
-	if(*s == '^')
-	{
-		if(*++s == '+')
-		{
+	if(*s == '^') {
+		if(*++s == '+') {
 			flags |= FD_SIGN_EXP;
 			s++;
 		}
-		if(IsDigit(*s))
-		{
+		if(IsDigit(*s)) {
 			fill_exp = (int)strtol(s, NULL, 10);
 			while(IsDigit(*++s))
 				;
 		}
 	}
-	switch(idx)
-	{
-	case 'e': return FormatDoubleExp(value, digits, flags, fill_exp);
-	case 'f': return FormatDoubleFix(value, digits, flags);
-	case 'l': return GetLanguageInfo(f.language).FormatDouble(value, digits, flags, fill_exp);
-	default:  return FormatDouble(value, digits, flags, fill_exp);
+	bool lng = false;
+	if(*id == 'l') {
+		lng = true;
+		id++;
 	}
+	if(*id == 'e') flags |= FD_EXP;
+	else if(*id == 'f') flags |= FD_FIX;
+	if(lng)
+		return GetLanguageInfo(f.language).FormatDouble(value, digits, flags, fill_exp);
+	else
+		return FormatDouble(value, digits, flags, fill_exp);
 }
 
 String StringFormatter(const Formatting& f)
@@ -817,10 +816,14 @@ String NFormat(int language, const char *s, const Vector<Value>& v)
 		RegisterNumberFormatter("ne", &RealFormatter);
 		RegisterNumberFormatter("nf", &RealFormatter);
 		RegisterNumberFormatter("nl", &RealFormatter);
+		RegisterNumberFormatter("nle", &RealFormatter);
+		RegisterNumberFormatter("nlf", &RealFormatter);
 		RegisterNumberFormatter("v",  &RealFormatter);
 		RegisterNumberFormatter("ve", &RealFormatter);
 		RegisterNumberFormatter("vf", &RealFormatter);
 		RegisterNumberFormatter("vl", &RealFormatter);
+		RegisterNumberFormatter("vle", &RealFormatter);
+		RegisterNumberFormatter("vlf", &RealFormatter);
 
 		// real number formats (n = fixed decimals, v = valid decimals)
 		// ne, ve - force exponential notation; nf, vf - force fixed notation; nl, vl - language-based formatting

@@ -4,6 +4,7 @@ IconDes::Slot::Slot()
 {
 	pastepos = Null;
 	supersampling = false;
+	exp = false;
 }
 
 IconDes::Slot& IconDes::Current()

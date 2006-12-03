@@ -6,10 +6,13 @@
 
 void Ide::SyncCh()
 {
-	if(ChGetStyle() != chstyle) {
-		ChSetStyle(chstyle);
-		RefreshLayout();
-	}
+	if(chstyle == 1)
+		SetSkin(ChStdSkin);
+	else
+	if(chstyle == 2)
+		SetSkin(ChClassicSkin);
+	else
+		SetSkin(ChHostSkin);
 }
 
 void Ide::ToggleVerboseBuild() {
@@ -580,12 +583,6 @@ void AppMain___()
 	const Vector<String>& arg = CommandLine();
 
 #ifdef PLATFORM_POSIX
-	Draw::SetStdFont(ScreenSans(13));
-	#ifdef _DEBUG
-		SetExeTitle("debugide");
-	#else
-		SetExeTitle("theide");
-	#endif
 	String home = Environment().Get("UPP_HOME", Null);
 	if(!IsNull(home))
 		SetHomeDirectory(home);

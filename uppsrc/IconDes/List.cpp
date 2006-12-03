@@ -1,9 +1,13 @@
 #include "IconDes.h"
 
-static String sFormatImageName(const String& name, const Image& img)
+static String sFormatImageName(const String& name, const Image& img, bool exp)
 {
 	Size sz = img.GetSize();
-	return String().Cat() << name << " (" << sz.cx << " x " << sz.cy << ')';
+	String r;
+	r << name << " (" << sz.cx << " x " << sz.cy << ')';
+	if(exp)
+		r << " ex.";
+	return r;
 }
 
 void IconDes::SyncList()
@@ -13,7 +17,7 @@ void IconDes::SyncList()
 	list.Clear();
 	for(int i = 0; i < slot.GetCount(); i++) {
 		Slot& c = slot[i];
-		list.Add(sFormatImageName(c.name, c.image), c.image);
+		list.Add(sFormatImageName(c.name, c.image, c.exp), c.image);
 	}
 	if(ii >= 0) {
 		list.SetCursor(ii);
@@ -66,7 +70,7 @@ void IconDes::InsertRemoved(int q)
 	}
 }
 
-void IconDes::ImageInsert(const String& name, const Image& m)
+void IconDes::ImageInsert(const String& name, const Image& m, bool exp)
 {
 	int ii = list.IsCursor() ? list.GetCursor() : 0;
 	if(ii == list.GetCount() - 1)
@@ -74,6 +78,7 @@ void IconDes::ImageInsert(const String& name, const Image& m)
 	Slot& c = slot.Insert(ii);
 	c.name = name;
 	c.image = m;
+	c.exp = exp;
 	SyncList();
 	list.SetCursor(ii);
 }
@@ -87,7 +92,7 @@ void IconDes::InsertImage()
 			return;
 	}
 	while(!CheckName(dlg));
-	ImageInsert(~dlg.name, CreateImage(Size(~dlg.cx, ~dlg.cy), Null));
+	ImageInsert(~dlg.name, CreateImage(Size(~dlg.cx, ~dlg.cy), Null), dlg.exp);
 }
 
 void IconDes::Duplicate()
@@ -128,6 +133,7 @@ void IconDes::EditImage()
 	dlg.cx <<= img.GetWidth();
 	dlg.cy <<= img.GetHeight();
 	dlg.name <<= c.name;
+	dlg.exp <<= c.exp;
 	for(;;) {
 		switch(dlg.Run()) {
 		case IDCANCEL:
@@ -137,7 +143,8 @@ void IconDes::EditImage()
 		case IDOK:
 			if(!CheckName(dlg)) break;
 			c.name = ~dlg.name;
-			list.Set(0, sFormatImageName(c.name, c.image));
+			c.exp = ~dlg.exp;
+			list.Set(0, sFormatImageName(c.name, c.image, c.exp));
 			Reset();
 			return;
 		}
@@ -203,7 +210,7 @@ void IconDes::ListMenu(Bar& bar)
 		bar.Separator();
 		for(int i = removed.GetCount() - 1; i >= 0; i--) {
 			Slot& r = removed[i];
-			bar.Add("Insert " + sFormatImageName(r.name, r.image), r.base_image,
+			bar.Add("Insert " + sFormatImageName(r.name, r.image, r.exp), r.base_image,
 			        THISBACK1(InsertRemoved, i));
 		}
 	}
@@ -216,12 +223,13 @@ void IconDes::Clear()
 	Reset();
 }
 
-void IconDes::AddImage(const String& name, const Image& image)
+void IconDes::AddImage(const String& name, const Image& image, bool exp)
 {
 	Slot& c = slot.Add();
 	c.name = name;
 	c.image = image;
-	list.Add(sFormatImageName(c.name, c.image), c.image);
+	c.exp = exp;
+	list.Add(sFormatImageName(c.name, c.image, c.exp), c.image);
 	list.GoBegin();
 }
 
@@ -245,4 +253,9 @@ Image IconDes::GetImage(int ii) const
 String IconDes::GetName(int ii) const
 {
 	return slot[ii].name;
+}
+
+bool IconDes::GetExport(int ii) const
+{
+	return slot[ii].exp;
 }

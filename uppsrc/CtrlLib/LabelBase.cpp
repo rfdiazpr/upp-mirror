@@ -177,15 +177,7 @@ Size DrawLabel::Paint(Draw& w, const Rect& r, bool visibleaccesskey) const
 	Size sz2 = rimg.GetSize();
 	Size txtsz = *text ? GetSmartTextSize(ScreenInfo(), text, font) : paintrect.GetStdSize();
 	Size isz = GetSize();
-	Point p;
-	if(valign == ALIGN_TOP)
-		p.y = r.top;
-	else
-	if(valign == ALIGN_BOTTOM)
-		p.y = r.bottom - isz.cy;
-	else
-	if(valign == ALIGN_CENTER)
-		p.y = (r.bottom + r.top - isz.cy) / 2;
+	Point p, ip;
 	if(align == ALIGN_LEFT)
 		p.x = r.left;
 	else
@@ -194,6 +186,14 @@ Size DrawLabel::Paint(Draw& w, const Rect& r, bool visibleaccesskey) const
 	else
 	if(align == ALIGN_CENTER)
 		p.x = (r.right + r.left - isz.cx) / 2;
+	if(valign == ALIGN_TOP)
+		p.y = r.top;
+	else
+	if(valign == ALIGN_BOTTOM)
+		p.y = r.bottom - isz.cy;
+	else
+	if(valign == ALIGN_CENTER)
+		p.y = (r.bottom + r.top - txtsz.cy) / 2;
 	Color color = ink;
 	if(IsNull(color))
 		color = disabled ? SColorDisabled : SColorText;
@@ -205,14 +205,14 @@ Size DrawLabel::Paint(Draw& w, const Rect& r, bool visibleaccesskey) const
 		p.x += sz1.cx;
 		p.x += lspc;
 	}
-	int iy = p.y + push + (isz.cy - sz1.cy) / 2;
+	int iy = push + (r.top + r.bottom - sz1.cy) / 2;
 
 	if(IsNull(lcolor))
 		w.DrawImage(ix, iy, sDis(limg, disabled));
 	else
 		w.DrawImage(ix, iy, limg, lcolor);
 
-	iy = p.y + push + (isz.cy - sz2.cy) / 2;
+	iy = push + (r.top + r.bottom - sz2.cy) / 2;
 	ix = (IsNull(rspc) ? r.right - sz2.cx : p.x + txtsz.cx + rspc) + push;
 	if(IsNull(rcolor))
 		w.DrawImage(ix, iy, sDis(rimg, disabled));
@@ -223,7 +223,7 @@ Size DrawLabel::Paint(Draw& w, const Rect& r, bool visibleaccesskey) const
 		if(disabled)
 			DrawSmartText(w, p.x + push + 1, p.y + push + (isz.cy - txtsz.cy) / 2 + 1,
 			              txtsz.cx, text, font, SColorPaper);
-		DrawSmartText(w, p.x + push, p.y + push + (isz.cy - txtsz.cy) / 2, txtsz.cx,
+		DrawSmartText(w, p.x + push, p.y + push, txtsz.cx,
 		              text, font, color, visibleaccesskey ? accesskey : 0);
 		if(focus)
 			DrawFocus(w, p.x - 2, p.y, txtsz.cx + 5, isz.cy);
@@ -322,4 +322,21 @@ void LinkToolTipIn__();
 
 LabelBase::~LabelBase() {
 	LinkToolTipIn__();
+}
+
+void DrawFocus(Draw& w, int x, int y, int cx, int cy) {
+	w.Clipoff(x, y, cx, cy);
+	for(int a = 0; a < cx; a += CtrlImg::focus_h().GetWidth()) {
+		w.DrawImage(a, 0, CtrlImg::focus_h());
+		w.DrawImage(a, cy - 1, CtrlImg::focus_h());
+	}
+	for(int a = 0; a < cy; a += CtrlImg::focus_v().GetHeight()) {
+		w.DrawImage(0, a, CtrlImg::focus_v());
+		w.DrawImage(cx - 1, a, CtrlImg::focus_v());
+	}
+	w.End();
+}
+
+void DrawFocus(Draw& w, const Rect& r) {
+	DrawFocus(w, r.left, r.top, r.Width(), r.Height());
 }

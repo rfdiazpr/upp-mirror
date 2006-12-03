@@ -240,8 +240,9 @@ void Ide::SetupFormat() {
 		hlt.hlstyle.WhenCtrlsAction = ed.WhenAction =
 		con.WhenAction = f1.WhenAction = f2.WhenAction = dlg.Breaker(222);
 	hlt.hl_restore <<= dlg.Breaker(333);
-	for(int i = 0; i < ChGetStyleCount(); i++)
-		ide.chstyle.Add(i, ChGetStyleName(i));
+	ide.chstyle.Add(0, "Host platform");
+	ide.chstyle.Add(1, "Standard");
+	ide.chstyle.Add(2, "Classic");
 	for(;;) {
 		int c = dlg.Run();
 		editorfont = ed.Get();

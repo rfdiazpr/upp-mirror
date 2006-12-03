@@ -5,10 +5,10 @@
 #include <locale.h>
 
 #ifdef _DEBUG
-//	#define SYNCHRONIZE
+	#define SYNCHRONIZE
 #endif
 
-#define LLOG(x)  LOG(x)
+#define LLOG(x) // LOG(x)
 
 XIM Ctrl::xim;
 

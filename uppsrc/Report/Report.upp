@@ -1,3 +1,5 @@
+description "Preview and printing of reports";
+
 uses
 	CtrlLib,
 	RichText;

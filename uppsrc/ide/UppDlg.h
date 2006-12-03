@@ -255,6 +255,7 @@ struct PackageEditor : WorkspaceWork, WithUppLayout<TopWindow> {
 	void AddFileOption();
 	void EditFileOption();
 	void RemoveFileOption();
+	void Description();
 
 	typedef PackageEditor CLASSNAME;
 

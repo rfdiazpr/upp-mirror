@@ -1,3 +1,5 @@
+description "Rich-text data structures and painting, including RTF and HTML export/import";
+
 uses
 	CtrlCore,
 	plugin\png;

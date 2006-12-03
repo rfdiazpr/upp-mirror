@@ -6,7 +6,7 @@ struct MyApp : TopWindow {
 	void Paint(Draw& w) {
 		w.DrawRect(GetSize(), White);
 		w.Offset(50, 50);
-		const char *text = "Programming is good job";
+		const char *text = "Programming is a good job";
 		Font fnt(~fontlist, 60);
 		FontInfo fi = fnt.Info();
 		int x = 0;
@@ -19,6 +19,7 @@ struct MyApp : TopWindow {
 			dx.Add(width + 4);
 			x += width;
 		}
+		w.DrawRect(0, 0, 4, 4, Black());
 		w.DrawText(0, 0, text, fnt);
 		w.DrawText(0, 70, text, fnt, Blue(), dx.GetCount(), dx.Begin());
 		w.End();

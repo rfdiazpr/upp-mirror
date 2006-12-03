@@ -1,10 +1,6 @@
 #include "SqlCtrl.h"
 #pragma hdrstop
 
-#include <Oracle/Oracle8.h>
-//#include <TCtrlLib/TCtrlLib.h>
-//#include <TCtrlLib/OldTreeCtrl.h>
-
 #include "SqlDlg.h"
 
 static bool StringLessNoCase(String a, String b) { return CompareNoCase(a, b) < 0; }
@@ -91,8 +87,8 @@ void DlgSqlExport::Run(Sql& cursor, String command, String tablename)
 			case WSTRING_V: type = t_("string"); break;
 			case DATE_V: type = t_("date"); break;
 			case TIME_V: type = t_("date/time"); break;
-			case ORA_BLOB_V: type = t_("BLOB"); break;
-			case ORA_CLOB_V: type = t_("CLOB"); break;
+			case /*ORA_BLOB_V*/-1: type = t_("BLOB"); break;
+			case /*ORA_CLOB_V*/-2: type = t_("CLOB"); break;
 			default: type = FormatInt(sci.type); break;
 		}
 		columns.Add(sci.name, sci.type, sci.width, 1);

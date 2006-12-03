@@ -1,9 +1,11 @@
+description "Ultimate++ COFF linker (GNU binutils compatible, faster)";
+
 uses
 	coff;
 
-target(TEST) "ld-test.exe";
+target(TEST) ld-test.exe;
 
-target(!TEST) "ld.exe";
+target(!TEST) ld.exe;
 
 link(GCC) "-v ";
 

@@ -291,7 +291,11 @@ void QTFEncodePara(String& qtf, const RichPara& p, const RichPara::Format& style
 						qtf << q;
 					}
 					else {
-						qtf << (char)FromUnicode(c, charset);
+						int c = FromUnicode(c, charset, 0);
+						if(c)
+							qtf << (char)c;
+						else
+							qtf << "@$" << Format("%04X", c) << ';';
 						d++;
 					}
 				}

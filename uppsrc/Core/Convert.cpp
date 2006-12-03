@@ -214,13 +214,44 @@ Value Scan(dword qtype, const String& text) {
 		if(text.IsEmpty()) return (Date) Null;
 		if(StrToDate(date, text)) return date;
 		return ErrorValue(t_("Invalid date !"));
-		break;
+	case TIME_V: {
+		if(text.IsEmpty()) return (Time) Null;
+		const char *s = StrToDate(date, text);
+		if(s)
+			try {
+				CParser p(s);
+				Time tm = ToTime(date);
+				if(p.IsEof())
+					return tm;
+				int q = p.ReadInt();
+				if(q < 0 || q > 23)
+					throw CParser::Error("");
+				tm.hour = q;
+				if(p.IsEof())
+					return tm;
+				p.PassChar(':');
+				q = p.ReadInt();
+				if(q < 0 || q > 59)
+					throw CParser::Error("");
+				tm.minute = q;
+				if(p.IsEof())
+					return tm;
+				p.PassChar(':');
+				q = p.ReadInt();
+				if(q < 0 || q > 59)
+					throw CParser::Error("");
+				tm.second = q;
+				if(p.IsEof())
+					return tm;
+			}
+			catch(CParser::Error) {}
+		return ErrorValue(t_("Invalid time !"));
+	}
 	case STRING_V:
 	case WSTRING_V:
 		return text;
 	case DOUBLE_V:
 		return StrDblValue(text);
-	case TIME_V://NOT IMPLEMENTED
 	default:
 		ASSERT(0);
 		break;
@@ -347,118 +378,12 @@ ConvertTime::~ConvertTime()
 
 Value ConvertTime::Scan(const Value& text) const
 {
-	if(text.IsNull())
-		return text;
-	try
-	{
-		String s = text;
-		const char *p = s;
-		while(*p == ' ')
-			p++;
-		if(*p == 0)
-			return Null;
-		if(!IsDigit(*p))
-			throw *p;
-
-		Time time = ToTime(GetSysDate());
-		unsigned val = stou(p, &p);
-		if(*p == '.')
-		{ // day
-			if(val < 1 || val > 31)
-				throw Exc(t_("invalid day number."));
-			time.day = val;
-			if(IsDigit(*++p))
-			{ // month
-				val = stou(p, &p);
-				if(val < 1 || val > 12)
-					throw Exc(t_("invalid month number."));
-				time.month = val;
-				if(*p == '.' && IsDigit(*++p))
-				{
-					bool fix = (*p == '0');
-					int val = stou(p, &p);
-					if(!fix && val >= 0 && val < 80)
-						time.year = 2000 + val;
-					else if(!fix && val >= 80 && val < 100)
-						time.year = 1900 + val;
-					else if(val >= 0 && val < 4000)
-						time.year = val;
-					else
-						throw Exc(t_("invalid year number."));
-				}
-			}
-			while(*p == ' ')
-				p++;
-			if(*p == 0)
-				goto NO_TIME;
-
-			if(!IsDigit(*p))
-				throw *p;
-			val = stou(p, &p);
-		}
-
-		if(val >= 24)
-			throw Exc(t_("invalid hour number."));
-		time.hour = val;
-		if(*p == ':')
-		{
-			if(!IsDigit(*++p))
-				throw *p;
-			val = stou(p, &p);
-			if(val >= 60)
-				throw Exc(t_("invalid minute number."));
-			time.minute = val;
-			if(*p == ':')
-			{
-				if(!IsDigit(*++p))
-					throw *p;
-				val = stou(p, &p);
-				if(val >= 60)
-					throw Exc(t_("invalid second number."));
-				time.second = val;
-			}
-		}
-		while(*p == ' ')
-			p++;
-		if(*p)
-			throw Exc(NFormat(t_("invalid character '%c' following date/time."), *p));
-NO_TIME:
-//		static const char *months[] =
-//		{
-//			"leden", "únor", "bøezen", "duben",
-//			"kvìten", "èerven", "èervenec", "srpen",
-//			"záøí", "øíjen", "listopad", "prosinec"
-//		};
-		if(!time.IsValid())
-		{
-			int days = LastDayOfMonth(time).day;
-			if(time.month == 2)
-				throw Exc(NFormat(t_("invalid day number %d - February in year %d has only %d days."),
-					time.day, time.year, days));
-			else
-				throw Exc(NFormat(t_("invalid day number %d - %month has only %d days."),
-					time.day, time.month, days));
-		}
-		if(!IsNull(minval) && time < minval)
-			throw Exc(NFormat(t_("exceeded valid range (lower bound: %`)."), minval));
-		if(!IsNull(maxval) && time > maxval)
-			throw Exc(NFormat(t_("exceeded valid range (upper bound: %`)."), maxval));
-		return time;
-	}
-	catch(char c)
-	{
-		String s;
-		s << t_("Invalid date/time: digit expected, found character");
-		if((byte)c >= ' ')
-			s << " \'" << c << "'.";
-		else
-			s << ::Format(" 0x%02x.", (byte)c);
-		return ErrorValue(s);
-	}
-	catch(Exc e)
-	{
-		return ErrorValue(t_("Invalid date/time:") + e);
-	}
+	Value v = ::Scan(TIME_V, text);
+	if(IsError(v)) return v;
+	if(IsNull(v)) return notnull ? NotNullError() : v;
+	Time m = v;
+	if(m >= minval && m <= maxval) return v;
+	return ErrorValue(t_("Time must be between ") + ::Format(minval) + t_("range\v and ") + ::Format(maxval) + ".");
 }
 
 int ConvertTime::Filter(int chr) const

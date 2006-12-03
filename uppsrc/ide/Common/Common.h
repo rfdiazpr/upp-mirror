@@ -258,6 +258,7 @@ public:
 	};
 	byte                     charset;
 	bool                     optimize_speed;
+	String                   description;
 	Vector<String>           accepts;
 	Array<OptItem>           flag;
 	Array<OptItem>           uses;

@@ -1,0 +1,37 @@
+[+] - new feature
+[-] - bugfix
+[*] - change
+
+
+0.95 
+	> first public version
+	
+0.96
+	* abandomed header/body structure - back to one control layout
+	+ each column can have control binded that is visible in each row
+	+ resizeing of fixed columns/rows is now possible
+	+ Fixed, Min and Max finally works in proportional mode
+	+ Sortable() - determines if column can be sorted
+	+ auto highlighing for fixed columns in any theme
+	+ usc file, now gridctrl is visible in layout editor (Complex->GridCtrl)
+	+ rows, columns as well as individual cell can work in read-only mode
+	+ Tutorial started..
+	+ GetSelectedItemsCount() - returns number of selected items
+	- if there are no fixed rows moving row before firsrt row is now possible
+	- if immediate search is off searching is executing on enter
+	  GetRow().Editable(0/1)
+	  GetColumn().Editable(0/1)
+	  GetCell().Editable(0/1)
+	- some corner cases fixed..
+	- many internal fixes, code clean up
+	
+	after 612-dev2
+	
+	* iml converted to the newer format
+	- if fixed rows == 0 nothing was displayed
+	- controls were not hidden if cell chagned to fixed and part of ctrl interesced its cell rect
+	- moved column/row use chameleon theme if active
+	- updated gcc compatibility
+	
+
+

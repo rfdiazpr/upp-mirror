@@ -3,6 +3,8 @@
 
 #include <Draw/Draw.h>
 
+NAMESPACE_UPP
+
 class PNGRaster : public StreamRaster {
 	class Data;
 	One<Data> data;
@@ -42,5 +44,7 @@ private:
 	ImageKind    kind;
 	bool         interlace;
 };
+
+END_UPP_NAMESPACE
 
 #endif

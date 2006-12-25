@@ -1,7 +1,10 @@
-uses Core;
+description "Persistency using XML";
 
-file 
-	"Xmlize.cpp";
+uses
+	Core;
+
+file
+	Xmlize.cpp;
 
 mainconfig
 	"" = "";

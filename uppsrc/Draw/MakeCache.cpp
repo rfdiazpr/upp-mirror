@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 static StaticCriticalSection sMakeImage;
@@ -96,3 +98,5 @@ Image MakeImage(const Image& image, Image (*make)(const Image& image))
 {
 	return MakeImage(SimpleImageMaker(image, make));
 }
+
+END_UPP_NAMESPACE

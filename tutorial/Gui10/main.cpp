@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 #define IMAGECLASS TutorialImg
 #define IMAGEFILE <Gui10/images.iml>
 #include <Draw/iml.h>

@@ -1,5 +1,7 @@
 #include "IconDes.h"
 
+NAMESPACE_UPP
+
 class AlphaImageInfo
 {
 public:
@@ -54,8 +56,13 @@ void ScanIML(CParser& parser, Array<ImlImage>& out_images,
 	bool exp = false;
 	while(!parser.IsEof())
 	{
-		if((bid = parser.ReadId()) == "IMAGE_META" && parser.Char('(') && !IsNull(name = parser.ReadId()))
+		if((bid = parser.ReadId()) == "IMAGE_META")
 		{
+			parser.Char('(');
+			if(parser.IsString())
+				name = parser.ReadString();
+			else
+				name = parser.ReadId();
 			parser.PassChar(',');
 			String value = parser.ReadString();
 			parser.PassChar(')');
@@ -199,6 +206,8 @@ bool LoadIml(const String& data, Array<ImlImage>& img, int& format)
 			if(p.Id("IMAGE_META")) {
 				p.PassChar('(');
 				e = p.ReadString() == "exp";
+				if(p.Char(',') && p.IsString())
+					p.ReadString();
 				p.PassChar(')');
 			}
 			exp.Add(e);
@@ -284,7 +293,7 @@ String SaveIml(const Array<ImlImage>& iml, int format) {
 		for(int i = 0; i < iml.GetCount(); i++) {
 			const ImlImage& c = iml[i];
 			if(c.exp)
-				out.PutLine("IMAGE_META(\"exp\")");
+				out.PutLine("IMAGE_META(\"exp\", \"\")");
 			String name = c.name;
 			Image buffer = c.image;
 			if(IsNull(name))
@@ -324,7 +333,7 @@ String SaveIml(const Array<ImlImage>& iml, int format) {
 			const ImlImage& c = iml[i];
 			out << "IMAGE_ID(" << c.name << ")";
 			if(c.exp)
-				out.PutLine(" IMAGE_META(\"exp\")");
+				out.PutLine(" IMAGE_META(\"exp\", \"\")");
 			out << "\r\n";
 		}
 		int ii = 0;
@@ -355,3 +364,5 @@ String SaveIml(const Array<ImlImage>& iml, int format) {
 	}
 	return out.GetResult();
 }
+
+END_UPP_NAMESPACE

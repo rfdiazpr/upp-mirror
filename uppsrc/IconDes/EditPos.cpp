@@ -1,5 +1,7 @@
 #include "IconDes.h"
 
+NAMESPACE_UPP
+
 bool IsSelection(const Image& m) {
 	const RGBA *s = m;
 	const RGBA *e = s + m.GetLength();
@@ -57,3 +59,5 @@ void IconDes::SetEditPos(const EditPos& e)
 	list.ScrollIntoCursor();
 	SyncImage();
 }
+
+END_UPP_NAMESPACE

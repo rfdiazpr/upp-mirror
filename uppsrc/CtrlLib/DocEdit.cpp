@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 void DocEdit::MouseWheel(Point p, int zdelta, dword keyflags)
 {
 	sb.Wheel(zdelta);
@@ -105,6 +107,8 @@ int sSum(const int *w, int n)
 void DocEdit::Paint(Draw& w) {
 	Size sz = GetSize();
 	Color bg =  color[IsShowEnabled() && !IsReadOnly() ? PAPER_NORMAL : PAPER_READONLY];
+	if(nobg)
+		bg = Null;
 	int y = -sb + 1;
 	int pos = 0;
 	int sell, selh;
@@ -467,3 +471,5 @@ DocEdit::DocEdit()
 }
 
 DocEdit::~DocEdit() {}
+
+END_UPP_NAMESPACE

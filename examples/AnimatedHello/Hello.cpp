@@ -3,6 +3,8 @@
 
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 class HelloWorld : public TopWindow {
 public:
 	virtual void LeftDown(Point, dword);

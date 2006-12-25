@@ -3,6 +3,9 @@
 
 #include <coff/coff.h>
 
+
+NAMESPACE_UPP
+
 class BinObjInfo {
 public:
 	BinObjInfo();
@@ -38,5 +41,7 @@ public:
 };
 
 void BinaryToObject(String objectfile, CParser& binscript, String base_dir, Callback1<String> WhenConsole);
+
+END_UPP_NAMESPACE
 
 #endif

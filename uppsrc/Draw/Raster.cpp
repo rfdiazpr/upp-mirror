@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 const RasterFormat *Raster::GetFormat()
 {
 	return NULL;
@@ -234,3 +236,5 @@ Image StreamRaster::LoadStringAny(const String& s, const Gate2<int, int> progres
 	StringStream ss(s);
 	return LoadAny(ss, progress);
 }
+
+END_UPP_NAMESPACE

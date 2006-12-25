@@ -1,3 +1,5 @@
+description "Mine sweeping game";
+
 uses
 	CtrlLib;
 

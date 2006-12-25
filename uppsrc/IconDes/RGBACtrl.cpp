@@ -1,5 +1,7 @@
 #include "IconDes.h"
 
+NAMESPACE_UPP
+
 Color s_stdcolor[] = {
 	Black,
 	Red,
@@ -184,3 +186,5 @@ RGBACtrl::RGBACtrl()
 	Add(text);
 	SyncText();
 }
+
+END_UPP_NAMESPACE

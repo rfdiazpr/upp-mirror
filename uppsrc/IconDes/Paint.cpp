@@ -1,5 +1,7 @@
 #include "IconDes.h"
 
+NAMESPACE_UPP
+
 #define IMAGECLASS IconDesImg
 #define IMAGEFILE <IconDes/IconDes.iml>
 #include <Draw/iml_source.h>
@@ -165,3 +167,5 @@ void IconDes::Paint(Draw& w)
 		                     magnify * Current().paste_image.GetSize() + Size(1, 1)),
 		             Color(200, 200, 255), 3);
 }
+
+END_UPP_NAMESPACE

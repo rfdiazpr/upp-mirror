@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 #define LAYOUTFILE <TabDlg/TabDlg.lay>
 #include <CtrlCore/lay.h>
 

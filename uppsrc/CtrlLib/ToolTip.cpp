@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 ToolTip::ToolTip()
@@ -222,3 +224,5 @@ void PerformDescription()
 		}
 	}
 }
+
+END_UPP_NAMESPACE

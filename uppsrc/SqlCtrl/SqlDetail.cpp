@@ -1,5 +1,7 @@
 #include "SqlCtrl.h"
 
+NAMESPACE_UPP
+
 SqlDetail::SqlDetail()
 {
 	present = false;
@@ -61,7 +63,7 @@ bool SqlDetail::Delete()
 {
 	if(!IsPresent() || fk.IsNull() || IsNull(fkval)) return false;
 	Sql sql(Session());
-	sql * ::Delete(table).Where(fk == fkval);
+	sql * UPP::Delete(table).Where(fk == fkval);
 	if(ShowError(sql)) return false;
 	present = false;
 	return true;
@@ -92,3 +94,5 @@ bool  SqlDetail::Accept()
 	return autocreate ? Create() : true;
 }
 
+
+END_UPP_NAMESPACE

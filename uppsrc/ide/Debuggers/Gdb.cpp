@@ -35,6 +35,23 @@ void Gdb::DebugBar(Bar& bar)
 	bar.Separator();
 	bar.Add(b, "Quick watch", THISBACK(QuickWatch))
 	   .Key(K_CTRL_Q);
+	bar.MenuSeparator();
+	bar.Add(b, "Copy backtrace", THISBACK(CopyStack));
+	bar.Add(b, "Copy dissassembly", THISBACK(CopyDisas));
+}
+
+void Gdb::CopyStack()
+{
+	DropFrames();
+	String s;
+	for(int i = 0; i < frame.GetCount(); i++)
+		s << frame.GetValue(i) << "\n";
+	WriteClipboardText(s);
+}
+
+void Gdb::CopyDisas()
+{
+	disas.WriteClipboard();
 }
 
 int CharFilterReSlash(int c)

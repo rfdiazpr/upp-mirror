@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct MyApp : public TopWindow {
 	Image   img;
 	FileSel fs;

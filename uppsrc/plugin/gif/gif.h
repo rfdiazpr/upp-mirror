@@ -3,6 +3,9 @@
 
 #include <Draw/Draw.h>
 
+
+NAMESPACE_UPP
+
 class GIFRaster : public StreamRaster {
 public:
 	class Data;
@@ -44,5 +47,7 @@ private:
 	bool         ignore_alpha;
 	String       comment;
 };
+
+END_UPP_NAMESPACE
 
 #endif

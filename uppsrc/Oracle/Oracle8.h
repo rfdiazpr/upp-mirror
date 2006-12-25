@@ -4,6 +4,8 @@
 #include <Sql/Sql.h>
 #include "OraCommon.h"
 
+NAMESPACE_UPP
+
 #if defined(PLATFORM_WIN32) && defined(COMPILER_MSC)
 #define __STDC__ 1
 #endif
@@ -50,6 +52,7 @@ protected:
 private:
 	bool                   AllocOciHandle(void *hp, int type);
 	void                   FreeOciHandle(void *hp, int type);
+	void                   SetOciError(String text);
 
 private:
 	friend class OCI8Connection;
@@ -117,5 +120,7 @@ public:
 #ifdef text
 #undef text
 #endif
+
+END_UPP_NAMESPACE
 
 #endif

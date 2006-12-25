@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 GUI_APP_MAIN
 {
 	DrawingDraw dw(100, 100);

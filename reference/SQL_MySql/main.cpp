@@ -1,5 +1,7 @@
 #include <MySql/MySql.h>
 
+using namespace Upp;
+
 CONSOLE_APP_MAIN
 {
 	MySqlSession session;

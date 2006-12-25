@@ -1,3 +1,5 @@
+description "Using event queue for communication between worker threads and GUI";
+
 uses
 	CtrlLib;
 

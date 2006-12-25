@@ -1,3 +1,5 @@
+NAMESPACE_UPP
+
 class RulerCtrl : public FrameCtrl<Ctrl>
 {
 public:
@@ -101,3 +103,5 @@ private:
 
 class HRulerCtrl : public RulerCtrl { public: HRulerCtrl() { Horz(); } };
 class VRulerCtrl : public RulerCtrl { public: VRulerCtrl() { Vert(); } };
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include "Report.h"
 
+NAMESPACE_UPP
+
 Report::Report()
 {
 	mg.x = mg.y = Null;
@@ -164,3 +166,5 @@ void Report::Put(const char *qtf)
 {
 	Put(ParseQTF(qtf));
 }
+
+END_UPP_NAMESPACE

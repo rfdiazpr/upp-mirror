@@ -4,6 +4,8 @@
 #include <Sql/Sql.h>
 #include "OraCommon.h"
 
+NAMESPACE_UPP
+
 class Oracle7 : public SqlSession {
 public:
 	virtual void                  Begin();
@@ -63,5 +65,7 @@ public:
 };
 
 typedef Oracle7 OracleSession;
+
+END_UPP_NAMESPACE
 
 #endif

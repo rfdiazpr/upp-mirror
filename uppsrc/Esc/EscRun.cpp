@@ -1,5 +1,8 @@
 #include "Esc.h"
 
+
+NAMESPACE_UPP
+
 #define LTIMING(x) // RTIMING(x)
 
 void LambdaArgs(CParser& p, EscLambda& l)
@@ -286,3 +289,5 @@ String   Expand(const String& doc, ArrayMap<String, EscValue>& global,
 		}
 	return out;
 }
+
+END_UPP_NAMESPACE

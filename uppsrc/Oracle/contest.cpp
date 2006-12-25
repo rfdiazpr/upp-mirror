@@ -2,6 +2,8 @@
 
 #include <Oracle/Oracle8.h>
 
+using namespace Upp;
+
 void Main()
 {
 	String buffer;

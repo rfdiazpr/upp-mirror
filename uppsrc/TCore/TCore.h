@@ -2,6 +2,7 @@
 #define __TCore__
 
 #include <Web/Web.h>
+
 #ifdef flagNOHELP
 #define NOHELP
 #endif//flagNOHELP

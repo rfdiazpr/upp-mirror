@@ -8,6 +8,8 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
+NAMESPACE_UPP
+
 void  *SSLAlloc(size_t size);
 void   SSLFree(void *ptr);
 void  *SSLRealloc(void *ptr, size_t size);
@@ -156,6 +158,8 @@ inline String SSLInfoCertNotBefore()    { return "SSL_CERT_NOT_BEFORE"; }    // 
 inline String SSLInfoCertNotAfter()     { return "SSL_CERT_NOT_AFTER"; }     // Date
 inline String SSLInfoCertVersion()      { return "SSL_CERT_VERSION"; }       // int
 inline String SSLInfoCertSerialNumber() { return "SSL_CERT_SERIAL_NUMBER"; } // String
+
+END_UPP_NAMESPACE
 
 #endif//flagNOSSL
 

@@ -2,6 +2,8 @@
 #include <plugin/z/z.h>
 #include <plugin/bz2/bz2.h>
 
+NAMESPACE_UPP
+
 BinObjInfo::BinObjInfo()
 {
 }
@@ -499,3 +501,5 @@ CONSOLE_APP_MAIN
 	}
 }
 #endif
+
+END_UPP_NAMESPACE

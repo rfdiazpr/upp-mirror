@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 static int GetParaHeight(const Array<RichPara::Part>& parts)
 {
 	int ht = 0;
@@ -646,3 +648,5 @@ void RTFEncoder::PutDocument()
 	oldstyle = Uuid::Create();
 	PutTxt(richtext, 0, 3600);
 }
+
+END_UPP_NAMESPACE

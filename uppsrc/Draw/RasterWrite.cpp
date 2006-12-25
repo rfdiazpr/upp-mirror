@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 void RasterFormat::Write(byte *t, const RGBA *s, int cx, const PaletteCv *palcv) const
 {
 	const RGBA *e = s + cx;
@@ -323,3 +325,5 @@ void RasterFormat::Write(byte *t, const RGBA *s, int cx, const PaletteCv *palcv)
 		NEVER();
 	}
 }
+
+END_UPP_NAMESPACE

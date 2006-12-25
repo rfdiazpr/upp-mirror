@@ -2,6 +2,8 @@
 
 #ifdef flagMAIN
 
+NAMESPACE_UPP
+
 void Paint(Draw& w)
 {
 	for(int i = 0; i < 32; i++) {
@@ -187,5 +189,7 @@ GUI_APP_MAIN
 				LOG(i << ": " << ttf.GetAdvanceWidth(i));
 //*/
 }
+
+END_UPP_NAMESPACE
 
 #endif

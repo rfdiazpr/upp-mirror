@@ -1,3 +1,5 @@
+NAMESPACE_UPP
+
 #define CHECK_CACHE() // CheckCache()
 #define CHECK_BLOCK(block, index) // CheckBlock(block, index)
 #ifdef _DEBUG
@@ -814,7 +816,7 @@ private:
 
 inline dword ValueTypeNo(const byte&)     { return DataTableColumn::BYTE_V; }
 inline dword ValueTypeNo(const short&)    { return DataTableColumn::SHORT_V; }
-inline dword ValueTypeNo(const bool&)     { return DataTableColumn::BOOL_V; }
+//inline dword ValueTypeNo(const bool&)     { return DataTableColumn::BOOL_V; }
 
 class DataTable : public DataClient
 {
@@ -964,3 +966,5 @@ protected:
 	ArrayMap<String, DataTable> tables;
 	int           block_level;
 };
+
+END_UPP_NAMESPACE

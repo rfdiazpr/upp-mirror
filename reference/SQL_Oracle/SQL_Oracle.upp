@@ -1,3 +1,5 @@
+description "Logging to Oracle";
+
 uses
 	Oracle;
 

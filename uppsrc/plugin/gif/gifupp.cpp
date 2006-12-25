@@ -1,5 +1,8 @@
 #include "gif.h"
 
+
+NAMESPACE_UPP
+
 struct GifGlobalInfo // information about gif file
 {
 	void     Serialize(Stream& stream);
@@ -1602,3 +1605,5 @@ void GIFEncoder::WriteLineRaw(const byte *s)
 {
 	data->WriteLineRaw(s);
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 bool RichTable::Reduce(RichContext& rc) const
 {
 	Rect br = rc.page;
@@ -170,3 +172,5 @@ RichTable::Layout RichTable::Realize(RichContext rc, int ny) const
 	}
 	return tab;
 }
+
+END_UPP_NAMESPACE

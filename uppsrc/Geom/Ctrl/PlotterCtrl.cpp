@@ -1,6 +1,8 @@
 #include "GeomCtrl.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 #define IMAGECLASS PlotterImg
 #define IMAGEFILE  <Geom/Ctrl/PlotterCtrl.iml>
 #include           <Draw/iml.h>
@@ -728,7 +730,7 @@ void PlotterCtrl::MouseMove(Point pt, dword keyflags)
 
 void PlotterCtrl::UpdateMousePos()
 {
-	mouse_pos = FromClient(::GetMousePos() - Size(GetScreenView().TopLeft()));
+	mouse_pos = FromClient(UPP::GetMousePos() - Size(GetScreenView().TopLeft()));
 	RefreshPos();
 	WhenMousePos();
 }
@@ -1093,3 +1095,5 @@ Pointf PanDragDrop::GetDelta(Pointf start, Pointf pt)
 	owner.AdjustPos(p, Null);
 	return p;
 }
+
+END_UPP_NAMESPACE

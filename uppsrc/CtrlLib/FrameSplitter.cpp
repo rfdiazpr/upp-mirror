@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 void SplitterFrame::FrameAdd(Ctrl& parent)
 {
 	parent.Add(*this);
@@ -114,3 +116,5 @@ SplitterFrame::SplitterFrame()
 	type = LEFT;
 	size = maxsize = 0;
 }
+
+END_UPP_NAMESPACE

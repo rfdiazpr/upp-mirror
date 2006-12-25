@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 SliderCtrl::SliderCtrl()
 : min(0)
 , max(100)
@@ -200,3 +202,5 @@ void SliderCtrl::Inc()
 }
 
 SliderCtrl::~SliderCtrl() {}
+
+END_UPP_NAMESPACE

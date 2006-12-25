@@ -1,5 +1,7 @@
 #include "CppBase.h"
 
+NAMESPACE_UPP
+
 #ifdef _MSC_VER
 #pragma inline_depth(255)
 #pragma optimize("t", on)
@@ -174,3 +176,5 @@ SrcFile PreProcess(Stream& in)
 	}
 	return res;
 }
+
+END_UPP_NAMESPACE

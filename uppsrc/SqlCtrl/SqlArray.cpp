@@ -1,5 +1,7 @@
 #include "SqlCtrl.h"
 
+NAMESPACE_UPP
+
 void SqlArray::Join(SqlId id, ArrayCtrl& master) {
 	master.AddCtrlAt(0, *this);
 	fk = id;
@@ -176,9 +178,9 @@ void SqlArray::AppendQuery(SqlBool where)
 		Session().ClearError();
 //		AutoWaitCursor awc(querytime); // todo: Fidler -> WaitCursor
 		if(IsNull(count))
-			sql * ::Select(cols).From(table).Where(wh).OrderBy(orderby);
+			sql * UPP::Select(cols).From(table).Where(wh).OrderBy(orderby);
 		else
-			sql * ::Select(cols).From(table).Where(wh).OrderBy(orderby).Limit(count).Offset(offset);
+			sql * UPP::Select(cols).From(table).Where(wh).OrderBy(orderby).Limit(count).Offset(offset);
 		if(ShowError(sql)) {
 //			awc.Cancel(); // todo: Fidler -> WaitCursor
 			return;
@@ -215,3 +217,5 @@ SqlArray::SqlArray() {
 	offset = 0;
 	count = Null;
 }
+
+END_UPP_NAMESPACE

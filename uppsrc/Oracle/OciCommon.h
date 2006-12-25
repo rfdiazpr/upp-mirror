@@ -15,13 +15,13 @@ struct OCIParam;
 typedef void dvoid;
 typedef int sword;
 typedef int sb4;
-typedef dword uword;
-typedef dword ub4;
+typedef UPP::dword uword;
+typedef UPP::dword ub4;
 typedef short sb2;
-typedef word ub2;
+typedef UPP::word ub2;
 typedef signed char sb1;
-typedef byte ub1;
-typedef byte OraText;
+typedef UPP::byte ub1;
+typedef UPP::byte OraText;
 enum
 {
 	// OCIInitialize modes

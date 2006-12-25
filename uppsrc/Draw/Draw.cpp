@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x)    // RLOG(x)
 #define LTIMING(x) // RTIMING(x)
 
@@ -318,3 +320,5 @@ BackDraw::~BackDraw()
 {
 	Destroy();
 }
+
+END_UPP_NAMESPACE

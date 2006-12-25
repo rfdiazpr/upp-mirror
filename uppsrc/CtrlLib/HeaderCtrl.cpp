@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 HeaderCtrl::Column::Column()
 {
 	ratio = 1;
@@ -680,3 +682,5 @@ HeaderCtrl::HeaderCtrl() {
 }
 
 HeaderCtrl::~HeaderCtrl() {}
+
+END_UPP_NAMESPACE

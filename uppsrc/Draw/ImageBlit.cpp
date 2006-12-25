@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 void Fill(RGBA *t, const RGBA& src, int n)
 {
 	while(n--)
@@ -254,3 +256,5 @@ Vector<Image> UnpackImlData(const String& d)
 	}
 	return img;
 }
+
+END_UPP_NAMESPACE

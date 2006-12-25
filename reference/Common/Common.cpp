@@ -1,9 +1,11 @@
 #include <Core/Core.h>
 
+using namespace Upp;
+
 struct Foo : Moveable< Foo, Comparable<Foo> > {
 	String a;
 	int    b;
-	
+
 	String   ToString() const            { return String().Cat() << '(' << a << ", " << b << ')'; }
 	unsigned GetHashValue() const        { return CombineHash() << a << b; }
 	int      Compare(const Foo& x) const { return CombineCompare(a, x.a)(b, x.b); }

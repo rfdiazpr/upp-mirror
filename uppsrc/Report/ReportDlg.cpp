@@ -1,5 +1,7 @@
 #include "Report.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 bool Print(Report& r, int i, const char *_name) {
@@ -198,7 +200,7 @@ void ReportWindow::Pdf()
 	}
 	if(!fs.ExecuteSaveAs("Output PDF file"))
 		return;
-	SaveFile(~fs, ::Pdf(*report));
+	SaveFile(~fs, UPP::Pdf(*report));
 }
 
 void ReportWindow::SetButton(int i, const char *label, int id)
@@ -249,3 +251,5 @@ bool Perform(Report& r, const char *caption)
 {
 	return ReportWindow().Perform(r, 100, caption);
 }
+
+END_UPP_NAMESPACE

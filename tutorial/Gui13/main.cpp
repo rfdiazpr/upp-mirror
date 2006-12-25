@@ -1,8 +1,10 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct MyAppWindow : TopWindow {
 	Button button;
-	
+
 	void Click() { PromptOK("You have clicked the button!"); }
 
 	typedef MyAppWindow CLASSNAME;

@@ -1,5 +1,7 @@
 #include <Core/Core.h>
 
+using namespace Upp;
+
 struct RawFoo {
 	String a;
 	int    b;

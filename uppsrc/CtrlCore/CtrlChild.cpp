@@ -1,5 +1,7 @@
 #include "CtrlCore.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x)  // LOG(x)
 
 void  Ctrl::AddChild(Ctrl *q, Ctrl *p)
@@ -222,3 +224,5 @@ const TopWindow *Ctrl::GetMainWindow() const
 {
 	return const_cast<Ctrl *>(this)->GetMainWindow();
 }
+
+END_UPP_NAMESPACE

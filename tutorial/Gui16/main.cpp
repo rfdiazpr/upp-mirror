@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 #define LAYOUTFILE <Gui16/dlg.lay>
 #include <CtrlCore/lay.h>
 

@@ -1,5 +1,7 @@
 #include "CtrlCore.h"
 
+NAMESPACE_UPP
+
 int MemoryProbeInt;
 
 struct TimeEvent : public Link<TimeEvent> {
@@ -118,12 +120,12 @@ void  Ctrl::InitTimer()
 
 void  Ctrl::SetTimeCallback(int delay_ms, Callback cb, int id) {
 	ASSERT(id >= 0 && id < sizeof(Ctrl));
-	::SetTimeCallback(delay_ms, cb, (byte *)this + id);
+	UPP::SetTimeCallback(delay_ms, cb, (byte *)this + id);
 }
 
 void  Ctrl::KillTimeCallback(int id) {
 	ASSERT(id >= 0 && id < sizeof(Ctrl));
-	::KillTimeCallback((byte *)this + id);
+	UPP::KillTimeCallback((byte *)this + id);
 }
 
 void  Ctrl::KillSetTimeCallback(int delay_ms, Callback cb, int id)
@@ -144,10 +146,12 @@ void  Ctrl::KillPostCallback(Callback cb, int id)
 
 bool  Ctrl::ExistsTimeCallback(int id) const {
 	ASSERT(id >= 0 && id < sizeof(Ctrl));
-	return ::ExistsTimeCallback((byte *)this + id);
+	return UPP::ExistsTimeCallback((byte *)this + id);
 }
 
 dword GetTimeClick()
 {
 	return sTClick;
 }
+
+END_UPP_NAMESPACE

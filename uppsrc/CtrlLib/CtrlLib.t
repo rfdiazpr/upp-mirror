@@ -1481,6 +1481,32 @@ srSP("Prekid ažuriranja će verovatno prouzrokovati nevolje kada startujete "
      "aplikaciju sledeći put.\nNastaviti?")
 zhCN("放弃可能导致下次运行本程序出现问题.\n继续?")
 
+//DateTimeCtrl
+
+T_("Week")
+plPL("Tydzień")
+deDE("Woche")
+T_("Wk")
+plPL("Ty.")
+deDE("Wo.")
+
+T_("Today")
+plPL("Dziś")
+deDE("Heute")
+
+T_("Next month")
+plPL("Następny miesiąc")
+deDE("Nächster Monat")
+T_("Previous month")
+plPL("Poprzedni miesiąc")
+deDE("Voriger Monat")
+
+T_("Next year")
+plPL("Następny rok")
+deDE("Nächstes Jahr")
+T_("Previous year")
+plPL("Poprzedni rok")
+deDE("Voriges Jahr")
 
 // Ctrl.lay
 

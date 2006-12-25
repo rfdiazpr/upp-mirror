@@ -1,6 +1,8 @@
 #include "Web.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 bool IsSameTextFile(const char *p, const char *q)
 {
 	for(;;)
@@ -882,3 +884,5 @@ String HttpQuery::ToString() const
 	}
 	return out;
 }
+
+END_UPP_NAMESPACE

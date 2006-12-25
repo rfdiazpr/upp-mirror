@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 static String sNumberAsText(int number)
 {
 	static const char * const digits[20] = {

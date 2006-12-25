@@ -1,5 +1,7 @@
 #include "Core.h"
 
+NAMESPACE_UPP
+
 #ifdef PLATFORM_WIN32
 
 static HINSTANCE app_instance;
@@ -118,14 +120,14 @@ void DeleteWinReg(const String& key, HKEY base) {
 String GetSystemDirectory() {
 	char temp[MAX_PATH];
 	*temp = 0;
-	GetSystemDirectory(temp, sizeof(temp));
+	::GetSystemDirectory(temp, sizeof(temp));
 	return FromSystemCharset(temp);
 }
 
 String GetWindowsDirectory() {
 	char temp[MAX_PATH];
 	*temp = 0;
-	GetWindowsDirectory(temp, sizeof(temp));
+	::GetWindowsDirectory(temp, sizeof(temp));
 	return FromSystemCharset(temp);
 }
 #endif
@@ -141,3 +143,5 @@ String GetModuleFileName(HINSTANCE instance) {
 }
 
 #endif
+
+END_UPP_NAMESPACE

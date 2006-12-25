@@ -1,5 +1,7 @@
 #include <Web/Web.h>
 
+using namespace Upp;
+
 #define APP_VERSION "1.0.r1"
 #define APP_DATE    Date(2005, 2, 22)
 

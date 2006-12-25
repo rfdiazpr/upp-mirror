@@ -3,6 +3,9 @@
 
 #include <Core/Core.h>
 
+
+NAMESPACE_UPP
+
 enum { ESC_VOID, ESC_NUMBER, ESC_ARRAY, ESC_MAP, ESC_LAMBDA };
 
 String EscTypeName(int sv_type);
@@ -90,7 +93,7 @@ public:
 	int     GetFieldInt(const char *id) const;
 
 	int     GetType() const                                   { return type; }
-	String  GetTypeName() const                               { return ::EscTypeName(type); }
+	String  GetTypeName() const                               { return UPP::EscTypeName(type); }
 
 	int     GetCount() const;
 
@@ -304,5 +307,7 @@ bool     IsTime(const EscValue& v);
 
 String   Expand(const String& doc, ArrayMap<String, EscValue>& global,
                 int oplimit = 50000, String (*format)(const Value& v) = StdFormat);
+
+END_UPP_NAMESPACE
 
 #endif

@@ -1,3 +1,5 @@
+description "GLCtrl widget example";
+
 uses
 	GLCtrl;
 
@@ -6,4 +8,3 @@ file
 
 mainconfig
 	"" = "GUI";
-

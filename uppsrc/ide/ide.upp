@@ -66,12 +66,7 @@ file
 	AUTHORS;
 
 mainconfig
-	"" = "GUI",
-	"" = "GUI XLFD",
-	"" = "GUI .ULD",
-	"" = "GUI USEMALLOC",
-	"" = "GUI MT",
-	"" = "GUI NOLIB";
+	"" = "GUI";
 
 custom() "",
 	"",

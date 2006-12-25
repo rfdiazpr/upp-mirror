@@ -1,5 +1,7 @@
 #include "RichEdit.h"
 
+NAMESPACE_UPP
+
 double UnitMultiplier(int unit) {
 	static double m[] =
 	{
@@ -153,3 +155,5 @@ UnitEdit::UnitEdit()
 	unit = UNIT_DOT;
 	WithSgn(false);
 }
+
+END_UPP_NAMESPACE

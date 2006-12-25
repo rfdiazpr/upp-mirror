@@ -19,6 +19,3 @@ file
 	ImlFile.cpp,
 	IconDes.lay,
 	IconDes.iml;
-
-mainconfig
-	"" = "GUI";

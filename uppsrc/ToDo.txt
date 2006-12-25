@@ -1,6 +1,37 @@
-* RTF import chyba - zaporne souradnice
+* SqlVal.As
 
-TopWindow::FULLSCREEN!
+* LineEdit current line highlight
+
+* const Callbacks
+
+* when working with non local copy of files (/usr/share/upp/uppsrc etc) and have no write access to these files (because installed as root - as normal) i get the error "Error creating temporary file /usr/share/upp/examples/UWord/UWord.iml" when closing or changing from UWord.iml to another file.
+  Got that with non .iml files, too but can't reproduce atm.
+  I guess the solution is creating temp files somewhere in ~ every time.
+
+* FLUXBOX in ubuntu
+
+* mThread = new boost::thread(boost::bind(&ChainBox::startChain,this));
+
+g00fy {
+
+	DE: 2 tabs, switch tab1 -> go down a bit with the cursor, move scrollbar back to top, switch tab2, switch back to 1
+	=> expected: same position as before
+	=> result: back at cursor position
+
+	IDE: improve the dialogs for code completion as they feel unnatural to anyone using DevCPP, Visual Studio or even Eclipse (sorry to sound harsh, but if you want to be widely accepted, you just got to follow the rest - ... - and do it better).
+
+	IDE: improve it with features of Visual Assist [http://www.wholetomato.com/]. I think if you/me/someone can integrate this, then no need for Visual Studio anymore Smile. And I can FINALLY leave my windows-machine alone Very Happy
+
+	IDE: provide more options for setting include directories and stuff, setting preprocessor definitions, ... [Maybe it's possible, but I'm just dumping my brain on first impression].
+
+	Ctrl: Make it possible to have an Office XP/2000 look (that would be nasty!). Maybe it's possible with the ThemeEngine I spotted, but I didn't look in it in depth.
+
+	Core: Add 'sizers'. This is some concept wxWidgets has and simply rocks... I don't know exactly how you do it, but in wx you just have a sizer and start adding stuff to it (other sizers, controls, ...). Then all the layout is done automagically. And on each platform it simply looks and feels the same (for example some people have big fonts in windows, and others small -> with sizers: no problem).
+
+	Website: Provide speed comparisons between QT/Java/wx/U++. For example insert into string, string copying, string manipulations, ...
+}
+
+* RTF import chyba - zaporne souradnice
 
 http://www.arilect.com/upp/forum/index.php?t=msg&th=1673&start=0&
 
@@ -8,7 +39,7 @@ http://www.arilect.com/upp/forum/index.php?t=msg&th=1673&start=0&
 
 * TabCtrl - rightedge problem (?)
 
-* Problem with menu fade in settings...
+
 
 Icon paste:
 

@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 void RichTxt::GetAllLanguages(Index<int>& all) const
 {
 	for(int i = 0; i < part.GetCount(); i++) {
@@ -341,3 +343,5 @@ void RichTxt::Normalize()
 		Invalidate();
 	}
 }
+
+END_UPP_NAMESPACE

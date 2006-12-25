@@ -1,5 +1,6 @@
 #include "Draw.h"
-#pragma hdrstop
+
+NAMESPACE_UPP
 
 #define LLOG(x)     //LOG(x)
 #define LTIMING(x)  //TIMING(x)
@@ -313,9 +314,9 @@ void Draw::SetClip() {
 	if(IsDrawing() || dw == Xroot) return;
 	LTIMING("SetClip");
 #ifdef PLATFORM_XFT
-	::SetClip(gc, xftdraw, clip.Top());
+	UPP::SetClip(gc, xftdraw, clip.Top());
 #else
-	::SetClip(gc, clip.Top());
+	UPP::SetClip(gc, clip.Top());
 #endif
 }
 
@@ -455,3 +456,5 @@ NilDraw::~NilDraw()
 Draw& GLOBAL_V(NilDraw, ScreenInfo)
 
 #endif
+
+END_UPP_NAMESPACE

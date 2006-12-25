@@ -126,6 +126,21 @@ FN(void, gtk_paint_arrow, (
 	int height
 ))
 
+FN(void, gtk_paint_extension, (
+	G_obj *style,
+	G_obj *window,
+	int    state_type,
+	int    shadow_type,
+	void  *area,
+	G_obj *widget,
+	const char *detail,
+	int x,
+	int y,
+	int width,
+	int height,
+	int gap_side
+))
+
 FN(G_obj *, gtk_widget_render_icon, (G_obj *widget, const char *stock_id, int size, const char *detail))
 
 FN(G_obj *, gtk_adjustment_new, (
@@ -157,3 +172,9 @@ FN(G_obj *, gtk_check_button_new, (void))
 FN(G_obj *, gtk_vscrollbar_new, (G_obj *adjustment))
 FN(G_obj *, gtk_hscrollbar_new, (G_obj *adjustment))
 FN(G_obj *, gtk_image_new, (void))
+FN(G_obj *, gtk_menu_new, (void))
+FN(G_obj *, gtk_menu_item_new, (void))
+FN(G_obj *, gtk_notebook_new, (void))
+
+FN(void, gtk_misc_get_alignment, (G_obj *misc, float *xalign, float *yalign))
+FN(void, gtk_misc_get_padding, (G_obj *misc, int *xpad, int *ypad))

@@ -3,6 +3,8 @@
 #include "TCoreCalc.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 String CalcType<const CalcNode *>::Describe() { return "lambda-výraz"; }
@@ -636,7 +638,7 @@ CalcNodePtr CalcContext::OptimizeConstant(CalcNodePtr src)
 	}
 }
 
-String CalcContext::Convert(String s, bool throw_errors, const ::Convert& convert)
+String CalcContext::Convert(String s, bool throw_errors, const UPP::Convert& convert)
 {
 	if(s.IsEmpty())
 		return Null;
@@ -690,7 +692,7 @@ void CalcContext::ParseConvert(String s, Vector<String>& sparts, Vector<CalcNode
 	}
 }
 
-String CalcContext::CalcConvert(const Vector<String>& sparts, const Vector<CalcNodePtr>& cparts, bool throw_errors, const ::Convert& convert)
+String CalcContext::CalcConvert(const Vector<String>& sparts, const Vector<CalcNodePtr>& cparts, bool throw_errors, const UPP::Convert& convert)
 {
 	String out;
 	for(int i = 0; i < sparts.GetCount(); i++)
@@ -871,7 +873,7 @@ String CalcContext::FormatNull(Value value, bool no_text)
 	}
 }
 
-String CalcContext::FormatText(Value value, const ::Convert& convert)
+String CalcContext::FormatText(Value value, const UPP::Convert& convert)
 {
 	if(value.IsError())
 		throw Exc(GetErrorText(value));
@@ -1540,3 +1542,5 @@ bool CalcParser::Force(int op, const char *expect)
 	Expect(expect);
 	return false;
 }
+
+END_UPP_NAMESPACE

@@ -3,6 +3,8 @@
 
 #include "SqlDlg.h"
 
+NAMESPACE_UPP
+
 static bool StringLessNoCase(String a, String b) { return CompareNoCase(a, b) < 0; }
 
 class DlgSqlExport : public WithSqlExportLayout<TopWindow>
@@ -389,3 +391,5 @@ void SqlObjectTree::TableExport(String table_name)
 	Sql cursor(session);
 	RunDlgSqlExport(cursor, "select * from " + schema + "." + table, table);
 }
+
+END_UPP_NAMESPACE

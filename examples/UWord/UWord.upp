@@ -1,3 +1,5 @@
+description "Wordprocessor application";
+
 uses
 	CtrlLib,
 	RichEdit,

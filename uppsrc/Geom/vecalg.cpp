@@ -1,5 +1,8 @@
 #include "Geom.h"
 
+
+NAMESPACE_UPP
+
 //////////////////////////////////////////////////////////////////////
 // Distance: Distance from point to line.
 //////////////////////////////////////////////////////////////////////
@@ -523,28 +526,28 @@ double VecLine::Distance(Pointf point, double* arg) const
 {
 	if(IsNull(point) || IsNull(*this))
 		return Null;
-	return ::Distance(point, A, B, arg);
+	return UPP::Distance(point, A, B, arg);
 }
 
 //////////////////////////////////////////////////////////////////////
 
 Pointf VecLine::Mid() const
 {
-	return ::Mid(A, B);
+	return UPP::Mid(A, B);
 }
 
 //////////////////////////////////////////////////////////////////////
 
 Pointf VecLine::Right() const
 {
-	return ::Right(Vector());
+	return UPP::Right(Vector());
 }
 
 //////////////////////////////////////////////////////////////////////
 
 Pointf VecLine::Left() const
 {
-	return ::Left(Vector());
+	return UPP::Left(Vector());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -721,7 +724,7 @@ Rectf VecArc::GetBoundingBox() const
 	}
 
 	double r = bulge / 2 + l * l / (8 * bulge);
-	Pointf C = ::Mid(A, B) + ::Right(B - A) * ((bulge - r) / l);
+	Pointf C = UPP::Mid(A, B) + UPP::Right(B - A) * ((bulge - r) / l);
 	int q1 = (A.x < C.x) ^ (A.y < C.y ? 3 : 0);
 	int q2 = (B.x < C.x) ^ (B.y < C.y ? 3 : 0);
 	if(r < 0) // swap quadrants
@@ -760,9 +763,9 @@ String Dump(const VecArc& arc)
 
 Pointf VecArc::ArcMid(Pointf P, Pointf Q, double l, double h)
 {
-	Pointf result = ::Mid(P, Q);
+	Pointf result = UPP::Mid(P, Q);
 	if(l > Vec_tolerance)
-		result += ::Right(Q - P) * (h / l);
+		result += UPP::Right(Q - P) * (h / l);
 	return result;
 }
 
@@ -794,7 +797,7 @@ Pointf VecArc::GetPointAt(Pointf P, Pointf Q, double l, double h, double t)
 		return VecLine::GetPointAt(P, Q, t);
 	double k = l * 0.5;
 	double lambda = h / k;
-	Pointf C = ::Mid(P, Q);
+	Pointf C = UPP::Mid(P, Q);
 	double beta = 2 * atan(lambda);
 	t = sin((2 * t - 1) * beta) / sin(beta);
 	C += (Q - P) * (t / 2);
@@ -805,7 +808,7 @@ Pointf VecArc::GetPointAt(Pointf P, Pointf Q, double l, double h, double t)
 	t *= t;
 	double denom = sqrt(opl * opl - 4 * l2 * t) + 1 - l2;
 	if(denom > Vec_tolerance)
-		C += ::Right(Q - P) * (4 * l2 * (1 - t) / denom);
+		C += UPP::Right(Q - P) * (4 * l2 * (1 - t) / denom);
 	return C;
 }
 
@@ -813,7 +816,7 @@ Pointf VecArc::GetPointAt(Pointf P, Pointf Q, double l, double h, double t)
 
 void VecArc::Bisect(Pointf P, Pointf Q, double l, double h, Pointf& centre, double& ll, double& hh)
 {
-	centre = ::Mid(P, Q) + ::Right(Q - P) * h / l;
+	centre = UPP::Mid(P, Q) + UPP::Right(Q - P) * h / l;
 	ll = sqrt(l * l / 4 + h * h);
 	hh = h * ll / (2 * ll + l);
 }
@@ -948,8 +951,8 @@ void VecArcInfo::Set(Pointf _C, Pointf _A, Pointf _B, bool anticlockwise)
 	C = _C;
 	reversed = !anticlockwise;
 	bow = A | B;
-	alpha = ::Bearing(A - C);
-	beta = ::Bearing(B - C);
+	alpha = UPP::Bearing(A - C);
+	beta = UPP::Bearing(B - C);
 	radius = B | C;
 	circle = (A == B);
 	curved = circle || (bow > Vec_tolerance);
@@ -1004,11 +1007,11 @@ void VecArcInfo::Set(Pointf _P, Pointf _Q, Pointf X)
 		return;
 	}
 
-	double x2  = ::Squared(X);
+	double x2  = UPP::Squared(X);
 	Pointf     AX  = X - _P;
 	Pointf     BX  = X - _Q;
-	double m1x = (x2 - ::Squared(_P)) / 2;
-	double m1y = (x2 - ::Squared(_Q)) / 2;
+	double m1x = (x2 - UPP::Squared(_P)) / 2;
+	double m1y = (x2 - UPP::Squared(_Q)) / 2;
 	double det = AX % BX;
 	Pointf     dc(m1x * BX.y - m1y * AX.y, m1y * AX.x - m1x * BX.x);
 
@@ -1023,8 +1026,8 @@ void VecArcInfo::Set(Pointf _P, Pointf _Q, Pointf X)
 
 		C         = dc / det;
 		radius    = X | C;
-		alpha     = ::Bearing(A - C);
-		beta      = ::Bearing(B - C);
+		alpha     = UPP::Bearing(A - C);
+		beta      = UPP::Bearing(B - C);
 
 		if(det >= 0)
 		{ // reverse arc direction
@@ -1061,9 +1064,9 @@ void VecArcInfo::Set(Pointf _P, Pointf _Q, double _bulge)
 	reversed = false;
 
 	radius = _bulge / 2 + bow * bow / (8 * _bulge);
-	C      = ::Mid(A, B) + ::Right(B - A) * ((_bulge - radius) / bow);
-	alpha  = ::Bearing(A - C);
-	beta   = ::Bearing(B - C);
+	C      = UPP::Mid(A, B) + UPP::Right(B - A) * ((_bulge - radius) / bow);
+	alpha  = UPP::Bearing(A - C);
+	beta   = UPP::Bearing(B - C);
 
 	if(bulge < 0)
 	{ // reverse arc direction
@@ -1131,11 +1134,11 @@ Pointf VecArcInfo::CentreOfMass() const
 {
 	if(IsCircle())
 		return C;
-	Pointf M = ::Mid(A, B);
+	Pointf M = UPP::Mid(A, B);
 	if(!IsCurved())
 		return M;
 	double extrusion = bow / (beta - alpha) - radius + fabs(bulge);
-	return M + Unit(IsReversed() ? ::Left(M) : ::Right(M)) * extrusion;
+	return M + Unit(IsReversed() ? UPP::Left(M) : UPP::Right(M)) * extrusion;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1252,7 +1255,7 @@ double VecArcInfo::Distance(Pointf X, double* arg) const
 		return fabs((X | C) - radius);
 	}
 	if(!IsCurved())
-		return ::Distance(X, A, B, arg);
+		return UPP::Distance(X, A, B, arg);
 
 	bool a = (A - C) % (X - C) > 0;
 	bool b = (X - C) % (B - C) > 0;
@@ -1299,11 +1302,11 @@ double VecArcInfo::Distance(Pointf X, double* arg) const
 
 double VecArcInfo::GetMaxDistance(Pointf point, Pointf *farthest) const
 {
-	if(IsCircle() || IsCurved() && ContainsBearing(::Bearing(C, point)))
+	if(IsCircle() || IsCurved() && ContainsBearing(UPP::Bearing(C, point)))
 	{
 		double distance = (point | C) + radius;
 		if(farthest)
-			*farthest = point + ::Length(C - point, radius);
+			*farthest = point + UPP::Length(C - point, radius);
 		return distance;
 	}
 
@@ -1321,12 +1324,12 @@ bool VecArcInfo::Crosses(Rectf R) const
 		return false;
 
 	if(!IsCurved())
-		return ::Crosses(R, A, B);
+		return UPP::Crosses(R, A, B);
 
 	if(R.Contains(A) || R.Contains(B))
 		return true;
 
-	if(!::Crosses(R, C, radius))
+	if(!UPP::Crosses(R, C, radius))
 		return false;
 
 	if(IsCircle())
@@ -1359,7 +1362,7 @@ double VecArcInfo::GetArg(Pointf point) const
 {
 	if(!IsCurved())
 		return VecLine::GetArg(point);
-	return GetArg(::Bearing(point, C));
+	return GetArg(UPP::Bearing(point, C));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1396,7 +1399,7 @@ Pointf VecArcInfo::GetStartDir() const
 {
 	if(IsCurved())
 	{
-		Pointf CA = ::Left(A - C);
+		Pointf CA = UPP::Left(A - C);
 		if(IsReversed())
 			CA = -CA;
 		return CA;
@@ -1411,7 +1414,7 @@ Pointf VecArcInfo::GetEndDir() const
 {
 	if(IsCurved())
 	{
-		Pointf CB = ::Left(B - C);
+		Pointf CB = UPP::Left(B - C);
 		if(IsReversed())
 			CB = -CB;
 		return CB;
@@ -1424,7 +1427,7 @@ Pointf VecArcInfo::GetEndDir() const
 
 double VecArcInfo::GetStartTangent() const
 {
-	return ::Bearing(GetStartDir());
+	return UPP::Bearing(GetStartDir());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1432,7 +1435,7 @@ double VecArcInfo::GetStartTangent() const
 
 double VecArcInfo::GetEndTangent() const
 {
-	return ::Bearing(GetEndDir());
+	return UPP::Bearing(GetEndDir());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1441,8 +1444,8 @@ VecArcInfo VecArcInfo::Offset(double dist) const
 {
 	if(dist == 0)
 		return *this;
-	Pointf last = A + ::Unit(::Right(GetStartDir())) * dist;
-	Pointf next = B + ::Unit(::Right(GetEndDir())) * dist;
+	Pointf last = A + UPP::Unit(UPP::Right(GetStartDir())) * dist;
+	Pointf next = B + UPP::Unit(UPP::Right(GetEndDir())) * dist;
 	if(IsCurved())
 		return VecArcInfo(C, last, next, !IsReversed());
 	else
@@ -1714,3 +1717,5 @@ bool VecIntersection::AA(const VecArcInfo &a1, const VecArcInfo &a2)
 }
 
 //////////////////////////////////////////////////////////////////////
+
+END_UPP_NAMESPACE

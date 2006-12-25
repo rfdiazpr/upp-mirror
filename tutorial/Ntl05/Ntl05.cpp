@@ -1,6 +1,7 @@
 #include <Core/Core.h>
 #include <list>
 
+using namespace Upp;
 
 CONSOLE_APP_MAIN
 {

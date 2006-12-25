@@ -1,12 +1,14 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct App : public TopWindow
 {
 	Button a, b, c, d;
 	Splitter v, h;
-	
+
 	void Toggle();
-	
+
 	App();
 };
 

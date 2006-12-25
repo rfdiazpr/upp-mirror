@@ -1,6 +1,8 @@
 #include "Web.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 #define LLOG(x) // RLOG(x)
 
 #define SLOWWRITE 4 // KB/s, comment out to turn off
@@ -956,3 +958,5 @@ String GetHttpErrorPage(HttpQuery query, String err, bool show_query)
 
 	return HtmlTitlePage(t_("Web server error"), body);
 }
+
+END_UPP_NAMESPACE

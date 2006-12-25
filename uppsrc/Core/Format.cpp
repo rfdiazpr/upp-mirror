@@ -3,6 +3,8 @@
 #pragma BLITZ_APPROVE
 #include <float.h>
 
+NAMESPACE_UPP
+
 // Old format ---------------------------
 
 String  VFormat(const char *fmt, va_list ptr) {
@@ -1115,3 +1117,5 @@ String DeFormat(const char *text)
 	}
 	return x;
 }
+
+END_UPP_NAMESPACE

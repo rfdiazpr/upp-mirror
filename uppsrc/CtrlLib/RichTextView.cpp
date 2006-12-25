@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 Rect  RichTextView::GetPage() const
@@ -461,3 +463,5 @@ bool Print(const RichText& text, const Rect& page, int currentpage, const char *
 }
 
 #endif
+
+END_UPP_NAMESPACE

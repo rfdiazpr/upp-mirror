@@ -3,6 +3,8 @@
 
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 class CounterCtrl : public Ctrl {
 public:
 	virtual Value GetData() const;
@@ -19,7 +21,7 @@ public:
 	CounterCtrl& SetFont(Font f)   { font = f; Refresh(); return *this; }
 	CounterCtrl& Ink(Color c)      { ink = c; Refresh(); return *this; }
 	CounterCtrl& Paper(Color c)    { paper = c; Refresh(); return *this; }
-	
+
 	CounterCtrl();
 	~CounterCtrl();
 };

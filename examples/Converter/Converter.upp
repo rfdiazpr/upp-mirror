@@ -1,3 +1,5 @@
+description "Converts metric units and U.S. units (meters / feets etc..)";
+
 uses
 	CtrlLib;
 
@@ -7,4 +9,3 @@ file
 
 mainconfig
 	"" = "GUI";
-

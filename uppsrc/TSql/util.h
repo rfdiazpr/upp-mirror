@@ -1,3 +1,5 @@
+NAMESPACE_UPP
+
 void __sqltempl__instantiation__(Gate2<int, int>); // a weird compiler bug
 
 #define DEFID(x)    const Id x(#x);
@@ -73,11 +75,14 @@ bool                  IsNotSchemaEmpty(const SqlVal& table, const SqlBool& cond,
 bool                  IsNotSchemaEmpty(const SqlVal& table, SqlId column, const Value& value, Sql& cursor APPSQLCURSOR);
 
 #ifdef PLATFORM_WIN32 // bw, move to tsql/ctrl
-bool                  LockSql(Sql& cursor APPSQLCURSOR);
-bool                  LockSql(const SqlVal& table, SqlBool where, Sql& cursor APPSQLCURSOR);
-bool                  LockSql(const SqlVal& table, SqlId column, const Value& value, Sql& cursor APPSQLCURSOR);
-bool                  LockSchemaSql(const SqlVal& table, SqlBool where, Sql& cursor APPSQLCURSOR);
-bool                  LockSchemaSql(const SqlVal& table, SqlId column, const Value& value, Sql& cursor APPSQLCURSOR);
+//bool                  LockSql(Sql& cursor APPSQLCURSOR);
+//bool                  LockSql(const SqlVal& table, SqlBool where, Sql& cursor APPSQLCURSOR);
+//bool                  LockSql(const SqlVal& table, SqlId column, const Value& value, Sql& cursor APPSQLCURSOR);
+//bool                  LockSchemaSql(const SqlVal& table, SqlBool where, Sql& cursor APPSQLCURSOR);
+//bool                  LockSchemaSql(const SqlVal& table, SqlId column, const Value& value, Sql& cursor APPSQLCURSOR);
+
+//Mirek 06/12/22 - not defined anywhere in uppsrc, clashes with idis
+
 #endif
 
 SqlVal                Alias(const SqlVal& value, const SqlVal& alias);
@@ -127,3 +132,5 @@ SqlBool               GetTimeRange(Time d1, Time d2, const SqlVal& exp, bool for
 String                GetYearDayIndex(Date date);
 SqlVal                GetYearDayIndex(const SqlVal& date);
 SqlBool               GetYearDayRange(const SqlVal& date, Date min, Date max);
+
+END_UPP_NAMESPACE

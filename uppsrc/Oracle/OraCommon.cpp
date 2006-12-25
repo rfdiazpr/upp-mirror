@@ -2,6 +2,8 @@
 #include "OciCommon.h"
 #include "OraCommon.h"
 
+NAMESPACE_UPP
+
 Date OciDecodeDate(const byte data[7]) {
 	Date d;
 	d.year = int(data[0] - 100) * 100 + data[1] - 100;
@@ -517,3 +519,11 @@ Vector<String> OracleSchemaReservedWords()
 		out[i] = rwlist[i];
 	return out;
 }
+
+Sql::ERRORCLASS OciErrorClass(int errcode)
+{
+	return errcode == 3111 || errcode == 3113 || errcode == 3114 ? Sql::CONNECTION_BROKEN
+	: Sql::ERROR_UNSPECIFIED;
+}
+
+END_UPP_NAMESPACE

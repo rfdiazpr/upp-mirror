@@ -67,10 +67,10 @@ public:
 	Iterator         End()                      { return Iterator(*this, GetCount()); }
 	Iterator         GetIter(int pos)           { return Iterator(*this, pos); }
 
-	friend void Swap(BiVector& a, BiVector& b)  { ::Swap(a.vector, b.vector);
-	                                              ::Swap(a.start, b.start);
-	                                              ::Swap(a.items, b.items);
-	                                              ::Swap(a.alloc, b.alloc); }
+	friend void Swap(BiVector& a, BiVector& b)  { UPP::Swap(a.vector, b.vector);
+	                                              UPP::Swap(a.start, b.start);
+	                                              UPP::Swap(a.items, b.items);
+	                                              UPP::Swap(a.alloc, b.alloc); }
 
 	STL_BI_COMPATIBILITY(BiVector<T>)
 };
@@ -139,7 +139,7 @@ public:
 	Iterator         End()                      { return Iterator(*this, GetCount()); }
 	Iterator         GetIter(int pos)           { return Iterator(*this, pos); }
 
-	friend void Swap(BiArray& a, BiArray& b)    { ::Swap(a.bv, b.bv); }
+	friend void Swap(BiArray& a, BiArray& b)    { UPP::Swap(a.bv, b.bv); }
 
 	STL_BI_COMPATIBILITY(BiArray<T>)
 };

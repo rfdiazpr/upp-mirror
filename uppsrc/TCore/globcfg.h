@@ -1,3 +1,5 @@
+NAMESPACE_UPP
+
 class Configuration;
 class ConfigItem;
 
@@ -100,3 +102,5 @@ protected:
 	VectorMap<String, ConfigItem*> items;
 	bool                  item_error;
 };
+
+END_UPP_NAMESPACE

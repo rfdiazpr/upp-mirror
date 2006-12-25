@@ -3,6 +3,9 @@
 
 #include <Draw/Draw.h>
 
+
+NAMESPACE_UPP
+
 class JPGRaster : public StreamRaster {
 public:
 	class Data;
@@ -37,5 +40,7 @@ public:
 private:
 	int          quality;
 };
+
+END_UPP_NAMESPACE
 
 #endif

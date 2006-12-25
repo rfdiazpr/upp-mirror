@@ -33,6 +33,12 @@
 /*
  * Internal format of a TIFF directory entry.
  */
+
+#ifndef flagNONAMESPACE
+typedef unsigned int uint32;
+typedef unsigned short uint16;
+#endif
+
 typedef	struct {
 #define	FIELD_SETLONGS	4
 	/* bit vector of fields that are set */

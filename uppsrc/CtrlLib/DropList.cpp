@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 void PopUpTable::CancelMode() {
@@ -419,3 +421,5 @@ void Add(DropList& list, const MapConvert& convert)
 	for(int i = 0; i < convert.GetCount(); i++)
 		list.Add(convert.GetKey(i), convert.GetValue(i));
 }
+
+END_UPP_NAMESPACE

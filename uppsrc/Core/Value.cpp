@@ -1,5 +1,7 @@
 #include "Core.h"
 
+NAMESPACE_UPP
+
 #ifndef flagSO
 const Nuller Null;
 #endif
@@ -53,7 +55,7 @@ Value::Value(const char *s)    { ptr = new RichValueRep<String>(s); }
 Value::Value(int i)            { ptr = new RichValueRep<int>(i); }
 Value::Value(int64 i)          { ptr = new RichValueRep<int64>(i); }
 Value::Value(double d)         { ptr = new RichValueRep<double>(d); }
-Value::Value(bool b)           { ptr = new RichValueRep<int>(b); }
+Value::Value(bool b)           { ptr = new RichValueRep<bool>(b); }
 Value::Value(Date d)           { ptr = new RichValueRep<Date>(d); }
 Value::Value(Time t)           { ptr = new RichValueRep<Time>(t); }
 Value::Value(const Nuller&)    { ptr = new RichValueRep<int>(Null); }
@@ -90,6 +92,7 @@ Value::operator double() const
 {
 	if(IsNull()) return Null;
 	return GetType() == INT_V   ? double(RichValue<int>::Extract(*this))
+	     : GetType() == BOOL_V ? double(RichValue<bool>::Extract(*this))
 	     : GetType() == INT64_V ? double(RichValue<int64>::Extract(*this))
 		                        : RichValue<double>::Extract(*this);
 }
@@ -98,6 +101,7 @@ Value::operator int() const
 {
 	if(IsNull()) return Null;
 	return GetType() == INT_V   ? RichValue<int>::Extract(*this)
+	     : GetType() == BOOL_V ? int(RichValue<bool>::Extract(*this))
 	     : GetType() == INT64_V ? int(RichValue<int64>::Extract(*this))
 		                        : int(RichValue<double>::Extract(*this));
 }
@@ -106,6 +110,7 @@ Value::operator int64() const
 {
 	if(IsNull()) return Null;
 	return GetType() == INT_V   ? int64(RichValue<int>::Extract(*this))
+	     : GetType() == BOOL_V ? int64(RichValue<bool>::Extract(*this))
 	     : GetType() == INT64_V ? RichValue<int64>::Extract(*this)
 		                        : int64(RichValue<double>::Extract(*this));
 }
@@ -195,7 +200,7 @@ String GetErrorText(const Value& v) {
 struct Ref::ValueRef : public RefManager {
 	virtual int   GetType()                            { return VALUE_V; }
 	virtual Value GetValue(const void *ptr)            { return *(Value *) ptr; }
-	virtual bool  IsNull(const void *ptr)              { return ::IsNull(*(Value *) ptr); }
+	virtual bool  IsNull(const void *ptr)              { return UPP::IsNull(*(Value *) ptr); }
 	virtual void  SetValue(void *ptr, const Value& v)  { *(Value *) ptr = v; }
 	virtual void  SetNull(void *ptr)                   { *(Value *) ptr = Null; }
 };
@@ -315,7 +320,7 @@ ValueArray::operator Value() const {
 
 ValueArray::ValueArray(const Value& src)
 {
-	if(!::IsNull(src)) {
+	if(!UPP::IsNull(src)) {
 		ASSERT(dynamic_cast<const ValueArray::Data *>(src.GetVoidPtr()));
 		data = (ValueArray::Data *)src.GetVoidPtr();
 	}
@@ -472,3 +477,5 @@ bool FnValueOrder::operator()(const Value& a, const Value& b) const
 {
 	return (*fn)(a, b) < 0;
 }
+
+END_UPP_NAMESPACE

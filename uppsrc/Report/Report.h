@@ -4,6 +4,8 @@
 #include <CtrlLib/CtrlLib.h>
 #include <RichText/RichText.h>
 
+NAMESPACE_UPP
+
 #define  LAYOUTFILE <Report/Report.lay>
 #include <CtrlCore/lay.h>
 
@@ -136,5 +138,7 @@ public:
 String Pdf(Report& report);
 bool   Print(Report& r, int i, const char *name = t_("Report"));
 bool   Perform(Report& r, const char *name = t_("Report"));
+
+END_UPP_NAMESPACE
 
 #endif

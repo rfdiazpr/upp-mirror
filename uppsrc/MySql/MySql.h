@@ -16,6 +16,8 @@
 #include </usr/include/mysql/mysql.h>
 #endif
 
+NAMESPACE_UPP
+
 const char *MySqlReadString(const char *s, String& stmt);
 
 bool MySqlPerformScript(const String& text, StatementExecutor& se, Gate2<int, int> progress_canceled = false);
@@ -61,6 +63,9 @@ public:
 	~MySqlSession()      { Close(); }
 };
 
+
 #endif
+
+END_UPP_NAMESPACE
 
 #endif

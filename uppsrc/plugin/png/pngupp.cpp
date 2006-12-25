@@ -7,6 +7,8 @@
 #include <Draw/Draw.h>
 #include "png.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x)  // LOG(x)
 
 static void png_read_stream(png_structp png_ptr, png_bytep buffer, png_size_t length)
@@ -491,3 +493,5 @@ void PNGEncoder::WriteLineRaw(const byte *s)
 {
 	data->WriteLineRaw(s);
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include "Draw.h"
-#pragma hdrstop
+
+NAMESPACE_UPP
+
 
 #ifdef PLATFORM_WIN32
 
@@ -84,6 +86,15 @@ int CALLBACK Draw::AddFace(const LOGFONT *logfont, const TEXTMETRIC *, dword typ
 		}
 	}
 #endif
+#ifdef PLATFORM_WINCE
+	if(facename) {
+		FontFaceInfo& f = sFontFace().Add(WString(logfont->lfFaceName).ToString());
+		f.name = WString(facename).ToString();
+		return 0;
+	}
+	FontFaceInfo& f = sFontFace().Add(WString(logfont->lfFaceName).ToString());
+	f.name = FromSystemCharset(logfont->lfFaceName);
+#else
 	if(facename) {
 		FontFaceInfo& f = sFontFace().Add(logfont->lfFaceName);
 		f.name = facename;
@@ -92,6 +103,7 @@ int CALLBACK Draw::AddFace(const LOGFONT *logfont, const TEXTMETRIC *, dword typ
 	}
 	FontFaceInfo& f = sFontFace().Add(logfont->lfFaceName);
 	f.name = FromSystemCharset(logfont->lfFaceName);
+#endif
 	f.info |= typ;
 	return 1;
 }
@@ -367,3 +379,5 @@ void Draw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font, Col
 }
 
 #endif
+
+END_UPP_NAMESPACE

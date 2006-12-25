@@ -1,6 +1,8 @@
 #ifndef _Geom_Draw_imgtran_h_
 #define _Geom_Draw_imgtran_h_
 
+NAMESPACE_UPP
+
 void LinearSet(ImageBuffer& dest, Point d0, Point d1, Point d2, RGBA color, const Rect *opt_clip = NULL);
 void LinearCopy(ImageBuffer& dest, Point d0, Point d1, Point d2,
 	const Image& src, Point s0, Point s1, Point s2, const Rect *opt_clip = NULL, bool interpolate = true);
@@ -16,5 +18,7 @@ void BilinearCopy(ImageBuffer& dest, Point d1, Point d2, Point d3, Point d4,
 	const Image& src, Rect sr, const Rect *opt_clip = NULL, bool interpolate = true);
 void BilinearCopy(ImageBuffer& dest, Point destpos[4],
 	const Image& src, Rect sr, const Rect *opt_clip = NULL, bool interpolate = true);
+
+END_UPP_NAMESPACE
 
 #endif

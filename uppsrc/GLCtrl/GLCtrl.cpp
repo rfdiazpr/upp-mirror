@@ -4,6 +4,8 @@
 #pragma comment( lib, "glu32.lib" )								// Search For GLu32.lib While Linking
 #pragma comment( lib, "glaux.lib" )								// Search For GLaux.lib While Linking
 
+NAMESPACE_UPP
+
 GLCtrl::GLCtrl()
 {
 	hDC = NULL;
@@ -80,7 +82,7 @@ void GLCtrl::StdView()
 	glViewport(0, 0, (GLsizei)sz.cx, (GLsizei)sz.cy);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45.0f, (GLfloat)(sz.cx)/(GLfloat)(sz.cy), 1.0f, 100.0f);		
+	gluPerspective(45.0f, (GLfloat)(sz.cx)/(GLfloat)(sz.cy), 1.0f, 100.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
@@ -99,3 +101,5 @@ LRESULT GLCtrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	return DHCtrl::WindowProc(message, wParam, lParam);
 }
+
+END_UPP_NAMESPACE

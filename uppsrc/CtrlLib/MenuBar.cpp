@@ -1,18 +1,20 @@
 #include "CtrlLib.h"
 
-#define LLOG(x)    // LOG(x)
-#define LTIMING(x) // RTIMING(x)
-
 #ifdef PLATFORM_WIN32
 #include <mmsystem.h>
 #endif
+
+NAMESPACE_UPP
+
+#define LLOG(x)    // LOG(x)
+#define LTIMING(x) // RTIMING(x)
 
 class MenuItemBase : public Ctrl, public Bar::Item
 {
 public:
 	virtual Bar::Item& Text(const char *text);
 	virtual Bar::Item& Key(dword key);
-	virtual Bar::Item& Image(const ::Image& img);
+	virtual Bar::Item& Image(const UPP::Image& img);
 	virtual Bar::Item& Enable(bool _enable);
 	virtual Bar::Item& Tip(const char *tip);
 	virtual Bar::Item& Help(const char *help);
@@ -76,10 +78,10 @@ public:
 	virtual bool  HotKey(dword key);
 	virtual void  SyncState();
 
-	virtual Bar::Item& Image(const ::Image& img);
+	virtual Bar::Item& Image(const UPP::Image& img);
 
 private:
-	::Image licon, ricon;
+	UPP::Image licon, ricon;
 
 	void  SendHelpLine();
 	void  ClearHelpLine();
@@ -88,7 +90,7 @@ protected:
 	virtual int  GetVisualState();
 
 public:
-	MenuItem& RightImage(const ::Image& img);
+	MenuItem& RightImage(const UPP::Image& img);
 };
 
 class SubMenuBase {
@@ -202,7 +204,7 @@ Bar::Item& MenuItemBase::Key(dword key)
 	return *this;
 }
 
-Bar::Item& MenuItemBase::Image(const ::Image& img)
+Bar::Item& MenuItemBase::Image(const UPP::Image& img)
 {
 	return *this;
 }
@@ -298,13 +300,19 @@ void DrawMenuText(Draw& w, int x, int y, const String& s, Font f, bool enabled,
 
 void MenuItemBase::DrawMenuText(Draw& w, int x, int y, const String& s, Font f, bool enabled, bool hl, Color color)
 {
-	::DrawMenuText(w, x, y, s, f, enabled, hl, VisibleAccessKeys() ? accesskey : 0, color);
+	UPP::DrawMenuText(w, x, y, s, f, enabled, hl, VisibleAccessKeys() ? accesskey : 0, color);
 }
+
+CH_LOOK(MenuItemLook, SColorHighlight());
+CH_LOOK(TopMenuItemLook, MenuItemLook());
 
 void MenuItemBase::PaintTopItem(Draw& w, int state) {
 	Size sz = GetSize();
 	if(GUI_GlobalStyle() >= GUISTYLE_XP) {
-		w.DrawRect(0, 0, sz.cx, sz.cy, state ? SColorHighlight : SColorFace);
+		if(state)
+			ChPaint(w, 0, 0, sz.cx, sz.cy, TopMenuItemLook());
+		else
+			w.DrawRect(0, 0, sz.cx, sz.cy, SColorFace);
 		String text = GetText();
 		Size isz = GetTextSize(text, StdFont());
 		DrawMenuText(w, 6, (sz.cy - isz.cy) / 2, text, GetFont(), IsItemEnabled(), state);
@@ -323,14 +331,14 @@ void MenuItemBase::PaintTopItem(Draw& w, int state) {
 
 // -------------------------------------
 
-Bar::Item& MenuItem::Image(const ::Image& img)
+Bar::Item& MenuItem::Image(const UPP::Image& img)
 {
 	licon = img;
 	Refresh();
 	return *this;
 }
 
-MenuItem& MenuItem::RightImage(const ::Image& img)
+MenuItem& MenuItem::RightImage(const UPP::Image& img)
 {
 	ricon = img;
 	Refresh();
@@ -401,8 +409,15 @@ void MenuItem::Paint(Draw& w)
 	state = GetVisualState();
 	bool hl = state != NORMAL;
 	Size sz = GetSize();
-	w.DrawRect(sz, hl ? SColorHighlight : GUI_GlobalStyle() >= GUISTYLE_XP ? SColorMenu : SColorFace);
-	::Image li = licon;
+
+	if(GUI_GlobalStyle() >= GUISTYLE_XP)
+		if(hl)
+			ChPaint(w, 0, 0, sz.cx, sz.cy, MenuItemLook());
+		else
+			w.DrawRect(0, 0, sz.cx, sz.cy, SColorMenu);
+	else
+		w.DrawRect(sz, hl ? SColorHighlight : SColorFace);
+	UPP::Image li = licon;
 	if(li.IsEmpty()) {
 		switch(type) {
 		case CHECK0: li = CtrlImg::MenuCheck0(); break;
@@ -436,8 +451,8 @@ void MenuItem::Paint(Draw& w)
 	x = sz.cx - max(isz.cx, 16) - 1;
 	if(!IsEmpty(keydesc)) {
 		isz = GetTextSize(keydesc, StdFont());
-		::DrawMenuText(w, x - isz.cx - 2, (sz.cy - isz.cy) / 2, keydesc, font, isenabled, hl,
-		               0, SColorMark());
+		UPP::DrawMenuText(w, x - isz.cx - 2, (sz.cy - isz.cy) / 2, keydesc, font, isenabled, hl,
+		                  0, SColorMark());
 	}
 }
 
@@ -1215,3 +1230,5 @@ MenuBar::~MenuBar()
 		parentmenu->SetActiveSubmenu(NULL, NULL);
 	LLOG("~MenuBar 1");
 }
+
+END_UPP_NAMESPACE

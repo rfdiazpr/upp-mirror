@@ -1,5 +1,7 @@
 #include "CtrlCore.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 #ifdef PLATFORM_X11
@@ -156,3 +158,5 @@ bool IsClipboardAvailableText()
 }
 
 #endif
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include "DocTypes.h"
 
+NAMESPACE_UPP
+
 DocReport::DocReport(const char *_name) {
 	name = _name;
 	pgsz.cx = 3968;
@@ -249,3 +251,5 @@ void PutQTF(DocReport& r, const char *qtf)
 		text.Paint(pw, Rect(Point(x, y), pgsz), paintinfo);
 	}
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 #define LAYOUTFILE <Chameleon/Chameleon.lay>
 #include <CtrlCore/lay.h>
 
@@ -46,58 +48,48 @@ INITBLOCK {
 
 
 struct MyApp : WithChameleonLayout<TopWindow> {
-	void SetStyle(int i);
-	void SetColor();
-	void SetImage();
-	void SetFn();
+	void Set(void (*skin)());
 
 	typedef MyApp CLASSNAME;
 	MyApp();
 };
 
-void MyApp::SetStyle(int i)
+void ColorSkin()
 {
-	ChSetStyle(i);
-	Refresh();
-}
-
-void MyApp::SetColor()
-{
-	ChSetStyle(CH_STYLE_STD);
 	ChSet("ButtonLook", 0, LtCyan());
 	ChSet("ButtonLook", 1, Yellow());
 	ChSet("ButtonLook", 2, Brown());
 	ChSet("ButtonLook", 3, Gray());
-	Refresh();
 }
 
-void MyApp::SetImage()
+void ImageSkin()
 {
-	ChSetStyle(CH_STYLE_STD);
 	for(int i = 0; i < 4; i++)
 		ChSet("ButtonLook", i, MyButtonImg::Get(i));
-	Refresh();
 }
 
-void MyApp::SetFn()
+void FnSkin()
 {
-	ChSetStyle(CH_STYLE_STD);
 	ChSet("ButtonLook", 0, EllipseLook(2, Black, LtGray));
 	ChSet("ButtonLook", 1, EllipseLook(3, Red, WhiteGray));
 	ChSet("ButtonLook", 2, EllipseLook(4, Blue, White));
 	ChSet("ButtonLook", 3, EllipseLook(1, Black, Gray));
-	Refresh();
+}
+
+void MyApp::Set(void (*skin)())
+{
+	SetSkin(skin);
 }
 
 MyApp::MyApp()
 {
 	CtrlLayout(*this, "Chameleon example");
-	host <<= THISBACK1(SetStyle, (int)CH_STYLE_DETECT);
-	std <<= THISBACK1(SetStyle, (int)CH_STYLE_STD);
-	classic <<= THISBACK1(SetStyle, (int)CH_STYLE_CLASSIC);
-	color <<= THISBACK(SetColor);
-	img <<= THISBACK(SetImage);
-	fn <<= THISBACK(SetFn);
+	host <<= THISBACK1(Set, ChHostSkin);
+	std <<= THISBACK1(Set, ChStdSkin);
+	classic <<= THISBACK1(Set, ChClassicSkin);
+	color <<= THISBACK1(Set, ColorSkin);
+	img <<= THISBACK1(Set, ImageSkin);
+	fn <<= THISBACK1(Set, FnSkin);
 }
 
 GUI_APP_MAIN

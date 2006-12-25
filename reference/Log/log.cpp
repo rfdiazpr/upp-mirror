@@ -1,10 +1,12 @@
 #include <Core/Core.h>
 
+using namespace Upp;
+
 struct Foo {
 	int i;
 
 	String ToString() const { return "Foo: " + AsString(i); }
-		
+
 	Foo() { i = 0; }
 	Foo(int i) : i(i) {}
 };

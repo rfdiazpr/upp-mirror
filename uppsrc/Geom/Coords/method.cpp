@@ -3,6 +3,8 @@
 
 #include "method.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) // RLOG(x)
 
 GisCoordsLonLat::GisCoordsLonLat(double prime_meridian)
@@ -809,3 +811,5 @@ GisCoords GisCoords::GetEPSG(int code)
 	gc->SyncArgs();
 	return GisCoords(gc);
 }
+
+END_UPP_NAMESPACE

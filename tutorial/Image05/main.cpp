@@ -1,6 +1,8 @@
 #include <CtrlLib/CtrlLib.h>
 #include <plugin/jpg/jpg.h>
 
+using namespace Upp;
+
 GUI_APP_MAIN
 {
 	FileSel fs;

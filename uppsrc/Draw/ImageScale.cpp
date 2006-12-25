@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 enum
 {
 	MAXAA = 4,
@@ -502,3 +504,5 @@ Image Rescale(const Image& src, int cx, int cy)
 {
 	return Rescale(src, Size(cx, cy));
 }
+
+END_UPP_NAMESPACE

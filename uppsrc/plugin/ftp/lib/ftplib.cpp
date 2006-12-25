@@ -37,9 +37,9 @@
 #define BUILDING_LIBRARY
 #include "ftplib.h"
 
-#define LLOG(x) RLOG(x)
-#define LLOGBLOCK(x) RLOGBLOCK(x)
-#define LDUMP(x) RDUMP(x)
+#define LLOG(x)      //RLOG(x)
+#define LLOGBLOCK(x) //RLOGBLOCK(x)
+#define LDUMP(x)     //RDUMP(x)
 
 #if defined(_WIN32)
 #define SETSOCKOPT_OPTVAL_TYPE (const char *)
@@ -244,7 +244,6 @@ static int writeline(char *buf, int len, netbuf *nData)
 	char *ubp = buf, *nbp;
 	char lc=0;
 
-	LLOG("writeline -> " << String(buf, len));
 	if (nData->dir != FTPLIB_WRITE)
 		return -1;
 	nbp = nData->buf;
@@ -422,7 +421,7 @@ GLOBALDEF int FtpConnect(const char *host, netbuf **nControl, char perror[],
 	tm.tv_usec = (idletime_msecs % 1000) * 1000;
 	memset(&sin,0,sizeof(sin));
 	sin.sin_family = AF_INET;
-	String lhost = host;
+	UPP::String lhost = host;
 	int pnum = lhost.Find(':');
 	if (pnum < 0)
 	{
@@ -437,9 +436,9 @@ GLOBALDEF int FtpConnect(const char *host, netbuf **nControl, char perror[],
 	}
 	else
 	{
-		String port = lhost.Mid(pnum + 1);
+		UPP::String port = lhost.Mid(pnum + 1);
 		lhost.Trim(pnum);
-		if (IsDigit(*port))
+		if(UPP::IsDigit(*port))
 			sin.sin_port = htons((short)atoi(port));
 		else {
 			pse = getservbyname(port,"tcp");
@@ -496,7 +495,7 @@ GLOBALDEF int FtpConnect(const char *host, netbuf **nControl, char perror[],
 		return 0;
 	}
 	ctrl = new NetBuf;
-	Zero(*ctrl);
+	UPP::Zero(*ctrl);
 	ctrl->buf = new char[FTPLIB_BUFSIZ];
 	ctrl->handle = sControl;
 	ctrl->dir = FTPLIB_CONTROL;
@@ -728,7 +727,7 @@ static int FtpOpenPort(netbuf *nControl, netbuf **nData, int mode, int dir)
 
 //*
 		if (connect(sData, &sin.sa, sizeof(sin.sa)) == -1) {
-			int t0 = msecs(), tlim = 0;
+			int t0 = UPP::msecs(), tlim = 0;
 			if(nControl->idlecb && FtpLastError() == ERRPENDING) {
 				while(!FtpCheckWrite(sData, &nControl->idletime)) {
 					if(!nControl->idlecb(nControl, -2, nControl->idlearg)) {
@@ -783,7 +782,7 @@ static int FtpOpenPort(netbuf *nControl, netbuf **nData, int mode, int dir)
 		}
 	}
 	ctrl = new NetBuf;
-	Zero(*ctrl);
+	UPP::Zero(*ctrl);
 	if (mode == 'A')
 		ctrl->buf = new char[FTPLIB_BUFSIZ];
 	ctrl->handle = sData;
@@ -821,7 +820,7 @@ static int FtpAcceptConnection(netbuf *nData, netbuf *nControl)
 		tv.tv_sec = ACCEPT_TIMEOUT;
 	}
 
-	int t = msecs();
+	int t = UPP::msecs();
 	for(;;) {
 		fd_set mask;
 		FD_ZERO(&mask);
@@ -840,7 +839,7 @@ static int FtpAcceptConnection(netbuf *nData, netbuf *nControl)
 			return 0;
 		}
 		else if (i == 0) {
-			if(nControl->idlecb && msecs(t) < 1000 * ACCEPT_TIMEOUT) {
+			if(nControl->idlecb && UPP::msecs(t) < 1000 * ACCEPT_TIMEOUT) {
 				if(!nControl->idlecb(nControl, -3, nControl->idlearg)) {
 					strcpy(nControl->response, "accept aborted");
 					net_close(nData->handle);

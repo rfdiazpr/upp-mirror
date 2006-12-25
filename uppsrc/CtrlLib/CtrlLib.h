@@ -4,6 +4,8 @@
 #include <CtrlCore/CtrlCore.h>
 #include <RichText/RichText.h>
 
+NAMESPACE_UPP
+
 #define IMAGECLASS CtrlImg
 #define IMAGEFILE <CtrlLib/Ctrl.iml>
 #include <Draw/iml_header.h>
@@ -37,6 +39,7 @@ class Bar;
 #include <CtrlLib/TextEdit.h>
 #include <CtrlLib/SliderCtrl.h>
 #include <CtrlLib/ColumnList.h>
+#include <CtrlLib/DateTimeCtrl.h>
 
 #define  LAYOUTFILE <CtrlLib/Ctrl.lay>
 #include <CtrlCore/lay.h>
@@ -47,5 +50,7 @@ class Bar;
 #include <CtrlLib/Lang.h>
 
 #include <CtrlLib/Ch.h>
+
+END_UPP_NAMESPACE
 
 #endif

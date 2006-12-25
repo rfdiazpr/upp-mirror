@@ -4,6 +4,8 @@
 #include <CtrlLib/CtrlLib.h>
 #include <Report/Report.h>
 
+using namespace Upp;
+
 #define LAYOUTFILE <AddressBook/AddressBook.lay>
 #include <CtrlCore/lay.h>
 

@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 Image CreateBall(int r, Color color)
 {
 	int rr = 2 * r;

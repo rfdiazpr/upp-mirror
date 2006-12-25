@@ -1,5 +1,7 @@
 #include "IconDes.h"
 
+NAMESPACE_UPP
+
 void IconDes::Interpolate()
 {
 	if(!IsCurrent())
@@ -8,7 +10,7 @@ void IconDes::Interpolate()
 	SaveUndo();
 	Slot& c = Current();
 	c.base_image = c.image;
-	::InterpolateImage(c.image, c.image.GetSize());
+	UPP::InterpolateImage(c.image, c.image.GetSize());
 	MaskSelection();
 }
 
@@ -38,7 +40,7 @@ void IconDes::KeyMove(int dx, int dy)
 	else {
 		Image h = c.image;
 		c.image = CreateImage(h.GetSize(), Null);
-		::Copy(c.image, Point(dx, dy), h, h.GetSize());
+		UPP::Copy(c.image, Point(dx, dy), h, h.GetSize());
 	}
 	Sync();
 }
@@ -69,8 +71,8 @@ void IconDes::SymmX()
 		Size sz = m.GetSize();
 		MirrorHorz(m, m.GetSize());
 		Image h = CreateImage(Size(2 * sz.cx, sz.cy), Null);
-		::Copy(h, Point(0, 0), c.paste_image, sz);
-		::Copy(h, Point(sz.cx, 0), m, sz);
+		UPP::Copy(h, Point(0, 0), c.paste_image, sz);
+		UPP::Copy(h, Point(sz.cx, 0), m, sz);
 		c.paste_image = h;
 		MakePaste();
 	}
@@ -78,7 +80,7 @@ void IconDes::SymmX()
 		Size sz = c.image.GetSize();
 		if(sz.cx < 2)
 			return;
-		::Copy(c.image, Point(sz.cx - sz.cx / 2, 0), c.image, Size(sz.cx / 2, sz.cy));
+		UPP::Copy(c.image, Point(sz.cx - sz.cx / 2, 0), c.image, Size(sz.cx / 2, sz.cy));
 		MirrorHorz(c.image, RectC(sz.cx - sz.cx / 2, 0, sz.cx / 2, sz.cy));
 	}
 	SyncShow();
@@ -110,8 +112,8 @@ void IconDes::SymmY()
 		Size sz = m.GetSize();
 		MirrorVert(m, m.GetSize());
 		Image h = CreateImage(Size(sz.cx, 2 * sz.cy), Null);
-		::Copy(h, Point(0, 0), c.paste_image, sz);
-		::Copy(h, Point(0, sz.cy), m, sz);
+		UPP::Copy(h, Point(0, 0), c.paste_image, sz);
+		UPP::Copy(h, Point(0, sz.cy), m, sz);
 		c.paste_image = h;
 		MakePaste();
 	}
@@ -119,7 +121,7 @@ void IconDes::SymmY()
 		Size sz = c.image.GetSize();
 		if(sz.cy < 2)
 			return;
-		::Copy(c.image, Point(0, sz.cy - sz.cy / 2), c.image, Size(sz.cx, sz.cy / 2));
+		UPP::Copy(c.image, Point(0, sz.cy - sz.cy / 2), c.image, Size(sz.cx, sz.cy / 2));
 		MirrorVert(c.image, RectC(0, sz.cy - sz.cy / 2, sz.cx, sz.cy / 2));
 	}
 	SyncShow();
@@ -255,7 +257,8 @@ void IconDes::Colorize()
 	dlg.level <<= dlg.Breaker();
 	Image bk = ImageStart();
 	for(;;) {
-		ImageSet(::Colorize(bk, CurrentColor(), (int)(minmax((double)~dlg.level, 0.0, 1.0) * 255)));
+		ImageSet(UPP::Colorize(bk, CurrentColor(),
+		         (int)(minmax((double)~dlg.level, 0.0, 1.0) * 255)));
 		switch(dlg.Run()) {
 		case IDCANCEL:
 			ImageSet(bk);
@@ -276,7 +279,7 @@ void IconDes::Chroma()
 	dlg.level <<= dlg.Breaker();
 	Image bk = ImageStart();
 	for(;;) {
-		ImageSet(::Grayscale(bk, 256 - (int)(minmax((double)~dlg.level, 0.0, 4.0) * 255)));
+		ImageSet(UPP::Grayscale(bk, 256 - (int)(minmax((double)~dlg.level, 0.0, 4.0) * 255)));
 		switch(dlg.Run()) {
 		case IDCANCEL:
 			ImageSet(bk);
@@ -297,7 +300,7 @@ void IconDes::Contrast()
 	dlg.level <<= dlg.Breaker();
 	Image bk = ImageStart();
 	for(;;) {
-		ImageSet(::Contrast(bk, (int)(minmax((double)~dlg.level, 0.0, 4.0) * 255)));
+		ImageSet(UPP::Contrast(bk, (int)(minmax((double)~dlg.level, 0.0, 4.0) * 255)));
 		switch(dlg.Run()) {
 		case IDCANCEL:
 			ImageSet(bk);
@@ -392,3 +395,5 @@ void IconDes::Colors()
 		}
 	}
 }
+
+END_UPP_NAMESPACE

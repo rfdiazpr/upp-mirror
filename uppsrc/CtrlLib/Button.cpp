@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 void Pusher::RefreshFocus() {
@@ -667,3 +669,5 @@ void DataPusher::SetDataAction(const Value& value)
 	SetData(value);
 	UpdateActionRefresh();
 }
+
+END_UPP_NAMESPACE

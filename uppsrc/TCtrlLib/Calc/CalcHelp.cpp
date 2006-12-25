@@ -1,6 +1,8 @@
 #include "TCtrlLibCalc.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 void UseHelpCalc() {}
 
 HelpCalcMap GetHelpCalcGroup(const String& groupname)
@@ -319,3 +321,5 @@ STATIC_HELP(CalcIndex, s_(CalcIndexHelpTopic),
 	s_(CalcIndexHelpIndex)
 )
 */
+
+END_UPP_NAMESPACE

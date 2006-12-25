@@ -1,5 +1,7 @@
 #include "RichEdit.h"
 
+NAMESPACE_UPP
+
 void RichEdit::UndoTableFormat::Apply(RichText& txt)
 {
 	txt.SetTableFormat(table, format);
@@ -9,7 +11,7 @@ RichEdit::UndoRec *RichEdit::UndoTableFormat::GetRedo(const RichText& txt)
 {
 	return new UndoTableFormat(txt, table);
 }
-		
+
 RichEdit::UndoTableFormat::UndoTableFormat(const RichText& txt, int table)
 : table(table)
 {
@@ -30,7 +32,7 @@ RichEdit::UndoRec *RichEdit::UndoCreateTable::GetRedo(const RichText& txt)
 }
 
 // -----------------------
-		
+
 void RichEdit::UndoDestroyTable::Apply(RichText& txt)
 {
 	txt.SetTable(pos, table);
@@ -40,7 +42,7 @@ RichEdit::UndoRec *RichEdit::UndoDestroyTable::GetRedo(const RichText& txt)
 {
 	return new UndoCreateTable(txt.GetRichPos(pos).table + 1);
 }
-		
+
 RichEdit::UndoDestroyTable::UndoDestroyTable(const RichText& txt, int tab)
 {
 	pos = txt.GetCellPos(tab, 0, 0).pos;
@@ -48,7 +50,7 @@ RichEdit::UndoDestroyTable::UndoDestroyTable(const RichText& txt, int tab)
 }
 
 // -----------------------
-		
+
 void RichEdit::UndoInsertParaSpecial::Apply(RichText& txt)
 {
 	txt.RemoveParaSpecial(table, before);
@@ -59,9 +61,9 @@ RichEdit::UndoRec *RichEdit::UndoInsertParaSpecial::GetRedo(const RichText& txt)
 {
 	return new UndoRemoveParaSpecial(txt, table, before);
 }
-		
+
 // -----------------------
-		
+
 void RichEdit::UndoRemoveParaSpecial::Apply(RichText& txt)
 {
 	txt.InsertParaSpecial(table, before, format);
@@ -96,3 +98,5 @@ RichEdit::UndoTable::UndoTable(const RichText& txt, int tab)
 	table = tab;
 	copy = txt.CopyTable(tab);
 }
+
+END_UPP_NAMESPACE

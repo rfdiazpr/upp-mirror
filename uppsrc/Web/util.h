@@ -170,7 +170,7 @@ public:
 	virtual bool       IsNull() const                { return this->v == 0; }
 	virtual unsigned   GetHashValue() const          { return (unsigned)~this->v; }
 	virtual bool       IsEqual(const Value::Void *p);
-	virtual String     AsString()                    { return !!this->v ? ::AsString(*this->v) : String(Null); }
+	virtual String     AsString()                    { return !!this->v ? UPP::AsString(*this->v) : String(Null); }
 
 	static const RawValueRep<T> *Cast(const Value::Void *p)
 	{ ASSERT(dynamic_cast<const RawValueRep<T> *>(p)); return (const RawValueRep<T> *)p; }
@@ -191,8 +191,8 @@ protected:
 
 public:
 	RefPCValue(T x) : Value(new Rep(x)) {}
-	static T Get(const Value& v)       { return ::IsNull(v) ? 0 : Rep::Cast(v.GetVoidPtr())->Get(); }
-	static T Extract(const Value& v)   { return ::IsNull(v) ? 0 : Rep::Cast(v.GetVoidPtr())->Get(); }
+	static T Get(const Value& v)       { return UPP::IsNull(v) ? 0 : Rep::Cast(v.GetVoidPtr())->Get(); }
+	static T Extract(const Value& v)   { return UPP::IsNull(v) ? 0 : Rep::Cast(v.GetVoidPtr())->Get(); }
 };
 
 template <class T>

@@ -1,3 +1,5 @@
+description "Using ArrayCtrl without storing any real data to it";
+
 uses
 	CtrlLib;
 

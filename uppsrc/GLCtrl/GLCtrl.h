@@ -6,6 +6,8 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+NAMESPACE_UPP
+
 class GLCtrl : public DHCtrl {
 public:
 	virtual void    State(int reason);
@@ -14,7 +16,7 @@ public:
 private:
 	HDC   hDC;
 	HGLRC hRC;
-	
+
 	void OpenGL();
 	void CloseGL();
 
@@ -24,14 +26,14 @@ public:
 	Callback WhenGLPaint;
 
 	void    StdView();
-	
+
 	HDC     GetDC() const            { return hDC; }
 	HGLRC   GetHGLRC() const         { return hRC; }
-	
+
 	GLCtrl();
 	~GLCtrl();
 };
 
+END_UPP_NAMESPACE
 
 #endif
-

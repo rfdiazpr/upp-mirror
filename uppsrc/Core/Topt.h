@@ -372,6 +372,9 @@ int Pow2Bound(int i);
 
 unsigned memhash(const void *ptr, size_t size);
 
+template <class T>
+inline unsigned GetHashValue(const T& x)                            { return x.GetHashValue(); }
+
 struct CombineHash {
 	unsigned hash;
 
@@ -382,9 +385,7 @@ struct CombineHash {
 public:
 	CombineHash& Put(unsigned h) { hash = ((hash << 4) + hash) ^ h; return *this; }
 
-	template <class T> CombineHash& operator<<(const T& x) { Do(x); return *this; }
-
-	operator unsigned() const    { return hash; }
+	operator unsigned() const                                       { return hash; }
 
 	CombineHash()                                                   { hash = INIT; }
 	template <class T>
@@ -395,10 +396,9 @@ public:
 	CombineHash(const T& h1, const U& h2, const V& h3)              { hash = INIT; Do(h1); Do(h2); Do(h3); }
 	template <class T, class U, class V, class W>
 	CombineHash(const T& h1, const U& h2, const V& h3, const W& h4)	{ hash = INIT; Do(h1); Do(h2); Do(h3); Do(h4); }
-};
 
-template <class T>
-inline unsigned GetHashValue(const T& x)                         { return x.GetHashValue(); }
+	template <class T> CombineHash& operator<<(const T& x)          { Do(x); return *this; }
+};
 
 template<> inline unsigned GetHashValue(const char& a)           { return (unsigned)a; }
 template<> inline unsigned GetHashValue(const signed char& a)    { return (const unsigned)a; }

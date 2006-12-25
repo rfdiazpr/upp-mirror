@@ -1,3 +1,5 @@
+NAMESPACE_UPP
+
 class PlotterTool;
 
 #define CATCH_PATH_MAP 0 // 1 = turn path catching on
@@ -61,8 +63,7 @@ public:
 		PREC         = 5,
 	};
 
-	class Trace
-	{
+	class Trace {
 	public:
 		Trace() {}
 		Trace(double left, double left_top, double left_bottom,
@@ -99,7 +100,7 @@ public:
 		Trace         GetCrop(double l, double r) const    { Trace t(*this); t.Crop(l, r); return t; }
 		Trace         GetCropRel(double l, double r) const { Trace t(*this); t.CropRel(l, r); return t; }
 
-		void          Paint(PlotterTool& tool, bool reduce = false, Color outline = Null) const;
+		void          Paint(PlotterTool& tool, bool reduce = false, UPP::Color outline = Null) const;
 
 		double        Width() const                        { return right - left; }
 		double        Top() const                          { return min(left_top, right_top); }
@@ -392,3 +393,5 @@ public:
 protected:
 	const PathStyleMap *path_map;
 };
+
+END_UPP_NAMESPACE

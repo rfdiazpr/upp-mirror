@@ -8,6 +8,8 @@
 #define GENID CPPID
 #include <TSql/id.h>
 
+NAMESPACE_UPP
+
 extern const char *txtFnTSqlTemplateFetchSeqKeyNull()  { return t_("Table '%s', column '%s': NULL value requested."); }
 extern const char *txtFnTSqlTemplateFetchSeqNotFound() { return t_("Row '%s' not found (table '%s', column '%s')."); }
 
@@ -742,3 +744,5 @@ SqlBool GetYearDayRange(const SqlVal& date, Date min, Date max)
 	}
 	return result;
 }
+
+END_UPP_NAMESPACE

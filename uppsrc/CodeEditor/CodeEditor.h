@@ -4,6 +4,9 @@
 //#include <ide/Common/Common.h>
 #include <CtrlLib/CtrlLib.h>
 
+
+NAMESPACE_UPP
+
 #define  LAYOUTFILE <CodeEditor/CodeEditor.lay>
 #include <CtrlCore/lay.h>
 
@@ -274,7 +277,10 @@ protected:
 	Color  BlockColor(int level);
 	void   Bracket(int pos, HlSt& hls);
 
-	void   Enclose(const char *c1, const char *c2);
+	bool   ToggleSimpleComment(int &start_line, int &end_line, bool usestars = true);
+	void   ToggleLineComments(bool usestars = false);
+	void   ToggleStarComments();
+	void   Enclose(const char *c1, const char *c2, int l = -1, int h = -1);
 
 	enum {
 		TIMEID_PERIODIC = Ctrl::TIMEID_COUNT,
@@ -412,5 +418,7 @@ public:
 	CodeEditor();
 	virtual ~CodeEditor();
 };
+
+END_UPP_NAMESPACE
 
 #endif

@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) // RLOG(x)
 
 AttrText::operator Value() const
@@ -283,3 +285,5 @@ PaintRect::PaintRect(const Display& _display, const Value& _val) {
 	display = &_display;
 	value = _val;
 }
+
+END_UPP_NAMESPACE

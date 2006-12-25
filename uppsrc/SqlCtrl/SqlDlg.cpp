@@ -1,6 +1,8 @@
 #include "SqlCtrl.h"
 #include "SqlDlg.h"
 
+NAMESPACE_UPP
+
 int SqlError(
 #ifdef PLATFORM_WIN32
 	HWND parent,
@@ -111,3 +113,5 @@ bool   ShowError(const char *msg)       { return ShowError(SQL, msg); }
 bool   ErrorRollback(const char *emsg)  { return ErrorRollback(SQL, emsg); }
 bool   OkCommit(const char *emsg)       { return OkCommit(SQL, emsg); }
 #endif
+
+END_UPP_NAMESPACE

@@ -1,3 +1,5 @@
+description "Example of dynamic dialog creation (based on XML file)";
+
 uses
 	CtrlLib;
 

@@ -1,10 +1,11 @@
+description "Using layouts for dialogs";
+
 uses
 	CtrlLib;
 
 file
-	Layout.lay,
-	Layout.cpp;
+	Layout.cpp,
+	Layout.lay;
 
 mainconfig
 	"" = "GUI";
-

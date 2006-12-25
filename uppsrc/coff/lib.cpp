@@ -1,6 +1,9 @@
 #include "coff.h"
 #pragma hdrstop
 
+
+NAMESPACE_UPP
+
 #ifdef PLATFORM_WIN32
 
 enum { HEADER_SIZE = sizeof(COFF_IMAGE_ARCHIVE_MEMBER_HEADER) };
@@ -336,3 +339,5 @@ void ArchiveJob::WriteIndex(byte *first, byte *second)
 }
 
 #endif
+
+END_UPP_NAMESPACE

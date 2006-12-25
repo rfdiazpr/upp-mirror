@@ -7,6 +7,8 @@ extern "C" {
 #include "lib/disasm.h"
 }
 
+NAMESPACE_UPP
+
 int NDisassemble(char *output, const byte *data, long offset)
 {
 	unsigned preferences = 0; // see lib/insns.h(84)
@@ -29,3 +31,5 @@ CONSOLE_APP_MAIN
 	}
 }
 #endif
+
+END_UPP_NAMESPACE

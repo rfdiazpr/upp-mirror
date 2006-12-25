@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 class ImageView : public TopWindow {
 public:
 	virtual bool Key(dword key, int);

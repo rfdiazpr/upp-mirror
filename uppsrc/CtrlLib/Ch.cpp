@@ -1,5 +1,8 @@
 #include "CtrlLib.h"
 
+
+NAMESPACE_UPP
+
 #define LLOG(x)  // RLOG(x)
 
 #define IMAGECLASS CtrlsImg
@@ -54,3 +57,5 @@ void ChSysInit()
 }
 
 #endif
+
+END_UPP_NAMESPACE

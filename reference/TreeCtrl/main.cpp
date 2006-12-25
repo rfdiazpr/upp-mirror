@@ -1,5 +1,7 @@
 #include "CtrlLib/CtrlLib.h"
 
+using namespace Upp;
+
 struct App : TopWindow {
 	Splitter   horz;
 	TreeCtrl   tree1;
@@ -8,7 +10,7 @@ struct App : TopWindow {
 	Option     x[10];
 	StatusBar  info;
 	Array<EditString> edit;
-	
+
 	typedef App CLASSNAME;
 
 	void OpenDir(int id) {
@@ -20,7 +22,7 @@ struct App : TopWindow {
 				          AppendFileName(path, n), n, ff.IsFolder());
 		}
 	}
-	
+
 	void CloseDir(int id) {
 		tree1.RemoveChildren(id);
 	}
@@ -47,12 +49,12 @@ struct App : TopWindow {
 			}
 		}
 	}
-	
+
 	void ShowPath() {
 		info = ~tree1;
 	}
 
-	
+
 	App() {
 		horz.Add(tree1);
 		horz.Add(tree2);
@@ -77,7 +79,7 @@ struct App : TopWindow {
 		tree2.NoCursor().NoRoot();
 		tree2.SortDeep(0);
 		Sizeable();
-		
+
 		tree1.WhenCursor = THISBACK(ShowPath);
 		tree1.AddFrame(info);
 	}

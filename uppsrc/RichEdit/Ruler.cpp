@@ -1,5 +1,7 @@
 #include "RichEdit.h"
 
+NAMESPACE_UPP
+
 #define IMAGECLASS RichEditImg
 #define IMAGEFILE <RichEdit/RichEdit.iml>
 #include <Draw/iml_source.h>
@@ -208,3 +210,5 @@ void RichRuler::SetTabs(int pos, int size)
 		Refresh();
 	}
 }
+
+END_UPP_NAMESPACE

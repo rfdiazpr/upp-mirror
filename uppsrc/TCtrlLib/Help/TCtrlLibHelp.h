@@ -6,6 +6,8 @@
 #include <RichEdit/RichEdit.h>
 #include "helputil.h"
 
+NAMESPACE_UPP
+
 //RichObjectType *RichObjectTypeDialogHelp();
 RichObjectType *RichObjectTypeDrawing();
 String          GetRichObjectTypeDrawingData(const Drawing& drawing);
@@ -34,5 +36,7 @@ void            OpenHelpTopicIndex(String topic = Null, bool index = false);
 
 Callback1<Bar&>& HelpTopicBookMenu();
 Callback1<RichText&>& HelpTopicOnlineToc();
+
+END_UPP_NAMESPACE
 
 #endif//__TCtrlLibHelp__

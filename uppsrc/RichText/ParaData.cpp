@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 PaintInfo::PaintInfo()
 {
 	sell = selh = 0;
@@ -265,8 +267,10 @@ void RichPara::PackParts(Stream& out, const RichPara::CharFormat& chrstyle,
 			obj.Add(p.object);
 			out.Put(OBJECT);
 		}
-		else
-			out.Put(ToUtf8(p.text));
+		else {
+			String x = ToUtf8(p.text);
+			out.Put(x);
+		}
 	}
 }
 
@@ -634,7 +638,7 @@ String RichPara::CharFormat::ToString() const
 	out
 	<< Font(*this)
 	<< ", ink " << DumpColor(ink);
-	if(!::IsNull(paper))
+	if(!UPP::IsNull(paper))
 		out << ", paper " << DumpColor(paper);
 	switch(sscript)
 	{
@@ -644,7 +648,7 @@ String RichPara::CharFormat::ToString() const
 	default: out << ", sscript(" << (int)sscript << ")"; break;
 	}
 	out << ", lang " << DumpLanguage(language);
-	if(!::IsNull(link))
+	if(!UPP::IsNull(link))
 		out << ", link " << link;
 	if(capitals)
 		out << ", capitals";
@@ -656,7 +660,7 @@ String RichPara::CharFormat::ToString() const
 String RichPara::Format::ToString() const
 {
 	String out;
-	if(!::IsNull(label))
+	if(!UPP::IsNull(label))
 		out << "label <" << label << ">: ";
 	out
 	<< DumpAlign(align) << ", left " << lm << ", right " << rm
@@ -682,3 +686,5 @@ String RichPara::Format::ToString() const
 }
 
 #endif
+
+END_UPP_NAMESPACE

@@ -11,6 +11,8 @@ typedef void   *DLLHANDLE;
 
 #include <winnt.h>
 
+NAMESPACE_UPP
+
 class PeFile
 {
 public:
@@ -98,17 +100,20 @@ const char *PeFile::FindExportRaw(const char *name, bool case_sensitive) const
 	return 0;
 }
 
-HMODULE CheckDll(const char *fn, const char *const *names, Vector<void *>& plist)
+
+END_UPP_NAMESPACE
+
+HMODULE CheckDll__(const char *fn, const char *const *names, UPP::Vector<void *>& plist)
 {
 #ifdef PLATFORM_WINCE
-	HMODULE hmod = LoadLibrary(ToSysChrSet(fn));
+	HMODULE hmod = LoadLibrary(UPP::ToSysChrSet(fn));
 #else
 	HMODULE hmod = LoadLibrary(fn);
 #endif
 	if(!hmod)
 		return 0;
 
-	PeFile pe;
+	UPP::PeFile pe;
 	if(!pe.Open((const char *)hmod)) {
 		FreeLibrary(hmod);
 		return 0;
@@ -119,7 +124,7 @@ HMODULE CheckDll(const char *fn, const char *const *names, Vector<void *>& plist
 		const char *name = pe.FindExportRaw(*p);
 		void *proc = 0;
 #ifdef PLATFORM_WINCE
-		if(!name || !(proc = (void *)GetProcAddress(hmod, ToSysChrSet(name))))
+		if(!name || !(proc = (void *)GetProcAddress(hmod, UPP::ToSysChrSet(name))))
 #else
 		if(!name || !(proc = (void *)GetProcAddress(hmod, name)))
 #endif
@@ -133,7 +138,7 @@ HMODULE CheckDll(const char *fn, const char *const *names, Vector<void *>& plist
 	return hmod;
 }
 
-void FreeDll(HMODULE hmod)
+void FreeDll__(HMODULE hmod)
 {
 	FreeLibrary(hmod);
 }
@@ -144,13 +149,13 @@ void FreeDll(HMODULE hmod)
 
 #include <dlfcn.h>
 
-void *CheckDll(const char *fn, const char *const *names, Vector<void *>& plist)
+void *CheckDll__(const char *fn, const char *const *names, UPP::Vector<void *>& plist)
 {
 
 	void *hmod = dlopen(fn, RTLD_LAZY);
 	if(!hmod) {
 		for(int i = 0; i < 100; i++) {
-			hmod = dlopen(fn + ("." + AsString(i)), RTLD_LAZY);
+			hmod = dlopen(fn + ("." + UPP::AsString(i)), RTLD_LAZY);
 			if(hmod)
 				break;
 		}
@@ -162,7 +167,7 @@ void *CheckDll(const char *fn, const char *const *names, Vector<void *>& plist)
 	for(const char *const *p = names; *p; p++) {
 		void *proc = dlsym(hmod, *p);
 		if(!proc) {
-			fputs(NFormat("Symbol %s not found in %s.\n", *p, fn), stderr);
+			fputs(UPP::NFormat("Symbol %s not found in %s.\n", *p, fn), stderr);
 			fflush(stderr);
 			dlclose(hmod);
 			return 0;
@@ -173,7 +178,7 @@ void *CheckDll(const char *fn, const char *const *names, Vector<void *>& plist)
 	return hmod;
 }
 
-void FreeDll(void *hmod)
+void FreeDll__(void *hmod)
 {
 	if(hmod)
 		dlclose(hmod);
@@ -181,7 +186,7 @@ void FreeDll(void *hmod)
 
 #endif//PLATFORM_POSIX
 
-DLLHANDLE LoadDll(String& inoutfn, const char *const *names, void *const *procs)
+DLLHANDLE LoadDll__(UPP::String& inoutfn, const char *const *names, void *const *procs)
 {
 	const char *fn = inoutfn;
 	while(*fn) {
@@ -192,11 +197,11 @@ DLLHANDLE LoadDll(String& inoutfn, const char *const *names, void *const *procs)
 #endif
 		)
 			fn++;
-		String libname(b, fn);
+		UPP::String libname(b, fn);
 		if(*fn)
 			fn++;
-		Vector<void *> plist;
-		if(DLLHANDLE hmod = CheckDll(libname, names, plist)) {
+		UPP::Vector<void *> plist;
+		if(DLLHANDLE hmod = CheckDll__(libname, names, plist)) {
 			for(int i = 0; i < plist.GetCount(); i++)
 				*(void **)*procs++ = plist[i];
 			inoutfn = libname;

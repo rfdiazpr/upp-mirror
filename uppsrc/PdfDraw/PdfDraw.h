@@ -4,6 +4,9 @@
 #include <CtrlLib/CtrlLib.h>
 #include <plugin/z/z.h>
 
+
+NAMESPACE_UPP
+
 class TTFReader {
 	struct TTFStream {
 		struct Fail {};
@@ -237,15 +240,15 @@ public:
 	virtual void DrawPolyPolylineOp(const Point *vertices, int vertex_count,
 	                                const int *counts, int count_count,
 	                                int width, Color color, Color doxor);
+	virtual void DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
+	                                   const int *subpolygon_counts, int scc,
+	                                   const int *disjunct_polygon_counts, int dpcc,
+	                                   Color color, int width, Color outline,
+	                                   uint64 pattern, Color doxor);
 	virtual void DrawEllipseOp(const Rect& r, Color color, int pen, Color pencolor);
 	virtual void DrawArcOp(const Rect& rc, Point start, Point end, int width, Color color);
 	virtual void DrawTextOp(int x, int y, int angle, const wchar *text, Font font,
 		                    Color ink, int n, const int *dx);
-
-	void         DrawPolyPolyPolygon(const Point *vertices, int vertex_count,
-		const int *subpolygon_counts, int subpolygon_count_count,
-		const int *disjunct_polygon_counts, int disjunct_polygon_count_count,
-		Color color = Black, int width = 0, Color outline = Null, uint64 pattern = 0, Color doxor = Null);
 
 private:
 	struct CharPos : Moveable<CharPos>   { word fi, ci; };
@@ -329,5 +332,7 @@ public:
 };
 
 String Pdf(const Array<Drawing>& report, Size pagesize, int margin);
+
+END_UPP_NAMESPACE
 
 #endif

@@ -1,3 +1,5 @@
+NAMESPACE_UPP
+
 /* obsoleted by Fidler's StoreAsString
 template <class T>
 String SerializeOut(const T& object)
@@ -281,3 +283,5 @@ bool WithBar<T>::Key(dword key, int repcnt)
 {
 	return MenuBar::Scan(WhenBar, key) || T::Key(key, repcnt);
 }
+
+END_UPP_NAMESPACE

@@ -32,6 +32,7 @@ private:
 	Scroller   scroller;
 	CtrlFrame *frame;
 	bool       clickkill;
+	bool       nobg;
 	int        mi;
 
 	struct Info : Ctrl {
@@ -89,13 +90,16 @@ private:
 	void    UpdateSelect();
 
 public:
-	Callback         WhenEnterItem;
-	Callback         WhenKillCursor;
 	Callback         WhenLeftClick;
 	Callback1<Point> WhenLeftClickPos;
 	Callback         WhenLeftDouble;
 	Callback1<Bar&>  WhenBar;
+	Callback         WhenSel;
+
+	// depracated - use WhenSel
 	Callback         WhenSelection;
+	Callback         WhenEnterItem;
+	Callback         WhenKillCursor;
 
 	int     GetColumnItems() const;
 	int     GetColumnCx(int i = 0) const;
@@ -129,6 +133,7 @@ public:
 	void         ClearSelection();
 	void         SelectOne(int i, bool sel);
 	bool         IsSelected(int i) const;
+	bool         IsSel(int i) const;
 
 	void         Sort(const ValueOrder& order);
 
@@ -141,6 +146,7 @@ public:
 	ColumnList&  NoClickKill()                        { return ClickKill(false); }
 	ColumnList&  SetDisplay(const Display& d)         { display = &d; return *this; }
 	ColumnList&  Multi(bool b = true)                 { multi = b; return *this; }
+	ColumnList&  NoBackground(bool b = true)          { nobg = b; Transparent(); Refresh(); return *this; }
 	bool         IsMulti() const                      { return multi; }
 
 	typedef ColumnList CLASSNAME;

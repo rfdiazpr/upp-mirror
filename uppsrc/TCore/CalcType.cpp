@@ -1,6 +1,8 @@
 #include "TCoreCalc.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 String CalcTypeDescribeInt()            { return t_("integer"); }
 
 String CalcType<double>::Describe()     { return t_("real number"); }
@@ -82,3 +84,5 @@ bool CalcType<bool>::ValueTo(Value v)
 		return false;
 	return !IsNumber(v) || (double)v != 0;
 }
+
+END_UPP_NAMESPACE

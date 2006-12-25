@@ -1,11 +1,14 @@
 #include <Core/Core.h>
 
+using namespace Upp;
+
 // This is diagnostic package:
 // It compiles all U++ examples using MSC8 and MINGW build methods
 // or methods listed on commandline
 
 String input = "d:\\";
 String output = "e:\\all";
+String umk = "d:\\theide\\umk.exe ";
 Vector<String> bm;
 
 Vector<String> failed;
@@ -27,7 +30,7 @@ void Build(const char *nest, const char *bm, bool release)
 			txt << ff.GetName() << ' ' << bm << ' ' << mn;
 			Cout() << "  Building " << txt;
 			String c;
-			c << "umk " << nest << ' ' << ff.GetName() << ' ' << bm << " -l" << flags;
+			c << umk << nest << ' ' << ff.GetName() << ' ' << bm << " -l" << flags;
 			if(first)
 				c << 'a';
 			c << ' ' << outdir;
@@ -55,7 +58,7 @@ void Build(const char *nest, bool release)
 void Build(const char *nest)
 {
 	Build(nest, false);
-	Build(nest, true);
+//	Build(nest, true);
 }
 
 CONSOLE_APP_MAIN
@@ -66,9 +69,9 @@ CONSOLE_APP_MAIN
 	for(int i = 0; i < arg.GetCount(); i++)
 		bm.Add(arg[i]);
 	if(bm.GetCount() == 0) {
-		bm.Add("MSC71");
-		bm.Add("MSC8");
-		bm.Add("MINGWI");
+		bm.Add("MSC71cdb");
+//		bm.Add("MSC8cdb");
+//		bm.Add("MINGWI");
 	}
 	Build("examples");
 	Build("reference");

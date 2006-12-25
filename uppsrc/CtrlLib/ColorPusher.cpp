@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 ColorPusher::~ColorPusher() {}
 
 void ColorPusher::Paint(Draw& w)
@@ -147,3 +149,5 @@ ColorButton::ColorButton()
 	NoTrack();
 	Transparent();
 }
+
+END_UPP_NAMESPACE

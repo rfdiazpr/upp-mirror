@@ -3,6 +3,8 @@
 
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 #define LAYOUTFILE <Days/Days.lay>
 #include <CtrlCore/lay.h>
 

@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 #ifdef NEWIMAGE
 
 struct RichImage : public RichObjectType {
@@ -122,3 +124,5 @@ RichObject CreateImageObject(const Image& img, int cx, int cy)
 }
 
 #endif
+
+END_UPP_NAMESPACE

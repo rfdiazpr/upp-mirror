@@ -3,6 +3,8 @@
 #include "lib/sqlite3.h"
 #include "Sqlite3.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 class Sqlite3Connection : public SqlConnection {
@@ -86,7 +88,7 @@ void Sqlite3Connection::BindParam(int i, const Value& r) {
 			break;
 		case DATE_V: {
 				Date d = r;
-				String p = Format("%02d-%02d-%04d", d.month, d.day, d.year);
+				String p = Format("%04d-%02d-%02d", d.year, d.month, d.day);
 				sqlite3_bind_text(current_stmt,i,p,p.GetLength(),SQLITE_TRANSIENT);
 			}
 			break;
@@ -146,6 +148,7 @@ bool Sqlite3Connection::Execute() {
 		for (int i = 0; i < numfields; ++i) {
 			SqlColumnInfo& field = info[i];
 			field.name = sqlite3_column_name(current_stmt,i);
+			String coltype = sqlite3_column_decltype(current_stmt,i);
 			switch (sqlite3_column_type(current_stmt,i)) {
 				case SQLITE_INTEGER:
 					field.type = INT_V;
@@ -154,7 +157,10 @@ bool Sqlite3Connection::Execute() {
 					field.type = DOUBLE_V;
 					break;
 				case SQLITE_TEXT:
-					field.type = WSTRING_V;
+					if(coltype == "date")
+						field.type = DATE_V;
+					else
+						field.type = WSTRING_V;
 					break;
 				case SQLITE_NULL:
 					field.type = VOID_V;
@@ -207,6 +213,8 @@ void Sqlite3Connection::GetColumn(int i, Ref f) const {
 	}
 
 	ASSERT(got_row_data);
+	String coltype = sqlite3_column_decltype(current_stmt,i);
+	String sdate;
 	switch (sqlite3_column_type(current_stmt,i)) {
 		case SQLITE_INTEGER:
 			f = sqlite3_column_int64(current_stmt,i);
@@ -215,7 +223,13 @@ void Sqlite3Connection::GetColumn(int i, Ref f) const {
 			f = sqlite3_column_double(current_stmt,i);
 			break;
 		case SQLITE_TEXT:
-			f = Value(WString((const wchar*)sqlite3_column_text16(current_stmt,i)));
+			if (coltype == "date"){
+				sdate = (const char *)sqlite3_column_text(current_stmt, i);
+				f = Value(Date(atoi(sdate.Mid(0, 4)), atoi(sdate.Mid(5, 2)),
+				               atoi(sdate.Mid(8, 2))));
+			}
+			else
+				f = Value(WString((const wchar*)sqlite3_column_text16(current_stmt,i)));
 			break;
 		case SQLITE_NULL:
 			f = Null;
@@ -289,49 +303,64 @@ void Sqlite3Session::Rollback() {
 		SetError(sqlite3_errmsg(db), rollback);
 }
 Vector<String> Sqlite3Session::EnumDatabases() {
-	// In theory, sqlite3 can "ATTACH" multiple databases (up to 10).
-	// However, I don't know how to list them.
-	Vector<String> out;
-	out.Add(current_dbname);
-	return out;
-}
-Vector<String> Sqlite3Session::EnumTables(String database) {
-	// Ignores database
 	Vector<String> out;
 	Sql sql(*this);
-	sql*Select(SqlId("tbl_name")).From(SqlId("sqlite_master")).Where(SqlId("type")=="table");
+	sql.Execute("PRAGMA database_list;");
+	while (sql.Fetch())
+		out.Add(sql[1]);  // sql[1] is database name, sql[2] is filename
+	return out;
+}
+
+Vector<String> Sqlite3Session::EnumTables(String database) {
+	Vector<String> out;
+	String dbn=database;
+	if(dbn.IsEmpty()) dbn=current_dbname; // for backward compatibility
+	Sql sql(*this);
+	sql.Execute("SELECT name FROM "+dbn+".sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY 1;");
 	while (sql.Fetch())
 		out.Add(sql[0]);
 	return out;
 }
-/*
-Vector<SqlColumnInfo> Sqlite3Session::EnumColumns(String database, String table) {
-	Vector<SqlColumnInfo> out;
-	Sqlite3Connection sql(*this,db);
-	sqlite3_stmt* s = sql.Compile(Format("select * from %s limit 0;",table));
-	int retcode = sqlite3_step(s);
-	ASSERT(SQLITE_DONE == retcode);
-	for (int i = 0; i < sqlite3_column_count(s); i++) {
-		SqlColumnInfo info;
-		info.name = sqlite3_column_name(s,i);
-		switch (sqlite3_column_type(s, i)) {
-	    case 1:
-	        info.type = INT_V;
-	        break;
-	    case 2:
-	        info.type = DOUBLE_V;
-	        break;
-	    default:
-	        info.type = STRING_V;
-		}
-		info.width = info.decimals = info.scale = info.prec = 0;
-		out.Add(info);
-	}
-	sqlite3_reset(s);
 
+Vector<String> Sqlite3Session::EnumViews(String database) {
+	Vector<String> out;
+	String dbn=database;
+	if(dbn.IsEmpty()) dbn=current_dbname;
+	Sql sql(*this);
+	sql.Execute("SELECT name FROM "+dbn+".sqlite_master WHERE type='view' AND name NOT LIKE 'sqlite_%' ORDER BY 1;");
+	while (sql.Fetch())
+		out.Add(sql[0]);
 	return out;
 }
-*/
+
+
+//////////////////////////////////////////////////////////////////////////
+
+Vector<SqlColumnInfo> Sqlite3Session::EnumColumns(String database, String table) {
+	Vector<SqlColumnInfo> out;
+	SqlColumnInfo info;
+	String ColType;
+	Sql sql(*this);
+	sql.Execute("PRAGMA table_info("+table+");");
+	while (sql.Fetch()) {
+		info.width = info.decimals = info.scale = info.prec = 0;
+		info.name = sql[1];
+		ColType   = sql[2];
+		if(ColType =="integer")
+			info.type = INT_V;
+		else
+		if(ColType =="real")
+			info.type = DOUBLE_V;
+		else
+		if (ColType =="date")
+			info.type = DATE_V; // is text
+		else
+			info.type = STRING_V;
+		out.Add(info);
+	}
+	return out;
+}
+
 
 //////////////////////////////////////////////////////////////////////
 
@@ -391,3 +420,5 @@ bool Sqlite3PerformScript(const String& txt, StatementExecutor& se, Gate2<int, i
 	}
 	return true;
 }
+
+END_UPP_NAMESPACE

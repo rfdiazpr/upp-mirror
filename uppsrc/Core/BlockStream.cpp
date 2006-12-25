@@ -1,5 +1,7 @@
 #include "Core.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x)           // LOG(x)
 #define LDUMP(x)          // DUMP(x)
 #define LLOGHEXDUMP(x, s) // LOGHEXDUMP(x, s)
@@ -493,3 +495,5 @@ FileStream::~FileStream() {
 }
 
 #endif
+
+END_UPP_NAMESPACE

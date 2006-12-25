@@ -1,3 +1,5 @@
+description "Including binary data into application";
+
 uses
 	Core,
 	plugin\bz2;
@@ -6,7 +8,7 @@ file
 	ship.usc,
 	bin.cpp,
 	bin.brc
-		depends bin.cpp;
+		depends() bin.cpp;
 
 mainconfig
 	"" = "";

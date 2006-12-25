@@ -9,6 +9,8 @@
 enum { DOC_SCREEN_ZOOM = 140 };
 #endif
 
+NAMESPACE_UPP
+
 Size GetPixelsPerMeter(const Draw& draw)
 {
 	if(draw.Dots())
@@ -173,13 +175,13 @@ static void DrawDragDropRectRaw(Draw& draw, const Rect& rc, HBRUSH brush, int wi
 	Size size = rc.Size();
 	enum { NOTPATINVERT = 0x00A50065 };
 	if(2 * width >= min(size.cx, size.cy))
-		PatBlt(draw, rc.left, rc.top, size.cx, size.cy, NOTPATINVERT);
+		::PatBlt(draw, rc.left, rc.top, size.cx, size.cy, NOTPATINVERT);
 	else
 	{
-		PatBlt(draw, rc.left, rc.top, size.cx, width, NOTPATINVERT);
-		PatBlt(draw, rc.left, rc.bottom - width, size.cx, width, NOTPATINVERT);
-		PatBlt(draw, rc.left, rc.top + width, width, size.cy - 2 * width, NOTPATINVERT);
-		PatBlt(draw, rc.right - width, rc.top + width, width, size.cy - 2 * width, NOTPATINVERT);
+		::PatBlt(draw, rc.left, rc.top, size.cx, width, NOTPATINVERT);
+		::PatBlt(draw, rc.left, rc.bottom - width, size.cx, width, NOTPATINVERT);
+		::PatBlt(draw, rc.left, rc.top + width, width, size.cy - 2 * width, NOTPATINVERT);
+		::PatBlt(draw, rc.right - width, rc.top + width, width, size.cy - 2 * width, NOTPATINVERT);
 	}
 	SelectObject(draw, old_brush);
 }
@@ -1260,3 +1262,5 @@ PrinterInfo::PrinterInfo()
 	}
 #endif
 }
+
+END_UPP_NAMESPACE

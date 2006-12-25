@@ -1,5 +1,6 @@
 #include "CtrlCore.h"
-#pragma hdrstop
+
+NAMESPACE_UPP
 
 #ifdef PLATFORM_WIN32
 
@@ -28,7 +29,7 @@ static BOOL CALLBACK sDumpWindow(HWND hwnd, LPARAM lParam) {
 	Ctrl *ctrl = Ctrl::CtrlFromHWND(hwnd);
 	if(ctrl) {
 #ifdef _DEBUG
-		dump << "Ctrl: " << ::Name(ctrl);
+		dump << "Ctrl: " << UPP::Name(ctrl);
 #endif
 	}
 	else if(!lParam)
@@ -145,12 +146,6 @@ LRESULT CALLBACK Ctrl::SysTimerProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
 	return ::DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-bool IsSysFlag(dword flag)
-{
-	BOOL b;
-	return SystemParametersInfo(flag, 0, &b, 0) && b;
-}
-
 #ifdef PLATFORM_WINCE
 #define L_(x)  L##x
 #else
@@ -162,23 +157,6 @@ void Ctrl::InitWin32(HINSTANCE hInstance)
 	LLOG("InitWin32");
 //	RLOGBLOCK("Ctrl::InitWin32");
 #define ILOG(x) // RLOG(x)
-	ILOG("SetXPStyle; hInstance = " << FormatIntHex(hInstance));
-	ChSet("GUI_GlobalStyle", IsWinXP() && !ScreenInfo().PaletteMode() && IsSysFlag(0x1022 /*SPI_GETFLATMENU*/)
-	                         ? GUISTYLE_XP : GUISTYLE_CLASSIC);
-#ifndef PLATFORM_WINCE
-	ILOG("SPI_GETDRAGFULLWINDOWS");
-	ChSet("GUI_DragFullWindow", IsSysFlag(SPI_GETDRAGFULLWINDOWS));
-#endif
-	ILOG("SPI_GETMENUANIMATION");
-	ChSet("GUI_PopUpEffect", IsSysFlag(0x1002 /*SPI_GETMENUANIMATION*/) ?
-	                               IsSysFlag(0x1012 /*SPI_GETMENUFADE*/) ? GUIEFFECT_FADE : GUIEFFECT_SLIDE
-	                               : GUIEFFECT_NONE);
-	ILOG("SPI_GETDROPSHADOW");
-	ChSet("GUI_DropShadows", IsSysFlag(0x1024 /*SPI_GETDROPSHADOW*/));
-	ILOG("SPI_GETKEYBOARDCUES");
-	ChSet("GUI_AltAccessKeys", !IsSysFlag(0x100A /*SPI_GETKEYBOARDCUES*/));
-	ChSet("GUI_AKD_Conservative", 0);
-
 	Ctrl::hInstance = hInstance;
 	ILOG("RegisterClassW");
 
@@ -451,6 +429,7 @@ void Ctrl::WndDestroy()
 Image Ctrl::DoMouse(int e, Point p, int zd)
 {
 //	LLOG("Ctrl::DoMouse(" << p << ", " << e << ")");
+	eventCtrl = this;
 	Image img = DispatchMouse(e, p, zd);
 	SyncCaret();
 	return img;
@@ -1160,3 +1139,5 @@ Vector<String> SplitCmdLine__(const char *cmd)
 }
 
 #endif
+
+END_UPP_NAMESPACE

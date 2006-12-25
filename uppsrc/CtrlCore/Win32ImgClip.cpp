@@ -1,5 +1,7 @@
 #include "CtrlCore.h"
 
+NAMESPACE_UPP
+
 #ifdef PLATFORM_WIN32
 
 Image ReadClipboardImage()
@@ -63,3 +65,5 @@ void AppendClipboardImage(const Image& img)
 }
 
 #endif
+
+END_UPP_NAMESPACE

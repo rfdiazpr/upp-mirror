@@ -275,7 +275,9 @@ void LocalHost::AddFlags(Index<String>& cfg)
 #elif defined(PLATFORM_FREEBSD)
 	cfg.Add("FREEBSD");
 #elif defined(PLATFORM_SOLARIS)
-	cfg.Add("FREEBSD");
+	cfg.Add("SOLARIS");
+#elif defined(PLATFORM_OSX11)
+	cfg.Add("OSX11");
 #endif
 }
 

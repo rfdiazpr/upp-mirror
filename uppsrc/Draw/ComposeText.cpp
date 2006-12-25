@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 enum {
 	CG_NONE,
 	CG_CAPITAL,
@@ -267,3 +269,5 @@ void Draw::ComposeText(int x, int y, int angle, const wchar *text, Font font, Co
 	}
 	DrawTextOp(x, y, angle, text, font, ink, n, dx);
 }
+
+END_UPP_NAMESPACE

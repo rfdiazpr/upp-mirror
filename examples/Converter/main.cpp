@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 // http://www.ictp.trieste.it/~manuals/programming/Java/tutorial/uiswing/overview/anatomy.html
 
 #define LAYOUTFILE <Converter/converter.lay>
@@ -22,7 +24,7 @@ struct ConverterPane : WithConverterPaneLayout<StaticRect> {
 		value <<= ~slider;
 		AdjustSlave();
 	}
-	
+
 	typedef ConverterPane CLASSNAME;
 
 	ConverterPane()
@@ -62,10 +64,10 @@ struct Converter : TopWindow
 		us.unit.Add(0.914, "Yards");
 		us.unit.Add(1613.0, "Miles");
 		us.unit <<= 0.305;
-		
+
 		us.slave = &metric;
 		metric.slave = &us;
-		
+
 		metric.AdjustSlave();
 	}
 };

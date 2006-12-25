@@ -3,6 +3,8 @@
 
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 class WarningDisplay : public Display
 {
 	int limit;

@@ -1,6 +1,8 @@
 #include "Web.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 #define FAKEERROR 0
 #define FAKESLOWLINE 0 // 57600 // Bd fake line speed, 0 = off
 
@@ -187,7 +189,7 @@ bool Socket::Data::OpenClient(const char *host, int port, bool nodelay, dword *m
 		NoDelay();
 
 	while(bind(socket, (const sockaddr *)&sin, sizeof(sin))) {
-		if(::GetLastError() != SOCKERR(EINPROGRESS) || !IsNull(timeout) && msecs(ticks) >= timeout) {
+		if(GetLastError() != SOCKERR(EINPROGRESS) || !IsNull(timeout) && msecs(ticks) >= timeout) {
 			SetSockError(NFormat("bind(host=%s, port=%d)", FormatIP(Peek32be(&addr.sin_addr)), port));
 			return false;
 		}
@@ -806,3 +808,5 @@ void SocketEvent::Select(Socket& socket, int fd_flags)
 }
 
 #endif
+
+END_UPP_NAMESPACE

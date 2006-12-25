@@ -1,5 +1,7 @@
 #include "Sql.h"
 
+NAMESPACE_UPP
+
 void SqlSchema::FlushColumn() {
 	if(column.IsEmpty()) return;
 	for(int i = items ? 0 : Null; items ? i < items : IsNull(i); i++) {
@@ -201,3 +203,5 @@ void operator*(SqlSchema& schema, const SqlInsert& insert) {
 		                   .Get(schema.GetDialect())
 	                    << ";\n";
 }
+
+END_UPP_NAMESPACE

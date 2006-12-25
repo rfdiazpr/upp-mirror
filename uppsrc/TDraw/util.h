@@ -1,3 +1,5 @@
+NAMESPACE_UPP
+
 static const int    DOTS_PER_METER_INT = 23622;
 static const double DOTS_PER_METER_DBL = 600e3 / 25.4;
 
@@ -189,3 +191,5 @@ private:
 #ifdef PLATFORM_WIN32
 int GdiGetFreeSpace();
 #endif
+
+END_UPP_NAMESPACE

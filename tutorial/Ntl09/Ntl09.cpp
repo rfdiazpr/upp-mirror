@@ -1,5 +1,7 @@
 #include <Core/Core.h>
 
+using namespace Upp;
+
 struct Person : Moveable<Person> {
 	String name;
 	String surname;

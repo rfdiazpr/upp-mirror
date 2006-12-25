@@ -1,5 +1,7 @@
 #include "CtrlCore.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x)  // LOG(x)
 
 bool Ctrl::Logc::IsEmpty() const {
@@ -459,3 +461,5 @@ Ctrl& Ctrl::HCenterPosZ(int size, int delta) {
 Ctrl& Ctrl::VCenterPosZ(int size, int delta) {
 	return VCenterPos(VertLayoutZoom(size), VertLayoutZoom(delta));
 }
+
+END_UPP_NAMESPACE

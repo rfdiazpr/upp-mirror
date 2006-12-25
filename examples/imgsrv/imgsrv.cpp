@@ -6,6 +6,8 @@
 #include <wincon.h>
 #endif
 
+using namespace Upp;
+
 #define APP_VERSION "1.1"
 #define APP_DATE    Date(2006, 5, 19)
 

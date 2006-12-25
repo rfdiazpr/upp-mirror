@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 CH_INT(DropBoxInsideEdge, 1);
 CH_INT(DropBoxWidth, FrameButtonWidth());
 
@@ -154,3 +156,5 @@ DropBox::DropBox()
 	AddFrame(button);
 	light = -1;
 }
+
+END_UPP_NAMESPACE

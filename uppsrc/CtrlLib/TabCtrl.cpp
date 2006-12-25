@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 CH_FONT(TabCtrlFont, StdFont());
 
 CH_INTS(TabCtrlMetric, TabCtrl::METRIC_COUNT,
@@ -7,6 +9,7 @@ CH_INTS(TabCtrlMetric, TabCtrl::METRIC_COUNT,
        		<< 2 // MARGIN
        		<< 2 << 2 << 2 << 2 // SEL*
        		<< 6 << 6 << 6 << 6 // *EDGE
+       		<< 0 // EXTENDLEFT
 );
 
 CH_LOOKS(TabCtrlLook, TabCtrl::LOOK_COUNT, CtrlsImgLook
@@ -162,10 +165,12 @@ void TabCtrl::PaintTabs(Draw& w)
 	ChPaint(w, 0, th, sz.cx, sz.cy - th, look(BODY));
 	Size chsz = GetTextSize("M", TabCtrlFont());
 	for(int phase = 0; phase < 2; phase++) {
-		for(int i = 0; i < tab.GetCount(); i++)
+		for(int i = tab.GetCount() - 1; i >= 0; i--)
 			if((sel == i) == phase) {
 				Item& t = tab[i];
 				Rect r = RectC(t.x, tt, t.cx, th - tt);
+				if(i)
+					r.left -= metric(EXTENDLEFT);
 				if(phase) {
 					r.left -= metric(SELLEFT);
 					r.right += metric(SELRIGHT);
@@ -483,3 +488,5 @@ TabDlg::TabDlg()
 	Acceptor(exit, IDEXIT);
 	Ctrl::Add(exit);
 }
+
+END_UPP_NAMESPACE

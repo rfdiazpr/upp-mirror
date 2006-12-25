@@ -1,3 +1,5 @@
+description "QTF - default text representation of RichText";
+
 uses
 	CtrlLib,
 	RichEdit;
@@ -7,4 +9,3 @@ file
 
 mainconfig
 	"" = "GUI";
-

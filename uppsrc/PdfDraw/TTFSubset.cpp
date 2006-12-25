@@ -1,5 +1,7 @@
 #include "PdfDraw.h"
 
+NAMESPACE_UPP
+
 dword sCheckSum(const String& data)
 {
 	const byte *s = (byte *)~data;
@@ -201,3 +203,5 @@ String TTFReader::Subset(const Vector<wchar>& chars, int first, bool os2)
 		return String::GetVoid();
 	}
 }
+
+END_UPP_NAMESPACE

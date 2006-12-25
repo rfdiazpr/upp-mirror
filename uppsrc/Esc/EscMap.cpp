@@ -1,5 +1,7 @@
 #include "Esc.h"
 
+NAMESPACE_UPP
+
 #define LTIMING(x) // RTIMING(x)
 
 VectorMap<EscValue, EscValue>& EscValue::CloneMap()
@@ -67,3 +69,5 @@ int  EscValue::GetFieldInt(const char *id) const
 {
 	return HasNumberField(id) ? MapGet(id).GetInt() : 0;
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,17 @@
 #include "Core.h"
 
+#ifdef PLATFORM_WIN32
+
+#define Ptr Ptr_
+#include <objbase.h>
+#undef Ptr
+
+#pragma comment(lib, "ole32.lib")
+
+#endif
+
+NAMESPACE_UPP
+
 #pragma BLITZ_APPROVE
 
 void Uuid::Serialize(Stream& s) {
@@ -8,12 +20,6 @@ void Uuid::Serialize(Stream& s) {
 }
 
 #ifdef PLATFORM_WIN32
-
-#define Ptr Ptr_
-#include <objbase.h>
-#undef Ptr
-
-#pragma comment(lib, "ole32.lib")
 
 Uuid Uuid::Create() {
 	Uuid uuid;
@@ -63,3 +69,5 @@ ValueGen& UuidValueGen()
 {
 	return Single<UuidValueGenClass>();
 }
+
+END_UPP_NAMESPACE

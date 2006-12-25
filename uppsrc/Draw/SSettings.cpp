@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 CH_COLOR(SBlack, Black());
 CH_COLOR(SGray, Gray());
 CH_COLOR(SLtGray, LtGray());
@@ -166,3 +168,5 @@ void UpdateSColors()
 
 }
 #endif
+
+END_UPP_NAMESPACE

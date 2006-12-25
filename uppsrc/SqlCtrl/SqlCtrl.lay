@@ -21,4 +21,3 @@ LAYOUT(SqlExportLayout, 412, 332)
 	ITEM(Button, ok, SetLabel(t_("OK")).RightPosZ(88, 80).BottomPosZ(3, 21))
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).RightPosZ(4, 80).BottomPosZ(4, 22))
 END_LAYOUT
-

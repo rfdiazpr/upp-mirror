@@ -1,6 +1,8 @@
 #include "Web.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 /* MD5 context. */
 typedef struct {
 	dword state[4];                                   /* state (ABCD) */
@@ -331,3 +333,5 @@ static void MD5_memset (void * output, int value, unsigned int len)
 {
 	memset(output, value, len);
 }
+
+END_UPP_NAMESPACE

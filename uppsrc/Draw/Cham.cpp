@@ -1,6 +1,23 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 #define LTIMING(x) // RTIMING(x)
+
+#if defined(_DEBUG) && 0
+#include <plugin/png/png.h>
+
+inline void LOGPNG(const char *name, const Image& m)
+{
+	PNGEncoder png;
+	png.SaveFile(ConfigFile(name) + ".png", m);
+}
+
+#else
+
+#define LOGPNG(a, b)
+
+#endif
 
 struct ChVar : Moveable<ChVar> {
 	int         count;
@@ -166,6 +183,7 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 	if(IsType<sChLookWith>(v)) {
 		const sChLookWith& x = ValueTo<sChLookWith>(v);
 		if(op == LOOK_PAINT) {
+			LOGPNG(AsString(x.img.GetSerialId()), x.img);
 			ChPaint(w, r, x.look);
 			Point p = r.CenterPos(x.img.GetSize());
 			if(x.colorfn)
@@ -429,3 +447,5 @@ void ColoredOverride(Iml& target, Iml& source)
 {
 	Override(target, source, true);
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct MyAppWindow : TopWindow {
 	void Exit() {
 		if(PromptOKCancel("Exit MyApp?"))

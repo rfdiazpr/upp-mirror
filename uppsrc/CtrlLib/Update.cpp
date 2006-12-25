@@ -1,5 +1,8 @@
 #include "CtrlLib.h"
 
+
+NAMESPACE_UPP
+
 #ifdef PLATFORM_WIN32
 #ifndef PLATFORM_WINCE
 
@@ -111,7 +114,7 @@ static String FixArg(String s)
 void SelfUpdate() {
 	char dst[512];
 	UpdateFile("UPDATER.EXE");
-	GetModuleFileName(NULL, dst, 512);
+	::GetModuleFileName(NULL, dst, 512);
 	String src = GetIniKey("UPDATE");
 	if(src.IsEmpty()) return;
 	src = AppendFileName(src, GetFileNamePos(dst));
@@ -161,3 +164,5 @@ bool SelfUpdateSelf()
 
 #endif
 #endif
+
+END_UPP_NAMESPACE

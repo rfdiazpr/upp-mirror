@@ -1,5 +1,7 @@
 #include "Core.h"
 
+NAMESPACE_UPP
+
 //template <>
 //void Rect_<double>::Union(const Rect_<double>& r) {
 void Rect_double_Union(Rect_<double>& self, const Rect_<double>& r) {
@@ -98,3 +100,5 @@ Size  GetFitSize(Size sz, int cx, int cy)
 	else
 		return iscale(sz, cx, sz.cx);
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include "Sql.h"
 
+NAMESPACE_UPP
+
 void SqlBool::SetTrue() {
 	priority = TRUEVAL;
 	text = "0=0";
@@ -142,3 +144,5 @@ SqlBool LeftJoin(SqlId tab1, SqlId tab2, SqlId key) {
 SqlBool RightJoin(SqlId tab1, SqlId tab2, SqlId key) {
 	return key.Of(tab1) == SqlCol(~key.Of(tab2) + "(+)");
 }
+
+END_UPP_NAMESPACE

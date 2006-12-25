@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 class RightInfoFrame : public CtrlFrame {
 	virtual void FrameLayout(Rect& r);
 	virtual void FramePaint(Draw& draw, const Rect& r);
@@ -299,3 +301,5 @@ ProgressInfo::~ProgressInfo()
 	if(info)
 		info->Set(Null);
 }
+
+END_UPP_NAMESPACE

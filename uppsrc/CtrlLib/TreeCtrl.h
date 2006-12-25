@@ -83,6 +83,7 @@ private:
 	bool         hasctrls;
 	bool         multiselect;
 	bool         isselection;
+	bool         nobg;
 	ScrollBars   sb;
 	Scroller     scroller;
 	Display     *display;
@@ -121,9 +122,12 @@ protected:
 public:
 	Callback1<int>  WhenOpen;
 	Callback1<int>  WhenClose;
-	Callback        WhenCursor;
 	Callback        WhenLeftDouble;
 	Callback1<Bar&> WhenBar;
+	Callback        WhenSel;
+
+	// deprecated - use WhenSel
+	Callback        WhenCursor;
 	Callback        WhenSelection;
 
 	void   SetRoot(const Node& n);
@@ -205,13 +209,15 @@ public:
 	void         ClearSelection();
 	void         SelectOne(int id, bool sel);
 	bool         IsSelected(int id) const       { return item[id].sel; }
+	bool         IsSel(int id) const;
 
 	void   Dump();
 
-	TreeCtrl& NoCursor(bool b = true)    { nocursor = b; if(b) KillCursor(); return *this; }
-	TreeCtrl& NoRoot(bool b = true)      { noroot = b; Dirty(); Refresh(); return *this; }
-	TreeCtrl& LevelCx(int cx)            { levelcx = cx; Dirty(); return *this; }
-	TreeCtrl& MultiSelect(bool b = true) { multiselect = true; return *this; }
+	TreeCtrl& NoCursor(bool b = true)     { nocursor = b; if(b) KillCursor(); return *this; }
+	TreeCtrl& NoRoot(bool b = true)       { noroot = b; Dirty(); Refresh(); return *this; }
+	TreeCtrl& LevelCx(int cx)             { levelcx = cx; Dirty(); return *this; }
+	TreeCtrl& MultiSelect(bool b = true)  { multiselect = true; return *this; }
+	TreeCtrl& NoBackground(bool b = true) { nobg = b; Transparent(); Refresh(); return *this; }
 
 	typedef TreeCtrl CLASSNAME;
 

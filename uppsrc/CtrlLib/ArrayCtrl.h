@@ -188,6 +188,7 @@ private:
 	bool  multiselect:1;
 	bool  hasctrls:1;
 	bool  headerctrls:1;
+	bool  nobg:1;
 
 	mutable bool  selectiondirty:1;
 
@@ -258,16 +259,19 @@ public:
 	Callback          WhenEnterKey;
 	Callback          WhenLeftClick;
 	Callback1<Bar&>   WhenBar;
-	Callback          WhenEnterRow;
 	Gate              WhenAcceptRow;
 	Callback          WhenUpdateRow;
-	Callback          WhenKillCursor;
-	Callback          WhenCursor;
 	Callback          WhenArrayAction;
 	Callback          WhenStartEdit;
 	Callback          WhenAcceptEdit;
-	Callback          WhenSelection;
 	Callback          WhenCtrlsAction;
+	Callback          WhenSel;
+
+	//Deprecated - use WhenSel
+	Callback          WhenEnterRow;
+	Callback          WhenKillCursor;
+	Callback          WhenCursor;
+	Callback          WhenSelection;
 
 	IdInfo&    IndexInfo(int ii);
 	IdInfo&    IndexInfo(Id id);
@@ -340,6 +344,7 @@ public:
 	void       Select(int i, int count, bool sel = true);
 	bool       IsSelected(int i) const                          { return array[i].select; }
 	void       ClearSelection();
+	bool       IsSel(int i) const;
 
 	Vector<Value> ReadRow(int i) const;
 
@@ -478,6 +483,7 @@ public:
 	ArrayCtrl& AutoHideSb(bool b = true)               { sb.AutoHide(b); return *this; }
 	ArrayCtrl& NoAutoHideSb()                          { return AutoHideSb(false); }
 	ArrayCtrl& MultiSelect(bool b = true)              { multiselect = b; return *this; }
+	ArrayCtrl& NoBackground(bool b = true)             { nobg = b; Transparent(); Refresh(); return *this; }
 
 	ArrayCtrl& ColumnWidths(const char *s);
 

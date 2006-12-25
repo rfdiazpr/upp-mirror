@@ -1,5 +1,7 @@
 #include "CtrlCore.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) //LOG(x)
 
 static bool StdDisplayErrorFn(const Value& e)
@@ -809,3 +811,5 @@ CH_INT(GUI_PopUpEffect, GUIEFFECT_SLIDE);
 CH_INT(GUI_DropShadows, 1);
 CH_INT(GUI_AltAccessKeys, 1);
 CH_INT(GUI_AKD_Conservative, 0);
+
+END_UPP_NAMESPACE

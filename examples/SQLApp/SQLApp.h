@@ -4,6 +4,8 @@
 #include <SqlCtrl/SqlCtrl.h>
 #include <plugin/sqlite3/sqlite3.h>
 
+using namespace Upp;
+
 #define LAYOUTFILE <SQLApp/SQLApp.lay>
 #include <CtrlCore/lay.h>
 

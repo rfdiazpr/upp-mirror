@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 int LineZoom(Zoom z, int a)
 {
 	return a ? max(1, z * a) : 0;
@@ -188,3 +190,5 @@ RichCell::RichCell(const RichCell& src, int)
 	vspan = src.vspan;
 	text <<= src.text;
 }
+
+END_UPP_NAMESPACE

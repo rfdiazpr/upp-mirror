@@ -1,5 +1,7 @@
 #include "TCore.h"
 
+NAMESPACE_UPP
+
 ConfigHeading::ConfigHeading()
 {
 	version = 0;
@@ -133,3 +135,5 @@ Configuration& Configuration::Main()
 	static Configuration main_configuration("Application configuration", 1, 1, 1);
 	return main_configuration;
 }
+
+END_UPP_NAMESPACE

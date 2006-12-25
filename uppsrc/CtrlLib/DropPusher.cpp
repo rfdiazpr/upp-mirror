@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 DropPusher::DropPusher()
 {
 	NoWantFocus();
@@ -60,3 +62,5 @@ void DropPusher::OnSelect()
 	if(c >= 0)
 		SetDataAction(keys[c]);
 }
+
+END_UPP_NAMESPACE

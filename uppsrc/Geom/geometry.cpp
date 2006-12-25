@@ -1,5 +1,7 @@
 #include "Geom.h"
 
+NAMESPACE_UPP
+
 Pointf Length(Pointf p, double length)
 {
 	double l = max(Length(p), AbsMax(p));
@@ -279,3 +281,5 @@ String Matrixf::ToString() const
 {
 	return String().Cat() << "[x = " << x << ", y = " << y << ", a = " << a << "]";
 }
+
+END_UPP_NAMESPACE

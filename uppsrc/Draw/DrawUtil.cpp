@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 #define LTIMING(x) // TIMING(x)
 
 void AddNotEmpty(Vector<Rect>& result, int left, int right, int top, int bottom)
@@ -105,7 +107,8 @@ void DrawFatFrame(Draw& w, const Rect& r, Color color, int n) {
 }
 
 void DrawFrame(Draw& w, int x, int y, int cx, int cy,
-			   Color leftcolor, Color topcolor, Color rightcolor, Color bottomcolor) {
+			   Color leftcolor, Color topcolor, Color rightcolor, Color bottomcolor)
+{
 	w.DrawRect(x, y, cx - 1, 1, topcolor);
 	w.DrawRect(x, y, 1, cy - 1, leftcolor);
 	w.DrawRect(x + cx - 1, y, 1, cy, rightcolor);
@@ -113,13 +116,15 @@ void DrawFrame(Draw& w, int x, int y, int cx, int cy,
 }
 
 void DrawFrame(Draw& w, const Rect& r,
-			   Color leftcolor, Color topcolor, Color rightcolor, Color bottomcolor) {
+			   Color leftcolor, Color topcolor, Color rightcolor, Color bottomcolor)
+{
 	DrawFrame(w, r.left, r.top, r.Width(), r.Height(),
 		      leftcolor, topcolor, rightcolor, bottomcolor);
 }
 
 void DrawFrame(Draw& w, int x, int y, int cx, int cy,
-			   Color topleftcolor, Color bottomrightcolor) {
+			   Color topleftcolor, Color bottomrightcolor)
+{
 	DrawFrame(w, x, y, cx, cy, topleftcolor, topleftcolor, bottomrightcolor, bottomrightcolor);
 }
 
@@ -627,3 +632,5 @@ DrawingToPdfFnType GetDrawingToPdfFn()
 {
 	return sPdf;
 }
+
+END_UPP_NAMESPACE

@@ -1,7 +1,10 @@
 #include "CtrlCore.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x)  // LOG(x)
 
+Ptr<Ctrl> Ctrl::eventCtrl;
 Ptr<Ctrl> Ctrl::mouseCtrl;
 Ptr<Ctrl> Ctrl::captureCtrl;
 Ptr<Ctrl> Ctrl::repeatTopCtrl;
@@ -57,6 +60,7 @@ Image Ctrl::FrameMouseEventH(int event, Point p, int zdelta, dword keyflags)
 		if((*mousehook()[i])(this, true, event, p, zdelta, keyflags))
 			return Image::Arrow();
 	LogMouseEvent("FRAME ", this, event, p, zdelta, keyflags);
+	eventCtrl = this;
 	return FrameMouseEvent(event, p, zdelta, keyflags);
 }
 
@@ -241,7 +245,7 @@ void    Ctrl::LRepeat() {
 
 void    Ctrl::LRep() {
 	LLOG("LRep");
-	::SetTimeCallback(-GetKbdSpeed(), callback(&Ctrl::LRepeat), &mousepos);
+	UPP::SetTimeCallback(-GetKbdSpeed(), callback(&Ctrl::LRepeat), &mousepos);
 }
 
 void    Ctrl::RRepeat() {
@@ -252,12 +256,12 @@ void    Ctrl::RRepeat() {
 }
 
 void    Ctrl::RRep() {
-	::SetTimeCallback(-GetKbdSpeed(), callback(&Ctrl::RRepeat), &mousepos);
+	UPP::SetTimeCallback(-GetKbdSpeed(), callback(&Ctrl::RRepeat), &mousepos);
 }
 
 void    Ctrl::KillRepeat() {
 	LLOG("Ctrl::KillRepeat");
-	::KillTimeCallback(&mousepos);
+	UPP::KillTimeCallback(&mousepos);
 }
 
 bool    Ctrl::HasMouse() const
@@ -325,12 +329,12 @@ Image Ctrl::DispatchMouse(int e, Point p, int zd) {
 	if(e == LEFTDOWN)
 	{
 		LLOG("Ctrl::DispatchMouse: init left repeat for " << ::Name(this) << " at " << p);
-		::SetTimeCallback(GetKbdDelay(), callback(&Ctrl::LRep), &mousepos);
+		UPP::SetTimeCallback(GetKbdDelay(), callback(&Ctrl::LRep), &mousepos);
 	}
 	if(e == RIGHTDOWN)
 	{
 		LLOG("Ctrl::DispatchMouse: init right repeat for " << ::Name(this) << " at " << p);
-		::SetTimeCallback(GetKbdDelay(), callback(&Ctrl::RRep), &mousepos);
+		UPP::SetTimeCallback(GetKbdDelay(), callback(&Ctrl::RRep), &mousepos);
 	}
 	if(e == LEFTUP || e == RIGHTUP)
 		KillRepeat();
@@ -420,3 +424,5 @@ AutoWaitCursor::~AutoWaitCursor() {
 	if(avg < -10000) avg = -10000;
 	if(avg >  10000) avg = 10000;
 }
+
+END_UPP_NAMESPACE

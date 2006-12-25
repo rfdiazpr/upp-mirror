@@ -1,3 +1,5 @@
+description "Connecting Sqlite3 database";
+
 uses
 	plugin\Sqlite3;
 

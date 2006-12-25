@@ -1,3 +1,5 @@
+description "Rudimentary HelloWorld application with menu and status bar";
+
 uses
 	CtrlLib;
 

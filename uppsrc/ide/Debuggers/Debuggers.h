@@ -51,6 +51,8 @@ public:
 	void  Add(dword adr, const String& code, const String& args);
 	void  AddT(dword tadr)              { taddr.Add(tadr); }
 
+	void  WriteClipboard();
+
 	void  Set(const String& s);
 	bool  InRange(dword adr)            { return addr.Find(adr) >= 0; }
 	void  SetCursor(dword adr);
@@ -155,6 +157,9 @@ struct Gdb : Dbg {
 	void      Data();
 
 	void      QuickWatch();
+
+	void      CopyStack();
+	void      CopyDisas();
 
 	bool      Create(One<Host> host, const String& exefile, const String& cmdline);
 

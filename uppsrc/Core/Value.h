@@ -46,6 +46,7 @@ public:
 	operator int() const                { return INT_NULL; }
 	operator int64() const              { return INT64_NULL; }
 	operator double() const             { return DOUBLE_NULL; }
+	operator bool() const               { return false; }
 
 	Nuller() {}
 };
@@ -59,6 +60,7 @@ extern const Nuller Null;
 template<> inline bool  IsNull(const int& i)     { return i == INT_NULL; }
 template<> inline bool  IsNull(const int64& i)   { return i == INT64_NULL; }
 template<> inline bool  IsNull(const double& r)  { return r < DOUBLE_NULL_LIM; }
+template<> inline bool  IsNull(const bool& r  )  { return false; }
 template<> inline bool  IsNull(const Date& d)    { return d.year == -32768; }
 template<> inline bool  IsNull(const Time& t)    { return t.year == -32768; }
 
@@ -88,6 +90,7 @@ const int VALUE_V   = 7;
 const int WSTRING_V = 8;
 
 const int INT64_V  = 10;
+const int BOOL_V   = 11;
 
 const int UNKNOWN_V = (int)0xffffffff;
 
@@ -201,7 +204,7 @@ inline bool IsVoid(const Value& v)     { return v.GetType() == VOID_V; }
 inline bool IsError(const Value& v)    { return v.GetType() == ERROR_V; }
 inline bool IsString(const Value& v)   { return v.GetType() == STRING_V || v.GetType() == WSTRING_V; }
 inline bool IsNumber(const Value& v)   { return v.GetType() == DOUBLE_V || v.GetType() == INT_V
-                                                || v.GetType() == INT64_V; }
+                                                || v.GetType() == INT64_V || v.GetType() == BOOL_V; }
 inline bool IsDateTime(const Value& v) { return v.GetType() == DATE_V || v.GetType() == TIME_V; }
 
 int StdValueCompare(const Value& a, const Value& b, int language);
@@ -255,6 +258,7 @@ public:
 inline dword ValueTypeNo(const int&)     { return INT_V; }
 inline dword ValueTypeNo(const int64&)   { return INT64_V; }
 inline dword ValueTypeNo(const double&)  { return DOUBLE_V; }
+inline dword ValueTypeNo(const bool&)    { return BOOL_V; }
 inline dword ValueTypeNo(const String&)  { return STRING_V; }
 inline dword ValueTypeNo(const WString&) { return WSTRING_V; }
 inline dword ValueTypeNo(const Date&)    { return DATE_V; }
@@ -363,7 +367,7 @@ inline bool IsPolyEqual(const T& x, const Value& v) {
 
 template <class T>
 inline unsigned ValueGetHashValue(const T& x) {
-	return ::GetHashValue(x);
+	return UPP::GetHashValue(x);
 }
 
 inline bool IsPolyEqual(const int& x, const Value& v) {
@@ -384,30 +388,30 @@ inline bool IsPolyEqual(const WString& x, const Value& v) {
 }
 
 inline unsigned ValueGetHashValue(const int& x) {
-	return ::GetHashValue((double)x);
+	return UPP::GetHashValue((double)x);
 }
 
 inline unsigned ValueGetHashValue(const int64& x) {
-	return ::GetHashValue((double)x);
+	return UPP::GetHashValue((double)x);
 }
 
 inline unsigned ValueGetHashValue(const Date& x) {
-	return ::GetHashValue(ToTime(x));
+	return UPP::GetHashValue(ToTime(x));
 }
 
 inline unsigned ValueGetHashValue(const String& x) { // Improve by specialized routines !!!
-	return ::GetHashValue((WString)x);
+	return UPP::GetHashValue((WString)x);
 }
 
 template <class T>
 class RichValueRep : public RawValueRep<T> {
 public:
-	virtual bool       IsNull() const                { return ::IsNull(this->v); }
+	virtual bool       IsNull() const                { return UPP::IsNull(this->v); }
 	virtual void       Serialize(Stream& s)          { s % this->v; }
-	virtual unsigned   GetHashValue() const          { return ::ValueGetHashValue(this->v); }
+	virtual unsigned   GetHashValue() const          { return UPP::ValueGetHashValue(this->v); }
 	virtual bool       IsEqual(const Value::Void *p) { return Cast(p)->Get() == this->v; }
-	virtual bool       IsPolyEqual(const Value& b)   { return ::IsPolyEqual(this->v, b); }
-	virtual String     AsString() const              { return ::AsString(this->v); }
+	virtual bool       IsPolyEqual(const Value& b)   { return UPP::IsPolyEqual(this->v, b); }
+	virtual String     AsString() const              { return UPP::AsString(this->v); }
 
 	RichValueRep(const T& v) : RawValueRep<T>(v)     {}
 	RichValueRep(Stream& s)                          { Serialize(s); }
@@ -486,7 +490,7 @@ struct RawRef : public RefManager {
 template <class T>
 struct RichRef : public RawRef<T> {
 	virtual Value GetValue(const void *p)           { return RichValue<T>(*(T *) p); }
-	virtual bool  IsNull(const void *p)             { return ::IsNull(*(T *) p); }
+	virtual bool  IsNull(const void *p)             { return UPP::IsNull(*(T *) p); }
 	virtual void  SetValue(void *p, const Value& v) { *(T *) p = T(v); }
 	virtual void  SetNull(void *p)                  { *(T *) p = T(Null); }
 };

@@ -1,6 +1,8 @@
 #include "CtrlCore.h"
 
-#define LLOG(x) // RLOG(x)
+NAMESPACE_UPP
+
+#define LLOG(x)  // LOG(x)
 
 #ifdef PLATFORM_WIN32
 
@@ -109,7 +111,7 @@ void TopWindow::SyncCaption()
 #endif
 }
 
-void TopWindow::CenterRect(HWND hwnd)
+void TopWindow::CenterRect(HWND hwnd, int center)
 {
 	SetupRect();
 	if(hwnd && center == 1 || center == 2) {
@@ -125,9 +127,13 @@ void TopWindow::CenterRect(HWND hwnd)
 		sz.cy = min(sz.cy, wr.Height());
 		if(center == 1) {
 			::GetClientRect(hwnd, r);
-			Point p = r.TopLeft();
-			::ClientToScreen(hwnd, p);
-			r.Offset(p);
+			if(r.IsEmpty())
+				r = wr;
+			else {
+				Point p = r.TopLeft();
+				::ClientToScreen(hwnd, p);
+				r.Offset(p);
+			}
 		}
 		else
 			r = wr;
@@ -140,6 +146,10 @@ void TopWindow::CenterRect(HWND hwnd)
 	}
 }
 
+static HWND trayHWND__;
+HWND   GetTrayHWND__()          { return trayHWND__; }
+void   SetTrayHWND__(HWND hwnd) { trayHWND__ = hwnd; }
+
 void TopWindow::Open(HWND hwnd)
 {
 	if(dokeys && (!GUI_AKD_Conservative() || GetAccessKeysDeep() <= 1))
@@ -151,10 +161,16 @@ void TopWindow::Open(HWND hwnd)
 #ifdef PLATFORM_WINCE
 	if(!GetRect().IsEmpty())
 #endif
-	CenterRect(hwnd);
-	Create(hwnd, style, exstyle, false, state == OVERLAPPED ? SW_SHOWNORMAL :
-	                                    state == MINIMIZED  ? SW_MINIMIZE :
-	                                                          SW_MAXIMIZE, false);
+	if(fullscreen) {
+		SetRect(ScreenInfo().GetPagePixels());
+		Create(hwnd, WS_POPUP, WS_EX_TOPMOST, false, SW_MAXIMIZE, false);
+	}
+	else {
+		CenterRect(hwnd, hwnd == GetTrayHWND__() ? center ? 2 : 0 : center);
+		Create(hwnd, style, exstyle, false, state == OVERLAPPED ? SW_SHOWNORMAL :
+		                                    state == MINIMIZED  ? SW_MINIMIZE :
+		                                                          SW_MAXIMIZE, false);
+	}
 	PlaceFocus();
 	SyncCaption();
 }
@@ -220,7 +236,7 @@ TopWindow& TopWindow::ExStyle(dword _exstyle)
 
 TopWindow& TopWindow::TopMost(bool b, bool stay_top)
 {
-   HWND hwnd;
+	HWND hwnd;
 	if(hwnd = GetHWND())
 	{
 		SetWindowPos(hwnd, b ? HWND_TOPMOST : (stay_top ? HWND_NOTOPMOST : HWND_BOTTOM),0,0,0,0,SWP_NOMOVE|SWP_NOSIZE );
@@ -234,3 +250,5 @@ bool TopWindow::IsTopMost() const
 }
 
 #endif
+
+END_UPP_NAMESPACE

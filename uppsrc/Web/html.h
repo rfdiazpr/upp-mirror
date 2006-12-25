@@ -107,9 +107,9 @@ public:
 	HtmlTag&      Size(int c);
 	HtmlTag&      Size(int cx, int cy);
 
-	HtmlTag&      Color(::Color color);
-	HtmlTag&      BorderColor(::Color color);
-	HtmlTag&      BgColor(::Color color);
+	HtmlTag&      Color(class Color color);
+	HtmlTag&      BorderColor(class Color color);
+	HtmlTag&      BgColor(class Color color);
 
 	HtmlTag&      Face(const char *s);
 	HtmlTag&      Border(int i);
@@ -154,9 +154,9 @@ public:
 	HtmlTag&      Loop(int i);
 	HtmlTag&      Volume(double v);
 	HtmlTag&      Src(const char *s);
-	HtmlTag&      Alink(::Color c);
-	HtmlTag&      Vlink(::Color c);
-	HtmlTag&      Link(::Color c);
+	HtmlTag&      Alink(class Color c);
+	HtmlTag&      Vlink(class Color c);
+	HtmlTag&      Link(class Color c);
 	HtmlTag&      Background(const char *s);
 
 	HtmlTag&      OnClick(const char *js);

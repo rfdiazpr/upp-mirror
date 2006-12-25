@@ -1,3 +1,5 @@
+description "Simple image viewer";
+
 uses
 	CtrlLib,
 	plugin\tif,

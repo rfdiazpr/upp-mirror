@@ -6,7 +6,6 @@ uses
 file
 	HexView.h,
 	HexView.cpp,
-	main.cpp,
 	HexView.lay,
 	Info readonly separator,
 	COPYING,

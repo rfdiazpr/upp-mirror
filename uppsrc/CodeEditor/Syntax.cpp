@@ -1,5 +1,7 @@
 #include "CodeEditor.h"
 
+NAMESPACE_UPP
+
 Color GetUvsHighlight(const wchar *text, int& n);
 
 const wchar *eatstring(const wchar *s) {
@@ -333,3 +335,5 @@ bool CodeEditor::SyntaxState::MatchHilite(const SyntaxState& st) const
 		&& seline == st.seline
 		&& spar == st.spar;
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,6 @@
 #include "Draw.h"
-#pragma hdrstop
+
+NAMESPACE_UPP
 
 #define LLOG(x) // LOG(x)
 #define LTIMING(x) // RTIMING(x)
@@ -414,3 +415,5 @@ PrintDraw::~PrintDraw() {
 #endif
 
 #endif
+
+END_UPP_NAMESPACE

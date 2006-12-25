@@ -3,6 +3,9 @@
 
 #include <CtrlLib/CtrlLib.h>
 
+
+NAMESPACE_UPP
+
 #define LAYOUTFILE <HexView/HexView.lay>
 #include <CtrlCore/lay.h>
 
@@ -23,7 +26,7 @@ public:
 	void  Set(int i, int d)            { ASSERT(i >= 0 && i < 80); data[i] = d; Refresh(); }
 	void  SetMode(int m);
 	int   GetMode() const              { return mode; }
-	
+
 	HexViewInfo();
 };
 
@@ -48,7 +51,7 @@ private:
 	ScrollBar sb;
 
 	HexViewInfo info;
-	
+
 	WithHexGotoLayout<TopWindow> go;
 
 	void      SetSb();
@@ -60,36 +63,37 @@ private:
 
 public:
 	virtual int Byte(int64 adr);
-	
+
 	Callback1<Bar&>          WhenBar;
 	Callback1<const String&> WhenGoto;
-	
+
 	void  ColumnsMenu(Bar& bar);
 	void  CharsetMenu(Bar& bar);
 	void  InfoMenu(Bar& bar);
 	void  StdMenu(Bar& bar);
-	
+
 	void  StdGoto(const String& text);
-	
+
 	void  GotoAddHistory()            { go.text.AddHistory(); }
 
-	bool  IsLongMode() const          { return total > 0xffffffff; }	
+	bool  IsLongMode() const          { return total > 0xffffffff; }
 	void  SetTotal(int64 _total);
 	void  SetSc(int64 address);
 	int64 GetSc() const               { return sc; }
 	void  SetCursor(int64 address);
 	int64 GetCursor() const           { return cursor; }
-	
+
 	void  SerializeSettings(Stream& s);
-	
+
 	HexView& SetFont(Font fnt);
 	HexView& Charset(byte chrset)     { charset = chrset; Refresh(); return *this; }
 	HexView& FixedColumns(int c = 0)  { fixed = c; Layout(); Refresh(); return *this; }
-	
+
 	typedef HexView CLASSNAME;
 
 	HexView();
 };
 
-#endif
+END_UPP_NAMESPACE
 
+#endif

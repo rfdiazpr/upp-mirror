@@ -1,6 +1,8 @@
 #include "Geom.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 Pointf3 Length(Pointf3 p, double length)
 {
 	double l = max(Length(p), fpabsmax(p));
@@ -378,3 +380,5 @@ Pointf3 Camera::InverseXY(Pointf point, double z) const
 		return Null;
 	return Pointf3(dx / dr, dy / dr, z);
 }
+
+END_UPP_NAMESPACE

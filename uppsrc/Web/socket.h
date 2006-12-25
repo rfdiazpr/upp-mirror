@@ -1,31 +1,5 @@
 //#define NOFAKEERROR
 
-#if defined(PLATFORM_WIN32)
-#define W_P(w, p) w
-#if !defined(PLATFORM_CYGWIN)
-#include <winsock2.h>
-#endif
-typedef int socklen_t;
-#elif defined(PLATFORM_POSIX)
-#define W_P(w, p) p
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <netinet/in.h>
-//#include <libiberty.h>
-enum
-{
-	INVALID_SOCKET = -1,
-	TCP_NODELAY    = 1,
-	SD_RECEIVE     = 0,
-	SD_SEND        = 1,
-	SD_BOTH        = 2,
-};
-typedef int SOCKET;
-#else
-#error Unsupported platform
-#endif//PLATFORM switch
-
 static const int DEFAULT_CONNECT_TIMEOUT = 5000;
 
 static const int SOCKKIND_STD = 1; // GetKind() for ordinary socket

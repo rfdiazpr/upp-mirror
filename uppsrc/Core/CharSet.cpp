@@ -1,5 +1,7 @@
 #include <Core/Core.h>
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 #define CUNDEF DEFAULTCHAR
@@ -1510,7 +1512,7 @@ void ToUpper(char *t, const char *s, int len, byte charset)
 	CharSetData& cs = s_cset(charset);
 	const char *lim = s + len;
 	while(s < lim)
-		*t++ = cs.FromUnicode(::ToUpper(cs.ToUnicode(*s++)));
+		*t++ = cs.FromUnicode(UPP::ToUpper(cs.ToUnicode(*s++)));
 }
 
 void ToLower(char *t, const char *s, int len, byte charset)
@@ -1519,7 +1521,7 @@ void ToLower(char *t, const char *s, int len, byte charset)
 	CharSetData& cs = s_cset(charset);
 	const char *lim = s + len;
 	while(s < lim)
-		*t++ = cs.FromUnicode(::ToLower(cs.ToUnicode(*s++)));
+		*t++ = cs.FromUnicode(UPP::ToLower(cs.ToUnicode(*s++)));
 }
 
 void ToAscii(char *t, const char *s, int len, byte charset)
@@ -1528,7 +1530,7 @@ void ToAscii(char *t, const char *s, int len, byte charset)
 	CharSetData& cs = s_cset(charset);
 	const char *lim = s + len;
 	while(s < lim)
-		*t++ = cs.FromUnicode(::ToAscii(cs.ToUnicode(*s++)));
+		*t++ = cs.FromUnicode(UPP::ToAscii(cs.ToUnicode(*s++)));
 }
 
 void ToUpper(char *s, int len, byte charset)
@@ -1711,3 +1713,5 @@ String ToAscii(const String& s, byte charset)
 	ToAscii(r, s, l, charset);
 	return r;
 }
+
+END_UPP_NAMESPACE

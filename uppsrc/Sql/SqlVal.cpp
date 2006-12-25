@@ -1,5 +1,7 @@
 #include "Sql.h"
 
+NAMESPACE_UPP
+
 SqlCol SqlCol::As(const char *as) const
 {
 	return name + " " + as;
@@ -46,7 +48,7 @@ SqlS::SqlS(const SqlS& a, const char *o, const SqlS& b, int pr) {
 }
 
 SqlVal::SqlVal(const String& x) {
-	if(::IsNull(x))
+	if(UPP::IsNull(x))
 		SetNull();
 	else
 		SetHigh(SqlFormat(x));
@@ -60,42 +62,42 @@ SqlVal::SqlVal(const char *s) {
 }
 
 SqlVal::SqlVal(int x) {
-	if(::IsNull(x))
+	if(UPP::IsNull(x))
 		SetNull();
 	else
 		SetHigh(SqlFormat(x));
 }
 
 SqlVal::SqlVal(int64 x) {
-	if(::IsNull(x))
+	if(UPP::IsNull(x))
 		SetNull();
 	else
 		SetHigh(SqlFormat(x));
 }
 
 SqlVal::SqlVal(double x) {
-	if(::IsNull(x))
+	if(UPP::IsNull(x))
 		SetNull();
 	else
 		SetHigh(SqlFormat(x));
 }
 
 SqlVal::SqlVal(Date x) {
-	if(::IsNull(x))
+	if(UPP::IsNull(x))
 		SetNull();
 	else
 		SetHigh(SqlFormat(x));
 }
 
 SqlVal::SqlVal(Time x) {
-	if(::IsNull(x))
+	if(UPP::IsNull(x))
 		SetNull();
 	else
 		SetHigh(SqlFormat(x));
 }
 
 SqlVal::SqlVal(const Value& x) {
-	if(::IsNull(x))
+	if(UPP::IsNull(x))
 		SetNull();
 	else
 		SetHigh(SqlFormat(x));
@@ -350,3 +352,5 @@ SqlVal OuterJoin(SqlCol col)
 {
 	return SqlCol(~col + "(+)");
 }
+
+END_UPP_NAMESPACE

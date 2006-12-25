@@ -1,5 +1,7 @@
 #include <Core/Core.h>
 
+using namespace Upp;
+
 CONSOLE_APP_MAIN
 {
 	Index<String> index;
@@ -18,7 +20,7 @@ CONSOLE_APP_MAIN
 		{
 			RTIMING("Index::FindAdd");
 			index.FindAdd(q);
-		}	
+		}
 	}
 	RDUMP(index.GetCount());
 	RDUMP(tm.Elapsed());

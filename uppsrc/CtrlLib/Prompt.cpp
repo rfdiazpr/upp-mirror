@@ -1,11 +1,18 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 struct PromptDlgWnd__ : TopWindow {
+	bool    esc;
+	Button *b;
+
 	virtual bool HotKey(dword key) {
 		if(TopWindow::HotKey(key))
 			return true;
 		if(IsAlpha(key))
 			return TopWindow::HotKey(K_ALT_A + ToUpper((int)key) - 'A');
+		if(key == K_ESCAPE && esc)
+			b->PseudoPush();
 		return false;
 	}
 };
@@ -40,6 +47,7 @@ int Prompt(const char *title, const Image& iconbmp, const char *qtf, bool okcanc
 			cx += bsz.cx + fcy;
 	}
 	int nbtn = !!button1 + !!button2 + !!button3;
+	dlg.esc = okcancel && nbtn == 1;
 	cx = min(550, max(nbtn * bcx + (1 + nbtn) * fcy, cx));
 	int qcx = cx - 2 * fcy;
 	if(bsz.cx)
@@ -65,6 +73,7 @@ int Prompt(const char *title, const Image& iconbmp, const char *qtf, bool okcanc
 	b1.WhenAction = dlg.Breaker(1);
 	b2.WhenAction = dlg.Breaker(0);
 	b3.WhenAction = dlg.Breaker(-1);
+	dlg.b = &b1;
 	int bx = bcx;
 	int gap = fcy / 2;
 	fcy = 8 * fcy / 10;
@@ -170,3 +179,5 @@ int PromptAbortRetryIgnore(const char *qtf) {
 	              t_("&Abort"), t_("&Retry"), t_("&Ignore"), 0,
 	              AbortButtonImage(), RetryButtonImage(), Null);
 }
+
+END_UPP_NAMESPACE

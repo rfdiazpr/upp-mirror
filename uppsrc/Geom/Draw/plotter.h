@@ -1,5 +1,4 @@
-//////////////////////////////////////////////////////////////////////
-// BW: LineDraw, superseded by PathDraw
+NAMESPACE_UPP
 
 typedef const signed char  LineStyle[];
 typedef const signed char *LineStyleArg;
@@ -77,9 +76,6 @@ private:
 	Vector<Point>  vertices;
 	Vector<int>    indices;
 };
-
-// end of BW (LineDraw)
-//////////////////////////////////////////////////////////////////////
 
 class Plotter
 {
@@ -498,3 +494,5 @@ private:
 	ArrayMap<Font, Type> font_map;
 	VectorMap<int, Array<Item> > cache;
 };
+
+END_UPP_NAMESPACE

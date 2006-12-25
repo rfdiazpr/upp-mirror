@@ -1,3 +1,5 @@
+description "SDL demo example";
+
 uses
 	Core;
 

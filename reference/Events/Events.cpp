@@ -1,8 +1,10 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct App : TopWindow {
 	ArrayCtrl  log;
-	
+
 	void Log(const String& s)
 	{
 //		if(!IsShutdown()) { // to prevent "ChildLostFocus" Log caused by destroying log itself
@@ -22,12 +24,12 @@ struct App : TopWindow {
 	{
 		Log("Activate");
 	}
-	
+
 	virtual void   Deactivate()
 	{
 		Log("Deactivate");
 	}
-	
+
 	virtual Image  FrameMouseEvent(int event, Point p, int zdelta, dword keyflags)
 	{
 		if(event != CURSORIMAGE)
@@ -35,7 +37,7 @@ struct App : TopWindow {
 			           event, p.x, p.y, zdelta, (int)keyflags));
 		return TopWindow::FrameMouseEvent(event, p, zdelta, keyflags);
 	}
-	
+
 	virtual Image  MouseEvent(int event, Point p, int zdelta, dword keyflags)
 	{
 		if(event != CURSORIMAGE)
@@ -147,7 +149,7 @@ struct App : TopWindow {
 	{
 		Log("ChildLostFocus");
 	}
-	
+
 	virtual void   Layout()
 	{
 		Log("Layout");
@@ -163,7 +165,7 @@ struct App : TopWindow {
 		log.NoHeader();
 		Add(log.HSizePos().BottomPos(0, 200));
 	}
-	
+
 	~App()
 	{
 		Shutdown();

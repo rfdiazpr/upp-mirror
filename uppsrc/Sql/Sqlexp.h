@@ -113,7 +113,7 @@ public:
 	SqlId(Id id) : id(id)                    {}
 };
 
-#define SQLID(x)    const SqlId x(#x);
+#define SQLID(x)    const UPP::SqlId x(#x);
 
 class SqlS : Moveable<SqlS> {
 protected:

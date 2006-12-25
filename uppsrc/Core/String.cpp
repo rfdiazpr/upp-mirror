@@ -1,5 +1,7 @@
 #include <Core/Core.h>
 
+NAMESPACE_UPP
+
 void  String::Cat(const char *s)
 {
 	B::Cat(s, strlen(s));
@@ -428,3 +430,5 @@ void DumpStringStats()
 void DumpStringStats() {}
 
 #endif
+
+END_UPP_NAMESPACE

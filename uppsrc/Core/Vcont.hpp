@@ -1,3 +1,36 @@
+#if 1 // save 0.8% of Linux executable size...
+
+void VectorReAlloc_(void *vector_, int newalloc, int sizeofT);
+void VectorReAllocF_(void *vector_, int newalloc, int sizeofT);
+void VectorGrow_(void *vector_, int sizeofT);
+void VectorGrowF_(void *vector_, int sizeofT);
+
+template <class T>
+void Vector<T>::ReAlloc(int newalloc)
+{
+	VectorReAlloc_(this, newalloc, sizeof(T));
+}
+
+template <class T>
+void Vector<T>::ReAllocF(int newalloc)
+{
+	VectorReAllocF_(this, newalloc, sizeof(T));
+}
+
+template <class T>
+void Vector<T>::Grow()
+{
+	VectorGrow_(this, sizeof(T));
+}
+
+template <class T>
+void Vector<T>::GrowF()
+{
+	VectorGrowF_(this, sizeof(T));
+}
+
+#else
+
 template <class T>
 void Vector<T>::ReAlloc(int newalloc)
 {
@@ -35,6 +68,7 @@ void Vector<T>::GrowF()
 	Grow();
 	RawFree(prev);
 }
+#endif
 
 template <class T>
 void Vector<T>::Pick(pick_ Vector<T>& v)

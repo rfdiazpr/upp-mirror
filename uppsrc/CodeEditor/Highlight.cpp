@@ -1,5 +1,7 @@
 #include "CodeEditor.h"
 
+NAMESPACE_UPP
+
 #define LTIMING(x)  // RTIMING(x)
 
 bool cmps(const wchar *q, const char *s, int& n) {
@@ -517,3 +519,5 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 	                      || cppid == "ifdef" || cppid == "ifndef"))
 	   hls.SetPaper(0, hls.v.GetCount(), hl_style[PAPER_IFDEF].color);
 }
+
+END_UPP_NAMESPACE

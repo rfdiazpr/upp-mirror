@@ -1,5 +1,6 @@
 #include "CtrlCore.h"
-#pragma hdrstop
+
+NAMESPACE_UPP
 
 #define LLOG(x)     // LOG(x)
 #define LLOGEND()   // LOGEND()
@@ -502,3 +503,5 @@ void Ctrl::SyncMoves()
 	top->move.Clear();
 	top->scroll_move.Clear();
 }
+
+END_UPP_NAMESPACE

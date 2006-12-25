@@ -1,5 +1,7 @@
 #include "RichEdit.h"
 
+NAMESPACE_UPP
+
 bool RichEdit::Key(dword key, int count)
 {
 	NextUndo();
@@ -141,3 +143,5 @@ bool RichEdit::Key(dword key, int count)
 	Finish();
 	return true;
 }
+
+END_UPP_NAMESPACE

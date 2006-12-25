@@ -40,8 +40,6 @@ inline CriticalSection::CriticalSection()  { InitializeCriticalSection(&section)
 
 #ifdef PLATFORM_POSIX
 
-#include <bits/atomicity.h>
-
 typedef _Atomic_word Atomic;
 
 inline int  AtomicRead(const volatile Atomic& t)      { return t; }
@@ -90,12 +88,12 @@ public:
 
 #define INTERLOCKED \
 for(bool i_b_ = true; i_b_;) \
-	for(static StaticCriticalSection i_ss_; i_b_;) \
-		for(CriticalSection::Lock i_ss_lock__(i_ss_); i_b_; i_b_ = false)
+	for(static UPP::StaticCriticalSection i_ss_; i_b_;) \
+		for(UPP::CriticalSection::Lock i_ss_lock__(i_ss_); i_b_; i_b_ = false)
 
 #define INTERLOCKED_(cs) \
 for(bool i_b_ = true; i_b_;) \
-	for(CriticalSection::Lock i_ss_lock__(cs); i_b_; i_b_ = false)
+	for(UPP::CriticalSection::Lock i_ss_lock__(cs); i_b_; i_b_ = false)
 
 
 #else

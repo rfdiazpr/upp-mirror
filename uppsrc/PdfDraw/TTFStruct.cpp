@@ -1,5 +1,7 @@
 #include "PdfDraw.h"
 
+NAMESPACE_UPP
+
 void   TTFReader::Head::Serialize(TTFStream& s)
 {
 	s % version % fontRevision % checkSumAdjustment % magicNumber % flags % unitsPerEm;
@@ -31,3 +33,5 @@ void   TTFReader::Post::Serialize(TTFStream& s)
 	s % format % italicAngle % underlinePosition % underlineThickness % isFixedPitch
 	  % reserved % minMemType42 % maxMemType42 % minMemType1 % maxMemType1;
 }
+
+END_UPP_NAMESPACE

@@ -1,4 +1,8 @@
 #include "Crypto.h"
+
+
+NAMESPACE_UPP
+
 /*
 SHA-1 in C
 By Steve Reid <steve@edmweb.com>
@@ -164,3 +168,5 @@ Sha1::~Sha1() {
 	memset(buffer, 0, 64);
 	memset(state, 0, 5);
 }
+
+END_UPP_NAMESPACE

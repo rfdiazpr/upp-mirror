@@ -6,23 +6,17 @@
 #ifdef PLATFORM_WIN32
 #include <winver.h>
 #include <imagehlp.h>
+#endif
+
+NAMESPACE_UPP
+
+#ifdef PLATFORM_WIN32
 
 #define DLLFILENAME "imagehlp.dll"
 #define DLIHEADER   <coff/imagehlp.dli>
 #define DLIMODULE   ImageHlp
 #include            <Core/dli.h>
-#endif
 
-/* - 2006-02-20 - removal suggested by Mathiass Sund
-#ifdef PLATFORM_FREEBSD
-#include <fcntl.>
-#include <unistd.h>
-#include <sys/mman.h>
-#endif
-*/
-
-
-#ifdef PLATFORM_WIN32
 Vector<String> EnumWinRegSubkeys(const char *path, HKEY base_key) {
 	HKEY key = 0;
 	Vector<String> keys;
@@ -699,3 +693,5 @@ String MaxLenString(const byte *b, int maxlen)
 		e--;
 	return String(b, e - b);
 }
+
+END_UPP_NAMESPACE

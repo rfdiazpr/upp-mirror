@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 void LookFrame::FrameLayout(Rect& r)
 {
 	Rect m = ChMargins((*look)());
@@ -137,6 +139,8 @@ void EditField::Paint(Draw& w)
 	Size sz = GetSize();
 	bool f = HasBorder();
 	Color paper = IsShowEnabled() && !IsReadOnly() ? SColorPaper : SColorFace;
+	if(nobg)
+		paper = Null;
 	Color ink = IsShowEnabled() ? SColorText : SColorDisabled;
 	if(convert && convert->Scan(text).IsError())
 		paper = Blend(paper, Color(255, 0, 0), 32);
@@ -468,7 +472,7 @@ void EditField::MenuBar(Bar& menu) {
 		.Key(K_CTRL_C);
 	menu.Add(IsEditable()
 		#ifdef PLATFORM_WIN32
-			&& IsClipboardFormatAvailable(CF_TEXT)
+			&& ::IsClipboardFormatAvailable(CF_TEXT)
 		#endif
 			,
 			t_("Paste"), CtrlImg::paste(), THISBACK(Paste))
@@ -664,6 +668,7 @@ void EditField::Reset()
 	maxlen = INT_MAX;
 	autosize = false;
 	keep_selection = false;
+	nobg = false;
 }
 
 EditField& EditField::SetFont(Font _font)
@@ -833,3 +838,5 @@ void EditDoubleSpin::MouseWheel(Point, int zdelta, dword)
 	else
 		Inc();
 }
+
+END_UPP_NAMESPACE

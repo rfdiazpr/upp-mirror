@@ -1,6 +1,8 @@
 #include "Core.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 unsigned stou(const char *s, void *endptr, unsigned base)
 {
 	ASSERT(base >= 2 && base <= 36);
@@ -272,9 +274,9 @@ Value  Convert::Format(const Value& q) const {
 	case DOUBLE_V:
 		return DblStr((double)q);
 	case DATE_V:
-		return ::Format(Date(q));
+		return UPP::Format(Date(q));
 	case TIME_V:
-		return ::Format(Time(q));
+		return UPP::Format(Time(q));
 	case STRING_V:
 	case WSTRING_V:
 		return q;
@@ -307,12 +309,12 @@ ConvertInt::~ConvertInt() {}
 #endif
 
 Value ConvertInt::Scan(const Value& text) const {
-	Value v = ::Scan(INT_V, text);
+	Value v = UPP::Scan(INT_V, text);
 	if(IsError(v)) return v;
 	if(IsNull(v)) return notnull ? NotNullError() : v;
 	int m = v;
 	if(m >= minval && m <= maxval) return v;
-	return ErrorValue(::Format(t_("Number must be between %d and %d."), minval, maxval));
+	return ErrorValue(UPP::Format(t_("Number must be between %d and %d."), minval, maxval));
 }
 
 int   ConvertInt::Filter(int chr) const {
@@ -323,16 +325,16 @@ Value ConvertDouble::Format(const Value& q) const
 {
 	if(IsNull(q))
 		return Null;
-	return ::NFormat(pattern, (double)q);
+	return UPP::NFormat(pattern, (double)q);
 }
 
 Value ConvertDouble::Scan(const Value& text) const {
-	Value v = ::Scan(DOUBLE_V, text);
+	Value v = UPP::Scan(DOUBLE_V, text);
 	if(IsError(v)) return v;
 	if(IsNull(v)) return notnull ? NotNullError() : v;
 	double m = v;
 	if(m >= minval && m <= maxval) return v;
-	return ErrorValue(::Format(t_("Number must be between %g and %g."), minval, maxval));
+	return ErrorValue(UPP::Format(t_("Number must be between %g and %g."), minval, maxval));
 }
 
 int   ConvertDouble::Filter(int chr) const {
@@ -357,12 +359,12 @@ ConvertDate::~ConvertDate()
 }
 
 Value ConvertDate::Scan(const Value& text) const {
-	Value v = ::Scan(DATE_V, text);
+	Value v = UPP::Scan(DATE_V, text);
 	if(IsError(v)) return v;
 	if(IsNull(v)) return notnull ? NotNullError() : v;
 	Date m = v;
 	if(m >= minval && m <= maxval) return v;
-	return ErrorValue(t_("Date must be between ") + ::Format(minval) + t_("range\v and ") + ::Format(maxval) + ".");
+	return ErrorValue(t_("Date must be between ") + UPP::Format(minval) + t_("range\v and ") + UPP::Format(maxval) + ".");
 }
 
 int   ConvertDate::Filter(int chr) const {
@@ -378,12 +380,12 @@ ConvertTime::~ConvertTime()
 
 Value ConvertTime::Scan(const Value& text) const
 {
-	Value v = ::Scan(TIME_V, text);
+	Value v = UPP::Scan(TIME_V, text);
 	if(IsError(v)) return v;
 	if(IsNull(v)) return notnull ? NotNullError() : v;
 	Time m = v;
 	if(m >= minval && m <= maxval) return v;
-	return ErrorValue(t_("Time must be between ") + ::Format(minval) + t_("range\v and ") + ::Format(maxval) + ".");
+	return ErrorValue(t_("Time must be between ") + UPP::Format(minval) + t_("range\v and ") + UPP::Format(maxval) + ".");
 }
 
 int ConvertTime::Filter(int chr) const
@@ -405,7 +407,7 @@ Value ConvertString::Scan(const Value& text) const {
 	if(IsNull(text)) return notnull ? NotNullError() : Value(text);
 	if(text.GetType() == STRING_V && String(text).GetLength() < maxlen ||
 	   text.GetType() == WSTRING_V && WString(text).GetLength() < maxlen) return text;
-	return ErrorValue(::Format(t_("Please enter no more than %d characters."), maxlen));
+	return ErrorValue(UPP::Format(t_("Please enter no more than %d characters."), maxlen));
 }
 
 GLOBAL_VAR(const ConvertInt, StdConvertInt)
@@ -486,5 +488,7 @@ Value FormatConvert::Format(const Value& v) const
 		va = v;
 	else
 		va.Add(v);
-	return ::Format(format, va.Get());
+	return UPP::Format(format, va.Get());
 }
+
+END_UPP_NAMESPACE

@@ -1,6 +1,8 @@
 #include "GeomDraw.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 //#define BILINEAR_TIMING
 
 #define RGBA_SET(d, s) *(dword *)&(d) = *(const dword *)&(s)
@@ -539,3 +541,5 @@ void BilinearCopy(ImageBuffer& dest, Point destpos[4], const Image& src, Rect sr
 		Point(sr.right - 1, sr.bottom - 1), Point(sr.left, sr.bottom - 1) };
 	BilinearCopy(dest, destpos, src, srcpos, opt_clip, interpolate);
 }
+
+END_UPP_NAMESPACE

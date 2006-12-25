@@ -16,6 +16,8 @@
 
 #endif
 
+NAMESPACE_UPP
+
 //////////////////////////////////////////////////////////////////////
 
 static voidpf zalloc_new(voidpf opaque, uInt items, uInt size)
@@ -326,3 +328,5 @@ String ZDecompress(const void *data, int len, Gate2<int, int> progress)
 	ZDecompress(out, in, progress);
 	return out;
 }
+
+END_UPP_NAMESPACE

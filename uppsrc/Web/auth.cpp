@@ -1,6 +1,8 @@
 #include "Web.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 enum { EXPIRE = 60 * 30 }; // 30 minutes inactivity expires token
 
 static Array<WebUser>          user_map;
@@ -284,3 +286,5 @@ String WebUser::Login(const HttpQuery& map, String& args, const char *iname, boo
 }
 
 //////////////////////////////////////////////////////////////////////
+
+END_UPP_NAMESPACE

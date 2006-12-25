@@ -1,6 +1,8 @@
 #include "GeomCtrl.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 EditDegree::EditDegree()
 {
 	AddFrame(spin);
@@ -42,3 +44,5 @@ bool EditDegree::Key(dword key, int repcnt)
 	}
 	return EditValue<double, ConvertDegree>::Key(key, repcnt);
 }
+
+END_UPP_NAMESPACE

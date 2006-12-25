@@ -1,10 +1,6 @@
 #ifndef _nImage__bmp_h_
 #define _nImage__bmp_h_
 
-#ifdef CPU_BIG_ENDIAD
-#error "Fix big endian issues!"
-#endif
-
 #ifdef COMPILER_MSC
 #pragma pack(push, 1)
 #endif
@@ -16,12 +12,12 @@ struct BMP_FILEHEADER {
 	word    bfReserved2;
 	dword   bfOffBits;
 
-	void    EndianSwap()
+	void    SwapEndian()
 	{
 #ifdef CPU_BIG_ENDIAN
-		EndianSwap(bfType);
-		EndianSwap(bfSize);
-		EndianSwap(bfOffBits);
+		bfType = UPP::SwapEndian(bfType);
+		bfSize = UPP::SwapEndian(bfSize);
+		bfOffBits = UPP::SwapEndian(bfOffBits);
 #endif
 	}
 }
@@ -44,21 +40,20 @@ struct BMP_INFOHEADER
 	dword      biClrUsed;
 	dword      biClrImportant;
 
-	void    EndianSwap()
+	void    SwapEndian()
 	{
 #ifdef CPU_BIG_ENDIAN
-		EndianSwap(biSize);
-		EndianSwap(biWidth);
-		EndianSwap(biHeight);
-		EndianSwap(biPlanes);
-		EndianSwap(biBitCount);
-		EndianSwap(biCompression);
-		EndianSwap(biSizeImage);
-		EndianSwap(biXPelsPerMeter);
-		EndianSwap(biYPelsPerMeter);
-		EndianSwap(biClrUsed);
-		EndianSwap(biClrImportant);
-
+		biSize = UPP::SwapEndian(biSize);
+		biWidth = UPP::SwapEndian(biWidth);
+		biHeight = UPP::SwapEndian(biHeight);
+		biPlanes = UPP::SwapEndian(biPlanes);
+		biBitCount = UPP::SwapEndian(biBitCount);
+		biCompression = UPP::SwapEndian(biCompression);
+		biSizeImage = UPP::SwapEndian(biSizeImage);
+		biXPelsPerMeter = UPP::SwapEndian(biXPelsPerMeter);
+		biYPelsPerMeter = UPP::SwapEndian(biYPelsPerMeter);
+		biClrUsed = UPP::SwapEndian(biClrUsed);
+		biClrImportant = UPP::SwapEndian(biClrImportant);
 #endif
 	}
 }

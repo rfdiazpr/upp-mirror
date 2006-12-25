@@ -83,7 +83,7 @@ public:
 	FileList&   IconWidth(int w)                     { iconwidth = w; Refresh(); return *this; }
 	int         GetIconWidth() const                 { return iconwidth; }
 	FileList&   Renaming(bool b = true)              { renaming = b; return *this; }
-	FileList&   JustName()                           { justname = true; return *this; }
+	FileList&   JustName(bool b = true)              { justname = true; Refresh(); return *this; }
 	FileList&   NoAccelKey()                         { accelkey = false; return *this; }
 
 	typedef FileList CLASSNAME;

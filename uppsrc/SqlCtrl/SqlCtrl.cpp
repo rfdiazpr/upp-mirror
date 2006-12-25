@@ -1,5 +1,7 @@
 #include "SqlCtrl.h"
 
+NAMESPACE_UPP
+
 void SqlLoad(MapConvert& cv, Sql& sql) {
 	cv.Clear();
 	while(sql.Fetch())
@@ -162,3 +164,5 @@ bool SqlCtrls::Load(SqlId table, SqlBool set)
 	return Load(SQL, table, set);
 }
 #endif
+
+END_UPP_NAMESPACE

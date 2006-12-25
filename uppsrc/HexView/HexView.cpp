@@ -1,5 +1,7 @@
 #include "HexView.h"
 
+NAMESPACE_UPP
+
 #ifdef PLATFORM_WIN32
 
 inline int FormatHexDigit(int c) {
@@ -486,3 +488,5 @@ HexView::HexView()
 }
 
 #endif
+
+END_UPP_NAMESPACE

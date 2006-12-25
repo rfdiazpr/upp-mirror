@@ -21,6 +21,8 @@ library(FREEBSD !XLFD) "Xft fontconfig Xrender freetype expat";
 
 library(LINUX !XLFD !SHARED) "fontconfig Xrender freetype expat";
 
+library(OSX11) "X11 Xft fontconfig Xrender freetype expat";
+
 file
 	Draw.h,
 	DrawWin32.h,

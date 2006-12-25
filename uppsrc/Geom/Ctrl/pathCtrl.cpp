@@ -1,6 +1,8 @@
 #include "GeomCtrl.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 #define LAYOUTFILE <Geom/Ctrl/pathedit.lay>
 #include           <CtrlCore/lay.h>
 
@@ -69,7 +71,7 @@ void DlgPathStyleSetup::OnMiter()
 
 void DlgPathStyleSetup::Pump(PathStyleMisc& style, bool write)
 {
-	::Pump pump;
+	UPP::Pump pump;
 	pump
 		<< PumpData(style.width,   dialog.width)
 		<< PumpData(style.begin,   dialog.begin)
@@ -149,7 +151,7 @@ bool DlgPathEditorSetup::Run(PathEditorCtrl::Setup& setup)
 
 void DlgPathEditorSetup::Pump(PathEditorCtrl::Setup& setup, bool write)
 {
-	::Pump pump;
+	UPP::Pump pump;
 	pump
 		<< PumpEnumData(setup.do_grid,   dialog.do_grid)
 		<< PumpData    (setup.grid,      dialog.grid)
@@ -1975,7 +1977,7 @@ void PathStyleMapCtrl::RightDown(Point pt, dword keyflags)
 	if(IsValid(i))
 		SetCursor(i);
 	SetWantFocus();
-	MenuBar::Execute(this, WhenBar, ::GetMousePos());
+	MenuBar::Execute(this, WhenBar, UPP::GetMousePos());
 }
 
 void PathStyleMapCtrl::SetCursor(int c)
@@ -2347,3 +2349,5 @@ void PathStyleCtrl::DoAction()
 	if(!IsNull(s))
 		SetDataAction(s);
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct App : TopWindow {
 	StaticRect        dynarect;
 	SliderCtrl        slider;

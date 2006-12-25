@@ -4,6 +4,8 @@
 #include <winnls.h>
 #endif
 
+NAMESPACE_UPP
+
 bool PanicMode;
 
 bool    IsPanicMode() { return PanicMode; }
@@ -292,6 +294,16 @@ void PokeML(void *ptr, int value) {
 	p[1] = (byte)(value >> 16);
 	p[0] = (byte)(value >> 24);
 }
+
+#define ENDIAN_SWAP { while(count--) { EndianSwap(*v++); } }
+
+void EndianSwap(word *v, int count) ENDIAN_SWAP
+void EndianSwap(int16 *v, int count) ENDIAN_SWAP
+void EndianSwap(dword *v, int count) ENDIAN_SWAP
+void EndianSwap(int *v, int count) ENDIAN_SWAP
+//void EndianSwap(long *v, int count) ENDIAN_SWAP
+void EndianSwap(int64 *v, int count) ENDIAN_SWAP
+void EndianSwap(uint64 *v, int count) ENDIAN_SWAP
 
 #ifndef PLATFORM_WIN32
 void Sleep(int msec)
@@ -902,3 +914,5 @@ extern "C" long _ftol2( double dblSource ) { return _ftol( dblSource ); }
 #ifdef PLATFORM_WINCE
 int errno; // missing and zlib needs it
 #endif
+
+END_UPP_NAMESPACE

@@ -2,8 +2,8 @@ uses
 	CtrlLib;
 
 file
-	gui21.usc,
 	main.cpp,
+	gui21.usc,
 	Gui21.lay;
 
 mainconfig

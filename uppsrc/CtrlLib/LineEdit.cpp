@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) //  LOG(x)
 
 LineEdit::LineEdit() {
@@ -84,6 +86,8 @@ void   LineEdit::Paint0(Draw& w) {
 			Highlight ih;
 			ih.ink = color[IsShowEnabled() ? INK_NORMAL : INK_DISABLED];
 			ih.paper = color[IsReadOnly() || !IsShowEnabled() ? PAPER_READONLY : PAPER_NORMAL];
+			if(nobg)
+				ih.paper = Null;
 			ih.font = font;
 			ih.chr = 0;
 			Vector<Highlight> hl;
@@ -706,3 +710,5 @@ bool LineEdit::Key(dword key, int count) {
 	Sync();
 	return true;
 }
+
+END_UPP_NAMESPACE

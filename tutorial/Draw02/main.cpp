@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct MyApp : TopWindow {
 	void DoPainting(Draw& w) {
 		w.DrawEllipse(0, 0, 100, 30, WhiteGray(), 1, Cyan);

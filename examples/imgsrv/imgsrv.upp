@@ -1,3 +1,5 @@
+description "Simple http image server";
+
 uses
 	Web,
 	Draw,

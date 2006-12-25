@@ -1,5 +1,7 @@
 #include "TCoreDb.h"
 
+NAMESPACE_UPP
+
 static const char tag[] =
 "CDF: Cybex Data File version 1.0.\r\n"
 "Copyright ©2000 Cybex Development, spol. s r.o.\r\n"
@@ -17,15 +19,15 @@ bool DataFile::Header::Serialize(Stream& stream, bool write)
 	if(write) {
 		stream.SetStoring();
 		memset(tag, 0, sizeof(tag));
-		CDB_ASSERT(sizeof(::tag) < sizeof(tag));
-		strcpy(tag, ::tag);
+		CDB_ASSERT(sizeof(UPP::tag) < sizeof(tag));
+		strcpy(tag, UPP::tag);
 		version = VERSION;
 	}
 	else
 		stream.SetLoading();
 	stream.Seek(0);
-	stream.SerializeRaw((byte *)tag, sizeof(::tag));
-	if(!write && strcmp(tag, ::tag))
+	stream.SerializeRaw((byte *)tag, sizeof(UPP::tag));
+	if(!write && strcmp(tag, UPP::tag))
 		return false;
 	StreamIL(stream, version);
 	if(version < MIN_VERSION || version > MAX_VERSION)
@@ -1218,3 +1220,5 @@ void DataFile::DumpObjects(const Vector<int>& list, bool dump_data)
 		}
 	}
 }
+
+END_UPP_NAMESPACE

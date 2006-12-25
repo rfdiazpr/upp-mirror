@@ -1,4 +1,7 @@
 #include "Draw.h"
+
+NAMESPACE_UPP
+
 #ifdef PLATFORM_WIN32
 
 #define LLOG(x)      // LOG(x)
@@ -268,3 +271,5 @@ void Draw::DrawEllipseOp(const Rect& r, Color color, int width, Color pencolor)
 }
 
 #endif
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include "RichEdit.h"
 
+NAMESPACE_UPP
+
 struct ParaFormating : public WithParaLayout<StaticRect>
 {
 	DropList n[8];
@@ -589,3 +591,5 @@ void RichEdit::ApplyStylesheet(const RichText& r)
 	ReadStyles();
 	Finish();
 }
+
+END_UPP_NAMESPACE

@@ -1,6 +1,8 @@
 #include "Web.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 //#define SMTP_DEBUG // uncomment this line to turn on LOG-based SMTP emulation
 #define SMTP_LOG // uncomment this line to turn on command-line based logging of SMTP communication
 
@@ -333,7 +335,7 @@ bool SmtpMail::Send()
 						msg.Cat('\n');
 						if(msg.GetLength() >= 65536)
 						{
-							::Send(socket, msg, trans_ptr);
+							UPP::Send(socket, msg, trans_ptr);
 							msg = Null;
 						}
 					}
@@ -353,3 +355,5 @@ bool SmtpMail::Send()
 		return false;
 	}
 }
+
+END_UPP_NAMESPACE

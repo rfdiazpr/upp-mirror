@@ -1,8 +1,8 @@
 #include "RichText.h"
 
-#define LLOG(x) // LOG(x)
+NAMESPACE_UPP
 
-#include <Draw/Draw.h>
+#define LLOG(x) // LOG(x)
 
 RichObject CreateDrawingObject(const Drawing& dwg, Size dot_size, Size out_size = Null);
 RichObject CreateImageObject(const Image& img, Size dot_size, Size out_size = Null);
@@ -1032,3 +1032,5 @@ void RTFParser::ReadTableStyle()
 	else if(PassQ("clvertalb"))
 		state.cellformat.align = ALIGN_BOTTOM;
 }
+
+END_UPP_NAMESPACE

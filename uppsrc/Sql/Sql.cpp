@@ -1,5 +1,7 @@
 #include "Sql.h"
 
+NAMESPACE_UPP
+
 bool SqlToBool(const String& s) {
 	return !(IsNull(s) || *s == '0' && s[1] == '\0');
 }
@@ -101,8 +103,13 @@ bool Sql::Execute() {
 	if(GetSession().usrlog)
 		UsrLogT(9, cn->statement);
 	Stream *s = GetSession().GetTrace();
-	if(s)
+	if(s) {
+#ifndef NOAPPSQL
+		if(this == &AppCursor())
+			*s << "SQL* ";
+#endif
 		*s << cn->statement << '\n';
+	}
 	bool b = cn->Execute();
 	if(s && !b)
 		*s << "## ERROR: " << GetSession().GetLastError() << '\n';
@@ -384,11 +391,13 @@ void Sql::Assign(SqlSource& s) {
 	cn = s.CreateConnection();
 }
 
-void   Sql::SetError(const String& err, const String& stmt) { GetSession().SetError(err, stmt); }
+void   Sql::SetError(String err, String stmt, int code, ERRORCLASS clss) { GetSession().SetError(err, stmt, code, clss); }
 void   Sql::ClearError()                          { GetSession().ClearError(); }
 
 String Sql::GetLastError() const                  { return GetSession().GetLastError(); }
 String Sql::GetErrorStatement() const             { return GetSession().GetErrorStatement(); }
+int    Sql::GetErrorCode() const                  { return GetSession().GetErrorCode(); }
+Sql::ERRORCLASS Sql::GetErrorClass() const        { return GetSession().GetErrorClass(); }
 bool   Sql::WasError() const                      { return GetSession().WasError(); }
 
 void   Sql::Begin()                               { GetSession().Begin(); }
@@ -491,11 +500,13 @@ Vector<SqlColumnInfo> SqlSession::EnumColumns(String database, String table)
 	return info;
 }
 
-void   SqlSession::SetError(const String& error, const String& stmt) {
+void   SqlSession::SetError(String error, String stmt, int code, Sql::ERRORCLASS clss) {
 	lasterror = error;
 	errorstatement = stmt;
+	errorcode = code;
+	errorclass = clss;
 	String err;
-	err << "ERROR " << error << ": " << stmt << '\n';
+	err << "ERROR " << error << "(" << code << "): " << stmt << '\n';
 	if(logerrors)
 		BugLog() << err;
 	if(GetTrace())
@@ -523,3 +534,5 @@ StatementExecutor& SQLStatementExecutor() {
 	return Single<SQLStatementExecutorClass>();
 }
 #endif
+
+END_UPP_NAMESPACE

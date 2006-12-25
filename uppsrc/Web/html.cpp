@@ -1,5 +1,7 @@
 #include "Web.h"
 
+NAMESPACE_UPP
+
 String ToHtml(const char *s)
 {
 	if(*s == '`')
@@ -42,11 +44,11 @@ Htmls& Htmls::Qtf(const char *qtf) {
 
 Htmls& Htmls::Text(const char *s)                  { Cat(ToHtml(s)); return *this; }
 Htmls& Htmls::Quote(const char *s)                 { Cat('\"' + ToHtml(s) + '\"'); return *this; }
-Htmls& Htmls::Color(::Color color)                 { Quote(ColorToHtml(color)); return *this; }
-Htmls& Htmls::Percent(double d)                    { return Quote(::Format("%g%%", d)); }
+Htmls& Htmls::Color(class Color color)             { Quote(ColorToHtml(color)); return *this; }
+Htmls& Htmls::Percent(double d)                    { return Quote(UPP::Format("%g%%", d)); }
 
-Htmls& Htmls::Color(const char *nm, ::Color c) {
-	if(!::IsNull(c))
+Htmls& Htmls::Color(const char *nm, class Color c) {
+	if(!UPP::IsNull(c))
 		Attr(nm); Cat('='); return Color(c);
 }
 
@@ -55,9 +57,9 @@ Htmls& Htmls::Percent(const char *nm, double d)    { Attr(nm); Cat('='); return 
 Htmls& Htmls::Attr(const char *a)                  { Cat(' '); Cat(a); return *this; }
 Htmls& Htmls::Attr(const char *a, const char *s)   { Attr(a); Cat('='); return Quote(s); }
 Htmls& Htmls::Attr(const char *a, String s)        { return Attr(a, ~s); }
-Htmls& Htmls::Attr(const char *a, int i)           { return Attr(a, ::Format("%d", i)); }
-Htmls& Htmls::Attr(const char *a, double d)        { return Attr(a, ::Format("%g", d)); }
-Htmls& Htmls::Attr(const char *a, Date d)          { return Attr(a, ::Format(d)); }
+Htmls& Htmls::Attr(const char *a, int i)           { return Attr(a, UPP::Format("%d", i)); }
+Htmls& Htmls::Attr(const char *a, double d)        { return Attr(a, UPP::Format("%g", d)); }
+Htmls& Htmls::Attr(const char *a, Date d)          { return Attr(a, UPP::Format(d)); }
 Htmls& Htmls::Attr(const char *a, Value v)         { return Attr(a, StdFormat(v)); }
 
 Htmls& Htmls::Attp(const char *a, double v)        { return v >= 0 ? Attr(a, v) : Percent(a, -v); }
@@ -131,9 +133,9 @@ HtmlTag& HtmlTag::HotKey(char c)            { return c ? Attr("ACCESSKEY", Strin
 HtmlTag& HtmlTag::Size(int c)               { return Attr("SIZE", c); }
 HtmlTag& HtmlTag::Size(int cx, int cy)      { return Attr("SIZE", Format("%d, %d", cx, cy)); }
 
-HtmlTag& HtmlTag::Color(::Color color)      { return Color("COLOR", color); }
-HtmlTag& HtmlTag::BorderColor(::Color col)  { return Color("BORDERCOLOR", col); }
-HtmlTag& HtmlTag::BgColor(::Color color)    { return Color("BGCOLOR", color); }
+HtmlTag& HtmlTag::Color(class Color color)      { return Color("COLOR", color); }
+HtmlTag& HtmlTag::BorderColor(class Color col)  { return Color("BORDERCOLOR", col); }
+HtmlTag& HtmlTag::BgColor(class Color color)    { return Color("BGCOLOR", color); }
 
 HtmlTag& HtmlTag::Face(const char *s)       { return Attr("FACE", s); }
 HtmlTag& HtmlTag::Border(int i)             { return Attr("BORDER", i); }
@@ -178,9 +180,9 @@ HtmlTag& HtmlTag::Balance(double v)         { return Attr("BALANCE", v); }
 HtmlTag& HtmlTag::Loop(int i)               { return Attr("LOOP", i); }
 HtmlTag& HtmlTag::Volume(double v)          { return Attr("VOLUME", v); }
 HtmlTag& HtmlTag::Src(const char *s)        { return Attr("SRC", s); }
-HtmlTag& HtmlTag::Alink(::Color c)          { return Color("ALINK", c); }
-HtmlTag& HtmlTag::Vlink(::Color c)          { return Color("VLINK", c); }
-HtmlTag& HtmlTag::Link(::Color c)           { return Color("LINK", c); }
+HtmlTag& HtmlTag::Alink(class Color c)      { return Color("ALINK", c); }
+HtmlTag& HtmlTag::Vlink(class Color c)      { return Color("VLINK", c); }
+HtmlTag& HtmlTag::Link(class Color c)       { return Color("LINK", c); }
 HtmlTag& HtmlTag::Background(const char *s) { return Attr("BACKGROUND", s); }
 HtmlTag& HtmlTag::OnClick(const char *s)    { return Atth("onClick", s); }
 
@@ -608,3 +610,5 @@ HtmlTag HtmlFntSize(int size)
 {
 	return HtmlTag("span").Attr("style", Sprintf("font-size: %dpt", size));
 }
+
+END_UPP_NAMESPACE

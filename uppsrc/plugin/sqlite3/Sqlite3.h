@@ -3,7 +3,8 @@
 
 #include <Sql/Sql.h>
 
-// Not yet implemented.  What is this supposed to do??
+NAMESPACE_UPP
+
 bool Sqlite3PerformScript(const String& text,
 #ifdef NOAPPSQL
 	StatementExecutor& se,
@@ -18,9 +19,10 @@ public:
 	virtual bool           IsOpen() const               { return NULL != db; }
 	virtual RunScript      GetRunScript() const         { return &Sqlite3PerformScript; }
 	virtual Vector<String> EnumUsers()                  { NEVER(); return Vector<String>(); } // No users in sqlite!
-	virtual Vector<String> EnumDatabases();				// Currently does not detect attached DBs, just returns current filename
-	virtual Vector<String> EnumTables(String database);	// Currently ignores database string
-//	virtual Vector<SqlColumnInfo> EnumColumns(String database, String table);	// Currently ignores database string
+	virtual Vector<String> EnumDatabases();
+	virtual Vector<String> EnumTables(String database);
+	virtual Vector<String> EnumViews(String database);
+        virtual Vector<SqlColumnInfo> EnumColumns(String database, String table);
 
 	// Some opaque structures used by the sqlite3 library
 	typedef struct sqlite3 sqlite3;
@@ -48,5 +50,6 @@ public:
 	~Sqlite3Session()      { Close(); }
 };
 
+END_UPP_NAMESPACE
 
 #endif

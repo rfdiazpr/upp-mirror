@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 #define LTIMING(x)  // TIMING(x)
 
 CH_LOOKS(ToolButtonLook, 6, CtrlsImgLook(CtrlsImg::I_TB, 6));
@@ -46,7 +48,7 @@ Bar::Item& ToolButton::Repeat(bool r)
 	return *this;
 }
 
-Bar::Item& ToolButton::Image(const ::Image& img)
+Bar::Item& ToolButton::Image(const UPP::Image& img)
 {
 	if(!img.IsSame(image)) {
 		image = img;
@@ -256,3 +258,5 @@ ToolBar::ToolBar()
 }
 
 ToolBar::~ToolBar() {}
+
+END_UPP_NAMESPACE

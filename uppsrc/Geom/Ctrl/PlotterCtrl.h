@@ -1,3 +1,5 @@
+NAMESPACE_UPP
+
 class PlotterDragDrop;
 
 class PlotterCtrl : public DragDropCtrl, public CtrlFrame
@@ -317,3 +319,5 @@ private:
 	PlotterCtrl&            owner;
 	Pointf                  old_delta;
 };
+
+END_UPP_NAMESPACE

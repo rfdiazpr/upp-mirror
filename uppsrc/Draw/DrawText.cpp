@@ -1,5 +1,7 @@
 #include "Draw.h"
-#pragma hdrstop
+
+NAMESPACE_UPP
+
 
 #if defined(PLATFORM_WIN32) || defined(PLATFORM_X11)
 
@@ -446,3 +448,5 @@ Size GetTextSize(const String& text, Font font)
 }
 
 #endif
+
+END_UPP_NAMESPACE

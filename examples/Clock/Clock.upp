@@ -1,3 +1,5 @@
+description "Analogue / digital clock";
+
 uses
 	CtrlLib;
 
@@ -6,4 +8,3 @@ file
 
 mainconfig
 	"" = "GUI";
-

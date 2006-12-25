@@ -11,6 +11,9 @@ extern "C" {
 }
 #undef XINT32
 
+
+NAMESPACE_UPP
+
 #define LLOG(x)  // LOG(x)
 
 static void NoOutput(j_common_ptr cinfo)
@@ -484,3 +487,5 @@ void JPGEncoder::WriteLineRaw(const byte *s)
 {
 	data->WriteLineRaw(s);
 }
+
+END_UPP_NAMESPACE

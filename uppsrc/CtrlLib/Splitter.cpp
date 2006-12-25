@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 int Splitter::ClientToPos(Point p) const
 {
 	return minmax(vert ? 10000 * p.y / GetSize().cy : 10000 * p.x / GetSize().cx, 0, 9999);
@@ -200,3 +202,5 @@ Splitter::Splitter() {
 }
 
 Splitter::~Splitter() {}
+
+END_UPP_NAMESPACE

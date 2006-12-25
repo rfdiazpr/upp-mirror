@@ -1,3 +1,5 @@
+description "Using binary data for installation";
+
 uses
 	plugin\bz2;
 

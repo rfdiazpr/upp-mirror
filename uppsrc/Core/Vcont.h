@@ -106,7 +106,7 @@ public:
 	Iterator         GetIter(int i)         { ASSERT(i >= 0 && i <= items); return Begin() + i; }
 
 // Optimalizations
-	friend void Swap(Vector& a, Vector& b)  { ::Swap(a.items, b.items); ::Swap(a.alloc, b.alloc); ::Swap(a.vector, b.vector); }
+	friend void Swap(Vector& a, Vector& b)  { UPP::Swap(a.items, b.items); UPP::Swap(a.alloc, b.alloc); UPP::Swap(a.vector, b.vector); }
 	friend void Append(Vector& dst, const Vector& src)         { dst.Append(src); }
 
 //obsolete names
@@ -166,7 +166,7 @@ public:
 	void     InsertPick(int i, pick_ Array& x)    { vector.InsertPick(i, x.vector); }
 	void     AppendPick(pick_ Array& x)           { Insert(GetCount(), x); }
 	int      GetIndex(const T& item) const;
-	void     Swap(int i1, int i2)       { ::Swap(vector[i1], vector[i2]); }
+	void     Swap(int i1, int i2)       { UPP::Swap(vector[i1], vector[i2]); }
 	void     Move(int i1, int i2);
 
 	T       *Detach(int i)              { T *t = &Get(i); vector.Remove(i); return t; }
@@ -274,7 +274,7 @@ public:
 		Iterator(NP *null) : ConstIterator(null) {}
 
 	//G++
-	//	friend void IterSwap(Iterator a, Iterator b) { ::Swap(*a.ptr, *b.ptr); }
+	//	friend void IterSwap(Iterator a, Iterator b) { UPP::Swap(*a.ptr, *b.ptr); }
 	};
 
 // Standard container interface
@@ -287,10 +287,10 @@ public:
 	ConstIterator    GetIter(int pos) const     { return (T **)vector.GetIter(pos); }
 
 // Optimalization
-	friend void Swap(Array& a, Array& b)                   { ::Swap(a.vector, b.vector); }
+	friend void Swap(Array& a, Array& b)                   { UPP::Swap(a.vector, b.vector); }
 	//GCC forced move from Iterator, ugly workaround
 private:
-	static void IterSwap0(Iterator a, Iterator b)          { ::Swap(*a.ptr, *b.ptr); }
+	static void IterSwap0(Iterator a, Iterator b)          { UPP::Swap(*a.ptr, *b.ptr); }
 public:
 	friend void IterSwap(Iterator a, Iterator b)           { Array<T>::IterSwap0(a, b); }
 

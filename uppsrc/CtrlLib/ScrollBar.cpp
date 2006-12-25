@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 CH_INT(ScrollBarSize, FrameButtonWidth());
@@ -780,3 +782,5 @@ void Scroller::Scroll(Ctrl& p, int newposy)
 {
 	Scroll(p, p.GetSize(), newposy);
 }
+
+END_UPP_NAMESPACE

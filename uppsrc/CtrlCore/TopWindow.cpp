@@ -1,5 +1,7 @@
 #include "CtrlCore.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x)  // LOG(x)
 
 Rect TopWindow::windowFrameMargin;
@@ -479,6 +481,7 @@ TopWindow::TopWindow()
 	WhenClose = THISBACK(Close);
 	overlapped.Clear();
 	dokeys = true;
+	fullscreen = false;
 }
 
 TopWindow::~TopWindow()
@@ -502,3 +505,5 @@ void Maxisize(TopWindow& win, int screencxmax)
 	if(Ctrl::GetWorkArea().Width() <= screencxmax)
 		win.Maximize();
 }
+
+END_UPP_NAMESPACE

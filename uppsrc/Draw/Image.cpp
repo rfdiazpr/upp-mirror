@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 #define LTIMING(x) // RTIMING(x)
 
 int ImageBuffer::ScanKind() const
@@ -629,3 +631,5 @@ Size GetImageStringDots(const String& src)
 	sz.cy = ss.Get16le();
 	return sz;
 }
+
+END_UPP_NAMESPACE

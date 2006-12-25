@@ -1,5 +1,7 @@
 #include "CppBase.h"
 
+NAMESPACE_UPP
+
 #ifdef _MSC_VER
 #pragma inline_depth(255)
 #pragma optimize("t", on)
@@ -419,3 +421,5 @@ const char *Lex::Pos(int pos)
 	Prepare(pos);
 	return pos < term.GetCount() ? term[pos].ptr : ptr;
 }
+
+END_UPP_NAMESPACE

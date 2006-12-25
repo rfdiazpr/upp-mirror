@@ -1,6 +1,8 @@
 #include "GeomCoords.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 GisCoords::Arg GisCoords::Arg::Edit(double& v, String ident, String name, String help_topic, double min, double max, bool not_null)
 {
 	Arg out;
@@ -475,3 +477,5 @@ bool GisTransform::Equals(const GisTransform& t) const
 {
 	return Source() == t.Source() && Target() == t.Target();
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 #define TOPICFILE <Topic/app.tpp/all.i>
 #include <Core/topic_group.h>
 

@@ -1,5 +1,7 @@
 // OBSOLETE!!! Use RichTextView instead!
 
+NAMESPACE_UPP
+
 class QtfCtrl : public Ctrl {
 public:
 	virtual void  Paint(Draw& w);
@@ -68,3 +70,5 @@ public:
 	QtfCtrl();
 	virtual ~QtfCtrl();
 };
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include "CtrlCore.h"
 
+NAMESPACE_UPP
+
 #ifdef PLATFORM_WIN32
 #ifndef PLATFORM_WINCE
 
@@ -75,3 +77,5 @@ DHCtrl::~DHCtrl()
 
 #endif
 #endif
+
+END_UPP_NAMESPACE

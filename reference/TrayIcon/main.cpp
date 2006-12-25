@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 #define IMAGECLASS Tray
 #define IMAGEFILE  <TrayIcon/tray.iml>
 #include <Draw/iml.h>

@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 void RichTable::Invalidate()
 {
 	cpy.page = -1;
@@ -575,3 +577,5 @@ RichTable::RichTable()
 	r_row = -1;
 	Invalidate();
 }
+
+END_UPP_NAMESPACE

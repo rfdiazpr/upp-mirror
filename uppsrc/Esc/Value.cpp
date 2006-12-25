@@ -1,5 +1,8 @@
 #include <Esc/Esc.h>
 
+
+NAMESPACE_UPP
+
 EscValue EscFromStdValue(const Value& v)
 {
 	EscValue r;
@@ -58,3 +61,5 @@ void StdValueLib(ArrayMap<String, EscValue>& global)
 {
 	Escape(global, "StdFormat(x)", SIC_StdFormat);
 }
+
+END_UPP_NAMESPACE

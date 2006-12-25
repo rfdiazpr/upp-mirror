@@ -1,5 +1,7 @@
 #include "CtrlCore.h"
 
+NAMESPACE_UPP
+
 #ifdef flagSO
 CtrlFrame::CtrlFrame() {}
 CtrlFrame::~CtrlFrame() {}
@@ -152,3 +154,5 @@ void LayoutFrameBottom(Rect& r, Ctrl *ctrl, int cy)
 		r.bottom -= cy;
 	}
 }
+
+END_UPP_NAMESPACE

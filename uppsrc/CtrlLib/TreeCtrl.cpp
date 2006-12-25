@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 TreeCtrl::Node::Node()
 {
 	Init();
@@ -59,6 +61,7 @@ TreeCtrl::TreeCtrl()
 	dirty = true;
 	isselection = false;
 	multiselect = false;
+	nobg = false;
 	Clear();
 	SetFrame(ViewFrame());
 	AddFrame(sb);
@@ -473,6 +476,7 @@ void TreeCtrl::SetCursorLine(int i, bool sc)
 		if(m.ctrl && m.ctrl->SetWantFocus())
 			return;
 		WhenCursor();
+		WhenSel();
 	}
 }
 
@@ -504,6 +508,7 @@ void TreeCtrl::SetCursorLineSync(int i)
 		if(!(m.ctrl && m.ctrl->SetWantFocus()))
 			SetFocus();
 		WhenCursor();
+		WhenSel();
 	}
 }
 
@@ -513,6 +518,7 @@ void TreeCtrl::KillCursor()
 	cursor = -1;
 	Refresh();
 	WhenCursor();
+	WhenSel();
 }
 
 void TreeCtrl::SetCursor(int id, bool sc)
@@ -641,7 +647,8 @@ void TreeCtrl::Paint(Draw& w)
 	Size sz = GetSize();
 	Point org = sb;
 	scroller.Set(org);
-	w.DrawRect(sz, SColorPaper);
+	if(!nobg)
+		w.DrawRect(sz, SColorPaper);
 	int levelcx2 = levelcx >> 1;
 	for(int i = 0; i < line.GetCount(); i++) {
 		Line& l = line[i];
@@ -681,6 +688,8 @@ void TreeCtrl::Paint(Draw& w)
 			dword st = 0;
 			Color fg = SColorText;
 			Color bg = SColorPaper;
+			if(nobg)
+				bg = Null;
 			bool hasfocus = HasFocus();
 			if(IsReadOnly())
 				st |= Display::READONLY;
@@ -837,7 +846,7 @@ void TreeCtrl::Sort0(int id, const ValueOrder& order, bool byvalue)
 	so.tree = this;
 	so.order = &order;
 	so.byvalue = byvalue;
-	::Sort(item[id].child, so);
+	UPP::Sort(item[id].child, so);
 }
 
 void TreeCtrl::Sort(int id, const ValueOrder& order, bool byvalue)
@@ -926,6 +935,7 @@ void TreeCtrl::ClearSelection()
 		ClearSelTree(0);
 		isselection = false;
 		WhenSelection();
+		WhenSel();
 		WhenAction();
 		Refresh();
 	}
@@ -946,6 +956,7 @@ void TreeCtrl::UpdateSelect()
 {
 	isselection = UpdateSelTree(0);
 	WhenSelection();
+	WhenSel();
 	WhenAction();
 }
 
@@ -959,6 +970,11 @@ void TreeCtrl::SelectOne(int id, bool sel)
 		item[id].sel = sel;
 	UpdateSelect();
 	RefreshItem(id);
+}
+
+bool TreeCtrl::IsSel(int id) const
+{
+	return IsSelection() ? IsSelected(id) : GetCursor() == id;
 }
 
 void TreeCtrl::SetOption(int id)
@@ -1076,3 +1092,5 @@ void OptionTree::SetOption(int id)
 
 OptionTree::OptionTree() { aux.Add(); }
 OptionTree::~OptionTree() {}
+
+END_UPP_NAMESPACE

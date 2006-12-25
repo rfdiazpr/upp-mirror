@@ -4,6 +4,8 @@
 #include <sys/mman.h>
 #endif
 
+NAMESPACE_UPP
+
 #define LLOG(x) // RLOG(x)
 #define LDUMP(x) // RDUMP(x)
 #define LLOGHEXDUMP(x, y) // RLOGHEXDUMP(x, y)
@@ -152,7 +154,7 @@ int64 Stream::Get64be() {
 	return *(int64 *)h;
 }
 #else
-int  Stream::Get16be() {
+int  Stream::Get16le() {
 	byte h[2];
 	int q;
 	h[0] = Get();
@@ -160,7 +162,7 @@ int  Stream::Get16be() {
 	return q < 0 ? -1 : *(word *)h;
 }
 
-int Stream::Get32be() {
+int Stream::Get32le() {
 	byte h[4];
 	int q;
 	h[0] = Get();
@@ -170,7 +172,7 @@ int Stream::Get32be() {
 	return q < 0 ? -1 : *(int32 *)h;
 }
 
-int64 Stream::Get64be() {
+int64 Stream::Get64le() {
 	byte h[8];
 	int q;
 	h[0] = Get();
@@ -445,23 +447,32 @@ void Stream::SerializeRaw(byte *data, dword size) {
 }
 
 void Stream::SerializeRaw(word *data, dword count) {
+#ifdef CPU_BE
+	EndianSwap(data, count);
+#endif
 	SerializeRaw((byte *)data, 2 * count);
 #ifdef CPU_BE
-	SwapOrder(data, count);
+	EndianSwap(data, count);
 #endif
 }
 
 void Stream::SerializeRaw(dword *data, dword count) {
+#ifdef CPU_BE
+	EndianSwap(data, count);
+#endif
 	SerializeRaw((byte *)data, 4 * count);
 #ifdef CPU_BE
-	SwapOrder(data, count);
+	EndianSwap(data, count);
 #endif
 }
 
 void Stream::SerializeRaw(uint64 *data, dword count) {
+#ifdef CPU_BE
+	EndianSwap(data, count);
+#endif
 	SerializeRaw((byte *)data, 8 * count);
 #ifdef CPU_BE
-	SwapOrder(data, count);
+	EndianSwap(data, count);
 #endif
 }
 
@@ -542,7 +553,93 @@ void  Stream::Pack(bool& a, bool& b) {
 	bool h = false; Pack(a, b, h, h, h, h, h, h);
 }
 
-//#must be changed for nonIA32....
+#if 1
+Stream& Stream::operator%(bool& d)
+{
+	SerializeRaw((byte *)&d, 1);
+	return *this;
+}
+
+Stream& Stream::operator%(char& d)
+{
+	SerializeRaw((byte *)&d, 1);
+	return *this;
+}
+
+Stream& Stream::operator%(signed char& d)
+{
+	SerializeRaw((byte *)&d, 1);
+	return *this;
+}
+
+Stream& Stream::operator%(unsigned char& d)
+{
+	SerializeRaw((byte *)&d, 1);
+	return *this;
+}
+
+Stream& Stream::operator%(short& d)
+{
+	SerializeRaw((word *)&d, 1);
+	return *this;
+}
+
+Stream& Stream::operator%(unsigned short& d)
+{
+	SerializeRaw((word *)&d, 1);
+	return *this;
+}
+
+Stream& Stream::operator%(int& d)
+{
+	SerializeRaw((dword *)&d, 1);
+	return *this;
+}
+
+Stream& Stream::operator%(unsigned int& d)
+{
+	SerializeRaw((dword *)&d, 1);
+	return *this;
+}
+
+Stream& Stream::operator%(long& d)
+{
+	SerializeRaw((dword *)&d, 1);
+	return *this;
+}
+
+Stream& Stream::operator%(unsigned long& d)
+{
+	SerializeRaw((dword *)&d, 1);
+	return *this;
+}
+
+Stream& Stream::operator%(float& d)
+{
+	SerializeRaw((dword *)&d, 1);
+	return *this;
+}
+
+Stream& Stream::operator%(double& d)
+{
+	SerializeRaw((uint64 *)&d, 1);
+	return *this;
+}
+
+Stream& Stream::operator%(int64& d)
+{
+	SerializeRaw((uint64 *)&d, 1);
+	return *this;
+}
+
+Stream& Stream::operator%(uint64& d)
+{
+	SerializeRaw((uint64 *)&d, 1);
+	return *this;
+}
+
+#else
+
 Stream& Stream::operator%(bool& d)
 {
 	SerializeRaw((byte *)&d, sizeof(d));
@@ -626,6 +723,8 @@ Stream& Stream::operator%(uint64& d)
 	SerializeRaw((byte *)&d, sizeof(d));
 	return *this;
 }
+#endif
+
 
 Stream& Stream::operator%(String& s) {
 	if(IsError()) return *this;
@@ -1463,3 +1562,5 @@ int StreamHeading(Stream& stream, int ver, int minver, int maxver, const char* t
 	}
 	return ver;
 }
+
+END_UPP_NAMESPACE

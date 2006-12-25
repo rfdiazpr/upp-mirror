@@ -96,7 +96,7 @@ public:
 	int       Get8()                 { return ptr < rdlim ? *ptr++ : _Get8(); }
 #ifdef CPU_X86
 	int       Get16()                { if(ptr >= rdlim - 1) return _Get16(); int q = *(word *)ptr; ptr += 2; return q; }
-	int       Get32()                { if(ptr >= rdlim - 3) return _Get32(); int q = *(int *)ptr; ptr += 4; return q; }
+	int       Get32()                { if(ptr >= rdlim - 3) return _Get32(); int q = *(dword *)ptr; ptr += 4; return q; }
 	int64     Get64()                { if(ptr >= rdlim - 7) return _Get64(); int64 q = *(int64 *)ptr; ptr += 8; return q; }
 #else
 	int       Get16()                { return _Get16(); }
@@ -113,8 +113,8 @@ public:
 	int64     Get64be();
 #else
 	int       Get16le();
-	int       Get32le()
-	int64     Get64le()
+	int       Get32le();
+	int64     Get64le();
 	int       Get16be()              { return Get16(); }
 	int       Get32be()              { return Get32(); }
 	int64     Get64be()              { return Get64(); }
@@ -126,8 +126,8 @@ public:
 
 #ifdef CPU_X86
 	void      Put16(word q)          { if(ptr < wrlim - 1) { *(word *)ptr = q; ptr += 2; } else Put(&q, 2); }
-	void      Put32(int q)           { if(ptr < wrlim - 3) { *(long *)ptr = q; ptr += 4; } else Put(&q, 4); }
-	void      Put64(int64 q)         { if(ptr < wrlim - 3) { *(int64 *)ptr = q; ptr += 8; } else Put(&q, 8); }
+	void      Put32(int q)           { if(ptr < wrlim - 3) { *(dword *)ptr = q; ptr += 4; } else Put(&q, 4); }
+	void      Put64(int64 q)         { if(ptr < wrlim - 7) { *(int64 *)ptr = q; ptr += 8; } else Put(&q, 8); }
 #else
 	void      Put16(word q)          { Put(&q, 2); }
 	void      Put32(int q)           { Put(&q, 4); }
@@ -223,7 +223,7 @@ public:
 	Stream&   operator/(int& i)            { dword w = i + 1; Pack(w); i = w - 1; return *this; }
 	Stream&   operator/(unsigned int& i)   { Pack(*(dword *)&i); return *this; }
 	Stream&   operator/(long& i)           { dword w = i + 1; Pack(w); i = w - 1; return *this; }
-	Stream&   operator/(unsigned long& i)  { Pack(*(dword *)&i); return *this; }
+	Stream&   operator/(unsigned long& i)  { dword w = i + 1; Pack(w); i = w - 1; return *this; }
 
 	void      Magic(dword magic = 0x7d674d7b);
 

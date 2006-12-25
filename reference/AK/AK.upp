@@ -1,3 +1,5 @@
+description "The definition and use of redefinable key accelerators";
+
 uses
 	CtrlLib;
 
@@ -7,9 +9,8 @@ file
 	Setup.key,
 	setup.cpp,
 	main.cpp,
-	ak.t charset "utf8",
+	ak.t charset "UTF-8",
 	ak.icpp;
 
 mainconfig
 	"" = "GUI";
-

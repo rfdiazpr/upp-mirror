@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 class HelloWorld : public TopWindow {
 	MenuBar menu;
 	StatusBar status;

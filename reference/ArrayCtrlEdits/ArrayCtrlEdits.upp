@@ -1,3 +1,5 @@
+description "Embedded widgets in ArrayCtrl";
+
 uses
 	CtrlLib;
 

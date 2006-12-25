@@ -3,6 +3,9 @@
 
 class OciSqlConnection;
 
+
+NAMESPACE_UPP
+
 Date        OciDecodeDate(const byte data[7]);
 bool        OciEncodeDate(byte data[7], Date d);
 Time        OciDecodeTime(const byte data[7]);
@@ -13,6 +16,7 @@ String      OciParseStringError(const char *s);
 String      OciParseRefError(const char *s);
 
 int         OciParse(const char *statement, String& out, OciSqlConnection *conn, SqlSession *session);
+Sql::ERRORCLASS OciErrorClass(int errcode);
 
 class SqlSequence : public ValueGen {
 	SqlId       ssq;
@@ -77,5 +81,7 @@ class OciSqlConnection : public SqlConnection {
 protected:
 	virtual void SetParam(int i, OracleRef ref) = 0;
 };
+
+END_UPP_NAMESPACE
 
 #endif//ORACOMMON_H

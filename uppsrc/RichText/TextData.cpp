@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 void  RichText::CatPick(pick_ RichText& p)
 {
 	MergeStyles(p);
@@ -326,3 +328,5 @@ RichText::RichText(pick_ RichTxt& x, pick_ RichStyles& st)
 {
 	nolinks = false;
 }
+
+END_UPP_NAMESPACE

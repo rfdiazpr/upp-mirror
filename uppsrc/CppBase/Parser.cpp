@@ -1,5 +1,7 @@
 #include "CppBase.h"
 
+NAMESPACE_UPP
+
 #ifdef _MSC_VER
 #pragma inline_depth(255)
 #pragma optimize("t", on)
@@ -1443,3 +1445,5 @@ void Parse(Stream& s, const Vector<String>& ignore, CppBase& base, const String&
 	Parser p;
 	p.Do(s, ignore, base, fn, _err);
 }
+
+END_UPP_NAMESPACE

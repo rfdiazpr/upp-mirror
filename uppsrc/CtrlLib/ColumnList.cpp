@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 void ColumnList::MouseWheel(Point p, int zdelta, dword keyflags) {
 	sb.Wheel(zdelta);
 }
@@ -370,6 +372,11 @@ bool ColumnList::IsSelected(int i) const {
 	return item[i].sel;
 }
 
+bool ColumnList::IsSel(int i) const
+{
+	return IsSelection() ? IsSelected(i) : GetCursor() == i;
+}
+
 void ColumnList::UpdateSelect() {
 	isselection = false;
 	for(int i = 0; i < item.GetCount(); i++)
@@ -380,12 +387,15 @@ void ColumnList::UpdateSelect() {
 	SyncInfoStyle();
 	Action();
 	WhenSelection();
+	WhenSel();
 }
 
 void ColumnList::GetItemStyle(int i, Color& ink, Color& paper, dword& style)
 {
 	ink = SColorText;
 	paper = SColorPaper;
+	if(nobg)
+		paper = Null;
 	const Item& m = item[i];
 	style = 0;
 	if(i == cursor) {
@@ -486,11 +496,13 @@ void ColumnList::SetCursor(int c)
 		Refresh();
 	else
 		RefreshCursor();
-	if(c0 != cursor)
+	if(c0 != cursor) {
 		if(cursor >= 0)
 			WhenEnterItem();
 		else
 			WhenKillCursor();
+		WhenSel();
+	}
 	SyncInfoStyle();
 	Action();
 }
@@ -508,6 +520,7 @@ void ColumnList::KillCursor()
 	cursor = -1;
 	sb.Begin();
 	WhenKillCursor();
+	WhenSel();
 	Action();
 }
 
@@ -585,7 +598,7 @@ void ColumnList::Sort(const ValueOrder& order)
 	ItemOrder itemorder;
 	itemorder.order = &order;
 	KillCursor();
-	::Sort(item, itemorder);
+	UPP::Sort(item, itemorder);
 	sb.Begin();
 }
 
@@ -669,6 +682,9 @@ ColumnList::ColumnList() {
 	multi = false;
 	isselection = false;
 	mi = -1;
+	nobg = false;
 }
 
 ColumnList::~ColumnList() {}
+
+END_UPP_NAMESPACE

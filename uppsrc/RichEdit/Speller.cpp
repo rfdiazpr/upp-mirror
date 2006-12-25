@@ -1,5 +1,7 @@
 #include "RichEdit.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 struct Speller {
@@ -222,3 +224,5 @@ Bits RichEdit::SpellParagraph(const RichPara& para)
 	}
 	return e;
 }
+
+END_UPP_NAMESPACE

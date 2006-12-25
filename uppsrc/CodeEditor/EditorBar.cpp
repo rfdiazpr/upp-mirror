@@ -1,5 +1,7 @@
 #include "CodeEditor.h"
 
+NAMESPACE_UPP
+
 void Renumber(LineInfo& lf) {
 	LineInfo tf;
 	int l = 0;
@@ -303,3 +305,5 @@ EditorBar::EditorBar() {
 EditorBar::~EditorBar()
 {
 }
+
+END_UPP_NAMESPACE

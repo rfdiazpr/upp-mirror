@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 extern Color (*QTFColor[])();
 extern int   QTFFontHeight[];
 
@@ -291,11 +293,11 @@ void QTFEncodePara(String& qtf, const RichPara& p, const RichPara::Format& style
 						qtf << q;
 					}
 					else {
-						int c = FromUnicode(c, charset, 0);
-						if(c)
-							qtf << (char)c;
+						int ch = FromUnicode(c, charset, 0);
+						if(ch)
+							qtf << (char)ch;
 						else
-							qtf << "@$" << Format("%04X", c) << ';';
+							qtf << "@$" << Format("%04X", ch) << ';';
 						d++;
 					}
 				}
@@ -533,3 +535,5 @@ String AsQTF(const RichObject& obj)
 	x.Cat(p);
 	return AsQTF(x);
 }
+
+END_UPP_NAMESPACE

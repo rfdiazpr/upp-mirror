@@ -1,3 +1,5 @@
+description "Storing raster images in various formats";
+
 uses
 	CtrlLib,
 	plugin\gif,

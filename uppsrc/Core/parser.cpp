@@ -1,5 +1,7 @@
 #include "Core.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x)    // LOG(x)
 #define LTIMING(x) // RTIMING(x)
 
@@ -406,3 +408,5 @@ String AsCString(const String& s, int linemax, const char *linepfx, dword flags)
 {
 	return AsCString(s, s.End(), linemax, linepfx, flags);
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 void BarPane::LeftDown(Point pt, dword keyflags)
@@ -199,7 +201,7 @@ Bar::Item::~Item() {}
 Bar::Item& Bar::Item::Text(const char *text)        { return *this; }
 Bar::Item& Bar::Item::Key(dword key)                { return *this; }
 Bar::Item& Bar::Item::Repeat(bool b)                { return *this; }
-Bar::Item& Bar::Item::Image(const ::Image& img)     { return *this; }
+Bar::Item& Bar::Item::Image(const UPP::Image& img)  { return *this; }
 Bar::Item& Bar::Item::Enable(bool _enable)          { return *this; }
 Bar::Item& Bar::Item::Tip(const char *tip)          { return *this; }
 Bar::Item& Bar::Item::Help(const char *help)        { return *this; }
@@ -228,12 +230,12 @@ void Bar::AddNC(Ctrl& ctrl)
 	AddCtrl(&ctrl, (int)Null);
 }
 
-Bar::Item&  Bar::Add(bool enable, const char *text, const ::Image& image, Callback cb)
+Bar::Item&  Bar::Add(bool enable, const char *text, const UPP::Image& image, Callback cb)
 {
 	return AddItem(cb).Text(text).Image(image).Enable(enable);
 }
 
-Bar::Item&  Bar::Add(bool enable, KeyInfo& (*key)(), const ::Image& image, Callback callback)
+Bar::Item&  Bar::Add(bool enable, KeyInfo& (*key)(), const UPP::Image& image, Callback callback)
 {
 	const char *text = (*key)().name;
 	if(*text == '\3')
@@ -241,17 +243,17 @@ Bar::Item&  Bar::Add(bool enable, KeyInfo& (*key)(), const ::Image& image, Callb
 	return Add(enable, text, image, callback).Key(key);
 }
 
-Bar::Item&  Bar::Add(const char *text, const ::Image& image, Callback callback)
+Bar::Item&  Bar::Add(const char *text, const UPP::Image& image, Callback callback)
 {
 	return Add(true, text, image, callback);
 }
 
-Bar::Item& Bar::Add(const String& text, const ::Image& image, Callback callback)
+Bar::Item& Bar::Add(const String& text, const UPP::Image& image, Callback callback)
 {
 	return Add(~text, image, callback);
 }
 
-Bar::Item&  Bar::Add(KeyInfo& (*key)(), const ::Image& image, Callback callback)
+Bar::Item&  Bar::Add(KeyInfo& (*key)(), const UPP::Image& image, Callback callback)
 {
 	return Add(true, key, image, callback);
 }
@@ -284,16 +286,16 @@ void   Bar::MenuGap(int size)            { if(IsMenuBar()) Gap(size); }
 void   Bar::AddMenu(Ctrl& ctrl)          { if(IsMenuBar()) Add(ctrl); }
 void   Bar::AddMenu(Ctrl& ctrl, Size sz) { if(IsMenuBar()) Add(ctrl, sz); }
 
-Bar::Item&  Bar::AddMenu(bool enable, KeyInfo& (*key)(), const ::Image& image, Callback callback)
+Bar::Item&  Bar::AddMenu(bool enable, KeyInfo& (*key)(), const UPP::Image& image, Callback callback)
 { return IsMenuBar() ? Add(enable, key, image, callback) : NilItem(); }
 
-Bar::Item&  Bar::AddMenu(KeyInfo& (*key)(), const ::Image& image, Callback callback)
+Bar::Item&  Bar::AddMenu(KeyInfo& (*key)(), const UPP::Image& image, Callback callback)
 { return IsMenuBar() ? Add(key, image, callback) : NilItem(); }
 
-Bar::Item&  Bar::AddMenu(bool enable, const char *text, const ::Image& image, Callback callback)
+Bar::Item&  Bar::AddMenu(bool enable, const char *text, const UPP::Image& image, Callback callback)
 { return IsMenuBar() ? Add(enable, text, image, callback) : NilItem(); }
 
-Bar::Item&  Bar::AddMenu(const char *text, const ::Image& image, Callback callback)
+Bar::Item&  Bar::AddMenu(const char *text, const UPP::Image& image, Callback callback)
 { return IsMenuBar() ? Add(text, image, callback) : NilItem(); }
 
 Bar::Item& Bar::Add(bool enable, const char *text, Callback1<Bar&> proc)
@@ -302,10 +304,10 @@ Bar::Item& Bar::Add(bool enable, const char *text, Callback1<Bar&> proc)
 Bar::Item& Bar::Add(const char *text, Callback1<Bar&> proc)
 { return Add(true, text, proc); }
 
-Bar::Item& Bar::Add(bool enable, const char *text, const ::Image& image, Callback1<Bar&> proc)
+Bar::Item& Bar::Add(bool enable, const char *text, const UPP::Image& image, Callback1<Bar&> proc)
 { return Add(enable, text, proc).Image(image); }
 
-Bar::Item& Bar::Add(const char *text, const ::Image& image, Callback1<Bar&> proc)
+Bar::Item& Bar::Add(const char *text, const UPP::Image& image, Callback1<Bar&> proc)
 { return Add(text, proc).Image(image); }
 
 void   Bar::ToolSeparator()                { if(IsToolBar()) Separator(); }
@@ -326,10 +328,10 @@ void Bar::AddKey(KeyInfo& (*key)(), Callback cb)
 	AddKey(k.key[3], cb);
 }
 
-Bar::Item&  Bar::Add(bool enable, const ::Image& image, Callback cb)
+Bar::Item&  Bar::Add(bool enable, const UPP::Image& image, Callback cb)
 { return IsToolBar() ? AddItem(cb).Image(image).Enable(enable) : NilItem(); }
 
-Bar::Item&  Bar::Add(const ::Image& image, Callback cb)
+Bar::Item&  Bar::Add(const UPP::Image& image, Callback cb)
 { return IsToolBar() ? Add(true, image, cb) : NilItem(); }
 
 class Bar::ScanKeys : public Bar {
@@ -342,7 +344,7 @@ class Bar::ScanKeys : public Bar {
 		virtual Item& Check(bool check)              { return *this; }
 		virtual Item& Radio(bool check)              { return *this; }
 		virtual Item& Key(dword _key)                { if(_key) key.Add(_key); return *this; }
-		virtual Item& Image(const ::Image& img)      { return *this;  }
+		virtual Item& Image(const UPP::Image& img)   { return *this;  }
 		virtual Item& Enable(bool _enable = true)    { enabled = _enable; return *this; }
 		virtual Item& Tip(const char *tip)           { return *this; }
 		virtual Item& Help(const char *help)         { return *this; }
@@ -495,7 +497,7 @@ BarCtrl *BarCtrl::GetBarCtrlParent(Ctrl *q)
 void BarCtrl::SendHelpLine(Ctrl *q)
 {
 	String s = q->GetHelpLine();
-	if(!::IsEmpty(s)) {
+	if(!UPP::IsEmpty(s)) {
 		BarCtrl *b = GetBarCtrlParent(q);
 		if(b) b->WhenHelp(s);
 	}
@@ -619,3 +621,5 @@ void LRUList::RemoveEntry(const String& path)
 	if(q >= 0)
 		lru.Remove(q);
 }
+
+END_UPP_NAMESPACE

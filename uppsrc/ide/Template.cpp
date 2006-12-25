@@ -84,7 +84,14 @@ int NoCr(int c)
 	return c == '\r' ? 0 : c;
 }
 
-AppPreview::AppPreview() { SetFrame(InsetFrame()); AddFrame(sb); sb <<= THISBACK(Scroll); NoWantFocus(); }
+AppPreview::AppPreview()
+{
+	SetFrame(ViewFrame());
+	AddFrame(sb);
+	sb <<= THISBACK(Scroll);
+	NoWantFocus();
+}
+
 AppPreview::~AppPreview() {}
 
 void AppPreview::MouseWheel(Point p, int zdelta, dword keyflags) {

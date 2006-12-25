@@ -9,6 +9,8 @@
 #ifdef PLATFORM_WIN32
 #include <shellapi.h>
 
+NAMESPACE_UPP
+
 void DropFilesRegister(HWND hwnd)
 {
 	DragAcceptFiles(hwnd, true);
@@ -814,3 +816,5 @@ bool ShowErrorFocus(bool cond, const char *text, Ctrl& focus)
 	focus.SetFocus();
 	return true;
 }
+
+END_UPP_NAMESPACE

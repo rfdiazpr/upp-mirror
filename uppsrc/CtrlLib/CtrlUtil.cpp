@@ -1,5 +1,8 @@
 #include "CtrlLib.h"
 
+
+NAMESPACE_UPP
+
 #define LLOG(x) // RLOG(x)
 
 #define IMAGECLASS CtrlImg
@@ -175,3 +178,5 @@ void CtrlRetriever::Retrieve()
 	for(int i = 0; i < item.GetCount(); i++)
 		item[i].Retrieve();
 }
+
+END_UPP_NAMESPACE

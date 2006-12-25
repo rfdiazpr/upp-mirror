@@ -4,7 +4,7 @@
 #include "TSql.h"
 #pragma hdrstop
 
-//////////////////////////////////////////////////////////////////////
+NAMESPACE_UPP
 
 #ifndef NOAPPSQL
 int SqlUserGetRightsTo(const char* table)
@@ -13,16 +13,12 @@ int SqlUserGetRightsTo(const char* table)
 }
 #endif
 
-//////////////////////////////////////////////////////////////////////
-
 #ifndef NOAPPSQL
 bool SqlUserCanWrite(const char* table)
 {
 	return SqlUser().CanWrite(table);
 }
 #endif
-
-//////////////////////////////////////////////////////////////////////
 
 #ifndef NOAPPSQL
 bool SqlUserCanRead(const char* table)
@@ -31,14 +27,9 @@ bool SqlUserCanRead(const char* table)
 }
 #endif
 
-//////////////////////////////////////////////////////////////////////
-// SqlAnyTable::
-
 SqlAnyTable::SqlAnyTable()
 {
 }
-
-//////////////////////////////////////////////////////////////////////
 
 SqlAnyTable::SqlAnyTable(const char *table_name, SqlSession& session)
 {
@@ -84,14 +75,10 @@ SqlAnyTable::SqlAnyTable(const char *table_name, SqlSession& session)
 	}
 }
 
-//////////////////////////////////////////////////////////////////////
-
 SqlAnyTable::SqlAnyTable(const char* owner, const char* table)
 	: owner(owner), table(table)
 {
 }
-
-//////////////////////////////////////////////////////////////////////
 
 String SqlAnyTable::Dot() const
 {
@@ -102,21 +89,14 @@ String SqlAnyTable::Dot() const
 	return result;
 }
 
-//////////////////////////////////////////////////////////////////////
-
 bool SqlAnyTable::operator == (const SqlAnyTable& t) const
 {
 	return owner == t.owner && table == t.table;
 }
 
-//////////////////////////////////////////////////////////////////////
-// SqlAnyColumn::
-
 SqlAnyColumn::SqlAnyColumn()
 {
 }
-
-//////////////////////////////////////////////////////////////////////
 
 SqlAnyColumn::SqlAnyColumn(const char* column, const char* table_name, SqlSession& session)
 : SqlAnyTable(table_name, session)
@@ -124,15 +104,11 @@ SqlAnyColumn::SqlAnyColumn(const char* column, const char* table_name, SqlSessio
 {
 }
 
-//////////////////////////////////////////////////////////////////////
-
 SqlAnyColumn::SqlAnyColumn(const char* column, const char* owner, const char* table)
 : SqlAnyTable(owner, table)
 , column(ToUpper(column))
 {
 }
-
-//////////////////////////////////////////////////////////////////////
 
 SqlAnyColumn::SqlAnyColumn(const char* column, const SqlAnyTable& table)
 : SqlAnyTable(table)
@@ -140,27 +116,19 @@ SqlAnyColumn::SqlAnyColumn(const char* column, const SqlAnyTable& table)
 {
 }
 
-//////////////////////////////////////////////////////////////////////
-
 String SqlAnyColumn::DotColumn() const
 {
 	return Dot() + '.' + column;
 }
-
-//////////////////////////////////////////////////////////////////////
 
 bool SqlAnyColumn::operator == (const SqlAnyColumn& c) const
 {
 	return owner == c.owner && table == c.table && column == c.column;
 }
 
-//////////////////////////////////////////////////////////////////////
-
 #ifndef NOAPPSQL
 GLOBAL_VAR(SqlUserRights, SqlUser)
 #endif
-
-//////////////////////////////////////////////////////////////////////
 
 void SqlUserRights::Clear()
 {
@@ -169,8 +137,6 @@ void SqlUserRights::Clear()
 	rights.Clear();
 	error = Null;
 }
-
-//////////////////////////////////////////////////////////////////////
 
 void SqlUserRights::Sync()
 {
@@ -219,8 +185,6 @@ void SqlUserRights::Sync()
 	}
 }
 
-//////////////////////////////////////////////////////////////////////
-
 int SqlUserRights::GetRightsTo(const char* table)
 {
 	try
@@ -240,23 +204,16 @@ int SqlUserRights::GetRightsTo(const char* table)
 	}
 }
 
-//////////////////////////////////////////////////////////////////////
-
 bool SqlUserRights::HasRole(const char* role)
 {
 	Sync();
 	return roles.Find(role) >= 0;
 }
 
-//////////////////////////////////////////////////////////////////////
-// SqlIndex::
-
 SqlIndex::SqlIndex()
 {
 	session = NULL;
 }
-
-//////////////////////////////////////////////////////////////////////
 
 void SqlIndex::Open(String ind, String own, SqlSession& session)
 {
@@ -275,8 +232,6 @@ void SqlIndex::Open(String ind, String own, SqlSession& session)
 	dropped = false;
 }
 
-//////////////////////////////////////////////////////////////////////
-
 SqlIndex::SqlIndex(const SqlIndex& another, int)
 {
 	table     = another.table;
@@ -286,13 +241,9 @@ SqlIndex::SqlIndex(const SqlIndex& another, int)
 	session   = another.session;
 }
 
-//////////////////////////////////////////////////////////////////////
-
 SqlIndex::~SqlIndex()
 {
 }
-
-//////////////////////////////////////////////////////////////////////
 
 String SqlIndex::Dot() const
 {
@@ -302,8 +253,6 @@ String SqlIndex::Dot() const
 		return index;
 }
 
-//////////////////////////////////////////////////////////////////////
-
 void SqlIndex::Drop()
 {
 	ASSERT(session);
@@ -311,8 +260,6 @@ void SqlIndex::Drop()
 	if(!index.IsEmpty() && cursor.Execute("drop index " + Dot()))
 		dropped = true;
 }
-
-//////////////////////////////////////////////////////////////////////
 
 void SqlIndex::Create()
 {
@@ -331,20 +278,13 @@ void SqlIndex::Create()
 		dropped = false;
 }
 
-//////////////////////////////////////////////////////////////////////
-// SqlIndexMap::
-
 SqlIndexMap::SqlIndexMap()
 {
 }
 
-//////////////////////////////////////////////////////////////////////
-
 SqlIndexMap::~SqlIndexMap()
 {
 }
-
-//////////////////////////////////////////////////////////////////////
 
 void SqlIndexMap::Add(const char* _table, SqlSession& session)
 {
@@ -361,8 +301,6 @@ void SqlIndexMap::Add(const char* _table, SqlSession& session)
 		AddPick(SqlIndex(index, owner, session));
 }
 
-//////////////////////////////////////////////////////////////////////
-
 void SqlIndexMap::Drop(Gate2<int, int> progress)
 {
 	for(int i = 0; i < map.GetCount(); i++)
@@ -372,8 +310,6 @@ void SqlIndexMap::Drop(Gate2<int, int> progress)
 			throw AbortExc();
 	}
 }
-
-//////////////////////////////////////////////////////////////////////
 
 void SqlIndexMap::Create(Gate2<int, int> progress)
 {
@@ -385,28 +321,19 @@ void SqlIndexMap::Create(Gate2<int, int> progress)
 	}
 }
 
-//////////////////////////////////////////////////////////////////////
-// SqlRelocate::
-
 SqlRelocate::SqlRelocate()
 {
 	session = NULL;
 }
 
-//////////////////////////////////////////////////////////////////////
-
 SqlRelocate::~SqlRelocate()
 {
 }
-
-//////////////////////////////////////////////////////////////////////
 
 void SqlRelocate::Find(SqlId table, SqlId column, SqlSession& session)
 {
 	Find(~table.ToString(), ~column.ToString(), session);
 }
-
-//////////////////////////////////////////////////////////////////////
 
 void SqlRelocate::Find(const char* table, const char* column, SqlSession& sess)
 {
@@ -471,8 +398,6 @@ void SqlRelocate::Find(const char* table, const char* column, SqlSession& sess)
 	}
 	ClearResult();
 }
-
-//////////////////////////////////////////////////////////////////////
 
 void SqlRelocate::Move(const Vector<int>& old_seq, const Vector<int>& new_seq, int options, Gate2<int, int> progress)
 {
@@ -558,8 +483,6 @@ void SqlRelocate::Move(const Vector<int>& old_seq, const Vector<int>& new_seq, i
 	}
 }
 
-//////////////////////////////////////////////////////////////////////
-
 void SqlRelocate::Move(int old_seq, int new_seq, int options, Gate2<int, int> progress)
 {
 	Vector<int> src, dest;
@@ -568,15 +491,11 @@ void SqlRelocate::Move(int old_seq, int new_seq, int options, Gate2<int, int> pr
 	Move(src, dest, options, progress);
 }
 
-//////////////////////////////////////////////////////////////////////
-
 void SqlRelocate::ClearResult()
 {
 	result.SetCount(reference.GetCount());
 	Fill(result.Begin(), result.End(), false);
 }
-
-//////////////////////////////////////////////////////////////////////
 
 Vector<SqlAnyColumn> SqlRelocate::GetReferences(int seq) const
 {
@@ -599,18 +518,14 @@ Vector<SqlAnyColumn> SqlRelocate::GetReferences(int seq) const
 	return result;
 }
 
-//////////////////////////////////////////////////////////////////////
-
 unsigned GetHashValue(const SqlAnyTable& t)
 {
 	return GetHashValue(t.owner) ^ GetHashValue(t.table);
 }
-
-//////////////////////////////////////////////////////////////////////
 
 unsigned GetHashValue(const SqlAnyColumn& t)
 {
 	return GetHashValue(static_cast<const SqlAnyTable&>(t)) ^ GetHashValue(t.column);
 }
 
-//////////////////////////////////////////////////////////////////////
+END_UPP_NAMESPACE

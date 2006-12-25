@@ -2,6 +2,8 @@
 #include "OciCommon.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 #define LLOG(x) // RLOG(x)
 
 //#define DLLFILENAME "ora803.dll"
@@ -10,14 +12,16 @@
 #define DLIHEADER   <Oracle/Oci8.dli>
 #include <Core/dli.h>
 
-static String OciError(OCIError *errhp)
+static String OciError(OCIError *errhp, int *code)
 {
+	if(code) *code = Null;
 	if(!OCI8()) return t_("Error running OCI8 Oracle connection dynamic library.");
 	if(!errhp) return t_("Unknown error.");
 	OraText errbuf[512];
 	strcpy((char *)errbuf, t_("(unknown error)"));
 	sb4 errcode;
 	OCI8().OCIErrorGet(errhp, 1, NULL, &errcode, errbuf, sizeof(errbuf), OCI_HTYPE_ERROR);
+	if(code) *code = errcode;
 	return (const char *) errbuf;
 }
 
@@ -30,6 +34,13 @@ bool Oracle8::AllocOciHandle(void *hp, int type) {
 void Oracle8::FreeOciHandle(void *hp, int type) {
 	LLOG("FreeOciHandle(" << type << ")");
 	if(OCI8() && hp) OCI8().OCIHandleFree(hp, type);
+}
+
+void Oracle8::SetOciError(String text)
+{
+	int errcode;
+	String msg = OciError(errhp, &errcode);
+	SetError(msg, text, errcode, OciErrorClass(errcode));
 }
 
 class OCI8Connection : public Link<OCI8Connection>, public OciSqlConnection {
@@ -597,49 +608,68 @@ void  OCI8Connection::GetColumn(int i, Ref f) const {
 		return;
 	}
 	switch(f.GetType()) {
-	case STRING_V:
-		GetColumn(i, RefString(f));
-		break;
-	case INT_V:
-		GetColumn(i, RefInt(f));
-		break;
-	case DOUBLE_V:
-		GetColumn(i, RefDouble(f));
-		break;
-	case DATE_V:
-		GetColumn(i, RefDate(f));
-		break;
-	case TIME_V:
-		GetColumn(i, RefTime(f));
-		break;
-	case VALUE_V:
-		{
-			double d;
-			Time m;
+		case STRING_V: {
 			String s;
-			switch(column[i].type) {
-			case SQLT_STR:
-//			case SQLT_RDD:
-				GetColumn(i, s);
-				f = Value(s);
-				break;
-			case SQLT_BLOB:
-			case SQLT_CLOB:
-			case SQLT_FLT:
-				GetColumn(i, d);
-				f = Value(d);
-				break;
-			case SQLT_DAT:
-				GetColumn(i, m);
-				f = Value(m);
-				break;
-			default:
-				NEVER();
-			}
+			GetColumn(i, s);
+			f.SetValue(s);
+			break;
 		}
-		break;
-	default:
-		NEVER();
+		case INT_V: {
+			int d;
+			GetColumn(i, d);
+			f.SetValue(d);
+			break;
+		}
+		case DOUBLE_V: {
+			double d;
+			GetColumn(i, d);
+			f.SetValue(d);
+			break;
+		}
+		case DATE_V: {
+			Date d;
+			GetColumn(i, d);
+			f.SetValue(d);
+			break;
+		}
+		case TIME_V: {
+			Time t;
+			GetColumn(i, t);
+			f.SetValue(t);
+			break;
+		}
+		case VALUE_V: {
+			switch(column[i].type) {
+				case SQLT_STR:
+				/*case SQLT_RDD:*/ {
+					String s;
+					GetColumn(i, s);
+					f.SetValue(s);
+					break;
+				}
+				case SQLT_BLOB:
+				case SQLT_CLOB:
+				case SQLT_FLT: {
+					double d;
+					GetColumn(i, d);
+					f.SetValue(d);
+					break;
+				}
+				case SQLT_DAT: {
+					Time m;
+					GetColumn(i, m);
+					f.SetValue(m);
+					break;
+				}
+				default: {
+					NEVER();
+				}
+			}
+			break;
+		}
+		default: {
+			NEVER();
+		}
 	}
 }
 
@@ -650,7 +680,7 @@ void OCI8Connection::Cancel() {
 
 void OCI8Connection::SetError() {
 	if(session)
-		session->SetError(OciError(errhp), statement);
+		session->SetOciError(statement);
 	parse = true;
 }
 
@@ -716,8 +746,11 @@ void OCI8Connection::Clear() {
 	if(session) {
 		if(refcursor) {
 			OCIStmt *aux = 0;
-			if(!session -> AllocOciHandle(&aux, OCI_HTYPE_STMT))
-				session -> SetError(OciError(errhp), t_("Closing reference cursor"));
+			if(!session -> AllocOciHandle(&aux, OCI_HTYPE_STMT)) {
+				int errcode;
+				String err = OciError(errhp, &errcode);
+				session->SetError(err, t_("Closing reference cursor"), errcode, OciErrorClass(errcode));
+			}
 			static char close[] = "begin close :1; end;";
 			bool err = false;
 			OCIBind *bind = 0;
@@ -791,9 +824,8 @@ bool Oracle8::Login(const char *name, const char *pwd, const char *db, String *w
 		return false;
 	}
 //	puts("Attributes allocated"); fflush(stdout);
-	if(OCI8().OCIServerAttach(srvhp, errhp, (byte *)db, strlen(db), 0))
-	{
-		SetError(OciError(errhp), NFormat(t_("Connecting to server '%s'"), db));
+	if(OCI8().OCIServerAttach(srvhp, errhp, (byte *)db, strlen(db), 0)) {
+		SetOciError(NFormat(t_("Connecting to server '%s'"), db));
 		Logoff();
 		return false;
 	}
@@ -805,14 +837,15 @@ bool Oracle8::Login(const char *name, const char *pwd, const char *db, String *w
 	|| OCI8().OCIAttrSet(seshp, OCI_HTYPE_SESSION, (byte *)pwd, strlen(pwd), OCI_ATTR_PASSWORD, errhp)
 	|| OCI8().OCIAttrSet(svchp, OCI_HTYPE_SVCCTX, seshp, 0, OCI_ATTR_SESSION, errhp)
 	|| (retcode = OCI8().OCISessionBegin(svchp, errhp, seshp, OCI_CRED_RDBMS, OCI_DEFAULT)) != OCI_SUCCESS
-		&& retcode != OCI_SUCCESS_WITH_INFO)
-	{
-		SetError(OciError(errhp), t_("Connecting to Oracle database."));
+	&& retcode != OCI_SUCCESS_WITH_INFO) {
+		SetOciError(t_("Connecting to Oracle database."));
 		Logoff();
 		return false;
 	}
-	if(retcode == OCI_SUCCESS_WITH_INFO && warn)
-		*warn = OciError(errhp);
+	if(retcode == OCI_SUCCESS_WITH_INFO && warn) {
+		int errcode;
+		*warn = OciError(errhp, &errcode);
+	}
 //	puts("In session, user = " + GetUser()); fflush(stdout);
 	in_session = true;
 	return true;
@@ -987,7 +1020,7 @@ Vector<String> Oracle8::EnumReservedWords()
 void OracleBlob::SetStreamSize(int64 pos) {
 	ASSERT(pos <= GetStreamSize());
 	if(pos < GetStreamSize())
-		OCI8().OCILobTrim(session->svchp, session->errhp, locp, pos);
+		OCI8().OCILobTrim(session->svchp, session->errhp, locp, (dword)pos);
 }
 
 dword OracleBlob::Read(int64 at, void *ptr, dword size) {
@@ -1049,3 +1082,5 @@ OracleBlob::OracleBlob() {
 OracleBlob::~OracleBlob() {
 	Close();
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 GUI_APP_MAIN
 {
 	PrinterJob pd("My printer job");

@@ -61,7 +61,7 @@ void     HexDump(Stream& s, const void *ptr, int size, int maxsize = INT_MAX);
 int      msecs(int from = 0);
 
 String        GetTypeName(const char *type_name);
-inline String GetTypeName(const std::type_info& tinfo)   { return GetTypeName(tinfo.name()); }
+inline String GetTypeName(const ::std::type_info& tinfo)   { return GetTypeName(tinfo.name()); }
 
 void __LOGF__(const char *format, ...);
 
@@ -69,18 +69,18 @@ void __LOGF__(const char *format, ...);
 
 #define DEBUGCODE(x)     x
 
-#define LOG(a)           VppLog() << a << '\n'
-#define LOGF             __LOGF__
-#define LOGBEGIN()       VppLog().Begin()
-#define LOGEND()         VppLog().End()
+#define LOG(a)           UPP::VppLog() << a << '\n'
+#define LOGF             UPP::__LOGF__
+#define LOGBEGIN()       UPP::VppLog().Begin()
+#define LOGEND()         UPP::VppLog().End()
 #define LOGBLOCK(n)      RLOGBLOCK(n)
-#define LOGHEXDUMP(s, a) HexDump(VppLog(), s, a)
+#define LOGHEXDUMP(s, a) UPP::HexDump(VppLog(), s, a)
 #define QUOTE(a)         { LOG(#a); a; }
-#define LOGSRCPOS()      VppLog() << __FILE__ << '#' << __LINE__ << '\n'
-#define DUMP(a)          VppLog() << #a << " = " << (a) << '\n'
-#define DUMPC(c)         DumpContainer(VppLog() << #c << ":\n", (c))
-#define DUMPCC(c)        DumpContainer2(VppLog() << #c << ":\n", (c))
-#define DUMPCCC(c)       DumpContainer3(VppLog() << #c << ":\n", (c))
+#define LOGSRCPOS()      UPP::VppLog() << __FILE__ << '#' << __LINE__ << '\n'
+#define DUMP(a)          UPP::VppLog() << #a << " = " << (a) << '\n'
+#define DUMPC(c)         UPP::DumpContainer(VppLog() << #c << ":\n", (c))
+#define DUMPCC(c)        UPP::DumpContainer2(VppLog() << #c << ":\n", (c))
+#define DUMPCCC(c)       UPP::DumpContainer3(VppLog() << #c << ":\n", (c))
 #define XASSERT(c, d)    if(!bool(c)) { LOG("XASSERT failed"); LOGSRCPOS(); LOG(d); ASSERT(0); } else
 #define NEVER()          ASSERT(0)
 #define XNEVER(d)        if(1) { LOG("NEVER failed"); LOGSRCPOS(); LOG(d); ASSERT(0); } else
@@ -89,10 +89,16 @@ void __LOGF__(const char *format, ...);
 
 #define TIMING(x)        RTIMING(x)
 #define HITCOUNT(x)      RHITCOUNT(x)
-#define ACTIVATE_TIMING()    TimingInspector::Activate(true);
-#define DEACTIVATE_TIMING()  TimingInspector::Activate(false);
+#define ACTIVATE_TIMING()    UPP::TimingInspector::Activate(true);
+#define DEACTIVATE_TIMING()  UPP::TimingInspector::Activate(false);
+
+#define DLOG(x)          LOG(x)
+#define DDUMP(x)         DUMP(x)
 
 #else
+
+#define DLOG(x)          @@@ERROR!!!
+#define DDUMP(x)         @@@ERROR!!!
 
 #define ASSERT(x)
 
@@ -131,15 +137,15 @@ struct DebugLogBlock
 	const char *name;
 };
 
-#define RLOG(a)           VppLog() << a << '\n'
-#define RLOGBEGIN()       VppLog().Begin()
-#define RLOGEND()         VppLog().End()
-#define RLOGBLOCK(n)      DebugLogBlock MK__s(n)
-#define RLOGHEXDUMP(s, a) HexDump(VppLog(), s, a)
+#define RLOG(a)           UPP::VppLog() << a << '\n'
+#define RLOGBEGIN()       UPP::VppLog().Begin()
+#define RLOGEND()         UPP::VppLog().End()
+#define RLOGBLOCK(n)      UPP::DebugLogBlock MK__s(n)
+#define RLOGHEXDUMP(s, a) UPP::HexDump(UPP::VppLog(), s, a)
 #define RQUOTE(a)         { LOG(#a); a; }
-#define RLOGSRCPOS()      VppLog() << __FILE__ << '#' << __LINE__ << '\n'
-#define RDUMP(a)          VppLog() << #a << " = " << (a) << '\n'
-#define RDUMPC(c)         DumpContainer(VppLog() << #c << ":\n", (c))
+#define RLOGSRCPOS()      UPP::VppLog() << __FILE__ << '#' << __LINE__ << '\n'
+#define RDUMP(a)          UPP::VppLog() << #a << " = " << (a) << '\n'
+#define RDUMPC(c)         UPP::DumpContainer(UPP::VppLog() << #c << ":\n", (c))
 
 // Crash support
 

@@ -8,6 +8,9 @@
 #undef int32
 #undef uint32
 
+
+NAMESPACE_UPP
+
 #if DBGALLOC
 double total_allocated = 0, total_freed = 0;
 unsigned alloc_calls = 0, free_calls = 0, realloc_calls = 0;
@@ -1032,3 +1035,5 @@ void TIFEncoder::WriteLineRaw(const byte *s)
 {
 	data->WriteLineRaw(s);
 }
+
+END_UPP_NAMESPACE

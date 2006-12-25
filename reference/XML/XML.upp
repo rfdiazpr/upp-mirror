@@ -1,7 +1,10 @@
-uses Core;
+description "Creating and parsing XML files";
 
-file 
-	"XML.cpp";
+uses
+	Core;
+
+file
+	XML.cpp;
 
 mainconfig
 	"" = "";

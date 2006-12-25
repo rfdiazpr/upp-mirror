@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 RichTable::Format RichText::GetTableFormat(int table) const
 {
 	return GetConstTable(table).GetFormat();
@@ -219,3 +221,5 @@ void       RichText::ApplyTableFormatInfo(int table, const Rect& sel, const Rich
 	tab.Normalize();
 	RefreshAll();
 }
+
+END_UPP_NAMESPACE

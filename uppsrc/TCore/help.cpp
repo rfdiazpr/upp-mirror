@@ -1,5 +1,7 @@
 #include "TCore.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) // RLOG(x)
 #define LDUMP(x) // RDUMP(x)
 
@@ -632,3 +634,5 @@ void HelpInit::Run()
 		m[i]();
 	m.Clear();
 }
+
+END_UPP_NAMESPACE

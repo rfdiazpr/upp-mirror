@@ -4,6 +4,8 @@
 #include <shellapi.h>
 #endif
 
+NAMESPACE_UPP
+
 #ifdef PLATFORM_WIN32
 
 String GetExeFilePath()
@@ -307,3 +309,5 @@ String GetDataFile(const char *filename)
 
 	return AppendFileName(s, filename);
 }
+
+END_UPP_NAMESPACE

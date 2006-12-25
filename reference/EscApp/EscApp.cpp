@@ -1,5 +1,7 @@
 #include <Esc/Esc.h>
 
+using namespace Upp;
+
 void SIC_Print(EscEscape& e)
 {
 	if(e[0].IsArray())

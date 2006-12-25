@@ -1,12 +1,12 @@
+description "Displays a number of days between two dates";
+
 uses
 	CtrlLib;
 
 file
-	"Days.h"
-	, main.cpp
-	, "Days.lay"
-	
-;
+	Days.h,
+	main.cpp,
+	Days.lay;
 
 mainconfig
 	"" = "GUI";

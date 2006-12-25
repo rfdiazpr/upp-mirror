@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 RasterEncoder::RasterEncoder()
 {
 	size = Size(0, 0);
@@ -172,3 +174,5 @@ String StreamRasterEncoder::SaveString(const Image& img)
 	ImageRaster r(img);
 	return SaveString(r);
 }
+
+END_UPP_NAMESPACE

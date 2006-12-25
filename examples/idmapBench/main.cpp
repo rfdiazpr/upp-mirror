@@ -1,4 +1,5 @@
 #define  NDEBUG
+#define  _SECURE_SCL 0
 
 #include <Core/Core.h>
 
@@ -12,43 +13,52 @@
 #include <deque>
 #include <string>
 
+#ifdef COMPILER_GCC
+#include <tr1/unordered_map>
+#else
+#include <hash_map>
+#endif
+
 using namespace std;
+using namespace Upp;
+
+#define NO_OUTPUT // for benchmark purposes, output is omitted
 
 void BenchNTL(const char *file) {
-	std::ifstream in(file);
+	FileIn in(file);
 	if (!in) {
 		std::cout << "Cannot open input file.\n";
 		return;
 	}
-	
+
 	VectorMap<String, Vector<int> > map;
 	int line = 1;
-	
+
 	for(;;) {
-		int c = in.get();
-		if(c == EOF) break;
+		int c = in.Get();
+		if(c < 0) break;
 		if(isalpha(c) || c == '_') {
 			String id;
-			id += c;
-			c = in.get();
-			while(c != EOF && (isalnum(c) || c == '_')) {
+			id.Cat(c);
+			c = in.Get();
+			while(c >= 0 && (isalnum(c) || c == '_')) {
 				id.Cat(c);
-				c = in.get();
+				c = in.Get();
 			}
 			map.GetAdd(id).Add(line);
 		}
 		else
 		if(isdigit(c))
-			do c = in.get();
-			while(c != EOF && (isalnum(c) || c == '.'));
+			do c = in.Get();
+			while(c >= 0 && (isalnum(c) || c == '.'));
 		if(c == '\n')
 			++line;
 	}
 
 	Vector<int> order = GetSortOrder(map.GetKeys());
-/* For benchmark purposes, output is omitted
+#ifndef NO_OUTPUT
 	for(int i = 0; i < order.GetCount(); i++) {
-		std::cout << map.GetKey(order[i]) << ": ";
+		std::cout << ~map.GetKey(order[i]) << ": ";
 		const Vector<int>& l = map[order[i]];
 		for(int i = 0; i < l.GetCount(); i++) {
 			if(i) std::cout << ", ";
@@ -56,19 +66,19 @@ void BenchNTL(const char *file) {
 		}
 		std::cout << '\n';
 	}
-*/
+#endif
 }
 
-void BenchSTL(const char *file) {
+template <class Container>
+void BenchSTL(Container& imap, const char *file) {
 	std::ifstream in(file);
 	if (!in) {
 		std::cout << "Cannot open input file.\n";
 		return;
 	}
-	
-	map< string, vector<int> > imap;
+
 	int line = 1;
-	
+
 	for(;;) {
 		int c = in.get();
 		if(c == EOF) break;
@@ -89,8 +99,13 @@ void BenchSTL(const char *file) {
 		if(c == '\n')
 			++line;
 	}
+}
 
-/* For benchmark purposes, output is omitted
+void BenchMap(const char *file)
+{
+	map< string, vector<int> > imap;
+	BenchSTL(imap, file);
+#ifndef NO_OUTPUT
 	map< std::string, vector<int> >::const_iterator e = imap.end();
 	for(map< std::string, vector<int> >::const_iterator i = imap.begin(); i != e; i++) {
 		std::cout << i->first << ": ";
@@ -102,8 +117,45 @@ void BenchSTL(const char *file) {
 		}
 		std::cout << '\n';
 	}
-*/
+#endif
 }
+
+#ifdef COMPILER_GCC
+typedef std::tr1::unordered_map< string, vector<int> > HashMap;
+#else
+typedef stdext::hash_map< string, vector<int> > HashMap;
+#endif
+
+inline bool h_less(const HashMap::value_type *a, const HashMap::value_type *b)
+{
+	return a->first < b->first;
+}
+
+void BenchHashMap(const char *file)
+{
+	HashMap imap;
+	BenchSTL(imap, file);
+	vector< const HashMap::value_type * > order;
+	for(HashMap::const_iterator i = imap.begin(); i != imap.end(); i++)
+		order.push_back(&*i);
+	sort(order.begin(), order.end(), h_less);
+
+#ifndef NO_OUTPUT
+	vector< const HashMap::value_type * >::const_iterator e = order.end();
+	for(vector< const HashMap::value_type * >::const_iterator i = order.begin(); i != e; i++) {
+		std::cout << (*i)->first << ": ";
+		vector<int>::const_iterator e = (*i)->second.end();
+		vector<int>::const_iterator b = (*i)->second.begin();
+		for(vector<int>::const_iterator j = b; j != e; j++) {
+			if(j != b) std::cout << ", ";
+			std::cout << *j;
+		}
+		std::cout << '\n';
+	}
+#endif
+}
+
+#define N 10000
 
 CONSOLE_APP_MAIN
 {
@@ -115,22 +167,28 @@ CONSOLE_APP_MAIN
 	else
 		fn = argv[0];
 
-	int n;
-
-	BenchSTL(fn);// One run to cache the file
+	BenchHashMap(fn); // first run to cache the file
 
 	{
-		BenchSTL(fn);
+		BenchHashMap(fn);
 		TimeStop tm;
-		for(n = 0; n < 10000; n++)
-			BenchSTL(fn);
-		cout << "STL time: " << tm.Elapsed() << " ms \n";
+		for(int n = 0; n < N; n++)
+			BenchHashMap(fn);
+		cout << "STL hash_map time: " << tm.Elapsed() << " ms \n";
+	}
+
+	{
+		BenchMap(fn);
+		TimeStop tm;
+		for(int n = 0; n < N; n++)
+			BenchMap(fn);
+		cout << "STL map time: " << tm.Elapsed() << " ms \n";
 	}
 
 	{
 		BenchNTL(fn);
 		TimeStop tm;
-		for(n = 0; n < 10000; n++)
+		for(int n = 0; n < N; n++)
 			BenchNTL(fn);
 		cout << "NTL time: " << tm.Elapsed() << " ms\n";
 	}

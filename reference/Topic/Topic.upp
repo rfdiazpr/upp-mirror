@@ -1,3 +1,5 @@
+description "Using TheIDE documentation editor (Topic++) to provide application help";
+
 uses
 	CtrlLib;
 
@@ -6,4 +8,3 @@ file
 
 mainconfig
 	"" = "GUI";
-

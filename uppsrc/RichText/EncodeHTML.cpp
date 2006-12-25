@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 String HtmlFontStyle(Font f, Font base)
 {
 	String style;
@@ -109,7 +111,8 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
               const VectorMap<String, String>& links,
               const VectorMap<String, String>& labels,
               const String& outdir, const String& namebase, Zoom z, int& im,
-              const VectorMap<String, String>& escape)
+              const VectorMap<String, String>& escape,
+              int imtolerance)
 {
 	String html;
 	for(int i = 0; i < text.GetPartCount(); i++)
@@ -165,7 +168,8 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 						if(c.vspan)
 							html << " rowspan=" << c.vspan + 1;
 						html << '>';
-						html << AsHtml(c.text, styles, css, links, labels, outdir, namebase, z, im, escape);
+						html << AsHtml(c.text, styles, css, links, labels, outdir, namebase, z,
+						               im, escape, imtolerance);
 						html << "</TD>\r\n";
 					}
 				}
@@ -218,6 +222,8 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 					String lname;
 					lname << "L$" << name;
 					Size sz = z * part.object.GetSize();
+					if(abs(100 * (psz.cx - sz.cx) / sz.cx) < imtolerance)
+						sz = psz;
 					ImageDraw w(sz);
 					part.object.Paint(w, sz);
 					PNGEncoder png;
@@ -319,10 +325,10 @@ String EncodeHtml(const RichText& text, Index<String>& css,
                   const VectorMap<String, String>& links,
                   const VectorMap<String, String>& labels,
                   const String& outdir, const String& namebase, Zoom z,
-                  const VectorMap<String, String>& escape)
+                  const VectorMap<String, String>& escape, int imt)
 {
 	int im = 0;
-	return AsHtml(text, text.GetStyles(), css, links, labels, outdir, namebase, z, im, escape);
+	return AsHtml(text, text.GetStyles(), css, links, labels, outdir, namebase, z, im, escape, imt);
 }
 
 String AsCss(Index<String>& ss)
@@ -334,3 +340,5 @@ String AsCss(Index<String>& ss)
 	}
 	return css;
 }
+
+END_UPP_NAMESPACE

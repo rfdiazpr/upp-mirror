@@ -1,5 +1,7 @@
 #include "RichEdit.h"
 
+NAMESPACE_UPP
+
 void RichEdit::CancelMode()
 {
 	tabmove.table = 0;
@@ -330,3 +332,5 @@ void RichEdit::LeftRepeat(Point p, dword flags)
 			MoveUpDown(1, true);
 	}
 }
+
+END_UPP_NAMESPACE

@@ -3,6 +3,8 @@
 
 #include <Core/Core.h>
 
+NAMESPACE_UPP
+
 #ifdef flagNOAPPSQL
 	#define NOAPPSQL
 	#define APPSQLCURSOR
@@ -12,8 +14,10 @@
 	#define APPSQLSESSION = SQL.GetSession()
 #endif
 
-#include <Sql/Sqlexp.h>
-#include <Sql/Sqls.h>
-#include <Sql/SqlSchema.h>
+#include "Sqlexp.h"
+#include "Sqls.h"
+#include "SqlSchema.h"
+
+END_UPP_NAMESPACE
 
 #endif

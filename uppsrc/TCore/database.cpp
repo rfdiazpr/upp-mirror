@@ -1,6 +1,8 @@
 #include "TCoreDb.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 static String Format(const Vector<Value>& values)
 {
 	String s;
@@ -1777,7 +1779,7 @@ DataSet& DataSet::Sort()
 {
 	for(const int *p = set.Begin(), *e = set.End(); ++p < e;)
 		if(p[-1] > p[0]) {
-			::Sort(set);
+			UPP::Sort(set);
 			break;
 		}
 	return *this;
@@ -2885,3 +2887,5 @@ bool DataBase::TryRemove(String n)
 	Remove(i);
 	return true;
 }
+
+END_UPP_NAMESPACE

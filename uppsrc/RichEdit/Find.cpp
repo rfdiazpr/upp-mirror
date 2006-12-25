@@ -1,5 +1,7 @@
 #include <RichEdit/RichEdit.h>
 
+NAMESPACE_UPP
+
 void RichEdit::FindReplaceAddHistory() {
 	if(!String(findreplace.find).IsEmpty())
 		findreplace.find.AddHistory();
@@ -102,7 +104,6 @@ void RichEdit::Find()
 		}
 		findreplace.SetRect(r);
 		if(!findreplace.IsOpen()) {
-			LOG("FIND OPEN");
 			findreplace.Open();
 		}
 		SetFocus();
@@ -187,3 +188,5 @@ void RichEdit::OpenFindReplace()
 		}
 	}
 }
+
+END_UPP_NAMESPACE

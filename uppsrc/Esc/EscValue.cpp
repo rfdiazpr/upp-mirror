@@ -1,5 +1,8 @@
 #include <Esc/Esc.h>
 
+
+NAMESPACE_UPP
+
 #define LTIMING(x)  // RTIMING(x)
 
 String EscTypeName(int sv_type)
@@ -114,7 +117,7 @@ unsigned EscValue::GetHashValue() const
 			hash = 1;
 			break;
 		case ESC_NUMBER:
-			hash = ::GetHashValue(number) | 0x80000;
+			hash = UPP::GetHashValue(number) | 0x80000;
 			break;
 		case ESC_ARRAY:
 			for(int i = 0; i < array->array.GetCount(); i++)
@@ -128,7 +131,7 @@ unsigned EscValue::GetHashValue() const
 			hash |= 0x8000000;
 			break;
 		case ESC_LAMBDA:
-			hash = ::GetHashValue(lambda->code) | 0x4000000;
+			hash = UPP::GetHashValue(lambda->code) | 0x4000000;
 			break;
 		}
 	}
@@ -311,3 +314,5 @@ bool IsTrue(const EscValue& a)
 		return a.GetNumber();
 	return a.GetCount();
 }
+
+END_UPP_NAMESPACE

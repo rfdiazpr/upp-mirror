@@ -1,5 +1,7 @@
 #include "CodeEditor.h"
 
+NAMESPACE_UPP
+
 Array<IdentPos> GetLineIdent(const char *line)
 {
 	Array<IdentPos> out;
@@ -198,3 +200,5 @@ bool CodeEditor::FindLangString(bool back)
 	}
 	return false;
 }
+
+END_UPP_NAMESPACE

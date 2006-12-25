@@ -1,13 +1,15 @@
 #include <Core/Core.h>
 #pragma BLITZ_APPROVE
 
-#ifdef UPP_HEAP
-
 #ifdef COMPILER_MSC
 #include <malloc.h>
 #else
 #include <stdlib.h>
 #endif
+
+NAMESPACE_UPP
+
+#ifdef UPP_HEAP
 
 //#define _DEBUG
 
@@ -220,7 +222,7 @@ void HeapPanic(const char *text, void *pos, int size)
 {
 	RLOG("\n\n" << text << "\n");
 	char h[200];
-	sprintf(h, "MemoryWatchFree(0x%p);\n", pos);
+	sprintf(h, "MemoryWatchFree(%p);\n", pos);
 	RLOG(h);
 	HexDump(VppLog(), pos, size, 64);
 	Panic(text);
@@ -726,6 +728,7 @@ void MemoryProbeRaw(const char *name, dword flags)
 	int full = 0;
 	int mixed = 0;
 	int frag = 0;
+	int smallsz = 0;
 	if(flags & MEMORY_PROBE_FULL)
 		RLOG("Full pages");
 	for(i = 0; i < MB_MAP_SIZE; i++)
@@ -736,6 +739,7 @@ void MemoryProbeRaw(const char *name, dword flags)
 					if(flags & MEMORY_PROBE_FULL)
 						RLOG(Dump(page));
 					full++;
+					smallsz += 4096;
 				}
 			}
 	if(flags & MEMORY_PROBE_FULL)
@@ -765,6 +769,7 @@ void MemoryProbeRaw(const char *name, dword flags)
 						RLOG(Dump(page));
 					mixed++;
 					frag += page->freecount * page->size;
+					smallsz += 4096 - page->freecount * page->size;
 				}
 			}
 	if(flags & MEMORY_PROBE_MIXED)
@@ -809,8 +814,10 @@ void MemoryProbeRaw(const char *name, dword flags)
 		RLOG("Fragmentation " << sDump(100 * frag / ((full + mixed) * 4096)) << " %");
 		RLOG("Large blocks " << sDump(large));
 		RLOG("Free large blocks");
+		RLOG("Used small memory " << sDump(smallsz));
 #ifdef PLATFORM_WIN32
 		RLOG("Used large memory " << sDump(lused));
+		RLOG("Total memory used " << sDump(lused + smallsz));
 		RLOG("Free large memory " << sDump(lfree));
 		RLOG("Total large memory " << sDump(lfree + lused));
 		RLOG("Large fragmentation " << sDump(100 * lfree / (lfree + lused)) << " %");
@@ -825,10 +832,12 @@ void MemoryProbeRaw(const char *name, dword flags)
 
 void MemoryProbe(const char *name, dword flags)
 {
-#ifdef _MULTITHREADED
-	CriticalSection::Lock __(sHeapLock);
-#endif
+//#ifdef _MULTITHREADED
+//	CriticalSection::Lock __(sHeapLock);
+//#endif
 	MemoryProbeRaw(name, flags);
 }
 
 #endif
+
+END_UPP_NAMESPACE

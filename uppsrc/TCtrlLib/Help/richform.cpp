@@ -3,6 +3,8 @@
 
 #include <TDraw/formula.h>
 
+NAMESPACE_UPP
+
 struct RichObjectTypeFormulaCls : public RichObjectType
 {
 	virtual String GetTypeName(const Value&) const;
@@ -100,9 +102,10 @@ void RichObjectTypeFormulaCls::Paint(const Value& data, Draw& w, Size sz) const
 	}
 }
 
+bool RunDlgFormula(String& text, Font& font, Color& color);
+
 void RichObjectTypeFormulaCls::DefaultAction(RichObject& ex) const
 {
-	bool RunDlgFormula(String& text, Font& font, Color& color);
 	static Data data;
 	data.text = Null;
 	RichObject obj = ex;
@@ -115,3 +118,5 @@ void RichObjectTypeFormulaCls::DefaultAction(RichObject& ex) const
 		ex = ro;
 	}
 }
+
+END_UPP_NAMESPACE

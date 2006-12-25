@@ -1,5 +1,7 @@
 #include "DocTypes.h"
 
+NAMESPACE_UPP
+
 int  QtfParser::GetNumber() {
 	int n = 0;
 	int sgn = 1;
@@ -376,3 +378,4 @@ void QtfParser::Init() {
 	ender = END;
 }
 
+END_UPP_NAMESPACE

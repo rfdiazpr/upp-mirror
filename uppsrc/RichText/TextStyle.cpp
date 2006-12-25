@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 const RichStyle& RichStyle::GetDefault()
 {
 	return Single<RichStyle>();
@@ -30,7 +32,7 @@ int FindStyleWithName(const RichStyles& style, const String& name)
 
 struct RichText::StyleChangeOp : RichTxt::ParaOp {
 	Uuid id, nid;
-	
+
 	virtual bool operator()(RichTxt::Para& p) {
 		if(p.styleid == id) {
 			p.styleid = nid;
@@ -94,7 +96,7 @@ void  RichText::RemoveStyle(const Uuid& id)
 struct RichText::MergeStylesOp : RichTxt::ParaOp {
 	RichText       *text;
 	const RichText *stxt;
-	
+
 	virtual bool operator()(RichTxt::Para& p) {
 		if(text->style.Find(p.styleid) < 0) {
 			RichStyle& s = text->style.GetAdd(p.styleid);
@@ -147,3 +149,5 @@ void  RichText::OverrideStyles(const RichStyles& ms, bool matchname, bool addmis
 
 	Update(op);
 }
+
+END_UPP_NAMESPACE

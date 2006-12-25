@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 DropChoice::DropChoice() {
 	always_drop = false;
 	drop.SetMonoImage(CtrlsImg::DA()).NoWantFocus();
@@ -132,3 +134,5 @@ DropChoice& DropChoice::AlwaysDrop(bool e)
 	drop.Enable(list.GetCount() || always_drop);
 	return *this;
 }
+
+END_UPP_NAMESPACE

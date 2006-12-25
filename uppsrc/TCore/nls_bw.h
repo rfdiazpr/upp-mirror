@@ -1,3 +1,5 @@
+NAMESPACE_UPP
+
 extern int         NlsDefaultCodePage;
 
 enum { CP_1250 = 100, CP_LATIN2 = 101 };
@@ -88,4 +90,4 @@ private:
 	const byte *cvt;
 };
 
-//////////////////////////////////////////////////////////////////////
+END_UPP_NAMESPACE

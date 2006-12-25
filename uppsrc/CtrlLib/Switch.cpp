@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 #define LDUMP(x) // DUMP(x)
 
 Switch& Switch::Set(int i, const Value& val) {
@@ -310,3 +312,5 @@ Switch::Switch() {
 }
 
 Switch::~Switch() {}
+
+END_UPP_NAMESPACE

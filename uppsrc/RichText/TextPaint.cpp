@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 RichContext RichText::Context(const Rect& page) const
 {
 	RichContext c(style);
@@ -177,3 +179,5 @@ void RichText::Paint(Draw& w, int x, int y, int cx) const
 {
 	Paint(Zoom(1, 1), w, x, y, cx);
 }
+
+END_UPP_NAMESPACE

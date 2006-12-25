@@ -2,14 +2,16 @@
 #pragma hdrstop
 #pragma BLITZ_APPROVE
 
+#include <DocTypes/DocTypes.h>
+
+NAMESPACE_UPP
+
 #define LAYOUTFILE <TCtrlLib/Help/DlgHelpView.lay>
 #include <CtrlCore/lay.h>
 
 #define IMAGEFILE  <TCtrlLib/Help/DlgHelpView.iml>
 #define IMAGECLASS DlgHelpViewImg
 #include           <Draw/iml.h>
-
-#include <DocTypes/DocTypes.h>
 
 class ReportPageDraw : public PageDraw
 {
@@ -805,3 +807,5 @@ void DlgHelpLang::OnLangFileBrowse()
 		lang_file_browse.Action();
 	}
 }
+
+END_UPP_NAMESPACE

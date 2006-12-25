@@ -112,10 +112,6 @@
 	#endif
 #endif
 
-
-
-void RegisterTopic__(const char *topicfile, const char *topic, const char *title, const byte *data, int len);
-
 #define TOPIC(id)       { const char *topic = id;
 #define TITLE(x)          const char *title = x;
 #define COMPRESSED        static const byte data[] = {

@@ -1,5 +1,7 @@
 #include "Core.h"
 
+NAMESPACE_UPP
+
 #ifdef _MULTITHREADED
 
 #if defined(_DEBUG) && defined(PLATFORM_WIN32)
@@ -44,3 +46,5 @@ void StaticCriticalSection::Initialize()
 		section = new(buffer) CriticalSection;
 }
 #endif
+
+END_UPP_NAMESPACE

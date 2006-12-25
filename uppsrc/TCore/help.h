@@ -1,3 +1,5 @@
+NAMESPACE_UPP
+
 class HelpInit
 {
 public:
@@ -133,3 +135,5 @@ RegisterHelpTopicInfo(ASSTRING(cls), __FILE__, callback(&COMBINE(cls, HelpTitleP
 
 #define HELP_TEXT(text) << text
 #define HELP_END );
+
+END_UPP_NAMESPACE

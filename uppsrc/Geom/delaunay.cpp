@@ -1,6 +1,8 @@
 #include "Geom.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 #define DELDUMP
 
 #ifdef DELDUMP
@@ -234,3 +236,5 @@ void Delaunay::AddHull(int i)
 		LINK(xf, 1, xl, 2);
 	}
 }
+
+END_UPP_NAMESPACE

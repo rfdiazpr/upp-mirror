@@ -1,9 +1,11 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct MyAppWindow : TopWindow {
 	Point  p;
 	String text;
-	
+
 	virtual void LeftDown(Point pos, dword flags) {
 		p = pos;
 		Refresh();

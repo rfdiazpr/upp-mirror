@@ -1,6 +1,8 @@
 #include <TCtrlLib/Help/TCtrlLibHelp.h>
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 enum
@@ -867,7 +869,7 @@ const DocType *DocType::GetDocType(const char *filename)
 {
 	if(!filename || !*filename)
 		return NULL;
-	String fn = ::GetFileName(filename);
+	String fn = UPP::GetFileName(filename);
 	for(const DocType *const *p = doc_types.Begin(), *const *e = doc_types.End(); p < e; p++)
 		if(FindMultiTemplate((*p) -> GetExt(), fn))
 			return *p;
@@ -1319,7 +1321,7 @@ void DocCtrl::OnWindowClose()
 
 void DocCtrl::SetActive(bool kill_init)
 {
-	LOG("DocCtrl::SetActive in " << ::Name(this));
+	LOG("DocCtrl::SetActive in " << UPP::Name(this));
 
 	if(!IsEnabled())
 		return;
@@ -1437,3 +1439,5 @@ DocCtrl *DocPokus::CreateDoc()
 	return new DocPokus;
 }
 #endif
+
+END_UPP_NAMESPACE

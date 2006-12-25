@@ -1,5 +1,7 @@
 #include <Core/Core.h>
 
+using namespace Upp;
+
 VectorMap<String, double> var;
 
 double Exp(CParser& p);

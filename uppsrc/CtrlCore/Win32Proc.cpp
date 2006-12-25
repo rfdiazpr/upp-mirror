@@ -1,10 +1,14 @@
 #include "CtrlCore.h"
 
+#ifdef PLATFORM_WIN32
+#include <winnls.h>
+#endif
+
+NAMESPACE_UPP
+
 #define LLOG(x)  // LOG(x)
 
 #ifdef PLATFORM_WIN32
-
-#include <winnls.h>
 
 dword Ctrl::KEYtoK(dword chr) {
 	if(chr == VK_TAB)
@@ -62,6 +66,8 @@ void  SetWinceMouse(HWND hwnd, LPARAM lparam) {}
 #endif
 
 static bool sPainting;
+
+bool PassWindowsKey(int wParam);
 
 LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 	ASSERT(!sPainting); // WindowProc invoked while in Paint routine
@@ -253,8 +259,8 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 					keycode = wParam;
 				else {
 					char b[20];
-					GetLocaleInfo(MAKELCID(LOWORD(GetKeyboardLayout(0)), SORT_DEFAULT),
-					              LOCALE_IDEFAULTANSICODEPAGE, b, 20);
+					::GetLocaleInfo(MAKELCID(LOWORD(GetKeyboardLayout(0)), SORT_DEFAULT),
+					                LOCALE_IDEFAULTANSICODEPAGE, b, 20);
 					int codepage = atoi(b);
 					if(codepage >= 1250 && codepage <= 1258)
 						keycode = ToUnicode(wParam, codepage - 1250 + CHARSET_WIN1250);
@@ -270,7 +276,6 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 				if(_this) PostInput();
 			}
 //			LOG("key processed = " << b);
-			bool PassWindowsKey(int wParam);
 			if(b || (message == WM_SYSKEYDOWN || message == WM_SYSKEYUP)
 			&& wParam != VK_F4 && !PassWindowsKey(wParam)) // 17.11.2003 Mirek -> invoke system menu
 				return 0L;
@@ -291,7 +296,7 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 		if(HasChildDeep(mouseCtrl) || this == ~mouseCtrl) mouseCtrl = NULL;
 		if(HasChildDeep(focusCtrl) || this == ~focusCtrl) focusCtrl = NULL;
 		if(HasChildDeep(focusCtrlWnd) || this == ~focusCtrlWnd) {
-			RLOG("WM_NCDESTROY: clearing focusCtrlWnd = " << ::Name(focusCtrlWnd));
+			LLOG("WM_NCDESTROY: clearing focusCtrlWnd = " << ::Name(focusCtrlWnd));
 			focusCtrlWnd = NULL;
 			focusCtrl = NULL;
 		}
@@ -438,3 +443,5 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 void Ctrl::PreDestroy() {}
 
 #endif
+
+END_UPP_NAMESPACE

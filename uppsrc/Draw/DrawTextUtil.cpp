@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 void DrawTextEllipsis(Draw& w, int x, int y, int cx, const wchar *text, const char *ellipsis,
 				      Font font, Color ink, int n)
 {
@@ -117,3 +119,5 @@ void DrawTLText(Draw& draw, int x, int y, int cx, const wchar *text,
 		if(*s++ == '\0') break;
 	}
 }
+
+END_UPP_NAMESPACE

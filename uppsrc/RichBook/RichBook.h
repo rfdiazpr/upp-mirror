@@ -3,6 +3,8 @@
 
 #include <RichText/RichText.h>
 
+NAMESPACE_UPP
+
 RichPara::FieldType& FieldTypeVar();
 Id                   FieldTypeVarID();
 
@@ -126,5 +128,7 @@ void CreateDefaultRTF();
 void CreateDefaultHTML();
 
 void HelpBookMenu(Bar& bar);
+
+END_UPP_NAMESPACE
 
 #endif

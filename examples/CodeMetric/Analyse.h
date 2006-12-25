@@ -3,6 +3,8 @@
 
 #include <CppBase/CppBase.h>
 
+using namespace Upp;
+
 struct CodeMetric
 {
 public:

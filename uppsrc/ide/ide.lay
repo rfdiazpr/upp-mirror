@@ -335,12 +335,15 @@ LAYOUT(AddLangLayout, 148, 68)
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).LeftPosZ(76, 64).TopPosZ(36, 24))
 END_LAYOUT
 
-LAYOUT(XInstallLayout, 336, 112)
+LAYOUT(XInstallLayout, 336, 164)
 	ITEM(Option, uppsrc, SetLabel(t_("Create user copy of uppsrc package (Ultimate++)")).LeftPosZ(8, 320).TopPosZ(8, 17))
 	ITEM(Option, reference, SetLabel(t_("Create user copy of reference package (reference examples)")).LeftPosZ(8, 320).TopPosZ(28, 17))
+	ITEM(Option, tutorial, SetLabel(t_("Create user copy of tutorials package")).LeftPosZ(8, 320).TopPosZ(68, 17))
 	ITEM(Option, examples, SetLabel(t_("Create user copy of examples package")).LeftPosZ(8, 320).TopPosZ(48, 17))
-	ITEM(Button, ok, SetLabel(t_("OK")).LeftPosZ(196, 64).TopPosZ(80, 24))
-	ITEM(Button, cancel, SetLabel(t_("Cancel")).LeftPosZ(264, 64).TopPosZ(80, 24))
+	ITEM(Button, ok, SetLabel(t_("OK")).LeftPosZ(196, 64).TopPosZ(128, 24))
+	ITEM(Button, cancel, SetLabel(t_("Cancel")).LeftPosZ(264, 64).TopPosZ(128, 24))
+	ITEM(EditField, path, LeftPosZ(84, 244).TopPosZ(96, 17))
+	ITEM(Label, out, SetLabel(t_("Output Folder:")).LeftPosZ(8, 76).TopPosZ(96, 17))
 END_LAYOUT
 
 LAYOUT(StatLayout, 732, 552)
@@ -411,7 +414,7 @@ LAYOUT(SetupEditorLayout, 488, 280)
 	ITEM(Option, filetabs, SetLabel(t_("File tabs")).LeftPosZ(12, 152).TopPosZ(216, 18))
 	ITEM(Switch, insert_include, SetLabel(t_("No #include in new souces\n#include first\n#include previous")).LeftPosZ(316, 156).TopPosZ(32, 56))
 	ITEM(Option, header_guards, SetLabel(t_("Insert guards to new headers")).LeftPosZ(316, 164).TopPosZ(12, 15))
-	ITEM(Option, auto_enclose, SetLabel(t_("[ { ( \" / enclose selection")).LeftPosZ(12, 168).TopPosZ(236, 15))
+	ITEM(Option, auto_enclose, SetLabel(t_("[ { ( \" / * enclose selection")).LeftPosZ(12, 168).TopPosZ(236, 15))
 END_LAYOUT
 
 LAYOUT(SetupIdeLayout, 512, 248)

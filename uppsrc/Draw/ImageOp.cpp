@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 Image CreateImage(Size sz, Color color)
 {
 	ImageBuffer ib(sz);
@@ -446,3 +448,5 @@ Image  RotateAntiClockwise(const Image& img)
 			ib[x][y] = img[y][sz.cx - x - 1];
 	return ib;
 }
+
+END_UPP_NAMESPACE

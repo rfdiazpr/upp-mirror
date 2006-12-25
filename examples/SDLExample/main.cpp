@@ -1,5 +1,7 @@
 #include <Core/Core.h>
 
+using namespace Upp;
+
 #ifdef PLATFORM_WIN32
 #include <SDL.h>
 #else

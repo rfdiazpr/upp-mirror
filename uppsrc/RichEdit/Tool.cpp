@@ -1,5 +1,7 @@
 #include "RichEdit.h"
 
+NAMESPACE_UPP
+
 void RichEdit::StyleTool(Bar& bar, int width)
 {
 	bar.Add(!IsReadOnly(), style, width);
@@ -421,3 +423,5 @@ void RichEdit::DefaultBar(Bar& bar, bool extended)
 		HyperlinkTool(bar, INT_MAX);
 	}
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct Frame1 : CtrlFrame {
 	virtual void FrameLayout(Rect& r) {
 		r.left += 20;
@@ -31,13 +33,13 @@ struct Frame2 : Frame1 {
 	virtual void FrameRemove() {
 		x.Remove();
 	}
-	
+
 	Frame2() {
 		x.LeftPos(0, 16).TopPos(0, 16).NoWantFocus();
 	}
 };
 
-struct CtrlSelfFrame : Ctrl, CtrlFrame 
+struct CtrlSelfFrame : Ctrl, CtrlFrame
 {
     virtual void FrameLayout(Rect &r) {
         r.left += 20;
@@ -46,7 +48,7 @@ struct CtrlSelfFrame : Ctrl, CtrlFrame
     virtual void FrameAddSize(Size &sz) {
         sz += Size(20, 20);
     }
-    virtual void FramePaint(Draw &w, const Rect &r) {        
+    virtual void FramePaint(Draw &w, const Rect &r) {
         w.DrawRect(r.left, r.top, r.Width(), 20, SGreen);
         w.DrawRect(r.left, r.top + 20, 20, r.Height() - 20, SBlue);
     }
@@ -67,24 +69,23 @@ GUI_APP_MAIN
 	win.Add(ctrl.SizePos());
 	win.SetRect(0, 0, 100, 100);
 	win.Run();
-	
+
 	ctrl.SetFrame(InsetFrame());
 	win.Run();
-	
+
 	ctrl.AddFrame(BlackFrame());
 	win.Run();
 
 	Frame1 frame1;
 	ctrl.InsertFrame(0, frame1);
 	win.Run();
-	
+
 	Frame2 frame2;
 	ctrl.AddFrame(frame2);
 	win.Run();
-	
+
 	ctrl.Remove();
 	CtrlSelfFrame csf;
 	win.Add(csf.SizePos());
 	win.Run();
 }
-

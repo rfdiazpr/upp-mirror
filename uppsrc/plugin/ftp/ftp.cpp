@@ -1,7 +1,7 @@
 #include "ftp.h"
-#pragma hdrstop
-
 #include "lib/ftplib.h"
+
+NAMESPACE_UPP
 
 #define LLOGBLOCK(x)  // LOGBLOCK(x)
 #define LLOG(x)       // LOG(x)
@@ -260,3 +260,5 @@ String FtpClientGet(String url, String *error)
 	}
 	return data;
 }
+
+END_UPP_NAMESPACE

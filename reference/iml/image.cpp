@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 #define  IMAGEFILE  <iml/image.iml>
 #define  IMAGECLASS MyImg
 #include <Draw/iml.h>

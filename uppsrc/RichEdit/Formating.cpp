@@ -1,5 +1,7 @@
 #include "RichEdit.h"
 
+NAMESPACE_UPP
+
 void RichEdit::ApplyFormat(dword charvalid, dword paravalid)
 {
 	if(IsReadOnly())
@@ -621,3 +623,5 @@ void RichEdit::AdjustObjectSize()
 		}
 	}
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include "TCtrlLib.h"
 
+NAMESPACE_UPP
+
 RulerCtrl::RulerCtrl()
 {
 	scale = 1;
@@ -359,3 +361,5 @@ int RulerCtrl::GetStdWidth()
 {
 	return 22;
 }
+
+END_UPP_NAMESPACE

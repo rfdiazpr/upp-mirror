@@ -14,6 +14,8 @@ typedef byte text;
 };
 */
 
+NAMESPACE_UPP
+
 #define DLLFILENAME "ociw32.dll"
 #define DLIMODULE   OCI7
 #define DLIHEADER   <Oracle/Oci7.dli>
@@ -467,9 +469,20 @@ int OCI7Connection::GetRowsProcessed() const {
 
 bool OCI7Connection::Fetch() {
 	ASSERT(!parse);
+//	DUMP(parse);
 	if(parse || eof) return false;
 //	if(!dynamic_param.IsEmpty()) // dynamic pseudo-fetch
 //		return (dynamic_pos < dynamic_rows && ++dynamic_pos < dynamic_rows);
+	if(frows == 1) {
+		fi = 0;
+		if(OCI7().ofetch(&cda)) {
+			if(cda.rc != 1403)
+				SetError();
+			return false;
+		}
+		fetched++;
+		return true;
+	}
 	if(fi < 0 || fetched >= cda.rpc) {
 		bool tt = session->IsTraceTime();
 		int fstart = tt ? msecs() : 0;
@@ -487,8 +500,10 @@ bool OCI7Connection::Fetch() {
 					fetchtime / max<double>(added, 1),
 					added * 1000.0 / max<double>(fetchtime, 1));
 		}
-		if(fetched >= cda.rpc)
+		if(fetched >= cda.rpc) {
+			eof = true;
 			return false;
+		}
 		fi = 0;
 	}
 	else
@@ -603,53 +618,73 @@ void  OCI7Connection::GetColumn(int i, Ref f) const {
 //		return;
 //	}
 	switch(f.GetType()) {
-	case STRING_V:
-		GetColumn(i, RefString(f));
-		break;
-	case INT_V:
-		GetColumn(i, RefInt(f));
-		break;
-	case DOUBLE_V:
-		GetColumn(i, RefDouble(f));
-		break;
-	case DATE_V:
-		GetColumn(i, RefDate(f));
-		break;
-	case TIME_V:
-		GetColumn(i, RefTime(f));
-		break;
-	case VALUE_V:
-		{
-			int n;
-			double d;
-			Time m;
+		case STRING_V: {
 			String s;
-			switch(column[i].type) {
-			case SQLT_STR:
-			case SQLT_LBI:
-			case SQLT_LNG:
-				GetColumn(i, s);
-				f = Value(s);
-				break;
-			case SQLT_INT:
-				GetColumn(i, n);
-				f = Value(n);
-				break;
-			case SQLT_FLT:
-				GetColumn(i, d);
-				f = Value(d);
-				break;
-			case SQLT_DAT:
-				GetColumn(i, m);
-				f = Value(m);
-				break;
-			default:
-				NEVER();
-			}
+			GetColumn(i, s);
+			f.SetValue(s);
+			break;
 		}
-		break;
-	default:
-		NEVER();
+		case INT_V: {
+			int d;
+			GetColumn(i, d);
+			f.SetValue(d);
+			break;
+		}
+		case DOUBLE_V: {
+			double d;
+			GetColumn(i, d);
+			f.SetValue(d);
+			break;
+		}
+		case DATE_V: {
+			Date d;
+			GetColumn(i, d);
+			f.SetValue(d);
+			break;
+		}
+		case TIME_V: {
+			Time d;
+			GetColumn(i, d);
+			f.SetValue(d);
+			break;
+		}
+		case VALUE_V: {
+			switch(column[i].type) {
+				case SQLT_STR:
+				case SQLT_LBI:
+				case SQLT_LNG: {
+					String s;
+					GetColumn(i, s);
+					f = Value(s);
+					break;
+				}
+				case SQLT_INT: {
+					int n;
+					GetColumn(i, n);
+					f = Value(n);
+					break;
+				}
+				case SQLT_FLT: {
+					double d;
+					GetColumn(i, d);
+					f = Value(d);
+					break;
+				}
+				case SQLT_DAT: {
+					Time m;
+					GetColumn(i, m);
+					f = Value(m);
+					break;
+				}
+				default: {
+					NEVER();
+				}
+			}
+			break;
+		}
+		default: {
+			NEVER();
+		}
 	}
 }
 
@@ -928,3 +963,5 @@ Vector<String> Oracle7::EnumReservedWords()
 {
 	return OracleSchemaReservedWords();
 }
+
+END_UPP_NAMESPACE

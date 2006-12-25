@@ -1,5 +1,7 @@
 #include <Core/Core.h>
 
+using namespace Upp;
+
 template <class T>
 void Print(const T& a)
 {

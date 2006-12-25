@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 RichTable::Format::Format()
 {
 	grid = 4;
@@ -364,3 +366,5 @@ void RichTable::ApplyZoom(Zoom z, const RichStyles& ostyle, const RichStyles& zs
 				c.text.ApplyZoom(z, ostyle, zstyle);
 			}
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,6 @@
 #include "RichEdit.h"
-#pragma hdrstop
+
+NAMESPACE_UPP
 
 bool FontHeight::Key(dword key, int count)
 {
@@ -336,7 +337,7 @@ bool RichEdit::Print()
 {
 	text.SetFooter(footer);
 	text.PrintNoLinks(nolinks);
-	return ::Print(text, pagesz, cursorc.page);
+	return UPP::Print(text, pagesz, cursorc.page);
 }
 
 struct DisplayFont : public Display {
@@ -687,3 +688,5 @@ RichEditWithToolBar::RichEditWithToolBar()
 	WhenRefreshBar = callback(this, &RichEditWithToolBar::RefreshBar);
 	extended = true;
 }
+
+END_UPP_NAMESPACE

@@ -1,3 +1,5 @@
+NAMESPACE_UPP
+
 /* TRC 2/12/2003: obsoleted by Fidler's callback1
 template <class OBJECT_, class METHOD_, class A, class T>
 struct Callback1MethodActionArg : public Callback1Action<A> {
@@ -403,10 +405,10 @@ public:
 };
 
 template <class T>
-class RefCon;
+class UPP::RefCon;
 
 template <class T>
-class RefPtr;
+class UPP::RefPtr;
 
 class WeakRef;
 
@@ -414,7 +416,7 @@ template <class T>
 class WeakCon : public WeakBase
 {
 	friend class WeakRef;
-	friend class RefCon<T>;
+	friend class UPP::RefCon<T>;
 
 public:
 	WeakCon() : ptr(0) {}
@@ -439,7 +441,7 @@ public:
 
 	friend bool     operator == (const WeakCon<T>& a, const WeakCon<T>& b) { return a.ptr == b.ptr; }
 	friend bool     operator != (const WeakCon<T>& a, const WeakCon<T>& b) { return a.ptr != b.ptr; }
-	friend unsigned GetHashValue(const WeakCon<T>& a)                      { return ::GetHashValue(a.ptr); }
+	friend unsigned GetHashValue(const WeakCon<T>& a)                      { return UPP::GetHashValue(a.ptr); }
 
 protected:
 	T              *ptr;
@@ -582,3 +584,5 @@ template <class T>
 class VirtualValueArray : public VirtualStdSegtorArray<Value, T>
 {
 };
+
+END_UPP_NAMESPACE

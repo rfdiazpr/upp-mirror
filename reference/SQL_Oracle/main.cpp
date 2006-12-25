@@ -1,5 +1,7 @@
 #include <Oracle/Oracle7.h>
 
+using namespace Upp;
+
 CONSOLE_APP_MAIN
 {
 	Oracle7 oracle;
@@ -7,5 +9,5 @@ CONSOLE_APP_MAIN
 	Sql sql(oracle);
 	sql.Execute("select ENAME, JOB from EMP");
 	while(sql.Fetch())
-		Cout() << String(sql[0]) << ": " << String(sql[1]);
+		Cout() << sql[0] << ": " << sql[1];
 }

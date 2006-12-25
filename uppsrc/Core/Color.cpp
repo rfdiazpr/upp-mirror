@@ -1,5 +1,7 @@
 #include "Core.h"
 
+NAMESPACE_UPP
+
 void RGBtoHSV(double r, double g, double b, double& h, double& s, double& v)
 {
 	double delta;
@@ -111,3 +113,5 @@ Color Blend(Color c1, Color c2, int alpha)
 	             min(((a * (c2.GetG() - c1.GetG())) >> 8) + c1.GetG(), 255),
 	             min(((a * (c2.GetB() - c1.GetB())) >> 8) + c1.GetB(), 255));
 }
+
+END_UPP_NAMESPACE

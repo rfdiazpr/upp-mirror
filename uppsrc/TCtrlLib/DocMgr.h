@@ -1,3 +1,5 @@
+NAMESPACE_UPP
+
 #define LAYOUTFILE <TCtrlLib/DocMgr.lay>
 #include <CtrlCore/lay.h>
 
@@ -391,3 +393,5 @@ public:
 	static DocCtrl *CreateDoc();
 };
 #endif
+
+END_UPP_NAMESPACE

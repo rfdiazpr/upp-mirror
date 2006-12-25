@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+NAMESPACE_UPP
+
 #ifdef PLATFORM_XFT
 #define FNTSIZE 12
 #else
@@ -141,7 +143,7 @@ void FileSel::Load() {
 		if(q >= 0 && q < mask.GetCount())
 			emask = mask[q];
 	}
-	if(!::Load(list, d, emask, mode == SELECTDIR, WhenIcon, *filesystem)) {
+	if(!UPP::Load(list, d, emask, mode == SELECTDIR, WhenIcon, *filesystem)) {
 		Exclamation(t_("[A3* Unable to read the directory !]&&") + DeQtf((String)~dir) + "&&" +
 		            GetErrorMessage(GetLastError()));
 		if(!basedir.IsEmpty() && String(~dir).IsEmpty()) {
@@ -458,7 +460,7 @@ void FileSel::PlusMinus(const char *title, bool sel) {
 	if(EditText(pattern, title, t_("Mask")) && !pattern.IsEmpty())
 		for(int i = 0; i < list.GetCount(); i++)
 			if(!list.Get(i).isdir)
-				if(::PatternMatchMulti(pattern, list.Get(i).name))
+				if(PatternMatchMulti(pattern, list.Get(i).name))
 					list.SelectOne(i, sel);
 }
 
@@ -922,3 +924,5 @@ FileSel::FileSel() {
 }
 
 FileSel::~FileSel() {}
+
+END_UPP_NAMESPACE

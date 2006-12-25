@@ -138,6 +138,7 @@ public:
 	const XmlNode& operator[](int i) const                    { return node[i]; }
 	const XmlNode& operator[](const char *tag) const;
 	XmlNode&       Add()                                      { return node.Add(); }
+	void           AddText(const String& txt)                 { Add().CreateText(txt); }
 	int            FindTag(const char *tag) const;
 	XmlNode&       Add(const char *tag);
 	XmlNode&       GetAdd(const char *tag);

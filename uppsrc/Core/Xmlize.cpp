@@ -1,5 +1,7 @@
 #include "Core.h"
 
+NAMESPACE_UPP
+
 template<>
 void Xmlize(XmlIO xml, String& var)
 {
@@ -183,3 +185,5 @@ bool LoadFromXMLFile(Callback1<XmlIO> xmlize, const char *file)
 {
 	return LoadFromXML(xmlize, LoadFile(sXMLFile(file)));
 }
+
+END_UPP_NAMESPACE

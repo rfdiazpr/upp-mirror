@@ -1,5 +1,7 @@
 #include "Esc.h"
 
+NAMESPACE_UPP
+
 #define LTIMING(x) // RTIMING(x)
 
 Vector<EscValue>& EscValue::CloneArray()
@@ -118,3 +120,5 @@ void EscValue::InitString(const WString& s)
 		a[i] = s[i];
 	total++;
 }
+
+END_UPP_NAMESPACE

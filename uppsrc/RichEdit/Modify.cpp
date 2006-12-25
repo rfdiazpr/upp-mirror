@@ -1,5 +1,7 @@
 #include "RichEdit.h"
 
+NAMESPACE_UPP
+
 bool RichEdit::InvalidRange(int l, int h)
 {
 	return !InSameTxt(text.GetRichPos(min(l, h)), text.GetRichPos(max(l, h)));
@@ -388,3 +390,5 @@ void RichEdit::InsertLine()
 	ApplyFormat(0, RichText::NEWPAGE|RichText::LABEL);
 	objectpos = -1;
 }
+
+END_UPP_NAMESPACE

@@ -1,7 +1,8 @@
 #include "CtrlCore.h"
-#pragma hdrstop
 
-#define LLOG(x)  // LOG(x)
+NAMESPACE_UPP
+
+#define LLOG(x)   // DLOG(x)
 
 #ifdef PLATFORM_X11
 
@@ -67,7 +68,7 @@ void TopWindow::DefSyncTitle()
 		XChangeProperty(Xdisplay, w, XAtom("_NET_WM_NAME"), XAtom("UTF8_STRING"),
 		                8, PropModeReplace,
 		                (const unsigned char *)~utf8title, utf8title.GetLength());
-		XChangeProperty(Xdisplay, w, XAtom("_NET_WM_ICON_NAME"), XAtom("XA_UTF8_STRING"),
+		XChangeProperty(Xdisplay, w, XAtom("_NET_WM_ICON_NAME"), XAtom("UTF8_STRING"),
 		                8, PropModeReplace,
 		                (const unsigned char *)~utf8title, utf8title.GetLength());
 	}
@@ -168,43 +169,49 @@ void TopWindow::Open(Ctrl *owner)
 	if(dokeys && (!GUI_AKD_Conservative() || GetAccessKeysDeep() <= 1))
 		DistributeAccessKeys();
 	UsrLogT(3, "OPEN " + Desc(this));
-	LLOG("OPEN " << Name() << " owner: " << ::Name(owner));
+	LLOG("OPEN " << Name() << " owner: " << UPP::Name(owner));
 	IgnoreMouseUp();
-	CenterRect(owner);
-	LLOG("Open NextRequest " << NextRequest(Xdisplay));
-	Create(owner, false, false);
-	xminsize.cx = xmaxsize.cx = Null;
-	title2.Clear();
-	LLOG("SyncCaption");
-	SyncCaption();
-	LLOG("SyncSizeHints");
-	size_hints->flags = 0;
-	SyncSizeHints();
-	Rect r = GetRect();
-	size_hints->x = r.left;
-	size_hints->y = r.top;
-	size_hints->width = r.Width();
-	size_hints->height = r.Height();
-	size_hints->win_gravity = StaticGravity;
-	size_hints->flags |= PPosition|PSize|PWinGravity;
-	if(owner) {
-		ASSERT(owner->IsOpen());
-		LLOG("XSetTransientForHint");
-		XSetTransientForHint(Xdisplay, GetWindow(), owner->GetWindow());
+	if(fullscreen) {
+		SetRect(0, 0, Xwidth, Xheight);
+		PopUp(owner, false, false);
 	}
-	LLOG("XSetWMNormalHints");
-	XSetWMNormalHints(Xdisplay, GetWindow(), size_hints);
-	Atom protocols[2];
-	protocols[0] = XAtom("WM_DELETE_WINDOW");
-	protocols[1] = XAtom("WM_TAKE_FOCUS");
-	LLOG("XSetWMProtocols");
-	XSetWMProtocols(Xdisplay, GetWindow(), protocols, 2);
-	String x = GetExeTitle().ToString();
-	const char *progname = ~x;
-	class_hint->res_name = (char *)progname;
-	class_hint->res_class = (char *)progname;
-	XSetClassHint(Xdisplay, GetWindow(), class_hint);
-	LLOG("WndShow(" << visible << ")");
+	else {
+		CenterRect(owner);
+		LLOG("Open NextRequest " << NextRequest(Xdisplay));
+		Create(owner, false, false);
+		xminsize.cx = xmaxsize.cx = Null;
+		title2.Clear();
+		LLOG("SyncCaption");
+		SyncCaption();
+		LLOG("SyncSizeHints");
+		size_hints->flags = 0;
+		SyncSizeHints();
+		Rect r = GetRect();
+		size_hints->x = r.left;
+		size_hints->y = r.top;
+		size_hints->width = r.Width();
+		size_hints->height = r.Height();
+		size_hints->win_gravity = StaticGravity;
+		size_hints->flags |= PPosition|PSize|PWinGravity;
+		if(owner) {
+			ASSERT(owner->IsOpen());
+			LLOG("XSetTransientForHint");
+			XSetTransientForHint(Xdisplay, GetWindow(), owner->GetWindow());
+		}
+		LLOG("XSetWMNormalHints");
+		XSetWMNormalHints(Xdisplay, GetWindow(), size_hints);
+		Atom protocols[2];
+		protocols[0] = XAtom("WM_DELETE_WINDOW");
+		protocols[1] = XAtom("WM_TAKE_FOCUS");
+		LLOG("XSetWMProtocols");
+		XSetWMProtocols(Xdisplay, GetWindow(), protocols, 2);
+		String x = GetExeTitle().ToString();
+		const char *progname = ~x;
+		class_hint->res_name = (char *)progname;
+		class_hint->res_class = (char *)progname;
+		XSetClassHint(Xdisplay, GetWindow(), class_hint);
+		LLOG("WndShow(" << visible << ")");
+	}
 	WndShow(visible);
 	if(visible) {
 		XEvent e;
@@ -228,7 +235,10 @@ void TopWindow::Open(Ctrl *owner)
 	PlaceFocus();
 	StateH(OPEN);
 	Vector<int> fe = GetPropertyInts(top->window, XAtom("_NET_FRAME_EXTENTS"));
-	if(fe.GetCount() >= 4) {
+	if(fe.GetCount() >= 4 &&
+	   fe[0] >= 0 && fe[0] <= 16 && fe[1] >= 0 && fe[1] <= 16 && //fluxbox returns wrong numbers - quick&dirty workaround
+	   fe[2] >= 0 && fe[2] <= 64 && fe[3] >= 0 && fe[3] <= 48)
+	{
 		windowFrameMargin.left = max(windowFrameMargin.left, fe[0]);
 		windowFrameMargin.right = max(windowFrameMargin.right, fe[1]);
 		windowFrameMargin.top = max(windowFrameMargin.top, fe[2]);
@@ -275,3 +285,5 @@ bool TopWindow::IsTopMost() const
 }
 
 #endif
+
+END_UPP_NAMESPACE

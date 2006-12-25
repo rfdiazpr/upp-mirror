@@ -1,6 +1,8 @@
 #include "bmp.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 #include "bmphdr.h"
 
 bool LoadBMPHeader(Stream& stream, BMPHeader& header, bool file)
@@ -13,14 +15,14 @@ bool LoadBMPHeader(Stream& stream, BMPHeader& header, bool file)
 		BMP_FILEHEADER bmfh;
 		if(!stream.GetAll(&bmfh, sizeof(bmfh)))
 			return false;
-		bmfh.EndianSwap();
+		bmfh.SwapEndian();
 		if(bmfh.bfType != 'B' + 256 * 'M')
 			return false;
 	}
 	Zero(header);
 	if(!stream.GetAll(&header, sizeof(BMP_INFOHEADER)) || header.biSize < sizeof(BMP_INFOHEADER))
 		return false;
-	header.EndianSwap();
+	header.SwapEndian();
 	if(header.biBitCount != 1 && header.biBitCount != 4 && header.biBitCount != 8
 	&& header.biBitCount != 16 && header.biBitCount != 24 && header.biBitCount != 32)
 		return false;
@@ -282,3 +284,5 @@ const RasterFormat *BMPRaster::GetFormat()
 BMPRaster::~BMPRaster()
 {
 }
+
+END_UPP_NAMESPACE

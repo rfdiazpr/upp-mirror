@@ -7,6 +7,8 @@
 #include <utime.h>
 #endif//PLATFORM_POSIX
 
+NAMESPACE_UPP
+
 static int sDirSep(int c) {
 	return c == '/' || c == '\\' ? c : 0;
 }
@@ -187,9 +189,9 @@ int ComparePath(String fa, String fb) {
 #ifndef PLATFORM_WINCE
 String GetCurrentDirectory() {
 #if defined(PLATFORM_WIN32)
-	DWORD dwCount = GetCurrentDirectory(0, 0);
+	DWORD dwCount = ::GetCurrentDirectory(0, 0);
 	char h[1024];
-	GetCurrentDirectory(1024, h);
+	::GetCurrentDirectory(1024, h);
 	return FromSystemCharset(h);
 #elif defined(PLATFORM_POSIX)
 	char h[1024];
@@ -207,7 +209,7 @@ String GetCurrentDirectory() {
 String GetTempPath()
 {
 	char h[1024];
-	GetTempPath(1024, h);
+	::GetTempPath(1024, h);
 	return FromSystemCharset(h);
 }
 
@@ -858,7 +860,7 @@ Array<FileSystemInfo::FileInfo> FileSystemInfo::Find(String mask, int max_count)
 
 bool FileSystemInfo::CreateFolder(String path, String& error) const
 {
-	if(::DirectoryCreate(path))
+	if(UPP::DirectoryCreate(path))
 		return true;
 	error = GetErrorMessage(GetLastError());
 	return false;
@@ -873,3 +875,5 @@ bool FileSystemInfo::FolderExists(String path) const
 	Array<FileInfo> fi = Find(path, 1);
 	return !fi.IsEmpty() && fi[0].is_directory;
 }
+
+END_UPP_NAMESPACE

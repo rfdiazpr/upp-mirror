@@ -2,6 +2,8 @@
 #pragma hdrstop
 #pragma BLITZ_APPROVE
 
+NAMESPACE_UPP
+
 void UseCalcGuiType() {}
 
 RegisterCalcTypeName(Pointf,             t_("point"))
@@ -71,3 +73,5 @@ FDECLP0(rect,         NNNN,  &GroupGeom)
 FDECLP0(rect,         P,     &GroupGeom)
 FDECLP0(rect,         PP,    &GroupGeom)
 FDECLP0(text,         R,     &GroupString)
+
+END_UPP_NAMESPACE

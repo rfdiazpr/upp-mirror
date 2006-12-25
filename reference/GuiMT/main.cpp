@@ -1,5 +1,7 @@
 #include "CtrlLib/CtrlLib.h"
 
+using namespace Upp;
+
 #define LAYOUTFILE <GuiMT/Divisors.lay>
 #include <CtrlCore/lay.h>
 

@@ -58,10 +58,10 @@ public:
 	virtual void   Paint(Draw& w);
 
 protected:
-	class ::Color   color;
+	class Color    color;
 
 public:
-	StaticRect& Color(class ::Color _color);
+	StaticRect& Color(class Color _color);
 
 	StaticRect();
 	virtual ~StaticRect();

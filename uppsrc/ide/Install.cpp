@@ -1,4 +1,5 @@
 #include "ide.h"
+//#include "Install.h"
 
 #ifdef PLATFORM_WIN32
 
@@ -62,13 +63,17 @@ void Uninstall()
 		Exclamation("Uninstall failed to remove some files...&" + DeQtf(GetLastErrorMessage()));
 }
 
+#define Ptr Ptr_
+#define byte byte_
+
 #include <winnls.h>
 #include <winnetwk.h>
 
-#define Ptr Ptr_
 #include <wincon.h>
 #include <shlobj.h>
+
 #undef Ptr
+#undef byte
 
 bool CreateShellLink(const char *filepath, const char *linkpath, const char *desc, int icon)
 {
@@ -241,15 +246,45 @@ void ChkSupp(const char *s, String& dir)
 		dir = s;
 }
 
+struct XInstallDlg : public WithXInstallLayout<TopWindow> {
+
+private:
+
+	FrameRight<Button> pathbrowse;
+
+	void	FindInstFolder();
+
+public:
+
+	typedef XInstallDlg CLASSNAME;
+
+	XInstallDlg();
+
+};
+
+void XInstallDlg::FindInstFolder() {
+	FileSel *fs = &OutputFs();
+	fs->Set(path);
+	if(! fs->ExecuteSelectDir("Select output directory ..."))
+		return;
+	path <<= ~(*fs);
+}
+
+XInstallDlg::XInstallDlg() {
+	CtrlLayoutOKCancel(*this, "Ultimate++ user setup");
+	pathbrowse <<= THISBACK(FindInstFolder);
+	pathbrowse.SetMonoImage(CtrlImg::smallright()).NoWantFocus();
+	uppsrc = true;
+	reference = true;
+	examples = true;
+	tutorial = true;
+	path.AddFrame(pathbrowse);
+	path <<= AppendFileName(FromSystemCharset(getenv("HOME")), "upp");
+}
+
 bool Install()
 {
-	WithXInstallLayout<TopWindow> dlg;
-	CtrlLayoutOKCancel(dlg, "Ultimate++ user setup");
-	dlg.uppsrc = true;
-	dlg.reference = true;
-	dlg.examples = true;
-	if(dlg.Run() != IDOK)
-		return false;
+	XInstallDlg dlg;
 	String supp;
 	ChkSupp(GetHomeDirFile("upp"), supp);
 	ChkSupp("/usr/local/share/upp", supp);
@@ -264,23 +299,16 @@ bool Install()
 		return true;
 	}
 	Progress pi;
-#ifdef PLATFORM_FREEBSD
-	String upp = FromSystemCharset(getenv("UPP_DIR"));
-	if(IsNull(upp)) {
-	  upp = AppendFileName(FromSystemCharset(getenv("HOME")), "upp");
-	  if (DirectoryExists(upp)) {
-	    Exclamation("Personal Ultimate`+`+ directory not found. Please set variable $UPP`_DIR appropriately.");
-	    return false;
-	  }
-	} else {
-	  if (DirectoryExists(upp)) {
-	    Exclamation("Directory defined in variable $UPP`_DIR already exists. Please define another directory for Ultimate`+`+");
-	    return false;
-	  }
+	for (;;) {
+		if (dlg.Run() == IDOK) {
+			if (DirectoryExists((String)dlg.path)) {
+				int dlgres = PromptYesNoCancel("Directory exists, overwrite ?");
+				if (dlgres == -1 ) return false;
+				if (dlgres) break;
+			} else break;
+		} else return false;
 	}
-#else
-	String upp = GetHomeDirFile("upp");
-#endif
+	String upp(dlg.path);
 	String uppsrc;
 	String pp;
 	String out = AppendFileName(upp, "out");
@@ -315,6 +343,14 @@ bool Install()
 	else
 		u = AppendFileName(supp, "examples");
 	SaveFile(ConfigFile("examples.var"), "UPP = " + AsCString(u + ';' + uppsrc) + pp);
+	if(dlg.tutorial) {
+		if(!CopyFolder(pi, AppendFileName(upp, "tutorial"), AppendFileName(supp, "tutorial")))
+			return false;
+		u = AppendFileName(upp, "tutorial");
+	}
+	else
+		u = AppendFileName(supp, "tutorial");
+	SaveFile(ConfigFile("tutorial.var"), "UPP = " + AsCString(u + ';' + uppsrc) + pp);
 	SaveFile(ConfigFile("MyApps.var"), "UPP = " + AsCString(AppendFileName(upp, "MyApps;" + uppsrc)) + pp);
 	String bm = ConfigFile("GCC.bm");
 	if(IsNull(LoadFile(bm)))

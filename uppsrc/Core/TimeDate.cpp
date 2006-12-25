@@ -1,5 +1,7 @@
 #include "Core.h"
 
+NAMESPACE_UPP
+
 static int s_month[] = {
 	31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 };
@@ -394,3 +396,5 @@ Time GetSysTime() {
 Date GetSysDate() {
 	return GetSysTime();
 }
+
+END_UPP_NAMESPACE

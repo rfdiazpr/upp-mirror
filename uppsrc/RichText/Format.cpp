@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 void RichTxt::FormatInfo::Set(const RichPara::Format& fmt)
 {
 	(RichPara::Format&)*this = fmt;
@@ -193,3 +195,5 @@ void RichTxt::FormatInfo::ApplyTo(RichPara::Format& fmt) const
 	if(paravalid & SPACING)
 		fmt.linespacing = linespacing;
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include "Core.h"
 
+NAMESPACE_UPP
+
 int sMemDiagInitCount = 0;
 
 #if defined(_DEBUG) && defined(UPP_HEAP)
@@ -103,11 +105,27 @@ void MemoryFreeDebug(void *ptr)
 	DbgBlkLink *e = p->next;
 	if(p != e->prev) {
 		sHeapLock2.Leave();
-		HeapPanic("Heap is corrupted", p + 1, (uintptr_t)p->next - (uintptr_t)(p + 1));
+		char h[256];
+		sprintf(h, "Heap is corrupted p:%p e->prev:%p", p, e->prev);
+		HeapPanic(h, p + 1, (uintptr_t)p->next - (uintptr_t)(p + 1));
 	}
 	e->Unlink();
 	p->Unlink();
 	MemoryFree(p);
+}
+
+void MemoryCheckDebug()
+{
+	CriticalSection::Lock __(sHeapLock2);
+	DbgBlkLink *p = &dbg_live;
+	do {
+		if(p->prev->next != p || p->next->prev != p) {
+			sHeapLock2.Leave();
+			HeapPanic("HEAP CHECK: Heap is corrupted", p + 1, (uintptr_t)p->next - (uintptr_t)(p + 1));
+		}
+		p = p->next;
+	}
+	while(p != &dbg_live);
 }
 
 void MemoryDumpLeaks()
@@ -174,3 +192,5 @@ void MemoryInitDiagnostics()
 #endif
 
 #endif
+
+END_UPP_NAMESPACE

@@ -1,6 +1,9 @@
 #include "coff.h"
 #pragma hdrstop
 
+
+NAMESPACE_UPP
+
 #ifdef PLATFORM_WIN32
 
 #define MACHINE(mach) { ASSTRING(mach), COMBINE(COFF_IMAGE_FILE_MACHINE_, mach) },
@@ -65,3 +68,5 @@ String COFFSymbolName(const COFF_IMAGE_SYMBOL& sym, const char *strtbl)
 }
 
 #endif
+
+END_UPP_NAMESPACE

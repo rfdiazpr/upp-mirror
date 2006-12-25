@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 #ifdef PLATFORM_WIN32
 #ifndef PLATFORM_WINCE
 
@@ -264,3 +266,5 @@ WinMetaFileDraw::WinMetaFileDraw(int cx, int cy, const char *app, const char *na
 
 #endif
 #endif
+
+END_UPP_NAMESPACE

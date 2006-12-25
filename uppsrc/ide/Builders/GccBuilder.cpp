@@ -137,6 +137,13 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 	cc << ' ' << Gather(pkg.option, config.GetKeys());
 	cc << " -fexceptions ";
 
+	if (HasFlag("OSX11")) {
+	  if (HasFlag("POWERPC"))
+		cc << " -arch ppc";
+	  if (HasFlag("X86"))
+		cc << " -arch i386";
+	}
+
 	String cc_speed = cc;
 	bool   release = false;
 
@@ -382,18 +389,27 @@ bool GccBuilder::Link(const Vector<String>& linkfile, const String& linkoptions,
 			if(HasFlag("DEBUG") || HasFlag("DEBUG_MINIMAL") || HasFlag("DEBUG_FULL"))
 				lnk << " -ggdb";
 			else
-				lnk << " -Wl,-s";
+				lnk << (!HasFlag("OSX11") ? " -Wl,-s" : "");
 			for(i = 0; i < libpath.GetCount(); i++)
 				lnk << " -L" << GetHostPathQ(libpath[i]);
 //			lnk << " -Wl,--gc-sections,-O,2 ";
-			lnk << " -Wl,-O,2 "; // CXL 05/11/14 --gc-sections causing trouble on ubuntu
+			if (!HasFlag("OSX11"))
+			  lnk << " -Wl,-O,2 "; // CXL 05/11/14 --gc-sections causing trouble on ubuntu
 			lnk << linkoptions;
+
+			if (HasFlag("OSX11")) {
+			  if (HasFlag("POWERPC"))
+				lnk << " -arch ppc";
+			  if (HasFlag("X86"))
+				lnk << " -arch i386";
+			}
+
 			for(i = 0; i < linkfile.GetCount(); i++)
 				if(ToLower(GetFileExt(linkfile[i])) == ".o")
 					lnk  << ' ' << GetHostPathQ(linkfile[i]);
 				else
 					lib.Add(linkfile[i]);
-			if(!HasFlag("SOLARIS"))
+			if(!HasFlag("SOLARIS")&&!HasFlag("OSX11"))
 				lnk << " -Wl,--start-group ";
 			for(i = 0; i < lib.GetCount(); i++) {
 				String ln = lib[i];
@@ -403,7 +419,7 @@ bool GccBuilder::Link(const Vector<String>& linkfile, const String& linkoptions,
 				else
 					lnk << " -l" << ln;
 			}
-			if(!HasFlag("SOLARIS"))
+			if(!HasFlag("SOLARIS")&&!HasFlag("OSX11"))
 				lnk << " -Wl,--end-group";
 			PutConsole("Linking...");
 			CustomStep(".pre-link");

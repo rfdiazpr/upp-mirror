@@ -1,5 +1,7 @@
 #include "IconDes.h"
 
+NAMESPACE_UPP
+
 void IconDes::SetPen(int _pen)
 {
 	pen = _pen;
@@ -296,3 +298,5 @@ IconDes::IconDes()
 	magnify = 13;
 	pen = 1;
 }
+
+END_UPP_NAMESPACE

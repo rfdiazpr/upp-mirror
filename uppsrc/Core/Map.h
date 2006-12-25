@@ -88,8 +88,8 @@ public:
 	void     Serialize(Stream& s);
 #endif
 
-	void     Swap(AMap& x)                         { ::Swap(value, x.value);
-	                                                 ::Swap(key, x.key); }
+	void     Swap(AMap& x)                         { UPP::Swap(value, x.value);
+	                                                 UPP::Swap(key, x.key); }
 	const Index<K, HashFn>&  GetIndex() const      { return key; }
 	Index<K, HashFn>         PickIndex() pick_     { return key; }
 

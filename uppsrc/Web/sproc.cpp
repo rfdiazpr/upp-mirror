@@ -1,5 +1,4 @@
 #include "Web.h"
-
 #pragma hdrstop
 
 #ifdef PLATFORM_POSIX
@@ -8,6 +7,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #endif
+
+NAMESPACE_UPP
 
 static void WriteLog(const String& s)
 {
@@ -628,3 +629,5 @@ One<SlaveProcess> StartProcess(const char *cmdline, const char *envptr, int time
 	One<RemoteSlaveProcess> rsp = new RemoteSlaveProcess(host, port, p, envptr, timeout);
 	return rsp.Detach();
 }
+
+END_UPP_NAMESPACE

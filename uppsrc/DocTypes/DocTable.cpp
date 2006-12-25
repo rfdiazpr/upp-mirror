@@ -1,5 +1,7 @@
 #include "DocTypes.h"
 
+NAMESPACE_UPP
+
 TableCell& TableCell::NewPar() {
 	par.Add();
 	par.Top().CopyStyle(par[par.GetCount() - 2]);
@@ -531,3 +533,5 @@ int  Table::GetWidth(int zoom, Draw& w) const {
 	}
 	return cx + 2 * GetFrameWidth();
 }
+
+END_UPP_NAMESPACE

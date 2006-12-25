@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 struct cDrawRasterData : DataDrawer {
 	int                cx;
 	StringStream       ss;
@@ -34,3 +36,5 @@ void DrawRasterData(Draw& w, int x, int y, int cx, int cy, const String& data)
 {
 	w.DrawData(x, y, cx, cy, data, "image_data");
 }
+
+END_UPP_NAMESPACE

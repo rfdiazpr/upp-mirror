@@ -1,6 +1,8 @@
 #include "bmp.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 #include "bmphdr.h"
 
 Vector<Image> ReadIcon(String data)
@@ -203,3 +205,5 @@ String WriteIcon(const Vector<Image>& icons, int flags)
 	}
 	return out;
 }
+
+END_UPP_NAMESPACE

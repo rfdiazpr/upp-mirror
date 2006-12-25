@@ -1,6 +1,8 @@
 #ifndef _Geom_Ctrl_CoordCtrl_h_
 #define _Geom_Ctrl_CoordCtrl_h_
 
+NAMESPACE_UPP
+
 class EditDegree : public EditValue<double, ConvertDegree>
 {
 public:
@@ -16,5 +18,7 @@ private:
 private:
 	SpinButtons   spin;
 };
+
+END_UPP_NAMESPACE
 
 #endif

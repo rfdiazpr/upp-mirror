@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 struct KeyBinding : Moveable<KeyBinding> {
 	KeyInfo    *key;
 	const char *id;
@@ -363,3 +365,5 @@ void RestoreKeys(const String& data)
 	}
 	catch(CParser::Error) {}
 }
+
+END_UPP_NAMESPACE

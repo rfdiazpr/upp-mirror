@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 RichTxt::Para::Para(const Para& src, int)
 : object(src.object, 1)
 {
@@ -459,3 +461,5 @@ String RichCellPos::ToString() const
 }
 
 #endif
+
+END_UPP_NAMESPACE

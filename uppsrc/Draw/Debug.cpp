@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 String DumpLanguage(int language)
 {
 	if(IsNull(language))
@@ -558,3 +560,5 @@ int GdiGetFreeSpace()
 	return objects.GetCount();
 }
 #endif
+
+END_UPP_NAMESPACE

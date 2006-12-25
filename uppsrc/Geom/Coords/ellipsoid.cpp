@@ -1,6 +1,8 @@
 #include "GeomCoords.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 struct EPSGEllipsoid
 {
 	int         code;
@@ -757,3 +759,5 @@ bool operator == (const GisEllipsoid& ea, const GisEllipsoid& eb)
 {
 	return ea.a == eb.a && ea.b == eb.b && ea.from_wgs84 == eb.from_wgs84;
 }
+
+END_UPP_NAMESPACE

@@ -1,6 +1,8 @@
 #include "GeomDraw.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 #define DEBUG_AREA 0
@@ -759,7 +761,7 @@ Point Plotter::LtoPointOrtho(Pointf pt) const
 static void PaintRectPart(Draw& draw, int x, int y, int w, int h)
 {
 #if defined(PLATFORM_WIN32)
-	PatBlt(draw, x, y, w, h, PATINVERT);
+	::PatBlt(draw, x, y, w, h, PATINVERT);
 #elif defined(PLATFORM_X11)
 	Point offset = draw.GetOffset();
 	XFillRectangle(Xdisplay, draw.GetDrawable(), draw.GetGC(), x + offset.x, y + offset.y, w, h);
@@ -2537,3 +2539,5 @@ void PlotterTest()
 	window.Run();
 }
 #endif
+
+END_UPP_NAMESPACE

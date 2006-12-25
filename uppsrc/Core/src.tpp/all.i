@@ -6,22 +6,6 @@ TOPIC("Vector$en-us")
 #include "Vector$en-us.tpp"
 END_TOPIC
 
-TOPIC("Convert$en-us")
-#include "Convert$en-us.tpp"
-END_TOPIC
-
-TOPIC("Format$en-us")
-#include "Format$en-us.tpp"
-END_TOPIC
-
-TOPIC("Segtor$en-us")
-#include "Segtor$en-us.tpp"
-END_TOPIC
-
-TOPIC("Indext$en-us")
-#include "Indext$en-us.tpp"
-END_TOPIC
-
 TOPIC("BiVector$en-us")
 #include "BiVector$en-us.tpp"
 END_TOPIC
@@ -54,10 +38,6 @@ TOPIC("AMap$en-us")
 #include "AMap$en-us.tpp"
 END_TOPIC
 
-TOPIC("PtePtr$en-us")
-#include "PtePtr$en-us.tpp"
-END_TOPIC
-
 TOPIC("DateFmt$en-us")
 #include "DateFmt$en-us.tpp"
 END_TOPIC
@@ -82,10 +62,6 @@ TOPIC("Buffer$en-us")
 #include "Buffer$en-us.tpp"
 END_TOPIC
 
-TOPIC("SerializationUtils$en-us")
-#include "SerializationUtils$en-us.tpp"
-END_TOPIC
-
 TOPIC("CParser$en-us")
 #include "CParser$en-us.tpp"
 END_TOPIC
@@ -100,4 +76,28 @@ END_TOPIC
 
 TOPIC("Color$en-us")
 #include "Color$en-us.tpp"
+END_TOPIC
+
+TOPIC("SerializationUtils$en-us")
+#include "SerializationUtils$en-us.tpp"
+END_TOPIC
+
+TOPIC("Indext$en-us")
+#include "Indext$en-us.tpp"
+END_TOPIC
+
+TOPIC("PtePtr$en-us")
+#include "PtePtr$en-us.tpp"
+END_TOPIC
+
+TOPIC("Segtor$en-us")
+#include "Segtor$en-us.tpp"
+END_TOPIC
+
+TOPIC("Convert$en-us")
+#include "Convert$en-us.tpp"
+END_TOPIC
+
+TOPIC("Format$en-us")
+#include "Format$en-us.tpp"
 END_TOPIC

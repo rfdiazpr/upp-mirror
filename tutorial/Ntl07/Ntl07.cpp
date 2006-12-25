@@ -1,5 +1,7 @@
 #include <Core/Core.h>
 
+using namespace Upp;
+
 struct Number {
 	virtual double Get() const = 0;
 

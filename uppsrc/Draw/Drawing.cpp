@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x)  // LOG(x)
 
 #ifdef COMPILER_MSC
@@ -49,42 +51,26 @@ static void StreamPackPoints(Stream& stream, const Point *in, int count)
 
 static void StreamUnpackInts(Stream& stream, int *out, int count)
 {
-	ASSERT(sizeof(int) >= 4);
-	int *end = out + count;
-	byte *top = reinterpret_cast<byte *>(end) - count * 4;
-	stream.Get(top, count * 4);
-	if(sizeof(int) > 4)
-	{
-		for(; out < end; out++, top += 4)
-			*out = Peek32le(top);
+#ifdef CPU_LITTLE_ENDIAN
+	if(sizeof(int) == 4) {
+		stream.Get(out, count * 4);
+		return;
 	}
-	else
-	{
-#ifndef CPU_LITTLE_ENDIAN
-		BltSwapEndian4(out, out, count);
 #endif
-	}
+	while(count--)
+		*out++ = stream.Get32le();
 }
 
 static void StreamPackInts(Stream& stream, const int *in, int count)
 {
-	if(sizeof(int) == 4)
-	{
 #ifdef CPU_LITTLE_ENDIAN
+	if(sizeof(int) == 4) {
 		stream.Put(in, count * 4);
 		return;
+	}
 #endif
-	}
-	enum { PART = 1024 };
-	byte part[PART * 4];
-	while(count > 0)
-	{
-		int part_count = min<int>(count, PART);
-		for(byte *pp = part, *pe = pp + 4 * part_count; pp < pe; pp += 4)
-			Poke32le(pp, *in++);
-		stream.Put(part, part_count * 4);
-		count -= part_count;
-	}
+	while(count--)
+		stream.Put32le(*in++);
 }
 
 // ------------------------------
@@ -432,6 +418,11 @@ static void wsDrawPolyPolyPolygon(Draw& w, Stream& stream, const DrawingPos& dp)
 	StreamUnpackPoints(stream, vertices, vertex_count);
 	StreamUnpackInts(stream, subpolygon_counts, subpolygon_count_count);
 	StreamUnpackInts(stream, disjunct_polygon_counts, disjunct_polygon_count_count);
+	if(!dp.Identity()) {
+		for(Point *p = vertices, *e = p + vertex_count; p < e; p++)
+			dp.Transform(*p);
+		dp.TransformW(width);
+	}
 	w.DrawPolyPolyPolygon(vertices, vertex_count,
 		                  subpolygon_counts, subpolygon_count_count,
 		                  disjunct_polygon_counts, disjunct_polygon_count_count,
@@ -751,3 +742,5 @@ void Drawing::WriteClipboardWMF() const {
 }
 #endif
 #endif
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include "CodeEditor.h"
 
+NAMESPACE_UPP
+
 bool CodeEditor::FindReplace::Key(dword key, int cnt) {
 	if(key == K_CTRL_I) {
 		if(find.HasFocus()) {
@@ -345,7 +347,7 @@ void CodeEditor::OpenNormalFindReplace()
 	findreplace.Title("Find / Replace");
 	findreplace.amend.Show();
 	findreplace.findback.Show();
-	findreplace.ok.SetLabel("Find next");
+	findreplace.ok.SetLabel("Find");
 	findreplace.ok <<= THISBACK(DoFind);
 	findreplace.cancel <<= findreplace.WhenClose = THISBACK(CloseFindReplace);
 	findreplace.Open();
@@ -514,3 +516,5 @@ void CodeEditor::SerializeFind(Stream& s)
 	s % findreplace.replace;
 	findreplace.replace.SerializeList(s);
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,6 @@
 #include "Core.h"
 #pragma hdrstop
+
 #ifdef PLATFORM_WIN32
 #include <wingdi.h>
 #include <winnls.h>
@@ -8,6 +9,8 @@
 #include <locale.h>
 #include <langinfo.h>
 #endif
+
+NAMESPACE_UPP
 
 #define LLOG(x) // LOG(x)
 
@@ -83,11 +86,11 @@ String GetUserLocale(dword type)
 {
 #ifdef PLATFORM_WINCE
 	wchar h[256];
-	int n = GetLocaleInfo(GetUserDefaultLCID(), type, h, 256);
+	int n = ::GetLocaleInfo(GetUserDefaultLCID(), type, h, 256);
 	return n ? WString(h, n - 1).ToString() : String();
 #else
 	char h[256];
-	int n = GetLocaleInfo(GetUserDefaultLCID(), type, h, 256);
+	int n =:: GetLocaleInfo(GetUserDefaultLCID(), type, h, 256);
 	return n ? String(h, n - 1) : String();
 #endif
 }
@@ -157,14 +160,14 @@ GLOBAL_VAR(LCIDMap, GetLCIDMap)
 String GetLocaleInfoA(LCID lcid, LCTYPE lctype)
 {
 	wchar cbuf[1000];
-	GetLocaleInfoW(lcid, lctype, cbuf, __countof(cbuf));
+	::GetLocaleInfoW(lcid, lctype, cbuf, __countof(cbuf));
 	return FromSystemCharset(cbuf);
 }
 #else
 String GetLocaleInfoA(LCID lcid, LCTYPE lctype)
 {
 	char cbuf[1000];
-	GetLocaleInfoA(lcid, lctype, cbuf, __countof(cbuf));
+	::GetLocaleInfoA(lcid, lctype, cbuf, __countof(cbuf));
 	return FromSystemCharset(cbuf);
 }
 #endif
@@ -176,12 +179,12 @@ WString GetLocaleInfoW(LCID lcid, LCTYPE lctype)
 		char abuf[1000];
 	};
 	Zero(wbuf);
-	if(GetLocaleInfoW(lcid, lctype, (WCHAR *)wbuf, __countof(wbuf)))
+	if(::GetLocaleInfoW(lcid, lctype, (WCHAR *)wbuf, __countof(wbuf)))
 		return wbuf;
 #ifdef PLATFORM_WINCE
 	return Null;
 #else
-	GetLocaleInfoA(lcid, lctype, abuf, __countof(abuf));
+	::GetLocaleInfoA(lcid, lctype, abuf, __countof(abuf));
 	return ToUnicode(abuf, CHARSET_DEFAULT);
 #endif
 }
@@ -199,9 +202,9 @@ static BOOL CALLBACK sEnumLocale(char *locale_string)
 #else
 	char buffer[10];
 #endif
-	GetLocaleInfo(lcid, LOCALE_SISO639LANGNAME, buffer, 10);
+	::GetLocaleInfo(lcid, LOCALE_SISO639LANGNAME, buffer, 10);
 	int language = (ToUpper(buffer[0]) << 24) + (ToUpper(buffer[1]) << 16);
-	GetLocaleInfo(lcid, LOCALE_SISO3166CTRYNAME, buffer, 10);
+	::GetLocaleInfo(lcid, LOCALE_SISO3166CTRYNAME, buffer, 10);
 	language += (ToUpper(buffer[0]) << 8) + (ToUpper(buffer[1]) << 0);
 	LLOG(FormatIntHex(language, 8) << ", " << LNGAsText(language) << "->" << FormatIntHex(lcid, 8));
 	GetLCIDMap().GetAdd(language, lcid);
@@ -585,7 +588,7 @@ String LanguageInfo::FormatInt(int value) const
 	if(IsNull(value))
 		return Null;
 	String dest;
-	String is = ::FormatInt(value);
+	String is = UPP::FormatInt(value);
 	const char *p = NlsCopyDigits(is, dest, thousand_separator);
 	if(*p)
 		dest.Cat(p);
@@ -597,17 +600,17 @@ String LanguageInfo::FormatDouble(double value, int digits, int FD_flags, int fi
 	if(IsNull(value))
 		return Null;
 //	puts(String() << "LanguageInfo(" << LNGAsText(language) << "): thousands <" << thousand_separator << ">, decimal <" << decimal_point << ">");
-	return NlsFormatRaw(::FormatDouble(value, digits, FD_flags, fill_exp), thousand_separator, decimal_point);
+	return NlsFormatRaw(UPP::FormatDouble(value, digits, FD_flags, fill_exp), thousand_separator, decimal_point);
 }
 
 String LanguageInfo::FormatDate(Date date) const
 {
-	return ::FormatDate(date, date_format, language);
+	return UPP::FormatDate(date, date_format, language);
 }
 
 String LanguageInfo::FormatTime(Time time) const
 {
-	return ::FormatTime(time, time_format, language);
+	return UPP::FormatTime(time, time_format, language);
 }
 
 /*
@@ -627,14 +630,14 @@ double LanguageInfo::ScanDouble(const char *text, const char **endptr) const
 /*
 Date LanguageInfo::ScanDate(const char *text, const char **endptr, Date base_date) const
 {
-	return ::ScanDate(text, endptr, date_format, language, base_date);
+	return UPP::ScanDate(text, endptr, date_format, language, base_date);
 }
 */
 
 /*
 Time LanguageInfo::ScanTime(const char *text, const char **endptr, Time base_time) const
 {
-	return ::ScanTime(text, endptr, time_format, language, base_time);
+	return UPP::ScanTime(text, endptr, time_format, language, base_time);
 }
 */
 
@@ -1071,3 +1074,5 @@ const LanguageInfo& GetLanguageInfo()
 {
 	return GetLanguageInfo(GetCurrentLanguage());
 }
+
+END_UPP_NAMESPACE

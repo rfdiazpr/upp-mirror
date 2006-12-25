@@ -1,5 +1,4 @@
-//////////////////////////////////////////////////////////////////////
-// setop: set operation templates.
+NAMESPACE_UPP
 
 enum SetOpCode
 {
@@ -14,7 +13,7 @@ enum SetOpCode
 	SET_OP2_XOR,   // symmetrical difference
 };
 
-template <> inline unsigned GetHashValue(const SetOpCode& c) { return c; }
+template <> inline unsigned Upp::GetHashValue(const SetOpCode& c) { return c; }
 
 NTL_MOVEABLE(SetOpCode);
 
@@ -26,8 +25,6 @@ Index<V> SetGetIndex(I begin, I end)
 		result.FindAdd(*begin++);
 	return result;
 }
-
-//////////////////////////////////////////////////////////////////////
 
 template <class C, class I>
 C SetLAdd(I begin1, I end1, I begin2, I end2)
@@ -49,8 +46,6 @@ C SetLAdd(I begin1, I end1, I begin2, I end2)
 	}
 	return result;
 }
-
-//////////////////////////////////////////////////////////////////////
 
 template <class C, class I>
 C SetRAdd(I begin1, I end1, I begin2, I end2)
@@ -75,8 +70,6 @@ C SetRAdd(I begin1, I end1, I begin2, I end2)
 	}
 	return result;
 }
-
-//////////////////////////////////////////////////////////////////////
 
 template <class C, class I>
 C SetAnd(I begin1, I end1, I begin2, I end2)
@@ -110,8 +103,6 @@ C SetAnd(I begin1, I end1, I begin2, I end2)
 	return result;
 }
 
-//////////////////////////////////////////////////////////////////////
-
 template <class C, class I>
 C SetSub(I begin1, I end1, I begin2, I end2)
 {
@@ -133,8 +124,6 @@ C SetSub(I begin1, I end1, I begin2, I end2)
 	}
 	return result;
 }
-
-//////////////////////////////////////////////////////////////////////
 
 template <class C, class I>
 C SetXor(I begin1, I end1, I begin2, I end2)
@@ -162,8 +151,6 @@ C SetXor(I begin1, I end1, I begin2, I end2)
 	return result;
 }
 
-//////////////////////////////////////////////////////////////////////
-
 template <class C, class I>
 C SetOperation(I begin1, I end1, I begin2, I end2, SetOpCode op)
 {
@@ -184,15 +171,11 @@ C SetOperation(I begin1, I end1, I begin2, I end2, SetOpCode op)
 	return result;
 }
 
-//////////////////////////////////////////////////////////////////////
-
 template <class T>
 T SetOperation(const T& set1, const T& set2, SetOpCode op)
 {
 	return SetOperation<T>(set1.Begin(), set1.End(), set2.Begin(), set2.End(), op);
 }
-
-//////////////////////////////////////////////////////////////////////
 
 template <class T> T SetLAdd(const T& set1, const T& set2) { return SetLAdd<T>(set1.Begin(), set1.End(), set2.Begin(), set2.End()); }
 template <class T> T SetRAdd(const T& set1, const T& set2) { return SetRAdd<T>(set1.Begin(), set1.End(), set2.Begin(), set2.End()); }
@@ -200,4 +183,4 @@ template <class T> T SetAnd (const T& set1, const T& set2) { return SetAnd<T>(se
 template <class T> T SetSub (const T& set1, const T& set2) { return SetSub<T>(set1.Begin(), set1.End(), set2.Begin(), set2.End()); }
 template <class T> T SetXor (const T& set1, const T& set2) { return SetXor<T>(set1.Begin(), set1.End(), set2.Begin(), set2.End());  }
 
-//////////////////////////////////////////////////////////////////////
+END_UPP_NAMESPACE

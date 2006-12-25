@@ -1,5 +1,7 @@
 #include "RichEdit.h"
 
+NAMESPACE_UPP
+
 void RichEdit::FinishNF()
 {
 	anchorp = text.GetRichPos(anchor);
@@ -402,3 +404,5 @@ void RichEdit::GotoLabel(const String& lbl)
 			break;
 		}
 }
+
+END_UPP_NAMESPACE

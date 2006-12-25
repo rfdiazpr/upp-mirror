@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 #ifdef PLATFORM_X11
 
 static void sInitXImage(XImage& ximg, Size sz)
@@ -58,12 +60,12 @@ void Image::Data::SysInit()
 void Image::Data::SysRelease()
 {
 	if(picture) {
-		XRenderFreePicture(Xdisplay, picture);
+		if(Xdisplay) XRenderFreePicture(Xdisplay, picture);
 		ResCount -= !paintonly;
 		picture = 0;
 	}
 	if(picture8) {
-		XRenderFreePicture(Xdisplay, picture8);
+		if(Xdisplay) XRenderFreePicture(Xdisplay, picture8);
 		ResCount -= !paintonly;
 		picture8 = 0;
 	}
@@ -400,3 +402,5 @@ Cursor X11Cursor(const Image& img)
 }
 
 #endif
+
+END_UPP_NAMESPACE

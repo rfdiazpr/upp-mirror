@@ -1,7 +1,7 @@
-LAYOUT(AddressBookLayout, 496, 456)
+LAYOUT(AddressBookLayout, 512, 456)
 	ITEM(MenuBar, menu, LeftPosZ(0, 216).TopPosZ(0, 20))
-	ITEM(TabCtrl, tab, LeftPosZ(8, 480).TopPosZ(32, 84))
-	ITEM(ArrayCtrl, array, LeftPosZ(8, 480).TopPosZ(124, 324))
+	ITEM(TabCtrl, tab, LeftPosZ(8, 496).TopPosZ(32, 84))
+	ITEM(ArrayCtrl, array, LeftPosZ(8, 496).TopPosZ(124, 324))
 END_LAYOUT
 
 LAYOUT(ModifyLayout, 480, 52)

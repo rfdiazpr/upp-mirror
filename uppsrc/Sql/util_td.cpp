@@ -1,5 +1,7 @@
 #include "Sql.h"
 
+NAMESPACE_UPP
+
 void td_scalar(SqlSet& set, const String& prefix, const char *x) {
 	set.Cat(SqlCol(prefix + x));
 }
@@ -21,3 +23,5 @@ void td_shrink(String *array, int cnt) {
 		array++;
 	}
 }
+
+END_UPP_NAMESPACE

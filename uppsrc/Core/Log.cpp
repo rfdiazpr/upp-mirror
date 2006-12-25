@@ -1,5 +1,7 @@
 #include "Core.h"
 
+NAMESPACE_UPP
+
 #ifdef PLATFORM_WINCE
 const char *FromSysChrSet(const wchar *s)
 {
@@ -192,3 +194,5 @@ bool LogStream::IsOpen() const
 	return hfile != INVALID_HANDLE_VALUE;
 #endif
 }
+
+END_UPP_NAMESPACE

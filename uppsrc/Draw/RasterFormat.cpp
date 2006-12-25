@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 static int sMaskPos16(dword mask)
 {
 	if(mask > 0xffff)
@@ -328,3 +330,5 @@ void RasterFormat::Read(RGBA *t, const byte *s, int cx, const RGBA *palette) con
 		break;
 	}
 }
+
+END_UPP_NAMESPACE

@@ -52,8 +52,6 @@ bool IdeModuleUsc(CParser& p)
 	return false;
 }
 
-dword ParseKeyDesc(CParser& p);
-
 static void ReadMacro(CParser& p)
 {
 	IdeMacro macro;

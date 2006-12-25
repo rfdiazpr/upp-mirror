@@ -1,3 +1,5 @@
+description "Investigating C++ cyclometric complexity";
+
 uses
 	CtrlLib,
 	CppBase;

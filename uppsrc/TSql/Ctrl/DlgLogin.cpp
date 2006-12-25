@@ -4,6 +4,8 @@
 #include "TSqlCtrl.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 String Garble(const char *s)
 {
 	int c = 0xAA;
@@ -258,3 +260,5 @@ bool DlgLogin::StdSetPassword(SqlSession& session, String new_pwd)
 	Sql cursor(session);
 	return cursor.Execute(cmd);
 }
+
+END_UPP_NAMESPACE

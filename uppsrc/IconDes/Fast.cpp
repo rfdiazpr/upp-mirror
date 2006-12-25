@@ -1,5 +1,7 @@
 #include "IconDes.h"
 
+NAMESPACE_UPP
+
 void IconDes::MaskSelection()
 {
 	ImageBuffer ib(Current().image);
@@ -84,3 +86,5 @@ void IconDes::Set(Point p, RGBA rgba, dword flags)
 		CurrentImage() = ib;
 	}
 }
+
+END_UPP_NAMESPACE

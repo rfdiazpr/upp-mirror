@@ -1,8 +1,10 @@
 #include <Core/Core.h>
 
+using namespace Upp;
+
 struct Foo {
 	int x;
-	
+
 	void Action()                { Cout() << "Action: " << x << '\n'; }
 	void ActionWithParam(int y)  { Cout() << "ActionWithParam: " << x + y << '\n'; }
 
@@ -21,9 +23,9 @@ struct Bar {
 	Foo foo;
 
 	void Action() { Cout() << "foo's Do called\n"; }
-	
+
 	typedef Bar CLASSNAME;
-	
+
 	Bar() { foo.WhenDo = THISBACK(Action); }
 };
 
@@ -38,7 +40,7 @@ CONSOLE_APP_MAIN
 	Callback cb2 = callback(Fn);
 	Callback1<int> cb3 = callback(&a, &Foo::ActionWithParam);
 	Callback cb4 = callback1(&a, &Foo::ActionWithParam, 30);
-	
+
 	cb1();
 	cb2();
 	cb3(10);
@@ -47,7 +49,7 @@ CONSOLE_APP_MAIN
 	Cout() << "---------\n";
 	cb4 << cb2;
 	cb4();
-	
+
 	Cout() << "---------\n";
 	Bar b;
 	b.foo.Do();

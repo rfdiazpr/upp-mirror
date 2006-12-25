@@ -7,6 +7,8 @@
 #pragma  comment(lib, "comdlg32.lib")
 #endif
 
+NAMESPACE_UPP
+
 void ReportCtrl::MouseWheel(Point, int zdelta, dword) {
 	sb.Wheel(zdelta);
 }
@@ -179,7 +181,7 @@ void ReportDlg::Pdf()
 	}
 	if(!fs.ExecuteSaveAs(t_("Output PDF file")))
 		return;
-	SaveFile(~fs, ::Pdf(*report));
+	SaveFile(~fs, UPP::Pdf(*report));
 }
 
 void ReportDlg::SetButton(int i, const char *label, int id)
@@ -319,3 +321,5 @@ bool DocReport::Print(int page, const char *_name)
 	EndPage();
 	return Print0(page, _name ? _name : ~name);
 }
+
+END_UPP_NAMESPACE

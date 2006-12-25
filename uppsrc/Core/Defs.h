@@ -18,11 +18,11 @@ void    Panic(const char *msg);
 
 void    AssertFailed(const char *file, int line, const char *cond);
 
-#define VERIFY(x)        ((x) ? (void)0 : AssertFailed(__FILE__, __LINE__, #x))
+#define VERIFY(x)        ((x) ? (void)0 : UPP::AssertFailed(__FILE__, __LINE__, #x))
 
 #ifdef _DEBUG
 
-#define ASSERT(x)        ((x) ? (void)0 : AssertFailed(__FILE__, __LINE__, #x))
+#define ASSERT(x)        ((x) ? (void)0 : UPP::AssertFailed(__FILE__, __LINE__, #x))
 
 #else
 
@@ -145,21 +145,15 @@ static void COMBINE(x, _fn)()
 #undef max
 #endif
 
-#if defined(_MSC_VER) && (_MSC_VER < 1300)// || defined(PLATFORM_WINCE)
-	template <class T> inline const T& min(const T& a, const T& b) { return a < b ? a : b; }
-	template <class T> inline const T& max(const T& a, const T& b) { return a > b ? a : b; }
-#else
-	#include <algorithm>
-	using std::max;
-	using std::min;
-#endif
+template <class T> inline const T& min(const T& a, const T& b) { return a < b ? a : b; }
+template <class T> inline const T& max(const T& a, const T& b) { return a > b ? a : b; }
 
 template <class T>
 inline T minmax(T x, T _min, T _max)                           { return min(max(x, _min), _max); }
 
 typedef unsigned char      byte;
-typedef unsigned char      uint8;
 typedef signed char        int8;
+typedef unsigned char      uint8;
 
 typedef short unsigned     word;
 typedef short int          int16;
@@ -204,8 +198,6 @@ typedef uint64             qword;
 #define INT64_MAX          INT64(+0x7FFFFFFFFFFFFFFF)
 #endif
 
-inline int64 abs(int64 x)       { return x < 0 ? -x : x; }
-
 #if !defined(PLATFORM_WIN32)
 
 #define HIBYTE(a)        (byte)((a) >> 8)
@@ -230,13 +222,6 @@ inline int64 abs(int64 x)       { return x < 0 ? -x : x; }
 #define pick_ const
 #endif
 
-// fix MSC8 beta problem....
-#ifdef COMPILER_MSC
-namespace std {
-	inline void __cdecl _Debug_message(const wchar_t *, const wchar_t *, unsigned int line) {}
-};
-#endif
-
 #define BINARY(i, f) \
 extern "C" byte *i; \
 extern "C" int COMBINE(i, _length);
@@ -252,9 +237,10 @@ extern "C" int COMBINE(i, _length)[]; \
 extern "C" int COMBINE(i, _count); \
 extern "C" char *COMBINE(i, _files)[];
 
+int RegisterTypeNo__(const char *type);
+
 template <class T>
 int StaticTypeNo() {
-	int RegisterTypeNo__(const char *type);
 	static int typeno = -1;
 	if(typeno < 0)
 		typeno = RegisterTypeNo__(typeid(T).name());
@@ -300,25 +286,7 @@ enum MemoryProbeFlags {
 void  MemoryProbe(const char *name = NULL, dword flags = 0);
 const char *MemoryCounters();
 
-#include <new>
-
-#ifdef _DEBUG
-
-inline void *operator new(size_t size) throw(std::bad_alloc) { void *ptr = MemoryAllocDebug(size); return ptr; }
-inline void operator  delete(void *ptr) throw()              { MemoryFreeDebug(ptr); }
-
-inline void *operator new[](size_t size) throw(std::bad_alloc) { void *ptr = MemoryAllocDebug(size); return ptr; }
-inline void operator  delete[](void *ptr) throw()              { MemoryFreeDebug(ptr); }
-
-#else
-
-inline void *operator new(size_t size) throw(std::bad_alloc) { void *ptr = MemoryAlloc(size); return ptr; }
-inline void operator  delete(void *ptr) throw()              { MemoryFree(ptr); }
-
-inline void *operator new[](size_t size) throw(std::bad_alloc) { void *ptr = MemoryAlloc(size); return ptr; }
-inline void operator  delete[](void *ptr) throw()              { MemoryFree(ptr); }
-
-#endif
+void  MemoryCheckDebug();
 
 #else
 
@@ -333,9 +301,9 @@ inline void   MemoryInitDiagnostics() {}
 inline void  *MemoryAllocDebug(dword size) {}
 inline void   MemoryFreeDebug(void *p) {}
 inline void   MemoryCheck() {}
+inline void   MemoryCheckDebug() {}
 
 #endif
-
 
 //Quick fix....
 #ifdef PLATFORM_WINCE

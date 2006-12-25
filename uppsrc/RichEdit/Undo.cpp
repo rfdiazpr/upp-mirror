@@ -1,5 +1,7 @@
 #include "RichEdit.h"
 
+NAMESPACE_UPP
+
 void RichEdit::UndoInsert::Apply(RichText& txt)
 {
 	txt.Remove(pos, length);
@@ -83,3 +85,5 @@ RichEdit::UndoStyles::UndoStyles(const RichText& txt)
 {
 	styles <<= txt.GetStyles();
 }
+
+END_UPP_NAMESPACE

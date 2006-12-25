@@ -3,6 +3,8 @@
 
 #include <float.h>
 
+NAMESPACE_UPP
+
 #define POLY_TIMING(n) RTIMING(n)
 #define POLY_LOGGING   0 // 1 = on, 0 = off
 
@@ -1029,3 +1031,5 @@ void PolygonIterator<T>::DumpDone(int i) const
 		out << ' ' << traces[i].done[t];
 	RLOG(out);
 }
+
+END_UPP_NAMESPACE

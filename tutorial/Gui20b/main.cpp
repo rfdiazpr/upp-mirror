@@ -1,6 +1,6 @@
 #include <CtrlLib/CtrlLib.h>
 
-#include <CtrlLib/CtrlLib.h>
+using namespace Upp;
 
 struct MyApp : TopWindow {
 	Button exit;

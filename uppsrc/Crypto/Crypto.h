@@ -3,6 +3,8 @@
 
 #include <Core/Core.h>
 
+NAMESPACE_UPP
+
 void   SHA1Transform(dword state[5], byte buffer[64]);
 void   SHA1Init(dword state[5]);
 void   SHA1Size(byte buffer[64], dword size);
@@ -27,5 +29,7 @@ public:
 
 String EncodeBscF(const String& src);
 String DecodeBscF(const String& src);
+
+END_UPP_NAMESPACE
 
 #endif

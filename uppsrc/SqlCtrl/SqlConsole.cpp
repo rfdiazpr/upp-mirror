@@ -1,11 +1,13 @@
 #include "SqlCtrl.h"
+#include <Report/Report.h>
+
 #pragma hdrstop
+
+NAMESPACE_UPP
 
 #define IMAGEFILE <SqlCtrl/SqlCtrl.iml>
 #define IMAGECLASS SqlConsoleImg
 #include <Draw/iml.h>
-
-#include <Report/Report.h>
 
 void RunDlgSqlExport(Sql& cursor, String command, String tablename);
 
@@ -226,6 +228,7 @@ protected:
 		NORMAL,
 		RERUN,
 		SCRIPT,
+		QUIET,
 	};
 
 	void    ColSize();
@@ -236,7 +239,7 @@ protected:
 	void    TraceToExecute();
 	void    ListToCommand();
 	void    SaveTrace();
-	void    RunScript();
+	void    RunScript(bool quiet);
 	void    TraceMenu(Bar& menu);
 	void    MacroList();
 	void    ObjectTree() { SQLObjectTree(cursor.GetSession()); }
@@ -245,9 +248,11 @@ protected:
 	friend class Exec;
 	class Exec : public StatementExecutor {
 	public:
+		Exec(bool quiet) : quiet(quiet) {}
 		SqlConsole *me;
+		bool quiet;
 		virtual bool Execute(const String& stmt) {
-			me->command <<= stmt; me->Sync(); me->Execute(SCRIPT); return true;
+			me->command <<= stmt; me->Sync(); me->Execute(quiet ? QUIET : SCRIPT); return true;
 		}
 	};
 
@@ -313,6 +318,8 @@ void SqlConsole::Execute(int type) {
 		Title((s + " - " + err).ToWString());
 		return;
 	}
+	if(type == QUIET)
+		return;
 	bool onecol = cursor.GetColumns() == 1;
 	record.Show(!onecol);
 	errortext.Show(onecol);
@@ -407,7 +414,10 @@ bool SqlConsole::Key(dword key, int count) {
 		Execute();
 		return true;
 	case K_CTRL_R:
-		RunScript();
+		RunScript(false);
+		return true;
+	case K_CTRL_Q:
+		RunScript(true);
 		return true;
 	case K_CTRL_S:
 		SaveTrace();
@@ -487,8 +497,8 @@ void SqlConsole::SaveTrace() {
 	}
 }
 
-void SqlConsole::RunScript() {
-	::RunScript runscript = cursor.GetSession().GetRunScript();
+void SqlConsole::RunScript(bool quiet) {
+	UPP::RunScript runscript = cursor.GetSession().GetRunScript();
 	if(!runscript) {
 		Exclamation(t_("Database connection doesn't support running scripts."));
 		return;
@@ -499,7 +509,7 @@ void SqlConsole::RunScript() {
 	fsel.Type(t_("SQL scripts (*.sql)"), "*.sql");
 	fsel.AllFilesType();
 	if(!fsel.ExecuteOpen(t_("Run script"))) return;
-	Exec exec;
+	Exec exec(quiet);
 	exec.me = this;
 	LastDir = GetFileDirectory(~fsel);
 	Progress progress(t_("Executing script"));
@@ -508,7 +518,8 @@ void SqlConsole::RunScript() {
 
 void SqlConsole::TraceMenu(Bar& menu) {
 	menu.Add(t_("Save as script.."), THISBACK(SaveTrace)).Key(K_CTRL_S);
-	menu.Add(t_("Run script.."), THISBACK(RunScript)).Key(K_CTRL_R);
+	menu.Add(t_("Run script.."), THISBACK1(RunScript, false)).Key(K_CTRL_R);
+	menu.Add(t_("Run script quietly.."), THISBACK1(RunScript, true)).Key(K_CTRL_Q);
 	menu.Add(t_("List macros.."), THISBACK(MacroList)).Key(K_CTRL_M);
 }
 
@@ -532,7 +543,7 @@ void SqlConsole::ListPrintRow()
 	qtf << "++";
 	Report report;
 	report << qtf;
-	::Perform(report);
+	UPP::Perform(report);
 }
 
 void SqlConsole::ListPrintList()
@@ -550,7 +561,7 @@ void SqlConsole::ListPrintList()
 	qtf << "++";
 	Report report;
 	report << qtf;
-	::Perform(report);
+	UPP::Perform(report);
 }
 
 void SqlConsole::ListExport()
@@ -595,3 +606,5 @@ void SQLCommander(SqlSession& session) {
 	SqlConsole con(session);
 	con.Perform();
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 #define LTIMING(x)
 
 struct sPalCv {
@@ -275,3 +277,5 @@ void CreatePalette(Raster& raster, RGBA *palette, int ncolors, PaletteCv& cv)
 	else
 		CreatePaletteCv(palette, ncolors, cv);
 }
+
+END_UPP_NAMESPACE

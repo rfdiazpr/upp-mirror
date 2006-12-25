@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+NAMESPACE_UPP
+
 void WindowsList()
 {
 	WithSimpleSelectLayout<TopWindow> d;
@@ -47,3 +49,5 @@ void WindowsMenu(Bar& bar)
 	if(p >= 10)
 		bar.Add(t_("More windows.."), callback(WindowsList));
 }
+
+END_UPP_NAMESPACE

@@ -5,6 +5,8 @@
 #include <DocTypes/DocTypes.h>
 #include <PdfDraw/PdfDraw.h>
 
+NAMESPACE_UPP
+
 #define LLOG(x) // RLOG(x)
 
 String MQTFStrip(const char *p)
@@ -402,7 +404,7 @@ private:
 	struct HelpItem : public Bar::Item {
 		virtual Item& Text(const char *s)            { info.text = s; return *this; }
 		virtual Item& Key(dword _key)                { info.keys.Add(_key); return *this; }
-		virtual Item& Image(const ::Image& img)      { info.image = img; return *this;  }
+		virtual Item& Image(const UPP::Image& img)   { info.image = img; return *this;  }
 		virtual Item& Help(const char *hlp)          { info.help = hlp; return *this; }
 		virtual Item& Topic(const char *help)        { info.drl = HelpAppDPP(help); return *this; }
 		virtual Item& Description(const char *help)  { info.description = help; return *this; }
@@ -1421,7 +1423,7 @@ static bool sEditorKeyHook(Ctrl *ctrl, dword key, int repcnt)
 		Ctrl *wctrl = ctrl->GetTopCtrl();
 		LLOG("sEditorKeyHook, key = " << GetKeyDesc(key) << " for " << Name(wctrl));
 		if(key == K_SHIFT_F12) {
-			Point mouse = ::GetMousePos();
+			Point mouse = UPP::GetMousePos();
 			Point wmouse = mouse - wctrl->GetScreenView().TopLeft();
 			Ctrl *cpt = wctrl->ChildFromPoint(wmouse);
 			if(!cpt)
@@ -1903,3 +1905,6 @@ String CreateHelpRTF()
 		return Null;
 	}
 }
+
+
+END_UPP_NAMESPACE

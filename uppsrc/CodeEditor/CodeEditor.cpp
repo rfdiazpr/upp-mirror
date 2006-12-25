@@ -1,5 +1,7 @@
 #include "CodeEditor.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) // RLOG(x)
 #define LTIMING(x) // RTIMING(x)
 
@@ -580,10 +582,107 @@ void CodeEditor::Goto() {
 		SetCursor(GetPos(atoi(line) - 1));
 }
 
-void CodeEditor::Enclose(const char *c1, const char *c2)
+bool CodeEditor::ToggleSimpleComment(int &start_line, int &end_line, bool usestars)
 {
 	int l, h;
 	if(!GetSelection(l, h))
+		return true;
+
+	int pos = h;
+	start_line = GetLine(l);
+	end_line = GetLinePos(pos);
+
+	if(usestars && start_line == end_line) {
+		Enclose("/*", "*/", l, h);
+		return true;
+	}
+
+	if(pos && end_line < GetLineCount()) end_line++;
+	SetLineSelection(start_line, end_line);
+
+	return false;
+}
+
+void CodeEditor::ToggleLineComments(bool usestars)
+{
+	int start_line, end_line;
+	if(ToggleSimpleComment(start_line, end_line))
+		return;
+
+	int us = static_cast<int>(usestars);
+
+	bool is_commented = true;
+
+	if(usestars) {
+
+		is_commented &= GetChar(GetPos(start_line) + 0) == '/' &&
+						GetChar(GetPos(start_line) + 1) == '*';
+
+		is_commented &= GetChar(GetPos(end_line - 1) + 1) == '*' &&
+						GetChar(GetPos(end_line - 1) + 2) == '/';
+	}
+
+	for(int line = start_line + us; is_commented && (line < end_line - us * 2); ++line)
+		is_commented &= GetChar(GetPos(line)) == (usestars ? ' ' : '/') &&
+						GetChar(GetPos(line)+1) == (usestars ? '*' : '/');
+
+	if(!is_commented) {
+
+		if(usestars) {
+			Insert(GetPos(end_line)," */\n");
+			Insert(GetPos(start_line),"/*\n");
+		}
+
+		for(int line = start_line + us; line < end_line + us; ++line)
+			Insert(GetPos(line), usestars ? " * " : "//");
+	}
+	else
+	{
+		int line = start_line;
+		if(usestars)
+			Remove(GetPos(start_line), 3);
+		for(; line < end_line - us * 2; ++line)
+			Remove(GetPos(line), 2 + us);
+		if(usestars)
+			Remove(GetPos(line), 4);
+	}
+
+	if(usestars)
+		SetLineSelection(start_line, end_line + (is_commented ? -2 : 2));
+	else
+		SetLineSelection(start_line, end_line);
+}
+
+void CodeEditor::ToggleStarComments()
+{
+	int start_line, end_line;
+	if(ToggleSimpleComment(start_line, end_line))
+		return;
+
+	bool is_commented =
+		GetChar(GetPos(start_line)) == '/' &&
+		GetChar(GetPos(start_line)+1) == '*' &&
+		GetChar(GetPos(start_line)+2) == '\n' &&
+		GetChar(GetPos(end_line-1)) == '*' &&
+		GetChar(GetPos(end_line-1)+1) == '/' &&
+		GetChar(GetPos(end_line-1)+2) == '\n';
+
+	if(!is_commented) {
+		// Backwards because inserting changes the end line #
+		Insert(GetPos(end_line),"*/\n");
+		Insert(GetPos(start_line),"/*\n");
+		SetLineSelection(start_line, end_line+2);
+	} else {
+		// Backwards because inserting changes the end line #
+		Remove(GetPos(end_line-1),3);
+		Remove(GetPos(start_line),3);
+		SetLineSelection(start_line, end_line-2);
+	}
+}
+
+void CodeEditor::Enclose(const char *c1, const char *c2, int l, int h)
+{
+	if((l < 0 || h < 0) && !GetSelection(l, h))
 		return;
 	Insert(l, WString(c1));
 	Insert(h + strlen(c1), WString(c2));
@@ -657,11 +756,22 @@ bool CodeEditor::Key(dword code, int count) {
 				return true;
 			}
 			if(code == '/') {
-				Enclose("/*", "*/");
+				//Enclose("/*", "*/");
+				ToggleLineComments(false);
+				return true;
+			}
+			if(code == K_CTRL_SLASH)
+			{
+				ToggleLineComments(true);
+				return true;
+			}
+			if(code == '*') {
+				//Enclose("/*", "*/");
+				ToggleStarComments();
 				return true;
 			}
 		}
-  		if(code >= 32 && code < 128 && count == 1) {
+		if(code >= 32 && code < 128 && count == 1) {
 			IndentInsert(code);
 			return true;
 		}
@@ -889,3 +999,5 @@ CodeEditor::CodeEditor() {
 }
 
 CodeEditor::~CodeEditor() {}
+
+END_UPP_NAMESPACE

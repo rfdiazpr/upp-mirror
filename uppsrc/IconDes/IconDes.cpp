@@ -1,5 +1,7 @@
 #include "IconDes.h"
 
+NAMESPACE_UPP
+
 IconDes::Slot::Slot()
 {
 	pastepos = Null;
@@ -123,9 +125,9 @@ void IconDes::MakePaste()
 	Slot& c = Current();
 	c.image = c.base_image;
 	if(paste_opaque)
-		::Copy(c.image, c.pastepos, c.paste_image, c.paste_image.GetSize());
+		UPP::Copy(c.image, c.pastepos, c.paste_image, c.paste_image.GetSize());
 	else
-		::Over(c.image, c.pastepos, c.paste_image, c.paste_image.GetSize());
+		UPP::Over(c.image, c.pastepos, c.paste_image, c.paste_image.GetSize());
 	MaskSelection();
 }
 
@@ -571,3 +573,5 @@ void IconDes::ResizeDown()
 	c.supersampling = false;
 	Reset();
 }
+
+END_UPP_NAMESPACE

@@ -582,6 +582,8 @@ void AppMain___()
 
 	const Vector<String>& arg = CommandLine();
 
+	bool firstinstall;
+
 #ifdef PLATFORM_POSIX
 	String home = Environment().Get("UPP_HOME", Null);
 	if(!IsNull(home))
@@ -590,6 +592,7 @@ void AppMain___()
 	if(!ff)
 		if(!Install())
 			return;
+	firstinstall = !ff;
 #endif
 
 #ifdef _DEBUG
@@ -599,7 +602,8 @@ void AppMain___()
 #ifdef PLATFORM_WIN32
 	if(!CheckLicense())
 		return;
-	if(!IsNull(LoadFile(GetExeDirFile("install.upp"))))
+	firstinstall = !IsNull(LoadFile(GetExeDirFile("install.upp")));
+	if(firstinstall)
 		if(!Install())
 			return;
 #endif
@@ -609,6 +613,7 @@ void AppMain___()
 			Uninstall();
 			return;
 		}
+		if(!firstinstall && arg[i] == "-install" && !Install()) return;
 
 	#ifdef PLATFORM_WIN32
 		if(arg[i] == "!") {

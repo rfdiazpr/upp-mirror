@@ -1,6 +1,8 @@
 #include "TCore.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 String XMLTag::ToString() const
 {
 	String out;
@@ -402,9 +404,9 @@ String ToXml(const char *s, byte charset)
 Xmls& Xmls::Attr(const char *a)                  { Cat(' '); Cat(a); return *this; }
 Xmls& Xmls::Attr(const char *a, const char *s)   { Attr(a); Cat('='); return Quote(s); }
 Xmls& Xmls::Attr(const char *a, String s)        { return Attr(a, ~s); }
-Xmls& Xmls::Attr(const char *a, int i)           { return Attr(a, ::FormatInt(i)); }
-Xmls& Xmls::Attr(const char *a, double d)        { return Attr(a, ::FormatDouble(d)); }
-Xmls& Xmls::Attr(const char *a, Date d)          { return Attr(a, ::Format(d)); }
+Xmls& Xmls::Attr(const char *a, int i)           { return Attr(a, UPP::FormatInt(i)); }
+Xmls& Xmls::Attr(const char *a, double d)        { return Attr(a, UPP::FormatDouble(d)); }
+Xmls& Xmls::Attr(const char *a, Date d)          { return Attr(a, UPP::Format(d)); }
 Xmls& Xmls::Attr(const char *a, Value v)         { return Attr(a, StdFormat(v)); }
 
 Xmls& Xmls::Cat(const XmlsTag& tag)               { return Cat(Xmls(tag)); }
@@ -478,3 +480,5 @@ Xmls XmlsComment(const char *text)
 	out.Cat(" -->\n");
 	return out;
 }
+
+END_UPP_NAMESPACE

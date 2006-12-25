@@ -1,5 +1,7 @@
 #include <Report/Report.h>
 
+using namespace Upp;
+
 GUI_APP_MAIN
 {
 	Report r;

@@ -13,3 +13,5 @@ void   EditKeys();
 
 String StoreKeys();
 void   RestoreKeys(const String& data);
+
+dword ParseKeyDesc(CParser& p);

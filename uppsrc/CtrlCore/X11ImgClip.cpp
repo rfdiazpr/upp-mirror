@@ -1,8 +1,10 @@
 #include "CtrlCore.h"
 
-#ifdef PLATFORM_X11
-
 #include <plugin/bmp/bmp.h>
+
+NAMESPACE_UPP
+
+#ifdef PLATFORM_X11
 
 Image ReadClipboardImage()
 {
@@ -23,3 +25,5 @@ void AppendClipboardImage(const Image& img)
 }
 
 #endif
+
+END_UPP_NAMESPACE

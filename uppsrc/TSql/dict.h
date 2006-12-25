@@ -9,6 +9,8 @@
 // if(UserCanRead[Write]("ADRESA"[ADRESA]))
 //    ...
 
+NAMESPACE_UPP
+
 enum // rights
 {
 	SEL = 0x01,
@@ -224,3 +226,5 @@ inline SqlIndexMap& operator << (SqlIndexMap& map, const char* table) { map.Add(
 
 unsigned GetHashValue(const SqlAnyTable& table);
 unsigned GetHashValue(const SqlAnyColumn& column);
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 int Diff(RGBA a, RGBA b)
 {
 	return max(abs(a.r - b.r), max(abs(a.b - b.b), abs(a.g - b.g)));
@@ -92,7 +94,7 @@ struct ButtonDecomposer {
 
 	void Do() {
 		Size sz = src.GetSize();
-		int qa = min(4, min(sz.cy / 5, sz.cx / 5));
+		int qa = min(4, min(sz.cy / 4, sz.cx / 4));
 		if(qa == 0) {
 			dst = src;
 			return;
@@ -111,7 +113,7 @@ struct ButtonDecomposer {
 			if(aa[p] > a)
 				a = aa[p];
 		}
-		if(a < min(sz.cy / 3, sz.cy / 3))
+		if(a < min(sz.cx / 3, sz.cy / 3))
 			a++;
 		dst = src;
 		ImageBuffer b(dst);
@@ -259,3 +261,5 @@ int ImageMargin(const Image& m, int p, int dist)
 			break;
 	return d + 1;
 }
+
+END_UPP_NAMESPACE

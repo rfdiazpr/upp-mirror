@@ -3,6 +3,8 @@
 
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 #define LAYOUTFILE <EyeCare/EyeCare.lay>
 #include <CtrlCore/lay.h>
 

@@ -5,6 +5,8 @@
 #include <Esc/Esc.h>
 #include <Web/Web.h>
 
+using namespace Upp;
+
 #define IMAGECLASS IdeCommonImg
 #define IMAGEFILE  <ide/Common/common.iml>
 #include <Draw/iml_header.h>
@@ -183,7 +185,6 @@ bool   IsFullDirectory(const String& d);
 bool   IsCSourceFile(const char *path);
 bool   IsCHeaderFile(const char *path);
 
-String GetFileFolder(const char *fileName);
 String FollowCygwinSymlink(const String& filename);
 
 void   SplitPathMap(const char *path_map, Vector<String>& local, Vector<String>& remote);

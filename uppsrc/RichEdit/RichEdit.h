@@ -3,6 +3,8 @@
 
 #include <CtrlLib/CtrlLib.h>
 
+NAMESPACE_UPP
+
 #define IMAGECLASS RichEditImg
 #define IMAGEFILE <RichEdit/RichEdit.iml>
 #include <Draw/iml_header.h>
@@ -646,5 +648,7 @@ public:
 
 	RichEditWithToolBar();
 };
+
+END_UPP_NAMESPACE
 
 #endif

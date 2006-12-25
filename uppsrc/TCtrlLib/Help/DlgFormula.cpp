@@ -4,6 +4,8 @@
 
 #include <TDraw/formula.h>
 
+NAMESPACE_UPP
+
 #define LAYOUTFILE <TCtrlLib/Help/DlgFormula.lay>
 #include <CtrlCore/lay.h>
 
@@ -208,3 +210,5 @@ void DlgFormula::ToolOper(Bar& bar)
 void DlgFormula::OnOperChar(char c)
 {
 }
+
+END_UPP_NAMESPACE

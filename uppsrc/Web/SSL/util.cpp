@@ -3,6 +3,8 @@
 
 #ifndef flagNOSSL
 
+NAMESPACE_UPP
+
 #define LOG_UPP_SSL_MALLOC 0
 
 #if LOG_UPP_SSL_MALLOC
@@ -517,5 +519,7 @@ bool SSLClientSocket(Socket& socket, SSLContext& ssl_context, const char *host, 
 	socket.Attach(-data);
 	return true;
 }
+
+END_UPP_NAMESPACE
 
 #endif//flagNOSSL

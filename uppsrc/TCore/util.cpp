@@ -11,6 +11,8 @@
 #include <ieeefp.h>
 #endif
 
+NAMESPACE_UPP
+
 bool IsNan(double t)
 {
 #ifdef PLATFORM_WIN32
@@ -998,7 +1000,7 @@ bool SaveFileBackup(String fn, String data, bool keep_backup)
 	String tfn = fn + ".$old";
 	FileDelete(tfn);
 	FileMove(fn, tfn);
-	bool res = ::SaveFile(fn, data);
+	bool res = SaveFile(fn, data);
 	if(!res)
 		FileDelete(fn);
 	else if(!keep_backup)
@@ -1202,3 +1204,5 @@ String AppendPathList(String s, String path_list)
 	}
 	return result;
 }
+
+END_UPP_NAMESPACE

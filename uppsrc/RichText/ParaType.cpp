@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 void RichPara::Smh(Lines& lines, HeightInfo *th, int cx) const
 {
 	Line& l = lines.line.Top();
@@ -371,3 +373,5 @@ int RichPara::Lines::BodyHeight()
 		sum += line[i].Sum();
 	return sum;
 }
+
+END_UPP_NAMESPACE

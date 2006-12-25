@@ -1,3 +1,5 @@
+NAMESPACE_UPP
+
 inline String        HelpDPPStyle()                   { return HelpHostDPP("style"); }
 inline String        HelpDPPTopics()                  { return HelpHostDPP("topics"); }
 inline String        HelpDPPTopicsAuto()              { return HelpHostDPP("topics_auto"); }
@@ -119,3 +121,5 @@ public:
 private:
 	const RichObjectType *type;
 };
+
+END_UPP_NAMESPACE

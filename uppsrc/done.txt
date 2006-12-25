@@ -1,4 +1,10 @@
+Weekend {
 
+* Problem with menu fade in settings...
+* PCRE
+* fullscreen
+
+}
 
 Weekend {
 	New ImageView example

@@ -1,6 +1,8 @@
 #ifndef __TCtrlLib_CtrlArray__
 #define __TCtrlLib_CtrlArray__
 
+NAMESPACE_UPP
+
 class CtrlArray : public Ctrl
 {
 public:
@@ -114,5 +116,7 @@ private:
 	bool              duplicating;
 	bool              moving;
 };
+
+END_UPP_NAMESPACE
 
 #endif//__TCtrlLib_CtrlArray__

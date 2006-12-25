@@ -1,11 +1,15 @@
 #include "CtrlCore.h"
 
 #ifdef PLATFORM_X11
-
 #include <locale.h>
+#endif
+
+NAMESPACE_UPP
+
+#ifdef PLATFORM_X11
 
 #ifdef _DEBUG
-	#define SYNCHRONIZE
+//	#define SYNCHRONIZE
 #endif
 
 #define LLOG(x) // LOG(x)
@@ -357,3 +361,5 @@ bool Ctrl::IsOpenEffectsMode() {
 }
 */
 #endif
+
+END_UPP_NAMESPACE

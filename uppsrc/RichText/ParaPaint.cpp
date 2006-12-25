@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 #define IMAGECLASS RichTextImg
 #define IMAGEFILE <RichText/RichText.iml>
 #include <Draw/iml.h>
@@ -568,3 +570,5 @@ void  RichPara::ApplyZoom(Zoom z)
 		if(part[i].object)
 			part[i].object.SetSize(z * part[i].object.GetSize());
 }
+
+END_UPP_NAMESPACE

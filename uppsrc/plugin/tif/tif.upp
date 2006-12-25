@@ -71,7 +71,6 @@ file
 	lib\tif_predict.h,
 	lib\tif_print.c,
 	lib\tif_read.c,
-	lib\tif_stream.cxx,
 	lib\tif_strip.c,
 	lib\tif_swab.c,
 	lib\tif_thunder.c,

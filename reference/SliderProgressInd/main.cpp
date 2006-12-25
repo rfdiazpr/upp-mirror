@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct App : TopWindow {
 	ProgressIndicator progress;
 	SliderCtrl        slider;

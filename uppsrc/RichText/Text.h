@@ -19,7 +19,7 @@ public:
 	Uuid                  GetStyleId(int i) const              { return style.GetKey(i); }
 	Uuid                  GetStyleId(const String& name) const;
 	const RichStyle&      GetStyle(int i) const                { return style[i]; }
-	const RichStyle&      GetStyle(const Uuid& id) const       { return ::GetStyle(style, id); }
+	const RichStyle&      GetStyle(const Uuid& id) const       { return UPP::GetStyle(style, id); }
 	void                  SetStyle(const Uuid& id, const RichStyle& _style);
 	bool                  HasStyle(const Uuid& id)             { return style.Find(id) >= 0; }
 	void                  RemoveStyle(const Uuid& id);

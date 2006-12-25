@@ -1,5 +1,3 @@
-#ifdef LAYOUTFILE
-
 LAYOUT(DlgShotCtrlAttrLayout, 440, 270)
 	ITEM(Label, dv___0, SetLabel(t_("Object type:")).LeftPosZ(4, 68).TopPosZ(4, 19))
 	ITEM(EditField, object_type, HSizePosZ(76, 4).TopPosZ(4, 19))
@@ -67,5 +65,3 @@ LAYOUT(DlgShotCtrlAttrLayout, 440, 270)
 	ITEM(Label, dv___63, SetLabel(t_("Value:")).LeftPosZ(4, 68).TopPosZ(246, 19))
 	ITEM(EditField, object_value, HSizePosZ(76, 4).TopPosZ(246, 19))
 END_LAYOUT
-
-#endif

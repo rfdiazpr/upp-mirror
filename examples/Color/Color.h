@@ -3,6 +3,8 @@
 
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 class ColorWindow : public TopWindow {
 public:
 	typedef Color CLASSNAME;

@@ -6,6 +6,8 @@
 
 #include "OldTreeCtrl.h"
 
+NAMESPACE_UPP
+
 #define IMAGECLASS OldTreeCtrlImg
 #define IMAGEFILE  <TCtrlLib/OldTreeCtrl.iml>
 #include <Draw/iml_header.h>
@@ -551,7 +553,7 @@ OldTreeItem& OldTreeItem::Insert(int pos, OldTreeItem *item)
 	children.Insert(pos, item);
 	item->parent = this;
 	item->owner  = owner;
-	::SetOwner(*item);
+	UPP::SetOwner(*item);
 	item->TouchLayout();
 	return *item;
 }
@@ -1463,3 +1465,5 @@ void OldTreeCtrl::ScCursor(Point pt)
 		pt += i->GetTreeRect().TopLeft();
 	scroll = pt;
 }
+
+END_UPP_NAMESPACE

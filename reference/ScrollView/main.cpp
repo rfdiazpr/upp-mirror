@@ -1,8 +1,10 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct App : public TopWindow {
 	Point pos;
-	
+
 	virtual void Paint(Draw &w)
 	{
 		Size sz = GetSize();
@@ -15,14 +17,14 @@ struct App : public TopWindow {
 	virtual bool Key(dword key, int count)
 	{
 		if(key == VK_SPACE) {
-			Size sz = GetSize();		
+			Size sz = GetSize();
 			Size delta(rand() % 50, rand() % 50);
 			pos += delta;
 			ScrollView(-delta);
 		}
 		return true;
 	}
-	
+
 	App()
 	{
 		pos = Point(0, 0);

@@ -10,7 +10,7 @@ struct Size_ : Moveable< Size_<T> > {
 	bool          IsEmpty() const              { return cx == 0 || cy == 0; }
 
 	void          SetNull()                    { cx = Null; }
-	bool          IsNullInstance() const       { return ::IsNull(cx); }
+	bool          IsNullInstance() const       { return UPP::IsNull(cx); }
 
 	Size_&        operator+=(Size_ p)          { cx  += p.cx; cy  += p.cy; return *this; }
 	Size_&        operator+=(T t)              { cx  += t;    cy  += t;    return *this; }
@@ -56,7 +56,7 @@ struct Size_ : Moveable< Size_<T> > {
 	friend T      Squared(Size_ a)             { return a.cx * a.cx + a.cy * a.cy; }
 	friend double Length(Size_ a)              { return hypot(a.cx, a.cy); }
 
-	unsigned      GetHashValue() const         { return ::GetHashValue(cx) ^ ::GetHashValue(cy); }
+	unsigned      GetHashValue() const         { return UPP::GetHashValue(cx) ^ UPP::GetHashValue(cy); }
 
 	String        ToString() const;
 
@@ -105,7 +105,7 @@ struct Point_ : Moveable< Point_<T> > {
 	bool          IsZero() const                    { return x == 0 && y == 0; }
 
 	void          SetNull()                         { x = y = Null; }
-	bool          IsNullInstance() const            { return ::IsNull(x); }
+	bool          IsNullInstance() const            { return UPP::IsNull(x); }
 
 	void          Offset(T dx, T dy)                { x += dx; y += dy; }
 
@@ -158,7 +158,7 @@ struct Point_ : Moveable< Point_<T> > {
 
 	friend Point_ Nvl(Point_ a, Point_ b)           { return IsNull(a) ? b : a; }
 
-	unsigned      GetHashValue() const              { return ::GetHashValue(x) ^ ::GetHashValue(y); }
+	unsigned      GetHashValue() const              { return UPP::GetHashValue(x) ^ UPP::GetHashValue(y); }
 
 	String        ToString() const;
 
@@ -335,7 +335,7 @@ struct Rect_ : Moveable< Rect_<T> > {
 
 	friend const Rect_& Nvl(const Rect_& a, const Rect_& b) { return IsNull(a) ? b : a; }
 
-	unsigned     GetHashValue() const           { return ::GetHashValue(left) ^ ::GetHashValue(top) ^ ::GetHashValue(right) ^ ::GetHashValue(bottom); }
+	unsigned     GetHashValue() const           { return UPP::GetHashValue(left) ^ UPP::GetHashValue(top) ^ UPP::GetHashValue(right) ^ UPP::GetHashValue(bottom); }
 
 	String ToString() const;
 

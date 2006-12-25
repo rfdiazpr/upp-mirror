@@ -1,5 +1,7 @@
 #include "Core.h"
 
+NAMESPACE_UPP
+
 #define TFILE <Core/Core.t>
 #include <Core/t.h>
 
@@ -374,3 +376,5 @@ bool   LoadLngFile(const char *file)
 	}
 	return true;
 }
+
+END_UPP_NAMESPACE

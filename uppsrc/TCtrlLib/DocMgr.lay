@@ -1,5 +1,3 @@
-#ifdef LAYOUTFILE
-
 LAYOUT(DocListWindowsLayout, 400, 200)
 	ITEM(ArrayCtrl, window_list, AutoHideSb(true).HSizePosZ(4, 4).VSizePosZ(4, 32))
 	ITEM(Button, ok, SetLabel(t_("&Activate")).LeftPosZ(4, 80).BottomPosZ(4, 22))
@@ -20,6 +18,3 @@ LAYOUT(DocListNewLayout, 234, 110)
 	ITEM(Button, ok, SetLabel(t_("OK")).RightPosZ(4, 80).TopPosZ(4, 22))
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).RightPosZ(4, 80).TopPosZ(30, 22))
 END_LAYOUT
-
-#endif
-

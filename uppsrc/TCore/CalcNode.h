@@ -1,3 +1,5 @@
+NAMESPACE_UPP
+
 struct CalcPacket;
 class  CalcNode;
 class  CalcContext;
@@ -349,13 +351,13 @@ public:
 
 	String              Convert(String s, bool throw_errors, const class Convert& convert = NoConvert());
 	static void         ParseConvert(String s, Vector<String>& sparts, Vector<CalcNodePtr>& cparts, bool throw_errors);
-	String              CalcConvert(const Vector<String>& sparts, const Vector<CalcNodePtr>& cparts, bool throw_errors, const ::Convert& convert = NoConvert());
+	String              CalcConvert(const Vector<String>& sparts, const Vector<CalcNodePtr>& cparts, bool throw_errors, const UPP::Convert& convert = NoConvert());
 
 	virtual Value       Calc(CalcPacket& packet);
 	virtual Value       TryCalc(CalcPacket& packet);
 	virtual String      GetTypeName(Value value) const;
 	virtual String      FormatNull(Value value, bool no_text = false);
-	virtual String      FormatText(Value value, const ::Convert& convert = NoConvert());
+	virtual String      FormatText(Value value, const UPP::Convert& convert = NoConvert());
 
 	virtual void        PushLevel();
 	virtual void        PopLevel();
@@ -656,3 +658,5 @@ RegisterHelpTopicInfo("Calc$" topic, __FILE__, callback(&FGENID(chlt, dflt)), CN
 #define MDECL0(id, x, group)  MDECLT(BTA1, ASSTRING(id),                 id,           group, COMBINE3(C, id, x))
 #define MDECLP(id, x, group)  MDECLT(BTA0, "C" ASSTRING(id) ASSTRING(x), ASSTRING(id), group, COMBINE3(C, id, x))
 #define MDECLP0(id, x, group) MDECLT(BTA1, "C" ASSTRING(id) ASSTRING(x), ASSTRING(id), group, COMBINE3(C, id, x))
+
+END_UPP_NAMESPACE

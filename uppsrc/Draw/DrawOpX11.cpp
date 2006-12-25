@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 #ifdef PLATFORM_X11
 
 #define LLOG(x)     // LOG(x)
@@ -341,3 +343,5 @@ void Draw::DrawArcOp(const Rect& rc, Point start, Point end, int width, Color co
 }
 
 #endif
+
+END_UPP_NAMESPACE

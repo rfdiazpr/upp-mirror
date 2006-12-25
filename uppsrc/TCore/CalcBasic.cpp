@@ -17,6 +17,8 @@
 #include <ieeefp.h>
 #endif
 
+NAMESPACE_UPP
+
 void UseCalcBasic() {} // to bring in globally constructed objects
 
 String PluralFormat(int i, const char *b)
@@ -1152,3 +1154,5 @@ static inline bool ClikeSS(WString s, WString m)
 }
 
 FDECLP(like, SS, GroupString)
+
+END_UPP_NAMESPACE

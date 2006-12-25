@@ -1,5 +1,3 @@
-#ifdef LAYOUTFILE
-
 LAYOUT(CalcLayout, 462, 84)
 	ITEM(Label, dv___0, SetLabel(t_("&Expression:")).LeftPosZ(4, 62).TopPosZ(4, 19))
 	ITEM(WithDropChoice<EditField>, exp, HSizePosZ(68, 4).TopPosZ(4, 19))
@@ -17,6 +15,3 @@ LAYOUT(CalcStoreLayout, 246, 192)
 	ITEM(Button, ok, SetLabel(t_("OK")).RightPosZ(88, 80).BottomPosZ(4, 22))
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).RightPosZ(4, 80).BottomPosZ(4, 22))
 END_LAYOUT
-
-#endif
-

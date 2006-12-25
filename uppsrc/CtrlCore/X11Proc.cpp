@@ -1,5 +1,7 @@
 #include "CtrlCore.h"
 
+NAMESPACE_UPP
+
 #ifdef PLATFORM_X11
 
 #define LLOG(x)        //LOG(x)
@@ -259,6 +261,7 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 		break;
 	case ButtonRelease: {
 			mousePos = Point(event->xbutton.x_root, event->xbutton.y_root);
+			XUngrabPointer(Xdisplay, CurrentTime);
 			XButtonEvent& e = event->xbutton;
 			sModState = e.state;
 			Xeventtime = e.time;
@@ -316,3 +319,5 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 }
 
 #endif
+
+END_UPP_NAMESPACE

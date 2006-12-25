@@ -2,6 +2,8 @@
 #include "bin.brc"
 #include <plugin/bz2/bz2.h>
 
+using namespace Upp;
+
 //**
 
 CONSOLE_APP_MAIN

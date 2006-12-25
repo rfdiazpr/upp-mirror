@@ -1,5 +1,7 @@
 #include <DocTypes/DocTypes.h>
 
+NAMESPACE_UPP
+
 RtfDocOut::RtfDocOut() {
 	color.Add(Black());
 	pgcx = 3968;
@@ -264,3 +266,5 @@ String RtfDocOut::Get() {
 	out += "}\r\n";
 	return out;
 }
+
+END_UPP_NAMESPACE

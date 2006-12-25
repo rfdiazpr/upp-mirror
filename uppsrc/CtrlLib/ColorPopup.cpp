@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 static struct {
 	const char  *name;
 	ColorF color;
@@ -324,3 +326,5 @@ ColorPopUp::ColorPopUp()
 	BackPaint();
 	nulltext = t_("(transparent)");
 }
+
+END_UPP_NAMESPACE

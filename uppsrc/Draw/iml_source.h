@@ -29,8 +29,8 @@
 // -----------------------
 
 
-Iml& IMAGECLASS::Iml() {
-	static Image::Init init[] = {
+UPP::Iml& IMAGECLASS::Iml() {
+	static UPP::Image::Init init[] = {
 	#define IMAGE_PACKED(n, d) { COMBINE(COMBINE(IMAGECLASS, _), n##__scans__), __countof(COMBINE(COMBINE(IMAGECLASS, _), n##__scans__)), d },
 
 		#include IMAGEFILE
@@ -51,7 +51,7 @@ Iml& IMAGECLASS::Iml() {
 	#define IMAGE_ID(n)
 	#define IMAGE_PACKED(n, d)
 	};
-	static ::Iml iml(init, name, COUNT);
+	static UPP::Iml iml(init, name, COUNT);
 	static bool imlinit;
 	if(!imlinit) {
 		imlinit = true;
@@ -60,7 +60,7 @@ Iml& IMAGECLASS::Iml() {
 	#undef  IMAGE_DATA
 	#undef  IMAGE_END_DATA
 
-	#define IMAGE_BEGIN_DATA { static const byte data[] = {
+	#define IMAGE_BEGIN_DATA { static const UPP::byte data[] = {
 	#define IMAGE_DATA(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,aa,ab,ac,ad,ae,af,b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,ba,bb,bc,bd,be,bf)\
 	                   a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,aa,ab,ac,ad,ae,af,b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,ba,bb,bc,bd,be,bf,
 
@@ -72,17 +72,17 @@ Iml& IMAGECLASS::Iml() {
 	return iml;
 }
 
-Image IMAGECLASS::Get(int i)
+UPP::Image IMAGECLASS::Get(int i)
 {
 	return Iml().Get(i);
 }
 
-Image IMAGECLASS::Get(const char *s)
+UPP::Image IMAGECLASS::Get(const char *s)
 {
 	return Iml().Get(Find(s));
 }
 
-int   IMAGECLASS::Find(const String& s)
+int   IMAGECLASS::Find(const UPP::String& s)
 {
 	return Iml().Find(s);
 }
@@ -92,12 +92,12 @@ int   IMAGECLASS::Find(const char *s)
 	return Iml().Find(s);
 }
 
-void  IMAGECLASS::Set(int i, const Image& m)
+void  IMAGECLASS::Set(int i, const UPP::Image& m)
 {
 	Iml().Set(i, m);
 }
 
-void  IMAGECLASS::Set(const char *s, const Image& m)
+void  IMAGECLASS::Set(const char *s, const UPP::Image& m)
 {
 	Iml().Set(Find(s), m);
 }

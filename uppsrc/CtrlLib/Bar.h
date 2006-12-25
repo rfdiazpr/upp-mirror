@@ -94,11 +94,11 @@ public:
 	void   Add(bool en, Ctrl& ctrl, int cx, int cy = 0) { Add(ctrl, cx, cy); ctrl.Enable(en); }
 
 
-	Item&  Add(bool enable, const char *text, const ::Image& image, Callback callback);
-	Item&  Add(bool enable, KeyInfo& (*key)(), const ::Image& image, Callback callback);
-	Item&  Add(const char *text, const ::Image& image, Callback callback);
-	Item&  Add(const String& text, const ::Image& image, Callback callback);
-	Item&  Add(KeyInfo& (*key)(), const ::Image& image, Callback callback);
+	Item&  Add(bool enable, const char *text, const UPP::Image& image, Callback callback);
+	Item&  Add(bool enable, KeyInfo& (*key)(), const UPP::Image& image, Callback callback);
+	Item&  Add(const char *text, const UPP::Image& image, Callback callback);
+	Item&  Add(const String& text, const UPP::Image& image, Callback callback);
+	Item&  Add(KeyInfo& (*key)(), const UPP::Image& image, Callback callback);
 
 	Item&  Add(bool enable, const char *text, Callback callback);
 	Item&  Add(bool enable, KeyInfo& (*key)(), Callback callback);
@@ -114,16 +114,16 @@ public:
 	void   AddMenu(Ctrl& ctrl, Size sz);
 	void   AddMenu(Ctrl& ctrl, int cx, int cy = 0)  { AddMenu(ctrl, Size(cx, cy)); }
 
-	Item&  AddMenu(bool enable, const char *text, const ::Image& image, Callback callback);
-	Item&  AddMenu(bool enable, KeyInfo& (*key)(), const ::Image& image, Callback callback);
-	Item&  AddMenu(const char *text, const ::Image& image, Callback callback);
-	Item&  AddMenu(const String& t, const ::Image& m, Callback c) { AddMenu(t, m, c); }
-	Item&  AddMenu(KeyInfo& (*key)(), const ::Image& m, Callback c);
+	Item&  AddMenu(bool enable, const char *text, const UPP::Image& image, Callback callback);
+	Item&  AddMenu(bool enable, KeyInfo& (*key)(), const UPP::Image& image, Callback callback);
+	Item&  AddMenu(const char *text, const UPP::Image& image, Callback callback);
+	Item&  AddMenu(const String& t, const UPP::Image& m, Callback c) { AddMenu(t, m, c); }
+	Item&  AddMenu(KeyInfo& (*key)(), const UPP::Image& m, Callback c);
 
 	Item&  Add(bool enable, const char *text, Callback1<Bar&> proc);
 	Item&  Add(const char *text, Callback1<Bar&> proc);
-	Item&  Add(bool enable, const char *text, const ::Image& image, Callback1<Bar&> proc);
-	Item&  Add(const char *text, const ::Image& image, Callback1<Bar&> proc);
+	Item&  Add(bool enable, const char *text, const UPP::Image& image, Callback1<Bar&> proc);
+	Item&  Add(const char *text, const UPP::Image& image, Callback1<Bar&> proc);
 
 	void   ToolSeparator();
 	void   ToolBreak();
@@ -134,8 +134,8 @@ public:
 	void   AddTool(Ctrl& ctrl, Size sz);
 	void   AddTool(Ctrl& ctrl, int cx, int cy = 0)  { AddTool(ctrl, Size(cx, cy)); }
 
-	Item&  Add(const ::Image& image, Callback callback);
-	Item&  Add(bool enable, const ::Image& image, Callback callback);
+	Item&  Add(const UPP::Image& image, Callback callback);
+	Item&  Add(bool enable, const UPP::Image& image, Callback callback);
 
 	virtual void AddKey(dword key, Callback cb);
 	        void AddKey(KeyInfo& (*key)(), Callback cb);
@@ -331,7 +331,7 @@ public:
 	virtual Bar::Item& Text(const char *text);
 	virtual Bar::Item& Key(dword key);
 	virtual Bar::Item& Repeat(bool repeat = true);
-	virtual Bar::Item& Image(const ::Image& img);
+	virtual Bar::Item& Image(const UPP::Image& img);
 	virtual Bar::Item& Enable(bool _enable);
 	virtual Bar::Item& Tip(const char *tip);
 	virtual Bar::Item& Help(const char *help);
@@ -349,7 +349,7 @@ protected:
 	bool    repeat;
 
 private:
-	::Image image;
+	UPP::Image image;
 
 	void  SendHelpLine();
 	void  ClearHelpLine();

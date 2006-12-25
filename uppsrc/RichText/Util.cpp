@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 Draw& SimplePageDraw::Info()
 {
 	return w;
@@ -118,3 +120,5 @@ RichText AsRichText(const wchar *s, const RichPara::Format& f)
 	clip.Cat(p);
 	return clip;
 }
+
+END_UPP_NAMESPACE

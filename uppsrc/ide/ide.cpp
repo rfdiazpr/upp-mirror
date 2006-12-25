@@ -40,31 +40,27 @@ void Ide::MakeTitle()
 }
 
 void Ide::MakeIcon() {
-//TODO
-#ifdef PLATFORM_WIN32_not_yet
+#ifdef PLATFORM_WIN32
 	String mp = main;
 	Image li = IdeImg::PackageLarge();
 	if(!IsNull(mp))
 	{
-		ImageDraw idraw(li);
-		ImageMaskDraw mdraw(li);
-		Font font = Arial(9);
-		Size sz = idraw.GetTextSize(mp, font);
-		sz.cy -= 2;
-		sz.cx += 2;
-		int delta = li.GetWidth() - 1;
-		int lines = (sz.cx > delta) ? 2 : 1;
-		int x = max(1, (li.GetWidth() - sz.cx) >> 1), y = li.GetHeight() - lines * sz.cy;
+		Size isz = li.GetSize();
+		ImageDraw idraw(isz);
+		Draw& mdraw = idraw.Alpha();
+		idraw.DrawImage(0, 0, li);
+		mdraw.DrawImage(0, 0, li, White);
+		Font font = StdFont(9);
+		Size sz = GetTextSize(mp, font);
+		sz.cx = min(sz.cx + 4, isz.cx);
+		sz.cy += 2;
+		int x = (isz.cx - sz.cx) / 2;
+		int y = isz.cy - sz.cy;
 		idraw.DrawRect(x, y, sz.cx, sz.cy, White);
-		mdraw.DrawRect(x, y, sz.cx, sz.cy, Black);
-		idraw.DrawText(x + 1, y - 1, mp, font, Black);
-		if(lines > 1)
-		{
-			y += sz.cy;
-			idraw.DrawRect(x, y, sz.cx - delta, sz.cy, White);
-			mdraw.DrawRect(x, y, sz.cx - delta, sz.cy, Black);
-			idraw.DrawText(x + 1 - delta, y - 1, mp, font, Black);
-		}
+		mdraw.DrawRect(x, y, sz.cx, sz.cy, White);
+		idraw.DrawText(x + 2, y + 1, mp, font, Black);
+		DrawFrame(idraw, x, y, sz.cx, sz.cy, LtBlue);
+		li = idraw;
 	}
 	LargeIcon(li);
 #endif

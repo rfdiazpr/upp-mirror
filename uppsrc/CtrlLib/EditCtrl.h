@@ -53,6 +53,7 @@ protected:
 	bool       initcaps:1;
 	bool       keep_selection:1;
 	bool       clickselect:1;
+	bool       nobg:1;
 
 	int     GetTextCx(const wchar *text, int n, bool password);
 	void    Paints(Draw& w, int& x, int fcy, const wchar *&txt,
@@ -118,6 +119,7 @@ public:
 	EditField& NullText(const char *text = t_("(default)"), Color ink = Brown);
 	EditField& MaxChars(int mc)              { maxlen = mc; return *this; }
 	EditField& AutoSize(int maxcx = INT_MAX) { autosize = maxcx; Finish(); return *this; }
+	EditField& NoBackground(bool b = true)   { nobg = b; Transparent(); Refresh(); return *this; }
 
 	CharFilter     GetFilter() const         { return filter; }
 	const Convert& GetConvert() const        { return *convert; }

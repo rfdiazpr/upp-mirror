@@ -1,5 +1,7 @@
 #include "Core.h"
 
+NAMESPACE_UPP
+
 #ifdef _MULTITHREADED
 
 CriticalSection& sCriticalSectionLock();
@@ -186,3 +188,5 @@ void Event::Set()
 }
 
 #endif
+
+END_UPP_NAMESPACE

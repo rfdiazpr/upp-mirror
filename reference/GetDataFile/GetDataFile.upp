@@ -1,3 +1,5 @@
+description "Demonstration of facility used to read application specific files";
+
 uses
 	Core;
 
@@ -7,4 +9,3 @@ file
 
 mainconfig
 	"" = "";
-

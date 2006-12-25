@@ -1,15 +1,17 @@
 #include <Core/Core.h>
 
+using namespace Upp;
+
 struct Foo {
 	int         q;
 	String      text;
 	Vector<int> data;
-	
+
 	void Serialize(Stream& s)
 	{
 		s % q % text % data;
 	}
-	
+
 	String ToString() const
 	{
 		String s;
@@ -18,7 +20,7 @@ struct Foo {
 			s << ' ' << data[i];
 		return s;
 	}
-	
+
 	Foo() { q = 0; }
 };
 

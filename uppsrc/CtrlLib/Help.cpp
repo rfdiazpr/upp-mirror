@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 Topic HelpWindow::AcquireTopic(const String& topic)
 {
 	return GetTopic(topic);
@@ -100,7 +102,7 @@ void HelpWindow::FontSize()
 void HelpWindow::Print()
 {
 #ifndef PLATFORM_PDA
-	::Print(view.Get(), Size(3968, 6074), 0);
+	UPP::Print(view.Get(), Size(3968, 6074), 0);
 #endif
 }
 
@@ -196,3 +198,5 @@ HelpWindow::HelpWindow()
 	Icon(CtrlImg::help());
 	SetBar();
 }
+
+END_UPP_NAMESPACE

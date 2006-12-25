@@ -1,5 +1,7 @@
 #include "Sql.h"
 
+NAMESPACE_UPP
+
 String SqlStatement::Get(int dialect) const
 {
 	ASSERT(dialect == ORACLE || dialect == SQLITE3 || dialect == MY_SQL || dialect == MSSQL ||
@@ -241,3 +243,5 @@ Value SqlStatement::Fetch() const {
 	return Fetch(SQL);
 }
 #endif
+
+END_UPP_NAMESPACE

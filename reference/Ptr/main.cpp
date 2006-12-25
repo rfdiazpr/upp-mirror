@@ -1,5 +1,7 @@
 #include <Core/Core.h>
 
+using namespace Upp;
+
 struct Foo : Pte<Foo> {
 	String text;
 };

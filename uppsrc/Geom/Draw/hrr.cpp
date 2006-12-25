@@ -10,6 +10,8 @@
 #include <plugin/gif/gif.h>
 #include <plugin/png/png.h>
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 void RasterCopy(RasterEncoder& dest, Raster& src, const Rect& src_rc)
@@ -1459,3 +1461,5 @@ One<StreamRasterEncoder> HRR::StdCreateEncoder(const HRRInfo& info)
 		default: return NULL;
 	}
 }
+
+END_UPP_NAMESPACE

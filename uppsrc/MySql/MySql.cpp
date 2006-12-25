@@ -1,5 +1,7 @@
 #include "MySql.h"
 
+NAMESPACE_UPP
+
 #ifndef flagNOMYSQL
 
 class MySqlConnection : public SqlConnection {
@@ -459,3 +461,5 @@ bool MySqlUpdateSchema(const SqlSchema& sch, int i, StatementExecutor& se) {
 }
 
 #endif
+
+END_UPP_NAMESPACE

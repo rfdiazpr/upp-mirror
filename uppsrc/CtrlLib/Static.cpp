@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 void StaticText::Paint(Draw& w)
 {
 	Size sz = GetSize();
@@ -189,7 +191,7 @@ ParentCtrl::ParentCtrl()
 	Transparent();
 }
 
-StaticRect& StaticRect::Color(class ::Color _color)
+StaticRect& StaticRect::Color(class Color _color)
 {
 	if(color != _color) {
 		color = _color;
@@ -298,6 +300,9 @@ SeparatorCtrl::SeparatorCtrl()
 {
 	NoWantFocus();
 	Transparent();
+	Disable();
 	margin = 2;
 	size = 7;
 }
+
+END_UPP_NAMESPACE

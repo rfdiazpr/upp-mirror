@@ -429,8 +429,13 @@ void CppBuilder::AddMakeFile(MakeFile& makefile, String package,
 		if(HasFlag("DEBUG") || HasFlag("DEBUG_MINIMAL") || HasFlag("DEBUG_FULL"))
 			lnk << " -ggdb";
 		else
-			lnk << " -Wl,-s";
-		lnk << " $(LIBPATH) -Wl,-O,2 $(LINKOPTIONS)";
+			lnk << (!HasFlag("OSX11") ? " -Wl,-s" : "");
+
+		lnk << " $(LIBPATH)";
+		if (!HasFlag("OSX11"))
+		  lnk << " -Wl,-O,2";
+		lnk << " $(LINKOPTIONS)";
+
 		makefile.linkfiles = lnk;
 	}
 
@@ -505,7 +510,7 @@ void CppBuilder::AddMakeFile(MakeFile& makefile, String package,
 	}
 
 	if(main) {
-		if(!HasFlag("SOLARIS"))
+		if(!HasFlag("SOLARIS")&&!HasFlag("OSX11"))
 			makefile.linkfiles << " \\\n\t\t-Wl,--start-group ";
 		for(int i = 0; i < all_libraries.GetCount(); i++) {
 			String ln = all_libraries[i];
@@ -515,7 +520,7 @@ void CppBuilder::AddMakeFile(MakeFile& makefile, String package,
 			else
 				makefile.linkfileend << " \\\n\t\t\t-l" << ln;
 		}
-		if(!HasFlag("SOLARIS"))
+		if(!HasFlag("SOLARIS")&&!HasFlag("OSX11"))
 			makefile.linkfileend << " \\\n\t\t-Wl,--end-group\n\n";
 	}
 }

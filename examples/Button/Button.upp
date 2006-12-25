@@ -1,3 +1,5 @@
+description "Counting button clicks";
+
 uses
 	CtrlLib;
 
@@ -6,4 +8,3 @@ file
 
 mainconfig
 	"" = "GUI";
-

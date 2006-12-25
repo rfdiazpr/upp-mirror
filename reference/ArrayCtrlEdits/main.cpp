@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 #define LAYOUTFILE <ArrayCtrlEdits/ArrayCtrlEdits.lay>
 #include <CtrlCore/lay.h>
 

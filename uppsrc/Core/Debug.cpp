@@ -1,5 +1,7 @@
 #include "Core.h"
 
+NAMESPACE_UPP
+
 #define LTIMING(x) // TIMING(x)
 
 int msecs(int from) { return (int)GetTickCount() - from; }
@@ -13,10 +15,10 @@ static void sLogFile(char *fn, const char *app = ".log")
 {
 #ifdef PLATFORM_WINCE
 	wchar wfn[256];
-	GetModuleFileName(NULL, wfn, 512);
+	::GetModuleFileName(NULL, wfn, 512);
 	strcpy(fn, FromSysChrSet(wfn));
 #else
-	GetModuleFileName(NULL, fn, 512);
+	::GetModuleFileName(NULL, fn, 512);
 #endif
 	char *e = fn + strlen(fn), *s = e;
 	while(s > fn && *--s != '\\' && *s != '.')
@@ -372,7 +374,7 @@ static char  appInfo[20];
 
 LONG __stdcall sDumpHandler(LPEXCEPTION_POINTERS ep) {
 	char fn[512];
-	GetModuleFileName(NULL, fn, 512);
+	::GetModuleFileName(NULL, fn, 512);
 	SYSTEMTIME st;
 	GetLocalTime(&st);
 	wsprintf(fn + strlen(fn), ".%d-%02d-%02d-%02d-%02d-%02d%s.crash",
@@ -427,3 +429,5 @@ void InstallCrashDump(const char *info) {
 }
 
 #endif
+
+END_UPP_NAMESPACE

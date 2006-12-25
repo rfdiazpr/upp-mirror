@@ -1,5 +1,7 @@
 #include "IconDes.h"
 
+NAMESPACE_UPP
+
 struct sFloodFill {
 	Rect         rc;
 	Size         sz;
@@ -203,3 +205,5 @@ String PackImlData(const Vector<Image>& image)
 	}
 	return ZCompress(block);
 }
+
+END_UPP_NAMESPACE

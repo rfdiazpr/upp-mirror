@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct MyAppWindow : TopWindow {
 	Button lt, rt, lb, rb, lv, ht, hv, cb, rc;
 

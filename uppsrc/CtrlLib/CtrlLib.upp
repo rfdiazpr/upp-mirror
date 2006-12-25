@@ -8,6 +8,8 @@ uses(LINUX) PdfDraw;
 
 uses(FREEBSD) PdfDraw;
 
+uses(OSX11) PdfDraw;
+
 file
 	CtrlLib.h,
 	CtrlLib readonly separator,
@@ -50,9 +52,10 @@ file
 	AKeys.cpp,
 	RichText.h,
 	RichTextView.cpp,
-	RichClip.cpp,
 	Prompt.cpp,
 	Help.cpp,
+	DateTimeCtrl.h,
+	DateTimeCtrl.cpp,
 	Bar readonly separator,
 	Bar.h,
 	Bar.cpp,
@@ -81,6 +84,7 @@ file
 	PrinterJob.cpp,
 	Windows.cpp,
 	Win32.cpp,
+	TrayIcon.cpp,
 	CtrlUtil.cpp,
 	Update.cpp,
 	XPTheme.dli,
@@ -96,8 +100,8 @@ file
 	Ch.cpp,
 	XPTheme.dli,
 	ChWin32.cpp,
-	ChGtk.cpp,
 	Ctrls.iml,
+	ChGtk.cpp,
 	ClassicCtrls.iml,
 	Meta readonly separator,
 	Normal.upt,

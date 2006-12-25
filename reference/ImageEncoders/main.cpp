@@ -6,6 +6,8 @@
 #include <plugin/jpg/jpg.h>
 #include <plugin/tif/tif.h>
 
+using namespace Upp;
+
 GUI_APP_MAIN
 {
 	ImageDraw iw(200, 50);

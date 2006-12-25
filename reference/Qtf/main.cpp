@@ -1,5 +1,7 @@
 #include <RichEdit/RichEdit.h>
 
+using namespace Upp;
+
 const char *examples[] = {
 	"Normal [* bold] [/ italic] [_ underline] [` superscript] [, subscript]",
 	"`[ `] \1[escaped]\1 [* bold]",

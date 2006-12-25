@@ -178,9 +178,16 @@ public:
 
 	String GetUser() const                             { return cn->GetUser(); }
 
-	void   SetError(const String& error, const String& stmt);
+	enum ERRORCLASS {
+		ERROR_UNSPECIFIED,
+		CONNECTION_BROKEN,
+	};
+
+	void   SetError(String error, String stmt, int code = 0, ERRORCLASS clss = ERROR_UNSPECIFIED);
 	String GetLastError() const;
 	String GetErrorStatement() const;
+	int    GetErrorCode() const;
+	ERRORCLASS GetErrorClass() const;
 	void   ClearError();
 
 	void   Begin();
@@ -239,6 +246,8 @@ protected:
 
 	String                        lasterror;
 	String                        errorstatement;
+	int                           errorcode;
+	Sql::ERRORCLASS               errorclass;
 
 public:
 	virtual void                  Begin();
@@ -278,9 +287,11 @@ public:
 
 	bool                          WasError() const                        { return !GetLastError().IsEmpty(); }
 
-	void                          SetError(const String& error, const String& stmt);
+	void                          SetError(String error, String stmt, int code = 0, Sql::ERRORCLASS clss = Sql::ERROR_UNSPECIFIED);
 	String                        GetLastError() const                    { return lasterror; }
 	String                        GetErrorStatement() const               { return errorstatement; }
+	int                           GetErrorCode() const                    { return errorcode; }
+	Sql::ERRORCLASS               GetErrorClass() const                   { return errorclass; }
 	void                          ClearError();
 
 	String                        GetUser()                               { return Sql(*this).GetUser(); }

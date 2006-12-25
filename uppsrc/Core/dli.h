@@ -20,12 +20,6 @@
 #endif
 #endif
 
-#ifdef PLATFORM_WIN32
-typedef HMODULE DLLHANDLE;
-#else
-typedef void   *DLLHANDLE;
-#endif
-
 #ifndef DLLSTRUCT
 #define DLLSTRUCT DLIMODULE
 #endif
@@ -58,7 +52,7 @@ struct DLLTYPE
 
 #include DLIHEADER
 private:
-	String            libname;
+	UPP::String       libname;
 	DLLHANDLE         handle;
 	bool              checked;
 };
@@ -100,9 +94,6 @@ DLLTYPE::DLLTYPE()
 #endif
 }
 
-DLLHANDLE LoadDll(String& fn, const char *const *names, void *const *procs);
-void      FreeDll(DLLHANDLE dllhandle);
-
 bool DLLTYPE::Load()
 {
 	if(!checked)
@@ -137,7 +128,7 @@ bool DLLTYPE::Load()
 
 //		if(handle = LoadDll(file, name, proc))
 //			atexit(&Free);
-		handle = LoadDll(libname, name, proc);
+		handle = LoadDll__(libname, name, proc);
 	}
 	return handle;
 }
@@ -152,7 +143,7 @@ void DLLTYPE::Force()
 
 void DLLTYPE::Free() {
 	if(handle) {
-		FreeDll(handle);
+		FreeDll__(handle);
 		handle = 0;
 	}
 	checked = false;

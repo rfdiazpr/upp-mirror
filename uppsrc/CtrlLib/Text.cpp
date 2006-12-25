@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+NAMESPACE_UPP
+
 TextCtrl::TextCtrl()
 {
 	Unicode();
@@ -16,6 +18,7 @@ TextCtrl::TextCtrl()
 	color[PAPER_READONLY] = SColorFace;
 	color[PAPER_SELECTED] = SColorHighlight;
 	processtab = true;
+	nobg = false;
 }
 
 TextCtrl::~TextCtrl() {}
@@ -614,7 +617,7 @@ void TextCtrl::StdBar(Bar& menu) {
 		.Key(K_CTRL_C);
 	menu.Add(IsEditable()
 		#ifdef PLATFORM_WIN32
-			&& IsClipboardFormatAvailable(CF_TEXT)
+			&& ::IsClipboardFormatAvailable(CF_TEXT)
 		#endif
 			,
 			t_("Paste"), CtrlImg::paste(), THISBACK(DoPaste))
@@ -628,3 +631,5 @@ void TextCtrl::StdBar(Bar& menu) {
 			t_("Select all"), THISBACK(SelectAll))
 		.Key(K_CTRL_A);
 }
+
+END_UPP_NAMESPACE

@@ -1,6 +1,8 @@
 #ifndef __Geom_Draw_hrr__
 #define __Geom_Draw_hrr__
 
+NAMESPACE_UPP
+
 //#include "Stream.h"
 
 class ImageWriter : public RasterEncoder {
@@ -201,5 +203,7 @@ private:
 	VectorMap<String, String>  map;
 	int                        map_offset;
 };
+
+END_UPP_NAMESPACE
 
 #endif//__Geom_Draw_hrr__

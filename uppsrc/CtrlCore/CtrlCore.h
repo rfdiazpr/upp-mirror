@@ -3,6 +3,8 @@
 
 #include <Draw/Draw.h>
 
+NAMESPACE_UPP
+
 enum {
 	K_DELTA        = 0x010000,
 
@@ -47,8 +49,8 @@ class TimeCallback
 public:
 	~TimeCallback()                      { Kill(); }
 
-	void Set(int delay, Callback cb)     { ::SetTimeCallback(delay, cb, this); }
-	void Kill()                          { ::KillTimeCallback(this); }
+	void Set(int delay, Callback cb)     { UPP::SetTimeCallback(delay, cb, this); }
+	void Kill()                          { UPP::KillTimeCallback(this); }
 	void KillSet(int delay, Callback cb) { Kill(); Set(delay, cb); }
 
 private:
@@ -313,6 +315,7 @@ private:
 	bool         ignoretakefocus:1;
 #endif
 
+	static  Ptr<Ctrl> eventCtrl;
 	static  Ptr<Ctrl> mouseCtrl;
 	static  Point     mousepos;
 	static  Ptr<Ctrl> focusCtrl;
@@ -888,6 +891,8 @@ public:
 
 	static Ctrl *GetFocusCtrl()                { return FocusCtrl(); }
 
+	static Ctrl *GetEventTopCtrl()             { return eventCtrl; }
+
 	static bool  IterateFocusForward(Ctrl *ctrl, Ctrl *top, bool noframe = false, bool init = false, bool all = false);
 	static bool  IterateFocusBackward(Ctrl *ctrl, Ctrl *top, bool noframe = false, bool all = false);
 
@@ -1363,25 +1368,25 @@ inline bool DisplayError(const Value& v) { return DisplayErrorFn()(v); }
 #ifdef PLATFORM_WIN32
 
 Vector<String>& coreCmdLine__();
+Vector<String> SplitCmdLine__(const char *cmd);
 
 #ifdef PLATFORM_WINCE
 
 #define GUI_APP_MAIN \
-Vector<String> SplitCmdLine__(const char *cmd);\
 void GuiMainFn_();\
 \
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR lpCmdLine, int nCmdShow) \
 { \
-	Ctrl::InitWin32(hInstance); \
-	coreCmdLine__() = SplitCmdLine__(FromSystemCharset(lpCmdLine)); \
-	AppInitEnvironment__(); \
+	UPP::Ctrl::InitWin32(hInstance); \
+	UPP::coreCmdLine__() = UPP::SplitCmdLine__(UPP::FromSystemCharset(lpCmdLine)); \
+	UPP::AppInitEnvironment__(); \
 	GuiMainFn_(); \
-	Ctrl::CloseTopCtrls(); \
-	UsrLog("---------- About to delete this log..."); \
-	DeleteUsrLog(); \
-	Ctrl::ExitWin32(); \
-	AppExit__(); \
-	return GetExitCode(); \
+	UPP::Ctrl::CloseTopCtrls(); \
+	UPP::UsrLog("---------- About to delete this log..."); \
+	UPP::DeleteUsrLog(); \
+	UPP::Ctrl::ExitWin32(); \
+	UPP::AppExit__(); \
+	return UPP::GetExitCode(); \
 } \
 \
 void GuiMainFn_()
@@ -1389,21 +1394,20 @@ void GuiMainFn_()
 #else
 
 #define GUI_APP_MAIN \
-Vector<String> SplitCmdLine__(const char *cmd);\
 void GuiMainFn_();\
 \
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow) \
 { \
-	Ctrl::InitWin32(hInstance); \
-	coreCmdLine__() = SplitCmdLine__(lpCmdLine); \
-	AppInitEnvironment__(); \
+	UPP::Ctrl::InitWin32(hInstance); \
+	UPP::coreCmdLine__() = UPP::SplitCmdLine__(lpCmdLine); \
+	UPP::AppInitEnvironment__(); \
 	GuiMainFn_(); \
-	Ctrl::CloseTopCtrls(); \
-	UsrLog("---------- About to delete this log..."); \
-	DeleteUsrLog(); \
-	Ctrl::ExitWin32(); \
-	AppExit__(); \
-	return GetExitCode(); \
+	UPP::Ctrl::CloseTopCtrls(); \
+	UPP::UsrLog("---------- About to delete this log..."); \
+	UPP::DeleteUsrLog(); \
+	UPP::Ctrl::ExitWin32(); \
+	UPP::AppExit__(); \
+	return UPP::GetExitCode(); \
 } \
 \
 void GuiMainFn_()
@@ -1417,15 +1421,15 @@ void GuiMainFn_()
 void GuiMainFn_(); \
 \
 int main(int argc, const char **argv, const char **envptr) { \
-	AppInit__(argc, argv, envptr); \
-	Ctrl::InitX11(NULL); \
+	UPP::AppInit__(argc, argv, envptr); \
+	UPP::Ctrl::InitX11(NULL); \
 	GuiMainFn_(); \
-	Ctrl::CloseTopCtrls(); \
-	UsrLog("---------- About to delete this log..."); \
-	DeleteUsrLog(); \
-	Ctrl::ExitX11(); \
-	AppExit__(); \
-	return GetExitCode(); \
+	UPP::Ctrl::CloseTopCtrls(); \
+	UPP::UsrLog("---------- About to delete this log..."); \
+	UPP::DeleteUsrLog(); \
+	UPP::Ctrl::ExitX11(); \
+	UPP::AppExit__(); \
+	return UPP::GetExitCode(); \
 } \
  \
 void GuiMainFn_()
@@ -1455,6 +1459,16 @@ public:
 	DHCtrl();
 	~DHCtrl();
 };
+
+#endif
+#endif
+
+END_UPP_NAMESPACE
+
+#ifdef PLATFORM_WIN32
+#ifndef PLATFORM_WINCE
+
+#include <ShellAPI.h>
 
 #endif
 #endif

@@ -1,5 +1,7 @@
 #include "Geom.h"
 
+NAMESPACE_UPP
+
 LinearSolver::LinearSolver(int count, double tolerance)
 : rows(count)
 , col1(count + 1)
@@ -111,3 +113,5 @@ void LinearSolver::SelfTest()
 		}
 	}
 }
+
+END_UPP_NAMESPACE

@@ -1,5 +1,7 @@
 #include "CtrlCore.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x)   // LOG(x)
 
 Ptr<Ctrl> Ctrl::focusCtrl;
@@ -91,11 +93,17 @@ bool Ctrl::DispatchKey(dword keycode, int count)
 				<< "): eaten in " << Desc(p));
 			if(IsUsrLog())
 				UsrLogT(2, String().Cat() << "-> " << Desc(p));
+			eventCtrl = focusCtrl;
 			return true;
 		}
 		s_hotkey = true;
-		if(!p->GetParent())
-			return p->HotKey(keycode);
+		if(!p->GetParent()) {
+			if(p->HotKey(keycode)) {
+				eventCtrl = focusCtrl;
+				return true;
+			}
+			return false;
+		}
 		p = p->GetParent();
 	}
 
@@ -112,7 +120,7 @@ bool Ctrl::HotKey(dword key)
 		if(ctrl->IsOpen() && ctrl->IsVisible() && ctrl->IsEnabled() && ctrl->HotKey(key))
 		{
 			if(IsUsrLog() && s_hotkey) {
-				UsrLogT(2, String().Cat() << "HOT-> " << ::Name(ctrl));
+				UsrLogT(2, String().Cat() << "HOT-> " << UPP::Name(ctrl));
 				s_hotkey = false;
 			}
 			return true;
@@ -348,3 +356,5 @@ String GetKeyDesc(int key)
 	}
 	return desc;
 }
+
+END_UPP_NAMESPACE

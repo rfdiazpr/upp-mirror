@@ -3,6 +3,8 @@
 
 #include <TCtrlLib/OldTreeCtrl.h>
 
+NAMESPACE_UPP
+
 #define LAYOUTFILE <TCtrlLib/Help/DlgShot.lay>
 #include <CtrlCore/lay.h>
 
@@ -445,3 +447,5 @@ void DlgShot::OnEditCtrlAttr()
 		DlgCtrlAttr(*sel_ctrl, focus_ctrl).Run();
 	}
 }
+
+END_UPP_NAMESPACE

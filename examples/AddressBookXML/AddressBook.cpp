@@ -1,7 +1,9 @@
 #include <CtrlLib/CtrlLib.h>
 #include <Report/Report.h>
 
-#define LAYOUTFILE <AddressBook/AddressBook.lay>
+using namespace Upp;
+
+#define LAYOUTFILE <AddressBookXML/AddressBook.lay>
 #include <CtrlCore/lay.h>
 
 class AddressBook : public WithAddressBookLayout<TopWindow> {

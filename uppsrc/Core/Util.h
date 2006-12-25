@@ -121,7 +121,7 @@ inline void   Poke32le(const void *ptr, int val)    { *(dword *)ptr = val; }
 inline void   Poke64le(const void *ptr, int64 val)  { *(int64 *)ptr = val; }
 #else
 inline int    Peek16le(const void *ptr)  { return MAKEWORD(((byte *)ptr)[0], ((byte *)ptr)[1]); }
-inline int    Peek32le(const void *ptr)  { return MAKEWORD(Peek16le(ptr), Peek16le((byte *)ptr + 2)); }
+inline int    Peek32le(const void *ptr)  { return MAKELONG(Peek16le(ptr), Peek16le((byte *)ptr + 2)); }
 inline int64  Peek64le(const void *ptr)  { return MAKEQWORD(Peek32le(ptr), Peek32le((byte *)ptr + 4)); }
 
 inline void   Poke16le(const void *ptr, int val)    { ((byte *)ptr)[0] = LOBYTE(val); ((byte *)ptr)[1] = HIBYTE(val); }
@@ -137,43 +137,30 @@ inline void   Poke16be(const void *ptr, int val)    { ((byte *)ptr)[1] = LOBYTE(
 inline void   Poke32be(const void *ptr, int val)    { Poke16le(ptr, HIWORD(val)); Poke16le((byte *)ptr + 2, LOWORD(val)); }
 inline void   Poke64be(const void *ptr, int64 val)  { Poke32le(ptr, HIDWORD(val)); Poke32le((byte *)ptr + 4, LODWORD(val)); }
 
-inline void   EndianSwap(word& v)  { byte *x = (byte *)(&v); Swap(x[0], x[1]); }
-inline void   EndianSwap(int16& v) { EndianSwap(*(word *)&v); }
-inline void   EndianSwap(dword& v) { byte *x = (byte *)&v; Swap(x[0], x[3]); Swap(x[1], x[2]); }
-inline void   EndianSwap(int& v)   { EndianSwap(*(dword *)&v); }
-inline void   EndianSwap(long& v)  { EndianSwap(*(dword *)&v); }
+inline void   EndianSwap(word& v)   { byte *x = (byte *)(&v); Swap(x[0], x[1]); }
+inline void   EndianSwap(int16& v)  { EndianSwap(*(word *)&v); }
+inline void   EndianSwap(dword& v)  { byte *x = (byte *)&v; Swap(x[0], x[3]); Swap(x[1], x[2]); }
+inline void   EndianSwap(int& v)    { EndianSwap(*(dword *)&v); }
+//inline void   EndianSwap(long& v)   { EndianSwap(*(dword *)&v); }
+inline void   EndianSwap(int64& v)  { byte *x = (byte *)&v; Swap(x[0], x[7]); Swap(x[1], x[6]); Swap(x[2], x[5]); Swap(x[3], x[4]); }
+inline void   EndianSwap(uint64& v) { EndianSwap(*(int64 *)&v); }
 
-/*
-//deprecated
-#ifdef CPU_X86
-inline int    PeekIW(const void *ptr)           { return *(const word *)ptr; }
-inline int    PeekIL(const void *ptr)           { return *(const int *)ptr; }
-inline int64  PeekI64(const void *ptr)          { return *(const int64 *)ptr; }
-inline void   PokeIW(void *ptr, int value)      { *(word *)ptr = value; }
-inline void   PokeIL(void *ptr, int value)      { *(int *)ptr = value; }
-inline void   PokeI64(const void *ptr, int64 v) { *(int64 *)ptr = v; }
-inline void   PokeIF4(void *ptr, float value)   { *(float *)ptr = value; }
-inline float  PeekIF4(const void *ptr)          { return *(const float *)ptr; }
-inline void   PokeID8(void *ptr, double value)  { *(double *)ptr = value; }
-inline double PeekID8(const void *ptr)          { return *(const double *)ptr; }
-#else
-int           PeekIW(const void *ptr);
-int           PeekIL(const void *ptr);
-int64         PeekI64(const void *ptr);
-void          PokeIW(void *ptr, int value);
-void          PokeIL(void *ptr, int value);
-void          PokeI64(void *ptr, int64 value);
-void          PokeIF4(void *ptr, float value);
-float         PeekIF4(const void *ptr);
-void          PokeID8(void *ptr, double value);
-double        PeekID8(const void *ptr);
-#endif
+inline word   SwapEndian(word v)    { EndianSwap(v); return v; }
+inline int16  SwapEndian(int16 v)   { EndianSwap(v); return v; }
+inline dword  SwapEndian(dword v)   { EndianSwap(v); return v; }
+inline int    SwapEndian(int v)     { EndianSwap(v); return v; }
+//inline long   SwapEndian(long v)    { EndianSwap(v); return v; }
+inline int64  SwapEndian(int64 v)   { EndianSwap(v); return v; }
+inline uint64 SwapEndian(uint64 v)  { EndianSwap(v); return v; }
 
-int           PeekMW(const void *ptr);
-int           PeekML(const void *ptr);
-void          PokeMW(void *ptr, int value);
-void          PokeML(void *ptr, int value);
-*/
+void EndianSwap(word *v, int count);
+void EndianSwap(int16 *v, int count);
+void EndianSwap(dword *v, int count);
+void EndianSwap(int *v, int count);
+//void EndianSwap(long *v, int count);
+void EndianSwap(int64 *v, int count);
+void EndianSwap(uint64 *v, int count);
+
 // Math utils
 
 inline double  sqr          (double a)                      { return a * a; }

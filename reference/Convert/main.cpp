@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct ConvertBin : Convert {
 	virtual Value  Format(const Value& q) const
 	{

@@ -1,5 +1,7 @@
 #include "CtrlCore.h"
 
+NAMESPACE_UPP
+
 void LocalLoop::Run()
 {
 	ASSERT(master);
@@ -229,3 +231,5 @@ bool PointLoop(Ctrl& ctrl, const Image& img)
 	m.Add(img);
 	return PointLoop(ctrl, m, 1);
 }
+
+END_UPP_NAMESPACE

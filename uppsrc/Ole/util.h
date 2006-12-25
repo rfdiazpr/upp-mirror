@@ -1,5 +1,7 @@
 #if defined(PLATFORM_WIN32) && defined(COMPILER_MSC)
 
+NAMESPACE_UPP
+
 #ifdef COMPILER_MSC
 typedef __int64 longlong_t;
 #define LL_(x) COMBINE(x, i64)
@@ -55,14 +57,14 @@ public:
 
 	Guid&    operator = (const GUID& _guid)  { (GUID&)*this = _guid; return *this; }
 
-	bool     IsNullInstance() const          { return ::IsNull(static_cast<const GUID&>(*this)); }
+	bool     IsNullInstance() const          { return UPP::IsNull(static_cast<const GUID&>(*this)); }
 	bool     IsEmpty() const                 { return IsNull(*this); }
 	void     Clear()                         { Zero(*this); }
 
-	operator String () const                 { return ::Format(*this); }
-	String   CFormat() const                 { return ::CFormat(*this); }
+	operator String () const                 { return UPP::Format(*this); }
+	String   CFormat() const                 { return UPP::CFormat(*this); }
 
-	void     Serialize(Stream& stream)       { ::Serialize(stream, *this); }
+	void     Serialize(Stream& stream)       { UPP::Serialize(stream, *this); }
 };
 
 template <>
@@ -285,5 +287,7 @@ protected:
 	IStreamPtr     istream;
 	int64          current_offset;
 };
+
+END_UPP_NAMESPACE
 
 #endif

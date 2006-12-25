@@ -2,6 +2,8 @@
 #pragma hdrstop
 #include "dbf.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 #define DO_DBF_TIMING 0
@@ -104,7 +106,7 @@ String DbfStream::Field::Format(Value value) const
 			double v = value;
 			if(IsNull(v))
 				return Null;
-			String out = ::Format("%.*f", decimal, v);
+			String out = UPP::Format("%.*f", decimal, v);
 			int delta = width - out.GetLength();
 			if(delta > 0)
 				out = String(' ', delta) + out;
@@ -126,7 +128,7 @@ String DbfStream::Field::Format(Value value) const
 		}
 
 	case 'D': {
-			::Date dt = value;
+			UPP::Date dt = value;
 			if(IsNull(dt))
 				return Null;
 			char p[9];
@@ -885,3 +887,5 @@ Value DbfStream::GetItemEmpty(int i) const
 {
 	return Value();
 }
+
+END_UPP_NAMESPACE

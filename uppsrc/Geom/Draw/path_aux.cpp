@@ -3,7 +3,7 @@
 
 #include "GeomDraw.h"
 
-//////////////////////////////////////////////////////////////////////
+NAMESPACE_UPP
 
 static void PathDraw_Output_1_1(PathDraw::Output& out, Point a, Point b)
 {
@@ -11,8 +11,6 @@ static void PathDraw_Output_1_1(PathDraw::Output& out, Point a, Point b)
 	out.AddFirst(a);
 	out.AddNext(b);
 }
-
-//////////////////////////////////////////////////////////////////////
 
 static void PathDraw_Output_1_2(PathDraw::Output& out, Point a, Point b)
 {
@@ -3101,4 +3099,4 @@ void (*PathDraw_Output_Thick[5][5])(PathDraw::Output& out, Point a, Point b) =
 	},
 };
 
-//////////////////////////////////////////////////////////////////////
+END_UPP_NAMESPACE

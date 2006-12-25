@@ -2,6 +2,8 @@
 
 // iscale: computes x * y / z.
 
+NAMESPACE_UPP
+
 #if defined(PLATFORM_WIN32) && defined(COMPILER_MSC) && defined(CPU_X86)
 #pragma warning(disable: 4035)
 #else
@@ -246,3 +248,5 @@ double ceilr(double d, int digits)
 	double fac = ipow10(i - digits);
 	return ceil(d / fac) * fac;
 }
+
+END_UPP_NAMESPACE

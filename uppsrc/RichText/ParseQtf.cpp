@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 Color (*QTFColor[])() = {
 	Black, LtGray, White, Red, Green, Blue, LtRed, WhiteGray, LtCyan, Yellow
 };
@@ -116,6 +118,8 @@ public:
 	RichQtfParser(bool scolors);
 };
 
+void init_s_nodeqtf();
+
 RichQtfParser::RichQtfParser(bool _scolors)
 {
 	format.Face(Font::ARIAL);
@@ -125,7 +129,6 @@ RichQtfParser::RichQtfParser(bool _scolors)
 	breakpage = false;
 	istable = false;
 	oldtab = false;
-	extern void init_s_nodeqtf();
 	init_s_nodeqtf();
 	scolors = _scolors;
 }
@@ -519,6 +522,8 @@ void RichQtfParser::Cat(int chr)
 	}
 }
 
+extern bool s_nodeqtf[128];
+
 void RichQtfParser::Parse(const char *qtf, byte _accesskey)
 {
 	accesskey = _accesskey;
@@ -798,7 +803,9 @@ void RichQtfParser::Parse(const char *qtf, byte _accesskey)
 			String xu;
 			while(isxdigit(*term))
 				xu.Cat(*term++);
-			Cat(stou(~xu, NULL, 16));
+			int c = stou(~xu, NULL, 16);
+			if(c >= 32)
+				Cat(c);
 			if(*term == ';')
 				term++;
 		}
@@ -885,7 +892,6 @@ void RichQtfParser::Parse(const char *qtf, byte _accesskey)
 		else {
 			if(!Key('`')) Key('\\');
 			if((byte)*term >= ' ') {
-				extern bool s_nodeqtf[128];
 				do {
 					if(istable)
 						EndPart();
@@ -951,3 +957,5 @@ String QtfRichObject::ToString() const
 QtfRichObject::QtfRichObject(const RichObject& o)
 	: obj(o)
 {}
+
+END_UPP_NAMESPACE

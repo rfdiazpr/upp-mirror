@@ -1,9 +1,10 @@
+description "Positioning loop example";
+
 uses
 	CtrlLib;
 
 file
-
-	"main.cpp";
+	main.cpp;
 
 mainconfig
 	"" = "GUI";

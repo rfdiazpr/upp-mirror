@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 #define LTIMING(x) // RTIMING(x)
 
 ArrayCtrl::Column::Column() {
@@ -625,6 +627,8 @@ void  ArrayCtrl::Paint(Draw& w) {
 				r.left = x;
 				r.right = x + cw - vertgrid + (j == column.GetCount() - 1);
 				Color bg = i & 1 ? evenpaper : oddpaper;
+				if(nobg)
+					bg = Null;
 				Color fg = i & 1 ? evenink : oddink;
 				bool ct = IsCtrl(i, j);
 				dword st = 0;
@@ -883,8 +887,10 @@ void ArrayCtrl::RejectRow() {
 	}
 	EndEdit();
 	WhenArrayAction();
-	if(rm_cursor)
+	if(rm_cursor) {
 		WhenCursor();
+		WhenSel();
+	}
 }
 
 void ArrayCtrl::Reject() {
@@ -896,6 +902,7 @@ void ArrayCtrl::CancelCursor() {
 	DisableCtrls();
 	cursor = anchor = -1;
 	WhenCursor();
+	WhenSel();
 }
 
 bool ArrayCtrl::UpdateRow() {
@@ -995,7 +1002,10 @@ bool ArrayCtrl::KillCursor0() {
 
 bool ArrayCtrl::KillCursor() {
 	bool b = KillCursor0();
-	if(b) WhenCursor();
+	if(b) {
+		WhenCursor();
+		WhenSel();
+	}
 	return b;
 }
 
@@ -1059,6 +1069,7 @@ bool ArrayCtrl::SetCursor0(int i, bool dosel) {
 		Action();
 		WhenEnterRow();
 		WhenCursor();
+		WhenSel();
 	}
 	return true;
 }
@@ -1119,6 +1130,7 @@ void ArrayCtrl::Select(int i, bool sel)
 	selectiondirty = true;
 	RefreshRow(i);
 	WhenSelection();
+	WhenSel();
 }
 
 void ArrayCtrl::Select(int i, int count, bool sel)
@@ -1129,6 +1141,7 @@ void ArrayCtrl::Select(int i, int count, bool sel)
 	}
 	selectiondirty = true;
 	WhenSelection();
+	WhenSel();
 }
 
 void ArrayCtrl::ClearSelection()
@@ -1142,7 +1155,13 @@ void ArrayCtrl::ClearSelection()
 		selectiondirty = false;
 		selectcount = 0;
 		WhenSelection();
+		WhenSel();
 	}
+}
+
+bool ArrayCtrl::IsSel(int i) const
+{
+	return IsSelection() ? IsSelected(i) : GetCursor() == i;
 }
 
 int  ArrayCtrl::GetScroll() const
@@ -1222,10 +1241,10 @@ void ArrayCtrl::LeftDown(Point p, dword flags)
 			else {
 				ClearSelection();
 				if((flags & K_SHIFT) && anchor >= 0)
-					Select(min(anchor, cursor), abs(anchor - cursor) + 1);
+					Select(min(anchor, cursor), abs(anchor - cursor) + 1, true);
 				else {
 					anchor = cursor;
-					Select(cursor);
+					Select(cursor, true);
 				}
 			}
 			Action();
@@ -1861,6 +1880,7 @@ void ArrayCtrl::Clear() {
 		WhenKillCursor();
 		cursor = -1;
 		WhenCursor();
+		WhenSel();
 	}
 	array.Clear();
 	cellinfo.Clear();
@@ -1904,6 +1924,7 @@ void ArrayCtrl::Reset() {
 	selectiondirty = false;
 	hasctrls = false;
 	headerctrls = false;
+	nobg = false;
 	selectcount = 0;
 	bains = 0;
 	row_name = t_("row");
@@ -2084,3 +2105,5 @@ void ArrayOption::Paint(Draw& w, const Rect& r, const Value& q,
 			w.DrawImage(p.x, p.y, icon);
 	}
 }
+
+END_UPP_NAMESPACE

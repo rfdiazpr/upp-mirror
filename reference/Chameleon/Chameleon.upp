@@ -1,3 +1,5 @@
+description "Skinning Button using Chameleon (preliminary!)";
+
 uses
 	CtrlLib;
 

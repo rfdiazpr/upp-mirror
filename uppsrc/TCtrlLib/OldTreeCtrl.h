@@ -1,6 +1,8 @@
 #ifndef __INCLUDE_CTRL_TREECTRL_H__
 #define __INCLUDE_CTRL_TREECTRL_H__
 
+NAMESPACE_UPP
+
 class OldTreeEdit;
 class OldTreeCursor;
 class OldTreeItem;
@@ -381,7 +383,7 @@ public:
 	int               GetHitTest() const                  { return hittest; }
 
 	OldTreeCtrl&         Font(class Font _font)           { font = _font; TouchLayout(); return *this; }
-	::Font            GetFont() const                     { return font; }
+	UPP::Font            GetFont() const                     { return font; }
 
 	OldTreeItem&         Add()                               { return OldTreeItem::Add(); }
 
@@ -448,7 +450,7 @@ protected:
 	bool              open_menu;      // open/close menuitem
 	bool              hide_top;       // ignore top level item
 	bool              multiselect;    // allow concurrent selection of multiple tree items
-	::Font            font;
+	UPP::Font            font;
 	Size              offset;
 	Point             old_scroll;
 	int               rowht;          // average row height
@@ -459,5 +461,7 @@ protected:
 	Point             drag_start;
 	char              drag_state; // 0 = off, 1 = on, 2 = possible
 };
+
+END_UPP_NAMESPACE
 
 #endif//__INCLUDE_CTRL_TREECTRL_H__

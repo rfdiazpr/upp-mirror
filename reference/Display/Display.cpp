@@ -1,5 +1,7 @@
 #include "CtrlLib/CtrlLib.h"
 
+using namespace Upp;
+
 struct FontFaceDisplay : Display {
 	virtual void Paint(Draw& w, const Rect& r, const Value& q,
 		               Color ink, Color paper, dword style) const

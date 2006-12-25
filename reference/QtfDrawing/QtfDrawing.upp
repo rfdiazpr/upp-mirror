@@ -1,9 +1,10 @@
+description "Placing code-generated graphics into Qtf";
+
 uses
 	CtrlLib;
 
 file
-
-	"main.cpp";
+	main.cpp;
 
 mainconfig
 	"" = "GUI";

@@ -1,6 +1,7 @@
 #ifndef __TDraw_formula__
 #define __TDraw_formula__
 
+NAMESPACE_UPP
 inline int Percent(int p, int q) { return p * q / 100; }
 
 enum FORMSYMBOL
@@ -259,5 +260,7 @@ private:
 private:
 	int std_height;
 };
+
+END_UPP_NAMESPACE
 
 #endif//__TDraw_formula__

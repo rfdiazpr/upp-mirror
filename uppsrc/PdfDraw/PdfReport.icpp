@@ -1,5 +1,7 @@
 #include "PdfDraw.h"
 
+NAMESPACE_UPP
+
 String Pdf(const Array<Drawing>& report, Size sz, int margin)
 {
 	PdfDraw w(sz + 2 * margin);
@@ -15,3 +17,5 @@ INITBLOCK
 {
 	SetDrawingToPdfFn(Pdf);
 }
+
+END_UPP_NAMESPACE

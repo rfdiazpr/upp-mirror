@@ -1,5 +1,7 @@
 #include "IconDes.h"
 
+NAMESPACE_UPP
+
 static String sFormatImageName(const String& name, const Image& img, bool exp)
 {
 	Size sz = img.GetSize();
@@ -149,7 +151,7 @@ void IconDes::EditImage()
 			return;
 		}
 		c.image = CreateImage(Size(minmax((int)~dlg.cx, 1, 8192), minmax((int)~dlg.cy, 1, 8192)), Null);
-		::Copy(c.image, Point(0, 0), img, img.GetSize());
+		UPP::Copy(c.image, Point(0, 0), img, img.GetSize());
 		Reset();
 	}
 }
@@ -259,3 +261,5 @@ bool IconDes::GetExport(int ii) const
 {
 	return slot[ii].exp;
 }
+
+END_UPP_NAMESPACE

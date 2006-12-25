@@ -1,6 +1,8 @@
 #include "TCtrlLibCalc.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 #define LAYOUTFILE <TCtrlLib/Calc/DlgCalc.lay>
 #include           <CtrlCore/lay.h>
 
@@ -83,3 +85,5 @@ void DlgCalc::CmdStore()
 	if(stdlg.Run() == IDOK)
 		calc_context->Set(~stdlg.var, result_val, true);
 }
+
+END_UPP_NAMESPACE

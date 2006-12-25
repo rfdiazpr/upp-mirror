@@ -173,8 +173,8 @@ public:
 	ConstIterator  End() const                            { return key.End(); }
 	ConstIterator  GetIter(int pos) const                 { return key.GetIter(pos); }
 
-	void Swap(AIndex& b)                                  { ::Swap(hash, b.hash);
-	                                                        ::Swap(key, b.key); }
+	void Swap(AIndex& b)                                  { UPP::Swap(hash, b.hash);
+	                                                        UPP::Swap(key, b.key); }
 // Optimalizations
 	friend int  GetCount(const AIndex& v)                 { return v.GetCount(); }
 

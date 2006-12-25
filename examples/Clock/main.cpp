@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct Clock : TopWindow {
 	void PaintPtr(Draw& w, double pos, double m, int d, Color color, Size sz2)
 	{

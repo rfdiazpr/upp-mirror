@@ -1,5 +1,7 @@
 #include "IconDes.h"
 
+NAMESPACE_UPP
+
 void AlphaCtrl::Layout()
 {
 	MakeImage();
@@ -119,3 +121,5 @@ AlphaCtrl::AlphaCtrl()
 	mask = false;
 	maskvalue = 255;
 }
+
+END_UPP_NAMESPACE

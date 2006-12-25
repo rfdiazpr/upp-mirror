@@ -1,5 +1,7 @@
 #include "Sql.h"
 
+NAMESPACE_UPP
+
 SqlSet operator|(const SqlSet& s1, const SqlSet& s2) {
 	if(s1.IsEmpty()) return s2;
 	if(s2.IsEmpty()) return s1;
@@ -89,3 +91,5 @@ void FieldDumper::Field(const char *name, Ref f)
 		s.Cat(", ");
 	s << name << " = " << Value(f);
 }
+
+END_UPP_NAMESPACE

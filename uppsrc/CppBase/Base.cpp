@@ -1,5 +1,7 @@
 #include "CppBase.h"
 
+NAMESPACE_UPP
+
 #ifdef _MSC_VER
 #pragma inline_depth(255)
 #pragma optimize("t", on)
@@ -395,3 +397,5 @@ void CppItem::Serialize(Stream& s)
 	s % kind % access;
 	s % natural % at % tparam % param % pname % tname % type % ptype % virt % key;
 }
+
+END_UPP_NAMESPACE

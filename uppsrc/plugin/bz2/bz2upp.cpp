@@ -2,6 +2,9 @@
 #include <plugin/bz2/bz2.h>
 #include "lib/bzlib.h"
 
+
+NAMESPACE_UPP
+
 static void* bzalloc_new(void *opaque, int items, int size)
 {
 	return new byte[items * size];
@@ -209,3 +212,5 @@ void BZ2Compress(Stream& out, Stream& in, Gate2<int, int> progress)
 	if(code != BZ_STREAM_END)
 		out.SetError();
 }
+
+END_UPP_NAMESPACE

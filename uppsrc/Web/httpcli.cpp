@@ -1,6 +1,8 @@
 #include "Web.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 #define LLOG(x)       // RLOG(x)
 #define LLOGBLOCK(x)  // RLOGBLOCK(x)
 #define LDUMP(x)      // RDUMP(x)
@@ -154,6 +156,7 @@ String HttpClient::Execute(Gate2<int, int> progress)
 		if(keepalive)
 			request << "Keep-alive: 300\r\n"; // 5 minutes (?)
 		request << "Accept: " << Nvl(accept, "*/*") << "\r\n";
+		request << "Accept-Encoding: gzip\r\n";
 		request << "Agent: " << Nvl(agent, "Ultimate++ HTTP client") << "\r\n";
 	}
 	if(!IsNull(username) || !IsNull(password))
@@ -199,6 +202,7 @@ String HttpClient::Execute(Gate2<int, int> progress)
 
 	int content_length = -1;
 	bool tc_chunked = false;
+	bool ce_gzip = false;
 	for(;;) {
 		String line = ReadUntilProgress('\n', start_time, end_time, progress);
 		if(socket.IsError()) {
@@ -214,9 +218,11 @@ String HttpClient::Execute(Gate2<int, int> progress)
 		if(b >= e)
 			break;
 		static const char cl[] = "content-length:";
+		static const char ce[] = "content-encoding:";
 		static const char te[] = "transfer-encoding:";
 		static const char lo[] = "location:";
 		static const int CL_LENGTH = sizeof(cl) - 1;
+		static const int CE_LENGTH = sizeof(ce) - 1;
 		static const int TE_LENGTH = sizeof(te) - 1;
 		static const int LO_LENGTH = sizeof(lo) - 1;
 		if(!MemICmp(p, cl, CL_LENGTH)) {
@@ -229,6 +235,13 @@ String HttpClient::Execute(Gate2<int, int> progress)
 					return String::GetVoid();
 				}
 			}
+		}
+		else if(!MemICmp(p, ce, CE_LENGTH)) {
+			for(p += CE_LENGTH; *p == ' '; p++)
+				;
+			static const char gzip[] = "gzip";
+			if(e - p == sizeof(gzip) - 1 && !memcmp(p, gzip, sizeof(gzip) - 1))
+				ce_gzip = true;
 		}
 		else if(!MemICmp(p, te, TE_LENGTH)) {
 			for(p += TE_LENGTH; *p == ' '; p++)
@@ -349,6 +362,10 @@ EXIT:
 	if(!keepalive || socket.IsError() || socket.IsEof())
 		Close();
 
+	if(ce_gzip) {
+		body = GZDecompress(body);
+		return body;
+	}
 	return tc_chunked ? chunked : body;
 }
 
@@ -388,3 +405,5 @@ String HttpClientGet(String url, String *server_headers, String *error,
 {
 	return HttpClientGet(url, Null, Null, Null, server_headers, error, progress, timeout, max_redirect, retries);
 }
+
+END_UPP_NAMESPACE

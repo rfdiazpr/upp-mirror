@@ -1,5 +1,7 @@
 #include "Draw.h"
 
+NAMESPACE_UPP
+
 #ifdef PLATFORM_WIN32
 
 #define LTIMING(x) // RTIMING(x)
@@ -287,7 +289,7 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 			bf.AlphaFormat = AC_SRC_ALPHA;
 			HDC dcMem = ::CreateCompatibleDC(dc);
 			::SelectObject(dcMem, himg);
-			::fnAlphaBlend()(dc, x, y, ssz.cx, ssz.cy, dcMem, sr.left, sr.top, ssz.cx, ssz.cy, bf);
+			fnAlphaBlend()(dc, x, y, ssz.cx, ssz.cy, dcMem, sr.left, sr.top, ssz.cx, ssz.cy, bf);
 			::DeleteDC(dcMem);
 			PaintOnlyShrink();
 		}
@@ -546,3 +548,5 @@ Image Image::SizeBottomRight()  WCURSOR_(IDC_SIZENWSE)
 #endif
 
 #endif
+
+END_UPP_NAMESPACE

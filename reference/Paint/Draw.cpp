@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct App : public TopWindow {
 	void Paint(Draw& w)
 	{

@@ -1,3 +1,5 @@
+description "Using Convert to alter EditField for editing binary numbers";
+
 uses
 	CtrlLib;
 
@@ -6,4 +8,3 @@ file
 
 mainconfig
 	"" = "GUI";
-

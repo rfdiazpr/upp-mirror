@@ -1,6 +1,8 @@
 #include <RichEdit/RichEdit.h>
 #include <PdfDraw/PdfDraw.h>
 
+using namespace Upp;
+
 #define IMAGECLASS UWordImg
 #define IMAGEFILE  <UWord/UWord.iml>
 #include <Draw/iml.h>

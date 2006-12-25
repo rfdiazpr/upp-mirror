@@ -80,6 +80,7 @@ private:
 	Size          minsize;
 	Rect          overlappedrect;
 	bool          dokeys;
+	bool          fullscreen;
 
 	byte          center:2;
 
@@ -89,7 +90,7 @@ private:
 	Abreak       *FindAction(int ID);
 
 #ifdef PLATFORM_WIN32
-	void          CenterRect(HWND owner);
+	void          CenterRect(HWND owner, int center);
 #endif
 
 #ifdef PLATFORM_X11
@@ -190,6 +191,8 @@ public:
 	TopWindow& TopMost(bool b = true, bool stay_top = true);
 	TopWindow& NoTopMost()                            { return TopMost(false); }
 	bool       IsTopMost() const;
+	TopWindow& FullScreen(bool b = true)              { fullscreen = b; return *this; }
+	bool       IsFullScreen() const                   { return fullscreen; }
 	TopWindow& NoAccessKeysDistribution()             { dokeys = false; return *this; }
 
 	TopWindow& Icon(const Image& m);

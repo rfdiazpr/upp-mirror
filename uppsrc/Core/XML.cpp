@@ -1,5 +1,7 @@
 #include "Core.h"
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x);
 
 String DeXml(const char *s, byte charset)
@@ -739,3 +741,5 @@ String AsXML(const XmlNode& node, dword style)
 	}
 	return r;
 }
+
+END_UPP_NAMESPACE

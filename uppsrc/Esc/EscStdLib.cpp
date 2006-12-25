@@ -1,5 +1,8 @@
 #include <Esc/Esc.h>
 
+
+NAMESPACE_UPP
+
 #define LTIMING(x)  // RTIMING(x)
 
 void ESC_count(EscEscape& e)
@@ -253,3 +256,5 @@ void StdLib(ArrayMap<String, EscValue>& global)
 	Escape(global, "IsDate(x)", SIC_IsDate);
 	Escape(global, "IsTime(x)", SIC_IsTime);
 }
+
+END_UPP_NAMESPACE

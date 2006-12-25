@@ -3,6 +3,8 @@
 
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 #define IMAGEFILE  <XmlView/XmlView.iml>
 #define IMAGECLASS XmlImg
 #include <Draw/iml_header.h>

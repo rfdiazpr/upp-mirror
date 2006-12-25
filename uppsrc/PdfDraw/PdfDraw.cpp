@@ -1,5 +1,6 @@
 #include "PdfDraw.h"
-#pragma hdrstop
+
+NAMESPACE_UPP
 
 #define LDUMP(x) // DUMP(x)
 
@@ -527,7 +528,7 @@ void PdfDraw::DrawArcOp(const Rect& rc, Point start, Point end, int width, Color
 	NEVER();
 }
 
-void PdfDraw::DrawPolyPolyPolygon(const Point *vertices, int vertex_count,
+void PdfDraw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
 	const int *subpolygon_counts, int subpolygon_count_count,
 	const int *disjunct_polygon_counts, int disjunct_polygon_count_count,
 	Color color, int width, Color outline, uint64 pattern, Color doxor)
@@ -860,3 +861,5 @@ String PdfDraw::Finish()
 	    << "%%EOF\r\n";
 	return out;
 }
+
+END_UPP_NAMESPACE

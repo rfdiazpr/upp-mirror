@@ -22,26 +22,26 @@ public:
 #undef  IMAGE_ID
 
 public:
-	static ::Iml& Iml();
+	static UPP::Iml&   Iml();
 
-	static void   Register__()                { Register(ASSTRING(IMAGECLASS), Iml()); }
+	static void        Register__()                { Register(ASSTRING(IMAGECLASS), Iml()); }
 
-	static int    Find(const String& s);
-	static int    Find(const char *s);
-	static int    GetCount()                  { return Iml().GetCount(); }
-	static String GetId(int i)                { return Iml().GetId(i); }
+	static int         Find(const UPP::String& s);
+	static int         Find(const char *s);
+	static int         GetCount()                  { return Iml().GetCount(); }
+	static UPP::String GetId(int i)                { return Iml().GetId(i); }
 
-	static Image  Get(int i);
-	static Image  Get(const char *s);
-	static Image  Get(const String& s);
+	static UPP::Image  Get(int i);
+	static UPP::Image  Get(const char *s);
+	static UPP::Image  Get(const UPP::String& s);
 
-	static void   Set(int i, const Image& m);
-	static void   Set(const char *s, const Image& m);
+	static void   Set(int i, const UPP::Image& m);
+	static void   Set(const char *s, const UPP::Image& m);
 
 	static void   Reset()                     { Iml().Reset(); }
 
-#define IMAGE_BEGIN(n) static Image n() { return Get(I_##n); }
-#define IMAGE_ID(n) static Image n() { return Get(I_##n); }
+#define IMAGE_BEGIN(n) static UPP::Image n() { return Get(I_##n); }
+#define IMAGE_ID(n) static UPP::Image n() { return Get(I_##n); }
 #include IMAGEFILE
 #undef  IMAGE_BEGIN
 #undef  IMAGE_ID

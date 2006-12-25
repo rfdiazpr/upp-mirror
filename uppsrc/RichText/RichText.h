@@ -4,6 +4,9 @@
 #include <CtrlCore/CtrlCore.h>
 #include <plugin/png/png.h>
 
+
+NAMESPACE_UPP
+
 struct Zoom {
 	int m, d;
 
@@ -406,7 +409,8 @@ String EncodeHtml(const RichText& text, Index<String>& css,
                   const VectorMap<String, String>& links,
                   const VectorMap<String, String>& labels,
                   const String& path, const String& base = Null, Zoom z = Zoom(8, 40),
-                  const VectorMap<String, String>& escape = VectorMap<String, String>());
+                  const VectorMap<String, String>& escape = VectorMap<String, String>(),
+                  int imtolerance = 0);
 String AsCss(Index<String>& ss);
 
 inline //BW - no labels
@@ -436,5 +440,7 @@ struct PrintPageDraw : PageDraw {
 
 	PrintPageDraw(Draw& w) : w(w) {}
 };
+
+END_UPP_NAMESPACE
 
 #endif

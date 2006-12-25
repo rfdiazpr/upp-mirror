@@ -1,5 +1,7 @@
 #include "IconDes.h"
 
+NAMESPACE_UPP
+
 void IconDes::LeftDown(Point p, dword flags)
 {
 	if(!IsCurrent())
@@ -103,3 +105,5 @@ Image IconDes::CursorImage(Point p, dword flags)
 		       : IconDesImg::MoveOk();
 	return flags & K_SHIFT ? fill_cursor : cursor_image;
 }
+
+END_UPP_NAMESPACE

@@ -1,13 +1,19 @@
 #ifdef PLATFORM_WIN32
 struct RGBA : Moveable<RGBA> {
-	byte b, g, r, a;
+        byte b, g, r, a;
 };
 #endif
 
 #ifdef PLATFORM_POSIX
+#ifdef CPU_BE
 struct RGBA : Moveable<RGBA> {
-	byte b, g, r, a;
+        byte a, r, g, b;
 };
+#else
+struct RGBA : Moveable<RGBA> {
+        byte b, g, r, a;
+};
+#endif
 #endif
 
 #ifndef PLATFORM_WIN32

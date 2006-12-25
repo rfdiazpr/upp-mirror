@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 CH_LOOK(ProgressIndicatorLook, CtrlsImg::PI());
 CH_LOOK(VertProgressIndicatorLook, CtrlsImg::VPI());
 CH_LOOK(ProgressIndicatorChunkLook, CtrlsImg::PIC());
@@ -258,3 +260,5 @@ bool Progress::StepCanceled(int n)
 	Step(n);
 	return cancel;
 }
+
+END_UPP_NAMESPACE

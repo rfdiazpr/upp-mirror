@@ -3,6 +3,8 @@
 
 #include "CtrlArray.h"
 
+NAMESPACE_UPP
+
 CtrlArray::Item::Item()
 {
 	SetFrame(OutsetFrame());
@@ -333,3 +335,5 @@ void CtrlArray::OnDown(int index)
 		UpdateAction();
 	}
 }
+
+END_UPP_NAMESPACE

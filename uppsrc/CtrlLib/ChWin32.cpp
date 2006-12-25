@@ -1,5 +1,8 @@
 #include "CtrlLib.h"
 
+
+NAMESPACE_UPP
+
 #define LLOG(x)   // RLOG(x)
 #define LTIMING(x) // RTIMING(x)
 
@@ -305,7 +308,6 @@ void ChHostSkin()
 	ChSysInit();
 	if(XpWidget(XP_BUTTON)) {
 		LLOG("XP theme !");
-		ChSysInit();
 		ChSet("GUI_GlobalStyle", GUISTYLE_XP);
 		ColoredOverride(CtrlsImg::Iml(), CtrlsImg::Iml());
 		CtrlsImg::Reset();
@@ -368,7 +370,7 @@ void ChHostSkin()
 			      ChLookWith(RawToValue(e), XpImage(XP_SCROLLBAR, SBP_GRIPPERVERT, 1)));
 
 			Color paper = i == 3 ? SColorFace : SColorPaper;
-			Image m = XpImage(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL + i, paper);
+			Image m = XpImage(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL + i, paper, Size(24, 24));
 			Size isz = m.GetSize();
 			int cbs = XpInt(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL + i, 2403/*TMT_BORDERSIZE*/);
 			if(cbs == 0) {
@@ -445,12 +447,31 @@ static sysColor sSysColor[] = {
 	{ "SColorShadow", COLOR_3DSHADOW },
 };
 
+bool IsSysFlag(dword flag)
+{
+	BOOL b;
+	return SystemParametersInfo(flag, 0, &b, 0) && b;
+}
+
 void ChSysInit()
 {
 	CtrlImg::Reset();
 	CtrlsImg::Reset();
 	ChReset();
 	XpClear();
+
+	ChSet("GUI_GlobalStyle", IsWinXP() && !ScreenInfo().PaletteMode() && IsSysFlag(0x1022 /*SPI_GETFLATMENU*/)
+	                         ? GUISTYLE_XP : GUISTYLE_CLASSIC);
+#ifndef PLATFORM_WINCE
+	ChSet("GUI_DragFullWindow", IsSysFlag(SPI_GETDRAGFULLWINDOWS));
+#endif
+	ChSet("GUI_PopUpEffect", IsSysFlag(0x1002 /*SPI_GETMENUANIMATION*/) ?
+	                         IsSysFlag(0x1012 /*SPI_GETMENUFADE*/) ? GUIEFFECT_FADE
+	                                                               : GUIEFFECT_SLIDE
+	                                                               : GUIEFFECT_NONE);
+	ChSet("GUI_DropShadows", IsSysFlag(0x1024 /*SPI_GETDROPSHADOW*/));
+	ChSet("GUI_AltAccessKeys", !IsSysFlag(0x100A /*SPI_GETKEYBOARDCUES*/));
+	ChSet("GUI_AKD_Conservative", 0);
 
 	CtrlImg::Set(CtrlImg::I_information, Win32Icon(IDI_INFORMATION));
 	CtrlImg::Set(CtrlImg::I_question, Win32Icon(IDI_QUESTION));
@@ -467,3 +488,5 @@ void ChSysInit()
 #endif
 
 #endif
+
+END_UPP_NAMESPACE

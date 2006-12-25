@@ -16,6 +16,8 @@
 #undef Font
 #undef Picture
 
+NAMESPACE_UPP
+
 bool   OleDBPerformScript(const String& text, StatementExecutor& executor, Gate2<int, int> progress_canceled = false);
 String OleDBTextType(int width);
 
@@ -71,6 +73,8 @@ protected:
 	String                 user;
 	int                    level;
 };
+
+END_UPP_NAMESPACE
 
 #endif
 

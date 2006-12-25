@@ -1,5 +1,7 @@
 #include <GLCtrl/GLCtrl.h>
 
+using namespace Upp;
+
 struct OpenGLExample : GLCtrl {
 	Point point;
 
@@ -52,7 +54,7 @@ struct OpenGLExample : GLCtrl {
 			glVertex3d(0, 0, 1.67);
 		glEnd();
 	}
-	
+
 	virtual void MouseMove(Point p, dword) {
 		point = p;
 		Refresh();

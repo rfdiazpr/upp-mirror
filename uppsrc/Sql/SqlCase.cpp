@@ -1,5 +1,7 @@
 #include "Sql.h"
 
+NAMESPACE_UPP
+
 enum {
 	SQLC_IF = 1,
 	SQLC_ELSEIF,
@@ -248,3 +250,5 @@ SqlCase SqlCase::operator()(byte cond, const String& text) {
 SqlCase::SqlCase(byte cond, const String& text) {
 	s << (char)SQLC_IF << (char)cond << text;
 }
+
+END_UPP_NAMESPACE

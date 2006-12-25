@@ -1,5 +1,7 @@
 #include "TCoreDb.h"
 
+NAMESPACE_UPP
+
 static String GetRandomString(int maxlength = 50000, int minlength = 0)
 {
 	int len = minlength;
@@ -661,3 +663,5 @@ void DataBase::FullTest()
 	ColumnTest();
 	StructuredTest();
 }
+
+END_UPP_NAMESPACE

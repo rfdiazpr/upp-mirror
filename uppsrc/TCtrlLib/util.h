@@ -1,3 +1,5 @@
+NAMESPACE_UPP
+
 #define TOOL(x) \
 	void        COMBINE(Tool, x)(Bar& bar); \
 	void        COMBINE(On, x)(); \
@@ -528,3 +530,5 @@ Vector<String> DropFilesGetList(WPARAM hdrop);
 #endif
 
 bool ShowErrorFocus(bool cond, const char *text, Ctrl& focus);
+
+END_UPP_NAMESPACE

@@ -3,6 +3,9 @@
 
 #include <Draw/Draw.h>
 
+
+NAMESPACE_UPP
+
 class TIFRaster : public StreamRaster {
 public:
 	class Data;
@@ -47,5 +50,7 @@ private:
 // v Raster::Info bych zmenil flag alpha na ImageKind
 // dotaz: resi se nejak zrychleni toho generatoru palety, kdyz je ten obrazek mrnavy
 //        (typicky ikony 16 x 16 nebo 32 x 32 pixelu) ?
+
+END_UPP_NAMESPACE
 
 #endif

@@ -1,8 +1,6 @@
-//////////////////////////////////////////////////////////////////////
-// DlgColor: color selector.
-
 #include "CtrlLib.h"
-#pragma hdrstop
+
+NAMESPACE_UPP
 
 class FetchColorCtrl : public Button
 {
@@ -1016,7 +1014,7 @@ void PalCtrl::UpdateColorIndex()
 {
 	Config& gc = GlobalConfig();
 	if(gc.loaded)
-		color_index = ::Find(gc.current,
+		color_index = UPP::Find(gc.current,
 			gc.current + __countof(gc.current), color, StdEqual<int>()) - gc.current;
 }
 
@@ -1623,3 +1621,5 @@ void ColorCtrl::DoAction()
 	if(ok)
 		SetDataAction(convert->Scan(new_color));
 }
+
+END_UPP_NAMESPACE

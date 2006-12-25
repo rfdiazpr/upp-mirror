@@ -3,6 +3,10 @@
 
 #include <Core/Core.h>
 #include <time.h>
+
+
+NAMESPACE_UPP
+
 #include "defs.h"
 #include "util.h"
 #include "lib.h"
@@ -12,5 +16,7 @@
 #else
 	#define PATH_HAS_CASE 1
 #endif
+
+END_UPP_NAMESPACE
 
 #endif

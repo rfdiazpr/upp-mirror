@@ -1,5 +1,7 @@
 #include "DocTypes.h"
 
+NAMESPACE_UPP
+
 FontInfo ParaTypo::Part::Set(Draw& w, Font _font, Color _color) {
 	font = _font;
 	color = _color;
@@ -124,3 +126,5 @@ bool ParaTypo::Format(Alignment _align, int _total, char *_text, int *_width,
 	last = true;
 	return PutRaw();
 }
+
+END_UPP_NAMESPACE

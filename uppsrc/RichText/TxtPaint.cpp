@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+NAMESPACE_UPP
+
 int RichTxt::GetWidth(const RichStyles& st) const
 {
 	int cx = 0;
@@ -373,3 +375,5 @@ void RichTxt::ApplyZoom(Zoom z, const RichStyles& ostyle, const RichStyles& zsty
 			Set(i, p, zstyle);
 		}
 }
+
+END_UPP_NAMESPACE

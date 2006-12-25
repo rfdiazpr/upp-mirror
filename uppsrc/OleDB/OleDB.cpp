@@ -2,6 +2,8 @@
 
 #if defined(PLATFORM_WIN32) && defined(COMPILER_MSC)
 
+NAMESPACE_UPP
+
 #define LTIMING(x) // RTIMING(x)
 
 typedef ULONG DBLENGTH;
@@ -1338,5 +1340,7 @@ String OleDBTextType(int width)
 		return NFormat("varchar(%d)", width);
 	return "text";
 }
+
+END_UPP_NAMESPACE
 
 #endif

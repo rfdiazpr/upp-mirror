@@ -313,6 +313,9 @@ struct Pdb : Debugger, Ctrl {
 	void      SaveTree();
 	void      ExpandTreeType(int parent, CParser& p);
 
+	void      CopyStack();
+	void      CopyDisas();
+
 	void      MemoryGoto(const String& exp);
 
 	void      MemMenu(ArrayCtrl& array, Bar& bar, const String& exp);

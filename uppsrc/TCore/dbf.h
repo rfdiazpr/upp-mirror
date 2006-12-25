@@ -1,6 +1,8 @@
 #ifndef __TCore_dbf__
 #define __TCore_dbf__
 
+NAMESPACE_UPP
+
 #define DBFCOL(x) (#x, x)
 
 int StrBool(const char* s);
@@ -133,5 +135,7 @@ protected:
 	bool            dirty_header;
 	bool            has_memo;
 };
+
+END_UPP_NAMESPACE
 
 #endif//__TCore_dbf__

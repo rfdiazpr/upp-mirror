@@ -1,5 +1,7 @@
 #include <Core/Core.h>
 
+NAMESPACE_UPP
+
 int wstrlen(const wchar *s)
 {
 	const wchar *q = s;
@@ -96,3 +98,5 @@ String FilterWhile(const char *s, int (*filter)(int))
 	}
 	return result;
 }
+
+END_UPP_NAMESPACE

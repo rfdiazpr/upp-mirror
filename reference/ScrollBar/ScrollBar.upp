@@ -1,9 +1,10 @@
+description "Scrolling view using ScrollBar";
+
 uses
 	CtrlLib;
 
 file
-	
-	"main.cpp";
+	main.cpp;
 
 mainconfig
 	"" = "GUI";

@@ -1,11 +1,13 @@
 #include "PdfDraw.h"
 
-#ifdef CPU_LE
+NAMESPACE_UPP
+
 TTFReader::TTFStream& TTFReader::TTFStream::operator%(byte& q) {
 	Raw(&q, 1);
 	return *this;
 }
 
+#ifdef CPU_LE
 TTFReader::TTFStream& TTFReader::TTFStream::operator%(int32& q) {
 	byte *h = (byte *)&q;
 	*this % h[3] % h[2] % h[1] % h[0];
@@ -27,6 +29,30 @@ TTFReader::TTFStream& TTFReader::TTFStream::operator%(int16& q) {
 TTFReader::TTFStream& TTFReader::TTFStream::operator%(uint16& q) {
 	byte *h = (byte *)&q;
 	*this % h[1] % h[0];
+	return *this;
+}
+#else
+TTFReader::TTFStream& TTFReader::TTFStream::operator%(int32& q) {
+	byte *h = (byte *)&q;
+	*this % h[0] % h[1] % h[2] % h[3];
+	return *this;
+}
+
+TTFReader::TTFStream& TTFReader::TTFStream::operator%(uint32& q) {
+	byte *h = (byte *)&q;
+	*this % h[0] % h[1] % h[2] % h[3];
+	return *this;
+}
+
+TTFReader::TTFStream& TTFReader::TTFStream::operator%(int16& q) {
+	byte *h = (byte *)&q;
+	*this % h[0] % h[1];
+	return *this;
+}
+
+TTFReader::TTFStream& TTFReader::TTFStream::operator%(uint16& q) {
+	byte *h = (byte *)&q;
+	*this % h[0] % h[1];
 	return *this;
 }
 #endif
@@ -80,3 +106,5 @@ void TTFReader::TTFStreamIn::Raw(void *ptr, int count) {
 	memcpy(ptr, s, count);
 	s += count;
 }
+
+END_UPP_NAMESPACE

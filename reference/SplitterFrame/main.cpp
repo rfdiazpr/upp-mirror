@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct MyApp : TopWindow {
 	SplitterFrame sf;
 	ArrayCtrl list;

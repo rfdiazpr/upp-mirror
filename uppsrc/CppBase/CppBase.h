@@ -3,6 +3,8 @@
 
 #include <Core/Core.h>
 
+NAMESPACE_UPP
+
 int           GetCppFileIndex(const String& path);
 const String& GetCppFile(int i);
 
@@ -476,5 +478,7 @@ void   Qualify(CppBase& base, const CppWordsHash& words);
 void Parse(Stream& s, const Vector<String>& ignore, CppBase& base, const String& fn,
            Callback2<int, const String&> err);
 void Remove(CppBase& base, const Vector<String>& fn);
+
+END_UPP_NAMESPACE
 
 #endif

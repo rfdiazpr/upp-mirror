@@ -1,5 +1,7 @@
 #include "CtrlLib.h"
 
+NAMESPACE_UPP
+
 CtrlsImgLook& CtrlsImgLook::operator()(int i, int n)
 {
 	while(n-- > 0)
@@ -340,3 +342,5 @@ void DrawFocus(Draw& w, int x, int y, int cx, int cy) {
 void DrawFocus(Draw& w, const Rect& r) {
 	DrawFocus(w, r.left, r.top, r.Width(), r.Height());
 }
+
+END_UPP_NAMESPACE

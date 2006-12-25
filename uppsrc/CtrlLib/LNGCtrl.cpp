@@ -1,5 +1,8 @@
 #include "CtrlLib.h"
 
+
+NAMESPACE_UPP
+
 Size  LNGCtrl::GetMinSize() const
 {
 	int c = EditField::GetStdHeight();
@@ -77,3 +80,5 @@ LNGCtrl::LNGCtrl() {
 LNGCtrl::~LNGCtrl()
 {
 }
+
+END_UPP_NAMESPACE

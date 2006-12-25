@@ -1,6 +1,8 @@
 #ifndef _Gis3_Coords_method_h_
 #define _Gis3_Coords_method_h_
 
+NAMESPACE_UPP
+
 class GisCoordsLonLat : public GisCoords::Data
 {
 public:
@@ -231,5 +233,7 @@ public:
 	GisOrientation        orientation;
 	double                R, Rdeg, E, c;
 };
+
+END_UPP_NAMESPACE
 
 #endif

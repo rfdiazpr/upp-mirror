@@ -38,3 +38,5 @@ S_MATRIKA
 0 0 -1
 Color
 0 0 -1
+WString
+0 0 -1

@@ -1,6 +1,8 @@
 #include "bmp.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 #include "bmphdr.h"
 
 int BMPEncoder::GetPaletteCount()
@@ -65,9 +67,9 @@ void BMPEncoder::Start(Size size)
 	bmfh.bfType = 'B' + 256 * 'M';
 	bmfh.bfOffBits = sizeof(bmfh) + sizeof(BMP_INFOHEADER) + sizeof(BMP_RGB) * ncolors;
 	bmfh.bfSize = sizeof(bmfh) + sizeof(BMP_INFOHEADER) + ncolors + header.biSizeImage;
-	bmfh.EndianSwap();
+	bmfh.SwapEndian();
 	GetStream().Put(&bmfh, sizeof(bmfh));
-	header.EndianSwap();
+	header.SwapEndian();
 	int h = sizeof(BMP_INFOHEADER) + sizeof(BMP_RGB) * ncolors;
 	GetStream().Put(&header, h);
 	soff = GetStream().GetPos();
@@ -82,3 +84,5 @@ void BMPEncoder::WriteLineRaw(const byte *s)
 	memcpy(scanline, s, linebytes);
 	GetStream().Put(scanline, row_bytes);
 }
+
+END_UPP_NAMESPACE

@@ -3,6 +3,8 @@
 
 #include <Draw/Draw.h>
 
+NAMESPACE_UPP
+
 class BMPRaster : public StreamRaster {
 	Size             size;
 	int              row_bytes;
@@ -60,5 +62,7 @@ enum {
 
 Vector<Image> ReadIcon(String data);
 String        WriteIcon(const Vector<Image>& icons, int flags = WI_COLOR);
+
+END_UPP_NAMESPACE
 
 #endif

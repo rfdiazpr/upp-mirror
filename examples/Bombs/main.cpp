@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 class Bombs : public TopWindow {
 public:
 	virtual void Paint(Draw& w);

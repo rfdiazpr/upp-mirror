@@ -1,3 +1,5 @@
+description "Logging to MySql";
+
 uses
 	MySql;
 

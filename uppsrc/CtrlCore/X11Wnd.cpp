@@ -1,10 +1,15 @@
 #include "CtrlCore.h"
 
 #ifdef PLATFORM_X11
+#include <X11/Xlocale.h>
+#endif
+
+NAMESPACE_UPP
+
+#ifdef PLATFORM_X11
 
 #ifdef _DEBUG
 
-#include <X11/Xlocale.h>
 
 bool Ctrl::LogMessages/* = true*/;
 #endif
@@ -155,7 +160,7 @@ void Ctrl::ProcessEvent(XEvent *event)
 				VppLog() << " EVENT " << Format("%-20.20s", m->name);
 				VppLog() << "[window: " << event->xany.window << "] ";
 				if(q >= 0)
-					VppLog() << '<' << ::Name(Xwindow()[q].ctrl) << '>';
+					VppLog() << '<' << UPP::Name(Xwindow()[q].ctrl) << '>';
 				else
 					VppLog() << "<unknown ctrl> ";
 				VppLog() << '\n';
@@ -176,7 +181,7 @@ void Ctrl::ProcessEvent(XEvent *event)
 #ifdef _DEBUG
 #ifdef UPP_HEAP
 	if(MemoryCheck)
-		::MemoryCheck();
+		UPP::MemoryCheck();
 #endif
 	if(eo)
 		LLOG("------ end of event processing ----------");
@@ -299,6 +304,7 @@ void Ctrl::Create(Ctrl *owner, bool redirect, bool savebits)
 {
 	LLOG("Create " << Name() << " " << GetRect());
 	ASSERT(!IsChild() && !IsOpen());
+	XUngrabPointer(Xdisplay, CurrentTime);
 	XSetWindowAttributes swa;
 	swa.bit_gravity = ForgetGravity;
 	swa.background_pixmap = None;
@@ -792,3 +798,5 @@ ViewDraw::~ViewDraw()
 }
 
 #endif
+
+END_UPP_NAMESPACE

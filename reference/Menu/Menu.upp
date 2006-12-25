@@ -1,3 +1,5 @@
+description "Using MenuBar";
+
 uses
 	CtrlLib;
 
@@ -6,4 +8,3 @@ file
 
 mainconfig
 	"" = "GUI";
-

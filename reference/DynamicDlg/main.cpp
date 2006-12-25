@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct XmlDlg : public TopWindow {
 	Array<Label>                 label;
 	ArrayMap<String, EditString> edit;

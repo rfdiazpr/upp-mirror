@@ -1,5 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 struct MyApp : TopWindow {
 	virtual void Paint(Draw& w) {
 		w.DrawRect(GetSize(), White());

@@ -1,6 +1,8 @@
 #include <Core/Core.h>
 #include <plugin/bz2/bz2.h>
 
+using namespace Upp;
+
 #include "ship.brc"
 
 CONSOLE_APP_MAIN

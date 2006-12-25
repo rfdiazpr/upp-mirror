@@ -2,7 +2,6 @@
 #define CORE_H
 
 #define QLIB3
-#define UPP
 
 #if defined(flagMT) || defined(flagDEBUG)
 	#define _MULTITHREADED
@@ -75,6 +74,28 @@
 	#ifdef flagTESTLEAKS
 		#define TESTLEAKS
 	#endif
+#endif
+
+#ifdef flagOSX11
+	#define PLATFORM_OSX11
+	#define PLATFORM_POSIX
+	#ifdef flagGUI
+		#define PLATFORM_X11
+	#endif
+
+	#ifdef flagTESTLEAKS
+		#define TESTLEAKS
+	#endif
+
+     // defines set by OsX for us.
+    #ifdef __POWERPC__
+        #define flagPOWERPC
+    #endif
+
+    #ifdef __i386__
+        #define flagX86
+    #endif
+
 #endif
 
 #if defined(flagWIN) || defined(flagWIN32)
@@ -159,9 +180,9 @@
 	#define CPU_LE
 	#define CPU_LITTLE_ENDIAN // is it really?
 	#define CPU_ALIGNED
-#elif defined(flagPPC)
+#elif defined(flagPOWERPC)
 	#define CPU_32
-	#define CPU_PPC
+	#define CPU_POWERPC
 	#define CPU_BE
 	#define CPU_BIG_ENDIAN
 	#define CPU_ALIGNED
@@ -275,16 +296,68 @@
 	#endif
 #endif
 
+#include <algorithm>
+
+#ifdef PLATFORM_POSIX
+#include <bits/atomicity.h>
+#endif
+
+// fix MSC8 beta problem....
+#ifdef COMPILER_MSC
+namespace std {
+	inline void __cdecl _Debug_message(const wchar_t *, const wchar_t *, unsigned int line) {}
+};
+#endif
+
+namespace Upp {};
+
+#ifdef flagNONAMESPACE
+#define NAMESPACE_UPP
+#define END_UPP_NAMESPACE
+#define UPP
+#else
+#define NAMESPACE_UPP     namespace Upp {
+#define END_UPP_NAMESPACE };
+#define UPP               Upp
+#endif
+
+NAMESPACE_UPP
+
 #include <Core/Defs.h>
+
+END_UPP_NAMESPACE
+
+#ifdef UPP_HEAP
+#include <new>
+
+#ifdef _DEBUG
+
+inline void *operator new(size_t size) throw(std::bad_alloc) { void *ptr = UPP::MemoryAllocDebug(size); return ptr; }
+inline void operator  delete(void *ptr) throw()              { UPP::MemoryFreeDebug(ptr); }
+
+inline void *operator new[](size_t size) throw(std::bad_alloc) { void *ptr = UPP::MemoryAllocDebug(size); return ptr; }
+inline void operator  delete[](void *ptr) throw()              { UPP::MemoryFreeDebug(ptr); }
+
+#else
+
+inline void *operator new(size_t size) throw(std::bad_alloc) { void *ptr = UPP::MemoryAlloc(size); return ptr; }
+inline void operator  delete(void *ptr) throw()              { UPP::MemoryFree(ptr); }
+
+inline void *operator new[](size_t size) throw(std::bad_alloc) { void *ptr = UPP::MemoryAlloc(size); return ptr; }
+inline void operator  delete[](void *ptr) throw()              { UPP::MemoryFree(ptr); }
+
+#endif
+
+#endif
+
+NAMESPACE_UPP
+
 #include <Core/Mt.h>
 #include <Core/Global.h>
 #include <Core/Topt.h>
 #include <Core/Profile.h>
 #include <Core/String.h>
-
-#ifndef CONSERVATIVE
 #include <Core/String.hpp>
-#endif
 
 #include <Core/CharSet.h>
 #include <Core/TimeDate.h>
@@ -330,25 +403,51 @@
 
 #include <Core/Win32Com.h>
 
+#if (defined(_DEBUG) || defined(_TEST_LEAKS)) && defined(PLATFORM_POSIX)
+extern int sMemDiagInitCount;
+#endif
+
 #ifdef PLATFORM_WIN32
 NTL_MOVEABLE(POINT)
 NTL_MOVEABLE(SIZE)
 NTL_MOVEABLE(RECT)
 #endif
 
+END_UPP_NAMESPACE
+
 #if (defined(_DEBUG) || defined(_TEST_LEAKS)) && defined(PLATFORM_POSIX)
 
 //Place it to the begining of each file to be first function called in whole code...
 
+/*
 //$-
-extern int sMemDiagInitCount;
 struct MemDiagCls {
-	MemDiagCls()  { if(!sMemDiagInitCount++) MemoryInitDiagnostics(); }
-	~MemDiagCls() { if(!--sMemDiagInitCount) MemoryDumpLeaks(); }
+	MemDiagCls()  { if(!UPP::sMemDiagInitCount++) UPP::MemoryInitDiagnostics(); }
+	~MemDiagCls() { if(!--UPP::sMemDiagInitCount) UPP::MemoryDumpLeaks(); }
 };
 static const MemDiagCls sMemDiagHelper;
 //$+
+*/
 
+#endif
+
+inline UPP::int64  abs(UPP::int64 x)          { return x < 0 ? -x : x; }
+
+//some global definitions
+
+void      RegisterTopic__(const char *topicfile, const char *topic, const char *title, const UPP::byte *data, int len);
+
+#ifdef PLATFORM_WIN32
+typedef HMODULE DLLHANDLE;
+#else
+typedef void   *DLLHANDLE;
+#endif
+
+DLLHANDLE LoadDll__(UPP::String& fn, const char *const *names, void *const *procs);
+void      FreeDll__(DLLHANDLE dllhandle);
+
+#ifndef flagNONAMESPACE
+using Upp::byte; // Dirty solution to Windows.h typedef byte...
 #endif
 
 #endif //CORE_H

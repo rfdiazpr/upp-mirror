@@ -1,5 +1,7 @@
 #include <Core/Core.h>
 
+using namespace Upp;
+
 struct Distribution : Moveable<Distribution> {
 	String      text;
 	Vector<int> data;
@@ -41,5 +43,5 @@ CONSOLE_APP_MAIN
 	dist.Clear();
 	for(int n = 5; n <= 10; n++)
 		dist.Add() = CreateDist(n);
-	Dump(dist);	
+	Dump(dist);
 }

@@ -145,6 +145,14 @@ void DbgDisas::LostFocus()
 	Refresh();
 }
 
+void DbgDisas::WriteClipboard()
+{
+	String s;
+	for(int i = 0; i < addr.GetCount(); i++)
+		s << Format("%08X  ", (int)addr[i]) << inst[i].code << " " << inst[i].args << "\n";
+	WriteClipboardText(s);
+}
+
 DbgDisas::DbgDisas()
 {
 	SetFrame(InsetFrame());

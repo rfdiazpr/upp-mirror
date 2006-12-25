@@ -1,5 +1,8 @@
 #include <Esc/Esc.h>
 
+
+NAMESPACE_UPP
+
 #ifdef _MSC_VER
 #pragma inline_depth(255)
 #pragma optimize("t", on)
@@ -1194,3 +1197,5 @@ void  Esc::Run()
 	while(!IsEof() && no_return && no_break)
 		DoStatement();
 }
+
+END_UPP_NAMESPACE

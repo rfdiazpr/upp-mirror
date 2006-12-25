@@ -1,6 +1,8 @@
 #include "GeomDraw.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 #define LLOG(x) // LOG(x)
 
 enum { THICK = 5, THICKDOT = 20 };
@@ -760,7 +762,7 @@ void PathDraw::AddSegment(const PathStyle::Trace& trace, bool infinite)
 		int lw = t.left_bottom - t.left_top;
 		int rw = t.right_bottom - t.right_top;
 		int sw = 0;
-		if(draw->Dots() && lw <= THICKDOT && abs(rw - lw) <= 5)
+		if(draw->Dots() && lw <= THICKDOT && tabs(rw - lw) <= 5)
 		{
 			sw = (rw + lw) >> 1;
 			t.hline = PathDraw_Output_Thick[0][0];
@@ -2031,3 +2033,5 @@ void PathStyleDisplay::Paint(Draw& draw, const Rect& rc, const Value& v, Color i
 		pd.Paint();
 	}
 }
+
+END_UPP_NAMESPACE

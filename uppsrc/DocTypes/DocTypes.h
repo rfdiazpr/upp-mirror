@@ -9,6 +9,8 @@
 #include <RichText/RichText.h>
 #include <CtrlLib/CtrlLib.h>
 
+NAMESPACE_UPP
+
 enum { DOC_SCREEN_ZOOM = 140 };
 
 class ParaTypo {
@@ -705,6 +707,8 @@ public:
 	virtual ~RtfDocOut();
 #endif
 };
+
+END_UPP_NAMESPACE
 
 #include "Report.h"
 #include "QtfCtrl.h"

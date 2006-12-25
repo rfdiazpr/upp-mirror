@@ -1,5 +1,7 @@
 #include "Core.h"
 
+NAMESPACE_UPP
+
 /* Faster, but consuming more memory....
 PteBase::Prec *PteBase::PtrAdd()
 {
@@ -9,7 +11,7 @@ PteBase::Prec *PteBase::PtrAdd()
 
 void PteBase::PtrRelease(Prec *prec)
 {
-	if(prec && AtomicDec(prec->n) == 0) 
+	if(prec && AtomicDec(prec->n) == 0)
 		delete prec;
 }
 
@@ -81,3 +83,5 @@ PtrBase::~PtrBase()
 {
 	Release();
 }
+
+END_UPP_NAMESPACE

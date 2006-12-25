@@ -1,3 +1,5 @@
+description "SQL application example";
+
 uses
 	CtrlLib,
 	plugin\Sqlite3,

@@ -1,6 +1,8 @@
 #include "GeomDraw.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 static void ExpandSegmentUp(Vector<Point>& src, Vector<Point>& dest, const LinearSegmentTree::Node *node, Point smin, Point dmin)
 {
 	if(node) {
@@ -199,3 +201,5 @@ void PlotRect(PlotterTool& tool, GisTransform transform, const Rectf& src)
 	PlotLine(tool, transform, src.BottomRight(), src.BottomLeft());
 	PlotLine(tool, transform, src.BottomLeft(),  src.TopLeft());
 }
+
+END_UPP_NAMESPACE

@@ -1,3 +1,5 @@
+NAMESPACE_UPP
+
 class CalcTypeNameConvert
 {
 public:
@@ -136,3 +138,5 @@ struct CalcType<Nuller>
 	static bool        IsType(Value v)                   { return IsNull(v); }
 	static String      Describe();
 };
+
+END_UPP_NAMESPACE

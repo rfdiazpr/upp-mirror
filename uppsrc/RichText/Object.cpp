@@ -1,6 +1,7 @@
 #include "RichText.h"
-
 #include <CtrlLib/CtrlLib.h>
+
+NAMESPACE_UPP
 
 RichObjectType::RichObjectType() {}
 RichObjectType::~RichObjectType() {}
@@ -272,3 +273,5 @@ void RichObjectTypeDrawingCls::Paint(const Value& data, Draw& w, Size sz) const
 INITBLOCK {
 	RichObject::Register("Drawing", &Single<RichObjectTypeDrawingCls>());
 };
+
+END_UPP_NAMESPACE

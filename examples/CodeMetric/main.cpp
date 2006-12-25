@@ -47,7 +47,6 @@ void WarningDisplay::PaintBackground(Draw& w, const Rect& r, const Value& q,
 	Display::PaintBackground(w, r, q, ink, paper, style);
 }
 
-
 void AnalyseGui::MainMenu(Bar &bar)
 {
 	bar.Add("Load file", THISBACK(Open));

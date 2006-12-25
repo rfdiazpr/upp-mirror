@@ -1,5 +1,7 @@
 #include "RichEdit.h"
 
+NAMESPACE_UPP
+
 void RichEdit::SaveTableFormat(int table)
 {
 	AddUndo(new UndoTableFormat(text, table));
@@ -311,3 +313,5 @@ void RichEdit::JoinCell()
 	text.JoinCell(tablesel, cells);
 	Move(text.GetCellPos(tablesel, cells.TopLeft()).pos);
 }
+
+END_UPP_NAMESPACE

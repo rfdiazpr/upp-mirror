@@ -1,6 +1,21 @@
 #include "CtrlLib.h"
 
 #ifdef PLATFORM_WIN32
+#ifndef PLATFORM_WINCE
+
+#include <commdlg.h>
+#pragma  comment(lib, "comdlg32.lib")
+
+#endif
+#else
+
+#include <PdfDraw/PdfDraw.h>
+
+#endif
+
+NAMESPACE_UPP
+
+#ifdef PLATFORM_WIN32
 
 #ifndef PLATFORM_WINCE
 
@@ -122,8 +137,6 @@ PrinterJob& PrinterJob::CurrentPage(int i)
 #endif
 
 #ifdef PLATFORM_POSIX
-
-#include <PdfDraw/PdfDraw.h>
 
 String System(const char *cmd, const String& in)
 {
@@ -349,3 +362,5 @@ PrinterJob& PrinterJob::CurrentPage(int i)
 }
 
 #endif
+
+END_UPP_NAMESPACE

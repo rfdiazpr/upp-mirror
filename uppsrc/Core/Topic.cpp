@@ -1,5 +1,7 @@
 #include "Core.h"
 
+NAMESPACE_UPP
+
 struct TopicData__ : Moveable<TopicData__> {
 	String      title;
 	const byte *data;
@@ -84,19 +86,21 @@ Topic GetTopic(const char *path)
 	return t;
 }
 
+END_UPP_NAMESPACE
+
 void RegisterTopic__(const char *topicfile, const char *topic, const char *title,
-                     const byte *data, int len)
+                     const UPP::byte *data, int len)
 {
-	INTERLOCKED_(sTopicLock) {
+	INTERLOCKED_(UPP::sTopicLock) {
 		ASSERT(*topicfile == '<');
-		ASSERT(*GetFileName(topicfile).Last() == '>');
-		String q = GetFileFolder(topicfile + 1);
-		String group = GetFileTitle(q);
-		String package = UnixPath(GetFileFolder(q));
-		TopicData__& d = Topics__().GetAdd(package).GetAdd(group).GetAdd(topic);
+		ASSERT(*UPP::GetFileName(topicfile).Last() == '>');
+		UPP::String q = UPP::GetFileFolder(topicfile + 1);
+		UPP::String group = UPP::GetFileTitle(q);
+		UPP::String package = UPP::UnixPath(UPP::GetFileFolder(q));
+		UPP::TopicData__& d = UPP::Topics__().GetAdd(package).GetAdd(group).GetAdd(topic);
 		d.title = title;
 		d.data = data;
 		d.len = len;
-		TopicBase().GetAdd(package).GetAdd(group).Add(topic);
+		UPP::TopicBase().GetAdd(package).GetAdd(group).Add(topic);
 	}
 }

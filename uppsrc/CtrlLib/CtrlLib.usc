@@ -290,6 +290,7 @@ ctrl DataPusher {
 	>Base;
 	Frame SetFrame = InsetFrame();
 	bool  SetEditable = true @1;
+	Text  Tip;
 
 	Paint(w) {
 		r = GetRect();
@@ -308,6 +309,7 @@ ctrl Button {
 	Text   SetLabel ? "Button label";
 	Font   SetFont = StdFont();
 	Frame  SetFrame @1;
+	Text  Tip;
 
 	Paint(w) {
 		r = GetRect();
@@ -333,6 +335,7 @@ ctrl Option {
 	bool   SetEditable = true @1 ? "Editable";
 	bool   ThreeState;
 	bool   NotNull;
+	Text   Tip;
 
 	Paint(w) {
 		x = self;
@@ -402,6 +405,7 @@ ctrl EditField {
 	bool  SetEditable = true @1 ? "Editable";
 	bool  WantFocus = true;
 	int   MaxChars;
+	Text  Tip;
 //	Qtf   SetInfo @1 ? "Info of control" ;
 
 	Paint(w) {
@@ -573,6 +577,7 @@ ctrl DropList {
 	bool  WantFocus = true;
 	bool  DisplayAll = false;
 	bool  AlwaysDrop = false @1;
+	Text  Tip;
 //	Qtf   SetInfo @1 ? "Info of control" ;
 
 	Paint(w) {
@@ -591,6 +596,7 @@ template WithDropChoice {
 	bool   Dropping = true;
 	String Appending = ", ";
 	raw    SetDropLines = 16;
+	Text   Tip;
 
 	Paint(w) {
 		CtrlPaint(w);

@@ -1,6 +1,8 @@
 #include "GeomCoords.h"
 #pragma hdrstop
 
+NAMESPACE_UPP
+
 #define LLOG(x) // RLOG(x)
 
 double DegreeStep(double min_step)
@@ -1175,3 +1177,5 @@ PlanarSegmentTree CreatePlanarTree(const LinearSegmentTree& left, const LinearSe
 		left.target1, right.target1, left.target2, right.target2);
 	return out;
 }
+
+END_UPP_NAMESPACE

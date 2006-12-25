@@ -2,11 +2,13 @@
 
 // http://java.sun.com/docs/books/tutorial/uiswing/start/swingTour.html
 
+using namespace Upp;
+
 struct ButtonApp : TopWindow {
 	int    count;
 	Button button;
 	Label  label;
-	
+
 	void RefreshLabel()
 	{
 		label = Format("Number of button clicks %d", count);
@@ -16,9 +18,9 @@ struct ButtonApp : TopWindow {
 		++count;
 		RefreshLabel();
 	}
-	
+
 	typedef ButtonApp CLASSNAME;
-	
+
 	ButtonApp()
 	{
 		count = 0;
@@ -36,4 +38,3 @@ GUI_APP_MAIN
 {
 	ButtonApp().Run();
 }
-

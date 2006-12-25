@@ -33,6 +33,9 @@ void Pdb::DebugBar(Bar& bar)
 	bar.Add(b, AK_ADDWATCH, THISBACK(AddWatch));
 	bar.Add(b, AK_EXPLORER, THISBACK(DoExplorer));
 	bar.Add(b, AK_MEMORY, THISBACK1(SetTab, 4));
+	bar.MenuSeparator();
+	bar.Add(b, "Copy backtrace", THISBACK(CopyStack));
+	bar.Add(b, "Copy dissassembly", THISBACK(CopyDisas));
 }
 
 void Pdb::Tab()
@@ -239,6 +242,20 @@ void Pdb::CleanupOnExit()
 		UnloadModuleSymbols();
 		SymCleanup(hProcess);
 	}
+}
+
+
+void Pdb::CopyStack()
+{
+	String s;
+	for(int i = 0; i < framelist.GetCount(); i++)
+		s << framelist.GetValue(i) << "\n";
+	WriteClipboardText(s);
+}
+
+void Pdb::CopyDisas()
+{
+	disas.WriteClipboard();
 }
 
 Pdb::~Pdb()

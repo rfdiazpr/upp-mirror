@@ -20,9 +20,13 @@ A million repetitions of "a"
 /* Hash a single 512-bit block. This is the core of the algorithm. */
 /* blk0() and blk() perform the initial expand. */
 /* I got the idea of expanding during the round function from SSLeay */
-//#define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
 
+#ifdef COMPILER_MSC
 #define rol(value, bits) _rotl(value, bits)
+#else
+#define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
+#endif
+
 #define blk0(i) (block[i] = (rol(block[i],24)&0xFF00FF00)|(rol(block[i],8)&0x00FF00FF))
 #define blk(i) (block[i&15] = rol(block[(i+13)&15]^block[(i+8)&15] \
                ^block[(i+2)&15]^block[i&15],1))

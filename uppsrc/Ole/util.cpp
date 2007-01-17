@@ -114,6 +114,7 @@ OleVariant AsVariant(Value value) {
 	if(value.IsNull())
 		return out;
 	switch(value.GetType()) {
+	case BOOL_V:
 	case INT_V:     out.vt = VT_I4; out.lVal = (int)value; break;
 	case DOUBLE_V:  out.vt = VT_R8; out.dblVal = value; break;
 	case STRING_V:

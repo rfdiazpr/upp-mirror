@@ -2,42 +2,38 @@
 
 using namespace Upp;
 
-template <class T>
-void Print(const T& a)
-{
-	Cout() << a << '\n';
-}
-
 CONSOLE_APP_MAIN
 {
 	String a;
 	a = "Hello";
-	Print(a);
+	DUMP(a);
 	a = a + " world";
-	Print(a);
+	DUMP(a);
 	a.Cat('!');
-	Print(a);
+	DUMP(a);
 	a.Cat("ABCDEFGHIJKLM", 3);
-	Print(a);
+	DUMP(a);
 	a.Clear();
 	for(int i = 0; i < 10; i++)
 		a << i << ", ";
-	Print(a);
-	Print(String().Cat() << "Number is " << 123 << ".");
+	DUMP(a);
+	DUMP(String().Cat() << "Number is " << 123 << ".");
 	a = "0123456789";
-	Print(a.GetLength());
+	DUMP(a.GetLength());
 	a.Insert(6, "<inserted>");
-	Print(a);
+	DUMP(a);
 	a.Remove(2, 2);
-	Print(a);
-	Print(a.Find('e'));
-	Print(a.ReverseFind('e'));
-	Print(a.Find("ted"));
-	Print(a.Mid(3, 3));
-	Print(a.Mid(3));
+	DUMP(a);
+	DUMP(a.Find('e'));
+	DUMP(a.ReverseFind('e'));
+	DUMP(a.StartsWith("ABC"));
+	DUMP(a.EndsWith("KLM"));
+	DUMP(a.Find("ted"));
+	DUMP(a.Mid(3, 3));
+	DUMP(a.Mid(3));
 	a.Trim(4);
-	Print(a);
-	Print(a[0]);
-	Print(*a);
-	Print(a);
+	DUMP(a);
+	DUMP(a[0]);
+	DUMP(*a);
+	DUMP(a);
 }

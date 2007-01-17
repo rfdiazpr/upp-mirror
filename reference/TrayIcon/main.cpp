@@ -7,14 +7,18 @@ using namespace Upp;
 #include <Draw/iml.h>
 
 struct App : TrayIcon {
-	void Info() {
+	virtual void LeftDouble() {
 		Icon(Tray::Icon1());
 		PromptOK("TrayIcon launched this prompt!");
 		Icon(Tray::Icon());
 	}
 
-	void Menu(Bar& bar) {
-		bar.Add("Info..", THISBACK(Info));
+	virtual void LeftDown() {
+		Info("TrayIcon", "You have clicked the TrayIcon!\n""TrayIcon is U++ reference example.");
+	}
+
+	virtual void Menu(Bar& bar) {
+		bar.Add("Info..", THISBACK(LeftDouble));
 		bar.Separator();
 		bar.Add("Exit", THISBACK(Break));
 	}
@@ -22,10 +26,8 @@ struct App : TrayIcon {
 	typedef App CLASSNAME;
 
 	App() {
-		WhenBar = THISBACK(Menu);
-		WhenLeftDouble = THISBACK(Info);
 		Icon(Tray::Icon());
-		Tip("This is U++ tray icon");
+		Tip("This is U++ TrayIcon");
 	}
 };
 

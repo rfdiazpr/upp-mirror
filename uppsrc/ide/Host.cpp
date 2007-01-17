@@ -156,15 +156,14 @@ static Vector<int>& sPid()
 void sCleanZombies(int signal_number)
 {
 	Vector<int>& pid = sPid();
-	int dummy;
-	for(int i = 0; i < pid.GetCount(); i++)
-		if(waitpid(pid[i], &dummy, WNOHANG) > 0) {
+	int i = 0;
+	while(i < pid.GetCount())
+		if(waitpid(pid[i], 0, WNOHANG | WUNTRACED) > 0)
 			pid.Remove(i);
-			return;
-		}
+		else
+			i++;
 }
 #endif
-
 
 void LocalHost::Launch(const char *_cmdline, bool console)
 {
@@ -238,9 +237,7 @@ void LocalHost::Launch(const char *_cmdline, bool console)
 
 	args.Add(NULL);
 
-	static bool init;
-	if(!init) {
-		init = true;
+	ONCELOCK {
 		struct sigaction sigchld_action;
   		memset(&sigchld_action, 0, sizeof(sigchld_action));
   		sigchld_action.sa_handler = sCleanZombies;
@@ -261,6 +258,7 @@ void LocalHost::Launch(const char *_cmdline, bool console)
 		const char **envp = env.Begin();
 		execve(args[0], args, (char *const *)envp);
 	}
+	RLOG("Launch pid: " << pid);
 	sPid().Add(pid);
 #endif
 }

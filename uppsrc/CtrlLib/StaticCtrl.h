@@ -47,6 +47,12 @@ public:
 	LabelBox& operator=(const char *s)   { SetText(s); return *this; }
 };
 
+Color LabelBoxTextColor();
+Color LabelBoxColor();
+
+void LabelBoxTextColor_Write(Color c);
+void LabelBoxColor_Write(Color c);
+
 struct ParentCtrl : public Ctrl {
 	virtual Rect   GetVoidRect();
 

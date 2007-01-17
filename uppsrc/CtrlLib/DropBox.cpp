@@ -2,12 +2,15 @@
 
 NAMESPACE_UPP
 
-CH_INT(DropBoxInsideEdge, 1);
-CH_INT(DropBoxWidth, FrameButtonWidth());
-
-CH_LOOK(DropBoxEdge, CtrlsImgLook(CtrlsImg::I_EFE));
-CH_LOOKS(DropBoxBtn, 4, CtrlsImgLook(CtrlsImg::I_EB, CtrlsImg::DA(), ButtonMonoColor));
-CH_LOOKS(DropBoxSquaredBtn, 4, CtrlsImgLook(CtrlsImg::I_EB, CtrlsImg::DA(), ButtonMonoColor));
+CH_STYLE(DropList, Style, StyleDefault)
+{
+	inside = true;
+	width = FrameButtonWidth();
+	edge = CtrlsImg::EFE();
+	const Color *m = Button::StyleNormal().monocolor;
+	CtrlsImageLook(button, CtrlsImg::I_EB, CtrlsImg::DA(), m);
+	CtrlsImageLook(squaredbutton, CtrlsImg::I_EB, CtrlsImg::DA(), m);
+}
 
 void DropBox::CancelMode()
 {
@@ -49,9 +52,9 @@ Image DropBox::FrameMouseEvent(int event, Point p, int zdelta, dword keyflags)
 }
 
 Rect DropBox::GetDropBoxRect(Rect r) const {
-	r.left = r.right - DropBoxWidth();
-	if(!UserEdge() && DropBoxInsideEdge()) {
-		Rect mg = ChMargins(DropBoxEdge());
+	r.left = r.right - style->width;
+	if(!UserEdge() && style->inside) {
+		Rect mg = ChMargins(style->edge);
 		r.left -= mg.right;
 		r.right -= mg.right;
 		r.top += mg.top;
@@ -71,25 +74,24 @@ void DropBox::ButtonPaint(Draw& w, const Rect& r)
 		q = CTRL_DISABLED;
 	Rect box = GetDropBoxRect(r);
 	w.DrawRect(box, enabled ? SColorPaper : SColorFace);
-	if(UserEdge()) {
-		ChPaint(w, box, DropBoxSquaredBtn(q));
-	}
+	if(UserEdge())
+		ChPaint(w, box, style->squaredbutton[q]);
 	else {
-		ChPaintEdge(w, r, DropBoxEdge());
-		ChPaint(w, box, DropBoxBtn(q));
+		ChPaintEdge(w, r, style->edge);
+		ChPaint(w, box, style->button[q]);
 	}
 }
 
 void DropBox::ButtonLayout(Rect& r)
 {
 	rect = r;
-	r.right -= DropBoxWidth();
+	r.right -= style->width;
 	if(!UserEdge()) {
-		Rect mg = ChMargins(DropBoxEdge());
+		Rect mg = ChMargins(style->edge);
 		r.left += mg.left;
 		r.top += mg.top;
 		r.bottom -= mg.bottom;
-		if(DropBoxInsideEdge())
+		if(style->inside)
 			r.right -= mg.right;
 	}
 }
@@ -97,13 +99,13 @@ void DropBox::ButtonLayout(Rect& r)
 void DropBox::ButtonAddSize(Size& sz)
 {
 	if(UserEdge()) {
-		sz.cx += DropBoxWidth();
+		sz.cx += style->width;
 	}
 	else {
-		Rect mg = ChMargins(DropBoxEdge());
+		Rect mg = ChMargins(style->edge);
 		sz.cy += mg.top + mg.bottom;
-		sz.cx += mg.left + DropBoxWidth();
-		if(DropBoxInsideEdge())
+		sz.cx += mg.left + style->width;
+		if(style->inside)
 			sz.cx += mg.right;
 	}
 }
@@ -149,6 +151,7 @@ void DropBox::DropEdge::FrameAddSize(Size& sz)
 
 DropBox::DropBox()
 {
+	style = &DropList::StyleDefault();
 	always_drop = false;
 	edge.dropbox = this;
 	SetFrame(edge);

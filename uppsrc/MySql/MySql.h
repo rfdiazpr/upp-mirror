@@ -63,9 +63,8 @@ public:
 	~MySqlSession()      { Close(); }
 };
 
+END_UPP_NAMESPACE
 
 #endif
-
-END_UPP_NAMESPACE
 
 #endif

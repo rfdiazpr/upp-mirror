@@ -1,8 +1,8 @@
 #include "MySql.h"
 
-NAMESPACE_UPP
-
 #ifndef flagNOMYSQL
+
+NAMESPACE_UPP
 
 class MySqlConnection : public SqlConnection {
 protected:
@@ -200,6 +200,7 @@ void MySqlConnection::SetParam(int i, const Value& r) {
 				p = b;
 			}
 			break;
+		case BOOL_V:
 		case INT_V:
 			p = Format("%d", int(r));
 			break;
@@ -460,6 +461,6 @@ bool MySqlUpdateSchema(const SqlSchema& sch, int i, StatementExecutor& se) {
 	return true;
 }
 
-#endif
-
 END_UPP_NAMESPACE
+
+#endif

@@ -44,6 +44,7 @@ protected:
 	bool    isenabled;
 	byte    type;
 	byte    accesskey;
+	const MenuBar::Style *style;
 
 public:
 	virtual void SyncState() = 0;
@@ -52,11 +53,12 @@ public:
 	                            Color color = SColorMenuText);
 	void           PaintTopItem(Draw& w, int state);
 
-	bool           IsItemEnabled() const         { return isenabled; }
-	String         GetText() const               { return text; }
-	MenuItemBase&  LeftGap(int cx)               { leftgap = cx; return *this; }
-	MenuItemBase&  SetFont(Font f)               { font = f; return *this; }
-	Font           GetFont() const               { return font; }
+	bool           IsItemEnabled() const          { return isenabled; }
+	String         GetText() const                { return text; }
+	MenuItemBase&  LeftGap(int cx)                { leftgap = cx; return *this; }
+	MenuItemBase&  SetFont(Font f)                { font = f; return *this; }
+	MenuItemBase&  Style(const MenuBar::Style *s) { style = s; return *this; }
+	Font           GetFont() const                { return font; }
 
 	MenuItemBase();
 };
@@ -186,6 +188,7 @@ MenuItemBase::MenuItemBase()
 	leftgap = 16;
 	accesskey = 0;
 	NoWantFocus();
+	style = &MenuBar::StyleDefault();
 }
 
 Bar::Item& MenuItemBase::Text(const char *s)
@@ -303,14 +306,16 @@ void MenuItemBase::DrawMenuText(Draw& w, int x, int y, const String& s, Font f, 
 	UPP::DrawMenuText(w, x, y, s, f, enabled, hl, VisibleAccessKeys() ? accesskey : 0, color);
 }
 
-CH_LOOK(MenuItemLook, SColorHighlight());
-CH_LOOK(TopMenuItemLook, MenuItemLook());
+CH_STYLE(MenuBar, Style, StyleDefault)
+{
+	topitem = item = SColorHighlight();
+}
 
 void MenuItemBase::PaintTopItem(Draw& w, int state) {
 	Size sz = GetSize();
 	if(GUI_GlobalStyle() >= GUISTYLE_XP) {
 		if(state)
-			ChPaint(w, 0, 0, sz.cx, sz.cy, TopMenuItemLook());
+			ChPaint(w, 0, 0, sz.cx, sz.cy, style->topitem);
 		else
 			w.DrawRect(0, 0, sz.cx, sz.cy, SColorFace);
 		String text = GetText();
@@ -412,7 +417,7 @@ void MenuItem::Paint(Draw& w)
 
 	if(GUI_GlobalStyle() >= GUISTYLE_XP)
 		if(hl)
-			ChPaint(w, 0, 0, sz.cx, sz.cy, MenuItemLook());
+			ChPaint(w, 0, 0, sz.cx, sz.cy, style->item);
 		else
 			w.DrawRect(0, 0, sz.cx, sz.cy, SColorMenu);
 	else
@@ -442,12 +447,18 @@ void MenuItem::Paint(Draw& w)
 			DrawBorder(w, 0, iy - 2, isz.cx + 4, isz.cy + 4, chk ? ThinInsetBorder : ThinOutsetBorder);
 		}
 	}
-	DrawHighlightImage(w, 2, iy, li, hl || chk, isenabled);
+	if(isenabled)
+		DrawHighlightImage(w, 2, iy, li, hl || chk, true);
+	else
+		w.DrawImage(2, iy, DisabledImage(li));
 	int x = max(isz.cx, leftgap) + 6;
 	isz = GetTextSize(text, StdFont());
 	DrawMenuText(w, x, (sz.cy - isz.cy) / 2, txt, font, isenabled, hl, SColorMenuText);
 	isz = ricon.GetSize();
-	DrawHighlightImage(w, sz.cx - isz.cx, (sz.cy - isz.cy) / 2, ricon, hl, isenabled);
+	if(isenabled)
+		DrawHighlightImage(w, sz.cx - isz.cx, (sz.cy - isz.cy) / 2, ricon, hl, true);
+	else
+		w.DrawImage(sz.cx - isz.cx, (sz.cy - isz.cy) / 2, DisabledImage(ricon));
 	x = sz.cx - max(isz.cx, 16) - 1;
 	if(!IsEmpty(keydesc)) {
 		isz = GetTextSize(keydesc, StdFont());
@@ -775,6 +786,7 @@ Bar::Item& MenuBar::AddItem(Callback cb)
 	pane.Add(q, Null);
 	q->SetFont(font);
 	q->LeftGap(leftgap);
+	q->Style(style);
 	*q <<= THISBACK(CloseMenu);
 	*q << cb;
 	return *q;
@@ -799,6 +811,7 @@ Bar::Item& MenuBar::AddSubMenu(Callback1<Bar&> proc)
 	pane.Add(q, Null);
 	q->SetFont(font);
 	q->LeftGap(leftgap);
+	q->Style(style);
 	w->SetParent(this);
 	w->Set(proc);
 	return *q;
@@ -1219,6 +1232,7 @@ MenuBar::MenuBar()
 	font = StdFont();
 	leftgap = 16;
 	lock = 0;
+	SetStyle(StyleDefault());
 }
 
 MenuBar::~MenuBar()

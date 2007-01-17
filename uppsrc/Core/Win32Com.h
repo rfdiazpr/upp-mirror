@@ -5,8 +5,10 @@
 #ifdef PLATFORM_WINCE
 inline bool IsWinNT() { return false; }
 inline bool IsWinXP() { return false; }
+inline bool IsWin2K() { return false; }
 #else
 inline bool IsWinNT() { return GetVersion() < 0x80000000; }
+bool IsWin2K();
 bool IsWinXP();
 #endif
 

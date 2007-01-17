@@ -216,6 +216,7 @@ String SqlFormat(const Value& x)
 {
 	if(x.IsNull()) return "NULL";
 	switch(x.GetType()) {
+	case BOOL_V:
 	case INT_V:
 		return SqlFormat((int) x);
 	case INT64_V:

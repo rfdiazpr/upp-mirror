@@ -4,7 +4,10 @@ NAMESPACE_UPP
 
 #define LTIMING(x)  // TIMING(x)
 
-CH_LOOKS(ToolButtonLook, 6, CtrlsImgLook(CtrlsImg::I_TB, 6));
+CH_STYLE(ToolBar, Style, StyleDefault)
+{
+	CtrlsImageLook(look, CtrlsImg::I_TB, 6);
+}
 
 void ToolButton::UpdateTip()
 {
@@ -97,14 +100,14 @@ void  ToolButton::Paint(Draw& w)
 	if(!q || !q->IsTransparent())
 		w.DrawRect(sz, checked && !HasMouse() ? Blend(SColorFace, SColorLight) : SColorFace);
 	Point center = (sz - isz) / 2;
-	ChPaint(w, sz, ToolButtonLook((IsEnabled() ? HasMouse() ? GetMouseLeft() ? CTRL_PRESSED
-						                                                     : checked ? 5 : CTRL_HOT
-				                                            : checked ? 4 : CTRL_NORMAL
-					                           : CTRL_DISABLED)));
+	ChPaint(w, sz, look[IsEnabled() ? HasMouse() ? GetMouseLeft() ? CTRL_PRESSED
+						                                          : checked ? 5 : CTRL_HOT
+				                                 : checked ? 4 : CTRL_NORMAL
+					                : CTRL_DISABLED]);
 	if(IsEnabled())
 		DrawHighlightImage(w, center.x, center.y, image, HasMouse());
 	else
-		w.DrawImage(center.x, center.y, MakeImage(image, Etched));
+		w.DrawImage(center.x, center.y, DisabledImage(image));
 }
 
 void  ToolButton::MouseEnter(Point, dword)
@@ -173,6 +176,7 @@ void ToolButton::Reset()
 	accel = 0;
 	checked = false;
 	NoWantFocus();
+	look = ToolBar::StyleDefault().look;
 }
 
 ToolButton::ToolButton()
@@ -255,6 +259,7 @@ ToolBar::ToolBar()
 	ssize = 8;
 	lock = 0;
 	ii = 0;
+	SetStyle(StyleDefault());
 }
 
 ToolBar::~ToolBar() {}

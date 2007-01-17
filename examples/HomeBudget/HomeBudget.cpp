@@ -1,7 +1,7 @@
 #include <CtrlLib/CtrlLib.h>
 #include <GridCtrl/GridCtrl.h>
-#include <plugin/Sqlite3/lib/Sqlite3.h>
-#include <plugin/Sqlite3/Sqlite3.h>
+#include <plugin/sqlite3/lib/sqlite3.h>
+#include <plugin/sqlite3/Sqlite3.h>
 
 using namespace Upp;
 
@@ -9,13 +9,11 @@ using namespace Upp;
 #define IMAGECLASS Images
 #include <Draw/iml.h>
 
-#define SCHEMADIALECT <plugin/Sqlite3/Sqlite3Schema.h>
+#define SCHEMADIALECT <plugin/sqlite3/Sqlite3Schema.h>
 #define MODEL <HomeBudget/HomeBudget.sch>
-#include "Sql/sch_header.h"
 
-#ifdef flagDEBUG
 #include <Sql/sch_schema.h>
-#endif
+#include <Sql/sch_header.h>
 #include <Sql/sch_source.h>
 
 #define LAYOUTFILE <HomeBudget/HomeBudget.lay>
@@ -63,17 +61,6 @@ struct DispPM : GridDisplay
 		GridDisplay::Paint(w, x, y, cx, cy, Value(""), style, fg, bg, fnt, found, fs, fe);
 	}
 };
-
-Date ScanDate(String &s)
-{
-	if(s.IsEmpty())
-		return Null;
-	int year  = atoi(s.Left(4));
-	int month = atoi(s.Mid(5, 2));
-	int day   = atoi(s.Right(2));
-	
-	return Date(year, month, day);
-}
 
 HomeBudget::HomeBudget()
 {
@@ -218,7 +205,7 @@ void HomeBudget::LoadMoney(int dtid)
 		money(CAT_ID) = SQL[CAT_ID];
 		money(PM) = SQL[PM];
 		money(VALUE) = SQL[VALUE];
-		money(DT) = ScanDate(String(SQL[DT]));
+		money(DT) = SQL[DT];
 		money(DESC) = SQL[DESC];
 	}
 }
@@ -228,7 +215,7 @@ void HomeBudget::LoadDates()
 	month.Clear();
 	SQL & Select(ID, DT).From(DATES);
 	while(SQL.Fetch())
-		month.Add(SQL[0], ScanDate(String(SQL[1])));
+		month.Add(SQL);
 }
 
 void HomeBudget::LoadGroups()
@@ -255,7 +242,7 @@ void HomeBudget::LoadCategories(int group_id)
 int HomeBudget::GetCategorySign()
 {
 	SQL & Select(PM).From(CATEGORIES).Where(ID == money.Get(CAT_ID));
-	Value v = SQL.Fetch() ? SQL[0] : 0;	
+	Value v = SQL.Fetch() ? SQL[0] : Value(0);	
 	LOG(v);
 	return v;
 }
@@ -651,7 +638,7 @@ void HomeBudget::SetRest(StaticText &rest, float r)
 void HomeBudget::UpdateValue()
 {
 	SQL & Select(DEFVALUE).From(CATEGORIES).Where(ID == money.Get(CAT_ID));
-	Value v = SQL.Fetch() ? SQL[0] : 0;	
+	Value v = SQL.Fetch() ? SQL[0] : Value(0);
 	money.Set(VALUE, v);
 	money.Set(PM, GetCategorySign());
 }

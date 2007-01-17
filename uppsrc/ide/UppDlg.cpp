@@ -89,6 +89,7 @@ void PackageEditor::SaveOptions() {
 		actual.charset = (byte)(int)~charset;
 		actual.accepts = Split(accepts.GetText().ToString(), ' ');
 		actual.optimize_speed = optimize_speed;
+		actual.noblitz = noblitz;
 		if(IsActiveFile())
 			ActiveFile().optimize_speed = optimize_speed_file;
 		SavePackage();
@@ -108,6 +109,7 @@ void PackageEditor::Empty()
 {
 	FileEmpty();
 	charset.Disable();
+	noblitz.Disable();
 	description.Disable();
 	optimize_speed.Disable();
 	filelist.Clear();
@@ -154,6 +156,7 @@ void PackageEditor::PackageCursor()
 		description <<= actual.description;
 		charset <<= (int)actual.charset;
 		optimize_speed = actual.optimize_speed;
+		noblitz = actual.noblitz;
 		String s;
 		for(int i = 0; i < actual.accepts.GetCount(); i++) {
 			if(i) s << ' ';
@@ -162,6 +165,7 @@ void PackageEditor::PackageCursor()
 		accepts = s.ToWString();
 		description.Enable();
 		charset.Enable();
+		noblitz.Enable();
 		optimize_speed.Enable();
 		accepts.Enable();
 		option.Enable();
@@ -532,6 +536,7 @@ PackageEditor::PackageEditor()
 	accepts.SetFilter(FlagFilter);
 	accepts <<=
 	charset <<= THISBACK(SaveOptions);
+	noblitz <<=
 	optimize_speed <<=
 	optimize_speed_file <<= THISBACK(SaveOptionsLoad);
 

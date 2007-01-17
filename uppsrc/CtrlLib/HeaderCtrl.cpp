@@ -40,24 +40,29 @@ void  HeaderCtrl::Column::LabelUpdate()
 	}
 }
 
-CH_LOOKS(HeaderTabLook, 4, CtrlsImgLook(CtrlsImg::I_HTB));
-CH_INT(HeaderTabGridAdjustment, 0);
-CH_INT(HeaderTabPressOffsetFlag, ButtonPressOffsetFlag());
+CH_STYLE(HeaderCtrl, Style, StyleDefault)
+{
+	CtrlsImageLook(look, CtrlsImg::I_HTB);
+	gridadjustment = 0;
+	Point p = Button::StyleNormal().pressoffset;
+	pressoffset = p.x || p.y;
+}
 
 void HeaderCtrl::Column::Paint(bool& first, Draw& w,
                                int x, int y, int cx, int cy, bool disabled, bool push, bool hl)
 {
+	const HeaderCtrl::Style *style = header ? header->style : &HeaderCtrl::StyleDefault();;
 	if(first) {
-		if(cx >= -HeaderTabGridAdjustment()) {
-			cx -= HeaderTabGridAdjustment();
+		if(cx >= -style->gridadjustment) {
+			cx -= style->gridadjustment;
 			if(cx < 0)
 				cx = 0;
 			first = false;
 		}
 	}
 	else
-		x -= HeaderTabGridAdjustment();
-	bool p = push && HeaderTabPressOffsetFlag();
+		x -= style->gridadjustment;
+	bool p = push && style->pressoffset;
 	Color bg = Nvl(paper, SColorFace());
 	int q = CTRL_NORMAL;
 	if(hl)
@@ -66,7 +71,7 @@ void HeaderCtrl::Column::Paint(bool& first, Draw& w,
 		q = CTRL_PRESSED;
 	if(disabled)
 		q = CTRL_DISABLED;
-	ChPaint(w, x, y, cx, cy, HeaderTabLook(q));
+	ChPaint(w, x, y, cx, cy, style->look[q]);
 	x += margin;
 	cx -= 2 * margin;
 	w.Clip(x + 2, y, cx - 4, cy);
@@ -402,6 +407,7 @@ void HeaderCtrl::Paint(Draw& w) {
 		if(x >= sz.cx) break;
 	}
 	Column h;
+	h.header = this;
 	h.Paint(first, w, x, 0, 999, sz.cy, false, false, false);
 }
 
@@ -654,6 +660,8 @@ void HeaderCtrl::Reset()
 	oszcx = -1;
 	invisible = false;
 	height = 0;
+	style = &StyleDefault();
+	Refresh();
 }
 
 void HeaderCtrl::WScroll()

@@ -6,6 +6,7 @@ uses
 file
 	EyeCare.h,
 	EyeCare.cpp,
+	icon.rc,
 	EyeCare.lay,
 	EyeCare.iml;
 

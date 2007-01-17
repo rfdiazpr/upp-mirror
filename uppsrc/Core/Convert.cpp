@@ -211,6 +211,7 @@ Value Scan(dword qtype, const String& text) {
 	Date date;
 	switch(qtype) {
 	case INT_V:
+	case BOOL_V:
 		return StrIntValue(text);
 	case DATE_V:
 		if(text.IsEmpty()) return (Date) Null;
@@ -270,6 +271,7 @@ Value  Convert::Format(const Value& q) const {
 	if(IsVoid(q) || q.IsNull()) return String();
 	switch(q.GetType()) {
 	case INT_V:
+	case BOOL_V:
 		return IntStr((int)q);
 	case DOUBLE_V:
 		return DblStr((double)q);

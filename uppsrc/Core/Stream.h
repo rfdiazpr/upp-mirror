@@ -126,27 +126,27 @@ public:
 
 #ifdef CPU_X86
 	void      Put16(word q)          { if(ptr < wrlim - 1) { *(word *)ptr = q; ptr += 2; } else Put(&q, 2); }
-	void      Put32(int q)           { if(ptr < wrlim - 3) { *(dword *)ptr = q; ptr += 4; } else Put(&q, 4); }
+	void      Put32(dword q)         { if(ptr < wrlim - 3) { *(dword *)ptr = q; ptr += 4; } else Put(&q, 4); }
 	void      Put64(int64 q)         { if(ptr < wrlim - 7) { *(int64 *)ptr = q; ptr += 8; } else Put(&q, 8); }
 #else
 	void      Put16(word q)          { Put(&q, 2); }
-	void      Put32(int q)           { Put(&q, 4); }
+	void      Put32(dword q)         { Put(&q, 4); }
 	void      Put64(int64 q)         { Put(&q, 8); }
 #endif
 
 #ifdef CPU_LE
 	void      Put16le(word q)        { Put(&q, 2); }
-	void      Put32le(int q)         { Put(&q, 4); }
+	void      Put32le(dword q)       { Put(&q, 4); }
 	void      Put64le(int64 q)       { Put(&q, 8); }
 	void      Put16be(word q);
-	void      Put32be(int q);
+	void      Put32be(dword q);
 	void      Put64be(int64 q);
 #else
 	void      Put16le(word q);
-	void      Put32le(int q);
+	void      Put32le(dword q);
 	void      Put64le(int64 q);
 	void      Put16be(word q)        { Put(&q, 2); }
-	void      Put32be(int q)         { Put(&q, 4); }
+	void      Put32be(dword q)         { Put(&q, 4); }
 	void      Put64be(int64 q)       { Put(&q, 8); }
 #endif
 

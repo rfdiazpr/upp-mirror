@@ -1,3 +1,25 @@
+* RTF - CJK export
+
+* PDF - CJK export
+
+* Scaled down Icon preview
+
+* Topic++ - "keywords"
+
+* ArrayCtrl -> ValueMap misto ValueArray, operator[] a operator(a, b)
+
+* Hele, jenom pro tvoje info: mam pocit, ze se do IDE vratila ta stara chyba, ze v class browseru (jak se strida s consoli) pri zobrazeni tridy jsou v seznamu na zacatku nadrizene tridy, takze ta zobrazena trida je uplne na konci.
+
+* LeftEdge in Win32
+
+* "Seems OK except for some of the hot-key listings on the menus (eg ctrl+100dc for split horizontal)"
+
+* Editor Tabs IDE - scroll problem
+
+* No blitz package flag
+
+* LeftEdge in linux
+
 * SqlVal.As
 
 * LineEdit current line highlight

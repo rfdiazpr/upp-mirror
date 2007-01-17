@@ -15,7 +15,6 @@ void TopWindow::SyncSizeHints()
 	if(min != xminsize || max != xmaxsize) {
 		xminsize = min;
 		xmaxsize = max;
-		XSizeHints sh;
 		size_hints->min_width = min.cx;
 		size_hints->min_height = min.cy;
 		size_hints->max_width = max.cx;
@@ -23,7 +22,7 @@ void TopWindow::SyncSizeHints()
 		size_hints->flags = PMinSize|PMaxSize;
 		Window w = GetWindow();
 		if(w)
-			XSetWMNormalHints(Xdisplay, w, &sh);
+			XSetWMNormalHints(Xdisplay, w, size_hints);
 	}
 }
 

@@ -1,6 +1,3 @@
-int   TabCtrlMetric(int i);
-Value TabCtrlLook(int i);
-
 class TabCtrl : public Ctrl {
 public:
 	virtual bool  Accept();
@@ -58,6 +55,13 @@ public:
 		Item&          Image(const UPP::Image& m)       { return SetImage(m); }
 	};
 
+	struct Style : ChStyle<Style> {
+		int tabheight, margin, extendleft;
+		Rect sel, edge;
+		Value normal[4], first[4], last[4], both[4], body;
+		Font font;
+	};
+
 private:
 	struct Tabs : public Ctrl {
 		virtual void Paint(Draw& w);
@@ -72,8 +76,7 @@ private:
 	ParentCtrl  pane;
 	bool        accept_current;
 
-	int       (*metric)(int i);
-	Value     (*look)(int i);
+	const Style *style;
 
 	static Image Fade(int i);
 
@@ -88,21 +91,6 @@ private:
 	void       Go(int d);
 
 public:
-	enum ChParam {
-		TABHEIGHT,
-		MARGIN, SELTOP, SELLEFT, SELRIGHT, SELBOTTOM,
-		LEFTEDGE, TOPEDGE, RIGHTEDGE, BOTTOMEDGE,
-		EXTENDLEFT,
-		METRIC_COUNT,
-
-		NORMAL = 0,
-		FIRST = 4,
-		LAST = 8,
-		BOTH = 12,
-		BODY = 16,
-		LOOK_COUNT = 17
-	};
-
 	Callback WhenSet;
 
 	TabCtrl::Item& Add();
@@ -125,10 +113,11 @@ public:
 	void     Add(Ctrl& c)                        { pane.Add(c.SizePos()); }
 	TabCtrl& operator<<(Ctrl& c)                 { Add(c); return *this; }
 
-	TabCtrl& AcceptCurrent(bool ac = true)         { accept_current = ac; return *this; }
-	TabCtrl& AcceptAll()                           { return AcceptCurrent(false); }
-	TabCtrl& Style(Value (*l)(int))                { look = l; Refresh(); return *this; }
-	TabCtrl& Style(Value (*l)(int), int (*m)(int)) { metric = m; RefreshLayout(); return Style(l); }
+	static const Style& StyleDefault();
+
+	TabCtrl& AcceptCurrent(bool ac = true)       { accept_current = ac; return *this; }
+	TabCtrl& AcceptAll()                         { return AcceptCurrent(false); }
+	TabCtrl& SetStyle(const Style& s)            { style = &s; Refresh(); return *this; }
 
 	void Reset();
 

@@ -94,11 +94,13 @@ void __LOGF__(const char *format, ...);
 
 #define DLOG(x)          LOG(x)
 #define DDUMP(x)         DUMP(x)
+#define DDUMPC(x)        DUMPC(x)
 
 #else
 
 #define DLOG(x)          @@@ERROR!!!
 #define DDUMP(x)         @@@ERROR!!!
+#define DDUMPC(x)        @@@ERROR!!!
 
 #define ASSERT(x)
 

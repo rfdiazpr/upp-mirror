@@ -2,6 +2,24 @@
 
 NAMESPACE_UPP
 
+void CtrlsImageLook(Value *look, int i, int n)
+{
+	while(n--)
+		*look++ = CtrlsImg::Get(i++);
+}
+
+void CtrlsImageLook(Value *look, int i, const Image& image, const Color *color, int n)
+{
+	for(int q = 0; q < n; q++)
+		*look++ = ChLookWith(CtrlsImg::Get(i++), image, *color++);
+}
+
+void CtrlsImageLook(Value *look, int i, const Image& image, int n)
+{
+	for(int q = 0; q < n; q++)
+		*look++ = ChLookWith(CtrlsImg::Get(i++), image);
+}
+
 CtrlsImgLook& CtrlsImgLook::operator()(int i, int n)
 {
 	while(n-- > 0)
@@ -168,9 +186,21 @@ Size DrawLabel::GetSize() const
 	return isz;
 }
 
-Image sDis(const Image& img, bool dis)
+Image DisImage(const Image& m)
 {
-	return dis ? MakeImage(img, Etched) : img;
+	Image mm = Grayscale(m, 200);
+	ImageBuffer ib(mm);
+	RGBA *s = ~ib;
+	RGBA *e = s + ib.GetLength();
+	while(s < e)
+		(s++)->a /= 3;
+	return ib;
+}
+
+Image DisabledImage(const Image& img, bool dis)
+{
+	return dis ? MakeImage(img, GUI_GlobalStyle() == GUISTYLE_CLASSIC ? Etched : DisImage)
+	           : img;
 }
 
 Size DrawLabel::Paint(Draw& w, const Rect& r, bool visibleaccesskey) const
@@ -210,14 +240,14 @@ Size DrawLabel::Paint(Draw& w, const Rect& r, bool visibleaccesskey) const
 	int iy = push + (r.top + r.bottom - sz1.cy) / 2;
 
 	if(IsNull(lcolor))
-		w.DrawImage(ix, iy, sDis(limg, disabled));
+		w.DrawImage(ix, iy, DisabledImage(limg, disabled));
 	else
 		w.DrawImage(ix, iy, limg, lcolor);
 
 	iy = push + (r.top + r.bottom - sz2.cy) / 2;
 	ix = (IsNull(rspc) ? r.right - sz2.cx : p.x + txtsz.cx + rspc) + push;
 	if(IsNull(rcolor))
-		w.DrawImage(ix, iy, sDis(rimg, disabled));
+		w.DrawImage(ix, iy, DisabledImage(rimg, disabled));
 	else
 		w.DrawImage(ix, iy, rimg, rcolor);
 	paintrect.Paint(w, p.x + push, p.y + push, txtsz.cx, isz.cy, color, Null);

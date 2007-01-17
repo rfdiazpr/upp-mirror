@@ -524,7 +524,7 @@ void AssistEditor::PopUpAssist(bool auto_insert)
 			s = s.Mid(2);
 		s = Nvl(s, "<globals>");
 		if(s[0] == '<')
-			type.Add(AttrText(s).Ink(SColorHighlight()));
+			type.Add(AttrText(s).Ink(SColorMark()));
 		else
 			type.Add(Nvl(s, "<globals>"));
 	}

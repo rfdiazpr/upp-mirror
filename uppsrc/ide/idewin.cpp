@@ -850,5 +850,4 @@ void AppMain___()
 		LOG("!!!!! Uknown exception");
 	}
 #endif
-	DumpStringStats();
 }

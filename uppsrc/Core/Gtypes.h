@@ -51,11 +51,6 @@ struct Size_ : Moveable< Size_<T> > {
 
 	friend Size_  Nvl(Size_ a, Size_ b)        { return IsNull(a) ? b : a; }
 
-	friend T      ScalarProduct(Size_ a, Size_ b) { return a.cx * b.cx + a.cy * b.cy; }
-	friend T      VectorProduct(Size_ a, Size_ b) { return a.cx * b.cy - a.cy * b.cx; }
-	friend T      Squared(Size_ a)             { return a.cx * a.cx + a.cy * a.cy; }
-	friend double Length(Size_ a)              { return hypot(a.cx, a.cy); }
-
 	unsigned      GetHashValue() const         { return UPP::GetHashValue(cx) ^ UPP::GetHashValue(cy); }
 
 	String        ToString() const;

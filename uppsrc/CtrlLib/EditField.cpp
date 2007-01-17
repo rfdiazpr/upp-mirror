@@ -26,8 +26,8 @@ void LookFrame::FrameAddSize(Size& sz)
 	sz.cy += m.top + m.bottom;
 }
 
-CH_LOOK(EditFieldEdge, CtrlsImg::EFE());
-CH_LOOK(ViewEdge, CtrlsImg::VE());
+CH_VALUE(EditFieldEdge, CtrlsImg::EFE());
+CH_VALUE(ViewEdge, CtrlsImg::VE());
 
 CtrlFrame& EditFieldFrame()
 {

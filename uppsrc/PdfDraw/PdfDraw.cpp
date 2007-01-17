@@ -283,9 +283,7 @@ PdfDraw::OutlineInfo PdfDraw::GetOutlineInfo(Font fnt)
 #ifdef PLATFORM_X11
 	FontInfo fi = fnt.Info();
 	String fn = fi.GetFileName();
-	DUMP(fn);
 	String ext = ToLower(GetFileExt(fn));
-	DUMP(ext);
 	if(ext == ".ttf" || ext == ".otf") {
 		String data = LoadFile(fn);
 		TTFReader ttf;

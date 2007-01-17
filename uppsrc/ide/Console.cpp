@@ -88,7 +88,6 @@ int Console::Flush()
 			continue;
 		String s;
 		slot.process->Read(s);
-		RLOG(slot.cmdline << "->" << s << "\n\n");
 		if(!IsNull(s)) {
 			done_output = true;
 			if(slot.outfile)

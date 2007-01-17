@@ -87,8 +87,14 @@ void GccBuilder::BinaryToObject(String objfile, CParser& binscript, String based
 			if(data.GetLength() != b.length)
 				throw Exc(NFormat("length of file '%s' changed (%d -> %d) during object creation",
 					b.file, b.length, data.GetLength()));
+			switch(b.encoding) {
+				case BinObjInfo::Block::ENC_BZ2: data = BZ2Compress(data); break;
+				case BinObjInfo::Block::ENC_ZIP: data = ZCompress(data); break;
+			}
+			int b_length = data.GetLength();
+			data.Cat('\0');
 			fo << AsCString(data, 70) << ";\n\n"
-			"int " << ident << "_length = " << data.GetLength() << ";\n\n";
+			"int " << ident << "_length = " << b_length << ";\n\n";
 		}
 	}
 

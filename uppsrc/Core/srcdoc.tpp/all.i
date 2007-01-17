@@ -57,3 +57,7 @@ END_TOPIC
 TOPIC("Tutorial$en-us")
 #include "Tutorial$en-us.tpp"
 END_TOPIC
+
+TOPIC("CoreTutorial$en-us")
+#include "CoreTutorial$en-us.tpp"
+END_TOPIC

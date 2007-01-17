@@ -304,9 +304,9 @@ String GetKeyDesc(int key)
 	if(key == 0)
 		return desc;
 
-	if(key & K_CTRL)  desc << "Ctrl+";
-	if(key & K_ALT)   desc << "Alt+";
-	if(key & K_SHIFT) desc << "Shift+";
+	if(key & K_CTRL)  desc << t_("Ctrl+");
+	if(key & K_ALT)   desc << t_("Alt+");
+	if(key & K_SHIFT) desc << t_("Shift+");
 
 
 	key &= ~(K_CTRL | K_ALT | K_SHIFT);
@@ -325,14 +325,14 @@ String GetKeyDesc(int key)
 			int key;
 			const char *name;
 		} nkey[] = {
-			K_TAB, "Tab", K_SPACE, "Space", K_RETURN, "Enter", K_BACKSPACE, "Backspace",
-			K_CAPSLOCK, "Caps Lock", K_ESCAPE, "Esc",
-			K_PAGEUP, "Page Up", K_PAGEDOWN, "Page Down",
-			K_END, "End", K_HOME, "Home",
-			K_LEFT, "Left", K_UP, "Up", K_RIGHT, "Right", K_DOWN, "Down",
-			K_INSERT, "Insert", K_DELETE, "Delete", K_BREAK, "Break",
-			K_MULTIPLY, "Num[*]", K_ADD, "Num[+]", K_SUBTRACT, "Num[-]", K_DIVIDE, "Num[/]",
-			K_ALT_KEY, "Alt", K_SHIFT_KEY, "Shift", K_CTRL_KEY, "Ctrl",
+			K_TAB, tt_("Tab"), K_SPACE, tt_("Space"), K_RETURN, tt_("Enter"), K_BACKSPACE, tt_("Backspace"),
+			K_CAPSLOCK, tt_("Caps Lock"), K_ESCAPE, tt_("Esc"),
+			K_PAGEUP, tt_("Page Up"), K_PAGEDOWN, tt_("Page Down"),
+			K_END, tt_("End"), K_HOME, tt_("Home"),
+			K_LEFT, tt_("Left"), K_UP, tt_("Up"), K_RIGHT, tt_("Right"), K_DOWN, tt_("Down"),
+			K_INSERT, tt_("Insert"), K_DELETE, tt_("Delete"), K_BREAK, tt_("Break"),
+			K_MULTIPLY, tt_("Num[*]"), K_ADD, tt_("Num[+]"), K_SUBTRACT, tt_("Num[-]"), K_DIVIDE, tt_("Num[/]"),
+			K_ALT_KEY, tt_("Alt"), K_SHIFT_KEY, tt_("Shift"), K_CTRL_KEY, tt_("Ctrl"),
 		#ifdef PLATFORM_X11
 			0x10060, "[`]", 0x1002d, "[-]", 0x1003d, "[=]", 0x1005c, "[\\]",
 			0x1005b, "[[]", 0x1005d, "[]]",
@@ -349,7 +349,7 @@ String GetKeyDesc(int key)
 		};
 		for(int i = 0; nkey[i].key; i++)
 			if(nkey[i].key == key) {
-				desc << nkey[i].name;
+				desc << GetLngString(nkey[i].name);
 				return desc;
 			}
 		desc << Format("%04x", key);

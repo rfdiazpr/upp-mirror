@@ -77,6 +77,7 @@ void Sqlite3Connection::BindParam(int i, const Value& r) {
 			sqlite3_bind_text16(current_stmt,i,p,2*p.GetLength(),SQLITE_TRANSIENT);
 			break;
 		}
+		case BOOL_V:
 		case INT_V:
 			sqlite3_bind_int(current_stmt, i, int(r));
 			break;

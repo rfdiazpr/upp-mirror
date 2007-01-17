@@ -1,6 +1,5 @@
 #include "CtrlLib.h"
 
-
 NAMESPACE_UPP
 
 #define LLOG(x)   // RLOG(x)
@@ -17,7 +16,7 @@ void ChSysInit()
 	CtrlImg::Reset();
 	CtrlsImg::Reset();
 	ChReset();
-	ChSet("GUI_GlobalStyle", GUISTYLE_CLASSIC);
+	GUI_GlobalStyle_Write(GUISTYLE_CLASSIC);
 }
 
 void ChHostSkin()
@@ -181,15 +180,16 @@ void SetXpImages(int uii, int n, int widget, int part, int state)
 	}
 }
 
-void SetXpColors(const char *chcolor, int n, int widget, int part, int state, int type)
+void SetXpColors(Color *color, int n, int widget, int part, int state, int type)
 {
 	int ii = 0;
 	for(int i = 0; i < n; i++) {
 		Color c = XpColor(widget, part, state++, type);
 		if(!IsNull(c))
-			ChSet(chcolor, ii++, c);
+			color[ii++] = c;
 	}
 }
+
 
 Value XpLookFn(Draw& w, const Rect& rect, const Value& v, int op)
 {
@@ -260,47 +260,21 @@ static chCtrlsImg sImgs[] = {
 	{ CtrlsImg::I_O2, 4, XP_BUTTON, BP_CHECKBOX, CBS_MIXEDNORMAL },
 };
 
-struct chLooks {
-	const char *id;
-	int   start_count;
-	int   widget;
-	int   part;
-	int   state;
-	bool  contentm;
-};
-
-static chLooks sLooks[] = {
-	{ "ButtonLook", 4, XP_BUTTON, BP_PUSHBUTTON, 1 },
-	{ "OkButtonLook", 4, XP_BUTTON, BP_PUSHBUTTON, 1 },
-	{ "ScrollBarHorzUpper", 4, XP_SCROLLBAR, SBP_LOWERTRACKHORZ, 1 },
-	{ "ScrollBarHorzLower", 4, XP_SCROLLBAR, SBP_UPPERTRACKHORZ, 1 },
-	{ "ScrollBarVertUpper", 4, XP_SCROLLBAR, SBP_LOWERTRACKVERT, 1 },
-	{ "ScrollBarVertLower", 4, XP_SCROLLBAR, SBP_UPPERTRACKVERT, 1 },
-	{ "ScrollBarUp", 4, XP_SCROLLBAR, SBP_ARROWBTN, ABS_UPNORMAL },
-	{ "ScrollBarDown", 4, XP_SCROLLBAR, SBP_ARROWBTN, ABS_DOWNNORMAL },
-	{ "ScrollBarLeft", 4, XP_SCROLLBAR, SBP_ARROWBTN, ABS_LEFTNORMAL },
-	{ "ScrollBarRight", 4, XP_SCROLLBAR, SBP_ARROWBTN, ABS_RIGHTNORMAL },
-	{ "SpinUpLook", 4, XP_SPIN, SPNP_UP, 1 },
-	{ "SpinDownLook", 4, XP_SPIN, SPNP_DOWN, 1 },
-	{ "DropBoxBtn", 4, XP_COMBOBOX, CP_DROPDOWNBUTTON, 1 },
-	{ "DropBoxSquaredBtn", 4, XP_COMBOBOX, CP_DROPDOWNBUTTON, 1 },
-	{ "DropBoxEdge", 1, XP_COMBOBOX, 0, 0 },
-	{ "HeaderTabLook", 4, XP_HEADER, HP_HEADERITEM, 1 },
-	{ "ProgressIndicatorLook", 1, XP_PROGRESS, PP_BAR, 0, true },
-	{ "VertProgressIndicatorLook", 1, XP_PROGRESS, PP_BARVERT, 0, true },
-	{ "ProgressIndicatorChunkLook", 1, XP_PROGRESS, PP_CHUNK },
-	{ "VertProgressIndicatorChunkLook", 1, XP_PROGRESS, PP_CHUNKVERT },
-	{ "TabCtrlLook", 4, XP_TAB, TABP_TABITEM, 1 },
-	{ "TabCtrlLook", MAKELONG(4, 4), XP_TAB, TABP_TABITEMLEFTEDGE, 1 },
-	{ "TabCtrlLook", MAKELONG(4, 8), XP_TAB, TABP_TABITEM/*RIGHTEDGE*/, 1 },
-	{ "TabCtrlLook", MAKELONG(4, 12), XP_TAB, TABP_TABITEMBOTHEDGE, 1 },
-	{ "TabCtrlLook", MAKELONG(1, 16), XP_TAB, TABP_PANE, 1 },
-	{ "ToolButtonLook", 6, XP_TOOLBAR, 1, 1 },
-};
-
-void ChSet(const char *id, int i, const XpElement& e)
+void Win32Look(Value *ch, int count, int widget, int part, int state = 1, bool contentm = false)
 {
-	ChSet(id, i, RawToValue(e));
+	for(int i = 0; i < count; i++) {
+		XpElement e;
+		e.widget = widget;
+		e.part = part;
+		e.state = state + i;
+		e.contentm = contentm;
+		ch[i] = RawToValue(e);
+	}
+}
+
+void Win32Look(Value& ch, int widget, int part, int state = 1, bool contentm = false)
+{
+	Win32Look(&ch, 1, widget, part, state, contentm);
 }
 
 void ChHostSkin()
@@ -308,22 +282,85 @@ void ChHostSkin()
 	ChSysInit();
 	if(XpWidget(XP_BUTTON)) {
 		LLOG("XP theme !");
-		ChSet("GUI_GlobalStyle", GUISTYLE_XP);
+		GUI_GlobalStyle_Write(GUISTYLE_XP);
 		ColoredOverride(CtrlsImg::Iml(), CtrlsImg::Iml());
 		CtrlsImg::Reset();
-		ChSet("EditFieldIsThin", 1);
+		EditFieldIsThin_Write(1);
 		for(chCtrlsImg *m = sImgs; m < sImgs + __countof(sImgs); m++)
 			SetXpImages(m->id, m->count, m->widget, m->part, m->state);
-		XpElement e;
-		for(chLooks *l = sLooks; l < sLooks + __countof(sLooks); l++) {
-			for(int i = 0; i < LOWORD(l->start_count); i++) {
-				e.widget = l->widget;
-				e.part = l->part;
-				e.state = l->state + i;
-				e.contentm = l->contentm;
-				ChSet(l->id, HIWORD(l->start_count) + i, e);
-			}
+
+		{
+			Button::Style& s = Button::StyleNormal().Write();
+			Win32Look(s.look, 4, XP_BUTTON, BP_PUSHBUTTON);
+			SetXpColors(s.textcolor, 4, XP_BUTTON, BP_PUSHBUTTON, PBS_NORMAL, 3803/*TMT_TEXTCOLOR*/);
 		}
+		{
+			Button::Style& s = Button::StyleOk().Write();
+			Win32Look(s.look, 4, XP_BUTTON, BP_PUSHBUTTON);
+			Win32Look(s.look[0], XP_BUTTON, BP_PUSHBUTTON, PBS_DEFAULTED);
+		}
+		Win32Look(ToolBar::StyleDefault().Write().look, 6, XP_TOOLBAR, 1, 1);
+		{
+			ScrollBar::Style& s = ScrollBar::StyleDefault().Write();
+			Win32Look(s.hupper, 4, XP_SCROLLBAR, SBP_LOWERTRACKHORZ);
+			Win32Look(s.hlower, 4, XP_SCROLLBAR, SBP_UPPERTRACKHORZ);
+			Win32Look(s.vupper, 4, XP_SCROLLBAR, SBP_LOWERTRACKVERT);
+			Win32Look(s.vlower, 4, XP_SCROLLBAR, SBP_UPPERTRACKVERT);
+			Win32Look(s.up.look, 4, XP_SCROLLBAR, SBP_ARROWBTN, ABS_UPNORMAL);
+			Win32Look(s.down.look, 4, XP_SCROLLBAR, SBP_ARROWBTN, ABS_DOWNNORMAL);
+			Win32Look(s.left.look, 4, XP_SCROLLBAR, SBP_ARROWBTN, ABS_LEFTNORMAL);
+			Win32Look(s.right.look, 4, XP_SCROLLBAR, SBP_ARROWBTN, ABS_RIGHTNORMAL);
+		}
+		{
+			TabCtrl::Style& s = TabCtrl::StyleDefault().Write();
+			Win32Look(s.normal, 4, XP_TAB, TABP_TABITEM);
+			Win32Look(s.first, 4, XP_TAB, TABP_TABITEMLEFTEDGE);
+			Win32Look(s.last, 4, XP_TAB, TABP_TABITEM);
+			Win32Look(s.both, 4, XP_TAB, TABP_TABITEMBOTHEDGE);
+			Win32Look(s.body, XP_TAB, TABP_PANE);
+		}
+		{
+			SpinButtons::Style& s = SpinButtons::StyleDefault().Write();
+			Win32Look(s.inc.look, 4, XP_SPIN, SPNP_UP);
+			Win32Look(s.dec.look, 4, XP_SPIN, SPNP_DOWN);
+			s.width = FrameButtonWidth();
+		}
+		{
+			DropList::Style& s = DropList::StyleDefault().Write();
+			Win32Look(s.button, 4, XP_COMBOBOX, CP_DROPDOWNBUTTON);
+			Win32Look(s.squaredbutton, 4, XP_COMBOBOX, CP_DROPDOWNBUTTON);
+			Win32Look(s.edge, XP_COMBOBOX, 0, 0);
+			s.inside = XpInt(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL, 2403/*TMT_BORDERSIZE*/);
+		}
+		{
+			HeaderCtrl::Style& s = HeaderCtrl::StyleDefault().Write();
+			Win32Look(s.look, 4, XP_HEADER, HP_HEADERITEM);
+			Image hm = XpImage(XP_HEADER, HP_HEADERITEM, 1, SColorPaper, Size(20, 10));
+			RGBA textc = SColorText();
+			int diff = Diff(hm[4][19], textc);
+			int hdroll = 0;
+			for(int i = 0; i < 4; i++) {
+				int d = Diff(hm[4][i], textc);
+				if(d < diff) {
+					diff = d;
+					hdroll = i + 1;
+				}
+				d = Diff(hm[4][19 - i], textc);
+				if(d < diff) {
+					diff = d;
+					hdroll = -i;
+				}
+			}
+			s.gridadjustment = hdroll;
+		}
+		{
+			ProgressIndicator::Style& s = ProgressIndicator::StyleDefault().Write();
+			Win32Look(s.hlook, XP_PROGRESS, PP_BAR, 0, true);
+			Win32Look(s.vlook, XP_PROGRESS, PP_BARVERT, 0, true);
+			Win32Look(s.hchunk, XP_PROGRESS, PP_CHUNK);
+			Win32Look(s.vchunk, XP_PROGRESS, PP_CHUNKVERT);
+		}
+
 /*		Image m = XpImage(XP_WINDOW, WP_DIALOG, 0, SColorPaper());
 		if(!IsNull(SimpleColor(m))) {
 			e.widget = XP_WINDOW;
@@ -332,50 +369,25 @@ void ChHostSkin()
 			ChSet("DialogFaceLook", e);
 		}*/
 
-		e.widget = XP_BUTTON;
-		e.part = BP_PUSHBUTTON;
-		e.state = PBS_DEFAULTED;
-		ChSet("OkButtonLook", 0, e);
-		ChSet("DropBoxInsideEdge", XpInt(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL,
-		                                 2403/*TMT_BORDERSIZE*/));
-		ChSet("DropImg", Null);
-
-		Image hm = XpImage(XP_HEADER, HP_HEADERITEM, 1, SColorPaper, Size(20, 10));
-		RGBA textc = SColorText();
-		int diff = Diff(hm[4][19], textc);
-		int hdroll = 0;
+		XpElement e;
 		for(int i = 0; i < 4; i++) {
-			int d = Diff(hm[4][i], textc);
-			if(d < diff) {
-				diff = d;
-				hdroll = i + 1;
+			{
+				ScrollBar::Style& s = ScrollBar::StyleDefault().Write();
+				e.widget = XP_SCROLLBAR;
+				e.state = 1 + i;
+				e.contentm = false;
+				e.part = SBP_THUMBBTNHORZ;
+				s.hthumb[i] = ChLookWith(RawToValue(e), XpImage(XP_SCROLLBAR, SBP_GRIPPERHORZ, 1));
+				e.part = SBP_THUMBBTNVERT;
+				s.vthumb[i] = ChLookWith(RawToValue(e), XpImage(XP_SCROLLBAR, SBP_GRIPPERVERT, 1));
 			}
-			d = Diff(hm[4][19 - i], textc);
-			if(d < diff) {
-				diff = d;
-				hdroll = -i;
-			}
-		}
-		ChSet("HeaderTabGridAdjustment", hdroll);
-
-		for(int i = 0; i < 4; i++) {
-			e.widget = XP_SCROLLBAR;
-			e.state = 1 + i;
-			e.contentm = false;
-			e.part = SBP_THUMBBTNHORZ;
-			ChSet("ScrollBarHorzThumb", i,
-			      ChLookWith(RawToValue(e), XpImage(XP_SCROLLBAR, SBP_GRIPPERHORZ, 1)));
-			e.part = SBP_THUMBBTNVERT;
-			ChSet("ScrollBarVertThumb", i,
-			      ChLookWith(RawToValue(e), XpImage(XP_SCROLLBAR, SBP_GRIPPERVERT, 1)));
-
 			Color paper = i == 3 ? SColorFace : SColorPaper;
 			Image m = XpImage(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL + i, paper, Size(24, 24));
 			Size isz = m.GetSize();
 			int cbs = XpInt(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL + i, 2403/*TMT_BORDERSIZE*/);
 			if(cbs == 0) {
 				Image h = HorzSymm(m);
-				ChSet("LeftEdgeButtonLook", i, Unglyph(Crop(h, 1, 1, isz.cx - 1, isz.cy - 2)));
+				Button::StyleLeftEdge().Write().look[i] = Unglyph(Crop(h, 1, 1, isz.cx - 1, isz.cy - 2));
 				m = Crop(h, 0, 1, isz.cx - 1, isz.cy - 2);
 			}
 			if(cbs == 1 &&
@@ -387,40 +399,49 @@ void ChHostSkin()
 					e.part = CP_DROPDOWNBUTTON;
 					e.state = CBXS_NORMAL + i;
 					e.whista = true;
-					ChSet("DropBoxBtn", i, e);
+					DropList::StyleDefault().Write().button[i] = RawToValue(e);
 			}
 			Color c;
 			double gf;
 			m = Unglyph(m, c, gf);
 			if(i == 0 && gf > 150)
 				CtrlsImg::Set(CtrlsImg::I_DA, ClassicCtrlsImg::DA());
-			ChSet("ButtonMonoColor", i, c);
-			ChSet("EdgeButtonLook", i, m);
-			ChSet("DropBoxSquaredBtn", i, ChLookWith(m, CtrlsImg::DA(), c));
+
+			Button::StyleEdge().Write().look[i] = m;
+			if(cbs)
+				Button::StyleLeftEdge().Write().look[i] = m;
+
+			Button::StyleNormal().Write().monocolor[i] = c;
+			Button::StyleOk().Write().monocolor[i] = c;
+			Button::StyleEdge().Write().monocolor[i] = c;
+			Button::StyleLeftEdge().Write().monocolor[i] = c;
+			Button::StyleScroll().Write().monocolor[i] = c;
+
+			DropList::StyleDefault().Write().squaredbutton[i] = ChLookWith(m, CtrlsImg::DA(), c);
 			m = Unglyph(XpImage(XP_SCROLLBAR, SBP_ARROWBTN, i + ABS_UPNORMAL, paper));
 			Size msz = m.GetSize();
-			ChSet("ScrollButtonLook", i,
+
+			Button::StyleScroll().Write().look[i] =
 			      VertBlend(m, Unglyph(XpImage(XP_SCROLLBAR, SBP_ARROWBTN, i + ABS_DOWNNORMAL,
 			                                   paper)),
-			                msz.cy / 3, msz.cy * 2 / 3));
+			                msz.cy / 3, msz.cy * 2 / 3);
 		}
 		int ebs = max(1, XpInt(XP_EDIT, EP_EDITTEXT, 1, 2403/*TMT_BORDERSIZE*/));
 		Image ee = XpImage(XP_EDIT, EP_EDITTEXT, 1, SColorFace(), Size(10 * ebs, 10 * ebs));
 		ImageBuffer eb(ee);
 		eb.SetHotSpot(Point(ebs, ebs));
 		ee = eb;
-		ChSet("EditFieldEdge", ee);
+		EditFieldEdge_Write(ee);
 
 		ebs = max(1, XpInt(XP_LISTVIEW, 0, 1, 2403/*TMT_BORDERSIZE*/));
 		ee = XpImage(XP_LISTVIEW, 0, 1, SColorFace(), Size(10 * ebs, 10 * ebs));
 		eb = ee;
 		eb.SetHotSpot(Point(ebs + 1, ebs + 1));
 		ee = eb;
-		ChSet("ViewEdge", ee);
-		ChSet("SpinWidth", FrameButtonWidth());
-		ChSet("LabelBoxTextColor", XpColor(XP_BUTTON, BP_GROUPBOX, GBS_NORMAL, 3803/*TMT_TEXTCOLOR*/));
-		ChSet("LabelBoxColor", XpColor(XP_BUTTON, BP_GROUPBOX, GBS_NORMAL, 3822/*TMT_BORDERCOLORHINT*/));
-		SetXpColors("ButtonTextColor", 4, XP_BUTTON, BP_PUSHBUTTON, PBS_NORMAL, 3803/*TMT_TEXTCOLOR*/);
+		ViewEdge_Write(ee);
+
+		LabelBoxTextColor_Write(XpColor(XP_BUTTON, BP_GROUPBOX, GBS_NORMAL, 3803/*TMT_TEXTCOLOR*/));
+		LabelBoxColor_Write(XpColor(XP_BUTTON, BP_GROUPBOX, GBS_NORMAL, 3822/*TMT_BORDERCOLORHINT*/));
 
 		ChLookFn(XpLookFn);
 	}
@@ -429,22 +450,22 @@ void ChHostSkin()
 }
 
 struct sysColor {
-	const char *id;
+	void (*set)(Color c);
 	int syscolor;
 };
 
 static sysColor sSysColor[] = {
-	{ "SColorFace", COLOR_3DFACE },
-	{ "SColorPaper", COLOR_WINDOW },
-	{ "SColorText", COLOR_WINDOWTEXT },
-	{ "SColorHighlight", COLOR_HIGHLIGHT },
-	{ "SColorHighlightText", COLOR_HIGHLIGHTTEXT },
-	{ "SColorMenu", COLOR_MENU },
-	{ "SColorMenuText", COLOR_MENUTEXT },
-	{ "SColorInfo", COLOR_INFOBK },
-	{ "SColorInfoText", COLOR_INFOTEXT },
-	{ "SColorLight", COLOR_3DHILIGHT },
-	{ "SColorShadow", COLOR_3DSHADOW },
+	{ SColorFace_Write, COLOR_3DFACE },
+	{ SColorPaper_Write, COLOR_WINDOW },
+	{ SColorText_Write, COLOR_WINDOWTEXT },
+	{ SColorHighlight_Write, COLOR_HIGHLIGHT },
+	{ SColorHighlightText_Write, COLOR_HIGHLIGHTTEXT },
+	{ SColorMenu_Write, COLOR_MENU },
+	{ SColorMenuText_Write, COLOR_MENUTEXT },
+	{ SColorInfo_Write, COLOR_INFOBK },
+	{ SColorInfoText_Write, COLOR_INFOTEXT },
+	{ SColorLight_Write, COLOR_3DHILIGHT },
+	{ SColorShadow_Write, COLOR_3DSHADOW },
 };
 
 bool IsSysFlag(dword flag)
@@ -460,29 +481,29 @@ void ChSysInit()
 	ChReset();
 	XpClear();
 
-	ChSet("GUI_GlobalStyle", IsWinXP() && !ScreenInfo().PaletteMode() && IsSysFlag(0x1022 /*SPI_GETFLATMENU*/)
-	                         ? GUISTYLE_XP : GUISTYLE_CLASSIC);
+	GUI_GlobalStyle_Write(IsWinXP() && !ScreenInfo().PaletteMode() && IsSysFlag(0x1022 /*SPI_GETFLATMENU*/)
+	                      ? GUISTYLE_XP : GUISTYLE_CLASSIC);
 #ifndef PLATFORM_WINCE
-	ChSet("GUI_DragFullWindow", IsSysFlag(SPI_GETDRAGFULLWINDOWS));
+	GUI_DragFullWindow_Write(IsSysFlag(SPI_GETDRAGFULLWINDOWS));
 #endif
-	ChSet("GUI_PopUpEffect", IsSysFlag(0x1002 /*SPI_GETMENUANIMATION*/) ?
-	                         IsSysFlag(0x1012 /*SPI_GETMENUFADE*/) ? GUIEFFECT_FADE
-	                                                               : GUIEFFECT_SLIDE
-	                                                               : GUIEFFECT_NONE);
-	ChSet("GUI_DropShadows", IsSysFlag(0x1024 /*SPI_GETDROPSHADOW*/));
-	ChSet("GUI_AltAccessKeys", !IsSysFlag(0x100A /*SPI_GETKEYBOARDCUES*/));
-	ChSet("GUI_AKD_Conservative", 0);
+	GUI_PopUpEffect_Write(IsSysFlag(0x1002 /*SPI_GETMENUANIMATION*/) ?
+	                      IsSysFlag(0x1012 /*SPI_GETMENUFADE*/) ? GUIEFFECT_FADE
+	                                                            : GUIEFFECT_SLIDE
+	                                                            : GUIEFFECT_NONE);
+	GUI_DropShadows_Write(IsSysFlag(0x1024 /*SPI_GETDROPSHADOW*/));
+	GUI_AltAccessKeys_Write(!IsSysFlag(0x100A /*SPI_GETKEYBOARDCUES*/));
+	GUI_AKD_Conservative_Write(0);
 
 	CtrlImg::Set(CtrlImg::I_information, Win32Icon(IDI_INFORMATION));
 	CtrlImg::Set(CtrlImg::I_question, Win32Icon(IDI_QUESTION));
 	CtrlImg::Set(CtrlImg::I_exclamation, Win32Icon(IDI_EXCLAMATION));
 
-	ChSet("FrameButtonWidth", GetSystemMetrics(SM_CYHSCROLL));
-	ChSet("ScrollBarArrowSize", GetSystemMetrics(SM_CXHSCROLL));
+	FrameButtonWidth_Write(GetSystemMetrics(SM_CYHSCROLL));
+	ScrollBarArrowSize_Write(GetSystemMetrics(SM_CXHSCROLL));
 	for(sysColor *s = sSysColor; s < sSysColor + __countof(sSysColor); s++)
-		ChSet(s->id, Color::FromCR(GetSysColor(s->syscolor)));
+		(*s->set)(Color::FromCR(GetSysColor(s->syscolor)));
 	dword x = GetSysColor(COLOR_GRAYTEXT);
-	ChSet("SColorDisabled", x ? Color::FromCR(x) : Color::FromCR(GetSysColor(COLOR_3DSHADOW)));
+	SColorDisabled_Write(x ? Color::FromCR(x) : Color::FromCR(GetSysColor(COLOR_3DSHADOW)));
 }
 
 #endif

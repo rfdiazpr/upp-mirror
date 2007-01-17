@@ -7,17 +7,8 @@ struct App : TopWindow {
 
 	void Log(const String& s)
 	{
-//		if(!IsShutdown()) { // to prevent "ChildLostFocus" Log caused by destroying log itself
-			log.Add(s);
-			log.GoEnd();
-//		}
-	}
-
-	virtual void   Paint(Draw& w)
-	{
-		Size sz = GetSize();
-		w.DrawRect(sz, SLtGray);
-		Log("Paint");
+		log.Add(s);
+		log.GoEnd();
 	}
 
 	virtual void   Activate()

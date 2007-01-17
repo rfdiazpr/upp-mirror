@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LTIMING(x) // RTIMING(x)
+#define LTIMING(x)  // RTIMING(x)
 
 #if defined(_DEBUG) && 0
 #include <plugin/png/png.h>
@@ -18,79 +18,6 @@ inline void LOGPNG(const char *name, const Image& m)
 #define LOGPNG(a, b)
 
 #endif
-
-struct ChVar : Moveable<ChVar> {
-	int         count;
-	byte       *state;
-	Value     (*get)(int i);
-	void      (*set)(int i, const Value& v);
-};
-
-static VectorMap<String, ChVar>& chVar()
-{
-	static VectorMap<String, ChVar> var;
-	return var;
-};
-
-void ChRegisterVar__(const char *name, int n,
-                     byte *state, Value (*get)(int i), void (*set)(int i, const Value& v))
-{
-	VectorMap<String, ChVar>& var = chVar();
-	ASSERT(var.Find(name) < 0);
-	ChVar& ch = var.Add(name);
-	ch.count = n;
-	ch.state = state;
-	ch.get = get;
-	ch.set = set;
-}
-
-void ChSet(const char *name, int i, const Value& val)
-{
-	VectorMap<String, ChVar>& var = chVar();
-	int q = var.Find(name);
-	if(q < 0)
-		return;
-	ChVar& v = var[q];
-	*v.state = 2;
-	(*v.set)(i, val);
-	for(int i = 0; i < var.GetCount(); i++)
-		if(*var[i].state == 1)
-			*var[i].state = 0;
-}
-
-void ChSet(const char *name, const Value& val)
-{
-	VectorMap<String, ChVar>& var = chVar();
-	int q = var.Find(name);
-	if(q < 0)
-		return;
-	ChVar& v = var[q];
-	for(int i = 0; i < v.count; i++)
-		ChSet(name, i, val);
-}
-
-void ChSetf(const char *name, Value (*fn)(int))
-{
-	VectorMap<String, ChVar>& var = chVar();
-	int q = var.Find(name);
-	if(q < 0)
-		return;
-	ChVar& v = var[q];
-	for(int i = 0; i < v.count; i++)
-		ChSet(name, i, (*fn)(i));
-}
-
-Value ChGet(const char *name, int i)
-{
-	VectorMap<String, ChVar>& var = chVar();
-	int q = var.Find(name);
-	return q < 0 ? Null : (*var[q].get)(i);
-}
-
-Value ChGet(const char *name)
-{
-	return ChGet(name, 0);
-}
 
 struct ChImageMaker : ImageMaker {
 	Size       sz;
@@ -213,11 +140,11 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 		}
 	}
 	if(IsType<Image>(v)) {
-		Image b = v;
-		Size isz = b.GetSize();
+		Image img = v;
+		Size isz = img.GetSize();
 		Size sz = r.GetSize();
-		Point p = b.GetHotSpot();
-		Point p2 = b.Get2ndSpot();
+		Point p = img.GetHotSpot();
+		Point p2 = img.Get2ndSpot();
 		int tile = 0;
 		if(p2.x || p2.y) {
 			if(p2.x < p.x) {
@@ -246,38 +173,43 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 			}
 		}
 		if(op == LOOK_ISOPAQUE)
-			return b.GetKind() == IMAGE_OPAQUE;
+			return img.GetKind() == IMAGE_OPAQUE;
 		if(op == LOOK_MARGINS)
 			return Rect(p.x, p.y, p.x, p.y);
 		if(op == LOOK_PAINT || op == LOOK_PAINTEDGE) {
 			LTIMING("ChPaint Image");
 			w.Clipoff(r);
-			if(p.x >= 0 && 2 * p.x < min(isz.cx, sz.cx) &&
-			   p.y >= 0 && 2 * p.y < min(isz.cy, sz.cy)) {
-				Rect sr(p, p2);
-				Size sz2(isz.cx - sr.right, isz.cy - sr.bottom);
-				Rect r = RectC(p.x, p.y, sz.cx - sr.left - sz2.cx, sz.cy - sr.top - sz2.cy);
-				w.DrawImage(0, 0, b, RectC(0, 0, p.x, p.y));
-				w.DrawImage(0, r.bottom, b, RectC(0, sr.bottom, p.x, sz2.cy));
-				w.DrawImage(r.right, 0, b, RectC(sr.right, 0, sz2.cx, p.y));
-				w.DrawImage(r.right, r.bottom, b, RectC(sr.right, sr.bottom, sz2.cx, sz2.cy));
-				ChDraw(w, p.x, 0, r.Width(), p.y, b, RectC(p.x, 0, sr.Width(), p.y));
-				ChDraw(w, p.x, r.bottom, r.Width(), sz2.cy, b, RectC(p.x, sr.bottom, sr.Width(), sz2.cy));
-				ChDraw(w, 0, p.y, p.x, r.Height(), b, RectC(0, p.y, p.x, sr.Height()));
-				ChDraw(w, r.right, p.y, sz2.cx, r.Height(), b,
+			Rect sr(p, p2);
+			Size sz2(isz.cx - sr.right, isz.cy - sr.bottom);
+			Rect r = RectC(p.x, p.y, sz.cx - sr.left - sz2.cx, sz.cy - sr.top - sz2.cy);
+			int top = minmax(sz.cy / 2, 0, isz.cy);
+			int bottom = minmax(sz.cy - top, 0, isz.cy);
+			int yy = isz.cy - bottom;
+			int left = minmax(sz.cx / 2, 0, isz.cx);
+			int right = minmax(sz.cx - left, 0, isz.cx);
+			int xx = isz.cx - right;
+			if(!r.IsEmpty()) {
+				w.DrawImage(0, 0, img, RectC(0, 0, p.x, p.y));
+				w.DrawImage(0, r.bottom, img, RectC(0, sr.bottom, p.x, sz2.cy));
+				w.DrawImage(r.right, 0, img, RectC(sr.right, 0, sz2.cx, p.y));
+				w.DrawImage(r.right, r.bottom, img, RectC(sr.right, sr.bottom, sz2.cx, sz2.cy));
+				ChDraw(w, p.x, 0, r.Width(), p.y, img, RectC(p.x, 0, sr.Width(), p.y));
+				ChDraw(w, p.x, r.bottom, r.Width(), sz2.cy, img, RectC(p.x, sr.bottom, sr.Width(), sz2.cy));
+				ChDraw(w, 0, p.y, p.x, r.Height(), img, RectC(0, p.y, p.x, sr.Height()));
+				ChDraw(w, r.right, p.y, sz2.cx, r.Height(), img,
 				       RectC(sr.right, p.y, sz2.cx, sr.Height()));
 				if(op == LOOK_PAINT) {
 					if(IsNull(r) || IsNull(sr))
 						return 1;
 					if(tile) {
 						LTIMING("Ch-Tiles");
-						b = Rescale(b, Size((tile & 1 ? sr : r).GetWidth(),
+						img = Rescale(img, Size((tile & 1 ? sr : r).GetWidth(),
 						                    (tile & 2 ? sr : r).GetHeight()), sr);
-						DrawTiles(w, r, b);
+						DrawTiles(w, r, img);
 					}
 					else {
 						static VectorMap<int64, int> btc;
-						int64 key = b.GetSerialId();
+						int64 key = img.GetSerialId();
 						int q;
 						{
 							LTIMING("Find");
@@ -285,7 +217,7 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 						}
 						if(q < 0) {
 							LTIMING("ClassifyContent");
-							q = ClassifyContent(b, sr);
+							q = ClassifyContent(img, sr);
 							if(btc.GetCount() > 100)
 								btc.Clear();
 							btc.Add(key, q);
@@ -296,28 +228,50 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 						case IMAGECONTENT_VERTDUP|IMAGECONTENT_HORZDUP:
 							{
 								LTIMING("Ch-singlecolor");
-								RGBA c = b[sr.top][sr.left];
+								RGBA c = img[sr.top][sr.left];
 								if(c.a == 255) {
 									w.DrawRect(r, c);
 									break;
 								}
 							}
 						case 0:
-							ChDraw(w, r, b, sr);
+							ChDraw(w, r, img, sr);
 							break;
 						default:
 							LTIMING("Ch-linedup");
-							b = Rescale(b, Size(((q & IMAGECONTENT_HORZDUP) ? sr : r).GetWidth(),
+							img = Rescale(img, Size(((q & IMAGECONTENT_HORZDUP) ? sr : r).GetWidth(),
 							                    ((q & IMAGECONTENT_VERTDUP) ? sr : r).GetHeight()), sr);
 							LTIMING("Ch-linedup-drawtiles");
-							DrawTiles(w, r, b);
+							DrawTiles(w, r, img);
 							break;
 						}
 					}
 				}
 			}
 			else
-				ChDraw(w, r, b, b.GetSize());
+			if(r.left < r.right) {
+				w.DrawImage(0, 0, img, RectC(0, 0, p.x, top));
+				w.DrawImage(0, sz.cy - bottom, img, RectC(0, yy, p.x, bottom));
+				w.DrawImage(r.right, 0, img, RectC(sr.right, 0, sz2.cx, top));
+				w.DrawImage(r.right, sz.cy - bottom, img, RectC(sr.right, yy, sz2.cx, bottom));
+				ChDraw(w, p.x, 0, r.Width(), top, img, RectC(p.x, 0, sr.Width(), top));
+				ChDraw(w, p.x, sz.cy - bottom, r.Width(), bottom, img, RectC(p.x, yy, sr.Width(), bottom));
+			}
+			else
+			if(r.top < r.bottom) {
+				w.DrawImage(0, 0, img, RectC(0, 0, left, p.y));
+				w.DrawImage(0, r.bottom, img, RectC(0, sr.bottom, left, sz2.cy));
+				w.DrawImage(sz.cx - right, 0, img, RectC(xx, 0, right, p.y));
+				w.DrawImage(sz.cx - right, r.bottom, img, RectC(xx, sr.bottom, right, sz2.cy));
+				ChDraw(w, 0, p.y, left, r.Height(), img, RectC(0, p.y, left, sr.Height()));
+				ChDraw(w, sz.cx - right, p.y, right, r.Height(), img, RectC(xx, p.y, right, sr.Height()));
+			}
+			else {
+				w.DrawImage(0, 0, img, RectC(0, 0, left, top));
+				w.DrawImage(0, sz.cy - bottom, img, RectC(0, yy, left, top));
+				w.DrawImage(sz.cx - right, 0, img, RectC(xx, 0, right, top));
+				w.DrawImage(sz.cx - right, sz.cy - bottom, img, RectC(xx, yy, right, bottom));
+			}
 			w.End();
 			return 1;
 		}
@@ -339,12 +293,38 @@ void ChLookFn(Value (*fn)(Draw& w, const Rect& r, const Value& v, int op))
 		sChps().Add(fn);
 }
 
+struct sStyleCh : Moveable<sStyleCh> {
+	byte *status;
+	void (*init)();
+};
+
+Vector<sStyleCh>& sChStyle()
+{
+	static Vector<sStyleCh> x;
+	return x;
+}
+
+void ChRegisterStyle__(byte& state, byte& registered, void (*init)())
+{
+	if(!registered) {
+		sStyleCh& s = sChStyle().Add();
+		s.status = &state;
+		s.init = init;
+		registered = true;
+	}
+}
+
 void ChReset()
 {
-	VectorMap<String, ChVar>& var = chVar();
-	for(int i = 0; i < var.GetCount(); i++)
-		*var[i].state = 0;
+	for(int i = 0; i < sChStyle().GetCount(); i++)
+		*sChStyle()[i].status = 0;
 	ChLookFn(StdChLookFn);
+}
+
+void ChFinish()
+{
+	for(int i = 0; i < sChStyle().GetCount(); i++)
+		sChStyle()[i].init();
 }
 
 Value sChOp(Draw& w, const Rect& r, const Value& v, int op)

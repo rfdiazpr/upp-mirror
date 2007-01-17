@@ -19,14 +19,29 @@ bool IconDes::Key(dword key, int count)
 	return false;
 }
 
-void IconDes::ToggleMagnify()
+void IconDes::SetMagnify(int mag)
 {
-	if(!IsCurrent())
+	if( !IsCurrent() )
 		return;
-	magnify = magnify > 20 ? 1 : max(3, magnify + 2);
+
+	magnify = minmax(mag, 1, 27);
+
 	sb = Point(0, 0);
 	SetSb();
 	Refresh();
+
+	SetBar();
+}
+
+
+void IconDes::ZoomIn()
+{
+	SetMagnify(magnify+2);
+}
+
+void IconDes::ZoomOut()
+{
+	SetMagnify(magnify-2);
 }
 
 void IconDes::DoPaste()
@@ -78,7 +93,12 @@ void IconDes::EditBar(Bar& bar)
 void IconDes::SettingBar(Bar& bar)
 {
 	Slot *c = IsCurrent() ? &Current() : NULL;
-	bar.Add(c, "Change zoom", IconDesImg::Magnify(), THISBACK(ToggleMagnify));
+	bar.Add(c, "Zoom out", IconDesImg::ZoomMinus(), THISBACK(ZoomOut))
+		.Enable(magnify > 1)
+		.Key(K_SHIFT_CTRL_SUBRACT);
+	bar.Add(c, "Zoom in",  IconDesImg::ZoomPlus(), THISBACK(ZoomIn))
+		.Enable(magnify < 27)
+		.Key(K_SHIFT_CTRL_ADD);
 	bar.Add("Paste transparent/opaque",
 	        paste_opaque ? IconDesImg::PasteOpaque()
 	                     : IconDesImg::PasteTransparent(),

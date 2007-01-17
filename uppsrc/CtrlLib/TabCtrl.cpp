@@ -2,19 +2,20 @@
 
 NAMESPACE_UPP
 
-CH_FONT(TabCtrlFont, StdFont());
-
-CH_INTS(TabCtrlMetric, TabCtrl::METRIC_COUNT,
-       		TabCtrlFont().Info().GetHeight() + 8  // TABHEIGHT
-       		<< 2 // MARGIN
-       		<< 2 << 2 << 2 << 2 // SEL*
-       		<< 6 << 6 << 6 << 6 // *EDGE
-       		<< 0 // EXTENDLEFT
-);
-
-CH_LOOKS(TabCtrlLook, TabCtrl::LOOK_COUNT, CtrlsImgLook
-	(CtrlsImg::I_TAB, 4 * 4 + 1)
-);
+CH_STYLE(TabCtrl, Style, StyleDefault)
+{
+	font = StdFont();
+	tabheight = font.Info().GetHeight() + 8;
+	margin = 2;
+	sel = Rect(2, 2, 2, 2);
+	edge = Rect(6, 6, 6, 6);
+	extendleft = 0;
+	CtrlsImageLook(normal, CtrlsImg::I_TAB, 4);
+	CtrlsImageLook(first, CtrlsImg::I_FTAB, 4);
+	CtrlsImageLook(last, CtrlsImg::I_LTAB, 4);
+	CtrlsImageLook(both, CtrlsImg::I_BTAB, 4);
+	body = CtrlsImg::TABB();
+}
 
 TabCtrl::Item& TabCtrl::Item::Text(const String& _text)
 {
@@ -68,7 +69,8 @@ TabCtrl::Item::Item()
 
 void TabCtrl::Item::Layout(int xp, int y, int cy)
 {
-	Size chsz = GetTextSize("M", TabCtrlFont());
+	Font fnt = owner->style->font;
+	Size chsz = GetTextSize("M", fnt);
 	x = xp;
 	Size sz = pict.GetStdSize();
 	if(sz.cx) {
@@ -79,7 +81,7 @@ void TabCtrl::Item::Layout(int xp, int y, int cy)
 	}
 	else
 		xp += chsz.cx;
-	sz = GetTextSize(text, TabCtrlFont());
+	sz = GetTextSize(text, fnt);
 	if(sz.cx) {
 		textpos.x = xp;
 		textpos.y = y + (cy - sz.cy) / 2;
@@ -100,16 +102,16 @@ void TabCtrl::Item::Paint(Draw& w)
 {
 	Size sz = pict.GetStdSize();
 	pict.Paint(w, pictpos.x, pictpos.y, sz.cx, sz.cy, SColorText, Null);
-	w.DrawText(textpos.x, textpos.y, text, TabCtrlFont());
+	w.DrawText(textpos.x, textpos.y, text, owner->style->font);
 }
 
 void TabCtrl::SyncTabs()
 {
-	int x = TabCtrlMetric(MARGIN) - x0;
+	int x = style->margin - x0;
 	for(int i = 0; i < tab.GetCount(); i++) {
 		Item& t = tab[i];
-		t.Layout(x, metric(SELTOP) * (i != sel),
-		            metric(TABHEIGHT) + metric(SELTOP) * (i == sel));
+		t.Layout(x, style->sel.top * (i != sel),
+		            style->tabheight + style->sel.top * (i == sel));
 		x += t.cx;
 	}
 	left.Show(x0 > 0);
@@ -125,26 +127,26 @@ void TabCtrl::Layout()
 		if(tab[i].ctrl)
 			Ctrl::Add(*tab[i].ctrl);
 	Size sz = GetSize();
-	int th = metric(TABHEIGHT) + metric(SELTOP);
-	tabs.TopPos(0, th + metric(SELBOTTOM))
-	    .HSizePos(0, metric(SELLEFT) + metric(SELRIGHT));
+	int th = style->tabheight + style->sel.top;
+	tabs.TopPos(0, th + style->sel.bottom)
+	    .HSizePos(0, style->sel.left + style->sel.right);
 	SyncTabs();
 	SyncHot();
-	pane.VSizePos(metric(TABHEIGHT) + metric(TOPEDGE), metric(BOTTOMEDGE))
-	    .HSizePos(metric(LEFTEDGE), metric(RIGHTEDGE));
+	pane.VSizePos(style->tabheight + style->edge.top, style->edge.bottom)
+	    .HSizePos(style->edge.left, style->edge.right);
 	left.LeftPos(0, 16).TopPos(th - 16, 16);
 	right.RightPos(0, 16).TopPos(th - 16, 16);
 }
 
 Size TabCtrl::ComputeSize(Size pane)
 {
-	return Size(pane.cx + metric(LEFTEDGE) + metric(RIGHTEDGE),
-	            pane.cy + metric(TABHEIGHT) + metric(TOPEDGE) + metric(BOTTOMEDGE));
+	return Size(pane.cx + style->edge.left + style->edge.right,
+	            pane.cy + style->tabheight + style->edge.top + style->edge.bottom);
 }
 
 int TabCtrl::TabsRight()
 {
-	return tabs.GetSize().cx - metric(SELLEFT) - metric(SELRIGHT);
+	return tabs.GetSize().cx - style->sel.left - style->sel.right;
 }
 
 void TabCtrl::Tabs::Paint(Draw& w)
@@ -159,31 +161,32 @@ Rect TabCtrl::GetOpaqueRect()
 
 void TabCtrl::PaintTabs(Draw& w)
 {
-	int tt = metric(SELTOP);
-	int th = metric(TABHEIGHT) + tt;
+	int tt = style->sel.top;
+	int th = style->tabheight + tt;
 	Size sz = GetSize();
-	ChPaint(w, 0, th, sz.cx, sz.cy - th, look(BODY));
-	Size chsz = GetTextSize("M", TabCtrlFont());
+	ChPaint(w, 0, th, sz.cx, sz.cy - th, style->body);
+	Size chsz = GetTextSize("M", style->font);
 	for(int phase = 0; phase < 2; phase++) {
 		for(int i = tab.GetCount() - 1; i >= 0; i--)
 			if((sel == i) == phase) {
 				Item& t = tab[i];
 				Rect r = RectC(t.x, tt, t.cx, th - tt);
 				if(i)
-					r.left -= metric(EXTENDLEFT);
+					r.left -= style->extendleft;
 				if(phase) {
-					r.left -= metric(SELLEFT);
-					r.right += metric(SELRIGHT);
+					r.left -= style->sel.left;
+					r.right += style->sel.right;
 					r.top -= tt;
-					r.bottom += metric(SELBOTTOM);
+					r.bottom += style->sel.bottom;
 				}
-				ChPaint(w, r, look(
-					(tab.GetCount() == 1 ? BOTH : i == 0 ? FIRST :
-					 i == tab.GetCount() - 1 ? LAST : NORMAL)
-					+
+				ChPaint(w, r,
+					(tab.GetCount() == 1 ? style->both : i == 0 ? style->first :
+					 i == tab.GetCount() - 1 ? style->last : style->normal)
+					[
 					(!IsEnabled() || !t.enabled ? CTRL_DISABLED :
 					 phase ? CTRL_PRESSED :
-					 i == hot ? CTRL_HOT : CTRL_NORMAL)));
+					 i == hot ? CTRL_HOT : CTRL_NORMAL)]
+				);
 				t.Paint(w);
 			}
 	}
@@ -191,14 +194,14 @@ void TabCtrl::PaintTabs(Draw& w)
 
 void TabCtrl::Paint(Draw& w)
 {
-	int th = metric(TABHEIGHT) + metric(SELTOP);
+	int th = style->tabheight + style->sel.top;
 	Size sz = GetSize();
-	ChPaint(w, 0, th, sz.cx, sz.cy - th, look(BODY));
+	ChPaint(w, 0, th, sz.cx, sz.cy - th, style->body);
 }
 
 int  TabCtrl::GetTab(Point p)
 {
-	if(p.y >= 0 && p.y < metric(TABHEIGHT))
+	if(p.y >= 0 && p.y < style->tabheight)
 		for(int i = 0; i < tab.GetCount(); i++)
 			if(p.x < tab[i].Right())
 				return i;
@@ -253,8 +256,8 @@ void TabCtrl::ScrollInto(int i)
 		tabs.Refresh();
 		SyncTabs();
 	}
-	if(t.x < metric(MARGIN)) {
-		x0 += t.x - metric(MARGIN);
+	if(t.x < style->margin) {
+		x0 += t.x - style->margin;
 		tabs.Refresh();
 		SyncTabs();
 	}
@@ -265,7 +268,7 @@ void TabCtrl::Left()
 	if(x0 <= 0)
 		return;
 	for(int i = tab.GetCount() - 1; i >= 0; i--)
-		if(tab[i].x < metric(MARGIN)) {
+		if(tab[i].x < style->margin) {
 			ScrollInto(i);
 			break;
 		}
@@ -274,7 +277,7 @@ void TabCtrl::Left()
 void TabCtrl::Right()
 {
 	for(int i = 0; i < tab.GetCount(); i++)
-		if(tab[i].Right() > tabs.GetRect().GetWidth() - metric(SELLEFT) - metric(SELRIGHT)) {
+		if(tab[i].Right() > tabs.GetRect().GetWidth() - style->sel.left - style->sel.right) {
 			ScrollInto(i);
 			break;
 		}
@@ -425,8 +428,7 @@ TabCtrl::TabCtrl()
 	right <<= THISBACK(Right);
 	Transparent().NoWantFocus();
 	tabs.Transparent().NoWantFocus();
-	metric = TabCtrlMetric;
-	look = TabCtrlLook;
+	SetStyle(StyleDefault());
 }
 
 // ----------------------------------------------------------------

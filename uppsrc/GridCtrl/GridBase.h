@@ -36,7 +36,6 @@ struct Item : Moveable<Item>
 {
 	friend class ItemRect;
 	friend class GridCtrl;
-	friend class GridHeader;
 	
 	Item()
 	{
@@ -100,7 +99,6 @@ typedef Vector< Edit > Edits;
 class ItemRect : public Moveable<ItemRect>
 {
 	friend class GridCtrl;
-	friend class GridHeader;
 	
 	public:
 		ItemRect()

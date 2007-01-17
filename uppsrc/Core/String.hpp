@@ -1,13 +1,8 @@
-void DumpStringStats();
-
 template <class T, class S>
 typename AString<T, S>::Data *AString<T, S>::Alloc(int alloc)
 {
 //	LOG("Alloc " << alloc);
 	alloc = (HeapRoundUp((max(alloc, 5) + 1) * sizeof(T) + sizeof(Data)) - sizeof(Data)) / sizeof(T) - 1;
-#ifdef STRING_STATS
-	StringAlloc[min(dword(sizeof(Data) + sizeof(T) * (alloc + 1)), (dword)63)]++;
-#endif
 //	LOG("Rounded Alloc " << alloc << ": " << (alloc + 1) * sizeof(T) + sizeof(Data));
 	Data *newdata = (Data *) new byte[sizeof(Data) + sizeof(T) * (alloc + 1)];
 	newdata->alloc = alloc;
@@ -38,7 +33,6 @@ T *AString<T, S>::Create(int len)
 {
 	if(!len)
 		return S::CreateNull();
-	int al = len;
 	Data *n = Alloc(len);
 	n->length = len;
 	T *p = (T *)(n + 1);
@@ -60,8 +54,6 @@ T *AString<T, S>::Create(const T *data, int len)
 template <class T, class S>
 void AString<T, S>::Cat(const T *s, int len)
 {
-	STRING_STAT_CODE(StringClone);
-	STRING_STAT_CODER(StringCatN);
 	Chk();
 	Data *d = GetData(ptr);
 	if(AtomicRead(d->refcount) == 1 && d->length + len <= d->alloc) {
@@ -82,8 +74,6 @@ void AString<T, S>::Cat(const T *s, int len)
 template <class T, class S>
 void AString<T, S>::Cat(int c)
 {
-	STRING_STAT_CODE(StringClone);
-	STRING_STAT_CODER(StringCat1);
 	Chk();
 	Data *d = GetData(ptr);
 	if(AtomicRead(d->refcount) != 1 || d->length >= d->alloc) {
@@ -99,8 +89,6 @@ void AString<T, S>::Cat(int c)
 template <class T, class S>
 void AString<T, S>::Cat(int c, int count)
 {
-	STRING_STAT_CODE(StringClone);
-	STRING_STAT_CODER(StringCatN);
 	Chk();
 	Data *d = GetData(ptr);
 	if(AtomicRead(d->refcount) != 1 || d->length + count > d->alloc) {
@@ -240,7 +228,6 @@ void AString<T, S>::ReleaseBuffer(int len)
 template <class T, class S>
 void AString<T, S>::Assign(const AString<T, S>& s)
 {
-	STRING_STAT_CODE(StringAssign);
 	Chk();
 	s.Retain();
 	Release();
@@ -363,6 +350,21 @@ int AString<T, S>::Find(int len, const T *s, int from) const
 		p++;
 	}
 	return -1;
+}
+
+template <class T, class S>
+bool AString<T, S>::StartsWith(const T *s, int len) const
+{
+	if(len > GetLength()) return false;
+	return memcmp(s, ptr, len * sizeof(T)) == 0;
+}
+
+template <class T, class S>
+bool AString<T, S>::EndsWith(const T *s, int len) const
+{
+	int l = GetLength();
+	if(len > l) return false;
+	return memcmp(s, ptr + l - len, len * sizeof(T)) == 0;
 }
 
 template <class T, class S>

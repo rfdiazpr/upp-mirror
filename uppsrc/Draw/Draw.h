@@ -80,9 +80,6 @@ struct G_obj { int d; };
 void          InitX11Draw(const char *dispname = NULL);
 void          InitX11Draw(XDisplay *display);
 
-void                UpdateSystemSettings();
-const TextSettings& KDESettings();
-
 void   XError();
 void   XError(const char *s);
 
@@ -424,6 +421,44 @@ Color SColorShadow();
 Color SColorLtFace();
 Color SColorDkShadow();
 
+
+void SBlack_Write(Color c);
+void SGray_Write(Color c);
+void SLtGray_Write(Color c);
+void SWhiteGray_Write(Color c);
+void SWhite_Write(Color c);
+void SRed_Write(Color c);
+void SGreen_Write(Color c);
+void SBrown_Write(Color c);
+void SBlue_Write(Color c);
+void SMagenta_Write(Color c);
+void SCyan_Write(Color c);
+void SYellow_Write(Color c);
+void SLtRed_Write(Color c);
+void SLtGreen_Write(Color c);
+void SLtYellow_Write(Color c);
+void SLtBlue_Write(Color c);
+void SLtMagenta_Write(Color c);
+void SLtCyan_Write(Color c);
+
+void SColorPaper_Write(Color c);
+void SColorText_Write(Color c);
+void SColorHighlight_Write(Color c);
+void SColorHighlightText_Write(Color c);//
+void SColorMenu_Write(Color c);
+void SColorMenuText_Write(Color c);
+void SColorInfo_Write(Color c);
+void SColorInfoText_Write(Color c);//
+void SColorMark_Write(Color c);
+void SColorDisabled_Write(Color c);
+void SColorLight_Write(Color c);
+void SColorFace_Write(Color c);
+void SColorShadow_Write(Color c);
+
+void SColorLtFace_Write(Color c);
+void SColorDkShadow_Write(Color c);
+
+
 inline Color InvertColor() { return Color(255, 0); }
 inline Color DefaultInk() { return Black(); } //TODO!
 
@@ -542,7 +577,6 @@ protected:
 public:
 	static bool AutoPalette();
 	static void SetAutoPalette(bool ap);
-//	static void Win32UpdateSColors();
 
 #endif
 

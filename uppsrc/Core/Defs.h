@@ -83,14 +83,17 @@ void    AssertFailed(const char *file, int line, const char *cond);
 #define ASSTRING_(x)  #x
 #define ASSTRING(x)   ASSTRING_(x)
 
-#define COMBINE__(a, b)         a##b
-#define COMBINE(a, b)           COMBINE__(a, b)
+#define COMBINE__(a, b)            a##b
+#define COMBINE(a, b)              COMBINE__(a, b)
 
-#define COMBINE3__(a, b, c)     a##b##c
-#define COMBINE3(a, b, c)       COMBINE3__(a, b, c)
+#define COMBINE3__(a, b, c)        a##b##c
+#define COMBINE3(a, b, c)          COMBINE3__(a, b, c)
 
-#define COMBINE4__(a, b, c, d)  a##b##c##d
-#define COMBINE4(a, b, c, d)    COMBINE4__(a, b, c, d)
+#define COMBINE4__(a, b, c, d)     a##b##c##d
+#define COMBINE4(a, b, c, d)       COMBINE4__(a, b, c, d)
+
+#define COMBINE5__(a, b, c, d, e)  a##b##c##d##e
+#define COMBINE5(a, b, c, d, e)    COMBINE5__(a, b, c, d, e)
 
 #define MK__s__(x)       s__s##x
 #define MK__s_(x)        MK__s__(x)
@@ -240,10 +243,16 @@ extern "C" char *COMBINE(i, _files)[];
 int RegisterTypeNo__(const char *type);
 
 template <class T>
-int StaticTypeNo() {
+int RegisterTypeNo___()
+{
+	return RegisterTypeNo__(typeid(T).name());
+}
+
+template <class T>
+inline int StaticTypeNo() {
 	static int typeno = -1;
 	if(typeno < 0)
-		typeno = RegisterTypeNo__(typeid(T).name());
+		typeno = RegisterTypeNo___<T>();
 	return typeno;
 }
 
@@ -283,10 +292,25 @@ enum MemoryProbeFlags {
 	MEMORY_PROBE_SUMMARY = 16,
 };
 
-void  MemoryProbe(const char *name = NULL, dword flags = 0);
-const char *MemoryCounters();
-
 void  MemoryCheckDebug();
+
+void  MemorySum(int& smallkb, int& largekb);
+
+struct MemoryProfile {
+	int allocated[1024];
+	int fragmented[1024];
+	int freepages;
+	int large_count;
+	int large_size[1024];
+	int large_total;
+	int large_free_count;
+	int large_free_size[1024];
+	int large_free_total;
+
+	MemoryProfile();
+};
+
+MemoryProfile *PeakMemoryProfile();
 
 #else
 
@@ -295,13 +319,28 @@ inline void  *MemoryAlloc(size_t size) { return new byte[size]; }
 inline void   MemoryFree(void *p)      { delete[] (byte *) p; }
 inline size_t HeapRoundUp(size_t size) { return (size + 3) & -4; }
 inline void   MemoryShrink()           {}
-inline void   MemoryProbe(const char *name, dword flags) {}
-inline const char *MemoryCounters() { return ""; }
 inline void   MemoryInitDiagnostics() {}
 inline void  *MemoryAllocDebug(dword size) {}
 inline void   MemoryFreeDebug(void *p) {}
 inline void   MemoryCheck() {}
 inline void   MemoryCheckDebug() {}
+
+struct MemoryProfile {
+	int allocated[1024];
+	int fragmented[1024];
+	int freepages;
+	int large_count;
+	int large_size[1024];
+	int large_total;
+	int large_free_count;
+	int large_free_size[1024];
+	int large_free_total;
+
+	MemoryProfile() { memset(this, 0, sizeof(MemoryProfile)); }
+};
+
+inline MemoryProfile *PeakMemoryProfile() { return NULL; }
+inline void   MemorySum(int& smallkb, int& largekb) {}
 
 #endif
 

@@ -51,7 +51,8 @@ public:
 
 class Any : Moveable<Any> {
 	struct BaseData {
-		virtual  int TypeNo()   { return -1; }
+		int      typeno;
+
 		virtual ~BaseData() {}
 	};
 
@@ -59,9 +60,7 @@ class Any : Moveable<Any> {
 	struct Data : BaseData {
 		T        data;
 
-		virtual  int TypeNo()                     { return StaticTypeNo<T>(); }
-
-		Data() {}
+		Data()                                    { typeno = StaticTypeNo<T>(); }
 	};
 
 	BaseData *ptr;
@@ -71,7 +70,7 @@ class Any : Moveable<Any> {
 
 public:
 	template <class T> T& Create()                { Clear(); Data<T> *x = new Data<T>; ptr = x; return x->data; }
-	template <class T> bool Is() const            { return ptr && ptr->TypeNo() == StaticTypeNo<T>(); }
+	template <class T> bool Is() const            { return ptr && ptr->typeno == StaticTypeNo<T>(); }
 	template <class T> T& Get()                   { ASSERT(Is<T>()); Chk(); return ((Data<T>*)ptr)->data; }
 	template <class T> const T& Get() const       { ASSERT(Is<T>()); Chk(); return ((Data<T>*)ptr)->data; }
 

@@ -219,7 +219,6 @@ struct CppPos : Moveable<CppPos> {
 	int    file;
 
 	String GetFile() const                       { return GetCppFile(file); }
-//	void   Serialize(Stream& s)                  { s % impl % line % file; }
 
 	CppPos()                                     { line = 0; impl = false; }
 };
@@ -284,8 +283,6 @@ struct CppBase {
 	CppNest&       GetAdd(const String& s)                       { return nest.GetAdd(s); }
 
 	bool           IsType(int i) const;
-
-//	Vector<int> GetBases(int i) const;
 };
 
 class Parser {

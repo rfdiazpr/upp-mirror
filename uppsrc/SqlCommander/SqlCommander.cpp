@@ -29,6 +29,8 @@
 	#include <MySql/MySql.h>
 #endif
 
+using namespace Upp;
+
 #define LAYOUTFILE <SqlCommander/login.lay>
 #include <CtrlCore/lay.h>
 

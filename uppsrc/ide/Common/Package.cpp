@@ -160,12 +160,14 @@ Package::Package()
 {
 	charset = 0;
 	optimize_speed = false;
+	noblitz = true;
 }
 
 void Package::Load(const char *path) {
 	for(;;) {
 		charset = 0;
 		optimize_speed = false;
+		noblitz = false;
 		library.Clear();
 		target.Clear();
 		flag.Clear();
@@ -200,6 +202,9 @@ void Package::Load(const char *path) {
 						accepts.Add(ReadValue(p));
 					while(p.Char(','));
 				}
+				else
+				if(p.Id("noblitz"))
+				   noblitz = true;
 				else
 				if(p.Id("optimize_speed"))
 					optimize_speed = true;
@@ -361,6 +366,8 @@ bool Package::Save(const char *path) const {
 		out << "charset " << AsCString(CharsetName(charset)) << ";\n\n";
 	if(optimize_speed)
 		out << "optimize_speed;\n\n";
+	if(noblitz)
+		out << "noblitz;\n\n";
 	putp(out, "acceptflags", accepts);
 	putopt(out, "flags", flag);
 	putopt(out, "uses", uses);

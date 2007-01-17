@@ -51,12 +51,6 @@ public:
 	virtual ~Pusher();
 };
 
-Value ButtonLook(int i);
-Value OkButtonLook(int i);
-Value EdgeButtonLook(int i);
-Value ScrollButtonLook(int i);
-Color ButtonMonoColor(int i);
-int   ButtonPressOffsetFlag();
 
 class Button : public Pusher {
 public:
@@ -72,35 +66,57 @@ public:
 	virtual void   LostFocus();
 	virtual int    OverPaint() const;
 
+public:
+	struct Style : ChStyle<Style> {
+		Value look[4];
+		Color monocolor[4], textcolor[4];
+		Point pressoffset;
+		int   focusmargin;
+		int   overpaint;
+		Font  font;
+		Image ok, cancel, exit;
+	};
+
 protected:
 	enum { NORMAL, OK, CANCEL, EXIT };
+	const Style *style;
 	Image   img;
-	Value  (*look)(int);
 	bool    monoimg;
 	byte    type;
 
-	void RefreshOK(Ctrl *p);
+	void  RefreshOK(Ctrl *p);
+	const Style *St() const;
 
 public:
 	Button&  SetImage(const Image& img);
 	Button&  SetMonoImage(const Image& img);
-	Button&  Style(Value (*look)(int));
-	Button&  NormalStyle()                               { return Style(ButtonLook); }
-	Button&  EdgeStyle()                                 { return Style(EdgeButtonLook); }
-	Button&  ScrollStyle()                               { return Style(ScrollButtonLook); }
+
+	static const Style& StyleNormal();
+	static const Style& StyleOk();
+	static const Style& StyleEdge();
+	static const Style& StyleLeftEdge();
+	static const Style& StyleScroll();
+
+	Button&  SetStyle(const Style& s);
+	Button&  AutoStyle();
+
+	Button&  NormalStyle()                        { return SetStyle(StyleNormal()); }
+	Button&  EdgeStyle()                          { return SetStyle(StyleEdge()); }
+	Button&  LeftEdgeStyle()                      { return SetStyle(StyleLeftEdge()); }
+	Button&  ScrollStyle()                        { return SetStyle(StyleScroll()); }
+
 	Button&  Ok();
 	Button&  Cancel();
 	Button&  Exit();
-	Button&  Normal()                                    { type = NORMAL; return *this; }
+	Button&  Normal()                             { type = NORMAL; Refresh(); return *this; }
 
 	Button();
 	virtual ~Button();
 };
 
-class SpinButtons : public CtrlFrame {
-private:
-	bool visible;
+Color ButtonMonoColor(int i);
 
+class SpinButtons : public CtrlFrame {
 public:
 	virtual void FrameLayout(Rect& r);
 	virtual void FrameAddSize(Size& sz);
@@ -108,13 +124,28 @@ public:
 	virtual void FrameRemove();
 
 public:
+	struct Style : ChStyle<Style> {
+		Button::Style inc;
+		Button::Style dec;
+		int           width;
+	};
+
+private:
+	bool         visible;
+	const Style *style;
+
+public:
 	Button inc;
 	Button dec;
 
+	void         Show(bool s = true);
+
+	static const Style& StyleDefault();
+
+	SpinButtons& SetStyle(const Style& s);
+
 	SpinButtons();
 	virtual ~SpinButtons();
-
-	void         Show(bool s = true);
 };
 
 class Option : public Pusher {
@@ -168,11 +199,17 @@ public:
 	virtual Value GetData() const;
 	virtual void  Serialize(Stream& s);
 
+public:
+	struct Style : ChStyle<Style> {
+		Value look[4];
+	};
+
 private:
-	bool  option;
-	bool  push;
-	Image image;
-	Image image1;
+	Image        image;
+	Image        image1;
+	const Style *style;
+	bool         option;
+	bool         push;
 
 public:
 	ButtonOption&  SetImage(const Image& img)                 { image = img; Refresh(); return *this; }
@@ -184,6 +221,9 @@ public:
 
 	void operator=(bool b)                                    { Set(b); }
 	operator bool() const                                     { return Get(); }
+
+	ButtonOption& SetStyle(const Style& s)                    { style = &s; Refresh(); return *this; }
+	ButtonOption& AutoStyle()                                 { style = NULL; Refresh(); return *this; }
 
 	ButtonOption();
 };

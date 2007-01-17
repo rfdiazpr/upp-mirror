@@ -172,29 +172,51 @@ Pusher::~Pusher() {}
 
 // ----------------
 
-CH_LOOKS(ButtonLook, 4, CtrlsImgLook(CtrlsImg::I_B));
-CH_LOOKS(OkButtonLook, 4, CtrlsImgLook(CtrlsImg::I_OkB));
-CH_LOOKS(EdgeButtonLook, 4, CtrlsImgLook(CtrlsImg::I_EB));
-CH_LOOKS(LeftEdgeButtonLook, 4, EdgeButtonLook);
-CH_LOOKS(ScrollButtonLook, 4, CtrlsImgLook(CtrlsImg::I_SB));
-CH_COLORS(ButtonMonoColor, 4, Blend(Blend(SColorHighlight, SColorShadow), SColorText, 80));
-CH_INT(ButtonPressOffsetFlag, 0);
-CH_INT(ButtonPressOffsetFlagY, ButtonPressOffsetFlag());
-CH_INT(ButtonFocusMargin, 3);
-CH_INT(ButtonOverPaint, 0);
-CH_FONT(ButtonFont, StdFont());
-CH_COLORS(ButtonTextColor, 4, SColorText() << SColorText() << SColorText() << SColorDisabled());
+CH_STYLE(Button, Style, StyleNormal)
+{
+	CtrlsImageLook(look, CtrlsImg::I_B);
+	monocolor[0] = monocolor[1] = monocolor[2] = monocolor[3] =
+		Blend(Blend(SColorHighlight, SColorShadow), SColorText, 80);
+	textcolor[0] = textcolor[1] = textcolor[2] = SColorText();
+	textcolor[3] = SColorDisabled();
+	font = StdFont();
+	pressoffset = Point(0, 0);
+	focusmargin = 3;
+	overpaint = 0;
+}
 
-CH_IMAGE(OkButtonImage, Null);
-CH_IMAGE(CancelButtonImage, Null);
-CH_IMAGE(ExitButtonImage, Null);
+CH_STYLE(Button, Style, StyleOk)
+{
+	Assign(Button::StyleNormal());
+	CtrlsImageLook(look, CtrlsImg::I_OkB);
+}
 
-typedef Value (*sLookfn)(int);
+CH_STYLE(Button, Style, StyleEdge)
+{
+	Assign(Button::StyleNormal());
+	CtrlsImageLook(look, CtrlsImg::I_EB);
+}
+
+CH_STYLE(Button, Style, StyleLeftEdge)
+{
+	Assign(Button::StyleEdge());
+}
+
+CH_STYLE(Button, Style, StyleScroll)
+{
+	Assign(Button::StyleNormal());
+	CtrlsImageLook(look, CtrlsImg::I_SB);
+}
+
+Color ButtonMonoColor(int i)
+{
+	return Button::StyleNormal().monocolor[i];
+}
 
 Button& Button::Ok()
 {
 	if(IsNull(img))
-		img = OkButtonImage();
+		img = St()->ok;
 	type = OK;
 	Refresh();
 	return *this;
@@ -203,7 +225,7 @@ Button& Button::Ok()
 Button& Button::Cancel()
 {
 	if(IsNull(img))
-		img = CancelButtonImage();
+		img = St()->cancel;
 	type = CANCEL;
 	Refresh();
 	return *this;
@@ -212,46 +234,53 @@ Button& Button::Cancel()
 Button& Button::Exit()
 {
 	if(IsNull(img))
-		img = ExitButtonImage();
+		img = St()->exit;
 	type = EXIT;
 	Refresh();
 	return *this;
 }
 
-int Button::OverPaint() const
+const Button::Style *GetButtonStyle(const Ctrl *q)
 {
-	if(look == ButtonLook || look == OkButtonLook) return ButtonOverPaint();
-	return 0;
-}
-
-sLookfn GetButtonLook(Ctrl *q)
-{
-	Value (*st)(int) = ButtonLook;
+	const Button::Style *st = &Button::StyleNormal();
 	if(q->InFrame()) {
-		st = EdgeButtonLook;
+		st = &Button::StyleEdge();
 		if(q->GetParent()) {
 			Rect r = q->GetRect();
 			Size sz = q->GetParent()->GetRect().GetSize();
 			if(r.right < sz.cx / 2)
-				st = LeftEdgeButtonLook;
+				st = &Button::StyleLeftEdge();
 		}
 	}
 	return st;
 }
 
-Button& Button::Style(Value (*_look)(int))
+int Button::OverPaint() const
 {
-	if(look != _look) {
-		look = _look;
+	return St()->overpaint;
+}
+
+Button& Button::SetStyle(const Button::Style& s)
+{
+	if(style != &s) {
+		style = &s;
 		RefreshLayout();
 		Refresh();
 	}
 	return *this;
 }
 
+Button& Button::AutoStyle()
+{
+	style = NULL;
+	RefreshLayout();
+	Refresh();
+	return *this;
+}
+
 void Button::Layout()
 {
-	Transparent(!ChIsOpaque(look ? look(CTRL_NORMAL) : ButtonLook(CTRL_NORMAL)));
+	Transparent(!ChIsOpaque(St()->look[0]));
 }
 
 void Button::RefreshOK(Ctrl *p)
@@ -276,13 +305,32 @@ void Button::LostFocus()
 	Pusher::LostFocus();
 }
 
+const Button::Style *Button::St() const
+{
+	const Style *st;
+	if(style)
+		st = style;
+	else {
+		st = GetButtonStyle(this);
+		if(type == OK) {
+			Button *b = dynamic_cast<Button *>(GetFocusCtrl());
+			if(!b || b == this || b->GetTopCtrl() != GetTopCtrl())
+				st = &StyleOk();
+		}
+		if(HasFocus())
+			st = &StyleOk();
+	}
+	return st;
+}
+
 void Button::Paint(Draw& w)
 {
+	const Style *st = St();
 	Size sz = GetSize();
 	bool ds = !IsShowEnabled();
 	DrawLabel dl;
 	dl.text = label;
-	dl.font = Nvl(font, ButtonFont());
+	dl.font = Nvl(font, st->font);
 	dl.limg = img;
 	dl.disabled = ds;
 	dl.lspc = !label.IsEmpty() && !img.IsEmpty() ? 4 : 0;
@@ -290,28 +338,15 @@ void Button::Paint(Draw& w)
 		dl.accesskey = accesskey;
 	if(monoimg)
 		dl.lcolor = SColorText;
-	Value (*st)(int) = look;
-	if(!st) {
-		st = GetButtonLook(this);
-		if(type == OK) {
-			Button *b = dynamic_cast<Button *>(GetFocusCtrl());
-			if(!b || b == this || b->GetTopCtrl() != GetTopCtrl())
-				st = OkButtonLook;
-		}
-		if(HasFocus())
-			st = OkButtonLook;
-	}
 	int i = GetVisualState();
-	ChPaint(w, sz, (*st)(i));
-	dl.ink = ButtonTextColor(i);
+	ChPaint(w, sz, st->look[i]);
+	dl.ink = st->textcolor[i];
 	if(monoimg)
-		dl.lcolor = ButtonMonoColor(i);
-	int mx = IsPush() && ButtonPressOffsetFlag();
-	int my = IsPush() && ButtonPressOffsetFlagY();
-	dl.Paint(w, 3 + mx, 3 + my, sz.cx - 6, sz.cy - 6);
-	if(HasFocus()) {
-		DrawFocus(w, Rect(sz).Deflated(ButtonFocusMargin()));
-	}
+		dl.lcolor = st->monocolor[i];
+	dl.Paint(w, 3 + IsPush() * st->pressoffset.x, 3 + IsPush() * st->pressoffset.y,
+	         sz.cx - 6, sz.cy - 6);
+	if(HasFocus())
+		DrawFocus(w, Rect(sz).Deflated(st->focusmargin));
 }
 
 void  Button::MouseEnter(Point, dword)
@@ -388,16 +423,20 @@ Button& Button::SetMonoImage(const Image& _img)
 }
 
 Button::Button() {
-	look = NULL;
+	style = NULL;
 	type = NORMAL;
 	monoimg = false;
 }
 
 Button::~Button() {}
 
-CH_INT(SpinWidth, 12);
-CH_LOOKS(SpinUpLook, 4, CtrlsImgLook(CtrlsImg::I_EB, CtrlsImg::SpU(), ButtonMonoColor));
-CH_LOOKS(SpinDownLook, 4, CtrlsImgLook(CtrlsImg::I_EB, CtrlsImg::SpD(), ButtonMonoColor));
+CH_STYLE(SpinButtons, Style, StyleDefault)
+{
+	inc = dec = Button::StyleNormal();
+	CtrlsImageLook(inc.look, CtrlsImg::I_EB, CtrlsImg::SpU(), inc.monocolor);
+	CtrlsImageLook(dec.look, CtrlsImg::I_EB, CtrlsImg::SpD(), dec.monocolor);
+	width = 12;
+}
 
 void SpinButtons::FrameLayout(Rect& r)
 {
@@ -411,7 +450,7 @@ void SpinButtons::FrameLayout(Rect& r)
 	Size sz = r.Size();
 	int h = r.Height();
 	int h2 = h / 2;
-	int h7 = min(sz.cx / 2, SpinWidth());
+	int h7 = min(sz.cx / 2, style->width);
 	inc.SetFrameRect(r.right - h7, r.top, h7, h2);
 	dec.SetFrameRect(r.right - h7, r.top + h2, h7, r.Height() - h2);
 	r.right -= h7;
@@ -433,19 +472,32 @@ void SpinButtons::FrameRemove() {
 	dec.Remove();
 }
 
-SpinButtons::SpinButtons() {
-	visible = true;
-	inc.Style(SpinUpLook).NoWantFocus();
-	dec.Style(SpinDownLook).NoWantFocus();
-}
-
-SpinButtons::~SpinButtons() {}
-
 void SpinButtons::Show(bool s)
 {
 	visible = s;
 	inc.RefreshParentLayout();
 }
+
+SpinButtons& SpinButtons::SetStyle(const Style& s)
+{
+	if(style != &s) {
+		style = &s;
+		inc.SetStyle(style->inc);
+		dec.SetStyle(style->dec);
+		inc.RefreshParentLayout();
+	}
+	return *this;
+}
+
+SpinButtons::SpinButtons() {
+	visible = true;
+	inc.NoWantFocus();
+	dec.NoWantFocus();
+	style = NULL;
+	SetStyle(StyleDefault());
+}
+
+SpinButtons::~SpinButtons() {}
 
 // -----------------
 
@@ -542,6 +594,7 @@ Option::~Option() {}
 ButtonOption::ButtonOption()
 {
 	option = push = false;
+	style = NULL;
 	Transparent();
 }
 
@@ -564,9 +617,9 @@ void  ButtonOption::Paint(Draw& w) {
 	         HasMouse() || HasFocus() ? CTRL_HOT :
 	         CTRL_NORMAL;
 	if(option) i = CTRL_PRESSED;
-	ChPaint(w, sz, GetButtonLook(this)(i));
+	ChPaint(w, sz, style ? style->look[i] : GetButtonStyle(this)->look[i]);
 	Point p = r.CenterPos(image.GetSize());
-	w.DrawImage(p.x, p.y, (option && !IsNull(image1)) ? image1 : image);
+	w.DrawImage(p.x, p.y, DisabledImage((option && !IsNull(image1)) ? image1 : image, !IsEnabled()));
 }
 
 void  ButtonOption::LeftDown(Point, dword) {

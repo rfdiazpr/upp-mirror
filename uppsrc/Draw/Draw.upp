@@ -1,4 +1,4 @@
-description "Fundamental graphics operations, include raster image processing";
+description "Fundamental graphics operations, including raster image processing";
 
 acceptflags
 	XLFD;

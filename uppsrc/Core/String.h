@@ -1,32 +1,6 @@
-#ifdef _DEBUG
-//#define STRING_STATS
-#endif
-
-#ifdef STRING_STATS
-extern int StringClone[64];
-extern int StringPtr[64];
-extern int StringIndex[64];
-extern int StringLength[64];
-extern int StringRetain[64];
-extern int StringRetainR[64];
-extern int StringRelease[64];
-extern int StringReleaseR[64];
-extern int StringAssign[64];
-extern int StringCopy[64];
-extern int StringDestruct[64];
-extern int StringCompare[64];
-extern int StringAlloc[64];
-extern int StringCat1[64];
-extern int StringCatN[64];
-extern int StringNull;
-#define STRING_STAT_CODE(x) { x[min(GetData(ptr)->length, 63)]++; }
-#define STRING_STAT_CODER(x) { if(GetData(ptr)->length) x[min((int)GetData(ptr)->refcount, 63)]++; }
-#else
-#define STRING_STAT_CODE(x)
-#define STRING_STAT_CODER(x)
-#endif
-
 class Nuller;
+
+// #define STRING_EXPERIMENTAL // activate experimental optimizations
 
 int wstrlen(const wchar *s);
 
@@ -70,8 +44,8 @@ protected:
 	static T *Create(int len);
 	static T *Create(const T *data, int len);
 
-	void  Retain() const               { STRING_STAT_CODER(StringRetainR); STRING_STAT_CODE(StringRetain); GetData(ptr)->Retain(); }
-	void  Release()                    { STRING_STAT_CODER(StringReleaseR); STRING_STAT_CODE(StringRelease); GetData(ptr)->Release(); }
+	void  Retain() const               { GetData(ptr)->Retain(); }
+	void  Release()                    { GetData(ptr)->Release(); }
 
 	void  Chk()	const                  { ASSERT(ptr && AtomicRead(GetData(ptr)->refcount) > 0); }
 
@@ -102,9 +76,9 @@ public:
 
 	void   Trim(int at);
 
-	int    GetLength() const                   { STRING_STAT_CODE(StringLength); return GetData(ptr)->length; }
-	int    GetCount() const                    { STRING_STAT_CODE(StringLength); return GetData(ptr)->length; }
-	bool   IsEmpty() const                     { STRING_STAT_CODE(StringLength); return GetCount() == 0; }
+	int    GetLength() const                   { return GetData(ptr)->length; }
+	int    GetCount() const                    { return GetData(ptr)->length; }
+	bool   IsEmpty() const                     { return GetCount() == 0; }
 
 	int    Find(int chr, int from = 0) const;
 	int    ReverseFind(int chr, int from) const;
@@ -114,12 +88,19 @@ public:
 	int    Find(const T *s, int from = 0) const;
 	int    Find(const S& s, int from = 0) const { return Find(s.GetCount(), s.Begin(), from); }
 
+	bool   StartsWith(const T *s, int len) const;
+	bool   StartsWith(const T *s) const         { return StartsWith(s, strlen(s)); }
+	bool   StartsWith(const S& s) const         { return StartsWith(s, s.GetLength()); }
+
+	bool   EndsWith(const T *s, int len) const;
+	bool   EndsWith(const T *s) const           { return EndsWith(s, strlen(s)); }
+	bool   EndsWith(const S& s) const           { return EndsWith(s, s.GetLength()); }
+
 	void   Clear();
 
 	void   Shrink();
 	void   Reserve(int len);
-	int    GetAlloc() const                    { return GetData(ptr)->alloc; }
-
+	int    GetAlloc() const                     { return GetData(ptr)->alloc; }
 
 	T     *GetBuffer(int minlen); // deprecated !!!
 	void   ReleaseBuffer(int newlen = -1); // deprecated !!!
@@ -156,11 +137,16 @@ public:
 	friend bool operator>=(const S& a, const T *b)  { return a.Compare(b) >= 0; }
 	friend bool operator>=(const T *a, const S& b)  { return b.Compare(a) <= 0; }
 
+#ifdef STRING_EXPERIMENTAL
+	friend bool operator==(const S& a, const S& b)  { return a.IsEqual(b); }
+	friend bool operator!=(const S& a, const S& b)  { return !a.IsEqual(b); }
+#else
 	friend bool operator==(const S& a, const S& b)  { return a.Compare(b) == 0; }
+	friend bool operator!=(const S& a, const S& b)  { return a.Compare(b) != 0; }
+#endif
 	friend bool operator==(const S& a, const T *b)  { return a.Compare(b) == 0; }
 	friend bool operator==(const T *a, const S& b)  { return b.Compare(a) == 0; }
 
-	friend bool operator!=(const S& a, const S& b)  { return a.Compare(b) != 0; }
 	friend bool operator!=(const S& a, const T *b)  { return a.Compare(b) != 0; }
 	friend bool operator!=(const T *a, const S& b)  { return b.Compare(a) != 0; }
 
@@ -240,6 +226,8 @@ class String : public AString<char, String> {
 
 	static char *CreateNull();
 
+	void   Slice(const char *a, int n);
+
 //	friend class B;
 	friend class AString<char, String>;
 	friend class AStringBuffer<char, String>;
@@ -285,14 +273,13 @@ public:
 	int    Compare(const String& s) const;
 	int    Compare(const char *s) const;
 
-	const char *operator~() const              { STRING_STAT_CODE(StringPtr); return B::ptr; }
-	operator const char*() const               { STRING_STAT_CODE(StringPtr); return B::ptr; }
-	operator const void*() const               { STRING_STAT_CODE(StringPtr); return B::ptr; }
-	operator const byte*() const               { STRING_STAT_CODE(StringPtr); return (byte *) B::ptr; }
+	const char *operator~() const              { return B::ptr; }
+	operator const char*() const               { return B::ptr; }
+	operator const void*() const               { return B::ptr; }
+	operator const byte*() const               { return (byte *) B::ptr; }
 
-	int operator*() const                      { STRING_STAT_CODE(StringPtr); return *B::ptr; }
-	int operator[](int i) const                { STRING_STAT_CODE(StringIndex); ASSERT(i <= B::GetLength());
-	                                             return (byte)ptr[i]; }
+	int operator*() const                      { return *B::ptr; }
+	int operator[](int i) const                { ASSERT(i <= B::GetLength()); return (byte)ptr[i]; }
 	bool   IsVoid() const;
 	bool   IsZero() const;
 
@@ -311,7 +298,11 @@ public:
 	String(const String& s, int n);
 	String(const char *s, int n);
 	String(const byte *s, int n);
+#ifdef STRING_EXPERIMENTAL
+	String(const char *s, const char *lim) { Slice(s, lim - s); }
+#else
 	String(const char *s, const char *lim);
+#endif
 	String(int chr, int count);
 	String(Buffer& b) : B(0, b.Get()) {};
 	~String();
@@ -341,6 +332,9 @@ public:
 
 		void Strlen();
 	};
+
+	String(const std::string& s);
+	operator std::string() const;
 };
 
 typedef String::Buffer StringBuffer;
@@ -635,6 +629,9 @@ public:
 
 		void Strlen();
 	};
+
+	WString(const std::wstring& s);
+	operator std::wstring() const;
 };
 
 typedef WString::Buffer WStringBuffer;

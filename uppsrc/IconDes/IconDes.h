@@ -206,7 +206,10 @@ private:
 	void  Scroll();
 
 	void  SetTool(void (IconDes::*tool)(Point p, dword flags));
-	void  ToggleMagnify();
+
+	void  SetMagnify(int mag);
+	void  ZoomIn();
+	void  ZoomOut();
 
 	void  TogglePaste();
 

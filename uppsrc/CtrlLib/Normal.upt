@@ -10,6 +10,8 @@ option "Multithreaded" mt;
 
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 #endif
 
 @@main.cpp

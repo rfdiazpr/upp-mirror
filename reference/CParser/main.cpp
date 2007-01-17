@@ -69,7 +69,7 @@ CONSOLE_APP_MAIN
 				id = p.ReadId();
 				if(p.Char('=')) {
 					double x = Exp(p);
-					Cout() << id << " <= " << x << '\n';
+					Cout() << id << " <- " << x << '\n';
 					var.GetAdd(id) = x;
 					goto done;
 				}

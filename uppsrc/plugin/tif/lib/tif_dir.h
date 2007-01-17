@@ -35,8 +35,10 @@
  */
 
 #ifndef flagNONAMESPACE
+#ifndef _TIFF_DATA_TYPEDEFS_
 typedef unsigned int uint32;
 typedef unsigned short uint16;
+#endif
 #endif
 
 typedef	struct {

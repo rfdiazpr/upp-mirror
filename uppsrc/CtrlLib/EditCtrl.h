@@ -11,6 +11,12 @@ public:
 	LookFrame(Value (*look)()) : look(look) {}
 };
 
+Value EditFieldEdge();
+Value ViewEdge();
+
+void EditFieldEdge_Write(Value);
+void ViewEdge_Write(Value);
+
 CtrlFrame& EditFieldFrame();
 CtrlFrame& ViewFrame();
 
@@ -29,7 +35,7 @@ public:
 	virtual Size  GetMinSize() const;
 	virtual void  SetData(const Value& data);
 	virtual Value GetData() const;
-	virtual void CancelMode();
+	virtual void  CancelMode();
 
 protected:
 	WString    text;

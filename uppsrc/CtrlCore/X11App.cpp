@@ -133,8 +133,25 @@ Index<Atom>& _NET_Supported()
 	return q;
 }
 
+bool X11ErrorTrap;
+
+bool Ctrl::TrapX11Errors()
+{
+	bool b = X11ErrorTrap;
+	X11ErrorTrap = true;
+}
+
+void Ctrl::UntrapX11Errors(bool b)
+{
+	X11ErrorTrap = b;
+}
+
 int X11ErrorHandler(XDisplay *, XErrorEvent *error)
 {
+#ifndef _DEBUG
+	if(X11ErrorTrap) return 0;
+#endif
+
 	static const char *request[] = {
 		"",
 		"X_CreateWindow",
@@ -296,12 +313,12 @@ void Ctrl::InitX11(const char *display)
 
 	ChSync();
 
-	ChSet("GUI_GlobalStyle", GUISTYLE_XP);
-	ChSet("GUI_DragFullWindow", 1);
-	ChSet("GUI_PopUpEffect", GUIEFFECT_SLIDE);
-	ChSet("GUI_DropShadows", 1);
-	ChSet("GUI_AltAccessKeys", 1);
-	ChSet("GUI_AKD_Conservative", 0);
+	GUI_GlobalStyle_Write(GUISTYLE_XP);
+	GUI_DragFullWindow_Write(1);
+	GUI_PopUpEffect_Write(GUIEFFECT_SLIDE);
+	GUI_DropShadows_Write(1);
+	GUI_AltAccessKeys_Write(1);
+	GUI_AKD_Conservative_Write(0);
 
 	setlocale(LC_ALL, "en_US.utf8");
 	if(XSupportsLocale()) {
@@ -355,11 +372,7 @@ int Ctrl::GetKbdSpeed()
 {
 	return 25;
 }
-/*
-bool Ctrl::IsOpenEffectsMode() {
-	return KDESettings()("KDE", "EffectAnimateMenu") == "true";
-}
-*/
+
 #endif
 
 END_UPP_NAMESPACE

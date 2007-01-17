@@ -32,6 +32,13 @@ public:
 	virtual void  CancelMode();
 	virtual Image FrameMouseEvent(int event, Point p, int zdelta, dword keyflags);
 
+public:
+	struct Style : ChStyle<Style> {
+		bool  inside;
+		int   width;
+		Value edge, button[4], squaredbutton[4];
+	};
+
 private:
 	bool UserEdge() const;
 	Rect GetDropBoxRect(Rect r) const;
@@ -73,6 +80,7 @@ protected:
 	void     EnableDrop(bool b = true) { enabled = b || always_drop; RefreshFrame(); }
 	void     AlwaysDrop(bool e = true);
 
+	const Style *style;
 
 public:
 	DropBox();
@@ -110,6 +118,8 @@ protected:
 	void          Change(int q);
 
 public:
+	typedef DropBox::Style Style;
+
 	Callback      WhenDrop;
 	Callback      WhenClick;
 
@@ -147,6 +157,8 @@ public:
 
 	const PopUpTable& GetList() const           { return list; }
 
+	static const Style& StyleDefault();
+
 	DropList&     SetConvert(const Convert& cv);
 	DropList&     SetDisplay(int i, const Display& d);
 	DropList&     SetDisplay(const Display& d);
@@ -156,6 +168,7 @@ public:
 	DropList&     DisplayAll(bool b = true)             { displayall = b; return *this; }
 	DropList&     DropFocus(bool b = true)              { dropfocus = b; return *this; }
 	DropList&     AlwaysDrop(bool e = true)             { DropBox::AlwaysDrop(e); return *this; }
+	DropList&     SetStyle(const Style& s)              { style = &s; Refresh(); return *this; }
 
 	DropList();
 	virtual ~DropList();

@@ -13,10 +13,16 @@
 #include <deque>
 #include <string>
 
+//#define TEST_HASHMAP
+
+#ifdef TEST_HASHMAP
+
 #ifdef COMPILER_GCC
 #include <tr1/unordered_map>
 #else
 #include <hash_map>
+#endif
+
 #endif
 
 using namespace std;
@@ -120,6 +126,8 @@ void BenchMap(const char *file)
 #endif
 }
 
+#ifdef TEST_HASHMAP
+
 #ifdef COMPILER_GCC
 typedef std::tr1::unordered_map< string, vector<int> > HashMap;
 #else
@@ -155,6 +163,8 @@ void BenchHashMap(const char *file)
 #endif
 }
 
+#endif
+
 #define N 10000
 
 CONSOLE_APP_MAIN
@@ -167,8 +177,9 @@ CONSOLE_APP_MAIN
 	else
 		fn = argv[0];
 
-	BenchHashMap(fn); // first run to cache the file
+	BenchNTL(fn); // first run to cache the file
 
+#ifdef TEST_HASHMAP
 	{
 		BenchHashMap(fn);
 		TimeStop tm;
@@ -176,6 +187,7 @@ CONSOLE_APP_MAIN
 			BenchHashMap(fn);
 		cout << "STL hash_map time: " << tm.Elapsed() << " ms \n";
 	}
+#endif
 
 	{
 		BenchMap(fn);

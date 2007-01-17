@@ -29,9 +29,38 @@
 	
 	* iml converted to the newer format
 	- if fixed rows == 0 nothing was displayed
-	- controls were not hidden if cell chagned to fixed and part of ctrl interesced its cell rect
-	- moved column/row use chameleon theme if active
+	- controls were not hidden if cell changed to fixed and part of ctrl interesced its cell rect
+	+ moved column/row use chameleon theme if active
 	- updated gcc compatibility
+	- blue line is properly painted at first/last col/row (before its witdth was 1 instead of 2)
+	+ content of grid can be scrolled left/right in row select mode
+	- fixed controls synchronization
+	
+	after 612-dev3
+	
+	* line resizing mode now works in linux
+	+ copy/paste
+	- set() crashed if row was greater than total rows count
+	* Block selection can be one only now
+	- RefreshRows refreshed wrong ctrl area
+	- selection was lost if shift/ctrl was realeased before mouse button
+	- fixed positioning cursor after deleting selected rows
+	- fixed deleting selected rows if rows are not in continous block
+	* Append and Insert refresh new rows
+	
+	after 701-dev1
+	
+	- fixed copy/paste in cell, shift mode
+	- fixed canecling new row
+	- fixed refreshing after appending/inserting/removing operations in proportional row mdoe
+	* in select_row mode first ctrl is always activated after first edits show
+	+ ExtraPaste() enables/disables paste as new rows, paste as appended rows menu
+	+ FixedPaste() disables adding rows during pasting
+	+ paste now calls WhenUpdateCell/WhenInsertRow/WhenUpdateRow callbacks
+	- fixed coping/paste of cursor line (which is not formaly selected)
+	+ pasting text clipboard
+	
+	
 	
 
 

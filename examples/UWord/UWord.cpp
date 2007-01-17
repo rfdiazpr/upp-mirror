@@ -74,11 +74,9 @@ void UWord::FileBar(Bar& bar)
 	bar.Add("Export to PDF..", UWordImg::pdf(), THISBACK(Pdf))
 	   .Help("Export document to PDF file");
 	if(bar.IsMenuBar()) {
-		bar.Separator();
-		if(lrufile().GetCount()) {
+		if(lrufile().GetCount())
 			lrufile()(bar, THISBACK(OpenFile));
-			bar.Separator();
-		}
+		bar.Separator();
 		bar.Add("Exit", THISBACK(Destroy));
 	}
 }

@@ -448,12 +448,10 @@ void TopWindow::SerializePlacement(Stream& s, bool reminimize)
 #endif
 }
 
-CH_LOOK(DialogFaceLook, SColorFace());
-
 struct DialogBackground : public Display {
 	void Paint(Draw& w, const Rect& r, const Value& q, Color ink, Color paper, dword style) const
 	{
-		ChPaint(w, r, DialogFaceLook());
+		w.DrawRect(r, SColorFace());
 	}
 };
 

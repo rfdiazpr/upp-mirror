@@ -803,6 +803,7 @@ void Ctrl::ChSync()
 	if(skin)
 		(*skin)();
 	Csize.cx = Dsize.cx = 0;
+	ChFinish();
 }
 
 CH_INT(GUI_GlobalStyle, GUISTYLE_CLASSIC);

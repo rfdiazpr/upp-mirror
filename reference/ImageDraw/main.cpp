@@ -16,6 +16,7 @@ struct App : TopWindow {
 		w.DrawEllipse(0, 0, 100, 100, SGreen);
 		w.DrawText(0, 0, "ImageDraw!", Arial(13).Bold(), SYellow);
 		img = w;
+		Sizeable();
 	}
 };
 

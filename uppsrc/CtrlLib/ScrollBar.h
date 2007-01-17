@@ -1,84 +1,58 @@
-class Slider : public Ctrl {
-	virtual void  CancelMode();
-	virtual void  Paint(Draw& draw);
-	virtual void  LeftDown(Point p, dword keyflags);
-	virtual void  LeftRepeat(Point p, dword keyflags);
-	virtual void  MouseMove(Point p, dword keyflags);
-	virtual void  MouseEnter(Point p, dword);
-	virtual void  MouseLeave();
-	virtual void  LeftUp(Point, dword);
-	virtual void  Layout();
-
-protected:
-	int     thumbsize;
-	int     thumbpos;
-	int     delta;
-	bool    horz:1;
-	bool    track:1;
-	bool    jump:1;
-	bool    edgestyle:1;
-	int8    push;
-	int8    light;
-
-	Rect    GetPartRect(int p) const;
-	int     GetMousePart();
-	void    Drag(Point p);
-	int&    HV(int& h, int& v) const;
-	int     GetHV(int h, int v) const;
-	int     GetHV(Point p) const                           { return GetHV(p.x, p.y); }
-	int     GetHV(Size s) const                            { return GetHV(s.cx, s.cy); }
-	void    Bounds();
-
-public:
-	bool    IsHorz() const                                 { return horz; }
-	bool    IsVert() const                                 { return !horz; }
-	bool    Set(int thumbpos, int thumbsize);
-	bool    Set(int _thumbpos)                             { return Set(_thumbpos, thumbsize); }
-	int     GetPos() const                                 { return thumbpos; }
-	int     GetThumbSize() const                           { return thumbsize; }
-	int     GetRange() const;
-
-	Slider& Horz(bool b = true)                            { horz = b; return *this; }
-	Slider& Vert()                                         { return Horz(false); }
-	Slider& Track(bool b = true)                           { track = b; return *this; }
-	Slider& NoTrack()                                      { track = false; return *this; }
-	Slider& EdgeStyle(bool b = true)                       { edgestyle = b; return *this; }
-	Slider& NoEdgeStyle()                                  { return EdgeStyle(false); }
-
-	Slider& Jump(bool b = true)                            { jump = b; return *this; }
-
-	Callback WhenPrev;
-	Callback WhenNext;
-	Callback WhenLeftClick;
-
-	operator int()                                         { return thumbpos; }
-
-	Slider();
-};
-
-int ScrollBarSize();
-int ScrollBarArrowSize();
-
 class ScrollBar : public FrameCtrl<Ctrl> {
 public:
 	virtual void Layout();
 	virtual Size GetStdSize() const;
 	virtual void Paint(Draw& draw);
+	virtual void LeftDown(Point p, dword);
+	virtual void MouseMove(Point p, dword);
+	virtual void MouseEnter(Point p, dword);
+	virtual void MouseLeave();
+	virtual void LeftUp(Point p, dword);
+	virtual void LeftRepeat(Point p, dword);
+	virtual void CancelMode();
 
 	virtual void FrameLayout(Rect& r);
 	virtual void FrameAddSize(Size& sz);
 
-protected:
+public:
+	struct Style : ChStyle<Style> {
+		int barsize, arrowsize, thumbmin, overthumb;
+		bool through;
+		Value vupper[4], vthumb[4], vlower[4];
+		Value hupper[4], hthumb[4], hlower[4];
+		Button::Style up, down, left, right;
+	};
+
+private:
+	int     thumbpos;
+	int     thumbsize;
+	bool    horz:1;
+	bool    jump:1;
+	bool    track:1;
+	int     delta;
+	int8    push;
+	int8    light;
+
 	Button  prev, next;
-	Slider  slider;
 	int     pagepos;
 	int     pagesize;
 	int     totalsize;
 	int     linesize;
 	int     minthumb;
-	bool    horz:1;
 	bool    autohide:1;
 	bool    autodisable:1;
+
+	const Style *style;
+
+	Rect    Slider() const;
+	int&    HV(int& h, int& v) const;
+	int     GetHV(int h, int v) const;
+	Rect    GetPartRect(int p) const;
+	void    Bounds();
+	bool    SetThumb(int _thumbpos, int _thumbsize);
+	void    Drag(Point p);
+	int     GetMousePart();
+	int     GetRange() const;
 
 	void    Position();
 	void    Uset(int a);
@@ -88,8 +62,8 @@ public:
 	Callback WhenVisibility;
 	Callback WhenLeftClick;
 
-	bool    IsHorz() const                  { return slider.IsHorz(); }
-	bool    IsVert() const                  { return slider.IsVert(); }
+	bool    IsHorz() const                  { return horz; }
+	bool    IsVert() const                  { return !horz; }
 
 	void    Set(int pagepos, int pagesize, int totalsize);
 
@@ -120,14 +94,16 @@ public:
 	int     GetTotal() const                { return totalsize; }
 	int     GetLine() const                 { return linesize; }
 
-	ScrollBar& Horz(bool b = true)          { slider.Horz(b); return *this; }
+	static const Style& StyleDefault();
+
+	ScrollBar& Horz(bool b = true)          { horz = b; Refresh(); RefreshLayout(); return *this; }
 	ScrollBar& Vert()                       { return Horz(false); }
 
 	ScrollBar& SetLine(int _line)           { linesize = _line; return *this; }
 
-	ScrollBar& Track(bool b = true)         { slider.Track(b); return *this; }
-	ScrollBar& NoTrack()                    { slider.NoTrack(); return *this; }
-	ScrollBar& Jump(bool b = true)          { slider.Jump(b); return *this; }
+	ScrollBar& Track(bool b = true)         { track = b; return *this; }
+	ScrollBar& NoTrack()                    { return Track(false); }
+	ScrollBar& Jump(bool b = true)          { jump = b; return *this; }
 	ScrollBar& NoJump(bool b = true)        { return Jump(false); }
 	ScrollBar& AutoHide(bool b = true);
 	ScrollBar& NoAutoHide()                 { return AutoHide(false); }
@@ -135,6 +111,7 @@ public:
 	ScrollBar& AutoDisable(bool b = true);
 	ScrollBar& NoAutoDisable()              { return AutoDisable(false); }
 	ScrollBar& MinThumb(int sz)             { minthumb = sz; }
+	ScrollBar& SetStyle(const Style& s);
 
 	operator int() const                    { return pagepos; }
 	int operator=(int pagepos)              { Set(pagepos); return pagepos; }
@@ -142,6 +119,8 @@ public:
 	ScrollBar();
 	virtual ~ScrollBar();
 };
+
+inline int ScrollBarSize()                  { return ScrollBar::StyleDefault().barsize; }//!!
 
 class VScrollBar : public ScrollBar {
 public:
@@ -165,6 +144,9 @@ public:
 	SizeGrip();
 	virtual ~SizeGrip();
 };
+
+Image SizeGripImg();
+void  SizeGripImg_Write(Image m);
 
 class ScrollBars : public CtrlFrame {
 public:

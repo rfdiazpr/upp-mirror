@@ -83,6 +83,7 @@ void DlgSqlExport::Run(Sql& cursor, String command, String tablename)
 		const SqlColumnInfo& sci = cursor.GetColumnInfo(i);
 		String type;
 		switch(sci.type) {
+			case BOOL_V:
 			case INT_V: type = t_("integer"); break;
 			case DOUBLE_V: type = t_("real number"); break;
 			case STRING_V:

@@ -36,11 +36,11 @@ void AppInitEnvironment__();
 void ConsoleMainFn_(); \
  \
 int main(int argc, char *argv[]) { \
-	AppInit__(argc, (const char **)argv); \
+	UPP::AppInit__(argc, (const char **)argv); \
 	ConsoleMainFn_(); \
-	DeleteUsrLog(); \
-	AppExit__(); \
-	return GetExitCode(); \
+	UPP::DeleteUsrLog(); \
+	UPP::AppExit__(); \
+	return UPP::GetExitCode(); \
 } \
  \
 void ConsoleMainFn_()
@@ -55,11 +55,11 @@ void AppInit__(int argc, const char **argv, const char **envptr);
 void ConsoleMainFn_(); \
  \
 int main(int argc, const char **argv, const char **envptr) { \
-	AppInit__(argc, argv, envptr); \
+	UPP::AppInit__(argc, argv, envptr); \
 	ConsoleMainFn_(); \
-	DeleteUsrLog(); \
-	AppExit__(); \
-	return GetExitCode(); \
+	UPP::DeleteUsrLog(); \
+	UPP::AppExit__(); \
+	return UPP::GetExitCode(); \
 } \
  \
 void ConsoleMainFn_()

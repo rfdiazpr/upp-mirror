@@ -81,13 +81,6 @@ void KillTimeCallback(void *id) {
 
 void Ctrl::TimerProc(dword time)
 {
-#ifdef UPP_HEAP
-	if(MemoryProbeInt) {
-		static int lastprobe;
-		if((int)time - (lastprobe + MemoryProbeInt) >= 0)
-			MemoryProbe("***");
-	}
-#endif
 	sTimerLock.Enter();
 	TimeEvent *list = tevents();
 	if(sTClick > time)

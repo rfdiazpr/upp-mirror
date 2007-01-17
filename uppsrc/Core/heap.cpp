@@ -49,6 +49,31 @@ static const char *sDump(dword w)
 	return h[q];
 }
 
+int  sSmallKb;
+
+#ifdef CPU_64
+int64 sLarge;
+#else
+int   sLarge;
+#endif
+
+MemoryProfile *sPeak;
+
+void MemorySum(int& smallkb, int& largekb)
+{
+	smallkb = sSmallKb;
+	largekb = (int) (sLarge >> 10);
+}
+
+MemoryProfile *PeakMemoryProfile()
+{
+	if(sPeak)
+		return sPeak;
+	sPeak = (MemoryProfile *)MemoryAllocPermanent(sizeof(MemoryProfile));
+	memset(sPeak, 0, sizeof(MemoryProfile));
+	return NULL;
+}
+
 #ifdef PLATFORM_WIN32
 
 static byte **free_raw_page;
@@ -56,6 +81,8 @@ static int    free_raw_alloc;
 static int    free_raw_count;
 
 byte *Alloc4KBRaw() {
+	if(sPeak) *sPeak = MemoryProfile();
+	sSmallKb += 4;
 	if(free_raw_count) {
 		byte *ptr = free_raw_page[--free_raw_count];
 		VirtualAlloc(ptr, 4096, MEM_COMMIT, PAGE_READWRITE);
@@ -76,6 +103,7 @@ byte *Alloc4KBRaw() {
 
 void Free4KBRaw(byte *ptr)
 {
+	sSmallKb -= 4;
 	LLOG("Free4KBRaw " << sDumpPtr(ptr));
 	if(free_raw_count >= free_raw_alloc) {
 		byte **prev = free_raw_page;
@@ -97,6 +125,8 @@ void Free4KBRaw(byte *ptr)
 #else
 
 byte *Alloc4KBRaw() {
+	if(sPeak) *sPeak = MemoryProfile();
+	sSmallKb += 4;
 	static unsigned chunk = 64 * 1024;
 	static byte *ptr   = NULL;
 	static byte *limit = NULL;
@@ -126,7 +156,7 @@ void *MemoryAllocPermanentRaw(size_t size)
 	static byte *limit = NULL;
 	if(ptr + size >= limit) {
 		ptr = Alloc4KBRaw();
-		limit = ptr + size;
+		limit = ptr + 4096;
 	}
 	void *p = ptr;
 	ptr += size;
@@ -141,8 +171,6 @@ void *MemoryAllocPermanent(size_t size)
 #endif
 	return MemoryAllocPermanentRaw(size);
 }
-
-int MemoryProbeFlags;
 
 static int page_count;
 static int small_count;
@@ -299,10 +327,6 @@ PageInfo *NewPage(int magnitude)
 			free_info = ptr;
 			ptr++;
 		}
-		if(MemoryProbeFlags) {
-			RLOG("Page block request " << 4 * magnitude);
-			MemoryProbe("512KB ", MemoryProbeFlags);
-		}
 	}
 
 	PageInfo *p = (PageInfo *)free_info;
@@ -458,12 +482,10 @@ static inline void sInitTables()
 	if(page_count < 200) {
 		sPgc = 200;
 		mtab = medium_map;
-		MemoryProbeRaw("HEAP Medium granularity", MemoryProbeFlags);
 	}
 	else {
 		sPgc = INT_MAX;
 		mtab = fine_map;
-		MemoryProbeRaw("HEAP Fine granularity", MemoryProbeFlags);
 	}
 	GenerateMagnitudeTable(mtab);
 }
@@ -485,8 +507,10 @@ void *MemoryAlloc(size_t size)
 #ifdef _MULTITHREADED
 	CriticalSection::Lock __(sHeapLock);
 #endif
+	static bool init;
 	LTIMING("Alloc");
 	LLOG("Alloc(" << sDump(size) << ")");
+
 	if(size <= 1024) {
 #ifdef _DEBUG
 		small_count++;
@@ -535,7 +559,6 @@ void *MemoryAlloc(size_t size)
 		}
 		else {
 			sInitTables();
-			static bool init;
 			if(!init) {
 				for(int i = 0; i < MB_MAP_SIZE; i++)
 					memory_map[i] = unknown_megabyte;
@@ -558,7 +581,18 @@ void *MemoryAlloc(size_t size)
 		return q;
 	}
 	void *q = malloc(size);
+	sInitTables();
+	if(!init) {
+		for(int i = 0; i < MB_MAP_SIZE; i++)
+			memory_map[i] = unknown_megabyte;
+		init = true;
+		LLOG("PageInfo size: " << sDump(sizeof(PageInfo)));
+		LLOG("MegaByte size: " << sDump(sizeof(MegaByte)));
+	}
 	large++;
+#ifdef COMPILER_MSC
+	sLarge += _msize(q);
+#endif
 	if(!q)
 		Panic("Out of memory");
 	return q;
@@ -578,6 +612,9 @@ void MemoryFree(void *ptr)
 	int pgi = ((dword)ptr >> 12);
 	PageInfo *page = memory_map[pgi >> 8]->page[pgi & 255];
 	if(!page) {
+	#ifdef COMPILER_MSC
+		sLarge -= _msize(ptr);
+	#endif
 		free(ptr);
 		large--;
 		return;
@@ -600,6 +637,9 @@ void MemoryFree(void *ptr)
 			break;
 		}
 		if(m->mbi == -1) {
+		#ifdef PLATFORM_WIN32
+			sLarge -= _msize(ptr);
+		#endif
 			free(ptr);
 			large--;
 			return;
@@ -702,140 +742,43 @@ void MemoryCheck()
 	}
 }
 
-const char *MemoryCounters()
+MemoryProfile::MemoryProfile()
 {
-	static char h[256];
-	static int ppages;
-	sprintf(h, "recycled: %d, allocated: %d", recycled, allocated);
-	allocated = 0;
-	recycled = 0;
-	return h;
-}
-
-void MemoryProbeRaw(const char *name, dword flags)
-{
+	memset(this, 0, sizeof(MemoryProfile));
 #ifdef CPU_32
-	static int n;
-	if(flags)
-		if(name)
-			RLOG("--------- Memory probe " << ++n << " - " << name << " - " << GetSysTime()
-			     << " --------------------");
-		else
-			RLOG("--------- Memory probe " << ++n << " " << GetSysTime()
-			     << " --------------------");
-	int i, j;
-	int free = 0;
-	int full = 0;
-	int mixed = 0;
-	int frag = 0;
-	int smallsz = 0;
-	if(flags & MEMORY_PROBE_FULL)
-		RLOG("Full pages");
-	for(i = 0; i < MB_MAP_SIZE; i++)
+	for(int i = 0; i < MB_MAP_SIZE; i++)
 		if(memory_map[i] != unknown_megabyte)
-			for(j = 0; j < 256; j++) {
+			for(int j = 0; j < 256; j++) {
 				PageInfo *page = memory_map[i]->page[j];
-				if(page && page->freecount == 0) {
-					if(flags & MEMORY_PROBE_FULL)
-						RLOG(Dump(page));
-					full++;
-					smallsz += 4096;
-				}
+				if(page)
+					if(page->freecount == page->blockcount)
+						freepages++;
+					else {
+						fragmented[page->size / 4] += page->freecount;
+						allocated[page->size / 4] += page->blockcount - page->freecount;
+					}
 			}
-	if(flags & MEMORY_PROBE_FULL)
-		RLOG("--------------");
-	if(flags & MEMORY_PROBE_FREE)
-		RLOG("Free pages");
-	for(i = 0; i < MB_MAP_SIZE; i++)
-		if(memory_map[i] != unknown_megabyte)
-			for(j = 0; j < 256; j++) {
-				PageInfo *page = memory_map[i]->page[j];
-				if(page && page->freecount == page->blockcount) {
-					if(flags & MEMORY_PROBE_FREE)
-						RLOG(Dump(page));
-					free++;
-				}
-			}
-	if(flags & MEMORY_PROBE_FREE)
-		RLOG("--------------");
-	if(flags & MEMORY_PROBE_MIXED)
-		RLOG("Mixed pages");
-	for(i = 0; i < MB_MAP_SIZE; i++)
-		if(memory_map[i] != unknown_megabyte)
-			for(j = 0; j < 256; j++) {
-				PageInfo *page = memory_map[i]->page[j];
-				if(page && page->freecount && page->freecount != page->blockcount) {
-					if(flags & MEMORY_PROBE_MIXED)
-						RLOG(Dump(page));
-					mixed++;
-					frag += page->freecount * page->size;
-					smallsz += 4096 - page->freecount * page->size;
-				}
-			}
-	if(flags & MEMORY_PROBE_MIXED)
-		RLOG("--------------");
 
-#ifdef PLATFORM_WIN32
-	int lused = 0;
-	int lfree = 0;
 #if defined(COMPILER_MSC) && !defined(PLATFORM_WINCE) //!!MINGW
-	if(flags & MEMORY_PROBE_LARGE)
-		RLOG("Free large pages");
 	_HEAPINFO hinfo;
 	int heapstatus;
 	hinfo._pentry = NULL;
 	while( ( heapstatus = _heapwalk( &hinfo ) ) == _HEAPOK ) {
 		if(hinfo._useflag != _USEDENTRY) {
-			lfree += hinfo._size;
-			if(flags & MEMORY_PROBE_LARGE)
-				RLOG(hinfo._size);
+			large_free_total += hinfo._size;
+			if(large_free_count < 1024)
+				large_free_size[large_free_count] = hinfo._size;
+			large_free_count++;
 		}
-		else
-			lused += hinfo._size;
+		else {
+			large_total += hinfo._size;
+			if(large_count < 1024)
+				large_size[large_count] = hinfo._size;
+			large_count++;
+		}
 	}
-	if(flags & MEMORY_PROBE_LARGE)
-		RLOG("--------------");
 #endif
 #endif
-
-	if(flags & MEMORY_PROBE_SUMMARY) {
-		int total = free + full + mixed;
-		RLOG("Total pages " << sDump(total));
-		RLOG("Full pages  " << sDump(full) << " (" << sDump(100 * full / total) << " %)");
-		RLOG("Free pages  " << sDump(free) << " (" << sDump(100 * free / total) << " %)");
-		RLOG("Mixed pages " << sDump(mixed) << " (" << sDump(100 * mixed / total) << " %)");
-		RLOG("Mixed free bytes " << sDump(frag));
-		RLOG("Recycled pages since last probe " << sDump(recycled));
-		static int ppages;
-		RLOG("Allocated pages since last probe " << sDump(total - ppages));
-		ppages = total;
-		RLOG("Small blocks " << sDump(small_count));
-		RLOG("Total 4KB pages acquired " << sDump(page_count) << ", " << sDump(page_count * 4) << " KB");
-		RLOG("Fragmentation " << sDump(100 * frag / ((full + mixed) * 4096)) << " %");
-		RLOG("Large blocks " << sDump(large));
-		RLOG("Free large blocks");
-		RLOG("Used small memory " << sDump(smallsz));
-#ifdef PLATFORM_WIN32
-		RLOG("Used large memory " << sDump(lused));
-		RLOG("Total memory used " << sDump(lused + smallsz));
-		RLOG("Free large memory " << sDump(lfree));
-		RLOG("Total large memory " << sDump(lfree + lused));
-		RLOG("Large fragmentation " << sDump(100 * lfree / (lfree + lused)) << " %");
-#endif
-	}
-
-	if(flags)
-		RLOG("---------------------------------------------");
-	recycled = 0;
-#endif
-}
-
-void MemoryProbe(const char *name, dword flags)
-{
-//#ifdef _MULTITHREADED
-//	CriticalSection::Lock __(sHeapLock);
-//#endif
-	MemoryProbeRaw(name, flags);
 }
 
 #endif

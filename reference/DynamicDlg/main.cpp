@@ -3,9 +3,8 @@
 using namespace Upp;
 
 struct XmlDlg : public TopWindow {
-	Array<Label>                 label;
-	ArrayMap<String, EditString> edit;
-	ArrayMap<String, Option>     option;
+	Array<Label>           label;
+	ArrayMap<String, Ctrl> ctrl;
 
 	bool Load(const char *xml);
 };
@@ -21,13 +20,13 @@ bool XmlDlg::Load(const char *xml)
 		int linecy = Draw::GetStdFontCy() + 4;
 		while(!p.End())
 			if(p.TagE("option")) {
-				Add(option.Add(p["id"]).SetLabel(p["label"]).TopPos(y, linecy).LeftPos(10, 100));
+				Add(ctrl.Create<Option>(p["id"]).SetLabel(p["label"]).TopPos(y, linecy).LeftPos(10, 100));
 				y += linecy + 4;
 			}
 			else
 			if(p.TagE("edit")) {
 				Add(label.Add().SetLabel(p["label"]).TopPos(y, linecy).LeftPos(10, 30));
-				Add(edit.Add(p["id"]).TopPos(y, linecy).LeftPos(40, 60));
+				Add(ctrl.Create<EditString>(p["id"]).TopPos(y, linecy).LeftPos(40, 60));
 				y += linecy + 4;
 			}
 			else
@@ -47,7 +46,7 @@ GUI_APP_MAIN
 	if(!dlg.Load(LoadFile(GetDataFile("dialog.xml"))))
 		return;
 	dlg.Run();
-	int q = dlg.edit.Find("E1");
+	int q = dlg.ctrl.Find("E1");
 	if(q >= 0)
-		PromptOK("E1 value: " + DeQtf(AsString(~dlg.edit[q])));
+		PromptOK("E1 value: " + DeQtf(AsString(~dlg.ctrl[q])));
 }

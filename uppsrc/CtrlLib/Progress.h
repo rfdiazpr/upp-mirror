@@ -3,27 +3,36 @@ public:
 	virtual void   Paint(Draw& draw);
 	virtual void   Layout();
 
+public:
+	struct Style : ChStyle<Style> {
+		Value vlook, vchunk, hlook, hchunk;
+	};
+
 protected:
 	int   total, actual;
 	int   pxp;
 	bool  percent:1;
+	const Style *style;
 
 	Size GetMsz();
 
 public:
 	void  Set(int actual, int total);
-	void  Set(int _actual)                     { Set(_actual, total); }
+	void  Set(int _actual)                      { Set(_actual, total); }
 
-	void  operator=(int i)                     { Set(i); }
-	int   operator++()                         { Set(actual + 1); return actual; }
-	int   operator++(int)                      { int i = actual; Set(actual + 1); return i; }
-	int   operator+=(int i)                    { Set(actual + i); return actual; }
+	void  operator=(int i)                      { Set(i); }
+	int   operator++()                          { Set(actual + 1); return actual; }
+	int   operator++(int)                       { int i = actual; Set(actual + 1); return i; }
+	int   operator+=(int i)                     { Set(actual + i); return actual; }
 
-	operator int()                             { return actual; }
+	operator int()                              { return actual; }
 
-	ProgressIndicator& SetTotal(int _total)    { Set(actual, _total); return *this; }
-	ProgressIndicator& Percent(bool b = true)  { percent = b; return *this; }
-	ProgressIndicator& NoPercent()             { return Percent(false); }
+	static const Style& StyleDefault();
+
+	ProgressIndicator& SetTotal(int _total)     { Set(actual, _total); return *this; }
+	ProgressIndicator& Percent(bool b = true)   { percent = b; return *this; }
+	ProgressIndicator& NoPercent()              { return Percent(false); }
+	ProgressIndicator& SetStyle(const Style& s) { style = &s; Refresh(); return *this; }
 
 	ProgressIndicator();
 	virtual ~ProgressIndicator();

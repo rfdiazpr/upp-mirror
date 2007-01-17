@@ -868,6 +868,8 @@ String GetLastErrorMessage() {
 #ifdef PLATFORM_POSIX
 static void LinuxBeep(const char *fn)
 {
+	return;
+	// This is not the right way to do that... (causes zombies, ignores Gnome settings)
 	char h[100];
 	strcpy(h, "aplay /usr/share/sounds/");
 	strcat(h, fn);

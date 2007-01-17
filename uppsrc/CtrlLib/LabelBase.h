@@ -2,7 +2,7 @@ enum {
 	CTRL_NORMAL, CTRL_HOT, CTRL_PRESSED, CTRL_DISABLED
 };
 
-struct CtrlsImgLook : Vector<Value> {
+struct CtrlsImgLook : Vector<Value> { // deprecated - remove after refactoring chameleon
 	CtrlsImgLook& operator()(int i, int n = 4);
 	CtrlsImgLook& operator()(int i, const Image& img, Color (*fn)(int i), int n = 4);
 	CtrlsImgLook& operator()(int i, const Image& img, int n = 4);
@@ -10,6 +10,10 @@ struct CtrlsImgLook : Vector<Value> {
 	CtrlsImgLook(int i, const Image& img, Color (*fn)(int i), int n = 4);
 	CtrlsImgLook(int i, const Image& img, int n = 4);
 };
+
+void CtrlsImageLook(Value *look, int i, int n = 4);
+void CtrlsImageLook(Value *look, int i, const Image& image, const Color *color, int n = 4);
+void CtrlsImageLook(Value *look, int i, const Image& image, int n = 4);
 
 String DeAmp(const char *s);
 
@@ -51,6 +55,8 @@ struct DrawLabel {
 
 	DrawLabel();
 };
+
+Image DisabledImage(const Image& img, bool disabled = true);
 
 class LabelBase {
 protected:

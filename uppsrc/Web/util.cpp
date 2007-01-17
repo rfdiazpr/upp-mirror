@@ -656,6 +656,7 @@ void HttpQuery::Get(String key, Ref result) const
 {
 	switch(result.GetType())
 	{
+	case BOOL_V:   result.SetValue(GetBool(key)); break;
 	case INT_V:    RefInt(result)    = GetInt(key); break;
 	case DOUBLE_V: RefDouble(result) = GetDouble(key); break;
 	case STRING_V: RefString(result) = GetString(key); break;

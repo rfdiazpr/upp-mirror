@@ -12,6 +12,8 @@ option "Multithreaded"          mt;
 
 #include <CtrlLib/CtrlLib.h>
 
+using namespace Upp;
+
 <:?lay:>#define LAYOUTFILE <<:PACKAGE:>/<:PACKAGE:>.lay>
 #include <CtrlCore/lay.h><:.:>
 

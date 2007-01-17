@@ -2,8 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x)     // LOG(x)
-#define LLOGEND()   // LOGEND()
+#define LLOG(x)     // DLOG(x)
 #define LTIMING(x)  // TIMING(x)
 
 void Ctrl::RefreshFrame(const Rect& r) {
@@ -119,7 +118,7 @@ void  Ctrl::ScrollView(const Rect& _r, int dx, int dy)
 		for(Ctrl *q = GetFirstChild(); q; q = q->GetNext())
 			if(q->InView()) {
 				Rect cr = q->GetRect();
-				if(top && r.Contains(cr)) {
+				if(top && r.Intersects(cr)) { // Uno: Contains -> Intersetcs
 					Rect to = cr;
 					GetTopRect(to, false);
 					if(r.Intersects(cr.Offseted(-dx, -dy))) { // Uno's suggestion 06/11/26 Contains -> Intersetcs
@@ -141,7 +140,7 @@ void  Ctrl::ScrollView(const Rect& _r, int dx, int dy)
 						m.from = from;
 						m.to = to;
 						m.ctrl = q;
-						LLOG("ScrollView Add " << ::Name(q) << from << " -> " << to);
+						LLOG("ScrollView Add " << UPP::Name(q) << from << " -> " << to);
 						goto done;
 					}
 					cr &= r;
@@ -265,7 +264,6 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip) {
 			w.End();
 		}
 	}
-	LLOGEND();
 }
 
 int sShowRepaint;
@@ -379,6 +377,7 @@ void Ctrl::UpdateArea(Draw& draw, const Rect& clip)
 	if(IsPanicMode())
 		return;
 	LTIMING("UpdateArea");
+	LLOG("========== UPDATE AREA " << UPP::Name(this) << " ==========");
 	RemoveFullRefresh();
 	if(backpaint == FULLBACKPAINT) {
 		ShowRepaintRect(draw, clip, LtRed());
@@ -388,6 +387,7 @@ void Ctrl::UpdateArea(Draw& draw, const Rect& clip)
 		bw.SetPaintingDraw(draw, clip.TopLeft());
 		CtrlPaint(bw, clip);
 		bw.Put(draw, clip.TopLeft());
+		LLOG("========== END (FULLBACKPAINT)");
 		return;
 	}
 	if(backpaint == TRANSPARENTBACKPAINT) {
@@ -403,13 +403,17 @@ void Ctrl::UpdateArea(Draw& draw, const Rect& clip)
 			bw.SetPaintingDraw(draw, ar.TopLeft());
 			CtrlPaint(bw, ar);
 			bw.Put(draw, ar.TopLeft());
-			if(!draw.ExcludeClip(ar))
+			if(!draw.ExcludeClip(ar)) {
+				LLOG("========== END");
 				return;
+			}
 		}
 		PaintOpaqueAreas(draw, Point(0, 0), clip);
+		LLOG("========== END");
 		return;
 	}
 	CtrlPaint(draw, clip);
+	LLOG("========== END");
 }
 
 void Ctrl::RemoveFullRefresh()
@@ -433,7 +437,7 @@ Ctrl *Ctrl::GetTopRect(Rect& r, bool inframe)
 void  Ctrl::DoSync(Ctrl *q, Rect r, bool inframe)
 {
 	ASSERT(q);
-	LLOG("DoSync " << ::Name(q) << " " << r);
+	LLOG("DoSync " << UPP::Name(q) << " " << r);
 	Ctrl *top = q->GetTopRect(r, inframe);
 	top->SyncScroll();
 	top->WndUpdate(r);

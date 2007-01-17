@@ -262,7 +262,7 @@ String GetLngString_(int lang, const char *id)
 		else
 			return ToCharset(dch, r->text, CHARSET_UTF8);
 	}
-	return Null;
+	return GetENUSc(id);
 }
 
 String GetLngString(int lang, const char *id)

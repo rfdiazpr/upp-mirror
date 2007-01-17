@@ -11,6 +11,8 @@ option "Multithreaded" mt;
 
 #include <Core/Core.h>
 
+using namespace Upp;
+
 #endif
 @@<:PACKAGE:>.cpp
 #include <:?header:>"<:PACKAGE:>.h"<:/:><Core/Core.h><:.:>

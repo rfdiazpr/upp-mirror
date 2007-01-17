@@ -78,23 +78,103 @@ public:
 
 #endif
 
+#ifdef PLATFORM_X11
+
+class TrayIcon : Ctrl {
+	virtual bool HookProc(XEvent *event);
+	virtual void Paint(Draw& draw);
+	virtual void LeftDown(Point p, dword keyflags);
+	virtual void LeftUp(Point p, dword keyflags);
+	virtual void LeftDouble(Point p, dword keyflags);
+	virtual void RightDown(Point p, dword keyflags);
+
+private:
+	void AddToTray();
+
+	Window traywin;
+	Image  icon;
+	void DoMenu(Bar& bar);
+	void Call(int code, unsigned long d1, unsigned long d2, unsigned long d3);
+	void Message(const char *title, const char *text, int timeout);
+
+public:
+	virtual void    LeftDown();
+	virtual void    LeftUp();
+	virtual void    LeftDouble();
+	virtual void    Menu(Bar& bar);
+
+	Callback        WhenLeftDown;
+	Callback        WhenLeftUp;
+	Callback        WhenLeftDouble;
+	Callback1<Bar&> WhenBar;
+
+	void            Break()                                { EndLoop(0); }
+	void            Run()                                  { EventLoop(this); }
+
+	void            Show(bool b = true);
+	void            Hide()                                 { Show(false); }
+
+	void            Info(const char *title, const char *text, int timeout = 10)    { Message(title, text, timeout); }
+	void            Warning(const char *title, const char *text, int timeout = 10) { Message(title, text, timeout); }
+	void            Error(const char *title, const char *text, int timeout = 10)   { Message(title, text, timeout); }
+
+	TrayIcon&  Icon(const Image &img)                      { icon = img; Refresh(); }
+	TrayIcon&  Tip(const char *text)                       { Ctrl::Tip(text); }
+
+	typedef TrayIcon CLASSNAME;
+
+	TrayIcon();
+};
+
+#endif
 
 #ifdef PLATFORM_WIN32
 #ifndef PLATFORM_WINCE
 
-#include <ShellAPI.h>
-
 class TrayIcon : private Ctrl {
+	typedef struct NotifyIconOld {
+		dword sz;
+		HWND  hwnd;
+		dword id;
+		dword flags;
+		dword message;
+		HICON icon;
+		char  tip[64];
+	};
+	typedef struct NotifyIconNew {
+		dword sz;
+		HWND  hwnd;
+		dword id;
+		dword flags;
+		dword message;
+		HICON icon;
+		char  tip[128];
+
+		dword state;
+		dword statemask;
+		char  info[256];
+		dword timeout;
+		char  title[64];
+		dword infoflags;
+	};
+
 	Image          icon;
 	bool           visible;
 	String         tip;
-	NOTIFYICONDATA nid;
+	NotifyIconNew  nid;
 	HWND           hwnd;
 
 	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 	void Notify(dword msg);
+	void DoMenu(Bar& bar);
+	void Message(int type, const char *title, const char *text, int timeout = 10);
 
 public:
+	virtual void    Menu(Bar& bar);
+	virtual void    LeftDown();
+	virtual void    LeftUp();
+	virtual void    LeftDouble();
+
 	Callback        WhenLeftDown;
 	Callback        WhenLeftUp;
 	Callback        WhenLeftDouble;
@@ -104,6 +184,10 @@ public:
 	void            Hide()                                 { Show(false); }
 	void            Break()                                { EndLoop(0); }
 	void            Run()                                  { EventLoop(this); }
+
+	void            Info(const char *title, const char *text, int timeout = 10)    { Message(1, title, text, timeout); }
+	void            Warning(const char *title, const char *text, int timeout = 10) { Message(2, title, text, timeout); }
+	void            Error(const char *title, const char *text, int timeout = 10)   { Message(3, title, text, timeout); }
 
 	TrayIcon&  Icon(const Image &img);
 	TrayIcon&  Tip(const char *text);
@@ -222,3 +306,5 @@ void CtrlRetriever::Put(Ctrl& ctrl, T& val)
 }
 
 void UpdateFile(String dst, String src);
+
+void MemoryProfileInfo();

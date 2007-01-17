@@ -20,6 +20,8 @@ file
 	CtrlKbd.cpp,
 	CtrlTimer.cpp,
 	LocalLoop.cpp,
+	CtrlCore.icpp,
+	CtrlCore.t,
 	TopWindow readonly separator,
 	TopWindow.h,
 	TopWindow.cpp,

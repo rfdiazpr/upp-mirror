@@ -18,33 +18,46 @@ void ChSysInit();
 void ChStdSkin()
 {
 	ChSysInit();
-	ChSet("GUI_GlobalStyle", GUISTYLE_XP);
+	GUI_GlobalStyle_Write(GUISTYLE_XP);
 	ColoredOverride(CtrlsImg::Iml(), CtrlsImg::Iml());
+}
+
+void SbWc(Value *look)
+{
+	Color wc = Blend(SColorFace(), SColorPaper(), 170);
+	look[CTRL_NORMAL] = wc;
+	look[CTRL_HOT] = wc;
+	look[CTRL_PRESSED] = SColorText();
+	look[CTRL_DISABLED] = wc;
 }
 
 void ChClassicSkin()
 {
 	LLOG("ChInitWinClassic");
 	ChSysInit();
-	ChSet("GUI_GlobalStyle", GUISTYLE_CLASSIC);
+	GUI_GlobalStyle_Write(GUISTYLE_CLASSIC);
+
 	ColoredOverride(CtrlsImg::Iml(), ClassicCtrlsImg::Iml());
 	for(int q = 0; q < 4; q++)
 		CtrlsImg::Set(CtrlsImg::I_HTB + q, AdjustColors(CtrlsImg::Get(ClassicCtrlsImg::I_B + q)));
-	Color wc = Blend(SColorFace(), SColorPaper(), 170);
-	ChSet("ScrollBarHorzUpper", wc);
-	ChSet("ScrollBarHorzUpper", CTRL_PRESSED, SColorText());
-	ChSetf("ScrollBarHorzThumb", ScrollButtonLook);
-	ChSet("ScrollBarHorzLower", wc);
-	ChSet("ScrollBarHorzLower", CTRL_PRESSED, SColorText());
-	ChSet("ScrollBarVertUpper", wc);
-	ChSet("ScrollBarVertUpper", CTRL_PRESSED, SColorText());
-	ChSetf("ScrollBarVertThumb", ScrollButtonLook);
-	ChSet("ScrollBarVertLower", wc);
-	ChSet("ScrollBarVertLower", CTRL_PRESSED, SColorText());
 
-	ChSet("ButtonPressOffsetFlag", 1);
-	ChSet("ButtonMonoColor", SColorText());
-	ChSet("LabelBoxTextColor", SColorText());
+	{
+		Button::Style& s = Button::StyleNormal().Write();
+		s.monocolor[0] = s.monocolor[1] = s.monocolor[2] = s.monocolor[3] = SColorText();
+		s.pressoffset.x = s.pressoffset.y = 1;
+	}
+
+	{
+		ScrollBar::Style& s = ScrollBar::StyleDefault().Write();
+		SbWc(s.hupper);
+		SbWc(s.hlower);
+		SbWc(s.vupper);
+		SbWc(s.vlower);
+		for(int i = 0; i < 4; i++)
+			s.vthumb[i] = s.hthumb[i] = Button::StyleNormal().look[i];
+	}
+
+	LabelBoxTextColor_Write(SColorText());
 }
 
 #ifdef PLATFORM_X11

@@ -396,19 +396,25 @@ Index<String>& Id::Ids() {
 	return Single<IdList>();
 }
 
+static StaticCriticalSection s_ids;
+
 void Id::Set(const String& s) {
+	CriticalSection::Lock __(s_ids);
 	ndx = Ids().FindAdd(s);
 }
 
 String Id::ToString() const {
+	CriticalSection::Lock __(s_ids);
 	return Ids()[ndx];
 }
 
 const String& Id::AsString(int n) {
+	CriticalSection::Lock __(s_ids);
 	return Ids()[n];
 }
 
 Id Id::Find(const String& s) {
+	CriticalSection::Lock __(s_ids);
 	int i = Ids().Find(s);
 	if(i < 0) return Id();
 	return Id(i);
@@ -433,10 +439,10 @@ int StdValueCompare(const Value& a, const Value& b, int language)
 	if(na || nb)
 		return !na ? 1 : !nb ? -1 : 0;
 	int ta = a.GetType(), tb = b.GetType();
-	if(ta == INT_V && tb == INT_V)
+	if((ta == INT_V || ta == BOOL_V) && (tb == INT_V || tb == BOOL_V))
 		return cmp<int>(a, b);
-	if((ta == INT_V || ta == INT64_V || ta == DOUBLE_V)
-	&& (tb == INT_V || tb == INT64_V || tb == DOUBLE_V))
+	if((ta == BOOL_V || ta == INT_V || ta == INT64_V || ta == DOUBLE_V)
+	&& (tb == BOOL_V || tb == INT_V || tb == INT64_V || tb == DOUBLE_V))
 		return cmp<double>(a, b);
 	if(ta == DATE_V && tb == DATE_V)
 		return cmp<Date>(a, b);

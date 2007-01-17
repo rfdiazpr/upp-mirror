@@ -25,15 +25,6 @@ extern DropList *dlev;
 void Log(const char *fmt, ...);
 void Log(int level, const char *fmt, ...);
 	
-enum GridState
-{
-	GS_UP = 0,
-	GS_MOVE = 1,
-	GS_DOWN = 2,
-	GS_BORDER = 3,
-	GS_POPUP = 4
-};
-
 class FindEditString : public EditString
 {
 	public:
@@ -124,22 +115,64 @@ class CtrlsHolder : public Ctrl
 		}
 };
 
+class GridClipboard : Moveable<GridClipboard>
+{
+	public:
+		struct ClipboardData : Moveable<ClipboardData>
+		{
+			int col, row;
+			Value v;
+			virtual void Serialize(Stream &s)
+			{
+				s % col % row;
+				s % v;
+			}			
+		};
+		
+		Vector<ClipboardData> data;
+		Point minpos, maxpos;
+		bool shiftmode;
+		
+		virtual void Serialize(Stream &s)
+		{
+			s % shiftmode;
+			s % minpos % maxpos;
+			s % data;		
+		}
+};
+
 class GridCtrl : public Ctrl
 {
-	friend class GridHeader;
-	
 	private:
+
+		enum
+		{
+			GO_PREV,
+			GO_NEXT,
+			GO_LEFT,
+			GO_RIGHT,
+			GO_BEGIN,
+			GO_END,
+			GO_PAGEUP,
+			GO_PAGEDN
+		};
 	
+		enum GridState
+		{
+			GS_UP     = 0,
+			GS_MOVE   = 1,
+			GS_DOWN   = 2,
+			GS_BORDER = 3,
+			GS_POPUP  = 4
+		};
+		
+		static int GD_COL_WIDTH;
+		static int GD_ROW_HEIGHT;
+		static int GD_HDR_HEIGHT;
+		static int GD_IND_WIDTH;
+		
 		typedef GridCtrl CLASSNAME;
 	
-		static int defHeight;
-		static int defMainRowHeight;		
-		static int defWidth;
-		static int defLMargin;
-		static int defRMargin;
-		static int defIndWidth;
-		static int defSplit;
-							
 		Items  items;
 		HItems hitems;
 		VItems vitems;
@@ -207,7 +240,9 @@ class GridCtrl : public Ctrl
 		bool editing:1;
 		bool hiding:1;
 		bool clipboard:1;
-		
+		bool extra_paste:1;
+		bool fixed_paste:1;
+				
 		bool reject_null_row:1;
 		bool tab_changes_row:1;
 		bool tab_adds_row:1;
@@ -253,8 +288,10 @@ class GridCtrl : public Ctrl
 		bool cancel_operation:1;
 		bool disable_childgotfocus:1;
 		bool mouse_move:1;
+		bool is_clipboard:1;
+		bool selecting:1;
 		
-		bool resizeing;
+		bool resizing;
 		bool fixed_click;
 		bool fixed_top_click;
 		bool fixed_left_click;
@@ -274,10 +311,10 @@ class GridCtrl : public Ctrl
 		int  moveCol,     oldMoveCol;
 		int  moveRow,     oldMoveRow;
 		int  scrollxdir,  scrollydir;
-		int  total_cols,   total_rows;					
-		int  fixed_cols,   fixed_rows;		
-		int  total_width,  total_height;
-		int  fixed_width,  fixed_height;
+		int  total_cols,  total_rows;					
+		int  fixed_cols,  fixed_rows;		
+		int  total_width, total_height;
+		int  fixed_width, fixed_height;
 
 		int  selected_rows;
 		int  selected_items;
@@ -379,7 +416,7 @@ class GridCtrl : public Ctrl
 		GridCtrl& ResizeColMode(int m = 0);
 		GridCtrl& ResizeRowMode(int m = 0);
 
-		GridCtrl& Indicator(bool b = true, int size = defIndWidth);
+		GridCtrl& Indicator(bool b = true, int size = GD_IND_WIDTH);
 		
 		GridCtrl& GridColor(Color fg = SColorShadow);		
 		GridCtrl& FocusColor(Color fg = SColorHighlightText, Color bg = SColorHighlight);		
@@ -388,7 +425,7 @@ class GridCtrl : public Ctrl
 		GridCtrl& EvenColor(Color fg = SColorText, Color bg = Blend(SColorHighlight, SColorPaper, 220));
 		GridCtrl& ColoringMode(int m);
 		
-		GridCtrl& SetDefaultRowHeight(int h)    { defHeight = h; sby.SetLine(h); return *this; }
+		GridCtrl& SetDefaultRowHeight(int h)    { GD_ROW_HEIGHT = h; sby.SetLine(h); return *this; }
 		GridCtrl& SetColWidth(int n, int width, bool recalc = true);
 		GridCtrl& SetRowHeight(int n, int height, bool recalc = true);
 		GridCtrl& SetColsMin(int size);
@@ -407,6 +444,8 @@ class GridCtrl : public Ctrl
 		GridCtrl& Editing(bool b = true)     { editing     = b; return *this; }
 		GridCtrl& Hiding(bool b = true)      { hiding      = b; return *this; }
 		GridCtrl& Clipboard(bool b = true)   { clipboard   = b; return *this; }
+		GridCtrl& ExtraPaste(bool b = true)  { extra_paste = b; return *this; }
+		GridCtrl& FixedPaste(bool b = true)  { fixed_paste = b; return *this; }
 		
 		GridCtrl& RejectNullRow(bool b = true)   { reject_null_row   = b; return *this; }
 		GridCtrl& KeepLastRow(bool b = true)     { keep_last_row     = b; return *this; }
@@ -461,9 +500,9 @@ class GridCtrl : public Ctrl
 	
 		/* Methods */		
 			
-		ItemRect& InsertColumn(int pos, const char *name, int size = defWidth, bool idx = false);
-		ItemRect& AddColumn(Id id, const char *name, int size = defWidth, bool idx = false);
-		ItemRect& AddColumn(const char *name, int size = defWidth, bool idx = false);
+		ItemRect& InsertColumn(int pos, const char *name, int size = GD_COL_WIDTH, bool idx = false);
+		ItemRect& AddColumn(Id id, const char *name, int size = GD_COL_WIDTH, bool idx = false);
+		ItemRect& AddColumn(const char *name, int size = GD_COL_WIDTH, bool idx = false);
 		
 		void RemoveColumn(int n, int cnt = 1);
 		
@@ -476,8 +515,8 @@ class GridCtrl : public Ctrl
 		ItemRect& AddIndex(const char *name)        { return AddColumn(name, 0, true); }
 		ItemRect& AddIndex(String &name)            { return AddColumn(name, 0, true); }
 		
-		GridCtrl& Add(int n = 1, int size = defHeight);
-		GridCtrl& AddRow(int n = 1, int size = defHeight) { return Add(n, size); }
+		GridCtrl& Add(int n = 1, int size = GD_ROW_HEIGHT);
+		GridCtrl& AddRow(int n = 1, int size = GD_ROW_HEIGHT) { return Add(n, size);}
 
 		//$-GridCtrl& Add(const Value& [, const Value& ]...);
 		#define  E__Add(I)      GridCtrl& Add(__List##I(E__Value));
@@ -527,13 +566,14 @@ class GridCtrl : public Ctrl
 		void SetFixedRows(int n = 1);		
 		void SetFixedCols(int n = 1);
 				
-		static int  GetStdRowHeight() { return defHeight; }
+		static int GetStdRowHeight() { return GD_ROW_HEIGHT; }
 		
 		void RefreshRow(int n = -1, bool relative = true, bool fixed = false);
 		void RefreshCol(int n = -1, bool relative = true, bool fixed = false);
-		void RefreshRows(int n = 0, int cnt = 1, bool relative = true, bool fixed = false);
+		void RefreshRows(int from, int to, bool relative = true, bool fixed = false);
 		void RefreshItem(int r, int c, bool relative = true);
 		void RefreshNewRow();
+		void RefreshFrom(int from);
 		
 		void RefreshTop();
 		void RefreshLeft();
@@ -626,7 +666,7 @@ class GridCtrl : public Ctrl
 		int  GetFixedCount();
 		int  GetTotalCount();
 		
-		void SetRowCount(int n, int size = defHeight);
+		void SetRowCount(int n, int size = GD_ROW_HEIGHT);
 		void SetColCount(int n, int size = 100);
 
 		void Select(int n, int cnt = 1);
@@ -636,8 +676,8 @@ class GridCtrl : public Ctrl
 		bool IsSelectionEnd()        { return sel_end;           }
 		int  GetSelectedCount()      { return selected_rows;     }
 		int  GetSelectedItemsCount() { return selected_items;    }
-		bool IsSelected(int n);	
-		bool IsSelected(int n, int m);	
+		bool IsSelected(int n, bool relative = true);	
+		bool IsSelected(int n, int m, bool relative = true);
 		
 		void DoInsertBefore0(bool edit);
 		void DoInsertBefore();
@@ -718,10 +758,10 @@ class GridCtrl : public Ctrl
 
 		void SetItemCursor(Point p, bool b, bool highlight);
 
-		void Insert0(int i, int cnt = 1, int size = defHeight);
-		bool Remove0(int i, int cnt = 1, bool recalc = true, bool whens = false);
-		void Duplicate0(int i, int cnt = 1);
-		int  Append0(int cnt = 1, int size = defHeight, bool refresh = true);
+		void Insert0(int row, int cnt = 1, bool recalc = true, bool refresh = true, int size = GD_ROW_HEIGHT);
+		bool Remove0(int row, int cnt = 1, bool recalc = true, bool refresh = true, bool whens = true);
+		void Duplicate0(int row, int cnt = 1);
+		int  Append0(int cnt = 1, int size = GD_ROW_HEIGHT, bool refresh = true);
 
 		void GoCursorLeftRight();
 
@@ -740,7 +780,7 @@ class GridCtrl : public Ctrl
 		bool ShowCtrls(int show = 1, int setfocus = 0, 
 					   bool setcursor = true, bool setctrls = false, bool scroll = false);
 					   
-		void UpdateCtrlsPos(bool newpos = true, int setfocus = 1, bool setcursor = true, bool setctrls = false);
+		void UpdateCtrlsPos(int newpos = 1, int show = 1, int setfocus = 1, bool setcursor = true, bool setctrls = false);
 		
 		
 		void SetCtrlsData(int row);
@@ -751,8 +791,8 @@ class GridCtrl : public Ctrl
 		int  GetFocusedCtrlIndex();		
 		Point GetCtrlPos(Ctrl * ctrl);
 		
-		void OnSplit(int state = 0, bool sync = false);
-		void OnScroll();
+		void Split(int state = 0, bool sync = false);
+		void Scroll();
 		
 		bool IsTopHeader()  { return fixed_rows > 0; }
 		bool IsLeftHeader() { return fixed_cols > 1 || indicator; }
@@ -783,8 +823,10 @@ class GridCtrl : public Ctrl
 		void ShowFindOpts();
 		void SetFindOpts(int n);
 
-		Item& GetItem(const Point &p) { return GetItem(p.x, p.y); }
+		Item& GetItem(const Point &p) { return GetItem(p.y, p.x); }
 		inline Item& GetItem(int n, int m);
+
+		void Set0(int r, int c, const Value &val, bool paste = false);
 		Value Get0(int r, int c);
 		
 		int GetSplitCol(const Point &p, int splitSize = 5);
@@ -822,6 +864,15 @@ class GridCtrl : public Ctrl
 		Ctrl * GetCtrl(int x, int y, bool check_visibility = false);
 		Ctrl * GetCtrl(const Point &p, bool check_visibility = false);
 		bool IsCtrl(Point &p);
+		
+		GridClipboard GetClipboard();
+		void SetClipboard();
+		bool IsClipboardAvailable();
+		void Paste(int mode = 0);
+		void DoCopy();
+		void DoPaste();
+		void DoPasteInsertedRows();
+		void DoPasteAppendedRows();
 		
 
 	public:

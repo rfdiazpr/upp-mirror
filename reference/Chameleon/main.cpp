@@ -46,35 +46,58 @@ INITBLOCK {
 	ChLookFn(MyLookFn);
 }
 
+Button::Style ColorStyle()
+{
+	Button::Style s = Button::StyleNormal();
+	s.look[0] = LtCyan();
+	s.look[1] = Yellow();
+	s.look[2] = Brown();
+	s.look[3] = Gray();
+	return s;
+}
 
-struct MyApp : WithChameleonLayout<TopWindow> {
-	void Set(void (*skin)());
+Button::Style ImageStyle()
+{
+	Button::Style s = Button::StyleNormal();
+	for(int i = 0; i < 4; i++)
+		s.look[i] = MyButtonImg::Get(i);
+	s.pressoffset = Point(1, -1);
+	return s;
+}
 
-	typedef MyApp CLASSNAME;
-	MyApp();
-};
+Button::Style FnStyle()
+{
+	Button::Style s = Button::StyleNormal().Write();
+	s.look[0] = EllipseLook(2, Black, LtGray);
+	s.look[1] = EllipseLook(3, Red, WhiteGray);
+	s.look[2] = EllipseLook(4, Blue, White);
+	s.look[3] = EllipseLook(1, Black, Gray);
+	return s;
+}
 
 void ColorSkin()
 {
-	ChSet("ButtonLook", 0, LtCyan());
-	ChSet("ButtonLook", 1, Yellow());
-	ChSet("ButtonLook", 2, Brown());
-	ChSet("ButtonLook", 3, Gray());
+	Button::StyleNormal().Write() = ColorStyle();
 }
 
 void ImageSkin()
 {
-	for(int i = 0; i < 4; i++)
-		ChSet("ButtonLook", i, MyButtonImg::Get(i));
+	Button::StyleNormal().Write() = ImageStyle();
 }
 
 void FnSkin()
 {
-	ChSet("ButtonLook", 0, EllipseLook(2, Black, LtGray));
-	ChSet("ButtonLook", 1, EllipseLook(3, Red, WhiteGray));
-	ChSet("ButtonLook", 2, EllipseLook(4, Blue, White));
-	ChSet("ButtonLook", 3, EllipseLook(1, Black, Gray));
+	Button::StyleNormal().Write() = FnStyle();
 }
+
+
+struct MyApp : WithChameleonLayout<TopWindow> {
+	void Set(void (*skin)());
+	Button::Style scolor, simage, sfn;
+
+	typedef MyApp CLASSNAME;
+	MyApp();
+};
 
 void MyApp::Set(void (*skin)())
 {
@@ -88,8 +111,14 @@ MyApp::MyApp()
 	std <<= THISBACK1(Set, ChStdSkin);
 	classic <<= THISBACK1(Set, ChClassicSkin);
 	color <<= THISBACK1(Set, ColorSkin);
+	scolor = ColorStyle();
+	color.SetStyle(scolor);
 	img <<= THISBACK1(Set, ImageSkin);
+	simage= ImageStyle();
+	img.SetStyle(simage);
 	fn <<= THISBACK1(Set, FnSkin);
+	sfn = FnStyle();
+	fn.SetStyle(sfn);
 }
 
 GUI_APP_MAIN

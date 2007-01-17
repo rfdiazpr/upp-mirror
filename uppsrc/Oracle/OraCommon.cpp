@@ -140,6 +140,7 @@ const char *OracleRef::Parse(const char *stmt) {
 
 int OracleRef::GetOraType() const {
 	switch(ora_vtype) {
+	case BOOL_V:
 	case INT_V:      return SQLT_INT;
 	case DOUBLE_V:   return SQLT_FLT;
 	case WSTRING_V:
@@ -154,6 +155,7 @@ int OracleRef::GetOraType() const {
 
 int OracleRef::GetMaxLen() const {
 	switch(ora_vtype) {
+	case BOOL_V:
 	case INT_V:       return sizeof(int);
 	case DOUBLE_V:    return sizeof(double);
 	case WSTRING_V:

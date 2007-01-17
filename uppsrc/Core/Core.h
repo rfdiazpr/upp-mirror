@@ -297,6 +297,7 @@
 #endif
 
 #include <algorithm>
+#include <string>
 
 #ifdef PLATFORM_POSIX
 #include <bits/atomicity.h>
@@ -304,9 +305,11 @@
 
 // fix MSC8 beta problem....
 #ifdef COMPILER_MSC
+#ifndef PLATFORM_WINCE
 namespace std {
 	inline void __cdecl _Debug_message(const wchar_t *, const wchar_t *, unsigned int line) {}
 };
+#endif
 #endif
 
 namespace Upp {};

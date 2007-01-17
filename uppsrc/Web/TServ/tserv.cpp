@@ -5,6 +5,8 @@
 #include <signal.h>
 #endif//PLATFORM_POSIX
 
+using namespace Upp;
+
 enum { DEFAULT_PORT = 2346 };
 
 #ifdef _DEBUG
@@ -223,7 +225,7 @@ CommandServer& CommandServer::Filter(const char *ip)
 	Socket::Init();
 	hostent *he = gethostbyname(ip);
 	if(he)
-		ip_filter.FindAdd(PeekML((in_addr *)(he -> h_addr_list[0])));
+		ip_filter.FindAdd(Peek32be((in_addr *)(he -> h_addr_list[0])));
 	else
 		fputs(NFormat("gethostbyname: adresa '%s' nebyla nalezena ...\n", ip), stderr);
 	return *this;
@@ -250,7 +252,7 @@ String CommandServer::CheckFiles(const char *f)
 			return NFormat("ERROR(%s): file size expected at line %d", fn, line);
 
 			FindFile ff(fn);
-			if(ff && fabs(Time(ff.GetLastWriteTime()) - time) <= 2 && ff.GetLength() == l)
+			if(ff && tabs(Time(ff.GetLastWriteTime()) - time) <= 2 && ff.GetLength() == l)
 				out << fn << '\n';
 
 		while(*f && *f++ != '\n')
@@ -287,7 +289,7 @@ String CommandServer::DeleteFolderDeep(const char *f)
 			f++;
 		String fn(b, f);
 		if(!IsNull(fn))
-			::DeleteFolderDeep(NativePath(fn));
+			Upp::DeleteFolderDeep(NativePath(fn));
 		while(*f && *f++ != '\n')
 			;
 	}

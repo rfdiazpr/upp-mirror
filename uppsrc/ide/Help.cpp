@@ -13,6 +13,7 @@ Size MakeLogo(Ctrl& parent, Array<Ctrl>& ctrl)
 	Size  isz = logo.GetSize();
 	ImageCtrl& l = ctrl.Create<ImageCtrl>();
 	Label& v = ctrl.Create<Label>();
+	Label& v1 = ctrl.Create<Label>();
 	l.SetImage(logo);
 	Size sz = Size(isz.cx, isz.cy/* + 100*/);
 	v = IDE_VERSION;
@@ -22,8 +23,14 @@ Size MakeLogo(Ctrl& parent, Array<Ctrl>& ctrl)
 		v.RightPos(3, Ctrl::MINSIZE).TopPos(90, 40);
 	}
 	l.Add(v);
+	int a, b;
+	MemorySum(a, b);
 	v.SetFont(Arial(20));
 	v.SetInk(Blend(Gray, Blue));
+	v1 = Format("%d`KB/%d`KB", a, b);
+	v1.LeftPos(300, 100).BottomPos(20, 12);
+	v1.SetFont(Arial(10));
+	l.Add(v1);
 	parent.Add(ctrl.Create<StaticRect>().Color(White).SizePos());
 	parent.Add(l.TopPos(0, isz.cy).LeftPos(0, isz.cx));
 /*	parent.Add(ctrl.Create<StaticRect>().Color(Blue).LeftPos(2, isz.cx - 4).TopPos(isz.cy, 1));
@@ -67,6 +74,12 @@ struct AboutDlg : TopWindow {
 	RichTextView about;
 
 	typedef AboutDlg CLASSNAME;
+
+	virtual bool Key(dword key, int) {
+		if(key == K_ALT_M)
+			MemoryProfileInfo();
+		return false;
+	}
 
 	AboutDlg() {
 		Size isz = MakeLogo(*this, ctrl);

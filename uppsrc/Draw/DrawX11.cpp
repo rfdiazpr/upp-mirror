@@ -164,8 +164,6 @@ dword GetTrueColorPixel(int r, int g, int b)
 
 inline int ssq(int x) { return x * x; }
 
-void UpdateSColors();
-
 void InitX11Draw(XDisplay *display)
 {
 	Xdisplay = display;
@@ -235,8 +233,6 @@ void InitX11Draw(XDisplay *display)
 //	XFree(v);
 
 	Draw::SetStdFont(ScreenSans(12));
-
-	UpdateSColors();
 }
 
 void InitX11Draw(const char *dispname)

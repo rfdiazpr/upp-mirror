@@ -1,6 +1,5 @@
 #include "CtrlLib.h"
 
-
 NAMESPACE_UPP
 
 #ifdef PLATFORM_X11
@@ -270,13 +269,16 @@ Value GtkLookFn(Draw& w, const Rect& rect, const Value& v, int op)
 			gm.e = e;
 			gm.eg = eg;
 			gm.sz = r.Size();
-			if(e.shadow & 0x80)
-				gm.sz.cy--;
-			Image m = MakeImagePaintOnly(gm);
-			w.DrawImage(r.left, r.top, m);
-			if(e.shadow & 0x80)
-				w.DrawImage(r.left + 1, r.bottom - 1, m,
-				            RectC(1, gm.sz.cy - 1, gm.sz.cx - 2, 1));
+			Image m;
+			if(e.shadow & 0x80) {
+				m = MakeImage(gm);
+				w.DrawImage(r.left, r.top,
+				            m, RectC(0, 0, gm.sz.cx, gm.sz.cy - 7));
+				w.DrawImage(r.left + 4, r.bottom - 7,
+				            m, RectC(4, gm.sz.cy - 7, gm.sz.cx - 8, 5));
+			}
+			else
+				w.DrawImage(r.left, r.top, MakeImagePaintOnly(gm));
 			return 1;
 		}
 	}
@@ -292,75 +294,43 @@ Value GtkMakeCh(int shadow, int state)
 	return RawToValue(e);
 }
 
-void GtkCh(const char *chvar, int i, int shadow, int state)
+void GtkCh(Value& look, int shadow, int state)
 {
-	ChSet(chvar, i, GtkMakeCh(shadow, state));
+	look = GtkMakeCh(shadow, state);
 }
 
-void GtkCh(const char *chvar, int shadow = 0)
+void GtkCh(Value *look, const char *d)
 {
-	GtkCh(chvar, CTRL_NORMAL, shadow, 0);
-	GtkCh(chvar, CTRL_HOT, shadow, 2);
-	GtkCh(chvar, CTRL_PRESSED, shadow, 1);
-	GtkCh(chvar, CTRL_DISABLED, shadow, 4);
+	GtkCh(look[CTRL_NORMAL], d[4] - '0', d[0] - '0');
+	GtkCh(look[CTRL_HOT], d[5] - '0', d[1] - '0');
+	GtkCh(look[CTRL_PRESSED], d[6] - '0', d[2] - '0');
+	GtkCh(look[CTRL_DISABLED], d[7] - '0', d[3] - '0');
 }
 
-void GtkChButton(const char *chvar)
-{
-	GtkCh(chvar, CTRL_NORMAL, 2, 0);
-	GtkCh(chvar, CTRL_HOT, 2, 2);
-	GtkCh(chvar, CTRL_PRESSED, 1, 1);
-	GtkCh(chvar, CTRL_DISABLED, 2, 4);
-}
+void GtkCh(Value *look)             { GtkCh(look, "02140000"); }
+void GtkChButton(Value *look)       { GtkCh(look, "02142212"); }
+void GtkChSlider(Value *look)       { GtkCh(look, "02242222"); }
+void GtkChTrough(Value *look)       { GtkCh(look, "11141111"); }
 
-void GtkChSlider(const char *chvar)
-{
-	GtkCh(chvar, CTRL_NORMAL, 2, 0);
-	GtkCh(chvar, CTRL_HOT, 2, 2);
-	GtkCh(chvar, CTRL_PRESSED, 2, 2);
-	GtkCh(chvar, CTRL_DISABLED, 2, 4);
-}
-
-void GtkChTrough(const char *chvar)
-{
-	GtkCh(chvar, CTRL_NORMAL, 1, 1);
-	GtkCh(chvar, CTRL_HOT, 1, 1);
-	GtkCh(chvar, CTRL_PRESSED, 1, 1);
-	GtkCh(chvar, CTRL_DISABLED, 1, 4);
-}
-
-void GtkChWith(const char *chvar, int i, int shadow, int state, const Image& img, Color (*color)(int i))
+void GtkChWith(Value& look, int shadow, int state, const Image& img, Color c)
 {
 	GtkElement e;
 	e.gtki = ChGtkIs().GetCount() - 1;
 	e.shadow = shadow;
 	e.state = state;
-	ChSet(chvar, i, ChLookWith(GtkMakeCh(shadow, state), img, color, i));
+	look = ChLookWith(GtkMakeCh(shadow, state), img, c);
 }
 
-void GtkChButtonWith(const char *chvar, const Image& img)
+void GtkChWith(Value *look, const char *d, const Image& img)
 {
-	GtkChWith(chvar, CTRL_NORMAL, 2, 0, img, ButtonMonoColor);
-	GtkChWith(chvar, CTRL_HOT, 2, 2, img, ButtonMonoColor);
-	GtkChWith(chvar, CTRL_PRESSED, 1, 1, img, ButtonMonoColor);
-	GtkChWith(chvar, CTRL_DISABLED, 2, 4, img, ButtonMonoColor);
+	GtkChWith(look[CTRL_NORMAL], d[4] - '0', d[0] - '0', img, ButtonMonoColor(0));
+	GtkChWith(look[CTRL_HOT], d[5] - '0', d[1] - '0', img, ButtonMonoColor(1));
+	GtkChWith(look[CTRL_PRESSED], d[6] - '0', d[2] - '0', img, ButtonMonoColor(2));
+	GtkChWith(look[CTRL_DISABLED], d[7] - '0', d[3] - '0', img, ButtonMonoColor(3));
 }
 
-void GtkChArrow(const char *chvar, const Image& img)
-{
-	GtkChWith(chvar, CTRL_NORMAL, 2, 0, img, ButtonMonoColor);
-	GtkChWith(chvar, CTRL_HOT, 2, 2, img, ButtonMonoColor);
-	GtkChWith(chvar, CTRL_PRESSED, 1, 1, img, ButtonMonoColor);
-	GtkChWith(chvar, CTRL_DISABLED, 2, 4, img, ButtonMonoColor);
-}
-
-void GtkChSbtn(const char *chvar)
-{
-	GtkCh(chvar, CTRL_NORMAL, 2, 0);
-	GtkCh(chvar, CTRL_HOT, 2, 2);
-	GtkCh(chvar, CTRL_PRESSED, 2, 1);
-	GtkCh(chvar, CTRL_DISABLED, 2, 4);
-}
+void GtkChButtonWith(Value *look, const Image& img) { GtkChWith(look, "02142222", img); }
+void GtkChArrow(Value *look, const Image& img) { GtkChWith(look, "02142212", img); }
 
 int  GtkInt(G_obj *widget, const char *id)
 {
@@ -387,24 +357,24 @@ void GtkIml(int uii, G_obj *w, int shadow, const char *detail, int type, int cx,
 	GtkIml(uii + 3, w, shadow, 4, detail, type, cx, cy);
 }
 
-void ChGtkColor(const char *id, int ii, int i, G_obj *widget)
+Color ChGtkColor(int ii, G_obj *widget)
 {
 	G_color cc = ((G_color *)((byte *)GTK().gtk_widget_get_style(widget)
 	                          + GTK__COLOR_OFFSET))[ii];
-	ChSet(id, i, Color(cc.r >> 8, cc.g >> 8, cc.b >> 8));
+	return Color(cc.r >> 8, cc.g >> 8, cc.b >> 8);
 }
 
-void ChGtkColor(const char *id, int ii, int i)
+void ChGtkColor(Color& c, int ii)
 {
-	ChGtkColor(id, ii, i, ChGtkLast());
+	c = ChGtkColor(ii, ChGtkLast());
 }
 
-void ChGtkColor(const char *id, int ii)
+void ChGtkColor(Color *c, int ii)
 {
-	ChGtkColor("ButtonTextColor", ii + 0, 0);
-	ChGtkColor("ButtonTextColor", ii + 2, 1);
-	ChGtkColor("ButtonTextColor", ii + 1, 2);
-	ChGtkColor("ButtonTextColor", ii + 4, 3);
+	ChGtkColor(c[0], ii + 0);
+	ChGtkColor(c[1], ii + 2);
+	ChGtkColor(c[2], ii + 1);
+	ChGtkColor(c[3], ii + 4);
 }
 
 Image GtkImage(const char *id, int size, int maxh = INT_MAX)
@@ -438,19 +408,18 @@ Image GtkChImgLook(int shadow, int state, int kind)
 	return m;
 }
 
-void GtkChImgWith(const char *chvar, int i, int shadow, int state, const Image& img,
-                  Color (*color)(int i), int kind)
+void GtkChImgWith(Value& look, int shadow, int state, const Image& img, Color c, int kind)
 {
 	Value m = GtkChImgLook(shadow, state, kind);
-	ChSet(chvar, i, IsNull(img) ? m : ChLookWith(m, img, color, i));
+	look = IsNull(img) ? m : ChLookWith(m, img, c);
 }
 
-void GtkChImgWith(const char *chvar, const Image& img, int kind)
+void GtkChImgWith(Value *look, const Image& img, int kind)
 {
-	GtkChImgWith(chvar, CTRL_HOT, 2, 2, img, ButtonMonoColor, kind);
-	GtkChImgWith(chvar, CTRL_PRESSED, 1, 1, img, ButtonMonoColor, kind);
-	GtkChImgWith(chvar, CTRL_DISABLED, 2, 4, img, ButtonMonoColor, kind);
-	GtkChImgWith(chvar, CTRL_NORMAL, 2, 0, img, ButtonMonoColor, kind);
+	GtkChImgWith(look[CTRL_HOT], 2, 2, img, ButtonMonoColor(1), kind);
+	GtkChImgWith(look[CTRL_PRESSED], 1, 1, img, ButtonMonoColor(2), kind);
+	GtkChImgWith(look[CTRL_DISABLED], 2, 4, img, ButtonMonoColor(3), kind);
+	GtkChImgWith(look[CTRL_NORMAL], 2, 0, img, ButtonMonoColor(0), kind);
 }
 
 bool IsEmptyImage(const Image& m)
@@ -469,251 +438,30 @@ void ChHostSkin()
 {
 	if(!GTK() || !GDK() || !GOBJ())
 		return;
-	static struct { const char *id; int ii; int i; } col[] = {
-		{ "SColorPaper", 6*5 + 0 },
-		{ "SColorFace", 1*5 + 0 },
-		{ "SColorText", 5*5 + 0 },
-		{ "SColorHighlight", 6*5 + 3 },
-		{ "SColorHighlightText", 5*5 + 3 },
-		{ "SColorMenu", 6*5 + 0 },
-		{ "SColorMenuText", 5*5 + 0 },
-		{ "SColorDisabled", 5*5 + 4 },
-		{ "SColorLight", 2*5 + 0 },
-		{ "SColorShadow", 3*5 + 0 },
+	static struct { void (*set)(Color); int ii; } col[] = {
+		{ SColorPaper_Write, 6*5 + 0 },
+		{ SColorFace_Write, 1*5 + 0 },
+		{ SColorText_Write, 5*5 + 0 },
+		{ SColorHighlight_Write, 6*5 + 3 },
+		{ SColorHighlightText_Write, 5*5 + 3 },
+		{ SColorMenu_Write, 6*5 + 0 },
+		{ SColorMenuText_Write, 5*5 + 0 },
+		{ SColorDisabled_Write, 5*5 + 4 },
+		{ SColorLight_Write, 2*5 + 0 },
+		{ SColorShadow_Write, 3*5 + 0 },
 	};
 	for(int i = 0; i < __countof(col); i++)
-		ChGtkColor(col[i].id, col[i].ii, col[i].i, gtk__parent());
-
-	ColoredOverride(CtrlsImg::Iml(), CtrlsImg::Iml());
-
-	Color fc = Blend(SColorHighlight, SColorShadow);
-
-	ChGtkIs().Clear();
-	G_obj *w = Setup(GTK().gtk_radio_button_new(NULL));
-	G_toggle *g = (G_toggle *)w;
-	int is = GtkInt(w, "indicator-size") + 2;
-	g->active = false;
-	g->inconsistent = false;
-	GtkIml(CtrlsImg::I_S0, w, 2, "radiobutton", GTK_OPTION|GTK_MARGIN1, is, is);
-	g->active = true;
-	GtkIml(CtrlsImg::I_S1, w, 1, "radiobutton", GTK_OPTION|GTK_MARGIN1, is, is);
-	GTK().gtk_widget_destroy(w);
-
-	w = Setup(GTK().gtk_check_button_new());
-	g = (G_toggle *)w;
-	g->active = false;
-	g->inconsistent = false;
-	GtkIml(CtrlsImg::I_O0, w, 2, "checkbutton", GTK_CHECK|GTK_MARGIN1, is, is);
-	g->active = true;
-	GtkIml(CtrlsImg::I_O1, w, 1, "checkbutton", GTK_CHECK|GTK_MARGIN1, is, is);
-	g->active = false;
-	g->inconsistent = true;
-	GtkIml(CtrlsImg::I_O2, w, 3, "checkbutton", GTK_CHECK|GTK_MARGIN1, is, is);
-	GTK().gtk_widget_destroy(w);
-
-	ChSet("ButtonOverPaint", 3);
-	static G_obj *button = GTK().gtk_button_new();
-	ChGtkNew(button, "button", GTK_BOX|GTK_MARGIN3);
-	GtkChButton("ButtonLook");
-	GtkChButton("ToolButtonLook");
-	ChSet("ToolButtonLook", CTRL_NORMAL, Null);
-	ChSet("ToolButtonLook", CTRL_DISABLED, Null);
-	GtkCh("ToolButtonLook", 4, 1, 1);
-	GtkCh("ToolButtonLook", 5, 1, 1);
-
-	ChGtkColor("ButtonTextColor", 0 * 5);
-	ChSet("ButtonPressOffsetFlag", GtkInt("child-displacement-x"));
-	ChSet("ButtonPressOffsetFlagY", GtkInt("child-displacement-y"));
-
-	static G_obj *def_button;
-	if(!def_button) {
-		def_button = GTK().gtk_button_new();
-		Setup(def_button);
-		GTK().gtk_widget_set(def_button, "can-default", true, NULL);
-		GTK().gtk_window_set_default(gtk__parent(), def_button);
-		ChGtkNew(def_button, "button", GTK_BOX|GTK_MARGIN3);
-	}
-	GtkChButton("OkButtonLook");
-
-	G_obj *adj = GTK().gtk_adjustment_new(250, 0, 1000, 1, 1, 500);
-
-	ChSet("ScrollBarTrough", 1);
-	static G_obj *vscrollbar = GTK().gtk_vscrollbar_new(adj);
-	ChGtkNew(vscrollbar, "slider", GTK_SLIDER|GTK_VAL1);
-	GtkChSlider("ScrollBarVertThumb");
-	Image m = GetGTK(ChGtkLast(), 0, 0, "slider", GTK_SLIDER|GTK_VAL1, 16, 32);
-	ChSet("ScrollBarThumbMin", GtkInt("min-slider-length"));
-	int sw, as;
-	ChSet("ScrollBarSize", sw = GtkInt("slider-width"));
-	ChSet("ScrollBarArrowSize", as = GtkInt("stepper-size"));
-	ChGtkNew("trough", GTK_BOX);
-	GtkChTrough("ScrollBarVertUpper");
-	GtkChTrough("ScrollBarVertLower");
-	is = min(sw, as) / 2;
-	bool atp = IsEmptyImage(GetGTK(ChGtkLast(), 2, 2, "vscrollbar", GTK_BOX|GTK_TOP, 16, 16));
-	if(atp) {
-		ChGtkNew("vscrollbar", GTK_ARROW);
-		GtkCh("ScrollBarUp", 1);
-		ChGtkNew("vscrollbar", GTK_ARROW|GTK_VAL1);
-		GtkCh("ScrollBarDown", 1);
-
-		static G_obj *btn = GTK().gtk_button_new();
-		ChGtkNew(btn, "button", GTK_BOX);
-
-		GtkChButton("ScrollButtonLook");
-
-		GtkChButton("EdgeButtonLook");
-		GtkChButton("LeftEdgeButtonLook");
-
-		GtkChButtonWith("DropBoxBtn", CtrlsImg::DA());
-		GtkChButtonWith("DropBoxSquaredBtn", CtrlsImg::DA());
-
-		GtkChButtonWith("SpinUpLook", CtrlsImg::SpU());
-		GtkChButtonWith("SpinDownLook", CtrlsImg::SpD());
-	}
-	else {
-		GtkIml(CtrlsImg::I_UA, ChGtkLast(), 0, 0, "vscrollbar", GTK_ARROW, is, is);
-		GtkIml(CtrlsImg::I_DA, ChGtkLast(), 0, 0, "vscrollbar", GTK_ARROW|GTK_VAL1, is, is);
-
-		ChGtkNew("vscrollbar", GTK_BOX|GTK_TOP);
-		GtkChArrow("ScrollBarUp", CtrlsImg::UA());
-		ChGtkNew("vscrollbar", GTK_BOX|GTK_BOTTOM);
-		GtkChArrow("ScrollBarDown", CtrlsImg::DA());
-		ChGtkNew("vscrollbar", GTK_BOX|GTK_VCENTER);
-
-		GtkChSbtn("ScrollButtonLook");
-
-		GtkChImgWith("EdgeButtonLook", Null, 1);
-		GtkChImgWith("LeftEdgeButtonLook", Null, 2);
-
-		GtkChImgWith("DropBoxBtn", CtrlsImg::DA(), 1);
-		GtkChImgWith("DropBoxSquaredBtn", CtrlsImg::DA(), 1);
-
-		GtkChImgWith("SpinUpLook", CtrlsImg::SpU(), 1);
-		GtkChImgWith("SpinDownLook", CtrlsImg::SpD(), 1);
-	}
-
-
-	int d = Diff(fc, SColorPaper());
-	for(int x = 0; x < 4; x++)
-		for(int y = 0; y < 4; y++) {
-			RGBA c = sLastImage[x][y];
-			if(c.a == 255) {
-				int dd = Diff(c, SColorPaper());
-				if(dd > d) {
-					fc = c;
-					d = dd;
-				}
-			}
-		}
-	ChSet("FieldFrameColor", fc);
-
-	static G_obj *hscrollbar = GTK().gtk_hscrollbar_new(adj);
-	ChGtkNew(hscrollbar, "slider", GTK_SLIDER);
-	GtkChSlider("ScrollBarHorzThumb");
-	ChGtkNew("trough", GTK_BOX);
-	GtkChTrough("ScrollBarHorzUpper");
-	GtkChTrough("ScrollBarHorzLower");
-	if(atp) {
-		ChGtkNew("hscrollbar", GTK_ARROW|GTK_VAL2);
-		GtkCh("ScrollBarLeft", 1);
-		ChGtkNew("hscrollbar", GTK_ARROW|GTK_VAL3);
-		GtkCh("ScrollBarRight", 1);
-	}
-	else {
-		GtkIml(CtrlsImg::I_LA, ChGtkLast(), 0, 0, "hscrollbar", GTK_ARROW|GTK_VAL2, is, is);
-		GtkIml(CtrlsImg::I_RA, ChGtkLast(), 0, 0, "hscrollbar", GTK_ARROW|GTK_VAL3, is, is);
-		ChGtkNew("hscrollbar", GTK_BOX|GTK_LEFT);
-		GtkChArrow("ScrollBarLeft", CtrlsImg::LA());
-		ChGtkNew("hscrollbar", GTK_BOX|GTK_RIGHT);
-		GtkChArrow("ScrollBarRight", CtrlsImg::RA());
-		ChGtkNew("hscrollbar", GTK_BOX|GTK_VCENTER);
-	}
-
-	GTK().gtk_object_sink(adj);
-
-	adj = GTK().gtk_adjustment_new(0, 0, 1000, 1, 1, 500);
-	w = GTK().gtk_vscrollbar_new(NULL);
-	Setup(w);
-	ChSet("ScrollBarOverThumb", m != GetGTK(w, 0, 0, "slider", GTK_SLIDER|GTK_VAL1, 16, 32));
-	GTK().gtk_widget_destroy(w);
-	GTK().gtk_object_sink(adj);
-
-	static G_obj *menu_item = GTK().gtk_menu_item_new();
-	ChGtkNew(menu_item, "menuitem", GTK_BOX);
-	GtkCh("MenuItemLook", 0, 2, 2);
-
-	static G_obj *tabctrl = GTK().gtk_notebook_new();
-	ChGtkNew(tabctrl, "tab", GTK_EXT|GTK_VAL3);
-	ImageBuffer ib(9, 9);
-	ImageBuffer ib1(9, 9);
-	m = GetGTK(tabctrl, 0, 2, "tab", GTK_EXT|GTK_VAL3, 12, 12);
-	for(int i = 0; i < 5; i++) {
-		RGBA *t = ~ib + i * 9 + i;
-		RGBA *t1 = ~ib1 + i * 9 + i;
-		for(int n = 9 - 2 * i; n--; t += 9, t1 += 9) {
-			Fill(t, m[10][i], 9 - 2 * i);
-			Fill(t1, m[10][11 - i], 9 - 2 * i);
-		}
-	}
-	{
-		RGBA *t = ~ib + 9 + 8;
-		RGBA *t1 = ~ib1 + 9 + 8;
-		for(int i = 1; i < 9; i++) {
-			memcpy(t, t1, i * sizeof(RGBA));
-			t += 9 - 1;
-			t1 += 9 - 1;
-		}
-	}
-	ib.SetHotSpot(Point(4, 4));
-	ChSet("TabCtrlLook", 16, Image(ib));
-	for(int i = 0; i < 4; i++) {
-		GtkCh("TabCtrlLook", i * 4 + 0, 2, 1);
-		GtkCh("TabCtrlLook", i * 4 + 1, 2, 1);
-		GtkCh("TabCtrlLook", i * 4 + 2, 0x82, 0);
-		GtkCh("TabCtrlLook", i * 4 + 3, 2, 1);
-	}
-	Vector<int> tm;
-	tm << StdFont().Info().GetHeight() + 8  // TABHEIGHT
-		<< 0 // MARGIN
-		<< 0 << 0 << 0 << 2 // SEL*
-		<< 6 << 6 << 6 << 6 // *EDGE
-		<< 2
-	;
-	for(int i = 0; i < tm.GetCount(); i++)
-		ChSet("TabCtrlMetric", i, tm[i]);
-
-	ib.Create(3, 3);
-	Fill(~ib, fc, ib.GetLength());
-	ib[1][1] = Color(Null);
-	ib.SetHotSpot(Point(1, 1));
-	CtrlsImg::Set(CtrlsImg::I_EFE, ib);
-	ib.Create(5, 5);
-	Fill(~ib, fc, ib.GetLength());
-	for(int x = 1; x < 4; x++)
-		Fill(ib[x] + 1, SColorPaper(), 3);
-	ib[2][2] = Color(Null);
-	ib.SetHotSpot(Point(2, 2));
-	CtrlsImg::Set(CtrlsImg::I_VE, ib);
-
-	Color c = SColorPaper();
-	for(int i = 0; i < 3; i++)
-		ChSet("ButtonMonoColor", i, c.GetR() + c.GetG() + c.GetB() < 3 * 128 ? White() : Black());
-	ChSet("ButtonMonoColor", 3, Gray());
-
-	ChCtrlImg(CtrlImg::I_information, "gtk-dialog-info", 6);
-	ChCtrlImg(CtrlImg::I_question, "gtk-dialog-question", 6);
-	ChCtrlImg(CtrlImg::I_exclamation, "gtk-dialog-warning", 6);
-
-	char *font_name = "";
-	GOBJ().g_object_get(GTK().gtk_settings_get_default(), "gtk-font-name", &font_name, NULL);
-	int xdpi = 96 * 1024;
-	GOBJ().g_object_get(GTK().gtk_settings_get_default(), "gtk-xft-dpi", &xdpi, NULL);
+		(*col[i].set)(ChGtkColor(col[i].ii, gtk__parent()));
 
 	int fontname = Font::ARIAL;
 	int fontheight = 13;
 	bool bold = false;
 	bool italic = false;
+
+	char *font_name = "";
+	GOBJ().g_object_get(GTK().gtk_settings_get_default(), "gtk-font-name", &font_name, NULL);
+	int xdpi = 96 * 1024;
+	GOBJ().g_object_get(GTK().gtk_settings_get_default(), "gtk-xft-dpi", &xdpi, NULL);
 
 	const char *q = strrchr(font_name, ' ');
 	if(q) {
@@ -755,21 +503,281 @@ void ChHostSkin()
 	Draw::SetStdFont(Font(fontname, (fontheight * xdpi + 512*72) / (1024*72))
 	                 .Bold(bold).Italic(italic));
 
+	ColoredOverride(CtrlsImg::Iml(), CtrlsImg::Iml());
+
+	Color fc = Blend(SColorHighlight, SColorShadow);
+
+	ChGtkIs().Clear();
+	G_obj *w = Setup(GTK().gtk_radio_button_new(NULL));
+	G_toggle *g = (G_toggle *)w;
+	int is = GtkInt(w, "indicator-size") + 2;
+	g->active = false;
+	g->inconsistent = false;
+	GtkIml(CtrlsImg::I_S0, w, 2, "radiobutton", GTK_OPTION|GTK_MARGIN1, is, is);
+	g->active = true;
+	GtkIml(CtrlsImg::I_S1, w, 1, "radiobutton", GTK_OPTION|GTK_MARGIN1, is, is);
+	GTK().gtk_widget_destroy(w);
+
+	w = Setup(GTK().gtk_check_button_new());
+	g = (G_toggle *)w;
+	g->active = false;
+	g->inconsistent = false;
+	GtkIml(CtrlsImg::I_O0, w, 2, "checkbutton", GTK_CHECK|GTK_MARGIN1, is, is);
+	g->active = true;
+	GtkIml(CtrlsImg::I_O1, w, 1, "checkbutton", GTK_CHECK|GTK_MARGIN1, is, is);
+	g->active = false;
+	g->inconsistent = true;
+	GtkIml(CtrlsImg::I_O2, w, 3, "checkbutton", GTK_CHECK|GTK_MARGIN1, is, is);
+	GTK().gtk_widget_destroy(w);
+
+	{
+		Button::Style& s = Button::StyleNormal().Write();
+		s.overpaint = 3;
+		static G_obj *button = GTK().gtk_button_new();
+		ChGtkNew(button, "button", GTK_BOX|GTK_MARGIN3);
+		GtkChButton(s.look);
+
+		s.ok = GtkImage("gtk-ok", 4, 16);
+		s.cancel = GtkImage("gtk-cancel", 4, 16);
+		s.exit = GtkImage("gtk-quit", 4, 16);
+
+		ChGtkColor(s.textcolor, 0 * 5);
+		s.pressoffset.x = GtkInt("child-displacement-x");
+		s.pressoffset.y = GtkInt("child-displacement-y");
+
+		Color c = SColorPaper();
+		for(int i = 0; i < 4; i++)
+			s.monocolor[i] = c.GetR() + c.GetG() + c.GetB() < 3 * 128 ? White() : Black();
+		s.monocolor[3] = Gray();
+
+		ToolBar::Style& ts = ToolBar::StyleDefault().Write();
+		GtkChButton(ts.look);
+		ts.look[CTRL_NORMAL] = Null;
+		ts.look[CTRL_DISABLED] = Null;
+		GtkCh(ts.look[4], 1, 1);
+		GtkCh(ts.look[5], 1, 1);
+	}
+
+	{
+		Button::Style& s = Button::StyleOk().Write();
+		static G_obj *def_button;
+		if(!def_button) {
+			def_button = GTK().gtk_button_new();
+			Setup(def_button);
+			GTK().gtk_widget_set(def_button, "can-default", true, NULL);
+			GTK().gtk_window_set_default(gtk__parent(), def_button);
+			ChGtkNew(def_button, "button", GTK_BOX|GTK_MARGIN3);
+		}
+		GtkChButton(s.look);
+	}
+
+	{
+		ScrollBar::Style& s = ScrollBar::StyleDefault().Write();
+		G_obj *adj = GTK().gtk_adjustment_new(250, 0, 1000, 1, 1, 500);
+		s.through = true;
+		static G_obj *vscrollbar = GTK().gtk_vscrollbar_new(adj);
+		ChGtkNew(vscrollbar, "slider", GTK_SLIDER|GTK_VAL1);
+		GtkChSlider(s.vthumb);
+		Image m = GetGTK(ChGtkLast(), 0, 0, "slider", GTK_SLIDER|GTK_VAL1, 16, 32);
+		s.thumbmin = GtkInt("min-slider-length");
+		s.barsize = GtkInt("slider-width");
+		s.arrowsize = GtkInt("stepper-size");
+		ChGtkNew("trough", GTK_BOX);
+		GtkChTrough(s.vupper);
+		GtkChTrough(s.vlower);
+		is = min(s.barsize, s.arrowsize) / 2;
+		bool atp = IsEmptyImage(GetGTK(ChGtkLast(), 2, 2, "vscrollbar", GTK_BOX|GTK_TOP, 16, 16));
+		if(atp) {
+			ChGtkNew("vscrollbar", GTK_ARROW);
+			GtkCh(s.up.look, "02141111");
+			ChGtkNew("vscrollbar", GTK_ARROW|GTK_VAL1);
+			GtkCh(s.down.look, "02141111");
+
+			static G_obj *btn = GTK().gtk_button_new();
+			ChGtkNew(btn, "button", GTK_BOX);
+
+			GtkChButton(Button::StyleScroll().Write().look);
+			GtkChButton(Button::StyleEdge().Write().look);
+			GtkChButton(Button::StyleLeftEdge().Write().look);
+
+			{
+				DropList::Style& s = DropList::StyleDefault().Write();
+				GtkChButtonWith(s.button, CtrlsImg::DA());
+				GtkChButtonWith(s.squaredbutton, CtrlsImg::DA());
+			}
+			{
+				SpinButtons::Style& s = SpinButtons::StyleDefault().Write();
+				GtkChButtonWith(s.inc.look, CtrlsImg::SpU());
+				GtkChButtonWith(s.dec.look, CtrlsImg::SpD());
+			}
+		}
+		else {
+			GtkIml(CtrlsImg::I_UA, ChGtkLast(), 0, 0, "vscrollbar", GTK_ARROW, is, is);
+			GtkIml(CtrlsImg::I_DA, ChGtkLast(), 0, 0, "vscrollbar", GTK_ARROW|GTK_VAL1, is, is);
+
+			ChGtkNew("vscrollbar", GTK_BOX|GTK_TOP);
+			GtkChArrow(s.up.look, CtrlsImg::UA());
+			ChGtkNew("vscrollbar", GTK_BOX|GTK_BOTTOM);
+			GtkChArrow(s.down.look, CtrlsImg::DA());
+			ChGtkNew("vscrollbar", GTK_BOX|GTK_VCENTER);
+
+			GtkCh(Button::StyleScroll().Write().look, "02142222");
+
+			GtkChImgWith(Button::StyleEdge().Write().look, Null, 1);
+			GtkChImgWith(Button::StyleLeftEdge().Write().look, Null, 2);
+
+			{
+				DropList::Style& s = DropList::StyleDefault().Write();
+				GtkChImgWith(s.button, CtrlsImg::DA(), 1);
+				GtkChImgWith(s.squaredbutton, CtrlsImg::DA(), 1);
+			}
+			{
+				SpinButtons::Style& s = SpinButtons::StyleDefault().Write();
+				GtkChImgWith(s.inc.look, CtrlsImg::SpU(), 1);
+				GtkChImgWith(s.dec.look, CtrlsImg::SpD(), 1);
+			}
+		}
+
+		int d = Diff(fc, SColorPaper());
+		for(int x = 0; x < 4; x++)
+			for(int y = 0; y < 4; y++) {
+				RGBA c = sLastImage[x][y];
+				if(c.a == 255) {
+					int dd = Diff(c, SColorPaper());
+					if(dd > d) {
+						fc = c;
+						d = dd;
+					}
+				}
+			}
+		FieldFrameColor_Write(fc);
+
+		static G_obj *hscrollbar = GTK().gtk_hscrollbar_new(adj);
+		ChGtkNew(hscrollbar, "slider", GTK_SLIDER);
+		GtkChSlider(s.hthumb);
+		ChGtkNew("trough", GTK_BOX);
+		GtkChTrough(s.hupper);
+		GtkChTrough(s.hlower);
+		if(atp) {
+			ChGtkNew("hscrollbar", GTK_ARROW|GTK_VAL2);
+			GtkCh(s.left.look, "02141111");
+			ChGtkNew("hscrollbar", GTK_ARROW|GTK_VAL3);
+			GtkCh(s.right.look, "02141111");
+		}
+		else {
+			GtkIml(CtrlsImg::I_LA, ChGtkLast(), 0, 0, "hscrollbar", GTK_ARROW|GTK_VAL2, is, is);
+			GtkIml(CtrlsImg::I_RA, ChGtkLast(), 0, 0, "hscrollbar", GTK_ARROW|GTK_VAL3, is, is);
+			ChGtkNew("hscrollbar", GTK_BOX|GTK_LEFT);
+			GtkChArrow(s.left.look, CtrlsImg::LA());
+			ChGtkNew("hscrollbar", GTK_BOX|GTK_RIGHT);
+			GtkChArrow(s.right.look, CtrlsImg::RA());
+			ChGtkNew("hscrollbar", GTK_BOX|GTK_VCENTER);
+		}
+
+		GTK().gtk_object_sink(adj);
+
+		adj = GTK().gtk_adjustment_new(0, 0, 1000, 1, 1, 500);
+		w = GTK().gtk_vscrollbar_new(NULL);
+		Setup(w);
+		s.overthumb = m != GetGTK(w, 0, 0, "slider", GTK_SLIDER|GTK_VAL1, 16, 32);
+		GTK().gtk_widget_destroy(w);
+		GTK().gtk_object_sink(adj);
+	}
+
+	{
+		MenuBar::Style& s = MenuBar::StyleDefault().Write();
+		static G_obj *menu_item = GTK().gtk_menu_item_new();
+		ChGtkNew(menu_item, "menuitem", GTK_BOX);
+		GtkCh(s.item, 2, 2);
+		GtkCh(s.topitem, 2, 2);
+	}
+
+	{
+		TabCtrl::Style& s = TabCtrl::StyleDefault().Write();
+		static G_obj *tabctrl = GTK().gtk_notebook_new();
+		ChGtkNew(tabctrl, "tab", GTK_EXT|GTK_VAL3|GTK_MARGIN3);
+		ImageBuffer ib(9, 9);
+		ImageBuffer ib1(9, 9);
+		Image m = GetGTK(tabctrl, 0, 2, "tab", GTK_EXT|GTK_VAL3, 12, 24);
+		for(int i = 0; i < 5; i++) {
+			RGBA *t = ~ib + i * 9 + i;
+			RGBA *t1 = ~ib1 + i * 9 + i;
+			for(int n = 9 - 2 * i; n--; t += 9, t1 += 9) {
+				Fill(t, m[21][i], 9 - 2 * i);
+				Fill(t1, m[21][11 - i], 9 - 2 * i);
+			}
+		}
+		{
+			RGBA *t = ~ib + 9 + 8;
+			RGBA *t1 = ~ib1 + 9 + 8;
+			for(int i = 1; i < 9; i++) {
+				memcpy(t, t1, i * sizeof(RGBA));
+				t += 9 - 1;
+				t1 += 9 - 1;
+			}
+		}
+		ib.SetHotSpot(Point(4, 4));
+		s.body = Image(ib);
+		GtkCh(s.normal[0], 2, 1);
+		GtkCh(s.normal[1], 2, 1);
+		GtkCh(s.normal[2], 0x82, 0);
+		GtkCh(s.normal[3], 2, 1);
+		for(int i = 0; i < 4; i++)
+			s.first[i] = s.last[i] = s.both[i] = s.normal[i];
+		s.margin = 0;
+
+		s.sel = Rect(0, 0, 0, 4);
+		s.extendleft = 2;
+	}
+
+	ImageBuffer ib;
+	ib.Create(3, 3);
+	Fill(~ib, fc, ib.GetLength());
+	ib[1][1] = Color(Null);
+	ib.SetHotSpot(Point(1, 1));
+	CtrlsImg::Set(CtrlsImg::I_EFE, ib);
+	ib.Create(5, 5);
+	Fill(~ib, fc, ib.GetLength());
+	for(int x = 1; x < 4; x++)
+		Fill(ib[x] + 1, SColorPaper(), 3);
+	ib[2][2] = Color(Null);
+	ib.SetHotSpot(Point(2, 2));
+	CtrlsImg::Set(CtrlsImg::I_VE, ib);
+	DropList::StyleDefault().Write().edge = CtrlsImg::EFE();
+
+	static G_obj *popup;
+	static int shadowtype;
+	if(!popup) {
+		G_obj *bar = GTK().gtk_menu_bar_new();
+		Setup(bar);
+		GTK().gtk_widget_style_get(bar, "shadow_type", &shadowtype, NULL);
+		G_obj *item = GTK().gtk_menu_item_new();
+		GTK().gtk_menu_shell_append(bar, item);
+		GTK().gtk_widget_realize(item);
+		popup = GTK().gtk_menu_new();
+		GTK().gtk_menu_item_set_submenu(item, popup);
+		GTK().gtk_widget_realize(popup);
+	}
+	Color c = GetGTK(popup, 0, 2, "menu", GTK_BOX, 32, 32)[16][16];
+	if(!IsNull(c) && Diff(c, SColorPaper()) > 200) //!!! ClearLooks patch
+		SColorMenu_Write(c);
+
+	ChCtrlImg(CtrlImg::I_information, "gtk-dialog-info", 6);
+	ChCtrlImg(CtrlImg::I_question, "gtk-dialog-question", 6);
+	ChCtrlImg(CtrlImg::I_exclamation, "gtk-dialog-warning", 6);
+
 	static struct {
-		const char *ch;
+		void  (*set)(Image);
 		const char *gtk;
 	} bimg[] = {
-		{ "OkButtonImage", "gtk-ok" },
-		{ "CancelButtonImage", "gtk-cancel" },
-		{ "ExitButtonImage", "gtk-quit" },
-		{ "YesButtonImage", "gtk-yes" },
-		{ "NoButtonImage", "gtk-no" },
-		{ "AbortButtonImage", "gtk-stop" },
-		{ "RetryButtonImage", "gtk-refresh" },
+		{ YesButtonImage_Write, "gtk-yes" },
+		{ NoButtonImage_Write, "gtk-no" },
+		{ AbortButtonImage_Write, "gtk-stop" },
+		{ RetryButtonImage_Write, "gtk-refresh" },
 	};
 
 	for(int i = 0; i < __countof(bimg); i++)
-		ChSet(bimg[i].ch, GtkImage(bimg[i].gtk, 4, 16));
+		(*bimg[i].set)(GtkImage(bimg[i].gtk, 4, 16));
 
 	ChLookFn(GtkLookFn);
 }

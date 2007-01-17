@@ -11,7 +11,7 @@ NAMESPACE_UPP
 #ifdef _DEBUG
 
 
-bool Ctrl::LogMessages/* = true*/;
+bool Ctrl::LogMessages = true;
 #endif
 
 #define LLOG(x)     // LOG(x)
@@ -121,10 +121,16 @@ Ctrl::XWindow *Ctrl::GetXWindow()
 	return q >= 0 ? &Xwindow()[q] : NULL;
 }
 
+bool Ctrl::HookProc(XEvent *event) { return false; }
+
 void Ctrl::ProcessEvent(XEvent *event)
 {
 	if(xim && XFilterEvent(event, None))
 		return;
+	ArrayMap<Window, Ctrl::XWindow>& xmap = Xwindow();
+	for(int i = 0; i < xmap.GetCount(); i++)
+		if(xmap[i].ctrl && xmap[i].ctrl->HookProc(event))
+			return;
 	FocusSync();
 	if(event->type == PropertyNotify &&
 	   (event->xproperty.atom == XAtom("_QT_SETTINGS_TIMESTAMP_") ||
@@ -148,7 +154,7 @@ void Ctrl::ProcessEvent(XEvent *event)
 	   	xclipboard().Clear();
 	   	return;
 	}
-	int q = Xwindow().Find(event->xany.window);
+	int q = xmap.Find(event->xany.window);
 #ifdef _DEBUG
 	bool eo = false;
 	if(LogMessages && event->type != NoExpose && event->type != PropertyNotify
@@ -169,14 +175,14 @@ void Ctrl::ProcessEvent(XEvent *event)
 			}
 #endif
 	if(q < 0) return;
-	XWindow& w = Xwindow()[q];
+	XWindow& w = xmap[q];
 	if(w.ctrl) {
 		w.ctrl->EventProc(w, event);
 		if(w.ctrl)
 			w.ctrl->SyncMoves();
 	}
 	else
-		Xwindow().SetKey(q, None);
+		xmap.SetKey(q, None);
 	DefferedFocusSync();
 #ifdef _DEBUG
 #ifdef UPP_HEAP
@@ -190,7 +196,6 @@ void Ctrl::ProcessEvent(XEvent *event)
 
 void Ctrl::TimerAndPaint() {
 	LTIMING("TimerAndPaint");
-//	LLOG("TIMER AND PAINT");
 	AnimateCaret();
 	TimerProc(GetTickCount());
 	for(int i = 0; i < Xwindow().GetCount(); i++) {
@@ -199,8 +204,9 @@ void Ctrl::TimerAndPaint() {
 			if(xw.ctrl) {
 				FocusSync();
 				xw.ctrl->SyncScroll();
-				xw.ctrl->DoPaint(xw.invalid);
+				Vector<Rect> x = xw.invalid;
 				xw.invalid.Clear();
+				xw.ctrl->DoPaint(x);
 			}
 			else
 				Xwindow().SetKey(i, None);

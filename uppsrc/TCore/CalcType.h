@@ -108,7 +108,7 @@ struct CalcType<bool>
 {
 	static Value  ToValue(bool b)         { return b ? 1 : 0; }
 	static bool   ValueTo(Value v);
-	static bool   IsType(Value v)  { return IsNumber(v) || IsString(v); }
+	static bool   IsType(Value v)         { return IsNull(v) || IsNumber(v) || IsString(v); }
 	static String Describe();
 };
 

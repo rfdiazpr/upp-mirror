@@ -477,6 +477,7 @@ void OleDBConnection::SetParam(int i, const Value& r)
 	else {
 		int l;
 		switch(r.GetType()) {
+		case BOOL_V:
 		case INT_V:
 			if(par.vtype != INT_V && par.vtype != DOUBLE_V) {
 				ClearArgs();

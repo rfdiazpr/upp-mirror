@@ -1,4 +1,4 @@
-description "Skinning Button using Chameleon (preliminary!)";
+description "Skinning Button using Chameleon";
 
 uses
 	CtrlLib;

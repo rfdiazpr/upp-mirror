@@ -16,6 +16,12 @@ public:
 	virtual void  FrameAddSize(Size& sz);
 
 public:
+	struct Style : ChStyle<Style> {
+		Value look[4];
+		int   gridadjustment;
+		bool  pressoffset;
+	};
+
 	class Column : public LabelBase {
 	protected:
 		virtual void  LabelUpdate();
@@ -68,6 +74,7 @@ protected:
 	byte  mode;
 	int   light;
 	int   height;
+	const Style *style;
 
 	double Denominator() const;
 	void   Reduce(int q, double& delta, double rs, int szcx, bool checkmin);
@@ -119,6 +126,8 @@ public:
 	void          SetHeight(int cy);
 	int           GetHeight() const;
 
+	static const Style& StyleDefault();
+
 	HeaderCtrl&   Invisible(bool inv);
 	HeaderCtrl&   Track(bool _track = true)               { track = _track; sb.Track(track); return *this; }
 	HeaderCtrl&   NoTrack()                               { return Track(false); }
@@ -126,6 +135,7 @@ public:
 	HeaderCtrl&   ReduceNext();
 	HeaderCtrl&   ReduceLast();
 	HeaderCtrl&   Absolute();
+	HeaderCtrl&   SetStyle(const Style& s)                { style = &s; Refresh(); return *this; }
 
 	static int GetStdHeight()                             { return Draw::GetStdFontCy() + 4; }
 

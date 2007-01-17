@@ -269,17 +269,17 @@ dword ParseKeyDesc(CParser& p)
 		int q = p.GetChar();
 		p.PassChar(']');
 		switch(q) {
-		case '`':  return f | 0x100c0;
-		case '-':  return f | 0x100bd;
-		case '=':  return f | 0x100bb;
-		case '\\': return f | 0x100dc;
-		case ';':  return f | 0x100ba;
-		case '\'': return f | 0x100de;
-		case ',':  return f | 0x100bc;
-		case '.':  return f | 0x100be;
-		case '/':  return f | 0x100bf;
-		case '[':  return f | 0x100db;
-		case ']':  return f | 0x100dd;
+		case '`':  return f | K_CTRL_GRAVE;
+		case '-':  return f | K_CTRL_MINUS;
+		case '=':  return f | K_CTRL_EQUAL;
+		case '\\': return f | K_CTRL_BACKSLASH;
+		case ';':  return f | K_CTRL_SEMICOLON;
+		case '\'': return f | K_CTRL_APOSTROPHE;
+		case ',':  return f | K_CTRL_COMMA;
+		case '.':  return f | K_CTRL_PERIOD;
+		case '/':  return f | K_CTRL_SLASH;
+		case '[':  return f | K_CTRL_LBRACKET;
+		case ']':  return f | K_CTRL_RBRACKET;
 		}
 		throw CParser::Error("");
 	}

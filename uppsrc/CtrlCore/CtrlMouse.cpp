@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x)  // LOG(x)
+#define LLOG(x) //  LOG(x)
 
 Ptr<Ctrl> Ctrl::eventCtrl;
 Ptr<Ctrl> Ctrl::mouseCtrl;
@@ -240,7 +240,7 @@ void    Ctrl::LRepeat() {
 		repeatTopCtrl->DispatchMouseEvent(LEFTREPEAT, repeatMousePos, 0);
 	else
 		KillRepeat();
-	LLOG("LRepeat " << ::Name(mouseCtrl));
+	LLOG("LRepeat " << UPP::Name(mouseCtrl));
 }
 
 void    Ctrl::LRep() {
@@ -307,7 +307,7 @@ void    Ctrl::CheckMouseCtrl() {
 	Point p = GetMousePos();
 	if(mouseCtrl) {
 		Rect r = mouseCtrl->GetScreenRect();
-		LLOG("CheckMouseCtrl mouseCtrl " << ::Name(mouseCtrl) << " " << r);
+		LLOG("CheckMouseCtrl mouseCtrl " << UPP::Name(mouseCtrl) << " " << r);
 		if(!mouseCtrl->HasCapture() && !r.Contains(p)) {
 			Ptr<Ctrl> mousectrl = mouseCtrl;
 			if(mouseinview)
@@ -328,12 +328,12 @@ Image Ctrl::DispatchMouse(int e, Point p, int zd) {
 	repeatTopCtrl = this;
 	if(e == LEFTDOWN)
 	{
-		LLOG("Ctrl::DispatchMouse: init left repeat for " << ::Name(this) << " at " << p);
+		LLOG("Ctrl::DispatchMouse: init left repeat for " << UPP::Name(this) << " at " << p);
 		UPP::SetTimeCallback(GetKbdDelay(), callback(&Ctrl::LRep), &mousepos);
 	}
 	if(e == RIGHTDOWN)
 	{
-		LLOG("Ctrl::DispatchMouse: init right repeat for " << ::Name(this) << " at " << p);
+		LLOG("Ctrl::DispatchMouse: init right repeat for " << UPP::Name(this) << " at " << p);
 		UPP::SetTimeCallback(GetKbdDelay(), callback(&Ctrl::RRep), &mousepos);
 	}
 	if(e == LEFTUP || e == RIGHTUP)

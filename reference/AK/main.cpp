@@ -30,6 +30,7 @@ App::App()
 	SetLang(LNGC_('E','N','U','S', CHARSET_UTF8));
 	AddFrame(menubar);
 	menubar.Set(THISBACK(MainMenu));
+	Sizeable();
 }
 
 GUI_APP_MAIN

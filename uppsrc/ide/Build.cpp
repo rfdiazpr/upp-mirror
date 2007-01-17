@@ -16,7 +16,6 @@ Index<String> Ide::PackageConfig(const Workspace& wspc, int package,
 {
 	String packagepath = PackagePath(wspc[package]);
 	const Package& pkg = wspc.package[package];
-//	pkg.Load(packagepath);
 	Index<String> cfg;
 	cfg = SplitFlags(mainparam, package == 0, wspc.GetAllAccepts(package));
 	cfg.FindAdd(bm.Get("BUILDER", "GCC"));
@@ -40,7 +39,7 @@ Index<String> Ide::PackageConfig(const Workspace& wspc, int package,
 		case 1:  cfg.FindAdd("DEBUG_MINIMAL"); break;
 		case 2:  cfg.FindAdd("DEBUG_FULL"); break;
 		}
-		if((p.blitz >= 0 ? p.blitz : m.def.blitz))
+		if(!pkg.noblitz && (p.blitz >= 0 ? p.blitz : m.def.blitz))
 			cfg.FindAdd("BLITZ");
 	}
 	else {
@@ -48,7 +47,7 @@ Index<String> Ide::PackageConfig(const Workspace& wspc, int package,
 		case 1:  cfg.FindAdd("DEBUG_MINIMAL"); break;
 		case 2:  cfg.FindAdd("DEBUG_FULL"); break;
 		}
-		if(m.def.blitz)
+		if(!pkg.noblitz && m.def.blitz)
 			cfg.FindAdd("BLITZ");
 	}
 	host.AddFlags(cfg);

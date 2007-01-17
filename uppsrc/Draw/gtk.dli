@@ -172,6 +172,11 @@ FN(G_obj *, gtk_check_button_new, (void))
 FN(G_obj *, gtk_vscrollbar_new, (G_obj *adjustment))
 FN(G_obj *, gtk_hscrollbar_new, (G_obj *adjustment))
 FN(G_obj *, gtk_image_new, (void))
+FN(G_obj *, gtk_menu_bar_new, (void))
+FN(void, gtk_menu_shell_append, (G_obj *menu_shell, G_obj *child))
+FN(void, gtk_menu_item_set_submenu, (G_obj *item, G_obj *submenu))
+
+
 FN(G_obj *, gtk_menu_new, (void))
 FN(G_obj *, gtk_menu_item_new, (void))
 FN(G_obj *, gtk_notebook_new, (void))

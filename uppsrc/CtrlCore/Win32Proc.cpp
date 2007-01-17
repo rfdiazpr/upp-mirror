@@ -4,6 +4,8 @@
 #include <winnls.h>
 #endif
 
+//#include "imm.h"
+
 NAMESPACE_UPP
 
 #define LLOG(x)  // LOG(x)
@@ -427,6 +429,19 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 		RefreshLayoutDeep();
 		RefreshFrame();
 		break;
+/*
+    case WM_IME_COMPOSITION:
+		HIMC himc = ImmGetContext(hwnd);
+		if(!himc) break;
+		CANDIDATEFORM cf;
+		Rect r = GetScreenRect();
+		cf.dwIndex = 0;
+		cf.dwStyle = CFS_CANDIDATEPOS;
+		cf.ptCurrentPos.x = r.left + caretx;
+		cf.ptCurrentPos.y = r.top + carety + caretcy;
+		ImmSetCandidateWindow (himc, &cf);
+		break;
+*/
 	}
 	if(hwnd)
 #ifdef PLATFORM_WINCE

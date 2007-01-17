@@ -10,7 +10,7 @@ NAMESPACE_UPP
 
 GridDisplay StdGridDisplay;
 
-static Image (*vhdr[])() = 
+static Image (*vhdr[])() =
 {
 	GridDispImg::ImgVHdr0,
 	GridDispImg::ImgVHdr1,
@@ -25,17 +25,17 @@ void GridDisplay::Paint(Draw &w, int x, int y, int cx, int cy, const Value &val,
 						Color &fg, Color &bg, Font &fnt, bool found, int fs, int fe)
 {
 	if(cx == 0 || cy == 0) return;
-	
+
 	if(style & GD::READONLY)
 	{
 		bg = Blend(bg, SGray(), 40);
 		fg = Blend(fg, SGray(), 200);
 	}
-	
+
 	Color mg = bg;
-	
+
 	int al = style & GD::ALIGN ? style & GD::ALIGN : align;
-			
+
 	if(cx > lm + rm && cy > tm + bm)
 	{
 		if(lm > 0) w.DrawRect(x, y, lm, cy, mg);
@@ -47,11 +47,11 @@ void GridDisplay::Paint(Draw &w, int x, int y, int cx, int cy, const Value &val,
 		int ny = y + tm;
 		int ncx = cx - lm - rm;
 		int ncy = cy - tm - bm;
-		
+
 		w.DrawRect(nx, ny, cx - lm - rm, cy - tm - bm, bg);
-		
+
 		w.Clip(nx, ny, ncx, ncy);
-		
+
 		if(!leftImg.IsEmpty())
 		{
 			Size isz = leftImg.GetSize();
@@ -71,34 +71,31 @@ void GridDisplay::Paint(Draw &w, int x, int y, int cx, int cy, const Value &val,
 
 		if(!(style & GD::NOTEXT))
 			DrawText(w, nx, nx, ny, ncx, ncy, al, (const wchar *) (WString) val, fnt, fg, bg, found, fs, fe, style & GD::WRAP);
-		
+
 		w.End();
 	}
 	else
 		w.DrawRect(x, y, cx, cy, bg);
 }
 
-Value HeaderTabLook(int); 
-int HeaderTabGridAdjustment();
-
 void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, int cx, int cy, const Value &val, dword style,
 		                     bool indicator, bool moved, int sortmode, int sortcol, int sortcnt, bool horizontal)
 {
 	static int ccy = -1;
-	
+
 	bool chameleon = style & GD::CHAMELEON;
 	bool highlight = style & GD::HIGHLIGHT;
 	bool readonly  = style & GD::READONLY;
-	
-	
+
+
 	if(chameleon)
 	{
 		int ncx = cx;
 		int nx = x;
-		
-		int ht = HeaderTabGridAdjustment();
-		
-		if(firstx) 
+
+		int ht = HeaderCtrl::StyleDefault().gridadjustment;
+
+		if(firstx)
 		{
 			if(ncx >= -ht)
 			{
@@ -115,8 +112,8 @@ void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, in
 			q = CTRL_HOT;
 		if(readonly)
 			q = CTRL_DISABLED;
-					
-		ChPaint(w, nx, y, ncx, cy, HeaderTabLook(q));		
+
+		ChPaint(w, nx, y, ncx, cy, HeaderCtrl::StyleDefault().look[q]);
 	}
 	else
 	{
@@ -131,11 +128,11 @@ void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, in
 
 		Color dark(76, 83, 92);
 		Color bright(White);
-		
-		
+
+
 		if(!firstx) w.DrawRect(x, y, 1, cy, bright);
 		if(!firsty) w.DrawRect(x, y, cx, 1, bright);
-		
+
 		if(firstx) w.DrawRect(x, y, 1, cy, dark);
 		if(firsty) w.DrawRect(x, y, cx, 1, dark);
 
@@ -143,36 +140,36 @@ void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, in
 		w.DrawRect(x, y + cy - 1, cx, 1, dark);
 
 	}
-	
+
 	if(moved)
 	    DrawBorder(w, x, y, cx, cy, BlackBorder);
-		     	
+
 	int tx = x + lm;
 
 	Color col = style & GD::READONLY ? Gray : Black;
-	
+
 	if(sortmode > 0)
 	{
 		Size isz = GridDispImg::ImgSortAsc().GetSize();
-		
+
 		int yf = y + (cy - isz.cy) / 2;
 		int xf = x + 2;
 		tx = xf + isz.cx + 1;
-								
+
 		if(sortcol > 0 && sortcnt > 0)
 		{
 			String tcol = AsString(sortcol);
-			
+
 			Size tsz = GetTextSize(tcol, font);
 			w.DrawText(tx, y + (cy - tsz.cy) / 2, tcol, font);
 			tx += tsz.cx;
 		}
-				
+
 		if(sortmode == 1)
 			w.DrawImage(xf, yf, GridDispImg::ImgSortAsc(), col);
 		else
 			w.DrawImage(xf, yf, GridDispImg::ImgSortDsc(), col);
-		
+
 		tx += 3;
 
 	}
@@ -202,16 +199,16 @@ void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, in
 		int ny = y + tm;
 		int ncx = cx - lm - rm;
 		int ncy = cy - tm - bm;
-				
+
 		w.Clip(nx, ny, ncx, ncy);
-				
+
 		int al = style & GD::ALIGN ? style & GD::ALIGN : align;
-		
+
 		Color fg = style & GD::READONLY ? SColorDisabled() : SColorText();
-				
+
 		DrawText(w, tx, nx, ny, ncx, ncy, al, (const wchar *) (WString) (val), font, fg, SColorPaper, 0, 0, 0, style & GD::WRAP);
-		
-		w.End();		
+
+		w.End();
 	}
 }
 
@@ -219,19 +216,19 @@ void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int al
 {
 	int tcy = font.Info().GetHeight();
 	//w.Clip(x, y, cx, cy);
-	
+
 	const wchar *p = s;
 	const wchar *t = s;
-	
+
 	int lines = 0;
-	
+
 	int ty = y;
 	Size tsz;
-	
+
 	if((align & GD::VCENTER) || (align & GD::BOTTOM))
 	{
 		const wchar * e = t;
-		
+
 		while(*p)
 		{
 			if(*p == '\n' || *(p + 1) == '\0')
@@ -250,7 +247,7 @@ void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int al
 				}
 				else
 					lines++;
-				e = p;				
+				e = p;
 			}
 			p++;
 		}
@@ -258,20 +255,20 @@ void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int al
 			ty = y + (cy - tcy * lines) / 2;
 		else
 			ty = y + cy - tcy * lines;
-		p = s;		
+		p = s;
 	}
-	
+
 	while(true)
 	{
 		bool nextline = *p == '\n';
 		bool caret    = *p == '\r';
 		bool endtext  = *p == '\0';
-		
+
 		if(nextline || endtext)
 		{
 			int tx = x;
 			tsz = GetTextSize(t, font, p - t);
-			
+
 			bool textbreak = false;
 			if(wrap && tsz.cx > cx)
 			{
@@ -289,34 +286,33 @@ void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int al
 					p = t + 1;
 				textbreak = true;
 			}
-			
+
 			if(align & GD::RIGHT)
 				tx = x + cx - tsz.cx;
 			else if(align & GD::HCENTER)
 				tx = x + (cx - tsz.cx) / 2;
-			
+
 			if(found)
 			{
 				int s = GetTextSize(t, font, fs).cx;
 				int e = GetTextSize(t, font, fe + 1).cx;
 				w.DrawRect(max(mx, tx) + s, y, e - s, cy, Color(255, 242, 0));
 			}
-						
+
 			w.DrawText(max(mx, tx), ty, t, font, fg, p - t);
 			ty += tcy;
 			t = textbreak ? p : p + 1;
 		}
 		if(caret)
-			*(char *) p = ' ';				
+			*(char *) p = ' ';
 		if(endtext)
 			break;
 		else
 			p++;
-		
+
 	}
-	
+
 	//w.End();
 }
 
 END_UPP_NAMESPACE
-

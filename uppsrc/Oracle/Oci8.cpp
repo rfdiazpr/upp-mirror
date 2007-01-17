@@ -311,6 +311,7 @@ void  OCI8Connection::SetParam(int i, const Value& q) {
 		case WSTRING_V:
 			SetParam(i, String(q));
 			break;
+		case BOOL_V:
 		case INT_V:
 			SetParam(i, int(q));
 			break;
@@ -614,6 +615,7 @@ void  OCI8Connection::GetColumn(int i, Ref f) const {
 			f.SetValue(s);
 			break;
 		}
+		case BOOL_V:
 		case INT_V: {
 			int d;
 			GetColumn(i, d);

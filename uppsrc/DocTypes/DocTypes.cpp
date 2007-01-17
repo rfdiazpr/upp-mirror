@@ -2,8 +2,8 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x) // RLOG(x)
-#define LDUMP(x) // RDUMP(x)
+#define LLOG(x)  // DLOG(x)
+#define LDUMP(x) // DDUMP(x)
 
 class BulletDisplay : public Display {
 	void  Paint(Draw& w, const Rect& r, const Value& q, Color i, Color p, dword s) const {
@@ -155,7 +155,7 @@ bool Paragraph::Format(ParaTypo& pfmt, Draw& w, int cx, int zoom) const {
 			Size sz = pptr->pr.GetStdSize();
 			*wp++ = pp->width = pptr->pr && !pptr->sz.cx ? sz.cx : DocZoom(zoom, pptr->sz.cx);
 			*ip++ = pp;
-			pp->ascent = pptr->pr && !pptr->sz.cy ? sz.cy : DocZoom(zoom, pptr->sz.cy);
+			pp->ascent = minmax(pptr->pr && !pptr->sz.cy ? sz.cy : DocZoom(zoom, pptr->sz.cy), 0, 1000);
 			pp->descent = 0;
 			pp->external = pp->overhang = 0;
 			pp->color = pptr->color;

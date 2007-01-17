@@ -2,17 +2,20 @@
 
 NAMESPACE_UPP
 
-CH_LOOK(ProgressIndicatorLook, CtrlsImg::PI());
-CH_LOOK(VertProgressIndicatorLook, CtrlsImg::VPI());
-CH_LOOK(ProgressIndicatorChunkLook, CtrlsImg::PIC());
-CH_LOOK(VertProgressIndicatorChunkLook, CtrlsImg::VPIC());
+CH_STYLE(ProgressIndicator, Style, StyleDefault)
+{
+	hlook = CtrlsImg::PI();
+	hchunk = CtrlsImg::PIC();
+	vlook = CtrlsImg::VPI();
+	vchunk = CtrlsImg::VPIC();
+}
 
 Size ProgressIndicator::GetMsz()
 {
 	Size sz = GetSize();
-	Rect mg = ChMargins(ProgressIndicatorLook());
+	Rect mg = ChMargins(style->hlook);
 	sz.cx -= mg.left + mg.right;
-	mg = ChMargins(VertProgressIndicatorLook());
+	mg = ChMargins(style->vlook);
 	sz.cy -= mg.top + mg.bottom;
 	return sz;
 }
@@ -35,16 +38,15 @@ void ProgressIndicator::Paint(Draw& w) {
 	if(GUI_GlobalStyle() >= GUISTYLE_XP && !percent) {
 		w.DrawRect(sz, SColorPaper);
 		if(sz.cy > sz.cx) {
-			ChPaint(w, sz, VertProgressIndicatorLook());
-			Rect r = ChMargins(VertProgressIndicatorLook());
+			ChPaint(w, sz, style->vlook);
+			Rect r = ChMargins(style->vlook);
 			ChPaint(w, r.left, sz.cy - r.bottom - p - p0, sz.cx - r.left - r.right, p,
-			        VertProgressIndicatorChunkLook());
+			        style->vchunk);
 		}
 		else {
-			ChPaint(w, sz, ProgressIndicatorLook());
-			Rect r = ChMargins(ProgressIndicatorLook());
-			ChPaint(w, r.left + p0, r.top, p, sz.cy - r.top - r.bottom,
-			        ProgressIndicatorChunkLook());
+			ChPaint(w, sz, style->hlook);
+			Rect r = ChMargins(style->hlook);
+			ChPaint(w, r.left + p0, r.top, p, sz.cy - r.top - r.bottom, style->hchunk);
 		}
 	}
 	else {
@@ -109,6 +111,7 @@ void ProgressIndicator::Set(int _actual, int _total) {
 }
 
 ProgressIndicator::ProgressIndicator() {
+	style = &StyleDefault();
 	Transparent();
 	NoWantFocus();
 	total = actual = 0;

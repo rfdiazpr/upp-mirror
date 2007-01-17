@@ -9,6 +9,7 @@ EscValue EscFromStdValue(const Value& v)
 	Time t;
 	if(!IsNull(v))
 		switch(v.GetType()) {
+		case BOOL_V:
 		case INT_V:
 		case DOUBLE_V:
 			r = (double)v;

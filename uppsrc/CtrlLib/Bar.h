@@ -242,24 +242,30 @@ protected:
 	virtual Item& AddItem(Callback cb);
 	virtual Item& AddSubMenu(Callback1<Bar&> proc);
 
+public:
+	struct Style : ChStyle<Style> {
+		Value item, topitem;
+	};
+
 private:
 	Array<MenuItemBase> item;
 
-	MenuBar  *parentmenu;
-	MenuBar  *submenu;
-	Ctrl     *submenuitem;
-	Ptr<Ctrl> restorefocus;
-	bool      doeffect;
-	Font      font;
-	int       leftgap;
-	int       lock;
+	MenuBar     *parentmenu;
+	MenuBar     *submenu;
+	Ctrl        *submenuitem;
+	Ptr<Ctrl>    restorefocus;
+	bool         doeffect;
+	Font         font;
+	int          leftgap;
+	int          lock;
+	const Style *style;
 
 	friend class MenuItemBase;
 	friend class SubMenuBase;
 	friend class TopSubMenuItem;
 	friend class SubMenuItem;
 
-	void     SetParentMenu(MenuBar *parent)    { parentmenu = parent; }
+	void     SetParentMenu(MenuBar *parent)    { parentmenu = parent; style = parent->style; }
 	MenuBar *GetParentMenu()                   { return parentmenu; }
 	void     SetActiveSubmenu(MenuBar *sm, Ctrl *menuitem);
 	MenuBar *GetActiveSubmenu()                { return submenu; }
@@ -287,7 +293,6 @@ public:
 
 	void     CloseMenu();
 
-
 	void     Set(Callback1<Bar&> menu);
 	void     Post(Callback1<Bar&> bar);
 
@@ -306,8 +311,11 @@ public:
 	bool     IsEmpty()                              { return item.IsEmpty(); }
 	void     Clear();
 
+	static const Style& StyleDefault();
+
 	MenuBar& LeftGap(int cx)                        { leftgap = cx; return *this; }
 	MenuBar& SetFont(Font f)                        { font = f; return *this; }
+	MenuBar& SetStyle(const Style& s)               { style = &s; Refresh(); return *this; }
 	Font     GetFont() const                        { return font; }
 
 	typedef MenuBar CLASSNAME;
@@ -347,6 +355,7 @@ protected:
 	bool    checked;
 	bool    paint_checked;
 	bool    repeat;
+	const Value *look;
 
 private:
 	UPP::Image image;
@@ -357,6 +366,8 @@ private:
 
 public:
 	void  Reset();
+
+	void  SetLook(const Value *l) { look = l; Refresh(); }
 
 	ToolButton();
 	virtual ~ToolButton();
@@ -370,11 +381,17 @@ protected:
 	virtual Item& AddItem(Callback cb);
 	virtual Item& AddSubMenu(Callback1<Bar&> proc);
 
+public:
+	struct Style : ChStyle<Style> {
+		Value look[6];
+	};
+
 private:
 	int               ii;
 	Array<ToolButton> item;
 	int               lock;
 	Callback1<Bar&>   proc;
+	const Style      *style;
 
 protected:
 	enum {
@@ -390,6 +407,10 @@ public:
 	void Clear();
 	void Set(Callback1<Bar&> bar);
 	void Post(Callback1<Bar&> bar);
+
+	static const Style& StyleDefault();
+
+	ToolBar& SetStyle(const Style& s)               { style = &s; Refresh(); return *this; }
 
 	typedef ToolBar  CLASSNAME;
 

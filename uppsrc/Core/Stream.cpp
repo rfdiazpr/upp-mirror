@@ -250,7 +250,7 @@ void Stream::Put16be(word q) {
 	Put(h[0]);
 }
 
-void Stream::Put32be(int q) {
+void Stream::Put32be(dword q) {
 	byte *h = (byte *) &q;
 	Put(h[3]);
 	Put(h[2]);
@@ -276,7 +276,7 @@ void Stream::Put16le(word q) {
 	Put(h[1]);
 }
 
-void Stream::Put32le(int q) {
+void Stream::Put32le(dword q) {
 	byte *h = (byte *) &q;
 	Put(h[0]);
 	Put(h[1]);

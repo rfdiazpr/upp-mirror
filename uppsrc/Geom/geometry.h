@@ -22,6 +22,18 @@ inline double fpmax        (Pointf p)                         { return max(p.x, 
 inline double fpabsmin     (Pointf p)                         { return min(fabs(p.x), fabs(p.y)); }
 inline double fpabsmax     (Pointf p)                         { return max(fabs(p.x), fabs(p.y)); }
 
+// temporary fix by Mirek Fidler:
+inline double ScalarProduct(Sizef a, Sizef b) { return a.cx * b.cx + a.cy * b.cy; }
+inline double VectorProduct(Sizef a, Sizef b) { return a.cx * b.cy - a.cy * b.cx; }
+inline double Squared(Sizef a)             { return a.cx * a.cx + a.cy * a.cy; }
+inline double Length(Sizef a)              { return hypot(a.cx, a.cy); }
+
+inline double ScalarProduct(Size a, Size b) { return a.cx * b.cx + a.cy * b.cy; }
+inline double VectorProduct(Size a, Size b) { return a.cx * b.cy - a.cy * b.cx; }
+inline double Squared(Size a)             { return a.cx * a.cx + a.cy * a.cy; }
+inline double Length(Size a)              { return hypot(a.cx, a.cy); }
+
+
 inline Pointf Move         (Pointf p, double dx, double dy)   { return Pointf(p.x + dx, p.y + dy); }
 inline Pointf Mid          (Pointf p, Pointf q)               { return Pointf((p.x + q.x) / 2, (p.y + q.y) / 2); }
 inline Pointf Mid          (Pointf p, Pointf q, double wt)    { return p + (q - p) * wt; }

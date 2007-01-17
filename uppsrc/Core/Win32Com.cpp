@@ -16,6 +16,14 @@ HINSTANCE AppGetHandle()
 void AppSetHandle(HINSTANCE dll_instance) { app_instance = dll_instance; }
 
 #ifndef PLATFORM_WINCE
+bool IsWin2K()
+{
+	OSVERSIONINFO of;
+	of.dwOSVersionInfoSize = sizeof(of);
+	GetVersionEx(&of);
+	return of.dwMajorVersion >= 5 && of.dwMinorVersion >= 0;
+}
+
 bool IsWinXP()
 {
 	OSVERSIONINFO of;

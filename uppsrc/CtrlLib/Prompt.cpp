@@ -17,7 +17,8 @@ struct PromptDlgWnd__ : TopWindow {
 	}
 };
 
-int Prompt(const char *title, const Image& iconbmp, const char *qtf, bool okcancel,
+int Prompt(Callback1<const String&> WhenLink,
+           const char *title, const Image& iconbmp, const char *qtf, bool okcancel,
            const char *button1, const char *button2, const char *button3,
 		   int cx,
 		   Image im1, Image im2, Image im3)
@@ -26,6 +27,7 @@ int Prompt(const char *title, const Image& iconbmp, const char *qtf, bool okcanc
 	PromptDlgWnd__ dlg;
 	RichTextCtrl qtfctrl;
 	Icon         icon;
+	qtfctrl.WhenLink = WhenLink;
 	icon.SetImage(iconbmp);
 	Button b1, b2, b3;
 	qtfctrl.SetQTF(String("[G1 ") + qtf, GetRichTextStdScreenZoom());
@@ -106,11 +108,20 @@ int Prompt(const char *title, const Image& iconbmp, const char *qtf, bool okcanc
 	return dlg.RunAppModal();
 }
 
+int Prompt(Callback1<const String&> WhenLink,
+           const char *title, const Image& icon, const char *qtf, bool okcancel,
+           const char *button1, const char *button2, const char *button3,
+		   int cx)
+{
+	return Prompt(WhenLink, title, icon, qtf, okcancel, button1, button2, button3, cx, Null, Null, Null);
+}
+
 int Prompt(const char *title, const Image& icon, const char *qtf, bool okcancel,
            const char *button1, const char *button2, const char *button3,
 		   int cx)
 {
-	return Prompt(title, icon, qtf, okcancel, button1, button2, button3, cx, Null, Null, Null);
+	return Prompt(callback(LaunchWebBrowser), title,
+	              icon, qtf, okcancel, button1, button2, button3, cx, Null, Null, Null);
 }
 
 int Prompt(const char *title, const Image& icon, const char *qtf,
@@ -147,35 +158,40 @@ CH_IMAGE(RetryButtonImage, Null);
 
 int PromptYesNo(const char *qtf) {
 	BeepQuestion();
-	return Prompt(Ctrl::GetAppName(), CtrlImg::question(), qtf, false,
+	return Prompt(callback(LaunchWebBrowser),
+	              Ctrl::GetAppName(), CtrlImg::question(), qtf, false,
 	              t_("&Yes"), t_("&No"), NULL, 0,
 	              YesButtonImage(), NoButtonImage(), Null);
 }
 
 int PromptYesNoCancel(const char *qtf) {
 	BeepQuestion();
-	return Prompt(Ctrl::GetAppName(), CtrlImg::question(), qtf, true,
+	return Prompt(callback(LaunchWebBrowser),
+	              Ctrl::GetAppName(), CtrlImg::question(), qtf, true,
 	              t_("&Yes"), t_("&No"), t_("Cancel"), 0,
 	              YesButtonImage(), NoButtonImage(), Null);
 }
 
 int PromptAbortRetry(const char *qtf) {
 	BeepExclamation();
-	return Prompt(Ctrl::GetAppName(), CtrlImg::exclamation(), qtf, false,
+	return Prompt(callback(LaunchWebBrowser),
+	              Ctrl::GetAppName(), CtrlImg::exclamation(), qtf, false,
 	              t_("&Abort"), t_("&Retry"), NULL, 0,
 	              AbortButtonImage(), RetryButtonImage(), Null);
 }
 
 int PromptRetryCancel(const char *qtf) {
 	BeepExclamation();
-	return Prompt(Ctrl::GetAppName(), CtrlImg::exclamation(), qtf, true,
+	return Prompt(callback(LaunchWebBrowser),
+	              Ctrl::GetAppName(), CtrlImg::exclamation(), qtf, true,
 	              t_("&Retry"), t_("Cancel"), NULL, 0,
 	              RetryButtonImage(), Null, Null);
 }
 
 int PromptAbortRetryIgnore(const char *qtf) {
 	BeepExclamation();
-	return Prompt(Ctrl::GetAppName(), CtrlImg::exclamation(), qtf, false,
+	return Prompt(callback(LaunchWebBrowser),
+	              Ctrl::GetAppName(), CtrlImg::exclamation(), qtf, false,
 	              t_("&Abort"), t_("&Retry"), t_("&Ignore"), 0,
 	              AbortButtonImage(), RetryButtonImage(), Null);
 }

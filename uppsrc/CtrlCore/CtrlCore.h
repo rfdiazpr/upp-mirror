@@ -119,8 +119,6 @@ CtrlFrame& BottomSeparatorFrame();
 CtrlFrame& LeftSeparatorFrame();
 CtrlFrame& RightSeparatorFrame();
 
-int  FrameButtonWidth();
-
 void LayoutFrameLeft(Rect& r, Ctrl *ctrl, int cx);
 void LayoutFrameRight(Rect& r, Ctrl *ctrl, int cx);
 void LayoutFrameTop(Rect& r, Ctrl *ctrl, int cy);
@@ -171,6 +169,7 @@ Index<Atom>& _NET_Supported();
 #endif
 
 class TopWindow;
+class TrayIcon;
 
 class Ctrl : public Pte<Ctrl> {
 public:
@@ -463,6 +462,7 @@ private:
 
 	friend class ViewDraw;
 	friend class TopWindow;
+	friend class TrayIcon;
 	friend class WaitCursor;
 
 #ifdef PLATFORM_WIN32
@@ -574,8 +574,11 @@ public:
 	static XIM  xim;
 
 	virtual void    EventProc(XWindow& w, XEvent *event);
+	virtual bool    HookProc(XEvent *event);
 	        Window  GetWindow() const         { return parent ? None : top ? top->window : None; }
 	static  Ctrl   *CtrlFromWindow(Window w);
+	bool    TrapX11Errors();
+	void    UntrapX11Errors(bool b);
 
 #endif
 
@@ -1062,6 +1065,9 @@ public:
 	virtual ~Ctrl();
 };
 
+int   EditFieldIsThin();
+int   FrameButtonWidth();
+int   ScrollBarArrowSize();
 Color FieldFrameColor();
 
 enum { GUISTYLE_FLAT, GUISTYLE_CLASSIC, GUISTYLE_XP, GUISTYLE_X };
@@ -1075,6 +1081,18 @@ int GUI_PopUpEffect();
 int GUI_DropShadows();
 int GUI_AltAccessKeys();
 int GUI_AKD_Conservative();
+
+void GUI_GlobalStyle_Write(int);
+void GUI_DragFullWindow_Write(int);
+void GUI_PopUpEffect_Write(int);
+void GUI_DropShadows_Write(int);
+void GUI_AltAccessKeys_Write(int);
+void GUI_AKD_Conservative_Write(int);
+
+void  EditFieldIsThin_Write(int);
+void  FrameButtonWidth_Write(int);
+void  ScrollBarArrowSize_Write(int);
+void  FieldFrameColor_Write(Color);
 
 String Name(const Ctrl *ctrl);
 String Desc(const Ctrl *ctrl);

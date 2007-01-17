@@ -114,7 +114,7 @@
 
 #define TOPIC(id)       { const char *topic = id;
 #define TITLE(x)          const char *title = x;
-#define COMPRESSED        static const byte data[] = {
+#define COMPRESSED        static const UPP::byte data[] = {
 #define END_TOPIC         }; RegisterTopic__(ASSTRING(TOPICFILE), topic, title, data, __countof(data)); }
 
 INITBLOCK_(COMBINE3(TOPIC__, TOPIC_VERB, TOPIC_VERA))

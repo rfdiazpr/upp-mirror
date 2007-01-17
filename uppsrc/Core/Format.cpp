@@ -532,6 +532,7 @@ void RegisterNumberFormatter(const char *id, Formatter f)
 	RegisterFormatter(DOUBLE_V, id, f);
 	RegisterFormatter(INT64_V, id, f);
 	RegisterFormatter(INT_V, id, f);
+	RegisterFormatter(BOOL_V, id, f);
 	RegisterNullFormatter(id, f);
 }
 
@@ -806,9 +807,11 @@ void IntDoubleRegister(int type)
 String NFormat(int language, const char *s, const Vector<Value>& v)
 {
 	ONCELOCK {
+		IntDoubleRegister(BOOL_V);
 		IntDoubleRegister(INT_V);
 		IntDoubleRegister(INT64_V);
 		IntDoubleRegister(DOUBLE_V);
+
 		RegisterStringFormatter("s", &StringFormatter);
 		RegisterNullFormatter("", &DateFormatter);
 		RegisterFormatter(DATE_V, "", &DateFormatter);

@@ -506,6 +506,7 @@ Ctrl::Ctrl() {
 	frame.Add().frame = &NullFrame();
 	enabled = visible = wantfocus = initfocus = true;
 	editable = true;
+	GLX = false;
 #ifdef PLATFORM_WIN32
 	activex = false;
 #endif

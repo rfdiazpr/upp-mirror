@@ -112,13 +112,23 @@ void Ide::Edit(Bar& menu) {
 			    .Help("Edit using the designer (not as text)");
 			menu.MenuSeparator();
 		}
-		menu.Add("Cut", CtrlImg::cut(), callback(&editor, &LineEdit::Cut))
+		Bar::Item& (Bar::*add)(const char *s, const Image& m, Callback cb) = &Bar::Add;
+		if(toolbar_in_row) add = &MenuBar::AddMenu;
+		(menu.*add)("Undo", CtrlImg::undo(), callback(&editor, &LineEdit::Undo))
+			.Key(K_CTRL_Z)
+			.Help("Undo changes to text");
+		(menu.*add)("Redo", CtrlImg::redo(), callback(&editor, &LineEdit::Redo))
+			.Key(K_SHIFT|K_CTRL_Z)
+			.Help("Redo undone changes");
+		if(!toolbar_in_row || menu.IsMenuBar())
+			menu.Separator();
+		(menu.*add)("Cut", CtrlImg::cut(), callback(&editor, &LineEdit::Cut))
 			.Key(K_CTRL_X)
 			.Help("Cut selection and place it on the system clipboard");
-		menu.Add("Copy", CtrlImg::copy(), callback(&editor, &LineEdit::Copy))
+		(menu.*add)("Copy", CtrlImg::copy(), callback(&editor, &LineEdit::Copy))
 			.Key(K_CTRL_C)
 			.Help("Copy current selection on the system clipboard");
-		menu.Add("Paste", CtrlImg::paste(), THISBACK(EditPaste))
+		(menu.*add)("Paste", CtrlImg::paste(), THISBACK(EditPaste))
 			.Key(K_CTRL_V)
 			.Help("Insert text from clipboard at cursor location");
 
@@ -447,10 +457,6 @@ void Ide::MainMenu(Bar& menu) {
 
 void Ide::MainTool(Bar& bar)
 {
-	if(toolbar_in_row)
-		bar.Separator();
-//	File(bar);
-//	bar.Separator();
 	Edit(bar);
 	if(debugger)
 		DebugMenu(bar);

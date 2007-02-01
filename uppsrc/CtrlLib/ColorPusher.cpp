@@ -12,7 +12,7 @@ void ColorPusher::Paint(Draw& w)
 	if(withtext) {
 		w.DrawRect(2, 2, sz.cy - 4, sz.cy - 4, color);
 		DrawFrame(w, 1, 1, sz.cy - 2, sz.cy - 2, SColorText);
-		w.DrawText(sz.cy + 2, ty, FormatColor(color));
+		w.DrawText(sz.cy + 2, ty, FormatColor(color), StdFont(), SColorText());
 	}
 	else {
 		if(!IsNull(color)) {
@@ -21,7 +21,8 @@ void ColorPusher::Paint(Draw& w)
 		}
 		else
 		if(!withtext)
-			w.DrawText(max(2, (sz.cx - GetTextSize(nulltext, StdFont()).cx) / 2), ty, nulltext);
+			w.DrawText(max(2, (sz.cx - GetTextSize(nulltext, StdFont()).cx) / 2), ty,
+			           nulltext, StdFont(), SColorText());
 	}
 	if(HasFocus())
 		DrawFocus(w, GetSize());

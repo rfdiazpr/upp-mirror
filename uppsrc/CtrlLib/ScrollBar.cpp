@@ -113,7 +113,7 @@ void ScrollBar::Paint(Draw& w) {
 
 	const Value **l = IsHorz() ? hl : vl;
 
-	if(IsShowEnabled()) {
+	if(prev.IsShowEnabled()) {
 		for(int i = 0; i < 3; i++) {
 			Rect pr = GetPartRect(i);
 			if(i != 2) {
@@ -131,12 +131,12 @@ void ScrollBar::Paint(Draw& w) {
 		}
 		else
 		if(IsHorz()) {
-			ChPaint(w, 0, 0, sz.cx / 2, sz.cy, l[0][CTRL_DISABLED]);
-			ChPaint(w, sz.cx / 2, 0, sz.cx - sz.cx / 2, sz.cy, l[1][CTRL_DISABLED]);
+			ChPaint(w, style->arrowsize, 0, sz.cx / 2, sz.cy, l[0][CTRL_DISABLED]);
+			ChPaint(w, style->arrowsize + sz.cx / 2, 0, sz.cx - sz.cx / 2, sz.cy, l[1][CTRL_DISABLED]);
 		}
 		else {
-			ChPaint(w, 0, 0, sz.cx, sz.cy / 2, l[0][CTRL_DISABLED]);
-			ChPaint(w, 0, sz.cy / 2, sz.cx, sz.cy - sz.cy / 2, l[1][CTRL_DISABLED]);
+			ChPaint(w, 0, style->arrowsize, sz.cx, sz.cy / 2, l[0][CTRL_DISABLED]);
+			ChPaint(w, 0, style->arrowsize + sz.cy / 2, sz.cx, sz.cy - sz.cy / 2, l[1][CTRL_DISABLED]);
 		}
 }
 
@@ -291,7 +291,8 @@ void ScrollBar::Set(int _pagepos, int _pagesize, int _totalsize) {
 		WhenVisibility();
 	}
 	if(autodisable) {
-		Enable(a);
+		if(prev.IsEnabled() != a)
+			Refresh();
 		prev.Enable(a);
 		next.Enable(a);
 	}
@@ -498,7 +499,8 @@ ScrollBar& ScrollBar::AutoHide(bool b) {
 ScrollBar& ScrollBar::AutoDisable(bool b) {
 	autodisable = b;
 	if(!b) {
-		Enable();
+		if(!prev.IsEnabled())
+			Refresh();
 		prev.Enable();
 		next.Enable();
 	}

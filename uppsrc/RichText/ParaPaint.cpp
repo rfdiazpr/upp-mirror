@@ -40,7 +40,8 @@ void RichPara::Flush(Draw& draw, const PaintInfo& pi, wchar *text,
 		int zy0 = z * y0;
 		int zx0 = z * x0;
 		if(!IsNull(f.paper) && !highlight)
-			draw.DrawRect(zx0, z * y, width, z * (y + linecy) - z * y, f.paper);
+			draw.DrawRect(zx0, z * y, width, z * (y + linecy) - z * y,
+			              pi.coloroverride ? SColorPaper() : f.paper);
 		if(!IsNull(f.indexentry) && !IsNull(pi.indexentry))
 			draw.DrawRect(zx0, zy0, width, 2, pi.indexentry);
 		Font fnt = f;
@@ -59,12 +60,14 @@ void RichPara::Flush(Draw& draw, const PaintInfo& pi, wchar *text,
 			int dx = max(fi.GetAscent() / 5, 2);
 			for(int i = 0; dx * i < width; i++)
 				draw.DrawRect(zx0 + i * dx, zy0 + fi.GetDescent() / 2,
-				              dx / 2, max(fi.GetDescent() / 3, 1), f.ink);
+				              dx / 2, max(fi.GetDescent() / 3, 1),
+				              pi.coloroverride ? SColorText() : f.ink);
 		}
-		Color ink = f.ink;
+		Color ink = pi.coloroverride ? SColorText() : f.ink;
 		if(!IsNull(f.link) && !IsNull(pi.hyperlink)) {
 			fnt.Underline();
-			ink = pi.hyperlink;
+			if(!pi.coloroverride)
+				ink = pi.hyperlink;
 		}
 		x = zx0;
 		for(int i = 0; i < len; i++) {
@@ -275,18 +278,18 @@ void RichPara::Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& 
 				r1.Deflate(max(1, q));
 				switch(format.bullet) {
 				case BULLET_BOX:
-					draw.DrawRect(r, format.ink);
+					draw.DrawRect(r, pi.coloroverride ? SColorText() : format.ink);
 					break;
 				case BULLET_BOXWHITE:
-					draw.DrawRect(r, format.ink);
+					draw.DrawRect(r, pi.coloroverride ? SColorText() : format.ink);
 					draw.DrawRect(r1, White);
 					break;
 				case BULLET_ROUNDWHITE:
-					draw.DrawEllipse(r, format.ink);
-					draw.DrawEllipse(r1, White);
+					draw.DrawEllipse(r, pi.coloroverride ? SColorText() : format.ink);
+					draw.DrawEllipse(r1, pi.coloroverride ? SColorPaper() : White);
 					break;
 				case BULLET_ROUND:
-					draw.DrawEllipse(r, format.ink);
+					draw.DrawEllipse(r, pi.coloroverride ? SColorText() : format.ink);
 					break;
 				default:
 					String s = n.AsText(format);
@@ -295,7 +298,7 @@ void RichPara::Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& 
 						cf.Height(z * cf.GetHeight());
 						draw.DrawText(r.left,
 						              z * y0 - cf.Info().GetAscent(),
-						              s, cf, cf.ink);
+						              s, cf, pi.coloroverride ? SColorText() : cf.ink);
 					}
 				}
 			}

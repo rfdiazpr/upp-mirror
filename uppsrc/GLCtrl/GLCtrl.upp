@@ -3,7 +3,10 @@ uses
 
 library(WIN32 GCC) "glaux glu32 opengl32";
 
+library(LINUX) "GL GLU";
+
+library(FREEBSD) "GL GLU";
+
 file
 	GLCtrl.h,
 	GLCtrl.cpp;
-

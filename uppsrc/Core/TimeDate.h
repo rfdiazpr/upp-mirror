@@ -72,8 +72,8 @@ struct Time : Date, RelOps< Time, Moveable<Time> > {
 
 	void     Serialize(Stream& s);
 
-	static Time High()       { return Time(9999, 1, 1); }
-	static Time Low()        { return Time(-9999, 12, 31); }
+	static Time High()       { return Time(4000, 1, 1); }
+	static Time Low()        { return Time(-4000, 1, 1); }
 
 	void   Set(int64 scalar);
 	int64  Get();

@@ -55,7 +55,10 @@ extern int         Xconnection;
 
 extern dword   (*Xgetpixel)(int r, int g, int b);
 
+/*
 struct G_obj { int d; };
+
+#ifndef flagNOGTK
 
 #define DLIMODULE   GTK
 #define DLIHEADER   <Draw/gtk.dli>
@@ -77,6 +80,8 @@ struct G_obj { int d; };
 #define DLIHEADER   <Draw/gnome.dli>
 #include <Core/dli_header.h>
 
+#endif
+*/
 void          InitX11Draw(const char *dispname = NULL);
 void          InitX11Draw(XDisplay *display);
 
@@ -229,8 +234,8 @@ class FontInfo : Moveable<FontInfo> {
 		int  lspc;
 		int  rspc;
 
-		bool operator==(const CharMetrics& b)
-		     { return width = b.width && lspc == b.lspc && rspc == b.rspc; }
+		bool operator==(const CharMetrics& b) const
+		     { return width == b.width && lspc == b.lspc && rspc == b.rspc; }
 	};
 
 	struct Data : public Link<Data, 2> {

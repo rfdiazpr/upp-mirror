@@ -1,11 +1,25 @@
 #include "Draw.h"
 
+#ifdef PLATFORM_X11
+
+#define Time    XTime
+#define Font    XFont
+#define Display XDisplay
+#define Picture XPicture
+
+#include <gtk/gtk.h>
+#include <gdk/gdkx.h>
+#include <gdk/gdkprivate.h>
+
+#undef Picture
+#undef Time
+#undef Font
+#undef Display
+
 NAMESPACE_UPP
 
 #define LLOG(x)     //LOG(x)
 #define LTIMING(x)  //TIMING(x)
-
-#ifdef PLATFORM_X11
 
 XDisplay   *Xdisplay;
 int         Xscreenno;
@@ -25,6 +39,9 @@ byte       *Xmapcolor;
 byte       *Xunmapcolor;
 
 dword   (*Xgetpixel)(int r, int g, int b);
+
+/*
+#ifndef flagNOGTK
 
 #define DLLFILENAME "libgtk-x11-2.0.so"
 #define DLIMODULE   GTK
@@ -50,6 +67,9 @@ dword   (*Xgetpixel)(int r, int g, int b);
 #define DLIMODULE   GNOME
 #define DLIHEADER   <Draw/gnome.dli>
 #include <Core/dli_source.h>
+
+#endif
+*/
 
 void StaticExitDraw_()
 {
@@ -237,26 +257,39 @@ void InitX11Draw(XDisplay *display)
 
 void InitX11Draw(const char *dispname)
 {
-	if(GTK() && GDK() && GOBJ()) {
-		const Vector<String>& cmd = CommandLine();
-		char **argv = (char**) MemoryAllocPermanent(sizeof(char *) * cmd.GetCount());
-		for(int i = 0; i < cmd.GetCount(); i++)
-		    argv[i] = PermanentCopy(cmd[i]);
-		int argc = cmd.GetCount();
-		GTK().gtk_init (&argc, &argv);
-		G_obj *w = GTK().gtk_window_new(0);
-		G_obj *d = GTK().gtk_widget_get_display(w);
-		GDK().gdk_x11_display_get_xdisplay(d);
-		InitX11Draw((XDisplay *)GDK().gdk_x11_display_get_xdisplay(d));
-		GTK().gtk_widget_destroy(w);
+#ifdef flagNOGTK
+	if(!dispname || !*dispname) {
+		int f = Environment().Find("DISPLAY");
+		dispname = (f >= 0 ? ~Environment()[f] : ":0.0");
 	}
-	else {
+	InitX11Draw(XOpenDisplay(dispname));
+#else
+	const Vector<String>& cmd = CommandLine();
+	char **argv = (char**) MemoryAllocPermanent(sizeof(char *) * cmd.GetCount());
+	for(int i = 0; i < cmd.GetCount(); i++)
+	    argv[i] = PermanentCopy(cmd[i]);
+	int argc = cmd.GetCount();
+	gtk_init (&argc, &argv);
+	GtkWidget *w = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	GdkDisplay *d = gtk_widget_get_display(w);
+	gdk_x11_display_get_xdisplay(d);
+	InitX11Draw(gdk_x11_display_get_xdisplay(d));
+	gtk_widget_destroy(w);
+#endif
+/*
+#ifndef flagNOGTK
+	if(GTK() && GDK() && GOBJ()) {
+	}
+	else
+#endif
+	{
 		if(!dispname || !*dispname) {
 			int f = Environment().Find("DISPLAY");
 			dispname = (f >= 0 ? ~Environment()[f] : ":0.0");
 		}
 		InitX11Draw(XOpenDisplay(dispname));
 	}
+*/
 }
 
 #ifdef PLATFORM_XFT
@@ -451,6 +484,6 @@ NilDraw::~NilDraw()
 
 Draw& GLOBAL_V(NilDraw, ScreenInfo)
 
-#endif
-
 END_UPP_NAMESPACE
+
+#endif

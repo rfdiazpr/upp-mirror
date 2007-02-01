@@ -200,7 +200,10 @@ void FileSel::AddName(Vector<String>& fn, String& f) {
 			f << '.' << defext;
 		else
 			f = TrimDot(f);
-		fn.Add(f);
+		if(f[0] == '\"' && f.GetCount() > 2)
+			fn.Add(f.Mid(1, f.GetCount() - 2));
+		else
+			fn.Add(f);
 	}
 	f.Clear();
 }
@@ -226,28 +229,34 @@ void FileSel::Finish() {
 	String f = file.GetText().ToString();
 	if(f.IsEmpty()) return;
 	String o;
-	for(const char *s = f; *s; s++) {
-		if(*s == ' ')
-			AddName(fn, o);
-		else
-		if(*s == '\"') {
-			AddName(fn, o);
-			s++;
-			for(;;) {
-				if(*s == '\0')
-					AddName(fn, o);
-				else
-				if(*s == '\"') {
-					AddName(fn, o);
-					break;
+	if(mode == OPEN && IsMulti()) {
+		for(const char *s = f; *s; s++) {
+			if(*s == ' ')
+				AddName(fn, o);
+			else
+			if(*s == '\"') {
+				AddName(fn, o);
+				s++;
+				for(;;) {
+					if(*s == '\0')
+						AddName(fn, o);
+					else
+					if(*s == '\"') {
+						AddName(fn, o);
+						break;
+					}
+					o.Cat(*s++);
 				}
-				o.Cat(*s++);
 			}
+			else
+				o.Cat(*s);
 		}
-		else
-			o.Cat(*s);
+		AddName(fn, o);
 	}
-	AddName(fn, o);
+	else {
+		o = f;
+		AddName(fn, o);
+	}
 	if(!IsMulti() && fn.GetCount())
 		fn.SetCount(1);
 	String d = GetDir();

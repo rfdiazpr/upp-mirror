@@ -11,7 +11,7 @@ NAMESPACE_UPP
 #ifdef _DEBUG
 
 
-bool Ctrl::LogMessages = true;
+bool Ctrl::LogMessages = false;
 #endif
 
 #define LLOG(x)     // LOG(x)
@@ -64,6 +64,7 @@ void Ctrl::DoPaint(const Vector<Rect>& invalid)
 					caret = true;
 					break;
 				}
+		if(GLX) return;
 		GC gc = XCreateGC(Xdisplay, (Drawable)top->window, 0, 0);
 		XftDraw *xftdraw = XftDrawCreate(Xdisplay, (Drawable) top->window,
 		                                 DefaultVisual(Xdisplay, Xscreenno), Xcolormap);
@@ -638,17 +639,23 @@ void Ctrl::FocusSync()
 	Window fw = GetXServerFocusWindow();
 	if(fw != focusWindow) {
 		LLOG("FocusSync to " << FormatIntHex(fw));
-		KillFocus(focusWindow);
-		focusWindow = None;
 		if(fw) {
 			int q = Xwindow().Find(fw);
 			if(q < 0)
 				return;
 			focusWindow = fw;
 			XWindow& w = Xwindow()[q];
-			if(w.ctrl)
+			if(w.ctrl) {
+				if(w.ctrl->IsPopUp())
+					return;
+				KillFocus(focusWindow);
+				focusWindow = None;
 				w.ctrl->SetFocusWnd();
+				return;
+			}
 		}
+		KillFocus(focusWindow);
+		focusWindow = None;
 	}
 }
 

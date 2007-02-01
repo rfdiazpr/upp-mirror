@@ -1,5 +1,8 @@
 description "Basic library of GUI elements";
 
+acceptflags
+	NOGTK;
+
 uses
 	CtrlCore,
 	RichText;

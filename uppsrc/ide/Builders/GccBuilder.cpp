@@ -80,7 +80,7 @@ void GccBuilder::BinaryToObject(String objfile, CParser& binscript, String based
 		}
 		else {
 			BinObjInfo::Block& b = belem[0];
-			fo << "char " << ident << "[] =\n";
+			fo << "char *" << ident << " =\n";
 			String data = ::LoadFile(b.file);
 			if(data.IsVoid())
 				throw Exc(NFormat("Error reading file '%s'", b.file));

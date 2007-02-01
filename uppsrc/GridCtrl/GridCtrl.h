@@ -425,6 +425,10 @@ class GridCtrl : public Ctrl
 		GridCtrl& EvenColor(Color fg = SColorText, Color bg = Blend(SColorHighlight, SColorPaper, 220));
 		GridCtrl& ColoringMode(int m);
 		
+		GridCtrl& ColorRows(bool b = true) { return ColoringMode(2).EvenColor(); }
+		GridCtrl& ColorCols(bool b = true) { return ColoringMode(1).EvenColor(); }
+
+		
 		GridCtrl& SetDefaultRowHeight(int h)    { GD_ROW_HEIGHT = h; sby.SetLine(h); return *this; }
 		GridCtrl& SetColWidth(int n, int width, bool recalc = true);
 		GridCtrl& SetRowHeight(int n, int height, bool recalc = true);
@@ -455,7 +459,7 @@ class GridCtrl : public Ctrl
 		GridCtrl& FullColResizing(bool b = true) { full_col_resizing = b; return *this; }
 		GridCtrl& FullRowResizing(bool b = true) { full_row_resizing = b; return *this; }
 		GridCtrl& Chameleon(bool b = true)       { chameleon         = b; return *this; }
-		
+				
 		GridCtrl& SearchOffset(int offset) { find_offset = offset; return *this; }
 		
 		GridCtrl& SetToolBar(bool b = true, int align = BarCtrl::BAR_BOTTOM, int frame = 1);
@@ -515,8 +519,8 @@ class GridCtrl : public Ctrl
 		ItemRect& AddIndex(const char *name)        { return AddColumn(name, 0, true); }
 		ItemRect& AddIndex(String &name)            { return AddColumn(name, 0, true); }
 		
-		GridCtrl& Add(int n = 1, int size = GD_ROW_HEIGHT);
-		GridCtrl& AddRow(int n = 1, int size = GD_ROW_HEIGHT) { return Add(n, size);}
+		GridCtrl& AddRow(int n = 1, int size = GD_ROW_HEIGHT);
+		GridCtrl& Add() { return AddRow(); }
 
 		//$-GridCtrl& Add(const Value& [, const Value& ]...);
 		#define  E__Add(I)      GridCtrl& Add(__List##I(E__Value));
@@ -546,9 +550,12 @@ class GridCtrl : public Ctrl
 		
 		void   SetLast(int c, const Value &val);
 		void   SetFixed(int r, int c, const Value &val);
+		Value  GetFixed(int r, int c);
+		Value  GetFixed(int c);				
 		Value  Get(int r, int c);
 		Value  Get(int c);
 		Value  Get(Id id);
+		Value  Get();
 		Value  Get(const char * alias);
 		Value  Get(int r, const char * alias);
 		Value  GetNew(int c);
@@ -621,6 +628,7 @@ class GridCtrl : public Ctrl
 		int  SetCursorId(int n);
 		int  GetCursor(bool rel = false);
 		int  GetCursor(int uid);
+		Point  GetCursorPos();
 		void CenterCursor();		
 		bool IsCursor()      { return GetCursor() >= 0; }
 		bool IsCursorBegin() { return GetCursor() == 0; }
@@ -735,6 +743,9 @@ class GridCtrl : public Ctrl
 		void CommitNewRow()     { newrow_inserted = newrow_appended = false; }
 		
 		void Serialize(Stream &s);
+
+		Ctrl * GetCtrl(int r, int c);
+		Ctrl * GetCtrl(int c);
 				
 		static int GetStdHeight() { return Draw::GetStdFontCy() + 4; }
 				
@@ -861,8 +872,8 @@ class GridCtrl : public Ctrl
 		void Nothing();
 		void Init();
 		
-		Ctrl * GetCtrl(int x, int y, bool check_visibility = false);
-		Ctrl * GetCtrl(const Point &p, bool check_visibility = false);
+		Ctrl * GetCtrl(int x, int y, bool check_visibility, bool relative = false);
+		Ctrl * GetCtrl(const Point &p, bool check_visibility, bool relative = false);
 		bool IsCtrl(Point &p);
 		
 		GridClipboard GetClipboard();

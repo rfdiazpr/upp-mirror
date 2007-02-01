@@ -8,4 +8,4 @@ file
 	RegExp.cpp charset "UTF-8";
 
 mainconfig
-	"" = "CONSOLE";
+	"" = "";

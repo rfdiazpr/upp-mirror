@@ -96,7 +96,7 @@ void RichEdit::Paint(Draw& w)
 	p_size = sz;
 	Rect tr = GetTextRect();
 	Zoom zoom = GetZoom();
-	w.DrawRect(sz, SColorPaper);
+	w.DrawRect(sz, White);
 	PageY py = text.GetHeight(pagesz);
 	{
 		EditPageDraw pw(w);

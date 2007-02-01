@@ -133,8 +133,6 @@ public:
 	const Value& operator=(const Value& v)      { SetData(v); return v; }
 	operator Value() const                      { return GetData(); }
 
-	DropList&     SetDropLines(int d)           { list.SetDropLines(d); return *this; }
-
 	void          SetIndex(int i)               { SetData(GetKey(i)); }
 	int           GetIndex()                    { return FindKey(value); }
 
@@ -159,6 +157,7 @@ public:
 
 	static const Style& StyleDefault();
 
+	DropList&     SetDropLines(int d)                   { list.SetDropLines(d); return *this; }
 	DropList&     SetConvert(const Convert& cv);
 	DropList&     SetDisplay(int i, const Display& d);
 	DropList&     SetDisplay(const Display& d);

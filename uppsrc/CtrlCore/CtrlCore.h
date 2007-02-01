@@ -170,6 +170,7 @@ Index<Atom>& _NET_Supported();
 
 class TopWindow;
 class TrayIcon;
+class GLCtrl;
 
 class Ctrl : public Pte<Ctrl> {
 public:
@@ -307,6 +308,7 @@ private:
 	bool         isopen:1;
 	bool         popup:1;
 	byte         backpaint:2;//2
+	bool         GLX:1;
 
 	bool         akv:1;
 	bool         destroying:1;
@@ -463,6 +465,7 @@ private:
 	friend class ViewDraw;
 	friend class TopWindow;
 	friend class TrayIcon;
+	friend class GLCtrl;
 	friend class WaitCursor;
 
 #ifdef PLATFORM_WIN32
@@ -515,6 +518,7 @@ protected:
 		Ptr<Ctrl>    last_active;
 		XIC          xic;
 	};
+
 private:
 	static ArrayMap<Window, XWindow>& Xwindow();
 	static Ptr<Ctrl> WndCaretCtrl;

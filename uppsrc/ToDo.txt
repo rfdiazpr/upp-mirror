@@ -12,11 +12,7 @@
 
 * LeftEdge in Win32
 
-* "Seems OK except for some of the hot-key listings on the menus (eg ctrl+100dc for split horizontal)"
-
 * Editor Tabs IDE - scroll problem
-
-* No blitz package flag
 
 * LeftEdge in linux
 
@@ -29,8 +25,6 @@
 * when working with non local copy of files (/usr/share/upp/uppsrc etc) and have no write access to these files (because installed as root - as normal) i get the error "Error creating temporary file /usr/share/upp/examples/UWord/UWord.iml" when closing or changing from UWord.iml to another file.
   Got that with non .iml files, too but can't reproduce atm.
   I guess the solution is creating temp files somewhere in ~ every time.
-
-* FLUXBOX in ubuntu
 
 * mThread = new boost::thread(boost::bind(&ChainBox::startChain,this));
 
@@ -58,10 +52,6 @@ g00fy {
 http://www.arilect.com/upp/forum/index.php?t=msg&th=1673&start=0&
 
 2006-11-08 22:40 - 200000!
-
-* TabCtrl - rightedge problem (?)
-
-
 
 Icon paste:
 

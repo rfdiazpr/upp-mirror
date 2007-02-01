@@ -63,7 +63,6 @@ void HeaderCtrl::Column::Paint(bool& first, Draw& w,
 	else
 		x -= style->gridadjustment;
 	bool p = push && style->pressoffset;
-	Color bg = Nvl(paper, SColorFace());
 	int q = CTRL_NORMAL;
 	if(hl)
 		q = CTRL_HOT;

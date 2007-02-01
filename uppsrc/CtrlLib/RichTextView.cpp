@@ -39,6 +39,9 @@ void  RichTextView::Paint(Draw& w)
 		PageY py = text.GetHeight(GetPage());
 		y = (sz.cy / zoom  - py.y) / 2;
 	}
+	Color c = SColorPaper();
+	if(c.GetR() + c.GetG() + c.GetB() < 150)
+		pi.coloroverride = true;
 	text.Paint(pw, GetPage(), pi);
 	w.End();
 	w.End();

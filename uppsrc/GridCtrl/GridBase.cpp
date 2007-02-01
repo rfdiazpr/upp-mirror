@@ -167,4 +167,16 @@ void ItemRect::Serialize(Stream &s)
 	s % hidden;
 }
 
+static void MakeOption(One<Ctrl>& ctrl)
+{
+  ctrl.Create<Option>();
+  ctrl->WantFocus();
+}
+
+ItemRect& ItemRect::Option()
+{
+	return Ctrls(MakeOption).CtrlAlignHorzCenter(15);
+}
+
+
 END_UPP_NAMESPACE

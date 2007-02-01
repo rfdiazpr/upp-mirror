@@ -18,6 +18,7 @@ struct MyApp : TopWindow {
 		for(int i = 0; i < 100; i++)
 			list.Add(FormatIntRoman(i, true));
 		AddFrame(InsetFrame());
+		Sizeable();
 	}
 };
 

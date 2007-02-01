@@ -51,7 +51,7 @@ void RichRuler::Paint(Draw& w)
 			if(x + tsz.cx - tsz.cx / 2 < cx) {
 				int px = x0 + x - tsz.cx / 2;
 				w.DrawRect(px, 4, tsz.cx, sz.cy - 8, SColorPaper);
-				w.DrawText(x0 + x - tsz.cx / 2, 4, n, Arial(10));
+				w.DrawText(x0 + x - tsz.cx / 2, 4, n, Arial(10), SColorText);
 			}
 		}
 	FieldFrame().FramePaint(w, RectC(x0 - 1, 3, cx + 3, sz.cy - 6));

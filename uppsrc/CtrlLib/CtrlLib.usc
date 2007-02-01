@@ -841,3 +841,127 @@ ctrl RichTextCtrl {
 		w.DrawText(3, 3, "RichTextCtrl", Arial(10), :SMagenta);
 	}
 }
+
+ctrl DateTimeCtrl {
+	group "Input fields";
+
+	GetMinSize() { sz = GetTextSize("X"); sz.cy += 6; return sz; }
+	GetStdSize() { sz = GetMinSize(); sz.cx *= 13; return sz; }
+
+	Frame SetFrame = InsetFrame();
+	bool  SetEditable = true @2 ? "Editable";
+	bool  WantFocus = true;
+	bool  SelectAll = true;
+	Text  Tip;
+
+	Paint(w) {
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+		w.DrawRect(r, :SWhite);
+		n = r.bottom - r.top;
+		DrawEdgeButton(w, RectC(r.right - n, r.top, n, n));
+		w.DrawImage((n - 7) / 2 + r.right - n, (n - 6) / 2 + r.top, "ClassicCtrlsImg::DA");
+		w.DrawText(3, (GetSize().cy - GetTextSize("", Arial(10)).cy) / 2,
+			(.SetEditable ? "" : "R/O ") + "01/05/2007", Arial(10), :SMagenta);
+	}
+}
+
+fn PaintButton(w, r, img)
+{
+	col = Color(153, 204, 255);
+	w.DrawRect(r, :SWhite);
+	DeflateRect(r);
+	w.DrawRect(r, col);
+	PaintRcCenterImage(w, r, img);
+}
+
+ctrl Calendar {
+	group "Input fields";
+
+	GetMinSize() { return Size(180, 120); }
+	GetStdSize() { return Size(236, 156); }
+
+	Frame SetFrame = BlackFrame();
+	bool  SetEditable = true @2 ? "Editable";
+	bool  WantFocus = true;
+	bool  SelectAll = true;
+	Text  Tip;
+
+	Paint(w) {
+		ts = GetTextSize("X");
+		r = GetRect();
+		ro = GetRect();
+		f = StdFont();
+		b = r.bottom;
+		r.bottom = 20;
+		w.DrawRect(r, Color(51, 102, 204));
+		r.top = r.bottom;
+		r.bottom = b;
+		w.DrawRect(r, :SWhite);
+		width = r.right - r.left;
+		height = r.bottom - r.top - 15;
+		sw = width / 8;
+		sh = height / 7;
+		w.DrawRect(r.left + 4, r.top + sh, width - 8, 1, :SBlack);
+		w.DrawRect(r.left + sw, r.top + 4, 1, height - 8, :SBlack);		
+		ts = GetTextSize("Wk");
+		ty = r.top + (sh - ts.cy) / 2;
+		w.DrawText(r.left + (sw - ts.cx) / 2 , ty, "Wk", f, :SBlack);
+
+		days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];		
+		for(i = 0; i < 7; i++)
+			w.DrawText(r.left + sw + i * sw + (sw - ts.cx) / 2, ty, days[i], f, :SBlack);
+
+		d = 1;
+		tn = GetTextSize("0");
+		gray = 0;
+		fnt = f;
+		for(j = 0; j < 6; j++)
+		{
+			ty = r.top + sh  + j * sh + (sh - ts.cy) / 2;
+			w.DrawText(r.left + (sw - tn.cx) / 2, ty, to_string(j + 1), f, :SBlack);
+			
+			for(i = 0; i < 7; i++)
+			{
+				if(d == 19)
+				{
+					w.DrawRect(r.left + sw + i * sw + 0, r.top + sh + j * sh + 0, sw, sh, :SBlack);
+					w.DrawRect(r.left + sw + i * sw + 1, r.top + sh + j * sh + 1, sw - 2, sh - 2, Color(255, 254, 220));
+					fnt = f.Bold(1);
+				}
+				day = to_string(d);
+				ts = GetTextSize(day, fnt);
+
+				w.DrawText(r.left + sw + i * sw + (sw - ts.cx) / 2, ty, day, fnt, gray ? :SGray : (i == 6 ? :SRed : :SBlack));
+				fnt = f.Bold(false);
+				if(++d > 31)
+				{
+					d = 1;
+					gray = 1;
+				}
+			}			
+		}
+
+		today = "Today: 01/19/2007";
+		ts = GetTextSize(today, StdFont().Bold());
+		w.DrawText((r.right - ts.cx) / 2, r.bottom - 3 - ts.cy, today, f.Bold(), :SBlue);
+
+		current = "January 2007";
+		ts = GetTextSize(current, StdFont().Bold());
+		w.DrawText((r.right - ts.cx) / 2, (ro.top + 20 - ts.cy) / 2, current, f.Bold(), :SWhite);
+	
+		r = Rect(ro.left + 3, ro.top + 2, ro.left + 3 + 16, ro.top + 18);
+		PaintButton(w, r, "ClassicCtrlsImg::LA");
+		r.left += 15;
+		r.right += 15;
+		PaintButton(w, r, "ClassicCtrlsImg::RA");
+
+		r = Rect(ro.right - 3 - 16, ro.top + 2, ro.right - 3, ro.top + 18);
+		PaintButton(w, r, "ClassicCtrlsImg::RA");
+		r.left -= 15;
+		r.right -= 15;
+		PaintButton(w, r, "ClassicCtrlsImg::LA");
+				
+		DrawCtrlFrame(w, ro, .SetFrame);
+	}
+}

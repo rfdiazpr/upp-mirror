@@ -129,7 +129,7 @@ void ColorPopUp::Paint(Draw& w)
 		Size fsz = GetTextSize(nulltext, StdFont());
 		Rect r(1, y, sz.cx - 1, fsz.cy + y + 2);
 		DrawFrame(w, r, SColorText);
-		w.DrawText((sz.cx - fsz.cx) / 2, y, nulltext);
+		w.DrawText((sz.cx - fsz.cx) / 2, y, nulltext, StdFont(), SColorText());
 		y = r.bottom + 3;
 		if(colori == 998)
 		{

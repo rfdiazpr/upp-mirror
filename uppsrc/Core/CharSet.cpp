@@ -759,7 +759,7 @@ dword uni__info[2048] = {
 	0x003fc7f8,0x003fcff9,0x003fd7fa,0x003fdffb,0x003fe7fc,0x003feffd,0x003ff7fe,0x003fffff,
 };
 
-byte DefaultCharset;
+byte DefaultCharset = 255;
 
 void SetDefaultCharset(byte charset)
 {

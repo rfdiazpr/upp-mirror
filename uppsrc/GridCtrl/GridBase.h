@@ -286,6 +286,7 @@ class ItemRect : public Moveable<ItemRect>
 		ItemRect& Ctrls(Callback1<One<Ctrl>&> _factory)	 { (*edits)[id].factory = _factory; return *this; }	
 		ItemRect& Ctrls(void (*factory)(One<Ctrl>&))     { return Ctrls(callback(factory)); }
 		template<class T> ItemRect&  Ctrls()             { return Ctrls(DefaultCtrlFactory<T>()); }
+		ItemRect& Option();
 				
 		ItemRect& Editable(bool b)                       { editable = b;     return *this; }
 		ItemRect& NoEditable()                           { editable = false; return *this; }

@@ -1,59 +1,55 @@
 #include "CtrlLib.h"
 
-NAMESPACE_UPP
-
 #ifdef PLATFORM_X11
 
-#define SAVEPNG(name, m) // LOGPNG(name, m)
+#ifdef flagNOGTK
 
-// very system dependent layout of certain GTK structures...
-struct G_rect  { int x, y, cx, cy; };
-struct G_color { dword _; word r, g, b; };
+NAMESPACE_UPP
 
-#ifdef CPU_64
-#define GTK__ALLOCATION_OFFSET 64
-#define GTK__COLOR_OFFSET      24
+void ChHostSkin() {}
 
-struct G_toggle {
-	byte filler[144];
-	int  active:1;
-	int  ind:1;
-	int  inconsistent:1;
-};
+END_UPP_NAMESPACE
+
 #else
-#define GTK__ALLOCATION_OFFSET 36
-#define GTK__COLOR_OFFSET      12
 
-struct G_toggle {
-	byte filler[88];
-	int  active:1;
-	int  ind:1;
-	int  inconsistent:1;
-};
-#endif
+#define Time    XTime
+#define Font    XFont
+#define Display XDisplay
+#define Picture XPicture
 
-G_obj *gtk__parent()
+#include <gtk/gtk.h>
+#include <gdk/gdkx.h>
+#include <gdk/gdkprivate.h>
+
+#undef Picture
+#undef Time
+#undef Font
+#undef Display
+
+NAMESPACE_UPP
+
+GtkWidget *gtk__parent()
 {
-	static G_obj *p;
+	static GtkWidget *p;
 	if(!p) {
-		p = GTK().gtk_window_new(1);
-		GTK().gtk_widget_realize(p);
+		p = gtk_window_new(GTK_WINDOW_POPUP);
+		gtk_widget_realize(p);
 	}
 	return p;
 }
 
-G_obj *Setup(G_obj *widget)
+GtkWidget *Setup(GtkWidget *widget)
 {
-	static G_obj *fl;
+	static GtkWidget *fl;
 	if (!fl) {
-		fl = GTK().gtk_fixed_new();
-		GTK().gtk_container_add(gtk__parent(), fl);
-		GTK().gtk_widget_realize(fl);
+		fl = gtk_fixed_new();
+		gtk_container_add(GTK_CONTAINER(gtk__parent()), fl);
+		gtk_widget_realize(fl);
 	}
 
-	GTK().gtk_fixed_put(fl, widget, 0, 0);
-	GTK().gtk_widget_realize(widget);
-	GTK().gtk_widget_show(widget);
+	gtk_fixed_put(GTK_FIXED(fl), widget, 0, 0);
+	gtk_widget_realize(widget);
+	gtk_widget_show(widget);
 	return widget;
 }
 
@@ -86,20 +82,20 @@ enum {
 
 static Image sLastImage;
 
-Image GetGTK(G_obj *widget, int state, int shadow, const char *detail, int type, int cx, int cy)
+Image GetGTK(GtkWidget *widget, int state, int shadow, const char *detail, int type, int cx, int cy)
 {
-	G_obj *icon;
+	GdkPixbuf *icon;
 	if(type == GTK_ICON) {
-		GTK().gtk_widget_set_sensitive(widget, 1);
-		GTK().gtk_widget_set_state(widget, 0);
-		icon = GTK().gtk_widget_render_icon(widget, detail, state, NULL);
+		gtk_widget_set_sensitive(widget, 1);
+		gtk_widget_set_state(widget, GTK_STATE_NORMAL);
+		icon = gtk_widget_render_icon(widget, detail, (GtkIconSize)state, NULL);
 		if(!icon) return Null;
-		cx = GPIXBUF().gdk_pixbuf_get_width(icon);
-		cy = GPIXBUF().gdk_pixbuf_get_height(icon);
+		cx = gdk_pixbuf_get_width(icon);
+		cy = gdk_pixbuf_get_height(icon);
 	}
 	else {
-		GTK().gtk_widget_set_sensitive(widget, state != 4);
-		GTK().gtk_widget_set_state(widget, state);
+		gtk_widget_set_sensitive(widget, state != 4);
+		gtk_widget_set_state(widget, (GtkStateType)state);
 	}
 	Rect rect;
 	int ht = type & 0xf000;
@@ -111,82 +107,81 @@ Image GetGTK(G_obj *widget, int state, int shadow, const char *detail, int type,
 	if(type >= GTK_TOP && type <= GTK_BOTTOM)
 		cy *= 3;
 	type &= ~0xf000;
-	G_rect *allocation = (G_rect *)((byte*)widget + GTK__ALLOCATION_OFFSET);
-	allocation->x = 0;
-	allocation->y = 0;
-	allocation->cx = cx;
-	allocation->cy = cy;
+	GdkRectangle& allocation = ((GtkWidget*)widget)->allocation;
+	allocation.x = 0;
+	allocation.y = 0;
+	allocation.width = cx;
+	allocation.height = cy;
 	Image m[2];
 	Color back = White;
 	int margin = (type >> 4) & 15;
 	for(int i = 0; i < 2; i++) {
 		ImageDraw iw(cx + 2 * margin, cy + 2 * margin);
 		iw.DrawRect(0, 0, cx + 2 * margin, cy + 2 * margin, back);
-		static G_obj *cm = GDK().gdk_x11_colormap_foreign_new(
-			GDK().gdkx_visual_get(XVisualIDFromVisual(Xvisual)), Xcolormap);
-		G_obj *pixmap = GDK().gdk_pixmap_foreign_new(iw.GetDrawable());
-		GDK().gdk_drawable_set_colormap(pixmap, cm);
-		G_rect cr;
+		static GdkColormap *cm = gdk_x11_colormap_foreign_new(
+			                        gdkx_visual_get(XVisualIDFromVisual(Xvisual)), Xcolormap);
+		GdkPixmap *pixmap = gdk_pixmap_foreign_new(iw.GetDrawable());
+		gdk_drawable_set_colormap(pixmap, cm);
+		GdkRectangle cr;
 		cr.x = 0;
 		cr.y = 0;
-		cr.cx = cx;
-		cr.cy = cy;
-		G_obj *style = GTK().gtk_widget_get_style(widget);
+		cr.width = cx;
+		cr.height = cy;
+		GtkStyle *style = gtk_widget_get_style(widget);
 		int rcx = max(rect.GetWidth() - 2 * margin, 0);
 		int rcy = max(rect.GetHeight() - 2 * margin, 0);
 		int t1 = (type & 0xf00) >> 8;
 		switch(type & 15) {
 		case GTK_BOX:
-			GTK().gtk_paint_box(style, pixmap, state, shadow, &cr,
+			gtk_paint_box(style, pixmap, (GtkStateType)state, (GtkShadowType)shadow, &cr,
 			                    widget, detail,
 			                    rect.left + margin, rect.top + margin, rcx, rcy);
 			break;
 		case GTK_CHECK:
-			GTK().gtk_paint_check(style, pixmap, state, shadow, &cr,
+			gtk_paint_check(style, pixmap, (GtkStateType)state, (GtkShadowType)shadow, &cr,
 			                      widget, detail,
 			                      rect.left + margin, rect.top + margin, rcx, rcy);
 			break;
 		case GTK_OPTION:
-			GTK().gtk_paint_option(style, pixmap, state, shadow, &cr,
+			gtk_paint_option(style, pixmap, (GtkStateType)state, (GtkShadowType)shadow, &cr,
 			                       widget, detail,
 			                       rect.left + margin, rect.top + margin, rcx, rcy);
 			break;
 		case GTK_ARROW:
-			GTK().gtk_paint_arrow(style, pixmap, state, shadow, &cr,
-			                      widget, detail, t1, 1,
+			gtk_paint_arrow(style, pixmap, (GtkStateType)state, (GtkShadowType)shadow, &cr,
+			                      widget, detail, (GtkArrowType)t1, 1,
 			                      rect.left + margin, rect.top + margin, rcx, rcy);
 			break;
 		case GTK_SLIDER:
-			GTK().gtk_paint_slider(style, pixmap, state, shadow, &cr,
+			gtk_paint_slider(style, pixmap, (GtkStateType)state, (GtkShadowType)shadow, &cr,
 			                       widget, detail,
 			                       rect.left + margin, rect.top + margin, rcx, rcy,
-			                       t1);
+			                       (GtkOrientation)t1);
 			break;
 		case GTK_ICON:
-			GDK().gdk_draw_pixbuf(pixmap, NULL, icon, 0, 0, 0, 0, -1, -1, 0, 0, 0);
+			gdk_draw_pixbuf(pixmap, NULL, icon, 0, 0, 0, 0, -1, -1, (GdkRgbDither)0, 0, 0);
 			break;
 		case GTK_EXT:
-			GTK().gtk_paint_extension(style, pixmap, state, shadow, &cr,
-			                          widget, detail,
-			                          rect.left + margin, rect.top + margin, rcx, rcy, t1);
+			gtk_paint_extension(style, pixmap, (GtkStateType)state, (GtkShadowType)shadow, &cr,
+			                          widget, (gchar *)detail,
+			                          rect.left + margin, rect.top + margin, rcx, rcy,
+			                          (GtkPositionType)t1);
 			break;
 		}
-		GOBJ().g_object_unref(pixmap);
+		g_object_unref(pixmap);
 		m[i] = Crop(iw, rect.Inflated(margin));
-		SAVEPNG(AsString((uintptr_t)widget) + "-" + detail + "-" + AsString(type) + "-" + AsString(i), m[i]);
 		back = Black;
 	}
 	if(type == GTK_ICON)
-		GOBJ().g_object_unref(icon);
+		g_object_unref(icon);
 	sLastImage = RecreateAlpha(m[0], m[1]);
-	SAVEPNG(AsString((uintptr_t)widget) + "-" + detail + "-" + AsString(type), sLastImage);
 	return sLastImage;
 }
 
 struct ChGtkI : Moveable<ChGtkI> {
-	G_obj *widget;
+	GtkWidget  *widget;
 	const char *detail;
-	int    type;
+	int         type;
 };
 
 Vector<ChGtkI>& ChGtkIs()
@@ -195,7 +190,7 @@ Vector<ChGtkI>& ChGtkIs()
 	return x;
 }
 
-G_obj *ChGtkLast()
+GtkWidget *ChGtkLast()
 {
 	return ChGtkIs().Top().widget;
 }
@@ -210,9 +205,9 @@ int ChGtkLastType()
 	return ChGtkIs().Top().type;
 }
 
-void ChGtkNew(G_obj *widget, const char *detail, int type)
+void ChGtkNew(GtkWidget *widget, const char *detail, int type)
 {
-	if(GTK().gtk_widget_get_parent(widget) == NULL)
+	if(gtk_widget_get_parent(widget) == NULL)
 		Setup(widget);
 	ChGtkI& q = ChGtkIs().Add();
 	q.widget = widget;
@@ -332,10 +327,10 @@ void GtkChWith(Value *look, const char *d, const Image& img)
 void GtkChButtonWith(Value *look, const Image& img) { GtkChWith(look, "02142222", img); }
 void GtkChArrow(Value *look, const Image& img) { GtkChWith(look, "02142212", img); }
 
-int  GtkInt(G_obj *widget, const char *id)
+int  GtkInt(GtkWidget *widget, const char *id)
 {
 	int x = 0;
-	GTK().gtk_widget_style_get(widget, id, &x, NULL);
+	gtk_widget_style_get(widget, id, &x, NULL);
 	return x;
 }
 
@@ -344,12 +339,12 @@ int  GtkInt(const char *id)
 	return GtkInt(ChGtkLast(), id);
 }
 
-void GtkIml(int uii, G_obj *w, int shadow, int state, const char *detail, int type, int cx, int cy)
+void GtkIml(int uii, GtkWidget *w, int shadow, int state, const char *detail, int type, int cx, int cy)
 {
 	CtrlsImg::Set(uii, GetGTK(w, state, shadow, detail, type, cx, cy));
 }
 
-void GtkIml(int uii, G_obj *w, int shadow, const char *detail, int type, int cx, int cy)
+void GtkIml(int uii, GtkWidget *w, int shadow, const char *detail, int type, int cx, int cy)
 {
 	GtkIml(uii + 0, w, shadow, 0, detail, type, cx, cy);
 	GtkIml(uii + 1, w, shadow, 2, detail, type, cx, cy);
@@ -357,11 +352,10 @@ void GtkIml(int uii, G_obj *w, int shadow, const char *detail, int type, int cx,
 	GtkIml(uii + 3, w, shadow, 4, detail, type, cx, cy);
 }
 
-Color ChGtkColor(int ii, G_obj *widget)
+Color ChGtkColor(int ii, GtkWidget *widget)
 {
-	G_color cc = ((G_color *)((byte *)GTK().gtk_widget_get_style(widget)
-	                          + GTK__COLOR_OFFSET))[ii];
-	return Color(cc.r >> 8, cc.g >> 8, cc.b >> 8);
+	GdkColor cc = ((GtkStyle *)gtk_widget_get_style(widget))->fg[ii];
+	return Color(cc.red >> 8, cc.green >> 8, cc.blue >> 8);
 }
 
 void ChGtkColor(Color& c, int ii)
@@ -436,8 +430,6 @@ bool IsEmptyImage(const Image& m)
 
 void ChHostSkin()
 {
-	if(!GTK() || !GDK() || !GOBJ())
-		return;
 	static struct { void (*set)(Color); int ii; } col[] = {
 		{ SColorPaper_Write, 6*5 + 0 },
 		{ SColorFace_Write, 1*5 + 0 },
@@ -459,9 +451,13 @@ void ChHostSkin()
 	bool italic = false;
 
 	char *font_name = "";
-	GOBJ().g_object_get(GTK().gtk_settings_get_default(), "gtk-font-name", &font_name, NULL);
-	int xdpi = 96 * 1024;
-	GOBJ().g_object_get(GTK().gtk_settings_get_default(), "gtk-xft-dpi", &xdpi, NULL);
+	g_object_get(gtk_settings_get_default(), "gtk-font-name", &font_name, NULL);
+#ifdef _DEBUG
+	int xdpi = 100 * 1024;
+#else
+	int xdpi = 72 * 1024;
+#endif
+	g_object_get(gtk_settings_get_default(), "gtk-xft-dpi", &xdpi, NULL);
 
 	const char *q = strrchr(font_name, ' ');
 	if(q) {
@@ -508,32 +504,30 @@ void ChHostSkin()
 	Color fc = Blend(SColorHighlight, SColorShadow);
 
 	ChGtkIs().Clear();
-	G_obj *w = Setup(GTK().gtk_radio_button_new(NULL));
-	G_toggle *g = (G_toggle *)w;
+	GtkWidget *w = Setup(gtk_radio_button_new(NULL));
 	int is = GtkInt(w, "indicator-size") + 2;
-	g->active = false;
-	g->inconsistent = false;
+	GTK_TOGGLE_BUTTON(w)->active = false;
+	GTK_TOGGLE_BUTTON(w)->inconsistent = false;
 	GtkIml(CtrlsImg::I_S0, w, 2, "radiobutton", GTK_OPTION|GTK_MARGIN1, is, is);
-	g->active = true;
+	GTK_TOGGLE_BUTTON(w)->active = true;
 	GtkIml(CtrlsImg::I_S1, w, 1, "radiobutton", GTK_OPTION|GTK_MARGIN1, is, is);
-	GTK().gtk_widget_destroy(w);
+	gtk_widget_destroy(w);
 
-	w = Setup(GTK().gtk_check_button_new());
-	g = (G_toggle *)w;
-	g->active = false;
-	g->inconsistent = false;
+	w = Setup(gtk_check_button_new());
+	GTK_TOGGLE_BUTTON(w)->active = false;
+	GTK_TOGGLE_BUTTON(w)->inconsistent = false;
 	GtkIml(CtrlsImg::I_O0, w, 2, "checkbutton", GTK_CHECK|GTK_MARGIN1, is, is);
-	g->active = true;
+	GTK_TOGGLE_BUTTON(w)->active = true;
 	GtkIml(CtrlsImg::I_O1, w, 1, "checkbutton", GTK_CHECK|GTK_MARGIN1, is, is);
-	g->active = false;
-	g->inconsistent = true;
+	GTK_TOGGLE_BUTTON(w)->active = false;
+	GTK_TOGGLE_BUTTON(w)->inconsistent = true;
 	GtkIml(CtrlsImg::I_O2, w, 3, "checkbutton", GTK_CHECK|GTK_MARGIN1, is, is);
-	GTK().gtk_widget_destroy(w);
+	gtk_widget_destroy(w);
 
 	{
 		Button::Style& s = Button::StyleNormal().Write();
 		s.overpaint = 3;
-		static G_obj *button = GTK().gtk_button_new();
+		static GtkWidget *button = gtk_button_new();
 		ChGtkNew(button, "button", GTK_BOX|GTK_MARGIN3);
 		GtkChButton(s.look);
 
@@ -560,12 +554,12 @@ void ChHostSkin()
 
 	{
 		Button::Style& s = Button::StyleOk().Write();
-		static G_obj *def_button;
+		static GtkWidget *def_button;
 		if(!def_button) {
-			def_button = GTK().gtk_button_new();
+			def_button = gtk_button_new();
 			Setup(def_button);
-			GTK().gtk_widget_set(def_button, "can-default", true, NULL);
-			GTK().gtk_window_set_default(gtk__parent(), def_button);
+			gtk_widget_set(def_button, "can-default", true, NULL);
+			gtk_window_set_default(GTK_WINDOW(gtk__parent()), def_button);
 			ChGtkNew(def_button, "button", GTK_BOX|GTK_MARGIN3);
 		}
 		GtkChButton(s.look);
@@ -573,9 +567,9 @@ void ChHostSkin()
 
 	{
 		ScrollBar::Style& s = ScrollBar::StyleDefault().Write();
-		G_obj *adj = GTK().gtk_adjustment_new(250, 0, 1000, 1, 1, 500);
+		GtkObject *adj = gtk_adjustment_new(250, 0, 1000, 1, 1, 500);
 		s.through = true;
-		static G_obj *vscrollbar = GTK().gtk_vscrollbar_new(adj);
+		static GtkWidget *vscrollbar = gtk_vscrollbar_new(GTK_ADJUSTMENT(adj));
 		ChGtkNew(vscrollbar, "slider", GTK_SLIDER|GTK_VAL1);
 		GtkChSlider(s.vthumb);
 		Image m = GetGTK(ChGtkLast(), 0, 0, "slider", GTK_SLIDER|GTK_VAL1, 16, 32);
@@ -593,7 +587,7 @@ void ChHostSkin()
 			ChGtkNew("vscrollbar", GTK_ARROW|GTK_VAL1);
 			GtkCh(s.down.look, "02141111");
 
-			static G_obj *btn = GTK().gtk_button_new();
+			static GtkWidget *btn = gtk_button_new();
 			ChGtkNew(btn, "button", GTK_BOX);
 
 			GtkChButton(Button::StyleScroll().Write().look);
@@ -652,7 +646,7 @@ void ChHostSkin()
 			}
 		FieldFrameColor_Write(fc);
 
-		static G_obj *hscrollbar = GTK().gtk_hscrollbar_new(adj);
+		static GtkWidget *hscrollbar = gtk_hscrollbar_new(GTK_ADJUSTMENT(adj));
 		ChGtkNew(hscrollbar, "slider", GTK_SLIDER);
 		GtkChSlider(s.hthumb);
 		ChGtkNew("trough", GTK_BOX);
@@ -674,19 +668,19 @@ void ChHostSkin()
 			ChGtkNew("hscrollbar", GTK_BOX|GTK_VCENTER);
 		}
 
-		GTK().gtk_object_sink(adj);
+		gtk_object_sink(adj);
 
-		adj = GTK().gtk_adjustment_new(0, 0, 1000, 1, 1, 500);
-		w = GTK().gtk_vscrollbar_new(NULL);
+		adj = gtk_adjustment_new(0, 0, 1000, 1, 1, 500);
+		w = gtk_vscrollbar_new(NULL);
 		Setup(w);
 		s.overthumb = m != GetGTK(w, 0, 0, "slider", GTK_SLIDER|GTK_VAL1, 16, 32);
-		GTK().gtk_widget_destroy(w);
-		GTK().gtk_object_sink(adj);
+		gtk_widget_destroy(w);
+		gtk_object_sink(adj);
 	}
 
 	{
 		MenuBar::Style& s = MenuBar::StyleDefault().Write();
-		static G_obj *menu_item = GTK().gtk_menu_item_new();
+		static GtkWidget *menu_item = gtk_menu_item_new();
 		ChGtkNew(menu_item, "menuitem", GTK_BOX);
 		GtkCh(s.item, 2, 2);
 		GtkCh(s.topitem, 2, 2);
@@ -694,7 +688,7 @@ void ChHostSkin()
 
 	{
 		TabCtrl::Style& s = TabCtrl::StyleDefault().Write();
-		static G_obj *tabctrl = GTK().gtk_notebook_new();
+		static GtkWidget *tabctrl = gtk_notebook_new();
 		ChGtkNew(tabctrl, "tab", GTK_EXT|GTK_VAL3|GTK_MARGIN3);
 		ImageBuffer ib(9, 9);
 		ImageBuffer ib1(9, 9);
@@ -745,21 +739,21 @@ void ChHostSkin()
 	CtrlsImg::Set(CtrlsImg::I_VE, ib);
 	DropList::StyleDefault().Write().edge = CtrlsImg::EFE();
 
-	static G_obj *popup;
+	static GtkWidget *popup;
 	static int shadowtype;
 	if(!popup) {
-		G_obj *bar = GTK().gtk_menu_bar_new();
+		GtkWidget *bar = gtk_menu_bar_new();
 		Setup(bar);
-		GTK().gtk_widget_style_get(bar, "shadow_type", &shadowtype, NULL);
-		G_obj *item = GTK().gtk_menu_item_new();
-		GTK().gtk_menu_shell_append(bar, item);
-		GTK().gtk_widget_realize(item);
-		popup = GTK().gtk_menu_new();
-		GTK().gtk_menu_item_set_submenu(item, popup);
-		GTK().gtk_widget_realize(popup);
+		gtk_widget_style_get(bar, "shadow_type", &shadowtype, NULL);
+		GtkWidget *item = gtk_menu_item_new();
+		gtk_menu_shell_append(GTK_MENU_SHELL(bar), item);
+		gtk_widget_realize(item);
+		popup = gtk_menu_new();
+		gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), popup);
+		gtk_widget_realize(popup);
 	}
 	Color c = GetGTK(popup, 0, 2, "menu", GTK_BOX, 32, 32)[16][16];
-	if(!IsNull(c) && Diff(c, SColorPaper()) > 200) //!!! ClearLooks patch
+	if(!IsNull(c) && Diff(c, SColorPaper()) < 200) //!!! ClearLooks patch
 		SColorMenu_Write(c);
 
 	ChCtrlImg(CtrlImg::I_information, "gtk-dialog-info", 6);
@@ -782,6 +776,8 @@ void ChHostSkin()
 	ChLookFn(GtkLookFn);
 }
 
+END_UPP_NAMESPACE
+
 #endif
 
-END_UPP_NAMESPACE
+#endif

@@ -17,9 +17,13 @@ library(WIN32 !NOMYSQL MSC !DEBUG) opt/mysqlclient.lib;
 
 library(LINUX) "mysqlclient ssl";
 
+library(FREEBSD) mysqlclient;
+
 link(DEBUG SO) /nodefaultlib:LIBCD;
 
 link(SHARED SO) /nodefaultlib:LIBCMT;
+
+link(FREEBSD) -L/usr/local/lib/mysql;
 
 file
 	MySql.h,

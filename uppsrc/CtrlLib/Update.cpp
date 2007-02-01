@@ -71,7 +71,7 @@ void UpdateFile(String dst, String src)
 		return;
 	}
 	String old = dst + ".old";
-	pi.SetText("Pøepisuji " + dst);
+	pi.SetText(NFormat(t_("Overwriting %s"), dst));
 	pi.SetTotal(10000);
 	int start = msecs();
 	for(;;)

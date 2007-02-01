@@ -545,6 +545,7 @@ void AssistEditor::PopUpAssist(bool auto_insert)
 		popup.SetRect(p.x, p.y + GetFontSize().cy, cx, cy);
 	else
 		popup.SetRect(p.x, p.y - cy, cx, cy);
+	popup.BackPaint();
 	if(auto_insert && assist.GetCount() == 1) {
 		assist.GoBegin();
 		AssistInsert();

@@ -60,7 +60,21 @@
 	- fixed coping/paste of cursor line (which is not formaly selected)
 	+ pasting text clipboard
 	
+	after 2007.1beta
 	
+	* row/col coloring always starts from white color no matter how many fixed rows/cols are
+	+ usc: ColorRows, ColorCols options
+	+ usc: added missing new functionality (cliborad)
+	* Add(n, size) removed becouse of conflict with Add(Value v, ...). Added Add() - adds one row
+
+	after 2007.1beta2
 	
-
-
+	- fixed calling WhenUpdateCell in Ctrls mode (regression)
+	- tab key in select_row mode went into editing mode instead of changing row or setting focus on visible ctrl (regression)
+	+ Value Get() - returns value of cursor cell
+	+ Point GetCursorPos() - returns full cursor position
+	+ Ctrl * GetCtrl(...) - return pointer to cell's control
+	+ Option() - makes given column the option column (AddColumn().Option() = AddColumn().Ctrls(MakeOption))
+	+ Value GetFixed(r, c) - returns value of fixed column c at row r
+	+ Value GetFixed(c) - returns value of fixed column c at first row
+	

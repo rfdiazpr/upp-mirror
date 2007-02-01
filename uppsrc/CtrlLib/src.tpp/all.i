@@ -129,3 +129,7 @@ END_TOPIC
 TOPIC("ToolBar$en-us")
 #include "ToolBar$en-us.tpp"
 END_TOPIC
+
+TOPIC("TreeCtrl$en-us")
+#include "TreeCtrl$en-us.tpp"
+END_TOPIC

@@ -43,6 +43,7 @@ inline void    StreamIL(Stream& stream, int& value)  { value = PutGetIL(stream, 
 inline void    StreamM64(Stream& stream, int64& value) { value = PutGetM64(stream, value); }
 inline void    StreamI64(Stream& stream, int64& value) { value = PutGetI64(stream, value); }
 void           StreamID(Stream& stream, double& value);
+void           StreamMD(Stream& stream, double& value);
 void           StreamIFP(Stream& stream, Pointf& pt);
 void           StreamIFR(Stream& stream, Rectf& rect);
 

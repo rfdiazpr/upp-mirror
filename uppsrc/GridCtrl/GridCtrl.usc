@@ -125,6 +125,7 @@ ctrl GridCtrl {
 	//Color FocusColor(Color fg = SColorHighlightText, Color bg = SColorHighlight);		
 	//Color OddColor(Color fg = SColorText, Color bg = SColorInfo);
 	//Color EvenColor(Color fg = SColorText, Color bg = Blend(SColorHighlight, SColorPaper, 220));
+	bool ColorRows = false;
 	ColoringModes ColoringMode;
 		
 	bool Inserting = true;
@@ -139,11 +140,15 @@ ctrl GridCtrl {
 	bool Closing = false;
 	bool Editing = false;
 	bool Hiding = false;
+	bool Clipboard = false;
+	bool FixedPaste = false;
+	bool ExtraPaste = true;
 	
 	bool RejectNullRow = true;
 	bool KeepLastRow = false;
 	bool TabChangesRow = true;
-	bool TabAddsRow = false;
+	bool TabAddsRow = true;
+	bool EnterLikeTab = false;
 	bool Chameleon = false;
 
 	Paint(w) 

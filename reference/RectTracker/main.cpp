@@ -43,6 +43,7 @@ struct MyApp : TopWindow {
 		rect = RectC(100, 100, 100, 100);
 		hline = 150;
 		vline = 150;
+		Sizeable();
 	}
 };
 

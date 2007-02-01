@@ -329,6 +329,7 @@ void Ide::SetupBars()
 		AddFrame(toolbar);
 	}
 	AddFrame(statusbar);
+	SetBar();
 }
 
 Ide::Ide()
@@ -849,5 +850,8 @@ void AppMain___()
 		Exclamation("Unknown exception !");
 		LOG("!!!!! Uknown exception");
 	}
+#endif
+#ifdef STRING_STATS
+	DumpStringStats();
 #endif
 }

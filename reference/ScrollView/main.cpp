@@ -16,7 +16,7 @@ struct App : public TopWindow {
 
 	virtual bool Key(dword key, int count)
 	{
-		if(key == VK_SPACE) {
+		if(key == K_SPACE) {
 			Size sz = GetSize();
 			Size delta(rand() % 50, rand() % 50);
 			pos += delta;

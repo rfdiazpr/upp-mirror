@@ -523,9 +523,9 @@ String NormalizePath(const char *path, const char *currdir) {
 			}
 	}
 	out.Cat(Join(p, DIR_SEPS));
-	if(quote)
-		return '\"' + out + '\"';
-	else
+//	if(quote)
+//		return '\"' + out + '\"';
+//	else
 		return out;
 }
 

@@ -286,17 +286,49 @@ int64 PutGetI64(Stream& stream, int64 value)
 	return value;
 }
 
+static void Swap8(byte *data)
+{
+	byte temp[8];
+	temp[0] = data[7];
+	temp[1] = data[6];
+	temp[2] = data[5];
+	temp[3] = data[4];
+	temp[4] = data[3];
+	temp[5] = data[2];
+	temp[6] = data[1];
+	temp[7] = data[0];
+	memcpy(data, temp, 8);
+}
+
 void StreamID(Stream& stream, double& value)
 {
-#ifdef CPU_LITTLE_ENDIAN
 	ASSERT(sizeof(value) == 8);
-	stream.SerializeRaw((byte *)&value, sizeof(value));
-#else
-	ASSERT(sizeof(value) == 8);
-	for(byte *p = reinterpret_cast<byte *>(&value), e = p + sizeof(value); e > p; stream % *--e)
-		;
+#ifndef CPU_LITTLE_ENDIAN
+	if(stream.IsStoring())
+		Swap8((byte *)&value);
 #endif
-	if(stream.IsLoading() && value < -1e38)
+	stream.SerializeRaw((byte *)&value, 8);
+#ifndef CPU_LITTLE_ENDIAN
+	if(stream.IsLoading())
+		Swap8((byte *)&value);
+#endif
+	if(stream.IsLoading() && value < -1e300)
+		value = Null;
+}
+
+void StreamMD(Stream& stream, double& value)
+{
+	ASSERT(sizeof(value) == 8);
+#ifdef CPU_LITTLE_ENDIAN
+	if(stream.IsStoring())
+		Swap8((byte *)&value);
+#endif
+	stream.SerializeRaw((byte *)&value, 8);
+#ifdef CPU_LITTLE_ENDIAN
+	if(stream.IsLoading())
+		Swap8((byte *)&value);
+#endif
+	if(stream.IsLoading() && value < -1e300)
 		value = Null;
 }
 

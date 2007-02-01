@@ -102,7 +102,7 @@ void TabCtrl::Item::Paint(Draw& w)
 {
 	Size sz = pict.GetStdSize();
 	pict.Paint(w, pictpos.x, pictpos.y, sz.cx, sz.cy, SColorText, Null);
-	w.DrawText(textpos.x, textpos.y, text, owner->style->font);
+	w.DrawText(textpos.x, textpos.y, text, owner->style->font, SColorText());
 }
 
 void TabCtrl::SyncTabs()

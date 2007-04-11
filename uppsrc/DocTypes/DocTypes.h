@@ -25,7 +25,7 @@ public:
 		void  *voidptr;
 		int    width;
 
-		FontInfo Set(Draw& w, Font font, Color color);
+		FontInfo Set(Font font, Color color);
 	};
 
 
@@ -165,15 +165,15 @@ public:
 	int         GetCount() const                { return part.GetCount(); }
 	const Part *GetParts() const                { return part.Begin(); }
 
-	bool        Format(ParaTypo& pfmt, Draw& w, int cx, int coef = 1024) const;
+	bool        Format(ParaTypo& pfmt, int cx, int coef = 1024) const;
 
-	int         GetHeight(int zoom, Draw& w, int cx) const;
+	int         GetHeight(int zoom, int cx) const;
 	bool        Paint(int zoom, Draw& w, int x, int y, int cx, int ymax, PaintInfo& pi,
 		              Color paper = SWhite) const;
 	int         Paint(int zoom, Draw& w, int x, int y, int cx, Color paper = SWhite) const;
 	void        Paint(int zoom, int angle, Draw& w, int x, int y, int cx) const;
 
-	int         GetHeight(Draw& w, int cx) const;
+	int         GetHeight(int cx) const;
 	bool        Paint(Draw& w, int x, int y, int cx, int ymax, PaintInfo& pi,
 		              Color paper = White) const;
 	int         Paint(Draw& w, int x, int y, int cx, Color paper = White) const;
@@ -181,8 +181,8 @@ public:
 	void        GetValueRects(int zoom, Draw& w, int x, int& y, int cx,
 		                      Vector<ValueRect>& vr) const;
 
-	int         GetWidth(int zoom, Draw& w) const;
-	int         GetWidth(Draw& w) const         { return GetWidth(1024, w); }
+	int         GetWidth(int zoom) const;
+	int         GetWidth() const                { return GetWidth(1024); }
 
 	void        Clear();
 	void        SetParaFont(Font f)             { parafont = f; }
@@ -301,12 +301,12 @@ public:
 	void  CopyStyle(const TableCell& s)       { SetStyle(s.GetStyle()); }
 	void  ClearStyle()                        { style.Init(); }
 
-	int   GetHeight(int zoom, Draw& w, int cx) const;
+	int   GetHeight(int zoom, int cx) const;
 	bool  Paint(int zoom, Draw& w, int x, int y, int cx, int cy, int pcy, Color color,
 		        PaintInfo& pi) const;
 	void  GetValueRects(int zoom, Draw& w, int x, int y, int cx, int cy, int pcy,
 		                Vector<ValueRect>& vr) const;
-	int   GetWidth(int zoom, Draw& w) const;
+	int   GetWidth(int zoom) const;
 
 	void  Qtf(const char *s);
 	void  SetPaintRect(const PaintRect& c)   { paintrect = c; }
@@ -366,7 +366,7 @@ protected:
 		Vector<Cell> cell;
 	};
 
-	Line GetLine(int zoom, Draw& w, int i, int tcx, const Vector<int> *yl) const;
+	Line GetLine(int zoom, int i, int tcx, const Vector<int> *yl) const;
 	int  Span(Vector<Line>& line) const;
 	void FrameTab(int zoom, Draw& w, bool was, int x, int y, int yp, int cx) const;
 	void DrawLine(int zoom, Draw& w, int x, int y, int i, const Line& ln, int ymax,
@@ -418,20 +418,20 @@ public:
 
 	int         GetRows() const              { return cell.GetCount(); }
 
-	int         GetHeight(int zoom, Draw& w, int cx) const;
+	int         GetHeight(int zoom, int cx) const;
 	bool        Paint(int zoom, Draw& w, int x, int y, int cx,
 		              int ymax, PaintInfo& pi) const;
 	int         Paint(int zoom, Draw& w, int x, int y, int cx) const;
 	void        GetValueRects(int zoom, Draw& w, int x, int& y, int cx,
 		                      Vector<ValueRect>& vr) const;
 
-	int         GetHeight(Draw& w, int cx) const;
+	int         GetHeight(int cx) const;
 	bool        Paint(Draw& w, int x, int y, int cx,
 		              int ymax, PaintInfo& pi) const;
 	int         Paint(Draw& w, int x, int y, int cx) const;
 
-	int         GetWidth(int zoom, Draw& w) const;
-	int         GetWidth(Draw& w) const      { return GetWidth(1024, w); }
+	int         GetWidth(int zoom) const;
+	int         GetWidth() const             { return GetWidth(1024); }
 
 	void        Clear()                      { cell.Clear(); style.Init(); }
 
@@ -466,7 +466,7 @@ protected:
 
 	Vector<Item>     item;
 
-	int               GetHeight(int zoom, Draw& w, int i, int cx, Cache& cache) const;
+	int               GetHeight(int zoom, int i, int cx, Cache& cache) const;
 	void              Qtf0(const char *s, bool append, byte charset);
 
 public:
@@ -484,17 +484,17 @@ public:
 	bool              IsTable(int i) const        { return item[i].type == TABLE; }
 	const Table&      GetTable(int i) const       { return item[i].data; }
 
-	int               GetHeight(int zoom, Draw& w, int cx) const;
+	int               GetHeight(int zoom, int cx) const;
 	int               Paint(int zoom, Draw& w, int x, int y, int cx, Color paper = SWhite) const;
 	Vector<ValueRect> GetValueRects(int zoom, Draw& w, int x, int y, int cx) const;
-	int               GetWidth(int zoom, Draw& w) const;
+	int               GetWidth(int zoom) const;
 
-	int               GetHeight(Draw& w, int cx) const           { return GetHeight(1024, w, cx); }
+	int               GetHeight(int cx) const           { return GetHeight(1024, cx); }
 	int               Paint(Draw& w, int x, int y, int cx, Color paper = White) const {
 		                return Paint(1024, w, x, y, cx, paper); }
-	int               GetWidth(Draw& w) const                    { return GetWidth(1024, w); }
+	int               GetWidth() const                    { return GetWidth(1024); }
 
-	int               GetHeight(int zoom, Draw& w, int cx, Cache& cache) const;
+	int               GetHeight(int zoom, int cx, Cache& cache) const;
 	void              Paint(int zoom, Draw& w, int x, int y, int cx, int cy, int y0,
 		                    Cache& cache, Color paper = SWhite) const;
 

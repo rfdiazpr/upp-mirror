@@ -90,7 +90,6 @@ void FnSkin()
 	Button::StyleNormal().Write() = FnStyle();
 }
 
-
 struct MyApp : WithChameleonLayout<TopWindow> {
 	void Set(void (*skin)());
 	Button::Style scolor, simage, sfn;

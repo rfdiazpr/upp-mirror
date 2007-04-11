@@ -2,6 +2,8 @@
 #include <winver.h>
 #include <imagehlp.h>
 
+using namespace Upp;
+
 #define DLLFILENAME "imagehlp.dll"
 #define DLIHEADER   "imagehlp.dli"
 #define DLIMODULE   Imagehlp

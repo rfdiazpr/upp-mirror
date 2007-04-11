@@ -39,14 +39,12 @@ void GifGlobalInfo::Serialize(Stream& stream)
 {
 	glo_fpos = stream.GetPos();
 	stream.SerializeRaw(tag, 6);
-	if(stream.IsError() || memcmp(tag, "GIF8", 4))
-	{
+	if(stream.IsError() || memcmp(tag, "GIF8", 4)) {
 		stream.SetError();
 		return;
 	}
 	stream % width % height % flags % bgnd % raw_aspect;
-	if(stream.IsLoading())
-	{
+	if(stream.IsLoading()) {
 		gct_flag = flags & GCT_PRESENT;
 		gct_sort = flags & GCT_SORTED;
 		gct_bits = (flags & GCT_BITS_MASK) + 1;
@@ -98,26 +96,23 @@ bool GifLocalInfo::Load(Stream& stream)
 	while((c1 = stream.Get()) != 0x2C)
 		if(c1 == 0x00)
 			;
-		else if(c1 == 0x21)
-		{
+		else if(c1 == 0x21) {
 			int code = stream.Get();
 			int len = stream.Get();
 			int64 next = stream.GetPos() + len;
-			if(code == 0xF9)
-			{ // read transparent color index
+			if(code == 0xF9) { // read transparent color index
 				byte flags = stream.Get(); // packed fields
 				stream.Get16le(); // delay time
 				transparent = stream.Get();
 				if(!(flags & 1))
 					transparent = -1;
 			}
-			else if(code == 0xFE)
-			{ // comment
+			else if(code == 0xFE) { // comment
 				stream.Seek(next);
-				while(len = stream.Get())
-				{
+				while(len = stream.Get()) {
 					int old = comment.GetLength();
-					StringBuffer b(comment, old + len);
+					StringBuffer b(old + len);
+					memcpy(b, comment, old);
 					bool res = stream.GetAll(~b + old, len);
 					comment = b;
 					if(!res)
@@ -125,8 +120,7 @@ bool GifLocalInfo::Load(Stream& stream)
 				}
 				next = 0;
 			}
-			if(next)
-			{
+			if(next) {
 				stream.Seek(next);
 				while((len = stream.Get()) > 0)
 					stream.SeekCur(len);
@@ -219,23 +213,19 @@ GifProcessor::GifProcessor(Stream& stream, const AlphaArray *raw_image)
 void GifProcessor::Save(bool optimize_palette, const String& cm)
 {
 	const AlphaArray *src_image = raw_image;
-	if(src_image->pixel.bpp > 8 || optimize_palette || src_image->HasAlpha())
-	{
+	if(src_image->pixel.bpp > 8 || optimize_palette || src_image->HasAlpha()) {
 		temp_image.pixel = CreatePalette(src_image->pixel, 8, 255);
 		raw_image = &temp_image;
 	}
-	if(optimize_palette)
-	{
-		if(raw_image != &temp_image)
-		{
+	if(optimize_palette) {
+		if(raw_image != &temp_image) {
 			temp_image.pixel <<= src_image->pixel;
 			raw_image = &temp_image;
 		}
 		OptimizePalette(temp_image.pixel);
 	}
 	int transparent_index = -1;
-	if(src_image->HasAlpha())
-	{
+	if(src_image->HasAlpha()) {
 		ASSERT(temp_image.pixel.palette.GetCount() < 256);
 		transparent_index = temp_image.pixel.palette.GetCount();
 		temp_image.pixel.palette.Add(Black());
@@ -257,10 +247,8 @@ void GifProcessor::Save(bool optimize_palette, const String& cm)
 	g.raw_aspect = 0;
 
 	stream % g;
-
-	{ // write palette
-		for(int i = 0, n = 1 << start_bpp; i < n; i++)
-		{
+ { // write palette
+		for(int i = 0, n = 1 << start_bpp; i < n; i++) {
 			Color color = Black;
 			if(i < raw_image->pixel.palette.GetCount())
 				color = raw_image->pixel.palette[i];
@@ -271,12 +259,10 @@ void GifProcessor::Save(bool optimize_palette, const String& cm)
 	}
 
 	// write comment block
-	if(!IsNull(comment))
-	{
+	if(!IsNull(comment)) {
 		stream.Put(0x21);
 		stream.Put(0xFE);
-		for(int t = 0, n; (n = min(comment.GetLength() - t, 255)) > 0; t += n)
-		{
+		for(int t = 0, n; (n = min(comment.GetLength() - t, 255)) > 0; t += n) {
 			stream.Put(n);
 			stream.Put(comment.Begin() + t, n);
 		}
@@ -284,8 +270,7 @@ void GifProcessor::Save(bool optimize_palette, const String& cm)
 	}
 
 	// store transparent color index
-	if(transparent_index >= 0)
-	{
+	if(transparent_index >= 0) {
 		stream.Put(0x21);
 		stream.Put(0xF9);
 		stream.Put(4);
@@ -332,13 +317,11 @@ void GifProcessor::SaveSubimage()
 //	static TimingInspector ti_put("PUT_CODE");
 
 #define PUT_CODE(code) \
-	do \
-	{ \
+	do \ { \
 		/*TimingInspector::Routine r(ti_put);*/ \
 		_old_byte |= (code) << _old_shift; \
 		_old_shift += _old_bits; \
-		if(_old_shift >= 16) \
-		{ \
+		if(_old_shift >= 16) \ { \
 			if(data_ptr >= data_end) \
 				FlushDataBlock(); \
 			*data_ptr++ = _old_byte; \
@@ -348,8 +331,7 @@ void GifProcessor::SaveSubimage()
 			_old_byte >>= 8; \
 			_old_shift -= 16; \
 		} \
-		else if(_old_shift >= 8) \
-		{ \
+		else if(_old_shift >= 8) \ { \
 			if(data_ptr >= data_end) \
 				FlushDataBlock(); \
 			*data_ptr++ = _old_byte; \
@@ -362,10 +344,8 @@ void GifProcessor::SaveSubimage()
 	int restart_code = 1 << start_bpp;
 	PUT_CODE(restart_code);
 
-	for(;;)
-	{
-		if(sp == se)
-		{
+	for(;;) {
+		if(sp == se) {
 			if(--y < 0)
 				break;
 			sp = raw_image->GetPixelUpScan(y);
@@ -376,10 +356,8 @@ void GifProcessor::SaveSubimage()
 		ASSERT(i >= items && i <= &items[MAX_COUNT]);
 
 SEEK:
-		if(sp == se)
-		{
-			if(--y < 0)
-			{
+		if(sp == se) {
+			if(--y < 0) {
 				PUT_CODE(i - items);
 				break;
 			}
@@ -391,26 +369,21 @@ SEEK:
 		if((i = (p = i)->child) == 0)
 			p->child = new_item;
 		else
-			for(;;)
-			{
+			for(;;) {
 				if(i->character == c)
 					goto SEEK;
-				if(c < i->character)
-				{
+				if(c < i->character) {
 					if(i->left)
 						i = i->left;
-					else
-					{
+					else {
 						i->left = new_item;
 						break;
 					}
 				}
-				else
-				{
+				else {
 					if(i->right)
 						i = i->right;
-					else
-					{
+					else {
 						i = i->right = new_item;
 						break;
 					}
@@ -420,10 +393,8 @@ SEEK:
 		// code not found - rewind last char & output current prefix, add new code to table
 		sp--;
 		PUT_CODE(p - items);
-		if(item_count < MAX_COUNT)
-		{ // add new entry to item table
-			if(item_count >= max_bit_count)
-			{
+		if(item_count < MAX_COUNT) { // add new entry to item table
+			if(item_count >= max_bit_count) {
 				max_bit_count <<= 1;
 				_old_bits++;
 			}
@@ -431,8 +402,7 @@ SEEK:
 			new_item->left = new_item->right = new_item->child = 0;
 			item_count++;
 		}
-		else
-		{ // restart table
+		else { // restart table
 			PUT_CODE(restart_code);
 			ClearTable(true);
 			_old_bits = old_bits;
@@ -441,8 +411,7 @@ SEEK:
 
 	// put terminator code & close output block
 	PUT_CODE(restart_code + 1);
-	if(_old_shift > 0)
-	{
+	if(_old_shift > 0) {
 		if(data_ptr >= data_end)
 			FlushDataBlock();
 		*data_ptr++ = _old_byte;
@@ -470,8 +439,7 @@ void GifProcessor::FlushDataBlock()
 //	TIMING("GifEncoder::FlushDataBlock");
 
 	int count = data_ptr - data_block;
-	if(count)
-	{
+	if(count) {
 		ASSERT(count <= 255);
 		stream.Put(count);
 		stream.Put(data_block, count);
@@ -481,8 +449,7 @@ void GifProcessor::FlushDataBlock()
 
 void GifProcessor::ClearTable(bool save)
 {
-	for(int i = 0, n = 1 << start_bpp; i < n; i++)
-	{
+	for(int i = 0, n = 1 << start_bpp; i < n; i++) {
 		Item& item = items[i];
 		item.character = i;
 		item.length = 1;
@@ -497,8 +464,7 @@ void GifProcessor::ClearTable(bool save)
 	old_code = -1;
 	old_bits = start_bpp;
 	max_bit_count = 1 << old_bits;
-	while(item_count > max_bit_count)
-	{
+	while(item_count > max_bit_count) {
 		old_bits++;
 		max_bit_count <<= 1;
 	}
@@ -513,22 +479,17 @@ bool GifProcessor::Fetch(byte *&cptr, const byte *cend)
 	byte *_data_ptr = data_ptr;
 	byte *_data_end = data_end;
 	dword _old_byte = old_byte;
-	while(cp < cend)
-	{
+	while(cp < cend) {
 //		static TimingInspector ti("Fetch-Get");
 //		ti.Start();
 		int code;
-		if(_old_shift + _old_bits <= 8)
-		{
+		if(_old_shift + _old_bits <= 8) {
 			code = (_old_byte >> _old_shift) & ((1 << _old_bits) - 1);
 			_old_shift += _old_bits;
 		}
-		else
-		{
-			if(_data_ptr >= _data_end)
-			{
-				if(!FetchDataBlock())
-				{
+		else {
+			if(_data_ptr >= _data_end) {
+				if(!FetchDataBlock()) {
 //					ti.End();
 					cptr = cp;
 					return false;
@@ -537,18 +498,14 @@ bool GifProcessor::Fetch(byte *&cptr, const byte *cend)
 				_data_end = data_end;
 			}
 			_old_byte |= *_data_ptr++ << 8;
-			if(_old_shift + _old_bits <= 16)
-			{
+			if(_old_shift + _old_bits <= 16) {
 				code = (_old_byte >> _old_shift) & ((1 << _old_bits) - 1);
 				_old_shift += _old_bits - 8;
 				_old_byte >>= 8;
 			}
-			else
-			{
-				if(_data_ptr >= _data_end)
-				{
-					if(!FetchDataBlock())
-					{
+			else {
+				if(_data_ptr >= _data_end) {
+					if(!FetchDataBlock()) {
 //						ti.End();
 						cptr = cp;
 						return false;
@@ -565,23 +522,19 @@ bool GifProcessor::Fetch(byte *&cptr, const byte *cend)
 		}
 //		ti.End();
 
-		if(code < item_count)
-		{
+		if(code < item_count) {
 //			TIMING("Fetch-existing code");
 			const Item& item = items[code];
 			if(item.length < 0)
-				if(item.length == -1)
-				{
+				if(item.length == -1) {
 					ClearTable();
 					_old_bits = old_bits;
 				}
-				else
-				{
+				else {
 					cptr = cp;
 					return false; // end of stream
 				}
-			else
-			{ // copy new pixels to output
+			else { // copy new pixels to output
 				byte *p = (cp += item.length);
 				byte first;
 /*
@@ -644,10 +597,8 @@ __no1:
 				const Item *i = &item;
 				*--p = i->character;
 				int left = item.length;
-				if(--left > 0)
-				{
-					for(; left >= 8; p -= 8, left -= 8)
-					{
+				if(--left > 0) {
+					for(; left >= 8; p -= 8, left -= 8) {
 						p[-1] = (i = i->prefix)->character;
 						p[-2] = (i = i->prefix)->character;
 						p[-3] = (i = i->prefix)->character;
@@ -657,16 +608,14 @@ __no1:
 						p[-7] = (i = i->prefix)->character;
 						p[-8] = (i = i->prefix)->character;
 					}
-					if(left & 4)
-					{
+					if(left & 4) {
 						p[-1] = (i = i->prefix)->character;
 						p[-2] = (i = i->prefix)->character;
 						p[-3] = (i = i->prefix)->character;
 						p[-4] = (i = i->prefix)->character;
 						p -= 4;
 					}
-					if(left & 2)
-					{
+					if(left & 2) {
 						p[-1] = (i = i->prefix)->character;
 						p[-2] = (i = i->prefix)->character;
 						p -= 2;
@@ -678,15 +627,13 @@ __no1:
 //*/
 //				while(i->prefix)
 //					*--p = (i = i->prefix)->character;
-				if(old_code >= 0 && item_count < MAX_COUNT)
-				{ // add to string table
+				if(old_code >= 0 && item_count < MAX_COUNT) { // add to string table
 					Item& item = items[item_count++];
 					item.character = first;
 					item.prefix = &items[old_code];
 					item.length = item.prefix->length + 1;
 				}
-				if(item_count >= max_bit_count && item_count < MAX_COUNT)
-				{
+				if(item_count >= max_bit_count && item_count < MAX_COUNT) {
 					max_bit_count <<= 1;
 					++_old_bits;
 				}
@@ -694,11 +641,9 @@ __no1:
 				old_first = first;
 			}
 		}
-		else
-		{ // special case: duplicate first character of old_code
+		else { // special case: duplicate first character of old_code
 //			TIMING("Fetch-new code");
-			if(old_code < 0 || code > item_count)
-			{ // decoder error
+			if(old_code < 0 || code > item_count) { // decoder error
 				stream.SetError();
 				cptr = cp;
 				return false;
@@ -713,8 +658,7 @@ __no1:
 			*--p = i->character;
 			while(i->prefix)
 				*--p = (i = i->prefix)->character;
-			if(item_count >= max_bit_count && item_count < MAX_COUNT)
-			{
+			if(item_count >= max_bit_count && item_count < MAX_COUNT) {
 				max_bit_count <<= 1;
 				++_old_bits;
 			}
@@ -764,10 +708,8 @@ bool GifProcessor::LoadSubimage(int& transparent_index)
 	byte *data_ptr = data, *data_end = data;
 	int pass = 0;
 	Size size = temp_image.GetSize();
-	for(int y = 0; y < size.cy;)
-	{
-		if(more && data_ptr + size.cx > data_end)
-		{ // fetch more data
+	for(int y = 0; y < size.cy;) {
+		if(more && data_ptr + size.cx > data_end) { // fetch more data
 			if(data_end > data_ptr)
 				Copy((byte *)data, data_ptr, data_end);
 			data_end -= (data_ptr - data);
@@ -778,8 +720,7 @@ bool GifProcessor::LoadSubimage(int& transparent_index)
 		if(avail == 0)
 			break;
 		byte *wrt = writer[y];
-		if(avail < temp_image.GetWidth())
-		{
+		if(avail < temp_image.GetWidth()) {
 			const byte *rd = reader[y];
 			if(rd != wrt)
 				memcpy(wrt, rd, temp_image.GetWidth());
@@ -788,8 +729,7 @@ bool GifProcessor::LoadSubimage(int& transparent_index)
 		writer.Write();
 		data_ptr += avail;
 		if(l.interlace)
-			switch(pass)
-			{
+			switch(pass) {
 			case 0: if((y += 8) < size.cy) break; y = 4 - 8; pass++;
 			case 1: if((y += 8) < size.cy) break; y = 2 - 4; pass++;
 			case 2: if((y += 4) < size.cy) break; y = 1 - 2; pass++;
@@ -814,8 +754,7 @@ AlphaArray GifProcessor::Load()
 		return temp_image;
 	temp_image.pixel.Create(g.width, g.height, g.gct_recs <= 2 ? 1 : g.gct_recs <= 16 ? 4 : 8);
 	stream.Seek(g.gct_fpos);
-	for(int i = 0; i < g.gct_recs; i++)
-	{
+	for(int i = 0; i < g.gct_recs; i++) {
 		int r = stream.Get(), g = stream.Get(), b = stream.Get();
 		temp_image.pixel.palette.Add(Color(r, g, b));
 	}
@@ -833,8 +772,7 @@ AlphaArray GifProcessor::Load()
 		xlat[transparent_index] = 1;
 		PixelReader8 reader(temp_image.pixel);
 		PixelWriter8 writer(temp_image.alpha);
-		for(int y = 0; y < g.height; y++)
-		{
+		for(int y = 0; y < g.height; y++) {
 			BltXlatB(writer[y], reader[y], g.width, xlat);
 			writer.Write();
 		}
@@ -859,8 +797,7 @@ Array<AlphaArray> GifEncoder::LoadRaw(Stream& _stream, const Vector<int>& page_i
 
 void GifEncoder::SaveRaw(Stream& stream, const Vector<const AlphaArray *>& pages)
 {
-	if(pages.GetCount() != 1)
-	{
+	if(pages.GetCount() != 1) {
 		stream.SetError();
 		return;
 	}
@@ -954,8 +891,7 @@ GIFRaster::Data::~Data()
 
 void GIFRaster::Data::ClearTable()
 {
-	for(int i = 0, n = 1 << start_bpp; i < n; i++)
-	{
+	for(int i = 0, n = 1 << start_bpp; i < n; i++) {
 		Item& item = items[i];
 		item.character = i;
 		item.length = 1;
@@ -967,8 +903,7 @@ void GIFRaster::Data::ClearTable()
 	old_code = -1;
 	old_bits = start_bpp;
 	max_bit_count = 1 << old_bits;
-	while(item_count > max_bit_count)
-	{
+	while(item_count > max_bit_count) {
 		old_bits++;
 		max_bit_count <<= 1;
 	}
@@ -998,22 +933,17 @@ bool GIFRaster::Data::Fetch(byte *&cptr, const byte *cend)
 	byte *_data_ptr = data_ptr;
 	byte *_data_end = data_end;
 	dword _old_byte = old_byte;
-	while(cp < cend)
-	{
+	while(cp < cend) {
 //		static TimingInspector ti("Fetch-Get");
 //		ti.Start();
 		int code;
-		if(_old_shift + _old_bits <= 8)
-		{
+		if(_old_shift + _old_bits <= 8) {
 			code = (_old_byte >> _old_shift) & ((1 << _old_bits) - 1);
 			_old_shift += _old_bits;
 		}
-		else
-		{
-			if(_data_ptr >= _data_end)
-			{
-				if(!FetchDataBlock())
-				{
+		else {
+			if(_data_ptr >= _data_end) {
+				if(!FetchDataBlock()) {
 //					ti.End();
 					cptr = cp;
 					return false;
@@ -1022,18 +952,14 @@ bool GIFRaster::Data::Fetch(byte *&cptr, const byte *cend)
 				_data_end = data_end;
 			}
 			_old_byte |= *_data_ptr++ << 8;
-			if(_old_shift + _old_bits <= 16)
-			{
+			if(_old_shift + _old_bits <= 16) {
 				code = (_old_byte >> _old_shift) & ((1 << _old_bits) - 1);
 				_old_shift += _old_bits - 8;
 				_old_byte >>= 8;
 			}
-			else
-			{
-				if(_data_ptr >= _data_end)
-				{
-					if(!FetchDataBlock())
-					{
+			else {
+				if(_data_ptr >= _data_end) {
+					if(!FetchDataBlock()) {
 //						ti.End();
 						cptr = cp;
 						return false;
@@ -1175,8 +1101,7 @@ bool GIFRaster::Data::LoadSubimage(int& transparent_index)
 	byte *data_ptr = data, *data_end = data;
 	int pass = 0;
 	for(int y = 0; y < size.cy;) {
-		if(more && data_ptr + size.cx > data_end)
-		{ // fetch more data
+		if(more && data_ptr + size.cx > data_end) { // fetch more data
 			if(data_end > data_ptr)
 				Copy((byte *)data, data_ptr, data_end);
 			data_end -= (data_ptr - data);
@@ -1190,8 +1115,7 @@ bool GIFRaster::Data::LoadSubimage(int& transparent_index)
 		memcpy(wrt, data_ptr, avail);
 		data_ptr += avail;
 		if(l.interlace)
-			switch(pass)
-			{
+			switch(pass) {
 			case 0: if((y += 8) < size.cy) break; y = 4 - 8; pass++;
 			case 1: if((y += 8) < size.cy) break; y = 2 - 4; pass++;
 			case 2: if((y += 4) < size.cy) break; y = 1 - 2; pass++;
@@ -1362,8 +1286,7 @@ void GIFEncoder::Data::FlushDataBlock()
 //	TIMING("GifEncoder::FlushDataBlock");
 
 	int count = data_ptr - data_block;
-	if(count)
-	{
+	if(count) {
 		ASSERT(count <= 255);
 		stream.Put(count);
 		stream.Put(data_block, count);
@@ -1414,8 +1337,7 @@ void GIFEncoder::Data::Start(Size sz, bool ignore_alpha, String comment, const R
 	g.raw_aspect = 0;
 
 	stream % g;
-
-	{ // write palette
+ { // write palette
 		for(int i = 0, n = 1 << start_bpp; i < n; i++) {
 			RGBA rgba = (i == transparent_index ? RGBAZero() : palette[i]);
 			stream.Put(rgba.r);
@@ -1568,8 +1490,7 @@ void GIFEncoder::Data::WriteLineRaw(const byte *sp)
 		PUT_CODE(i - items);
 		// put terminator code & close output block
 		PUT_CODE(restart_code + 1);
-		if(_old_shift > 0)
-		{
+		if(_old_shift > 0) {
 			if(data_ptr >= data_end)
 				FlushDataBlock();
 			*data_ptr++ = _old_byte;

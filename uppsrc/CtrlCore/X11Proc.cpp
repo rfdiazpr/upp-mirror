@@ -56,7 +56,7 @@ dword Ctrl::KEYtoK(dword key)
 void Ctrl::SetLastActive(XWindow *w, Ctrl *la)
 {
 	while(w) {
-		LLOG("  to " << ::Name(w->ctrl));
+		LLOG("  to " << UPP::Name(w->ctrl));
 		w->last_active = la;
 		w = w->owner ? w->owner->GetXWindow() : NULL;
 	}
@@ -229,7 +229,7 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 				SetWndFocus();
 			ClickActivateWnd();
 			mousePos = Point(event->xbutton.x_root, event->xbutton.y_root);
-			XUngrabPointer(Xdisplay, CurrentTime);
+			ReleaseGrab();
 			XButtonEvent& e = event->xbutton;
 			sModState = e.state;
 			Xeventtime = e.time;
@@ -261,7 +261,7 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 		break;
 	case ButtonRelease: {
 			mousePos = Point(event->xbutton.x_root, event->xbutton.y_root);
-			XUngrabPointer(Xdisplay, CurrentTime);
+			ReleaseGrab();
 			XButtonEvent& e = event->xbutton;
 			sModState = e.state;
 			Xeventtime = e.time;

@@ -329,7 +329,8 @@ ctrl Option {
 	group "Push";
 
 	Text   SetLabel @1 ? "Option text";
-	>Base;
+	Font   SetFont = StdFont() @1;
+	Frame  SetFrame @2;
 	bool   BlackEdge;
 	bool   SwitchImage;
 	bool   SetEditable = true @1 ? "Editable";
@@ -903,12 +904,12 @@ ctrl Calendar {
 		sw = width / 8;
 		sh = height / 7;
 		w.DrawRect(r.left + 4, r.top + sh, width - 8, 1, :SBlack);
-		w.DrawRect(r.left + sw, r.top + 4, 1, height - 8, :SBlack);		
+		w.DrawRect(r.left + sw, r.top + 4, 1, height - 8, :SBlack);
 		ts = GetTextSize("Wk");
 		ty = r.top + (sh - ts.cy) / 2;
 		w.DrawText(r.left + (sw - ts.cx) / 2 , ty, "Wk", f, :SBlack);
 
-		days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];		
+		days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 		for(i = 0; i < 7; i++)
 			w.DrawText(r.left + sw + i * sw + (sw - ts.cx) / 2, ty, days[i], f, :SBlack);
 
@@ -920,7 +921,7 @@ ctrl Calendar {
 		{
 			ty = r.top + sh  + j * sh + (sh - ts.cy) / 2;
 			w.DrawText(r.left + (sw - tn.cx) / 2, ty, to_string(j + 1), f, :SBlack);
-			
+
 			for(i = 0; i < 7; i++)
 			{
 				if(d == 19)
@@ -939,7 +940,7 @@ ctrl Calendar {
 					d = 1;
 					gray = 1;
 				}
-			}			
+			}
 		}
 
 		today = "Today: 01/19/2007";
@@ -949,7 +950,7 @@ ctrl Calendar {
 		current = "January 2007";
 		ts = GetTextSize(current, StdFont().Bold());
 		w.DrawText((r.right - ts.cx) / 2, (ro.top + 20 - ts.cy) / 2, current, f.Bold(), :SWhite);
-	
+
 		r = Rect(ro.left + 3, ro.top + 2, ro.left + 3 + 16, ro.top + 18);
 		PaintButton(w, r, "ClassicCtrlsImg::LA");
 		r.left += 15;
@@ -961,7 +962,66 @@ ctrl Calendar {
 		r.left -= 15;
 		r.right -= 15;
 		PaintButton(w, r, "ClassicCtrlsImg::LA");
-				
+
 		DrawCtrlFrame(w, ro, .SetFrame);
+	}
+}
+
+ctrl SliderCtrl {
+	group "Progress";
+
+	GetMinSize() { return Size(0, 0); }
+	GetStdSize() { return Size(64, 24); }
+
+	Frame  SetFrame @1;
+
+	Paint(w) {
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+
+		sz = Size(r.right - r.left, r.bottom - r.top);
+
+		halfX = int(r.left + r.right) >> 1;
+		halfY = int(r.top + r.bottom) >> 1;
+
+		if (sz.cx < sz.cy) {
+			DrawInsetFrame(w, Rect(halfX - 2, r.top + 2, halfX + 2, r.bottom - 2));
+			imgSz = GetImageSize("CtrlImg::vthumb");
+			w.DrawImage(halfX - (imgSz.cx >> 1), halfY - (imgSz.cy >> 1), "CtrlImg::vthumb");
+		} else {
+			DrawInsetFrame(w, Rect(r.left + 2, halfY - 2, r.right - 2, halfY + 2));
+			imgSz = GetImageSize("CtrlImg::hthumb");
+			w.DrawImage(halfX - (imgSz.cx >> 1), halfY - (imgSz.cy >> 1), "CtrlImg::hthumb");
+		}
+	}
+}
+
+ctrl ProgressIndicator {
+	group "Progress";
+
+	GetMinSize() { return Size(0, 0); }
+	GetStdSize() { return Size(64, 24); }
+
+	Frame  SetFrame @1;
+
+	Paint(w) {
+		r = GetRect();
+
+		DrawCtrlFrame(w, r, .SetFrame);
+		DrawInsetFrame(w, r);
+
+		sz = Size(r.right - r.left, r.bottom - r.top);
+
+		w.DrawRect(r.left, r.top, sz.cx, sz.cy, :SBlack);
+		DeflateRect(r);
+		sz = Size(r.right - r.left, r.bottom - r.top);
+		w.DrawRect(r.left, r.top, sz.cx, sz.cy, :SWhite);
+
+		if(sz.cx > sz.cy) {
+			w.DrawRect(r.left, r.top, sz.cx >> 2, sz.cy, :SLtGreen);
+		}
+		else {
+			w.DrawRect(r.left, r.bottom - (sz.cy >> 2), sz.cx, sz.cy >> 2, :SLtGreen);
+		}
 	}
 }

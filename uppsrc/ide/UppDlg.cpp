@@ -7,7 +7,7 @@ struct OptionDisplay : Display {
 		WString txt = q;
 		w.DrawRect(r, paper);
 		w.Clipoff(r.left + 10, r.top, r.Width() - 20, r.Height());
-		int tcy = GetTLTextHeight(w, txt, StdFont());
+		int tcy = GetTLTextHeight(txt, StdFont());
 		DrawTLText(w, 0, max((r.Height() - tcy) / 2, 0), r.Width(), txt, StdFont(), ink);
 		w.End();
 	}
@@ -20,7 +20,7 @@ struct OptionHeaderDisplay : Display {
 		WString txt = q;
 		w.DrawRect(r, SColorInfo);
 		w.Clipoff(r.left + 5, r.top, r.Width(), r.Height());
-		int tcy = GetTLTextHeight(w, txt, StdFont().Bold());
+		int tcy = GetTLTextHeight(txt, StdFont().Bold());
 		DrawTLText(w, 0, max((r.Height() - tcy) / 2, 0), r.Width(), txt,
 		           StdFont().Bold(), SColorText);
 		w.End();
@@ -37,7 +37,7 @@ struct DependsDisplay : Display {
 		Image img = IdeFileImage(q);
 		Size isz = img.GetSize();
 		w.DrawImage(0, (r.Height() - isz.cy) / 2, img);
-		int tcy = GetTLTextHeight(w, txt, StdFont());
+		int tcy = GetTLTextHeight(txt, StdFont());
 		DrawTLText(w, isz.cx + 4, max((r.Height() - tcy) / 2, 0), r.Width(), txt, StdFont(), ink);
 		w.End();
 	}
@@ -52,7 +52,7 @@ struct UsesDisplay : Display {
 		w.Clipoff(r.left + 10, r.top, r.Width() - 20, r.Height());
 		Size isz = IdeImg::Package().GetSize();
 		w.DrawImage(0, (r.Height() - isz.cy) / 2, IdeImg::Package());
-		int tcy = GetTLTextHeight(w, txt, StdFont());
+		int tcy = GetTLTextHeight(txt, StdFont());
 		DrawTLText(w, isz.cx + 4, max((r.Height() - tcy) / 2, 0), r.Width(), txt, StdFont(), ink);
 		w.End();
 	}

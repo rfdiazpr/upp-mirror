@@ -128,17 +128,18 @@ ctrl GridCtrl {
 	bool ColorRows = false;
 	ColoringModes ColoringMode;
 		
-	bool Inserting = true;
-	bool Appending = true;
-	bool Duplicating = false
+	bool Inserting = false;
+	bool Appending = false;
+	bool Duplicating = false;
 	bool Moving = false;
-	bool Removing = true;
-	bool Accepting = true;
-	bool Canceling = true;
+	bool Removing = false;
+	bool Accepting = false;
+	bool Canceling = false;
 	bool Navigating = false;
 	bool Searching = false;
 	bool Closing = false;
 	bool Editing = false;
+	bool EditsInNewRow = true;
 	bool Hiding = false;
 	bool Clipboard = false;
 	bool FixedPaste = false;

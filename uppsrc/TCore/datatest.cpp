@@ -13,11 +13,9 @@ static String GetRandomString(int maxlength = 50000, int minlength = 0)
 			v += rand() * RAND_MAX;
 		len += rand() % (span + 1);
 	}
-	String s;
-	char *p = s.GetBuffer(len);
+	StringBuffer s(len);
 	for(int i = 0; i < len; i++)
-		p[i] = rand();
-	s.ReleaseBuffer(len);
+		s[i] = rand();
 	return s;
 }
 

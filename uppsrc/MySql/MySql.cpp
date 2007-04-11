@@ -92,7 +92,7 @@ bool MySqlSession::Open(const char *connect) {
 		if(*p == ':')
 		{ // port
 			if(!IsDigit(*++p))
-				throw Exc("Oèekáváno èíslo portu.");
+				throw Exc("Port number expected.");
 			port = stou(p, &p);
 		}
 		if(*p == ',') // socket

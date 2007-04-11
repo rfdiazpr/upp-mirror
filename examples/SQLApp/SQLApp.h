@@ -2,14 +2,14 @@
 #define _SQLApp_SQLApp_h
 
 #include <SqlCtrl/SqlCtrl.h>
-#include <plugin/sqlite3/sqlite3.h>
+#include <plugin/sqlite3/Sqlite3.h>
 
 using namespace Upp;
 
 #define LAYOUTFILE <SQLApp/SQLApp.lay>
 #include <CtrlCore/lay.h>
 
-#define SCHEMADIALECT <plugin/Sqlite3/Sqlite3Schema.h>
+#define SCHEMADIALECT <plugin/sqlite3/Sqlite3Schema.h>
 #define MODEL <SQLApp/SQLApp.sch>
 #include "Sql/sch_header.h"
 

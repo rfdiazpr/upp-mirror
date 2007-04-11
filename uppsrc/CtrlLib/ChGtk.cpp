@@ -17,9 +17,9 @@ END_UPP_NAMESPACE
 #define Display XDisplay
 #define Picture XPicture
 
+#include <limits.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
-#include <gdk/gdkprivate.h>
 
 #undef Picture
 #undef Time

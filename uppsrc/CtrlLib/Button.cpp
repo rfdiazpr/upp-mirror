@@ -522,7 +522,7 @@ void Option::RefreshPush() {
 
 Size Option::GetMinSize() const {
 	Size isz = CtrlsImg::O0().GetSize();
-	return AddFrameSize(isz.cx + GetSmartTextSize(ScreenInfo(), label).cx + 4,
+	return AddFrameSize(isz.cx + GetSmartTextSize(label).cx + 4,
 		                max(isz.cy, StdFont().Info().GetHeight()) + 2);
 }
 
@@ -531,7 +531,7 @@ void Option::Paint(Draw& w) {
 	if(!IsTransparent())
 		w.DrawRect(0, 0, sz.cx, sz.cy, SColorFace);
 	Size isz = CtrlsImg::O0().GetSize();
-	Size tsz = GetSmartTextSize(w, label, font);
+	Size tsz = GetSmartTextSize(label, font);
 	int ty = (sz.cy - tsz.cy) / 2;
 	int iy = (tsz.cy - isz.cy) / 2 + ty;
 	bool ds = !IsShowEnabled();

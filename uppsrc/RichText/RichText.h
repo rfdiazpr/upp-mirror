@@ -111,6 +111,7 @@ struct RichObjectType : Moveable<RichObjectType> {
 	virtual Size   GetPhysicalSize(const Value& data) const;
 	virtual Size   GetPixelSize(const Value& data) const;
 	virtual void   Paint(const Value& data, Draw& w, Size sz) const;
+	virtual Image  ToImage(const Value& data, Size sz) const;
 	virtual Value  Read(const String& s) const;
 	virtual String Write(const Value& v) const;
 	virtual Value  ReadClipboard() const;
@@ -149,6 +150,7 @@ public:
 	void   SetSize(Size sz)                      { size = sz; NewSerial(); }
 	Size   GetSize() const                       { return size; }
 	void   Paint(Draw& w, Size sz) const;
+	Image  ToImage(Size sz) const;
 	Size   GetPhysicalSize() const               { return physical_size; }
 	Size   GetPixelSize() const                  { return pixel_size; }
 	Size   GetDefaultSize(Size maxsize) const    { return type ? type->GetDefaultSize(data, maxsize) : physical_size; }

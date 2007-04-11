@@ -42,7 +42,7 @@ bool  ExistsTimeCallback(void *id);
 dword GetTimeClick();
 
 inline
-void  PostCallback(Callback cb, void *id = NULL)                { SetTimeCallback(1, cb, NULL); }
+void  PostCallback(Callback cb, void *id = NULL)                { SetTimeCallback(1, cb, id); }
 
 class TimeCallback
 {
@@ -50,8 +50,10 @@ public:
 	~TimeCallback()                      { Kill(); }
 
 	void Set(int delay, Callback cb)     { UPP::SetTimeCallback(delay, cb, this); }
+	void Post(Callback cb)               { UPP::PostCallback(cb, this); }
 	void Kill()                          { UPP::KillTimeCallback(this); }
 	void KillSet(int delay, Callback cb) { Kill(); Set(delay, cb); }
+	void KillPost(Callback cb)           { Kill(); Post(cb); }
 
 private:
 	byte dummy;
@@ -307,6 +309,7 @@ private:
 	bool         inloop:1;
 	bool         isopen:1;
 	bool         popup:1;
+	bool         popupgrab:1;
 	byte         backpaint:2;//2
 	bool         GLX:1;
 
@@ -529,6 +532,8 @@ private:
 	static int       Xbuttontime;
 	static Window    grabWindow, focusWindow;
 	static Point     mousePos;
+	static int       PopupGrab;
+	static Ptr<Ctrl> popupWnd;
 
 	static void     ProcessEvent(XEvent *event);
 	static void     TimerAndPaint();
@@ -540,6 +545,10 @@ private:
 	       void     SetLastActive(XWindow *w, Ctrl *la);
 	       XWindow *GetXWindow();
 	static void     SyncMousePos();
+	static void     ReleaseGrab();
+
+	       void  StartPopupGrab();
+	static void  EndPopupGrab();
 
 	friend bool  GetMouseRight();
 	friend bool  GetMouseLeft();
@@ -563,6 +572,7 @@ public:
 
 		String Read(int fmt);
 		void   Write(int fmt, const String& data);
+		bool   IsAvailable(int fmt);
 
 		void   Clear()                     { data.Clear(); }
 		void   Request(XSelectionRequestEvent *se);
@@ -698,6 +708,7 @@ public:
 
 	virtual void   PostInput();
 
+	virtual void   ChildFrameMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags);
 	virtual void   ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags);
 	virtual void   ChildGotFocus();
 	virtual void   ChildLostFocus();
@@ -1027,6 +1038,7 @@ public:
 	static void ClickFocus(bool cf);
 
 	static Rect   GetWorkArea();
+	static Rect   GetScreenArea();
 	static int    GetKbdDelay();
 	static int    GetKbdSpeed();
 	static bool   IsAlphaSupported();

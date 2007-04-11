@@ -14,8 +14,8 @@ void Item::SetCtrl(Ctrl * newCtrl)
 	ctrl = newCtrl;
 	ctrl->Hide();
 	ctrl->WantFocus();
-	//ctrl->SetFrame(NullFrame());
-	ctrl->SetFrame(BlackFrame());
+	ctrl->SetFrame(NullFrame());
+	//ctrl->SetFrame(BlackFrame());
 }
 
 void Item::DropCtrl()                  
@@ -104,10 +104,9 @@ ItemRect& ItemRect::Fixed(int n)
 
 ItemRect& ItemRect::Edit(Ctrl &ctrl)
 {
-/*	Item &it = (*items)[0][id];
-	it.SetCtrl(&ctrl);
-*/	ctrl.Hide();
+	ctrl.Hide();
 	ctrl.SetFrame(BlackFrame());
+	//ctrl.SetFrame(NullFrame());
 	(*edits)[id].ctrl = &ctrl;
 	parent->AddChild(&ctrl);
 	return *this;
@@ -135,6 +134,18 @@ ItemRect& ItemRect::Default(Value v)
 {
 	defval = v;
 	return *this;
+}
+
+ItemRect& ItemRect::Index(bool b)
+{
+	Size(0);
+	index = b;
+	return *this;
+}
+
+String ItemRect::GetName()
+{
+	return (*items)[0][id].val;
 }
 
 ItemRect& ItemRect::SetFormat(const char *fmt)
@@ -177,6 +188,5 @@ ItemRect& ItemRect::Option()
 {
 	return Ctrls(MakeOption).CtrlAlignHorzCenter(15);
 }
-
 
 END_UPP_NAMESPACE

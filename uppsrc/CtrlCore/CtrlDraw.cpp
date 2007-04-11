@@ -238,31 +238,31 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip) {
 				w.End();
 			}
 		}
-		bool hasviewctrls = false;
+	}
+	bool hasviewctrls = false;
+	for(q = firstchild; q; q = q->next)
+		if(q->IsShown())
+			if(q->InFrame()) {
+				LEVELCHECK(w);
+				Point off = q->GetRect().TopLeft();
+				w.Offset(off);
+				q->CtrlPaint(w, clip - off);
+				w.End();
+			}
+			else
+				hasviewctrls = true;
+	if(hasviewctrls && !view.IsEmpty()) {
+		Rect cl = clip & view;
+		w.Clip(cl);
 		for(q = firstchild; q; q = q->next)
-			if(q->IsShown())
-				if(q->InFrame()) {
-					LEVELCHECK(w);
-					Point off = q->GetRect().TopLeft();
-					w.Offset(off);
-					q->CtrlPaint(w, clip - off);
-					w.End();
-				}
-				else
-					hasviewctrls = true;
-		if(hasviewctrls) {
-			Rect cl = clip & view;
-			w.Clip(cl);
-			for(q = firstchild; q; q = q->next)
-				if(q->IsShown() && q->InView()) {
-					LEVELCHECK(w);
-					Point off = q->GetRect().TopLeft() + view.TopLeft();
-					w.Offset(off);
-					q->CtrlPaint(w, cl - off);
-					w.End();
-				}
-			w.End();
-		}
+			if(q->IsShown() && q->InView()) {
+				LEVELCHECK(w);
+				Point off = q->GetRect().TopLeft() + view.TopLeft();
+				w.Offset(off);
+				q->CtrlPaint(w, cl - off);
+				w.End();
+			}
+		w.End();
 	}
 }
 
@@ -396,6 +396,7 @@ void Ctrl::UpdateArea(Draw& draw, const Rect& clip)
 		GatherTransparentAreas(area, draw, Point(0, 0), clip);
 		for(int i = 0; i < area.GetCount(); i++) {
 			Rect ar = area[i];
+			LLOG("Painting area: " << ar);
 			ShowRepaintRect(draw, ar, LtBlue());
 			BackDraw bw;
 			bw.Create(draw, ar.GetSize());

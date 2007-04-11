@@ -8,23 +8,23 @@ TableCell& TableCell::NewPar() {
 	return *this;
 }
 
-int   TableCell::GetHeight(int zoom, Draw& w, int cx) const {
+int   TableCell::GetHeight(int zoom, int cx) const {
 	cx -= DocZoom(zoom, style.leftwidth) + DocZoomLn(zoom, style.rightwidth) +
 		  DocZoom(zoom, style.leftspace) + DocZoom(zoom, style.rightspace);
 	int cy = DocZoom(zoom, style.topwidth) + DocZoomLn(zoom, style.bottomwidth) +
 		     DocZoom(zoom, style.topspace) + DocZoom(zoom, style.bottomspace);
 	for(int i = 0; i < par.GetCount(); i++) {
 		const Paragraph& p = par[i];
-		cy += p.GetHeight(zoom, w, cx) +
+		cy += p.GetHeight(zoom, cx) +
 			  DocZoom(zoom, p.GetBefore()) + DocZoom(zoom, p.GetAfter());
 	}
 	return paintrect ? max(cy, paintrect.RatioSize(cx, 0).cy) : cy;
 }
 
-int   TableCell::GetWidth(int zoom, Draw& w) const {
+int   TableCell::GetWidth(int zoom) const {
 	int cx = 0;
 	for(int i = 0; i < par.GetCount(); i++)
-		cx = max(cx, par[i].GetWidth(zoom, w));
+		cx = max(cx, par[i].GetWidth(zoom));
 	cx += DocZoom(zoom, style.leftwidth) + DocZoomLn(zoom, style.rightwidth) +
 		  DocZoom(zoom, style.leftspace) + DocZoom(zoom, style.rightspace);
 	return cx;
@@ -86,7 +86,7 @@ bool  TableCell::Paint(int zoom, Draw& w, int x, int y, int cx, int cy, int pcy,
 			ypos += ppi.ypos - py;
 		}
 		else {
-			int h = ypos < pi.yl ? p.GetHeight(zoom, w, cx) : 0;
+			int h = ypos < pi.yl ? p.GetHeight(zoom, cx) : 0;
 			if(ypos + h > pi.yl) {
 				ppi.yl = pi.yl - ypos;
 				if(p.Paint(zoom, w, x, y, cx, ymax, ppi, style.paper)) {
@@ -231,7 +231,7 @@ int GetTotalRatio(const Array<TableCell>& row) {
 	return tr;
 }
 
-Table::Line Table::GetLine(int zoom, Draw& w, int i, int tcx, const Vector<int> *yl) const {
+Table::Line Table::GetLine(int zoom, int i, int tcx, const Vector<int> *yl) const {
 	Line ln;
 	const Array<TableCell>& row = cell[i];
 	int rcx = GetTotalRatio(row);
@@ -258,7 +258,7 @@ Table::Line Table::GetLine(int zoom, Draw& w, int i, int tcx, const Vector<int> 
 	for(j = 0; j < row.GetCount(); j++) {
 		Size& sz = ln.cell[j].size;
 		const TableCell& cell = row[j];
-		sz.cy = cell.GetHeight(zoom, w, sz.cx);
+		sz.cy = cell.GetHeight(zoom, sz.cx);
 		if(yl && !ln.span && j < yl->GetCount())
 			sz.cy -= (*yl)[j];
 		ln.height = max(ln.height, ln.cell[j].span ? 0 : sz.cy);
@@ -366,7 +366,7 @@ bool Table::Paint(int zoom, Draw& w, int x, int y, int cx, int ymax, PaintInfo& 
 	if(pi.line) {
 		int m = min(GetHeaderRows(), cell.GetCount());
 		for(j = 0; j < m; j++)
-			header.Add() = GetLine(zoom, w, j, tcx, NULL);
+			header.Add() = GetLine(zoom, j, tcx, NULL);
 	}
 	int hdrcy = Span(header);
 	if(hdrcy > ymax - y) {
@@ -390,7 +390,7 @@ bool Table::Paint(int zoom, Draw& w, int x, int y, int cx, int ymax, PaintInfo& 
 			int k = pi.line + line.GetCount();
 			if(k >= GetRows() || line.GetCount() && !KeepLine(k) && span <= 0)
 				break;
-			span = max((line.Add() = GetLine(zoom, w, k, tcx, yl)).span, span);
+			span = max((line.Add() = GetLine(zoom, k, tcx, yl)).span, span);
 			if(span) nospan = false;
 			yl = NULL;
 			span--;
@@ -448,7 +448,7 @@ int  Table::Paint(Draw& w, int x, int y, int cx) const {
 	return Paint(1024, w, x, y, cx);
 }
 
-int  Table::GetHeight(int zoom, Draw& w, int cx) const {
+int  Table::GetHeight(int zoom, int cx) const {
 	int cy = 0;
 	int ln = 0;
 	cx -= DocZoomLn(zoom, GetFrameWidth()) + DocZoomLn(zoom, GetFrameWidth()) +
@@ -462,7 +462,7 @@ int  Table::GetHeight(int zoom, Draw& w, int cx) const {
 			if(ln + line.GetCount() >= GetRows() ||
 			   line.GetCount() && !KeepLine(k) && span <= 0)
 				break;
-			span = max((line.Add() = GetLine(zoom, w, k, cx, NULL)).span, span);
+			span = max((line.Add() = GetLine(zoom, k, cx, NULL)).span, span);
 			span--;
 		}
 		cy += Span(line);
@@ -508,7 +508,7 @@ const {
 			int k = li + line.GetCount();
 			if(k >= GetRows() || line.GetCount() && !KeepLine(k) && span <= 0)
 				break;
-			span = max((line.Add() = GetLine(zoom, w, k, cx, NULL)).span, span);
+			span = max((line.Add() = GetLine(zoom, k, cx, NULL)).span, span);
 			span--;
 		}
 		y += Span(line);
@@ -518,17 +518,17 @@ const {
 	y += zfw;
 }
 
-int  Table::GetHeight(Draw& w, int cx) const {
-	return GetHeight(1024, w, cx);
+int  Table::GetHeight(int cx) const {
+	return GetHeight(1024, cx);
 }
 
-int  Table::GetWidth(int zoom, Draw& w) const {
+int  Table::GetWidth(int zoom) const {
 	int cx = 0;
 	for(int i = 0; i < GetRows(); i++) {
 		const Array<TableCell>& row = cell[i];
 		int x = 0;
 		for(int j = 0; j < row.GetCount(); j++)
-			x = max(x, row[j].GetWidth(zoom, w) / row[j].GetRatio());
+			x = max(x, row[j].GetWidth(zoom) / row[j].GetRatio());
 		cx = max(cx, x * GetTotalRatio(row));
 	}
 	return cx + 2 * GetFrameWidth();

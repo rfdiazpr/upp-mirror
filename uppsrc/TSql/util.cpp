@@ -144,21 +144,21 @@ public:
 	Ref ref;
 };
 
-class GetRefMap : public FieldOperator
-{
-public:
-	GetRefMap() {}
-
-	virtual void Field(const char *name, Ref f)
-	{
+struct GetRefMap : FieldOperator {
+	virtual void Field(const char *name, Ref f) {
 		map.Add(Id(name), f);
 	}
-
 	VectorMap<Id, Ref> map;
 };
 
-class GetTableName : public FieldOperator
-{
+struct GetValueMap : FieldOperator {
+	virtual void Field(const char *name, Ref f) {
+		map.Add(Id(name), f);
+	}
+	VectorMap<Id, Value> map;
+};
+
+class GetTableName : public FieldOperator {
 	virtual void Field(const char *name, Ref f) {}
 };
 
@@ -282,10 +282,21 @@ String GetTableName(Fields nf)
 	return helper.table;
 }
 
-VectorMap<Id, Ref> GetRefMap(Fields nf)
+VectorMap<Id, Ref> GetRefMap(Fields nf, String *tablename)
 {
 	SqlUtil::GetRefMap helper;
 	nf(helper);
+	if(tablename)
+		*tablename = helper.table;
+	return helper.map;
+}
+
+VectorMap<Id, Value> GetValueMap(Fields nf, String *tablename)
+{
+	SqlUtil::GetValueMap helper;
+	nf(helper);
+	if(tablename)
+		*tablename = helper.table;
 	return helper.map;
 }
 
@@ -593,6 +604,11 @@ int64 SelectSchemaCount(const SqlVal& table, const SqlBool& cond, Sql& cursor)
 	return Select(SqlCountRows()).FromSchema(table).Where(cond).Fetch(cursor);
 }
 
+SqlVal GetUpper(const SqlVal& val)
+{
+	return SqlFunc("UPPER", val);
+}
+
 SqlVal GetCsVal(const SqlVal& val)
 {
 	return SqlFunc("REPLACE", SqlFunc("UPPER", val), "CH", "HŽŽ");
@@ -635,7 +651,8 @@ SqlBool GetTextRange(const String& s1, const String& s2, const SqlVal& exp)
 		return SqlBool();
 	if(IsNull(s1) || IsNull(s2)) // just one - use as template
 		return LikeSmartWild(exp, s1 + s2);
-	return Between(GetCsAsciiVal(exp), GetCsAsciiVal(s1), GetCsAsciiVal(s2 + "ŽŽ"));
+//	return Between(GetCsAsciiVal(exp), GetCsAsciiVal(s1), GetCsAsciiVal(s2 + "ŽŽ"));
+	return Between(Upper(exp), Upper(s1), Upper(s2 + "ŽŽ"));
 }
 
 static const double above = 1 + 1e-9, below = 1 - 1e-9;

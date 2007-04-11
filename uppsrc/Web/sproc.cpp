@@ -111,7 +111,7 @@ void LocalSlaveProcess::Free() {
 	if(rpipe[1] >= 0) { close(rpipe[1]); rpipe[1] = -1; }
 	if(wpipe[0] >= 0) { close(wpipe[0]); wpipe[0] = -1; }
 	if(wpipe[1] >= 0) { close(wpipe[1]); wpipe[1] = -1; }
-	waitpid(pid, 0, WNOHANG | WUNTRACED);
+	if(pid) waitpid(pid, 0, WNOHANG | WUNTRACED);
 	pid = 0;
 	output_read = false;
 #endif
@@ -328,7 +328,7 @@ void LocalSlaveProcess::Kill() {
 		kill(pid, SIGTERM);
 		GetExitCode();
 		int status;
-		if(waitpid(pid, &status, 0) == pid)
+		if(pid && waitpid(pid, &status, 0) == pid)
 			DecodeExitCode(status);
 		exit_string = "Child process has been killed.\n";
 	}

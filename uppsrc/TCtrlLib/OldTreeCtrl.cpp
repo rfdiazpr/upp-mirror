@@ -592,7 +592,7 @@ void OldTreeItem::LayoutItem()
 						textsize.cy = doc.GetHeight(DOC_SCREEN_ZOOM, ScreenInfo(), textsize.cx);
 					}
 					else*/
-						textsize = GetSmartTextSize(ScreenInfo(), display, owner->font);
+						textsize = GetSmartTextSize(display, owner->font);
 				}
 			}
 			break;
@@ -721,11 +721,11 @@ void OldTreeItem::PaintItem(Draw& draw, Point pos) const
 						if(*display == '\xFF') {
 							Document doc;
 							doc.Qtf(display.Begin() + 1);
-							size.cx = doc.GetWidth(SCREEN_ZOOM, draw);
-							size.cy = doc.GetHeight(SCREEN_ZOOM, draw, size.cx);
+							size.cx = doc.GetWidth(SCREEN_ZOOM);
+							size.cy = doc.GetHeight(SCREEN_ZOOM, size.cx);
 						}
 						else
-							size = GetTLTextSize(draw, wdisplay = display.ToWString(), owner->font);
+							size = GetTLTextSize(wdisplay = display.ToWString(), owner->font);
 
 						Rect trc = item;
 						trc.left -= TSGAP;

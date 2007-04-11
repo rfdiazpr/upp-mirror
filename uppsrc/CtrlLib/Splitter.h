@@ -47,6 +47,7 @@ public:
 	bool      IsHorz() const                       { return !vert; }
 	bool      IsVert() const                       { return vert; }
 
+	void      Clear();
 	void      Reset();
 
 	Splitter();
@@ -67,9 +68,12 @@ public:
 	virtual Image CursorImage(Point p, dword keyflags);
 
 private:
-	int type, size, maxsize;
 	Point ref;
-	int   size0;
+	Size  parentsize;
+	int   type, minsize, sizemin;
+	int   size, size0;
+
+	int   BoundSize();
 
 public:
 	enum { LEFT, TOP, RIGHT, BOTTOM };
@@ -82,9 +86,12 @@ public:
 	SplitterFrame& Right(Ctrl& c, int size)   { return Set(c, size, RIGHT); }
 	SplitterFrame& Bottom(Ctrl& c, int size)  { return Set(c, size, BOTTOM); }
 
-	int  GetType() const            { return type; }
-	int  GetSize() const            { return size; }
-	void SetSize(int sz)            { size = sz; RefreshParentLayout(); }
+	SplitterFrame& MinSize(int sz)            { minsize = sz; return *this; }
+	SplitterFrame& SizeMin(int sz)            { sizemin = sz; return *this; }
+
+	int  GetType() const                      { return type; }
+	int  GetSize() const                      { return size; }
+	void SetSize(int sz)                      { size = sz; RefreshParentLayout(); }
 
 	SplitterFrame();
 };

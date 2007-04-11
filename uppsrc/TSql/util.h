@@ -48,9 +48,10 @@ Value                 GetValue(Fields nf, SqlId field);
 Ref                   GetRef(Fields nf, SqlId field);
 String                GetTableName(Fields nf);
 
-VectorMap<Id, Ref>    GetRefMap(Fields nf);
+VectorMap<Id, Ref>    GetRefMap(Fields nf, String *tablename = NULL);
+VectorMap<Id, Value>  GetValueMap(Fields nf, String *tablename = NULL);
 
-String                ForceInsertRowid(const SqlSet& insert, Sql& cursor APPSQLCURSOR);
+String                ForceInsertRowid(const SqlInsert& insert, Sql& cursor APPSQLCURSOR);
 String                ForceInsertRowid(Fields nf, Sql& cursor APPSQLCURSOR);
 String                ForceInsertRowid(SqlId table, Fields nf, Sql& cursor APPSQLCURSOR);
 String                ForceSchemaInsertRowid(Fields nf, Sql& cursor APPSQLCURSOR);

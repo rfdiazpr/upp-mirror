@@ -8,7 +8,7 @@ NAMESPACE_UPP
 #define LOGTIMING 0
 
 #ifdef _DEBUG
-#define LOGMESSAGES 0
+#define LOGMESSAGES 1
 #endif
 
 #define ELOG(x)  // RLOG(GetSysTime() << ": " << x)
@@ -510,7 +510,7 @@ LRESULT CALLBACK Ctrl::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 	   message != 0x0118)
 		for(WinMsg *m = sWinMsg; m->ID; m++)
 			if(m->ID == message) {
-				RLOG(m->name << ' ' << ::Name(w) <<
+				RLOG(m->name << ' ' << UPP::Name(w) <<
 					Sprintf(", wParam = %d (0x%x), lParam = %d (0x%x)",
 					       wParam, wParam, lParam, lParam));
 				VppLog().Begin();
@@ -743,6 +743,14 @@ Rect Ctrl::GetWorkArea()
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &r, 0);
 	LLOG("Ctrl::GetWorkArea -> " << r);
 	return r;
+}
+
+Rect Ctrl::GetScreenArea()
+{
+	return RectC(GetSystemMetrics(SM_XVIRTUALSCREEN),
+		GetSystemMetrics(SM_YVIRTUALSCREEN),
+		GetSystemMetrics(SM_CXVIRTUALSCREEN),
+		GetSystemMetrics(SM_CYVIRTUALSCREEN));
 }
 
 int Ctrl::GetKbdDelay()
@@ -1030,6 +1038,7 @@ void AppendClipboard(const char *format, const byte *data, int length)
 	HANDLE handle = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, length + 2);
 	byte *ptr;
 	if(!handle || !(ptr = (byte *)GlobalLock(handle))) {
+		if(handle) GlobalFree(handle);
 		CloseClipboard();
 		return;
 	}
@@ -1039,6 +1048,7 @@ void AppendClipboard(const char *format, const byte *data, int length)
 	GlobalUnlock(handle);
 	if(!SetClipboardData(GetClipboardFormatCode(format), handle)) {
 		LLOG("SetClipboardData error: " << GetLastErrorMessage());
+		GlobalFree(handle);
 		CloseClipboard();
 		return;
 	}

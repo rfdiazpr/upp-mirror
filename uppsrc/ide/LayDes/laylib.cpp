@@ -222,7 +222,7 @@ void SIC_GetSmartTextSize(EscEscape& e)
 	Font font = StdFont();
 	if(e.GetCount() > 1)
 		font = FontEsc(e[1]);
-	e = EscSize(GetSmartTextSize(ScreenInfo(), text, font));
+	e = EscSize(GetSmartTextSize(text, font));
 }
 
 void SIC_GetQtfHeight(EscEscape& e)

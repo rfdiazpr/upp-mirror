@@ -52,7 +52,8 @@ void IdeIconDes::Save()
 			png.SaveFile(AppendFileName(folder, String().Cat() << "icon" << sz.cx << 'x' << sz.cy << ".png"), c.image);
 		}
 	}
-	if(!SaveChangedFileFinish(filename, SaveIml(m, format)))
+	String d = SaveIml(m, format);
+	if(!SaveChangedFileFinish(filename, d))
 		return;
 	filetime = FileGetTime(filename);
 	SaveFile(AppendFileName(folder, "icon.ico"), WriteIcon(exp.GetValues()));

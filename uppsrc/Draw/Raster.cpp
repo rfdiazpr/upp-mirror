@@ -129,15 +129,21 @@ void MemoryRaster::Load(Raster& raster)
 	if(!palette.IsEmpty())
 		memcpy(palette, raster.GetPalette(), palette.GetCount() * sizeof(RGBA));
 	lines.SetCount(size.cy);
-	if(const RasterFormat *fmt = raster.GetFormat())
+	if(const RasterFormat *fmt = raster.GetFormat()) {
 		format = *fmt;
-	else
+		int rowbytes = format.GetByteCount(size.cx);
+		for(int i = 0; i < size.cy; i++) {
+			lines[i].Alloc(rowbytes);
+			memcpy(~lines[i], raster.GetLine(i).GetRawData(), rowbytes);
+		}
+	}
+	else {
 		format.SetRGBA();
-	int rowbytes = format.GetByteCount(size.cx);
-	for(int i = 0; i < size.cy; i++) {
-		Line line = raster.GetLine(i);
-		lines[i].Alloc(rowbytes);
-		memcpy(~lines[i], line, rowbytes);
+		int rowbytes = sizeof(RGBA) * size.cx;
+		for(int i = 0; i < size.cy; i++) {
+			lines[i].Alloc(rowbytes);
+			memcpy(~lines[i], raster.GetLine(i).GetRGBA(), rowbytes);
+		}
 	}
 }
 

@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x)  // LOG(x)
+#define LLOG(x)  // DLOG(x)
 
 Rect TopWindow::windowFrameMargin;
 
@@ -25,7 +25,7 @@ void TopWindow::ActiveFocus0(Ctrl& ctrl)
 
 void TopWindow::Activate()
 {
-	LLOG("Activate " << Name() << " activefocus = " << ::Name(activefocus));
+	LLOG("Activate " << Name() << " activefocus = " << UPP::Name(activefocus));
 	UsrLogT(3, "ACTIVATE " + Desc(this));
 	if(activefocus && (HasFocus() || !GetFocusChildDeep()) && IsEnabled())
 		activefocus->SetWantFocus();
@@ -39,11 +39,11 @@ void TopWindow::ChildGotFocus()
 
 void TopWindow::Deactivate()
 {
-	LLOG("DeActivate current focus " << ::Name(GetFocusCtrl()));
+	LLOG("DeActivate current focus " << UPP::Name(GetFocusCtrl()));
 	if(HasFocusDeep())
 		activefocus = GetFocusCtrl();
 	UsrLogT(3, "DEACTIVATE " + Desc(this));
-	LLOG("DeActivate " << Name() << " activefocus = " << ::Name(activefocus));
+	LLOG("DeActivate " << Name() << " activefocus = " << UPP::Name(activefocus));
 }
 
 void TopWindow::PlaceFocus()
@@ -251,7 +251,7 @@ void GatherWindowTree(Ctrl *w, const Vector<Ctrl *>& ws, Vector<Ctrl *>& es)
 int  TopWindow::Run(bool appmodal)
 {
 	LLOG("TopWindow::Run() <- " << typeid(*this).name());
-	LLOG("Focus = " << ::Name(GetFocusCtrl()));
+	LLOG("Focus = " << UPP::Name(GetFocusCtrl()));
 	if(!IsOpen())
 		Open();
 	if(!IsVisible()) Show();
@@ -277,14 +277,14 @@ int  TopWindow::Run(bool appmodal)
 	Vector< Ptr<Ctrl> > disabled = DisableCtrls(es, this);
 #ifdef _DEBUG
 	for(int d = 0; d < disabled.GetCount(); d++)
-	{ LLOG("DisableCtrls[" << d << "] = " << ::Name(disabled[d])); }
-	LLOG("Running EventLoop in " << ::Name(this));
+	{ LLOG("DisableCtrls[" << d << "] = " << UPP::Name(disabled[d])); }
+	LLOG("Running EventLoop in " << UPP::Name(this));
 #endif
 	EventLoop(this);
 #ifdef _DEBUG
-	LLOG("Finished EventLoop in " << ::Name(this));
+	LLOG("Finished EventLoop in " << UPP::Name(this));
 	for(int e = 0; e < disabled.GetCount(); e++)
-		LLOG("EnableCtrls[" << e << "] = " << ::Name(disabled[e]));
+		LLOG("EnableCtrls[" << e << "] = " << UPP::Name(disabled[e]));
 #endif
 	EnableCtrls(disabled);
 	int q = exitcode;
@@ -292,7 +292,7 @@ int  TopWindow::Run(bool appmodal)
 	exitcode = pexitcode;
 	LLOG("TopWindow::Run() = " << q << " -> " << typeid(*this).name());
 #ifdef PLATFORM_WIN32
-	LLOG("Focus = " << ::Name(GetFocusCtrl()) << ", raw " << (void *)::GetFocus());
+	LLOG("Focus = " << UPP::Name(GetFocusCtrl()) << ", raw " << (void *)::GetFocus());
 #endif
 	return q;
 }

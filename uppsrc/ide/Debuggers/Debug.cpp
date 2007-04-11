@@ -166,6 +166,8 @@ void Pdb::Unlock()
 
 void Pdb::AddThread(dword dwThreadId, HANDLE hThread)
 {
+	if(threadsp.Find(dwThreadId) >= 0)
+		return;
 	CONTEXT ctx;
 	ctx.ContextFlags = CONTEXT_FULL;
 	GetThreadContext(hThread, &ctx);
@@ -248,15 +250,14 @@ bool Pdb::RunToException()
 				const EXCEPTION_RECORD& x = event.u.Exception.ExceptionRecord;
 				if(x.ExceptionCode != EXCEPTION_BREAKPOINT && x.ExceptionCode != EXCEPTION_SINGLE_STEP) {
 					if(event.u.Exception.dwFirstChance) {
-						LLOG("First chance " << usehex << x.ExceptionCode);
+						LLOG("First chance " << FormatIntHex(x.ExceptionCode));
 						break;
 					}
 					String desc = Format("Exception: [* %X] at [* %08X]&",
 					                     (int)x.ExceptionCode, (int)x.ExceptionAddress);
 					for(int i = 0; i < __countof(ex_desc); i++)
-						if(ex_desc[i].code == x.ExceptionCode) {
+						if(ex_desc[i].code == x.ExceptionCode)
 							desc << "[* " << DeQtf(ex_desc[i].text) << "]&";
-						}
 					if(x.ExceptionCode == EXCEPTION_ACCESS_VIOLATION) {
 						desc << (x.ExceptionInformation[0] ? "[*@3 writing]" : "[*@4 reading]");
 						desc << Format(" at [* %08X]", (int)x.ExceptionInformation[1]);
@@ -274,28 +275,28 @@ bool Pdb::RunToException()
 					Unlock();
 				if(refreshmodules)
 					LoadModuleInfo();
-				HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, event.dwThreadId);
-				if(!hThread) {
-					Error();
-					return false;
+				ctx.Clear();
+				for(int i = 0; i < threadsp.GetCount(); i++) {
+					dword threadid = threadsp.GetKey(i);
+					CONTEXT& c = ctx.Add(threadid);
+					HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, threadid);
+					if(!hThread) {
+						Error();
+						return false;
+					}
+					c.ContextFlags = CONTEXT_FULL;
+					GetThreadContext(hThread, &c);
+					if(event.dwThreadId == threadid)
+						context = c;
+					CloseHandle(hThread);
 				}
-				context.ContextFlags = CONTEXT_FULL;
-				GetThreadContext(hThread, &context);
-				LLOG("Exception: " << FormatIntHex(event.u.Exception.ExceptionRecord.ExceptionCode) <<
-				     " at: " << FormatIntHex(event.u.Exception.ExceptionRecord.ExceptionAddress) <<
-				     " EIP: " << FormatIntHex(context.Eip) <<
-				     " first: " << event.u.Exception.dwFirstChance);
 				if(event.u.Exception.ExceptionRecord.ExceptionCode == EXCEPTION_BREAKPOINT
 				&& bp_set.Find((dword)event.u.Exception.ExceptionRecord.ExceptionAddress) >= 0)
 					context.Eip = (DWORD)event.u.Exception.ExceptionRecord.ExceptionAddress;
 				RemoveBp();
-//				for(int i = 0; i < bp_address.GetCount(); i++) {
-//					WriteProcessMemory(hProcess, (LPVOID) bp_address[i], &bp_data[i], 1, NULL);
-//					FlushInstructionCache (hProcess, (LPCVOID)bp_address[i], 1);
-//				}
-//				bp_address.Clear();
-//				bp_data.Clear();
-				CloseHandle(hThread);
+				LLOG("Exception: " << FormatIntHex(event.u.Exception.ExceptionRecord.ExceptionCode) <<
+				     " at: " << FormatIntHex(event.u.Exception.ExceptionRecord.ExceptionAddress) <<
+				     " first: " << event.u.Exception.dwFirstChance);
 				return true;
 			}
 			case CREATE_THREAD_DEBUG_EVENT:
@@ -304,9 +305,7 @@ bool Pdb::RunToException()
 				break;
 			case EXIT_THREAD_DEBUG_EVENT: {
 				LLOG("Exit thread: " << event.dwThreadId);
-				int i = threadsp.Find(event.dwThreadId);
-				if(i >= 0)
-					threadsp.Remove(i);
+				threadsp.RemoveKey(event.dwThreadId);
 				break;
 			}
 			case CREATE_PROCESS_DEBUG_EVENT:
@@ -369,6 +368,11 @@ bool Pdb::RunToException()
 	}
 }
 
+const CONTEXT& Pdb::CurrentContext()
+{
+	return ctx.Get((int)~threadlist);
+}
+
 void Pdb::WriteContext(dword cf)
 {
 	context.ContextFlags = cf;
@@ -413,12 +417,12 @@ void Pdb::BreakRunning()
 {
 	stop = true;
 	if(running) {
-/*		BOOL (WINAPI *debugbreak)(HANDLE Process);
+		BOOL (WINAPI *debugbreak)(HANDLE Process);
 		debugbreak = (BOOL (WINAPI *)(HANDLE))
 		             GetProcAddress(GetModuleHandle("kernel32.dll"), "DebugBreakProcess");
 		if(debugbreak)
 			(*debugbreak)(hProcess);
-		else*/
+		else
 			for(int i = 0; i < threadsp.GetCount(); i++) {
 				HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, threadsp.GetKey(i));
 				if(hThread) {
@@ -429,7 +433,6 @@ void Pdb::BreakRunning()
 					ctx.EFlags |= 0x100;
 					SetThreadContext(hThread, &ctx);
 					GetThreadContext(hThread, &ctx);
-//					Bp(ctx.Eip);
 					ResumeThread(hThread);
 					CloseHandle(hThread);
 				}

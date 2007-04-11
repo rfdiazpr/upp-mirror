@@ -344,7 +344,8 @@ void RichPara::Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& 
 	Size sz = RichTextImg::EndParaChar().GetSize();
 	if(sz.cy < z * lineascent && !IsNull(pi.showcodes))
 		pw.Page(py.page).DrawImage(z * x, z * y0 - sz.cy,
-		                            RichTextImg::EndParaChar(), pi.showcodes);
+		                           RichTextImg::EndParaChar(),
+		                           format.indexentry.GetCount() ? pi.indexentry : pi.showcodes);
 	if(format.newpage && !IsNull(pi.showcodes)) {
 		Draw& w = pw.Page(opy.page);
 		int wd = z * page.right - z * page.left;

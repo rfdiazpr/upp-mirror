@@ -48,6 +48,8 @@ PlotterCtrl::PlotterCtrl()
 , old_size(Null)
 //, paint_draw(NULL)
 , buffer_paint(false)
+, buffer_pan(false)
+, pan_offset(0, 0)
 , show_scroll(true)
 , lock_drag_drop(false)
 , lock_short_drag_drop(false)
@@ -202,6 +204,14 @@ void PlotterCtrl::SetExtent(const Rectf& e)
 		Pointf d = delta;
 		Layout();
 		SetDelta(d);
+	}
+}
+
+void PlotterCtrl::PanOffset(Point o)
+{
+	if(pan_offset != o) {
+		pan_offset = o;
+		Refresh();
 	}
 }
 
@@ -529,7 +539,7 @@ void PlotterCtrl::Paint(Draw& draw)
 #ifdef PLATFORM_WIN32
 		if(!paint_buffer.IsEmpty()) {
 			LLOG("-> blit paint_buffer");
-			if(!BitBlt(draw, Point(0, 0), *paint_draw, paint_buffer.GetSize())) {
+			if(!BitBlt(draw, pan_offset, *paint_draw, paint_buffer.GetSize())) {
 				LLOG("-> blit error");
 			}
 		}
@@ -548,13 +558,13 @@ void PlotterCtrl::Paint(Draw& draw)
 			}
 			else {
 				LLOG("-> DrawImage paint_buffer");
-				draw.DrawImage(0, 0, paint_buffer);
+				draw.DrawImage(pan_offset.x, pan_offset.y, paint_buffer);
 			}
 		}
 		else {
 			LLOG("-> Plot (direct)");
 			draw.DrawRect(clip, background);
-			Plotter plotter(draw, scale, delta);
+			Plotter plotter(draw, scale, delta + Pointf(pan_offset));
 			plotter.PathMap(&PathStyleMap::App());
 			Plot(plotter);
 			if(drag_drop) {
@@ -1056,7 +1066,6 @@ Image PanDragDrop::Cursor(Pointf pt, dword keyflags, bool dragging) const
 
 bool PanDragDrop::Push(Pointf pt, dword keyflags)
 {
-	old_delta = GetOwner().GetPushDelta();
 	return true;
 }
 
@@ -1064,36 +1073,20 @@ void PanDragDrop::Drag(Pointf start, Pointf prev, Pointf curr, dword keyflags)
 {
 	PlotterCtrl& owner = GetOwner();
 	if(!IsNull(curr))
-	{
-		Pointf p = old_delta + (curr - start) * owner.GetPushScale();
-		owner.AdjustPos(p, Point(Null));
-		if(p != owner.GetDelta()) {
-			owner.SetDelta(p);
-			owner.WhenUserZoom();
-		}
-	}
+		owner.PanOffset(PointfToPoint((curr - start) * owner.GetPushScale()));
 }
 
 void PanDragDrop::Drop(Pointf start, Pointf end, dword keyflags)
 {
 	PlotterCtrl& owner = GetOwner();
-//	owner.SetDelta(GetDelta(start, end));
+	owner.SetDelta(owner.GetDelta() + (end - start) * owner.GetPushScale());
+	owner.PanOffset(Point(0, 0));
 	owner.WhenUserZoom();
 }
 
 void PanDragDrop::Cancel()
 {
-	GetOwner().SetDelta(old_delta);
-}
-
-Pointf PanDragDrop::GetDelta(Pointf start, Pointf pt)
-{
-	if(IsNull(pt))
-		return Null;
-	const PlotterCtrl& owner = GetOwner();
-	Pointf p = owner.GetDelta() + (pt - start) * owner.GetScale();
-	owner.AdjustPos(p, Null);
-	return p;
+	GetOwner().PanOffset(Point(0, 0));
 }
 
 END_UPP_NAMESPACE

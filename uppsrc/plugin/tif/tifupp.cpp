@@ -397,6 +397,7 @@ public:
 	};
 	enum { MAX_CACHE_SIZE = 50000000 };
 	RGBA palette[256];
+	int palette_count;
 	Buffer<Row> rows;
 	int64 mapping_offset;
 	int mapping_size;
@@ -731,6 +732,7 @@ bool TIFRaster::Data::Create()
 		format.Set24le(0xFF << 16, 0xFF << 8, 0xFF);
 		bpp = 24;
 	}
+	palette_count = 0;
 	if(isContig	&& (photometric == PHOTOMETRIC_PALETTE
 	|| photometric == PHOTOMETRIC_MINISWHITE || photometric == PHOTOMETRIC_MINISBLACK)
 	&& (bitspersample == 1 || bitspersample == 2 || bitspersample == 4 || bitspersample == 8)) {
@@ -738,6 +740,7 @@ bool TIFRaster::Data::Create()
 		tif_uint32 **ppal = (photometric == PHOTOMETRIC_PALETTE ? PALmap : BWmap);
 		ASSERT(ppal);
 //		byte rshift = 8 - img.bitspersample;
+		palette_count = 1 << min<int>(bitspersample, 8);
 		byte mask = (1 << bitspersample) - 1;
 		int part_last = 8 / bitspersample - 1;
 		int i;
@@ -841,6 +844,11 @@ Raster::Info TIFRaster::GetInfo()
 Raster::Line TIFRaster::GetLine(int line)
 {
 	return Raster::Line(&data->imagebuf[data->row_bytes * line], this, false);
+}
+
+int TIFRaster::GetPaletteCount()
+{
+	return data->palette_count;
 }
 
 const RGBA *TIFRaster::GetPalette()

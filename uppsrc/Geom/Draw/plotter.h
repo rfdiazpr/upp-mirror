@@ -26,8 +26,8 @@ public:
 	void           Clear();
 	void           Flush(); // flush polyline buffer
 
-	void           MoveTo(Point pt)       { (this ->* MoveToRaw)(pt); }
-	void           LineTo(Point pt)       { (this ->* LineToRaw)(pt); }
+	void           MoveTo(Point pt)       { ASSERT(MoveToRaw); (this->*MoveToRaw)(pt); }
+	void           LineTo(Point pt)       { ASSERT(LineToRaw); (this->*LineToRaw)(pt); }
 	void           Close();
 
 	LineDraw&      operator << (Point pt) { LineTo(pt); return *this; }
@@ -132,12 +132,12 @@ public:
 	Draw&               GetDraw()                                         { ASSERT(draw); return *draw; }
 	void                SetXorMode(bool xm);
 
-	Point               LtoPoint(Pointf pt) const                         { return (this ->* ltopoint)(pt); }
+	Point               LtoPoint(Pointf pt) const                         { ASSERT(ltopoint); return (this->*ltopoint)(pt); }
 
 	double              LtoP(double dist) const                           { return dist * measure; }
 	double              PtoL(double dist) const                           { return dist / measure; }
 
-	Pointf              LtoP(Pointf pt) const                             { return (this ->* ltop)(pt); }
+	Pointf              LtoP(Pointf pt) const                             { ASSERT(ltop); return (this->*ltop)(pt); }
 	Pointf              LtoPrel(Pointf pt) const                          { return pt % physical; }
 
 	Pointf              PtoL(Pointf pt) const                             { return pt * logical; }
@@ -369,11 +369,9 @@ private:
 	Color          fill_color;
 };
 
-class MarkTool
-{
+class MarkTool {
 public:
-	class Marker
-	{
+	class Marker {
 	public:
 		Marker() {}
 		virtual ~Marker() {}
@@ -410,9 +408,10 @@ public:
 	virtual void     Clear(); // clear paint buffer
 	void             Flush();
 
-	void             Put(Pointf pt)  { (this ->* PutRaw)(pt); }
+	void             Put(Pointf pt)  { ASSERT(PutRaw); (this->*PutRaw)(pt); }
 
 private:
+	void             PutDummy(Pointf pt);
 	void             PutClip(Pointf pt);
 	void             PutSimple(Pointf pt);
 

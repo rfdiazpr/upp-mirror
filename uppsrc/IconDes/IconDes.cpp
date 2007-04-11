@@ -430,7 +430,7 @@ void IconDes::SaveUndo()
 		return;
 	Slot& c = Current();
 	Vector<Image> undo = UnpackImlData(c.undo);
-	int maxn = minmax(400000 / c.image.GetLength(), 4, 128);
+	int maxn = minmax(400000 / max(c.image.GetLength(), 1), 4, 128);
 	while(undo.GetCount() > maxn)
 		undo.Remove(0);
 	if(undo.GetCount() && undo.Top() == c.image)
@@ -524,11 +524,15 @@ void IconDes::MaskFill(ImageBuffer& ib, RGBA color, int mask)
 void IconDes::SetColor0(RGBA color)
 {
 	FinishPaste();
+	doselection = false;
+	rgbactrl.Mask(false);
 	SaveUndo();
 	ImageBuffer ib(Current().image);
 	MaskFill(ib, color, 255);
 	Refresh();
 	SetCurrentImage(ib);
+	SyncShow();
+	SetBar();
 }
 
 void IconDes::SetColor()

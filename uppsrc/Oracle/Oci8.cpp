@@ -10,17 +10,26 @@ NAMESPACE_UPP
 #define DLLFILENAME "oci.dll"
 #define DLIMODULE   OCI8
 #define DLIHEADER   <Oracle/Oci8.dli>
-#include <Core/dli.h>
+#include <Core/dli_source.h>
 
-static String OciError(OCIError *errhp, int *code)
+void OCI8SetDllPath(String oci8_path, T_OCI8& oci8)
+{
+	static String dflt_name;
+	if(IsNull(dflt_name))
+		dflt_name = oci8.GetLibName();
+	if(oci8_path != oci8.GetLibName())
+		oci8.SetLibName(Nvl(oci8_path, dflt_name));
+}
+
+static String OciError(T_OCI8& oci8, OCIError *errhp, int *code)
 {
 	if(code) *code = Null;
-	if(!OCI8()) return t_("Error running OCI8 Oracle connection dynamic library.");
+	if(!oci8) return t_("Error running OCI8 Oracle connection dynamic library.");
 	if(!errhp) return t_("Unknown error.");
 	OraText errbuf[512];
 	strcpy((char *)errbuf, t_("(unknown error)"));
 	sb4 errcode;
-	OCI8().OCIErrorGet(errhp, 1, NULL, &errcode, errbuf, sizeof(errbuf), OCI_HTYPE_ERROR);
+	oci8.OCIErrorGet(errhp, 1, NULL, &errcode, errbuf, sizeof(errbuf), OCI_HTYPE_ERROR);
 	if(code) *code = errcode;
 	return (const char *) errbuf;
 }
@@ -28,18 +37,18 @@ static String OciError(OCIError *errhp, int *code)
 bool Oracle8::AllocOciHandle(void *hp, int type) {
 	LLOG("AllocOciHandle(" << type << "), envhp = " << envhp);
 	*(dvoid **)hp = NULL;
-	return OCI8() && !OCI8().OCIHandleAlloc(envhp, (dvoid **)hp, type, 0, NULL);
+	return oci8 && !oci8.OCIHandleAlloc(envhp, (dvoid **)hp, type, 0, NULL);
 }
 
 void Oracle8::FreeOciHandle(void *hp, int type) {
 	LLOG("FreeOciHandle(" << type << ")");
-	if(OCI8() && hp) OCI8().OCIHandleFree(hp, type);
+	if(oci8 && hp) oci8.OCIHandleFree(hp, type);
 }
 
 void Oracle8::SetOciError(String text)
 {
 	int errcode;
-	String msg = OciError(errhp, &errcode);
+	String msg = OciError(oci8, errhp, &errcode);
 	SetError(msg, text, errcode, OciErrorClass(errcode));
 }
 
@@ -58,6 +67,7 @@ protected:
 	virtual            ~OCI8Connection();
 
 	struct Item {
+		T_OCI8&        oci8;
 		int            type;
 		int16          len;
 		sb2            ind;
@@ -105,11 +115,12 @@ protected:
 
 		sb4 Out(ub4 iter, ub4 index, dvoid **bufpp, ub4 **alenp, ub1 *piecep, dvoid **indp, ub2 **rcodep);
 
-		Item();
+		Item(T_OCI8& oci8);
 		~Item();
 	};
 
 	Oracle8           *session;
+	T_OCI8&            oci8;
 	OCIStmt           *stmthp;
 	OCIError          *errhp;
 	Array<Item>        param;
@@ -144,14 +155,14 @@ protected:
 
 	void      Clear();
 
-    OCI8Connection(Oracle8 *s);
+	OCI8Connection(Oracle8& s);
 
 	friend class Oracle8;
 };
 
 void OCI8Connection::Item::Clear() {
 	if(type == SQLT_BLOB || type == SQLT_CLOB)
-		OCI8().OCIDescriptorFree((dvoid *)lob, OCI_DTYPE_LOB);
+		oci8.OCIDescriptorFree((dvoid *)lob, OCI_DTYPE_LOB);
 	else
 	if(len > sizeof(buffer))
 		delete[] ptr;
@@ -163,7 +174,9 @@ void OCI8Connection::Item::Clear() {
 	dyna_width = 0;
 }
 
-OCI8Connection::Item::Item() {
+OCI8Connection::Item::Item(T_OCI8& oci8_)
+: oci8(oci8_)
+{
 	len = 0;
 	lob = NULL;
 	bind = NULL;
@@ -183,7 +196,7 @@ bool OCI8Connection::Item::Alloc(OCIEnv *envhp, int _type, int _len, int res) {
 	type = _type;
 	len = _len + res;
 	if(type == SQLT_BLOB || type == SQLT_CLOB)
-		OCI8().OCIDescriptorAlloc(envhp, (dvoid **) &lob, OCI_DTYPE_LOB, 0, NULL);
+		oci8.OCIDescriptorAlloc(envhp, (dvoid **) &lob, OCI_DTYPE_LOB, 0, NULL);
 	if(len > sizeof(buffer))
 		ptr = new byte[len];
 	return true;
@@ -240,7 +253,9 @@ sb4 OCI8Connection::Item::Out(ub4 iter, ub4 index, dvoid **bufpp, ub4 **alenp, u
 }
 
 OCI8Connection::Item& OCI8Connection::PrepareParam(int i, int type, int len, int res, int dynamic_vtype) {
-	Item& p = param.At(i);
+	while(param.GetCount() <= i)
+		param.Add(new Item(oci8));
+	Item& p = param[i];
 	if(p.Alloc(session -> envhp, type, len, res))
 		parse = true;
 	p.dyna_vtype = dynamic_vtype;
@@ -294,7 +309,7 @@ private:
 
 void OCI8Connection::SetParam(int i, Sql& rc) {
 	Item& w = PrepareParam(i, SQLT_RSET, -1, 0, VOID_V);
-	w.refcursor = new OCI8Connection(session);
+	w.refcursor = new OCI8Connection(*session);
 	w.refcursor -> refcursor = true;
 	*(OCIStmt **)w.Data() = w.refcursor -> stmthp;
 	w.ind = 0;
@@ -311,7 +326,6 @@ void  OCI8Connection::SetParam(int i, const Value& q) {
 		case WSTRING_V:
 			SetParam(i, String(q));
 			break;
-		case BOOL_V:
 		case INT_V:
 			SetParam(i, int(q));
 			break;
@@ -339,7 +353,7 @@ void  OCI8Connection::SetParam(int i, const Value& q) {
 }
 
 void OCI8Connection::AddColumn(int type, int len) {
-	column.Add().Alloc(session -> envhp, type, len);
+	column.Add(new Item(oci8)).Alloc(session -> envhp, type, len);
 }
 
 bool OCI8Connection::Execute() {
@@ -352,8 +366,8 @@ bool OCI8Connection::Execute() {
 			return false;
 		ub4 fr = fetchrows;
 
-		OCI8().OCIAttrSet(stmthp, OCI_HTYPE_STMT, &fr, 0, OCI_ATTR_PREFETCH_ROWS, errhp);
-		if(OCI8().OCIStmtPrepare(stmthp, errhp, (byte *)~parsed_cmd, parsed_cmd.GetLength(), OCI_NTV_SYNTAX,
+		oci8.OCIAttrSet(stmthp, OCI_HTYPE_STMT, &fr, 0, OCI_ATTR_PREFETCH_ROWS, errhp);
+		if(oci8.OCIStmtPrepare(stmthp, errhp, (byte *)~parsed_cmd, parsed_cmd.GetLength(), OCI_NTV_SYNTAX,
 			              OCI_DEFAULT)) {
 			SetError();
 			return false;
@@ -361,18 +375,18 @@ bool OCI8Connection::Execute() {
 
 		while(param.GetCount() < args)
 			SetParam(param.GetCount(), String());
-		param.SetCount(args);
+		param.Trim(args);
 		dynamic_param.Clear();
 		for(int i = 0; i < args; i++) {
 			Item& p = param[i];
-			if(OCI8().OCIBindByPos(stmthp, &p.bind, errhp, i + 1, p.Data(), p.len, p.type,
+			if(oci8.OCIBindByPos(stmthp, &p.bind, errhp, i + 1, p.Data(), p.len, p.type,
 				            &p.ind, NULL, NULL, 0, NULL, p.is_dynamic ? OCI_DATA_AT_EXEC : OCI_DEFAULT)) {
 				SetError();
 				return false;
 			}
 			if(p.is_dynamic) {
 				dynamic_param.Add(i);
-				if(OCI8().OCIBindDynamic(p.bind, errhp, &p, &Item::DynaIn, &p, &Item::DynaOut)) {
+				if(oci8.OCIBindDynamic(p.bind, errhp, &p, &Item::DynaIn, &p, &Item::DynaOut)) {
 					SetError();
 					return false;
 				}
@@ -380,12 +394,12 @@ bool OCI8Connection::Execute() {
 		}
 	}
 	ub2 type;
-	if(OCI8().OCIAttrGet(stmthp, OCI_HTYPE_STMT, &type, NULL, OCI_ATTR_STMT_TYPE, errhp)) {
+	if(oci8.OCIAttrGet(stmthp, OCI_HTYPE_STMT, &type, NULL, OCI_ATTR_STMT_TYPE, errhp)) {
 		SetError();
 		return false;
 	}
 
-	if(OCI8().OCIStmtExecute(SvcCtx(), stmthp, errhp, type != OCI_STMT_SELECT, 0, NULL, NULL,
+	if(oci8.OCIStmtExecute(SvcCtx(), stmthp, errhp, type != OCI_STMT_SELECT, 0, NULL, NULL,
 		              session->StdMode() && session->level == 0 ? OCI_COMMIT_ON_SUCCESS : OCI_DEFAULT)) {
 		SetError();
 		session->PostError();
@@ -420,7 +434,7 @@ bool OCI8Connection::GetColumnInfo() {
 	info.Clear();
 	column.Clear();
 	ub4 argcount;
-	if(OCI8().OCIAttrGet(stmthp, OCI_HTYPE_STMT, &argcount, 0, OCI_ATTR_PARAM_COUNT, errhp) != OCI_SUCCESS) {
+	if(oci8.OCIAttrGet(stmthp, OCI_HTYPE_STMT, &argcount, 0, OCI_ATTR_PARAM_COUNT, errhp) != OCI_SUCCESS) {
 		SetError();
 		return false;
 	}
@@ -439,7 +453,7 @@ bool OCI8Connection::GetColumnInfo() {
 	}
 	for(ub4 i = 1; i <= argcount; i++) {
 		OCIParam *pd;
-		if(OCI8().OCIParamGet(stmthp, OCI_HTYPE_STMT, errhp, (dvoid **)&pd, i) != OCI_SUCCESS) {
+		if(oci8.OCIParamGet(stmthp, OCI_HTYPE_STMT, errhp, (dvoid **)&pd, i) != OCI_SUCCESS) {
 			SetError();
 			return false;
 		}
@@ -448,11 +462,11 @@ bool OCI8Connection::GetColumnInfo() {
 		ub2 type, width;
 		ub2 prec;
 		sb1 scale;
-		OCI8().OCIAttrGet(pd, OCI_DTYPE_PARAM, &type, NULL,  OCI_ATTR_DATA_TYPE, errhp);
-		OCI8().OCIAttrGet(pd, OCI_DTYPE_PARAM, &width, NULL, OCI_ATTR_DATA_SIZE, errhp);
-		OCI8().OCIAttrGet(pd, OCI_DTYPE_PARAM, &name, &name_len, OCI_ATTR_NAME, errhp);
-		OCI8().OCIAttrGet(pd, OCI_DTYPE_PARAM, &prec, NULL,  OCI_ATTR_PRECISION, errhp);
-		OCI8().OCIAttrGet(pd, OCI_DTYPE_PARAM, &scale, NULL,  OCI_ATTR_SCALE, errhp);
+		oci8.OCIAttrGet(pd, OCI_DTYPE_PARAM, &type, NULL,  OCI_ATTR_DATA_TYPE, errhp);
+		oci8.OCIAttrGet(pd, OCI_DTYPE_PARAM, &width, NULL, OCI_ATTR_DATA_SIZE, errhp);
+		oci8.OCIAttrGet(pd, OCI_DTYPE_PARAM, &name, &name_len, OCI_ATTR_NAME, errhp);
+		oci8.OCIAttrGet(pd, OCI_DTYPE_PARAM, &prec, NULL,  OCI_ATTR_PRECISION, errhp);
+		oci8.OCIAttrGet(pd, OCI_DTYPE_PARAM, &scale, NULL,  OCI_ATTR_SCALE, errhp);
 		SqlColumnInfo& ii = info.Add();
 		ii.decimals = Null;
 		ii.width = width;
@@ -489,7 +503,7 @@ bool OCI8Connection::GetColumnInfo() {
 			break;
 		}
 		Item& c = column.Top();
-		OCI8().OCIDefineByPos(stmthp, &c.define, errhp, i,
+		oci8.OCIDefineByPos(stmthp, &c.define, errhp, i,
 			blob ? (void *)&c.lob : (void *)c.Data(), blob ? -1 : c.len,
 			c.type, &c.ind, NULL, NULL, OCI_DEFAULT);
 	}
@@ -501,7 +515,7 @@ int OCI8Connection::GetRowsProcessed() const {
 	if(!dynamic_param.IsEmpty())
 		return dynamic_pos + 1;
 	ub4 rp = 0;
-	OCI8().OCIAttrGet(stmthp, OCI_HTYPE_STMT, &rp, NULL, OCI_ATTR_ROW_COUNT, errhp);
+	oci8.OCIAttrGet(stmthp, OCI_HTYPE_STMT, &rp, NULL, OCI_ATTR_ROW_COUNT, errhp);
 	return rp;
 }
 
@@ -512,7 +526,7 @@ bool OCI8Connection::Fetch() {
 		return (dynamic_pos < dynamic_rows && ++dynamic_pos < dynamic_rows);
 	bool tt = session->IsTraceTime();
 	int fstart = tt ? msecs() : 0;
-	sword status = OCI8().OCIStmtFetch(stmthp, errhp, 1, OCI_FETCH_NEXT, OCI_DEFAULT);
+	sword status = oci8.OCIStmtFetch(stmthp, errhp, 1, OCI_FETCH_NEXT, OCI_DEFAULT);
 	bool ok = false;
 	if(status == OCI_SUCCESS || status == OCI_SUCCESS_WITH_INFO) {
 		fetchtime += msecs(fstart);
@@ -615,7 +629,6 @@ void  OCI8Connection::GetColumn(int i, Ref f) const {
 			f.SetValue(s);
 			break;
 		}
-		case BOOL_V:
 		case INT_V: {
 			int d;
 			GetColumn(i, d);
@@ -676,7 +689,7 @@ void  OCI8Connection::GetColumn(int i, Ref f) const {
 }
 
 void OCI8Connection::Cancel() {
-	OCI8().OCIBreak(SvcCtx(), errhp);
+	oci8.OCIBreak(SvcCtx(), errhp);
 	parse = true;
 }
 
@@ -735,13 +748,18 @@ String OCI8Connection::ToString() const {
 	return lg;
 }
 
-OCI8Connection::OCI8Connection(Oracle8 *s) {
+static int conn_count = 0;
+
+OCI8Connection::OCI8Connection(Oracle8& s)
+: session(&s)
+, oci8(s.oci8)
+{
+	LOG("OCI8Connection construct, #" << ++conn_count << " total");
 	refcursor = false;
-	session = s;
-	if(!session -> AllocOciHandle(&stmthp, OCI_HTYPE_STMT)
-	|| !session -> AllocOciHandle(&errhp, OCI_HTYPE_ERROR))
-		session -> SetError(t_("Error initializing connection"), t_("OCI8 connection"));
-	LinkAfter(&s->clink);
+	if(!session->AllocOciHandle(&stmthp, OCI_HTYPE_STMT)
+	|| !session->AllocOciHandle(&errhp, OCI_HTYPE_ERROR))
+		session->SetError(t_("Error initializing connection"), t_("OCI8 connection"));
+	LinkAfter(&s.clink);
 }
 
 void OCI8Connection::Clear() {
@@ -750,15 +768,15 @@ void OCI8Connection::Clear() {
 			OCIStmt *aux = 0;
 			if(!session -> AllocOciHandle(&aux, OCI_HTYPE_STMT)) {
 				int errcode;
-				String err = OciError(errhp, &errcode);
+				String err = OciError(oci8, errhp, &errcode);
 				session->SetError(err, t_("Closing reference cursor"), errcode, OciErrorClass(errcode));
 			}
 			static char close[] = "begin close :1; end;";
 			bool err = false;
 			OCIBind *bind = 0;
-			err = OCI8().OCIStmtPrepare(aux, errhp, (OraText *)close, strlen(close), OCI_NTV_SYNTAX, OCI_DEFAULT)
-				|| OCI8().OCIBindByPos(aux, &bind, errhp, 1, &stmthp, 0, SQLT_RSET, 0, 0, 0, 0, 0, OCI_DEFAULT)
-				|| OCI8().OCIStmtExecute(SvcCtx(), aux, errhp, 1, 0, 0, 0, OCI_DEFAULT);
+			err = oci8.OCIStmtPrepare(aux, errhp, (OraText *)close, strlen(close), OCI_NTV_SYNTAX, OCI_DEFAULT)
+				|| oci8.OCIBindByPos(aux, &bind, errhp, 1, &stmthp, 0, SQLT_RSET, 0, 0, 0, 0, 0, OCI_DEFAULT)
+				|| oci8.OCIStmtExecute(SvcCtx(), aux, errhp, 1, 0, 0, 0, OCI_DEFAULT);
 			if(err)
 				SetError();
 			session -> FreeOciHandle(aux, OCI_HTYPE_STMT);
@@ -771,18 +789,18 @@ void OCI8Connection::Clear() {
 
 OCI8Connection::~OCI8Connection() {
 	Clear();
+	LOG("OCI8Connection destruct, #" << --conn_count << " left");
 }
 
 SqlConnection *Oracle8::CreateConnection() {
-	return new OCI8Connection(this);
+	return new OCI8Connection(*this);
 }
 
 bool   Oracle8::IsOpen() const {
 	return svchp;
 }
 
-bool Oracle8::Open(const String& connect_string, String *warn)
-{
+bool Oracle8::Open(const String& connect_string, String *warn) {
 	String name, pwd, server;
 	const char *b = connect_string, *p = b;
 	while(*p && *p != '/' && *p != '@')
@@ -799,46 +817,43 @@ bool Oracle8::Open(const String& connect_string, String *warn)
 	return Login(name, pwd, server, warn);
 }
 
-bool Oracle8::Login(const char *name, const char *pwd, const char *db, String *warn)
-{
+bool Oracle8::Login(const char *name, const char *pwd, const char *db, String *warn) {
 	LLOG("Oracle8::Login");
 	level = 0;
 	Logoff();
 	ClearError();
 	user = ToUpper(String(name));
-//	puts("Loading library"); fflush(stdout);
-	if(!OCI8().Load()) {
-		SetError(t_("Error running OCI8 Oracle connection dynamic library."),
-			t_("Connecting to Oracle database."));
+	RLOG("Loading OCI8 library");
+	if(!oci8.Load()) {
+		SetError(t_("Error running OCI8 Oracle connection dynamic library."), t_("Connecting to Oracle database."), 0, Sql::CONNECTION_BROKEN);
 		return false;
 	}
-//	puts("OCI8 loaded"); fflush(stdout);
-	if(OCI8().OCIInitialize(OCI_THREADED | OCI_OBJECT, NULL, NULL, NULL, NULL)
-	|| OCI8().OCIEnvInit(&envhp, OCI_DEFAULT, 0, NULL)
+	RLOG("OCI8 loaded -> OCIInitialize, OCIEnvInit");
+	if(oci8.OCIInitialize(OCI_THREADED | OCI_OBJECT, NULL, NULL, NULL, NULL)
+	|| oci8.OCIEnvInit(&envhp, OCI_DEFAULT, 0, NULL)
 	|| !AllocOciHandle(&errhp, OCI_HTYPE_ERROR)
 	|| !AllocOciHandle(&svchp, OCI_HTYPE_SVCCTX)
 	|| !AllocOciHandle(&srvhp, OCI_HTYPE_SERVER)
 	|| !AllocOciHandle(&seshp, OCI_HTYPE_SESSION))
 	{
 		Logoff();
-		SetError(t_("Error initializing OCI8 library."),
-			t_("Connecting to Oracle database."));
+		SetError(t_("Error initializing OCI8 library."), t_("Connecting to Oracle database."), 0, Sql::CONNECTION_BROKEN);
 		return false;
 	}
-//	puts("Attributes allocated"); fflush(stdout);
-	if(OCI8().OCIServerAttach(srvhp, errhp, (byte *)db, strlen(db), 0)) {
+	RLOG("Attributes allocated -> OCIServerAttach");
+	if(oci8.OCIServerAttach(srvhp, errhp, (byte *)db, strlen(db), 0)) {
 		SetOciError(NFormat(t_("Connecting to server '%s'"), db));
 		Logoff();
 		return false;
 	}
-//	puts("In server"); fflush(stdout);
+	RLOG("Server attached -> OCIAttrSet, OCISessionBegin");
 	in_server = true;
 	sword retcode;
-	if(OCI8().OCIAttrSet(svchp, OCI_HTYPE_SVCCTX, srvhp, 0, OCI_ATTR_SERVER, errhp)
-	|| OCI8().OCIAttrSet(seshp, OCI_HTYPE_SESSION, (byte *)name, strlen(name), OCI_ATTR_USERNAME, errhp)
-	|| OCI8().OCIAttrSet(seshp, OCI_HTYPE_SESSION, (byte *)pwd, strlen(pwd), OCI_ATTR_PASSWORD, errhp)
-	|| OCI8().OCIAttrSet(svchp, OCI_HTYPE_SVCCTX, seshp, 0, OCI_ATTR_SESSION, errhp)
-	|| (retcode = OCI8().OCISessionBegin(svchp, errhp, seshp, OCI_CRED_RDBMS, OCI_DEFAULT)) != OCI_SUCCESS
+	if(oci8.OCIAttrSet(svchp, OCI_HTYPE_SVCCTX, srvhp, 0, OCI_ATTR_SERVER, errhp)
+	|| oci8.OCIAttrSet(seshp, OCI_HTYPE_SESSION, (byte *)name, strlen(name), OCI_ATTR_USERNAME, errhp)
+	|| oci8.OCIAttrSet(seshp, OCI_HTYPE_SESSION, (byte *)pwd, strlen(pwd), OCI_ATTR_PASSWORD, errhp)
+	|| oci8.OCIAttrSet(svchp, OCI_HTYPE_SVCCTX, seshp, 0, OCI_ATTR_SESSION, errhp)
+	|| (retcode = oci8.OCISessionBegin(svchp, errhp, seshp, OCI_CRED_RDBMS, OCI_DEFAULT)) != OCI_SUCCESS
 	&& retcode != OCI_SUCCESS_WITH_INFO) {
 		SetOciError(t_("Connecting to Oracle database."));
 		Logoff();
@@ -846,27 +861,31 @@ bool Oracle8::Login(const char *name, const char *pwd, const char *db, String *w
 	}
 	if(retcode == OCI_SUCCESS_WITH_INFO && warn) {
 		int errcode;
-		*warn = OciError(errhp, &errcode);
+		*warn = OciError(oci8, errhp, &errcode);
 	}
-//	puts("In session, user = " + GetUser()); fflush(stdout);
+	RLOG("Session attached, user = " + GetUser());
 	in_session = true;
 	return true;
 }
 
 void Oracle8::Logoff() {
+	LOG("Oracle8::Logoff, #" << conn_count << " connections pending");
 	while(!clink.IsEmpty()) {
 		clink.GetNext()->Clear();
 		clink.GetNext()->Unlink();
+		LOG("-> #" << conn_count << " connections left");
 	}
 	if(in_session)
 	{
 		in_session = false;
-		OCI8().OCISessionEnd(svchp, errhp, seshp, OCI_DEFAULT);
+		RLOG("OCISessionEnd");
+		oci8.OCISessionEnd(svchp, errhp, seshp, OCI_DEFAULT);
 	}
 	if(in_server)
 	{
 		in_server = false;
-		OCI8().OCIServerDetach(srvhp, errhp, OCI_DEFAULT);
+		RLOG("OCIServerDetach");
+		oci8.OCIServerDetach(srvhp, errhp, OCI_DEFAULT);
 	}
 	FreeOciHandle(seshp, OCI_HTYPE_SESSION);
 	seshp = NULL;
@@ -904,7 +923,7 @@ void   Oracle8::Commit() {
 //	else
 //		ClearError();
 	if(level == 0) {
-		OCI8().OCITransCommit(svchp, errhp, OCI_DEFAULT);
+		oci8.OCITransCommit(svchp, errhp, OCI_DEFAULT);
 //		if(Stream *s = GetTrace())
 //			*s << "%commit;\n";
 	}
@@ -917,7 +936,7 @@ void   Oracle8::Rollback() {
 	if(level > 1)
 		Sql(*this).Execute("rollback to savepoint " + Spn());
 	else {
-		OCI8().OCITransRollback(svchp, errhp, OCI_DEFAULT);
+		oci8.OCITransRollback(svchp, errhp, OCI_DEFAULT);
 //		if(Stream *s = GetTrace())
 //			*s << "%rollback;\n";
 	}
@@ -941,7 +960,9 @@ void   Oracle8::RollbackTo(const String& savepoint) {
 	Sql(*this).Execute("rollback to savepoint " + savepoint);
 }
 
-Oracle8::Oracle8() {
+Oracle8::Oracle8(T_OCI8& oci8_)
+: oci8(oci8_)
+{
 #ifdef PLATFORM_POSIX
 	char *orahome = getenv("ORACLE_HOME");
 	if(!orahome || !*orahome)
@@ -951,9 +972,9 @@ Oracle8::Oracle8() {
 		orahome = "/opt/oracle/OraHome1";
 #endif
 #ifdef CPU_SPARC
-	OCI8().LibName() = AppendFileName(orahome, "lib32/libclntsh.so");
+	oci8.SetLibName(AppendFileName(orahome, "lib32/libclntsh.so"));
 #else
-	OCI8().LibName() = AppendFileName(orahome, "lib/libclntsh.so");
+	oci8.SetLibName(AppendFileName(orahome, "lib/libclntsh.so"));
 #endif
 //	puts("OCI = " + OCI8.LibName());
 #endif
@@ -1022,15 +1043,15 @@ Vector<String> Oracle8::EnumReservedWords()
 void OracleBlob::SetStreamSize(int64 pos) {
 	ASSERT(pos <= GetStreamSize());
 	if(pos < GetStreamSize())
-		OCI8().OCILobTrim(session->svchp, session->errhp, locp, (dword)pos);
+		session->oci8.OCILobTrim(session->svchp, session->errhp, locp, pos);
 }
 
 dword OracleBlob::Read(int64 at, void *ptr, dword size) {
 	ASSERT(IsOpen() && (style & STRM_READ) && session);
 	ASSERT(at == (dword)at);
 	ub4 n = size;
-	if(OCI8().OCILobRead(session->svchp, session->errhp, locp, &n, (dword)at + 1, ptr, size,
-	                     NULL, NULL, 0, SQLCS_IMPLICIT) != OCI_SUCCESS) return 0;
+	if(session->oci8.OCILobRead(session->svchp, session->errhp, locp, &n, (dword)at + 1, ptr, size,
+		NULL, NULL, 0, SQLCS_IMPLICIT) != OCI_SUCCESS) return 0;
 	return n;
 }
 
@@ -1038,7 +1059,7 @@ void OracleBlob::Write(int64 at, const void *ptr, dword size) {
 	ASSERT(IsOpen() && (style & STRM_WRITE) && session);
 	ASSERT(at == (dword)at);
 	ub4 n = size;
-	if(OCI8().OCILobWrite(session->svchp, session->errhp, locp, &n, (dword)at + 1, (void *)ptr, size,
+	if(session->oci8.OCILobWrite(session->svchp, session->errhp, locp, &n, (dword)at + 1, (void *)ptr, size,
 		OCI_ONE_PIECE, NULL, NULL, 0, SQLCS_IMPLICIT) != OCI_SUCCESS || n != size)
 	{
 		SetError();
@@ -1049,7 +1070,8 @@ void OracleBlob::Assign(Oracle8& s, int blob) {
 	session = &s;
 	locp = (OCILobLocator *)blob;
 	ub4 n;
-	OpenInit(READWRITE, OCI8().OCILobGetLength(session->svchp, session->errhp, locp, &n) == OCI_SUCCESS ? n : 0);
+	OpenInit(READWRITE,
+		session->oci8.OCILobGetLength(session->svchp, session->errhp, locp, &n) == OCI_SUCCESS ? n : 0);
 }
 
 

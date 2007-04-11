@@ -114,8 +114,6 @@ bool Pdb::Create(One<Host> local, const String& exefile, const String& cmdline)
 
 	LoadFromGlobal(*this, CONFIGNAME);
 
-	LOG("Init " << hProcess);
-
 	if(!SymInitialize(hProcess, 0, FALSE)) {
 		Error();
 		return false;
@@ -130,6 +128,7 @@ bool Pdb::Create(One<Host> local, const String& exefile, const String& cmdline)
 	running = true;
 
 	RunToException();
+	Sync();
 
 	return true;
 }
@@ -208,7 +207,8 @@ Pdb::Pdb()
 	framelist.Ctrl::Add(dlock.SizePos());
 
 	pane.Add(tab.SizePos());
-	pane.Add(framelist.HSizePos(320, 0).TopPos(2, EditField::GetStdHeight()));
+	pane.Add(threadlist.LeftPosZ(320, 60).TopPos(2, EditField::GetStdHeight()));
+	pane.Add(framelist.HSizePosZ(384, 0).TopPos(2, EditField::GetStdHeight()));
 	split.Horz(pane, tree.SizePos());
 	split.SetPos(8000);
 	Add(split);
@@ -222,6 +222,7 @@ Pdb::Pdb()
 	tab <<= THISBACK(Tab);
 
 	framelist <<= THISBACK(SetFrame);
+	threadlist <<= THISBACK(SetThread);
 
 	watches.WhenAcceptEdit = THISBACK(Data);
 	tab <<= THISBACK(Data);
@@ -243,7 +244,6 @@ void Pdb::CleanupOnExit()
 		SymCleanup(hProcess);
 	}
 }
-
 
 void Pdb::CopyStack()
 {

@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)  LOG(x)
 
 #ifdef PLATFORM_X11
 
@@ -25,7 +25,7 @@ void Ctrl::Xclipboard::Write(int fmt, const String& _data)
 	LLOG("SetSelectionOwner " << XAtomName(fmt));
 	data.GetAdd(fmt) = _data;
 //	if(XGetSelectionOwner(Xdisplay, XAtom("CLIPBOARD") != win)) // 20060926 Nicomeseas&cxl
-		XSetSelectionOwner(Xdisplay, XAtom("CLIPBOARD"), win, CurrentTime);
+	XSetSelectionOwner(Xdisplay, XAtom("CLIPBOARD"), win, CurrentTime);
 }
 
 void Ctrl::Xclipboard::Request(XSelectionRequestEvent *se)
@@ -110,13 +110,6 @@ void AppendClipboard(const char *fmt, const String& data)
 
 String  ReadClipboard(const char *fmt)
 {
-/*
-	String formats = Ctrl::xclipboard().Read(XAtom("TARGETS"));
-	int c = formats.GetCount() / sizeof(Atom);
-	const Atom *m = (Atom *) ~formats;
-	for(int i = 0; i < c; i++)
-		LOG("Available " << XAtomName(m[i]));
-//*/
 	return Ctrl::xclipboard().Read(XAtom(fmt));
 }
 
@@ -140,16 +133,22 @@ WString ReadClipboardUnicodeText()
 	return FromUtf8(ReadClipboard("UTF8_STRING"));
 }
 
-bool IsClipboardAvailable(const char *fmt)
+bool Ctrl::Xclipboard::IsAvailable(int fmt)
 {
-	String formats = Ctrl::xclipboard().Read(XAtom("TARGETS"));
+	if(data.GetCount())
+		return data.Find(fmt) >= 0;
+	String formats = Read(XAtom("TARGETS"));
 	int c = formats.GetCount() / sizeof(Atom);
 	const Atom *m = (Atom *) ~formats;
-	int xa = XAtom(fmt);
 	for(int i = 0; i < c; i++)
-		if(m[i] == xa)
+		if(m[i] == fmt)
 			return true;
 	return false;
+}
+
+bool IsClipboardAvailable(const char *fmt)
+{
+	Ctrl::xclipboard().IsAvailable(XAtom(fmt));
 }
 
 bool IsClipboardAvailableText()

@@ -419,14 +419,16 @@ void DataColumnVar::SetCount(int count)
 				cache_index.Add(c - 1);
 				block.total = 3 * SHORT_BYTES + SHORT_BYTES * to_add + data.GetLength();
 				CDB_ASSERT(block.total >= 4 * SHORT_BYTES && block.total <= MAX_BYTES);
-				char *p = block.buffer.GetBuffer(block.total);
+				StringBuffer blockbuf(block.total);
+				memcpy(blockbuf, block.buffer, min(block.buffer.GetLength(), block.total));
+				char *p = blockbuf;
 				Poke16le(p, data.GetLength() + SHORT_BYTES);
 				memcpy(p += SHORT_BYTES, data, data.GetLength());
 				Poke16le(p += data.GetLength(), SHORT_BYTES);
 				block.offsets = SHORT_BYTES + data.GetLength();
 				for(int i = 0; i <= to_add; i++)
 					Poke16le(p += SHORT_BYTES, block.offsets);
-				block.buffer.ReleaseBuffer(block.total);
+				block.buffer = blockbuf;
 				current_size += block.total;
 				row_count += to_add;
 				block.raw_dirty = true;
@@ -439,10 +441,12 @@ void DataColumnVar::SetCount(int count)
 				block.total += to_add * SHORT_BYTES;
 				int old_total = block.offsets + (span + to_add + 1) * SHORT_BYTES;
 				CDB_ASSERT(old_total >= 3 * SHORT_BYTES && old_total <= MAX_BYTES);
-				char *p = block.buffer.GetBuffer(old_total) + block.offsets + SHORT_BYTES * span;
+				StringBuffer blockbuf(old_total);
+				memcpy(blockbuf, block.buffer, min(block.buffer.GetLength(), old_total));
+				char *p = ~blockbuf + block.offsets + SHORT_BYTES * span;
 				for(int i = 0; i < to_add; i++)
 					Poke16le(p += SHORT_BYTES, block.offsets);
-				block.buffer.ReleaseBuffer(old_total);
+				block.buffer = blockbuf;
 				block.raw_dirty = true;
 				current_size += block.total;
 				row_count += to_add;
@@ -458,11 +462,13 @@ void DataColumnVar::SetCount(int count)
 				cache_index.Add(block_index.GetCount() - 1);
 				block.total = SHORT_BYTES * (batch + 2);
 				CDB_ASSERT(block.total >= 3 * SHORT_BYTES && block.total <= MAX_BYTES);
-				char *p = block.buffer.GetBuffer(block.total);
+				StringBuffer blockbuf(block.total);
+				memcpy(blockbuf, block.buffer, min(block.buffer.GetLength(), block.total));
+				char *p = blockbuf;
 				Poke16le(p, block.offsets = SHORT_BYTES);
 				for(int i = 0; i <= batch; i++)
 					Poke16le(p += SHORT_BYTES, SHORT_BYTES);
-				block.buffer.ReleaseBuffer(block.total);
+				block.buffer = blockbuf;
 				block.raw_dirty = true;
 				current_size += block.total;
 			}
@@ -1003,11 +1009,10 @@ Vector<int> DataRowIndex::Add(int count)
 		master_dirty = true;
 		int x = datafile->Add(id);
 		block_index.Add(x);
-		String content;
-		char *bp = content.GetBuffer(2 * INDEX_BYTES);
+		StringBuffer content(2 * INDEX_BYTES);
+		char *bp = content;
 		Poke32le(bp, 0);
 		Poke32le(bp + INDEX_BYTES, count);
-		content.ReleaseBuffer(2 * INDEX_BYTES);
 		datafile->Set(x, content, id);
 		int pos = items.GetCount();
 		items.SetCountR(pos + count);
@@ -1036,11 +1041,10 @@ void DataRowIndex::AddAt(int index)
 	while(block_index.GetCount() < bx) {
 		int x = datafile->Add(id);
 		block_index.Add(x);
-		String content;
-		char *bp = content.GetBuffer(2 * INDEX_BYTES);
+		StringBuffer content(2 * INDEX_BYTES);
+		char *bp = content;
 		Poke32le(bp, 0);
 		Poke32le(bp + INDEX_BYTES, 0);
-		content.ReleaseBuffer(2 * INDEX_BYTES);
 		datafile->Set(x, content, id);
 		master_dirty = true;
 	}

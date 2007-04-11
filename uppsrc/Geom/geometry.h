@@ -28,9 +28,9 @@ inline double VectorProduct(Sizef a, Sizef b) { return a.cx * b.cy - a.cy * b.cx
 inline double Squared(Sizef a)             { return a.cx * a.cx + a.cy * a.cy; }
 inline double Length(Sizef a)              { return hypot(a.cx, a.cy); }
 
-inline double ScalarProduct(Size a, Size b) { return a.cx * b.cx + a.cy * b.cy; }
-inline double VectorProduct(Size a, Size b) { return a.cx * b.cy - a.cy * b.cx; }
-inline double Squared(Size a)             { return a.cx * a.cx + a.cy * a.cy; }
+inline int    ScalarProduct(Size a, Size b) { return a.cx * b.cx + a.cy * b.cy; }
+inline int    VectorProduct(Size a, Size b) { return a.cx * b.cy - a.cy * b.cx; }
+inline int    Squared(Size a)             { return a.cx * a.cx + a.cy * a.cy; }
 inline double Length(Size a)              { return hypot(a.cx, a.cy); }
 
 

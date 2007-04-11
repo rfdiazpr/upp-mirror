@@ -42,6 +42,12 @@ public:
 	void                    RefreshBuffer();
 	void                    RefreshBuffer(const Rect& rc);
 
+	void                    BufferPan(bool bp = true)        { buffer_pan = bp; }
+	bool                    IsBufferPan() const              { return buffer_pan; }
+	void                    PanOffset(Point o);
+	void                    ClearPanOffset()                 { PanOffset(Point(0, 0)); }
+	Point                   GetPanOffset() const             { return pan_offset; }
+
 	void                    PostRefresh();
 	void                    Refresh0()                       { Refresh(); }
 
@@ -197,6 +203,8 @@ protected:
 	bool                    is_painting;
 	bool                    abort_repaint;
 	bool                    buffer_paint;
+	bool                    buffer_pan;
+	Point                   pan_offset;
 
 private:
 	void                    OnHScroll();
@@ -313,11 +321,7 @@ public:
 	virtual void            Cancel();
 
 private:
-	Pointf                  GetDelta(Pointf start, Pointf pt);
-
-private:
 	PlotterCtrl&            owner;
-	Pointf                  old_delta;
 };
 
 END_UPP_NAMESPACE

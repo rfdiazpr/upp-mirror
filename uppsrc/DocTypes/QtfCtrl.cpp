@@ -32,7 +32,7 @@ bool QtfCtrl::Key(dword key, int count) {
 int QtfCtrl::GetHeight(int cx) const {
 	cx -= lm + rm;
 	if(cx <= 0) return 0;
-	return doc.GetHeight(zoom, ScreenInfo(), cx, cache);
+	return doc.GetHeight(zoom, cx, cache);
 }
 
 void QtfCtrl::Layout() {

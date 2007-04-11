@@ -139,8 +139,7 @@ Splitter& Splitter::Horz(Ctrl& left, Ctrl& right)
 
 void Splitter::Set(Ctrl& l, Ctrl& r)
 {
-	while(GetFirstChild())
-		RemoveChild(GetFirstChild());
+	Clear();
 	*this << l << r;
 	Layout();
 }
@@ -180,9 +179,13 @@ void Splitter::Serialize(Stream& s) {
 	}
 }
 
-void Splitter::Reset() {
+void Splitter::Clear() {
 	while(GetFirstChild())
 		RemoveChild(GetFirstChild());
+}
+
+void Splitter::Reset() {
+	Clear();
 	pos.Clear();
 	mins.Clear();
 	style = -1;

@@ -189,11 +189,10 @@ void sLarge(String& text, int *large, int count, const char *txt)
 		int nn = i++;
 		while(i < n && large[i] == q) i++;
 		nn = i - nn;
-		if(q > 1024)
-			if(q < 10000)
-				text << Format("%4d B, %5d %s (%6d KB)\r\n", q, nn, txt, (nn * q) >> 10);
-			else
-				text << Format("%4d`KB, %5d %s (%6d KB)\r\n", q >> 10, nn, txt, (nn * q) >> 10);
+		if(q < 10000)
+			text << Format("%4d B, %5d %s (%6d KB)\r\n", q, nn, txt, (nn * q) >> 10);
+		else
+			text << Format("%4d`KB, %5d %s (%6d KB)\r\n", q >> 10, nn, txt, (nn * q) >> 10);
 	}
 }
 

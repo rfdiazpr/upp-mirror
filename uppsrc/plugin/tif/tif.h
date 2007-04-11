@@ -15,15 +15,16 @@ public:
 	TIFRaster();
 	~TIFRaster();
 
-	virtual bool    Create();
-	virtual Size    GetSize();
-	virtual Info    GetInfo();
-	virtual Line    GetLine(int line);
-	virtual const RGBA *GetPalette();
+	virtual bool                Create();
+	virtual Size                GetSize();
+	virtual Info                GetInfo();
+	virtual Line                GetLine(int line);
+	virtual int                 GetPaletteCount();
+	virtual const RGBA         *GetPalette();
 	virtual const RasterFormat *GetFormat();
 
 private:
-	bool            Init();
+	bool                        Init();
 };
 
 class TIFEncoder : public StreamRasterEncoder {

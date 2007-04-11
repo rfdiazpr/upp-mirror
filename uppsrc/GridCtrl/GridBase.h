@@ -6,6 +6,11 @@ class GridCtrl;
 class GridHeader;
 class ItemRect;
 
+inline static bool IsSet(int s, int b)
+{
+	return s & b;
+}
+
 inline static void BitSet(dword &k, dword v, bool s)
 {
 	if(s) k |= v; else  k &= ~v;
@@ -45,9 +50,9 @@ struct Item : Moveable<Item>
 		
 		fs = fe = 0;
 		style = 0;
-		toremove = false;
 		editable = true;
 		clickable = true;
+		modified = false;
 	}
 	~Item()
 	{
@@ -66,12 +71,12 @@ struct Item : Moveable<Item>
 		void Cursor(bool s) { BitSet(style, GD::CURSOR, s); }
 		void Live(bool s)   { BitSet(style, GD::LIVE, s);   }
 		void Found(bool s)  { BitSet(style, GD::FOUND, s);  }
-
+		
 		int fs, fe;
 		dword style;
-		bool toremove:1;
 		bool editable:1;
 		bool clickable:1;
+		bool modified:1;
 	
 		Ptr<Ctrl> ctrl;
 		
@@ -128,6 +133,7 @@ class ItemRect : public Moveable<ItemRect>
 			fnt = StdFont();
 			align = GD::LEFT | GD::VCENTER;
 			wrap = false;
+			modified = false;
 			fg = Null;
 			bg = Null;
 
@@ -168,6 +174,7 @@ class ItemRect : public Moveable<ItemRect>
 		bool editable;
 		bool sortable;
 		bool clickable;
+		bool modified;
 		
 		Value defval;
 		
@@ -233,7 +240,7 @@ class ItemRect : public Moveable<ItemRect>
 			if(sortMode)
 				return (StdValueCompare((*a.items)[a.id][sortCol].val, (*b.items)[b.id][sortCol].val, 0) > 0);
 			else
-	 			return a.id > b.id;
+				return a.id > b.id;
 		}
 	public:
 	
@@ -252,28 +259,30 @@ class ItemRect : public Moveable<ItemRect>
 		ItemRect& SetDisplay(GridDisplay &gd);
 		ItemRect& NoConvertion();
 		ItemRect& Default(Value v);
+		ItemRect& Index(bool b = true);
 		
-		ItemRect& AlignTop()                             { align = GD::TOP;                      return *this; }
-		ItemRect& AlignBottom()                          { align = GD::BOTTOM;                   return *this; }
-		ItemRect& AlignLeft()                            { align = GD::LEFT;                     return *this; }
-		ItemRect& AlignRight()                           { align = GD::RIGHT;                    return *this; }
-		ItemRect& AlignHorzCenter()                      { align = GD::HCENTER;                  return *this; }
-		ItemRect& AlignVertCenter()                      { align = GD::VCENTER;                  return *this; }
-		ItemRect& AlignCenter()                          { align = GD::HCENTER | GD::VCENTER;    return *this; }
-		ItemRect& AlignTopLeft()                         { align = GD::LEFT    | GD::TOP;        return *this; }
-		ItemRect& AlignTopRight()                        { align = GD::RIGHT   | GD::TOP;        return *this; }
-		ItemRect& AlignTopCenter()                       { align = GD::HCENTER | GD::TOP;        return *this; }
-		ItemRect& AlignBottomLeft()                      { align = GD::LEFT    | GD::BOTTOM;     return *this; }
-		ItemRect& AlignBottomRight()                     { align = GD::RIGHT   | GD::BOTTOM;     return *this; }
-		ItemRect& AlignBottomCenter()                    { align = GD::HCENTER | GD::BOTTOM;     return *this; }
-
-
-		ItemRect& CtrlAlignTop(int t = 0, int s = 0)     { calign |= GD::TOP;     st = t; sy = s; return *this; }
-		ItemRect& CtrlAlignBottom(int b = 0, int s = 0)  { calign |= GD::BOTTOM;  sb = b; sy = s; return *this; }
-		ItemRect& CtrlAlignLeft(int l = 0, int s = 0)    { calign |= GD::LEFT;    sl = l; sx = s; return *this; }
-		ItemRect& CtrlAlignRight(int r = 0, int s = 0)   { calign |= GD::RIGHT;   sr = r; sx = s; return *this; }
-		ItemRect& CtrlAlignHorzCenter(int s = 0)         { calign |= GD::HCENTER; sx = s;         return *this; }
-		ItemRect& CtrlAlignVertCenter(int s = 0)         { calign |= GD::VCENTER; sy = s;         return *this; }
+		String GetName();
+		
+		ItemRect& AlignTop()                             { align = GD::TOP;                               return *this; }
+		ItemRect& AlignBottom()                          { align = GD::BOTTOM;                            return *this; }
+		ItemRect& AlignLeft()                            { align = GD::LEFT;                              return *this; }
+		ItemRect& AlignRight()                           { align = GD::RIGHT;                             return *this; }
+		ItemRect& AlignHorzCenter()                      { align = GD::HCENTER;                           return *this; }
+		ItemRect& AlignVertCenter()                      { align = GD::VCENTER;                           return *this; }
+		ItemRect& AlignCenter()                          { align = GD::HCENTER | GD::VCENTER;             return *this; }
+		ItemRect& AlignTopLeft()                         { align = GD::LEFT    | GD::TOP;                 return *this; }
+		ItemRect& AlignTopRight()                        { align = GD::RIGHT   | GD::TOP;                 return *this; }
+		ItemRect& AlignTopCenter()                       { align = GD::HCENTER | GD::TOP;                 return *this; }
+		ItemRect& AlignBottomLeft()                      { align = GD::LEFT    | GD::BOTTOM;              return *this; }
+		ItemRect& AlignBottomRight()                     { align = GD::RIGHT   | GD::BOTTOM;              return *this; }
+		ItemRect& AlignBottomCenter()                    { align = GD::HCENTER | GD::BOTTOM;              return *this; }
+		
+		ItemRect& CtrlAlignTop(int t = 0, int s = 0)     { calign |= GD::TOP;     st = t; sy = s;         return *this; }
+		ItemRect& CtrlAlignBottom(int b = 0, int s = 0)  { calign |= GD::BOTTOM;  sb = b; sy = s;         return *this; }
+		ItemRect& CtrlAlignLeft(int l = 0, int s = 0)    { calign |= GD::LEFT;    sl = l; sx = s;         return *this; }
+		ItemRect& CtrlAlignRight(int r = 0, int s = 0)   { calign |= GD::RIGHT;   sr = r; sx = s;         return *this; }
+		ItemRect& CtrlAlignHorzCenter(int s = 0)         { calign |= GD::HCENTER; sx = s;                 return *this; }
+		ItemRect& CtrlAlignVertCenter(int s = 0)         { calign |= GD::VCENTER; sy = s;                 return *this; }
 		ItemRect& CtrlAlignHorzPos(int l = 0, int r = 0) { calign |= GD::HPOS;    sl = l; sr = r; sx = 1; return *this; }
 		ItemRect& CtrlAlignVertPos(int t = 0, int b = 0) { calign |= GD::VPOS;    st = t; sb = b; sy = 1; return *this; }
 		
@@ -288,11 +297,11 @@ class ItemRect : public Moveable<ItemRect>
 		template<class T> ItemRect&  Ctrls()             { return Ctrls(DefaultCtrlFactory<T>()); }
 		ItemRect& Option();
 				
-		ItemRect& Editable(bool b)                       { editable = b;     return *this; }
-		ItemRect& NoEditable()                           { editable = false; return *this; }
+		ItemRect& Editable(bool b)                       { editable = b;      return *this; }
+		ItemRect& NoEditable()                           { editable = false;  return *this; }
 
-		ItemRect& Sortable(bool b)                       { sortable = b;     return *this; }
-		ItemRect& NoSortable()                           { sortable = false; return *this; }
+		ItemRect& Sortable(bool b)                       { sortable = b;      return *this; }
+		ItemRect& NoSortable()                           { sortable = false;  return *this; }
 
 		ItemRect& Clickable(bool b)                      { clickable = b;     return *this; }
 		ItemRect& NoClickable()                          { clickable = false; return *this; }

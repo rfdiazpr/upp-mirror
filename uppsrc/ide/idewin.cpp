@@ -851,7 +851,4 @@ void AppMain___()
 		LOG("!!!!! Uknown exception");
 	}
 #endif
-#ifdef STRING_STATS
-	DumpStringStats();
-#endif
 }

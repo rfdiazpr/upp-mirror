@@ -1,7 +1,9 @@
 #include <CtrlLib/CtrlLib.h>
-#include "GridCtrl.h"
+#include <GridCtrl/GridCtrl.h>
 
 NAMESPACE_UPP
+
+#pragma warning(disable: 4355)
 
 #define  IMAGECLASS GridImg
 #define  IMAGEFILE <GridCtrl/GridCtrl.iml>
@@ -107,7 +109,6 @@ GridCtrl::GridCtrl() : holder(*this)
 	firstVisRow = -1;
 	lastVisRow  = -1;
 	
-	isfocus = true;
 	rowidx = -1;
 	
 	GD_COL_WIDTH  = 50;
@@ -161,18 +162,19 @@ GridCtrl::GridCtrl() : holder(*this)
 	vert_grid           = true;
 	sorting             = false;
 	live_cursor         = false;
-	edit_mode           = 0;
+	edit_mode           = GE_ROW;
 	one_click_edit      = false;
 	coloringMode        = 0;
 	ctrls               = false;
 	genr_ctrls          = false;
 	edit_ctrls          = false;
-	factory_ctrls       = false;
 	sorting             = true;
 	sorting_multicol    = true;
 	
-	cancel_operation = false;	
-	disable_childgotfocus = false;
+	cancel_update_cell  = false;
+	cancel_update       = false;
+	cancel_insert       = false;
+	cancel_remove       = false;
 	
 	inserting         = false;
 	appending         = false;
@@ -184,6 +186,7 @@ GridCtrl::GridCtrl() : holder(*this)
 	navigating        = false;
 	searching         = false;
 	editing           = false;
+	edits_in_new_row  = true;
 	closing           = false;
 	hiding            = false;
 	clipboard         = false;
@@ -207,7 +210,7 @@ GridCtrl::GridCtrl() : holder(*this)
 	chameleon         = false;
 
 	mouse_move        = false;
-	row_modified      = false;
+	row_modified      = 0;
 	
 	curpos.x  = curpos.y  = -1;
 	oldcur.x  = oldcur.y  = -1;
@@ -217,13 +220,12 @@ GridCtrl::GridCtrl() : holder(*this)
 	osz.cx    = osz.cy    = -1;
 	livecur.x = livecur.y = -1;
 	leftpnt.x = leftpnt.y = -1;
-
+	
 	fixed_width  = 0;
 	fixed_height = 0;
 	total_width  = 0;
 	total_height = 0;
-	
-	
+		
 	ItemRect &ir = vitems.Add();
 	ir.parent = this;
 	ir.edits = &edits;
@@ -232,9 +234,7 @@ GridCtrl::GridCtrl() : holder(*this)
 	/* add indicator, total_cols = 1 */
 	AddColumn("", 0);
 	
-	focuscol = 0;
 	shiftmode = false;
-	popupmenu = false;
 	recalc_cols = false;
 	recalc_rows = false;
 	selected_rows = 0;
@@ -253,10 +253,13 @@ GridCtrl::GridCtrl() : holder(*this)
 	
 	newrow_inserted = false;
 	newrow_appended = false;
-	row_removed = false;
+    row_removed = false;
 	just_clicked = false;
+
 	call_whenchangerow = true;
 	call_whenremoverow = true;
+	call_whenupdaterow = true;
+	call_wheninsertrow = true;
 	
 	sel_begin = false;
 	sel_end = false;
@@ -287,6 +290,7 @@ GridCtrl::GridCtrl() : holder(*this)
 	
 	focused_ctrl = NULL;
 	focused_ctrl_id = -1;
+	focused_col = -1;
 	
 	findstring.AddFrame(findimg);
 	findstring.AddFrame(findopts);
@@ -304,7 +308,7 @@ GridCtrl::GridCtrl() : holder(*this)
 	
 	bar.Set(WhenToolBar);
 	
-//	WhenCtrlsAction = THISBACK(CtrlsAction);
+	//WhenCtrlsAction = THISBACK(CtrlsAction);
 	
 	resizing = false;
 	selecting = false;
@@ -358,8 +362,7 @@ void GridCtrl::StdToolBar(Bar &bar)
 		else
 			bar.Separator();
 		
-		NavigatingBar(bar);
-			
+		NavigatingBar(bar);			
 	}
 		
 	if(closing)
@@ -398,7 +401,7 @@ GridCtrl& GridCtrl::SetToolBar(bool b, int align, int frame)
 	
 	if(!b)
 		return *this;
-	
+
 	InsertFrame(frame, bar.Align(align));
 	
 	if(frame == 1)
@@ -531,7 +534,7 @@ void GridCtrl::StdMenuBar(Bar &bar)
 		bar.Add(t_("Append"), StdAppend)
 		   .Image(GridImg::ImgGridAdd())
 		   .Help(RowFormat(t_("Append a new %s at the end of the table.")))
-		   .Key(inserting ? K_SHIFT_INSERT : K_INSERT);
+		   .Key(inserting ? (dword) K_SHIFT_INSERT : (dword) K_INSERT);
 		   
 		isitem = true;
 	}
@@ -695,8 +698,7 @@ void GridCtrl::SetClipboard()
 
 	gc.minpos = minpos;
 	gc.maxpos = maxpos;
-	
-	
+		
 	bool row_selected = select_row && IsSelected(curpos.y, false);
 	gc.shiftmode = row_selected ? true : shiftmode;
 				
@@ -729,21 +731,14 @@ void GridCtrl::Paste(int mode)
 		return;
 
 	GridClipboard gc = GetClipboard();
-	if(gc.data.IsEmpty())
-	{
-		if(IsClipboardAvailableText())
-		{
-			Vector<String> lines = Upp::Split(ReadClipboardText(), '\n');
-			for(int i = 0; i < lines.GetCount(); i++)
-			{
-				Vector<String> cells = Upp::Split(lines[i], ' ');
-				//todo..
-			}
-		}
+	
+	bool is_gc = !gc.data.IsEmpty();
+	bool is_tc = IsClipboardAvailableText();
+	
+	if(!is_gc && !is_tc)
 		return;
-	}
-
-	if(select_row && !gc.shiftmode)
+	
+	if(is_gc && select_row && !gc.shiftmode)
 		return;
 	
 	Point cp(curpos);
@@ -752,25 +747,79 @@ void GridCtrl::Paste(int mode)
 		cp.x = fixed_cols;
 	if(cp.y < 0)
 		cp.y = fixed_rows;
+
+	Vector<String> lines;
+	
+	if(is_tc && !is_gc)
+		lines = Upp::Split(ReadClipboardText(), '\n');
 	
 	if(mode == 1)
 	{
-		int dy = gc.maxpos.y - gc.minpos.y + 1;
+		int dy = is_gc ? gc.maxpos.y - gc.minpos.y + 1
+		               : lines.GetCount();
 		Insert0(curpos.y, dy);
 		curpos.y += dy;
 	}
 	else if(mode == 2)
 		cp.y = total_rows;
-		
+
 	int lc = -1, lr = -1;
-	
-	if(!select_row && gc.shiftmode)
+			
+	if(!is_gc)
+	{
+		if(is_tc)
+		{
+			int pr = 0;
+			bool new_row = false;
+
+			for(int i = 0; i < lines.GetCount(); i++)
+			{
+				Vector<String> cells = Upp::Split(lines[i], '\t');
+				for(int j = 0; j < cells.GetCount(); j++)
+				{
+					int r = i;
+					int c = j;
+					
+					if(cp.x + c < total_cols)
+					{
+						lc = cp.x + c;
+						lr = cp.y + r;
+							
+						new_row = lr >= total_rows;
+						if(fixed_paste && new_row)
+							break;
+						Set0(lr, lc, cells[j], true);
+					}
+					
+					if(r > pr || (i == lines.GetCount() - 1 && j == cells.GetCount() - 1))
+					{
+						if(new_row)
+						{
+							#ifdef LOG_CALLBACKS
+							LGR(2, "WhenInsertRow() - paste");
+							#endif
+							WhenInsertRow();
+						}
+						else
+						{
+							#ifdef LOG_CALLBACKS
+							LGR(2, "WhenUpdateRow() - paste");
+							#endif
+							WhenUpdateRow();
+						}
+						pr = r;
+					}
+				}
+			}
+		}
+	}
+	else if(!select_row && gc.shiftmode)
 	{
 		lc = cp.x;
 		lr = cp.y;
 		
 		for(int i = 0; i < gc.data.GetCount(); i++)
-		{			
+		{
 			Set0(lr, lc, gc.data[i].v, true);
 			
 			bool data_end = i == gc.data.GetCount() - 1;
@@ -998,7 +1047,7 @@ void GridCtrl::Paint(Draw &w)
 					int id = hitems[j].id;
 					Item &it = items[vitems[i].id][id];
 					GridDisplay * cd = items[0][id].display;
-					GridDisplay *gd = cd ? cd : it.display != NULL ? it.display : display;
+					GridDisplay * gd = cd ? cd : it.display != NULL ? it.display : display;
 	
 					dword style = hitems[j].style | hitems[j].align;
 					if(i > 0) style &= ~GD::HIGHLIGHT;
@@ -1068,7 +1117,7 @@ void GridCtrl::Paint(Draw &w)
 				if(w.IsPainting(x, y, cx, cy))
 				{
 					Item &it = items[vitems[j].id][hitems[i].id];
-					GridDisplay *gd = it.display != NULL ? it.display : display;
+					GridDisplay * gd = it.display != NULL ? it.display : display;
 	
 					dword style = vitems[j].style;
 					if(i > 0) style &= ~GD::HIGHLIGHT;
@@ -1104,7 +1153,7 @@ void GridCtrl::Paint(Draw &w)
 		for(i = max(firstRow, fixed_rows); i < total_rows; i++)
 		{
 			if(vitems[i].hidden) continue;
-			
+
 			y = vitems[i].nTop(sby);
 			cy = vitems[i].nHeight();
 
@@ -1113,21 +1162,23 @@ void GridCtrl::Paint(Draw &w)
 
 			if(!w.IsPainting(0, y, sz.cx, cy))
 				continue;
-			
+					
 			bool even = coloringMode == 2 ? (i - vitems[i].n - fixed_rows) & 1 : false;
 						
 			for(j = max(firstCol, fixed_cols); j < total_cols; j++)
 			{
 				if(hitems[j].hidden) continue;
-				
+
 				x = hitems[j].nLeft(sbx);
 				cx = hitems[j].nWidth();
-				
+								
 				if(x >= rc.right)
 					break;
 														       		
 				if(w.IsPainting(x, y, cx, cy))
 				{
+					bool iscur = /*i == curpos.y && j == curpos.x*/ false;
+
 					if(coloringMode == 1)
 						even = (j - hitems[j].n - fixed_cols) & 1;
 		
@@ -1168,8 +1219,8 @@ void GridCtrl::Paint(Draw &w)
 					{
 						if(style & GD::FOCUS)
 						{
-							fg = fg_focus;
-							bg = bg_focus;
+							fg = iscur ? Blend(bg_focus, Black, 230) : fg_focus;
+							bg = iscur ? Blend(bg_focus, White, 230) : bg_focus;
 						}
 						else
 						{
@@ -1206,7 +1257,7 @@ void GridCtrl::Paint(Draw &w)
 						fg = fg_odd;
 						bg = bg_odd;
 					}
-	
+
 					if(custom)
 					{
 						if(!IsNull(cfg)) fg = cfg;
@@ -1218,14 +1269,22 @@ void GridCtrl::Paint(Draw &w)
 									
 					int gcx = cx - (int) vert_grid;
 					int gcy = cy - (int) horz_grid;
-
+					
+					gd->col = j - fixed_rows;
+					gd->row = i - fixed_cols;
+					gd->parent = this;
 					gd->Paint(w, x, y, gcx, gcy,
 					          hitems[j].IsConvertion() ? GetConvertedColumn(id, it.val) : it.val, style | en, 
 					          fg, bg, fnt, it.style & GD::FOUND, it.fs, it.fe);
-	
+
 					if(vert_grid) w.DrawRect(x + gcx, y, 1, cy, fg_grid);
 					if(horz_grid) w.DrawRect(x, y + gcy, cx, 1, fg_grid);
+					
+					//if(iscur)
+					//	DrawFocus(w, x, y, gcx, gcy);
 				}
+				//if(curpos.y == i)
+				//	DrawFocus(w, hitems[fixed_cols].nLeft(), y, hitems[total_cols - 1].nRight() - 1, cy - 1);
 			}
 		}
 		w.End();
@@ -1269,16 +1328,6 @@ void GridCtrl::Paint(Draw &w)
 	LG("---- Paint(%d).", paintcnt);
 }
 
-/*void GridCtrl::DrawHorzDragLine(Draw &w, int pos, int size)
-{
-	Size sz = GridDispImg::ImgSelUp().GetSize();
-	DrawHighlightImage(w, pos - sz.cx / 2, 0, GridDispImg::ImgSelUp());
-	DrawHighlightImage(w, pos - sz.cx / 2, size - sz.cy - 1, GridDispImg::ImgSelDn());
-	w.DrawLine(pos, sz.cy, pos, size - sz.cy - 1, 0, SWhite);
-	w.DrawLine(pos, sz.cy, pos, size - sz.cy - 1, PEN_DOT);
-}
-*/
-
 void GridCtrl::DrawHorzDragLine(Draw &w, int pos, int size)
 {
 	w.DrawRect(pos, 0, 2, size - 1, SLtBlue);
@@ -1286,14 +1335,7 @@ void GridCtrl::DrawHorzDragLine(Draw &w, int pos, int size)
 
 void GridCtrl::DrawVertDragLine(Draw &w, int pos, int size, int dx)
 {
-/*	Size sz = GridDispImg::ImgSelLeft().GetSize();
-	DrawHighlightImage(w, 0, pos - sz.cy / 2, GridDispImg::ImgSelLeft());
-	DrawHighlightImage(w, size - sz.cx - 1, pos - sz.cy / 2, GridDispImg::ImgSelRight());
-	w.DrawLine(sz.cx, pos, size - sz.cx - 1, pos, 0, SWhite);
-	w.DrawLine(sz.cx, pos, size - sz.cx - 1, pos, PEN_DOT);
-*/
-	w.DrawRect(1 + dx, pos, size - dx - 1, 2, SLtBlue);
-	
+	w.DrawRect(1 + dx, pos, size - dx - 1, 2, SLtBlue);	
 }
 
 Value GridCtrl::GetConvertedColumn(int col, Value &v)
@@ -1346,6 +1388,7 @@ ItemRect& GridCtrl::AddColumn(const char *name, int size, bool idx)
 	
 	String lname(name);
 	aliases.Add(ToLower(lname), ib.id);
+	rowbkp.Add();
 	total_cols++;
 	
 	recalc_cols = true;
@@ -1359,10 +1402,19 @@ ItemRect& GridCtrl::AddColumn(Id id, const char *name, int size, bool idx)
 	return AddColumn(name, size, idx).Alias(id);
 }
 
-void GridCtrl::RemoveColumn(int n, int cnt /* = 1*/)
+void GridCtrl::RemoveColumn(int n)
 {
-	items.Remove(n + fixed_cols);
-	hitems.Remove(n + fixed_cols);
+	if(n < 1 || n > total_cols - 1)
+		return;
+	n += 1;
+	items.Remove(n);
+	hitems.Remove(n);
+	rowbkp.Remove(n);
+	total_cols--;
+	if(n < fixed_cols)
+		fixed_cols--;
+	recalc_cols = true;
+	RefreshLayout();
 }
 
 GridCtrl& GridCtrl::AddRow(int n, int size)
@@ -1468,8 +1520,9 @@ void GridCtrl::MouseMove(Point p, dword keyflags)
 			dx = hitems[moveCol].nLeft(fixed_top_click ? sbx : 0) - p.x;
 			dy = vitems[moveRow].nTop(fixed_left_click ? sby : 0) - p.y;
 		}
+
 		
-		Point pt = p + GetScreenRect().TopLeft();
+		Point pt = p + GetScreenRect().TopLeft() + GetBarOffset();
 		
 		pophdr.display = display;
 		pophdr.chameleon = chameleon;
@@ -1516,7 +1569,12 @@ void GridCtrl::MouseMove(Point p, dword keyflags)
 				}
 				return;
 			}
-			if(multi_select && (keyflags & K_CTRL))
+			
+			bool select = true;
+			if(select_row && !multi_select)
+				select = false;
+			
+			if(select && (keyflags & K_CTRL))
 			{
 				if(SetCursor0(p, true))
 				{
@@ -1623,59 +1681,51 @@ void GridCtrl::LeftDown(Point p, dword keyflags)
 		moveRow = oldMoveRow = GetMouseRow(p, fixed_left_click, 1);
 		return;
 	}
+
+	SetFocus();
 	
 	if(IsEmpty())
-	{
-		SetFocus();
 		return;
-	}
 
-	bool newcur = SetCursor0(p, true);
-	if(newcur)
-	{
-		moveCol = curpos.x;
-		moveRow = curpos.y;
-	}
-
-	bool samerow = ctrlid.y == curid.y && newcur;
-	GetCtrlsData(ctrlid.y, samerow, !samerow);
-	ShowCtrls(false, 0, false, true, false);
+	CurState cs = SetCursor0(p, true);
+	if(cs.IsAccepted())
+		UpdateCtrls(UC_HIDE | UC_CTRLS | UC_OLDCUR);
 	
-	if(IsValidCursor(curpos))
-	{
-		if(multi_select && (keyflags & K_CTRL))
-		{
-			if(!select_row)
-				ClearSelection();
-			
-			shiftpos = curpos;
-			
-			Point from(select_row ? fixed_cols : curpos.x, curpos.y);
-			Point to(select_row ? total_cols - 1 : curpos.x, curpos.y);
-			SelectRange(from, to, !vitems[curpos.y].IsSelect());
-			selecting = true;
-					
-		}
-		else if(keyflags & K_SHIFT)
-		{
-			DoShiftSelect();
-			selecting = true;
-		}
-
-		#ifdef LOG_CALLBACKS
-		//LGR(2, "WhenLeftClick()");
-		#endif
+	if(!cs)
+		return;
+	
+	moveCol = curpos.x;
+	moveRow = curpos.y;
 		
-		WhenLeftClick();
-	}
-	
-	SetFocus();
-
-	if(newcur && one_click_edit && IsRowEditable())
+	if(keyflags & K_CTRL)
 	{
-		SetCtrlsData(curid.y);
-		UpdateCtrlsPos(1, 2, 1, true, true);
-	}	
+		bool select = true;
+		if(!select_row)
+			ClearSelection();
+		else if(!multi_select)
+			select = false;
+			
+		if(select)
+		{
+			shiftpos = curpos;
+			SelectRange(curpos, curpos, !vitems[curpos.y].IsSelect(), select_row);
+			selecting = true;
+		}
+	}
+	else if(keyflags & K_SHIFT)
+	{
+		DoShiftSelect();
+		selecting = true;
+	}
+
+	#ifdef LOG_CALLBACKS
+	//LGR(2, "WhenLeftClick()");
+	#endif
+	
+	WhenLeftClick();
+	
+	if(one_click_edit && IsRowEditable())
+		UpdateCtrls(UC_SHOW | UC_FOCUS | UC_CURSOR | UC_CTRLS | UC_GOFIRST | UC_MOUSE);
 }
 
 void GridCtrl::LeftUp(Point p, dword keyflags)
@@ -1781,8 +1831,8 @@ void GridCtrl::LeftUp(Point p, dword keyflags)
 				GSort(newSortCol, hitems[j].sortmode, fixed_rows);
 			}
 
-			Repaint(false, true);
 			UpdateCursor();
+			Repaint(false, true);
 		}
     }	    
 	
@@ -1795,11 +1845,7 @@ void GridCtrl::LeftUp(Point p, dword keyflags)
 	}
 
 	if(selected_rows > 0 && !selecting)
-		ClearSelection();
-	
-	if(multi_select && keyflags & K_CTRL)
-		shiftpos = curpos;
-
+		ClearSelection();	
 }
 
 void GridCtrl::LeftDouble(Point p, dword keyflags)
@@ -1812,12 +1858,12 @@ void GridCtrl::LeftDouble(Point p, dword keyflags)
 	
 	if(IsEmpty() || !IsMouseBody(p))
 		return;
+	
+	if(keyflags & K_SHIFT || keyflags & K_CTRL)
+		return;
 		
 	if(IsRowEditable())
-	{
-		SetCtrlsData(curid.y);
-		UpdateCtrlsPos(1, 2, 1, true, true);		
-	}	
+		UpdateCtrls(UC_SHOW | UC_FOCUS | UC_CURSOR | UC_CTRLS | UC_GOFIRST | UC_MOUSE);
 
 	if(!IsCtrl(curpos))
 	{
@@ -1839,17 +1885,14 @@ void GridCtrl::RightDown(Point p, dword keyflags)
 	if(total_rows > fixed_rows)
 	{
 		//ClearSelection();
-		bool newcur = SetCursor0(p, true);
-		bool samerow = ctrlid.y == curid.y && newcur;
-		GetCtrlsData(ctrlid.y, samerow, !samerow);
-		SetCtrlsData(curid.y);
-		ShowCtrls(false);
+		if(!SetCursor0(p, true).IsAccepted())
+			return;
+		
+		UpdateCtrls(UC_HIDE | UC_CTRLS);
 	}
 	
 	SetFocus(); //jak nie bedzie menu to fokous zostanie na danym wierszu
-	popupmenu = true;
 	MenuBar::Execute(WhenMenuBar);
-	popupmenu = false;
 }
 
 void GridCtrl::Init()
@@ -1874,6 +1917,10 @@ void GridCtrl::State(int reason)
 		//ready po init - updatesb wola layout() a ten syncctrl 
 		//(ktory w sumie wola sie 3 razy zanim grid sie wyswietli - niepotrzebnie)
 	}
+	else if(reason == CLOSE)
+	{
+		EndEdit();
+	}
 }
 
 void GridCtrl::Layout()
@@ -1893,22 +1940,17 @@ void GridCtrl::Layout()
 
 void GridCtrl::ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags)
 {
-	if(child->GetParent() == &holder && (event == LEFTDOWN || event == RIGHTDOWN) && child != focused_ctrl)
+	if(child->GetParent() == &holder && child != focused_ctrl)
 	{
-		Point cp = GetCtrlPos(child);
-		if(cp.x < 0 || cp.y < 0)
-			return;
-		bool samerow = curpos.y == cp.y;
-		GetCtrlsData(ctrlid.y, samerow, !samerow);
-		SetCursor0(cp, false);
-		child->SetFocus(); //not always necessary exception: DropList
-		focused_ctrl = child;
-		focused_ctrl_id = hitems[cp.x].id;
-		ctrlid.y = vitems[cp.y].id;
-		ctrlpos.y = cp.y;
-
-		if(ctrlpos.y != cp.y)
-			SetCtrlsData(ctrlid.y);
+		if(event == LEFTDOWN || event == RIGHTDOWN)
+		{
+			Point cp = GetCtrlPos(child);
+			if(cp.x < 0 || cp.y < 0)
+				return;
+			
+			if(SetCursor0(cp, false))
+				UpdateCtrls(UC_SHOW | UC_FOCUS | UC_CTRLS_OFF);
+		}
 	}
 	return Ctrl::ChildMouseEvent(child, event, p, zdelta, keyflags);
 }
@@ -1981,7 +2023,7 @@ Rect& GridCtrl::AlignRect(Rect &r, int i)
 			r.bottom -= hitems[i].sb;
 		}
 	}
-	
+	//r.Deflate(1);
 	return r;
 }
 
@@ -2001,9 +2043,7 @@ void GridCtrl::Scroll()
 	scrollydir = delta.cy == 0 ? scrollydir : delta.cy < 0 ? 1 : -1;
 
 	SyncCtrls();
-	if(ctrls)
-		ShowCtrls(1, 0, 0, 0, 1);
-
+	UpdateCtrls(UC_CHECK_VIS | UC_SHOW | UC_SCROLL);
 
 	if(resizeCol || resizeRow)
 		return;
@@ -2068,16 +2108,18 @@ void GridCtrl::Set0(int r, int c, const Value &val, bool paste)
 
 	int ri = vitems[r].id;
 	Ctrl * ctrl = items[ri][c].ctrl;
-	if(!ctrl && ctrls && ctrlid.y == ri)
-		ctrl = edits[c].ctrl;
-	
 	if(ctrl)
 		ctrl->SetData(val);
 	else
 	{
-		items[ri][c].val = val;
-		RefreshItem(r, c, false);
+		ctrl = edits[c].ctrl;
+		if(ctrl && ctrlid.y == ri)
+			ctrl->SetData(val);
 	}
+
+	items[ri][c].val = val;
+	RefreshItem(r, c, false);
+
 	if(paste)
 		WhenUpdateCell();
 }
@@ -2089,12 +2131,12 @@ void GridCtrl::Set(int r, int c, const Value &val)
 
 void GridCtrl::Set(int c, const Value &val)
 {
-	Set0(curpos.y, c + fixed_cols, val);
+	Set0(rowidx, c + fixed_cols, val);
 }
 
 void GridCtrl::Set(Id id, const Value &val)
 {
-	Set0(curpos.y, aliases.Get(id), val);
+	Set0(rowidx, aliases.Get(id), val);
 }
 
 void GridCtrl::Set(int r, const Vector<Value> &v, int data_offset /* = 0*/, int column_offset /* = 0*/)
@@ -2113,6 +2155,26 @@ void GridCtrl::Set(const Vector<Value> &v, int data_offset /* = 0*/, int column_
 {
 	int r = rowidx - fixed_rows;
 	Set(r, v, data_offset, column_offset);
+}
+
+void GridCtrl::SetCtrlValue(int r, int c, const Value &val)
+{
+	c += fixed_cols;
+	int ri = vitems[r].id;
+	Ctrl * ctrl = items[ri][c].ctrl;
+	if(ctrl)
+		ctrl->SetData(val);
+	else
+	{
+		ctrl = edits[c].ctrl;
+		if(ctrl && ctrlid.y == ri)
+			ctrl->SetData(val);
+	}
+}
+
+void GridCtrl::SetCtrlValue(int c, const Value &val)
+{
+	SetCtrlValue(rowidx, c, val);
 }
 
 void GridCtrl::SetLast(int c, const Value &val)
@@ -2144,7 +2206,7 @@ Value GridCtrl::Get0(int r, int c)
 	
 	Ctrl * ctrl = items[r][c].ctrl;
 	
-	if(!ctrl && ctrls && ctrlid.y == r)
+	if(!ctrl && /*ctrls &&*/ ctrlid.y == r)
 		ctrl = edits[c].ctrl;
 	
 	return ctrl ? ctrl->GetData() : items[r][c].val;
@@ -2163,6 +2225,11 @@ Value GridCtrl::Get(int c)
 Value GridCtrl::Get(Id id)
 {
 	return Get0(rowidx, aliases.Get(id));
+}
+
+Value GridCtrl::Get(int r, Id id)
+{
+	return Get0(r + fixed_rows, aliases.Get(id));
 }
 
 Value GridCtrl::Get()
@@ -2220,6 +2287,16 @@ Value& GridCtrl::operator() (int r, const char * alias)
 	return items[vitems[r + fixed_rows].id][aliases.Get(alias)].val;
 }
 
+bool GridCtrl::IsModified(int r, int c)
+{
+	return items[vitems[r + fixed_rows].id][c + fixed_cols].modified;
+}
+
+bool GridCtrl::IsModified(int c)
+{
+	return items[vitems[rowidx].id][c + fixed_cols].modified;
+}
+
 Vector<Value> GridCtrl::ReadRow(int n) const 
 {
 	Vector<Value> v;
@@ -2244,15 +2321,25 @@ GridCtrl& GridCtrl::Add(const Vector<Value> &v, int offset)
 	return *this;
 }
 
-#define E__Addv(I)    Set(q, I - 1, p##I)
-#define E__AddF(I) \
-GridCtrl& GridCtrl::Add(__List##I(E__Value)) { \
-	int q = GetCount(); \
-	__List##I(E__Addv); \
-	return *this; \
+ItemRect& GridCtrl::GetColumn(int n)
+{
+	return hitems[GetIdCol(n + fixed_cols)];
 }
-__Expand(E__AddF)
 
+ItemRect& GridCtrl::GetColumn()
+{
+	return hitems[curpos.x];
+}
+
+ItemRect& GridCtrl::GetRow(int n)
+{
+	return vitems[n + fixed_rows];
+}
+
+ItemRect& GridCtrl::GetRow()
+{
+	return vitems[rowidx];
+}
 
 int GridCtrl::GetMouseCol(Point &p, bool relative, bool fixed, bool full)
 {
@@ -2268,8 +2355,9 @@ int GridCtrl::GetMouseCol(Point &p, bool relative, bool fixed, bool full)
 		dx += sbx;
 	
 	int first_col = fixed ? 0 : max(firstVisCol, fixed_cols);
+	int last_col = max(lastVisCol, fixed_cols - 1);
 		
-	for(int i = first_col; i <= lastVisCol; i++)
+	for(int i = first_col; i <= last_col; i++)
 	{
 		if(p.x >= hitems[i].nLeft(dx) && 
 		   p.x  < hitems[i].nRight(dx))
@@ -2289,8 +2377,9 @@ int GridCtrl::GetMouseRow(Point &p, bool relative, bool fixed, bool full)
 		dy += sby;
 	
 	int first_row = fixed ? 0 : max(firstVisRow, fixed_rows);
+	int last_row = max(lastVisRow, fixed_rows - 1);
 	
-	for(int i = first_row; i <= lastVisRow; i++)
+	for(int i = first_row; i <= last_row; i++)
 	{
 		if(p.y >= vitems[i].nTop(dy) && 
 		   p.y  < vitems[i].nBottom(dy))
@@ -2391,24 +2480,30 @@ void GridCtrl::UpdateHolder(bool force)
 	}
 }
 
-bool GridCtrl::SetCursor0(int x, int y, bool mouse, bool highlight, int dirx, int diry, bool ctrlmode)
+GridCtrl::CurState GridCtrl::SetCursor0(int x, int y, bool mouse, bool highlight, int dirx, int diry, bool ctrlmode)
 {
 	return SetCursor0(Point(x, y), mouse, highlight, dirx, diry, ctrlmode);
 }
 
-bool GridCtrl::SetCursor0(Point p, bool mouse, bool highlight, int dirx, int diry, bool ctrlmode)
+GridCtrl::CurState GridCtrl::SetCursor0(Point p, bool mouse, bool highlight, int dirx, int diry, bool ctrlmode)
 {
 	bool nocursor = (curpos.x < 0 && curpos.y < 0);
+	
+	CurState cs;
 		
 	Point tmpcur;
 	
-	oldcur = highlight ? livecur : curpos;	
+	oldcur = highlight ? livecur : curpos;
+	
+	bool mouse_valid = true;
+	
 	if(mouse)
 	{
 		tmpcur.x = GetMouseCol(p, true, false);
 		tmpcur.y = GetMouseRow(p, true, false);
 		if(tmpcur.x < 0 || tmpcur.y < 0)
-			return false;
+			mouse_valid = false;
+		//	return cs;
 	}
 	else
 		tmpcur = p;
@@ -2416,7 +2511,7 @@ bool GridCtrl::SetCursor0(Point p, bool mouse, bool highlight, int dirx, int dir
 	bool oldvalid = IsValidCursorAll(oldcur);	
 	bool newvalid;
 			
-	if(!mouse && !highlight)
+	if(!highlight && mouse_valid)
 	{
 		if(dirx == -2) dirx = tmpcur.x >= oldcur.x ? 1 : -1;
 		if(diry == -2) diry = tmpcur.y >= oldcur.y ? 1 : -1;
@@ -2468,7 +2563,7 @@ bool GridCtrl::SetCursor0(Point p, bool mouse, bool highlight, int dirx, int dir
 				break;
 			
 			if(quit)
-				return false;
+				return cs;
 		
 			if(dirx != 0 || hx)
 			{
@@ -2534,43 +2629,56 @@ bool GridCtrl::SetCursor0(Point p, bool mouse, bool highlight, int dirx, int dir
 	else
 		newvalid = IsValidCursor(tmpcur);
 
-	if(!newvalid)
-		(highlight ? livecur : curpos) = tmpcur;
+/*
+	if(!newvalid && highlight)
+		livecur = tmpcur;
+*/
 	
 	if(tmpcur == oldcur)
-		return false;
-	
-	if(oldvalid)
-	{
-		SetItemCursor(oldcur, false, highlight);
-		if(!newvalid)
+		return cs;
+
+	bool isnewcol = oldcur.x != tmpcur.x;
+	bool isnewrow = oldcur.y != tmpcur.y;
+
+	if(!highlight && (isnewrow || isnewcol))
+		if(!GetCtrlsData(curid.y, !isnewrow))
 		{
-			RefreshRow(oldcur.y, 0);
-			return false;
+			cs.accepted = false;
+			return cs;
 		}
-	}
-					
+	
+	cs.accepted = true;
+
 	if(!newvalid)
-		return false;
+	{
+		if(highlight)
+			livecur = tmpcur;
+		else
+			if(cs.accepted)
+				curpos = tmpcur;
+	}
+			
+	if(oldvalid)
+		SetItemCursor(oldcur, false, highlight);
+						
+	if(!newvalid)
+	{
+		if(oldvalid)
+			RefreshRow(oldcur.y, 0);
+		return cs;
+	}
+	
+	cs.newx = isnewcol;
+	cs.newy = isnewrow;
 	
 	SetItemCursor(tmpcur, true, highlight);
 			
-	if(oldvalid && oldcur.y != tmpcur.y)
-	{
+	if(oldvalid && isnewrow)
 		RefreshRow(oldcur.y, 0);
-	}
 
-	if(highlight)
-	{
-		if(oldcur.y != tmpcur.y)
-			RefreshRow(tmpcur.y, 0, 0);
-		else if(!select_row && oldcur.x != tmpcur.x)
-			RefreshRow(tmpcur.y, 0, 0);			
-	}
-	else
-	{
-		RefreshRow(tmpcur.y, 0);
-	}
+	//if(isnewrow || isnewcol)
+	if(isnewrow || (!select_row && isnewcol))
+		RefreshRow(tmpcur.y, 0, 0);
 			
 	if(highlight)
 	{
@@ -2579,12 +2687,8 @@ bool GridCtrl::SetCursor0(Point p, bool mouse, bool highlight, int dirx, int dir
 	}
 	else
 	{
-		oldid  = curid;
-		
-		bool isnewrow = curpos.y != tmpcur.y;
-		
 		curpos = tmpcur;
-		
+		oldid  = curid;
 		rowidx = curpos.y;
 				
 		curid.x = hitems[curpos.x].id;
@@ -2599,10 +2703,13 @@ bool GridCtrl::SetCursor0(Point p, bool mouse, bool highlight, int dirx, int dir
 			WhenChangeRow();
 		}
 		
+		if(isnewrow)
+			SetCtrlsData(curid.y);
+		
 		LG("cur(%d, %d)", curpos.x, curpos.y);
 	}
 	
-	return true;
+	return cs;
 }
 
 int GridCtrl::GetWidth(int n)
@@ -2642,11 +2749,6 @@ int GridCtrl::GetFirst0(Vector<ItemRect> &its, int total, int sb, int p, int is,
 	else
 		l = is;
 
-/*	LG("p:%d", p);
-	LG("is:%d", is);
-	LG("dir:%d", dir);
-	LG("l:%d r:%d", l, r);
-*/	   
 	while(l <= r)
 	{
 		int i = (l + r) / 2;
@@ -2724,15 +2826,10 @@ bool GridCtrl::SetDiffItemSize(bool horizontal, RectItems &its, int n, int diff,
 		return false;
 	
 	if(diff < 0 && its[n].IsMin())
-	{
-		LG("Min1");
 		return false;
-	}
+
 	if(diff > 0 && its[n].IsMax())
-	{
-		LG("Max1");
 		return false;
-	}
 	
 	int resize_mode = horizontal ? resize_col_mode : resize_row_mode;
 	
@@ -2746,10 +2843,7 @@ bool GridCtrl::SetDiffItemSize(bool horizontal, RectItems &its, int n, int diff,
 				break;
 			}
 		if(ismin)
-		{
-			LG("Min2");
 			return false;
-		}
 	}
 	
 	double size = its[n].size + diff;
@@ -2856,7 +2950,6 @@ void GridCtrl::Recalc(bool horizontal, RectItems &its, int n, double size, doubl
 			its[n].prop = its[n].size * imaxsize;
 	}
 	
-//	LGR(Format("Time diff %d", tm.Elapsed()));
 	CalcIntPos(its, n, maxsize, tcnt - 1, resize_mode, false);
 }
 
@@ -3205,7 +3298,7 @@ GridCtrl& GridCtrl::Indicator(bool b, int size)
 
 void GridCtrl::RefreshRow(int n, bool relative, bool fixed)
 {
-	if(n < 0) { n = curpos.y; relative = false; }
+	if(n < 0) { n = rowidx; relative = false; }
 	if(relative) n += fixed_rows;
 	if(vitems[n].hidden) return;
 	int dy = fixed ? 0 : sby;
@@ -3291,26 +3384,6 @@ int GridCtrl::GetIdRow(int id, bool checkall)
 	return -1;
 }
 
-int GridCtrl::GetVisIdCol(int id)
-{
-	for(int i = firstCol; i <= lastCol; i++)
-	{
-		if(id == hitems[i].id)
-			return i;
-	}
-	return -1;
-}
-
-int GridCtrl::GetVisIdRow(int id)
-{
-	for(int i = firstRow; i <= lastRow; i++)
-	{
-		if(id == hitems[i].id)
-			return i;
-	}
-	return -1;
-}
-
 int GridCtrl::GetNextRow(int n)
 {
 	n += fixed_rows;
@@ -3332,9 +3405,11 @@ int GridCtrl::GetPrevRow(int n)
 void GridCtrl::UpdateCursor()
 {
 	curpos.x = GetIdCol(curid.x);
-	curpos.y = GetIdRow(curid.y);	
+	curpos.y = GetIdRow(curid.y);
 	rowidx = curpos.y;
 	shiftpos = curpos;
+	ctrlid.y = curpos.y < 0 ? -1 : vitems[curpos.y].id;
+	ctrlpos.y = curpos.y;
 }
 
 int GridCtrl::Find(const Value &v, int col)
@@ -3347,11 +3422,16 @@ int GridCtrl::Find(const Value &v, int col)
 	return -1;
 }
 
+int GridCtrl::Find(const Value &v, Id id)
+{
+	return Find(v, aliases.Get(id) - fixed_cols);
+}
+
 void GridCtrl::UpdateDefaults(int ri)
 {
 	for(int i = 1; i < total_cols; i++)
 		if(!IsNull(hitems[i].defval))
-			items[ri][hitems[i].id].val = hitems[i].defval;			
+			items[ri][hitems[i].id].val = hitems[i].defval;
 }
 
 void GridCtrl::SetCtrlsData(int row)
@@ -3370,65 +3450,55 @@ void GridCtrl::SetCtrlsData(int row)
 	}
 }
 
-bool GridCtrl::GetCtrlsData(int row, bool samerow, bool doall)
+bool GridCtrl::GetCtrlsData(int row, bool samerow, bool doall, bool updates)
 {
-	if(row < 0 || !HasCtrls())
-		return false;
-		
+	if(row < 0 || row > items.GetCount() - 1 || !HasCtrls())
+		return true;
+	
 	bool newrow = newrow_inserted || newrow_appended;
-	bool modified = false;
 
 	if(focused_ctrl)
 	{
+		Item &it = items[row][focused_ctrl_id];		
+		rowbkp[focused_ctrl_id] = it.val;
+				
+		if(updates && !focused_ctrl->Accept())
+			return false;
+		
 		Value v = focused_ctrl->GetData();
 		if(v.IsNull() && newrow)
-			v = focused_ctrl_val;
-		focused_ctrl->Accept();
+			v = focused_ctrl_val;		
+						
+		it.modified = it.val != v;
 		
-		#ifdef LOG_CALLBACKS
-		Value oldval = items[row][focused_ctrl_id].val;
-		#endif
+		if(it.modified)
+		{
+			row_modified++;
+			it.val = v;
 			
-		if(items[row][focused_ctrl_id].val != v)
-		{
-			modified = row_modified = true;
-			items[row][focused_ctrl_id].val = v;
-		}
-		if((samerow || doall) && modified)
-		{
-			#ifdef LOG_CALLBACKS
-			LGR(2, "WhenUpdateCell()");
-			LGR(2, Format("[row: %d, colid: %d]", row, focused_ctrl_id));
-			LGR(2, Format("[oldval : %s]", AsString(oldval)));
-			LGR(2, Format("[newval : %s]", AsString(v)));
-			#endif
-			WhenUpdateCell();
-		}
-	}
-
-	if(edit_mode == 0 && !samerow)
-		for(int i = 1; i < total_cols; i++)
-		{
-			int idx = hitems[i].id;
-			int idy = vitems[row].id;
-			Ctrl * ctrl = items[idy][idx].ctrl;
-			if(!ctrl)
-				ctrl = edits[idx].ctrl;
-			if(ctrl && ctrl->IsShown())
+			if(updates)
 			{
-				Value v = ctrl->GetData();
-				if(v.IsNull() && newrow)
-					v = hitems[i].defval;
+				#ifdef LOG_CALLBACKS
+				LGR(2, "WhenUpdateCell()");
+				LGR(2, Format("[row: %d, colid: %d]", row, focused_ctrl_id));
+				LGR(2, Format("[oldval : %s]", AsString(rowbkp[focused_ctrl_id])));
+				LGR(2, Format("[newval : %s]", AsString(v)));
+				#endif
+				WhenUpdateCell();
 				
-				ctrl->Accept();
-			
-				if(items[row][idx].val != v)
+				if(cancel_update_cell)
 				{
-					modified = row_modified = true;
-					items[row][idx].val = v;
+					it.val = rowbkp[focused_ctrl_id];
+					it.modified = false;
+					cancel_update_cell = false;
+					row_modified--;
 				}
 			}
 		}
+	}
+
+	if(!updates)
+		return false;
 			
 	if(!samerow || doall)
 	{
@@ -3439,7 +3509,6 @@ bool GridCtrl::GetCtrlsData(int row, bool samerow, bool doall)
 			LGR(2, Format("[row: %d]", row));
 			#endif
 			WhenInsertRow();
-			row_modified = false;
 		}
 		else if(row_modified)
 		{
@@ -3448,11 +3517,15 @@ bool GridCtrl::GetCtrlsData(int row, bool samerow, bool doall)
 			LGR(2, Format("[row: %d]", row));
 			#endif
 			WhenUpdateRow();
-			row_modified = false;
 		}
-		
+				
 		WhenAcceptRow();
 		WhenModification();
+
+		if(cancel_update)
+			CancelCtrlsData(row, true);
+		else
+			ClearModified(row);
 	}
 
 	if(newrow && (!samerow || doall))
@@ -3460,46 +3533,160 @@ bool GridCtrl::GetCtrlsData(int row, bool samerow, bool doall)
 		newrow_inserted = false;
 		newrow_appended = false;
 	}
-	
-	return modified;
+
+	return true;
 }
 
-bool GridCtrl::CancelCtrlsData(int row)
+bool GridCtrl::CancelCtrlsData(int row, bool all)
 {
+	cancel_update = false;
+	
+	if(!row_modified)
+		return false;
+	
 	bool null = true;
+	
+	int ie = total_cols;
+	int is = 1;
+	
+	if(edit_mode == GE_CELL && !all)
+	{
+		is = curpos.x;
+		ie = is + 1;
+	}
 	
 	for(int i = 1; i < total_cols; i++)
 	{
-		Ctrl * ctrl = edits[hitems[i].id].ctrl;
-		if(ctrl && ctrl->IsShown() && ctrl->HasFocus())
+		int id = hitems[i].id;
+		Item &it = items[row][id];
+				
+		Ctrl * ctrl = it.ctrl;
+		if(!ctrl)
+			ctrl = edits[id].ctrl;
+		if(ctrl)
 		{
 			ctrl->Reject();
-			ctrl->SetData(items[row][hitems[i].id].val);
-			if(!IsNull(ctrl->GetData()))
-				null = false;
+			if(it.modified)
+			{
+				it.modified = false;
+				row_modified--;
+				ctrl->SetData(rowbkp[id]); // dla ctrls
+				it.val = rowbkp[id];
+				if(!IsNull(it.val))
+					null = false;
+			}
 		}
 	}
 	return null;
 }
 
-void GridCtrl::UpdateCtrlsPos(int newpos /* = 1 */, int show /* = 1 */, int setfocus /* = 1 */, bool setcursor /* = true */, bool setctrls /* = false */)
+void GridCtrl::UpdateCtrls(int opt /*= UC_CHECK_VIS | UC_SHOW | UC_CURSOR | UC_FOCUS*/)
 {
-	if(!ctrls && !newpos)
+	if(opt & UC_CHECK_VIS && !ctrls)
 		return;
-			
-	if(newpos == 1)
-	{
-		ctrlid.y = curpos.y < 0 ? -1 : vitems[curpos.y].id;
-		ctrlpos.y = curpos.y;
-	}
-	else if(newpos == 2)
-		ctrlpos.y = GetIdRow(ctrlid.y);
+	
+	Point cp(opt & UC_OLDCUR ? oldcur : curpos);
 
-	ShowCtrls(show, setfocus, setcursor, setctrls);
+	bool show = opt & UC_SHOW;
+	
+	ctrlid.y  = show ? (cp.y < 0 ? -1 : vitems[cp.y].id) : -1;
+	ctrlpos.y = show ? cp.y : -1;
+
+	if(cp.y < 0)
+		return;
+	
+	Size sz = GetSize();
+	
+	bool isctrl = false;
+
+	Ctrl * first_ctrl = NULL;
+	focused_ctrl = NULL;
+	focused_ctrl_id = -1;
+	focused_col = -1;
+
+	bool gofirst = opt & UC_GOFIRST && select_row && !ctrls;
+	if(opt & UC_MOUSE)
+		 gofirst = gofirst && !GetCtrl(cp, false, false);	
+	
+	for(int i = 1; i < total_cols; i++)
+	{
+		if(hitems[i].hidden)
+			continue;
+
+		Ctrl * ctrl = GetCtrl(cp.y, i, show == false);
+		
+		if(!ctrl)
+			continue;
+		
+		int id = hitems[i].id;
+
+		if(!first_ctrl)
+			first_ctrl = ctrl;
+		
+		bool dorect = false;
+		bool dofocus = false;
+		
+		bool factory = edits[id].factory;
+		
+		if(show)
+		{
+			bool dorf = gofirst ? ctrl == first_ctrl : i == curpos.x;
+			dofocus = dorf;
+			dorect = edit_mode == GE_CELL ? dorf : (ctrls || opt & UC_CTRLS);
+		}
+		if(dorect)
+		{
+			Rect r = GetItemRect(ctrlpos.y, i, horz_grid, vert_grid, true);
+
+			if(!r.Intersects(sz))
+				r.Set(0, 0, 0, 0);
+
+			if(!factory)
+			{
+				ctrl->SetRect(AlignRect(r, i));
+				ctrl->Show();
+				isctrl = true;
+			}
+
+		}
+		else if(!factory)
+		{
+			ctrl->SetRect(0, 0, 0, 0);
+			ctrl->Hide();
+		}
+		
+		if(dofocus)
+		{
+			LG(2, "Focus on %d", i);
+			ctrl->SetFocus();
+			focused_ctrl = ctrl;
+			focused_ctrl_id = id;
+			focused_ctrl_val = hitems[i].defval;
+			focused_col = i;
+			
+			if(opt & UC_CURSOR)
+				SetCursor0(i, cp.y);
+		}			
+
+	}	
+	
+	edit_ctrls = isctrl;
+		
+	if(opt & UC_CTRLS)
+		ctrls = isctrl;
+
+	if(opt & UC_CTRLS_OFF && !isctrl)
+		ctrls = false;
+		
+	if(!show)
+		SetFocus();
+
+	if(!(opt & UC_SCROLL))
+		RebuildToolBar();	
 }
 
 void GridCtrl::SyncCtrls()
-{	
+{
 	Size sz = GetSize();
 	genr_ctrls = false;
 
@@ -3517,7 +3704,7 @@ void GridCtrl::SyncCtrls()
 	Rect r;
 		 
 	for(int j = 0; j < total_rows; j++)
-	{		
+	{
 		int idy = vitems[j].id;
 		bool fixed = j < fixed_rows;
 		bool create = !fixed && vitems[j].editable;
@@ -3569,120 +3756,6 @@ bool GridCtrl::HasCtrls()
 	return edit_ctrls || genr_ctrls;
 }
 
-bool GridCtrl::ShowCtrls(int show, int setfocus, bool setcursor, bool setctrls, bool scroll)
-{
-	if(curpos.y < 0 || ctrlpos.y < 0)
-		return false;
-	
-	Size sz = GetSize();
-	
-	bool isctrl = false;
-
-	Ctrl * first_ctrl = NULL;
-	focused_ctrl = NULL;
-	focused_ctrl_id = -1;
-
-	if(select_row && show == 1 && !ctrls)
-		setfocus = 2;
-	
-	int focusx = curpos.x;
-	
-	for(int i = 1; i < total_cols; i++)
-	{
-		if(hitems[i].hidden)
-			continue;
-
-		Ctrl * ctrl = GetCtrl(curpos.y, i, show == false);
-		
-		if(!ctrl)
-			continue;
-		
-		int id = hitems[i].id;
-
-		if(!first_ctrl)
-			first_ctrl = ctrl;
-		
-		bool dorect = false;
-		bool dofocus = false;
-		
-		bool factory = edits[id].factory;
-		
-		if(show)
-		{
-			if(edit_mode == 1)
-			{
-				if((setfocus < 2 && i == curpos.x) || 
-				   (setfocus == 2 && ctrl == first_ctrl))
-				{
-					dorect = true;
-					dofocus = true;
-				}
-			}
-			else
-			{
-				dorect = setctrls || ctrls;
-
-				if((i == curpos.x && setfocus == 1) || 
-				   (ctrl == first_ctrl && setfocus == 2))
-						dofocus = true;
-			}
-			
-		}
-		if(dorect)
-		{
-			Rect r = GetItemRect(ctrlpos.y, i, horz_grid, vert_grid, true);
-
-			if(!r.Intersects(sz))
-				r.Set(0, 0, 0, 0);
-
-			if(!factory)
-			{
-				ctrl->SetRect(AlignRect(r, i));
-				ctrl->Show();
-				isctrl = true;
-			}
-
-		}
-		else if(!factory)
-		{
-			bool hide = true;
-			if(edit_mode == 2 && !show)
-				hide = false;
-			
-			if(hide)
-			{
-				ctrl->SetRect(0, 0, 0, 0);
-				ctrl->Hide();
-			}
-		}
-		
-		if(dofocus)
-		{
-			LG(2, "Focus on %d", i);
-			ctrl->SetFocus();
-			focused_ctrl = ctrl;
-			focused_ctrl_id = id;
-			focused_ctrl_val = hitems[i].defval;
-			
-			if(setcursor)
-				SetCursor0(i, curpos.y);
-		}			
-
-	}	
-	
-	edit_ctrls = isctrl;
-		
-	if(setctrls)
-		ctrls = isctrl;
-		
-	if(!show)
-		SetFocus();
-
-	if(!scroll)
-		RebuildToolBar();
-	
-	return isctrl;
-}
 
 void GridCtrl::RestoreFocus()
 {
@@ -3694,7 +3767,7 @@ bool GridCtrl::ShowNextCtrl()
 {
 	if(GoRight(1, 1))
 	{
-		UpdateCtrlsPos(1, 2, 1, false);
+		UpdateCtrls(UC_CHECK_VIS | UC_SHOW | UC_FOCUS);
 		return true;
 	}
 	return false;
@@ -3704,7 +3777,7 @@ bool GridCtrl::ShowPrevCtrl()
 {
 	if(GoLeft(1, 1))
 	{
-		UpdateCtrlsPos(1, 2, 1, false);
+		UpdateCtrls(UC_CHECK_VIS | UC_SHOW | UC_FOCUS);
 		return true;
 	}
 	return false;
@@ -3780,7 +3853,7 @@ void GridCtrl::Split(int state, bool sync)
 	if((resize_paint_mode > 1 && state > GS_UP) || state == GS_UP)
 	{
 		SyncCtrls();
-		UpdateCtrlsPos(0, 1, state == GS_UP);
+		UpdateCtrls(UC_CHECK_VIS | UC_SHOW | (UC_FOCUS * int(state == GS_UP)));
 	}
 	
 	if(sync)
@@ -3843,7 +3916,7 @@ bool GridCtrl::Key(dword key, int)
 					
 			return true;
 		case K_ESCAPE:
-			if(ctrls)
+			if(HasCtrls())
 			{
 				CancelEdit();			
 				return true;
@@ -3883,6 +3956,33 @@ bool GridCtrl::Key(dword key, int)
 			GoEnd();
 			DoShiftSelect();
 			return true;
+
+		case K_CTRL|K_LEFT:
+			GoLeft();
+			DoCtrlSelect();
+			return true;
+		case K_CTRL|K_RIGHT:
+			GoRight();
+			DoCtrlSelect();
+			return true;
+		case K_CTRL|K_UP:
+			GoPrev();
+			DoCtrlSelect();
+			return true;
+		case K_CTRL|K_DOWN:
+			GoNext();
+			DoCtrlSelect();
+			return true;
+
+/*
+		case K_CTRL|K_LEFT:
+			SwapCols(curpos.x, curpos.x - 1);
+			return true;
+		case K_CTRL|K_RIGHT:
+			SwapCols(curpos.x, curpos.x + 1);
+			return true;
+*/
+
 		case K_CTRL_INSERT:
 			DoCopy();
 			return true;
@@ -3892,14 +3992,11 @@ bool GridCtrl::Key(dword key, int)
 		case K_SHIFT_DELETE:
 			DoRemove();
 			return true;
-		case K_S:
 		case K_UP:
-		//case K_CTRL|K_UP:
 			GoPrev();
 			ClearSelection();
 			return true;
 		case K_DOWN:
-		//case K_CTRL|K_DOWN:
 			GoNext();
 			ClearSelection(); 
 			return true;	
@@ -3932,12 +4029,6 @@ bool GridCtrl::Key(dword key, int)
 			GoPageDn();
 			ClearSelection();
 			return true;		
-		case K_CTRL|K_LEFT:
-			SwapCols(curpos.x, curpos.x - 1);
-			return true;
-		case K_CTRL|K_RIGHT:
-			SwapCols(curpos.x, curpos.x + 1);
-			return true;
 		case K_TAB:
 			if(HasCtrls())
 			{
@@ -4265,7 +4356,7 @@ void GridCtrl::Clear(bool columns)
 	doscroll = false;
 	scrollxdir = scrollydir = 0;
 	
-	ShowCtrls(false);
+	UpdateCtrls(UC_HIDE | UC_CTRLS);
 	
 	items.Remove(1, items.GetCount() - 1);
 	vitems.Remove(1, vitems.GetCount() - 1);
@@ -4274,6 +4365,7 @@ void GridCtrl::Clear(bool columns)
 	{
 		hitems.Remove(1, hitems.GetCount() - 1);
 		items[0].Remove(1, items[0].GetCount() - 1);
+		rowbkp.Remove(1, rowbkp.GetCount() - 1);
 		total_cols = 1;
 		total_width = 0;
 		total_height = 0;
@@ -4282,8 +4374,9 @@ void GridCtrl::Clear(bool columns)
 		firstCol = -1;
 		lastCol = -1;
 		fixed_cols = 1;
-		firstVisRow = 0;
+		firstVisRow = -1;
 		lastVisRow = -1;
+		coluid = 0;
 	}
 	else
 	{
@@ -4303,6 +4396,11 @@ void GridCtrl::Clear(bool columns)
 	
 	hcol = -1;
 	hrow = -1;
+	
+	rowidx = -1;
+	rowuid = 0;
+	
+	row_modified = 0;
 
 	UpdateSizes();
 	UpdateHolder();
@@ -4317,9 +4415,14 @@ void GridCtrl::Reset()
 	Clear(true);
 }
 
-void GridCtrl::First()
+void GridCtrl::Begin()
 {
 	rowidx = fixed_rows;
+}
+
+void GridCtrl::End()
+{
+	rowidx = total_rows - 1;
 }
 
 void GridCtrl::Next()
@@ -4327,9 +4430,19 @@ void GridCtrl::Next()
 	++rowidx;
 }
 
-bool GridCtrl::IsEnd()
+bool GridCtrl::IsNext()
 {
-	return rowidx == total_rows;
+	return rowidx < total_rows;
+}
+
+bool GridCtrl::IsBegin()
+{
+	return rowidx == fixed_rows;
+}
+
+bool GridCtrl::IsLast()
+{
+	return rowidx == total_rows - 1;
 }
 
 int GridCtrl::SetCursor(int n)
@@ -4355,6 +4468,14 @@ int GridCtrl::GetCursor(bool rel)
 		return IsValidCursor(curpos) ? vitems[curpos.y].id  - fixed_rows : -1;
 	else
 		return IsValidCursor(curpos) ? curpos.y - fixed_rows : -1;
+}
+
+int GridCtrl::GetPrevCursor(bool rel)
+{
+	if(rel)
+		return IsValidCursor(oldcur) ? vitems[oldcur.y].id  - fixed_rows : -1;
+	else
+		return IsValidCursor(oldcur) ? oldcur.y - fixed_rows : -1;
 }
 
 int GridCtrl::GetCursor(int uid)
@@ -4418,7 +4539,7 @@ void GridCtrl::CenterCursor()
 	{
 		GetCtrlsData(oldid.y);	 
 		SetCtrlsData(curid.y);
-		UpdateCtrlsPos();
+		UpdateCtrls();
 	}
 }
 
@@ -4469,27 +4590,22 @@ bool GridCtrl::Go0(int jump, bool scroll, bool goleft, bool ctrlmode)
 	}
 
 	Size sz = GetSize();
-	int cid = curid.y;
-	int rid = rowidx;
 	int sy = -1;
-
-	GetCtrlsData(curid.y, samerow, doall);
-
-	focused_ctrl = NULL;
-	focused_ctrl_id = -1;
 		
 	switch(jump)
 	{
 		case GO_BEGIN:
 		{
-			SetCursor0(curpos.x < 0 ? firstVisCol : curpos.x, firstVisRow, false, false, 0, -1, ctrls);
+			if(!SetCursor0(curpos.x < 0 ? firstVisCol : curpos.x, firstVisRow, false, false, 0, 1, ctrls))
+				return false;
 			sy = 0;
 			
 			break;
 		}
 		case GO_END:
 		{
-			SetCursor0((curpos.x < 0 || goleft) ? firstVisCol : curpos.x, lastVisRow, false, false, 0, 1, ctrls);
+			if(!SetCursor0((curpos.x < 0 || goleft) ? firstVisCol : curpos.x, lastVisRow, false, false, 0, -1, ctrls))
+				return false;
 			if(goleft)
 				GoCursorLeftRight();
 			else
@@ -4499,9 +4615,10 @@ bool GridCtrl::Go0(int jump, bool scroll, bool goleft, bool ctrlmode)
 		}
 		case GO_NEXT:
 		{
-			SetCursor0(curpos.x < 0 ? firstVisCol : curpos.x, 
-					   curpos.y < 0 ? firstVisRow : curpos.y + 1,
-					   0, 0, 0, 1, ctrls);
+			if(!SetCursor0(curpos.x < 0 ? firstVisCol : curpos.x, 
+			               curpos.y < 0 ? firstVisRow : curpos.y + 1,
+					       0, 0, 0, 1, ctrls))
+				return false;
 							  
 			int b = vitems[curpos.y].nBottom(sby);
 			int r = sz.cy;
@@ -4513,9 +4630,10 @@ bool GridCtrl::Go0(int jump, bool scroll, bool goleft, bool ctrlmode)
 		}
 		case GO_PREV:
 		{
-			SetCursor0(curpos.x < 0 ? firstVisCol : curpos.x, 
-					   curpos.y < 0 ? firstVisRow : curpos.y - 1,
-					   0, 0, 0, -1, ctrls);
+			if(!SetCursor0(curpos.x < 0 ? firstVisCol : curpos.x, 
+			               curpos.y < 0 ? firstVisRow : curpos.y - 1,
+			               0, 0, 0, -1, ctrls))
+				return false;
 		
 			int t = vitems[curpos.y].nTop(sby + fixed_height);
 			
@@ -4528,7 +4646,7 @@ bool GridCtrl::Go0(int jump, bool scroll, bool goleft, bool ctrlmode)
 		{
 			if(!SetCursor0(curpos.x < 0 ? firstVisCol : curpos.x - 1, 
 						   curpos.y < 0 ? firstVisRow : curpos.y, 
-						   0, 0, -1, 0, ctrlmode))
+						   0, 0, -1, 0, ctrlmode).IsNewCol())
 				return false;
 			
 			break;
@@ -4537,14 +4655,15 @@ bool GridCtrl::Go0(int jump, bool scroll, bool goleft, bool ctrlmode)
 		{
 			if(!SetCursor0(curpos.x < 0 ? firstVisCol : curpos.x + 1, 
 						   curpos.y < 0 ? firstVisRow : curpos.y, 
-						   0, 0, 1, 0, ctrlmode))
+						   0, 0, 1, 0, ctrlmode).IsNewCol())
 				return false;
 						
 			break;
 		}
 		case GO_PAGEUP:
 		{
-			int c = curpos.y;
+			int cp = curpos.y;
+			int c = cp;
 				
 			int yn = vitems[c].nTop() - sz.cy;
 			int ya = vitems[c].nTop(sby);
@@ -4559,6 +4678,9 @@ bool GridCtrl::Go0(int jump, bool scroll, bool goleft, bool ctrlmode)
 				}
 		
 			c = found ? i : firstVisRow;
+
+			if(!SetCursor0(curpos.x < 0 ? firstVisCol : curpos.x, c, 0, 0, -2, -2, ctrls))
+				return false;
 			
 			if(scroll && resize_row_mode == 0)
 			{
@@ -4572,13 +4694,12 @@ bool GridCtrl::Go0(int jump, bool scroll, bool goleft, bool ctrlmode)
 					sby.Set(yc - ya);
 			}
 		
-			SetCursor0(curpos.x < 0 ? firstVisCol : curpos.x, c, 0, 0, -2, -2, ctrls);
-		
 			break;
 		}
 		case GO_PAGEDN:
 		{
-			int c = curpos.y;
+			int cp = curpos.y;
+			int c = cp;
 				
 			int yn = vitems[c].nTop() + sz.cy;
 			int ya = vitems[c].nTop(sby);
@@ -4593,34 +4714,28 @@ bool GridCtrl::Go0(int jump, bool scroll, bool goleft, bool ctrlmode)
 				}
 		
 			c = found ? i : lastVisRow;
+
+			if(!SetCursor0(curpos.x < 0 ? firstVisCol : curpos.x, c, 0, 0, -2, -2, ctrls))
+				return false;
 			
 			if(scroll && resize_row_mode == 0)
 			{
 				int yc = vitems[c].nTop();
-				int yt = vitems[curpos.y].nTop(sby);
-				int yb = vitems[curpos.y].nBottom(sby);
+				int yt = vitems[cp].nTop(sby);
+				int yb = vitems[cp].nBottom(sby);
 				
 				if(yt < 0 || yb > sz.cy - 1)
 					sby.Set(yc);
 				else
 					sby.Set(yc - ya);
 			}
-		
-			SetCursor0(curpos.x < 0 ? firstVisCol : curpos.x, c, 0, 0, -2, -2, ctrls);
-		
+				
 			break;
 		}
 	}
 
 	if(jump == GO_LEFT || jump == GO_RIGHT)
 	{
-		if(cid != curid.y)
-		{
-			rowidx = rid;
-			GetCtrlsData(cid, false);
-			rowidx = curpos.y;
-			SetCtrlsData(curid.y);
-		}
 		if(scroll)
 			GoCursorLeftRight();
 	}	
@@ -4630,21 +4745,22 @@ bool GridCtrl::Go0(int jump, bool scroll, bool goleft, bool ctrlmode)
 			sby.Set(sy);
 
 		if(ctrls)
-		{
-			SetCtrlsData(curid.y);
-			UpdateCtrlsPos();
-		}
+			UpdateCtrls();
 	}
 		
 	Ctrl * ctrl = IsValidCursor(curpos) ? GetItem(curpos).ctrl : NULL;
 	if(ctrl)
 	{
 		focused_ctrl = ctrl;
-		focused_ctrl_id = hitems[curpos.x].id;//GetColId(curpos.x);
+		focused_ctrl_id = hitems[curpos.x].id;
+		focused_col = curpos.x;
 		ctrl->SetFocus();
 	}
-	else if(!focused_ctrl)
+	else
+	{
+		focused_ctrl = NULL;
 		SetFocus();
+	}
 	
 	return true;	
 }
@@ -4681,15 +4797,11 @@ bool GridCtrl::GoFirstVisible(bool scroll)
 	if(IsEmpty())
 		return false;
 	
-	GetCtrlsData(curid.y);
 	SetCursor0(curpos.x < 0 ? firstVisCol : curpos.x, max(firstVisRow, firstRow));
 	if(scroll && resize_row_mode == 0)
 		sby.Set(vitems[firstRow].nTop(/*fixed_height*/));
 	if(ctrls)
-	{
-		SetCtrlsData(curid.y);
-		UpdateCtrlsPos();
-	}
+		UpdateCtrls();
 	
 	return true;
 }
@@ -4738,7 +4850,8 @@ bool GridCtrl::IsCtrl(Point &p)
 void GridCtrl::GoTo(int n, bool setcursor, bool scroll)
 {
 	if(setcursor)
-		SetCursor(n);
+		if(!SetCursor(n))
+			return;
 	
 	if(scroll)
 	{
@@ -4771,9 +4884,7 @@ GridCtrl& GridCtrl::SetColsMax(int size)
 void GridCtrl::GotFocus()
 {
 	LG("GotFocus");
-	isfocus = true;
-	if(ctrls)
-		RestoreFocus();
+	RestoreFocus();
 	if(IsValidCursor(curpos))
 		RefreshRow(curpos.y, 0, 0);
 }
@@ -4781,16 +4892,13 @@ void GridCtrl::GotFocus()
 void GridCtrl::LostFocus()
 {
 	LG("Lostfocus");
-	if(!popupmenu)
-		isfocus = false;
 	if(IsValidCursor(curpos))
 		RefreshRow(curpos.y, 0, 0);
 }
 
 void GridCtrl::ChildGotFocus()
 {
-	if(!isfocus)
-		GotFocus();
+	GotFocus();
 }
 
 void GridCtrl::ChildLostFocus()
@@ -4830,7 +4938,7 @@ void GridCtrl::Repaint(bool do_recalc_cols /* = false*/, bool do_recalc_rows /* 
 		UpdateSizes();
 		UpdateSb();
 		UpdateHolder();	
-		UpdateCtrlsPos(2);
+		UpdateCtrls();
 		SyncCtrls();
 		doscroll = true;
 	}
@@ -4878,7 +4986,7 @@ bool GridCtrl::SwitchEdit()
 	else if(IsRowEditable()) 
 	{
 		SetCtrlsData(curid.y);
-		UpdateCtrlsPos(1, 1, 1, true, true);
+		UpdateCtrls(UC_SHOW | UC_FOCUS | UC_CURSOR | UC_CTRLS | UC_GOFIRST);
 	}
 	return true;
 }
@@ -4888,37 +4996,30 @@ bool GridCtrl::StartEdit(int focusmode)
 	if(!IsValidCursor(curpos))
 		return false;
 
-	EndEdit(true);
-	SetFocus(); //zeby wywolac GotFocus i ustawic zmienna isfocus na true;
 	SetCtrlsData(curid.y);
-	UpdateCtrlsPos(1, 1, focusmode, true, true);
+	UpdateCtrls(UC_SHOW | UC_GOFIRST | UC_CURSOR | UC_CTRLS);
 	return true;
 }
 
 void GridCtrl::EndEdit(bool accept, bool doall)
 {
-	if(ctrls)
+	GetCtrlsData(curid.y, false, doall, accept);
+	UpdateCtrls(UC_HIDE | UC_CTRLS);
+
+	if(!accept)
 	{
-		if(accept)
-		{
-			GetCtrlsData(curid.y, false, doall);
-			//if(th.ClearSorted())
-			//	th.Refresh();
-		}
-
-		ShowCtrls(false, 0, true, true);
-
-		if(!accept && CancelCtrlsData(curid.y) && reject_null_row && (newrow_inserted || newrow_appended))
+		CancelCtrlsData(curid.y);
+		if(newrow_inserted || newrow_appended)
 		{
 			newrow_inserted = false;
-			newrow_appended = false;			
-			call_whenremoverow = false;
-			DoRemove(); //DoRemove wola EndEdit ale wtedy ctrls jest juz false
-			call_whenremoverow = true;
+			newrow_appended = false;
+			Remove0(curpos.y);
+			int y = curpos.y;
+			curpos.y = -1;
+			SetCursor0(curpos.x, max(fixed_rows, min(total_rows - 1, y)));
 		}
 	}
 }
-
 
 void GridCtrl::Insert0(int row, int cnt /* = 1*/, bool recalc /* = true*/, bool refresh /* = true*/, int size /* = GD_ROW_HEIGHT*/)
 {
@@ -4991,9 +5092,9 @@ bool GridCtrl::Remove0(int row, int cnt /* = 1*/, bool recalc /* = true*/, bool 
 				#endif
 			}
 			
-			if(cancel_operation)
+			if(cancel_remove)
 			{
-				cancel_operation = false;
+				cancel_remove = false;
 				cancel = false;
 				if(i == cnt - 1)
 					return cancel;
@@ -5003,12 +5104,21 @@ bool GridCtrl::Remove0(int row, int cnt /* = 1*/, bool recalc /* = true*/, bool 
 			if(call_whenremoverow)
 				WhenModification();	
 		}
+
+		if(vitems[rowidx].IsSelect())
+		{
+			int si = 0;
+			for(int j = fixed_cols; j < total_cols; j++)
+				if(GetItem(rowidx, j).IsSelect())
+					si++;
+				
+			selected_items -= si;
+			selected_rows -= 1;			
+		}
 		
 		for(int j = 0; j < total_rows; j++)
-		{
 			if(vitems[j].id > id)
 				vitems[j].id--;
-		}
 		
 		total_height -= vitems[rowidx].nHeight();
 
@@ -5137,17 +5247,23 @@ void GridCtrl::SelectCount(int i, int cnt, bool sel)
 
 void GridCtrl::SelectRange(int from, int to, bool sel)
 {
-	SelectRange(Point(0, from), Point(0, to), sel);
+	SelectRange(Point(fixed_cols, from), Point(total_cols - 1, to), sel);
 }
 
 void GridCtrl::ShiftSelect(int from, int to)
 {
-	ShiftSelect(Point(0, from), Point(0, to));
+	ShiftSelect(Point(fixed_cols, from), Point(total_cols - 1, to));
 }
 
-void GridCtrl::SelectRange(Point from, Point to, bool sel /* = true*/)
+void GridCtrl::SelectRange(Point from, Point to, bool sel /* = true*/, bool fullrow /* = false*/)
 {
 	Point f, t;
+	
+	if(fullrow)
+	{
+		from.x = fixed_cols;
+		to.x = total_cols - 1;
+	}
 	
 	if(from.y < to.y)
 	{
@@ -5342,8 +5458,13 @@ void GridCtrl::DoShiftSelect()
 
 void GridCtrl::DoCtrlSelect()
 {
-	SelectRange(shiftpos, oldcur, false);
-	SelectRange(shiftpos, curpos, true);
+	if(shiftmode && !select_row)
+	{
+		ClearSelection();
+		shiftpos = oldcur;
+	}
+	SelectRange(shiftpos, oldcur, false, select_row);
+	SelectRange(shiftpos, curpos, true, select_row);
 }
 
 bool GridCtrl::IsSelected(int n, bool relative)
@@ -5364,8 +5485,9 @@ void GridCtrl::ClearSelection()
 {
 	LG("Cleared %d", selected_rows);
 	shiftmode = false;
+	shiftpos = curpos;
 	if(selected_rows > 0)
-	{		
+	{
 		for(int i = fixed_rows; i < total_rows; i++)
 		{
 			vitems[i].Select(0);
@@ -5417,9 +5539,9 @@ void GridCtrl::DoRemove()
 	
 	if(!curvalid && selected_rows == 0)
 		return;
-
-	row_removed = true;
 		
+    row_removed = true;
+    
 	EndEdit();
 	
 	int y = curpos.y;
@@ -5450,21 +5572,13 @@ void GridCtrl::DoRemove()
 			{
 				sel_begin = i == minRowSelected;
 				sel_end = i == maxRowSelected;
-				
-				int si = 0;
-				if(vitems[rid].IsSelect())
-					for(int i = fixed_cols; i < total_cols; i++)
-						if(GetItem(rid, i).IsSelect())
-							si++;
-				
+								
 				if(Remove0(rid, 1, false, false))
 				{
 					/* curpos.y tez sie zmienia bo gdy w whenromoverow jest woloanie innego okna to 
 					   grid traci fokus i wola sie lostfoucs, ktory wymaga poprawnego curpos.y */
 					if(i == ocy)
 						y = curpos.y = rid - 1;
-					removed++;
-					selected_items -= si;
 				}
 				else
 					not_removed++;
@@ -5472,17 +5586,14 @@ void GridCtrl::DoRemove()
 			else
 				not_removed++;
 		}
-		selected_rows -= removed;
 		RecalcRows();
 		SyncCtrls();
 		Refresh();
 	}
 	
 	curpos.y = -1;
-	SetCursor0(curpos.x, max(fixed_rows, min(total_rows - 1, y)));
-	
-	row_removed = false;
-	
+	SetCursor0(curpos.x, max(fixed_rows, min(total_rows - 1, y)));	
+    row_removed = false;
 }
 
 void GridCtrl::DoAppend0(bool edit)
@@ -5491,16 +5602,14 @@ void GridCtrl::DoAppend0(bool edit)
 	Append0();
 
 	call_whenchangerow = false;	
-	
-	GoEnd(true, true);
-	
+	GoEnd(true, true);	
 	call_whenchangerow = true;
 
 	newrow_appended = true;
 	
 	if(edit)
 	{
-		StartEdit(2);
+		StartEdit();
 		GoCursorLeftRight();
 	}	
 	
@@ -5514,24 +5623,24 @@ void GridCtrl::DoAppend0(bool edit)
 
 }
 
-void GridCtrl::DoAppend()             { DoAppend0(1);       }
-void GridCtrl::DoAppendNoEdit()       { DoAppend0(0);       }
-void GridCtrl::DoInsertBefore()       { DoInsertBefore0(1); }
-void GridCtrl::DoInsertBeforeNoEdit() {	DoInsertBefore0(0); }
-void GridCtrl::DoInsertAfter()        {                     }
-void GridCtrl::DoDuplicate()          {                     }
-void GridCtrl::DoEdit()               { StartEdit();        }
-void GridCtrl::DoEndEdit()            { EndEdit();          }
-void GridCtrl::DoSwapUp()             { SwapUp();           }
-void GridCtrl::DoSwapDown()           { SwapDown();         }
-void GridCtrl::DoGoBegin()            { GoBegin();          }
-void GridCtrl::DoGoEnd()              { GoEnd();            }
-void GridCtrl::DoGoNext()             { GoNext();           }
-void GridCtrl::DoGoPrev()             { GoPrev();           }
-void GridCtrl::DoGoLeft()             { GoLeft();           }
-void GridCtrl::DoGoRight()            { GoRight();          }
-void GridCtrl::DoGoPageUp()           { GoPageUp();         }
-void GridCtrl::DoGoPageDn()           { GoPageDn();         }
+void GridCtrl::DoAppend()             { DoAppend0(edits_in_new_row); }
+void GridCtrl::DoAppendNoEdit()       { DoAppend0(0);                }
+void GridCtrl::DoInsertBefore()       { DoInsertBefore0(1);          }
+void GridCtrl::DoInsertBeforeNoEdit() {	DoInsertBefore0(0);          }
+void GridCtrl::DoInsertAfter()        {                              }
+void GridCtrl::DoDuplicate()          {                              }
+void GridCtrl::DoEdit()               { StartEdit();                 }
+void GridCtrl::DoEndEdit()            { EndEdit();                   } 
+void GridCtrl::DoSwapUp()             { SwapUp();                    }
+void GridCtrl::DoSwapDown()           { SwapDown();                  }
+void GridCtrl::DoGoBegin()            { GoBegin();                   }
+void GridCtrl::DoGoEnd()              { GoEnd();                     }
+void GridCtrl::DoGoNext()             { GoNext();                    }
+void GridCtrl::DoGoPrev()             { GoPrev();                    }
+void GridCtrl::DoGoLeft()             { GoLeft();                    }
+void GridCtrl::DoGoRight()            { GoRight();                   }
+void GridCtrl::DoGoPageUp()           { GoPageUp();                  }
+void GridCtrl::DoGoPageDn()           { GoPageDn();                  }
 
 void GridCtrl::DoSelectAll()
 {
@@ -5748,8 +5857,7 @@ bool GridCtrl::Match(const WString &f, const WString &s, int &fs, int &fe)
 
 void GridCtrl::DoFind()
 {
-	if(ctrls)
-		ShowCtrls(false, false, false);	
+	UpdateCtrls(UC_CHECK_VIS | UC_HIDE);
 	ShowMatchedRows((WString) ~findstring);
 }
 
@@ -5814,6 +5922,20 @@ void GridCtrl::UpdateVisColRow(bool col)
 	}
 }
 
+Point GridCtrl::GetBarOffset()
+{
+	Size bsz = bar.GetSize();
+	return Point(bar.GetAlign() == BarCtrl::BAR_LEFT ? bsz.cx : 0,
+	             bar.GetAlign() == BarCtrl::BAR_TOP ? bsz.cy : 0);	         
+}
+
+void GridCtrl::ClearModified(int r)
+{
+	row_modified = 0;
+	for(int i = 0; i < total_cols; ++i)
+		items[r][i].modified = false;
+}
+
 void GridCtrl::Debug(int n)
 {
 	if(n == 0)
@@ -5840,6 +5962,7 @@ void GridCtrl::Debug(int n)
 		LG("total_height %d", total_height);
 		LG("scrollxdir   %d", scrollxdir);
 		LG("scrollydir   %d", scrollydir);
+		LG("row_modified %d", row_modified);
 		LG("---- END --------------");
 	}
 	if(n == 1)
@@ -5952,8 +6075,6 @@ void GridCtrl::UpdateHighlighting(int mode, Point p)
 		int col = GetMouseCol(p, true, true, false);
 		int row = hrow = GetMouseRow(p, false, true, true);
 
-		LG("col %d, row %d", col, row);
-		
 		if(hcol >= 0 && (hcol != col || row != 0) && hitems[hcol].IsHighlight())
 		{
 			hitems[hcol].Highlight(0);
@@ -6010,5 +6131,16 @@ void GridPopUpHeader::Close()
 	open = false;
 	Ctrl::Close();
 }
+
+/* after this assist++ see nothing */
+
+#define E__Addv(I)    Set(q, I - 1, p##I)
+#define E__AddF(I) \
+GridCtrl& GridCtrl::Add(__List##I(E__Value)) { \
+	int q = GetCount(); \
+	__List##I(E__Addv); \
+	return *this; \
+}
+__Expand(E__AddF)
 
 END_UPP_NAMESPACE

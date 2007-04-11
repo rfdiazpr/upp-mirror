@@ -150,7 +150,7 @@ public:
 	ReportCtrl& Numbers(bool nums)    { numbers = nums; Refresh(); return *this; }
 
 	void      Set(DocReport& p);
-	int       GetFirst() const        { return sb / pagesize.cy * pvn; }
+	int       GetFirst() const        { return sb / max(pagesize.cy * pvn, 1); }
 
 	void      ScrollInto(int toppage, int top, int bottompage, int bottom);
 	void      ScrollInto(const DocReport::RValueRect& vr);

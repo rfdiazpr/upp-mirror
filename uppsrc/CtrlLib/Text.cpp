@@ -156,14 +156,20 @@ void TextCtrl::SetPickUndoData(pick_ TextCtrl::UndoData& data)
 	incundoserial = true;
 }
 
+void TextCtrl::Set(const WString& s)
+{
+	Clear();
+	Insert0(0, s);
+}
+
 void  TextCtrl::SetData(const Value& v)
 {
-	Set(v);
+	Set((WString)v);
 }
 
 Value TextCtrl::GetData() const
 {
-	return Get();
+	return GetW();
 }
 
 String TextCtrl::GetEncodedLine(int i, byte charset) const

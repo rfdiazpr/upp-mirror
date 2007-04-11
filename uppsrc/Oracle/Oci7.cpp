@@ -19,7 +19,16 @@ NAMESPACE_UPP
 #define DLLFILENAME "ociw32.dll"
 #define DLIMODULE   OCI7
 #define DLIHEADER   <Oracle/Oci7.dli>
-#include <Core/dli.h>
+#include <Core/dli_source.h>
+
+void OCI7SetDllPath(String oci7_path, T_OCI7& oci7)
+{
+	static String dflt_name;
+	if(IsNull(dflt_name))
+		dflt_name = oci7.GetLibName();
+	if(oci7_path != oci7.GetLibName())
+		oci7.SetLibName(Nvl(oci7_path, dflt_name));
+}
 
 class OCI7Connection : public Link<OCI7Connection>, public OciSqlConnection {
 protected:
@@ -103,6 +112,7 @@ protected:
 //	int            dynamic_pos;
 //	int            dynamic_rows;
 
+	T_OCI7&        oci7;
 	Oracle7       *session;
 
 	Param&    PrepareParam(int i, int type, int len, int reserve /*, int dynamic_vtype*/);
@@ -126,7 +136,7 @@ protected:
 
 	void      Clear();
 
-    OCI7Connection(Oracle7 *s);
+    OCI7Connection(Oracle7& s);
 
 	friend class Oracle7;
 };
@@ -258,7 +268,7 @@ private:
 
 void OCI7Connection::SetParam(int i, Sql& cursor) {
 	Param& w = PrepareParam(i, SQLT_CUR, -1, 0 /*, VOID_V*/);
-	w.refcursor = new OCI7Connection(session);
+	w.refcursor = new OCI7Connection(*session);
 	Oracle7RefCursorStub stub(w.refcursor);
 	w.ptr = (byte *)&w.refcursor -> cda;
 	w.ind = 0;
@@ -280,6 +290,7 @@ void  OCI7Connection::SetParam(int i, const Value& q) {
 		case INT_V:
 			SetParam(i, int(q));
 			break;
+		case INT64_V:
 		case DOUBLE_V:
 			SetParam(i, double(q));
 			break;
@@ -317,19 +328,19 @@ bool OCI7Connection::Execute() {
 		String cmd;
 		args = OciParse(statement, cmd, this, session);
 		Cancel();
-		if(OCI7().oparse(&cda, (OraText *)(const char *)cmd, -1, 0, 2) != 0) {
+		if(oci7.oparse(&cda, (OraText *)(const char *)cmd, -1, 0, 2) != 0) {
 			SetError();
 			return false;
 		}
 		while(param.GetCount() < args)
 			SetParam(param.GetCount(), String());
-		param.SetCount(args);
+		param.Trim(args);
 //		dynamic_param.Clear();
   		for(int i = 0; i < args; i++) {
 			Param& p = param[i];
 			if(p.type == SQLT_LBI) {
 				String h = Format(":%d", i + 1);
-				if(OCI7().obindps(&cda, 0, (byte *)~h, h.GetLength(), NULL,
+				if(oci7.obindps(&cda, 0, (byte *)~h, h.GetLength(), NULL,
 					            max(1, longparam.GetLength()), p.type,
 								0, NULL, NULL, NULL, 0, 0, 0, 0, 0, NULL, NULL, 0, 0)) {
 					SetError();
@@ -337,7 +348,7 @@ bool OCI7Connection::Execute() {
 				}
 			}
     		else
-			if(OCI7().obndrn(&cda, i + 1, (OraText *)p.Data(), p.len, p.type,
+			if(oci7.obndrn(&cda, i + 1, (OraText *)p.Data(), p.len, p.type,
 					       -1, &p.ind, NULL, -1, -1) != 0) {
 				SetError();
 				return false;
@@ -350,7 +361,7 @@ bool OCI7Connection::Execute() {
 //		dword time;
 //		if(session->IsTraceTime())
 //			time = GetTickCount();
-		OCI7().oexec(&cda);
+		oci7.oexec(&cda);
 //		if(session->IsTraceTime() && session->GetTrace())
 //			*session->GetTrace() << Sprintf("--------------\nexec %d ms:\n", GetTickCount() - time);
 		if(cda.rc == 0)
@@ -361,7 +372,7 @@ bool OCI7Connection::Execute() {
 			return false;
 		}
 		ub4 l = longparam.GetLength();
-		OCI7().osetpi(&cda, OCI_LAST_PIECE, (void *)~longparam, &l);
+		oci7.osetpi(&cda, OCI_LAST_PIECE, (void *)~longparam, &l);
 	}
 
 //	if(!dynamic_param.IsEmpty()) {
@@ -409,7 +420,7 @@ bool OCI7Connection::GetColumnInfo()
 		sb4 width;
 		sb2 type, prec, scale, null;
 		sb4 hlen = 255;
-		if(OCI7().odescr((cda_def *)&cda, i + 1, &width, &type, (sb1 *)h, &hlen, NULL, &prec,
+		if(oci7.odescr((cda_def *)&cda, i + 1, &width, &type, (sb1 *)h, &hlen, NULL, &prec,
 				       &scale, &null))
 			break;
 		SqlColumnInfo& ii = info.Add();
@@ -455,7 +466,7 @@ bool OCI7Connection::GetColumnInfo()
 	}
 	for(i = 0; i < column.GetCount(); i++) {
 		Column& q = column[i];
-		if(OCI7().odefin(&cda, i + 1, (OraText *)q.data, q.len, q.type, -1, q.ind, NULL, -1, -1, q.rl, q.rc)) {
+		if(oci7.odefin(&cda, i + 1, (OraText *)q.data, q.len, q.type, -1, q.ind, NULL, -1, -1, q.rl, q.rc)) {
 			SetError();
 			return false;
 		}
@@ -470,13 +481,12 @@ int OCI7Connection::GetRowsProcessed() const {
 
 bool OCI7Connection::Fetch() {
 	ASSERT(!parse);
-//	DUMP(parse);
 	if(parse || eof) return false;
 //	if(!dynamic_param.IsEmpty()) // dynamic pseudo-fetch
 //		return (dynamic_pos < dynamic_rows && ++dynamic_pos < dynamic_rows);
 	if(frows == 1) {
 		fi = 0;
-		if(OCI7().ofetch(&cda)) {
+		if(oci7.ofetch(&cda)) {
 			if(cda.rc != 1403)
 				SetError();
 			return false;
@@ -487,7 +497,7 @@ bool OCI7Connection::Fetch() {
 	if(fi < 0 || fetched >= cda.rpc) {
 		bool tt = session->IsTraceTime();
 		int fstart = tt ? msecs() : 0;
-		if(OCI7().ofen(&cda, frows) && cda.rc != 1403) {
+		if(oci7.ofen(&cda, frows) && cda.rc != 1403) {
 			eof = true;
 			SetError();
 			return false;
@@ -536,7 +546,7 @@ void OCI7Connection::GetColumn(int i, String& s) const
 			if(!c.lob) {
 				Buffer<byte> buffer(32768);
 				ub4 len;
-				while(!OCI7().oflng(&cda, i + 1, buffer, 32768, c.type, &len, s.GetLength()) && len)
+				while(!oci7.oflng(&cda, i + 1, buffer, 32768, c.type, &len, s.GetLength()) && len)
 					s.Cat(buffer, len);
 				if(s.GetAlloc() - s.GetLength() > 32768)
 					s.Shrink();
@@ -625,7 +635,6 @@ void  OCI7Connection::GetColumn(int i, Ref f) const {
 			f.SetValue(s);
 			break;
 		}
-		case BOOL_V:
 		case INT_V: {
 			int d;
 			GetColumn(i, d);
@@ -691,7 +700,7 @@ void  OCI7Connection::GetColumn(int i, Ref f) const {
 }
 
 void OCI7Connection::Cancel() {
-	OCI7().ocan(&cda);
+	oci7.ocan(&cda);
 	parse = true;
 }
 
@@ -758,16 +767,16 @@ String OCI7Connection::ToString() const
 	return lg;
 }
 
-OCI7Connection::OCI7Connection(Oracle7 *s) : session(s) {
+OCI7Connection::OCI7Connection(Oracle7& s) : session(&s), oci7(s.oci7) {
 	eof = true;
 	memset(&cda, 0, sizeof(cda));
-	CHECK(!OCI7().oopen(&cda, (cda_def *) (session->lda), 0, -1, -1, 0, -1));
-	LinkAfter(&s->clink);
+	CHECK(!oci7.oopen(&cda, (cda_def *) (session->lda), 0, -1, -1, 0, -1));
+	LinkAfter(&s.clink);
 }
 
 void OCI7Connection::Clear() {
 	if(session) {
-		OCI7().oclose(&cda);
+		oci7.oclose(&cda);
 		session = NULL;
 	}
 }
@@ -776,20 +785,19 @@ OCI7Connection::~OCI7Connection() {
 	Clear();
 }
 
-bool Oracle7::Open(const String& connect)
-{
+bool Oracle7::Open(const String& connect) {
 	Close();
 	::memset(lda, 0, sizeof(lda));
 	::memset(hda, 0, sizeof(hda));
-	if(!OCI7().Load()) {
-		SetError(t_("Error loading the OCI7 library needed to connect to the Oracle database."),
-			t_("Connecting to database server."));
+	if(!oci7.Load()) {
+		SetError("Nelze spustit knihovnu OCI7 pro pøipojení k databázi Oracle.",
+			     "Pøipojení k databázovému serveru.");
 		return false;
 	}
-	int code = OCI7().olog((cda_def *)lda, hda, (OraText *)(const char *)connect, -1,
+	int code = oci7.olog((cda_def *)lda, hda, (OraText *)(const char *)connect, -1,
 	                     NULL, -1, NULL, -1, OCI_LM_DEF);
 	if(code) {
-		SetError(GetErrorMsg(code), t_("Connecting to database server."));
+		SetError(GetErrorMsg(code), "Pøipojení k databázovému serveru.");
 		return false;
 	}
 	connected = true;
@@ -803,7 +811,7 @@ String Oracle7::GetErrorMsg(int code) const {
 	byte h[520];
 	*h = 0;
 	String r;
-	OCI7().oerhms((cda_def *)lda, (sb2)code, (OraText *)h, 512);
+	oci7.oerhms((cda_def *)lda, (sb2)code, (OraText *)h, 512);
 	for(byte *s = h; *s; s++)
 		r.Cat(*s < ' ' ? ' ' : *s);
 	r << "(code " << code << ")";
@@ -811,7 +819,7 @@ String Oracle7::GetErrorMsg(int code) const {
 }
 
 SqlConnection *Oracle7::CreateConnection() {
-	return new OCI7Connection(this);
+	return new OCI7Connection(*this);
 }
 
 void Oracle7::Close() {
@@ -820,7 +828,7 @@ void Oracle7::Close() {
 		clink.GetNext()->Unlink();
 	}
 	if(connected) {
-		OCI7().ologof((cda_def *)lda);
+		oci7.ologof((cda_def *)lda);
 		connected = false;
 	}
 }
@@ -836,11 +844,11 @@ void   Oracle7::PreExec() {
 		Stream *s = GetTrace();
 		if(autocommit) {
 			if(s) *s << "%autocommit on;\n";
-			OCI7().ocon((cda_def *)lda);
+			oci7.ocon((cda_def *)lda);
 		}
 		else {
 			if(s) *s << "%autocommit off;\n";
-			OCI7().ocof((cda_def *)lda);
+			oci7.ocof((cda_def *)lda);
 		}
 	}
 }
@@ -865,7 +873,7 @@ void   Oracle7::Commit() {
 //	else
 //		ClearError();
 	if(level == 0) {
-		OCI7().ocom((cda_def *)lda);
+		oci7.ocom((cda_def *)lda);
 //		if(Stream *s = GetTrace())
 //			*s << "%commit;\n";
 	}
@@ -878,7 +886,7 @@ void   Oracle7::Rollback() {
 	if(level > 1)
 		Sql(*this).Execute("rollback to savepoint " + Spn());
 	else {
-		OCI7().orol((cda_def *)lda);
+		oci7.orol((cda_def *)lda);
 		if(Stream *s = GetTrace())
 			*s << "%rollback;\n";
 	}
@@ -906,7 +914,9 @@ bool   Oracle7::IsOpen() const {
 	return connected;
 }
 
-Oracle7::Oracle7() {
+Oracle7::Oracle7(T_OCI7& oci7_)
+: oci7(oci7_)
+{
 	connected = false;
 	autocommit = false;
 	level = 0;

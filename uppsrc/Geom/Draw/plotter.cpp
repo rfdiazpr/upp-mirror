@@ -137,7 +137,7 @@ void LineDraw::Set(Draw& _draw, LineStyle pattern, Color color, int width, doubl
 	pen_color = color;
 	if(pen_width <= 1)
 		AddVector = &LineDraw::AddVectorThin;
-	else if(draw -> Pixels() && pen_width <= 5)
+	else if(draw->Pixels() && pen_width <= 5)
 	{
 		AddVector = &LineDraw::AddVectorThick;
 		half_width = pen_width >> 1;
@@ -166,8 +166,8 @@ void LineDraw::Set(Draw& _draw, LineStyle pattern, Color color, int width, doubl
 		active = NULL;
 	}
 	first = last = Null;
-	clip = draw -> GetClip();
-	Size size = draw -> GetPagePixels();
+	clip = draw->GetClip();
+	Size size = draw->GetPagePixels();
 	max_rad = max(size.cx, size.cy);
 	vertices.Clear();
 	indices.Clear();
@@ -299,8 +299,8 @@ void LineDraw::AddVectorArea(Point a, Point b)
 	polygon[8].x = b.x + larger.cy; polygon[8].y = b.y + larger.cx;
 	polygon[9].x = b.x + vector.cy; polygon[9].y = b.y - vector.cx;
 	DrawPolygon(*draw, polygon, 10, pen_color, PEN_NULL, Black, 0);
-//	draw -> SetColor(pen_color);
-//	draw -> SetDrawPen(PEN_NULL, Black);
+//	draw->SetColor(pen_color);
+//	draw->SetDrawPen(PEN_NULL, Black);
 //	Polygon(*draw, polygon, 10);
 }
 
@@ -522,7 +522,7 @@ void LineDraw::ArcTo(Point p, int bulge, int levels)
 			if(bulge >= 0)
 				Swap(start, end);
 			if(max(start.x - end.x, start.y - end.y) <= 2)
-				draw -> DrawLine(start, end, pen_width, pen_color);
+				draw->DrawLine(start, end, pen_width, pen_color);
 			else
 			{
 				if(bulge >= 0)
@@ -668,7 +668,7 @@ void Plotter::SetXorMode(bool xm)
 	SetROP2(*draw, xm ? R2_NOTXORPEN : R2_COPYPEN);
 #endif
 #ifdef PLATFORM_X11
-	XSetFunction(Xdisplay, draw -> GetGC(), xm ? X11_ROP2_NOT_XOR : X11_ROP2_COPY);
+	XSetFunction(Xdisplay, draw->GetGC(), xm ? X11_ROP2_NOT_XOR : X11_ROP2_COPY);
 #endif
 }
 
@@ -1509,7 +1509,7 @@ void AreaTool::Set(const Plotter& _info, Color _fill_color, uint64 _fill_pattern
 	pw *= outline_width;
 	is_line = !path.IsEmpty();
 	std_pen = !is_line || IsNull(outline_color)
-	|| (ghost_lines.IsEmpty() && is_solid && pw < (_info.draw -> Dots() ? 20 : 2.5) /*&& !IsNull(fill_color)*/ && !fill_pattern);
+	|| (ghost_lines.IsEmpty() && is_solid && pw < (_info.draw->Dots() ? 20 : 2.5) /*&& !IsNull(fill_color)*/ && !fill_pattern);
 	if(std_pen)
 //		|| *outline_pattern == 0 && !fill_pattern && outline_width <= 1)
 	{
@@ -1553,7 +1553,7 @@ void AreaTool::Paint()
 {
 	if(!plotter.draw)
 		return;
-	if(!(plotter.clip && plotter.draw -> GetClip()))
+	if(!(plotter.clip && plotter.draw->GetClip()))
 	{
 		Clear();
 		return;
@@ -1581,7 +1581,7 @@ void AreaTool::Paint()
 		HGDIOBJ old_brush = SelectObject(hdc, fill_pattern.GetBrush(Null, Null));
 		int old_color = SetTextColor(hdc, Black);
 		int old_bk = SetBkColor(hdc, White);
-		plotter.draw -> SetDrawPen(PEN_NULL, Black);
+		plotter.draw->SetDrawPen(PEN_NULL, Black);
 		if(counts.GetCount() == 1)
 			Polygon(*plotter.draw, (const POINT *)vertices.Begin(), vertices.GetCount());
 		else
@@ -1606,7 +1606,7 @@ void AreaTool::Paint()
 	else if(!IsNull(fill_color) || (std_pen && raw_outline_style != PEN_NULL))
 	{ // simple fill
 //		RTIMING("AreaTool::Fill(solid color)");
-		plotter.draw -> SetDrawPen(raw_outline_style, raw_outline_color);
+		plotter.draw->SetDrawPen(raw_outline_style, raw_outline_color);
 		HGDIOBJ old_brush = 0;
 		if(IsNull(fill_color))
 		{
@@ -1614,7 +1614,7 @@ void AreaTool::Paint()
 			old_brush = SelectObject(*plotter.draw, null_brush);
 		}
 		else
-			plotter.draw -> SetColor(fill_color);
+			plotter.draw->SetColor(fill_color);
 		if(counts.GetCount() == 1)
 			Polygon(*plotter.draw, (const POINT *)vertices.Begin(), vertices.GetCount());
 		else
@@ -1797,10 +1797,10 @@ void SquareMarker::Paint(Draw& draw, const Vector<Point>& pt)
 	int half = size >> 1;
 	for(const Point *ip = pt.Begin(), *ie = pt.End(); ip < ie; ip++, op += 4)
 	{
-		op[0].x = op[3].x = ip -> x - half;
-		op[0].y = op[1].y = ip -> y - half;
-		op[1].x = op[2].x = ip -> x + half;
-		op[2].y = op[3].y = ip -> y + half;
+		op[0].x = op[3].x = ip->x - half;
+		op[0].y = op[1].y = ip->y - half;
+		op[1].x = op[2].x = ip->x + half;
+		op[2].y = op[3].y = ip->y + half;
 	}
 	Vector<int> outix;
 	outix.SetCount(obj, 4);
@@ -1865,11 +1865,11 @@ void TriangleMarker::Paint(Draw& draw, const Vector<Point>& pt)
 	Point *op = outpt.Begin();
 	for(const Point *ip = pt.Begin(), *ie = pt.End(); ip < ie; ip++, op += 3)
 	{
-		op[0].x = ip -> x - half;
-		op[1].x = ip -> x + half;
-		op[0].y = op[1].y = ip -> y + half + 1;
-		op[2].x = ip -> x;
-		op[2].y = ip -> y - half;
+		op[0].x = ip->x - half;
+		op[1].x = ip->x + half;
+		op[0].y = op[1].y = ip->y + half + 1;
+		op[2].x = ip->x;
+		op[2].y = ip->y - half;
 	}
 	Vector<int> outix;
 	outix.SetCount(obj, 3);
@@ -1899,11 +1899,11 @@ void NablaMarker::Paint(Draw& draw, const Vector<Point>& pt)
 	Point *op = outpt.Begin();
 	for(const Point *ip = pt.Begin(), *ie = pt.End(); ip < ie; ip++, op += 3)
 	{
-		op[0].x = ip -> x - half;
-		op[1].x = ip -> x + half;
-		op[0].y = op[1].y = ip -> y - half;
-		op[2].x = ip -> x;
-		op[2].y = ip -> y + half + 1;
+		op[0].x = ip->x - half;
+		op[1].x = ip->x + half;
+		op[0].y = op[1].y = ip->y - half;
+		op[2].x = ip->x;
+		op[2].y = ip->y + half + 1;
 	}
 	Vector<int> outix;
 	outix.SetCount(obj, 3);
@@ -1954,12 +1954,12 @@ void CrossMarker::Paint(Draw& draw, const Vector<Point>& pt)
 	Point *op = out.Begin();
 	for(const Point *ip = pt.Begin(), *ie = pt.End(); ip < ie; ip++, op += 4)
 	{
-		op[0].x = ip -> x - half;
-		op[1].x = ip -> x + half;
-		op[0].y = op[1].y = ip -> y;
-		op[2].x = op[3].x = ip -> x;
-		op[2].y = ip -> y - half;
-		op[3].y = ip -> y + half;
+		op[0].x = ip->x - half;
+		op[1].x = ip->x + half;
+		op[0].y = op[1].y = ip->y;
+		op[2].x = op[3].x = ip->x;
+		op[2].y = ip->y - half;
+		op[3].y = ip->y + half;
 	}
 	Vector<int> seg;
 	seg.SetCount(2 * pt.GetCount(), 2);
@@ -1997,11 +1997,11 @@ void DiamondMarker::Paint(Draw& draw, const Vector<Point>& pt)
 	Point *op = out.Begin();
 	for(const Point *ip = pt.Begin(), *ie = pt.End(); ip < ie; ip++, op += 5)
 	{
-		op[0].x = ip -> x - x4; op[0].y = ip -> y + y2;
-		op[1].x = ip -> x + x4; op[1].y = ip -> y + y2;
-		op[2].x = ip -> x + x2; op[2].y = ip -> y;
-		op[3].x = ip -> x;      op[3].y = ip -> y - y2;
-		op[4].x = ip -> x - x2; op[4].y = ip -> y;
+		op[0].x = ip->x - x4; op[0].y = ip->y + y2;
+		op[1].x = ip->x + x4; op[1].y = ip->y + y2;
+		op[2].x = ip->x + x2; op[2].y = ip->y;
+		op[3].x = ip->x;      op[3].y = ip->y - y2;
+		op[4].x = ip->x - x2; op[4].y = ip->y;
 	}
 	Vector<int> seg;
 	seg.SetCount(pt.GetCount(), 5);
@@ -2039,12 +2039,12 @@ void HexagonMarker::Paint(Draw& draw, const Vector<Point>& pt)
 	Point *op = out.Begin();
 	for(const Point *ip = pt.Begin(), *ie = pt.End(); ip < ie; ip++, op += 6)
 	{
-		op[0].x = ip -> x - x4; op[0].y = ip -> y + y2;
-		op[1].x = ip -> x + x4; op[1].y = ip -> y + y2;
-		op[2].x = ip -> x + x2; op[2].y = ip -> y;
-		op[3].x = ip -> x + x4; op[3].y = ip -> y - y2;
-		op[4].x = ip -> x - x4; op[4].y = ip -> y - y2;
-		op[5].x = ip -> x - x2; op[5].y = ip -> y;
+		op[0].x = ip->x - x4; op[0].y = ip->y + y2;
+		op[1].x = ip->x + x4; op[1].y = ip->y + y2;
+		op[2].x = ip->x + x2; op[2].y = ip->y;
+		op[3].x = ip->x + x4; op[3].y = ip->y - y2;
+		op[4].x = ip->x - x4; op[4].y = ip->y - y2;
+		op[5].x = ip->x - x2; op[5].y = ip->y;
 	}
 	Vector<int> seg;
 	seg.SetCount(pt.GetCount(), 6);
@@ -2087,17 +2087,17 @@ void StarMarker::Paint(Draw& draw, const Vector<Point>& pt)
 	Point *op = out.Begin();
 	for(const Point *ip = pt.Begin(), *ie = pt.End(); ip < ie; ip++, op += 10)
 	{
-		int sy = ip -> y + dy;
-		op[0].x = ip -> x - x4; op[0].y = ip -> y + y2;
-		op[1].x = ip -> x;      op[1].y = sy      + Y2;
-		op[2].x = ip -> x + x4; op[2].y = ip -> y + y2;
-		op[3].x = ip -> x + X2; op[3].y = sy      + Y4;
-		op[4].x = ip -> x + x2; op[4].y = ip -> y - Y4;
-		op[5].x = ip -> x + X4; op[5].y = sy      - Y2;
-		op[6].x = ip -> x;      op[6].y = ip -> y - y2;
-		op[7].x = ip -> x - X4; op[7].y = sy      - Y2;
-		op[8].x = ip -> x - x2; op[8].y = ip -> y - Y4;
-		op[9].x = ip -> x - X2; op[9].y = sy      + Y4;
+		int sy = ip->y + dy;
+		op[0].x = ip->x - x4; op[0].y = ip->y + y2;
+		op[1].x = ip->x;      op[1].y = sy      + Y2;
+		op[2].x = ip->x + x4; op[2].y = ip->y + y2;
+		op[3].x = ip->x + X2; op[3].y = sy      + Y4;
+		op[4].x = ip->x + x2; op[4].y = ip->y - Y4;
+		op[5].x = ip->x + X4; op[5].y = sy      - Y2;
+		op[6].x = ip->x;      op[6].y = ip->y - y2;
+		op[7].x = ip->x - X4; op[7].y = sy      - Y2;
+		op[8].x = ip->x - x2; op[8].y = ip->y - Y4;
+		op[9].x = ip->x - X2; op[9].y = sy      + Y4;
 	}
 	Vector<int> seg;
 	seg.SetCount(pt.GetCount(), 10);
@@ -2188,7 +2188,7 @@ void LetterMarker::Paint(Draw& draw, const Vector<Point>& pt)
 						  OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
 						  DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE,
 						  raw_font.GetFaceName());
-	draw -> BeginGdi();
+	draw->BeginGdi();
 	old_font = (HFONT)SelectObject(*draw, new_font);
 */
 //	Size size;
@@ -2270,8 +2270,8 @@ One<MarkTool::Marker> MarkTool::StandardMarker(int type, int size, Color color, 
 }
 
 MarkTool::MarkTool()
-: PutRaw(0)
 {
+	PutRaw = &MarkTool::PutDummy;
 }
 
 MarkTool::~MarkTool() {}
@@ -2279,15 +2279,14 @@ MarkTool::~MarkTool() {}
 void MarkTool::Set(const Plotter& info, One<Marker> _marker)
 {
 	marker = _marker;
-	size = marker -> GetSize();
+	size = marker->GetSize();
 	plotter.Set(info, size);
 	Clear();
 }
 
 bool MarkTool::SetExtent(const Rectf& rc)
 {
-	if(plotter.IntersectsLClip(rc))
-	{
+	if(plotter.IntersectsLClip(rc)) {
 		Rectf crc = plotter.LtoP(rc);
 		if(plotter.InPClip(crc))
 			PutRaw = &MarkTool::PutSimple;
@@ -2314,9 +2313,8 @@ void MarkTool::Paint()
 
 void MarkTool::Flush()
 {
-	if(!vertices.IsEmpty())
-	{
-		marker -> Paint(*plotter.draw, vertices);
+	if(!vertices.IsEmpty()) {
+		marker->Paint(*plotter.draw, vertices);
 		vertices.Clear();
 	}
 }
@@ -2326,6 +2324,8 @@ void MarkTool::Clear()
 	vertices.Clear();
 	ClearExtent();
 }
+
+void MarkTool::PutDummy(Pointf pt) {}
 
 void MarkTool::PutSimple(Pointf pt)
 {
@@ -2441,7 +2441,7 @@ void TextTool::Put(const String& text, Pointf pt, double angle)
 	if(apart)
 		offset = Rotated(offset, (-2 * M_PI * apart) / angle_prec);
 	One<Item> item = new Item(PointfToPoint(pos + offset), text, color, outline);
-	int sz = item -> GetSize();
+	int sz = item->GetSize();
 	if(cache_size + sz > CACHE_LIMIT) // flush
 		Paint();
 	cache_size += sz;

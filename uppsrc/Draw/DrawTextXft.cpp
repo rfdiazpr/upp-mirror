@@ -111,7 +111,7 @@ void Draw::InitPlatformFonts()
 			f.compose = sCheckComposed((char *)family);
 		}
 	}
-	static const char *replacements[] = {
+/*	static const char *replacements[] = {
 		"Bitstream Vera Sans",
 		"Times New Roman;Bitstream Vera Serif",
 		"Bitstream Vera Sans;Arial",
@@ -128,7 +128,7 @@ void Draw::InitPlatformFonts()
 				XFTFontFace()[i].compose = sCheckComposed(basic_fonts[i]);
 				break;
 			}
-	}
+	}*/
 	FcFontSetDestroy(fs);
 }
 
@@ -183,7 +183,7 @@ XftFont *Draw::CreateXftFont(Font font, int angle)
 		                      XFT_SLANT, XftTypeInteger, int(font.IsItalic() ? 110 : 0),
 		                      XFT_PIXEL_SIZE, XftTypeInteger, hg,
 		                      XFT_MATRIX, XftTypeMatrix, &mx,
-		                      XFT_WEIGHT, XftTypeInteger, int(font.IsBold() ? 200 : 0),
+		                      XFT_WEIGHT, XftTypeInteger, int(font.IsBold() ? 200 : 100),
 		                      XFT_ANTIALIAS, XftTypeBool, FcBool(!font.IsNonAntiAliased()),
 		                      XFT_MINSPACE, XftTypeBool, (FcBool)1,
 		                      (void *)0);
@@ -193,7 +193,7 @@ XftFont *Draw::CreateXftFont(Font font, int angle)
 		                      XFT_FAMILY, XftTypeString, face,
 		                      XFT_SLANT, XftTypeInteger, int(font.IsItalic() ? 110 : 0),
 		                      XFT_PIXEL_SIZE, XftTypeInteger, hg,
-		                      XFT_WEIGHT, XftTypeInteger, int(font.IsBold() ? 200 : 0),
+		                      XFT_WEIGHT, XftTypeInteger, int(font.IsBold() ? 200 : 100),
 		                      XFT_ANTIALIAS, XftTypeBool, FcBool(!font.IsNonAntiAliased()),
 		                      XFT_MINSPACE, XftTypeBool, (FcBool)1,
 	                          (void *)0);

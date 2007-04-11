@@ -53,6 +53,7 @@ protected:
 	Color           nullink;
 	int             maxlen;
 	int             autosize;
+	byte            charset;
 
 	bool       password:1;
 	bool       autoformat:1;
@@ -119,6 +120,7 @@ public:
 	EditField& SetConvert(const Convert& c)  { convert = &c; return *this; }
 	EditField& AutoFormat(bool b = true)     { autoformat = b; return *this; }
 	EditField& NoAutoFormat()                { return AutoFormat(false); }
+	EditField& SetCharset(byte cs)           { charset = cs; return *this; }
 	EditField& SetFont(Font _font);
 	EditField& ClickSelect(bool b = true)    { clickselect = b; return *this; }
 	EditField& InitCaps(bool b = true)       { initcaps = b; return *this; }

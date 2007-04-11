@@ -134,16 +134,16 @@ public:
 	void   SetRoot(const Image& img, Value v);
 	void   SetRoot(const Image& img, Value v, Value t);
 	void   SetRoot(const Image& img, Ctrl& ctrl, int cx = 0, int cy = 0);
-	int    Insert(int parent, int i, const Node& n);
-	int    Insert(int parent, int i);
-	int    Insert(int parent, int i, const Image& img, Value value, bool withopen = false);
-	int    Insert(int parent, int i, const Image& img, Value key, Value value, bool withopen = false);
-	int    Insert(int parent, int i, const Image& img, Ctrl& c, int cx = 0, int cy = 0, bool wo = false);
-	int    Add(int parent, const Node& n);
-	int    Add(int parent);
-	int    Add(int parent, const Image& img, Value value, bool withopen = false);
-	int    Add(int parent, const Image& img, Value key, Value value, bool withopen = false);
-	int    Add(int parent, const Image& img, Ctrl& ctrl, int cx = 0, int cy = 0, bool withopen = false);
+	int    Insert(int parentid, int i, const Node& n);
+	int    Insert(int parentid, int i);
+	int    Insert(int parentid, int i, const Image& img, Value value, bool withopen = false);
+	int    Insert(int parentid, int i, const Image& img, Value key, Value value, bool withopen = false);
+	int    Insert(int parentid, int i, const Image& img, Ctrl& c, int cx = 0, int cy = 0, bool wo = false);
+	int    Add(int parentid, const Node& n);
+	int    Add(int parentid);
+	int    Add(int parentid, const Image& img, Value value, bool withopen = false);
+	int    Add(int parentid, const Image& img, Value key, Value value, bool withopen = false);
+	int    Add(int parentid, const Image& img, Ctrl& ctrl, int cx = 0, int cy = 0, bool withopen = false);
 	void   Remove(int id);
 	void   RemoveChildren(int id);
 

@@ -2,12 +2,12 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x)  // LOG(x)
+#define LLOG(x)   // DLOG(x)
 
 void  Ctrl::AddChild(Ctrl *q, Ctrl *p)
 {
 	ASSERT(q);
-	LLOG("Add " << ::Name(q) << " to: " << Name());
+	LLOG("Add " << UPP::Name(q) << " to: " << Name());
 	if(p == q) return;
 	bool updaterect = true;
 	if(q->parent) {
@@ -112,7 +112,7 @@ bool Ctrl::HasChildDeep(Ctrl *q) const
 
 static bool IterateFocusFw(Ctrl *ctrl, bool noframe, bool init, bool all)
 {
-	LLOG("IterateFocusFw(" << ::Name(ctrl) << ")");
+	LLOG("IterateFocusFw(" << UPP::Name(ctrl) << ")");
 	while(ctrl) {
 		if(ctrl->IsOpen() && ctrl->IsVisible() && ctrl->IsEnabled()) {
 			if(!(noframe && ctrl->InFrame())) {
@@ -133,7 +133,7 @@ static bool IterateFocusFw(Ctrl *ctrl, bool noframe, bool init, bool all)
 
 bool Ctrl::IterateFocusForward(Ctrl *ctrl, Ctrl *top, bool noframe, bool init, bool all)
 {
-	LLOG("IterateFocusForward(" << ::Name(ctrl) << ", top " << ::Name(top) << ", noframe " << noframe << ", init " << init << ")");
+	LLOG("IterateFocusForward(" << UPP::Name(ctrl) << ", top " << UPP::Name(top) << ", noframe " << noframe << ", init " << init << ")");
 	if(!ctrl) return false;
 	if(IterateFocusFw(ctrl->GetFirstChild(), noframe, init, all))
 		return true;

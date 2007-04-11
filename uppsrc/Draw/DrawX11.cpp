@@ -7,9 +7,11 @@
 #define Display XDisplay
 #define Picture XPicture
 
+#ifndef flagNOGTK
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 #include <gdk/gdkprivate.h>
+#endif
 
 #undef Picture
 #undef Time

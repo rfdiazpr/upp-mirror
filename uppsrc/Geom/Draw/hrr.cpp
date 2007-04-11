@@ -712,6 +712,28 @@ HRR::HRR(const char *path, bool read_only)
 	Open(path, read_only);
 }
 
+One<StreamRaster> HRR::StdCreateDecoder(const HRRInfo& info)
+{
+	switch(info.GetMethod()) {
+		case HRRInfo::METHOD_GIF: return new GIFRaster;
+		case HRRInfo::METHOD_PNG: return new PNGRaster;
+		case HRRInfo::METHOD_JPG: return new JPGRaster;
+//		case HRRInfo::METHOD_BMP: return new BMPRaster;
+	}
+	return NULL;
+}
+
+One<StreamRasterEncoder> HRR::StdCreateEncoder(const HRRInfo& info)
+{
+	switch(info.GetMethod()) {
+		case HRRInfo::METHOD_GIF: return new GIFEncoder;
+		case HRRInfo::METHOD_PNG: return new PNGEncoder;
+		case HRRInfo::METHOD_JPG: return new JPGEncoder(info.GetQuality());
+//		case HRRInfo::METHOD_BMP: return new BMPEncoder;
+	}
+	return NULL;
+}
+
 bool HRR::Open(const char *path, bool read_only)
 {
 	Close();
@@ -748,7 +770,7 @@ inline static int GetImageSize(const Image& im) { return GetImageSize(im.GetSize
 
 void HRR::FlushCache(int limit)
 {
-	while(cache_sizeof > cache_sizeof_limit && !image_cache.IsEmpty()) {
+	while(!image_cache.IsEmpty() && cache_sizeof > limit) {
 		cache_sizeof -= GetImageSize(image_cache[0]);
 		image_cache.Remove(0);
 	}
@@ -822,6 +844,163 @@ void HRR::Paint(Draw& draw, Rect dest, Rectf src,
 	Paint(draw, MatrixfScale(src, dest), Null, alpha, max_pixel, mono_black, mono_white, blend_bgnd);
 	draw.End();
 	LLOG(EndIndent << "// HRR::Paint");
+}
+
+HRR::Cursor::Cursor(HRR& owner_, const Rectf& extent_, double measure_,
+	int alpha_, Color mono_black_, Color mono_white_, Color blend_bgnd_)
+: owner(owner_)
+, extent(extent_)
+, measure(measure_)
+, alpha(alpha_)
+, mono_black(mono_black_)
+, mono_white(mono_white_)
+, blend_bgnd(blend_bgnd_)
+{
+	bool use_pixel = (IsNull(mono_black) && IsNull(mono_white));
+
+	if(owner.info.IsMono() && use_pixel) {
+		mono_black = owner.info.GetMonoBlack();
+		mono_white = owner.info.GetMonoWhite();
+		use_pixel = (IsNull(mono_black) && IsNull(mono_white));
+		if(use_pixel) {
+			LLOG(EndIndent << "//HRR::Paint, null color, empty case");
+			return;
+		}
+	}
+
+//	bool use_bg = (alpha < 100 && IsNull(blend_bgnd) || do_transform);
+//	bool use_alpha = !use_pixel || IsNull(info.background);
+	bool is_bw = (!IsNull(mono_black) && !IsNull(mono_white));
+//	bool out_pixel = (use_pixel || is_bw);
+//	bool out_alpha = (use_pixel ? IsNull(info.background) : !is_bw);
+
+//	LLOG("[" << StopMsec(ticks) << "] use_bg = " << use_bg << ", use_pixel = " << use_pixel << ", use_alpha = " << use_alpha
+//		<< ", is_bw = " << is_bw << ", out_pixel = " << out_pixel << ", out_alpha = " << out_alpha);
+
+	double r = HRRInfo::UNIT / owner.info.GetMapRect().Width();
+//	if(draw.Dots())
+//		r /= 5; // ad hoc conversion from screen space to dot resolution
+	level = 0;
+	for(; level < owner.info.GetLevels() - 1 && r < measure; r *= 2, level++)
+		;
+//	DUMP(level);
+
+	if(!IsNull(mono_black))
+		mono_black = BlendColor(mono_black, alpha, Nvl(owner.info.GetBackground(), White));
+	if(!IsNull(mono_white))
+		mono_white = BlendColor(mono_white, alpha, Nvl(owner.info.GetBackground(), White));
+
+	// calculate interest area in Q-tree blocks
+	total = 1 << level;
+	Rectf blocks = (extent - owner.info.GetMapRect().BottomLeft()) / owner.info.GetMapRect().Size() * double(total);
+	rc = Rect(ffloor(blocks.left), ffloor(-blocks.bottom), fceil(blocks.right), fceil(-blocks.top));
+	rc &= Rect(0, 0, total, total);
+
+	// prepare clipping & image loader
+	if(!owner.info.IsMono()) {
+		raster = CreateDecoder(owner.info);
+		if(!raster) {
+			LLOG(EndIndent << "//HRR:x: decoder not found, exiting");
+			return;
+		}
+	}
+
+	// adjust transform parameters to convert from Q-tree space to device coords
+//	delta += info.map_rect.BottomLeft() * scale;
+//	scale *= Sizef(1, -1) * info.map_rect.Size() / double(1 << level);
+
+#ifdef _DEBUG
+//	int ti = 0;
+#endif
+
+	block = rc.TopLeft();
+	block.x--;
+}
+
+bool HRR::Cursor::Fetch(Rectf& part)
+{
+	for(;;) {
+		if(++block.x >= rc.right) {
+			block.x = rc.left;
+			if(++block.y >= rc.bottom)
+				return false;
+		}
+		LLOG("[" << StopMsec(ticks) << "] block = [" << x << ", " << y << "]");
+		int pixel_offset = owner.pixel_directory[level][block.x + block.y * total];
+		int mask_offset = owner.mask_directory[level][block.x + block.y * total];
+		int coff;
+		if(pixel_offset)
+			coff = pixel_offset;
+		else if(mask_offset)
+			coff = -mask_offset;
+		else
+			continue;
+		int cimg = -1;
+		if((cimg = owner.image_cache.Find(coff)) < 0) {
+			ImageBuffer new_image;
+			if(pixel_offset) {
+				owner.stream.Seek(Unpack64(pixel_offset));
+				new_image = raster->Load(owner.stream);
+				if(new_image.IsEmpty()) {
+					RLOG(NFormat("Failed to load block [%d, %d].", block.x, block.y));
+					continue;
+				}
+//				PixelSetConvert(new_image.pixel, -3);
+			}
+			if(mask_offset) {
+				owner.stream.Seek(Unpack64(mask_offset));
+				int len = owner.stream.GetIL();
+				String data;
+				ASSERT(len >= 0 && len < HRRInfo::UNIT * (HRRInfo::UNIT + 1) + 1);
+				owner.stream.Get(data.GetBuffer(len), len);
+				data.ReleaseBuffer(len);
+				if(owner.version < 5) {
+					Size sz(0, 0);
+					if(cimg >= 0)
+						sz = new_image.GetSize();
+					else if(pixel_offset) {
+						int csize = owner.size_cache.Find(pixel_offset);
+						if(csize < 0) {
+							if(owner.size_cache.GetCount() >= 10000)
+								owner.size_cache.Clear();
+							int64 pixpos = Unpack64(pixel_offset);
+							if(pixpos > owner.stream.GetSize())
+								owner.stream.SetSize(pixpos);
+	//								stream.Seek(pixpos);
+							csize = owner.size_cache.GetCount();
+	//								Stream64Stream pixel_stream(stream, pixpos);
+							owner.stream.Seek(pixpos);
+							raster->Open(owner.stream);
+							owner.size_cache.Add(pixel_offset, raster->GetSize());
+						}
+						sz = owner.size_cache[csize];
+					}
+					if(sz.cx <= 0 || sz.cy <= 0)
+						continue;
+//					new_image.alpha = PixelArray::Mono(sz);
+				}
+				DecodeMask(new_image, data, owner.version >= 5);
+			}
+			int new_len = new_image.GetLength() * sizeof(RGBA);
+			owner.FlushCache(owner.cache_sizeof_limit - new_len);
+			owner.cache_sizeof += new_len;
+			cimg = owner.image_cache.GetCount();
+			owner.image_cache.Add(coff, new_image);
+		}
+		if(cimg >= 0) {
+			part = owner.GetLogBlockRect(level, RectC(block.x, block.y, 1, 1));
+			Size sz = owner.image_cache[cimg].GetSize();
+			part.right = part.left + part.Width() * sz.cx / HRRInfo::UNIT;
+			part.top = part.bottom - part.Height() * sz.cy / HRRInfo::UNIT;
+			return true;
+		}
+	}
+}
+
+Image HRR::Cursor::Get()
+{
+	ASSERT(cimg >= 0);
+	return owner.image_cache[cimg];
 }
 
 void HRR::Paint(Draw& draw, const Matrixf& trg_pix, GisTransform transform,
@@ -1440,26 +1619,6 @@ void HRR::FlushMap()
 int HRR::SizeOfInstance() const
 {
 	return sizeof(*this) + directory_sizeof + cache_sizeof;
-}
-
-One<StreamRaster> HRR::StdCreateDecoder(const HRRInfo& info)
-{
-	switch(info.GetMethod()) {
-		case HRRInfo::METHOD_GIF: return new GIFRaster;
-		case HRRInfo::METHOD_JPG: return new JPGRaster;
-		case HRRInfo::METHOD_PNG: return new PNGRaster;
-		default: return NULL;
-	}
-}
-
-One<StreamRasterEncoder> HRR::StdCreateEncoder(const HRRInfo& info)
-{
-	switch(info.GetMethod()) {
-		case HRRInfo::METHOD_GIF: return new GIFEncoder;
-		case HRRInfo::METHOD_JPG: return new JPGEncoder(info.quality);
-		case HRRInfo::METHOD_PNG: return new PNGEncoder;
-		default: return NULL;
-	}
 }
 
 END_UPP_NAMESPACE

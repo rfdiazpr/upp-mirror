@@ -8,6 +8,8 @@ To do
 - fix selecting proper column index during moiving columns when some columns are hidden
 - optimized version of SyncCtrls (yep, over 1000 rows there are performance problems)
 
+- merged cells
+
 Done
 ---------------------------------
 
@@ -42,7 +44,4 @@ gdy np sa dwie pierwsze wiersze w trybie read-only i nizej jest aktywna kontrolk
 to kursor nie zmienia pozycji (bo tam gdzie chce skoczyc jest read-only) a powinien sie ustawic na pierwszej edytowalnej
 komorce
 
-przenoszenie kolumn, nie widac niebieskiej kreski na pierwszej kolumnie, powinna ona byc rysowana na koncu komorki
-a nie na jej poczatku
-
-przenoszenie kolumn, gdy toolbar jest na gorze przeciagana komorka jest wyzej od kursora myszki wlasnie o wysokosc toolbara
+double click na kolumnie z checkboxem w row edit mode powoduje dziwne rzeczy.

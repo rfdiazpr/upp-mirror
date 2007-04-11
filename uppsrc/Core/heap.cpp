@@ -59,10 +59,9 @@ int   sLarge;
 
 MemoryProfile *sPeak;
 
-void MemorySum(int& smallkb, int& largekb)
+int MemoryUsedKb()
 {
-	smallkb = sSmallKb;
-	largekb = (int) (sLarge >> 10);
+	return sSmallKb + (int) (sLarge >> 10);
 }
 
 MemoryProfile *PeakMemoryProfile()

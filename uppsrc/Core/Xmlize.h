@@ -32,6 +32,18 @@ public:
 		return *this;
 	}
 
+	template <class T> XmlIO Attr(const char *id, T& var, T def) {
+		if(IsLoading())
+		    if(IsNull(node.Attr(id)))
+				var = def;
+		    else
+				XmlAttrLoad(var, node.Attr(id));
+		else
+		if(var != def)
+			node.SetAttr(id, XmlAttrStore(var));
+		return *this;
+	}
+
 	XmlIO At(int i)                                    { XmlIO m(node.At(i), IsLoading()); return m; }
 	XmlIO Add()                                        { XmlIO m(node.Add(), IsLoading()); return m; }
 	XmlIO Add(const char *id)                          { XmlIO m(node.Add(id), IsLoading()); return m; }

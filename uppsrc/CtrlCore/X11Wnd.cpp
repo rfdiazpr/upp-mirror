@@ -11,13 +11,15 @@ NAMESPACE_UPP
 #ifdef _DEBUG
 
 
-bool Ctrl::LogMessages = false;
+bool Ctrl::LogMessages
+= false
+;
 #endif
 
-#define LLOG(x)     // LOG(x)
-#define LTIMING(x)  // RTIMING(x)
-#define LDUMP(x)    // RDUMP(x)
-#define LDUMPC(x)   // RDUMPC(x)
+#define LLOG(x)      // LOG(x)
+#define LTIMING(x)   // RTIMING(x)
+#define LDUMP(x)     // RDUMP(x)
+#define LDUMPC(x)    // RDUMPC(x)
 
 // #define SYNCHRONIZE
 
@@ -46,6 +48,8 @@ int       Ctrl::Xbuttons;
 Window    Ctrl::grabWindow, Ctrl::focusWindow;
 int       Ctrl::Xeventtime;
 
+int       Ctrl::PopupGrab;
+Ptr<Ctrl> Ctrl::popupWnd;
 
 Point     Ctrl::mousePos;
 
@@ -175,7 +179,11 @@ void Ctrl::ProcessEvent(XEvent *event)
 				break;
 			}
 #endif
-	if(q < 0) return;
+	if(q < 0) {
+		if(event->type == ButtonRelease && popupWnd)
+			popupWnd->SetFocus();
+		return;
+	}
 	XWindow& w = xmap[q];
 	if(w.ctrl) {
 		w.ctrl->EventProc(w, event);
@@ -311,7 +319,8 @@ void Ctrl::Create(Ctrl *owner, bool redirect, bool savebits)
 {
 	LLOG("Create " << Name() << " " << GetRect());
 	ASSERT(!IsChild() && !IsOpen());
-	XUngrabPointer(Xdisplay, CurrentTime);
+	LLOG("Ungrab1");
+	ReleaseGrab();
 	XSetWindowAttributes swa;
 	swa.bit_gravity = ForgetGravity;
 	swa.background_pixmap = None;
@@ -392,11 +401,38 @@ Vector<Ctrl *> Ctrl::GetTopCtrls()
 	return v;
 }
 
+void Ctrl::StartPopupGrab()
+{
+	if(PopupGrab == 0) {
+		if(!top) return;
+		if(XGrabPointer(
+			Xdisplay, top->window, true,
+			ButtonPressMask|ButtonReleaseMask|PointerMotionMask|EnterWindowMask|LeaveWindowMask,
+			GrabModeAsync, GrabModeAsync, None, None, CurrentTime) == GrabSuccess) {
+				PopupGrab++;
+				popupWnd = GetTopWindow();
+			}
+	}
+}
+
+void Ctrl::EndPopupGrab()
+{
+	if(PopupGrab == 0) return;
+	if(--PopupGrab == 0) {
+		XUngrabPointer(Xdisplay, CurrentTime);
+		XFlush(Xdisplay);
+	}
+}
+
 void Ctrl::PopUp(Ctrl *owner, bool savebits, bool activate, bool, bool)
 {
 	Ctrl *q = owner ? owner->GetTopCtrl() : GetActiveCtrl();
 	ignoretakefocus = true;
 	Create(q, true, savebits);
+	if(activate) {
+		q->StartPopupGrab();
+		popupgrab = true;
+	}
 	if(top) popup = true;
 	WndShow(visible);
 	if(activate && IsEnabled())
@@ -501,13 +537,21 @@ bool Ctrl::HasWndCapture() const
 	return top && top->window == grabWindow;
 }
 
+void Ctrl::ReleaseGrab()
+{
+	if(grabWindow) {
+		XUngrabPointer(Xdisplay, CurrentTime);
+		XFlush(Xdisplay);
+		grabWindow = None;
+	}
+}
+
 bool Ctrl::ReleaseWndCapture()
 {
 	LLOG("Releasing capture");
 	if(top && top->window == grabWindow) {
-		XUngrabPointer(Xdisplay, CurrentTime);
-		XFlush(Xdisplay);
-		grabWindow = None;
+		LLOG("Ungrab3");
+		ReleaseCapture();
 		return true;
 	}
 	return false;
@@ -585,7 +629,7 @@ void Ctrl::TakeFocus()
 			LLOG("Activate of disabled window" << Name());
 			if(w->last_active && w->last_active->IsOpen() && w->last_active->IsEnabled() &&
 			   w->last_active != this) {
-				LLOG("    activating last active: " << ::Name(w->last_active));
+				LLOG("    activating last active: " << UPP::Name(w->last_active));
 				w->last_active->TakeFocus();
 			}
 		}

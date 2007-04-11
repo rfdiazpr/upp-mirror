@@ -35,7 +35,7 @@ public:
 	void     Pick(pick_ Document& _doc);
 
 	int      GetHeight(int cx) const;
-	int      GetWidth() const                      { return doc.GetWidth(zoom, ScreenInfo()); }
+	int      GetWidth() const                      { return doc.GetWidth(zoom); }
 
 	const Vector<ValueRect>& GetValueRects() const { return valuerect; }
 	int      GetSb() const                         { return sb; }

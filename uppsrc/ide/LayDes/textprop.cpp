@@ -136,9 +136,9 @@ String LTProperty::Save() const
 template <class Editor>
 struct TextEditProperty : public LTProperty {
 	virtual Value    GetData() const                { return Get(); }
-
-	virtual void     Set(const WString& s)          { editor <<= s; }
 	virtual WString  Get() const                    { return ~editor; }
+	virtual void     Set(const WString& text)       { editor <<= text; }
+
 	virtual bool     PlaceFocus(dword k, int c)     { editor.SetFocus(); return editor.Key(k, c); }
 
 protected:
@@ -156,26 +156,11 @@ protected:
 	}
 };
 
-struct TextProperty : public TextEditProperty<EditString>
-{
-	virtual int      GetHeight() const {
-		return 2 * EditField::GetStdHeight() + 6;
-	}
-
-	TextProperty() {
-		Add(editor.HSizePos(100, 2).TopPos(2));
-		editor.SetConvert(*this);
-	}
-
-	static ItemProperty *Create() { return new TextProperty; }
-};
-
-struct DocProperty : public TextEditProperty<DocEdit>
-{
-	Button  large;
-
+template <class Editor>
+struct SmartTextEditProperty : public TextEditProperty<Editor> {
+	typedef TextEditProperty<Editor> B;
 	virtual WString  Get() const {
-		WString text = editor.GetW();
+		WString text = ~B::editor;
 		WString r;
 		for(const wchar *s = text; *s; s++) {
 			if(*s == '\\' && s[1] == '1') {
@@ -205,9 +190,29 @@ struct DocProperty : public TextEditProperty<DocEdit>
 			if(*s == '\n' || *s >= ' ')
 				r.Cat(*s);
 		}
-		editor.SetCharset(charset);
-		editor <<= r;
+		B::editor.SetCharset(B::charset);
+		B::editor <<= r;
 	}
+};
+
+struct TextProperty : public SmartTextEditProperty<EditString>
+{
+	virtual int      GetHeight() const {
+		return 2 * EditField::GetStdHeight() + 6;
+	}
+
+	TextProperty() {
+		Add(editor.HSizePos(100, 2).TopPos(2));
+		editor.SetConvert(*this);
+	}
+
+	static ItemProperty *Create() { return new TextProperty; }
+};
+
+struct DocProperty : public SmartTextEditProperty<DocEdit>
+{
+	Button  large;
+
 	virtual int      GetHeight() const {
 		return EditField::GetStdHeight() + 6 + 120 + 1;
 	}
@@ -250,7 +255,7 @@ struct QtfProperty : public TextEditProperty<RichTextView>
 {
 	Button  large;
 
-	virtual int    GetHeight() const       { return EditField::GetStdHeight() + 6 + 120 + 1; }
+	virtual int    GetHeight() const           { return EditField::GetStdHeight() + 6 + 120 + 1; }
 
 	void LargeEdit();
 

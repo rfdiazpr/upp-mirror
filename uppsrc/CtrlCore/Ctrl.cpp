@@ -518,6 +518,7 @@ Ctrl::Ctrl() {
 	inloop = popup = isopen = false;
 	modify = false;
 	unicode = false;
+	popupgrab = false;
 }
 
 void KillTimeCallbacks(void *id, void *idlim);
@@ -529,6 +530,12 @@ void Ctrl::DoRemove() {
 	if(HasChildDeep(mouseCtrl) || mouseCtrl == this)
 		mouseCtrl = NULL;
 	LLOG("DoRemove " << Name() << " focusCtrl: " << ::Name(focusCtrl) << BeginIndent);
+#ifdef PLATFORM_X11
+	if(popupgrab) {
+		EndPopupGrab();
+		popupgrab = false;
+	}
+#endif
 	if(HasFocusDeep()) {
 		LLOG("DoRemove - HasFocusDeep");
 		if(destroying) {

@@ -4,6 +4,8 @@
 #include <plugin/gif/gif.h>
 #ifdef PLATFORM_WIN32
 #include <wincon.h>
+#else
+#include <signal.h>
 #endif
 
 using namespace Upp;
@@ -21,10 +23,9 @@ static BOOL WINAPI ControlBreak(DWORD reason)
 }
 #endif
 #ifdef PLATFORM_POSIX
-static int SignalHandler()
+static void SignalHandler(int signal)
 {
 	canceled = true;
-	return 1;
 }
 #endif
 
@@ -36,6 +37,7 @@ CONSOLE_APP_MAIN
 #ifdef PLATFORM_POSIX
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGKILL, &SignalHandler);
+	InitX11Draw();
 #endif
 
 	HttpServer server;

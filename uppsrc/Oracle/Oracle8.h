@@ -2,7 +2,9 @@
 #define ORACLE8_H
 
 #include <Sql/Sql.h>
+
 #include "OraCommon.h"
+#include "OciCommon.h"
 
 NAMESPACE_UPP
 
@@ -10,18 +12,26 @@ NAMESPACE_UPP
 #define __STDC__ 1
 #endif
 
-//#define dword _dword
-//#include <oci.h>
-//#undef dword
-
-// selected definitions from OCI headers
+// selected definitions from OCI 8 headers
 struct OCIEnv;
 struct OCIServer;
 struct OCISession;
 struct OCISvcCtx;
 struct OCIError;
 struct OCILobLocator;
-//
+
+#define DLLFILENAME "oci.dll"
+#define DLIMODULE   OCI8
+#define DLIHEADER   <Oracle/Oci8.dli>
+#include <Core/dli_header.h>
+
+void OCI8SetDllPath(String oci8_path, T_OCI8& oci8 = OCI8());
+
+//#define dword _dword
+//#include <oci.h>
+//#undef dword
+
+class OCI8Connection;
 
 class Oracle8 : public SqlSession {
 public:
@@ -33,7 +43,6 @@ public:
 	virtual void                  RollbackTo(const String& savepoint);
 
 	virtual bool                  IsOpen() const;
-	virtual int                   GetDialect() const            { return ORACLE; }
 
 	virtual RunScript             GetRunScript() const          { return &OraclePerformScript; }
 
@@ -45,6 +54,9 @@ public:
 	virtual Vector<String>        EnumPrimaryKey(String database, String table);
 	virtual String                EnumRowID(String database, String table);
 	virtual Vector<String>        EnumReservedWords();
+
+public:
+	T_OCI8&              oci8;
 
 protected:
 	virtual SqlConnection *CreateConnection();
@@ -85,7 +97,7 @@ public:
 	};
 
 	void    SetTransactionMode(int mode)            { tmode = mode; }
-	Oracle8();
+	Oracle8(T_OCI8& oci8 = OCI8());
 	~Oracle8();
 };
 
@@ -120,7 +132,6 @@ public:
 #ifdef text
 #undef text
 #endif
-
 END_UPP_NAMESPACE
 
 #endif

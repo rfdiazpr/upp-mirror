@@ -187,6 +187,17 @@ void ScrollBar::Drag(Point p) {
 
 void ScrollBar::LeftDown(Point p, dword) {
 	push = GetMousePart();
+	LLOG("ScrollBar::LeftDown(" << p << ")");
+	LLOG("MousePos = " << GetMousePos() << ", ScreenView = " << GetScreenView()
+	<< ", rel. pos = " << (GetMousePos() - GetScreenView().TopLeft()));
+	LLOG("GetWorkArea = " << GetWorkArea());
+	LLOG("VisibleScreenView = " << GetVisibleScreenView());
+	LLOG("PartRect(0) = " << GetPartRect(0));
+	LLOG("PartRect(1) = " << GetPartRect(1));
+	LLOG("PartRect(2) = " << GetPartRect(2));
+	LLOG("ScrollBar::LeftDown: mousepart = " << (int)push << ", rect = " << GetPartRect(push)
+		<< ", overthumb = " << style->overthumb << ", slider = " << Slider());
+	LLOG("thumbpos = " << thumbpos << ", thumbsize = " << thumbsize);
 	if(push == 2)
 		delta = GetHV(p.x, p.y) - thumbpos;
 	else {
@@ -463,7 +474,7 @@ void ScrollBar::FrameLayout(Rect& r)
 
 void ScrollBar::FrameAddSize(Size& sz)
 {
-	(IsHorz() ? sz.cx : sz.cy) += ScrollBarSize();
+	(IsHorz() ? sz.cy : sz.cx) += ScrollBarSize();
 }
 
 Size ScrollBar::GetViewSize() const {
@@ -568,8 +579,10 @@ void SizeGrip::LeftDown(Point p, dword flags)
 	if(!q || q->IsMaximized() || !q->IsSizeable()) return;
 #ifdef PLATFORM_WIN32
 	HWND hwnd = q->GetHWND();
-	if(hwnd)
+	if(hwnd) {
 		::SendMessage(hwnd, WM_SYSCOMMAND, 0xf008, MAKELONG(p.x, p.y));
+		::SendMessage(hwnd, WM_LBUTTONUP, 0, MAKELONG(p.x, p.y));
+	}
 #endif
 #ifdef PLATFORM_X11
 	if(_NET_Supported().Find(XAtom("_NET_WM_MOVERESIZE")) >= 0) {

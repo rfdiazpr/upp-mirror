@@ -38,7 +38,7 @@ void DrawTextEllipsis(Draw& w, int x, int y, int cx, const char *text, const cha
 	DrawTextEllipsis(w, x, y, cx, WString(text), ellipsis, font, ink, n);
 }
 
-Size GetTLTextSize(Draw& draw, const wchar *text, Font font)
+Size GetTLTextSize(const wchar *text, Font font)
 {
 	Size sz(0, 0);
 	int cy = font.Info().GetHeight();
@@ -68,7 +68,12 @@ Size GetTLTextSize(Draw& draw, const wchar *text, Font font)
 	return sz;
 }
 
-int GetTLTextHeight(Draw& w, const wchar *s, Font font)
+Size GetTLTextSize(Draw&, const wchar *text, Font font)
+{
+	return GetTLTextSize(text, font);
+}
+
+int GetTLTextHeight(const wchar *s, Font font)
 {
 	int cy = font.Info().GetHeight();
 	int h = cy;
@@ -78,6 +83,11 @@ int GetTLTextHeight(Draw& w, const wchar *s, Font font)
 		s++;
 	}
 	return h;
+}
+
+int GetTLTextHeight(Draw&, const wchar *s, Font font)
+{
+	return GetTLTextHeight(s, font);
 }
 
 void DrawTLText(Draw& draw, int x, int y, int cx, const wchar *text,

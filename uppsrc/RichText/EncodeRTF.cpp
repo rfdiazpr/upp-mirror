@@ -245,11 +245,11 @@ void RTFEncoder::PutObject(const RichObject& object)
 	object.Paint(wmd, log_size);
 	WinMetaFile wmf = wmd.Close();
 	HENHMETAFILE hemf = wmf.GetHEMF();
-	int size = GetWinMetaFileBits(hemf, 0, 0, MM_ANISOTROPIC, ScreenInfo());
+	int size = GetWinMetaFileBits(hemf, 0, 0, MM_ANISOTROPIC, ScreenHDC());
 	if(size > 0)
 	{
 		Buffer<byte> buffer(size);
-		GetWinMetaFileBits(hemf, size, buffer, MM_ANISOTROPIC, ScreenInfo());
+		GetWinMetaFileBits(hemf, size, buffer, MM_ANISOTROPIC, ScreenHDC());
 		enum { BLOCK = 32 };
 		const byte *b = buffer;
 		for(int l = size; l > 0; l -= BLOCK)

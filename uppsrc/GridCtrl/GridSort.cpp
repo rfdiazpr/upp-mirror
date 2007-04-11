@@ -84,9 +84,9 @@ void GridCtrl::GSort(int col, int order, int from, int count)
 		ite = its + count;
 	
 	if(order < 2)
-		Sort(its, ite, StdLess<ItemRect>());
+		Upp::Sort(its, ite, StdLess<ItemRect>());
 	else
-		Sort(its, ite, StdGreater<ItemRect>());
+		Upp::Sort(its, ite, StdGreater<ItemRect>());
 }
  
  
@@ -111,16 +111,6 @@ bool GridCtrl::ClearMultisort()
 	if(sortOrder.IsEmpty())
 		return false;
 	
-/*	for(int i = 0; i < sortOrder.GetCount(); i++)
-	{
-		int idx = sortOrder[i];
-		if(hitems[idx].sortMode > 0)
-			sorted = true;
-		hitems[idx].sortmode = 0;
-		hitems[idx].sortcol = 0;
-	}
-*/
-
 	return ClearSorted();
 }
 
@@ -141,18 +131,52 @@ bool GridCtrl::ClearSorted()
 
 bool GridCtrl::IsSorted()
 {
-	/*
-	bool sorted = false;
-	for(int i = 0; i < total_cols; i++)
-		if(hitems[i].sortmode > 0)
-		{
-			sorted = true;
-			break;
-		}
-		   
-	return sortOrder.GetCount() > 0 || sorted;
-	*/
 	return sortOrder.GetCount() > 0 || sortCol >= 0;
+}
+
+GridCtrl& GridCtrl::Sort(int sort_col, int sort_mode, bool multisort, bool repaint)
+{
+	int col = GetIdCol(sort_col + fixed_cols);
+	if(col < 0)
+		return *this;
+	
+	if(!multisort)
+	{
+		sortOrder.Clear();
+		ClearSorted();
+	}
+
+	sortOrder.Add(col);
+	
+	hitems[col].sortmode = sort_mode;
+	hitems[col].sortcol = sortOrder.GetCount();
+	GSort();
+
+	UpdateCursor();
+
+	if(repaint)
+		Repaint();
+	return *this;
+}
+
+GridCtrl& GridCtrl::Sort(Id id, int sort_mode, bool multisort, bool repaint)
+{
+	return Sort(aliases.Get(id), sort_mode, multisort, repaint);	
+}
+
+GridCtrl& GridCtrl::MultiSort(int sort_col, int sort_mode)
+{
+	return Sort(sort_col, sort_mode, true);
+}
+
+GridCtrl& GridCtrl::MultiSort(Id id, int sort_mode)
+{
+	return Sort(aliases.Get(id), sort_mode, true);
+}
+
+void GridCtrl::ClearSort()
+{
+	Sort(0, SORT_ID);
 }
 
 END_UPP_NAMESPACE

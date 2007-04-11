@@ -244,10 +244,9 @@ private:
 	int          right_limits;
 };
 
-RefCon<Formula> ParseFormula(const char *formula, Font font = Roman(100), Color color = SBlack);
+RefCon<Formula> ParseFormula(const char *formula, Font font = Arial(100), Color color = SBlack);
 
-class FormulaDisplay : public Display
-{
+class FormulaDisplay : public Display {
 public:
 	FormulaDisplay(int std_height = 0);
 
@@ -260,6 +259,8 @@ private:
 private:
 	int std_height;
 };
+
+const Display& StdFormulaDisplay();
 
 END_UPP_NAMESPACE
 

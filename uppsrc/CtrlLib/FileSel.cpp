@@ -139,9 +139,13 @@ void FileSel::Load() {
 	String d = GetDir();
 	String emask = "*";
 	if(!IsNull(type)) {
-		int q = ~type;
-		if(q >= 0 && q < mask.GetCount())
-			emask = mask[q];
+		if(IsString(~type))
+			emask = ~type;
+		else {
+			int q = ~type;
+			if(q >= 0 && q < mask.GetCount())
+				emask = mask[q];
+		}
 	}
 	if(!UPP::Load(list, d, emask, mode == SELECTDIR, WhenIcon, *filesystem)) {
 		Exclamation(t_("[A3* Unable to read the directory !]&&") + DeQtf((String)~dir) + "&&" +
@@ -587,9 +591,9 @@ void FileSel::FileUpdate() {
 	}
 	bool b = list.IsCursor() || !String(file).IsEmpty();
 	ok.Enable(b);
-	ok.SetLabel(t_("Open"));
-	if(mode == SAVEAS &&
-	   (!String(file).IsEmpty() || list.IsCursor() && list[list.GetCursor()].isdir))
+	if(mode != SAVEAS || list.IsCursor() && list[list.GetCursor()].isdir)
+		ok.SetLabel(t_("Open"));
+	else
 		ok.SetLabel(t_("Save"));
 }
 
@@ -818,6 +822,7 @@ bool FileSel::ExecuteOpen(const char *title) {
 
 bool FileSel::ExecuteSaveAs(const char *title) {
 	Title(title ? title : t_("Save as"));
+	ok.SetLabel(t_("Save"));
 	return Execute(SAVEAS);
 }
 

@@ -224,19 +224,15 @@ String AsHtml(const RichTxt& text, const RichStyles& styles, Index<String>& css,
 					Size sz = z * part.object.GetSize();
 					if(abs(100 * (psz.cx - sz.cx) / sz.cx) < imtolerance)
 						sz = psz;
-					ImageDraw w(sz);
-					part.object.Paint(w, sz);
 					PNGEncoder png;
-					png.SaveFile(AppendFileName(outdir, name), w);
+					png.SaveFile(AppendFileName(outdir, name), part.object.ToImage(sz));
 					if(psz.cx * psz.cy)
 						html << "<A HREF=\"" << lname << "\">";
 					html << "<IMG SRC=\"" << name << "\" BORDER=0 ALT=\"\">";
 					if(psz.cx * psz.cy) {
 						html << "</A>";
-						ImageDraw w(psz);
-						part.object.Paint(w, psz);
 						PNGEncoder png;
-						png.SaveFile(AppendFileName(outdir, lname), w);
+						png.SaveFile(AppendFileName(outdir, lname), part.object.ToImage(psz));
 					}
 				}
 				else

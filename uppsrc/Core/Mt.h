@@ -86,6 +86,7 @@ public:
 	void Leave()                   { Get().Leave(); }
 };
 
+
 #define INTERLOCKED \
 for(bool i_b_ = true; i_b_;) \
 	for(static UPP::StaticCriticalSection i_ss_; i_b_;) \
@@ -94,7 +95,6 @@ for(bool i_b_ = true; i_b_;) \
 #define INTERLOCKED_(cs) \
 for(bool i_b_ = true; i_b_;) \
 	for(UPP::CriticalSection::Lock i_ss_lock__(cs); i_b_; i_b_ = false)
-
 
 #else
 

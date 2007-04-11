@@ -143,6 +143,7 @@ void ScanIML(CParser& parser, Array<ImlImage>& out_images,
 				{
 					CParser::Pos pos = parser.GetPos();
 					const char *end;
+					end = pos.ptr; // TODO - remove
 					String scan; // TODO = GetUnicodeScan(pos.ptr, &end);
 					pos.ptr = end;
 					parser.SetPos(pos);

@@ -181,7 +181,7 @@ bool Ctrl::SetFocus0(bool activate)
 	if(IsUsrLog())
 		UsrLogT(6, String().Cat() << "SETFOCUS " << Desc(this));
 	LLOG("Ctrl::SetFocus " << Desc(this));
-	LLOG("focusCtrlWnd " << ::Name(focusCtrlWnd));
+	LLOG("focusCtrlWnd " << UPP::Name(focusCtrlWnd));
 	defferedSetFocus = NULL;
 	if(focusCtrl == this) return true;
 	if(!IsOpen() || !IsEnabled() || !IsVisible()) return false;

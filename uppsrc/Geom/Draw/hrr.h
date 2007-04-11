@@ -133,6 +133,31 @@ public:
 		const HRR&  hrr;
 	};
 
+	struct Cursor {
+		Cursor(HRR& owner, const Rectf& extent, double measure, int alpha = 100,
+			Color mono_black = Null, Color mono_white = Null, Color blend_bgnd = Null);
+
+		bool Fetch(Rectf& part_rc);
+		Image Get();
+
+		HRR& owner;
+		Rectf extent;
+		double measure;
+		Color mono_black;
+		Color mono_white;
+		int alpha;
+		Color blend_bgnd;
+
+		One<StreamRaster> raster;
+		int level;
+		int total;
+		Rect rc;
+		Point block;
+		int cimg;
+	};
+
+	friend struct Cursor;
+
 	enum
 	{
 		DEFAULT_CACHE_SIZEOF_LIMIT = 20000000,

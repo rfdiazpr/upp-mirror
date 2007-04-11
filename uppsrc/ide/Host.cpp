@@ -158,7 +158,7 @@ void sCleanZombies(int signal_number)
 	Vector<int>& pid = sPid();
 	int i = 0;
 	while(i < pid.GetCount())
-		if(waitpid(pid[i], 0, WNOHANG | WUNTRACED) > 0)
+		if(pid[i] && waitpid(pid[i], 0, WNOHANG | WUNTRACED) > 0)
 			pid.Remove(i);
 		else
 			i++;

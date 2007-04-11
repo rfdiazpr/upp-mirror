@@ -98,6 +98,7 @@ public:
 	int    GetInvalidCharPos(byte charset = CHARSET_DEFAULT) const;
 	bool   CheckCharset(byte charset = CHARSET_DEFAULT) const { return GetInvalidCharPos(charset) < 0; }
 
+	void    Set(const WString& s);
 	void    Set(const String& s, byte charset = CHARSET_DEFAULT);
 	String  Get(byte charset = CHARSET_DEFAULT) const;
 	String  Get(int pos, int size, byte charset = CHARSET_DEFAULT) const;

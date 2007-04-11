@@ -635,7 +635,7 @@ inline int GetOperSpace(RefCon<Formula> a, RefCon<Formula> b)
 class FormulaParser
 {
 public:
-	FormulaParser(const char *ptr, Font font = StdFont(), Color color = Color());
+	FormulaParser(const char *ptr, Font font = Arial(100), Color color = Color());
 
 	RefCon<Formula>  Run();
 
@@ -999,12 +999,71 @@ RefCon<Formula> FormulaParser::RunTerm()
 		else
 			break;
 
-	if(Check(':'))
-	{
-		if(*ptr == 0)
-			return GetError("EOF in ':'");
-		String text(ptr++, 1);
-		return new FormulaText(text.ToWString(), font.Face(Font::SYMBOL), state.color);
+	if(Check(':')) {
+		static const wchar Alpha[26] = {
+			0x391, // A -> Alpha
+			0x392, // B -> Beta
+			0x3A7, // C -> Chi
+			0x394, // D -> Delta
+			0x395, // E -> Epsilon
+			0x3A6, // F -> Phi
+			0x393, // G -> Gamma
+			0x397, // H -> Eta
+			0x399, // I -> Iota
+			0x300, // J
+			0x39A, // K -> Kappa
+			0x39B, // L -> Lambda
+			0x39C, // M -> Mu
+			0x39D, // N -> Nu
+			0x39F, // O -> Omikron
+			0x3A0, // P -> Pi
+			0x398, // Q -> Theta
+			0x3A1, // R -> Rho
+			0x3A3, // S -> Sigma
+			0x3A4, // T -> Tau
+			0x300, // U
+			0x3A9, // V -> Omega
+			0x3A8, // W -> Psi
+			0x39E, // X -> Xi
+			0x3A5, // Y -> Ypsilon
+			0x396, // Z -> Zeta
+		};
+		static const wchar alpha[26] = {
+			0x3B1, // a -> alpha
+			0x3B2, // b -> beta
+			0x3C7, // c -> chi
+			0x3B4, // d -> delta
+			0x3B5, // e -> epsilon
+			0x3C6, // f -> phi
+			0x3B3, // g -> gamma
+			0x3B7, // h -> eta
+			0x3B9, // i -> iota
+			0x300, // j
+			0x3BA, // k -> kappa
+			0x3BB, // l -> lambda
+			0x3BC, // m -> mu
+			0x3BD, // n -> nu
+			0x3BF, // o -> omikron
+			0x3C0, // p -> pi
+			0x3B8, // q -> theta
+			0x3C1, // r -> rho
+			0x3C3, // s -> sigma
+			0x3C4, // t -> tau
+			0x3C2, // u -> final sigma
+			0x3C9, // v -> omega
+			0x3C8, // w -> psi
+			0x3BE, // x -> xi
+			0x3C5, // y -> ypsilon
+			0x3B6, // z -> zeta
+		};
+		wchar wc = 0;
+		if(IsUpper(*ptr))
+			wc = Alpha[*ptr++ - 'A'];
+		else if(IsLower(*ptr))
+			wc = alpha[*ptr++ - 'a'];
+		else
+			return GetError("invalid greek character");
+		return new FormulaText(WString(wc, 1), font, state.color);
 	}
 	char c = Skip();
 	if(IsAlpha(c))
@@ -1037,8 +1096,7 @@ RefCon<Formula> FormulaParser::RunTerm()
 		else if(ident == "oint")         group_sym = FS_OINT;
 		else if(ident == "oiint")        group_sym = FS_OIINT;
 
-		if(group_sym != FS_EMPTY)
-		{
+		if(group_sym != FS_EMPTY) {
 			RefCon<Formula> topright, bottomright, top, bottom, topleft, bottomleft;
 			RunIndex(topright, bottomright, top, bottom, topleft, bottomleft);
 			RefCon<Formula> arg = RunTerm();
@@ -1050,14 +1108,8 @@ RefCon<Formula> FormulaParser::RunTerm()
 				body = new FormulaIndex(body, topright, bottomright, top, bottom, topleft, bottomleft);
 			return MakeBinary(body, Null, arg);
 		}
-		else if(ident == "int")
-		{
-		}
-		else if(ident == "pow")
-		{
-		}
 		else if(ident == "oo")
-			return new FormulaText("\xA5", font.Face(Font::SYMBOL), state.color, -11);
+			return new FormulaText(WString(0x221E, 1), font, state.color, -11);
 
 		if(!font.IsItalic() && !noitalic && ptr - b == 2 && *b == 'd'
 		&& (b[1] < 'd' || b[1] > 'h'))
@@ -1284,13 +1336,11 @@ void FormulaDisplay::Paint(Draw& draw, const Rect& rc, const Value& value, Color
 {
 	draw.DrawRect(rc, paper);
 	RefCon<Formula> form = Get(value, std_height ? std_height : 300, ink);
-	if(!!form)
-	{
+	if(!!form) {
 		if(std_height)
 			form->PaintRect(draw, (rc.left + rc.right - form->GetWidth()) >> 1,
 				(rc.top + rc.bottom - form->GetHeight() + 2 * form->GetAscent()) >> 1);
-		else
-		{
+		else {
 			DrawingDraw ddraw(form->GetSize());
 			form->PaintRect(ddraw, 0, form->GetAscent());
 			Drawing dwg = ddraw;
@@ -1303,8 +1353,7 @@ void FormulaDisplay::Paint(Draw& draw, const Rect& rc, const Value& value, Color
 Size FormulaDisplay::GetStdSize(const Value& value) const
 {
 	int ht = std_height;
-	if(!ht)
-	{
+	if(!ht) {
 		FontInfo fi = StdFont().Info();
 		ht = fi.GetHeight() - fi.GetExternal();
 	}
@@ -1321,6 +1370,8 @@ RefCon<Formula> FormulaDisplay::Get(const Value& value, int ht, Color ink) const
 	return ParseFormula(StdFormat(value), Roman(ht), ink);
 //	return new FormulaBox(ParseFormula(StdFormat(value), Roman(ht)), LtRed, FormulaBox::INNER);
 }
+
+const Display& GLOBAL_V(FormulaDisplay, StdFormulaDisplay);
 
 #ifdef flagMAIN
 #include <CtrlLib/CtrlLib.h>

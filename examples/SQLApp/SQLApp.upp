@@ -2,7 +2,7 @@ description "SQL application example";
 
 uses
 	CtrlLib,
-	plugin\Sqlite3,
+	plugin\sqlite3,
 	SqlCtrl;
 
 file

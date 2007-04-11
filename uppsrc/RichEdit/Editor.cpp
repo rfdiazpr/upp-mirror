@@ -395,6 +395,7 @@ void RichEdit::Pick(pick_ RichText& t)
 	Vector<int> all_lang = text.GetAllLanguages();
 	SetupLanguage(all_lang);
 	Move(0);
+	Update();
 }
 
 Value RichEdit::GetData() const

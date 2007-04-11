@@ -47,6 +47,7 @@ bool Pdb::IsValidFrame(dword eip)
 void Pdb::Sync0()
 {
 	stop = false;
+	const CONTEXT& context = ctx.Get((int)~threadlist);
 	dword eip = context.Eip;
 	dword ebp = context.Ebp;
 	dword spmax = threadsp.Get(event.dwThreadId, 0);
@@ -54,6 +55,7 @@ void Pdb::Sync0()
 	frame.Clear();
 	int ndx = 0;
 	FnInfo fn = GetFnInfo(eip);
+	int c = -1;
 	for(;;) {
 		Frame& f = frame.Add();
 		f.eip = eip;
@@ -80,17 +82,19 @@ void Pdb::Sync0()
 				r << f.param.GetKey(i) << "=" << Visualise(f.param[i], 30).GetString();
 			}
 			r << ')';
+			if(c < 0)
+				c = frame.GetCount() - 1;
 		}
 		framelist.Add(frame.GetCount() - 1, r);
 		int q = 0;
 		for(;;) {
 			if(ebp > spmax || ++q > 1024 * 64)
-				return;
+				goto end;
 			dword neip, nebp;
 			if(!Copy(ebp, &nebp, 4))
-				return;
+				goto end;
 			if(!Copy(ebp + 4, &neip, 4))
-				return;
+				goto end;
 			if(nebp >= ebp && nebp < spmax && IsValidFrame(neip)) {
 				fn = GetFnInfo(neip);
 				if(!IsNull(fn.name)) {
@@ -102,12 +106,29 @@ void Pdb::Sync0()
 			ebp += 4;
 		}
 	}
+end:
+	framelist <<= max(c, 0);
 }
 
 void Pdb::Sync()
 {
+	threadlist.Clear();
+	for(int i = 0; i < threadsp.GetCount(); i++) {
+		int thid = threadsp.GetKey(i);
+		AttrText x(Format("0x%x", thid));
+		if(thid == event.dwThreadId)
+			x.font = StdFont().Bold();
+		threadlist.Add(thid, x);
+	}
+	threadlist <<= (int)event.dwThreadId;
 	Sync0();
-	framelist <<= 0;
+	SetFrame();
+	IdeActivateBottom();
+}
+
+void Pdb::SetThread()
+{
+	Sync0();
 	SetFrame();
 	IdeActivateBottom();
 }
@@ -145,6 +166,7 @@ void Pdb::SetFrame()
 		}
 		disas.SetCursor(f.eip);
 		disas.SetIp(f.eip, ptrimg);
+		const CONTEXT& context = ctx.Get((int)~threadlist);
 		Reg(regs.eax, context.Eax);
 		Reg(regs.ebx, context.Ebx);
 		Reg(regs.ecx, context.Ecx);

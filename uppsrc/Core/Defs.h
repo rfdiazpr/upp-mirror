@@ -294,7 +294,7 @@ enum MemoryProbeFlags {
 
 void  MemoryCheckDebug();
 
-void  MemorySum(int& smallkb, int& largekb);
+int   MemoryUsedKb();
 
 struct MemoryProfile {
 	int allocated[1024];
@@ -340,8 +340,15 @@ struct MemoryProfile {
 };
 
 inline MemoryProfile *PeakMemoryProfile() { return NULL; }
-inline void   MemorySum(int& smallkb, int& largekb) {}
+inline int MemoryUsedKb() { return 0; }
 
+#endif
+
+#ifdef CPU_X86
+bool CPU_MMX();
+bool CPU_SSE();
+bool CPU_SSE2();
+bool CPU_SSE3();
 #endif
 
 //Quick fix....

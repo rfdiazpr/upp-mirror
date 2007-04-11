@@ -121,17 +121,26 @@ HMODULE CheckDll__(const char *fn, const char *const *names, UPP::Vector<void *>
 
 	int missing = 0;
 	for(const char *const *p = names; *p; p++) {
-		const char *name = pe.FindExportRaw(*p);
+		const char *exp = *p;
+		bool optional = (*exp == '?');
+		if(optional) exp++;
+		const char *name = pe.FindExportRaw(exp);
 		void *proc = 0;
 #ifdef PLATFORM_WINCE
 		if(!name || !(proc = (void *)GetProcAddress(hmod, UPP::ToSysChrSet(name))))
 #else
 		if(!name || !(proc = (void *)GetProcAddress(hmod, name)))
 #endif
-			missing++;
+			if(!optional) {
+				if(!missing)
+					RLOG(fn << " missing exports:");
+				RLOG(exp);
+				missing++;
+			}
 		plist.Add(proc);
 	}
 	if(missing) {
+		RLOG(missing << " total");
 		FreeLibrary(hmod);
 		return 0;
 	}
@@ -164,15 +173,24 @@ void *CheckDll__(const char *fn, const char *const *names, UPP::Vector<void *>& 
 			return 0;
 	}
 
+	int missing = 0;
 	for(const char *const *p = names; *p; p++) {
-		void *proc = dlsym(hmod, *p);
-		if(!proc) {
-			fputs(UPP::NFormat("Symbol %s not found in %s.\n", *p, fn), stderr);
-			fflush(stderr);
-			dlclose(hmod);
-			return 0;
+		const char *exp = *p;
+		bool optional = (*exp == '?');
+		if(optional) exp++;
+		void *proc = dlsym(hmod, exp);
+		if(!proc && !optional) {
+			if(!missing)
+				RLOG(fn << " missing exports:");
+			RLOG(exp);
 		}
 		plist.Add(proc);
+	}
+
+	if(missing) {
+		RLOG(missing << " missing symbols total");
+		dlclose(hmod);
+		return 0;
 	}
 
 	return hmod;

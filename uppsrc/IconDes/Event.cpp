@@ -7,15 +7,17 @@ void IconDes::LeftDown(Point p, dword flags)
 	if(!IsCurrent())
 		return;
 	SaveUndo();
-	SetCapture();
 	startpoint = GetPos(p);
 	if(IsPasting()) {
-		if(Rect(Current().pastepos, Current().paste_image.GetSize()).Contains(startpoint))
+		if(Rect(Current().pastepos, Current().paste_image.GetSize()).Contains(startpoint)) {
 			startpoint -= Current().pastepos;
+			SetCapture();
+		}
 		else
 			FinishPaste();
 		return;
 	}
+	SetCapture();
 	Current().base_image = CurrentImage();
 	if(flags & K_SHIFT) {
 		ImageBuffer ib(CurrentImage());

@@ -175,7 +175,7 @@ RTFParser::RTFParser(const char *rtf)
 
 RichText RTFParser::Run()
 {
-	if(!PassGroup() || !PassCmd("rtf") || command_arg != 1)
+	if(!PassGroup() || !PassCmd("rtf") || command_arg != 1 && !IsNull(command_arg))
 		return output;
 	while(Token() != T_EOF)
 		ReadItem();
@@ -868,7 +868,7 @@ void RTFParser::ReadPict()
 			mfp.mm = wmf_mode;
 			mfp.xExt = log_size.cx;
 			mfp.yExt = log_size.cy;
-			wmf = WinMetaFile(SetWinMetaFileBits(blip_data.GetLength(), blip_data, ScreenInfo(), &mfp));
+			wmf = WinMetaFile(SetWinMetaFileBits(blip_data.GetLength(), blip_data, ScreenHDC(), &mfp));
 		}
 		wmf.Paint(dd, log_size);
 	}

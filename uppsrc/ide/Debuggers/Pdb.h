@@ -143,9 +143,10 @@ struct Pdb : Debugger, Ctrl {
 	bool                    refreshmodules;
 	Vector<ModuleInfo>      module;
 	DEBUG_EVENT             event;
-	CONTEXT                 context;
 	HWND                    hWnd;
 	VectorMap<dword, byte>  bp_set;
+	CONTEXT                 context;
+	ArrayMap<dword, CONTEXT> ctx;
 
 	Index<dword>            invalidpage;
 	VectorMap<dword, MemPg> mempage;
@@ -170,6 +171,7 @@ struct Pdb : Debugger, Ctrl {
 	EditString         watchedit;
 
 	TabCtrl            tab;
+	DropList           threadlist;
 	DropList           framelist;
 	Label              dlock;
 	ArrayCtrl          locals;
@@ -207,11 +209,13 @@ struct Pdb : Debugger, Ctrl {
 	bool       IsBpSet(dword address) const { return bp_set.Find(address) >= 0; }
 	bool       Continue();
 	bool       SingleStep();
-	void       WriteContext(dword cf = CONTEXT_CONTROL);
 	void       BreakRunning();
 	void       SetBreakpoints();
 	void       SaveForeground();
 	void       RestoreForeground();
+
+	const CONTEXT& CurrentContext();
+	void           WriteContext(dword cf = CONTEXT_CONTROL);
 
 // mem
 	int        Byte(dword addr);
@@ -268,6 +272,7 @@ struct Pdb : Debugger, Ctrl {
 	bool       IsValidFrame(dword eip);
 	void       Sync0();
 	void       Sync();
+	void       SetThread();
 	void       SetFrame();
 	bool       Step(bool over);
 	void       Trace(bool over);

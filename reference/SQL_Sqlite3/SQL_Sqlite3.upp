@@ -1,7 +1,7 @@
 description "Connecting Sqlite3 database";
 
 uses
-	plugin\Sqlite3;
+	plugin\sqlite3;
 
 file
 	simple.h,

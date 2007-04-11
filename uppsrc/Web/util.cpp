@@ -325,7 +325,7 @@ String Base64Decode(const char *b, const char *e)
 
 String ASCII85Encode(const byte *p, int length)
 {
-	String out;
+	StringBuffer out;
 	out.Reserve((length >> 2) * 5 + (length & 3) + 1);
 	while(length >= 4)
 	{

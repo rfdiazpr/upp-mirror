@@ -35,6 +35,19 @@ AttrText::AttrText(const WString& _text)
 	Init();
 }
 
+class StdDisplayClass : public Display
+{
+public:
+	StdDisplayClass(int align = ALIGN_LEFT) : align(align) {}
+
+	virtual void Paint0(Draw& draw, const Rect& rc, const Value& v, Color ink, Color paper, dword style) const;
+	virtual void Paint(Draw& draw, const Rect& rc, const Value& v, Color ink, Color paper, dword style) const;
+	virtual Size GetStdSize(const Value& q) const;
+
+private:
+	int    align;
+};
+
 void Display::PaintBackground(Draw& w, const Rect& r, const Value& q,
                               Color ink, Color paper, dword style) const
 {
@@ -60,21 +73,9 @@ Size Display::GetStdSize(const Value& q) const
 	return Size(8, 8);
 }
 
-class StdDisplayClass : public Display
-{
-public:
-	StdDisplayClass(int align = ALIGN_LEFT) : align(align) {}
-
-	virtual void Paint(Draw& draw, const Rect& rc, const Value& v, Color ink, Color paper, dword style) const;
-	virtual Size GetStdSize(const Value& q) const;
-
-private:
-	int    align;
-};
-
-void StdDisplayClass::Paint(Draw& w, const Rect& r, const Value& q,
-                    Color ink, Color paper, dword s) const {
-	LLOG("Display::Paint: " << q << " ink:" << ink << " paper:" << paper);
+void StdDisplayClass::Paint0(Draw& w, const Rect& r, const Value& q,
+                             Color ink, Color paper, dword s) const {
+	LLOG("Display::Paint0: " << q << " ink:" << ink << " paper:" << paper);
 	WString txt;
 	Font font = StdFont();
 	int a = align;
@@ -97,9 +98,15 @@ void StdDisplayClass::Paint(Draw& w, const Rect& r, const Value& q,
 		x = r.right - GetStdSize(q).cx;
 	if(a == ALIGN_CENTER)
 		x += (r.Width() - GetStdSize(q).cx) / 2;
-	PaintBackground(w, r, q, ink, paper, s);
 	int tcy = GetTLTextHeight(w, txt, font);
 	DrawTLText(w, x, r.top + max((r.Height() - tcy) / 2, 0), r.Width(), txt, font, ink);
+}
+
+void StdDisplayClass::Paint(Draw& w, const Rect& r, const Value& q,
+                    Color ink, Color paper, dword s) const {
+	LLOG("Display::Paint: " << q << " ink:" << ink << " paper:" << paper);
+	PaintBackground(w, r, q, ink, paper, s);
+	Paint0(w, r, q, ink, paper, s);
 }
 
 Size StdDisplayClass::GetStdSize(const Value& q) const

@@ -4,7 +4,8 @@ charset "windows-1250";
 
 uses
 	Core,
-	Web;
+	Web,
+	plugin\dbf;
 
 file
 	TCore.h,
@@ -12,10 +13,9 @@ file
 	tcore.usc,
 	TCore_init.icpp,
 	template.h,
+	dbf.h,
 	util.h,
 	util.cpp,
-	dbf.h,
-	dbf.cpp,
 	setop.h,
 	nls_bw.h,
 	nls_bw.hpp,

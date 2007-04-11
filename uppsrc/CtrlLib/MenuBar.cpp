@@ -531,6 +531,8 @@ void SubMenuBase::Pull(Ctrl *item, Point p, Size sz)
 {
 	if(!item->IsOpen() || menu.IsOpen()) return;
 	menu.Clear();
+	if(parentmenu)
+		menu.SetStyle(*parentmenu->style);
 	proc(menu);
 	if(parentmenu) {
 		parentmenu->SetActiveSubmenu(&menu, item);

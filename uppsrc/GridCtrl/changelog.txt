@@ -78,3 +78,47 @@
 	+ Value GetFixed(r, c) - returns value of fixed column c at row r
 	+ Value GetFixed(c) - returns value of fixed column c at first row
 	
+	after 2007.1beta3
+	
+	* Set() now always store value in cell data structure even if that cell has ctrl
+	* All Set(int c, ...) methods now use rowidx for selecting row instead of curpos.y
+	- Set did not set ctrl value if ctrl was created by Ctrls()
+	+ SetCtrlValue(..) - sets value of cell control
+	- In WhenUpdate/WhenInsert rowidx had wrong value (regression)
+	* control focusig code cleanup
+	- fixed 's' key problem (cursor went up after pressing it)
+	- there was unnecessary WhenUpdateRow/WhenInsertRow call after sorting and then changing row
+	
+	after 2007.1rc1
+	
+	- moving cols/rows - popuped cell was paint in wrong position if internal toolbar was on top or left side of grid
+	- highlighting of fixed cells was broken if there were no non-fixed rows/cols
+	- edits no longer appear in edit row mode if "factory" ctrl is clicked
+	- edits' values were not properly updated when row was change after clicking "factory" ctrl (regression)
+	- fixed crash after removing a row and then changing cursor position (regression)
+	- Clear() didn't update rowidx
+	- RefreshRow(n) use rowidx if n	< 0 instead of curpos.y
+	
+	ok seems to be ready for 2007.2
+	
+	after 2007.1rc2
+	
+	+ Sort/MultiSort methods
+	
+	after 2007.1rc3
+	
+	* WhenUpdateCell is always called no metter what edit mode is set
+	- Esc corectly restores values in row edit mode (regression)
+	- Sort(...) now updates cursor positon
+	- rectangular selections were possible only if multiselect mode was set
+	+ rectangular selections can be marked with keyboard (CTRL + arrows)
+	- fixed usc script (wrong initial states for accepting/removing/inserting)
+	- it's now impossible to change cursor position if value in active control is wrong
+	- Remove updates selected_rows/items values (before only DoRemove did that)
+	+ IsModified(..) - returns if value of cell was changed
+	
+	
+	
+	
+	
+	

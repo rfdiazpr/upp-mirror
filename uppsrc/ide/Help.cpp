@@ -23,11 +23,9 @@ Size MakeLogo(Ctrl& parent, Array<Ctrl>& ctrl)
 		v.RightPos(3, Ctrl::MINSIZE).TopPos(90, 40);
 	}
 	l.Add(v);
-	int a, b;
-	MemorySum(a, b);
 	v.SetFont(Arial(20));
 	v.SetInk(Blend(Gray, Blue));
-	v1 = Format("%d`KB/%d`KB", a, b);
+	v1 = Format("%d`KB", MemoryUsedKb());
 	v1.LeftPos(300, 100).BottomPos(20, 12);
 	v1.SetFont(Arial(10));
 	l.Add(v1);

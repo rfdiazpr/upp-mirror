@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x)   // DLOG(x)
+#define LLOG(x)    //DLOG(x)
 
 #ifdef PLATFORM_X11
 
@@ -78,6 +78,7 @@ void TopWindow::SyncTitle()
 	LLOG("SyncTitle: " << title);
 	KillTimeCallback(TIMEID_DEFSYNCTITLE);
 	SetTimeCallback(0, THISBACK(DefSyncTitle), TIMEID_DEFSYNCTITLE);
+	LLOG("*SyncTitle: " << title);
 }
 
 void TopWindow::SyncCaption()

@@ -183,7 +183,7 @@ int DlgCompareDir::Refresh(String rel_path, int parent)
 			tree.Add(parent, CompDirImg::a_file(), NFormat("%s: A (%`, %0n)", afile[fa].name, afile[fa].time, afile[fa].size));
 			done |= 1;
 		}
-		else if(afile[fa].time != bfile[fb].time || afile[fa].size != bfile[fb].size
+		else if(afile[fa].size != bfile[fb].size
 		|| LoadFile(AppendFileName(arel, names[i])) != LoadFile(AppendFileName(brel, names[i]))) {
 			tree.Add(parent, CompDirImg::ab_file(), NFormat("%s: A (%`, %0n), B (%`, %0n)",
 				bfile[fb].name, afile[fa].time, afile[fa].size, bfile[fb].time, bfile[fb].size));

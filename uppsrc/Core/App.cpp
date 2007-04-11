@@ -248,6 +248,9 @@ void AppInit__(int argc, const char **argv, const char **envptr)
 
 void AppInitEnvironment__()
 {
+#ifdef _MULTITHREADED
+	sCriticalSectionLock();
+#endif
 #ifndef PLATFORM_WINCE
 	char *env = GetEnvironmentStrings();
 	for(char *ptr = env; *ptr; ptr++)
@@ -267,7 +270,6 @@ void AppInitEnvironment__()
 	}
 	FreeEnvironmentStrings(env);
 #endif
-	sCriticalSectionLock();
 	CommonInit();
 }
 

@@ -32,6 +32,8 @@ public:
 	HttpClient&  Get()                            { return Method(METHOD_GET); }
 	HttpClient&  Post()                           { return Method(METHOD_POST); }
 
+	HttpClient&  PostData(String pd)              { postdata = pd; return *this; }
+
 	String       Execute(Gate2<int, int> progress = false);
 	String       ExecuteRedirect(int max_redirect = DEFAULT_MAX_REDIRECT,
 		int retries = DEFAULT_RETRIES, Gate2<int, int> progress = false);
@@ -72,6 +74,7 @@ public:
 	String       client_headers;
 	String       accept;
 	String       agent;
+	String       postdata;
 
 	int          status_code;
 	String       status_line;

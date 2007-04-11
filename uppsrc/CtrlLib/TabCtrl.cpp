@@ -179,13 +179,13 @@ void TabCtrl::PaintTabs(Draw& w)
 					r.top -= tt;
 					r.bottom += style->sel.bottom;
 				}
+				int ndx = !IsEnabled() || !t.enabled ? CTRL_DISABLED :
+					       phase ? CTRL_PRESSED :
+					       i == hot ? CTRL_HOT : CTRL_NORMAL;
 				ChPaint(w, r,
 					(tab.GetCount() == 1 ? style->both : i == 0 ? style->first :
 					 i == tab.GetCount() - 1 ? style->last : style->normal)
-					[
-					(!IsEnabled() || !t.enabled ? CTRL_DISABLED :
-					 phase ? CTRL_PRESSED :
-					 i == hot ? CTRL_HOT : CTRL_NORMAL)]
+					[ndx]
 				);
 				t.Paint(w);
 			}
@@ -406,6 +406,12 @@ bool TabCtrl::Accept()
 
 void TabCtrl::Reset()
 {
+	for(int i = 0; i < tab.GetCount(); i++) {
+		if(tab[i].ctrl)
+			tab[i].ctrl->Remove();
+		if(tab[i].slave)
+			tab[i].slave->Remove();
+	}
 	tab.Clear();
 	x0 = 0;
 	CancelMode();

@@ -92,7 +92,7 @@ Paragraph& Paragraph::Bullet(const PaintRect& bullet, int indent, Size size, Col
 	return *this;
 }
 
-int  Paragraph::GetWidth(int zoom, Draw& w) const {
+int  Paragraph::GetWidth(int zoom) const {
 	const Part *pptr = part.Begin();
 	const Part *plim = part.End();
 	int cx = DocZoom(zoom, style.indent);
@@ -114,7 +114,7 @@ int  Paragraph::GetWidth(int zoom, Draw& w) const {
 	return cx + style.lm + style.rm + (style.bullet ? style.bulletindent : 0);
 }
 
-bool Paragraph::Format(ParaTypo& pfmt, Draw& w, int cx, int zoom) const {
+bool Paragraph::Format(ParaTypo& pfmt, int cx, int zoom) const {
 	int len = length + !!style.indent;
 	Buffer<char> chr(len);
 	Buffer<int>  width(len);
@@ -144,7 +144,7 @@ bool Paragraph::Format(ParaTypo& pfmt, Draw& w, int cx, int zoom) const {
 		static Part dummy;
 		*cp++ = ' ';
 		*wp++ = DocZoom(zoom, style.indent);
-		pp->Set(w, Arial(0), Black);
+		pp->Set(Arial(0), Black);
 		pp->voidptr = &dummy;
 		*ip++ = pp;
 		pp++;
@@ -163,7 +163,7 @@ bool Paragraph::Format(ParaTypo& pfmt, Draw& w, int cx, int zoom) const {
 		else {
 			Font font = pptr->font;
 			font.Height(DocZoom(zoom, pptr->font.GetHeight()));
-			FontInfo pf = pp->Set(w, font, pptr->color);
+			FontInfo pf = pp->Set(font, pptr->color);
 			const char *s = pptr->text;
 //			LOG("Format " << s << " a: " << pf.GetAscent() << " d: " << pf.GetDescent());
 			int n = pptr->text.GetLength();
@@ -197,12 +197,12 @@ bool  Paragraph::ParaHeight::Put() {
 	return false;
 }
 
-int  Paragraph::GetHeight(int zoom, Draw& w, int cx) const {
+int  Paragraph::GetHeight(int zoom, int cx) const {
 	ParaHeight pp;
 	pp.cy = 0;
 	cx -= DocZoom(zoom, style.lm + style.rm + style.bulletindent);
 	if(cx <= 0) return 0;
-	Format(pp, w, cx, zoom);
+	Format(pp, cx, zoom);
 	LLOG("ParaHeight " << pp.cy);
 	return pp.cy;
 }
@@ -281,7 +281,7 @@ bool Paragraph::Paint(int zoom, Draw& w, int x, int y, int cx, int ymax, PaintIn
 	pp.yp = 0;
 	pp.paper = paper;
 	cx -= DocZoom(zoom, style.lm + style.rm + bi);
-	bool r = Format(pp, w, max(1, cx), zoom);
+	bool r = Format(pp, max(1, cx), zoom);
 	if(pi.yl == 0 && pp.yp > 0 && style.bullet)
 		style.bullet.Paint(w, x + DocZoom(zoom, style.lm), y,
 		                   style.bulletsize.cx ? DocZoom(zoom, style.bulletsize.cx) : pp.bh,
@@ -367,14 +367,14 @@ void Paragraph::Paint(int zoom, int angle, Draw& w, int x, int y, int cx) const 
 	pp.y = 0;
 	pp.lm = DocZoom(zoom, style.lm + bi);
 	cx -= DocZoom(zoom, style.lm + style.rm + bi);
-	bool r = Format(pp, w, max(1, cx), zoom);
+	bool r = Format(pp, max(1, cx), zoom);
 /*	if(pp.yp > 0 && style.bullet)
 		style.bullet.Paint(w, x + DocZoom(zoom, style.lm), y, DocZoom(zoom, style.bulletindent),
 		                   pp.bh, Black, White, 0);*/
 }
 
-int    Paragraph::GetHeight(Draw& w, int cx) const {
-	return GetHeight(1024, w, cx);
+int    Paragraph::GetHeight(int cx) const {
+	return GetHeight(1024, cx);
 }
 
 bool Paragraph::Paint(Draw& w, int x, int y, int cx, int ymax, PaintInfo& pi, Color paper) const {
@@ -445,7 +445,7 @@ const {
 	pr.liney = y;
 	pr.px = x;
 	cx -= DocZoom(zoom, style.lm + style.rm + bi);
-	Format(pr, w, max(1, cx), zoom);
+	Format(pr, max(1, cx), zoom);
 	y = pr.liney;
 }
 
@@ -498,33 +498,33 @@ void Document::Cat(const Paragraph& p) {
 		AddParagraph() <<= p;
 }
 
-int Document::GetHeight(int zoom, Draw& w, int cx) const {
+int Document::GetHeight(int zoom, int cx) const {
 	int cy = 0;
 	for(int i = 0; i < item.GetCount(); i++) {
 		const Item& m = item[i];
 		if(m.type == PARAGRAPH) {
 			const Paragraph& p = m.data.LastCell().Par();
 			cy += DocZoom(zoom, p.GetBefore());
-			cy += p.GetHeight(zoom, w, cx);
+			cy += p.GetHeight(zoom, cx);
 			cy += DocZoom(zoom, p.GetAfter());
 		}
 		else {
 			cy += DocZoom(zoom, m.data.GetBefore());
-			cy += m.data.GetHeight(zoom, w, cx);
+			cy += m.data.GetHeight(zoom, cx);
 			cy += DocZoom(zoom, m.data.GetAfter());
 		}
 	}
 	return cy;
 }
 
-int Document::GetWidth(int zoom, Draw& w) const {
+int Document::GetWidth(int zoom) const {
 	int cx = 0;
 	for(int i = 0; i < item.GetCount(); i++) {
 		const Item& m = item[i];
 		if(m.type == PARAGRAPH)
-			cx = max(cx, m.data.LastCell().Par().GetWidth(zoom, w));
+			cx = max(cx, m.data.LastCell().Par().GetWidth(zoom));
 		else
-			cx = max(cx, m.data.GetWidth(zoom, w));
+			cx = max(cx, m.data.GetWidth(zoom));
 	}
 	return cx;
 }
@@ -566,7 +566,7 @@ Vector<ValueRect> Document::GetValueRects(int zoom, Draw& w, int x, int y, int c
 	return vr;
 }
 
-int  Document::GetHeight(int zoom, Draw& w, int i, int cx, Document::Cache& cache) const {
+int  Document::GetHeight(int zoom, int i, int cx, Document::Cache& cache) const {
 	if(cache.cx == cx && cache.zoom == zoom && i < cache.cy.GetCount() && !IsNull(cache.cy[i]))
 		return cache.cy[i];
 	int cy;
@@ -574,12 +574,12 @@ int  Document::GetHeight(int zoom, Draw& w, int i, int cx, Document::Cache& cach
 	if(m.type == PARAGRAPH) {
 		const Paragraph& p = m.data.LastCell().Par();
 		cy = DocZoom(zoom, p.GetBefore());
-		cy += p.GetHeight(zoom, w, cx);
+		cy += p.GetHeight(zoom, cx);
 		cy += DocZoom(zoom, p.GetAfter());
 	}
 	else {
 		cy = DocZoom(zoom, m.data.GetBefore());
-		cy += m.data.GetHeight(zoom, w, cx);
+		cy += m.data.GetHeight(zoom, cx);
 		cy += DocZoom(zoom, m.data.GetAfter());
 	}
 	if(cache.cx != cx || cache.zoom != zoom) {
@@ -591,10 +591,10 @@ int  Document::GetHeight(int zoom, Draw& w, int i, int cx, Document::Cache& cach
 	return cy;
 }
 
-int  Document::GetHeight(int zoom, Draw& w, int cx, Cache& cache) const {
+int  Document::GetHeight(int zoom, int cx, Cache& cache) const {
 	int cy = 0;
 	for(int i = 0; i < item.GetCount(); i++)
-		cy += GetHeight(zoom, w, i, cx, cache);
+		cy += GetHeight(zoom, i, cx, cache);
 	return cy;
 }
 
@@ -603,7 +603,7 @@ void Document::Paint(int zoom, Draw& w, int x, int y, int cx, int cy, int y0,
 	int yp = 0;
 	for(int i = 0; i < item.GetCount() && yp < y0 + cy; i++) {
 		const Item& m = item[i];
-		int h = GetHeight(zoom, w, i, cx, cache);
+		int h = GetHeight(zoom, i, cx, cache);
 		int yo = yp + y - y0;
 		if((yp += h) <= y0)
 			continue;

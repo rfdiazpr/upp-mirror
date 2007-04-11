@@ -29,7 +29,7 @@ FieldOperator& FieldOperator::operator()(const char *name, bool& b) {
 	return *this;
 }
 
-static char sql_error[] = "Datab??zov?? chyba";
+static char sql_error[] = "Database error";
 
 #ifndef NOAPPSQL
 SqlExc::SqlExc() : Exc(sql_error) {
@@ -50,7 +50,7 @@ void SqlExc::SetSessionError(const SqlSession& session) {
 		*this = session.GetLastError();
 	else
 		*this = String(sql_error);
-	*this << "\nSQL p?¸?­kaz: " << session.GetErrorStatement();
+	*this << "\nSQL error: " << session.GetErrorStatement();
 }
 
 SqlConnection::SqlConnection()  { parse = true; fetchrows = 32; longsize = 16384; }

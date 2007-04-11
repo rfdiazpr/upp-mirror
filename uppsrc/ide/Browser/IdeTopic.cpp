@@ -137,7 +137,7 @@ void TopicEditor::MainTool(Bar& bar)
 }
 
 String NaturalDeQtf(const char *s) {
-	String r;
+	StringBuffer r;
 	r.Reserve(256);
 	bool cm = false;
 	while(*s) {

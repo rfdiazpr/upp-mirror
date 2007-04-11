@@ -7,6 +7,8 @@
 
 #define BIT(x) (1 << x)
 
+class GridCtrl;
+
 namespace GD
 {
 	enum 
@@ -50,6 +52,10 @@ class GridDisplay
 		bool	hgrid;
 		bool	vgrid;
 		
+		int 	col, row;
+		
+		GridCtrl *parent;
+		
 		GridDisplay() : font(StdFont())
 		{
 			align = GD::TOP | GD::LEFT; 
@@ -70,6 +76,7 @@ class GridDisplay
 		void SetVMargin(int top, int bottom)		 { tm = top;  bm = bottom;     }
 		void SetTheme(int th)                        { theme = th;                 }
 		int  GetThemeCount()                         { return 6;                   }
+		
 		
 		void DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int align, 
 					  const wchar *s, const Font &font, const Color &fg, const Color &bg, 

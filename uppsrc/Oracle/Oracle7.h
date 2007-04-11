@@ -3,8 +3,18 @@
 
 #include <Sql/Sql.h>
 #include "OraCommon.h"
+#include "OciCommon.h"
 
 NAMESPACE_UPP
+
+#define DLLFILENAME "ociw32.dll"
+#define DLIMODULE   OCI7
+#define DLIHEADER   <Oracle/Oci7.dli>
+#include <Core/dli_header.h>
+
+class OCI7Connection;
+
+void OCI7SetDllPath(String oci7_path, T_OCI7& oci7 = OCI7());
 
 class Oracle7 : public SqlSession {
 public:
@@ -27,6 +37,9 @@ public:
 	virtual Vector<String>        EnumPrimaryKey(String database, String table);
 	virtual String                EnumRowID(String database, String table);
 	virtual Vector<String>        EnumReservedWords();
+
+public:
+	T_OCI7&                       oci7;
 
 protected:
 	virtual SqlConnection        *CreateConnection();
@@ -60,7 +73,7 @@ public:
 
 	void    SetTransactionMode(int mode)            { tmode = mode; }
 
-	Oracle7();
+	Oracle7(T_OCI7& oci7 = OCI7());
 	~Oracle7();
 };
 

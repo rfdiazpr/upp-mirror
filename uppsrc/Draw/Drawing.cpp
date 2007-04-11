@@ -250,6 +250,14 @@ int   DrawingPos::GetY(int y) const {
 	return iscale(y + srcoff.y, target.cy, source.cy) - trgoff.y;
 }
 
+int   DrawingPos::GetCx(int cx) const {
+	return iscale(cx, target.cx, source.cx);
+}
+
+int   DrawingPos::GetCy(int cy) const {
+	return iscale(cy, target.cy, source.cy);
+}
+
 int   DrawingPos::GetW(int w) const {
 	return iscale(w, target.cx + target.cy, source.cx + source.cy);
 }
@@ -263,7 +271,7 @@ Point DrawingPos::Get(Point p) const {
 }
 
 Size  DrawingPos::Get(Size sz) const {
-	return Size(GetX(sz.cx), GetY(sz.cy));
+	return Size(GetCx(sz.cx), GetCy(sz.cy));
 }
 
 Rect  DrawingPos::Get(const Rect& r) const {
@@ -499,8 +507,8 @@ static void wsDrawText(Draw& w, Stream& s, const DrawingPos& ps) {
 			if(odd) {
 				a = ps.target.cy;
 				b = ps.source.cy;
-				int ht = ps.GetX(fi.GetFontHeight());
-				font.Width(ps.GetY(fi.GetAveWidth())).Height(ht ? ht : 1);
+				int ht = ps.GetCx(fi.GetFontHeight());
+				font.Width(ps.GetCy(fi.GetAveWidth())).Height(ht ? ht : 1);
 				FontInfo nf = font.Info();
 				x = angle == 2700 ? ps.GetX(x - fi.GetAscent()) + nf.GetAscent()
 				                  : ps.GetX(x + fi.GetAscent()) - nf.GetAscent();
@@ -509,8 +517,8 @@ static void wsDrawText(Draw& w, Stream& s, const DrawingPos& ps) {
 			else {
 				a = ps.target.cx;
 				b = ps.source.cx;
-				int ht = ps.GetY(fi.GetFontHeight());
-				font.Width(ps.GetX(fi.GetAveWidth())).Height(ht ? ht : 1);
+				int ht = ps.GetCy(fi.GetFontHeight());
+				font.Width(ps.GetCx(fi.GetAveWidth())).Height(ht ? ht : 1);
 				FontInfo nf = font.Info();
 				x = ps.GetX(x);
 				y = angle == 1800 ? ps.GetY(y - fi.GetAscent()) + nf.GetAscent()

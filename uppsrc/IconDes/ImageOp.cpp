@@ -177,7 +177,6 @@ Image Magnify(const Image& img, int nx, int ny)
 String PackImlData(const Vector<Image>& image)
 {
 	StringBuffer block;
-	int bl = 0;
 	for(int i = 0; i < image.GetCount(); i++) {
 		Image img = image[i];
 		StringStream ss;
@@ -201,7 +200,6 @@ String PackImlData(const Vector<Image>& image)
 			block.Cat(s->a);
 			s++;
 		}
-		bl += img.GetLength();
 	}
 	return ZCompress(block);
 }

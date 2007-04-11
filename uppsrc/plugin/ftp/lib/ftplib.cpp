@@ -484,7 +484,6 @@ GLOBALDEF int FtpConnect(const char *host, netbuf **nControl, char perror[],
 			}
 		}
 		else {
-			RLOG("FtpLastError = " << FtpLastError());
 			strcpy(perror, "connect");
 			net_close(sControl);
 			return 0;

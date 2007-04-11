@@ -97,7 +97,7 @@ Image XpImage(int widget, int part, int state, Color color = Null, Size sz = Nul
 	if(!theme)
 		return Null;
 	if(IsNull(sz))
-		XpTheme().GetThemePartSize(theme, ScreenInfo().GetHandle(), part, state, NULL,
+		XpTheme().GetThemePartSize(theme, ScreenHDC(), part, state, NULL,
 		                           1 /*TS_TRUE*/, sz);
 	Color c = White;
 	Image m[2];
@@ -481,7 +481,7 @@ void ChSysInit()
 	ChReset();
 	XpClear();
 
-	GUI_GlobalStyle_Write(IsWinXP() && !ScreenInfo().PaletteMode() && IsSysFlag(0x1022 /*SPI_GETFLATMENU*/)
+	GUI_GlobalStyle_Write(IsWinXP() && !ScreenInPaletteMode() && IsSysFlag(0x1022 /*SPI_GETFLATMENU*/)
 	                      ? GUISTYLE_XP : GUISTYLE_CLASSIC);
 #ifndef PLATFORM_WINCE
 	GUI_DragFullWindow_Write(IsSysFlag(SPI_GETDRAGFULLWINDOWS));

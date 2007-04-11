@@ -604,6 +604,9 @@ public:
 
 	RichEdit&       FontFaces(const Vector<int>& face);
 	RichEdit&       ShowCodes(Color c)                    { showcodes = c; Refresh(); return *this; }
+	RichEdit&       Unit(int u)                           { unit = u; Refresh(); return *this; }
+	RichEdit&       SpellCheck(bool b)                    { spellcheck = b; Refresh(); return *this; }
+	RichEdit&       SetZoom(int z)                        { zoom = z; Refresh(); return *this; }
 
 	struct UndoInfo {
 		int              undoserial;

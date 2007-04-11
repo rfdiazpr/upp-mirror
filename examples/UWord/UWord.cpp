@@ -33,6 +33,7 @@ protected:
 	void OpenFile(const String& fn);
 	void New();
 	void Open();
+	void Save0();
 	void Save();
 	void SaveAs();
 	void Print();
@@ -127,10 +128,9 @@ void UWord::Open()
 		statusbar.Temporary("Loading aborted.");
 }
 
-void UWord::Save()
+void UWord::Save0()
 {
 	lrufile().NewEntry(filename);
-	if(!editor.IsModified()) return;
 	if(filename.IsEmpty())
 		SaveAs();
 	else
@@ -142,13 +142,19 @@ void UWord::Save()
 			Exclamation("Error saving the file [* " + DeQtf(filename) + "]!");
 }
 
+void UWord::Save()
+{
+	if(!editor.IsModified()) return;
+	Save0();
+}
+
 void UWord::SaveAs()
 {
 	FileSel& fs = UWordFs();
 	if(fs.ExecuteSaveAs()) {
 		filename = fs;
 		Title(filename);
-		Save();
+		Save0();
 	}
 }
 

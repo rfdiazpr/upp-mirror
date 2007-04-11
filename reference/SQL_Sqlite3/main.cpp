@@ -1,4 +1,4 @@
-#include <plugin/Sqlite3/Sqlite3.h>
+#include <plugin/sqlite3/Sqlite3.h>
 
 SqlId all("*");
 SqlId name("name");

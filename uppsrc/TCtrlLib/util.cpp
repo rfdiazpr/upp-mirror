@@ -30,9 +30,8 @@ Vector<String> DropFilesGetList(WPARAM hdrop)
 	Vector<String> list;
 	for(int i = 0; i < count; i++) {
 		int length = DragQueryFile((HDROP)hdrop, i, 0, 0);
-		String s;
-		DragQueryFile((HDROP)hdrop, i, s.GetBuffer(length), length + 1);
-		s.ReleaseBuffer(length);
+		StringBuffer s(length + 1);
+		DragQueryFile((HDROP)hdrop, i, s, length + 1);
 		list.Add(s);
 	}
 	DragFinish((HDROP)hdrop);

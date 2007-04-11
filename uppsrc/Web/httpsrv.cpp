@@ -309,7 +309,7 @@ HttpServer *HttpServer::Wait(const Vector<HttpServer *>& list, int msec)
 			if(list[i]->connection.IsOpen())
 				sockets.Add(&list[i]->connection);
 		}
-		RLOG(String() << "-> Socket::Wait(" << sockets.GetCount() << " sockets");
+		LLOG(String() << "-> Socket::Wait(" << sockets.GetCount() << " sockets)");
 		if(sockets.IsEmpty() || !Socket::Wait(sockets, Vector<Socket *>(), msec))
 			return NULL;
 	}
@@ -606,7 +606,7 @@ One<HttpRequest> HttpServer::GetRequest()
 				String content = request_query.GetString("$$CONTENT_TYPE");
 				static const char mtag[] = "multipart/";
 				if(!socket.IsError() && strnicmp(content, mtag, 10))
-					request_query.SetURL(post_data);
+					request_query.Set("$$POSTDATA", post_data); // request_query.SetURL(post_data);
 				else
 					GetHttpPostData(request_query, post_data);
 				One<HttpRequest> req = new HttpRequest(*this, conn, request_query);

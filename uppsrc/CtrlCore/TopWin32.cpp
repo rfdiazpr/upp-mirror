@@ -26,8 +26,10 @@ LRESULT TopWindow::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 		return 0;
 #endif
 	case WM_CLOSE:
-		IgnoreMouseUp();
-		WhenClose();
+		if(IsEnabled()) {
+			IgnoreMouseUp();
+			WhenClose();
+		}
 		return 0;
 	case WM_WINDOWPOSCHANGED:
 #ifndef PLATFORM_WINCE
@@ -162,7 +164,7 @@ void TopWindow::Open(HWND hwnd)
 	if(!GetRect().IsEmpty())
 #endif
 	if(fullscreen) {
-		SetRect(ScreenInfo().GetPagePixels());
+		SetRect(GetScreenSize());
 		Create(hwnd, WS_POPUP, WS_EX_TOPMOST, false, SW_MAXIMIZE, false);
 	}
 	else {

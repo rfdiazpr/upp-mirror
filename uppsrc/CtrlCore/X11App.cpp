@@ -12,7 +12,7 @@ NAMESPACE_UPP
 //	#define SYNCHRONIZE
 #endif
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)  // LOG(x)
 
 XIM Ctrl::xim;
 
@@ -361,6 +361,11 @@ Rect Ctrl::GetWorkArea()
 			r = RectC(0, 0, Xwidth, Xheight);
 	}
 	return r;
+}
+
+Rect Ctrl::GetScreenArea()
+{
+	return RectC(0, 0, Xwidth, Xheight);
 }
 
 int Ctrl::GetKbdDelay()

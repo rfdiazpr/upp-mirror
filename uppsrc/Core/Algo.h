@@ -964,6 +964,64 @@ inline void IndexSort2(KC& keys, VC& values1, WC& values2)
 		__IndexSort2(keys.Begin(), keys.End(), values1.Begin(), values2.Begin(), StdLess<KT>(), (KT *)0);
 }
 
+template <class II, class VI, class WI, class XI, class K>
+struct IndexSort3Iterator
+{
+	typedef IndexSort3Iterator<II, VI, WI, XI, K> Iter;
+
+	IndexSort3Iterator(II ii, VI vi, WI wi, XI xi) : ii(ii), vi(vi), wi(wi), xi(xi) {}
+
+	Iter&       operator ++ ()               { ++ii; ++vi; ++wi; ++xi; return *this; }
+	Iter&       operator -- ()               { --ii; --vi; --wi; --xi; return *this; }
+	const K&    operator *  () const         { return *ii; }
+	Iter        operator +  (int i) const    { return Iter(ii + i, vi + i, wi + i, xi + i); }
+	Iter        operator -  (int i) const    { return Iter(ii - i, vi - i, wi - i, xi - i); }
+	int         operator -  (Iter b) const   { return (int)(ii - b.ii); }
+	bool        operator == (Iter b) const   { return ii == b.ii; }
+	bool        operator != (Iter b) const   { return ii != b.ii; }
+	bool        operator <  (Iter b) const   { return ii <  b.ii; }
+	friend void IterSwap    (Iter a, Iter b) { IterSwap(a.ii, b.ii); IterSwap(a.vi, b.vi); IterSwap(a.wi, b.wi); IterSwap(a.xi, b.xi); }
+
+	II          ii;
+	VI          vi;
+	WI          wi;
+	XI          xi;
+};
+
+template <class II, class VI, class WI, class XI, class K, class Less>
+inline void __IndexSort3(II begin, II end, VI pair1, WI pair2, XI pair3, const Less& less, const K *)
+{
+	int count = end - begin;
+	Sort(IndexSort3Iterator<II, VI, WI, XI, K>(begin, pair1, pair2, pair3),
+		IndexSort3Iterator<II, VI, WI, XI, K>(end, pair1 + count, pair2 + count, pair3 + count),
+		less);
+}
+
+template <class II, class VI, class WI, class XI, class Less>
+inline void IndexSort3(II begin, II end, VI pair1, WI pair2, XI pair3, const Less& less)
+{
+	if(begin != end)
+		__IndexSort3(begin, end, pair1, pair2, pair3, less, &*begin);
+}
+
+template <class KC, class VC, class WC, class XC, class Less>
+inline void IndexSort3(KC& keys, VC& values1, WC& values2, XC& values3, const Less& less)
+{
+	typedef typename KC::ValueType KT;
+	ASSERT(keys.GetCount() == values1.GetCount() && keys.GetCount() == values2.GetCount()
+		&& keys.GetCount() == values3.GetCount());
+	if(keys.GetCount() >= 2)
+		__IndexSort3(keys.Begin(), keys.End(), values1.Begin(), values2.Begin(), values3.Begin(), less, (KT *)0);
+}
+
+template <class KC, class VC, class WC, class XC>
+inline void IndexSort3(KC& keys, VC& values1, WC& values2, XC& values3)
+{
+	typedef typename KC::ValueType KT;
+	if(keys.GetCount() >= 2)
+		__IndexSort3(keys.Begin(), keys.End(), values1.Begin(), values2.Begin(), values3.Begin(), StdLess<KT>(), (KT *)0);
+}
+
 template <class I, class V>
 struct SortOrderIterator : PostfixOps< SortOrderIterator<I, V> >
 {

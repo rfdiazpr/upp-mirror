@@ -664,13 +664,11 @@ String DataFile::ReadBlock(foff_t offset, int length)
 
 	if(length <= 0)
 		return Null;
-	String result;
 	int total = length;
 	int reserve = length + OFFSET_BYTES - 1;
-	char *ptr = result.GetBuffer(reserve);
 	if(length <= BLOCK_BYTES) { // simple storage
-		Read(ptr, offset, length);
-		result.ReleaseBuffer(length);
+		StringBuffer result(length);
+		Read(result, offset, length);
 		return result;
 	}
 	int buffer[10];
@@ -683,6 +681,8 @@ String DataFile::ReadBlock(foff_t offset, int length)
 	}
 	if(buffer[depth] > reserve)
 		ThrowRead();
+	StringBuffer result(reserve);
+	char *ptr = result;
 	char *off = ptr + reserve - buffer[depth];
 	Read(off, offset, buffer[depth]);
 	do { // indirection step
@@ -702,7 +702,7 @@ String DataFile::ReadBlock(foff_t offset, int length)
 	}
 	while(depth);
 
-	result.ReleaseBuffer(total);
+	result.SetCount(total);
 	return result;
 }
 

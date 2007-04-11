@@ -10,4 +10,4 @@ file
 	imgsrv.cpp;
 
 mainconfig
-	"" = "";
+	"" = "GUI";

@@ -900,6 +900,9 @@ private:
 	void operator=(const Draw&);
 };
 
+inline bool ScreenInPaletteMode() { return ScreenInfo().PaletteMode(); }
+inline Size GetScreenSize()       { return ScreenInfo().GetPagePixels(); }
+
 void DrawImageBandRLE(Draw& w, int x, int y, const Image& m, int minp);
 
 class DataDrawer {
@@ -930,6 +933,8 @@ struct DrawingPos {
 
 	int   GetX(int x) const;
 	int   GetY(int y) const;
+	int   GetCx(int cx) const;
+	int   GetCy(int cy) const;
 	int   GetW(int w) const;
 	Point Get(int x, int y) const;
 	Point Get(Point p) const;
@@ -1188,8 +1193,10 @@ void DrawTextEllipsis(Draw& w, int x, int y, int cx, const char *text, const cha
 				      Font font = StdFont(), Color ink = SColorText(), int n = -1);
 void DrawTextEllipsis(Draw& w, int x, int y, int cx, const wchar *text, const char *ellipsis,
 				      Font font = StdFont(), Color ink = SColorText(), int n = -1);
-Size GetTLTextSize(Draw& draw, const wchar *text, Font font = StdFont());
-int  GetTLTextHeight(Draw& w, const wchar *s, Font font = StdFont());
+Size GetTLTextSize(const wchar *text, Font font = StdFont());
+int  GetTLTextHeight(const wchar *s, Font font = StdFont());
+Size GetTLTextSize(Draw& draw, const wchar *text, Font font = StdFont()); // deprecated
+int  GetTLTextHeight(Draw& w, const wchar *s, Font font = StdFont()); // deprecated
 void DrawTLText(Draw& draw, int x, int y, int cx, const wchar *text, Font font = StdFont(),
                 Color ink = SColorText(), int accesskey = 0);
 

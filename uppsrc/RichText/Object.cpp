@@ -48,6 +48,13 @@ Size RichObjectType::GetPhysicalSize(const Value& data) const { return Size(0, 0
 Size RichObjectType::GetPixelSize(const Value& data) const { return Size(1, 1); }
 void RichObjectType::Paint(const Value& data, Draw& w, Size sz) const {}
 
+Image RichObjectType::ToImage(const Value& data, Size sz) const
+{
+	ImageDraw w(sz);
+	Paint(data, w, sz);
+	return w;
+}
+
 String RichObjectType::GetLink(const Value& data, Point pt, Size sz) const
 {
 	return Null;
@@ -78,6 +85,17 @@ void RichObject::Paint(Draw& w, Size sz) const
 		w.DrawRect(sz, SColorFace());
 		DrawFrame(w, sz, SColorText());
 		w.DrawText(2, 2, type_name);
+	}
+}
+
+Image RichObject::ToImage(Size sz) const
+{
+	if(type)
+		return type->ToImage(data, sz);
+	else {
+		ImageDraw w(sz);
+		Paint(w, sz);
+		return w;
 	}
 }
 

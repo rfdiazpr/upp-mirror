@@ -29,8 +29,10 @@ BorderFrame::~BorderFrame() {}
 
 void BorderFrame::FrameLayout(Rect& r)
 {
+	Size sz = r.GetSize();
 	int n = (int)(intptr_t)*border;
-	r.Deflate(n);
+	if(sz.cx >= 2 * n && sz.cy >= 2 * n)
+		r.Deflate(n);
 }
 
 void BorderFrame::FrameAddSize(Size& sz)
@@ -40,7 +42,10 @@ void BorderFrame::FrameAddSize(Size& sz)
 
 void BorderFrame::FramePaint(Draw& draw, const Rect& r)
 {
-	DrawBorder(draw, r.left, r.top, r.Width(), r.Height(), border);
+	Size sz = r.GetSize();
+	int n = (int)(intptr_t)*border;
+	if(sz.cx >= 2 * n && sz.cy >= 2 * n)
+		DrawBorder(draw, r.left, r.top, r.Width(), r.Height(), border);
 }
 
 CtrlFrame& GLOBAL_VP(BorderFrame, InsetFrame, (InsetBorder()));

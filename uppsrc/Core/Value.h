@@ -370,6 +370,12 @@ inline unsigned ValueGetHashValue(const T& x) {
 	return UPP::GetHashValue(x);
 }
 
+inline bool IsPolyEqual(const bool& x, const Value& v) {
+	return v.GetType() == DOUBLE_V && int(x) == double(v)
+	    || v.GetType() == INT64_V && int(x) == int64(v)
+	    || v.GetType() == INT_V && int(x) == int(v);
+}
+
 inline bool IsPolyEqual(const int& x, const Value& v) {
 	return v.GetType() == DOUBLE_V && x == double(v)
 	    || v.GetType() == INT64_V && x == int64(v);
@@ -385,6 +391,10 @@ inline bool IsPolyEqual(const Date& x, const Value& v) {
 
 inline bool IsPolyEqual(const WString& x, const Value& v) {
 	return v.GetType() == STRING_V && WString(v) == x;
+}
+
+inline unsigned ValueGetHashValue(const bool& x) {
+	return UPP::GetHashValue((double)x);
 }
 
 inline unsigned ValueGetHashValue(const int& x) {

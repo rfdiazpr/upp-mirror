@@ -61,6 +61,8 @@ Image Ctrl::FrameMouseEventH(int event, Point p, int zdelta, dword keyflags)
 			return Image::Arrow();
 	LogMouseEvent("FRAME ", this, event, p, zdelta, keyflags);
 	eventCtrl = this;
+	if(parent)
+		parent->ChildFrameMouseEvent(this, event, p, zdelta, keyflags);
 	return FrameMouseEvent(event, p, zdelta, keyflags);
 }
 
@@ -78,6 +80,12 @@ Image Ctrl::MouseEventH(int event, Point p, int zdelta, dword keyflags)
 	if(parent)
 		parent->ChildMouseEvent(this, event, p, zdelta, keyflags);
 	return MouseEvent(event, p, zdelta, keyflags);
+}
+
+void Ctrl::ChildFrameMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags)
+{
+	if(parent)
+		parent->ChildFrameMouseEvent(child, event, p, zdelta, keyflags);
 }
 
 void Ctrl::ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags)

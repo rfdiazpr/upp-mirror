@@ -67,6 +67,8 @@ void __LOGF__(const char *format, ...);
 
 #ifdef _DEBUG
 
+#define _DBG_
+
 #define DEBUGCODE(x)     x
 
 #define LOG(a)           UPP::VppLog() << a << '\n'

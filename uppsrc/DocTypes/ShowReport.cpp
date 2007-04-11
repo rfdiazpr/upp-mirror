@@ -64,9 +64,9 @@ void ReportCtrl::Layout() {
 		static int h[] = { 1, 3, 15, 63 };
 		pm = h[pages];
 		Size sr = report->GetPage(0).GetSize();
-		pagesize.cx = sz.cx / pvn;
-		pagesize.cy = sr.cy * pagesize.cx / sr.cx;
-		vsize = (report->GetCount() + pvn - 1) / pvn * pagesize.cy;
+		pagesize.cx = sz.cx / max(pvn, 1);
+		pagesize.cy = sr.cy * pagesize.cx / max(sr.cx, 1);
+		vsize = (report->GetCount() + pvn - 1) / max(pvn, 1) * pagesize.cy;
 		sb.SetPage(sz.cy);
 		sb.SetTotal(vsize);
 		Init();

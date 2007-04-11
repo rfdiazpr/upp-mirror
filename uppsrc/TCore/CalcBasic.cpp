@@ -175,14 +175,13 @@ FDECL0(">>", CsarNN, &GroupBitOp)
 inline double CmulNN(double a, double b)               { return a * b; }
 inline WString CmulSN(WString s, int i)
 {
-	WString result;
 	if(i <= 0 || IsNull(s))
-		return result;
+		return Null;
 	if(i == 1)
 		return s;
 	int len = s.GetLength() * i;
-	memsetex(result.GetBuffer(len), s, sizeof(wchar) * s.GetLength(), i);
-	result.ReleaseBuffer(len);
+	WStringBuffer result(len);
+	memsetex(result, s, sizeof(wchar) * s.GetLength(), i);
 	return result;
 }
 inline WString CmulNS(int i, WString s) { return CmulSN(s, i); }

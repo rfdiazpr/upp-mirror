@@ -118,10 +118,10 @@ FN(sword,   OCILobFlushBuffer, (OCISvcCtx *svchp, OCIError *errhp, OCILobLocator
 FN(sword,   OCILobGetLength, (OCISvcCtx *svchp, OCIError *errhp, OCILobLocator *locp, ub4 *lenp))
 
 FN(sword,   OCILobIsEqual, (OCIEnv *envhp, const OCILobLocator *x, const OCILobLocator *y, \
-                            boolean *is_equal))
+                            oci_boolean *is_equal))
 
-FN(sword,   OCILobLocatorIsInit, (OCIEnv *envhp, OCIError *errhp, const OCILobLocator *locp, 
-                                  boolean *is_initialized))
+FN(sword,   OCILobLocatorIsInit, (OCIEnv *envhp, OCIError *errhp, const OCILobLocator *locp,
+                                  oci_boolean *is_initialized))
 
 FN(sword,   OCILobRead, (OCISvcCtx *svchp, OCIError *errhp, OCILobLocator *locp, \
                      ub4 *amtp, ub4 offset, dvoid *bufp, ub4 bufl, \
@@ -138,8 +138,8 @@ FN(sword,   OCILobWrite,  (OCISvcCtx *svchp, OCIError *errhp, OCILobLocator *loc
 
 FN(sword,   OCIBreak, (dvoid *hndlp, OCIError *errhp))
 
-FN(sword,   OCIAttrGet, (const dvoid *trgthndlp, ub4 trghndltyp, 
-                         dvoid *attributep, ub4 *sizep, ub4 attrtype, 
+FN(sword,   OCIAttrGet, (const dvoid *trgthndlp, ub4 trghndltyp,
+                         dvoid *attributep, ub4 *sizep, ub4 attrtype,
                          OCIError *errhp))
 
 FN(sword,   OCIAttrSet, (dvoid *trgthndlp, ub4 trghndltyp, dvoid *attributep,

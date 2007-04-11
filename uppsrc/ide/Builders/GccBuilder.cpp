@@ -420,7 +420,7 @@ bool GccBuilder::Link(const Vector<String>& linkfile, const String& linkoptions,
 			for(i = 0; i < lib.GetCount(); i++) {
 				String ln = lib[i];
 				String ext = ToLower(GetFileExt(ln));
-				if(ext == ".a" || ext == ".so" || ext == ".dll")
+				if(ext == ".a" || ext == ".so" || ext == ".dll" || ext == ".lib")
 					lnk << ' ' << GetHostPathQ(FindInDirs(libpath, lib[i]));
 				else
 					lnk << " -l" << ln;

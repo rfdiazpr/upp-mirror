@@ -172,7 +172,7 @@ void Switch::Paint(Draw& w) {
 		bool dv = ds || !v.enabled;
 
 		Size isz = CtrlsImg::S0().GetSize();
-		Size tsz = GetSmartTextSize(w, v.label, font);
+		Size tsz = GetSmartTextSize(v.label, font);
 		int iy = (linecy - isz.cy) / 2;
 
 		Rect hr = RectC(x, y, horz ? tsz.cx + isz.cx + 4 : sz.cx, linecy);

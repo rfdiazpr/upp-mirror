@@ -17,8 +17,8 @@ void CtrlsImageLook(Value *look, int i, const Image& image, int n = 4);
 
 String DeAmp(const char *s);
 
-Size GetSmartTextSize(Draw& w, const char *text, Font font = StdFont());
-int  GetSmartTextHeight(Draw& w, const char *s, int cx, Font font = StdFont());
+Size GetSmartTextSize(const char *text, Font font = StdFont());
+int  GetSmartTextHeight(const char *s, int cx, Font font = StdFont());
 void DrawSmartText(Draw& w, int x, int y, int cx, const char *text,
                    Font font = StdFont(), Color ink = DefaultInk, int accesskey = 0);
 

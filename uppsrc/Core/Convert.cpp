@@ -87,7 +87,7 @@ int ScanInt(const wchar *ptr, const wchar **endptr, int base)
 		return Null;
 }
 
-double ScanDouble(const char *p, const char **endptr)
+double ScanDouble(const char *p, const char **endptr, bool accept_comma)
 {
 	const char *begin = p;
 	while(*p && (byte)*p <= ' ')
@@ -95,8 +95,7 @@ double ScanDouble(const char *p, const char **endptr)
 	bool neg = false;
 	if(*p == '+' || *p == '-')
 		neg = (*p++ == '-');
-	if((byte)(*p - '0') >= 10 && !(*p == '.' && (byte)(p[1] - '0') < 10))
-	{
+	if((byte)(*p - '0') >= 10 && !(*p == '.' && (byte)(p[1] - '0') < 10)) {
 		if(endptr) *endptr = begin;
 		return Null;
 	}
@@ -104,41 +103,37 @@ double ScanDouble(const char *p, const char **endptr)
 	char c;
 	int exp = 0;
 	while((byte)(*p - '0') < 10)
-		if((c = *p++) != '0')
-		{
+		if((c = *p++) != '0') {
 			if(exp) { mantissa *= ipow10(exp); exp = 0; }
 			mantissa = 10 * mantissa + c - '0';
 		}
 		else
 			exp++;
 	int raise = exp;
-	if(*p == '.') // decimal part
+	if(*p == '.' || accept_comma && *p == ',') // decimal part
 		while((byte)((c = *++p) - '0') < 10)
-			if(c != '0')
-			{
+			if(c != '0') {
 				if(raise) { mantissa *= ipow10(raise); exp -= raise; raise = 0; }
 				exp--;
 				mantissa = 10 * mantissa + c - '0';
 			}
 			else
 				raise++;
-	if(*p == 'E' || *p == 'e')
-	{ // exponent
+	if(*p == 'E' || *p == 'e') { // exponent
 		int vexp = ScanInt(p + 1, endptr);
 		if(!IsNull(vexp))
 			exp += vexp;
 	}
 	else
 		if(endptr) *endptr = p;
-	if(exp)
-	{
+	if(exp) {
 		double e = ipow10(tabs(exp));
 		mantissa = (exp > 0 ? mantissa * e : mantissa / e);
 	}
 	return neg ? -mantissa : mantissa;
 }
 
-double ScanDouble(const wchar *p, const wchar **endptr)
+double ScanDouble(const wchar *p, const wchar **endptr, bool accept_comma)
 {
 	const wchar *begin = p;
 	while(*p && *p <= ' ')
@@ -146,8 +141,7 @@ double ScanDouble(const wchar *p, const wchar **endptr)
 	bool neg = false;
 	if(*p == '+' || *p == '-')
 		neg = (*p++ == '-');
-	if((unsigned)(*p - '0') >= 10)
-	{
+	if((unsigned)(*p - '0') >= 10) {
 		if(endptr) *endptr = begin;
 		return Null;
 	}
@@ -155,34 +149,30 @@ double ScanDouble(const wchar *p, const wchar **endptr)
 	wchar c;
 	int exp = 0;
 	while((unsigned)(*p - '0') < 10)
-		if((c = *p++) != '0')
-		{
+		if((c = *p++) != '0') {
 			if(exp) { mantissa *= ipow10(exp); exp = 0; }
 			mantissa = 10 * mantissa + c - '0';
 		}
 		else
 			exp++;
 	int raise = exp;
-	if(*p == '.') // decimal part
+	if(*p == '.' || accept_comma && *p == ',') // decimal part
 		while((unsigned)((c = *++p) - '0') < 10)
-			if(c != '0')
-			{
+			if(c != '0') {
 				if(raise) { mantissa *= ipow10(raise); exp -= raise; raise = 0; }
 				exp--;
 				mantissa = 10 * mantissa + c - '0';
 			}
 			else
 				raise++;
-	if(*p == 'E' || *p == 'e')
-	{ // exponent
+	if(*p == 'E' || *p == 'e') { // exponent
 		int vexp = ScanInt(p + 1, endptr);
 		if(!IsNull(vexp))
 			exp += vexp;
 	}
 	else
 		if(endptr) *endptr = p;
-	if(exp)
-	{
+	if(exp) {
 		double e = ipow10(tabs(exp));
 		mantissa = (exp > 0 ? mantissa * e : mantissa / e);
 	}

@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-FontInfo ParaTypo::Part::Set(Draw& w, Font _font, Color _color) {
+FontInfo ParaTypo::Part::Set(Font _font, Color _color) {
 	font = _font;
 	color = _color;
 	FontInfo pf = font.Info();

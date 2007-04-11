@@ -375,7 +375,8 @@ int EditField::Insert(int pos, const WString& itext)
 			chr = (*filter)(chr);
 			if(chr) {
 				chr = convert->Filter(chr);
-				if(chr) ins.Cat(chr);
+				if(chr && (charset == CHARSET_UNICODE || FromUnicode(chr, charset, 0)))
+					ins.Cat(chr);
 			}
 		}
 		else
@@ -669,6 +670,7 @@ void EditField::Reset()
 	autosize = false;
 	keep_selection = false;
 	nobg = false;
+	charset = CHARSET_UNICODE;
 }
 
 EditField& EditField::SetFont(Font _font)

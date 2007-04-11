@@ -98,7 +98,7 @@ Rect  Ctrl::GetVisibleScreenRect() const
 	else if(activex)
 		r = GetWndScreenRect();
 #endif
-	return r & GetWorkArea();
+	return r & GetScreenArea();
 }
 
 Rect  Ctrl::GetVisibleScreenView() const

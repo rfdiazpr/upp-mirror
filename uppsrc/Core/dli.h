@@ -4,9 +4,13 @@
 #define DLISTR_(s)  DLISTR__(s)
 #define DLISTR(s)   DLISTR_(s)
 
-#define FN(retval, fn, args)          FN_CN(retval, DLLCALL, fn, args, DLISTR(fn))
-#define FN_C(retval, call, fn, args)  FN_CN(retval, call, fn, args, DLISTR(fn))
-#define FN_N(retval, fn, args, name)  FN_CN(retval, DLLCALL, fn, args, name)
+#define FN(retval, fn, args)           FN_CN(retval, DLLCALL, fn, args, DLISTR(fn))
+#define FN_C(retval, call, fn, args)   FN_CN(retval, call, fn, args, DLISTR(fn))
+#define FN_N(retval, fn, args, name)   FN_CN(retval, DLLCALL, fn, args, name)
+
+#define FN0(retval, fn, args)          FN0_CN(retval, DLLCALL, fn, args, DLISTR(fn))
+#define FN0_C(retval, call, fn, args)  FN0_CN(retval, call, fn, args, DLISTR(fn))
+#define FN0_N(retval, fn, args, name)  FN0_CN(retval, DLLCALL, fn, args, name)
 
 #ifndef DLLTYPE
 #define DLLTYPE   COMBINE(T_, DLIMODULE)
@@ -36,11 +40,12 @@
 
 #define FN_CN(retval, call, fn, args, name)\
 	typedef retval (call fn##_type) args; fn##_type *fn;
+#define FN0_CN FN_CN
 
-struct DLLTYPE
-{
+struct DLLTYPE{
 	DLLTYPE();
 
+	UPP::String       GetLibName() const        { return libname; }
 	void              SetLibName(const char *n) { if(handle) Free(); libname = n; checked = false; }
 
 	bool              Load();
@@ -58,6 +63,7 @@ private:
 };
 
 #undef FN_CN
+#undef FN0_CN
 
 // ---------
 
@@ -101,6 +107,7 @@ bool DLLTYPE::Load()
 		checked = true;
 
 #define FN_CN(retval, call, fn, args, name)  name,
+#define FN0_CN(retval, call, fn, args, name) "?" name,
 
 		const char *name[] =
 		{
@@ -109,11 +116,13 @@ bool DLLTYPE::Load()
 		};
 
 #undef FN_CN
+#undef FN0_CN
 
 // --- FnPtr map
 
 
 #define FN_CN(retval, call, fn, args, name)  &fn,
+#define FN0_CN FN_CN
 
 		void *proc[] =
 		{
@@ -121,7 +130,8 @@ bool DLLTYPE::Load()
 			0
 		};
 
-		#undef FN_CN
+#undef FN_CN
+#undef FN0_CN
 
 		// --- Proc pointers
 
@@ -150,15 +160,13 @@ void DLLTYPE::Free() {
 }
 #endif
 
-#undef DLIMODULE
-
-#undef DLIHEADER
-#undef DLLTYPE
-#undef DLLCALL
-
 #undef FN
 #undef FN_C
 #undef FN_N
+
+#undef FN0
+#undef FN0_C
+#undef FN0_N
 
 #undef DLISTR__
 #undef DLISTR_
@@ -172,26 +180,15 @@ void DLLTYPE::Free() {
 #undef DLLAUTOLOAD
 #endif
 
-
-#undef FN
-#undef FN_C
-#undef FN_N
-
 #undef DLLTYPE
-
-#undef DLISTR__
-#undef DLISTR_
-#undef DLISTR
-
 #undef DLIMODULE
-
 #undef DLIHEADER
 #undef DLLCALL
 
-	#ifdef DLLFILENAME
-	#undef DLLFILENAME
-	#endif
+#ifdef DLLFILENAME
+#undef DLLFILENAME
+#endif
 
-	#ifdef DLLAUTOLOAD
-	#undef DLLAUTOLOAD
-	#endif
+#ifdef DLLAUTOLOAD
+#undef DLLAUTOLOAD
+#endif

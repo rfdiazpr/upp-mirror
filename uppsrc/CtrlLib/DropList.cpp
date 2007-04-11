@@ -59,7 +59,7 @@ bool PopUpTable::Key(dword key, int n) {
 
 void PopUpTable::PopUp(Ctrl *owner, int x, int top, int bottom, int width) {
 	DoClose();
-	int h = min(droplines, GetCount()) * GetLineCy() + 2;
+	int h = AddFrameSize(width, min(droplines, GetCount()) * GetLineCy()).cy;
 	Rect rt = RectC(x, bottom, width, h);
 	Rect area = Ctrl::GetWorkArea();
 	bool up = false;

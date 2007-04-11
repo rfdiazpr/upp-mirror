@@ -133,3 +133,11 @@ END_TOPIC
 TOPIC("TreeCtrl$en-us")
 #include "TreeCtrl$en-us.tpp"
 END_TOPIC
+
+TOPIC("OptionTree$en-us")
+#include "OptionTree$en-us.tpp"
+END_TOPIC
+
+TOPIC("Static$en-us")
+#include "Static$en-us.tpp"
+END_TOPIC

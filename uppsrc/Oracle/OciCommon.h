@@ -11,7 +11,7 @@ struct OCIDefine;
 struct OCISnapshot;
 struct OCIParam;
 
-#define boolean int
+#define oci_boolean int
 typedef void dvoid;
 typedef int sword;
 typedef int sb4;

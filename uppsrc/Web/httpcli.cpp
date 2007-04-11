@@ -3,7 +3,7 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x)       // RLOG(x)
+#define LLOG(x)       RLOG(x)
 #define LLOGBLOCK(x)  // RLOGBLOCK(x)
 #define LDUMP(x)      // RDUMP(x)
 
@@ -158,10 +158,12 @@ String HttpClient::Execute(Gate2<int, int> progress)
 		request << "Accept: " << Nvl(accept, "*/*") << "\r\n";
 		request << "Accept-Encoding: gzip\r\n";
 		request << "Agent: " << Nvl(agent, "Ultimate++ HTTP client") << "\r\n";
+		if(method == METHOD_POST)
+			request << "Content-Length: " << postdata.GetLength() << "\r\n";
 	}
 	if(!IsNull(username) || !IsNull(password))
 		request << "Authorization: basic " << Base64Encode(username + ":" + password) << "\r\n";
-	request << client_headers << "\r\n";
+	request << client_headers << "\r\n" << postdata;
 	LLOG("host = " << host << ", port = " << port);
 	LLOG("request: " << request);
 	int written = 0;

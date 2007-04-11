@@ -1,4 +1,4 @@
-#include <Plugin/Pcre/Pcre.h>
+#include <plugin/pcre/Pcre.h>
 
 using namespace Upp;
 

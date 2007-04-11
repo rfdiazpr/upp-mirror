@@ -719,21 +719,19 @@ Topic HomeBudgetHelp::AcquireTopic(const String& topic)
 //rozwiazac zapisywnie kolumn
 GUI_APP_MAIN
 {
+	bool nodb = false;	
 	Sqlite3Session db;
 	db.LogErrors(true);
+	
 	#ifdef flagDEBUG    
 	db.SetTrace();
+	nodb = true;
 	#endif
 
-	#ifndef flagDEBUG
 	FileIn fi("HomeBudget.db3");
 	if(fi.IsError() || fi.GetSize() <= 0)
-	{
-		Exclamation(t_("Database file is corrupted"));
-		return;
-	}
+		nodb = true;
 	fi.Close();
-	#endif
 	
 	if(!db.Open(ConfigFile("HomeBudget.db3")))
 	{
@@ -743,23 +741,24 @@ GUI_APP_MAIN
 		
 	SQL = db;
 
-	#ifdef flagDEBUG
-	SqlSchema sch(SQLITE3);
-	StdStatementExecutor se(db);
-	All_Tables(sch);
-	if(sch.ScriptChanged(SqlSchema::UPGRADE))
-		Sqlite3PerformScript(sch.Upgrade(), se);
-	if(sch.ScriptChanged(SqlSchema::ATTRIBUTES)) 
+	if(nodb)
 	{
-		Sqlite3PerformScript(sch.Attributes(), se);
+		SqlSchema sch(SQLITE3);
+		StdStatementExecutor se(db);
+		All_Tables(sch);
+		if(sch.ScriptChanged(SqlSchema::UPGRADE))
+			Sqlite3PerformScript(sch.Upgrade(), se);
+		if(sch.ScriptChanged(SqlSchema::ATTRIBUTES)) 
+		{
+			Sqlite3PerformScript(sch.Attributes(), se);
+		}
+		if(sch.ScriptChanged(SqlSchema::CONFIG)) 
+		{
+			Sqlite3PerformScript(sch.ConfigDrop(), se);
+			Sqlite3PerformScript(sch.Config(), se);
+		}
+		sch.SaveNormal();
 	}
-	if(sch.ScriptChanged(SqlSchema::CONFIG)) 
-	{
-		Sqlite3PerformScript(sch.ConfigDrop(), se);
-		Sqlite3PerformScript(sch.Config(), se);
-	}
-	sch.SaveNormal();
-	#endif
 
 	try
 	{

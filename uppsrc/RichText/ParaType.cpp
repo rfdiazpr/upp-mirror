@@ -73,14 +73,14 @@ struct RichPara::StorePart {
 	int                pos;
 	FontInfo           pfi;
 
-	void Store(Draw& draw, Lines& lines, const Part& p, int pinc);
+	void Store(Lines& lines, const Part& p, int pinc);
 };
 
-void RichPara::StorePart::Store(Draw& draw, Lines& lines, const Part& part, int pinc)
+void RichPara::StorePart::Store(Lines& lines, const Part& part, int pinc)
 {
 	if(part.field && pinc) {
 		for(int i = 0; i < part.fieldpart.GetCount(); i++)
-			Store(draw, lines, part.fieldpart[i], 0);
+			Store(lines, part.fieldpart[i], 0);
 		pos++;
 	}
 	else
@@ -193,7 +193,6 @@ static int CountChars(const Array<RichPara::Part>& part)
 RichPara::Lines RichPara::FormatLines(int acx) const
 {
 	int i;
-	Draw& draw = ScreenInfo();
 	Lines lines;
 	lines.cx = acx;
 	lines.len = GetLength();
@@ -238,7 +237,7 @@ RichPara::Lines RichPara::FormatLines(int acx) const
 	sp.pos = 0;
 
 	for(i = 0; i < part.GetCount(); i++)
-		sp.Store(draw, lines, part[i], 1);
+		sp.Store(lines, part[i], 1);
 
 	wchar *s = lines.text;
 	wchar *text = s;

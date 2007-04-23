@@ -296,6 +296,15 @@ Ctrl *Ctrl::GetActiveWindow()
 	return q ? q->GetTopWindow() : NULL;
 }
 
+bool  Ctrl::HasFocusDeep() const
+{
+	if(HasFocus() || HasChildDeep(FocusCtrl())) return true;
+	Ctrl *a = GetActiveCtrl();
+	if(!a || !a->IsPopUp()) return false;
+	a = a->GetOwnerCtrl();
+	return a && HasChildDeep(a);
+}
+
 String GetKeyDesc(int key)
 {
 	String desc;

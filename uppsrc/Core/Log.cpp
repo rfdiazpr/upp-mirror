@@ -67,7 +67,7 @@ void LogStream::Create(const char *path, bool append)
 	strcat(backup, ".old");
 
 #if defined(PLATFORM_WIN32)
-	FileDelete(backup);
+	DeleteFile(backup);
 #elif defined(PLATFORM_POSIX)
 	unlink(backup);
 #else
@@ -75,7 +75,7 @@ void LogStream::Create(const char *path, bool append)
 #endif
 
 #if defined(PLATFORM_WIN32)
-	FileMove(filename, backup);
+	MoveFile(filename, backup);
 #elif defined(PLATFORM_POSIX)
 	!rename(filename, backup);
 #else
@@ -194,5 +194,22 @@ bool LogStream::IsOpen() const
 	return hfile != INVALID_HANDLE_VALUE;
 #endif
 }
+
+#ifdef _MULTITHREADED
+
+StaticCriticalSection sLogLock;
+
+void LockLog()
+{
+	sLogLock.Enter();
+}
+
+void UnlockLog()
+{
+	sLogLock.Leave();
+}
+
+#endif
+
 
 END_UPP_NAMESPACE

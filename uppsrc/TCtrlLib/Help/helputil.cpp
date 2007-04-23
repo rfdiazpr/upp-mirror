@@ -466,9 +466,9 @@ void RegisterHelpMenuItems(Callback1<Bar&> barproc, String ident, String module)
 
 void RegisterHelpFieldTypes()
 {
-	RichPara::fieldtype().FindAdd(FieldTypeLinkID(), &FieldTypeLink());
-	RichPara::fieldtype().FindAdd(FieldTypeIndexID(), &FieldTypeIndex());
-	RichPara::fieldtype().FindAdd(FieldTypeSectionID(), &FieldTypeSection());
+	RichPara::Register(FieldTypeLinkID(), FieldTypeLink());
+	RichPara::Register(FieldTypeIndexID(), FieldTypeIndex());
+	RichPara::Register(FieldTypeSectionID(), FieldTypeSection());
 }
 
 struct FieldTypeLinkCls : public RichPara::FieldType

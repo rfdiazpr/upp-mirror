@@ -3,6 +3,8 @@ NAMESPACE_UPP
 static const int    DOTS_PER_METER_INT = 23622;
 static const double DOTS_PER_METER_DBL = 600e3 / 25.4;
 
+Draw&  ScreenInfo();
+
 Size   GetPixelsPerMeter(const Draw& draw);
 int    GetHorzPixelsPerMeter(const Draw& draw);
 int    GetVertPixelsPerMeter(const Draw& draw);

@@ -68,11 +68,6 @@ Size GetTLTextSize(const wchar *text, Font font)
 	return sz;
 }
 
-Size GetTLTextSize(Draw&, const wchar *text, Font font)
-{
-	return GetTLTextSize(text, font);
-}
-
 int GetTLTextHeight(const wchar *s, Font font)
 {
 	int cy = font.Info().GetHeight();
@@ -83,11 +78,6 @@ int GetTLTextHeight(const wchar *s, Font font)
 		s++;
 	}
 	return h;
-}
-
-int GetTLTextHeight(Draw&, const wchar *s, Font font)
-{
-	return GetTLTextHeight(s, font);
 }
 
 void DrawTLText(Draw& draw, int x, int y, int cx, const wchar *text,

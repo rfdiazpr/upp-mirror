@@ -121,9 +121,11 @@ Value::operator bool() const
 	return operator int();
 }
 
-typedef VectorMap<dword, Value::Void *(*)(Stream& s)> stypemap;
-
-GLOBAL_VAR(stypemap, Value::Typemap)
+VectorMap<dword, Value::Void *(*)(Stream& s)>& Value::Typemap()
+{
+	static VectorMap<dword, Value::Void *(*)(Stream& s)> x;
+	return x;
+}
 
 void Value::Serialize(Stream& s) {
 	ONCELOCK {
@@ -156,12 +158,11 @@ void Value::Serialize(Stream& s) {
 	}
 }
 
-void Value::Register(dword w, Void* (*c)(Stream& s)) {
-	INTERLOCKED {
-		ASSERT(w != UNKNOWN_V);
-		ASSERT(w < 0x8000000);
-		CHECK(Typemap().GetAdd(w, c) == c);
-	}
+void Value::Register(dword w, Void* (*c)(Stream& s)) init_ {
+	AssertST();
+	ASSERT(w != UNKNOWN_V);
+	ASSERT(w < 0x8000000);
+	CHECK(Typemap().GetAdd(w, c) == c);
 }
 
 String  Value::ToString() const {
@@ -384,7 +385,9 @@ String AsString(const ValueArray& v) {
 	return sAsString(v.Get());
 }
 
-RichValue<ValueArray>::Registrator ValueArrayRegistrator;
+INITBLOCK {
+	RichValue<ValueArray>::Register();
+}
 
 // ----------------------------------
 

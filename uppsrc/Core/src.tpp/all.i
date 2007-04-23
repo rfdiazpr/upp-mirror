@@ -105,3 +105,7 @@ END_TOPIC
 TOPIC("Color$en-us")
 #include "Color$en-us.tpp"
 END_TOPIC
+
+TOPIC("Thread$en-us")
+#include "Thread$en-us.tpp"
+END_TOPIC

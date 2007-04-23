@@ -156,7 +156,14 @@ ItemRect& ItemRect::SetFormat(const char *fmt)
 
 ItemRect& ItemRect::SetDisplay(GridDisplay &gd)
 {
-	(*items)[0][id].display = &gd;
+	//(*items)[0][id].display = &gd;
+	display = &gd;
+	return *this;
+}
+
+ItemRect& ItemRect::IgnoreDisplay()
+{
+	ignore_display = true;
 	return *this;
 }
 

@@ -193,6 +193,9 @@ const Ctrl *Ctrl::GetOwner() const        { return const_cast<Ctrl *>(this)->Get
 Ctrl       *Ctrl::GetTopCtrlOwner()       { return GetTopCtrl()->GetOwner(); }
 const Ctrl *Ctrl::GetTopCtrlOwner() const { return GetTopCtrl()->GetOwner(); }
 
+Ctrl       *Ctrl::GetOwnerCtrl()          { return !IsChild() && top ? top->owner : NULL; }
+const Ctrl *Ctrl::GetOwnerCtrl() const    { return const_cast<Ctrl *>(this)->GetOwnerCtrl(); }
+
 TopWindow *Ctrl::GetTopWindow()
 {
 	Ctrl *q = GetTopCtrl();

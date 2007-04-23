@@ -78,7 +78,6 @@ private:
 	String        backup;
 	PaintRect     background;
 	Size          minsize;
-	Rect          overlappedrect;
 	bool          dokeys;
 	bool          fullscreen;
 

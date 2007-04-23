@@ -127,6 +127,7 @@ bool Draw::IsPaintingOp(const Rect& r) const
 void Draw::DrawRectOp(int x, int y, int cx, int cy, Color color)
 {
 	LTIMING("DrawRect");
+	DrawLock __;
 	LLOG("DrawRect " << RectC(x, y, cx, cy) << ": " << color);
 	if(IsNull(color)) return;
 	if(cx <= 0 || cy <= 0) return;
@@ -143,6 +144,7 @@ void Draw::DrawRectOp(int x, int y, int cx, int cy, Color color)
 
 void Draw::DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color)
 {
+	DrawLock __;
 	if(IsNull(width) || IsNull(color)) return;
 	SetLineStyle(width);
 	SetForeground(color);
@@ -155,6 +157,7 @@ void Draw::DrawPolyPolylineOp(const Point *vertices, int vertex_count,
 	                          const int *counts, int count_count,
 	                          int width, Color color, Color doxor)
 {
+	DrawLock __;
 	ASSERT(count_count > 0 && vertex_count > 0);
 	if(vertex_count < 2 || IsNull(color))
 		return;
@@ -213,6 +216,7 @@ static void DrawPolyPolyPolygonRaw(Draw& draw, const Point *vertices, int vertex
 	const int *subpolygon_counts, int subpolygon_count_count,
 	const int *disjunct_polygon_counts, int disjunct_polygon_count_count)
 {
+	DrawLock __;
 	for(int i = 0; i < disjunct_polygon_count_count; i++, disjunct_polygon_counts++)
 	{
 		int poly = *disjunct_polygon_counts;
@@ -270,6 +274,7 @@ void Draw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
 	const int *disjunct_polygon_counts, int disjunct_polygon_count_count,
 	Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
+	DrawLock __;
 	if(vertex_count == 0)
 		return;
 
@@ -310,13 +315,14 @@ void Draw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
 
 void Draw::DrawEllipseOp(const Rect& r, Color color, int pen, Color pencolor)
 {
+	DrawLock __;
 	SetLineStyle(pen);
 	if(!IsNull(color)) {
 		SetForeground(color);
 		XFillArc(Xdisplay, dw, gc, r.left + actual_offset.x, r.top + actual_offset.y,
 			r.Width() - 1, r.Height() - 1, 0, 360 * 64);
 	}
-	if(!IsNull(pencolor)) {
+	if(!IsNull(pencolor) && !IsNull(pen)) {
 		SetForeground(pencolor);
 		XDrawArc(Xdisplay, dw, gc, r.left + actual_offset.x, r.top + actual_offset.y,
 			r.Width() - 1, r.Height() - 1, 0, 360 * 64);
@@ -325,6 +331,7 @@ void Draw::DrawEllipseOp(const Rect& r, Color color, int pen, Color pencolor)
 
 void Draw::DrawArcOp(const Rect& rc, Point start, Point end, int width, Color color)
 {
+	DrawLock __;
 	XGCValues gcv, gcv_old;
 	XGetGCValues(Xdisplay, GetGC(), GCForeground, &gcv_old);
 	Point offset = GetOffset();

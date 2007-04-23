@@ -338,6 +338,16 @@ ctrl Option {
 	bool   NotNull;
 	Text   Tip;
 
+	ViewRect(w) {
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+		return r;
+	}
+	ViewSize(w) {
+		r = ViewRect(w);
+		return Size(r.right - r.left, r.bottom - r.top);
+	}
+
 	Paint(w) {
 		x = self;
 		sz = ViewSize(w);

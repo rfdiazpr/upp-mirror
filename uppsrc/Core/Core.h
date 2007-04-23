@@ -3,7 +3,7 @@
 
 #define QLIB3
 
-#if defined(flagMT) || defined(flagDEBUG)
+#if defined(flagMT)
 	#define _MULTITHREADED
 #endif
 
@@ -79,8 +79,14 @@
 #ifdef flagOSX11
 	#define PLATFORM_OSX11
 	#define PLATFORM_POSIX
+
+	#define flagUSEMALLOC // A bug in carbon?! - MacOS X seems to crash when custom allocator is used
+
 	#ifdef flagGUI
 		#define PLATFORM_X11
+		#ifndef flagNOGTK
+			#define flagNOGTK
+		#endif
 	#endif
 
 	#ifdef flagTESTLEAKS
@@ -223,6 +229,7 @@
 	#include <fcntl.h>
 	#include <unistd.h>
 	#include <pthread.h>
+	#include <semaphore.h>
 	#include <memory.h>
 	#include <dirent.h>
 	#ifdef PLATFORM_SOLARIS
@@ -283,6 +290,9 @@
 			#include <winbase.h>
 			#include <wingdi.h>
 			#include <winuser.h>
+		#define byte win32_byte_ // RpcNdr defines byte -> class with Upp::byte
+			#include <objidl.h>
+		#undef byte
 			typedef DWORD LCTYPE;
 		#else
 			#define _WINSOCKAPI_   /* Prevent inclusion of winsock.h in windows.h */
@@ -341,6 +351,12 @@ inline void operator  delete(void *ptr) throw()              { UPP::MemoryFreeDe
 inline void *operator new[](size_t size) throw(std::bad_alloc) { void *ptr = UPP::MemoryAllocDebug(size); return ptr; }
 inline void operator  delete[](void *ptr) throw()              { UPP::MemoryFreeDebug(ptr); }
 
+inline void *operator new(size_t size, const std::nothrow_t&)  { void *ptr = UPP::MemoryAllocDebug(size); return ptr; }
+inline void operator  delete(void *ptr, const std::nothrow_t&) { UPP::MemoryFreeDebug(ptr); }
+
+inline void *operator new[](size_t size, const std::nothrow_t&)  { void *ptr = UPP::MemoryAllocDebug(size); return ptr; }
+inline void operator  delete[](void *ptr, const std::nothrow_t&) { UPP::MemoryFreeDebug(ptr); }
+
 #else
 
 inline void *operator new(size_t size) throw(std::bad_alloc) { void *ptr = UPP::MemoryAlloc(size); return ptr; }
@@ -348,6 +364,12 @@ inline void operator  delete(void *ptr) throw()              { UPP::MemoryFree(p
 
 inline void *operator new[](size_t size) throw(std::bad_alloc) { void *ptr = UPP::MemoryAlloc(size); return ptr; }
 inline void operator  delete[](void *ptr) throw()              { UPP::MemoryFree(ptr); }
+
+inline void *operator new(size_t size, const std::nothrow_t&)  { void *ptr = UPP::MemoryAlloc(size); return ptr; }
+inline void operator  delete(void *ptr, const std::nothrow_t&) { UPP::MemoryFree(ptr); }
+
+inline void *operator new[](size_t size, const std::nothrow_t&)  { void *ptr = UPP::MemoryAlloc(size); return ptr; }
+inline void operator  delete[](void *ptr, const std::nothrow_t&) { UPP::MemoryFree(ptr); }
 
 #endif
 
@@ -360,7 +382,6 @@ NAMESPACE_UPP
 #include <Core/Topt.h>
 #include <Core/Profile.h>
 #include <Core/String.h>
-#include <Core/String.hpp>
 
 #include <Core/CharSet.h>
 #include <Core/TimeDate.h>
@@ -390,8 +411,6 @@ NAMESPACE_UPP
 #include <Core/Format.h>
 #include <Core/Convert.h>
 
-#include <Core/Thread.h>
-
 #include <Core/z.h>
 
 #include <Core/Parser.h>
@@ -403,6 +422,8 @@ NAMESPACE_UPP
 #include <Core/App.h>
 
 #include <Core/Xmlize.h>
+
+#include <Core/CoWork.h>
 
 #include <Core/Win32Com.h>
 

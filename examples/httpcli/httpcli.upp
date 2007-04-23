@@ -1,0 +1,8 @@
+uses
+	Web;
+
+file
+	main.cpp;
+
+mainconfig
+	"" = "";

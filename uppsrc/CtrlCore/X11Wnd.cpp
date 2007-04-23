@@ -437,6 +437,7 @@ void Ctrl::PopUp(Ctrl *owner, bool savebits, bool activate, bool, bool)
 	WndShow(visible);
 	if(activate && IsEnabled())
 		SetFocus();
+	if(top) top->owner = owner;
 }
 
 Ctrl *Ctrl::GetActiveCtrl()

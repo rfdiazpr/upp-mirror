@@ -17,6 +17,7 @@ RulerCtrl::RulerCtrl()
 	is_vert = false;
 	is_right = false;
 	background = Yellow;
+	outer_color = SGray();
 	autoselect = false;
 }
 
@@ -193,10 +194,10 @@ void RulerCtrl::Paint(Draw& draw)
 		cli2 = min<int>(cli2, ToClient(rrange));
 	Rect nclip;
 	if(is_vert) {
-		draw.DrawRect(0, 0, client.cx, cli1, SGray);
+		draw.DrawRect(0, 0, client.cx, cli1, outer_color);
 		if(!IsNull(lrange))
-			draw.DrawRect(0, cli1++, client.cx, 1, SWhite);
-		draw.DrawRect(0, cli2, client.cx, client.cy - cli2, SGray);
+			draw.DrawRect(0, cli1++, client.cx, 1, SBlack);
+		draw.DrawRect(0, cli2, client.cx, client.cy - cli2, outer_color);
 		if(!IsNull(rrange))
 			draw.DrawRect(0, --cli2, client.cx, 1, SBlack);
 		draw.DrawRect(0, cli1, 1, cli2 - cli1, SGray);
@@ -205,10 +206,10 @@ void RulerCtrl::Paint(Draw& draw)
 		nclip = RectC(1, cli1, client.cx - 2, cli2 - cli1);
 	}
 	else {
-		draw.DrawRect(0, 0, cli1, client.cy, SGray);
+		draw.DrawRect(0, 0, cli1, client.cy, outer_color);
 		if(!IsNull(lrange))
-			draw.DrawRect(cli1++, 0, 1, client.cy, SWhite);
-		draw.DrawRect(cli2, 0, client.cx - cli2, client.cy, SGray);
+			draw.DrawRect(cli1++, 0, 1, client.cy, SBlack);
+		draw.DrawRect(cli2, 0, client.cx - cli2, client.cy, outer_color);
 		if(!IsNull(rrange))
 			draw.DrawRect(--cli2, 0, 1, client.cy, SBlack);
 		draw.DrawRect(cli1, 0, cli2 - cli1, 1, SGray);

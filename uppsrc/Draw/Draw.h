@@ -119,9 +119,18 @@ class Draw;
 HDC ScreenHDC();
 #endif
 
-Draw& ScreenInfo();
+bool ScreenInPaletteMode();
+Size GetScreenSize();
 
 #include "Image.h"
+
+void EnterDraw();
+void LeaveDraw();
+
+struct DrawLock {
+	DrawLock()    { EnterDraw(); }
+	~DrawLock()   { LeaveDraw(); }
+};
 
 const int FONT_V = 40;
 
@@ -244,7 +253,7 @@ class FontInfo : Moveable<FontInfo> {
 		void         CreateFont(int i, int cs);
 	#endif
 
-		int          count;
+		int          refcount;
 		Font         font;
 		int          angle;
 		int          device;
@@ -293,15 +302,12 @@ class FontInfo : Moveable<FontInfo> {
 
 	friend class Draw;
 
+	CharMetrics       *CreateMetricsPage(int page) const;
 	CharMetrics       *GetPage(int page) const;
 	void               ComposeMetrics(Font fnt, CharMetrics *m) const;
 
-	#ifdef PLATFORM_X11
-//	const CharMetrics& Get(wchar chr); //TODO - remove
-	#endif
-
 	void       Release();
-	void       Retain(const FontInfo& f) { ptr = f.ptr; ptr->count++; charset = f.charset; }
+	void       Retain(const FontInfo& f);
 	FontInfo(Data *ptr) : ptr(ptr)       { charset = CHARSET_UNICODE; }
 
 	bool        IsEqual(byte charset, Font f, int angle, int device) const;
@@ -629,11 +635,11 @@ public:
 	bool  IsMono() const                                { return is_mono; }
 
 	Size  GetPagePixels() const                         { return pagePixels; }
-	Size  GetPageDots() const                           { return pagePixels; }
+//	Size  GetPageDots() const                           { return pagePixels; }
 	Size  GetPageMMs() const                            { return pageMMs; }
 	Size  GetPixelsPerInch() const                      { return inchPixels; }
-	Size  GetSheetPixels() const                        { return sheetPixels; }
-	Point GetPageOffset() const                         { return pageOffset; }
+//	Size  GetSheetPixels() const                        { return sheetPixels; }
+//	Point GetPageOffset() const                         { return pageOffset; }
 
 	bool  Pixels() const                                { return pixels; }
 	bool  Dots() const                                  { return !pixels; }
@@ -899,9 +905,6 @@ private:
 	Draw(const Draw&);
 	void operator=(const Draw&);
 };
-
-inline bool ScreenInPaletteMode() { return ScreenInfo().PaletteMode(); }
-inline Size GetScreenSize()       { return ScreenInfo().GetPagePixels(); }
 
 void DrawImageBandRLE(Draw& w, int x, int y, const Image& m, int minp);
 
@@ -1195,8 +1198,6 @@ void DrawTextEllipsis(Draw& w, int x, int y, int cx, const wchar *text, const ch
 				      Font font = StdFont(), Color ink = SColorText(), int n = -1);
 Size GetTLTextSize(const wchar *text, Font font = StdFont());
 int  GetTLTextHeight(const wchar *s, Font font = StdFont());
-Size GetTLTextSize(Draw& draw, const wchar *text, Font font = StdFont()); // deprecated
-int  GetTLTextHeight(Draw& w, const wchar *s, Font font = StdFont()); // deprecated
 void DrawTLText(Draw& draw, int x, int y, int cx, const wchar *text, Font font = StdFont(),
                 Color ink = SColorText(), int accesskey = 0);
 

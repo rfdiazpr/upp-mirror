@@ -10,6 +10,7 @@ NAMESPACE_UPP
 void Draw::BeginOp()
 {
 	LTIMING("Begin");
+	DrawLock __;
 	Cloff& w = cloff.Add();
 	w.org = actual_offset;
 	w.hrgn = CreateRectRgn(0, 0, 0, 0);
@@ -24,6 +25,7 @@ void Draw::BeginOp()
 
 void Draw::OffsetOp(Point p)
 {
+	DrawLock __;
 	Begin();
 	actual_offset += p;
 	LTIMING("Offset");
@@ -32,6 +34,7 @@ void Draw::OffsetOp(Point p)
 
 bool Draw::ClipOp(const Rect& r)
 {
+	DrawLock __;
 	Begin();
 	LTIMING("Clip");
 	return IntersectClip(r);
@@ -39,6 +42,7 @@ bool Draw::ClipOp(const Rect& r)
 
 bool Draw::ClipoffOp(const Rect& r)
 {
+	DrawLock __;
 	Begin();
 	LTIMING("Clipoff");
 	LLOG("ClipoffOp " << r << ", GetClip() = " << GetClip() << ", actual_offset = " << actual_offset);
@@ -51,6 +55,7 @@ bool Draw::ClipoffOp(const Rect& r)
 
 void Draw::EndOp()
 {
+	DrawLock __;
 	LTIMING("End");
 	ASSERT(cloff.GetCount());
 	Cloff& w = cloff.Top();
@@ -64,6 +69,7 @@ void Draw::EndOp()
 
 bool Draw::ExcludeClipOp(const Rect& r)
 {
+	DrawLock __;
 #ifdef PLATFORM_WINCE
 	int q = ExcludeClipRect(handle, r.left, r.top, r.right, r.bottom);
 #else
@@ -79,6 +85,7 @@ bool Draw::ExcludeClipOp(const Rect& r)
 
 bool Draw::IntersectClipOp(const Rect& r)
 {
+	DrawLock __;
 #ifdef PLATFORM_WINCE
 	int q = IntersectClipRect(handle, r.left, r.top, r.right, r.bottom);
 #else
@@ -94,6 +101,7 @@ bool Draw::IntersectClipOp(const Rect& r)
 
 Rect Draw::GetClipOp() const
 {
+	DrawLock __;
 	Rect r;
 	::GetClipBox(handle, r);
 	return r;
@@ -101,6 +109,7 @@ Rect Draw::GetClipOp() const
 
 bool Draw::IsPaintingOp(const Rect& r) const
 {
+	DrawLock __;
 	LTIMING("IsPainting");
 	LLOG("Draw::IsPaintingOp r: " << r);
 	return ::RectVisible(handle, r);
@@ -108,6 +117,7 @@ bool Draw::IsPaintingOp(const Rect& r) const
 
 void Draw::DrawRectOp(int x, int y, int cx, int cy, Color color)
 {
+	DrawLock __;
 	LTIMING("DrawRect");
 	LLOG("DrawRect " << RectC(x, y, cx, cy) << ": " << color);
 	if(IsNull(color)) return;
@@ -122,6 +132,7 @@ void Draw::DrawRectOp(int x, int y, int cx, int cy, Color color)
 
 void Draw::DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color)
 {
+	DrawLock __;
 	if(IsNull(width) || IsNull(color)) return;
 	SetDrawPen(width, color);
 	::MoveToEx(handle, x1, y1, NULL);
@@ -134,6 +145,7 @@ void Draw::DrawPolyPolylineOp(const Point *vertices, int vertex_count,
                             const int *counts, int count_count,
 	                        int width, Color color, Color doxor)
 {
+	DrawLock __;
 	ASSERT(count_count > 0 && vertex_count > 0);
 	if(vertex_count < 2 || IsNull(color))
 		return;
@@ -157,6 +169,7 @@ static void DrawPolyPolyPolygonRaw(
 	const int *subpolygon_counts, int subpolygon_count_count,
 	const int *disjunct_polygon_counts, int disjunct_polygon_count_count)
 {
+	DrawLock __;
 	for(int i = 0; i < disjunct_polygon_count_count; i++, disjunct_polygon_counts++)
 	{
 		int poly = *disjunct_polygon_counts;
@@ -187,6 +200,7 @@ void Draw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
 	const int *disjunct_polygon_counts, int disjunct_polygon_count_count,
 	Color color, int width, Color outline, uint64 pattern, Color doxor)
 {
+	DrawLock __;
 	if(vertex_count == 0)
 		return;
 	bool is_xor = !IsNull(doxor);
@@ -239,7 +253,6 @@ void Draw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
 		}
 	}
 	else { // simple fill
-//		RTIMING("AreaTool::Fill(solid color)");
 		SetDrawPen(IsNull(outline) ? PEN_NULL : width, Nvl(outline, Black));
 		int old_rop2;
 		if(is_xor) {
@@ -257,6 +270,7 @@ void Draw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
 
 void Draw::DrawArcOp(const Rect& rc, Point start, Point end, int width, Color color)
 {
+	DrawLock __;
 	SetDrawPen(width, color);
 	::Arc(GetHandle(), rc.left, rc.top, rc.right, rc.bottom, start.x, start.y, end.x, end.y);
 }
@@ -265,6 +279,7 @@ void Draw::DrawArcOp(const Rect& rc, Point start, Point end, int width, Color co
 
 void Draw::DrawEllipseOp(const Rect& r, Color color, int width, Color pencolor)
 {
+	DrawLock __;
 	SetColor(color);
 	SetDrawPen(width, pencolor);
 	::Ellipse(GetHandle(), r.left, r.top, r.right, r.bottom);

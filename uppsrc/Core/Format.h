@@ -10,8 +10,10 @@ String         Format64Hex(uint64 a);
 
 #ifdef CPU_64
 inline String  FormatIntHex(const void *ptr) { return Format64Hex((int64)ptr); }
+inline String  FormatHex(const void *ptr)    { return Format64Hex((int64)ptr); }
 #else
 inline String  FormatIntHex(const void *ptr) { return FormatIntHex((int)ptr); }
+inline String  FormatHex(const void *ptr)    { return FormatIntHex((int)ptr); }
 #endif
 
 String         FormatInteger(int a);
@@ -69,12 +71,12 @@ struct Formatting
 
 typedef String (*Formatter)(const Formatting& fmt);
 
-void RegisterFormatter(int type, const char *id, Formatter f);
-void RegisterNullFormatter(const char *id, Formatter f);
-void RegisterNumberFormatter(const char *id, Formatter f);
-void RegisterStringFormatter(const char *id, Formatter f);
-void RegisterDateTimeFormatter(const char *id, Formatter f);
-void RegisterValueFormatter(const char *id, Formatter f);
+void RegisterFormatter(int type, const char *id, Formatter f) init_;
+void RegisterNullFormatter(const char *id, Formatter f) init_;
+void RegisterNumberFormatter(const char *id, Formatter f) init_;
+void RegisterStringFormatter(const char *id, Formatter f) init_;
+void RegisterDateTimeFormatter(const char *id, Formatter f) init_;
+void RegisterValueFormatter(const char *id, Formatter f) init_;
 
 #define E__NFValue(I)  Value COMBINE(p, I)
 #define E__NFBody(I) \

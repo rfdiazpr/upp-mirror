@@ -13,8 +13,8 @@ static int UPP_SSL_alloc = 0;
 
 void *SSLAlloc(size_t size)
 {
-	int alloc = HeapRoundUp(size + sizeof(int));
-	int *aptr = (int *)MemoryAlloc(alloc);
+	int alloc = size + sizeof(int);
+	int *aptr = (int *)MemoryAllocSz(alloc);
 	if(!aptr)
 	{
 #if LOG_UPP_SSL_MALLOC
@@ -54,8 +54,8 @@ void *SSLRealloc(void *ptr, size_t size)
 #endif
 		return ptr;
 	}
-	int newalloc = HeapRoundUp(size + sizeof(int));
-	int *newaptr = (int *)MemoryAlloc(newalloc);
+	int newalloc = size + sizeof(int);
+	int *newaptr = (int *)MemoryAllocSz(newalloc);
 	if(!newaptr)
 	{
 #if LOG_UPP_SSL_MALLOC

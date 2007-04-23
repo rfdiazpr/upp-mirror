@@ -6,6 +6,7 @@ namespace Upp {
 
 void Set__(volatile bool& b)
 {
+	//WriteMemoryBarrier should be here
 	b = true;
 }
 

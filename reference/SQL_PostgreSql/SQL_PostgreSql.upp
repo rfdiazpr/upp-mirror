@@ -1,0 +1,14 @@
+uses
+	CtrlLib,
+	PostgreSQL,
+	SqlCtrl;
+
+file
+	database.sch,
+	Postgres.h,
+	Postgres.cpp,
+	Postgres.lay;
+
+mainconfig
+	"" = "GUI";
+

@@ -301,7 +301,6 @@ String Image::ToString() const
 	return String("Image ").Cat() << GetSize();
 }
 
-StaticCriticalSection Image::Data::ResLock;
 Link<Image::Data>     Image::Data::ResData[1];
 int                   Image::Data::ResCount;
 
@@ -320,15 +319,15 @@ Image::Data::Data(ImageBuffer& b)
 
 Image::Data::~Data()
 {
-	INTERLOCKED_(ResLock) {
-		SysRelease();
-		Unlink();
-	}
+	DrawLock __;
+	SysRelease();
+	Unlink();
 }
 
 void Image::Data::PaintOnlyShrink()
 {
 	if(paintonly) {
+		DrawLock __;
 		DropPixels___(buffer);
 		ResCount -= GetResCount();
 		Unlink();

@@ -189,9 +189,20 @@ public:
 	void Free();
 	Raster::Info GetInfo();
 	Raster::Line GetLine(int line);
+	void ScanMetaData();
+	void ScanExifData(const char *begin);
+	Value GetMetaData(String id);
+	void EnumMetaData(Vector<String>& id_list);
 
 private:
 	bool Init();
+
+	int     Exif16(const char *s) { return exif_big_endian ? Peek16be(s) : Peek16le(s); }
+	int     Exif32(const char *s) { return exif_big_endian ? Peek32be(s) : Peek32le(s); }
+	double  ExifF5(const char *s);
+
+	enum IFD_TYPE { BASE_IFD, GPS_IFD };
+	int  ExifDir(const char *begin, int offset, IFD_TYPE type);
 
 private:
 	JPGRaster& owner;
@@ -201,6 +212,8 @@ private:
 	RasterFormat format;
 	RGBA palette[256];
 
+	VectorMap<String, Value> metadata;
+
 	struct jpeg_decompress_struct cinfo;
 	struct jpeg_longjmp_error_mgr jerr;
 
@@ -209,6 +222,7 @@ private:
 	int row_bytes;
 	int row_bytes_4;
 	bool finish;
+	bool exif_big_endian;
 
 	int next_line;
 };
@@ -255,12 +269,120 @@ bool JPGRaster::Data::Create(Stream& stream_)
 	return Init();
 }
 
+void JPGRaster::Data::ScanMetaData()
+{
+	if(!metadata.IsEmpty())
+		return;
+	for(jpeg_saved_marker_ptr p = cinfo.marker_list; p; p = p->next) {
+		String data(p->data, p->data_length);
+		String key;
+		if(p->marker == JPEG_COM)
+			key = "COM";
+		else if(p->marker >= JPEG_APP0 && p->marker <= JPEG_APP0 + 15) {
+			key = NFormat("APP%d", p->marker - JPEG_APP0);
+			if(p->marker == JPEG_APP0 + 1 && !memcmp(data, "Exif\0\0", 6))
+				ScanExifData(data.GetIter(6));
+		}
+		if(metadata.Find(key) >= 0) {
+			for(int i = 1;; i++) {
+				String suffix;
+				suffix << key << '$' << i;
+				if(metadata.Find(suffix) < 0) {
+					key = suffix;
+					break;
+				}
+			}
+		}
+		metadata.Add(key, data);
+	}
+}
+
+double JPGRaster::Data::ExifF5(const char *s)
+{
+	unsigned num = Exif32(s + 0);
+	unsigned den = Exif32(s + 4);
+	if(den == 0)
+		return Null;
+	return num / (double)den;
+}
+
+int JPGRaster::Data::ExifDir(const char *begin, int offset, IFD_TYPE type)
+{
+	const char *e = begin + offset;
+	int nitems = Exif16(e);
+//	puts(NFormat("directory %08x: %d items", dir, nitems));
+	e += 2;
+	for(int i = 0; i < nitems; i++, e += 12) {
+		int tag = Exif16(e);
+		int fmt = Exif16(e + 2);
+		int count = Exif32(e + 4);
+		static const int fmtlen[] = {
+			1, 1, 2, 4, 8, 1, 1, 2, 4, 8, 4, 8
+		};
+		int len = 0;
+		if(fmt > 0 && fmt <= __countof(fmtlen))
+			len = fmtlen[fmt - 1] * count;
+		const char *data = e + 8;
+		if(len > 4)
+			data = begin + Exif32(data);
+//		puts(NFormat("[%d]: tag %04x fmt %d, count %d, data %s",
+//			i, tag, fmt, count, BinHexEncode(data, data + len)));
+		if(type == BASE_IFD) {
+			if(tag == 0x8825) {
+				int offset = Exif32(data);
+	//			puts(NFormat("GPS IFD at %08x", offset));
+				ExifDir(begin, offset, GPS_IFD);
+			}
+		}
+		else if(type == GPS_IFD) {
+			if((tag == 2 || tag == 4) && fmt == 5 && count == 3) {
+				metadata.Add(tag == 2 ? "GPSLatitude" : "GPSLongitude",
+					ExifF5(data + 0) + ExifF5(data + 8) / 60 + ExifF5(data + 16) / 3600);
+//				puts(NFormat("GPSLatitude: %n %n %n", n1, n2, n3));
+			}
+			else if(tag == 6 && fmt == 5 && count == 1)
+				metadata.Add("GPSAltitude", ExifF5(data));
+		}
+	}
+	int nextoff = Exif32(e);
+//	puts(NFormat("next offset = %08x", nextoff));
+	return nextoff;
+}
+
+void JPGRaster::Data::ScanExifData(const char *begin)
+{
+	const char *p = begin;
+	if(p[0] == 'I' && p[1] == 'I')
+		exif_big_endian = false;
+	else if(p[0] == 'M' && p[1] == 'M')
+		exif_big_endian = true;
+	else
+		return;
+	for(int diroff = Exif32(p + 4); diroff; diroff = ExifDir(begin, diroff, BASE_IFD))
+		;
+}
+
+Value JPGRaster::Data::GetMetaData(String id)
+{
+	ScanMetaData();
+	return metadata.Get(id, Value());
+}
+
+void JPGRaster::Data::EnumMetaData(Vector<String>& id_list)
+{
+	ScanMetaData();
+	id_list <<= metadata.GetKeys();
+}
+
 bool JPGRaster::Data::Init()
 {
 	if(setjmp(jerr.jmpbuf))
 		return false;
 
 	jpeg_stream_src(&cinfo, *stream);
+	jpeg_save_markers(&cinfo, JPEG_COM, 0xFFFF);
+	for(int i = 0; i <= 15; i++)
+		jpeg_save_markers(&cinfo, JPEG_APP0 + i, 0xFFFF);
 	jpeg_read_header(&cinfo, TRUE);
 	jpeg_start_decompress(&cinfo);
 
@@ -376,6 +498,18 @@ Raster::Info JPGRaster::GetInfo()
 	info.dots = data->dot_size;
 	info.hotspot = Null;
 	return info;
+}
+
+Value JPGRaster::GetMetaData(String id)
+{
+	ASSERT(data);
+	return data->GetMetaData(id);
+}
+
+void JPGRaster::EnumMetaData(Vector<String>& id_list)
+{
+	ASSERT(data);
+	data->EnumMetaData(id_list);
 }
 
 Raster::Line JPGRaster::GetLine(int line)

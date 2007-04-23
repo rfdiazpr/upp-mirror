@@ -1,0 +1,508 @@
+#include "PostgreSQL.h"
+
+#ifndef flagNOPOSTGRESQL
+
+NAMESPACE_UPP
+
+class PostgreSQLConnection : public SqlConnection {
+protected:
+	virtual void        SetParam(int i, const Value& r);
+	virtual bool        Execute();
+	virtual int         GetRowsProcessed() const;
+	virtual bool        Fetch();
+	virtual void        GetColumn(int i, Ref f) const;
+	virtual void        Cancel();
+	virtual SqlSession& GetSession() const;
+	virtual String      GetUser() const;
+	virtual String      ToString() const;
+
+private:
+	PostgreSQLSession&  session;
+	PGconn         *conn;
+	Vector<String> param;
+	PGresult      *result;
+	int            rows;
+	int            fetched_row; //-1, if not fetched yet
+
+	void           FreeResult();
+
+public:
+	PostgreSQLConnection(PostgreSQLSession& a_session, PGconn *a_conn);
+	virtual ~PostgreSQLConnection() { Cancel(); }
+};
+
+const char *PostgreSQLReadString(const char *s, String& stmt)
+{
+	//TODO: to clear this, currently this is based on sqlite
+	stmt.Cat(*s);
+	int c = *s++;
+	for(;;) {
+		if(*s == '\0') break;
+		else
+		if(*s == '\'' && s[1] == '\'') {
+			stmt.Cat('\'');
+			s += 2;
+		}
+		else
+		if(*s == c) {
+			stmt.Cat(c);
+			s++;
+			break;
+		}
+		else
+		if(*s == '\\') {
+			stmt.Cat('\\');
+			if(*++s)
+				stmt.Cat(*s++);
+		}
+		else
+			stmt.Cat(*s++);
+	}
+	return s;
+}
+
+bool PostgreSQLPerformScript(const String& txt, StatementExecutor& se, Gate2<int, int> progress_canceled)
+{
+	const char *text = txt;
+	for(;;) {
+		String stmt;
+		while(*text <= 32 && *text > 0) text++;
+		if(*text == '\0') break;
+		for(;;) {
+			if(*text == '\0')
+				break;
+			if(*text == ';')
+				break;
+			else
+			if(*text == '\'')
+				text = PostgreSQLReadString(text, stmt);
+			else
+			if(*text == '\"')
+				text = PostgreSQLReadString(text, stmt);
+			else
+				stmt.Cat(*text++);
+		}
+		if(progress_canceled(text - txt.Begin(), txt.GetLength()))
+			return false;
+		if(!se.Execute(stmt))
+			return false;
+		if(*text) text++;
+	}
+	return true;
+}
+
+//////////////////////////////////////////////
+
+Vector<String> PostgreSQLSession::EnumUsers()
+{
+	Vector<String> vec;
+	Sql sql(*this);
+	sql.Execute("SELECT rolname from pg_authid where rolcanlogin");
+	while(sql.Fetch())
+	{
+		vec.Add(sql[0]);
+	}
+	return vec;
+}
+
+Vector<String> PostgreSQLSession::EnumDatabases()
+{
+	Vector<String> vec;
+	Sql sql(*this);
+	sql.Execute("SELECT datname from pg_database");
+	while(sql.Fetch())
+	{
+		vec.Add(sql[0]);
+	}
+	return vec;
+}
+
+Vector<String> PostgreSQLSession::EnumTables(String database)
+{
+	Vector<String> vec;
+	Sql sql(*this);
+	sql.Execute("select c.relname FROM pg_catalog.pg_class c "
+		"LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace "
+		"WHERE c.relkind IN ('r','') AND n.nspname NOT IN ('pg_catalog', 'pg_toast') "
+		"AND pg_catalog.pg_table_is_visible(c.oid)");
+	while(sql.Fetch())
+	{
+		vec.Add(sql[0]);
+	}
+	return vec;
+}
+
+Vector<String> PostgreSQLSession::EnumViews(String database)
+{
+	return Vector<String>(); //TODO
+}
+
+Vector<String> PostgreSQLSession::EnumSequences(String database)
+{
+	return Vector<String>(); //TODO
+}
+
+Vector<SqlColumnInfo> PostgreSQLSession::EnumColumns(String database, String table)
+{
+	return Vector<SqlColumnInfo>(); //TODO try this: 
+/*
+SELECT a.attnum, a.attname AS field, t.typname AS type,
+       a.attlen AS length, a.atttypmod AS length_var,
+       a.attnotnull AS not_null, a.atthasdef as has_default
+  FROM pg_class c, pg_attribute a, pg_type t
+ WHERE c.relname = '$table'
+   AND a.attnum > 0
+   AND a.attrelid = c.oid
+   AND a.atttypid = t.oid
+ ORDER BY a.attnum;
+*/
+}
+
+Vector<String> PostgreSQLSession::EnumPrimaryKey(String database, String table)
+{
+	return Vector<String>(); //TODO
+}
+
+String PostgreSQLSession::EnumRowID(String database, String table)
+{
+	return ""; //TODO
+}
+
+Vector<String> PostgreSQLSession::EnumReservedWords()
+{
+	return Vector<String>(); //TODO
+}
+
+SqlConnection * PostgreSQLSession::CreateConnection()
+{
+	return new PostgreSQLConnection(*this, conn);
+}
+
+void PostgreSQLSession::StoreInOidTypeMap(const char *typname, int type_id, const VectorMap<String, int64> &typname_oid_map)
+{
+	int idx = typname_oid_map.Find(typname);
+	if(idx <= 0)
+		return;
+	int64 oid = typname_oid_map[idx];
+	oid_type_map.FindAdd((Oid)oid, type_id);
+}
+
+bool PostgreSQLSession::InitOidTypeMap()
+{
+	oid_type_map.Clear();
+	PGresult *res = PQexec(conn, "select oid, typname from pg_type");
+	if(PQresultStatus(res) != PGRES_TUPLES_OK)
+	{
+		PQclear(res);
+		return false;
+	}
+	int row_count = PQntuples(res);
+	VectorMap<String, int64> typname_oid_map;
+	for(int i = 0; i < row_count; i++)
+	{
+		typname_oid_map.FindAdd(PQgetvalue(res, i, 1), atol(PQgetvalue(res, i, 0)));
+	}
+	StoreInOidTypeMap("bool", BOOL_V, typname_oid_map);
+	StoreInOidTypeMap("abstime", TIME_V, typname_oid_map);
+	StoreInOidTypeMap("cid", INT_V, typname_oid_map);
+	StoreInOidTypeMap("date", DATE_V, typname_oid_map);
+	StoreInOidTypeMap("float4", DOUBLE_V, typname_oid_map);
+	StoreInOidTypeMap("float8", DOUBLE_V, typname_oid_map);
+	StoreInOidTypeMap("int2", INT_V, typname_oid_map);
+	StoreInOidTypeMap("int4", INT_V, typname_oid_map);
+	StoreInOidTypeMap("int8", INT_V, typname_oid_map); //should be INT64_V
+	//StoreInOidTypeMap("interval", , typname_oid_map);
+	StoreInOidTypeMap("money", DOUBLE_V, typname_oid_map);
+	StoreInOidTypeMap("numeric", DOUBLE_V, typname_oid_map);
+	StoreInOidTypeMap("oid", INT64_V, typname_oid_map);
+	StoreInOidTypeMap("time", TIME_V, typname_oid_map);
+	StoreInOidTypeMap("time_stamp", TIME_V, typname_oid_map);
+	StoreInOidTypeMap("timestamp", TIME_V, typname_oid_map);
+	//StoreInOidTypeMap("timestamptz", TIME_V, typname_oid_map);
+	//StoreInOidTypeMap("timetz", TIME_V, typname_oid_map);
+	//StoreInOidTypeMap("tinterval", , typname_oid_map);
+	StoreInOidTypeMap("xid", INT_V, typname_oid_map);
+		
+	return true;
+}
+
+void PostgreSQLSession::ExecTrans(const char * statement)
+{
+	if(trace)
+		*trace << statement << "\n";
+	PGresult *res = PQexec(conn, statement);
+	if(PQresultStatus(res) == PGRES_COMMAND_OK)
+	{
+		PQclear(res);
+		return;
+	}
+	if(trace)
+		*trace << statement << " failed: " << PQerrorMessage(conn) << "\n";
+	SetError(PQerrorMessage(conn), statement);
+	PQclear(res);
+}
+
+int PostgreSQLSession::OidToType(Oid oid)
+{
+	int idx = oid_type_map.Find(oid);
+	if(idx <= 0)
+		return STRING_V;
+	return oid_type_map[idx];
+}
+
+bool PostgreSQLSession::Open(const char *connect)
+{
+	Close();
+	conn = PQconnectdb(connect);
+	if(PQstatus(conn) != CONNECTION_OK)
+	{
+		SetError(PQerrorMessage(conn), "Opening db");
+		Close();
+		return false;
+	}
+	//read oids of different types to a map (oid =>value-type). Execute() sets up type based on this
+	if(!InitOidTypeMap())
+	{
+		SetError(PQerrorMessage(conn), "Initializing type map");
+		Close();
+		return false;
+	}
+	return true;
+}
+
+void PostgreSQLSession::Close()
+{
+	if(!conn)
+		return;
+#ifndef flagNOAPPSQL
+	if(SQL.IsOpen() && &SQL.GetSession() == this)
+		SQL.Cancel();
+#endif
+
+	PQfinish(conn);
+	conn = NULL;
+}
+
+void PostgreSQLSession::Begin()
+{
+	ExecTrans("BEGIN");
+}
+
+void PostgreSQLSession::Commit()
+{
+	ExecTrans("COMMIT");
+}
+
+void PostgreSQLSession::Rollback()
+{
+	ExecTrans("ROLLBACK");
+}
+
+/////////////////////////////////////////////////
+
+void PostgreSQLConnection::SetParam(int i, const Value& r)
+{
+	String p;
+	if(IsNull(r))
+		p = "NULL";
+	else
+		switch(r.GetType()) {
+		case WSTRING_V:
+		case STRING_V: {
+				String v = r;
+				StringBuffer b(v.GetLength() * 2 + 3);
+				char *q = b;
+				*q = '\'';
+				int *err = NULL;
+				int n = PQescapeStringConn(conn, q + 1, v, v.GetLength(), err);
+				q[1 + n] = '\'';
+				b.SetCount(2 + n); //TODO - check this fix
+				p = b;
+			}
+			break;
+		case BOOL_V:
+		case INT_V:
+			p = Format("%d", int(r));
+			break;
+		case DOUBLE_V:
+			p = Format("%.10g", double(r));
+			break;
+		case DATE_V: {
+				Date d = r;
+				p = Format("\'%04d-%02d-%02d\'", d.year, d.month, d.day);
+			}
+			break;
+		case TIME_V: {
+				Time t = r;
+				p = Format("\'%04d-%02d-%02d %02d:%02d:%02d\'",
+						   t.year, t.month, t.day, t.hour, t.minute, t.second);
+			}
+			break;
+		default:
+			NEVER();
+		}
+	param.At(i, p);
+}
+
+bool PostgreSQLConnection::Execute()
+{
+	Cancel();
+	if(statement.GetLength() == 0) {
+		session.SetError("Empty statement", statement);
+		return false;
+	}
+	String query;
+	int pi = 0;
+	const char *s = statement;
+	while(s < statement.End())
+		if(*s == '\'' || *s == '\"')
+			s = PostgreSQLReadString(s, query);
+		else {
+			if(*s == '?')
+				query.Cat(param[pi++]);
+			else
+				query.Cat(*s);
+			s++;
+		}
+
+	Stream *trace = session.GetTrace();
+	dword time;
+	if(session.IsTraceTime())
+		time = GetTickCount();
+
+	result = PQexec(conn, query);
+
+	if(trace) {
+		if(session.IsTraceTime())
+			*trace << Format("--------------\nexec %d ms:\n", msecs(time));
+		*trace << ToString() << '\n';
+	}
+	if(PQresultStatus(result) == PGRES_TUPLES_OK) //result set
+	{
+		rows = PQntuples(result);
+		int fields = PQnfields(result);
+		info.SetCount(fields);
+		for(int i = 0; i < fields; i++)
+		{
+			SqlColumnInfo& f = info[i];
+			f.name = ToUpper(PQfname(result, i));
+			f.width = PQfsize(result, i);
+			f.decimals = f.scale = f.prec = 0; // TODO
+			Oid type_oid = PQftype(result, i);
+			f.type = session.OidToType(type_oid);
+		}
+		return true;
+	}
+	if(PQresultStatus(result) == PGRES_COMMAND_OK) //command executed OK
+	{
+		rows = atoi(PQcmdTuples(result));
+		return true;
+	}
+	
+	//error
+	session.SetError( PQerrorMessage(conn), query );
+	FreeResult();
+	
+	return false;
+}
+
+int PostgreSQLConnection::GetRowsProcessed() const
+{
+	return rows;
+}
+
+bool PostgreSQLConnection::Fetch()
+{
+	fetched_row++;
+	if(result && rows > 0 && fetched_row < rows)
+	{
+		return true;
+	}
+	Cancel();
+	return false;
+}
+
+// 0123456789012345678
+// YYYY-MM-DD HH-MM-SS
+
+static Date sDate(const char *s) {
+	return Date(atoi(s), atoi(s + 5), atoi(s + 8));
+}
+
+void PostgreSQLConnection::GetColumn(int i, Ref f) const
+{
+	if(PQgetisnull(result, fetched_row, i))
+	{
+		f = Null;
+		return;
+	}
+	char * s = PQgetvalue(result, fetched_row, i);
+	switch(info[i].type)
+	{
+		case INT_V:
+			f = atoi(s);
+			break;
+		case DOUBLE_V:
+			f = atof(s);
+			break;
+		case DATE_V:
+			f = Value(sDate(s));
+			break;
+		case TIME_V: {
+				Time t = ToTime(sDate(s));
+				t.hour = atoi(s + 11);
+				t.minute = atoi(s + 14);
+				t.second = atoi(s + 17);
+				f = Value(t);
+			}
+			break;
+		default:
+			f = Value(String(s));
+			break;
+	}
+}
+
+void PostgreSQLConnection::Cancel()
+{
+	param.Clear();
+	info.Clear();
+	rows = 0;
+	fetched_row = -1;
+	FreeResult();
+}
+
+SqlSession& PostgreSQLConnection::GetSession() const
+{
+	return session;
+}
+
+String PostgreSQLConnection::GetUser() const
+{
+	return PQuser(conn);
+}
+
+String PostgreSQLConnection::ToString() const
+{
+	return statement;
+}
+
+void PostgreSQLConnection::FreeResult()
+{
+	if(result)
+	{
+		PQclear(result);
+		result = NULL;
+	}
+}
+
+PostgreSQLConnection::PostgreSQLConnection(PostgreSQLSession& a_session, PGconn *a_conn)
+  : session(a_session), conn(a_conn)
+{
+	result = NULL;
+}
+
+
+
+END_UPP_NAMESPACE
+
+#endif

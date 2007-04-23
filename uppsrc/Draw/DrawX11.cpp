@@ -42,37 +42,6 @@ byte       *Xunmapcolor;
 
 dword   (*Xgetpixel)(int r, int g, int b);
 
-/*
-#ifndef flagNOGTK
-
-#define DLLFILENAME "libgtk-x11-2.0.so"
-#define DLIMODULE   GTK
-#define DLIHEADER   <Draw/gtk.dli>
-#include <Core/dli_source.h>
-
-#define DLLFILENAME "libgdk-x11-2.0.so"
-#define DLIMODULE   GDK
-#define DLIHEADER   <Draw/gdk.dli>
-#include <Core/dli_source.h>
-
-#define DLLFILENAME "libgdk_pixbuf-2.0.so"
-#define DLIMODULE   GPIXBUF
-#define DLIHEADER   <Draw/gpixbuf.dli>
-#include <Core/dli_source.h>
-
-#define DLLFILENAME "libgobject-2.0.so"
-#define DLIMODULE   GOBJ
-#define DLIHEADER   <Draw/gobj.dli>
-#include <Core/dli_source.h>
-
-#define DLLFILENAME "libgnome-2.so"
-#define DLIMODULE   GNOME
-#define DLIHEADER   <Draw/gnome.dli>
-#include <Core/dli_source.h>
-
-#endif
-*/
-
 void StaticExitDraw_()
 {
 	Draw::FreeFonts();
@@ -300,6 +269,7 @@ void SetClip(GC gc, XftDraw *xftdraw, const Vector<Rect>& cl)
 void SetClip(GC gc, const Vector<Rect>& cl)
 #endif
 {
+	DrawLock __;
 	LTIMING("SetClip");
 	Buffer<XRectangle> xr(cl.GetCount());
 	LLOG("SetClip");
@@ -331,6 +301,7 @@ void Draw::CloneClip()
 
 void Draw::SetForeground(Color color)
 {
+	DrawLock __;
 	LTIMING("SetForeground");
 	if(IsDrawing()) return;
 	int p = GetXPixel(color.GetR(), color.GetG(), color.GetB());
@@ -342,6 +313,7 @@ void Draw::SetForeground(Color color)
 }
 
 void Draw::SetClip() {
+	DrawLock __;
 	if(IsDrawing() || dw == Xroot) return;
 	LTIMING("SetClip");
 #ifdef PLATFORM_XFT
@@ -353,9 +325,12 @@ void Draw::SetClip() {
 
 void Draw::SetLineStyle(int width)
 {
+	DrawLock __;
 	if(IsDrawing()) return;
 	if(width == linewidth) return;
 	linewidth = width;
+	if(IsNull(width))
+		width = 1;
 	if(width < PEN_SOLID) {
 		static const char dash[] = { 18, 6 };
 		static const char dot[] = { 3, 3 };
@@ -380,6 +355,7 @@ void Draw::SetLineStyle(int width)
 
 void Draw::Init()
 {
+	DrawLock __;
 	pagePixels = Size(Xwidth, Xheight);
 	pageMMs = Size(XwidthMM, XheightMM);
 	inchPixels = 254 * pagePixels / pageMMs / 10;
@@ -397,6 +373,7 @@ void Draw::Init()
 
 void Draw::Init(const Vector<Rect>& _clip, Point _offset)
 {
+	DrawLock __;
 	Init();
 	clip.Add() <<= _clip;
 	offset.Add(_offset);
@@ -409,6 +386,7 @@ void Draw::Init(const Vector<Rect>& _clip, Point _offset)
 
 Draw::Draw()
 {
+	DrawLock __;
 	dw = None;
 	gc = None;
 	actual_offset = Point(0, 0);
@@ -436,6 +414,7 @@ Draw::~Draw()
 
 void BackDraw::Create(Draw& w, int cx, int cy)
 {
+	DrawLock __;
 	LLOG("Creating BackDraw " << cx << "x" << cy);
 	Destroy();
 	size.cx = cx;
@@ -454,6 +433,7 @@ void BackDraw::Create(Draw& w, int cx, int cy)
 
 void BackDraw::Put(Draw& w, int x, int y)
 {
+	DrawLock __;
 	LLOG("Putting BackDraw");
 	ASSERT(dw != None);
 	XCopyArea(Xdisplay, dw, w.GetDrawable(), w.GetGC(), 0, 0, size.cx, size.cy,
@@ -462,6 +442,7 @@ void BackDraw::Put(Draw& w, int x, int y)
 
 void BackDraw::Destroy()
 {
+	DrawLock __;
 	if(dw != None) {
 	#ifdef PLATFORM_XFT
 		XftDrawDestroy(xftdraw);
@@ -473,6 +454,7 @@ void BackDraw::Destroy()
 
 NilDraw::NilDraw()
 {
+	DrawLock __;
 	dw = Xroot;
 	gc = XCreateGC(Xdisplay, Xroot, 0, 0);
 	pixels = false;
@@ -481,10 +463,11 @@ NilDraw::NilDraw()
 
 NilDraw::~NilDraw()
 {
+	DrawLock __;
 	XFreeGC(Xdisplay, gc);
 }
 
-Draw& GLOBAL_V(NilDraw, ScreenInfo)
+Draw& ScreenInfo() { return Single<NilDraw>(); }
 
 END_UPP_NAMESPACE
 

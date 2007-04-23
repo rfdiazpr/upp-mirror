@@ -168,7 +168,7 @@ void TopWindow::Open(HWND hwnd)
 		Create(hwnd, WS_POPUP, WS_EX_TOPMOST, false, SW_MAXIMIZE, false);
 	}
 	else {
-		CenterRect(hwnd, hwnd == GetTrayHWND__() ? center ? 2 : 0 : center);
+		CenterRect(hwnd, hwnd && hwnd == GetTrayHWND__() ? center ? 2 : 0 : center);
 		Create(hwnd, style, exstyle, false, state == OVERLAPPED ? SW_SHOWNORMAL :
 		                                    state == MINIMIZED  ? SW_MINIMIZE :
 		                                                          SW_MAXIMIZE, false);
@@ -181,6 +181,8 @@ void TopWindow::Open(Ctrl *owner)
 {
 	LLOG("TopWindow::Open(Ctrl) -> " << ::Name(owner));
 	Open(owner ? owner->GetTopCtrl()->GetHWND() : NULL);
+	if(IsOpen() && top)
+		top->owner = owner;
 }
 
 void TopWindow::Open()

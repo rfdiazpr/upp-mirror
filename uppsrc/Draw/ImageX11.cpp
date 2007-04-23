@@ -21,6 +21,7 @@ static void sInitXImage(XImage& ximg, Size sz)
 
 void SetSurface(Draw& w, int x, int y, int cx, int cy, const RGBA *pixels)
 {
+	DrawLock __;
 	Pixmap pixmap = XCreatePixmap(Xdisplay, Xroot, cx, cy, 24);
 	XPicture picture = XRenderCreatePicture(
 		Xdisplay, pixmap,
@@ -60,11 +61,13 @@ void Image::Data::SysInit()
 void Image::Data::SysRelease()
 {
 	if(picture) {
+		DrawLock __;
 		if(Xdisplay) XRenderFreePicture(Xdisplay, picture);
 		ResCount -= !paintonly;
 		picture = 0;
 	}
 	if(picture8) {
+		DrawLock __;
 		if(Xdisplay) XRenderFreePicture(Xdisplay, picture8);
 		ResCount -= !paintonly;
 		picture8 = 0;
@@ -88,6 +91,7 @@ inline int s255d16(int x)
 
 static XPicture sGetSolidFill(Color c)
 {
+	DrawLock __;
 	int q = GetHashValue(c) % (int)XRSolidFillCount;
 	XRSolidFill& f = sFill[q];
 	if(f.color == c && f.picture)
@@ -114,113 +118,113 @@ static XPicture sGetSolidFill(Color c)
 
 void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 {
-	INTERLOCKED_(ResLock) {
-		while(ResCount > 512) {
-			Image::Data *l = ResData->GetPrev();
-			l->SysRelease();
-			l->Unlink();
-		}
-		x += w.GetOffset().x;
-		y += w.GetOffset().y;
-		Size sz = buffer.GetSize();
-		int  len = sz.cx * sz.cy;
-		Rect sr = src & sz;
-		Size ssz = sr.Size();
-		if(sr.IsEmpty())
-			return;
-		if(GetKind() == IMAGE_EMPTY)
-			return;
-		if(GetKind() == IMAGE_OPAQUE && !IsNull(c)) {
-			w.DrawRect(x, y, sz.cx, sz.cy, c);
-			return;
-		}
-		if(GetKind() == IMAGE_OPAQUE && paintcount == 0 && sr == Rect(sz)) {
-			SetSurface(w, x, y, sz.cx, sz.cy, buffer);
-			paintcount++;
-			return;
-		}
-		Unlink();
-		LinkAfter(ResData);
-		if(IsNull(c)) {
-			if(!picture) {
-				bool opaque = GetKind() == IMAGE_OPAQUE;
-				Pixmap pixmap = XCreatePixmap(Xdisplay, Xroot, sz.cx, sz.cy, opaque ? 24 : 32);
-				picture = XRenderCreatePicture(
-					Xdisplay, pixmap,
-				    XRenderFindStandardFormat(Xdisplay, opaque ? PictStandardRGB24
-				                                               : PictStandardARGB32),
-				    0, 0
-				);
-				ResCount++;
-				XImage ximg;
-				sInitXImage(ximg, sz);
-				ximg.bitmap_pad = 32;
-				ximg.bytes_per_line = 4 * sz.cx;
-				ximg.bits_per_pixel = 32;
-				ximg.blue_mask = 0x00ff0000;
-				ximg.green_mask = 0x0000ff00;
-				ximg.red_mask = 0x000000ff;
-				Buffer<RGBA> pma;
-				if(opaque) {
-					ximg.bitmap_unit = 32;
-					ximg.depth = 24;
-					ximg.data = (char *)~buffer;
-				}
-				else {
-					pma.Alloc(len);
-					PreMultiplyAlpha(pma, ~buffer, len);
-					ximg.bitmap_unit = 32;
-					ximg.depth = 32;
-					ximg.data = (char *)~pma;
-				}
-				XInitImage(&ximg);
-				GC gc = XCreateGC(Xdisplay, pixmap, 0, 0);
-				XPutImage(Xdisplay, pixmap, gc, &ximg, 0, 0, 0, 0, sz.cx, sz.cy);
-				XFreeGC(Xdisplay, gc);
-				XFreePixmap(Xdisplay, pixmap);
-				PaintOnlyShrink();
+	DrawLock __;
+	while(ResCount > 512) {
+		Image::Data *l = ResData->GetPrev();
+		l->SysRelease();
+		l->Unlink();
+	}
+	x += w.GetOffset().x;
+	y += w.GetOffset().y;
+	Size sz = buffer.GetSize();
+	int  len = sz.cx * sz.cy;
+	Rect sr = src & sz;
+	Size ssz = sr.Size();
+	if(sr.IsEmpty())
+		return;
+	if(GetKind() == IMAGE_EMPTY)
+		return;
+	if(GetKind() == IMAGE_OPAQUE && !IsNull(c)) {
+		w.DrawRect(x, y, sz.cx, sz.cy, c);
+		return;
+	}
+	if(GetKind() == IMAGE_OPAQUE && paintcount == 0 && sr == Rect(sz)) {
+		SetSurface(w, x, y, sz.cx, sz.cy, buffer);
+		paintcount++;
+		return;
+	}
+	Unlink();
+	LinkAfter(ResData);
+	if(IsNull(c)) {
+		if(!picture) {
+			bool opaque = GetKind() == IMAGE_OPAQUE;
+			Pixmap pixmap = XCreatePixmap(Xdisplay, Xroot, sz.cx, sz.cy, opaque ? 24 : 32);
+			picture = XRenderCreatePicture(
+				Xdisplay, pixmap,
+			    XRenderFindStandardFormat(Xdisplay, opaque ? PictStandardRGB24
+			                                               : PictStandardARGB32),
+			    0, 0
+			);
+			ResCount++;
+			XImage ximg;
+			sInitXImage(ximg, sz);
+			ximg.bitmap_pad = 32;
+			ximg.bytes_per_line = 4 * sz.cx;
+			ximg.bits_per_pixel = 32;
+			ximg.blue_mask = 0x00ff0000;
+			ximg.green_mask = 0x0000ff00;
+			ximg.red_mask = 0x000000ff;
+			Buffer<RGBA> pma;
+			if(opaque) {
+				ximg.bitmap_unit = 32;
+				ximg.depth = 24;
+				ximg.data = (char *)~buffer;
 			}
-			XRenderComposite(Xdisplay, PictOpOver,
-			                 picture, 0, XftDrawPicture(w.GetXftDraw()),
-			                 sr.left, sr.top, 0, 0, x, y, ssz.cx, ssz.cy);
-		}
-		else {
-			ASSERT(!paintonly);
-			if(!picture8) {
-				Pixmap pixmap = XCreatePixmap(Xdisplay, Xroot, sz.cx, sz.cy, 8);
-				picture8 = XRenderCreatePicture(Xdisplay, pixmap,
-				                                XRenderFindStandardFormat(Xdisplay, PictStandardA8),
-				                                0, 0);
-				ResCount++;
-				Buffer<byte> ab(len);
-				byte *t = ab;
-				const RGBA *s = buffer;
-				const RGBA *e = s + len;
-				while(s < e)
-					*t++ = (s++)->a;
-				XImage ximg;
-				sInitXImage(ximg, sz);
-				ximg.data             = (char *)~ab;
-				ximg.bitmap_unit      = 8;
-				ximg.bitmap_pad       = 8;
-				ximg.depth            = 8;
-				ximg.bytes_per_line   = sz.cx;
-				ximg.bits_per_pixel   = 8;
-				XInitImage(&ximg);
-				GC gc = XCreateGC(Xdisplay, pixmap, 0, 0);
-				XPutImage(Xdisplay, pixmap, gc, &ximg, 0, 0, 0, 0, sz.cx, sz.cy);
-				XFreeGC(Xdisplay, gc);
-				XFreePixmap(Xdisplay, pixmap);
+			else {
+				pma.Alloc(len);
+				PreMultiplyAlpha(pma, ~buffer, len);
+				ximg.bitmap_unit = 32;
+				ximg.depth = 32;
+				ximg.data = (char *)~pma;
 			}
-			XRenderComposite(Xdisplay, PictOpOver,
-			                 sGetSolidFill(c), picture8, XftDrawPicture(w.GetXftDraw()),
-			                 sr.left, sr.top, 0, 0, x, y, ssz.cx, ssz.cy);
+			XInitImage(&ximg);
+			GC gc = XCreateGC(Xdisplay, pixmap, 0, 0);
+			XPutImage(Xdisplay, pixmap, gc, &ximg, 0, 0, 0, 0, sz.cx, sz.cy);
+			XFreeGC(Xdisplay, gc);
+			XFreePixmap(Xdisplay, pixmap);
+			PaintOnlyShrink();
 		}
+		XRenderComposite(Xdisplay, PictOpOver,
+		                 picture, 0, XftDrawPicture(w.GetXftDraw()),
+		                 sr.left, sr.top, 0, 0, x, y, ssz.cx, ssz.cy);
+	}
+	else {
+		ASSERT(!paintonly);
+		if(!picture8) {
+			Pixmap pixmap = XCreatePixmap(Xdisplay, Xroot, sz.cx, sz.cy, 8);
+			picture8 = XRenderCreatePicture(Xdisplay, pixmap,
+			                                XRenderFindStandardFormat(Xdisplay, PictStandardA8),
+			                                0, 0);
+			ResCount++;
+			Buffer<byte> ab(len);
+			byte *t = ab;
+			const RGBA *s = buffer;
+			const RGBA *e = s + len;
+			while(s < e)
+				*t++ = (s++)->a;
+			XImage ximg;
+			sInitXImage(ximg, sz);
+			ximg.data             = (char *)~ab;
+			ximg.bitmap_unit      = 8;
+			ximg.bitmap_pad       = 8;
+			ximg.depth            = 8;
+			ximg.bytes_per_line   = sz.cx;
+			ximg.bits_per_pixel   = 8;
+			XInitImage(&ximg);
+			GC gc = XCreateGC(Xdisplay, pixmap, 0, 0);
+			XPutImage(Xdisplay, pixmap, gc, &ximg, 0, 0, 0, 0, sz.cx, sz.cy);
+			XFreeGC(Xdisplay, gc);
+			XFreePixmap(Xdisplay, pixmap);
+		}
+		XRenderComposite(Xdisplay, PictOpOver,
+		                 sGetSolidFill(c), picture8, XftDrawPicture(w.GetXftDraw()),
+		                 sr.left, sr.top, 0, 0, x, y, ssz.cx, ssz.cy);
 	}
 }
 
 void ImageDraw::Init()
 {
+	DrawLock __;
 	dw = XCreatePixmap(Xdisplay, Xroot, max(size.cx, 1), max(size.cy, 1), Xdepth);
 	gc = XCreateGC(Xdisplay, dw, 0, 0);
 	xftdraw = XftDrawCreate(Xdisplay, (Drawable) dw, DefaultVisual(Xdisplay, Xscreenno), Xcolormap);
@@ -239,6 +243,7 @@ void ImageDraw::Init()
 
 ImageDraw::operator Image() const
 {
+	DrawLock __;
 	XImage *xim = XGetImage(Xdisplay, dw, 0, 0, max(size.cx, 1), max(size.cy, 1), AllPlanes, ZPixmap);
 	Visual *v = DefaultVisual(Xdisplay, Xscreenno);
 	RasterFormat fmt;
@@ -327,6 +332,7 @@ ImageDraw::ImageDraw(int cx, int cy)
 
 ImageDraw::~ImageDraw()
 {
+	DrawLock __;
 	XftDrawDestroy(xftdraw);
 	XFreePixmap(Xdisplay, dw);
 	XFreeGC(Xdisplay, gc);
@@ -365,6 +371,7 @@ Image Image::SizeBottomRight()  FCURSOR_(XC_bottom_right_corner)
 
 Cursor X11Cursor(const Image& img)
 {
+	DrawLock __;
 	int q = img.GetCursorCheat();
 	if(q >= 0)
 		return XCreateFontCursor(Xdisplay, q);

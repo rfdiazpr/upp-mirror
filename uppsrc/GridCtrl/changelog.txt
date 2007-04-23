@@ -117,6 +117,15 @@
 	- Remove updates selected_rows/items values (before only DoRemove did that)
 	+ IsModified(..) - returns if value of cell was changed
 	
+	after 2007.1rc5/final
+	
+	+ introduced joined cells - JoinCells(), JointFixedCells()
+	- cursor is not hidden after clicking below rows (only edits are closed then) (regression)
+	+ AddRow returns ItemRect& now, but Add still returns GridCtrl&
+	+ clicking on edit's child control move focus
+	
+	
+	
 	
 	
 	

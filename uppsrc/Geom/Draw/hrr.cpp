@@ -950,10 +950,10 @@ bool HRR::Cursor::Fetch(Rectf& part)
 			if(mask_offset) {
 				owner.stream.Seek(Unpack64(mask_offset));
 				int len = owner.stream.GetIL();
-				String data;
 				ASSERT(len >= 0 && len < HRRInfo::UNIT * (HRRInfo::UNIT + 1) + 1);
-				owner.stream.Get(data.GetBuffer(len), len);
-				data.ReleaseBuffer(len);
+				StringBuffer databuf(len);
+				owner.stream.Get(databuf, len);
+				String data = databuf;
 				if(owner.version < 5) {
 					Size sz(0, 0);
 					if(cimg >= 0)
@@ -1305,10 +1305,10 @@ static void StreamHRRString(Stream& stream, String& string)
 	}
 	if(stream.IsStoring())
 		stream.SerializeRaw((byte *)(const char *)string, len);
-	else
-	{
-		stream.SerializeRaw((byte *)string.GetBuffer(len), len);
-		string.ReleaseBuffer(len);
+	else {
+		StringBuffer stringbuf(len);
+		stream.SerializeRaw((byte *)~stringbuf, len);
+		string = stringbuf;
 	}
 }
 

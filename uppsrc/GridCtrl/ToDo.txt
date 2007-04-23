@@ -45,3 +45,7 @@ to kursor nie zmienia pozycji (bo tam gdzie chce skoczyc jest read-only) a powin
 komorce
 
 double click na kolumnie z checkboxem w row edit mode powoduje dziwne rzeczy.
+
+
+!!! Przeniesc ClearCursor do Remove0
+!!! Zrobic test grid w gridzie

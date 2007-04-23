@@ -94,13 +94,14 @@ String MscBuilder::MachineName() const
 String MscBuilder::LinkerName() const
 {
 	if(HasFlag("ULD")) return "uld";
+	if(HasFlag("INTEL")) return "xilink";
 	return "link";
 }
 
 static bool sContainsPchOptions(const String& x)
 {
 	Index<String> a = Split(x, ' ');
-	return  a.Find("-Gl") >= 0 || a.Find("/Gl") >= 0 || a.Find("-Y-") >= 0 || a.Find("/Y-") >= 0
+	return  a.Find("-GL") >= 0 || a.Find("/GL") >= 0 || a.Find("-Y-") >= 0 || a.Find("/Y-") >= 0
 	     || a.Find("-Yc") >= 0 || a.Find("/Yc") >= 0 || a.Find("-Yd") >= 0 || a.Find("/Yd") >= 0
 	     || a.Find("-Yl") >= 0 || a.Find("/Yl") >= 0 || a.Find("-Yu") >= 0 || a.Find("/Yu") >= 0
 	     || a.Find("-YX") >= 0 || a.Find("/YX") >= 0;
@@ -341,10 +342,16 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 						<< " -pdb:" << GetHostPathQ(ForceExt(product, ".pdb"))
 						<< " -out:" << GetHostPathQ(product)
 						<< " -incremental:no";
+					if(HasFlag("FORCE_SIZE")){
+						if(sContainsPchOptions(release_size_options))
+							lib << " -ltcg";
+					}else if(HasFlag("FORCE_SPEED"))
+						if(sContainsPchOptions(release_options))
+							lib << " -ltcg";
 					if(HasAnyDebug())
 						lib << " -debug -OPT:NOREF";
 					else
-						lib << " -OPT:REF";
+						lib << " -release -OPT:REF,ICF,NOWIN98";
 					if(HasFlag("MSC8ARM"))
 						lib <<  " -subsystem:windowsce,4.20 /ARMPADCODE";
 					else
@@ -387,9 +394,16 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 						lib << ' ' << GetHostPathQ(libfile);
 					}
 				}
-				else
-					lib << "link /lib -nologo -out:" << GetHostPathQ(product)
-						<< ' ' << Gather(pkg.link, config.GetKeys());
+				else{
+					lib << (HasFlag("INTEL") ? "xilib" : "lib") << " -nologo";
+					if(HasFlag("FORCE_SIZE")){
+						if(sContainsPchOptions(release_size_options))
+							lib << " -ltcg";
+					}else if(HasFlag("FORCE_SPEED"))
+						if(sContainsPchOptions(release_options))
+							lib << " -ltcg";
+					lib << " -out:" << GetHostPathQ(product) << ' ' << Gather(pkg.link, config.GetKeys());
+				}
 				for(int i = 0; i < obj.GetCount(); i++)
 					lib << ' ' << GetHostPathQ(obj[i]);
 				PutConsole("Creating library...");
@@ -398,6 +412,10 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 				if(Execute(lib)) {
 					DeleteFile(product);
 					return false;
+				}else if(HasFlag("MSC8") && is_shared) {
+					String mt("mt -nologo -manifest ");
+					mt << GetHostPathQ(product) << ".manifest -outputresource:" << GetHostPathQ(product) << ";2";
+					Execute(mt);
 				}
 				PutConsole(String().Cat() << product << " (" << GetFileInfo(product).length
 				           << " B) created in " << GetPrintTime(linktime));
@@ -423,10 +441,16 @@ bool MscBuilder::Link(const Vector<String>& linkfile, const String& linkoptions,
 			link << LinkerName() << " -nologo -machine:" << MachineName()
 			<< " -pdb:" << GetHostPathQ(ForceExt(target, ".pdb"))
 			<< " -out:" << GetHostPathQ(target);
+			if(HasFlag("FORCE_SIZE")){
+				if(sContainsPchOptions(release_size_options))
+					link << " -ltcg";
+			}else if(HasFlag("FORCE_SPEED"))
+				if(sContainsPchOptions(release_options))
+					link << " -ltcg";
 			if(HasAnyDebug())
 				link << " -incremental:yes -debug -OPT:NOREF";
 			else
-				link << " -incremental:no -OPT:REF";
+				link << " -incremental:no -release -OPT:REF,ICF,NOWIN98";
 			if(HasFlag("MSC8ARM"))
 				link <<  " -subsystem:windowsce,4.20 /ARMPADCODE";
 			else
@@ -447,6 +471,12 @@ bool MscBuilder::Link(const Vector<String>& linkfile, const String& linkoptions,
 			CustomStep(".pre-link");
 			if(Execute(link) == 0) {
 				CustomStep(".post-link");
+				if(HasFlag("MSC8")) {
+					String mt("mt -nologo -manifest ");
+					mt << GetHostPathQ(target) << ".manifest -outputresource:" << GetHostPathQ(target)
+				           << (HasFlag("DLL") ? ";2" : ";1");
+				   Execute(mt);
+				}
 				PutConsole(String().Cat() << GetHostPath(target) << " (" << GetFileInfo(target).length
 				           << " B) linked in " << GetPrintTime(time));
 				return true;

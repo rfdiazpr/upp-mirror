@@ -284,7 +284,7 @@ int    Convert::Filter(int chr) const {
 	return chr;
 }
 
-GLOBAL_VAR(const Convert, StdConvert);
+GLOBAL_VAR_INIT(const Convert, StdConvert);
 
 String StdFormat(const Value& q) {
 	return StdConvert().Format(q);
@@ -402,17 +402,17 @@ Value ConvertString::Scan(const Value& text) const {
 	return ErrorValue(UPP::Format(t_("Please enter no more than %d characters."), maxlen));
 }
 
-GLOBAL_VAR(const ConvertInt, StdConvertInt)
-GLOBAL_VARP(const ConvertInt, StdConvertIntNotNull, (-INT_MAX, INT_MAX, true))
-GLOBAL_VAR(const ConvertDouble, StdConvertDouble)
-GLOBAL_VARP(const ConvertDouble, StdConvertDoubleNotNull,
+GLOBAL_VAR_INIT(const ConvertInt, StdConvertInt)
+GLOBAL_VARP_INIT(const ConvertInt, StdConvertIntNotNull, (-INT_MAX, INT_MAX, true))
+GLOBAL_VAR_INIT(const ConvertDouble, StdConvertDouble)
+GLOBAL_VARP_INIT(const ConvertDouble, StdConvertDoubleNotNull,
             (-DOUBLE_NULL_LIM, DOUBLE_NULL_LIM, true))
-GLOBAL_VAR(const ConvertDate, StdConvertDate)
-GLOBAL_VARP(const ConvertDate, StdConvertDateNotNull, (Date(0, 0, 0), Date(3000, 12, 31), true))
-GLOBAL_VAR(const ConvertTime, StdConvertTime)
-GLOBAL_VARP(const ConvertTime, StdConvertTimeNotNull, (Null, Null, true))
-GLOBAL_VAR(const ConvertString, StdConvertString);
-GLOBAL_VARP(const ConvertString, StdConvertStringNotNull, (INT_MAX, true))
+GLOBAL_VAR_INIT(const ConvertDate, StdConvertDate)
+GLOBAL_VARP_INIT(const ConvertDate, StdConvertDateNotNull, (Date(0, 0, 0), Date(3000, 12, 31), true))
+GLOBAL_VAR_INIT(const ConvertTime, StdConvertTime)
+GLOBAL_VARP_INIT(const ConvertTime, StdConvertTimeNotNull, (Null, Null, true))
+GLOBAL_VAR_INIT(const ConvertString, StdConvertString);
+GLOBAL_VARP_INIT(const ConvertString, StdConvertStringNotNull, (INT_MAX, true))
 
 Value  MapConvert::Format(const Value& q) const {
 	return map.Get(q, Null);
@@ -422,7 +422,7 @@ Value NoConvertClass::Format(const Value& q) const {
 	return q;
 }
 
-GLOBAL_VAR(const NoConvertClass, NoConvert)
+GLOBAL_VAR_INIT(const NoConvertClass, NoConvert)
 
 Value JoinConvert::Format(const Value& v) const {
 	String r;

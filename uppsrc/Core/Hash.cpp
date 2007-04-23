@@ -28,7 +28,7 @@ unsigned PrimeBound(unsigned n)
 	return *FindUpperBoundIter(prime_tab, prime_tab + __countof(prime_tab), n);
 }
 
-void HashBase::Free() const
+void HashBase::Free()
 {
 	if(map)
 		delete [](byte *)map;
@@ -36,7 +36,7 @@ void HashBase::Free() const
 	mcount = 0;
 }
 
-void HashBase::ClearIndex() const
+void HashBase::ClearIndex()
 {
 	link.Clear();
 	unlinked = -1;
@@ -57,7 +57,7 @@ HashBase::HashBase(pick_ HashBase& b)
 	map = b.map;
 	mcount = b.mcount;
 	unlinked = b.unlinked;
-	b.map = NULL;
+	const_cast<HashBase &>(b).map = NULL;
 }
 
 void HashBase::operator=(pick_ HashBase& b)
@@ -68,7 +68,7 @@ void HashBase::operator=(pick_ HashBase& b)
 	map = b.map;
 	mcount = b.mcount;
 	unlinked = b.unlinked;
-	b.map = NULL;
+	const_cast<HashBase &>(b).map = NULL;
 }
 
 HashBase::HashBase(const HashBase& b, int)
@@ -77,12 +77,14 @@ HashBase::HashBase(const HashBase& b, int)
 	unlinked = -1;
 	mcount = 0;
 	map = NULL;
+	Reindex();
 }
 
 void HashBase::operator<<=(const HashBase& b)
 {
 	ClearIndex();
 	hash <<= b.hash;
+	Reindex();
 }
 
 HashBase::~HashBase()
@@ -90,7 +92,7 @@ HashBase::~HashBase()
 	Free();
 }
 
-inline void HashBase::LinkBefore(int i, Link& l, int bi) const
+inline void HashBase::LinkBefore(int i, Link& l, int bi)
 {
 	Link& bl = link[bi];
 	l.next = bi;
@@ -102,11 +104,9 @@ inline void HashBase::LinkBefore(int i, Link& l, int bi) const
 void HashBase::Trim(int count)
 {
 	ASSERT(count <= hash.GetCount() && count >= 0);
-	if(map && link.GetCount() > count) {
-		for(int i = count; i < link.GetCount(); i++)
-			Unlink(i, link[i]);
-		link.Trim(count);
-	}
+	for(int i = count; i < link.GetCount(); i++)
+		Unlink(i, link[i]);
+	link.Trim(count);
 	hash.SetCount(count);
 }
 
@@ -115,7 +115,7 @@ void HashBase::Drop(int n)
 	Trim(hash.GetCount() - n);
 }
 
-void HashBase::FinishIndex() const
+void HashBase::FinishIndex()
 {
 	int q = link.GetCount();
 	link.Reserve(hash.GetAlloc());
@@ -124,7 +124,7 @@ void HashBase::FinishIndex() const
 		LinkTo(i, link[i], hash[i] & UNSIGNED_HIBIT ? unlinked : Mapi(i));
 }
 
-void HashBase::Reindex(int n) const
+void HashBase::Reindex(int n)
 {
 	ClearIndex();
 	Free();
@@ -134,7 +134,7 @@ void HashBase::Reindex(int n) const
 	FinishIndex();
 }
 
-void HashBase::Reindex() const
+void HashBase::Reindex()
 {
 	Reindex(hash.GetCount());
 }
@@ -142,13 +142,12 @@ void HashBase::Reindex() const
 void HashBase::Add(unsigned _hash)
 {
 	hash.Add(_hash & ~UNSIGNED_HIBIT);
+	DoIndex();
 }
 
 void  HashBase::SetUn(int i, unsigned _hash)
 {
 	if(map) {
-		if(link.GetCount() < hash.GetCount())
-			DoIndex();
 		Link& lnk = link[i];
 		Unlink(i, lnk);
 		LinkTo(i, lnk, Maph(_hash & ~UNSIGNED_HIBIT));
@@ -158,8 +157,6 @@ void  HashBase::SetUn(int i, unsigned _hash)
 
 Vector<int> HashBase::GetUnlinked() const
 {
-	if(link.GetCount() < hash.GetCount())
-		DoIndex();
 	Vector<int> r;
 	int q = unlinked;
 	if(q >= 0) {
@@ -175,8 +172,6 @@ Vector<int> HashBase::GetUnlinked() const
 int HashBase::Put(unsigned _hash)
 {
 	if(unlinked < 0) return -1;
-	if(link.GetCount() < hash.GetCount())
-		DoIndex();
 	Link& l = link[unlinked];
 	int i = unlinked;
 	unlinked = link[unlinked].next;
@@ -193,8 +188,6 @@ int HashBase::Put(unsigned _hash)
 
 void HashBase::Set(int i, unsigned _hash) {
 	if(map) {
-		if(link.GetCount() < hash.GetCount())
-			DoIndex();
 		Link& lnk = link[i];
 		Unlink(i, lnk);
 		int& mi = Maph(_hash & ~UNSIGNED_HIBIT);
@@ -229,8 +222,10 @@ void HashBase::Set(int i, unsigned _hash) {
 
 void HashBase::Shrink() {
 	hash.Shrink();
-	if((int)PrimeBound(hash.GetCount()) < mcount)
+	if((int)PrimeBound(hash.GetCount()) < mcount) {
 		ClearIndex();
+		DoIndex();
+	}
 	else
 		link.Shrink();
 }
@@ -247,17 +242,20 @@ void HashBase::Remove(int i)
 {
 	hash.Remove(i);
 	ClearIndex();
+	Reindex();
 }
 
 void HashBase::Remove(const int *sorted_list, int count)
 {
 	hash.Remove(sorted_list, count);
 	ClearIndex();
+	Reindex();
 }
 
 void HashBase::Insert(int i, unsigned _hash) {
 	hash.Insert(i, _hash & ~UNSIGNED_HIBIT);
 	ClearIndex();
+	Reindex();
 }
 
 #ifdef UPP
@@ -267,6 +265,7 @@ void HashBase::Serialize(Stream& s) {
 	if(s.IsLoading())
 		ClearIndex();
 	hash.Serialize(s);
+	Reindex();
 }
 #endif
 

@@ -65,24 +65,32 @@ inline String GetTypeName(const ::std::type_info& tinfo)   { return GetTypeName(
 
 void __LOGF__(const char *format, ...);
 
+#ifdef _MULTITHREADED
+void LockLog();
+void UnlockLog();
+#else
+inline void LockLog() {}
+inline void UnlockLog() {}
+#endif
+
 #ifdef _DEBUG
 
 #define _DBG_
 
 #define DEBUGCODE(x)     x
 
-#define LOG(a)           UPP::VppLog() << a << '\n'
+#define LOG(a)           UPP::LockLog(), UPP::VppLog() << a << '\n', UPP::UnlockLog()
 #define LOGF             UPP::__LOGF__
-#define LOGBEGIN()       UPP::VppLog().Begin()
-#define LOGEND()         UPP::VppLog().End()
+#define LOGBEGIN()       UPP::LockLog(), UPP::VppLog().Begin()
+#define LOGEND()         UPP::VppLog().End(), UPP::UnlockLog()
 #define LOGBLOCK(n)      RLOGBLOCK(n)
 #define LOGHEXDUMP(s, a) UPP::HexDump(VppLog(), s, a)
 #define QUOTE(a)         { LOG(#a); a; }
-#define LOGSRCPOS()      UPP::VppLog() << __FILE__ << '#' << __LINE__ << '\n'
-#define DUMP(a)          UPP::VppLog() << #a << " = " << (a) << '\n'
-#define DUMPC(c)         UPP::DumpContainer(VppLog() << #c << ":\n", (c))
-#define DUMPCC(c)        UPP::DumpContainer2(VppLog() << #c << ":\n", (c))
-#define DUMPCCC(c)       UPP::DumpContainer3(VppLog() << #c << ":\n", (c))
+#define LOGSRCPOS()      UPP::LockLog(), UPP::VppLog() << __FILE__ << '#' << __LINE__ << '\n', UPP::UnlockLog()
+#define DUMP(a)          UPP::LockLog(), UPP::VppLog() << #a << " = " << (a) << '\n', UPP::UnlockLog()
+#define DUMPC(c)         UPP::LockLog(), UPP::DumpContainer(VppLog() << #c << ":\n", (c)), UPP::UnlockLog()
+#define DUMPCC(c)        UPP::LockLog(), UPP::DumpContainer2(VppLog() << #c << ":\n", (c)), UPP::UnlockLog()
+#define DUMPCCC(c)       UPP::LockLog(), UPP::DumpContainer3(VppLog() << #c << ":\n", (c)), UPP::UnlockLog()
 #define XASSERT(c, d)    if(!bool(c)) { LOG("XASSERT failed"); LOGSRCPOS(); LOG(d); ASSERT(0); } else
 #define NEVER()          ASSERT(0)
 #define XNEVER(d)        if(1) { LOG("NEVER failed"); LOGSRCPOS(); LOG(d); ASSERT(0); } else
@@ -141,15 +149,15 @@ struct DebugLogBlock
 	const char *name;
 };
 
-#define RLOG(a)           UPP::VppLog() << a << '\n'
-#define RLOGBEGIN()       UPP::VppLog().Begin()
-#define RLOGEND()         UPP::VppLog().End()
+#define RLOG(a)           UPP::LockLog(), UPP::VppLog() << a << '\n', UPP::UnlockLog()
+#define RLOGBEGIN()       UPP::LockLog(), UPP::VppLog().Begin()
+#define RLOGEND()         UPP::VppLog().End(), UPP::UnlockLog()
 #define RLOGBLOCK(n)      UPP::DebugLogBlock MK__s(n)
 #define RLOGHEXDUMP(s, a) UPP::HexDump(UPP::VppLog(), s, a)
 #define RQUOTE(a)         { LOG(#a); a; }
-#define RLOGSRCPOS()      UPP::VppLog() << __FILE__ << '#' << __LINE__ << '\n'
-#define RDUMP(a)          UPP::VppLog() << #a << " = " << (a) << '\n'
-#define RDUMPC(c)         UPP::DumpContainer(UPP::VppLog() << #c << ":\n", (c))
+#define RLOGSRCPOS()      UPP::LockLog(), UPP::VppLog() << __FILE__ << '#' << __LINE__ << '\n'
+#define RDUMP(a)          UPP::LockLog(), UPP::VppLog() << #a << " = " << (a) << '\n', UPP::UnlockLog()
+#define RDUMPC(c)         UPP::LockLog(), UPP::DumpContainer(UPP::VppLog() << #c << ":\n", (c)), UPP::UnlockLog()
 
 // Crash support
 

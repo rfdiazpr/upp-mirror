@@ -405,7 +405,7 @@ void TreeCtrl::Open(int id, bool open)
 
 void TreeCtrl::OpenDeep(int id, bool open)
 {
-	Open(id);
+	Open(id, open);
 	Item& m = item[id];
 	for(int i = 0; i < m.child.GetCount(); i++)
 		OpenDeep(m.child[i], open);

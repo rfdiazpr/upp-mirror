@@ -98,7 +98,7 @@ void StdDisplayClass::Paint0(Draw& w, const Rect& r, const Value& q,
 		x = r.right - GetStdSize(q).cx;
 	if(a == ALIGN_CENTER)
 		x += (r.Width() - GetStdSize(q).cx) / 2;
-	int tcy = GetTLTextHeight(w, txt, font);
+	int tcy = GetTLTextHeight(txt, font);
 	DrawTLText(w, x, r.top + max((r.Height() - tcy) / 2, 0), r.Width(), txt, font, ink);
 }
 
@@ -111,7 +111,7 @@ void StdDisplayClass::Paint(Draw& w, const Rect& r, const Value& q,
 
 Size StdDisplayClass::GetStdSize(const Value& q) const
 {
-	return GetTLTextSize(ScreenInfo(), WString(IsString(q) ? q : StdConvert().Format(q)), StdFont());
+	return GetTLTextSize(WString(IsString(q) ? q : StdConvert().Format(q)), StdFont());
 }
 
 #ifdef flagSO
@@ -120,9 +120,9 @@ Display::Display() {}
 
 Display::~Display() {}
 
-const Display& GLOBAL_V(StdDisplayClass, StdDisplay)
-const Display& GLOBAL_VP(StdDisplayClass, StdCenterDisplay, (ALIGN_CENTER))
-const Display& GLOBAL_VP(StdDisplayClass, StdRightDisplay, (ALIGN_RIGHT))
+const Display& GLOBAL_V_INIT(StdDisplayClass, StdDisplay)
+const Display& GLOBAL_VP_INIT(StdDisplayClass, StdCenterDisplay, (ALIGN_CENTER))
+const Display& GLOBAL_VP_INIT(StdDisplayClass, StdRightDisplay, (ALIGN_RIGHT))
 
 #ifdef flagSO
 ColorDisplayNull::ColorDisplayNull(String nulltext) : nulltext(nulltext) {}

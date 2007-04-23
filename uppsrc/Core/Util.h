@@ -365,8 +365,8 @@ bool LoadFromString(T& x, const String& s) {
 	return Load(x, ss);
 }
 
-void             RegisterGlobalConfig(const char *name);
-void             RegisterGlobalConfig(const char *name, Callback WhenFlush);
+void             RegisterGlobalConfig(const char *name) init_;
+void             RegisterGlobalConfig(const char *name, Callback WhenFlush) init_;
 
 String           GetGlobalConfigData(const char *name);
 void             SetGlobalConfigData(const char *name, const String& data);

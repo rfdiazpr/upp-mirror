@@ -31,4 +31,27 @@ String GetWindowsDirectory();
 #endif
 String GetModuleFileName(HINSTANCE instance = AppGetHandle());
 
+//deprecated
+class SyncObject {
+protected:
+	HANDLE     handle;
+
+public:
+	bool       Wait(int time_ms);
+	bool       Wait();
+
+	HANDLE     GetHandle() const { return handle; }
+
+	SyncObject();
+	~SyncObject();
+};
+
+//deprecated
+class Event : public SyncObject {
+public:
+	void       Set();
+
+	Event();
+};
+
 #endif

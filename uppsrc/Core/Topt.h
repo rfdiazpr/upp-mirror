@@ -251,7 +251,7 @@ template <class T, class B = EmptyClass>
 class DeepCopyOption : public B {
 public:
 	friend T& operator<<=(T& dest, const T& src)
-	{ (&dest)->T::~T(); ::new(&dest) T(src, 1); return dest; }
+	{ if(&dest != &src) { (&dest)->T::~T(); ::new(&dest) T(src, 1); } return dest; }
 	friend void DeepCopyConstruct(void *dest, const T& src)
 	{ ::new (dest) T(src, 0); }
 	friend T *DeepCopyNew(const T& src)

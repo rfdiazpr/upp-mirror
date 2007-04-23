@@ -244,6 +244,8 @@ void TopWindow::Open(Ctrl *owner)
 		windowFrameMargin.top = max(windowFrameMargin.top, fe[2]);
 		windowFrameMargin.bottom = max(windowFrameMargin.bottom, fe[3]);
 	}
+	if(IsOpen() && top)
+		top->owner = owner;
 }
 
 void TopWindow::Open()

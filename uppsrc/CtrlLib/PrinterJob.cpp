@@ -69,7 +69,10 @@ bool PrinterJob::Execute0(bool dodlg)
 	HDC hdc;
 	if(dodlg) {
 		dlg.Flags = PD_DISABLEPRINTTOFILE|PD_NOSELECTION|PD_HIDEPRINTTOFILE|PD_RETURNDC;
-		if(!PrintDlg(&dlg)) return false;
+		Vector< Ptr<Ctrl> > disabled = DisableCtrls(Ctrl::GetTopCtrls());
+		bool b = PrintDlg(&dlg);
+		EnableCtrls(disabled);
+		if(!b) return false;
 		hdc = dlg.hDC;
 	}
 	else {

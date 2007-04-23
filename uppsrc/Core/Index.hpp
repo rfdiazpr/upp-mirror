@@ -1,4 +1,4 @@
-inline void HashBase::LinkTo(int i, Link& l, int& m) const
+inline void HashBase::LinkTo(int i, Link& l, int& m)
 {
 	if(m >= 0) {
 		Link& bl = link[m];
@@ -40,7 +40,7 @@ inline int& HashBase::Maph(unsigned _hash) const
 	return map[h % mcount];
 }
 
-inline void HashBase::DoIndex() const
+inline void HashBase::DoIndex()
 {
 	if(hash.GetCount() < mcount)
 		FinishIndex();
@@ -51,15 +51,11 @@ inline void HashBase::DoIndex() const
 inline int HashBase::Find(unsigned _hash) const
 {
 	if(hash.GetCount() == 0) return -1;
-	if(link.GetCount() < hash.GetCount() || mcount == 0)
-		DoIndex();
 	return Maph(_hash);
 }
 
 inline int HashBase::FindNext(int i) const
 {
-	if(link.GetCount() < hash.GetCount())
-		DoIndex();
 	int q = link[i].next;
 	return q == Mapi(i) ? -1 : q;
 }
@@ -67,16 +63,12 @@ inline int HashBase::FindNext(int i) const
 inline int HashBase::FindLast(unsigned _hash) const
 {
 	if(hash.GetCount() == 0) return - 1;
-	if(link.GetCount() < hash.GetCount())
-		DoIndex();
 	int i = Find(_hash & ~UNSIGNED_HIBIT);
 	return i >= 0 ? link[i].prev : -1;
 }
 
 inline int HashBase::FindPrev(int i) const
 {
-	if(link.GetCount() < hash.GetCount())
-		DoIndex();
 	int q = link[i].prev;
 	return q == link[Mapi(i)].prev ? -1 : q;
 }

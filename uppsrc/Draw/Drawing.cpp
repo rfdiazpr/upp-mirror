@@ -668,7 +668,7 @@ void  DrawingDraw::Create(Size sz) {
 void DrawingDraw::DInit()
 {
 #ifdef PLATFORM_WIN32
-	Attach(ScreenInfo().GetHandle());
+	Attach(ScreenHDC());
 #endif
 #ifdef PLATFORM_X11
 	gc = XCreateGC(Xdisplay, RootWindow(Xdisplay, Xscreenno), 0, 0);

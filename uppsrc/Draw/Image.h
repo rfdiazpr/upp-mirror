@@ -109,7 +109,6 @@ private:
 		int64  serial;
 		int    paintcount;
 
-		static StaticCriticalSection ResLock;
 		static Link<Data>            ResData[1];
 		static int                   ResCount;
 
@@ -149,7 +148,6 @@ private:
 
 	Data *data;
 
-	static StaticCriticalSection ResLock;
 	static Link<Image::Data>     ResData[1];
 	static int                   ResCount;
 

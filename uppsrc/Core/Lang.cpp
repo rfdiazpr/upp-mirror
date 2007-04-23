@@ -215,8 +215,9 @@ LCID GetLanguageLCID(int language)
 {
 	if(language == 0)
 		return 0x400;
-	if(GetLCIDMap().IsEmpty())
+	ONCELOCK {
 		EnumSystemLocales(&sEnumLocale, LCID_SUPPORTED);
+	}
 	return GetLCIDMap().Get(language, MAKELCID(MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL), SORT_DEFAULT));
 }
 #endif
@@ -799,15 +800,18 @@ One<LanguageInfo::WildcardCompare> LanguageInfo::GetWildcardCompare(const wchar 
 
 typedef ArrayMap<int, LanguageInfo> LanguageInfoMap;
 GLOBAL_VAR(LanguageInfoMap, LanguageInfo::Map)
+static StaticMutex sMapMutex;
 
 void LanguageInfo::Register(One<LanguageInfo> info)
 {
-	int lang = info->language;
-	int f = Map().Find(lang);
-	if(f >= 0)
-		Map().Set(f, -info);
-	else
-		Map().Add(lang, -info);
+	INTERLOCKED_(sMapMutex) {
+		int lang = info->language;
+		int f = Map().Find(lang);
+		if(f >= 0)
+			Map().Set(f, -info);
+		else
+			Map().Add(lang, -info);
+	}
 }
 
 class LanguageInfoCS : public LanguageInfo
@@ -1059,15 +1063,17 @@ const LanguageInfo& GetLanguageInfo(int lcode)
 		return *rinfo;
 	if(lcode == 0)
 		lcode = GetCurrentLanguage(); //!! todo - decide on default / neutral language code
-	LanguageInfoMap& map = LanguageInfo::Map();
-	int f = map.Find(lcode);
-	if(f < 0)
-	{
-		f  = map.GetCount();
-		map.Add(lcode, new LanguageInfo(lcode));
+	INTERLOCKED_(sMapMutex) {
+		LanguageInfoMap& map = LanguageInfo::Map();
+		int f = map.Find(lcode);
+		if(f < 0)
+		{
+			f  = map.GetCount();
+			map.Add(lcode, new LanguageInfo(lcode));
+		}
+		recent = lcode;
+		return *(rinfo = &map[f]);
 	}
-	recent = lcode;
-	return *(rinfo = &map[f]);
 }
 
 const LanguageInfo& GetLanguageInfo()

@@ -178,7 +178,7 @@ void Draw::InitPlatformFonts() {
 
 FontInfo::Data::Data()
 {
-	count = 1;
+	refcount = 1;
 	hfont = NULL;
 	for(int i = 0; i < 256; i++)
 		width[i] = NULL;
@@ -187,6 +187,7 @@ FontInfo::Data::Data()
 
 FontInfo::Data::~Data()
 {
+	DrawLock __;
 	if(hfont)
 		DeleteObject(hfont);
 	for(int i = 0; i < 256; i++)
@@ -197,7 +198,8 @@ FontInfo::Data::~Data()
 
 void FontInfo::Data::GetMetrics(int page, CharMetrics *t)
 {
-	HDC hdc = ScreenInfo().GetHandle();
+	DrawLock __;
+	HDC hdc = ScreenHDC();
 	HFONT ohfont = (HFONT) ::SelectObject(hdc, hfont);
 	page <<= 8;
 	bool abca = false, abcw = false;
@@ -244,6 +246,7 @@ void FontInfo::Data::GetMetrics(int page, CharMetrics *t)
 
 FontInfo Draw::Acquire(Font font, HDC hdc, int angle, int device)
 {
+	DrawLock __;
 	if(IsNull(font))
 		font = StdFont();
 	if(font.GetFace() == 0)
@@ -267,7 +270,7 @@ FontInfo Draw::Acquire(Font font, HDC hdc, int angle, int device)
 				LLOG("Removing from cache " << f->font << " count:" << f->count <<
 				     " cached:" << FontCached);
 			}
-			f->count++;
+			f->refcount++;
 			return f;
 		}
 	}
@@ -361,6 +364,7 @@ FontInfo Draw::Acquire(Font font, HDC hdc, int angle, int device)
 
 void Draw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font, Color ink,
                       int n, const int *dx) {
+	DrawLock __;
 	COLORREF cr = GetColor(ink);
 	if(cr != lastTextColor) {
 		LLOG("Setting text color: " << ink);

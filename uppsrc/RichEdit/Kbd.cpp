@@ -39,6 +39,10 @@ bool RichEdit::Key(dword key, int count)
 		if(cursor < text.GetLength() && !RemoveSpecial(cursor, cursor + 1, false))
 			Remove(cursor, 1, true);
 		break;
+	case K_INSERT:
+		overwrite = !overwrite;
+		PlaceCaret();
+		break;
 	case K_CTRL_DELETE:
 		if(RemoveSelection(true)) return true;
 		if(cursor < text.GetLength()) {
@@ -133,6 +137,11 @@ bool RichEdit::Key(dword key, int count)
 			RichText txt;
 			txt.SetStyles(text.GetStyles());
 			txt.Cat(p);
+			if(overwrite) {
+				RichPos p = text.GetRichPos(cursor);
+				if(p.posinpara < p.paralen)
+					Remove(cursor, 1);
+			}
 			Insert(cursor, txt, true);
 			Move(cursor + count, false);
 			break;

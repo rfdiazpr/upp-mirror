@@ -1,5 +1,8 @@
 description "JPEG image file format";
 
+uses
+	Draw;
+
 file
 	jpg.h,
 	jpgupp.cpp,

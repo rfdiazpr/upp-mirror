@@ -42,8 +42,9 @@ LCID GetLanguageLCID(int language)
 {
 	if(language == 0)
 		return 0x400;
-	if(GetLCIDMap().IsEmpty())
+	ONCELOCK {
 		EnumSystemLocales(&sEnumLocale, LCID_SUPPORTED);
+	}
 	return GetLCIDMap().Get(language, MAKELCID(MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL), SORT_DEFAULT));
 }
 #endif
@@ -485,6 +486,7 @@ GLOBAL_VAR(LanguageInfoMap, LanguageInfo::Map)
 
 void LanguageInfo::Register(One<LanguageInfo> info)
 {
+	AssertST();
 	int lang = info->language;
 	int f = Map().Find(lang);
 	if(f >= 0)

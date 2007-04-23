@@ -21,6 +21,8 @@ public:
 	virtual Line    GetLine(int line);
 	virtual const RGBA *GetPalette();
 	virtual const RasterFormat *GetFormat();
+	virtual Value   GetMetaData(String id);
+	virtual void    EnumMetaData(Vector<String>& id_list);
 };
 
 class JPGEncoder : public StreamRasterEncoder {

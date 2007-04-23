@@ -4,13 +4,15 @@ NAMESPACE_UPP
 
 #define LLOG(x) //LOG(x)
 
+#define IMAGECLASS CtrlCoreImg
+#define IMAGEFILE <CtrlCore/Ctrl.iml>
+#include <Draw/iml_source.h>
+
 static bool StdDisplayErrorFn(const Value& e)
 {
 	if(!e.IsError())
 		return false;
 	String s = GetErrorText(e);
-//	if(s.IsEmpty())
-//		s = s_(CtrlInvalidData);
 #ifdef PLATFORM_WIN32
 #ifdef PLATFORM_WINCE
 	MessageBox(NULL, ToSystemCharset(s), ToSystemCharset(GetExeTitle()), MB_OK | MB_ICONQUESTION);
@@ -53,7 +55,20 @@ void Ctrl::LeftUp(Point, dword keyflags)            {}
 void Ctrl::RightUp(Point p, dword keyflags)         {}
 void Ctrl::MouseLeave()                             {}
 void Ctrl::MouseWheel(Point p, int zd, dword kf)    {}
+void Ctrl::LeftTriple(Point p, dword keyflags)      {}
+void Ctrl::LeftDrag(Point p, dword keyflags)        {}
+void Ctrl::LeftHold(Point p, dword keyflags)        {}
+void Ctrl::RightTriple(Point p, dword keyflags)     {}
+void Ctrl::RightDrag(Point p, dword keyflags)       {}
+void Ctrl::RightHold(Point p, dword keyflags)       {}
+
 void Ctrl::Layout()                                 {}
+
+void Ctrl::DragEnter(Point p, DnDEvent& d) {}
+void Ctrl::DragAndDrop(Point p, DnDEvent& d)        {}
+void Ctrl::DragLeave() {}
+
+String Ctrl::GetClip(const char *fmt, int kind) { return Null; }
 
 void Ctrl::PostInput()
 {
@@ -820,5 +835,7 @@ CH_INT(GUI_PopUpEffect, GUIEFFECT_SLIDE);
 CH_INT(GUI_DropShadows, 1);
 CH_INT(GUI_AltAccessKeys, 1);
 CH_INT(GUI_AKD_Conservative, 0);
+CH_INT(GUI_DragDistance, 4);
+CH_INT(GUI_DblClickTime, 500);
 
 END_UPP_NAMESPACE

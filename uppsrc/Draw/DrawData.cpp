@@ -75,6 +75,7 @@ void DrawImageBandRLE(Draw& w, int x, int y, const Image& m, int minp)
 
 void Draw::DrawDataOp(int x, int y, int cx, int cy, const String& data, const char *id)
 {
+	DrawLock __;
 	One<DataDrawer> dd = DataDrawer::Create(id);
 	if(dd) {
 		dd->Open(data, cx, cy);

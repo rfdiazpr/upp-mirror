@@ -30,18 +30,18 @@ bool Draw::StdFontSizeSet;
 Size Draw::StdFontSize;
 Font Draw::AStdFont;
 
-RichValue<Font>::Registrator MK__s;
+INITBLOCK {
+	RichValue<Font>::Register();
+}
 
 void Draw::InitFonts()
 {
+	DrawLock __;
 	if(sFini) return;
-	INTERLOCKED {
-		if(sFini) return;
-		sFini = true;
-		GetFontHash(0);
-		GetFontLru();
-		InitPlatformFonts();
-	}
+	sFini = true;
+	GetFontHash(0);
+	GetFontLru();
+	InitPlatformFonts();
 }
 
 int FontFilter(int c)
@@ -61,8 +61,11 @@ int  Font::FindFaceNameIndex(const char *name) {
 	return 0;
 }
 
+Draw& ScreenInfo();
+
 FontInfo Font::Info() const
 {
+	DrawLock __;
 	return ScreenInfo().GetFontInfoW(*this);
 }
 
@@ -224,9 +227,10 @@ int FontInfo::GetRightSpace(int c) const {
 }
 
 void Draw::Release(FontInfo::Data *font) {
-	ASSERT(font->count > 0);
+	DrawLock __;
+	ASSERT(font->refcount > 0);
 	LLOG("Release " << font->font << " count:" << font->count);
-	if(--font->count == 0) {
+	if(--font->refcount == 0) {
 		if(FontCacheMax == 0) {
 			delete font;
 			return;
@@ -250,14 +254,24 @@ void FontInfo::Release()
 	if(ptr) Draw::Release(ptr);
 }
 
+void FontInfo::Retain(const FontInfo& f)
+{
+	DrawLock __;
+	ptr = f.ptr;
+	ptr->refcount++;
+	charset = f.charset;
+}
+
 FontInfo Draw::GetFontInfo(byte charset, Font font) {
+	DrawLock __;
+	LTIMING("GetFontInfo");
 	if(charset == CHARSET_DEFAULT)
 		charset = GetDefaultCharset();
 	if(lastFont.IsEqual(charset, font, 0, device))
 		return lastFont;
 #ifdef PLATFORM_WIN32
 	HDC hdc = GetHandle();
-	FontInfo fi = Acquire(font, hdc ? hdc : ScreenInfo().GetHandle(), 0, device);
+	FontInfo fi = Acquire(font, hdc ? hdc : ScreenHDC(), 0, device);
 #endif
 #ifdef PLATFORM_X11
 	FontInfo fi = Acquire(font, 0, device);
@@ -277,6 +291,7 @@ FontInfo Draw::GetFontInfoW(Font font)
 }
 
 void Draw::SetFont(Font font, int angle) {
+	DrawLock __;
 	LLOG("Set font: " << font << " face: " << font.GetFaceName());
 	if(lastFont && lastFont.IsEqual(CHARSET_UNICODE, font, angle, device))
 		return;
@@ -307,8 +322,10 @@ WString TextUnicode(const char *s, int n, byte cs, Font font)
 		return ToUnicode(s, n, cs);
 }
 
-FontInfo::CharMetrics *FontInfo::GetPage(int page) const
+FontInfo::CharMetrics *FontInfo::CreateMetricsPage(int page) const
 {
+	DrawLock __;
+	CharMetrics *cm;
 	if(page >= 46 && !ptr->default_width) {
 		ptr->default_width = new CharMetrics[256];
 		ptr->GetMetrics(page, ptr->default_width);
@@ -319,21 +336,24 @@ FontInfo::CharMetrics *FontInfo::GetPage(int page) const
 				break;
 			}
 	}
-	CharMetrics *& cm = ptr->width[page];
-	if(!cm) {
-		cm = new CharMetrics[256];
-		ptr->GetMetrics(page, cm);
-		if(page == 1)
-			ComposeMetrics(ptr->font, cm);
-		if(page >= 46) {
-			for(int i = 0; i < 256; i++)
-				if(!(cm[i] == ptr->default_width[i]) && cm[i].width)
-					return cm;
-			delete[] cm;
-			cm = ptr->default_width;
-		}
+	cm = new CharMetrics[256];
+	ptr->GetMetrics(page, cm);
+	if(page == 1)
+		ComposeMetrics(ptr->font, cm);
+	if(page >= 46) {
+		for(int i = 0; i < 256; i++)
+			if(!(cm[i] == ptr->default_width[i]) && cm[i].width)
+				return cm;
+		delete[] cm;
+		cm = ptr->default_width;
 	}
 	return cm;
+}
+
+FontInfo::CharMetrics *FontInfo::GetPage(int page) const
+{
+	ONCELOCK_PTR(ptr->width[page], CreateMetricsPage(page));
+	return ptr->width[page];
 }
 
 void Draw::DrawText(int x, int y, int angle, const wchar *text, Font font,

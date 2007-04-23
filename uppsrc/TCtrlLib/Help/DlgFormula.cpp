@@ -164,7 +164,7 @@ void DlgFormula::OnPreview()
 	int h = (Nvl((int)~height, 12) * 600 + 36) / 72;
 	last_color = Nvl(Color(~color), SBlack);
 	last_font = Font().Face(f).Height(h);
-	Font scr_font = Font(last_font).Height(VertDotsToPixels(ScreenInfo(), last_font.GetHeight()));
+	Font scr_font = Font(last_font).Height(VertDotsToPixels(ScreenDraw(), last_font.GetHeight()));
 	formula.Set(last_text, scr_font, last_color);
 }
 

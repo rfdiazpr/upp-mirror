@@ -411,7 +411,7 @@ String NormalizePath(const char *path, const char *currdir)
 		if(path - b == 1 && *b == '.')
 			; //no-op
 		else if(path - b == 2 && *b == '.' && b[1] == '.') {
-			const char *ob = out.GetIter(outstart), *oe = out.End();
+			const char *ob = ~out + outstart, *oe = out.End();
 			if(oe - 1 > ob && oe[-1] == DIR_SEP)
 				oe--;
 			while(oe > ob && oe[-1] != DIR_SEP)

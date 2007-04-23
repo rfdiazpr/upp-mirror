@@ -41,6 +41,28 @@ CtrlFrame& ViewFrame()
 	return m;
 }
 
+CH_STYLE(EditField, Style, StyleDefault)
+{
+	paper = SColorPaper();
+	disabled = SColorFace();
+	focus = paper;
+	invalid = Blend(paper, Color(255, 0, 0), 32);
+	text = SColorText();
+	textdisabled = SColorDisabled();
+	selected = SColorHighlight();
+	selectedtext = SColorHighlightText();
+}
+
+EditField& EditField::SetStyle(const Style& s)
+{
+	if(style != &s) {
+		style = &s;
+		RefreshLayout();
+		Refresh();
+	}
+	return *this;
+}
+
 void EditField::CancelMode()
 {
 	keep_selection = false;
@@ -138,12 +160,13 @@ void EditField::Paint(Draw& w)
 {
 	Size sz = GetSize();
 	bool f = HasBorder();
-	Color paper = IsShowEnabled() && !IsReadOnly() ? SColorPaper : SColorFace;
+	const EditField::Style *st = style ? style : &StyleDefault();
+	Color paper = IsShowEnabled() && !IsReadOnly() ? (HasFocus() ? st->focus : st->paper) : st->disabled;
 	if(nobg)
 		paper = Null;
-	Color ink = IsShowEnabled() ? SColorText : SColorDisabled;
+	Color ink = IsShowEnabled() ? st->text : st->textdisabled;
 	if(convert && convert->Scan(text).IsError())
-		paper = Blend(paper, Color(255, 0, 0), 32);
+		paper = st->invalid;
 	int fcy = font.Info().GetHeight();
 	int yy = GetTy();
 	w.DrawRect(0, 0, 2, sz.cy, paper);
@@ -161,8 +184,8 @@ void EditField::Paint(Draw& w)
 		int l, h;
 		if(GetSelection(l, h)) {
 			Paints(w, x, fcy, txt, ink, paper, l, password);
-			Paints(w, x, fcy, txt, IsShowEnabled() ? SColorHighlightText() : paper,
-			                       IsShowEnabled() ? SColorHighlight() : ink, h - l, password);
+			Paints(w, x, fcy, txt, IsShowEnabled() ? st->selectedtext : paper,
+			                       IsShowEnabled() ? st->selected : ink, h - l, password);
 			Paints(w, x, fcy, txt, ink, paper, text.GetLength() - h, password);
 		}
 		else
@@ -690,6 +713,7 @@ EditField& EditField::NullText(const char *text, Color ink)
 
 EditField::EditField()
 {
+	style = NULL;
 	Unicode();
 	Reset();
 	SetFrame(EditFieldFrame());

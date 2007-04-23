@@ -126,7 +126,7 @@ protected:
 	void     SetVoidVal();
 
 public:
-	static  void Register(dword w, Void* (*c)(Stream& s));
+	static  void Register(dword w, Void* (*c)(Stream& s)) init_;
 
 	dword    GetType() const         { return ptr->GetType(); }
 	bool     IsError() const         { return GetType() == ERROR_V; }
@@ -453,15 +453,15 @@ public:
 		if(IsNull(v)) return GetNull();
 		return Rep::Cast(v.GetVoidPtr())->Get();
 	}
-	static void Register() {
+	static void Register() init_ {
 		Value::Register(ValueTypeNo(*(T *)NULL), Rep::Create);
 	}
-	class Registrator {
+/*	class Registrator {
 	public:
 		Registrator() {
 			RichValue::Register();
 		}
-	};
+	};*/
 	static const T& Extract(const Value& v) {
 		if(v.IsNull()) return GetNull();
 		return Rep::Cast(v.GetVoidPtr())->Get();

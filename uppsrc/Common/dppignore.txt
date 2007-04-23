@@ -1,3 +1,4 @@
+init_
 pick_
 WINAPI
 CALLBACK
@@ -32,4 +33,3 @@ __CLRCALL_OR_CDECL
 _CRTIMP2_PURE_DEBUG_IT
 _CRTIMP2_PURE
 __declspec
-

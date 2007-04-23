@@ -552,7 +552,18 @@ WString RichPara::GetText() const
 }
 
 typedef VectorMap<Id, RichPara::FieldType *> FieldTypeMap;
-GLOBAL_VAR(FieldTypeMap, RichPara::fieldtype)
+GLOBAL_VAR(FieldTypeMap, fieldtype0)
+
+const VectorMap<Id, RichPara::FieldType *>& RichPara::fieldtype()
+{
+	return fieldtype0();
+}
+
+void RichPara::Register(Id id, FieldType& ft) init_
+{
+	AssertST();
+	fieldtype0().GetAdd(id, &ft);
+}
 
 bool RichPara::EvaluateFields(VectorMap<String, Value>& vars)
 {

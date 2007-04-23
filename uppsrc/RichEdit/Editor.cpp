@@ -218,7 +218,8 @@ Rect RichEdit::GetCaretRect(const RichCaret& pr) const
 	Zoom zoom = GetZoom();
 	Rect tr = GetTextRect();
 	Rect r = RectC(pr.left * zoom + tr.left, GetPosY(pr) + (pr.lineascent - pr.caretascent) * zoom - sb,
-	               (pr.caretascent * pr.caretdescent) * zoom > 20 ? 2 : 1,
+	               overwrite && GetChar(cursor) != '\n' ? pr.Width() * zoom
+	                         : (pr.caretascent * pr.caretdescent) * zoom > 20 ? 2 : 1,
 	               (pr.caretascent + pr.caretdescent) * zoom);
 	if(r.right > tr.right)
 		return Rect(tr.right - r.Width(), r.top, tr.right, r.bottom);
@@ -560,6 +561,8 @@ RichEdit::RichEdit()
 
 	showcodes = LtBlue;
 	spellcheck = true;
+
+	overwrite = false;
 
 	sb.WhenScroll = THISBACK(Scroll);
 	sb.SetLine(16);

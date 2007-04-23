@@ -28,11 +28,13 @@ struct Edit : Moveable<Edit>
 	Ptr<Ctrl> ctrl;
 	Convert * convert;
 	Callback1<One<Ctrl>&> factory;
+	bool nofactory;
 	
 	Edit()
 	{
 		ctrl = NULL;
 		convert = NULL;
+		nofactory = false;
 	}
 };
 
@@ -52,7 +54,16 @@ struct Item : Moveable<Item>
 		style = 0;
 		editable = true;
 		clickable = true;
+		idx = 0;
+		idy = 0;
+		cx = 0;
+		cy = 0;
+		group = -1;
+		isjoined = false;
+
 		modified = false;
+		sync_flag = -1;
+		paint_flag = -1;
 	}
 	~Item()
 	{
@@ -72,11 +83,17 @@ struct Item : Moveable<Item>
 		void Live(bool s)   { BitSet(style, GD::LIVE, s);   }
 		void Found(bool s)  { BitSet(style, GD::FOUND, s);  }
 		
+		bool IsJoined() { return isjoined; }
+
+		int idx, idy, cx, cy, group;
+		bool isjoined:1;
 		int fs, fe;
 		dword style;
 		bool editable:1;
 		bool clickable:1;
 		bool modified:1;
+		int sync_flag;
+		int paint_flag;
 	
 		Ptr<Ctrl> ctrl;
 		
@@ -121,11 +138,13 @@ class ItemRect : public Moveable<ItemRect>
 			editable = true;
 			sortable = true;
 			clickable = true;
+			ignore_display = false;
 			style = 0;
 			
 			calign = 0;
 			sl = sr = st = sb = 0;
 			sx = sy = 0;
+			join = 0;		
 			
 			ismin = false;
 			ismax = false;
@@ -140,7 +159,8 @@ class ItemRect : public Moveable<ItemRect>
 			ctrl    = NULL;
 			convert = NULL;
 			display = NULL;
-
+			
+			level = 0;
 		}
 		
 	private:
@@ -148,6 +168,10 @@ class ItemRect : public Moveable<ItemRect>
 		Items *items;
 		Ctrl *parent;
 		Edits *edits;
+		
+		int level;
+		
+		//Vector<ItemRect *> child;
 		
 		Ptr<Ctrl>   ctrl;
 		Convert     *convert;
@@ -167,6 +191,7 @@ class ItemRect : public Moveable<ItemRect>
 		
 		double tpos, tsize, tprop;
 		int tnpos, tnsize;
+		int  join;
 	
 		bool hidden;
 		bool index;
@@ -195,6 +220,8 @@ class ItemRect : public Moveable<ItemRect>
 		bool wrap;
 		Font fnt;
 		Color fg, bg;
+		
+		bool ignore_display:1;
 		
 		double Left(int scroll = 0)    { return pos - scroll;          }
 		double Right(int scroll = 0)   { return pos + size - scroll;   }
@@ -257,6 +284,7 @@ class ItemRect : public Moveable<ItemRect>
 		ItemRect& SetConvert(Convert &c);
 		ItemRect& SetFormat(const char *fmt);
 		ItemRect& SetDisplay(GridDisplay &gd);
+		ItemRect& IgnoreDisplay();
 		ItemRect& NoConvertion();
 		ItemRect& Default(Value v);
 		ItemRect& Index(bool b = true);
@@ -283,6 +311,7 @@ class ItemRect : public Moveable<ItemRect>
 		ItemRect& CtrlAlignRight(int r = 0, int s = 0)   { calign |= GD::RIGHT;   sr = r; sx = s;         return *this; }
 		ItemRect& CtrlAlignHorzCenter(int s = 0)         { calign |= GD::HCENTER; sx = s;                 return *this; }
 		ItemRect& CtrlAlignVertCenter(int s = 0)         { calign |= GD::VCENTER; sy = s;                 return *this; }
+		ItemRect& CtrlAlignCenter(int s = 0, int d = 0)  { calign |= GD::VCENTER | GD::HCENTER; sx = s; sy = d; return *this; }
 		ItemRect& CtrlAlignHorzPos(int l = 0, int r = 0) { calign |= GD::HPOS;    sl = l; sr = r; sx = 1; return *this; }
 		ItemRect& CtrlAlignVertPos(int t = 0, int b = 0) { calign |= GD::VPOS;    st = t; sb = b; sy = 1; return *this; }
 		
@@ -295,6 +324,7 @@ class ItemRect : public Moveable<ItemRect>
 		ItemRect& Ctrls(Callback1<One<Ctrl>&> _factory)	 { (*edits)[id].factory = _factory; return *this; }	
 		ItemRect& Ctrls(void (*factory)(One<Ctrl>&))     { return Ctrls(callback(factory)); }
 		template<class T> ItemRect&  Ctrls()             { return Ctrls(DefaultCtrlFactory<T>()); }
+		ItemRect& NoCtrls()                              { (*edits)[id].nofactory = true; return *this; }
 		ItemRect& Option();
 				
 		ItemRect& Editable(bool b)                       { editable = b;      return *this; }

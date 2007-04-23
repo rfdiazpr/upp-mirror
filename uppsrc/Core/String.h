@@ -14,330 +14,344 @@ inline int stricmp(const char *a, const char *b)         { return _stricmp(a, b)
 inline int strnicmp(const char *a, const char *b, int n) { return _strnicmp(a, b, n); }
 #endif
 
-template <class T, class St>
-class AStringBuffer;
+inline int strlen__(const char *s)  { return s ? strlen(s) : 0; }
+inline int strlen__(const wchar *s) { return s ? wstrlen(s) : 0; }
 
-inline int strlen__(const char *s) { return strlen(s); }
-inline int strlen__(const wchar *s) { return wstrlen(s); }
+inline int cmpval__(char x)         { return (byte)x; }
+inline int cmpval__(wchar x)        { return (word)x; }
 
-template <class T, class S>
-class AString : public Moveable<S> {
-protected:
-	struct Data {
-		Atomic   refcount;
-		int      length;
-		int      alloc;
+class String;
+class WString;
+class StringBuffer;
+class WStringBuffer;
 
-		T    *GetPtr() const  { return (T*)(this + 1); }
-		void  Release()       { ASSERT(refcount > 0); if(AtomicDec(refcount) == 0) delete[] (byte *)this; }
-		void  Retain()        { ASSERT(refcount > 0); AtomicInc(refcount); }
-	};
-
-	T *ptr;
-
-	static Data *GetData(const T *ptr)    { return (Data *)ptr - 1; }
-
-	static Data *Alloc(int len);
-	static Data *Clone(const Data *data, int newalloc);
-
-	static T *CreateEmpty(Data *kind);
-	static T *Create(int len);
-	static T *Create(const T *data, int len);
-
-	void  Retain() const               { GetData(ptr)->Retain(); }
-	void  Release()                    { GetData(ptr)->Release(); }
-
-	void  Chk()	const                  { ASSERT(ptr && AtomicRead(GetData(ptr)->refcount) > 0); }
-
-	void Cat(int c);
-	void Cat(int c, int count);
-	void Cat(const T *s, int len);
-
-	void Insert(int at, int c);
-	void Insert(int at, const T *s, int len);
-
-	void Assign(const AString& s);
-	void Assign(const T *s, int len);
-	void DeepAssign(const AString& s);
-
-	T   *Mid(int pos, int length) const;
-	T   *Mid(int pos) const;
-	T   *Right(int count) const;
-	T   *Left(int count) const;
-
-	bool   IsEqual(const T *ptr, int len) const;
-
-	AString(int, T *p)                 { ptr = p; }
+template <class B>
+class AString : public B {
+	typedef typename B::tchar  tchar;
+	typedef typename B::bchar  bchar;
+	typedef typename B::Buffer buffer;
+	typedef typename B::String String;
 
 public:
-	void   Remove(int at, int count = 1);
+	void Clear()                                              { B::Free(); B::Zero(); }
+	int  GetLength() const                                    { return B::GetCount(); }
+	bool IsEmpty() const                                      { return B::GetCount() == 0; }
 
-	void   Set(int at, int chr);
+	const tchar *End() const                                  { return B::Begin() + GetLength(); }
+	const tchar *Last() const                                 { return End() - !!B::GetCount(); }
+	const tchar *GetIter(int i) const                         { ASSERT(i >= 0 && i <= B::GetCount()); return B::Begin() + i; }
 
-	void   Trim(int at);
+	int operator*() const                                     { return *B::Begin(); }
+	int operator[](int i) const                               { ASSERT(i >= 0 && i <= B::GetCount()); return B::Begin()[i]; }
 
-	int    GetLength() const                   { return GetData(ptr)->length; }
-	int    GetCount() const                    { return GetData(ptr)->length; }
-	bool   IsEmpty() const                     { return GetCount() == 0; }
+	operator const tchar *() const                            { return B::Begin(); }
+	const tchar *operator~() const                            { return B::Begin(); }
+	operator const bchar *() const                            { return (bchar *)B::Begin(); }
+	operator const void *() const                             { return B::Begin(); }
+
+	void Insert(int pos, int c)                               { *B::Insert(pos, 1, NULL) = c; }
+	void Insert(int pos, const tchar *s, int count)           { B::Insert(pos, count, s); }
+	void Insert(int pos, const String& s)                     { Insert(pos, s, s.GetCount()); }
+	void Insert(int pos, const char *s)                       { Insert(pos, s, strlen(s)); }
+
+	void  Cat(int c)                                          { B::Cat(c); }
+	void  Cat(const tchar *s, int len)                        { B::Cat(s, len); }
+	void  Cat(const tchar *s)                                 { Cat(s, strlen__(s)); }
+	void  Cat(const String& s)                                { Cat(~s, s.GetLength()); }
+	void  Cat(int c, int count);
+	void  Cat(const tchar *s, const tchar *lim)               { ASSERT(s <= lim); Cat(s, lim - s); }
+	void  Cat(const String& s, int len)                       { B::Cat(~s, len); }
+	void  Cat(const bchar *s, int len)                        { Cat((const tchar *) s, len); }
+
+	String& Cat()                                             { return *(String *)this; }
+
+	int    Compare(const String& s) const;
+	int    Compare(const char *s) const;
+
+	bool   IsEqual(const String& s) const                     { return B::IsEqual(s); }
+	bool   IsEqual(const char *s) const                       { return Compare(s) == 0; }
+
+	String Mid(int pos, int length) const;
+	String Mid(int pos) const                                 { return Mid(pos, GetLength() - pos); }
+	String Right(int count) const                             { return Mid(GetLength() - count); }
+	String Left(int count) const                              { return Mid(0, count); }
 
 	int    Find(int chr, int from = 0) const;
 	int    ReverseFind(int chr, int from) const;
 	int    ReverseFind(int chr) const;
 
-	int    Find(int len, const T *s, int from) const;
-	int    Find(const T *s, int from = 0) const;
-	int    Find(const S& s, int from = 0) const { return Find(s.GetCount(), s.Begin(), from); }
+	int    Find(int len, const tchar *s, int from) const;
+	int    Find(const tchar *s, int from = 0) const;
+	int    Find(const String& s, int from = 0) const          { return Find(s.GetCount(), ~s, from); }
 
-	bool   StartsWith(const T *s, int len) const;
-	bool   StartsWith(const T *s) const         { return StartsWith(s, strlen(s)); }
-	bool   StartsWith(const S& s) const         { return StartsWith(s, s.GetLength()); }
+	bool   StartsWith(const tchar *s, int len) const;
+	bool   StartsWith(const tchar *s) const                   { return StartsWith(s, strlen__(s)); }
+	bool   StartsWith(const String& s) const                  { return StartsWith(~s, s.GetLength()); }
 
-	bool   EndsWith(const T *s, int len) const;
-	bool   EndsWith(const T *s) const           { return EndsWith(s, strlen(s)); }
-	bool   EndsWith(const S& s) const           { return EndsWith(s, s.GetLength()); }
+	bool   EndsWith(const tchar *s, int len) const;
+	bool   EndsWith(const tchar *s) const                     { return EndsWith(s, strlen__(s)); }
+	bool   EndsWith(const String& s) const                    { return EndsWith(~s, s.GetLength()); }
 
-	void   Clear();
+	friend bool operator<(const String& a, const String& b)   { return a.Compare(b) < 0; }
+	friend bool operator<(const String& a, const tchar *b)    { return a.Compare(b) < 0; }
+	friend bool operator<(const tchar *a, const String& b)    { return b.Compare(a) > 0; }
 
-	void   Shrink();
-	void   Reserve(int len);
-	int    GetAlloc() const                     { return GetData(ptr)->alloc; }
+	friend bool operator<=(const String& a, const String& b)  { return a.Compare(b) <= 0; }
+	friend bool operator<=(const String& a, const tchar *b)   { return a.Compare(b) <= 0; }
+	friend bool operator<=(const tchar *a, const String& b)   { return b.Compare(a) >= 0; }
 
-	T     *GetBuffer(int minlen); // deprecated !!!
-	void   ReleaseBuffer(int newlen = -1); // deprecated !!!
+	friend bool operator>(const String& a, const String& b)   { return a.Compare(b) > 0; }
+	friend bool operator>(const String& a, const tchar *b)    { return a.Compare(b) > 0; }
+	friend bool operator>(const tchar *a, const String& b)    { return b.Compare(a) < 0; }
 
-	AString()                                  { ptr = S::CreateNull(); }
-	AString(const AString& a)                  { ptr = a.ptr; Retain(); }
-	AString(const T *s, int len)               { ptr = Create(s, len); }
-	AString(const T *s)                        { ptr = s ? Create(s, strlen__(s)) : S::CreateNull(); }
-	AString(int chr, int count);
+	friend bool operator>=(const String& a, const String& b)   { return a.Compare(b) >= 0; }
+	friend bool operator>=(const String& a, const tchar *b)    { return a.Compare(b) >= 0; }
+	friend bool operator>=(const tchar *a, const String& b)    { return b.Compare(a) <= 0; }
 
-	~AString()                                 { Chk(); Release(); }
-	typedef T        ValueType;
-	typedef const T* ConstIterator;
-	const T *Begin() const                     { return ptr; }
-	const T *End() const                       { return ptr + GetCount(); }
-	const T *Last() const                      { return End() - 1; }
-	const T *GetIter(int i) const              { ASSERT(i >= 0 && i <= GetCount()); return ptr + i; }
+	friend bool operator==(const String& a, const String& b)   { return a.IsEqual(b); }
+	friend bool operator!=(const String& a, const String& b)   { return !a.IsEqual(b); }
+	friend bool operator==(const String& a, const tchar *b)    { return a.Compare(b) == 0; }
+	friend bool operator==(const tchar *a, const String& b)    { return b.Compare(a) == 0; }
+	friend bool operator!=(const String& a, const tchar *b)    { return a.Compare(b) != 0; }
+	friend bool operator!=(const tchar *a, const String& b)    { return b.Compare(a) != 0; }
 
-	friend class AStringBuffer<T, S>;
-
-	friend bool operator<(const S& a, const S& b)   { return a.Compare(b) < 0; }
-	friend bool operator<(const S& a, const T *b)   { return a.Compare(b) < 0; }
-	friend bool operator<(const T *a, const S& b)   { return b.Compare(a) > 0; }
-
-	friend bool operator<=(const S& a, const S& b)  { return a.Compare(b) <= 0; }
-	friend bool operator<=(const S& a, const T *b)  { return a.Compare(b) <= 0; }
-	friend bool operator<=(const T *a, const S& b)  { return b.Compare(a) >= 0; }
-
-	friend bool operator>(const S& a, const S& b)   { return a.Compare(b) > 0; }
-	friend bool operator>(const S& a, const T *b)   { return a.Compare(b) > 0; }
-	friend bool operator>(const T *a, const S& b)   { return b.Compare(a) < 0; }
-
-	friend bool operator>=(const S& a, const S& b)  { return a.Compare(b) >= 0; }
-	friend bool operator>=(const S& a, const T *b)  { return a.Compare(b) >= 0; }
-	friend bool operator>=(const T *a, const S& b)  { return b.Compare(a) <= 0; }
-
-#ifdef STRING_EXPERIMENTAL
-	friend bool operator==(const S& a, const S& b)  { return a.IsEqual(b); }
-	friend bool operator!=(const S& a, const S& b)  { return !a.IsEqual(b); }
-#else
-	friend bool operator==(const S& a, const S& b)  { return a.Compare(b) == 0; }
-	friend bool operator!=(const S& a, const S& b)  { return a.Compare(b) != 0; }
-#endif
-	friend bool operator==(const S& a, const T *b)  { return a.Compare(b) == 0; }
-	friend bool operator==(const T *a, const S& b)  { return b.Compare(a) == 0; }
-
-	friend bool operator!=(const S& a, const T *b)  { return a.Compare(b) != 0; }
-	friend bool operator!=(const T *a, const S& b)  { return b.Compare(a) != 0; }
-
-	friend S    operator+(const S& a, const S& b)   { S c(a); c += b; return c; }
-	friend S    operator+(const S& a, const T *b)   { S c(a); c += b; return c; }
-	friend S    operator+(const T *a, const S& b)   { S c(a); c += b; return c; }
-	friend S    operator+(const S& a, int b)        { S c(a); c += b; return c; }
-	friend S    operator+(int a, const S& b)        { S c; c.Cat(a); c += b; return c; }
-	friend S    operator+(const S& a, T b)          { S c(a); c += b; return c; }
-	friend S    operator+(T a, const S& b)          { S c; c.Cat(a); c += b; return c; }
+	friend String operator+(const String& a, const String& b)  { String c(a); c += b; return c; }
+	friend String operator+(const String& a, const tchar *b)   { String c(a); c += b; return c; }
+	friend String operator+(const tchar *a, const String& b)   { String c(a); c += b; return c; }
+	friend String operator+(const String& a, int b)            { String c(a); c += b; return c; }
+	friend String operator+(int a, const String& b)            { String c(a, 1); c += b; return c; }
+	friend String operator+(const String& a, tchar b)          { String c(a); c += b; return c; }
+	friend String operator+(tchar a, const String& b)          { String c(a, 1); c += b; return c; }
 };
 
-template <class T, class S>
-class AStringBuffer {
-protected:
-	T      *begin;
-	T      *end;
-	T      *alloc;
+#include "AString.hpp"
 
-	void Reads() { typename S::Data *d = S::GetData(begin); end = begin + d->length; alloc = begin + d->alloc; }
-	void Realloc(int newalloc);
-	void Expand(int len);
-	void Expand();
-	void Init(int len);
-	void Init(S& text, int minalloc);
-	void Free()                            { if(begin) S::GetData(begin)->Release(); }
-	T   *Get();
-	void Set(S& s);
-	T   *Ptr()                             { *end = '\0'; return begin; }
+class String0 : Moveable<String0> {
+	enum { SMALL, MEDIUM = 31 };
+	enum { KIND = 14, SLEN = 15, LLEN = 2 };
 
-	friend class String;
-	friend class WString;
+	struct Rc {
+		Atomic refcount;
+		int    alloc;
 
-public:
-	AStringBuffer();
-	AStringBuffer(int length)              { Init(length); }
-	AStringBuffer(S& text)                 { Init(text, text.GetCount()); }
-	AStringBuffer(S& text, int length)     { Init(text, length); end = begin + length; }
-
-	operator T*()                          { return Ptr(); }
-	operator void*()                       { return Ptr(); }
-	T *operator~()                         { return Ptr(); }
-
-	void Cat(int c)                        { if(end >= alloc) Expand(); *end++ = c; }
-	void Cat(int c, int count)             { if(end + count >= alloc) Expand(count);
-	                                         Fill(end, end + count, (T)c); end += count; }
-	void Cat(const T *s, int len)          { if(end + len >= alloc) Expand(len);
-	                                         memcpy(end, s, sizeof(T) * len); end += len; }
-
-	int  GetLength() const                 { return end - begin; }
-	T   *SetLength(int len);
-	int  GetCount() const                  { return GetLength(); }
-	T   *SetCount(int len)                 { return SetLength(len); }
-	T   *Begin()                           { return begin; }
-	T   *End()                             { return end; }
-
-	void Clear();
-	void Reserve(int alloc);
-
-	~AStringBuffer();
-
-private:
-	AStringBuffer(const AStringBuffer&);
-	void operator=(const AStringBuffer&);
-};
-
-class WString;
-
-class String : public AString<char, String> {
-	typedef AString<char, String> B;
-
-	String(Data *data)                         { ptr = CreateEmpty(data); }
-	String(int, char *p) : B(0, p)             {}
-
-	static Data *Void();
-	static Data *Zero();
-
-	static char *CreateNull();
-
-	void   Slice(const char *a, int n);
-
-//	friend class B;
-	friend class AString<char, String>;
-	friend class AStringBuffer<char, String>;
-
-public:
-	class Buffer;
-	friend class String::Buffer;
-
-	void  Cat(int c)                           { B::Cat(c); }
-	void  Cat(const char *s);
-	void  Cat(const String& s);
-
-	void  Cat(int c, int count)                { B::Cat(c, count); }
-	void  Cat(const char *s, int len)          { B::Cat(s, len); }
-	void  Cat(const char *s, const char *lim)  { ASSERT(s <= lim); Cat(s, lim - s); }
-	void  Cat(const String& s, int len)        { B::Cat(~s, len); }
-	void  Cat(const byte *s, int len)          { B::Cat((const char *) s, len); }
-
-	String& Cat()                              { return *this; }
-
-	const String& operator+=(char c)           { Cat(c); return *this; }
-	const String& operator+=(const char *s)    { Cat(s); return *this; }
-	const String& operator+=(const String& s)  { Cat(s); return *this; }
-
-	String& operator=(const char *s);
-	String& operator=(const String& s)         { B::Assign(s); return *this; }
-	String& operator=(Buffer& b)               { *this = String(b); return *this; }
-	String& operator<<=(const String& s)       { B::DeepAssign(s); return *this; }
-
-	void  Insert(int at, int c)                { B::Insert(at, c); }
-	void  Insert(int at, const String& s);
-	void  Insert(int at, const char *s, int l) { B::Insert(at, s, l); }
-	void  Insert(int at, const char *s);
-
-	String Mid(int pos, int length) const      { return String(0, B::Mid(pos, length)); }
-	String Mid(int pos) const                  { return String(0, B::Mid(pos)); }
-	String Right(int count) const              { return String(0, B::Right(count)); }
-	String Left(int count) const               { return String(0, B::Left(count)); }
-
-	bool   IsEqual(const String& s) const;
-	bool   IsEqual(const char *s) const;
-
-	int    Compare(const String& s) const;
-	int    Compare(const char *s) const;
-
-	const char *operator~() const              { return B::ptr; }
-	operator const char*() const               { return B::ptr; }
-	operator const void*() const               { return B::ptr; }
-	operator const byte*() const               { return (byte *) B::ptr; }
-
-	int operator*() const                      { return *B::ptr; }
-	int operator[](int i) const                { ASSERT(i <= B::GetLength()); return (byte)ptr[i]; }
-	bool   IsVoid() const;
-	bool   IsZero() const;
-
-	static String GetVoid();
-	static String GetZero();
-
-//	operator WString() const;
-
-	WString       ToWString() const;
-	const String& ToString() const             { return *this; }
-
-	String();
-	String(const Nuller&);
-	String(const String& s);
-	String(const char *s);
-	String(const String& s, int n);
-	String(const char *s, int n);
-	String(const byte *s, int n);
-#ifdef STRING_EXPERIMENTAL
-	String(const char *s, const char *lim) { Slice(s, lim - s); }
-#else
-	String(const char *s, const char *lim);
-#endif
-	String(int chr, int count);
-	String(Buffer& b) : B(0, b.Get()) {};
-	~String();
-
-	friend void Swap(String& a, String& b)     { char *h = a.ptr; a.ptr = b.ptr; b.ptr = h; }
-
-	class Buffer : public AStringBuffer<char, String> {
-		typedef AStringBuffer<char, String> B;
-
-	public:
-		Buffer()                                           {}
-		Buffer(int length) : B(length)                     {}
-		Buffer(String& text) : B(text)                     {}
-		Buffer(String& text, int length) : B(text, length) {}
-
-		void  Cat(int c)                                   { B::Cat(c); }
-		void  Cat(int c, int count)                        { B::Cat(c, count); }
-		void  Cat(const char *s, int len)                  { B::Cat(s, len); }
-
-		void  Cat(const char *s)                           { Cat(s, strlen(s)); }
-		void  Cat(const String& s)                         { Cat(s, s.GetLength()); }
-		void  Cat(const char *s, const char *lim)          { ASSERT(s <= lim); Cat(s, lim - s); }
-		void  Cat(const String& s, int len)                { Cat(~s, len); }
-		void  Cat(const byte *s, int len)                  { Cat((const char *) s, len); }
-
-		void operator=(String& s)                          { Set(s); }
-
-		void Strlen();
+		char *GetPtr() const  { return (char*)(this + 1); }
+		void  Release();
+		void  Retain();
 	};
 
-	String(const std::string& s);
-	operator std::string() const;
+	union { // Optimize for CPU_64 too!!!
+		char   chr[16];
+		char  *ptr;
+		dword *wptr;
+		qword *qptr;
+		dword  w[4];
+		qword  q[2];
+	};
+
+#ifdef _DEBUG
+	void Dsyn();
+#else
+	void Dsyn() {}
+#endif
+
+	char&  SLen()                { return chr[SLEN]; }
+	char   SLen() const          { return chr[SLEN]; }
+	dword& LLen()                { return w[LLEN]; }
+	dword  LLen() const          { return w[LLEN]; }
+	bool   IsSmall() const       { return chr[KIND] == SMALL; }
+	bool   IsLarge() const       { return chr[KIND] != SMALL; }
+	bool   IsMedium() const      { return chr[KIND] == MEDIUM; }
+	bool   IsRef() const         { return (byte)chr[KIND] > MEDIUM; }
+	Rc    *Ref() const           { return (Rc *)ptr - 1; }
+	bool   IsShared() const      { return Ref()->refcount != 1; }
+	bool   IsSharedRef() const   { return IsRef() && IsShared(); }
+	int    LAlloc() const        { int b = (byte)chr[KIND]; return b == 255 ? Ref()->alloc : b; }
+	dword  LEqual(const String0& s) const;
+
+	void LSet(const String0& s);
+	void LFree();
+	void LCat(int c);
+	unsigned LHashValue() const;
+
+	void UnShare();
+	void SetSLen(int l);
+
+	char *Ptr() { return IsSmall() ? chr : ptr; }
+	char *Alloc(int count, char& kind);
+
+	static String0::Rc voidptr[2];
+
+	void Swap(String0& b)                           { UPP::Swap(q[0], b.q[0]); UPP::Swap(q[1], b.q[1]); Dsyn(); b.Dsyn(); }
+
+	friend class String;
+	friend class StringBuffer;
+
+protected:
+	void Zero()                  { q[0] = q[1] = 0; Dsyn(); }
+	void Free()                  { if(IsLarge()) LFree(); }
+	void Set(const String0& s) {
+		if(s.IsSmall()) { q[0] = s.q[0]; q[1] = s.q[1]; }
+		else LSet(s);
+		Dsyn();
+	}
+	void Assign(const String0& s) {
+		if(s.IsSmall()) {
+			Free();
+			q[0] = s.q[0]; q[1] = s.q[1];
+		}
+		else
+			if(this != &s) {
+				Free();
+				LSet(s);
+			}
+		Dsyn();
+	}
+	void  Set(const char *s, int len);
+	char *Insert(int pos, int count, const char *str);
+
+public: // should be protected, bug in gcc 3.4
+	typedef char         tchar;
+	typedef byte         bchar;
+	typedef StringBuffer Buffer;
+	typedef Upp::String  String;
+
+public:
+	bool IsEqual(const String0& s) const {
+		return (chr[KIND] | s.chr[KIND] ? LEqual(s) :
+		#ifdef CPU_64
+		        ((q[0] ^ s.q[0]) | (q[1] ^ s.q[1]))
+		#else
+		        ((w[0] ^ s.w[0]) | (w[1] ^ s.w[1]) | (w[2] ^ s.w[2]) | (w[3] ^ s.w[3]))
+		#endif
+		       ) == 0;
+	}
+
+	unsigned GetHashValue() const {
+		return chr[KIND] ? LHashValue() : (unsigned)CombineHash(w[0], w[1], w[2], w[3]);
+	}
+
+	void Cat(int c) {
+		if(SLen() < 14)
+			chr[SLen()++] = c;
+		else
+			LCat(c);
+		Dsyn();
+	}
+
+	void Cat(const char *s, int len);
+
+	void Set(int i, int chr);
+	void Trim(int pos);
+
+	const char *Begin() const   { return IsSmall() ? chr : ptr; }
+
+	int operator[](int i) const { ASSERT(i >= 0 && i <= GetCount()); return Begin()[i]; }
+
+	operator const char *() const   { return Begin(); }
+	const char *operator~() const   { return Begin(); }
+
+	void Remove(int pos, int count = 1);
+	void Clear()                { Free(); Zero(); }
+
+	int GetCount() const        { return IsSmall() ? chr[SLEN] : w[LLEN]; }
+	int GetLength() const       { return GetCount(); }
+	int GetAlloc() const        { return IsSmall() ? 14 : LAlloc(); }
+
+	void Reserve(int r);
+
+	String0& operator=(const String0& s) { Free(); Set(s); return *this; }
+
+	String0()                       { Zero(); }
+	~String0()                      { Free(); }
 };
 
-typedef String::Buffer StringBuffer;
+class String : public Moveable<String, AString<String0> > {
+	void Swap(String& b)                                   { String0::Swap(b); }
+
+#ifdef _DEBUG
+	int          len;
+	const char  *s;
+	friend class String0;
+#endif
+
+public:
+	const String& operator+=(char c)                       { Cat(c); return *this; }
+	const String& operator+=(const char *s)                { Cat(s); return *this; }
+	const String& operator+=(const String& s)              { Cat(s); return *this; }
+
+	String& operator=(const char *s);
+	String& operator=(const String& s)                     { String0::Assign(s); return *this; }
+	String& operator=(StringBuffer& b)                     { *this = String(b); return *this; }
+	String& operator<<=(const String& s)                   { if(this != &s) { String0::Free(); String0::Set(s, s.GetCount()); } return *this; }
+
+	void   Shrink()                                        { *this = String(Begin(), GetLength()); }
+
+	String()                                               {}
+	String(const Nuller&)                                  {}
+	String(const String& s)                                { String0::Set(s); }
+	String(const char *s)                                  { String0::Set(s, strlen__(s)); }
+	String(const String& s, int n)                         { ASSERT(n >= 0 && n <= s.GetLength()); String0::Set(~s, n); }
+	String(const char *s, int n)                           { String0::Set(s, n); }
+	String(const byte *s, int n)                           { String0::Set((const char *)s, n); }
+	String(const char *s, const char *lim)                 { String0::Set(s, lim - s); }
+	String(int chr, int count)                             { String0::Zero(); Cat(chr, count); }
+	String(StringBuffer& b);
+
+	WString ToWString() const;
+	const String& ToString() const                         { return *this; }
+
+	static String GetVoid();
+	bool   IsVoid() const;
+
+	friend void Swap(String& a, String& b)                 { a.Swap(b); }
+};
+
+class StringBuffer : NoCopy {
+	char   *begin;
+	char   *end;
+	char   *limit;
+
+	friend class String;
+
+	typedef String0::Rc Rc;
+
+	char *Alloc(int len, int& alloc);
+	void  Expand(int n, const char *cat = NULL, int l = 0);
+	void  Expand();
+	void  Zero()                    { static char h[1]; begin = end = limit = h; }
+	void  Free();
+	void  Set(String& s);
+
+public:
+	char *Begin()                   { *end = '\0'; return begin; }
+	char *End()                     { *end = '\0'; return end; }
+
+	operator char*()                { return Begin(); }
+	char *operator~()               { return Begin(); }
+
+	void SetLength(int l);
+	void SetCount(int l)            { SetLength(l); }
+	int  GetLength() const          { return end - begin; }
+	int  GetCount() const           { return GetLength(); }
+	void Strlen()                   { SetLength(strlen(begin)); }
+	void Clear()                    { Free(); Zero(); }
+	void Reserve(int r)             { int l = GetLength(); SetLength(l + r); SetLength(l); }
+
+	void Cat(int c)                 { if(end >= limit) Expand(); *end++ = c; }
+	void Cat(int c, int count);
+	void Cat(const char *s, int l);
+	void Cat(const char *s)         { Cat(s, strlen(s)); }
+	void Cat(const String& s)       { Cat(s, s.GetLength()); }
+
+	int  GetAlloc() const           { return limit - begin; }
+
+	void operator=(String& s)       { Free(); Set(s); }
+
+	StringBuffer()                  { Zero(); }
+	StringBuffer(String& s)         { Set(s); }
+	StringBuffer(int len)           { Zero(); SetLength(len); }
+	~StringBuffer()                 { Free(); }
+};
 
 inline bool  IsEmpty(const String& s)      { return s.IsEmpty(); }
 
@@ -514,127 +528,169 @@ inline StringBuffer& operator<<(StringBuffer& s, const char& x)
 	return s;
 }
 
-class Value;
+class WString0 {
+	enum { SMALL = 23 };
 
-class WString : public AString<wchar, WString> {
-	typedef AString<wchar, WString> B;
+	wchar *ptr;
+	int    length;
+	int    alloc;
 
-	WString(Data *data)                         { ptr = CreateEmpty(data); }
-	WString(int, wchar *p) : B(0, p)            {}
+#ifdef _DEBUG
+	void Dsyn();
+#else
+	void Dsyn() {}
+#endif
 
-	static Data *Void();
-	static Data *Zero();
+	static Atomic voidptr[2];
 
-	static wchar *CreateNull();
+	bool    IsRc() const  { return alloc > SMALL; }
+	Atomic& Rc()          { return *((Atomic *)ptr - 1); }
+	bool    IsShared()    { return IsRc() && Rc() > 1; }
 
-//	friend class B;
-	friend class AString<wchar, WString>;
-	friend class AStringBuffer<wchar, WString>;
+	wchar  *Alloc(int& count);
+	void    LCat(int c);
+	void    UnShare();
+
+	friend class WStringBuffer;
+	friend class WString;
+
+public: // should be protected, bug in GCC 3.4
+	typedef wchar         tchar;
+	typedef int16         bchar;
+	typedef WStringBuffer Buffer;
+	typedef WString       String;
+
+protected:
+	void    Zero()                       { static wchar e[2]; length = alloc = 0; ptr = e; Dsyn(); ASSERT(*ptr == 0); }
+	void    Set(const wchar *s, int length);
+	void    Set(const WString0& s);
+	void    Free();
+	void    Swap(WString0& b)            { Upp::Swap(ptr, b.ptr); Upp::Swap(length, b.length); Upp::Swap(alloc, b.alloc); Dsyn(); b.Dsyn(); }
+	wchar  *Insert(int pos, int count, const wchar *data);
 
 public:
-	class Buffer;
-	friend class WString::Buffer;
+	const wchar *Begin() const           { return ptr; }
+	int   operator[](int i) const        { return ptr[i]; }
 
-	void  Cat(int c)                            { B::Cat(c); }
-	void  Cat(const wchar *s);
-	void  Cat(const WString& s);
+	operator const wchar *() const       { return Begin(); }
+	const wchar *operator~() const       { return Begin(); }
 
-	void  Cat(int c, int count)                 { B::Cat(c, count); }
-	void  Cat(const wchar *s, int len)          { B::Cat(s, len); }
-	void  Cat(const wchar *s, const wchar *lim) { ASSERT(s <= lim); Cat(s, lim - s); }
-	void  Cat(const WString& s, int len)        { B::Cat(~s, len); }
+	void Cat(int c)                      { if(!IsRc() && length < alloc) { ptr[length++] = c; ptr[length] = 0; } else LCat(c); Dsyn(); }
+	void Cat(const wchar *s, int length);
 
-	WString& Cat()                              { return *this; }
+	int  GetCount() const                { return length; }
+	int  GetLength() const               { return length; }
+	int  GetAlloc() const                { return alloc; }
 
-	const WString& operator+=(wchar c)          { Cat(c); return *this; }
-	const WString& operator+=(const wchar *s)   { Cat(s); return *this; }
-	const WString& operator+=(const WString& s) { Cat(s); return *this; }
+	unsigned GetHashValue() const             { return memhash(ptr, length * sizeof(wchar)); }
+	bool     IsEqual(const WString0& s) const { return s.length == length && memcmp(ptr, s.ptr, length * sizeof(wchar)) == 0; }
 
-	WString& operator<<(wchar c)                { Cat(c); return *this; }
-	WString& operator<<(const WString& s)       { Cat(s); return *this; }
-	WString& operator<<(const wchar *s)         { Cat(s); return *this; }
+	void Remove(int pos, int count = 1);
+	void Insert(int pos, const wchar *s, int count);
+	void Clear()                         { Free(); Zero(); }
+
+	void Set(int pos, int ch);
+	void Trim(int pos);
+
+	WString0()                           { Zero(); }
+	~WString0()                          { Free(); }
+};
+
+class WString : public Moveable<WString, AString<WString0> >
+{
+	void Swap(WString& b)                                   { WString0::Swap(b); }
+
+#ifdef _DEBUG
+	int          len;
+	const wchar *s;
+	friend class WString0;
+#endif
+
+public:
+	UPP::String ToString() const;
+
+	const WString& operator+=(wchar c)                      { Cat(c); return *this; }
+	const WString& operator+=(const wchar *s)               { Cat(s); return *this; }
+	const WString& operator+=(const WString& s)             { Cat(s); return *this; }
+
+	WString& operator<<(wchar c)                            { Cat(c); return *this; }
+	WString& operator<<(const WString& s)                   { Cat(s); return *this; }
+	WString& operator<<(const wchar *s)                     { Cat(s); return *this; }
 
 	WString& operator=(const wchar *s);
-	WString& operator=(const WString& s)        { B::Assign(s); return *this; }
-	WString& operator=(Buffer& b)               { *this = WString(b); return *this; }
-	WString& operator<<=(const WString& s)      { B::DeepAssign(s); return *this; }
+	WString& operator=(const WString& s)                    { if(this != &s) { WString0::Free(); WString0::Set(s); } return *this; }
+	WString& operator=(WStringBuffer& b)                    { *this = WString(b); return *this; }
+	WString& operator<<=(const WString& s)                  { if(this != &s) { WString0::Free(); WString0::Set(s, s.GetCount()); } return *this; }
 
-	void  Insert(int at, int c)                 { B::Insert(at, c); }
-	void  Insert(int at, const WString& s);
-	void  Insert(int at, const wchar *s, int l) { B::Insert(at, s, l); }
-	void  Insert(int at, const wchar *s);
+	void   Shrink()                                         { *this = WString(Begin(), GetLength()); }
 
-	WString Mid(int pos, int length) const      { return WString(0, B::Mid(pos, length)); }
-	WString Mid(int pos) const                  { return WString(0, B::Mid(pos)); }
-	WString Right(int count) const              { return WString(0, B::Right(count)); }
-	WString Left(int count) const               { return WString(0, B::Left(count)); }
+	WString()                                               {}
+	WString(const Nuller&)                                  {}
+	WString(const WString& s)                               { WString0::Set(s); }
+	WString(const wchar *s)                                 { WString0::Set(s, strlen__(s)); }
+	WString(const WString& s, int n)                        { ASSERT(n >= 0 && n <= s.GetLength()); WString0::Set(~s, n); }
+	WString(const wchar *s, int n)                          { WString0::Set(s, n); }
+	WString(const wchar *s, const wchar *lim)               { WString0::Set(s, lim - s); }
+	WString(int chr, int count)                             { WString0::Zero(); Cat(chr, count); }
+	WString(WStringBuffer& b);
 
-	bool   IsEqual(const WString& s) const;
-	bool   IsEqual(const wchar *s) const;
-
-	int    Compare(const WString& s) const;
-	int    Compare(const wchar *s) const;
-
-	const wchar *operator~() const              { return B::ptr; }
-	operator const wchar*() const               { return B::ptr; }
-	operator const void*() const                { return B::ptr; }
-
-	int operator*() const                       { return *B::ptr; }
-	int operator[](int i) const                 { ASSERT(i <= B::GetLength()); return ptr[i]; }
-
-	bool   IsVoid() const;
-	bool   IsZero() const;
-
-	static WString GetVoid();
-	static WString GetZero();
-
-	String ToString() const;
-
-	WString();
-	WString(const Nuller&);
-	WString(const WString& s);
-	WString(const wchar *s);
-	WString(const WString& s, int n);
-	WString(const wchar *s, int n);
-	WString(const wchar *s, const wchar *lim);
 	WString(const char *s);
 	WString(const char *s, int n);
 	WString(const char *s, const char *lim);
-	WString(int chr, int count);
-	WString(Buffer& b) : B(0, b.Get()) {};
-	~WString();
 
-	friend void Swap(WString& a, WString& b)    { wchar *h = a.ptr; a.ptr = b.ptr; b.ptr = h; }
+	static WString GetVoid();
+	bool   IsVoid() const                                   { return alloc < 0; }
 
-	class Buffer : public AStringBuffer<wchar, WString> {
-		typedef AStringBuffer<wchar, WString> B;
-
-	public:
-		Buffer()                                            {}
-		Buffer(int length) : B(length)                      {}
-		Buffer(WString& text) : B(text)                     {}
-		Buffer(WString& text, int length) : B(text, length) {}
-
-		void  Cat(int c)                                   { B::Cat(c); }
-		void  Cat(int c, int count)                        { B::Cat(c, count); }
-		void  Cat(const wchar *s, int len)                 { B::Cat(s, len); }
-
-		void  Cat(const char *s)                           { Cat(WString(s)); }
-		void  Cat(const wchar *s)                          { Cat(s, wstrlen(s)); }
-		void  Cat(const WString& s)                        { Cat(s, s.GetLength()); }
-		void  Cat(const wchar *s, const wchar *lim)        { ASSERT(s <= lim); Cat(s, lim - s); }
-		void  Cat(const WString& s, int len)               { Cat(~s, len); }
-
-		void operator=(WString& s)                         { Set(s); }
-
-		void Strlen();
-	};
-
-	WString(const std::wstring& s);
-	operator std::wstring() const;
+	friend void Swap(WString& a, WString& b)                { a.Swap(b); }
+	friend WString operator+(const WString& a, char b)      { WString c(a); c += b; return c; }
+	friend WString operator+(char a, const WString& b)      { WString c(a, 1); c += b; return c; }
 };
 
-typedef WString::Buffer WStringBuffer;
+class WStringBuffer : NoCopy {
+	wchar   *begin;
+	wchar   *end;
+	wchar   *limit;
+
+	friend class WString;
+
+	wchar *Alloc(int len, int& alloc);
+	void   Expand(int n, const wchar *cat = NULL, int l = 0);
+	void   Expand();
+	void   Zero();
+	void   Free();
+	void   Set(WString& s);
+
+public:
+	wchar *Begin()                   { *end = '\0'; return begin; }
+	wchar *End()                     { *end = '\0'; return end; }
+
+	operator wchar*()                { return Begin(); }
+	wchar *operator~()               { return Begin(); }
+
+	void  SetLength(int l);
+	void  SetCount(int l)            { SetLength(l); }
+	int   GetLength() const          { return end - begin; }
+	int   GetCount() const           { return GetLength(); }
+	void  Strlen()                   { SetLength(wstrlen(begin)); }
+	void  Clear()                    { Free(); Zero(); }
+	void  Reserve(int r)             { int l = GetLength(); SetLength(l + r); SetLength(l); }
+
+	void  Cat(int c)                 { if(end >= limit) Expand(); *end++ = c; }
+	void  Cat(int c, int count);
+	void  Cat(const wchar *s, int l);
+	void  Cat(const wchar *s)        { Cat(s, wstrlen(s)); }
+	void  Cat(const WString& s)      { Cat(s, s.GetLength()); }
+	void  Cat(const char *s)         { Cat(WString(s)); }
+
+	int   GetAlloc() const           { return limit - begin; }
+
+	void operator=(WString& s)       { Free(); Set(s); }
+
+	WStringBuffer()                  { Zero(); }
+	WStringBuffer(WString& s)        { Set(s); }
+	WStringBuffer(int len)           { Zero(); SetLength(len); }
+	~WStringBuffer()                 { Free(); }
+};
 
 inline bool  IsEmpty(const WString& s)      { return s.IsEmpty(); }
 

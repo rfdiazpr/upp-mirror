@@ -509,6 +509,7 @@ VectorMap<FormId, Formatter>& formatmap()
 
 void RegisterFormatter(int type, const char *id, Formatter f)
 {
+	AssertST();
 	INTERLOCKED {
 		FormId fid(id, type);
 		formatmap().FindAdd(fid, f);
@@ -851,7 +852,6 @@ String NFormat(int language, const char *s, const Vector<Value>& v)
 	Formatting f;
 	f.language = language;
 	String result;
-	result.Reserve(100);
 	int pos = 0;
 	const char *b;
 	for(;;) {

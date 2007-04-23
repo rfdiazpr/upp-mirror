@@ -5,26 +5,26 @@ class HashBase : Moveable<HashBase> {
 		int   next;
 		int   prev;
 	};
-	Vector<unsigned>      hash;
-	mutable Vector<Link>  link;
-	mutable int          *map;
-	mutable int           mcount;
-	mutable int           unlinked;
+	Vector<unsigned> hash;
+	Vector<Link>     link;
+	int             *map;
+	int              mcount;
+	int              unlinked;
 
-	void  LinkBefore(int i, Link& l, int bi) const;
-	void  LinkTo(int i, Link& l, int& m) const;
+	void  LinkBefore(int i, Link& l, int bi);
+	void  LinkTo(int i, Link& l, int& m);
 	void  Unlink(int i, Link& l, int& mi);
 	void  Unlink(int i, Link& l);
 	int&  Maph(unsigned _hash) const;
 	int&  Mapi(int i) const;
-	void  FinishIndex() const;
-	void  DoIndex() const;
-	void  Free() const;
+	void  FinishIndex();
+	void  DoIndex();
+	void  Free();
 
 public:
-	void  ClearIndex() const;
-	void  Reindex(int n) const;
-	void  Reindex() const;
+	void  ClearIndex();
+	void  Reindex(int n);
+	void  Reindex();
 
 	void  Add(unsigned hash);
 	void  Set(int i, unsigned hash);
@@ -127,9 +127,9 @@ public:
 
 	void     Clear()                         { hash.Clear(); key.Clear(); }
 
-	void     ClearIndex() const              { hash.ClearIndex(); }
-	void     Reindex(int n) const            { hash.Reindex(n); }
-	void     Reindex() const                 { hash.Reindex(); }
+	void     ClearIndex()                    { hash.ClearIndex(); }
+	void     Reindex(int n)                  { hash.Reindex(n); }
+	void     Reindex()                       { hash.Reindex(); }
 
 	void     Unlink(int i)                   { hash.Unlink(i); }
 	int      UnlinkKey(const T& k, unsigned h);

@@ -493,6 +493,8 @@ void ChSysInit()
 	GUI_DropShadows_Write(IsSysFlag(0x1024 /*SPI_GETDROPSHADOW*/));
 	GUI_AltAccessKeys_Write(!IsSysFlag(0x100A /*SPI_GETKEYBOARDCUES*/));
 	GUI_AKD_Conservative_Write(0);
+	GUI_DragDistance_Write(GetSystemMetrics(SM_CXDRAG));
+	GUI_DblClickTime_Write(GetDoubleClickTime());
 
 	CtrlImg::Set(CtrlImg::I_information, Win32Icon(IDI_INFORMATION));
 	CtrlImg::Set(CtrlImg::I_question, Win32Icon(IDI_QUESTION));

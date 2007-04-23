@@ -224,7 +224,7 @@ void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int al
 
 	int ty = y;
 	Size tsz;
-
+	
 	if((align & GD::VCENTER) || (align & GD::BOTTOM))
 	{
 		const wchar * e = t;
@@ -311,7 +311,7 @@ void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int al
 			p++;
 
 	}
-
+	
 	//w.End();
 }
 

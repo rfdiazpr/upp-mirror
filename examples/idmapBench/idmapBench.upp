@@ -10,4 +10,6 @@ file
 
 mainconfig
 	"" = "",
-	"" = "USEMALLOC";
+	"" = "USEMALLOC",
+	"" = "MT",
+	"" = "USEMALLOC MT";

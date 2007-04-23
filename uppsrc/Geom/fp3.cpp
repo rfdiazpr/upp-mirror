@@ -125,12 +125,12 @@ void Box3::Union(Pointf3 pt)
 //////////////////////////////////////////////////////////////////////
 // Matrix3::
 
-GLOBAL_VARP(const Matrixf3, Matrixf3_0, (0, 0, 0, 0, 0, 0, 0, 0, 0))
-GLOBAL_VARP(const Matrixf3, Matrixf3_1, (1, 0, 0, 0, 1, 0, 0, 0, 1))
-GLOBAL_VARP(const Matrixf3, Matrixf3_Null, (0, 0, 0, 0, 0, 0, 0, 0, 0, Null, Null, Null))
-GLOBAL_VARP(const Matrixf3, Matrixf3_MirrorX, (-1, 0, 0, 0, 1, 0, 0, 0, 1))
-GLOBAL_VARP(const Matrixf3, Matrixf3_MirrorY, (1, 0, 0, 0, -1, 0, 0, 0, 1))
-GLOBAL_VARP(const Matrixf3, Matrixf3_MirrorZ, (1, 0, 0, 0, 1, 0, 0, 0, -1))
+GLOBAL_VARP_INIT(const Matrixf3, Matrixf3_0, (0, 0, 0, 0, 0, 0, 0, 0, 0))
+GLOBAL_VARP_INIT(const Matrixf3, Matrixf3_1, (1, 0, 0, 0, 1, 0, 0, 0, 1))
+GLOBAL_VARP_INIT(const Matrixf3, Matrixf3_Null, (0, 0, 0, 0, 0, 0, 0, 0, 0, Null, Null, Null))
+GLOBAL_VARP_INIT(const Matrixf3, Matrixf3_MirrorX, (-1, 0, 0, 0, 1, 0, 0, 0, 1))
+GLOBAL_VARP_INIT(const Matrixf3, Matrixf3_MirrorY, (1, 0, 0, 0, -1, 0, 0, 0, 1))
+GLOBAL_VARP_INIT(const Matrixf3, Matrixf3_MirrorZ, (1, 0, 0, 0, 1, 0, 0, 0, -1))
 
 void Matrixf3::Serialize(Stream& stream)
 {

@@ -55,7 +55,7 @@ void _PLACE_DEBUGER_FREE_BREAK_HERE_()
 	LOG("Memory watch free...");
 }
 
-static DbgBlkLink dbg_live;
+static DbgBlkLink dbg_live = { &dbg_live, &dbg_live };
 
 extern bool PanicMode;
 
@@ -66,8 +66,8 @@ void *MemoryAllocDebug(size_t size)
 #ifdef _MULTITHREADED
 	sHeapLock2.Enter();
 #endif
-	if(!dbg_live.next)
-		dbg_live.LinkSelf();
+//	if(!dbg_live.next)
+//		dbg_live.LinkSelf();
 	size = (size + 7) & 0xfffffff8;
 	DbgBlkLink *p = (DbgBlkLink *)MemoryAlloc(size + 2 * sizeof(DbgBlkLink));
 	DbgBlkLink *e = (DbgBlkLink *)((byte *)(p + 1) + size);
@@ -116,6 +116,7 @@ void MemoryFreeDebug(void *ptr)
 
 void MemoryCheckDebug()
 {
+	MemoryCheck();
 	CriticalSection::Lock __(sHeapLock2);
 	DbgBlkLink *p = &dbg_live;
 	do {

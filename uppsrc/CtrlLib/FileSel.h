@@ -128,11 +128,12 @@ protected:
 		OPEN, SAVEAS, SELECTDIR
 	};
 
-	int            mode;
-	bool           asking;
-	bool           multi;
-	bool           rdonly;
-	bool           bidname;
+	int         mode;
+	bool        asking;
+	bool        multi;
+	bool        rdonly;
+	bool        bidname;
+	bool        appmodal;
 
 	bool        PatternMatch(const char *fn);
 	bool        OpenItem();
@@ -207,6 +208,8 @@ public:
 	FileSel& NoAsking()                          { return Asking(false); }
 	FileSel& EditFileName(bool b)                { file.SetEditable(b); return *this; }
 	FileSel& NoEditFileName()                    { return EditFileName(false); }
+	FileSel& AppModal(bool b = true)             { appmodal = b; return *this; }
+	FileSel& NoAppModal()                        { return AppModal(false); }
 
 	FileSel();
 	virtual ~FileSel();

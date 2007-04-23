@@ -4,8 +4,8 @@ class Vector : public MoveableAndDeepCopyOption< Vector<T> > {
 	int      items;
 	int      alloc;
 
-	static void    RawFree(T *ptr)            { if(ptr) delete (byte *) ptr; }
-	static T      *RawAlloc(int n)            { return (T *) new byte[n * sizeof(T)]; }
+	static void    RawFree(T *ptr)            { if(ptr) MemoryFree(ptr); }
+	static T      *RawAlloc(int& n);
 	static Vector& SetPicked(pick_ Vector& v) { Vector& p = (Vector&)(v); p.items = -1; p.vector = NULL; return p; }
 
 	void     Pick(pick_ Vector<T>& v);
@@ -79,6 +79,10 @@ public:
 
 	Vector()                         { vector = NULL; items = alloc = 0; }
 	~Vector() {
+//		if(items >= 0 && (alloc - items) * sizeof(T) > 16)
+//			RLOG("~Vector, waste: " << (alloc - items) * sizeof(T)
+//			    << ", items: " << items << ", alloc: " << alloc << ", sizeof(T): " << sizeof(T)
+//			    << ", " << typeid(T).name()); //TODO remove
 		Free();
 		return; // Constraints:
 		T t(*vector);        // T must have transfer constructor (also GCC 4.0 bug workaround)

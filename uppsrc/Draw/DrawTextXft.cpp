@@ -5,7 +5,7 @@ NAMESPACE_UPP
 #ifdef PLATFORM_XFT
 
 #define LLOG(x)       //LOG(x)
-#define LTIMING(x)    //TIMING(x)
+#define LTIMING(x)    //RTIMING(x)
 
 struct XFTFontFaceInfo {
 	String      name;
@@ -27,7 +27,7 @@ ArrayMap<String, XFTFontFaceInfo>& XFTFontFace()
 
 FontInfo::Data::Data()
 {
-	count = 1;
+	refcount = 1;
 	for(int i = 0; i < 256; i++)
 		width[i] = NULL;
 	xftfont = NULL;
@@ -36,6 +36,7 @@ FontInfo::Data::Data()
 
 FontInfo::Data::~Data()
 {
+	DrawLock __;
 	if(xftfont)
 		XftFontClose(Xdisplay, xftfont);
 	for(int i = 0; i < 256; i++)
@@ -46,6 +47,7 @@ FontInfo::Data::~Data()
 
 void FontInfo::Data::GetMetrics(int page, CharMetrics *t)
 {
+	DrawLock __;
 	LTIMING("GetMetrics");
 	LLOG("GetMetrics " << font << " char:" << page * 256 << ", 256");
 	if(xftfont) {
@@ -59,7 +61,18 @@ void FontInfo::Data::GetMetrics(int page, CharMetrics *t)
 			t[i].lspc = -info.x;
 			t[i].rspc = info.xOff - info.width + info.x;
 		}
-		return;
+
+/*		FT_UInt h[1];
+		for(int i = 0; i < 256; i++) {
+			LTIMING("XftTextExtents16");
+			*h = XftCharIndex(Xdisplay, xftfont, (page << 8) + i);
+			XGlyphInfo info;
+			XftGlyphExtents(Xdisplay, xftfont, h, 1, &info);
+			t[i].width = info.xOff;
+			t[i].lspc = -info.x;
+			t[i].rspc = info.xOff - info.width + info.x;
+		}
+*/
 	}
 }
 
@@ -202,6 +215,7 @@ XftFont *Draw::CreateXftFont(Font font, int angle)
 
 FontInfo Draw::Acquire(Font font, int angle, int device)
 {
+	DrawLock __;
 	LTIMING("Acquire");
 	if(IsNull(font))
 		font = StdFont();
@@ -224,7 +238,7 @@ FontInfo Draw::Acquire(Font font, int angle, int device)
 				LLOG("Removing from cache " << f->font << " count:" << f->count <<
 				            " cached:" << FontCached);
 			}
-			f->count++;
+			f->refcount++;
 			return f;
 		}
 	}

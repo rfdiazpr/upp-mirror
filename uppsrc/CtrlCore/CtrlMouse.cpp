@@ -13,6 +13,8 @@ bool      Ctrl::ignoreclick;
 bool      Ctrl::mouseinframe;
 bool      Ctrl::mouseinview;
 Point     Ctrl::mousepos;
+Point     Ctrl::leftmousepos = Null;
+Point     Ctrl::rightmousepos = Null;;
 
 dword GetMouseFlags() {
 	dword style = 0;
@@ -108,6 +110,24 @@ Image Ctrl::MouseEvent(int event, Point p, int zdelta, dword keyflags)
 		break;
 	case LEFTDOUBLE:
 		LeftDouble(p, keyflags);
+		break;
+	case LEFTDRAG:
+		LeftDrag(p, keyflags);
+		break;
+	case LEFTHOLD:
+		LeftHold(p, keyflags);
+		break;
+	case LEFTTRIPLE:
+		LeftTriple(p, keyflags);
+		break;
+	case RIGHTDRAG:
+		RightDrag(p, keyflags);
+		break;
+	case RIGHTHOLD:
+		RightHold(p, keyflags);
+		break;
+	case RIGHTTRIPLE:
+		RightTriple(p, keyflags);
 		break;
 	case RIGHTDOWN:
 		RightDown(p, keyflags);
@@ -251,9 +271,20 @@ void    Ctrl::LRepeat() {
 	LLOG("LRepeat " << UPP::Name(mouseCtrl));
 }
 
+static int sDist(Point a, Point b)
+{
+	return IsNull(a) ? INT_MAX : max(abs(a.x - b.x), abs(a.y - b.y));
+}
+
 void    Ctrl::LRep() {
 	LLOG("LRep");
 	UPP::SetTimeCallback(-GetKbdSpeed(), callback(&Ctrl::LRepeat), &mousepos);
+}
+
+void    Ctrl::LHold() {
+	if(sDist(leftmousepos, mousepos) < GUI_DragDistance() && repeatTopCtrl)
+		repeatTopCtrl->DispatchMouseEvent(LEFTHOLD, repeatMousePos, 0);
+	leftmousepos = Null;
 }
 
 void    Ctrl::RRepeat() {
@@ -265,6 +296,12 @@ void    Ctrl::RRepeat() {
 
 void    Ctrl::RRep() {
 	UPP::SetTimeCallback(-GetKbdSpeed(), callback(&Ctrl::RRepeat), &mousepos);
+}
+
+void    Ctrl::RHold() {
+	if(sDist(rightmousepos, mousepos) < GUI_DragDistance() && repeatTopCtrl)
+		repeatTopCtrl->DispatchMouseEvent(RIGHTHOLD, repeatMousePos, 0);
+	rightmousepos = Null;
 }
 
 void    Ctrl::KillRepeat() {
@@ -307,8 +344,12 @@ bool    Ctrl::HasMouseIn(const Rect& r)
 
 void    Ctrl::DoCursorShape() {
 //	LLOG("DoCursorShape " << ::Name(mouseCtrl));
-	if(mouseCtrl)
-		mouseCtrl->GetTopCtrl()->SetMouseCursor(mouseCtrl->MEvent0(CURSORIMAGE, mousepos, 0));
+	if(mouseCtrl) {
+		Image m = CursorOverride();
+		if(IsNull(m))
+			m = mouseCtrl->MEvent0(CURSORIMAGE, mousepos, 0);
+		mouseCtrl->GetTopCtrl()->SetMouseCursor(m);
+	}
 }
 
 void    Ctrl::CheckMouseCtrl() {
@@ -326,26 +367,63 @@ void    Ctrl::CheckMouseCtrl() {
 				                            0, GetMouseFlags());
 			mouseinview = mouseinframe = false;
 			mouseCtrl = NULL;
+			leftmousepos = rightmousepos = Null;
 		}
 	}
 	DoCursorShape();
 }
 
+Point leftdblpos = Null, rightdblpos = Null;
+int leftdbltime = Null, rightdbltime = Null;
+
+bool sDblTime(int time)
+{
+	return !IsNull(time) && (int)GetTickCount() - time < GUI_DblClickTime();
+}
+
 Image Ctrl::DispatchMouse(int e, Point p, int zd) {
 	repeatMousePos = p;
 	repeatTopCtrl = this;
-	if(e == LEFTDOWN)
-	{
+	if(e == LEFTDOUBLE) {
+		leftdbltime = GetTickCount();
+		leftdblpos = mousepos;
+	}
+	if(e == RIGHTDOUBLE) {
+		rightdbltime = GetTickCount();
+		rightdblpos = mousepos;
+	}
+	if(e == LEFTDOWN) {
 		LLOG("Ctrl::DispatchMouse: init left repeat for " << UPP::Name(this) << " at " << p);
 		UPP::SetTimeCallback(GetKbdDelay(), callback(&Ctrl::LRep), &mousepos);
+		UPP::SetTimeCallback(2 * GetKbdDelay(), callback(&Ctrl::LHold), &mousepos);
+		leftmousepos = mousepos;
+		if(sDist(leftdblpos, mousepos) < GUI_DragDistance() && sDblTime(leftdbltime))
+			e = LEFTTRIPLE;
 	}
-	if(e == RIGHTDOWN)
-	{
+	if(e == RIGHTDOWN) {
 		LLOG("Ctrl::DispatchMouse: init right repeat for " << UPP::Name(this) << " at " << p);
 		UPP::SetTimeCallback(GetKbdDelay(), callback(&Ctrl::RRep), &mousepos);
+		UPP::SetTimeCallback(2 * GetKbdDelay(), callback(&Ctrl::RHold), &mousepos);
+		rightmousepos = mousepos;
+		if(sDist(rightdblpos, mousepos) < GUI_DragDistance() && sDblTime(rightdbltime))
+			e = RIGHTTRIPLE;
 	}
+	if(e == LEFTUP)
+		leftmousepos = Null;
+	if(e == RIGHTUP)
+		rightmousepos = Null;
 	if(e == LEFTUP || e == RIGHTUP)
 		KillRepeat();
+	if(e == MOUSEMOVE) {
+		if(sDist(leftmousepos, mousepos) > GUI_DragDistance() && repeatTopCtrl) {
+			repeatTopCtrl->DispatchMouseEvent(LEFTDRAG, leftmousepos, 0);
+			leftmousepos = Null;
+		}
+		if(sDist(rightmousepos, mousepos) > GUI_DragDistance() && repeatTopCtrl) {
+			repeatTopCtrl->DispatchMouseEvent(RIGHTDRAG, rightmousepos, 0);
+			rightmousepos = Null;
+		}
+	}
 	return DispatchMouseEvent(e, p, zd);
 }
 
@@ -431,6 +509,20 @@ AutoWaitCursor::~AutoWaitCursor() {
 	if(time0) avg = GetTickCount() - time0 - 500;
 	if(avg < -10000) avg = -10000;
 	if(avg >  10000) avg = 10000;
+}
+
+Image& Ctrl::CursorOverride()
+{
+	static Image m;
+	return m;
+}
+
+Image Ctrl::OverrideCursor(const Image& m)
+{
+	Image om = CursorOverride();
+	CursorOverride() = m;
+	DoCursorShape();
+	return om;
 }
 
 END_UPP_NAMESPACE

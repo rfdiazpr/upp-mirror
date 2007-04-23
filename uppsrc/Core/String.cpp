@@ -1,218 +1,450 @@
-#include <Core/Core.h>
+#include "Core.h"
 
 NAMESPACE_UPP
 
-void  String::Cat(const char *s)
+#include "HeapImp.h"
+
+#ifdef UPP_HEAP
+
+static inline void *MAlloc_S()
 {
-	B::Cat(s, strlen(s));
+	MCache& m = mcache[1];
+	FreeLink *l = m.list;
+	if(l) {
+		m.list = l->next;
+		m.count--;
+		return l;
+	}
+	else
+		return MAlloc_Get(m, 1);
 }
 
-void  String::Cat(const String& s)
+static inline void MFree_S(void *ptr)
 {
-	B::Cat(~s, s.GetLength());
+	MCache& m = mcache[1];
+	((FreeLink *)ptr)->next = m.list;
+	m.list = (FreeLink *)ptr;
+#ifdef _DEBUG
+#ifdef CPU_64
+	FreeFill((dword *)ptr + 2, 32 / 4 - 2);
+#else
+	FreeFill((dword *)ptr + 1, 32 / 4 - 1);
+#endif
+#endif
+	if(++m.count > CACHEMAX)
+		MFree_Reduce(m, 1);
 }
 
-void String::Insert(int at, const String& s)
+#else
+
+static inline void *MAlloc_S()          { return malloc(32); }
+static inline void  MFree_S(void *ptr)  { free(ptr); }
+
+#endif
+
+
+
+#ifdef _DEBUG
+void String0::Dsyn()
 {
-	Insert(at, ~s, s.GetLength());
+	String *d_str = static_cast<String *>(this);
+	d_str->s = Begin();
+	d_str->len = GetCount();
+}
+#endif
+
+String0::Rc String0::voidptr[2] = { { 2, 0 }, { 0, 0 } };
+
+void String0::LSet(const String0& s)
+{
+	w[2] = s.w[2];
+	w[3] = s.w[3];
+	if(s.IsRef()) {
+		ptr = s.ptr;
+		if(ptr != (char *)(voidptr + 1))
+			AtomicInc(s.Ref()->refcount);
+	}
+	else {
+		ptr = (char *)MAlloc_S();
+		qptr[0] = s.qptr[0];
+		qptr[1] = s.qptr[1];
+		qptr[2] = s.qptr[2];
+		qptr[3] = s.qptr[3];
+	}
 }
 
-void String::Insert(int at, const char *s)
+void String0::LFree()
 {
-	Insert(at, s, strlen(s));
+	if(IsRef()) {
+		if(ptr != (char *)(voidptr + 1)) {
+			Rc *rc = Ref();
+			ASSERT(rc->refcount > 0);
+			if(AtomicDec(rc->refcount) == 0) MemoryFree(rc);
+		}
+	}
+	else
+		MFree_S(ptr);
+}
+
+dword String0::LEqual(const String0& s) const
+{
+	int l = GetCount();
+	if(s.GetCount() != l) return 1;
+#ifdef CPU_64
+	const qword *qa = (const qword *)Begin();
+	const qword *qb = (const qword *)s.Begin();
+	while(l >= 8) {
+		if(*qa++ != *qb++) return 1;
+		l -= 8;
+	}
+	const dword *da = (const dword *)qa;
+	const dword *db = (const dword *)qb;
+	if((l & 4) && *da++ != *db++) return 1;
+#else
+	const dword *da = (const dword *)Begin();
+	const dword *db = (const dword *)s.Begin();
+	while(l >= 4) {
+		if(*da++ != *db++) return 1;
+		l -= 4;
+	}
+#endif
+	const word *wa = (const word *)da;
+	const word *wb = (const word *)db;
+	if((l & 2) && *wa++ != *wb++) return 1;
+	return (l & 1) ? *(const char *)wa != *(const char *)wb : 0;
+}
+
+unsigned String0::LHashValue() const
+{
+	int l = LLen();
+	if(l < 15) {
+		dword w[4];
+		w[0] = w[1] = w[2] = w[3] = 0;
+		memcpy(w, ptr, l);
+		((byte *)w)[SLEN] = l;
+		return CombineHash(w[0], w[1], w[2], w[3]);
+	}
+	return memhash(ptr, l);
+}
+
+char *String0::Alloc(int count, char& kind)
+{
+	if(count < 32) {
+		kind = MEDIUM;
+		return (char *)MAlloc_S();
+	}
+	size_t sz = sizeof(Rc) + count + 1;
+	Rc *rc = (Rc *)MemoryAlloc(sz);
+	rc->alloc = sz - sizeof(Rc) - 1;
+	rc->refcount = 1;
+	kind = min(rc->alloc, 255);
+	return (char *)(rc + 1);
+}
+
+char *String0::Insert(int pos, int count, const char *s)
+{
+	ASSERT(pos >= 0 && count >= 0 && pos <= GetCount());
+	int len = GetCount();
+	int newlen = len + count;
+	char *str = (char *)Begin();
+	if(newlen < GetAlloc() && !IsSharedRef()) {
+		if(s >= str + pos && s <= str + len)
+			s += count;
+		if(pos < len)
+			memmove(str + pos + count, str + pos, len - pos);
+		if(IsSmall())
+			SLen() = newlen;
+		else
+			LLen() = newlen;
+		str[newlen] = 0;
+		if(s)
+			memcpy(str + pos, s, count);
+		Dsyn();
+		return str + pos;
+	}
+	char kind;
+	char *p = Alloc(max(2 * len, newlen), kind);
+	if(pos > 0)
+		memcpy(p, str, pos);
+	if(pos < len)
+		memcpy(p + pos + count, str + pos, len - pos);
+	if(s)
+		memcpy(p + pos, s, count);
+	p[newlen] = 0;
+	Free();
+	ptr = p;
+	LLen() = newlen;
+	SLen() = 15;
+	chr[KIND] = kind;
+	Dsyn();
+	return ptr + pos;
+}
+
+void String0::UnShare()
+{
+	if(IsSharedRef()) {
+		int len = LLen();
+		char kind;
+		char *p = Alloc(len, kind);
+		memcpy(p, ptr, len + 1);
+		Free();
+		chr[KIND] = kind;
+		ptr = p;
+	}
+}
+
+void String0::SetSLen(int l)
+{
+	SLen() = l;
+	memset(chr + l, 0, 15 - l);
+}
+
+void String0::Remove(int pos, int count)
+{
+	ASSERT(pos >= 0 && count >= 0 && pos + count <= GetCount());
+	UnShare();
+	char *s = (char *)Begin();
+	memmove(s + pos, s + pos + count, GetCount() - pos - count + 1);
+	if(IsSmall())
+		SetSLen(SLen() - count);
+	else
+		LLen() -= count;
+	Dsyn();
+}
+
+void String0::Set(int pos, int chr)
+{
+	ASSERT(pos >= 0 && pos < GetCount());
+	UnShare();
+	Ptr()[pos] = chr;
+}
+
+void String0::Trim(int pos)
+{
+	ASSERT(pos >= 0 && pos <= GetCount());
+	if(IsSmall()) {
+		chr[pos] = 0;
+		SetSLen(pos);
+	}
+	else {
+		UnShare();
+		ptr[pos] = 0;
+		LLen() = pos;
+	}
+	Dsyn();
+}
+
+void String0::LCat(int c)
+{
+	if(IsSmall()) {
+		qword *x = (qword *)MAlloc_S();
+		x[0] = q[0];
+		x[1] = q[1];
+		LLen() = SLen();
+		SLen() = 15;
+		chr[KIND] = MEDIUM;
+		qptr = x;
+	}
+	int l = LLen();
+	if(IsRef() ? !IsShared() && l < (int)Ref()->alloc : l < 31) {
+		ptr[l] = c;
+		ptr[LLen() = l + 1] = 0;
+	}
+	else {
+		char *s = Insert(l, 1, NULL);
+		s[0] = c;
+		s[1] = 0;
+	}
+}
+
+void String0::Cat(const char *s, int len)
+{
+	if(IsSmall()) {
+		if(SLen() + len < 14) {
+			memcpy(chr + SLen(), s, len);
+			SLen() += len;
+			chr[SLen()] = 0;
+			Dsyn();
+			return;
+		}
+	}
+	else
+		if((int)LLen() + len < LAlloc() && !IsSharedRef()) {
+			memcpy(ptr + LLen(), s, len);
+			LLen() += len;
+			ptr[LLen()] = 0;
+			Dsyn();
+			return;
+		}
+	Insert(GetCount(), len, s);
+}
+
+void String0::Reserve(int r)
+{
+	int l = GetCount();
+	Insert(GetCount(), r, NULL);
+	Trim(l);
+}
+
+void String0::Set(const char *s, int len)
+{
+	w[0] = w[1] = w[2] = w[3] = 0;
+	switch(len) {
+	#define MOV(x) case x: chr[x - 1] = s[x - 1];
+		MOV(14) MOV(13) MOV(12) MOV(11) MOV(10) MOV(9) MOV(8)
+		MOV(7) MOV(6) MOV(5) MOV(4) MOV(3) MOV(2) MOV(1)
+	case 0:
+		SLen() = len;
+		break;
+	default:
+		char *p = Alloc(len, chr[KIND]);
+		memcpy(p, s, len);
+		p[len] = 0;
+		ptr = p;
+		LLen() = len;
+		SLen() = 15;
+	};
+	Dsyn();
 }
 
 String& String::operator=(const char *s)
 {
-	if(!s)
-		Clear();
-	else
-		Assign(s, strlen(s));
+	int  len = GetCount();
+	char *str = (char *)Begin();
+	if(s >= str && s <= str + len)
+		return *this = String(s, strlen__(s));
+	String0::Free();
+	String0::Set(s, strlen__(s));
 	return *this;
-}
-
-#ifdef STRING_EXPERIMENTAL
-#define EQ1(i)  (a[i] ^ b[i])
-#define EQ2(i)  (*(word *)(a + i) ^ *(word *)(b + i))
-#define EQ4(i)  (*(dword *)(a + i) ^ *(dword *)(b + i))
-#endif
-
-bool String::IsEqual(const String& s) const
-{
-#ifdef STRING_EXPERIMENTAL
-	int l = GetLength();
-	if(s.GetLength() != l) return false;
-	const char *a = ptr;
-	const char *b = s;
-	switch(l) {
-	case  0: return true;
-	case  1: return a[0] == b[0];
-	case  2: return *(word *)a == *(word *)b;
-	case  3: return (EQ2(0) | EQ1(2)) == 0;
-	case  4: return *(dword *)a == *(dword *)b;
-	case  5: return (EQ4(0) | EQ1(4)) == 0;
-	case  6: return (EQ4(0) | EQ2(4)) == 0;
-	case  7: return (EQ4(0) | EQ2(4) | EQ1(7)) == 0;
-	case  8: return (EQ4(0) | EQ4(4)) == 0;
-	case  9: return (EQ4(0) | EQ4(4) | EQ1(8)) == 0;
-	case 10: return (EQ4(0) | EQ4(4) | EQ2(8) | EQ1(10)) == 0;
-	case 11: return (EQ4(0) | EQ4(4) | EQ2(8) | EQ1(10)) == 0;
-	case 12: return (EQ4(0) | EQ4(4) | EQ4(8)) == 0;
-	case 13: return (EQ4(0) | EQ4(4) | EQ4(8) | EQ1(12)) == 0;
-	case 14: return (EQ4(0) | EQ4(4) | EQ4(8) | EQ2(12)) == 0;
-	}
-#endif
-	return B::IsEqual(s, s.GetCount());
-}
-
-bool String::IsEqual(const char *s) const
-{
-	return B::IsEqual(s, strlen(s));
-}
-
-struct StringCompare__
-{
-	int operator()(char a, char b) const { return byte(a) - byte(b); }
-};
-
-int String::Compare(const String& s) const
-{
-	int l1 = GetLength();
-	int l2 = s.GetLength();
-	int l = min(l1, l2);
-	int q = memcmp(ptr, ~s, l);
-	return q ? q : l1 - l2;
-}
-
-int String::Compare(const char *s) const
-{
-	int l1 = GetLength();
-	int l2 = strlen(s);
-	int l = min(l1, l2);
-	int q = memcmp(ptr, s, l);
-	return q ? q : l1 - l2;
-}
-
-WString String::ToWString() const
-{
-	return ToUnicode(*this, CHARSET_DEFAULT);
-}
-
-String::String() {}
-String::String(const Nuller&) {}
-
-String::String(const String& s) : B(s) {}
-String::String(const char *s) : B(s) {}
-String::String(int chr, int count) : B(chr, count) {}
-
-#ifdef STRING_EXPERIMENTAL
-#define CREATE(a, l) \
-	n = (Data *) new byte[sizeof(Data) + a]; \
-	n->alloc = a - 1; \
-	n->refcount = 1; \
-	t = ptr = (char *)(n + 1); \
-	t[n->length = l] = 0;
-
-#define COPY1         t[0]  = s[0];
-#define COPY2  COPY1  t[1]  = s[1];
-#define COPY3  COPY2  t[2]  = s[2];
-#define COPY4  COPY3  t[3]  = s[3];
-#define COPY5  COPY4  t[4]  = s[4];
-#define COPY6  COPY5  t[5]  = s[5];
-#define COPY7  COPY6  t[6]  = s[6];
-#define COPY8  COPY7  t[7]  = s[7];
-#define COPY9  COPY8  t[8]  = s[8];
-#define COPY10 COPY9  t[9]  = s[9];
-#define COPY11 COPY10 t[10] = s[10];
-#define COPY12 COPY11 t[11] = s[11];
-#define COPY13 COPY12 t[12] = s[12];
-#define COPY14 COPY13 t[13] = s[13];
-#define COPY15 COPY14 t[14] = s[14];
-#define COPY16 COPY15 t[15] = s[15];
-
-void String::Slice(const char *s, int len)
-{
-	Data *n;
-	char *t;
-	switch(len) {
-	case 0:  ptr = CreateNull(); return;
-	case 1:  CREATE(8, 1);   COPY1; return;
-	case 2:  CREATE(8, 2);   COPY2; return;
-	case 3:  CREATE(8, 3);   COPY3; return;
-	case 4:  CREATE(8, 4);   COPY4; return;
-	case 5:  CREATE(8, 5);   COPY5; return;
-	case 6:  CREATE(8, 6);   COPY6; return;
-	case 7:  CREATE(8, 7);   COPY7; return;
-	case 8:  CREATE(16, 8);  COPY8; return;
-	case 9:  CREATE(16, 9);  COPY9; return;
-	case 10: CREATE(16, 10); COPY10; return;
-	case 11: CREATE(16, 11); COPY11; return;
-	case 12: CREATE(16, 12); COPY12; return;
-	case 13: CREATE(16, 13); COPY13; return;
-	case 14: CREATE(16, 14); COPY14; return;
-	case 15: CREATE(16, 15); COPY15; return;
-	}
-	memcpy(ptr = Create(len), s, len);
-}
-#endif
-
-String::String(const String& s, int n) : B(~s, n) { ASSERT(n <= s.GetLength() + 1); }
-String::String(const char *s, int n) : B(s, n) {}
-String::String(const byte *s, int n) : B((char *)s, n) {}
-
-#ifndef STRING_EXPERIMENTAL
-String::String(const char *s, const char *lim) : B(s, lim - s) {}
-#endif
-
-String::String(const std::string& s) : B(s.c_str(), s.length()) {}
-String::operator std::string() const { return std::string(Begin(), End()); }
-
-String::~String() {}
-
-char *String::CreateNull()
-{
-	static Data data[] = { { 1, 0, 0 }, { 0 } };
-	data->Retain();
-	return (char *)(data + 1);
-}
-
-String::Data *String::Void()
-{
-	static Data d[] = { { 2, 0, 0 }, { 0 } };
-	return d;
-}
-
- String::Data *String::Zero()
-{
-	static Data d[] = { { 3, 0, 0 }, { 0 } };
-	return d;
-}
-
-bool   String::IsVoid() const
-{
-	return ptr == Void()->GetPtr();
-}
-
-bool   String::IsZero() const
-{
-	return ptr == Zero()->GetPtr();
 }
 
 String String::GetVoid()
 {
-	return String(Void());
+	String s;
+	s.ptr = (char *)(voidptr + 1);
+	s.LLen() = 0;
+	s.SLen() = 15;
+	s.chr[KIND] = 50;
+	return s;
 }
 
-String String::GetZero()
+bool String::IsVoid() const
 {
-	return String(Zero());
+	return IsRef() && ptr == (char *)(voidptr + 1);
 }
 
-void String::Buffer::Strlen()
+String::String(StringBuffer& b)
 {
-	int len = strlen(begin);
-	ASSERT(len < end - begin);
-	end = begin + len;
+	int l = b.GetLength();
+	if(l <= 14) {
+		Zero();
+		memcpy(chr, b.begin, l);
+		SLen() = l;
+		b.Free();
+	}
+	else {
+		ptr = b.begin;
+		ptr[l] = 0;
+		SLen() = 15;
+		LLen() = l;
+		chr[KIND] = min(b.GetAlloc(), 255);
+	}
+	b.Zero();
+	Dsyn();
+}
+
+WString String::ToWString() const
+{
+	return WString(Begin(), GetCount());
+}
+
+char *StringBuffer::Alloc(int count, int& alloc)
+{
+	if(count <= 31) {
+		char *s = (char *)MAlloc_S();
+		alloc = 31;
+		return s;
+	}
+	else {
+		size_t sz = sizeof(Rc) + count + 1;
+		Rc *rc = (Rc *)MemoryAlloc(sz);
+		alloc = rc->alloc = sz - sizeof(Rc) - 1;
+		rc->refcount = 1;
+		return (char *)(rc + 1);
+	}
+}
+
+void StringBuffer::Free()
+{
+	int all = limit - begin;
+	if(all == 31)
+		MFree_S(begin);
+	if(all > 31)
+		MemoryFree((Rc *)begin - 1);
+}
+
+void StringBuffer::Expand(int n, const char *cat, int l)
+{
+	int al;
+	int ep = end - begin;
+	char *p = Alloc(n, al);
+	memcpy(p, begin, GetLength());
+	if(cat) {
+		memcpy(p + ep, cat, l);
+		ep += l;
+	}
+	Free();
+	begin = p;
+	end = begin + ep;
+	limit = begin + al;
+}
+
+void StringBuffer::Expand()
+{
+	Expand(GetLength() * 2);
+}
+
+void StringBuffer::SetLength(int l)
+{
+	if(l > (limit - begin))
+		Expand(l);
+	end = begin + l;
+}
+
+void StringBuffer::Cat(const char *s, int l)
+{
+	if(end + l > limit)
+		Expand(max(GetLength(), l) + GetLength(), s, l);
+	else {
+		memcpy(end, s, l);
+		end += l;
+	}
+}
+
+void StringBuffer::Cat(int c, int l)
+{
+	if(end + l > limit)
+		Expand(max(GetLength(), l) + GetLength(), NULL, l);
+	memset(end, c, l);
+	end += l;
+}
+
+void StringBuffer::Set(String& s)
+{
+	s.UnShare();
+	int l = s.GetLength();
+	if(s.GetAlloc() == 14) {
+		begin = (char *)MAlloc_S();
+		limit = begin + 31;
+		memcpy(begin, s.Begin(), l);
+		end = begin + l;
+	}
+	else {
+		begin = s.ptr;
+		end = begin + l;
+		limit = begin + s.GetAlloc();
+	}
+	s.Zero();
 }
 
 String TrimLeft(const String& str)
@@ -255,199 +487,6 @@ int CompareNoCase(const String& a, const char *b, byte encoding)
 	if(encoding == CHARSET_DEFAULT) encoding = GetDefaultCharset();
 	if(encoding == CHARSET_UTF8) return CompareNoCase(FromUtf8(a), FromUtf8(b, strlen(b)));
 	return IterCompare(a.Begin(), a.End(), b, b + strlen(b), StringICompare__(encoding));
-}
-
-// -----------------------------------------------------------------------------------
-
-void  WString::Cat(const wchar *s)
-{
-	B::Cat(s, wstrlen(s));
-}
-
-void  WString::Cat(const WString& s)
-{
-	B::Cat(~s, s.GetLength());
-}
-
-void WString::Insert(int at, const WString& s)
-{
-	Insert(at, ~s, s.GetLength());
-}
-
-void WString::Insert(int at, const wchar *s)
-{
-	Insert(at, s, wstrlen(s));
-}
-
-WString& WString::operator=(const wchar *s)
-{
-	if(!s)
-		Clear();
-	else
-		Assign(s, wstrlen(s));
-	return *this;
-}
-
-bool WString::IsEqual(const WString& s) const
-{
-	return B::IsEqual(s, s.GetCount());
-}
-
-bool WString::IsEqual(const wchar *s) const
-{
-	return B::IsEqual(s, wstrlen(s));
-}
-
-struct WStringCompare__
-{
-	int operator()(wchar a, wchar b) const { return a - b; }
-};
-
-int WString::Compare(const WString& s) const
-{
-	return IterCompare(Begin(), End(), s.Begin(), s.End(), WStringCompare__());
-}
-
-int WString::Compare(const wchar *s) const
-{
-	return IterCompare(Begin(), End(), s, s + wstrlen(s), WStringCompare__());
-}
-
-/*
-WString::operator String() const
-{
-	return FromUnicode(*this, CHARSET_DEFAULT);
-}
-*/
-
-String WString::ToString() const
-{
-	return FromUnicode(*this, CHARSET_DEFAULT);
-}
-
-WString::WString() {}
-WString::WString(const Nuller&) {}
-
-WString::WString(const WString& s) : B(s) {}
-
-WString::WString(const wchar *s) : B(s) {}
-//WString::WString(wchar *s) : B(s) {}
-WString::WString(const WString& s, int n) : B(~s, n) { ASSERT(n <= s.GetLength() + 1); }
-WString::WString(const wchar *s, int n) : B(s, n) {}
-WString::WString(const wchar *s, const wchar *lim) : B(s, lim - s) {}
-WString::WString(const char *s) : B(ToUnicode(s, s ? strlen(s) : 0, CHARSET_DEFAULT)) {}
-WString::WString(const char *s, int n) : B(ToUnicode(s, n, CHARSET_DEFAULT)) {}
-WString::WString(const char *s, const char *lim) : B(ToUnicode(s, s ? lim - s : 0, CHARSET_DEFAULT)) {}
-//WString::WString(char *s) : B(ToUnicode(s, CHARSET_DEFAULT)) {}
-WString::WString(int chr, int count) : B(chr, count) {}
-
-WString::WString(const std::wstring& s)
-{
-	if(sizeof(std::wstring::value_type) == sizeof(wchar)) {
-		Assign((wchar *)s.c_str(), s.length());
-	}
-	else {
-		std::wstring::const_iterator i = s.begin();
-		while(i < s.end())
-			Cat(*i++);
-	}
-}
-
-WString::operator std::wstring() const
-{
-	if(sizeof(std::wstring::value_type) == sizeof(wchar))
-		return std::wstring((std::wstring::value_type *)Begin(),
-		                    (std::wstring::value_type *)End());
-	else {
-		std::wstring r;
-		const wchar *s = Begin();
-		while(s < End())
-			r += *s++;
-		return r;
-	}
-}
-
-WString::~WString() {}
-
-wchar *WString::CreateNull()
-{
-	static Data data[] = { { 1, 0, 0 }, { 0 } };
-	data->Retain();
-	return (wchar *)(data + 1);
-}
-
-WString::Data *WString::Void()
-{
-	static Data d[] = { { 2, 0, 0 }, { 0 } };
-	return d;
-}
-
-WString::Data *WString::Zero()
-{
-	static Data d[] = { { 3, 0, 0 }, { 0 } };
-	return d;
-}
-
-bool   WString::IsVoid() const
-{
-	return ptr == Void()->GetPtr();
-}
-
-bool   WString::IsZero() const
-{
-	return ptr == Zero()->GetPtr();
-}
-
-WString WString::GetVoid()
-{
-	return WString(Void());
-}
-
-WString WString::GetZero()
-{
-	return WString(Zero());
-}
-
-void WString::Buffer::Strlen()
-{
-	int len = wstrlen(begin);
-	ASSERT(len < end - begin);
-	end = begin + len;
-}
-
-WString TrimLeft(const WString& str)
-{
-	const wchar *s = str;
-	if(!IsSpace(*s))
-		return s;
-	while(IsSpace(*s)) s++;
-	return WString(s, str.End());
-}
-
-WString TrimRight(const WString& str)
-{
-	if(str.IsEmpty())
-		return str;
-	const wchar *s = str.Last();
-	if(!IsSpace(*s))
-		return str;
-	while(s >= ~str && IsSpace(*s)) s--;
-	return WString(~str, s + 1);
-}
-
-struct WStringICompare__
-{
-	int operator()(wchar a, wchar b) const { return ToUpper(a) - ToUpper(b); }
-};
-
-int CompareNoCase(const WString& a, const WString& b)
-{
-	return IterCompare(a.Begin(), a.End(), b.Begin(), b.End(), WStringICompare__());
-}
-
-int CompareNoCase(const WString& a, const wchar *b)
-{
-	return IterCompare(a.Begin(), a.End(), b, b + wstrlen(b), WStringICompare__());
 }
 
 END_UPP_NAMESPACE

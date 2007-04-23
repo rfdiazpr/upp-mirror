@@ -74,14 +74,18 @@ static void sOpenVppLog(LogStream *s)
 LogStream& StdLogStream()
 {
 	static LogStream *s;
+	ReadMemoryBarrier();
 	if(!s) {
-		INTERLOCKED
-			if(!s) {
-				static byte lb[sizeof(LogStream)];
-				LogStream *strm = new(lb) LogStream;
-				sOpenVppLog(strm);
-				s = strm;
-			}
+		static StaticCriticalSection lock;
+		lock.Enter();
+		if(!s) {
+			static byte lb[sizeof(LogStream)];
+			LogStream *strm = new(lb) LogStream;
+			sOpenVppLog(strm);
+			WriteMemoryBarrier();
+			s = strm;
+		}
+		lock.Leave();
 	}
 	return *s;
 }
@@ -178,8 +182,13 @@ Stream&  UsrLogT(int indent, const char *line)
 	if(!susrlog)
 		return NilStream();
 	Time tm = GetSysTime();
-	return UsrLogStream() << Format("%02d:%02d:%02d ", tm.hour, tm.minute, tm.second)
-	                      << String(' ', indent) << line << "\r\n";
+	char h[256];
+	sprintf(h, "%02d:%02d:%02d ", tm.hour, tm.minute, tm.second);
+	Stream& s = UsrLogStream() << h;
+	while(indent--)
+		s << " ";
+	s << line << "\r\n";
+	return s;
 }
 
 Stream&  UsrLogT(const char *line)
@@ -268,7 +277,6 @@ TimingInspector::TimingInspector(const char *_name) {
 }
 
 TimingInspector::~TimingInspector() {
-//	ASSERT(nesting_depth == 0); // troubles in MT!
 	if(this == &s_zero()) return;
 	StdLog() << Dump() << "\r\n";
 }

@@ -48,6 +48,7 @@ BitmapInfo32__::BitmapInfo32__(int cx, int cy)
 
 HBITMAP CreateBitMask(const RGBA *data, Size sz, Size tsz, Size csz, RGBA *ct)
 {
+	DrawLock __;
 	memset(ct, 0, tsz.cx * tsz.cy * sizeof(RGBA));
 	int linelen = (tsz.cx + 15) >> 4 << 1;
 	Buffer<byte>  mask(tsz.cy * linelen, 0xff);
@@ -77,6 +78,7 @@ HBITMAP CreateBitMask(const RGBA *data, Size sz, Size tsz, Size csz, RGBA *ct)
 
 void SetSurface(HDC dc, int x, int y, int cx, int cy, const RGBA *pixels)
 {
+	DrawLock __;
 	BitmapInfo32__ bi(cx, cy);
 	::SetDIBitsToDevice(dc, x, y, cx, cy, 0, 0, 0, cy, pixels,
 	                    bi, DIB_RGB_COLORS);
@@ -111,6 +113,7 @@ public:
 
 void DrawSurface::Init(Draw& w, int _x, int _y, int cx, int cy)
 {
+	DrawLock __;
 	dc = w.GetHandle();
 	size = Size(cx, cy);
 	x = _x;
@@ -124,7 +127,6 @@ void DrawSurface::Init(Draw& w, int _x, int _y, int cx, int cy)
 
 DrawSurface::DrawSurface(Draw& w, const Rect& r)
 {
-
 	Init(w, r.left, r.top, r.Width(), r.Height());
 }
 
@@ -135,6 +137,7 @@ DrawSurface::DrawSurface(Draw& w, int x, int y, int cx, int cy)
 
 DrawSurface::~DrawSurface()
 {
+	DrawLock __;
 	::BitBlt(dc, x, y, size.cx, size.cy, dcMem, 0, 0, SRCCOPY);
 	::DeleteObject(::SelectObject(dcMem, hbmpOld));
 	::DeleteDC(dcMem);
@@ -149,14 +152,17 @@ void Image::Data::SysInit()
 void Image::Data::SysRelease()
 {
 	if(hbmp) {
+		DrawLock __;
 		DeleteObject(hbmp);
 		ResCount -= !paintonly;
 	}
 	if(hmask) {
+		DrawLock __;
 		DeleteObject(hmask);
 		ResCount -= !paintonly;
 	}
 	if(himg) {
+		DrawLock __;
 		DeleteObject(himg);
 		ResCount -= !paintonly;
 	}
@@ -171,6 +177,7 @@ typedef BOOL (WINAPI *tAlphaBlend)(HDC hdcDest, int nXOriginDest, int nYOriginDe
 
 static tAlphaBlend fnAlphaBlend()
 {
+	DrawLock __;
 	static tAlphaBlend pSet;
 	static bool inited = false;
 	if(!inited) {
@@ -184,6 +191,7 @@ static tAlphaBlend fnAlphaBlend()
 
 void Image::Data::CreateHBMP(HDC dc, const RGBA *data)
 {
+	DrawLock __;
 	BitmapInfo32__ bi(buffer.GetWidth(), buffer.GetHeight());
 	HDC dcMem = ::CreateCompatibleDC(dc);
 	RGBA *pixels;
@@ -197,122 +205,122 @@ void Image::Data::CreateHBMP(HDC dc, const RGBA *data)
 
 void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 {
-	INTERLOCKED_(ResLock) {
-		ASSERT(!paintonly || IsNull(c));
-		int max = IsWinNT() ? 250 : 100;
-		while(ResCount > max) {
-			Image::Data *l = ResData->GetPrev();
-			l->SysRelease();
-			l->Unlink();
+	DrawLock __;
+	ASSERT(!paintonly || IsNull(c));
+	int max = IsWinNT() ? 250 : 100;
+	while(ResCount > max) {
+		Image::Data *l = ResData->GetPrev();
+		l->SysRelease();
+		l->Unlink();
+	}
+	HDC dc = w.GetHandle();
+	Size sz = buffer.GetSize();
+	int  len = sz.cx * sz.cy;
+	Rect sr = src & sz;
+	Size ssz = sr.Size();
+	if(sr.IsEmpty())
+		return;
+	if(GetKind() == IMAGE_EMPTY)
+		return;
+	if(GetKind() == IMAGE_OPAQUE && !IsNull(c)) {
+		w.DrawRect(x, y, sz.cx, sz.cy, c);
+		return;
+	}
+	if(GetKind() == IMAGE_OPAQUE && paintcount == 0 && sr == Rect(sz) && !w.IsMetaFile() && IsWinNT()) {//TODO !IsWinNT
+		LTIMING("Image Opaque direct set");
+		SetSurface(w, x, y, sz.cx, sz.cy, buffer);
+		paintcount++;
+		return;
+	}
+	Unlink();
+	LinkAfter(ResData);
+	if(GetKind() == IMAGE_OPAQUE) {
+		if(!hbmp) {
+			LTIMING("Image Opaque create");
+			CreateHBMP(dc, buffer);
 		}
-		HDC dc = w.GetHandle();
-		Size sz = buffer.GetSize();
-		int  len = sz.cx * sz.cy;
-		Rect sr = src & sz;
-		Size ssz = sr.Size();
-		if(sr.IsEmpty())
-			return;
-		if(GetKind() == IMAGE_EMPTY)
-			return;
-		if(GetKind() == IMAGE_OPAQUE && !IsNull(c)) {
-			w.DrawRect(x, y, sz.cx, sz.cy, c);
-			return;
+		LTIMING("Image Opaque blit");
+		HDC dcMem = ::CreateCompatibleDC(dc);
+		::SelectObject(dcMem, hbmp);
+		::BitBlt(dc, x, y, ssz.cx, ssz.cy, dcMem, sr.left, sr.top, SRCCOPY);
+		::DeleteDC(dcMem);
+		PaintOnlyShrink();
+		return;
+	}
+	if(GetKind() == IMAGE_MASK) {
+		HDC dcMem = ::CreateCompatibleDC(dc);
+		if(!hmask) {
+			LTIMING("Image Mask create");
+			Buffer<RGBA> bmp(len);
+			hmask = CreateBitMask(buffer, sz, sz, sz, bmp);
+			ResCount++;
+			if(!hbmp)
+				CreateHBMP(dc, bmp);
 		}
-		if(GetKind() == IMAGE_OPAQUE && paintcount == 0 && sr == Rect(sz) && !w.IsMetaFile() && IsWinNT()) {//TODO !IsWinNT
-			LTIMING("Image Opaque direct set");
-			SetSurface(w, x, y, sz.cx, sz.cy, buffer);
-			paintcount++;
-			return;
+		LTIMING("Image Mask blt");
+		HBITMAP o = (HBITMAP)::SelectObject(dcMem, ::CreateCompatibleBitmap(dc, sz.cx, sz.cy));
+		::BitBlt(dcMem, 0, 0, ssz.cx, ssz.cy, dc, x, y, SRCCOPY);
+		HDC dcMem2 = ::CreateCompatibleDC(dc);
+		::SelectObject(dcMem2, hmask);
+		::BitBlt(dcMem, 0, 0, ssz.cx, ssz.cy, dcMem2, sr.left, sr.top, SRCAND);
+		if(IsNull(c)) {
+			::SelectObject(dcMem2, hbmp);
+			::BitBlt(dcMem, 0, 0, ssz.cx, ssz.cy, dcMem2, sr.left, sr.top, SRCPAINT);
 		}
-		Unlink();
-		LinkAfter(ResData);
-		if(GetKind() == IMAGE_OPAQUE) {
-			if(!hbmp) {
-				LTIMING("Image Opaque create");
-				CreateHBMP(dc, buffer);
-			}
-			LTIMING("Image Opaque blit");
-			HDC dcMem = ::CreateCompatibleDC(dc);
-			::SelectObject(dcMem, hbmp);
-			::BitBlt(dc, x, y, ssz.cx, ssz.cy, dcMem, sr.left, sr.top, SRCCOPY);
-			::DeleteDC(dcMem);
-			PaintOnlyShrink();
-			return;
+		else {
+			HBRUSH ho = (HBRUSH) SelectObject(dcMem, CreateSolidBrush(c));
+			::BitBlt(dcMem, 0, 0, ssz.cx, ssz.cy, dcMem2, sr.left, sr.top, 0xba0b09);
+			::DeleteObject(::SelectObject(dcMem, ho));
 		}
-		if(GetKind() == IMAGE_MASK) {
-			HDC dcMem = ::CreateCompatibleDC(dc);
-			if(!hmask) {
-				LTIMING("Image Mask create");
-				Buffer<RGBA> bmp(len);
-				hmask = CreateBitMask(buffer, sz, sz, sz, bmp);
-				ResCount++;
-				if(!hbmp)
-					CreateHBMP(dc, bmp);
-			}
-			LTIMING("Image Mask blt");
-			HBITMAP o = (HBITMAP)::SelectObject(dcMem, ::CreateCompatibleBitmap(dc, sz.cx, sz.cy));
-			::BitBlt(dcMem, 0, 0, ssz.cx, ssz.cy, dc, x, y, SRCCOPY);
-			HDC dcMem2 = ::CreateCompatibleDC(dc);
-			::SelectObject(dcMem2, hmask);
-			::BitBlt(dcMem, 0, 0, ssz.cx, ssz.cy, dcMem2, sr.left, sr.top, SRCAND);
-			if(IsNull(c)) {
-				::SelectObject(dcMem2, hbmp);
-				::BitBlt(dcMem, 0, 0, ssz.cx, ssz.cy, dcMem2, sr.left, sr.top, SRCPAINT);
-			}
-			else {
-				HBRUSH ho = (HBRUSH) SelectObject(dcMem, CreateSolidBrush(c));
-				::BitBlt(dcMem, 0, 0, ssz.cx, ssz.cy, dcMem2, sr.left, sr.top, 0xba0b09);
-				::DeleteObject(::SelectObject(dcMem, ho));
-			}
-			::BitBlt(dc, x, y, ssz.cx, ssz.cy, dcMem, 0, 0, SRCCOPY);
-			::DeleteObject(::SelectObject(dcMem, o));
-			::DeleteDC(dcMem2);
-			::DeleteDC(dcMem);
-			PaintOnlyShrink();
-			return;
-		}
+		::BitBlt(dc, x, y, ssz.cx, ssz.cy, dcMem, 0, 0, SRCCOPY);
+		::DeleteObject(::SelectObject(dcMem, o));
+		::DeleteDC(dcMem2);
+		::DeleteDC(dcMem);
+		PaintOnlyShrink();
+		return;
+	}
 #ifndef PLATFORM_WINCE
-		if(fnAlphaBlend() && IsNull(c) && !ImageFallBack) {
-			if(!himg) {
-				LTIMING("Image Alpha create");
-				BitmapInfo32__ bi(sz.cx, sz.cy);
-				himg = CreateDIBSection(ScreenInfo().GetHandle(), bi, DIB_RGB_COLORS,
-				                              (void **)&section, NULL, 0);
-				ResCount++;
-				PreMultiplyAlpha(section, buffer, len);
-			}
-			LTIMING("Image Alpha blit");
-			BLENDFUNCTION bf;
-			bf.BlendOp = AC_SRC_OVER;
-			bf.BlendFlags = 0;
-			bf.SourceConstantAlpha = 255;
-			bf.AlphaFormat = AC_SRC_ALPHA;
-			HDC dcMem = ::CreateCompatibleDC(dc);
-			::SelectObject(dcMem, himg);
-			fnAlphaBlend()(dc, x, y, ssz.cx, ssz.cy, dcMem, sr.left, sr.top, ssz.cx, ssz.cy, bf);
-			::DeleteDC(dcMem);
-			PaintOnlyShrink();
+	if(fnAlphaBlend() && IsNull(c) && !ImageFallBack) {
+		if(!himg) {
+			LTIMING("Image Alpha create");
+			BitmapInfo32__ bi(sz.cx, sz.cy);
+			himg = CreateDIBSection(ScreenHDC(), bi, DIB_RGB_COLORS,
+			                              (void **)&section, NULL, 0);
+			ResCount++;
+			PreMultiplyAlpha(section, buffer, len);
 		}
-		else
+		LTIMING("Image Alpha blit");
+		BLENDFUNCTION bf;
+		bf.BlendOp = AC_SRC_OVER;
+		bf.BlendFlags = 0;
+		bf.SourceConstantAlpha = 255;
+		bf.AlphaFormat = AC_SRC_ALPHA;
+		HDC dcMem = ::CreateCompatibleDC(dc);
+		::SelectObject(dcMem, himg);
+		fnAlphaBlend()(dc, x, y, ssz.cx, ssz.cy, dcMem, sr.left, sr.top, ssz.cx, ssz.cy, bf);
+		::DeleteDC(dcMem);
+		PaintOnlyShrink();
+	}
+	else
 #endif
-		{
-			LTIMING("Image Alpha sw");
-			DrawSurface sf(w, x, y, ssz.cx, ssz.cy);
-			RGBA *t = sf;
-			for(int i = sr.top; i < sr.bottom; i++) {
-				if(IsNull(c))
-					AlphaBlendOpaque(t, buffer[i] + sr.left, ssz.cx);
-				else
-					AlphaBlendOpaque(t, buffer[i] + sr.left, ssz.cx, c);
-				t += ssz.cx;
-			}
+	{
+		LTIMING("Image Alpha sw");
+		DrawSurface sf(w, x, y, ssz.cx, ssz.cy);
+		RGBA *t = sf;
+		for(int i = sr.top; i < sr.bottom; i++) {
+			if(IsNull(c))
+				AlphaBlendOpaque(t, buffer[i] + sr.left, ssz.cx);
+			else
+				AlphaBlendOpaque(t, buffer[i] + sr.left, ssz.cx, c);
+			t += ssz.cx;
 		}
 	}
 }
 
 void ImageDraw::Section::Init(int cx, int cy)
 {
-	dc = ::CreateCompatibleDC(ScreenInfo().GetHandle());
+	DrawLock __;
+	dc = ::CreateCompatibleDC(ScreenHDC());
 	BitmapInfo32__ bi(cx, cy);
 	hbmp = CreateDIBSection(dc, bi, DIB_RGB_COLORS, (void **)&pixels, NULL, 0);
 	hbmpOld = (HBITMAP) ::SelectObject(dc, hbmp);
@@ -320,12 +328,14 @@ void ImageDraw::Section::Init(int cx, int cy)
 
 ImageDraw::Section::~Section()
 {
+	DrawLock __;
 	::DeleteObject(::SelectObject(dc, hbmpOld));
 	::DeleteDC(dc);
 }
 
 void ImageDraw::Init()
 {
+	DrawLock __;
 	rgb.Init(size.cx, size.cy);
 	a.Init(size.cx, size.cy);
 	Attach(rgb.dc);
@@ -396,6 +406,7 @@ Image Image::SizeBottomRight() { return Null; }
 
 Image Win32IconCursor(LPCSTR id, int iconsize, bool cursor)
 {
+	DrawLock __;
 	HICON icon;
 	if(cursor)
 		icon = (HICON)LoadCursor(0, id);
@@ -484,6 +495,7 @@ Image Win32Cursor(int id)
 
 HICON IconWin32(const Image& img, bool cursor)
 {
+	DrawLock __;
 	if(img.IsEmpty())
 		return NULL;
 	if(cursor) {
@@ -498,7 +510,9 @@ HICON IconWin32(const Image& img, bool cursor)
 	iconinfo.xHotspot = p.x;
 	iconinfo.yHotspot = p.y;
 	static Size cursor_size(GetSystemMetrics(SM_CXCURSOR), GetSystemMetrics(SM_CYCURSOR));
-	Size tsz = cursor ? cursor_size : sz;
+	Size tsz = sz;
+	if(!IsWin2K() && cursor)
+		tsz = cursor_size;
 	Size csz = Size(min(tsz.cx, sz.cx), min(tsz.cy, sz.cy));
 	if(IsWinXP() && !ImageFallBack) {
 		RGBA *pixels;

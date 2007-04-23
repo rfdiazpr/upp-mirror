@@ -59,7 +59,6 @@ private:
 	byte dummy;
 };
 
-
 class Ctrl;
 
 class CtrlFrame {
@@ -170,9 +169,52 @@ String      ReadPropertyData(Window w, Atom property, Atom rtype = AnyPropertyTy
 Index<Atom>& _NET_Supported();
 #endif
 
+#define IMAGECLASS CtrlCoreImg
+#define IMAGEFILE <CtrlCore/Ctrl.iml>
+#include <Draw/iml_header.h>
+
 class TopWindow;
 class TrayIcon;
 class GLCtrl;
+
+class ClipData;
+
+enum {
+	CLIP_BOARD,
+	CLIP_DROP,
+	CLIP_SELECTION,
+};
+
+class ClipData {
+	friend struct UDropTarget;
+
+	UDropTarget *dt;
+
+public:
+	bool   Has(const char *type) const;
+	String Get(const char *type) const;
+};
+
+enum {
+	DND_NONE = 0,
+	DND_COPY = 1,
+	DND_MOVE = 2,
+};
+
+class DnDEvent : public ClipData {
+	friend struct UDropTarget;
+
+	bool drop;
+	int  action;
+
+public:
+	void Accept()       { action = DND_COPY|DND_MOVE; }
+	void AcceptMove()   { action = DND_MOVE; }
+	void AcceptCopy()   { action = DND_COPY; }
+
+	bool IsDrag() const { return !drop; }
+	bool IsDrop() const { return drop; }
+};
 
 class Ctrl : public Pte<Ctrl> {
 public:
@@ -261,6 +303,8 @@ private:
 		Rect       to;
 	};
 
+	friend struct UDropTarget;
+
 	struct Top {
 #ifdef PLATFORM_WIN32
 		HWND           hwnd;
@@ -271,6 +315,10 @@ private:
 		Vector<Scroll> scroll;
 		VectorMap<Ctrl *, MoveCtrl> move;
 		VectorMap<Ctrl *, MoveCtrl> scroll_move;
+		Ptr<Ctrl>      owner;
+#ifdef PLATFORM_WIN32
+		UDropTarget   *dndtgt;
+#endif
 	};
 
 	union {
@@ -285,7 +333,7 @@ private:
 	LogPos       pos;//8
 	Rect16       rect;
 	Mitor<Frame> frame;//16
-	String       info;//4
+	String       info;//16
 	int16        caretx, carety, caretcx, caretcy;//8
 
 	byte         overpaint;
@@ -302,6 +350,7 @@ private:
 	bool         enabled:1;
 	bool         wantfocus:1;
 	bool         initfocus:1;
+	bool         activepopup:1;
 	bool         editable:1;
 	bool         modify:1;
 	bool         ignoremouse:1;
@@ -322,6 +371,7 @@ private:
 	static  Ptr<Ctrl> eventCtrl;
 	static  Ptr<Ctrl> mouseCtrl;
 	static  Point     mousepos;
+	static  Point     leftmousepos, rightmousepos;
 	static  Ptr<Ctrl> focusCtrl;
 	static  Ptr<Ctrl> focusCtrlWnd;
 	static  Ptr<Ctrl> lastActiveWnd;
@@ -374,12 +424,15 @@ private:
 
 	static  void  EndIgnore();
 	static  void  LRep();
+	static  void  LHold();
 	static  void  LRepeat();
 	static  void  RRep();
+	static  void  RHold();
 	static  void  RRepeat();
 	static  void  KillRepeat();
 	static  void  CheckMouseCtrl();
 	static  void  DoCursorShape();
+	static  Image& CursorOverride();
 	bool    IsMouseActive() const;
 	Image   MouseEventH(int event, Point p, int zdelta, dword keyflags);
 	Image   FrameMouseEventH(int event, Point p, int zdelta, dword keyflags);
@@ -424,6 +477,10 @@ private:
 	bool SetWndCapture();
 	bool HasWndCapture() const;
 	bool ReleaseWndCapture();
+
+#ifdef PLATFORM_WIN32
+	static
+#endif
 	void SetMouseCursor(const Image& m);
 
 	static void DoDeactivate(Ptr<Ctrl> pfocusCtrl, Ptr<Ctrl> nfocusCtrl);
@@ -452,6 +509,7 @@ private:
 	void WndUpdate();
 	void WndUpdate(const Rect& r);
 
+	void WndFree();
 	void WndDestroy();
 
 	static void InitTimer();
@@ -470,6 +528,9 @@ private:
 	friend class TrayIcon;
 	friend class GLCtrl;
 	friend class WaitCursor;
+	friend class ClipData;
+	friend struct UDropSource;
+	friend class DnDAction;
 
 #ifdef PLATFORM_WIN32
 	static LRESULT CALLBACK SysTimerProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -632,16 +693,25 @@ public:
 		UP            = 0x90,
 		DOUBLE        = 0xa0,
 		REPEAT        = 0xb0,
+		DRAG          = 0xc0,
+		HOLD          = 0xd0,
+		TRIPLE        = 0xe0,
 
 		LEFTDOWN      = LEFT|DOWN,
 		LEFTDOUBLE    = LEFT|DOUBLE,
 		LEFTREPEAT    = LEFT|REPEAT,
 		LEFTUP        = LEFT|UP,
+		LEFTDRAG      = LEFT|DRAG,
+		LEFTHOLD      = LEFT|HOLD,
+		LEFTTRIPLE    = LEFT|TRIPLE,
 
 		RIGHTDOWN     = RIGHT|DOWN,
 		RIGHTDOUBLE   = RIGHT|DOUBLE,
 		RIGHTREPEAT   = RIGHT|REPEAT,
 		RIGHTUP       = RIGHT|UP,
+		RIGHTDRAG     = RIGHT|DRAG,
+		RIGHTHOLD     = RIGHT|HOLD,
+		RIGHTTRIPLE   = RIGHT|TRIPLE
 	};
 
 	enum {
@@ -687,14 +757,25 @@ public:
 	virtual void   MouseMove(Point p, dword keyflags);
 	virtual void   LeftDown(Point p, dword keyflags);
 	virtual void   LeftDouble(Point p, dword keyflags);
+	virtual void   LeftTriple(Point p, dword keyflags);
 	virtual void   LeftRepeat(Point p, dword keyflags);
+	virtual void   LeftDrag(Point p, dword keyflags);
+	virtual void   LeftHold(Point p, dword keyflags);
 	virtual void   LeftUp(Point p, dword keyflags);
 	virtual void   RightDown(Point p, dword keyflags);
 	virtual void   RightDouble(Point p, dword keyflags);
+	virtual void   RightTriple(Point p, dword keyflags);
 	virtual void   RightRepeat(Point p, dword keyflags);
+	virtual void   RightDrag(Point p, dword keyflags);
+	virtual void   RightHold(Point p, dword keyflags);
 	virtual void   RightUp(Point p, dword keyflags);
 	virtual void   MouseWheel(Point p, int zdelta, dword keyflags);
 	virtual void   MouseLeave();
+
+	virtual void   DragEnter(Point p, DnDEvent& d);
+	virtual void   DragAndDrop(Point p, DnDEvent& d);
+	virtual void   DragLeave();
+	virtual String GetClip(const char *fmt, int kind);
 
 	virtual Image  CursorImage(Point p, dword keyflags);
 
@@ -762,6 +843,9 @@ public:
 	Ctrl            *GetOwner();
 	const Ctrl      *GetTopCtrlOwner() const;
 	Ctrl            *GetTopCtrlOwner();
+
+	Ctrl            *GetOwnerCtrl();
+	const Ctrl      *GetOwnerCtrl() const;
 
 	const TopWindow *GetTopWindow() const;
 	TopWindow       *GetTopWindow();
@@ -866,6 +950,8 @@ public:
 	void        Sync();
 	void        Sync(const Rect& r);
 
+	static Image OverrideCursor(const Image& m);
+
 	void        DrawCtrl(Draw& w, int x = 0, int y = 0);
 	void        DrawCtrlWithParent(Draw& w, int x = 0, int y = 0);
 
@@ -890,7 +976,7 @@ public:
 
 	bool    SetFocus();
 	bool    HasFocus() const                   { return FocusCtrl() == this; }
-	bool    HasFocusDeep() const               { return HasFocus() || HasChildDeep(FocusCtrl()); }
+	bool    HasFocusDeep() const;
 	Ctrl&   WantFocus(bool ft = true)          { wantfocus = ft; return *this; }
 	Ctrl&   NoWantFocus()                      { return WantFocus(false); }
 	bool	IsWantFocus() const                { return wantfocus; }
@@ -1018,6 +1104,7 @@ public:
 	void   EndLoop()                { inloop = false; }
 	void   EndLoop(int code)        { ASSERT(!parent); exitcode = code; EndLoop(); }
 	bool   InLoop() const           { return inloop; }
+	bool   InCurrentLoop() const    { return GetLoopCtrl() == this; }
 	int    GetExitCode() const      { return exitcode; }
 
 	void SetMinSize(Size sz) {} // see CtrlLayout template and WindowCtrl...
@@ -1097,6 +1184,8 @@ int GUI_PopUpEffect();
 int GUI_DropShadows();
 int GUI_AltAccessKeys();
 int GUI_AKD_Conservative();
+int GUI_DragDistance();
+int GUI_DblClickTime();
 
 void GUI_GlobalStyle_Write(int);
 void GUI_DragFullWindow_Write(int);
@@ -1104,6 +1193,8 @@ void GUI_PopUpEffect_Write(int);
 void GUI_DropShadows_Write(int);
 void GUI_AltAccessKeys_Write(int);
 void GUI_AKD_Conservative_Write(int);
+void GUI_DragDistance_Write(int);
+void GUI_DblClickTime_Write(int);
 
 void  EditFieldIsThin_Write(int);
 void  FrameButtonWidth_Write(int);
@@ -1393,6 +1484,40 @@ void   AppendClipboardImage(const Image& img);
 inline void WriteClipboardImage(const Image& img)
 	{ ClearClipboard(); AppendClipboardImage(img); }
 
+class DnDAction {
+	VectorMap<String, String> datasrc;
+	bool  copy;
+	bool  move;
+	Image sample;
+	Ptr<Ctrl> ctrl;
+
+	friend struct UDataObject;
+	friend struct UEnumFORMATETC;
+
+public:
+	DnDAction& Append(const char *fmt, const String& data);
+	template <class T>
+	DnDAction& Append(const T& data)    { Append(typeid(T).name(), StoreAsString(data)); }
+	DnDAction& NoCopy()                 { copy = false; return *this; }
+	DnDAction& NoMove()                 { move = false; return *this; }
+	DnDAction& Sample(const Image& m)   { sample = m; return *this; }
+
+	int Do();
+
+	DnDAction(Ctrl *src, const char *fmts = NULL);
+};
+
+template <class T>
+bool Has(const ClipData& data)
+{
+	return data.Has(typeid(T).name());
+}
+
+template <class T>
+bool Get(const ClipData& data)
+{
+	return data.Get(typeid(T).name());
+}
 
 #include <CtrlCore/TopWindow.h>
 

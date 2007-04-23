@@ -796,7 +796,8 @@ bool FileSel::Execute(int _mode) {
 	}
 	list.SetSbPos(lastsby);
 	FileUpdate();
-	int c = TopWindow::Execute();
+	int c = TopWindow::Run(appmodal);
+	TopWindow::Close();
 	lastsby = list.GetSbPos();
 	type.Trim(dlc);
 	activetype = type.GetIndex();
@@ -933,6 +934,7 @@ FileSel::FileSel() {
 	rdonly = false;
 	multi = false;
 	bidname = false;
+	appmodal = true;
 
 	AddChildBefore(GetFirstChild(), &sizegrip);
 }

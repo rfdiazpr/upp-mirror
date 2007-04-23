@@ -173,6 +173,7 @@ private:
 	Size                     pagesz;
 	String                   footer;
 	bool                     nolinks;
+	bool                     overwrite;
 	static int               fixedlang;
 
 	WithRichFindReplaceLayout<TopWindow> findreplace;

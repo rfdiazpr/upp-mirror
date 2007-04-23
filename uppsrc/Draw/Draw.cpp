@@ -4,8 +4,27 @@ NAMESPACE_UPP
 
 #define LLOG(x)    // RLOG(x)
 #define LTIMING(x) // RTIMING(x)
+//#define BENCH
 
-RichValue<Color>::Registrator MK__s;
+static StaticMutex sDrawLock;
+
+#ifdef BENCH
+static TimingInspector sDrawTiming("DRAW");
+#endif
+
+void EnterDraw() {
+	sDrawLock.Enter();
+#ifdef BENCH
+	sDrawTiming.Start();
+#endif
+}
+
+void LeaveDraw() {
+#ifdef BENCH
+	sDrawTiming.End();
+#endif
+	sDrawLock.Leave();
+}
 
 void Draw::StartPage() {}
 void Draw::EndPage() {}
@@ -38,6 +57,7 @@ Stream& Draw::PutRect(const Rect& r)
 
 void Draw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, const Rect& src, Color color)
 {
+	DrawLock __;
 	LTIMING("DrawImageOp");
 	if(IsNull(src))
 		return;
@@ -297,8 +317,11 @@ void NilDraw::DrawDrawingOp(const Rect& target, const Drawing& w) {}
 
 // ---------------------------
 
+Draw& ScreenInfo();
+
 void BackDraw::Create(int cx, int cy)
 {
+	DrawLock __;
 	Create(ScreenInfo(), cx, cy);
 }
 
@@ -319,6 +342,18 @@ BackDraw::BackDraw()
 BackDraw::~BackDraw()
 {
 	Destroy();
+}
+
+Draw& ScreenInfo();
+
+bool ScreenInPaletteMode()
+{
+	return ScreenInfo().PaletteMode();
+}
+
+Size GetScreenSize()
+{
+	return ScreenInfo().GetPagePixels();
 }
 
 END_UPP_NAMESPACE

@@ -1,37 +1,29 @@
-#define GLOBAL_V(type, name) \
+#define GLOBAL_VP(type, name, param) \
 name() \
 { \
-	static type *q; \
-	if(!q) { \
-		static StaticCriticalSection cs; \
-		CriticalSection::Lock __(cs); \
-		if(!q) { \
-			static type x; \
-			q = &x; \
-		} \
-	} \
-	return *q; \
-}
-
-#define GLOBAL_VAR(type, name) \
-type& GLOBAL_V(type, name)
-
-#define GLOBAL_VP(type, name, param) \
-name() { \
-	static type *q; \
-	if(!q) { \
-		static StaticCriticalSection cs; \
-		CriticalSection::Lock __(cs); \
-		if(!q) { \
-			static type x param; \
-			q = &x; \
-		} \
-	} \
-	return *q; \
+	static type x param; \
+	return x; \
 }
 
 #define GLOBAL_VARP(type, name, param) \
 type& GLOBAL_VP(type, name, param)
+
+#define GLOBAL_V(type, name)   GLOBAL_VP(type, name, init_)
+#define GLOBAL_VAR(type, name) type& GLOBAL_V(type, name)
+
+#define GLOBAL_VP_INIT(type, name, param) \
+name() \
+{ \
+	static type x param; \
+	return x; \
+} \
+INITBLOCK { name(); }
+
+#define GLOBAL_VARP_INIT(type, name, param) \
+type& GLOBAL_VP_INIT(type, name, param)
+
+#define GLOBAL_V_INIT(type, name)   GLOBAL_VP_INIT(type, name, init_)
+#define GLOBAL_VAR_INIT(type, name) type& GLOBAL_V_INIT(type, name)
 
 
 // DEPRECATED! (USE ONCELOCK_)
@@ -49,15 +41,3 @@ if(!init) { \
 #define INIT_LOCK(code) \
 static bool init; \
 INIT_LOCKV(init, code)
-
-
-void Set__(volatile bool& b);
-
-#define ONCELOCK \
-for(static volatile bool o_b_; !o_b_;) \
-	for(static StaticCriticalSection o_ss_; !o_b_;) \
-		for(CriticalSection::Lock o_ss_lock__(o_ss_); !o_b_; Set__(o_b_))
-
-#define ONCELOCK_(o_b_) \
-for(static StaticCriticalSection o_ss_; !o_b_;) \
-	for(CriticalSection::Lock o_ss_lock__(o_ss_); !o_b_; Set__(o_b_))

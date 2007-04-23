@@ -192,7 +192,8 @@ struct RichPara {
 		int                  BodyHeight();
 	};
 
-	static VectorMap<Id, FieldType *>& fieldtype();
+	static const VectorMap<Id, FieldType *>& fieldtype();
+	static void  Register(Id id, FieldType& ft) init_;
 
 	Format      format;
 	Array<Part> part;

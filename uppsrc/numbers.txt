@@ -693,3 +693,26 @@ name = Hash
  816 B,      4 allocated (    3 KB),      1 fragmented (    0 KB)
 1024 B,    253 allocated (  253 KB),     11 fragmented (   11 KB)
  TOTAL, 158929 allocated ( 6263 KB),   1614 fragmented (  101 KB)
+
+----------------------------
+NewCore idmap benchmark, Core2 Duo, 2.7Ghz
+
+Ubuntu64, gcc (GCC) 4.1.2 20060928 (prerelease) (Ubuntu 4.1.1-13ubuntu5)
+	Small
+		U++ allocator
+			STL hash_map time: 2978 ms
+			STL map time: 3318 ms
+			NTL time: 1075 ms
+		Standard allocator
+			STL hash_map time: 3774 ms
+			STL map time: 4079 ms
+			NTL time: 1394 ms
+	Large
+		U++ allocator
+			STL hash_map time: 28558 ms
+			STL map time: 37230 ms
+			NTL time: 8604 ms
+		Standard allocator
+			STL hash_map time: 36374 ms
+			STL map time: 43718 ms
+			NTL time: 10552 ms

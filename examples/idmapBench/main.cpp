@@ -13,7 +13,7 @@
 #include <deque>
 #include <string>
 
-//#define TEST_HASHMAP
+#define TEST_HASHMAP
 
 #ifdef TEST_HASHMAP
 

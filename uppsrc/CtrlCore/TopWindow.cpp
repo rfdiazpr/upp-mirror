@@ -62,6 +62,7 @@ bool TopWindow::IsShowEnabled() const
 void TopWindow::Close()
 {
 	if(InLoop()) {
+		if(!InCurrentLoop()) return;
 		if(FindAction(IDCANCEL))
 			RejectBreak(IDCANCEL);
 		else
@@ -242,7 +243,8 @@ void TopWindow::WorkAreaTrim()
 
 void GatherWindowTree(Ctrl *w, const Vector<Ctrl *>& ws, Vector<Ctrl *>& es)
 {
-	es.Add(w);
+	if(!w->InLoop())
+		es.Add(w);
 	for(int i = 0; i < ws.GetCount(); i++)
 		if(ws[i]->GetOwner() == w)
 			GatherWindowTree(ws[i], ws, es);
@@ -260,24 +262,19 @@ int  TopWindow::Run(bool appmodal)
 	exitcode = Null;
 	Vector<Ctrl *> es;
 	if(appmodal)
-		es = GetTopWindows();
+		es = GetTopCtrls();
 	else {
-		Vector<Ctrl *> ws = GetTopWindows();
+		Vector<Ctrl *> ws = GetTopCtrls();
+		for(int i = 0; i < ws.GetCount(); i++)
+			if(ws[i]->InLoop())
+				es.Add(ws[i]);
 		Ctrl *mw = GetMainWindow();
-		if(mw) {
-			GatherWindowTree(mw, ws, es);
-			for(int i = 0; i < ws.GetCount(); i++)
-				if(ws[i]->InLoop()) {
-					Ctrl *mw2 = ws[i]->GetMainWindow();
-					if(mw2 != mw)
-						GatherWindowTree(mw2, ws, es);
-				}
-		}
+		if(mw) GatherWindowTree(mw, ws, es);
 	}
 	Vector< Ptr<Ctrl> > disabled = DisableCtrls(es, this);
 #ifdef _DEBUG
 	for(int d = 0; d < disabled.GetCount(); d++)
-	{ LLOG("DisableCtrls[" << d << "] = " << UPP::Name(disabled[d])); }
+		LLOG("DisableCtrls[" << d << "] = " << UPP::Name(disabled[d]));
 	LLOG("Running EventLoop in " << UPP::Name(this));
 #endif
 	EventLoop(this);
@@ -458,7 +455,6 @@ struct DialogBackground : public Display {
 TopWindow::TopWindow()
 {
 	TransparentBackPaint();
-	overlappedrect = GetDefaultWindowRect();
 	background = PaintRect(Single<DialogBackground>(), Null);
 	center = 1;
 	minsize = Size(80, 20);

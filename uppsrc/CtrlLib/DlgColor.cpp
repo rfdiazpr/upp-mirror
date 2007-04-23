@@ -908,11 +908,19 @@ static void InitColor(Color *out)
 	out[15] = Color(0x00, 0xFF, 0xFF);
 };
 
-GLOBAL_VAR(PalCtrl::Config, PalCtrl::GlobalConfig);
+PalCtrl::Config& PalCtrl::GlobalConfig()
+{
+	static PalCtrl::Config x;
+	return x;
+}
 
 typedef Index<PalCtrl *, PtrHash> PalCtrlIndex;
 
-GLOBAL_VAR(PalCtrlIndex, PalCtrl::GetActive);
+PalCtrlIndex& PalCtrl::GetActive()
+{
+	static PalCtrlIndex x;
+	return x;
+}
 
 PalCtrl::PalCtrl()
 {

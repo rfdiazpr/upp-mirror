@@ -53,22 +53,10 @@ Color HsvColorf(double h, double s, double v)
 	return Color(min(int(r * 255), 255), min(int(g * 255), 255), min(int(b * 255), 255));
 }
 
-static GLOBAL_VAR(Vector<dword>, sStdColor);
-
-void Color::SetStdColor(int i, dword color) {
-	sStdColor().At(i) = color;
-}
-
 dword Color::Get() const
 {
 	if(IsNullInstance()) return 0;
 	dword c = color;
-	if(color & 0x80000000) {
-		int palix(color & 0xffffff);
-		const Vector<dword>& stdclr = sStdColor();
-		if(palix < stdclr.GetCount())
-			c = stdclr[palix];
-	}
 	return c & 0xffffff;
 }
 

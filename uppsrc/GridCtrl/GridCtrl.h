@@ -144,6 +144,11 @@ class GridClipboard : Moveable<GridClipboard>
 class GridCtrl : public Ctrl
 {
 	public:
+
+		static int GD_COL_WIDTH;
+		static int GD_ROW_HEIGHT;
+		static int GD_HDR_HEIGHT;
+		static int GD_IND_WIDTH;
 	
 		enum GridOrder
 		{
@@ -210,21 +215,18 @@ class GridCtrl : public Ctrl
 			bool newx;
 			bool newy;
 			bool accepted;
+			bool valid;
 			
-			CurState() : newx(false), newy(false), accepted(false) {}
+			CurState() : newx(false), newy(false), accepted(false), valid(true) {}
 			bool IsNewRow()   { return newy;         }
 			bool IsNewCol()   { return newx;         }
 			bool IsNew()      { return newx || newy; }
 			bool IsAccepted() { return accepted;     }
+			bool IsValid()    { return valid;        }
 			
 			operator bool() { return IsNew() && IsAccepted(); }
 		};
-				
-		static int GD_COL_WIDTH;
-		static int GD_ROW_HEIGHT;
-		static int GD_HDR_HEIGHT;
-		static int GD_IND_WIDTH;
-		
+					
 		typedef GridCtrl CLASSNAME;
 	
 		Items  items;
@@ -327,6 +329,7 @@ class GridCtrl : public Ctrl
 		bool sel_end:1;
 		bool moving_header:1;
 		bool moving_body:1;
+		bool moving_allowed:1;
 		bool roworder:1;
 		bool scrollLeftRight:1;
 		bool doscroll:1;
@@ -359,6 +362,9 @@ class GridCtrl : public Ctrl
 		bool just_clicked;
 		bool synced;		
 		
+		bool valid_cursor;
+		
+		
 		/* Values */	
 		
 		int  curSplitCol, curSplitRow;
@@ -387,13 +393,17 @@ class GridCtrl : public Ctrl
 		int  sc_fr;
 		int  sc_lr;
 		
+		int  join_group;
+		
+		int  sync_flag;
+		int  paint_flag;
+				
 		/* Points */		
 				
 		Point oldpos;		
 		Point curpos;
 		Point oldcur;
 		Point curid;
-		Point oldid;
 		Point livecur;
 		Point ctrlpos;
 		Point ctrlid;
@@ -462,7 +472,6 @@ class GridCtrl : public Ctrl
 		GridCtrl& EditMode(int m)      			{ edit_mode          = m; return *this; }
 		GridCtrl& EditRow()         			{ edit_mode          = GE_ROW;  return *this; }
 		GridCtrl& EditCell()         			{ edit_mode          = GE_CELL; return *this; }
-		//GridCtrl& UpdateRow(bool b = true)    { cell_updates       = b; return *this; }
 		GridCtrl& OneClickEdit(bool b = true)   { one_click_edit     = b; return *this; }
 		GridCtrl& Absolute()					{ return ResizeColMode(0);              }
 		GridCtrl& Proportional()				{ return ResizeColMode(1);              }
@@ -559,7 +568,9 @@ class GridCtrl : public Ctrl
 	    virtual Image CursorImage(Point p, dword);
 	    virtual void State(int reason);
 	    virtual void ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags);
+		virtual void ChildFrameMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags);
 	    
+		void ChildAction(Ctrl *child, int event);    
 		void RestoreFocus();
 	
 		/* Methods */		
@@ -579,8 +590,8 @@ class GridCtrl : public Ctrl
 		ItemRect& AddIndex(const char *name)        { return AddColumn(name, 0, true); }
 		ItemRect& AddIndex(String &name)            { return AddColumn(name, 0, true); }
 		
-		GridCtrl& AddRow(int n = 1, int size = GD_ROW_HEIGHT);
-		GridCtrl& Add() { return AddRow(); }
+		ItemRect& AddRow(int n = 1, int size = GD_ROW_HEIGHT);
+		GridCtrl& Add() { AddRow(); return *this; }
 
 		//$-GridCtrl& Add(const Value& [, const Value& ]...);
 		#define  E__Add(I)      GridCtrl& Add(__List##I(E__Value));
@@ -601,7 +612,7 @@ class GridCtrl : public Ctrl
 		int GetFixedWidth();
 		int GetFixedHeight();
 
-		Item& GetCell(int n, int m) { return items[n][m]; }		
+		Item& GetCell(int n, int m) { return items[vitems[n + fixed_rows].id][hitems[m + fixed_cols].id]; }		
 						
 		void Set(int r, int c, const Value &val);	
 		void Set(int c, const Value &val);	
@@ -674,7 +685,7 @@ class GridCtrl : public Ctrl
 		void EndEdit(bool accept = true, bool doall = false);
 		void CancelEdit() { EndEdit(false); }
 		
-		int  Append(int cnt = 1, bool refresh = true);
+		int  Append(int cnt = 1, bool refresh = true, int height = GD_ROW_HEIGHT);
 		void Insert(int i, int cnt = 1);
 		void Remove(int i, int cnt = 1);
 		void RemoveFirst(int cnt = 1);
@@ -685,7 +696,8 @@ class GridCtrl : public Ctrl
 		void CancelUpdate()     { cancel_update      = true; }
 		void CancelInsert()     { cancel_insert      = true; }
 		void CancelUpdateCell() { cancel_update_cell = true; }
-		
+
+		void ClearCursor(bool remove = false);
 		void Clear(bool columns = false);
 		void Reset();
 		
@@ -738,6 +750,8 @@ class GridCtrl : public Ctrl
 	
 		void SwapUp(int cnt = 1);
 		void SwapDown(int cnt = 1);
+
+		bool CanMoveCol(int n, int m);
 		
 		void MoveCol(int n, int m);
 		bool MoveRow(int n, int m, bool repaint = true);
@@ -825,6 +839,12 @@ class GridCtrl : public Ctrl
 				
 		void Debug(int n = 0);
 		void UpdateScrollbars() { UpdateSb(); }
+
+		void JoinCells(int left, int top, int right, int bottom, bool relative = true);
+		void JoinFixedCells(int left, int top, int right, int bottom);
+		void JoinRow(int n);
+		void JoinCols();
+		void JoinRows();
 		
 		GridCtrl& Sort(int sort_col, int sort_mode = SORT_UP, bool multisort = false, bool repaint = true);
 		GridCtrl& Sort(Id id, int sort_mode = SORT_UP, bool multisort = false, bool repaint = true);
@@ -869,7 +889,9 @@ class GridCtrl : public Ctrl
 		bool HasCtrls();
 		bool ShowNextCtrl();
 		bool ShowPrevCtrl();
+		public:
 		void SyncCtrls();
+		private:
 		void UpdateCtrls(int opt = UC_CHECK_VIS | UC_SHOW | UC_CURSOR | UC_FOCUS);
 			
 		void SetCtrlsData(int row);
@@ -918,8 +940,8 @@ class GridCtrl : public Ctrl
 		void Set0(int r, int c, const Value &val, bool paste = false);
 		Value Get0(int r, int c);
 		
-		int GetSplitCol(const Point &p, int splitSize = 5);
-		int GetSplitRow(const Point &p, int splitSize = 5);
+		int GetSplitCol(const Point &p, int splitSize = 5, bool full = false);
+		int GetSplitRow(const Point &p, int splitSize = 5, bool full = false);
 
 		int GetFirst0(Vector<ItemRect> &its, int total, int sb, int diff, int is, int dir);
 		int GetFirstVisCol(int diff, int is = 0, int dir = 1);
@@ -944,8 +966,8 @@ class GridCtrl : public Ctrl
 		bool ClearSorted();
 		bool IsSorted();
 
-		void DrawHorzDragLine(Draw &w, int pos, int size);
-		void DrawVertDragLine(Draw &w, int pos, int size, int dx = 0);
+		void DrawHorzDragLine(Draw &w, int pos, int cx, int size, Color c);
+		void DrawVertDragLine(Draw &w, int pos, int size, int dx, Color c);
 
 		void Nothing();
 		void Init();
@@ -968,6 +990,7 @@ class GridCtrl : public Ctrl
 		
 		int  GetIdCol(int id, bool checkall = false);
 		int  GetIdRow(int id, bool checkall = false);
+		Item& GetItemSize(int &r, int &c, int &x, int &y, int &cx, int &cy, bool &skip, bool relx = true, bool rely = true);
 
 	public:
 		

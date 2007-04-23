@@ -37,7 +37,7 @@ Id FieldTypeVarID()
 }
 
 INITBLOCK {
-	RichPara::fieldtype().FindAdd(FieldTypeVarID(), &FieldTypeVar());
+	RichPara::Register(FieldTypeVarID(), FieldTypeVar());
 }
 
 /*

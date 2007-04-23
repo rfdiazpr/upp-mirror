@@ -37,7 +37,19 @@ public:
 	virtual Value GetData() const;
 	virtual void  CancelMode();
 
+public:
+	struct Style : ChStyle<Style> {
+		Color paper;
+		Color disabled;
+		Color focus;
+		Color invalid;
+		Color text, textdisabled;
+		Color selected, selectedtext;
+	};
+
 protected:
+	const Style *style;
+
 	WString    text;
 	int        sc;
 	int        cursor, anchor;
@@ -80,7 +92,12 @@ protected:
 	void    SelectAll();
 	void    MenuBar(Bar& menu);
 
+
+
 public:
+	static const Style& StyleDefault();
+	EditField&  SetStyle(const Style& s);
+
 	static  int   GetViewHeight(Font font = StdFont());
 	static  int   GetStdHeight(Font font = StdFont());
 

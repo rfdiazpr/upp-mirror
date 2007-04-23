@@ -4,47 +4,344 @@ NAMESPACE_UPP
 
 #ifdef _MULTITHREADED
 
-#if defined(_DEBUG) && defined(PLATFORM_WIN32)
-void CriticalSection::Enter()
+Mutex& sMutexLock()
 {
-	dword tid = GetCurrentThreadId();
-	ASSERT(threadid != tid); // The same thread reentrancy not allowed (deadlock in linux)
-	EnterCriticalSection(&section);
-	threadid = tid;
-}
-
-void CriticalSection::Leave()
-{
-	threadid = ~0;
-	LeaveCriticalSection(&section);
-}
-
-CriticalSection::CriticalSection()
-{
-	threadid = ~0;
-	InitializeCriticalSection(&section);
-}
-#endif
-
-#endif
-
-CriticalSection& sCriticalSectionLock()
-{
-	static CriticalSection *section;
+	static Mutex *section;
 	if(!section) {
-		static byte b[sizeof(CriticalSection)];
-		section = new(b) CriticalSection;
+		static byte b[sizeof(Mutex)];
+		section = new(b) Mutex;
 	}
 	return *section;
 }
 
-#ifdef _MULTITHREADED
-void StaticCriticalSection::Initialize()
-{
-	CriticalSection::Lock __(sCriticalSectionLock());
-	if(!section)
-		section = new(buffer) CriticalSection;
+INITBLOCK {
+	sMutexLock();
 }
+
+Thread::Thread()
+{
+	sMutexLock();
+#ifdef PLATFORM_WIN32
+	handle = 0;
+#endif
+#ifdef PLATFORM_POSIX
+	handle = 0;
+#endif
+}
+
+void Thread::Detach()
+{
+#if defined(PLATFORM_WIN32)
+	if(handle) {
+		CloseHandle(handle);
+		handle = 0;
+	}
+#elif defined(PLATFORM_POSIX)
+	if(handle) {
+		CHECK(!pthread_detach(handle));
+		handle = 0;
+	}
+#endif
+}
+
+static Atomic sThreadCount;
+
+#if defined(PLATFORM_WIN32) || defined(PLATFORM_POSIX)
+static
+#ifdef PLATFORM_WIN32
+dword __stdcall
+#else
+void *
+#endif
+sThreadRoutine(void *arg)
+{
+	LOG("sThreadRoutine");
+	Callback *cb = (Callback *)arg;
+	AtomicInc(sThreadCount);
+	(*cb)();
+	AtomicDec(sThreadCount);
+	delete cb;
+#ifdef UPP_HEAP
+	MemoryFreeThread();
+#endif
+	return 0;
+}
+#endif
+
+static bool threadr;
+
+bool Thread::IsST()
+{
+	return !threadr;
+}
+
+bool Thread::Run(Callback _cb)
+{
+	threadr = true;
+	Detach();
+	Callback *cb = new Callback(_cb);
+#ifdef PLATFORM_WIN32
+	dword thread_id;
+	handle = CreateThread(0, 0, sThreadRoutine, cb, 0, &thread_id);
+#endif
+#ifdef PLATFORM_POSIX
+	if(pthread_create(&handle, 0, sThreadRoutine, cb))
+		handle = 0;
+#endif
+	return handle;
+}
+
+int Thread::GetCount()
+{
+	return sThreadCount;
+}
+
+static Atomic  sShutdown;
+
+void Thread::ShutdownThreads()
+{
+	AtomicInc(sShutdown);
+	while(sThreadCount)
+		Sleep(100);
+	AtomicDec(sShutdown);
+}
+
+bool Thread::IsShutdownThreads()
+{
+	return sShutdown;
+}
+
+int Thread::Wait()
+{
+	if(!IsOpen())
+		return -1;
+	int out;
+#ifdef PLATFORM_WIN32
+	dword exit;
+	if(!GetExitCodeThread(handle, &exit))
+		return -1;
+	if(exit != STILL_ACTIVE)
+		out = (int)exit;
+	else
+	{
+		if(WaitForSingleObject(handle, INFINITE) != WAIT_OBJECT_0)
+			return Null;
+		out = GetExitCodeThread(handle, &exit) ? int(exit) : int(Null);
+	}
+	Detach();
+#endif
+#ifdef PLATFORM_POSIX
+	void *thread_return;
+	if(pthread_join(handle, &thread_return))
+		out = Null;
+	else
+		out = (int)(intptr_t)thread_return;
+	handle = 0;
+#endif
+	return out;
+}
+
+void Thread::Priority(int percent)
+{
+	ASSERT(IsOpen());
+#ifdef PLATFORM_WIN32
+	int prior;
+	if(percent <= 25)
+		prior = THREAD_PRIORITY_LOWEST;
+	else if(percent <= 75)
+		prior = THREAD_PRIORITY_BELOW_NORMAL;
+	else if(percent <= 125)
+		prior = THREAD_PRIORITY_NORMAL;
+	else if(percent <= 175)
+		prior = THREAD_PRIORITY_ABOVE_NORMAL;
+	else
+		prior = THREAD_PRIORITY_HIGHEST;
+	SetThreadPriority(handle, prior);
+#endif
+#ifdef PLATFORM_POSIX
+	//!! todo
+#endif
+}
+
+void Thread::Start(Callback cb)
+{
+	Thread t;
+	LOG("Thread::Start");
+	t.Run(cb);
+	t.Detach();
+	LOG("Thread::Detached");
+}
+
+void Thread::Sleep(int msec)
+{
+#ifdef PLATFORM_WIN32
+	::Sleep(msec);
+#endif
+#ifdef PLATFORM_POSIX
+	timespec tval;
+	tval.tv_sec = msec / 1000;
+	tval.tv_nsec = (msec % 1000) * 1000000;
+	nanosleep(&tval, NULL);
+#endif
+}
+
+#ifdef CPU_X86
+
+static bool sSSE2 = CPU_SSE2();
+
+void ReadMemoryBarrier()
+{
+	if(sSSE2)
+	#ifdef COMPILER_MSC
+		__asm lfence;
+	#else
+		__asm__("lfence");
+	#endif
+	else {
+		static Atomic x;
+		AtomicInc(x);
+	}
+}
+
+void WriteMemoryBarrier()
+{
+	if(sSSE2)
+	#ifdef COMPILER_MSC
+		__asm sfence;
+	#else
+		__asm__("sfence");
+	#endif
+}
+
+#endif
+
+#ifdef PLATFORM_WIN32
+
+void Semaphore::Release()
+{
+	ReleaseSemaphore(handle, 1, NULL);
+}
+
+void Semaphore::Wait()
+{
+	WaitForSingleObject(handle, INFINITE);
+}
+
+Semaphore::Semaphore()
+{
+	handle = CreateSemaphore(NULL, 0, INT_MAX, NULL);
+}
+
+Semaphore::~Semaphore()
+{
+	CloseHandle(handle);
+}
+
+Mutex& sMutexLock();
+
+#endif
+
+#ifdef PLATFORM_POSIX
+
+static __thread byte sThreadId;
+
+void Mutex::Enter()
+{
+	if(threadid == &sThreadId)
+		count++;
+	else {
+		pthread_mutex_lock(mutex);
+		threadid = &sThreadId;
+		count = 1;
+	}
+}
+
+void Mutex::Leave()
+{
+	if(--count == 0) {
+		threadid = NULL;
+		pthread_mutex_unlock(mutex);
+	}
+}
+
+Mutex::Mutex()
+{
+	threadid = NULL;
+	pthread_mutex_init(mutex, NULL);;
+}
+
+Mutex::~Mutex()
+{
+	pthread_mutex_destroy(mutex);
+}
+
+/*
+Event::Event()
+{
+	pthread_mutex_init(mutex, NULL);
+	pthread_cond_init(cond, NULL);
+}
+
+Event::~Event()
+{
+	pthread_mutex_destroy(mutex);
+	pthread_cond_destroy(cond);
+}
+
+void Event::Wait()
+{
+	pthread_mutex_lock(mutex);
+    pthread_cond_wait(cond, mutex);
+	pthread_mutex_unlock(mutex);
+}
+
+void Event::Go()
+{
+	pthread_cond_signal(cond);
+}
+*/
+void Semaphore::Release()
+{
+	sem_post(&sem);
+}
+
+void Semaphore::Wait()
+{
+	sem_wait(&sem);
+}
+
+Semaphore::Semaphore()
+{
+	sem_init(&sem, 0, 0);
+}
+
+Semaphore::~Semaphore()
+{
+	sem_destroy(&sem);
+}
+
+#endif
+
+void StaticMutex::Initialize()
+{
+	Mutex::Lock __(sMutexLock());
+	if(!section) {
+		Mutex *cs = new(buffer) Mutex;
+		WriteMemoryBarrier();
+		section = cs;
+	}
+}
+
+void StaticSemaphore::Initialize()
+{
+	Mutex::Lock __(sMutexLock());
+	if(!semaphore) {
+		Semaphore *cs = new(buffer) Semaphore;
+		WriteMemoryBarrier();
+		semaphore = cs;
+	}
+}
+
 #endif
 
 END_UPP_NAMESPACE

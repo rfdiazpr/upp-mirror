@@ -1,40 +1,112 @@
+#ifndef _DEBUG
+inline void AssertST() {}
+#endif
+
 #ifdef _MULTITHREADED
+
+class Callback;
+
+class Thread {
+#ifdef PLATFORM_WIN32
+	HANDLE     handle;
+#endif
+#ifdef PLATFORM_POSIX
+	pthread_t  handle;
+#endif
+
+public:
+	bool       Run(Callback cb);
+
+	void       Detach();
+	int        Wait();
+
+	bool       IsOpen() const     { return handle; }
+
+#ifdef PLATFORM_WIN32
+	HANDLE      GetHandle() const { return handle; }
+#endif
+#ifdef PLATFORM_POSIX
+	pthread_t   GetHandle() const { return handle; }
+#endif
+
+	void        Priority(int percent); // 0 = lowest, 100 = normal
+
+	static void Start(Callback cb);
+
+	static void Sleep(int ms);
+
+	static bool IsST();
+	static int  GetCount();
+	static void ShutdownThreads();
+	static bool IsShutdownThreads();
+
+
+	Thread();
+	~Thread()   { Detach(); }
+
+private:
+	void operator=(const Thread&);
+	Thread(const Thread&);
+};
+
+#ifdef _DEBUG
+inline void AssertST() { ASSERT(Thread::IsST()); }
+#endif
+
+void ReadMemoryBarrier();
+void WriteMemoryBarrier();
+
+class Semaphore {
+#ifdef PLATFORM_WIN32
+	HANDLE     handle;
+#else
+	sem_t      sem;
+#endif
+
+public:
+	void       Wait();
+	void       Release();
+
+	Semaphore();
+	~Semaphore();
+};
+
+class StaticSemaphore {
+	volatile Semaphore *semaphore;
+	byte                buffer[sizeof(Semaphore)];
+
+	void Initialize();
+
+public:
+	Semaphore& Get()             { ReadMemoryBarrier(); if(!semaphore) Initialize(); return *const_cast<Semaphore *>(semaphore); }
+	operator Semaphore&()        { return Get(); }
+	void Wait()                  { Get().Wait(); }
+	void Release()               { Get().Release(); }
+};
 
 #ifdef PLATFORM_WIN32
 
 typedef LONG Atomic;
 
-inline int  AtomicRead(const volatile Atomic& t)      { return t; }
-inline void AtomicWrite(volatile Atomic& t, int val)  { t = val; }
-
 inline int  AtomicInc(volatile Atomic& t)             { return InterlockedIncrement((Atomic *)&t); }
 inline int  AtomicDec(volatile Atomic& t)             { return InterlockedDecrement((Atomic *)&t); }
 inline int  AtomicXAdd(volatile Atomic& t, int incr)  { return InterlockedExchangeAdd((Atomic *)&t, incr); }
 
-class CriticalSection {
+class Mutex {
 protected:
 	CRITICAL_SECTION section;
-#ifdef _DEBUG
-	dword threadid;
-#endif
 
-	CriticalSection(int)         {}
+	Mutex(int)         {}
 
 public:
-	void  Enter();
-	void  Leave();
+	void  Enter()                { EnterCriticalSection(&section); }
+	void  Leave()                { LeaveCriticalSection(&section); }
 
-	CriticalSection();
-	~CriticalSection()           { DeleteCriticalSection(&section); }
+	Mutex()                      { InitializeCriticalSection(&section); }
+	~Mutex()                     { DeleteCriticalSection(&section); }
 
 	struct Lock;
 };
-
-#ifndef _DEBUG
-inline void CriticalSection::Enter()       { EnterCriticalSection(&section); }
-inline void CriticalSection::Leave()       { LeaveCriticalSection(&section); }
-inline CriticalSection::CriticalSection()  { InitializeCriticalSection(&section); }
-#endif
 
 #endif
 
@@ -42,59 +114,90 @@ inline CriticalSection::CriticalSection()  { InitializeCriticalSection(&section)
 
 typedef _Atomic_word Atomic;
 
-inline int  AtomicRead(const volatile Atomic& t)      { return t; }
-inline void AtomicWrite(volatile Atomic& t, int val)  { t = val; }
-
 inline int  AtomicInc(volatile Atomic& t)             { using namespace __gnu_cxx; __atomic_add(&t, 1); return t; }
 inline int  AtomicDec(volatile Atomic& t)             { using namespace __gnu_cxx; __atomic_add(&t, -1); return t; }
 inline int  AtomicXAdd(volatile Atomic& t, int incr)  { using namespace __gnu_cxx; return __exchange_and_add(&t, incr); }
 
-class CriticalSection {
+class Mutex {
 protected:
 	pthread_mutex_t  mutex[1];
+	void            *threadid;
+	int              count;
 
-	CriticalSection(int)         {}
+	Mutex(int)         {}
 
 public:
-	void  Enter()             { pthread_mutex_lock(mutex); }
-	void  Leave()             { pthread_mutex_unlock(mutex); }
+	void  Enter();
+	void  Leave();
 
 	struct Lock;
 
-	CriticalSection()         { pthread_mutex_init(mutex, NULL); }
-	~CriticalSection()        { pthread_mutex_destroy(mutex); }
+	Mutex();
+	~Mutex();
 };
 
 #endif
 
-struct CriticalSection::Lock {
-	CriticalSection& s;
-	Lock(CriticalSection& s) : s(s) { s.Enter(); }
+inline int  AtomicRead(const volatile Atomic& t)      { ReadMemoryBarrier(); return t; }
+inline void AtomicWrite(volatile Atomic& t, int val)  { WriteMemoryBarrier(); t = val; }
+
+struct Mutex::Lock {
+	Mutex& s;
+	Lock(Mutex& s) : s(s) { s.Enter(); }
 	~Lock()                         { s.Leave(); }
 };
 
-class StaticCriticalSection {
-	volatile CriticalSection *section;
-	byte                      buffer[sizeof(CriticalSection)];
+class StaticMutex {
+	volatile Mutex *section;
+	byte                      buffer[sizeof(Mutex)];
 
 	void Initialize();
 
 public:
-	CriticalSection& Get()         { if(!section) Initialize(); return *const_cast<CriticalSection *>(section); }
-	operator CriticalSection&()    { return Get(); }
-	void Enter()                   { Get().Enter(); }
+	Mutex& Get()         { if(!section) Initialize(); return *const_cast<Mutex *>(section); }
+	operator Mutex&()    { return Get(); }
+	void Enter()                   { Get().Enter();}
 	void Leave()                   { Get().Leave(); }
 };
 
-
 #define INTERLOCKED \
 for(bool i_b_ = true; i_b_;) \
-	for(static UPP::StaticCriticalSection i_ss_; i_b_;) \
-		for(UPP::CriticalSection::Lock i_ss_lock__(i_ss_); i_b_; i_b_ = false)
+	for(static UPP::StaticMutex i_ss_; i_b_;) \
+		for(UPP::Mutex::Lock i_ss_lock__(i_ss_); i_b_; i_b_ = false)
+
+struct H_l_ : Mutex::Lock {
+	bool b;
+	H_l_(Mutex& cs) : Mutex::Lock(cs) { b = true; }
+};
 
 #define INTERLOCKED_(cs) \
-for(bool i_b_ = true; i_b_;) \
-	for(UPP::CriticalSection::Lock i_ss_lock__(cs); i_b_; i_b_ = false)
+for(UPP::H_l_ i_ss_lock__(cs); i_ss_lock__.b; i_ss_lock__.b = false)
+
+void Set__(volatile bool& b);
+
+#define ONCELOCK \
+for(static volatile bool o_b_; ReadMemoryBarrier(), !o_b_;) \
+	for(static StaticMutex o_ss_; !o_b_;) \
+		for(Mutex::Lock o_ss_lock__(o_ss_); !o_b_; WriteMemoryBarrier(), Set__(o_b_))
+
+#define ONCELOCK_(o_b_) \
+for(static StaticMutex o_ss_; ReadMemoryBarrier(), !o_b_;) \
+	for(Mutex::Lock o_ss_lock__(o_ss_); !o_b_; WriteMemoryBarrier(), Set__(o_b_))
+
+template <class U, class V>
+void dirty_trick_MemoryBarrier(U& ptr, V data) {
+	WriteMemoryBarrier();
+	ptr = data;
+}
+
+#define ONCELOCK_PTR(ptr, init) \
+if((ReadMemoryBarrier(), !ptr)) { \
+	static StaticMutex cs; \
+	cs.Enter(); \
+	if(!ptr) \
+		dirty_trick_MemoryBarrier(ptr, init); \
+	cs.Leave(); \
+}
 
 #else
 
@@ -107,25 +210,44 @@ inline int  AtomicInc(volatile Atomic& t)             { ++t; return t; }
 inline int  AtomicDec(volatile Atomic& t)             { --t; return t; }
 inline int  AtomicXAdd(volatile Atomic& t, int incr)  { Atomic x = t; t += incr; return x; }
 
-class CriticalSection {
+class Mutex {
 public:
 	void  Enter()                {}
 	void  Leave()                {}
 
-	CriticalSection()            {}
-	~CriticalSection()           {}
+	Mutex()            {}
+	~Mutex()           {}
 
 	struct Lock;
 };
 
-typedef CriticalSection StaticCriticalSection;
+typedef Mutex StaticMutex;
 
-struct CriticalSection::Lock {
-	Lock(CriticalSection&) {}
+struct Mutex::Lock {
+	Lock(Mutex&) {}
 	~Lock()                {}
 };
 
 #define INTERLOCKED
 #define INTERLOCKED_(x)
 
+#define ONCELOCK \
+for(static bool o_b_; !o_b_; o_b_ = true)
+
+#define ONCELOCK_(o_b_) \
+for(; !o_b_; o_b_ = true) \
+
+#define ONCELOCK_PTR(ptr, init) \
+if(!ptr) ptr = init;
+
+inline void ReadMemoryBarrier() {}
+inline void WriteMemoryBarrier() {}
+
+#ifdef _DEBUG
+inline void AssertST() {}
 #endif
+
+#endif
+
+typedef Mutex CriticalSection; // deprecated
+typedef StaticMutex StaticCriticalSection; // deprecated

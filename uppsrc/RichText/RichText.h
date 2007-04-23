@@ -140,7 +140,7 @@ class RichObject : Moveable<RichObject> {
 	void                  NewSerial();
 
 public:
-	static void   Register(const char *name, RichObjectType *type);
+	static void   Register(const char *name, RichObjectType *type) init_;
 	static int    GetTypeCount()                 { return Map().GetCount(); }
 	static int    FindType(const String& name)   { return Map().Find(name); }
 	static RichObjectType& GetType(int i)        { return *Map()[i]; }
@@ -355,6 +355,7 @@ struct QtfRichObject {
 public:
 	String ToString() const;
 
+	QtfRichObject() {}
 	QtfRichObject(const RichObject& o);
 };
 

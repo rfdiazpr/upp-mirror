@@ -188,8 +188,7 @@ One<T> TypeMap<T, I>::Copy(const One<T>& object) const
 {
 	if(!object)
 		return NULL;
-	String aux = StoreAsString(const_cast<T&>(*object));
-	return this->SerializeIn(aux);
+	return this->SerializeIn(SerializeOut(object));
 }
 
 template <class T, class I>

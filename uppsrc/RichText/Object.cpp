@@ -60,9 +60,9 @@ String RichObjectType::GetLink(const Value& data, Point pt, Size sz) const
 	return Null;
 }
 
-typedef VectorMap<String, RichObjectType *> helptype;
+typedef VectorMap<String, RichObjectType *> RichObjectHT;
 
-GLOBAL_VAR(helptype, RichObject::Map)
+GLOBAL_VAR(RichObjectHT, RichObject::Map);
 
 void RichObject::NewSerial()
 {
@@ -74,6 +74,7 @@ void RichObject::NewSerial()
 
 void RichObject::Register(const char *name, RichObjectType *type)
 {
+	AssertST();
 	Map().FindAdd(name, type);
 }
 

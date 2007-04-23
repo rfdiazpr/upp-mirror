@@ -32,9 +32,6 @@ protected:
 	dword Get() const;
 
 public:
-	static void SetStdColor(int i, dword color); //TODO: remove (obsolete)
-	static void SetStdColor(int i, Color color)  { SetStdColor(i, color.color); }
-
 	dword    GetRaw() const            { return color; }
 
 	int      GetR() const              { return GetRValue(Get()); }

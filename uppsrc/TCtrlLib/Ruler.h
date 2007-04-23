@@ -43,6 +43,9 @@ public:
 	void            SetBackground(Color bg)           { background = bg; Refresh(); }
 	Color           GetBackground() const             { return background; }
 
+	void            SetOuterColor(Color bg)           { outer_color = bg; Refresh(); }
+	Color           GetOuterColor() const             { return outer_color; }
+
 	double          FromClient(double client) const   { return (client - GetRawDelta()) / scale; }
 	double          ToClientf(double pos) const       { return pos * scale + GetRawDelta(); }
 	int             ToClient(double pos) const        { return fround(ToClientf(pos)); }
@@ -92,6 +95,7 @@ private:
 	bool            autoselect;
 	String          label_text;
 	Color           background;
+	Color           outer_color;
 
 	enum
 	{

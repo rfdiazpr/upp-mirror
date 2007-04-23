@@ -1,9 +1,17 @@
-#if 1 // save 0.8% of Linux executable size...
-
 void VectorReAlloc_(void *vector_, int newalloc, int sizeofT);
 void VectorReAllocF_(void *vector_, int newalloc, int sizeofT);
 void VectorGrow_(void *vector_, int sizeofT);
 void VectorGrowF_(void *vector_, int sizeofT);
+
+template <class T>
+T * Vector<T>::RawAlloc(int& n)
+{
+	size_t sz0 = n * sizeof(T);
+	size_t sz = sz0;
+	void *q = MemoryAllocSz(sz);
+	n += (sz - sz0) / sizeof(T);
+	return (T *)q;
+}
 
 template <class T>
 void Vector<T>::ReAlloc(int newalloc)
@@ -28,47 +36,6 @@ void Vector<T>::GrowF()
 {
 	VectorGrowF_(this, sizeof(T));
 }
-
-#else
-
-template <class T>
-void Vector<T>::ReAlloc(int newalloc)
-{
-	ASSERT(newalloc >= items);
-	Chk();
-	T *newvector = newalloc ? RawAlloc(newalloc) : NULL;
-	if(vector)
-		memcpy(newvector, vector, items * sizeof(T));
-	vector = newvector;
-	alloc = newalloc;
-}
-
-template <class T>
-void Vector<T>::ReAllocF(int newalloc)
-{
-	T *prev = vector;
-	ReAlloc(newalloc);
-	RawFree(prev);
-}
-
-template <class T>
-void Vector<T>::Grow()
-{
-#ifdef _DEBUG
-	ReAlloc(ntl_max(2 * alloc, 1));
-#else
-	ReAlloc(ntl_max(2 * alloc, sizeof(T) == 4 ? 8 : 1));
-#endif
-}
-
-template <class T>
-void Vector<T>::GrowF()
-{
-	T *prev = vector;
-	Grow();
-	RawFree(prev);
-}
-#endif
 
 template <class T>
 void Vector<T>::Pick(pick_ Vector<T>& v)

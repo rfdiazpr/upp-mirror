@@ -150,6 +150,36 @@ String GetModuleFileName(HINSTANCE instance) {
 	return FromSystemCharset(h);
 }
 
+bool SyncObject::Wait(int ms)
+{
+	return WaitForSingleObject(handle, ms);
+}
+
+bool SyncObject::Wait()
+{
+	return Wait(INFINITE);
+}
+
+SyncObject::SyncObject()
+{
+	handle = NULL;
+}
+
+SyncObject::~SyncObject()
+{
+	if(handle) CloseHandle(handle);
+}
+
+Event::Event()
+{
+	handle = CreateEvent(NULL, FALSE, FALSE, NULL);
+}
+
+void Event::Set()
+{
+	SetEvent(handle);
+}
+
 #endif
 
 END_UPP_NAMESPACE

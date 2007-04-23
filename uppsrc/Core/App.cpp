@@ -219,8 +219,6 @@ void CommonInit()
 	sMainRunning = true;
 }
 
-CriticalSection& sCriticalSectionLock();
-
 #ifdef PLATFORM_POSIX
 void AppInit__(int argc, const char **argv, const char **envptr)
 {
@@ -239,7 +237,6 @@ void AppInit__(int argc, const char **argv, const char **envptr)
 	Vector<String>& cmd = coreCmdLine__();
 	for(int i = 1; i < argc; i++)
 		cmd.Add(argv[i]);
-	sCriticalSectionLock();
 	CommonInit();
 }
 #endif
@@ -248,9 +245,6 @@ void AppInit__(int argc, const char **argv, const char **envptr)
 
 void AppInitEnvironment__()
 {
-#ifdef _MULTITHREADED
-	sCriticalSectionLock();
-#endif
 #ifndef PLATFORM_WINCE
 	char *env = GetEnvironmentStrings();
 	for(char *ptr = env; *ptr; ptr++)

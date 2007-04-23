@@ -4,11 +4,11 @@ NAMESPACE_UPP
 
 #ifdef PLATFORM_WIN32
 
-#define LLOG(x)   //  LOG(x)
+#define LLOG(x)    // LOG(x)
 #define LOGTIMING 0
 
 #ifdef _DEBUG
-#define LOGMESSAGES 1
+#define LOGMESSAGES 0
 #endif
 
 #define ELOG(x)  // RLOG(GetSysTime() << ": " << x)
@@ -225,6 +225,8 @@ void Ctrl::InitWin32(HINSTANCE hInstance)
 
 	ChSync();
 
+	OleInitialize(NULL);
+
 /* TRC 05/11/14: moved to GuiSleep to avoid thread creation in OCX DllMain
 	DWORD dummy;
 	OverwatchThread = CreateThread(NULL, 0x100000, Win32OverwatchThread, NULL, 0, &dummy);
@@ -258,6 +260,8 @@ bool Ctrl::IsAlphaSupported()
 
 void Ctrl::ExitWin32()
 {
+	OleUninitialize();
+
 	sFinished = true;
 	for(int i = 0; i < Windows().GetCount(); i++) {
 		HWND hwnd = Windows().GetKey(i);
@@ -311,6 +315,7 @@ void  Ctrl::SetMouseCursor(const Image& image)
 {
 #ifndef PLATFORM_WINCE
 	static Image img;
+//	DDUMP(image.GetSerialId());
 	if(image.GetSerialId() != img.GetSerialId()) {
 		img = image;
 		HCURSOR hc = IconWin32(img, true);
@@ -351,7 +356,7 @@ Ctrl *Ctrl::GetActiveCtrl()
 			LLOG("-> top[" << i << "] = " << FormatIntHex(top[i]->GetHWND()));
 			for(HWND hwnd = top[i]->GetHWND(); hwnd; hwnd = ::GetParent(hwnd))
 				if(hwnd == actwnd) {
-					LLOG("-> match for " << ::Name(top[i]));
+					LLOG("-> match for " <<UPP::Name(top[i]));
 					return top[i];
 				}
 		}
@@ -359,9 +364,11 @@ Ctrl *Ctrl::GetActiveCtrl()
 	return NULL;
 }
 
+UDropTarget *NewUDropTarget(Ctrl *);
+
 void Ctrl::Create(HWND parent, DWORD style, DWORD exstyle, bool savebits, int show, bool dropshadow)
 {
-	LLOG("Ctrl::Create(parent = " << (void *)parent << ") in " << ::Name(this) << BeginIndent);
+	LLOG("Ctrl::Create(parent = " << (void *)parent << ") in " <<UPP::Name(this) << BeginIndent);
 	ASSERT(!IsChild() && !IsOpen());
 	Rect r = GetRect();
 	AdjustWindowRectEx(r, style, FALSE, exstyle);
@@ -404,14 +411,17 @@ void Ctrl::Create(HWND parent, DWORD style, DWORD exstyle, bool savebits, int sh
 	::ShowWindow(top->hwnd, visible ? show : SW_HIDE);
 //	::UpdateWindow(hwnd);
 	StateH(OPEN);
-	LLOG(EndIndent << "//Ctrl::Create in " << ::Name(this));
+	LLOG(EndIndent << "//Ctrl::Create in " <<UPP::Name(this));
+	RegisterDragDrop(top->hwnd, (LPDROPTARGET) (top->dndtgt = NewUDropTarget(this)));
 }
 
-void Ctrl::WndDestroy()
+void ReleaseUDropTarget(UDropTarget *dt);
+
+void Ctrl::WndFree()
 {
-	LLOG("Ctrl::WndDestroy() in " << ::Name(this) << BeginIndent);
-	LLOG((DumpWindowOrder(false), ""));
 	if(!top) return;
+	RevokeDragDrop(GetHWND());
+	ReleaseUDropTarget(top->dndtgt);
 	isopen = false;
 	HWND owner = GetWindow(top->hwnd, GW_OWNER);// CXL 31.10.2003 z DoRemove
 	bool focus = ::GetFocus() == top->hwnd;
@@ -420,10 +430,17 @@ void Ctrl::WndDestroy()
 	     << " ::GetFocus() " << (void *)::GetFocus());
 	if(owner && focus)// CXL 7.11.2003 presun - melo by to fungovat take a neblikat...
 		::SetFocus(owner);
-	::DestroyWindow(top->hwnd);
-	LLOG(EndIndent << "//Ctrl::WndDestroy() in " << ::Name(this));
+	LLOG(EndIndent << "//Ctrl::WndFree() in " <<UPP::Name(this));
 	delete top;
 	top = NULL;
+}
+
+void Ctrl::WndDestroy()
+{
+	LLOG("Ctrl::WndDestroy() in " <<UPP::Name(this) << BeginIndent);
+	LLOG((DumpWindowOrder(false), ""));
+	if(top && top->hwnd)
+		::DestroyWindow(top->hwnd);
 }
 
 Image Ctrl::DoMouse(int e, Point p, int zd)
@@ -461,7 +478,7 @@ void Ctrl::NcCreate(HWND hwnd)
 void Ctrl::NcDestroy()
 {
 	if(!parent)
-		top->hwnd = NULL;
+		WndFree();
 }
 
 LRESULT CALLBACK Ctrl::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -621,7 +638,7 @@ void Ctrl::EventLoop(Ctrl *ctrl)
 	ASSERT(LoopLevel == 0 || ctrl);
 	LoopLevel++;
 	LLOG("Entering event loop at level " << LoopLevel << BeginIndent);
-	Ctrl *ploop;
+	Ptr<Ctrl> ploop;
 	if(ctrl) {
 		ploop = LoopCtrl;
 		LoopCtrl = ctrl;
@@ -677,7 +694,7 @@ void Ctrl::WndDestroyCaret()
 
 void Ctrl::WndCreateCaret(const Rect& cr)
 {
-	LLOG("Ctrl::WndCreateCaret(" << cr << ") in " << ::Name(this));
+	LLOG("Ctrl::WndCreateCaret(" << cr << ") in " << UPP::Name(this));
 	HWND hwnd = GetHWND();
 	if(!hwnd) return;
 	Rect r;
@@ -777,7 +794,7 @@ int Ctrl::GetKbdSpeed()
 
 void Ctrl::SetWndForeground()
 {
-	LLOG("Ctrl::SetWndForeground() in " << ::Name(this));
+	LLOG("Ctrl::SetWndForeground() in " << UPP::Name(this));
 	HWND hwnd = GetHWND();
 	if(hwnd)
 		::SetForegroundWindow(hwnd);
@@ -790,7 +807,7 @@ bool Ctrl::IsWndForeground() const
 		return false;
 	HWND fore = ::GetForegroundWindow();
 	LLOG("Ctrl::IsWndForeground(): hwnd = " << (void *)hwnd
-	     << ", fore = " << (void *)fore << " - " << ::Name(CtrlFromHWND(fore)));
+	     << ", fore = " << (void *)fore << " - " << UPP::Name(CtrlFromHWND(fore)));
 	if(IsActiveX()) {
 		while(hwnd && hwnd != fore && !!::GetParent(hwnd))
 			hwnd = ::GetParent(hwnd);
@@ -800,20 +817,20 @@ bool Ctrl::IsWndForeground() const
 
 bool Ctrl::WndEnable(bool b)
 {
-	LLOG("Ctrl::WndEnable(" << b << ") in " << ::Name(this) << ", focusCtrlWnd = " << ::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
+	LLOG("Ctrl::WndEnable(" << b << ") in " << UPP::Name(this) << ", focusCtrlWnd = " << UPP::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
 	HWND hwnd = GetHWND();
 	if(!b) {
 		ReleaseCapture();
-		LLOG("//Ctrl::WndEnable(" << b << ") -> true " << ::Name(this) << ", focusCtrlWnd = " << ::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
+		LLOG("//Ctrl::WndEnable(" << b << ") -> true " << UPP::Name(this) << ", focusCtrlWnd = " <<UPP::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
 		return true;
 	}
-	LLOG("//Ctrl::WndEnable(" << b << ") -> false " << ::Name(this) << ", focusCtrlWnd = " << ::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
+	LLOG("//Ctrl::WndEnable(" << b << ") -> false " <<UPP::Name(this) << ", focusCtrlWnd = " <<UPP::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
 	return false;
 }
 
 bool Ctrl::SetWndFocus()
 {
-	LLOG("Ctrl::SetWndFocus() in " << ::Name(this));
+	LLOG("Ctrl::SetWndFocus() in " <<UPP::Name(this));
 	HWND hwnd = GetHWND();
 	if(hwnd) {
 		LLOG("Ctrl::SetWndFocus() -> ::SetFocus(" << (void *)hwnd << ")");
@@ -821,7 +838,7 @@ bool Ctrl::SetWndFocus()
 		::SetFocus(hwnd);
 		return true;
 	}
-	LLOG("//Ctrl::SetWndFocus() in " << ::Name(this) << ", active window = " << (void *)::GetActiveWindow());
+	LLOG("//Ctrl::SetWndFocus() in " <<UPP::Name(this) << ", active window = " << (void *)::GetActiveWindow());
 	return false;
 }
 
@@ -935,6 +952,7 @@ void Ctrl::PopUp(Ctrl *owner, bool savebits, bool activate, bool dropshadow, boo
 	popup = false;
 	Ctrl *q = owner ? owner->GetTopCtrl() : GetActiveCtrl();
 	PopUpHWND(q ? q->GetHWND() : NULL, savebits, activate, dropshadow, topmost);
+	if(top) top->owner = owner;
 }
 
 Rect Ctrl::GetScreenClient(HWND hwnd)

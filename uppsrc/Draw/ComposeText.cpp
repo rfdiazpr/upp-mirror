@@ -165,6 +165,8 @@ gc_info[128] = {
 	{ CG_NONE, 0, 0 } // CG_SMALL, 'LONG S
 };
 
+Draw& ScreenInfo();
+
 void FontInfo::ComposeMetrics(Font fnt, CharMetrics *m) const
 {
 	if(fnt.GetFaceInfo() & Font::COMPOSED) {

@@ -115,29 +115,29 @@ struct Callexit {
 
 // deprecated, use INITBLOCK
 #define INITCODE(x) \
-static void COMBINE(MK__s, _fn)() { x } static Callinit MK__s(COMBINE(MK__s, _fn));
+static void COMBINE(MK__s, _fn)() { x } static UPP::Callinit MK__s(COMBINE(MK__s, _fn));
 
 
 #define INITBLOCK \
-static void COMBINE(MK__s, _fn)(); static Callinit MK__s(COMBINE(MK__s, _fn)); \
+static void COMBINE(MK__s, _fn)(); static UPP::Callinit MK__s(COMBINE(MK__s, _fn)); \
 static void COMBINE(MK__s, _fn)()
 
 #define INITBLOCK_(x) \
-static void COMBINE(x, _fn)(); static Callinit x(COMBINE(x, _fn)); \
+static void COMBINE(x, _fn)(); static UPP::Callinit x(COMBINE(x, _fn)); \
 static void COMBINE(x, _fn)()
 
 
 // deprecated, use EXITBLOCK
 #define EXITCODE(x) \
-static void COMBINE(MK__s, _fn)() { x } static Callexit MK__s(COMBINE(MK__s, _fn));
+static void COMBINE(MK__s, _fn)() { x } static UPP::Callexit MK__s(COMBINE(MK__s, _fn));
 
 
 #define EXITBLOCK \
-static void COMBINE(MK__s, _fn)(); static Callexit MK__s(COMBINE(MK__s, _fn)); \
+static void COMBINE(MK__s, _fn)(); static UPP::Callexit MK__s(COMBINE(MK__s, _fn)); \
 static void COMBINE(MK__s, _fn)()
 
 #define EXITBLOCK_(x) \
-static void COMBINE(x, _fn)(); static Callexit x(COMBINE(x, _fn)); \
+static void COMBINE(x, _fn)(); static UPP::Callexit x(COMBINE(x, _fn)); \
 static void COMBINE(x, _fn)()
 
 #ifdef min
@@ -225,6 +225,8 @@ typedef uint64             qword;
 #define pick_ const
 #endif
 
+#define init_
+
 #define BINARY(i, f) \
 extern "C" byte *i; \
 extern "C" int COMBINE(i, _length);
@@ -256,8 +258,6 @@ inline int StaticTypeNo() {
 	return typeno;
 }
 
-size_t HeapRoundUp(size_t size);
-
 #ifndef  flagUSEMALLOC
 #define UPP_HEAP
 #endif
@@ -266,23 +266,25 @@ size_t HeapRoundUp(size_t size);
 
 void *MemoryAllocPermanent(size_t size);
 
+void *MemoryAllocSz(size_t& size);
 void *MemoryAlloc(size_t size);
 void  MemoryFree(void *ptr);
-
+void  MemoryFreeThread();
+void  MemoryCheck();
 void  MemoryShrink();
+int   MemoryUsedKb();
 
 
 void *MemoryAllocDebug(size_t size);
 void  MemoryFreeDebug(void *ptr);
 
-void  MemoryWatch(void *leak);
+void         MemoryWatch(void *leak);
 inline void  MemoryWatch(uintptr_t leak)           { MemoryWatch((void *)leak); }
-void  MemoryWatchFree(void *ptr);
+void         MemoryWatchFree(void *ptr);
 inline void  MemoryWatchFree(uintptr_t leak)       { MemoryWatchFree((void *)leak); }
 
 void  MemoryInitDiagnostics();
 void  MemoryDumpLeaks();
-void  MemoryCheck();
 
 enum MemoryProbeFlags {
 	MEMORY_PROBE_FULL    = 1,
@@ -294,8 +296,6 @@ enum MemoryProbeFlags {
 
 void  MemoryCheckDebug();
 
-int   MemoryUsedKb();
-
 struct MemoryProfile {
 	int allocated[1024];
 	int fragmented[1024];
@@ -306,6 +306,8 @@ struct MemoryProfile {
 	int large_free_count;
 	int large_free_size[1024];
 	int large_free_total;
+
+	void Make();
 
 	MemoryProfile();
 };
@@ -315,32 +317,33 @@ MemoryProfile *PeakMemoryProfile();
 #else
 
 inline void  *MemoryAllocPermanent(size_t size)                { return malloc(size); }
-inline void  *MemoryAlloc(size_t size) { return new byte[size]; }
-inline void   MemoryFree(void *p)      { delete[] (byte *) p; }
-inline size_t HeapRoundUp(size_t size) { return (size + 3) & -4; }
-inline void   MemoryShrink()           {}
-inline void   MemoryInitDiagnostics() {}
+inline void  *MemoryAlloc(size_t size)     { return new byte[size]; }
+inline void  *MemoryAllocSz(size_t &size)  { return new byte[size]; }
+inline void   MemoryFree(void *p)          { delete[] (byte *) p; }
+inline void   MemoryShrink()               {}
+inline void   MemoryInitDiagnostics()      {}
 inline void  *MemoryAllocDebug(dword size) {}
-inline void   MemoryFreeDebug(void *p) {}
+inline void   MemoryFreeDebug(void *p)     {}
 inline void   MemoryCheck() {}
 inline void   MemoryCheckDebug() {}
+inline int    MemoryUsedKb() { return 0; }
 
 struct MemoryProfile {
 	int allocated[1024];
 	int fragmented[1024];
 	int freepages;
 	int large_count;
-	int large_size[1024];
+	int large_size[4096];
 	int large_total;
 	int large_free_count;
-	int large_free_size[1024];
+	int large_free_size[4096];
 	int large_free_total;
 
 	MemoryProfile() { memset(this, 0, sizeof(MemoryProfile)); }
 };
 
 inline MemoryProfile *PeakMemoryProfile() { return NULL; }
-inline int MemoryUsedKb() { return 0; }
+inline void   MemorySum(int& smallkb, int& largekb) {}
 
 #endif
 
@@ -358,4 +361,11 @@ const wchar *ToSysChrSet(const char *s);
 #else
 inline const char *FromSysChrSet(const char *s) { return s; }
 inline const char *ToSysChrSet(const char *s) { return s; }
+#endif
+
+#ifdef _DEBUG
+void __LOGF__(const char *format, ...);
+#define LOGF             UPP::__LOGF__
+#else
+inline void __LOGF__(const char *format, ...);
 #endif

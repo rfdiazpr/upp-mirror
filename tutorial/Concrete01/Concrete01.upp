@@ -1,7 +1,0 @@
-uses Core;
-
-file
-	"Concrete01.cpp";
-
-mainconfig
-	"" = "";

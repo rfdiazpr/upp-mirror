@@ -1,7 +1,9 @@
 description "Image designer";
 
 uses
-	CtrlLib;
+	CtrlLib,
+	plugin\gif,
+	plugin\jpg;
 
 file
 	IconDes.h,

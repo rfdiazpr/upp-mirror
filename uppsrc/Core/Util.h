@@ -273,6 +273,8 @@ va_list va_ptr(const T& obj)
 
 // ---------------
 
+bool InScList(const char *s, const char *list);
+
 struct TextTest {
 	virtual const char *Accept(const char *s) const = 0;
 };

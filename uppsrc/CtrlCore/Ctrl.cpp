@@ -64,12 +64,6 @@ void Ctrl::RightHold(Point p, dword keyflags)       {}
 
 void Ctrl::Layout()                                 {}
 
-void Ctrl::DragEnter(Point p, DnDEvent& d) {}
-void Ctrl::DragAndDrop(Point p, DnDEvent& d)        {}
-void Ctrl::DragLeave() {}
-
-String Ctrl::GetClip(const char *fmt, int kind) { return Null; }
-
 void Ctrl::PostInput()
 {
 	if(parent) parent->PostInput();

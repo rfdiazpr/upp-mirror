@@ -296,6 +296,16 @@ bool RichEdit::GetSelection(int& l, int& h) const
 	return false;
 }
 
+bool RichEdit::InSelection(int& c) const
+{
+	int sell, selh;
+	if(GetSelection(sell, selh) && c >= sell && c < selh) {
+		c = sell;
+		return true;
+	}
+	return false;
+}
+
 void RichEdit::CancelSelection()
 {
 	if(IsSelection()) {

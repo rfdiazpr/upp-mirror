@@ -10,8 +10,11 @@ struct RichImage : public RichObjectType {
 	virtual Size   GetPixelSize(const Value& data) const;
 	virtual void   Paint(const Value& data, Draw& w, Size sz) const;
 	virtual Image  ToImage(const Value& data, Size sz) const;
-	virtual Value  ReadClipboard() const;
-	virtual void   WriteClipboard(const Value& v) const;
+
+	virtual bool   Accept(PasteClip& clip);
+	virtual Value  Read(PasteClip& clip);
+	virtual String GetClipFmts() const;
+	virtual String GetClip(const Value& data, const String& fmt) const;
 
 	typedef RichImage CLASSNAME;
 };
@@ -21,15 +24,24 @@ String RichImage::GetTypeName(const Value& v) const
 	return "image";
 }
 
-Value RichImage::ReadClipboard() const
+bool RichImage::Accept(PasteClip& clip)
 {
-	Image img = ReadClipboardImage();
-	return img ? StoreImageAsString(img) : String();
+	return AcceptImage(clip);
 }
 
-void  RichImage::WriteClipboard(const Value& v) const
+Value RichImage::Read(PasteClip& clip)
 {
-	WriteClipboardImage(LoadImageFromString(v));
+	return StoreImageAsString(GetImage(clip));
+}
+
+String RichImage::GetClipFmts() const
+{
+	return ClipFmtsImage();
+}
+
+String RichImage::GetClip(const Value& data, const String& fmt) const
+{
+	return GetImageClip(LoadImageFromString(data), fmt);
 }
 
 Size   RichImage::GetPixelSize(const Value& data) const

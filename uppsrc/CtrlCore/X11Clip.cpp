@@ -133,6 +133,42 @@ WString ReadClipboardUnicodeText()
 	return FromUtf8(ReadClipboard("UTF8_STRING"));
 }
 
+String GetString(PasteClip& clip)
+{
+	if(clip.Accept("wtext"))
+		return FromUtf8(~clip).ToString();
+	if(clip.IsAvailable("text"))
+		return ~clip;
+	return Null;
+}
+
+WString GetWString(PasteClip& clip)
+{
+	if(clip.Accept("wtext"))
+		return FromUtf8(~clip);
+	if(clip.IsAvailable("text"))
+		return (~clip).ToWString();
+	return Null;
+}
+
+String GetTextClip(const WString& text, const String& fmt)
+{
+	if(fmt == "text")
+		return text.ToString();
+	if(fmt == "wtext")
+		return ToUtf8(text);
+	return Null;
+}
+
+String GetTextClip(const String& text, const String& fmt)
+{
+	if(fmt == "text")
+		return text;
+	if(fmt == "wtext")
+		return GetTextClip(text.ToWString(), fmt);
+	return Null;
+}
+
 bool Ctrl::Xclipboard::IsAvailable(int fmt)
 {
 	if(data.GetCount())
@@ -140,20 +176,38 @@ bool Ctrl::Xclipboard::IsAvailable(int fmt)
 	String formats = Read(XAtom("TARGETS"));
 	int c = formats.GetCount() / sizeof(Atom);
 	const Atom *m = (Atom *) ~formats;
-	for(int i = 0; i < c; i++)
+	for(int i = 0; i < c; i++) {
+		DDUMP(XAtomName(m[i]));
 		if(m[i] == fmt)
 			return true;
+	}
 	return false;
 }
 
 bool IsClipboardAvailable(const char *fmt)
 {
-	Ctrl::xclipboard().IsAvailable(XAtom(fmt));
+	String f = fmt;
+	if(f == "text")
+		f = "STRING";
+	if(f == "wtext")
+		f = "UTF8_STRING";
+	DDUMP(f);
+	return Ctrl::xclipboard().IsAvailable(XAtom(fmt));
 }
 
 bool IsClipboardAvailableText()
 {
-	return IsClipboardAvailable("UTF8_STRING");
+	return IsClipboardAvailable("text") || IsClipboardAvailable("wtext");
+}
+
+bool Has(UDropTarget *dt, const char *fmt)
+{
+	return false;
+}
+
+String Get(UDropTarget *dt, const char *fmt)
+{
+	return Null;
 }
 
 #endif

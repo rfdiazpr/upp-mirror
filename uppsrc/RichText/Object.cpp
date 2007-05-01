@@ -36,12 +36,26 @@ String RichObjectType::Write(const Value& v) const
 	return v;
 }
 
-Value RichObjectType::ReadClipboard() const
+bool RichObjectType::Accept(PasteClip& clip)
+{
+	return false;
+}
+
+Value RichObjectType::Read(PasteClip& clip)
 {
 	return Null;
 }
 
-void RichObjectType::WriteClipboard(const Value& v) const {}
+String RichObjectType::GetClipFmts() const
+{
+	return Null;
+}
+
+String RichObjectType::GetClip(const Value& data, const String& fmt) const
+{
+	return Null;
+}
+
 void RichObjectType::Menu(Bar& bar, RichObject& data) const {}
 void RichObjectType::DefaultAction(RichObject& data) const {}
 Size RichObjectType::GetPhysicalSize(const Value& data) const { return Size(0, 0); }
@@ -204,9 +218,6 @@ struct RichObjectTypeDrawingCls : public RichObjectType
 	virtual void   Paint(const Value& data, Draw& w, Size sz) const;
 	virtual Value  Read(const String& s) const;
 	virtual String Write(const Value& v) const;
-//	virtual Value  ReadClipboard() const;
-//	virtual void   Menu(Bar& bar, RichObjectExchange& ex) const;
-//	virtual void   DefaultAction(RichObjectExchange& ex) const;
 
 	struct Data
 	{

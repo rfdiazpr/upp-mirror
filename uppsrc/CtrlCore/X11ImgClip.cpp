@@ -6,22 +6,51 @@ NAMESPACE_UPP
 
 #ifdef PLATFORM_X11
 
+
+String ClipFmtsImage()
+{
+	return ClipFmt<Image>() + ";image/bmp;image/png";
+}
+
+bool AcceptImage(PasteClip& clip)
+{
+	return clip.Accept(ClipFmt<Image>()) || clip.Accept("image/bmp") || clip.Accept("image/png");
+}
+
+Image GetImage(PasteClip& clip)
+{
+	Image m;
+	if(Accept<Image>(clip)) {
+		LoadFromString(m, ~clip);
+		if(!m.IsEmpty())
+			return m;
+	}
+	if(clip.Accept("image/bmp;image/png"))
+		return StreamRaster::LoadStringAny(~clip);
+	return Null;
+}
+
 Image ReadClipboardImage()
 {
-	Image m = ReadClipboardFormat<Image>();
-	if(!m.IsEmpty())
-		return m;
-	Image img = StreamRaster::LoadStringAny(ReadClipboard("image/bmp"));
-	if(!img.IsEmpty())
-		return img;
-	return StreamRaster::LoadStringAny(ReadClipboard("image/png"));
+	return GetImage(Ctrl::Clipboard());
+}
+
+String GetImageClip(const Image& img, const String& fmt)
+{
+	if(img.IsEmpty()) return Null;
+
+	if(fmt == "image/bmp")
+		return BMPEncoder().SaveString(img);
+	if(fmt == ClipFmt<Image>())
+		return StoreAsString(const_cast<Image&>(img));
+	return Null;
 }
 
 void AppendClipboardImage(const Image& img)
 {
-	WriteClipboardFormat(img);
-	BMPEncoder bmp;
-	AppendClipboard("image/bmp", bmp.SaveString(img));
+	if(img.IsEmpty()) return;
+	AppendClipboard(ClipFmt<Image>(), StoreAsString(const_cast<Image&>(img)));
+	AppendClipboard("dib", GetImageClip(img, "dib"));
 }
 
 #endif

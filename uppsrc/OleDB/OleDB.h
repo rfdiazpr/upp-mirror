@@ -7,6 +7,8 @@
 
 #define Font OleFont
 #define Picture OlePicture
+#define byte win32_byte_ // RpcNdr defines byte -> class with Upp::byte
+#define CY win32_CY_
 #include <Ole/Ole.h>
 #include <winnls.h>
 #include <oleauto.h>
@@ -15,6 +17,8 @@
 #include <msdaguid.h>
 #undef Font
 #undef Picture
+#undef byte
+#undef CY
 
 NAMESPACE_UPP
 

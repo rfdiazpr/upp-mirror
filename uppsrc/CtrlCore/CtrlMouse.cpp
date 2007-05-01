@@ -233,6 +233,8 @@ Image Ctrl::MEvent0(int e, Point p, int zd)
 	}
 	if((e & ACTION) == DOUBLE)
 		mm |= K_MOUSEDOUBLE;
+	if((e & ACTION) == TRIPLE)
+		mm |= K_MOUSETRIPLE;
 	Rect view = GetView();
 	if(mouseCtrl != this) {
 		if(mouseCtrl) {
@@ -271,9 +273,14 @@ void    Ctrl::LRepeat() {
 	LLOG("LRepeat " << UPP::Name(mouseCtrl));
 }
 
-static int sDist(Point a, Point b)
+static int sDistMax(Point a, Point b)
 {
 	return IsNull(a) ? INT_MAX : max(abs(a.x - b.x), abs(a.y - b.y));
+}
+
+static int sDistMin(Point a, Point b)
+{
+	return IsNull(a) ? -1 : max(abs(a.x - b.x), abs(a.y - b.y));
 }
 
 void    Ctrl::LRep() {
@@ -282,9 +289,8 @@ void    Ctrl::LRep() {
 }
 
 void    Ctrl::LHold() {
-	if(sDist(leftmousepos, mousepos) < GUI_DragDistance() && repeatTopCtrl)
+	if(sDistMax(leftmousepos, mousepos) < GUI_DragDistance() && repeatTopCtrl)
 		repeatTopCtrl->DispatchMouseEvent(LEFTHOLD, repeatMousePos, 0);
-	leftmousepos = Null;
 }
 
 void    Ctrl::RRepeat() {
@@ -299,9 +305,8 @@ void    Ctrl::RRep() {
 }
 
 void    Ctrl::RHold() {
-	if(sDist(rightmousepos, mousepos) < GUI_DragDistance() && repeatTopCtrl)
+	if(sDistMax(rightmousepos, mousepos) < GUI_DragDistance() && repeatTopCtrl)
 		repeatTopCtrl->DispatchMouseEvent(RIGHTHOLD, repeatMousePos, 0);
-	rightmousepos = Null;
 }
 
 void    Ctrl::KillRepeat() {
@@ -386,26 +391,26 @@ Image Ctrl::DispatchMouse(int e, Point p, int zd) {
 	repeatTopCtrl = this;
 	if(e == LEFTDOUBLE) {
 		leftdbltime = GetTickCount();
-		leftdblpos = mousepos;
+		leftdblpos = p;
 	}
 	if(e == RIGHTDOUBLE) {
 		rightdbltime = GetTickCount();
-		rightdblpos = mousepos;
+		rightdblpos = p;
 	}
 	if(e == LEFTDOWN) {
 		LLOG("Ctrl::DispatchMouse: init left repeat for " << UPP::Name(this) << " at " << p);
 		UPP::SetTimeCallback(GetKbdDelay(), callback(&Ctrl::LRep), &mousepos);
 		UPP::SetTimeCallback(2 * GetKbdDelay(), callback(&Ctrl::LHold), &mousepos);
-		leftmousepos = mousepos;
-		if(sDist(leftdblpos, mousepos) < GUI_DragDistance() && sDblTime(leftdbltime))
+		leftmousepos = p;
+		if(sDistMax(leftdblpos, mousepos) < GUI_DragDistance() && sDblTime(leftdbltime))
 			e = LEFTTRIPLE;
 	}
 	if(e == RIGHTDOWN) {
 		LLOG("Ctrl::DispatchMouse: init right repeat for " << UPP::Name(this) << " at " << p);
 		UPP::SetTimeCallback(GetKbdDelay(), callback(&Ctrl::RRep), &mousepos);
 		UPP::SetTimeCallback(2 * GetKbdDelay(), callback(&Ctrl::RHold), &mousepos);
-		rightmousepos = mousepos;
-		if(sDist(rightdblpos, mousepos) < GUI_DragDistance() && sDblTime(rightdbltime))
+		rightmousepos = p;
+		if(sDistMax(rightdblpos, mousepos) < GUI_DragDistance() && sDblTime(rightdbltime))
 			e = RIGHTTRIPLE;
 	}
 	if(e == LEFTUP)
@@ -415,11 +420,11 @@ Image Ctrl::DispatchMouse(int e, Point p, int zd) {
 	if(e == LEFTUP || e == RIGHTUP)
 		KillRepeat();
 	if(e == MOUSEMOVE) {
-		if(sDist(leftmousepos, mousepos) > GUI_DragDistance() && repeatTopCtrl) {
+		if(sDistMin(leftmousepos, mousepos) > GUI_DragDistance() && repeatTopCtrl) {
 			repeatTopCtrl->DispatchMouseEvent(LEFTDRAG, leftmousepos, 0);
 			leftmousepos = Null;
 		}
-		if(sDist(rightmousepos, mousepos) > GUI_DragDistance() && repeatTopCtrl) {
+		if(sDistMin(rightmousepos, mousepos) > GUI_DragDistance() && repeatTopCtrl) {
 			repeatTopCtrl->DispatchMouseEvent(RIGHTDRAG, rightmousepos, 0);
 			rightmousepos = Null;
 		}

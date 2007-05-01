@@ -4,26 +4,6 @@
 #define IMAGEFILE  <Docedit/Docedit.iml>
 #include <Draw/iml_source.h>
 
-bool InScList(const char *s, const char *list)
-{
-	for(;;) {
-		const char *q = s;
-		for(;;) {
-			if(*q == '\0' && *list == '\0') return true;
-			if(*q != *list) {
-				if(*q == '\0' && *list == ';') return true;
-				if(*list == '\0') return false;
-				break;
-			}
-			q++;
-			list++;
-		}
-		while(*list && *list != ';') list++;
-		if(*list == '\0') return false;
-		list++;
-	}
-}
-
 bool IsCppKeyword(const String& id)
 {
 	static Index<String> kw;

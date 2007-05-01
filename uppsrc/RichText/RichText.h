@@ -114,11 +114,14 @@ struct RichObjectType : Moveable<RichObjectType> {
 	virtual Image  ToImage(const Value& data, Size sz) const;
 	virtual Value  Read(const String& s) const;
 	virtual String Write(const Value& v) const;
-	virtual Value  ReadClipboard() const;
-	virtual void   WriteClipboard(const Value& v) const;
 	virtual void   Menu(Bar& bar, RichObject& ex) const;
 	virtual void   DefaultAction(RichObject& ex) const;
 	virtual String GetLink(const Value& data, Point pt, Size sz) const;
+
+	virtual bool   Accept(PasteClip& clip);
+	virtual Value  Read(PasteClip& clip);
+	virtual String GetClipFmts() const;
+	virtual String GetClip(const Value& data, const String& fmt) const;
 
 	RichObjectType();
 	virtual ~RichObjectType();
@@ -402,6 +405,7 @@ inline int PointDotHeight(int p) { return (minmax<int>(Nvl(p, 0), 0, MAX_POINT_H
 
 void       EncodeRTF(Stream& stream, const RichText& richtext, byte charset);
 String     EncodeRTF(const RichText& richtext, byte charset);
+String     EncodeRTF(const RichText& richtext);
 RichText   ParseRTF(const char *rtf);
 
 Zoom  GetRichTextStdScreenZoom();

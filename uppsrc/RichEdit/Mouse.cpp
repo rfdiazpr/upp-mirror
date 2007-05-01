@@ -5,6 +5,9 @@ NAMESPACE_UPP
 void RichEdit::CancelMode()
 {
 	tabmove.table = 0;
+	selclick = false;
+	dropcaret.Clear();
+//	dropscroll = Null;
 }
 
 void RichEdit::MouseWheel(Point p, int zdelta, dword keyflags)
@@ -39,10 +42,23 @@ void RichEdit::SetObjectYDelta(int pt)
 	}
 }
 
+void RichEdit::SetObjectPos(int pos)
+{
+	Rect r = GetObjectRect(cursor);
+	Rect rr = r.Offseted(16, -sb);
+	objectrect = GetObjectRect(pos);
+	objectpos = cursor;
+	PageRect pr = text.GetCaret(cursor, pagesz);
+	PlaceCaret();
+	Refresh(rr);
+	ReadFormat();
+}
+
 void RichEdit::LeftDown(Point p, dword flags)
 {
 	NextUndo();
 	SetFocus();
+	selclick = false;
 	tabmove = GetHotPos(p);
 	if(tabmove.table && tabmove.column >= -2) {
 		SaveTableFormat(tabmove.table);
@@ -88,23 +104,29 @@ void RichEdit::LeftDown(Point p, dword flags)
 	else {
 		c = GetMousePos(p);
 		if(c >= 0) {
+			if(InSelection(c)) {
+				selclick = true;
+				return;
+			}
 			Move(c, flags & K_SHIFT);
 			mpos = c;
 			SetCapture();
-			if(cursorp.object) {
-				Rect r = GetObjectRect(cursor);
-				Rect rr = r.Offseted(16, -sb);
-				if(rr.Contains(p)) {
-					objectrect = r;
-					objectpos = cursor;
-					PageRect pr = text.GetCaret(cursor, pagesz);
-					PlaceCaret();
-					Refresh(rr);
-					ReadFormat();
-				}
-			}
+			if(cursorp.object && GetObjectRect(cursor).Contains(p))
+				SetObjectPos(cursor);
 		}
 	}
+}
+
+void RichEdit::LeftUp(Point p, dword flags)
+{
+	NextUndo();
+	int c = GetMousePos(p);
+	int d = c;
+	if(!HasCapture() && InSelection(d) && selclick) {
+		CancelSelection();
+		Move(c);
+	}
+	selclick = false;
 }
 
 void RichEdit::MouseMove(Point p, dword flags)
@@ -315,8 +337,10 @@ Image RichEdit::CursorImage(Point p, dword flags)
 			RichHotPos hp = GetHotPos(p);
 			if(hp.table > 0)
 				return Image::SizeHorz();
-			else
-				return CtrlImg::ibeam0;
+			else {
+				int c = GetMousePos(p);
+				return InSelection(c) ? Image::Arrow() : CtrlImg::ibeam0;
+			}
 		}
 	}
 	return Image::Arrow();

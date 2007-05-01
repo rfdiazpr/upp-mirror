@@ -41,10 +41,10 @@ void *SysAllocRaw(size_t size)
 #ifdef PLATFORM_WIN32
 	return VirtualAlloc(NULL, size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
 #else
-#ifdef PLATFORM_OSX11
-	return mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
-#else
+#ifdef PLATFORM_LINUX
 	return mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+#else
+	return mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
 #endif
 #endif
 }

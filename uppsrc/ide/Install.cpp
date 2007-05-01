@@ -65,6 +65,8 @@ void Uninstall()
 
 #define Ptr Ptr_
 #define byte byte_
+#define CY win32_CY_
+
 
 #include <winnls.h>
 #include <winnetwk.h>
@@ -74,6 +76,7 @@ void Uninstall()
 
 #undef Ptr
 #undef byte
+#undef CY
 
 bool CreateShellLink(const char *filepath, const char *linkpath, const char *desc, int icon)
 {

@@ -117,6 +117,28 @@ void IconDes::InsertPaste()
 	EditImage();
 }
 
+FileSel& IconDes::ImgFile()
+{
+	static FileSel sel;
+	ONCELOCK {
+		sel.Type("Image files", "*.png *.bmp *.jpg *.jpeg *.gif");
+		sel.AllFilesType();
+	}
+	return sel;
+}
+
+void IconDes::InsertFile()
+{
+	if(!ImgFile().ExecuteOpen()) return;
+	Image m = StreamRaster::LoadFileAny(~ImgFile());
+	if(IsNull(m)) {
+		Exclamation("Not an image.");
+		return;
+	}
+	ImageInsert("", m);
+	EditImage();
+}
+
 void IconDes::ListCursor()
 {
 	SyncImage();
@@ -201,6 +223,8 @@ void IconDes::ListMenu(Bar& bar)
 	   .Key(K_CTRL_D);
 	bar.Add("Insert from clipboard", IconDesImg::InsertPaste(), THISBACK(InsertPaste))
 	   .Key(K_ALT_V);
+	bar.Add("Insert from file..", IconDesImg::InsertFile(), THISBACK(InsertFile))
+	   .Key(K_ALT_O);
 	bar.Separator();
 	bar.Add(IsCurrent() && list.GetCursor() > 0, "Move up", IconDesImg::MoveUp(),
 	        THISBACK1(MoveSlot, -1))

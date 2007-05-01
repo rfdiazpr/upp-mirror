@@ -169,27 +169,17 @@ void RichEdit::Redo()
 #define RTFS "text/richtext"
 #endif
 
-void RichEdit::Copy()
+RichText RichEdit::GetSelection(int maxcount) const
 {
-	if(IsSelection()) {
-		ClearClipboard();
-		RichText clip;
-		if(tablesel) {
-			RichTable tab = text.CopyTable(tablesel, cells);
-			clip.SetStyles(text.GetStyles());
-			clip.CatPick(tab);
-		}
-		else
-			clip = text.Copy(min(cursor, anchor), abs(cursor - anchor));
-		AppendClipboard("text/QTF", AsQTF(clip));
-		AppendClipboard(RTFS, EncodeRTF(clip, GetDefaultCharset()));
-		AppendClipboardUnicodeText(clip.GetPlainText());
+	RichText clip;
+	if(tablesel) {
+		RichTable tab = text.CopyTable(tablesel, cells);
+		clip.SetStyles(text.GetStyles());
+		clip.CatPick(tab);
 	}
 	else
-	if(objectpos >= 0) {
-		RichObject o = GetObject();
-		o.GetType().WriteClipboard(o.GetData());
-	}
+		clip = text.Copy(min(cursor, anchor), min(maxcount, abs(cursor - anchor)));
+	return clip;
 }
 
 void RichEdit::Cut()
@@ -272,49 +262,6 @@ void RichEdit::RemoveText(int count)
 RichText RichEdit::CopyText(int pos, int count) const
 {
 	return text.Copy(pos, count);
-}
-
-void RichEdit::Paste()
-{
-	if(IsReadOnly())
-		return;
-	int stylei = 0;
-	RichText clip;
-	if(IsClipboardAvailable("text/QTF"))
-		clip = ParseQTF(ReadClipboard("text/QTF"));
-	else
-	if(IsClipboardAvailable(RTFS))
-		clip = ParseRTF(ReadClipboard(RTFS));
-	else
-	if(IsClipboardAvailableText())
-		clip = AsRichText(ReadClipboardUnicodeText(), formatinfo);
-	else {
-		for(int i = 0; i < RichObject::GetTypeCount(); i++) {
-			RichObjectType& rt = RichObject::GetType(i);
-			Value data = rt.ReadClipboard();
-			if(!IsNull(data)) {
-				RichPara p;
-				p.Cat(RichObject(&rt, data, pagesz), formatinfo);
-				RichText clip;
-				clip.Cat(p);
-				PasteText(clip);
-				break;
-			}
-		}
-		return;
-	}
-	if(clip.GetPartCount() == 1 && clip.IsTable(0)) {
-		CancelSelection();
-		if(cursorp.table) {
-			NextUndo();
-			SaveTable(cursorp.table);
-			text.PasteTable(cursorp.table, cursorp.cell, clip.GetTable(0));
-			Finish();
-			return;
-		}
-	}
-	clip.Normalize();
-	PasteText(clip);
 }
 
 void RichEdit::InsertObject(int type)

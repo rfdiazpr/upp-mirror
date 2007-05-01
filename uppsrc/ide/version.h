@@ -1,1 +1,1 @@
-#define IDE_VERSION    "704.r58"
+#define IDE_VERSION    "704.r60"

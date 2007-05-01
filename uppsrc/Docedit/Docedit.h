@@ -130,7 +130,6 @@ struct DocNestDisplay : public Display
 
 void InitItemArray(ArrayCtrl& item);
 void LoadItems(const DocSet& set, const String& nameing, const String& nesting, ArrayCtrl& item);
-bool InScList(const char *s, const char *list);
 int  PosOf(const String& s, const String& subs);
 bool IsCppKeyword(const String& id);
 int  CompareNests(const Value& v1, const Value& v2);

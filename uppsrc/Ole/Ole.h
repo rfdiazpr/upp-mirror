@@ -8,11 +8,15 @@
 #define Ptr Ptr_
 #define StdFont StdFont_
 #define Picture Picture_
+#define byte win32_byte_ // RpcNdr defines byte -> class with Upp::byte
+#define CY win32_CY_
 #include <comdef.h>
 #include <comip.h>
 #undef Ptr
 #undef StdFont
 #undef Picture
+#undef byte
+#undef CY
 
 #endif
 

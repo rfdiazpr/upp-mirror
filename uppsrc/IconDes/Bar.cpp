@@ -264,7 +264,7 @@ void IconDes::SerializeSettings(Stream& s)
 		&IconDes::HotSpotTool,
 	};
 
-	int version = 1;
+	int version = 2;
 	s / version;
 	s / magnify;
 	s % leftpane % bottompane;
@@ -280,6 +280,8 @@ void IconDes::SerializeSettings(Stream& s)
 	SetSb();
 	Refresh();
 	SetBar();
+	if(version >= 2)
+		s % ImgFile();
 }
 
 IconDes::IconDes()

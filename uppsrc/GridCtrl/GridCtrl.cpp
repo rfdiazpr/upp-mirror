@@ -1030,13 +1030,11 @@ void GridCtrl::Paint(Draw &w)
 	if(UpdateCols() || UpdateRows())
 		UpdateSizes();
 
-	bool newfirst = false;
 	if(scrollxdir != 0 || firstCol < 0)
 	{
 		firstCol = GetFirstVisCol(fixed_width, firstCol, scrollxdir);
 		LG("fc %d, scx %d", firstCol, scrollxdir);
 		scrollxdir = 0;
-		newfirst = true;
 	}
 	
 	if(scrollydir != 0 || firstRow < 0)
@@ -1044,23 +1042,8 @@ void GridCtrl::Paint(Draw &w)
 		firstRow = GetFirstVisRow(fixed_height, firstRow, scrollydir);
 		LG("fr %d, scy %d", firstRow, scrollydir);
 		scrollydir = 0;
-		newfirst = true;
 	}
-	
-	/*if(newfirst)
-	{
-		int c = firstCol;
-		int r = firstRow;
-		int idx = hitems[c].id;
-		int idy = vitems[r].id;		
-		int group = items[idy][idx].group;
-		if(group >= 0)
-		{
-			while(items[idy][idx].group == group) { firstCol = c; idx = hitems[--c].id; }
-			while(items[idy][idx].group == group) { firstRow = r; idy = vitems[--r].id; }
-		}
-	}*/
-	
+		
 	int en = IsShowEnabled() ? 0 : GD::READONLY;
 
 	//---------------------------------------------------------------------------------------
@@ -1099,6 +1082,7 @@ void GridCtrl::Paint(Draw &w)
 				if(hitems[j].hidden)
 					continue;
 				
+				int jj = j;
 				Item &it = GetItemSize(i, j, x, y, cx, cy, skip, true, false);
 				if(skip)
 					continue;
@@ -1114,8 +1098,8 @@ void GridCtrl::Paint(Draw &w)
 					if(i > 0) style &= ~GD::HIGHLIGHT;
 					if(chameleon) 
 						style |= GD::CHAMELEON;
-										
-					gd->PaintFixed(w, j == firstcol, i == 0, x, y, cx, cy,
+					
+					gd->PaintFixed(w, jj == firstcol, i == 0, x, y, cx, cy,
 								i == 0 ? it.val : GetConvertedColumn(hitems[j].id, it.val), 
 								style | en, false, false,
 								i == 0 ? hitems[j].sortmode : 0,
@@ -1387,8 +1371,13 @@ void GridCtrl::Paint(Draw &w)
 	{
 		r.Set(fixed_width, 0, sz.cx, fixed_height);
 		w.Clip(r); 
-		bool lastcol = curSplitCol == total_cols - 1;
-		int cx = hitems[curSplitCol + !lastcol].nWidth() / 2;
+		bool lastcol = curSplitCol == lastVisCol;
+		
+		int cp = curSplitCol;
+		if(!lastcol)
+			while(++cp < total_cols && hitems[cp].hidden);	
+				
+		int cx = hitems[cp].nWidth() / 2;
 		int x = lastcol ? hitems[curSplitCol].nLeft(sbx) + cx
 		                : hitems[curSplitCol].nRight(sbx) - 1;
 		DrawFatFrame(w, x, 0, cx, vitems[fixed_rows - 1].nBottom(), moving_allowed ? LtBlue : Red, 2);
@@ -2029,7 +2018,7 @@ void GridCtrl::Layout()
 		return;
 	
 	LG("Layout");
-	
+
 	UpdateCols();
 	UpdateRows();
 	UpdateSizes();

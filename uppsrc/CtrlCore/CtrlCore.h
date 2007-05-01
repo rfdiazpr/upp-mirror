@@ -18,6 +18,7 @@ enum {
 	K_MOUSERIGHT   = 0x400000,
 	K_MOUSELEFT    = 0x800000,
 	K_MOUSEDOUBLE  = 0x1000000,
+	K_MOUSETRIPLE  = 0x2000000,
 
 	K_SHIFT_CTRL = K_SHIFT|K_CTRL,
 };
@@ -180,41 +181,69 @@ class GLCtrl;
 class ClipData;
 
 enum {
-	CLIP_BOARD,
-	CLIP_DROP,
-	CLIP_SELECTION,
-};
-
-class ClipData {
-	friend struct UDropTarget;
-
-	UDropTarget *dt;
-
-public:
-	bool   Has(const char *type) const;
-	String Get(const char *type) const;
-};
-
-enum {
 	DND_NONE = 0,
 	DND_COPY = 1,
 	DND_MOVE = 2,
+
+	DND_ALL  = 3,
 };
 
-class DnDEvent : public ClipData {
-	friend struct UDropTarget;
+struct UDropTarget;
 
-	bool drop;
-	int  action;
+class PasteClip {
+	friend struct UDropTarget;
+	friend class  Ctrl;
+
+	UDropTarget *dt;
+	int          prefer;
+	bool         paste;
+	bool         accepted;
+	String       data;
 
 public:
-	void Accept()       { action = DND_COPY|DND_MOVE; }
-	void AcceptMove()   { action = DND_MOVE; }
-	void AcceptCopy()   { action = DND_COPY; }
+	bool   IsAvailable(const char *fmt) const;
+	String Get(const char *fmt) const;
 
-	bool IsDrag() const { return !drop; }
-	bool IsDrop() const { return drop; }
+	bool   Accept(const char *fmt);
+	String Get() const                  { return data; }
+
+	operator String() const             { return data; }
+	String operator ~() const           { return data; }
+
+	void   PreferMove()                 { prefer = DND_MOVE; }
+	void   PreferCopy()                 { prefer = DND_COPY; }
+
+	bool   IsAccepted() const           { return accepted; }
+
+	bool   IsQuery() const              { return !paste; }
+	bool   IsPaste() const              { return paste; }
+
+	PasteClip();
 };
+
+String  ClipFmtsText();
+bool    AcceptText(PasteClip& clip);
+String  GetString(PasteClip& clip);
+WString GetWString(PasteClip& clip);
+String  GetTextClip(const String& text, const String& fmt);
+String  GetTextClip(const WString& text, const String& fmt);
+
+String  ClipFmtsImage();
+bool    AcceptImage(PasteClip& clip);
+Image   GetImage(PasteClip& clip);
+String  GetImageClip(const Image& m, const String& fmt);
+
+template <class T>
+String ClipFmt()
+{
+	return String("U++ type: ") + typeid(T).name();
+}
+
+template <class T>
+bool   Accept(PasteClip& clip)
+{
+	return clip.Accept(ClipFmt<T>());
+}
 
 class Ctrl : public Pte<Ctrl> {
 public:
@@ -772,10 +801,12 @@ public:
 	virtual void   MouseWheel(Point p, int zdelta, dword keyflags);
 	virtual void   MouseLeave();
 
-	virtual void   DragEnter(Point p, DnDEvent& d);
-	virtual void   DragAndDrop(Point p, DnDEvent& d);
+	virtual void   DragEnter(Point p, PasteClip& d);
+	virtual void   DragAndDrop(Point p, PasteClip& d);
+	virtual void   DragRepeat(Point p);
 	virtual void   DragLeave();
-	virtual String GetClip(const char *fmt, int kind);
+	virtual String GetDropData(const String& fmt) const;
+	virtual String GetSelection(const String& fmt) const;
 
 	virtual Image  CursorImage(Point p, dword keyflags);
 
@@ -1106,6 +1137,18 @@ public:
 	bool   InLoop() const           { return inloop; }
 	bool   InCurrentLoop() const    { return GetLoopCtrl() == this; }
 	int    GetExitCode() const      { return exitcode; }
+
+	static PasteClip& Clipboard();
+	static PasteClip& Selection();
+	void   SetSelectionSource(const char *fmts);
+	int    DoDragAndDrop(const char *fmts, const Image& sample, dword actions,
+	                     const VectorMap<String, String>& data);
+	int    DoDragAndDrop(const char *fmts, const Image& sample, dword actions = DND_ALL);
+	int    DoDragAndDrop(const VectorMap<String, String>& data, const Image& sample,
+	                     dword actions = DND_ALL);
+	static Ctrl *DragAndDropSource();
+	bool   IsDragAndDropSource()    { return this == DragAndDropSource(); }
+	static Size  StdSampleSize()    { return Size(126, 96); }
 
 	void SetMinSize(Size sz) {} // see CtrlLayout template and WindowCtrl...
 
@@ -1483,41 +1526,6 @@ void   AppendClipboardImage(const Image& img);
 
 inline void WriteClipboardImage(const Image& img)
 	{ ClearClipboard(); AppendClipboardImage(img); }
-
-class DnDAction {
-	VectorMap<String, String> datasrc;
-	bool  copy;
-	bool  move;
-	Image sample;
-	Ptr<Ctrl> ctrl;
-
-	friend struct UDataObject;
-	friend struct UEnumFORMATETC;
-
-public:
-	DnDAction& Append(const char *fmt, const String& data);
-	template <class T>
-	DnDAction& Append(const T& data)    { Append(typeid(T).name(), StoreAsString(data)); }
-	DnDAction& NoCopy()                 { copy = false; return *this; }
-	DnDAction& NoMove()                 { move = false; return *this; }
-	DnDAction& Sample(const Image& m)   { sample = m; return *this; }
-
-	int Do();
-
-	DnDAction(Ctrl *src, const char *fmts = NULL);
-};
-
-template <class T>
-bool Has(const ClipData& data)
-{
-	return data.Has(typeid(T).name());
-}
-
-template <class T>
-bool Get(const ClipData& data)
-{
-	return data.Get(typeid(T).name());
-}
 
 #include <CtrlCore/TopWindow.h>
 

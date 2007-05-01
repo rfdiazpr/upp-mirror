@@ -26,7 +26,7 @@ public:
 	virtual RGBA   *GetPalette();
 	virtual const RasterFormat *GetFormat();
 
-	BMPRaster()     { file = true; }
+	BMPRaster(bool file = true) : file(file) {}
 	~BMPRaster();
 };
 

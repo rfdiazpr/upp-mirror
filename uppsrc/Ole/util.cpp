@@ -127,7 +127,7 @@ OleVariant AsVariant(Value value) {
 	return out;
 }
 
-double GetCurrency(const CY& currency) {
+double GetCurrency(const win32_CY_& currency) {
 	return (currency.Hi * (65536.0 * 65536.0) + currency.Lo) / 10000.0;
 }
 

@@ -96,6 +96,12 @@ String EncodeRTF(const RichText& richtext, byte charset)
 	return s;
 }
 
+String EncodeRTF(const RichText& richtext)
+{
+	return EncodeRTF(richtext, GetDefaultCharset() == CHARSET_UTF8 ? GetLNGCharset(GetSystemLNG())
+	                                                               : GetDefaultCharset());
+}
+
 RTFEncoder::RTFEncoder(Stream& stream, const RichText& richtext, byte charset)
 : stream(stream)
 , richtext(richtext)

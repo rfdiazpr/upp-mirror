@@ -256,7 +256,8 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 					+ ' ' + GetHostPathQ(fn), slot, GetHostPath(objfile), 1))
 					execerr = true;
 			}
-			else if(brc) {
+			else
+			if(brc) {
 				PutConsole(GetFileNamePos(fn));
 				try {
 					String hfn = GetHostPath(fn);
@@ -345,7 +346,9 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 					if(HasFlag("FORCE_SIZE")){
 						if(sContainsPchOptions(release_size_options))
 							lib << " -ltcg";
-					}else if(HasFlag("FORCE_SPEED"))
+					}
+					else
+					if(HasFlag("FORCE_SPEED"))
 						if(sContainsPchOptions(release_options))
 							lib << " -ltcg";
 					if(HasAnyDebug())
@@ -395,11 +398,13 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 					}
 				}
 				else{
-					lib << (HasFlag("INTEL") ? "xilib" : "lib") << " -nologo";
+					lib << (HasFlag("INTEL") ? "xilib" : "link /lib") << " -nologo";
 					if(HasFlag("FORCE_SIZE")){
 						if(sContainsPchOptions(release_size_options))
 							lib << " -ltcg";
-					}else if(HasFlag("FORCE_SPEED"))
+					}
+					else
+					if(HasFlag("FORCE_SPEED"))
 						if(sContainsPchOptions(release_options))
 							lib << " -ltcg";
 					lib << " -out:" << GetHostPathQ(product) << ' ' << Gather(pkg.link, config.GetKeys());
@@ -412,7 +417,9 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 				if(Execute(lib)) {
 					DeleteFile(product);
 					return false;
-				}else if(HasFlag("MSC8") && is_shared) {
+				}
+				else
+				if(HasFlag("MSC8") && is_shared) {
 					String mt("mt -nologo -manifest ");
 					mt << GetHostPathQ(product) << ".manifest -outputresource:" << GetHostPathQ(product) << ";2";
 					Execute(mt);
@@ -444,7 +451,9 @@ bool MscBuilder::Link(const Vector<String>& linkfile, const String& linkoptions,
 			if(HasFlag("FORCE_SIZE")){
 				if(sContainsPchOptions(release_size_options))
 					link << " -ltcg";
-			}else if(HasFlag("FORCE_SPEED"))
+			}
+			else
+			if(HasFlag("FORCE_SPEED"))
 				if(sContainsPchOptions(release_options))
 					link << " -ltcg";
 			if(HasAnyDebug())
@@ -471,7 +480,7 @@ bool MscBuilder::Link(const Vector<String>& linkfile, const String& linkoptions,
 			CustomStep(".pre-link");
 			if(Execute(link) == 0) {
 				CustomStep(".post-link");
-				if(HasFlag("MSC8")) {
+				if(HasFlag("MSC8") && HasFlag("SHARED")) {
 					String mt("mt -nologo -manifest ");
 					mt << GetHostPathQ(target) << ".manifest -outputresource:" << GetHostPathQ(target)
 				           << (HasFlag("DLL") ? ";2" : ";1");

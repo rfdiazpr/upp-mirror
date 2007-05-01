@@ -2,9 +2,9 @@
 
 NAMESPACE_UPP
 
-#include "HeapImp.h"
-
 #ifdef UPP_HEAP
+
+#include "HeapImp.h"
 
 static inline void *MAlloc_WS()
 {

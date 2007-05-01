@@ -291,8 +291,10 @@
 			#include <wingdi.h>
 			#include <winuser.h>
 		#define byte win32_byte_ // RpcNdr defines byte -> class with Upp::byte
+		#define CY win32_CY_
 			#include <objidl.h>
 		#undef byte
+		#undef CY
 			typedef DWORD LCTYPE;
 		#else
 			#define _WINSOCKAPI_   /* Prevent inclusion of winsock.h in windows.h */

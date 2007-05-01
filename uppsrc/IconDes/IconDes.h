@@ -266,7 +266,10 @@ private:
 	void  RemoveImage();
 	void  Duplicate();
 	void  InsertPaste();
+	void  InsertFile();
 	void  MoveSlot(int d);
+
+	static FileSel& ImgFile();
 
 public:
 	virtual void ToolEx(Bar& bar);

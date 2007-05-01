@@ -126,6 +126,8 @@ public:
 	virtual void  Paint(Draw& w);
 	virtual bool  Key(dword key, int count);
 	virtual void  LeftDown(Point p, dword flags);
+	virtual void  LeftUp(Point p, dword flags);
+	virtual void  LeftDrag(Point p, dword flags);
 	virtual void  RightDown(Point p, dword flags);
 	virtual void  LeftDouble(Point p, dword flags);
 	virtual void  MouseMove(Point p, dword flags);
@@ -136,6 +138,11 @@ public:
 	virtual Value GetData() const;
 	virtual void  SetData(const Value& v);
 	virtual void  Serialize(Stream& s);
+	virtual void  DragAndDrop(Point p, PasteClip& d);
+	virtual void  DragRepeat(Point p);
+	virtual void  DragLeave();
+	virtual String GetSelection(const String& fmt) const;
+
 
 private:
 	Size                     p_size;
@@ -158,6 +165,10 @@ private:
 	RichHotPos               tabmove;
 	int                      mpos;
 	int                      undosteps;
+	int                      dropcursor;
+	Rect                     dropcaret;
+	int                      droppos, droplen;
+	bool                     selclick;
 	DropList                 face;
 	FontHeight               height;
 	DataPusher               hyperlink;
@@ -340,6 +351,7 @@ private:
 	Rect       GetObjectRect(int pos) const;
 	void       FixObjectRect();
 
+	void       SetObjectPos(int pos);
 	void       AdjustObjectSize();
 	void       SetObjectPercent(int p);
 	void       SetObjectYDelta(int pt);
@@ -470,6 +482,11 @@ private:
 	void     DoRefreshBar();
 	void     RefreshBar();
 
+	bool     Accept(PasteClip& d, RichText& clip);
+	void     ClipPaste(RichText& clip);
+	Rect     GetDropCaret();
+	bool     InSelection(int& c) const;
+
 	static bool   SpellWord(const wchar *wrd, int len, int lang);
 	static void   SpellerAdd(const WString& w, int lang);
 
@@ -498,11 +515,12 @@ public:
 	int    GetCursor() const                       { return cursor; }
 	int    GetAnchor() const                       { return anchor; }
 
-	void   Select(int pos, int count);
-	bool   IsSelection() const;
-	bool   GetSelection(int& l, int& h) const;
-	bool   RemoveSelection(bool joinnext = false);
-	void   CancelSelection();
+	void     Select(int pos, int count);
+	bool     IsSelection() const;
+	bool     GetSelection(int& l, int& h) const;
+	RichText GetSelection(int maxlen = INT_MAX) const;
+	bool     RemoveSelection(bool joinnext = false);
+	void     CancelSelection();
 
 	void   BeginOp()                               { NextUndo(); }
 

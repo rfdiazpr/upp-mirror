@@ -159,12 +159,10 @@ void IconDes::SmoothRescale()
 		if(IsPasting()) {
 			c.paste_image = Rescale(bk, sz);
 			MakePaste();
-			SyncImage();
 		}
 		else {
 			c.image = Rescale(bk, sz);
 			Refresh();
-			SyncShow();
 		}
 		SyncImage();
 		SyncShow();
@@ -177,8 +175,9 @@ void IconDes::SmoothRescale()
 			else {
 				c.image = bk;
 				Refresh();
-				SyncShow();
 			}
+			SyncImage();
+			SyncShow();
 			return;
 		case IDOK:
 			return;

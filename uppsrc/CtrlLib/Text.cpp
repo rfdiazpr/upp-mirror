@@ -23,6 +23,13 @@ TextCtrl::TextCtrl()
 
 TextCtrl::~TextCtrl() {}
 
+void TextCtrl::CancelMode()
+{
+	selclick = false;
+	dropcaret = Null;
+	isdrag = false;
+}
+
 void TextCtrl::Clear()
 {
 	cline = cpos = 0;
@@ -529,14 +536,14 @@ bool   TextCtrl::GetSelection(int& l, int& h) const {
 	}
 }
 
-String TextCtrl::GetSelection(byte charset) {
+String TextCtrl::GetSelection(byte charset) const {
 	int l, h;
 	if(GetSelection(l, h))
 		return Get(l, h - l, charset);
 	return String();
 }
 
-WString TextCtrl::GetSelectionW() {
+WString TextCtrl::GetSelectionW() const {
 	int l, h;
 	if(GetSelection(l, h))
 		return GetW(l, h - l);
@@ -636,6 +643,11 @@ void TextCtrl::StdBar(Bar& menu) {
 	menu.Add(GetLength(),
 			t_("Select all"), THISBACK(SelectAll))
 		.Key(K_CTRL_A);
+}
+
+String TextCtrl::GetSelectionData(const String& fmt) const
+{
+	return GetTextClip(GetSelectionW(), fmt);
 }
 
 END_UPP_NAMESPACE

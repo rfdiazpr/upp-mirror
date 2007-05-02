@@ -402,7 +402,7 @@ Image Ctrl::DispatchMouse(int e, Point p, int zd) {
 		UPP::SetTimeCallback(GetKbdDelay(), callback(&Ctrl::LRep), &mousepos);
 		UPP::SetTimeCallback(2 * GetKbdDelay(), callback(&Ctrl::LHold), &mousepos);
 		leftmousepos = p;
-		if(sDistMax(leftdblpos, mousepos) < GUI_DragDistance() && sDblTime(leftdbltime))
+		if(sDistMax(leftdblpos, p) < GUI_DragDistance() && sDblTime(leftdbltime))
 			e = LEFTTRIPLE;
 	}
 	if(e == RIGHTDOWN) {
@@ -410,7 +410,7 @@ Image Ctrl::DispatchMouse(int e, Point p, int zd) {
 		UPP::SetTimeCallback(GetKbdDelay(), callback(&Ctrl::RRep), &mousepos);
 		UPP::SetTimeCallback(2 * GetKbdDelay(), callback(&Ctrl::RHold), &mousepos);
 		rightmousepos = p;
-		if(sDistMax(rightdblpos, mousepos) < GUI_DragDistance() && sDblTime(rightdbltime))
+		if(sDistMax(rightdblpos, p) < GUI_DragDistance() && sDblTime(rightdbltime))
 			e = RIGHTTRIPLE;
 	}
 	if(e == LEFTUP)

@@ -97,7 +97,7 @@ Vector<String> PostgreSQLSession::EnumUsers()
 {
 	Vector<String> vec;
 	Sql sql(*this);
-	sql.Execute("SELECT rolname from pg_authid where rolcanlogin");
+	sql.Execute("select rolname from pg_authid where rolcanlogin");
 	while(sql.Fetch())
 	{
 		vec.Add(sql[0]);
@@ -109,53 +109,75 @@ Vector<String> PostgreSQLSession::EnumDatabases()
 {
 	Vector<String> vec;
 	Sql sql(*this);
-	sql.Execute("SELECT datname from pg_database");
+	sql.Execute("select datname from pg_database");
 	while(sql.Fetch())
-	{
 		vec.Add(sql[0]);
-	}
+	return vec;
+}
+
+Vector<String> PostgreSQLSession::EnumData(char type, const char *schema)
+{
+	Vector<String> vec;
+	Sql sql(Format("select n.nspname || '.' || c.relname from pg_catalog.pg_class c "
+		             "left join pg_catalog.pg_namespace n "
+		               "on n.oid = c.relnamespace "
+		            "where c.relkind = '%c' "
+		              "and n.nspname like '%s' "
+		              "and pg_catalog.pg_table_is_visible(c.oid)",
+		              type, schema ? schema : "%"), *this);
+	sql.Execute();
+	while(sql.Fetch())
+		vec.Add(sql[0]);
 	return vec;
 }
 
 Vector<String> PostgreSQLSession::EnumTables(String database)
 {
-	Vector<String> vec;
-	Sql sql(*this);
-	sql.Execute("select c.relname FROM pg_catalog.pg_class c "
-		"LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace "
-		"WHERE c.relkind IN ('r','') AND n.nspname NOT IN ('pg_catalog', 'pg_toast') "
-		"AND pg_catalog.pg_table_is_visible(c.oid)");
-	while(sql.Fetch())
-	{
-		vec.Add(sql[0]);
-	}
-	return vec;
+	return EnumData('r', database);
 }
 
 Vector<String> PostgreSQLSession::EnumViews(String database)
 {
-	return Vector<String>(); //TODO
+	return EnumData('v', database);
 }
 
 Vector<String> PostgreSQLSession::EnumSequences(String database)
 {
-	return Vector<String>(); //TODO
+	return EnumData('s', database);
 }
 
 Vector<SqlColumnInfo> PostgreSQLSession::EnumColumns(String database, String table)
 {
-	return Vector<SqlColumnInfo>(); //TODO try this: 
-/*
-SELECT a.attnum, a.attname AS field, t.typname AS type,
-       a.attlen AS length, a.atttypmod AS length_var,
-       a.attnotnull AS not_null, a.atthasdef as has_default
-  FROM pg_class c, pg_attribute a, pg_type t
- WHERE c.relname = '$table'
-   AND a.attnum > 0
-   AND a.attrelid = c.oid
-   AND a.atttypid = t.oid
- ORDER BY a.attnum;
-*/
+	/* database means schema here - support for schemas is a something to fix in sql interface */
+	
+	Vector<SqlColumnInfo> vec;
+
+	Sql sql(Format("select a.attname, a.atttypid, a.attlen, a.atttypmod, a.attnotnull "
+	                 "from pg_attribute a "
+	                "inner join pg_class c "
+	                   "on a.attrelid = c.oid "
+	                "inner join pg_namespace n "
+	                   "on c.relnamespace = n.oid "
+	                "where c.relname = '%s' "
+	                  "and n.nspname = '%s' "
+	                  "and a.attnum > 0 "
+	                "order by a.attnum", table, database), *this);
+	sql.Execute();
+	while(sql.Fetch())
+	{
+		SqlColumnInfo &ci = vec.Add();
+		int type_mod = int(sql[3]) - sizeof(int32);
+		ci.name = sql[0];
+		ci.type = sql[1];
+		ci.width = sql[2];
+		if(ci.width < 0)
+			ci.width = type_mod;
+		ci.prec = (type_mod >> 16) & 0xffff;
+		ci.scale = type_mod & 0xffff;
+		ci.decimals = ci.prec; //what is this for?
+		//ci.null = sql[4] == "0"; //not supported in column info structure		
+	}
+	return vec;
 }
 
 Vector<String> PostgreSQLSession::EnumPrimaryKey(String database, String table)
@@ -439,6 +461,9 @@ void PostgreSQLConnection::GetColumn(int i, Ref f) const
 	char * s = PQgetvalue(result, fetched_row, i);
 	switch(info[i].type)
 	{
+		case INT64_V:
+			f = atoi(s);
+			break;
 		case INT_V:
 			f = atoi(s);
 			break;

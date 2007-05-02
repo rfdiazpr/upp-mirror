@@ -1,3 +1,12 @@
+struct TextArrayOps {
+	virtual int GetLength() const = 0;
+	virtual int GetChar(int i) const = 0;
+
+	bool GetWordSelection(int c, int& sell, int& selh);
+	int  GetNextWord(int c);
+	int  GetPrevWord(int c);
+};
+
 class LookFrame : public CtrlFrame {
 public:
 	virtual void FrameLayout(Rect& r);
@@ -20,15 +29,21 @@ void ViewEdge_Write(Value);
 CtrlFrame& EditFieldFrame();
 CtrlFrame& ViewFrame();
 
-class EditField : public Ctrl {
+class EditField : public Ctrl, private TextArrayOps {
 public:
 	virtual void  Layout();
 	virtual void  Paint(Draw& draw);
 	virtual void  LeftDown(Point p, dword keyflags);
 	virtual void  MouseMove(Point p, dword keyflags);
 	virtual void  LeftDouble(Point p, dword keyflags);
+	virtual void  LeftTriple(Point p, dword keyflags);
+	virtual void  LeftDrag(Point p, dword flags);
+	virtual void  LeftUp(Point p, dword flags);
 	virtual void  RightDown(Point p, dword keyflags);
 	virtual Image CursorImage(Point p, dword keyflags);
+	virtual void  DragAndDrop(Point p, PasteClip& d);
+	virtual void  DragRepeat(Point p);
+	virtual void  DragLeave();
 	virtual bool  Key(dword key, int rep);
 	virtual void  GotFocus();
 	virtual void  LostFocus();
@@ -67,6 +82,10 @@ protected:
 	int             autosize;
 	byte            charset;
 
+	int        dropcursor;
+	Rect       dropcaret;
+	bool       selclick;
+
 	bool       password:1;
 	bool       autoformat:1;
 	bool       initcaps:1;
@@ -80,6 +99,7 @@ protected:
 	int     GetStringCx(const wchar *text, int n);
 	int     GetCaret(int cursor);
 	int     GetCursor(int posx);
+	void    SyncCaret();
 	void    Finish(bool refresh = true);
 	void    SaveUndo();
 	void    DoAutoFormat();
@@ -111,12 +131,13 @@ public:
 	void    Insert(const char *text)                    { return Insert(WString(text)); }
 	void    Insert(int chr);
 
-	void    Move(int newpos, bool select);
+	void    Move(int newpos, bool select = false);
 
 	void    SetSelection(int l = 0, int h = INT_MAX);
 	bool    GetSelection(int& l, int& h) const;
 	bool    IsSelection() const;
 	bool    RemoveSelection();
+	void    CancelSelection();
 	void    Copy();
 
 	void           SetText(const WString& text);
@@ -128,6 +149,7 @@ public:
 	operator String() const                  { return text.ToString(); }
 	void operator=(const WString& s)         { SetText(s); }
 	int     GetLength() const                { return text.GetLength(); }
+	int     GetChar(int i) const             { return text[i]; }
 
 	void    Clear();
 	void    Reset();

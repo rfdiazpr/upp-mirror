@@ -2,6 +2,52 @@
 
 NAMESPACE_UPP
 
+bool IsWCh(int c)
+{
+	return IsLeNum(c) || c == '_';
+}
+
+bool TextArrayOps::GetWordSelection(int c, int& l, int& h)
+{
+	if(IsWCh(GetChar(c))) {
+		l = h = c;
+		while(l > 0 && IsWCh(GetChar(l - 1)))
+			l--;
+		while(h < GetLength() && IsWCh(GetChar(h)))
+			h++;
+		if(h != c)
+			while(h < GetLength() && GetChar(h) == ' ')
+				h++;
+		return true;
+	}
+	return false;
+}
+
+int TextArrayOps::GetNextWord(int cursor)
+{
+	bool a = IsWCh(GetChar(cursor));
+	int n = 0;
+	int c = cursor;
+	while(c <= GetLength() && IsWCh(GetChar(c)) == a) {
+		if(++n > 10000) return cursor;
+		c++;
+	}
+	return c;
+}
+
+int TextArrayOps::GetPrevWord(int cursor)
+{
+	int n = 0;
+	int c = cursor;
+	if(c == 0) return 0;
+	bool a = IsWCh(GetChar(c - 1));
+	while(c > 0 && IsWCh(GetChar(c - 1)) == a) {
+		if(++n > 10000) return cursor;
+		c--;
+	}
+	return c;
+}
+
 void LookFrame::FrameLayout(Rect& r)
 {
 	Rect m = ChMargins((*look)());
@@ -66,6 +112,8 @@ EditField& EditField::SetStyle(const Style& s)
 void EditField::CancelMode()
 {
 	keep_selection = false;
+	selclick = false;
+	dropcaret.Clear();
 }
 
 int EditField::GetTextCx(const wchar *txt, int n, bool password)
@@ -118,7 +166,7 @@ int  EditField::GetCursor(int posx)
 			return i;
 		s++;
 	}
-	return posx > (x + x0) / 2 ? i : 0;
+	return posx > (x + x0) / 2 ? i : max(i - 1, 0);
 }
 
 Image EditField::CursorImage(Point, dword)
@@ -193,6 +241,8 @@ void EditField::Paint(Draw& w)
 	}
 	w.DrawRect(x, 0, 9999, fcy, paper);
 	w.End();
+//	w.DrawRect(dropcaret, LtBlue());
+	DrawTiles(w, dropcaret, CtrlImg::checkers());
 }
 
 bool EditField::GetSelection(int& l, int& h) const
@@ -215,6 +265,13 @@ bool EditField::GetSelection(int& l, int& h) const
 bool EditField::IsSelection() const
 {
 	return anchor >= 0 && anchor != cursor;
+}
+
+void EditField::SyncCaret()
+{
+	FontInfo fi = font.Info();
+	SetCaret(GetCaret(cursor) - sc + 2 - fi.GetRightSpace('o'), GetTy(),
+	         1, min(GetSize().cy - 2 * GetTy(), fi.GetHeight()));
 }
 
 void EditField::Finish(bool refresh)
@@ -248,9 +305,7 @@ void EditField::Finish(bool refresh)
 	}
 	if(refresh)
 		Refresh();
-	FontInfo fi = font.Info();
-	SetCaret(x - sc + 2 - fi.GetRightSpace('o'), GetTy(),
-	         1, min(sz.cy - 2 * GetTy(), fi.GetHeight()));
+	SyncCaret();
 }
 
 void EditField::Layout()
@@ -296,26 +351,40 @@ void EditField::LeftDown(Point p, dword flags)
 		}
 		sc = 0;
 	}
+	int c = GetCursor(p.x + sc);
+	int l, h;
+	selclick = false;
+	if(GetSelection(l, h) && c >= l && c < h) {
+		selclick = true;
+		return;
+	}
 	SetCapture();
-	Move(GetCursor(p.x + sc), flags & K_SHIFT);
+	Move(c, flags & K_SHIFT);
 	Finish();
+}
+
+void EditField::LeftUp(Point p, dword flags)
+{
+	int c = GetCursor(p.x + sc);
+	int l, h;
+	if(GetSelection(l, h) && c >= l && c < h && !HasCapture() && selclick)
+		Move(c, false);
+	Finish();
+	selclick = false;
 }
 
 void EditField::LeftDouble(Point p, dword flags)
 {
-	if(IsLeNum(text[cursor])) {
-		int l = cursor;
-		int h = cursor;
-		while(l > 0 && IsLeNum(text[l - 1]))
-			l--;
-		while(h < GetLength() && IsLeNum(text[h]))
-			h++;
-		if(h != cursor)
-			while(h < GetLength() && text[h] == ' ')
-				h++;
-		if(l != h)
-			SetSelection(l, h);
-	}
+	int l, h;
+	if(GetWordSelection(cursor, l, h))
+		SetSelection(l, h);
+}
+
+void EditField::LeftTriple(Point p, dword keyflags)
+{
+	anchor = 0;
+	cursor = text.GetLength();
+	Finish();
 }
 
 void EditField::MouseMove(Point p, dword flags)
@@ -356,6 +425,17 @@ void EditField::SetSelection(int l, int h)
 		anchor = -1;
 	}
 	Finish();
+}
+
+void EditField::CancelSelection()
+{
+	int l, h;
+	if(GetSelection(l, h)) {
+		cursor = l;
+		anchor = -1;
+		sc = 0;
+		Finish();
+	}
 }
 
 bool EditField::RemoveSelection()
@@ -437,9 +517,93 @@ void EditField::Insert(const WString& s)
 	Finish();
 }
 
-static inline bool IsWord(int c)
+void EditField::DragAndDrop(Point p, PasteClip& d)
 {
-	return IsLetter(c) || IsDigit(c);
+	if(IsReadOnly()) return;
+	int c = GetCursor(p.x + sc);
+	if(AcceptText(d)) {
+		SaveUndo();
+		int sell, selh;
+		if(GetSelection(sell, selh)) {
+			if(c >= sell && c < selh) {
+				RemoveSelection();
+				if(IsDragAndDropSource())
+					d.SetAction(DND_COPY);
+				c = sell;
+			}
+			else
+			if(d.GetAction() == DND_MOVE && IsDragAndDropSource()) {
+				if(c > sell)
+					c -= selh - sell;
+				RemoveSelection();
+				d.SetAction(DND_COPY);
+			}
+		}
+		int count = Insert(c, GetWString(d));
+		SetFocus();
+		SetSelection(c, c + count);
+		return;
+	}
+	if(!d.IsAccepted()) return;
+	Rect dc(0, 0, 0, 0);
+	if(c >= 0) {
+		FontInfo fi = font.Info();
+		int x = GetCaret(c);
+		dc = RectC(x - sc + 2 - fi.GetRightSpace('o'), GetTy(),
+		           1, min(GetSize().cy - 2 * GetTy(), fi.GetHeight()));
+	}
+	if(dc != dropcaret) {
+		Refresh(dropcaret);
+		dropcaret = dc;
+		Refresh(dropcaret);
+	}
+}
+
+void EditField::DragRepeat(Point p)
+{
+	if(IsReadOnly())
+		return;
+	Size sz = GetSize();
+	int sd = min(sz.cx / 6, 16);
+	int d = 0;
+	if(p.x < sd)
+		d = -3;
+	if(p.x > sz.cx - sd)
+		d = 3;
+	int a = minmax((int)sc + minmax(d, -16, 16), 0, max(0, GetCaret(GetLength()) - sz.cx + 2));
+	if(a != sc) {
+		sc = a;
+		Refresh();
+		SyncCaret();
+	}
+}
+
+void EditField::DragLeave()
+{
+	Refresh(dropcaret);
+	dropcaret.Clear();
+}
+
+void EditField::LeftDrag(Point p, dword flags)
+{
+	int c = GetCursor(p.x + sc);
+	Size ssz = StdSampleSize();
+	int sell, selh;
+	if(!HasCapture() && GetSelection(sell, selh) && c >= sell && c <= selh) {
+		WString sel = text.Mid(sell, selh - sell);
+		ImageDraw iw(ssz);
+		iw.DrawText(0, 0, sel);
+		iw.Alpha().DrawText(0, 0, sel, StdFont(), White);
+		VectorMap<String, String> data;
+		AddTextClip(data, sel);
+		if(DoDragAndDrop(data, iw) == DND_MOVE) {
+			CancelSelection();
+			SaveUndo();
+			Remove(sell, selh - sell);
+			sc = 0;
+			Finish();
+		}
+	}
 }
 
 void EditField::Undo()
@@ -531,18 +695,10 @@ bool EditField::Key(dword key, int rep)
 		Move(cursor - 1, select);
 		return true;
 	case K_CTRL_LEFT:
-		if(cursor <= 0) return true;
-		q = cursor - 1;
-		while(q > 0 && text[q - 1] != ' ')
-			q--;
-		Move(q, select);
+		Move(GetPrevWord(cursor), select);
 		return true;
 	case K_CTRL_RIGHT:
-		if(cursor >= text.GetLength()) return true;
-		q = cursor + 1;
-		while(q < text.GetLength() && text[q] != ' ')
-			q++;
-		Move(q, select);
+		Move(GetNextWord(cursor), select);
 		return true;
 	case K_RIGHT:
 		Move(cursor + 1, select);
@@ -596,8 +752,8 @@ bool EditField::Key(dword key, int rep)
 		if(cursor == 0 || IsReadOnly()) return true;
 		SaveUndo();
 		q = cursor;
-		h = IsWord(text[--cursor]);
-		while(cursor > 0 && IsWord(text[cursor - 1]) == h)
+		h = IsWCh(text[--cursor]);
+		while(cursor > 0 && IsWCh(text[cursor - 1]) == h)
 			cursor--;
 		Remove(cursor, q - cursor);
 		Action();
@@ -619,8 +775,8 @@ bool EditField::Key(dword key, int rep)
 		}
 		if(cursor >= text.GetLength()) return true;
 		q = cursor;
-		h = IsWord(text[q]);
-		while(IsWord(text[q]) == h && q < text.GetLength()) q++;
+		h = IsWCh(text[q]);
+		while(IsWCh(text[q]) == h && q < text.GetLength()) q++;
 		SaveUndo();
 		Remove(cursor, q - cursor);
 		Action();

@@ -120,7 +120,7 @@ struct FontHeight : public WithDropChoice<EditDouble> {
 #define LAYOUTFILE <RichEdit/RichEdit.lay>
 #include <CtrlCore/lay.h>
 
-class RichEdit : public Ctrl {
+class RichEdit : public Ctrl, private TextArrayOps {
 public:
 	virtual void  Layout();
 	virtual void  Paint(Draw& w);
@@ -130,6 +130,7 @@ public:
 	virtual void  LeftDrag(Point p, dword flags);
 	virtual void  RightDown(Point p, dword flags);
 	virtual void  LeftDouble(Point p, dword flags);
+	virtual void  LeftTriple(Point p, dword flags);
 	virtual void  MouseMove(Point p, dword flags);
 	virtual void  LeftRepeat(Point p, dword flags);
 	virtual void  MouseWheel(Point p, int zdelta, dword keyflags);
@@ -141,7 +142,7 @@ public:
 	virtual void  DragAndDrop(Point p, PasteClip& d);
 	virtual void  DragRepeat(Point p);
 	virtual void  DragLeave();
-	virtual String GetSelection(const String& fmt) const;
+	virtual String GetSelectionData(const String& fmt) const;
 
 
 private:
@@ -165,9 +166,7 @@ private:
 	RichHotPos               tabmove;
 	int                      mpos;
 	int                      undosteps;
-	int                      dropcursor;
 	Rect                     dropcaret;
-	int                      droppos, droplen;
 	bool                     selclick;
 	DropList                 face;
 	FontHeight               height;
@@ -484,8 +483,8 @@ private:
 
 	bool     Accept(PasteClip& d, RichText& clip);
 	void     ClipPaste(RichText& clip);
-	Rect     GetDropCaret();
 	bool     InSelection(int& c) const;
+	void     RefreshDropCaret();
 
 	static bool   SpellWord(const wchar *wrd, int len, int lang);
 	static void   SpellerAdd(const WString& w, int lang);
@@ -519,6 +518,7 @@ public:
 	bool     IsSelection() const;
 	bool     GetSelection(int& l, int& h) const;
 	RichText GetSelection(int maxlen = INT_MAX) const;
+	void     SetSelection(int l, int h)            { Select(l, h - l); }
 	bool     RemoveSelection(bool joinnext = false);
 	void     CancelSelection();
 

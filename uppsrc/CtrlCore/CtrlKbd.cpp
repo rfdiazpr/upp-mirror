@@ -192,6 +192,7 @@ bool Ctrl::SetFocus0(bool activate)
 	if(!topwindow) topwindow = topctrl;
 	LLOG("SetFocus -> SetWndFocus: topwindow = " << ::Name(topwindow) << ", focusCtrlWnd = " << ::Name(focusCtrlWnd));
 	if(!topwindow->HasWndFocus() && !topwindow->SetWndFocus()) return false;// cxl 31.1.2004
+	topwindow->SetWndForeground(); // cxl 2007-4-27
 	LLOG("SetFocus -> focusCtrl = this: " << FormatIntHex(this) << ", _this = " << FormatIntHex(~_this) << ", " << ::Name(_this));
 	focusCtrl = _this;
 	focusCtrlWnd = topwindow;

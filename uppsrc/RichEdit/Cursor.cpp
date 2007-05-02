@@ -154,21 +154,12 @@ bool RichEdit::IsW(int c)
 
 void RichEdit::MoveWordRight(bool select)
 {
-	int c = cursor;
-	bool a = IsW(text[c]);
-	while(c <= text.GetLength() && IsW(text[c]) == a)
-		c++;
-	Move(c, select);
+	Move(GetNextWord(cursor), select);
 }
 
 void RichEdit::MoveWordLeft(bool select)
 {
-	int c = cursor;
-	if(c == 0) return;
-	bool a = IsW(text[c - 1]);
-	while(c > 0 && IsW(text[c - 1]) == a)
-		c--;
-	Move(c, select);
+	Move(GetPrevWord(cursor), select);
 }
 
 bool RichEdit::SelBeg(bool select)

@@ -26,8 +26,10 @@ byte  ExtractAccessKey(const char *s, String& label);
 bool  CompareAccessKey(byte accesskey, dword key);
 byte  ChooseAccessKey(const char *s, dword used);
 
-void DrawFocus(Draw& w, int x, int y, int cx, int cy);
-void DrawFocus(Draw& w, const Rect& r);
+void DrawFocus(Draw& w, int x, int y, int cx, int cy, Color c = SColorText());
+void DrawFocus(Draw& w, const Rect& r, Color c = SColorText());
+
+void DrawHorzDrop(Draw& w, int x, int y, int cx);
 
 struct DrawLabel {
 	bool      push;

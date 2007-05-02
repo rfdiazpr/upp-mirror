@@ -78,6 +78,13 @@ enum_property EditModes
 	"1" : "Cell"
 }
 
+enum_property ToolBarPos
+{
+	"0" : "Off",
+	"1" : "Top",
+	"2" : "Bottom"
+}
+
 ctrl GridCtrl {
 	group "Complex";
 
@@ -151,6 +158,9 @@ ctrl GridCtrl {
 	bool TabAddsRow = true;
 	bool EnterLikeTab = false;
 	bool Chameleon = false;
+	bool DrawFocus = false;
+	
+	//bool SetToolBar
 
 	Paint(w) 
 	{

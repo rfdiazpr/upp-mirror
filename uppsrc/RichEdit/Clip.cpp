@@ -52,50 +52,50 @@ void RichEdit::ClipPaste(RichText& clip)
 
 void RichEdit::DragAndDrop(Point p, PasteClip& d)
 {
-	dropcursor = GetMousePos(p);
+	int dropcursor = GetMousePos(p);
 	if(dropcursor >= 0) {
 		RichText clip;
 		if(Accept(d, clip)) {
 			NextUndo();
+			int a = sb;
 			int c = dropcursor;
-			if(InSelection(c))
+			if(InSelection(c)) {
 				RemoveSelection();
+				if(IsDragAndDropSource())
+					d.SetAction(DND_COPY);
+			}
 			int sell, selh;
-			bool sel = GetSelection(sell, selh);
+			if(GetSelection(sell, selh) && d.GetAction() == DND_MOVE && IsDragAndDropSource()) {
+				if(c > sell)
+					c -= selh - sell;
+				RemoveSelection();
+				d.SetAction(DND_COPY);
+			}
 			Move(c);
 			clip.Normalize();
-			droppos = cursor;
-			droplen = clip.GetLength();
 			ClipPaste(clip);
-			if(sel) {
-				if(c < sell) {
-					sell += clip.GetLength();
-					selh += clip.GetLength();
-				}
-				Select(sell, selh - sell);
-			}
+			sb = a;
+			Select(c, clip.GetLength());
+			SetFocus();
 			return;
 		}
 	}
 	if(!d.IsAccepted()) dropcursor = -1;
-	Rect r = GetDropCaret();
-	if(r != dropcaret) {
-		Refresh(dropcaret);
-		dropcaret = r;
-		Refresh(dropcaret);
+	Rect r = Null;
+	if(dropcursor >= 0 || dropcursor < text.GetLength()) {
+		RichCaret pr = text.GetCaret(dropcursor, pagesz);
+		int h = pr.Height();
+		Zoom zoom = GetZoom();
+		Rect tr = GetTextRect();
+		r = RectC(pr.left * zoom + tr.left - 1,
+		          GetPosY(pr) + (pr.lineascent - pr.caretascent) * zoom,
+		          2, (pr.caretascent + pr.caretdescent) * zoom);
 	}
-}
-
-Rect RichEdit::GetDropCaret()
-{
-	if(dropcursor < 0 || dropcursor > text.GetLength())
-		return Rect(0, 0, 0, 0);
-	RichCaret pr = text.GetCaret(dropcursor, pagesz);
-	int h = pr.Height();
-	Zoom zoom = GetZoom();
-	Rect tr = GetTextRect();
-	return RectC(pr.left * zoom + tr.left - 1, GetPosY(pr) + (pr.lineascent - pr.caretascent) * zoom - sb,
-	             2, (pr.caretascent + pr.caretdescent) * zoom);
+	if(r != dropcaret) {
+		RefreshDropCaret();
+		dropcaret = r;
+		RefreshDropCaret();
+	}
 }
 
 void RichEdit::DragRepeat(Point p)
@@ -103,13 +103,20 @@ void RichEdit::DragRepeat(Point p)
 	if(IsReadOnly())
 		return;
 	Size sz = GetSize();
-	int sd = min(sz.cy / 4, 32);
+	int sd = min(sz.cy / 6, 32);
 	int d = 0;
 	if(p.y < sd)
 		d = p.y - sd;
 	if(p.y > sz.cy - sd)
 		d = p.y - sz.cy + sd;
+	RefreshDropCaret();
 	sb = (int)sb + minmax(d, -16, 16);
+	RefreshDropCaret();
+}
+
+void RichEdit::RefreshDropCaret()
+{
+	Refresh(dropcaret.OffsetedVert(-sb));
 }
 
 void RichEdit::Paste()
@@ -124,8 +131,7 @@ void RichEdit::Paste()
 
 void RichEdit::DragLeave()
 {
-	Refresh(dropcaret);
-	dropcursor = -1;
+	RefreshDropCaret();
 	dropcaret.Clear();
 }
 
@@ -150,7 +156,7 @@ void RichEdit::Copy()
 	}
 }
 
-String RichEdit::GetSelection(const String& fmt) const
+String RichEdit::GetSelectionData(const String& fmt) const
 {
 	String f = fmt;
 	if(IsSelection()) {
@@ -193,17 +199,9 @@ void RichEdit::LeftDrag(Point p, dword flags)
 				s->a = 0;
 			s++;
 		}
-		droppos = -1;
 		NextUndo();
-		int sell, selh;
-		if(DoDragAndDrop("text/QTF;" RTFS ";" + ClipFmtsText(), ib) == DND_MOVE
-		   && GetSelection(sell, selh)) {
-			if(droppos >= 0 && droppos >= selh)
-				droppos -= selh - sell;
+		if(DoDragAndDrop("text/QTF;" RTFS ";" + ClipFmtsText(), ib) == DND_MOVE)
 			RemoveSelection();
-		}
-		if(droppos >= 0)
-			Select(droppos, droplen);
 	}
 /*	else
 	if(objectpos >= 0 && c == objectpos) {

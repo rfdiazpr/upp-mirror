@@ -1,7 +1,9 @@
-class TextCtrl : public Ctrl {
+class TextCtrl : public Ctrl, protected TextArrayOps {
 public:
 	virtual void  SetData(const Value& v);
 	virtual Value GetData() const;
+	virtual void  CancelMode();
+	virtual String GetSelectionData(const String& fmt) const;
 
 public:
 	struct UndoRec {
@@ -67,6 +69,10 @@ protected:
 	int              dirty;
 	byte             charset;
 
+	bool             selclick;
+	Point            dropcaret;
+	bool             isdrag;
+
 	Color            color[COLOR_COUNT];
 
 	bool             processtab;
@@ -131,8 +137,8 @@ public:
 	void    SetSelection(int anchor = 0, int cursor = INT_MAX);
 	bool    IsSelection() const               { return anchor >= 0; }
 	bool    GetSelection(int& l, int& h) const;
-	String  GetSelection(byte charset = CHARSET_DEFAULT);
-	WString GetSelectionW();
+	String  GetSelection(byte charset = CHARSET_DEFAULT) const;
+	WString GetSelectionW() const;
 	void    ClearSelection();
 	bool    RemoveSelection();
 	void    SetCursor(int cursor)             { PlaceCaret(cursor); }
@@ -179,16 +185,23 @@ public:
 
 class LineEdit : public TextCtrl {
 public:
-	virtual bool  Key(dword key, int count);
-	virtual void  Paint(Draw& w);
-	virtual void  LeftDown(Point p, dword flags);
-	virtual void  RightDown(Point p, dword flags);
-	virtual void  LeftRepeat(Point p, dword keyflags);
-	virtual void  MouseMove(Point p, dword flags);
-	virtual void  MouseWheel(Point, int zdelta, dword);
-	virtual Image CursorImage(Point, dword);
-	virtual void  Layout();
-	virtual void  RefreshLine(int i);
+	virtual bool   Key(dword key, int count);
+	virtual void   Paint(Draw& w);
+	virtual void   LeftDown(Point p, dword flags);
+	virtual void   RightDown(Point p, dword flags);
+	virtual void   LeftRepeat(Point p, dword keyflags);
+	virtual void   LeftDouble(Point p, dword keyflags);
+	virtual void   LeftTriple(Point p, dword keyflags);
+	virtual void   LeftUp(Point p, dword flags);
+	virtual void   LeftDrag(Point p, dword flags);
+	virtual void   MouseMove(Point p, dword flags);
+	virtual void   MouseWheel(Point, int zdelta, dword);
+	virtual Image  CursorImage(Point, dword);
+	virtual void   DragAndDrop(Point p, PasteClip& d);
+	virtual void   DragRepeat(Point p);
+	virtual void   DragLeave();
+	virtual void   Layout();
+	virtual void   RefreshLine(int i);
 
 protected:
 	virtual void  SetSb();
@@ -232,7 +245,6 @@ protected:
 	bool             showtabs;
 	bool             cutline;
 	bool             overwrite;
-
 	Scroller         scroller;
 	Point            caretpos;
 
@@ -247,6 +259,8 @@ protected:
 
 	void   Scroll();
 	void   SetHBar();
+	Rect   DropCaret();
+	void   RefreshDropCaret();
 
 	struct RefreshDraw;
 
@@ -328,6 +342,9 @@ public:
 	virtual void  Layout();
 	virtual bool  Key(dword key, int count);
 	virtual void  LeftDown(Point p, dword flags);
+	virtual void  LeftDouble(Point p, dword keyflags);
+	virtual void  LeftTriple(Point p, dword keyflags);
+	virtual void  LeftUp(Point p, dword flags);
 	virtual void  RightDown(Point p, dword w);
 	virtual void  MouseMove(Point p, dword flags);
 	virtual void  MouseWheel(Point p, int zdelta, dword keyflags);
@@ -336,6 +353,11 @@ public:
 	virtual void  LostFocus();
 	virtual void  RefreshLine(int i);
 	virtual void  SetSb();
+
+	virtual void  DragAndDrop(Point p, PasteClip& d);
+	virtual void  DragRepeat(Point p);
+	virtual void  DragLeave();
+	virtual void  LeftDrag(Point p, dword flags);
 
 protected:
 	virtual void  ClearLines();
@@ -380,6 +402,9 @@ protected:
 	void   VertMove(int delta, bool select, bool scs);
 	void   HomeEnd(int x, bool select);
 	void   RefreshStyle();
+	Rect   DropCaret();
+	void   RefreshDropCaret();
+	int    GetMousePos(Point p);
 
 public:
 	DocEdit& After(int a)               { after = a; RefreshStyle(); return *this; }

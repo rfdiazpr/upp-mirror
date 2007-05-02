@@ -301,6 +301,7 @@ class GridCtrl : public Ctrl
 		bool clipboard:1;
 		bool extra_paste:1;
 		bool fixed_paste:1;
+		bool draw_focus:1;
 				
 		bool reject_null_row:1;
 		bool tab_changes_row:1;
@@ -520,6 +521,8 @@ class GridCtrl : public Ctrl
 		GridCtrl& ExtraPaste(bool b = true)      { extra_paste       = b; return *this; }
 		GridCtrl& FixedPaste(bool b = true)      { fixed_paste       = b; return *this; }
 		
+		GridCtrl& DrawFocus(bool b = true)       { draw_focus        = b; return *this; }
+		
 		GridCtrl& RejectNullRow(bool b = true)   { reject_null_row   = b; return *this; }
 		GridCtrl& KeepLastRow(bool b = true)     { keep_last_row     = b; return *this; }
 		GridCtrl& TabChangesRow(bool b = true)   { tab_changes_row   = b; return *this; }
@@ -682,8 +685,8 @@ class GridCtrl : public Ctrl
 		
 		bool StartEdit(int focusmode = 1);
 		bool SwitchEdit();
-		void EndEdit(bool accept = true, bool doall = false);
-		void CancelEdit() { EndEdit(false); }
+		bool EndEdit(bool accept = true, bool doall = false);
+		bool CancelEdit() { return EndEdit(false); }
 		
 		int  Append(int cnt = 1, bool refresh = true, int height = GD_ROW_HEIGHT);
 		void Insert(int i, int cnt = 1);
@@ -786,6 +789,7 @@ class GridCtrl : public Ctrl
 		void DoDuplicate();
 		void DoEdit();
 		void DoEndEdit();
+		void DoCancelEdit();
 		void DoSelectAll();
 		void DoSwapUp();
 		void DoSwapDown();
@@ -992,6 +996,9 @@ class GridCtrl : public Ctrl
 		int  GetIdRow(int id, bool checkall = false);
 		Item& GetItemSize(int &r, int &c, int &x, int &y, int &cx, int &cy, bool &skip, bool relx = true, bool rely = true);
 
+	private:
+		bool WhenInsertRow0();
+
 	public:
 		
 		Callback1<Bar&> WhenMenuBar;
@@ -1001,7 +1008,7 @@ class GridCtrl : public Ctrl
 		Callback WhenLeftClick;
 		Callback WhenEnter;
 		Callback WhenEmpty;
-		
+				
 		Callback WhenInsertRow;
 		Callback WhenUpdateRow;
 		Callback WhenRemoveRow;

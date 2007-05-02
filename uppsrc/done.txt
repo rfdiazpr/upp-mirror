@@ -1,3 +1,9 @@
+Weekend {
+	RichEdit left triple
+	SetWndForeground in SetFocus
+}
+
+============
 * "Seems OK except for some of the hot-key listings on the menus (eg ctrl+100dc for split horizontal)"
 
 * No blitz package flag

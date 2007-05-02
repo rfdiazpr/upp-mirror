@@ -124,7 +124,6 @@ void UDropTarget::DnD(POINTL pl, bool drop, DWORD *effect, DWORD keys)
 	Point p(pl.x, pl.y);
 	PasteClip d;
 	d.dt = this;
-	d.prefer = 0;
 	d.paste = drop;
 	d.accepted = false;
 	Point hp = p - ctrl->GetScreenRect().TopLeft();
@@ -134,29 +133,37 @@ void UDropTarget::DnD(POINTL pl, bool drop, DWORD *effect, DWORD keys)
 		p -= sw.TopLeft();
 	else
 		c = NULL;
+	d.allowed = 0;
+	d.action = 0;
+	if(e & DROPEFFECT_COPY) {
+		d.allowed = DND_COPY;
+		d.action = DND_COPY;
+	}
+	if(e & DROPEFFECT_MOVE) {
+		d.allowed |= DND_MOVE;
+		if(c->IsDragAndDropSource())
+			d.action = DND_MOVE;
+	}
+	if((keys & MK_CONTROL) && (d.allowed & DND_COPY))
+		d.action = DND_COPY;
+	if((keys & MK_CONTROL) && (d.allowed & DND_COPY))
+		d.action = DND_COPY;
+	if((keys & (MK_ALT|MK_SHIFT)) && (d.allowed & DND_MOVE))
+		d.action = DND_MOVE;
 	if(c != dndctrl) {
 		if(dndctrl) dndctrl->DragLeave();
 		dndctrl = c;
 		if(dndctrl) dndctrl->DragEnter(p, d);
 	}
+	*effect = DROPEFFECT_NONE;
 	if(c) {
 		dndpos = p;
 		c->DragAndDrop(p, d);
-		if(d.accepted) {
-			*effect = DND_MOVE;
-			if(d.prefer == DND_COPY)
-				*effect = DND_COPY;
-			if(keys & MK_CONTROL)
-				*effect = DROPEFFECT_COPY;
-			if(keys & (MK_ALT|MK_SHIFT))
+		if(d.IsAccepted()) {
+			if(d.action == DND_MOVE)
 				*effect = DROPEFFECT_MOVE;
-			if((*effect & e) == 0) {
-				*effect = DROPEFFECT_NONE;
-				if(e & DROPEFFECT_COPY)
-					*effect = DROPEFFECT_COPY;
-				if(e & DROPEFFECT_MOVE)
-					*effect = DROPEFFECT_MOVE;
-			}
+			if(d.action == DND_COPY)
+				*effect = DROPEFFECT_COPY;
 		}
 	}
 }
@@ -233,7 +240,7 @@ STDMETHODIMP UDropTarget::DragLeave()
 
 STDMETHODIMP UDropTarget::Drop(LPDATAOBJECT, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
 {
-	LOG("Drop");
+	LLOG("Drop");
 	DnD(pt, true, pdwEffect, grfKeyState);
 	EndDrag();
 	FreeData();

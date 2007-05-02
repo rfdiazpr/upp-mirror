@@ -156,6 +156,7 @@ void DocEdit::Paint(Draw& w) {
 	w.DrawRect(1, y++, cx, 1, SColorShadow);
 	if(y < sz.cy)
 		w.DrawRect(1, y, cx, sz.cy - y, bg);
+	DrawTiles(w, DropCaret(), CtrlImg::checkers());
 }
 
 void DocEdit::SetSb()
@@ -251,15 +252,51 @@ void DocEdit::PlaceCaret(int newpos, bool select) {
 	SelectionChanged();
 }
 
+int DocEdit::GetMousePos(Point p)
+{
+	return GetCursorPos(Point(p.x - 1, p.y + sb - 1));
+}
+
 void DocEdit::LeftDown(Point p, dword flags) {
-	SetFocus();
-	PlaceCaret(GetCursorPos(Point(p.x - 1, p.y + sb - 1)), flags & K_SHIFT);
+	SetWantFocus();
+	int c = GetMousePos(p);
+	int l, h;
+	if(GetSelection(l, h) && c >= l && c < h) {
+		selclick = true;
+		return;
+	}
+	PlaceCaret(c, flags & K_SHIFT);
 	SetCapture();
+}
+
+void DocEdit::LeftUp(Point p, dword flags)
+{
+	if(!HasCapture() && selclick) {
+		int c = GetMousePos(p);
+		PlaceCaret(c, flags & K_SHIFT);
+		SetWantFocus();
+	}
+	selclick = false;
 }
 
 void DocEdit::MouseMove(Point p, dword flags) {
 	if(!HasCapture()) return;
-	PlaceCaret(GetCursorPos(Point(p.x - 1, p.y + sb - 1)), true);
+	PlaceCaret(GetMousePos(p), true);
+}
+
+void DocEdit::LeftDouble(Point, dword)
+{
+	int l, h;
+	if(GetWordSelection(cursor, l, h))
+		SetSelection(l, h);
+}
+
+void DocEdit::LeftTriple(Point, dword)
+{
+	int q = cursor;
+	int i = GetLinePos(q);
+	q = cursor - q;
+	SetSelection(q, q + GetLineLength(i) + 1);
 }
 
 Image DocEdit::CursorImage(Point, dword) {
@@ -314,20 +351,10 @@ bool DocEdit::Key(dword key, int cnt)
 	int pgsk = max(8, 6 * GetSize().cy / 8);
 	switch(key & ~K_SHIFT) {
 	case K_CTRL_LEFT:
-		if(cursor <= 0) return true;
-		q = cursor - 1;
-		h = IsLetter(GetChar(q));
-		while(q > 0 && IsLetter(GetChar(q - 1)) == h)
-			q--;
-		PlaceCaret(q, select);
+		PlaceCaret(GetPrevWord(cursor), select);
 		break;
 	case K_CTRL_RIGHT:
-		if(cursor >= total) return true;
-		h = IsLetter(GetChar(cursor));
-		q = cursor + 1;
-		while(q < total && IsLetter(GetChar(q)) == h)
-			q++;
-		PlaceCaret(q, select);
+		PlaceCaret(GetNextWord(cursor), select);
 		break;
 	case K_HOME:
 		HomeEnd(0, select);
@@ -448,7 +475,7 @@ void  DocEdit::RefreshStyle()
 void DocEdit::RightDown(Point p, dword w)
 {
 	SetFocus();
-	int c = GetCursorPos(Point(p.x - 1, p.y + sb - 1));
+	int c = GetMousePos(p);
 	int l, h;
 	if(!GetSelection(l, h) || c < l || c >= h)
 		PlaceCaret(c, false);
@@ -471,5 +498,99 @@ DocEdit::DocEdit()
 }
 
 DocEdit::~DocEdit() {}
+
+void DocEdit::DragAndDrop(Point p, PasteClip& d)
+{
+	if(IsReadOnly()) return;
+	int c = GetMousePos(p);
+	if(AcceptText(d)) {
+		NextUndo();
+		int a = sb;
+		int sell, selh;
+		if(GetSelection(sell, selh)) {
+			if(c >= sell && c < selh) {
+				RemoveSelection();
+				if(IsDragAndDropSource())
+					d.SetAction(DND_COPY);
+				c = sell;
+			}
+			else
+			if(d.GetAction() == DND_MOVE && IsDragAndDropSource()) {
+				if(c > sell)
+					c -= selh - sell;
+				RemoveSelection();
+				d.SetAction(DND_COPY);
+			}
+		}
+		int count = Insert(c, GetWString(d));
+		sb = a;
+		SetFocus();
+		SetSelection(c, c + count);
+		return;
+	}
+	if(!d.IsAccepted()) return;
+	Point dc = Null;
+	if(c >= 0) {
+		Point cr = GetCaret(c);
+		dc = Point(cr.x + 1, cr.y);
+	}
+	if(dc != dropcaret) {
+		RefreshDropCaret();
+		dropcaret = dc;
+		RefreshDropCaret();
+	}
+}
+
+Rect DocEdit::DropCaret()
+{
+	if(IsNull(dropcaret))
+		return Rect(0, 0, 0, 0);
+	return RectC(dropcaret.x, dropcaret.y - sb, 1, font.Info().GetLineHeight());
+}
+
+void DocEdit::RefreshDropCaret()
+{
+	Refresh(DropCaret());
+}
+
+void DocEdit::DragRepeat(Point p)
+{
+	if(IsReadOnly())
+		return;
+	Size sz = GetSize();
+	int sd = min(sz.cy / 6, 16);
+	int d = 0;
+	if(p.y < sd)
+		d = p.y - sd;
+	if(p.y > sz.cy - sd)
+		d = p.y - sz.cy + sd;
+	RefreshDropCaret();
+	sb = (int)sb + minmax(d, -16, 16);
+	RefreshDropCaret();
+}
+
+void DocEdit::DragLeave()
+{
+	RefreshDropCaret();
+	dropcaret = Null;
+	isdrag = false;
+	Layout();
+}
+
+void DocEdit::LeftDrag(Point p, dword flags)
+{
+	int c = GetMousePos(p);
+	int l, h;
+	if(!HasCapture() && GetSelection(l, h) && c >= l && c < h) {
+		WString sample = GetW(l, min(h - l, 3000));
+		Size ssz = StdSampleSize();
+		ImageDraw iw(ssz);
+		DrawTLText(iw, 0, 0, ssz.cx, sample, StdFont(), Black());
+		DrawTLText(iw.Alpha(), 0, 0, ssz.cx, sample, StdFont(), White());
+		NextUndo();
+		if(DoDragAndDrop(ClipFmtsText(), iw) == DND_MOVE)
+			RemoveSelection();
+	}
+}
 
 END_UPP_NAMESPACE

@@ -7,7 +7,6 @@ void RichEdit::CancelMode()
 	tabmove.table = 0;
 	selclick = false;
 	dropcaret.Clear();
-//	dropscroll = Null;
 }
 
 void RichEdit::MouseWheel(Point p, int zdelta, dword keyflags)
@@ -306,11 +305,21 @@ void RichEdit::LeftDouble(Point p, dword flags)
 				Finish();
 			}
 			else {
-				Move(c, false);
-				MoveWordLeft(false);
-				MoveWordRight(true);
+				int l, h;
+				if(GetWordSelection(c, l, h))
+					SetSelection(l, h);
 			}
 		}
+	}
+}
+
+void RichEdit::LeftTriple(Point p, dword flags)
+{
+	NextUndo();
+	int c = GetMousePos(p);
+	if(c >= 0 && c != objectpos) {
+		RichPos rp = text.GetRichPos(c);
+		Select(c - rp.posinpara, rp.paralen + 1);
 	}
 }
 

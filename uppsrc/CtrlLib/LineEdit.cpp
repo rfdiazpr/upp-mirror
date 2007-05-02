@@ -168,6 +168,7 @@ void   LineEdit::Paint0(Draw& w) {
 		pos += len + 1;
 	}
 	w.DrawRect(0, y, sz.cx, sz.cy - y, color[IsReadOnly() || !IsShowEnabled() ? PAPER_READONLY : PAPER_NORMAL]);
+	DrawTiles(w, DropCaret(), CtrlImg::checkers());
 }
 
 void LineEdit::Paint(Draw& w)
@@ -207,7 +208,7 @@ void LineEdit::RefreshChars(bool (*chars)(int c))
 
 void   LineEdit::Layout() {
 	Size sz = sb.GetReducedViewSize();
-	if(nohbar)
+	if(nohbar || isdrag)
 		sz.cy = GetSize().cy;
 	sb.SetPage(sz / GetFontSize());
 	SetHBar();
@@ -381,9 +382,24 @@ int LineEdit::GetMousePos(Point p) const {
 
 void LineEdit::LeftDown(Point p, dword flags) {
 	mpos = GetMousePos(p);
+	int l, h;
+	if(GetSelection(l, h) && mpos >= l && mpos < h) {
+		selclick = true;
+		return;
+	}
 	PlaceCaret(mpos, flags & K_SHIFT);
 	SetWantFocus();
 	SetCapture();
+}
+
+void LineEdit::LeftUp(Point p, dword flags)
+{
+	if(!HasCapture() && selclick) {
+		mpos = GetMousePos(p);
+		PlaceCaret(mpos, flags & K_SHIFT);
+		SetWantFocus();
+	}
+	selclick = false;
 }
 
 void LineEdit::RightDown(Point p, dword flags)
@@ -396,8 +412,23 @@ void LineEdit::RightDown(Point p, dword flags)
 	MenuBar::Execute(WhenBar);
 }
 
+void LineEdit::LeftDouble(Point, dword)
+{
+	int l, h;
+	if(GetWordSelection(cursor, l, h))
+		SetSelection(l, h);
+}
+
+void LineEdit::LeftTriple(Point, dword)
+{
+	int q = cursor;
+	int i = GetLinePos(q);
+	q = cursor - q;
+	SetSelection(q, q + GetLineLength(i) + 1);
+}
+
 void LineEdit::MouseMove(Point p, dword flags) {
-	if((flags & K_MOUSELEFT) && HasFocus()) {
+	if((flags & K_MOUSELEFT) && HasFocus() && HasCapture()) {
 		int c = GetMousePos(p);
 		if(mpos != c)
 			PlaceCaret(c, true);
@@ -578,7 +609,7 @@ void LineEdit::SetEditPosSb(const LineEdit::EditPos& pos) {
 void LineEdit::SetHBar()
 {
 	int mpos = 0;
-	if(!nohbar) {
+	if(!nohbar && !isdrag) {
 		int m = min(sb.y + sb.GetPage().cy + 2, line.GetCount());
 		for(int i = sb.y; i < m; i++) {
 			int pos = 0;
@@ -623,22 +654,12 @@ bool LineEdit::Key(dword key, int count) {
 	switch(key & ~K_SHIFT) {
 	case K_CTRL_LEFT:
 		{
-			if(cursor <= 0) return true;
-			int q = cursor - 1;
-			bool h = IsLetter(GetChar(q));
-			while(q > 0 && IsLetter(GetChar(q - 1)) == h)
-				q--;
-			PlaceCaret(q, sel);
+			PlaceCaret(GetPrevWord(cursor), sel);
 			break;
 		}
 	case K_CTRL_RIGHT:
 		{
-			if(cursor >= total) return true;
-			bool h = IsLetter(GetChar(cursor));
-			int q = cursor + 1;
-			while(q < total && IsLetter(GetChar(q)) == h)
-				q++;
-			PlaceCaret(q, sel);
+			PlaceCaret(GetNextWord(cursor), sel);
 			break;
 		}
 	case K_LEFT:
@@ -709,6 +730,104 @@ bool LineEdit::Key(dword key, int count) {
 	}
 	Sync();
 	return true;
+}
+
+void LineEdit::DragAndDrop(Point p, PasteClip& d)
+{
+	if(IsReadOnly()) return;
+	int c = GetMousePos(p);
+	if(AcceptText(d)) {
+		NextUndo();
+		int a = sb.y;
+		int sell, selh;
+		if(GetSelection(sell, selh)) {
+			if(c >= sell && c < selh) {
+				RemoveSelection();
+				if(IsDragAndDropSource())
+					d.SetAction(DND_COPY);
+				c = sell;
+			}
+			else
+			if(d.GetAction() == DND_MOVE && IsDragAndDropSource()) {
+				if(c > sell)
+					c -= selh - sell;
+				RemoveSelection();
+				d.SetAction(DND_COPY);
+			}
+		}
+		int count = Insert(c, GetWString(d));
+		sb.y = a;
+		SetFocus();
+		SetSelection(c, c + count);
+		return;
+	}
+	if(!d.IsAccepted()) return;
+	if(!isdrag) {
+		isdrag = true;
+		ScrollIntoCursor();
+	}
+	Point dc = Null;
+	if(c >= 0)
+		dc = GetColumnLine(c);
+	if(dc != dropcaret) {
+		RefreshDropCaret();
+		dropcaret = dc;
+		RefreshDropCaret();
+	}
+}
+
+Rect LineEdit::DropCaret()
+{
+	if(IsNull(dropcaret))
+		return Rect(0, 0, 0, 0);
+	Size fsz = GetFontSize();
+	Point p = dropcaret - sb;
+	p = Point(p.x * fsz.cx, p.y * fsz.cy);
+	return RectC(p.x, p.y, 1, fsz.cy);
+}
+
+void LineEdit::RefreshDropCaret()
+{
+	Refresh(DropCaret());
+}
+
+void LineEdit::DragRepeat(Point p)
+{
+	if(IsReadOnly())
+		return;
+	Size sz = GetSize();
+	int sd = min(sz.cy / 6, 32);
+	int d = 0;
+	if(p.y < sd)
+		d = -1;
+	if(p.y > sz.cy - sd)
+		d = 1;
+	RefreshDropCaret();
+	sb.y = (int)sb.y + minmax(d, -16, 16);
+	RefreshDropCaret();
+}
+
+void LineEdit::DragLeave()
+{
+	RefreshDropCaret();
+	dropcaret = Null;
+	isdrag = false;
+	Layout();
+}
+
+void LineEdit::LeftDrag(Point p, dword flags)
+{
+	int c = GetMousePos(p);
+	int l, h;
+	if(!HasCapture() && GetSelection(l, h) && c >= l && c < h) {
+		WString sample = GetW(l, min(h - l, 3000));
+		ImageDraw iw(StdSampleSize());
+		DrawTLText(iw, 0, 0, 9999, sample, Courier(10), Black());
+		DrawTLText(iw.Alpha(), 0, 0, 9999, sample, Courier(10), White());
+		NextUndo();
+		if(DoDragAndDrop(ClipFmtsText(), iw) == DND_MOVE)
+			RemoveSelection();
+	}
 }
 
 END_UPP_NAMESPACE

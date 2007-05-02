@@ -195,9 +195,12 @@ class PasteClip {
 	friend class  Ctrl;
 
 	UDropTarget *dt;
+	byte         action;
+	byte         allowed;
 	int          prefer;
 	bool         paste;
 	bool         accepted;
+	String       fmt;
 	String       data;
 
 public:
@@ -206,12 +209,12 @@ public:
 
 	bool   Accept(const char *fmt);
 	String Get() const                  { return data; }
-
 	operator String() const             { return data; }
 	String operator ~() const           { return data; }
 
-	void   PreferMove()                 { prefer = DND_MOVE; }
-	void   PreferCopy()                 { prefer = DND_COPY; }
+	int    GetAction() const            { return action; }
+	int    GetAllowedActions() const    { return allowed; }
+	void   SetAction(int x)             { action = x; }
 
 	bool   IsAccepted() const           { return accepted; }
 
@@ -227,6 +230,8 @@ String  GetString(PasteClip& clip);
 WString GetWString(PasteClip& clip);
 String  GetTextClip(const String& text, const String& fmt);
 String  GetTextClip(const WString& text, const String& fmt);
+void    AddTextClip(VectorMap<String, String>& data, const String& text);
+void    AddTextClip(VectorMap<String, String>& data, const WString& text);
 
 String  ClipFmtsImage();
 bool    AcceptImage(PasteClip& clip);
@@ -806,7 +811,7 @@ public:
 	virtual void   DragRepeat(Point p);
 	virtual void   DragLeave();
 	virtual String GetDropData(const String& fmt) const;
-	virtual String GetSelection(const String& fmt) const;
+	virtual String GetSelectionData(const String& fmt) const;
 
 	virtual Image  CursorImage(Point p, dword keyflags);
 

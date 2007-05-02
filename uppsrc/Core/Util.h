@@ -273,6 +273,7 @@ va_list va_ptr(const T& obj)
 
 // ---------------
 
+int  InScListIndex(const char *s, const char *list);
 bool InScList(const char *s, const char *list);
 
 struct TextTest {

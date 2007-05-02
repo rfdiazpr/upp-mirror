@@ -598,16 +598,16 @@ void ArrayCtrl::ChildLostFocus()
 
 void  ArrayCtrl::Paint(Draw& w) {
 	LTIMING("Paint");
+	bool hasfocus0 = HasFocusDeep();
 	Size size = GetSize();
 	Rect r;
 	r.bottom = 0;
-	bool hasfocus = HasFocusDeep();
 	int i = GetLineAt(sb);
 	int xs = -header.GetScroll();
 	int js;
 	for(js = 0; js < column.GetCount(); js++) {
 		int cw = header.GetTabWidth(js);
-		if ( ( xs + cw - vertgrid + (js == column.GetCount() - 1)) >= 0)
+		if ((xs + cw - vertgrid + (js == column.GetCount() - 1)) >= 0)
 			break;
 		xs += cw;
 	}
@@ -618,7 +618,22 @@ void  ArrayCtrl::Paint(Draw& w) {
 			if(r.top > size.cy) break;
 			r.bottom = r.top + GetLineCy(i);
 			int x = xs;
+			dword st = 0;
 			for(int j = js; j < column.GetCount(); j++) {
+				bool hasfocus = hasfocus0 && !isdrag;
+				bool drop = i == dropline && (dropcol == DND_LINE || dropcol == j);
+				if(IsReadOnly())
+					st |= Display::READONLY;
+				if(i < array.GetCount() && array[i].select)
+					st |= Display::SELECT;
+				if(i == cursor && !nocursor)
+					st |= Display::CURSOR;
+				if(drop) {
+					hasfocus = true;
+					st |= Display::CURSOR;
+				}
+				if(hasfocus)
+					st |= Display::FOCUS;
 				int cw = header.GetTabWidth(j);
 				int cm = column[j].margin;
 				if(cm < 0)
@@ -631,21 +646,12 @@ void  ArrayCtrl::Paint(Draw& w) {
 					bg = Null;
 				Color fg = i & 1 ? evenink : oddink;
 				bool ct = IsCtrl(i, j);
-				dword st = 0;
-				if(IsReadOnly())
-					st |= Display::READONLY;
-				if(i < array.GetCount() && array[i].select) {
-					st |= Display::SELECT;
+				if((st & Display::SELECT) ||
+				    !multiselect && (st & Display::CURSOR) && !nocursor ||
+				    drop) {
 					fg = hasfocus ? SColorHighlightText : SColorText;
 					bg = hasfocus ? SColorHighlight : fc;
 				}
-				if(i == cursor && !nocursor) {
-					st |= Display::CURSOR;
-					fg = hasfocus ? SColorHighlightText : SColorText;
-					bg = hasfocus ? (GetSelectCount() > 1 ? Blend(SColorPaper, SColorHighlight)
-					                                      : SColorHighlight) : fc;
-				}
-				if(hasfocus) st |= Display::FOCUS;
 				const Display& d = ct ? StdDisplay() : GetDisplay(i, j);
 				Value q = ct ? Null : GetConvertedColumn(i, j);
 				if(w.IsPainting(r))
@@ -669,12 +675,19 @@ void  ArrayCtrl::Paint(Draw& w) {
 			}
 			if(horzgrid)
 				w.DrawRect(0, r.bottom, size.cx, 1, gridcolor);
+			r.left = 0;
+			r.right = x;
+			if(i == cursor && !nocursor && multiselect && GetSelectCount() != 1 && hasfocus0 && !isdrag)
+				DrawFocus(w, r, st & Display::SELECT ? SColorPaper() : SColorText());
+			r.bottom += horzgrid;
 			r.left = x;
 			r.right = size.cx;
-			r.bottom += horzgrid;
 			w.DrawRect(r, SColorPaper);
+			if(i == dropline && dropcol == DND_INSERTLINE)
+				DrawHorzDrop(w, 0, r.top - (i > 0), size.cx);
 			i++;
 		}
+	int ldy = r.bottom;
 	r.left = 0;
 	r.right = size.cx;
 	r.top = r.bottom;
@@ -685,6 +698,8 @@ void  ArrayCtrl::Paint(Draw& w) {
 	}
 	r.bottom = size.cy;
 	w.DrawRect(r, SColorPaper);
+	if(GetCount() == dropline && dropcol == DND_INSERTLINE)
+		DrawHorzDrop(w, 0, ldy - 1, size.cx);
 	scroller.Set(Point(header.GetScroll(), sb));
 }
 
@@ -709,10 +724,11 @@ void ArrayCtrl::HeaderScrollVisibility()
 		sb.SetFrame(NullFrame());
 }
 
-void ArrayCtrl::RefreshRow(int i) {
+void ArrayCtrl::RefreshRow(int i)
+{
 	if(i >= 0 && i < GetCount())
 		Refresh(0, GetLineY(i) - sb, GetSize().cx, GetLineCy(i) + horzgrid);
-	if(IsAppendLine())
+	if(IsAppendLine() || i == GetCount())
 		Refresh(0, GetLineY(GetCount()) - sb, GetSize().cx, linecy + horzgrid);
 }
 
@@ -1046,17 +1062,13 @@ bool ArrayCtrl::SetCursor0(int i, bool dosel) {
 	if(nocursor || GetCount() == 0)
 		return false;
 	i = minmax(i, 0, GetCount() - 1);
+	bool sel = false;
 	if(i != cursor) {
 		RefreshRow(cursor);
 		if(cursor >= 0) {
 			if(!KillCursor0()) return false;
 		}
 		cursor = i;
-		if(dosel && multiselect) {
-			ClearSelection();
-			anchor = cursor;
-			Select(cursor);
-		}
 		ScrollIntoCursor();
 		RefreshRow(cursor);
 		SetCtrls();
@@ -1069,8 +1081,16 @@ bool ArrayCtrl::SetCursor0(int i, bool dosel) {
 		Action();
 		WhenEnterRow();
 		WhenCursor();
-		WhenSel();
+		sel = true;
 	}
+	if(dosel && multiselect) {
+		ClearSelection();
+		anchor = cursor;
+		Select(cursor);
+		sel = true;
+	}
+	if(sel)
+		WhenSel();
 	return true;
 }
 
@@ -1161,7 +1181,7 @@ void ArrayCtrl::ClearSelection()
 
 bool ArrayCtrl::IsSel(int i) const
 {
-	return IsSelection() ? IsSelected(i) : GetCursor() == i;
+	return multiselect ? IsSelected(i) : GetCursor() == i;
 }
 
 int  ArrayCtrl::GetScroll() const
@@ -1218,6 +1238,26 @@ void ArrayCtrl::ClickColumn(Point p)
 			}
 }
 
+void ArrayCtrl::ClickSel(dword flags)
+{
+	if(cursor >= 0 && multiselect) {
+		if(flags & K_CTRL) {
+			Select(cursor, !IsSelected(cursor));
+			anchor = cursor;
+		}
+		else {
+			ClearSelection();
+			if((flags & K_SHIFT) && anchor >= 0)
+				Select(min(anchor, cursor), abs(anchor - cursor) + 1, true);
+			else {
+				anchor = cursor;
+				Select(cursor, true);
+			}
+		}
+		Action();
+	}
+}
+
 void ArrayCtrl::LeftDown(Point p, dword flags)
 {
 	if(IsReadOnly()) return;
@@ -1228,38 +1268,32 @@ void ArrayCtrl::LeftDown(Point p, dword flags)
 	}
 	int c = cursor;
 	bool b = HasFocus();
-	DoPoint(p, false);
+	DoPoint(p, !(flags & (K_CTRL|K_SHIFT)));
 	ClickColumn(p);
-	if(!IsNull(clickpos.x) && c == cursor && cursor >= 0 && b && column[clickpos.x].clickedit)
+	if(!IsNull(clickpos.x) && c == cursor && cursor >= 0 && b && column[clickpos.x].clickedit
+	   && (flags & (K_CTRL|K_SHIFT)) == 0)
 		StartEdit(clickpos.x);
-	else {
-		if(cursor >= 0 && multiselect) {
-			if(flags & K_CTRL) {
-				Select(cursor, !IsSelected(cursor));
-				anchor = cursor;
-			}
-			else {
-				ClearSelection();
-				if((flags & K_SHIFT) && anchor >= 0)
-					Select(min(anchor, cursor), abs(anchor - cursor) + 1, true);
-				else {
-					anchor = cursor;
-					Select(cursor, true);
-				}
-			}
-			Action();
-		}
-	}
+	else
+		ClickSel(flags);
 	WhenLeftClick();
 }
 
-void ArrayCtrl::LeftDouble(Point p, dword) {
+void ArrayCtrl::LeftDouble(Point p, dword flags) {
 	if(IsReadOnly()) return;
-	DoPoint(p);
+	DoPoint(p, !(flags & (K_CTRL|K_SHIFT)));
 	ClickColumn(p);
+	ClickSel(flags);
 	if((IsInserting() || IsAppending()) && IsAppendLine() && !IsCursor())
 		DoAppend();
-	WhenLeftDouble();
+	if(!multiselect || (flags & (K_CTRL|K_SHIFT)) == 0)
+		WhenLeftDouble();
+}
+
+void ArrayCtrl::LeftDrag(Point p, dword)
+{
+	int ii = GetLineAt(p.y + sb);
+	if(!IsNull(ii) && IsSel(ii))
+		WhenDrag();
 }
 
 void ArrayCtrl::MouseMove(Point p, dword)
@@ -1327,16 +1361,18 @@ int ArrayCtrl::GetEditColumn() const {
 	return -1;
 }
 
-void ArrayCtrl::KeyMultiSelect(dword key)
+void ArrayCtrl::KeyMultiSelect(int aanchor, dword key)
 {
 	if(!multiselect)
 		return;
 	ClearSelection();
 	if(key & K_SHIFT) {
+		anchor = aanchor;
 		if(anchor >= 0)
 			Select(min(anchor, cursor), abs(anchor - cursor) + 1);
 	}
-	else if(cursor >= 0) {
+	else
+	if(cursor >= 0) {
 		anchor = cursor;
 		Select(anchor);
 	}
@@ -1344,6 +1380,7 @@ void ArrayCtrl::KeyMultiSelect(dword key)
 
 bool ArrayCtrl::Key(dword key, int) {
 	if(IsReadOnly()) return false;
+	int aanchor = anchor;
 	if(!editmode) {
 		if(key > 32 && key < 256) {
 			int cr = cursor >= 0 ? cursor + 1 : 0;
@@ -1361,7 +1398,7 @@ bool ArrayCtrl::Key(dword key, int) {
 		case K_PAGEUP:
 		case K_SHIFT_PAGEUP:
 			Page(-1);
-			KeyMultiSelect(key);
+			KeyMultiSelect(aanchor, key);
 			return true;
 		case K_PAGEDOWN:
 		case K_SHIFT_PAGEDOWN:
@@ -1369,7 +1406,7 @@ bool ArrayCtrl::Key(dword key, int) {
 				KillCursor();
 			else {
 				Page(1);
-				KeyMultiSelect(key);
+				KeyMultiSelect(aanchor, key);
 			}
 			return true;
 		case K_HOME:
@@ -1379,7 +1416,7 @@ bool ArrayCtrl::Key(dword key, int) {
 		case K_SHIFT|K_CTRL_HOME:
 		case K_SHIFT|K_CTRL_PAGEUP:
 			GoBegin();
-			KeyMultiSelect(key);
+			KeyMultiSelect(aanchor, key);
 			return true;
 		case K_END:
 		case K_CTRL_END:
@@ -1388,13 +1425,13 @@ bool ArrayCtrl::Key(dword key, int) {
 		case K_SHIFT|K_CTRL_END:
 		case K_SHIFT|K_CTRL_PAGEDOWN:
 			GoEnd();
-			KeyMultiSelect(key);
+			KeyMultiSelect(aanchor, key);
 			return true;
 		case K_CTRL_A:
 			if(multiselect) {
 				GoEnd();
 				anchor = 0;
-				KeyMultiSelect(K_SHIFT);
+				KeyMultiSelect(aanchor, K_SHIFT);
 			}
 			return true;
 		}
@@ -1408,7 +1445,7 @@ bool ArrayCtrl::Key(dword key, int) {
 				if(d >= 0)
 					StartEdit(d);
 				else
-					KeyMultiSelect(key);
+					KeyMultiSelect(aanchor, key);
 		}
 		else
 		if((IsInserting() || IsAppending()) && IsAppendLine())
@@ -1426,7 +1463,7 @@ bool ArrayCtrl::Key(dword key, int) {
 			if(SetCursor0(cursor + 1) && d >= 0)
 				StartEdit(d);
 			else
-				KeyMultiSelect(key);
+				KeyMultiSelect(aanchor, key);
 		}
 		else
 			sb.NextLine();
@@ -1932,6 +1969,12 @@ void ArrayCtrl::Reset() {
 	autoappend = false;
 }
 
+void ArrayCtrl::CancelMode()
+{
+	isdrag = false;
+	dropline = dropcol = -1;
+}
+
 void ArrayCtrl::MouseWheel(Point p, int zdelta, dword keyflags) {
 	sb.Wheel(zdelta);
 }
@@ -1984,6 +2027,127 @@ ArrayCtrl& ArrayCtrl::EvenRowColor(Color paper, Color ink)
 	evenink = ink;
 	Refresh();
 	return *this;
+}
+
+void ArrayCtrl::RefreshSel()
+{
+	Size sz = GetSize();
+	int i = GetLineAt(sb);
+	int y = GetLineY(i) - sb;
+	while(y < sz.cy && i < array.GetCount()) {
+		if(IsSelected(i))
+			RefreshRow(i);
+		y += GetLineCy(i++);
+	}
+}
+
+void ArrayCtrl::DnD(int line, int col)
+{
+	if(dropline != line || dropcol != col) {
+		RefreshRow(dropline - 1);
+		RefreshRow(dropline);
+		dropline = line;
+		dropcol = col;
+		RefreshRow(dropline - 1);
+		RefreshRow(dropline);
+	}
+}
+
+void ArrayCtrl::DragAndDrop(Point p, PasteClip& d)
+{
+	if(IsReadOnly())
+		return;
+	if(!isdrag) {
+		isdrag = true;
+		RefreshSel();
+	}
+	int py = p.y + sb;
+	int line = GetLineAt(py);
+	int col = -1;
+	if(line >= 0) {
+		for(int i = 0; i < column.GetCount(); i++)
+			if(GetCellRect(line, i).Contains(p)) {
+				col = i;
+				break;
+			}
+		if(col >= 0) {
+			WhenDropCell(line, col, d);
+			if(d.IsAccepted()) {
+				DnD(line, col);
+				return;
+			}
+		}
+		int y = GetLineY(line);
+		int cy = GetLineCy();
+		if(py < y + cy / 4) {
+			WhenDropInsert(line, d);
+			if(d.IsAccepted()) {
+				DnD(line, DND_INSERTLINE);
+				return;
+			}
+		}
+		if(py >= y + 3 * cy / 4 && line < GetCount()) {
+			WhenDropInsert(line + 1, d);
+			if(d.IsAccepted()) {
+				DnD(line + 1, DND_INSERTLINE);
+				return;
+			}
+		}
+		WhenDropLine(line, d);
+		if(d.IsAccepted()) {
+			DnD(line, DND_LINE);
+			return;
+		}
+		if(py < y + cy / 2) {
+			WhenDropInsert(line, d);
+			if(d.IsAccepted()) {
+				DnD(line, DND_INSERTLINE);
+				return;
+			}
+		}
+		if(py >= y + cy / 2 && line < GetCount()) {
+			WhenDropInsert(line + 1, d);
+			if(d.IsAccepted()) {
+				DnD(line + 1, DND_INSERTLINE);
+				return;
+			}
+		}
+	}
+	int ci = GetCount();
+	if(py < GetLineY(ci) + GetLineCy(ci) / 4) {
+		WhenDropInsert(ci, d);
+		if(d.IsAccepted()) {
+			DnD(GetCount(), DND_INSERTLINE);
+			return;
+		}
+	}
+	WhenDrop(d);
+	DnD(-1, -1);
+}
+
+void ArrayCtrl::DragRepeat(Point p)
+{
+	if(IsReadOnly())
+		return;
+	Size sz = GetSize();
+	int sd = min(sz.cy / 6, 16);
+	int d = 0;
+	if(p.y < sd)
+		d = p.y - sd;
+	if(p.y > sz.cy - sd)
+		d = p.y - sz.cy + sd;
+	RefreshRow(dropline - 1);
+	RefreshRow(dropline);
+	sb = (int)sb + minmax(d, -16, 16);
+	RefreshRow(dropline - 1);
+	RefreshRow(dropline);
+}
+
+void ArrayCtrl::DragLeave()
+{
+	isdrag = false;
+	RefreshSel();
+	DnD(-1, -1);
 }
 
 ArrayCtrl::ArrayCtrl() {

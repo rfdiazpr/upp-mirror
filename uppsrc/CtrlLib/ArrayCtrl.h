@@ -12,6 +12,7 @@ Callback1<One<Ctrl>&> DefaultCtrlFactory()
 
 class ArrayCtrl : public Ctrl {
 public:
+	virtual void  CancelMode();
 	virtual bool  Accept();
 	virtual void  Reject();
 	virtual void  Paint(Draw& w);
@@ -19,10 +20,14 @@ public:
 	virtual bool  Key(dword key, int);
 	virtual void  LeftDown(Point p, dword);
 	virtual void  LeftDouble(Point p, dword);
+	virtual void  LeftDrag(Point p, dword);
 	virtual void  RightDown(Point p, dword);
 	virtual void  MouseMove(Point p, dword);
 	virtual void  MouseWheel(Point p, int zdelta, dword keyflags);
 	virtual Image CursorImage(Point p, dword);
+	virtual void  DragAndDrop(Point p, PasteClip& d);
+	virtual void  DragRepeat(Point p);
+	virtual void  DragLeave();
 	virtual void  GotFocus();
 	virtual void  LostFocus();
 	virtual void  ChildGotFocus();
@@ -162,6 +167,7 @@ private:
 	int   linecy;
 	int   virtualcount;
 	Point clickpos;
+	int   dropline, dropcol;
 
 	mutable int   selectcount;
 
@@ -194,6 +200,8 @@ private:
 
 	unsigned  bains:2;
 
+	bool  isdrag:1;
+
 	int    Pos(int np) const;
 
 	void   InsertCache(int i);
@@ -208,6 +216,7 @@ private:
 
 	void   DoPoint(Point p, bool dosel = true);
 	void   ClickColumn(Point p);
+	void   ClickSel(dword flags);
 	Rect   GetCellRect(int i, int col);
 	Rect   GetCellRectM(int i, int col);
 
@@ -241,9 +250,13 @@ private:
 	bool   SetCursor0(int i, bool dosel = true);
 
 	void   SyncSelection() const;
-	void   KeyMultiSelect(dword key);
+	void   KeyMultiSelect(int aanchor, dword key);
 
 	void   HeaderScrollVisibility();
+
+	void   RefreshSel();
+	void   DnD(int line, int col);
+	enum { DND_INSERTLINE = -1, DND_LINE = -2 };
 
 public: // temporary (TRC 06/07/28)
 	Ctrl&      SetCtrl(int i, int j, Ctrl *newctrl);
@@ -266,6 +279,12 @@ public:
 	Callback          WhenAcceptEdit;
 	Callback          WhenCtrlsAction;
 	Callback          WhenSel;
+
+	Callback                        WhenDrag;
+	Callback3<int, int, PasteClip&> WhenDropCell;
+	Callback2<int, PasteClip&>      WhenDropInsert;
+	Callback2<int, PasteClip&>      WhenDropLine;
+	Callback1<PasteClip&>           WhenDrop;
 
 	//Deprecated - use WhenSel
 	Callback          WhenEnterRow;

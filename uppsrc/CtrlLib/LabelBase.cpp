@@ -356,21 +356,30 @@ LabelBase::~LabelBase() {
 	LinkToolTipIn__();
 }
 
-void DrawFocus(Draw& w, int x, int y, int cx, int cy) {
+void DrawFocus(Draw& w, int x, int y, int cx, int cy, Color c) {
 	w.Clipoff(x, y, cx, cy);
 	for(int a = 0; a < cx; a += CtrlImg::focus_h().GetWidth()) {
-		w.DrawImage(a, 0, CtrlImg::focus_h());
-		w.DrawImage(a, cy - 1, CtrlImg::focus_h());
+		w.DrawImage(a, 0, CtrlImg::focus_h(), c);
+		w.DrawImage(a, cy - 1, CtrlImg::focus_h(), c);
 	}
 	for(int a = 0; a < cy; a += CtrlImg::focus_v().GetHeight()) {
-		w.DrawImage(0, a, CtrlImg::focus_v());
-		w.DrawImage(cx - 1, a, CtrlImg::focus_v());
+		w.DrawImage(0, a, CtrlImg::focus_v(), c);
+		w.DrawImage(cx - 1, a, CtrlImg::focus_v(), c);
 	}
 	w.End();
 }
 
-void DrawFocus(Draw& w, const Rect& r) {
-	DrawFocus(w, r.left, r.top, r.Width(), r.Height());
+void DrawFocus(Draw& w, const Rect& r, Color c) {
+	DrawFocus(w, r.left, r.top, r.Width(), r.Height(), c);
+}
+
+void DrawHorzDrop(Draw& w, int x, int y, int cx)
+{
+	w.DrawRect(x, y, cx, 2, SColorHighlight);
+	w.DrawRect(x, y - 2, 1, 6, SColorHighlight);
+	w.DrawRect(cx - 1, y - 2, 1, 6, SColorHighlight);
+	w.DrawRect(x + 1, y - 1, 1, 4, SColorHighlight);
+	w.DrawRect(cx - 2, y - 1, 1, 4, SColorHighlight);
 }
 
 END_UPP_NAMESPACE

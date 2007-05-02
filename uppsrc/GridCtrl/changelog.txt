@@ -124,6 +124,17 @@
 	+ AddRow returns ItemRect& now, but Add still returns GridCtrl&
 	+ clicking on edit's child control move focus
 	
+	after 704-dev1
+	
+	* Esc pass control to parent if there is nothing to cancel
+	- focused ctrl lost focus if its position was changed by cursor keys (regression)
+	- new column move indicator had 0 width if hidden column was pointed
+	- in some cases cursor was hidden after removing row
+	- scrollbars were not updated after reomoving selected rows
+	+ DrawFocus() - shows active cell even in select_row mode
+	
+	
+	
 	
 	
 	

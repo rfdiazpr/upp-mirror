@@ -4,7 +4,11 @@
 #ifndef flagNOPOSTGRESQL
 
 #include <Sql/Sql.h>
-#include "libpq-fe.h"
+#ifdef PLATFORM_WIN32
+#include <libpq-fe.h>
+#elif defined(PLATFORM_POSIX)
+#include <postgresql/libpq-fe.h>
+#endif
 
 NAMESPACE_UPP
 
@@ -47,6 +51,9 @@ private:
 	void                  StoreInOidTypeMap(const char *typname, int type_id, const VectorMap<String, int64> &typname_oid_map);
 	bool                  InitOidTypeMap();
 	void                  ExecTrans(const char * statement);
+
+	Vector<String>        EnumData(char type, const char *schema = NULL);
+
 public:
 	int                   OidToType(Oid oid); ///< default is STRING_V
 	bool                  Open(const char *connect);

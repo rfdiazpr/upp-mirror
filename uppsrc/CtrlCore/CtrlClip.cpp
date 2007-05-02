@@ -9,10 +9,10 @@ void Ctrl::DragLeave() {}
 
 String Ctrl::GetDropData(const String& fmt) const
 {
-	return GetSelection(fmt);
+	return GetSelectionData(fmt);
 }
 
-String Ctrl::GetSelection(const String& fmt) const
+String Ctrl::GetSelectionData(const String& fmt) const
 {
 	return Null;
 }
@@ -30,18 +30,22 @@ String PasteClip::Get(const char *fmt) const
 	return dt ? UPP::Get(dt, fmt) : ReadClipboard(fmt);
 }
 
-bool   PasteClip::Accept(const char *fmt)
+bool   PasteClip::Accept(const char *_fmt)
 {
-	Vector<String> f = Split(fmt, ';');
-	for(int i = 0; i < f.GetCount(); i++)
+	Vector<String> f = Split(_fmt, ';');
+	for(int i = 0; i < f.GetCount(); i++) {
+		if(IsAccepted() && fmt == _fmt)
+			return paste;
 		if(IsAvailable(f[i])) {
 			accepted = true;
 			if(paste) {
+				fmt = f[i];
 				data = Get(f[i]);
 				return true;
 			}
 			break;
 		}
+	}
 	return false;
 }
 
@@ -66,6 +70,18 @@ String ClipFmtsText()
 bool AcceptText(PasteClip& clip)
 {
 	return clip.Accept("wtext;text");
+}
+
+void AddTextClip(VectorMap<String, String>& data, const String& text)
+{
+	data.GetAdd("text", GetTextClip(text, "text"));
+	data.GetAdd("wtext", GetTextClip(text, "wtext"));
+}
+
+void AddTextClip(VectorMap<String, String>& data, const WString& text)
+{
+	data.GetAdd("text", GetTextClip(text, "text"));
+	data.GetAdd("wtext", GetTextClip(text, "wtext"));
 }
 
 int Ctrl::DoDragAndDrop(const char *fmts, const Image& sample, dword actions)

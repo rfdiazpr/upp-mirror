@@ -11,33 +11,6 @@ NAMESPACE_UPP
 #define LLOG(x) // LOG(x)
 #define LTIMING(x) // TIMING(x)
 
-int InScListIndex(const char *s, const char *list)
-{
-	int ii = 0;
-	for(;;) {
-		const char *q = s;
-		for(;;) {
-			if(*q == '\0' && *list == '\0') return ii;
-			if(*q != *list) {
-				if(*q == '\0' && *list == ';') return ii;
-				if(*list == '\0') return -1;
-				break;
-			}
-			q++;
-			list++;
-		}
-		while(*list && *list != ';') list++;
-		if(*list == '\0') return -1;
-		list++;
-		ii++;
-	}
-}
-
-bool InScList(const char *s, const char *list)
-{
-	return InScListIndex(s, list) >= 0;
-}
-
 inline const char *bew(const char *s, const char *t)
 {
 	while(*s)

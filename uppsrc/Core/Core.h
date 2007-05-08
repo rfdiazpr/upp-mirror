@@ -5,6 +5,9 @@
 
 #if defined(flagMT)
 	#define _MULTITHREADED
+	#ifdef flagDLL
+		#define flagUSEMALLOC
+	#endif
 #endif
 
 #ifdef flagMSC8ARM
@@ -443,9 +446,9 @@ END_UPP_NAMESPACE
 
 #if (defined(_DEBUG) || defined(_TEST_LEAKS)) && defined(PLATFORM_POSIX)
 
-//Place it to the begining of each file to be first function called in whole code...
+//Place it to the begining of each file to be the first function called in whole executable...
 
-/*
+// Uncommented 2007-05-06 cxl - to find out why it was commented... :)
 //$-
 struct MemDiagCls {
 	MemDiagCls()  { if(!UPP::sMemDiagInitCount++) UPP::MemoryInitDiagnostics(); }
@@ -453,7 +456,7 @@ struct MemDiagCls {
 };
 static const MemDiagCls sMemDiagHelper;
 //$+
-*/
+
 
 #endif
 

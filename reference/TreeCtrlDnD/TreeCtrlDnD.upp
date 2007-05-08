@@ -1,0 +1,10 @@
+description "How to use Drag & Drop in TreeCtrl";
+
+uses
+	CtrlLib;
+
+file
+	main.cpp;
+
+mainconfig
+	"" = "GUI";

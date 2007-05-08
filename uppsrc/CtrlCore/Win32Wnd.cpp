@@ -413,6 +413,7 @@ void Ctrl::Create(HWND parent, DWORD style, DWORD exstyle, bool savebits, int sh
 	StateH(OPEN);
 	LLOG(EndIndent << "//Ctrl::Create in " <<UPP::Name(this));
 	RegisterDragDrop(top->hwnd, (LPDROPTARGET) (top->dndtgt = NewUDropTarget(this)));
+	CancelMode();
 }
 
 void ReleaseUDropTarget(UDropTarget *dt);

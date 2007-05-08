@@ -70,10 +70,14 @@ void ArrayCtrl::Column::InvalidateCache(int i) {
 		cache.Get< Vector<Value> >()[i] = Value();
 }
 
-void ArrayCtrl::Column::InsertCache(int i) {
+void ArrayCtrl::Column::InsertCache(int i, int count) {
 	if(i < 0) return;
-	if(cache.Is< Vector<String> >() && i < cache.Get< Vector<String> >().GetCount())
-		cache.Get< Vector<String> >().Insert(i) = String::GetVoid();
+	if(cache.Is< Vector<String> >() && i < cache.Get< Vector<String> >().GetCount()) {
+		Vector<String>& v = cache.Get< Vector<String> >();
+		v.InsertN(i, count);
+		while(count--)
+			v[i++] = String::GetVoid();
+	}
 	if(cache.Is< Vector<Value> >() && i < cache.Get< Vector<Value> >().GetCount())
 		cache.Get< Vector<Value> >().Insert(i);
 }
@@ -596,14 +600,14 @@ void ArrayCtrl::ChildLostFocus()
 	Ctrl::ChildLostFocus();
 }
 
-void  ArrayCtrl::Paint(Draw& w) {
+Size  ArrayCtrl::DoPaint(Draw& w, bool sample) {
 	LTIMING("Paint");
-	bool hasfocus0 = HasFocusDeep();
-	Size size = GetSize();
+	bool hasfocus0 = HasFocusDeep() || sample;
+	Size size = sample ? StdSampleSize() : GetSize();
 	Rect r;
 	r.bottom = 0;
-	int i = GetLineAt(sb);
-	int xs = -header.GetScroll();
+	int i = sample ? 0 : GetLineAt(sb);
+	int xs = sample ? 0 : -header.GetScroll();
 	int js;
 	for(js = 0; js < column.GetCount(); js++) {
 		int cw = header.GetTabWidth(js);
@@ -612,81 +616,87 @@ void  ArrayCtrl::Paint(Draw& w) {
 		xs += cw;
 	}
 	Color fc = Blend(SColorDisabled, SColorPaper);
+	int sy = 0;
 	if(!IsNull(i))
 		while(i < GetCount()) {
-			r.top = GetLineY(i) - sb;
-			if(r.top > size.cy) break;
-			r.bottom = r.top + GetLineCy(i);
-			int x = xs;
-			dword st = 0;
-			for(int j = js; j < column.GetCount(); j++) {
-				bool hasfocus = hasfocus0 && !isdrag;
-				bool drop = i == dropline && (dropcol == DND_LINE || dropcol == j);
-				if(IsReadOnly())
-					st |= Display::READONLY;
-				if(i < array.GetCount() && array[i].select)
-					st |= Display::SELECT;
-				if(i == cursor && !nocursor)
-					st |= Display::CURSOR;
-				if(drop) {
-					hasfocus = true;
-					st |= Display::CURSOR;
-				}
-				if(hasfocus)
-					st |= Display::FOCUS;
-				int cw = header.GetTabWidth(j);
-				int cm = column[j].margin;
-				if(cm < 0)
-					cm = header.Tab(j).GetMargin();
-				if(x > size.cx) break;
-				r.left = x;
-				r.right = x + cw - vertgrid + (j == column.GetCount() - 1);
-				Color bg = i & 1 ? evenpaper : oddpaper;
-				if(nobg)
-					bg = Null;
-				Color fg = i & 1 ? evenink : oddink;
-				bool ct = IsCtrl(i, j);
-				if((st & Display::SELECT) ||
-				    !multiselect && (st & Display::CURSOR) && !nocursor ||
-				    drop) {
-					fg = hasfocus ? SColorHighlightText : SColorText;
-					bg = hasfocus ? SColorHighlight : fc;
-				}
-				const Display& d = ct ? StdDisplay() : GetDisplay(i, j);
-				Value q = ct ? Null : GetConvertedColumn(i, j);
-				if(w.IsPainting(r))
-					if(cw < 2 * cm || editmode && i == cursor && column[j].edit)
-						d.PaintBackground(w, r, q, fg, bg, st);
-					else {
-						d.PaintBackground(w, RectC(r.left, r.top, cm, r.Height()), q, fg, bg, st);
-						r.left += cm;
-						r.right -= cm;
-						d.PaintBackground(w, RectC(r.right, r.top, cm, r.Height()), q, fg, bg, st);
-						w.Clip(r);
-						if(ct)
-							GetCtrl(i, j).Color(bg);
-						else
-							GetDisplay(i, j).Paint(w, r, q, fg, bg, st);
-						w.End();
+			if(!sample || i == cursor || i < array.GetCount() && array[i].select) {
+				r.top = sample ? sy : GetLineY(i) - sb;
+				if(r.top > size.cy)
+					break;
+				r.bottom = r.top + GetLineCy(i);
+				int x = xs;
+				dword st = 0;
+				for(int j = js; j < column.GetCount(); j++) {
+					bool hasfocus = hasfocus0 && !isdrag;
+					bool drop = i == dropline && (dropcol == DND_LINE || dropcol == j);
+					if(IsReadOnly())
+						st |= Display::READONLY;
+					if(i < array.GetCount() && array[i].select)
+						st |= Display::SELECT;
+					if(i == cursor && !nocursor)
+						st |= Display::CURSOR;
+					if(drop) {
+						hasfocus = true;
+						st |= Display::CURSOR;
 					}
-				x += cw;
-				if(vertgrid)
-					w.DrawRect(x - 1, r.top, 1, r.Height(), gridcolor);
+					if(hasfocus)
+						st |= Display::FOCUS;
+					int cw = header.GetTabWidth(j);
+					int cm = column[j].margin;
+					if(cm < 0)
+						cm = header.Tab(j).GetMargin();
+					if(x > size.cx) break;
+					r.left = x;
+					r.right = x + cw - vertgrid + (j == column.GetCount() - 1);
+					Color bg = i & 1 ? evenpaper : oddpaper;
+					if(nobg)
+						bg = Null;
+					Color fg = i & 1 ? evenink : oddink;
+					bool ct = IsCtrl(i, j);
+					if((st & Display::SELECT) ||
+					    !multiselect && (st & Display::CURSOR) && !nocursor ||
+					    drop) {
+						fg = hasfocus ? SColorHighlightText : SColorText;
+						bg = hasfocus ? SColorHighlight : fc;
+					}
+					const Display& d = ct ? StdDisplay() : GetDisplay(i, j);
+					Value q = ct ? Null : GetConvertedColumn(i, j);
+					if(sample || w.IsPainting(r))
+						if(cw < 2 * cm || editmode && i == cursor && column[j].edit)
+							d.PaintBackground(w, r, q, fg, bg, st);
+						else {
+							d.PaintBackground(w, RectC(r.left, r.top, cm, r.Height()), q, fg, bg, st);
+							r.left += cm;
+							r.right -= cm;
+							d.PaintBackground(w, RectC(r.right, r.top, cm, r.Height()), q, fg, bg, st);
+							w.Clip(r);
+							if(ct)
+								GetCtrl(i, j).Color(bg);
+							else
+								GetDisplay(i, j).Paint(w, r, q, fg, bg, st);
+							w.End();
+						}
+					x += cw;
+					if(vertgrid)
+						w.DrawRect(x - 1, r.top, 1, r.Height(), gridcolor);
+				}
+				if(horzgrid)
+					w.DrawRect(0, r.bottom, size.cx, 1, gridcolor);
+				r.left = 0;
+				r.right = x;
+				if(i == cursor && !nocursor && multiselect && GetSelectCount() != 1 && hasfocus0 && !isdrag)
+					DrawFocus(w, r, st & Display::SELECT ? SColorPaper() : SColorText());
+				r.bottom += horzgrid;
+				r.left = x;
+				r.right = size.cx;
+				w.DrawRect(r, SColorPaper);
+				if(i == dropline && dropcol == DND_INSERTLINE)
+					DrawHorzDrop(w, 0, r.top - (i > 0), size.cx);
+				sy = r.bottom;
 			}
-			if(horzgrid)
-				w.DrawRect(0, r.bottom, size.cx, 1, gridcolor);
-			r.left = 0;
-			r.right = x;
-			if(i == cursor && !nocursor && multiselect && GetSelectCount() != 1 && hasfocus0 && !isdrag)
-				DrawFocus(w, r, st & Display::SELECT ? SColorPaper() : SColorText());
-			r.bottom += horzgrid;
-			r.left = x;
-			r.right = size.cx;
-			w.DrawRect(r, SColorPaper);
-			if(i == dropline && dropcol == DND_INSERTLINE)
-				DrawHorzDrop(w, 0, r.top - (i > 0), size.cx);
 			i++;
 		}
+	if(sample) return Size(r.left, sy);
 	int ldy = r.bottom;
 	r.left = 0;
 	r.right = size.cx;
@@ -701,6 +711,19 @@ void  ArrayCtrl::Paint(Draw& w) {
 	if(GetCount() == dropline && dropcol == DND_INSERTLINE)
 		DrawHorzDrop(w, 0, ldy - 1, size.cx);
 	scroller.Set(Point(header.GetScroll(), sb));
+	return Size();
+}
+
+void ArrayCtrl::Paint(Draw& w)
+{
+	DoPaint(w, false);
+}
+
+Image ArrayCtrl::GetDragSample()
+{
+	ImageDraw iw(StdSampleSize());
+	Size sz = DoPaint(iw, true);
+	return Crop(iw, 0, 0, sz.cx, sz.cy);
 }
 
 void ArrayCtrl::Scroll() {
@@ -1266,6 +1289,16 @@ void ArrayCtrl::LeftDown(Point p, dword flags)
 		header.StartSplitDrag(q);
 		return;
 	}
+	q = GetLineAt(p.y + sb);
+	selclick = false;
+	if(q >= 0 && q < GetCount() && IsSel(q) && (flags & (K_CTRL|K_SHIFT)) == 0) {
+		selclick = true;
+		return;
+	}
+	DoClick(p, flags);
+}
+
+void ArrayCtrl::DoClick(Point p, dword flags) {
 	int c = cursor;
 	bool b = HasFocus();
 	DoPoint(p, !(flags & (K_CTRL|K_SHIFT)));
@@ -1278,7 +1311,15 @@ void ArrayCtrl::LeftDown(Point p, dword flags)
 	WhenLeftClick();
 }
 
-void ArrayCtrl::LeftDouble(Point p, dword flags) {
+void ArrayCtrl::LeftUp(Point p, dword flags)
+{
+	if(selclick)
+		DoClick(p, flags);
+	selclick = false;
+}
+
+void ArrayCtrl::LeftDouble(Point p, dword flags)
+{
 	if(IsReadOnly()) return;
 	DoPoint(p, !(flags & (K_CTRL|K_SHIFT)));
 	ClickColumn(p);
@@ -1549,37 +1590,51 @@ void ArrayCtrl::Add(__List##I(E__Value)) { \
 }
 __Expand(E__AddF)
 
-void  ArrayCtrl::Insert(int i) {
+void  ArrayCtrl::Insert(int i, int count) {
 	if(i < array.GetCount()) {
-		array.Insert(i);
+		array.InsertN(i, count);
 		for(int j = 0; j < column.GetCount(); j++)
-			column[j].InsertCache(i);
+			column[j].InsertCache(i, count);
 	}
 	else
-		array.At(i);
+		array.At(i + count - 1);
 	if(i <= cursor) cursor++;
 	if(i < cellinfo.GetCount())
-		cellinfo.Insert(i);
+		cellinfo.InsertN(i, count);
 	if(i < ln.GetCount()) {
 		int y = ln[i].y;
-		ln.Insert(i);
+		ln.InsertN(i, count);
 		Reline(i, y);
 	}
-	for(int ii = 0; ii < idx.GetCount(); ii++) {
-		Value v = idx[ii].GetInsertValue();
-		if(!IsNull(v))
-			Set(i, ii, v);
+	if(virtualcount >= 0) virtualcount += count;
+	while(count--) {
+		for(int ii = 0; ii < idx.GetCount(); ii++) {
+			Value v = idx[ii].GetInsertValue();
+			if(!IsNull(v))
+				Set(i, ii, v);
+		}
+		i++;
 	}
-	if(virtualcount >= 0) virtualcount++;
 	Refresh();
 	SetSb();
 	PlaceEdits();
 	SyncCtrls();
 }
 
-void  ArrayCtrl::Insert(int i, const Vector<Value>& v) {
+void  ArrayCtrl::Insert(int i)
+{
+	Insert(i, 1);
+}
+
+void ArrayCtrl::Insert(int i, const Vector<Value>& v) {
 	Insert(i);
 	Set(i, v);
+}
+
+void ArrayCtrl::Insert(int i, const Vector< Vector<Value> >& v) {
+	Insert(i, v.GetCount());
+	for(int ii = 0; ii < v.GetCount(); ii++)
+		Set(i++, v[ii]);
 }
 
 void  ArrayCtrl::Remove(int i) {
@@ -1587,7 +1642,7 @@ void  ArrayCtrl::Remove(int i) {
 	if(i == cursor) CancelCursor();
 	Remove0(i);
 	if(c >= 0)
-		SetCursor(c - (i < c));
+		SetCursor0(c - (i < c), false);
 	anchor = -1;
 	PlaceEdits();
 	SyncCtrls();
@@ -1640,7 +1695,7 @@ void ArrayCtrl::EndEdit() {
 }
 
 void ArrayCtrl::LostFocus() {
-	if(IsSelection())
+	if(GetSelectCount() > 1)
 		Refresh();
 	else
 	if(IsCursor())
@@ -1648,7 +1703,7 @@ void ArrayCtrl::LostFocus() {
 }
 
 void ArrayCtrl::GotFocus() {
-	if(IsSelection())
+	if(GetSelectCount() > 1)
 		Refresh();
 	else
 	if(IsCursor())
@@ -1972,6 +2027,7 @@ void ArrayCtrl::Reset() {
 void ArrayCtrl::CancelMode()
 {
 	isdrag = false;
+	selclick = false;
 	dropline = dropcol = -1;
 }
 
@@ -2148,6 +2204,65 @@ void ArrayCtrl::DragLeave()
 	isdrag = false;
 	RefreshSel();
 	DnD(-1, -1);
+}
+
+void ArrayCtrl::RemoveSelection()
+{
+	for(int i = GetCount() - 1; i >= 0; i--)
+		if(IsSel(i))
+			Remove(i); // Optimize!
+	KillCursor();
+}
+
+void ArrayCtrl::InsertDrop(int line, const Vector< Vector<Value> >& data, PasteClip& d, bool self)
+{
+	if(data.GetCount() == 0)
+		return;
+	if(d.GetAction() == DND_MOVE && self) {
+		for(int i = GetCount() - 1; i >= 0; i--) {
+			if(IsSel(i)) {
+				Remove(i); // Optimize!
+				if(i < line)
+					line--;
+			}
+		}
+		KillCursor();
+		d.SetAction(DND_COPY);
+	}
+	Insert(line, data);
+	ClearSelection();
+	SetCursor(line + data.GetCount() - 1);
+	if(IsMultiSelect())
+		Select(line, data.GetCount());
+	SetFocus();
+}
+
+void ArrayCtrl::InsertDrop(int line, const Vector<Value>& data, PasteClip& d, bool self)
+{
+	Vector< Vector<Value> > x;
+	x.Add() <<= data;
+	InsertDrop(line, x, d, self);
+}
+
+void ArrayCtrl::InsertDrop(int line, const Value& data, PasteClip& d, bool self)
+{
+	Vector<Value> x;
+	x.Add(data);
+	InsertDrop(line, x, d, self);
+}
+
+void ArrayCtrl::InsertDrop(int line, const ArrayCtrl& src, PasteClip& d)
+{
+	Vector< Vector<Value> > data;
+	for(int i = 0; i < src.GetCount(); i++)
+		if(src.IsSel(i))
+			data.Add(src.GetLine(i));
+	InsertDrop(line, data, d, &src == this);
+}
+
+void ArrayCtrl::InsertDrop(int line, PasteClip& d)
+{
+	InsertDrop(line, GetInternal<ArrayCtrl>(d), d);
 }
 
 ArrayCtrl::ArrayCtrl() {

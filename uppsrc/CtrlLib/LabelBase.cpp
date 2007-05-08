@@ -377,9 +377,35 @@ void DrawHorzDrop(Draw& w, int x, int y, int cx)
 {
 	w.DrawRect(x, y, cx, 2, SColorHighlight);
 	w.DrawRect(x, y - 2, 1, 6, SColorHighlight);
-	w.DrawRect(cx - 1, y - 2, 1, 6, SColorHighlight);
+	w.DrawRect(x + cx - 1, y - 2, 1, 6, SColorHighlight);
 	w.DrawRect(x + 1, y - 1, 1, 4, SColorHighlight);
-	w.DrawRect(cx - 2, y - 1, 1, 4, SColorHighlight);
+	w.DrawRect(x + cx - 2, y - 1, 1, 4, SColorHighlight);
 }
+
+Point GetDragScroll(Ctrl *ctrl, Point p, Size max)
+{
+	if(ctrl->IsReadOnly())
+		return Point(0, 0);
+	Size sz = ctrl->GetSize();
+	Size sd = min(sz / 6, Size(16, 16));
+	Point d(0, 0);
+	if(p.x < sd.cx)
+		d.x = p.x - sd.cx;
+	if(p.x > sz.cx - sd.cx)
+		d.x = p.x - sz.cx + sd.cx;
+	if(p.y < sd.cy)
+		d.y = p.y - sd.cy;
+	if(p.y > sz.cy - sd.cy)
+		d.y = p.y - sz.cy + sd.cy;
+	d.x = minmax(d.x, -max.cx, max.cx);
+	d.y = minmax(d.y, -max.cy, max.cy);
+	return d;
+}
+
+Point GetDragScroll(Ctrl *ctrl, Point p, int max)
+{
+	return GetDragScroll(ctrl, p, Size(max, max));
+}
+
 
 END_UPP_NAMESPACE

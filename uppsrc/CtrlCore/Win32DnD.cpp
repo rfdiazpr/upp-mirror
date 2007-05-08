@@ -47,7 +47,6 @@ struct UDropTarget : public IDropTarget {
 	LPDATAOBJECT  data;
 	Ptr<Ctrl>     ctrl;
 	Index<String> fmt;
-	Ptr<Ctrl>     dndctrl;
 	Point         dndpos;
 
 	STDMETHOD(QueryInterface)(REFIID riid, void **ppvObj);
@@ -69,6 +68,12 @@ struct UDropTarget : public IDropTarget {
 	~UDropTarget();
 };
 
+static Ptr<Ctrl> dndctrl;
+
+Ctrl *Ctrl::GetDragAndDropTarget()
+{
+	return dndctrl;
+}
 
 bool Has(UDropTarget *dt, const char *fmt)
 {
@@ -141,7 +146,7 @@ void UDropTarget::DnD(POINTL pl, bool drop, DWORD *effect, DWORD keys)
 	}
 	if(e & DROPEFFECT_MOVE) {
 		d.allowed |= DND_MOVE;
-		if(c->IsDragAndDropSource())
+		if(Ctrl::GetDragAndDropSource())
 			d.action = DND_MOVE;
 	}
 	if((keys & MK_CONTROL) && (d.allowed & DND_COPY))
@@ -257,7 +262,7 @@ UDropTarget::~UDropTarget()
 
 Ptr<Ctrl> sDnDSource;
 
-Ctrl * Ctrl::DragAndDropSource()
+Ctrl * Ctrl::GetDragAndDropSource()
 {
 	return sDnDSource;
 }
@@ -481,7 +486,6 @@ STDMETHODIMP UDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeySta
 
 STDMETHODIMP UDropSource::GiveFeedback(DWORD dwEffect)
 {
-	DUMP(dwEffect);
 	Image m = IsNull(move) ? copy : move;
 	if((dwEffect & DROPEFFECT_COPY) == DROPEFFECT_COPY) {
 		if(!IsNull(copy)) m = copy;

@@ -207,10 +207,13 @@ public:
 	bool   IsAvailable(const char *fmt) const;
 	String Get(const char *fmt) const;
 
+	bool   Accept();
 	bool   Accept(const char *fmt);
 	String Get() const                  { return data; }
 	operator String() const             { return data; }
 	String operator ~() const           { return data; }
+
+	void   Reject()                     { accepted = false; data.Clear(); }
 
 	int    GetAction() const            { return action; }
 	int    GetAllowedActions() const    { return allowed; }
@@ -248,6 +251,38 @@ template <class T>
 bool   Accept(PasteClip& clip)
 {
 	return clip.Accept(ClipFmt<T>());
+}
+
+
+String GetInternalDropId__(const char *type, const char *id);
+void NewInternalDrop__(const void *ptr);
+const void *GetInternalDropPtr__();
+
+template <class T>
+VectorMap<String, String> InternalClip(const T& x, const char *id = "")
+{
+	NewInternalDrop__(&x);
+	VectorMap<String, String> d;
+	d.Add(GetInternalDropId__(typeid(T).name(), id));
+	return d;
+}
+
+template <class T>
+bool IsAvailableInternal(PasteClip& d, const char *id = "")
+{
+	return d.IsAvailable(GetInternalDropId__(typeid(T).name(), id));
+}
+
+template <class T>
+bool AcceptInternal(PasteClip& d, const char *id = "")
+{
+	return d.Accept(GetInternalDropId__(typeid(T).name(), id));
+}
+
+template <class T>
+const T& GetInternal(PasteClip& d)
+{
+	return *(T *)GetInternalDropPtr__();
 }
 
 class Ctrl : public Pte<Ctrl> {
@@ -1143,17 +1178,20 @@ public:
 	bool   InCurrentLoop() const    { return GetLoopCtrl() == this; }
 	int    GetExitCode() const      { return exitcode; }
 
-	static PasteClip& Clipboard();
-	static PasteClip& Selection();
+	static PasteClip Clipboard();
+	static PasteClip Selection();
+
 	void   SetSelectionSource(const char *fmts);
 	int    DoDragAndDrop(const char *fmts, const Image& sample, dword actions,
 	                     const VectorMap<String, String>& data);
-	int    DoDragAndDrop(const char *fmts, const Image& sample, dword actions = DND_ALL);
-	int    DoDragAndDrop(const VectorMap<String, String>& data, const Image& sample,
+	int    DoDragAndDrop(const char *fmts, const Image& sample = Null, dword actions = DND_ALL);
+	int    DoDragAndDrop(const VectorMap<String, String>& data, const Image& sample = Null,
 	                     dword actions = DND_ALL);
-	static Ctrl *DragAndDropSource();
-	bool   IsDragAndDropSource()    { return this == DragAndDropSource(); }
-	static Size  StdSampleSize()    { return Size(126, 96); }
+	static Ctrl *GetDragAndDropSource();
+	static Ctrl *GetDragAndDropTarget();
+	bool   IsDragAndDropSource()    { return this == GetDragAndDropSource(); }
+	bool   IsDragAndDropTarget()    { return this == GetDragAndDropTarget(); }
+	static Size  StdSampleSize()    { return Size(126, 106); }
 
 	void SetMinSize(Size sz) {} // see CtrlLayout template and WindowCtrl...
 

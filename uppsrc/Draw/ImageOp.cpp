@@ -86,6 +86,25 @@ Image Crop(const Image& img, int x, int y, int cx, int cy)
 	return Crop(img, RectC(x, y, cx, cy));
 }
 
+Image ColorMask(const Image& src, Color key)
+{
+	ImageBuffer ib(src.GetSize());
+	const RGBA *s = src;
+	const RGBA *e = src + src.GetLength();
+	RGBA *t = ~ib;
+	byte kr = key.GetR();
+	byte kg = key.GetG();
+	byte kb = key.GetB();
+	while(s < e) {
+		if(s->r == kr && s->g == kg && s->b == kb)
+			*t++ = RGBAZero();
+		else
+			*t++ = *s;
+		s++;
+	}
+	return ib;
+}
+
 void CanvasSize(RasterEncoder& tgt, Raster& img, int cx, int cy)
 {
 	tgt.Create(cx, cy, img);

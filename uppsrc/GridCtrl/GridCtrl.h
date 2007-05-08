@@ -648,6 +648,7 @@ class GridCtrl : public Ctrl
 		
 		bool IsModified(int r, int c);
 		bool IsModified(int c);
+		bool IsModifiedRow(int r);
 
 		Vector<Value> ReadRow(int n) const;
 		GridCtrl& Add(const Vector<Value> &v, int offset = 0);
@@ -674,7 +675,7 @@ class GridCtrl : public Ctrl
 		
 		void UpdateCursor();
 		
-		int Find(const Value &v, int col = 0);
+		int Find(const Value &v, int col = 0, int start_from = 0);
 		int Find(const Value &v, Id id);
 									
 		GridDisplay& GetDisplay() { return *display; }
@@ -690,7 +691,7 @@ class GridCtrl : public Ctrl
 		
 		int  Append(int cnt = 1, bool refresh = true, int height = GD_ROW_HEIGHT);
 		void Insert(int i, int cnt = 1);
-		void Remove(int i, int cnt = 1);
+		void Remove(int i = -1, int cnt = 1);
 		void RemoveFirst(int cnt = 1);
 		void RemoveLast(int cnt = 1);
 		void Duplicate(int i, int cnt = 1);
@@ -861,6 +862,8 @@ class GridCtrl : public Ctrl
 		
 	private:
 	
+		bool TabKey(bool enter_mode);
+	
 		bool Go0(int jump, bool scroll = true, bool goleft = false, bool ctrlmode = false);
 	
 		CurState SetCursor0(Point p, bool mouse = false, bool highlight = false, int dirx = -2, int diry = -2, bool ctrlmode = false);
@@ -1024,7 +1027,8 @@ class GridCtrl : public Ctrl
 		
 		Callback StdInsert;
 		Callback StdAppend;
-		Callback StdRemove;		
+		Callback StdRemove;
+		Callback StdEdit;		
 };
 
 END_UPP_NAMESPACE

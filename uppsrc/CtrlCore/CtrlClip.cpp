@@ -30,6 +30,12 @@ String PasteClip::Get(const char *fmt) const
 	return dt ? UPP::Get(dt, fmt) : ReadClipboard(fmt);
 }
 
+bool PasteClip::Accept()
+{
+	accepted = true;
+	return paste;
+}
+
 bool   PasteClip::Accept(const char *_fmt)
 {
 	Vector<String> f = Split(_fmt, ';');
@@ -54,12 +60,12 @@ PasteClip::PasteClip()
 	prefer = 0;
 	paste = true;
 	accepted = false;
+	dt = NULL;
 }
 
-PasteClip& Ctrl::Clipboard()
+PasteClip Ctrl::Clipboard()
 {
-	static PasteClip p;
-	return p;
+	return PasteClip();
 }
 
 String ClipFmtsText()
@@ -93,6 +99,26 @@ int Ctrl::DoDragAndDrop(const char *fmts, const Image& sample, dword actions)
 int Ctrl::DoDragAndDrop(const VectorMap<String, String>& data, const Image& sample, dword actions)
 {
 	return DoDragAndDrop("", sample, actions, data);
+}
+
+
+Uuid        sDndUuid;
+const void *sInternalPtr;
+
+String GetInternalDropId__(const char *type, const char *id)
+{
+	return "U++ Internal clip:" + AsString(sDndUuid) + '-' + type + '-' + id;
+}
+
+void NewInternalDrop__(const void *ptr)
+{
+	sDndUuid = Uuid::Create();
+	sInternalPtr = ptr;
+}
+
+const void *GetInternalDropPtr__()
+{
+	return sInternalPtr;
 }
 
 END_UPP_NAMESPACE

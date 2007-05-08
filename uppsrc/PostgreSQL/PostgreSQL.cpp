@@ -9,6 +9,7 @@ protected:
 	virtual void        SetParam(int i, const Value& r);
 	virtual bool        Execute();
 	virtual int         GetRowsProcessed() const;
+	virtual Value       GetInsertedId() const;
 	virtual bool        Fetch();
 	virtual void        GetColumn(int i, Ref f) const;
 	virtual void        Cancel();
@@ -99,9 +100,7 @@ Vector<String> PostgreSQLSession::EnumUsers()
 	Sql sql(*this);
 	sql.Execute("select rolname from pg_authid where rolcanlogin");
 	while(sql.Fetch())
-	{
 		vec.Add(sql[0]);
-	}
 	return vec;
 }
 
@@ -143,7 +142,7 @@ Vector<String> PostgreSQLSession::EnumViews(String database)
 
 Vector<String> PostgreSQLSession::EnumSequences(String database)
 {
-	return EnumData('s', database);
+	return EnumData('S', database);
 }
 
 Vector<SqlColumnInfo> PostgreSQLSession::EnumColumns(String database, String table)
@@ -161,6 +160,7 @@ Vector<SqlColumnInfo> PostgreSQLSession::EnumColumns(String database, String tab
 	                "where c.relname = '%s' "
 	                  "and n.nspname = '%s' "
 	                  "and a.attnum > 0 "
+	                  "and a.attisdropped = '0' "
 	                "order by a.attnum", table, database), *this);
 	sql.Execute();
 	while(sql.Fetch())
@@ -168,7 +168,7 @@ Vector<SqlColumnInfo> PostgreSQLSession::EnumColumns(String database, String tab
 		SqlColumnInfo &ci = vec.Add();
 		int type_mod = int(sql[3]) - sizeof(int32);
 		ci.name = sql[0];
-		ci.type = sql[1];
+		ci.type = OidToType((int)sql[1]);
 		ci.width = sql[2];
 		if(ci.width < 0)
 			ci.width = type_mod;
@@ -240,8 +240,8 @@ bool PostgreSQLSession::InitOidTypeMap()
 	StoreInOidTypeMap("time", TIME_V, typname_oid_map);
 	StoreInOidTypeMap("time_stamp", TIME_V, typname_oid_map);
 	StoreInOidTypeMap("timestamp", TIME_V, typname_oid_map);
-	//StoreInOidTypeMap("timestamptz", TIME_V, typname_oid_map);
-	//StoreInOidTypeMap("timetz", TIME_V, typname_oid_map);
+	StoreInOidTypeMap("timestamptz", TIME_V, typname_oid_map);
+	StoreInOidTypeMap("timetz", TIME_V, typname_oid_map);
 	//StoreInOidTypeMap("tinterval", , typname_oid_map);
 	StoreInOidTypeMap("xid", INT_V, typname_oid_map);
 		
@@ -278,7 +278,7 @@ bool PostgreSQLSession::Open(const char *connect)
 	conn = PQconnectdb(connect);
 	if(PQstatus(conn) != CONNECTION_OK)
 	{
-		SetError(PQerrorMessage(conn), "Opening db");
+		SetError(PQerrorMessage(conn), "Opening database");
 		Close();
 		return false;
 	}
@@ -307,17 +307,17 @@ void PostgreSQLSession::Close()
 
 void PostgreSQLSession::Begin()
 {
-	ExecTrans("BEGIN");
+	ExecTrans("begin");
 }
 
 void PostgreSQLSession::Commit()
 {
-	ExecTrans("COMMIT");
+	ExecTrans("commit");
 }
 
 void PostgreSQLSession::Rollback()
 {
-	ExecTrans("ROLLBACK");
+	ExecTrans("rollback");
 }
 
 /////////////////////////////////////////////////
@@ -392,7 +392,9 @@ bool PostgreSQLConnection::Execute()
 	if(session.IsTraceTime())
 		time = GetTickCount();
 
-	result = PQexec(conn, query);
+	//result = PQexec(conn, query);
+	result = PQexecParams(conn, query, 0, NULL, NULL, NULL, NULL, 0);
+	// TODO we should recieve data in binary format to avoid all the ato* stuff
 
 	if(trace) {
 		if(session.IsTraceTime())
@@ -407,7 +409,7 @@ bool PostgreSQLConnection::Execute()
 		for(int i = 0; i < fields; i++)
 		{
 			SqlColumnInfo& f = info[i];
-			f.name = ToUpper(PQfname(result, i));
+			f.name = PQfname(result, i);
 			f.width = PQfsize(result, i);
 			f.decimals = f.scale = f.prec = 0; // TODO
 			Oid type_oid = PQftype(result, i);
@@ -421,7 +423,6 @@ bool PostgreSQLConnection::Execute()
 		return true;
 	}
 	
-	//error
 	session.SetError( PQerrorMessage(conn), query );
 	FreeResult();
 	
@@ -433,21 +434,32 @@ int PostgreSQLConnection::GetRowsProcessed() const
 	return rows;
 }
 
+Value PostgreSQLConnection::GetInsertedId() const
+{
+	//it needs GetInsertedId(const char * sequence) 
+	//there is no other/better way to retrieve last inserted id
+	const char * sequence = NULL;
+		
+	Sql sql(Format("select currval('%s')", sequence), session);
+	if(sql.Execute() && sql.Fetch())
+		return sql[0];
+	else
+		return Null;
+}
+
 bool PostgreSQLConnection::Fetch()
 {
 	fetched_row++;
 	if(result && rows > 0 && fetched_row < rows)
-	{
 		return true;
-	}
 	Cancel();
 	return false;
 }
 
-// 0123456789012345678
-// YYYY-MM-DD HH-MM-SS
-
-static Date sDate(const char *s) {
+static Date sDate(const char *s) 
+{
+	// 0123456789012345678
+	// YYYY-MM-DD HH-MM-SS
 	return Date(atoi(s), atoi(s + 5), atoi(s + 8));
 }
 
@@ -461,14 +473,18 @@ void PostgreSQLConnection::GetColumn(int i, Ref f) const
 	char * s = PQgetvalue(result, fetched_row, i);
 	switch(info[i].type)
 	{
+		//ntohl(*(int *)PQgetvalue(res, 0, 0));
 		case INT64_V:
 			f = atoi(s);
+			//f = Value(*((int64 *)s));
 			break;
 		case INT_V:
 			f = atoi(s);
+			//f = Value(*((int32 *)s));
 			break;
 		case DOUBLE_V:
 			f = atof(s);
+			//f = Value(*(double *)(s));
 			break;
 		case DATE_V:
 			f = Value(sDate(s));
@@ -525,8 +541,6 @@ PostgreSQLConnection::PostgreSQLConnection(PostgreSQLSession& a_session, PGconn 
 {
 	result = NULL;
 }
-
-
 
 END_UPP_NAMESPACE
 

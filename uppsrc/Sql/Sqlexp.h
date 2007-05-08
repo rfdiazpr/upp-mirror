@@ -424,8 +424,14 @@ public:
 	SqlSelect& From(SqlId table1, SqlId table2);
 	SqlSelect& From(SqlId table1, SqlId table2, SqlId table3);
 	SqlSelect& From(const SqlVal& a)                  { return From(SqlSet(a)); }
+	
+	SqlSelect& InnerJoin(SqlId table);
+	SqlSelect& LeftJoin(SqlId table);
+	SqlSelect& RightJoin(SqlId table);
+	SqlSelect& FullJoin(SqlId table);
 
-	SqlSelect& Where(const SqlBool& where);
+	SqlSelect& Where(const SqlBool& exp);
+	SqlSelect& On(const SqlBool& exp);
 	SqlSelect& StartWith(const SqlBool& exp);
 	SqlSelect& ConnectBy(const SqlBool& exp);
 	SqlSelect& GroupBy(const SqlSet& columnset);

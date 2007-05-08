@@ -555,18 +555,7 @@ void DocEdit::RefreshDropCaret()
 
 void DocEdit::DragRepeat(Point p)
 {
-	if(IsReadOnly())
-		return;
-	Size sz = GetSize();
-	int sd = min(sz.cy / 6, 16);
-	int d = 0;
-	if(p.y < sd)
-		d = p.y - sd;
-	if(p.y > sz.cy - sd)
-		d = p.y - sz.cy + sd;
-	RefreshDropCaret();
-	sb = (int)sb + minmax(d, -16, 16);
-	RefreshDropCaret();
+	sb = (int)sb + GetDragScroll(this, p, 16).y;
 }
 
 void DocEdit::DragLeave()

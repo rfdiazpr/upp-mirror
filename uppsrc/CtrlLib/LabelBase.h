@@ -31,6 +31,9 @@ void DrawFocus(Draw& w, const Rect& r, Color c = SColorText());
 
 void DrawHorzDrop(Draw& w, int x, int y, int cx);
 
+Point GetDragScroll(Ctrl *ctrl, Point p, Size max);
+Point GetDragScroll(Ctrl *ctrl, Point p, int max = 16);
+
 struct DrawLabel {
 	bool      push;
 	bool      focus;

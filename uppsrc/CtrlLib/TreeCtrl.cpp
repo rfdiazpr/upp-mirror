@@ -59,13 +59,27 @@ TreeCtrl::TreeCtrl()
 	nocursor = false;
 	noroot = false;
 	dirty = true;
-	isselection = false;
 	multiselect = false;
 	nobg = false;
 	Clear();
 	SetFrame(ViewFrame());
 	AddFrame(sb);
 	sb.WhenScroll = THISBACK(Scroll);
+	WhenLeftDouble = THISBACK(StdLeftDouble);
+}
+
+void TreeCtrl::StdLeftDouble()
+{
+	if(IsCursor())
+		Open(GetCursor(), !IsOpen(GetCursor()));
+}
+
+void TreeCtrl::CancelMode()
+{
+	selclick = false;
+	dropinsert = 0;
+	dropitem = -1;
+	repoint = Null;
 }
 
 TreeCtrl::~TreeCtrl() {}
@@ -130,6 +144,7 @@ int    TreeCtrl::Insert(int parentid, int i, const TreeCtrl::Node& n)
 		item.Add();
 	}
 	Item& m = item[id];
+	m.free = false;
 	m.parent = parentid;
 	(TreeCtrl::Node&)m = n;
 	if(parentid >= 0) {
@@ -239,9 +254,19 @@ void   TreeCtrl::RemoveChildren(int id)
 	Dirty(id);
 }
 
+int TreeCtrl::GetChildIndex(int id, int childid) const
+{
+	for(int i = 0; i < GetChildCount(id); i++)
+		if(GetChild(id, i) == childid)
+			return i;
+	return -1;
+}
+
 void   TreeCtrl::RemoveSubtree(int id)
 {
 	Item& m = item[id];
+	if(m.sel)
+		selectcount--;
 	if(m.linei == cursor)
 		cursor = item[m.parent].linei;
 	m.value = Null;
@@ -249,6 +274,7 @@ void   TreeCtrl::RemoveSubtree(int id)
 	RemoveChildren(id);
 	m.freelink = freelist;
 	freelist = id;
+	m.free = true;
 }
 
 void   TreeCtrl::Remove(int id)
@@ -261,6 +287,13 @@ void   TreeCtrl::Remove(int id)
 	Dirty(pi);
 }
 
+void   TreeCtrl::Remove(const Vector<int>& id)
+{
+	for(int i = 0; i < id.GetCount(); i++)
+		if(!item[id[i]].free)
+			Remove(id[i]);
+}
+
 void   TreeCtrl::Clear()
 {
 	item.Clear();
@@ -269,7 +302,8 @@ void   TreeCtrl::Clear()
 	item[0].parent = -1;
 	freelist = -1;
 	Dirty();
-	cursor = -1;
+	cursor = anchor = -1;
+	selectcount = 0;
 }
 
 void TreeCtrl::RemoveCtrls(int itemi)
@@ -334,7 +368,7 @@ void TreeCtrl::SyncTree()
 	cursor = -1;
 	dirty = false;
 	if(cursorid >= 0)
-		SetCursor(cursorid, false);
+		SetCursor(cursorid, false, false);
 	SyncCtrls(true, restorefocus);
 }
 
@@ -426,20 +460,21 @@ int TreeCtrl::FindLine(int y) const
 	return l > 0 ? l - 1 : 0;
 }
 
-void TreeCtrl::RefreshLine(int i)
+void TreeCtrl::RefreshLine(int i, int ex)
 {
 	SyncTree();
 	if(i >= 0) {
 		Size sz = GetSize();
 		int y = line[i].y - sb.GetY();
-		Refresh(0, y, sz.cx, item[line[i].itemi].GetSize().cy);
+		Refresh(0, y - ex, sz.cx, item[line[i].itemi].GetSize().cy + 2 * ex);
 	}
 }
 
-void TreeCtrl::RefreshItem(int id)
+void TreeCtrl::RefreshItem(int id, int ex)
 {
 	SyncTree();
-	RefreshLine(item[id].linei);
+	if(id >= 0 && id < item.GetCount())
+		RefreshLine(item[id].linei, ex);
 }
 
 int  TreeCtrl::GetItemAtLine(int i)
@@ -460,10 +495,14 @@ int  TreeCtrl::GetLineCount()
 	return line.GetCount();
 }
 
-void TreeCtrl::SetCursorLine(int i, bool sc)
+void TreeCtrl::SetCursorLine(int i, bool sc, bool sel)
 {
 	if(nocursor)
 		return;
+	if(sel && multiselect) {
+		ClearSelection();
+		SelectOne(line[i].itemi, true);
+	}
 	if(i != cursor) {
 		i = minmax(i, 0, line.GetCount() - 1);
 		if(i < 0) return;
@@ -482,7 +521,7 @@ void TreeCtrl::SetCursorLine(int i, bool sc)
 
 void TreeCtrl::SetCursorLine(int i)
 {
-	SetCursorLine(i, true);
+	SetCursorLine(i, true, true);
 }
 
 void TreeCtrl::SetCursorLineSync(int i)
@@ -490,8 +529,6 @@ void TreeCtrl::SetCursorLineSync(int i)
 	if(nocursor)
 		return;
 	if(i != cursor) {
-		if(cursor < 0)
-			Refresh();
 		RefreshLine(cursor);
 		if(i < 0)
 			cursor = -1;
@@ -499,9 +536,7 @@ void TreeCtrl::SetCursorLineSync(int i)
 			cursor = minmax(i, (int)noroot, line.GetCount() - 1);
 		RefreshLine(cursor);
 		Item& m = item[line[cursor].itemi];
-		if(cursor < 0)
-			Refresh();
-		else {
+		if(cursor >= 0) {
 			Sync();
 			sb.ScrollIntoY(line[cursor].y, m.GetSize().cy);
 		}
@@ -521,7 +556,7 @@ void TreeCtrl::KillCursor()
 	WhenSel();
 }
 
-void TreeCtrl::SetCursor(int id, bool sc)
+void TreeCtrl::SetCursor(int id, bool sc, bool sel)
 {
 	while(id > 0) {
 		ASSERT(id >= 0 && id < item.GetCount());
@@ -529,17 +564,17 @@ void TreeCtrl::SetCursor(int id, bool sc)
 		SyncTree();
 		const Item& m = item[id];
 		if(m.linei >= 0) {
-			SetCursorLine(m.linei, sc);
+			SetCursorLine(m.linei, sc, true);
 			return;
 		}
 		id = m.parent;
 	}
-	SetCursorLine(0, sc);
+	SetCursorLine(0, sc, true);
 }
 
 void TreeCtrl::SetCursor(int id)
 {
-	SetCursor(id, true);
+	SetCursor(id, true, true);
 }
 
 int  TreeCtrl::GetCursor() const
@@ -574,6 +609,40 @@ bool   TreeCtrl::FindSetCursor(Value key)
 	return true;
 }
 
+void TreeCtrl::UpdateSelect()
+{
+	WhenSelection();
+	WhenSel();
+	WhenAction();
+}
+
+bool TreeCtrl::IsSel(int id) const
+{
+	return multiselect ? IsSelected(id) : GetCursor() == id;
+}
+
+bool TreeCtrl::IsSelDeep(int id) const
+{
+	return IsSel(id) || id && IsSelDeep(GetParent(id));
+}
+
+void TreeCtrl::SelectOne0(int id, bool sel)
+{
+	if(!multiselect)
+		return;
+	if(item[id].canselect && item[id].sel != sel) {
+		item[id].sel = sel;
+		selectcount += 2 * sel - 1;
+		RefreshItem(id);
+	}
+}
+
+void TreeCtrl::SelectOne(int id, bool sel)
+{
+	SelectOne0(id, sel);
+	UpdateSelect();
+}
+
 void TreeCtrl::ShiftSelect(int l1, int l2)
 {
 	if(!multiselect)
@@ -581,12 +650,19 @@ void TreeCtrl::ShiftSelect(int l1, int l2)
 	bool b = false;
 	if(l1 > l2)
 		Swap(l1, l2);
-	for(int i = l1; i <= l2; i++)
-		SelectOne(line[i].itemi, true);
+	for(int i = 0; i < line.GetCount(); i++)
+		SelectOne0(line[i].itemi, i >= l1 && i <= l2);
 	UpdateSelect();
 }
 
-void TreeCtrl::LeftDown(Point p, dword flags)
+void TreeCtrl::LeftDrag(Point p, dword keyflags)
+{
+	if(p.y + sb.y > sb.GetTotal().cy)
+		return;
+	WhenDrag();
+}
+
+void TreeCtrl::DoClick(Point p, dword flags, bool down)
 {
 	Point org = sb;
 	if(p.y + org.y > sb.GetTotal().cy)
@@ -594,36 +670,61 @@ void TreeCtrl::LeftDown(Point p, dword flags)
 	int i = FindLine(p.y + org.y);
 	const Line& l = line[i];
 	int x = levelcx + l.level * levelcx - org.x - (levelcx >> 1) - org.x;
-	if(p.x > x - 6 && p.x < x + 6)
-		Open(l.itemi, !IsOpen(l.itemi));
+	if(p.x > x - 6 && p.x < x + 6) {
+		if(down)
+			Open(l.itemi, !IsOpen(l.itemi));
+	}
 	else {
+		if(down && IsSel(l.itemi)) {
+			selclick = true;
+			return;
+		}
 		SetFocus();
 		int q = cursor;
-		SetCursorLine(i);
+		SetCursorLine(i, true, false);
+		if(multiselect) {
+			int id = GetCursor();
+			if(flags & K_CTRL) {
+				SelectOne(id, !IsSelected(id));
+				anchor = cursor;
+			}
+			else
+				if(flags & K_SHIFT)
+					ShiftSelect(anchor < 0 ? cursor : anchor, cursor);
+				else {
+					ClearSelection();
+					SelectOne(id);
+					anchor = cursor;
+				}
+		}
 		if(cursor != q)
 			WhenAction();
-		if(multiselect) {
-			if(flags & K_CTRL) {
-				int id = GetCursor();
-				SelectOne(id, !IsSelected(id));
-			}
-			else {
-				ClearSelection();
-				if(flags & K_SHIFT) {
-					ShiftSelect(q, cursor);
-					cursor = q;
-				}
-			}
-		}
+	}
+}
+
+void TreeCtrl::LeftDown(Point p, dword flags)
+{
+	DoClick(p, flags, true);
+}
+
+void TreeCtrl::LeftUp(Point p, dword keyflags)
+{
+	if(selclick) {
+		DoClick(p, keyflags, false);
+		selclick = false;
 	}
 }
 
 void TreeCtrl::LeftDouble(Point p, dword flags)
 {
+	LeftDown(p, flags);
 	Point org = sb;
 	if(p.y + org.y > sb.GetTotal().cy)
 		return;
-	if(FindLine(p.y + org.y) == GetCursorLine())
+	int i = FindLine(p.y + org.y);
+	const Line& l = line[i];
+	int x = levelcx + l.level * levelcx - org.x - (levelcx >> 1) - org.x;
+	if(i == GetCursorLine() && (flags & (K_SHIFT|K_CTRL)) == 0 && p.x > x + 6)
 		WhenLeftDouble();
 }
 
@@ -661,6 +762,7 @@ void TreeCtrl::Paint(Draw& w)
 			}
 		}
 	}
+	Rect dri;
 	for(int i = FindLine(org.y); i < line.GetCount(); i++) {
 		Line& l = line[i];
 		const Item& m = item[l.itemi];
@@ -673,10 +775,16 @@ void TreeCtrl::Paint(Draw& w)
 		int y = l.y - org.y;
 		if(y > sz.cy)
 			break;
+		int x = 0;
+		x = levelcx + l.level * levelcx - org.x;
+		Point op = Point(x - levelcx2, y + msz.cy / 2);
+		Rect r = RectC(x, y, vsz.cx + 2 * m.margin, msz.cy);
+		if(l.itemi == dropitem) {
+			dri = r;
+			if(i == 0)
+				dri.top++;
+		}
 		if(w.IsPainting(0, y, sz.cx, msz.cy)) {
-			int x = 0;
-			x = levelcx + l.level * levelcx - org.x;
-			Point op = Point(x - levelcx2, y + msz.cy / 2);
 			w.DrawRect(op.x, op.y, levelcx2, 1, SColorShadow);
 			if(m.canopen || m.child.GetCount()) {
 				Image im = m.isopen ? CtrlImg::treeminus() : CtrlImg::treeplus();
@@ -690,28 +798,70 @@ void TreeCtrl::Paint(Draw& w)
 			Color bg = SColorPaper;
 			if(nobg)
 				bg = Null;
-			bool hasfocus = HasFocus();
+			bool hasfocus0 = HasFocus();
+			bool hasfocus = hasfocus0 && !IsDragAndDropTarget();
+			bool drop = l.itemi == dropitem && dropinsert == 0;
 			if(IsReadOnly())
 				st |= Display::READONLY;
-			if(m.sel) {
+			if(m.sel && multiselect)
 				st |= Display::SELECT;
-				fg = hasfocus ? SColorHighlightText : SColorText;
-				bg = hasfocus ? SColorHighlight : SColorFace;
-			}
-			if(i == cursor && !nocursor) {
+			if(i == cursor && !nocursor)
 				st |= Display::CURSOR;
-				fg = hasfocus ? SColorHighlightText : SColorText;
-				bg = hasfocus ? (isselection ? Blend(SColorLight, SColorHighlight) : SColorHighlight)
-				              : SColorFace;
+			if(drop) {
+				hasfocus = true;
+				st |= Display::CURSOR;
 			}
-			if(hasfocus) st |= Display::FOCUS;
+			if(hasfocus)
+				st |= Display::FOCUS;
+			if((st & Display::SELECT) ||
+			    !multiselect && (st & Display::CURSOR) && !nocursor ||
+			    drop) {
+				fg = hasfocus ? SColorHighlightText : SColorText;
+				bg = hasfocus ? SColorHighlight : Blend(SColorDisabled, SColorPaper);
+			}
 			if(!(m.ctrl && m.ctrl->IsWantFocus())) {
-				w.DrawRect(x, y, vsz.cx + 2 * m.margin, msz.cy, bg);
+				w.DrawRect(r, bg);
 				d->Paint(w, RectC(x + m.margin, y + (msz.cy - vsz.cy) / 2, vsz.cx, vsz.cy), m.value,
 				         fg, bg, st);
+				if(i == cursor && !nocursor && multiselect && GetSelectCount() != 1 && hasfocus0
+				   && !IsDragAndDropTarget())
+					DrawFocus(w, r, st & Display::SELECT ? SColorPaper() : SColorText());
 			}
 		}
 	}
+	if(dropitem >= 0 && dropinsert)
+		DrawHorzDrop(w, dri.left - 2, dropinsert < 0 ? dri.top : dri.bottom - 1,
+		             sz.cx - dri.left + 2);
+}
+
+Image TreeCtrl::GetDragSample()
+{
+	SyncTree();
+	Size sz = StdSampleSize();
+	ImageDraw iw(StdSampleSize());
+	iw.DrawRect(sz, SColorPaper);
+	int y = 0;
+	for(int i = 0; i < line.GetCount(); i++) {
+		Line& l = line[i];
+		const Item& m = item[l.itemi];
+		const Display *d = m.display;
+		if(!d) d = &StdDisplay();
+		Size msz = m.GetSize();
+		Size isz = m.image.GetSize();
+		Size vsz = m.GetValueSize();
+		Rect r = RectC(0, y, vsz.cx + 2 * m.margin, msz.cy);
+		int x = 0;
+		if(IsSel(l.itemi)) {
+			iw.DrawImage(x, y + (msz.cy - isz.cy) / 2, m.image);
+			x += isz.cx;
+			if(!(m.ctrl && m.ctrl->IsWantFocus())) {
+				d->Paint(iw, RectC(x + m.margin, y + (msz.cy - vsz.cy) / 2, vsz.cx, vsz.cy), m.value,
+				         SColorHighlightText, SColorHighlight, Display::SELECT|Display::FOCUS);
+			}
+			y += msz.cy;
+		}
+	}
+	return ColorMask(iw, SColorPaper);
 }
 
 void TreeCtrl::Scroll()
@@ -770,16 +920,16 @@ bool TreeCtrl::Key(dword key, int)
 	case K_SHIFT_TAB:
 		return Tab(-1);
 	case K_UP:
-		SetCursorLineSync(cursor > 0 ? cursor - 1 : 0);
+		SetCursorLineSync(cursor > 0 ? cursor - 1 : line.GetCount() - 1);
 		break;
 	case K_DOWN:
-		SetCursorLineSync(cursor >= 0 ? cursor + 1 : line.GetCount() - 1);
+		SetCursorLineSync(cursor >= 0 ? cursor + 1 : 0);
 		break;
 	case K_PAGEDOWN:
-		SetCursorLineSync(cursor >= 0 ? FindLine(line[cursor].y + sz.cy) : line.GetCount() - 1);
+		SetCursorLineSync(cursor >= 0 ? FindLine(line[cursor].y + sz.cy) : 0);
 		break;
 	case K_PAGEUP:
-		SetCursorLineSync(cursor >= 0 ? FindLine(line[cursor].y - sz.cy) : 0);
+		SetCursorLineSync(cursor >= 0 ? FindLine(line[cursor].y - sz.cy) : line.GetCount() - 1);
 		break;
 	case K_LEFT:
 		if(cid >= 0)
@@ -792,13 +942,21 @@ bool TreeCtrl::Key(dword key, int)
 	default:
 		return false;
 	}
-	if(cid != cursor)
-		if(shift && multiselect)
-			ShiftSelect(cid, cursor);
-		else
-			ClearSelection();
-	if(cursor != cid)
+	if(GetCursor() != cid) {
+		if(multiselect && cursor >= 0) {
+			if(shift) {
+				if(anchor < 0)
+					anchor = cursor;
+				ShiftSelect(anchor, cursor);
+			}
+			else {
+				ClearSelection();
+				SelectOne(GetCursor());
+				anchor = cursor;
+			}
+		}
 		WhenAction();
+	}
 	return true;
 }
 
@@ -814,6 +972,8 @@ void TreeCtrl::GotFocus()
 		}
 	else
 		RefreshLine(cursor);
+	if(GetSelectCount() > 1)
+		Refresh();
 }
 
 void TreeCtrl::LostFocus()
@@ -821,6 +981,8 @@ void TreeCtrl::LostFocus()
 	if(dirty)
 		return;
 	RefreshLine(cursor);
+	if(GetSelectCount() > 1)
+		Refresh();
 }
 
 void TreeCtrl::ChildRemoved(Ctrl *)
@@ -921,64 +1083,187 @@ void TreeCtrl::ScrollTo(Point sc)
 	sb = sc;
 }
 
-void TreeCtrl::ClearSelTree(int id)
+void TreeCtrl::SelClear(int id)
 {
 	Item& m = item[id];
-	m.sel = false;
+	if(m.sel) {
+		RefreshItem(id);
+		m.sel = false;
+	}
 	for(int i = 0; i < m.child.GetCount(); i++)
-		ClearSelTree(m.child[i]);
+		SelClear(m.child[i]);
+}
+
+void TreeCtrl::GatherSel(int id, Vector<int>& sel) const
+{
+	if(IsSel(id))
+		sel.Add(id);
+	const Item& m = item[id];
+	for(int i = 0; i < m.child.GetCount(); i++)
+		GatherSel(m.child[i], sel);
+}
+
+Vector<int> TreeCtrl::GetSel() const
+{
+	Vector<int> v;
+	GatherSel(0, v);
+	return v;
+}
+
+void TreeCtrl::RefreshSel()
+{
+	Size sz = GetSize();
+	for(int i = FindLine(sb.GetY()); i < line.GetCount(); i++) {
+		Line& l = line[i];
+		int y = l.y - sb.GetY();
+		if(y > sz.cy)
+			break;
+		if(IsSel(l.itemi))
+			RefreshItem(l.itemi);
+	}
 }
 
 void TreeCtrl::ClearSelection()
 {
-	if(isselection) {
-		ClearSelTree(0);
-		isselection = false;
+	if(selectcount) {
+		SelClear(0);
 		WhenSelection();
 		WhenSel();
 		WhenAction();
-		Refresh();
+		selectcount = 0;
 	}
-}
-
-bool TreeCtrl::UpdateSelTree(int id)
-{
-	Item& m = item[id];
-	if(m.sel)
-		return true;
-	for(int i = 0; i < m.child.GetCount(); i++)
-		if(UpdateSelTree(m.child[i]))
-			return true;
-	return false;
-}
-
-void TreeCtrl::UpdateSelect()
-{
-	isselection = UpdateSelTree(0);
-	WhenSelection();
-	WhenSel();
-	WhenAction();
-}
-
-void TreeCtrl::SelectOne(int id, bool sel)
-{
-	if(!multiselect) {
-		ClearSelection();
-		return;
-	}
-	if(item[id].canselect)
-		item[id].sel = sel;
-	UpdateSelect();
-	RefreshItem(id);
-}
-
-bool TreeCtrl::IsSel(int id) const
-{
-	return IsSelection() ? IsSelected(id) : GetCursor() == id;
 }
 
 void TreeCtrl::SetOption(int id)
 {
+}
+
+void TreeCtrl::DnD(int itemid, int insert)
+{
+	if(itemid != dropitem || insert != dropinsert)
+	{
+		RefreshItem(dropitem, 4);
+		dropitem = itemid;
+		dropinsert = insert;
+		RefreshItem(dropitem, 4);
+	}
+}
+
+bool TreeCtrl::DnDInserti(int ii, PasteClip& d, bool bottom)
+{
+	if(ii >= 0 && ii < line.GetCount()) {
+		int itemi = line[ii].itemi;
+		int parent = GetParent(itemi);
+		int childi = GetChildIndex(parent, itemi);
+		int ins = -1;
+		if(bottom)
+			if(childi != GetChildCount(parent) - 1 && ii + 1 < line.GetCount())
+				return DnDInserti(ii + 1, d, false);
+			else {
+				childi++;
+				ins = 1;
+			}
+		WhenDropInsert(parent, childi, d);
+		if(d.IsAccepted()) {
+			DnD(itemi, ins);
+			return true;
+		}
+	}
+	return false;
+}
+
+void TreeCtrl::DragEnter(Point p, PasteClip& d)
+{
+	RefreshSel();
+}
+
+void TreeCtrl::DragAndDrop(Point p, PasteClip& d)
+{
+	int py = p.y + sb.GetY();
+	if(py < sb.GetTotal().cy) {
+		int ii = FindLine(py);
+		const Line& l = line[ii];
+		if(l.itemi && WhenDropInsert) {
+			int y = l.y;
+			int cy = item[l.itemi].GetSize().cy;
+			if(py < y + cy / 4 && DnDInserti(ii, d, false))
+				return;
+			if(py >= y + 3 * cy / 4 && DnDInserti(ii, d, true))
+				return;
+		}
+		WhenDropItem(l.itemi, d);
+		if(d.IsAccepted()) {
+			DnD(l.itemi, 0);
+			return;
+		}
+		WhenDropInsert(l.itemi, GetChildCount(l.itemi), d);
+		if(d.IsAccepted()) {
+			DnD(l.itemi, 0);
+			return;
+		}
+	}
+	WhenDrop(d);
+	DnD(-1, 0);
+}
+
+void TreeCtrl::DragRepeat(Point p)
+{
+	sb = sb + GetDragScroll(this, p, 16);
+	p.y += sb.y;
+	if(p == repoint) {
+		if(GetTimeClick() - retime > 1000 && p.y < sb.GetTotal().cy) {
+			int ii = FindLine(p.y);
+			const Line& l = line[ii];
+			int y = l.y;
+			int cy = item[l.itemi].GetSize().cy;
+			if(p.y >= y + cy / 4 && p.y < y + 3 * cy / 4 &&
+			   !IsOpen(l.itemi) && GetChildCount(l.itemi)) {
+				Open(l.itemi, true);
+				retime = GetTimeClick();
+			}
+		}
+	}
+	else {
+		retime = GetTimeClick();
+		repoint = p;
+	}
+}
+
+void TreeCtrl::DragLeave()
+{
+	DnD(-1, 0);
+	RefreshSel();
+	repoint = Null;
+}
+
+void TreeCtrl::AdjustAction(int parent, PasteClip& d)
+{
+	if(IsDragAndDropSource() && IsSelDeep(parent) && d.GetAction() == DND_MOVE)
+		d.SetAction(DND_COPY);
+}
+
+void TreeCtrl::InsertDrop(int parent, int ii, const TreeCtrl& src, PasteClip& d)
+{
+	TreeCtrl copy;
+	Vector<int> sel = src.GetSel();
+	for(int i = 0; i < sel.GetCount(); i++)
+		Copy(copy, 0, i, src, sel[i]);
+	Vector<int> did;
+	for(int i = 0; i < copy.GetChildCount(0); i++) {
+		did.Add(Copy(*this, parent, ii + i, copy, copy.GetChild(0, i)));
+		SetCursor(did.Top());
+	}
+	if(&src == this && d.GetAction() == DND_MOVE) {
+		Remove(sel);
+		d.SetAction(DND_COPY);
+	}
+	for(int i = 0; i < did.GetCount(); i++)
+		SelectOne(did[i], true);
+}
+
+void TreeCtrl::InsertDrop(int parent, int ii, PasteClip& d)
+{
+	InsertDrop(parent, ii, GetInternal<TreeCtrl>(d), d);
 }
 
 void OptionTree::SetRoot(const Image& img, Option& opt, const char *text)
@@ -1092,5 +1377,14 @@ void OptionTree::SetOption(int id)
 
 OptionTree::OptionTree() { aux.Add(); }
 OptionTree::~OptionTree() {}
+
+int Copy(TreeCtrl& dst, int did, int i, const TreeCtrl& src, int id)
+{
+	did = dst.Insert(did, i, src.GetNode(id));
+	dst.Open(did, src.IsOpen(id));
+	for(int i = 0; i < src.GetChildCount(id); i++)
+		Copy(dst, did, i, src, src.GetChild(id, i));
+	return did;
+}
 
 END_UPP_NAMESPACE

@@ -1,0 +1,10 @@
+description "Drag&Drop with ArrayCtrl as target";
+
+uses
+	CtrlLib;
+
+file
+	main.cpp;
+
+mainconfig
+	"" = "GUI";

@@ -1,9 +1,12 @@
 class TreeCtrl : public Ctrl {
 public:
+	virtual void  CancelMode();
 	virtual void  Paint(Draw& w);
 	virtual void  Layout();
 	virtual void  LeftDown(Point p, dword flags);
+	virtual void  LeftUp(Point p, dword flags);
 	virtual void  LeftDouble(Point p, dword flags);
+	virtual void  LeftDrag(Point p, dword keyflags);
 	virtual void  RightDown(Point p, dword flags);
 	virtual void  MouseWheel(Point p, int zdelta, dword keyflags);
 	virtual bool  Key(dword key, int);
@@ -13,6 +16,10 @@ public:
 	virtual void  ChildRemoved(Ctrl *);
 	virtual void  SetData(const Value& data);
 	virtual Value GetData() const;
+	virtual void  DragEnter(Point p, PasteClip& d);
+	virtual void  DragAndDrop(Point p, PasteClip& d);
+	virtual void  DragRepeat(Point p);
+	virtual void  DragLeave();
 
 public:
 	class Node
@@ -55,6 +62,7 @@ private:
 			int            freelink;
 		};
 
+		bool           free;
 		bool           isopen;
 		bool           sel;
 		Vector<int>    child;
@@ -63,7 +71,7 @@ private:
 		Size GetValueSize() const;
 		Size GetSize() const;
 
-		Item() { isopen = false; linei = -1; parent = -1; canselect = true; sel = false; }
+		Item() { isopen = false; linei = -1; parent = -1; canselect = true; sel = false; free = false; }
 	};
 	struct Line : Moveable<Line> {
 		int  level;
@@ -77,13 +85,20 @@ private:
 	int          cursor;
 	int          freelist;
 	int          levelcx;
+	int          anchor;
+	int          selectcount;
 	bool         nocursor;
 	bool         noroot;
 	bool         dirty;
 	bool         hasctrls;
 	bool         multiselect;
-	bool         isselection;
 	bool         nobg;
+
+	bool         selclick;
+	int          dropitem, dropinsert;
+	Point        repoint;
+	int          retime;
+
 	ScrollBars   sb;
 	Scroller     scroller;
 	Display     *display;
@@ -100,21 +115,27 @@ private:
 	void   RemoveSubtree(int id);
 	void   Scroll();
 	int    FindLine(int y) const;
-	void   RefreshLine(int i);
-	void   RefreshItem(int id);
+	void   RefreshLine(int i, int ex = 0);
+	void   RefreshItem(int id, int ex = 0);
 	void   SetCursorLineSync(int i);
-	void   SetCursorLine(int i, bool scroll);
-	void   SetCursor(int id, bool scroll);
+	void   SetCursorLine(int i, bool scroll, bool sel);
+	void   SetCursor(int id, bool scroll, bool sel);
 	void   RemoveCtrls(int itemi);
 	void   SyncCtrls(bool add, Ctrl *restorefocus);
 	bool   Tab(int d);
 	void   Sort0(int id, const ValueOrder& order, bool byvalue);
 	void   SortDeep0(int id, const ValueOrder& order, bool byvalue);
 	void   GatherOpened(int id, Vector<int>& o);
+	void   SelClear(int id);
 	void   UpdateSelect();
-	void   ClearSelTree(int id);
-	bool   UpdateSelTree(int id);
 	void   ShiftSelect(int l1, int l2);
+	void   SelectOne0(int id, bool sel);
+	void   DnD(int itemid, int insert);
+	bool   DnDInserti(int ii, PasteClip& d, bool bottom);
+	bool   DnDInsert(int ii, int py, int q, PasteClip& d);
+	void   RefreshSel();
+	void   GatherSel(int id, Vector<int>& sel) const;
+	void   DoClick(Point p, dword flags, bool down);
 
 protected:
 	virtual void SetOption(int id);
@@ -125,6 +146,11 @@ public:
 	Callback        WhenLeftDouble;
 	Callback1<Bar&> WhenBar;
 	Callback        WhenSel;
+
+	Callback                        WhenDrag;
+	Callback2<int, PasteClip&>      WhenDropItem;
+	Callback3<int, int, PasteClip&> WhenDropInsert;
+	Callback1<PasteClip&>           WhenDrop;
 
 	// deprecated - use WhenSel
 	Callback        WhenCursor;
@@ -149,6 +175,7 @@ public:
 
 	int    GetChildCount(int id) const                         { return item[id].child.GetCount(); }
 	int    GetChild(int id, int i) const                       { return item[id].child[i]; }
+	int    GetChildIndex(int id, int childid) const;
 	int    GetParent(int id) const                             { return item[id].parent; }
 
 	Value  Get(int id) const;
@@ -205,11 +232,21 @@ public:
 
 	void   Clear();
 
-	bool         IsSelection() const            { return isselection; }
 	void         ClearSelection();
-	void         SelectOne(int id, bool sel);
+	void         SelectOne(int id, bool sel = true);
 	bool         IsSelected(int id) const       { return item[id].sel; }
 	bool         IsSel(int id) const;
+	int          GetSelectCount() const         { return selectcount; }
+	bool         IsSelDeep(int id) const;
+	Vector<int>  GetSel() const;
+	void         Remove(const Vector<int>& id);
+
+	void         AdjustAction(int parent, PasteClip& x);
+	void         InsertDrop(int parent, int ii, const TreeCtrl& src, PasteClip& x);
+	void         InsertDrop(int parent, int ii, PasteClip& d);
+	Image        GetDragSample();
+
+	void         StdLeftDouble();
 
 	void   Dump();
 
@@ -224,6 +261,8 @@ public:
 	TreeCtrl();
 	~TreeCtrl();
 };
+
+int Copy(TreeCtrl& dst, int dstid, int i, const TreeCtrl& src, int srcid);
 
 class OptionTree : public TreeCtrl {
 	Vector<Option *> option;

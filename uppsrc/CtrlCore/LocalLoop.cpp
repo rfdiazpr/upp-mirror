@@ -35,7 +35,7 @@ Image RectTracker::CursorImage(Point, dword)
 {
 	if(animation)
 		DrawRect(rect, rect);
-	return Image::Arrow();
+	return cursorimage;
 }
 
 static uint64 RectTracker_normal = INT64(0x55aa55aa55aa55aa);

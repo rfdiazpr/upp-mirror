@@ -259,7 +259,6 @@ void IconDes::Paste(const Image& img)
 	SetBar();
 }
 
-
 Rect  IconDes::SelectionRect()
 {
 	if(!IsCurrent())

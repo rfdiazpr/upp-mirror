@@ -793,18 +793,7 @@ void LineEdit::RefreshDropCaret()
 
 void LineEdit::DragRepeat(Point p)
 {
-	if(IsReadOnly())
-		return;
-	Size sz = GetSize();
-	int sd = min(sz.cy / 6, 32);
-	int d = 0;
-	if(p.y < sd)
-		d = -1;
-	if(p.y > sz.cy - sd)
-		d = 1;
-	RefreshDropCaret();
-	sb.y = (int)sb.y + minmax(d, -16, 16);
-	RefreshDropCaret();
+	sb.y = (int)sb.y + GetDragScroll(this, p, 1).y;
 }
 
 void LineEdit::DragLeave()

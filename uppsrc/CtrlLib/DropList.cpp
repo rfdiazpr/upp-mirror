@@ -9,6 +9,7 @@ void PopUpTable::CancelMode() {
 		DoClose();
 		WhenCancel();
 	}
+	ArrayCtrl::CancelMode();
 }
 
 void PopUpTable::DoClose() {

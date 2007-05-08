@@ -354,6 +354,7 @@ void Ctrl::Create(Ctrl *owner, bool redirect, bool savebits)
 	             FocusChangeMask|KeyPressMask|KeyReleaseMask|PointerMotionMask|
 	             ButtonPressMask|ButtonReleaseMask|PropertyChangeMask|
 	             VisibilityChangeMask|im_event_mask);
+	CancelMode();
 }
 
 void Ctrl::WndDestroy()

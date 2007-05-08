@@ -54,6 +54,13 @@ SqlSelect& SqlSelect::Where(const SqlBool& exp) {
 	return *this;
 }
 
+SqlSelect& SqlSelect::On(const SqlBool& exp)
+{
+	if(!exp.IsTrue() && !exp.IsEmpty())
+		text << " on " << ~exp;
+	return *this;
+}
+
 SqlSelect& SqlSelect::StartWith(const SqlBool& exp) {
 	text << " start with " << ~exp;
 	return *this;
@@ -131,6 +138,30 @@ SqlSelect& SqlSelect::From(SqlId table1, SqlId table2)
 SqlSelect& SqlSelect::From(SqlId table1, SqlId table2, SqlId table3)
 {
 	text = "select " + text + " from " + ~table1 + ", " + ~table2 + ", " + ~table3;
+	return *this;
+}
+
+SqlSelect& SqlSelect::InnerJoin(SqlId table)
+{
+	text << " inner join " << ~table;
+	return *this;
+}
+
+SqlSelect& SqlSelect::LeftJoin(SqlId table)
+{
+	text << " left outer join " << ~table;
+	return *this;
+}
+
+SqlSelect& SqlSelect::RightJoin(SqlId table)
+{
+	text << " right outer join " << ~table;
+	return *this;
+}
+
+SqlSelect& SqlSelect::FullJoin(SqlId table)
+{
+	text << " full outer join " << ~table;
 	return *this;
 }
 

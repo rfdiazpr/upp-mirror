@@ -100,6 +100,16 @@ bool SetWinRegString(const String& string, const char *value, const char *path, 
 	return ok;
 }
 
+bool SetWinRegExpandString(const String& string, const char *value, const char *path, HKEY base_key) {
+	HKEY key = 0;
+	if(RegCreateKeyEx(base_key, path, 0, NULL, REG_OPTION_NON_VOLATILE,
+		KEY_ALL_ACCESS, NULL, &key, NULL) != ERROR_SUCCESS)
+		return false;
+	bool ok = (RegSetValueEx(key, value, 0,	REG_EXPAND_SZ, string, string.GetLength() + 1) == ERROR_SUCCESS);
+	RegCloseKey(key);
+	return ok;
+}
+
 bool SetWinRegInt(int data, const char *value, const char *path, HKEY base_key)
 {
 	HKEY key = 0;

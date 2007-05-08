@@ -439,7 +439,27 @@ ctrl EditField {
 ctrl DocEdit {
 	group "Editors";
 
-	>EditField;
+	GetMinSize() { sz = GetTextSize("X"); sz.cy += 6; return sz; }
+	GetStdSize() { sz = GetMinSize(); sz.cx *= 8; return sz; }
+
+	Frame SetFrame = InsetFrame();
+	Font  SetFont = StdFont();
+	bool  SetEditable = true @1 ? "Editable";
+	bool  WantFocus = true;
+	Text  Tip;
+//	Qtf   SetInfo @1 ? "Info of control" ;
+
+	Paint(w) {
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+		w.DrawRect(r, :SWhite);
+		PaintData(w);
+	}
+
+	PaintText(w, text) {
+		w.DrawText(3, (GetSize().cy - GetTextSize(text, Arial(10)).cy) / 2,
+			(.SetEditable ? "" : "R/O ") + text, Arial(10), :SMagenta);
+	}
 
 	PaintData(w) {
 		PaintText(w, "DocEdit");

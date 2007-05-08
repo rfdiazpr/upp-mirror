@@ -1,3 +1,4 @@
+
 template <class T>
 void DefaultCtrlFactoryFn(One<Ctrl>& ctrl)
 {
@@ -21,6 +22,7 @@ public:
 	virtual void  LeftDown(Point p, dword);
 	virtual void  LeftDouble(Point p, dword);
 	virtual void  LeftDrag(Point p, dword);
+	virtual void  LeftUp(Point p, dword flags);
 	virtual void  RightDown(Point p, dword);
 	virtual void  MouseMove(Point p, dword);
 	virtual void  MouseWheel(Point p, int zdelta, dword keyflags);
@@ -63,7 +65,7 @@ public:
 		Any                   cache;
 
 		void   InvalidateCache(int i);
-		void   InsertCache(int i);
+		void   InsertCache(int i, int n);
 		void   RemoveCache(int i);
 		void   ClearCache();
 
@@ -201,6 +203,7 @@ private:
 	unsigned  bains:2;
 
 	bool  isdrag:1;
+	bool  selclick:1;
 
 	int    Pos(int np) const;
 
@@ -215,6 +218,7 @@ private:
 	void   Page(int q);
 
 	void   DoPoint(Point p, bool dosel = true);
+	void   DoClick(Point p, dword flags);
 	void   ClickColumn(Point p);
 	void   ClickSel(dword flags);
 	Rect   GetCellRect(int i, int col);
@@ -242,6 +246,8 @@ private:
 	void   SetCtrls();
 	void   DoRemovem();
 	bool   KillCursor0();
+
+	Size   DoPaint(Draw& w, bool sample);
 
 	bool   TestKey(int i, int key);
 
@@ -365,7 +371,8 @@ public:
 	void       ClearSelection();
 	bool       IsSel(int i) const;
 
-	Vector<Value> ReadRow(int i) const;
+	Vector<Value> ReadRow(int i) const; // deprecated name
+	Vector<Value> GetLine(int i) const                          { return ReadRow(i); }
 
 	void       Set(int i, const Vector<Value>& v);
 
@@ -378,9 +385,21 @@ public:
 #undef   E__Add
 //$+
 	void       Insert(int i);
+	void       Insert(int i, int count);
 	void       Insert(int i, const Vector<Value>& v);
+	void       Insert(int i, const Vector< Vector<Value> >& v);
 
 	void       Remove(int i);
+
+	void       RemoveSelection();
+
+	Image      GetDragSample();
+
+	void       InsertDrop(int line, const Vector< Vector<Value> >& data, PasteClip& d, bool self);
+	void       InsertDrop(int line, const Vector<Value>& data, PasteClip& d, bool self);
+	void       InsertDrop(int line, const Value& data, PasteClip& d, bool self);
+	void       InsertDrop(int line, const ArrayCtrl& src, PasteClip& d);
+	void       InsertDrop(int line, PasteClip& d);
 
 	bool       IsCursor() const                        { return cursor >= 0; }
 	bool       SetCursor(int i);
@@ -502,6 +521,7 @@ public:
 	ArrayCtrl& AutoHideSb(bool b = true)               { sb.AutoHide(b); return *this; }
 	ArrayCtrl& NoAutoHideSb()                          { return AutoHideSb(false); }
 	ArrayCtrl& MultiSelect(bool b = true)              { multiselect = b; return *this; }
+	bool       IsMultiSelect(bool b = true)            { return multiselect = b; }
 	ArrayCtrl& NoBackground(bool b = true)             { nobg = b; Transparent(); Refresh(); return *this; }
 
 	ArrayCtrl& ColumnWidths(const char *s);

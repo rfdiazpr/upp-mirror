@@ -397,8 +397,8 @@ ConvertString::~ConvertString() {}
 Value ConvertString::Scan(const Value& text) const {
 	if(IsError(text)) return text;
 	if(IsNull(text)) return notnull ? NotNullError() : Value(text);
-	if(text.GetType() == STRING_V && String(text).GetLength() < maxlen ||
-	   text.GetType() == WSTRING_V && WString(text).GetLength() < maxlen) return text;
+	if(text.GetType() == STRING_V && String(text).GetLength() <= maxlen ||
+	   text.GetType() == WSTRING_V && WString(text).GetLength() <= maxlen) return text;
 	return ErrorValue(UPP::Format(t_("Please enter no more than %d characters."), maxlen));
 }
 

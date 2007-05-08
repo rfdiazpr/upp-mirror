@@ -132,6 +132,18 @@
 	- in some cases cursor was hidden after removing row
 	- scrollbars were not updated after reomoving selected rows
 	+ DrawFocus() - shows active cell even in select_row mode
+	- fixed column widths calculation bug related to min max restrictions
+	- after paste selection was not cleared
+	- rectangular selection caused crash in some cases if they were made with keyboard
+	- fixed crash if inserted row was canceled (removed) in insert callback
+	- enter accepted row with wrong values in controls
+	- if last cell had worng value in embeded control and tab was pressed focus of that control was lost 
+	- WhenRemoveRow was called if new (not commited) row was canceled (eg. by pressing ESC)
+	- toolbar icons were not properly refreshed
+	+ CancelInsert() - should be called in WhenInsertRow to cancel inserting a new row
+	+ CancelUpdate() - should be called in WhenUpdateRow to restore original values of a row
+	+ CancelRemove() - should be called in WhenRemoveRow to cancel removing a current row
+	* Remove() without aguments remove current row
 	
 	
 	

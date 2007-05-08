@@ -100,18 +100,7 @@ void RichEdit::DragAndDrop(Point p, PasteClip& d)
 
 void RichEdit::DragRepeat(Point p)
 {
-	if(IsReadOnly())
-		return;
-	Size sz = GetSize();
-	int sd = min(sz.cy / 6, 32);
-	int d = 0;
-	if(p.y < sd)
-		d = p.y - sd;
-	if(p.y > sz.cy - sd)
-		d = p.y - sz.cy + sd;
-	RefreshDropCaret();
-	sb = (int)sb + minmax(d, -16, 16);
-	RefreshDropCaret();
+	sb = (int)sb + GetDragScroll(this, p, 16).y;
 }
 
 void RichEdit::RefreshDropCaret()
@@ -191,16 +180,8 @@ void RichEdit::LeftDrag(Point p, dword flags)
 		ImageDraw iw(ssz);
 		iw.DrawRect(0, 0, ssz.cx, ssz.cy, White);
 		sample.Paint(iw, 0, 0, 128);
-		ImageBuffer ib(iw);
-		RGBA *s = ~ib;
-		const RGBA *e = s + ib.GetLength();
-		while(s < e) {
-			if(s->r == 255 && s->g == 255 && s->b == 255)
-				s->a = 0;
-			s++;
-		}
 		NextUndo();
-		if(DoDragAndDrop("text/QTF;" RTFS ";" + ClipFmtsText(), ib) == DND_MOVE)
+		if(DoDragAndDrop("text/QTF;" RTFS ";" + ClipFmtsText(), ColorMask(iw, White)) == DND_MOVE)
 			RemoveSelection();
 	}
 /*	else

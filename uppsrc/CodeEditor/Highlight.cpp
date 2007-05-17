@@ -13,6 +13,17 @@ bool cmps(const wchar *q, const char *s, int& n) {
 	return *q == *s;
 }
 
+bool IsUpperString(const char *q)
+{
+	while(*q)
+	{
+		if(*q != '_' && (*q < '0' || *q > '9') && !IsUpper(*q))
+			return false;
+		q++;
+    }
+	return true;
+} 
+
 #define UVSALERT      Color(255, 240, 240)
 #define UVSREPINSERT  Color(240, 240, 255)
 #define UVSYOUINSERT  Color(240, 255, 240)
@@ -203,6 +214,10 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 		return;
 	static Index<String> keyword[HIGHLIGHT_COUNT];
 	static Index<String> name[HIGHLIGHT_COUNT];
+	static Index<String> kw_upp_macros;
+	static Index<String> kw_sql_base;
+	static Index<String> kw_sql_bool;
+	static Index<String> kw_sql_func;
 	if(keyword[0].GetCount() == 0)
 	{
 		static const char *cpp[] = {
@@ -274,6 +289,37 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 			"true", "try", "void", "volatile", "while",
 			NULL
 		};
+		static const char *upp_macros[] = {
+			"CLASSNAME", "THISBACK", "THISBACK1", "THISBACK2",
+			"LOG", "LOGF", "DUMP", "DUMPC", "DUMPCC", "DUMPCCC",
+			"LOGBEGIN", "LOGEND", "LOGBLOCK", "LOGHEXDUMP",
+			"QUOTE", "XASSERT", "NEVER", "XNEVER", "CHECK", "XCHECK", "ASSERT",
+			"RLOG", "RLOGBEGIN", "RLOGEND", "RLOGBLOCK", "RLOGHEXDUMP", "RQUOTE",
+			"RLOGSRCPOS", "RDUMP", "RDUMPC",
+			"NAMESPACE_UPP", "END_UPP_NAMESPACE",
+			NULL
+		};
+		static const char *sql_base[] = {
+			"Select", "Update", "Insert", "Delete", "From",
+			"Join", "InnerJoin", "LeftJoin", "RightJoin", "FullJoin", "OuterJoin",
+			"Where", "On", "OrderBy", "GroupBy",
+			"Of", "As", "StartWith", "ConnectBy", "Having", "ForUpdate", "NoWait", "Limit",
+			"Offset", "Hint", "SQL",
+			NULL
+		};
+		static const char *sql_func[] = {
+			"Decode", "Distinct", "All", "SqlAll", "Count", "Descending",
+			"SqlMax", "SqlMin", "SqlSum", "Avg", "Stddev", "Variance",
+			"Greatest", "Least", "ConvertCharset", "ConvertAscii",
+			"Upper", "Lower", "Substr", "Instr", "Wild", "SqlDate", "AddMonths", "LastDay",
+			"MonthsBetween", "NextDay", "SqlNvl", "Prior", "NextVal", "CurrVal", "SqlArg",
+			NULL
+		};
+		static const char *sql_bool[] = {
+			"SqlIsNull", "NotNull", "Like", "LikeUpperAscii", "NotLike", "Between",
+			"NotBetween", "In", "NotIn", "Exists", "NotExists",
+			NULL
+		};
 		static const char *tfile[] = {
 			"T_",
 			NULL,
@@ -287,14 +333,27 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 		static const char **nm[HIGHLIGHT_COUNT] = {
 			upp, usclib, javan, javan, usclib
 		};
+		const char **q = NULL;
 		for(int i = 0; i < HIGHLIGHT_COUNT; i++) {
-			const char **q = kw[i];
+			q = kw[i];
 			while(*q)
 				keyword[i].Add(*q++);
 			q = nm[i];
 			while(*q)
 				name[i].Add(*q++);
 		}
+		q = upp_macros;
+		while(*q)
+			kw_upp_macros.Add(*q++);
+		q = sql_base;
+		while(*q)
+			kw_sql_base.Add(*q++);
+		q = sql_func;
+		while(*q)
+			kw_sql_func.Add(*q++);
+		q = sql_bool;
+		while(*q)
+			kw_sql_bool.Add(*q++);
 	}
 	WString text = GetWLine(line);
 	SyntaxState ss = ScanSyntax(line);
@@ -484,6 +543,11 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 			String iid = id;
 			hls.Put(q - p, keyword[highlight].Find(iid) >= 0 ? hl_style[INK_KEYWORD] :
 			               name[highlight].Find(iid) >= 0 ? hl_style[INK_UPP] :
+			               kw_upp_macros.Find(iid) >= 0 ? hl_style[INK_UPPMACROS] :
+			               kw_sql_base.Find(iid) >= 0 ? hl_style[INK_SQLBASE] :
+			               kw_sql_func.Find(iid) >= 0 ? hl_style[INK_SQLFUNC] :
+			               kw_sql_bool.Find(iid) >= 0 ? hl_style[INK_SQLBOOL] :
+			               IsUpperString(iid) && !sm.macro ? hl_style[INK_UPPER] :
 			               hl_style[INK_NORMAL]);
 			p = q;
 		}

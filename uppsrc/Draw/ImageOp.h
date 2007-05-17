@@ -22,6 +22,9 @@ Image Grayscale(const Image& img);
 Image Grayscale(const Image& img, int amount);
 Image Contrast(const Image& img, int amount = 256);
 
+Image HorzFadeOut(int cx, int cy, Color color);
+Image HorzFadeOut(Size sz, Color color);
+
 class RescaleImage {
 	Raster       *src;
 	Size          tsz;

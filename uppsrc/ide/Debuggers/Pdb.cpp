@@ -97,6 +97,7 @@ bool Pdb::Create(One<Host> local, const String& exefile, const String& cmdline)
 	Buffer<char> cmd(cl.GetLength() + 1);
 	memcpy(cmd, cl, cl.GetLength() + 1);
 	PROCESS_INFORMATION pi;
+	ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
 	Buffer<char> env(local->GetEnvironment().GetCount() + 1);
 	memcpy(env, ~local->GetEnvironment(), local->GetEnvironment().GetCount() + 1);
 	bool h = CreateProcess(exefile, cmd, NULL, NULL, TRUE,

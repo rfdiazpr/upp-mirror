@@ -34,7 +34,8 @@ void TopWindow::EndIgnoreTakeFocus()
 void TopWindow::EventProc(XWindow& w, XEvent *event)
 {
 	Ptr<Ctrl> this_ = this;
-	if(event->type == ClientMessage)
+	if(event->type == ClientMessage) {
+		DDUMP(XAtomName(event->xclient.message_type));
 		if(event->xclient.format == 32 && event->xclient.message_type)
 			if(event->xclient.message_type == XAtom("WM_PROTOCOLS")) {
 				Atom a = event->xclient.data.l[0];
@@ -50,6 +51,7 @@ void TopWindow::EventProc(XWindow& w, XEvent *event)
 					return;
 				}
 			}
+	}
 	if(this_) Ctrl::EventProc(w, event);
 	if(this_) SyncSizeHints();
 }

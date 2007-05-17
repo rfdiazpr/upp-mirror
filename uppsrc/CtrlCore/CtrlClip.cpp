@@ -4,6 +4,7 @@ NAMESPACE_UPP
 
 void Ctrl::DragEnter(Point p, PasteClip& d)         {}
 void Ctrl::DragAndDrop(Point p, PasteClip& d)       {}
+void Ctrl::ChildDragAndDrop(Point p, PasteClip& d)  {}
 void Ctrl::DragRepeat(Point p) {}
 void Ctrl::DragLeave() {}
 
@@ -17,6 +18,7 @@ String Ctrl::GetSelectionData(const String& fmt) const
 	return Null;
 }
 
+#ifdef PLATFORM_WIN32
 bool   Has(UDropTarget *dt, const char *fmt);
 String Get(UDropTarget *dt, const char *fmt);
 
@@ -29,6 +31,22 @@ String PasteClip::Get(const char *fmt) const
 {
 	return dt ? UPP::Get(dt, fmt) : ReadClipboard(fmt);
 }
+#endif
+
+#ifdef PLATFORM_X11
+bool   XDnDHas(const char *fmt);
+String XDnDGet(const char *fmt);
+
+bool PasteClip::IsAvailable(const char *fmt) const
+{
+	return dnd ? XDnDHas(fmt) : IsClipboardAvailable(fmt);
+}
+
+String PasteClip::Get(const char *fmt) const
+{
+	return dnd ? XDnDGet(fmt) : ReadClipboard(fmt);
+}
+#endif
 
 bool PasteClip::Accept()
 {
@@ -57,15 +75,20 @@ bool   PasteClip::Accept(const char *_fmt)
 
 PasteClip::PasteClip()
 {
-	prefer = 0;
 	paste = true;
 	accepted = false;
+#ifdef PLATFORM_WIN32
 	dt = NULL;
+#else
+	dnd = false;
+#endif
 }
 
-PasteClip Ctrl::Clipboard()
+PasteClip& Ctrl::Clipboard()
 {
-	return PasteClip();
+	static PasteClip d;
+	d.fmt.Clear();
+	return d;
 }
 
 String ClipFmtsText()
@@ -119,6 +142,16 @@ void NewInternalDrop__(const void *ptr)
 const void *GetInternalDropPtr__()
 {
 	return sInternalPtr;
+}
+
+Ctrl *Ctrl::FindCtrl(Ctrl *ctrl, Point& p)
+{
+	for(;;) {
+		Ctrl *c = ctrl->ChildFromPoint(p);
+		if(!c) break;
+		ctrl = c;
+	}
+	return ctrl;
 }
 
 END_UPP_NAMESPACE

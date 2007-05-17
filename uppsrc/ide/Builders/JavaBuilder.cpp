@@ -231,13 +231,12 @@ Time JavaBuilder::AddClassDeep(String& link, String dir, String reldir)
 {
 	Time time = Time::Low();
 	Vector<String> folders;
-	for(FindFile ff(AppendFileName(dir, AppendFileName(reldir, "*"))); ff; ff.Next())
-	{
+	for(FindFile ff(AppendFileName(dir, AppendFileName(reldir, "*"))); ff; ff.Next()) {
 		if(ff.IsFolder())
 			folders.Add(ff.GetName());
 		else if(!stricmp(GetFileExtPos(ff.GetName()), ".class"))
 		{
-			link << " -C \"" << dir << "\" \"" << CatAnyPath(reldir, ff.GetName()) << '\"';
+			link << " -C \"" << dir << "\" \"" << UnixPath(CatAnyPath(reldir, ff.GetName())) << '\"';
 			time = max(time, Time(ff.GetLastWriteTime()));
 		}
 	}
@@ -255,8 +254,7 @@ bool JavaBuilder::Link(const Vector<String>& linkfile, const String& linkoptions
 	String maindir = linkfile[MAINDIR];
 	String manifest = linkfile[MANIFEST];
 	PutConsole("Compiling...");
-	if(Execute(linkoptions) != 0)
-	{
+	if(Execute(linkoptions) != 0) {
 		DeleteFile(mainclass);
 		return false;
 	}
@@ -264,21 +262,34 @@ bool JavaBuilder::Link(const Vector<String>& linkfile, const String& linkoptions
 	host->ChDir(maindir);
 
 	PutConsole("Archiving...");
-	String link;
-	link << "jar cf";
+	String cmdline;
+	cmdline << "cf";
 	if(!manifest.IsEmpty())
-		link << 'm';
-	link << ' ' << GetHostPath(target);
+		cmdline << 'm';
+	cmdline << ' ' << GetHostPath(target);
 	if(!manifest.IsEmpty())
-		link << ' ' << GetHostPath(manifest);
+		cmdline << ' ' << GetHostPath(manifest);
 	Time tm = Time::Low();
 	for(int i = ITEMCOUNT; i < linkfile.GetCount(); i++)
-		tm = max(tm, AddClassDeep(link, linkfile[i], Null));
-	if(tm > targettime)
-	{
+		tm = max(tm, AddClassDeep(cmdline, linkfile[i], Null));
+	if(tm > targettime) {
 		CustomStep(".pre-link");
-		if(Execute(link) != 0)
-		{
+		String link, response;
+		link << "jar ";
+		if(cmdline.GetLength() < 32000)
+			link << cmdline;
+		else {
+			response = GetTempFileName("jar");
+			link << '@' << response;
+			if(!UPP::SaveFile(response, cmdline)) {
+				PutConsole(String().Cat() << "Error writing JAR response file '" << response << "'");
+				return false;
+			}
+		}
+		bool ok = (Execute(link) == 0);
+		if(!IsNull(response))
+			FileDelete(response);
+		if(!ok) {
 			DeleteFile(target);
 			return false;
 		}

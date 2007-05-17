@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x)  LOG(x)
+#define LLOG(x)  // LOG(x)
 
 #ifdef PLATFORM_X11
 
@@ -177,7 +177,6 @@ bool Ctrl::Xclipboard::IsAvailable(int fmt)
 	int c = formats.GetCount() / sizeof(Atom);
 	const Atom *m = (Atom *) ~formats;
 	for(int i = 0; i < c; i++) {
-		DDUMP(XAtomName(m[i]));
 		if(m[i] == fmt)
 			return true;
 	}
@@ -191,7 +190,6 @@ bool IsClipboardAvailable(const char *fmt)
 		f = "STRING";
 	if(f == "wtext")
 		f = "UTF8_STRING";
-	DDUMP(f);
 	return Ctrl::xclipboard().IsAvailable(XAtom(fmt));
 }
 

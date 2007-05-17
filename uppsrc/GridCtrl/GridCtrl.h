@@ -11,6 +11,7 @@ NAMESPACE_UPP
 
 #define BIT(x) (1 << x)
 #define FOREACH_ROW(x) for(x.Begin(); x.IsNext(); x.Next())
+#define COLUMN(grid, column) (column, grid(column))
 
 #ifdef flagDEBUG
 #define LG Log
@@ -302,6 +303,7 @@ class GridCtrl : public Ctrl
 		bool extra_paste:1;
 		bool fixed_paste:1;
 		bool draw_focus:1;
+		bool cancel_all:1;
 				
 		bool reject_null_row:1;
 		bool tab_changes_row:1;
@@ -522,6 +524,7 @@ class GridCtrl : public Ctrl
 		GridCtrl& FixedPaste(bool b = true)      { fixed_paste       = b; return *this; }
 		
 		GridCtrl& DrawFocus(bool b = true)       { draw_focus        = b; return *this; }
+		GridCtrl& CancelAll(bool b = true)       { cancel_all        = b; return *this; }
 		
 		GridCtrl& RejectNullRow(bool b = true)   { reject_null_row   = b; return *this; }
 		GridCtrl& KeepLastRow(bool b = true)     { keep_last_row     = b; return *this; }
@@ -572,6 +575,10 @@ class GridCtrl : public Ctrl
 	    virtual void State(int reason);
 	    virtual void ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags);
 		virtual void ChildFrameMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags);
+		virtual bool Accept();
+		virtual void Reject();
+		
+		virtual void DragAndDrop(Point p, PasteClip& d);
 	    
 		void ChildAction(Ctrl *child, int event);    
 		void RestoreFocus();
@@ -682,7 +689,6 @@ class GridCtrl : public Ctrl
 		GridCtrl&    SetDisplay(GridDisplay &gd) { display = &gd; return *this; }
 
 		bool IsEdit()  { return ctrls; }
-		bool IsEditable();
 		
 		bool StartEdit(int focusmode = 1);
 		bool SwitchEdit();
@@ -720,8 +726,8 @@ class GridCtrl : public Ctrl
 		int  GetCursor(int uid);
 		Point GetCursorPos();
 		void CenterCursor();		
-		bool IsCursor()      { return GetCursor() >= 0; }
-		bool IsCursorBegin() { return GetCursor() == 0; }
+		bool IsCursor()      { return valid_cursor; }
+		bool IsCursorBegin() { return curpos.y == fixed_rows; }
 		bool IsCursorEnd()   { return curpos.y == total_rows - 1; }
 		
 		int  GetNewRowPos();
@@ -901,9 +907,9 @@ class GridCtrl : public Ctrl
 		private:
 		void UpdateCtrls(int opt = UC_CHECK_VIS | UC_SHOW | UC_CURSOR | UC_FOCUS);
 			
-		void SetCtrlsData(int row);
-		bool GetCtrlsData(int row, bool samerow = false, bool doall = false, bool updates = true);
-		bool CancelCtrlsData(int row, bool all = false);
+		void SetCtrlsData();
+		bool GetCtrlsData(bool samerow = false, bool doall = false, bool updates = true);
+		bool CancelCtrlsData(bool all = false);
 		void UpdateDefaults(int ri);
 		
 		int  GetFocusedCtrlIndex();		
@@ -993,7 +999,7 @@ class GridCtrl : public Ctrl
 		void DoPasteAppendedRows();
 
 		Point GetBarOffset();
-		void ClearModified(int r);
+		void ClearModified();
 		
 		int  GetIdCol(int id, bool checkall = false);
 		int  GetIdRow(int id, bool checkall = false);

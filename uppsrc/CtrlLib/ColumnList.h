@@ -5,9 +5,10 @@ public:
 	virtual void  Layout();
 	virtual Image CursorImage(Point p, dword);
 	virtual void  LeftDown(Point p, dword);
+	virtual void  LeftUp(Point p, dword);
 	virtual void  LeftDouble(Point p, dword);
 	virtual void  RightDown(Point p, dword);
-	virtual void  LeftUp(Point p, dword);
+	virtual void  LeftDrag(Point p, dword keyflags);
 	virtual void  MouseMove(Point p, dword);
 	virtual void  MouseLeave();
 	virtual void  MouseWheel(Point p, int zdelta, dword keyflags);
@@ -15,6 +16,10 @@ public:
 	virtual void  GotFocus();
 	virtual void  LostFocus();
 	virtual void  CancelMode();
+	virtual void  DragEnter(Point, PasteClip&);
+	virtual void  DragAndDrop(Point p, PasteClip& d);
+	virtual void  DragRepeat(Point p);
+	virtual void  DragLeave();
 
 private:
 	virtual void  FrameLayout(Rect& r);
@@ -24,40 +29,22 @@ private:
 private:
 	int        ncl;
 	int        cy;
-	int        cursor;
+	int        cursor, anchor;
 	int        dx;
 	int        ci;
 	int        mpos;
 	ScrollBar  sb;
 	Scroller   scroller;
 	CtrlFrame *frame;
+	int        dropitem;
+	bool       insert;
 	bool       clickkill;
 	bool       nobg;
-	int        mi;
+	bool       popupex;
 
-	struct Info : Ctrl {
-		Value          value;
-		Color          paper, ink;
-		dword          style;
-		const Display *display;
-		ColumnList    *ctrl;
-		Rect           slim;
+	bool       selclick;
 
-		Point   Op(Point p);
-
-		virtual void  Paint(Draw& w);
-		virtual void  LeftDown(Point p, dword);
-		virtual void  LeftDouble(Point p, dword);
-		virtual void  RightDown(Point p, dword);
-		virtual void  LeftUp(Point p, dword);
-		virtual void  MouseWheel(Point p, int zdelta, dword keyflags);
-		virtual void  MouseLeave();
-		virtual void  MouseMove(Point p, dword);
-
-		Info();
-	} info;
-
-	friend struct Info;
+	DisplayPopup info;
 
 	const Display *display;
 
@@ -69,7 +56,7 @@ private:
 	};
 
 	Array<Item> item;
-	bool        isselection;
+	int         selcount;
 	bool        multi;
 
 	struct  ItemOrder;
@@ -81,13 +68,19 @@ private:
 	int     RoundedCy();
 	void    Page(bool down);
 	void    PointDown(Point p);
-	void    ShiftSelect(int anchor, int cursor);
-	void    RefreshItem(int i);
+	void    DoClick(Point p, dword flags);
+	void    ShiftSelect();
+	void    RefreshItem(int i, int ex = 0);
 	void    RefreshCursor()                    { RefreshItem(cursor); }
 	void    GetItemStyle(int i, Color& ink, Color& paper, dword& style);
-	void    SyncInfoStyle();
-
+	dword   PaintItem(Draw& w, int i, const Rect& r);
+	void    SyncInfo();
+	void    SetCursor0(int c, bool sel);
 	void    UpdateSelect();
+	void    RefreshSel();
+
+	bool    DnDInsert(int i, int py, PasteClip& d, int q);
+	void    DnD(int _drop, bool _insert);
 
 public:
 	Callback         WhenLeftClick;
@@ -95,6 +88,13 @@ public:
 	Callback         WhenLeftDouble;
 	Callback1<Bar&>  WhenBar;
 	Callback         WhenSel;
+
+	Callback                     WhenDrag;
+	Callback2<int, PasteClip&>   WhenDropItem;
+	Callback2<int, PasteClip&>   WhenDropInsert;
+	Callback1<PasteClip&>        WhenDrop;
+
+
 
 	// depracated - use WhenSel
 	Callback         WhenSelection;
@@ -125,17 +125,28 @@ public:
 	const Value& Get(int i) const                     { return item[i].value; }
 	const Value& operator[](int i) const              { return item[i].value; }
 
+	void         Set(int ii, const Value& val, bool canselect = true);
+	void         Set(int ii, const Value& val, const Display& display, bool canselect = true);
+
 	void         Insert(int ii, const Value& val, bool canselect = true);
 	void         Insert(int ii, const Value& val, const Display& display, bool canselect = true);
 	void         Remove(int ii);
 
-	bool         IsSelection() const                  { return isselection; }
+	void         RemoveSelection();
+
+	bool         IsSelection() const                  { return selcount > 0; }
 	void         ClearSelection();
 	void         SelectOne(int i, bool sel);
 	bool         IsSelected(int i) const;
 	bool         IsSel(int i) const;
 
 	void         Sort(const ValueOrder& order);
+
+	Image        GetDragSample();
+
+	void         InsertDrop(int ii, const Vector<Value>& data, PasteClip& d, bool self);
+	void         InsertDrop(int ii, const ColumnList& src, PasteClip& d);
+	void         InsertDrop(int ii, PasteClip& d);
 
 	ColumnList&  Columns(int _n)                      { ncl = _n; Refresh(); return *this; }
 	ColumnList&  ItemHeight(int _cy)                  { cy = _cy; Refresh(); return *this; }
@@ -145,9 +156,13 @@ public:
 	ColumnList&  ClickKill(bool b = true)             { clickkill = b; return *this; }
 	ColumnList&  NoClickKill()                        { return ClickKill(false); }
 	ColumnList&  SetDisplay(const Display& d)         { display = &d; return *this; }
-	ColumnList&  Multi(bool b = true)                 { multi = b; return *this; }
 	ColumnList&  NoBackground(bool b = true)          { nobg = b; Transparent(); Refresh(); return *this; }
+	ColumnList&  Multi(bool b = true)                 { multi = b; return *this; }
 	bool         IsMulti() const                      { return multi; }
+	ColumnList&  MultiSelect(bool b = true)           { multi = b; return *this; }
+	bool         IsMultiSelect() const                { return multi; }
+	ColumnList&  PopUpEx(bool b = true)               { popupex = b; return *this; }
+	ColumnList&  NoPopUpEx()                          { return PopUpEx(false); }
 
 	typedef ColumnList CLASSNAME;
 

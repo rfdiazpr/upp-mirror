@@ -314,12 +314,30 @@ bool IsTextFile(const String& file) {
 }
 
 bool Ide::FindLineError(int l, Host& host) {
+	String file;
+	int lineno;
+	int error;
+	if (FindLineError(console.GetUtf8Line(l), host, file, lineno, error)) {
+		file = NormalizePath(file);
+		editastext.FindAdd(file);
+		EditFile(file);
+		editor.SetCursor(editor.GetPos(editor.GetLineNo(lineno - 1)));
+		editor.CenterCursor();
+		editor.SetFocus();
+		Sync();
+		console.SetSelection(console.GetPos(l), console.GetPos(l + 1));
+		ShowConsole();
+		return true;
+	}
+	return false;
+}
+
+bool Ide::FindLineError(String ln, Host& host, String &file, int &lineno, int &error) {
 	Vector<String> wspc_paths;
 	VectorMap<String, String> bm = GetMethodVars(method);
 	bool is_java = (bm.Get("BUILDER", Null) == "JDK");
-	String ln = console.GetUtf8Line(l);
-	String file;
 	const char *s = ln;
+	error = ln.Find("arning", 0) > 0 ? 2 : 1;
 	while(*s == ' ' || *s == '\t')
 		s++;
 	for(; *s; s++) {
@@ -365,7 +383,7 @@ bool Ide::FindLineError(int l, Host& host) {
 			if(IsFullPath(file) && FileExists(file) && IsTextFile(file)) {
 				while(*s && !IsDigit(*s))
 					s++;
-				int lineno = 0;
+				lineno = 0;
 				if(IsDigit(*s))
 					lineno = stou(s);
 				Vector<String> conf = SplitFlags(mainconfigparam, true);
@@ -423,18 +441,8 @@ bool Ide::FindLineError(int l, Host& host) {
 						}
 					}
 				}
-				if(lineno > 0) {
-					file = NormalizePath(file);
-					editastext.FindAdd(file);
-					EditFile(file);
-					editor.SetCursor(editor.GetPos(editor.GetLineNo(lineno - 1)));
-					editor.CenterCursor();
-					editor.SetFocus();
-					Sync();
-					console.SetSelection(console.GetPos(l), console.GetPos(l + 1));
-					ShowConsole();
-					return true;
-				}
+				if(lineno > 0)
+					return true;				
 			}
 			file.Clear();
 		}
@@ -466,6 +474,55 @@ void Ide::FindPrevError() {
 		if(FindLineError(l, *host)) return;
 	for(l = console.GetLineCount() - 1; l > ln; l--)
 		if(FindLineError(l, *host)) return;
+}
+
+void Ide::ClearErrorEditor()
+{
+	for(int i = 0; i < filedata.GetCount(); i++) {
+		ClearErrorEditor(filedata.GetKey(i));
+	}
+}
+
+void Ide::ClearErrorEditor(String file)
+{
+	if(file == editfile)
+		editor.ClearErrors();
+	else {
+		LineInfo li = editor.GetLineInfo();
+		FileData& fd = Filedata(file);
+		editor.SetLineInfo(fd.lineinfo);
+		editor.ClearErrors();
+		fd.lineinfo = editor.GetLineInfo();				
+		editor.SetLineInfo(li);								
+	}
+}
+
+void Ide::SetErrorEditor()
+{
+	bool refresh = false;
+	String file;
+	int lineno;
+	int error;
+	One<Host> host = CreateHost(false);
+	for(int i = 0; i < console.GetLineCount(); i++) {
+		if(FindLineError(console.GetUtf8Line(i), *host, file, lineno, error)) {
+			if(editfile == file) {
+				editor.SetError(lineno - 1, error);
+				refresh = true;
+			}
+			else
+			{
+				LineInfo li = editor.GetLineInfo();
+				FileData& fd = Filedata(file);
+				editor.SetLineInfo(fd.lineinfo);
+				editor.SetError(lineno - 1, error);
+				fd.lineinfo = editor.GetLineInfo();				
+				editor.SetLineInfo(li);								
+			}
+		}
+	}
+	if(refresh) 
+		editor.RefreshFrame();
 }
 
 void Ide::Renumber() {

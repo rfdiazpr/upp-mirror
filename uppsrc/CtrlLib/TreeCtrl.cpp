@@ -61,6 +61,7 @@ TreeCtrl::TreeCtrl()
 	dirty = true;
 	multiselect = false;
 	nobg = false;
+	popupex = true;
 	Clear();
 	SetFrame(ViewFrame());
 	AddFrame(sb);
@@ -370,6 +371,7 @@ void TreeCtrl::SyncTree()
 	if(cursorid >= 0)
 		SetCursor(cursorid, false, false);
 	SyncCtrls(true, restorefocus);
+	SyncInfo();
 }
 
 void TreeCtrl::SyncCtrls(bool add, Ctrl *restorefocus)
@@ -467,6 +469,7 @@ void TreeCtrl::RefreshLine(int i, int ex)
 		Size sz = GetSize();
 		int y = line[i].y - sb.GetY();
 		Refresh(0, y - ex, sz.cx, item[line[i].itemi].GetSize().cy + 2 * ex);
+		SyncInfo();
 	}
 }
 
@@ -554,6 +557,7 @@ void TreeCtrl::KillCursor()
 	Refresh();
 	WhenCursor();
 	WhenSel();
+	SyncInfo();
 }
 
 void TreeCtrl::SetCursor(int id, bool sc, bool sel)
@@ -702,6 +706,35 @@ void TreeCtrl::DoClick(Point p, dword flags, bool down)
 	}
 }
 
+void TreeCtrl::SyncInfo()
+{
+	if((HasMouse() || info.HasMouse()) && popupex) {
+		Size sz = GetSize();
+		Point p = GetMouseViewPos();
+		Point org = sb;
+		if(p.y + org.y > sb.GetTotal().cy)
+			return;
+		int i = FindLine(p.y + org.y);
+		const Line& l = line[i];
+		const Item& m = item[l.itemi];
+		int x = levelcx + l.level * levelcx - org.x + m.image.GetSize().cx;
+		Rect r = RectC(x, l.y - org.y, sz.cx - x, m.GetSize().cy);
+		if(r.Contains(p)) {
+			Color fg, bg;
+			dword st;
+			const Display *d = GetStyle(i, fg, bg, st);
+			info.Set(this, r, m.value, d, fg, bg, st, m.margin);
+			return;
+		}
+	}
+	info.Cancel();
+}
+
+void TreeCtrl::MouseMove(Point, dword)
+{
+	SyncInfo();
+}
+
 void TreeCtrl::LeftDown(Point p, dword flags)
 {
 	DoClick(p, flags, true);
@@ -742,6 +775,40 @@ void TreeCtrl::RightDown(Point p, dword flags)
 		MenuBar::Execute(WhenBar);
 }
 
+const Display *TreeCtrl::GetStyle(int i, Color& fg, Color& bg, dword& st)
+{
+	const Line& l = line[i];
+	const Item& m = item[l.itemi];
+	st = 0;
+	fg = SColorText;
+	bg = SColorPaper;
+	if(nobg)
+		bg = Null;
+	bool hasfocus = HasFocus() && !IsDragAndDropTarget();
+	bool drop = l.itemi == dropitem && dropinsert == 0;
+	if(IsReadOnly())
+		st |= Display::READONLY;
+	if(m.sel && multiselect)
+		st |= Display::SELECT;
+	if(i == cursor && !nocursor)
+		st |= Display::CURSOR;
+	if(drop) {
+		hasfocus = true;
+		st |= Display::CURSOR;
+	}
+	if(hasfocus)
+		st |= Display::FOCUS;
+	if((st & Display::SELECT) ||
+	    !multiselect && (st & Display::CURSOR) && !nocursor ||
+	    drop) {
+		fg = hasfocus ? SColorHighlightText : SColorText;
+		bg = hasfocus ? SColorHighlight : Blend(SColorDisabled, SColorPaper);
+	}
+	if(m.display)
+		return m.display;
+	return &StdDisplay();
+}
+
 void TreeCtrl::Paint(Draw& w)
 {
 	SyncTree();
@@ -766,9 +833,6 @@ void TreeCtrl::Paint(Draw& w)
 	for(int i = FindLine(org.y); i < line.GetCount(); i++) {
 		Line& l = line[i];
 		const Item& m = item[l.itemi];
-		const Display *d = m.display;
-		if(!d)
-			d = &StdDisplay();
 		Size msz = m.GetSize();
 		Size isz = m.image.GetSize();
 		Size vsz = m.GetValueSize();
@@ -793,37 +857,14 @@ void TreeCtrl::Paint(Draw& w)
 			}
 			w.DrawImage(x, y + (msz.cy - isz.cy) / 2, m.image);
 			x += isz.cx;
-			dword st = 0;
-			Color fg = SColorText;
-			Color bg = SColorPaper;
-			if(nobg)
-				bg = Null;
-			bool hasfocus0 = HasFocus();
-			bool hasfocus = hasfocus0 && !IsDragAndDropTarget();
-			bool drop = l.itemi == dropitem && dropinsert == 0;
-			if(IsReadOnly())
-				st |= Display::READONLY;
-			if(m.sel && multiselect)
-				st |= Display::SELECT;
-			if(i == cursor && !nocursor)
-				st |= Display::CURSOR;
-			if(drop) {
-				hasfocus = true;
-				st |= Display::CURSOR;
-			}
-			if(hasfocus)
-				st |= Display::FOCUS;
-			if((st & Display::SELECT) ||
-			    !multiselect && (st & Display::CURSOR) && !nocursor ||
-			    drop) {
-				fg = hasfocus ? SColorHighlightText : SColorText;
-				bg = hasfocus ? SColorHighlight : Blend(SColorDisabled, SColorPaper);
-			}
+			Color fg, bg;
+			dword st;
+			const Display *d = GetStyle(i, fg, bg, st);
 			if(!(m.ctrl && m.ctrl->IsWantFocus())) {
-				w.DrawRect(r, bg);
+				w.DrawRect(x, y, vsz.cx + 2 * m.margin, msz.cy, bg);
 				d->Paint(w, RectC(x + m.margin, y + (msz.cy - vsz.cy) / 2, vsz.cx, vsz.cy), m.value,
 				         fg, bg, st);
-				if(i == cursor && !nocursor && multiselect && GetSelectCount() != 1 && hasfocus0
+				if(i == cursor && !nocursor && multiselect && GetSelectCount() != 1 && HasFocus()
 				   && !IsDragAndDropTarget())
 					DrawFocus(w, r, st & Display::SELECT ? SColorPaper() : SColorText());
 			}
@@ -974,6 +1015,7 @@ void TreeCtrl::GotFocus()
 		RefreshLine(cursor);
 	if(GetSelectCount() > 1)
 		Refresh();
+	SyncInfo();
 }
 
 void TreeCtrl::LostFocus()
@@ -983,6 +1025,7 @@ void TreeCtrl::LostFocus()
 	RefreshLine(cursor);
 	if(GetSelectCount() > 1)
 		Refresh();
+	SyncInfo();
 }
 
 void TreeCtrl::ChildRemoved(Ctrl *)
@@ -1208,6 +1251,8 @@ void TreeCtrl::DragAndDrop(Point p, PasteClip& d)
 
 void TreeCtrl::DragRepeat(Point p)
 {
+	if(IsReadOnly())
+		return;
 	sb = sb + GetDragScroll(this, p, 16);
 	p.y += sb.y;
 	if(p == repoint) {

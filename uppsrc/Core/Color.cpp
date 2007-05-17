@@ -107,4 +107,9 @@ INITBLOCK {
 	RichValue<Color>::Register();
 }
 
+int  Grayscale(const Color& c)
+{
+	return (77 * c.GetR() + 151 * c.GetG() + 28 * c.GetB()) >> 8;
+}
+
 END_UPP_NAMESPACE

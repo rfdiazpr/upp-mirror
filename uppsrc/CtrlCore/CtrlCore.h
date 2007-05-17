@@ -194,10 +194,14 @@ class PasteClip {
 	friend struct UDropTarget;
 	friend class  Ctrl;
 
+#ifdef PLATFORM_WIN32
 	UDropTarget *dt;
+#endif
+#ifdef PLATFORM_X11
+	bool         dnd;
+#endif
 	byte         action;
 	byte         allowed;
-	int          prefer;
 	bool         paste;
 	bool         accepted;
 	String       fmt;
@@ -240,6 +244,9 @@ String  ClipFmtsImage();
 bool    AcceptImage(PasteClip& clip);
 Image   GetImage(PasteClip& clip);
 String  GetImageClip(const Image& m, const String& fmt);
+
+bool            AcceptFiles(PasteClip& clip);
+Vector<String>  GetFiles(PasteClip& clip);
 
 template <class T>
 String ClipFmt()
@@ -481,6 +488,8 @@ private:
 	static int       FindMoveCtrl(const VectorMap<Ctrl *, MoveCtrl>& m, Ctrl *x);
 	static MoveCtrl *FindMoveCtrlPtr(VectorMap<Ctrl *, MoveCtrl>& m, Ctrl *x);
 
+	static Ctrl *FindCtrl(Ctrl *ctrl, Point& p);
+
 	Size    PosVal(int v) const;
 	void    Lay1(int& pos, int& r, int align, int a, int b, int sz) const;
 	Rect    CalcRect(LogPos pos, const Rect& prect, const Rect& pview) const;
@@ -694,6 +703,8 @@ protected:
 	static void   KillFocus(Window w);
 	static void   FocusSync();
 
+	       void DropEvent(XWindow& w, XEvent *event);
+
 public:
 	struct Xclipboard {
 		Window win;
@@ -843,6 +854,7 @@ public:
 
 	virtual void   DragEnter(Point p, PasteClip& d);
 	virtual void   DragAndDrop(Point p, PasteClip& d);
+	virtual void   ChildDragAndDrop(Point p, PasteClip& d);
 	virtual void   DragRepeat(Point p);
 	virtual void   DragLeave();
 	virtual String GetDropData(const String& fmt) const;
@@ -1034,7 +1046,8 @@ public:
 	bool    HasMouse() const;
 	bool    HasMouseDeep() const;
 	bool    HasMouseInFrame(const Rect& r);
-	bool    HasMouseIn(const Rect& r);
+	bool    HasMouseIn(const Rect& r) const;
+	Point   GetMouseViewPos() const;
 	static Ctrl *GetMouseCtrl();
 
 	static void IgnoreMouseClick();
@@ -1178,8 +1191,8 @@ public:
 	bool   InCurrentLoop() const    { return GetLoopCtrl() == this; }
 	int    GetExitCode() const      { return exitcode; }
 
-	static PasteClip Clipboard();
-	static PasteClip Selection();
+	static PasteClip& Clipboard();
+	static PasteClip& Selection();
 
 	void   SetSelectionSource(const char *fmts);
 	int    DoDragAndDrop(const char *fmts, const Image& sample, dword actions,

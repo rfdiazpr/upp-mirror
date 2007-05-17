@@ -21,6 +21,8 @@ String FromWin32CF(int cf)
 		return "wtext";
 	if(cf == CF_DIB)
 		return "dib";
+	if(cf == CF_HDROP)
+		return "files";
 	char h[256];
 	GetClipboardFormatNameA(cf, h, 255);
 	return h;
@@ -110,16 +112,6 @@ String UDropTarget::Get(const char *fmt) const
 	return Null;
 }
 
-Ctrl *FindCtrl(Ctrl *ctrl, Point& p)
-{
-	for(;;) {
-		Ctrl *c = ctrl->ChildFromPoint(p);
-		if(!c) break;
-		ctrl = c;
-	}
-	return ctrl;
-}
-
 void UDropTarget::DnD(POINTL pl, bool drop, DWORD *effect, DWORD keys)
 {
 	dword e = *effect;
@@ -132,7 +124,7 @@ void UDropTarget::DnD(POINTL pl, bool drop, DWORD *effect, DWORD keys)
 	d.paste = drop;
 	d.accepted = false;
 	Point hp = p - ctrl->GetScreenRect().TopLeft();
-	Ctrl *c = FindCtrl(ctrl, hp);
+	Ctrl *c = Ctrl::FindCtrl(ctrl, hp);
 	Rect sw = c->GetScreenView();
 	if(sw.Contains(p))
 		p -= sw.TopLeft();
@@ -164,6 +156,10 @@ void UDropTarget::DnD(POINTL pl, bool drop, DWORD *effect, DWORD keys)
 	if(c) {
 		dndpos = p;
 		c->DragAndDrop(p, d);
+		while(c && !d.IsAccepted()) {
+			c->ChildDragAndDrop(p, d);
+			c = c->GetParent();
+		}
 		if(d.IsAccepted()) {
 			if(d.action == DND_MOVE)
 				*effect = DROPEFFECT_MOVE;
@@ -179,7 +175,6 @@ void UDropTarget::Repeat()
 		dndctrl->DragRepeat(dndpos);
 		PasteClip d;
 		d.dt = this;
-		d.prefer = 0;
 		d.paste = false;
 		d.accepted = false;
 		if(dndctrl)
@@ -593,9 +588,10 @@ int Ctrl::DoDragAndDrop(const char *fmts, const Image& sample, dword actions,
 	DWORD re = obj->effect;
 	obj->Release();
 	dsrc->Release();
-	Ctrl::OverrideCursor(m);
-	Ctrl::SyncCaret();
-	Ctrl::CheckMouseCtrl();
+	OverrideCursor(m);
+	SyncCaret();
+	CheckMouseCtrl();
+	KillRepeat();
 	if(r == DRAGDROP_S_DROP) {
 		if(((result | re) & DROPEFFECT_MOVE) == DROPEFFECT_MOVE && (actions & DND_MOVE))
 			return DND_MOVE;

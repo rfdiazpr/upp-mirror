@@ -26,12 +26,14 @@ void    Panic(const char *msg)
 #else
 	MessageBox(::GetActiveWindow(), msg, "Panic", MB_ICONSTOP | MB_OK | MB_APPLMODAL);
 #endif
+#ifndef __NOASSEMBLY__
 #if defined(_DEBUG) && defined(CPU_X86)
 #ifdef COMPILER_MSC
 	_asm int 3
 #endif
 #ifdef COMPILER_GCC
 	asm("int $3");
+#endif
 #endif
 #endif
 #else
@@ -69,12 +71,14 @@ void    AssertFailed(const char *file, int line, const char *cond)
 #else
 	MessageBox(::GetActiveWindow(), s, "Assertion failed", MB_ICONSTOP | MB_OK | MB_APPLMODAL);
 #endif
+#ifndef __NOASSEMBLY__
 #ifdef CPU_X86
 #ifdef COMPILER_MSC
 	_asm int 3
 #endif
 #ifdef COMPILER_GCC
 	asm("int $3");
+#endif
 #endif
 #endif
 #else

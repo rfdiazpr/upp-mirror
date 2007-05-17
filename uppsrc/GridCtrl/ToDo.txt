@@ -40,5 +40,5 @@ gdy np sa dwie pierwsze wiersze w trybie read-only i nizej jest aktywna kontrolk
 to kursor nie zmienia pozycji (bo tam gdzie chce skoczyc jest read-only) a powinien sie ustawic na pierwszej edytowalnej
 komorce
 
-double click na kolumnie z checkboxem w row edit mode powoduje dziwne rzeczy.
+gdy nie ma zadnych kolumn Clear ustawia lastVisRow i firstVisRow na 1 co powoduje crash gdy kliknie sie na ciele kontrolki
 

@@ -187,13 +187,13 @@ void ItemRect::Serialize(Stream &s)
 
 static void MakeOption(One<Ctrl>& ctrl)
 {
-  ctrl.Create<Option>();
-  ctrl->WantFocus();
+	ctrl.Create<Option>();
+	ctrl->WantFocus();
 }
 
 ItemRect& ItemRect::Option()
 {
-	return Ctrls(MakeOption).CtrlAlignHorzCenter(15);
+	return Ctrls(MakeOption).CtrlAlignHorzCenter(CtrlsImg::O0().GetSize().cx);
 }
 
 END_UPP_NAMESPACE

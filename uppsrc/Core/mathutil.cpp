@@ -4,12 +4,6 @@
 
 NAMESPACE_UPP
 
-#if defined(PLATFORM_WIN32) && defined(COMPILER_MSC) && defined(CPU_X86)
-#pragma warning(disable: 4035)
-#else
-#define __NOASSEMBLY__
-#endif
-
 int iscale(int x, int y, int z)
 {
 #ifdef __NOASSEMBLY__

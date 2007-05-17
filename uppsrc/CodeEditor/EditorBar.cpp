@@ -10,15 +10,20 @@ void Renumber(LineInfo& lf) {
 		t.breakpoint = lf[0].breakpoint;
 		t.lineno = 0;
 		t.count = lf[0].count;
+		t.error = lf[0].error;
+		t.edited = lf[0].edited;
 		l += t.count;
 	}
 	for(int i = 1; i < lf.GetCount(); i++) {
 		LineInfoRecord& r = lf[i];
-		if(r.breakpoint.IsEmpty() && tf.Top().breakpoint.IsEmpty())
+		if(r.breakpoint.IsEmpty() && r.error == 0 && r.edited == 0 && 
+			tf.Top().breakpoint.IsEmpty() && tf.Top().error == 0 && tf.Top().edited == 0)
 			tf.Top().count += r.count;
 		else {
 			LineInfoRecord& t = tf.Add();
 			t.breakpoint = r.breakpoint;
+			t.error = r.error;
+			t.edited = r.edited;
 			t.count = r.count;
 			t.lineno = l;
 		}
@@ -64,9 +69,13 @@ void EditorBar::Paint(Draw& w) {
 		previf <<= editor->ScanSyntax(i).ifstack;
 	while(y < cy) {
 		String b;
+		int err = 0;
+		int edit = 0;
 		if(i < li.GetCount()) {
 			const LnInfo& l = li[i];
-			b = li[i].breakpoint;
+			b = l.breakpoint;
+			err = l.error;
+			edit = l.edited;
 			if(l.lineno >= 0)
 				lno = l.lineno;
 		}
@@ -109,6 +118,14 @@ void EditorBar::Paint(Draw& w) {
 				}
 			}
 			previf = nextif;
+		}
+		if(edit > 0) {
+			int width = CodeEditorImg::Breakpoint().GetWidth() >> 1;
+			w.DrawRect(0, y, width, fy, LtBlue);
+		}
+		if(err > 0) {
+			int width = CodeEditorImg::Breakpoint().GetWidth() >> 1;
+			w.DrawRect(width, y, width, fy, err == 1 ? LtRed : Color(255, 175, 0));
 		}
 
 		if(!b.IsEmpty())
@@ -182,11 +199,13 @@ LineInfo EditorBar::GetLineInfo() const {
 	int l = -2;
 	for(int i = 0; i < li.GetCount(); i++) {
 		const LnInfo& ln = li[i];
-		if(!ln.breakpoint.IsEmpty()) {
+		if(!ln.breakpoint.IsEmpty() || ln.error || ln.edited) {
 			LineInfoRecord& r = lf.Add();
 			r.lineno = ln.lineno;
 			r.count = 1;
 			r.breakpoint = ln.breakpoint;
+			r.error = ln.error;
+			r.edited = ln.edited;
 			l = -2;
 		}
 		else
@@ -216,6 +235,8 @@ void EditorBar::SetLineInfo(const LineInfo& lf, int total) {
 				LnInfo& ln = li.Add();
 				ln.lineno = l;
 				ln.breakpoint = r.breakpoint;
+				ln.error = r.error;
+				ln.edited = r.edited;
 				if(l >= 0) l++;
 			}
 		}
@@ -253,6 +274,25 @@ void EditorBar::SetBreakpoint(int ln, const String& s)
 {
 	li.At(ln).breakpoint = s;
 	WhenBreakpoint(ln);
+}
+
+void EditorBar::SetEdited(int ln, int edit)
+{
+	li.At(ln).edited = edit;
+}
+
+void EditorBar::SetError(int ln, int err)
+{
+	li.At(ln).error = err;
+}
+
+void EditorBar::ClearErrors(int line)
+{
+	for(int i = 0; i < li.GetCount(); i++) {
+		if(li[i].error && (line < 0 || li[i].lineno == line)) {
+			li[i].error = 0;
+		}
+	}
 }
 
 int  EditorBar::GetLineNo(int lineno) const {

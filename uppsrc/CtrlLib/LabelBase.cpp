@@ -407,5 +407,123 @@ Point GetDragScroll(Ctrl *ctrl, Point p, int max)
 	return GetDragScroll(ctrl, p, Size(max, max));
 }
 
+Point DisplayPopup::Op(Point p)
+{
+	return p + GetScreenView().TopLeft() - ctrl->GetScreenView().TopLeft();
+}
+
+void DisplayPopup::LeftDown(Point p, dword flags)
+{
+	ctrl->LeftDown(Op(p), flags);
+}
+
+void DisplayPopup::LeftDrag(Point p, dword flags)
+{
+	Cancel();
+	ctrl->LeftDrag(Op(p), flags);
+}
+
+void DisplayPopup::LeftDouble(Point p, dword flags)
+{
+	ctrl->LeftDouble(Op(p), flags);
+}
+
+void DisplayPopup::RightDown(Point p, dword flags)
+{
+	ctrl->RightDown(Op(p), flags);
+}
+
+void DisplayPopup::LeftUp(Point p, dword flags)
+{
+	ctrl->LeftUp(Op(p), flags);
+}
+
+void DisplayPopup::MouseWheel(Point p, int zdelta, dword flags)
+{
+	ctrl->MouseWheel(Op(p), zdelta, flags);
+}
+
+void DisplayPopup::MouseLeave()
+{
+	Cancel();
+}
+
+void DisplayPopup::MouseMove(Point p, dword flags)
+{
+	p += GetScreenView().TopLeft();
+	if(!slim.Contains(p))
+		MouseLeave();
+}
+
+void DisplayPopup::Paint(Draw& w)
+{
+	Rect r = GetSize();
+	display->PaintBackground(w, r, value, ink, paper, style);
+	r.left += margin;
+	display->Paint(w, r, value, ink, paper, style);
+}
+
+DisplayPopup::DisplayPopup()
+{
+	SetFrame(BlackFrame());
+	display = NULL;
+}
+
+void DisplayPopup::Sync()
+{
+	Refresh();
+	if(display && ctrl && !ctrl->IsDragAndDropTarget() && !IsDragAndDropTarget()) {
+		Size sz = display->GetStdSize(value);
+		if(sz.cx + 2 * margin > item.GetWidth() || sz.cy > item.GetHeight()) {
+			Rect wa = GetWorkArea();
+			slim = item + ctrl->GetScreenView().TopLeft();
+			Rect r = item;
+			r.right = r.left + sz.cx + 2 * margin;
+			r.Inflate(1, 1);
+			r.Offset(ctrl->GetScreenView().TopLeft());
+//			r.Offset(min(0, wa.right - r.right), min(0, wa.bottom - r.bottom));
+			SetRect(r);
+			if(!IsOpen())
+				Ctrl::PopUp(ctrl, true, false, false);
+			return;
+		}
+	}
+	if(IsOpen())
+		Close();
+}
+
+void DisplayPopup::Cancel()
+{
+	display = NULL;
+	Sync();
+}
+
+bool DisplayPopup::IsOpen()
+{
+	return Ctrl::IsOpen();
+}
+
+bool DisplayPopup::HasMouse()
+{
+	return Ctrl::HasMouse() || ctrl && ctrl->HasMouse();
+}
+
+void DisplayPopup::Set(Ctrl *_ctrl, const Rect& _item,
+                       const Value& _value, const Display *_display,
+                       Color _ink, Color _paper, dword _style, int _margin)
+{
+	if(item != _item || ctrl != _ctrl || value != _value || display != _display || ink != _ink ||
+	   paper != _paper || style != _style) {
+		item = _item;
+		ctrl = _ctrl;
+		value = _value;
+		display = _display;
+		ink = _ink;
+		paper = _paper;
+		style = _style;
+		margin = _margin;
+		Sync();
+	}
+}
 
 END_UPP_NAMESPACE

@@ -513,6 +513,13 @@ bool SelectPackageDlg::Pless(const SelectPackageDlg::PkInfo& a, const SelectPack
 struct PackageDisplay : Display {
 	Font fnt;
 
+	virtual Size GetStdSize(const Value& q) const {
+		Size sz = GetTextSize(String(q), fnt);
+		sz.cx += 20;
+		sz.cy = max(sz.cy, 16);
+		return sz;
+	}
+
 	virtual void Paint(Draw& w, const Rect& r, const Value& q, Color ink, Color paper, dword style) const {
 		w.DrawRect(r, paper);
 		w.DrawImage(r.left, r.top + (r.Height() - 16) / 2, IdeImg::Package());

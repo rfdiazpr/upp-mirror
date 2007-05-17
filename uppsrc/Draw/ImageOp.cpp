@@ -448,6 +448,45 @@ Image SetColorKeepAlpha(const Image& img, Color c)
 	return w;
 }
 
+Image CreateHorzFadeOut(Size sz, Color color)
+{
+	ImageBuffer ib(sz);
+	RGBA c = color;
+	for(int q = 0; q < sz.cx; q++) {
+		c.a = q * 255 / sz.cx;
+		RGBA *t = ~ib + q;
+		for(int n = sz.cy; n > 0; n--) {
+			*t = c;
+			t += sz.cx;
+		}
+	}
+	return ib;
+}
+
+struct FadeOutMaker : ImageMaker {
+	Size  sz;
+	Color color;
+
+	virtual String Key() const {
+		char h[sizeof(Size) + sizeof(Color)];
+		memcpy(h, &sz, sizeof(sz));
+		memcpy(h + sizeof(Size), &color, sizeof(Color));
+		return String(h, sizeof(h));
+	}
+
+	virtual Image  Make() const {
+		return CreateHorzFadeOut(sz, color);
+	}
+};
+
+Image  HorzFadeOut(Size sz, Color color)
+{
+	FadeOutMaker m;
+	m.sz = sz;
+	m.color = color;
+	return MakeImage(m);
+}
+
 Image  RotateClockwise(const Image& img)
 {
 	Size sz = img.GetSize();

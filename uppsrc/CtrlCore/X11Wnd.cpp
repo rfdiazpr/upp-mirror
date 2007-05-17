@@ -354,6 +354,9 @@ void Ctrl::Create(Ctrl *owner, bool redirect, bool savebits)
 	             FocusChangeMask|KeyPressMask|KeyReleaseMask|PointerMotionMask|
 	             ButtonPressMask|ButtonReleaseMask|PropertyChangeMask|
 	             VisibilityChangeMask|im_event_mask);
+	int version = 5;
+	XChangeProperty(Xdisplay, w, XAtom("XdndAware"), XA_ATOM, 32,
+					PropModeReplace, (byte *)&version, 1);
 	CancelMode();
 }
 

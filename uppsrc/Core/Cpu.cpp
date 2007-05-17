@@ -22,6 +22,11 @@ static void sCheckCPU()
 	sHasSSE = true;
 	sHasSSE2 = true;
 #else
+#ifdef CPU_AMD64
+	sHasMMX = true;
+	sHasSSE = true;
+	sHasSSE2 = true;
+#else
 #ifdef COMPILER_MSC
 	__asm {
 		mov eax, 1
@@ -36,6 +41,7 @@ static void sCheckCPU()
 	sHasSSE = ((info1 >> 25) & 0x1);
 	sHasSSE2 = ((info1 >> 26) & 0x1);
 	sHasSSE3 = ((info2) & 0x1);
+#endif
 #endif
 }
 

@@ -710,9 +710,11 @@ void DataPusher::Paint(Draw& draw)
 	rc.Deflate(2, 1);
 	if(IsPush() && GUI_GlobalStyle() < GUISTYLE_XP)
 		rc += Size(1, 1);
+	draw.Clip(rc);
 	display -> Paint(draw, rc, convert -> Format(data),
 		(IsEnabled() ? SColorText : SColorDisabled), Color(paper),
 		(HasFocus() ? Display::FOCUS : 0) | (IsReadOnly() ? Display::READONLY : 0));
+	draw.End();
 	if(HasFocus())
 		DrawFocus(draw, GetSize());
 }

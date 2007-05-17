@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x)   // LOG(x)
+#define LLOG(x) // LOG(x)
 
 Ptr<Ctrl> Ctrl::focusCtrl;
 Ptr<Ctrl> Ctrl::focusCtrlWnd;
@@ -50,7 +50,7 @@ bool Ctrl::DispatchKey(dword keycode, int count)
 //	RLOG("DispatchKey: focusCtrl = " << FormatIntHex((int)~focusCtrl) << ", wnd = " << FormatIntHex((int)~focusCtrlWnd) << ")");
 	LLOG("DispatchKey " << keycode << " (0x" << Sprintf("%08x", keycode)
 		<< ", " << GetKeyDesc(keycode) << "), count:" << count
-		<< " focusCtrl:" << ::Name(focusCtrl) << " focusCtrlWnd:" << ::Name(focusCtrlWnd));
+		<< " focusCtrl:" << UPP::Name(focusCtrl) << " focusCtrlWnd:" << UPP::Name(focusCtrlWnd));
 	if((keycode & K_KEYUP) && ignorekeyup)
 	{
 		ignorekeyup = false;
@@ -134,7 +134,7 @@ void Ctrl::DoDeactivate(Ptr<Ctrl> pfocusCtrl, Ptr<Ctrl> nfocusCtrl)
 	if(pfocusCtrl) {
 		Ctrl *ptop = pfocusCtrl->GetTopCtrl();
 		Ctrl *ntop = nfocusCtrl ? nfocusCtrl->GetTopCtrl() : NULL;
-		LLOG("DoDeactivate " << ::Name(ptop) << " in favor of " << ::Name(ntop));
+		LLOG("DoDeactivate " << UPP::Name(ptop) << " in favor of " << UPP::Name(ntop));
 		if(ntop != ptop && !ptop->destroying) {
 			ptop->Deactivate();
 			ptop->StateH(DEACTIVATE);
@@ -190,10 +190,10 @@ bool Ctrl::SetFocus0(bool activate)
 	Ptr<Ctrl> topctrl = GetTopCtrl();
 	Ptr<Ctrl> _this = this;
 	if(!topwindow) topwindow = topctrl;
-	LLOG("SetFocus -> SetWndFocus: topwindow = " << ::Name(topwindow) << ", focusCtrlWnd = " << ::Name(focusCtrlWnd));
+	LLOG("SetFocus -> SetWndFocus: topwindow = " << UPP::Name(topwindow) << ", focusCtrlWnd = " << UPP::Name(focusCtrlWnd));
 	if(!topwindow->HasWndFocus() && !topwindow->SetWndFocus()) return false;// cxl 31.1.2004
 	topwindow->SetWndForeground(); // cxl 2007-4-27
-	LLOG("SetFocus -> focusCtrl = this: " << FormatIntHex(this) << ", _this = " << FormatIntHex(~_this) << ", " << ::Name(_this));
+	LLOG("SetFocus -> focusCtrl = this: " << FormatIntHex(this) << ", _this = " << FormatIntHex(~_this) << ", " << UPP::Name(_this));
 	focusCtrl = _this;
 	focusCtrlWnd = topwindow;
 	DoKillFocus(pfocusCtrl, _this);
@@ -217,13 +217,13 @@ void Ctrl::ActivateWnd()
 	LLOG("ActivateWnd " << Name());
 	Ptr<Ctrl> nfocusCtrl = this;
 	Ptr<Ctrl> pfocusCtrl = focusCtrl;
-	LLOG("About to set focus: " << ::Name(nfocusCtrl));
+	LLOG("About to set focus: " << UPP::Name(nfocusCtrl));
 	DoDeactivate(pfocusCtrl, nfocusCtrl);
 	focusCtrl = nfocusCtrl;
 	focusCtrlWnd = this;
 	DoKillFocus(pfocusCtrl, nfocusCtrl);
 	DoSetFocus(pfocusCtrl, nfocusCtrl, true);
-	LLOG("Focus: " << ::Name(focusCtrl) << " FocusWnd:" << ::Name(focusCtrlWnd));
+	LLOG("Focus: " << UPP::Name(focusCtrl) << " FocusWnd:" << UPP::Name(focusCtrlWnd));
 }
 
 void Ctrl::SetFocusWnd()
@@ -282,7 +282,7 @@ void Ctrl::SyncCaret() {
 		}
 	}
 	if(focusCtrl != caretCtrl || cr != caretRect) {
-		LLOG("Do SyncCaret focusCtrl: " << ::Name(focusCtrl) << ", caretCtrl: " << ::Name(caretCtrl));
+		LLOG("Do SyncCaret focusCtrl: " << UPP::Name(focusCtrl) << ", caretCtrl: " << UPP::Name(caretCtrl));
 		WndDestroyCaret();
 		if(focusCtrl && !cr.IsEmpty())
 			focusCtrl->GetTopCtrl()->WndCreateCaret(cr);

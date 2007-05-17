@@ -82,7 +82,7 @@ void RichEdit::DragAndDrop(Point p, PasteClip& d)
 	}
 	if(!d.IsAccepted()) dropcursor = -1;
 	Rect r = Null;
-	if(dropcursor >= 0 || dropcursor < text.GetLength()) {
+	if(dropcursor >= 0 && dropcursor < text.GetLength()) {
 		RichCaret pr = text.GetCaret(dropcursor, pagesz);
 		int h = pr.Height();
 		Zoom zoom = GetZoom();
@@ -113,7 +113,8 @@ void RichEdit::Paste()
 	if(IsReadOnly())
 		return;
 	RichText clip;
-	if(!Accept(Clipboard(), clip))
+	PasteClip d = Clipboard();
+	if(!Accept(d, clip))
 		return;
 	ClipPaste(clip);
 }

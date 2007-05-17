@@ -71,6 +71,9 @@ String MscBuilder::CmdLine()
 	if(HasFlag("SH4"))
 		cc = "shcl /Qsh4";
 	else
+	if(HasFlag("MSC8_64"))
+		cc = "cl /Wp64 ";
+	else
 	if(HasFlag("MSC8ARM"))
 		cc = "cl -GS- ";
 	else
@@ -87,6 +90,7 @@ String MscBuilder::MachineName() const
 	if(HasFlag("SH3"))     return "SH3";
 	if(HasFlag("SH4"))     return "SH4";
 	if(HasFlag("MSC8ARM")) return "ARM";
+	if(HasFlag("MSC8_64"))   return "x64";
 	if(HasFlag("WIN32"))   return "I386";
 	return "IX86";
 }
@@ -118,7 +122,7 @@ String MscBuilder::PdbPch(String package, int slot, bool do_pch) const
 	String pdb = GetHostPathQ(CatAnyPath(outdir, pkg_slot + ".pdb"));
 	String cc;
 	cc << " -Gy -Fd" << pdb;
-	if(do_pch && !HasFlag("MSC8") && !HasFlag("MSC8ARM")) // MSC8 does not support automatic precompiled headers...
+	if(do_pch && !HasFlag("MSC8") && !HasFlag("MSC8_64")&&  !HasFlag("MSC8ARM")) // MSC8 does not support automatic precompiled headers...
 		cc << " -YX -Fp" << GetHostPathQ(CatAnyPath(outdir, pkg_slot + ".pch")) << ' ';
 	return cc;
 }
@@ -146,7 +150,7 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 		      " -GX-"; // turn off exception handling
 	}
 	else
-	if(HasFlag("MSC8") || HasFlag("MSC8ARM"))
+	if(HasFlag("MSC8") || HasFlag("MSC8_64") || HasFlag("MSC8ARM"))
 		cc << " -EHsc";
 	else
 		cc << " -GX";
@@ -160,7 +164,8 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 	if(HasFlag("DEBUG_FULL"))
 		cc << " -Zi";
 	cc << ' ' << Gather(pkg.option, config.GetKeys());
-	cc << (HasFlag("SHARED") || is_shared ? " -MD" : (HasFlag("MT") || HasFlag("MSC8") || HasFlag("MSC8ARM")) ? " -MT" : " -ML");
+	cc << (HasFlag("SHARED") || is_shared ? " -MD"
+	      : (HasFlag("MT") || HasFlag("MSC8") || HasFlag("MSC8_64") || HasFlag("MSC8ARM")) ? " -MT" : " -ML");
 
 	String cc_size = cc;
 	String cc_speed = cc;
@@ -480,7 +485,7 @@ bool MscBuilder::Link(const Vector<String>& linkfile, const String& linkoptions,
 			CustomStep(".pre-link");
 			if(Execute(link) == 0) {
 				CustomStep(".post-link");
-				if(HasFlag("MSC8") && HasFlag("SHARED")) {
+				if((HasFlag("MSC8") || HasFlag("MSC8_64")) && HasFlag("SHARED")) {
 					String mt("mt -nologo -manifest ");
 					mt << GetHostPathQ(target) << ".manifest -outputresource:" << GetHostPathQ(target)
 				           << (HasFlag("DLL") ? ";2" : ";1");
@@ -515,6 +520,7 @@ void RegisterMscBuilder()
 {
 	RegisterBuilder("MSC71", CreateMscBuilder);
 	RegisterBuilder("MSC8", CreateMscBuilder);
+	RegisterBuilder("MSC8_64", CreateMscBuilder);
 	RegisterBuilder("MSC8ARM", CreateMscBuilder);
 	RegisterBuilder("EVC_ARM", CreateMscBuilder);
 	RegisterBuilder("EVC_MIPS", CreateMscBuilder);

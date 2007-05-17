@@ -357,7 +357,7 @@ ctrl Option {
 		imagesize = GetImageSize(img);
 		textsize = GetSmartTextSize(.SetLabel, .SetFont);
 		w.DrawImage(0, (sz.cy - imagesize.cy) / 2, img);
-		w.DrawSmartText(imagesize.cx + 4, (sz.cy - textsize.cy) / 2, .SetLabel, .SetFont, .SetInk);
+		w.DrawSmartText(imagesize.cx + 4, (sz.cy - textsize.cy) / 2, .SetLabel, .SetFont);
 	}
 }
 

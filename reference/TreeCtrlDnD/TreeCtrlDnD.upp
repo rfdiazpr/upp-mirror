@@ -1,4 +1,4 @@
-description "How to use Drag & Drop in TreeCtrl";
+description "Drag & Drop with TreeCtrl as target";
 
 uses
 	CtrlLib;

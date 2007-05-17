@@ -145,7 +145,13 @@
 	+ CancelRemove() - should be called in WhenRemoveRow to cancel removing a current row
 	* Remove() without aguments remove current row
 	
+	after 705-dev1
 	
+	- cancel did not work as it should in edit row mode
+	- focus was not set to control which could not be accepted
+	- edit in right menu was disabled in some cases
+	+ CancelAll - in this mode esc restore all previous values in edit cell mode (it is default for edit row mode)
+	- fixed some problems with accepting and rejecting grid
 	
 	
 	

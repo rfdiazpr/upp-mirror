@@ -37,6 +37,8 @@ FontInfo::Data::Data()
 FontInfo::Data::~Data()
 {
 	DrawLock __;
+	if(xftfont0 && xftfont0 != xftfont)
+		XftFontClose(Xdisplay, xftfont0);
 	if(xftfont)
 		XftFontClose(Xdisplay, xftfont);
 	for(int i = 0; i < 256; i++)
@@ -56,7 +58,7 @@ void FontInfo::Data::GetMetrics(int page, CharMetrics *t)
 			LTIMING("XftTextExtents16");
 			*h = (page << 8) + i;
 			XGlyphInfo info;
-			XftTextExtents16(Xdisplay, xftfont, h, 1, &info);
+			XftTextExtents16(Xdisplay, xftfont0, h, 1, &info);
 			t[i].width = info.xOff;
 			t[i].lspc = -info.x;
 			t[i].rspc = info.xOff - info.width + info.x;
@@ -250,16 +252,18 @@ FontInfo Draw::Acquire(Font font, int angle, int device)
 	f->device = device;
 	int hg = abs(font.GetHeight());
 	if(hg == 0) hg = 10;
-	f->xftfont = CreateXftFont(font, angle);
+	f->xftfont0 = f->xftfont = CreateXftFont(font, angle);
+	if(angle)
+		f->xftfont0 = CreateXftFont(font, 0);
 	f->filename = NULL;
-	f->ascent = (int16)f->xftfont->ascent;
-	f->descent = (int16)f->xftfont->descent;
+	f->ascent = (int16)f->xftfont0->ascent;
+	f->descent = (int16)f->xftfont0->descent;
 	f->height = f->ascent + f->descent;
-	f->lineheight = (int16)f->xftfont->height;
+	f->lineheight = (int16)f->xftfont0->height;
 	f->external = 0;
 	f->internal = 0;
 	f->overhang = 0;
-	f->maxwidth = (int16)f->xftfont->max_advance_width;
+	f->maxwidth = (int16)f->xftfont0->max_advance_width;
 	f->avewidth = f->maxwidth;
 	f->default_char = '?';
 	f->fixedpitch = font.GetFaceInfo() & Font::FIXEDPITCH;
@@ -305,7 +309,6 @@ void Draw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font,
 	c.pixel = GetXPixel(ink.GetR(), ink.GetG(), ink.GetB());
 	if(angle) {
 		int xpos = 0;
-		int xpp = 0;
 		int pfi = -1;
 		for(int i = 0; i < n; i++) {
 			wchar h = text[i];
@@ -316,13 +319,14 @@ void Draw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font,
 			xpos += dx ? dx[i] : lastFont[text[i]];
 		}
 		if(font.IsUnderline() || font.IsStrikeout()) {
-			xpos = xpp + lastFont[(byte)text[n - 1]];
+			x += fd->offset.cx;
+			y += fd->offset.cy;
 			if(font.IsUnderline())
 				DrawLine(
-					int(x + fd->offset.cx + fd->underline_position * fd->sina),
-					int(y + fd->offset.cy + fd->underline_position * fd->cosa),
-					int(x + xpos * fd->cosa + fd->offset.cx + fd->underline_position * fd->sina),
-					int(y - xpos * fd->sina + fd->offset.cy + fd->underline_position * fd->cosa),
+					int(x + fd->underline_position * fd->sina),
+					int(y + fd->underline_position * fd->cosa),
+					int(x + xpos * fd->cosa + fd->underline_position * fd->sina),
+					int(y - xpos * fd->sina + fd->underline_position * fd->cosa),
 					fd->underline_thickness,
 					ink
 				);

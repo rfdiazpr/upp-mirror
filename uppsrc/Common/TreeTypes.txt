@@ -10,3 +10,5 @@ Upp::SplitterFrame
 0 0 -1
 Upp::Size_<int>
 0 0 -1
+Upp::ColumnList
+0 0 -1

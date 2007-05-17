@@ -462,6 +462,7 @@ public:
 	virtual   void   FileSelected();
 	virtual   void   Serialize(Stream& s);
 	virtual   void   FileRename(const String& nm);
+	virtual   void   ChildDragAndDrop(Point p, PasteClip& d);
 
 	virtual   void      PutConsole(const char *s);
 	virtual   void      PutVerbose(const char *s);
@@ -900,7 +901,11 @@ public:
 	void      Renumber();
 
 	bool      FindLineError(int l, Host& host);
+	bool      FindLineError(String ln, Host& host, String& file, int& lineno, int& error);
 	void      FindError();
+	void	  ClearErrorEditor();
+	void	  ClearErrorEditor(String file);
+	void	  SetErrorEditor();
 
 	void      FindWildcard();
 	void      FindFolder();

@@ -100,31 +100,20 @@ void DrawFileName(Draw& w, int x, int y, int wcx, int cy, const WString& mname, 
 }
 
 void FileList::Paint(Draw& w, const Rect& r, const Value& q,
-		             Color, Color paper, dword style) const
+		             Color ink, Color paper, dword style) const
 {
 	const File& m = ValueTo<File>(q);
-	bool atcursor = style & Display::CURSOR;
-	bool sel = style & Display::SELECT;
-	Color fc = Blend(SColorDisabled, SColorPaper);
-	w.DrawRect(r, IsSelection() ? sel ? HasFocus() ? SColorHighlight
-	                                               : fc
-	                                  : paper
-	                            : atcursor && !IsEdit() ? HasFocus() ? SColorHighlight
-	                                                                 : fc
-	                                                    : paper);
-	if(IsSelection() && atcursor)
-		DrawFrame(w, r, SColorDisabled);
+	bool dark = Grayscale(paper) < 120;
+	w.DrawRect(r, paper);
 	int x = r.left + 2;
-	DrawHighlightImage(w, x, r.top + (r.Height() - m.icon.GetSize().cy), m.icon,
-	                   IsSelection() && sel && HasFocus() || atcursor && !IsEdit() && HasFocus());
+	DrawHighlightImage(w, x, r.top + (r.Height() - m.icon.GetSize().cy), m.icon, dark);
 	x += iconwidth;
 	x += 2;
 	FontInfo fi = m.font.Info();
-	bool mi = HasFocus() && (sel || atcursor && !IsSelection());
 	DrawFileName(w, x, r.top + (r.Height() - fi.GetHeight()) / 2,
 	             r.right - x - 2, r.Height(), WString(m.name), m.isdir, m.font,
-	             mi ? SColorHighlightText : m.ink,
-	             mi ? SColorHighlightText : m.extink,
+	             dark ? SColorHighlightText : m.ink,
+	             dark ? SColorHighlightText : m.extink,
 	             WString(m.desc), m.descfont, justname);
 }
 

@@ -21,6 +21,10 @@ struct LineInfoRecord {
 	int    lineno;
 	String breakpoint;
 	int    count;
+	int    error;
+	int    edited;
+	
+	LineInfoRecord() { error = 0; edited = 0; }
 };
 
 typedef Array<LineInfoRecord> LineInfo;
@@ -43,8 +47,10 @@ private:
 	struct LnInfo : Moveable<LnInfo> {
 		int    lineno;
 		String breakpoint;
+		int    error;
+		int    edited;
 
-		LnInfo() { lineno = -1; }
+		LnInfo() { lineno = -1; error = 0; edited = 0; }
 	};
 	Vector<LnInfo>   li;
 	int              sy;
@@ -73,6 +79,9 @@ public:
 
 	String  GetBreakpoint(int ln);
 	void    SetBreakpoint(int ln, const String& s);
+	void    SetEdited(int ln, int edit);
+	void    SetError(int ln, int err);
+	void    ClearErrors(int ln);
 
 	void SetEditor(CodeEditor *e)           { editor = e; }
 
@@ -118,6 +127,7 @@ public:
 	virtual void LeftDouble(Point p, dword keyflags);
 	virtual void MouseMove(Point p, dword keyflags);
 	virtual void Serialize(Stream& s);
+	void         CheckEdited(bool e = true) { check_edited = e; }
 
 protected:
 	virtual void HighlightLine(int line, Vector<Highlight>& h, int pos);
@@ -212,6 +222,7 @@ protected:
 	Time    last_key_time;
 
 	bool    auto_enclose;
+	bool    check_edited;
 
 	struct FindReplace : WithIDEFindReplaceLayout<TopWindow> {
 		WString itext;
@@ -390,6 +401,8 @@ public:
 	void     HidePtr()                                { bar.HidePtr(); }
 	String   GetBreakpoint(int line)                  { return bar.GetBreakpoint(line); }
 	void     SetBreakpoint(int line, const String& b) { bar.SetBreakpoint(line, b); }
+	void     SetError(int line, int err)              { bar.SetError(line, err); }
+	void     ClearErrors(int line = -1)               { bar.ClearErrors(line); }
 	void     GotoLine(int line);
 	void     EnableBreakpointing()                    { bar.EnableBreakpointing(true); }
 	void     DisableBreakpointing()                   { bar.EnableBreakpointing(false); }

@@ -262,6 +262,7 @@ class FontInfo : Moveable<FontInfo> {
 	#endif
 	#ifdef PLATFORM_XFT
 		XftFont     *xftfont;
+		XftFont     *xftfont0;
 	#endif
 		int          ascent;
 		int          descent;

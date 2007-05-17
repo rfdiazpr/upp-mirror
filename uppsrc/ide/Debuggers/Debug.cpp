@@ -2,10 +2,11 @@
 
 #ifdef COMPILER_MSC
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)  // LOG(x)
 
 void Pdb::Error()
 {
+	LLOG("ERROR: " << DeQtf(GetLastErrorMessage()));
 	Exclamation("Error!&" + DeQtf(GetLastErrorMessage()));
 	running = false;
 	Stop();
@@ -172,7 +173,7 @@ void Pdb::AddThread(dword dwThreadId, HANDLE hThread)
 	ctx.ContextFlags = CONTEXT_FULL;
 	GetThreadContext(hThread, &ctx);
 	threadsp.GetAdd(dwThreadId) = ctx.Esp;
-	LLOG("Thread SP: " << FormatIntHex(ctx.Esp));
+	LLOG("Adding thread " << dwThreadId << ", Thread SP: " << FormatIntHex(ctx.Esp));
 }
 
 #define EXID(id)       { id, #id },
@@ -276,10 +277,13 @@ bool Pdb::RunToException()
 				if(refreshmodules)
 					LoadModuleInfo();
 				ctx.Clear();
+				LLOG("event.dwThreadId = " << event.dwThreadId);
 				for(int i = 0; i < threadsp.GetCount(); i++) {
 					dword threadid = threadsp.GetKey(i);
+					LLOG("Opening thread " << threadid);
 					CONTEXT& c = ctx.Add(threadid);
 					HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, threadid);
+					LLOG("hThread = " << (void *)hThread);
 					if(!hThread) {
 						Error();
 						return false;

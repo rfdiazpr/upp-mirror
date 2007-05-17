@@ -20,6 +20,9 @@ FileSel& PdfFs()
 }
 
 class UWord : public TopWindow {
+public:
+	virtual void ChildDragAndDrop(Point, PasteClip& d);
+
 protected:
 	RichEdit   editor;
 	MenuBar    menubar;
@@ -126,6 +129,16 @@ void UWord::Open()
 		OpenFile(fs);
 	else
 		statusbar.Temporary("Loading aborted.");
+}
+
+void UWord::ChildDragAndDrop(Point, PasteClip& d)
+{
+	if(AcceptFiles(d)) {
+		Vector<String> fn = GetFiles(d);
+		for(int i = 0; i < fn.GetCount(); i++)
+			if(FileExists(fn[i]))
+				OpenFile(fn[i]);
+	}
 }
 
 void UWord::Save0()

@@ -19,6 +19,8 @@ int  GetClipboardFormatCode(const char *format_id)
 		return CF_UNICODETEXT;
 	if(fmt == "dib")
 		return CF_DIB;
+	if(fmt == "files")
+		return CF_HDROP;
 	static VectorMap<String, int> format_map;
 	int f = format_map.Find(format_id);
 	if(f < 0) {
@@ -221,7 +223,8 @@ Image GetImage(PasteClip& clip)
 
 Image ReadClipboardImage()
 {
-	return GetImage(Ctrl::Clipboard());
+	PasteClip d = Ctrl::Clipboard();
+	return GetImage(d);
 }
 
 String GetImageClip(const Image& img, const String& fmt)
@@ -252,6 +255,52 @@ void AppendClipboardImage(const Image& img)
 	if(img.IsEmpty()) return;
 	AppendClipboard(ClipFmt<Image>(), StoreAsString(const_cast<Image&>(img)));
 	AppendClipboard("dib", GetImageClip(img, "dib"));
+}
+
+bool AcceptFiles(PasteClip& clip)
+{
+	if(clip.Accept("files")) {
+		clip.SetAction(DND_COPY);
+		return true;
+	}
+	return false;
+}
+
+
+struct sDROPFILES {
+    DWORD offset;
+    POINT dummy;
+    BOOL  dummy2;
+    BOOL  unicode;
+};
+
+Vector<String> GetFiles(PasteClip& clip)
+{
+	Vector<String> f;
+	String data = clip;
+	if(data.GetCount() < sizeof(sDROPFILES) + 2)
+		return f;
+	const sDROPFILES *df = (const sDROPFILES *)~data;
+	const char *s = ((const char *)df + df->offset);
+	if(df->unicode) {
+		const wchar *ws = (wchar *)s;
+		while(*ws) {
+			WString fn;
+			while(*ws)
+				fn.Cat(*ws++);
+			f.Add(fn.ToString());
+			ws++;
+		}
+	}
+	else
+		while(*s) {
+			String fn;
+			while(*s)
+				fn.Cat(*s++);
+			f.Add(fn.ToString());
+			s++;
+		}
+	return f;
 }
 
 #endif

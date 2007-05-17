@@ -26,7 +26,7 @@ struct App : TopWindow {
 	{
 		if(tree.DoDragAndDrop(InternalClip(tree, "mytreedrag"),
 		                       tree.GetDragSample()) == DND_MOVE)
-			tree.Remove(tree.GetCursor());
+			tree.RemoveSelection();
 	}
 
 	App() {

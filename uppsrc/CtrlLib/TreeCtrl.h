@@ -9,6 +9,7 @@ public:
 	virtual void  LeftDrag(Point p, dword keyflags);
 	virtual void  RightDown(Point p, dword flags);
 	virtual void  MouseWheel(Point p, int zdelta, dword keyflags);
+	virtual void  MouseMove(Point, dword);
 	virtual bool  Key(dword key, int);
 	virtual void  GotFocus();
 	virtual void  LostFocus();
@@ -93,6 +94,7 @@ private:
 	bool         hasctrls;
 	bool         multiselect;
 	bool         nobg;
+	bool         popupex;
 
 	bool         selclick;
 	int          dropitem, dropinsert;
@@ -103,12 +105,15 @@ private:
 	Scroller     scroller;
 	Display     *display;
 
+	DisplayPopup info;
+
 	struct LineLess {
 		bool   operator()(int y, const Line& l) const            { return y < l.y; }
 	};
 
 	struct SortOrder;
 
+	const Display *GetStyle(int i, Color& fg, Color& bg, dword& st);
 	void   Dirty(int id = 0);
 	void   ReLine(int, int, Size&);
 	void   SyncTree();
@@ -136,6 +141,7 @@ private:
 	void   RefreshSel();
 	void   GatherSel(int id, Vector<int>& sel) const;
 	void   DoClick(Point p, dword flags, bool down);
+	void   SyncInfo();
 
 protected:
 	virtual void SetOption(int id);
@@ -255,6 +261,8 @@ public:
 	TreeCtrl& LevelCx(int cx)             { levelcx = cx; Dirty(); return *this; }
 	TreeCtrl& MultiSelect(bool b = true)  { multiselect = true; return *this; }
 	TreeCtrl& NoBackground(bool b = true) { nobg = b; Transparent(); Refresh(); return *this; }
+	TreeCtrl& PopUpEx(bool b = true)      { popupex = b; return *this; }
+	TreeCtrl& NoPopUpEx()                 { return PopUpEx(false); }
 
 	typedef TreeCtrl CLASSNAME;
 

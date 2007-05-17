@@ -86,7 +86,7 @@ void RGBACtrl::Paint(Draw& w)
 		Size isz = CtrlImg::wheel_cursor().GetSize();
 		pp = pp + (cbox - isz) / 2;
 		w.DrawImage(pp.x, pp.y, CtrlImg::wheel_cursor(),
-		            (color.GetR() + color.GetG() + color.GetB()) < 400 ? White() : Black());
+		            Grayscale(color) < 120 ? White() : Black());
 	}
 }
 

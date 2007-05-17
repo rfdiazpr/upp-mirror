@@ -26,7 +26,7 @@ int  GetChMaskPos32(dword mask);
 const byte *UnpackRLE(RGBA *t, const byte *src, int len);
 String      PackRLE(const RGBA *s, int len);
 
-inline int  Grayscale(int r, int g, int b) { return (77 * r + 151 * b + 28 * r) >> 8; }
+inline int  Grayscale(int r, int g, int b) { return (77 * r + 151 * g + 28 * b) >> 8; }
 inline int  Grayscale(const RGBA& c)       { return Grayscale(c.r, c.g, c.b); }
 inline byte Saturate255(int x)             { return byte(~(x >> 24) & (x | (-(x >> 8) >> 24)) & 0xff); }
 

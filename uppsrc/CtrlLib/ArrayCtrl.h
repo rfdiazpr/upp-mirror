@@ -162,6 +162,7 @@ private:
 	Vector< Vector<CellInfo> > cellinfo;
 	Vector<bool>               modify;
 	FrameBottom<StaticRect>    scrollbox;
+	DisplayPopup               info;
 
 	int   keypos;
 	int   cursor;
@@ -196,6 +197,7 @@ private:
 	bool  multiselect:1;
 	bool  hasctrls:1;
 	bool  headerctrls:1;
+	bool  popupex:1;
 	bool  nobg:1;
 
 	mutable bool  selectiondirty:1;
@@ -247,6 +249,7 @@ private:
 	void   DoRemovem();
 	bool   KillCursor0();
 
+	const Display& GetCellInfo(int i, int j, bool f0, Value& v, Color& fg, Color& bg, dword& st);
 	Size   DoPaint(Draw& w, bool sample);
 
 	bool   TestKey(int i, int key);
@@ -261,8 +264,11 @@ private:
 	void   HeaderScrollVisibility();
 
 	void   RefreshSel();
+	bool   DnDInsert(int line, int py, PasteClip& d, int q);
 	void   DnD(int line, int col);
 	enum { DND_INSERTLINE = -1, DND_LINE = -2 };
+
+	void   SyncInfo();
 
 public: // temporary (TRC 06/07/28)
 	Ctrl&      SetCtrl(int i, int j, Ctrl *newctrl);
@@ -523,6 +529,8 @@ public:
 	ArrayCtrl& MultiSelect(bool b = true)              { multiselect = b; return *this; }
 	bool       IsMultiSelect(bool b = true)            { return multiselect = b; }
 	ArrayCtrl& NoBackground(bool b = true)             { nobg = b; Transparent(); Refresh(); return *this; }
+	ArrayCtrl& PopUpEx(bool b = true)                  { popupex = b; return *this; }
+	ArrayCtrl& NoPopUpEx()                             { return PopUpEx(false); }
 
 	ArrayCtrl& ColumnWidths(const char *s);
 

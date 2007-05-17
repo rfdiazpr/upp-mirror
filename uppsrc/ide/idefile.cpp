@@ -344,6 +344,7 @@ void Ide::FileRename(const String& nm)
 }
 
 void Ide::EditFile0(const String& path, byte charset, bool astext, const String& headername) {
+	editor.CheckEdited(false);
 	editor.CloseAssist();
 	if(path.IsEmpty()) return;
 	FlushFile();
@@ -420,6 +421,7 @@ void Ide::EditFile0(const String& path, byte charset, bool astext, const String&
 	PosSync();
 	SetBar();
 	editor.assist_active = IsProjectFile(editfile) && (IsCSourceFile(editfile) || IsCHeaderFile(editfile));
+	editor.CheckEdited(true);
 }
 
 void Ide::EditAsText()
@@ -512,6 +514,19 @@ void Ide::EditAnyFile() {
 	if(!fs.ExecuteOpen()) return;
 	EditFile(fs);
 	FileSelected();
+}
+
+void Ide::ChildDragAndDrop(Point, PasteClip& d)
+{
+	if(AcceptFiles(d)) {
+		Vector<String> f = GetFiles(d);
+		for(int i = 0; i < f.GetCount(); i++)
+			if(FileExists(f[i])) {
+				EditFile(f[i]);
+				FileSelected();
+				editor.SetFocus();
+			}
+	}
 }
 
 void Ide::AddLru()

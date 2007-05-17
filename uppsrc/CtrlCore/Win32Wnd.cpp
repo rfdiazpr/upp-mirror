@@ -384,11 +384,10 @@ void Ctrl::Create(HWND parent, DWORD style, DWORD exstyle, bool savebits, int sh
 			                                     : dropshadow ? L"UPP-CLASS-DS-W"    : L"UPP-CLASS-W",
 			                            L"", style, r.left, r.top, r.Width(), r.Height(),
 			                            parent, NULL, hInstance, this);
-		else {
+		else
 			top->hwnd = CreateWindowW(L"UPP-CLASS-W",
 			                          L"", WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 			                          parent, NULL, hInstance, this);
-		}
 #else
 	if(IsWinNT() && (!parent || IsWindowUnicode(parent)))
 		top->hwnd = CreateWindowExW(exstyle,
@@ -424,6 +423,7 @@ void Ctrl::WndFree()
 	RevokeDragDrop(GetHWND());
 	ReleaseUDropTarget(top->dndtgt);
 	isopen = false;
+	if(!top) return;
 	HWND owner = GetWindow(top->hwnd, GW_OWNER);// CXL 31.10.2003 z DoRemove
 	bool focus = ::GetFocus() == top->hwnd;
 	LLOG("Ctrl::WndDestroy owner " << (void *)owner

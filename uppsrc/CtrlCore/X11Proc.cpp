@@ -202,6 +202,18 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 					DispatchKey(KEYtoK(tab[i].key)|up, count);
 					return;
 				}
+			if(GetShift() && chr == 0) {
+				static int k[] = { 41, 33, 64, 35, 36, 37, 94, 38, 42, 40 };
+				for(int i = 0; i < 10; i++)
+					if(keysym == k[i]) {
+						DispatchKey(KEYtoK(i + K_0)|up, count);
+						return;
+					}
+			}
+			if(keysym >= 48 && keysym <= 57 && chr == 0) {
+				DispatchKey(KEYtoK(keysym - 48 + K_0)|up, count);
+				return;
+			}
 			if(chr >= 1 && chr < 32) {
 				DispatchKey(KEYtoK(chr - 1 + K_CTRL_A)|up, count);
 				return;
@@ -316,6 +328,7 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 		DoCursorShape();
 		break;
 	}
+	DropEvent(w, event);
 }
 
 #endif

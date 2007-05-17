@@ -142,6 +142,7 @@
 	#define COMPILER_GCC
 	#define COMPILER_GNU
 	#define COMPILER_GNU3
+	#define __NOASSEMBLY__
 #endif
 
 #ifdef flagDM
@@ -200,6 +201,7 @@
 	#if defined(__amd64) || defined(_WIN64)
 		#define CPU_AMD64
 		#define CPU_64
+		#define __NOASSEMBLY__
 	#else
 		#define CPU_IA32
 		#define CPU_32
@@ -258,6 +260,15 @@
 #endif
 
 #ifdef PLATFORM_WIN32
+
+	#if defined(COMPILER_MSC) && defined(CPU_X86)
+		#pragma warning(disable: 4035)
+	#else
+		#ifndef __NOASSEMBLY__
+			#define __NOASSEMBLY__
+		#endif
+	#endif
+
 	#define DIR_SEP  '\\'
 	#define DIR_SEPS "\\"
 	#define PLATFORM_PATH_HAS_CASE 0
@@ -267,8 +278,20 @@
 	#ifndef PLATFORM_MFC // just mini Windows headers
 		#ifdef COMPILER_MSC
 			#ifndef CPU_ARM
-				#ifndef _X86_
-					#define _X86_
+				#ifndef CPU_AMD64
+					#ifndef _X86_
+						#define _X86_
+					#endif
+				#else
+					#ifndef _AMD64_
+						#define _AMD64_
+					#endif
+					#ifndef __NOASSEMBLY__
+						#define __NOASSEMBLY__
+					#endif
+					#ifndef WIN64
+						#define WIN64
+					#endif
 				#endif
 			#endif
 			#ifndef _WINDOWS_

@@ -525,6 +525,7 @@ Vector<String> Ide::GetAllLibraries(const Workspace& wspc, int index,
 
 bool Ide::Build(const Workspace& wspc, String mainparam, String outfile, bool clear_console)
 {
+	ClearErrorEditor();
 	BeginBuilding(true, clear_console);
 	bool ok = true;
 	if(wspc.GetCount()) {
@@ -576,6 +577,7 @@ bool Ide::Build(const Workspace& wspc, String mainparam, String outfile, bool cl
 	}
 	EndBuilding(ok);
 	ReQualifyBrowserBase();
+	SetErrorEditor();
 	return ok;
 }
 
@@ -687,6 +689,7 @@ void Ide::FileCompile()
 {
 	if(editfile.IsEmpty())
 		return;
+	ClearErrorEditor(editfile);
 	SwitchHeader();
 	BeginBuilding();
 	const Workspace& wspc = IdeWorkspace();
@@ -700,6 +703,7 @@ void Ide::FileCompile()
 	}
 	onefile.Clear();
 	EndBuilding(ok);
+	SetErrorEditor();
 }
 
 void Ide::Preprocess() {

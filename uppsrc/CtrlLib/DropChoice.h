@@ -134,7 +134,7 @@ public:
 	operator Value() const                      { return GetData(); }
 
 	void          SetIndex(int i)               { SetData(GetKey(i)); }
-	int           GetIndex()                    { return FindKey(value); }
+	int           GetIndex() const              { return FindKey(value); }
 
 	bool          HasKey(const Value& k) const  { return key.Find(k) >= 0; }
 	int           FindKey(const Value& k) const { return key.Find(k); }

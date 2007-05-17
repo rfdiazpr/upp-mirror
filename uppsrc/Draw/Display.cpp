@@ -94,12 +94,17 @@ void StdDisplayClass::Paint0(Draw& w, const Rect& r, const Value& q,
 	else
 		txt = IsString(q) ? q : StdConvert().Format(q);
 	int x = r.left;
+	Size tsz = GetTLTextSize(txt, font);
 	if(a == ALIGN_RIGHT)
-		x = r.right - GetStdSize(q).cx;
+		x = r.right - tsz.cx;
 	if(a == ALIGN_CENTER)
-		x += (r.Width() - GetStdSize(q).cx) / 2;
+		x += (r.Width() - tsz.cx) / 2;
 	int tcy = GetTLTextHeight(txt, font);
 	DrawTLText(w, x, r.top + max((r.Height() - tcy) / 2, 0), r.Width(), txt, font, ink);
+	if(tsz.cx > r.GetWidth()) {
+		int wd = min(r.GetWidth() / 4, 8);
+		w.DrawImage(r.right - wd, r.top, HorzFadeOut(Size(wd, r.GetHeight()), paper));
+	}
 }
 
 void StdDisplayClass::Paint(Draw& w, const Rect& r, const Value& q,
@@ -111,7 +116,17 @@ void StdDisplayClass::Paint(Draw& w, const Rect& r, const Value& q,
 
 Size StdDisplayClass::GetStdSize(const Value& q) const
 {
-	return GetTLTextSize(WString(IsString(q) ? q : StdConvert().Format(q)), StdFont());
+	Font font = StdFont();
+	WString txt;
+	if(IsType<AttrText>(q)) {
+		const AttrText& t = ValueTo<AttrText>(q);
+		txt = t.text;
+		if(!IsNull(t.font))
+			font = t.font;
+	}
+	else
+		txt = IsString(q) ? q : StdConvert().Format(q);
+	return GetTLTextSize(txt, font);
 }
 
 #ifdef flagSO

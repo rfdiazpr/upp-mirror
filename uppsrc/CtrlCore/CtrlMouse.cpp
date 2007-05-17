@@ -338,13 +338,18 @@ bool    Ctrl::HasMouseInFrame(const Rect& r)
 	return q.Contains(GetMousePos());
 }
 
-bool    Ctrl::HasMouseIn(const Rect& r)
+bool    Ctrl::HasMouseIn(const Rect& r) const
 {
 	if(!HasMouse())
 		return false;
 	Rect q = GetVisibleScreenView();
 	q = r.Offseted(q.TopLeft()) & q;
 	return q.Contains(GetMousePos());
+}
+
+Point Ctrl::GetMouseViewPos() const
+{
+	return GetMousePos() - GetVisibleScreenView().TopLeft();
 }
 
 void    Ctrl::DoCursorShape() {
@@ -387,6 +392,16 @@ bool sDblTime(int time)
 }
 
 Image Ctrl::DispatchMouse(int e, Point p, int zd) {
+	if(e == MOUSEMOVE) {
+		if(sDistMin(leftmousepos, mousepos) > GUI_DragDistance() && repeatTopCtrl == this) {
+			DispatchMouseEvent(LEFTDRAG, leftmousepos, 0);
+			leftmousepos = Null;
+		}
+		if(sDistMin(rightmousepos, mousepos) > GUI_DragDistance() && repeatTopCtrl == this) {
+			DispatchMouseEvent(RIGHTDRAG, rightmousepos, 0);
+			rightmousepos = Null;
+		}
+	}
 	repeatMousePos = p;
 	repeatTopCtrl = this;
 	if(e == LEFTDOUBLE) {
@@ -419,16 +434,6 @@ Image Ctrl::DispatchMouse(int e, Point p, int zd) {
 		rightmousepos = Null;
 	if(e == LEFTUP || e == RIGHTUP)
 		KillRepeat();
-	if(e == MOUSEMOVE) {
-		if(sDistMin(leftmousepos, mousepos) > GUI_DragDistance() && repeatTopCtrl) {
-			repeatTopCtrl->DispatchMouseEvent(LEFTDRAG, leftmousepos, 0);
-			leftmousepos = Null;
-		}
-		if(sDistMin(rightmousepos, mousepos) > GUI_DragDistance() && repeatTopCtrl) {
-			repeatTopCtrl->DispatchMouseEvent(RIGHTDRAG, rightmousepos, 0);
-			rightmousepos = Null;
-		}
-	}
 	return DispatchMouseEvent(e, p, zd);
 }
 

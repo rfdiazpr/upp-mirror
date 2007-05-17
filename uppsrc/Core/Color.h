@@ -111,6 +111,9 @@ Color  Blend(Color c1, Color c2, int alpha = 128);
 
 String ColorToHtml(Color color);
 
+int  Grayscale(const Color& c);
+
+
 inline bool operator==(const Value& v, Color x)        { return v == x.operator Value(); }
 inline bool operator==(Color x, const Value& v)        { return v == x.operator Value(); }
 inline bool operator!=(const Value& v, Color x)        { return v != x.operator Value(); }

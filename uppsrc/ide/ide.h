@@ -20,6 +20,7 @@
 #include <Web/Web.h>
 
 #include <ide/Browser/Browser.h>
+#include <ide/QuickTabs/QuickTabs.h>
 #include <CodeEditor/CodeEditor.h>
 
 #include "UppDlg.h"
@@ -290,66 +291,6 @@ void HideSplash();
 void ShowSplash();
 bool IsSplashOpen();
 
-class IdeQuickTabs : public FrameCtrl<Ctrl> {
-public:
-	virtual void Paint(Draw& w);
-	virtual void LeftDown(Point p, dword);
-	virtual void MouseMove(Point p, dword);
-	virtual void MouseLeave();
-	virtual void CancelMode();
-	virtual void FramePaint(Draw& w, const Rect& r);
-	virtual void FrameLayout(Rect& r);
-	virtual void FrameAddSize(Size& sz);
-	virtual void Layout();
-
-private:
-	enum { HEIGHT = 12, DY = 7, DX = 9 };
-
-	struct Tab {
-		String file;
-		int    x;
-		int    cx;
-		int    Right() { return x + cx; }
-	};
-
-	Array<Tab>    tab;
-	int           hl;
-	bool          hlclose;
-	int           cursor;
-	Font          font;
-	int           fcy;
-	int           sc;
-	Button        left, right;
-
-	void   PaintTab(Draw& w, int x, int y, int cx, int cy, Color paper, Color top, bool hlclose);
-	int    GetPos(Point p, bool& close);
-	void   Repos();
-	void   Sc();
-	void   Left();
-	void   Right();
-	void   SyncLeftRight();
-
-public:
-	void   Close(int i);
-
-	void   SetCursor(int i);
-
-	int    GetCount()                         { return tab.GetCount(); }
-	int    GetCursor() const                  { return cursor; }
-	String GetFile(int i) const               { return tab[i].file; }
-
-	bool   FindSetFile(const String& fn);
-	void   SetAddFile(const String& fn);
-	void   RenameFile(const String& fn, const String& nn);
-
-	void   Set(const IdeQuickTabs& tabs);
-	void   Clear();
-
-	typedef IdeQuickTabs CLASSNAME;
-
-	IdeQuickTabs();
-};
-
 class RightTabs : public FrameCtrl<Ctrl> {
 public:
 	virtual void Paint(Draw& w);
@@ -520,7 +461,7 @@ public:
 	One<IdeDesigner> designer;
 	AssistEditor     editor;
 	CodeEditor       editor2;
-	IdeQuickTabs     tabs, tabs2, dtabs;
+	QuickTabs        tabs, tabs2, dtabs;
 	EscValue         macro_api;
 
 	RightTabs   btabs;
@@ -565,10 +506,11 @@ public:
 		Point              columnline;
 		LineEdit::UndoData undodata;
 		LineInfo           lineinfo;
+		LineInfoRem        lineinforem;
 
 		void Clear()  {
 			filetime = Null; editpos.Clear(); undodata.Clear();
-			columnline = Null; lineinfo.Clear();
+			columnline = Null; lineinfo.Clear(); lineinforem.Clear();
 		}
 	};
 
@@ -653,6 +595,7 @@ public:
 	bool      header_guards;
 	bool      filetabs;
 	bool      auto_enclose;
+	bool      mark_lines;
 	int       insert_include;
 	int       bordercolumn;
 	Color     bordercolor;
@@ -784,6 +727,8 @@ public:
 		void  FindString(bool back);
 		void  FindNextError();
 		void  FindPrevError();
+		void  ClearEditedFile();
+		void  ClearEditedAll();
 
 	void      EditSpecial(Bar& menu);
 		void  TranslateString();
@@ -947,7 +892,7 @@ public:
 
 	void      SetBar();
 
-	void      UpdateFormat(CodeEditor& editor, IdeQuickTabs& tabs);
+	void      UpdateFormat(CodeEditor& editor, QuickTabs& tabs);
 	void      UpdateFormat();
 	void      ReadHlStyles(ArrayCtrl& hlstyle);
 

@@ -88,7 +88,7 @@ String  Report::FormatHF(const char *s, int pageno)
 	while(*s) {
 		if(s[0] == '$' && s[1] == '$') {
 			if(s[2] == 'P') {
-				result.Cat(Format("%d", pageno + 1));
+				result << pageno + 1;
 				s += 3;
 			}
 			else

@@ -193,12 +193,14 @@ struct UDropTarget;
 class PasteClip {
 	friend struct UDropTarget;
 	friend class  Ctrl;
+	friend PasteClip sMakeDropClip(bool paste);
+
 
 #ifdef PLATFORM_WIN32
 	UDropTarget *dt;
 #endif
 #ifdef PLATFORM_X11
-	bool         dnd;
+	int          type;
 #endif
 	byte         action;
 	byte         allowed;
@@ -231,19 +233,19 @@ public:
 	PasteClip();
 };
 
-String  ClipFmtsText();
-bool    AcceptText(PasteClip& clip);
-String  GetString(PasteClip& clip);
-WString GetWString(PasteClip& clip);
-String  GetTextClip(const String& text, const String& fmt);
-String  GetTextClip(const WString& text, const String& fmt);
-void    AddTextClip(VectorMap<String, String>& data, const String& text);
-void    AddTextClip(VectorMap<String, String>& data, const WString& text);
+const char *ClipFmtsText();
+bool        AcceptText(PasteClip& clip);
+String      GetString(PasteClip& clip);
+WString     GetWString(PasteClip& clip);
+String      GetTextClip(const String& text, const String& fmt);
+String      GetTextClip(const WString& text, const String& fmt);
+void        AddTextClip(VectorMap<String, String>& data, const String& text);
+void        AddTextClip(VectorMap<String, String>& data, const WString& text);
 
-String  ClipFmtsImage();
-bool    AcceptImage(PasteClip& clip);
-Image   GetImage(PasteClip& clip);
-String  GetImageClip(const Image& m, const String& fmt);
+const char *ClipFmtsImage();
+bool        AcceptImage(PasteClip& clip);
+Image       GetImage(PasteClip& clip);
+String      GetImageClip(const Image& m, const String& fmt);
 
 bool            AcceptFiles(PasteClip& clip);
 Vector<String>  GetFiles(PasteClip& clip);
@@ -609,6 +611,7 @@ private:
 	friend class ClipData;
 	friend struct UDropSource;
 	friend class DnDAction;
+	friend class PasteClip;
 
 #ifdef PLATFORM_WIN32
 	static LRESULT CALLBACK SysTimerProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -704,6 +707,11 @@ protected:
 	static void   FocusSync();
 
 	       void DropEvent(XWindow& w, XEvent *event);
+	static Index<String> drop_formats;
+	static String Unicode(const WString& w);
+	static WString Unicode(const String& s);
+	static bool   ClipHas(int type, const char *fmt);
+	static String ClipGet(int type, const char *fmt);
 
 public:
 	struct Xclipboard {
@@ -711,7 +719,7 @@ public:
 
 		VectorMap<int, String> data;
 
-		String Read(int fmt);
+		String Read(int fmt, int selection, int property);
 		void   Write(int fmt, const String& data);
 		bool   IsAvailable(int fmt);
 
@@ -727,6 +735,8 @@ public:
 	static int  Xeventtime;
 
 	static XIM  xim;
+
+	void DnD(Window src, bool paste);
 
 	virtual void    EventProc(XWindow& w, XEvent *event);
 	virtual bool    HookProc(XEvent *event);

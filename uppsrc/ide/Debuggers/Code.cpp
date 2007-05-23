@@ -47,10 +47,10 @@ bool Pdb::IsValidFrame(dword eip)
 void Pdb::Sync0()
 {
 	stop = false;
-	const CONTEXT& context = ctx.Get((int)~threadlist);
+	const CONTEXT& context = threads.Get((int)~threadlist).context;
 	dword eip = context.Eip;
 	dword ebp = context.Ebp;
-	dword spmax = threadsp.Get(event.dwThreadId, 0);
+	dword spmax = threads.Get(event.dwThreadId).sp;
 	framelist.Clear();
 	frame.Clear();
 	int ndx = 0;
@@ -113,8 +113,8 @@ end:
 void Pdb::Sync()
 {
 	threadlist.Clear();
-	for(int i = 0; i < threadsp.GetCount(); i++) {
-		int thid = threadsp.GetKey(i);
+	for(int i = 0; i < threads.GetCount(); i++) {
+		int thid = threads.GetKey(i);
 		AttrText x(Format("0x%x", thid));
 		if(thid == event.dwThreadId)
 			x.font = StdFont().Bold();
@@ -166,7 +166,7 @@ void Pdb::SetFrame()
 		}
 		disas.SetCursor(f.eip);
 		disas.SetIp(f.eip, ptrimg);
-		const CONTEXT& context = ctx.Get((int)~threadlist);
+		const CONTEXT& context = threads.Get((int)~threadlist).context;
 		Reg(regs.eax, context.Eax);
 		Reg(regs.ebx, context.Ebx);
 		Reg(regs.ecx, context.Ecx);

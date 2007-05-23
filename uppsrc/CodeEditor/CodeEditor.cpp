@@ -14,10 +14,9 @@ void CodeEditor::DirtyFrom(int line) {
 	for(int i = 0; i < 4; i++)
 		if(scache[i].line >= line)
 			scache[i].Clear();
-		
+
 	if(check_edited) {
-		bar.ClearErrors(line);			
-		bar.SetEdited(line, 1);
+		bar.ClearErrors(line);
 		bar.Refresh();
 	}
 }
@@ -36,6 +35,8 @@ inline bool RBR(int c) {
 }
 
 void CodeEditor::PostInsert(int pos, const WString& text) {
+	if(check_edited)
+		bar.SetEdited(GetLine(pos));
 	if(IsFullRefresh()) return;
 	if(!ScanSyntax(GetLine(pos + text.GetLength()) + 1).MatchHilite(rm_ins)) {
 		if(text.GetLength() == 1 && *text == '(' || *text == '[' || *text == ']' || *text == ')')
@@ -56,6 +57,8 @@ void CodeEditor::PreRemove(int pos, int size) {
 }
 
 void CodeEditor::PostRemove(int pos, int size) {
+	if(check_edited)
+		bar.SetEdited(GetLine(pos));
 	if(IsFullRefresh()) return;
 	if(!ScanSyntax(GetLine(pos) + 1).MatchHilite(rm_ins)) {
 		if(rmb == '(' || rmb == '[' || rmb == ']' || rmb == ')')
@@ -73,8 +76,6 @@ void CodeEditor::ClearLines() {
 
 void CodeEditor::InsertLines(int line, int count) {
 	bar.InsertLines(line, count);
-	for (int i = 0; i < count; i++)
-		bar.SetEdited(line + i, 1);
 }
 
 void CodeEditor::RemoveLines(int line, int count) {
@@ -837,6 +838,7 @@ void CodeEditor::DefaultHlStyles()
 	SetHlStyle(INK_SQLBASE, Black);
 	SetHlStyle(INK_SQLFUNC, Black);
 	SetHlStyle(INK_SQLBOOL, Black);
+	SetHlStyle(INK_UPPMACROS, Black);
 
 	SetHlStyle(PAPER_BLOCK1, Blend(LtBlue, White, 240));
 	SetHlStyle(PAPER_BLOCK2, Blend(LtGreen, White, 240));
@@ -1009,6 +1011,8 @@ CodeEditor::CodeEditor() {
 	highlight_bracket_pos = 10;
 	SetTimeCallback(-20, THISBACK(Periodic), TIMEID_PERIODIC);
 	auto_enclose = false;
+	mark_lines = true;
+	check_edited = false;
 }
 
 CodeEditor::~CodeEditor() {}

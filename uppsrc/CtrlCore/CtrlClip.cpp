@@ -34,17 +34,17 @@ String PasteClip::Get(const char *fmt) const
 #endif
 
 #ifdef PLATFORM_X11
-bool   XDnDHas(const char *fmt);
+bool   Is(const char *fmt);
 String XDnDGet(const char *fmt);
 
 bool PasteClip::IsAvailable(const char *fmt) const
 {
-	return dnd ? XDnDHas(fmt) : IsClipboardAvailable(fmt);
+	return Ctrl::ClipHas(type, fmt);
 }
 
 String PasteClip::Get(const char *fmt) const
 {
-	return dnd ? XDnDGet(fmt) : ReadClipboard(fmt);
+	return Ctrl::ClipGet(type, fmt);
 }
 #endif
 
@@ -80,7 +80,7 @@ PasteClip::PasteClip()
 #ifdef PLATFORM_WIN32
 	dt = NULL;
 #else
-	dnd = false;
+	type = 0;
 #endif
 }
 
@@ -89,28 +89,6 @@ PasteClip& Ctrl::Clipboard()
 	static PasteClip d;
 	d.fmt.Clear();
 	return d;
-}
-
-String ClipFmtsText()
-{
-	return "wtext;text";
-}
-
-bool AcceptText(PasteClip& clip)
-{
-	return clip.Accept("wtext;text");
-}
-
-void AddTextClip(VectorMap<String, String>& data, const String& text)
-{
-	data.GetAdd("text", GetTextClip(text, "text"));
-	data.GetAdd("wtext", GetTextClip(text, "wtext"));
-}
-
-void AddTextClip(VectorMap<String, String>& data, const WString& text)
-{
-	data.GetAdd("text", GetTextClip(text, "text"));
-	data.GetAdd("wtext", GetTextClip(text, "wtext"));
 }
 
 int Ctrl::DoDragAndDrop(const char *fmts, const Image& sample, dword actions)
@@ -152,6 +130,76 @@ Ctrl *Ctrl::FindCtrl(Ctrl *ctrl, Point& p)
 		ctrl = c;
 	}
 	return ctrl;
+}
+
+static String sUnicode(const WString& w)
+{
+	return String((const char *)~w, w.GetLength() * 2);
+}
+
+Image MakeDragImage(const Image& arrow, Image sample)
+{
+	ImageBuffer b;
+	if(IsNull(sample)) {
+		sample = CtrlCoreImg::DndData();
+		b = sample;
+		Over(b, Point(0, 0), arrow, arrow.GetSize());
+	}
+	else {
+		b.Create(128, 128);
+		memset(~b, 0, sizeof(RGBA) * b.GetLength());
+		Size ssz = sample.GetSize();
+		Over(b, Point(2, 22), sample, sample.GetSize());
+		for(int y = 20; y < 96; y++) {
+			RGBA *s = b[y];
+			RGBA *e = s + 96;
+			while(s < e)
+				(s++)->a >>= 1;
+			e += 32;
+			int q = 128;
+			while(s < e) {
+				s->a = (s->a * q) >> 8;
+				q -= 4;
+				s++;
+			}
+		}
+		int qq = 128;
+		for(int y = 96; y < 128; y++) {
+			RGBA *s = b[y];
+			RGBA *e = s + 96;
+			while(s < e) {
+				s->a = (s->a * qq) >> 8;
+				s++;
+			}
+			e += 32;
+			int q = 255;
+			while(s < e) {
+				s->a = (s->a * q * qq) >> 16;
+				q -= 8;
+				s++;
+			}
+			qq -= 4;
+		}
+		RGBA *s = b[21] + 1;
+		RGBA c1 = Blue();
+		RGBA c2 = White();
+		for(int a = 255; a > 0; a -= 3) {
+			c1.a = c2.a = a;
+			*s++ = c1;
+			Swap(c1, c2);
+		}
+		s = b[21] + 1;
+		c1 = Black();
+		c2 = White();
+		for(int a = 255; a > 0; a -= 8) {
+			c1.a = c2.a = a;
+			*s = c1;
+			s += b.GetWidth();
+			Swap(c1, c2);
+		}
+	}
+	Over(b, Point(0, 0), arrow, arrow.GetSize());
+	return b;
 }
 
 END_UPP_NAMESPACE

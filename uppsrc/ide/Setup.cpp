@@ -118,7 +118,7 @@ Font FontSelectManager::Get() {
 	return f;
 }
 
-void Ide::UpdateFormat(CodeEditor& editor, IdeQuickTabs& tabs)
+void Ide::UpdateFormat(CodeEditor& editor, QuickTabs& tabs)
 {
 	if(!IsActiveFile() || ActiveFile().tabsize <= 0)
 		editor.TabSize(editortabsize);
@@ -136,6 +136,7 @@ void Ide::UpdateFormat(CodeEditor& editor, IdeQuickTabs& tabs)
 	editor.HiliteIfEndif(hilite_if_endif);
 	editor.LineNumbers(line_numbers);
 	editor.AutoEnclose(auto_enclose);
+	editor.MarkLines(mark_lines);
 	editor.BorderColumn(bordercolumn, bordercolor);
 	editor.Refresh();
 }
@@ -213,6 +214,7 @@ void Ide::SetupFormat() {
 		(edt.header_guards, header_guards)
 		(edt.insert_include, insert_include)
 		(edt.auto_enclose, auto_enclose)
+		(edt.mark_lines, mark_lines)
 		(edt.bordercolumn, bordercolumn)
 		(edt.bordercolor, bordercolor)
 		(ide.show_status_bar, show_status_bar)

@@ -158,10 +158,11 @@ void DropList::Paint(Draw& w) {
 	cr.right = sz.cx - 1;
 	cr.bottom = sz.cy - 1;
 	DrawRectMinusRect(w, r, cr, SColorPaper);
-	w.DrawRect(cr, f ? SColorHighlight
-	                 : push ? Blend(SColorHighlight, SColorFace, 235)
-	                        : IsShowEnabled() && !IsReadOnly() ? SColorPaper
-	                                                           : SColorFace);
+	Color bg = f ? SColorHighlight
+	             : push ? Blend(SColorHighlight, SColorFace, 235)
+	                    : IsShowEnabled() && !IsReadOnly() ? SColorPaper
+	                                                       : SColorFace;
+	w.DrawRect(cr, bg);
 	cr.top = (sz.cy - list.GetLineCy()) / 2;
 	cr.bottom = cr.top + list.GetLineCy();
 	int m = list.HeaderTab(0).GetMargin();
@@ -169,7 +170,7 @@ void DropList::Paint(Draw& w) {
 	cr.right -= m;
 	if(cr.left < cr.right)
 		d.Paint(w, cr, v, f ? SColorHighlightText : IsShowEnabled() ? SColorText : SColorDisabled,
-		        Null, f ? Display::CURSOR : Display::FOCUS|Display::CURSOR);
+		        bg, f ? Display::CURSOR : Display::FOCUS|Display::CURSOR);
 }
 
 void DropList::LeftDown(Point p, dword keyflags) {

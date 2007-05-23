@@ -1,14 +1,4 @@
-Upp::String
+Upp::Image
 0 0 -1
-Upp::WString
-0 0 -1
-Upp::Vector<Upp::Image>
-0 0 -1
-Upp::MenuBar::Style
-0 0 -1
-Upp::SplitterFrame
-0 0 -1
-Upp::Size_<int>
-0 0 -1
-Upp::ColumnList
+Upp::Image::Data
 0 0 -1

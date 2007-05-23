@@ -810,8 +810,10 @@ void LineEdit::LeftDrag(Point p, dword flags)
 	int l, h;
 	if(!HasCapture() && GetSelection(l, h) && c >= l && c < h) {
 		WString sample = GetW(l, min(h - l, 3000));
-		ImageDraw iw(StdSampleSize());
-		DrawTLText(iw, 0, 0, 9999, sample, Courier(10), Black());
+		Size sz = StdSampleSize();
+		ImageDraw iw(sz);
+		iw.DrawRect(sz, Black());
+		iw.Alpha().DrawRect(sz, Black());
 		DrawTLText(iw.Alpha(), 0, 0, 9999, sample, Courier(10), White());
 		NextUndo();
 		if(DoDragAndDrop(ClipFmtsText(), iw) == DND_MOVE)

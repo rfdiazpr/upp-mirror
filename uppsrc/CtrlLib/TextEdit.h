@@ -67,6 +67,7 @@ protected:
 	BiArray<UndoRec> undo;
 	BiArray<UndoRec> redo;
 	int              dirty;
+	int              undo_op;
 	byte             charset;
 
 	bool             selclick;
@@ -155,6 +156,7 @@ public:
 	bool      IsUndo() const                  { return undo.GetCount(); }
 	bool      IsRedo() const                  { return redo.GetCount(); }
 	void      ClearUndo()                     { undo.Clear(); redo.Clear(); }
+	bool      IsUndoOp() const                { return undo_op; }
 	UndoData  PickUndoData();
 	void      SetPickUndoData(pick_ UndoData& data);
 

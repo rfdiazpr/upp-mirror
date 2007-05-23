@@ -369,7 +369,7 @@ void TreeCtrl::SyncTree()
 	cursor = -1;
 	dirty = false;
 	if(cursorid >= 0)
-		SetCursor(cursorid, false, false);
+		SetCursor(cursorid, false, false, false);
 	SyncCtrls(true, restorefocus);
 	SyncInfo();
 }
@@ -403,7 +403,7 @@ bool TreeCtrl::IsOpen(int id) const
 
 void TreeCtrl::Dirty(int id)
 {
-	ClearSelection();
+	if (selectcount) SelClear(0);
 	Size sz = GetSize();
 	dirty = true;
 	while(id >= 0) {
@@ -425,11 +425,11 @@ void TreeCtrl::Open(int id, bool open)
 		m.isopen = open;
 		int q = GetCursor();
 		while(q >= 0) {
+			q = GetParent(q);
 			if(q == id) {
-				SetCursor(id);
+				SetCursor(id, true, true, true);
 				break;
 			}
-			q = GetParent(q);
 		}
 		Dirty(id);
 		if(open)
@@ -498,18 +498,35 @@ int  TreeCtrl::GetLineCount()
 	return line.GetCount();
 }
 
-void TreeCtrl::SetCursorLine(int i, bool sc, bool sel)
+void TreeCtrl::MoveCursorLine(int c, int incr)
+{
+	int cnt = line.GetCount();
+	if (!incr) return;
+	else if (c < 0) c = cnt-1;
+	else if (c >= cnt) c = 0;
+
+	while (!item[line[c].itemi].canselect) {
+		c += incr;
+		if (c == cursor) return;
+		else if (c < 0) c = cnt-1;
+		else if (c >= cnt) c = 0;
+	}
+	SetCursorLineSync(c);
+}
+
+void TreeCtrl::SetCursorLine(int i, bool sc, bool sel, bool cb)
 {
 	if(nocursor)
 		return;
 	if(sel && multiselect) {
-		ClearSelection();
+		if (selectcount) SelClear(0);
 		SelectOne(line[i].itemi, true);
 	}
 	if(i != cursor) {
 		i = minmax(i, 0, line.GetCount() - 1);
 		if(i < 0) return;
 		Item& m = item[line[i].itemi];
+		if (!multiselect && !m.canselect) return;
 		if(sc)
 			sb.ScrollIntoY(line[i].y, m.GetSize().cy);
 		RefreshLine(cursor);
@@ -517,14 +534,16 @@ void TreeCtrl::SetCursorLine(int i, bool sc, bool sel)
 		RefreshLine(cursor);
 		if(m.ctrl && m.ctrl->SetWantFocus())
 			return;
-		WhenCursor();
-		WhenSel();
+		if(cb) {
+			WhenCursor();
+			if (!multiselect) WhenSel();
+		}
 	}
 }
 
 void TreeCtrl::SetCursorLine(int i)
 {
-	SetCursorLine(i, true, true);
+	SetCursorLine(i, true, true, true);
 }
 
 void TreeCtrl::SetCursorLineSync(int i)
@@ -546,7 +565,7 @@ void TreeCtrl::SetCursorLineSync(int i)
 		if(!(m.ctrl && m.ctrl->SetWantFocus()))
 			SetFocus();
 		WhenCursor();
-		WhenSel();
+		if (!multiselect) WhenSel();
 	}
 }
 
@@ -560,7 +579,7 @@ void TreeCtrl::KillCursor()
 	SyncInfo();
 }
 
-void TreeCtrl::SetCursor(int id, bool sc, bool sel)
+void TreeCtrl::SetCursor(int id, bool sc, bool sel, bool cb)
 {
 	while(id > 0) {
 		ASSERT(id >= 0 && id < item.GetCount());
@@ -568,17 +587,17 @@ void TreeCtrl::SetCursor(int id, bool sc, bool sel)
 		SyncTree();
 		const Item& m = item[id];
 		if(m.linei >= 0) {
-			SetCursorLine(m.linei, sc, true);
+			SetCursorLine(m.linei, sc, sel, cb);
 			return;
 		}
 		id = m.parent;
 	}
-	SetCursorLine(0, sc, true);
+	SetCursorLine(0, sc, sel, cb);
 }
 
 void TreeCtrl::SetCursor(int id)
 {
-	SetCursor(id, true, true);
+	SetCursor(id, true, true, true);
 }
 
 int  TreeCtrl::GetCursor() const
@@ -630,7 +649,7 @@ bool TreeCtrl::IsSelDeep(int id) const
 	return IsSel(id) || id && IsSelDeep(GetParent(id));
 }
 
-void TreeCtrl::SelectOne0(int id, bool sel)
+void TreeCtrl::SelectOne0(int id, bool sel, bool cb)
 {
 	if(!multiselect)
 		return;
@@ -638,13 +657,13 @@ void TreeCtrl::SelectOne0(int id, bool sel)
 		item[id].sel = sel;
 		selectcount += 2 * sel - 1;
 		RefreshItem(id);
+		if (cb) UpdateSelect();
 	}
 }
 
 void TreeCtrl::SelectOne(int id, bool sel)
 {
-	SelectOne0(id, sel);
-	UpdateSelect();
+	SelectOne0(id, sel, true);
 }
 
 void TreeCtrl::ShiftSelect(int l1, int l2)
@@ -655,8 +674,7 @@ void TreeCtrl::ShiftSelect(int l1, int l2)
 	if(l1 > l2)
 		Swap(l1, l2);
 	for(int i = 0; i < line.GetCount(); i++)
-		SelectOne0(line[i].itemi, i >= l1 && i <= l2);
-	UpdateSelect();
+		SelectOne0(line[i].itemi, i >= l1 && i <= l2, true);
 }
 
 void TreeCtrl::LeftDrag(Point p, dword keyflags)
@@ -685,7 +703,7 @@ void TreeCtrl::DoClick(Point p, dword flags, bool down)
 		}
 		SetFocus();
 		int q = cursor;
-		SetCursorLine(i, true, false);
+		SetCursorLine(i, true, false, true);
 		if(multiselect) {
 			int id = GetCursor();
 			if(flags & K_CTRL) {
@@ -696,7 +714,7 @@ void TreeCtrl::DoClick(Point p, dword flags, bool down)
 				if(flags & K_SHIFT)
 					ShiftSelect(anchor < 0 ? cursor : anchor, cursor);
 				else {
-					ClearSelection();
+					if (selectcount) SelClear(0);
 					SelectOne(id);
 					anchor = cursor;
 				}
@@ -961,16 +979,16 @@ bool TreeCtrl::Key(dword key, int)
 	case K_SHIFT_TAB:
 		return Tab(-1);
 	case K_UP:
-		SetCursorLineSync(cursor > 0 ? cursor - 1 : line.GetCount() - 1);
+		MoveCursorLine(cursor - 1, -1);
 		break;
 	case K_DOWN:
-		SetCursorLineSync(cursor >= 0 ? cursor + 1 : 0);
+		MoveCursorLine(cursor + 1, 1);
 		break;
 	case K_PAGEDOWN:
-		SetCursorLineSync(cursor >= 0 ? FindLine(line[cursor].y + sz.cy) : 0);
+		MoveCursorLine(cursor >= 0 ? FindLine(line[cursor].y + sz.cy) : 0, 1);
 		break;
 	case K_PAGEUP:
-		SetCursorLineSync(cursor >= 0 ? FindLine(line[cursor].y - sz.cy) : line.GetCount() - 1);
+		MoveCursorLine(cursor >= 0 ? FindLine(line[cursor].y - sz.cy) : line.GetCount() - 1, -1);
 		break;
 	case K_LEFT:
 		if(cid >= 0)

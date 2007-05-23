@@ -9,7 +9,7 @@ NAMESPACE_UPP
 #ifdef PLATFORM_X11
 
 #ifdef _DEBUG
-	#define SYNCHRONIZE
+//	#define SYNCHRONIZE
 #endif
 
 #define LLOG(x)  // LOG(x)

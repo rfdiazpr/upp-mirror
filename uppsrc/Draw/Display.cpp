@@ -101,8 +101,9 @@ void StdDisplayClass::Paint0(Draw& w, const Rect& r, const Value& q,
 		x += (r.Width() - tsz.cx) / 2;
 	int tcy = GetTLTextHeight(txt, font);
 	DrawTLText(w, x, r.top + max((r.Height() - tcy) / 2, 0), r.Width(), txt, font, ink);
-	if(tsz.cx > r.GetWidth()) {
+	if(tsz.cx > r.GetWidth() && !IsNull(paper)) {
 		int wd = min(r.GetWidth() / 4, 8);
+		wd = min(wd, tsz.cx - r.GetWidth());
 		w.DrawImage(r.right - wd, r.top, HorzFadeOut(Size(wd, r.GetHeight()), paper));
 	}
 }

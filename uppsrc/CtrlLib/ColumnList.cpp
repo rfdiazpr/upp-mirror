@@ -331,7 +331,9 @@ void ColumnList::GetItemStyle(int i, Color& fg, Color& bg, dword& st)
 	bg = SColorPaper;
 	if(nobg)
 		bg = Null;
-	if((st & Display::SELECT) || !multi && (st & Display::CURSOR) || drop) {
+	if((st & Display::SELECT) ||
+	   (!multi || !item[i].canselect && selcount == 0) && (st & Display::CURSOR) ||
+	   drop) {
 		fg = hasfocus ? SColorHighlightText : SColorText;
 		bg = hasfocus ? SColorHighlight : Blend(SColorDisabled, SColorPaper);
 	}
@@ -367,7 +369,7 @@ void ColumnList::Paint(Draw& w) {
 					dword style = PaintItem(w, i, r);
 					w.DrawRect(rect.right - 1, rect.top, 1, rect.Height(),
 					           x + cx < sz.cx ? SColorDisabled : SColorPaper);
-					if(i == cursor && selcount != 1 && multi)
+					if(i == cursor && selcount != 1 && multi && item[i].canselect)
 						DrawFocus(w, r, style & Display::SELECT ? SColorPaper() : SColorText());
 				}
 			}
@@ -394,9 +396,11 @@ Image ColumnList::GetDragSample()
 	ImageDraw iw(sz);
 	int y = 0;
 	for(int i = 0; i < GetCount() && y < sz.cy; i++)
-		if(IsSel(i))
+		if(IsSel(i)) {
 			PaintItem(iw, i, RectC(0, y, sz.cx, cy));
-	return iw;
+			y += cy;
+		}
+	return Crop(iw, 0, 0, sz.cx, y);;
 }
 
 int  ColumnList::GetPageItems() const {
@@ -640,7 +644,7 @@ void ColumnList::Add(const Value& val, bool canselect)
 
 void ColumnList::Add(const Value& val, const Display& display, bool canselect)
 {
-	Add(val);
+	Add(val, canselect);
 	item.Top().display = &display;
 }
 

@@ -241,6 +241,7 @@ void Ide::SaveFile(bool always)
 
 	FileData& fd = Filedata(editfile);
 	fd.lineinfo = editor.GetLineInfo();
+	fd.lineinforem = editor.GetLineInfoRem();
 	fd.editpos = editor.GetEditPos();
 	fd.columnline = editor.GetColumnLine(fd.editpos.cursor);
 	fd.filetime = edittime;
@@ -390,6 +391,7 @@ void Ide::EditFile0(const String& path, byte charset, bool astext, const String&
 			editor.SetCursor(editor.GetColumnLinePos(fd.columnline));
 		editor.SetPickUndoData(fd.undodata);
 		editor.SetLineInfo(fd.lineinfo);
+		editor.SetLineInfoRem(fd.lineinforem);
 		if(ff.IsReadOnly())
 			editor.SetReadOnly();
 	}
@@ -578,14 +580,37 @@ void Ide::PassEditor()
 	editor2.Highlight(editor.GetHighlight());
 	editor2.LoadHlStyles(editor.StoreHlStyles());
 	byte charset = editor.GetCharset();
+	editor2.CheckEdited(false);
 	editor2.Set(editor.Get(charset), charset);
 	editor2.SetEditPosSb(editor.GetEditPos());
-	IdeQuickTabs h;
+	editor2.CheckEdited();
+	QuickTabs h;
 	h.Set(tabs);
 	tabs.Set(tabs2);
 	tabs2.Set(h);
 	editor.SetFocus();
 	editor.ScrollIntoCursor();
+}
+
+void Ide::ClearEditedFile()
+{
+	editor.ClearEdited();
+}
+
+void Ide::ClearEditedAll()
+{
+	ClearEditedFile();
+	for(int i = 0; i < filedata.GetCount(); i++) {
+		LineInfo li = editor.GetLineInfo();
+		LineInfoRem lir = editor.GetLineInfoRem();
+		FileData& fd = Filedata(filedata.GetKey(i));
+		editor.SetLineInfo(fd.lineinfo);
+		editor.SetLineInfoRem(fd.lineinforem);
+		ClearEditedFile();
+		fd.lineinfo = editor.GetLineInfo();				
+		fd.lineinforem = editor.GetLineInfoRem();				
+		editor.SetLineInfo(li);
+	}
 }
 
 void Ide::SplitEditor(bool horz)

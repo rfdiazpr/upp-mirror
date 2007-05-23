@@ -172,6 +172,14 @@ void Ide::Edit(Bar& menu) {
 			.Help("Find any ordinary string constant (\"\" - delimited)");
 		menu.Add(AK_FINDSTRINGBACK, THISBACK1(FindString, true))
 			.Help("Find any ordinary string constant (\"\" - delimited) backwards");
+		if(mark_lines && menu.IsMenuBar()) {
+			menu.Separator();
+			menu.Add(AK_CLEARMARKERSFILE, THISBACK(ClearEditedFile))
+				.Help("Remove change markers in current file");
+			menu.Add(AK_CLEARMARKERSALL, THISBACK(ClearEditedAll))
+				.Help("Remove change markers in all files");
+			menu.Separator();
+		}
 		if(menu.IsMenuBar())
 			menu.Add("Special", THISBACK(EditSpecial));
 	}

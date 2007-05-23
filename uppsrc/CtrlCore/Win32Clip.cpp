@@ -112,6 +112,11 @@ void AppendClipboardUnicodeText(const WString& s)
 	AppendClipboard((const char *)CF_UNICODETEXT, (byte *)~s, 2 * s.GetLength());
 }
 
+const char *ClipFmtsText()
+{
+	return "wtext;text";
+}
+
 String GetString(PasteClip& clip)
 {
 	if(clip.Accept("wtext")) {
@@ -132,6 +137,24 @@ WString GetWString(PasteClip& clip)
 	if(clip.IsAvailable("text"))
 		return (~clip).ToWString();
 	return Null;
+}
+
+
+bool AcceptText(PasteClip& clip)
+{
+	return clip.Accept(ClipFmtsText());
+}
+
+void AddTextClip(VectorMap<String, String>& data, const String& text)
+{
+	data.GetAdd("text", GetTextClip(text, "text"));
+	data.GetAdd("wtext", GetTextClip(text, "wtext"));
+}
+
+void AddTextClip(VectorMap<String, String>& data, const WString& text)
+{
+	data.GetAdd("text", GetTextClip(text, "text"));
+	data.GetAdd("wtext", GetTextClip(text, "wtext"));
 }
 
 String GetTextClip(const WString& text, const String& fmt)
@@ -178,14 +201,19 @@ bool IsClipboardAvailableText()
 	return IsClipboardAvailable((const char *)CF_TEXT);
 }
 
-String ClipFmtsImage()
+const char *ClipFmtsImage()
 {
-	return "dib;" + ClipFmt<Image>();
+	static const char *q;
+	ONCELOCK {
+		static String s = "dib;" + ClipFmt<Image>();
+		q = s;
+	}
+	return q;
 }
 
 bool AcceptImage(PasteClip& clip)
 {
-	return clip.Accept(ClipFmt<Image>()) || clip.Accept("dib");
+	return clip.Accept(ClipFmtsImage());
 }
 
 Image GetImage(PasteClip& clip)

@@ -182,7 +182,8 @@ void RichEdit::LeftDrag(Point p, dword flags)
 		iw.DrawRect(0, 0, ssz.cx, ssz.cy, White);
 		sample.Paint(iw, 0, 0, 128);
 		NextUndo();
-		if(DoDragAndDrop("text/QTF;" RTFS ";" + ClipFmtsText(), ColorMask(iw, White)) == DND_MOVE)
+		if(DoDragAndDrop(String().Cat() << "text/QTF;" RTFS ";" << ClipFmtsText(),
+		                 ColorMask(iw, White)) == DND_MOVE)
 			RemoveSelection();
 	}
 /*	else

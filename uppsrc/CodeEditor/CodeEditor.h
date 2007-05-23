@@ -22,12 +22,19 @@ struct LineInfoRecord {
 	String breakpoint;
 	int    count;
 	int    error;
+	int    firstedited;
 	int    edited;
 	
 	LineInfoRecord() { error = 0; edited = 0; }
 };
 
 typedef Array<LineInfoRecord> LineInfo;
+
+struct LineInfoRemRecord : Moveable<LineInfoRemRecord> {
+	int    firstedited;
+	int    edited;
+};
+typedef Vector<LineInfoRemRecord> LineInfoRem;
 
 void Renumber(LineInfo& lf);
 void ClearBreakpoints(LineInfo& lf);
@@ -48,11 +55,14 @@ private:
 		int    lineno;
 		String breakpoint;
 		int    error;
+		int    firstedited;
 		int    edited;
 
-		LnInfo() { lineno = -1; error = 0; edited = 0; }
+		LnInfo() { lineno = -1; error = 0; firstedited = 0; edited = 0; }
 	};
 	Vector<LnInfo>   li;
+	LineInfoRem      li_removed;
+	
 	int              sy;
 	CodeEditor       *editor;
 	int              ptrline[2];
@@ -60,6 +70,8 @@ private:
 	bool             bingenabled;
 	bool             hilite_if_endif;
 	bool             line_numbers;
+	bool             ignored_next_edit;
+	int              next_age;
 
 	String& PointBreak(int& y);
 	void    sPaintImage(Draw& w, int y, int fy, const Image& img);
@@ -79,7 +91,9 @@ public:
 
 	String  GetBreakpoint(int ln);
 	void    SetBreakpoint(int ln, const String& s);
-	void    SetEdited(int ln, int edit);
+	void    SetEdited(int ln, int count = 1);
+	void    ClearEdited();
+	void    ClearMarkers(int ln = -1, int count = 1);
 	void    SetError(int ln, int err);
 	void    ClearErrors(int ln);
 
@@ -87,6 +101,8 @@ public:
 
 	LineInfo GetLineInfo() const;
 	void     SetLineInfo(const LineInfo& li, int total);
+	LineInfoRem & GetLineInfoRem()             { return li_removed; }
+	void     SetLineInfoRem(LineInfoRem& li)   { li_removed = li; }
 
 	int      GetLineNo(int lineno) const;
 	int      GetNoLine(int line) const;
@@ -128,6 +144,7 @@ public:
 	virtual void MouseMove(Point p, dword keyflags);
 	virtual void Serialize(Stream& s);
 	void         CheckEdited(bool e = true) { check_edited = e; }
+	bool         GetCheckEdited()           { return check_edited; }
 
 protected:
 	virtual void HighlightLine(int line, Vector<Highlight>& h, int pos);
@@ -222,6 +239,7 @@ protected:
 	Time    last_key_time;
 
 	bool    auto_enclose;
+	bool    mark_lines;
 	bool    check_edited;
 
 	struct FindReplace : WithIDEFindReplaceLayout<TopWindow> {
@@ -391,6 +409,8 @@ public:
 
 	LineInfo GetLineInfo() const                      { return bar.GetLineInfo(); }
 	void     SetLineInfo(const LineInfo& lf);
+	LineInfoRem GetLineInfoRem()                      { return LineInfoRem(bar.GetLineInfoRem(), 0); }
+	void     SetLineInfoRem(LineInfoRem& lf)          { bar.SetLineInfoRem(LineInfoRem(lf, 0)); }
 	double   GetStatEditTime() const                  { return stat_edit_time; }
 	void     Renumber()                               { bar.Renumber(GetLineCount()); }
 	void     ClearBreakpoints()                       { bar.ClearBreakpoints(); }
@@ -403,6 +423,8 @@ public:
 	void     SetBreakpoint(int line, const String& b) { bar.SetBreakpoint(line, b); }
 	void     SetError(int line, int err)              { bar.SetError(line, err); }
 	void     ClearErrors(int line = -1)               { bar.ClearErrors(line); }
+	void     ClearEdited()                            { bar.ClearEdited(); }
+	int		 GetUndoCount()                           { return undo.GetCount(); }
 	void     GotoLine(int line);
 	void     EnableBreakpointing()                    { bar.EnableBreakpointing(true); }
 	void     DisableBreakpointing()                   { bar.EnableBreakpointing(false); }
@@ -415,6 +437,8 @@ public:
 	void     IndentAmount(int ia)                     { indent_amount = ia; }
 	void     NoParenthesisIndent(bool b)              { no_parenthesis_indent = b; }
 	void     LineNumbers(bool b)                      { bar.LineNumbers(b); }
+	void     MarkLines(bool b)                        { mark_lines = b; }
+	bool     GetMarkLines()                           { return mark_lines; }
 	void     AutoEnclose(bool b)                      { auto_enclose = b; }
 
 	void     HideBar()                                { bar.Hide(); }

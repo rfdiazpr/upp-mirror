@@ -504,6 +504,7 @@ Ide::Ide()
 
 	filetabs = true;
 	auto_enclose = false;
+	mark_lines = true;
 
 	bordercolumn = 96;
 	bordercolor = SColorFace();

@@ -123,8 +123,9 @@ private:
 	void   RefreshLine(int i, int ex = 0);
 	void   RefreshItem(int id, int ex = 0);
 	void   SetCursorLineSync(int i);
-	void   SetCursorLine(int i, bool scroll, bool sel);
-	void   SetCursor(int id, bool scroll, bool sel);
+	void   MoveCursorLine(int c, int incr);
+	void   SetCursorLine(int i, bool sc, bool sel, bool cb);
+	void   SetCursor(int id, bool sc, bool sel, bool cb);
 	void   RemoveCtrls(int itemi);
 	void   SyncCtrls(bool add, Ctrl *restorefocus);
 	bool   Tab(int d);
@@ -134,7 +135,7 @@ private:
 	void   SelClear(int id);
 	void   UpdateSelect();
 	void   ShiftSelect(int l1, int l2);
-	void   SelectOne0(int id, bool sel);
+	void   SelectOne0(int id, bool sel, bool cb = false);
 	void   DnD(int itemid, int insert);
 	bool   DnDInserti(int ii, PasteClip& d, bool bottom);
 	bool   DnDInsert(int ii, int py, int q, PasteClip& d);
@@ -246,6 +247,7 @@ public:
 	bool         IsSelDeep(int id) const;
 	Vector<int>  GetSel() const;
 	void         Remove(const Vector<int>& id);
+	void         RemoveSelection()              { Remove(GetSel()); }
 
 	void         AdjustAction(int parent, PasteClip& x);
 	void         InsertDrop(int parent, int ii, const TreeCtrl& src, PasteClip& x);
@@ -259,7 +261,7 @@ public:
 	TreeCtrl& NoCursor(bool b = true)     { nocursor = b; if(b) KillCursor(); return *this; }
 	TreeCtrl& NoRoot(bool b = true)       { noroot = b; Dirty(); Refresh(); return *this; }
 	TreeCtrl& LevelCx(int cx)             { levelcx = cx; Dirty(); return *this; }
-	TreeCtrl& MultiSelect(bool b = true)  { multiselect = true; return *this; }
+	TreeCtrl& MultiSelect(bool b = true)  { multiselect = b; return *this; }
 	TreeCtrl& NoBackground(bool b = true) { nobg = b; Transparent(); Refresh(); return *this; }
 	TreeCtrl& PopUpEx(bool b = true)      { popupex = b; return *this; }
 	TreeCtrl& NoPopUpEx()                 { return PopUpEx(false); }

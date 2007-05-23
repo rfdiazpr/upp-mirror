@@ -60,7 +60,7 @@ static String Dump(Ctrl *ctrl)
 }
 #endif
 
-static UINT CALLBACK sCenterHook(HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static UINT_PTR CALLBACK sCenterHook(HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	LLOG("msg = " << (int)msg << ", wParam = " << Format("%08x", (int)wParam)
 	    << ", lParam = " << Format("%08x", (int)lParam)

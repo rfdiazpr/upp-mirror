@@ -90,7 +90,7 @@ GridCtrl::GridCtrl() : holder(*this)
 	rowidx = -1;
 	
 	GD_COL_WIDTH  = 50;
-	GD_ROW_HEIGHT = Draw::GetStdFontCy() + 4;
+	GD_ROW_HEIGHT = Draw::GetStdFontCy() + 5;
 	GD_HDR_HEIGHT = GD_ROW_HEIGHT + 2;
 	GD_IND_WIDTH  = 9;
 	
@@ -3661,7 +3661,6 @@ bool GridCtrl::GetCtrlsData(bool samerow, bool doall, bool updates)
 		
 		Value v = focused_ctrl->GetData();
 						
-		//it.modified = it.val != v;
 		bool was_modified = it.modified;
 		
 		it.modified = edit_mode == GE_CELL ? it.val != v : rowbkp[focused_ctrl_id] != v;
@@ -3669,8 +3668,9 @@ bool GridCtrl::GetCtrlsData(bool samerow, bool doall, bool updates)
 		if(it.modified)
 		{
 			vitems[curid.y].modified = true;
-		
-			row_modified++;
+
+			if(!was_modified)		
+				row_modified++;
 			
 			it.val = v;
 			
@@ -3695,8 +3695,6 @@ bool GridCtrl::GetCtrlsData(bool samerow, bool doall, bool updates)
 				}
 			}
 		}
-		else if(was_modified)
-			row_modified--;
 	}
 
 	if(!updates)
@@ -3707,16 +3705,15 @@ bool GridCtrl::GetCtrlsData(bool samerow, bool doall, bool updates)
 		if(edit_mode == GE_ROW)
 			for(int i = fixed_cols; i < total_cols; ++i)
 			{
-				if(items[curid.y][hitems[i].id].modified)
+				if(!newrow && !items[curid.y][hitems[i].id].modified)
+					continue;
+				Ctrl * ctrl = GetCtrl(rowidx, i, true, false);
+				if(ctrl && !ctrl->Accept())
 				{
-					Ctrl * ctrl = GetCtrl(rowidx, i, true, false);
-					if(ctrl && !ctrl->Accept())
-					{
-						focused_ctrl = ctrl;
-						ctrl->SetFocus();
-						curpos.x = i;
-						return false;
-					}
+					focused_ctrl = ctrl;
+					ctrl->SetFocus();
+					curpos.x = i;
+					return false;
 				}
 			}
 		
@@ -4999,23 +4996,22 @@ bool GridCtrl::Go0(int jump, bool scroll, bool goleft, bool ctrlmode)
 			sby.Set(sy);
 
 		if(ctrls)
-			UpdateCtrls();
+			UpdateCtrls(UC_CHECK_VIS | UC_SHOW | UC_FOCUS);
 	}
 		
-	Ctrl * ctrl = IsValidCursor(curpos) ? GetItem(curpos).ctrl : NULL;
-	if(ctrl)
+	if(!ctrls)
 	{
-		focused_ctrl = ctrl;
-		focused_ctrl_id = hitems[curpos.x].id;
-		focused_col = curpos.x;
-		ctrl->SetFocus();
+		Ctrl * ctrl = valid_cursor ? GetItem(curpos).ctrl : NULL;
+		if(ctrl)
+		{
+			focused_ctrl = ctrl;
+			focused_ctrl_id = hitems[curpos.x].id;
+			focused_col = curpos.x;
+			ctrl->SetFocus();
+		}
+		else
+			focused_ctrl = NULL;
 	}
-	else
-	{
-		focused_ctrl = NULL;
-		//SetFocus();
-	}
-	
 	return true;	
 }
 
@@ -5882,7 +5878,7 @@ void GridCtrl::DoRemove()
 
 void GridCtrl::DoAppend0(bool edit)
 {
-//	EndEdit();
+	EndEdit(); //powinno byc zakomentowane ale wtedy goend wola endedit ale juz dla rowidx wiekszego o 1..
 	Append0();
 
 	call_whenchangerow = false;	

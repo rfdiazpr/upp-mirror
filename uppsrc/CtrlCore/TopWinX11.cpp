@@ -35,7 +35,7 @@ void TopWindow::EventProc(XWindow& w, XEvent *event)
 {
 	Ptr<Ctrl> this_ = this;
 	if(event->type == ClientMessage) {
-		DDUMP(XAtomName(event->xclient.message_type));
+//		DDUMP(XAtomName(event->xclient.message_type));
 		if(event->xclient.format == 32 && event->xclient.message_type)
 			if(event->xclient.message_type == XAtom("WM_PROTOCOLS")) {
 				Atom a = event->xclient.data.l[0];
@@ -248,6 +248,10 @@ void TopWindow::Open(Ctrl *owner)
 	}
 	if(IsOpen() && top)
 		top->owner = owner;
+
+	int version = 5;
+	XChangeProperty(Xdisplay, GetWindow(), XAtom("XdndAware"), XA_ATOM, 32,
+					0, (byte *)&version, 1);
 }
 
 void TopWindow::Open()

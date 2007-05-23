@@ -167,13 +167,25 @@ void Pdb::Unlock()
 
 void Pdb::AddThread(dword dwThreadId, HANDLE hThread)
 {
-	if(threadsp.Find(dwThreadId) >= 0)
+	if(threads.Find(dwThreadId) >= 0)
 		return;
 	CONTEXT ctx;
 	ctx.ContextFlags = CONTEXT_FULL;
 	GetThreadContext(hThread, &ctx);
-	threadsp.GetAdd(dwThreadId) = ctx.Esp;
+	Thread& f = threads.GetAdd(dwThreadId);
+	f.sp = ctx.Esp;
+	f.hThread = hThread;
 	LLOG("Adding thread " << dwThreadId << ", Thread SP: " << FormatIntHex(ctx.Esp));
+}
+
+void Pdb::RemoveThread(dword dwThreadId)
+{
+	int q = threads.Find(dwThreadId);
+	if(q >= 0) {
+		Thread& f = threads[q];
+		CloseHandle(f.hThread);
+		threads.Remove(q);
+	}
 }
 
 #define EXID(id)       { id, #id },
@@ -276,23 +288,13 @@ bool Pdb::RunToException()
 					Unlock();
 				if(refreshmodules)
 					LoadModuleInfo();
-				ctx.Clear();
 				LLOG("event.dwThreadId = " << event.dwThreadId);
-				for(int i = 0; i < threadsp.GetCount(); i++) {
-					dword threadid = threadsp.GetKey(i);
-					LLOG("Opening thread " << threadid);
-					CONTEXT& c = ctx.Add(threadid);
-					HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, threadid);
-					LLOG("hThread = " << (void *)hThread);
-					if(!hThread) {
-						Error();
-						return false;
-					}
+				for(int i = 0; i < threads.GetCount(); i++) {
+					CONTEXT& c = threads[i].context;
 					c.ContextFlags = CONTEXT_FULL;
-					GetThreadContext(hThread, &c);
-					if(event.dwThreadId == threadid)
+					GetThreadContext(threads[i].hThread, &c);
+					if(event.dwThreadId == threads.GetKey(i))
 						context = c;
-					CloseHandle(hThread);
 				}
 				if(event.u.Exception.ExceptionRecord.ExceptionCode == EXCEPTION_BREAKPOINT
 				&& bp_set.Find((dword)event.u.Exception.ExceptionRecord.ExceptionAddress) >= 0)
@@ -307,30 +309,27 @@ bool Pdb::RunToException()
 				LLOG("Create thread: " << event.dwThreadId);
 				AddThread(event.dwThreadId, event.u.CreateThread.hThread);
 				break;
-			case EXIT_THREAD_DEBUG_EVENT: {
+			case EXIT_THREAD_DEBUG_EVENT:
 				LLOG("Exit thread: " << event.dwThreadId);
-				threadsp.RemoveKey(event.dwThreadId);
+				RemoveThread(event.dwThreadId);
 				break;
-			}
 			case CREATE_PROCESS_DEBUG_EVENT:
 				LLOG("Create process: " << event.dwProcessId);
 				processid = event.dwProcessId;
 				AddThread(event.dwThreadId, event.u.CreateProcessInfo.hThread);
 				CloseHandle(event.u.CreateProcessInfo.hFile);
+				CloseHandle(event.u.CreateProcessInfo.hProcess);
 				break;
 			case EXIT_PROCESS_DEBUG_EVENT:
 				LLOG("Exit process: " << event.dwProcessId);
 				if(locked)
 					Unlock();
-				threadsp.Clear();
 				terminated = true;
 				CleanupOnExit();
 				if(ContinueDebugEvent(event.dwProcessId, event.dwThreadId, DBG_CONTINUE))
 					RLOG("ContinueDebugEvent(EXIT_PROCESS_DEBUG_EVENT) -> OK");
 				else
 					RLOG("ContinueDebugEvent -> " << GetErrorMessage(GetLastError()));
-				CloseHandle(hProcess);
-				hProcess = INVALID_HANDLE_VALUE;
 				return false;
 			case LOAD_DLL_DEBUG_EVENT: {
 				LLOG("Load dll: " << event.u.LoadDll.lpBaseOfDll);
@@ -374,19 +373,14 @@ bool Pdb::RunToException()
 
 const CONTEXT& Pdb::CurrentContext()
 {
-	return ctx.Get((int)~threadlist);
+	return threads.Get((int)~threadlist).context;
 }
 
 void Pdb::WriteContext(dword cf)
 {
 	context.ContextFlags = cf;
-	HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, event.dwThreadId);
-	if(!hThread) {
-		Error();
-		return;
-	}
+	HANDLE hThread = threads.Get(event.dwThreadId).hThread;
 	SetThreadContext(hThread, &context);
-	CloseHandle(hThread);
 }
 
 bool Pdb::SingleStep()
@@ -427,19 +421,16 @@ void Pdb::BreakRunning()
 		if(debugbreak)
 			(*debugbreak)(hProcess);
 		else
-			for(int i = 0; i < threadsp.GetCount(); i++) {
-				HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, threadsp.GetKey(i));
-				if(hThread) {
-					SuspendThread(hThread);
-					CONTEXT ctx;
-					ctx.ContextFlags = CONTEXT_CONTROL;
-					GetThreadContext(hThread, &ctx);
-					ctx.EFlags |= 0x100;
-					SetThreadContext(hThread, &ctx);
-					GetThreadContext(hThread, &ctx);
-					ResumeThread(hThread);
-					CloseHandle(hThread);
-				}
+			for(int i = 0; i < threads.GetCount(); i++) {
+				HANDLE hThread = threads[i].hThread;
+				SuspendThread(hThread);
+				CONTEXT ctx;
+				ctx.ContextFlags = CONTEXT_CONTROL;
+				GetThreadContext(hThread, &ctx);
+				ctx.EFlags |= 0x100;
+				SetThreadContext(hThread, &ctx);
+				GetThreadContext(hThread, &ctx);
+				ResumeThread(hThread);
 			}
 	}
 }

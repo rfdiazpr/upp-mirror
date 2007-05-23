@@ -62,11 +62,11 @@ void Ctrl::Xclipboard::Request(XSelectionRequestEvent *se)
 	XSendEvent(Xdisplay, se->requestor, XFalse, 0, &e);
 }
 
-String Ctrl::Xclipboard::Read(int fmt)
+String Ctrl::Xclipboard::Read(int fmt, int selection, int property)
 {
-	if(data.GetCount())
+	if(data.GetCount() && selection == XAtom("CLIPBOARD"))
 		return data.Get(fmt, Null);
-	XConvertSelection(Xdisplay, XAtom("CLIPBOARD"), fmt, XAtom("CLIPDATA"), win, CurrentTime);
+	XConvertSelection(Xdisplay, selection, fmt, property, win, CurrentTime);
 	XFlush(Xdisplay);
 	XEvent event;
 	for(int i = 0; i < 20; i++) {
@@ -79,12 +79,12 @@ String Ctrl::Xclipboard::Read(int fmt)
 		}
 		if(XCheckTypedWindowEvent(Xdisplay, win, SelectionRequest, &event) &&
 		   event.xselectionrequest.owner == win &&
-		   event.xselectionrequest.selection == XAtom("CLIPBOARD")) {
+		   event.xselectionrequest.selection == selection) {
 			Request(&event.xselectionrequest);
 		}
 		if(XCheckTypedWindowEvent(Xdisplay, win, SelectionClear, &event) &&
 		   event.xselectionclear.window == win &&
-		   event.xselectionclear.selection == XAtom("CLIPBOARD")) {
+		   event.xselectionclear.selection == selection) {
 			Clear();
 		}
 		Sleep(10);
@@ -108,9 +108,9 @@ void AppendClipboard(const char *fmt, const String& data)
 	Ctrl::xclipboard().Write(XAtom(fmt), data);
 }
 
-String  ReadClipboard(const char *fmt)
+String ReadClipboard(const char *fmt)
 {
-	return Ctrl::xclipboard().Read(XAtom(fmt));
+	return Ctrl::xclipboard().Read(XAtom(fmt), XAtom("CLIPBOARD"), XAtom("CLIPDATA"));
 }
 
 void AppendClipboardText(const String& s)
@@ -133,47 +133,11 @@ WString ReadClipboardUnicodeText()
 	return FromUtf8(ReadClipboard("UTF8_STRING"));
 }
 
-String GetString(PasteClip& clip)
-{
-	if(clip.Accept("wtext"))
-		return FromUtf8(~clip).ToString();
-	if(clip.IsAvailable("text"))
-		return ~clip;
-	return Null;
-}
-
-WString GetWString(PasteClip& clip)
-{
-	if(clip.Accept("wtext"))
-		return FromUtf8(~clip);
-	if(clip.IsAvailable("text"))
-		return (~clip).ToWString();
-	return Null;
-}
-
-String GetTextClip(const WString& text, const String& fmt)
-{
-	if(fmt == "text")
-		return text.ToString();
-	if(fmt == "wtext")
-		return ToUtf8(text);
-	return Null;
-}
-
-String GetTextClip(const String& text, const String& fmt)
-{
-	if(fmt == "text")
-		return text;
-	if(fmt == "wtext")
-		return GetTextClip(text.ToWString(), fmt);
-	return Null;
-}
-
 bool Ctrl::Xclipboard::IsAvailable(int fmt)
 {
 	if(data.GetCount())
 		return data.Find(fmt) >= 0;
-	String formats = Read(XAtom("TARGETS"));
+	String formats = Read(XAtom("TARGETS"), XAtom("CLIPBOARD"), XAtom("CLIPDATA"));
 	int c = formats.GetCount() / sizeof(Atom);
 	const Atom *m = (Atom *) ~formats;
 	for(int i = 0; i < c; i++) {
@@ -183,29 +147,113 @@ bool Ctrl::Xclipboard::IsAvailable(int fmt)
 	return false;
 }
 
+bool Ctrl::ClipHas(int type, const char *fmt)
+{
+	if(type == 0)
+		return Ctrl::xclipboard().IsAvailable(XAtom(fmt));
+	return drop_formats.Find(fmt) >= 0;
+}
+
+String Ctrl::ClipGet(int type, const char *fmt)
+{
+	return Ctrl::xclipboard().Read(
+	           XAtom(fmt),
+	           type ? XAtom("XdndSelection") : XAtom("CLIPBOARD"),
+	           type ? XA_SECONDARY : XAtom("CLIPDATA")
+	       );
+}
+
+String Unicode__(const WString& w)
+{
+	return String((const char *)~w, 2 * w.GetLength());
+}
+
+WString Unicode__(const String& s)
+{
+	return WString((const wchar *)~s, s.GetLength() / 2);
+}
+
+const char *ClipFmtsText()
+{
+	return "STRING;UTF8_STRING;text/plain;text/unicode";
+}
+
+String GetString(PasteClip& clip)
+{
+	if(clip.Accept("STRING") || clip.Accept("text/plain"))
+		return ~clip;
+	if(clip.Accept("UTF8_STRING"))
+		return FromUtf8(~clip).ToString();
+	if(clip.Accept("text/unicode"))
+		return Unicode__(~clip).ToString();
+	return Null;
+}
+
+WString GetWString(PasteClip& clip)
+{
+	if(clip.Accept("STRING") || clip.Accept("text/plain"))
+		return (~clip).ToWString();
+	if(clip.Accept("UTF8_STRING"))
+		return FromUtf8(~clip);
+	if(clip.Accept("text/unicode"))
+		return Unicode__(~clip);
+	return Null;
+}
+
+String GetTextClip(const WString& text, const String& fmt)
+{
+	if(fmt == "STRING" || fmt == "text/plain")
+		return text.ToString();
+	if(fmt == "UTF8_STRING")
+		return ToUtf8(text);
+	if(fmt == "text/unicode")
+		return Unicode__(text);
+	return Null;
+}
+
+String GetTextClip(const String& text, const String& fmt)
+{
+	if(fmt == "STRING" || fmt == "text/plain")
+		return text;
+	if(fmt == "UTF8_STRING")
+		return ToUtf8(text.ToWString());
+	if(fmt == "text/unicode")
+		return Unicode__(text.ToWString());
+	return Null;
+}
+
+bool AcceptText(PasteClip& clip)
+{
+	return clip.Accept(ClipFmtsText());
+}
+
+void AddTextClip(VectorMap<String, String>& data, const String& text)
+{
+	data.GetAdd("STRING", text);
+	data.GetAdd("text/plain", text);
+	data.GetAdd("UTF8_STRING", ToUtf8(text.ToWString()));
+	data.GetAdd("text/unicode", Unicode__(text.ToWString()));
+}
+
+void AddTextClip(VectorMap<String, String>& data, const WString& text)
+{
+	data.GetAdd("STRING", text.ToString());
+	data.GetAdd("text/plain", text.ToString());
+	data.GetAdd("UTF8_STRING", ToUtf8(text));
+	data.GetAdd("text/unicode", Unicode__(text));
+}
+
 bool IsClipboardAvailable(const char *fmt)
 {
-	String f = fmt;
-	if(f == "text")
-		f = "STRING";
-	if(f == "wtext")
-		f = "UTF8_STRING";
 	return Ctrl::xclipboard().IsAvailable(XAtom(fmt));
 }
 
 bool IsClipboardAvailableText()
 {
-	return IsClipboardAvailable("text") || IsClipboardAvailable("wtext");
-}
-
-bool Has(UDropTarget *dt, const char *fmt)
-{
-	return false;
-}
-
-String Get(UDropTarget *dt, const char *fmt)
-{
-	return Null;
+	return IsClipboardAvailable("STRING") ||
+	       IsClipboardAvailable("UTF8_STRING") ||
+	       IsClipboardAvailable("text/plain") ||
+	       IsClipboardAvailable("text/unicode");
 }
 
 #endif

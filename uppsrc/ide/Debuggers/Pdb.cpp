@@ -243,7 +243,11 @@ void Pdb::CleanupOnExit()
 	if(hProcess != INVALID_HANDLE_VALUE) {
 		UnloadModuleSymbols();
 		SymCleanup(hProcess);
+		CloseHandle(hProcess);
+		hProcess = INVALID_HANDLE_VALUE;
 	}
+	while(threads.GetCount())
+		RemoveThread(threads.GetKey(0));
 }
 
 void Pdb::CopyStack()
@@ -267,7 +271,6 @@ Pdb::~Pdb()
 	for(int i = 0; i < treetype.GetCount(); i++)
 		out << treetype.GetKey(i) << "\r\n" << treetype[i] << "\r\n";
 	if(hProcess != INVALID_HANDLE_VALUE) {
-		CleanupOnExit();
 		if(!running)
 			ContinueDebugEvent(event.dwProcessId, event.dwThreadId, DBG_CONTINUE);
 		TerminateProcess(hProcess, -1);
@@ -278,7 +281,7 @@ Pdb::~Pdb()
 				break;
 		}
 		while(event.dwDebugEventCode != EXIT_PROCESS_DEBUG_EVENT);
-		CloseHandle(hProcess);
+		CleanupOnExit();
 	}
 	StoreToGlobal(*this, CONFIGNAME);
 	IdeRemoveBottom(*this);

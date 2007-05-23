@@ -9,6 +9,7 @@ TextCtrl::TextCtrl()
 	Clear();
 	undoserial = 0;
 	incundoserial = false;
+	undo_op = false;
 	WhenBar = THISBACK(StdBar);
 	charset = CHARSET_UNICODE;
 	color[INK_NORMAL] = SColorText;
@@ -458,6 +459,7 @@ void TextCtrl::Remove(int pos, int size) {
 
 void TextCtrl::Undo() {
 	if(undo.IsEmpty()) return;
+	undo_op = true;
 	int nc = 0;
 	int s = undo.Tail().serial;
 	while(undo.GetCount()) {
@@ -485,6 +487,7 @@ void TextCtrl::Undo() {
 	ClearSelection();
 	PlaceCaret(nc, false);
 	Action();
+	undo_op = false;
 }
 
 void TextCtrl::Redo() {

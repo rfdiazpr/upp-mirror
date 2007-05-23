@@ -12,7 +12,7 @@ NAMESPACE_UPP
 
 
 bool Ctrl::LogMessages
-= false
+// = true
 ;
 #endif
 
@@ -128,6 +128,9 @@ Ctrl::XWindow *Ctrl::GetXWindow()
 
 bool Ctrl::HookProc(XEvent *event) { return false; }
 
+void DnDRequest(XSelectionRequestEvent *se);
+void DnDClear();
+
 void Ctrl::ProcessEvent(XEvent *event)
 {
 	if(xim && XFilterEvent(event, None))
@@ -148,15 +151,19 @@ void Ctrl::ProcessEvent(XEvent *event)
 		}
 	}
 	if(event->type == SelectionRequest &&
-	   event->xselectionrequest.owner == xclipboard().win &&
-	   event->xselectionrequest.selection == XAtom("CLIPBOARD")) {
-		xclipboard().Request(&event->xselectionrequest);
+	   event->xselectionrequest.owner == xclipboard().win) {
+		if(event->xselectionrequest.selection == XAtom("CLIPBOARD"))
+			xclipboard().Request(&event->xselectionrequest);
+		if(event->xselectionrequest.selection == XAtom("XdndSelection"))
+			DnDRequest(&event->xselectionrequest);
 		return;
 	}
 	if(event->type == SelectionClear &&
-	   event->xselectionclear.window == xclipboard().win &&
-	   event->xselectionclear.selection == XAtom("CLIPBOARD")) {
-	   	xclipboard().Clear();
+	   event->xselectionclear.window == xclipboard().win) {
+		if(event->xselectionclear.selection == XAtom("CLIPBOARD"))
+			xclipboard().Clear();
+		if(event->xselectionrequest.selection == XAtom("XdndSelection"))
+			DnDClear();
 	   	return;
 	}
 	int q = xmap.Find(event->xany.window);
@@ -354,9 +361,9 @@ void Ctrl::Create(Ctrl *owner, bool redirect, bool savebits)
 	             FocusChangeMask|KeyPressMask|KeyReleaseMask|PointerMotionMask|
 	             ButtonPressMask|ButtonReleaseMask|PropertyChangeMask|
 	             VisibilityChangeMask|im_event_mask);
-	int version = 5;
+	int version = 3;
 	XChangeProperty(Xdisplay, w, XAtom("XdndAware"), XA_ATOM, 32,
-					PropModeReplace, (byte *)&version, 1);
+					0, (byte *)&version, 1);
 	CancelMode();
 }
 

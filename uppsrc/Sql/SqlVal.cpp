@@ -4,7 +4,7 @@ NAMESPACE_UPP
 
 SqlCol SqlCol::As(const char *as) const
 {
-	return name + " " + as;
+	return name + SqlCase(MSSQL | POSTGRESS, " as ")(" ") + as;
 }
 
 SqlCol SqlId::Of(SqlId id) const
@@ -14,7 +14,7 @@ SqlCol SqlId::Of(SqlId id) const
 
 SqlCol SqlId::As(const char *as) const
 {
-	return id.IsNull() ? ToString() : ToString() + SqlCase(MSSQL, " as ")(" ") + as;
+	return id.IsNull() ? ToString() : ToString() + SqlCase(MSSQL | POSTGRESS, " as ")(" ") + as;
 }
 
 SqlId SqlId::operator [] (int i) const

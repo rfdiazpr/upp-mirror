@@ -663,6 +663,7 @@ void Calendar::PopUp(Ctrl *owner, Rect &rt)
 {
 	Close();
 	Reset();
+	date->SetFocus();
 
 	SetRect(rt);
 	Ctrl::PopUp(owner, true, true, GUI_DropShadows());

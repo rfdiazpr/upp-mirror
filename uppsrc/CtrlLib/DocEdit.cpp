@@ -574,7 +574,8 @@ void DocEdit::LeftDrag(Point p, dword flags)
 		WString sample = GetW(l, min(h - l, 3000));
 		Size ssz = StdSampleSize();
 		ImageDraw iw(ssz);
-		DrawTLText(iw, 0, 0, ssz.cx, sample, StdFont(), Black());
+		iw.DrawRect(ssz, Black());
+		iw.Alpha().DrawRect(ssz, Black());
 		DrawTLText(iw.Alpha(), 0, 0, ssz.cx, sample, StdFont(), White());
 		NextUndo();
 		if(DoDragAndDrop(ClipFmtsText(), iw) == DND_MOVE)

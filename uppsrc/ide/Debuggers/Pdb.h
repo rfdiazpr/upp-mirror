@@ -133,20 +133,25 @@ struct Pdb : Debugger, Ctrl {
 	                       Color ink, Color paper, dword style) const;
 	};
 
-	int                     lock;
-	bool                    running;
-	bool                    stop;
-	HANDLE                  hProcess;
-	DWORD                   processid;
-	VectorMap<dword, dword> threadsp;
-	bool                    terminated;
-	bool                    refreshmodules;
-	Vector<ModuleInfo>      module;
-	DEBUG_EVENT             event;
-	HWND                    hWnd;
-	VectorMap<dword, byte>  bp_set;
-	CONTEXT                 context;
-	ArrayMap<dword, CONTEXT> ctx;
+	struct Thread {
+		HANDLE  hThread;
+		dword   sp;
+		CONTEXT context;
+	};
+
+	int                      lock;
+	bool                     running;
+	bool                     stop;
+	HANDLE                   hProcess;
+	DWORD                    processid;
+	ArrayMap<dword, Thread>  threads;
+	bool                     terminated;
+	bool                     refreshmodules;
+	Vector<ModuleInfo>       module;
+	DEBUG_EVENT              event;
+	HWND                     hWnd;
+	VectorMap<dword, byte>   bp_set;
+	CONTEXT                  context;
 
 	Index<dword>            invalidpage;
 	VectorMap<dword, MemPg> mempage;
@@ -200,6 +205,7 @@ struct Pdb : Debugger, Ctrl {
 	void       UnloadModuleSymbols();
 	void       CleanupOnExit();
 	void       AddThread(dword dwThreadId, HANDLE hThread);
+	void       RemoveThread(dword dwThreadId);
 	void       Lock();
 	void       Unlock();
 	bool       RunToException();

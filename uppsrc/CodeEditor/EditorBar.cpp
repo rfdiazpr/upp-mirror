@@ -11,18 +11,20 @@ void Renumber(LineInfo& lf) {
 		t.lineno = 0;
 		t.count = lf[0].count;
 		t.error = lf[0].error;
+		t.firstedited = lf[0].firstedited;		
 		t.edited = lf[0].edited;
 		l += t.count;
 	}
 	for(int i = 1; i < lf.GetCount(); i++) {
 		LineInfoRecord& r = lf[i];
-		if(r.breakpoint.IsEmpty() && r.error == 0 && r.edited == 0 && 
+		if(r.breakpoint.IsEmpty() && r.error == 0 && r.edited == 0 &&
 			tf.Top().breakpoint.IsEmpty() && tf.Top().error == 0 && tf.Top().edited == 0)
 			tf.Top().count += r.count;
 		else {
 			LineInfoRecord& t = tf.Add();
 			t.breakpoint = r.breakpoint;
 			t.error = r.error;
+			t.firstedited = r.firstedited;
 			t.edited = r.edited;
 			t.count = r.count;
 			t.lineno = l;
@@ -61,12 +63,14 @@ void EditorBar::Paint(Draw& w) {
 	int y = 0;
 	int i = editor->GetScrollPos().y;
 	int cy = GetSize().cy;
-	int lno = i;
 	bool hi_if = (hilite_if_endif && (editor->highlight == CodeEditor::HIGHLIGHT_CPP
 		|| editor->highlight == CodeEditor::HIGHLIGHT_JAVA));
 	Vector<CodeEditor::IfState> previf;
 	if(hi_if)
 		previf <<= editor->ScanSyntax(i).ifstack;
+	int ptri[2];
+	for(int q = 0; q < 2; q++)
+		ptri[q] = ptrline[q] >= 0 ? GetLineNo(ptrline[q]) : -1;
 	while(y < cy) {
 		String b;
 		int err = 0;
@@ -76,8 +80,6 @@ void EditorBar::Paint(Draw& w) {
 			b = l.breakpoint;
 			err = l.error;
 			edit = l.edited;
-			if(l.lineno >= 0)
-				lno = l.lineno;
 		}
 		if(line_numbers && i < editor->GetLineCount()) {
 			String n = AsString(i + 1);
@@ -119,13 +121,15 @@ void EditorBar::Paint(Draw& w) {
 			}
 			previf = nextif;
 		}
-		if(edit > 0) {
+		if(editor->GetMarkLines()) {
 			int width = CodeEditorImg::Breakpoint().GetWidth() >> 1;
-			w.DrawRect(0, y, width, fy, LtBlue);
-		}
-		if(err > 0) {
-			int width = CodeEditorImg::Breakpoint().GetWidth() >> 1;
-			w.DrawRect(width, y, width, fy, err == 1 ? LtRed : Color(255, 175, 0));
+			if(edit)
+			{
+				int age = (int)(log((double)(editor->GetUndoCount() + 1 - edit)) * 30);
+				w.DrawRect(0, y, width, fy, Blend(LtBlue, SColorLtFace(), min(220, age)));	
+			}
+			if(err)
+				w.DrawRect(width, y, width, fy, err == 1 ? LtRed : (err == 2 ? Color(255, 175, 0) : Green));		
 		}
 
 		if(!b.IsEmpty())
@@ -133,11 +137,10 @@ void EditorBar::Paint(Draw& w) {
 			                      b == "\xe" ? CodeEditorImg::InvalidBreakpoint() :
 			                                   CodeEditorImg::CondBreakpoint());
 		for(int q = 0; q < 2; q++)
-			if(i < li.GetCount() && ptrline[q] >= 0 && ptrline[q] == li[i].lineno)
+			if(ptri[q] == i)
 				sPaintImage(w, y, fy, ptrimg[q]);
 		y += fy;
 		i++;
-		lno++;
 	}
 }
 
@@ -179,10 +182,37 @@ void EditorBar::RightDown(Point p, dword flags) {
 
 void EditorBar::InsertLines(int i, int count) {
 	li.InsertN(minmax(i, 0, li.GetCount()), max(count, 0));
+	if(editor->GetCheckEdited()) {
+		if(editor->IsUndoOp() && li_removed.GetCount() >= count) {
+			for(int t = 0; t < count; t++) {
+				li.At(i + t).firstedited = li_removed[li_removed.GetCount() - count + t].firstedited;
+				li[i + t].edited = li_removed[li_removed.GetCount() - count + t].edited;
+			}
+			li_removed.Drop(count);
+			SetEdited(i + count, 1);			
+			ignored_next_edit = true;
+		}
+		else {
+			if (li[i].firstedited == 0) 
+				li[i].firstedited = li.At(i + count).firstedited;
+			SetEdited(i + 1, count);
+		}
+	}
 	Refresh();
 }
 
 void EditorBar::RemoveLines(int i, int count) {
+	if(editor->GetCheckEdited() && !editor->IsUndoOp()) {
+		for(int t = i - 1; t < i + count - 1; t++) {
+			LineInfoRemRecord& rm = li_removed.Add();
+			rm.firstedited = li[t].firstedited;
+			rm.edited = li[t].edited;
+		}
+		if(li.At(i + count - 1).firstedited)
+			next_age = li[i + count - 1].firstedited;
+		else
+			next_age = editor->GetUndoCount();
+	}
 	i = minmax(i, 0, li.GetCount());
 	li.Remove(i, minmax(count, 0, li.GetCount() - i));
 	Refresh();
@@ -191,6 +221,8 @@ void EditorBar::RemoveLines(int i, int count) {
 void EditorBar::ClearLines() {
 	li.Clear();
 	li.Shrink();
+	li_removed.Clear();
+	li_removed.Shrink();
 	Refresh();
 }
 
@@ -205,6 +237,7 @@ LineInfo EditorBar::GetLineInfo() const {
 			r.count = 1;
 			r.breakpoint = ln.breakpoint;
 			r.error = ln.error;
+			r.firstedited = ln.firstedited;
 			r.edited = ln.edited;
 			l = -2;
 		}
@@ -236,6 +269,7 @@ void EditorBar::SetLineInfo(const LineInfo& lf, int total) {
 				ln.lineno = l;
 				ln.breakpoint = r.breakpoint;
 				ln.error = r.error;
+				ln.firstedited = r.firstedited;
 				ln.edited = r.edited;
 				if(l >= 0) l++;
 			}
@@ -276,9 +310,46 @@ void EditorBar::SetBreakpoint(int ln, const String& s)
 	WhenBreakpoint(ln);
 }
 
-void EditorBar::SetEdited(int ln, int edit)
+void EditorBar::SetEdited(int ln, int count)
 {
-	li.At(ln).edited = edit;
+	if(ignored_next_edit) {
+		ignored_next_edit = false;
+		return;
+	}
+	int age = editor->GetUndoCount() + 1;
+	bool undo = editor->IsUndoOp();
+	for(int i = 0; i < count; i++) {
+		if(undo) {
+			if (li.At(ln + i).firstedited >= age - 1) {
+				li[ln + i].firstedited = 0;
+				li[ln + i].edited = 0;
+			} 
+		}
+		else {
+			if(next_age) { 
+				li[ln + i].firstedited = next_age;
+				li[ln + i].edited = age;
+				next_age = 0;
+			}
+			else {
+				if(li.At(ln + i).firstedited == 0)	
+					li[ln + i].firstedited = age;
+				li[ln + i].edited = age;
+			}
+		}
+	}
+	Refresh();
+}
+
+void EditorBar::ClearEdited()
+{
+	for(int i = 0; i < li.GetCount(); i++) {
+		li.At(i).firstedited = 0;
+		li[i].edited = 0;
+	}
+	li_removed.Clear();
+	li_removed.Shrink();
+	Refresh();
 }
 
 void EditorBar::SetError(int ln, int err)
@@ -288,11 +359,16 @@ void EditorBar::SetError(int ln, int err)
 
 void EditorBar::ClearErrors(int line)
 {
-	for(int i = 0; i < li.GetCount(); i++) {
-		if(li[i].error && (line < 0 || li[i].lineno == line)) {
-			li[i].error = 0;
-		}
-	}
+	int count;
+	if(line < 0) {
+		line = 0;
+		count = li.GetCount();
+	} 
+	else
+		count = line + 1;
+		
+	for(int i = line; i < count; i++)
+		li[i].error = 0;
 }
 
 int  EditorBar::GetLineNo(int lineno) const {
@@ -340,6 +416,8 @@ EditorBar::EditorBar() {
 	bingenabled = true;
 	hilite_if_endif = true;
 	line_numbers = false;
+	ignored_next_edit = false;
+	next_age = 0;
 }
 
 EditorBar::~EditorBar()

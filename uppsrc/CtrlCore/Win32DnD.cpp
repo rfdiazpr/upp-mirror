@@ -496,72 +496,12 @@ STDMETHODIMP UDropSource::GiveFeedback(DWORD dwEffect)
 	return S_OK;
 }
 
+Image MakeDragImage(const Image& arrow, Image sample);
 
 Image MakeDragImage(const Image& arrow, const Image& arrow98, Image sample)
 {
-	if(IsWin2K()) {
-		ImageBuffer b;
-		if(IsNull(sample)) {
-			sample = CtrlCoreImg::DndData();
-			b = sample;
-			Over(b, Point(0, 0), arrow, arrow.GetSize());
-		}
-		else {
-			b.Create(128, 128);
-			memset(~b, 0, sizeof(RGBA) * b.GetLength());
-			Size ssz = sample.GetSize();
-			Over(b, Point(2, 22), sample, sample.GetSize());
-			for(int y = 20; y < 96; y++) {
-				RGBA *s = b[y];
-				RGBA *e = s + 96;
-				while(s < e)
-					(s++)->a >>= 1;
-				e += 32;
-				int q = 128;
-				while(s < e) {
-					s->a = (s->a * q) >> 8;
-					q -= 4;
-					s++;
-				}
-			}
-			int qq = 128;
-			for(int y = 96; y < 128; y++) {
-				RGBA *s = b[y];
-				RGBA *e = s + 96;
-				while(s < e) {
-					s->a = (s->a * qq) >> 8;
-					s++;
-				}
-				e += 32;
-				int q = 255;
-				while(s < e) {
-					s->a = (s->a * q * qq) >> 16;
-					q -= 8;
-					s++;
-				}
-				qq -= 4;
-			}
-			RGBA *s = b[21] + 1;
-			RGBA c1 = Blue();
-			RGBA c2 = White();
-			for(int a = 255; a > 0; a -= 3) {
-				c1.a = c2.a = a;
-				*s++ = c1;
-				Swap(c1, c2);
-			}
-			s = b[21] + 1;
-			c1 = Black();
-			c2 = White();
-			for(int a = 255; a > 0; a -= 8) {
-				c1.a = c2.a = a;
-				*s = c1;
-				s += b.GetWidth();
-				Swap(c1, c2);
-			}
-		}
-		Over(b, Point(0, 0), arrow, arrow.GetSize());
-		return b;
-	}
+	if(IsWin2K())
+		return MakeDragImage(arrow, sample);
 	else
 		return arrow98;
 }

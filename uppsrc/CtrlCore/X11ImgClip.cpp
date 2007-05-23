@@ -7,9 +7,14 @@ NAMESPACE_UPP
 #ifdef PLATFORM_X11
 
 
-String ClipFmtsImage()
+const char *ClipFmtsImage()
 {
-	return ClipFmt<Image>() + ";image/bmp;image/png";
+	static const char *q;
+	ONCELOCK {
+		static String s(ClipFmt<Image>() + ";image/bmp;image/png");
+		q = s;
+	}
+	return q;
 }
 
 bool AcceptImage(PasteClip& clip)
@@ -37,8 +42,8 @@ Image ReadClipboardImage()
 
 String GetImageClip(const Image& img, const String& fmt)
 {
-	if(img.IsEmpty()) return Null;
-
+	if(img.IsEmpty())
+		return Null;
 	if(fmt == "image/bmp")
 		return BMPEncoder().SaveString(img);
 	if(fmt == ClipFmt<Image>())

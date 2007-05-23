@@ -335,7 +335,7 @@ CONSOLE_APP_MAIN
 		"bool operator()(P1 p1) const { return Execute(p1); }\n"
 		"void ClearTrue()             { Clear(); action = (Gate1Action<P1> *)1; }\n"
 		"void ClearFalse()            { Clear(); }\n\n"
-		"Gate1(bool b)                { action = (Gate1Action<P1> *)(int)b; }",
+		"Gate1(bool b)                { action = (Gate1Action<P1> *)(uintptr_t)b; }",
 		"&& (void *)action != (void *)1"
 	);
 	CallbackGen("Gate2", "bool", 2,
@@ -344,7 +344,7 @@ CONSOLE_APP_MAIN
 		"bool operator()(P1 p1, P2 p2) const { return Execute(p1, p2); }\n"
 		"void ClearTrue()             { Clear(); action = (Gate2Action<P1, P2> *)1; }\n"
 		"void ClearFalse()            { Clear(); }\n\n"
-		"Gate2(bool b)                { action = (Gate2Action<P1, P2> *)(int)b; }",
+		"Gate2(bool b)                { action = (Gate2Action<P1, P2> *)(uintptr_t)b; }",
 		"&& (void *)action != (void *)1"
 	);
 	CallbackGen("Gate3", "bool", 3,
@@ -353,7 +353,7 @@ CONSOLE_APP_MAIN
 		"bool operator()(P1 p1, P2 p2, P3 p3) const { return Execute(p1, p2, p3); }\n"
 		"void ClearTrue()             { Clear(); action = (Gate3Action<P1, P2, P3> *)1; }\n"
 		"void ClearFalse()            { Clear(); }\n\n"
-		"Gate3(bool b)                { action = (Gate3Action<P1, P2, P3> *)(int)b; }",
+		"Gate3(bool b)                { action = (Gate3Action<P1, P2, P3> *)(uintptr_t)b; }",
 		"&& (void *)action != (void *)1"
 	);
 	LOG("");

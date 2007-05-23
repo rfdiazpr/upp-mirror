@@ -332,12 +332,12 @@ bool Ide::FindLineError(int l, Host& host) {
 	return false;
 }
 
-bool Ide::FindLineError(String ln, Host& host, String &file, int &lineno, int &error) {
+bool Ide::FindLineError(String ln, Host& host, String& file, int& lineno, int& error) {
 	Vector<String> wspc_paths;
 	VectorMap<String, String> bm = GetMethodVars(method);
 	bool is_java = (bm.Get("BUILDER", Null) == "JDK");
 	const char *s = ln;
-	error = ln.Find("arning", 0) > 0 ? 2 : 1;
+	error = ln.Find("error", 0) > 0 ? 1 : (ln.Find("warning", 0) > 0 ? 2 : 3);
 	while(*s == ' ' || *s == '\t')
 		s++;
 	for(; *s; s++) {
@@ -478,6 +478,9 @@ void Ide::FindPrevError() {
 
 void Ide::ClearErrorEditor()
 {
+	if(!mark_lines)
+		return;
+	
 	for(int i = 0; i < filedata.GetCount(); i++) {
 		ClearErrorEditor(filedata.GetKey(i));
 	}
@@ -485,6 +488,9 @@ void Ide::ClearErrorEditor()
 
 void Ide::ClearErrorEditor(String file)
 {
+	if(!mark_lines)
+		return;
+	
 	if(file == editfile)
 		editor.ClearErrors();
 	else {
@@ -499,6 +505,9 @@ void Ide::ClearErrorEditor(String file)
 
 void Ide::SetErrorEditor()
 {
+	if(!mark_lines)
+		return;
+	
 	bool refresh = false;
 	String file;
 	int lineno;

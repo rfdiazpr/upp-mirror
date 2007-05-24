@@ -49,3 +49,4 @@ LAYOUT(NewGroupLayout, 204, 56)
 	ITEM(Button, ok, SetLabel(t_("OK")).LeftPosZ(48, 74).TopPosZ(28, 24))
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).LeftPosZ(126, 74).TopPosZ(28, 24))
 END_LAYOUT
+

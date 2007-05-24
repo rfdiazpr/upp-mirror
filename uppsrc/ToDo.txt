@@ -1,3 +1,23 @@
+MENU OSCILACE!!!! (Drug to caption)
+
+
+
+$uvs: PENDING CONFLICT
+$uvs: REPOSITORY INSERT
+Debugger Registers
+$uvs: END REPOSITORY INSERT
+============
+     Counter ... FAILED
+     gui_tutorial ... FAILED
+     OpenGL ... FAILED (i guess due to missing libs here ...)
+     RegExp ... FAILED
+     SQL_Oracle ... FAILED
+     SQL_Sqlite3 ... FAILED
+     XmlDlg ... FAILED
+     CtrlLib ... FAILED
+building tutorial:
+     Concrete01 ... FAILED
+============
 * RTF - CJK export
 
 * PDF - CJK export

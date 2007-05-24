@@ -415,6 +415,7 @@ void Ide::EditFile0(const String& path, byte charset, bool astext, const String&
 		editor.SetCharset(charset);
 		MakeTitle();
 		SetBar();
+		editor.CheckEdited(true);
 		return;
 	}
 	fd.undodata.Clear();

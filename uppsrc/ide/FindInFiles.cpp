@@ -337,6 +337,7 @@ void Ide::FindInFiles() {
 			console << Format("%d occurrence(s) have been found.\n", n);
 		}
 	}
+	SetErrorEditor();
 }
 
 void Ide::FindString(bool back)
@@ -347,13 +348,13 @@ void Ide::FindString(bool back)
 
 void Ide::TranslateString()
 {
-	 int l, h;
-	 if(editor.GetSelection(l, h)) {
-	     editor.Insert(l, "t_(");
-	     editor.Insert(h + 3, ")");
-	     editor.SetCursor(h + 4);
-	     FindString(false);
-	 }
+	int l, h;
+	if(editor.GetSelection(l, h)) {
+		editor.Insert(l, "t_(");
+		editor.Insert(h + 3, ")");
+		editor.SetCursor(h + 4);
+		FindString(false);
+	}
 }
 
 void Ide::InsertWildcard(int c) {

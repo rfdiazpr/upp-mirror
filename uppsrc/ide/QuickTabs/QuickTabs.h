@@ -76,8 +76,9 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		int active;
 		int target;
 		int cross;
+		bool crosses;
+		bool file_icons;
 		Point mouse, oldp;
-		bool middle_button;
 
 		virtual void Paint(Draw &w);
 		virtual void LeftDown(Point p, dword keys);
@@ -94,9 +95,6 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		virtual void DragLeave();
 		virtual void DragRepeat(Point p);
 		virtual void MouseWheel(Point p, int zdelta, dword keyflags);
-		#ifdef PLATFORM_WIN32
-		virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
-		#endif
 		
 		void DrawTab(Draw &w, int i);
 		void Repos(bool update = false);
@@ -112,6 +110,9 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		void Close(int n);
 		void Remove(int n);
 		void Clear();
+		
+	 	QuickTabs& FileIcons(bool b = true) { file_icons = b; return *this; }
+	 	QuickTabs& Crosses(bool b = true)   { crosses = b; return *this;    }
 		
 		typedef QuickTabs CLASSNAME;
 		

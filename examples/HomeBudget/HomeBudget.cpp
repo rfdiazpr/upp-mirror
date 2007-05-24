@@ -115,7 +115,6 @@ void HomeBudget::Setup()
 	groups.WhenRemoveRow = THISBACK(RemoveGroup);
 	groups.WhenChangeRow = THISBACK(ChangeGroup);
 
-	
 	categories.AddIndex(ID);
 	categories.AddColumn(NAME, t_("Name")).Edit(ec);
 	categories.AddColumn(DEFVALUE, t_("Default value")).Edit(defval).SetConvert(Single<ConvDouble>());
@@ -143,7 +142,7 @@ void HomeBudget::Setup()
 
 	GenMonthList(dt.year);
 
-	SQL & Delete(MONEY).Where(IsNull(CAT_ID));
+	SQL * Delete(MONEY).Where(IsNull(CAT_ID));
 
 	LoadDates();
 	LoadGroups();
@@ -197,7 +196,7 @@ void HomeBudget::GenMonthList(int year)
 void HomeBudget::LoadMoney(int dtid)
 {
 	money.Clear();
-	SQL & Select(ID, CAT_ID, PM, VALUE, DT, DESC).From(MONEY).Where(DT_ID == dtid);
+	SQL * Select(ID, CAT_ID, PM, VALUE, DT, DESC).From(MONEY).Where(DT_ID == dtid);
 	while(SQL.Fetch())
 	{
 		money.Add();
@@ -213,7 +212,7 @@ void HomeBudget::LoadMoney(int dtid)
 void HomeBudget::LoadDates()
 {
 	month.Clear();
-	SQL & Select(ID, DT).From(DATES);
+	SQL * Select(ID, DT).From(DATES);
 	while(SQL.Fetch())
 		month.Add(SQL);
 }
@@ -221,7 +220,7 @@ void HomeBudget::LoadDates()
 void HomeBudget::LoadGroups()
 {
 	groups.Clear();
-	SQL & Select(ID, NAME).From(GROUPS);
+	SQL * Select(ID, NAME).From(GROUPS);
 	while(SQL.Fetch())
 		groups.Add(SQL);
 
@@ -234,16 +233,15 @@ void HomeBudget::LoadGroups()
 void HomeBudget::LoadCategories(int group_id)
 {
 	categories.Clear();
-	SQL & Select(ID, NAME, DEFVALUE, PM, INNEWMONTH).From(CATEGORIES).Where(GR_ID == group_id);
+	SQL * Select(ID, NAME, DEFVALUE, PM, INNEWMONTH).From(CATEGORIES).Where(GR_ID == group_id);
 	while(SQL.Fetch())
 		categories.Add(SQL);
 }
 
 int HomeBudget::GetCategorySign()
 {
-	SQL & Select(PM).From(CATEGORIES).Where(ID == money.Get(CAT_ID));
+	SQL * Select(PM).From(CATEGORIES).Where(ID == money.Get(CAT_ID));
 	Value v = SQL.Fetch() ? SQL[0] : Value(0);	
-	LOG(v);
 	return v;
 }
 
@@ -259,22 +257,38 @@ void HomeBudget::UpdateCategories()
 		category.Add(SQL[0], Format("%s - %s", SQL[2], SQL[1]));
 }
 
-
 void HomeBudget::InsertGroup()
 {
-	SQL & Insert(GROUPS)
-		(NAME, groups(1));
-	groups(0) = SQL.GetInsertedId();
+	try
+	{
+		SQL & Insert(GROUPS)
+			(NAME, groups(1));
+		groups(0) = SQL.GetInsertedId();
+		
+		categories.Clear();
+		categories.Enable();
+	}
+	catch(SqlExc &e)
+	{
+		groups.CancelInsert();
+		Exclamation("[* " + DeQtfLf(e) + "]");
+	}
 	
-	categories.Clear();
-	categories.Enable();
 }
 
 void HomeBudget::UpdateGroup()
 {
-	SQL & ::Update(GROUPS)
-		(NAME, groups(1))
-		.Where(ID == groups(0));
+	try
+	{
+		SQL & ::Update(GROUPS)
+			(NAME, groups(1))
+			.Where(ID == groups(0));
+	}
+	catch(SqlExc &e)
+	{
+		groups.CancelUpdate();
+		Exclamation("[* " + DeQtfLf(e) + "]");
+	}
 }
 
 void HomeBudget::RemoveGroup()
@@ -308,18 +322,11 @@ struct AddNewCat : WithNewCategoryLayout<TopWindow>
 		addgroup.NoWantFocus();
 
 		int cnt = 0;
-		try
+		SQL * Select(ID, NAME).From(GROUPS);
+		while(SQL.Fetch())
 		{
-			SQL & Select(ID, NAME).From(GROUPS);
-			while(SQL.Fetch())
-			{
-				groups.Add(SQL[0], SQL[1]);
-				cnt++;
-			}
-		}
-		catch(SqlExc &e)
-		{
-			Exclamation("[* " + DeQtfLf(e) + "]");
+			groups.Add(SQL[0], SQL[1]);
+			cnt++;
 		}
 			
 		bool isgroup = cnt > 0;
@@ -366,55 +373,78 @@ void HomeBudget::NewCategory()
 	
 	if(dlg.Execute() == IDOK)
 	{
-		SQL & ::Insert(CATEGORIES)
-		    (GR_ID, ~dlg.groups)
-			(NAME, ~dlg.name)
-			(DEFVALUE, 0)
-			(PM, dlg.pm == 0 ? 1 : -1)
-			(INNEWMONTH, 0);
-
-		int64 id = SQL.GetInsertedId();
-		UpdateCategories();			
-		money.Set(CAT_ID, id);
-		UpdateValue();
-		
-		int gid = ~dlg.groups;
-		
-		if(dlg.IsNewGroup())
+		try
 		{
-			groups.Add(Value(gid), dlg.groups.GetValue());
-			groups.GoEnd();
-			categories.Enable();
+			SQL & ::Insert(CATEGORIES)
+			    (GR_ID, ~dlg.groups)
+				(NAME, ~dlg.name)
+				(DEFVALUE, 0)
+				(PM, dlg.pm == 0 ? 1 : -1)
+				(INNEWMONTH, 0);
+	
+			int64 id = SQL.GetInsertedId();
+			UpdateCategories();			
+			money.Set(CAT_ID, id);
+			UpdateValue();
+			
+			int gid = ~dlg.groups;
+			
+			if(dlg.IsNewGroup())
+			{
+				groups.Add(Value(gid), dlg.groups.GetValue());
+				groups.GoEnd();
+				categories.Enable();
+			}
+			int c = groups.GetCursor();
+			if(c >= 0 && gid == groups(c, 0))
+				LoadCategories(gid);
 		}
-		int c = groups.GetCursor();
-		if(c >= 0 && gid == groups(c, 0))
-			LoadCategories(gid);
+		catch(SqlExc &e)
+		{
+			Exclamation("[* " + DeQtfLf(e) + "]");
+		}		
 	}
 }
 
-
 void HomeBudget::InsertCategory()
 {
-	SQL & Insert(CATEGORIES)
-	    (GR_ID, groups(ID))
-		(NAME, categories(NAME))
-		(DEFVALUE, categories(DEFVALUE))
-		(PM, categories(PM))
-		(INNEWMONTH, categories(INNEWMONTH));
-		
-	categories(0) = SQL.GetInsertedId();
+	try
+	{
+		SQL & Insert(CATEGORIES)
+		    (GR_ID, groups(ID))
+			(NAME, categories(NAME))
+			(DEFVALUE, categories(DEFVALUE))
+			(PM, categories(PM))
+			(INNEWMONTH, categories(INNEWMONTH));
+			
+		categories(0) = SQL.GetInsertedId();
+	}
+	catch(SqlExc &e)
+	{
+		categories.CancelInsert();
+		Exclamation("[* " + DeQtfLf(e) + "]");
+	}
+	
 }
 
 void HomeBudget::UpdateCategory()
 {
-	SQL & ::Update(CATEGORIES)
-		(NAME, categories(NAME))
-		(DEFVALUE, categories(DEFVALUE))
-		(PM, categories(PM))
-		(INNEWMONTH, categories(INNEWMONTH))
-		.Where(ID == categories(ID));
-		
-	UpdateSummary();
+	try
+	{
+		SQL & ::Update(CATEGORIES)
+			(NAME, categories(NAME))
+			(DEFVALUE, categories(DEFVALUE))
+			(PM, categories(PM))
+			(INNEWMONTH, categories(INNEWMONTH))
+			.Where(ID == categories(ID));
+			
+		UpdateSummary();
+	}
+	catch(SqlExc &e)
+	{
+		categories.CancelUpdate();
+		Exclamation("[* " + DeQtfLf(e) + "]");
+	}
 }
 
 void HomeBudget::ChangeGroup()
@@ -424,58 +454,98 @@ void HomeBudget::ChangeGroup()
 
 void HomeBudget::RemoveCategory()
 {
-	SQL & ::Select(CAT_ID, NAME).From(MONEY, CATEGORIES).Where(CAT_ID == categories(ID) && ID.Of(CATEGORIES) == categories(ID)).Limit(1);
-	if(SQL.Fetch())
+	try
 	{
-		PromptOK(Format(t_("Item '%s' can't be removed. It is used in calculations."), AsString(SQL[1])));
-		categories.CancelRemove();
+		SQL * ::Select(CAT_ID, NAME).From(MONEY, CATEGORIES).Where(CAT_ID == categories(ID) && ID.Of(CATEGORIES) == categories(ID)).Limit(1);
+		if(SQL.Fetch())
+		{
+			PromptOK(Format(t_("Item '%s' can't be removed. It is used in calculations."), AsString(SQL[1])));
+			categories.CancelRemove();
+		}
+		else
+			SQL & ::Delete(CATEGORIES).Where(ID == categories(ID));
 	}
-	else
-		SQL & ::Delete(CATEGORIES).Where(ID == categories(ID));
+	catch(SqlExc &e)
+	{
+		categories.CancelRemove();
+		Exclamation("[* " + DeQtfLf(e) + "]");
+	}
 }
 
 void HomeBudget::InsertMoney()
 {
-	SQL & ::Insert(MONEY)
-		(DT_ID,  dtid)
-		(CAT_ID, money(CAT_ID))
-		(PM,     money(PM))
-		(VALUE,  money(VALUE))
-		(DT,     money(DT))
-		(DESC,   money(DESC));
-	
-	money(ID) = SQL.GetInsertedId();
-	
-	//to trzeba robic tylko dla ostatniej kategori do automatycznego wstawienia	
-	if(dosummary)
-		UpdateSummary();
+	try
+	{
+		SQL & ::Insert(MONEY)
+			(DT_ID,  dtid)
+			(CAT_ID, money(CAT_ID))
+			(PM,     money(PM))
+			(VALUE,  money(VALUE))
+			(DT,     money(DT))
+			(DESC,   money(DESC));
+		
+		money(ID) = SQL.GetInsertedId();
+		
+		//to trzeba robic tylko dla ostatniej kategori do automatycznego wstawienia	
+		if(dosummary)
+			UpdateSummary();
+	}
+	catch(SqlExc &e)
+	{
+		money.CancelInsert();
+		Exclamation("[* " + DeQtfLf(e) + "]");
+	}
 }
 
 void HomeBudget::UpdateMoney()
 {
-	SQL & ::Update(MONEY)
-		(DT_ID,  dtid)
-		(CAT_ID, money(CAT_ID))
-		(PM,     money(PM))
-		(VALUE,  money(VALUE))
-		(DT,     money(DT))
-		(DESC,   money(DESC))
-		.Where(ID == money(ID));
-		
-	UpdateSummary();
+	try
+	{
+		SQL & ::Update(MONEY)
+			(DT_ID,  dtid)
+			(CAT_ID, money(CAT_ID))
+			(PM,     money(PM))
+			(VALUE,  money(VALUE))
+			(DT,     money(DT))
+			(DESC,   money(DESC))
+			.Where(ID == money(ID));
+			
+		UpdateSummary();
+	}
+	catch(SqlExc &e)
+	{
+		money.CancelUpdate();
+		Exclamation("[* " + DeQtfLf(e) + "]");
+	}
 }
 
 void HomeBudget::RemoveMoney()
 {
-	SQL & ::Delete(MONEY).Where(ID == money(ID));
-	UpdateSummary();
+	try
+	{
+		SQL & ::Delete(MONEY).Where(ID == money(ID));
+		UpdateSummary();
+	}
+	catch(SqlExc &e)
+	{
+		money.CancelRemove();
+		Exclamation("[* " + DeQtfLf(e) + "]");
+	}
 }
 
 void HomeBudget::InsertDate()
 {
-	SQL & ::Insert(DATES)(DT, month(1));
-	month(0) = dtid = (int) SQL.GetInsertedId();
-	EnableMoney();
+	try
+	{
+		SQL & ::Insert(DATES)(DT, month(1));
+		month(0) = dtid = (int) SQL.GetInsertedId();
+		EnableMoney();
+	}
+	catch(SqlExc &e)
+	{
+		month.CancelInsert();
+		Exclamation("[* " + DeQtfLf(e) + "]");
+	}
 }
 
 void HomeBudget::EnableMoney(int cnt)
@@ -485,19 +555,36 @@ void HomeBudget::EnableMoney(int cnt)
 
 void HomeBudget::UpdateDate()
 {
-	SQL & ::Update(DATES)(DT, month(1)).Where(ID == month(ID));
+	try
+	{
+		SQL & ::Update(DATES)(DT, month(1)).Where(ID == month(ID));
+	}
+	catch(SqlExc &e)
+	{
+		month.CancelUpdate();
+		Exclamation("[* " + DeQtfLf(e) + "]");		
+	}
 }
 
 void HomeBudget::RemoveDate()
 {
-	SQL.Begin();
-	SQL & ::Delete(MONEY).Where(DT_ID == month(ID));
-	SQL & ::Delete(DATES).Where(ID == month(ID));
-	SQL.Commit();
-	bool en = month.GetCount() <= 1 ? false : true;
-	EnableMoney(en);
-	if(!en)
-		money.Clear();
+	try
+	{
+		SQL.Begin();
+		SQL & ::Delete(MONEY).Where(DT_ID == month(ID));
+		SQL & ::Delete(DATES).Where(ID == month(ID));
+		SQL.Commit();
+		bool en = month.GetCount() <= 1 ? false : true;
+		EnableMoney(en);
+		if(!en)
+			money.Clear();
+	}
+	catch(SqlExc &e)
+	{
+		month.CancelRemove();
+		Exclamation("[* " + DeQtfLf(e) + "]");
+	}
+	
 }
 
 void HomeBudget::ChangeDate()
@@ -544,58 +631,66 @@ void HomeBudget::UpdateSummary()
 	float p = 0, tp = 0;
 	float m = 0, tm = 0;
 	float r = 0, tr = 0;
-	
-	SQL & ::Select(PM, SqlSum(VALUE))
-		.From(MONEY, DATES)
-		.Where(DT.Of(DATES) < month(DT) && DT_ID == ID.Of(DATES) && NotNull(VALUE))
-		.GroupBy(PM);
-		
-	while(SQL.Fetch())
-	{
-		int pm = SQL[PM];
-		float v = (float) int(SQL[1]);
-		if(pm < 0)
-			tm = v;
-		else
-			tp = v;
-	}
-	
-	tr = tp - tm;
-	
-	SQL & ::Select(PM, SqlSum(VALUE))
-		.From(MONEY)
-		.Where(DT_ID == dtid && NotNull(VALUE))
-		.GroupBy(PM);
-	
-	while(SQL.Fetch())
-	{
-		int pm = SQL[PM];
-		float v = (float) int(SQL[1]);
-		if(pm < 0)
-			m = v;
-		else
-			p = v;
-	}
-	
-	mostpr.Clear();
-	SQL & ::Select(NAME, SqlId("sum(value) as val"))
-		.From(MONEY, CATEGORIES)
-		.Where(DT_ID == dtid && CAT_ID == ID.Of(CATEGORIES) && PM.Of(MONEY) < 0)
-		.GroupBy(CAT_ID)
-		.OrderBy(Descending(SqlId("val")));
-		
-	while(SQL.Fetch())
-		mostpr.Add(SQL);
 
 	mostcat.Clear();
-	SQL & ::Select(NAME.Of(GROUPS), SqlId("sum(value) as val"))
-		.From(MONEY, GROUPS, CATEGORIES)
-		.Where(DT_ID == dtid && PM.Of(MONEY) < 0 && CAT_ID == ID.Of(CATEGORIES) && GR_ID == ID.Of(GROUPS))
-		.GroupBy(GR_ID)
-		.OrderBy(Descending(SqlId("val")));
+	mostpr.Clear();
+	
+	try
+	{
+		SQL & ::Select(PM, SqlSum(VALUE))
+			.From(MONEY, DATES)
+			.Where(DT.Of(DATES) < month(DT) && DT_ID == ID.Of(DATES) && NotNull(VALUE))
+			.GroupBy(PM);
+			
+		while(SQL.Fetch())
+		{
+			int pm = SQL[PM];
+			float v = (float) int(SQL[1]);
+			if(pm < 0)
+				tm = v;
+			else
+				tp = v;
+		}
 		
-	while(SQL.Fetch())
-		mostcat.Add(SQL);
+		tr = tp - tm;
+		
+		SQL & ::Select(PM, SqlSum(VALUE))
+			.From(MONEY)
+			.Where(DT_ID == dtid && NotNull(VALUE))
+			.GroupBy(PM);
+		
+		while(SQL.Fetch())
+		{
+			int pm = SQL[PM];
+			float v = (float) int(SQL[1]);
+			if(pm < 0)
+				m = v;
+			else
+				p = v;
+		}
+		
+		SQL & ::Select(NAME, SqlId("sum(value) as val"))
+			.From(MONEY, CATEGORIES)
+			.Where(DT_ID == dtid && CAT_ID == ID.Of(CATEGORIES) && PM.Of(MONEY) < 0)
+			.GroupBy(CAT_ID)
+			.OrderBy(Descending(SqlId("val")));
+			
+		while(SQL.Fetch())
+			mostpr.Add(SQL);
+	
+		SQL & ::Select(NAME.Of(GROUPS), SqlId("sum(value) as val"))
+			.From(MONEY, GROUPS, CATEGORIES)
+			.Where(DT_ID == dtid && PM.Of(MONEY) < 0 && CAT_ID == ID.Of(CATEGORIES) && GR_ID == ID.Of(GROUPS))
+			.GroupBy(GR_ID)
+			.OrderBy(Descending(SqlId("val")));
+			
+		while(SQL.Fetch())
+			mostcat.Add(SQL);
+	}
+	catch(SqlExc &e)
+	{
+		Exclamation("[* " + DeQtfLf(e) + "]");
+	}
 	
 	r = p - m;
 	plus.SetText(Format("%.2f", p));
@@ -637,10 +732,17 @@ void HomeBudget::SetRest(StaticText &rest, float r)
 
 void HomeBudget::UpdateValue()
 {
-	SQL & Select(DEFVALUE).From(CATEGORIES).Where(ID == money.Get(CAT_ID));
-	Value v = SQL.Fetch() ? SQL[0] : Value(0);
-	money.Set(VALUE, v);
-	money.Set(PM, GetCategorySign());
+	try
+	{
+		SQL & Select(DEFVALUE).From(CATEGORIES).Where(ID == money.Get(CAT_ID));
+		Value v = SQL.Fetch() ? SQL[0] : Value(0);
+		money.Set(VALUE, v);
+		money.Set(PM, GetCategorySign());
+	}
+	catch(SqlExc &e)
+	{
+		Exclamation("[* " + DeQtfLf(e) + "]");
+	}
 }
 
 void HomeBudget::Options()
@@ -716,7 +818,6 @@ Topic HomeBudgetHelp::AcquireTopic(const String& topic)
 	return t;
 }
 
-//rozwiazac zapisywnie kolumn
 GUI_APP_MAIN
 {
 	bool nodb = false;	
@@ -760,23 +861,15 @@ GUI_APP_MAIN
 		sch.SaveNormal();
 	}
 
-	try
-	{
-		HomeBudget hb;
-		
-		LoadFromFile(hb);
-		
-		if(hb.lang == 0)
-			SetLanguage(LNGC_('E','N','U','S', CHARSET_UNICODE));
-		else
-			SetLanguage(LNGC_('P','L','P','L', CHARSET_UNICODE));
-		hb.Setup();
-		hb.Run();
-		StoreToFile(hb);
-	}
-	catch(SqlExc &e)
-	{
-		Exclamation("[* " + DeQtfLf(e) + "]");
-	}
+	HomeBudget hb;
 	
+	LoadFromFile(hb);
+	
+	if(hb.lang == 0)
+		SetLanguage(LNGC_('E','N','U','S', CHARSET_UNICODE));
+	else
+		SetLanguage(LNGC_('P','L','P','L', CHARSET_UNICODE));
+	hb.Setup();
+	hb.Run();
+	StoreToFile(hb);	
 }

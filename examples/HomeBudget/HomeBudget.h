@@ -1,6 +1,6 @@
 #ifndef _HomeBudget_HomeBudget_h
 #define _HomeBudget_HomeBudget_h
-
+ 
 class HomeBudgetHelp : public HelpWindow
 {
 	public:
@@ -22,7 +22,8 @@ class HomeBudget : public WithHomeBudgetLayout<TopWindow>
 		DateTimeCtrl dt;
 		DropList dlpm, category, months, yesno, plusminus;
 		EditDouble defval, val;
-		EditString es, eg, ec;
+		EditStringNotNull eg, ec;
+		EditString es;
 		FrameRight<Button> newcat;
 		
 		int dtid;

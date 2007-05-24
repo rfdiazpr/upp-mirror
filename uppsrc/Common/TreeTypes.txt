@@ -2,3 +2,7 @@ Upp::Image
 0 0 -1
 Upp::Image::Data
 0 0 -1
+Upp::String
+0 0 -1
+Upp::Vector<Upp::String>
+0 0 -1

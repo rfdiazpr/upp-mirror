@@ -153,7 +153,8 @@ QuickTabs::QuickTabs()
 	active = -1;
 	cross = -1;
 	target = -1;
-	middle_button = false;
+	crosses = true;
+	file_icons = false;
 	BackPaint();
 }
 
@@ -210,7 +211,7 @@ void QuickTabs::DrawTab(Draw &w, int i)
 		w.DrawImage(x + sw, 0, t.cx - sw - ew, h, Img::BN());
 		w.DrawImage(x + t.cx - ew, 0, Img::RN());
 	}
-	if(tabs.GetCount() > 1)	
+	if(crosses && tabs.GetCount() > 1)	
 		w.DrawImage(x + t.cx - isz.cx - MARGIN, (h - isz.cy) / 2, isactive ? (cross == i ? Img::CR2() : Img::CR1()) : Img::CR0());
 	
 	String fn = GetFileName(t.name);
@@ -248,7 +249,7 @@ int QuickTabs::GetWidth(int n)
 {
 	Tab &t = tabs[n];
 	t.tsz = GetTextSize(GetFileName(t.name), StdFont());
-	return MARGIN * 2 + t.tsz.cx + SPACE + Img::CR0().GetSize().cx;
+	return MARGIN * 2 + t.tsz.cx + (SPACE + Img::CR0().GetSize().cx) * crosses;
 }
 
 int QuickTabs::GetHeight(int n)
@@ -302,41 +303,21 @@ void QuickTabs::Clear()
 
 void QuickTabs::LeftDown(Point p, dword keyflags)
 {
-	if(!middle_button)
-	{
-		if(keyflags & K_CTRL)
-		{
-			highlight = -1;
-			Refresh();
-			SetCapture();
-			oldp = p;
-			return;
-		}
-	}
-	else
-	{
-		middle_button = false;
-		cross = highlight;
-	}
-	
 	mouse = p;
-	
-	if(cross != -1 && tabs.GetCount() > 1)
+
+	if(keyflags & K_MOUSEMIDDLE)
+		cross = highlight;
+	else if(keyflags & K_CTRL)
 	{
-			
-		Close(cross);
-		if(cross == active)
-		{
-			active = -1;
-			SetCursor(cross);
-		}
-		else
-		{
-			if(cross < active)
-				active = max(active - 1, 0);
-			Refresh();
-		}
+		highlight = -1;
+		Refresh();
+		SetCapture();
+		oldp = p;
+		return;
 	}
+	
+	if(cross != -1)
+		Close(cross);
 	else
 		SetCursor(highlight);
 }
@@ -381,7 +362,7 @@ void QuickTabs::MouseMove(Point p, dword keyflags)
 	{
 		if(tabs[i].HasMouse(p))
 		{
-			iscross = tabs[i].HasMouseCross(p);
+			iscross = crosses ? tabs[i].HasMouseCross(p) : false;
 			if(highlight != i || (iscross && cross != i))
 			{
 				if(iscross)
@@ -429,15 +410,6 @@ void QuickTabs::FramePaint(Draw& w, const Rect& rr)
 	FieldFrame().FramePaint(w, r);
 }
 
-#ifdef PLATFORM_WIN32
-LRESULT QuickTabs::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
-{
-	if(message == WM_MBUTTONDOWN)
-		middle_button = true;
-	return Ctrl::WindowProc(message, wParam, lParam);
-}
-#endif
-
 void QuickTabs::DragAndDrop(Point p, PasteClip& d)
 {
 	int c = GetTargetTab(p);
@@ -481,7 +453,11 @@ void QuickTabs::DragLeave()
 void QuickTabs::DragRepeat(Point p)
 {
 	if(target >= 0)
-		sc.AddPos(GetDragScroll(this, p, 16).x);
+	{
+		int dx = GetDragScroll(this, p, 16).x;
+		if(dx != 0)
+			sc.AddPos(dx);
+	} 
 }
 
 void QuickTabs::SetCursor(int n)
@@ -520,9 +496,23 @@ void QuickTabs::SetCursor(int n)
 
 void QuickTabs::Close(int n)
 {
+	if(tabs.GetCount() <= 1)
+		return;
+	
 	sc.AddTotal(-tabs[n].cx);
 	tabs.Remove(n);
-	Repos(true);
+	if(n == active)
+	{
+		active = -1;
+		Repos(true);
+		SetCursor(n);
+	}
+	else
+	{
+		if(n < active)
+			active = max(active - 1, 0);
+		Repos(true);
+	}
 }
 
 bool QuickTabs::FindSetFile(const String& fn)

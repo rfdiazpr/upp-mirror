@@ -93,7 +93,6 @@ public:
 	void    SetBreakpoint(int ln, const String& s);
 	void    SetEdited(int ln, int count = 1);
 	void    ClearEdited();
-	void    ClearMarkers(int ln = -1, int count = 1);
 	void    SetError(int ln, int err);
 	void    ClearErrors(int ln);
 

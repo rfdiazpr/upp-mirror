@@ -8,7 +8,7 @@ bool Gdb::Result(String& result, const String& s)
 	result.Cat(s);
 	const char *q = FindTag(~result + max(l - 5, 0), PROMPT);
 	if(q) {
-		result.Trim(q - ~result);
+		result.Trim((int)(q - ~result));
 		return true;
 	}
 	return false;
@@ -224,7 +224,7 @@ String FormatFrame(const char *s)
 	return s;
 }
 
-bool ParsePos(const String& s, String& fn, int& line, dword& adr)
+bool ParsePos(const String& s, String& fn, int& line, adr_t & adr)
 {
 	const char *q = FindTag(s, "\x1a\x1a");
 	if(!q) return false;
@@ -332,7 +332,7 @@ void Gdb::DisasCursor()
 		return;
 	int line;
 	String file;
-	dword addr;
+	adr_t addr;
 	if(ParsePos(FastCmd(Sprintf("info line *0x%X", disas.GetCursor())), file, line, addr))
 		IdeSetDebugPos(file, line - 1, DbgImg::DisasPtr(), 1);
 	disas.SetFocus();

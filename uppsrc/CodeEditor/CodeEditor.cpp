@@ -702,7 +702,7 @@ void CodeEditor::Enclose(const char *c1, const char *c2, int l, int h)
 bool CodeEditor::Key(dword code, int count) {
 	Time key_time = GetSysTime();
 	double diff;
-	if(!IsNull(last_key_time) && (diff = key_time - last_key_time) <= 3)
+	if(!IsNull(last_key_time) && (diff = int(key_time - last_key_time)) <= 3)
 		stat_edit_time += diff;
 	last_key_time = key_time;
 

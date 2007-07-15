@@ -4,12 +4,12 @@
 
 #define LLOG(x) // LOG(x)
 
-int    Pdb::Byte(dword addr)
+int    Pdb::Byte(adr_t addr)
 {
-	int page = addr >> 10;
+	int page = (int) (addr >> 10);
 	if(invalidpage.Find(page) >= 0)
 		return -1;
-	int pos = addr & 1023;
+	int pos = (int) (addr & 1023);
 	int q = mempage.Find(page);
 	if(q >= 0)
 		return (byte)mempage[q].data[pos];
@@ -25,7 +25,7 @@ int    Pdb::Byte(dword addr)
 	return -1;
 }
 
-bool    Pdb::Copy(dword addr, void *ptr, int count)
+bool    Pdb::Copy(adr_t addr, void *ptr, int count)
 {
 	byte *s = (byte *)ptr;
 	while(count--) {
@@ -37,7 +37,7 @@ bool    Pdb::Copy(dword addr, void *ptr, int count)
 	return true;
 }
 
-String Pdb::ReadString(dword addr, int maxlen)
+String Pdb::ReadString(adr_t addr, int maxlen)
 {
 	String r;
 	while(r.GetLength() < maxlen) {
@@ -49,7 +49,7 @@ String Pdb::ReadString(dword addr, int maxlen)
 	return r;
 }
 
-WString Pdb::ReadWString(dword addr, int maxlen)
+WString Pdb::ReadWString(adr_t addr, int maxlen)
 {
 	WString r;
 	while(r.GetLength() < maxlen) {

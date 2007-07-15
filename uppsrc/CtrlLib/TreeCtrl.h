@@ -17,7 +17,7 @@ public:
 	virtual void  ChildRemoved(Ctrl *);
 	virtual void  SetData(const Value& data);
 	virtual Value GetData() const;
-	virtual void  DragEnter(Point p, PasteClip& d);
+	virtual void  DragEnter();
 	virtual void  DragAndDrop(Point p, PasteClip& d);
 	virtual void  DragRepeat(Point p);
 	virtual void  DragLeave();
@@ -125,7 +125,7 @@ private:
 	void   SetCursorLineSync(int i);
 	void   MoveCursorLine(int c, int incr);
 	void   SetCursorLine(int i, bool sc, bool sel, bool cb);
-	void   SetCursor(int id, bool sc, bool sel, bool cb);
+	void   SetCursor(int id, bool sc, bool sel, bool cb);	
 	void   RemoveCtrls(int itemi);
 	void   SyncCtrls(bool add, Ctrl *restorefocus);
 	bool   Tab(int d);

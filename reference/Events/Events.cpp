@@ -58,6 +58,19 @@ struct App : TopWindow {
 		Log(Format("LeftDouble(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
 	}
 
+	virtual void LeftTriple(Point p, dword keyflags)
+	{
+		Log(Format("LeftTriple(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
+	}
+	
+	virtual void LeftDrag(Point p, dword keyflags) {
+		Log(Format("LeftDrag(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
+	}
+	
+	virtual void LeftHold(Point p, dword keyflags) {
+		Log(Format("LeftHold(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
+	}
+
 	virtual void   LeftRepeat(Point p, dword keyflags)
 	{
 		Log(Format("LeftRepeat(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
@@ -78,6 +91,19 @@ struct App : TopWindow {
 		Log(Format("RightDouble(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
 	}
 
+	virtual void RightTriple(Point p, dword keyflags)
+	{
+		Log(Format("RightTriple(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
+	}
+	
+	virtual void RightDrag(Point p, dword keyflags) {
+		Log(Format("RightDrag(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
+	}
+	
+	virtual void RightHold(Point p, dword keyflags) {
+		Log(Format("RightHold(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
+	}
+
 	virtual void   RightRepeat(Point p, dword keyflags)
 	{
 		Log(Format("RightRepeat(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
@@ -86,6 +112,39 @@ struct App : TopWindow {
 	virtual void   RightUp(Point p, dword keyflags)
 	{
 		Log(Format("RightUp(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
+	}
+
+	virtual void   MiddleDown(Point p, dword keyflags)
+	{
+		Log(Format("MiddleDown(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
+	}
+
+	virtual void   MiddleDouble(Point p, dword keyflags)
+	{
+		Log(Format("MiddleDouble(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
+	}
+
+	virtual void MiddleTriple(Point p, dword keyflags)
+	{
+		Log(Format("MiddleTriple(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
+	}
+	
+	virtual void MiddleDrag(Point p, dword keyflags) {
+		Log(Format("MiddleDrag(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
+	}
+	
+	virtual void MiddleHold(Point p, dword keyflags) {
+		Log(Format("MiddleHold(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
+	}
+
+	virtual void   MiddleRepeat(Point p, dword keyflags)
+	{
+		Log(Format("MiddleRepeat(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
+	}
+
+	virtual void   MiddleUp(Point p, dword keyflags)
+	{
+		Log(Format("MiddleUp(Point(%d, %d), %x)", p.x, p.y, (int)keyflags));
 	}
 
 	virtual void   MouseWheel(Point p, int zdelta, dword keyflags)

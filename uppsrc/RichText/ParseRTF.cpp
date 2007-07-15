@@ -157,6 +157,7 @@ RTFParser::RTFParser(const char *rtf)
 : rtf_begin(rtf)
 , rtf(rtf)
 {
+	LOG(rtf);
 	is_full = false;
 	next_command = false;
 	default_font = 0;
@@ -718,6 +719,8 @@ void RTFParser::ReadParaStyle()
 		SkipGroup();
 		state.format.bullet = RichPara::BULLET_ROUND;
 	}
+	else if(PassQ("pagebb"))
+		state.format.newpage = (command_arg != 0);
 	else if(PassQ("ql"))
 		state.format.align = ALIGN_LEFT;
 	else if(PassQ("qc"))

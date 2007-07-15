@@ -3,7 +3,8 @@ description "Converts binary data to COFF object files";
 optimize_speed;
 
 uses
-	coff;
+	coff,
+	plugin\bz2;
 
 file
 	binobj.h,
@@ -15,3 +16,4 @@ file
 
 mainconfig
 	"" = "";
+

@@ -642,7 +642,7 @@ void TopSubMenuItem::Pull()
 		parentmenu->SyncState();
 }
 
-void TopSubMenuItem::MouseEnter(Point, dword)
+void TopSubMenuItem::MouseEnter(Point p, dword)
 {
 	Refresh();
 	if(isenabled && parentmenu->GetActiveSubmenu())

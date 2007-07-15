@@ -141,10 +141,10 @@ void TopicWindow::SyncDocTree()
 	String hdx = "topic://ide/app/index$en-us";
 	if(idelink.GetCount() == 0)
 		GatherLinks(idelink, hdx);
-	int ide = AddTree(0, IdeImg::Package(), hdx, "TheIDE help");
+	int ide = AddTree(0, IdeImg::Package(), "\3" + hdx, "TheIDE help");
 	for(int i = 0; i < idelink.GetCount(); i++)
 		if(idelink[i] != hdx && MatchTopicLink(idelink[i], sdx))
-			AddTree(ide, TopicImg::Topic(), idelink[i], GetTopic(idelink[i]).title);
+			AddTree(ide, TopicImg::Topic(), "\3" + idelink[i], GetTopic(idelink[i]).title);
 
 	Index<String> used;
 	const Workspace& wspc = GetIdeWorkspace();
@@ -230,7 +230,7 @@ void Ide::ShowTopics()
 		GetRefLinks("");
 		doc.SyncDocTree();
 		if(doc.GetCurrent().IsEmpty())
-			doc.GoTo("topic://ide/app/index$en-us");
+			doc.GoTo("\3topic://ide/app/index$en-us");
 	}
 	else
 		doc.SetForeground();
@@ -264,9 +264,9 @@ Vector<String> GetTypeRefLinks(const String& t, String &label)
 Topic TopicWindow::AcquireTopic(const String& t)
 {
 	String topic = t;
-	Topic it = GetTopic(topic.Mid(1));
-	if(it.text.GetCount())
-		return it;
+	internal = (byte)*topic < 32;
+	if(*topic == '\3')
+		return GetTopic(topic.Mid(1));
 	if(*topic == '\1') {
 		Topic t;
 		t.title = "Summary";
@@ -428,7 +428,8 @@ void  TopicWindow::BarEx(Bar& bar)
 	   .Check(showwords);
 	bar.GapRight();
 	bar.Separator();
-	bar.Add(IdeKeys::AK_TOPICEDITOR, TopicImg::Topic(), THISBACK(OpenTopic));
+	bar.Add(!internal && GetCurrent().StartsWith("topic:"),
+	        TopicImg::Topic(), THISBACK(OpenTopic));
 }
 
 void TopicWindow::Serialize(Stream& s)
@@ -453,4 +454,5 @@ TopicWindow::TopicWindow()
 	lang <<= THISBACK(Lang);
 	lang.Tip("Language"),
 	search.Tip("Full text search");
+	internal = true;
 }

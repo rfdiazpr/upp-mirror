@@ -208,6 +208,21 @@ void WorkspaceWork::AddFile(ADDFILE af)
 	FileSelected();
 }
 
+void WorkspaceWork::AddItem(const String& name, bool separator, bool readonly)
+{
+	int fci = filelist.GetCursor();
+	int cs = filelist.GetSbPos();
+	int ci = fci >= 0 && fci < fileindex.GetCount() ? fileindex[fci] : -1;
+	Package::File& f = ci >= 0 ? actual.file.Insert(ci) : actual.file.Add();
+	f = name;
+	f.separator = separator;
+	f.readonly = readonly;
+	SaveLoadPackage();
+	filelist.SetSbPos(cs);
+	filelist.SetCursor(fci >= 0 ? fci : filelist.GetCount() - 1);
+	FileSelected();
+}
+
 void WorkspaceWork::AddSeparator()
 {
 	String active = GetActivePackage();
@@ -215,16 +230,74 @@ void WorkspaceWork::AddSeparator()
 	String name;
 	if(!EditText(name, "Insert separator", "Name"))
 		return;
-	int fci = filelist.GetCursor();
-	int cs = filelist.GetSbPos();
-	int ci = fci >= 0 && fci < fileindex.GetCount() ? fileindex[fci] : -1;
-	Package::File& f = ci >= 0 ? actual.file.Insert(ci) : actual.file.Add();
-	f = name;
-	f.separator = f.readonly = true;
-	SaveLoadPackage();
-	filelist.SetSbPos(cs);
-	filelist.SetCursor(fci >= 0 ? fci : filelist.GetCount() - 1);
-	FileSelected();
+	AddItem(~name, true, true);
+}
+
+
+class Tpp : public WithTppLayout<TopWindow> {
+public:
+	void Sync() {
+		bool en = group.IsCursor() && IsNull(group.GetKey());
+		name_lbl.Enable(en);
+		name.Enable(en);
+		name_tpp.Enable(en);
+	}
+
+	void Load(const char *dir)
+	{
+		Index<String> exist;
+		FindFile ff(AppendFileName(dir, "*.tpp"));
+		while(ff) {
+			if(ff.IsFolder()) {
+				String s = GetFileTitle(ff.GetName());
+				group.Add(s, AttrText(s).SetFont(StdFont().Bold()));
+				exist.Add(s);
+			}
+			ff.Next();
+		}
+		static char *h[4] = { "src.tpp", "srcdoc.tpp", "srcimp.tpp", "app.tpp" };
+		for(int i = 0; i < __countof(h); i++) {
+			String s = GetFileTitle(h[i]);
+			if(exist.Find(s) < 0)
+				group.Add(s, s + " (new)");
+		}
+		group.Add(Null, "<other new>");
+		group.GoBegin();
+	}
+	
+	String GetName()
+	{
+		String s;
+		if(group.IsCursor()) {
+			s = group.GetKey();
+			if(IsNull(s))
+				s << ~name;
+			s << ".tpp";
+		}
+		return s;
+	}
+
+	typedef Tpp CLASSNAME;
+	
+	Tpp() {
+		CtrlLayoutOKCancel(*this, "Insert topic group");
+		group.AddKey();
+		group.AddColumn("Group");
+		group.WhenSel = THISBACK(Sync);
+		name.SetFilter(CharFilterAlpha);
+	}
+};
+
+void WorkspaceWork::AddTopicGroup()
+{
+	String package = GetActivePackage();
+	if(IsNull(package)) return;
+	Tpp dlg;
+	dlg.Load(PackageDirectory(package));
+	if(dlg.Run() != IDOK) return;
+	String g = dlg.GetName();
+	if(g.GetCount())
+		AddItem(g, false, false);
 }
 
 void WorkspaceWork::RemoveFile()
@@ -250,10 +323,17 @@ void WorkspaceWork::RemoveFile()
 void WorkspaceWork::DelFile()
 {
 	if(!filelist.IsCursor() || filelist[filelist.GetCursor()].isdir) return;
-	if(!PromptYesNo("Remove file from package and discard it ?")) return;
 	String file = SourcePath(GetActivePackage(), GetActiveFileName());
-	RemoveFile();
-	::DeleteFile(file);
+	if(IsFolder(file)) {
+		if(!PromptYesNo("Remove the topic group and discard ALL topics?")) return;
+		RemoveFile();
+		DeleteFolderDeep(file);
+	}
+	else {
+		if(!PromptYesNo("Remove the file from package and discard it ?")) return;
+		RemoveFile();
+		::DeleteFile(file);
+	}
 }
 
 void WorkspaceWork::RenameFile()
@@ -380,6 +460,7 @@ void WorkspaceWork::FileMenu(Bar& menu)
 	bool isaux = (actualpackage == tempaux || actualpackage == prjaux || actualpackage == ideaux);
 	menu.Add(!isaux, "Insert package directory file(s)", THISBACK1(AddFile, PACKAGE_FILE))
 		.Help("Insert file relative to current package");
+	menu.Add(!isaux, "Insert topic++ group", THISBACK(AddTopicGroup));
 	menu.Add("Insert separator", THISBACK(AddSeparator))
 		.Help("Insert text separator line");
 	menu.Separator();
@@ -407,13 +488,13 @@ void WorkspaceWork::FileMenu(Bar& menu)
 		BuildFileMenu(menu);
 		menu.Separator();
 	}
-	menu.Add(filelist.IsCursor(), sel ? "Rename separator" : "Rename file", THISBACK(RenameFile))
-		.Help("Change separator text");
-	menu.Add(filelist.IsCursor(), sel ? "Remove separator " : "Remove file", THISBACK(RemoveFile))
+	menu.Add("Rename...", THISBACK(RenameFile))
+	    .Help("Rename file / separator / topic group");
+	menu.Add("Remove", THISBACK(RemoveFile))
 		.Key(organizer ? K_DELETE : K_ALT_DELETE)
-		.Help("Remove file / separator from package");
-	menu.Add(filelist.IsCursor() && !sel, "Delete file", THISBACK(DelFile))
-		.Help("Remove file reference from package & delete file on disk");
+		.Help("Remove file / separator / topic group from package");
+	menu.Add(filelist.IsCursor() && !sel, "Delete", THISBACK(DelFile))
+		.Help("Remove file / topic group reference from package & delete file / folder on disk");
 	menu.Separator();
 	menu.Add(filelist.GetCursor() > 0, "Move up", THISBACK1(MoveFile, -1))
 		.Key(organizer ? K_CTRL_UP : K_SHIFT_CTRL_UP)

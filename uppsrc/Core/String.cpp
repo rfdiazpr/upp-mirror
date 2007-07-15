@@ -135,7 +135,7 @@ char *String0::Alloc(int count, char& kind)
 	}
 	size_t sz = sizeof(Rc) + count + 1;
 	Rc *rc = (Rc *)MemoryAlloc(sz);
-	rc->alloc = sz - sizeof(Rc) - 1;
+	rc->alloc = (int)sz - sizeof(Rc) - 1;
 	rc->refcount = 1;
 	kind = min(rc->alloc, 255);
 	return (char *)(rc + 1);
@@ -368,7 +368,7 @@ char *StringBuffer::Alloc(int count, int& alloc)
 	else {
 		size_t sz = sizeof(Rc) + count + 1;
 		Rc *rc = (Rc *)MemoryAlloc(sz);
-		alloc = rc->alloc = sz - sizeof(Rc) - 1;
+		alloc = rc->alloc = (int)sz - sizeof(Rc) - 1;
 		rc->refcount = 1;
 		return (char *)(rc + 1);
 	}
@@ -376,7 +376,7 @@ char *StringBuffer::Alloc(int count, int& alloc)
 
 void StringBuffer::Free()
 {
-	int all = limit - begin;
+	int all = (int)(limit - begin);
 	if(all == 31)
 		MFree_S(begin);
 	if(all > 31)
@@ -386,7 +386,7 @@ void StringBuffer::Free()
 void StringBuffer::Expand(int n, const char *cat, int l)
 {
 	int al;
-	int ep = end - begin;
+	int ep = (int)(end - begin);
 	char *p = Alloc(n, al);
 	memcpy(p, begin, GetLength());
 	if(cat) {
@@ -485,7 +485,7 @@ int CompareNoCase(const String& a, const String& b, byte encoding)
 int CompareNoCase(const String& a, const char *b, byte encoding)
 {
 	if(encoding == CHARSET_DEFAULT) encoding = GetDefaultCharset();
-	if(encoding == CHARSET_UTF8) return CompareNoCase(FromUtf8(a), FromUtf8(b, strlen(b)));
+	if(encoding == CHARSET_UTF8) return CompareNoCase(FromUtf8(a), FromUtf8(b, (int)strlen(b)));
 	return IterCompare(a.Begin(), a.End(), b, b + strlen(b), StringICompare__(encoding));
 }
 

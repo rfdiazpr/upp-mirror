@@ -104,6 +104,11 @@ public:
 	double                  GetAspectRatio() const           { return aspect; }
 	bool                    IsAspectRatio() const            { return aspect != 0; }
 
+	void                    SetAspectLock(bool a = true);
+	void                    NoAspectLock()                   { SetAspectLock(false); }
+	bool                    IsAspectLock() const             { return aspect_lock; }
+	bool                    IsAspectLocked() const           { return IsAspectRatio() || IsAspectLock(); }
+
 	void                    SetScale(Sizef scale);
 	void                    SetDelta(Pointf delta);
 	void                    SetZoom(Sizef scale, Pointf delta);
@@ -151,6 +156,7 @@ public:
 	void                    UserZoomIn();
 	void                    UserZoomOut();
 	virtual void            UserZoomFull();
+	void                    UserAspectLock();
 	void                    UserZoom(const Rectf& rc, bool keep_ratio = true);
 
 	void                    PickDragDrop(One<PlotterDragDrop> dd);
@@ -173,6 +179,7 @@ public:
 		TOOL(ViewZoomIn)
 		TOOL(ViewZoomOut)
 		TOOL(ViewZoomFull)
+		TOOL(ViewAspectLock)
 		TOOL(ViewPan)
 
 public:
@@ -185,7 +192,7 @@ protected:
 	void                    AdjustPos(Point scpos, int xymask); // 1 = x, 2 = y
 
 protected:
-	bool                    rev_x, rev_y;
+	bool                    rev_x, rev_y, aspect_lock;
 	Rect                    gap;
 	Alignment               halign, valign;
 	Color                   background;

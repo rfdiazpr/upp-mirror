@@ -1,15 +1,19 @@
 String  GetExeFilePath();
 String  GetExeDirFile(const char *fp);
 
-#ifdef PLATFORM_POSIX
 String  GetHomeDirFile(const char *fp);
 String  GetHomeDirectory();
+
+#ifdef PLATFORM_POSIX
 
 void    SetHomeDirectory(const char *dir);
 
 #endif
 
 String  GetExeTitle();
+
+void    UseHomeDirectoryConfig(bool b = true);
+
 String  ConfigFile(const char *file);
 String  ConfigFile();
 

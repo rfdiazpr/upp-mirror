@@ -5,11 +5,20 @@ NAMESPACE_UPP
 
 #ifdef PLATFORM_WIN32
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)  // LOG(x)
+
+VectorMap<int, ClipData>& sClipMap()
+{
+	static VectorMap<int, ClipData> x;
+	return x;
+}
+
+extern HWND utilityHWND;
+
 
 int  GetClipboardFormatCode(const char *format_id)
 {
-	int x = (int)format_id;
+	int x = (int)(intptr_t)format_id;
 	if(x >= 0 && x < 65535)
 		return x;
 	String fmt = format_id;
@@ -38,39 +47,87 @@ int  GetClipboardFormatCode(const char *format_id)
 
 void ClearClipboard()
 {
-	if(OpenClipboard(NULL)) {
+	sClipMap().Clear();
+	if(OpenClipboard(utilityHWND)) {
 		EmptyClipboard();
+		CloseClipboard();
+	}
+}
+
+void SetClipboardRaw(int format, const byte *data, int length)
+{
+	HANDLE handle = NULL;
+	if(data) {
+		handle = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, length + 2);
+		byte *ptr;
+		if(!handle)
+			return;
+		if(!(ptr = (byte *)GlobalLock(handle))) {
+			GlobalFree(handle);
+			return;
+		}
+		memcpy(ptr, data, length);
+		ptr[length] = 0;
+		ptr[length + 1] = 0;
+		GlobalUnlock(handle);
+	}
+	if(!SetClipboardData(format, handle)) {
+		LLOG("SetClipboardData error: " << GetLastErrorMessage());
+		GlobalFree(handle);
+	}
+}
+
+void AppendClipboard(int format, const byte *data, int length)
+{
+	if(OpenClipboard(utilityHWND)) {
+		SetClipboardRaw(format, data, length);
 		CloseClipboard();
 	}
 }
 
 void AppendClipboard(const char *format, const byte *data, int length)
 {
-	if(!OpenClipboard(NULL))
-		return;
-	HANDLE handle = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, length + 2);
-	byte *ptr;
-	if(!handle || !(ptr = (byte *)GlobalLock(handle))) {
-		if(handle) GlobalFree(handle);
-		CloseClipboard();
-		return;
-	}
-	memcpy(ptr, data, length);
-	ptr[length] = 0;
-	ptr[length + 1] = 0;
-	GlobalUnlock(handle);
-	if(!SetClipboardData(GetClipboardFormatCode(format), handle)) {
-		LLOG("SetClipboardData error: " << GetLastErrorMessage());
-		GlobalFree(handle);
-		CloseClipboard();
-		return;
-	}
-	CloseClipboard();
+	Vector<String> f = Split(format, ';');
+	for(int i = 0; i < f.GetCount(); i++)
+		AppendClipboard(GetClipboardFormatCode(f[i]), data, length);
 }
 
 void AppendClipboard(const char *format, const String& data)
 {
 	AppendClipboard(format, data, data.GetLength());
+}
+
+void AppendClipboard(const char *format, const Value& data, String (*render)(const Value&))
+{
+	Vector<String> f = Split(format, ';');
+	for(int i = 0; i < f.GetCount(); i++) {
+		int c = GetClipboardFormatCode(f[i]);
+		sClipMap().GetAdd(c) = ClipData(data, render);
+		AppendClipboard(c, NULL, 0);
+	}
+}
+
+void Ctrl::RenderFormat(int format)
+{
+	int q = sClipMap().Find(format);
+	if(q >= 0) {
+		String s = sClipMap()[q].Render();
+		SetClipboardRaw(format, s, s.GetLength());
+	}
+}
+
+void Ctrl::RenderAllFormats()
+{
+	if(sClipMap().GetCount() && OpenClipboard(utilityHWND)) {
+		for(int i = 0; i < sClipMap().GetCount(); i++)
+			RenderFormat(sClipMap().GetKey(i));
+		CloseClipboard();
+	}
+}
+
+void Ctrl::DestroyClipboard()
+{
+	sClipMap().Clear();
 }
 
 String ReadClipboard(const char *format)
@@ -84,7 +141,7 @@ String ReadClipboard(const char *format)
 	}
 	const byte *src = (const byte *)GlobalLock(hmem);
 	ASSERT(src);
-	int length = GlobalSize(hmem);
+	int length = (int)GlobalSize(hmem);
 	if(length < 0) {
 		CloseClipboard();
 		return Null;
@@ -100,7 +157,7 @@ void AppendClipboardText(const String& s)
 #ifdef PLATFORM_WINCE
 	AppendClipboardUnicodeText(s.ToWString());
 #else
-	AppendClipboard((const char *)CF_TEXT, ToSystemCharset(s));
+	AppendClipboard("text", ToSystemCharset(s));
 #endif
 }
 
@@ -109,7 +166,7 @@ void AppendClipboardUnicodeText(const WString& s)
 #ifndef PLATFORM_WINCE
 	AppendClipboardText(s.ToString());
 #endif
-	AppendClipboard((const char *)CF_UNICODETEXT, (byte *)~s, 2 * s.GetLength());
+	AppendClipboard("wtext", (byte *)~s, 2 * s.GetLength());
 }
 
 const char *ClipFmtsText()
@@ -145,16 +202,26 @@ bool AcceptText(PasteClip& clip)
 	return clip.Accept(ClipFmtsText());
 }
 
-void AddTextClip(VectorMap<String, String>& data, const String& text)
+static String sText(const Value& data)
 {
-	data.GetAdd("text", GetTextClip(text, "text"));
-	data.GetAdd("wtext", GetTextClip(text, "wtext"));
+	return data;
 }
 
-void AddTextClip(VectorMap<String, String>& data, const WString& text)
+static String sWText(const Value& data)
 {
-	data.GetAdd("text", GetTextClip(text, "text"));
-	data.GetAdd("wtext", GetTextClip(text, "wtext"));
+	return Unicode__(WString(data));
+}
+
+void Append(VectorMap<String, ClipData>& data, const String& text)
+{
+	data.GetAdd("text", ClipData(text, sText));
+	data.GetAdd("wtext", ClipData(text, sWText));
+}
+
+void Append(VectorMap<String, ClipData>& data, const WString& text)
+{
+	data.GetAdd("text", ClipData(text, sText));
+	data.GetAdd("wtext", ClipData(text, sWText));
 }
 
 String GetTextClip(const WString& text, const String& fmt)
@@ -162,7 +229,7 @@ String GetTextClip(const WString& text, const String& fmt)
 	if(fmt == "text")
 		return text.ToString();
 	if(fmt == "wtext")
-		return String((char *)~text, sizeof(wchar) * (text.GetLength() + 1));
+		return Unicode__(text);
 	return Null;
 }
 
@@ -171,7 +238,7 @@ String GetTextClip(const String& text, const String& fmt)
 	if(fmt == "text")
 		return text;
 	if(fmt == "wtext")
-		return GetTextClip(text.ToWString(), fmt);
+		return Unicode__(text.ToWString());
 	return Null;
 }
 
@@ -181,7 +248,7 @@ String ReadClipboardText()
 	return ReadClipboardUnicodeText().ToString();
 #else
 	String s = ReadClipboard((const char *)CF_TEXT);
-	return String(s, strlen(~s));
+	return String(s, (int)strlen(~s));
 #endif
 }
 
@@ -255,34 +322,45 @@ Image ReadClipboardImage()
 	return GetImage(d);
 }
 
+String sDib(const Value& image)
+{
+	Image img = image;
+	BITMAPINFOHEADER header;
+	Zero(header);
+	header.biSize = sizeof(header);
+	header.biWidth = img.GetWidth();
+	header.biHeight = -img.GetHeight();
+	header.biBitCount = 32;
+	header.biPlanes = 1;
+	header.biCompression = BI_RGB;
+	StringBuffer b(sizeof(header) + 4 * img.GetLength());
+	byte *p = (byte *)~b;
+	memcpy(p, &header, sizeof(header));
+	memcpy(p + sizeof(header), ~img, 4 * img.GetLength());
+	return b;
+}
+
+String sImage(const Value& image)
+{
+	Image img = image;
+	return StoreAsString(const_cast<Image&>(img));
+}
+
 String GetImageClip(const Image& img, const String& fmt)
 {
 	if(img.IsEmpty()) return Null;
-	if(fmt == "dib") {
-		BITMAPINFOHEADER header;
-		Zero(header);
-		header.biSize = sizeof(header);
-		header.biWidth = img.GetWidth();
-		header.biHeight = -img.GetHeight();
-		header.biBitCount = 32;
-		header.biPlanes = 1;
-		header.biCompression = BI_RGB;
-		StringBuffer b(sizeof(header) + 4 * img.GetLength());
-		byte *p = (byte *)~b;
-		memcpy(p, &header, sizeof(header));
-		memcpy(p + sizeof(header), ~img, 4 * img.GetLength());
-		return b;
-	}
+	if(fmt == "dib")
+		return sDib(img);
 	if(fmt == ClipFmt<Image>())
-		return StoreAsString(const_cast<Image&>(img));
+		return sImage(img);
 	return Null;
 }
 
 void AppendClipboardImage(const Image& img)
 {
 	if(img.IsEmpty()) return;
-	AppendClipboard(ClipFmt<Image>(), StoreAsString(const_cast<Image&>(img)));
-	AppendClipboard("dib", GetImageClip(img, "dib"));
+	AppendClipboard(ClipFmt<Image>(), img, sImage);
+	AppendClipboard("dib", img, sDib);
 }
 
 bool AcceptFiles(PasteClip& clip)

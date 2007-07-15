@@ -123,20 +123,26 @@ FileSel& IconDes::ImgFile()
 	ONCELOCK {
 		sel.Type("Image files", "*.png *.bmp *.jpg *.jpeg *.gif");
 		sel.AllFilesType();
+		sel.Multi();
 	}
 	return sel;
+}
+
+int CharFilterImageId(int c)
+{
+	return IsAlNum(c) ? c : '_';
 }
 
 void IconDes::InsertFile()
 {
 	if(!ImgFile().ExecuteOpen()) return;
-	Image m = StreamRaster::LoadFileAny(~ImgFile());
-	if(IsNull(m)) {
-		Exclamation("Not an image.");
-		return;
+	for(int i = 0; i < ImgFile().GetCount(); i++) {
+		String fn = ImgFile()[i];
+		Image m = StreamRaster::LoadFileAny(fn);
+		if(IsNull(m))
+			Exclamation(DeQtf(fn) + " not an image.");
+		ImageInsert(Filter(GetFileTitle(fn), CharFilterImageId), m);
 	}
-	ImageInsert("", m);
-	EditImage();
 }
 
 void IconDes::ListCursor()
@@ -223,7 +229,7 @@ void IconDes::ListMenu(Bar& bar)
 	   .Key(K_CTRL_D);
 	bar.Add("Insert from clipboard", IconDesImg::InsertPaste(), THISBACK(InsertPaste))
 	   .Key(K_ALT_V);
-	bar.Add("Insert from file..", IconDesImg::InsertFile(), THISBACK(InsertFile))
+	bar.Add("Insert from file(s)..", IconDesImg::InsertFile(), THISBACK(InsertFile))
 	   .Key(K_ALT_O);
 	bar.Separator();
 	bar.Add(IsCurrent() && list.GetCursor() > 0, "Move up", IconDesImg::MoveUp(),

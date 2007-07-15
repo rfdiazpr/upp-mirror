@@ -445,12 +445,12 @@ void Pdb::MemoryGoto(const String& exp)
 	CParser p(exp);
 	try {
 		Val v = Exp(p);
-		dword adr = 0;
+		adr_t adr = 0;
 		if(v.ref > 0)
 			adr = GetRVal(v).address;
 		else
 		if(v.rvalue)
-			adr = (dword)GetInt(v);
+			adr = (adr_t)GetInt(v);
 		else
 			adr = v.address;
 		memory.SetCursor(adr);

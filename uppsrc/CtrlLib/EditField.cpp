@@ -209,11 +209,12 @@ void EditField::Paint(Draw& w)
 	Size sz = GetSize();
 	bool f = HasBorder();
 	const EditField::Style *st = style ? style : &StyleDefault();
-	Color paper = IsShowEnabled() && !IsReadOnly() ? (HasFocus() ? st->focus : st->paper) : st->disabled;
+	bool enabled = IsShowEnabled();
+	Color paper = enabled && !IsReadOnly() ? (HasFocus() ? st->focus : st->paper) : st->disabled;
 	if(nobg)
 		paper = Null;
-	Color ink = IsShowEnabled() ? st->text : st->textdisabled;
-	if(convert && convert->Scan(text).IsError())
+	Color ink = enabled ? st->text : st->textdisabled;
+	if(convert && enabled && convert->Scan(text).IsError())
 		paper = st->invalid;
 	int fcy = font.Info().GetHeight();
 	int yy = GetTy();
@@ -223,25 +224,30 @@ void EditField::Paint(Draw& w)
 	w.DrawRect(sz.cx - 2, 0, 2, sz.cy, paper);
 	w.Clipoff(2, yy, sz.cx - 4, fcy);
 	int x = -sc;
+	bool ar = alignright && !HasFocus();
 	if(IsNull(text) && !IsNull(nulltext)) {
 		const wchar *txt = nulltext;
 		Paints(w, x, fcy, txt, nullink, paper, nulltext.GetLength(), false);
 	}
 	else {
 		const wchar *txt = text;
+		if(ar) {
+			x = sz.cx - 4 - GetTextCx(text, text.GetLength(), password);
+			w.DrawRect(0, 0, x, fcy, paper);
+		}
 		int l, h;
 		if(GetSelection(l, h)) {
 			Paints(w, x, fcy, txt, ink, paper, l, password);
-			Paints(w, x, fcy, txt, IsShowEnabled() ? st->selectedtext : paper,
-			                       IsShowEnabled() ? st->selected : ink, h - l, password);
+			Paints(w, x, fcy, txt, enabled ? st->selectedtext : paper,
+			                       enabled ? st->selected : ink, h - l, password);
 			Paints(w, x, fcy, txt, ink, paper, text.GetLength() - h, password);
 		}
 		else
 			Paints(w, x, fcy, txt, ink, paper, text.GetLength(), password);
 	}
-	w.DrawRect(x, 0, 9999, fcy, paper);
+	if(!ar)
+		w.DrawRect(x, 0, 9999, fcy, paper);
 	w.End();
-//	w.DrawRect(dropcaret, LtBlue());
 	DrawTiles(w, dropcaret, CtrlImg::checkers());
 }
 
@@ -342,6 +348,7 @@ void EditField::LostFocus()
 
 void EditField::LeftDown(Point p, dword flags)
 {
+	int c = GetCursor(p.x + sc);
 	if(!HasFocus()) {
 		SetFocus();
 		if(clickselect) {
@@ -350,8 +357,8 @@ void EditField::LeftDown(Point p, dword flags)
 			return;
 		}
 		sc = 0;
+		Move(c);
 	}
-	int c = GetCursor(p.x + sc);
 	int l, h;
 	selclick = false;
 	if(GetSelection(l, h) && c >= l && c < h) {
@@ -361,6 +368,20 @@ void EditField::LeftDown(Point p, dword flags)
 	SetCapture();
 	Move(c, flags & K_SHIFT);
 	Finish();
+}
+
+void EditField::MiddleDown(Point p, dword flags)
+{
+	if(IsReadOnly())
+		return;
+	if(AcceptText(Selection())) {
+		WString w = GetWString(Selection());
+		selclick = false;
+		LeftDown(p, flags);
+		Insert(w);
+		Action();
+		Finish();
+	}
 }
 
 void EditField::LeftUp(Point p, dword flags)
@@ -412,6 +433,8 @@ void EditField::Move(int newpos, bool select)
 		anchor = -1;
 	cursor = newpos;
 	Finish(refresh);
+	if(select)
+		SetSelectionSource(ClipFmtsText());
 }
 
 void EditField::SetSelection(int l, int h)
@@ -542,6 +565,7 @@ void EditField::DragAndDrop(Point p, PasteClip& d)
 		int count = Insert(c, GetWString(d));
 		SetFocus();
 		SetSelection(c, c + count);
+		Action();
 		return;
 	}
 	if(!d.IsAccepted()) return;
@@ -594,16 +618,25 @@ void EditField::LeftDrag(Point p, dword flags)
 		ImageDraw iw(ssz);
 		iw.DrawText(0, 0, sel);
 		iw.Alpha().DrawText(0, 0, sel, StdFont(), White);
-		VectorMap<String, String> data;
-		AddTextClip(data, sel);
+		VectorMap<String, ClipData> data;
+		Append(data, sel);
 		if(DoDragAndDrop(data, iw) == DND_MOVE) {
 			CancelSelection();
 			SaveUndo();
 			Remove(sell, selh - sell);
 			sc = 0;
 			Finish();
+			Action();
 		}
 	}
+}
+
+String EditField::GetSelectionData(const String& fmt) const
+{
+	int sell, selh;
+	if(GetSelection(sell, selh))
+		return GetTextClip(text.Mid(sell, selh - sell), fmt);
+	return String();
 }
 
 void EditField::Undo()
@@ -850,6 +883,7 @@ void EditField::Reset()
 	keep_selection = false;
 	nobg = false;
 	charset = CHARSET_UNICODE;
+	alignright = false;
 }
 
 EditField& EditField::SetFont(Font _font)
@@ -891,7 +925,7 @@ void EditIntSpin::Inc()
 	}
 	else
 	if(!IsNull(GetMax()) && i < GetMax())
-		SetData(i + 1);
+		SetData(min(i + inc, GetMax()));
 	else
 		return;
 	SetFocus();
@@ -913,7 +947,7 @@ void EditIntSpin::Dec()
 	}
 	else
 	if(!IsNull(GetMin()) && i > GetMin())
-		SetData(i - 1);
+		SetData(max(i - inc, GetMin()));
 	else
 		return;
 	SetFocus();
@@ -926,6 +960,7 @@ void EditIntSpin::Init()
 	sb.inc.WhenAction = sb.inc.WhenRepeat = callback(this, &EditIntSpin::Inc);
 	sb.dec.WhenAction = sb.dec.WhenRepeat = callback(this, &EditIntSpin::Dec);
 	AddFrame(sb);
+	inc = 1;
 }
 
 EditIntSpin::EditIntSpin()

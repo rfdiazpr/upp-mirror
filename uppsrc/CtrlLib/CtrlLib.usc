@@ -336,7 +336,10 @@ ctrl Option {
 	bool   SetEditable = true @1 ? "Editable";
 	bool   ThreeState;
 	bool   NotNull;
-	Text   Tip;
+	Text   Tip @2;
+
+	GetMinSize() { sz = GetTextSize("X"); sz.cy += 2; return sz; }
+	GetStdSize() { sz = GetMinSize(); sz.cx *= 7; sz.cy = max(16, sz.cy); return sz; }
 
 	ViewRect(w) {
 		r = GetRect();
@@ -416,6 +419,7 @@ ctrl EditField {
 	bool  SetEditable = true @1 ? "Editable";
 	bool  WantFocus = true;
 	int   MaxChars;
+	bool  AlignRight;
 	Text  Tip;
 //	Qtf   SetInfo @1 ? "Info of control" ;
 

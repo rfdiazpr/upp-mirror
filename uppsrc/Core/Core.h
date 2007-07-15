@@ -157,8 +157,8 @@
 	#ifndef _DEBUG
 		#define _DEBUG
 	#endif
-	#ifndef _TEST_LEAKS
-		#define _TEST_LEAKS
+	#ifndef TESTLEAKS
+		#define TESTLEAKS
 	#endif
 #else
 	#ifndef _RELEASE
@@ -455,7 +455,7 @@ NAMESPACE_UPP
 
 #include <Core/Win32Com.h>
 
-#if (defined(_DEBUG) || defined(_TEST_LEAKS)) && defined(PLATFORM_POSIX)
+#if (defined(_DEBUG) || defined(TESTLEAKS)) && defined(PLATFORM_POSIX)
 extern int sMemDiagInitCount;
 #endif
 
@@ -467,11 +467,10 @@ NTL_MOVEABLE(RECT)
 
 END_UPP_NAMESPACE
 
-#if (defined(_DEBUG) || defined(_TEST_LEAKS)) && defined(PLATFORM_POSIX)
+#if (defined(TESTLEAKS) || defined(_DEBUG)) && defined(PLATFORM_POSIX) && !defined(PLATFORM_OSX11)
 
 //Place it to the begining of each file to be the first function called in whole executable...
 
-// Uncommented 2007-05-06 cxl - to find out why it was commented... :)
 //$-
 struct MemDiagCls {
 	MemDiagCls()  { if(!UPP::sMemDiagInitCount++) UPP::MemoryInitDiagnostics(); }
@@ -483,9 +482,11 @@ static const MemDiagCls sMemDiagHelper;
 
 #endif
 
-inline UPP::int64  abs(UPP::int64 x)          { return x < 0 ? -x : x; }
-
 //some global definitions
+
+#ifndef STLPORT
+inline UPP::int64  abs(UPP::int64 x)          { return x < 0 ? -x : x; }
+#endif
 
 void      RegisterTopic__(const char *topicfile, const char *topic, const char *title, const UPP::byte *data, int len);
 

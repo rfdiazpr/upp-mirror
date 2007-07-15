@@ -105,4 +105,3 @@ T_("cell")
 plPL("komórki")
 T_("cells")
 plPL("komórek")
-

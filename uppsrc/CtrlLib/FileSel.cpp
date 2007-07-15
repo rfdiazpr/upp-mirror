@@ -594,7 +594,7 @@ void FileSel::FileUpdate() {
 	if(mode != SAVEAS || list.IsCursor() && list[list.GetCursor()].isdir)
 		ok.SetLabel(t_("Open"));
 	else
-		ok.SetLabel(t_("Save"));
+		ok.SetLabel(t_("Save"));		
 }
 
 void FileSel::Rename(const String& on, const String& nn) {

@@ -32,7 +32,7 @@ fn PaintHeader(w, r, text, sorting = 0)
 	ty = (r.top + r.bottom - GetTextSize(text).cy) >> 1;
 	DrawButtonFrame(w, r);
 	r.left += 2;
-	
+
 	if(sorting)
 	{
 		if(sorting == 2)
@@ -56,7 +56,7 @@ enum_property ColoringModes
 {
 	"0" : "None",
 	"1" : "Row",
-	"2" : "Column" 
+	"2" : "Column"
 }
 
 enum_property ResizeModes
@@ -88,13 +88,13 @@ enum_property ToolBarPos
 ctrl GridCtrl {
 	group "Complex";
 
-	ViewRect(w) 
+	ViewRect(w)
 	{
 		r = GetRect();
 		DrawCtrlFrame(w, r, .SetFrame);
 		return r;
 	}
-	ViewSize(w) 
+	ViewSize(w)
 	{
 		r = ViewRect(w);
 		return Size(r.right - r.left, r.bottom - r.top);
@@ -127,14 +127,14 @@ ctrl GridCtrl {
 	bool MultiSorting = true;
 	EditModes EditMode = 0;
 	bool OneClickEdit = false;
-	
+
 	//Color LiveColor;
-	//Color FocusColor(Color fg = SColorHighlightText, Color bg = SColorHighlight);		
+	//Color FocusColor(Color fg = SColorHighlightText, Color bg = SColorHighlight);
 	//Color OddColor(Color fg = SColorText, Color bg = SColorInfo);
 	//Color EvenColor(Color fg = SColorText, Color bg = Blend(SColorHighlight, SColorPaper, 220));
 	bool ColorRows = false;
 	ColoringModes ColoringMode;
-		
+
 	bool Inserting = false;
 	bool Appending = false;
 	bool Duplicating = false;
@@ -151,7 +151,7 @@ ctrl GridCtrl {
 	bool Clipboard = false;
 	bool FixedPaste = false;
 	bool ExtraPaste = true;
-	
+
 	bool RejectNullRow = true;
 	bool KeepLastRow = false;
 	bool TabChangesRow = true;
@@ -159,10 +159,10 @@ ctrl GridCtrl {
 	bool EnterLikeTab = false;
 	bool Chameleon = false;
 	bool DrawFocus = false;
-	
+
 	//bool SetToolBar
 
-	Paint(w) 
+	Paint(w)
 	{
 		PaintGrid(w, GetRect());
 
@@ -170,18 +170,18 @@ ctrl GridCtrl {
 //		w.DrawRect(0, 0, sz.cx, sz.cy, :Gray);
 		//w.DrawText(px, (sz.cy - textsize.cy) / 2, .SetText, .SetFont, .SetInkOff);
 	}
-		
+
 	PaintGrid(w, r) {
 		fontcy = GetTextSize("X").cy;
 		cols = 3;
 		ind_width = fontcy;
-		
+
 		focus_bg = Color(0, 102, 204);
 		live_bg = Color(187, 214, 241);
 		multi_bg = Color(217, 198, 251);
-				
+
 		DrawCtrlFrame(w, r, .SetFrame);
-		
+
 
 		if(!.AutoHideVertSb)
 		{
@@ -189,12 +189,12 @@ ctrl GridCtrl {
 			r.right = vsb.left = vsb.right - fontcy - 4;
 			PaintVertSb(w, vsb);
 		}
-		
+
 		if(!.AutoHideHorzSb)
 		{
 			hsb = r;
 			r.bottom = hsb.top = hsb.bottom - fontcy - 4;
-		}	
+		}
 
 		if(.Indicator)
 			r.left = r.left + ind_width;
@@ -204,10 +204,10 @@ ctrl GridCtrl {
 		col_width = wd / cols;
 		row_height = fontcy + 4;
 		header_height = fontcy + 6;
-		
+
 		body = r;
 		body.top = r.top + header_height;
-			
+
 		for(i = 0; i < cols; i++)
 		{
 			rt = r;
@@ -223,17 +223,17 @@ ctrl GridCtrl {
 			}
 			PaintHeader(w, rt, "Column " + to_string(i + 1), sorting);
 		}
-		
+
 		if(.Indicator)
 		{
 			rt.right = r.left;
 			rt.left = r.left - ind_width;
 			PaintHeader(w, rt, "", 0);
 		}
-		
+
 		hg = body.bottom - body.top;
 		rows = hg / row_height;
-		
+
 		w.DrawRect(body.left, body.top, wd, hg, :SWhite);
 		if(.SelectRow)
 			w.DrawRect(body.left, body.top, wd, row_height, focus_bg);
@@ -247,15 +247,15 @@ ctrl GridCtrl {
 			else
 				w.DrawRect(body.left, body.top + row_height, col_width - 1, row_height, live_bg);
 		}
-						
+
 		for(i = 0; i <= rows; i++)
 		{
 			row = body;
 			row.top = body.top + i * row_height;
 			row.bottom = row.top + row_height;
-			
+
 			if(i > 0 && .HorzGrid)
-				w.DrawRect(row.left, row.top, row.right - row.left, 1, .GridColor);				
+				w.DrawRect(row.left, row.top, row.right - row.left, 1, .GridColor);
 
 			if(.Indicator)
 			{
@@ -274,13 +274,13 @@ ctrl GridCtrl {
 				if(.Indicator)
 					PaintImageCenter(w, rt, "GridCtrl:GridDisplay.iml:ImgSelected");
 			}
-			
-		}	
+
+		}
 
 		if(.VertGrid)
 			for(i = 1; i <= cols; i++)
 				w.DrawRect(body.left + i * col_width - 1, body.top, 1, hg, .GridColor);
-			
+
 		if(.MovingCols)
 		{
 			rt = body;
@@ -311,10 +311,10 @@ ctrl GridCtrl {
 
 		if(!.AutoHideHorzSb)
 			PaintHorzSb(w, hsb);
-		
+
 	}
-	
-	Sample() 
+
+	Sample()
 	{
 		.SetText = "Text";
 		.SetFont = Arial(10).Bold().Italic();

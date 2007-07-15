@@ -83,14 +83,15 @@ bool Ide::SyncHostFiles(RemoteHost& host)
 	int ticks = msecs(-1000);
 	const Workspace& wspc = IdeWorkspace();
 	int p;
-	for(p = 0; p < wspc.GetCount(); p++)
-	{
+	for(p = 0; p < wspc.GetCount(); p++) {
 		const Package& pkg = wspc.GetPackage(p);
 		String pn = wspc[p];
 		for(int f = -1; f < pkg.file.GetCount(); f++)
-			if(f < 0 || !pkg.file[f].separator)
-			{
+			if(f < 0 || !pkg.file[f].separator) {
 				Vector<String> pkgfiles;
+				String pk = (f >= 0 ? SourcePath(pn, pkg.file[f]) : PackagePath(pn));
+				if(!FindFile(pk).IsFile())
+					continue;
 				pkgfiles.Add(f >= 0 ? SourcePath(pn, pkg.file[f]) : PackagePath(pn));
 				pkgfiles.AppendPick(HdependGetDependencies(pkgfiles[0]));
 				for(int d = 0; d < pkgfiles.GetCount(); d++) {
@@ -461,7 +462,6 @@ void Ide::BeginBuilding(bool sync_files, bool clear_console)
 	build_time = GetTickCount();
 	CreateHost(sync_files);
 	cmdout.Clear();
-	topic.Save();
 }
 
 void Ide::EndBuilding(bool ok)

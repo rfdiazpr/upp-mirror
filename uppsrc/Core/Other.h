@@ -52,7 +52,7 @@ public:
 class Any : Moveable<Any> {
 	struct BaseData {
 		int      typeno;
-
+		
 		virtual ~BaseData() {}
 	};
 

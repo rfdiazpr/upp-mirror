@@ -1,4 +1,4 @@
-To do              
+To do
 ---------------------------------
 
 - modify GSort to use stable sort (faster?)
@@ -41,4 +41,3 @@ to kursor nie zmienia pozycji (bo tam gdzie chce skoczyc jest read-only) a powin
 komorce
 
 gdy nie ma zadnych kolumn Clear ustawia lastVisRow i firstVisRow na 1 co powoduje crash gdy kliknie sie na ciele kontrolki
-

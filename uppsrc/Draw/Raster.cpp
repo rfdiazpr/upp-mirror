@@ -83,7 +83,7 @@ Image Raster::GetImage(int x, int y, int cx, int cy, const Gate2<int, int> progr
 		y++;
 	}
 	Info f = GetInfo();
-	b.SetHotSpot(f.hotspot - Point(x, y));
+	b.SetHotSpot(f.hotspot - Point(x, y0));
 	if(size.cx && size.cy)
 		b.SetDots(Size(f.dots.cx * cx / size.cx, f.dots.cy * cy / size.cy));
 	return IsError() ? Image() : Image(b);

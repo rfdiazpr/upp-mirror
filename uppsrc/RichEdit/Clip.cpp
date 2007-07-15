@@ -77,6 +77,7 @@ void RichEdit::DragAndDrop(Point p, PasteClip& d)
 			sb = a;
 			Select(c, clip.GetLength());
 			SetFocus();
+			Action();
 			return;
 		}
 	}
@@ -125,14 +126,27 @@ void RichEdit::DragLeave()
 	dropcaret.Clear();
 }
 
+static String sRTF(const Value& data)
+{
+	const RichText& txt = ValueTo<RichText>(data);
+	return EncodeRTF(txt);
+}
+
+static String sQTF(const Value& data)
+{
+	const RichText& txt = ValueTo<RichText>(data);
+	return AsQTF(txt);
+}
+
 void RichEdit::Copy()
 {
 	if(IsSelection()) {
 		ClearClipboard();
-		RichText clip = GetSelection();
-		AppendClipboard("text/QTF", AsQTF(clip));
-		AppendClipboard(RTFS, EncodeRTF(clip));
-		AppendClipboardUnicodeText(clip.GetPlainText());
+		RichText txt = GetSelection();
+		AppendClipboardUnicodeText(txt.GetPlainText());
+		Value clip = RawPickToValue(txt);
+		AppendClipboard("text/QTF", clip, sQTF);
+		AppendClipboard(RTFS, clip, sRTF);
 	}
 	else
 	if(objectpos >= 0) {
@@ -151,16 +165,11 @@ String RichEdit::GetSelectionData(const String& fmt) const
 	String f = fmt;
 	if(IsSelection()) {
 		RichText clip = GetSelection();
-		if(f == "text")
-			return clip.GetPlainText().ToString();
-		if(f == "wtext") {
-			WString x = clip.GetPlainText();
-			return String((byte *)~x, x.GetLength() + 2);
-		}
 		if(f == "text/QTF")
 			return AsQTF(clip);
 		if(InScList(f, RTFS))
 			return EncodeRTF(clip);
+		return GetTextClip(clip.GetPlainText(), fmt);
 	}
 /*	else
 	if(objectpos >= 0) {
@@ -183,8 +192,10 @@ void RichEdit::LeftDrag(Point p, dword flags)
 		sample.Paint(iw, 0, 0, 128);
 		NextUndo();
 		if(DoDragAndDrop(String().Cat() << "text/QTF;" RTFS ";" << ClipFmtsText(),
-		                 ColorMask(iw, White)) == DND_MOVE)
+		                 ColorMask(iw, White)) == DND_MOVE) {
 			RemoveSelection();
+			Action();
+		}
 	}
 /*	else
 	if(objectpos >= 0 && c == objectpos) {
@@ -202,6 +213,18 @@ void RichEdit::LeftDrag(Point p, dword flags)
 		Move(droppos);
 		SetObjectPos(droppos);
 	}*/
+}
+
+void  RichEdit::MiddleDown(Point p, dword flags)
+{
+	RichText clip;
+	if(IsReadOnly())
+		return;
+	if(Accept(Selection(), clip)) {
+		selclick = false;
+		LeftDown(p, flags);
+		ClipPaste(clip);
+	}
 }
 
 END_UPP_NAMESPACE

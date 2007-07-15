@@ -116,11 +116,6 @@ byte  ExtractAccessKey(const char *s, String& label)
 	String text;
 	bool qtf = *s == '\1';
 	while(*s)
-		if(*s == '\\' && s[1]) {
-			text.Cat(s[1]);
-			s += 2;
-		}
-		else
 		if((*s == '&' && !qtf || *s == '\b') && s[1] && s[1] != '&') {
 			accesskey = ToAscii(ToUpper(s[1]));
 			s++;

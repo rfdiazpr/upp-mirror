@@ -955,7 +955,7 @@ public:
 	void ClearTrue()             { Clear(); action = (Gate1Action<P1> *)1; }
 	void ClearFalse()            { Clear(); }
 
-	Gate1(bool b)                { action = (Gate1Action<P1> *)(int)b; }
+	Gate1(bool b)                { action = (Gate1Action<P1> *)(uintptr_t)b; }
 
 	explicit Gate1(Gate1Action <P1> *newaction) { action = newaction; }
 	Gate1() { action = NULL; }
@@ -1107,7 +1107,7 @@ public:
 	void ClearTrue()             { Clear(); action = (Gate2Action<P1, P2> *)1; }
 	void ClearFalse()            { Clear(); }
 
-	Gate2(bool b)                { action = (Gate2Action<P1, P2> *)(int)b; }
+	Gate2(bool b)                { action = (Gate2Action<P1, P2> *)(uintptr_t)b; }
 
 	explicit Gate2(Gate2Action <P1, P2> *newaction) { action = newaction; }
 	Gate2() { action = NULL; }
@@ -1259,7 +1259,7 @@ public:
 	void ClearTrue()             { Clear(); action = (Gate3Action<P1, P2, P3> *)1; }
 	void ClearFalse()            { Clear(); }
 
-	Gate3(bool b)                { action = (Gate3Action<P1, P2, P3> *)(int)b; }
+	Gate3(bool b)                { action = (Gate3Action<P1, P2, P3> *)(uintptr_t)b; }
 
 	explicit Gate3(Gate3Action <P1, P2, P3> *newaction) { action = newaction; }
 	Gate3() { action = NULL; }
@@ -1340,6 +1340,158 @@ Gate3<P1, P2, P3>::Gate3(const Gate3& c)
 
 template <class P1, class P2, class P3>
 Gate3<P1, P2, P3>::~Gate3()
+{
+	Release();
+}
+
+// -----------------------------------------------------------
+
+template <class P1, class P2, class P3, class P4>
+struct Gate4Action {
+	Atomic  count;
+
+	virtual bool Execute(P1 p1, P2 p2, P3 p3, P4 p4) = 0;
+	virtual bool IsValid() const { return true; }
+
+	Gate4Action()          { count = 1; }
+	virtual ~Gate4Action() {}
+};
+
+template <class OBJECT, class METHOD, class P1, class P2, class P3, class P4>
+struct Gate4MethodActionPte : public Gate4Action<P1, P2, P3, P4> {
+	Ptr<OBJECT>  object;
+	METHOD       method;
+
+	bool Execute(P1 p1, P2 p2, P3 p3, P4 p4) { return object ? (object->*method)(p1, p2, p3, p4) : false; }
+	bool IsValid() const { return object; }
+
+	Gate4MethodActionPte(OBJECT *object, METHOD method) : object(object), method(method) {}
+};
+
+template <class OBJECT, class METHOD, class P1, class P2, class P3, class P4>
+struct Gate4MethodAction : public Gate4Action<P1, P2, P3, P4> {
+	OBJECT  *object;
+	METHOD   method;
+
+	bool Execute(P1 p1, P2 p2, P3 p3, P4 p4) { return (object->*method)(p1, p2, p3, p4); }
+
+	Gate4MethodAction(OBJECT *object, METHOD method) : object(object), method(method) {}
+};
+
+template <class P1, class P2, class P3, class P4>
+struct Gate4FnAction : public Gate4Action<P1, P2, P3, P4> {
+	bool (*fn)(P1 p1, P2 p2, P3 p3, P4 p4);
+
+	bool Execute(P1 p1, P2 p2, P3 p3, P4 p4) { return (*fn)(p1, p2, p3, p4); }
+
+	Gate4FnAction(bool (*fn)(P1 p1, P2 p2, P3 p3, P4 p4)) : fn(fn) {}
+};
+
+template <class P1, class P2, class P3, class P4>
+class Gate4 : Moveable< Gate4<P1, P2, P3, P4> > {
+	Gate4Action<P1, P2, P3, P4> *action;
+
+	void Retain() const { if(action && (void *)action != (void *)1) AtomicInc(action->count); }
+	void Release()      { if(action && (void *)action != (void *)1 && AtomicDec(action->count) == 0) delete action; }
+
+	bool operator==(const Gate4&);
+	bool operator!=(const Gate4&);
+
+public:
+	typedef Gate4 CLASSNAME;
+
+	Gate4& operator=(const Gate4& c);
+	Gate4(const Gate4& c);
+	void Clear()        { Release(); action = NULL; }
+
+
+	operator bool() const        { return (void *)action != (void *)1 && action && action->IsValid(); }
+	bool Execute(P1 p1, P2 p2, P3 p3, P4 p4) const;
+	bool operator()(P1 p1, P2 p2, P3 p3, P4 p4) const { return Execute(p1, p2, p3, p4); }
+	void ClearTrue()             { Clear(); action = (Gate4Action<P1, P2, P3, P4> *)1; }
+	void ClearFalse()            { Clear(); }
+
+	Gate4(bool b)                { action = (Gate4Action<P1, P2, P3, P4> *)(uintptr_t)b; }
+
+	explicit Gate4(Gate4Action <P1, P2, P3, P4> *newaction) { action = newaction; }
+	Gate4() { action = NULL; }
+	Gate4(_CNULL) { action = NULL; }
+	~Gate4();
+
+	static Gate4 Empty() { return CNULL; }
+
+};
+
+template <class OBJECT, class METHOD, class P1, class P2, class P3, class P4>
+Gate4<P1, P2, P3, P4> pteback(OBJECT *object, bool (METHOD::*method)(P1 p1, P2 p2, P3 p3, P4 p4)) {
+	return Gate4<P1, P2, P3, P4>(new Gate4MethodActionPte<OBJECT, bool (METHOD::*)(P1 p1, P2 p2, P3 p3, P4 p4), P1, P2, P3, P4>(object, method));
+}
+
+template <class OBJECT, class METHOD, class P1, class P2, class P3, class P4>
+Gate4<P1, P2, P3, P4> callback(OBJECT *object, bool (METHOD::*method)(P1 p1, P2 p2, P3 p3, P4 p4)) {
+	return Gate4<P1, P2, P3, P4>(new Gate4MethodAction<OBJECT, bool (METHOD::*)(P1 p1, P2 p2, P3 p3, P4 p4), P1, P2, P3, P4>(object, method));
+}
+
+template <class OBJECT, class METHOD, class P1, class P2, class P3, class P4>
+Gate4<P1, P2, P3, P4> callback(const OBJECT *object, bool (METHOD::*method)(P1 p1, P2 p2, P3 p3, P4 p4) const) {
+	return Gate4<P1, P2, P3, P4>(new Gate4MethodAction<const OBJECT, bool (METHOD::*)(P1 p1, P2 p2, P3 p3, P4 p4) const, P1, P2, P3, P4>(object, method));
+}
+
+template <class P1, class P2, class P3, class P4>
+inline Gate4<P1, P2, P3, P4> callback(bool (*fn)(P1 p1, P2 p2, P3 p3, P4 p4)) {
+	return Gate4<P1, P2, P3, P4>(new Gate4FnAction <P1, P2, P3, P4>(fn));
+}
+
+template <class P1, class P2, class P3, class P4>
+struct Gate4ForkAction : public Gate4Action<P1, P2, P3, P4> {
+	Gate4<P1, P2, P3, P4> cb1, cb2;
+
+	bool Execute(P1 p1, P2 p2, P3 p3, P4 p4) { cb1(p1, p2, p3, p4); return cb2(p1, p2, p3, p4); }
+
+	Gate4ForkAction(Gate4<P1, P2, P3, P4> cb1, Gate4<P1, P2, P3, P4> cb2)
+		 : cb1(cb1), cb2(cb2) {}
+};
+
+template <class P1, class P2, class P3, class P4>
+inline Gate4<P1, P2, P3, P4> Proxy(Gate4<P1, P2, P3, P4>& cb)
+{
+	return callback(&cb, &Gate4<P1, P2, P3, P4>::Execute);
+}
+
+template <class P1, class P2, class P3, class P4>
+Gate4<P1, P2, P3, P4> callback(Gate4<P1, P2, P3, P4> cb1, Gate4<P1, P2, P3, P4> cb2)
+{
+	return Gate4<P1, P2, P3, P4>(new Gate4ForkAction <P1, P2, P3, P4>(cb1, cb2));
+}
+
+template <class P1, class P2, class P3, class P4>
+Gate4<P1, P2, P3, P4>& operator<<(Gate4<P1, P2, P3, P4>& a, Gate4<P1, P2, P3, P4> b)
+{
+	if(a)
+		a = callback(a, b);
+	else
+		a = b;
+	return a;
+}
+
+template <class P1, class P2, class P3, class P4>
+Gate4<P1, P2, P3, P4>& Gate4<P1, P2, P3, P4>::operator=(const Gate4& c)
+{
+	c.Retain();
+	Release();
+	action = c.action;
+	return *this;
+}
+
+template <class P1, class P2, class P3, class P4>
+Gate4<P1, P2, P3, P4>::Gate4(const Gate4& c)
+{
+	action = c.action;
+	Retain();
+}
+
+template <class P1, class P2, class P3, class P4>
+Gate4<P1, P2, P3, P4>::~Gate4()
 {
 	Release();
 }

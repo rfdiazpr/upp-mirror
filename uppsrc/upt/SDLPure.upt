@@ -20,7 +20,7 @@ option "Event loop" loop;
 SDL_Surface * OpenScreen(const int width, const int height, const int bpp, const int flags)
 {
 	SDL_Surface * screen = SDL_SetVideoMode(width, height, bpp, flags);
-	if(!screen)
+	if(!screen) 
 	{
 		printf("Couldn't set display mode: %s\n", SDL_GetError());
 		return NULL;
@@ -40,18 +40,18 @@ int main(int argc, char **argv)
 <:?video:>
 	int videoflags = SDL_HWSURFACE | SDL_HWACCEL<:(fullscreen || doublebuff ? fullscreen ? doublebuff ? " | SDL_FULLSCREEN | SDL_DOUBLEBUF" : " | SDL_FULLSCREEN" : doublebuff ? " | SDL_DOUBLEBUF" : "" : ""):>;
 	SDL_Surface * screen = OpenScreen(1024, 768, 32, videoflags);
-	if(!screen)
+	if(!screen) 
 		return 1;
 <:.:><:?loop:>
 	SDL_Event event;
 	bool done = false;
-
+	
 	while(!done)
-	{
+	{       
 		if(SDL_PollEvent(&event))
 		{
-			switch (event.type)
-			{
+			switch (event.type) 
+			{                    
 				case SDL_KEYDOWN:
 					if(event.key.keysym.sym == SDLK_LALT || event.key.keysym.sym == SDLK_TAB)
 						break;
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 					{
 						videoflags ^= SDL_FULLSCREEN;
 						screen = OpenScreen(screen->w, screen->h, screen->format->BitsPerPixel, videoflags);
-						if(!screen)
+						if(!screen) 
 							done = true;
 						break;
 					}" : ""):>

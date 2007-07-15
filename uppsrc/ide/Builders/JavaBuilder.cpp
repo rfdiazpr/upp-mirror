@@ -15,7 +15,7 @@ String AdjustLines(const String& file)
 			b = p;
 			while(*p && *p != '\n' && *p != '\"')
 				p++;
-			out.Cat(b, p - b);
+			out.Cat(b, (int)(p - b));
 			b = p;
 			if(*p == '\"')
 			{
@@ -34,13 +34,13 @@ String AdjustLines(const String& file)
 				continue;
 			}
 		}
-		out.Cat(b, p - b);
+		out.Cat(b, (int)(p - b));
 		while(*p && *p != '\n')
 		{
 			b = p;
 			while(*p && *p != '\n' && *p != '\r')
 				p++;
-			out.Cat(b, p - b);
+			out.Cat(b, (int)(p - b));
 			while(*p == '\r')
 				p++;
 		}

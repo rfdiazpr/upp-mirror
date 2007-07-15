@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)  // LOG(x)
 
 static StaticCriticalSection sMakeImage;
 
@@ -17,6 +17,7 @@ struct scImageMaker : LRUCache<Image>::Maker {
 	bool  paintonly;
 
 	virtual String Key() const {
+		String q = m->Key();
 		return m->Key();
 	}
 	virtual int    Make(Image& object) const {
@@ -29,7 +30,18 @@ struct scImageMaker : LRUCache<Image>::Maker {
 	}
 };
 
-int sMaxSize;
+static int sMaxSize;
+static int sMaxSizeMax = 4000000;
+
+void SetMakeImageCacheMax(int m)
+{
+	sMaxSizeMax = m;
+}
+
+void  SetMakeImageCacheSize(int m)
+{
+	sMaxSize = m;
+}
 
 void SweepMkImageCache()
 {
@@ -48,7 +60,7 @@ Image MakeImage__(const ImageMaker& m, bool paintonly)
 		cm.m = &m;
 		cm.paintonly = paintonly;
 		result = cache.Get(cm);
-		int q = min(cache.GetFoundSize() + cache.GetNewSize(), 4000000);
+		int q = min(cache.GetFoundSize() + cache.GetNewSize(), sMaxSizeMax);
 		if(q > sMaxSize) {
 			sMaxSize = q;
 			LLOG("ImageCache: Increasing maxsize to " << sMaxSize);
@@ -97,6 +109,46 @@ Image SimpleImageMaker::Make() const
 Image MakeImage(const Image& image, Image (*make)(const Image& image))
 {
 	return MakeImage(SimpleImageMaker(image, make));
+}
+
+struct sCachedRescale : public ImageMaker
+{
+	Size  sz;
+	Image img;
+
+	virtual String Key() const {
+		char h[2 * sizeof(int) + sizeof(int64)];
+		memcpy(h, &sz.cx, sizeof(int));
+		memcpy(h + sizeof(int), &sz.cy, sizeof(int));
+		int64 x = img.GetSerialId();
+		memcpy(h + 2 * sizeof(int), &x, sizeof(int64));
+		return String(h, 12);
+	}
+
+	virtual Image Make() const {
+		return Rescale(img, sz);
+	}
+
+};
+
+Image CachedRescale(const Image& m, Size sz)
+{
+	if(m.GetSize() == sz)
+		return m;
+	sCachedRescale cr;
+	cr.sz = sz;
+	cr.img = m;
+	return MakeImage(cr);
+}
+
+Image CachedRescalePaintOnly(const Image& m, Size sz)
+{
+	if(m.GetSize() == sz)
+		return m;
+	sCachedRescale cr;
+	cr.sz = sz;
+	cr.img = m;
+	return MakeImagePaintOnly(cr);
 }
 
 END_UPP_NAMESPACE

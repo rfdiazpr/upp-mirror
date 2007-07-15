@@ -2,7 +2,7 @@
 Encoding=UTF-8
 Name=TheIDE
 GenericName=TheIDE
-Comment=IDE for cross-platform C++ development
+Comment=IDE for cross-platform C++ development 
 MimeType=application/x-upp
 Exec=theide
 Icon=theide.png

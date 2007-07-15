@@ -322,7 +322,7 @@ void DocBrowser::Delete()
 
 void DocBrowser::New()
 {
-	
+
 	external.package.Add("Core"); //!!!
 	external.package <<= doc_dir.GetPackage(current);
 	external.nameing <<= ~nameing;
@@ -487,15 +487,15 @@ DocBrowser::DocBrowser()
 	item.WhenKillCursor = THISBACK(Flush);
 	item.WhenBar = THISBACK(ItemMenu);
 	item.WhenLeftDouble = THISBACK(Edit);
-	
+
 	view.Show();
 	edit.Hide();
 	edit.SetPage(Size(3968, INT_MAX));
-	
+
 	CtrlLayoutOKCancel(query, "Select");
 	query.clear <<= query.Breaker(IDYES);
 	query.status = 0;
-	
+
 	AddFrame(menu);
 	SetMainBar();
 	menu.Ctrl::Add(lang.RightPos(10, 70).TopPos(0, EditField::GetStdHeight()));
@@ -506,14 +506,14 @@ DocBrowser::DocBrowser()
 	lang <<= (int)LNGFromText("EN-US");
 	lang <<= THISBACK(Query);
 
-	edit.InsertFrame(1, editbar);	
+	edit.InsertFrame(1, editbar);
 	edit.WhenRefreshBar = THISBACK(SetEditBar);
 	edit.WhenHyperlink = THISBACK(EditLink);
-	
+
 	view.WhenLink = THISBACK(FollowLink);
-	
+
 	sort = false;
-	
+
 	CtrlLayoutOKCancel(external, "New external item");
 	external.ActiveFocus(external.item);
 }

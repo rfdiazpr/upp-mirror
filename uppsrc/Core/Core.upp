@@ -128,6 +128,9 @@ file
 	sub.upt,
 	core.upt,
 	Info readonly separator,
+	src.tpp,
+	srcdoc.tpp,
+	srcimp.tpp,
 	COPYING,
 	COPYING-PLAIN,
 	AUTHORS;
@@ -135,3 +138,4 @@ file
 mainconfig
 	"Normal" = "",
 	"Remote shared" = "SHARED";
+

@@ -150,7 +150,8 @@ void RichEdit::Paint(Draw& w)
 	else
 	if(paintcarect)
 		w.DrawRect(GetCaretRect(), InvertColor);
-	DrawTiles(w, dropcaret.OffsetedVert(-sb), CtrlImg::checkers());
+	if(!IsNull(dropcaret))
+		DrawTiles(w, dropcaret.OffsetedVert(-sb), CtrlImg::checkers());
 	scroller.Set(sb);
 }
 

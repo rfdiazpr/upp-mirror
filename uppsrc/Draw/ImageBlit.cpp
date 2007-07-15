@@ -25,7 +25,7 @@ const byte *UnpackRLE(RGBA *t, const byte *s, int len)
 		if(*s & 0x80) {
 			if(*s == 0x80)
 				break;
-			int count = min<int>(*s & 0x3F, e - t);
+			int count = min<int>((int)(*s & 0x3F), (int)(e - t));
 			RGBA h;
 			if(*s++ & 0x40)
 				Zero(h);
@@ -36,7 +36,7 @@ const byte *UnpackRLE(RGBA *t, const byte *s, int len)
 				h.a = 255;
 				s += 3;
 			}
-			count = min<int>(count, e - t);
+			count = min<int>(count, (int)(e - t));
 			memsetex(t, &h, sizeof(RGBA), count);
 			t += count;
 		}
@@ -69,7 +69,7 @@ String PackRLE(const RGBA *s, int len)
 			s++;
 			while(s < e && s->a == 0 && s - q < 0x3f)
 				s++;
-			r.Cat((0x80|0x40) + (s - q));
+			r.Cat((0x80|0x40) + (int)(s - q));
 		}
 		else
 		if(s + 1 < e && s[0] == s[1]) {
@@ -77,7 +77,7 @@ String PackRLE(const RGBA *s, int len)
 			while(s + 1 < e && s[0] == s[1] && s - q < 0x3e)
 				s++;
 			s++;
-			r.Cat(0x80 + (s - q));
+			r.Cat(0x80 + (int)(s - q));
 			r.Cat(q->b);
 			r.Cat(q->g);
 			r.Cat(q->r);
@@ -86,7 +86,7 @@ String PackRLE(const RGBA *s, int len)
 			s++;
 			while(s + 1 < e && s->a && s[0] != s[1] && s - q < 0x3f)
 				s++;
-			r.Cat(s - q);
+			r.Cat((int)(s - q));
 			while(q < s) {
 				r.Cat(q->b);
 				r.Cat(q->g);
@@ -197,6 +197,21 @@ void AlphaBlend(RGBA *b, const RGBA *f, int len)
 		b->b += m * (f->b - b->b) >> 8;
 		b++;
 		f++;
+	}
+}
+
+void AlphaBlendOverBg(RGBA *b, RGBA bg, int len)
+{
+	sInitBlends();
+	const RGBA *e = b + len;
+	while(b < e) {
+		sBlends& x = sblends[(bg.a << 8) + b->a];
+		int m = x.m;
+		b->a = x.a;
+		b->r = bg.r + (m * (b->r - bg.r) >> 8);
+		b->g = bg.g + (m * (b->g - bg.g) >> 8);
+		b->b = bg.b + (m * (b->b - bg.b) >> 8);
+		b++;
 	}
 }
 

@@ -231,7 +231,7 @@ public:
 		ConstIterator operator+(int i) const    { return ptr + i; }
 		ConstIterator operator-(int i) const    { return ptr - i; }
 
-		int  operator-(ConstIterator x) const   { return ptr - x.ptr; }
+		int  operator-(ConstIterator x) const   { return (int)(ptr - x.ptr); }
 
 		bool operator==(ConstIterator x) const  { return ptr == x.ptr; }
 		bool operator!=(ConstIterator x) const  { return ptr != x.ptr; }

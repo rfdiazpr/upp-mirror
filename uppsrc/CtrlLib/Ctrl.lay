@@ -110,3 +110,4 @@ LAYOUT(PrinterLayout, 372, 264)
 	ITEM(Switch, landscape, SetLabel(t_("Portrait\nLandscape")).LeftPosZ(16, 152).TopPosZ(194, 15))
 	ITEM(LabelBox, dv___21, SetLabel(t_("Placement")).LeftPosZ(8, 356).TopPosZ(176, 48))
 END_LAYOUT
+

@@ -8,11 +8,11 @@ NAMESPACE_UPP
 // Old format ---------------------------
 
 String  VFormat(const char *fmt, va_list ptr) {
-	int limit = 2 * strlen(fmt) + 1024;
+	int limit = 2 * (int)strlen(fmt) + 1024;
 	Buffer<char> buffer(limit);
 	vsprintf(buffer, fmt, ptr);
 	va_end(ptr);
-	int len = strlen(buffer);
+	int len = (int)strlen(buffer);
 	ASSERT(len <= limit);
 	return String(buffer, len);
 }
@@ -49,7 +49,7 @@ String FormatIntBase(int i, int base, int width, char lpad, int sign)
 	}
 	if(do_sign && lpad == '0')
 		*--p = (minus ? '-' : '+');
-	int dwd = e - p;
+	int dwd = (int)(e - p);
 	int pad = (width = max(width, dwd)) - dwd;
 	StringBuffer out(width);
 	char *o = out;
@@ -184,7 +184,7 @@ static char *PutDigits(char *out, unsigned number, int count)
 		*t++ = number % 10 + '0';
 	while(number /= 10);
 	ASSERT(t - temp <= __countof(temp));
-	if((count -= t - temp) > 0)
+	if((count -= (int)(t - temp)) > 0)
 	{
 		char *e = out + count;
 		while(out < e)
@@ -270,7 +270,7 @@ String FormatDoubleDigits(double d, int raw_digits, int flags, int& exponent)
 			*p++ = '0';
 		}
 	}
-	return String(~buffer, p - ~buffer);
+	return String(~buffer, (int)(p - ~buffer));
 }
 
 String FormatDouble(double d, int digits, int flags, int pad_exp)
@@ -513,7 +513,7 @@ void RegisterFormatter(int type, const char *id, Formatter f)
 	INTERLOCKED {
 		FormId fid(id, type);
 		formatmap().FindAdd(fid, f);
-		formatmap().Find(fid); // Using internal NTL knowledge to make it lock-free...
+		formatmap().Find(fid);
 	}
 }
 
@@ -805,7 +805,7 @@ void IntDoubleRegister(int type)
 	RegisterFormatter(type, "tw", &twFormatter);
 }
 
-String NFormat(int language, const char *s, const Vector<Value>& v)
+static void sRegisterFormatters()
 {
 	ONCELOCK {
 		IntDoubleRegister(BOOL_V);
@@ -849,6 +849,15 @@ String NFormat(int language, const char *s, const Vector<Value>& v)
 		RegisterValueFormatter("vt", &StdFormatFormatter);
 		RegisterValueFormatter("", &StdFormatFormatter);
 	}
+}
+
+INITBLOCK {
+	sRegisterFormatters();
+}
+
+String NFormat(int language, const char *s, const Vector<Value>& v)
+{
+	sRegisterFormatters();
 	Formatting f;
 	f.language = language;
 	String result;
@@ -860,7 +869,7 @@ String NFormat(int language, const char *s, const Vector<Value>& v)
 		for(;;) {
 			while(*s && *s != '%')
 				++s;
-			result.Cat(b, s - b);
+			result.Cat(b, (int)(s - b));
 			if(*s == '\0')
 				return result;
 			++s;
@@ -893,7 +902,7 @@ String NFormat(int language, const char *s, const Vector<Value>& v)
 			}
 			else
 			if(*s == '*') {
-				f.format.Cat(b, s - b);
+				f.format.Cat(b, (int)(s - b));
 				f.format.Cat(FormatInt(v[pos++]));
 				b = ++s;
 			}
@@ -920,12 +929,12 @@ String NFormat(int language, const char *s, const Vector<Value>& v)
 			}
 			else
 			if(*s == '[') {
-				f.format.Cat(b, s - b);
+				f.format.Cat(b, (int)(s - b));
 				s++;
 				b = s;
 				while(*s && *s != ']')
 					s++;
-				f.format.Cat(b, s - b);
+				f.format.Cat(b, (int)(s - b));
 				if(*s) s++;
 				b = s;
 				if(!IsAlpha(*s) && *s != '~') break;
@@ -950,7 +959,7 @@ String NFormat(int language, const char *s, const Vector<Value>& v)
 				s++;
 			}
 		}
-		f.format.Cat(b, s - b);
+		f.format.Cat(b, (int)(s - b));
 		b = s;
 		while(IsAlpha(*s))
 			s++;

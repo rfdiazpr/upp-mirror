@@ -47,12 +47,13 @@ protected:
 private:
 	PGconn               *conn;
 	VectorMap<Oid, int>   oid_type_map; //pg has an oid for every type
-	
+
 	void                  StoreInOidTypeMap(const char *typname, int type_id, const VectorMap<String, int64> &typname_oid_map);
 	bool                  InitOidTypeMap();
 	void                  ExecTrans(const char * statement);
 
 	Vector<String>        EnumData(char type, const char *schema = NULL);
+	String                ErrorMessage();
 
 public:
 	int                   OidToType(Oid oid); ///< default is STRING_V

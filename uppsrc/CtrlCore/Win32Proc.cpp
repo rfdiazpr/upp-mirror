@@ -128,27 +128,23 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 		break;
 #endif
 	case WM_LBUTTONDOWN:
-	case WM_MBUTTONDOWN:
 #ifdef PLARFORM_WINCE
 		wince_mouseleft = true;
 #endif
 		SetWinceMouse(hwnd, lParam);
 		ClickActivateWnd();
 		if(ignoreclick) return 0L;
-		DoMouse(LEFTDOWN, Point(lParam), message == WM_MBUTTONDOWN ? MIDDLEBUTTON : 0);
+		DoMouse(LEFTDOWN, Point((dword)lParam), 0);
 		if(_this) PostInput();
 		return 0L;
 	case WM_LBUTTONUP:
-	case WM_MBUTTONUP:
 		if(ignoreclick)
 			EndIgnore();
 		else
-			DoMouse(LEFTUP, Point(lParam), message == WM_MBUTTONUP ? MIDDLEBUTTON : 0);
+			DoMouse(LEFTUP, Point((dword)lParam), 0);
 #ifdef PLATFORM_WINCE
 		wince_mouseleft = false;
 #endif
-		if(!GetMouseRight() && !GetMouseMiddle() && !GetMouseLeft())
-			ReleaseCtrlCapture();
 #ifdef PLATFORM_WINCE
 		wince_mousepos = Point(-99999, -99999);
 		if(!ignoreclick)
@@ -157,16 +153,47 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 		if(_this) PostInput();
 		return 0L;
 	case WM_LBUTTONDBLCLK:
-	case WM_MBUTTONDBLCLK:
 		ClickActivateWnd();
 		if(ignoreclick) return 0L;
-		DoMouse(LEFTDOUBLE, Point(lParam), message == WM_MBUTTONDBLCLK ? MIDDLEBUTTON : 0);
+		DoMouse(LEFTDOUBLE, Point((dword)lParam), 0);
 		if(_this) PostInput();
 		return 0L;
 	case WM_RBUTTONDOWN:
 		ClickActivateWnd();
 		if(ignoreclick) return 0L;
-		DoMouse(RIGHTDOWN, Point(lParam));
+		DoMouse(RIGHTDOWN, Point((dword)lParam));
+		if(_this) PostInput();
+		return 0L;
+	case WM_RBUTTONUP:
+		if(ignoreclick)
+			EndIgnore();
+		else
+			DoMouse(RIGHTUP, Point((dword)lParam));
+		if(_this) PostInput();
+		return 0L;
+	case WM_RBUTTONDBLCLK:
+		ClickActivateWnd();
+		if(ignoreclick) return 0L;
+		DoMouse(RIGHTDOUBLE, Point((dword)lParam));
+		if(_this) PostInput();
+		return 0L;
+	case WM_MBUTTONDOWN:
+		ClickActivateWnd();
+		if(ignoreclick) return 0L;
+		DoMouse(MIDDLEDOWN, Point((dword)lParam));
+		if(_this) PostInput();
+		return 0L;
+	case WM_MBUTTONUP:
+		if(ignoreclick)
+			EndIgnore();
+		else
+			DoMouse(MIDDLEUP, Point((dword)lParam));
+		if(_this) PostInput();
+		return 0L;
+	case WM_MBUTTONDBLCLK:
+		ClickActivateWnd();
+		if(ignoreclick) return 0L;
+		DoMouse(MIDDLEDOUBLE, Point((dword)lParam));
 		if(_this) PostInput();
 		return 0L;
 #ifndef PLATFORM_WINCE
@@ -176,20 +203,6 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 		ClickActivateWnd();
 		break;
 #endif
-	case WM_RBUTTONUP:
-		if(ignoreclick)
-			EndIgnore();
-		else
-			DoMouse(RIGHTUP, Point(lParam));
-		if(!GetMouseLeft() && !GetMouseMiddle()) ReleaseCtrlCapture();
-		if(_this) PostInput();
-		return 0L;
-	case WM_RBUTTONDBLCLK:
-		ClickActivateWnd();
-		if(ignoreclick) return 0L;
-		DoMouse(RIGHTDOUBLE, Point(lParam));
-		if(_this) PostInput();
-		return 0L;
 	case WM_MOUSEMOVE:
 		SetWinceMouse(hwnd, lParam);
 		LLOG("WM_MOUSEMOVE: ignoreclick = " << ignoreclick);
@@ -198,7 +211,7 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 			return 0L;
 		}
 		if(_this)
-			DoMouse(MOUSEMOVE, Point(lParam));
+			DoMouse(MOUSEMOVE, Point((dword)lParam));
 		DoCursorShape();
 		return 0L;
 	case 0x20a: // WM_MOUSEWHEEL:
@@ -207,11 +220,11 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 			return 0L;
 		}
 		if(_this)
-			DoMouse(MOUSEWHEEL, Point(lParam), (short)HIWORD(wParam));
+			DoMouse(MOUSEWHEEL, Point((dword)lParam), (short)HIWORD(wParam));
 		if(_this) PostInput();
 		return 0L;
 	case WM_SETCURSOR:
-		if((HWND)wParam == hwnd && LOWORD(lParam) == HTCLIENT) {
+		if((HWND)wParam == hwnd && LOWORD((dword)lParam) == HTCLIENT) {
 			if(hCursor) SetCursor(hCursor);
 			return TRUE;
 		}
@@ -242,32 +255,32 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 #endif
 			dword keycode = 0;
 			if(message == WM_KEYDOWN)
-				keycode = KEYtoK(wParam);
+				keycode = KEYtoK((dword)wParam);
 			else
 			if(message == WM_KEYUP)
-				keycode = KEYtoK(wParam) | K_KEYUP;
+				keycode = KEYtoK((dword)wParam) | K_KEYUP;
 			else
 			if(message == WM_SYSKEYDOWN /*&& ((lParam & 0x20000000) || wParam == VK_F10)*/)
-				keycode = KEYtoK(wParam);
+				keycode = KEYtoK((dword)wParam);
 			else
 			if(message == WM_SYSKEYUP /*&& ((lParam & 0x20000000) || wParam == VK_F10)*/)
-				keycode = KEYtoK(wParam) | K_KEYUP;
+				keycode = KEYtoK((dword)wParam) | K_KEYUP;
 			else
 			if(message == WM_CHAR && wParam != 127 && wParam > 32) {
 #ifdef PLATFORM_WINCE
 				keycode = wParam;
 #else
 				if(IsWindowUnicode(hwnd)) // TRC 04/10/17: ActiveX Unicode patch
-					keycode = wParam;
+					keycode = (dword)wParam;
 				else {
 					char b[20];
 					::GetLocaleInfo(MAKELCID(LOWORD(GetKeyboardLayout(0)), SORT_DEFAULT),
 					                LOCALE_IDEFAULTANSICODEPAGE, b, 20);
 					int codepage = atoi(b);
 					if(codepage >= 1250 && codepage <= 1258)
-						keycode = ToUnicode(wParam, codepage - 1250 + CHARSET_WIN1250);
+						keycode = ToUnicode((dword)wParam, codepage - 1250 + CHARSET_WIN1250);
 					else
-						keycode = wParam;
+						keycode = (dword)wParam;
 				}
 #endif
 			}
@@ -279,7 +292,7 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 			}
 //			LOG("key processed = " << b);
 			if(b || (message == WM_SYSKEYDOWN || message == WM_SYSKEYUP)
-			&& wParam != VK_F4 && !PassWindowsKey(wParam)) // 17.11.2003 Mirek -> invoke system menu
+			&& wParam != VK_F4 && !PassWindowsKey((dword)wParam)) // 17.11.2003 Mirek -> invoke system menu
 				return 0L;
 			break;
 		}
@@ -327,10 +340,10 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 		break;
 #ifndef PLATFORM_WINCE
 	case WM_MOUSEACTIVATE:
-		LLOG("WM_MOUSEACTIVATE " << Name() << ", focusCtrlWnd = " << ::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
+		LLOG("WM_MOUSEACTIVATE " << Name() << ", focusCtrlWnd = " << UPP::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
 		if(!IsEnabled()) {
 			if(lastActiveWnd && lastActiveWnd->IsEnabled()) {
-				LLOG("WM_MOUSEACTIVATE -> ::SetFocus for " << ::Name(lastActiveWnd));
+				LLOG("WM_MOUSEACTIVATE -> ::SetFocus for " << UPP::Name(lastActiveWnd));
 				::SetFocus(lastActiveWnd->GetHWND());
 			}
 			else
@@ -369,20 +382,23 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 		ignorekeyup = true;
 		break;
 	case WM_SETFOCUS:
-		LLOG("WM_SETFOCUS " << Name() << ", focusCtrlWnd = " << ::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
+		LLOG("WM_SETFOCUS " << Name() << ", focusCtrlWnd = " << UPP::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
 		if(this != focusCtrlWnd)
-			if(IsEnabled())
+			if(IsEnabled()) {
+				LLOG("WM_SETFOCUS -> ActivateWnd: this != focusCtrlWnd, this = "
+					<< Name() << ", focusCtrlWnd = " << UPP::Name(focusCtrlWnd));
 				ActivateWnd();
+			}
 			else {
 				if(focusCtrlWnd && focusCtrlWnd->IsEnabled()) {
 					if(!IsEnabled())
 						MessageBeep(MB_OK);
-					LLOG("WM_SETFOCUS -> ::SetFocus for " << ::Name(focusCtrlWnd));
+					LLOG("WM_SETFOCUS -> ::SetFocus for " << UPP::Name(focusCtrlWnd));
 					::SetFocus(focusCtrlWnd->GetHWND());
 				}
 				else
 				if(lastActiveWnd && lastActiveWnd->IsEnabled()) {
-					LLOG("WM_SETFOCUS -> ::SetFocus for " << ::Name(lastActiveWnd));
+					LLOG("WM_SETFOCUS -> ::SetFocus for " << UPP::Name(lastActiveWnd));
 					::SetFocus(lastActiveWnd->GetHWND());
 				}
 				else {
@@ -390,13 +406,15 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 					::SetFocus(NULL);
 				}
 			}
-		LLOG("//WM_SETFOCUS " << (void *)hwnd << ", focusCtrlWnd = " << ::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
+		LLOG("//WM_SETFOCUS " << (void *)hwnd << ", focusCtrlWnd = " << UPP::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
 		return 0L;
 	case WM_KILLFOCUS:
-		LLOG("WM_KILLFOCUS " << (void *)(HWND)wParam << ", this = " << ::Name(this) << ", focusCtrlWnd = " << ::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
+		LLOG("WM_KILLFOCUS " << (void *)(HWND)wParam << ", this = " << UPP::Name(this) << ", focusCtrlWnd = " << UPP::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
 		LLOG("Kill " << ::Name(CtrlFromHWND((HWND)wParam)));
-		if(!CtrlFromHWND((HWND)wParam))
+		if(!CtrlFromHWND((HWND)wParam)) {
+			LLOG("WM_KILLFOCUS -> KillFocusWnd: " << UPP::Name(this));
 			KillFocusWnd();
+		}
 		LLOG("//WM_KILLFOCUS " << (void *)(HWND)wParam << ", focusCtrlWnd = " << ::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
 		return 0L;
 	case WM_ENABLE:

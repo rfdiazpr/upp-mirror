@@ -22,7 +22,7 @@ class CoWork : NoCopy {
 		static bool DoJob();
 		static void ThreadRun(int tno);
 	};
-
+	
 	friend struct Pool;
 
 	static Pool& pool();

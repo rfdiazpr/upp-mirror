@@ -293,7 +293,7 @@ void XmlParser::Next()
 								const char *e = term;
 								while(*++e && *e != '&' && *e != '\"')
 									;
-								attrval.Cat(term, e - term);
+								attrval.Cat(term, (int)(e - term));
 								term = e;
 							}
 						if(*term == '\"')
@@ -307,7 +307,7 @@ void XmlParser::Next()
 								const char *e = term;
 								while((byte)*++e > ' ' && *e != '>' && *e != '&')
 									;
-								attrval.Cat(term, e - term);
+								attrval.Cat(term,(int) (e - term));
 								term = e;
 							}
 					}
@@ -337,7 +337,7 @@ void XmlParser::Next()
 				const char *e = term;
 				while(*++e && *e != '&' && *e != '<')
 					;
-				raw_text.Cat(term, e - term);
+				raw_text.Cat(term, (int)(e - term));
 				term = e;
 			}
 		}
@@ -346,7 +346,7 @@ void XmlParser::Next()
 			while(re > raw_text.Begin() && (byte)re[-1] <= ' ')
 				re--;
 		}
-		text = FromUtf8(~raw_text, re - ~raw_text).ToString();
+		text = FromUtf8(~raw_text, (int)(re - ~raw_text)).ToString();
 		type = XML_TEXT;
 	}
 }

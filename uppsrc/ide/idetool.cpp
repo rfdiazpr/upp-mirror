@@ -86,36 +86,20 @@ void  Ide::QueryWord()
 	SetBar();
 }
 
-void Ide::TopicPackages()
-{
-	topic.SetCommonDir(GetCommonDir());
-	topic.ClearPackages();
-	const Workspace& wspc = IdeWorkspace();
-	for(int i = 0; i < wspc.GetCount(); i++)
-		topic.AddPackage(wspc[i], PackageDirectory(wspc[i]));
-	topic.FinishPackages();
-}
-
-void Ide::OpenTopic()
-{
-	if(!topic.IsOpen()) {
-		TopicPackages();
-		topic.OpenMain();
-	}
-	topic.SetForeground();
-	topic.SetEditorFocus();
-}
-
 void Ide::OpenATopic()
 {
-	OpenTopic();
-	topic.OpenLink(doc.GetCurrent());
-	topic.GotoLabel(doc.GetCurrentLabel());
-}
-
-void Ide::TopicBack()
-{
-	editor.SetFocus();
+	String t = doc.GetCurrent();
+	if(!t.StartsWith("topic:"))
+		return;
+	TopicLink tl = ParseTopicLink(t);
+	if(tl) {
+		EditFile(AppendFileName(PackageDirectory(tl.package), tl.group + ".tpp"));
+		if(designer) {
+			TopicEditor *te = dynamic_cast<TopicEditor *>(&designer->DesignerCtrl());
+			if(te)
+				te->GoTo(tl.topic, doc.GetCurrentLabel());
+		}
+	}
 }
 
 void Ide::DppIgnoreList()

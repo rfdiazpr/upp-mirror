@@ -44,7 +44,7 @@ void IconDes::SyncShow()
 		if(c.supersampling) {
 			int l = c.image.GetLength();
 			if(l > 0 && l <= 256 * 256)
-				image = Rescale(image, c.image.GetSize() / 3);
+				image = DownSample3x(image);
 			else
 				image = IconDesImg::LargeImage();
 		}
@@ -570,9 +570,8 @@ void IconDes::ResizeDown()
 		return;
 	Slot& c = Current();
 	BeginResize();
-	Size sz = c.image.GetSize() / 3;
-	sz = Size(max(sz.cx, 1), max(sz.cy, 1));
-	c.image = Rescale(c.image, sz);
+	c.image = (c.image.GetSize() / 3).IsEmpty() ? CreateImage(Size(1, 1), White)
+	                                            : DownSample3x(c.image);
 	c.supersampling = false;
 	Reset();
 }

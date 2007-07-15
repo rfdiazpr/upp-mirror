@@ -22,6 +22,7 @@ void AlphaBlendOpaque(RGBA *t, const RGBA *s, int len, int alpha);
 void AlphaBlend(RGBA *b, const RGBA *f, int len);
 void AlphaBlend(RGBA *b, const RGBA *f, int len, Color color);
 int  GetChMaskPos32(dword mask);
+void AlphaBlendOverBg(RGBA *b, RGBA bg, int len);
 
 const byte *UnpackRLE(RGBA *t, const byte *src, int len);
 String      PackRLE(const RGBA *s, int len);

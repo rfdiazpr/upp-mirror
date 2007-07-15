@@ -504,7 +504,7 @@ void TreeCtrl::MoveCursorLine(int c, int incr)
 	if (!incr) return;
 	else if (c < 0) c = cnt-1;
 	else if (c >= cnt) c = 0;
-
+	
 	while (!item[line[c].itemi].canselect) {
 		c += incr;
 		if (c == cursor) return;
@@ -1233,7 +1233,7 @@ bool TreeCtrl::DnDInserti(int ii, PasteClip& d, bool bottom)
 	return false;
 }
 
-void TreeCtrl::DragEnter(Point p, PasteClip& d)
+void TreeCtrl::DragEnter()
 {
 	RefreshSel();
 }

@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)  // LOG(x)
 
 Ptr<Ctrl> Ctrl::focusCtrl;
 Ptr<Ctrl> Ctrl::focusCtrlWnd;
@@ -182,6 +182,7 @@ bool Ctrl::SetFocus0(bool activate)
 		UsrLogT(6, String().Cat() << "SETFOCUS " << Desc(this));
 	LLOG("Ctrl::SetFocus " << Desc(this));
 	LLOG("focusCtrlWnd " << UPP::Name(focusCtrlWnd));
+	LLOG("Ctrl::SetFocus0 -> deferredSetFocus = NULL; was: " << UPP::Name(defferedSetFocus));
 	defferedSetFocus = NULL;
 	if(focusCtrl == this) return true;
 	if(!IsOpen() || !IsEnabled() || !IsVisible()) return false;
@@ -230,8 +231,10 @@ void Ctrl::SetFocusWnd()
 {
 	// notification, don't set physical focus here
 	LLOG("Ctrl::SetFocusWnd");
-	if(focusCtrlWnd != this)
+	if(focusCtrlWnd != this) {
+		LLOG("Ctrl::SetFocusWnd->ActivateWnd");
 		ActivateWnd();
+	}
 }
 
 void Ctrl::KillFocusWnd()
@@ -249,20 +252,27 @@ void Ctrl::KillFocusWnd()
 void Ctrl::ClickActivateWnd()
 {
 	LLOG("Ctrl::ClickActivateWnd");
-	if(this == ~focusCtrlWnd && focusCtrl && focusCtrl->GetTopCtrl() != this)
+	if(this == ~focusCtrlWnd && focusCtrl && focusCtrl->GetTopCtrl() != this) {
+		LLOG("Ctrl::ClickActivateWnd -> ActivateWnd");
 		ActivateWnd();
+	}
 }
 
 void Ctrl::DefferedFocusSync()
 {
 	while(defferedChildLostFocus.GetCount() || defferedSetFocus) {
+		LLOG("Ctrl::DeferredFocusSync, defferedSetFocus = " << UPP::Name(defferedSetFocus));
 		Vector< Ptr<Ctrl> > b = defferedChildLostFocus;
 		defferedChildLostFocus.Clear();
 		for(int i = 0; i < b.GetCount(); i++)
-			if(b[i])
+			if(b[i]) {
+				LLOG("Ctrl::DeferredFocusSync -> ChildLostFocus " << UPP::Name(b[i]));
 				b[i]->ChildLostFocus();
-		if(defferedSetFocus)
+			}
+		if(defferedSetFocus) {
+			LLOG("Ctrl::DeferredFocusSync -> SetFocus " << UPP::Name(defferedSetFocus));
 			defferedSetFocus->SetFocus();
+		}
 		defferedSetFocus = NULL;
 		SyncCaret();
 	}
@@ -282,7 +292,9 @@ void Ctrl::SyncCaret() {
 		}
 	}
 	if(focusCtrl != caretCtrl || cr != caretRect) {
-		LLOG("Do SyncCaret focusCtrl: " << UPP::Name(focusCtrl) << ", caretCtrl: " << UPP::Name(caretCtrl));
+		LLOG("Do SyncCaret focusCtrl: " << UPP::Name(focusCtrl)
+		     << ", caretCtrl: " << UPP::Name(caretCtrl)
+		     << ", cr: " << cr);
 		WndDestroyCaret();
 		if(focusCtrl && !cr.IsEmpty())
 			focusCtrl->GetTopCtrl()->WndCreateCaret(cr);

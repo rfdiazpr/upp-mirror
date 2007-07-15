@@ -261,7 +261,7 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 				if(Xbuttons < 3)
 					DispatchMouse(RIGHT|action, p, 0);
 				else
-					DispatchMouse(LEFT|action, p, MIDDLEBUTTON);
+					DispatchMouse(MIDDLE|action, p, 0);
 				break;
 			case Button3:
 				sModState |= Button3Mask;
@@ -273,7 +273,6 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 		break;
 	case ButtonRelease: {
 			mousePos = Point(event->xbutton.x_root, event->xbutton.y_root);
-			ReleaseGrab();
 			XButtonEvent& e = event->xbutton;
 			sModState = e.state;
 			Xeventtime = e.time;
@@ -300,7 +299,7 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 					if(Xbuttons < 3)
 						DispatchMouse(RIGHTUP, p, 0);
 					else
-						DispatchMouse(LEFTUP, p, MIDDLEBUTTON);
+						DispatchMouse(MIDDLEUP, p, 0);
 					break;
 				case Button3:
 					DispatchMouse(RIGHTUP, p, 0);
@@ -312,8 +311,6 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 					DispatchMouse(MOUSEWHEEL, p, -120);
 					break;
 				}
-			if(!GetMouseLeft() && !GetMouseRight() && !GetMouseMiddle())
-				ReleaseCtrlCapture();
 			if(_this) PostInput();
 		}
 		break;

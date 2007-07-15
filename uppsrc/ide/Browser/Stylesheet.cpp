@@ -4,12 +4,11 @@ struct StyleDlg : public WithStylesheetLayout<TopWindow> {
 	virtual bool Accept();
 
 	EditString editname;
-	String     commondir;
 
 	void Edit();
 	void Load();
 	void Save();
-	String CommonFile(const char *s)      { return AppendFileName(commondir, s); }
+	String CommonFile(const char *s)      { return AppendFileName(GetCommonDir(), s); }
 
 	typedef StyleDlg CLASSNAME;
 
@@ -87,7 +86,6 @@ StyleDlg::StyleDlg()
 
 int TopicEditor::Execute(StyleDlg& d)
 {
-	d.commondir = commondir;
 	d.Load();
 	d.style.FindSetCursor(laststylesheet);
 	if(!d.style.IsCursor())
@@ -134,8 +132,6 @@ void TopicEditor::ApplyStylesheet()
 
 void TopicEditor::ApplyStylesheetGroup()
 {
-	if(!group.IsCursor())
-		return;
 	StyleDlg d;
 	d.Title("Apply stylesheet to current group");
 	d.edit.Hide();

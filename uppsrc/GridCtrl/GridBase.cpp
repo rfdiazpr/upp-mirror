@@ -1,15 +1,14 @@
 #include <CtrlLib/CtrlLib.h>
+#include "GridCtrl.h"
 
 NAMESPACE_UPP
 
-#include "GridBase.h"
-
-int ItemRect::sortCol;
-int ItemRect::sortMode;
+int GridCtrl::ItemRect::sortCol;
+int GridCtrl::ItemRect::sortMode;
 
 /*---------------------------------------------------*/
 
-void Item::SetCtrl(Ctrl * newCtrl)
+void GridCtrl::Item::SetCtrl(Ctrl * newCtrl)
 {
 	ctrl = newCtrl;
 	ctrl->Hide();
@@ -18,40 +17,40 @@ void Item::SetCtrl(Ctrl * newCtrl)
 	//ctrl->SetFrame(BlackFrame());
 }
 
-void Item::DropCtrl()                  
+void GridCtrl::Item::DropCtrl()
 {
 	ctrl = NULL;
 }
 
-VectorMap<Id, int> *ItemRect::aliases = NULL;
+VectorMap<Id, int> *GridCtrl::ItemRect::aliases = NULL;
 
 /*---------------------------------------------------*/
 
-ItemRect& ItemRect::Alias(Id _id)
+GridCtrl::ItemRect& GridCtrl::ItemRect::Alias(Id _id)
 {
 	aliases->SetKey(id, _id);
 	return *this;
 }
 
-ItemRect& ItemRect::Alias(const char * s)
+GridCtrl::ItemRect& GridCtrl::ItemRect::Alias(const char * s)
 {
 	aliases->SetKey(id, s);
 	return *this;
 }
 
-ItemRect& ItemRect::Name(String &s)
+GridCtrl::ItemRect& GridCtrl::ItemRect::Name(String &s)
 {
 	(*items)[0][id].val = s;
 	return *this;
 }
 
-ItemRect& ItemRect::Name(const char * s)
+GridCtrl::ItemRect& GridCtrl::ItemRect::Name(const char * s)
 {
 	(*items)[0][id].val = s;
 	return *this;
 }
 
-ItemRect& ItemRect::Size(int n)
+GridCtrl::ItemRect& GridCtrl::ItemRect::Size(int n)
 {
 	hidden = n == 0;
 
@@ -62,121 +61,121 @@ ItemRect& ItemRect::Size(int n)
 	}
 	else
 		n = 0;
-	
+
 	size = nsize = n;
 	return *this;
 }
 
-ItemRect& ItemRect::Width(int n)  
+GridCtrl::ItemRect& GridCtrl::ItemRect::Width(int n)
 {
 	return Size(n);
 }
 
-ItemRect& ItemRect::Height(int n) 
+GridCtrl::ItemRect& GridCtrl::ItemRect::Height(int n)
 {
 	return Size(n);
 }
 
-ItemRect& ItemRect::Min(int n)
+GridCtrl::ItemRect& GridCtrl::ItemRect::Min(int n)
 {
 	if(hidden)
 		return *this;
 	min = n;
 	if(size < min)
 		size = min;
-	return *this; 
+	return *this;
 }
 
-ItemRect& ItemRect::Max(int n)
+GridCtrl::ItemRect& GridCtrl::ItemRect::Max(int n)
 {
 	if(hidden)
 		return *this;
-	max = n; 
+	max = n;
 	if(size > max)
 		size = max;
-	return *this; 
+	return *this;
 }
 
-ItemRect& ItemRect::Fixed(int n)
+GridCtrl::ItemRect& GridCtrl::ItemRect::Fixed(int n)
 {
 	return Min(n).Max(n);
 }
 
-ItemRect& ItemRect::Edit(Ctrl &ctrl)
+GridCtrl::ItemRect& GridCtrl::ItemRect::Edit(Ctrl &ctrl)
 {
 	ctrl.Hide();
 	ctrl.SetFrame(BlackFrame());
 	//ctrl.SetFrame(NullFrame());
 	(*edits)[id].ctrl = &ctrl;
-	parent->AddChild(&ctrl);
+	parent->holder.AddChild(&ctrl);
 	return *this;
 }
 
 
-void ItemRect::ChangeSortMode(bool idsort)
+void GridCtrl::ItemRect::ChangeSortMode(bool idsort)
 {
 	if(++sortmode > 2) sortmode = (int) !idsort;
 }
 
-ItemRect& ItemRect::SetConvert(Convert &c)
+GridCtrl::ItemRect& GridCtrl::ItemRect::SetConvert(Convert &c)
 {
 	(*edits)[id].convert = &c;
 	return *this;
 }
 
-ItemRect& ItemRect::NoConvertion()
+GridCtrl::ItemRect& GridCtrl::ItemRect::NoConvertion()
 {
 	convertion = false;
 	return *this;
 }
 
-ItemRect& ItemRect::Default(Value v)
+GridCtrl::ItemRect& GridCtrl::ItemRect::Default(Value v)
 {
 	defval = v;
 	return *this;
 }
 
-ItemRect& ItemRect::Index(bool b)
+GridCtrl::ItemRect& GridCtrl::ItemRect::Index(bool b)
 {
 	Size(0);
 	index = b;
 	return *this;
 }
 
-String ItemRect::GetName()
+String GridCtrl::ItemRect::GetName()
 {
 	return (*items)[0][id].val;
 }
 
-ItemRect& ItemRect::SetFormat(const char *fmt)
+GridCtrl::ItemRect& GridCtrl::ItemRect::SetFormat(const char *fmt)
 {
 	//(*items)[0][id].convert = &c;
 	return *this;
 }
 
-ItemRect& ItemRect::SetDisplay(GridDisplay &gd)
+GridCtrl::ItemRect& GridCtrl::ItemRect::SetDisplay(GridDisplay &gd)
 {
 	//(*items)[0][id].display = &gd;
 	display = &gd;
 	return *this;
 }
 
-ItemRect& ItemRect::IgnoreDisplay()
+GridCtrl::ItemRect& GridCtrl::ItemRect::IgnoreDisplay()
 {
 	ignore_display = true;
 	return *this;
 }
 
-void ItemRect::Clear()
+void GridCtrl::ItemRect::Clear()
 {
 	fnt = StdFont();
 	bg = Null;
 	fg = Null;
 }
 
-void ItemRect::Serialize(Stream &s)
+void GridCtrl::ItemRect::Serialize(Stream &s)
 {
-	s % align;
+	s % balign % halign % calign;
 	s % fg % bg;
 	s % fnt;
 	s % id;
@@ -191,9 +190,33 @@ static void MakeOption(One<Ctrl>& ctrl)
 	ctrl->WantFocus();
 }
 
-ItemRect& ItemRect::Option()
+GridCtrl::ItemRect& GridCtrl::ItemRect::Option()
 {
 	return Ctrls(MakeOption).CtrlAlignHorzCenter(CtrlsImg::O0().GetSize().cx);
+}
+
+GridCtrl::Item& GridCtrl::Item::Editable(bool b)
+{
+	editable = b;
+	//SyncCtrls(id);
+	return *this;
+}
+
+GridCtrl::Item& GridCtrl::Item::NoEditable()
+{
+	return Editable(false);
+}
+
+GridCtrl::ItemRect& GridCtrl::ItemRect::Editable(bool b)
+{
+	editable = b;
+	parent->SyncCtrls(id);
+	return *this;
+}
+
+GridCtrl::ItemRect& GridCtrl::ItemRect::NoEditable()
+{
+	return Editable(false);
 }
 
 END_UPP_NAMESPACE

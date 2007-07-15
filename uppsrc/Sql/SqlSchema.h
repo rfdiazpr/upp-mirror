@@ -70,7 +70,7 @@ public:
 
 	SqlSchema& SchemaName(String sch)                          { schemaname = sch; return *this; }
 	SqlSchema& MaxIDLen(int n)                                 { maxidlen = n; return *this; }
-
+	
 	int        GetDialect() const                              { return dialect; }
 
 #ifndef NOAPPSQL

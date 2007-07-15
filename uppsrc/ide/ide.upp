@@ -14,8 +14,6 @@ uses
 	plugin\bz2,
 	HexView;
 
-library(WIN32) "shell32 ole32";
-
 link(WIN32 MSC) /MAP;
 
 file
@@ -59,6 +57,7 @@ file
 	Resources readonly separator,
 	ide.iml,
 	ide.lay,
+	app.tpp,
 	ide.rc,
 	Makefile,
 	Info readonly separator,
@@ -68,9 +67,9 @@ file
 
 mainconfig
 	"" = "GUI",
-	"" = "GUI USEMALLOC";
+	"" = "GUI USEMALLOC",
+	"" = ".NOGTK GUI";
 
 custom() "",
 	"",
 	"$(OUTDIR)/$(FILE).obj";
-

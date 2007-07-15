@@ -4,8 +4,8 @@ NAMESPACE_UPP
 
 #ifdef _MULTITHREADED
 
-#define LLOG(x)  LOG(x)
-#define LDUMP(x) DUMP(x)
+#define LLOG(x)  // LOG(x)
+#define LDUMP(x) // DUMP(x)
 
 CoWork::Pool& CoWork::pool()
 {

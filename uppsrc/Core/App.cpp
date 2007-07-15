@@ -13,6 +13,11 @@ String GetExeFilePath()
 	return GetModuleFileName();
 }
 
+String  GetHomeDirectory() {
+	return FromSystemCharset(getenv("HOMEDRIVE")) +
+	       FromSystemCharset(getenv("HOMEPATH"));
+}
+
 #endif
 
 #ifdef PLATFORM_POSIX
@@ -96,15 +101,13 @@ String  GetHomeDirectory() {
 	String r;
 	INTERLOCKED_(sHlock) {
 		String& s = sHomeDir();
-		if(s.IsEmpty())
-			s = FromSystemCharset(getenv("HOME"));
+		if(s.IsEmpty()) {
+			const char *home = getenv("HOME");
+			s = FromSystemCharset(home ? home : "/root");
+		}
 		r = s;
 	}
 	return r;
-}
-
-String  GetHomeDirFile(const char *fp) {
-	return AppendFileName(GetHomeDirectory(), fp);
 }
 
 void    SetHomeDirectory(const char *dir)
@@ -116,17 +119,30 @@ void    SetHomeDirectory(const char *dir)
 
 #endif//PLATFORM_POSIX
 
+String  GetHomeDirFile(const char *fp) {
+	return AppendFileName(GetHomeDirectory(), fp);
+}
+
+static bool sHomecfg;
+
+void    UseHomeDirectoryConfig(bool b)
+{
+	sHomecfg = b;
+}
 
 String  ConfigFile(const char *file) {
 #if defined(PLATFORM_WIN32)
+	if(sHomecfg) {
+		String p = GetHomeDirFile(GetExeTitle());
+		ONCELOCK
+			RealizeDirectory(p);
+		return AppendFileName(p, file);
+	}
 	return GetExeDirFile(file);
 #elif defined(PLATFORM_POSIX)
 	String p = GetHomeDirFile("." + GetExeTitle());
-	static bool b;
-	if(!b) {
+	ONCELOCK
 		RealizeDirectory(p);
-		b = true;
-	}
 	return AppendFileName(p, file);
 #else
 #error ConfigFile not implemented for this platform, comment this line to get input string back

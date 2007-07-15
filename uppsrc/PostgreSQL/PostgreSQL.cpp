@@ -26,6 +26,7 @@ private:
 	int            fetched_row; //-1, if not fetched yet
 
 	void           FreeResult();
+	String         ErrorMessage();
 
 public:
 	PostgreSQLConnection(PostgreSQLSession& a_session, PGconn *a_conn);
@@ -94,6 +95,20 @@ bool PostgreSQLPerformScript(const String& txt, StatementExecutor& se, Gate2<int
 
 //////////////////////////////////////////////
 
+String PostgreSQLConnection::ErrorMessage()
+{
+	return FromSystemCharset(PQerrorMessage(conn));
+}
+
+//////////////////////////////////////////////
+
+String PostgreSQLSession::ErrorMessage()
+{
+	return FromSystemCharset(PQerrorMessage(conn));
+}
+
+//////////////////////////////////////////////
+
 Vector<String> PostgreSQLSession::EnumUsers()
 {
 	Vector<String> vec;
@@ -148,7 +163,7 @@ Vector<String> PostgreSQLSession::EnumSequences(String database)
 Vector<SqlColumnInfo> PostgreSQLSession::EnumColumns(String database, String table)
 {
 	/* database means schema here - support for schemas is a something to fix in sql interface */
-	
+
 	Vector<SqlColumnInfo> vec;
 
 	Sql sql(Format("select a.attname, a.atttypid, a.attlen, a.atttypmod, a.attnotnull "
@@ -175,7 +190,7 @@ Vector<SqlColumnInfo> PostgreSQLSession::EnumColumns(String database, String tab
 		ci.prec = (type_mod >> 16) & 0xffff;
 		ci.scale = type_mod & 0xffff;
 		ci.decimals = ci.prec; //what is this for?
-		//ci.null = sql[4] == "0"; //not supported in column info structure		
+		//ci.null = sql[4] == "0"; //not supported in column info structure
 	}
 	return vec;
 }
@@ -244,7 +259,7 @@ bool PostgreSQLSession::InitOidTypeMap()
 	StoreInOidTypeMap("timetz", TIME_V, typname_oid_map);
 	//StoreInOidTypeMap("tinterval", , typname_oid_map);
 	StoreInOidTypeMap("xid", INT_V, typname_oid_map);
-		
+
 	return true;
 }
 
@@ -259,8 +274,8 @@ void PostgreSQLSession::ExecTrans(const char * statement)
 		return;
 	}
 	if(trace)
-		*trace << statement << " failed: " << PQerrorMessage(conn) << "\n";
-	SetError(PQerrorMessage(conn), statement);
+		*trace << statement << " failed: " << ErrorMessage() << "\n";
+	SetError(ErrorMessage(), statement);
 	PQclear(res);
 }
 
@@ -278,14 +293,14 @@ bool PostgreSQLSession::Open(const char *connect)
 	conn = PQconnectdb(connect);
 	if(PQstatus(conn) != CONNECTION_OK)
 	{
-		SetError(PQerrorMessage(conn), "Opening database");
+		SetError(ErrorMessage(), "Opening database");
 		Close();
 		return false;
 	}
 	//read oids of different types to a map (oid =>value-type). Execute() sets up type based on this
 	if(!InitOidTypeMap())
 	{
-		SetError(PQerrorMessage(conn), "Initializing type map");
+		SetError(ErrorMessage(), "Initializing type map");
 		Close();
 		return false;
 	}
@@ -386,6 +401,7 @@ bool PostgreSQLConnection::Execute()
 				query.Cat(*s);
 			s++;
 		}
+	param.Clear();
 
 	Stream *trace = session.GetTrace();
 	dword time;
@@ -409,7 +425,7 @@ bool PostgreSQLConnection::Execute()
 		for(int i = 0; i < fields; i++)
 		{
 			SqlColumnInfo& f = info[i];
-			f.name = PQfname(result, i);
+			f.name = ToUpper(PQfname(result, i));
 			f.width = PQfsize(result, i);
 			f.decimals = f.scale = f.prec = 0; // TODO
 			Oid type_oid = PQftype(result, i);
@@ -422,10 +438,10 @@ bool PostgreSQLConnection::Execute()
 		rows = atoi(PQcmdTuples(result));
 		return true;
 	}
-	
-	session.SetError( PQerrorMessage(conn), query );
+
+	session.SetError( ErrorMessage(), query );
 	FreeResult();
-	
+
 	return false;
 }
 
@@ -436,10 +452,10 @@ int PostgreSQLConnection::GetRowsProcessed() const
 
 Value PostgreSQLConnection::GetInsertedId() const
 {
-	//it needs GetInsertedId(const char * sequence) 
+	//it needs GetInsertedId(const char * sequence)
 	//there is no other/better way to retrieve last inserted id
 	const char * sequence = NULL;
-		
+
 	Sql sql(Format("select currval('%s')", sequence), session);
 	if(sql.Execute() && sql.Fetch())
 		return sql[0];
@@ -456,7 +472,7 @@ bool PostgreSQLConnection::Fetch()
 	return false;
 }
 
-static Date sDate(const char *s) 
+static Date sDate(const char *s)
 {
 	// 0123456789012345678
 	// YYYY-MM-DD HH-MM-SS
@@ -505,7 +521,6 @@ void PostgreSQLConnection::GetColumn(int i, Ref f) const
 
 void PostgreSQLConnection::Cancel()
 {
-	param.Clear();
 	info.Clear();
 	rows = 0;
 	fetched_row = -1;

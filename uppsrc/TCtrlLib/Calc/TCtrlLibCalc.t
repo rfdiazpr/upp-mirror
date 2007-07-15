@@ -1,4 +1,6 @@
-
+#ifdef _MSC_VER
+#pragma setlocale("C")
+#endif
 // CalcGuiType.cpp
 
 T_("point")

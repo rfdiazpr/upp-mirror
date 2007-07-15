@@ -40,6 +40,18 @@ Image ReadClipboardImage()
 	return GetImage(Ctrl::Clipboard());
 }
 
+static String sBmp(const Value& data)
+{
+	Image img = data;
+	return BMPEncoder().SaveString(img);
+}
+
+static String sImg(const Value& data)
+{
+	Image img = data;
+	return StoreAsString(const_cast<Image&>(img));
+}
+
 String GetImageClip(const Image& img, const String& fmt)
 {
 	if(img.IsEmpty())
@@ -54,8 +66,8 @@ String GetImageClip(const Image& img, const String& fmt)
 void AppendClipboardImage(const Image& img)
 {
 	if(img.IsEmpty()) return;
-	AppendClipboard(ClipFmt<Image>(), StoreAsString(const_cast<Image&>(img)));
-	AppendClipboard("dib", GetImageClip(img, "dib"));
+	AppendClipboard(ClipFmt<Image>(), img, sImg);
+	AppendClipboard("image/bmp", img, sBmp);
 }
 
 #endif

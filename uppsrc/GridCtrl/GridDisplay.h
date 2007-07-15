@@ -11,7 +11,7 @@ class GridCtrl;
 
 namespace GD
 {
-	enum 
+	enum
 	{
 		CURSOR    = BIT(0),
 		SELECT    = BIT(1),
@@ -40,7 +40,7 @@ namespace GD
 class GridDisplay
 {
 	public:
-		
+
 		Image	leftImg;
 		Image	rightImg;
 		Image   centerImg;
@@ -51,21 +51,21 @@ class GridDisplay
 		int     theme;
 		bool	hgrid;
 		bool	vgrid;
-		
+
 		int 	col, row;
-		
+
 		GridCtrl *parent;
-		
+
 		GridDisplay() : font(StdFont())
 		{
-			align = GD::TOP | GD::LEFT; 
+			align = GD::TOP | GD::LEFT;
 			lm = rm = 4;
 			tm = bm = 0;
 			theme = 5;
 		}
-		
+
 		~GridDisplay() {};
-		
+
 		void SetLeftImage(const Image &img)			 { leftImg  = img;  	       }
 		void SetRightImage(const Image &img)		 { rightImg = img;  	       }
 		void SetCenterImage(const Image &img)		 { centerImg = img;  	       }
@@ -76,19 +76,19 @@ class GridDisplay
 		void SetVMargin(int top, int bottom)		 { tm = top;  bm = bottom;     }
 		void SetTheme(int th)                        { theme = th;                 }
 		int  GetThemeCount()                         { return 6;                   }
-		
-		
-		void DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int align, 
-					  const wchar *s, const Font &font, const Color &fg, const Color &bg, 
+
+
+		void DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int align,
+					  const wchar *s, const Font &font, const Color &fg, const Color &bg,
 					  bool found, int fs, int fe, bool wrap);
 
 		virtual void Paint(Draw &w, int x, int y, int cx, int cy, const Value &val, dword style,
 				           Color &fg, Color &bg, Font &fnt, bool found = false, int fs = 0, int fe = 0);
 
 		virtual void PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, int cx, int cy, const Value &val, dword style,
-								bool indicator = false, bool moved = false, 
+								bool indicator = false, bool moved = false,
 								int sortmode = 0, int sortcol = -1, int sortcnt = 0, bool horizontal = true);
-								
+
 };
 
 

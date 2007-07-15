@@ -332,7 +332,7 @@ I FindUpperBoundIter(I begin, I end, const T& val, const L& less)
 template <class I, class T>
 I FindUpperBoundIter(I begin, I end, const T& val)
 {
-	return begin + FindUpperBound(begin, 0, end - begin, val, StdLess<T>());
+	return begin + FindUpperBound(begin, 0, (int)(end - begin), val, StdLess<T>());
 }
 
 template <class C, class T, class L>
@@ -711,6 +711,10 @@ void StreamContainer(Stream& s, T& cont)
 {
 	int n = cont.GetCount();
 	s / n;
+	if(n < 0) {
+		s.LoadError();
+		return;
+	}
 	if(s.IsLoading())
 	{
 		cont.Clear();
@@ -792,7 +796,7 @@ template <class I, class Less>
 void Sort(I begin, I end, const Less& less)
 {
 	int count;
-	while((count = end - begin) > __SORT_THRESHOLD) {
+	while((count = (int)(end - begin)) > __SORT_THRESHOLD) {
 		int expected = count >> 1, deviation = expected - (expected >> 8);
 		I b = begin, e = end, m = b + expected;
 		for(int pass = 1;; pass++) {
@@ -809,7 +813,7 @@ void Sort(I begin, I end, const Less& less)
 			}
 			if(pass >= __SORT_MEDIAN_PASSES)
 				break;
-			int pos = (b - begin);
+			int pos = (int)(b - begin);
 			if(pos <= expected - deviation)
 				e = end;
 			else if(pos >= expected + deviation) {
@@ -1112,7 +1116,7 @@ void StableSort__(int n, I begin, I end, const Less& less, T *temp)
 template <class I, class Less, class T>
 void StableSort__(I begin, I end, const Less& less, const T&)
 {
-	int n = end - begin;
+	int n = (int)(end - begin);
 	T *temp = (T*) new byte[sizeof(T) * n];
 	StableSort__(n, begin, end, less, temp);
 	delete[] (byte *)temp;

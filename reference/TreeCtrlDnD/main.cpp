@@ -44,6 +44,7 @@ struct App : TopWindow {
 		tree.WhenDropInsert = THISBACK(DropInsert);
 		tree.WhenDrag = THISBACK(Drag);
 		tree.MultiSelect();
+		Sizeable();
 	}
 };
 

@@ -24,7 +24,7 @@ struct LineInfoRecord {
 	int    error;
 	int    firstedited;
 	int    edited;
-	
+
 	LineInfoRecord() { error = 0; edited = 0; }
 };
 
@@ -62,7 +62,7 @@ private:
 	};
 	Vector<LnInfo>   li;
 	LineInfoRem      li_removed;
-	
+
 	int              sy;
 	CodeEditor       *editor;
 	int              ptrline[2];
@@ -100,8 +100,8 @@ public:
 
 	LineInfo GetLineInfo() const;
 	void     SetLineInfo(const LineInfo& li, int total);
-	LineInfoRem & GetLineInfoRem()             { return li_removed; }
-	void     SetLineInfoRem(LineInfoRem& li)   { li_removed = li; }
+	LineInfoRem & GetLineInfoRem()                   { return li_removed; }
+	void     SetLineInfoRem(pick_ LineInfoRem& li)   { li_removed = li; }
 
 	int      GetLineNo(int lineno) const;
 	int      GetNoLine(int line) const;
@@ -409,7 +409,7 @@ public:
 	LineInfo GetLineInfo() const                      { return bar.GetLineInfo(); }
 	void     SetLineInfo(const LineInfo& lf);
 	LineInfoRem GetLineInfoRem()                      { return LineInfoRem(bar.GetLineInfoRem(), 0); }
-	void     SetLineInfoRem(LineInfoRem& lf)          { bar.SetLineInfoRem(LineInfoRem(lf, 0)); }
+	void     SetLineInfoRem(pick_ LineInfoRem& lf)    { bar.SetLineInfoRem(LineInfoRem(lf, 0)); }
 	double   GetStatEditTime() const                  { return stat_edit_time; }
 	void     Renumber()                               { bar.Renumber(GetLineCount()); }
 	void     ClearBreakpoints()                       { bar.ClearBreakpoints(); }

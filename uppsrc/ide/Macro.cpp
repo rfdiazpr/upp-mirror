@@ -41,6 +41,9 @@ EscValue Ide::MacroEditor()
 	out.Escape("Launch(cmdline)", THISBACK(MacroLaunch));
 	out.Escape("ClearConsole()", THISBACK(MacroClearConsole));
 	out.Escape("EditFile(...)", THISBACK(MacroEditFile));
+	out.Escape("SaveCurrentFile()", THISBACK(MacroSaveCurrentFile));
+	out.Escape("ProjectDir()", THISBACK(MacroProjectDir));
+	out.Escape("FileName()", THISBACK(MacroFileName));
 	return out;
 }
 
@@ -409,4 +412,19 @@ void Ide::MacroEditFile(EscEscape& e)
 	else if(e.GetCount() == 2)
 		filename = SourcePath(e[0], e[1]);
 	EditFile(filename);
+}
+
+void Ide::MacroSaveCurrentFile(EscEscape& e)
+{
+	SaveFile();
+}
+
+void Ide::MacroProjectDir(EscEscape& e)
+{
+	e = GetFileFolder(PackagePathA(GetActivePackage()));
+}
+
+void Ide::MacroFileName(EscEscape& e)
+{
+	e = editfile;
 }

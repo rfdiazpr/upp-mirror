@@ -23,7 +23,7 @@ void Pdb::UnloadModuleSymbols()
 	}
 }
 
-int  Pdb::FindModuleIndex(dword base)
+int  Pdb::FindModuleIndex(adr_t base)
 {
 	for(int i = 0; i < module.GetCount(); i++)
 		if(module[i].base == base)
@@ -61,7 +61,7 @@ void Pdb::LoadModuleInfo()
 		MODULEINFO mi;
 		if(GetModuleInformation(hProcess, m[i], &mi, sizeof(mi))) {
 			ModuleInfo& f = nm.Add();
-			f.base = (dword)mi.lpBaseOfDll;
+			f.base = (adr_t)mi.lpBaseOfDll;
 			f.size = mi.SizeOfImage;
 			int q = FindModuleIndex(f.base);
 			if(q >= 0) {
@@ -76,7 +76,7 @@ void Pdb::LoadModuleInfo()
 				if(GetModuleFileNameEx(hProcess, m[i], name, MAX_PATH)) {
 					f.path = name;
 					if(FileExists(ForceExt(f.path, ".pdb"))) {
-						dword w = (dword)SymLoadModule64(hProcess, NULL, name, 0, f.base, f.size);
+						adr_t w = (adr_t)SymLoadModule64(hProcess, NULL, name, 0, f.base, f.size);
 						if(w) {
 							LLOG("Loading symbols " << FormatIntHex(f.base) << '/' << hProcess << " returned base " << FormatIntHex(w));
 							f.symbols = true;
@@ -96,7 +96,7 @@ void Pdb::LoadModuleInfo()
 	refreshmodules = false;
 }
 
-bool Pdb::AddBp(dword address)
+bool Pdb::AddBp(adr_t address)
 {
 	LLOG("AddBp: " << FormatIntHex(address));
 	if(bp_set.Find(address) >= 0)
@@ -112,7 +112,7 @@ bool Pdb::AddBp(dword address)
 	return true;
 }
 
-bool Pdb::RemoveBp(dword address)
+bool Pdb::RemoveBp(adr_t address)
 {
 	int pos = bp_set.Find(address);
 	if(pos < 0)
@@ -128,7 +128,7 @@ bool Pdb::RemoveBp()
 {
 	for(int i = bp_set.GetCount(); --i >= 0;)
 		if(!bp_set.IsUnlinked(i)) {
-			dword address = bp_set.GetKey(i);
+			adr_t address = bp_set.GetKey(i);
 			if(!WriteProcessMemory(hProcess, (LPVOID)address, &bp_set[i], 1, NULL))
 				return false;
 			FlushInstructionCache(hProcess, (LPCVOID)address, 1);
@@ -173,7 +173,11 @@ void Pdb::AddThread(dword dwThreadId, HANDLE hThread)
 	ctx.ContextFlags = CONTEXT_FULL;
 	GetThreadContext(hThread, &ctx);
 	Thread& f = threads.GetAdd(dwThreadId);
+	#ifdef CPU_32
 	f.sp = ctx.Esp;
+	#else
+	f.sp = ctx.Rsp;
+	#endif
 	f.hThread = hThread;
 	LLOG("Adding thread " << dwThreadId << ", Thread SP: " << FormatIntHex(ctx.Esp));
 }
@@ -191,7 +195,7 @@ void Pdb::RemoveThread(dword dwThreadId)
 #define EXID(id)       { id, #id },
 
 struct {
-	dword code;
+	adr_t code;
 	const char *text;
 }
 ex_desc[] = {
@@ -232,7 +236,7 @@ void Pdb::SaveForeground()
 		GetWindowThreadProcessId(hwnd, &pid);
 		if(pid == processid) {
 			hWnd = hwnd;
-			LLOG("Saved foreground window: " << FormatIntHex((dword)hWnd));
+			LLOG("Saved foreground window: " << FormatIntHex((adr_t)hWnd));
 		}
 	}
 }
@@ -267,7 +271,7 @@ bool Pdb::RunToException()
 						break;
 					}
 					String desc = Format("Exception: [* %X] at [* %08X]&",
-					                     (int)x.ExceptionCode, (int)x.ExceptionAddress);
+					                     (int64)x.ExceptionCode, (int64)x.ExceptionAddress);
 					for(int i = 0; i < __countof(ex_desc); i++)
 						if(ex_desc[i].code == x.ExceptionCode)
 							desc << "[* " << DeQtf(ex_desc[i].text) << "]&";
@@ -297,8 +301,13 @@ bool Pdb::RunToException()
 						context = c;
 				}
 				if(event.u.Exception.ExceptionRecord.ExceptionCode == EXCEPTION_BREAKPOINT
-				&& bp_set.Find((dword)event.u.Exception.ExceptionRecord.ExceptionAddress) >= 0)
-					context.Eip = (DWORD)event.u.Exception.ExceptionRecord.ExceptionAddress;
+				&& bp_set.Find((adr_t)event.u.Exception.ExceptionRecord.ExceptionAddress) >= 0)
+					#ifdef CPU_32
+					context.Eip = (adr_t)event.u.Exception.ExceptionRecord.ExceptionAddress;
+					#else
+					context.Rip = (adr_t)event.u.Exception.ExceptionRecord.ExceptionAddress;
+					#endif
+
 				RemoveBp();
 				LLOG("Exception: " << FormatIntHex(event.u.Exception.ExceptionRecord.ExceptionCode) <<
 				     " at: " << FormatIntHex(event.u.Exception.ExceptionRecord.ExceptionAddress) <<

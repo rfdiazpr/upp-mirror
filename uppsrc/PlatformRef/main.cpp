@@ -27,9 +27,9 @@ void PlatformRef::Paint(Draw& w)
 	w.DrawText(0, 0, keyboard);
 	Size tsz = GetTextSize(mouse, StdFont());
 	w.DrawText(sz.cx - tsz.cx, 0, mouse);
-
+	
 	ImageBuffer ib(128, 128);
-
+	
 }
 
 bool PlatformRef::Key(dword key, int count)

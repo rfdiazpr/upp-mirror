@@ -93,6 +93,7 @@ String EncodeRTF(const RichText& richtext, byte charset)
 	StringStream out;
 	EncodeRTF(out, richtext, charset);
 	String s = out.GetResult();
+	LOG("EncodeRTF <<<<<\n" << s << "\n>>>>> EncodeRTF");
 	return s;
 }
 
@@ -280,7 +281,7 @@ bool RTFEncoder::PutParaFormat(const RichPara::Format& pf, const RichPara::Forma
 		switch(pf.align)
 		{
 		case ALIGN_NULL:
-		case ALIGN_LEFT:    break;
+		case ALIGN_LEFT:    Command("ql"); break;
 		case ALIGN_CENTER:  Command("qc"); break;
 		case ALIGN_RIGHT:   Command("qr"); break;
 		case ALIGN_JUSTIFY: Command("qj"); break;
@@ -301,6 +302,8 @@ bool RTFEncoder::PutParaFormat(const RichPara::Format& pf, const RichPara::Forma
 	if(nind      != oind)         Command("fi", DotTwips(nind));
 	if(nlm       != olm)          Command("li", DotTwips(nlm));
 	if(pf.rm     != difpf.rm)     Command("ri", DotTwips(pf.rm));
+	if(pf.newpage)
+		Command("pagebb");
 	if(pf.before != difpf.before) Command("sb", DotTwips(pf.before));
 	if(pf.after  != difpf.after)  Command("sa", DotTwips(pf.after));
 	if(pf.tab    != difpf.tab)    PutTabs(pf.tab);
@@ -551,24 +554,19 @@ void RTFEncoder::PutTxt(const RichTxt& txt, int nesting, int dot_width)
 				&& para.format.bullet != RichPara::BULLET_TEXT && para_ht != para_ht);
 			if(pstyle != oldstyle
 			|| para.format.bullet != parafmt.bullet || para.format.bullet == RichPara::BULLET_TEXT
-			|| hdiff || para.format.tab != parafmt.tab) {
+			|| hdiff || para.format.tab != parafmt.tab || para.format.newpage || parafmt.newpage) {
 				Command("s", styleid.Find(pstyle));
 				oldstyle = pstyle;
 				parafmt = richtext.GetStyle(pstyle).format;
-	//			charfmt = richtext.GetStyle(pstyle).charformat;
-	//			if(para.format.tab != parafmt.tab || hdiff)
-				{
-					Command("pard");
-					if(nesting)
-						Command("intbl");
-					if(nesting > 1)
-						Command("itap", nesting);
-					parafmt = RichPara::Format();
-					para_ht = 0;
-				}
+				Command("pard");
+				if(nesting)
+					Command("intbl");
+				if(nesting > 1)
+					Command("itap", nesting);
+				parafmt = RichPara::Format();
+				para_ht = 0;
 			}
-			if(para.format.bullet == RichPara::BULLET_TEXT)
-			{
+			if(para.format.bullet == RichPara::BULLET_TEXT) {
 				int epart = 0, eoff = 0;
 				while(epart < para.part.GetCount() && (eoff = para.part[epart].text.Find('\t')) < 0)
 					epart++;
@@ -595,8 +593,7 @@ void RTFEncoder::PutTxt(const RichTxt& txt, int nesting, int dot_width)
 					End();
 				End();
 			}
-			else if(para.format.bullet != RichPara::BULLET_NONE)
-			{
+			else if(para.format.bullet != RichPara::BULLET_NONE) {
 				int sym_face = SYMBOL_INDEX;
 				byte sym_char = 0xB7;
 

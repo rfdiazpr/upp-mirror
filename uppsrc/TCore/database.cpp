@@ -658,7 +658,7 @@ void DataColumnVar::FlushCache(int i, int set_span)
 				if(i == nx) { // dirty block
 					String s = block.dirty[order[ox]];
 					string[i] = s;
-					data[i] = s;
+					data[i] = string[i];
 					length[i] = s.GetLength();
 					nx = (++ox < order.GetCount() ? block.dirty.GetKey(order[ox]) - range : span);
 				}

@@ -7,6 +7,7 @@ const Point Calendar::nullday = Point(-1, -1);
 Calendar::Calendar()
 {
 	SetFrame(BlackFrame());
+	style = NULL;
 
 	Add(mleft);
 	Add(mright);
@@ -23,16 +24,12 @@ Calendar::Calendar()
 	yleft  <<= THISBACK(OnYearLeft);
 	yright <<= THISBACK(OnYearRight);
 
-	open       = false;
-	userdate   = false;
 	selall     = true;
 	isheader   = false;
 	istoday    = false;
 	washeader  = false;
 	wastoday   = false;
-	aspopup    = false;
 
-	fnt = StdFont();
 	bs = 5;
 	first_day = MONDAY;
 
@@ -41,94 +38,57 @@ Calendar::Calendar()
 
 void Calendar::Reset()
 {
-	Date tdate = GetSysDate();
-	tday   = tdate.day;
-	tmonth = tdate.month;
-	tyear  = tdate.year;
+	today = GetSysDate();
+	view = today;
+	view.day = 0;
+	sel = today;
 
-	Date cdate = aspopup ? (Date) (*date) : tdate;
-	if(cdate.IsValid())
-	{
-		cday   = cdate.day;
-		cmonth = cdate.month;
-		cyear  = cdate.year;
-	}
-	else
-	{
-		cday   = tday;
-		cmonth = tmonth;
-		cyear  = tyear;
-	}
-
-	if(!userdate)
-	{
-		day   = cday;
-		month = cmonth;
-		year  = cyear;
-	}
-
-	userdate = false;
 	isheader = false;
 	istoday = false;
 	washeader = false;
 	wastoday = false;
 
-	selday = 0;
-
 	newday = oldday = nullday;
-	today = Format("%s: %s", t_("Today"), Format(tdate));
+	stoday = Format("%s: %s", t_("Today"), Format(today));
 }
 
-void Calendar::SetColors()
+Calendar& Calendar::SetStyle(const Style& s)
 {
-	colHeader	  = SColorHighlight;
-	colCurDate	  = White;
-	colSelCurDate = SColorText;
-	colToday	  = SColorText;
-	colSelToday   = SColorMark;
-	colBg		  = SColorPaper;
-	colFg		  = SColorText;
-	colCurDayBg	  = Color(200, 250, 0);
-	colCurDayFg	  = Black;
-	colSelDayBg	  = Color(255, 254, 220);
-	colSelDayFg	  = Black;
-	colGrayDay	  = Color(180, 180, 180);
-	colSelDay	  = SColorMark;
-	colLine       = Gray;
-	colDayNames	  = SColorText;
-	colWeek		  = SColorText;
+	style = &s;
+	Refresh();
+	return *this;
 }
 
 void Calendar::OnMonthLeft()
 {
-	if(--month < 1)
+	if(--view.month < 1)
 	{
-		month = 12;
-		if(year > 0)
-			year--;
+		view.month = 12;
+		if(view.year > 0)
+			view.year--;
 	}
 	RefreshAll();
 }
 
 void Calendar::OnMonthRight()
 {
-	if(++month > 12)
+	if(++view.month > 12)
 	{
-		month = 1;
-		year++;
+		view.month = 1;
+		view.year++;
 	}
 	RefreshAll();
 }
 
 void Calendar::OnYearLeft()
 {
-	if(year > 0) year--;
+	if(view.year > 0) view.year--;
 	RefreshAll();
 }
 
 void Calendar::OnYearRight()
 {
-	year++;
+	view.year++;
 	RefreshAll();
 }
 
@@ -214,21 +174,21 @@ void Calendar::LeftUp(Point p, dword keyflags)
 
 		if(day < 0)
 		{
-			day = -day;
+			view.day = -day;
 			if(lastrow < 3)
-				month--;
+				view.month--;
 			else
-				month++;
+				view.month++;
 
-			if(month < 1)
+			if(view.month < 1)
 			{
-				month = 12;
-				year--;
+				view.month = 12;
+				view.year--;
 			}
-			if(month > 12)
+			if(view.month > 12)
 			{
-				month = 1;
-				year++;
+				view.month = 1;
+				view.year++;
 			}
 			refall = true;
 		}
@@ -239,31 +199,26 @@ void Calendar::LeftUp(Point p, dword keyflags)
 	Date dt;
 
 	if(istoday)
-		dt = Date(tyear, tmonth, tday);
+		dt = today;
 	else if(isheader)
-		dt = Date(year, month, 1);
+		dt = Date(view.year, view.month, 1);
 	else
-		dt = Date(year, month, day);
+		dt = Date(view.year, view.month, view.day);
 
-	if(aspopup)
+	if(IsPopUp())
 	{
-		GetParent()->IgnoreMouseClick();
-		Close();
-		*date <<= dt;
-		date->SetFocus();
-		date->WhenAction();
+		sel = dt;
+		Deactivate();
+		WhenAction();
 	}
 	else
 	{
-		cday = dt.day;
-		cmonth = dt.month;
-		cyear = dt.year;
-
+		sel = dt;
 		WhenAction();
 
 		if(refall)
 		{
-			selday = 0;
+			view.day = 0;
 			RefreshAll();
 			Sync();
 			oldday = nullday;
@@ -291,7 +246,7 @@ void Calendar::MouseMove(Point p, dword keyflags)
 			bool b = (selall == false ? Day(oldday) > 0 : true);
 			if(b)
 			{
-				selday = 0;
+				view.day = 0;
 				RefreshDay(oldday);
 			}
 		}
@@ -300,7 +255,7 @@ void Calendar::MouseMove(Point p, dword keyflags)
 			bool b = (selall == false ? Day(newday) > 0 : true);
 			if(b)
 			{
-				selday = Day(newday);
+				view.day = Day(newday);
 				RefreshDay(newday);
 			}
 		}
@@ -397,33 +352,32 @@ Point Calendar::GetDay(Point p)
 	return Point(-1, -1);
 }
 
-Date Calendar::GetDate()
+Size Calendar::ComputeSize()
 {
-	return Date(cyear, cmonth, cday);
-}
+	const Style &st = style ? *style : StyleDefault();
+	Font fnt = st.font;
 
-void Calendar::ComputeSize()
-{
-	Size sz = aspopup ? Size(-1, -1) : GetSize();
+	Size sz = IsPopUp() ? Size(-1, -1) : GetSize();
 	Size tsz = GetTextSize("WW", fnt.NoBold().NoUnderline());
+	Size rsz;
 
 	fh = tsz.cy;
 
 	colw = (float)(tsz.cx + 6);
 	rowh = (float)(tsz.cy + 4);
 
-	width = bs * 2 + 2 + (int)(colw * (cols + 1));
-	height = 4 + (int)(rowh * (rows + 3));
+	rsz.cx = bs * 2 + 2 + (int)(colw * (cols + 1));
+	rsz.cy = 4 + (int)(rowh * (rows + 3));
 
-	if(sz.cx > width)
+	if(sz.cx > rsz.cx)
 	{
 		colw = (sz.cx - bs * 2 + 2) / (float) (cols + 1);
-		width = sz.cx;
+		rsz.cx = sz.cx;
 	}
-	if(sz.cy > height)
+	if(sz.cy > rsz.cy)
 	{
 		rowh = (sz.cy - 4) / (float) (rows + 3);
-		height = sz.cy;
+		rsz.cy = sz.cy;
 	}
 
 	cw = (int)(colw);
@@ -434,57 +388,54 @@ void Calendar::ComputeSize()
 
 	btnh = rh - 4 - 1;
 	btnw = rh - 4;
-}
 
-Size Calendar::GetCalendarSize()
-{
-	ComputeSize();
-	return Size(width, height);
+	return rsz;
 }
 
 void Calendar::Paint(Draw &w)
 {
-	SetColors(); // to draw in proper colors when theme is changed
+	const Style &st = style ? *style : StyleDefault();
+	Font fnt = st.font;
 
 	Size sz = GetSize();
 	Size tsz;
 	String str;
 	int d = 1;
-	int m = month;
-	int y = year;
+	int m = view.month;
+	int y = view.year;
 
 	if(w.IsPainting(0, 0, sz.cx, hs))
 	{
-		w.DrawRect(0, 0, sz.cx, hs, colHeader);
-		curdate = Format("%s %d", MonthName(month - 1), year);
+		w.DrawRect(0, 0, sz.cx, hs, st.header);
+		curdate = Format("%s %d", MonthName(view.month - 1), view.year);
 		szcurdate = GetTextSize(curdate, fnt.Bold());
-		w.DrawText((sz.cx - szcurdate.cx) / 2, (hs - szcurdate.cy) / 2, curdate, fnt.Underline(isheader), colCurDate);
+		w.DrawText((sz.cx - szcurdate.cx) / 2, (hs - szcurdate.cy) / 2, curdate, fnt.Underline(isheader), st.curdate);
 	}
-	w.DrawRect(0, hs, sz.cx, sz.cy - ts - hs, colBg);
+	w.DrawRect(0, hs, sz.cx, sz.cy - ts - hs, st.background[0]);
 
 	if(w.IsPainting(0, hs, sz.cx, rh))
 	{
 		int y = (int) (rowh + (rowh - fh) / 2.0);
 		fnt.NoBold().NoUnderline();
 		tsz = GetTextSize(t_("Wk"), fnt);
-		w.DrawText(bs + (cw - tsz.cx) / 2, y, t_("Wk"), fnt, colWeek);
+		w.DrawText(bs + (cw - tsz.cx) / 2, y, t_("Wk"), fnt, st.week);
 
 		for(int i = 0; i < cols; i++)
 		{
 			const String &s = DyName((i + first_day) % 7);
 			tsz = GetTextSize(s, fnt);
-			w.DrawText(bs  + 2 + (int)((i + 1) * colw) + (cw - tsz.cx) / 2, y, s, fnt, colDayNames);
+			w.DrawText(bs  + 2 + (int)((i + 1) * colw) + (cw - tsz.cx) / 2, y, s, fnt, st.dayname);
 		}
 	}
 
 	if(w.IsPainting(0, sz.cy - ts, sz.cx, ts))
 	{
-		sztoday = GetTextSize(today, fnt.Bold().Underline(istoday));
-		w.DrawRect(0, sz.cy - ts, sz.cx, ts, colBg);
-		w.DrawText((sz.cx - sztoday.cx) / 2, sz.cy - (ts + sztoday.cy) / 2, today, fnt, istoday ? colSelToday : colToday);
+		sztoday = GetTextSize(stoday, fnt.Bold().Underline(istoday));
+		w.DrawRect(0, sz.cy - ts, sz.cx, ts, st.background[0]);
+		w.DrawText((sz.cx - sztoday.cx) / 2, sz.cy - (ts + sztoday.cy) / 2, stoday, fnt, istoday ? st.selecttoday : st.today);
 	}
 
-	int fd = DayOfWeek(1, month, year);
+	int fd = DayOfWeek(1, view.month, view.year);
 
 	if(fd > 0)
 	{
@@ -502,7 +453,7 @@ void Calendar::Paint(Draw &w)
 		int yc = (rh - fh) / 2;
 
 		str = AsString(WeekOfYear(d, m, y));
-		w.DrawText(bs + (cw - GetTextSize(str, fnt).cx) / 2, yp + yc, str, fnt.NoBold().NoUnderline(), colWeek);
+		w.DrawText(bs + (cw - GetTextSize(str, fnt).cx) / 2, yp + yc, str, fnt.NoBold().NoUnderline(), st.week);
 
 		for(int j = 0; j < cols; j++)
 		{
@@ -510,14 +461,14 @@ void Calendar::Paint(Draw &w)
 
 			if(w.IsPainting(xp, yp, cw, rh))
 			{
-				Color fg = colFg;
-				Color bg = colBg;
+				Color fg = st.foreground[0];
+				Color bg = st.background[0];
 
 				fnt.NoBold().NoUnderline();
 				bool special = false;
 				int sd = d;
 
-				if(m == month)
+				if(m == view.month)
 				{
 					Day(j, i) = d;
 
@@ -532,20 +483,20 @@ void Calendar::Paint(Draw &w)
 						firstday.x = j;
 						firstday.y = i;
 					}
-					if(d == tday && m == tmonth && y == tyear)
+					if(d == today.day && m == today.month && y == today.year)
 					{
-						fg = colCurDayFg;
-						bg = colCurDayBg;
+						fg = st.foreground[1];
+						bg = st.background[1];
 						fnt.Bold();
 						special = true;
 
 						curday.x = j;
 						curday.y = i;
 					}
-					if(d == cday && m == cmonth && y == cyear)
+					if(d == sel.day && m == sel.month && y == sel.year)
 					{
-						fg = colSelDayFg;
-						bg = colSelDayBg;
+						fg = st.foreground[2];
+						bg = st.background[2];
 						fnt.Bold();
 						special = true;
 
@@ -555,32 +506,31 @@ void Calendar::Paint(Draw &w)
 				}
 				else
 				{
-					fg = colGrayDay;
+					fg = st.outofmonth;
 					sd = d > 0 ? -d : d;
 					Day(j, i) = sd;
 				}
 
 
-				if(sd == selday)
+				if(sd == view.day)
 				{
 					if(sd < 0 && selall)
 					{
-						fg = colGrayDay;
+						fg = st.outofmonth;
 						fnt.Bold().Underline(!special);
 					}
-					if(sd > 0 && month == m)
+					if(sd > 0 && view.month == m)
 					{
-						fg = colSelDay;
+						fg = st.selectday;
 						fnt.Bold().Underline(!special);
 					}
-					selmonth = m;
 				}
 
 				w.DrawRect(xp, yp, cw, rh, bg);
 				if(special)
 				{
 					DrawFrame(w, xp + 1, yp + 1, cw - 2, rh - 2, Black);
-					DrawFrame(w, xp, yp, cw, rh, colBg);
+					DrawFrame(w, xp, yp, cw, rh, st.background[0]);
 				}
 
 				str = AsString(abs(d));
@@ -599,19 +549,19 @@ void Calendar::Paint(Draw &w)
 		}
 	}
 
-	w.DrawRect(bs, (int) (rowh * 2) + 1, sz.cx - bs * 2, 1, colLine);
-	w.DrawRect(bs + cw + 1, hs + bs, 1, sz.cy - hs - ts - bs * 1, colLine);
+	w.DrawRect(bs, (int) (rowh * 2) + 1, sz.cx - bs * 2, 1, st.line);
+	w.DrawRect(bs + cw + 1, hs + bs, 1, sz.cy - hs - ts - bs * 1, st.line);
 
 	lastrow = row;
 }
 
 void Calendar::Deactivate()
 {
-	if(open)
+	if(IsOpen() && IsPopUp())
 	{
-		open = false;
-		Close();
+		WhenPopDown();
 		IgnoreMouseClick();
+		Close();
 	}
 }
 
@@ -663,43 +613,76 @@ void Calendar::PopUp(Ctrl *owner, Rect &rt)
 {
 	Close();
 	Reset();
-	date->SetFocus();
-
 	SetRect(rt);
 	Ctrl::PopUp(owner, true, true, GUI_DropShadows());
-	open = true;
 }
 
-void Calendar::SetDate(int y, int m, int d)
+void Calendar::SetDate(const Date &dt)
 {
-	day = d;
-	month = m;
-	year = y;
-	userdate = true;
+	sel = !IsNull(dt) && dt.IsValid() ? dt : today;
+	view = sel;
+	view.day = 0;
 	RefreshAll();
 }
 
-void Calendar::SetDate(Date &dt)
+void Calendar::SetView(const Date &v)
 {
-	SetDate(dt.year, dt.month, dt.day);
+	view = v;
+	view.day = 0;
+	RefreshAll();
 }
+
+CH_STYLE(Calendar, Style, StyleDefault)
+{
+	header  = SColorHighlight;
+
+	background[0] = SColorPaper; 		// main area
+	background[1] = Color(200, 250, 0); 	// today
+	background[2] = Color(255, 254, 220);// selection
+
+	foreground[0] = SColorText; 	// main area
+	foreground[1] = Black;		// today
+	foreground[2] = Black;		// selection
+
+	outofmonth 		= Color(180, 180, 180);
+	curdate 		= White;
+	today 			= SColorText;
+	selecttoday 	= SColorMark;
+	cursorday		= SColorText;
+	selectday		= SColorMark;
+	line			= Gray;
+	dayname			= SColorText;
+	week			= SColorText;
+	Font font		= StdFont();
+}
+
+// DateTimeCtrl
 
 DateTimeCtrl::DateTimeCtrl()
 {
 	AddFrame(drop);
 	drop.SetMonoImage(CtrlsImg::DA());
 	//drop.NoWantFocus();
-	calendar.SetParent(*this);
-	calendar.AsPopUp();
-	drop <<= THISBACK(OnDrop);
+	drop 				<<= THISBACK(OnDrop);
+	calendar 			<<= THISBACK(OnCalChoice);
+	calendar.WhenPopDown  = THISBACK(OnCalClose);
 }
 
 DateTimeCtrl& DateTimeCtrl::SetDate(int y, int m, int d)
 {
-	calendar.SetDate(y, m, d);
 	SetData(Date(y, m, d));
-
 	return *this;
+}
+
+void DateTimeCtrl::OnCalChoice()
+{
+	SetData(~calendar);
+}
+
+void DateTimeCtrl::OnCalClose()
+{
+	IgnoreMouse(false);
+	SetFocus();
 }
 
 void DateTimeCtrl::OnDrop()
@@ -742,8 +725,12 @@ void DateTimeCtrl::OnDrop()
 		r.right += diff;
 
 	}
+	IgnoreMouse(true);
 	calendar.PopUp(this, r);
+	calendar <<= GetData();
 }
+
+// FlatButton
 
 FlatButton::FlatButton()
 {

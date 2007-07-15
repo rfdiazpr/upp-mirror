@@ -25,3 +25,4 @@ LAYOUT(AboutDialogLayout, 304, 196)
 	ITEM(RichTextCtrl, text, LeftPosZ(12, 280).TopPosZ(20, 132))
 	ITEM(Button, ok, SetLabel(t_("OK")).LeftPosZ(228, 72).TopPosZ(168, 24))
 END_LAYOUT
+

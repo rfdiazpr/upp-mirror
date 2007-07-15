@@ -26,7 +26,6 @@ static TimeEvent *tevents() {
 }
 
 static void sTimeCallback(dword time, int delay, Callback cb, void *id) {
-	ASSERT(id != NULL);
 	TimeEvent *list = tevents();
 	TimeEvent *e;
 	for(e = list->GetNext(); e != list && time >= e->time; e = e->GetNext());
@@ -37,14 +36,10 @@ static void sTimeCallback(dword time, int delay, Callback cb, void *id) {
 	ne->id = id;
 }
 
-void *SetTimeCallback(int delay_ms, Callback cb, void *id) {
+void SetTimeCallback(int delay_ms, Callback cb, void *id) {
 	CriticalSection::Lock __(sTimerLock);
-	static dword aid;
 	ASSERT(abs(delay_ms) < 0x40000000);
-	if(id == NULL)
-		id = (void *) ((aid = (aid + 1) & 0x7fffffff) | 0x80000000);
 	sTimeCallback(GetTickCount() + abs(delay_ms), delay_ms, cb, id);
-	return id;
 }
 
 void KillTimeCallbacks(void *id, void *idlim) {

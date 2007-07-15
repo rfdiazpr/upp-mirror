@@ -19,13 +19,13 @@ public:
 
 	void              Minimize(bool min = true);
 	bool              IsMinimized() const;
-	
+
 	void              Position(Point pt);
 	Point             GetPosition() const;
-	
+
 	bool              Wait(int msec);
 	One<HttpRequest>  GetRequest();
-	
+
 private:
 	One<DlgServerGui> gui;
 };

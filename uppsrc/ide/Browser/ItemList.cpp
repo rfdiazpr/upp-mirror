@@ -55,7 +55,7 @@ Vector<ItemTextPart> ParseItemNatural(const CppItemInfo& m, const char *s)
 	bool param = false;
 	while(*s) {
 		ItemTextPart& p = part.Add();
-		p.pos = s - ~m.natural;
+		p.pos = (int)(s - ~m.natural);
 		p.type = ITEM_TEXT;
 		int n = 1;
 		if(*s >= '0' && *s <= '9') {

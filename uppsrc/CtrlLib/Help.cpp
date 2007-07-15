@@ -18,6 +18,7 @@ bool HelpWindow::GoTo0(const String& link)
 	if(IsNull(link))
 		return false;
 	Topic t = AcquireTopic(link);
+	SetBar();
 	if(!IsNull(t.text)) {
 		label = t.label;
 		topic = t.link;

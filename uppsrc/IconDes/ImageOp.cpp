@@ -143,37 +143,6 @@ void MirrorVert(Image& img, const Rect& rect)
 	img = ib;
 }
 
-Image Magnify(const Image& img, int nx, int ny)
-{
-	if(nx == 1 && ny == 1)
-		return img;
-	if(nx == 0 || ny == 0)
-		return Image();
-	Size sz = img.GetSize();
-	bool xdown = nx < 0;
-	nx = abs(nx);
-	int ncx = xdown ? sz.cx / nx : sz.cx * nx;
-	ImageBuffer b(ncx, sz.cy * ny);
-	const RGBA *s = ~img;
-	const RGBA *e = s + img.GetLength();
-	RGBA *t = ~b;
-	while(s < e) {
-		RGBA *q = t;
-		const RGBA *le = s + sz.cx;
-		while(s < le) {
-			Fill(q, *s, nx);
-			q += nx;
-			s++;
-		}
-		for(int n = ny - 1; n--;) {
-			memcpy(q, t, ncx * sizeof(RGBA));
-			q += ncx;
-		}
-		t = q;
-	}
-	return b;
-}
-
 String PackImlData(const Vector<Image>& image)
 {
 	StringBuffer block;
@@ -202,6 +171,44 @@ String PackImlData(const Vector<Image>& image)
 		}
 	}
 	return ZCompress(block);
+}
+
+Image DownSample3x(const Image& src)
+{
+	Size tsz = src.GetSize() / 3;
+	ImageBuffer ib(tsz);
+	int w = src.GetSize().cx;
+	int w2 = 2 * w;
+	for(int y = 0; y < tsz.cy; y++) {
+		RGBA *t = ib[y];
+		RGBA *e = t + tsz.cx;
+		const RGBA *s = src[3 * y];
+		while(t < e) {
+			int r, g, b, a;
+			int aa;
+			const RGBA *q;
+			r = g = b = a = 0;
+#define S__SUM(delta) q = s + delta; aa = (int)q->a; r += aa * q->r; g += aa * q->g; b += aa * q->b; a += aa;
+			S__SUM(0) S__SUM(1) S__SUM(2)
+			S__SUM(w + 0) S__SUM(w + 1) S__SUM(w + 2)
+			S__SUM(w2 + 0) S__SUM(w2 + 1) S__SUM(w2 + 2)
+#undef  S__SUM
+			t->a = a / 9;
+			if(a) {
+				t->r = r / a;
+				t->g = g / a;
+				t->b = b / a;
+			}
+			else {
+				t->r = 0;
+				t->g = 0;
+				t->b = 0;
+			}
+			t++;
+			s += 3;
+		}
+	}
+	return ib;
 }
 
 END_UPP_NAMESPACE

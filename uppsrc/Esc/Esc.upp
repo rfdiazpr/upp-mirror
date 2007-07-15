@@ -15,9 +15,11 @@ file
 	EscStdLib.cpp,
 	Value.cpp,
 	Info readonly separator,
+	srcdoc.tpp,
 	COPYING,
 	COPYING-PLAIN,
 	AUTHORS;
 
 mainconfig
 	"" = "";
+

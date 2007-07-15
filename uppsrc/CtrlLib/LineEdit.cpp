@@ -229,7 +229,7 @@ int   LineEdit::GetGPos(int ln, int cl) const {
 		if(cl < gl) break;
 		s++;
 	}
-	return GetPos(ln, s - b);
+	return GetPos(ln, int(s - b));
 }
 
 Point LineEdit::GetColumnLine(int pos) const {
@@ -350,6 +350,8 @@ int LineEdit::PlaceCaretNoG(int newcursor, bool sel) {
 	ScrollIntoCursor();
 	PlaceCaret0(p);
 	SelectionChanged();
+	if(IsSelection())
+		SetSelectionSource(ClipFmtsText());
 	return p.x;
 }
 
@@ -759,6 +761,7 @@ void LineEdit::DragAndDrop(Point p, PasteClip& d)
 		sb.y = a;
 		SetFocus();
 		SetSelection(c, c + count);
+		Action();
 		return;
 	}
 	if(!d.IsAccepted()) return;
@@ -816,8 +819,10 @@ void LineEdit::LeftDrag(Point p, dword flags)
 		iw.Alpha().DrawRect(sz, Black());
 		DrawTLText(iw.Alpha(), 0, 0, 9999, sample, Courier(10), White());
 		NextUndo();
-		if(DoDragAndDrop(ClipFmtsText(), iw) == DND_MOVE)
+		if(DoDragAndDrop(ClipFmtsText(), iw) == DND_MOVE) {
 			RemoveSelection();
+			Action();
+		}
 	}
 }
 

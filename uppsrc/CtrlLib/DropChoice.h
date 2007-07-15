@@ -124,31 +124,32 @@ public:
 	Callback      WhenClick;
 
 	DropList&     Add(const Value& key, const Value& value);
-	DropList&     Add(const Value& value)       { return Add(value, value); }
+	DropList&     Add(const Value& value)         { return Add(value, value); }
 	void          ClearList();
 	void          Clear();
 
 	void          Drop();
 
-	const Value& operator=(const Value& v)      { SetData(v); return v; }
-	operator Value() const                      { return GetData(); }
+	const Value& operator=(const Value& v)        { SetData(v); return v; }
+	operator Value() const                        { return GetData(); }
 
-	void          SetIndex(int i)               { SetData(GetKey(i)); }
-	int           GetIndex() const              { return FindKey(value); }
+	void          SetIndex(int i)                 { SetData(GetKey(i)); }
+	int           GetIndex() const                { return FindKey(value); }
 
-	bool          HasKey(const Value& k) const  { return key.Find(k) >= 0; }
-	int           FindKey(const Value& k) const { return key.Find(k); }
-	int           Find(const Value& k) const    { return key.Find(k); }
-
-	int           GetCount() const              { return key.GetCount(); }
+	bool          HasKey(const Value& k) const    { return key.Find(k) >= 0; }
+	int           FindKey(const Value& k) const   { return key.Find(k); }
+	int           Find(const Value& k) const      { return key.Find(k); }
+ 	int           FindValue(const Value& v) const { return list.Find(v); }
+ 	
+	int           GetCount() const                { return key.GetCount(); }
 	void          Trim(int n);
-	const Value&  GetKey(int i) const           { return key[i]; }
+	const Value&  GetKey(int i) const             { return key[i]; }
 
-	Value         GetValue(int i) const         { return list.Get(i, 0); }
+	Value         GetValue(int i) const           { return list.Get(i, 0); }
 	Value         GetValue() const;
 	void          SetValue(int i, const Value& v);
 	void          SetValue(const Value& v);
-	Value         operator[](int i) const       { return GetValue(i); }
+	Value         operator[](int i) const         { return GetValue(i); }
 
 	void          Adjust();
 	void          Adjust(const Value& k);

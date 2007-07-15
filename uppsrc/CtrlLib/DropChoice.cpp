@@ -16,7 +16,7 @@ void DropChoice::Drop() {
 	if(!owner || owner->IsReadOnly() || list.GetCount() == 0 && !WhenDrop) return;
 	WhenDrop();
 	if(dropfocus)
-		owner->SetFocus();
+		owner->SetWantFocus();
 	if(!list.FindSetCursor(owner->GetData()) && list.GetCount() > 0)
 		list.SetCursor(0);
 	list.PopUp(owner);

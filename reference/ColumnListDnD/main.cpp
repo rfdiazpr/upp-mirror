@@ -28,7 +28,7 @@ public:
 			list.SetCursor(ii);
 		}
 	}
-
+	
 	void Drag()
 	{
 		if(list.DoDragAndDrop(InternalClip(list, "mydrag"), list.GetDragSample()) == DND_MOVE)
@@ -44,7 +44,7 @@ public:
 		list.MultiSelect();
 		list.WhenDropInsert = THISBACK(DropInsert);
 		list.WhenDropItem = THISBACK(DropSum);
-
+		
 		list.WhenDrag = THISBACK(Drag);
 
 		for(int i = 0; i < 500; i++)

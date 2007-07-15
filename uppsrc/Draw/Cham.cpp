@@ -172,10 +172,12 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 				p.y = isz.cy - p.y - 1;
 			}
 		}
+		if(op == LOOK_MARGINS)
+			return Rect(p.x, p.y, isz.cx - p2.x, isz.cy - p2.y);
 		if(op == LOOK_ISOPAQUE)
 			return img.GetKind() == IMAGE_OPAQUE;
-		if(op == LOOK_MARGINS)
-			return Rect(p.x, p.y, p.x, p.y);
+		if(IsNull(img))
+			return 1;
 		if(op == LOOK_PAINT || op == LOOK_PAINTEDGE) {
 			LTIMING("ChPaint Image");
 			w.Clipoff(r);
@@ -330,11 +332,12 @@ void ChFinish()
 Value sChOp(Draw& w, const Rect& r, const Value& v, int op)
 {
 	Value q;
-	for(int i = sChps().GetCount() - 1; i >= 0; i--) {
-		q = (*sChps()[i])(w, r, v, op);
-		if(!IsNull(q))
-			break;
-	}
+	if(!IsNull(v))
+		for(int i = sChps().GetCount() - 1; i >= 0; i--) {
+			q = (*sChps()[i])(w, r, v, op);
+			if(!IsNull(q))
+				break;
+		}
 	return q;
 }
 

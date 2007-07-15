@@ -139,6 +139,7 @@ private:
 
 	friend class RichTxt;
 	friend class RichText;
+public:
 
 	Array<RichCell>&       operator[](int i)             { return cell[i]; }
 	const Array<RichCell>& operator[](int i) const       { return cell[i]; }
@@ -155,6 +156,7 @@ private:
 	int           GetLength() const;
 	int           GetTableCount() const;
 
+private:
 	void          Normalize0();
 
 	RichTable     Copy(const Rect& sel) const;

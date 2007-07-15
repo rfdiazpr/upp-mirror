@@ -542,4 +542,29 @@ void BilinearCopy(ImageBuffer& dest, Point destpos[4], const Image& src, Rect sr
 	BilinearCopy(dest, destpos, src, srcpos, opt_clip, interpolate);
 }
 
+static inline Pointf Cvp(double x, double y, double sina, double cosa)
+{
+	return Pointf(x * cosa + y * sina, -x * sina + y * cosa);
+}
+
+Image BilinearRotate(const Image& m, int angle)
+{
+	RTIMING("Rotate");
+	Size isz = m.GetSize();
+	Point center = isz / 2;
+	Pointf centerf = Pointf(Point(isz)) / 2;
+	double sina, cosa;
+	Draw::SinCos(angle, sina, cosa);
+	Pointf p1 = Cvp(-centerf.x, -centerf.y, sina, cosa);
+	Pointf p2 = Cvp(centerf.x, -centerf.y, sina, cosa);
+	Size sz2 = Size(2 * (int)max(tabs(p1.x), tabs(p2.x)),
+	                2 * (int)max(tabs(p1.y), tabs(p2.y)));
+	Point dcenter = sz2 / 2;
+	ImageBuffer ib(sz2);
+	Fill(~ib, RGBAZero(), ib.GetLength());
+	BilinearCopy(ib, dcenter + (Point)p1, dcenter + (Point)p2, dcenter - (Point)p1, dcenter - (Point)p2,
+	             m, Point(0, 0), Point(isz.cx, 0), isz, Point(0, isz.cy));
+	return ib;
+}
+
 END_UPP_NAMESPACE

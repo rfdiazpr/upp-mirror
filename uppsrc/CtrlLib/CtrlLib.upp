@@ -112,6 +112,10 @@ file
 	Complex.upt,
 	CtrlLib.usc font 2 charset "UTF-8",
 	Info readonly separator,
+	src.tpp,
+	srcdoc.tpp,
+	appdoc.tpp,
 	COPYING,
 	COPYING-PLAIN,
 	AUTHORS;
+

@@ -711,7 +711,7 @@ void ColumnList::DragRepeat(Point p)
 	sb = sb + GetDragScroll(this, p, 1).y;
 }
 
-void ColumnList::DragEnter(Point, PasteClip&)
+void ColumnList::DragEnter()
 {
 	RefreshSel();
 }

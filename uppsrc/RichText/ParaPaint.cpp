@@ -222,7 +222,7 @@ void RichPara::Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& 
 					h = x;
 				pp++;
 				if(*i0 != *i || hg->object) {
-					Flush(draw, pi, text, i0, wd, i0 - cf, i - i0, x0, x, y0, py.y, linecy,
+					Flush(draw, pi, text, i0, wd, (int)(i0 - cf),(int)( i - i0), x0, x, y0, py.y, linecy,
 					      lineascent, z, highlight);
 					i0 = i;
 					x0 = x;
@@ -260,7 +260,7 @@ void RichPara::Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& 
 				}
 			}
 			if(i > i0)
-				Flush(draw, pi, text, i0, wd, i0 - cf, i - i0, x0, x, y0, py.y, linecy,
+				Flush(draw, pi, text, i0, wd, (int)(i0 - cf), (int)(i - i0), x0, x, y0, py.y, linecy,
 				      lineascent, z, highlight);
 			if(lni == 0) {
 				Rect r;
@@ -452,7 +452,7 @@ int RichPara::PosInLine(int x, const Rect& page, const Lines& pl, int lni) const
 	int xp = li.xpos + page.left;
 	while(w < wl && xp + *w <= x)
 		xp += *w++;
-	int pos = w - pl.width;
+	int pos = (int)(w - pl.width);
 	return pos < pl.clen ? pl.pos[pos] : pl.len;
 }
 
@@ -535,7 +535,7 @@ void  RichPara::GatherIndexes(Vector<RichValPos>& info, const Rect& page, PageY 
 				if(!ie.IsEmpty()) {
 					RichValPos& f = info.Add();
 					f.py = py;
-					f.pos = i - i0 + pos;
+					f.pos = (int)(i - i0) + pos;
 					f.data = ie;
 				}
 			}

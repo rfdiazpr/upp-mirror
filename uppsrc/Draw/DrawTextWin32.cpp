@@ -58,6 +58,9 @@ int CALLBACK Draw::AddFace(const LOGFONT *logfont, const TEXTMETRIC *, dword typ
 		typ |= Font::SCALEABLE;
 	if(logfont->lfCharSet == SYMBOL_CHARSET)
 		typ |= Font::SYMBOLTYPE;
+	else
+	if(logfont->lfCharSet != 0)
+		typ |= Font::LOCAL;
 #ifndef PLATFORM_WINCE
 	{
 		typedef DWORD (WINAPI *GGIW)(HDC, LPCWSTR, int, LPWORD, DWORD);

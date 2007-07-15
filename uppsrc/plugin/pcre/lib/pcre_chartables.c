@@ -2,8 +2,8 @@
 *      Perl-Compatible Regular Expressions       *
 *************************************************/
 
-/* This file is automatically written by the dftables auxiliary 
-program. If you edit it by hand, you might like to edit the Makefile to 
+/* This file is automatically written by the dftables auxiliary
+program. If you edit it by hand, you might like to edit the Makefile to
 prevent its ever being regenerated.
 
 This file contains the default tables for characters with codes less than

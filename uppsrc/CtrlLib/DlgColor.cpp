@@ -1022,8 +1022,8 @@ void PalCtrl::UpdateColorIndex()
 {
 	Config& gc = GlobalConfig();
 	if(gc.loaded)
-		color_index = UPP::Find(gc.current,
-			gc.current + __countof(gc.current), color, StdEqual<int>()) - gc.current;
+		color_index =(int)( UPP::Find(gc.current,
+			gc.current + __countof(gc.current), color, StdEqual<int>()) - gc.current);
 }
 
 void PalCtrl::Layout()

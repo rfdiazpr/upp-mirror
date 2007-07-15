@@ -75,6 +75,7 @@ void TopWindow::DeleteIco()
 
 void TopWindow::SyncCaption()
 {
+	LLOG("SyncCaption");
 	HWND hwnd = GetHWND();
 	if(hwnd) {
 		style = ::GetWindowLong(hwnd, GWL_STYLE);
@@ -157,7 +158,7 @@ void TopWindow::Open(HWND hwnd)
 	if(dokeys && (!GUI_AKD_Conservative() || GetAccessKeysDeep() <= 1))
 		DistributeAccessKeys();
 	UsrLogT(3, "OPEN " + Desc(this));
-	LLOG("TopWindow::Open, HWND = " << FormatIntHex((int)hwnd, 8) << ", Active = " << FormatIntHex((int)::GetActiveWindow(), 8));
+	LLOG("TopWindow::Open, owner HWND = " << FormatIntHex((int)hwnd, 8) << ", Active = " << FormatIntHex((int)::GetActiveWindow(), 8));
 	IgnoreMouseUp();
 	SyncCaption();
 #ifdef PLATFORM_WINCE
@@ -179,7 +180,7 @@ void TopWindow::Open(HWND hwnd)
 
 void TopWindow::Open(Ctrl *owner)
 {
-	LLOG("TopWindow::Open(Ctrl) -> " << ::Name(owner));
+	LLOG("TopWindow::Open(Ctrl) -> " << UPP::Name(owner));
 	Open(owner ? owner->GetTopCtrl()->GetHWND() : NULL);
 	if(IsOpen() && top)
 		top->owner = owner;

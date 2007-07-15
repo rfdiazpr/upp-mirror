@@ -1,4 +1,6 @@
-
+#ifdef _MSC_VER
+#pragma setlocale("C")
+#endif
 // Report.h
 
 T_("Report")
@@ -45,7 +47,7 @@ ruRU("&Номера страниц")
 
 T_("PDF export..")
 csCZ("PDF export..")
-huHU("")
+huHU("PDF export..")
 itIT("")
 ruRU("")
 

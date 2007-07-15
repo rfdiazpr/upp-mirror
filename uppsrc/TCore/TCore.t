@@ -1,4 +1,6 @@
-
+#ifdef _MSC_VER
+#pragma setlocale("C")
+#endif
 // util.cpp
 
 T_("Null value not allowed.")

@@ -241,7 +241,7 @@ local int get_byte(s)
     if (s->z_eof) return EOF;
     if (s->stream.avail_in == 0) {
 	errno = 0;
-	s->stream.avail_in = fread(s->inbuf, 1, Z_BUFSIZE, s->file);
+	s->stream.avail_in = (unsigned)fread(s->inbuf, 1, Z_BUFSIZE, s->file);
 	if (s->stream.avail_in == 0) {
 	    s->z_eof = 1;
 	    if (ferror(s->file)) s->z_err = Z_ERRNO;

@@ -12,6 +12,8 @@
 #define  LAYOUTFILE    <ide/Debuggers/Gdb.lay>
 #include <CtrlCore/lay.h>
 
+typedef uintptr_t adr_t;
+
 class DbgDisas : public Ctrl {
 public:
 	virtual void Paint(Draw& w);
@@ -23,7 +25,7 @@ public:
 	virtual void LostFocus();
 
 private:
-	Index<dword> addr;
+	Index<adr_t> addr;
 	struct Inst : Moveable<Inst> {
 		String code;
 		String args;
@@ -31,9 +33,9 @@ private:
 
 	ScrollBar    sb;
 	Vector<Inst> inst;
-	Index<dword> taddr;
+	Index<adr_t> taddr;
 	int          codecx;
-	dword        low, high;
+	adr_t        low, high;
 	int          cursor;
 	int          ip;
 	Image        ipimg;
@@ -48,16 +50,16 @@ public:
 	Callback WhenFocus;
 
 	void  Clear();
-	void  Add(dword adr, const String& code, const String& args);
-	void  AddT(dword tadr)              { taddr.Add(tadr); }
+	void  Add(adr_t adr, const String& code, const String& args);
+	void  AddT(adr_t tadr)              { taddr.Add(tadr); }
 
 	void  WriteClipboard();
 
 	void  Set(const String& s);
-	bool  InRange(dword adr)            { return addr.Find(adr) >= 0; }
-	void  SetCursor(dword adr);
-	dword GetCursor() const             { return cursor >= 0 ? addr[cursor] : 0; }
-	void  SetIp(dword adr, const Image& img);
+	bool  InRange(adr_t adr)            { return addr.Find(adr) >= 0; }
+	void  SetCursor(adr_t adr);
+	adr_t GetCursor() const             { return cursor >= 0 ? addr[cursor] : 0; }
+	void  SetIp(adr_t adr, const Image& img);
 
 	DbgDisas();
 };
@@ -88,7 +90,7 @@ struct Dbg : Debugger, Ctrl {
 
 	String             file;
 	int                line;
-	dword              addr;
+	adr_t              addr;
 
 	FileOut            log;
 

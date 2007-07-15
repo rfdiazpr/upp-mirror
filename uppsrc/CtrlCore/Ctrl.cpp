@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x) //LOG(x)
+#define LLOG(x) // LOG(x)
 
 #define IMAGECLASS CtrlCoreImg
 #define IMAGEFILE <CtrlCore/Ctrl.iml>
@@ -59,6 +59,13 @@ void Ctrl::LeftDrag(Point p, dword keyflags)        {}
 void Ctrl::LeftHold(Point p, dword keyflags)        {}
 void Ctrl::RightDrag(Point p, dword keyflags)       {}
 void Ctrl::RightHold(Point p, dword keyflags)       {}
+void Ctrl::MiddleDown(Point p, dword keyflags)      {}
+void Ctrl::MiddleDouble(Point p, dword keyflags)    {}
+void Ctrl::MiddleTriple(Point p, dword keyflags)    {}
+void Ctrl::MiddleRepeat(Point p, dword keyflags)    {}
+void Ctrl::MiddleDrag(Point p, dword keyflags)      {}
+void Ctrl::MiddleHold(Point p, dword keyflags)      {}
+void Ctrl::MiddleUp(Point p, dword keyflags)        {}
 
 void Ctrl::Layout()                                 {}
 
@@ -301,6 +308,7 @@ bool Ctrl::IsModified() const
 
 void Ctrl::SetCaret(int x, int y, int cx, int cy)
 {
+//	DLOG("SetCaret " << x << ", " << y << ", " << cx << ", " << cy);
 	caretx = x;
 	carety = y;
 	caretcx = cx;
@@ -309,10 +317,11 @@ void Ctrl::SetCaret(int x, int y, int cx, int cy)
 
 void Ctrl::SetCaret(const Rect& r)
 {
+//	DLOG("SetCaret " << r);
 	caretx = r.left;
 	carety = r.top;
-	caretcx = r.Width();
-	caretcy = r.Height();
+	caretcx = r.GetWidth();
+	caretcy = r.GetHeight();
 }
 
 void Ctrl::KillCaret()
@@ -424,10 +433,10 @@ String Ctrl::Name() const {
 		s << "(parent " << String(typeid(*parent).name()) << ")";
 	else
 #ifdef PLATFORM_WIN32
-		s << Format("(hwnd 0x%x)", (int) GetHWND());
+		s << Format("(hwnd 0x%x)", (int)(intptr_t) GetHWND());
 #endif
 #ifdef PLATFORM_X11
-		s << Format("(window 0x%x)", (int) GetWindow());
+		s << Format("(window 0x%x)", (int)(intptr_t) GetWindow());
 #endif
 	return s;
 }
@@ -546,7 +555,7 @@ void Ctrl::DoRemove() {
 	CancelModeDeep();
 	if(HasChildDeep(mouseCtrl) || mouseCtrl == this)
 		mouseCtrl = NULL;
-	LLOG("DoRemove " << Name() << " focusCtrl: " << ::Name(focusCtrl) << BeginIndent);
+	LLOG("DoRemove " << Name() << " focusCtrl: " << UPP::Name(focusCtrl) << BeginIndent);
 #ifdef PLATFORM_X11
 	if(popupgrab) {
 		EndPopupGrab();
@@ -557,11 +566,13 @@ void Ctrl::DoRemove() {
 		LLOG("DoRemove - HasFocusDeep");
 		if(destroying) {
 			if(parent) {
+				LLOG("parent - deferred SetFocus / ChildLostFocus; parent = " << UPP::Name(parent));
 				defferedSetFocus = parent;
 				defferedChildLostFocus.Add(parent);
 			}
 			else
 				if(IsPopUp()) {
+					LLOG("Remove Popup");
 					Ctrl *owner = GetOwner();
 					if(owner && owner->IsEnabled())
 						owner->ActivateWnd();
@@ -573,7 +584,7 @@ void Ctrl::DoRemove() {
 			focusCtrl = NULL;
 			DoKillFocus(fc, NULL);
 			if(parent) {
-				LLOG("DoRemove -> SetFocus(" << ::Name(parent) << "), focusCtrl = " << ::Name(focusCtrl) << ", fc = " << ::Name(fc));
+				LLOG("DoRemove -> SetFocus(" << UPP::Name(parent) << "), focusCtrl = " << UPP::Name(focusCtrl) << ", fc = " << UPP::Name(fc));
 				bool b = IsWantFocus();
 				NoWantFocus();
 				parent->SetFocus0(false);
@@ -581,14 +592,17 @@ void Ctrl::DoRemove() {
 			}
 			else
 				if(IsPopUp()) {
+					LLOG("Remove Popup");
 					Ctrl *owner = GetOwner();
-					if(owner && owner->IsEnabled())
+					if(owner && owner->IsEnabled()) {
+						LLOG("Remove popup -> owner->ActivateWnd");
 						owner->ActivateWnd();
+					}
 				}
 		}
 		SyncCaret();
 	}
-	LLOG(EndIndent << "//DoRemove " << Name() << " focusCtrl: " << ::Name(focusCtrl));
+	LLOG(EndIndent << "//DoRemove " << Name() << " focusCtrl: " << UPP::Name(focusCtrl));
 }
 
 void Ctrl::Close()

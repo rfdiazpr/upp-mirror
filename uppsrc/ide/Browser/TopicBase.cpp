@@ -64,7 +64,7 @@ struct ScanTopicIterator : RichText::Iterator {
 			AddLinkRef(link, para.format.label);
 			ref.FindAdd(para.format.label);
 		}
-
+		
 		for(int i = 0; i < para.part.GetCount(); i++)
 			if(para.part[i].IsText()) {
 				const wchar *s = para.part[i].text;
@@ -98,18 +98,18 @@ String TopicCacheName(const char *path)
 void SyncTopicFile(const RichText& text, const String& link, const String& path, const String& title)
 {
 	ClearLinkRef(link);
-
+	
 	ScanTopicIterator sti;
 	sti.link = link;
 	text.Iterate(sti);
-
+	
 	TopicInfo& ti = topic_info().GetAdd(link);
 	ti.title = title;
 	ti.path = path;
 	ti.time = FileGetTime(path);
 	ti.words = sti.words.PickKeys();
 	Sort(ti.words);
-
+	
 	FileOut out(TopicCacheName(path));
 	out << title << '\n';
 	for(int i = 0; i < sti.ref.GetCount(); i++)

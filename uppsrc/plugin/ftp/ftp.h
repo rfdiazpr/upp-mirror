@@ -29,7 +29,7 @@ public:
 
 	void    SetError(String s) { error = s; }
 	String  GetError() const   { return error; }
-	void    ClearError()       { error = NULL; }
+	void    ClearError()       { error.Clear(); }
 
 	bool    CheckOpen();
 

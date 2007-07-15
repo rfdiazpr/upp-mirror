@@ -12,7 +12,7 @@ enum { DEFAULT_PORT = 2346 };
 #ifdef _DEBUG
 #define DO_SVRLOG 1
 #else
-#define DO_SVRLOG 1
+#define DO_SVRLOG 0
 #endif
 
 #if DO_SVRLOG
@@ -38,6 +38,14 @@ void DeleteFolderDeep(const char *dir)
 	DirectoryDelete(dir);
 }
 */
+
+static bool quit_signal = false;
+
+static void QuitSignal(int)
+{
+	puts("Termination signal received, quitting...");
+	quit_signal = true;
+}
 
 class CommandServer
 {
@@ -212,8 +220,8 @@ CommandServer::CommandServer()
 {
 	timer_chunk = 100;
 	quit_flag = true;
-	Logging(true);
-	Timing(true);
+	Logging(false);
+	Timing(false);
 }
 
 CommandServer::~CommandServer()
@@ -574,15 +582,13 @@ void CommandServer::RunServer(int port)
 
 	String error;
 	Socket server;
-	if(!ServerSocket(server, port))
-	{
+	if(!ServerSocket(server, port, true, 100)) {
 		puts(NFormat("Error creating server socket at port %d: %s", port, Socket::GetErrorText()));
 		return;
 	}
 	server.NoLinger();
 
-	if(logging)
-	{
+	if(logging) {
 		if(ip_filter.IsEmpty())
 			puts("IP Filtering: off (accepting requests from all IP addresses)");
 		else
@@ -597,7 +603,7 @@ void CommandServer::RunServer(int port)
 
 	dword ipaddr;
 	dword ticks = GetTickCount() + 1000;
-	for(quit_flag = false; !quit_flag;)
+	for(quit_flag = false; !quit_flag && !quit_signal;)
 	{
 		bool work = false;
 		Socket connection;
@@ -736,7 +742,7 @@ void CommandServer::RunClient()
 		}
 		catch(Exc e)
 		{
-			puts("Chyba: " + e);
+			puts("Error: " + e);
 		}
 	}
 }
@@ -798,9 +804,10 @@ CONSOLE_APP_MAIN
 {
 #ifdef PLATFORM_POSIX
 	signal(SIGPIPE, SIG_IGN);
-	signal(SIGINT, SIG_IGN);
+	signal(SIGINT, &QuitSignal);
+	signal(SIGTERM, &QuitSignal);
 #endif//PLATFORM_POSIX
-	puts("TSERV " TSERV_VERSION ", release date: " TSERV_DATE "\n"
+	puts(String().Cat() << "TSERV " TSERV_VERSION ", release date: " << TSERV_DATE << "\n"
 	TSERV_COPYRIGHT);
 
 /*

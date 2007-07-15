@@ -258,6 +258,7 @@ private:
 	Label    search_label;
 	WithDropChoice<EditString> search;
 	DropList lang;
+	bool     internal;
 	bool     showwords, issearch, all;
 
 
@@ -587,6 +588,9 @@ public:
 	bool      show_status_bar;
 	bool      toolbar_in_row;
 	bool      show_tabs;
+	bool      tabs_icons;
+	bool      tabs_crosses;
+	bool      tabs_grouping;
 	bool      no_parenthesis_indent;
 	bool      hilite_if_endif;
 	bool      wrap_console_text;
@@ -625,10 +629,7 @@ public:
 	} ff;
 	int                              iwc;
 
-	TopicEditor     topic;
 	TopicWindow     doc;
-
-	String          lasttopicpath;
 
 	int             state_icon;
 
@@ -808,9 +809,7 @@ public:
 		void  RescanCode();
 		void  QueryId();
 		void  About();
-		void  OpenTopic();
 		void  OpenATopic();
-		void  TopicPackages();
 		void  Goto();
 		void  GotoGlobal();
 		void  ScanFile();
@@ -948,6 +947,9 @@ public:
 		void  MacroLaunch(EscEscape& e);
 		void  MacroClearConsole(EscEscape& e);
 		void  MacroEditFile(EscEscape& e);
+		void  MacroSaveCurrentFile(EscEscape& e);
+		void  MacroProjectDir(EscEscape& e);
+		void  MacroFileName(EscEscape& e);
 
 	typedef   Ide CLASSNAME;
 

@@ -1171,7 +1171,7 @@ int utf8len(const char *_s, int _len)
 		else
 		if(code < 0xF0) {
 			if(s > lim - 2) {
-				len += 1 + lim - s;
+				len += 1 + (int)(lim - s);
 				break;
 			}
 			word c = ((code - 0xE0) << 12) + ((s[0] - 0x80) << 6) + s[1] - 0x80;
@@ -1329,7 +1329,7 @@ String ToUtf8(const wchar *s, int len)
 
 int utf8len(const char *s)
 {
-	return utf8len(s, strlen(s));
+	return utf8len(s, (int)strlen(s));
 }
 
 int lenAsUtf8(const wchar *s)
@@ -1359,7 +1359,7 @@ bool  CheckUtf8(const String& src)
 
 WString FromUtf8(const char *s)
 {
-	return FromUtf8(s, strlen(s));
+	return FromUtf8(s, (int)strlen(s));
 }
 
 WString FromUtf8(const String& s)
@@ -1653,7 +1653,7 @@ String ToUpper(const char *s, byte charset)
 	charset = ResolveCharset(charset);
 	if(charset == CHARSET_UTF8)
 		return ToUtf8(ToUpper(FromUtf8(s)));
-	int l = strlen(s);
+	int l = (int)strlen(s);
 	StringBuffer r(l);
 	ToUpper(r, s, l, charset);
 	return r;
@@ -1664,7 +1664,7 @@ String ToLower(const char *s, byte charset)
 	charset = ResolveCharset(charset);
 	if(charset == CHARSET_UTF8)
 		return ToUtf8(ToLower(FromUtf8(s)));
-	int l = strlen(s);
+	int l = (int)strlen(s);
 	StringBuffer r(l);
 	ToLower(r, s, l, charset);
 	return r;
@@ -1675,7 +1675,7 @@ String ToAscii(const char *s, byte charset)
 	charset = ResolveCharset(charset);
 	if(charset == CHARSET_UTF8)
 		return ToUtf8(ToAscii(FromUtf8(s)));
-	int l = strlen(s);
+	int l = (int)strlen(s);
 	StringBuffer r(l);
 	ToAscii(r, s, l, charset);
 	return r;

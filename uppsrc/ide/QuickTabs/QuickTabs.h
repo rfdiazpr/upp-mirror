@@ -13,26 +13,26 @@ class TabScrollBar : public Ctrl
 {
 	private:
 		int total;
-		int pos, ps;
+		double pos, ps;
 		int new_pos;
 		int old_pos;
-		int start_pos;
-		int size;
+		double start_pos;
+		double size;
+		double cs, ics;
 		void UpdatePos(bool update = true);
 		bool ready;
 		Size sz;
-		FrameLeft<StaticRect> ls;
-		FrameRight<StaticRect> rs;
-		
+
 	public:
 		TabScrollBar();
-		
+
 		virtual void Paint(Draw &w);
 		virtual void LeftDown(Point p, dword keyflags);
 		virtual void LeftUp(Point p, dword keyflags);
 		virtual void MouseMove(Point p, dword keyflags);
+		virtual void MouseWheel(Point p, int zdelta, dword keyflags);
 		virtual void Layout();
-		
+
 		int  GetPos() const;
 		void SetPos(int p, bool dontscale = false);
 		void AddPos(int p, bool dontscale = false);
@@ -45,6 +45,72 @@ class TabScrollBar : public Ctrl
 		Callback WhenScroll;
 };
 
+struct Tab : Moveable<Tab>
+{
+	String name;
+	String group;
+	bool visible;
+	int x, cx;
+	int y, cy;
+	int id;
+	Size tsz;
+	Tab() : visible(true), id(-1)
+	{}
+	int Right() { return x + cx; }
+	bool HasMouse(Point &p);
+	bool HasMouseCross(Point &p);
+};
+
+struct Group : Moveable<Group>
+{
+	Group()	{}
+	String name;
+	String path;
+	int active;
+	int count;
+	int first;
+	int last;
+};
+
+class GroupButton : public Ctrl
+{
+	private:
+
+		Vector<Group> groups;
+		int current;
+
+	public:
+
+		typedef GroupButton CLASSNAME;
+
+		virtual void Paint(Draw &w);
+		virtual void LeftDown(Point p, dword keyflags);
+		virtual void MouseEnter(Point p, dword keyflags);
+		virtual void MouseLeave();
+
+		void Make(const Vector<Tab> &tabs);
+		int  Find(const String& g);
+		const String& GetNext();
+		void DoList(Bar &bar);
+		void DoGrouping(int n);
+
+		String GetName() const           { return current == 0 ? Null : groups[current].path; }
+		int  SetCurrent(const String &s) { current = max(0, Find(s)); return current; }
+		int  SetCurrent(int c)           { int t = current; current = c; return current; }
+		int  GetCurrent() const          { return current;                }
+		void SetActive(int id)           { groups[current].active = id;   }
+		int  GetActive() const           { return groups[current].active; }
+		int  GetFirst() const            { return groups[current].first;  }
+		int  GetLast() const             { return groups[current].last;   }
+		bool IsAll() const               { return current == 0;           }
+
+		GroupButton();
+
+		Callback WhenGrouping;
+		Callback WhenCloseAll;
+		Callback WhenCloseRest;
+};
+
 class QuickTabs : public FrameCtrl<Ctrl>
 {
 	private:
@@ -52,25 +118,15 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		{
 			MARGIN = 6,
 			SPACE = 10,
-			HEIGHT = 30
+			HEIGHT = 30,
+			FILEICON = 16
 		};
-			
+
+		int id;
 		FrameBottom<TabScrollBar> sc;
-		FrameRight<Button> list;
+		FrameLeft<GroupButton> groups;
 		void Scroll();
-		
-		struct Tab : Moveable<Tab>
-		{
-			String name;
-			int x, cx;
-			int y, cy;
-			Size tsz;
-			Tab() {}
-			int Right() { return x + cx; }
-			bool HasMouse(Point &p);
-			bool HasMouseCross(Point &p);
-		};
-		
+
 		Vector<Tab> tabs;
 		int highlight;
 		int active;
@@ -78,12 +134,16 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		int cross;
 		bool crosses;
 		bool file_icons;
+		bool isalt;
+		bool isdrag;
+		bool grouping;
 		Point mouse, oldp;
 
 		virtual void Paint(Draw &w);
-		virtual void LeftDown(Point p, dword keys);
-		virtual void LeftUp(Point p, dword keys);
-		virtual void MouseMove(Point p, dword keys);
+		virtual void LeftDown(Point p, dword keysflags);
+		virtual void LeftUp(Point p, dword keysflags);
+		virtual void MiddleDown(Point p, dword keyflags);
+		virtual void MouseMove(Point p, dword keysflags);
 		virtual void MouseLeave();
 		virtual void Layout();
 		virtual void FrameLayout(Rect &r);
@@ -91,31 +151,39 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		virtual void FramePaint(Draw& w, const Rect& r);
 		virtual void DragAndDrop(Point p, PasteClip& d);
 		virtual void LeftDrag(Point p, dword keyflags);
-		virtual void DragEnter(Point p, PasteClip& d);
+		virtual void DragEnter();
 		virtual void DragLeave();
 		virtual void DragRepeat(Point p);
+		virtual void CancelMode();
 		virtual void MouseWheel(Point p, int zdelta, dword keyflags);
-		
+
 		void DrawTab(Draw &w, int i);
-		void Repos(bool update = false);
+		void Repos(bool update = true);
+		int  FindActive(int id);
+		int  GetNext(int n);
+		int  GetPrev(int n);
+
 		int GetWidth(int n);
 		int GetHeight(int n);
 		int GetTotal();
 		int GetTargetTab(Point p);
-				
+
+		void Group();
+
 	public:
 		QuickTabs();
-		
+
 		void Add(const char *name, bool make_active = false);
 		void Close(int n);
 		void Remove(int n);
 		void Clear();
-		
-	 	QuickTabs& FileIcons(bool b = true) { file_icons = b; return *this; }
-	 	QuickTabs& Crosses(bool b = true)   { crosses = b; return *this;    }
-		
+
+		QuickTabs& FileIcons(bool b);
+		QuickTabs& Crosses(bool b);
+		QuickTabs& Grouping(bool b);
+
 		typedef QuickTabs CLASSNAME;
-		
+
 		int    GetCount() const { return tabs.GetCount(); }
 		int    GetCursor() const { return active; }
 		String GetFile(int n) const { return tabs[n].name; }
@@ -124,8 +192,9 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		void   RenameFile(const String& fn, const String& nn);
 		void   Set(const QuickTabs& t);
 
-		void SetCursor(int n);		
+		int    GetNextId();
+
+		void SetCursor(int n);
 };
 
 #endif
-

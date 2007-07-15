@@ -8,15 +8,15 @@
 #define INT64_(x)                  COLUMN_("bigint", int64, x, 0, 0)
 #define INT64_ARRAY_(x, items)     COLUMN_ARRAY_("bigint", int64, x, 0, 0, items)
 
-#define SERIAL(x)                  COLUMN("integer autoincrement", int64, x, 0, 0) //int is not enough, as it is unsigned
-#define SERIAL_ARRAY(x, items)     COLUMN_ARRAY("integer autoincrement", int64, x, 0, 0, items)
-#define SERIAL_(x)                 COLUMN_("integer autoincrement", int64, x, 0, 0)
-#define SERIAL_ARRAY_(x, items)    COLUMN_ARRAY_("integer autoincrement", int64, x, 0, 0, items)
+#define SERIAL(x)                  COLUMN("serial", int64, x, 0, 0) //int is not enough, as it is unsigned
+#define SERIAL_ARRAY(x, items)     COLUMN_ARRAY("serial", int64, x, 0, 0, items)
+#define SERIAL_(x)                 COLUMN_("serial", int64, x, 0, 0)
+#define SERIAL_ARRAY_(x, items)    COLUMN_ARRAY_("serial", int64, x, 0, 0, items)
 
-#define BIGSERIAL(x)               COLUMN("integer autoincrement", int64, x, 0, 0)
-#define BIGSERIAL_ARRAY(x, items)  COLUMN_ARRAY("integer autoincrement", int64, x, 0, 0, items)
-#define BIGSERIAL_(x)              COLUMN_("integer autoincrement", int64, x, 0, 0)
-#define BIGSERIAL_ARRAY_(x, items) COLUMN_ARRAY_("integer autoincrement", int64, x, 0, 0, items)
+#define BIGSERIAL(x)               COLUMN("bigserial", int64, x, 0, 0)
+#define BIGSERIAL_ARRAY(x, items)  COLUMN_ARRAY("bigserial", int64, x, 0, 0, items)
+#define BIGSERIAL_(x)              COLUMN_("bigserial", int64, x, 0, 0)
+#define BIGSERIAL_ARRAY_(x, items) COLUMN_ARRAY_("bigserial", int64, x, 0, 0, items)
 
 #define DOUBLE(x)                  COLUMN("double precision", double, x, 0, 0)
 #define DOUBLE_ARRAY(x, items)     COLUMN_ARRAY("double precision", double, x, 0, 0, items)

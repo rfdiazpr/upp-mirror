@@ -267,12 +267,12 @@ private:
 
 	struct KeyMaster : public ParentCtrl {
 		LayDes *d;
-
+	
 		virtual bool   Key(dword key, int count) {
 			return d->DoKey(key, count);
 		}
 	};
-
+	
 	String   filename;
 	byte     charset;
 	String   layfile;

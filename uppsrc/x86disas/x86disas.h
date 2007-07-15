@@ -170,9 +170,9 @@ class X86Disas {
 		unsigned char o32;	/* operand 32 prefix */
 		x86_InsnOperand op[3];	/* 3 operands for instruction */
 	};
-	
+
 	/* operand types enumerated */
-	
+
 	unsigned char G_dis_mode;	/* disassembly mode, (16/32/64) */
 	unsigned char G_opr_mode;	/* operand mode, (16/32) */
 	unsigned char G_adr_mode;	/* address mode, (16/32) */
@@ -226,13 +226,13 @@ class X86Disas {
 	void print_rsi(x86_Insn *ip, unsigned n);
 	void opscript(x86_Insn *ip, unsigned n, char *script);
 	void Disasm(x86_Insn *ip);
-	
+
 public:
 	String mnemonic;
 	String operands;
 	bool   iscall;
 	int    size;
-	
+
 	X86Disas(dword ip, byte *data);
 };
 

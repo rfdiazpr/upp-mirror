@@ -116,13 +116,14 @@ private:
 	struct CellCtrl : StaticRect {
 		virtual void LeftDown(Point, dword);
 
+		bool       owned;
 		Ctrl      *ctrl;
 	};
 
 	struct CellInfo : Moveable<CellInfo> {
 		BitAndPtr ptr;
 
-		void           Set(Ctrl *ctrl);
+		void           Set(Ctrl *ctrl, bool owned);
 		bool           IsCtrl() const             { return ptr.GetBit(); }
 		CellCtrl&      GetCtrl() const            { ASSERT(IsCtrl()); return *(CellCtrl *)ptr.GetPtr(); }
 
@@ -250,6 +251,7 @@ private:
 	bool   KillCursor0();
 
 	const Display& GetCellInfo(int i, int j, bool f0, Value& v, Color& fg, Color& bg, dword& st);
+	Ctrl&  SetCtrl(int i, int j, Ctrl *newctrl, bool owned);
 	Size   DoPaint(Draw& w, bool sample);
 
 	bool   TestKey(int i, int key);
@@ -270,8 +272,8 @@ private:
 
 	void   SyncInfo();
 
-public: // temporary (TRC 06/07/28)
-	Ctrl&      SetCtrl(int i, int j, Ctrl *newctrl);
+public: // temporary (TRC 06/07/28) // will be removed!
+	Ctrl&  SetCtrl(int i, int j, Ctrl *newctrl) { return SetCtrl(i, j, newctrl, true); }
 
 protected:
 	virtual bool UpdateRow();
@@ -447,6 +449,8 @@ public:
 	void            SetDisplay(int i, int j, const Display& d);
 	const Display&  GetDisplay(int row, int col);
 	const Display&  GetDisplay(int col);
+	
+	void       SetCtrl(int i, int j, Ctrl& ctrl);
 
 	ArrayCtrl& SetLineCy(int cy);
 	void       SetLineCy(int i, int cy);

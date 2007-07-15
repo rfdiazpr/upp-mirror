@@ -100,6 +100,8 @@ int GetSystemLNG()
 	static int lang;
 	ONCELOCK {
 		lang = LNGFromText(GetUserLocale(LOCALE_SISO639LANGNAME) + GetUserLocale(LOCALE_SISO3166CTRYNAME));
+		if(!lang)
+			lang = LNG_ENGLISH;
 		int cs = atoi(GetUserLocale(LOCALE_IDEFAULTANSICODEPAGE));
 		if(cs >= 1250 && cs <= 1258)
 			lang = SetLNGCharset(lang, CHARSET_WIN1250 + cs - 1250);
@@ -111,13 +113,15 @@ int GetSystemLNG()
 #ifdef PLATFORM_POSIX
 int GetSystemLNG() {
 	static int lang;
-	INIT_LOCK (
+	ONCELOCK {
 		String s = Environment().Get("LANG", Null);
 		lang = LNGFromText(s);
+		if(!lang)
+			lang = LNG_ENGLISH;
 		const char *q = strchr(s, '.');
 		if(q)
 			lang = SetLNGCharset(lang, CharsetByName(q + 1));
-	);
+	};
 	return lang;
 };
 
@@ -537,7 +541,7 @@ static const char *NlsFindDigits(const char *src, String& dest)
 		const char *start = src;
 		while(*++src && !IsDigit(*src))
 			;
-		dest.Cat(start, src - start);
+		dest.Cat(start, (int)(src - start));
 	}
 	return src;
 }
@@ -549,7 +553,7 @@ static const char *NlsCopyDigits(const char *src, String& dest, String thousands
 		const char *p = src;
 		while(IsDigit(*++src))
 			;
-		int first = (src - p + 2) % 3 + 1;
+		int first = ((int)(src - p) + 2) % 3 + 1;
 		while(p < src)
 		{
 			dest.Cat(p, first);
@@ -577,7 +581,7 @@ static String NlsFormatRaw(const char *n, String thousands, String decimals)
 		const char *s = n;
 		while(IsDigit(*n))
 			n++;
-		result.Cat(s, n - s);
+		result.Cat(s, (int)(n - s));
 	}
 	if(*(n = NlsCopyDigits(n, result, thousands)))
 		result.Cat(n);

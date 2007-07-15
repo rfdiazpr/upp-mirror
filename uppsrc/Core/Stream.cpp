@@ -319,7 +319,7 @@ void Stream::PutUtf8(int c)
 
 void Stream::Put(const char *s)
 {
-	Put(s, strlen(s));
+	Put(s, (int)strlen(s));
 }
 
 void Stream::Put(const String& s) {
@@ -831,7 +831,7 @@ void StringStream::SetWriteBuffer()
 void StringStream::SetWriteMode()
 {
 	if(writemode) return;
-	dword p = ptr - buffer;
+	intptr_t p = ptr - buffer;
 	size = data.GetLength();
 	wdata = data;
 	SetWriteBuffer();
@@ -888,11 +888,11 @@ void  StringStream::_Put(const void *d, dword sz)
 {
 	SetWriteMode();
 	if(ptr + sz >= wrlim) {
-		dword p = ptr - buffer;
+		intptr_t p = ptr - buffer;
 	#ifdef _DEBUG
-		wdata.SetLength(max((dword)1, max(2 * (dword)GetSize(), (dword)GetSize() + sz)));
+		wdata.SetLength(max(1, max(2 * (int)GetSize(), (int)GetSize() + (int)sz)));
 	#else
-		wdata.SetLength(max((dword)128, max(2 * (dword)GetSize(), (dword)GetSize() + sz)));
+		wdata.SetLength(max(128, max(2 * (int)GetSize(), (int)GetSize() + (int)sz)));
 	#endif
 		SetWriteBuffer();
 		ptr = buffer + p;
@@ -961,8 +961,8 @@ int64 MemStream::GetSize() const {
 }
 
 dword MemStream::_Get(void *data, dword size) {
-	if(size > (dword)(uintptr_t)(rdlim - ptr))
-		size = rdlim - ptr;
+	if(size > (dword)(intptr_t)(rdlim - ptr))
+		size = (dword)(intptr_t)(rdlim - ptr);
 	memcpy(data, ptr, size);
 	ptr += size;
 	return size;
@@ -1115,7 +1115,7 @@ void CompareStream::Compare(int64 pos, const void *data, dword size) {
 }
 
 void CompareStream::Flush() {
-	Compare(pos, buffer, ptr - buffer);
+	Compare(pos, buffer, (int)(ptr - buffer));
 }
 
 void CompareStream::_Put(const void *data, dword size) {

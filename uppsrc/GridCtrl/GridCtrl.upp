@@ -16,11 +16,10 @@ options
 	-DLOG_CALLBACKS;
 
 file
-	GridBase.h,
-	GridBase.cpp,
 	GridDisplay.h,
 	GridDisplay.cpp,
 	GridCtrl.h,
+	GridBase.cpp,
 	GridCtrl.cpp,
 	GridSort.cpp,
 	GridCtrl.iml,

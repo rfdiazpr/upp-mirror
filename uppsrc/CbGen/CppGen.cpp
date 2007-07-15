@@ -1,5 +1,7 @@
 #include <Core/Core.h>
 
+using namespace Upp;
+
 String If(String s, String txt)
 {
 	return IsNull(s) ? String() : txt;
@@ -294,6 +296,7 @@ CONSOLE_APP_MAIN
 {
 	LOG("#ifndef CPP_PART__");
 	LOG("");
+
 	CallbackGen("Callback", "void", 0,
 		"operator bool() const   { return action && action->IsValid(); }\n"
 		"void Execute() const;\n"
@@ -354,6 +357,15 @@ CONSOLE_APP_MAIN
 		"void ClearTrue()             { Clear(); action = (Gate3Action<P1, P2, P3> *)1; }\n"
 		"void ClearFalse()            { Clear(); }\n\n"
 		"Gate3(bool b)                { action = (Gate3Action<P1, P2, P3> *)(uintptr_t)b; }",
+		"&& (void *)action != (void *)1"
+	);
+	CallbackGen("Gate4", "bool", 4,
+	    "operator bool() const        { return (void *)action != (void *)1 && action && action->IsValid(); }\n"
+		"bool Execute(P1 p1, P2 p2, P3 p3, P4 p4) const;\n"
+		"bool operator()(P1 p1, P2 p2, P3 p3, P4 p4) const { return Execute(p1, p2, p3, p4); }\n"
+		"void ClearTrue()             { Clear(); action = (Gate4Action<P1, P2, P3, P4> *)1; }\n"
+		"void ClearFalse()            { Clear(); }\n\n"
+		"Gate4(bool b)                { action = (Gate4Action<P1, P2, P3, P4> *)(uintptr_t)b; }",
 		"&& (void *)action != (void *)1"
 	);
 	LOG("");

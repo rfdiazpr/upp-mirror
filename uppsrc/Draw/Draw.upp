@@ -4,8 +4,7 @@ acceptflags
 	NOGTK;
 
 uses
-	Core,
-	plugin/bmp;
+	Core;
 
 library((LINUX | FREEBSD) & !NOGTK) "gtk-x11-2.0  gdk-x11-2.0  atk-1.0  gdk_pixbuf-2.0  m  pangocairo-1.0  fontconfig  Xext  Xrender  Xinerama  Xi  Xrandr  Xcursor  Xfixes  pango-1.0  cairo  X11  gobject-2.0  gmodule-2.0  glib-2.0";
 
@@ -79,9 +78,12 @@ file
 	gtk.dli,
 	gnome.dli,
 	Info readonly separator,
+	src.tpp,
+	srcdoc.tpp,
 	COPYING,
 	COPYING-PLAIN,
 	AUTHORS;
 
 mainconfig
 	"Debug" = "MSC GUI DEBUG WIN32";
+

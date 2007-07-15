@@ -424,7 +424,7 @@ public:
 	SqlSelect& From(SqlId table1, SqlId table2);
 	SqlSelect& From(SqlId table1, SqlId table2, SqlId table3);
 	SqlSelect& From(const SqlVal& a)                  { return From(SqlSet(a)); }
-	
+
 	SqlSelect& InnerJoin(SqlId table);
 	SqlSelect& LeftJoin(SqlId table);
 	SqlSelect& RightJoin(SqlId table);

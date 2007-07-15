@@ -70,14 +70,14 @@ HomeBudget::HomeBudget()
 void HomeBudget::Setup()
 {
 	CtrlLayout(*this, String(t_("Home budget")) + " 1.0");
-	
+
 	Icon(Images::SmallIcon());
 	LargeIcon(Images::LargeIcon());
-	
+
 	tab.Add(money.SizePos(), t_("Expenses"));
 	tab.Add(spl.Horz(groups, categories), t_("Categories"));
 	spl.SetPos(2000);
-	
+
 	money.AddIndex(ID);
 	money.AddColumn(CAT_ID, t_("Category")).Edit(category).SetConvert(category);
 	money.AddColumn(PM, t_("Plus / Minus")).SetDisplay(Single<DispPM>()).NoConvertion().Edit(plusminus);
@@ -93,7 +93,7 @@ void HomeBudget::Setup()
 
 	Date dt = GetSysDate();
 	dt.day = 1;
-	
+
 	month.AddIndex(ID);
 	month.AddColumn(DT, t_("Month")).Edit(months).SetConvert(Single<ConvMonth>()).Default(dt);
 	month.Appending().Removing().Editing().Accepting().Canceling();
@@ -104,7 +104,7 @@ void HomeBudget::Setup()
 	month.WhenAcceptRow = THISBACK(AcceptDate);
 	month.WhenNewRow    = THISBACK(NewDate);
 	month.SetToolBar();
-	
+
 	groups.AddIndex(ID);
 	groups.AddColumn(NAME, t_("Name")).Edit(eg);
 	groups.Appending().Removing().Editing().Accepting().Canceling();
@@ -127,15 +127,15 @@ void HomeBudget::Setup()
 	categories.Appending().Removing().Editing();
 	categories.RejectNullRow();
 	categories.SetToolBar();
-	
+
 	mostpr.AddColumn(t_("Name"));
 	mostpr.AddColumn(t_("Amount")).SetConvert(Single<ConvDouble>()).AlignCenter();
 	mostcat.AddColumn(t_("Name"));
 	mostcat.AddColumn(t_("Amount")).SetConvert(Single<ConvDouble>()).AlignCenter();
 
 	tabmost.Add(mostpr.SizePos(), t_("Product"));
-	tabmost.Add(mostcat.SizePos(), t_("Category"));	
-	
+	tabmost.Add(mostcat.SizePos(), t_("Category"));
+
 	dlpm.Add(-1, t_("Minus")).Add(1, t_("Plus"));
 	plusminus.Add(-1, t_("Minus")).Add(1, t_("Plus"));
 	yesno.Add(0, t_("No")).Add(1, t_("Yes"));
@@ -146,9 +146,9 @@ void HomeBudget::Setup()
 
 	LoadDates();
 	LoadGroups();
-	
+
 	UpdateCategories();
-	
+
 	if(month.GetCount() > 0)
 	{
 		month.GoEnd();
@@ -156,22 +156,22 @@ void HomeBudget::Setup()
 	}
 	EnableMoney();
 	Sizeable().Zoomable();
-		
+
 	category <<= THISBACK(UpdateValue);
 	exit <<= THISBACK(Close);
 	options <<= THISBACK(Options);
 	about <<= THISBACK(About);
 	newcat <<= THISBACK(NewCategory);
 	help <<= THISBACK(Help);
-	
+
 	category.DropFocus();
 	dlpm.DropFocus();
 	months.DropFocus();
 	yesno.DropFocus();
-	
+
 	newcat.SetImage(Images::SmallPlus());
 	category.AddFrame(newcat);
-	
+
 	dosummary = true;
 }
 
@@ -241,7 +241,7 @@ void HomeBudget::LoadCategories(int group_id)
 int HomeBudget::GetCategorySign()
 {
 	SQL * Select(PM).From(CATEGORIES).Where(ID == money.Get(CAT_ID));
-	Value v = SQL.Fetch() ? SQL[0] : Value(0);	
+	Value v = SQL.Fetch() ? SQL[0] : Value(0);
 	return v;
 }
 
@@ -252,7 +252,7 @@ void HomeBudget::UpdateCategories()
 		.From(CATEGORIES, GROUPS)
 		.Where(GR_ID == ID.Of(GROUPS))
 		.OrderBy(NAME.Of(GROUPS), NAME.Of(CATEGORIES));
-		
+
 	while(SQL.Fetch())
 		category.Add(SQL[0], Format("%s - %s", SQL[2], SQL[1]));
 }
@@ -264,7 +264,7 @@ void HomeBudget::InsertGroup()
 		SQL & Insert(GROUPS)
 			(NAME, groups(1));
 		groups(0) = SQL.GetInsertedId();
-		
+
 		categories.Clear();
 		categories.Enable();
 	}
@@ -273,7 +273,7 @@ void HomeBudget::InsertGroup()
 		groups.CancelInsert();
 		Exclamation("[* " + DeQtfLf(e) + "]");
 	}
-	
+
 }
 
 void HomeBudget::UpdateGroup()
@@ -302,7 +302,7 @@ void HomeBudget::RemoveGroup()
 		PromptOK(t_("You can't remove this group. It is not empty."));
 		groups.CancelRemove();
 	}
-	
+
 	if(groups.GetCount() == 1)
 		categories.Disable();
 }
@@ -311,7 +311,7 @@ struct AddNewCat : WithNewCategoryLayout<TopWindow>
 {
 	typedef AddNewCat CLASSNAME;
 	bool newgroup;
-	
+
 	AddNewCat()
 	{
 		newgroup = false;
@@ -328,21 +328,21 @@ struct AddNewCat : WithNewCategoryLayout<TopWindow>
 			groups.Add(SQL[0], SQL[1]);
 			cnt++;
 		}
-			
+
 		bool isgroup = cnt > 0;
 		if(isgroup)
 			groups.SetIndex(0);
 		else
 			ok.Disable();
-		
-		pm = 1;		
+
+		pm = 1;
 	}
-	
+
 	void SelGroup()
 	{
 		ok.Enable();
 	}
-	
+
 	void NewGroup()
 	{
 		WithNewGroupLayout<TopWindow> dlg;
@@ -370,7 +370,7 @@ struct AddNewCat : WithNewCategoryLayout<TopWindow>
 void HomeBudget::NewCategory()
 {
 	AddNewCat dlg;
-	
+
 	if(dlg.Execute() == IDOK)
 	{
 		try
@@ -381,14 +381,14 @@ void HomeBudget::NewCategory()
 				(DEFVALUE, 0)
 				(PM, dlg.pm == 0 ? 1 : -1)
 				(INNEWMONTH, 0);
-	
+
 			int64 id = SQL.GetInsertedId();
-			UpdateCategories();			
+			UpdateCategories();
 			money.Set(CAT_ID, id);
 			UpdateValue();
-			
+
 			int gid = ~dlg.groups;
-			
+
 			if(dlg.IsNewGroup())
 			{
 				groups.Add(Value(gid), dlg.groups.GetValue());
@@ -402,7 +402,7 @@ void HomeBudget::NewCategory()
 		catch(SqlExc &e)
 		{
 			Exclamation("[* " + DeQtfLf(e) + "]");
-		}		
+		}
 	}
 }
 
@@ -416,7 +416,7 @@ void HomeBudget::InsertCategory()
 			(DEFVALUE, categories(DEFVALUE))
 			(PM, categories(PM))
 			(INNEWMONTH, categories(INNEWMONTH));
-			
+
 		categories(0) = SQL.GetInsertedId();
 	}
 	catch(SqlExc &e)
@@ -424,7 +424,7 @@ void HomeBudget::InsertCategory()
 		categories.CancelInsert();
 		Exclamation("[* " + DeQtfLf(e) + "]");
 	}
-	
+
 }
 
 void HomeBudget::UpdateCategory()
@@ -437,7 +437,7 @@ void HomeBudget::UpdateCategory()
 			(PM, categories(PM))
 			(INNEWMONTH, categories(INNEWMONTH))
 			.Where(ID == categories(ID));
-			
+
 		UpdateSummary();
 	}
 	catch(SqlExc &e)
@@ -483,10 +483,10 @@ void HomeBudget::InsertMoney()
 			(VALUE,  money(VALUE))
 			(DT,     money(DT))
 			(DESC,   money(DESC));
-		
+
 		money(ID) = SQL.GetInsertedId();
-		
-		//to trzeba robic tylko dla ostatniej kategori do automatycznego wstawienia	
+
+		//to trzeba robic tylko dla ostatniej kategori do automatycznego wstawienia
 		if(dosummary)
 			UpdateSummary();
 	}
@@ -509,7 +509,7 @@ void HomeBudget::UpdateMoney()
 			(DT,     money(DT))
 			(DESC,   money(DESC))
 			.Where(ID == money(ID));
-			
+
 		UpdateSummary();
 	}
 	catch(SqlExc &e)
@@ -562,7 +562,7 @@ void HomeBudget::UpdateDate()
 	catch(SqlExc &e)
 	{
 		month.CancelUpdate();
-		Exclamation("[* " + DeQtfLf(e) + "]");		
+		Exclamation("[* " + DeQtfLf(e) + "]");
 	}
 }
 
@@ -584,7 +584,7 @@ void HomeBudget::RemoveDate()
 		month.CancelRemove();
 		Exclamation("[* " + DeQtfLf(e) + "]");
 	}
-	
+
 }
 
 void HomeBudget::ChangeDate()
@@ -605,7 +605,7 @@ void HomeBudget::AcceptDate()
 {
 	if(!month.IsNewRow())
 		return;
-	
+
 	dosummary = false;
 	SQL.Begin();
 	SQL * Select(ID, DEFVALUE, PM).From(CATEGORIES).Where(INNEWMONTH == 1);
@@ -627,21 +627,21 @@ void HomeBudget::UpdateSummary()
 {
 	if(!month.IsCursor())
 		return;
-	
+
 	float p = 0, tp = 0;
 	float m = 0, tm = 0;
 	float r = 0, tr = 0;
 
 	mostcat.Clear();
 	mostpr.Clear();
-	
+
 	try
 	{
 		SQL & ::Select(PM, SqlSum(VALUE))
 			.From(MONEY, DATES)
 			.Where(DT.Of(DATES) < month(DT) && DT_ID == ID.Of(DATES) && NotNull(VALUE))
 			.GroupBy(PM);
-			
+
 		while(SQL.Fetch())
 		{
 			int pm = SQL[PM];
@@ -651,14 +651,14 @@ void HomeBudget::UpdateSummary()
 			else
 				tp = v;
 		}
-		
+
 		tr = tp - tm;
-		
+
 		SQL & ::Select(PM, SqlSum(VALUE))
 			.From(MONEY)
 			.Where(DT_ID == dtid && NotNull(VALUE))
 			.GroupBy(PM);
-		
+
 		while(SQL.Fetch())
 		{
 			int pm = SQL[PM];
@@ -668,22 +668,22 @@ void HomeBudget::UpdateSummary()
 			else
 				p = v;
 		}
-		
+
 		SQL & ::Select(NAME, SqlId("sum(value) as val"))
 			.From(MONEY, CATEGORIES)
 			.Where(DT_ID == dtid && CAT_ID == ID.Of(CATEGORIES) && PM.Of(MONEY) < 0)
 			.GroupBy(CAT_ID)
 			.OrderBy(Descending(SqlId("val")));
-			
+
 		while(SQL.Fetch())
 			mostpr.Add(SQL);
-	
+
 		SQL & ::Select(NAME.Of(GROUPS), SqlId("sum(value) as val"))
 			.From(MONEY, GROUPS, CATEGORIES)
 			.Where(DT_ID == dtid && PM.Of(MONEY) < 0 && CAT_ID == ID.Of(CATEGORIES) && GR_ID == ID.Of(GROUPS))
 			.GroupBy(GR_ID)
 			.OrderBy(Descending(SqlId("val")));
-			
+
 		while(SQL.Fetch())
 			mostcat.Add(SQL);
 	}
@@ -691,7 +691,7 @@ void HomeBudget::UpdateSummary()
 	{
 		Exclamation("[* " + DeQtfLf(e) + "]");
 	}
-	
+
 	r = p - m;
 	plus.SetText(Format("%.2f", p));
 	minus.SetText(Format("%.2f", m));
@@ -708,7 +708,7 @@ void HomeBudget::ClearSummary()
 	prev_month.SetText("");
 	real_rest.SetText("");
 	mostpr.Clear();
-	mostcat.Clear();	
+	mostcat.Clear();
 }
 
 void HomeBudget::SetRest(StaticText &rest, float r)
@@ -727,7 +727,7 @@ void HomeBudget::SetRest(StaticText &rest, float r)
 	{
 		rest.SetText(Format("%.2f", r));
 		rest.SetInk(LtRed);
-	}	
+	}
 }
 
 void HomeBudget::UpdateValue()
@@ -765,14 +765,14 @@ void HomeBudget::ClearAll()
 		SQL & ::Delete(MONEY);
 		SQL & ::Delete(DATES);
 		//SQL.ExecuteX("VACUUM");
-		
+
 		LoadDates();
 		LoadGroups();
 		UpdateCategories();
 		money.Clear();
 		categories.Clear();
 		EnableMoney();
-		
+
 		PromptOK(t_("Database was cleared"));
 	}
 	catch(SqlExc &e)
@@ -788,7 +788,7 @@ void HomeBudget::About()
 	dlg.info.NoSb();
 	Size sz = dlg.info.GetSize();
 	dlg.info.SetQTF(GetTopic(String("HomeBudget/src/About$") + (lang == 0 ? "en-us" : "pl-pl")), Zoom(150, 1400));
-	dlg.info.SetZoom(Zoom(1, 1));	
+	dlg.info.SetZoom(Zoom(1, 1));
 	dlg.Execute();
 }
 
@@ -820,11 +820,11 @@ Topic HomeBudgetHelp::AcquireTopic(const String& topic)
 
 GUI_APP_MAIN
 {
-	bool nodb = false;	
+	bool nodb = false;
 	Sqlite3Session db;
 	db.LogErrors(true);
-	
-	#ifdef flagDEBUG    
+
+	#ifdef flagDEBUG
 	db.SetTrace();
 	nodb = true;
 	#endif
@@ -833,13 +833,13 @@ GUI_APP_MAIN
 	if(fi.IsError() || fi.GetSize() <= 0)
 		nodb = true;
 	fi.Close();
-	
+
 	if(!db.Open(ConfigFile("HomeBudget.db3")))
 	{
 		Exclamation(t_("Can't create or open database file"));
 		return;
 	}
-		
+
 	SQL = db;
 
 	if(nodb)
@@ -849,11 +849,11 @@ GUI_APP_MAIN
 		All_Tables(sch);
 		if(sch.ScriptChanged(SqlSchema::UPGRADE))
 			Sqlite3PerformScript(sch.Upgrade(), se);
-		if(sch.ScriptChanged(SqlSchema::ATTRIBUTES)) 
+		if(sch.ScriptChanged(SqlSchema::ATTRIBUTES))
 		{
 			Sqlite3PerformScript(sch.Attributes(), se);
 		}
-		if(sch.ScriptChanged(SqlSchema::CONFIG)) 
+		if(sch.ScriptChanged(SqlSchema::CONFIG))
 		{
 			Sqlite3PerformScript(sch.ConfigDrop(), se);
 			Sqlite3PerformScript(sch.Config(), se);
@@ -862,14 +862,14 @@ GUI_APP_MAIN
 	}
 
 	HomeBudget hb;
-	
+
 	LoadFromFile(hb);
-	
+
 	if(hb.lang == 0)
 		SetLanguage(LNGC_('E','N','U','S', CHARSET_UNICODE));
 	else
 		SetLanguage(LNGC_('P','L','P','L', CHARSET_UNICODE));
 	hb.Setup();
 	hb.Run();
-	StoreToFile(hb);	
+	StoreToFile(hb);
 }

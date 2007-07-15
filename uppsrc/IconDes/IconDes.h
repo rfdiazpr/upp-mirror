@@ -89,8 +89,8 @@ void   FloodFill(ImageBuffer& img, RGBA color, Point pt, const Rect& rc);
 void   InterpolateImage(Image& img, const Rect& _rc);
 void   MirrorHorz(Image& img, const Rect& rect);
 void   MirrorVert(Image& img, const Rect& rect);
-Image  Magnify(const Image& img, int nx, int ny);
 String PackImlData(const Vector<Image>& image);
+Image  DownSample3x(const Image& src);
 
 class IconDes : public Ctrl {
 public:

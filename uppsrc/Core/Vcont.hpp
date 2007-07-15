@@ -9,7 +9,7 @@ T * Vector<T>::RawAlloc(int& n)
 	size_t sz0 = n * sizeof(T);
 	size_t sz = sz0;
 	void *q = MemoryAllocSz(sz);
-	n += (sz - sz0) / sizeof(T);
+	n += (int)((sz - sz0) / sizeof(T));
 	return (T *)q;
 }
 
@@ -379,7 +379,7 @@ void Array<T>::SetCountR(int n, const T& init) {
 template <class T>
 int  Array<T>::GetIndex(const T& item) const {
 	for(void * const *ptr = vector.Begin(); ptr < vector.End(); ptr++)
-		if(*ptr == (void *)&item) return ptr - vector.Begin();
+		if(*ptr == (void *)&item) return (int)(ptr - vector.Begin());
 	return -1;
 }
 

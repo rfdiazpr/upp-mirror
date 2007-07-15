@@ -96,7 +96,7 @@ void DbgDisas::Clear()
 	codecx = GetTextSize("movlmo", StdFont()).cx;
 }
 
-void  DbgDisas::Add(dword adr, const String& code, const String& args)
+void  DbgDisas::Add(adr_t adr, const String& code, const String& args)
 {
 	if(adr < low)
 		low = adr;
@@ -118,7 +118,7 @@ void DbgDisas::Scroll()
 	Refresh();
 }
 
-void DbgDisas::SetCursor(dword adr)
+void DbgDisas::SetCursor(adr_t adr)
 {
 	cursor = addr.Find(adr);
 	if(cursor >= 0)
@@ -126,7 +126,7 @@ void DbgDisas::SetCursor(dword adr)
 	Refresh();
 }
 
-void DbgDisas::SetIp(dword adr, const Image& img)
+void DbgDisas::SetIp(adr_t adr, const Image& img)
 {
 	ip = addr.Find(adr);
 	ipimg = img;

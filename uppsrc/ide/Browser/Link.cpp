@@ -7,26 +7,28 @@ struct TopicLinkDlg : WithTopicLinkLayout<TopWindow> {
 	void   Label();
 	String LinkString();
 	String ActualDir();
-
-	Vector<String>& packagedir;
+	String PackageGroup(const char *name);
 
 	typedef TopicLinkDlg CLASSNAME;
-	TopicLinkDlg(Vector<String>& packagedir, FileList& _package);
+	TopicLinkDlg();
 };
 
-TopicLinkDlg::TopicLinkDlg(Vector<String>& packagedir, FileList& _package)
-: packagedir(packagedir)
+TopicLinkDlg::TopicLinkDlg()
 {
 	CtrlLayoutOKCancel(*this, "Hyperlink");
 	package.WhenKillCursor = package.WhenEnterItem = THISBACK(Package);
 	group.WhenKillCursor = group.WhenEnterItem = THISBACK(Group);
 	topic.WhenKillCursor = topic.WhenEnterItem = THISBACK(Topic);
 	label.WhenKillCursor = label.WhenEnterItem = THISBACK(Label);
-	for(int i = 0; i < _package.GetCount(); i++)
-		package.Add(_package[i].name);
-	package.SetCursor(0);
-	package.FindSetCursor(_package.GetCurrentName());
+	const Workspace& wspc = GetIdeWorkspace();
+	for(int i = 0; i < wspc.GetCount(); i++)
+		package.Add(wspc[i]);
 	insert <<= Breaker(IDYES);
+}
+
+String TopicLinkDlg::PackageGroup(const char *name)
+{
+	return AppendFileName(PackageDirectory(package.GetCurrentName()), String(name) + ".tpp");
 }
 
 void TopicLinkDlg::Package()
@@ -35,7 +37,12 @@ void TopicLinkDlg::Package()
 	group.Clear();
 	if(!package.IsCursor())
 		return;
-	LoadGroups(group, packagedir[package.GetCursor()]);
+	FindFile ff(PackageGroup("*"));
+	while(ff) {
+		if(ff.IsFolder())
+			group.Add(GetFileTitle(ff.GetName()), TopicImg::Group());
+		ff.Next();
+	}
 	topic.Clear();
 	group.FindSetCursor(pg);
 }
@@ -44,7 +51,7 @@ void TopicLinkDlg::Group()
 {
 	topic.Clear();
 	if(package.IsCursor() && group.IsCursor())
-		LoadTopics(topic, AppendFileName(packagedir[package.GetCursor()], group.GetCurrentName() + ".tpp"));
+		LoadTopics(topic, PackageGroup(group.GetCurrentName()));
 }
 
 String TopicLinkDlg::LinkString()
@@ -59,8 +66,7 @@ void TopicLinkDlg::Topic()
 		link <<= LinkString();
 		RichText txt = ParseQTF(ReadTopic(LoadFile(
 						NormalizePath(
-							AppendFileName(AppendFileName(packagedir[package.GetCursor()],
-								                          group.GetCurrentName() + ".tpp"),
+							AppendFileName(PackageGroup(group.GetCurrentName()),
 		        			               topic.GetCurrentName() + ".tpp")
 		               ))).text);
 		Vector<String> ref = GatherLabels(txt);
@@ -78,7 +84,7 @@ void TopicLinkDlg::Label()
 
 void TopicEditor::Hyperlink(String& link, WString& text)
 {
-	TopicLinkDlg d(packagedir, package);
+	TopicLinkDlg d;
 	d.link <<= link;
 	String label;
 	TopicLink tl;
@@ -90,8 +96,8 @@ void TopicEditor::Hyperlink(String& link, WString& text)
 	else
 		tl = ParseTopicLink(link);
 	if(IsNull(tl.topic)) {
-		d.package.FindSetCursor(package.GetCurrentName()) &&
-		d.group.FindSetCursor(group.GetCurrentName()) &&
+		d.package.FindSetCursor(GetFileTitle(GetFileFolder(grouppath))) &&
+		d.group.FindSetCursor(GetFileTitle(grouppath)) &&
 		d.topic.FindSetCursor(topic.GetCurrentName());
 	}
 	else {
@@ -107,9 +113,7 @@ void TopicEditor::Hyperlink(String& link, WString& text)
 	if(c == IDOK)
 		return;
 	if(d.topic.IsCursor()) {
-		String fn = AppendFileName(
-				                   AppendFileName(d.packagedir[d.package.GetCursor()],
-				                                  d.group.GetCurrentName() + ".tpp"),
+		String fn = AppendFileName(d.PackageGroup(d.group.GetCurrentName()),
 		                           d.topic.GetCurrentName() + ".tpp");
 		text = ReadTopic(LoadFile(fn)).title.ToWString();
 	}

@@ -9,12 +9,12 @@ int GLCtrl::ContextActivated = 0;
 
 bool InCreation = false; // to prevent CreateGLXWindow to be called two times
 
-GLCtrl::GLCtrl( int depthsize, int stencilsize, bool doublebuffer,
+GLCtrl::GLCtrl( int depthsize, int stencilsize, bool doublebuffer, 
 				bool multisamplebuffering, int numberofsamples )
 {
 	NumInstance = NbInstance;
 	NbInstance++;
-
+	
 	IsInitialized    = false;
 	IsMapped         = false;
 	SubWindow        = 0;
@@ -26,7 +26,7 @@ GLCtrl::GLCtrl( int depthsize, int stencilsize, bool doublebuffer,
 	NumberOfSamples  = numberofsamples;
 
 	CurrentPos.Clear();
-
+	
 	InitializationProblem = false;
 	ErrorMessage          = "GL/GLX error.";
 }
@@ -42,27 +42,27 @@ bool GLCtrl::CreateGLXWindow( Window &Window, GLXContext &WindowContext )
 	if( InCreation == true )
 		return false;
 	InCreation = true;
-
+	
 	Vector<int> visual;
 	visual << GLX_RGBA << GLX_DEPTH_SIZE << DepthSize;
-
+	
 	if( StencilSize > 0 )
 		visual << GLX_STENCIL_SIZE << StencilSize;
-
+	
 	if( DoubleBuffering )
 		visual << GLX_DOUBLEBUFFER;
-
+	
 	if( MultiSampleBuffering && NumberOfSamples > 1 )
 	{
 		visual << GLX_SAMPLE_BUFFERS_ARB << 1 << GLX_SAMPLES_ARB << NumberOfSamples;
 	}
-
+	
 	visual << None;
 
 	// Try to find a visual
 	XVisualInfo *visualInfo = NULL;
 	visualInfo = glXChooseVisual( (Display*)Xdisplay, DefaultScreen(Xdisplay), visual );
-
+	
 	if( visualInfo == NULL )
 	{
 		ErrorMessage = "CreateGLXWindow : Impossible to find a suitable visual.";
@@ -71,7 +71,7 @@ bool GLCtrl::CreateGLXWindow( Window &Window, GLXContext &WindowContext )
 	}
 
 	// Create an OpenGL rendering context
-	WindowContext = glXCreateContext((Display *)Xdisplay,
+	WindowContext = glXCreateContext((Display *)Xdisplay, 
 									visualInfo,
 									NULL,      // No sharing of display lists
 									GL_TRUE ); // Direct rendering if possible
@@ -98,7 +98,7 @@ bool GLCtrl::CreateGLXWindow( Window &Window, GLXContext &WindowContext )
 	winAttr.border_pixel = 0;
 	winAttr.event_mask   = ExposureMask;
 	winAttr.save_under   = XFalse;
-
+	
 	// Create an X window with the selected visual
 	Rect r = RectInTopWindow();
 	Window = XCreateWindow( Xdisplay,                              // display
@@ -108,10 +108,10 @@ bool GLCtrl::CreateGLXWindow( Window &Window, GLXContext &WindowContext )
 							visualInfo->depth,                     // depth
 							InputOutput,                           // class
 							visualInfo->visual,                    // visual
-							CWBorderPixel | CWColormap |
+							CWBorderPixel | CWColormap | 
 							CWSaveUnder   | CWEventMask,           // value mask
 							&winAttr );                            // attributes
-
+	
 	if( Window == 0 )
 	{
 		ErrorMessage = "CreateGLXWindow : XCreate window error.";
@@ -127,7 +127,7 @@ bool GLCtrl::CreateGLXWindow( Window &Window, GLXContext &WindowContext )
 	cw.exposed = true;
 	cw.owner   = GetParent();
 	cw.xic     = NULL;
-
+	
 	GLX = true;
 	InCreation = false;
 	return true;
@@ -148,14 +148,14 @@ void GLCtrl::OpenGLResize()
 {
 	if( !IsInitialized )
 		return;
-
+	
 	int w = GetSize().cx,
 		h = GetSize().cy;
-
+	
 	ActivateContext();
-
+	
 	// Call user function
-	GLResize( w, h );
+	GLResize( w, h );	
 }
 
 void GLCtrl::OpenGLPaint()
@@ -163,12 +163,12 @@ void GLCtrl::OpenGLPaint()
 	if( IsMapped && IsInitialized )
 	{
 		ActivateContext();
-
+		
 		// Call user function
 		GLPaint();
-
+		
 		if( DoubleBuffering )
-			glXSwapBuffers( (Display*)Xdisplay, SubWindow ); // Buffer swap does implicit glFlush
+			glXSwapBuffers( (Display*)Xdisplay, SubWindow ); // Buffer swap does implicit glFlush		
 		else
 			glFlush();
 	}
@@ -193,8 +193,8 @@ void GLCtrl::MoveSubWindow()
 	Rect r = RectInTopWindow();
 	int w = GetSize().cx,
 		h = GetSize().cy;
-
-	// TODO: use only XMove when needed
+	
+	// TODO: use only XMove when needed	 
 	XMoveResizeWindow( Xdisplay, SubWindow, r.TopLeft().x, r.TopLeft().y, w, h );
 }
 
@@ -202,12 +202,12 @@ void GLCtrl::State(int reason)
 {
 	if( InitializationProblem )
 		return;
-
+	
 	if( IsInitialized )
 	{
 		switch( reason )
 		{
-			case SHOW:
+			case SHOW: 
 			{
 				if( IsShown() && !IsMapped )
 					MapWindow();
@@ -215,13 +215,13 @@ void GLCtrl::State(int reason)
 				if( !IsShown() && IsMapped )
 					UnMapWindow();
 			}; break;
-
+			
 			case LAYOUTPOS:
 			{
 				MoveSubWindow();
 				OpenGLResize();
 			}; break;
-
+			
 			default:
 				break;
 		}
@@ -249,7 +249,7 @@ void GLCtrl::Paint(Draw& draw)
 			Size sz = GetSize();
 			draw.DrawRect(0, 0, sz.cx, sz.cy, SWhite);
 			if( InitializationProblem )
-				draw.DrawText(3,3, "GLCtrl::"+ErrorMessage, Arial(12).Bold(), SRed);
+				draw.DrawText(3,3, "GLCtrl::"+ErrorMessage, Arial(12).Bold(), SRed);			
 		}
 }
 
@@ -266,7 +266,7 @@ void GLCtrl::UnMapWindow()
 {
 	if( IsMapped )
 	{
-		XUnmapWindow( Xdisplay, SubWindow );
+		XUnmapWindow( Xdisplay, SubWindow );		
 		IsMapped = false;
 	}
 }
@@ -275,10 +275,10 @@ void GLCtrl::OpenGL()
 {
 	if( IsInitialized || InitializationProblem || InCreation )
 		return;
-
+	
 	int errorBase;
 	int eventBase;
-
+	
 	// Make sure OpenGL's GLX extensions supported
 	if( !glXQueryExtension( (Display*)Xdisplay, &errorBase, &eventBase ) )
 	{
@@ -286,21 +286,21 @@ void GLCtrl::OpenGL()
 		InitializationProblem = true;
 		return;
 	}
-
+	
 	// Create glxwindow
 	if( CreateGLXWindow( SubWindow, SubWindowContext ) )
 	{
 		// Activate the created glxwindow
 		glXMakeCurrent( (Display*)Xdisplay, SubWindow, SubWindowContext );
-
+		
 		IsInitialized = true;
-
+		
 		MapWindow();
-
+	
 		// Call user init function
 		GLInit();
 		GLResize( GetSize().cx, GetSize().cy );
-		OpenGLPaint();
+		OpenGLPaint();		
 	}
 	else
 		InitializationProblem = true;
@@ -321,7 +321,7 @@ void GLCtrl::CloseGL()
 	{
 		// Call user function
 		GLDone();
-
+		
 		IsInitialized = false;
 		InitializationProblem = false;
 
@@ -329,9 +329,9 @@ void GLCtrl::CloseGL()
 		XDestroyWindow( Xdisplay, SubWindow );
 
 		RemoveUppXWindow();
-
+		
 		glXMakeCurrent( (Display*)Xdisplay, None, NULL );
-		glXDestroyContext( (Display *)Xdisplay, SubWindowContext );
+		glXDestroyContext( (Display *)Xdisplay, SubWindowContext );		
 	}
 }
 
@@ -339,7 +339,7 @@ void GLCtrl::PostResizeGL()
 {
 	if( !IsInitialized )
 		return;
-
+	
 	OpenGLResize();
 }
 
@@ -347,7 +347,7 @@ void GLCtrl::PostPaintGL()
 {
 	if( !IsInitialized )
 		return;
-
+	
 	OpenGLPaint();
 }
 
@@ -360,7 +360,7 @@ void GLCtrl::StdView()
 {
 	if( !IsInitialized )
 		return;
-
+		
 	glShadeModel(GL_SMOOTH);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
 	glClearDepth(1.0f);
@@ -372,7 +372,7 @@ void GLCtrl::StdView()
 	glViewport(0, 0, (GLsizei)sz.cx, (GLsizei)sz.cy);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45.0f, (GLfloat)(sz.cx)/(GLfloat)(sz.cy), 1.0f, 100.0f);
+	gluPerspective(45.0f, (GLfloat)(sz.cx)/(GLfloat)(sz.cy), 1.0f, 100.0f);		
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }

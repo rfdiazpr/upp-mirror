@@ -51,3 +51,4 @@ LAYOUT(ReferenceDlgLayout, 644, 392)
 	ITEM(Button, ok, SetLabel(t_("OK")).RightPosZ(76, 64).BottomPosZ(8, 24))
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).RightPosZ(8, 64).BottomPosZ(8, 24))
 END_LAYOUT
+

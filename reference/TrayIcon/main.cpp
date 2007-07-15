@@ -12,7 +12,7 @@ struct App : TrayIcon {
 		PromptOK("TrayIcon launched this prompt!");
 		Icon(Tray::Icon());
 	}
-
+	
 	virtual void LeftDown() {
 		Info("TrayIcon", "You have clicked the TrayIcon!\n""TrayIcon is U++ reference example.");
 	}

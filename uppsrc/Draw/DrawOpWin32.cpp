@@ -181,7 +181,7 @@ static void DrawPolyPolyPolygonRaw(
 				int total = 0;
 				while(total < poly)
 					total += *se++;
-				sub = se - subpolygon_counts;
+				sub = (int)(se - subpolygon_counts);
 			}
 			else
 				sub = subpolygon_count_count;

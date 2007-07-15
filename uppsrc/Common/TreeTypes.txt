@@ -2,7 +2,25 @@ Upp::Image
 0 0 -1
 Upp::Image::Data
 0 0 -1
-Upp::String
+Upp::ImageBuffer
 0 0 -1
-Upp::Vector<Upp::String>
+Upp::Point_<int>
+0 0 -1
+Upp::One<Upp::PNGRaster::Data>
+0 0 -1
+Upp::PNGRaster::Data
+0 0 -1
+Upp::Raster::Info
+0 0 -1
+Zaci
+0 0 -1
+Upp::Array<RoomObject>
+0 0 -1
+PosRoomDes
+0 0 -1
+PosFontFace
+0 0 -1
+PosValue
+0 0 -1
+Upp::RGBA
 0 0 -1

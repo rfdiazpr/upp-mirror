@@ -53,7 +53,7 @@ wchar *WString0::Alloc(int& count)
 	}
 	size_t sz = sizeof(Atomic) + (count + 1) * sizeof(wchar);
 	Atomic *rc = (Atomic *)MemoryAlloc(sz);
-	count = ((sz - sizeof(Atomic)) >> 1) - 1;
+	count = ((int)(sz - sizeof(Atomic)) >> 1) - 1;
 	*rc = 1;
 	return (wchar *)(rc + 1);
 }
@@ -236,7 +236,7 @@ WString::WString(WStringBuffer& b)
 
 WString::WString(const char *s) {
 	Zero();
-	*this = ToUnicode(s, s ? strlen(s) : 0, CHARSET_DEFAULT);
+	*this = ToUnicode(s, s ? (int)strlen(s) : 0, CHARSET_DEFAULT);
 }
 
 WString::WString(const char *s, int n) {
@@ -246,7 +246,7 @@ WString::WString(const char *s, int n) {
 
 WString::WString(const char *s, const char *lim) {
 	Zero();
-	*this = ToUnicode(s, s ? lim - s : 0, CHARSET_DEFAULT);
+	*this = ToUnicode(s, s ? (int)(lim - s) : 0, CHARSET_DEFAULT);
 }
 
 String WString::ToString() const
@@ -261,6 +261,33 @@ WString WString::GetVoid()
 	WString b;
 	b.alloc = -1;
 	return b;
+}
+
+WString::WString(const std::wstring& s)
+{
+	if(sizeof(std::wstring::value_type) == sizeof(wchar)) {
+		WString0::Set((wchar *)s.c_str(), (int)s.length());
+	}
+	else {
+		WString0::Zero();
+		std::wstring::const_iterator i = s.begin();
+		while(i < s.end())
+			Cat(*i++);
+	}
+}
+
+WString::operator std::wstring() const
+{
+	if(sizeof(std::wstring::value_type) == sizeof(wchar))
+		return std::wstring((std::wstring::value_type *)Begin(),
+		                    (std::wstring::value_type *)End());
+	else {
+		std::wstring r;
+		const wchar *s = Begin();
+		while(s < End())
+			r += *s++;
+		return r;
+	}
 }
 
 void WStringBuffer::Zero()
@@ -279,7 +306,7 @@ wchar *WStringBuffer::Alloc(int count, int& alloc)
 	else {
 		size_t sz = sizeof(Atomic) + (count + 1) * sizeof(wchar);
 		Atomic *rc = (Atomic *)MemoryAlloc(sz);
-		alloc = ((sz - sizeof(Atomic)) >> 1) - 1;
+		alloc = ((int)(sz - sizeof(Atomic)) >> 1) - 1;
 		*rc = 1;
 		return (wchar *)(rc + 1);
 	}
@@ -287,7 +314,7 @@ wchar *WStringBuffer::Alloc(int count, int& alloc)
 
 void WStringBuffer::Free()
 {
-	int all = limit - begin;
+	int all = (int)(limit - begin);
 	if(all == WString0::SMALL)
 		MFree_WS(begin);
 	if(all > WString0::SMALL)
@@ -297,7 +324,7 @@ void WStringBuffer::Free()
 void WStringBuffer::Expand(int n, const wchar *cat, int l)
 {
 	int al;
-	int ep = end - begin;
+	int ep = (int)(end - begin);
 	wchar *p = Alloc(n, al);
 	memcpy(p, begin, GetLength() * sizeof(wchar));
 	if(cat) {

@@ -127,7 +127,8 @@ Size  ToolButton::GetMinSize() const
 	Size sz = image.GetSize();
 	if(sz.IsEmpty())
 		sz = Size(16, 16);
-	return sz + 6;
+	sz += 6;
+	return Size(max(sz.cx, minsize.cx), max(sz.cy, minsize.cy));
 }
 
 void  ToolButton::LeftDown(Point, dword)
@@ -177,6 +178,7 @@ void ToolButton::Reset()
 	checked = false;
 	NoWantFocus();
 	look = ToolBar::StyleDefault().look;
+	minsize = Size(0, 0);
 }
 
 ToolButton::ToolButton()
@@ -201,6 +203,7 @@ Bar::Item& ToolBar::AddItem(Callback cb)
 	ToolButton& m = item.DoIndex(ii++);
 	m.Reset();
 	m.WhenAction = cb;
+	m.SetMinSize(buttonminsize);
 	pane.Add(&m, Null);
 	return m;
 }
@@ -260,6 +263,7 @@ ToolBar::ToolBar()
 	lock = 0;
 	ii = 0;
 	SetStyle(StyleDefault());
+	buttonminsize = Size(0, 0);
 }
 
 ToolBar::~ToolBar() {}

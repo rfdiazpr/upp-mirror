@@ -12,7 +12,7 @@ public:
 	void          Attach(HENHMETAFILE emf);
 	HENHMETAFILE *Detach();
 
-	bool     IsPicked() const               { return (dword) hemf == 0xffffffff; }
+	bool     IsPicked() const               { return (uintptr_t) hemf == 0xffffffff; }
 
 	operator bool() const                   { ChkP(); return hemf; }
 	Size     GetSize() const                { ChkP(); return hemf ? size : Size(0, 0); }

@@ -42,6 +42,27 @@ public:
 
 class Calendar : public Ctrl
 {
+public:
+	struct Style : ChStyle<Style> {
+		Color header;
+		Color background[3]; // main area, today, selection
+		Color foreground[3]; // main area, today, selection
+		Color outofmonth;
+		Color curdate;
+		Color today;
+		Color selecttoday;
+		Color cursorday;
+		Color selectday;
+		Color line;
+		Color dayname;
+		Color week;
+		Font font;
+	};
+
+protected:
+	const Style *style;
+	const Style *St() const;
+
 private:
 	typedef Calendar CLASSNAME;
 
@@ -67,31 +88,7 @@ private:
 	int row;
 	int lastrow;
 
-	int width;
-	int height;
 	int fh;
-
-	bool selall;
-	bool aspopup;
-
-	Color colHeader;
-	Color colBg;
-	Color colFg;
-	Color colCurDayBg;
-	Color colCurDayFg;
-	Color colSelDayBg;
-	Color colSelDayFg;
-	Color colGrayDay;
-	Color colCurDate;
-	Color colToday;
-	Color colSelToday;
-	Color colSelCurDate;
-	Color colSelDay;
-	Color colLine;
-	Color colDayNames;
-	Color colWeek;
-
-	Font fnt;
 
 	int days[rows][cols];
 
@@ -100,35 +97,27 @@ private:
 	Point prevday;
 	Point curday, firstday;
 
-	String today;
+	String stoday;
 	Size sztoday;
 	String curdate;
 	Size szcurdate;
+
+	bool selall;
 	bool istoday;
 	bool wastoday;
 	bool isheader;
 	bool washeader;
 
-	EditDate *date;
-
-	int day, month, year;
-	int tday, tmonth, tyear;
-	int cday, cmonth, cyear;
-	int selday;
-	int selmonth;
+	Date view;
+	Date today;
+	Date sel;
 
 	int first_day;
-
-	bool userdate;
-	bool open;
-	bool clickall;
 
 	void OnMonthLeft();
 	void OnMonthRight();
 	void OnYearLeft();
 	void OnYearRight();
-
-	void SetColors();
 
 	bool MouseOnToday(Point p);
 	bool MouseOnHeader(Point p);
@@ -151,11 +140,13 @@ private:
 	void RefreshToday();
 	void RefreshHeader();
 	void RefreshAll();
-	void ComputeSize();
+	Size ComputeSize();
 
 public:
-
 	Calendar();
+
+	Callback 			WhenPopDown;
+	static const Style& StyleDefault();
 
 	void Reset();
 
@@ -163,34 +154,48 @@ public:
 	int	 DayOfWeek(int day, int month, int year, int zelleroffset = 2);
 	int  WeekOfYear(int day, int month, int year);
 
-	Date GetDate();
+	virtual Value GetData() const			   { return sel;          }
+	virtual void  SetData(const Value& data)   { SetDate((Date)data); }
 
-	Calendar& SetFont(Font f)          { fnt = f; return *this;        }
+	Date GetDate() const			   { return sel;                  }
+	void SetDate(int y, int m, int d)  { SetDate(Date(y, m, d));	  }
+	void SetDate(const Date &dt);
+
+	Date GetCursor() const			   { return view; 				  }
+	bool HasCursor() const			   { return view.day != 0;        }
+
+	Date GetView() const			   { return Date(view.year, view.month, view.day ? view.day : 1); }
+	void SetView(const Date &v);
+
+	Calendar& SetStyle(const Style& s);
 	Calendar& SelectAll(bool b = true) { selall = b; return *this;     }
 	Calendar& NoSelectAll()            { selall = false; return *this; }
-	Calendar& AsPopUp(bool b = true)   { aspopup = b; return *this;    }
-	Calendar& FirstDay(int n = MONDAY) { first_day = n; return *this; }
+	Calendar& FirstDay(int n = MONDAY) { first_day = n; return *this;  }
 
-	void SetParent(EditDate &ctrl) { date = &ctrl; }
-	void SetDate(int y, int m, int d);
-	void SetDate(Date &dt);
 	void PopUp(Ctrl *owner, Rect &rt);
-	Size GetCalendarSize();
+	Size GetCalendarSize()			   { return ComputeSize();   	   }
 };
 
 
 class DateTimeCtrl : public EditDate {
 	FrameRight<Button> drop;
 	Calendar calendar;
+
+	void OnCalChoice();
+	void OnCalClose();
 	void OnDrop();
 
-	public:
-		typedef DateTimeCtrl CLASSNAME;
+public:
+	typedef DateTimeCtrl CLASSNAME;
 
-	    DateTimeCtrl();
+	DateTimeCtrl();
 
-		DateTimeCtrl& SetDate(int y, int m, int d);
-	    DateTimeCtrl& SetFont(Font f)   { calendar.SetFont(f); return *this;       }
-		DateTimeCtrl& SelectAll(bool b) { calendar.SelectAll(b); return *this;     }
-		DateTimeCtrl& NoSelectAll()     { calendar.SelectAll(false); return *this; }
+	DateTimeCtrl& SetDate(int y, int m, int d);
+	DateTimeCtrl& SetCalendarStyle(Calendar::Style& style)   { calendar.SetStyle(style); return *this;  }
+	DateTimeCtrl& SetButtonStyle(Button::Style& style)       { drop.SetStyle(style); return *this; }
+	DateTimeCtrl& SetButtonImage(const Image& image)         { drop.SetImage(image); return *this; }
+	DateTimeCtrl& SetButtonMonoImage(const Image& image)     { drop.SetMonoImage(image); return *this; }
+	DateTimeCtrl& SetButtonWidth(int cx)                     { drop.Width(cx); return *this; }
+	DateTimeCtrl& SelectAll(bool b) 						 { calendar.SelectAll(b); return *this;     }
+	DateTimeCtrl& NoSelectAll()     						 { calendar.SelectAll(false); return *this; }
 };

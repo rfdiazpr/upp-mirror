@@ -1,5 +1,4 @@
 #include "RichText.h"
-#include <CtrlLib/CtrlLib.h>
 
 NAMESPACE_UPP
 

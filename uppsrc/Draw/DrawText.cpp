@@ -308,7 +308,7 @@ void Draw::SetFont(Font font, int angle) {
 WString TextUnicode(const char *s, int n, byte cs, Font font)
 {
 	if(n < 0)
-		n = strlen(s);
+		n = (int)strlen(s);
 	if(font.GetFace() == Font::SYMBOL) {
 		WStringBuffer b(n);
 		wchar *t = b;
@@ -464,6 +464,11 @@ Size GetTextSize(const char *text, Font font, int n)
 Size GetTextSize(const String& text, Font font)
 {
 	return GetTextSize(text, font, text.GetLength());
+}
+
+Font Draw::GetStdFont()
+{
+	return AStdFont;
 }
 
 #endif

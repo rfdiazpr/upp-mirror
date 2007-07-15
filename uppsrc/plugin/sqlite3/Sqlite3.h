@@ -19,7 +19,7 @@ public:
 	virtual bool           IsOpen() const               { return NULL != db; }
 	virtual RunScript      GetRunScript() const         { return &Sqlite3PerformScript; }
 	virtual Vector<String> EnumUsers()                  { NEVER(); return Vector<String>(); } // No users in sqlite!
-	virtual Vector<String> EnumDatabases();
+	virtual Vector<String> EnumDatabases();	
 	virtual Vector<String> EnumTables(String database);
 	virtual Vector<String> EnumViews(String database);
         virtual Vector<SqlColumnInfo> EnumColumns(String database, String table);

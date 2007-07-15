@@ -55,12 +55,12 @@ DocEdit::Fmt DocEdit::Format(const WString& text) const
 		if(x > cx)
 			if(space && space <= s) {
 				space++;
-				fmt.line.Add(space - fmt.text);
+				fmt.line.Add(int(space - fmt.text));
 				space = NULL;
 				x -= spacex;
 			}
 			else {
-				fmt.line.Add(s - fmt.text);
+				fmt.line.Add(int(s - fmt.text));
 				x = cw;
 			}
 	}
@@ -207,10 +207,10 @@ int  DocEdit::GetCursorPos(Point p) {
 			const int *e = fmt.width + fmt.LineEnd(l);
 			while(w < e) {
 				if(p.x < x + *w / 2)
-					return w - fmt.width + pos;
+					return int(w - fmt.width) + pos;
 				x += *w++;
 			}
-			int p = e - fmt.width;
+			int p = int(e - fmt.width);
 			if(p > 0 && text[p - 1] == ' ' && l < fmt.line.GetCount() - 1)
 			   p--;
 			return p + pos;
@@ -249,6 +249,8 @@ void DocEdit::PlaceCaret(int newpos, bool select) {
 		}
 	cursor = newpos;
 	PlaceCaret(true);
+	if(IsSelection())
+		SetSelectionSource(ClipFmtsText());
 	SelectionChanged();
 }
 
@@ -526,6 +528,7 @@ void DocEdit::DragAndDrop(Point p, PasteClip& d)
 		sb = a;
 		SetFocus();
 		SetSelection(c, c + count);
+		Action();
 		return;
 	}
 	if(!d.IsAccepted()) return;
@@ -578,8 +581,10 @@ void DocEdit::LeftDrag(Point p, dword flags)
 		iw.Alpha().DrawRect(ssz, Black());
 		DrawTLText(iw.Alpha(), 0, 0, ssz.cx, sample, StdFont(), White());
 		NextUndo();
-		if(DoDragAndDrop(ClipFmtsText(), iw) == DND_MOVE)
+		if(DoDragAndDrop(ClipFmtsText(), iw) == DND_MOVE) {
 			RemoveSelection();
+			Action();
+		}
 	}
 }
 

@@ -4,7 +4,6 @@
 #include <CtrlCore/CtrlCore.h>
 #include <plugin/png/png.h>
 
-
 NAMESPACE_UPP
 
 struct Zoom {
@@ -117,7 +116,7 @@ struct RichObjectType : Moveable<RichObjectType> {
 	virtual void   Menu(Bar& bar, RichObject& ex) const;
 	virtual void   DefaultAction(RichObject& ex) const;
 	virtual String GetLink(const Value& data, Point pt, Size sz) const;
-
+	
 	virtual bool   Accept(PasteClip& clip);
 	virtual Value  Read(PasteClip& clip);
 	virtual String GetClipFmts() const;

@@ -9,3 +9,4 @@ END_TOPIC
 TOPIC("DrawTutorial$en-us")
 #include "DrawTutorial$en-us.tpp"
 END_TOPIC
+

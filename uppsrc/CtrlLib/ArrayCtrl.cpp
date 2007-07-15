@@ -119,12 +119,13 @@ void ArrayCtrl::CellCtrl::LeftDown(Point, dword)
 		ctrl->SetFocus();
 }
 
-void ArrayCtrl::CellInfo::Set(Ctrl *ctrl)
+void ArrayCtrl::CellInfo::Set(Ctrl *ctrl, bool owned)
 {
 	CellCtrl *cc = new CellCtrl;
 	cc->ctrl = ctrl;
 	cc->Add(*ctrl);
 	cc->Color(SColorPaper);
+	cc->owned = owned;
 	ptr.Set1(cc);
 }
 
@@ -139,18 +140,19 @@ ArrayCtrl::CellInfo::~CellInfo()
 {
 	if(ptr.GetBit()) {
 		CellCtrl *cc = (CellCtrl *)ptr.GetPtr();
-		delete cc->ctrl;
+		if(cc->owned)
+			delete cc->ctrl;
 		delete cc;
 	}
 }
 
-Ctrl& ArrayCtrl::SetCtrl(int i, int j, Ctrl *newctrl)
+Ctrl& ArrayCtrl::SetCtrl(int i, int j, Ctrl *newctrl, bool owned)
 {
 	newctrl->SetData(GetColumn(i, j));
 	hasctrls = true;
 	RefreshRow(i);
 	CellInfo& ci = cellinfo.At(i).At(j);
-	ci.Set(newctrl);
+	ci.Set(newctrl, owned);
 	Ctrl& c = ci.GetCtrl();
 	if(newctrl->GetPos().x.GetAlign() == LEFT && newctrl->GetPos().x.GetB() == 0)
 		newctrl->HSizePos().VCenterPos(STDSIZE);
@@ -173,6 +175,11 @@ Ctrl& ArrayCtrl::SetCtrl(int i, int j, Ctrl *newctrl)
 		j = cellinfo[i].GetCount();
 	}
 	SyncInfo();
+}
+
+void  ArrayCtrl::SetCtrl(int i, int j, Ctrl& ctrl)
+{
+	SetCtrl(i, j, &ctrl, false);
 }
 
 bool  ArrayCtrl::IsCtrl(int i, int j) const
@@ -555,7 +562,7 @@ void  ArrayCtrl::SyncCtrls(int from)
 				if(newctrl->GetPos().x.GetAlign() == LEFT && newctrl->GetPos().x.GetB() == 0)
 					newctrl->HSizePos().VCenterPos(STDSIZE);
 				CellInfo& ci = cellinfo.At(i).At(j);
-				ci.Set(newctrl.Detach());
+				ci.Set(newctrl.Detach(), true);
 				Ctrl& c = ci.GetCtrl();
 				AddChild(&c, p);
 				ct = true;
@@ -1620,7 +1627,8 @@ void  ArrayCtrl::Set(int i, const Vector<Value>& v) {
 void  ArrayCtrl::Add() {
 	if(GetIndexCount()) {
 		Vector<Value> x;
-		x.SetCount(GetIndexCount());
+		for(int ii = 0; ii < idx.GetCount(); ii++)
+			x.Add(idx[ii].GetInsertValue());
 		Set(array.GetCount(), x);
 	}
 	else {

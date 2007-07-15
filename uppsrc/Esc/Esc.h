@@ -46,18 +46,18 @@ class EscValue : Moveable<EscValue> {
 	static int             max_total;
 
 public:
-	static int             GetTotalCount()           { return total; }
-	static void            SetMaxTotalCount(int n)   { max_total = n; }
-	static int             GetMaxTotalCount()        { return max_total; }
+	static int             GetTotalCount();
+	static void            SetMaxTotalCount(int n);
+	static int             GetMaxTotalCount();
 
 	bool IsVoid() const                          { return type == ESC_VOID; }
-	EscValue()                                   { type = ESC_VOID; hash = 0; total++; }
+	EscValue();
 
 	bool                   IsNumber() const      { return type == ESC_NUMBER; }
 	double                 GetNumber() const     { return IsNumber() ? number : 0; }
 	bool                   IsInt() const;
 	int                    GetInt() const;
-	EscValue(double n)                           { number = n; type = ESC_NUMBER; hash = 0; total++; }
+	EscValue(double n);
 
 	bool                    IsArray() const      { return type == ESC_ARRAY; }
 	const Vector<EscValue>& GetArray() const;

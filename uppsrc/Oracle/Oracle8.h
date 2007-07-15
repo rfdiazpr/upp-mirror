@@ -64,7 +64,7 @@ protected:
 private:
 	bool                   AllocOciHandle(void *hp, int type);
 	void                   FreeOciHandle(void *hp, int type);
-	void                   SetOciError(String text);
+	void                   SetOciError(String text, OCIError *errhp);
 
 private:
 	friend class OCI8Connection;

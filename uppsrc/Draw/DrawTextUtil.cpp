@@ -57,7 +57,7 @@ Size GetTLTextSize(const wchar *text, Font font)
 				t = q;
 				while(q < s && *q >= ' ')
 					q++;
-				a += GetTextSize(t, font, q - t).cx;
+				a += GetTextSize(t, font, (int) (q - t)).cx;
 			}
 			t = s + 1;
 			sz.cy += cy;
@@ -105,8 +105,8 @@ void DrawTLText(Draw& draw, int x, int y, int cx, const wchar *text,
 					}
 					q++;
 				}
-				draw.DrawText(a, y, t, font, ink, q - t);
-				a += GetTextSize(t, font, q - t).cx;
+				draw.DrawText(a, y, t, font, ink, (int)(q - t));
+				a += GetTextSize(t, font, (int)(q - t)).cx;
 				if(ak) {
 					draw.DrawText(a, y, q, font().Underline(), ink, 1);
 					a += GetTextSize(q, font().Underline(), 1).cx;

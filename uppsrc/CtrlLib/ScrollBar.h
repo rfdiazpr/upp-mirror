@@ -93,7 +93,7 @@ public:
 	int     GetPage() const                 { return pagesize; }
 	int     GetTotal() const                { return totalsize; }
 	int     GetLine() const                 { return linesize; }
-
+	
 	static const Style& StyleDefault();
 
 	ScrollBar& Horz(bool b = true)          { horz = b; Refresh(); RefreshLayout(); return *this; }

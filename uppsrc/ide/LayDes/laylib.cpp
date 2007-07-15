@@ -336,17 +336,17 @@ void EscDraw::DrawText(EscEscape& e)
 	if(e[2].IsInt())
 	{
 		int z = e.Int(2);
-		e.CheckArray(3);
-		WString text = e[3];
+		e.CheckArray(3);			
+		WString text = e[3];		
 		if(e.GetCount() > 4)
-			font = FontEsc(e[4]);
+			font = FontEsc(e[4]);		
 		if(e.GetCount() > 5)
 			color = ColorEsc(e[5]);
 		w.DrawText(x, y, z, text, Nvl(font, StdFont()), color);
 	}
 	else
 	{
-		e.CheckArray(2);
+		e.CheckArray(2);			
 		WString text = e[2];
 		if(e.GetCount() > 3)
 			font = FontEsc(e[3]);

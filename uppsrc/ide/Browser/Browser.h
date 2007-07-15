@@ -248,42 +248,40 @@ Topic  ReadTopic(const char *text);
 Vector<String> GatherLabels(const RichText& text);
 String WriteTopic(const char *title, const RichText& text);
 
-void LoadGroups(FileList& group, const String& dir);
-void LoadTopics(FileList& topic, const String& dir, const String& filepath = Null);
+void LoadTopics(FileList& topic, const String& dir);
+
+TopicLink ParseTopicFilePath(const String& path);
+String    TopicFilePath(const TopicLink& tl);
 
 struct StyleDlg;
 
-class TopicEditor : public TopWindow {
+class TopicEditor : public IdeDesigner, public Ctrl {
 public:
+	virtual String GetFileName() const;
+	virtual void   Save();
+	virtual void   EditMenu(Bar& menu);
+	virtual Ctrl&  DesignerCtrl()                                   { return *this; }
+	virtual void   SetFocus();
+
 	virtual bool Key(dword key, int);
-	virtual void Close();
 
 protected:
-	MenuBar           menu;
 	ToolBar           tool;
 
-	FileList          package;
-	FileList          group;
 	FileList          topic;
 
 	EditString        title;
 	RichEdit          editor;
 
-	Splitter          vert;
 	StaticRect        right;
 	Splitter          left_right;
 
-	String            commondir;
-	Vector<String>    packagedir;
+	String            grouppath;
+	String            topicpath;
 
-	String            filepath;
-
-	String            laststylesheet;
-	int               lastlang;
-
-	Vector<String>    tablru;
-	int               tabi;
-	bool              allfonts;
+	static String     laststylesheet;
+	static int        lastlang;
+	static bool       allfonts;
 
 	struct FileInfo {
 		Time               time;
@@ -293,12 +291,10 @@ protected:
 		FileInfo() { time = Time(1, 1, 1); }
 	};
 
-	ArrayMap<String, FileInfo> editstate;
+	static VectorMap<String, String>  grouptopic;
+	static ArrayMap<String, FileInfo> editstate;
 
-	void   MainMenu(Bar& bar);
-	void   EditMenu(Bar& bar);
 	void   FormatMenu(Bar& bar);
-	void   GroupMenu(Bar& bar);
 	void   TableMenu(Bar& bar);
 	void   TopicMenu(Bar& bar);
 	void   MainTool(Bar& bar);
@@ -307,18 +303,11 @@ protected:
 	void   Exit();
 	void   SetBar();
 
-	void   NewGroup();
-	void   RemoveGroup();
-
 	String GetCurrentTopicPath();
 
 	void   NewTopic();
 	void   RenameTopic();
 	void   RemoveTopic();
-
-	String ActualPackageDir();
-
-	TopicLink ParseTopicFilePath(const String& path);
 
 	bool         autosave;
 	ReferenceDlg ref;
@@ -326,11 +315,7 @@ protected:
 	void   ShowTopic(bool b = true);
 	void   HideTopic()                   { ShowTopic(false); }
 
-	void   EnterPackage();
-	void   EnterGroup();
-	void   EnterTopic();
-
-	void   SaveInc(const String& packagedir, const String& group);
+	void   TopicCursor();
 
 	int    Execute(StyleDlg& d);
 	void   EditStylesheets();
@@ -341,7 +326,9 @@ protected:
 	void   Hyperlink(String&, WString&);
 
 	void   Load(const String& path);
-	void   AddLru();
+	void   SaveTopic();
+	void   SaveInc();
+	void   Flush();
 
 	void   SyncFonts();
 	void   AllFonts();
@@ -351,7 +338,6 @@ protected:
 	void   CreateQtf(const String& item, const CppItemInfo& m, String& p1, String& p2);
 	void   InsertItem();
 
-	void   GoBack()                  { WhenBack(); }
 	void   FindBrokenRef();
 
 	void   Repair();
@@ -359,40 +345,25 @@ protected:
 
 public:
 	enum {
-		TIMEID_AUTOSAVE = TopWindow::TIMEID_COUNT,
+		TIMEID_AUTOSAVE = Ctrl::TIMEID_COUNT,
 	    TIMEID_COUNT
 	};
 
 	static Size TopicPage()                          { return Size(3968, INT_MAX); }
 
-	void   Serialize(Stream& s);
-	void   SerializeWspc(Stream& s);
-
-	void   ClearPackages();
-	void   AddPackage(const char *name, const char *dir);
-	void   FinishPackages();
-
-	bool   Open(const String& path);
-	bool   OpenLink(const String& link);
-	void   GotoLabel(const String& label)                    { editor.GotoLabel(label); }
-	String GetFilePath() const                               { return filepath; }
-	void   Save();
-	void   Flush();
-
 	void   ExportPdf();
 
-	void   SetEditorFocus();
-
-	void   SetCommonDir(const String& common)                { commondir = common; }
-
-	Callback WhenSync;
-	Callback WhenBack;
-
 	typedef TopicEditor CLASSNAME;
+
+	void Open(const String& grouppath);
+	void GoTo(const String& topic, const String& link);
+	
+	static void SerializeEditPos(Stream& s);
+	
+	void Serialize(Stream& s);
 
 	TopicEditor();
 	virtual ~TopicEditor();
 };
-
 
 #endif

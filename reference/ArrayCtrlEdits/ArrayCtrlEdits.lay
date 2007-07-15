@@ -3,3 +3,4 @@ LAYOUT(AppLayout, 416, 132)
 	ITEM(EditInt, editor, LeftPosZ(308, 104).TopPosZ(4, 19))
 	ITEM(Option, option, SetLabel(t_("Option")).LeftPosZ(308, 104).TopPosZ(28, 15))
 END_LAYOUT
+

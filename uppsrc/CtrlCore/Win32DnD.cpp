@@ -49,7 +49,6 @@ struct UDropTarget : public IDropTarget {
 	LPDATAOBJECT  data;
 	Ptr<Ctrl>     ctrl;
 	Index<String> fmt;
-	Point         dndpos;
 
 	STDMETHOD(QueryInterface)(REFIID riid, void **ppvObj);
 	STDMETHOD_(ULONG, AddRef)(void)  { return ++rc; }
@@ -69,13 +68,6 @@ struct UDropTarget : public IDropTarget {
 	UDropTarget() { rc = 1; data = NULL; }
 	~UDropTarget();
 };
-
-static Ptr<Ctrl> dndctrl;
-
-Ctrl *Ctrl::GetDragAndDropTarget()
-{
-	return dndctrl;
-}
 
 bool Has(UDropTarget *dt, const char *fmt)
 {
@@ -104,7 +96,7 @@ String UDropTarget::Get(const char *fmt) const
 	STGMEDIUM s;
 	if(data->GetData(&fmtetc, &s) == S_OK && s.tymed == TYMED_HGLOBAL) {
 		char *val = (char *)GlobalLock(s.hGlobal);
-		String data(val, GlobalSize(s.hGlobal));
+		String data(val, (int)GlobalSize(s.hGlobal));
 		GlobalUnlock(s.hGlobal);
 		ReleaseStgMedium(&s);
 		return data;
@@ -118,18 +110,10 @@ void UDropTarget::DnD(POINTL pl, bool drop, DWORD *effect, DWORD keys)
 	*effect = DROPEFFECT_NONE;
 	if(!ctrl)
 		return;
-	Point p(pl.x, pl.y);
 	PasteClip d;
 	d.dt = this;
 	d.paste = drop;
 	d.accepted = false;
-	Point hp = p - ctrl->GetScreenRect().TopLeft();
-	Ctrl *c = Ctrl::FindCtrl(ctrl, hp);
-	Rect sw = c->GetScreenView();
-	if(sw.Contains(p))
-		p -= sw.TopLeft();
-	else
-		c = NULL;
 	d.allowed = 0;
 	d.action = 0;
 	if(e & DROPEFFECT_COPY) {
@@ -143,49 +127,25 @@ void UDropTarget::DnD(POINTL pl, bool drop, DWORD *effect, DWORD keys)
 	}
 	if((keys & MK_CONTROL) && (d.allowed & DND_COPY))
 		d.action = DND_COPY;
-	if((keys & MK_CONTROL) && (d.allowed & DND_COPY))
-		d.action = DND_COPY;
 	if((keys & (MK_ALT|MK_SHIFT)) && (d.allowed & DND_MOVE))
 		d.action = DND_MOVE;
-	if(c != dndctrl) {
-		if(dndctrl) dndctrl->DragLeave();
-		dndctrl = c;
-		if(dndctrl) dndctrl->DragEnter(p, d);
-	}
-	*effect = DROPEFFECT_NONE;
-	if(c) {
-		dndpos = p;
-		c->DragAndDrop(p, d);
-		while(c && !d.IsAccepted()) {
-			c->ChildDragAndDrop(p, d);
-			c = c->GetParent();
-		}
-		if(d.IsAccepted()) {
-			if(d.action == DND_MOVE)
-				*effect = DROPEFFECT_MOVE;
-			if(d.action == DND_COPY)
-				*effect = DROPEFFECT_COPY;
-		}
+	ctrl->DnD(Point(pl.x, pl.y), d);
+	if(d.IsAccepted()) {
+		if(d.action == DND_MOVE)
+			*effect = DROPEFFECT_MOVE;
+		if(d.action == DND_COPY)
+			*effect = DROPEFFECT_COPY;
 	}
 }
 
 void UDropTarget::Repeat()
 {
-	if(dndctrl) {
-		dndctrl->DragRepeat(dndpos);
-		PasteClip d;
-		d.dt = this;
-		d.paste = false;
-		d.accepted = false;
-		if(dndctrl)
-			dndctrl->DragAndDrop(dndpos, d);
-	}
+	Ctrl::DnDRepeat();
 }
 
 STDMETHODIMP UDropTarget::DragEnter(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
 {
 	LLOG("DragEnter " << pt);
-	SetTimeCallback(-Ctrl::GetKbdSpeed(), callback(this, &UDropTarget::Repeat), &dndpos);
 	data = pDataObj;
 	data->AddRef();
 	fmt.Clear();
@@ -223,11 +183,7 @@ void UDropTarget::FreeData()
 
 void UDropTarget::EndDrag()
 {
-	if(dndctrl) {
-		dndctrl->DragLeave();
-		dndctrl = NULL;
-	}
-	KillTimeCallback(&dndpos);
+	Ctrl::DnDLeave();
 }
 
 STDMETHODIMP UDropTarget::DragLeave()
@@ -241,6 +197,8 @@ STDMETHODIMP UDropTarget::DragLeave()
 STDMETHODIMP UDropTarget::Drop(LPDATAOBJECT, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
 {
 	LLOG("Drop");
+	if(Ctrl::GetDragAndDropSource())
+		Ctrl::OverrideCursor(Null);
 	DnD(pt, true, pdwEffect, grfKeyState);
 	EndDrag();
 	FreeData();
@@ -263,9 +221,9 @@ Ctrl * Ctrl::GetDragAndDropSource()
 }
 
 struct  UDataObject : public IDataObject {
-	ULONG                     rc;
-	dword                     effect;
-	VectorMap<String, String> data;
+	ULONG                       rc;
+	dword                       effect;
+	VectorMap<String, ClipData> data;
 
 	STDMETHOD(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
 	STDMETHOD_(ULONG, AddRef)(void)  { return ++rc; }
@@ -345,9 +303,10 @@ void SetMedium(STGMEDIUM *medium, const String& data)
 STDMETHODIMP UDataObject::GetData(FORMATETC *fmtetc, STGMEDIUM *medium)
 {
 	String fmt = FromWin32CF(fmtetc->cfFormat);
-	String *s = data.FindPtr(fmt);
+	ClipData *s = data.FindPtr(fmt);
 	if(s) {
-		SetMedium(medium, s->GetCount() ? *s : sDnDSource ? sDnDSource->GetDropData(fmt) : String());
+		String q = s->Render();
+		SetMedium(medium, q.GetCount() ? q : sDnDSource ? sDnDSource->GetDropData(fmt) : String());
 		return S_OK;
 	}
 	return DV_E_FORMATETC;
@@ -507,7 +466,7 @@ Image MakeDragImage(const Image& arrow, const Image& arrow98, Image sample)
 }
 
 int Ctrl::DoDragAndDrop(const char *fmts, const Image& sample, dword actions,
-                        const VectorMap<String, String>& data)
+                        const VectorMap<String, ClipData>& data)
 {
 	UDataObject *obj = new UDataObject;
 	obj->data <<= data;
@@ -519,8 +478,10 @@ int Ctrl::DoDragAndDrop(const char *fmts, const Image& sample, dword actions,
 	UDropSource *dsrc = new UDropSource;
 	DWORD result = 0;
 	Image m = Ctrl::OverrideCursor(CtrlCoreImg::DndMove());
-	if(actions & DND_COPY) dsrc->copy = MakeDragImage(CtrlCoreImg::DndCopy(), CtrlCoreImg::DndCopy98(), sample);
-	if(actions & DND_MOVE) dsrc->move = MakeDragImage(CtrlCoreImg::DndMove(), CtrlCoreImg::DndMove98(), sample);
+	if(actions & DND_COPY)
+		dsrc->copy = MakeDragImage(CtrlCoreImg::DndCopy(), CtrlCoreImg::DndCopy98(), sample);
+	if(actions & DND_MOVE)
+		dsrc->move = MakeDragImage(CtrlCoreImg::DndMove(), CtrlCoreImg::DndMove98(), sample);
 	sDnDSource = this;
 	HRESULT r = DoDragDrop(obj, dsrc,
 	                       (actions & DND_COPY ? DROPEFFECT_COPY : 0) |
@@ -532,6 +493,7 @@ int Ctrl::DoDragAndDrop(const char *fmts, const Image& sample, dword actions,
 	SyncCaret();
 	CheckMouseCtrl();
 	KillRepeat();
+	sDnDSource = NULL;
 	if(r == DRAGDROP_S_DROP) {
 		if(((result | re) & DROPEFFECT_MOVE) == DROPEFFECT_MOVE && (actions & DND_MOVE))
 			return DND_MOVE;
@@ -552,6 +514,8 @@ UDropTarget *NewUDropTarget(Ctrl *ctrl)
 	dt->ctrl = ctrl;
 	return dt;
 }
+
+void Ctrl::SetSelectionSource(const char *fmts) {}
 
 #endif
 

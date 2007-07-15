@@ -22,7 +22,7 @@ bool IsUpperString(const char *q)
 		q++;
     }
 	return true;
-} 
+}
 
 #define UVSALERT      Color(255, 240, 240)
 #define UVSREPINSERT  Color(240, 240, 255)

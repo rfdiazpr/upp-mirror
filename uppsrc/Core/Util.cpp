@@ -1,7 +1,10 @@
 #include "Core.h"
 
 #ifdef PLATFORM_WIN32
-#include <winnls.h>
+#	include <winnls.h>
+#	if defined(PLATFORM_WINCE) || defined(WIN64)
+#		include <intrin.h>
+#	endif
 #endif
 
 NAMESPACE_UPP
@@ -21,21 +24,27 @@ void    Panic(const char *msg)
 	UsrLogT("===== PANIC ================================================");
 	UsrLogT(msg);
 #ifdef PLATFORM_WIN32
-#ifdef PLATFORM_WINCE
+
+#	ifdef PLATFORM_WINCE
 	MessageBox(::GetActiveWindow(), ToSysChrSet(msg), L"Panic", MB_ICONSTOP | MB_OK | MB_APPLMODAL);
-#else
+#	else
 	MessageBox(::GetActiveWindow(), msg, "Panic", MB_ICONSTOP | MB_OK | MB_APPLMODAL);
-#endif
-#ifndef __NOASSEMBLY__
-#if defined(_DEBUG) && defined(CPU_X86)
-#ifdef COMPILER_MSC
-	_asm int 3
-#endif
-#ifdef COMPILER_GCC
-	asm("int $3");
-#endif
-#endif
-#endif
+#	endif
+
+#	ifdef __NOASSEMBLY__
+#		if defined(PLATFORM_WINCE) || defined(WIN64)
+			__debugbreak();
+#		endif
+#	else
+#		if defined(_DEBUG) && defined(CPU_X86)
+#			ifdef COMPILER_MSC
+				_asm int 3
+#			endif
+#			ifdef COMPILER_GCC
+				asm("int $3");
+#			endif
+#		endif
+#	endif
 #else
 	write(2, msg, strlen(msg));
 	write(2, "\n", 1);
@@ -71,16 +80,20 @@ void    AssertFailed(const char *file, int line, const char *cond)
 #else
 	MessageBox(::GetActiveWindow(), s, "Assertion failed", MB_ICONSTOP | MB_OK | MB_APPLMODAL);
 #endif
-#ifndef __NOASSEMBLY__
-#ifdef CPU_X86
-#ifdef COMPILER_MSC
-	_asm int 3
-#endif
-#ifdef COMPILER_GCC
-	asm("int $3");
-#endif
-#endif
-#endif
+#	ifdef __NOASSEMBLY__
+#		if defined(PLATFORM_WINCE) || defined(WIN64)
+			__debugbreak();
+#		endif
+#	else
+#		if defined(_DEBUG) && defined(CPU_X86)
+#			ifdef COMPILER_MSC
+				_asm int 3
+#			endif
+#			ifdef COMPILER_GCC
+				asm("int $3");
+#			endif
+#		endif
+#	endif
 #else
 	write(2, s, strlen(s));
 #endif
@@ -866,7 +879,7 @@ String GetErrorMessage(DWORD dwError) {
 			modf += (char)c;
 	const char* p = modf;
 	for(s = p + modf.GetLength(); s > p && s[-1] == ' '; s--);
-	return FromSystemCharset(modf.Left(s - p));
+	return FromSystemCharset(modf.Left((int)(s - p)));
 #endif
 }
 

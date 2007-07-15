@@ -552,8 +552,7 @@ void BarCtrl::AddCtrl(Ctrl *ctrl, int gapsize)
 
 BarCtrl& BarCtrl::Align(int al) {
 	align = al;
-	if(InFrame() && GetParent())
-		RefreshParentLayout();
+	SyncBar();
 	return *this;
 }
 
@@ -568,11 +567,13 @@ void BarCtrl::SyncBar()
 void BarCtrl::Layout()
 {
 	LLOG("BarCtrl::Layout");
-	if(IsChild())
+	if(IsChild()) {
+		bool dowrap = InFrame() && wrap >= 0 || wrap > 0;
 		if(GetAlign() == BAR_LEFT || GetAlign() == BAR_RIGHT)
-			pane.Repos(false, InFrame() ? GetSize().cy : INT_MAX);
+			pane.Repos(false, dowrap ? GetSize().cy : INT_MAX);
 		else
-			pane.Repos(true, InFrame() ? GetSize().cx : INT_MAX);
+			pane.Repos(true, dowrap ? GetSize().cx : INT_MAX);
+	}
 }
 
 BarCtrl::BarCtrl() {
@@ -583,6 +584,7 @@ BarCtrl::BarCtrl() {
 	sii = zii = 0;
 	NoWantFocus();
 	pane.WhenLeftClick = Proxy(WhenLeftClick);
+	wrap = 0;
 }
 
 BarCtrl::~BarCtrl() {}

@@ -754,7 +754,7 @@ void Parser::Do()
 				context.access = PUBLIC;
 				Key(':');
 			}
-			else 
+			else
 			if(Key(tk_private)) {
 				context.access = PRIVATE;
 				Key(':');

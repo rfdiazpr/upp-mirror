@@ -73,6 +73,8 @@ void Ide::Serialize(Stream& s) {
 	s % filetabs;
 	s % auto_enclose;
 	s % show_tabs;
+	s % tabs_icons;
+	s % tabs_crosses;
 	s % no_parenthesis_indent;
 	s % hilite_scope;
 	s % hilite_if_endif;
@@ -93,7 +95,6 @@ void Ide::Serialize(Stream& s) {
 	s % pocfg;
 	if(s.IsLoading())
 		LoadVars(varsname);
-	s % topic;
 	SerializeGlobalConfigs(s);
 	doc.Serialize(s);
 	s % right_split;
@@ -450,6 +451,9 @@ Ide::Ide()
 	indent_spaces = false;
 	show_status_bar = false;
 	show_tabs = false;
+	tabs_icons = false;
+	tabs_crosses = true;
+	tabs_grouping = true;
 	no_parenthesis_indent = false;
 
 	idestate = EDITING;
@@ -495,8 +499,6 @@ Ide::Ide()
 
 	targetmode = 0;
 
-	topic.WhenSync = THISBACK(RefreshBrowser);
-	topic.WhenBack = THISBACK(TopicBack);
 	browser.WhenShowTopic = THISBACK(ShowTopic);
 	doc.WhenTopic = THISBACK(OpenATopic);
 
@@ -835,7 +837,6 @@ void AppMain___()
 		SaveBrowserBase();
 		SaveFile(ConfigFile("ide.key"), StoreKeys());
 		SaveFile(ConfigFile("ide.colors"), ide.editor.StoreHlStyles());
-		ide.topic.Flush();
 		DelTemps();
 	}
 	catch(const CParser::Error& e) {

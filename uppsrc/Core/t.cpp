@@ -13,7 +13,7 @@ static int sIdLen(const char *txt)
 	for(s = txt; *s; s++)
 		if(*s == '\a' && s[1] != '\a')
 			break;
-	return s - txt;
+	return (int)(s - txt);
 }
 
 static bool sIdEq(const char *a, const char *b)

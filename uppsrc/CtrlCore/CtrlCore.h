@@ -37,7 +37,7 @@ enum {
 	DELAY_MINIMAL = 0
 };
 
-void *SetTimeCallback(int delay_ms, Callback cb, void *id = NULL); // delay_ms < 0 -> periodic
+void  SetTimeCallback(int delay_ms, Callback cb, void *id = NULL); // delay_ms < 0 -> periodic
 void  KillTimeCallback(void *id);
 bool  ExistsTimeCallback(void *id);
 dword GetTimeClick();
@@ -178,8 +178,6 @@ class TopWindow;
 class TrayIcon;
 class GLCtrl;
 
-class ClipData;
-
 enum {
 	DND_NONE = 0,
 	DND_COPY = 1,
@@ -189,6 +187,17 @@ enum {
 };
 
 struct UDropTarget;
+
+struct ClipData : Moveable<ClipData> {
+	Value  data;
+	String (*render)(const Value& data);
+
+	String  Render() const                   { return (*render)(data); }
+
+	ClipData(const Value& data, String (*render)(const Value& data));
+	ClipData(const String& data);
+	ClipData();
+};
 
 class PasteClip {
 	friend struct UDropTarget;
@@ -233,19 +242,23 @@ public:
 	PasteClip();
 };
 
+String  Unicode__(const WString& w);
+WString Unicode__(const String& s);
+
 const char *ClipFmtsText();
 bool        AcceptText(PasteClip& clip);
 String      GetString(PasteClip& clip);
 WString     GetWString(PasteClip& clip);
 String      GetTextClip(const String& text, const String& fmt);
 String      GetTextClip(const WString& text, const String& fmt);
-void        AddTextClip(VectorMap<String, String>& data, const String& text);
-void        AddTextClip(VectorMap<String, String>& data, const WString& text);
+void        Append(VectorMap<String, ClipData>& data, const String& text);
+void        Append(VectorMap<String, ClipData>& data, const WString& text);
 
 const char *ClipFmtsImage();
 bool        AcceptImage(PasteClip& clip);
 Image       GetImage(PasteClip& clip);
 String      GetImageClip(const Image& m, const String& fmt);
+void        Append(VectorMap<String, ClipData>& data, const Image& img);
 
 bool            AcceptFiles(PasteClip& clip);
 Vector<String>  GetFiles(PasteClip& clip);
@@ -268,10 +281,10 @@ void NewInternalDrop__(const void *ptr);
 const void *GetInternalDropPtr__();
 
 template <class T>
-VectorMap<String, String> InternalClip(const T& x, const char *id = "")
+VectorMap<String, ClipData> InternalClip(const T& x, const char *id = "")
 {
 	NewInternalDrop__(&x);
-	VectorMap<String, String> d;
+	VectorMap<String, ClipData> d;
 	d.Add(GetInternalDropId__(typeid(T).name(), id));
 	return d;
 }
@@ -298,6 +311,7 @@ class Ctrl : public Pte<Ctrl> {
 public:
 	enum PlacementConstants {
 		CENTER   = 0,
+		MIDDLE   = 0,
 		LEFT     = 1,
 		RIGHT    = 2,
 		TOP      = 1,
@@ -359,8 +373,6 @@ private:
 	void operator=(Ctrl&);
 
 private:
-	enum { MIDDLEBUTTON = 0x80000000 };
-
 	struct Frame : Moveable<Frame> {
 		CtrlFrame *frame;
 		Rect16     view;
@@ -386,6 +398,7 @@ private:
 	struct Top {
 #ifdef PLATFORM_WIN32
 		HWND           hwnd;
+		UDropTarget   *dndtgt;
 #endif
 #ifdef PLATFORM_X11
 		Window         window;
@@ -394,9 +407,6 @@ private:
 		VectorMap<Ctrl *, MoveCtrl> move;
 		VectorMap<Ctrl *, MoveCtrl> scroll_move;
 		Ptr<Ctrl>      owner;
-#ifdef PLATFORM_WIN32
-		UDropTarget   *dndtgt;
-#endif
 	};
 
 	union {
@@ -449,7 +459,7 @@ private:
 	static  Ptr<Ctrl> eventCtrl;
 	static  Ptr<Ctrl> mouseCtrl;
 	static  Point     mousepos;
-	static  Point     leftmousepos, rightmousepos;
+	static  Point     leftmousepos, rightmousepos, middlemousepos;
 	static  Ptr<Ctrl> focusCtrl;
 	static  Ptr<Ctrl> focusCtrlWnd;
 	static  Ptr<Ctrl> lastActiveWnd;
@@ -490,8 +500,6 @@ private:
 	static int       FindMoveCtrl(const VectorMap<Ctrl *, MoveCtrl>& m, Ctrl *x);
 	static MoveCtrl *FindMoveCtrlPtr(VectorMap<Ctrl *, MoveCtrl>& m, Ctrl *x);
 
-	static Ctrl *FindCtrl(Ctrl *ctrl, Point& p);
-
 	Size    PosVal(int v) const;
 	void    Lay1(int& pos, int& r, int align, int a, int b, int sz) const;
 	Rect    CalcRect(LogPos pos, const Rect& prect, const Rect& pview) const;
@@ -509,6 +517,9 @@ private:
 	static  void  RRep();
 	static  void  RHold();
 	static  void  RRepeat();
+	static  void  MRep();
+	static  void  MHold();
+	static  void  MRepeat();
 	static  void  KillRepeat();
 	static  void  CheckMouseCtrl();
 	static  void  DoCursorShape();
@@ -530,6 +541,15 @@ private:
 	static  bool  DispatchKey(dword keycode, int count);
 	void    SetFocusWnd();
 	void    KillFocusWnd();
+
+	static Ptr<Ctrl> dndctrl;
+	static Point     dndpos;
+	static bool      dndframe;
+	static PasteClip dndclip;
+
+	void    DnD(Point p, PasteClip& clip);
+	static void DnDRepeat();
+	static void DnDLeave();
 
 	void    SyncLayout(int force = 0);
 	bool    AddScroll(const Rect& sr, int dx, int dy);
@@ -608,13 +628,15 @@ private:
 	friend class TrayIcon;
 	friend class GLCtrl;
 	friend class WaitCursor;
-	friend class ClipData;
 	friend struct UDropSource;
 	friend class DnDAction;
 	friend class PasteClip;
 
 #ifdef PLATFORM_WIN32
-	static LRESULT CALLBACK SysTimerProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK UtilityProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static void RenderFormat(int format);
+	static void RenderAllFormats();
+	static void DestroyClipboard();
 
 public:
 	static Event&    ExitLoopEvent();
@@ -676,7 +698,8 @@ private:
 	static Point     mousePos;
 	static int       PopupGrab;
 	static Ptr<Ctrl> popupWnd;
-
+	static Index<String> sel_formats;
+	static Ptr<Ctrl>     sel_ctrl;
 	static void     ProcessEvent(XEvent *event);
 	static void     TimerAndPaint();
 	static void     ProcessEvent(XEvent& event);
@@ -707,8 +730,9 @@ protected:
 	static void   FocusSync();
 
 	       void DropEvent(XWindow& w, XEvent *event);
+	static void DropStatusEvent(XEvent *event);
 	static Index<String> drop_formats;
-	static String Unicode(const WString& w);
+	static String  Unicode(const WString& w);
 	static WString Unicode(const String& s);
 	static bool   ClipHas(int type, const char *fmt);
 	static String ClipGet(int type, const char *fmt);
@@ -717,11 +741,11 @@ public:
 	struct Xclipboard {
 		Window win;
 
-		VectorMap<int, String> data;
+		VectorMap<int, ClipData> data;
 
 		String Read(int fmt, int selection, int property);
-		void   Write(int fmt, const String& data);
-		bool   IsAvailable(int fmt);
+		void   Write(int fmt, const ClipData& data);
+		bool   IsAvailable(int fmt, const char *type);
 
 		void   Clear()                     { data.Clear(); }
 		void   Request(XSelectionRequestEvent *se);
@@ -801,7 +825,15 @@ public:
 		RIGHTUP       = RIGHT|UP,
 		RIGHTDRAG     = RIGHT|DRAG,
 		RIGHTHOLD     = RIGHT|HOLD,
-		RIGHTTRIPLE   = RIGHT|TRIPLE
+		RIGHTTRIPLE   = RIGHT|TRIPLE,
+
+		MIDDLEDOWN     = MIDDLE|DOWN,
+		MIDDLEDOUBLE   = MIDDLE|DOUBLE,
+		MIDDLEREPEAT   = MIDDLE|REPEAT,
+		MIDDLEUP       = MIDDLE|UP,
+		MIDDLEDRAG     = MIDDLE|DRAG,
+		MIDDLEHOLD     = MIDDLE|HOLD,
+		MIDDLETRIPLE   = MIDDLE|TRIPLE
 	};
 
 	enum {
@@ -859,13 +891,20 @@ public:
 	virtual void   RightDrag(Point p, dword keyflags);
 	virtual void   RightHold(Point p, dword keyflags);
 	virtual void   RightUp(Point p, dword keyflags);
+	virtual void   MiddleDown(Point p, dword keyflags);
+	virtual void   MiddleDouble(Point p, dword keyflags);
+	virtual void   MiddleTriple(Point p, dword keyflags);
+	virtual void   MiddleRepeat(Point p, dword keyflags);
+	virtual void   MiddleDrag(Point p, dword keyflags);
+	virtual void   MiddleHold(Point p, dword keyflags);
+	virtual void   MiddleUp(Point p, dword keyflags);
 	virtual void   MouseWheel(Point p, int zdelta, dword keyflags);
 	virtual void   MouseLeave();
 
-	virtual void   DragEnter(Point p, PasteClip& d);
 	virtual void   DragAndDrop(Point p, PasteClip& d);
-	virtual void   ChildDragAndDrop(Point p, PasteClip& d);
+	virtual void   FrameDragAndDrop(Point p, PasteClip& d);
 	virtual void   DragRepeat(Point p);
+	virtual void   DragEnter();
 	virtual void   DragLeave();
 	virtual String GetDropData(const String& fmt) const;
 	virtual String GetSelectionData(const String& fmt) const;
@@ -1205,10 +1244,11 @@ public:
 	static PasteClip& Selection();
 
 	void   SetSelectionSource(const char *fmts);
+
 	int    DoDragAndDrop(const char *fmts, const Image& sample, dword actions,
-	                     const VectorMap<String, String>& data);
+	                     const VectorMap<String, ClipData>& data);
 	int    DoDragAndDrop(const char *fmts, const Image& sample = Null, dword actions = DND_ALL);
-	int    DoDragAndDrop(const VectorMap<String, String>& data, const Image& sample = Null,
+	int    DoDragAndDrop(const VectorMap<String, ClipData>& data, const Image& sample = Null,
 	                     dword actions = DND_ALL);
 	static Ctrl *GetDragAndDropSource();
 	static Ctrl *GetDragAndDropTarget();
@@ -1322,7 +1362,7 @@ inline Ctrl *operator<<(Ctrl *parent, Ctrl& child)
 
 inline unsigned GetHashValue(Ctrl *x)
 {
-	return (unsigned)(long)x;
+	return (unsigned)(intptr_t)x;
 }
 
 String GetKeyDesc(int key);
@@ -1429,7 +1469,7 @@ protected:
 #ifdef COMPILER_MSC
 inline unsigned GetHashValue(const HWND& hwnd)
 {
-	return (unsigned)hwnd;
+	return (unsigned)(intptr_t)hwnd;
 }
 #endif
 #endif
@@ -1538,7 +1578,9 @@ public:
 };
 
 void    ClearClipboard();
+void    AppendClipboard(const char *format, const byte *data, int length);
 void    AppendClipboard(const char *format, const String& data);
+void    AppendClipboard(const char *format, const Value& data, String (*render)(const Value& data));
 String  ReadClipboard(const char *format);
 bool    IsClipboardAvailable(const char *format);
 

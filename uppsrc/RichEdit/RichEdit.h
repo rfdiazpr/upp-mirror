@@ -126,6 +126,7 @@ public:
 	virtual void  Paint(Draw& w);
 	virtual bool  Key(dword key, int count);
 	virtual void  LeftDown(Point p, dword flags);
+	virtual void  MiddleDown(Point p, dword flags);
 	virtual void  LeftUp(Point p, dword flags);
 	virtual void  LeftDrag(Point p, dword flags);
 	virtual void  RightDown(Point p, dword flags);

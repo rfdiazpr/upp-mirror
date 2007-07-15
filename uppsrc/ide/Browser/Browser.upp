@@ -3,7 +3,8 @@ description "TheIDE - code browser and Topic++";
 uses
 	CppBase,
 	ide\Common,
-	PdfDraw;
+	PdfDraw,
+	RichEdit;
 
 file
 	Browser.h,
@@ -24,17 +25,14 @@ file
 	Link.cpp,
 	TopicWin.cpp,
 	IdeTopic.cpp,
+	TopicI.icpp,
 	Topic.lay,
-	Topic.iml,
-	Info readonly separator,
-	COPYING,
-	COPYING-PLAIN,
-	AUTHORS;
+	Topic.iml;
 
 mainconfig
 	"" = "GUI";
 
-RichEdit
+RichEdit 
 
 ,
 	PdfDraw;

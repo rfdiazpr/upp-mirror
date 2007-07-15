@@ -169,7 +169,7 @@ void Lex::Next()
 				x.Cat(*ptr++);
 			int q = id.FindAdd(x);
 			if(q >= ignore_low && q < ignore_high)
-				while((byte)*ptr <= ' ') {
+				while(*ptr && (byte)*ptr <= ' ') {
 					ptr++;
 					if(*ptr == '(') {
 						int level = 1;

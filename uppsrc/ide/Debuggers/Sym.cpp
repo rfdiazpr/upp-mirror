@@ -53,7 +53,7 @@ char * BaseTypeAsString( DWORD baseType )
 }
 #endif
 
-dword Pdb::GetAddress(FilePos p)
+adr_t Pdb::GetAddress(FilePos p)
 {
 	LONG dummy;
 	IMAGEHLP_LINE ln;
@@ -68,7 +68,7 @@ dword Pdb::GetAddress(FilePos p)
 	return NULL;
 }
 
-Pdb::FilePos Pdb::GetFilePos(dword address)
+Pdb::FilePos Pdb::GetFilePos(adr_t address)
 {
 	FilePos fp;
 	DWORD dummy;
@@ -86,7 +86,7 @@ Pdb::FilePos Pdb::GetFilePos(dword address)
 
 #define MAX_SYM_NAME 1024
 
-Pdb::FnInfo Pdb::GetFnInfo(dword address)
+Pdb::FnInfo Pdb::GetFnInfo(adr_t address)
 {
 	DWORD64 h;
 
@@ -139,9 +139,9 @@ Pdb::FnInfo Pdb::GetFnInfo(String name)
 	return fn;
 }
 */
-void Pdb::TypeVal(Pdb::Val& v, int typeId, dword modbase)
+void Pdb::TypeVal(Pdb::Val& v, int typeId, adr_t modbase)
 {
-	dword tag;
+	adr_t tag;
 	for(;;) {
 		tag = GetSymInfo(modbase, typeId, TI_GET_SYMTAG);
 		if(tag == SymTagPointerType) {
@@ -188,7 +188,7 @@ void Pdb::TypeVal(Pdb::Val& v, int typeId, dword modbase)
 }
 
 struct Pdb::LocalsCtx {
-	dword                       ebp;
+	adr_t                       ebp;
 	VectorMap<String, Pdb::Val> param;
 	VectorMap<String, Pdb::Val> local;
 	Pdb                        *pdb;
@@ -205,14 +205,14 @@ BOOL CALLBACK Pdb::EnumLocals(PSYMBOL_INFO pSym, ULONG SymbolSize, PVOID UserCon
 		return TRUE;
 
 	Val& v = (pSym->Flags & IMAGEHLP_SYMBOL_INFO_PARAMETER ? c.param : c.local).GetAdd(pSym->Name);
-	v.address = (dword)pSym->Address;
+	v.address = (adr_t)pSym->Address;
 	if(pSym->Flags & IMAGEHLP_SYMBOL_INFO_REGRELATIVE)
 		v.address += c.ebp;
-	c.pdb->TypeVal(v, pSym->TypeIndex, (dword)pSym->ModBase);
+	c.pdb->TypeVal(v, pSym->TypeIndex, (adr_t)pSym->ModBase);
 	return TRUE;
 }
 
-void Pdb::GetLocals(dword eip, dword ebp, VectorMap<String, Pdb::Val>& param,
+void Pdb::GetLocals(adr_t eip, adr_t ebp, VectorMap<String, Pdb::Val>& param,
                     VectorMap<String, Pdb::Val>& local)
 {
 	static IMAGEHLP_STACK_FRAME f;
@@ -268,13 +268,13 @@ Pdb::Val Pdb::GetGlobal(const char *fn, const String& name)
 		return Val();
 	}
 	Val v;
-	v.address = (dword)pSymbol->Address;
-	TypeVal(v, pSymbol->TypeIndex, (dword)pSymbol->ModBase);
+	v.address = (adr_t)pSymbol->Address;
+	TypeVal(v, pSymbol->TypeIndex, (adr_t)pSymbol->ModBase);
 	global.Add(nm, v);
 	return v;
 }
 
-String Pdb::GetSymName(dword modbase, dword typeindex)
+String Pdb::GetSymName(adr_t modbase, dword typeindex)
 {
     WCHAR *pwszTypeName;
     if(SymGetTypeInfo(hProcess, modbase, typeindex, TI_GET_SYMNAME, &pwszTypeName)) {
@@ -285,14 +285,14 @@ String Pdb::GetSymName(dword modbase, dword typeindex)
     return Null;
 }
 
-dword Pdb::GetSymInfo(dword modbase, dword typeindex, IMAGEHLP_SYMBOL_TYPE_INFO info)
+dword Pdb::GetSymInfo(adr_t modbase, dword typeindex, IMAGEHLP_SYMBOL_TYPE_INFO info)
 {
 	dword dw = 0;
 	SymGetTypeInfo(hProcess, modbase, typeindex, info, &dw);
 	return dw;
 }
 
-int Pdb::GetTypeIndex(dword modbase, dword typeindex)
+int Pdb::GetTypeIndex(adr_t modbase, dword typeindex)
 {
 	int q = type.Find(typeindex);
 	if(q < 0) {
@@ -340,7 +340,7 @@ const Pdb::Type& Pdb::GetType(int ti)
 							TypeVal(v, GetSymInfo(t.modbase, ch, TI_GET_TYPEID), t.modbase);
 							ULONG64 adr = 0;
 							SymGetTypeInfo(hProcess, t.modbase, ch, TI_GET_ADDRESS, &adr);
-							v.address = (dword)adr;
+							v.address = (adr_t)adr;
 						}
 					}
 					else

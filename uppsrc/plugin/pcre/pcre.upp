@@ -33,4 +33,3 @@ file
 	lib\pcre_xclass.c,
 	lib\ucp.h,
 	lib\ucpinternal.h;
-

@@ -1,4 +1,6 @@
-
+#ifdef _MSC_VER
+#pragma setlocale("C")
+#endif
 // SqlArray.cpp
 
 T_("Can't insert record.")
@@ -39,6 +41,21 @@ csCZ("Odstranit aktuální %s.")
 
 T_("record")
 csCZ("záznam")
+
+
+// SqlDlg.cpp
+
+T_("Database error")
+csCZ("Chyba při práci s databází")
+
+T_("The operation has failed")
+csCZ("Při provádění operace došlo k chybě")
+
+T_("The operation has failed.\nOperation was canceled")
+csCZ("Při provádění operace došlo k chybě.\nOperace je stornována.")
+
+T_("SQL error!")
+csCZ("Chyba SQL!")
 
 
 // SqlConsole.cpp
@@ -96,6 +113,9 @@ csCZ("Uložit jako skript..")
 
 T_("Run script..")
 csCZ("Provést skript")
+
+T_("Run script quietly..")
+csCZ("")
 
 T_("List macros..")
 csCZ("Seznam maker..")

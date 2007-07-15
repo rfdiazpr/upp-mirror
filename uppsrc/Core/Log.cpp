@@ -121,7 +121,8 @@ void LogStream::Create(const char *path, bool append)
 #else //#
 	const char *procexepath_();
 	strcpy(exe, procexepath_());
-	strcpy(user, getenv("USER"));
+	const char *uenv = getenv("USER");
+	strcpy(user, uenv ? uenv : "boot");
 #endif
 
 	char h[1000];
@@ -130,10 +131,10 @@ void LogStream::Create(const char *path, bool append)
 	           t.day, t.month, t.year, t.hour, t.minute, t.second, user);
 	dword n;
 #ifdef PLATFORM_WIN32
-	WriteFile(hfile, h, strlen(h), &n, NULL);
+	WriteFile(hfile, h, (dword)strlen(h), &n, NULL);
 	if(part) {
 		sprintf(h, ", #%d", part);
-		WriteFile(hfile, h, strlen(h) , &n, NULL);
+		WriteFile(hfile, h, (dword)strlen(h) , &n, NULL);
 	}
 	WriteFile(hfile, "\r\n", 2, &n, NULL);
 #else
@@ -148,7 +149,7 @@ void LogStream::Create(const char *path, bool append)
 
 void LogStream::Flush()
 {
-	int count = p - buffer;
+	int count = (int)(p - buffer);
 	if(count == 0) return;
 #ifdef PLATFORM_WIN32
 	if(hfile != INVALID_HANDLE_VALUE) {

@@ -128,6 +128,7 @@ struct SelectPackageDlg : public WithListLayout<TopWindow> {
 
 	bool           selectvars;
 	bool           loading;
+	bool           finished;
 	String         selected;
 	int            update;
 
@@ -278,12 +279,15 @@ SelectPackageDlg::SelectPackageDlg(const char *title, bool selectvars_, bool mai
 
 String SelectPackageDlg::Run(String startwith)
 {
+	finished = false;
 	if(!IsSplashOpen())
 		Open();
 	if(selectvars)
 		SyncBase(GetVarsName());
 	else
 		OnBase();
+	if(finished)
+		return GetCurrentName();
 	alist.FindSetCursor(startwith);
 	clist.FindSetCursor(startwith);
 	ActiveFocus(alist.IsShown() ? (Ctrl&)alist : (Ctrl&)clist);
@@ -298,6 +302,7 @@ String SelectPackageDlg::Run(String startwith)
 void SelectPackageDlg::OnOK()
 {
 	loading = false;
+	finished = true;
 	AcceptBreak(IDOK);
 }
 
@@ -445,6 +450,8 @@ void SelectPackageDlg::Load(String upp, String dir, int progress_pos, int progre
 {
 	if(msecs(update) >= 200)
 	{
+		if(!IsSplashOpen() && !IsOpen())
+			Open();
 		progress.Set(progress_pos);
 		SyncList();
 		ProcessEvents();
@@ -555,12 +562,12 @@ void SelectPackageDlg::SyncList()
 			alist.Add(packages[i].package, packages[i].description);
 			alist.SetDisplay(alist.GetCount() - 1, 0, pd);
 		}
-	alist.ScrollTo(asc);
-	clist.SetSbPos(csc);
 	if(!alist.FindSetCursor(n))
 		alist.GoBegin();
 	if(!clist.FindSetCursor(n) && clist.GetCount())
 		clist.SetCursor(0);
+	alist.ScrollTo(asc);
+	clist.SetSbPos(csc);
 }
 
 INITBLOCK

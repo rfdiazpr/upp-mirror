@@ -40,7 +40,7 @@ struct OperandDecoderMap {
     unsigned code;	/* operand code */
     char    *scr;	/* script */
 };
-	
+
 static unsigned char  n_scal[] = { 1, 2, 4, 8 };
 
 /* this structure defines the decoder script for a particular

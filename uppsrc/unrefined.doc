@@ -356,9 +356,9 @@ SqlCtrl - SQL GUI widgets
 TCore, TDraw, TCtrlLib, TSql - can be considered as "candidate" packages
 Updater - automatic exe deployment application
 Web - html, TCP/IP and remote process support
- 
+
 Parts of TheIDE:
- 
+
 Browser - Doc++ implementation
 Builders - builders for GCC, MSVC and Java
 Debuggers - GDB visual interface

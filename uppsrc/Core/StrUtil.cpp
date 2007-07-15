@@ -6,7 +6,7 @@ int wstrlen(const wchar *s)
 {
 	const wchar *q = s;
 	while(*q) q++;
-	return q - s;
+	return (int)(q - s);
 }
 
 unsigned ctoi(int c)

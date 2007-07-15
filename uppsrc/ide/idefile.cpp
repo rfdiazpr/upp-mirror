@@ -319,6 +319,8 @@ void Ide::FlushFile() {
 	if(designer) {
 		tabs.Set(dtabs);
 		designer->SaveEditPos();
+		if(dynamic_cast<TopicEditor *>(&designer->DesignerCtrl()))
+			RefreshBrowser();
 	}
 	else
 	if(!editfile.IsEmpty())
@@ -608,8 +610,8 @@ void Ide::ClearEditedAll()
 		editor.SetLineInfo(fd.lineinfo);
 		editor.SetLineInfoRem(fd.lineinforem);
 		ClearEditedFile();
-		fd.lineinfo = editor.GetLineInfo();				
-		fd.lineinforem = editor.GetLineInfoRem();				
+		fd.lineinfo = editor.GetLineInfo();
+		fd.lineinforem = editor.GetLineInfoRem();
 		editor.SetLineInfo(li);
 	}
 }

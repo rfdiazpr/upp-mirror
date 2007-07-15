@@ -585,6 +585,7 @@ Option::Option() {
 	switchimage = threestate = false;
 	blackedge = false;
 	Transparent();
+	font = StdFont();
 }
 
 Option::~Option() {}

@@ -23,7 +23,7 @@ struct Pdb : Debugger, Ctrl {
 	virtual void Serialize(Stream& s);
 
 	struct ModuleInfo : Moveable<ModuleInfo> {
-		dword  base;
+		adr_t  base;
 		dword  size;
 		String path;
 		bool   symbols;
@@ -34,7 +34,7 @@ struct Pdb : Debugger, Ctrl {
 	struct FilePos {
 		String path;
 		int    line;
-		dword  address;
+		adr_t  address;
 
 		operator bool() const                   { return !IsNull(path); }
 
@@ -49,7 +49,7 @@ struct Pdb : Debugger, Ctrl {
 	struct CdbHexView : HexView {
 		Pdb *cdb;
 
-		virtual int Byte(int64 addr)            { return cdb->Byte((dword)addr); }
+		virtual int Byte(int64 addr)            { return cdb->Byte((adr_t)addr); }
 
 		CdbHexView()                            { SetTotal(0x80000000); }
 	}
@@ -57,7 +57,7 @@ struct Pdb : Debugger, Ctrl {
 
 	struct FnInfo {
 		String name;
-		dword  address;
+		adr_t  address;
 		dword  size;
 		dword  pdbtype;
 
@@ -72,7 +72,7 @@ struct Pdb : Debugger, Ctrl {
 		byte   bitpos;
 		byte   bitcnt;
 		union {
-			dword  address;
+			adr_t  address;
 			int64  ival;
 			double fval;
 		};
@@ -90,7 +90,7 @@ struct Pdb : Debugger, Ctrl {
 	struct Type : Moveable<Type> {
 		Type() : size(-1), vtbl_typeindex(-1) {}
 
-		dword  modbase;
+		adr_t  modbase;
 
 		String name;
 		int    size;
@@ -104,7 +104,7 @@ struct Pdb : Debugger, Ctrl {
 	};
 
 	struct Frame : Moveable<Frame> {
-		dword                  eip, ebp;
+		adr_t               reip, rebp;
 		FnInfo                 fn;
 		VectorMap<String, Val> param;
 		VectorMap<String, Val> local;
@@ -135,35 +135,35 @@ struct Pdb : Debugger, Ctrl {
 
 	struct Thread {
 		HANDLE  hThread;
-		dword   sp;
+		adr_t   sp;
 		CONTEXT context;
 	};
 
-	int                      lock;
-	bool                     running;
-	bool                     stop;
-	HANDLE                   hProcess;
-	DWORD                    processid;
+	int                      	lock;
+	bool                     	running;
+	bool                     	stop;
+	HANDLE                   	hProcess;
+	DWORD                    	processid;
 	ArrayMap<dword, Thread>  threads;
-	bool                     terminated;
-	bool                     refreshmodules;
-	Vector<ModuleInfo>       module;
-	DEBUG_EVENT              event;
-	HWND                     hWnd;
-	VectorMap<dword, byte>   bp_set;
-	CONTEXT                  context;
+	bool                     	terminated;
+	bool                     	refreshmodules;
+	Vector<ModuleInfo>       	module;
+	DEBUG_EVENT              	event;
+	HWND                     	hWnd;
+	VectorMap<adr_t, byte>   bp_set;
+	CONTEXT                  	context;
 
-	Index<dword>            invalidpage;
-	VectorMap<dword, MemPg> mempage;
+	Index<adr_t>            	invalidpage;
+	VectorMap<adr_t, MemPg> 	mempage;
 
-	Index<dword>            breakpoint;
+	Index<adr_t>            breakpoint;
 
-	ArrayMap<int, Type>     type;
+	ArrayMap<int, Type>     	type;
 
-	String                  disas_name;
+	String                  	disas_name;
 
-	Array<Frame>            frame;
-	String                  autotext;
+	Array<Frame>            	frame;
+	String                  	autotext;
 
 
 	FrameBottom<WithRegistersLayout<StaticRect> > regs;
@@ -201,7 +201,7 @@ struct Pdb : Debugger, Ctrl {
 
 // debug
 	void       LoadModuleInfo();
-	int        FindModuleIndex(dword base);
+	int        FindModuleIndex(adr_t base);
 	void       UnloadModuleSymbols();
 	void       CleanupOnExit();
 	void       AddThread(dword dwThreadId, HANDLE hThread);
@@ -209,10 +209,10 @@ struct Pdb : Debugger, Ctrl {
 	void       Lock();
 	void       Unlock();
 	bool       RunToException();
-	bool       AddBp(dword address);
-	bool       RemoveBp(dword address);
+	bool       AddBp(adr_t address);
+	bool       RemoveBp(adr_t address);
 	bool       RemoveBp();
-	bool       IsBpSet(dword address) const { return bp_set.Find(address) >= 0; }
+	bool       IsBpSet(adr_t address) const { return bp_set.Find(address) >= 0; }
 	bool       Continue();
 	bool       SingleStep();
 	void       BreakRunning();
@@ -224,28 +224,28 @@ struct Pdb : Debugger, Ctrl {
 	void           WriteContext(dword cf = CONTEXT_CONTROL);
 
 // mem
-	int        Byte(dword addr);
-	bool       Copy(dword addr, void *ptr, int count);
-	String     ReadString(dword addr, int maxlen = INT_MAX);
-	WString    ReadWString(dword addr, int maxlen = INT_MAX);
+	int        Byte(adr_t addr);
+	bool       Copy(adr_t addr, void *ptr, int count);
+	String     ReadString(adr_t addr, int maxlen = INT_MAX);
+	WString    ReadWString(adr_t addr, int maxlen = INT_MAX);
 
 // sym
 	struct LocalsCtx;
 	static BOOL CALLBACK  EnumLocals(PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID UserContext);
 	static BOOL CALLBACK  EnumGlobals(PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID UserContext);
-	void                  TypeVal(Pdb::Val& v, int typeId, dword modbase);
-	String                GetSymName(dword modbase, dword typeindex);
-	dword                 GetSymInfo(dword modbase, dword typeindex, IMAGEHLP_SYMBOL_TYPE_INFO info);
+	void                  TypeVal(Pdb::Val& v, int typeId, adr_t modbase);
+	String                GetSymName(adr_t modbase, dword typeindex);
+	dword                 GetSymInfo(adr_t modbase, dword typeindex, IMAGEHLP_SYMBOL_TYPE_INFO info);
 	const Type&           GetType(int ti);
-	int                   GetTypeIndex(dword modbase, dword typeindex);
-	const Type&           GetTypeId(dword modbase, dword typeindex) { return GetType(GetTypeIndex(modbase, typeindex)); }
+	int                   GetTypeIndex(adr_t modbase, dword typeindex);
+	const Type&           GetTypeId(adr_t modbase, dword typeindex) { return GetType(GetTypeIndex(modbase, typeindex)); }
 	Val                   GetGlobal(const char *fn, const String& name);
 
-	dword                 GetAddress(FilePos p);
-	FilePos               GetFilePos(dword address);
-	FnInfo                GetFnInfo(dword address);
+	adr_t                 GetAddress(FilePos p);
+	FilePos               GetFilePos(adr_t address);
+	FnInfo                GetFnInfo(adr_t address);
 //	FnInfo                GetFnInfo(String name);
-	void                  GetLocals(dword eip, dword ebp, VectorMap<String, Pdb::Val>& param,
+	void                  GetLocals(adr_t reip, adr_t rebp, VectorMap<String, Pdb::Val>& param,
 	                                VectorMap<String, Pdb::Val>& local);
 	String                TypeAsString(int ti, bool deep = true);
 
@@ -270,12 +270,12 @@ struct Pdb : Debugger, Ctrl {
 	Val        Exp(CParser& p);
 	void       Visualise(Visual& result, Pdb::Val val, int expandptr, int slen, int maxlen = 250);
 	Visual     Visualise(Val v, int maxlen = 250);
-	Visual     Visualise(const String& exp, int maxlen = 250);
+	Visual     Visualise(const String& rexp, int maxlen = 250);
 
 // code
-	int        Disassemble(dword ip);
-	void       Reg(Label& reg, dword val);
-	bool       IsValidFrame(dword eip);
+	int        Disassemble(adr_t ip);
+	void       Reg(Label& reg, adr_t val);
+	bool       IsValidFrame(adr_t eip);
 	void       Sync0();
 	void       Sync();
 	void       SetThread();
@@ -284,7 +284,7 @@ struct Pdb : Debugger, Ctrl {
 	void       Trace(bool over);
 	void       StepOut();
 	void       DoRunTo() { RunTo(); }
-	dword      CursorAdr();
+	adr_t      CursorAdr();
 	void       SetIp();
 
 	void       Break();

@@ -139,8 +139,6 @@ void Ide::SetMain(const String& package)
 	if(IsNull(e))
 		e = GetFirstFile();
 	EditFile(e);
-	if(!IsNull(lasttopicpath))
-		topic.Open(lasttopicpath);
 }
 
 void Ide::Exit()
@@ -168,6 +166,8 @@ bool Ide::OpenMainPackage()
 	String p = SelectPackage(tt, main, true, true);
 	if(p.IsEmpty()) return false;
 	main.Clear();
+	if(!IsOpen())
+		Open();
 	SetMain(p);
 	if(editor.auto_assist)
 		StartBrowserBase();
@@ -215,7 +215,6 @@ void Ide::SaveWorkspace()
 {
 	if(console.console) return;
 	if(main.IsEmpty()) return;
-	lasttopicpath = topic.GetFilePath();
 	StoreToFile(THISBACK(SerializeWorkspace), WorkspaceFile());
 }
 
@@ -283,7 +282,6 @@ void Ide::SyncUsc()
 void Ide::SyncWorkspace()
 {
 	SyncUsc();
-	TopicPackages();
 	SyncBrowserBase();
 }
 
@@ -442,7 +440,7 @@ bool Ide::FindLineError(String ln, Host& host, String& file, int& lineno, int& e
 					}
 				}
 				if(lineno > 0)
-					return true;				
+					return true;
 			}
 			file.Clear();
 		}
@@ -480,7 +478,7 @@ void Ide::ClearErrorEditor()
 {
 	if(!mark_lines)
 		return;
-	
+
 	for(int i = 0; i < filedata.GetCount(); i++) {
 		ClearErrorEditor(filedata.GetKey(i));
 	}
@@ -490,7 +488,7 @@ void Ide::ClearErrorEditor(String file)
 {
 	if(!mark_lines)
 		return;
-	
+
 	if(file == editfile)
 		editor.ClearErrors();
 	else {
@@ -498,8 +496,8 @@ void Ide::ClearErrorEditor(String file)
 		FileData& fd = Filedata(file);
 		editor.SetLineInfo(fd.lineinfo);
 		editor.ClearErrors();
-		fd.lineinfo = editor.GetLineInfo();				
-		editor.SetLineInfo(li);								
+		fd.lineinfo = editor.GetLineInfo();
+		editor.SetLineInfo(li);
 	}
 }
 
@@ -507,7 +505,7 @@ void Ide::SetErrorEditor()
 {
 	if(!mark_lines)
 		return;
-	
+
 	bool refresh = false;
 	String file;
 	int lineno;
@@ -525,12 +523,12 @@ void Ide::SetErrorEditor()
 				FileData& fd = Filedata(file);
 				editor.SetLineInfo(fd.lineinfo);
 				editor.SetError(lineno - 1, error);
-				fd.lineinfo = editor.GetLineInfo();				
-				editor.SetLineInfo(li);								
+				fd.lineinfo = editor.GetLineInfo();
+				editor.SetLineInfo(li);
 			}
 		}
 	}
-	if(refresh) 
+	if(refresh)
 		editor.RefreshFrame();
 }
 
@@ -788,10 +786,7 @@ void Ide::SerializeWorkspace(Stream& s) {
 	SerializeWorkspaceConfigs(s);
 	SerializeOutputMode(s);
 	SerializeClosed(s);
-	topic.SerializeWspc(s);
 	browser.SerializeWspc(s);
-	if(version >= 3)
-		s % lasttopicpath;
 }
 
 void Ide::SetIdeState(int newstate) {

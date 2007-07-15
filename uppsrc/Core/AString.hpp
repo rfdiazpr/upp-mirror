@@ -61,7 +61,7 @@ int AString<B>::Find(int chr, int from) const
 	const tchar *ptr = B::Begin();
 	for(const tchar *s = ptr + from; s < e; s++)
 		if(*s == chr)
-			return s - ptr;
+			return (int)(s - ptr);
 	return -1;
 }
 
@@ -73,7 +73,7 @@ int AString<B>::ReverseFind(int chr, int from) const
 		const tchar *ptr = B::Begin();
 		for(const tchar *s = ptr + from; s >= ptr; s--)
 			if(*s == chr)
-				return s - ptr;
+				return (int)(s - ptr);
 	}
 	return -1;
 }
@@ -97,7 +97,7 @@ int AString<B>::Find(int len, const tchar *s, int from) const
 	len *= sizeof(tchar);
 	while(p <= e) {
 		if(memcmp(s, p, len) == 0)
-			return p - ptr;
+			return (int)(p - ptr);
 		p++;
 	}
 	return -1;

@@ -29,11 +29,11 @@ class GLCtrl : public Ctrl
 	int        NumInstance;
 	static int NbInstance;
 	static int ContextActivated;
-
+	
 	void ActivateContext();
 
 	Point CurrentPos;
-
+	
 	Rect RectInTopWindow() const;
 	void MapWindow();
 	void UnMapWindow();
@@ -48,21 +48,21 @@ class GLCtrl : public Ctrl
 
 	void OpenGL();
 	void CloseGL();
-
+	
 public:
 	typedef GLCtrl CLASSNAME;
 
-	GLCtrl( int  depthsize            = 24,
-	        int  stencilsize          = 0,
-	        bool doublebuffer         = true,
-			bool multisamplebuffering = false,
+	GLCtrl( int  depthsize            = 24, 
+	        int  stencilsize          = 0, 
+	        bool doublebuffer         = true, 
+			bool multisamplebuffering = false, 
 			int  numberofsamples      = 0 );
 
 	~GLCtrl();
 
 	// User overridable methods
 	virtual void GLInit();
-	virtual void GLDone();
+	virtual void GLDone();	
 	virtual void GLResize( int w, int h );
 	virtual void GLPaint();
 	virtual void State(int reason);

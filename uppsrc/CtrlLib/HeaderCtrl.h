@@ -125,7 +125,7 @@ public:
 
 	void          SetHeight(int cy);
 	int           GetHeight() const;
-
+	
 	static const Style& StyleDefault();
 
 	HeaderCtrl&   Invisible(bool inv);

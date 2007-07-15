@@ -22,7 +22,7 @@ const wchar *GetTextFitLim(const FontInfo& fi, const wchar *txt, const wchar *en
 }
 
 int GetTextFitCount(const FontInfo& fi, const WString& s, int& cx) {
-	return GetTextFitLim(fi, s, s.End(), cx) - s.Begin();
+	return (int)(GetTextFitLim(fi, s, s.End(), cx) - s.Begin());
 }
 
 const wchar *strdirsep(const wchar *s) {
@@ -48,8 +48,8 @@ void DrawFileName(Draw& w, int x, int y, int wcx, int cy, const WString& mname, 
 		name += slash + 1;
 	int txtcx = GetTextSize(fi, name);
 	if(txtcx <= wcx) {
-		w.DrawText(x, y, name, font, ink, ext - name);
-		w.DrawText(x + GetTextSize(fi, name, ext), y, ext, font, extink, mname.End() - ext);
+		w.DrawText(x, y, name, font, ink, (int)(ext - name));
+		w.DrawText(x + GetTextSize(fi, name, ext), y, ext, font, extink, (int)(mname.End() - ext));
 		if(!IsEmpty(desc))
 			DrawTextEllipsis(w, x + fi.GetHeight(), y, wcx - txtcx,
 			                 desc, "...", descfont, extink);
@@ -70,9 +70,9 @@ void DrawFileName(Draw& w, int x, int y, int wcx, int cy, const WString& mname, 
 					txtcx -= GetTextSize(fi, name, bk + 1);
 					name = bk + 1;
 					if(txtcx < wcx) {
-						w.DrawText(x, y, name, font, ink, ext - name);
+						w.DrawText(x, y, name, font, ink, (int)(ext - name));
 						x += GetTextSize(fi, name, ext);
-						w.DrawText(x, y, ext, font, extink, end - ext);
+						w.DrawText(x, y, ext, font, extink, (int)(end - ext));
 						return;
 					}
 					bk = strdirsep(name);
@@ -89,11 +89,11 @@ void DrawFileName(Draw& w, int x, int y, int wcx, int cy, const WString& mname, 
 			}
 			else {
 				wcx -= extcx;
-				int n = GetTextFitLim(fi, name, end, wcx) - name;
+				int n = (int)(GetTextFitLim(fi, name, end, wcx) - name);
 				w.DrawText(x, y, name, font, ink, n);
 				x += GetTextSize(fi, name, name + n);
 				w.DrawText(x, y, "...", font, SColorDisabled, 3);
-				w.DrawText(x + dot3, y, ext, font, extink, end - ext);
+				w.DrawText(x + dot3, y, ext, font, extink, (int)(end - ext));
 			}
 		}
 	}

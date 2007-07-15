@@ -23,7 +23,7 @@ bool PostgreSQLTest::OpenDB()
 		return false;
 	}
 	m_array.SetSession(m_session);
-	
+
 	//schema
 	Progress p;
 	p.SetText(t_("Creating _DEBUG database"));
@@ -41,7 +41,7 @@ bool PostgreSQLTest::OpenDB()
 	}
 	sch.SaveNormal();
 
-	
+
 	return true;
 }
 
@@ -87,4 +87,3 @@ GUI_APP_MAIN
 		dlg.Run();
 	}
 }
-

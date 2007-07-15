@@ -107,7 +107,7 @@ void MemoryFreeDebug(void *ptr)
 		sHeapLock2.Leave();
 		char h[256];
 		sprintf(h, "Heap is corrupted p:%p e->prev:%p", p, e->prev);
-		HeapPanic(h, p + 1, (uintptr_t)p->next - (uintptr_t)(p + 1));
+		HeapPanic(h, p + 1, (int)((uintptr_t)p->next - (uintptr_t)(p + 1)));
 	}
 	e->Unlink();
 	p->Unlink();
@@ -122,7 +122,7 @@ void MemoryCheckDebug()
 	do {
 		if(p->prev->next != p || p->next->prev != p) {
 			sHeapLock2.Leave();
-			HeapPanic("HEAP CHECK: Heap is corrupted", p + 1, (uintptr_t)p->next - (uintptr_t)(p + 1));
+			HeapPanic("HEAP CHECK: Heap is corrupted", p + 1, (int)((uintptr_t)p->next - (uintptr_t)(p + 1)));
 		}
 		p = p->next;
 	}

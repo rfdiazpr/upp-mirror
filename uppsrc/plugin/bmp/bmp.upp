@@ -1,5 +1,8 @@
 description "BMP image file format";
 
+uses
+	Draw;
+
 file
 	bmp.h,
 	bmphdr.h,

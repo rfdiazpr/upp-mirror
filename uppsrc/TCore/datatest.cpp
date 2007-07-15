@@ -258,7 +258,7 @@ static void CheckColumnA2(DataFile& df, int aobj)
 {
 	DataColumnOf<int> a;
 	a.Open(df, aobj, 1);
-	for(int i = 0; i < a.GetCount(); i++)
+	for(int i = 0; i < ROW_COUNT; i++)
 		if((int)a[i] != 3 * i)
 		{
 			String s;
@@ -272,7 +272,7 @@ static void CheckColumnB(DataFile& df, int bobj)
 {
 	DataColumnOf<int> b;
 	b.Open(df, bobj, 2);
-	for(int i = 0; i < b.GetCount(); i++)
+	for(int i = 0; i < ROW_COUNT; i++)
 	{
 		if((int)b[i] != -i)
 		{
@@ -290,7 +290,7 @@ static void CheckColumnB2(DataFile& df, int bobj)
 {
 	DataColumnOf<int> b;
 	b.Open(df, bobj, 2);
-	for(int i = 0; i < b.GetCount(); i++)
+	for(int i = 0; i < ROW_COUNT; i++)
 		if((int)b[i] != -i * i)
 		{
 			String s;
@@ -304,7 +304,7 @@ static void CheckColumnC(DataFile& df, int cobj)
 {
 	DataColumnOf<String> c;
 	c.Open(df, cobj, 3);
-	for(int i = 0; i < c.GetCount(); i++)
+	for(int i = 0; i < ROW_COUNT; i++)
 	{
 //		if(i == 179540)
 //			__asm int 3
@@ -327,7 +327,7 @@ static void CheckColumnC2(DataFile& df, int cobj)
 {
 	DataColumnOf<String> c;
 	c.Open(df, cobj, 3);
-	for(int i = 0; i < c.GetCount(); i++)
+	for(int i = 0; i < ROW_COUNT; i++)
 	{
 		String t = c[i], e = "ab" + IntStr(i) + "cd_ef" + IntStr(-i);
 		if(t != e)
@@ -344,7 +344,7 @@ static void CheckColumnD(DataFile& df, int dobj)
 {
 	DataColumnOf<Date> d;
 	d.Open(df, dobj, 4);
-	for(int i = 0; i < d.GetCount(); i++)
+	for(int i = 0; i < ROW_COUNT; i++)
 	{
 		if(Date(d[i]) != anchor_date + i)
 		{
@@ -362,7 +362,7 @@ static void CheckColumnD2(DataFile& df, int dobj)
 {
 	DataColumnOf<Date> d;
 	d.Open(df, dobj, 4);
-	for(int i = 0; i < d.GetCount(); i++)
+	for(int i = 0; i < ROW_COUNT; i++)
 		if(Date(d[i]) != anchor_date - 2 * i)
 		{
 			String s;
@@ -377,7 +377,7 @@ static void CheckColumnE(DataFile& df, int eobj)
 {
 	DataColumnOf<Time> e;
 	e.Open(df, eobj, 5);
-	for(int i = 0; i < e.GetCount(); i++)
+	for(int i = 0; i < ROW_COUNT; i++)
 	{
 		Time dest = ToTime(anchor_date) + i;
 		if(Time(e[i]) != dest)
@@ -397,7 +397,7 @@ static void CheckColumnE2(DataFile& df, int eobj)
 {
 	DataColumnOf<Time> e;
 	e.Open(df, eobj, 5);
-	for(int i = 0; i < e.GetCount(); i++)
+	for(int i = 0; i < ROW_COUNT; i++)
 	{
 		Time dest = ToTime(anchor_date) - 2 * i;
 		if(Time(e[i]) != dest)
@@ -538,10 +538,10 @@ static void CheckDataBase2(const String& fn, int aobj, int bobj, int cobj, int d
 		return;
 	}
 
-	df.Commit(0);
+//	df.Commit(0);
 	RLOG("Database file size = " << df.GetFileSize() << ", overhead = " << df.GetOverhead() << "%");
 	RLOG("Compacting...\n");
-	df.Compact();
+//	df.Compact();
 	RLOG("Database file size = " << df.GetFileSize() << ", overhead = " << df.GetOverhead() << "%");
 
 	RLOG("Checking A/2...");
@@ -556,7 +556,6 @@ static void CheckDataBase2(const String& fn, int aobj, int bobj, int cobj, int d
 	CheckColumnE2(df, eobj);
 	RLOG("Checking F/2...");
 	CheckColumnF2(df, fobj);
-
 	df.Commit(0);
 	df.Close();
 }

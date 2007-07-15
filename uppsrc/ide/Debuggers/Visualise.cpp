@@ -152,7 +152,7 @@ void Pdb::Visualise(Visual& result, Pdb::Val val, int expandptr, int slen, int m
 	for(int i = 0; i < t.base.GetCount(); i++) {
 		const Val& b = t.base[i];
 		if(b.type >= 0) {
-			dword adr = b.address + val.address;
+			adr_t adr = b.address + val.address;
 			const Type& t = GetType(b.type);
 			for(int i = 0; i < t.member.GetCount(); i++) {
 				if(cm)

@@ -22,3 +22,4 @@ file
 mainconfig
 	"" = ".NOMYSQL GUI .NOAPPSQL",
 	"" = "GUI MT .NOAPPSQL";
+

@@ -11,7 +11,7 @@ void Renumber(LineInfo& lf) {
 		t.lineno = 0;
 		t.count = lf[0].count;
 		t.error = lf[0].error;
-		t.firstedited = lf[0].firstedited;		
+		t.firstedited = lf[0].firstedited;
 		t.edited = lf[0].edited;
 		l += t.count;
 	}
@@ -126,10 +126,10 @@ void EditorBar::Paint(Draw& w) {
 			if(edit)
 			{
 				int age = (int)(log((double)(editor->GetUndoCount() + 1 - edit)) * 30);
-				w.DrawRect(0, y, width, fy, Blend(LtBlue, SColorLtFace(), min(220, age)));	
+				w.DrawRect(0, y, width, fy, Blend(LtBlue, SColorLtFace(), min(220, age)));
 			}
 			if(err)
-				w.DrawRect(width, y, width, fy, err == 1 ? LtRed : (err == 2 ? Color(255, 175, 0) : Green));		
+				w.DrawRect(width, y, width, fy, err == 1 ? LtRed : (err == 2 ? Color(255, 175, 0) : Green));
 		}
 
 		if(!b.IsEmpty())
@@ -189,11 +189,11 @@ void EditorBar::InsertLines(int i, int count) {
 				li[i + t].edited = li_removed[li_removed.GetCount() - count + t].edited;
 			}
 			li_removed.Drop(count);
-			SetEdited(i + count, 1);			
+			SetEdited(i + count, 1);
 			ignored_next_edit = true;
 		}
 		else {
-			if (li[i].firstedited == 0) 
+			if (li[i].firstedited == 0)
 				li[i].firstedited = li.At(i + count).firstedited;
 			SetEdited(i + 1, count);
 		}
@@ -323,16 +323,16 @@ void EditorBar::SetEdited(int ln, int count)
 			if (li.At(ln + i).firstedited >= age - 1) {
 				li[ln + i].firstedited = 0;
 				li[ln + i].edited = 0;
-			} 
+			}
 		}
 		else {
-			if(next_age) { 
+			if(next_age) {
 				li[ln + i].firstedited = next_age;
 				li[ln + i].edited = age;
 				next_age = 0;
 			}
 			else {
-				if(li.At(ln + i).firstedited == 0)	
+				if(li.At(ln + i).firstedited == 0)
 					li[ln + i].firstedited = age;
 				li[ln + i].edited = age;
 			}
@@ -363,10 +363,10 @@ void EditorBar::ClearErrors(int line)
 	if(line < 0) {
 		line = 0;
 		count = li.GetCount();
-	} 
+	}
 	else
 		count = line + 1;
-		
+
 	for(int i = line; i < count; i++)
 		li[i].error = 0;
 }

@@ -191,4 +191,3 @@ void Paragraph::Dump()
 		    << ::Dump(part[i].format)) << " charset:" << part[i].text.GetCharset();
 	LOG("---------" << EndIndent);
 }
-

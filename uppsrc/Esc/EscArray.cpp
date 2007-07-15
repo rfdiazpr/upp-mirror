@@ -121,4 +121,32 @@ void EscValue::InitString(const WString& s)
 	total++;
 }
 
+int   EscValue::GetTotalCount()
+{
+	return total;
+}
+
+void  EscValue::SetMaxTotalCount(int n)
+{
+	max_total = n;
+}
+
+int   EscValue::GetMaxTotalCount()
+{
+	return max_total;
+}
+
+EscValue::EscValue()
+{
+	type = ESC_VOID; hash = 0; total++;
+}
+
+EscValue::EscValue(double n)
+{
+	number = n;
+	type = ESC_NUMBER;
+	hash = 0;
+	total++;
+}
+
 END_UPP_NAMESPACE

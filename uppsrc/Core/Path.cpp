@@ -112,7 +112,7 @@ bool IsFullPath(const char *r) {
 }
 
 String GetFileDirectory(const char *fileName) {
-	return String(fileName, GetFileNamePos(fileName) - fileName);
+	return String(fileName, (int)(GetFileNamePos(fileName) - fileName));
 }
 
 String GetFileFolder(const char *fileName) {
@@ -126,7 +126,7 @@ String GetFileFolder(const char *fileName) {
 		return "/";
 #endif
 	if(s > fileName)
-		return String(fileName, s - fileName - 1);
+		return String(fileName, (int)(s - fileName) - 1);
 	return Null;
 }
 
@@ -134,7 +134,7 @@ String GetFileTitle(const char *fileName) {
 	fileName = GetFileNamePos(fileName);
 	const char *ext = GetFileExtPos(fileName);
 	if(*ext)
-		return String(fileName, ext - fileName);
+		return String(fileName, (int)(ext - fileName));
 	else
 		return fileName;
 }
@@ -287,7 +287,7 @@ String GetFileOnPath(const char* file, const char* paths, bool current, const ch
 			while(*paths && *paths != ';' && *paths != ':')
 				paths++;
 #endif
-			String dir(start, paths - start);
+			String dir(start, (int)(paths - start));
 			if(!dir.IsEmpty()) {
 #ifdef PLATFORM_WINCE
 				dir = NormalizePath(AppendFileName(NativePath(dir), ufn));
@@ -416,10 +416,10 @@ String NormalizePath(const char *path, const char *currdir)
 				oe--;
 			while(oe > ob && oe[-1] != DIR_SEP)
 				oe--;
-			out.Trim(oe - out.Begin());
+			out.Trim((int)(oe - out.Begin()));
 		}
 		else
-			out.Cat(b, path - b);
+			out.Cat(b, (int)(path - b));
 	}
 	return out;
 }

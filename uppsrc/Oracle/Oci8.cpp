@@ -45,10 +45,10 @@ void Oracle8::FreeOciHandle(void *hp, int type) {
 	if(oci8 && hp) oci8.OCIHandleFree(hp, type);
 }
 
-void Oracle8::SetOciError(String text)
+void Oracle8::SetOciError(String text, OCIError *from_errhp)
 {
 	int errcode;
-	String msg = OciError(oci8, errhp, &errcode);
+	String msg = OciError(oci8, from_errhp, &errcode);
 	SetError(msg, text, errcode, OciErrorClass(errcode));
 }
 
@@ -695,7 +695,7 @@ void OCI8Connection::Cancel() {
 
 void OCI8Connection::SetError() {
 	if(session)
-		session->SetOciError(statement);
+		session->SetOciError(statement, errhp);
 	parse = true;
 }
 
@@ -842,7 +842,7 @@ bool Oracle8::Login(const char *name, const char *pwd, const char *db, String *w
 	}
 	RLOG("Attributes allocated -> OCIServerAttach");
 	if(oci8.OCIServerAttach(srvhp, errhp, (byte *)db, strlen(db), 0)) {
-		SetOciError(NFormat(t_("Connecting to server '%s'"), db));
+		SetOciError(NFormat(t_("Connecting to server '%s'"), db), errhp);
 		Logoff();
 		return false;
 	}
@@ -855,7 +855,7 @@ bool Oracle8::Login(const char *name, const char *pwd, const char *db, String *w
 	|| oci8.OCIAttrSet(svchp, OCI_HTYPE_SVCCTX, seshp, 0, OCI_ATTR_SESSION, errhp)
 	|| (retcode = oci8.OCISessionBegin(svchp, errhp, seshp, OCI_CRED_RDBMS, OCI_DEFAULT)) != OCI_SUCCESS
 	&& retcode != OCI_SUCCESS_WITH_INFO) {
-		SetOciError(t_("Connecting to Oracle database."));
+		SetOciError(t_("Connecting to Oracle database."), errhp);
 		Logoff();
 		return false;
 	}

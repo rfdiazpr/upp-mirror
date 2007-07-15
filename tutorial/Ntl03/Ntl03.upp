@@ -1,6 +1,6 @@
 uses Core;
 
-file 
+file
 	"Ntl03.cpp";
 
 mainconfig

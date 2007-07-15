@@ -148,6 +148,7 @@ public:
 		SCALEABLE   = 0x0002,
 		SYMBOLTYPE  = 0x0004,
 		COMPOSED    = 0x0008,
+		LOCAL       = 0x0010,
 	};
 
 	static int    GetFaceCount();
@@ -617,7 +618,7 @@ public:
 	static void SinCos(int angle, double& sina, double& cosa);
 
 	static void SetStdFont(Font font);
-	static Font GetStdFont()                            { return AStdFont; }
+	static Font GetStdFont();
 	static Size GetStdFontSize();
 	static int  GetStdFontCy()                          { return GetStdFontSize().cy; }
 

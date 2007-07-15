@@ -24,9 +24,9 @@ void TopicEditor::CompressGroup()
 	Progress pi;
 	pi.SetTotal(topic.GetCount());
 	for(;;) {
-		if(IsNull(filepath))
+		if(IsNull(topicpath))
 			return;
-		pi.SetText(GetFileTitle(filepath));
+		pi.SetText(GetFileTitle(topicpath));
 		pi.SetPos(topic.GetCursor());
 		editor.SetModify();
 		Save();
@@ -68,9 +68,9 @@ void TopicEditor::FindBrokenRef()
 	Progress pi;
 	pi.SetTotal(topic.GetCount());
 	for(;;) {
-		if(IsNull(filepath))
+		if(IsNull(topicpath))
 			return;
-		pi.SetText(GetFileTitle(filepath));
+		pi.SetText(GetFileTitle(topicpath));
 		pi.SetPos(topic.GetCursor());
 		FindBrokenRefIterator fi;
 		fi.cursor = editor.GetCursor();
@@ -86,7 +86,7 @@ void TopicEditor::FindBrokenRef()
 			break;
 		}
 		topic.SetCursor(c);
-		if(!IsNull(filepath))
+		if(!IsNull(topicpath))
 			editor.Move(0);
 	}
 }
@@ -128,8 +128,6 @@ void TopicEditor::MainTool(Bar& bar)
 	bar.GapRight();
 	bar.Break();
 	editor.LabelTool(bar, 500);
-	bar.Add("Back", IdeCommonImg::Package(), THISBACK(GoBack))
-	   .Key(K_CTRL_T);
 	bar.Gap();
 	Tools(bar);
 	bar.Gap();
@@ -276,7 +274,7 @@ void TopicEditor::CreateQtf(const String& item, const CppItemInfo& m, String& p1
 
 void TopicEditor::InsertItem()
 {
-	if(IsNull(filepath))
+	if(IsNull(topicpath))
 		return;
 	Save();
 	ref.Title("Insert");
@@ -323,6 +321,24 @@ void TopicEditor::InsertItem()
 	editor.Move(c);
 }
 
+String TopicEditor::GetFileName() const
+{
+	return grouppath;
+}
+
+void TopicEditor::Save()
+{
+	SaveTopic();
+	SaveInc();
+}
+
+void TopicEditor::SetFocus()
+{
+	if(editor.IsEnabled())
+		editor.SetFocus();
+	else
+		Ctrl::SetFocus();
+}
 
 #ifdef _DEBUG
 void TopicEditor::Repair()

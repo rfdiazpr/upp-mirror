@@ -228,3 +228,77 @@ public:
 
 	CallbackArgTarget()                 { result = Null; }
 };
+
+template <class OBJECT_, class METHOD_, class T1, class T2, class T3, class T4>
+struct CallbackMethodActionArg4Pte : public CallbackAction {
+	Ptr<OBJECT_>  object;
+	METHOD_       method;
+	T1            arg1;
+	T2            arg2;
+	T3            arg3;
+	T4            arg4;
+	void    Execute() { if(object) (object->*method)(arg1, arg2, arg3, arg4); }
+
+	CallbackMethodActionArg4Pte(OBJECT_ *object, METHOD_ method, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
+	: object(object), method(method), arg1(arg1), arg2(arg2), arg3(arg3), arg4(arg4) {}
+};
+
+template <class Object, class R, class O, class A, class B,class C, class D, class T1, class T2, class T3, class T4>
+Callback pteback4(Object *object, R (O::*method)(A, B,C,D), T1 arg1, T2 arg2, T3 arg3, T4 arg4) {
+	return Callback(new CallbackMethodActionArg4Pte<Object, R (O::*)(A, B,C,D), T1, T2, T3, T4>
+	                    (object, method, arg1, arg2, arg3, arg4));
+}
+
+template <class OBJECT_, class METHOD_, class T1, class T2, class T3, class T4>
+struct CallbackMethodActionArg4 : public CallbackAction
+{
+	OBJECT_  *object;
+	METHOD_   method;
+	T1        arg1;
+	T2        arg2;
+	T3        arg3;
+	T4        arg4;
+
+	void    Execute() { (object->*method)(arg1, arg2, arg3, arg4); }
+
+	CallbackMethodActionArg4(OBJECT_ *object, METHOD_ method, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
+	: object(object), method(method), arg1(arg1), arg2(arg2), arg3(arg3), arg4(arg4) {}
+};
+
+template <class Object, class R, class O, class A, class B, class C, class D, class T1, class T2, class T3, class T4>
+Callback callback4(Object *object, R (O::*method)(A, B, C, D), T1 arg1, T2 arg2, T3 arg3, T4 arg4)
+{
+	return Callback(
+		new CallbackMethodActionArg4<Object, R (O::*)(A, B, C, D), T1, T2, T3, T4>(object, method, arg1, arg2, arg3, arg4));
+}
+
+template <class Object, class R, class O, class A, class B, class C, class D, class T1, class T2, class T3, class T4>
+Callback callback4(const Object *object, R (O::*method)(A, B, C, D) const, T1 arg1, T2 arg2, T3 arg3, T4 arg4) {
+	return Callback(new CallbackMethodActionArg4<Object, R (O::*)(A, B,C,D) const, T1, T2, T3, T4>
+	                    (object, method, arg1, arg2, arg3, arg4));
+}
+
+template <class X, class T1, class T2, class T3, class T4, class HC = X>
+struct CallbackActionCallArg4 : public CallbackAction {
+	X         x;
+	T1        arg1;
+	T2        arg2;
+	T3        arg3;
+	T4        arg4;
+	void    Execute() { x(arg1, arg2, arg3, arg4); }
+
+	CallbackActionCallArg4(X x, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
+		: x(x), arg1(arg1), arg2(arg2), arg3(arg3), arg4(arg4) {}
+};
+
+template <class R, class A, class B,class C, class D, class T1, class T2, class T3, class T4>
+Callback callback4(R (*fn)(A, B, C, D), T1 arg1, T2 arg2, T3 arg3, T4 arg4) {
+	return Callback(
+		new CallbackActionCallArg4<R (*)(A, B,C,D), T1, T2, T3, T4, uintptr_t>(fn, arg1, arg2, arg3, arg4));
+}
+
+template <class A, class B, class C, class D, class T1, class T2, class T3, class T4>
+Callback callback4(Callback4<A, B, C, D> cb, T1 arg1, T2 arg2, T3 arg3, T4 arg4) {
+	return Callback(
+		new CallbackActionCallArg4<Callback4<A, B,C,D>, T1, T2, T3, T4>(cb, arg1, arg2, arg3, arg4));
+}

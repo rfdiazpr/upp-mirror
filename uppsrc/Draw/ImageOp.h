@@ -72,6 +72,7 @@ struct ImageFilter9 {
 };
 
 Image Filter(const Image& img, ImageFilter9& filter);
+void  Filter(RasterEncoder& target, Raster& src, ImageFilter9& filter);
 
 Image Etched(const Image& img);
 Image Sharpen(const Image& img, int amount = 100);
@@ -113,4 +114,12 @@ struct ImageMaker {
 Image MakeImage(const ImageMaker& m);
 Image MakeImage(const Image& image, Image (*make)(const Image& image));
 
+void  SetMakeImageCacheSize(int m);
+void  SetMakeImageCacheMax(int m);
+
 Image MakeImagePaintOnly(const ImageMaker& m);
+
+Image CachedRescale(const Image& m, Size sz);
+Image CachedRescalePaintOnly(const Image& m, Size sz);
+
+Image Magnify(const Image& img, int nx, int ny);

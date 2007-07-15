@@ -177,7 +177,7 @@ public:
 	Color    Get() const;
 
 	ColorPopUp& NotNull(bool b = true)               { notnull = b; return *this; }
-	ColorPopUp& SColors(bool b = true)               { scolors = b; return *this; }
+	ColorPopUp& SColors(bool b = true)               { scolors = b; return *this; }//Deprecated
 	ColorPopUp& NullText(const char *s)              { nulltext = s; Refresh(); return *this; }
 	ColorPopUp& NoRampWheel(bool b = true)           { norampwheel = b; return *this; }
 
@@ -211,12 +211,12 @@ protected:
 public:
 	typedef ColorPusher CLASSNAME;
 
-	ColorPusher& NullText(const char *s) { nulltext = s; colors.NullText(s); Refresh(); return *this; }
-	ColorPusher& NotNull(bool b = true)  { colors.NotNull(b); return *this; }
-	ColorPusher& SColors(bool b = true)  { colors.SColors(b); return *this; }
-	ColorPusher& WithText()              { withtext = true; return *this; }
-	ColorPusher& Track(bool b = true)    { track = b; return *this; }
-	ColorPusher& NoTrack()               { return Track(false); }
+	ColorPusher& NullText(const char *s)    { nulltext = s; colors.NullText(s); Refresh(); return *this; }
+	ColorPusher& NotNull(bool b = true)     { colors.NotNull(b); return *this; }
+	ColorPusher& SColors(bool b = true)     { colors.SColors(b); return *this; }
+	ColorPusher& WithText()                 { withtext = true; return *this; }
+	ColorPusher& Track(bool b = true)       { track = b; return *this; }
+	ColorPusher& NoTrack()                  { return Track(false); }
 	ColorPusher& NoRampWheel(bool b = true) { colors.NoRampWheel(b); return *this; }
 
 	ColorPusher();

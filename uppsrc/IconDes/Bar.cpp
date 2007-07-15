@@ -203,34 +203,6 @@ void IconDes::SetBar()
 	toolbar.Set(THISBACK(MainToolBar));
 }
 
-struct sCachedRescale : public ImageMaker
-{
-	Size  sz;
-	Image img;
-
-	virtual String Key() const {
-		char h[2 * sizeof(int) + sizeof(int64)];
-		memcpy(h, &sz.cx, sizeof(int));
-		memcpy(h + sizeof(int), &sz.cy, sizeof(int));
-		int64 x = img.GetSerialId();
-		memcpy(h + 2 * sizeof(int), &x, sizeof(int64));
-		return String(h, 12);
-	}
-
-	virtual Image Make() const {
-		return Rescale(img, sz);
-	}
-
-};
-
-Image CachedRescale(const Image& m, Size sz)
-{
-	sCachedRescale cr;
-	cr.sz = sz;
-	cr.img = m;
-	return MakeImage(cr);
-}
-
 struct CachedIconImage : public Display {
 	virtual void Paint(Draw& w, const Rect& r, const Value& q,
 	                   Color ink, Color paper, dword style) const

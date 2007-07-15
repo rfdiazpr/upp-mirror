@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x) // DLOG(x)
+#define LLOG(x)   // LOG(x)
 
 Rect TopWindow::windowFrameMargin;
 
@@ -240,6 +240,7 @@ void TopWindow::WorkAreaTrim()
 	if(h != GetRect() && !IsChild())
 		SetRect(h);
 }
+
 
 void GatherWindowTree(Ctrl *w, const Vector<Ctrl *>& ws, Vector<Ctrl *>& es)
 {

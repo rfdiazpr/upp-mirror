@@ -1,25 +1,11 @@
 #include "Browser.h"
 
-TopicLink TopicEditor::ParseTopicFilePath(const String& path)
-{
-	TopicLink tl;
-	tl.topic = GetFileTitle(path);
-	String q = GetFileFolder(path);
-	tl.group = GetFileTitle(q);
-	q = GetFileFolder(q);
-	for(int i = 0; i < packagedir.GetCount(); i++)
-		if(PathIsEqual(packagedir[i], q)) {
-			tl.package = package[i].name;
-			return tl;
-		}
-	return TopicLink();
-}
+ArrayMap<String, TopicEditor::FileInfo> TopicEditor::editstate;
+VectorMap<String, String>               TopicEditor::grouptopic;
 
-
-String TopicEditor::ActualPackageDir()
-{
-	return package.IsCursor() ? packagedir[package.GetCursor()] : Null;
-}
+String     TopicEditor::laststylesheet;
+int        TopicEditor::lastlang;
+bool       TopicEditor::allfonts;
 
 struct ListOrder : FileList::Order {
 public:
@@ -28,65 +14,45 @@ public:
 	}
 };
 
-void LoadGroups(FileList& group, const String& dir)
+void LoadTopics(FileList& topic, const String& grouppath)
 {
-	FindFile ff(AppendFileName(dir, "*.tpp"));
-	while(ff) {
-		if(ff.IsFolder()) {
-			group.Add(GetFileTitle(ff.GetName()), TopicImg::Group());
-			group.Enable();
-		}
-		ff.Next();
-	}
-	group.Sort(ListOrder());
-}
-
-void TopicEditor::EnterPackage()
-{
-	String pg = group.GetCurrentName();
-	group.Clear();
-	group.Disable();
 	topic.Clear();
-	topic.Disable();
-	if(!package.IsCursor())
-		return;
-	group.Enable();
-	topic.Enable();
-	LoadGroups(group, ActualPackageDir());
-	if(!IsNull(pg))
-		group.FindSetCursor(pg);
-	EnterGroup();
-}
-
-void LoadTopics(FileList& topic, const String& dir, const String& filepath)
-{
-	FindFile ff(AppendFileName(dir, "*.tpp"));
+	FindFile ff(AppendFileName(grouppath, "*.tpp"));
 	while(ff) {
-		if(ff.IsFile()) {
+		if(ff.IsFile())
 			topic.Add(GetFileTitle(ff.GetName()), TopicImg::Topic());
-			if(PathIsEqual(AppendFileName(dir, ff.GetName()), filepath))
-				topic.SetCursor(topic.GetCount() - 1);
-		}
 		ff.Next();
 	}
 	topic.Sort(ListOrder());
+	topic.Enable();
 }
 
-void TopicEditor::EnterGroup()
+void TopicEditor::Open(const String& _grouppath)
 {
-	topic.Clear();
-	if(!package.IsCursor() || IsNull(group.GetCurrentName()))
-		return;
-	LoadTopics(topic, AppendFileName(ActualPackageDir(), group.GetCurrentName() + ".tpp"), filepath);
-	topic.Enable();
+	grouppath = _grouppath;
+	if(FileExists(grouppath))
+		DeleteFile(grouppath);
+	DirectoryCreate(grouppath);
+	LoadTopics(topic, grouppath);
+	int q = grouptopic.Find(grouppath);
+	if(q >= 0)
+		topic.FindSetCursor(grouptopic[q]);
+	else
+		topic.SetCursor(0);
+}
+
+void TopicEditor::GoTo(const String& _topic, const String& link)
+{
+	if(topic.FindSetCursor(_topic) && !IsNull(link))
+		editor.GotoLabel(link);
 }
 
 String TopicEditor::GetCurrentTopicPath()
 {
-	return NormalizePath(
-			AppendFileName(
-				AppendFileName(ActualPackageDir(), group.GetCurrentName() + ".tpp"),
-	            topic.GetCurrentName() + ".tpp"));
+	if(topic.IsCursor())
+		return NormalizePath(AppendFileName(grouppath, topic.GetCurrentName() + ".tpp"));
+	else
+		return Null;
 }
 
 void TopicEditor::ShowTopic(bool b)
@@ -97,14 +63,13 @@ void TopicEditor::ShowTopic(bool b)
 	editor.Show(b);
 }
 
-void TopicEditor::EnterTopic()
+void TopicEditor::TopicCursor()
 {
 	HideTopic();
 	if(!topic.IsCursor())
 		return;
-
 	String h = GetCurrentTopicPath();
-	if(h != filepath)
+	if(h != topicpath)
 		Load(h);
 	else
 		ShowTopic();
@@ -123,8 +88,7 @@ void TopicEditor::Load(const String& fn)
 
 	title <<= t.title;
 	editor <<= t.text;
-	filepath = fn;
-	AddLru();
+	topicpath = fn;
 
 	int q = editstate.Find(fn);
 	if(q >= 0) {
@@ -136,41 +100,18 @@ void TopicEditor::Load(const String& fn)
 		editor.SetPosInfo(fi.pos);
 	}
 
+	grouptopic.GetAdd(grouppath) = GetFileTitle(fn);
+
 	ShowTopic();
 
-	ActiveFocus(editor);
+	editor.SetFocus();
 	editor.ClearModify();
 	title.ClearModify();
-
-	Title(fn);
 }
 
-bool TopicEditor::Open(const String& fn)
+void TopicEditor::SaveTopic()
 {
-	TopicLink tl = ParseTopicFilePath(fn);
-	if(!tl)
-		return false;
-	package.FindSetCursor(tl.package);
-	group.FindSetCursor(tl.group);
-	topic.FindSetCursor(tl.topic);
-	return true;
-}
-
-bool TopicEditor::OpenLink(const String& lnk)
-{
-	TopicLink tl = ParseTopicLink(lnk);
-	if(!tl)
-		return false;
-	package.FindSetCursor(tl.package);
-	group.FindSetCursor(tl.group);
-	topic.FindSetCursor(tl.topic);
-	return true;
-}
-
-
-void TopicEditor::Save()
-{
-	if(IsNull(filepath))
+	if(IsNull(topicpath))
 		return;
 	if(IsNull(~title)) {
 		const RichText& txt = editor.Get();
@@ -192,30 +133,31 @@ void TopicEditor::Save()
 	if(!editor.IsModified() && !title.IsModified())
 		return;
 	String r = WriteTopic((String)~title, editor.Get());
-	if(LoadFile(filepath) != r) {
-		SaveFile(filepath, r);
-		TopicLink tl = ParseTopicFilePath(filepath);
-		if(tl) {
-			SyncTopicFile(editor.Get(), TopicLinkString(tl), filepath, ~title);
-			WhenSync();
-		}
+	if(LoadFile(topicpath) != r) {
+		SaveFile(topicpath, r);
+		TopicLink tl = ParseTopicFilePath(topicpath);
+		if(tl)
+			SyncTopicFile(editor.Get(), TopicLinkString(tl), topicpath, ~title);
 	}
 }
 
 void TopicEditor::Flush()
 {
-	Save();
-	FileInfo& fi = editstate.GetAdd(filepath);
-	fi.time = FileGetTime(filepath);
+	SaveTopic();
+	FileInfo& fi = editstate.GetAdd(topicpath);
+	fi.time = FileGetTime(topicpath);
 	fi.pos = editor.GetPosInfo();
 	fi.undo = editor.PickUndoInfo();
-	filepath.Clear();
+	topicpath.Clear();
 	editor.Clear();
 	HideTopic();
 }
 
-void TopicEditor::SaveInc(const String& packagedir, const String& group)
+void TopicEditor::SaveInc()
 {
+	String packagedir = GetFileFolder(grouppath);
+	String group = GetFileTitle(grouppath);
+
 	if(IsNull(packagedir) || IsNull(group))
 		return;
 
@@ -237,4 +179,26 @@ void TopicEditor::SaveInc(const String& packagedir, const String& group)
 			DeleteFile(fn);
 		else
 			SaveFile(fn, gh);
+}
+
+TopicLink ParseTopicFilePath(const String& path)
+{
+	TopicLink tl;
+	tl.topic = GetFileTitle(path);
+	String q = GetFileFolder(path);
+	tl.group = GetFileTitle(q);
+	q = GetFileFolder(q);
+	const Workspace& wspc = GetIdeWorkspace();
+	for(int i = 0; i < wspc.GetCount(); i++)
+		if(PathIsEqual(PackageDirectory(wspc[i]), q)) {
+			tl.package = wspc[i];
+			return tl;
+		}
+	return TopicLink();
+}
+
+String TopicFilePath(const TopicLink& tl)
+{
+	return AppendFileName(AppendFileName(PackageDirectory(tl.package), tl.group + ".tpp"),
+	                      tl.topic + ".tpp");
 }

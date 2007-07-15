@@ -1,3 +1,17 @@
+#ifdef _MSC_VER
+#pragma setlocale("C")
+#endif
+// Oci7.cpp
+
+T_("Error loading OCI7 Oracle database client library.")
+csCZ("")
+
+T_("Connecting to server")
+csCZ("Navazuji spojení")
+
+T_("Connecting to database server")
+csCZ("")
+
 
 // Oci8.cpp
 

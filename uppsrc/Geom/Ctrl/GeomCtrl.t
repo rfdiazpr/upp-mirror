@@ -1,4 +1,6 @@
-
+#ifdef _MSC_VER
+#pragma setlocale("C")
+#endif
 // pathedit.lay
 
 T_("&Initial segment:")
@@ -94,6 +96,12 @@ csCZ("Zvětšit\tNum[+]")
 T_("Zoom in current view (click to zoom in 2x, drag & drop to zoom in area)")
 csCZ("Zvětšovat oblasti plochy (kliknutím zvětšíte 2x, tažením myši "
      "zvětšíte zadanou oblast)")
+
+T_("Lock aspect ratio")
+csCZ("Stejné měřítko os")
+
+T_("Keep temporarily x and y scale factors in sync")
+csCZ("Dočasně udržovat stálé měřítko os x a y")
 
 T_("Pan")
 csCZ("Posouvat")

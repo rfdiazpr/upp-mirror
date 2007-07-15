@@ -224,10 +224,11 @@ void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int al
 
 	int ty = y;
 	Size tsz;
-	
+
 	if((align & GD::VCENTER) || (align & GD::BOTTOM))
 	{
 		const wchar * e = t;
+		int ccx = max(5, cx);
 
 		while(*p)
 		{
@@ -238,8 +239,8 @@ void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int al
 					int tcx = GetTextSize(e, font, p - e).cx;
 					if(tcx > cx)
 					{
-						lines += tcx / cx;// + ((tcx % cx) > 0 ? 1 : 0);
-						if(tcx % cx > 0)
+						lines += tcx / ccx;
+						if(tcx % ccx > 0)
 							lines++;
 					}
 					else
@@ -264,12 +265,12 @@ void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int al
 		bool caret    = *p == '\r';
 		bool endtext  = *p == '\0';
 
+		bool textbreak = false;
 		if(nextline || endtext)
 		{
 			int tx = x;
 			tsz = GetTextSize(t, font, p - t);
 
-			bool textbreak = false;
 			if(wrap && tsz.cx > cx)
 			{
 				int size = 0;
@@ -305,13 +306,17 @@ void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int al
 		}
 		if(caret)
 			*(char *) p = ' ';
-		if(endtext)
-			break;
-		else
-			p++;
+
+		if(!textbreak)
+		{
+			if(endtext)
+				break;
+			else
+				p++;
+		}
 
 	}
-	
+
 	//w.End();
 }
 

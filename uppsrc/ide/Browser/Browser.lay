@@ -19,3 +19,4 @@ LAYOUT(QueryLayout, 612, 416)
 	ITEM(Button, ok, SetLabel(t_("OK")).RightPosZ(8, 64).BottomPosZ(8, 24))
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).RightPosZ(80, 64).BottomPosZ(8, 24))
 END_LAYOUT
+

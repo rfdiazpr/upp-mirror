@@ -6,8 +6,7 @@
 
 TopicEditor::TopicEditor()
 {
-	SetRect(0, 0, 600, 400);
-	AddFrame(menu);
+	SizePos();
 	editor.InsertFrame(0, TopSeparatorFrame());
 	editor.InsertFrame(1, tool);
 	SetBar();
@@ -16,29 +15,15 @@ TopicEditor::TopicEditor()
 	title.SetFont(tf);
 	right.Add(title.HSizePos(2, 2).TopPos(0, dcy));
 	right.Add(editor.VSizePos(dcy + 4, 0).HSizePos());
-	vert.Add(package);
-	vert.Add(group);
-	vert.Add(topic);
-	vert.Vert();
-	Add(left_right.Horz(vert, right));
-	left_right.SetPos(2000);
-	Zoomable().Sizeable();
+	Add(left_right.Horz(topic, right));
+	left_right.SetPos(1200);
 
-	package.NoRoundSize().Columns(2);
-	group.NoRoundSize().Columns(2);
-	topic.NoRoundSize().Columns(2);
+	topic.NoRoundSize().Columns(1);
 
 	title.Tip("Topic title");
 
-	package.WhenKillCursor = package.WhenEnterItem = THISBACK(EnterPackage);
-	group.WhenKillCursor = group.WhenEnterItem = THISBACK(EnterGroup);
-	topic.WhenKillCursor = topic.WhenEnterItem = THISBACK(EnterTopic);
-
-	group.WhenBar = THISBACK(GroupMenu);
+	topic.WhenSel = THISBACK(TopicCursor);
 	topic.WhenBar = THISBACK(TopicMenu);
-
-	package.NoWantFocus();
-	group.NoWantFocus();
 	topic.NoWantFocus();
 
 	editor.SetPage(TopicPage());
@@ -48,44 +33,37 @@ TopicEditor::TopicEditor()
 	editor.Disable();
 	title.Disable();
 
-	Icon(TopicImg::Topic(), TopicImg::Topic());
-
 	lastlang = LNG_ENGLISH;
-
-	tabi = 0;
-
-	ActiveFocus(editor);
-
-	Maximize();
 
 	allfonts = false;
 
 	editor.WhenLabel = THISBACK(Label);
+	
+	LoadFromGlobal(*this, "topic-editor");
 }
 
 TopicEditor::~TopicEditor()
 {
+	StoreToGlobal(*this, "topic-editor");
+	Flush();
+}
+
+INITBLOCK {
+	RegisterGlobalConfig("topic-editor");
 }
 
 void TopicEditor::Serialize(Stream& s)
 {
-	int version = 2;
+	int version = 0;
 	s / version;
-	SerializePlacement(s);
 	editor.SerializeSettings(s);
-	s % left_right % vert;
-	package.Serialize(s);
-	group.Serialize(s);
+	s % left_right;
 	topic.Serialize(s);
-	bool b;
-	if(version >= 1)
-		s % b;
-	if(version >= 2)
-		s % allfonts;
+	s % allfonts;
 	SyncFonts();
 }
 
-void TopicEditor::SerializeWspc(Stream& s)
+void TopicEditor::SerializeEditPos(Stream& s)
 {
 	int version = 0;
 	s / version;
@@ -97,8 +75,8 @@ void TopicEditor::SerializeWspc(Stream& s)
 				s % editstate[i].pos;
 			}
 		}
-		String dm;
-		s % dm;
+		String empty;
+		s % empty;
 	}
 	else
 		for(;;) {
@@ -108,31 +86,9 @@ void TopicEditor::SerializeWspc(Stream& s)
 				break;
 			s % editstate.GetAdd(fn).pos;
 		}
+	s % grouptopic;
 	s % lastlang;
-	s % tablru;
-	if(s.IsStoring()) {
-		for(int i = 0; i < editstate.GetCount(); i++) {
-			String fn = editstate.GetKey(i);
-			if(!fn.IsEmpty() && FileExists(fn)) {
-				s % fn;
-				s % editstate[i].pos;
-			}
-		}
-		String h;
-		s % h;
-	}
-	else {
-		String fn;
-		editstate.Clear();
-		for(;;) {
-			s % fn;
-			if(fn.IsEmpty()) break;
-			FileInfo& fd = editstate.GetAdd(fn);
-			s % fd.pos;
-		}
-	}
 	s % laststylesheet;
-	ref.Serialize(s);
 }
 
 void TopicEditor::ExportPdf()
@@ -174,15 +130,9 @@ void TopicEditor::AllFonts()
 	SyncFonts();
 }
 
-void TopicEditor::GroupMenu(Bar& bar)
-{
-	bar.Add(package.IsCursor(), "New group..", THISBACK(NewGroup));
-	bar.Add(group.IsCursor(), "Remove group..", THISBACK(RemoveGroup));
-}
-
 void TopicEditor::TopicMenu(Bar& bar)
 {
-	bar.Add(group.IsCursor(), "New topic..", THISBACK(NewTopic))
+	bar.Add("New topic..", THISBACK(NewTopic))
 	   .Key(K_CTRL_N).Key(K_ALT_INSERT);
 	bar.Add(topic.IsCursor(), "Rename topic..", THISBACK(RenameTopic));
 	bar.Add(topic.IsCursor(), "Remove topic", THISBACK(RemoveTopic))
@@ -193,9 +143,7 @@ void TopicEditor::FileBar(Bar& bar)
 {
 	TopicMenu(bar);
 	bar.Separator();
-	GroupMenu(bar);
-	bar.Separator();
-	bar.Add(!IsNull(filepath), "Save", THISBACK(Save))
+	bar.Add(!IsNull(topicpath), "Save", THISBACK(Save))
 	   .Key(K_CTRL_S);
 	bar.Separator();
 	editor.PrintTool(bar);
@@ -211,6 +159,8 @@ void TopicEditor::FileBar(Bar& bar)
 
 void TopicEditor::EditMenu(Bar& bar)
 {
+	bar.Add("Topic", THISBACK(FileBar));
+	bar.Separator();
 	editor.CutTool(bar);
 	editor.CopyTool(bar);
 	editor.PasteTool(bar);
@@ -222,6 +172,10 @@ void TopicEditor::EditMenu(Bar& bar)
 	bar.Separator();
 	bar.Add("All fonts", THISBACK(AllFonts))
 	   .Check(allfonts);
+	bar.Separator();
+	bar.Add("Table", THISBACK(TableMenu));
+	bar.Add("Format", THISBACK(FormatMenu));
+	bar.Add("Stylesheet", THISBACK(StyleSheetMenu));
 }
 
 void TopicEditor::FormatMenu(Bar& bar)
@@ -251,54 +205,9 @@ void TopicEditor::TableMenu(Bar& bar)
 void TopicEditor::StyleSheetMenu(Bar& bar)
 {
 	bar.Add("Stylesheets..", THISBACK(EditStylesheets));
-	bar.Add(!IsNull(filepath), "Store stylesheet..", THISBACK(StoreStylesheet));
-	bar.Add(!IsNull(filepath), "Apply stylesheet..", THISBACK(ApplyStylesheet));
+	bar.Add(!IsNull(topicpath), "Store stylesheet..", THISBACK(StoreStylesheet));
+	bar.Add(!IsNull(topicpath), "Apply stylesheet..", THISBACK(ApplyStylesheet));
 	bar.Add("Apply stylesheet to group..", THISBACK(ApplyStylesheetGroup));
-}
-
-void TopicEditor::MainMenu(Bar& bar)
-{
-	bar.Add("Topic", THISBACK(FileBar));
-	bar.Add("Edit", THISBACK(EditMenu));
-//	bar.Add("Format", THISBACK(FormatMenu));
-	bar.Add("Table", THISBACK(TableMenu));
-	bar.Add("Stylesheet", THISBACK(StyleSheetMenu));
-}
-
-void TopicEditor::NewGroup()
-{
-	if(!package.IsCursor())
-		return;
-	WithGroupDlgLayout<TopWindow> d;
-	CtrlLayoutOKCancel(d, "New group");
-	d.group.SetFilter(CharFilterID);
-	if(d.Run() != IDOK)
-		return;
-	DirectoryCreate(AppendFileName(ActualPackageDir(), (String)~d.group + ".tpp"));
-	EnterPackage();
-	group.FindSetCursor((String)~d.group);
-}
-
-void TopicEditor::RemoveGroup()
-{
-	if(!group.IsCursor() || !PromptYesNo("Remove group?"))
-		return;
-	String pd = AppendFileName(ActualPackageDir(), group.GetCurrentName() + ".tpp");
-	FindFile ff(AppendFileName(pd, "*.*"));
-	while(ff) {
-		if(ff.IsFile() || ff.IsFolder()) {
-			if(PromptYesNo("Group is not empty!&Delete anyway?"))
-				break;
-			else
-				return;
-		}
-		ff.Next();
-	}
-	ff.Close();
-	Flush();
-	if(!DeleteFolderDeep(pd))
-		Exclamation(GetLastErrorMessage());
-	EnterPackage();
 }
 
 void CreateTopic(const char *fn, int lang, const String& ss)
@@ -322,8 +231,6 @@ struct TopicDlg : T {
 
 void TopicEditor::NewTopic()
 {
-	if(!package.IsCursor() || !group.IsCursor())
-		return;
 	TopicDlg<WithNewTopicLayout<TopWindow> > d("New topic");
 	d.lang <<= lastlang;
 
@@ -331,10 +238,10 @@ void TopicEditor::NewTopic()
 	Vector<String> style;
 	name.Add("<none>");
 	style.Add("");
-	FindFile ff(AppendFileName(commondir, "*.style"));
+	FindFile ff(AppendFileName(GetCommonDir(), "*.style"));
 	while(ff) {
 		name.Add(GetFileTitle(ff.GetName()));
-		style.Add(LoadFile(AppendFileName(commondir, ff.GetName())));
+		style.Add(LoadFile(AppendFileName(GetCommonDir(), ff.GetName())));
 		ff.Next();
 	}
 	IndexSort(name, style);
@@ -351,7 +258,7 @@ void TopicEditor::NewTopic()
 	for(;;) {
 		if(d.Run() != IDOK)
 			return;
-		fn = AppendFileName(AppendFileName(ActualPackageDir(), group.GetCurrentName() + ".tpp"), d.GetName());
+		fn = AppendFileName(grouppath, d.GetName());
 		if(!FileExists(fn))
 			break;
 		if(PromptYesNo("Topic already exists.&Do you want to clear it?"))
@@ -361,10 +268,11 @@ void TopicEditor::NewTopic()
 	lastlang = ~d.lang;
 	int q = d.stylesheet.GetIndex();
 	CreateTopic(fn, ~d.lang, q >= 0 ? style[q] : Null);
-	SaveInc(ActualPackageDir(), group.GetCurrentName());
 	Flush();
+	Open(grouppath);
 	Load(fn);
-	EnterGroup();
+	SaveInc();
+	topic.FindSetCursor(fn);
 }
 
 void TopicEditor::RenameTopic()
@@ -380,112 +288,45 @@ void TopicEditor::RenameTopic()
 	d.lang <<= lng;
 	if(d.Run() != IDOK)
 		return;
-	String np = AppendFileName(GetFileFolder(p), d.GetName());
+	String np = AppendFileName(grouppath, d.GetName());
 	if(FindFile(np)) {
 		Exclamation("Target file aready exists!");
 		return;
 	}
 	Flush();
 	FileMove(p, np);
+	Open(grouppath);
 	Load(np);
-	EnterGroup();
-	SaveInc(ActualPackageDir(), group.GetCurrentName());
+	SaveInc();
+	topic.FindSetCursor(np);
 }
 
 void TopicEditor::RemoveTopic()
 {
-	if(!topic.IsCursor() || !group.IsCursor() || !package.IsCursor()
-	   || !PromptYesNo("Delete topic [* " + DeQtf(topic.GetCurrentName()) + "] ?"))
+	if(!topic.IsCursor() ||
+	   !PromptYesNo("Delete topic [* " + DeQtf(topic.GetCurrentName()) + "] ?"))
 		return;
-	String packagedir = ActualPackageDir();
 	String p = GetCurrentTopicPath();
+	int q = topic.GetCursor();
 	Flush();
 	DeleteFile(p);
-	EnterGroup();
-	SaveInc(packagedir, group.GetCurrentName());
+	Open(grouppath);
+	SaveInc();
+	topic.SetCursor(q);
 }
 
 void TopicEditor::SetBar()
 {
-	menu.Set(THISBACK(MainMenu));
 	tool.Set(THISBACK(MainTool));
-}
-
-void TopicEditor::ClearPackages()
-{
-	package.Clear();
-	packagedir.Clear();
-}
-
-void TopicEditor::AddPackage(const char *name, const char *dir)
-{
-	RealizeDirectory(dir);
-	package.Add(name, TopicImg::Package());
-	packagedir.Add(dir);
-}
-
-void TopicEditor::FinishPackages()
-{
-	String s = filepath;
-	SaveInc(ActualPackageDir(), group.GetCurrentName());
-	Flush();
-	group.Clear();
-	topic.Clear();
-	Open(s);
-}
-
-void TopicEditor::Close()
-{
-	Save();
-	SaveInc(ActualPackageDir(), group.GetCurrentName());
-	TopWindow::Close();
-}
-
-void TopicEditor::AddLru()
-{
-	if(filepath.IsEmpty() || tabi) return;
-	LruAdd(tablru, filepath, 30);
 }
 
 bool TopicEditor::Key(dword key, int cnt)
 {
 	switch(key) {
-	case K_CTRL_T:
-	case K_CTRL_ENTER:
-		WhenBack();
-		return true;
-	case K_CTRL_KEY|K_KEYUP:
-		if(tabi) {
-			tabi = 0;
-			AddLru();
-		}
-		return true;
-	case K_CTRL_TAB:
-		while(tablru.GetCount()) {
-			if(++tabi >= tablru.GetCount())
-				tabi = 0;
-			if(tabi < tablru.GetCount())
-				if(Open(tablru[tabi])) {
-					Sync();
-					break;
-				}
-			tablru.Remove(tabi);
-		}
-		return true;
 	case K_ALT_UP:
 		return topic.Key(K_UP, 0);
 	case K_ALT_DOWN:
 		return topic.Key(K_DOWN, 0);
-	case K_ALT_LEFT:
-		return package.Key(K_UP, 0);
-	case K_ALT_RIGHT:
-		return package.Key(K_DOWN, 0);
 	}
-	return TopWindow::Key(key, cnt);
-}
-
-void TopicEditor::SetEditorFocus()
-{
-	editor.SetFocus();
-	editor.ScrollToCursor();
+	return false;
 }

@@ -113,7 +113,7 @@ String ZGCompress(String s, bool gzip, Gate2<int, int> progress)
 		out.Cat(output, buf_size - z.avail_out);
 		z.next_out = output;
 		z.avail_out = buf_size;
-		if(progress((const char *)z.next_in - ~s, s.GetLength())) {
+		if(progress((int)((const char *)z.next_in - ~s), s.GetLength())) {
 			deflateEnd(&z);
 			return String::GetVoid();
 		}
@@ -174,7 +174,7 @@ String ZGDecompress(String s, bool gzip, Gate2<int, int> progress)
 		out.Cat(output, buf_size - z.avail_out);
 		z.next_out = output;
 		z.avail_out = buf_size;
-		if(progress((const char *)z.next_in - ~s, s.GetLength()))
+		if(progress((int)((const char *)z.next_in - ~s), (int)s.GetLength()))
 		{
 			inflateEnd(&z);
 			return String::GetVoid();

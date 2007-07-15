@@ -26,7 +26,7 @@ public:
 	int   operator+=(int i)                     { Set(actual + i); return actual; }
 
 	operator int()                              { return actual; }
-
+	
 	static const Style& StyleDefault();
 
 	ProgressIndicator& SetTotal(int _total)     { Set(actual, _total); return *this; }

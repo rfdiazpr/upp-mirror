@@ -23,7 +23,7 @@ int  GetDaysOfMonth(int m, int y) {
 }
 
 bool Date::IsValid() const {
-	return year == 0 || month >= 1 && month <= 12 &&
+	return year == -32768 /* TRC fix 2007/06/17:was == 0 */ || month >= 1 && month <= 12 &&
 		                day >= 1 && day <= GetDaysOfMonth(month, year);
 }
 

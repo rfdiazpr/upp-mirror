@@ -9,7 +9,7 @@ int SqlError(
 #endif
 	const char *text, const char *error, const char *statement, bool retry) {
 	WithSqlErrorLayout<TopWindow> r;
-	CtrlLayoutCancel(r, "Chyba pøi práci s databází");
+	CtrlLayoutCancel(r, t_("Database error"));
 	r.text = text;
 	r.error.AutoHideSb().SetReadOnly() <<= error;
 	r.statement.AutoHideSb().SetReadOnly() <<= statement;
@@ -62,7 +62,7 @@ int  SqlError(const char *text, const Sql& sql, bool retry) {
 
 bool   DisplayError(const SqlSession& session, const char *msg) {
 	if(!session.WasError()) return false;
-	SqlError(msg ? msg : "Pøi provádìní operace došlo k chybì",
+	SqlError(msg ? msg : t_("The operation has failed"),
 			 session.GetLastError(), session.GetErrorStatement());
 	return true;
 }
@@ -76,7 +76,7 @@ bool   ShowError(SqlSession& session, const char *msg) {
 }
 
 bool ErrorRollback(SqlSession& session, const char *msg) {
-	if(!ShowError(session, msg ? msg : "Pøi provádìní operace došlo k chybì.\nOperace je stornována."))
+	if(!ShowError(session, msg ? msg : t_("The operation has failed.\nOperation was canceled")))
 		return false;
 	session.Rollback();
 	return true;

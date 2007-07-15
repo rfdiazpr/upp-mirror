@@ -1,6 +1,6 @@
 #ifndef _HomeBudget_HomeBudget_h
 #define _HomeBudget_HomeBudget_h
- 
+
 class HomeBudgetHelp : public HelpWindow
 {
 	public:
@@ -8,11 +8,11 @@ class HomeBudgetHelp : public HelpWindow
 		virtual Topic AcquireTopic(const String& topic);
 };
 
-class HomeBudget : public WithHomeBudgetLayout<TopWindow> 
+class HomeBudget : public WithHomeBudgetLayout<TopWindow>
 {
 	public:
 		typedef HomeBudget CLASSNAME;
-	
+
 		GridCtrl groups;
 		GridCtrl categories;
 		GridCtrl money;
@@ -25,7 +25,7 @@ class HomeBudget : public WithHomeBudgetLayout<TopWindow>
 		EditStringNotNull eg, ec;
 		EditString es;
 		FrameRight<Button> newcat;
-		
+
 		int dtid;
 		bool dosummary;
 		int lang;
@@ -34,7 +34,7 @@ class HomeBudget : public WithHomeBudgetLayout<TopWindow>
 
 		void NewGroup();
 		void NewCategory();
-		
+
 		void InsertGroup();
 		void UpdateGroup();
 		void RemoveGroup();
@@ -45,21 +45,21 @@ class HomeBudget : public WithHomeBudgetLayout<TopWindow>
 		void RemoveCategory();
 		void LoadCategories(int group_id);
 		void UpdateCategories();
-		
+
 		void InsertMoney();
 		void UpdateMoney();
 		void RemoveMoney();
-		
+
 		void InsertDate();
 		void UpdateDate();
 		void RemoveDate();
 		void ChangeDate();
 		void NewDate();
 		void AcceptDate();
-		
+
 		void LoadDates();
-		void LoadGroups();	
-				
+		void LoadGroups();
+
 		void UpdateSummary();
 		void ClearSummary();
 		void UpdateValue();
@@ -68,19 +68,18 @@ class HomeBudget : public WithHomeBudgetLayout<TopWindow>
 		void Options();
 		void About();
 		void Setup();
-		
+
 		void Help();
-		
+
 		void SetRest(StaticText &rest, float r);
 		int GetCategorySign();
-		
+
 		void ClearAll();
 
-		
+
 		void LoadMoney(int did);
 		void EnableMoney(int cnt = -1);
-		
+
 };
 
 #endif
-

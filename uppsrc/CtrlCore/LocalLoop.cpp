@@ -2,13 +2,18 @@
 
 NAMESPACE_UPP
 
+#define LLOG(x) // DLOG(x)
+
 void LocalLoop::Run()
 {
 	ASSERT(master);
 	master->AddChild(this);
 	Ptr<Ctrl> focus = GetFocusCtrl();
 	SetCapture();
+	SetFocus();
+	LLOG("LocalLoop::Run");
 	EventLoop(this);
+	LLOG("LocalLoop Finished");
 	Remove();
 	if(focus)
 		focus->SetFocus();

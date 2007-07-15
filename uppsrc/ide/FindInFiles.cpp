@@ -380,26 +380,15 @@ void Ide::FindSetStdDir(String n)
 	ff.folder <<= n;
 }
 
-String DeSlash(const char *s)
-{
-	String r;
-	while(*s) {
-		if(*s == '\\')
-			r.Cat('\\');
-		r.Cat(*s++);
-	}
-	return r;
-}
-
 void Ide::FindStdDir()
 {
 	String n = GetFileFolder(editfile);
 	MenuBar menu;
 	if(!IsNull(n))
-		menu.Add(DeSlash(n), THISBACK1(FindSetStdDir, n));
+		menu.Add(n, THISBACK1(FindSetStdDir, n));
 	Vector<String> d = GetUppDirs();
 	for(int i = 0; i < d.GetCount(); i++)
-		menu.Add(DeSlash(d[i]), THISBACK1(FindSetStdDir, d[i]));
+		menu.Add(d[i], THISBACK1(FindSetStdDir, d[i]));
 	menu.Execute(&findd, findd.GetScreenRect().BottomLeft());
 }
 

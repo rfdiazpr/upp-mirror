@@ -16,7 +16,7 @@ public:
 	virtual void  GotFocus();
 	virtual void  LostFocus();
 	virtual void  CancelMode();
-	virtual void  DragEnter(Point, PasteClip&);
+	virtual void  DragEnter();
 	virtual void  DragAndDrop(Point p, PasteClip& d);
 	virtual void  DragRepeat(Point p);
 	virtual void  DragLeave();

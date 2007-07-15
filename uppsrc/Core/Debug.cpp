@@ -34,7 +34,8 @@ extern char Argv0__[_MAX_PATH + 1];
 static void sLogFile(char *fn, const char *app = ".log")
 {
 	char *path = fn;
-	strcpy(fn, getenv("HOME"));
+	const char *ehome = getenv("HOME");
+	strcpy(fn, ehome ? ehome : "/root");
 	if(!*fn || (fn += strlen(fn))[-1] != '/')
 		*fn++ = '/';
 	*fn++ = '.';
@@ -227,7 +228,7 @@ String GetTypeName(const char *s)
 {
 	static const char _struct[] = "struct ", _class[] = "class ";
 	enum { LEN_S = sizeof(_struct) - 1, LEN_C = sizeof(_class) - 1 };
-	int len = strlen(s);
+	int len = (dword)strlen(s);
 	if(len > LEN_C && !memcmp(s, _class, LEN_C))
 		s += LEN_C;
 	else if(len > LEN_S && !memcmp(s, _struct, LEN_S))
@@ -404,7 +405,7 @@ LONG __stdcall sDumpHandler(LPEXCEPTION_POINTERS ep) {
 	dword esp = ep->ContextRecord->Esp;
 #endif
 
-	WriteFile(file, (void *) esp, sESP - esp, &v, NULL);
+	WriteFile(file, (void *) esp, (dword)(sESP - esp), &v, NULL);
 	/*	dword base = ep->ContextRecord->Ebp;
 	for(;;) {
 		dword new_base = *(dword *)base;

@@ -12,17 +12,16 @@ class PaintGL {
 	HBITMAP hbmp, ohbmp;
 	HDC     hdc;
 	HGLRC   hrc;
-	
+
 	void Free();
 	void Init(Size sz);
-	
+
 public:
 	void Paint(Draw& w, const Rect& r, Callback gl);
-	
+
 	PaintGL();
 	~PaintGL();
 };
 
 
 #endif
-

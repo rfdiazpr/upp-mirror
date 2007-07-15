@@ -2,11 +2,45 @@
 
 NAMESPACE_UPP
 
-void Ctrl::DragEnter(Point p, PasteClip& d)         {}
+ClipData::ClipData(const Value& data, String (*render)(const Value& data))
+:	data(data), render(render)
+{}
+
+String sRawClipData(const Value& data)
+{
+	return data;
+}
+
+ClipData::ClipData(const String& data)
+:	data(data), render(sRawClipData)
+{}
+
+ClipData::ClipData()
+:	render(sRawClipData)
+{}
+
 void Ctrl::DragAndDrop(Point p, PasteClip& d)       {}
-void Ctrl::ChildDragAndDrop(Point p, PasteClip& d)  {}
+void Ctrl::FrameDragAndDrop(Point p, PasteClip& d)  {}
+void Ctrl::DragEnter()                              {}
 void Ctrl::DragRepeat(Point p) {}
 void Ctrl::DragLeave() {}
+
+PasteClip& Ctrl::Clipboard()
+{
+	static PasteClip d;
+	d.fmt.Clear();
+	return d;
+}
+
+PasteClip& Ctrl::Selection()
+{
+	static PasteClip d;
+#ifdef PLATFORM_X11
+	d.fmt.Clear();
+	d.type = 2;
+#endif
+	return d;
+}
 
 String Ctrl::GetDropData(const String& fmt) const
 {
@@ -24,19 +58,20 @@ String Get(UDropTarget *dt, const char *fmt);
 
 bool PasteClip::IsAvailable(const char *fmt) const
 {
+	if(this == &Ctrl::Selection())
+		return false;
 	return dt ? UPP::Has(dt, fmt) : IsClipboardAvailable(fmt);
 }
 
 String PasteClip::Get(const char *fmt) const
 {
+	if(this == &Ctrl::Selection())
+		return Null;
 	return dt ? UPP::Get(dt, fmt) : ReadClipboard(fmt);
 }
 #endif
 
 #ifdef PLATFORM_X11
-bool   Is(const char *fmt);
-String XDnDGet(const char *fmt);
-
 bool PasteClip::IsAvailable(const char *fmt) const
 {
 	return Ctrl::ClipHas(type, fmt);
@@ -84,24 +119,16 @@ PasteClip::PasteClip()
 #endif
 }
 
-PasteClip& Ctrl::Clipboard()
-{
-	static PasteClip d;
-	d.fmt.Clear();
-	return d;
-}
-
 int Ctrl::DoDragAndDrop(const char *fmts, const Image& sample, dword actions)
 {
-	VectorMap<String, String> dummy;
+	VectorMap<String, ClipData> dummy;
 	return DoDragAndDrop(fmts, sample, actions, dummy);
 }
 
-int Ctrl::DoDragAndDrop(const VectorMap<String, String>& data, const Image& sample, dword actions)
+int Ctrl::DoDragAndDrop(const VectorMap<String, ClipData>& data, const Image& sample, dword actions)
 {
 	return DoDragAndDrop("", sample, actions, data);
 }
-
 
 Uuid        sDndUuid;
 const void *sInternalPtr;
@@ -122,19 +149,14 @@ const void *GetInternalDropPtr__()
 	return sInternalPtr;
 }
 
-Ctrl *Ctrl::FindCtrl(Ctrl *ctrl, Point& p)
+String Unicode__(const WString& w)
 {
-	for(;;) {
-		Ctrl *c = ctrl->ChildFromPoint(p);
-		if(!c) break;
-		ctrl = c;
-	}
-	return ctrl;
+	return String((const char *)~w, 2 * w.GetLength());
 }
 
-static String sUnicode(const WString& w)
+WString Unicode__(const String& s)
 {
-	return String((const char *)~w, w.GetLength() * 2);
+	return WString((const wchar *)~s, s.GetLength() / 2);
 }
 
 Image MakeDragImage(const Image& arrow, Image sample)
@@ -200,6 +222,77 @@ Image MakeDragImage(const Image& arrow, Image sample)
 	}
 	Over(b, Point(0, 0), arrow, arrow.GetSize());
 	return b;
+}
+
+Ptr<Ctrl> Ctrl::dndctrl;
+Point     Ctrl::dndpos;
+bool      Ctrl::dndframe;
+PasteClip Ctrl::dndclip;
+
+void Ctrl::DnDRepeat()
+{
+	if(dndctrl) {
+		dndctrl->DragRepeat(dndpos);
+		if(dndctrl) {
+			PasteClip d = dndclip;
+			if(dndframe)
+				dndctrl->FrameDragAndDrop(dndpos, d);
+			else
+				dndctrl->DragAndDrop(dndpos, d);
+		}
+	}
+	else
+		UPP::KillTimeCallback(&dndpos);
+}
+
+void Ctrl::DnD(Point p, PasteClip& clip)
+{
+	UPP::KillTimeCallback(&dndpos);
+	dndclip = clip;
+	Point hp = p - GetScreenRect().TopLeft();
+	Ptr<Ctrl> ctrl = this;
+	while(ctrl && ctrl->IsEnabled()) {
+		Rect view = ctrl->GetScreenView();
+		if(ctrl->IsMouseActive())
+			if(view.Contains(p)) {
+				dndpos = p - view.TopLeft();
+				dndframe = false;
+				ctrl->DragAndDrop(dndpos, clip);
+				if(clip.IsAccepted())
+					break;
+			}
+			else {
+				dndpos = p - ctrl->GetScreenRect().TopLeft();
+				dndframe = true;
+				ctrl->FrameDragAndDrop(dndpos, clip);
+				if(clip.IsAccepted())
+					break;
+			}
+		ctrl = ctrl->ChildFromPoint(hp);
+	}
+	if(ctrl != dndctrl) {
+		if(dndctrl)
+			dndctrl->DragLeave();
+		dndctrl = ctrl;
+		if(dndctrl)
+			dndctrl->DragEnter();
+	}
+	if(dndctrl)
+		UPP::SetTimeCallback(-40, callback(DnDRepeat), &dndpos);
+}
+
+void Ctrl::DnDLeave()
+{
+	if(dndctrl) {
+		dndctrl->DragLeave();
+		UPP::KillTimeCallback(&dndpos);
+		dndctrl = NULL;
+	}
+}
+
+Ctrl *Ctrl::GetDragAndDropTarget()
+{
+	return dndctrl;
 }
 
 END_UPP_NAMESPACE

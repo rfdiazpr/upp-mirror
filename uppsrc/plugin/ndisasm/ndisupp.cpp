@@ -8,8 +8,11 @@ extern "C" {
 }
 
 NAMESPACE_UPP
-
-int NDisassemble(char *output, const byte *data, long offset)
+#ifdef CPU_32
+int NDisassemble(char *output, const byte *data, long offset)// returns instruction length
+#else
+int NDisassemble(char *output, const byte *data, int64 offset)// returns instruction length
+#endif
 {
 	unsigned preferences = 0; // see lib/insns.h(84)
 	long len = disasm(const_cast<unsigned char *>(data), output, 32, offset, false, preferences);

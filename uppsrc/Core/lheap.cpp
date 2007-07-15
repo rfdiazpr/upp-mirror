@@ -151,21 +151,21 @@ void *LAlloc(size_t& size) {
 	LTIMING("Large alloc");
 	if(size < 256)
 		size = 256;
-	int ii = sSzBin(size);
+	int ii = sSzBin((int)size);
 	size = sBinSz[ii];
 
 	while(ii < BINS) {
 		MLink *b = &s_freebin[ii];
 		MLink *n = b->next;
 		if(b != n)
-			return sDivideBlock(n, size, ii);
+			return sDivideBlock(n, (int)size, ii);
 		ii++;
 	}
 
 	MLink *n = sAddChunk();
 	if(!n)
 		Panic("Out of memory!");
-	return n ? sDivideBlock(n, size, BINS - 1) : NULL;
+	return n ? sDivideBlock(n, (int)size, BINS - 1) : NULL;
 }
 
 void LFree(void *ptr) {
@@ -223,7 +223,7 @@ void LMake(MemoryProfile& p)
 	int fi = 0;
 	MLink *m = s_ball.next;
 	while(m != &s_ball) {
-		int sz = *(size_t *)((byte *)m + 16);
+		int sz = (int)*(size_t *)((byte *)m + 16);
 		p.large_count++;
 		p.large_total += sz;
 		if(ii < 4096)

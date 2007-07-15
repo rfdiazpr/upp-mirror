@@ -84,6 +84,9 @@ void RichEdit::MoveNG(int newpos, bool select)
 		anchor = cursor;
 	objectpos = -1;
 	Finish();
+	if(select)
+		SetSelectionSource(String().Cat() << "text/QTF;Rich Text Format;text/rtf;application/rtf;"
+		                   << ClipFmtsText());
 }
 
 void RichEdit::Move(int newpos, bool select)
@@ -206,67 +209,71 @@ bool RichEdit::CursorKey(dword key, int count)
 		default:
 			return false;
 		}
-	else
-		switch(key & ~K_SHIFT) {
-		case K_LEFT:
-			if(!SelBeg(select))
-				Move(cursor - 1, select);
-			break;
-		case K_RIGHT:
-			if(!SelEnd(select))
-				Move(cursor + 1, select);
-			break;
-		case K_UP:
-			if(!SelBeg(select))
-				MoveUpDown(-1, select);
-			break;
-		case K_DOWN:
-			if(!SelEnd(select))
-				MoveUpDown(1, select);
-			break;
-		case K_PAGEUP:
-			if(!SelBeg(select))
-				MovePageUpDown(-1, select);
-			break;
-		case K_PAGEDOWN:
-			if(!SelEnd(select))
-				MovePageUpDown(1, select);
-			break;
-		case K_END:
-			MoveHomeEnd(1, select);
-			break;
-		case K_HOME:
-			MoveHomeEnd(-1, select);
-			break;
-		case K_CTRL_LEFT:
-			if(!SelBeg(select))
-				MoveWordLeft(select);
-			break;
-		case K_CTRL_RIGHT:
-			if(!SelEnd(select))
-				MoveWordRight(select);
-			break;
+	else {
+		switch(key) {
 		case K_CTRL_UP:
 			sb.PrevLine();
 			break;
 		case K_CTRL_DOWN:
 			sb.NextLine();
 			break;
-		case K_CTRL_HOME:
-		case K_CTRL_PAGEUP:
-			Move(0, select);
-			break;
-		case K_CTRL_END:
-		case K_CTRL_PAGEDOWN:
-			Move(text.GetLength(), select);
-			break;
-		case K_CTRL_A:
-			Move(0, false);
-			Move(text.GetLength(), true);
-			break;
 		default:
-			return false;
+			switch(key & ~K_SHIFT) {
+			case K_LEFT:
+				if(!SelBeg(select))
+					Move(cursor - 1, select);
+				break;
+			case K_RIGHT:
+				if(!SelEnd(select))
+					Move(cursor + 1, select);
+				break;
+			case K_UP:
+				if(!SelBeg(select))
+					MoveUpDown(-1, select);
+				break;
+			case K_DOWN:
+				if(!SelEnd(select))
+					MoveUpDown(1, select);
+				break;
+			case K_PAGEUP:
+				if(!SelBeg(select))
+					MovePageUpDown(-1, select);
+				break;
+			case K_PAGEDOWN:
+				if(!SelEnd(select))
+					MovePageUpDown(1, select);
+				break;
+			case K_END:
+				MoveHomeEnd(1, select);
+				break;
+			case K_HOME:
+				MoveHomeEnd(-1, select);
+				break;
+			case K_CTRL_LEFT:
+				if(!SelBeg(select))
+					MoveWordLeft(select);
+				break;
+			case K_CTRL_RIGHT:
+				if(!SelEnd(select))
+					MoveWordRight(select);
+				break;
+			case K_CTRL_HOME:
+			case K_CTRL_PAGEUP:
+				Move(0, select);
+				break;
+			case K_CTRL_END:
+			case K_CTRL_PAGEDOWN:
+				Move(text.GetLength(), select);
+				break;
+			case K_CTRL_A:
+				Move(0, false);
+				Move(text.GetLength(), true);
+				break;
+			default:
+				return false;
+			}
 		}
+	}
 	Sync();
 	return true;
 }

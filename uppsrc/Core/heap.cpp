@@ -37,23 +37,26 @@ void *SysAllocRaw(size_t size)
 {
 	LTIMING("SysAllocRaw");
 	if(sPeak) *sPeak = MemoryProfile();
-	sKB += ((size + 4095) & ~4095) >> 10;
+	sKB += int(((size + 4095) & ~4095) >> 10);
 #ifdef PLATFORM_WIN32
-	return VirtualAlloc(NULL, size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
+	void *ptr = VirtualAlloc(NULL, size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
 #else
 #ifdef PLATFORM_LINUX
-	return mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+	void *ptr =  mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
 #else
-	return mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
+	void *ptr =  mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
 #endif
 #endif
+	if(!ptr)
+		Panic("Out of memory!");
+	return ptr;
 }
 
 void  SysFreeRaw(void *ptr, size_t size)
 {
 	LTIMING("SysFreeRaw");
 //	LOGF("SysFreeRaw %X - %d\n", ptr, size);
-	sKB -= ((size + 4095) & ~4095) >> 10;
+	sKB -= int(((size + 4095) & ~4095) >> 10);
 #ifdef PLATFORM_WIN32
 	VirtualFree(ptr, 0, MEM_RELEASE);
 #else
@@ -184,9 +187,8 @@ static inline FreeLink *sMAllocKN(int k)
 		}
 		if(p->next == p) {
 			p = sFree->next;
-			if(p->next == p) {
+			if(p->next == p)
 				p = (MPage *)SysAllocRaw(4096);
-			}
 			else
 				p->Unlink();
 			p->Format(k);
@@ -251,7 +253,7 @@ void *MemoryAllocSz(size_t& size)
 	if(sz == 0) sz = 1;
 	if(sz <= 256) {
 		LTIMING("Small alloc");
-		int k = (sz - 1) >> 4;
+		int k = ((int)sz - 1) >> 4;
 		MCache& m = mcache[k];
 		FreeLink *l = m.list;
 		if(l == NULL) {
@@ -274,7 +276,7 @@ void *MemoryAlloc(size_t sz)
 	if(sz == 0) sz = 1;
 	if(sz <= 256) {
 		LTIMING("Small alloc");
-		int k = (sz - 1) >> 4;
+		int k = ((int)sz - 1) >> 4;
 		MCache& m = mcache[k];
 		FreeLink *l = m.list;
 		if(l == NULL) {

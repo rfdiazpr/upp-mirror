@@ -1,8 +1,10 @@
 description "TheIDE - .iml designer";
 
 uses
-	IconDes;
+	IconDes,
+	ide\Common;
 
 file
 	IconDes.h,
 	IdeDes.cpp;
+

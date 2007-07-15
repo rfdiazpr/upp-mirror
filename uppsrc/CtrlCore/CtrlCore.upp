@@ -1,7 +1,8 @@
 description "GUI core system";
 
 uses
-	Draw;
+	Draw,
+	plugin/bmp;
 
 library(WIN32 !MSC8ARM) "advapi32 comdlg32 comctl32";
 
@@ -47,9 +48,12 @@ file
 	X11App.cpp,
 	X11Event.i,
 	Info readonly separator,
+	src.tpp,
+	srcdoc.tpp,
 	COPYING,
 	COPYING-PLAIN,
 	AUTHORS;
 
 mainconfig
 	"Debug" = "MSC GUI DEBUG WIN32";
+

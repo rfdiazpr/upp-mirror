@@ -14,7 +14,7 @@ CH_STYLE(ScrollBar, Style, StyleDefault)
 {
 	arrowsize = ScrollBarArrowSize();
 	barsize = FrameButtonWidth();
-	thumbmin = 1;
+	thumbmin = 16;
 	overthumb = 0;
 	through = false;
 	CtrlsImageLook(vupper, CtrlsImg::I_SBVU);
@@ -82,27 +82,26 @@ Rect ScrollBar::GetPartRect(int p) const {
 	Rect h = Slider();
 	int sbo = style->overthumb;
 	int off =  GetHV(h.left, h.top);
+	int ts = thumbsize;
+	if(ts < style->thumbmin)
+		ts = 0;
 	switch(p) {
 	case 0:
-		HV(h.right, h.bottom) = thumbpos - sbo + thumbsize / 2 + off;
+		HV(h.right, h.bottom) = thumbpos - sbo + ts / 2 + off;
 		break;
 	case 1:
-		HV(h.left, h.top) = thumbpos + thumbsize / 2 + sbo + off;
+		HV(h.left, h.top) = thumbpos + ts / 2 + sbo + off;
 		break;
 	case 2:
 		HV(h.left, h.top) = thumbpos - sbo + off;
-		HV(h.right, h.bottom) = thumbpos + thumbsize + sbo + off;
+		HV(h.right, h.bottom) = thumbpos + ts + sbo + off;
 		break;
 	}
 	return h;
 }
 
 void ScrollBar::Paint(Draw& w) {
-	{
-		Size sz = GetSize();
-		w.DrawRect(sz, SColorPaper());
-	}
-
+	w.DrawRect(GetSize(), SColorPaper());
 	Size sz = style->through ? GetSize() : Slider().GetSize();
 	light = GetMousePart();
 	int p = push;
@@ -120,7 +119,8 @@ void ScrollBar::Paint(Draw& w) {
 				w.Clip(pr);
 				pr = style->through ? GetSize() : Slider();
 			}
-			ChPaint(w, pr, l[i][p == i ? CTRL_PRESSED : light == i ? CTRL_HOT : CTRL_NORMAL]);
+			if(i != 2 || thumbsize >= style->thumbmin)
+				ChPaint(w, pr, l[i][p == i ? CTRL_PRESSED : light == i ? CTRL_HOT : CTRL_NORMAL]);
 			if(i != 2)
 				w.End();
 		}

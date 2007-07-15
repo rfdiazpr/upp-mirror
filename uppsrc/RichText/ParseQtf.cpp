@@ -323,7 +323,7 @@ void RichQtfParser::Error(const char *s) {
 	(Font&) ef = Arial(84).Bold().Underline();
 	ef.ink = Red;
 	paragraph.Cat(("ERROR: " + String(s) + ": " +
-	              Filter(String(term, min<int>(strlen(term), 20)), NoLow)).ToWString(), ef);
+	              Filter(String(term, min<int>((int)strlen(term), 20)), NoLow)).ToWString(), ef);
 	target.Cat(paragraph);
 	FlushStyles();
 	throw Exc();
@@ -881,11 +881,11 @@ void RichQtfParser::Parse(const char *qtf, byte _accesskey)
 			const char *b = ++term;
 			for(; *term && *term != '\1'; term++)
 				if(*term == '\n') {
-					text.Cat(ToUnicode(b, term - b, format.charset));
+					text.Cat(ToUnicode(b, (int)(term - b), format.charset));
 					EndPart();
 					b = term + 1;
 				}
-			text.Cat(ToUnicode(b, term - b, format.charset));
+			text.Cat(ToUnicode(b, (int)(term - b), format.charset));
 			if(*term == '\1')
 				term++;
 		}

@@ -107,7 +107,7 @@ struct IdeDesigner  {
 	virtual String GetFileName() const = 0;
 	virtual void   Save() = 0;
 	virtual void   SyncUsc()                                        {}
-	virtual void   SaveEditPos() = 0;
+	virtual void   SaveEditPos()                                    {}
 	virtual void   EditMenu(Bar& menu) = 0;
 	virtual int    GetCharset() const                               { return -1; }
 	virtual Ctrl&  DesignerCtrl() = 0;

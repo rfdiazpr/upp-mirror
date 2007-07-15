@@ -62,7 +62,7 @@ void WinMetaFile::Clear() {
 void WinMetaFile::Pick(pick_ WinMetaFile& src) {
 	hemf = src.hemf;
 	size = src.size;
-	src.hemf = (HENHMETAFILE) 0xffffffff;
+	src.hemf = (HENHMETAFILE)(intptr_t) 0xffffffff;
 }
 
 void WinMetaFile::Copy(const WinMetaFile& src) {

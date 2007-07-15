@@ -167,7 +167,7 @@ protected:
 	virtual void   AddCtrl(Ctrl *ctrl, Size sz);
 
 private:
-	class SizeCtrl : public StaticRect {
+	class SizeCtrl : public ParentCtrl {
 	public:
 		virtual Size GetMinSize() const;
 
@@ -190,6 +190,7 @@ protected:
 	BarPane pane;
 	int     smargin;
 	int     ssize;
+	int     wrap;
 
 	void     SyncBar();
 
@@ -217,6 +218,9 @@ public:
 	BarCtrl& Left()                      { return Align(BAR_LEFT); }
 	BarCtrl& Right()                     { return Align(BAR_RIGHT); }
 	int      GetAlign() const            { return align; }
+
+	BarCtrl& Wrap(int q = 1)             { wrap = q; SyncBar(); return *this; }
+	BarCtrl& NoWrap()                    { return Wrap(-1); }
 
 	typedef BarCtrl CLASSNAME;
 
@@ -355,6 +359,7 @@ protected:
 	bool    checked;
 	bool    paint_checked;
 	bool    repeat;
+	Size    minsize;
 	const Value *look;
 
 private:
@@ -368,6 +373,7 @@ public:
 	void  Reset();
 
 	void  SetLook(const Value *l) { look = l; Refresh(); }
+	void  SetMinSize(Size sz)     { minsize = sz; }
 
 	ToolButton();
 	virtual ~ToolButton();
@@ -392,6 +398,7 @@ private:
 	int               lock;
 	Callback1<Bar&>   proc;
 	const Style      *style;
+	Size              buttonminsize;
 
 protected:
 	enum {
@@ -411,6 +418,7 @@ public:
 	static const Style& StyleDefault();
 
 	ToolBar& SetStyle(const Style& s)               { style = &s; Refresh(); return *this; }
+	ToolBar& SetButtonMinSize(Size sz)              { buttonminsize = sz; return *this; }
 
 	typedef ToolBar  CLASSNAME;
 

@@ -36,7 +36,7 @@ bool IsWinXP()
 String AsString(const wchar_t *buffer) {
 	if(!buffer)
 		return Null;
-	return AsString(buffer, wcslen(buffer));
+	return AsString(buffer, (int)wcslen(buffer));
 }
 
 String AsString(const wchar_t *buffer, int count) { // Convert with code page...
@@ -51,7 +51,7 @@ String AsString(const wchar_t *buffer, int count) { // Convert with code page...
 String AsString(const wchar_t *buffer, const wchar_t *end) {
 	if(!buffer)
 		return Null;
-	return AsString(buffer, end - buffer);
+	return AsString(buffer, (int)(end - buffer));
 }
 
 #ifndef PLATFORM_WINCE

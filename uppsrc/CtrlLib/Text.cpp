@@ -24,6 +24,19 @@ TextCtrl::TextCtrl()
 
 TextCtrl::~TextCtrl() {}
 
+void TextCtrl::MiddleDown(Point p, dword flags)
+{
+	if(IsReadOnly())
+		return;
+	if(AcceptText(Selection())) {
+		WString w = GetWString(Selection());
+		selclick = false;
+		LeftDown(p, flags);
+		Paste(w);
+		Action();
+	}
+}
+
 void TextCtrl::CancelMode()
 {
 	selclick = false;

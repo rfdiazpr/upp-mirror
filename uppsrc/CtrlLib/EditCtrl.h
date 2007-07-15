@@ -34,6 +34,7 @@ public:
 	virtual void  Layout();
 	virtual void  Paint(Draw& draw);
 	virtual void  LeftDown(Point p, dword keyflags);
+	virtual void  MiddleDown(Point p, dword keyflags);
 	virtual void  MouseMove(Point p, dword keyflags);
 	virtual void  LeftDouble(Point p, dword keyflags);
 	virtual void  LeftTriple(Point p, dword keyflags);
@@ -51,6 +52,7 @@ public:
 	virtual void  SetData(const Value& data);
 	virtual Value GetData() const;
 	virtual void  CancelMode();
+	virtual String GetSelectionData(const String& fmt) const;
 
 public:
 	struct Style : ChStyle<Style> {
@@ -92,6 +94,7 @@ protected:
 	bool       keep_selection:1;
 	bool       clickselect:1;
 	bool       nobg:1;
+	bool       alignright:1;
 
 	int     GetTextCx(const wchar *text, int n, bool password);
 	void    Paints(Draw& w, int& x, int fcy, const wchar *&txt,
@@ -167,6 +170,7 @@ public:
 	EditField& MaxChars(int mc)              { maxlen = mc; return *this; }
 	EditField& AutoSize(int maxcx = INT_MAX) { autosize = maxcx; Finish(); return *this; }
 	EditField& NoBackground(bool b = true)   { nobg = b; Transparent(); Refresh(); return *this; }
+	EditField& AlignRight(bool b = true)     { alignright = b; Refresh(); return *this; }
 
 	CharFilter     GetFilter() const         { return filter; }
 	const Convert& GetConvert() const        { return *convert; }
@@ -253,6 +257,7 @@ public:
 
 protected:
 	SpinButtons sb;
+	int         inc;
 
 	void   Inc();
 	void   Dec();
@@ -260,6 +265,8 @@ protected:
 
 public:
 	EditIntSpin&    ShowSpin(bool s = true)   { sb.Show(s); return *this; }
+	EditIntSpin&    SetInc(int _inc)           { inc = _inc; return *this; }
+	int             GetInc() const            { return inc; }
 
 	EditIntSpin();
 	EditIntSpin(int min, int max);

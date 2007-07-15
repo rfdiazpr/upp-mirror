@@ -43,6 +43,7 @@ PlotterCtrl::PlotterCtrl()
 , gap(10, 10, 10, 10)
 , rev_x(false)
 , rev_y(false)
+, aspect_lock(false)
 , halign(ALIGN_CENTER)
 , valign(ALIGN_CENTER)
 , old_size(Null)
@@ -139,7 +140,7 @@ void PlotterCtrl::FrameLayout(Rect& rc)
 	Rect out = rc;
 	rc.right -= box;
 	rc.bottom -= box;
-	int sbx = (aspect ? 0 : box);
+	int sbx = (IsAspectLocked() ? 0 : box);
 	vscroll  .SetFrameRect(rc.right, rc.top, box, rc.Height() - 3 * sbx);
 	vert_in  .SetFrameRect(rc.right, rc.bottom - 3 * sbx, box, sbx);
 	vert_in  .Enable(sbx);
@@ -194,6 +195,7 @@ void PlotterCtrl::SetAspectRatio(double a)
 {
 	aspect = a;
 	ZoomFull();
+	WhenRescan();
 }
 
 void PlotterCtrl::SetExtent(const Rectf& e)
@@ -282,8 +284,9 @@ void PlotterCtrl::SetZoom(Sizef s, Pointf d)
 
 void PlotterCtrl::SetZoom(double s, Pointf d)
 {
-	ASSERT(aspect);
-	scale = AdjustScale(Pointf(rev_x ? -s : s, (rev_y ? -s : s) * aspect));
+	ASSERT(IsAspectLocked());
+	double a = (aspect_lock ? 1 : aspect);
+	scale = AdjustScale(Pointf(rev_x ? -s : s, (rev_y ? -s : s) * a));
 	Layout();
 	SetDelta(d);
 	WhenZoom();
@@ -399,8 +402,17 @@ void PlotterCtrl::SetZoomSc(Sizef new_scale)
 
 void PlotterCtrl::SetZoomSc(double s)
 {
-	ASSERT(aspect);
-	SetZoomSc(rev_x ? -s : s, (rev_y ? -s : s) * aspect);
+	ASSERT(IsAspectLocked());
+	SetZoomSc(rev_x ? -s : s, (rev_y ? -s : s) * (aspect_lock ? 1 : aspect));
+}
+
+void PlotterCtrl::SetAspectLock(bool a)
+{
+	aspect_lock = a;
+	RefreshParentLayout();
+	if(IsAspectLocked())
+		Zoom(GetViewRect(), false, true);
+	WhenRescan();
 }
 
 void PlotterCtrl::ZoomInX()
@@ -437,8 +449,7 @@ void PlotterCtrl::ZoomOutY()
 
 void PlotterCtrl::ZoomY(double min, double max, bool add_gap)
 {
-	if(min != max)
-	{
+	if(min != max) {
 		int gt = (add_gap ? gap.top : 0), gb = (add_gap ? gap.bottom : 0);
 		int s = GetSize().cy;
 		double sc = (rev_y ? -1 : 1) * (s - gt - gb) / (max - min);
@@ -455,36 +466,46 @@ void PlotterCtrl::Zoom(const Rectf& rc, bool keep_ratio, bool add_gap)
 	if(tmp.right  < tmp.left) tmp.left = tmp.right  = 0;
 	if(tmp.bottom < tmp.top)  tmp.top  = tmp.bottom = 0;
 	Rect g = (add_gap ? gap : Rect(0, 0, 0, 0));
-	if(aspect || keep_ratio)
-	{
+	double use_aspect = (aspect_lock ? 1.0 : aspect);
+	if(use_aspect || keep_ratio) {
 		Size avail = GetSize() - g.TopLeft() - g.BottomRight();
 		Sizef size = tmp.Size();
 		double d = Abs(size * scale) % Sizef(avail);
-		if(d >= 0)
-		{
+		if(d >= 0) {
 			d /= 2 * avail.cx * fabs(scale.cy);
 			tmp.top -= d;
 			tmp.bottom += d;
 		}
-		else
-		{
+		else {
 			d /= -2 * avail.cy * fabs(scale.cx);
 			tmp.left -= d;
 			tmp.right += d;
 		}
 	}
-	if(aspect)
-	{
-		Size s = GetSize();
-		double sx = tmp.Width() <= 1e-20 ? scale.cx : (s.cx - g.left - g.right) / tmp.Width();
-		double dx = (rev_x ? s.cx - g.right + sx * tmp.left : g.left - sx * tmp.left);
-		double sy = sx * aspect;
-		double dy = (rev_y ? s.cy - g.bottom + sy * tmp.top : g.top - sy * tmp.top);
-		SetZoom(sx, Pointf(dx, dy));
+	if(use_aspect) {
+		Rect inset = Rect(GetSize()).Deflated(g);
+		Point inc = inset.CenterPoint();
+		Sizef sc;
+		Pointf dl;
+		sc.cx = tmp.Width() <= 1e-20 ? scale.cx : inset.Width() / tmp.Width();
+		sc.cy = sc.cx * use_aspect;
+		if(rev_x) { sc.cx = -sc.cx; Swap(tmp.left, tmp.right); }
+		if(rev_y) { sc.cy = -sc.cy; Swap(tmp.top, tmp.bottom); }
+		Pointf tmpc = tmp.CenterPoint();
+		switch(halign) {
+			case ALIGN_LEFT:   dl.x = inset.left - sc.cx * tmp.left; break;
+			case ALIGN_RIGHT:  dl.x = inset.right - sc.cx * tmp.right; break;
+			default:           dl.x = inc.x - sc.cx * tmpc.x; break;
+		}
+		switch(valign) {
+			case ALIGN_TOP:    dl.y = inset.top - sc.cy * tmp.top; break;
+			case ALIGN_BOTTOM: dl.y = inset.bottom - sc.cy * tmp.bottom; break;
+			default:           dl.y = inc.y - sc.cy * tmpc.y; break;
+		}
+		SetZoom(sc, dl);
 //		AdjustPos(Null);
 	}
-	else
-	{
+	else {
 		if(rc.left < rc.right)  ZoomX(tmp.left, tmp.right);
 		if(rc.top  < rc.bottom) ZoomY(tmp.top,  tmp.bottom);
 	}
@@ -766,15 +787,13 @@ One<PlotterDragDrop> PlotterCtrl::ClearDragDrop()
 
 void PlotterCtrl::ToolView(Bar& bar)
 {
-	if(aspect)
-	{
+	if(IsAspectLocked()) {
 		ToolViewZoomIn(bar);
 		ToolViewZoomOut(bar);
 		ToolViewZoomFull(bar);
 		bar.Separator();
 	}
-	else
-	{
+	else {
 		ToolViewZoomInX(bar);
 		ToolViewZoomOutX(bar);
 		ToolViewZoomFullX(bar);
@@ -787,6 +806,8 @@ void PlotterCtrl::ToolView(Bar& bar)
 		ToolViewZoomOut(bar);
 		ToolViewZoomFull(bar);
 	}
+	if(!aspect)
+		ToolViewAspectLock(bar);
 	ToolViewPan(bar);
 }
 
@@ -897,6 +918,18 @@ void PlotterCtrl::OnViewZoomIn()
 		UserZoomIn();
 }
 
+void PlotterCtrl::ToolViewAspectLock(Bar& bar)
+{
+	bar.Add(!aspect, t_("Lock aspect ratio"), PlotterImg::view_aspect_lock(), THISBACK(OnViewAspectLock))
+		.Check(aspect_lock)
+		.Help(t_("Keep temporarily x and y scale factors in sync"));
+}
+
+void PlotterCtrl::OnViewAspectLock()
+{
+	UserAspectLock();
+}
+
 void PlotterCtrl::ToolViewPan(Bar& bar)
 {
 	bar.Add(t_("Pan"), PlotterImg::view_pan(), THISBACK(OnViewPan))
@@ -910,6 +943,12 @@ void PlotterCtrl::OnViewPan()
 		PickDragDrop(new PanDragDrop(*this));
 	else
 		ClearDragDrop();
+}
+
+void PlotterCtrl::UserAspectLock()
+{
+	SetAspectLock(!IsAspectLock());
+	WhenUserZoom();
 }
 
 void PlotterCtrl::UserZoomInX()

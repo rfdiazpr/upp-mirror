@@ -4,7 +4,7 @@ NAMESPACE_UPP
 
 #ifdef PLATFORM_WIN32
 
-#define LLOG(x)    // LOG(x)
+#define LLOG(x)   //   LOG(x)
 #define LOGTIMING 0
 
 #ifdef _DEBUG
@@ -16,7 +16,7 @@ NAMESPACE_UPP
 template<>
 unsigned GetHashValue(const HWND& h)
 {
-	return (unsigned)h;
+	return (unsigned)(intptr_t)h;
 }
 
 static bool sFinished;
@@ -129,18 +129,32 @@ DWORD WINAPI Ctrl::Win32OverwatchThread(LPVOID)
 #endif
 #endif
 
-static HWND  timerHWND = 0;
+HWND utilityHWND = 0;
+
+extern VectorMap<int, ClipData>& sClipMap();
+
+INITBLOCK
+{
+	sClipMap();
+}
 
 EXITBLOCK
 {
-	if(timerHWND) DestroyWindow(timerHWND);
+	if(utilityHWND) DestroyWindow(utilityHWND);
 }
 
-LRESULT CALLBACK Ctrl::SysTimerProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Ctrl::UtilityProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	if(message == WM_TIMER) {
-//		LLOG("[" << msecs() << "]: WM_TIMER");
+	sClipMap();
+	switch(message) {
+	case WM_TIMER:
 		TimerProc(GetTickCount());
+		return 0;
+	case WM_RENDERFORMAT:
+		RenderFormat((dword)wParam);
+		return 0;
+	case WM_DESTROYCLIPBOARD:
+		DestroyClipboard();
 		return 0;
 	}
 	return ::DefWindowProc(hWnd, message, wParam, lParam);
@@ -210,16 +224,16 @@ void Ctrl::InitWin32(HINSTANCE hInstance)
 	wc.style         = 0;
 	wc.lpszClassName = L_("UPP-TIMER");
 	wc.hCursor       = NULL;
-	wc.lpfnWndProc   = &Ctrl::SysTimerProc;
+	wc.lpfnWndProc   = &Ctrl::UtilityProc;
 	RegisterClass(&wc);
 
 	ILOG("InitTimer");
 	InitTimer();
 	ILOG("SetTimer");
-	timerHWND = CreateWindow(L_("UPP-TIMER"), L_(""), WS_OVERLAPPED,
+	utilityHWND = CreateWindow(L_("UPP-TIMER"), L_(""), WS_OVERLAPPED,
 		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 		NULL, NULL, NULL, NULL);
-	SetTimer(timerHWND, 1, 10, NULL);
+	SetTimer(utilityHWND, 1, 10, NULL);
 	ILOG("Windows");
 	Windows(); //?? TRC: what's the use of this?
 
@@ -260,6 +274,8 @@ bool Ctrl::IsAlphaSupported()
 
 void Ctrl::ExitWin32()
 {
+	RenderAllFormats();
+
 	OleUninitialize();
 
 	sFinished = true;
@@ -290,9 +306,9 @@ void Ctrl::ExitWin32()
 void Ctrl::SetTimerGranularity(int ms)
 {
 	if(ms > 0)
-		SetTimer(timerHWND, 1, ms, NULL);
+		SetTimer(utilityHWND, 1, ms, NULL);
 	else
-		KillTimer(timerHWND, 1);
+		KillTimer(utilityHWND, 1);
 }
 
 VectorMap< HWND, Ptr<Ctrl> >& Ctrl::Windows()
@@ -429,8 +445,10 @@ void Ctrl::WndFree()
 	LLOG("Ctrl::WndDestroy owner " << (void *)owner
 	     << " focus " << focus
 	     << " ::GetFocus() " << (void *)::GetFocus());
-	if(owner && focus)// CXL 7.11.2003 presun - melo by to fungovat take a neblikat...
+	if(owner && focus) { // CXL 7.11.2003 presun - melo by to fungovat take a neblikat...
+		LLOG("Ctrl::WndFree->SetFocus " << UPP::Name(Ctrl::CtrlFromHWND(owner)));
 		::SetFocus(owner);
+	}
 	LLOG(EndIndent << "//Ctrl::WndFree() in " <<UPP::Name(this));
 	delete top;
 	top = NULL;
@@ -440,8 +458,11 @@ void Ctrl::WndDestroy()
 {
 	LLOG("Ctrl::WndDestroy() in " <<UPP::Name(this) << BeginIndent);
 	LLOG((DumpWindowOrder(false), ""));
-	if(top && top->hwnd)
-		::DestroyWindow(top->hwnd);
+	if(top && top->hwnd) {
+		HWND hwnd = top->hwnd;
+		WndFree(); // CXL 2007-06-04 to avoid loosing focus with maximize box owned dialogs
+		::DestroyWindow(hwnd);
+	}
 }
 
 Image Ctrl::DoMouse(int e, Point p, int zd)
@@ -590,7 +611,7 @@ bool PassWindowsKey(int wParam)
 static void sProcessMSG(MSG& msg)
 {
 	if(msg.message != WM_SYSKEYDOWN && msg.message != WM_SYSKEYUP
-	|| PassWindowsKey(msg.wParam) || msg.wParam == VK_MENU) //17.11 Mirek - fix to get windows menu invoked on Alt+Space
+	|| PassWindowsKey((dword)msg.wParam) || msg.wParam == VK_MENU) //17.11 Mirek - fix to get windows menu invoked on Alt+Space
 		TranslateMessage(&msg); // 04/09/07: TRC fix to make barcode reader going better
 	DispatchMessage(&msg);
 }
@@ -965,7 +986,7 @@ Rect Ctrl::GetScreenClient(HWND hwnd)
 	::ClientToScreen(hwnd, tl);
 	::ClientToScreen(hwnd, br);
 	LLOG("Ctrl::GetScreenClient: hwnd = " << FormatPtr(hwnd) << ", client = " << r
-		<< ", screen(tl) = " << tl << ", screen(br) = " << br);
+	     << ", screen(tl) = " << tl << ", screen(br) = " << br);
 	return Rect(tl, br);
 }
 

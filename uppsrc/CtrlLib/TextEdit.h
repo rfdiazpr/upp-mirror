@@ -4,6 +4,7 @@ public:
 	virtual Value GetData() const;
 	virtual void  CancelMode();
 	virtual String GetSelectionData(const String& fmt) const;
+	virtual void  MiddleDown(Point p, dword flags);
 
 public:
 	struct UndoRec {

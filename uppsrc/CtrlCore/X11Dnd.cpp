@@ -1,23 +1,46 @@
 #include "CtrlCore.h"
 
-#define LLOG(x) LOG(x)
+#define LLOG(x)  // LOG(x)
 
 #ifdef PLATFORM_X11
 
 NAMESPACE_UPP
 
-int Xdnd_waiting_status;
-int Xdnd_status_timeout;
-int Xdnd_status;
+bool Xdnd_waiting_status;
+bool Xdnd_waiting_finished;
+int  Xdnd_status;
+int  Xdnd_version;
 
-XEvent ClientMsg(Window src, const char *type, int format = 32)
+static Atom XdndEnter;
+static Atom XdndPosition;
+static Atom XdndLeave;
+static Atom XdndDrop;
+static Atom XdndStatus;
+static Atom XdndFinished;
+static Atom XdndActionCopy;
+static Atom XdndActionMove;
+
+void InitDndAtoms()
+{
+	if(XdndEnter) return;
+	XdndEnter = XAtom("XdndEnter");
+	XdndPosition = XAtom("XdndPosition");
+	XdndLeave = XAtom("XdndLeave");
+	XdndDrop = XAtom("XdndDrop");
+	XdndStatus = XAtom("XdndStatus");
+	XdndFinished = XAtom("XdndFinished");
+	XdndActionCopy = XAtom("XdndActionCopy");
+	XdndActionMove = XAtom("XdndActionMove");
+}
+
+XEvent ClientMsg(Window src, Atom type, int format = 32)
 {
 	XEvent e;
 	Zero(e);
 	e.xclient.type = ClientMessage;
 	e.xclient.display = Xdisplay;
 	e.xclient.window = src;
-	e.xclient.message_type = XAtom(type);
+	e.xclient.message_type = type;
 	e.xclient.format = format;
 	return e;
 }
@@ -25,23 +48,39 @@ XEvent ClientMsg(Window src, const char *type, int format = 32)
 struct DnDLoop : LocalLoop {
 	Image move, copy, reject;
 	Vector<Atom> fmt;
-	const VectorMap<String, String> *data;
+	const VectorMap<String, ClipData> *data;
 	Ptr<Ctrl> source;
 	void SetFmts(Window w, Atom property);
 	Window src, target;
+	int    action;
 
 	void Request(XSelectionRequestEvent *se);
 	void Sync();
+	String GetData(const String& f);
+	void Leave();
 	virtual void  LeftUp(Point, dword);
+	virtual bool  Key(dword, int);
 	virtual void  MouseMove(Point p, dword);
 	virtual Image CursorImage(Point, dword);
 };
 
+Ptr<DnDLoop> dndloop;
+
+void DnDLoop::Leave()
+{
+	if(target) {
+		LLOG("Sending XdndLeave to " << target);
+		XEvent e = ClientMsg(target, XdndLeave);
+		e.xclient.data.l[0] = src;
+		XSendEvent(Xdisplay, target, XFalse, 0, &e);
+	}
+}
 
 void DnDLoop::Sync()
 {
 	if(Xdnd_waiting_status)
 		return;
+	bool tx = Ctrl::TrapX11Errors();
 	Window root, child;
 	unsigned int d1;
 	int x, y, d2;
@@ -54,7 +93,7 @@ void DnDLoop::Sync()
 			Vector<int> x = GetPropertyInts(tgt, XAtom("XdndAware"));
 			LLOG("XdndAware " << tgt << ": " << x.GetCount());
 			if(x.GetCount()) {
-				version = min(3, x[0]);
+				Xdnd_version = x[0];
 				break;
 			}
 		}
@@ -63,56 +102,132 @@ void DnDLoop::Sync()
 			break;
 		}
 	}
+	if(Xdnd_version < 3)
+		tgt = None;
 	if(tgt != target) {
-		if(target) {
-			LLOG("Sending XdndLeave to " << target);
-			XEvent e = ClientMsg(target, "XdndLeave");
-			e.xclient.data.l[0] = src;
-			XSendEvent(Xdisplay, target, XFalse, 0, &e);
-		}
+		Leave();
 		target = tgt;
 		if(target) {
-			LLOG("Sending XdndEnter to " << target);
-			XEvent e = ClientMsg(target, "XdndEnter");
+			LLOG("Sending XdndEnter to " << target << ", src = " << src);
+			XEvent e = ClientMsg(target, XdndEnter);
 			e.xclient.data.l[0] = src;
-			e.xclient.data.l[1] = MAKEWORD(fmt.GetCount() > 3, version);
+			e.xclient.data.l[1] = (fmt.GetCount() > 3) | (version << 24);
 			for(int i = 0; i < min(3, fmt.GetCount()); i++)
-				e.xclient.data.l[i] = fmt[i];
+				e.xclient.data.l[i + 2] = fmt[i];
 			XSendEvent(Xdisplay, target, XFalse, 0, &e);
 		}
 	}
 
 	if(target) {
 		LLOG("Sending XdndPosition to " << target << " " << x << ", " << y);
-		XEvent e = ClientMsg(target, "XdndPosition");
+		XEvent e = ClientMsg(target, XdndPosition);
 		e.xclient.data.l[0] = src;
 		e.xclient.data.l[1] = 0;
 		e.xclient.data.l[2] = MAKELONG(y, x);
 		e.xclient.data.l[3] = Xeventtime;
-		e.xclient.data.l[4] = XAtom("XdndActionCopy");
+		int action = XdndActionCopy;
+		if(source && source->GetTopCtrl()->GetWindow() == target)
+			action = XdndActionMove;
+		if(GetShift())
+			action = XdndActionMove;
+		if(GetCtrl())
+			action = XdndActionCopy;
+		e.xclient.data.l[4] = action;
 		XSendEvent(Xdisplay, target, XFalse, 0, &e);
 		XFlush(Xdisplay);
 		Xdnd_waiting_status = true;
-		Xdnd_status_timeout = GetTickCount() + 200;
+		int timeout = GetTickCount() + 200;
+		LLOG("Waiting for XdndStatus");
+		TimeStop tm;
+		while(Xdnd_waiting_status && GetTickCount() < timeout) {
+			GuiSleep(0);
+			ProcessEvents();
+		}
+		LLOG("Waiting status " << tm << "ms");
+		if(Xdnd_waiting_status) {
+			LLOG("XdndStatus timeout");
+			Xdnd_status = DND_NONE;
+			Xdnd_waiting_status = false;
+		}
+		else
+			LLOG("XdndStatus recieved " << Xdnd_status);
+	}
+	Ctrl::UntrapX11Errors(tx);
+}
+
+void Ctrl::DropStatusEvent(XEvent *event)
+{
+	InitDndAtoms();
+	if(event->type != ClientMessage)
+		return;
+	LLOG("DropStatus Client Message " << XAtomName(event->xclient.message_type));
+	if(event->type == ClientMessage && dndloop && event->xclient.data.l[0] == dndloop->target) {
+		if(event->xclient.message_type == XdndStatus && Xdnd_waiting_status) {
+			LLOG("XdndStatus, xdnd action: " << XAtomName(event->xclient.data.l[4]));
+			Xdnd_status = (event->xclient.data.l[1] & 1) ?
+			                 event->xclient.data.l[4] == XdndActionMove ? DND_MOVE : DND_COPY
+			              : DND_NONE;
+			Xdnd_waiting_status = false;
+		}
+		if(event->xclient.message_type == XdndFinished && Xdnd_waiting_finished) {
+			LLOG("XdndFinished, xdnd action: " << XAtomName(event->xclient.data.l[2]));
+			if(Xdnd_version == 5)
+				Xdnd_status = (event->xclient.data.l[1] & 1) ?
+				                 event->xclient.data.l[2] == XdndActionMove ? DND_MOVE : DND_COPY
+				              : DND_NONE;
+			Xdnd_waiting_finished = false;
+		}
 	}
 }
 
 void DnDLoop::LeftUp(Point, dword)
 {
+	LLOG("DnDLoop::LeftUp");
+	bool tx = TrapX11Errors();
+	if(target) {
+		LLOG("Sending XdndDrop to " << target);
+		XEvent e = ClientMsg(target, XdndDrop);
+		e.xclient.data.l[0] = src;
+		e.xclient.data.l[1] = 0;
+		e.xclient.data.l[2] = Xeventtime;
+		XSendEvent(Xdisplay, target, XFalse, 0, &e);
+		XFlush(Xdisplay);
+		Xdnd_waiting_finished = true;
+		int timeout = GetTickCount() + 200;
+		LLOG("Waiting for XdndFinished");
+		TimeStop tm;
+		while(Xdnd_waiting_finished && GetTickCount() < timeout) {
+			GuiSleep(0);
+			ProcessEvents();
+		}
+		LLOG("Waiting finished " << tm << "ms");
+		if(Xdnd_waiting_status) {
+			LLOG("XdndFinished timeout");
+			Xdnd_status = DND_NONE;
+			Xdnd_waiting_finished = false;
+		}
+		else
+			LLOG("XdndFinished recieved");
+	}
 	EndLoop();
+	UntrapX11Errors(tx);
 }
 
 void DnDLoop::MouseMove(Point p, dword)
 {
+	LLOG("DnDLoop::MouseMove");
+	Sync();
+}
+
+bool DnDLoop::Key(dword, int)
+{
+	LLOG("DnDLoop::Key");
 	Sync();
 }
 
 Image DnDLoop::CursorImage(Point, dword)
 {
-	return reject;
-	if(Xdnd_status < 0)
-		return reject;
-	return copy;
+	return Xdnd_status == DND_MOVE ? move : Xdnd_status == DND_COPY ? copy : reject;
 }
 
 void DnDLoop::SetFmts(Window w, Atom property)
@@ -125,6 +240,26 @@ void DnDLoop::SetFmts(Window w, Atom property)
 	XChangeProperty(Xdisplay, w, property, XAtom("ATOM"),
 	                8 * sizeof(Atom), 0, (unsigned char*)~x,
 	                fmt.GetCount());
+}
+
+String DnDLoop::GetData(const String& f)
+{
+	int i = data->Find(f);
+	String d;
+	if(i >= 0)
+		d = (*data)[i].Render();
+	else
+		if(source)
+			d = source->GetDropData(f);
+	return d;
+}
+
+String DnDGetData(const String& f)
+{
+	String d;
+	if(dndloop)
+		d = dndloop->GetData(f);
+	return d;
 }
 
 void DnDLoop::Request(XSelectionRequestEvent *se)
@@ -143,14 +278,7 @@ void DnDLoop::Request(XSelectionRequestEvent *se)
 		SetFmts(se->requestor, se->property);
 	}
 	else {
-		String f = XAtomName(se->target);
-		int i = data->Find(f);
-		String d;
-		if(i >= 0)
-			d = (*data)[i];
-		else
-			if(source)
-				d = source->GetDropData(f);
+		String d = GetData(XAtomName(se->target));
 		if(d.GetCount())
 			XChangeProperty(Xdisplay, se->requestor, se->property, se->target, 8, PropModeReplace,
 			                d, d.GetCount());
@@ -159,8 +287,6 @@ void DnDLoop::Request(XSelectionRequestEvent *se)
 	}
 	XSendEvent(Xdisplay, se->requestor, XFalse, 0, &e);
 }
-
-Ptr<DnDLoop> dndloop;
 
 void DnDRequest(XSelectionRequestEvent *se)
 {
@@ -171,9 +297,12 @@ void DnDClear() {}
 
 Image MakeDragImage(const Image& arrow, Image sample);
 
+Ptr<Ctrl> sDnDSource;
+
 int Ctrl::DoDragAndDrop(const char *fmts, const Image& sample, dword actions,
-                        const VectorMap<String, String>& data)
+                        const VectorMap<String, ClipData>& data)
 {
+	InitDndAtoms();
 	DnDLoop d;
 	d.reject = MakeDragImage(CtrlCoreImg::DndNone(), sample);
 	if(actions & DND_COPY) d.copy = MakeDragImage(CtrlCoreImg::DndCopy(), sample);
@@ -191,29 +320,23 @@ int Ctrl::DoDragAndDrop(const char *fmts, const Image& sample, dword actions,
 	XSetSelectionOwner(Xdisplay, XAtom("XdndSelection"), xclipboard().win, CurrentTime);
 	d.src = xclipboard().win;
 	d.target = None;
+	sDnDSource = this;
 	d.Run();
+	sDnDSource = NULL;
 	SyncCaret();
+	LLOG("DoDragAndDrop finished");
+	return Xdnd_status;
 }
 
-bool AcceptFiles(PasteClip& clip) {}
-
-Vector<String> GetFiles(PasteClip& clip) {}
-
-Ptr<Ctrl> sDnDSource;
-
-Ctrl * Ctrl::GetDragAndDropSource()
+Ctrl *Ctrl::GetDragAndDropSource()
 {
 	return sDnDSource;
 }
 
-Point            dndpos;
-static Ptr<Ctrl> dndctrl;
 Index<String>    Ctrl::drop_formats;
 
-Ctrl *Ctrl::GetDragAndDropTarget()
-{
-	return dndctrl;
-}
+int   XdndAction;
+Point XdndPos;
 
 PasteClip sMakeDropClip(bool paste)
 {
@@ -222,55 +345,35 @@ PasteClip sMakeDropClip(bool paste)
 	d.paste = paste;
 	d.accepted = false;
 	d.allowed = DND_MOVE|DND_COPY;
-	d.action = 0;
+	d.action = XdndAction;
 	return d;
 }
 
 void Ctrl::DnD(Window src, bool paste)
 {
-	Ctrl *c = dndctrl;
-	if(!c) return;
 	PasteClip d = sMakeDropClip(paste);
-	c->DragAndDrop(dndpos, d);
-	while(c && !d.IsAccepted()) {
-		c->ChildDragAndDrop(dndpos, d);
-		c = c->GetParent();
-	}
-	XEvent e = ClientMsg(src, "XdndStatus");
+	LLOG("Source action " << XdndAction);
+	DnD(XdndPos, d);
+	XdndAction = d.GetAction();
+	LLOG("Target action " << XdndAction);
+	XEvent e = ClientMsg(src, paste ? XdndFinished : XdndStatus);
 	e.xclient.data.l[0] = GetWindow();
-	e.xclient.data.l[4] = XAtom("XdndActionCopy");
+	(paste ? e.xclient.data.l[2] : e.xclient.data.l[4])
+		= XdndAction == DND_MOVE ? XdndActionMove : XdndActionCopy;
 	if(d.IsAccepted())
 		e.xclient.data.l[1] = 1;
+	LLOG("Sending status/finished to " << src << " accepted: " << d.IsAccepted());
 	XSendEvent(Xdisplay, src, XFalse, 0, &e);
 }
 
 void Ctrl::DropEvent(XWindow& w, XEvent *event)
 {
-	if(Xdnd_waiting_status && GetTickCount() > Xdnd_status_timeout && dndloop) {
-		Xdnd_status = 0;
-		Xdnd_waiting_status = false;
-		dndloop->Sync();
-		LLOG("XdndStatus timeout");
-	}
+	InitDndAtoms();
 	if(event->type != ClientMessage)
 		return;
-	LLOG("Client Message " << GetWindow());
 	Window src = event->xclient.data.l[0];
-	static Atom XdndEnter, XdndPosition, XdndLeave, XdndDrop, XdndStatus;
-	if(!XdndEnter) {
-		XdndEnter = XAtom("XdndEnter");
-		XdndPosition = XAtom("XdndPosition");
-		XdndLeave = XAtom("XdndLeave");
-		XdndDrop = XAtom("XdndDrop");
-		XdndStatus = XAtom("XdndStatus");
-	}
-	if(event->xclient.message_type == XdndStatus && dndloop &&
-	   (event->xclient.data.l[1] & 1) && event->xclient.data.l[0] == dndloop->target) {
-		LLOG("XdndStatus");
-		Xdnd_status = DND_COPY;
-		Xdnd_waiting_status = false;
-		dndloop->Sync();
-	}
+	LLOG("Client Message " << GetWindow() << " " << XAtomName(event->xclient.message_type)
+	      << ", src: " << src);
 	if(event->xclient.message_type == XdndEnter) {
 		LLOG("DnDEnter");
 		drop_formats.Clear();
@@ -281,43 +384,22 @@ void Ctrl::DropEvent(XWindow& w, XEvent *event)
 		}
 		else
 			for(int i = 2; i <= 4; i++)
-				drop_formats.Add(XAtomName(event->xclient.data.l[0]));
+				drop_formats.Add(XAtomName(event->xclient.data.l[i]));
 	}
+	static Point xdndpos;
 	if(event->xclient.message_type == XdndPosition) {
 		dword x = event->xclient.data.l[2];
-		Point p(HIWORD(x), LOWORD(x));
-		LLOG("XdndPosition " << p);
-		Point hp = p - GetScreenRect().TopLeft();
-		Ctrl *c = FindCtrl(this, hp);
-		Rect sw = c->GetScreenView();
-		if(sw.Contains(p))
-			p -= sw.TopLeft();
-		else
-			c = NULL;
-		LLOG("Target widget " << UPP::Name(c) << ", " << p);
-		if(c != dndctrl) {
-			if(dndctrl) dndctrl->DragLeave();
-			dndctrl = c;
-			PasteClip d = sMakeDropClip(false);
-			if(dndctrl) dndctrl->DragEnter(p, d);
-		}
-		if(c) {
-			dndpos = p;
-			DnD(src, false);
-		}
+		XdndPos = Point(HIWORD(x), LOWORD(x));
+		LLOG("XdndPosition " << p << ", action " << XAtomName(event->xclient.data.l[4]));
+		XdndAction = event->xclient.data.l[4] == XdndActionMove ? DND_MOVE : DND_COPY;
+		DnD(src, false);
 	}
-	if(event->xclient.message_type == XdndLeave && dndctrl) {
-		dndctrl->DragLeave();
-		dndctrl = NULL;
-	}
+	if(event->xclient.message_type == XdndLeave)
+		DnDLeave();
 	if(event->xclient.message_type == XdndDrop && dndctrl) {
-		LLOG("DROP!");
+		LLOG("XdndDrop to " << UPP::Name(dndctrl));
 		DnD(src, true);
-		dndctrl->DragLeave();
-		dndctrl = NULL;
-		XEvent e = ClientMsg(src, "XdndFinished");
-		e.xclient.data.l[0] = GetWindow();
-		XSendEvent(Xdisplay, src, XFalse, 0, &e);
+		DnDLeave();
 	}
 }
 

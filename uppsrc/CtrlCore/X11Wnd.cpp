@@ -152,14 +152,18 @@ void Ctrl::ProcessEvent(XEvent *event)
 	}
 	if(event->type == SelectionRequest &&
 	   event->xselectionrequest.owner == xclipboard().win) {
-		if(event->xselectionrequest.selection == XAtom("CLIPBOARD"))
-			xclipboard().Request(&event->xselectionrequest);
 		if(event->xselectionrequest.selection == XAtom("XdndSelection"))
 			DnDRequest(&event->xselectionrequest);
+		else
+			xclipboard().Request(&event->xselectionrequest);
 		return;
 	}
 	if(event->type == SelectionClear &&
 	   event->xselectionclear.window == xclipboard().win) {
+		if(event->xselectionclear.selection == XAtom("PRIMARY")) {
+			sel_formats.Clear();
+			sel_ctrl = NULL;
+		}
 		if(event->xselectionclear.selection == XAtom("CLIPBOARD"))
 			xclipboard().Clear();
 		if(event->xselectionrequest.selection == XAtom("XdndSelection"))
@@ -181,11 +185,14 @@ void Ctrl::ProcessEvent(XEvent *event)
 					VppLog() << '<' << UPP::Name(Xwindow()[q].ctrl) << '>';
 				else
 					VppLog() << "<unknown ctrl> ";
+				if(event->type == ClientMessage)
+					VppLog() << ": " << XAtomName(event->xclient.message_type);
 				VppLog() << '\n';
 				eo = true;
 				break;
 			}
 #endif
+	DropStatusEvent(event);
 	if(q < 0) {
 		if(event->type == ButtonRelease && popupWnd)
 			popupWnd->SetFocus();
@@ -212,7 +219,6 @@ void Ctrl::ProcessEvent(XEvent *event)
 
 void Ctrl::TimerAndPaint() {
 	LTIMING("TimerAndPaint");
-	AnimateCaret();
 	TimerProc(GetTickCount());
 	for(int i = 0; i < Xwindow().GetCount(); i++) {
 		XWindow& xw = Xwindow()[i];
@@ -228,6 +234,8 @@ void Ctrl::TimerAndPaint() {
 				Xwindow().SetKey(i, None);
 		}
 	}
+	SyncCaret();
+	AnimateCaret();
 }
 
 bool Ctrl::ProcessEvent(bool *)
@@ -361,7 +369,7 @@ void Ctrl::Create(Ctrl *owner, bool redirect, bool savebits)
 	             FocusChangeMask|KeyPressMask|KeyReleaseMask|PointerMotionMask|
 	             ButtonPressMask|ButtonReleaseMask|PropertyChangeMask|
 	             VisibilityChangeMask|im_event_mask);
-	int version = 3;
+	int version = 5;
 	XChangeProperty(Xdisplay, w, XAtom("XdndAware"), XA_ATOM, 32,
 					0, (byte *)&version, 1);
 	CancelMode();
@@ -417,9 +425,9 @@ void Ctrl::StartPopupGrab()
 	if(PopupGrab == 0) {
 		if(!top) return;
 		if(XGrabPointer(
-			Xdisplay, top->window, true,
-			ButtonPressMask|ButtonReleaseMask|PointerMotionMask|EnterWindowMask|LeaveWindowMask,
-			GrabModeAsync, GrabModeAsync, None, None, CurrentTime) == GrabSuccess) {
+		   Xdisplay, top->window, true,
+		   ButtonPressMask|ButtonReleaseMask|PointerMotionMask|EnterWindowMask|LeaveWindowMask,
+		   GrabModeAsync, GrabModeAsync, None, None, CurrentTime) == GrabSuccess) {
 				PopupGrab++;
 				popupWnd = GetTopWindow();
 			}
@@ -437,6 +445,7 @@ void Ctrl::EndPopupGrab()
 
 void Ctrl::PopUp(Ctrl *owner, bool savebits, bool activate, bool, bool)
 {
+	LLOG("POPUP: " << UPP::Name(this));
 	Ctrl *q = owner ? owner->GetTopCtrl() : GetActiveCtrl();
 	ignoretakefocus = true;
 	Create(q, true, savebits);
@@ -552,6 +561,7 @@ bool Ctrl::HasWndCapture() const
 void Ctrl::ReleaseGrab()
 {
 	if(grabWindow) {
+		LLOG("RELEASE GRAB");
 		XUngrabPointer(Xdisplay, CurrentTime);
 		XFlush(Xdisplay);
 		grabWindow = None;
@@ -563,7 +573,7 @@ bool Ctrl::ReleaseWndCapture()
 	LLOG("Releasing capture");
 	if(top && top->window == grabWindow) {
 		LLOG("Ungrab3");
-		ReleaseCapture();
+		ReleaseGrab();
 		return true;
 	}
 	return false;
@@ -574,17 +584,24 @@ static bool s_waitcursor;
 void Ctrl::SetMouseCursor(const Image& image)
 {
 	if(!top) return;
+	Window w = GetWindow();
+	if(IsPopUp()) {
+		Ctrl *tw = GetTopWindow();
+		if(tw)
+			w = tw->GetWindow();
+	}
 	static Image img;
 	static Cursor shc;
 	static Window wnd;
-	if(img.GetSerialId() != image.GetSerialId() || top->window != wnd) {
+	if(img.GetSerialId() != image.GetSerialId() || w != wnd) {
 		img = image;
 		Cursor hc = X11Cursor(img);
-		wnd = top->window;
+		wnd = w;
 		XDefineCursor(Xdisplay, wnd, hc);
 		if(shc)
 			XFreeCursor(Xdisplay, shc);
 		shc = hc;
+		XFlush(Xdisplay);
 	}
 }
 
@@ -697,21 +714,26 @@ void Ctrl::FocusSync()
 		LLOG("FocusSync to " << FormatIntHex(fw));
 		if(fw) {
 			int q = Xwindow().Find(fw);
-			if(q < 0)
-				return;
-			focusWindow = fw;
-			XWindow& w = Xwindow()[q];
-			if(w.ctrl) {
-				if(w.ctrl->IsPopUp())
+			if(q >= 0) {
+				LLOG("Focus to app window");
+				focusWindow = fw;
+				XWindow& w = Xwindow()[q];
+				if(w.ctrl) {
+					if(w.ctrl->IsPopUp()) {
+						AnimateCaret();
+						return;
+					}
+					KillFocus(focusWindow);
+					focusWindow = None;
+					w.ctrl->SetFocusWnd();
+					AnimateCaret();
 					return;
-				KillFocus(focusWindow);
-				focusWindow = None;
-				w.ctrl->SetFocusWnd();
-				return;
+				}
 			}
 		}
 		KillFocus(focusWindow);
 		focusWindow = None;
+		AnimateCaret();
 	}
 }
 
@@ -719,6 +741,7 @@ void  Ctrl::XorCaret()
 {
 	if(WndCaretCtrl && WndCaretCtrl->top && WndCaretCtrl->top->window) {
 		LTIMING("XorCaret");
+//		DLOG("XorCaret " << WndCaretRect << ", ctrl " << UPP::Name(WndCaretCtrl));
 		GC gc = XCreateGC(Xdisplay, WndCaretCtrl->top->window, 0, 0);
 		XSetFunction(Xdisplay, gc, GXinvert);
 		XFillRectangle(Xdisplay, WndCaretCtrl->top->window, gc,
@@ -743,6 +766,7 @@ void  Ctrl::AnimateCaret()
 
 void Ctrl::WndDestroyCaret()
 {
+	LLOG("WndDestroyCaret vis: " << WndCaretVisible << ", ctrl: " << UPP::Name(WndCaretCtrl));
 	if(WndCaretVisible)
 		XorCaret();
 	WndCaretCtrl = NULL;
@@ -750,6 +774,7 @@ void Ctrl::WndDestroyCaret()
 
 void Ctrl::WndCreateCaret(const Rect& cr)
 {
+	LLOG("WndCreateCaret " << cr);
 	WndDestroyCaret();
 	WndCaretCtrl = this;
 	WndCaretRect = cr - GetRect().TopLeft();

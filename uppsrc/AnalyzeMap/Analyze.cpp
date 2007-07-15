@@ -35,7 +35,7 @@ String AnalyzeMap(String fn)
 				len.Add(addr);
 				name.Add(String(b, e));
 			}
-			
+
 		}
 //	if(len.GetCount())
 //		len.Top() -= addr;

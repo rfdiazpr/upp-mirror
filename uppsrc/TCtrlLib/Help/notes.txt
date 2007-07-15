@@ -4,14 +4,14 @@ tomuto to asi nestoji za to... si myslim.
 -- Tak to ti dekuju, pres typecast to umim taky.
 
 Bylo by docela pekne, kdyby RichText umel Cat(pick_ RichText& text).
--- 
+--
 
-Bylo by docela pekne, kdyby RichText mel nejakou jednoduchou variantu Paintu 
+Bylo by docela pekne, kdyby RichText mel nejakou jednoduchou variantu Paintu
 bez strankovani a onanii kolem PageDraw a PaintInfo ve stylu stareho Documentu.
 -- vyrizeno
 
 Da se v RichTextView nejak nastavit zoom pro ten text?
--- 
+--
 
 Jak v RichTextView udelam skok na hyperlink, kdyz na nej uzivatel klikne?
 -- vyrizeno

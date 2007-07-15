@@ -53,9 +53,9 @@ FN(int, oparse, (struct cda_def *cursor, OraText *sqlstm, int sqllen, int defflg
 FN(int, orol,    (struct cda_def *lda))
 FN(int, osetpi,  (struct cda_def *cursor, ub1 piece, dvoid *bufp, dword *lenp))
 
-FN(int, onbset,   (struct cda_def *lda )) 
-FN(int, onbtst,   (struct cda_def *lda )) 
-FN(int, onbclr,   (struct cda_def *lda )) 
+FN(int, onbset,   (struct cda_def *lda ))
+FN(int, onbtst,   (struct cda_def *lda ))
+FN(int, onbclr,   (struct cda_def *lda ))
 FN(int, ognfd,    (struct cda_def *lda, dvoid *fdp))
 
 FN(int, obndra, (struct cda_def *cursor, OraText *sqlvar, int sqlvl,\
@@ -71,4 +71,3 @@ FN(int, obndrv, (struct cda_def *cursor, OraText *sqlvar, int sqlvl,\
 FN(int, odefin, (struct cda_def *cursor, int pos, ub1 *buf,\
 	               int bufl, int ftype, int scale, short *indp,\
 	               OraText *fmt, int fmtl, int fmtt, word *rlen, word *rcode))
-

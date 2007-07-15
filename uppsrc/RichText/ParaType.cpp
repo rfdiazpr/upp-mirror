@@ -262,14 +262,14 @@ RichPara::Lines RichPara::FormatLines(int acx) const
 			if(cx + *w > rcx && s > text || *s == '\t' && t.pos - format.lm >= rcx) {
 				Line& l = lines.line.Add();
 				l.withtabs = withtabs;
-				l.pos = text - lines.text;
+				l.pos = (int)(text - lines.text);
 				if(space) {
-					l.len = space - text + 1;
+					l.len = (int)(space - text) + 1;
 					l.cx = scx;
 					text = s = space + 1;
 				}
 				else {
-					l.len = s - text;
+					l.len = (int)(s - text);
 					l.cx = cx;
 					text = s;
 				}
@@ -309,8 +309,8 @@ RichPara::Lines RichPara::FormatLines(int acx) const
 	}
 	Line& l = lines.line.Add();
 	l.withtabs = withtabs;
-	l.pos = text - lines.text;
-	l.len = s - text;
+	l.pos = (int)(text - lines.text);
+	l.len = (int)(s - text);
 	l.cx = cx;
 	Smh(lines, lines.height, lines.cx);
 	for(i = 0; i < lines.line.GetCount(); i++) {

@@ -108,9 +108,9 @@ inline void UnlockLog() {}
 
 #else
 
-#define DLOG(x)          @@@ERROR!!!
-#define DDUMP(x)         @@@ERROR!!!
-#define DDUMPC(x)        @@@ERROR!!!
+#define DLOG(x)          @ // To clean logs after debugging, this produces error in release mode
+#define DDUMP(x)         @
+#define DDUMPC(x)        @
 
 #define ASSERT(x)
 

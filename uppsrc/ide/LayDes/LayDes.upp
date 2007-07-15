@@ -4,7 +4,8 @@ uses
 	ide\Common,
 	RichEdit,
 	Esc,
-	IconDes;
+	IconDes,
+	CodeEditor;
 
 file
 	LayDes.h,
@@ -24,3 +25,4 @@ file
 	laywin.cpp,
 	LayDes.lay,
 	LayDes.iml;
+

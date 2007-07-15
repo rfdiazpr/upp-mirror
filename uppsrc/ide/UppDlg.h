@@ -186,6 +186,8 @@ struct WorkspaceWork {
 
 	enum ADDFILE { PACKAGE_FILE, OUTPUT_FILE, HOME_FILE, COMMON_FILE, LOCAL_FILE, ANY_FILE };
 	void AddFile(ADDFILE type);
+	void AddItem(const String& name, bool separator, bool readonly);
+	void AddTopicGroup();
 	void AddSeparator();
 	void RemoveFile();
 	void DelFile();

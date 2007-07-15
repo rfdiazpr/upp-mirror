@@ -19,6 +19,8 @@ void BilinearCopy(ImageBuffer& dest, Point d1, Point d2, Point d3, Point d4,
 void BilinearCopy(ImageBuffer& dest, Point destpos[4],
 	const Image& src, Rect sr, const Rect *opt_clip = NULL, bool interpolate = true);
 
+Image BilinearRotate(const Image& m, int angle);
+
 END_UPP_NAMESPACE
 
 #endif

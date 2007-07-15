@@ -49,13 +49,13 @@ void PaintGL::Init(Size sz) {
 	bih.biCompression = BI_RGB;
 
 	hdc = CreateCompatibleDC(NULL);
-	
+
 	void *dummy;
 
 	hbmp = CreateDIBSection(hdc, (BITMAPINFO*)&bih, DIB_PAL_COLORS, &dummy, NULL, 0);
-	
+
 	ohbmp = (HBITMAP)SelectObject(hdc, hbmp);
-	
+
 	PIXELFORMATDESCRIPTOR pfd;
 	memset(&pfd, 0, sizeof(pfd));
 	pfd.nSize = sizeof(pfd);
@@ -81,7 +81,7 @@ void PaintGL::Init(Size sz) {
 	glViewport(0, 0, (GLsizei)sz.cx, (GLsizei)sz.cy);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45.0f, (GLfloat)(sz.cx)/(GLfloat)(sz.cy), 1.0f, 100.0f);		
+	gluPerspective(45.0f, (GLfloat)(sz.cx)/(GLfloat)(sz.cy), 1.0f, 100.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }

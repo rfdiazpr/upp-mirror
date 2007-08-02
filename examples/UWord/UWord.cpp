@@ -21,7 +21,8 @@ FileSel& PdfFs()
 
 class UWord : public TopWindow {
 public:
-	virtual void ChildDragAndDrop(Point, PasteClip& d);
+	virtual void DragAndDrop(Point, PasteClip& d);
+	virtual void FrameDragAndDrop(Point, PasteClip& d);
 
 protected:
 	RichEdit   editor;
@@ -131,7 +132,7 @@ void UWord::Open()
 		statusbar.Temporary("Loading aborted.");
 }
 
-void UWord::ChildDragAndDrop(Point, PasteClip& d)
+void UWord::DragAndDrop(Point, PasteClip& d)
 {
 	if(AcceptFiles(d)) {
 		Vector<String> fn = GetFiles(d);
@@ -139,6 +140,11 @@ void UWord::ChildDragAndDrop(Point, PasteClip& d)
 			if(FileExists(fn[i]))
 				OpenFile(fn[i]);
 	}
+}
+
+void UWord::FrameDragAndDrop(Point p, PasteClip& d)
+{
+	DragAndDrop(p, d);
 }
 
 void UWord::Save0()
@@ -183,7 +189,7 @@ void UWord::Pdf()
 		return;
 	Size page = Size(3968, 6074);
 	PdfDraw pdf;
-	::Print(pdf, editor.Get(), page);
+	UPP::Print(pdf, editor.Get(), page);
 	SaveFile(~fs, pdf.Finish());
 }
 

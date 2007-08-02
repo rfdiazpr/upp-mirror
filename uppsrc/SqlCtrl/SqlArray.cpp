@@ -206,6 +206,15 @@ void SqlArray::Query() {
 	AppendQuery(where);
 }
 
+void SqlArray::ReQuery()
+{
+	int sc = GetScroll();
+	Value key = GetKey();
+	Query();
+	ScrollTo(sc);
+	FindSetCursor(key);
+}
+
 SqlArray::SqlArray() {
 	querytime = 0;
 	ssn = NULL;

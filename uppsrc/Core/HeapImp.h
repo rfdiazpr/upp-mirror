@@ -53,6 +53,8 @@ void FreeCheck(dword *ptr, int count);
 void  *SysAllocRaw(size_t size);
 void   SysFreeRaw(void *ptr, size_t size);
 
+void  *AllocRaw64KB();
+
 void  *LAlloc(size_t& size);
 void   LFree(void *ptr);
 void   LMake(MemoryProfile& p);

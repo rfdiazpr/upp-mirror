@@ -4,8 +4,8 @@ uses
 	CtrlLib;
 
 file
-	Topic.cpp;
+	Topic.cpp,
+	app.tpp;
 
 mainconfig
 	"" = "GUI";
-

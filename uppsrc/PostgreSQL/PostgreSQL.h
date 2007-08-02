@@ -46,17 +46,12 @@ protected:
 
 private:
 	PGconn               *conn;
-	VectorMap<Oid, int>   oid_type_map; //pg has an oid for every type
 
-	void                  StoreInOidTypeMap(const char *typname, int type_id, const VectorMap<String, int64> &typname_oid_map);
-	bool                  InitOidTypeMap();
 	void                  ExecTrans(const char * statement);
-
 	Vector<String>        EnumData(char type, const char *schema = NULL);
 	String                ErrorMessage();
 
 public:
-	int                   OidToType(Oid oid); ///< default is STRING_V
 	bool                  Open(const char *connect);
 	void                  Close();
 
@@ -67,8 +62,30 @@ public:
 	virtual void          Commit();
 	virtual void          Rollback();
 
-	PostgreSQLSession()       { conn = NULL; Dialect(POSTGRESS); }
+	PostgreSQLSession()       { conn = NULL; Dialect(PGSQL); }
 	~PostgreSQLSession()      { Close(); }
+};
+
+class PgSequence : public ValueGen {
+	SqlId       ssq;
+	SqlId&      seq;
+	SqlSession *session;
+
+public:
+	virtual Value  Get();
+
+	Value operator++()                                                  { return Get(); }
+
+	void Set(SqlId id, SqlSession& s)                                   { ssq = id; session = &s; }
+
+#ifndef NOAPPSQL
+	void Set(SqlId id)                                                  { ssq = id; session = NULL; }
+	PgSequence(const char *name) : ssq(name), seq(ssq)                  { session = NULL; }
+	PgSequence(SqlId& seq) : seq(seq)                                   { session = NULL; }
+#endif
+	PgSequence(const char *name, SqlSession& s) : ssq(name), seq(ssq)   { session = &s; }
+	PgSequence(SqlId& seq, SqlSession& s) : seq(seq)                    { session = &s; }
+	PgSequence() : seq(ssq)                                             { session = NULL; }
 };
 
 END_UPP_NAMESPACE

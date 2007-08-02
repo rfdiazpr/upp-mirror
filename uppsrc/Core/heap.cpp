@@ -64,6 +64,52 @@ void  SysFreeRaw(void *ptr, size_t size)
 #endif
 }
 
+#ifdef flagMEMSHRINK
+void *AllocRaw4KB()
+{
+	return SysAllocRaw(4096);
+}
+
+void *AllocRaw64KB()
+{
+	return SysAllocRaw(65536);
+}
+#else
+void *AllocRaw4KB()
+{
+	static int   left;
+	static byte *ptr;
+	static int   n = 32;
+	if(left == 0) {
+		left = n >> 5;
+		ptr = (byte *)SysAllocRaw(left * 4096);
+	}
+	n = n + 1;
+	if(n > 4096) n = 4096;
+	void *p = ptr;
+	ptr += 4096;
+	left--;
+	return p;
+}
+
+void *AllocRaw64KB()
+{
+	static int   left;
+	static byte *ptr;
+	static int   n = 32;
+	if(left == 0) {
+		left = n >> 5;
+		ptr = (byte *)SysAllocRaw(left * 65536);
+	}
+	n = n + 1;
+	if(n > 256) n = 256;
+	void *p = ptr;
+	ptr += 65536;
+	left--;
+	return p;
+}
+#endif
+
 //----------------------------------------------------------------
 
 static StaticMutex sHeapLock;
@@ -75,7 +121,7 @@ void *MemoryAllocPermanentRaw(size_t size)
 	static byte *ptr = NULL;
 	static byte *limit = NULL;
 	if(ptr + size >= limit) {
-		ptr = (byte *)SysAllocRaw(4096);
+		ptr = (byte *)AllocRaw4KB();
 		limit = ptr + 4096;
 	}
 	void *p = ptr;
@@ -188,7 +234,7 @@ static inline FreeLink *sMAllocKN(int k)
 		if(p->next == p) {
 			p = sFree->next;
 			if(p->next == p)
-				p = (MPage *)SysAllocRaw(4096);
+				p = (MPage *)AllocRaw4KB();
 			else
 				p->Unlink();
 			p->Format(k);
@@ -359,6 +405,7 @@ void MemoryFreeThread()
 
 void MemoryShrink()
 {
+#ifdef flagMEMSHRINK
 	LTIMING("MemoryShrink");
 	MemoryFreeThread();
 	sHeapLock.Enter();
@@ -370,6 +417,7 @@ void MemoryShrink()
 	}
 	sHeapLock.Leave();
 	LMemoryShrink();
+#endif
 }
 
 void MemoryCheck()

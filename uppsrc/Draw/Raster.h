@@ -8,6 +8,7 @@ enum {
 	RASTER_24,
 	RASTER_32,
 	RASTER_32ALPHA,
+	RASTER_32PREMULTIPLIED,
 
 	RASTER_MSBFIRST = 0x80,
 
@@ -106,6 +107,8 @@ public:
 		Size  dots;
 		Point hotspot;
 		int   kind;
+
+		Info();
 	};
 
 public:

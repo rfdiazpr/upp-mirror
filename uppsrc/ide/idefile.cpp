@@ -67,8 +67,10 @@ void Ide::FileCursor()
 						break;
 					}
 			}
-		EditFile0(SourcePath(GetActivePackage(), GetActiveFileName()),
-		          f.charset ? f.charset : actual.charset ? actual.charset : default_charset,
+		String p = GetActiveFileName();
+		if(p != HELPNAME)
+			p = SourcePath(GetActivePackage(), GetActiveFileName());
+		EditFile0(p, f.charset ? f.charset : actual.charset ? actual.charset : default_charset,
 		          false, headername);
 	}
 }
@@ -317,8 +319,8 @@ void Ide::FlushFile() {
 	SaveFile();
 	editor.assist_active = false;
 	if(designer) {
-		tabs.Set(dtabs);
 		designer->SaveEditPos();
+		designer->DesignerCtrl().SetFrame(NullFrame());
 		if(dynamic_cast<TopicEditor *>(&designer->DesignerCtrl()))
 			RefreshBrowser();
 	}
@@ -329,6 +331,7 @@ void Ide::FlushFile() {
 	editor.Clear();
 	editor.Disable();
 	editorsplit.Ctrl::Remove();
+	editor.SetFrame(NullFrame());
 	designer.Clear();
 #ifdef UPP_HEAP
 	MemoryShrink();
@@ -358,14 +361,13 @@ void Ide::EditFile0(const String& path, byte charset, bool astext, const String&
 
 	if(!astext && !debugger && editastext.Find(path) < 0) {
 		for(int i = 0; i < GetIdeModuleCount() && !designer; i++)
-			designer = GetIdeModule(i).CreateDesigner(path, charset);
+			designer = GetIdeModule(i).CreateDesigner(this, path, charset);
 		if(designer) {
 			editpane.Add(designer->DesignerCtrl().SizePos());
 			designer->SetFocus();
 			if(filetabs) {
-				dtabs.Set(tabs);
-				designer->DesignerCtrl().SetFrame(dtabs);
-				dtabs.SetAddFile(editfile);
+				designer->DesignerCtrl().SetFrame(tabs);
+				tabs.SetAddFile(editfile);
 			}
 			MakeTitle();
 			SetBar();
@@ -373,6 +375,10 @@ void Ide::EditFile0(const String& path, byte charset, bool astext, const String&
 		}
 	}
 
+	if(filetabs)
+		editor.SetFrame(tabs);
+	else
+		editor.SetFrame(FieldFrame());
 	tabs.SetAddFile(editfile);
 	editor.Enable();
 	editpane.Add(editorsplit);
@@ -451,6 +457,22 @@ void Ide::EditFile(const String& p)
 {
 	if(p.IsEmpty()) {
 		FlushFile();
+		return;
+	}
+	if(p == HELPNAME) {
+		if(designer && designer->GetFileName() == p)
+			return;
+		package.SetCursor(package.GetCount() - 2);
+		for(int i = 0; i < actual.file.GetCount(); i++)
+			if(actual.file[i] == p) {
+				ShowFile(i);
+				filelist.SetCursor(i);
+				return;
+			}
+		actual.file.Insert(0, p);
+		SaveLoadPackage();
+		ShowFile(0);
+		filelist.SetCursor(0);
 		return;
 	}
 	String path = NormalizePath(p);

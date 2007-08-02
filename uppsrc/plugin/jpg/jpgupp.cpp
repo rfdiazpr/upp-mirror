@@ -172,7 +172,6 @@ struct jpeg_longjmp_error_mgr : public jpeg_error_mgr {
 static void error_exit(j_common_ptr cinfo)
 {
 	(*cinfo->err->output_message)(cinfo);
-	RLOG("JPGRaster: error exit!");
 	jpeg_longjmp_error_mgr *jlem = (jpeg_longjmp_error_mgr *)cinfo->err;
 	longjmp(jlem->jmpbuf, 1);
 }
@@ -402,7 +401,7 @@ bool JPGRaster::Data::Init()
 			break;
 		}
 		default: {
-			RLOG("JPGRaster: invalid number of components: " << (int)cinfo.output_components);
+			LLOG("JPGRaster: invalid number of components: " << (int)cinfo.output_components);
 			return false;
 		}
 	}

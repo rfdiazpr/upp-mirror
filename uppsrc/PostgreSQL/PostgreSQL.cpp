@@ -4,6 +4,55 @@
 
 NAMESPACE_UPP
 
+enum PGSQL_StandardOid {
+	PGSQL_BOOLOID = 16,
+	PGSQL_BYTEAOID = 17,
+	PGSQL_CHAROID = 18,
+	PGSQL_NAMEOID = 19,
+	PGSQL_INT8OID = 20,
+	PGSQL_INT2OID = 21,
+	PGSQL_INT2VECTOROID = 22,
+	PGSQL_INT4OID = 23,
+	PGSQL_REGPROCOID = 24,
+	PGSQL_TEXTOID = 25,
+	PGSQL_OIDOID = 26,
+	PGSQL_TIDOID = 27,
+	PGSQL_XIDOID = 28,
+	PGSQL_CIDOID = 29,
+	PGSQL_OIDVECTOROID = 30,
+	PGSQL_FLOAT4OID = 700,
+	PGSQL_FLOAT8OID = 701,
+	PGSQL_DATEOID = 1082,
+	PGSQL_TIMEOID = 1083,
+	PGSQL_TIMESTAMPOID = 1114,
+	PGSQL_TIMESTAMPZOID = 1184,
+	PGSQL_NUMERICOID = 1700,
+};
+
+int OidToType(Oid oid)
+{
+	switch(oid) {
+		case PGSQL_BOOLOID:
+			return BOOL_V;
+		case PGSQL_INT8OID:
+		case PGSQL_INT2OID:
+		case PGSQL_INT2VECTOROID:
+		case PGSQL_INT4OID:
+			return INT_V;
+		case PGSQL_FLOAT4OID:
+		case PGSQL_FLOAT8OID:
+		case PGSQL_NUMERICOID:
+			return DOUBLE_V;
+		case PGSQL_DATEOID:
+			return DATE_V;
+		case PGSQL_TIMEOID:
+		case PGSQL_TIMESTAMPOID:
+		case PGSQL_TIMESTAMPZOID:
+			return TIME_V;
+	}
+	return STRING_V;
+}
+
 class PostgreSQLConnection : public SqlConnection {
 protected:
 	virtual void        SetParam(int i, const Value& r);
@@ -22,6 +71,7 @@ private:
 	PGconn         *conn;
 	Vector<String> param;
 	PGresult      *result;
+	Vector<Oid>    oid;
 	int            rows;
 	int            fetched_row; //-1, if not fetched yet
 
@@ -215,54 +265,6 @@ SqlConnection * PostgreSQLSession::CreateConnection()
 	return new PostgreSQLConnection(*this, conn);
 }
 
-void PostgreSQLSession::StoreInOidTypeMap(const char *typname, int type_id, const VectorMap<String, int64> &typname_oid_map)
-{
-	int idx = typname_oid_map.Find(typname);
-	if(idx <= 0)
-		return;
-	int64 oid = typname_oid_map[idx];
-	oid_type_map.FindAdd((Oid)oid, type_id);
-}
-
-bool PostgreSQLSession::InitOidTypeMap()
-{
-	oid_type_map.Clear();
-	PGresult *res = PQexec(conn, "select oid, typname from pg_type");
-	if(PQresultStatus(res) != PGRES_TUPLES_OK)
-	{
-		PQclear(res);
-		return false;
-	}
-	int row_count = PQntuples(res);
-	VectorMap<String, int64> typname_oid_map;
-	for(int i = 0; i < row_count; i++)
-	{
-		typname_oid_map.FindAdd(PQgetvalue(res, i, 1), atol(PQgetvalue(res, i, 0)));
-	}
-	StoreInOidTypeMap("bool", BOOL_V, typname_oid_map);
-	StoreInOidTypeMap("abstime", TIME_V, typname_oid_map);
-	StoreInOidTypeMap("cid", INT_V, typname_oid_map);
-	StoreInOidTypeMap("date", DATE_V, typname_oid_map);
-	StoreInOidTypeMap("float4", DOUBLE_V, typname_oid_map);
-	StoreInOidTypeMap("float8", DOUBLE_V, typname_oid_map);
-	StoreInOidTypeMap("int2", INT_V, typname_oid_map);
-	StoreInOidTypeMap("int4", INT_V, typname_oid_map);
-	StoreInOidTypeMap("int8", INT_V, typname_oid_map); //should be INT64_V
-	//StoreInOidTypeMap("interval", , typname_oid_map);
-	StoreInOidTypeMap("money", DOUBLE_V, typname_oid_map);
-	StoreInOidTypeMap("numeric", DOUBLE_V, typname_oid_map);
-	StoreInOidTypeMap("oid", INT64_V, typname_oid_map);
-	StoreInOidTypeMap("time", TIME_V, typname_oid_map);
-	StoreInOidTypeMap("time_stamp", TIME_V, typname_oid_map);
-	StoreInOidTypeMap("timestamp", TIME_V, typname_oid_map);
-	StoreInOidTypeMap("timestamptz", TIME_V, typname_oid_map);
-	StoreInOidTypeMap("timetz", TIME_V, typname_oid_map);
-	//StoreInOidTypeMap("tinterval", , typname_oid_map);
-	StoreInOidTypeMap("xid", INT_V, typname_oid_map);
-
-	return true;
-}
-
 void PostgreSQLSession::ExecTrans(const char * statement)
 {
 	if(trace)
@@ -279,14 +281,6 @@ void PostgreSQLSession::ExecTrans(const char * statement)
 	PQclear(res);
 }
 
-int PostgreSQLSession::OidToType(Oid oid)
-{
-	int idx = oid_type_map.Find(oid);
-	if(idx <= 0)
-		return STRING_V;
-	return oid_type_map[idx];
-}
-
 bool PostgreSQLSession::Open(const char *connect)
 {
 	Close();
@@ -294,13 +288,6 @@ bool PostgreSQLSession::Open(const char *connect)
 	if(PQstatus(conn) != CONNECTION_OK)
 	{
 		SetError(ErrorMessage(), "Opening database");
-		Close();
-		return false;
-	}
-	//read oids of different types to a map (oid =>value-type). Execute() sets up type based on this
-	if(!InitOidTypeMap())
-	{
-		SetError(ErrorMessage(), "Initializing type map");
 		Close();
 		return false;
 	}
@@ -344,6 +331,17 @@ void PostgreSQLConnection::SetParam(int i, const Value& r)
 		p = "NULL";
 	else
 		switch(r.GetType()) {
+		case 34: {
+			String raw = SqlRaw(r);
+			size_t rl;
+			unsigned char *s = PQescapeByteaConn(conn, (const byte *)~raw, raw.GetLength(), &rl);
+			p.Reserve(rl + 16);
+			SaveFile("d:\\t1", String(s, rl));
+			p = "\'" + String(s, rl - 1) + "\'::bytea";
+			SaveFile("d:\\t2", p);
+			PQfreemem(s);
+			break;
+		}
 		case WSTRING_V:
 		case STRING_V: {
 				String v = r;
@@ -422,6 +420,7 @@ bool PostgreSQLConnection::Execute()
 		rows = PQntuples(result);
 		int fields = PQnfields(result);
 		info.SetCount(fields);
+		oid.SetCount(fields);
 		for(int i = 0; i < fields; i++)
 		{
 			SqlColumnInfo& f = info[i];
@@ -429,7 +428,8 @@ bool PostgreSQLConnection::Execute()
 			f.width = PQfsize(result, i);
 			f.decimals = f.scale = f.prec = 0; // TODO
 			Oid type_oid = PQftype(result, i);
-			f.type = session.OidToType(type_oid);
+			f.type = OidToType(type_oid);
+			oid[i] = type_oid;
 		}
 		return true;
 	}
@@ -486,36 +486,38 @@ void PostgreSQLConnection::GetColumn(int i, Ref f) const
 		f = Null;
 		return;
 	}
-	char * s = PQgetvalue(result, fetched_row, i);
+	char *s = PQgetvalue(result, fetched_row, i);
 	switch(info[i].type)
 	{
-		//ntohl(*(int *)PQgetvalue(res, 0, 0));
 		case INT64_V:
-			f = atoi(s);
-			//f = Value(*((int64 *)s));
-			break;
 		case INT_V:
-			f = atoi(s);
-			//f = Value(*((int32 *)s));
+			f.SetValue(atoi(s));
 			break;
 		case DOUBLE_V:
-			f = atof(s);
-			//f = Value(*(double *)(s));
+			f.SetValue(atof(s));
 			break;
 		case DATE_V:
-			f = Value(sDate(s));
+			f.SetValue(sDate(s));
 			break;
 		case TIME_V: {
 				Time t = ToTime(sDate(s));
 				t.hour = atoi(s + 11);
 				t.minute = atoi(s + 14);
 				t.second = atoi(s + 17);
-				f = Value(t);
+				f.SetValue(t);
 			}
 			break;
-		default:
-			f = Value(String(s));
+		default: {
+			if(oid[i] == PGSQL_BYTEAOID) {
+				size_t len;
+				unsigned char *q = PQunescapeBytea((const unsigned char *)s, &len);
+				f.SetValue(String(q, len));
+				PQfreemem(q);
+			}
+			else
+				f.SetValue(String(s));
 			break;
+		}
 	}
 }
 
@@ -555,6 +557,19 @@ PostgreSQLConnection::PostgreSQLConnection(PostgreSQLSession& a_session, PGconn 
   : session(a_session), conn(a_conn)
 {
 	result = NULL;
+}
+
+Value PgSequence::Get()
+{
+#ifndef NOAPPSQL
+	Sql sql(session ? *session : SQL.GetSession());
+#else
+	ASSERT(session);
+	Sql sql(*session);
+#endif
+	if(!sql.Execute(Select(NextVal(seq)).Get()) || !sql.Fetch())
+		return ErrorValue();
+	return sql[0];
 }
 
 END_UPP_NAMESPACE

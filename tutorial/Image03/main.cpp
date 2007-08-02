@@ -29,6 +29,7 @@ MyApp::MyApp()
 			}
 		}
 	}
+	Premultiply(ib);
 	img = ib;
 }
 
@@ -45,7 +46,7 @@ void MyApp::LeftDown(Point p, dword keyflags)
 	for(int y = 15; y < 35; y++) {
 		RGBA *l = ib[y];
 		for(int x = 15; x < 35; x++)
-			l[x] = Red();
+			l[x] = 100 * Red();
 	}
 	img = ib;
 	Refresh();

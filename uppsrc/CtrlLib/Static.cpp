@@ -305,4 +305,25 @@ SeparatorCtrl::SeparatorCtrl()
 	size = 7;
 }
 
+void DisplayCtrl::Paint(Draw& w)
+{
+	pr.Paint(w, GetSize());
+}
+
+Size DisplayCtrl::GetMinSize() const
+{
+	return pr.GetStdSize();
+}
+
+void DisplayCtrl::SetData(const Value& v)
+{
+	pr.SetValue(v);
+	Refresh();
+}
+
+void DisplayCtrl::SetDisplay(const Display& d)
+{
+	pr.SetDisplay(d);
+}
+
 END_UPP_NAMESPACE

@@ -287,7 +287,7 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 			himg = CreateDIBSection(ScreenHDC(), bi, DIB_RGB_COLORS,
 			                              (void **)&section, NULL, 0);
 			ResCount++;
-			PreMultiplyAlpha(section, buffer, len);
+			memcpy(section, ~buffer, buffer.GetLength() * sizeof(RGBA));
 		}
 		LTIMING("Image Alpha blit");
 		BLENDFUNCTION bf;
@@ -343,7 +343,7 @@ void ImageDraw::Init()
 	has_alpha = false;
 }
 
-ImageDraw::operator Image() const
+Image ImageDraw::Get(bool pm) const
 {
 	ImageBuffer b(size);
 	int n = size.cx * size.cy;
@@ -351,19 +351,35 @@ ImageDraw::operator Image() const
 	const RGBA *s = a.pixels;
 	const RGBA *e = a.pixels + n;
 	RGBA *t = b;
-	if(has_alpha)
+	if(has_alpha) {
 		while(s < e) {
 			t->a = s->r;
 			t++;
 			s++;
 		}
-	else
+		if(pm)
+			Premultiply(b);
+		b.SetKind(IMAGE_ALPHA);
+	}
+	else {
 		while(s < e) {
 			t->a = 255;
 			t++;
 			s++;
 		}
+		b.SetKind(IMAGE_OPAQUE);
+	}
 	return b;
+}
+
+ImageDraw::operator Image() const
+{
+	return Get(true);
+}
+
+Image ImageDraw::GetStraight() const
+{
+	return Get(false);
 }
 
 ImageDraw::ImageDraw(Size sz)
@@ -522,7 +538,7 @@ HICON IconWin32(const Image& img, bool cursor)
 		iconinfo.hbmMask = ::CreateBitmap(tsz.cx, tsz.cy, 1, 1, NULL);
 		memset(pixels, 0, tsz.cx * tsz.cy * sizeof(RGBA));
 		for(int y = 0; y < csz.cy; y++)
-			PreMultiplyAlpha(pixels + y * tsz.cx, img[y], csz.cx);
+			memcpy(pixels + y * tsz.cx, img[y], csz.cx * sizeof(RGBA));
 		::DeleteDC(dcMem);
 	}
 	else {
@@ -558,6 +574,8 @@ Image Image::SizeRight() WCURSOR_(IDC_SIZEWE)
 Image Image::SizeBottomLeft() WCURSOR_(IDC_SIZENESW)
 Image Image::SizeBottom() WCURSOR_(IDC_SIZENS)
 Image Image::SizeBottomRight()  WCURSOR_(IDC_SIZENWSE)
+Image Image::Cross() WCURSOR_(IDC_CROSS)
+Image Image::Hand() WCURSOR_(IDC_HAND)
 
 #endif
 

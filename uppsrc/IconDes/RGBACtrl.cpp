@@ -140,7 +140,7 @@ void RGBACtrl::MaskSet(int a)
 
 void RGBACtrl::Set(RGBA c)
 {
-	color = c;
+	color = StraightColor(c);
 	ramp <<= color;
 	alpha.SetColor(color);
 	MaskSet(c.a);

@@ -232,7 +232,7 @@ bool LoadIml(const String& data, Array<ImlImage>& img, int& format)
 			p.PassChar(')');
 
 			data.Trim(zlen);
-			Vector<Image> m = UnpackImlData(data);
+			Vector<Image> m = UnpackImlData(data, false);
 			if(m.GetCount() != count || ii + count > name.GetCount())
 				p.ThrowError("");
 			for(int i = 0; i < count; i++) {

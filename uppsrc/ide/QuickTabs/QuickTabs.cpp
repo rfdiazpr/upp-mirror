@@ -180,14 +180,23 @@ QuickTabs::QuickTabs()
 	isdrag = false;
 	id = -1;
 	groups.WhenGrouping = THISBACK(Group);
+	groups.WhenCloseAll = THISBACK(CloseAll);
+	groups.WhenCloseRest = Proxy(WhenCloseRest);
 	BackPaint();
+}
+
+void QuickTabs::CloseAll()
+{
+	for(int i = tabs.GetCount() - 1; i >= 0; i--)
+		if(i != active)
+			Close(i);
+	SetCursor(0);
 }
 
 int QuickTabs::GetNextId()
 {
 	return ++id;
 }
-
 
 void QuickTabs::Group()
 {
@@ -385,7 +394,7 @@ void QuickTabs::DrawTab(Draw &w, int i)
 
 	String fn = GetFileName(t.name);
 	int ty = (h - t.tsz.cy) / 2 + 1;
-	DrawFileName(w, x + MARGIN + (FILEICON + SPACE) * int(file_icons), ty,
+	DrawFileName(w, x + MARGIN + (FILEICON + SPACEICON) * int(file_icons), ty,
 	             t.tsz.cx, t.tsz.cy, fn.ToWString(),
 	             false, StdFont(), Black, LtBlue, Null, Null, false);
 
@@ -424,7 +433,7 @@ int QuickTabs::GetWidth(int n)
 	Tab &t = tabs[n];
 	t.tsz = GetTextSize(GetFileName(t.name), StdFont());
 	return MARGIN * 2 + t.tsz.cx + (SPACE + Img::CR0().GetSize().cx) * crosses
-	                             + (SPACE + FILEICON) * file_icons;
+	                             + (FILEICON + SPACEICON) * file_icons;
 }
 
 int QuickTabs::GetHeight(int n)
@@ -481,7 +490,7 @@ void QuickTabs::Repos(bool update)
 		sc.SetTotal(GetTotal());
 }
 
-int QuickTabs::FindActive(int id)
+int QuickTabs::Find(int id)
 {
 	for(int i = 0; i < tabs.GetCount(); i++)
 		if(tabs[i].id == id)
@@ -619,8 +628,7 @@ void QuickTabs::MouseMove(Point p, dword keyflags)
 			iscross = crosses ? tabs[i].HasMouseCross(p) : false;
 			if(highlight != i || (iscross && cross != i))
 			{
-				if(iscross)
-					cross = i;
+				cross = iscross ? i : -1;
 				highlight = i;
 				Refresh();
 				return;
@@ -679,9 +687,9 @@ void QuickTabs::DragAndDrop(Point p, PasteClip& d)
 	int c = GetTargetTab(p);
 	int tab = isalt ? highlight : active;
 	bool sametab = c == tab || c == tab + 1;
-	
+
 	bool internal = AcceptInternal<QuickTabs>(d, "tabs");
-	
+
 	if(d.IsAccepted())
 	{
 		if(!sametab && internal)
@@ -690,7 +698,7 @@ void QuickTabs::DragAndDrop(Point p, PasteClip& d)
 			Tab t = tabs[tab];
 			tabs.Insert(c, t);
 			tabs.Remove(tab + int(c < tab));
-			active = FindActive(id);
+			active = Find(id);
 			isdrag = false;
 			groups.Make(tabs);
 			Repos();
@@ -702,7 +710,7 @@ void QuickTabs::DragAndDrop(Point p, PasteClip& d)
 			return;
 		}
 	}
-		
+
 	if(c != target)
 	{
 		target = c;
@@ -755,14 +763,20 @@ void QuickTabs::SetCursor(int n)
 		return;
 
 	if(n < 0)
-		n = max(0, FindActive(groups.GetActive()));
+	{
+		n = max(0, Find(groups.GetActive()));
+		active = -1;
+	}
 
-	if(active == n)
+	bool is_all = groups.IsAll();
+	bool same_group = tabs[n].group == groups.GetName();
+	
+	if((same_group || is_all) && active == n)
 		return;
 
 	active = n;
 
-	if(!groups.IsAll() && tabs[n].group != groups.GetName())
+	if(!is_all && !same_group)
 	{
 		groups.SetCurrent(tabs[n].group);
 		Repos();
@@ -770,24 +784,16 @@ void QuickTabs::SetCursor(int n)
 
 	groups.SetActive(tabs[n].id);
 
-	bool scroll = false;
 	int cx = tabs[n].x - sc.GetPos();
 	if(cx < 0)
-	{
 		sc.AddPos(cx - 10);
-		scroll = true;
-	}
 	else
 	{
 		cx = tabs[n].x + tabs[n].cx - GetSize().cx - sc.GetPos();
 		if(cx > 0)
-		{
 			sc.AddPos(cx + 10);
-			scroll = true;
-		}
 	}
-	if(scroll)
-		MouseMove(mouse, 0);
+	MouseMove(mouse, 0);
 	UpdateActionRefresh();
 }
 
@@ -796,13 +802,15 @@ void QuickTabs::Close(int n)
 	if(tabs.GetCount() <= 1)
 		return;
 
-	int c = FindActive(tabs[n].id);
-	int nc = GetNext(c);
-	if(nc < 0)
-		nc = max(0, GetPrev(c));
-
-	groups.SetActive(tabs[nc].id);
-
+	if(n == active)
+	{
+		int c = Find(tabs[n].id);
+		int nc = GetNext(c);
+		if(nc < 0)
+			nc = max(0, GetPrev(c));
+	
+		groups.SetActive(tabs[nc].id);
+	}
 	sc.AddTotal(-tabs[n].cx);
 	tabs.Remove(n);
 	groups.Make(tabs);
@@ -844,6 +852,10 @@ void QuickTabs::RenameFile(const String& fn, const String& nn)
 void QuickTabs::Set(const QuickTabs& t)
 {
 	active = t.active;
+	file_icons = t.file_icons;
+	crosses = t.crosses;
+	grouping = t.grouping;
+	
 	cross = -1;
 	highlight = -1;
 	target = -1;

@@ -24,7 +24,7 @@ void SqlSchema::FlushColumn() {
 			}
 			else if (dialect == SQLITE3)
 				Upgrade() << Expand("alter table @t add ") << cd << ";\n";
-			else if (dialect == POSTGRESS)
+			else if (dialect == PGSQL)
 				Upgrade() << Expand("alter table @t add \n") << cd << "\n;\n\n";
 			else
 				Upgrade() << Expand("alter table @t add (\n") << cd << "\n);\n\n";

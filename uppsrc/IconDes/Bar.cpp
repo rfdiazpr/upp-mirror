@@ -214,10 +214,9 @@ struct CachedIconImage : public Display {
 		Size isz = m.GetSize();
 		if(isz.cx > 128 || isz.cy > 128)
 			m = IconDesImg::LargeImage();
-		else {
-			if(isz.cx > r.GetWidth() || isz.cy > r.GetHeight())
-				m = CachedRescale(m, GetFitSize(m.GetSize(), r.GetSize()));
-		}
+		else
+		if(isz.cx > r.GetWidth() || isz.cy > r.GetHeight())
+			m = CachedRescale(m, GetFitSize(m.GetSize(), r.GetSize()));
 		Point p = r.CenterPos(m.GetSize());
 		w.DrawImage(p.x, p.y, m);
 	}

@@ -128,7 +128,7 @@ void GatherLinks(Index<String>& link, const char *topic)
 	}
 }
 
-void TopicWindow::SyncDocTree()
+void TopicCtrl::SyncDocTree()
 {
 	Vector<String> ss = Split((String)~search, ' ');
 	Vector<int> sdx;
@@ -223,31 +223,6 @@ void TopicWindow::SyncDocTree()
 		OpenDeep();
 }
 
-void Ide::ShowTopics()
-{
-	if(!doc.IsOpen()) {
-		doc.OpenMain();
-		GetRefLinks("");
-		doc.SyncDocTree();
-		if(doc.GetCurrent().IsEmpty())
-			doc.GoTo("\3topic://ide/app/index$en-us");
-	}
-	else
-		doc.SetForeground();
-}
-
-void Ide::RefreshBrowser()
-{
-	browser.Refresh();
-	doc.SyncDocTree();
-}
-
-void Ide::ShowTopic(String link)
-{
-	ShowTopics();
-	doc.GoTo(link + '#' + browser.GetItem());
-}
-
 Vector<String> GetTypeRefLinks(const String& t, String &label)
 {
 	const char *tp[] = { "", "::struct", "::class", "::union", "::typedef", "::enum" };
@@ -261,8 +236,11 @@ Vector<String> GetTypeRefLinks(const String& t, String &label)
 	return f;
 }
 
-Topic TopicWindow::AcquireTopic(const String& t)
+String recent_topic;
+
+Topic TopicCtrl::AcquireTopic(const String& t)
 {
+	recent_topic = t;
 	String topic = t;
 	internal = (byte)*topic < 32;
 	if(*topic == '\3')
@@ -346,7 +324,7 @@ struct HighlightWords : RichText::Iterator {
 	}
 };
 
-void TopicWindow::FinishText(RichText& text)
+void TopicCtrl::FinishText(RichText& text)
 {
 	if(!showwords)
 		return;
@@ -365,12 +343,12 @@ void TopicWindow::FinishText(RichText& text)
 		text.ApplyFormatInfo(hw.pos[i].pos, fi, hw.pos[i].len);
 }
 
-void TopicWindow::OpenTopic()
+void TopicCtrl::OpenTopic()
 {
 	WhenTopic();
 }
 
-void TopicWindow::Search()
+void TopicCtrl::Search()
 {
 	if(issearch) {
 		search <<= Null;
@@ -384,27 +362,27 @@ void TopicWindow::Search()
 	SetBar();
 }
 
-void TopicWindow::ShowWords()
+void TopicCtrl::ShowWords()
 {
 	showwords = !showwords;
 	SetBar();
 	GoTo(GetCurrent());
 }
 
-void TopicWindow::All()
+void TopicCtrl::All()
 {
 	all = !all;
 	SyncDocTree();
 	SetBar();
 }
 
-void TopicWindow::Lang()
+void TopicCtrl::Lang()
 {
 	SyncDocTree();
 	SetBar();
 }
 
-bool TopicWindow::Key(dword key, int count)
+bool TopicCtrl::Key(dword key, int count)
 {
 	if(key == K_ENTER && search.HasFocus()) {
 		Search();
@@ -413,7 +391,7 @@ bool TopicWindow::Key(dword key, int count)
 	return HelpWindow::Key(key, count);
 }
 
-void  TopicWindow::BarEx(Bar& bar)
+void  TopicCtrl::BarEx(Bar& bar)
 {
 	bar.Gap();
 	bar.Add(lang, HorzLayoutZoom(60));
@@ -432,7 +410,7 @@ void  TopicWindow::BarEx(Bar& bar)
 	        TopicImg::Topic(), THISBACK(OpenTopic));
 }
 
-void TopicWindow::Serialize(Stream& s)
+void TopicCtrl::Serialize(Stream& s)
 {
 	int version = 2;
 	s / version;
@@ -443,7 +421,48 @@ void TopicWindow::Serialize(Stream& s)
 		s % all;
 }
 
-TopicWindow::TopicWindow()
+struct HelpDes : public IdeDesigner {
+	TopicCtrl *topic;
+
+	virtual String GetFileName() const              { return HELPNAME; }
+	virtual void   Save()                           {}
+	virtual void   EditMenu(Bar& menu)              {}
+	virtual Ctrl&  DesignerCtrl()                   { return *topic; }
+	virtual void   SetFocus()                       { topic->SetFocus(); }
+};
+
+bool IsHelpName(const char *path)
+{
+	return strcmp(path, HELPNAME) == 0;
+}
+
+struct HelpModule : public IdeModule {
+	virtual Image FileIcon(const char *path) {
+		return IsHelpName(path) ? IdeImg::help() : Null;
+	}
+	virtual IdeDesigner *CreateDesigner(Ide *ide, const char *path, byte cs) {
+		if(IsHelpName(path)) {
+			GetRefLinks("");
+			if(ide->doc.GetCurrent().IsEmpty()) {
+				ide->doc.SyncDocTree();
+				ide->doc.GoTo(Nvl(recent_topic, "\3topic://ide/app/index$en-us"));
+			}
+			HelpDes *d = new HelpDes;
+			d->topic = &ide->doc;
+			return d;
+		}
+		return false;
+	}
+	virtual void Serialize(Stream& s) {
+		s % recent_topic;
+	}
+};
+
+INITBLOCK {
+	RegisterIdeModule(Single<HelpModule>());
+}
+
+TopicCtrl::TopicCtrl()
 {
 	Icon(IdeImg::doc());
 	search_label = "Search: ";
@@ -455,4 +474,24 @@ TopicWindow::TopicWindow()
 	lang.Tip("Language"),
 	search.Tip("Full text search");
 	internal = true;
+}
+
+void Ide::ShowTopics()
+{
+	GetRefLinks("");
+	doc.SyncDocTree();
+	doc.GoTo("\3topic://ide/app/index$en-us");
+	EditFile(HELPNAME);
+}
+
+void Ide::RefreshBrowser()
+{
+	browser.Refresh();
+	doc.SyncDocTree();
+}
+
+void Ide::ShowTopic(String link)
+{
+	ShowTopics();
+	doc.GoTo(link + '#' + browser.GetItem());
 }

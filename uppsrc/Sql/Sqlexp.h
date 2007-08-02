@@ -3,7 +3,7 @@ enum {
 	SQLITE3   = 2,
 	MY_SQL    = 4,
 	MSSQL     = 8,
-	POSTGRESS = 16, // not implemented yet
+	PGSQL     = 16, // not implemented yet
 	FIREBIRD  = 32, // not implemented yet
 	DB2       = 64, // not implemented yet
 };
@@ -419,6 +419,7 @@ public:
 
 	SqlSelect& Hint(const char *hint);
 
+	SqlSelect& Get();
 	SqlSelect& From(const SqlSet& set);
 	SqlSelect& From(SqlId table);
 	SqlSelect& From(SqlId table1, SqlId table2);

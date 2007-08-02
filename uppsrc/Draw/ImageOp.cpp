@@ -462,6 +462,7 @@ Image CreateHorzFadeOut(Size sz, Color color)
 			t += sz.cx;
 		}
 	}
+	Premultiply(ib);
 	return ib;
 }
 

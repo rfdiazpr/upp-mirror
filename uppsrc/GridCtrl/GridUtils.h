@@ -20,6 +20,11 @@ inline bool BitInverse(dword &k, dword v)
 	return s;
 }
 
+inline int Distance(const Point &p0, const Point &p1)
+{
+	return max(abs(p0.x - p1.x), abs(p0.y - p1.y));
+}
+
 inline int32 Round(double a)
 {
 	#ifdef flagGCC
@@ -35,7 +40,7 @@ inline int32 Round(double a)
 }
 
 #ifdef flagDEBUG
-#define LG Log
+#define LG //Log
 #else
 #define LG
 #endif

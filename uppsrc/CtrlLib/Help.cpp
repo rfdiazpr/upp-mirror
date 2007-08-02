@@ -22,7 +22,7 @@ bool HelpWindow::GoTo0(const String& link)
 	if(!IsNull(t.text)) {
 		label = t.label;
 		topic = t.link;
-		Title(t.title.ToWString());
+		Title(FromUtf8(t.title));
 		RichText txt = ParseQTF(t.text);
 		FinishText(txt);
 		view.Pick(txt, zoom);
@@ -103,7 +103,8 @@ void HelpWindow::FontSize()
 void HelpWindow::Print()
 {
 #ifndef PLATFORM_PDA
-	UPP::Print(view.Get(), Size(3968, 6074), 0);
+	Topic t = AcquireTopic(topic);
+	UPP::Print(ParseQTF(t.text), Size(3968, 6074), 0);
 #endif
 }
 

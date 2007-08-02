@@ -21,8 +21,10 @@ String FromWin32CF(int cf)
 		return "wtext";
 	if(cf == CF_DIB)
 		return "dib";
+#ifndef PLATFORM_WINCE
 	if(cf == CF_HDROP)
 		return "files";
+#endif
 	char h[256];
 	GetClipboardFormatNameA(cf, h, 255);
 	return h;
@@ -328,7 +330,11 @@ STDMETHODIMP UDataObject::GetCanonicalFormatEtc(FORMATETC *, FORMATETC *pformate
     return E_NOTIMPL;
 }
 
+#ifdef PLATFORM_WINCE
+static int CF_PERFORMEDDROPEFFECT = RegisterClipboardFormat(_T("Performed DropEffect"));
+#else
 static int CF_PERFORMEDDROPEFFECT = RegisterClipboardFormat("Performed DropEffect");
+#endif
 
 STDMETHODIMP UDataObject::SetData(FORMATETC *fmtetc, STGMEDIUM *medium, BOOL release)
 {

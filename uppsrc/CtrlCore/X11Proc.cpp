@@ -196,6 +196,25 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 				{ XK_KP_Enter, K_ENTER },
 				{ XK_Escape, K_ESCAPE },
 				{ XK_space, K_SPACE },
+
+				{ XK_KP_Space, K_SPACE },
+				{ XK_KP_Tab, K_TAB },
+				{ XK_KP_Enter, K_ENTER },
+				{ XK_KP_F1, K_F1 },
+				{ XK_KP_F2, K_F2 },
+				{ XK_KP_F3, K_F3 },
+				{ XK_KP_F4, K_F4 },
+				{ XK_KP_Home, K_HOME },
+				{ XK_KP_Left, K_LEFT },
+				{ XK_KP_Up, K_UP },
+				{ XK_KP_Right, K_RIGHT },
+				{ XK_KP_Down, K_DOWN },
+				{ XK_KP_Page_Up, K_PAGEUP },
+				{ XK_KP_Page_Down, K_PAGEDOWN },
+				{ XK_KP_End, K_END },
+				{ XK_KP_Begin, K_HOME },
+				{ XK_KP_Insert, K_INSERT },
+				{ XK_KP_Delete, K_DELETE },
 			};
 			for(int i = 0; i < __countof(tab); i++)
 				if(tab[i].keysym == keysym) {

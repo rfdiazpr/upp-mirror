@@ -5,9 +5,6 @@ NAMESPACE_UPP
 
 #include "GridUtils.h"
 #include "GridDisplay.h"
-#define  IMAGECLASS GridImg
-#define  IMAGEFILE <GridCtrl/GridCtrl.iml>
-#include <Draw/iml_header.h>
 
 #define FOREACH_ROW(x) for(x.Begin(); x.IsNext(); x.Next())
 #define FOREACH_MODIFIED_ROW(x) FOREACH_ROW(x) if(x.IsModifiedRow())
@@ -52,6 +49,44 @@ class GridPopUpHeader : public Ctrl
 		void Close();
 };
 
+class GridButton : public Ctrl
+{
+	private:
+		Image img;	
+	public:
+		typedef GridButton CLASSNAME;
+		GridButton();
+		virtual void Paint(Draw& w);
+		virtual void LeftDown(Point p, dword flags);
+		virtual void LeftUp(Point p, dword flags);
+		virtual void MouseEnter(Point p, dword flags);
+		virtual void MouseLeave();
+		virtual Size GetStdSize() const;
+	
+};
+
+class GridResizePanel : public FrameBottom<Ctrl>
+{
+	private:
+		GridButton close;
+		Point pos;
+		Rect r;
+		Size minsize;
+	public:
+	
+		typedef GridResizePanel CLASSNAME;
+		GridResizePanel();
+		virtual void Paint(Draw& w);
+		virtual Image CursorImage(Point p, dword flags);
+		virtual void LeftDown(Point p, dword flags);
+		virtual void LeftUp(Point p, dword flags);
+		virtual void MouseMove(Point p, dword flags);
+		bool MouseOnGrip(const Point &p);
+		void SetMinSize(Size sz);
+		
+		Callback WhenClose;
+};
+
 class GridPopUp : public Ctrl
 {
 	public:
@@ -59,10 +94,7 @@ class GridPopUp : public Ctrl
 		bool open;
 		String text;
 
-		GridPopUp()
-		{
-			open = false;
-		}
+		GridPopUp() : open(false) {}
 		virtual void Paint(Draw &w);
 		void PopUp(Ctrl *owner, int x, int y, int width, int height);
 		void Close();
@@ -132,6 +164,8 @@ class GridClipboard : Moveable<GridClipboard>
 
 class GridCtrl : public Ctrl
 {
+	friend class DropGrid;
+	
 	public:
 
 		static int GD_COL_WIDTH;
@@ -353,6 +387,7 @@ class GridCtrl : public Ctrl
 					
 					modified = false;
 					isnew = false;
+					found = false;
 		
 					level = 0;
 				}
@@ -395,6 +430,7 @@ class GridCtrl : public Ctrl
 				bool clickable;
 				bool modified:1;
 				bool isnew:1;
+				bool found:1;
 		
 				Value defval;
 		
@@ -430,6 +466,8 @@ class GridCtrl : public Ctrl
 				bool   IsLive()                { return style & GD::LIVE;      }
 				bool   IsCursor()              { return style & GD::CURSOR;    }
 				bool   IsHighlight()           { return style & GD::HIGHLIGHT; }
+				
+				bool   IsFound()               { return found;                 }
 		
 				void   Select(bool s)          { BitSet(style, GD::SELECT, s);    }
 				void   Cursor(bool s)          { BitSet(style, GD::CURSOR, s);    }
@@ -574,7 +612,8 @@ class GridCtrl : public Ctrl
 		ScrollBar      sbx;
 		ScrollBar      sby;
 		ToolBar        bar;
-
+		
+		GridResizePanel resize_panel;
 		GridPopUp popup;
 
 		FrameLeft<ImageCtrl> findimg;
@@ -603,6 +642,8 @@ class GridCtrl : public Ctrl
 		bool dragging:1;
 		bool horz_grid:1;
 		bool vert_grid:1;
+		bool draw_last_horz_line:1;
+		bool draw_last_vert_line:1;
 		bool sorting:1;
 		bool sorting_multicol:1;
 		bool live_cursor:1;
@@ -648,8 +689,10 @@ class GridCtrl : public Ctrl
 
 		bool search_hide:1;
 		bool search_highlight:1;
+		bool search_highlight_first:1;
 		bool search_immediate:1;
 		bool search_case:1;
+		bool search_move_cursor:1;
 		int  find_offset;
 
 		/* States */
@@ -707,7 +750,6 @@ class GridCtrl : public Ctrl
 		int  firstVisRow, lastVisRow;
 		int  moveCol,     oldMoveCol;
 		int  moveRow,     oldMoveRow;
-		int  scrollxdir,  scrollydir;
 		int  total_cols,  total_rows;
 		int  fixed_cols,  fixed_rows;
 		int  total_width, total_height;
@@ -719,6 +761,7 @@ class GridCtrl : public Ctrl
 		int  bains;
 		int  coluid;
 		int  rowuid;
+		int  rowfnd;
 
 		int  minRowSelected;
 		int  maxRowSelected;
@@ -750,6 +793,8 @@ class GridCtrl : public Ctrl
 		int    focused_ctrl_id;
 		Value  focused_ctrl_val;
 		int    focused_col;
+		
+		WString search_string;
 
 
 	public:
@@ -790,29 +835,31 @@ class GridCtrl : public Ctrl
 		~GridCtrl();
 
 		/* Properties */
-		GridCtrl& HorzGrid(bool b = true) 	    { horz_grid          = b; return *this; }
-		GridCtrl& VertGrid(bool b = true) 	    { vert_grid          = b; return *this; }
-		GridCtrl& MultiSelect(bool b = true)    { multi_select       = b; return *this; }
-		GridCtrl& ResizingCols(bool b = true) 	{ resizing_cols      = b; return *this; }
-		GridCtrl& ResizingRows(bool b = true) 	{ resizing_rows      = b; return *this; }
-		GridCtrl& MovingCols(bool b = true)   	{ moving_cols        = b; return *this; }
-		GridCtrl& MovingRows(bool b = true)   	{ moving_rows        = b; return *this; }
-		GridCtrl& Dragging(bool b = true)       { dragging           = b; return *this; }
-		GridCtrl& ResizePaintMode(int m = 0) 	{ resize_paint_mode  = m; return *this; }
-		GridCtrl& LiveCursor(bool b = true)   	{ live_cursor        = b; return *this; }
-		GridCtrl& Sorting(bool b = true)      	{ sorting            = b; return *this; }
-		GridCtrl& MultiSorting(bool b = true) 	{ sorting_multicol   = b; return *this; }
-		GridCtrl& EditMode(int m)      			{ edit_mode          = m; return *this; }
-		GridCtrl& EditRow()         			{ edit_mode          = GE_ROW;  return *this; }
-		GridCtrl& EditCell()         			{ edit_mode          = GE_CELL; return *this; }
-		GridCtrl& OneClickEdit(bool b = true)   { one_click_edit     = b; return *this; }
-		GridCtrl& Absolute()					{ return ResizeColMode(0);              }
-		GridCtrl& Proportional()				{ return ResizeColMode(1);              }
-		GridCtrl& SelectRow(bool b = true)      { select_row         = b; return *this; }
-		GridCtrl& AutoHideHorzSb(bool b = true) { sbx.AutoHide(b);        return *this; }
-		GridCtrl& AutoHideVertSb(bool b = true) { sby.AutoHide(b);        return *this; }
-		GridCtrl& AutoHideSb(bool b = true)     { sbx.AutoHide(b);
-		                                          sby.AutoHide(b);        return *this; }
+		GridCtrl& HorzGrid(bool b = true) 	      { horz_grid           = b; return *this; }
+		GridCtrl& VertGrid(bool b = true) 	      { vert_grid           = b; return *this; }
+		GridCtrl& DrawLastHorzLine(bool b = true) { draw_last_horz_line = b; return *this; }
+		GridCtrl& DrawLastVertLine(bool b = true) { draw_last_vert_line = b; return *this; }
+		GridCtrl& MultiSelect(bool b = true)      { multi_select        = b; return *this; }
+		GridCtrl& ResizingCols(bool b = true) 	  { resizing_cols       = b; return *this; }
+		GridCtrl& ResizingRows(bool b = true) 	  { resizing_rows       = b; return *this; }
+		GridCtrl& MovingCols(bool b = true)   	  { moving_cols         = b; return *this; }
+		GridCtrl& MovingRows(bool b = true)   	  { moving_rows         = b; return *this; }
+		GridCtrl& Dragging(bool b = true)         { dragging            = b; return *this; }
+		GridCtrl& ResizePaintMode(int m = 0) 	  { resize_paint_mode   = m; return *this; }
+		GridCtrl& LiveCursor(bool b = true)   	  { live_cursor         = b; return *this; }
+		GridCtrl& Sorting(bool b = true)      	  { sorting             = b; return *this; }
+		GridCtrl& MultiSorting(bool b = true) 	  { sorting_multicol    = b; return *this; }
+		GridCtrl& EditMode(int m)      			  { edit_mode           = m; return *this; }
+		GridCtrl& EditRow()         			  { edit_mode           = GE_ROW;  return *this; }
+		GridCtrl& EditCell()         			  { edit_mode           = GE_CELL; return *this; }
+		GridCtrl& OneClickEdit(bool b = true)     { one_click_edit      = b; return *this; }
+		GridCtrl& Absolute()					  { return ResizeColMode(0);               }
+		GridCtrl& Proportional()				  { return ResizeColMode(1);               }
+		GridCtrl& SelectRow(bool b = true)        { select_row          = b; return *this; }
+		GridCtrl& AutoHideHorzSb(bool b = true)   { sbx.AutoHide(b);         return *this; }
+		GridCtrl& AutoHideVertSb(bool b = true)   { sby.AutoHide(b);         return *this; }
+		GridCtrl& AutoHideSb(bool b = true)       { sbx.AutoHide(b);
+		                                            sby.AutoHide(b);         return *this; }
 
 		GridCtrl& ResizeColMode(int m = 0);
 		GridCtrl& ResizeRowMode(int m = 0);
@@ -835,6 +882,8 @@ class GridCtrl : public Ctrl
 		GridCtrl& SetRowHeight(int n, int height, bool recalc = true);
 		GridCtrl& SetColsMin(int size);
 		GridCtrl& SetColsMax(int size);
+		
+		int GetDefaultRowHeight() { return GD_ROW_HEIGHT; }
 
 		GridCtrl& Inserting(bool b = true)       { inserting         = b; return *this; }
 		GridCtrl& Appending(bool b = true)       { appending         = b; return *this; }
@@ -865,10 +914,15 @@ class GridCtrl : public Ctrl
 		GridCtrl& FullRowResizing(bool b = true) { full_row_resizing = b; return *this; }
 		GridCtrl& Chameleon(bool b = true)       { chameleon         = b; return *this; }
 
-		GridCtrl& SearchOffset(int offset) { find_offset = offset; return *this; }
-
+		GridCtrl& SearchOffset(int offset)         { find_offset = offset; return *this; }
+		GridCtrl& SearchMoveCursor(bool b = true)  { search_move_cursor = b; return *this; }
+		GridCtrl& SearchImmediate(bool b = true)   { search_immediate = b; return *this; }
+		GridCtrl& SearchHideRows(bool b = true)    { search_hide = b; return *this; }
+		
 		GridCtrl& SetToolBar(bool b = true, int align = BarCtrl::BAR_BOTTOM, int frame = 1);
 		ToolBar&  GetToolBar() { return bar; }
+
+		GridCtrl& ResizePanel(bool b = true);
 
 		GridCtrl& BeforeAfterInserting()     { bains = 1; return *this; }
 		GridCtrl& AfterBeforeInserting()     { bains = 2; return *this; }
@@ -967,18 +1021,18 @@ class GridCtrl : public Ctrl
 
 		void   SetLast(int c, const Value &val);
 		void   SetFixed(int r, int c, const Value &val);
-		Value  GetFixed(int r, int c);
-		Value  GetFixed(int c);
-		Value  Get(int r, int c);
-		Value  Get(int c);
-		Value  Get(Id id);
-		Value  Get(int r, Id id);
-		Value  Get();
-		Value  Get(const char * alias);
-		Value  Get(int r, const char * alias);
-		Value  GetNew(int c);
-		Value  GetFirst(int c);
-		Value  GetLast(int c);
+		Value  GetFixed(int r, int c) const;
+		Value  GetFixed(int c) const;
+		Value  Get(int r, int c) const;
+		Value  Get(int c) const;
+		Value  Get(Id id) const;
+		Value  Get(int r, Id id) const;
+		Value  Get() const;
+		Value  Get(const char * alias) const;
+		Value  Get(int r, const char * alias) const;
+		Value  GetNew(int c) const;
+		Value  GetFirst(int c) const;
+		Value  GetLast(int c) const;
 		Value& operator() (int r, int c);
 		Value& operator() (int c);
 		Value& operator() (Id id);
@@ -1060,9 +1114,9 @@ class GridCtrl : public Ctrl
 		int  GetCursor(int uid);
 		Point GetCursorPos();
 		void CenterCursor();
-		bool IsCursor()      { return valid_cursor; }
-		bool IsCursorBegin() { return curpos.y == fixed_rows; }
-		bool IsCursorEnd()   { return curpos.y == total_rows - 1; }
+		bool IsCursor() const      { return valid_cursor; }
+		bool IsCursorBegin() const { return curpos.y == fixed_rows; }
+		bool IsCursorEnd() const   { return curpos.y == total_rows - 1; }
 
 		int  GetNewRowPos();
 		int  GetNewRowId();
@@ -1075,6 +1129,8 @@ class GridCtrl : public Ctrl
 		int  GetRowId(int n);
 		int  GetColUId();
 		int  GetRowUId();
+		int  FindCol(int id);
+		int  FindRow(int id);
 
 		int  GetNextRow(int n);
 		int  GetPrevRow(int n);
@@ -1120,14 +1176,18 @@ class GridCtrl : public Ctrl
 		bool IsSelected(int n, bool relative = true);
 		bool IsSelected(int n, int m, bool relative = true);
 
+		void DoInsert0(bool edit, bool after);
 		void DoInsertBefore0(bool edit);
 		void DoInsertBefore();
 		void DoInsertBeforeNoEdit();
+		void DoInsertAfter0(bool edit);
 		void DoInsertAfter();
+		void DoInsertAfterNoEdit();
 		void DoRemove();
 		void DoAppend0(bool edit);
 		void DoAppend();
 		void DoAppendNoEdit();
+		void DoDuplicate0();
 		void DoDuplicate();
 		void DoEdit();
 		void DoEndEdit();
@@ -1201,6 +1261,10 @@ class GridCtrl : public Ctrl
 		ScrollBar& HorzScroll() { return sbx; }
 		ScrollBar& VertScroll() { return sby; }
 
+		Value GetConvertedColumn(int col, Value &v);
+		
+		bool Search(dword key);
+
 	private:
 
 		bool TabKey(bool enter_mode);
@@ -1209,11 +1273,13 @@ class GridCtrl : public Ctrl
 
 		CurState SetCursor0(Point p, bool mouse = false, bool highlight = false, int dirx = -2, int diry = -2, bool ctrlmode = false);
 		CurState SetCursor0(int x, int y, bool mouse = false, bool highlight = false, int dirx = -2, int diry = -2, bool ctrlmode = false);
+		int SetCursor0(int n);
 
 		bool IsValidCursor(Point &p, int fc, int lc, int fr, int lr);
 		bool IsValidCursorVis(Point &p);
 		bool IsValidCursorAll(Point &p);
 		bool IsValidCursor(Point &p);
+		bool IsValidCursor(int c);
 
 		bool IsRowEditable();
 
@@ -1221,7 +1287,7 @@ class GridCtrl : public Ctrl
 
 		void Insert0(int row, int cnt = 1, bool recalc = true, bool refresh = true, int size = GD_ROW_HEIGHT, bool mark_newrow = false);
 		bool Remove0(int row, int cnt = 1, bool recalc = true, bool refresh = true, bool whens = true);
-		void Duplicate0(int row, int cnt = 1);
+		void Duplicate0(int row, int cnt = 1, bool recalc = true, bool refresh = true, bool mark_newrow = false);
 		int  Append0(int cnt = 1, int size = GD_ROW_HEIGHT, bool refresh = true, bool mark_newrow = false);
 
 		void GoCursorLeftRight();
@@ -1229,7 +1295,7 @@ class GridCtrl : public Ctrl
 		void UpdateSb(bool horz = true, bool vert = true);
 		void UpdateHolder(bool force = false);
 		bool UpdateCols(bool force = false);
-		bool UpdateRows(bool force = false);
+		bool UpdateRows(bool force = false);	
 		bool UpdateSizes();
 		void UpdateHighlighting(int mode, Point p = Null);
 		void UpdateVisColRow(bool col);
@@ -1258,7 +1324,6 @@ class GridCtrl : public Ctrl
 
 		bool IsMouseBody(Point &p);
 
-		Value GetConvertedColumn(int col, Value &v);
 		void DrawLine(bool iniLine, bool delLine);
 
 		Rect GetItemRect(int r, int c, bool hgrid = false, bool vgrid = false, bool ctrlmode = false);
@@ -1286,14 +1351,14 @@ class GridCtrl : public Ctrl
 		Item& GetItem(int n, int m)   { return items[vitems[n].id][hitems[m].id]; }
 
 		void Set0(int r, int c, const Value &val, bool paste = false);
-		Value Get0(int r, int c);
+		Value Get0(int r, int c) const;
 
 		int GetSplitCol(const Point &p, int splitSize = 5, bool full = false);
 		int GetSplitRow(const Point &p, int splitSize = 5, bool full = false);
 
-		int GetFirst0(Vector<ItemRect> &its, int total, int sb, int diff, int is, int dir);
-		int GetFirstVisCol(int diff, int is = 0, int dir = 1);
-		int GetFirstVisRow(int diff, int is = 0, int dir = 1);
+		int GetFirst0(Vector<ItemRect> &its, int total, int sb, int diff);
+		int GetFirstVisCol(int diff);
+		int GetFirstVisRow(int diff);
 
 		bool SetDiffItemSize(bool horizontal, RectItems &its, int n, int diff, bool newsize = true);
 		void Recalc(bool horizontal, RectItems &its, int n, double size, double diff);
@@ -1351,6 +1416,7 @@ class GridCtrl : public Ctrl
 		Callback WhenLeftDouble;
 		Callback WhenLeftClick;
 		Callback WhenEnter;
+		Callback WhenEscape;
 		Callback WhenEmpty;
 
 		Callback WhenCreateRow;
@@ -1367,10 +1433,14 @@ class GridCtrl : public Ctrl
 		Callback WhenModification;
 
 		Callback WhenCtrlsAction;
+		
+		Callback WhenSearchCursor;
+		Callback WhenClose;
 
 		Callback StdInsert;
 		Callback StdAppend;
 		Callback StdRemove;
+		Callback StdDuplicate;
 		Callback StdEdit;
 };
 

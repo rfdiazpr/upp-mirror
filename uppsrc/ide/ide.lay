@@ -101,7 +101,7 @@ LAYOUT(FindFileLayout, 450, 280)
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).RightPosZ(4, 80).BottomPosZ(4, 22))
 END_LAYOUT
 
-LAYOUT(UppLayout, 796, 576)
+LAYOUT(UppLayout, 800, 576)
 	UNTYPED(package, LeftPosZ(4, 240).TopPosZ(4, 376))
 	ITEM(Label, dv___1, SetLabel(t_("Description")).LeftPosZ(248, 56).TopPosZ(4, 19))
 	ITEM(DataPusher, description, HSizePosZ(304, 4).TopPosZ(4, 20))
@@ -110,7 +110,7 @@ LAYOUT(UppLayout, 796, 576)
 	ITEM(EditString, accepts, HSizePosZ(408, 260).TopPosZ(28, 19))
 	ITEM(Label, dv___6, SetLabel(t_("Encoding")).RightPosZ(204, 48).TopPosZ(28, 19))
 	ITEM(DropList, charset, RightPosZ(92, 112).TopPosZ(28, 19))
-	ITEM(Option, noblitz, SetLabel(t_("No BLITZ")).LeftPosZ(716, 76).TopPosZ(28, 20))
+	ITEM(Option, noblitz, SetLabel(t_("No BLITZ")).RightPosZ(6, 76).TopPosZ(28, 20))
 	ITEM(ArrayCtrl, option, HSizePosZ(248, 4).VSizePosZ(52, 128))
 	UNTYPED(filelist, LeftPosZ(4, 240).VSizePosZ(384, 4))
 	ITEM(ArrayCtrl, fileoption, HSizePosZ(248, 4).BottomPosZ(32, 92))
@@ -498,4 +498,3 @@ LAYOUT(TppLayout, 148, 284)
 	ITEM(Button, ok, SetLabel(t_("OK")).LeftPosZ(8, 64).TopPosZ(252, 24))
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).LeftPosZ(76, 64).TopPosZ(252, 24))
 END_LAYOUT
-

@@ -119,7 +119,8 @@ class QuickTabs : public FrameCtrl<Ctrl>
 			MARGIN = 6,
 			SPACE = 10,
 			HEIGHT = 30,
-			FILEICON = 16
+			FILEICON = 16,
+			SPACEICON = 5
 		};
 
 		int id;
@@ -159,7 +160,7 @@ class QuickTabs : public FrameCtrl<Ctrl>
 
 		void DrawTab(Draw &w, int i);
 		void Repos(bool update = true);
-		int  FindActive(int id);
+		int  Find(int id);
 		int  GetNext(int n);
 		int  GetPrev(int n);
 
@@ -170,17 +171,20 @@ class QuickTabs : public FrameCtrl<Ctrl>
 
 		void Group();
 
+		void CloseAll();
+
 	public:
+		Callback WhenCloseRest;
+
 		QuickTabs();
 
 		void Add(const char *name, bool make_active = false);
 		void Close(int n);
-		void Remove(int n);
 		void Clear();
 
-		QuickTabs& FileIcons(bool b);
-		QuickTabs& Crosses(bool b);
-		QuickTabs& Grouping(bool b);
+		QuickTabs& FileIcons(bool b = true);
+		QuickTabs& Crosses(bool b = true);
+		QuickTabs& Grouping(bool b = true);
 
 		typedef QuickTabs CLASSNAME;
 

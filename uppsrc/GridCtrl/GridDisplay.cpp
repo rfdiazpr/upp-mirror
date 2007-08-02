@@ -3,8 +3,8 @@
 NAMESPACE_UPP
 
 #include "GridDisplay.h"
-#define  IMAGEFILE <GridCtrl/GridDisplay.iml>
-#define  IMAGECLASS GridDispImg
+#define  IMAGECLASS GridImg
+#define  IMAGEFILE <GridCtrl/GridCtrl.iml>
 #include <Draw/iml_source.h>
 #include "GridUtils.h"
 
@@ -12,12 +12,12 @@ GridDisplay StdGridDisplay;
 
 static Image (*vhdr[])() =
 {
-	GridDispImg::ImgVHdr0,
-	GridDispImg::ImgVHdr1,
-	GridDispImg::ImgVHdr2,
-	GridDispImg::ImgVHdr3,
-	GridDispImg::ImgVHdr4,
-	GridDispImg::ImgVHdr5
+	GridImg::VHdr0,
+	GridImg::VHdr1,
+	GridImg::VHdr2,
+	GridImg::VHdr3,
+	GridImg::VHdr4,
+	GridImg::VHdr5
 };
 
 
@@ -150,7 +150,7 @@ void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, in
 
 	if(sortmode > 0)
 	{
-		Size isz = GridDispImg::ImgSortAsc().GetSize();
+		Size isz = GridImg::SortAsc().GetSize();
 
 		int yf = y + (cy - isz.cy) / 2;
 		int xf = x + 2;
@@ -166,9 +166,9 @@ void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, in
 		}
 
 		if(sortmode == 1)
-			w.DrawImage(xf, yf, GridDispImg::ImgSortAsc(), col);
+			w.DrawImage(xf, yf, GridImg::SortAsc(), col);
 		else
-			w.DrawImage(xf, yf, GridDispImg::ImgSortDsc(), col);
+			w.DrawImage(xf, yf, GridImg::SortDsc(), col);
 
 		tx += 3;
 
@@ -178,18 +178,18 @@ void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, in
 		w.Clip(x, y, cx, cy);
 		if((style & GD::CURSOR) && (style & GD::SELECT))
 		{
-			Size isz = GridDispImg::ImgFocSel().GetSize();
-			w.DrawImage(x + (cx - isz.cx) / 2, y + (cy - isz.cy) / 2, GridDispImg::ImgFocSel(), col);
+			Size isz = GridImg::FocSel().GetSize();
+			w.DrawImage(x + (cx - isz.cx) / 2, y + (cy - isz.cy) / 2, GridImg::FocSel(), col);
 		}
 		else if(style & GD::CURSOR)
 		{
-			Size isz = GridDispImg::ImgFocused().GetSize();
-			w.DrawImage(x + (cx - isz.cx) / 2, y + (cy - isz.cy) / 2, GridDispImg::ImgFocused(), col);
+			Size isz = GridImg::Focused().GetSize();
+			w.DrawImage(x + (cx - isz.cx) / 2, y + (cy - isz.cy) / 2, GridImg::Focused(), col);
 		}
 		else if(style & GD::SELECT)
 		{
-			Size isz = GridDispImg::ImgSelected().GetSize();
-			w.DrawImage(x + (cx - isz.cx) / 2, y + (cy - isz.cy) / 2, GridDispImg::ImgSelected(), col);
+			Size isz = GridImg::Selected().GetSize();
+			w.DrawImage(x + (cx - isz.cx) / 2, y + (cy - isz.cy) / 2, GridImg::Selected(), col);
 		}
 		w.End();
 	}
@@ -291,16 +291,19 @@ void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int al
 			if(align & GD::RIGHT)
 				tx = x + cx - tsz.cx;
 			else if(align & GD::HCENTER)
-				tx = x + (cx - tsz.cx) / 2;
 
+			tx = x + (cx - tsz.cx) / 2;
+			
+			Color tfg = fg;
 			if(found)
 			{
 				int s = GetTextSize(t, font, fs).cx;
 				int e = GetTextSize(t, font, fe + 1).cx;
-				w.DrawRect(max(mx, tx) + s, y, e - s, cy, Color(255, 242, 0));
+				w.DrawRect(max(mx, tx) + s, y, e - s, cy, Color(255, 239, 45));
+				tfg = Black();
 			}
 
-			w.DrawText(max(mx, tx), ty, t, font, fg, p - t);
+			w.DrawText(max(mx, tx), ty, t, font, tfg, p - t);
 			ty += tcy;
 			t = textbreak ? p : p + 1;
 		}

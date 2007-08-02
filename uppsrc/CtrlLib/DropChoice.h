@@ -110,6 +110,7 @@ protected:
 	bool               displayall;
 	bool               dropfocus;
 	bool               push;
+	bool               notnull;
 	const Convert     *valueconvert;
 	const Display     *valuedisplay;
 
@@ -167,8 +168,10 @@ public:
 	DropList&     ValueDisplay(const Display& d);
 	DropList&     DisplayAll(bool b = true)             { displayall = b; return *this; }
 	DropList&     DropFocus(bool b = true)              { dropfocus = b; return *this; }
+	DropList&     NoDropFocus()                         { return DropFocus(false); }
 	DropList&     AlwaysDrop(bool e = true)             { DropBox::AlwaysDrop(e); return *this; }
 	DropList&     SetStyle(const Style& s)              { style = &s; Refresh(); return *this; }
+	DropList&     NotNull(bool b = true)                { notnull = b; return *this; }
 
 	DropList();
 	virtual ~DropList();

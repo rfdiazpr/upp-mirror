@@ -51,7 +51,6 @@ bool RichTxt::Update(ParaOp& op)
 
 RichTxt& RichTxt::GetText0(int& pos, bool update)
 {
-
 	if(update)
 		Invalidate();
 	int p = pos;

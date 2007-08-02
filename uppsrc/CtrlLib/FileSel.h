@@ -104,8 +104,6 @@ class FileSel : public WithFileSelectorLayout<TopWindow> {
 public:
 	virtual bool Key(dword key, int count);
 
-	FileList    list;
-
 private:
 	SizeGrip    sizegrip;
 
@@ -123,6 +121,10 @@ protected:
 	int            activetype;
 	String         defext;
 	Vector<String> fn;
+
+	DisplayCtrl    preview_display;
+	Ctrl          *preview;
+	FileList       list;
 
 	enum {
 		OPEN, SAVEAS, SELECTDIR
@@ -157,6 +159,7 @@ protected:
 	void        Finish();
 	bool        Execute(int mode);
 	bool        IsMulti()                                     { return multi && mode == OPEN; }
+	void        SyncSplitter();
 
 	using       WithFileSelectorLayout<TopWindow>::Title;
 
@@ -210,6 +213,8 @@ public:
 	FileSel& NoEditFileName()                    { return EditFileName(false); }
 	FileSel& AppModal(bool b = true)             { appmodal = b; return *this; }
 	FileSel& NoAppModal()                        { return AppModal(false); }
+	FileSel& Preview(Ctrl& ctrl);
+	FileSel& Preview(const Display& d);
 
 	FileSel();
 	virtual ~FileSel();

@@ -88,6 +88,19 @@ public:
 	ImageCtrl()                                       { Transparent(); NoWantFocus(); }
 };
 
+class DisplayCtrl : public Ctrl {
+public:
+	virtual void   Paint(Draw& w);
+	virtual Size   GetMinSize() const;
+	virtual void   SetData(const Value& v);
+
+private:
+	PaintRect pr;
+
+public:
+	void SetDisplay(const Display& d);
+};
+
 // BWC
 typedef ImageCtrl Icon;
 

@@ -185,6 +185,11 @@ Size Image::GetDots() const
 	return data ? data->buffer.GetDots() : Size(0, 0);
 }
 
+int Image::GetKindNoScan() const
+{
+	return data ? data->buffer.GetKind() : IMAGE_EMPTY;
+}
+
 int Image::Data::GetKind()
 {
 	int k = buffer.GetKind();
@@ -332,6 +337,44 @@ void Image::Data::PaintOnlyShrink()
 		ResCount -= GetResCount();
 		Unlink();
 	}
+}
+
+static void sMultiply(ImageBuffer& b, int (*op)(RGBA *t, const RGBA *s, int len))
+{
+	if(b.GetKind() != IMAGE_OPAQUE && b.GetKind() != IMAGE_EMPTY)
+		b.SetKind((*op)(~b, ~b, b.GetLength()));
+}
+
+void Premultiply(ImageBuffer& b)
+{
+	sMultiply(b, Premultiply);
+}
+
+void Unmultiply(ImageBuffer& b)
+{
+	sMultiply(b, Unmultiply);
+}
+
+static Image sMultiply(const Image& img, int (*op)(RGBA *t, const RGBA *s, int len))
+{
+	int k = img.GetKind();
+	if(k == IMAGE_OPAQUE || k == IMAGE_EMPTY)
+		return img;
+	ImageBuffer ib(img.GetSize());
+	ib.SetHotSpot(img.GetHotSpot());
+	ib.Set2ndSpot(img.Get2ndSpot());
+	ib.SetKind(Premultiply(~ib, ~img, ib.GetLength()));
+	return ib;
+}
+
+Image Premultiply(const Image& img)
+{
+	return sMultiply(img, Premultiply);
+}
+
+Image Unmultiply(const Image& img)
+{
+	return sMultiply(img, Unmultiply);
 }
 
 void SetPaintOnly___(Image& m)

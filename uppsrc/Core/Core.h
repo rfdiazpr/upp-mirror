@@ -337,10 +337,6 @@
 #include <algorithm>
 #include <string>
 
-#ifdef PLATFORM_POSIX
-#include <bits/atomicity.h>
-#endif
-
 // fix MSC8 beta problem....
 #ifdef COMPILER_MSC
 #ifndef PLATFORM_WINCE

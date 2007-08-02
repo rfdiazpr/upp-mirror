@@ -26,7 +26,7 @@ END_LAYOUT
 LAYOUT(FileSelectorLayout, 460, 400)
 	ITEM(Label, dv___0, SetLabel(t_("&Directory")).LeftPosZ(8, 44).TopPosZ(6, 15))
 	ITEM(DropList, dir, HSizePosZ(56, 8).TopPosZ(4, 19))
-	UNTYPED(list, HSizePosZ(8, 8).VSizePosZ(28, 108))
+	ITEM(Splitter, splitter, HSizePosZ(8, 8).VSizePosZ(28, 108))
 	ITEM(Label, filename, HSizePosZ(8, 208).BottomPosZ(88, 16))
 	ITEM(Label, filesize, RightPosZ(148, 56).BottomPosZ(88, 16))
 	ITEM(Label, filetime, RightPosZ(8, 136).BottomPosZ(88, 16))
@@ -110,4 +110,3 @@ LAYOUT(PrinterLayout, 372, 264)
 	ITEM(Switch, landscape, SetLabel(t_("Portrait\nLandscape")).LeftPosZ(16, 152).TopPosZ(194, 15))
 	ITEM(LabelBox, dv___21, SetLabel(t_("Placement")).LeftPosZ(8, 356).TopPosZ(176, 48))
 END_LAYOUT
-

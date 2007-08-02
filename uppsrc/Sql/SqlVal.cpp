@@ -4,7 +4,7 @@ NAMESPACE_UPP
 
 SqlCol SqlCol::As(const char *as) const
 {
-	return name + SqlCase(MSSQL | POSTGRESS, " as ")(" ") + as;
+	return name + SqlCase(MSSQL | PGSQL, " as ")(" ") + as;
 }
 
 SqlCol SqlId::Of(SqlId id) const
@@ -14,7 +14,7 @@ SqlCol SqlId::Of(SqlId id) const
 
 SqlCol SqlId::As(const char *as) const
 {
-	return id.IsNull() ? ToString() : ToString() + SqlCase(MSSQL | POSTGRESS, " as ")(" ") + as;
+	return id.IsNull() ? ToString() : ToString() + SqlCase(MSSQL | PGSQL, " as ")(" ") + as;
 }
 
 SqlId SqlId::operator [] (int i) const
@@ -332,11 +332,17 @@ SqlVal Prior(SqlId a) {
 }
 
 SqlVal NextVal(SqlId a) {
-	return SqlVal(~a + ".NEXTVAL", SqlS::HIGH);
+	return SqlVal(SqlCase
+	                 (PGSQL, "nextval('" + ~a + "')")
+	                 (~a + ".NEXTVAL")
+	              , SqlS::HIGH);
 }
 
 SqlVal CurrVal(SqlId a) {
-	return SqlVal(~a + ".CURRVAL", SqlS::HIGH);
+	return SqlVal(SqlCase
+				    (PGSQL, "currval('" + ~a + "')")
+				    (~a + ".CURRVAL")
+				  , SqlS::HIGH);
 }
 
 SqlVal SqlRowNum()

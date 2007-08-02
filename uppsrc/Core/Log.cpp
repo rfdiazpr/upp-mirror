@@ -67,7 +67,15 @@ void LogStream::Create(const char *path, bool append)
 	strcat(backup, ".old");
 
 #if defined(PLATFORM_WIN32)
-	DeleteFile(backup);
+
+	#if defined(PLATFORM_WINCE)
+		wchar_t pwcs[512];
+		mbstowcs(pwcs, backup, strlen(backup));
+		DeleteFile(pwcs);
+	#else
+		DeleteFile(backup);
+	#endif
+
 #elif defined(PLATFORM_POSIX)
 	unlink(backup);
 #else
@@ -75,7 +83,13 @@ void LogStream::Create(const char *path, bool append)
 #endif
 
 #if defined(PLATFORM_WIN32)
-	MoveFile(filename, backup);
+	#if defined(PLATFORM_WINCE)
+		wchar_t wfilename[512];
+		mbstowcs(wfilename, filename, strlen(filename));
+		MoveFile(wfilename, pwcs);
+	#else
+		MoveFile(filename, backup);
+	#endif
 #elif defined(PLATFORM_POSIX)
 	!rename(filename, backup);
 #else

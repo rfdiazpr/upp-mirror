@@ -149,6 +149,7 @@ public:
 	void         InsertDrop(int ii, PasteClip& d);
 
 	ColumnList&  Columns(int _n)                      { ncl = _n; Refresh(); return *this; }
+	int          GetColumns() const                   { return ncl; }
 	ColumnList&  ItemHeight(int _cy)                  { cy = _cy; Refresh(); return *this; }
 	int          GetItemHeight() const                { return cy; }
 	ColumnList&  RoundSize(bool b = true);

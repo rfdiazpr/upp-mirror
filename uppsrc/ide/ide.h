@@ -241,7 +241,9 @@ struct TargetMode {
 bool CheckLicense();
 bool Install();
 
-class TopicWindow : public HelpWindow {
+#define HELPNAME "Help Topics"
+
+class TopicCtrl : public HelpWindow {
 public:
 	virtual Topic AcquireTopic(const String& topic);
 	virtual void  BarEx(Bar& bar);
@@ -269,9 +271,9 @@ public:
 
 	void Serialize(Stream& s);
 
-	typedef TopicWindow CLASSNAME;
+	typedef TopicCtrl CLASSNAME;
 
-	TopicWindow();
+	TopicCtrl();
 };
 
 struct IdeCalc : CodeEditor {
@@ -462,7 +464,7 @@ public:
 	One<IdeDesigner> designer;
 	AssistEditor     editor;
 	CodeEditor       editor2;
-	QuickTabs        tabs, tabs2, dtabs;
+	QuickTabs        tabs, tabs2;
 	EscValue         macro_api;
 
 	RightTabs   btabs;
@@ -629,7 +631,7 @@ public:
 	} ff;
 	int                              iwc;
 
-	TopicWindow     doc;
+	TopicCtrl     doc;
 
 	int             state_icon;
 
@@ -774,6 +776,7 @@ public:
 		void  PackageClean();
 		void  RebuildAll();
 		void  CreateMakefile();
+		void  SaveMakeFile(const String& file);
 		void  CleanUppOut();
 		void  SwitchHeader();
 		void  FileCompile();
@@ -877,11 +880,11 @@ public:
 	void      CloseSplit();
 	void      KeySplit(bool horz);
 	void      SwapEditors();
-	void      DTabFile();
 	void      TabFile();
 	void      TabFile2();
 	void      ClearTab();
 	void      ClearTabs();
+	void      CloseRest(QuickTabs *tabs);
 	void      TabsLR(int d);
 
 	void      RefreshFrame(bool auto_disasm);

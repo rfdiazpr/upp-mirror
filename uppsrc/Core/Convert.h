@@ -17,6 +17,8 @@ inline int    DblInt(double d)      { return IsNull(d) ? int(Null) : fround(d); 
 Value         StrDblValue(const char* s);
 inline double StrDbl(const char* s) { return ScanDouble(s); }
 
+Value NotNullError();
+
 class Convert {
 public:
 #ifdef flagSO

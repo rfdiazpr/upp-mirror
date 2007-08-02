@@ -167,6 +167,16 @@
 	
 	* find's options open at fixed position instead of mouse click position
 	- find's edit use GetStdSize() to determine its height (to proper scale at dpi > 96)
+	* in select full row mode ctrl_up/down swaps rows position
+	+ inserting after and duplicating finally implemented
+	- fixed key bindings for inserting/appending
+	- added missing icons in popup menu
+	- fixed cursor entering
+	- fixed SetCursorId()
+	- fixed wrong value returned by SetCursor(n)
+	+ searching without toolbar
+	
+	
 	
 	
 	

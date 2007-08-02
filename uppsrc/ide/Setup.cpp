@@ -122,10 +122,11 @@ void Ide::UpdateFormat(CodeEditor& editor, QuickTabs& tabs)
 {
 	if(!IsActiveFile() || ActiveFile().tabsize <= 0)
 		editor.TabSize(editortabsize);
-	if(filetabs)
-		editor.SetFrame(tabs);
-	else
-		editor.SetFrame(FieldFrame());
+	if(!designer)
+		if(filetabs)
+			editor.SetFrame(tabs);
+		else
+			editor.SetFrame(FieldFrame());
 	editor.IndentSpaces(indent_spaces);
 	editor.IndentAmount(indent_amount);
 	editor.ShowTabs(show_tabs);

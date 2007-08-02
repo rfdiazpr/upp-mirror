@@ -1,8 +1,14 @@
 T_("Do you really want to delete the selected %s ?")
 plPL("Czy na pewno chcesz usunąć zaznaczone %s ?")
 
-T_("Insert")
+T_("Insert ")
 plPL("Wstaw")
+
+T_("Insert before")
+plPL("Wstaw przed")
+
+T_("Insert after")
+plPL("Wstaw za")
 
 T_("Insert a new %s into the table.")
 plPL("Wstawia nowy %s do tabeli.")
@@ -28,11 +34,20 @@ plPL("Edytuj")
 T_("Edit active %s.")
 plPL("Edytuje aktualny %s.")
 
-T_("Delete")
+T_("Delete ")
 plPL("Usuń")
 
 T_("Delete active %s.")
 plPL("Usuń aktualny %s.")
+
+T_("Paste as")
+plPL("Wklej jako")
+
+T_("appended")
+plPL("dodane")
+
+T_("inserted")
+plPL("wstawione")
 
 T_("Move up")
 plPL("Przesuń do góry")

@@ -335,7 +335,7 @@ void ChHostSkin()
 		{
 			HeaderCtrl::Style& s = HeaderCtrl::StyleDefault().Write();
 			Win32Look(s.look, 4, XP_HEADER, HP_HEADERITEM);
-			Image hm = XpImage(XP_HEADER, HP_HEADERITEM, 1, SColorPaper, Size(20, 10));
+			Image hm = Unmultiply(XpImage(XP_HEADER, HP_HEADERITEM, 1, SColorPaper, Size(20, 10)));
 			RGBA textc = SColorText();
 			int diff = Diff(hm[4][19], textc);
 			int hdroll = 0;
@@ -406,11 +406,11 @@ void ChHostSkin()
 			m = Unglyph(m, c, gf);
 			if(i == 0 && gf > 150)
 				CtrlsImg::Set(CtrlsImg::I_DA, ClassicCtrlsImg::DA());
-			
+
 			Button::StyleEdge().Write().look[i] = m;
 			if(cbs)
 				Button::StyleLeftEdge().Write().look[i] = m;
-			
+
 			Button::StyleNormal().Write().monocolor[i] = c;
 			Button::StyleOk().Write().monocolor[i] = c;
 			Button::StyleEdge().Write().monocolor[i] = c;
@@ -420,7 +420,7 @@ void ChHostSkin()
 			DropList::StyleDefault().Write().squaredbutton[i] = ChLookWith(m, CtrlsImg::DA(), c);
 			m = Unglyph(XpImage(XP_SCROLLBAR, SBP_ARROWBTN, i + ABS_UPNORMAL, paper));
 			Size msz = m.GetSize();
-			
+
 			Button::StyleScroll().Write().look[i] =
 			      VertBlend(m, Unglyph(XpImage(XP_SCROLLBAR, SBP_ARROWBTN, i + ABS_DOWNNORMAL,
 			                                   paper)),

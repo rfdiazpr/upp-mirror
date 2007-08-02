@@ -7,13 +7,6 @@ void Ide::TabFile()
 		EditFile(tabs.GetFile(q));
 }
 
-void Ide::DTabFile()
-{
-	int q = dtabs.GetCursor();
-	if(q >= 0)
-		EditFile(dtabs.GetFile(q));
-}
-
 void Ide::TabFile2()
 {
 	int q = tabs2.GetCursor();
@@ -26,39 +19,45 @@ void Ide::TabFile2()
 
 void Ide::ClearTab()
 {
-	if(designer) {
-		int c = dtabs.GetCursor();
-		if(c >= 0)
-			dtabs.Close(c);
-		tabs.Set(dtabs);
-	}
-	else {
-		int c = tabs.GetCursor();
-		if(c >= 0)
-			tabs.Close(c);
-	}
+	int c = tabs.GetCursor();
+	if(c >= 0)
+		tabs.Close(c);
 	tabs2.Set(tabs);
 }
 
 void Ide::ClearTabs()
 {
-	dtabs.Clear();
 	tabs.Clear();
 	FileSelected();
 }
 
+void Ide::CloseRest(QuickTabs *tabs)
+{
+	Index<String> fn;
+	const Workspace& wspc = IdeWorkspace();
+	for(int i = 0; i < wspc.GetCount(); i++)
+		for(int j = 0; j < wspc.GetPackage(i).file.GetCount(); j++)
+			fn.Add(SourcePath(wspc[i], wspc.GetPackage(i).file[j]));
+	String cfn;
+	if(tabs->GetCursor() >= 0)
+		cfn = tabs->GetFile(tabs->GetCursor());
+	for(int i = tabs->GetCount() - 1; i >= 0; i--)
+		if(fn.Find(tabs->GetFile(i)) < 0)
+			tabs->Close(i);
+	tabs->FindSetFile(cfn);
+}
+
 void Ide::TabsLR(int d)
 {
-	QuickTabs& t = designer ? dtabs : tabs;
-	int c = t.GetCursor();
-	if(c < 0 || t.GetCount() <= 1)
+	int c = tabs.GetCursor();
+	if(c < 0 || tabs.GetCount() <= 1)
 		return;
-	c = minmax(c + d, 0, t.GetCount() - 1);
-	EditFile(t.GetFile(c));
+	c = minmax(c + d, 0, tabs.GetCount() - 1);
+	EditFile(tabs.GetFile(c));
 }
 
 void Ide::FileSelected()
 {
 	if(!IsNull(editfile))
-		(designer ? dtabs : tabs).SetAddFile(editfile);
+		tabs.SetAddFile(editfile);
 }

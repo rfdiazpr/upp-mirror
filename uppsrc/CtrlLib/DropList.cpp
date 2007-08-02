@@ -158,7 +158,8 @@ void DropList::Paint(Draw& w) {
 	cr.right = sz.cx - 1;
 	cr.bottom = sz.cy - 1;
 	DrawRectMinusRect(w, r, cr, SColorPaper);
-	Color bg = f ? SColorHighlight
+	Color bg = notnull && i < 0 ? Blend(SColorPaper, Color(255, 0, 0), 32) : 
+	           f ? SColorHighlight 
 	             : push ? Blend(SColorHighlight, SColorFace, 235)
 	                    : IsShowEnabled() && !IsReadOnly() ? SColorPaper
 	                                                       : SColorFace;
@@ -274,6 +275,7 @@ void DropList::Select() {
 void DropList::Cancel() {
 	if(dropfocus)
 		SetFocus();
+	RefreshFrame();
 }
 
 void DropList::ClearList() {
@@ -317,7 +319,7 @@ void DropList::SetData(const Value& data) {
 }
 
 Value DropList::GetData() const {
-	return value;
+	return notnull && IsNull(value) ? NotNullError() : value;
 }
 
 Value DropList::GetValue() const {
@@ -401,8 +403,9 @@ DropList::DropList() {
 	displayall = false;
 	valueconvert = &NoConvert();
 	valuedisplay = NULL;
-	dropfocus = false;
+	dropfocus = true;
 	push = false;
+	notnull = false;
 }
 
 DropList::~DropList() {}

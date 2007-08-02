@@ -14,12 +14,13 @@ void IconShow::Paint(Draw& w)
 	int cx = sz.cx / __countof(color);
 	Size isz = image.GetSize();
 	int n = isz.cx ? minmax(sz.cx / isz.cx, 1, __countof(color)) : 1;
+	Image img = Premultiply(image);
 	for(int i = 0; i < n; i++) {
 		int x = i * sz.cx / n;
 		int cx = (i + 1) * sz.cx / n - x;
 		w.DrawRect(x, 0, cx, sz.cy, color[i]);
 		if(isz.cx)
-			w.DrawImage(x + (cx - isz.cx) / 2, (sz.cy - isz.cy) / 2, image);
+			w.DrawImage(x + (cx - isz.cx) / 2, (sz.cy - isz.cy) / 2, img);
 	}
 }
 
@@ -61,7 +62,7 @@ void IconDes::Paint(Draw& w)
 			while(b < pb[y] + isz.cx)
 				*b++ = cc1;
 		}
-		AlphaBlendOpaque(pb, image, image.GetLength());
+		AlphaBlend(pb, image, image.GetLength());
 		if(!pastepaint)
 			for(int y = 0; y < isz.cy; y++) {
 				const RGBA *m = selection[y];
@@ -116,9 +117,10 @@ void IconDes::Paint(Draw& w)
 						if(s->a == 255)
 							w.DrawRect(mx + 1, my + 1, magnify - 1, magnify - 1, *s);
 						else {
-							Color c1 = Blend(GrayColor(102), *s, s->a);
+							Color c = StraightColor(*s);
+							Color c1 = Blend(GrayColor(102), c, s->a);
 							w.DrawRect(mx + 1, my + 1, magnify - 1, magnify - 1, c1);
-							Color c2 = Blend(GrayColor(153), *s, s->a);
+							Color c2 = Blend(GrayColor(153), c, s->a);
 							w.DrawRect(mx + md, my + 1, mc, mc, c2);
 							w.DrawRect(mx + 1, my + md, mc, mc, c2);
 						}

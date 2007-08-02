@@ -5,7 +5,7 @@ NAMESPACE_UPP
 String SqlStatement::Get(int dialect) const
 {
 	ASSERT(dialect == ORACLE || dialect == SQLITE3 || dialect == MY_SQL || dialect == MSSQL ||
-	       dialect == POSTGRESS || dialect == FIREBIRD || dialect == DB2);
+	       dialect == PGSQL || dialect == FIREBIRD || dialect == DB2);
 	return SqlCompile(dialect, text);
 }
 
@@ -114,6 +114,12 @@ SqlSelect& SqlSelect::Offset(int64 offset) {
 SqlSelect& SqlSelect::Hint(const char *hint)
 {
 	text = "/*+ " + String(hint) + " */ " + text;
+	return *this;
+}
+
+SqlSelect& SqlSelect::Get()
+{
+	text = "select " + text + SqlCase(ORACLE, "from DUAL")("");
 	return *this;
 }
 

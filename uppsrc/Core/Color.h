@@ -69,7 +69,9 @@ public:
 #endif
 };
 
-inline RGBA operator*(int alpha, Color c) { RGBA x = c; x.a = alpha; return x; }
+RGBA operator*(int alpha, Color c);
+
+inline Color StraightColor(RGBA rgba)  { return Color(rgba.r, rgba.g, rgba.b); }
 
 typedef Color (*ColorF)();
 

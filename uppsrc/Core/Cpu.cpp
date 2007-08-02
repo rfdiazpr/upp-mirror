@@ -54,6 +54,29 @@ bool CPU_SSE()  { sCheckCPU(); return sHasSSE; }
 bool CPU_SSE2() { sCheckCPU(); return sHasSSE2; }
 bool CPU_SSE3() { sCheckCPU(); return sHasSSE3; }
 
+#ifdef PLATFORM_POSIX
+#include <sys/sysinfo.h>
+#endif
+
+int CPU_Cores()
+{
+	static int n;
+	ONCELOCK {
+#ifdef PLATFORM_WIN32
+		DWORD pa, sa;
+		GetProcessAffinityMask(GetCurrentProcess(), &pa, &sa);
+		DWORD x = 0x80000000;
+		for(int i = 0; i < 32; i++)
+			n += !!(sa & (1 << i));
+#elif defined(PLATFORM_POSIX)
+		n = minmax(get_nprocs(), 1, 256);
+#else
+		n = 1;
+#endif
+	}
+	return n;
+}
+
 #endif
 
 END_UPP_NAMESPACE

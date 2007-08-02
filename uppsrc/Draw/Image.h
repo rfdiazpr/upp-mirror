@@ -1,5 +1,13 @@
 #define NEWIMAGE
 
+enum ImageKind {
+	IMAGE_UNKNOWN,
+	IMAGE_EMPTY,
+	IMAGE_ALPHA,
+	IMAGE_MASK,
+	IMAGE_OPAQUE,
+};
+
 inline bool operator==(const RGBA& a, const RGBA& b)
 {
 	return a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
@@ -14,15 +22,23 @@ inline RGBA RGBAZero() { RGBA c; c.r = c.g = c.b = c.a = 0; return c; }
 
 void Fill(RGBA *t, const RGBA& src, int n);
 void FillColor(RGBA *t, const RGBA& src, int n);
-void PreMultiplyAlpha(RGBA *t, const RGBA *s, int len);
 
-void AlphaBlendOpaque(RGBA *t, const RGBA *s, int len);
+int  Premultiply(RGBA *t, const RGBA *s, int len);
+int  Unmultiply(RGBA *t, const RGBA *s, int len);
+
+void AlphaBlend(RGBA *t, const RGBA *s, int len);
+void AlphaBlend(RGBA *t, const RGBA *s, int len, Color color);
+
 void AlphaBlendOpaque(RGBA *t, const RGBA *s, int len, Color color);
-void AlphaBlendOpaque(RGBA *t, const RGBA *s, int len, int alpha);
-void AlphaBlend(RGBA *b, const RGBA *f, int len);
-void AlphaBlend(RGBA *b, const RGBA *f, int len, Color color);
+void AlphaBlendOpaque(RGBA *t, const RGBA *s, int len);
+
+void AlphaBlendStraight(RGBA *b, const RGBA *f, int len);
+void AlphaBlendStraight(RGBA *b, const RGBA *f, int len, Color color);
+void AlphaBlendStraightOpaque(RGBA *t, const RGBA *s, int len);
+void AlphaBlendStraightOpaque(RGBA *t, const RGBA *s, int len, int alpha);
+
 int  GetChMaskPos32(dword mask);
-void AlphaBlendOverBg(RGBA *b, RGBA bg, int len);
+void AlphaBlendOverBgST(RGBA *b, RGBA bg, int len);
 
 const byte *UnpackRLE(RGBA *t, const byte *src, int len);
 String      PackRLE(const RGBA *s, int len);
@@ -30,14 +46,6 @@ String      PackRLE(const RGBA *s, int len);
 inline int  Grayscale(int r, int g, int b) { return (77 * r + 151 * g + 28 * b) >> 8; }
 inline int  Grayscale(const RGBA& c)       { return Grayscale(c.r, c.g, c.b); }
 inline byte Saturate255(int x)             { return byte(~(x >> 24) & (x | (-(x >> 8) >> 24)) & 0xff); }
-
-enum ImageKind {
-	IMAGE_UNKNOWN,
-	IMAGE_EMPTY,
-	IMAGE_ALPHA,
-	IMAGE_MASK,
-	IMAGE_OPAQUE,
-};
 
 class  Image;
 class  ImageDraw;
@@ -100,6 +108,9 @@ public:
 	ImageBuffer(ImageDraw& w);
 	ImageBuffer(ImageBuffer& b);
 };
+
+void Premultiply(ImageBuffer& b);
+void Unmultiply(ImageBuffer& b);
 
 void SetSurface(Draw& w, int x, int y, int cx, int cy, const RGBA *pixels);
 
@@ -191,6 +202,7 @@ public:
 	Point GetHotSpot() const;
 	Point Get2ndSpot() const;
 	Size  GetDots() const;
+	int   GetKindNoScan() const;
 	int   GetKind() const;
 
 	int64 GetSerialId() const                 { return data ? data->serial : 0; }
@@ -236,6 +248,8 @@ public:
 	static Image SizeBottomLeft();
 	static Image SizeBottom();
 	static Image SizeBottomRight();
+	static Image Cross();
+	static Image Hand();
 
 	// IML support ("private"), deprecated - legacy .iml
 	struct Init {
@@ -246,7 +260,11 @@ public:
 	explicit Image(const Init& init);
 };
 
+Image Premultiply(const Image& img);
+Image Unmultiply(const Image& img);
+
 Vector<Image> UnpackImlData(const String& data);
+Vector<Image> UnpackImlData(const String& d, bool premul);
 
 class Iml {
 	struct IImage : Moveable<IImage> {

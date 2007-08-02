@@ -23,11 +23,14 @@ class ImageDraw : public Draw, NoCopy {
 	bool    has_alpha;
 
 	void Init();
+	Image Get(bool pm) const;
 
 public:
 	Draw& Alpha()                         { has_alpha = true; return alpha; }
 
 	operator Image() const;
+
+	Image GetStraight() const;
 
 	ImageDraw(Size sz);
 	ImageDraw(int cx, int cy);

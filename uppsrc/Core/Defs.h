@@ -389,7 +389,6 @@ struct MemoryProfile {
 };
 
 inline MemoryProfile *PeakMemoryProfile() { return NULL; }
-inline void   MemorySum(int& smallkb, int& largekb) {}
 
 #endif
 
@@ -399,6 +398,8 @@ bool CPU_SSE();
 bool CPU_SSE2();
 bool CPU_SSE3();
 #endif
+
+int  CPU_Cores();
 
 //Quick fix....
 #ifdef PLATFORM_WINCE

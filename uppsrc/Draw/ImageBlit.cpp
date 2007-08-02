@@ -98,15 +98,92 @@ String PackRLE(const RGBA *s, int len)
 	return r;
 }
 
-void PreMultiplyAlpha(RGBA *t, const RGBA *s, int len)
+int Premultiply(RGBA *t, const RGBA *s, int len)
 {
 	const RGBA *e = s + len;
 	while(s < e) {
-		int alpha = s->a + (s->a >> 7);
-		t->r = alpha * (s->r) >> 8;
-		t->g = alpha * (s->g) >> 8;
-		t->b = alpha * (s->b) >> 8;
-		t->a = s->a;
+		if(s->a != 255) {
+			while(s < e) {
+				byte a = s->a;
+				if(s->a != 0 || s->a != 255) {
+					while(s < e) {
+						int alpha = s->a + (s->a >> 7);
+						t->r = alpha * (s->r) >> 8;
+						t->g = alpha * (s->g) >> 8;
+						t->b = alpha * (s->b) >> 8;
+						t->a = s->a;
+						s++;
+						t++;
+					}
+					return IMAGE_ALPHA;
+				}
+				t->r = a & s->r;
+				t->g = a & s->g;
+				t->b = a & s->b;
+				t->a = s->a;
+				s++;
+				t++;
+			}
+			return IMAGE_MASK;
+		}
+		*t++ = *s++;
+	}
+	return IMAGE_OPAQUE;
+}
+
+int um_table__[256];
+
+void sInitUmTable__()
+{
+	ONCELOCK {
+		for(int i = 1; i < 256; i++)
+			um_table__[i] = 65536 / i;
+	}
+}
+
+int Unmultiply(RGBA *t, const RGBA *s, int len)
+{
+	sInitUmTable__();
+	const RGBA *e = s + len;
+	while(s < e) {
+		if(s->a != 255) {
+			while(s < e) {
+				byte a = s->a;
+				if(s->a != 0 || s->a != 255) {
+					while(s < e) {
+						int alpha = um_table__[s->a];
+						t->r = (alpha * s->r) >> 8;
+						t->g = (alpha * s->g) >> 8;
+						t->b = (alpha * s->b) >> 8;
+						t->a = s->a;
+						s++;
+						t++;
+					}
+					return IMAGE_ALPHA;
+				}
+				t->r = a & s->r;
+				t->g = a & s->g;
+				t->b = a & s->b;
+				t->a = s->a;
+				s++;
+				t++;
+			}
+			return IMAGE_MASK;
+		}
+		*t++ = *s++;
+	}
+	return IMAGE_OPAQUE;
+}
+
+void AlphaBlend(RGBA *t, const RGBA *s, int len)
+{
+	const RGBA *e = s + len;
+	while(s < e) {
+		int alpha = 256 - (s->a + (s->a >> 7));
+		t->r = s->r + (alpha * t->r >> 8);
+		t->g = s->g + (alpha * t->g >> 8);
+		t->b = s->b + (alpha * t->b >> 8);
+		t->a = s->a + (alpha * t->a >> 8);
 		s++;
 		t++;
 	}
@@ -116,25 +193,28 @@ void AlphaBlendOpaque(RGBA *t, const RGBA *s, int len)
 {
 	const RGBA *e = s + len;
 	while(s < e) {
-		int alpha = s->a + (s->a >> 7);
-		t->r += alpha * (s->r - t->r) >> 8;
-		t->g += alpha * (s->g - t->g) >> 8;
-		t->b += alpha * (s->b - t->b) >> 8;
+		int alpha = 256 - (s->a + (s->a >> 7));
+		t->r = s->r + (alpha * t->r >> 8);
+		t->g = s->g + (alpha * t->g >> 8);
+		t->b = s->b + (alpha * t->b >> 8);
 		t->a = 255;
 		s++;
 		t++;
 	}
 }
 
-void AlphaBlendOpaque(RGBA *t, const RGBA *s, int len, int alpha)
+void AlphaBlend(RGBA *t, const RGBA *s, int len, Color color)
 {
 	const RGBA *e = s + len;
-	alpha = alpha + (alpha >> 7);
+	int r = color.GetR();
+	int g = color.GetG();
+	int b = color.GetB();
 	while(s < e) {
-		t->r += alpha * (s->r - t->r) >> 8;
-		t->g += alpha * (s->g - t->g) >> 8;
-		t->b += alpha * (s->b - t->b) >> 8;
-		t->a = 255;
+		int alpha = s->a + (s->a >> 7);
+		t->r += alpha * (r - t->r) >> 8;
+		t->g += alpha * (g - t->g) >> 8;
+		t->b += alpha * (b - t->b) >> 8;
+		t->a = s->a + ((256 - alpha) * t->a >> 8);
 		s++;
 		t++;
 	}
@@ -151,6 +231,20 @@ void AlphaBlendOpaque(RGBA *t, const RGBA *s, int len, Color color)
 		t->r += alpha * (r - t->r) >> 8;
 		t->g += alpha * (g - t->g) >> 8;
 		t->b += alpha * (b - t->b) >> 8;
+		t->a = 255;
+		s++;
+		t++;
+	}
+}
+
+void AlphaBlendStraightOpaque(RGBA *t, const RGBA *s, int len)
+{
+	const RGBA *e = s + len;
+	while(s < e) {
+		int alpha = s->a + (s->a >> 7);
+		t->r += alpha * (s->r - t->r) >> 8;
+		t->g += alpha * (s->g - t->g) >> 8;
+		t->b += alpha * (s->b - t->b) >> 8;
 		t->a = 255;
 		s++;
 		t++;
@@ -184,7 +278,7 @@ inline void sInitBlends()
 		sOnceInitBlends();
 }
 
-void AlphaBlend(RGBA *b, const RGBA *f, int len)
+void AlphaBlendStraight(RGBA *b, const RGBA *f, int len)
 {
 	sInitBlends();
 	const RGBA *e = f + len;
@@ -200,7 +294,7 @@ void AlphaBlend(RGBA *b, const RGBA *f, int len)
 	}
 }
 
-void AlphaBlendOverBg(RGBA *b, RGBA bg, int len)
+void AlphaBlendOverBgStraight(RGBA *b, RGBA bg, int len)
 {
 	sInitBlends();
 	const RGBA *e = b + len;
@@ -215,7 +309,7 @@ void AlphaBlendOverBg(RGBA *b, RGBA bg, int len)
 	}
 }
 
-void AlphaBlend(RGBA *b, const RGBA *f, int len, Color color)
+void AlphaBlendStraight(RGBA *b, const RGBA *f, int len, Color color)
 {
 	sInitBlends();
 	const RGBA *e = f + len;
@@ -245,7 +339,7 @@ int GetChMaskPos32(dword mask)
 	return 0;
 }
 
-Vector<Image> UnpackImlData(const String& d)
+Vector<Image> UnpackImlData(const String& d, bool premul)
 {
 	Vector<Image> img;
 	String data = ZDecompress(d);
@@ -260,16 +354,33 @@ Vector<Image> UnpackImlData(const String& d)
 		const RGBA *e = t + len;
 		if(s + 4 * len > data.End())
 			break;
-		while(t < e) {
-			t->r = *s++;
-			t->g = *s++;
-			t->b = *s++;
-			t->a = *s++;
-			t++;
-		}
+		if(premul)
+			while(t < e) {
+				t->a = s[3];
+				int alpha = t->a + (t->a >> 7);
+				t->r = (alpha * s[0]) >> 8;
+				t->g = (alpha * s[1]) >> 8;
+				t->b = (alpha * s[2]) >> 8;
+				s += 4;
+				t++;
+			}
+		else
+			while(t < e) {
+				t->a = s[3];
+				t->r = s[0];
+				t->g = s[1];
+				t->b = s[2];
+				s += 4;
+				t++;
+			}
 		img.Add() = ib;
 	}
 	return img;
+}
+
+Vector<Image> UnpackImlData(const String& d)
+{
+	return UnpackImlData(d, true);
 }
 
 END_UPP_NAMESPACE

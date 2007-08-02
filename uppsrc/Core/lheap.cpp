@@ -92,7 +92,7 @@ static MLink *sAddChunk()
 {
 	ASSERT(sizeof(MHeader) == 8);
 	ASSERT(sizeof(MLink) <= 16);
-	MLink *ml = (MLink *)SysAllocRaw(65536);
+	MLink *ml = (MLink *)AllocRaw64KB();
 	if(!ml) return NULL;
 	ml->Link(&s_mall);
 	MHeader *bh = (MHeader *)((byte *)ml + 16);
@@ -203,6 +203,7 @@ void LFree(void *ptr) {
 
 void LMemoryShrink()
 {
+#ifdef flagMEMSHRINK
 	LTIMING("LMemoryShrink");
 	CriticalSection::Lock __(llock);
 	MLink *m = s_freebin[BINS - 1].next;
@@ -214,6 +215,7 @@ void LMemoryShrink()
 		cm->Unlink();
 		SysFreeRaw(cm, 65536);
 	}
+#endif
 }
 
 void LMake(MemoryProfile& p)

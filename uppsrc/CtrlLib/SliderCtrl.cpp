@@ -71,16 +71,18 @@ void SliderCtrl::LeftDown(Point pos, dword keyflags)
 	int p = HoVe(pos.x, pos.y);
 	if(IsNull(thumb)) {
 		value = ClientToSlider(p);
+		WhenSlideFinish();
 		UpdateActionRefresh();
 	}
 	else
 	if(p >= thumb && p < thumb + HoVe(CtrlImg::hthumb().GetSize().cx, CtrlImg::vthumb().GetSize().cy))
 		SetCapture();
-	else
-	if(p < thumb)
-		Dec();
-	else
-		Inc();
+	else {
+		if(p < thumb)
+			Dec();
+		else
+			Inc();
+	}
 	Refresh();
 }
 
@@ -92,6 +94,8 @@ void SliderCtrl::LeftRepeat(Point p, dword f)
 
 void SliderCtrl::LeftUp(Point pos, dword keyflags)
 {
+	if (HasCapture())
+		WhenSlideFinish();
 	Refresh();
 }
 
@@ -177,6 +181,7 @@ void SliderCtrl::Dec()
 	}
 	if(n != value) {
 		value = n;
+		WhenSlideFinish();
 		UpdateActionRefresh();
 	}
 }
@@ -197,6 +202,7 @@ void SliderCtrl::Inc()
 	}
 	if(n != value) {
 		value = n;
+		WhenSlideFinish();
 		UpdateActionRefresh();
 	}
 }

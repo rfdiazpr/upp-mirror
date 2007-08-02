@@ -164,19 +164,9 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 			ximg.blue_mask = 0x00ff0000;
 			ximg.green_mask = 0x0000ff00;
 			ximg.red_mask = 0x000000ff;
-			Buffer<RGBA> pma;
-			if(opaque) {
-				ximg.bitmap_unit = 32;
-				ximg.depth = 24;
-				ximg.data = (char *)~buffer;
-			}
-			else {
-				pma.Alloc(len);
-				PreMultiplyAlpha(pma, ~buffer, len);
-				ximg.bitmap_unit = 32;
-				ximg.depth = 32;
-				ximg.data = (char *)~pma;
-			}
+			ximg.bitmap_unit = 32;
+			ximg.data = (char *)~buffer;
+			ximg.depth = opaque ? 24 : 32;
 			XInitImage(&ximg);
 			GC gc = XCreateGC(Xdisplay, pixmap, 0, 0);
 			XPutImage(Xdisplay, pixmap, gc, &ximg, 0, 0, 0, 0, sz.cx, sz.cy);
@@ -315,6 +305,7 @@ ImageDraw::operator Image() const
 		}
 		XDestroyImage(xim);
 	}
+	Premultiply(ib);
 	return ib;
 }
 
@@ -368,6 +359,8 @@ Image Image::SizeRight() FCURSOR_(XC_right_side)
 Image Image::SizeBottomLeft() FCURSOR_(XC_bottom_left_corner)
 Image Image::SizeBottom() FCURSOR_(XC_bottom_side)
 Image Image::SizeBottomRight()  FCURSOR_(XC_bottom_right_corner)
+Image Image::Cross() FCURSOR_(XC_crosshair)
+Image Image::Hand() FCURSOR_(XC_hand1)
 
 Cursor X11Cursor(const Image& img)
 {
@@ -393,7 +386,7 @@ Cursor X11Cursor(const Image& img)
 	ximg.red_mask = 0x000000ff;
 	Buffer<RGBA> pma;
 	pma.Alloc(len);
-	PreMultiplyAlpha(pma, ~img, len);
+	memcpy(pma, ~img, len * sizeof(RGBA));
 	ximg.bitmap_unit = 32;
 	ximg.depth = 32;
 	ximg.data = (char *)~pma;

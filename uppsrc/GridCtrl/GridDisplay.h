@@ -1,8 +1,8 @@
 #ifndef _GridCtrl_GridDisplay_h_
 #define _GridCtrl_GridDisplay_h_
 
-#define  IMAGEFILE <GridCtrl/GridDisplay.iml>
-#define  IMAGECLASS GridDispImg
+#define  IMAGEFILE <GridCtrl/GridCtrl.iml>
+#define  IMAGECLASS GridImg
 #include <Draw/iml_header.h>
 
 #define BIT(x) (1 << x)

@@ -40,7 +40,7 @@ fn PaintHeader(w, r, text, sorting = 0)
 			w.DrawText(r.left, ty, "1", StdFont());
 			r.left += 6;
 		}
-		w.DrawImage(r.left, r.top + 2, "GridCtrl:GridDisplay.iml:ImgSortAsc");
+		w.DrawImage(r.left, r.top + 2, "GridCtrl:GridCtrl.iml:SortAsc");
 		r.left += 10;
 	}
 	w.DrawText(r.left, ty, text, StdFont());
@@ -265,14 +265,14 @@ ctrl GridCtrl {
 				PaintHeader(w, rt, "");
 				if(i == 0)
 				{
-					PaintImageCenter(w, rt, "GridCtrl:GridDisplay.iml:ImgFocused");
+					PaintImageCenter(w, rt, "GridCtrl:GridCtrl.iml:Focused");
 				}
 			}
 			if(.MultiSelect && (i == 3 || i == 6 || i == 7))
 			{
 				w.DrawRect(row.left, row.top + 1, wd, row_height - .HorzGrid, multi_bg);
 				if(.Indicator)
-					PaintImageCenter(w, rt, "GridCtrl:GridDisplay.iml:ImgSelected");
+					PaintImageCenter(w, rt, "GridCtrl:GridCtrl.iml:Selected");
 			}
 
 		}

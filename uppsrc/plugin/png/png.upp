@@ -1,5 +1,8 @@
 description "PNG image file format U++ encapsulation";
 
+uses
+	Core;
+
 library(!WIN32) png;
 
 options

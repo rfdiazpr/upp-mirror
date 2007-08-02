@@ -70,7 +70,7 @@ void RasterFormat::Set32be(dword rmask, dword gmask, dword bmask, dword amask)
 
 void RasterFormat::SetRGBA()
 {
-	type = RASTER_32ALPHA;
+	type = RASTER_32PREMULTIPLIED;
 	bpos = 0;
 	gpos = 1;
 	rpos = 2;
@@ -82,7 +82,7 @@ int RasterFormat::IsRGBA() const
 	return (type & 31) == RASTER_32ALPHA && bpos == 0 && gpos == 1 && rpos == 2 && apos == 3;
 }
 
-static byte bits[16] = { 1, 2, 4, 8, 16, 16, 24, 32, 32 };
+static byte bits[16] = { 1, 2, 4, 8, 16, 16, 24, 32, 32, 32 };
 
 int RasterFormat::GetByteCount(int cx) const
 {
@@ -312,11 +312,24 @@ void RasterFormat::Read(RGBA *t, const byte *s, int cx, const RGBA *palette) con
 		}
 		break;
 	case RASTER_32ALPHA:
-	case RASTER_32ALPHA|RASTER_MSBFIRST:
+	case RASTER_32ALPHA|RASTER_MSBFIRST: {
+			RGBA *e = t + cx;
+			while(t < e) {
+				t->a = s[apos];
+				int alpha = t->a + (t->a >> 7);
+				t->r = (alpha * s[rpos]) >> 8;
+				t->g = (alpha * s[gpos]) >> 8;
+				t->b = (alpha * s[bpos]) >> 8;
+				s++;
+				t++;
+			}
+		}
+		break;
+	case RASTER_32PREMULTIPLIED:
+	case RASTER_32PREMULTIPLIED|RASTER_MSBFIRST:
 		if(bpos == 0 && gpos == 1 && rpos == 2 && apos == 3)
 			memcpy(t, s, cx * sizeof(RGBA));
-		else
-		{
+		else {
 			RGBA *e = t + cx;
 			while(t < e) {
 				t->a = s[apos];

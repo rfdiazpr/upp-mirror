@@ -49,7 +49,7 @@ void IconDes::SyncShow()
 				image = IconDesImg::LargeImage();
 		}
 		iconshow.image = image;
-		list.Set(1, image);
+		list.Set(1, Premultiply(image));
 	}
 	iconshow.Refresh();
 }
@@ -428,7 +428,7 @@ void IconDes::SaveUndo()
 	if(!IsCurrent())
 		return;
 	Slot& c = Current();
-	Vector<Image> undo = UnpackImlData(c.undo);
+	Vector<Image> undo = UnpackImlData(c.undo, false);
 	int maxn = minmax(400000 / max(c.image.GetLength(), 1), 4, 128);
 	while(undo.GetCount() > maxn)
 		undo.Remove(0);
@@ -448,10 +448,10 @@ void IconDes::Undo()
 	if(!IsCurrent())
 		return;
 	Slot& c = Current();
-	Vector<Image> undo = UnpackImlData(c.undo);
+	Vector<Image> undo = UnpackImlData(c.undo, false);
 	if(undo.GetCount() == 0)
 		return;
-	Vector<Image> redo = UnpackImlData(c.redo);
+	Vector<Image> redo = UnpackImlData(c.redo, false);
 	redo.Add(c.image);
 	c.image = undo.Pop();
 	c.supersampling = sRemoveSsFlag(c.image);
@@ -466,10 +466,10 @@ void IconDes::Redo()
 	if(!IsCurrent())
 		return;
 	Slot& c = Current();
-	Vector<Image> redo = UnpackImlData(c.redo);
+	Vector<Image> redo = UnpackImlData(c.redo, false);
 	if(c.redo.GetCount() == 0)
 		return;
-	Vector<Image> undo = UnpackImlData(c.undo);
+	Vector<Image> undo = UnpackImlData(c.undo, false);
 	sSetSsFlag(c.image, c.supersampling);
 	undo.Add(c.image);
 	c.image = redo.Pop();

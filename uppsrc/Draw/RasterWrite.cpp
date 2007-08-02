@@ -2,6 +2,9 @@
 
 NAMESPACE_UPP
 
+extern int  um_table__[256];
+void sInitUmTable__();
+
 void RasterFormat::Write(byte *t, const RGBA *s, int cx, const PaletteCv *palcv) const
 {
 	const RGBA *e = s + cx;
@@ -305,6 +308,18 @@ void RasterFormat::Write(byte *t, const RGBA *s, int cx, const PaletteCv *palcv)
 		break;
 	case RASTER_32ALPHA:
 	case RASTER_32ALPHA|RASTER_MSBFIRST:
+		sInitUmTable__();
+		while(s < e) {
+			int alpha = um_table__[t[apos] = s->a];
+			t[rpos] = (alpha * s->r) >> 8;
+			t[gpos] = (alpha * s->g) >> 8;
+			t[bpos] = (alpha * s->b) >> 8;
+			t += 4;
+			s++;
+		}
+		break;
+	case RASTER_32PREMULTIPLIED:
+	case RASTER_32PREMULTIPLIED|RASTER_MSBFIRST:
 	#ifdef PLATFORM_WIN32
 		if(bpos == 0 && gpos == 1 && rpos == 2 && apos == 3)
 			memcpy(t, s, cx * sizeof(RGBA));

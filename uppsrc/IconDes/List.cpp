@@ -141,7 +141,7 @@ void IconDes::InsertFile()
 		Image m = StreamRaster::LoadFileAny(fn);
 		if(IsNull(m))
 			Exclamation(DeQtf(fn) + " not an image.");
-		ImageInsert(Filter(GetFileTitle(fn), CharFilterImageId), m);
+		ImageInsert(Filter(GetFileTitle(fn), CharFilterImageId), Unmultiply(m));
 	}
 }
 
@@ -274,12 +274,7 @@ Image IconDes::GetImage(int ii) const
 {
 	const Slot& c = slot[ii];
 	Image m = slot[ii].image;
-	if(c.supersampling) {
-		Size sz = m.GetSize() / 3;
-		sz = Size(max(sz.cx, 1), max(sz.cy, 1));
-		m = Rescale(m, sz);
-	}
-	return m;
+	return c.supersampling ? DownSample3x(m) : m;
 }
 
 String IconDes::GetName(int ii) const

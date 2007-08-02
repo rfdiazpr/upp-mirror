@@ -746,6 +746,12 @@ void Ide::CreateMakefile()
 	mfout <<= AppendFileName(GetFileDirectory(PackagePath(wspc[0])), "Makefile");
 	if(!mfout.ExecuteSaveAs("Save makefile as"))
 		return;
+	SaveMakeFile(~mfout);
+}
+
+void Ide::SaveMakeFile(const String& fn)
+{
+	const Workspace& wspc = IdeWorkspace();
 
 	BeginBuilding(false);
 
@@ -832,10 +838,10 @@ void Ide::CreateMakefile()
 		"$(OutFile): " << linkdep << "\n\t" << linkfiles << linkfileend << "\n"
 		<< rules;
 
-	if(!::SaveFile(~mfout, makefile))
-		PutConsole(NFormat("%s: error writing makefile", ~mfout));
+	if(::SaveFile(fn, makefile))
+		PutConsole(NFormat("%s(1): makefile generation complete", fn));
 	else
-		PutConsole(NFormat("%s(1): makefile generation complete", ~mfout));
+		PutConsole(NFormat("%s: error writing makefile", fn));
 
 	EndBuilding(true);
 }

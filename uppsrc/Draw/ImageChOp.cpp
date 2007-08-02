@@ -36,6 +36,7 @@ void InterPoint::Add(int y, int x) {
 
 void Interpolate(ImageBuffer& b, const Rect& rc)
 {
+	Unmultiply(b);
 	int todo;
 	do {
 		todo = 0;
@@ -69,6 +70,7 @@ void Interpolate(ImageBuffer& b, const Rect& rc)
 			}
 	}
 	while(todo);
+	Premultiply(b);
 }
 
 struct ButtonDecomposer {
@@ -154,11 +156,11 @@ struct ButtonDecomposer {
 Image Unglyph(const Image& m, Color& c, double& gfactor)
 {
 	ButtonDecomposer b;
-	b.src = m;
+	b.src = Unmultiply(m);
 	b.Do();
 	c = b.color;
 	gfactor = (double)b.gdiff / b.gcount;
-	return b.dst;
+	return Premultiply(b.dst);
 }
 
 Image Unglyph(const Image& m, Color& c)
@@ -183,11 +185,25 @@ Image VertBlend(Image img1, Image img2, int y0, int y1)
 	for(int y = 0; y < sz.cy; y++)
 		if(y >= y1)
 			memcpy(b[y], img2[y], sz.cx * sizeof(RGBA));
-		else {
-			memcpy(b[y], img1[y], sz.cx * sizeof(RGBA));
-			if(y >= y0 && y1 > y0)
-				AlphaBlendOpaque(b[y], img2[y], sz.cx, 255 * (y - y0) / (y1 - y0));
+		else
+		if(y >= y0 && y1 > y0) {
+			int alpha = 256 * (y - y0) / (y1 - y0);
+			RGBA *t = b[y];
+			const RGBA *s1 = img1[y];
+			const RGBA *s2 = img2[y];
+			const RGBA *e = s1 + sz.cx;
+			while(s1 < e) {
+				t->r = s1->r + ((alpha * (s2->r - s1->r)) >> 8);
+				t->g = s1->g + ((alpha * (s2->g - s1->g)) >> 8);
+				t->b = s1->b + ((alpha * (s2->b - s1->b)) >> 8);
+				t->a = s1->a + ((alpha * (s2->a - s1->a)) >> 8);
+				s1++;
+				s2++;
+				t++;
+			}
 		}
+		else
+			memcpy(b[y], img1[y], sz.cx * sizeof(RGBA));
 	return b;
 }
 
@@ -249,11 +265,13 @@ Image RecreateAlpha(const Image& overwhite, const Image& overblack)
 		bs++;
 		ws++;
 	}
+	Premultiply(r);
 	return r;
 }
 
-int ImageMargin(const Image& m, int p, int dist)
+int ImageMargin(const Image& _m, int p, int dist)
 {
+	Image m = Unmultiply(_m);
 	Color c = m[4][4];
 	int d;
 	for(d = 4; d > 0; d--)

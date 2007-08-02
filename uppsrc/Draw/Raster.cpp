@@ -2,6 +2,15 @@
 
 NAMESPACE_UPP
 
+Raster::Info::Info()
+{
+	bpp = 24;
+	colors = 1 << 24;
+	dots = Size(0, 0);
+	hotspot = Point(0, 0);
+	kind = IMAGE_OPAQUE;
+}
+
 const RasterFormat *Raster::GetFormat()
 {
 	return NULL;

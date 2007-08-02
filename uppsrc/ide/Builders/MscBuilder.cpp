@@ -463,9 +463,9 @@ bool MscBuilder::Link(const Vector<String>& linkfile, const String& linkoptions,
 			else
 				link << " -incremental:no -release -OPT:REF,ICF,NOWIN98";
 			if(HasFlag("MSC8ARM"))
-				link <<  " -subsystem:windowsce,4.20 /ARMPADCODE";
+				link << " -subsystem:windowsce,4.20 /ARMPADCODE -NODEFAULTLIB:\"oldnames.lib\" ";
 			else
-			if(HasFlag("GUI"))
+			if(HasFlag("GUI") || HasFlag("MSC8ARM"))
 				link << (HasFlag("WIN32") ? " -subsystem:windows" : " -subsystem:windowsce");
 			else
 				link << " -subsystem:console";

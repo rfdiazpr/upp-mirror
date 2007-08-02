@@ -554,12 +554,15 @@ void FileSel::Update() {
 	filename = String();
 	filesize = String();
 	filetime = String();
+	if(preview)
+		*preview <<= Null;
 	if(list.IsCursor()) {
 		fn = list[list.GetCursor()].name;
 		if(fn[1] == ':' && fn.GetLength() <= 3)
 			filename = t_("  Drive");
 		else {
-			Array<FileSystemInfo::FileInfo> ff = filesystem->Find(FilePath(fn), 1);
+			String path = FilePath(fn);
+			Array<FileSystemInfo::FileInfo> ff = filesystem->Find(path, 1);
 			if(!ff.IsEmpty()) {
 				filename = "  " + fn;
 				if(ff[0].is_directory)
@@ -575,6 +578,8 @@ void FileSel::Update() {
 						filesize = Format("%d K  ", n >> 10);
 					else
 						filesize = Format("%d M  ", n >> 20);
+					if(preview)
+						*preview <<= path;
 				}
 				Time tm = ff[0].last_write_time;
 				filetime = "     " + Format(tm);
@@ -594,7 +599,7 @@ void FileSel::FileUpdate() {
 	if(mode != SAVEAS || list.IsCursor() && list[list.GetCursor()].isdir)
 		ok.SetLabel(t_("Open"));
 	else
-		ok.SetLabel(t_("Save"));		
+		ok.SetLabel(t_("Save"));
 }
 
 void FileSel::Rename(const String& on, const String& nn) {
@@ -703,9 +708,9 @@ bool FileSel::Execute(int _mode) {
 		filename.SetPosY(p);
 		filesize.SetPosY(p);
 		filetime.SetPosY(p);
-		p = list.GetPos().y;
+		p = splitter.Ctrl::GetPos().y;
 		p.SetB(q + 20);
-		list.SetPosY(p);
+		splitter.SetPosY(p);
 		bidname = false;
 	}
 	else {
@@ -719,6 +724,7 @@ bool FileSel::Execute(int _mode) {
 	readonly.Show(rdonly && mode == OPEN);
 	list.Multi(multi && mode == OPEN);
 	dir.ClearList();
+	file <<= Null;
 	int i;
 	if(basedir.IsEmpty()) {
 		for(i = 0; i < lru.GetCount(); i++)
@@ -754,7 +760,7 @@ bool FileSel::Execute(int _mode) {
 				dir <<= "";
 		}
 	}
-	Rect lr = list.GetRect();
+	Rect lr = splitter.GetRect();
 	Rect dr = dir.GetRect();
 	int px = GetSize().cx - lr.right;
 	if(IsMulti()) {
@@ -834,7 +840,7 @@ bool FileSel::ExecuteSelectDir(const char *title)
 }
 
 void FileSel::Serialize(Stream& s) {
-	int version = 5;
+	int version = 6;
 	s / version;
 	String ad = ~dir;
 	s / activetype % ad;
@@ -865,6 +871,9 @@ void FileSel::Serialize(Stream& s) {
 	if(version >= 5) {
 		s % sortext;
 	}
+	if(version >= 6) {
+		s % splitter;
+	}
 }
 
 String FileSel::GetFile(int i) const {
@@ -875,6 +884,36 @@ String FileSel::GetFile(int i) const {
 			p = AppendFileName(dir.GetData(), p);
 	}
 	return p;
+}
+
+void FileSel::SyncSplitter()
+{
+	splitter.Clear();
+	splitter.Add(list);
+	if(preview)
+		splitter.Add(*preview);
+}
+
+FileSel& FileSel::Preview(Ctrl& ctrl)
+{
+	bool n = false;
+	if(!preview) {
+		Size sz = GetRect().GetSize();
+		sz.cx = 5 * sz.cx / 3;
+		SetRect(sz);
+		n = true;
+	}
+	preview = &ctrl;
+	SyncSplitter();
+	if(n)
+		splitter.SetPos(6666);
+	return *this;
+}
+
+FileSel& FileSel::Preview(const Display& d)
+{
+	preview_display.SetDisplay(d);
+	return Preview(preview_display);
 }
 
 FileSel::FileSel() {
@@ -937,6 +976,11 @@ FileSel::FileSel() {
 	appmodal = true;
 
 	AddChildBefore(GetFirstChild(), &sizegrip);
+
+	preview = NULL;
+	preview_display.SetFrame(FieldFrame());
+
+	SyncSplitter();
 }
 
 FileSel::~FileSel() {}

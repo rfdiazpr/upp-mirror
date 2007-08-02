@@ -338,15 +338,9 @@ Ide::Ide()
 	start_time = GetSysTime();
 	stat_build_time = 0;
 	build_start_time = Null;
-	hydra1_threads = 1;
+	hydra1_threads = CPU_Cores();
 
 	chstyle = 0;
-
-#ifdef PLATFORM_WIN32
-	SYSTEM_INFO si;
-	GetSystemInfo(&si);
-	hydra1_threads = minmax<int>(si.dwNumberOfProcessors, 1, 10);
-#endif
 
 	Sizeable().Zoomable();
 
@@ -399,11 +393,11 @@ Ide::Ide()
 
 	editor.topsbbutton.ScrollStyle().NoWantFocus().Show();
 	editor.topsbbutton1.ScrollStyle().NoWantFocus().Show();
-	editor.SetFrame(tabs);
 	tabs <<= THISBACK(TabFile);
+	tabs.WhenCloseRest = THISBACK1(CloseRest, &tabs);
 	editor2.SetFrame(tabs2);
 	tabs2 <<= THISBACK(TabFile2);
-	dtabs <<= THISBACK(DTabFile);
+	tabs2.WhenCloseRest = THISBACK1(CloseRest, &tabs2);
 	editor2.topsbbutton.ScrollStyle().NoWantFocus().Show();
 	editor2.topsbbutton1.ScrollStyle().NoWantFocus().Show();
 	editor2.WhenLeftDown = THISBACK(SwapEditors);
@@ -413,6 +407,7 @@ Ide::Ide()
 
 	mainconfiglist.WhenClick = THISBACK(MainConfig);
 	mainconfiglist <<= THISBACK(OnMainConfigList);
+	mainconfiglist.NoDropFocus();
 
 	buildmode <<= THISBACK(SetupOutputMode);
 	buildmode.AddFrame(buildmethod);
@@ -747,6 +742,8 @@ void AppMain___()
 				ide.targetmode = 0;
 				ide.console.console = true;
 				bool clean = false;
+				bool makefile = false;
+				String mkf;
 				for(int i = 3; i < arg.GetCount(); i++)
 					if(arg[i][0] == '>')
 						ide.mainconfigparam = Filter(~arg[i] + 1, CommaSpace);
@@ -782,6 +779,9 @@ void AppMain___()
 							case 'e':
 								stoponerror = true;
 								break;
+							case 'M':
+								makefile = true;
+								break;
 							case 'v':
 								ide.console.verbosebuild = true;
 								break;
@@ -796,10 +796,15 @@ void AppMain___()
 					}
 					else {
 						ide.debug.target_override = ide.release.target_override = true;
-						ide.debug.target = ide.release.target = arg[i];
+						ide.debug.target = ide.release.target = mkf = arg[i];
 					}
 				if(clean)
 					ide.Clean();
+				if(makefile) {
+					ide.SaveMakeFile(IsNull(mkf) ? "Makefile" : mkf);
+					SetExitCode(0);
+				}
+				else
 				if(ide.Build())
 					SetExitCode(0);
 				else {

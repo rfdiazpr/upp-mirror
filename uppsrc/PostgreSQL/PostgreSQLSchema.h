@@ -68,27 +68,29 @@
 #define INDEX                      ATTRIBUTE("create index IDX_@x on @t(@c);", \
                                              "drop index IDX_@x;")
 #ifndef REFERENCES
-#define REFERENCES(x)              ATTRIBUTE("alter table @t add (constraint FK_@x foreign key "\
-                                             "(@c) references " #x ");",\
+#define REFERENCES(x)              ATTRIBUTE("alter table @t add constraint FK_@x foreign key "\
+                                             "(@c) references " #x ";",\
                                              "alter table @t drop constraint FK_@x;")
 #endif
 #ifndef REFERENCES_CASCADE
-#define REFERENCES_CASCADE(x)      ATTRIBUTE("alter table @t add (constraint FK_@x foreign key "\
-                                             "(@c) references " #x " on delete cascade);",\
+#define REFERENCES_CASCADE(x)      ATTRIBUTE("alter table @t add constraint FK_@x foreign key "\
+                                             "(@c) references " #x " on delete cascade;",\
                                              "alter table @t drop constraint FK_@x;")
 #endif
 #ifndef REFERENCES_
-#define REFERENCES_(n, x)          ATTRIBUTE("alter table @t add (constraint FK_@x$" #n " foreign key "\
-                                             "(@c) references " #x ");",\
+#define REFERENCES_(n, x)          ATTRIBUTE("alter table @t add constraint FK_@x$" #n " foreign key "\
+                                             "(@c) references " #x ";",\
                                              "alter table @t drop constraint FK_@x$" #n ";")
 #endif
 #ifndef REFERENCES_CASCADE_
-#define REFERENCES_CASCADE_(n, x)  ATTRIBUTE("alter table @t add (constraint FK_@x$" #n " foreign key "\
-                                             "(@c) references " #x " on delete cascade);",\
+#define REFERENCES_CASCADE_(n, x)  ATTRIBUTE("alter table @t add constraint FK_@x$" #n " foreign key "\
+                                             "(@c) references " #x " on delete cascade;",\
                                              "alter table @t drop constraint FK_@x$" #n ";")
 #endif
 
-#define DUAL_PRIMARY_KEY(k1, k2)   INLINE_ATTRIBUTE(", primary key (" #k1 ", " #k2 ")")
+#define DUAL_PRIMARY_KEY(k1, k2)   ATTRIBUTE("alter table @t add constraint DK_@t primary key "\
+                                             "(" #k1 ", " #k2 ");",\
+                                             "alter table @t drop constraint DK_@t;")
 
 #define DUAL_UNIQUE(k1, k2)        ATTRIBUTE("alter table @t add constraint DQ_@t unique "\
                                              "(" #k1 ", " #k2 ");",\

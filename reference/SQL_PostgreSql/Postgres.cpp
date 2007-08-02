@@ -24,6 +24,10 @@ bool PostgreSQLTest::OpenDB()
 	}
 	m_array.SetSession(m_session);
 
+#ifdef _DEBUG
+	m_session.SetTrace();
+#endif
+
 	//schema
 	Progress p;
 	p.SetText(t_("Creating _DEBUG database"));
@@ -40,7 +44,6 @@ bool PostgreSQLTest::OpenDB()
 		PostgreSQLPerformScript(sch.Config(),se, p);
 	}
 	sch.SaveNormal();
-
 
 	return true;
 }

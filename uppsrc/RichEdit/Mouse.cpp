@@ -110,7 +110,7 @@ void RichEdit::LeftDown(Point p, dword flags)
 			Move(c, flags & K_SHIFT);
 			mpos = c;
 			SetCapture();
-			if(cursorp.object && GetObjectRect(cursor).Contains(p))
+			if(cursorp.object && GetObjectRect(cursor).Offseted(16, -sb).Contains(p))
 				SetObjectPos(cursor);
 		}
 	}

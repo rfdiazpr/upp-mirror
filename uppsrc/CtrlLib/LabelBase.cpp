@@ -189,6 +189,7 @@ Image DisImage(const Image& m)
 	RGBA *e = s + ib.GetLength();
 	while(s < e)
 		(s++)->a /= 3;
+	Premultiply(ib);
 	return ib;
 }
 

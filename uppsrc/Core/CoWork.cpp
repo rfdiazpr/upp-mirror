@@ -16,7 +16,7 @@ CoWork::Pool& CoWork::pool()
 CoWork::Pool::Pool()
 {
 	LLOG("CoWork INIT");
-	for(int i = 0; i < 6; i++)
+	for(int i = 0; i < CPU_Cores() + 2; i++)
 		threads.Add().Run(callback1(&ThreadRun, i));
 }
 

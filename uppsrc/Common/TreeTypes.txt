@@ -24,3 +24,17 @@ PosValue
 0 0 -1
 Upp::RGBA
 0 0 -1
+ShapeInfo
+0 0 -1
+PosRoom
+0 0 -1
+RoomObject
+0 0 -1
+Upp::Buffer<Upp::RGBA>
+0 0 -1
+Upp::ImageEncoder
+0 0 -1
+Upp::RasterFormat
+0 0 -1
+Upp::Vector<int>
+0 0 -1

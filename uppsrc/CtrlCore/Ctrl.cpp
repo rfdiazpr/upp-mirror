@@ -536,7 +536,7 @@ Ctrl::Ctrl() {
 #ifdef PLATFORM_WIN32
 	activex = false;
 #endif
-	backpaint = NOBACKPAINT;
+	backpaint = TRANSPARENTBACKPAINT;
 	inframe = false;
 	ignoremouse = transparent = false;
 	caretcx = caretcy = caretx = carety = 0;

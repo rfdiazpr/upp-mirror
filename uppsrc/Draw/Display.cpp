@@ -104,7 +104,8 @@ void StdDisplayClass::Paint0(Draw& w, const Rect& r, const Value& q,
 	if(tsz.cx > r.GetWidth() && !IsNull(paper)) {
 		int wd = min(r.GetWidth() / 4, 8);
 		wd = min(wd, tsz.cx - r.GetWidth());
-		w.DrawImage(r.right - wd, r.top, HorzFadeOut(Size(wd, r.GetHeight()), paper));
+		if(wd > 0 && r.GetHeight() > 0)
+			w.DrawImage(r.right - wd, r.top, HorzFadeOut(Size(wd, r.GetHeight()), paper));
 	}
 }
 
@@ -286,7 +287,7 @@ Size  PaintRect::RatioSize(int cx, int cy) const {
 }
 
 void  PaintRect::Paint(Draw& w, const Rect& r,
-					   Color ink, Color paper, dword style) const {
+                       Color ink, Color paper, dword style) const {
 	if(display)
 		display->Paint(w, r, value, ink, paper, style);
 }

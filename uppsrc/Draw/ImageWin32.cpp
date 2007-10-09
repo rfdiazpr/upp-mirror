@@ -1,5 +1,9 @@
 #include "Draw.h"
 
+#ifdef PLATFORM_WIN32
+#include <shellapi.h>
+#endif
+
 NAMESPACE_UPP
 
 #ifdef PLATFORM_WIN32
@@ -192,13 +196,21 @@ static tAlphaBlend fnAlphaBlend()
 void Image::Data::CreateHBMP(HDC dc, const RGBA *data)
 {
 	DrawLock __;
-	BitmapInfo32__ bi(buffer.GetWidth(), buffer.GetHeight());
+	Size sz = buffer.GetSize();
+	BitmapInfo32__ bi(sz.cx, sz.cy);
 	HDC dcMem = ::CreateCompatibleDC(dc);
 	RGBA *pixels;
-	hbmp = CreateDIBSection(dcMem, bi, DIB_RGB_COLORS, (void **)&pixels, NULL, 0);
-	HDC hbmpOld = (HDC) ::SelectObject(dcMem, hbmp);
+	HBITMAP hbmp32 = CreateDIBSection(dcMem, bi, DIB_RGB_COLORS, (void **)&pixels, NULL, 0);
+	HDC hbmpOld = (HDC) ::SelectObject(dcMem, hbmp32);
 	memcpy(pixels, data, buffer.GetLength() * sizeof(RGBA));
+	HDC dcMem2 = ::CreateCompatibleDC(dc);
+	hbmp = ::CreateCompatibleBitmap(dc, sz.cx, sz.cy);
+	HBITMAP o2 = (HBITMAP)::SelectObject(dcMem2, hbmp);
+	::BitBlt(dcMem2, 0, 0, sz.cx, sz.cy, dcMem, 0, 0, SRCCOPY);
+	::SelectObject(dcMem2, o2);
+	::DeleteDC(dcMem2);
 	::SelectObject(dcMem, hbmpOld);
+	::DeleteObject(hbmp32);
 	::DeleteDC(dcMem);
 	ResCount++;
 }
@@ -241,13 +253,14 @@ void Image::Data::Paint(Draw& w, int x, int y, const Rect& src, Color c)
 		}
 		LTIMING("Image Opaque blit");
 		HDC dcMem = ::CreateCompatibleDC(dc);
-		::SelectObject(dcMem, hbmp);
+		HBITMAP o = (HBITMAP)::SelectObject(dcMem, hbmp);
 		::BitBlt(dc, x, y, ssz.cx, ssz.cy, dcMem, sr.left, sr.top, SRCCOPY);
+		::SelectObject(dcMem, o);
 		::DeleteDC(dcMem);
 		PaintOnlyShrink();
 		return;
 	}
-	if(GetKind() == IMAGE_MASK) {
+	if(GetKind() == IMAGE_MASK/* || GetKind() == IMAGE_OPAQUE*/) {
 		HDC dcMem = ::CreateCompatibleDC(dc);
 		if(!hmask) {
 			LTIMING("Image Mask create");
@@ -420,18 +433,9 @@ Image Image::SizeBottomRight() { return Null; }
 
 #else
 
-Image Win32IconCursor(LPCSTR id, int iconsize, bool cursor)
+static Image sWin32Icon(HICON icon, bool cursor)
 {
 	DrawLock __;
-	HICON icon;
-	if(cursor)
-		icon = (HICON)LoadCursor(0, id);
-	else
-		if(iconsize)
-			icon = (HICON)LoadImage(GetModuleHandle(NULL), id,
-			                        IMAGE_ICON, iconsize, iconsize, LR_DEFAULTCOLOR);
-		else
-			icon = LoadIcon(0, id);
 	ICONINFO iconinfo;
 	if(!icon || !GetIconInfo(icon, &iconinfo))
 		return Image();
@@ -453,8 +457,10 @@ Image Win32IconCursor(LPCSTR id, int iconsize, bool cursor)
 		RGBA *e = s + len;
 		RGBA *m = mask;
 		while(s < e) {
-			if(s->a != 255 && s->a != 0)
+			if(s->a != 255 && s->a != 0) {
+				Premultiply(b);
 				goto alpha;
+			}
 			s++;
 		}
 		s = ~b;
@@ -483,10 +489,33 @@ alpha:
 	::DeleteObject(iconinfo.hbmColor);
 	::DeleteObject(iconinfo.hbmMask);
 	Image img(b);
-	if(cursor)
-		img.SetCursorCheat(id);
 	::DestroyIcon(icon);
 	return img;
+}
+
+Image Win32IconCursor(LPCSTR id, int iconsize, bool cursor)
+{
+	HICON icon;
+	if(cursor)
+		icon = (HICON)LoadCursor(0, id);
+	else
+		if(iconsize)
+			icon = (HICON)LoadImage(GetModuleHandle(NULL), id,
+			                        IMAGE_ICON, iconsize, iconsize, LR_DEFAULTCOLOR);
+		else
+			icon = LoadIcon(0, id);
+	Image img = sWin32Icon(icon, cursor);
+	if(cursor)
+		img.SetCursorCheat(id);
+	return img;
+}
+
+Image Win32DllIcon(const char *dll, int ii, bool large)
+{
+	HICON icon;
+	if(ExtractIconEx(dll, ii, large ? &icon : NULL, large ? NULL : &icon, 1) == 1)
+		return sWin32Icon(icon, false);
+	return Null;
 }
 
 Image Win32Icon(LPCSTR id, int iconsize)

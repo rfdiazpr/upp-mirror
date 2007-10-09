@@ -8,6 +8,8 @@
 #pragma hdrstop
 #include "version.h"
 
+using namespace Upp;
+
 #define TFILE "wisapi.t"
 #include <Core/t.h>
 
@@ -355,8 +357,9 @@ private:
 
 		// state parameters
 		int             conn_id;
-		CheckedSection conn_lock;
+		CheckedSection  conn_lock;
 		WIsapiClient&   owner;
+		One<CheckedSection::Lock> owner_lock;
 		HttpQuery       query;
 		Socket          socket; // server connection
 	};
@@ -470,7 +473,8 @@ bool WIsapiClient::Connection::Run(int cid, const HttpQuery& new_query, EXTENSIO
 		is_busy = true;
 	}
 
-	owner.client_lock.Leave();
+	owner_lock.Clear();
+//	owner.client_lock.Leave();
 	CONNLOG(String() << "leaving client lock = " << owner.client_lock.Get());
 
 	dword start_ticks = GetTickCount();
@@ -479,7 +483,8 @@ bool WIsapiClient::Connection::Run(int cid, const HttpQuery& new_query, EXTENSIO
 	String error = RawRun(new_query, ecb, data_length);
 
 	CONNLOG(String() << "re-entering client lock = " << owner.client_lock.Get());
-	owner.client_lock.Enter();
+	owner_lock = new CheckedSection::Lock(owner.client_lock);
+//	owner.client_lock.Enter();
 
 	bool is_ok = IsNull(error);
 	if(is_error = !is_ok)
@@ -672,7 +677,8 @@ bool WIsapiClient::Run(int cid, const HttpQuery& query, EXTENSION_CONTROL_BLOCK 
 	do
 	{
 		ISAPILOG("WIsapiClient(" << cid << "): entering client lock = " << client_lock.Get());
-		client_lock.Enter();
+		One<CheckedSection::Lock> lock = new CheckedSection::Lock(client_lock);
+//		client_lock.Enter();
 		if(connections.IsEmpty())
 			return false;
 		int repcnt = connections.GetCount();
@@ -690,14 +696,15 @@ bool WIsapiClient::Run(int cid, const HttpQuery& query, EXTENSION_CONTROL_BLOCK 
 			ISAPILOG("WIsapiClient(" << cid << "): trying connection #" << i);
 			if(conn.Run(cid, query, ecb))
 			{
-				client_lock.Leave();
+//				client_lock.Leave();
 				ISAPILOG("WIsapiClient(" << cid << "): request completed, lock = " << client_lock.Get());
 				return true;
 			}
 			if(++i >= connections.GetCount())
 				i = 0;
 		}
-		client_lock.Leave();
+		lock.Clear();
+//		client_lock.Leave();
 		ISAPILOG("WIsapiClient(" << cid << "): leaving client lock = " << client_lock.Get());
 		ISAPIDEBUG(free_event.Wait(500);)
 	}
@@ -830,13 +837,13 @@ Htmls WIsapiClient::Body(String eng)
 	if(remote_admin)
 	{
 		menu
-			<< HtmlCell() / HtmlMenu(page == CONFIG, t_("Configuration"), cfg_url, 120)
+			<< HtmlCell() / ::HtmlMenu(page == CONFIG, t_("Configuration"), cfg_url, 120)
 			<< HtmlCell() / HtmlHardSpace(2);
 	}
 	else
 		page = STAT;
 	menu
-		<< HtmlCell() / HtmlMenu(page == STAT, t_("Statistics"), cfg_url + "=s", 120)
+		<< HtmlCell() / ::HtmlMenu(page == STAT, t_("Statistics"), cfg_url + "=s", 120)
 //		<< HtmlCell() / HtmlHardSpace(2)
 //		<< HtmlCell() / HtmlMenu(page == SERV, "Služby", cfg_url + "=r", 120)
 	;
@@ -1139,7 +1146,7 @@ Htmls WIsapiClient::Statistics()
 {
 	Htmls content;
 
-	double duration = GetSysTime() - run_time;
+	double duration = (double)(GetSysTime() - run_time);
 	int id = fround(duration);
 	String dd;
 	if(id < 60)

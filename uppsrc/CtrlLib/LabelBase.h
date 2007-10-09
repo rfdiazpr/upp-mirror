@@ -17,7 +17,7 @@ void CtrlsImageLook(Value *look, int i, const Image& image, int n = 4);
 
 String DeAmp(const char *s);
 
-Size GetSmartTextSize(const char *text, Font font = StdFont());
+Size GetSmartTextSize(const char *text, Font font = StdFont(), int cx = INT_MAX);
 int  GetSmartTextHeight(const char *s, int cx, Font font = StdFont());
 void DrawSmartText(Draw& w, int x, int y, int cx, const char *text,
                    Font font = StdFont(), Color ink = DefaultInk, int accesskey = 0);
@@ -54,7 +54,7 @@ struct DrawLabel {
 
 	int       accesskey;
 
-	Size      GetSize() const;
+	Size      GetSize(int txtcx = INT_MAX) const;
 	Size      Paint(Draw& w, const Rect& r, bool visibleaccesskey = true) const;
 	Size      Paint(Draw& w, int x, int y, int cx, int cy, bool visibleaccesskey = true) const;
 

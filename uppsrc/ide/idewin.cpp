@@ -511,6 +511,8 @@ Ide::Ide()
 	editor.theide = this;
 
 	histi = 0;
+
+	doc_serial = -1;
 }
 
 Ide::~Ide()

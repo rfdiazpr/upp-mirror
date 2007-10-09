@@ -1,3 +1,5 @@
+description "Columns with widget class in ArrayCtrl";
+
 uses
 	CtrlLib;
 
@@ -6,4 +8,3 @@ file
 
 mainconfig
 	"" = "GUI";
-

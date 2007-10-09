@@ -51,6 +51,7 @@ Image ChImageMaker::Make() const
 
 void  ChDraw(Draw& w, int x, int y, int cx, int cy, const Image& img, const Rect& src)
 {
+	LTIMING("ChDraw");
 	if(cx > 0 && cy > 0) {
 		ChImageMaker m;
 		m.sz = Size(cx, cy);

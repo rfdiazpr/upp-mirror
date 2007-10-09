@@ -50,7 +50,10 @@ struct RasterFormat {
 	void Set24be(dword rmask, dword gmask, dword bmask);
 	void Set32le(dword rmask, dword gmask, dword bmask, dword amask = 0);
 	void Set32be(dword rmask, dword gmask, dword bmask, dword amask = 0);
+	void Set32leStraight(dword rmask, dword gmask, dword bmask, dword amask);
+	void Set32beStraight(dword rmask, dword gmask, dword bmask, dword amask);
 	void SetRGBA();
+	void SetRGBAStraight();
 
 	int  IsRGBA() const;
 	int  GetByteCount(int cx) const;

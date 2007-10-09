@@ -91,6 +91,11 @@ LogStream& StdLogStream()
 	return *s;
 }
 
+void StdLogSetup(dword options)
+{
+	StdLogStream().SetOptions(options);
+}
+
 Stream& StdLog()
 {
 	return StdLogStream();
@@ -380,16 +385,24 @@ void Put(HANDLE file, T& data) {
 static LPTOP_LEVEL_EXCEPTION_FILTER sPrev;
 static dword sESP;
 static char  appInfo[20];
+static char  crashfilename[MAX_PATH];
+
+void SetCrashFileName(const char *cfile)
+{
+	ASSERT(strlen(cfile) < MAX_PATH);
+	strcpy(crashfilename, cfile);
+}
 
 LONG __stdcall sDumpHandler(LPEXCEPTION_POINTERS ep) {
-	char fn[512];
-	::GetModuleFileName(NULL, fn, 512);
 	SYSTEMTIME st;
 	GetLocalTime(&st);
-	wsprintf(fn + strlen(fn), ".%d-%02d-%02d-%02d-%02d-%02d%s.crash",
-		st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, appInfo);
-	HANDLE file = CreateFile(fn, GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL,
-	                         CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL|FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+	if(!*crashfilename) {
+		::GetModuleFileName(NULL, crashfilename, 512);
+		wsprintf(crashfilename + strlen(crashfilename), ".%d-%02d-%02d-%02d-%02d-%02d%s.crash",
+			st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, appInfo);
+	}
+	HANDLE file = CreateFile(crashfilename, GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL,
+		CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL|FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 	dword v = 1;
 	Put(file, v);
 	EXCEPTION_RECORD *er = ep->ExceptionRecord;

@@ -9,7 +9,7 @@ public:
 	SmtpMail&      Port(int p)                    { port = p; return *this; }
 	SmtpMail&      From(String f)                 { from = f; return *this; }
 	SmtpMail&      To(String t, AS a = TO)        { to.Add(t); as.Add(a); return *this; }
-	SmtpMail&      Text(String t, const char *m = 0) { text = t; mime = m; return *this; }
+	SmtpMail&      Text(String t, String m = Null) { text.Add(t); mime.Add(m); return *this; }
 	SmtpMail&      NoHeader()                     { no_header = true; return *this; }
 	SmtpMail&      NoHeaderSep()                  { no_header_sep = true; return *this; }
 	SmtpMail&      ReplyTo(String r)              { reply_to = r; return *this; }
@@ -38,8 +38,8 @@ private:
 	String         from;
 	Vector<String> to;
 	Vector<char>   as;
-	String         text;
-	String         mime; // default: text/plain; charset=windows-1250
+	Vector<String> text;
+	Vector<String> mime; // default: text/plain; charset=<default application charset>
 	bool           transcript; // default = false
 	Array<Attachment> attachments;
 

@@ -1,5 +1,6 @@
 options
-	"-DSUPPORT_UTF8 -DSUPPORT_UCP";
+	"-DSUPPORT_UTF8 -DSUPPORT_UCP -DHAVE_CONFIG_H",
+	-Ilib;
 
 options(GCC) -DPCRE_STATIC;
 
@@ -32,4 +33,6 @@ file
 	lib\pcre_version.c,
 	lib\pcre_xclass.c,
 	lib\ucp.h,
-	lib\ucpinternal.h;
+	lib\ucpinternal.h,
+	lib\ucptable.h;
+

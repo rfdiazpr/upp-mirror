@@ -127,7 +127,8 @@ VectorMap<dword, Value::Void *(*)(Stream& s)>& Value::Typemap()
 	return x;
 }
 
-void Value::Serialize(Stream& s) {
+static void sRegisterStd()
+{
 	ONCELOCK {
 		RichValue<int>::Register();
 		RichValue<int64>::Register();
@@ -137,6 +138,15 @@ void Value::Serialize(Stream& s) {
 		RichValue<Date>::Register();
 		RichValue<Time>::Register();
 	};
+}
+
+INITBLOCK {
+	sRegisterStd();
+}
+
+
+void Value::Serialize(Stream& s) {
+	sRegisterStd();
 	dword type;
 	if(s.IsLoading()) {
 		s / type;

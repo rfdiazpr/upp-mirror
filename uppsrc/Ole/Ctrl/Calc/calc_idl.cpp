@@ -6,7 +6,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0361 */
-/* at Sun Sep 19 11:40:37 2004
+/* at Mon Aug 20 00:14:29 2007
  */
 /* Compiler settings for e:\src\uppsrc\Ole\Ctrl\Calc\calc.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -96,7 +96,7 @@ MIDL_DEFINE_GUID(CLSID, CLSID_Calculator,0x2CFA5DB1,0xA740,0x11d3,0x98,0x1C,0x00
 
 
  /* File created by MIDL compiler version 6.00.0361 */
-/* at Sun Sep 19 11:40:37 2004
+/* at Mon Aug 20 00:14:29 2007
  */
 /* Compiler settings for e:\src\uppsrc\Ole\Ctrl\Calc\calc.idl:
     Oicf, W1, Zp8, env=Win64 (32b run,appending)

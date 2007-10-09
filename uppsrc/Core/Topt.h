@@ -247,6 +247,10 @@ NTL_MOVEABLE(double);
 NTL_MOVEABLE(void *);
 NTL_MOVEABLE(const void *);
 
+#if defined(_NATIVE_WCHAR_T_DEFINED) || defined(COMPILER_GCC)
+NTL_MOVEABLE(wchar_t);
+#endif
+
 template <class T, class B = EmptyClass>
 class DeepCopyOption : public B {
 public:
@@ -410,6 +414,7 @@ template<> inline unsigned GetHashValue(const unsigned int& a)   { return (const
 template<> inline unsigned GetHashValue(const long& a)           { return (const unsigned)a; }
 template<> inline unsigned GetHashValue(const unsigned long& a)  { return (const unsigned)a; }
 template<> inline unsigned GetHashValue(const bool& a)           { return (const unsigned)a; }
+template<> inline unsigned GetHashValue(const wchar_t& a)        { return (const unsigned)a; }
 
 template<> inline unsigned GetHashValue(const int64& a)          { return CombineHash((unsigned)a, (unsigned)(a >> 32)); }
 template<> inline unsigned GetHashValue(const uint64& a)         { return GetHashValue((int64)a); }

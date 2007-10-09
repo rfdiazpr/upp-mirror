@@ -284,14 +284,14 @@ bool MySqlConnection::Execute() {
 				f.type = STRING_V;
 			}
 			f.width = field->length;
-			f.decimals = f.scale = f.prec = 0;
+			f.scale = f.precision = 0;
 		}
 	}
 	else {
 		lastid = (int)mysql_insert_id(mysql);
 		if(lastid) {
 			SqlColumnInfo& f = info.Add();
-			f.width = f.decimals = f.scale = f.prec = 0;
+			f.width = f.scale = f.precision = 0;
 			f.type = DOUBLE_V;
 			f.name = "LAST_INSERT_ID";
 			rows = 1;

@@ -319,16 +319,28 @@ bool FileStream::Open(const char *name, dword mode) {
 	LLOG("Open " << name << " mode: " << mode);
 	Close();
 	int iomode = mode & ~SHAREMASK;
-	handle = CreateFile(ToSystemCharset(name),
-		iomode == READ ? GENERIC_READ : GENERIC_READ|GENERIC_WRITE,
-		(mode & NOREADSHARE ? 0 : FILE_SHARE_READ)
-		| (mode & NOWRITESHARE ? 0 : FILE_SHARE_WRITE)
-		| (mode & DELETESHARE ? FILE_SHARE_DELETE : 0),
-		NULL,
-		iomode == READ ? OPEN_EXISTING : iomode == CREATE ? CREATE_ALWAYS : OPEN_ALWAYS,
-		FILE_ATTRIBUTE_NORMAL|FILE_FLAG_SEQUENTIAL_SCAN,
-		NULL
-	);
+	if(IsWinNT())
+		handle = UnicodeWin32().CreateFileW(ToSystemCharsetW(name),
+			iomode == READ ? GENERIC_READ : GENERIC_READ|GENERIC_WRITE,
+			(mode & NOREADSHARE ? 0 : FILE_SHARE_READ)
+			| (mode & NOWRITESHARE ? 0 : FILE_SHARE_WRITE)
+			| (mode & DELETESHARE ? FILE_SHARE_DELETE : 0),
+			NULL,
+			iomode == READ ? OPEN_EXISTING : iomode == CREATE ? CREATE_ALWAYS : OPEN_ALWAYS,
+			FILE_ATTRIBUTE_NORMAL|FILE_FLAG_SEQUENTIAL_SCAN,
+			NULL
+		);
+	else
+		handle = CreateFile(ToSystemCharset(name),
+			iomode == READ ? GENERIC_READ : GENERIC_READ|GENERIC_WRITE,
+			(mode & NOREADSHARE ? 0 : FILE_SHARE_READ)
+			| (mode & NOWRITESHARE ? 0 : FILE_SHARE_WRITE)
+			| (mode & DELETESHARE ? FILE_SHARE_DELETE : 0),
+			NULL,
+			iomode == READ ? OPEN_EXISTING : iomode == CREATE ? CREATE_ALWAYS : OPEN_ALWAYS,
+			FILE_ATTRIBUTE_NORMAL|FILE_FLAG_SEQUENTIAL_SCAN,
+			NULL
+		);
 	if(handle == INVALID_HANDLE_VALUE) {
 		SetError();
 		return FALSE;

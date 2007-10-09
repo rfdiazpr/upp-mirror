@@ -12,6 +12,9 @@ public:
 	bool            IsBottomRight() const             { return is_right; }
 	int             GetLength() const                 { return is_vert ? GetSize().cy : GetSize().cx; }
 
+	void            SetWidth(int w)                   { width = w; RefreshParentLayout(); }
+	int             GetWidth() const                  { return width; }
+
 	void            SetZoom(double scale, double delta);
 
 	void            SetScale(double scale)            { SetZoom(scale, GetDelta()); }
@@ -79,6 +82,7 @@ private:
 	double          GetRawDelta() const;
 
 private:
+	int             width;
 	double          scale, delta;
 	mutable double  raw_delta;
 	double          min_range, max_range;

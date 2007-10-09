@@ -103,6 +103,7 @@ int  HeaderCtrl::GetHeight() const
 
 HeaderCtrl::Column& HeaderCtrl::Add()
 {
+	oszcx = -1;
 	return Tab(col.GetCount());
 }
 
@@ -430,6 +431,8 @@ int HeaderCtrl::GetLastVisibleTab() {
 }
 
 int HeaderCtrl::GetSplit(int px) {
+	if(!IsEnabled())
+		return Null;
 	RefreshDistribution();
 	px += sb;
 	int cx = GetSize().cx;

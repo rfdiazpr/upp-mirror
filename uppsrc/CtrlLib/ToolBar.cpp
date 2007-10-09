@@ -93,6 +93,7 @@ Bar::Item& ToolButton::Description(const char *desc)
 
 void  ToolButton::Paint(Draw& w)
 {
+	LTIMING("ToolButton::Paint");
 	paint_checked = checked;
 	Size sz = GetSize();
 	Size isz = image.GetSize();
@@ -247,7 +248,7 @@ void ToolBar::Set(Callback1<Bar&> bar)
 void ToolBar::Post(Callback1<Bar&> bar)
 {
 	KillTimeCallback(TIMEID_POST);
-	SetTimeCallback(0, THISBACK1(Set, bar), TIMEID_POST);
+	SetTimeCallback(0, PTEBACK1(Set, bar), TIMEID_POST);
 }
 
 int ToolBar::GetStdHeight()

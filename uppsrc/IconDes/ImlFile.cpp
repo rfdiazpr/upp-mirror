@@ -198,8 +198,10 @@ bool LoadIml(const String& data, Array<ImlImage>& img, int& format)
 		Vector<bool> exp;
 		while(p.Id("IMAGE_ID")) {
 			p.PassChar('(');
-			String n = p.ReadId();
-			if(n.GetLength() > 4 && memcmp(n, "im__", 4) == 0)
+			String n;
+			if(p.IsId())
+				n = p.ReadId();
+			if(n.StartsWith("im__", 4))
 				n = Null;
 			name.Add(n);
 			p.PassChar(')');

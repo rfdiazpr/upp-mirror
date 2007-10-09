@@ -2,9 +2,6 @@
 
 #ifdef PLATFORM_WIN32
 #	include <winnls.h>
-#	if defined(PLATFORM_WINCE) || defined(WIN64)
-#		include <intrin.h>
-#	endif
 #endif
 
 NAMESPACE_UPP
@@ -26,14 +23,14 @@ void    Panic(const char *msg)
 #ifdef PLATFORM_WIN32
 
 #	ifdef PLATFORM_WINCE
-	MessageBox(::GetActiveWindow(), ToSysChrSet(msg), L"Panic", MB_ICONSTOP | MB_OK | MB_APPLMODAL);
+	MessageBox(::GetActiveWindow(), ToSysChrSet(msg), L"Fatal error", MB_ICONSTOP | MB_OK | MB_APPLMODAL);
 #	else
-	MessageBox(::GetActiveWindow(), msg, "Panic", MB_ICONSTOP | MB_OK | MB_APPLMODAL);
+	MessageBox(::GetActiveWindow(), msg, "Fatal error", MB_ICONSTOP | MB_OK | MB_APPLMODAL);
 #	endif
 
 #	ifdef __NOASSEMBLY__
 #		if defined(PLATFORM_WINCE) || defined(WIN64)
-			__debugbreak();
+			DebugBreak();
 #		endif
 #	else
 #		if defined(_DEBUG) && defined(CPU_X86)
@@ -82,7 +79,7 @@ void    AssertFailed(const char *file, int line, const char *cond)
 #endif
 #	ifdef __NOASSEMBLY__
 #		if defined(PLATFORM_WINCE) || defined(WIN64)
-			__debugbreak();
+			DebugBreak();
 #		endif
 #	else
 #		if defined(_DEBUG) && defined(CPU_X86)
@@ -743,6 +740,17 @@ String FromSystemCharset(const String& src)
 	b.SetCount(q);
 	return WString(b).ToString();
 }
+
+WString ToSystemCharsetW(const char *src)
+{
+	return String(src).ToWString();
+}
+
+String FromSystemCharsetW(const wchar *src)
+{
+	return WString(src).ToString();
+}
+
 #else
 String ToSystemCharset(const String& src)
 {

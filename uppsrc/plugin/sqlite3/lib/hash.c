@@ -12,7 +12,7 @@
 ** This is the implementation of generic hash-tables
 ** used in SQLite.
 **
-** $Id: hash.c,v 1.18 2006/02/14 10:48:39 danielk1977 Exp $
+** $Id: hash.c,v 1.19 2007/03/31 03:59:24 drh Exp $
 */
 #include "sqliteInt.h"
 #include <assert.h>
@@ -22,7 +22,7 @@
 **
 ** "pNew" is a pointer to the hash table that is to be initialized.
 ** keyClass is one of the constants SQLITE_HASH_INT, SQLITE_HASH_POINTER,
-** SQLITE_HASH_BINARY, or SQLITE_HASH_STRING.  The value of keyClass
+** SQLITE_HASH_BINARY, or SQLITE_HASH_STRING.  The value of keyClass 
 ** determines what kind of key the hash table will use.  "copyKey" is
 ** true if the hash table should make its own private copy of keys and
 ** false if it should just use the supplied pointer.  CopyKey only makes
@@ -133,7 +133,7 @@ static int binCompare(const void *pKey1, int n1, const void *pKey2, int n2){
 /*
 ** Return a pointer to the appropriate hash function given the key class.
 **
-** The C syntax in this function definition may be unfamilar to some
+** The C syntax in this function definition may be unfamilar to some 
 ** programmers, so we provide the following additional explanation:
 **
 ** The name of the function is "hashFunction".  The function takes a
@@ -215,7 +215,7 @@ static void insertElement(
 
 
 /* Resize the hash table so that it cantains "new_size" buckets.
-** "new_size" must be a power of 2.  The hash table might fail
+** "new_size" must be a power of 2.  The hash table might fail 
 ** to resize if sqliteMalloc() fails.
 */
 static void rehash(Hash *pH, int new_size){
@@ -257,7 +257,7 @@ static HashElem *findElementGivenHash(
     count = pEntry->count;
     xCompare = compareFunction(pH->keyClass);
     while( count-- && elem ){
-      if( (*xCompare)(elem->pKey,elem->nKey,pKey,nKey)==0 ){
+      if( (*xCompare)(elem->pKey,elem->nKey,pKey,nKey)==0 ){ 
         return elem;
       }
       elem = elem->next;
@@ -276,7 +276,7 @@ static void removeElementGivenHash(
 ){
   struct _ht *pEntry;
   if( elem->prev ){
-    elem->prev->next = elem->next;
+    elem->prev->next = elem->next; 
   }else{
     pH->first = elem->next;
   }
@@ -291,7 +291,7 @@ static void removeElementGivenHash(
   if( pEntry->count<=0 ){
     pEntry->chain = 0;
   }
-  if( pH->copyKey && elem->pKey ){
+  if( pH->copyKey ){
     pH->xFree(elem->pKey);
   }
   pH->xFree( elem );
@@ -378,6 +378,9 @@ void *sqlite3HashInsert(Hash *pH, const void *pKey, int nKey, void *data){
     rehash(pH,8);
     if( pH->htsize==0 ){
       pH->count = 0;
+      if( pH->copyKey ){
+        pH->xFree(new_elem->pKey);
+      }
       pH->xFree(new_elem);
       return data;
     }

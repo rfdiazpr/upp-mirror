@@ -17,13 +17,80 @@ Image PosixGetDriveImage(String dir)
 	return CtrlImg::Hd();
 }
 
+#ifdef PLATFORM_WIN32
+struct FileIconMaker : ImageMaker {
+	String file;
+	bool   exe;
+	bool   dir;
+
+	virtual String Key() const {
+		return file + (exe ? "1" : "0") + (dir ? "1" : "0");
+	}
+
+	virtual Image Make() const {
+		Color c = White();
+		Image m[2];
+		for(int i = 0; i < 2; i++) {
+			SHFILEINFO info;
+			SHGetFileInfo(file, dir ? FILE_ATTRIBUTE_DIRECTORY : FILE_ATTRIBUTE_NORMAL,
+			              &info, sizeof(info),
+			              SHGFI_ICON|SHGFI_SMALLICON|(exe ? 0 : SHGFI_USEFILEATTRIBUTES));
+			HICON icon = info.hIcon;
+			ICONINFO iconinfo;
+			if(!icon || !GetIconInfo(icon, &iconinfo))
+				return Image();
+			BITMAP bm;
+			::GetObject((HGDIOBJ)iconinfo.hbmMask, sizeof(BITMAP), (LPVOID)&bm);
+			Size sz(bm.bmWidth, bm.bmHeight);
+			ImageDraw iw(sz);
+			iw.DrawRect(sz, c);
+			::DrawIconEx(iw.GetHandle(), 0, 0, info.hIcon, 0, 0, 0, NULL, DI_NORMAL|DI_COMPAT);
+			::DeleteObject(iconinfo.hbmColor);
+			::DeleteObject(iconinfo.hbmMask);
+			::DestroyIcon(info.hIcon);
+			c = Black();
+			m[i] = iw;
+		}
+		return RecreateAlpha(m[0], m[1]);
+	}
+};
+
+
+Image GetFileIcon(const char *path, bool dir, bool force = false)
+{
+	FileIconMaker m;
+	String ext = GetFileExt(path);
+	m.exe = false;
+	m.dir = false;
+	m.file = path;
+	if(force)
+		m.exe = true;
+	else
+	if(dir) {
+		m.dir = true;;
+		m.file.Clear();
+	}
+	else
+	if(ext == ".exe")
+		m.exe = true;
+	else
+		m.file = "x." + ext;
+	return MakeImage(m);
+}
+#endif
+
 bool Load(FileList& list, const String& dir, const char *patterns, bool dirs,
           Callback3<bool, const String&, Image&> WhenIcon, FileSystemInfo& filesystem)
 {
 	if(dir.IsEmpty()) {
 		Array<FileSystemInfo::FileInfo> root = filesystem.Find(Null);
 		for(int i = 0; i < root.GetCount(); i++)
-			list.Add(root[i].filename, GetDriveImage(root[i].root_style),
+			list.Add(root[i].filename,
+#ifdef PLATFORM_WIN32
+				GetFileIcon(root[i].filename, false, true),
+#else
+				GetDriveImage(root[i].root_style),
+#endif
 				Arial(FNTSIZE).Bold(), SColorText, true, -1, Null, SColorDisabled,
 				root[i].root_desc, Arial(FNTSIZE));
 	}
@@ -41,7 +108,9 @@ bool Load(FileList& list, const String& dir, const char *patterns, bool dirs,
 			Image img = fi.is_directory ? (isdrive ? PosixGetDriveImage(fi.filename) : CtrlImg::Dir())
 			                            : CtrlImg::File();
 		#else
-			Image img = fi.is_directory ? CtrlImg::Dir() : CtrlImg::File();
+			Image img = GetFileIcon(AppendFileName(dir, fi.filename), fi.is_directory);
+			if(IsNull(img))
+				img = fi.is_directory ? CtrlImg::Dir() : CtrlImg::File();
 		#endif
 			WhenIcon(fi.is_directory, fi.filename, img);
 			bool nd = dirs && !fi.is_directory;
@@ -133,10 +202,8 @@ Image GetDriveImage(char drive_style)
 	}
 }
 
-void FileSel::Load() {
-	list.EndEdit();
-	list.Clear();
-	String d = GetDir();
+String FileSel::GetMask()
+{
 	String emask = "*";
 	if(!IsNull(type)) {
 		if(IsString(~type))
@@ -147,6 +214,14 @@ void FileSel::Load() {
 				emask = mask[q];
 		}
 	}
+	return emask;
+}
+
+void FileSel::Load() {
+	list.EndEdit();
+	list.Clear();
+	String d = GetDir();
+	String emask = GetMask();
 	if(!UPP::Load(list, d, emask, mode == SELECTDIR, WhenIcon, *filesystem)) {
 		Exclamation(t_("[A3* Unable to read the directory !]&&") + DeQtf((String)~dir) + "&&" +
 		            GetErrorMessage(GetLastError()));
@@ -200,8 +275,19 @@ String TrimDot(String f) {
 
 void FileSel::AddName(Vector<String>& fn, String& f) {
 	if(!f.IsEmpty()) {
-		if(f.Find('.') < 0 && !defext.IsEmpty())
-			f << '.' << defext;
+		if(f.Find('.') < 0)
+			if(defext.IsEmpty()) {
+				String t = GetMask();
+				int q = t.Find('.');
+				if(q >= 0 && IsAlNum(t[q + 1])) {
+					int w = q + 2;
+					while(IsAlNum(t[w]))
+						w++;
+					f << t.Mid(q, w - q);
+				}
+			}
+			else
+				f << '.' << defext;
 		else
 			f = TrimDot(f);
 		if(f[0] == '\"' && f.GetCount() > 2)
@@ -314,7 +400,7 @@ void FileSel::Open() {
 		Finish();
 		return;
 	}
-	if(list.HasFocus()) {
+	if(list.HasFocus() || type.HasFocus()) {
 		if(OpenItem()) list.SetCursor(0);
 	}
 	else

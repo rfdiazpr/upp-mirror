@@ -7,6 +7,18 @@
 #include <utime.h>
 #endif//PLATFORM_POSIX
 
+#ifdef PLATFORM_WIN32
+#define DLLFILENAME "Kernel32.dll"
+#define DLIMODULE   UnicodeWin32
+#define DLIHEADER   <Core/Kernel32W.dli>
+#include <Core/dli_source.h>
+
+#define DLLFILENAME "Mpr.dll"
+#define DLIMODULE   UnicodeWin32Net
+#define DLIHEADER   <Core/Mpr32W.dli>
+#include <Core/dli_source.h>
+#endif
+
 NAMESPACE_UPP
 
 static int sDirSep(int c) {
@@ -189,10 +201,16 @@ int ComparePath(String fa, String fb) {
 #ifndef PLATFORM_WINCE
 String GetCurrentDirectory() {
 #if defined(PLATFORM_WIN32)
-	DWORD dwCount = ::GetCurrentDirectory(0, 0);
-	char h[1024];
-	::GetCurrentDirectory(1024, h);
-	return FromSystemCharset(h);
+	if(IsWinNT()) {
+		wchar h[MAX_PATH];
+		UnicodeWin32().GetCurrentDirectoryW(MAX_PATH, h);
+		return FromSystemCharsetW(h);
+	}
+	else {
+		char h[MAX_PATH];
+		::GetCurrentDirectory(MAX_PATH, h);
+		return FromSystemCharset(h);
+	}
 #elif defined(PLATFORM_POSIX)
 	char h[1024];
 	getcwd(h, 1024);
@@ -208,9 +226,16 @@ String GetCurrentDirectory() {
 
 String GetTempPath()
 {
-	char h[1024];
-	::GetTempPath(1024, h);
-	return FromSystemCharset(h);
+	if(IsWinNT()) {
+		wchar h[MAX_PATH];
+		UnicodeWin32().GetTempPathW(MAX_PATH, h);
+		return FromSystemCharsetW(h);
+	}
+	else {
+		char h[MAX_PATH];
+		::GetTempPath(MAX_PATH, h);
+		return FromSystemCharset(h);
+	}
 }
 
 #endif
@@ -250,10 +275,18 @@ String ToUnixName(const char* fn, const char* stop = NULL) {
 #ifndef PLATFORM_WINCE
 String GetFullPath(const char *file) {
 #ifdef PLATFORM_WIN32
-	String ufn = FromUnixName(file);
-	char h[1024];
-	GetFullPathName(ufn, 1024, h, 0);
-	return FromSystemCharset(h);
+	if(IsWinNT()) {
+		String ufn = FromUnixName(file);
+		wchar h[MAX_PATH];
+		UnicodeWin32().GetFullPathNameW(ToSystemCharsetW(ufn), MAX_PATH, h, 0);
+		return FromSystemCharsetW(h);
+	}
+	else {
+		String ufn = FromUnixName(file);
+		char h[MAX_PATH];
+		GetFullPathName(ToSystemCharset(ufn), MAX_PATH, h, 0);
+		return FromSystemCharset(h);
+	}
 #else
 	return NormalizePath(file);
 #endif
@@ -337,9 +370,43 @@ String ForceExt(const char* fn, const char* ext) {
 
 #ifdef PLATFORM_WIN32
 
+void FindFile::Init()
+{
+	if(IsWinNT()) {
+		w = new WIN32_FIND_DATAW;
+		a = NULL;
+	}
+	else {
+		a = new WIN32_FIND_DATA;
+		w = NULL;
+	}
+}
+
+FindFile::~FindFile()
+{
+	Close();
+	delete a;
+	delete w;
+}
+
+FindFile::FindFile()
+{
+	Init();
+	handle = INVALID_HANDLE_VALUE;
+}
+
+FindFile::FindFile(const char *name) {
+	Init();
+	handle = INVALID_HANDLE_VALUE;
+	Search(name);
+}
+
 bool FindFile::Search(const char *name) {
 	Close();
-	handle = FindFirstFile(ToSystemCharset(name), this);
+	if(w)
+		handle = UnicodeWin32().FindFirstFileW(ToSystemCharsetW(name), w);
+	else
+		handle = FindFirstFile(ToSystemCharset(name), a);
 	return handle != INVALID_HANDLE_VALUE;
 }
 
@@ -348,29 +415,107 @@ void FindFile::Close() {
 	handle = INVALID_HANDLE_VALUE;
 }
 
+bool FindFile::Next() {
+	if(w) {
+		if(!UnicodeWin32().FindNextFileW(handle, w)) {
+			Close();
+			return false;
+		}
+	}
+	else {
+		if(!FindNextFile(handle, a)) {
+			Close();
+			return false;
+		}
+	}
+	return true;
+}
+
+dword FindFile::GetAttributes() const
+{
+	return w ? w->dwFileAttributes : a->dwFileAttributes;
+}
+
 String FindFile::GetName() const
 {
-	return FromSystemCharset(cFileName);
+	return w ? FromSystemCharsetW(w->cFileName) : FromSystemCharset(a->cFileName);
 }
 
-
-bool FindFile::Next() {
-	if(!FindNextFile(handle, this)) {
-		Close();
-		return 0;
-	}
-	return 1;
+int64 FindFile::GetLength() const
+{
+	if(w)
+		return (int64)w->nFileSizeLow | ((int64)w->nFileSizeHigh << 32);
+	else
+		return (int64)a->nFileSizeLow | ((int64)a->nFileSizeHigh << 32);
 }
+
+FileTime FindFile::GetCreationTime() const
+{
+	return w ? w->ftCreationTime : a->ftCreationTime;
+}
+
+FileTime FindFile::GetLastAccessTime() const
+{
+	return w ? w->ftLastAccessTime : a->ftLastAccessTime;
+}
+
+FileTime FindFile::GetLastWriteTime() const
+{
+	return w ? w->ftLastWriteTime : a->ftLastWriteTime;
+}
+
+bool FindFile::IsDirectory() const
+{
+	return w ? w->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY
+	         : a->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+}
+
 
 bool FindFile::IsFolder() const {
-	return IsDirectory()
-		&& !(cFileName[0] == '.' && cFileName[1] == 0)
-		&& !(cFileName[0] == '.' && cFileName[1] == '.' && cFileName[2] == 0);
+	if(w)
+		return IsDirectory()
+			&& !(w->cFileName[0] == '.' && w->cFileName[1] == 0)
+			&& !(w->cFileName[0] == '.' && w->cFileName[1] == '.' && w->cFileName[2] == 0);
+	else
+		return IsDirectory()
+			&& !(a->cFileName[0] == '.' && a->cFileName[1] == 0)
+			&& !(a->cFileName[0] == '.' && a->cFileName[1] == '.' && a->cFileName[2] == 0);
 }
 
-FindFile::FindFile(const char *name) {
-	handle = INVALID_HANDLE_VALUE;
-	Search(name);
+bool FindFile::IsArchive() const
+{
+	return w ? w->dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE
+	         : a->dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE;
+}
+
+bool FindFile::IsCompressed() const
+{
+	return w ? w->dwFileAttributes & FILE_ATTRIBUTE_COMPRESSED
+	         : a->dwFileAttributes & FILE_ATTRIBUTE_COMPRESSED;
+}
+
+bool FindFile::IsHidden() const
+{
+	return w ? w->dwFileAttributes & FILE_ATTRIBUTE_HIDDEN
+	         : a->dwFileAttributes & FILE_ATTRIBUTE_HIDDEN;
+}
+
+bool FindFile::IsReadOnly() const
+{
+	return w ? w->dwFileAttributes & FILE_ATTRIBUTE_READONLY
+	         : a->dwFileAttributes & FILE_ATTRIBUTE_READONLY;
+}
+
+bool FindFile::IsSystem() const
+{
+	return w ? w->dwFileAttributes & FILE_ATTRIBUTE_SYSTEM
+	         : a->dwFileAttributes & FILE_ATTRIBUTE_SYSTEM;
+}
+
+bool FindFile::IsTemporary() const
+{
+	return w ? w->dwFileAttributes & FILE_ATTRIBUTE_TEMPORARY
+	         : a->dwFileAttributes & FILE_ATTRIBUTE_TEMPORARY;
 }
 
 String NormalizePath(const char *path, const char *currdir)
@@ -567,7 +712,10 @@ String NormalizePath(const char *path) {
 bool FileCopy(const char *oldname, const char *newname)
 {
 #if defined(PLATFORM_WIN32)
-	return CopyFile(ToSystemCharset(oldname), ToSystemCharset(newname), false);
+	if(IsWinNT())
+		return UnicodeWin32().CopyFileW(ToSystemCharsetW(oldname), ToSystemCharsetW(newname), false);
+	else
+		return CopyFile(ToSystemCharset(oldname), ToSystemCharset(newname), false);
 #elif defined(PLATFORM_POSIX)
 	FileIn fi(oldname);
 	if(!fi.IsOpen())
@@ -593,7 +741,10 @@ bool FileCopy(const char *oldname, const char *newname)
 bool FileMove(const char *oldname, const char *newname)
 {
 #if defined(PLATFORM_WIN32)
-	return !!MoveFile(ToSystemCharset(oldname), ToSystemCharset(newname));
+	if(IsWinNT())
+		return !!UnicodeWin32().MoveFileW(ToSystemCharsetW(oldname), ToSystemCharsetW(newname));
+	else
+		return !!MoveFile(ToSystemCharset(oldname), ToSystemCharset(newname));
 #elif defined(PLATFORM_POSIX)
 	return !rename(ToSystemCharset(oldname), ToSystemCharset(newname));
 #else
@@ -604,7 +755,10 @@ bool FileMove(const char *oldname, const char *newname)
 bool FileDelete(const char *filename)
 {
 #if defined(PLATFORM_WIN32)
-	return !!DeleteFile(ToSystemCharset(filename));
+	if(IsWinNT())
+		return !!UnicodeWin32().DeleteFileW(ToSystemCharsetW(filename));
+	else
+		return !!DeleteFile(ToSystemCharset(filename));
 #elif defined(PLATFORM_POSIX)
 	return !unlink(ToSystemCharset(filename));
 #else
@@ -615,7 +769,10 @@ bool FileDelete(const char *filename)
 bool DirectoryDelete(const char *dirname)
 {
 #if defined(PLATFORM_WIN32)
-	return !!RemoveDirectory(ToSystemCharset(dirname));
+	if(IsWinNT())
+		return !!UnicodeWin32().RemoveDirectoryW(ToSystemCharsetW(dirname));
+	else
+		return !!RemoveDirectory(ToSystemCharset(dirname));
 #elif defined(PLATFORM_POSIX)
 	return !rmdir(ToSystemCharset(dirname));
 #else
@@ -633,8 +790,13 @@ int Compare_FileTime(const FileTime& fa, const FileTime& fb)
 Time FileGetTime(const char *filename)
 {
 #if defined(PLATFORM_WIN32)
-	HANDLE handle = CreateFile(ToSystemCharset(filename), GENERIC_READ,
-	                           FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+	HANDLE handle;
+	if(IsWinNT())
+		handle = UnicodeWin32().CreateFileW(ToSystemCharsetW(filename), GENERIC_READ,
+		                    FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+	else
+		handle = CreateFile(ToSystemCharset(filename), GENERIC_READ,
+		                    FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
 	if(handle == INVALID_HANDLE_VALUE)
 		return Null;
 	FileTime ft;
@@ -654,9 +816,15 @@ Time FileGetTime(const char *filename)
 bool SetFileTime(const char *filename, FileTime ft)
 {
 #if defined(PLATFORM_WIN32)
-	HANDLE handle = CreateFile(ToSystemCharset(filename), GENERIC_READ | GENERIC_WRITE,
-		FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-		OPEN_EXISTING, 0, NULL);
+	HANDLE handle;
+	if(IsWinNT())
+		handle = UnicodeWin32().CreateFileW(ToSystemCharsetW(filename), GENERIC_READ | GENERIC_WRITE,
+			FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+			OPEN_EXISTING, 0, NULL);
+	else
+		handle = CreateFile(ToSystemCharset(filename), GENERIC_READ | GENERIC_WRITE,
+			FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+			OPEN_EXISTING, 0, NULL);
 	if(handle == INVALID_HANDLE_VALUE)
 		return false;
 	bool res = SetFileTime(handle, 0, 0, &ft);
@@ -712,7 +880,10 @@ bool DirectoryCreate(const char *path, int mode)
 #else
 bool DirectoryCreate(const char *path)
 {
-	return !!CreateDirectory(ToSystemCharset(path), 0);
+	if(IsWinNT())
+		return !!UnicodeWin32().CreateDirectoryW(ToSystemCharsetW(path), 0);
+	else
+		return !!CreateDirectory(ToSystemCharset(path), 0);
 }
 #endif
 
@@ -789,12 +960,12 @@ Array<FileSystemInfo::FileInfo> FileSystemInfo::Find(String mask, int max_count)
 		for(int c = 'A'; c <= 'Z'; c++) {
 			*drive = c;
 			int n = GetDriveType(drive);
-			if(n == DRIVE_NO_ROOT_DIR || IsWin32() && *drive == 'B') continue;
+			if(n == DRIVE_NO_ROOT_DIR/* || IsWin32() && *drive == 'B'*/) continue;
 			FileInfo& f = fi.Add();
 			f.filename = drive;
 			char name[256], system[256];
 			DWORD d;
-			if(c != 'A' && c != 'B' &&
+			if(c != 'A' && c != 'B' && n != DRIVE_REMOTE && n != DRIVE_UNKNOWN &&
 			   GetVolumeInformation(drive, name, 256, &d, &d, &d, system, 256)) {
 			   	if(*name) f.root_desc << " " << FromSystemCharset(name);
 			   	if(*system) f.root_desc << " [ " << FromSystemCharset(system) << " ]";
@@ -825,17 +996,14 @@ Array<FileSystemInfo::FileInfo> FileSystemInfo::Find(String mask, int max_count)
 			{
 				FileInfo& f = fi.Add();
 				f.filename = ff.GetName();
-#ifdef PLATFORM_WIN32
-#ifndef PLATFORM_WINCE
-				f.msdos_name = ff.GetMSDOSName();
-#endif
+#ifndef PLATFORM_POSIX
 				f.is_archive = ff.IsArchive();
 				f.is_compressed = ff.IsCompressed();
 				f.is_hidden = ff.IsHidden();
-				f.is_read_only = ff.IsReadOnly();
 				f.is_system = ff.IsSystem();
 				f.is_temporary = ff.IsTemporary();
 #endif
+				f.is_read_only = ff.IsReadOnly();
 				f.length = ff.GetLength();
 #ifdef PLATFORM_POSIX
 				f.creation_time = ff.GetLastChangeTime();

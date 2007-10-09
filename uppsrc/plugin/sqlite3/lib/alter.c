@@ -12,7 +12,7 @@
 ** This file contains C code routines that used to generate VDBE code
 ** that implements the ALTER TABLE command.
 **
-** $Id: alter.c,v 1.20 2006/02/09 02:56:03 drh Exp $
+** $Id: alter.c,v 1.27 2007/06/27 17:09:24 danielk1977 Exp $
 */
 #include "sqliteInt.h"
 #include <ctype.h>
@@ -25,10 +25,10 @@
 
 
 /*
-** This function is used by SQL generated to implement the
+** This function is used by SQL generated to implement the 
 ** ALTER TABLE command. The first argument is the text of a CREATE TABLE or
-** CREATE INDEX command. The second is a table name. The table name in
-** the CREATE TABLE or CREATE INDEX statement is replaced with the second
+** CREATE INDEX command. The second is a table name. The table name in 
+** the CREATE TABLE or CREATE INDEX statement is replaced with the third
 ** argument and the result returned. Examples:
 **
 ** sqlite_rename_table('CREATE TABLE abc(a, b, c)', 'def')
@@ -51,12 +51,17 @@ static void renameTableFunc(
   int len = 0;
   char *zRet;
 
-  /* The principle used to locate the table name in the CREATE TABLE
+  /* The principle used to locate the table name in the CREATE TABLE 
   ** statement is that the table name is the first token that is immediatedly
-  ** followed by a left parenthesis - TK_LP.
+  ** followed by a left parenthesis - TK_LP - or "USING" TK_USING.
   */
   if( zSql ){
     do {
+      if( !*zCsr ){
+        /* Ran out of input before finding an opening bracket. Return NULL. */
+        return;
+      }
+
       /* Store the token that zCsr points to in tname. */
       tname.z = zCsr;
       tname.n = len;
@@ -69,19 +74,19 @@ static void renameTableFunc(
         len = sqlite3GetToken(zCsr, &token);
       } while( token==TK_SPACE );
       assert( len>0 );
-    } while( token!=TK_LP );
+    } while( token!=TK_LP && token!=TK_USING );
 
-    zRet = sqlite3MPrintf("%.*s%Q%s", tname.z - zSql, zSql,
+    zRet = sqlite3MPrintf("%.*s%Q%s", tname.z - zSql, zSql, 
        zTableName, tname.z+tname.n);
     sqlite3_result_text(context, zRet, -1, sqlite3FreeX);
   }
 }
 
 #ifndef SQLITE_OMIT_TRIGGER
-/* This function is used by SQL generated to implement the ALTER TABLE
-** ALTER TABLE command. The first argument is the text of a CREATE TRIGGER
-** statement. The second is a table name. The table name in the CREATE
-** TRIGGER statement is replaced with the second argument and the result
+/* This function is used by SQL generated to implement the
+** ALTER TABLE command. The first argument is the text of a CREATE TRIGGER 
+** statement. The second is a table name. The table name in the CREATE 
+** TRIGGER statement is replaced with the third argument and the result 
 ** returned. This is analagous to renameTableFunc() above, except for CREATE
 ** TRIGGER, not CREATE INDEX and CREATE TABLE.
 */
@@ -100,13 +105,19 @@ static void renameTriggerFunc(
   int len = 0;
   char *zRet;
 
-  /* The principle used to locate the table name in the CREATE TRIGGER
+  /* The principle used to locate the table name in the CREATE TRIGGER 
   ** statement is that the table name is the first token that is immediatedly
   ** preceded by either TK_ON or TK_DOT and immediatedly followed by one
   ** of TK_WHEN, TK_BEGIN or TK_FOR.
   */
   if( zSql ){
     do {
+
+      if( !*zCsr ){
+        /* Ran out of input before finding the table name. Return NULL. */
+        return;
+      }
+
       /* Store the token that zCsr points to in tname. */
       tname.z = zCsr;
       tname.n = len;
@@ -121,12 +132,12 @@ static void renameTriggerFunc(
       assert( len>0 );
 
       /* Variable 'dist' stores the number of tokens read since the most
-      ** recent TK_DOT or TK_ON. This means that when a WHEN, FOR or BEGIN
+      ** recent TK_DOT or TK_ON. This means that when a WHEN, FOR or BEGIN 
       ** token is read and 'dist' equals 2, the condition stated above
       ** to be met.
       **
       ** Note that ON cannot be a database, table or column name, so
-      ** there is no need to worry about syntax like
+      ** there is no need to worry about syntax like 
       ** "CREATE TRIGGER ... ON ON.ON BEGIN ..." etc.
       */
       dist++;
@@ -138,7 +149,7 @@ static void renameTriggerFunc(
     /* Variable tname now contains the token that is the old table-name
     ** in the CREATE TRIGGER statement.
     */
-    zRet = sqlite3MPrintf("%.*s%Q%s", tname.z - zSql, zSql,
+    zRet = sqlite3MPrintf("%.*s%Q%s", tname.z - zSql, zSql, 
        zTableName, tname.z+tname.n);
     sqlite3_result_text(context, zRet, -1, sqlite3FreeX);
   }
@@ -170,7 +181,7 @@ void sqlite3AlterFunctions(sqlite3 *db){
 /*
 ** Generate the text of a WHERE expression which can be used to select all
 ** temporary triggers on table pTab from the sqlite_temp_master table. If
-** table pTab has no temporary triggers, or is itself stored in the
+** table pTab has no temporary triggers, or is itself stored in the 
 ** temporary database, NULL is returned.
 */
 static char *whereTempTriggers(Parse *pParse, Table *pTab){
@@ -179,9 +190,9 @@ static char *whereTempTriggers(Parse *pParse, Table *pTab){
   char *tmp = 0;
   const Schema *pTempSchema = pParse->db->aDb[1].pSchema; /* Temp db schema */
 
-  /* If the table is not located in the temp-db (in which case NULL is
+  /* If the table is not located in the temp-db (in which case NULL is 
   ** returned, loop through the tables list of triggers. For each trigger
-  ** that is not part of the temp-db schema, add a clause to the WHERE
+  ** that is not part of the temp-db schema, add a clause to the WHERE 
   ** expression being built up in zWhere.
   */
   if( pTab->pSchema!=pTempSchema ){
@@ -205,7 +216,7 @@ static char *whereTempTriggers(Parse *pParse, Table *pTab){
 ** pTab from the database, including triggers and temporary triggers.
 ** Argument zName is the name of the table in the database schema at
 ** the time the generated code is executed. This can be different from
-** pTab->zName if this function is being called to code part of an
+** pTab->zName if this function is being called to code part of an 
 ** "ALTER TABLE RENAME TO" statement.
 */
 static void reloadTableSchema(Parse *pParse, Table *pTab, const char *zName){
@@ -239,8 +250,8 @@ static void reloadTableSchema(Parse *pParse, Table *pTab, const char *zName){
   sqlite3VdbeOp3(v, OP_ParseSchema, iDb, 0, zWhere, P3_DYNAMIC);
 
 #ifndef SQLITE_OMIT_TRIGGER
-  /* Now, if the table is not stored in the temp database, reload any temp
-  ** triggers. Don't use IN(...) in case SQLITE_OMIT_SUBQUERY is defined.
+  /* Now, if the table is not stored in the temp database, reload any temp 
+  ** triggers. Don't use IN(...) in case SQLITE_OMIT_SUBQUERY is defined. 
   */
   if( (zWhere=whereTempTriggers(pParse, pTab))!=0 ){
     sqlite3VdbeOp3(v, OP_ParseSchema, 1, 0, zWhere, P3_DYNAMIC);
@@ -249,8 +260,8 @@ static void reloadTableSchema(Parse *pParse, Table *pTab, const char *zName){
 }
 
 /*
-** Generate code to implement the "ALTER TABLE xxx RENAME TO yyy"
-** command.
+** Generate code to implement the "ALTER TABLE xxx RENAME TO yyy" 
+** command. 
 */
 void sqlite3AlterRenameTable(
   Parse *pParse,            /* Parser context. */
@@ -260,13 +271,16 @@ void sqlite3AlterRenameTable(
   int iDb;                  /* Database that contains the table */
   char *zDb;                /* Name of database iDb */
   Table *pTab;              /* Table being renamed */
-  char *zName = 0;          /* NULL-terminated version of pName */
+  char *zName = 0;          /* NULL-terminated version of pName */ 
   sqlite3 *db = pParse->db; /* Database connection */
+  int nTabName;             /* Number of UTF-8 characters in zTabName */
+  const char *zTabName;     /* Original name of the table */
   Vdbe *v;
 #ifndef SQLITE_OMIT_TRIGGER
   char *zWhere = 0;         /* Where clause to locate temp triggers */
 #endif
-
+  int isVirtualRename = 0;  /* True if this is a v-table with an xRename() */
+  
   if( sqlite3MallocFailed() ) goto exit_rename_table;
   assert( pSrc->nSrc==1 );
 
@@ -283,7 +297,7 @@ void sqlite3AlterRenameTable(
   ** in database iDb. If so, this is an error.
   */
   if( sqlite3FindTable(db, zName, zDb) || sqlite3FindIndex(db, zName, zDb) ){
-    sqlite3ErrorMsg(pParse,
+    sqlite3ErrorMsg(pParse, 
         "there is already another table or index with this name: %s", zName);
     goto exit_rename_table;
   }
@@ -306,16 +320,42 @@ void sqlite3AlterRenameTable(
   }
 #endif
 
-  /* Begin a transaction and code the VerifyCookie for database iDb.
+#ifndef SQLITE_OMIT_VIRTUALTABLE
+  if( sqlite3ViewGetColumnNames(pParse, pTab) ){
+    goto exit_rename_table;
+  }
+  if( IsVirtual(pTab) && pTab->pMod->pModule->xRename ){
+    isVirtualRename = 1;
+  }
+#endif
+
+  /* Begin a transaction and code the VerifyCookie for database iDb. 
   ** Then modify the schema cookie (since the ALTER TABLE modifies the
-  ** schema).
+  ** schema). Open a statement transaction if the table is a virtual
+  ** table.
   */
   v = sqlite3GetVdbe(pParse);
   if( v==0 ){
     goto exit_rename_table;
   }
-  sqlite3BeginWriteOperation(pParse, 0, iDb);
+  sqlite3BeginWriteOperation(pParse, isVirtualRename, iDb);
   sqlite3ChangeCookie(db, v, iDb);
+
+  /* If this is a virtual table, invoke the xRename() function if
+  ** one is defined. The xRename() callback will modify the names
+  ** of any resources used by the v-table implementation (including other
+  ** SQLite tables) that are identified by the name of the virtual table.
+  */
+#ifndef SQLITE_OMIT_VIRTUALTABLE
+  if( isVirtualRename ){
+    sqlite3VdbeOp3(v, OP_String8, 0, 0, zName, 0);
+    sqlite3VdbeOp3(v, OP_VRename, 0, 0, (const char*)pTab->pVtab, P3_VTAB);
+  }
+#endif
+
+  /* figure out how many UTF-8 characters are in zName */
+  zTabName = pTab->zName;
+  nTabName = sqlite3Utf8CharLen(zTabName, -1);
 
   /* Modify the sqlite_master table to use the new table name. */
   sqlite3NestedParse(pParse,
@@ -331,19 +371,19 @@ void sqlite3AlterRenameTable(
           "name = CASE "
             "WHEN type='table' THEN %Q "
             "WHEN name LIKE 'sqlite_autoindex%%' AND type='index' THEN "
-              "'sqlite_autoindex_' || %Q || substr(name, %d+18,10) "
+             "'sqlite_autoindex_' || %Q || substr(name,%d+18,10) "
             "ELSE name END "
       "WHERE tbl_name=%Q AND "
-          "(type='table' OR type='index' OR type='trigger');",
-      zDb, SCHEMA_TABLE(iDb), zName, zName, zName,
+          "(type='table' OR type='index' OR type='trigger');", 
+      zDb, SCHEMA_TABLE(iDb), zName, zName, zName, 
 #ifndef SQLITE_OMIT_TRIGGER
       zName,
 #endif
-      zName, strlen(pTab->zName), pTab->zName
+      zName, nTabName, zTabName
   );
 
 #ifndef SQLITE_OMIT_AUTOINCREMENT
-  /* If the sqlite_sequence table exists in this database, then update
+  /* If the sqlite_sequence table exists in this database, then update 
   ** it with the new table name.
   */
   if( sqlite3FindTable(db, "sqlite_sequence", zDb) ){
@@ -359,7 +399,7 @@ void sqlite3AlterRenameTable(
   ** the temp database.
   */
   if( (zWhere=whereTempTriggers(pParse, pTab))!=0 ){
-    sqlite3NestedParse(pParse,
+    sqlite3NestedParse(pParse, 
         "UPDATE sqlite_temp_master SET "
             "sql = sqlite_rename_trigger(sql, %Q), "
             "tbl_name = %Q "
@@ -414,7 +454,7 @@ void sqlite3AlterFinishAddColumn(Parse *pParse, Token *pColDef){
   }
 #endif
 
-  /* If the default value for the new column was specified with a
+  /* If the default value for the new column was specified with a 
   ** literal NULL, then set pDflt to 0. This simplifies checking
   ** for an SQL NULL default below.
   */
@@ -435,7 +475,7 @@ void sqlite3AlterFinishAddColumn(Parse *pParse, Token *pColDef){
     return;
   }
   if( pCol->notNull && !pDflt ){
-    sqlite3ErrorMsg(pParse,
+    sqlite3ErrorMsg(pParse, 
         "Cannot add a NOT NULL column with default value NULL");
     return;
   }
@@ -463,10 +503,10 @@ void sqlite3AlterFinishAddColumn(Parse *pParse, Token *pColDef){
     while( (zEnd>zCol && *zEnd==';') || isspace(*(unsigned char *)zEnd) ){
       *zEnd-- = '\0';
     }
-    sqlite3NestedParse(pParse,
+    sqlite3NestedParse(pParse, 
         "UPDATE %Q.%s SET "
           "sql = substr(sql,1,%d) || ', ' || %Q || substr(sql,%d,length(sql)) "
-        "WHERE type = 'table' AND name = %Q",
+        "WHERE type = 'table' AND name = %Q", 
       zDb, SCHEMA_TABLE(iDb), pNew->addColOffset, zCol, pNew->addColOffset+1,
       zTab
     );
@@ -485,14 +525,14 @@ void sqlite3AlterFinishAddColumn(Parse *pParse, Token *pColDef){
 
 /*
 ** This function is called by the parser after the table-name in
-** an "ALTER TABLE <table-name> ADD" statement is parsed. Argument
+** an "ALTER TABLE <table-name> ADD" statement is parsed. Argument 
 ** pSrc is the full-name of the table being altered.
 **
 ** This routine makes a (partial) copy of the Table structure
 ** for the table being altered and sets Parse.pNewTable to point
 ** to it. Routines called by the parser as the column definition
-** is parsed (i.e. sqlite3AddColumn()) add the new Column data to
-** the copy. The copy of the Table structure is deleted by tokenize.c
+** is parsed (i.e. sqlite3AddColumn()) add the new Column data to 
+** the copy. The copy of the Table structure is deleted by tokenize.c 
 ** after parsing is finished.
 **
 ** Routine sqlite3AlterFinishAddColumn() will be called to complete
@@ -511,6 +551,13 @@ void sqlite3AlterBeginAddColumn(Parse *pParse, SrcList *pSrc){
   if( sqlite3MallocFailed() ) goto exit_begin_add_column;
   pTab = sqlite3LocateTable(pParse, pSrc->a[0].zName, pSrc->a[0].zDatabase);
   if( !pTab ) goto exit_begin_add_column;
+
+#ifndef SQLITE_OMIT_VIRTUALTABLE
+  if( IsVirtual(pTab) ){
+    sqlite3ErrorMsg(pParse, "virtual tables may not be altered");
+    goto exit_begin_add_column;
+  }
+#endif
 
   /* Make sure this is not an attempt to ALTER a view. */
   if( pTab->pSelect ){

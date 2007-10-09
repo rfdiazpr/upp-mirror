@@ -1,5 +1,5 @@
 /*
-** 2005 May 23
+** 2005 May 23 
 **
 ** The author disclaims copyright to this source code.  In place of
 ** a legal notice, here is a blessing:
@@ -13,7 +13,7 @@
 ** This file contains functions used to access the internal hash tables
 ** of user defined functions and collation sequences.
 **
-** $Id: callback.c,v 1.15 2006/05/24 12:43:27 drh Exp $
+** $Id: callback.c,v 1.18 2007/05/07 09:32:45 danielk1977 Exp $
 */
 
 #include "sqliteInt.h"
@@ -63,6 +63,7 @@ static int synthCollSeq(sqlite3 *db, CollSeq *pColl){
     pColl2 = sqlite3FindCollSeq(db, aEnc[i], z, n, 0);
     if( pColl2->xCmp!=0 ){
       memcpy(pColl, pColl2, sizeof(CollSeq));
+      pColl->xDel = 0;         /* Do not copy the destructor */
       return SQLITE_OK;
     }
   }
@@ -74,8 +75,8 @@ static int synthCollSeq(sqlite3 *db, CollSeq *pColl){
 ** or substituting a collation sequence of a different encoding when the
 ** requested collation sequence is not available in the database native
 ** encoding.
-**
-** If it is not NULL, then pColl must point to the database native encoding
+** 
+** If it is not NULL, then pColl must point to the database native encoding 
 ** collation sequence with name zName, length nName.
 **
 ** The return value is either the collation sequence to be used in database
@@ -83,9 +84,9 @@ static int synthCollSeq(sqlite3 *db, CollSeq *pColl){
 ** sequence can be found.
 */
 CollSeq *sqlite3GetCollSeq(
-  sqlite3* db,
-  CollSeq *pColl,
-  const char *zName,
+  sqlite3* db, 
+  CollSeq *pColl, 
+  const char *zName, 
   int nName
 ){
   CollSeq *p;
@@ -115,7 +116,7 @@ CollSeq *sqlite3GetCollSeq(
 ** that have not been defined by sqlite3_create_collation() etc.
 **
 ** If required, this routine calls the 'collation needed' callback to
-** request a definition of the collating sequence. If this doesn't work,
+** request a definition of the collating sequence. If this doesn't work, 
 ** an equivalent collating sequence that uses a text encoding different
 ** from the main database is substituted, if one is available.
 */
@@ -174,7 +175,7 @@ static CollSeq *findCollSeqEntry(
       pColl[0].zName[nName] = 0;
       pDel = sqlite3HashInsert(&db->aCollSeq, pColl[0].zName, nName, pColl);
 
-      /* If a malloc() failure occured in sqlite3HashInsert(), it will
+      /* If a malloc() failure occured in sqlite3HashInsert(), it will 
       ** return the pColl pointer to be deleted (because it wasn't added
       ** to the hash table).
       */
@@ -195,6 +196,11 @@ static CollSeq *findCollSeqEntry(
 **
 ** If the entry specified is not found and 'create' is true, then create a
 ** new entry.  Otherwise return NULL.
+**
+** A separate function sqlite3LocateCollSeq() is a wrapper around
+** this routine.  sqlite3LocateCollSeq() invokes the collation factory
+** if necessary and generates an error message if the collating sequence
+** cannot be found.
 */
 CollSeq *sqlite3FindCollSeq(
   sqlite3 *db,
@@ -246,7 +252,7 @@ FuncDef *sqlite3FindFunction(
   FuncDef *p;         /* Iterator variable */
   FuncDef *pFirst;    /* First function with this name */
   FuncDef *pBest = 0; /* Best match found so far */
-  int bestmatch = 0;
+  int bestmatch = 0;  
 
 
   assert( enc==SQLITE_UTF8 || enc==SQLITE_UTF16LE || enc==SQLITE_UTF16BE );
@@ -296,7 +302,7 @@ FuncDef *sqlite3FindFunction(
   ** exact match for the name, number of arguments and encoding, then add a
   ** new entry to the hash table and return it.
   */
-  if( createFlag && bestmatch<6 &&
+  if( createFlag && bestmatch<6 && 
       (pBest = sqliteMalloc(sizeof(*pBest)+nName))!=0 ){
     pBest->nArg = nArg;
     pBest->pNext = pFirst;
@@ -317,7 +323,7 @@ FuncDef *sqlite3FindFunction(
 
 /*
 ** Free all resources held by the schema structure. The void* argument points
-** at a Schema struct. This function does not call sqliteFree() on the
+** at a Schema struct. This function does not call sqliteFree() on the 
 ** pointer itself, it just cleans up subsiduary resources (i.e. the contents
 ** of the schema hash tables).
 */
@@ -339,7 +345,7 @@ void sqlite3SchemaFree(void *p){
   sqlite3HashInit(&pSchema->tblHash, SQLITE_HASH_STRING, 0);
   for(pElem=sqliteHashFirst(&temp1); pElem; pElem=sqliteHashNext(pElem)){
     Table *pTab = sqliteHashData(pElem);
-    sqlite3DeleteTable(0, pTab);
+    sqlite3DeleteTable(pTab);
   }
   sqlite3HashClear(&temp1);
   pSchema->pSeqTab = 0;

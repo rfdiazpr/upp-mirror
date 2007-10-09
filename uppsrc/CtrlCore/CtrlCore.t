@@ -3,110 +3,110 @@
 #endif
 // CtrlKbd.cpp
 
-T_("Ctrl+")
+T_("key\vCtrl+")
 deDE("Strg")
 huHU("Ctrl+")
 
-T_("Alt+")
+T_("key\vAlt+")
 deDE("")
 huHU("Alt+")
 
-T_("Shift+")
+T_("key\vShift+")
 deDE("")
 huHU("Shift+")
 
-T_("Tab")
+T_("key\vTab")
 deDE("")
 huHU("Tab")
 
-T_("Space")
+T_("key\vSpace")
 deDE("")
 huHU("Space")
 
-T_("Enter")
+T_("key\vEnter")
 deDE("")
 huHU("Enter")
 
-T_("Backspace")
+T_("key\vBackspace")
 deDE("")
 huHU("Backspace")
 
-T_("Caps Lock")
+T_("key\vCaps Lock")
 deDE("")
 huHU("Caps Lock")
 
-T_("Esc")
+T_("key\vEsc")
 deDE("")
 huHU("Esc")
 
-T_("Page Up")
+T_("key\vPage Up")
 deDE("")
 huHU("Page Up")
 
-T_("Page Down")
+T_("key\vPage Down")
 deDE("")
 huHU("Page Down")
 
-T_("End")
+T_("key\vEnd")
 deDE("")
 huHU("End")
 
-T_("Home")
+T_("key\vHome")
 deDE("")
 huHU("Home")
 
-T_("Left")
+T_("key\vLeft")
 deDE("Links")
 huHU("Bal")
 
-T_("Up")
+T_("key\vUp")
 deDE("")
 huHU("Up")
 
-T_("Right")
+T_("key\vRight")
 deDE("Rechts")
 huHU("Jobb")
 
-T_("Down")
+T_("key\vDown")
 deDE("")
 huHU("Down")
 
-T_("Insert")
+T_("key\vInsert")
 deDE("")
 huHU("Insert")
 
-T_("Delete")
+T_("key\vDelete")
 deDE("")
 huHU("Delete")
 
-T_("Break")
+T_("key\vBreak")
 deDE("")
 huHU("Break")
 
-T_("Num[*]")
+T_("key\vNum[*]")
 deDE("")
 huHU("Num[*]")
 
-T_("Num[+]")
+T_("key\vNum[+]")
 deDE("")
 huHU("Num[+]")
 
-T_("Num[-]")
+T_("key\vNum[-]")
 deDE("")
 huHU("Num[-]")
 
-T_("Num[/]")
+T_("key\vNum[/]")
 deDE("")
 huHU("Num[/]")
 
-T_("Alt")
+T_("key\vAlt")
 deDE("")
 huHU("Alt")
 
-T_("Shift")
+T_("key\vShift")
 deDE("")
 huHU("Shift")
 
-T_("Ctrl")
+T_("key\vCtrl")
 deDE("Strg")
 huHU("Ctrl")

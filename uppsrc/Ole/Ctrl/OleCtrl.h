@@ -73,6 +73,8 @@
 #define LOGINVOKE(x)
 #endif
 
+NAMESPACE_UPP
+
 typedef void (*InitProc)();
 InitProc& LateInitProc();
 
@@ -737,5 +739,7 @@ private:
 private:
 	VectorMap<Guid, IConnectionPoint *> point_map;
 };
+
+END_UPP_NAMESPACE
 
 #endif

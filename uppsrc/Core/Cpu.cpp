@@ -55,7 +55,11 @@ bool CPU_SSE2() { sCheckCPU(); return sHasSSE2; }
 bool CPU_SSE3() { sCheckCPU(); return sHasSSE3; }
 
 #ifdef PLATFORM_POSIX
+#ifdef PLATFORM_FREEBSD
+#include <unistd.h>
+#else
 #include <sys/sysinfo.h>
+#endif
 #endif
 
 int CPU_Cores()
@@ -69,7 +73,11 @@ int CPU_Cores()
 		for(int i = 0; i < 32; i++)
 			n += !!(sa & (1 << i));
 #elif defined(PLATFORM_POSIX)
+#ifdef PLATFORM_FREEBSD
+		n = minmax((int)sysconf(_SC_NPROCESSORS_ONLN), 1, 256);
+#else
 		n = minmax(get_nprocs(), 1, 256);
+#endif
 #else
 		n = 1;
 #endif

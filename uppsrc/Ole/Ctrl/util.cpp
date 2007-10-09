@@ -2,7 +2,11 @@
 
 #ifdef PLATFORM_WIN32
 
+NAMESPACE_UPP
+
 enum { HIMETRIC_INCH = 2540 }; // HIMETRIC units per inch
+
+Draw& ScreenInfo();
 
 Size ToHiMetric(Size pixel_size)
 {
@@ -166,7 +170,7 @@ HRESULT OcxProvideClassInfo::GetGUID(dword guidkind, GUID *guid)
 		return E_NOTIMPL;
 	}
 	if(guidkind == GUIDKIND_DEFAULT_SOURCE_DISP_IID) {
-		*guid = ocx_info->GetEventGUID();
+		*guid = ~ocx_info->GetEventGUID();
 		return ocx_info->GetEventGUID().IsEmpty() ? E_UNEXPECTED : S_OK;
 	}
 	return E_INVALIDARG;
@@ -571,5 +575,7 @@ void ExeRunServer()
 }
 #endif
 */
+
+END_UPP_NAMESPACE
 
 #endif

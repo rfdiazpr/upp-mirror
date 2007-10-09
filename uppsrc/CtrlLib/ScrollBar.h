@@ -93,7 +93,7 @@ public:
 	int     GetPage() const                 { return pagesize; }
 	int     GetTotal() const                { return totalsize; }
 	int     GetLine() const                 { return linesize; }
-	
+
 	static const Style& StyleDefault();
 
 	ScrollBar& Horz(bool b = true)          { horz = b; Refresh(); RefreshLayout(); return *this; }
@@ -110,7 +110,7 @@ public:
 	bool       IsAutoHide() const           { return autohide; }
 	ScrollBar& AutoDisable(bool b = true);
 	ScrollBar& NoAutoDisable()              { return AutoDisable(false); }
-	ScrollBar& MinThumb(int sz)             { minthumb = sz; }
+	ScrollBar& MinThumb(int sz)             { minthumb = sz; return *this; }
 	ScrollBar& SetStyle(const Style& s);
 
 	operator int() const                    { return pagepos; }

@@ -170,9 +170,16 @@ String GetLocaleInfoA(LCID lcid, LCTYPE lctype)
 #else
 String GetLocaleInfoA(LCID lcid, LCTYPE lctype)
 {
-	char cbuf[1000];
-	::GetLocaleInfoA(lcid, lctype, cbuf, __countof(cbuf));
-	return FromSystemCharset(cbuf);
+	if(IsWinNT()) {
+		wchar cbuf[1000];
+		UnicodeWin32().GetLocaleInfoW(lcid, lctype, cbuf, __countof(cbuf));
+		return FromSystemCharsetW(cbuf);
+	}
+	else {
+		char cbuf[1000];
+		::GetLocaleInfoA(lcid, lctype, cbuf, __countof(cbuf));
+		return FromSystemCharset(cbuf);
+	}
 }
 #endif
 

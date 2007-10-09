@@ -6,7 +6,7 @@ NAMESPACE_UPP
 //#define SMTP_DEBUG // uncomment this line to turn on LOG-based SMTP emulation
 #define SMTP_LOG // uncomment this line to turn on command-line based logging of SMTP communication
 
-static String GetDelimiter(const char *b, const char *e, const String& init = Null)
+static String GetDelimiter(const char *b, const char *e, String init)
 {
 	static const char delimiters[] =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef"
@@ -35,6 +35,11 @@ static String GetDelimiter(const char *b, const char *e, const String& init = Nu
 	return out;
 }
 
+static String GetDelimiter(String s, String init)
+{
+	return GetDelimiter(s.Begin(), s.End(), init);
+}
+
 static void Send(Socket& socket, const String &s, String *transcript = 0, int timeout = 60)
 {
 #ifdef SMTP_LOG
@@ -55,7 +60,7 @@ static void Send(Socket& socket, const String &s, String *transcript = 0, int ti
 	while(p != e)
 	{
 		if(GetTickCount() > end_time)
-			throw Exc("Porucha komunikace: vypršel èasový limit.");
+			throw Exc(t_("Communication Failure: Timeout."));
 
 		int amount = socket.WriteRaw(p, e - p), err;
 		if(amount > 0)
@@ -64,10 +69,10 @@ static void Send(Socket& socket, const String &s, String *transcript = 0, int ti
 			end_time = (timeout >= 0 ? GetTickCount() + 1000 * timeout : 0xFFFFFFFF);
 		}
 		else if(amount == 0)
-			throw Exc("Chyba pøi zápisu dat do socketu: komunikaèní kanál byl uzavøen.");
+			throw Exc(t_("Error writing data to socket: communication port closed."));
 		else if((err = Socket::GetErrorCode()) != SOCKERR(EWOULDBLOCK)) {
 			String str;
-			throw Exc(str << "Chyba pøi zápisu dat do socketu, kód chyby: " << err);
+			throw Exc(str << t_("Error writing data to socket, error code: ") << err);
 		}
 		else
 			Sleep(100);
@@ -85,7 +90,7 @@ static String SendRecv(Socket& socket, const String& s, String *transcript = 0, 
 	for(;;)
 	{
 		if(GetTickCount() > end_time)
-			throw Exc("Porucha komunikace: vypršel èasový limit.");
+			throw Exc(t_("Communication Failure: Timeout."));
 		char buffer[100];
 		int amount = socket.ReadRaw(buffer, sizeof(buffer)), err;
 		if(amount > 0)
@@ -107,7 +112,7 @@ static String SendRecv(Socket& socket, const String& s, String *transcript = 0, 
 				}
 		}
 		else if(amount == 0)
-			throw Exc("Chyba pøi ètení dat ze socketu: komunikaèní kanál byl uzavøen.");
+			throw Exc(t_("Error reading data from socket: commuication port closed."));
 		else if((err = Socket::GetErrorCode()) != SOCKERR(EWOULDBLOCK)) {
 			String str;
 			throw Exc(str << "Chyba pøi ètení dat ze socketu, kód chyby: " << err);
@@ -163,10 +168,10 @@ bool SmtpMail::Send()
 	try
 	{
 		if(IsNull(host))
-			throw Exc("Hostitel není zadán.");
+			throw Exc(t_("Host not set."));
 
 		if(to.IsEmpty())
-			throw Exc("Není zadán pøíjemce.");
+			throw Exc(t_("Recipient not set."));
 
 #ifdef SMTP_DEBUG
 		ipaddr = "1.2.3.4";
@@ -174,7 +179,7 @@ bool SmtpMail::Send()
 		Socket::Init();
 		dword my_addr;
 		if(!ClientSocket(socket, host, port, true, &my_addr, 10000, true))
-			throw Exc(NFormat("Nelze otevøít socket %s:%d: %s", host, port, Socket::GetErrorText()));
+			throw Exc(NFormat("Cannot open socket %s:%d: %s", host, port, Socket::GetErrorText()));
 
 		ipaddr
 			<< (int)((my_addr >>  0) & 0xFF) << '.'
@@ -210,7 +215,10 @@ bool SmtpMail::Send()
 			throw Exc(ans);
 #endif
 
-		String delimiter = GetDelimiter(text.Begin(), text.End(), "?");
+		String delimiter = "?";
+		for(int i = 0; i < text.GetCount(); i++)
+			delimiter = GetDelimiter(text[i], delimiter);
+		bool alter = text.GetCount() > 1;
 		bool multi = !attachments.IsEmpty();
 
 		{ // format message
@@ -250,8 +258,7 @@ bool SmtpMail::Send()
 					msg << "Subject: " << subject << "\r\n";
 				if(!IsNull(reply_to))
 					msg << "Reply-To: " << reply_to << "\r\n";
-				if(!IsNull(time_sent))
-				{
+				if(!IsNull(time_sent)) {
 					static const char *dayofweek[] =
 					{ "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
 					static const char *month[] =
@@ -262,86 +269,85 @@ bool SmtpMail::Send()
 						<< ' ' << Sprintf("%2d:%02d:%02d +0100", time_sent.hour, time_sent.minute, time_sent.second)
 						<< "\r\n";
 				}
-				if(multi)
-					msg << "Content-Type: Multipart/mixed; boundary=\"" << delimiter << "\"\r\n"
-						"\r\n"
-						"--" << delimiter << "\r\n"
-						"Content-Type: " << (*mime ? ~mime : "text/plain; charset=Windows-1250") << "\r\n"
-						"Content-Transfer-Encoding: quoted-printable\r\n"
-						;
-				if(!no_header_sep)
-					msg << "\r\n"; // message separator
+				if(multi || alter)
+					msg << "Content-Type: Multipart/" << (alter ? "alternative" : "mixed")
+						<< "; boundary=\"" << delimiter << "\"\r\n"
+						"\r\n";
 			}
 
-			bool begin = true;
-			for(const char *p = text.Begin(), *e = text.End(); p != e; p++)
-				if(*p >= 33 && *p <= 126 && *p != '=' && (*p != '.' || !begin))
-				{
-					msg.Cat(*p);
-					begin = false;
+			for(int i = 0; i < text.GetCount(); i++) {
+				String t = text[i], m = mime[i];
+				if(!no_header_sep)
+					msg << "\r\n";
+				if(!no_header) {
+					if(multi || alter)
+						msg << "--" << delimiter << "\r\n";
+					if(IsNull(m))
+						m << "text/plain; charset=\"" << MIMECharsetName(CHARSET_DEFAULT) << "\"";
+					msg << "Content-Type: " << m << "\r\n"
+					"Content-Transfer-Encoding: quoted-printable\r\n"
+					"\r\n";
 				}
-				else if(*p == '.' && begin)
-				{
-					msg.Cat("..");
-					begin = false;
-				}
-				else if(*p == ' ' && p + 1 != e && p[1] != '\r' && p[1] != '\n')
-				{
-					msg.Cat(' ');
-					begin = false;
-				}
-				else if(*p == '\r')
-					;
-				else if(*p == '\n')
-				{
+				bool begin = true;
+				for(const char *p = t.Begin(), *e = t.End(); p != e; p++)
+					if(*p >= 33 && *p <= 126 && *p != '=' && (*p != '.' || !begin)) {
+						msg.Cat(*p);
+						begin = false;
+					}
+					else if(*p == '.' && begin) {
+						msg.Cat("..");
+						begin = false;
+					}
+					else if(*p == ' ' && p + 1 != e && p[1] != '\r' && p[1] != '\n') {
+						msg.Cat(' ');
+						begin = false;
+					}
+					else if(*p == '\r')
+						;
+					else if(*p == '\n') {
+						msg.Cat("\r\n");
+						begin = true;
+					}
+					else {
+						static const char hex[] = "0123456789ABCDEF";
+						msg.Cat('=');
+						msg.Cat(hex[(*p >> 4) & 15]);
+						msg.Cat(hex[*p & 15]);
+					}
+
+				if(!begin)
 					msg.Cat("\r\n");
-					begin = true;
+			}
+			for(int i = 0; i < attachments.GetCount(); i++) {
+				const Attachment& a = attachments[i];
+				One<Stream> source;
+				if(!IsNull(a.file)) {
+					One<FileIn> fi = new FileIn(a.file);
+					if(fi -> IsOpen())
+						source = -fi;
 				}
 				else
-				{
-					static const char hex[] = "0123456789ABCDEF";
-					msg.Cat('=');
-					msg.Cat(hex[(*p >> 4) & 15]);
-					msg.Cat(hex[*p & 15]);
-				}
+					source = new StringStream(a.data);
+				msg << "--" << delimiter << "\r\n"
+					"Content-Type: " << a.mime << "; name=\"" << a.name << "\"\r\n"
+					"Content-Transfer-Encoding: base64\r\n"
+					"Content-Disposition: attachment; filename=\"" << a.name << "\"\r\n"
+					"\r\n";
 
-			if(!begin)
-				msg.Cat("\r\n");
-			if(multi)
-			{
-				for(int i = 0; i < attachments.GetCount(); i++)
+				char buffer[54];
+				for(int c; (c = source -> Get(buffer, sizeof(buffer))) != 0;)
 				{
-					const Attachment& a = attachments[i];
-					One<Stream> source;
-					if(!IsNull(a.file))
-					{
-						One<FileIn> fi = new FileIn(a.file);
-						if(fi -> IsOpen())
-							source = -fi;
-					}
-					else
-						source = new StringStream(a.data);
-					msg << "--" << delimiter << "\r\n"
-						"Content-Type: " << a.mime << "; name=\"" << a.name << "\"\r\n"
-						"Content-Transfer-Encoding: base64\r\n"
-						"Content-Disposition: attachment; filename=\"" << a.name << "\"\r\n"
-						"\r\n";
-
-					char buffer[54];
-					for(int c; (c = source -> Get(buffer, sizeof(buffer))) != 0;)
-					{
-						msg.Cat(Base64Encode(buffer, buffer + c));
-						msg.Cat('\r');
-						msg.Cat('\n');
-						if(msg.GetLength() >= 65536)
-						{
-							UPP::Send(socket, msg, trans_ptr);
-							msg = Null;
-						}
+					msg.Cat(Base64Encode(buffer, buffer + c));
+					msg.Cat('\r');
+					msg.Cat('\n');
+					if(msg.GetLength() >= 65536) {
+						UPP::Send(socket, msg, trans_ptr);
+						msg = Null;
 					}
 				}
-				msg << "--" << delimiter << "--\r\n";
 			}
+			if(multi || alter)
+				msg << "--" << delimiter << "--\r\n";
 			msg.Cat(".\r\n");
 			SendRecvOK(socket, msg, trans_ptr);
 		}

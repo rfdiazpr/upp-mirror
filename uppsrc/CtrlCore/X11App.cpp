@@ -350,7 +350,22 @@ Rect Ctrl::GetDefaultWindowRect()
 	return RectC(pos + 20, pos + 20, cx, cy);
 }
 
-Rect Ctrl::GetWorkArea()
+Rect Ctrl::GetWorkArea() const
+{
+	return GetPrimaryWorkArea();
+}
+
+Rect Ctrl::GetVirtualWorkArea()
+{
+	return GetPrimaryWorkArea();
+}
+
+Rect Ctrl::GetVirtualScreenArea()
+{
+	return GetPrimaryScreenArea();
+}
+
+Rect Ctrl::GetPrimaryWorkArea()
 {
 	static Rect r;
 	if(r.right == 0) {
@@ -363,7 +378,7 @@ Rect Ctrl::GetWorkArea()
 	return r;
 }
 
-Rect Ctrl::GetScreenArea()
+Rect Ctrl::GetPrimaryScreenArea()
 {
 	return RectC(0, 0, Xwidth, Xheight);
 }

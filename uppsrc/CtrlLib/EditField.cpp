@@ -116,9 +116,9 @@ void EditField::CancelMode()
 	dropcaret.Clear();
 }
 
-int EditField::GetTextCx(const wchar *txt, int n, bool password)
+int EditField::GetTextCx(const wchar *txt, int n, bool password, Font fnt)
 {
-	FontInfo fi = font.Info();
+	FontInfo fi = fnt.Info();
 	if(password)
 		return n * fi['*'];
 	const wchar *s = txt;
@@ -130,7 +130,7 @@ int EditField::GetTextCx(const wchar *txt, int n, bool password)
 
 int  EditField::GetCaret(int cursor)
 {
-	return GetTextCx(text, cursor, password);
+	return GetTextCx(text, cursor, password, font);
 }
 
 int  EditField::GetViewHeight(Font font)
@@ -188,18 +188,18 @@ int  EditField::GetTy()
 }
 
 void EditField::Paints(Draw& w, int& x, int fcy, const wchar *&txt,
-					   Color ink, Color paper, int n, bool password)
+					   Color ink, Color paper, int n, bool password, Font fnt)
 {
 	if(n < 0) return;
-	int cx = GetTextCx(txt, n, password);
+	int cx = GetTextCx(txt, n, password, font);
 	w.DrawRect(x, 0, cx, fcy, paper);
 	if(password) {
 		String h;
 		h.Cat('*', n);
-		w.DrawText(x, 0, ~h, font, ink, n);
+		w.DrawText(x, 0, ~h, fnt, ink, n);
 	}
 	else
-		w.DrawText(x, 0, txt, font, ink, n);
+		w.DrawText(x, 0, txt, fnt, ink, n);
 	txt += n;
 	x += cx;
 }
@@ -227,23 +227,23 @@ void EditField::Paint(Draw& w)
 	bool ar = alignright && !HasFocus();
 	if(IsNull(text) && !IsNull(nulltext)) {
 		const wchar *txt = nulltext;
-		Paints(w, x, fcy, txt, nullink, paper, nulltext.GetLength(), false);
+		Paints(w, x, fcy, txt, nullink, paper, nulltext.GetLength(), false, nullfont);
 	}
 	else {
 		const wchar *txt = text;
 		if(ar) {
-			x = sz.cx - 4 - GetTextCx(text, text.GetLength(), password);
+			x = sz.cx - 4 - GetTextCx(text, text.GetLength(), password, font);
 			w.DrawRect(0, 0, x, fcy, paper);
 		}
 		int l, h;
 		if(GetSelection(l, h)) {
-			Paints(w, x, fcy, txt, ink, paper, l, password);
+			Paints(w, x, fcy, txt, ink, paper, l, password, font);
 			Paints(w, x, fcy, txt, enabled ? st->selectedtext : paper,
-			                       enabled ? st->selected : ink, h - l, password);
-			Paints(w, x, fcy, txt, ink, paper, text.GetLength() - h, password);
+			                       enabled ? st->selected : ink, h - l, password, font);
+			Paints(w, x, fcy, txt, ink, paper, text.GetLength() - h, password, font);
 		}
 		else
-			Paints(w, x, fcy, txt, ink, paper, text.GetLength(), password);
+			Paints(w, x, fcy, txt, ink, paper, text.GetLength(), password, font);
 	}
 	if(!ar)
 		w.DrawRect(x, 0, 9999, fcy, paper);
@@ -323,6 +323,13 @@ void EditField::Layout()
 
 void EditField::GotFocus()
 {
+	if(autoformat && IsEditable() && !IsNull(text) && inactive_convert) {
+		Value v = convert->Scan(text);
+		if(!v.IsError()) {
+			WString s = convert->Format(v);
+			if(s != text) text = s;
+		}
+	}
 	if(!keep_selection) {
 		anchor = 0;
 		cursor = text.GetLength();
@@ -332,10 +339,11 @@ void EditField::GotFocus()
 
 void EditField::LostFocus()
 {
-	if(autoformat && IsEditable()) {
+	if(autoformat && IsEditable() && !IsNull(text)) {
 		Value v = convert->Scan(text);
 		if(!v.IsError()) {
-			WString s = convert->Format(v);
+			const Convert * cv = inactive_convert ? inactive_convert : convert;
+			WString s = cv->Format(v);
 			if(s != text) text = s;
 		}
 	}
@@ -851,7 +859,10 @@ void EditField::SetText(const WString& txt)
 
 void EditField::SetData(const Value& data)
 {
-	SetText((WString)convert->Format(data));
+	const Convert * cv = convert;
+	if(!HasFocus() && inactive_convert)
+		cv = inactive_convert;
+	SetText((WString) cv->Format(data));
 }
 
 Value EditField::GetData() const
@@ -877,6 +888,7 @@ void EditField::Reset()
 	clickselect = false;
 	filter = CharFilterUnicode;
 	convert = &NoConvert();
+	inactive_convert = NULL;
 	initcaps = false;
 	maxlen = INT_MAX;
 	autosize = false;
@@ -893,12 +905,18 @@ EditField& EditField::SetFont(Font _font)
 	return *this;
 }
 
-EditField& EditField::NullText(const char *text, Color ink)
+EditField& EditField::NullText(const char *text, Font fnt, Color ink)
 {
 	nulltext = text;
 	nullink = ink;
+	nullfont = fnt;
 	Refresh();
 	return *this;
+}
+
+EditField& EditField::NullText(const char *text, Color ink)
+{
+	return NullText(text, GetFont(), ink);
 }
 
 EditField::EditField()
@@ -1020,6 +1038,9 @@ void EditDoubleSpin::Inc()
 			Action();
 		}
 	}
+	else if(minval != DOUBLE_NULL_LIM)
+		SetData(minval);
+	SetFocus();
 }
 
 void EditDoubleSpin::Dec()
@@ -1039,6 +1060,9 @@ void EditDoubleSpin::Dec()
 			Action();
 		}
 	}
+	else if(maxval != -DOUBLE_NULL_LIM)
+		SetData(maxval);
+	SetFocus();
 }
 
 bool EditDoubleSpin::Key(dword key, int repcnt)

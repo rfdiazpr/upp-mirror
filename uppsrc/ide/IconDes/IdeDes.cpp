@@ -56,7 +56,8 @@ void IdeIconDes::Save()
 	if(!SaveChangedFileFinish(filename, d))
 		return;
 	filetime = FileGetTime(filename);
-	SaveFile(AppendFileName(folder, "icon.ico"), WriteIcon(exp.GetValues()));
+	if(exp.GetCount())
+		SaveFile(AppendFileName(folder, "icon.ico"), WriteIcon(exp.GetValues()));
 }
 
 void IdeIconDes::ToolEx(Bar& bar)

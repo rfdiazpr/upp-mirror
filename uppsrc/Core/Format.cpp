@@ -165,9 +165,9 @@ String Format64Hex(uint64 a)
 	return String(p, b + 50);
 }
 
-String FormatInteger(int a)            { return IsNull(a) ? String() : Sprintf("%d", a); }
+String FormatInteger(int a)            { return IsNull(a) ? String() : FormatInt(a); }
 String FormatUnsigned(unsigned long a) { return Sprintf("%u", a); }
-String FormatDouble(double a)          { return IsNull(a) ? String() : Sprintf("%.10g", a); }
+String FormatDouble(double a)          { return IsNull(a) ? String() : FormatDouble(a, 10, FD_REL); }
 String FormatBool(bool a)              { return a ? "true" : "false"; }
 String FormatPtr(const void *p)        { return Sprintf("0x%lX", p); }
 

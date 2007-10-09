@@ -51,11 +51,11 @@ int FontFilter(int c)
 
 int  Font::FindFaceNameIndex(const char *name) {
 	if(!Draw::sFini) Draw::InitFonts();
-	for(int i = 0; i < GetFaceCount(); i++)
+	for(int i = 1; i < GetFaceCount(); i++)
 		if(GetFaceName(i) == name)
 			return i;
 	String n = Filter(name, FontFilter);
-	for(int i = 0; i < GetFaceCount(); i++)
+	for(int i = 1; i < GetFaceCount(); i++)
 		if(Filter(GetFaceName(i), FontFilter) == n)
 			return i;
 	return 0;

@@ -60,6 +60,8 @@ static String Dump(Ctrl *ctrl)
 }
 #endif
 
+Rect MonitorRectForHWND(HWND hwnd);
+
 static UINT_PTR CALLBACK sCenterHook(HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	LLOG("msg = " << (int)msg << ", wParam = " << Format("%08x", (int)wParam)
@@ -75,10 +77,11 @@ static UINT_PTR CALLBACK sCenterHook(HWND hdlg, UINT msg, WPARAM wParam, LPARAM 
 		}
 		Rect dr, pr;
 		::GetWindowRect(hdlg, dr);
-		HWND owner = GetWindow(hdlg, GW_OWNER);
-		Rect wa = Ctrl::GetWorkArea();
-		if(owner)
+		Rect wa = Ctrl::GetPrimaryWorkArea();
+		if(HWND owner = ::GetWindow(hdlg, GW_OWNER)) {
 			::GetWindowRect(owner, pr);
+			wa = MonitorRectForHWND(owner);
+		}
 		else
 			pr = wa;
 		pr.Intersect(wa);

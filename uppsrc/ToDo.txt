@@ -1,6 +1,77 @@
+Vista:
+	DropList Chameleon
+	Font without Aero
+
+
+Linux:
+	NetNode
+	.cfg paths
+	DropList Chameleon
+
+Core:
+	Use .dli to use W variants of file functions, to get UNICODE filenames
+	Merge NetNode to filesystem (?)
+	Merssene twister for GUID
+
+CtrlLib:
+	RTL
+	Add IdCtrls reference example
+	Add Timer reference example
+	GetMinSize implemented for widgets to make layout systems work
+	Zoom &Out issue -> not Z&oom Out
+	FileSel
+	Rectangular blocks
+    if you click on toolbar button and mouse is still over this button the button should be highlighted - now you must move slightly mouse to restore highlighting.. - if I found time I'll try to fix it myself
+
+    Odpady - RichTextCtrl issue
+
+Sql:
+	SqlExp Document
+
+TheIDE:
+	Add manifest / icon .rc to template.
+	Editor run mode
+	Text mode for Topic++
+	Text mode for .iml (?)
+	Separate find / log
+	Builders:
+		Fix hydra
+
+
+//=============================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+$uvs: END YOUR INSERT
+$uvs: YOUR DELETE
+Ide:
+	Image rotation
+	Exclude when (include when)
+	FontZ v layout (plus default height)
+	Find in help
+$uvs: REPOSITORY INSERT (YOUR DELETE)
+	MT kompilace problem
+$uvs: END REPOSITORY INSERT (YOUR DELETE)
+
+---------------
+Done:
+	TreeCtrl: Option problem - mix widget and static data (drag & drop)
+
+
+//=============================================================================================
+$uvs: END YOUR DELETE
+
 MENU OSCILACE!!!! (Drug to caption)
-
-
 
 $uvs: PENDING CONFLICT
 $uvs: REPOSITORY INSERT

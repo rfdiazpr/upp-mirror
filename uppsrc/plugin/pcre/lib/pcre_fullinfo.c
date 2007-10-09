@@ -6,7 +6,7 @@
 and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
-           Copyright (c) 1997-2006 University of Cambridge
+           Copyright (c) 1997-2007 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,10 @@ POSSIBILITY OF SUCH DAMAGE.
 information about a compiled pattern. */
 
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "pcre_internal.h"
 
 
@@ -61,7 +65,7 @@ Arguments:
 Returns:           0 if data returned, negative on error
 */
 
-PCRE_DATA_SCOPE int
+PCRE_EXP_DEFN int
 pcre_fullinfo(const pcre *argument_re, const pcre_extra *extra_data, int what,
   void *where)
 {
@@ -138,6 +142,18 @@ switch (what)
 
   case PCRE_INFO_DEFAULT_TABLES:
   *((const uschar **)where) = (const uschar *)(_pcre_default_tables);
+  break;
+
+  case PCRE_INFO_OKPARTIAL:
+  *((int *)where) = (re->options & PCRE_NOPARTIAL) == 0;
+  break;
+
+  case PCRE_INFO_JCHANGED:
+  *((int *)where) = (re->options & PCRE_JCHANGED) != 0;
+  break;
+
+  case PCRE_INFO_HASCRORLF:
+  *((int *)where) = (re->options & PCRE_HASCRORLF) != 0;
   break;
 
   default: return PCRE_ERROR_BADOPTION;

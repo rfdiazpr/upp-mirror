@@ -28,8 +28,8 @@ file
 	ToDo.txt,
 	changelog.txt,
 	GridCtrl.t charset "UTF-8",
-	GridCtrl.usc;
+	GridCtrl.usc,
+	src.tpp;
 
 mainconfig
 	"" = "GUI";
-

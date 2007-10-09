@@ -264,7 +264,7 @@ public:
 		group.Add(Null, "<other new>");
 		group.GoBegin();
 	}
-	
+
 	String GetName()
 	{
 		String s;
@@ -278,7 +278,7 @@ public:
 	}
 
 	typedef Tpp CLASSNAME;
-	
+
 	Tpp() {
 		CtrlLayoutOKCancel(*this, "Insert topic group");
 		group.AddKey();
@@ -465,7 +465,7 @@ void WorkspaceWork::FileMenu(Bar& menu)
 		.Help("Insert text separator line");
 	menu.Separator();
 	menu.Add("Insert any file(s)", THISBACK1(AddFile, ANY_FILE))
-		.Key(K_CTRL_I)
+		.Key(K_SHIFT|K_CTRL_I)
 		.Help("Insert files from anywhere on disk (discouraged in portable packages)");
 	menu.Add(isaux, "Insert output directory file(s)", THISBACK1(AddFile, OUTPUT_FILE))
 		.Help("Open file selector in output / intermediate directory for current package");

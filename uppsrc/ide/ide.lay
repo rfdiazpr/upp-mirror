@@ -1,7 +1,6 @@
 LAYOUT(ListLayout, 604, 432)
 	ITEM(Splitter, splitter, HSizePosZ(4, 4).VSizePosZ(4, 60))
 	ITEM(Option, all, SetLabel(t_("&All packages")).LeftPosZ(4, 80).BottomPosZ(9, 19))
-	ITEM(Label, search_txt, SetLabel(t_("Search")).LeftPosZ(116, 36).BottomPosZ(9, 19))
 	ITEM(EditString, search, LeftPosZ(152, 124).BottomPosZ(9, 19))
 	ITEM(Option, brief, SetLabel(t_("Brief list")).HSizePosZ(296, 240).BottomPosZ(8, 20))
 	ITEM(ProgressIndicator, progress, HSizePosZ(4, 254).BottomPosZ(12, 15))

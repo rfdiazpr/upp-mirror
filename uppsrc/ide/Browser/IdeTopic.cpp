@@ -124,7 +124,8 @@ void TopicEditor::MainTool(Bar& bar)
 	bar.Gap();
 	editor.EditTools(bar);
 	bar.Gap();
-	editor.PrintTool(bar);
+	bar.Add("Print", CtrlImg::print(), THISBACK(Print))
+	   .Key(K_CTRL_P);
 	bar.GapRight();
 	bar.Break();
 	editor.LabelTool(bar, 500);

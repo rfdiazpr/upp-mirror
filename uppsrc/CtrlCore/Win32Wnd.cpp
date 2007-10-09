@@ -331,7 +331,6 @@ void  Ctrl::SetMouseCursor(const Image& image)
 {
 #ifndef PLATFORM_WINCE
 	static Image img;
-//	DDUMP(image.GetSerialId());
 	if(image.GetSerialId() != img.GetSerialId()) {
 		img = image;
 		HCURSOR hc = IconWin32(img, true);
@@ -647,7 +646,7 @@ void SweepMkImageCache();
 bool Ctrl::ProcessEvents(bool *quit)
 {
 	if(ProcessEvent(quit)) {
-		while(ProcessEvent(quit));
+		while(ProcessEvent(quit) && (!LoopCtrl || LoopCtrl->InLoop())); // LoopCtrl-MF 071008
 		SweepMkImageCache();
 		return true;
 	}
@@ -776,7 +775,55 @@ void Ctrl::SetAlpha(byte alpha)
     SetLayeredWindowAttributes() (hwnd, 0, alpha, 2);
 }
 
-Rect Ctrl::GetWorkArea()
+#define DLLFILENAME "User32.dll"
+#define DLIMODULE   MultiMon
+#define DLIHEADER   <CtrlCore/MultiMon.dli>
+#include <Core/dli.h>
+
+Rect MonitorRectForHWND(HWND hwnd)
+{
+	if(hwnd && MultiMon())
+		if(HMONITOR monitor = MultiMon().MonitorFromWindow(hwnd, 2/*MONITOR_DEFAULTTONEAREST*/)) {
+			MONITORINFO moninfo;
+			Zero(moninfo);
+			moninfo.cbSize = sizeof(moninfo);
+			MultiMon().GetMonitorInfo(monitor, &moninfo);
+			return Rect(moninfo.rcWork);
+		}
+	return Ctrl::GetPrimaryWorkArea();
+}
+
+Rect Ctrl::GetWorkArea() const
+{
+	return MonitorRectForHWND(GetHWND());
+}
+
+static BOOL CALLBACK sMonEnumProc(HMONITOR monitor, HDC hdc, LPRECT lprcMonitor, LPARAM data)
+{
+	MONITORINFO moninfo;
+	Zero(moninfo);
+	moninfo.cbSize = sizeof(moninfo);
+	MultiMon().GetMonitorInfo(monitor, &moninfo);
+	*(Rect *)data |= Rect(moninfo.rcWork);
+	return TRUE;
+}
+
+Rect Ctrl::GetVirtualWorkArea()
+{
+	Rect out = GetPrimaryWorkArea();
+	MultiMon().EnumDisplayMonitors(NULL, NULL, &sMonEnumProc, (LPARAM)&out);
+	return out;
+}
+
+Rect Ctrl::GetVirtualScreenArea()
+{
+	return RectC(GetSystemMetrics(SM_XVIRTUALSCREEN),
+		GetSystemMetrics(SM_YVIRTUALSCREEN),
+		GetSystemMetrics(SM_CXVIRTUALSCREEN),
+		GetSystemMetrics(SM_CYVIRTUALSCREEN));
+}
+
+Rect Ctrl::GetPrimaryWorkArea()
 {
 	Rect r;
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &r, 0);
@@ -784,12 +831,9 @@ Rect Ctrl::GetWorkArea()
 	return r;
 }
 
-Rect Ctrl::GetScreenArea()
+Rect Ctrl::GetPrimaryScreenArea()
 {
-	return RectC(GetSystemMetrics(SM_XVIRTUALSCREEN),
-		GetSystemMetrics(SM_YVIRTUALSCREEN),
-		GetSystemMetrics(SM_CXVIRTUALSCREEN),
-		GetSystemMetrics(SM_CYVIRTUALSCREEN));
+	return Size(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 }
 
 int Ctrl::GetKbdDelay()

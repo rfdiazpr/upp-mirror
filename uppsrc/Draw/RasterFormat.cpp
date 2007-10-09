@@ -62,15 +62,36 @@ void RasterFormat::Set32be(dword rmask, dword gmask, dword bmask, dword amask)
 	bpos = 3 - GetChMaskPos32(bmask);
 	if(amask) {
 		apos = 3 - GetChMaskPos32(amask);
-		type = RASTER_32ALPHA;
+		type = RASTER_32PREMULTIPLIED;
 	}
 	else
 		type = RASTER_32;
 }
 
+void RasterFormat::Set32leStraight(dword rmask, dword gmask, dword bmask, dword amask)
+{
+	Set32le(rmask, gmask, bmask, amask);
+	type = RASTER_32ALPHA;
+}
+
+void RasterFormat::Set32beStraight(dword rmask, dword gmask, dword bmask, dword amask)
+{
+	Set32be(rmask, gmask, bmask, amask);
+	type = RASTER_32ALPHA;
+}
+
 void RasterFormat::SetRGBA()
 {
 	type = RASTER_32PREMULTIPLIED;
+	bpos = 0;
+	gpos = 1;
+	rpos = 2;
+	apos = 3;
+}
+
+void RasterFormat::SetRGBAStraight()
+{
+	type = RASTER_32ALPHA;
 	bpos = 0;
 	gpos = 1;
 	rpos = 2;
@@ -320,7 +341,7 @@ void RasterFormat::Read(RGBA *t, const byte *s, int cx, const RGBA *palette) con
 				t->r = (alpha * s[rpos]) >> 8;
 				t->g = (alpha * s[gpos]) >> 8;
 				t->b = (alpha * s[bpos]) >> 8;
-				s++;
+				s += 4;
 				t++;
 			}
 		}

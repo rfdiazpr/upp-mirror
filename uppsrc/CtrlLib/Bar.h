@@ -117,7 +117,7 @@ public:
 	Item&  AddMenu(bool enable, const char *text, const UPP::Image& image, Callback callback);
 	Item&  AddMenu(bool enable, KeyInfo& (*key)(), const UPP::Image& image, Callback callback);
 	Item&  AddMenu(const char *text, const UPP::Image& image, Callback callback);
-	Item&  AddMenu(const String& t, const UPP::Image& m, Callback c) { AddMenu(t, m, c); }
+	Item&  AddMenu(const String& t, const UPP::Image& m, Callback c) { return AddMenu(t, m, c); }
 	Item&  AddMenu(KeyInfo& (*key)(), const UPP::Image& m, Callback c);
 
 	Item&  Add(bool enable, const char *text, Callback1<Bar&> proc);

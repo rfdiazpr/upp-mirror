@@ -96,16 +96,28 @@
                                              "(" #k1 ", " #k2 ");",\
                                              "alter table @t drop constraint DQ_@t;")
 
-#define UNIQUE_LIST(u, l)          ATTRIBUTE("alter table @t add constraint UQ_@t$" #u " unique "\
-                                             "(" l ");",\
-                                             "alter table @t drop constraint UQ_@t$" #u ";")
+#define SQLCHECK(name, chk)        ATTRIBUTE("alter table @t add constraint CHK_@t$" #name " check "\
+                                             "(" chk ");",\
+                                             "alter table @t drop constraint CHK_@t$" #name ";")
 
-#define SQLCHECK(n, ct)            ATTRIBUTE("alter table @t add constraint CHK_@t$" #n " check "\
-                                             "(" ct ");",\
-                                             "alter table @t drop constraint CHK_@t$" #n ";")
+#define PRIMARY_KEY_LIST(name, keys) \
+ATTRIBUTE("alter table @t add constraint PKL_@t$" #name " primary key (" keys ");", \
+          "alter table @t drop constraint PKL_@t$" #name  ";")
+
+#define REFERENCES_LIST(name, fks, tab, keys) \
+ATTRIBUTE("alter table @t add constraint FKL_@t$" #name " foreign key " \
+          "(" fks ") references " #tab "(" keys ");", \
+          "alter table @t drop constraint FKL_@t$" #name ";")
+
+#define INDEX_LIST(name, keys) \
+ATTRIBUTE("create index IDXL_@t$" #name " on @t(" keys ");", \
+          "drop index IDXL_@t$" #name ";");
+
+#define UNIQUE_LIST(name, list) \
+ATTRIBUTE("alter table @t add constraint UQ_@t$" #name " unique (" list ");", \
+          "alter table @t drop constraint UQ_@t$" #name ";")
 
 #include <Sql/sch_model.h>
-
 
 #undef INT
 #undef INT_ARRAY

@@ -51,13 +51,6 @@ HPALETTE GetQlibPalette()
 
 Draw& GLOBAL_VP(ScreenDraw, ScreenInfo, (true))
 
-struct ScreenInfoClass : ScreenDraw { ScreenInfoClass() : ScreenDraw(true) {} };
-
-ScreenDraw& ScreenDraw()
-{
-	return Single<ScreenInfoClass>();
-}
-
 HDC ScreenHDC()
 {
 	return ScreenInfo();

@@ -33,6 +33,8 @@ namespace GD
 		WRAP      = BIT(17),
 		CHAMELEON = BIT(18),
 		NOTEXT    = BIT(19),
+		BOLDKEY   = BIT(20),
+		BOLDVALUE = BIT(21),
 		ALIGN     = LEFT | RIGHT | TOP | BOTTOM	| VCENTER | HCENTER
 	};
 }
@@ -51,6 +53,7 @@ class GridDisplay
 		int     theme;
 		bool	hgrid;
 		bool	vgrid;
+		bool    keyval;
 
 		int 	col, row;
 
@@ -62,6 +65,7 @@ class GridDisplay
 			lm = rm = 4;
 			tm = bm = 0;
 			theme = 5;
+			keyval = false;
 		}
 
 		~GridDisplay() {};
@@ -72,6 +76,7 @@ class GridDisplay
 		void SetBgImage(Image &img)					 { bgImg    = img;    	       }
 		void SetFont(Font &fnt)						 { font     = fnt;    	       }
 		void SetTextAlign(int al)		 	 		 { align = al; 				   }
+//		void SetText
 		void SetHMargin(int left, int right)		 { lm = left; rm = right;  	   }
 		void SetVMargin(int top, int bottom)		 { tm = top;  bm = bottom;     }
 		void SetTheme(int th)                        { theme = th;                 }

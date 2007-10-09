@@ -16,6 +16,11 @@ Size TopWindow::GetMinSize() const
 	return minsize;
 }
 
+Size TopWindow::GetStdSize() const
+{
+	return GetMinSize();
+}
+
 void TopWindow::ActiveFocus0(Ctrl& ctrl)
 {
 	if(IsChild()) return;
@@ -497,7 +502,7 @@ TopWindow::~TopWindow()
 
 void Maxisize(TopWindow& win, int screencxmax)
 {
-	if(Ctrl::GetWorkArea().Width() <= screencxmax)
+	if(win.GetWorkArea().Width() <= screencxmax)
 		win.Maximize();
 }
 

@@ -633,8 +633,7 @@ void OleDBConnection::Execute(IRef<IRowset> rowset)
 		SqlColumnInfo& colinfo = info[i];
 		const DBCOLUMNINFO& dbci = columns[i];
 		colinfo.name = WString((const wchar *)dbci.pwszName).ToString();
-		colinfo.decimals = Null;
-		colinfo.prec = (dbci.bPrecision == (byte)~0 ? int(Null) : dbci.bPrecision);
+		colinfo.precision = (dbci.bPrecision == (byte)~0 ? int(Null) : dbci.bPrecision);
 		colinfo.scale = (dbci.bScale == (byte)~0 ? int(Null) : dbci.bScale);
 		colinfo.width = dbci.ulColumnSize;
 		switch(dbci.wType) {

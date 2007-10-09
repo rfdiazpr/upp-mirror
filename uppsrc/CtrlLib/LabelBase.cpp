@@ -65,12 +65,12 @@ String DeAmp(const char *s)
 	return out;
 }
 
-Size GetSmartTextSize(const char *text, Font font) {
+Size GetSmartTextSize(const char *text, Font font, int cx) {
 	if(*text == '\1') {
 		Size sz;
 		RichText txt = ParseQTF(text + 1);
 		txt.ApplyZoom(GetRichTextStdScreenZoom());
-		sz.cx = txt.GetWidth();
+		sz.cx = min(cx, txt.GetWidth());
 		sz.cy = txt.GetHeight(Zoom(1, 1), sz.cx);
 		return sz;
 	}
@@ -156,12 +156,12 @@ DrawLabel::DrawLabel()
 	accesskey = 0;
 }
 
-Size DrawLabel::GetSize() const
+Size DrawLabel::GetSize(int txtcx) const
 {
 	Size isz(0, 0);
 	Size sz1 = limg.GetSize();
 	Size sz2 = rimg.GetSize();
-	Size txtsz = *text ? GetSmartTextSize(text, font) : paintrect.GetStdSize();
+	Size txtsz = *text ? GetSmartTextSize(text, font, txtcx) : paintrect.GetStdSize();
 
 	if(!IsNull(lspc)) {
 		isz.cx = lspc;
@@ -203,8 +203,9 @@ Size DrawLabel::Paint(Draw& w, const Rect& r, bool visibleaccesskey) const
 {
 	Size sz1 = limg.GetSize();
 	Size sz2 = rimg.GetSize();
-	Size txtsz = *text ? GetSmartTextSize(text, font) : paintrect.GetStdSize();
-	Size isz = GetSize();
+	int txtcx = r.GetWidth() - sz1.cx - Nvl(lspc, 0) - sz2.cx - Nvl(rspc, 0);
+	Size txtsz = *text ? GetSmartTextSize(text, font, txtcx) : paintrect.GetStdSize();
+	Size isz = GetSize(txtcx);
 	Point p, ip;
 	if(align == ALIGN_LEFT)
 		p.x = r.left;
@@ -251,7 +252,7 @@ Size DrawLabel::Paint(Draw& w, const Rect& r, bool visibleaccesskey) const
 		if(disabled)
 			DrawSmartText(w, p.x + push + 1, p.y + push + (isz.cy - txtsz.cy) / 2 + 1,
 			              txtsz.cx, text, font, SColorPaper);
-		DrawSmartText(w, p.x + push, p.y + push, txtsz.cx,
+		DrawSmartText(w, p.x + push, p.y + push, txtcx,
 		              text, font, color, visibleaccesskey ? accesskey : 0);
 		if(focus)
 			DrawFocus(w, p.x - 2, p.y, txtsz.cx + 5, isz.cy);

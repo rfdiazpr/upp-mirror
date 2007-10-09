@@ -6,7 +6,7 @@
 
 NAMESPACE_UPP
 
-class DropGrid : public DropBox
+class DropGrid : public DropBox, public Convert
 {
 	private:
 
@@ -39,19 +39,29 @@ class DropGrid : public DropBox
 		PopUpGrid list;
 	
 	private:
+		int rowid;
+		Value value;
 		
 		int list_width;
 		int list_height;
 		int drop_lines;
-		bool display_all;
-		bool header;
-		int rowid;
-		Value value;
-		bool notnull;
+		
+		bool display_all:1;
+		bool header:1;
+		bool valuekey:1;
+		bool notnull:1;
+		bool format_columns:1;
+		bool drop_enter:1;
+		bool data_action:1;
+		bool searching:1;
+		
 		GridDisplay *display;
 				
 		void Change(int dir);
 		void SearchCursor();
+		void DoAction(int row, bool action = true);
+		Value MakeLongValue(int r = -1, bool columns = true) const;
+		void UpdateValue();
 		
 	public:
 	
@@ -68,20 +78,31 @@ class DropGrid : public DropBox
 		DropGrid& SetKeyColumn(int n);
 		DropGrid& SetValueColumn(int n);
 		DropGrid& AddValueColumn(int n);
+		DropGrid& AddValueColumns(int first = -1, int last = -1);
 		DropGrid& DisplayAll(bool b = true);
 		DropGrid& SetDropLines(int d);
-		DropGrid& NoHeader(bool b = true);
+		DropGrid& Header(bool b = true);
+		DropGrid& NoHeader();
 		DropGrid& Resizeable(bool b = true);
 		DropGrid& ColorRows(bool b = true);
 		DropGrid& NotNull(bool b = true);
+		DropGrid& ValueAsKey(bool b = true);
 		DropGrid& SetDisplay(GridDisplay &d);
-
-		void SetIndex(int n);
+		DropGrid& FormatColumns(bool b = true);
+		DropGrid& DropEnter(bool b = true);
+		DropGrid& DataAction(bool b = true);
+		DropGrid& Searching(bool b = true);
 		
-		DropGrid& AddColumn(const char *name, int width = GridCtrl::GD_COL_WIDTH);
-		DropGrid& AddColumn(Id id, const char *name, int width = GridCtrl::GD_COL_WIDTH);
-		DropGrid& AddIndex(const char *name = NULL);
-		DropGrid& AddIndex(Id id);
+		GridCtrl::ItemRect& AddColumn(const char *name, int width = GridCtrl::GD_COL_WIDTH, bool idx = false);
+		GridCtrl::ItemRect& AddColumn(Id id, const char *name, int width = GridCtrl::GD_COL_WIDTH, bool idx = false);
+		GridCtrl::ItemRect& AddIndex(const char *name = NULL);
+		GridCtrl::ItemRect& AddIndex(Id id);
+		int AddColumns(int cnt);
+		
+		int SetIndex(int n);
+		int GetIndex() const;
+		
+		int GetCount() const;
 		
 		void Reset();
 		void Clear();
@@ -89,6 +110,9 @@ class DropGrid : public DropBox
 		
 		virtual Value GetData() const;
 		virtual void SetData(const Value& v);
+		
+		Value GetValue() const;
+		Value GetKey() const;
 		
 		virtual bool Key(dword k, int);
 		virtual void Paint(Draw& draw);
@@ -107,15 +131,21 @@ class DropGrid : public DropBox
 		void  Set(int r, const Vector<Value> &v, int data_offset = 0, int column_offset = 0);
 		void  Add(const Vector<Value> &v, int data_offset = 0, int column_offset = 0);
 		
+		GridCtrl::ItemRect& GetRow(int r);
+		
+		bool IsSelected();
+		bool IsEmpty();
 		
 		int Find(const Value& v, int col = 0);
 		int Find(const Value& v, Id id);
 		
+		virtual Value Format(const Value& q) const;
+				
 		//$-DropCtrl& Add(const Value& [, const Value& ]...);
 		#define  E__Add(I)      DropGrid& Add(__List##I(E__Value));
 			__Expand(E__Add)
 		#undef   E__Add
-		//$+		
+		//$+
 };
 
 END_UPP_NAMESPACE

@@ -70,8 +70,8 @@ CONSOLE_APP_MAIN
 		bm.Add(arg[i]);
 	if(bm.GetCount() == 0) {
 		bm.Add("MSC71cdb");
-//		bm.Add("MSC8cdb");
-//		bm.Add("MINGWI");
+		bm.Add("MSC8");
+		bm.Add("MINGWI2");
 	}
 	Build("examples");
 	Build("reference");

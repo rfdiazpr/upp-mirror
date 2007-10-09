@@ -88,12 +88,14 @@ char *basic_fonts[] = {
 	"monospace",
 };
 
-static bool sCheckComposed(const char *face)
+static int sCheckComposed(const char *face)
 {
 	XftFont *xftfont = XftFontOpen(Xdisplay, Xscreenno,
 	                               XFT_FAMILY, XftTypeString, (char *)face,
 	                               XFT_PIXEL_SIZE, XftTypeInteger, 20,
 	                               (void *)0);
+	if(xftfont == NULL )
+		return -1;
 	int n = 0;
 	for(int c = 0; c < 128; c++)
 		if(!XftCharExists(Xdisplay, xftfont, c + 256))
@@ -116,34 +118,19 @@ void Draw::InitPlatformFonts()
 	for(int i = 0; i < fs->nfont; i++) {
 		FcChar8 *family = NULL;
 		if(FcPatternGetString(fs->fonts[i], FC_FAMILY, 0, &family) == 0 && family) {
-			XFTFontFaceInfo& f = XFTFontFace().GetAdd((char *)family);
-			int spacing;
-			if(FcPatternGetInteger(fs->fonts[i], FC_SPACING, 0, &spacing) == 0 && spacing == XFT_MONO)
-				f.fixed = true;
-			FcBool scaleable;
-			if(FcPatternGetBool(fs->fonts[i], FC_SCALABLE, 0, &scaleable) == 0 && scaleable)
-				f.scaleable = true;
-			f.compose = sCheckComposed((char *)family);
+			int comp = sCheckComposed((char *)family);
+			if(comp >= 0) {
+				XFTFontFaceInfo& f = XFTFontFace().GetAdd((char *)family);
+				int spacing;
+				if(FcPatternGetInteger(fs->fonts[i], FC_SPACING, 0, &spacing) == 0 && spacing == XFT_MONO)
+					f.fixed = true;
+				FcBool scaleable;
+				if(FcPatternGetBool(fs->fonts[i], FC_SCALABLE, 0, &scaleable) == 0 && scaleable)
+					f.scaleable = true;
+				f.compose = comp;
+			}
 		}
 	}
-/*	static const char *replacements[] = {
-		"Bitstream Vera Sans",
-		"Times New Roman;Bitstream Vera Serif",
-		"Bitstream Vera Sans;Arial",
-		"Courier New;Bitstream Vera Sans Mono",
-		"Times New Roman;Bitstream Vera Serif",
-		"Arial;Bitstream Vera Sans",
-		"Courier New;Bitstream Vera Sans Mono",
-	};
-	for(int i = 0; i < 7; i++) {
-		Vector<String> f = Split(replacements[i], ';');
-		for(int q = 0; q < f.GetCount(); q++)
-			if(XFTFontFace().Find(f[q]) >= 0) {
-				basic_fonts[i] = PermanentCopy(f[q]);
-				XFTFontFace()[i].compose = sCheckComposed(basic_fonts[i]);
-				break;
-			}
-	}*/
 	FcFontSetDestroy(fs);
 }
 

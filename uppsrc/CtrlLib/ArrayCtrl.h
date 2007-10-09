@@ -113,17 +113,18 @@ private:
 		Ctrl *ctrl;
 	};
 
-	struct CellCtrl : StaticRect {
+	struct CellCtrl : ParentCtrl {
 		virtual void LeftDown(Point, dword);
 
 		bool       owned;
+		bool       value;
 		Ctrl      *ctrl;
 	};
 
 	struct CellInfo : Moveable<CellInfo> {
 		BitAndPtr ptr;
 
-		void           Set(Ctrl *ctrl, bool owned);
+		void           Set(Ctrl *ctrl, bool owned, bool value);
 		bool           IsCtrl() const             { return ptr.GetBit(); }
 		CellCtrl&      GetCtrl() const            { ASSERT(IsCtrl()); return *(CellCtrl *)ptr.GetPtr(); }
 
@@ -200,6 +201,7 @@ private:
 	bool  headerctrls:1;
 	bool  popupex:1;
 	bool  nobg:1;
+	bool  focussetcursor:1;
 
 	mutable bool  selectiondirty:1;
 
@@ -251,7 +253,7 @@ private:
 	bool   KillCursor0();
 
 	const Display& GetCellInfo(int i, int j, bool f0, Value& v, Color& fg, Color& bg, dword& st);
-	Ctrl&  SetCtrl(int i, int j, Ctrl *newctrl, bool owned);
+	Ctrl&  SetCtrl(int i, int j, Ctrl *newctrl, bool owned, bool value);
 	Size   DoPaint(Draw& w, bool sample);
 
 	bool   TestKey(int i, int key);
@@ -273,7 +275,7 @@ private:
 	void   SyncInfo();
 
 public: // temporary (TRC 06/07/28) // will be removed!
-	Ctrl&  SetCtrl(int i, int j, Ctrl *newctrl) { return SetCtrl(i, j, newctrl, true); }
+	Ctrl&  SetCtrl(int i, int j, Ctrl *newctrl) { return SetCtrl(i, j, newctrl, true, true); }
 
 protected:
 	virtual bool UpdateRow();
@@ -446,11 +448,11 @@ public:
 
 	bool       IsInsert() const                        { return insertmode; }
 
-	void            SetDisplay(int i, int j, const Display& d);
+	void            SetDisplay(int i, int col, const Display& d);
 	const Display&  GetDisplay(int row, int col);
 	const Display&  GetDisplay(int col);
-	
-	void       SetCtrl(int i, int j, Ctrl& ctrl);
+
+	void       SetCtrl(int i, int col, Ctrl& ctrl, bool value = true);
 
 	ArrayCtrl& SetLineCy(int cy);
 	void       SetLineCy(int i, int cy);
@@ -483,6 +485,13 @@ public:
 
 	void       ClearCache();
 	void       InvalidateCache(int i);
+
+	void       ScrollUp()                              { sb.PrevLine(); }
+	void       ScrollDown()                            { sb.NextLine(); }
+	void       ScrollPageUp()                          { sb.PrevPage(); }
+	void       ScrollPageDown()                        { sb.NextPage(); }
+	void       ScrollEnd()                             { sb.End(); }
+	void       ScrollBegin()                           { sb.Begin(); }
 
 	String     RowFormat(const char *s);
 
@@ -530,11 +539,13 @@ public:
 	ArrayCtrl& NoMouseMoveCursor()                     { return MouseMoveCursor(false); }
 	ArrayCtrl& AutoHideSb(bool b = true)               { sb.AutoHide(b); return *this; }
 	ArrayCtrl& NoAutoHideSb()                          { return AutoHideSb(false); }
+	ArrayCtrl& HideSb(bool b = true)                   { sb.Show(!b); return *this; }
 	ArrayCtrl& MultiSelect(bool b = true)              { multiselect = b; return *this; }
 	bool       IsMultiSelect(bool b = true)            { return multiselect = b; }
 	ArrayCtrl& NoBackground(bool b = true)             { nobg = b; Transparent(); Refresh(); return *this; }
 	ArrayCtrl& PopUpEx(bool b = true)                  { popupex = b; return *this; }
 	ArrayCtrl& NoPopUpEx()                             { return PopUpEx(false); }
+	ArrayCtrl& NoFocusSetCursor()                      { focussetcursor = false; return *this; }
 
 	ArrayCtrl& ColumnWidths(const char *s);
 

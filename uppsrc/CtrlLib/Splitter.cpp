@@ -104,9 +104,19 @@ Image Splitter::CursorImage(Point p, dword) {
 	return FindIndex(p) < 0 ? Image::Arrow() : vert ? Image::SizeVert() : Image::SizeHorz();
 }
 
+int Splitter::GetMins(int i) const
+{
+	int min1 = (i < mins.GetCount() ? mins[i] : 0);
+	int min2 = 0;
+	int cx = GetSize().cx;
+	if(cx)
+		min2 = (i < minpx.GetCount() ? minpx[i] : 0) * 10000 / cx;
+	return max(min1, min2);
+}
+
 Splitter& Splitter::SetPos(int p, int i) {
-	int l = (i > 0 && i - 1 < pos.GetCount() ? pos[i - 1] : 0) + (i < mins.GetCount() ? mins[i] : 0);
-	int h = (i + 1 < pos.GetCount() ? pos[i + 1] : 10000) - (i + 1 < mins.GetCount() ? mins[i + 1] : 0);
+	int l = (i > 0 && i - 1 < pos.GetCount() ? pos[i - 1] : 0) + GetMins(i);
+	int h = (i + 1 < pos.GetCount() ? pos[i + 1] : 10000) - GetMins(i + 1);
 	pos.At(i) = minmax(p, l, h);
 	Layout();
 	return *this;

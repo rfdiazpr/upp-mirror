@@ -106,7 +106,7 @@ void FileList::Paint(Draw& w, const Rect& r, const Value& q,
 	bool dark = Grayscale(paper) < 120;
 	w.DrawRect(r, paper);
 	int x = r.left + 2;
-	DrawHighlightImage(w, x, r.top + (r.Height() - m.icon.GetSize().cy), m.icon, dark);
+	w.DrawImage(x, r.top + (r.Height() - m.icon.GetSize().cy) / 2, m.icon);
 	x += iconwidth;
 	x += 2;
 	FontInfo fi = m.font.Info();
@@ -203,7 +203,7 @@ bool FileList::Key(dword key, int count) {
 void FileList::Insert(int ii,
                       const String& name, const Image& icon, Font font, Color ink,
 				      bool isdir, int length, Time time, Color extink,
-				      const String& desc, Font descfont)
+				      const String& desc, Font descfont, Value data)
 {
 	Value v;
 	File& m = CreateRawValue<File>(v);
@@ -217,12 +217,13 @@ void FileList::Insert(int ii,
 	m.extink = IsNull(extink) ? ink : extink;
 	m.desc = desc;
 	m.descfont = descfont;
+	m.data = data;
 	ColumnList::Insert(ii, v, !m.isdir);
 }
 
 void FileList::Add(const String& name, const Image& icon, Font font, Color ink,
 				   bool isdir, int length, Time time, Color extink,
-				   const String& desc, Font descfont)
+				   const String& desc, Font descfont, Value data)
 {
 	Value v;
 	File& m = CreateRawValue<File>(v);
@@ -236,6 +237,7 @@ void FileList::Add(const String& name, const Image& icon, Font font, Color ink,
 	m.extink = IsNull(extink) ? ink : extink;
 	m.desc = desc;
 	m.descfont = descfont;
+	m.data = data;
 	ColumnList::Add(v, !m.isdir);
 }
 

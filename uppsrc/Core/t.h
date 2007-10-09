@@ -200,7 +200,7 @@
 
 INITBLOCK_(COMBINE3(LNG_MODULE, LNG_VERB, LNG_VERA))
 {
-	static LngEntry__ langset[] = {
+	static UPP::LngEntry__ langset[] = {
 	#include TFILE
 		{ 0, NULL }
 	};

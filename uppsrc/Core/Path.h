@@ -1,3 +1,4 @@
+
 bool PatternMatch(const char *p, const char *s);
 bool PatternMatchMulti(const char *p, const char *s);
 
@@ -57,41 +58,41 @@ struct FileTime : FILETIME, CompareRelOps<const FileTime&, &Compare_FileTime> {
 	                                      dwHighDateTime = ft.dwHighDateTime; }
 };
 
-class  FindFile : public WIN32_FIND_DATA {
-protected:
-	HANDLE      handle;
+class  FindFile {
+	WIN32_FIND_DATA  *a;
+	WIN32_FIND_DATAW *w;
+	HANDLE            handle;
+
+	void              Init();
 
 public:
 	bool        Search(const char *name);
 	bool        Next();
 	void        Close();
 
-	dword       GetAttributes() const    { return dwFileAttributes; }
+	dword       GetAttributes() const;
 	String      GetName() const;
-	int64       GetLength() const        { return (int64)nFileSizeLow | ((int64)nFileSizeHigh << 32); }
-	FileTime    GetCreationTime() const  { return ftCreationTime; }
-	FileTime    GetLastAccessTime() const{ return ftLastAccessTime; }
-	FileTime    GetLastWriteTime() const { return ftLastWriteTime; }
+	int64       GetLength() const;
+	FileTime    GetCreationTime() const;
+	FileTime    GetLastAccessTime() const;
+	FileTime    GetLastWriteTime() const;
 
-#ifndef PLATFORM_WINCE
-	const char *GetMSDOSName() const     { return cAlternateFileName; }
-#endif
-
-	bool        IsDirectory() const      { return dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY; }
+	bool        IsDirectory() const;
 	bool        IsFolder() const;
 	bool        IsFile() const           { return !IsDirectory(); }
-	bool        IsArchive() const        { return dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE; }
-	bool        IsCompressed() const     { return dwFileAttributes & FILE_ATTRIBUTE_COMPRESSED; }
-	bool        IsHidden() const         { return dwFileAttributes & FILE_ATTRIBUTE_HIDDEN; }
-	bool        IsReadOnly() const       { return dwFileAttributes & FILE_ATTRIBUTE_READONLY; }
-	bool        IsSystem() const         { return dwFileAttributes & FILE_ATTRIBUTE_SYSTEM; }
-	bool        IsTemporary() const      { return dwFileAttributes & FILE_ATTRIBUTE_TEMPORARY; }
+
+	bool        IsArchive() const;
+	bool        IsCompressed() const;
+	bool        IsHidden() const;
+	bool        IsReadOnly() const;
+	bool        IsSystem() const;
+	bool        IsTemporary() const;
 
 	operator    bool() const             { return handle != INVALID_HANDLE_VALUE; }
 
-	FindFile()                           { handle = INVALID_HANDLE_VALUE; }
+	FindFile();
 	FindFile(const char *name);
-	~FindFile()                          { Close(); }
+	~FindFile();
 };
 
 #endif
@@ -258,3 +259,35 @@ public:
 };
 
 FileSystemInfo& StdFileSystemInfo();
+
+#ifdef PLATFORM_WIN32
+
+class NetNode : Moveable<NetNode> {
+	NETRESOURCE net;
+	String      local, remote, comment, provider;
+
+	String      name;
+	String      path;
+
+	static void           Copy(String& t, char *s);
+	static Array<NetNode> Enum0(HANDLE hEnum);
+	static void           SetPtr(String& s, char *& ptr);
+
+	void SetPtrs();
+
+public:
+	String         GetName() const    { return name; }
+	String         GetPath() const    { return path; }
+	Array<NetNode> Enum() const;
+
+	void           Serialize(Stream& s);
+
+	static Array<NetNode> EnumRoot();
+
+	NetNode();
+	NetNode(const NetNode& s)         { *this = s; }
+
+	NetNode& operator=(const NetNode& s);
+};
+
+#endif

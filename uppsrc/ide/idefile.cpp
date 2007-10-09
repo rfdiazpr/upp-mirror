@@ -350,6 +350,7 @@ void Ide::FileRename(const String& nm)
 }
 
 void Ide::EditFile0(const String& path, byte charset, bool astext, const String& headername) {
+	DLOG("EditFile0 " << path);
 	editor.CheckEdited(false);
 	editor.CloseAssist();
 	if(path.IsEmpty()) return;
@@ -559,7 +560,9 @@ void Ide::ChildDragAndDrop(Point, PasteClip& d)
 void Ide::AddLru()
 {
 	if(editfile.IsEmpty() || tabi) return;
+	DDUMP(editfile);
 	LruAdd(tablru, editfile, 200);
+	DDUMPC(tablru);
 }
 
 static String sExFiles(const char *fn, const char **ext, int cnt)
@@ -711,4 +714,11 @@ void Ide::SyncEditorSplit()
 		editor2.topsbbutton1.ScrollStyle().SetMonoImage(IdeImg::closesplit()).Tip("Close (Ctrl+[\\])");
 		editor2.topsbbutton1 <<= THISBACK(CloseSplit);
 	}
+}
+
+bool Ide::HotKey(dword key)
+{
+	if(designer && designer->DesignerCtrl().HotKey(key))
+		return true;
+	return TopWindow::HotKey(key);
 }

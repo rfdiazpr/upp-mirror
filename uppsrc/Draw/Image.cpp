@@ -332,6 +332,7 @@ Image::Data::~Data()
 void Image::Data::PaintOnlyShrink()
 {
 	if(paintonly) {
+		LTIMING("PaintOnlyShrink");
 		DrawLock __;
 		DropPixels___(buffer);
 		ResCount -= GetResCount();
@@ -419,6 +420,8 @@ Image Iml::Get(int i)
 						if(cached_data != d.data) {
 							cached_data = d.data;
 							cached = UnpackImlData(String(d.data, d.len));
+							for(int i = 0; i < cached.GetCount(); i++)
+								cached[i] = Premultiply(cached[i]);
 						}
 						m.image = cached[i];
 						break;
@@ -428,7 +431,7 @@ Image Iml::Get(int i)
 				}
 			}
 			else
-				m.image = Image(img_init[i]);
+				m.image = Premultiply(Image(img_init[i]));
 		}
 		m.loaded = true;
 	}

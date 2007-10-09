@@ -123,7 +123,8 @@ void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, in
 		{
 			int sx = cx > 1 ? cx : 1;
 			int sy = cy - 1;
-			w.DrawImage(x, y, sx, sy, highlight ? Contrast(vhdr[theme](), 230) : vhdr[theme]());
+			if(sx > 0 && sy > 0)
+				w.DrawImage(x, y, sx, sy, highlight ? Contrast(vhdr[theme](), 230) : vhdr[theme]());
 		}
 
 		Color dark(76, 83, 92);
@@ -141,10 +142,30 @@ void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, in
 
 	}
 
+	int tx = x + lm;
+	
+	if(firsty)
+	{
+		if(!leftImg.IsEmpty())
+		{
+			Size isz = leftImg.GetSize();
+			w.DrawImage(tx, y + (cy - isz.cy) / 2, leftImg);
+			tx += isz.cx + 3;
+		}
+		if(!rightImg.IsEmpty())
+		{
+			Size isz = rightImg.GetSize();
+			w.DrawImage(x + cx - isz.cx - 3, y + (cy - isz.cy) / 2, rightImg);
+		}
+		if(!centerImg.IsEmpty())
+		{
+			Size isz = centerImg.GetSize();
+			w.DrawImage(x + (cx - isz.cx) / 2, y + (cy - isz.cy) / 2, centerImg);
+		}
+	}
+
 	if(moved)
 	    DrawBorder(w, x, y, cx, cy, BlackBorder);
-
-	int tx = x + lm;
 
 	Color col = style & GD::READONLY ? Gray : Black;
 
@@ -153,7 +174,7 @@ void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, in
 		Size isz = GridImg::SortAsc().GetSize();
 
 		int yf = y + (cy - isz.cy) / 2;
-		int xf = x + 2;
+		int xf = tx + 2;
 		tx = xf + isz.cx + 1;
 
 		if(sortcol > 0 && sortcnt > 0)
@@ -291,18 +312,23 @@ void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int al
 			if(align & GD::RIGHT)
 				tx = x + cx - tsz.cx;
 			else if(align & GD::HCENTER)
-
-			tx = x + (cx - tsz.cx) / 2;
-			
+				tx = x + (cx - tsz.cx) / 2;
+						
 			Color tfg = fg;
 			if(found)
 			{
-				int s = GetTextSize(t, font, fs).cx;
-				int e = GetTextSize(t, font, fe + 1).cx;
-				w.DrawRect(max(mx, tx) + s, y, e - s, cy, Color(255, 239, 45));
+				int chs = t - s;
+				int che = p - s - 1;
+
+				if(fs <= che && fe >= chs)
+				{
+					int scx = GetTextSize(t, font, max(chs, fs) - chs).cx;
+					int ecx = GetTextSize(t, font, min(che, fe) - chs + 1).cx;
+					w.DrawRect(max(mx, tx) + scx, ty, ecx - scx, tcy, Color(255, 239, 45));
+				}
 				tfg = Black();
 			}
-
+			
 			w.DrawText(max(mx, tx), ty, t, font, tfg, p - t);
 			ty += tcy;
 			t = textbreak ? p : p + 1;

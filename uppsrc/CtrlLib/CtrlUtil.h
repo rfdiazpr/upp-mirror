@@ -305,6 +305,25 @@ void CtrlRetriever::Put(Ctrl& ctrl, T& val)
 	Put(m);
 }
 
+class IdCtrls {
+	struct Item {
+		Id    id;
+		Ctrl *ctrl;
+	};
+	Array<Item> item;
+
+public:
+	void        Add(Id id, Ctrl& ctrl);
+	IdCtrls&    operator()(Id id, Ctrl& ctrl)        { Add(id, ctrl); return *this; }
+	int         GetCount() const                     { return item.GetCount(); }
+	Ctrl&       operator[](int i)                    { return *item[i].ctrl; }
+	const Ctrl& operator[](int i) const              { return *item[i].ctrl; }
+	Id          operator()(int i) const              { return item[i].id; }
+};
+
+void Set(ArrayCtrl& array, int ii, IdCtrls& m);
+void Get(ArrayCtrl& array, int ii, IdCtrls& m);
+
 void UpdateFile(String dst, String src);
 
 void MemoryProfileInfo();

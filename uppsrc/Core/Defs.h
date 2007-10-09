@@ -206,17 +206,14 @@ typedef short unsigned     uint16;
 typedef unsigned long      dword;
 typedef long               int32;
 typedef unsigned long      uint32;
+typedef WCHAR              wchar;
 #else
 typedef unsigned int       dword;
 typedef int                int32;
 typedef unsigned int       uint32;
-#endif
-
-#ifdef PLATFORM_WINCE
-typedef WCHAR              wchar;
-#else
 typedef word               wchar;
 #endif
+
 
 #ifdef COMPILER_MSC
 typedef __int64            int64;

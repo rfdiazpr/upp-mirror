@@ -1061,6 +1061,8 @@ public:
 	Rect        GetVisibleScreenRect() const;
 	Rect        GetVisibleScreenView() const;
 
+	Rect        GetWorkArea() const;
+
 	Size        AddFrameSize(int cx, int cy) const;
 	Size        AddFrameSize(Size sz) const              { return AddFrameSize(sz.cx, sz.cy); }
 
@@ -1273,8 +1275,10 @@ public:
 	static bool ClickFocus();
 	static void ClickFocus(bool cf);
 
-	static Rect   GetWorkArea();
-	static Rect   GetScreenArea();
+	static Rect   GetVirtualWorkArea();
+	static Rect   GetVirtualScreenArea();
+	static Rect   GetPrimaryWorkArea();
+	static Rect   GetPrimaryScreenArea();
 	static int    GetKbdDelay();
 	static int    GetKbdSpeed();
 	static bool   IsAlphaSupported();

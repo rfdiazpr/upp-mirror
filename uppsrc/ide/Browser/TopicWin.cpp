@@ -38,7 +38,7 @@ TopicEditor::TopicEditor()
 	allfonts = false;
 
 	editor.WhenLabel = THISBACK(Label);
-	
+
 	LoadFromGlobal(*this, "topic-editor");
 }
 
@@ -105,6 +105,11 @@ void TopicEditor::ExportPdf()
 	SaveFile(~fs, pdf.Finish());
 }
 
+void TopicEditor::Print()
+{
+	UPP::Print(editor.Get(), Size(3968, 6074), 0);
+}
+
 void TopicEditor::Exit()
 {
 	Close();
@@ -146,7 +151,8 @@ void TopicEditor::FileBar(Bar& bar)
 	bar.Add(!IsNull(topicpath), "Save", THISBACK(Save))
 	   .Key(K_CTRL_S);
 	bar.Separator();
-	editor.PrintTool(bar);
+	bar.Add("Print", CtrlImg::print(), THISBACK(Print))
+	   .Key(K_CTRL_P);
 	bar.Add("Export to PDF..", THISBACK(ExportPdf));
 	bar.Separator();
 	bar.Add("Exit", THISBACK(Exit));
@@ -272,7 +278,8 @@ void TopicEditor::NewTopic()
 	Open(grouppath);
 	Load(fn);
 	SaveInc();
-	topic.FindSetCursor(fn);
+	topic.FindSetCursor(GetFileTitle(fn));
+	editor.SetFocus();
 }
 
 void TopicEditor::RenameTopic()
@@ -298,7 +305,8 @@ void TopicEditor::RenameTopic()
 	Open(grouppath);
 	Load(np);
 	SaveInc();
-	topic.FindSetCursor(np);
+	topic.FindSetCursor(GetFileTitle(np));
+	editor.SetFocus();
 }
 
 void TopicEditor::RemoveTopic()
@@ -313,6 +321,8 @@ void TopicEditor::RemoveTopic()
 	Open(grouppath);
 	SaveInc();
 	topic.SetCursor(q);
+	if(q >= 0)
+		editor.SetFocus();
 }
 
 void TopicEditor::SetBar()

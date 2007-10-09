@@ -226,7 +226,7 @@ bool PNGRaster::Create()
 		case 4:  data->fmt.Set4mf(); break;
 		case 8:  if(color_type & PNG_COLOR_MASK_ALPHA) data->fmt.Set8A(); else data->fmt.Set8(); break;
 		case 24: data->fmt.Set24le(0xFF0000, 0xFF00, 0xFF); break;
-		case 32: data->fmt.SetRGBA(); break;
+		case 32: data->fmt.SetRGBAStraight(); break;
 		default: NEVER(); return false; // invalid bpp
 	}
 
@@ -398,7 +398,7 @@ void PNGEncoder::Data::Start(Stream& stream, Size size_, int bpp, ImageKind kind
 		color_type = (do_alpha ? PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB);
 		bit_depth = 8;
 		if(do_alpha) {
-			format.Set32le(0xFF << 16, 0xFF << 8, 0xFF, 0xFF << 24);
+			format.Set32leStraight(0xFF << 16, 0xFF << 8, 0xFF, 0xFF << 24);
 			rowbytes = 4 * size.cx;
 		}
 		else {

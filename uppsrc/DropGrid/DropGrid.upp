@@ -1,3 +1,5 @@
+description "DropGrid";
+
 uses
 	CtrlLib,
 	GridCtrl;

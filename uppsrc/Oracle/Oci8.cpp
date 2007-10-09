@@ -49,7 +49,7 @@ void Oracle8::SetOciError(String text, OCIError *from_errhp)
 {
 	int errcode;
 	String msg = OciError(oci8, from_errhp, &errcode);
-	SetError(msg, text, errcode, OciErrorClass(errcode));
+	SetError(msg, text, errcode, NULL, OciErrorClass(errcode));
 }
 
 class OCI8Connection : public Link<OCI8Connection>, public OciSqlConnection {
@@ -445,7 +445,7 @@ bool OCI8Connection::GetColumnInfo() {
 			ci.name = Format("#%d", i + 1);
 			ci.type = p.dyna_vtype;
 			ci.width = p.dyna_width;
-			ci.prec = Null;
+			ci.precision = Null;
 			ci.scale = Null;
 		}
 		parse = false;
@@ -468,9 +468,8 @@ bool OCI8Connection::GetColumnInfo() {
 		oci8.OCIAttrGet(pd, OCI_DTYPE_PARAM, &prec, NULL,  OCI_ATTR_PRECISION, errhp);
 		oci8.OCIAttrGet(pd, OCI_DTYPE_PARAM, &scale, NULL,  OCI_ATTR_SCALE, errhp);
 		SqlColumnInfo& ii = info.Add();
-		ii.decimals = Null;
 		ii.width = width;
-		ii.prec = prec;
+		ii.precision = prec;
 		ii.scale = scale;
 		ii.name = ToUpper(TrimRight(String(name, name_len)));
 		bool blob = false;
@@ -769,7 +768,7 @@ void OCI8Connection::Clear() {
 			if(!session -> AllocOciHandle(&aux, OCI_HTYPE_STMT)) {
 				int errcode;
 				String err = OciError(oci8, errhp, &errcode);
-				session->SetError(err, t_("Closing reference cursor"), errcode, OciErrorClass(errcode));
+				session->SetError(err, t_("Closing reference cursor"), errcode, NULL, OciErrorClass(errcode));
 			}
 			static char close[] = "begin close :1; end;";
 			bool err = false;
@@ -825,7 +824,7 @@ bool Oracle8::Login(const char *name, const char *pwd, const char *db, String *w
 	user = ToUpper(String(name));
 	RLOG("Loading OCI8 library");
 	if(!oci8.Load()) {
-		SetError(t_("Error running OCI8 Oracle connection dynamic library."), t_("Connecting to Oracle database."), 0, Sql::CONNECTION_BROKEN);
+		SetError(t_("Error running OCI8 Oracle connection dynamic library."), t_("Connecting to Oracle database."), 0, NULL, Sql::CONNECTION_BROKEN);
 		return false;
 	}
 	RLOG("OCI8 loaded -> OCIInitialize, OCIEnvInit");
@@ -837,7 +836,7 @@ bool Oracle8::Login(const char *name, const char *pwd, const char *db, String *w
 	|| !AllocOciHandle(&seshp, OCI_HTYPE_SESSION))
 	{
 		Logoff();
-		SetError(t_("Error initializing OCI8 library."), t_("Connecting to Oracle database."), 0, Sql::CONNECTION_BROKEN);
+		SetError(t_("Error initializing OCI8 library."), t_("Connecting to Oracle database."), 0, NULL, Sql::CONNECTION_BROKEN);
 		return false;
 	}
 	RLOG("Attributes allocated -> OCIServerAttach");

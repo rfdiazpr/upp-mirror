@@ -11,6 +11,7 @@ public:
 protected:
 	Vector<int> pos;
 	Vector<int> mins;
+	Vector<int> minpx;
 	int         width;
 	int         style;
 	int         mouseindex;
@@ -21,6 +22,7 @@ protected:
 	int       PosToClient(int pos) const;
 	int       FindIndex(Point client) const;
 	int       GetChildCount() const;
+	int       GetMins(int i) const;
 
 public:
 	void      Set(Ctrl& l, Ctrl& r);
@@ -35,6 +37,7 @@ public:
 	int       GetZoom() const                      { return style; }
 
 	void      SetMin(int i, int w)                 { mins.At(i, 0) = w; }
+	void      SetMinPixels(int i, int w)           { minpx.At(i, 0) = w; }
 
 	void      Add(Ctrl& pane);
 	Splitter& operator<<(Ctrl& pane)               { Add(pane); return *this; }
@@ -92,6 +95,10 @@ public:
 	int  GetType() const                      { return type; }
 	int  GetSize() const                      { return size; }
 	void SetSize(int sz)                      { size = sz; RefreshParentLayout(); }
+
+	void Show(bool show = true)				  { Ctrl::Show(show); }
+	void Hide()								  { Ctrl::Hide(); }
+	bool IsShown()							  { return Ctrl::IsShown(); }
 
 	SplitterFrame();
 };

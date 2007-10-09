@@ -899,7 +899,7 @@ String RTFParser::ReadBinHex(char& odd) const
 		byte w = (*s >= '0' && *s <= '9' ? *s - '0'
 			: *s >= 'A' && *s <= 'F' ? *s - 'A' + 10
 			: *s >= 'a' && *s <= 'f' ? *s - 'a' + 10
-			: -1);
+			: 255);
 		if(w < 16)
 			if(v >= 16)
 			{

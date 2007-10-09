@@ -196,8 +196,9 @@ int FindIndex(const T& cont, const V& value, const C& equal)
 template <class T, class V>
 int FindIndex(const T& cont, const V& value)
 {
-	typedef typename T::ValueType VT;
-	return FindIndex(cont, value, StdEqual<VT>());
+	for(int i = 0; i < cont.GetCount(); i++)
+		if(cont[i] == value) return i;
+	return -1;
 }
 
 template <class I, class K, class L>
@@ -836,14 +837,6 @@ void Sort(I begin, I end, const Less& less)
 	if(count >= 2)
 		ForwardSort(begin, end, less);
 }
-
-/* To be changed to Sort(c, pos, count, less)
-template <class T, class Less>
-void Sort(T& c, int l, int h, const Less& less)
-{
-	Sort(c.GetIter(l), c.GetIter(h), less);
-}
-*/
 
 template <class T, class Less>
 void Sort(T& c, const Less& less)

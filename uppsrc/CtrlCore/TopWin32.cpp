@@ -55,10 +55,8 @@ void TopWindow::SyncTitle()
 	HWND hwnd = GetHWND();
 #ifndef PLATFORM_WINCE
 	if(hwnd)
-		if(IsWindowUnicode(hwnd)) { // TRC 04/10/17: ActiveX Unicode patch
-//			ASSERT(IsWindowUnicode(hwnd));
+		if(IsWindowUnicode(hwnd))
 			::SetWindowTextW(hwnd, (const WCHAR*)~title);
-		}
 		else
 #endif
 			::SetWindowText(hwnd, ToSystemCharset(title.ToString()));
@@ -76,6 +74,8 @@ void TopWindow::DeleteIco()
 void TopWindow::SyncCaption()
 {
 	LLOG("SyncCaption");
+	if(fullscreen)
+		return;
 	HWND hwnd = GetHWND();
 	if(hwnd) {
 		style = ::GetWindowLong(hwnd, GWL_STYLE);
@@ -166,7 +166,7 @@ void TopWindow::Open(HWND hwnd)
 #endif
 	if(fullscreen) {
 		SetRect(GetScreenSize());
-		Create(hwnd, WS_POPUP, WS_EX_TOPMOST, false, SW_MAXIMIZE, false);
+		Create(hwnd, WS_POPUP, 0, false, SW_SHOWMAXIMIZED, false);
 	}
 	else {
 		CenterRect(hwnd, hwnd && hwnd == GetTrayHWND__() ? center ? 2 : 0 : center);

@@ -115,7 +115,7 @@ void LabelBox::Paint(Draw& w)
 	bool hline = sz.cy < 2 * Draw::GetStdFontCy();
 	bool vline = sz.cx < 2 * Draw::GetStdFontCy();
 	int ty = hline ? (sz.cy - lsz.cy) / 2 : 0;
-	Size ts = PaintLabel(w, d + 2, ty, sz.cx, sz.cy, !IsShowEnabled(), false, false, VisibleAccessKeys());
+	Size ts = PaintLabel(w, d + 2, ty, sz.cx, lsz.cy, !IsShowEnabled(), false, false, VisibleAccessKeys());
 	w.Begin();
 	w.ExcludeClip(d, ty, ts.cx + 4, ts.cy);
 	if(GUI_GlobalStyle() >= GUISTYLE_XP) {
@@ -183,6 +183,11 @@ void LabelBox::Paint(Draw& w)
 Rect ParentCtrl::GetVoidRect()
 {
 	return GetSize();
+}
+
+Size ParentCtrl::GetStdSize() const
+{
+	return GetMinSize();
 }
 
 ParentCtrl::ParentCtrl()

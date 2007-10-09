@@ -44,6 +44,13 @@ GridCtrl::ItemRect& GridCtrl::ItemRect::Name(String &s)
 	return *this;
 }
 
+GridCtrl::ItemRect& GridCtrl::ItemRect::Hidden(bool b)
+{
+	hidden = b;
+	size = 0;
+	return *this;
+}
+
 GridCtrl::ItemRect& GridCtrl::ItemRect::Name(const char * s)
 {
 	(*items)[0][id].val = s;
@@ -111,6 +118,10 @@ GridCtrl::ItemRect& GridCtrl::ItemRect::Edit(Ctrl &ctrl)
 	return *this;
 }
 
+//GridCtrl::ItemRect& GridCtrl::ItemRect::EditConvert(Ctrl &ctrl)
+//{
+//	return Edit(ctrl).SetConvert(ctrl);
+//}
 
 void GridCtrl::ItemRect::ChangeSortMode(bool idsort)
 {
@@ -142,7 +153,13 @@ GridCtrl::ItemRect& GridCtrl::ItemRect::Index(bool b)
 	return *this;
 }
 
-String GridCtrl::ItemRect::GetName()
+GridCtrl::ItemRect& GridCtrl::ItemRect::DataColumn(int n)
+{
+	data_col = n;
+	return *this;
+}
+
+String GridCtrl::ItemRect::GetName() const
 {
 	return (*items)[0][id].val;
 }
@@ -187,6 +204,7 @@ void GridCtrl::ItemRect::Serialize(Stream &s)
 static void MakeOption(One<Ctrl>& ctrl)
 {
 	ctrl.Create<Option>();
+	ctrl->SetData(0);
 	ctrl->WantFocus();
 }
 

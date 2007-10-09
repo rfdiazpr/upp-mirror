@@ -44,35 +44,45 @@ String                GetDisplayName(const GUID& guid);
 template <> bool      IsNull(const GUID& guid);
 GUID                  GetCoClassGUID(const char *name, bool prog_id = true);
 
-class Guid : public GUID, AssignValueTypeNo<GUID, 70, Moveable<Guid> >
+class Guid : public AssignValueTypeNo<Guid, 70, Moveable<Guid> >
 {
 public:
 	Guid(const Nuller& = Null)               { Clear(); }
-	Guid(const char *text, bool prid = true) { *(GUID *)this = GetCoClassGUID(text, prid); }
-	Guid(const GUID& guid) : GUID(guid) {}
+	Guid(const char *text, bool prid = true) { guid = GetCoClassGUID(text, prid); }
+	Guid(const GUID& guid_) : guid(guid_) {}
+	Guid(const Guid& guid_) : guid(guid_.guid) {}
 	Guid(IDispatchPtr& dispatch); // dynamic GUID of a dispatch object
 	Guid(Value v)                            { *this = ValueTo<Guid>(v); }
 
 	operator Value () const                  { return RichValue<Guid>(*this); }
+	operator const GUID& () const            { return guid; }
+	operator GUID& ()                        { return guid; }
+	const GUID& operator ~() const           { return guid; }
 
-	Guid&    operator = (const GUID& _guid)  { (GUID&)*this = _guid; return *this; }
+	Guid&    operator = (const GUID& _guid)  { guid = _guid; return *this; }
 
-	bool     IsNullInstance() const          { return UPP::IsNull(static_cast<const GUID&>(*this)); }
-	bool     IsEmpty() const                 { return IsNull(*this); }
-	void     Clear()                         { Zero(*this); }
+	bool     IsNullInstance() const          { return UPP::IsNull(guid); }
+	bool     IsEmpty() const                 { return IsNull(guid); }
+	void     Clear()                         { Zero(guid); }
 
-	operator String () const                 { return UPP::Format(*this); }
-	String   CFormat() const                 { return UPP::CFormat(*this); }
+	operator String () const                 { return UPP::Format(guid); }
+	String   CFormat() const                 { return UPP::CFormat(guid); }
 
-	void     Serialize(Stream& stream)       { UPP::Serialize(stream, *this); }
+	void     Serialize(Stream& stream)       { UPP::Serialize(stream, guid); }
+
+private:
+	GUID     guid;
 };
 
 template <>
-inline unsigned GetHashValue(const Guid& guid) { return GetHashValue(static_cast<const GUID&>(guid)); }
+inline unsigned GetHashValue(const Guid& guid) { return GetHashValue(~guid); }
 template <>
 inline String   AsString(const GUID& guid) { return Format(guid); }
 template <>
-inline String   AsString(const Guid& guid) { return Format(guid); }
+inline String   AsString(const Guid& guid) { return Format(~guid); }
+
+inline bool     operator == (const Guid& a, const Guid& b) { return ~a == ~b; }
+inline bool     operator != (const Guid& a, const Guid& b) { return ~a != ~b; }
 
 class OleVariant : public VARIANT
 {

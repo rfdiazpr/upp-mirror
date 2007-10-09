@@ -23,15 +23,15 @@ inline double fpabsmin     (Pointf p)                         { return min(fabs(
 inline double fpabsmax     (Pointf p)                         { return max(fabs(p.x), fabs(p.y)); }
 
 // temporary fix by Mirek Fidler:
-inline double ScalarProduct(Sizef a, Sizef b) { return a.cx * b.cx + a.cy * b.cy; }
-inline double VectorProduct(Sizef a, Sizef b) { return a.cx * b.cy - a.cy * b.cx; }
-inline double Squared(Sizef a)             { return a.cx * a.cx + a.cy * a.cy; }
-inline double Length(Sizef a)              { return hypot(a.cx, a.cy); }
+//inline double ScalarProduct(Sizef a, Sizef b) { return a.cx * b.cx + a.cy * b.cy; }
+//inline double VectorProduct(Sizef a, Sizef b) { return a.cx * b.cy - a.cy * b.cx; }
+//inline double Squared(Sizef a)             { return a.cx * a.cx + a.cy * a.cy; }
+//inline double Length(Sizef a)              { return hypot(a.cx, a.cy); }
 
-inline int    ScalarProduct(Size a, Size b) { return a.cx * b.cx + a.cy * b.cy; }
-inline int    VectorProduct(Size a, Size b) { return a.cx * b.cy - a.cy * b.cx; }
-inline int    Squared(Size a)             { return a.cx * a.cx + a.cy * a.cy; }
-inline double Length(Size a)              { return hypot(a.cx, a.cy); }
+//inline int    ScalarProduct(Size a, Size b) { return a.cx * b.cx + a.cy * b.cy; }
+//inline int    VectorProduct(Size a, Size b) { return a.cx * b.cy - a.cy * b.cx; }
+//inline int    Squared(Size a)             { return a.cx * a.cx + a.cy * a.cy; }
+//inline double Length(Size a)              { return hypot(a.cx, a.cy); }
 
 
 inline Pointf Move         (Pointf p, double dx, double dy)   { return Pointf(p.x + dx, p.y + dy); }

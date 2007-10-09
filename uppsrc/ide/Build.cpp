@@ -570,7 +570,6 @@ bool Ide::Build(const Workspace& wspc, String mainparam, String outfile, bool cl
 				ProcessEvents();
 				ms = msecs();
 			}
-			SetErrorEditor();
 		}
 		if(ok || !stoponerrors)
 			ok = BuildPackage(wspc, 0, build_order.GetCount(), build_order.GetCount() + 1,

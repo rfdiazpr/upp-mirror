@@ -179,6 +179,25 @@ void CtrlRetriever::Retrieve()
 		item[i].Retrieve();
 }
 
+void IdCtrls::Add(Id id, Ctrl& ctrl)
+{
+	Item& m = item.Add();
+	m.id = id;
+	m.ctrl = &ctrl;
+}
+
+void Set(ArrayCtrl& array, int ii, IdCtrls& m)
+{
+	for(int i = 0; i < m.GetCount(); i++)
+		array.Set(ii, m(i), ~m[i]);
+}
+
+void Get(ArrayCtrl& array, int ii, IdCtrls& m)
+{
+	for(int i = 0; i < m.GetCount(); i++)
+		m[i] <<= array.Get(ii, m(i));
+}
+
 void sLarge(String& text, int *large, int count, const char *txt)
 {
 	int n = min(1024, count);

@@ -35,7 +35,6 @@ void TopWindow::EventProc(XWindow& w, XEvent *event)
 {
 	Ptr<Ctrl> this_ = this;
 	if(event->type == ClientMessage) {
-//		DDUMP(XAtomName(event->xclient.message_type));
 		if(event->xclient.format == 32 && event->xclient.message_type)
 			if(event->xclient.message_type == XAtom("WM_PROTOCOLS")) {
 				Atom a = event->xclient.data.l[0];

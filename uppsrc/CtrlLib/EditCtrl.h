@@ -76,10 +76,12 @@ protected:
 
 	CharFilter      filter;
 	const Convert  *convert;
+	const Convert  *inactive_convert;
 	Font            font;
 
 	WString         nulltext;
 	Color           nullink;
+	Font            nullfont;
 	int             maxlen;
 	int             autosize;
 	byte            charset;
@@ -96,9 +98,9 @@ protected:
 	bool       nobg:1;
 	bool       alignright:1;
 
-	int     GetTextCx(const wchar *text, int n, bool password);
+	int     GetTextCx(const wchar *text, int n, bool password, Font fnt);
 	void    Paints(Draw& w, int& x, int fcy, const wchar *&txt,
-		           Color ink, Color paper, int n, bool pwd);
+		           Color ink, Color paper, int n, bool pwd, Font fnt);
 	int     GetStringCx(const wchar *text, int n);
 	int     GetCaret(int cursor);
 	int     GetCursor(int posx);
@@ -160,6 +162,7 @@ public:
 	EditField& Password(bool pwd = true)     { password = pwd; Finish(); return *this; }
 	EditField& SetFilter(int (*f)(int))      { filter = f; return *this; }
 	EditField& SetConvert(const Convert& c)  { convert = &c; return *this; }
+	EditField& SetInactiveConvert(const Convert& c) { inactive_convert = &c; return *this; }
 	EditField& AutoFormat(bool b = true)     { autoformat = b; return *this; }
 	EditField& NoAutoFormat()                { return AutoFormat(false); }
 	EditField& SetCharset(byte cs)           { charset = cs; return *this; }
@@ -167,6 +170,7 @@ public:
 	EditField& ClickSelect(bool b = true)    { clickselect = b; return *this; }
 	EditField& InitCaps(bool b = true)       { initcaps = b; return *this; }
 	EditField& NullText(const char *text = t_("(default)"), Color ink = Brown);
+	EditField& NullText(const char *text, Font fnt, Color ink);
 	EditField& MaxChars(int mc)              { maxlen = mc; return *this; }
 	EditField& AutoSize(int maxcx = INT_MAX) { autosize = maxcx; Finish(); return *this; }
 	EditField& NoBackground(bool b = true)   { nobg = b; Transparent(); Refresh(); return *this; }

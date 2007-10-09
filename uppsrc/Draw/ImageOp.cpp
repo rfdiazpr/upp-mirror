@@ -490,6 +490,11 @@ Image  HorzFadeOut(Size sz, Color color)
 	return MakeImage(m);
 }
 
+Image HorzFadeOut(int cx, int cy, Color color)
+{
+	return HorzFadeOut(Size(cx, cy), color);
+}
+
 Image  RotateClockwise(const Image& img)
 {
 	Size sz = img.GetSize();
@@ -539,6 +544,51 @@ Image Magnify(const Image& img, int nx, int ny)
 		t = q;
 	}
 	return b;
+}
+
+static Pointf Cvp(double x, double y, double sina, double cosa)
+{
+	return Pointf(x * cosa + y * sina, -x * sina + y * cosa);
+}
+
+Image Rotate(const Image& m, int angle)
+{
+	Size isz = m.GetSize();
+	Point center = isz / 2;
+	Pointf centerf = Pointf(Point(isz)) / 2.0;
+	double sina, cosa;
+	Draw::SinCos(-angle, sina, cosa);
+	Pointf p1 = Cvp(-centerf.x, -centerf.y, sina, cosa);
+	Pointf p2 = Cvp(centerf.x, -centerf.y, sina, cosa);
+	Size sz2 = Size(2 * (int)max(tabs(p1.x), tabs(p2.x)),
+	                2 * (int)max(tabs(p1.y), tabs(p2.y)));
+	Pointf dcenterf = Sizef(sz2) / 2.0;
+	Point dcenter = sz2 / 2;
+
+	ImageBuffer ib(sz2);
+	Fill(~ib, RGBAZero(), ib.GetLength());
+	RGBA *t = ~ib;
+	Draw::SinCos(angle, sina, cosa);
+	int sini = int(sina * 128);
+	int cosi = int(cosa * 128);
+	Buffer<int> xmx(sz2.cx);
+	Buffer<int> xmy(sz2.cx);
+	for(int x = 0; x < sz2.cx; x++) {
+		int xx = x + x - sz2.cx;
+		xmx[x] = int(xx * cosi);
+		xmy[x] = -int(xx * sini);
+	}
+	for(int y = 0; y < sz2.cy; y++) {
+		int yy = y + y - sz2.cy;
+		int ymx = int(yy * sini) + (isz.cx << 7);
+		int ymy = int(yy * cosi) + (isz.cy << 7);
+		for(int x = 0; x < sz2.cx; x++) {
+			int xs = (xmx[x] + ymx) >> 8;
+			int ys = (xmy[x] + ymy) >> 8;
+			*t++ = xs >= 0 && xs < isz.cx && ys >= 0 && ys < isz.cy ? m[ys][xs] : RGBAZero();
+		}
+	}
+	return ib;
 }
 
 END_UPP_NAMESPACE

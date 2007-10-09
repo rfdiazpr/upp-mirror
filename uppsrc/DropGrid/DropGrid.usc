@@ -11,7 +11,8 @@ ctrl DropGrid {
 	bool  Resizeable = true;
 	bool  ColorRows = false;
 	bool  NotNull = false;
-	
+	bool  SetEditable = true @2 ? "Editable";
+
 	Text  Tip;
 
 	Paint(w) {

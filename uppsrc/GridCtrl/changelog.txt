@@ -176,6 +176,33 @@
 	- fixed wrong value returned by SetCursor(n)
 	+ searching without toolbar
 	
+	after 708-dev1
+	
+	- toolbar is rebuilt when grid is enabled/disabled (Ctrl::Enable should be virtual!)
+	+ GetCurrentRow() - returns "current row" index - mostly cursor position, but sometimes cursor and current row position can be different
+	- more const correctness fixes
+	- if some rows were hidden it was still possible to navigate by those rows using cursor up/down (R)
+	- fixed crash in Append0(n) if n > 1 (R)
+	- fixed crash in Editable called for a row
+	+ EditConvert(Ctrl &ctrl) - synonym for sequence Edit().SetConvert()
+	
+	after 708-dev2
+	
+	+ CancelAccept() - called in callback When(Insert/Update) cancel inserting/updating operation but do not close edits
+	- fixed crash when dupliacing a row in empty grid
+	+ IsFilled() - opposite to IsEmpty()
+	
+	after 709-dev2
+	
+	+ IsRowInserted(), IsRowUpdated(), IsRowRemoved - valid in all life-cycle of grid
+	+ RemoveHides() - in this mode grid hide row instead of phisicly remove it
+	- fixed rare crash in PaintFixed()
+	+ searching is now able to highlight letters in multiline text
+	- fixed resize panel - min size was not set properly in some cases
+	- fixed rare scrolling artifacts
+	+ added FindInRow to find value in given row - returns column number
+	
+	
 	
 	
 	

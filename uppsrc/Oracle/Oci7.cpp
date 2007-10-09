@@ -424,9 +424,8 @@ bool OCI7Connection::GetColumnInfo()
 				       &scale, &null))
 			break;
 		SqlColumnInfo& ii = info.Add();
-		ii.decimals = Null;
 		ii.width = width;
-		ii.prec = prec;
+		ii.precision = prec;
 		ii.scale = scale;
 		h[hlen] = '\0';
 		ii.name = h;

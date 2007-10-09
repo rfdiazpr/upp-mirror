@@ -150,7 +150,7 @@ String Sha1::Finish() {
 void Sha1::Put(const void *data, dword length) {
 	const byte *s = (const byte *)data;
 	size += length;
-	while(length >= 64) {
+	while(pos + length >= 64) {
 		int n = 64 - pos;
 		memcpy(buffer + pos, s, n);
 		SHA1Transform(state, buffer);
@@ -158,8 +158,8 @@ void Sha1::Put(const void *data, dword length) {
 		length -= n;
 		pos = 0;
 	}
-	memcpy(buffer, s, length);
-	pos = length;
+	memcpy(buffer + pos, s, length);
+	pos += length;
 }
 
 Sha1::Sha1() {

@@ -21,6 +21,7 @@ enum {
 class TopWindow : public Ctrl {
 public:
 	virtual Size     GetMinSize() const;
+	virtual Size     GetStdSize() const;
 	virtual void     Activate();
 	virtual void     Deactivate();
 	virtual bool     Accept();
@@ -160,6 +161,8 @@ public:
 	int        Run(bool appmodal = false);
 	int        RunAppModal()                          { return Run(true); }
 	int        Execute();
+	bool       ExecuteOK()                            { return Execute() == IDOK;     }
+	bool       ExecuteCancel()                        { return Execute() == IDCANCEL; }
 
 	void       Minimize(bool effect = false);
 	void       Maximize(bool effect = false);

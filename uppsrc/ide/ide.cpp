@@ -538,6 +538,16 @@ void Ide::Renumber() {
 	editor.Renumber();
 }
 
+void Ide::CycleFiles()
+{
+	if(++tabi >= tablru.GetCount())
+		tabi = 0;
+	if(tabi < tablru.GetCount()) {
+		blocktabs = true;
+		EditFile(tablru[tabi]);
+	}
+}
+
 bool Ide::Key(dword key, int count) {
 	dword *k = IdeKeys::AK_DELLINE().key;
 	if(key == k[0] || key == k[1]) {
@@ -568,7 +578,7 @@ bool Ide::Key(dword key, int count) {
 	case K_CTRL|K_ALT_RIGHT:
 		TabsLR(1);
 		return true;
-	case K_CTRL_I:
+	case K_SHIFT|K_CTRL_O:
 		AddFile(WorkspaceWork::ANY_FILE);
 		return true;
 	case K_CTRL_KEY|K_KEYUP:
@@ -578,12 +588,7 @@ bool Ide::Key(dword key, int count) {
 		}
 		return true;
 	case K_CTRL_TAB:
-		if(++tabi >= tablru.GetCount())
-			tabi = 0;
-		if(tabi < tablru.GetCount()) {
-			blocktabs = true;
-			EditFile(tablru[tabi]);
-		}
+		CycleFiles();
 		return true;
 	case K_ALT_RIGHT:
 	default:

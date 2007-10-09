@@ -155,7 +155,7 @@ ctrl GridCtrl {
 	bool RejectNullRow = true;
 	bool KeepLastRow = false;
 	bool TabChangesRow = true;
-	bool TabAddsRow = true;
+	bool TabAddsRow = false;
 	bool EnterLikeTab = false;
 	bool Chameleon = false;
 	bool DrawFocus = false;

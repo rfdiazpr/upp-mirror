@@ -139,7 +139,7 @@ class String0 : Moveable<String0> {
 		void  Retain();
 	};
 
-	union { // Optimize for CPU_64 too!!!
+	union {
 		char   chr[16];
 		char  *ptr;
 		dword *wptr;

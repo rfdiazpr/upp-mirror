@@ -4,6 +4,8 @@
 
 #include "calc_idl.h"
 
+using namespace Upp;
+
 #define LAYOUTFILE "calc.lay"
 #include <CtrlCore/lay.h>
 
@@ -46,11 +48,13 @@ Calculator::Calculator()
 	dialog.history.AddColumn("Výraz", 10);
 	dialog.history.AddColumn("Výsledek", 2);
 	dialog.history <<= THISBACK(OnHistoryAction);
+
+	Guid guid = __uuidof(Calculator);
+	RLOG("clsid = " << guid);
 }
 
 void Calculator::OnCalc()
 {
-	PromptOK("Fuck me!");
 	Vector<Value> values;
 	values << ~dialog.expr << Value();
 	if(dialog.history.GetCount() > 10)

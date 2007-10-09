@@ -109,6 +109,13 @@ void TopicEditor::Load(const String& fn)
 	title.ClearModify();
 }
 
+int sSerial = 0;
+
+int TopicEditor::GetSerial()
+{
+	return sSerial;
+}
+
 void TopicEditor::SaveTopic()
 {
 	if(IsNull(topicpath))
@@ -134,6 +141,7 @@ void TopicEditor::SaveTopic()
 		return;
 	String r = WriteTopic((String)~title, editor.Get());
 	if(LoadFile(topicpath) != r) {
+		sSerial++;
 		SaveFile(topicpath, r);
 		TopicLink tl = ParseTopicFilePath(topicpath);
 		if(tl)

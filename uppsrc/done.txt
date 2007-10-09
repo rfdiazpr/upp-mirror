@@ -4,6 +4,10 @@ Weekend {
 }
 
 ============
+	F1 key switching between code and help without changing current help article or closing help tree.
+
+		Fix blitz
+
 * "Seems OK except for some of the hot-key listings on the menus (eg ctrl+100dc for split horizontal)"
 
 * No blitz package flag

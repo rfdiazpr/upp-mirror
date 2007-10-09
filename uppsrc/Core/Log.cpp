@@ -28,6 +28,7 @@ LogStream::LogStream()
 	part = 0;
 	sizelimit = 0;
 	*filename = 0;
+	options = LOG_FILE;
 }
 
 LogStream::~LogStream() {}
@@ -165,14 +166,24 @@ void LogStream::Flush()
 {
 	int count = (int)(p - buffer);
 	if(count == 0) return;
+	if(options & LOG_COUT)
+		Cout().Put(buffer, count);
+	if(options & LOG_CERR)
+		Cerr().Put(buffer, count);
 #ifdef PLATFORM_WIN32
-	if(hfile != INVALID_HANDLE_VALUE) {
-		dword n;
-		WriteFile(hfile, buffer, count, &n, NULL);
-	}
+	if(options & LOG_FILE)
+		if(hfile != INVALID_HANDLE_VALUE) {
+			dword n;
+			WriteFile(hfile, buffer, count, &n, NULL);
+		}
+	if(options & LOG_DBG)
+		::OutputDebugString((LPCSTR)buffer);
 #else
-	if(hfile >= 0)
-		write(hfile, buffer, count);
+	if(options & LOG_FILE)
+		if(hfile >= 0)
+			write(hfile, buffer, count);
+	if(options & LOG_DBG)
+		Cerr().Put(buffer, count);
 #endif
 	filesize += count;
 	p = buffer;

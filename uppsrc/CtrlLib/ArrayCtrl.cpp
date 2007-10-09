@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LTIMING(x) // RTIMING(x)
+#define LTIMING(x)  // RTIMING(x)
 
 ArrayCtrl::Column::Column() {
 	convert = NULL;
@@ -119,13 +119,14 @@ void ArrayCtrl::CellCtrl::LeftDown(Point, dword)
 		ctrl->SetFocus();
 }
 
-void ArrayCtrl::CellInfo::Set(Ctrl *ctrl, bool owned)
+void ArrayCtrl::CellInfo::Set(Ctrl *ctrl, bool owned, bool value)
 {
 	CellCtrl *cc = new CellCtrl;
 	cc->ctrl = ctrl;
 	cc->Add(*ctrl);
-	cc->Color(SColorPaper);
+//	cc->Color(SColorPaper);
 	cc->owned = owned;
+	cc->value = value;
 	ptr.Set1(cc);
 }
 
@@ -146,13 +147,14 @@ ArrayCtrl::CellInfo::~CellInfo()
 	}
 }
 
-Ctrl& ArrayCtrl::SetCtrl(int i, int j, Ctrl *newctrl, bool owned)
+Ctrl& ArrayCtrl::SetCtrl(int i, int j, Ctrl *newctrl, bool owned, bool value)
 {
-	newctrl->SetData(GetColumn(i, j));
+	if(value)
+		newctrl->SetData(GetColumn(i, j));
 	hasctrls = true;
 	RefreshRow(i);
 	CellInfo& ci = cellinfo.At(i).At(j);
-	ci.Set(newctrl, owned);
+	ci.Set(newctrl, owned, value);
 	Ctrl& c = ci.GetCtrl();
 	if(newctrl->GetPos().x.GetAlign() == LEFT && newctrl->GetPos().x.GetB() == 0)
 		newctrl->HSizePos().VCenterPos(STDSIZE);
@@ -177,9 +179,10 @@ Ctrl& ArrayCtrl::SetCtrl(int i, int j, Ctrl *newctrl, bool owned)
 	SyncInfo();
 }
 
-void  ArrayCtrl::SetCtrl(int i, int j, Ctrl& ctrl)
+void  ArrayCtrl::SetCtrl(int i, int j, Ctrl& ctrl, bool value)
 {
-	SetCtrl(i, j, &ctrl, false);
+	SetCtrl(i, j, &ctrl, false, value);
+	SyncCtrls(i);
 }
 
 bool  ArrayCtrl::IsCtrl(int i, int j) const
@@ -229,8 +232,11 @@ Value ArrayCtrl::Get0(int i, int ii) const {
 			if(IsCtrl(i, j)) {
 				const Column& m = column[j];
 				ASSERT(m.pos.GetCount() == 1);
-				if(Pos(m.pos[0]) == ii)
-					return GetCtrl(i, j).ctrl->GetData();
+				if(Pos(m.pos[0]) == ii) {
+					const CellCtrl& c = GetCtrl(i, j);
+					if(c.value)
+						return c.ctrl->GetData();
+				}
 			}
 	if(i < array.GetCount()) {
 		const Vector<Value>& v = array[i].line;
@@ -328,7 +334,9 @@ void ArrayCtrl::SetCtrlValue(int i, int ii, const Value& v)
 				const Column& m = column[j];
 				ASSERT(m.pos.GetCount() == 1);
 				if(Pos(m.pos[0]) == ii) {
-					GetCtrl(i, j).ctrl->SetData(v);
+					const CellCtrl& c = GetCtrl(i, j);
+					if(c.value)
+						c.ctrl->SetData(v);
 					return;
 				}
 			}
@@ -562,7 +570,7 @@ void  ArrayCtrl::SyncCtrls(int from)
 				if(newctrl->GetPos().x.GetAlign() == LEFT && newctrl->GetPos().x.GetB() == 0)
 					newctrl->HSizePos().VCenterPos(STDSIZE);
 				CellInfo& ci = cellinfo.At(i).At(j);
-				ci.Set(newctrl.Detach(), true);
+				ci.Set(newctrl.Detach(), true, true);
 				Ctrl& c = ci.GetCtrl();
 				AddChild(&c, p);
 				ct = true;
@@ -638,15 +646,14 @@ const Display& ArrayCtrl::GetCellInfo(int i, int j, bool f0,
 	if(nobg)
 		bg = Null;
 	fg = i & 1 ? evenink : oddink;
-	bool ct = IsCtrl(i, j);
 	if((st & Display::SELECT) ||
 	    !multiselect && (st & Display::CURSOR) && !nocursor ||
 	    drop) {
 		fg = hasfocus ? SColorHighlightText : SColorText;
 		bg = hasfocus ? SColorHighlight : Blend(SColorDisabled, SColorPaper);
 	}
-	v = ct ? Null : GetConvertedColumn(i, j);
-	return ct ? StdDisplay() : GetDisplay(i, j);
+	v = IsCtrl(i, j) && GetCtrl(i, j).value ? Null : GetConvertedColumn(i, j);
+	return GetDisplay(i, j);
 }
 
 Size  ArrayCtrl::DoPaint(Draw& w, bool sample) {
@@ -695,10 +702,7 @@ Size  ArrayCtrl::DoPaint(Draw& w, bool sample) {
 							r.right -= cm;
 							d.PaintBackground(w, RectC(r.right, r.top, cm, r.Height()), q, fg, bg, st);
 							w.Clip(r);
-							if(IsCtrl(i, j))
-								GetCtrl(i, j).Color(bg);
-							else
-								GetDisplay(i, j).Paint(w, r, q, fg, bg, st);
+							GetDisplay(i, j).Paint(w, r, q, fg, bg, st);
 							w.End();
 						}
 					x += cw;
@@ -714,7 +718,8 @@ Size  ArrayCtrl::DoPaint(Draw& w, bool sample) {
 				r.bottom += horzgrid;
 				r.left = x;
 				r.right = size.cx;
-				w.DrawRect(r, SColorPaper);
+				if(!nobg)
+					w.DrawRect(r, SColorPaper);
 				if(i == dropline && dropcol == DND_INSERTLINE)
 					DrawHorzDrop(w, 0, r.top - (i > 0), size.cx);
 				sy = r.bottom;
@@ -1780,6 +1785,7 @@ void ArrayCtrl::GotFocus() {
 	if(IsCursor())
 		RefreshRow(cursor);
 	else
+	if(focussetcursor)
 		GoBegin();
 	SetCursorEditFocus();
 	SyncInfo();
@@ -2098,6 +2104,7 @@ void ArrayCtrl::Reset() {
 	row_name = t_("row");
 	gridcolor = SColorShadow;
 	autoappend = false;
+	focussetcursor = true;
 }
 
 void ArrayCtrl::CancelMode()

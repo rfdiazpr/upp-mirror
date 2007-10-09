@@ -4,7 +4,6 @@ void IdeFileIcon0(bool dir, const String& filename, Image& img, bool fast = fals
 {
 	if(dir) return;
 	String ext = ToLower(GetFileExt(filename));
-	img = CtrlImg::File();
 	if(ext == ".h" || ext == ".hpp" || ext == ".hh" || ext == ".hxx")
 		img = IdeCommonImg::Header();
 	for(int i = 0; i < GetIdeModuleCount(); i++) {

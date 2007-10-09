@@ -99,6 +99,14 @@ public:
 	TabCtrl::Item& Add(Ctrl& slave, const char *text);
 	TabCtrl::Item& Add(Ctrl& slave, const Image& m, const char *text);
 
+	TabCtrl::Item& Insert(int i);
+	TabCtrl::Item& Insert(int i, const char *text);
+	TabCtrl::Item& Insert(int i, const Image& m, const char *text);
+	TabCtrl::Item& Insert(int i, Ctrl& slave, const char *text);
+	TabCtrl::Item& Insert(int i, Ctrl& slave, const Image& m, const char *text);
+
+	void  Remove(int i);
+
 	int   GetCount() const                       { return tab.GetCount(); }
 	Item& GetItem(int i)                         { return tab[i]; }
 	const Item& GetItem(int i) const             { return tab[i]; }
@@ -112,7 +120,7 @@ public:
 	Size     ComputeSize(Size pane);
 	void     Add(Ctrl& c)                        { pane.Add(c.SizePos()); }
 	TabCtrl& operator<<(Ctrl& c)                 { Add(c); return *this; }
-	
+
 	static const Style& StyleDefault();
 
 	TabCtrl& AcceptCurrent(bool ac = true)       { accept_current = ac; return *this; }

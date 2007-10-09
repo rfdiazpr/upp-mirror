@@ -211,7 +211,7 @@ BorderFrame& BottomJoinFrame();
 
 class TabPageCtrl : public StaticRect {
 public:
-	TabPageCtrl() { Color(Blend(SColorFace(), SColorPaper())); }
+	TabPageCtrl() { Color(Null); /*Blend(SColorFace(), SColorPaper()));*/ }
 };
 
 class DropListAll : public DropList

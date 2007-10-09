@@ -257,8 +257,6 @@ Image Ctrl::MEvent0(int e, Point p, int zd)
 	if((e & ACTION) == TRIPLE)
 		mm |= K_MOUSETRIPLE;
 	Rect view = GetView();
-//	DDUMP(UPP::Name(mouseCtrl));
-//	DDUMP(HasCapture());
 	if(mouseCtrl != this) {
 		if(mouseCtrl) {
 			Ptr<Ctrl> mousectrl = mouseCtrl;

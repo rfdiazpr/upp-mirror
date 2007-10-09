@@ -248,7 +248,7 @@ inline bool Value::Is() const
 }
 
 template <class T, dword type, class B = EmptyClass>
-class AssignValueTypeNo : B {
+class AssignValueTypeNo : public B {
 public:
 	friend dword ValueTypeNo(const T&)                  { return type; }
 
@@ -632,7 +632,7 @@ template<> inline bool     IsNull(const ValueArray& v)       { return v.IsNull()
 template<>
 String AsString(const ValueArray& v);
 
-inline bool IsValueArray(const Value& v) { return v.GetType() == 9; }
+inline bool IsValueArray(const Value& v) { return v.GetType() == VALUEARRAY_V; }
 
 class ValueGen {
 public:

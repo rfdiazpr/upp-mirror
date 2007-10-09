@@ -352,14 +352,17 @@ public:
 	static Size TopicPage()                          { return Size(3968, INT_MAX); }
 
 	void   ExportPdf();
+	void   Print();
 
 	typedef TopicEditor CLASSNAME;
 
 	void Open(const String& grouppath);
 	void GoTo(const String& topic, const String& link);
-	
+
+	static int  GetSerial();
+
 	static void SerializeEditPos(Stream& s);
-	
+
 	void Serialize(Stream& s);
 
 	TopicEditor();

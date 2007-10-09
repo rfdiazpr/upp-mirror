@@ -39,9 +39,9 @@ public:
 		bool           canselect;
 
 		Node& SetImage(const Image& img)          { image = img; return *this; }
-		Node& Set(const Value& v)                 { key = value = v; ctrl = NULL; return *this; }
-		Node& Set(const Value& v, const Value& t) { key = v; value = t; ctrl = NULL; return *this; }
-		Node& SetDisplay(const Display& d)        { display = &d; ctrl = NULL; return *this; }
+		Node& Set(const Value& v)                 { key = value = v; return *this; }
+		Node& Set(const Value& v, const Value& t) { key = v; value = t; return *this; }
+		Node& SetDisplay(const Display& d)        { display = &d; return *this; }
 		Node& SetSize(Size sz)                    { size = sz; return *this; }
 		Node& SetCtrl(Ctrl& _ctrl)                { ctrl = &_ctrl; return *this; }
 		Node& CanOpen(bool b = true)              { canopen = b; return *this; }
@@ -70,6 +70,7 @@ private:
 		int            linei;
 
 		Size GetValueSize() const;
+		Size GetCtrlSize() const;
 		Size GetSize() const;
 
 		Item() { isopen = false; linei = -1; parent = -1; canselect = true; sel = false; free = false; }
@@ -95,6 +96,7 @@ private:
 	bool         multiselect;
 	bool         nobg;
 	bool         popupex;
+	bool         chldlck;
 
 	bool         selclick;
 	int          dropitem, dropinsert;
@@ -125,7 +127,7 @@ private:
 	void   SetCursorLineSync(int i);
 	void   MoveCursorLine(int c, int incr);
 	void   SetCursorLine(int i, bool sc, bool sel, bool cb);
-	void   SetCursor(int id, bool sc, bool sel, bool cb);	
+	void   SetCursor(int id, bool sc, bool sel, bool cb);
 	void   RemoveCtrls(int itemi);
 	void   SyncCtrls(bool add, Ctrl *restorefocus);
 	bool   Tab(int d);

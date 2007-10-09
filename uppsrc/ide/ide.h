@@ -268,7 +268,7 @@ public:
 	Callback WhenTopic;
 
 	void SyncDocTree();
-
+	void SearchWord(const String& s);
 	void Serialize(Stream& s);
 
 	typedef TopicCtrl CLASSNAME;
@@ -397,6 +397,7 @@ struct Ide : public TopWindow, public WorkspaceWork, public IdeContext {
 public:
 	virtual   void   Paint(Draw& w);
 	virtual   bool   Key(dword key, int count);
+	virtual   bool   HotKey(dword key);
 	virtual   void   FileCursor();
 	virtual   void   PackageCursor();
 	virtual   void   SyncWorkspace();
@@ -631,6 +632,7 @@ public:
 	} ff;
 	int                              iwc;
 
+	int           doc_serial;
 	TopicCtrl     doc;
 
 	int             state_icon;
@@ -845,6 +847,8 @@ public:
 
 	void      CustomSteps();
 
+	void      CycleFiles();
+
 	void      Renumber();
 
 	bool      FindLineError(int l, Host& host);
@@ -901,6 +905,7 @@ public:
 	bool      OpenMainPackage();
 	void      NewMainPackage();
 
+	void      SearchTopics();
 	void      ShowTopics();
 	void      ShowTopic(String topic);
 

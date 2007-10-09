@@ -77,9 +77,11 @@ class GroupButton : public Ctrl
 	private:
 
 		Vector<Group> groups;
+		Vector<Tab> *tabs;
 		int current;
 
 	public:
+		GroupButton();
 
 		typedef GroupButton CLASSNAME;
 
@@ -88,11 +90,14 @@ class GroupButton : public Ctrl
 		virtual void MouseEnter(Point p, dword keyflags);
 		virtual void MouseLeave();
 
-		void Make(const Vector<Tab> &tabs);
+		void SetTabs(Vector<Tab> &t);
+		void Make();
 		int  Find(const String& g);
 		const String& GetNext();
 		void DoList(Bar &bar);
+		void DoCloseGroupsList(Bar &bar);
 		void DoGrouping(int n);
+		void DoCloseGroup(int n);
 
 		String GetName() const           { return current == 0 ? Null : groups[current].path; }
 		int  SetCurrent(const String &s) { current = max(0, Find(s)); return current; }
@@ -104,11 +109,10 @@ class GroupButton : public Ctrl
 		int  GetLast() const             { return groups[current].last;   }
 		bool IsAll() const               { return current == 0;           }
 
-		GroupButton();
-
 		Callback WhenGrouping;
 		Callback WhenCloseAll;
 		Callback WhenCloseRest;
+		Callback WhenCloseGroup;
 };
 
 class QuickTabs : public FrameCtrl<Ctrl>
@@ -135,7 +139,7 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		int cross;
 		bool crosses;
 		bool file_icons;
-		bool isalt;
+		bool isctrl;
 		bool isdrag;
 		bool grouping;
 		Point mouse, oldp;
@@ -143,7 +147,9 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		virtual void Paint(Draw &w);
 		virtual void LeftDown(Point p, dword keysflags);
 		virtual void LeftUp(Point p, dword keysflags);
+		virtual void RightDown(Point p, dword keyflags);
 		virtual void MiddleDown(Point p, dword keyflags);
+		virtual void MiddleUp(Point p, dword keyflags);
 		virtual void MouseMove(Point p, dword keysflags);
 		virtual void MouseLeave();
 		virtual void Layout();
@@ -159,7 +165,7 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		virtual void MouseWheel(Point p, int zdelta, dword keyflags);
 
 		void DrawTab(Draw &w, int i);
-		void Repos(bool update = true);
+		void Repos();
 		int  Find(int id);
 		int  GetNext(int n);
 		int  GetPrev(int n);
@@ -170,6 +176,7 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		int GetTargetTab(Point p);
 
 		void Group();
+		void Menu(Bar& bar);
 
 		void CloseAll();
 
@@ -197,6 +204,9 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		void   Set(const QuickTabs& t);
 
 		int    GetNextId();
+		
+		const Vector<Tab>& GetTabs() { return tabs; }
+		int GetPos() { return sc.GetPos(); }
 
 		void SetCursor(int n);
 };

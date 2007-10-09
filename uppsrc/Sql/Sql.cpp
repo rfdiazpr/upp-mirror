@@ -98,9 +98,10 @@ void Sql::SetStatement(const String& s) {
 }
 
 bool Sql::Execute() {
-	if(GetSession().traceslow < INT_MAX)
+	SqlSession &session = GetSession();
+	if(session.traceslow < INT_MAX)
 		cn->starttime = GetTickCount();
-	if(GetSession().usrlog)
+	if(session.usrlog)
 		UsrLogT(9, cn->statement);
 	Stream *s = GetSession().GetTrace();
 	if(s) {
@@ -110,9 +111,11 @@ bool Sql::Execute() {
 #endif
 		*s << cn->statement << '\n';
 	}
+	session.WhenDatabaseActivity(EXECUTING);
 	bool b = cn->Execute();
+	session.WhenDatabaseActivity(END_EXECUTING);
 	if(s && !b)
-		*s << "## ERROR: " << GetSession().GetLastError() << '\n';
+		*s << "## ERROR: " << session.GetLastError() << '\n';
 	return b;
 }
 
@@ -164,13 +167,17 @@ void Sql::ExecuteX(const String& s, __List##I(E__Value)) { \
 __Expand(E__ExecuteFX)
 
 bool Sql::Fetch() {
+	SqlSession& session = GetSession();
+	session.WhenDatabaseActivity(FETCHING);
 	int t0 = GetTickCount();
 	bool b = cn->Fetch();
 	int t = GetTickCount();
-	if(t - GetSession().traceslow > cn->starttime)
+	if(!b)
+		session.WhenDatabaseActivity(END_FETCHING);
+	if(t - session.traceslow > cn->starttime)
 		BugLog() << t - cn->starttime << " ms: " << cn->statement << '\n';
 	else
-	if(t - t0 > GetSession().traceslow)
+	if(t - t0 > session.traceslow)
 		BugLog() << t - t0 << " ms further fetch: " << cn->statement << '\n';
 	cn->starttime = INT_MAX;
 	return b;
@@ -195,19 +202,24 @@ bool Sql::Fetch(Vector<Value>& row) {
 	return true;
 }
 
-struct sFetchFields : public FieldOperator {
+struct sReadFields : public FieldOperator {
 	int  pi;
 	Sql *sql;
 
 	void Field(Ref r)       { sql->GetColumn(pi++, r); }
 };
 
-bool Sql::Fetch(Fields fo) {
-	if(!Fetch()) return false;
-	sFetchFields ff;
+void Sql::Get(Fields fo)
+{
+	sReadFields ff;
 	ff.sql = this;
 	ff.pi = 0;
 	fo(ff);
+}
+
+bool Sql::Fetch(Fields fo) {
+	if(!Fetch()) return false;
+	Get(fo);
 	return true;
 }
 
@@ -391,16 +403,21 @@ void Sql::Assign(SqlSource& s) {
 	cn = s.CreateConnection();
 }
 
-void   Sql::SetError(String err, String stmt, int code, ERRORCLASS clss) { GetSession().SetError(err, stmt, code, clss); }
+void Sql::SetError(String err, String stmt, int code, const char *scode, ERRORCLASS clss) 
+{
+	GetSession().SetError(err, stmt, code, scode, clss); 
+}
+
 void   Sql::ClearError()                          { GetSession().ClearError(); }
 
 String Sql::GetLastError() const                  { return GetSession().GetLastError(); }
 String Sql::GetErrorStatement() const             { return GetSession().GetErrorStatement(); }
 int    Sql::GetErrorCode() const                  { return GetSession().GetErrorCode(); }
+String Sql::GetErrorCodeString() const            { return GetSession().GetErrorCodeString(); }
 Sql::ERRORCLASS Sql::GetErrorClass() const        { return GetSession().GetErrorClass(); }
 bool   Sql::WasError() const                      { return GetSession().WasError(); }
 
-void   Sql::Begin()                               { GetSession().Begin(); }
+void   Sql::Begin()                               { ClearError(); GetSession().Begin(); }
 void   Sql::Commit()                              { GetSession().Commit(); }
 void   Sql::Rollback()                            { GetSession().Rollback(); }
 
@@ -453,8 +470,15 @@ Sql::Sql(SqlConnection *connection)
 : cn(connection)
 {}
 
-Sql::~Sql() {
+void Sql::Detach()
+{
 	if(cn) delete cn;
+	cn = NULL;
+}
+
+Sql::~Sql() {
+	DLOG("Sql::Detach " << (void *)this);
+	Detach();
 }
 
 SqlSession::SqlSession()
@@ -467,14 +491,21 @@ SqlSession::SqlSession()
 	dialect = 255;
 }
 
-SqlSession::~SqlSession() {}
+SqlSession::~SqlSession()
+{
+	DLOG("SqlSession::~SqlSession " << (void *)this);
+	if(SQL.IsOpen() && &SQL.GetSession() == this) {
+		DLOG("Detaching SQL");
+		SQL.Detach();
+	}
+}
 
 void           SqlSession::Begin()                                       { NEVER(); }
 void           SqlSession::Commit()                                      { NEVER(); }
 void           SqlSession::Rollback()                                    { NEVER(); }
 String         SqlSession::Savepoint()                                   { NEVER(); return Null; }
 void           SqlSession::RollbackTo(const String&)                     { NEVER(); }
-bool           SqlSession::IsOpen() const                                { NEVER(); return false; }
+bool           SqlSession::IsOpen() const                                { return false; }
 RunScript      SqlSession::GetRunScript() const                          { return NULL; }
 SqlConnection *SqlSession::CreateConnection()                            { return NULL; }
 Vector<String> SqlSession::EnumUsers()                                   { return Vector<String>(); }
@@ -500,10 +531,11 @@ Vector<SqlColumnInfo> SqlSession::EnumColumns(String database, String table)
 	return info;
 }
 
-void   SqlSession::SetError(String error, String stmt, int code, Sql::ERRORCLASS clss) {
+void   SqlSession::SetError(String error, String stmt, int code, const char *scode, Sql::ERRORCLASS clss) {
 	lasterror = error;
 	errorstatement = stmt;
-	errorcode = code;
+	errorcode_number = code;
+	errorcode_string = scode;
 	errorclass = clss;
 	String err;
 	err << "ERROR " << error << "(" << code << "): " << stmt << '\n';

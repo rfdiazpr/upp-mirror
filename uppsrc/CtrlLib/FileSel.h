@@ -24,6 +24,7 @@ public:
 		Color  extink;
 		String desc;
 		Font   descfont;
+		Value  data;
 
 		operator const String&() const { return name; }
 	};
@@ -67,11 +68,11 @@ public:
 	                const String& name, const Image& icon = Null,
 		            Font font = StdFont(), Color ink = SColorText(),
 	                bool isdir = false, int length = 0, Time time = Null, Color extink = Null,
-	                const String& desc = Null, Font descfont = Null);
+	                const String& desc = Null, Font descfont = Null, Value data = Null);
 	void        Add(const String& name, const Image& icon = Null,
 		            Font font = StdFont(), Color ink = SColorText(),
 	                bool isdir = false, int length = 0, Time time = Null, Color extink = Null,
-	                const String& desc = Null, Font descfont = Null);
+	                const String& desc = Null, Font descfont = Null, Value data = Null);
 
 	String      GetCurrentName() const;
 
@@ -160,6 +161,7 @@ protected:
 	bool        Execute(int mode);
 	bool        IsMulti()                                     { return multi && mode == OPEN; }
 	void        SyncSplitter();
+	String      GetMask();
 
 	using       WithFileSelectorLayout<TopWindow>::Title;
 

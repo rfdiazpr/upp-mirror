@@ -2,6 +2,8 @@
 
 #ifdef PLATFORM_WIN32
 
+NAMESPACE_UPP
+
 word *AllocString(String s)
 {
 	word *p = reinterpret_cast<word *>(CoTaskMemAlloc(sizeof(word) * (s.GetLength() + 1))), *d = p;
@@ -587,7 +589,7 @@ HRESULT OcxControl::Draw(dword aspect, long index, void *aspectinfo,
 	SetViewportExtEx(draw_dc, 1, 1, vext);
 	int old_mode = SetMapMode(draw_dc, MM_TEXT);
 
-	::Draw draw(draw_dc);
+	UPP::Draw draw(draw_dc);
 	draw.Offset(rc.TopLeft());
 	DrawCtrl(draw);
 	draw.End();
@@ -1231,5 +1233,7 @@ HRESULT OcxConnectionPointContainer::FindConnectionPoint(REFIID riid, IConnectio
 	(*ppCP = point_map[i])->AddRef();
 	return LOGRESULT(S_OK);
 }
+
+END_UPP_NAMESPACE
 
 #endif

@@ -31,6 +31,7 @@ file
 	lay.h,
 	llay.h,
 	Win32 readonly separator,
+	MultiMon.dli,
 	Win32Wnd.cpp,
 	Win32Clip.cpp,
 	Win32DnD.cpp,
@@ -56,4 +57,3 @@ file
 
 mainconfig
 	"Debug" = "MSC GUI DEBUG WIN32";
-

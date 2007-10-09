@@ -49,6 +49,8 @@ int OidToType(Oid oid)
 		case PGSQL_TIMESTAMPOID:
 		case PGSQL_TIMESTAMPZOID:
 			return TIME_V;
+		case PGSQL_BYTEAOID:
+			return BYTEA_V;
 	}
 	return STRING_V;
 }
@@ -67,16 +69,18 @@ protected:
 	virtual String      ToString() const;
 
 private:
-	PostgreSQLSession&  session;
+	PostgreSQLSession& session;
+	
 	PGconn         *conn;
-	Vector<String> param;
-	PGresult      *result;
-	Vector<Oid>    oid;
-	int            rows;
-	int            fetched_row; //-1, if not fetched yet
+	Vector<String>  param;
+	PGresult       *result;
+	Vector<Oid>     oid;
+	int             rows;
+	int             fetched_row; //-1, if not fetched yet
 
-	void           FreeResult();
-	String         ErrorMessage();
+	void            FreeResult();
+	String          ErrorMessage();
+	String          ErrorCode();
 
 public:
 	PostgreSQLConnection(PostgreSQLSession& a_session, PGconn *a_conn);
@@ -143,21 +147,25 @@ bool PostgreSQLPerformScript(const String& txt, StatementExecutor& se, Gate2<int
 	return true;
 }
 
-//////////////////////////////////////////////
-
 String PostgreSQLConnection::ErrorMessage()
 {
 	return FromSystemCharset(PQerrorMessage(conn));
 }
 
-//////////////////////////////////////////////
+String PostgreSQLConnection::ErrorCode()
+{
+	return PQresultErrorField(result, PG_DIAG_SQLSTATE);
+}
 
 String PostgreSQLSession::ErrorMessage()
 {
 	return FromSystemCharset(PQerrorMessage(conn));
 }
 
-//////////////////////////////////////////////
+String PostgreSQLSession::ErrorCode()
+{
+	return PQresultErrorField(result, PG_DIAG_SQLSTATE);	
+}
 
 Vector<String> PostgreSQLSession::EnumUsers()
 {
@@ -237,10 +245,9 @@ Vector<SqlColumnInfo> PostgreSQLSession::EnumColumns(String database, String tab
 		ci.width = sql[2];
 		if(ci.width < 0)
 			ci.width = type_mod;
-		ci.prec = (type_mod >> 16) & 0xffff;
+		ci.precision = (type_mod >> 16) & 0xffff;
 		ci.scale = type_mod & 0xffff;
-		ci.decimals = ci.prec; //what is this for?
-		//ci.null = sql[4] == "0"; //not supported in column info structure
+		ci.nullable = sql[4] == "0";
 	}
 	return vec;
 }
@@ -269,16 +276,16 @@ void PostgreSQLSession::ExecTrans(const char * statement)
 {
 	if(trace)
 		*trace << statement << "\n";
-	PGresult *res = PQexec(conn, statement);
-	if(PQresultStatus(res) == PGRES_COMMAND_OK)
+	result = PQexec(conn, statement);
+	if(PQresultStatus(result) == PGRES_COMMAND_OK)
 	{
-		PQclear(res);
+		PQclear(result);
 		return;
 	}
 	if(trace)
 		*trace << statement << " failed: " << ErrorMessage() << "\n";
-	SetError(ErrorMessage(), statement);
-	PQclear(res);
+	SetError(ErrorMessage(), statement, 0, ErrorCode());
+	PQclear(result);
 }
 
 bool PostgreSQLSession::Open(const char *connect)
@@ -322,8 +329,6 @@ void PostgreSQLSession::Rollback()
 	ExecTrans("rollback");
 }
 
-/////////////////////////////////////////////////
-
 void PostgreSQLConnection::SetParam(int i, const Value& r)
 {
 	String p;
@@ -331,14 +336,12 @@ void PostgreSQLConnection::SetParam(int i, const Value& r)
 		p = "NULL";
 	else
 		switch(r.GetType()) {
-		case 34: {
+		case BYTEA_V: {
 			String raw = SqlRaw(r);
 			size_t rl;
 			unsigned char *s = PQescapeByteaConn(conn, (const byte *)~raw, raw.GetLength(), &rl);
 			p.Reserve(rl + 16);
-			SaveFile("d:\\t1", String(s, rl));
 			p = "\'" + String(s, rl - 1) + "\'::bytea";
-			SaveFile("d:\\t2", p);
 			PQfreemem(s);
 			break;
 		}
@@ -358,6 +361,9 @@ void PostgreSQLConnection::SetParam(int i, const Value& r)
 		case BOOL_V:
 		case INT_V:
 			p = Format("%d", int(r));
+			break;
+		case INT64_V:
+			p = Format("%ld", int64(r));
 			break;
 		case DOUBLE_V:
 			p = Format("%.10g", double(r));
@@ -406,14 +412,11 @@ bool PostgreSQLConnection::Execute()
 	if(session.IsTraceTime())
 		time = GetTickCount();
 
-	//result = PQexec(conn, query);
 	result = PQexecParams(conn, query, 0, NULL, NULL, NULL, NULL, 0);
-	// TODO we should recieve data in binary format to avoid all the ato* stuff
 
 	if(trace) {
 		if(session.IsTraceTime())
 			*trace << Format("--------------\nexec %d ms:\n", msecs(time));
-		*trace << ToString() << '\n';
 	}
 	if(PQresultStatus(result) == PGRES_TUPLES_OK) //result set
 	{
@@ -426,7 +429,12 @@ bool PostgreSQLConnection::Execute()
 			SqlColumnInfo& f = info[i];
 			f.name = ToUpper(PQfname(result, i));
 			f.width = PQfsize(result, i);
-			f.decimals = f.scale = f.prec = 0; // TODO
+			int type_mod = PQfmod(result, i) - sizeof(int32);
+			if(f.width < 0)
+				f.width = type_mod;
+			f.precision = (type_mod >> 16) & 0xffff;
+			f.scale = type_mod & 0xffff;
+			f.nullable = true;
 			Oid type_oid = PQftype(result, i);
 			f.type = OidToType(type_oid);
 			oid[i] = type_oid;
@@ -439,9 +447,8 @@ bool PostgreSQLConnection::Execute()
 		return true;
 	}
 
-	session.SetError( ErrorMessage(), query );
+	session.SetError(ErrorMessage(), query, 0, ErrorCode());
 	FreeResult();
-
 	return false;
 }
 
@@ -516,7 +523,6 @@ void PostgreSQLConnection::GetColumn(int i, Ref f) const
 			}
 			else
 				f.SetValue(String(s));
-			break;
 		}
 	}
 }

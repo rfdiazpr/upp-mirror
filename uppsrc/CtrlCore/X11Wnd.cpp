@@ -252,7 +252,7 @@ void SweepMkImageCache();
 bool Ctrl::ProcessEvents(bool *)
 {
 	if(ProcessEvent()) {
-		while(ProcessEvent());
+		while(ProcessEvent() && (!LoopCtrl || LoopCtrl->InLoop())); // LoopCtrl-MF 071008
 		TimerAndPaint();
 		SweepMkImageCache();
 		return true;

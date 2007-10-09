@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0361 */
-/* at Sun Sep 19 11:40:37 2004
+/* at Mon Aug 20 00:14:29 2007
  */
 /* Compiler settings for e:\src\uppsrc\Ole\Ctrl\Calc\calc.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)

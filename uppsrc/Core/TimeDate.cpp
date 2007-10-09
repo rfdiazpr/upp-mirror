@@ -29,7 +29,7 @@ bool Date::IsValid() const {
 
 String DayName(int i, int lang)
 {
-	static char *day[] = {
+	static const char *day[] = {
 		tt_("date\vSunday"), tt_("date\vMonday"), tt_("date\vTuesday"),
 		tt_("date\vWednesday"), tt_("date\vThursday"), tt_("date\vFriday"), tt_("date\vSaturday")
 	};
@@ -38,7 +38,7 @@ String DayName(int i, int lang)
 
 String DyName(int i, int lang)
 {
-	static char *day[] = {
+	static const char *day[] = {
 		tt_("date\vSu"), tt_("date\vMo"), tt_("date\vTu"),
 		tt_("date\vWe"), tt_("date\vTh"), tt_("date\vFr"), tt_("date\vSa")
 	};
@@ -47,7 +47,7 @@ String DyName(int i, int lang)
 
 String MonthName(int i, int lang)
 {
-	static char *month[] = {
+	static const char *month[] = {
 		tt_("date\vJanuary"), tt_("date\vFebruary"), tt_("date\vMarch"), tt_("date\vApril"), tt_("date\vMay"),
 		tt_("date\vJune"), tt_("date\vJuly"), tt_("date\vAugust"), tt_("date\vSeptember"), tt_("date\vOctober"),
 		tt_("date\vNovember"), tt_("date\vDecember")
@@ -57,7 +57,7 @@ String MonthName(int i, int lang)
 
 String MonName(int i, int lang)
 {
-	static char *month[] = {
+	static const char *month[] = {
 		tt_("sdate\vJan"), tt_("sdate\vFeb"), tt_("sdate\vMar"), tt_("sdate\vApr"), tt_("sdate\vMay"),
 		tt_("sdate\vJun"), tt_("sdate\vJul"), tt_("sdate\vAug"), tt_("sdate\vSep"), tt_("sdate\vOct"),
 		tt_("sdate\vNov"), tt_("sdate\vDec")

@@ -37,8 +37,10 @@ String Decode64(const String& s);
 WString ToSystemCharset(const String& src);
 String  FromSystemCharset(const WString& src);
 #else
-String ToSystemCharset(const String& src);
-String FromSystemCharset(const String& src);
+String  ToSystemCharset(const String& src);
+String  FromSystemCharset(const String& src);
+WString ToSystemCharsetW(const char *src);
+String  FromSystemCharsetW(const wchar *src);
 #endif
 
 #ifdef PLATFORM_WIN32
@@ -248,7 +250,7 @@ public:
 
 class Exc : public String {
 public:
-	Exc(); // throw according to GetLastError()
+	Exc(); // throw exception according to GetLastError()
 	Exc(const String& desc) : String(desc) {}
 
 //	void Show() const;

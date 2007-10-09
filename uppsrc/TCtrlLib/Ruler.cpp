@@ -4,6 +4,7 @@ NAMESPACE_UPP
 
 RulerCtrl::RulerCtrl()
 {
+	width = GetStdWidth();
 	scale = 1;
 	delta = 0;
 	cursor = Null;
@@ -111,7 +112,7 @@ double RulerCtrl::GetRawDelta() const
 void RulerCtrl::FrameLayout(Rect& rc)
 {
 	Rect pos = rc;
-	int wd = (IsVisible() ? GetStdWidth() : 0);
+	int wd = (IsVisible() ? width : 0);
 	if(IsVert()) {
 		if(IsBottomRight())
 			rc.right = max(rc.left, pos.left = rc.right - wd);
@@ -131,9 +132,9 @@ void RulerCtrl::FrameAddSize(Size& sz)
 {
 	if(IsVisible()) {
 		if(IsVert())
-			sz.cx += GetStdWidth();
+			sz.cx += width;
 		else
-			sz.cy += GetStdWidth();
+			sz.cy += width;
 	}
 }
 
@@ -230,29 +231,6 @@ void RulerCtrl::Paint(Draw& draw)
 		SMALL_SIZE = 5,
 	};
 
-	double cl = IsNull(cursor) ? double(Null) : ToClientf(cursor);
-	Size lsize = GetTextSize(label_text, font);
-	if(is_vert) {
-		int tx = (client.cx - cy) >> 1;
-//		draw.DrawRect(tx - VXGAP, cli2 - lsize.cx - TGAP - HXGAP, lsize.cy + 2 * VXGAP, lsize.cx + 2 * HXGAP, background);
-		draw.DrawText(tx, cli2 - TGAP, 900, label_text, font, SGray);
-		if(cl >= -ARROW_RAD && cl <= client.cy + ARROW_RAD) {
-			int icl = fround(cl);
-			Image icon = is_right ? CtrlImg::smallleft() : CtrlImg::smallright();
-			draw.DrawImage(is_right ? 1 : client.cx - icon.GetWidth() - 1, icl - ARROW_RAD, icon);
-		}
-	}
-	else {
-		int tx = (client.cy - cy) >> 1;
-//		draw.DrawRect(cli1 + TGAP - HXGAP, tx - VXGAP, lsize.cx + 2 * HXGAP, lsize.cy + 2 * VXGAP, background);
-		draw.DrawText(cli1 + TGAP, tx, label_text, font, SGray);
-		if(cl >= -ARROW_RAD && cl <= client.cx + ARROW_RAD) {
-			int icl = fround(cl);
-			Image icon = is_right ? CtrlImg::smallup() : CtrlImg::smalldown();
-			draw.DrawImage(icl - ARROW_RAD, is_right ? 1 : client.cy - icon.GetHeight() - 1, icon);
-		}
-	}
-
 	double rep_count = 1;
 	double rep_delta = 0;
 	if(!IsNull(small_repeat)) {
@@ -270,9 +248,9 @@ void RulerCtrl::Paint(Draw& draw)
 			for(; ix < lim; ix++) {
 				int cli = ToClient(small_step[ix] + rep_delta);
 				if(is_vert)
-					draw.DrawRect(ppos, cli, SMALL_SIZE, 1, SBlack);
+					draw.DrawRect(ppos, cli, SMALL_SIZE, 1, Gray());
 				else
-					draw.DrawRect(cli, ppos, 1, SMALL_SIZE, SBlack);
+					draw.DrawRect(cli, ppos, 1, SMALL_SIZE, Gray());
 			}
 		}
 	}
@@ -285,7 +263,7 @@ void RulerCtrl::Paint(Draw& draw)
 	if(!text_step.IsEmpty() && (!text_value.IsEmpty() || text_convert)
 	&& rep_count > 0 && rep_count * text_step.GetCount() <= TEXT_LIMIT) {
 		int ix = BinFindIndex(text_step, pos1 - rep_delta);
-		int ppos = (cheight - cy) >> 1;
+		int ppos = (is_right ? SMALL_SIZE : cheight - cy - SMALL_SIZE);
 		for(int c = fround(rep_count); --c >= 0; ix = 0, rep_delta += text_repeat) {
 			int lim = text_step.GetCount();
 			double dp2 = pos2 - rep_delta;
@@ -307,16 +285,40 @@ void RulerCtrl::Paint(Draw& draw)
 				Size tsize = GetTextSize(text, font);
 				int half = tsize.cx >> 1;
 				if(is_vert) {
-					draw.DrawRect(0, cli, ppos, 1, SBlack);
+					draw.DrawRect(0, cli, ppos, 1, Gray());
 //					draw.DrawRect(ppos - VGAP, cli - half - HGAP, tsize.cy + 2 * VGAP, tsize.cx + 2 * HGAP, background);
-					draw.DrawText(ppos, cli + half, 900, text, font, SBlack);
+					draw.DrawText(ppos, cli + half, 900, text, font, Gray());
 				}
 				else {
-					draw.DrawRect(cli, 0, 1, ppos, SBlack);
+					draw.DrawRect(cli, 0, 1, ppos, Gray());
 //					draw.DrawRect(cli - half - HGAP, ppos - VGAP, tsize.cx + 2 * HGAP, tsize.cy + 2 * VGAP, background);
-					draw.DrawText(cli - half, ppos, text, font, SBlack);
+					draw.DrawText(cli - half, ppos, text, font, Gray());
 				}
 			}
+		}
+	}
+
+	Font labelfont = font().Bold();
+	double cl = IsNull(cursor) ? double(Null) : ToClientf(cursor);
+	Size lsize = GetTextSize(label_text, labelfont);
+	if(is_vert) {
+		int tx = (IsBottomRight() ? client.cx - cy : 0);
+//		draw.DrawRect(tx - VXGAP, cli2 - lsize.cx - TGAP - HXGAP, lsize.cy + 2 * VXGAP, lsize.cx + 2 * HXGAP, background);
+		draw.DrawText(tx, cli2 - TGAP, 900, label_text, labelfont, Black());
+		if(cl >= -ARROW_RAD && cl <= client.cy + ARROW_RAD) {
+			int icl = fround(cl);
+			Image icon = is_right ? CtrlImg::smallleft() : CtrlImg::smallright();
+			draw.DrawImage(is_right ? 1 : client.cx - icon.GetWidth() - 1, icl - ARROW_RAD, icon);
+		}
+	}
+	else {
+		int tx = (IsBottomRight() ? client.cy - cy : 0);
+//		draw.DrawRect(cli1 + TGAP - HXGAP, tx - VXGAP, lsize.cx + 2 * HXGAP, lsize.cy + 2 * VXGAP, background);
+		draw.DrawText(cli1 + TGAP, tx, label_text, labelfont, Black());
+		if(cl >= -ARROW_RAD && cl <= client.cx + ARROW_RAD) {
+			int icl = fround(cl);
+			Image icon = is_right ? CtrlImg::smallup() : CtrlImg::smalldown();
+			draw.DrawImage(icl - ARROW_RAD, is_right ? 1 : client.cy - icon.GetHeight() - 1, icon);
 		}
 	}
 

@@ -504,12 +504,12 @@ public:
 class FileMapping
 {
 public:
-	FileMapping(const char *file = NULL, bool delete_share = false, int64 mapoffset = 0, dword maplen = ~0);
+	FileMapping(const char *file = NULL, bool delete_share = false);
 	~FileMapping() { Close(); }
 
-	bool        Open(const char *file, bool delete_share = false, int64 mapoffset = 0, dword maplen = ~0);
-	bool        Create(const char *file, int64 filesize, bool delete_share = false, int64 mapoffset = 0, dword maplen = ~0);
-	bool        Expand(int64 filesize, int64 mapoffset = 0, dword maplen = ~0);
+	bool        Open(const char *file, bool delete_share = false);
+	bool        Create(const char *file, int64 filesize, bool delete_share = false);
+	bool        Expand(int64 filesize);
 	bool        Map(int64 offset, dword len);
 	bool        Unmap();
 	bool        Close();
@@ -567,6 +567,7 @@ inline int64 CopyStream(Stream& dest, Stream& src) { return CopyStream(dest, src
 
 #ifndef PLATFORM_WINCE
 Stream& Cout();
+Stream& Cerr();
 String  ReadStdIn();
 #endif
 

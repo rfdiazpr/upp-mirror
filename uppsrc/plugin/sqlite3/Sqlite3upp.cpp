@@ -344,7 +344,7 @@ Vector<SqlColumnInfo> Sqlite3Session::EnumColumns(String database, String table)
 	Sql sql(*this);
 	sql.Execute("PRAGMA table_info("+table+");");
 	while (sql.Fetch()) {
-		info.width = info.decimals = info.scale = info.prec = 0;
+		info.width = info.scale = info.precision = 0;
 		info.name = sql[1];
 		ColType   = sql[2];
 		if(ColType =="integer")

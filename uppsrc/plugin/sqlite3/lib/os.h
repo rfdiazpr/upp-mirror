@@ -21,6 +21,18 @@
 ** Figure out if we are dealing with Unix, Windows, or some other
 ** operating system.
 */
+#if defined(OS_OTHER)
+# if OS_OTHER==1
+#   undef OS_UNIX
+#   define OS_UNIX 0
+#   undef OS_WIN
+#   define OS_WIN 0
+#   undef OS_OS2
+#   define OS_OS2 0
+# else
+#   undef OS_OTHER
+# endif
+#endif
 #if !defined(OS_UNIX) && !defined(OS_OTHER)
 # define OS_OTHER 0
 # ifndef OS_WIN
@@ -28,7 +40,7 @@
 #     define OS_WIN 1
 #     define OS_UNIX 0
 #     define OS_OS2 0
-#   elif defined(_EMX_) || defined(_OS2) || defined(OS2) || defined(OS_OS2)
+#   elif defined(__EMX__) || defined(_OS2) || defined(OS2) || defined(_OS2_) || defined(__OS2__)
 #     define OS_WIN 0
 #     define OS_UNIX 0
 #     define OS_OS2 1
@@ -55,11 +67,15 @@
 # include <windows.h>
 # define SQLITE_TEMPNAME_SIZE (MAX_PATH+50)
 #elif OS_OS2
+# if (__GNUC__ > 3 || __GNUC__ == 3 && __GNUC_MINOR__ >= 3) && defined(OS2_HIGH_MEMORY)
+#  include <os2safe.h> /* has to be included before os2.h for linking to work */
+# endif
 # define INCL_DOSDATETIME
 # define INCL_DOSFILEMGR
 # define INCL_DOSERRORS
 # define INCL_DOSMISC
 # define INCL_DOSPROCESS
+# define INCL_DOSMODULEMGR
 # include <os2.h>
 # define SQLITE_TEMPNAME_SIZE (CCHMAXPATHCOMP)
 #else
@@ -74,6 +90,13 @@
 #endif
 
 /*
+** The default size of a disk sector
+*/
+#ifndef SQLITE_DEFAULT_SECTOR_SIZE
+# define SQLITE_DEFAULT_SECTOR_SIZE 512
+#endif
+
+/*
 ** Temporary files are named starting with this prefix followed by 16 random
 ** alphanumeric characters, and no file extension. They are stored in the
 ** OS's standard temporary file directory, and are deleted prior to exit.
@@ -81,9 +104,21 @@
 ** prefix to reflect your program's name, so that if your program exits
 ** prematurely, old temporary files can be easily identified. This can be done
 ** using -DTEMP_FILE_PREFIX=myprefix_ on the compiler command line.
+**
+** 2006-10-31:  The default prefix used to be "sqlite_".  But then
+** Mcafee started using SQLite in their anti-virus product and it
+** started putting files with the "sqlite" name in the c:/temp folder.
+** This annoyed many windows users.  Those users would then do a 
+** Google search for "sqlite", find the telephone numbers of the
+** developers and call to wake them up at night and complain.
+** For this reason, the default name prefix is changed to be "sqlite" 
+** spelled backwards.  So the temp files are still identified, but
+** anybody smart enough to figure out the code is also likely smart
+** enough to know that calling the developer will not help get rid
+** of the file.
 */
 #ifndef TEMP_FILE_PREFIX
-# define TEMP_FILE_PREFIX "sqlite_"
+# define TEMP_FILE_PREFIX "etilqs_"
 #endif
 
 /*
@@ -110,6 +145,9 @@
 #define sqlite3OsRealloc            sqlite3GenericRealloc
 #define sqlite3OsFree               sqlite3GenericFree
 #define sqlite3OsAllocationSize     sqlite3GenericAllocationSize
+#define sqlite3OsDlopen             sqlite3UnixDlopen
+#define sqlite3OsDlsym              sqlite3UnixDlsym
+#define sqlite3OsDlclose            sqlite3UnixDlclose
 #endif
 #if OS_WIN
 #define sqlite3OsOpenReadWrite      sqlite3WinOpenReadWrite
@@ -132,6 +170,9 @@
 #define sqlite3OsRealloc            sqlite3GenericRealloc
 #define sqlite3OsFree               sqlite3GenericFree
 #define sqlite3OsAllocationSize     sqlite3GenericAllocationSize
+#define sqlite3OsDlopen             sqlite3WinDlopen
+#define sqlite3OsDlsym              sqlite3WinDlsym
+#define sqlite3OsDlclose            sqlite3WinDlclose
 #endif
 #if OS_OS2
 #define sqlite3OsOpenReadWrite      sqlite3Os2OpenReadWrite
@@ -154,7 +195,12 @@
 #define sqlite3OsRealloc            sqlite3GenericRealloc
 #define sqlite3OsFree               sqlite3GenericFree
 #define sqlite3OsAllocationSize     sqlite3GenericAllocationSize
+#define sqlite3OsDlopen             sqlite3Os2Dlopen
+#define sqlite3OsDlsym              sqlite3Os2Dlsym
+#define sqlite3OsDlclose            sqlite3Os2Dlclose
 #endif
+
+
 
 
 /*
@@ -193,6 +239,7 @@ struct IoMethod {
   int (*xUnlock)(OsFile*, int);
   int (*xLockState)(OsFile *id);
   int (*xCheckReservedLock)(OsFile *id);
+  int (*xSectorSize)(OsFile *id);
 };
 
 /*
@@ -238,9 +285,9 @@ struct OsFile {
 ** UnlockFile().
 **
 ** LockFile() prevents not just writing but also reading by other processes.
-** A SHARED_LOCK is obtained by locking a single randomly-chosen
-** byte out of a specific range of bytes. The lock byte is obtained at
-** random so two separate readers can probably access the file at the
+** A SHARED_LOCK is obtained by locking a single randomly-chosen 
+** byte out of a specific range of bytes. The lock byte is obtained at 
+** random so two separate readers can probably access the file at the 
 ** same time, unless they are unlucky and choose the same lock byte.
 ** An EXCLUSIVE_LOCK is obtained by locking all bytes in the range.
 ** There can only be one writer.  A RESERVED_LOCK is obtained by locking
@@ -259,7 +306,7 @@ struct OsFile {
 ** The following #defines specify the range of bytes used for locking.
 ** SHARED_SIZE is the number of bytes available in the pool from which
 ** a random byte is selected for a shared lock.  The pool of bytes for
-** shared locks begins at SHARED_FIRST.
+** shared locks begins at SHARED_FIRST. 
 **
 ** These #defines are available in sqlite_aux.h so that adaptors for
 ** connecting SQLite to other operating systems can use the same byte
@@ -277,7 +324,7 @@ struct OsFile {
 ** that all locks will fit on a single page even at the minimum page size.
 ** PENDING_BYTE defines the beginning of the locks.  By default PENDING_BYTE
 ** is set high so that we don't have to allocate an unused page except
-** for very large databases.  But one should test the page skipping logic
+** for very large databases.  But one should test the page skipping logic 
 ** by setting PENDING_BYTE low and running the entire regression suite.
 **
 ** Changing the value of PENDING_BYTE results in a subtly incompatible
@@ -309,11 +356,9 @@ int sqlite3OsSeek(OsFile*, i64 offset);
 int sqlite3OsTruncate(OsFile*, i64 size);
 int sqlite3OsSync(OsFile*, int);
 void sqlite3OsSetFullSync(OsFile *id, int setting);
-int sqlite3OsFileHandle(OsFile *id);
 int sqlite3OsFileSize(OsFile*, i64 *pSize);
 int sqlite3OsLock(OsFile*, int);
 int sqlite3OsUnlock(OsFile*, int);
-int sqlite3OsLockState(OsFile *id);
 int sqlite3OsCheckReservedLock(OsFile *id);
 int sqlite3OsOpenReadWrite(const char*, OsFile**, int*);
 int sqlite3OsOpenExclusive(const char*, OsFile**, int);
@@ -323,6 +368,7 @@ int sqlite3OsFileExists(const char*);
 char *sqlite3OsFullPathname(const char*);
 int sqlite3OsIsDirWritable(char*);
 int sqlite3OsSyncDirectory(const char*);
+int sqlite3OsSectorSize(OsFile *id);
 int sqlite3OsTempFileName(char*);
 int sqlite3OsRandomSeed(char*);
 int sqlite3OsSleep(int ms);
@@ -335,6 +381,14 @@ void *sqlite3OsMalloc(int);
 void *sqlite3OsRealloc(void *, int);
 void sqlite3OsFree(void *);
 int sqlite3OsAllocationSize(void *);
+void *sqlite3OsDlopen(const char*);
+void *sqlite3OsDlsym(void*, const char*);
+int sqlite3OsDlclose(void*);
+
+#if defined(SQLITE_TEST) || defined(SQLITE_DEBUG)
+  int sqlite3OsFileHandle(OsFile *id);
+  int sqlite3OsLockState(OsFile *id);
+#endif
 
 /*
 ** If the SQLITE_ENABLE_REDEF_IO macro is defined, then the OS-layer
@@ -349,7 +403,7 @@ int sqlite3OsAllocationSize(void *);
 
 /*
 ** When redefinable I/O is enabled, a single global instance of the
-** following structure holds pointers to the routines that SQLite
+** following structure holds pointers to the routines that SQLite 
 ** uses to talk with the underlying operating system.  Modify this
 ** structure (before using any SQLite API!) to accomodate perculiar
 ** operating system interfaces or behaviors.
@@ -379,20 +433,33 @@ struct sqlite3OsVtbl {
   void *(*xRealloc)(void *, int);
   void (*xFree)(void *);
   int (*xAllocationSize)(void *);
+
+  void *(*xDlopen)(const char*);
+  void *(*xDlsym)(void*, const char*);
+  int (*xDlclose)(void*);
 };
 
 /* Macro used to comment out routines that do not exists when there is
-** no disk I/O
+** no disk I/O or extension loading
 */
 #ifdef SQLITE_OMIT_DISKIO
 # define IF_DISKIO(X)  0
 #else
 # define IF_DISKIO(X)  X
 #endif
+#ifdef SQLITE_OMIT_LOAD_EXTENSION
+# define IF_DLOPEN(X)  0
+#else
+# define IF_DLOPEN(X)  X
+#endif
 
-#ifdef _SQLITE_OS_C_
+
+#if defined(_SQLITE_OS_C_) || defined(SQLITE_AMALGAMATION)
   /*
   ** The os.c file implements the global virtual function table.
+  ** We have to put this file here because the initializers
+  ** (ex: sqlite3OsRandomSeed) are macros that are about to be
+  ** redefined.
   */
   struct sqlite3OsVtbl sqlite3Os = {
     IF_DISKIO( sqlite3OsOpenReadWrite ),
@@ -414,11 +481,14 @@ struct sqlite3OsVtbl {
     sqlite3OsMalloc,
     sqlite3OsRealloc,
     sqlite3OsFree,
-    sqlite3OsAllocationSize
+    sqlite3OsAllocationSize,
+    IF_DLOPEN( sqlite3OsDlopen ),
+    IF_DLOPEN( sqlite3OsDlsym ),
+    IF_DLOPEN( sqlite3OsDlclose ),
   };
 #else
   /*
-  ** Files other than os.c just reference the global virtual function table.
+  ** Files other than os.c just reference the global virtual function table. 
   */
   extern struct sqlite3OsVtbl sqlite3Os;
 #endif /* _SQLITE_OS_C_ */

@@ -4,6 +4,13 @@ const String& BoolToSql(bool b);
 
 class SqlSession;
 
+enum ActivityStatus {
+	FETCHING,
+	END_FETCHING,
+	EXECUTING,
+	END_EXECUTING
+};
+
 class SqlExc : public Exc {
 public:
 #ifndef NOAPPSQL
@@ -30,9 +37,9 @@ struct SqlColumnInfo : Moveable<SqlColumnInfo> {
 	String      name;
 	int         type;
 	int         width;
-	int         decimals;
-	int         scale;
-	int         prec;
+	int         precision; //number of total digits in numeric types
+	int         scale;     //number of digits after comma in numeric types
+	bool        nullable;  //true - column can hold null values
 };
 
 class SqlConnection {
@@ -81,6 +88,7 @@ protected:
 
 	Value       Select0(const String& what);
 	void        Assign(SqlSource& src);
+	void        Detach();
 	enum _NULLSQL { NULLSQL };
 	Sql(_NULLSQL) { cn = NULL; }
 
@@ -136,6 +144,7 @@ public:
 	const SqlColumnInfo& GetColumnInfo(int i) const    { return cn->info[i]; }
 	Vector<Value> GetRow() const;
 	operator Vector<Value>() const                     { return GetRow(); }
+	void   Get(Fields fields);
 
 	void        SetFetchRows(int nrows)                { cn->fetchrows = nrows; }
 	void        SetLongSize(int lsz)                   { cn->longsize = lsz; }
@@ -183,10 +192,11 @@ public:
 		CONNECTION_BROKEN,
 	};
 
-	void   SetError(String error, String stmt, int code = 0, ERRORCLASS clss = ERROR_UNSPECIFIED);
+	void   SetError(String error, String stmt, int code = 0, const char *scode = NULL, ERRORCLASS clss = ERROR_UNSPECIFIED);
 	String GetLastError() const;
 	String GetErrorStatement() const;
 	int    GetErrorCode() const;
+	String GetErrorCodeString() const;
 	ERRORCLASS GetErrorClass() const;
 	void   ClearError();
 
@@ -216,6 +226,7 @@ public:
 #ifndef NOAPPSQL
 struct AppSql : Sql {
 	void   operator=(SqlSource& s) { Assign(s); }
+	void   Detach()                { Sql::Detach(); }
 	AppSql() : Sql(NULLSQL) {}
 };
 AppSql& AppCursor();
@@ -246,7 +257,8 @@ protected:
 
 	String                        lasterror;
 	String                        errorstatement;
-	int                           errorcode;
+	int                           errorcode_number;
+	String                        errorcode_string;
 	Sql::ERRORCLASS               errorclass;
 
 public:
@@ -287,10 +299,11 @@ public:
 
 	bool                          WasError() const                        { return !GetLastError().IsEmpty(); }
 
-	void                          SetError(String error, String stmt, int code = 0, Sql::ERRORCLASS clss = Sql::ERROR_UNSPECIFIED);
+	void                          SetError(String error, String stmt, int code = 0, const char * scode = NULL, Sql::ERRORCLASS clss = Sql::ERROR_UNSPECIFIED);
 	String                        GetLastError() const                    { return lasterror; }
 	String                        GetErrorStatement() const               { return errorstatement; }
-	int                           GetErrorCode() const                    { return errorcode; }
+	int                           GetErrorCode() const                    { return errorcode_number; }
+	String                        GetErrorCodeString() const              { return errorcode_string; }
 	Sql::ERRORCLASS               GetErrorClass() const                   { return errorclass; }
 	void                          ClearError();
 
@@ -300,6 +313,8 @@ public:
 
 	SqlSession();
 	virtual ~SqlSession();
+
+	Callback1<ActivityStatus>     WhenDatabaseActivity;
 };
 
 class OciConnection;

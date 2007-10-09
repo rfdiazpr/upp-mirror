@@ -136,6 +136,7 @@ void TabCtrl::Layout()
 	    .HSizePos(style->edge.left, style->edge.right);
 	left.LeftPos(0, 16).TopPos(th - 16, 16);
 	right.RightPos(0, 16).TopPos(th - 16, 16);
+	Refresh();
 }
 
 Size TabCtrl::ComputeSize(Size pane)
@@ -312,10 +313,12 @@ Value TabCtrl::GetData() const
 
 TabCtrl::Item& TabCtrl::Add()
 {
+	CancelMode();
 	Item& t = tab.Add();
 	t.owner = this;
 	if(sel < 0)
 		Set(0);
+	Layout();
 	return t;
 }
 
@@ -337,6 +340,60 @@ TabCtrl::Item& TabCtrl::Add(Ctrl& slave, const char *text)
 TabCtrl::Item& TabCtrl::Add(Ctrl& slave, const Image& m, const char *text)
 {
 	return Add(slave, text).SetImage(m);
+}
+
+TabCtrl::Item& TabCtrl::Insert(int i)
+{
+	CancelMode();
+	int c = i < sel ? sel + 1 : sel;
+	TabCtrl::Item& m = tab.Insert(i);
+	m.owner = this;
+	Layout();
+	sel = -1;
+	Set(c);
+	return m;
+}
+
+TabCtrl::Item& TabCtrl::Insert(int i, const char *text)
+{
+	return Insert(i).Text(text);
+}
+
+TabCtrl::Item& TabCtrl::Insert(int i, const Image& m, const char *text)
+{
+	return Insert(i).Text(text).SetImage(m);
+}
+
+TabCtrl::Item& TabCtrl::Insert(int i, Ctrl& slave, const char *text)
+{
+	return Insert(i, text).Slave(&slave);
+}
+
+TabCtrl::Item& TabCtrl::Insert(int i, Ctrl& slave, const Image& m, const char *text)
+{
+	return Insert(i, slave, text).SetImage(m);
+}
+
+
+void TabCtrl::Remove(int i)
+{
+	CancelMode();
+	if(tab[i].ctrl)
+		tab[i].ctrl->Remove();
+	if(tab[i].slave)
+		tab[i].slave->Remove();
+	int c = i < sel ? sel - 1 : sel;
+	tab.Remove(i);
+	Layout();
+	sel = -1;
+	if(tab.GetCount())
+		Set(minmax(c, 0, tab.GetCount() - 1));
+	else {
+		x0 = 0;
+		sel = -1;
+		accept_current = false;
+		WhenSet();
+	}
 }
 
 void TabCtrl::Go(int d)
@@ -418,6 +475,7 @@ void TabCtrl::Reset()
 	sel = -1;
 	Refresh();
 	accept_current = false;
+	WhenSet();
 }
 
 TabCtrl::TabCtrl()

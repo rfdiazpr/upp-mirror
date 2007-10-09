@@ -362,6 +362,13 @@ void TopicCtrl::Search()
 	SetBar();
 }
 
+void TopicCtrl::SearchWord(const String& s)
+{
+	issearch = false;
+	search <<= s;
+	Search();
+}
+
 void TopicCtrl::ShowWords()
 {
 	showwords = !showwords;
@@ -478,10 +485,29 @@ TopicCtrl::TopicCtrl()
 
 void Ide::ShowTopics()
 {
+	if(designer && designer->GetFileName() == HELPNAME) {
+		CycleFiles();
+		tabi = 0;
+		return;
+	}
+	if(doc_serial != TopicEditor::GetSerial()) {
+		GetRefLinks("");
+		doc.SyncDocTree();
+		doc.GoTo("\3topic://ide/app/index$en-us");
+		doc_serial = TopicEditor::GetSerial();
+	}
+	EditFile(HELPNAME);
+}
+
+void Ide::SearchTopics()
+{
+	String s = editor.GetWord();
 	GetRefLinks("");
 	doc.SyncDocTree();
 	doc.GoTo("\3topic://ide/app/index$en-us");
 	EditFile(HELPNAME);
+	if(s.GetLength())
+		doc.SearchWord(s);
 }
 
 void Ide::RefreshBrowser()

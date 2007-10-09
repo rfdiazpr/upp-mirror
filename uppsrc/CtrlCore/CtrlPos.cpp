@@ -2,7 +2,8 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x)  // LOG(x)
+#define LLOG(x)    // LOG(x)
+#define LTIMING(x) // RTIMING(x)
 
 bool Ctrl::Logc::IsEmpty() const {
 	return GetAlign() == SIZE ? GetB() <= GetA() : GetB() <= 0;
@@ -98,7 +99,7 @@ Rect  Ctrl::GetVisibleScreenRect() const
 	else if(activex)
 		r = GetWndScreenRect();
 #endif
-	return r & GetScreenArea();
+	return r & GetVirtualScreenArea();
 }
 
 Rect  Ctrl::GetVisibleScreenView() const
@@ -186,6 +187,7 @@ void Ctrl::SetPos0(LogPos p, bool _inframe)
 		Rect from = GetRect().Size();
 		Top *top = GetTopRect(from, true)->top;
 		if(top) {
+			LTIMING("SetPos0 MoveCtrl");
 			pos = p;
 			inframe = _inframe;
 			Rect to = GetRect().Size();
@@ -214,12 +216,14 @@ void Ctrl::SetPos0(LogPos p, bool _inframe)
 
 void Ctrl::UpdateRect0()
 {
+	LTIMING("UpdateRect0");
 	if(parent)
 		rect = CalcRect(parent->GetRect(), parent->GetView());
 	else {
 		Rect r = GetWorkArea();
 		rect = CalcRect(r, r);
 	}
+	LTIMING("UpdateRect0 SyncLayout");
 	SyncLayout();
 }
 
@@ -275,6 +279,7 @@ Ctrl& Ctrl::SetFramePosY(Logc y) {
 void  Ctrl::SetRect(int x, int y, int cx, int cy)
 {
 	LLOG("SetRect " << Name() << " rect: " << RectC(x, y, cx, cy));
+	LTIMING("SetRect");
 	SetPos(PosLeft(x, cx), PosTop(y, cy));
 }
 

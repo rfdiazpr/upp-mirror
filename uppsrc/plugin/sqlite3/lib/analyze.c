@@ -11,7 +11,7 @@
 *************************************************************************
 ** This file contains code associated with the ANALYZE command.
 **
-** @(#) $Id: analyze.c,v 1.16 2006/01/10 17:58:23 danielk1977 Exp $
+** @(#) $Id: analyze.c,v 1.19 2007/06/20 13:37:31 drh Exp $
 */
 #ifndef SQLITE_OMIT_ANALYZE
 #include "sqliteInt.h"
@@ -36,9 +36,10 @@ static void openStatTable(
   Table *pStat;
   Vdbe *v = sqlite3GetVdbe(pParse);
 
+  if( v==0 ) return;
   pDb = &db->aDb[iDb];
   if( (pStat = sqlite3FindTable(db, "sqlite_stat1", pDb->zName))==0 ){
-    /* The sqlite_stat1 tables does not exist.  Create it.
+    /* The sqlite_stat1 tables does not exist.  Create it.  
     ** Note that a side-effect of the CREATE TABLE statement is to leave
     ** the rootpage of the new table on the top of the stack.  This is
     ** important because the OpenWrite opcode below will be needing it. */
@@ -62,8 +63,8 @@ static void openStatTable(
   }
 
   /* Open the sqlite_stat1 table for writing. Unless it was created
-  ** by this vdbe program, lock it for writing at the shared-cache level.
-  ** If this vdbe did create the sqlite_stat1 table, then it must have
+  ** by this vdbe program, lock it for writing at the shared-cache level. 
+  ** If this vdbe did create the sqlite_stat1 table, then it must have 
   ** already obtained a schema-lock, making the write-lock redundant.
   */
   if( iRootPage>0 ){
@@ -95,7 +96,7 @@ static void analyzeOneTable(
   int iDb;         /* Index of database containing pTab */
 
   v = sqlite3GetVdbe(pParse);
-  if( pTab==0 || pTab->pIndex==0 ){
+  if( v==0 || pTab==0 || pTab->pIndex==0 ){
     /* Do no analysis for tables that have no indices */
     return;
   }
@@ -171,9 +172,9 @@ static void analyzeOneTable(
     sqlite3VdbeAddOp(v, OP_Next, iIdxCur, topOfLoop);
     sqlite3VdbeAddOp(v, OP_Close, iIdxCur, 0);
 
-    /* Store the results.
+    /* Store the results.  
     **
-    ** The result is a single row of the sqlite_stmt1 table.  The first
+    ** The result is a single row of the sqlite_stat1 table.  The first
     ** two columns are the names of the table and index.  The third column
     ** is a string composed of a list of integer statistics about the
     ** index.  The first integer in the list is the total number of entires
@@ -185,7 +186,7 @@ static void analyzeOneTable(
     **
     **        I = (K+D-1)/D
     **
-    ** If K==0 then no entry is made into the sqlite_stat1 table.
+    ** If K==0 then no entry is made into the sqlite_stat1 table.  
     ** If K>0 then it is always the case the D>0 so division by zero
     ** is never possible.
     */
@@ -211,7 +212,7 @@ static void analyzeOneTable(
       }
     }
     sqlite3VdbeOp3(v, OP_MakeRecord, 3, 0, "aaa", 0);
-    sqlite3VdbeAddOp(v, OP_Insert, iStatCur, 0);
+    sqlite3VdbeAddOp(v, OP_Insert, iStatCur, OPFLAG_APPEND);
     sqlite3VdbeJumpHere(v, addr);
   }
 }
@@ -222,7 +223,9 @@ static void analyzeOneTable(
 */
 static void loadAnalysis(Parse *pParse, int iDb){
   Vdbe *v = sqlite3GetVdbe(pParse);
-  sqlite3VdbeAddOp(v, OP_LoadAnalysis, iDb, 0);
+  if( v ){
+    sqlite3VdbeAddOp(v, OP_LoadAnalysis, iDb, 0);
+  }
 }
 
 /*
@@ -314,12 +317,14 @@ void sqlite3Analyze(Parse *pParse, Token *pName1, Token *pName2){
     if( iDb>=0 ){
       zDb = db->aDb[iDb].zName;
       z = sqlite3NameFromToken(pTableName);
-      pTab = sqlite3LocateTable(pParse, z, zDb);
-      sqliteFree(z);
-      if( pTab ){
-        analyzeTable(pParse, pTab);
+      if( z ){
+        pTab = sqlite3LocateTable(pParse, z, zDb);
+        sqliteFree(z);
+        if( pTab ){
+          analyzeTable(pParse, pTab);
+        }
       }
-    }
+    }   
   }
 }
 
@@ -335,7 +340,7 @@ struct analysisInfo {
 
 /*
 ** This callback is invoked once for each index when reading the
-** sqlite_stat1 table.
+** sqlite_stat1 table.  
 **
 **     argv[0] = name of the index
 **     argv[1] = results of analysis - on integer for each column
@@ -371,10 +376,11 @@ static int analysisLoader(void *pData, int argc, char **argv, char **azNotUsed){
 /*
 ** Load the content of the sqlite_stat1 table into the index hash tables.
 */
-void sqlite3AnalysisLoad(sqlite3 *db, int iDb){
+int sqlite3AnalysisLoad(sqlite3 *db, int iDb){
   analysisInfo sInfo;
   HashElem *i;
   char *zSql;
+  int rc;
 
   /* Clear any prior statistics */
   for(i=sqliteHashFirst(&db->aDb[iDb].pSchema->idxHash);i;i=sqliteHashNext(i)){
@@ -386,7 +392,7 @@ void sqlite3AnalysisLoad(sqlite3 *db, int iDb){
   sInfo.db = db;
   sInfo.zDatabase = db->aDb[iDb].zName;
   if( sqlite3FindTable(db, "sqlite_stat1", sInfo.zDatabase)==0 ){
-     return;
+     return SQLITE_ERROR;
   }
 
 
@@ -394,9 +400,10 @@ void sqlite3AnalysisLoad(sqlite3 *db, int iDb){
   zSql = sqlite3MPrintf("SELECT idx, stat FROM %Q.sqlite_stat1",
                         sInfo.zDatabase);
   sqlite3SafetyOff(db);
-  sqlite3_exec(db, zSql, analysisLoader, &sInfo, 0);
+  rc = sqlite3_exec(db, zSql, analysisLoader, &sInfo, 0);
   sqlite3SafetyOn(db);
   sqliteFree(zSql);
+  return rc;
 }
 
 

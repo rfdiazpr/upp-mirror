@@ -40,7 +40,7 @@ inline int32 Round(double a)
 }
 
 #ifdef flagDEBUG
-#define LG //Log
+#define LG Log
 #else
 #define LG
 #endif

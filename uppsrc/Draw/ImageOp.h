@@ -80,6 +80,8 @@ Image Sharpen(const Image& img, int amount = 100);
 Image RotateClockwise(const Image& img);
 Image RotateAntiClockwise(const Image& img);
 
+Image Rotate(const Image& m, int angle);
+
 // Experimental {
 Image Colorize(const Image& img, Color color, int alpha = 100);
 Image Equalight(const Image& img, int thold = 10);
@@ -98,7 +100,7 @@ enum {
 	IMAGECONTENT_HORZDUP = 2,
 };
 
-int   ClassifyContent(const Image& m, const Rect& rect);
+int    ClassifyContent(const Image& m, const Rect& rect);
 
 Image  RecreateAlpha(const Image& overwhite, const Image& overblack);
 int    ImageMargin(const Image& m, int p, int dist);

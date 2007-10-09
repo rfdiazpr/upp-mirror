@@ -67,12 +67,14 @@ void  SetWinceMouse(HWND hwnd, LPARAM lparam)
 void  SetWinceMouse(HWND hwnd, LPARAM lparam) {}
 #endif
 
-static bool sPainting;
+#ifdef _DEBUG
+static String sPainting;
+#endif
 
 bool PassWindowsKey(int wParam);
 
 LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
-	ASSERT(!sPainting); // WindowProc invoked while in Paint routine
+	ASSERT(IsNull(sPainting)); // WindowProc invoked while in Paint routine
 //	LLOG("Ctrl::WindowProc(" << message << ") in " << ::Name(this) << ", focus " << (void *)::GetFocus());
 	Ptr<Ctrl> _this = this;
 	HWND hwnd = GetHWND();
@@ -111,9 +113,13 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 				LLOG("In paint realized " << n << " colors");
 			}
 #endif
-			sPainting = true;
+#ifdef _DEBUG
+			sPainting = Name();
+#endif
 			UpdateArea(draw, Rect(ps.rcPaint));
-			sPainting = false;
+#ifdef _DEBUG
+			sPainting = Null;
+#endif
 #ifndef PLATFORM_WINCE
 			if(draw.PaletteMode() && Draw::AutoPalette())
 				SelectPalette(dc, hOldPal, TRUE);

@@ -326,9 +326,9 @@ String GetKeyDesc(int key)
 	if(key == 0)
 		return desc;
 
-	if(key & K_CTRL)  desc << t_("Ctrl+");
-	if(key & K_ALT)   desc << t_("Alt+");
-	if(key & K_SHIFT) desc << t_("Shift+");
+	if(key & K_CTRL)  desc << t_("key\vCtrl+");
+	if(key & K_ALT)   desc << t_("key\vAlt+");
+	if(key & K_SHIFT) desc << t_("key\vShift+");
 
 
 	key &= ~(K_CTRL | K_ALT | K_SHIFT);
@@ -347,14 +347,14 @@ String GetKeyDesc(int key)
 			int key;
 			const char *name;
 		} nkey[] = {
-			K_TAB, tt_("Tab"), K_SPACE, tt_("Space"), K_RETURN, tt_("Enter"), K_BACKSPACE, tt_("Backspace"),
-			K_CAPSLOCK, tt_("Caps Lock"), K_ESCAPE, tt_("Esc"),
-			K_PAGEUP, tt_("Page Up"), K_PAGEDOWN, tt_("Page Down"),
-			K_END, tt_("End"), K_HOME, tt_("Home"),
-			K_LEFT, tt_("Left"), K_UP, tt_("Up"), K_RIGHT, tt_("Right"), K_DOWN, tt_("Down"),
-			K_INSERT, tt_("Insert"), K_DELETE, tt_("Delete"), K_BREAK, tt_("Break"),
-			K_MULTIPLY, tt_("Num[*]"), K_ADD, tt_("Num[+]"), K_SUBTRACT, tt_("Num[-]"), K_DIVIDE, tt_("Num[/]"),
-			K_ALT_KEY, tt_("Alt"), K_SHIFT_KEY, tt_("Shift"), K_CTRL_KEY, tt_("Ctrl"),
+			K_TAB, tt_("key\vTab"), K_SPACE, tt_("key\vSpace"), K_RETURN, tt_("key\vEnter"), K_BACKSPACE, tt_("key\vBackspace"),
+			K_CAPSLOCK, tt_("key\vCaps Lock"), K_ESCAPE, tt_("key\vEsc"),
+			K_PAGEUP, tt_("key\vPage Up"), K_PAGEDOWN, tt_("key\vPage Down"),
+			K_END, tt_("key\vEnd"), K_HOME, tt_("key\vHome"),
+			K_LEFT, tt_("key\vLeft"), K_UP, tt_("key\vUp"), K_RIGHT, tt_("key\vRight"), K_DOWN, tt_("key\vDown"),
+			K_INSERT, tt_("key\vInsert"), K_DELETE, tt_("key\vDelete"), K_BREAK, tt_("key\vBreak"),
+			K_MULTIPLY, tt_("key\vNum[*]"), K_ADD, tt_("key\vNum[+]"), K_SUBTRACT, tt_("key\vNum[-]"), K_DIVIDE, tt_("key\vNum[/]"),
+			K_ALT_KEY, tt_("key\vAlt"), K_SHIFT_KEY, tt_("key\vShift"), K_CTRL_KEY, tt_("key\vCtrl"),
 		#ifdef PLATFORM_X11
 			0x10060, "[`]", 0x1002d, "[-]", 0x1003d, "[=]", 0x1005c, "[\\]",
 			0x1005b, "[[]", 0x1005d, "[]]",

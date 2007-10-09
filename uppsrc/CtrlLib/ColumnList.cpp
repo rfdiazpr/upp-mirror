@@ -565,6 +565,7 @@ void ColumnList::Sort(const ValueOrder& order)
 	KillCursor();
 	UPP::Sort(item, itemorder);
 	sb.Begin();
+	SyncInfo();
 }
 
 void ColumnList::Clear() {

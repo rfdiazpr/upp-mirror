@@ -67,7 +67,7 @@ void TabScrollBar::Paint(Draw &w)
 
 void TabScrollBar::Layout()
 {
-	UpdatePos();
+	UpdatePos(false);
 }
 
 void TabScrollBar::LeftDown(Point p, dword keyflags)
@@ -176,11 +176,13 @@ QuickTabs::QuickTabs()
 	crosses = true;
 	file_icons = false;
 	grouping = true;
-	isalt = false;
+	isctrl = false;
 	isdrag = false;
 	id = -1;
+	groups.SetTabs(tabs);
 	groups.WhenGrouping = THISBACK(Group);
 	groups.WhenCloseAll = THISBACK(CloseAll);
+	groups.WhenCloseGroup = THISBACK(Group);
 	groups.WhenCloseRest = Proxy(WhenCloseRest);
 	BackPaint();
 }
@@ -189,7 +191,11 @@ void QuickTabs::CloseAll()
 {
 	for(int i = tabs.GetCount() - 1; i >= 0; i--)
 		if(i != active)
-			Close(i);
+			tabs.Remove(i);
+
+	sc.SetTotal(tabs[0].cx);
+	groups.Make();
+	Repos();		
 	SetCursor(0);
 }
 
@@ -202,6 +208,11 @@ void QuickTabs::Group()
 {
 	Repos();
 	SetCursor(-1);
+}
+
+void QuickTabs::Menu(Bar& bar)
+{
+	bar.Add(tabs.GetCount() > 1, "Close", THISBACK1(Close, highlight));
 }
 
 bool Tab::HasMouse(Point &p)
@@ -225,7 +236,7 @@ bool Tab::HasMouseCross(Point &p)
 	       p.y > iy - icy && p.y < iy + icy;
 }
 
-GroupButton::GroupButton()
+GroupButton::GroupButton() : tabs(NULL)
 {
 	Group &g = groups.Add();
 	g.name = "All";
@@ -268,11 +279,16 @@ void GroupButton::MouseLeave()
 	Refresh();
 }
 
-void GroupButton::Make(const Vector<Tab> &tabs)
+void GroupButton::SetTabs(Vector<Tab> &t)
 {
-	groups[0].count = tabs.GetCount();
+	tabs = &t;
+}
+
+void GroupButton::Make()
+{
+	groups[0].count = tabs->GetCount();
 	groups[0].first = 0;
-	groups[0].last = tabs.GetCount() - 1;
+	groups[0].last = tabs->GetCount() - 1;
 
 	for(int i = 1; i < groups.GetCount(); i++)
 	{
@@ -281,12 +297,13 @@ void GroupButton::Make(const Vector<Tab> &tabs)
 		groups[i].last = 0;
 	}
 
-	for(int i = 0; i < tabs.GetCount(); i++)
+	for(int i = 0; i < tabs->GetCount(); i++)
 	{
-		String s = ParseGroup(tabs[i].group);
+		Tab &tab = (*tabs)[i];
+		String s = ParseGroup(tab.group);
 		if(IsNull(s))
 			continue;
-		int n = Find(tabs[i].group);
+		int n = Find(tab.group);
 		if(n < 0)
 		{
 			Group &g = groups.Add();
@@ -294,8 +311,8 @@ void GroupButton::Make(const Vector<Tab> &tabs)
 			g.first = 1000000;
 			g.last = 0;
 			g.name = s;
-			g.path = tabs[i].group;
-			g.active = tabs[i].id;
+			g.path = tab.group;
+			g.active = tab.id;
 			n = groups.GetCount() - 1;
 		}
 		else
@@ -335,14 +352,52 @@ void GroupButton::DoList(Bar &bar)
 			bar.Separator();
 	}
 	bar.Separator();
+	if(tabs->GetCount() > 1)
+	{
+		bar.Add("Close group", THISBACK(DoCloseGroupsList));
+		bar.Separator();
+	}
 	bar.Add("Close all tabs except current", WhenCloseAll);
 	bar.Add("Close non-project tabs", WhenCloseRest);
+}
+
+void GroupButton::DoCloseGroupsList(Bar &bar)
+{
+	int cnt = groups.GetCount();
+	for(int i = 1; i < cnt; i++)
+		bar.Add(groups[i].name, THISBACK1(DoCloseGroup, i));
 }
 
 void GroupButton::DoGrouping(int n)
 {
 	current = n;
 	WhenGrouping();
+}
+
+void GroupButton::DoCloseGroup(int n)
+{
+	int cnt = groups.GetCount();
+	if(cnt <= 0)
+		return;
+
+	if(cnt == n)
+		--current;
+		
+	String group = groups[n].path;
+	
+	for(int i = tabs->GetCount() - 1; i >= 0; i--)
+	{
+		String s = ParseGroup((*tabs)[i].group);
+		if(IsNull(s))
+			continue;
+		if(group == (*tabs)[i].group && tabs->GetCount() > 1)
+			tabs->Remove(i);
+	}
+	if(cnt > 1)
+		groups.Remove(n);
+	Make();
+	Group();
+	WhenCloseGroup();
 }
 
 void QuickTabs::Layout()
@@ -387,8 +442,8 @@ void QuickTabs::DrawTab(Draw &w, int i)
 
 	if(file_icons)
 	{
-		Image icon = IdeFileImage(t.name);
 		//Image icon = Img::ARH;
+		Image icon = IdeFileImage(t.name);
 		w.DrawImage(x + MARGIN, (sz.cy - icon.GetSize().cx) / 2, icon);
 	}
 
@@ -449,7 +504,7 @@ void QuickTabs::Add(const char *name, bool make_active)
 	t.name = name;
 	t.group = GetFileFolder(name);
 	t.id = GetNextId();
-	groups.Make(tabs);
+	groups.Make();
 	Repos();
 	SetCursor(tabs.GetCount() - 1);
 }
@@ -460,7 +515,7 @@ int QuickTabs::GetTotal()
 	return tabs[groups.GetLast()].Right() + groups.GetWidth();
 }
 
-void QuickTabs::Repos(bool update)
+void QuickTabs::Repos()
 {
 	if(!tabs.GetCount())
 		return;
@@ -486,8 +541,7 @@ void QuickTabs::Repos(bool update)
 		tabs[i].cx = GetWidth(i);
 		tabs[i].cy = GetHeight(i);
 	}
-	//if(update)
-		sc.SetTotal(GetTotal());
+	sc.SetTotal(GetTotal());
 }
 
 int QuickTabs::Find(int id)
@@ -555,7 +609,7 @@ void QuickTabs::LeftDown(Point p, dword keyflags)
 {
 	mouse = p;
 
-	if(keyflags & K_CTRL)
+	if(keyflags & K_SHIFT)
 	{
 		highlight = -1;
 		Refresh();
@@ -564,8 +618,8 @@ void QuickTabs::LeftDown(Point p, dword keyflags)
 		return;
 	}
 
-	isalt = keyflags & K_ALT;
-	if(isalt)
+	isctrl = keyflags & K_CTRL;
+	if(isctrl)
 		return;
 
 	if(cross != -1)
@@ -577,11 +631,23 @@ void QuickTabs::LeftDown(Point p, dword keyflags)
 void QuickTabs::LeftUp(Point p, dword keyflags)
 {
 	ReleaseCapture();
+	mouse.Clear();
+}
+
+void QuickTabs::RightDown(Point p, dword keyflags)
+{
+	MenuBar::Execute(THISBACK(Menu), GetMousePos());	
 }
 
 void QuickTabs::MiddleDown(Point p, dword keyflags)
 {
+	mouse = p;
 	Close(highlight);
+}
+
+void QuickTabs::MiddleUp(Point p, dword keyflags)
+{
+	mouse.Clear();
 }
 
 int QuickTabs::GetTargetTab(Point p)
@@ -685,14 +751,14 @@ void QuickTabs::FramePaint(Draw& w, const Rect& rr)
 void QuickTabs::DragAndDrop(Point p, PasteClip& d)
 {
 	int c = GetTargetTab(p);
-	int tab = isalt ? highlight : active;
-	bool sametab = c == tab || c == tab + 1;
+	int tab = isctrl ? highlight : active;
 
+	bool sametab = c == tab || c == tab + 1;
 	bool internal = AcceptInternal<QuickTabs>(d, "tabs");
 
-	if(d.IsAccepted())
+	if(!sametab && d.IsAccepted())
 	{
-		if(!sametab && internal)
+		if(internal)
 		{
 			int id = tabs[active].id;
 			Tab t = tabs[tab];
@@ -700,7 +766,7 @@ void QuickTabs::DragAndDrop(Point p, PasteClip& d)
 			tabs.Remove(tab + int(c < tab));
 			active = Find(id);
 			isdrag = false;
-			groups.Make(tabs);
+			groups.Make();
 			Repos();
 			return;
 		}
@@ -709,6 +775,11 @@ void QuickTabs::DragAndDrop(Point p, PasteClip& d)
 			CancelMode();
 			return;
 		}
+	}
+	else
+	{
+		//d.Reject();
+		//unfortunately after Reject DragLeave stops working until d is accepted
 	}
 
 	if(c != target)
@@ -725,10 +796,9 @@ void QuickTabs::CancelMode()
 	Refresh();
 }
 
-
 void QuickTabs::LeftDrag(Point p, dword keyflags)
 {
-	if(keyflags & K_CTRL)
+	if(keyflags & K_SHIFT)
 		return;
 	if(highlight < 0)
 		return;
@@ -767,7 +837,7 @@ void QuickTabs::SetCursor(int n)
 		n = max(0, Find(groups.GetActive()));
 		active = -1;
 	}
-
+	
 	bool is_all = groups.IsAll();
 	bool same_group = tabs[n].group == groups.GetName();
 	
@@ -793,7 +863,9 @@ void QuickTabs::SetCursor(int n)
 		if(cx > 0)
 			sc.AddPos(cx + 10);
 	}
-	MouseMove(mouse, 0);
+	if(HasMouse() && mouse.x > 0 && mouse.y > 0)
+		MouseMove(mouse, 0);
+	
 	UpdateActionRefresh();
 }
 
@@ -813,7 +885,7 @@ void QuickTabs::Close(int n)
 	}
 	sc.AddTotal(-tabs[n].cx);
 	tabs.Remove(n);
-	groups.Make(tabs);
+	groups.Make();
 	Repos();
 	SetCursor(-1);
 }
@@ -859,6 +931,7 @@ void QuickTabs::Set(const QuickTabs& t)
 	cross = -1;
 	highlight = -1;
 	target = -1;
+	mouse.Clear();
 
 	tabs.SetCount(t.GetCount());
 	for(int i = 0; i < t.GetCount(); i++)
@@ -866,7 +939,7 @@ void QuickTabs::Set(const QuickTabs& t)
 		tabs[i].name = t.tabs[i].name;
 		tabs[i].group = t.tabs[i].group;
 	}
-	groups.Make(tabs);
+	groups.Make();
 	groups.SetCurrent(t.groups.GetCurrent());
 	Repos();
 	sc.Set(t.sc);

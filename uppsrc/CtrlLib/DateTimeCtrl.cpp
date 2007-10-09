@@ -510,9 +510,7 @@ void Calendar::Paint(Draw &w)
 					sd = d > 0 ? -d : d;
 					Day(j, i) = sd;
 				}
-
-
-				if(sd == view.day)
+				if(sd == char(view.day))
 				{
 					if(sd < 0 && selall)
 					{
@@ -662,7 +660,6 @@ DateTimeCtrl::DateTimeCtrl()
 {
 	AddFrame(drop);
 	drop.SetMonoImage(CtrlsImg::DA());
-	//drop.NoWantFocus();
 	drop 				<<= THISBACK(OnDrop);
 	calendar 			<<= THISBACK(OnCalChoice);
 	calendar.WhenPopDown  = THISBACK(OnCalClose);
@@ -677,6 +674,7 @@ DateTimeCtrl& DateTimeCtrl::SetDate(int y, int m, int d)
 void DateTimeCtrl::OnCalChoice()
 {
 	SetData(~calendar);
+	WhenAction();
 }
 
 void DateTimeCtrl::OnCalClose()

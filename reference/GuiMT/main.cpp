@@ -28,20 +28,24 @@ struct DivisorsInfo {
 
 void WorkerThread(DivisorsInfo f)
 {
-	String r;
+	String r1, r2;
 	int divisors = 0;
 	uint64 max = (uint64)sqrt((double)f.number) + 1;
 	for(uint64 i = 1; i < max; i++) {
 		if(f.gui->terminated)
 			break;
 		if(f.number % i == 0) {
-			r << ' ' << i;
-			PostCallback(callback2(f.gui, &Divisors::ShowResult, f.line, "working..." + r));
+			r1 << ' ' << i;
 			divisors++;
+			uint64 j = f.number / i;
+			if (j != i) {
+				r2 = " " + AsString(j) + r2;
+				divisors++;
+			}
+			PostCallback(callback2(f.gui, &Divisors::ShowResult, f.line, "working..." + r1 + r2));
 		}
 	}
-	r << ' ' << f.number;
-	PostCallback(callback2(f.gui, &Divisors::ShowResult, f.line, AsString(divisors + 1) + ": " + r));
+	PostCallback(callback2(f.gui, &Divisors::ShowResult, f.line, AsString(divisors) + ": " + r1 + r2));
 	AtomicDec(f.gui->threads);
 }
 

@@ -319,6 +319,7 @@
 		#define byte win32_byte_ // RpcNdr defines byte -> class with Upp::byte
 		#define CY win32_CY_
 			#include <objidl.h>
+			#include <winnetwk.h>
 		#undef byte
 		#undef CY
 			typedef DWORD LCTYPE;
@@ -327,6 +328,7 @@
 			#include <windows.h>
 			#include <stdint.h>
 		#endif
+		#include <process.h>
 	#endif
 
 	#ifdef RGBA
@@ -497,6 +499,18 @@ void      FreeDll__(DLLHANDLE dllhandle);
 
 #ifndef flagNONAMESPACE
 using Upp::byte; // Dirty solution to Windows.h typedef byte...
+#endif
+
+#ifdef PLATFORM_WIN32
+#define DLLFILENAME "Kernel32.dll"
+#define DLIMODULE   UnicodeWin32
+#define DLIHEADER   <Core/Kernel32W.dli>
+#include <Core/dli_header.h>
+
+#define DLLFILENAME "Mpr.dll"
+#define DLIMODULE   UnicodeWin32Net
+#define DLIHEADER   <Core/Mpr32W.dli>
+#include <Core/dli_header.h>
 #endif
 
 #endif //CORE_H

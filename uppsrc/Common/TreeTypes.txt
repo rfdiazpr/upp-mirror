@@ -1,40 +1,16 @@
-Upp::Image
+PosRooms
 0 0 -1
-Upp::Image::Data
+S_DISCOUNT
 0 0 -1
-Upp::ImageBuffer
+S_DISCOUNT_
 0 0 -1
-Upp::Point_<int>
+Upp::Time
 0 0 -1
-Upp::One<Upp::PNGRaster::Data>
+ProductPriceInfo
 0 0 -1
-Upp::PNGRaster::Data
+Upp::PostgreSQLSession
 0 0 -1
-Upp::Raster::Info
+PosArrayCtrl
 0 0 -1
-Zaci
-0 0 -1
-Upp::Array<RoomObject>
-0 0 -1
-PosRoomDes
-0 0 -1
-PosFontFace
-0 0 -1
-PosValue
-0 0 -1
-Upp::RGBA
-0 0 -1
-ShapeInfo
-0 0 -1
-PosRoom
-0 0 -1
-RoomObject
-0 0 -1
-Upp::Buffer<Upp::RGBA>
-0 0 -1
-Upp::ImageEncoder
-0 0 -1
-Upp::RasterFormat
-0 0 -1
-Upp::Vector<int>
+Creature
 0 0 -1

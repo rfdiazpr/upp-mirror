@@ -16,6 +16,7 @@ class LogStream : public Stream {
 
 	int   sizelimit;
 	int   part;
+	dword options;
 
 	void  Flush();
 	void  Put0(int w);
@@ -29,6 +30,8 @@ public:
 	virtual   bool  IsOpen() const;
 	void            Create(const char *path, bool append);
 	void            SetLimit(int maxsize)                    { sizelimit = maxsize; }
+
+	void            SetOptions(dword _options)               { options = _options; }
 
 	bool            Delete();
 	void            Close();
@@ -49,6 +52,10 @@ void     DeleteUsrLog();
 Stream&  BugLog();
 
 Stream&  StdLog();
+enum LogOptions {
+	LOG_FILE = 1, LOG_COUT = 2, LOG_CERR = 4, LOG_DBG = 8
+};
+void     StdLogSetup(dword options);
 
 Stream&  VppLog();
 void     SetVppLog(Stream& log);
@@ -162,6 +169,7 @@ struct DebugLogBlock
 // Crash support
 
 void InstallCrashDump(const char *app_info = NULL);
+void SetCrashFileName(const char *cfile);
 
 // Dumping templates
 

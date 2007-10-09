@@ -194,10 +194,13 @@ int Stream::GetUtf8()
 		LoadError();
 		return -1;
 	}
-	if(code <= 0x7F)
+	if(code < 0x80)
 		return code;
 	else
-	if(code <= 0xDF) {
+	if(code < 0xC2)
+		return -1;
+	else
+	if(code < 0xE0) {
 		if(IsEof()) {
 			LoadError();
 			return -1;
@@ -205,7 +208,7 @@ int Stream::GetUtf8()
 		return ((code - 0xC0) << 6) + Get() - 0x80;
 	}
 	else
-	if(code <= 0xEF) {
+	if(code < 0xF0) {
 		int c0 = Get();
 		int c1 = Get();
 		if(c1 < 0) {
@@ -214,19 +217,48 @@ int Stream::GetUtf8()
 		}
 		return ((code - 0xE0) << 12) + ((c0 - 0x80) << 6) + c1 - 0x80;
 	}
-	else //!!!!! add complete Utf here !!!!
-	if(code <= 0xF7) {
-		Get(); Get(); Get();
-		return 32;
+	else
+	if(code < 0xF8) {
+		int c0 = Get();
+		int c1 = Get();
+		int c2 = Get();
+		if(c2 < 0) {
+			LoadError();
+			return -1;
+		}
+		return ((code - 0xf0) << 18) + ((c0 - 0x80) << 12) + ((c1 - 0x80) << 6) + c2 - 0x80;
 	}
 	else
-	if(code <= 0xFB) {
-		Get(); Get(); Get(); Get();
-		return 32;
+	if(code < 0xFC) {
+		int c0 = Get();
+		int c1 = Get();
+		int c2 = Get();
+		int c3 = Get();
+		if(c3 < 0) {
+			LoadError();
+			return -1;
+		}
+		return ((code - 0xF8) << 24) + ((c0 - 0x80) << 18) + ((c1 - 0x80) << 12) +
+		       ((c2 - 0x80) << 6) + c3 - 0x80;
+	}
+	else
+	if(code < 0xFE) {
+		int c0 = Get();
+		int c1 = Get();
+		int c2 = Get();
+		int c3 = Get();
+		int c4 = Get();
+		if(c4 < 0) {
+			LoadError();
+			return -1;
+		}
+		return ((code - 0xFC) << 30) + ((c0 - 0x80) << 24) + ((c1 - 0x80) << 18) +
+		       ((c2 - 0x80) << 12) + ((c3 - 0x80) << 6) + c4 - 0x80;
+
 	}
 	else {
-		Get(); Get(); Get(); Get(); Get();
-		return 32;
+		LoadError();
+		return -1;
 	}
 }
 
@@ -1171,6 +1203,26 @@ Stream& Cout()
 {
 	return Single<CoutStream>();
 }
+
+class CerrStream : public Stream {
+	virtual void    _Put(int w) {
+	#ifdef PLATFORM_WIN32
+		static HANDLE h = GetStdHandle(STD_ERROR_HANDLE);
+		char s[1];
+		s[0] = w;
+		dword dummy;
+		WriteFile(h, s, 1, &dummy, NULL);
+	#else
+		putc(w, stderr);
+	#endif
+	}
+	virtual   bool  IsOpen() const { return true; }
+};
+
+Stream& Cerr()
+{
+	return Single<CerrStream>();
+}
 #endif
 
 static int sMappingGranularity_()
@@ -1188,7 +1240,7 @@ static int sMappingGranularity_()
 	return mg;
 }
 
-FileMapping::FileMapping(const char *file_, bool delete_share_, int64 mapoffset_, dword maplen_)
+FileMapping::FileMapping(const char *file_, bool delete_share_)
 {
 #ifdef PLATFORM_WIN32
 	hfile = INVALID_HANDLE_VALUE;
@@ -1204,18 +1256,23 @@ FileMapping::FileMapping(const char *file_, bool delete_share_, int64 mapoffset_
 	filesize = -1;
 	write = false;
 	if(file_)
-		Open(file_, delete_share_, mapoffset_, maplen_);
+		Open(file_, delete_share_);
 
 }
 
-bool FileMapping::Open(const char *file, bool delete_share, int64 mapoffset, dword maplen)
+bool FileMapping::Open(const char *file, bool delete_share)
 {
 	Close();
 	write = false;
 #ifdef PLATFORM_WIN32
-	hfile = CreateFile(ToSystemCharset(file), GENERIC_READ,
-		FILE_SHARE_READ | FILE_SHARE_WRITE | (delete_share && IsWinNT() ? FILE_SHARE_DELETE : 0),
-		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	if(IsWinNT())
+		hfile = UnicodeWin32().CreateFileW(ToSystemCharsetW(file), GENERIC_READ,
+			FILE_SHARE_READ | FILE_SHARE_WRITE | (delete_share && IsWinNT() ? FILE_SHARE_DELETE : 0),
+			NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	else
+		hfile = CreateFile(ToSystemCharset(file), GENERIC_READ,
+			FILE_SHARE_READ | FILE_SHARE_WRITE | (delete_share && IsWinNT() ? FILE_SHARE_DELETE : 0),
+			NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 	if(hfile == INVALID_HANDLE_VALUE)
 		return false;
 	filesize = ::GetFileSize(hfile, NULL);
@@ -1235,21 +1292,22 @@ bool FileMapping::Open(const char *file, bool delete_share, int64 mapoffset, dwo
 	}
 	filesize = hfstat.st_size;
 #endif
-	if(!Map(mapoffset, maplen)) {
-		Close();
-		return false;
-	}
 	return true;
 }
 
-bool FileMapping::Create(const char *file, int64 filesize_, bool delete_share, int64 mapoffset, dword maplen)
+bool FileMapping::Create(const char *file, int64 filesize_, bool delete_share)
 {
 	Close();
 	write = true;
 #ifdef PLATFORM_WIN32
-	hfile = CreateFile(ToSystemCharset(file), GENERIC_READ | GENERIC_WRITE,
-		FILE_SHARE_READ | FILE_SHARE_WRITE | (delete_share ? FILE_SHARE_DELETE : 0),
-		NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+	if(IsWinNT())
+		hfile = UnicodeWin32().CreateFileW(ToSystemCharsetW(file), GENERIC_READ | GENERIC_WRITE,
+			FILE_SHARE_READ | FILE_SHARE_WRITE | (delete_share ? FILE_SHARE_DELETE : 0),
+			NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+	else
+		hfile = CreateFile(ToSystemCharset(file), GENERIC_READ | GENERIC_WRITE,
+			FILE_SHARE_READ | FILE_SHARE_WRITE | (delete_share ? FILE_SHARE_DELETE : 0),
+			NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
 	if(hfile == INVALID_HANDLE_VALUE)
 		return false;
 	hmap = CreateFileMapping(hfile, NULL, PAGE_READWRITE, 0, 0, NULL);
@@ -1264,10 +1322,6 @@ bool FileMapping::Create(const char *file, int64 filesize_, bool delete_share, i
 		return false;
 #endif
 	filesize = filesize_;
-	if(!Map(mapoffset, maplen)) {
-		Close();
-		return false;
-	}
 	return true;
 }
 
@@ -1323,7 +1377,7 @@ bool FileMapping::Unmap()
 	return ok;
 }
 
-bool FileMapping::Expand(int64 new_filesize, int64 mapoffset, dword maplen)
+bool FileMapping::Expand(int64 new_filesize)
 {
 	ASSERT(IsOpen());
 	if(new_filesize > filesize) {
@@ -1344,7 +1398,7 @@ bool FileMapping::Expand(int64 new_filesize, int64 mapoffset, dword maplen)
 #endif
 		filesize = new_filesize;
 	}
-	return Map(mapoffset, maplen);
+	return true;
 }
 
 bool FileMapping::Close()

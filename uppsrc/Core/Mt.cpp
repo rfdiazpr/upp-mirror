@@ -49,7 +49,7 @@ static Atomic sThreadCount;
 #if defined(PLATFORM_WIN32) || defined(PLATFORM_POSIX)
 static
 #ifdef PLATFORM_WIN32
-dword __stdcall
+uintptr_t __stdcall
 #else
 void *
 #endif
@@ -81,8 +81,8 @@ bool Thread::Run(Callback _cb)
 	Detach();
 	Callback *cb = new Callback(_cb);
 #ifdef PLATFORM_WIN32
-	dword thread_id;
-	handle = CreateThread(0, 0, sThreadRoutine, cb, 0, &thread_id);
+	unsigned thread_id;
+	handle = (HANDLE)_beginthreadex(0, 0, sThreadRoutine, cb, 0, &thread_id);
 #endif
 #ifdef PLATFORM_POSIX
 	if(pthread_create(&handle, 0, sThreadRoutine, cb))
@@ -189,36 +189,36 @@ void Thread::Sleep(int msec)
 
 static bool sSSE2 = CPU_SSE2();
 
-void ReadMemoryBarrier() 
+void ReadMemoryBarrier()
 {
-	if(sSSE2) 
-	#ifdef COMPILER_MSC 
-		#ifdef CPU_AMD64 
-			_mm_lfence(); 
-		#else 
-			__asm lfence;  
-		#endif 
-	#else 
-		__asm__("lfence"); 
-	#endif 
-	else { 
-		static Atomic x; 
+	if(sSSE2)
+	#ifdef COMPILER_MSC
+		#ifdef CPU_AMD64
+			_mm_lfence();
+		#else
+			__asm lfence;
+		#endif
+	#else
+		__asm__("lfence");
+	#endif
+	else {
+		static Atomic x;
 		AtomicInc(x);
 	}
-} 
- 
+}
+
 void WriteMemoryBarrier() {
 	if(sSSE2)
-	#ifdef COMPILER_MSC  
-		#ifdef CPU_AMD64 
-			_mm_sfence(); 
-  		#else 
-			__asm sfence; 
-		#endif 
- 	#else 
-		__asm__("sfence"); 
-	#endif 
-} 
+	#ifdef COMPILER_MSC
+		#ifdef CPU_AMD64
+			_mm_sfence();
+  		#else
+			__asm sfence;
+		#endif
+ 	#else
+		__asm__("sfence");
+	#endif
+}
 
 #endif
 

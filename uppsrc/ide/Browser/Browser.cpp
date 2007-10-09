@@ -135,7 +135,9 @@ int ItemCompare(const Value& v1, const Value& v2)
 	int bk = b.kind >= FUNCTION && b.kind <= CLASSFUNCTIONTEMPLATE ? FUNCTION : b.kind;
 	if(ak != bk)
 	return ak - bk;*/
-	int q = a.fn.Compare(b.fn);
+	int q = a.inherited - b.inherited;
+	if(q) return q;
+	q = a.fn.Compare(b.fn);
 	return q ? q : a.line - b.line;
 }
 
@@ -203,7 +205,7 @@ void Browser::LoadNest(const String& nest, ArrayMap<String, CppItemInfo>& item, 
 	if(show_inherited) {
 		Vector<String> b = Split(base, ';');
 		for(int i = 0; i < b.GetCount(); i++)
-			LoadNest(b[i], item, inherited + 1);
+			LoadNest(b[i], item, ++inherited);
 	}
 }
 

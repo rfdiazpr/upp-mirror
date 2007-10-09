@@ -270,6 +270,7 @@ SelectPackageDlg::SelectPackageDlg(const char *title, bool selectvars_, bool mai
 	all = !main;
 	progress.Hide();
 	brief <<= THISBACK(SyncBrief);
+	search.NullText("Search", StdFont().Italic(), SColorDisabled());
 	search <<= THISBACK(SyncList);
 	search.SetFilter(CharFilterDefaultToUpperAscii);
 	SyncBrief();
@@ -400,7 +401,6 @@ void SelectPackageDlg::Load()
 	Vector<String> upp = GetUppDirs();
 	packages.Clear();
 	all.Hide();
-	search_txt.Hide();
 	search.Hide();
 	brief.Hide();
 	progress.Show();
@@ -419,7 +419,6 @@ void SelectPackageDlg::Load()
 	if(!IsOpen())
 		Open();
 	all.Show();
-	search_txt.Show();
 	search.Show();
 	brief.Show();
 	if(loading)

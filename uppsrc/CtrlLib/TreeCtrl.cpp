@@ -46,11 +46,8 @@ TreeCtrl::Node::Node(const Image& img, Ctrl& ctrl, int cx, int cy)
 	Init();
 	SetCtrl(ctrl);
 	image = img;
-	size = ctrl.GetMinSize();
-	if(cx > 0)
-		size.cx = cx;
-	if(cy > 0)
-		size.cy = cy;
+	size.cx = cx;
+	size.cy = cy;
 }
 
 TreeCtrl::TreeCtrl()
@@ -67,6 +64,7 @@ TreeCtrl::TreeCtrl()
 	AddFrame(sb);
 	sb.WhenScroll = THISBACK(Scroll);
 	WhenLeftDouble = THISBACK(StdLeftDouble);
+	chldlck = false;
 }
 
 void TreeCtrl::StdLeftDouble()
@@ -93,13 +91,13 @@ void   TreeCtrl::Layout()
 
 Size   TreeCtrl::Item::GetValueSize() const
 {
-	if(IsNull(size))
-		if(ctrl)
-			return ctrl->GetMinSize();
-		else
-			return display ? display->GetStdSize(value) : StdDisplay().GetStdSize(value);
-	else
-		return size;
+	return display ? display->GetStdSize(value) : StdDisplay().GetStdSize(value);
+}
+
+Size   TreeCtrl::Item::GetCtrlSize() const
+{
+	Size csz = ctrl->GetMinSize();
+	return Size(size.cx ? size.cx : csz.cx, size.cy ? size.cy : csz.cy);
 }
 
 Size   TreeCtrl::Item::GetSize() const
@@ -270,6 +268,8 @@ void   TreeCtrl::RemoveSubtree(int id)
 		selectcount--;
 	if(m.linei == cursor)
 		cursor = item[m.parent].linei;
+	if(m.ctrl)
+		m.ctrl->Remove();
 	m.value = Null;
 	m.image = Null;
 	RemoveChildren(id);
@@ -327,7 +327,9 @@ void TreeCtrl::ReLine(int itemi, int level, Size& sz)
 	Item& m = item[itemi];
 	if(m.ctrl) {
 		hasctrls = true;
+		chldlck = true;
 		m.ctrl->Remove();
+		chldlck = false;
 	}
 	m.linei = ii;
 	Size msz = m.GetSize();
@@ -371,7 +373,7 @@ void TreeCtrl::SyncTree()
 	if(cursorid >= 0)
 		SetCursor(cursorid, false, false, false);
 	SyncCtrls(true, restorefocus);
-	SyncInfo();
+	PostCallback(PTEBACK(SyncInfo));
 }
 
 void TreeCtrl::SyncCtrls(bool add, Ctrl *restorefocus)
@@ -379,6 +381,7 @@ void TreeCtrl::SyncCtrls(bool add, Ctrl *restorefocus)
 	if(!hasctrls)
 		return;
 	Point org = sb;
+	chldlck = true;
 	for(int i = noroot; i < line.GetCount(); i++) {
 		const Line& l = line[i];
 		Item& m = item[l.itemi];
@@ -389,11 +392,12 @@ void TreeCtrl::SyncCtrls(bool add, Ctrl *restorefocus)
 				restorefocus->SetFocus();
 			Size msz = m.GetSize();
 			Size isz = m.image.GetSize();
-			Size vsz = m.GetValueSize();
+			Size csz = m.GetCtrlSize();
 			m.ctrl->SetRect(levelcx + l.level * levelcx + isz.cx + m.margin - org.x,
-			                l.y + (msz.cy - vsz.cy) / 2 - org.y, vsz.cx, vsz.cy);
+			                l.y + (msz.cy - csz.cy) / 2 - org.y, csz.cx, csz.cy);
 		}
 	}
+	chldlck = false;
 }
 
 bool TreeCtrl::IsOpen(int id) const
@@ -403,7 +407,7 @@ bool TreeCtrl::IsOpen(int id) const
 
 void TreeCtrl::Dirty(int id)
 {
-	if (selectcount) SelClear(0);
+	if(selectcount) SelClear(0);
 	Size sz = GetSize();
 	dirty = true;
 	while(id >= 0) {
@@ -504,7 +508,7 @@ void TreeCtrl::MoveCursorLine(int c, int incr)
 	if (!incr) return;
 	else if (c < 0) c = cnt-1;
 	else if (c >= cnt) c = 0;
-	
+
 	while (!item[line[c].itemi].canselect) {
 		c += incr;
 		if (c == cursor) return;
@@ -519,7 +523,7 @@ void TreeCtrl::SetCursorLine(int i, bool sc, bool sel, bool cb)
 	if(nocursor)
 		return;
 	if(sel && multiselect) {
-		if (selectcount) SelClear(0);
+		if(selectcount) SelClear(0);
 		SelectOne(line[i].itemi, true);
 	}
 	if(i != cursor) {
@@ -714,7 +718,7 @@ void TreeCtrl::DoClick(Point p, dword flags, bool down)
 				if(flags & K_SHIFT)
 					ShiftSelect(anchor < 0 ? cursor : anchor, cursor);
 				else {
-					if (selectcount) SelClear(0);
+					if(selectcount) SelClear(0);
 					SelectOne(id);
 					anchor = cursor;
 				}
@@ -877,11 +881,15 @@ void TreeCtrl::Paint(Draw& w)
 			x += isz.cx;
 			Color fg, bg;
 			dword st;
-			const Display *d = GetStyle(i, fg, bg, st);
-			if(!(m.ctrl && m.ctrl->IsWantFocus())) {
+			if(m.ctrl)
+				x += m.GetCtrlSize().cx;
+			if(x < sz.cx) {
+				const Display *d = GetStyle(i, fg, bg, st);
 				w.DrawRect(x, y, vsz.cx + 2 * m.margin, msz.cy, bg);
-				d->Paint(w, RectC(x + m.margin, y + (msz.cy - vsz.cy) / 2, vsz.cx, vsz.cy), m.value,
-				         fg, bg, st);
+				Rect r = RectC(x + m.margin, y + (msz.cy - vsz.cy) / 2, vsz.cx, vsz.cy);
+				w.Clip(r);
+				d->Paint(w, r, m.value, fg, bg, st);
+				w.End();
 				if(i == cursor && !nocursor && multiselect && GetSelectCount() != 1 && HasFocus()
 				   && !IsDragAndDropTarget())
 					DrawFocus(w, r, st & Display::SELECT ? SColorPaper() : SColorText());
@@ -1048,7 +1056,8 @@ void TreeCtrl::LostFocus()
 
 void TreeCtrl::ChildRemoved(Ctrl *)
 {
-	Dirty();
+	if(!chldlck)
+		Dirty();
 }
 
 struct TreeCtrl::SortOrder {
@@ -1148,8 +1157,9 @@ void TreeCtrl::SelClear(int id)
 {
 	Item& m = item[id];
 	if(m.sel) {
-		RefreshItem(id);
 		m.sel = false;
+		RefreshItem(id);
+		selectcount--;
 	}
 	for(int i = 0; i < m.child.GetCount(); i++)
 		SelClear(m.child[i]);
@@ -1443,7 +1453,9 @@ OptionTree::~OptionTree() {}
 
 int Copy(TreeCtrl& dst, int did, int i, const TreeCtrl& src, int id)
 {
-	did = dst.Insert(did, i, src.GetNode(id));
+	TreeCtrl::Node x = src.GetNode(id);
+	x.ctrl = NULL;
+	did = dst.Insert(did, i, x);
 	dst.Open(did, src.IsOpen(id));
 	for(int i = 0; i < src.GetChildCount(id); i++)
 		Copy(dst, did, i, src, src.GetChild(id, i));

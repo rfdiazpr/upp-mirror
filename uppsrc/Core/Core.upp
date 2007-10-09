@@ -13,7 +13,7 @@ library(LINUX) "pthread dl";
 
 library(FREEBSD) pthread;
 
-library(WIN32 !MSC8ARM) "advapi32 shell32 winmm";
+library(WIN32 !MSC8ARM) "advapi32 shell32 winmm mpr";
 
 library(SOLARIS) "posix4 dl";
 
@@ -48,8 +48,11 @@ file
 	StrUtil.cpp optimize_speed,
 	CharSet.h,
 	CharSet.cpp optimize_speed,
+	Kernel32W.dli,
+	Mpr32W.dli,
 	Path.h,
 	Path.cpp,
+	NetNode.cpp,
 	App.h,
 	App.cpp,
 	Stream.h,
@@ -138,4 +141,3 @@ file
 mainconfig
 	"Normal" = "",
 	"Remote shared" = "SHARED";
-

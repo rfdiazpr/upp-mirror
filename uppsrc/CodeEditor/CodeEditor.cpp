@@ -86,6 +86,11 @@ void CodeEditor::NewScrollPos() {
 	bar.Scroll();
 }
 
+bool NotEscape(int pos, const WString& s)
+{
+	return pos == 0 || s[pos - 1] != '\\' ? true : !NotEscape(pos - 1, s);
+}
+
 void CodeEditor::CheckBracket(int li, int pos, int ppos, int pos0, WString ln, int d, int limit)
 {
 	int li0 = li;
@@ -104,12 +109,12 @@ void CodeEditor::CheckBracket(int li, int pos, int ppos, int pos0, WString ln, i
 				ppos += d;
 			}
 			c = ln[pos];
-			if((c == '\"' || c == '\'') && (pos == 0 || ln[pos - 1] != '\\' && ln[pos - 1] != '\'')) {
+			if((c == '\"' || c == '\'') && (NotEscape(pos, ln) && ln[pos - 1] != '\'')) {
 				pos += d;
 				ppos += d;
 				int lc = c;
 				while(pos < ln.GetLength() && pos > 0) {
-					if(ln[pos] == lc && (pos == 0 || ln[pos - 1] != '\\')) {
+					if(ln[pos] == lc && NotEscape(pos, ln)) {
 						pos += d;
 						ppos += d;
 						break;

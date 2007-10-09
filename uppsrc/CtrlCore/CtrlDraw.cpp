@@ -7,6 +7,7 @@ NAMESPACE_UPP
 
 void Ctrl::RefreshFrame(const Rect& r) {
 	if(!IsOpen() || !IsVisible() || r.IsEmpty()) return;
+	LTIMING("RefreshFrame");
 	LLOG("RefreshRect " << Name() << ' ' << r);
 	if(parent) {
 		if(InFrame())
@@ -16,6 +17,7 @@ void Ctrl::RefreshFrame(const Rect& r) {
 	}
 	else {
 		LLOG("WndInvalidateRect: " << r << ' ' << Name());
+		LTIMING("RefreshFrame InvalidateRect");
 		WndInvalidateRect(r);
 #ifdef PLATFORM_WIN32
 		LLOG("UpdateRect: " << GetWndUpdateRect() << ' ' << Name());
@@ -114,6 +116,7 @@ void  Ctrl::ScrollView(const Rect& _r, int dx, int dy)
 	if(w->AddScroll(sr, dx, dy))
 		Refresh();
 	else {
+		LTIMING("ScrollCtrls1");
 		Top *top = GetTopCtrl()->top;
 		for(Ctrl *q = GetFirstChild(); q; q = q->GetNext())
 			if(q->InView()) {
@@ -209,6 +212,7 @@ struct sDrawLevelCheck {
 #endif
 
 void Ctrl::CtrlPaint(Draw& w, const Rect& clip) {
+	LTIMING("CtrlPaint");
 	Rect rect = GetRect().GetSize();
 	Rect orect = rect.Inflated(overpaint);
 	if(!IsShown() || orect.IsEmpty() || clip.IsEmpty() || !clip.Intersects(orect))
@@ -257,10 +261,14 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip) {
 		for(q = firstchild; q; q = q->next)
 			if(q->IsShown() && q->InView()) {
 				LEVELCHECK(w);
-				Point off = q->GetRect().TopLeft() + view.TopLeft();
-				w.Offset(off);
-				q->CtrlPaint(w, cl - off);
-				w.End();
+				Rect qr = q->GetRect();
+				Point off = qr.TopLeft() + view.TopLeft();
+				Rect ocl = cl - off;
+				if(ocl.Intersects(Rect(qr.GetSize()).Inflated(overpaint))) {
+					w.Offset(off);
+					q->CtrlPaint(w, cl - off);
+					w.End();
+				}
 			}
 		w.End();
 	}
@@ -284,6 +292,7 @@ void ShowRepaintRect(Draw& w, const Rect& r, Color c)
 
 bool Ctrl::PaintOpaqueAreas(Draw& w, Point offset, const Rect& clip)
 {
+	LTIMING("PaintOpaqueAreas");
 	Rect r = parent ? GetRect() + offset : GetRect().GetSize();
 	Point off = r.TopLeft();
 	Point viewpos = off + GetView().TopLeft();
@@ -333,6 +342,7 @@ inline int Area(const Rect& r)
 
 void CombineArea(Vector<Rect>& area, const Rect& r)
 {
+	LTIMING("CombineArea");
 	if(r.IsEmpty()) return;
 	int ra = Area(r);
 	for(int i = 0; i < area.GetCount(); i++) {
@@ -348,6 +358,7 @@ void CombineArea(Vector<Rect>& area, const Rect& r)
 
 void Ctrl::GatherTransparentAreas(Vector<Rect>& area, Draw& w, Point offset, const Rect& clip)
 {
+	LTIMING("GatherTransparentAreas");
 	Rect r = parent ? GetRect() + offset : GetRect().GetSize();
 	Point off = r.TopLeft();
 	Point viewpos = off + GetView().TopLeft();
@@ -367,8 +378,11 @@ void Ctrl::GatherTransparentAreas(Vector<Rect>& area, Draw& w, Point offset, con
 			CombineArea(area, clip & Rect(notr.left, r.top, notr.right, notr.top));
 			CombineArea(area, clip & Rect(notr.left, notr.bottom, notr.right, r.bottom));
 		}
-		for(Ctrl *q = firstchild; q; q = q->next)
-			q->GatherTransparentAreas(area, w, q->InView() ? viewpos : off, clip);
+		for(Ctrl *q = firstchild; q; q = q->next) {
+			Point qoff = q->InView() ? viewpos : off;
+			if(clip.Intersects(q->GetRect() + qoff))
+				q->GatherTransparentAreas(area, w, qoff, clip);
+		}
 	}
 }
 
@@ -426,8 +440,10 @@ void Ctrl::RemoveFullRefresh()
 
 Ctrl *Ctrl::GetTopRect(Rect& r, bool inframe)
 {
-	if(!inframe)
+	if(!inframe) {
+		r &= Rect(GetSize());
 		r.Offset(GetView().TopLeft());
+	}
 	if(parent) {
 		r.Offset(GetRect().TopLeft());
 		return parent->GetTopRect(r, InFrame());

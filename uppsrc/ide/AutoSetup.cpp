@@ -112,7 +112,7 @@ void AutoSetup()
 			"DEBUG_INFO = \"2\";\n"
 			"DEBUG_BLITZ = \"1\";\n"
 			"DEBUG_LINKMODE = \"0\";\n"
-			"DEBUG_OPTIONS = \"-O0\";\n"
+			"DEBUG_OPTIONS = \"-O0 -gstabs\";\n"
 			"RELEASE_BLITZ = \"1\";\n"
 			"RELEASE_LINKMODE = \"0\";\n"
 			"RELEASE_OPTIONS = \"-O3 -ffunction-sections\";\n" // -funroll-loops ?

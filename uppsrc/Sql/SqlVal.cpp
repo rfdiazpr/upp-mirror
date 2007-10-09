@@ -145,7 +145,7 @@ SqlVal operator%(const SqlVal& a, const SqlVal& b) {
 }
 
 SqlVal operator|(const SqlVal& a, const SqlVal& b) {
-	return SqlVal(a, SqlCase(ORACLE, " || ")(" + "), b, SqlS::MUL);
+	return SqlVal(a, SqlCase(ORACLE, " || ")(PGSQL, " || ")(" + "), b, SqlS::MUL);
 }
 
 SqlVal& operator+=(SqlVal& a, const SqlVal& b)     { return a = a + b; }

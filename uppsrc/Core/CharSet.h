@@ -26,6 +26,7 @@
 #define  CHARSET_KOI8_R       24
 #define  CHARSET_CP852        25
 #define  CHARSET_MJK          26
+#define  CHARSET_CP850        27
 
 #define  CHARSET_TOASCII      253
 #define  CHARSET_UTF8         255

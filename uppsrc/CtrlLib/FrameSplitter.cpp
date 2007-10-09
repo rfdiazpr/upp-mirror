@@ -14,13 +14,13 @@ void SplitterFrame::FrameRemove()
 
 void SplitterFrame::FrameAddSize(Size& sz)
 {
-	(type == LEFT || type == RIGHT ? sz.cx : sz.cy) += size;
+	if (IsShown()) (type == LEFT || type == RIGHT ? sz.cx : sz.cy) += size;
 }
 
 int  SplitterFrame::BoundSize()
 {
 	int maxsize = max(0, (type == LEFT || type == RIGHT ? parentsize.cx : parentsize.cy) - sizemin);
-	return max(4, minmax(size, minsize - 4, maxsize));
+	return IsShown() ? max(4, minmax(size, minsize - 4, maxsize)) : 0;
 }
 
 void SplitterFrame::FrameLayout(Rect& r)

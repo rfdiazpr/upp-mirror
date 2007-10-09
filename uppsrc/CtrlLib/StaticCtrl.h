@@ -55,6 +55,7 @@ void LabelBoxColor_Write(Color c);
 
 struct ParentCtrl : public Ctrl {
 	virtual Rect   GetVoidRect();
+	virtual Size   GetStdSize() const;
 
 	ParentCtrl();
 };

@@ -462,6 +462,25 @@ word CHRTAB_KOI8_R[128] = {
 	0x042C, 0x042B, 0x0417, 0x0428, 0x042D, 0x0429, 0x0427, 0x042A,
 };
 
+word CHRTAB_CP850[128] = {
+	0x00C7, 0x00FC, 0x00E9, 0x00E2, 0x00E4, 0x00E0, 0x00E5, 0x00E7,
+	0x00EA, 0x00EB, 0x00E8, 0x00EF, 0x00EE, 0x00EC, 0x00C4, 0x00C5,
+	0x00C9, 0x00E6, 0x00C6, 0x00F4, 0x00F6, 0x00F2, 0x00FB, 0x00F9,
+	0x00FF, 0x00D6, 0x00DC, 0x00F8, 0x00A3, 0x00D8, 0x00D7, 0x0192,
+	0x00E1, 0x00ED, 0x00F3, 0x00FA, 0x00F1, 0x00D1, 0x00AA, 0x00BA,
+	0x00BF, 0x00AE, 0x00AC, 0x00BD, 0x00BC, 0x00A1, 0x00AB, 0x00BB,
+	0x2591, 0x2592, 0x2593, 0x2502, 0x2524, 0x00C1, 0x00C2, 0x00C0,
+	0x00A9, 0x2563, 0x2551, 0x2557, 0x255D, 0x00A2, 0x00A5, 0x2510,
+	0x2514, 0x2534, 0x252C, 0x251C, 0x2500, 0x253C, 0x00E3, 0x00C3,
+	0x255A, 0x2554, 0x2569, 0x2566, 0x2560, 0x2550, 0x256C, 0x00A4,
+	0x00F0, 0x00D0, 0x00CA, 0x00CB, 0x00C8, 0x0131, 0x00CD, 0x00CE,
+	0x00CF, 0x2518, 0x250C, 0x2588, 0x2584, 0x00A6, 0x00CC, 0x2580,
+	0x00D3, 0x00DF, 0x00D4, 0x00D2, 0x00F5, 0x00D5, 0x00B5, 0x00FE,
+	0x00DE, 0x00DA, 0x00DB, 0x00D9, 0x00FD, 0x00DD, 0x00AF, 0x00B4,
+	0x00AD, 0x00B1, 0x2017, 0x00BE, 0x00B6, 0x00A7, 0x00F7, 0x00B8,
+	0x00B0, 0x00A8, 0x00B7, 0x00B9, 0x00B3, 0x00B2, 0x25A0, 0x00A0
+};
+
 word CHRTAB_CP852[128] = {
 	0x00C7, 0x00FC, 0x00E9, 0x00E2, 0x00E4, 0x016F, 0x0107, 0x00E7,
 	0x0142, 0x00EB, 0x0150, 0x0151, 0x00EE, 0x0179, 0x00C4, 0x0106,
@@ -905,6 +924,7 @@ static void sInit()
 	AddCharSetE("windows-1257",CHRTAB_WIN1257,    CHARSET_WIN1257);
 	AddCharSetE("windows-1258",CHRTAB_WIN1258,    CHARSET_WIN1258);
 	AddCharSetE("koi8-r",      CHRTAB_KOI8_R,     CHARSET_WIN1251);
+	AddCharSetE("cp850",       CHRTAB_CP850,      CHARSET_WIN1252);
 	AddCharSetE("cp852",       CHRTAB_CP852,      CHARSET_WIN1250);
 	AddCharSetE("mjk",         CHRTAB_MJK,        CHARSET_WIN1250);
 #else
@@ -933,6 +953,7 @@ static void sInit()
 	AddCharSetE("windows-1257",CHRTAB_WIN1257,     CHARSET_ISO8859_13);
 	AddCharSetE("windows-1258",CHRTAB_WIN1258,     CHARSET_ISO8859_9);
 	AddCharSetE("koi8-r",      CHRTAB_KOI8_R,      CHARSET_ISO8859_5);
+	AddCharSetE("cp850",       CHRTAB_CP850,       CHARSET_ISO8859_1);
 	AddCharSetE("cp852",       CHRTAB_CP852,       CHARSET_ISO8859_2);
 	AddCharSetE("mjk",         CHRTAB_MJK,         CHARSET_ISO8859_2);
 #endif
@@ -1049,24 +1070,33 @@ void FromUnicode(char *s, const wchar *ws, int n, byte charset, int def)
 void ConvertCharset(char *t, byte tcharset, const char *s, byte scharset, int n)
 {
 	CharSetData& cs = s_cset(scharset);
-	CharSetData& ct = s_cset(tcharset);
 	const char *lim = s + n;
-	while(s < lim)
-		*t++ = ct.FromUnicode(cs.ToUnicode(*s++));
+	if(tcharset == CHARSET_TOASCII)
+		while(s < lim)
+			*t++ = ToAscii(cs.ToUnicode(*s++));
+	else {
+		CharSetData& ct = s_cset(tcharset);
+		while(s < lim)
+			*t++ = ct.FromUnicode(cs.ToUnicode(*s++));
+	}
 }
 
 bool utf8check(const char *_s, int len)
 {
 	const byte *s = (const byte *)_s;
 	const byte *lim = s + len;
+	int codePoint = 0;
 	while(s < lim) {
 		word code = (byte)*s++;
 		if(code >= 0x80) {
-			if(code < 0xC0)
+			if(code < 0xC2)
 				return false;
 			else
 			if(code < 0xE0) {
 				if(s >= lim || *s < 0x80 || *s >= 0xc0)
+					return false;
+				codePoint = ((code - 0xC0) << 6) + *s - 0x80;
+				if(codePoint < 0x80 || codePoint > 0x07FF)
 					return false;
 				s++;
 			}
@@ -1076,37 +1106,26 @@ bool utf8check(const char *_s, int len)
 				   s[0] < 0x80 || s[0] >= 0xc0 ||
 				   s[1] < 0x80 || s[1] >= 0xc0)
 				   	return false;
+				codePoint = ((code - 0xE0) << 12) + ((s[0] - 0x80) << 6) + s[1] - 0x80;
+				if(codePoint < 0x0800 || codePoint > 0xFFFF)
+					return false;
 				s += 2;
 			}
 			else
-			if(code < 0xF8) {
+			if(code < 0xF5) {
 				if(s + 2 >= lim ||
 				   s[0] < 0x80 || s[0] >= 0xc0 ||
 				   s[1] < 0x80 || s[1] >= 0xc0 ||
 				   s[2] < 0x80 || s[2] >= 0xc0)
 				   	return false;
+				codePoint = ((code - 0xf0) << 18) + ((s[0] - 0x80) << 12) +
+				            ((s[1] - 0x80) << 6) + s[2] - 0x80;
+				if(codePoint < 0x010000 || codePoint > 0x10FFFF)
+					return false;
 				s += 3;
 			}
 			else
-			if(code < 0xFE) {
-				if(s + 3 >= lim ||
-				   s[0] < 0x80 || s[0] >= 0xc0 ||
-				   s[1] < 0x80 || s[1] >= 0xc0 ||
-				   s[2] < 0x80 || s[2] >= 0xc0 ||
-				   s[3] < 0x80 || s[3] >= 0xc0)
-				   	return false;
-				s += 4;
-			}
-			else {
-				if(s + 3 >= lim ||
-				   s[0] < 0x80 || s[0] >= 0xc0 ||
-				   s[1] < 0x80 || s[1] >= 0xc0 ||
-				   s[2] < 0x80 || s[2] >= 0xc0 ||
-				   s[3] < 0x80 || s[3] >= 0xc0 ||
-				   s[4] < 0x80 || s[4] >= 0xc0)
-				   	return false;
-				s += 5;
-			}
+				return false;
 		}
 	}
 	return true;
@@ -1124,7 +1143,7 @@ int utf8len(const char *_s, int _len)
 			if(code < 0x80)
 				len++;
 			else
-			if(code < 0xC0)
+			if(code < 0xC2)
 				len++;
 			else
 			if(code < 0xE0) {
@@ -1153,7 +1172,7 @@ int utf8len(const char *_s, int _len)
 		if(code < 0x80)
 			len++;
 		else
-		if(code < 0xC0)
+		if(code < 0xC2)
 			len++;
 		else
 		if(code < 0xE0) {
@@ -1202,7 +1221,7 @@ WString FromUtf8(const char *_s, int len)
 			if(code < 0x80)
 				*t++ = code;
 			else
-			if(code < 0xC0)
+			if(code < 0xC2)
 				*t++ = 0xEE00 + code;
 			else
 			if(code < 0xE0) {

@@ -143,21 +143,38 @@ String GetSystemDirectory() {
 }
 
 String GetWindowsDirectory() {
-	char temp[MAX_PATH];
-	*temp = 0;
-	::GetWindowsDirectory(temp, sizeof(temp));
-	return FromSystemCharset(temp);
+	if(IsWinNT()) {
+		wchar temp[MAX_PATH];
+		*temp = 0;
+		UnicodeWin32().GetWindowsDirectoryW(temp, sizeof(temp));
+		return FromSystemCharsetW(temp);
+	}
+	else {
+		char temp[MAX_PATH];
+		*temp = 0;
+		::GetWindowsDirectory(temp, sizeof(temp));
+		return FromSystemCharset(temp);
+	}
 }
 #endif
 
 String GetModuleFileName(HINSTANCE instance) {
 #ifdef PLATFORM_WINCE
 	wchar h[_MAX_PATH];
-#else
-	char h[_MAX_PATH];
-#endif
 	GetModuleFileName(instance, h, _MAX_PATH);
 	return FromSystemCharset(h);
+#else
+	if(IsWinNT()) {
+		wchar h[_MAX_PATH];
+		UnicodeWin32().GetModuleFileNameW(instance, h, _MAX_PATH);
+		return FromSystemCharsetW(h);
+	}
+	else {
+		char h[_MAX_PATH];
+		GetModuleFileName(instance, h, _MAX_PATH);
+		return FromSystemCharset(h);
+	}
+#endif
 }
 
 bool SyncObject::Wait(int ms)

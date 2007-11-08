@@ -102,11 +102,19 @@ public:
 	virtual void    LeftUp();
 	virtual void    LeftDouble();
 	virtual void    Menu(Bar& bar);
+	virtual void    BalloonLeftDown();
+	virtual void    BalloonShow();
+	virtual void    BalloonHide();
+	virtual void    BalloonTimeout();
 
 	Callback        WhenLeftDown;
 	Callback        WhenLeftUp;
 	Callback        WhenLeftDouble;
 	Callback1<Bar&> WhenBar;
+	Callback        WhenBalloonLeftDown;
+	Callback        WhenBalloonShow;
+	Callback        WhenBalloonHide;
+	Callback        WhenBalloonTimeout;
 
 	void            Break()                                { EndLoop(0); }
 	void            Run()                                  { EventLoop(this); }
@@ -174,11 +182,19 @@ public:
 	virtual void    LeftDown();
 	virtual void    LeftUp();
 	virtual void    LeftDouble();
+	virtual void    BalloonLeftDown();
+	virtual void    BalloonShow();
+	virtual void    BalloonHide();
+	virtual void    BalloonTimeout();
 
 	Callback        WhenLeftDown;
 	Callback        WhenLeftUp;
 	Callback        WhenLeftDouble;
 	Callback1<Bar&> WhenBar;
+	Callback        WhenBalloonLeftDown;
+	Callback        WhenBalloonShow;
+	Callback        WhenBalloonHide;
+	Callback        WhenBalloonTimeout;
 
 	void            Show(bool b = true);
 	void            Hide()                                 { Show(false); }

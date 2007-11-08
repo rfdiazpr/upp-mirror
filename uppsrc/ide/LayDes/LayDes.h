@@ -64,11 +64,13 @@ struct EscDraw : public EscHandle {
 	Draw& w;
 
 	void DrawRect(EscEscape& e);
+	void DrawLine(EscEscape& e);
 	void DrawText(EscEscape& e);
 	void DrawSmartText(EscEscape& e);
 	void DrawQtf(EscEscape& e);
 	void GetTextSize(EscEscape& e);
 	void DrawImage(EscEscape& e);
+	void DrawImageColor(EscEscape& e);
 
 	typedef EscDraw CLASSNAME;
 
@@ -267,12 +269,12 @@ private:
 
 	struct KeyMaster : public ParentCtrl {
 		LayDes *d;
-	
+
 		virtual bool   Key(dword key, int count) {
 			return d->DoKey(key, count);
 		}
 	};
-	
+
 	String   filename;
 	byte     charset;
 	String   layfile;

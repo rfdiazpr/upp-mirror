@@ -109,9 +109,16 @@ SplitterFrame& SplitterFrame::Set(Ctrl& c, int _size, int _type)
 
 void SplitterFrame::Serialize(Stream& s)
 {
-	int version = 0;
+	int version = 1;
 	s / version;
 	s % size;
+	bool visible = IsShown();
+	if(version >= 1)
+		s % visible;
+	if(s.IsLoading()) {
+		Show(visible);
+		RefreshParentLayout();
+	}
 }
 
 SplitterFrame::SplitterFrame()

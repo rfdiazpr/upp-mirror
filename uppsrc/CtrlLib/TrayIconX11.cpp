@@ -187,6 +187,24 @@ TrayIcon::TrayIcon()
 	}
 }
 
+// Not implemented in X11 yet...
+void TrayIcon::BalloonLeftDown()
+{
+}
+
+void TrayIcon::BalloonShow()
+{
+}
+
+void TrayIcon::BalloonHide()
+{
+}
+
+void TrayIcon::BalloonTimeout()
+{
+}
+
+
 #endif
 
 END_UPP_NAMESPACE

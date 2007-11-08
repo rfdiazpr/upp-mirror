@@ -19,8 +19,8 @@ class HomeBudget : public WithHomeBudgetLayout<TopWindow>
 		GridCtrl mostpr;
 		GridCtrl mostcat;
 		Splitter spl;
-		DateTimeCtrl dt;
-		DropList dlpm, category, months, yesno, plusminus;
+		DropDate dt;
+		DropGrid dlpm, category, months, yesno, plusminus;
 		EditDouble defval, val;
 		EditStringNotNull eg, ec;
 		EditString es;

@@ -194,6 +194,19 @@ void ESC_OpenFileIn(EscEscape& e)
 		e = v;
 }
 
+// ---------------------------
+
+void ESC_sin(EscEscape& e)
+{
+	e = sin(e[0].GetNumber());
+}
+
+void ESC_cos(EscEscape& e)
+{
+	e = cos(e[0].GetNumber());
+}
+
+
 bool IsDate(const EscValue& v)
 {
 	return v.HasNumberField("year") && v.HasNumberField("month") && v.HasNumberField("day");
@@ -255,6 +268,9 @@ void StdLib(ArrayMap<String, EscValue>& global)
 	Escape(global, "GetSysTime()", SIC_GetSysTime);
 	Escape(global, "IsDate(x)", SIC_IsDate);
 	Escape(global, "IsTime(x)", SIC_IsTime);
+
+	Escape(global, "sin(value)", ESC_sin);
+	Escape(global, "cos(value)", ESC_cos);
 }
 
 END_UPP_NAMESPACE

@@ -82,11 +82,11 @@ const char *PeFile::FindExportRaw(const char *name, bool case_sensitive) const
 {
 	if(!exports || !name || !*name)
 		return 0;
-	int len = strlen(name);
+	int len = (int)strlen(name);
 	const dword *pnames = (const dword *)(data + (dword)exports->AddressOfNames);
 	for(int i = 0; i < (int) exports->NumberOfNames; i++) {
 		const char *exp = data + pnames[i];
-		int elen = strlen(exp);
+		int elen = (int)strlen(exp);
 		if(elen < len)
 			continue;
 		if(elen == len && EqualMem(exp, name, len, case_sensitive))

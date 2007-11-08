@@ -4,6 +4,20 @@ Weekend {
 }
 
 ============
+Vista:
+	Drag preview -> Cursor Image with Alpha
+	Caret in the EditField
+	Win64 support
+	Bigger font in buttons (?!)
+	Layout designer = edit field height minimal
+	Font without Aero
+	Menu shadow
+	Menu selection (and other selections?)
+	Editfiels "w" issue
+	DropList Chameleon
+
+
+
 	F1 key switching between code and help without changing current help article or closing help tree.
 
 		Fix blitz

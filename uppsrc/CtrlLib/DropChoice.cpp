@@ -4,12 +4,22 @@ NAMESPACE_UPP
 
 DropChoice::DropChoice() {
 	always_drop = false;
-	drop.SetMonoImage(CtrlsImg::DA()).NoWantFocus();
-	drop.WhenPush = callback(this, &DropChoice::Drop);
-	drop.Disable();
+	AddButton().Main() <<= THISBACK(Drop);
+	NoDisplay();
 	list.Normal();
 	list.WhenSelect = callback(this, &DropChoice::Select);
 	dropfocus = true;
+	EnableDrop(false);
+}
+
+void DropChoice::EnableDrop(bool b)
+{
+	GetButton(0).Enable(b);
+}
+
+void DropChoice::PseudoPush()
+{
+	MultiButton::PseudoPush(0);
 }
 
 void DropChoice::Drop() {
@@ -62,11 +72,11 @@ bool DropChoice::DoKey(dword key) {
 		int q = list.GetCursor();
 		switch(key) {
 		case K_ALT_DOWN:
-			drop.PseudoPush();
+			PseudoPush();
 			return true;
 		case K_DOWN:
 			if(appending)
-				drop.PseudoPush();
+				PseudoPush();
 			else {
 				list.SetCursor(q <= 0 ? list.GetCount() - 1 : q - 1);
 				Select();
@@ -74,7 +84,7 @@ bool DropChoice::DoKey(dword key) {
 			return true;
 		case K_UP:
 			if(appending)
-				drop.PseudoPush();
+				PseudoPush();
 			else {
 				list.SetCursor(q < 0 || q >= list.GetCount() - 1 ? 0 : q + 1);
 				Select();
@@ -87,12 +97,12 @@ bool DropChoice::DoKey(dword key) {
 
 void DropChoice::Add(const Value& s) {
 	list.Add(s);
-	drop.Enable();
+	EnableDrop(true);
 }
 
 void DropChoice::Clear() {
 	list.Clear();
-	drop.Enable(always_drop);
+	EnableDrop(always_drop);
 }
 
 void DropChoice::Serialize(Stream& s) {
@@ -112,6 +122,7 @@ void DropChoice::Serialize(Stream& s) {
 			v = list.Get(i, 0);
 			s % v;
 		}
+	EnableDrop(list.GetCount() || always_drop);
 }
 
 void DropChoice::AddHistory(const Value& v, int max) {
@@ -124,14 +135,14 @@ void DropChoice::AddHistory(const Value& v, int max) {
 	list.Insert(0, Vector<Value>() << v);
 	if(list.GetCount() > max)
 		list.SetCount(max);
-	drop.Enable(list.GetCount() || always_drop);
+	EnableDrop(list.GetCount() || always_drop);
 	list.KillCursor();
 }
 
 DropChoice& DropChoice::AlwaysDrop(bool e)
 {
 	always_drop = e;
-	drop.Enable(list.GetCount() || always_drop);
+	EnableDrop(list.GetCount() || always_drop);
 	return *this;
 }
 

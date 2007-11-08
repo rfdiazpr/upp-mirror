@@ -69,7 +69,7 @@ Array<NetNode> NetNode::EnumRoot()
 Array<NetNode> NetNode::Enum0(HANDLE hEnum)
 {
 	Array<NetNode> r;
-	DWORD cEntries = -1, cbBuffer = 0x4000;
+	DWORD cEntries = (DWORD)-1, cbBuffer = 0x4000;
 	Buffer<NETRESOURCE> lpnr(cbBuffer);
 	while(::WNetEnumResource(hEnum, &cEntries, lpnr, &cbBuffer) == 0) {
 		for(int i = 0; i < (int)cEntries; i++) {

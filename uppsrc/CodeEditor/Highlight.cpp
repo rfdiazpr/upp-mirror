@@ -9,7 +9,7 @@ bool cmps(const wchar *q, const char *s, int& n) {
 	while(*q)
 		if(*q++ != *s++)
 			return false;
-	n += q - t;
+	n += int(q - t);
 	return *q == *s;
 }
 
@@ -146,14 +146,14 @@ const wchar *CodeEditor::HlString(HlSt& hls, const wchar *p)
 					p++;
 				if(IsXDigit(*p))
 					p++;
-				hls.Put(p - t, hl_style[INK_CONST_STRINGOP]);
+				hls.Put(int(p - t), hl_style[INK_CONST_STRINGOP]);
 			}
 			else
 			if(*p >= '0' && *p <= '7') {
 				p++;
 				if(*p >= '0' && *p <= '7') p++;
 				if(*p >= '0' && *p <= '7') p++;
-				hls.Put(p - t, hl_style[INK_CONST_STRINGOP]);
+				hls.Put(int(p - t), hl_style[INK_CONST_STRINGOP]);
 			}
 			else {
 				hls.Put(hl_style[INK_CONST_STRINGOP]);
@@ -175,7 +175,7 @@ const wchar *CodeEditor::HlString(HlSt& hls, const wchar *p)
 					p++;
 				while(IsAlpha(*p) && *p)
 					p++;
-				hls.Put(p - t, hl_style[INK_CONST_STRINGOP]);
+				hls.Put(int(p - t), hl_style[INK_CONST_STRINGOP]);
 			}
 		else {
 			hls.Put(hl_style[INK_CONST_STRING]);
@@ -410,11 +410,11 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 			while(IsAlpha(*q))
 				id.Cat(*q++);
 			cppid = id;
-			hls.Put(macro.Find(cppid) < 0 ? 1 : q - p, hl_style[INK_MACRO]);
+			hls.Put(macro.Find(cppid) < 0 ? 1 : int(q - p), hl_style[INK_MACRO]);
 			p = q;
 		}
 	}
-	int lindent = p - ~text;
+	int lindent = int(p - ~text);
 	int lbrace = -1;
 	int lbclose = -1;
 	Color lbcolor = Null;
@@ -447,14 +447,14 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 		else
 		if(*p == '(') {
 			ss.brk.Add(')');
-			Bracket(p - text + pos, hls);
+			Bracket(int(p - text) + pos, hls);
 			hls.Put(hl_style[INK_PAR0 + max(ss.pl++, 0) % 4]);
 			p++;
 		}
 		else
 		if(*p == '{') {
 			ss.brk.Add('}');
-			Bracket(p - text + pos, hls);
+			Bracket(int(p - text) + pos, hls);
 			hls.Put(hl_style[INK_PAR0 + max(ss.cl++, 0) % 4]);
 			++block_level;
 			if(hls.pos < text.GetCount())
@@ -464,7 +464,7 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 		else
 		if(*p == '[') {
 			ss.brk.Add(']');
-			Bracket(p - text + pos, hls);
+			Bracket(int(p - text) + pos, hls);
 			hls.Put(hl_style[INK_PAR0 + max(ss.bl++, 0) % 4]);
 			p++;
 		}
@@ -472,7 +472,7 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 		if(*p == ')' || *p == '}' || *p == ']') {
 			if(*p == '}' && hilite_scope)
 				hls.SetPaper(hls.pos, text.GetLength() + 1 - hls.pos, BlockColor(--block_level));
-			Bracket(p - text + pos, hls);
+			Bracket(int(p - text) + pos, hls);
 			int& l = *p == ')' ? ss.pl : *p == '}' ? ss.cl : ss.bl;
 			if(ss.brk.IsEmpty() || ss.brk.Pop() != *p || l <= 0) {
 				hls.Put(hl_style[INK_ERROR]);
@@ -491,7 +491,7 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 			const wchar *t = p;
 			while(IsXDigit(*p))
 				p++;
-			hls.Put(p - t, hl_style[INK_CONST_HEX]);
+			hls.Put(int(p - t), hl_style[INK_CONST_HEX]);
 		}
 		else
 		if(IsDigit(*p)) {
@@ -507,7 +507,7 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 			if(c == INK_CONST_OCT && p - t == 1)
 				c = INK_CONST_INT;
 			if(p - t > 0)
-				hls.Put(p - t, hl_style[c]);
+				hls.Put(int(p - t), hl_style[c]);
 		}
 		else
 		if(*p == '\"' || *p == '\'')
@@ -541,14 +541,14 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 			while(iscid(*q) && q < e)
 				id.Cat(*q++);
 			String iid = id;
-			hls.Put(q - p, keyword[highlight].Find(iid) >= 0 ? hl_style[INK_KEYWORD] :
-			               name[highlight].Find(iid) >= 0 ? hl_style[INK_UPP] :
-			               kw_upp_macros.Find(iid) >= 0 ? hl_style[INK_UPPMACROS] :
-			               kw_sql_base.Find(iid) >= 0 ? hl_style[INK_SQLBASE] :
-			               kw_sql_func.Find(iid) >= 0 ? hl_style[INK_SQLFUNC] :
-			               kw_sql_bool.Find(iid) >= 0 ? hl_style[INK_SQLBOOL] :
-			               IsUpperString(iid) && !sm.macro ? hl_style[INK_UPPER] :
-			               hl_style[INK_NORMAL]);
+			hls.Put(int(q - p), keyword[highlight].Find(iid) >= 0 ? hl_style[INK_KEYWORD] :
+			                    name[highlight].Find(iid) >= 0 ? hl_style[INK_UPP] :
+			                    kw_upp_macros.Find(iid) >= 0 ? hl_style[INK_UPPMACROS] :
+			                    kw_sql_base.Find(iid) >= 0 ? hl_style[INK_SQLBASE] :
+			                    kw_sql_func.Find(iid) >= 0 ? hl_style[INK_SQLFUNC] :
+			                    kw_sql_bool.Find(iid) >= 0 ? hl_style[INK_SQLBOOL] :
+			                    IsUpperString(iid) && !sm.macro ? hl_style[INK_UPPER] :
+			                    hl_style[INK_NORMAL]);
 			p = q;
 		}
 		else {

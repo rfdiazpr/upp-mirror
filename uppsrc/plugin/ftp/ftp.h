@@ -12,12 +12,19 @@ public:
 	FtpClient();
 	~FtpClient();
 
-	bool    Connect(const char *host, const char *user = NULL, const char *password = NULL, bool pasv = true);
+	bool    Connect(const char *host, const char *user = NULL, const char *password = NULL,
+		bool pasv = true, int idletimeout_secs = 30);
 	void    Close();
 	bool    IsOpen() const;
 
-	bool    Save(const char *path, String data, Gate2<int, int> progress = false);
-	String  Load(const char *path, Gate1<String> progress = false);
+	bool    Save(const char *path, String data);
+	int     SaveCount(const char *path, String data);
+	String  Load(const char *path);
+	String  List(const char *path);
+
+	String  GetLoadedPart() const { return load_data; }
+	int     GetSavePos() const    { return save_pos; }
+	int     GetSaveTotal() const  { return save_total; }
 
 	bool    Rename(const char *oldpath, const char *newpath);
 	bool    Cd(const char *path);
@@ -42,6 +49,9 @@ private:
 private:
 	netbuf *ftpconn;
 	String  error;
+	String  load_data;
+	int     save_pos;
+	int     save_total;
 };
 
 String FtpClientGet(String url, String *error = NULL);

@@ -277,7 +277,9 @@ public:
 	RawValueRep(const T& v) : v(v)            {}
 	RawValueRep()                             {}
 	static const RawValueRep *Cast(const Value::Void *p) {
-		ASSERT(dynamic_cast<const RawValueRep *>(p));
+		ASSERT_(dynamic_cast<const RawValueRep *>(p),
+		        String().Cat() << "Invalid value conversion: "
+		                       << typeid(*p).name() << " -> " << typeid(T).name());
 		return (const RawValueRep *) p;
 	}
 };
@@ -428,7 +430,9 @@ public:
 
 	static Value::Void *Create(Stream& s)            { return new RichValueRep(s); }
 	static const RichValueRep *Cast(const Value::Void *p) {
-		ASSERT(dynamic_cast<const RichValueRep *>(p));
+		ASSERT_(dynamic_cast<const RichValueRep *>(p),
+		        String().Cat() << "Invalid value conversion: "
+		                       << typeid(*p).name() << " -> " << typeid(T).name());
 		return (const RichValueRep *) p;
 	}
 };

@@ -254,6 +254,8 @@ public:
 	ScrollBars& Box(Ctrl& box);
 	ScrollBars& WithSizeGrip()                       { the_box.Add(grip); return *this; }
 
+	ScrollBars& SetStyle(const ScrollBar::Style& s)  { x.SetStyle(s); y.SetStyle(s); }
+
 	operator Point() const                           { return Get(); }
 	Point operator=(Point p)                         { Set(p); return p; }
 

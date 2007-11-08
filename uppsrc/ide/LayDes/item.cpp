@@ -260,8 +260,12 @@ EscValue LayoutItem::CreateEsc() const
 	for(int q = 0; q < property.GetCount(); q++) {
 		EscValue w;
 		const Value& v = ~property[q];
-		if(IsType<Font>(v))
-			w = EscFont(v);
+		if(IsType<Font>(v)) {
+			Font fnt = v;
+			if(fnt.GetHeight())
+				fnt.Height(Ctrl::VertLayoutZoom(fnt.GetHeight()));
+			w = EscFont(fnt);
+		}
 		if(IsString(v))
 			w = (WString)v;
 		if(IsNumber(v))

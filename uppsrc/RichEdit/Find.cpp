@@ -47,7 +47,7 @@ struct RichFindIterator : RichText::Iterator {
 				if(compare3(q, upperw, lowerw, len) &&
 				   (!ww || (q + len == e || !IsLetter(q[len])) &&
 				           (q == ptext || !IsLetter(q[-1])))) {
-					fpos = q - ~ptext + pos;
+					fpos = int(q - ~ptext + pos);
 					return true;
 				}
 				q++;

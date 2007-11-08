@@ -199,6 +199,9 @@ protected:
 
 	void     Clear();
 
+	virtual Value GetBackground() const;
+
+	friend class BarPane;
 
 public:
 	Callback1<const String&> WhenHelp;
@@ -245,10 +248,12 @@ public:
 protected:
 	virtual Item& AddItem(Callback cb);
 	virtual Item& AddSubMenu(Callback1<Bar&> proc);
+	virtual Value GetBackground() const;
 
 public:
 	struct Style : ChStyle<Style> {
-		Value item, topitem;
+		Value item, topitem, topbar;
+		Color itemtext, topitemtext;
 	};
 
 private:
@@ -459,7 +464,8 @@ private:
 	String  text;
 
 public:
-	void Set(const char *_text)        { text = _text; }
+	void   Set(const char *_text)        { text = _text; }
+	String Get() const                   { return text; }
 
 	void PopUp(Ctrl *owner, Point p, bool effect);
 

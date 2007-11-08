@@ -15,7 +15,7 @@ int NDisassemble(char *output, const byte *data, int64 offset)// returns instruc
 #endif
 {
 	unsigned preferences = 0; // see lib/insns.h(84)
-	long len = disasm(const_cast<unsigned char *>(data), output, 32, offset, false, preferences);
+	long len = (long)disasm(const_cast<unsigned char *>(data), output, 32, offset, false, preferences);
 	if(len <= 0) {
 		eatbyte(const_cast<unsigned char *>(data), output);
 		len = 1;

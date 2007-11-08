@@ -7,6 +7,9 @@ void Copy(ImageBuffer& dest, Point p, const Image& src, const Rect& srect);
 void  Copy(Image& dest, Point p, const Image& src, const Rect& srect);
 void  Over(Image& dest, Point p, const Image& src, const Rect& srect);
 
+void  OverStraightOpaque(ImageBuffer& dest, Point p, const Image& src, const Rect& srect);
+void  OverStraightOpaque(Image& dest, Point p, const Image& _src, const Rect& srect);
+
 void  Crop(RasterEncoder& tgt, Raster& img, const Rect& rc);
 Image Crop(const Image& img, const Rect& rc);
 Image Crop(const Image& img, int x, int y, int cx, int cy);
@@ -79,7 +82,7 @@ Image Sharpen(const Image& img, int amount = 100);
 
 Image RotateClockwise(const Image& img);
 Image RotateAntiClockwise(const Image& img);
-
+Image MirrorHorz(const Image& img);
 Image Rotate(const Image& m, int angle);
 
 // Experimental {
@@ -93,11 +96,13 @@ Image Unglyph(const Image& m, Color& c, double& factor);
 Image Unglyph(const Image& m, Color& c);
 Image Unglyph(const Image& m);
 Image VertBlend(Image img1, Image img2, int y0, int y1);
+Image HorzBlend(Image img1, Image img2, int x0, int x1);
 Image HorzSymm(Image src);
 
 enum {
 	IMAGECONTENT_VERTDUP = 1,
 	IMAGECONTENT_HORZDUP = 2,
+	IMAGECONTENT_OPAQUEBODY = 4,
 };
 
 int    ClassifyContent(const Image& m, const Rect& rect);

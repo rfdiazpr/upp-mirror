@@ -196,22 +196,22 @@ ParentCtrl::ParentCtrl()
 	Transparent();
 }
 
-StaticRect& StaticRect::Color(class Color _color)
+StaticRect& StaticRect::Background(const Value& chvalue)
 {
-	if(color != _color) {
-		color = _color;
+	if(chvalue != bg) {
+		bg = chvalue;
 		Refresh();
 	}
 	return *this;
 }
 
-void StaticRect::Paint(Draw& w) {
-	Size sz = GetSize();
-	w.DrawRect(0, 0, sz.cx, sz.cy, color);
+void StaticRect::Paint(Draw& w)
+{
+	ChPaint(w, GetSize(), bg);
 }
 
 StaticRect::StaticRect() {
-	color = SColorFace;
+	bg = SColorFace();
 	NoWantFocus();
 }
 
@@ -244,7 +244,7 @@ void Picture::Paint(Draw& w) {
 	Size rz = sz;
 	if(ratio) {
 		Size sr = picture.GetSize();
-		if(sr.cx * sz.cx < sz.cy * sr.cy) {
+		if(sr.cy * sz.cx < sz.cy * sr.cx) {
 			rz.cy = sr.cy * sz.cx / sr.cx;
 			dy = (sz.cy - rz.cy) / 2;
 		}

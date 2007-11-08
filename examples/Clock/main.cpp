@@ -2,7 +2,7 @@
 
 using namespace Upp;
 
-struct Clock : TopWindow {
+struct App : TopWindow {
 	void PaintPtr(Draw& w, double pos, double m, int d, Color color, Size sz2)
 	{
 		w.DrawLine(sz2.cx, sz2.cy,
@@ -35,7 +35,7 @@ struct Clock : TopWindow {
 		Date date = GetSysDate();
 		PaintCenteredText(w, sz.cx / 2, 3 * sz.cy / 5, GetLanguageInfo().FormatDate(date),
 		                  fnt().Bold(), SLtBlue);
-		double tm = GetSysTime() - ToTime(date);
+		double tm = double(GetSysTime() - ToTime(date));
 		PaintPtr(w, tm / 60, 0.75, 1, SRed, sz2);
 		PaintPtr(w, tm / 3600, 0.6, 2, SCyan, sz2);
 		PaintPtr(w, tm / 3600 / 12, 0.5, 4, SBlack, sz2);
@@ -47,17 +47,17 @@ struct Clock : TopWindow {
 		Refresh();
 	}
 
-	Clock()
+	App()
 	{
 		SetRect(0, 0, 150, 150);
 		Sizeable().Zoomable();
 		BackPaint();
-		SetTimeCallback(-1000, callback(this, &Clock::Timer));
+		SetTimeCallback(-1000, callback(this, &App::Timer));
 		Title("Clock");
 	}
 };
 
 GUI_APP_MAIN
 {
-	Clock().Run();
+	App().Run();
 }

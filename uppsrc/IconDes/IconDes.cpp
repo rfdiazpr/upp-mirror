@@ -49,7 +49,7 @@ void IconDes::SyncShow()
 				image = IconDesImg::LargeImage();
 		}
 		iconshow.image = image;
-		list.Set(1, Premultiply(image));
+		list.Set(1, image);
 	}
 	iconshow.Refresh();
 }
@@ -127,7 +127,7 @@ void IconDes::MakePaste()
 	if(paste_opaque)
 		UPP::Copy(c.image, c.pastepos, c.paste_image, c.paste_image.GetSize());
 	else
-		UPP::Over(c.image, c.pastepos, c.paste_image, c.paste_image.GetSize());
+		UPP::Over(c.image, c.pastepos, Premultiply(c.paste_image), c.paste_image.GetSize());
 	MaskSelection();
 }
 

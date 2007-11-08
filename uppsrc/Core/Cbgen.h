@@ -799,10 +799,10 @@ public:
 	operator bool() const        { return (void *)action != (void *)1 && action && action->IsValid(); }
 	bool Execute() const;
 	bool operator()() const      { return Execute(); }
-	void ClearTrue()             { Clear(); action = (GateAction *)1; }
+	void ClearTrue()             { Clear(); action = (GateAction *)(uintptr_t)1; }
 	void ClearFalse()            { Clear(); }
 
-	Gate(bool b)                 { action = (GateAction *)(int)b; }
+	Gate(bool b)                 { action = (GateAction *)(uintptr_t)b; }
 
 	explicit Gate(GateAction  *newaction) { action = newaction; }
 	Gate() { action = NULL; }

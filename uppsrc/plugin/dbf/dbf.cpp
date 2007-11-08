@@ -467,6 +467,7 @@ bool DbfStream::DoCreate(const Array<Field>& _fields, byte _charset)
 	dirty_header = false;
 	row_index = 0;
 	next_row_index = 0;
+	has_memo = false;
 	fields.Clear();
 	for(int i = 0; i < _fields.GetCount(); i++)
 		fields.Add(_fields[i].name, _fields[i]);
@@ -478,7 +479,6 @@ bool DbfStream::DoCreate(const Array<Field>& _fields, byte _charset)
 
 void DbfStream::DoFields()
 {
-	has_memo = false;
 	field_read.Clear();
 	field_read.SetCount(fields.GetCount(), &DbfStream::GetItemEmpty);
 	for(int i = 0; i < fields.GetCount(); i++) {
@@ -494,7 +494,8 @@ void DbfStream::DoFields()
 		case 'D': field_read[i] = (fld.width < 10 ? &DbfStream::GetItemDateShort : &DbfStream::GetItemDateLong); break;
 		case 'L': field_read[i] = &DbfStream::GetItemLogical; break;
 		case 'M':
-		case 'G': field_read[i] = &DbfStream::GetItemMemo; break;
+		case 'G': field_read[i] = &DbfStream::GetItemMemoString; break;
+		case 'B': field_read[i] = &DbfStream::GetItemMemoBinary; break;
 		}
 	}
 }
@@ -859,7 +860,17 @@ Value DbfStream::GetItemLogical(int i) const
 	return StrBool(record[fields[i].offset]);
 }
 
-Value DbfStream::GetItemMemo(int i) const
+Value DbfStream::GetItemMemoString(int i) const
+{
+	return GetItemMemo(i, false);
+}
+
+Value DbfStream::GetItemMemoBinary(int i) const
+{
+	return GetItemMemo(i, true);
+}
+
+Value DbfStream::GetItemMemo(int i, bool binary) const
 {
 	if(!has_memo)
 		return false;
@@ -879,9 +890,11 @@ Value DbfStream::GetItemMemo(int i) const
 			Buffer<byte> buffer(len);
 			if(!dbt.GetAll(buffer, len))
 				return Value();
-			byte *p;
-			if(p = (byte *)memchr(buffer, '\0', len)) len = p - buffer;
-			if(p = (byte *)memchr(buffer, '\x1A', len)) len = p - buffer;
+			if(!binary) {
+				byte *p;
+				if(p = (byte *)memchr(buffer, '\0', len)) len = p - buffer;
+				if(p = (byte *)memchr(buffer, '\x1A', len)) len = p - buffer;
+			}
 /*
 			if(codepage_cv) {
 				byte *p = buffer, *e = p + len;
@@ -890,7 +903,7 @@ Value DbfStream::GetItemMemo(int i) const
 			}
 */
 			String s(buffer, len);
-			if(charset == GetDefaultCharset())
+			if(binary || charset == GetDefaultCharset())
 				return s;
 			return ToUnicode(s, charset);
 		}

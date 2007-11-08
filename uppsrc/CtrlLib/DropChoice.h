@@ -27,102 +27,38 @@ public:
 	virtual ~PopUpTable();
 };
 
-struct DropBox : public Ctrl {
+class DropList : public MultiButton, public Convert {
 public:
-	virtual void  CancelMode();
-	virtual Image FrameMouseEvent(int event, Point p, int zdelta, dword keyflags);
-
-public:
-	struct Style : ChStyle<Style> {
-		bool  inside;
-		int   width;
-		Value edge, button[4], squaredbutton[4];
-	};
-
-private:
-	bool UserEdge() const;
-	Rect GetDropBoxRect(Rect r) const;
-	int8 light;
-	Rect rect;
-	bool enabled;
-	bool always_drop;
-
-	struct DropEdge : CtrlFrame {
-		DropBox *dropbox;
-
-		virtual void FrameLayout(Rect& r);
-		virtual void FramePaint(Draw& draw, const Rect& r);
-		virtual void FrameAddSize(Size& sz);
-	};
-
-	struct DropButton : CtrlFrame {
-		DropBox *dropbox;
-
-		virtual void FrameLayout(Rect& r);
-		virtual void FramePaint(Draw& draw, const Rect& r);
-		virtual void FrameAddSize(Size& sz);
-	};
-
-	DropEdge   edge;
-	DropButton button;
-
-	friend struct DropEdge;
-	friend struct DropButton;
-
-	void  ButtonPaint(Draw& w, const Rect& r);
-	void  ButtonLayout(Rect& r);
-	void  ButtonAddSize(Size& sz);
-
-protected:
-	void     SyncLook();
-	void     Push();
-	Callback WhenPush;
-	void     EnableDrop(bool b = true) { enabled = b || always_drop; RefreshFrame(); }
-	void     AlwaysDrop(bool e = true);
-
-	const Style *style;
-
-public:
-	DropBox();
-};
-
-class DropList : public DropBox, public Convert {
-public:
-	virtual void  Paint(Draw& w);
 	virtual void  MouseWheel(Point p, int zdelta, dword keyflags);
-	virtual void  LeftDown(Point p, dword keyflags);
-	virtual void  MouseMove(Point, dword style);
-	virtual void  MouseLeave();
-	virtual void  LeftUp(Point p, dword keyflags);
 	virtual bool  Key(dword key, int);
 	virtual void  SetData(const Value& data);
 	virtual Value GetData() const;
-	virtual void  GotFocus();
-	virtual void  LostFocus();
-	virtual Size  GetMinSize() const;
 
 	virtual Value Format(const Value& q) const;
 
-protected:
+private:
 	PopUpTable         list;
 	Index<Value>       key;
 	Value              value;
-	bool               displayall;
-	bool               dropfocus;
-	bool               push;
-	bool               notnull;
 	const Convert     *valueconvert;
 	const Display     *valuedisplay;
+	bool               displayall;
+	bool               dropfocus;
+	bool               notnull;
+	bool               alwaysdrop;
 
 	void          Select();
 	void          Cancel();
 	void          Change(int q);
+	void          EnableDrop(bool b = true)         { GetButton(0).Enable(b || alwaysdrop); }
+	void          Sync();
+
+	typedef       DropList CLASSNAME;
 
 public:
-	typedef DropBox::Style Style;
+	typedef MultiButton::Style Style;
 
 	Callback      WhenDrop;
-	Callback      WhenClick;
 
 	DropList&     Add(const Value& key, const Value& value);
 	DropList&     Add(const Value& value)         { return Add(value, value); }
@@ -140,8 +76,8 @@ public:
 	bool          HasKey(const Value& k) const    { return key.Find(k) >= 0; }
 	int           FindKey(const Value& k) const   { return key.Find(k); }
 	int           Find(const Value& k) const      { return key.Find(k); }
- 	int           FindValue(const Value& v) const { return list.Find(v); }
- 	
+	int           FindValue(const Value& v) const { return list.Find(v); }
+
 	int           GetCount() const                { return key.GetCount(); }
 	void          Trim(int n);
 	const Value&  GetKey(int i) const             { return key[i]; }
@@ -155,9 +91,8 @@ public:
 	void          Adjust();
 	void          Adjust(const Value& k);
 
-	const PopUpTable& GetList() const           { return list; }
-
-	static const Style& StyleDefault();
+	const PopUpTable& GetList() const                   { return list; }
+	PopUpTable&   ListObject()                          { return list; }
 
 	DropList&     SetDropLines(int d)                   { list.SetDropLines(d); return *this; }
 	DropList&     SetConvert(const Convert& cv);
@@ -169,9 +104,11 @@ public:
 	DropList&     DisplayAll(bool b = true)             { displayall = b; return *this; }
 	DropList&     DropFocus(bool b = true)              { dropfocus = b; return *this; }
 	DropList&     NoDropFocus()                         { return DropFocus(false); }
-	DropList&     AlwaysDrop(bool e = true)             { DropBox::AlwaysDrop(e); return *this; }
-	DropList&     SetStyle(const Style& s)              { style = &s; Refresh(); return *this; }
+	DropList&     AlwaysDrop(bool e = true);
+	DropList&     SetStyle(const Style& s)              { MultiButton::SetStyle(s); return *this; }
 	DropList&     NotNull(bool b = true)                { notnull = b; return *this; }
+
+	DropList&     SetScrollBarStyle(const ScrollBar::Style& s) { list.SetScrollBarStyle(s); return *this; }
 
 	DropList();
 	virtual ~DropList();
@@ -181,39 +118,8 @@ void Add(DropList& list, const VectorMap<Value, Value>& values);
 void Add(MapConvert& convert, const VectorMap<Value, Value>& values);
 void Add(DropList& list, const MapConvert& convert);
 
-class DropPusher : public DataPusher, public Convert {
-// Deprecated; use DropList instead!!!
-public:
-	virtual Value      Format(const Value& v) const;
-
-private:
-	FrameRight<Button> drop;
-	PopUpTable         popup;
-	Vector<Value>      keys;
-
-	void               OnDrop();
-	void               OnSelect();
-	virtual void       DoAction();
-
-public:
-	Callback           WhenDrop;
-	Callback           WhenClick;
-
-	void               Clear();
-	void               Add(Value value, Value display);
-	void               Add(Value value)                 { Add(value, value); }
-
-	Value              GetValue() const;
-
-	typedef DropPusher CLASSNAME;
-
-	DropPusher();
-	virtual ~DropPusher();
-};
-
-class DropChoice : public Pte<DropChoice> {
+class DropChoice : public MultiButton {
 protected:
-	FrameRight<Button> drop;
 	PopUpTable         list;
 	Ctrl              *owner;
 	bool               appending;
@@ -222,6 +128,10 @@ protected:
 
 	void        Select();
 	void        Drop();
+	void        EnableDrop(bool b);
+	void        PseudoPush();
+
+	typedef DropChoice CLASSNAME;
 
 public:
 	Callback    WhenDrop;
@@ -235,11 +145,11 @@ public:
 
 	void        AddHistory(const Value& data, int max = 12);
 
-	void        AddTo(Ctrl& _owner)                   { _owner.AddFrame(drop); owner = &_owner; }
-	bool        IsActive() const                      { return drop.IsOpen(); }
+	void        AddTo(Ctrl& _owner)                   { MultiButton::AddTo(_owner); owner = &_owner; }
+	bool        IsActive() const                      { return IsOpen(); }
 
-	void        Show(bool b = true)                   { drop.Show(b); }
-	void        Hide()                                { Show(false); }
+//	void        Show(bool b = true)                   { drop.Show(b); }
+//	void        Hide()                                { Show(false); }
 
 	Value       Get() const;
 	int         GetIndex() const;
@@ -252,6 +162,8 @@ public:
 	DropChoice& Appending()                           { appending = true; return *this; }
 	DropChoice& AlwaysDrop(bool e = true);
 	DropChoice& NoDropFocus()                         { dropfocus = false; return *this; }
+
+	DropChoice& SetScrollBarStyle(const ScrollBar::Style& s) { list.SetScrollBarStyle(s); return *this; }
 
 	DropChoice();
 
@@ -280,6 +192,14 @@ public:
 
 	void            AddHistory(int max = 12)              { select.AddHistory(this->GetData(), max); }
 
+	MultiButton::SubButton& AddButton()                   { return select.AddButton(); }
+	int                     GetButtonCount() const        { return select.GetButtonCount(); }
+	MultiButton::SubButton& GetButton(int i)              { return select.GetButton(i); }
+	Rect                    GetPushScreenRect() const     { return select.GetPushScreenRect(); }
+
+	const MultiButton::Style& StyleDefault()              { return select.StyleFrame(); }
+	WithDropChoice& SetStyle(const MultiButton::Style& s) { select.SetStyle(s); return *this; }
+
 	WithDropChoice& Dropping(bool b = true)               { select.Show(b); return *this; }
 	WithDropChoice& NoDropping()                          { return Dropping(false); }
 	WithDropChoice& NoDropFocus()                         { select.NoDropFocus(); return *this; }
@@ -300,6 +220,7 @@ WithDropChoice<T>::WithDropChoice() {
 	select.WhenDrop = callback(this, &WithDropChoice::DoWhenDrop);
 	select.WhenSelect = callback(this, &WithDropChoice::DoWhenSelect);
 	appends = String::GetVoid();
+	SetStyle(StyleDefault());
 }
 
 template <class T>

@@ -18,6 +18,12 @@ void FillColor(RGBA *t, const RGBA& src, int n)
 	}
 }
 
+void Copy(RGBA *t, const RGBA *s, int n)
+{
+	while(n--)
+		*t++ = *s++;
+}
+
 const byte *UnpackRLE(RGBA *t, const byte *s, int len)
 {
 	RGBA *e = t + len;
@@ -339,10 +345,10 @@ int GetChMaskPos32(dword mask)
 	return 0;
 }
 
-Vector<Image> UnpackImlData(const String& d, bool premul)
+Vector<Image> UnpackImlData(const void *ptr, int len)
 {
 	Vector<Image> img;
-	String data = ZDecompress(d);
+	String data = ZDecompress(ptr, len);
 	const char *s = data;
 	while(s + 6 * 2 + 1 <= data.End()) {
 		ImageBuffer ib(Peek16le(s + 1), Peek16le(s + 3));
@@ -354,25 +360,14 @@ Vector<Image> UnpackImlData(const String& d, bool premul)
 		const RGBA *e = t + len;
 		if(s + 4 * len > data.End())
 			break;
-		if(premul)
-			while(t < e) {
-				t->a = s[3];
-				int alpha = t->a + (t->a >> 7);
-				t->r = (alpha * s[0]) >> 8;
-				t->g = (alpha * s[1]) >> 8;
-				t->b = (alpha * s[2]) >> 8;
-				s += 4;
-				t++;
-			}
-		else
-			while(t < e) {
-				t->a = s[3];
-				t->r = s[0];
-				t->g = s[1];
-				t->b = s[2];
-				s += 4;
-				t++;
-			}
+		while(t < e) {
+			t->a = s[3];
+			t->r = s[0];
+			t->g = s[1];
+			t->b = s[2];
+			s += 4;
+			t++;
+		}
 		img.Add() = ib;
 	}
 	return img;
@@ -380,7 +375,7 @@ Vector<Image> UnpackImlData(const String& d, bool premul)
 
 Vector<Image> UnpackImlData(const String& d)
 {
-	return UnpackImlData(d, true);
+	return UnpackImlData(~d, d.GetLength());
 }
 
 END_UPP_NAMESPACE

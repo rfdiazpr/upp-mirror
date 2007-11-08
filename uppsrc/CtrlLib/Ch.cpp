@@ -57,6 +57,11 @@ void ChClassicSkin()
 			s.vthumb[i] = s.hthumb[i] = Button::StyleNormal().look[i];
 	}
 
+	{
+		MultiButton::Style& s = MultiButton::StyleDefault().Write();
+		s.border = s.trivialborder = 2;
+	}
+
 	LabelBoxTextColor_Write(SColorText());
 }
 

@@ -70,7 +70,7 @@ protected:
 
 private:
 	PostgreSQLSession& session;
-	
+
 	PGconn         *conn;
 	Vector<String>  param;
 	PGresult       *result;
@@ -164,7 +164,7 @@ String PostgreSQLSession::ErrorMessage()
 
 String PostgreSQLSession::ErrorCode()
 {
-	return PQresultErrorField(result, PG_DIAG_SQLSTATE);	
+	return PQresultErrorField(result, PG_DIAG_SQLSTATE);
 }
 
 Vector<String> PostgreSQLSession::EnumUsers()
@@ -222,13 +222,14 @@ Vector<SqlColumnInfo> PostgreSQLSession::EnumColumns(String database, String tab
 {
 	/* database means schema here - support for schemas is a something to fix in sql interface */
 
+	int q = table.Find('.');
+	if(q) table = table.Mid(q + 1);
 	Vector<SqlColumnInfo> vec;
-
 	Sql sql(Format("select a.attname, a.atttypid, a.attlen, a.atttypmod, a.attnotnull "
-	                 "from pg_attribute a "
-	                "inner join pg_class c "
+	                 "from pg_catalog.pg_attribute a "
+	                "inner join pg_catalog.pg_class c "
 	                   "on a.attrelid = c.oid "
-	                "inner join pg_namespace n "
+	                "inner join pg_catalog.pg_namespace n "
 	                   "on c.relnamespace = n.oid "
 	                "where c.relname = '%s' "
 	                  "and n.nspname = '%s' "
@@ -241,7 +242,7 @@ Vector<SqlColumnInfo> PostgreSQLSession::EnumColumns(String database, String tab
 		SqlColumnInfo &ci = vec.Add();
 		int type_mod = int(sql[3]) - sizeof(int32);
 		ci.name = sql[0];
-		ci.type = OidToType((int)sql[1]);
+		ci.type = OidToType(IsString(sql[1]) ? atoi(String(sql[1])) : (int)sql[1]);
 		ci.width = sql[2];
 		if(ci.width < 0)
 			ci.width = type_mod;

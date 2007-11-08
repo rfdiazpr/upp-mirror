@@ -2,6 +2,10 @@
 
 NAMESPACE_UPP
 
+#define IMAGECLASS DrawImg
+#define IMAGEFILE <Draw/DrawImg.iml>
+#include <Draw/iml.h>
+
 #define LLOG(x) // RLOG(x)
 
 AttrText::operator Value() const
@@ -100,13 +104,25 @@ void StdDisplayClass::Paint0(Draw& w, const Rect& r, const Value& q,
 	if(a == ALIGN_CENTER)
 		x += (r.Width() - tsz.cx) / 2;
 	int tcy = GetTLTextHeight(txt, font);
-	DrawTLText(w, x, r.top + max((r.Height() - tcy) / 2, 0), r.Width(), txt, font, ink);
+	int tt = r.top + max((r.Height() - tcy) / 2, 0);
+	if(tsz.cx > r.GetWidth()) {
+		Size isz = DrawImg::threedots().GetSize();
+		int wd = r.GetWidth() - isz.cx;
+		w.Clip(r.left, r.top, wd, r.GetHeight());
+		DrawTLText(w, x, tt, r.Width(), txt, font, ink);
+		w.End();
+		w.DrawImage(r.left + wd, tt + font.Info().GetAscent() - isz.cy, DrawImg::threedots(), ink);
+	}
+	else
+		DrawTLText(w, x, tt, r.Width(), txt, font, ink);
+/*
 	if(tsz.cx > r.GetWidth() && !IsNull(paper)) {
 		int wd = min(r.GetWidth() / 4, 8);
 		wd = min(wd, tsz.cx - r.GetWidth());
 		if(wd > 0 && r.GetHeight() > 0)
 			w.DrawImage(r.right - wd, r.top, HorzFadeOut(Size(wd, r.GetHeight()), paper));
 	}
+*/
 }
 
 void StdDisplayClass::Paint(Draw& w, const Rect& r, const Value& q,

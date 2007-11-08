@@ -68,6 +68,13 @@ public:
 
 	void            Copy();
 
+	void            ScrollUp()                                { sb.PrevLine(); }
+	void            ScrollDown()                              { sb.NextLine(); }
+	void            ScrollPageUp()                            { sb.PrevPage(); }
+	void            ScrollPageDown()                          { sb.NextPage(); }
+	void            ScrollEnd()                               { sb.End(); }
+	void            ScrollBegin()                             { sb.Begin(); }
+
 	RichTextView&   PageWidth(int cx);
 	RichTextView&   SetZoom(Zoom z);
 	RichTextView&   Background(Color _color);
@@ -83,6 +90,8 @@ public:
 	RichTextView&   NoHyperlinkDecoration()                   { return HyperlinkDecoration(false); }
 
 	void            operator=(const char *qtf)                { SetQTF(qtf); }
+
+	RichTextView&   SetScrollBarStyle(const ScrollBar::Style& s) { sb.SetStyle(s); return *this; }
 
 	typedef RichTextView CLASSNAME;
 

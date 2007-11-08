@@ -165,6 +165,8 @@ public:
 	ColumnList&  PopUpEx(bool b = true)               { popupex = b; return *this; }
 	ColumnList&  NoPopUpEx()                          { return PopUpEx(false); }
 
+	ColumnList&  SetScrollBarStyle(const ScrollBar::Style& s) { sb.SetStyle(s); return *this; }
+
 	typedef ColumnList CLASSNAME;
 
 	ColumnList();

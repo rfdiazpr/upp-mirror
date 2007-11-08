@@ -12,13 +12,9 @@ void CtrlFrame::FrameAdd(Ctrl& ctrl) {}
 void CtrlFrame::FrameRemove() {}
 int CtrlFrame::OverPaint() const { return 0; }
 
-
-struct NullFrameClass : public CtrlFrame
-{
-	virtual void FrameLayout(Rect& r) {}
-	virtual void FramePaint(Draw& draw, const Rect& r) {}
-	virtual void FrameAddSize(Size& sz) {}
-};
+void NullFrameClass::FrameLayout(Rect& r) {}
+void NullFrameClass::FramePaint(Draw& draw, const Rect& r) {}
+void NullFrameClass::FrameAddSize(Size& sz) {}
 
 CtrlFrame& GLOBAL_V(NullFrameClass, NullFrame);
 

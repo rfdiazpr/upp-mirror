@@ -221,6 +221,8 @@ struct Moveable : public B {
 
 template <class T>
 inline void AssertMoveable(T *t = 0) { if(t) AssertMoveable0(t); }
+// COMPILATION ERROR HERE MEANS TYPE T WAS NOT MARKED AS Moveable
+
 
 #if defined(COMPILER_MSC) || defined(COMPILER_GCC) && (__GNUC__ < 4 || __GNUC_MINOR__ < 1)
 	#define NTL_MOVEABLE(T) inline void AssertMoveable0(T *) {}
@@ -427,7 +429,7 @@ template<> inline unsigned GetHashValue(const float& a)          { double x = a;
 #ifdef CPU_32
 inline unsigned GetPtrHashValue(const void *a)                   { return (int)a; }
 #else
-inline unsigned GetPtrHashValue(const void *a)                   { return CombineHash((int64)a); }
+inline unsigned GetPtrHashValue(const void *a)                   { return CombineHash((unsigned)(uintptr_t)a); }
 #endif
 
 /* Is it time to activate this?

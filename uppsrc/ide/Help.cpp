@@ -316,8 +316,8 @@ struct HighlightWords : RichText::Iterator {
 				wb.Cat(ToLower(*s++));
 			if(words.Find(FromUnicode(wb)) >= 0) {
 				Pos& p = pos.Add();
-				p.pos = b - ~text + tpos;
-				p.len = s - b;
+				p.pos = int(b - ~text) + tpos;
+				p.len = int(s - b);
 			}
 		}
 		return false;

@@ -1,9 +1,9 @@
 
 /* pngtest.c - a simple test program to test libpng
  *
- * libpng 1.0.9 - January 31, 2001
+ * Last changed in libpng 1.2.22 - [October 13, 2007]
  * For conditions of distribution and use, see copyright notice in png.h
- * Copyright (c) 1998-2001 Glenn Randers-Pehrson
+ * Copyright (c) 1998-2004 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -28,6 +28,8 @@
  * of files at once by typing "pngtest -m file1.png file2.png ..."
  */
 
+#include "png.h"
+
 #if defined(_WIN32_WCE)
 #  if _WIN32_WCE < 211
      __error__ (f|w)printf functions are not supported on old WindowsCE.;
@@ -42,7 +44,6 @@
 #else
 #  include <stdio.h>
 #  include <stdlib.h>
-#  include <assert.h>
 #  define READFILE(file, data, length, check) \
      check=(png_size_t)fread(data,(png_size_t)1,length,file)
 #  define WRITEFILE(file, data, length, check) \
@@ -51,16 +52,20 @@
 #endif
 
 #if defined(PNG_NO_STDIO)
-#if defined(_WIN32_WCE)
-typedef HANDLE                png_FILE_p;
-#else
-typedef FILE                * png_FILE_p;
-#endif
+#  if defined(_WIN32_WCE)
+     typedef HANDLE                png_FILE_p;
+#  else
+     typedef FILE                * png_FILE_p;
+#  endif
 #endif
 
 /* Makes pngtest verbose so we can find problems (needs to be before png.h) */
 #ifndef PNG_DEBUG
-#define PNG_DEBUG 0
+#  define PNG_DEBUG 0
+#endif
+
+#if !PNG_DEBUG
+#  define SINGLE_ROWBUF_ALLOC  /* makes buffer overruns easier to nail */
 #endif
 
 /* Turn on CPU timing
@@ -74,20 +79,6 @@ typedef FILE                * png_FILE_p;
 #ifdef PNGTEST_TIMING
 static float t_start, t_stop, t_decode, t_encode, t_misc;
 #include <time.h>
-#endif
-
-#include "png.h"
-
-/* Define png_jmpbuf() in case we are using a pre-1.0.6 version of libpng */
-#ifndef png_jmpbuf
-#  define png_jmpbuf(png_ptr) png_ptr->jmpbuf
-#endif
-
-#ifdef PNGTEST_TIMING
-static float t_start, t_stop, t_decode, t_encode, t_misc;
-#if !defined(PNG_tIME_SUPPORTED)
-#include <time.h>
-#endif
 #endif
 
 #if defined(PNG_TIME_RFC1123_SUPPORTED)
@@ -112,12 +103,28 @@ static int status_pass=1;
 static int status_dots_requested=0;
 static int status_dots=1;
 
+/* In case a system header (e.g., on AIX) defined jmpbuf */
+#ifdef jmpbuf
+#  undef jmpbuf
+#endif
+
+/* Define png_jmpbuf() in case we are using a pre-1.0.6 version of libpng */
+#ifndef png_jmpbuf
+#  define png_jmpbuf(png_ptr) png_ptr->jmpbuf
+#endif
+
 void
+#ifdef PNG_1_0_X
+PNGAPI
+#endif
 read_row_callback(png_structp png_ptr, png_uint_32 row_number, int pass);
 void
+#ifdef PNG_1_0_X
+PNGAPI
+#endif
 read_row_callback(png_structp png_ptr, png_uint_32 row_number, int pass)
 {
-    if(png_ptr == NULL || row_number > PNG_MAX_UINT) return;
+    if(png_ptr == NULL || row_number > PNG_UINT_31_MAX) return;
     if(status_pass != pass)
     {
        fprintf(stdout,"\n Pass %d: ",pass);
@@ -134,11 +141,17 @@ read_row_callback(png_structp png_ptr, png_uint_32 row_number, int pass)
 }
 
 void
+#ifdef PNG_1_0_X
+PNGAPI
+#endif
 write_row_callback(png_structp png_ptr, png_uint_32 row_number, int pass);
 void
+#ifdef PNG_1_0_X
+PNGAPI
+#endif
 write_row_callback(png_structp png_ptr, png_uint_32 row_number, int pass)
 {
-    if(png_ptr == NULL || row_number > PNG_MAX_UINT || pass > 7) return;
+    if(png_ptr == NULL || row_number > PNG_UINT_31_MAX || pass > 7) return;
     fprintf(stdout, "w");
 }
 
@@ -149,8 +162,14 @@ write_row_callback(png_structp png_ptr, png_uint_32 row_number, int pass)
    5 in case illegal filter values are present.) */
 static png_uint_32 filters_used[256];
 void
+#ifdef PNG_1_0_X
+PNGAPI
+#endif
 count_filters(png_structp png_ptr, png_row_infop row_info, png_bytep data);
 void
+#ifdef PNG_1_0_X
+PNGAPI
+#endif
 count_filters(png_structp png_ptr, png_row_infop row_info, png_bytep data)
 {
     if(png_ptr != NULL && row_info != NULL)
@@ -165,8 +184,14 @@ count_filters(png_structp png_ptr, png_row_infop row_info, png_bytep data)
 static png_uint_32 zero_samples;
 
 void
+#ifdef PNG_1_0_X
+PNGAPI
+#endif
 count_zero_samples(png_structp png_ptr, png_row_infop row_info, png_bytep data);
 void
+#ifdef PNG_1_0_X
+PNGAPI
+#endif
 count_zero_samples(png_structp png_ptr, png_row_infop row_info, png_bytep data)
 {
    png_bytep dp = data;
@@ -279,7 +304,7 @@ pngtest_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
 
    if (check != length)
    {
-      png_error(png_ptr, "Read Error");
+      png_error(png_ptr, "Read Error!");
    }
 }
 #else
@@ -409,8 +434,9 @@ pngtest_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
       png_error(png_ptr, "Write Error");
    }
 }
-
 #endif /* USE_FAR_KEYWORD */
+#endif /* PNG_NO_STDIO */
+/* END of code to validate stdio-free compilation */
 
 /* This function is called when there is a warning, but the library thinks
  * it can continue anyway.  Replacement functions don't have to do anything
@@ -438,11 +464,9 @@ pngtest_error(png_structp png_ptr, png_const_charp message)
    /* We can return because png_error calls the default handler, which is
     * actually OK in this case. */
 }
-#endif /* PNG_NO_STDIO */
-/* END of code to validate stdio-free compilation */
 
 /* START of code to validate memory allocation and deallocation */
-#ifdef PNG_USER_MEM_SUPPORTED
+#if defined(PNG_USER_MEM_SUPPORTED) && PNG_DEBUG
 
 /* Allocate memory.  For reasonable files, size should never exceed
    64K.  However, zlib may allocate more then 64K if you don't tell
@@ -466,10 +490,8 @@ static int maximum_allocation = 0;
 static int total_allocation = 0;
 static int num_allocations = 0;
 
-extern PNG_EXPORT(png_voidp,png_debug_malloc) PNGARG((png_structp png_ptr,
-   png_uint_32 size));
-extern PNG_EXPORT(void,png_debug_free) PNGARG((png_structp png_ptr,
-   png_voidp ptr));
+png_voidp png_debug_malloc PNGARG((png_structp png_ptr, png_uint_32 size));
+void png_debug_free PNGARG((png_structp png_ptr, png_voidp ptr));
 
 png_voidp
 png_debug_malloc(png_structp png_ptr, png_uint_32 size)
@@ -479,28 +501,40 @@ png_debug_malloc(png_structp png_ptr, png_uint_32 size)
       png_debug_malloc directly, with png_ptr == NULL which is OK */
 
    if (size == 0)
-      return (png_voidp)(NULL);
+      return (NULL);
 
    /* This calls the library allocator twice, once to get the requested
       buffer and once to get a new free list entry. */
    {
-      memory_infop pinfo = png_malloc_default(png_ptr, sizeof *pinfo);
+      /* Disable malloc_fn and free_fn */
+      memory_infop pinfo;
+      png_set_mem_fn(png_ptr, NULL, NULL, NULL);
+      pinfo = (memory_infop)png_malloc(png_ptr,
+         (png_uint_32)png_sizeof (*pinfo));
       pinfo->size = size;
       current_allocation += size;
       total_allocation += size;
       num_allocations ++;
       if (current_allocation > maximum_allocation)
          maximum_allocation = current_allocation;
-      pinfo->pointer = png_malloc_default(png_ptr, size);
+      pinfo->pointer = (png_voidp)png_malloc(png_ptr, size);
+      /* Restore malloc_fn and free_fn */
+      png_set_mem_fn(png_ptr, png_voidp_NULL, (png_malloc_ptr)png_debug_malloc,
+         (png_free_ptr)png_debug_free);
+      if (size != 0 && pinfo->pointer == NULL)
+      {
+         current_allocation -= size;
+         total_allocation -= size;
+         png_error(png_ptr,
+           "out of memory in pngtest->png_debug_malloc.");
+      }
       pinfo->next = pinformation;
       pinformation = pinfo;
       /* Make sure the caller isn't assuming zeroed memory. */
       png_memset(pinfo->pointer, 0xdd, pinfo->size);
-#if PNG_DEBUG
       if(verbose)
-         printf("png_malloc %d bytes at %x\n",size,pinfo->pointer);
-#endif
-      assert(pinfo->size != 12345678);
+         printf("png_malloc %lu bytes at %x\n",(unsigned long)size,
+          pinfo->pointer);
       return (png_voidp)(pinfo->pointer);
    }
 }
@@ -533,14 +567,14 @@ png_debug_free(png_structp png_ptr, png_voidp ptr)
                fprintf(STDERR, "Duplicate free of memory\n");
             /* We must free the list element too, but first kill
                the memory that is to be freed. */
-            memset(ptr, 0x55, pinfo->size);
+            png_memset(ptr, 0x55, pinfo->size);
             png_free_default(png_ptr, pinfo);
             pinfo=NULL;
             break;
          }
          if (pinfo->next == NULL)
          {
-            fprintf(STDERR, "Pointer %x not found\n", ptr);
+            fprintf(STDERR, "Pointer %x not found\n", (unsigned int)ptr);
             break;
          }
          ppinfo = &pinfo->next;
@@ -548,14 +582,12 @@ png_debug_free(png_structp png_ptr, png_voidp ptr)
    }
 
    /* Finally free the data. */
-#if PNG_DEBUG
    if(verbose)
       printf("Freeing %x\n",ptr);
-#endif
    png_free_default(png_ptr, ptr);
    ptr=NULL;
 }
-#endif /* PNG_USER_MEM_SUPPORTED */
+#endif /* PNG_USER_MEM_SUPPORTED && PNG_DEBUG */
 /* END of code to test memory allocation/deallocation */
 
 /* Test one file */
@@ -564,8 +596,17 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
 {
    static png_FILE_p fpin;
    static png_FILE_p fpout;  /* "static" prevents setjmp corruption */
-   png_structp read_ptr, write_ptr;
-   png_infop read_info_ptr, write_info_ptr, end_info_ptr, write_end_info_ptr;
+   png_structp read_ptr;
+   png_infop read_info_ptr, end_info_ptr;
+#ifdef PNG_WRITE_SUPPORTED
+   png_structp write_ptr;
+   png_infop write_info_ptr;
+   png_infop write_end_info_ptr;
+#else
+   png_structp write_ptr = NULL;
+   png_infop write_info_ptr = NULL;
+   png_infop write_end_info_ptr = NULL;
+#endif
    png_bytep row_buf;
    png_uint_32 y;
    png_uint_32 width, height;
@@ -582,7 +623,7 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
 #endif
    char inbuf[256], outbuf[256];
 
-   row_buf = (png_bytep)NULL;
+   row_buf = NULL;
 
 #if defined(_WIN32_WCE)
    MultiByteToWideChar(CP_ACP, 0, inname, -1, path, MAX_PATH);
@@ -608,36 +649,34 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
    }
 
    png_debug(0, "Allocating read and write structures\n");
-#ifdef PNG_USER_MEM_SUPPORTED
-   read_ptr = png_create_read_struct_2(PNG_LIBPNG_VER_STRING, (png_voidp)NULL,
-      (png_error_ptr)NULL, (png_error_ptr)NULL, (png_voidp)NULL,
+#if defined(PNG_USER_MEM_SUPPORTED) && PNG_DEBUG
+   read_ptr = png_create_read_struct_2(PNG_LIBPNG_VER_STRING, png_voidp_NULL,
+      png_error_ptr_NULL, png_error_ptr_NULL, png_voidp_NULL,
       (png_malloc_ptr)png_debug_malloc, (png_free_ptr)png_debug_free);
 #else
-   read_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, (png_voidp)NULL,
-      (png_error_ptr)NULL, (png_error_ptr)NULL);
+   read_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, png_voidp_NULL,
+      png_error_ptr_NULL, png_error_ptr_NULL);
 #endif
-#if defined(PNG_NO_STDIO)
    png_set_error_fn(read_ptr, (png_voidp)inname, pngtest_error,
        pngtest_warning);
-#endif
-#ifdef PNG_USER_MEM_SUPPORTED
-   write_ptr = png_create_write_struct_2(PNG_LIBPNG_VER_STRING, (png_voidp)NULL,
-      (png_error_ptr)NULL, (png_error_ptr)NULL, (png_voidp)NULL,
+#ifdef PNG_WRITE_SUPPORTED
+#if defined(PNG_USER_MEM_SUPPORTED) && PNG_DEBUG
+   write_ptr = png_create_write_struct_2(PNG_LIBPNG_VER_STRING, png_voidp_NULL,
+      png_error_ptr_NULL, png_error_ptr_NULL, png_voidp_NULL,
       (png_malloc_ptr)png_debug_malloc, (png_free_ptr)png_debug_free);
 #else
-   write_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, (png_voidp)NULL,
-      (png_error_ptr)NULL, (png_error_ptr)NULL);
+   write_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, png_voidp_NULL,
+      png_error_ptr_NULL, png_error_ptr_NULL);
 #endif
-#if defined(PNG_NO_STDIO)
    png_set_error_fn(write_ptr, (png_voidp)inname, pngtest_error,
        pngtest_warning);
 #endif
    png_debug(0, "Allocating read_info, write_info and end_info structures\n");
    read_info_ptr = png_create_info_struct(read_ptr);
-   write_info_ptr = png_create_info_struct(write_ptr);
    end_info_ptr = png_create_info_struct(read_ptr);
+#ifdef PNG_WRITE_SUPPORTED
+   write_info_ptr = png_create_info_struct(write_ptr);
    write_end_info_ptr = png_create_info_struct(write_ptr);
-#ifdef PNG_USER_MEM_SUPPORTED
 #endif
 
 #ifdef PNG_SETJMP_SUPPORTED
@@ -649,17 +688,22 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
 #endif
    {
       fprintf(STDERR, "%s -> %s: libpng read error\n", inname, outname);
+      if (row_buf)
+         png_free(read_ptr, row_buf);
       png_destroy_read_struct(&read_ptr, &read_info_ptr, &end_info_ptr);
+#ifdef PNG_WRITE_SUPPORTED
       png_destroy_info_struct(write_ptr, &write_end_info_ptr);
       png_destroy_write_struct(&write_ptr, &write_info_ptr);
+#endif
       FCLOSE(fpin);
       FCLOSE(fpout);
       return (1);
    }
 #ifdef USE_FAR_KEYWORD
-   png_memcpy(png_jmpbuf(read_ptr),jmpbuf,sizeof(jmp_buf));
+   png_memcpy(png_jmpbuf(read_ptr),jmpbuf,png_sizeof(jmp_buf));
 #endif
 
+#ifdef PNG_WRITE_SUPPORTED
    png_debug(0, "Setting jmpbuf for write struct\n");
 #ifdef USE_FAR_KEYWORD
    if (setjmp(jmpbuf))
@@ -670,38 +714,49 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
       fprintf(STDERR, "%s -> %s: libpng write error\n", inname, outname);
       png_destroy_read_struct(&read_ptr, &read_info_ptr, &end_info_ptr);
       png_destroy_info_struct(write_ptr, &write_end_info_ptr);
+#ifdef PNG_WRITE_SUPPORTED
       png_destroy_write_struct(&write_ptr, &write_info_ptr);
+#endif
       FCLOSE(fpin);
       FCLOSE(fpout);
       return (1);
    }
 #ifdef USE_FAR_KEYWORD
-   png_memcpy(png_jmpbuf(write_ptr),jmpbuf,sizeof(jmp_buf));
+   png_memcpy(png_jmpbuf(write_ptr),jmpbuf,png_sizeof(jmp_buf));
+#endif
 #endif
 #endif
 
    png_debug(0, "Initializing input and output streams\n");
 #if !defined(PNG_NO_STDIO)
    png_init_io(read_ptr, fpin);
+#  ifdef PNG_WRITE_SUPPORTED
    png_init_io(write_ptr, fpout);
+#  endif
 #else
    png_set_read_fn(read_ptr, (png_voidp)fpin, pngtest_read_data);
+#  ifdef PNG_WRITE_SUPPORTED
    png_set_write_fn(write_ptr, (png_voidp)fpout,  pngtest_write_data,
-#if defined(PNG_WRITE_FLUSH_SUPPORTED)
+#    if defined(PNG_WRITE_FLUSH_SUPPORTED)
       pngtest_flush);
-#else
+#    else
       NULL);
-#endif
+#    endif
+#  endif
 #endif
    if(status_dots_requested == 1)
    {
+#ifdef PNG_WRITE_SUPPORTED
       png_set_write_status_fn(write_ptr, write_row_callback);
+#endif
       png_set_read_status_fn(read_ptr, read_row_callback);
    }
    else
    {
-      png_set_write_status_fn(write_ptr, NULL);
-      png_set_read_status_fn(read_ptr, NULL);
+#ifdef PNG_WRITE_SUPPORTED
+      png_set_write_status_fn(write_ptr, png_write_status_ptr_NULL);
+#endif
+      png_set_read_status_fn(read_ptr, png_read_status_ptr_NULL);
    }
 
 #if defined(PNG_READ_USER_TRANSFORM_SUPPORTED)
@@ -717,13 +772,19 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
    png_set_write_user_transform_fn(write_ptr, count_zero_samples);
 #endif
 
-#define HANDLE_CHUNK_IF_SAFE      2
-#define HANDLE_CHUNK_ALWAYS       3
 #if defined(PNG_READ_UNKNOWN_CHUNKS_SUPPORTED)
-   png_set_keep_unknown_chunks(read_ptr, HANDLE_CHUNK_ALWAYS, NULL, 0);
+#  ifndef PNG_HANDLE_CHUNK_ALWAYS
+#    define PNG_HANDLE_CHUNK_ALWAYS       3
+#  endif
+   png_set_keep_unknown_chunks(read_ptr, PNG_HANDLE_CHUNK_ALWAYS,
+      png_bytep_NULL, 0);
 #endif
 #if defined(PNG_WRITE_UNKNOWN_CHUNKS_SUPPORTED)
-   png_set_keep_unknown_chunks(write_ptr, HANDLE_CHUNK_IF_SAFE, NULL, 0);
+#  ifndef PNG_HANDLE_CHUNK_IF_SAFE
+#    define PNG_HANDLE_CHUNK_IF_SAFE      2
+#  endif
+   png_set_keep_unknown_chunks(write_ptr, PNG_HANDLE_CHUNK_IF_SAFE,
+      png_bytep_NULL, 0);
 #endif
 
    png_debug(0, "Reading info struct\n");
@@ -941,10 +1002,12 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
       {
          png_set_tIME(write_ptr, write_info_ptr, mod_time);
 #if defined(PNG_TIME_RFC1123_SUPPORTED)
-         /* we have to use png_strcpy instead of "=" because the string
+         /* we have to use png_strncpy instead of "=" because the string
             pointed to by png_convert_to_rfc1123() gets free'ed before
             we use it */
-         png_strcpy(tIME_string,png_convert_to_rfc1123(read_ptr, mod_time));
+         png_strncpy(tIME_string,png_convert_to_rfc1123(read_ptr,
+            mod_time),29);
+         tIME_string[29] = '\0';
          tIME_chunk_present++;
 #endif /* PNG_TIME_RFC1123_SUPPORTED */
       }
@@ -984,32 +1047,29 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
    }
 #endif
 
+#ifdef PNG_WRITE_SUPPORTED
    png_debug(0, "\nWriting info struct\n");
 
 /* If we wanted, we could write info in two steps:
    png_write_info_before_PLTE(write_ptr, write_info_ptr);
  */
    png_write_info(write_ptr, write_info_ptr);
+#endif
 
-   png_debug(0, "\nAllocating row buffer \n");
+#ifdef SINGLE_ROWBUF_ALLOC
+   png_debug(0, "\nAllocating row buffer...");
    row_buf = (png_bytep)png_malloc(read_ptr,
       png_get_rowbytes(read_ptr, read_info_ptr));
-   if (row_buf == NULL)
-   {
-      fprintf(STDERR, "No memory to allocate row buffer\n");
-      png_destroy_read_struct(&read_ptr, &read_info_ptr, (png_infopp)NULL);
-      png_destroy_info_struct(write_ptr, &write_end_info_ptr);
-      png_destroy_write_struct(&write_ptr, &write_info_ptr);
-      FCLOSE(fpin);
-      FCLOSE(fpout);
-      return (1);
-   }
+   png_debug1(0, "0x%08lx\n\n", (unsigned long)row_buf);
+#endif /* SINGLE_ROWBUF_ALLOC */
    png_debug(0, "Writing row data\n");
 
 #if defined(PNG_READ_INTERLACING_SUPPORTED) || \
   defined(PNG_WRITE_INTERLACING_SUPPORTED)
    num_pass = png_set_interlace_handling(read_ptr);
+#  ifdef PNG_WRITE_SUPPORTED
    png_set_interlace_handling(write_ptr);
+#  endif
 #else
    num_pass=1;
 #endif
@@ -1024,7 +1084,16 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
       png_debug1(0, "Writing row data for pass %d\n",pass);
       for (y = 0; y < height; y++)
       {
-         png_read_rows(read_ptr, (png_bytepp)&row_buf, (png_bytepp)NULL, 1);
+#ifndef SINGLE_ROWBUF_ALLOC
+         png_debug2(0, "\nAllocating row buffer (pass %d, y = %ld)...", pass,y);
+         row_buf = (png_bytep)png_malloc(read_ptr,
+            png_get_rowbytes(read_ptr, read_info_ptr));
+         png_debug2(0, "0x%08lx (%ld bytes)\n", (unsigned long)row_buf,
+            png_get_rowbytes(read_ptr, read_info_ptr));
+#endif /* !SINGLE_ROWBUF_ALLOC */
+         png_read_rows(read_ptr, (png_bytepp)&row_buf, png_bytepp_NULL, 1);
+
+#ifdef PNG_WRITE_SUPPORTED
 #ifdef PNGTEST_TIMING
          t_stop = (float)clock();
          t_decode += (t_stop - t_start);
@@ -1036,6 +1105,12 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
          t_encode += (t_stop - t_start);
          t_start = t_stop;
 #endif
+#endif /* PNG_WRITE_SUPPORTED */
+
+#ifndef SINGLE_ROWBUF_ALLOC
+         png_debug2(0, "Freeing row buffer (pass %d, y = %ld)\n\n", pass, y);
+         png_free(read_ptr, row_buf);
+#endif /* !SINGLE_ROWBUF_ALLOC */
       }
    }
 
@@ -1069,10 +1144,12 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
       {
          png_set_tIME(write_ptr, write_end_info_ptr, mod_time);
 #if defined(PNG_TIME_RFC1123_SUPPORTED)
-         /* we have to use png_strcpy instead of "=" because the string
+         /* we have to use png_strncpy instead of "=" because the string
             pointed to by png_convert_to_rfc1123() gets free'ed before
             we use it */
-         png_strcpy(tIME_string,png_convert_to_rfc1123(read_ptr, mod_time));
+         png_strncpy(tIME_string,png_convert_to_rfc1123(read_ptr,
+            mod_time),29);
+         tIME_string[29] = '\0';
          tIME_chunk_present++;
 #endif /* PNG_TIME_RFC1123_SUPPORTED */
       }
@@ -1098,7 +1175,9 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
       }
    }
 #endif
+#ifdef PNG_WRITE_SUPPORTED
    png_write_end(write_ptr, write_end_info_ptr);
+#endif
 
 #ifdef PNG_EASY_ACCESS_SUPPORTED
    if(verbose)
@@ -1107,16 +1186,25 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
       iwidth = png_get_image_width(write_ptr, write_info_ptr);
       iheight = png_get_image_height(write_ptr, write_info_ptr);
       fprintf(STDERR, "Image width = %lu, height = %lu\n",
-         iwidth, iheight);
+         (unsigned long)iwidth, (unsigned long)iheight);
    }
 #endif
 
    png_debug(0, "Destroying data structs\n");
+#ifdef SINGLE_ROWBUF_ALLOC
+   png_debug(1, "destroying row_buf for read_ptr\n");
    png_free(read_ptr, row_buf);
    row_buf=NULL;
+#endif /* SINGLE_ROWBUF_ALLOC */
+   png_debug(1, "destroying read_ptr, read_info_ptr, end_info_ptr\n");
    png_destroy_read_struct(&read_ptr, &read_info_ptr, &end_info_ptr);
+#ifdef PNG_WRITE_SUPPORTED
+   png_debug(1, "destroying write_end_info_ptr\n");
    png_destroy_info_struct(write_ptr, &write_end_info_ptr);
+   png_debug(1, "destroying write_ptr, write_info_ptr\n");
    png_destroy_write_struct(&write_ptr, &write_info_ptr);
+#endif
+   png_debug(0, "Destruction complete.\n");
 
    FCLOSE(fpin);
    FCLOSE(fpout);
@@ -1212,7 +1300,6 @@ static PNG_CONST char *inname = "pngtest.png";
 static PNG_CONST char *outname = "pngout.png";
 #endif
 
-#if 0 // don't compile main
 int
 main(int argc, char *argv[])
 {
@@ -1223,13 +1310,14 @@ main(int argc, char *argv[])
    fprintf(STDERR, "   with zlib   version %s\n", ZLIB_VERSION);
    fprintf(STDERR,"%s",png_get_copyright(NULL));
    /* Show the version of libpng used in building the library */
-   fprintf(STDERR," library (%lu):%s", png_access_version_number(),
+   fprintf(STDERR," library (%lu):%s",
+      (unsigned long)png_access_version_number(),
       png_get_header_version(NULL));
    /* Show the version of libpng used in building the application */
    fprintf(STDERR," pngtest (%lu):%s", (unsigned long)PNG_LIBPNG_VER,
       PNG_HEADER_VERSION_STRING);
-   fprintf(STDERR," sizeof(png_struct)=%d, sizeof(png_info)=%d\n",
-                    sizeof(png_struct), sizeof(png_info));
+   fprintf(STDERR," png_sizeof(png_struct)=%ld, png_sizeof(png_info)=%ld\n",
+                    (long)png_sizeof(png_struct), (long)png_sizeof(png_info));
 
    /* Do some consistency checking on the memory allocation settings, I'm
       not sure this matters, but it is nice to know, the first of these
@@ -1297,7 +1385,7 @@ main(int argc, char *argv[])
    if (multiple)
    {
       int i;
-#ifdef PNG_USER_MEM_SUPPORTED
+#if defined(PNG_USER_MEM_SUPPORTED) && PNG_DEBUG
       int allocation_now = current_allocation;
 #endif
       for (i=2; i<argc; ++i)
@@ -1311,7 +1399,8 @@ main(int argc, char *argv[])
          if (kerror == 0)
          {
 #if defined(PNG_WRITE_USER_TRANSFORM_SUPPORTED)
-            fprintf(STDERR, "\n PASS (%lu zero samples)\n",zero_samples);
+            fprintf(STDERR, "\n PASS (%lu zero samples)\n",
+               (unsigned long)zero_samples);
 #else
             fprintf(STDERR, " PASS\n");
 #endif
@@ -1319,7 +1408,7 @@ main(int argc, char *argv[])
             for (k=0; k<256; k++)
                if(filters_used[k])
                   fprintf(STDERR, " Filter %d was used %lu times\n",
-                     k,filters_used[k]);
+                     k,(unsigned long)filters_used[k]);
 #endif
 #if defined(PNG_TIME_RFC1123_SUPPORTED)
          if(tIME_chunk_present != 0)
@@ -1332,7 +1421,7 @@ main(int argc, char *argv[])
             fprintf(STDERR, " FAIL\n");
             ierror += kerror;
          }
-#ifdef PNG_USER_MEM_SUPPORTED
+#if defined(PNG_USER_MEM_SUPPORTED) && PNG_DEBUG
          if (allocation_now != current_allocation)
             fprintf(STDERR, "MEMORY ERROR: %d bytes lost\n",
                current_allocation-allocation_now);
@@ -1344,13 +1433,14 @@ main(int argc, char *argv[])
                current_allocation);
             while (pinfo != NULL)
             {
-               fprintf(STDERR, " %d bytes at %x\n", pinfo->size, pinfo->pointer);
+               fprintf(STDERR, " %lu bytes at %x\n", (unsigned long)pinfo->size,
+                 (unsigned int) pinfo->pointer);
                pinfo = pinfo->next;
             }
          }
 #endif
       }
-#ifdef PNG_USER_MEM_SUPPORTED
+#if defined(PNG_USER_MEM_SUPPORTED) && PNG_DEBUG
          fprintf(STDERR, " Current memory allocation: %10d bytes\n",
             current_allocation);
          fprintf(STDERR, " Maximum memory allocation: %10d bytes\n",
@@ -1367,7 +1457,7 @@ main(int argc, char *argv[])
       for (i=0; i<3; ++i)
       {
          int kerror;
-#ifdef PNG_USER_MEM_SUPPORTED
+#if defined(PNG_USER_MEM_SUPPORTED) && PNG_DEBUG
          int allocation_now = current_allocation;
 #endif
          if (i == 1) status_dots_requested = 1;
@@ -1383,7 +1473,8 @@ main(int argc, char *argv[])
                 int k;
 #endif
 #if defined(PNG_WRITE_USER_TRANSFORM_SUPPORTED)
-                fprintf(STDERR, "\n PASS (%lu zero samples)\n",zero_samples);
+                fprintf(STDERR, "\n PASS (%lu zero samples)\n",
+                   (unsigned long)zero_samples);
 #else
                 fprintf(STDERR, " PASS\n");
 #endif
@@ -1391,7 +1482,7 @@ main(int argc, char *argv[])
                 for (k=0; k<256; k++)
                    if(filters_used[k])
                       fprintf(STDERR, " Filter %d was used %lu times\n",
-                         k,filters_used[k]);
+                         k,(unsigned long)filters_used[k]);
 #endif
 #if defined(PNG_TIME_RFC1123_SUPPORTED)
              if(tIME_chunk_present != 0)
@@ -1406,7 +1497,7 @@ main(int argc, char *argv[])
             fprintf(STDERR, " FAIL\n");
             ierror += kerror;
          }
-#ifdef PNG_USER_MEM_SUPPORTED
+#if defined(PNG_USER_MEM_SUPPORTED) && PNG_DEBUG
          if (allocation_now != current_allocation)
              fprintf(STDERR, "MEMORY ERROR: %d bytes lost\n",
                current_allocation-allocation_now);
@@ -1418,14 +1509,14 @@ main(int argc, char *argv[])
                 current_allocation);
              while (pinfo != NULL)
              {
-                fprintf(STDERR," %d bytes at %x\n",
-                   pinfo->size, pinfo->pointer);
+                fprintf(STDERR," %lu bytes at %x\n",
+                   (unsigned long)pinfo->size, (unsigned int)pinfo->pointer);
                 pinfo = pinfo->next;
              }
           }
 #endif
        }
-#ifdef PNG_USER_MEM_SUPPORTED
+#if defined(PNG_USER_MEM_SUPPORTED) && PNG_DEBUG
        fprintf(STDERR, " Current memory allocation: %10d bytes\n",
           current_allocation);
        fprintf(STDERR, " Maximum memory allocation: %10d bytes\n",
@@ -1459,6 +1550,4 @@ main(int argc, char *argv[])
 }
 
 /* Generate a compiler error if there is an old png.h in the search path. */
-typedef version_1_0_9 your_png_h_is_not_version_1_0_9;
-
-#endif//hides main function
+typedef version_1_2_22 your_png_h_is_not_version_1_2_22;

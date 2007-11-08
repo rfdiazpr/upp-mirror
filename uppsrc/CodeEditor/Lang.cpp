@@ -19,14 +19,14 @@ Array<IdentPos> GetLineIdent(const char *line)
 		else if(*p == 's' && p[1] == '_' && p[2] == '(' && (IsAlpha(p[3]) || p[3] == '_'))
 		{
 			IdentPos& pos = out.Add();
-			pos.begin = p - line;
+			pos.begin = int(p - line);
 			const char *b = (p += 3);
 			while(IsAlNum(*++p) || *p == '_')
 				;
 			pos.ident = String(b, p);
 			if(*p == ')')
 				p++;
-			pos.end = p - line;
+			pos.end = int(p - line);
 		}
 		else if(IsAlpha(*p) || *p == '_')
 		{
@@ -51,7 +51,7 @@ Vector<Point> GetLineString(const wchar *wline, bool& is_begin, bool& is_end)
 		wchar term = *p;
 		if(term == '\"' || term == '\'')
 		{
-			int begin = p++ - wline;
+			int begin = int(p++ - wline);
 			while(*p && *p != '\n')
 				if(*p == term)
 				{
@@ -69,7 +69,7 @@ Vector<Point> GetLineString(const wchar *wline, bool& is_begin, bool& is_end)
 				else if(*p++ == '\\' && *p && *p != '\n')
 					p++;
 			if(term == '\"')
-				out.Add(Point(begin, p - wline));
+				out.Add(Point(begin, int(p - wline)));
 		}
 		else
 			p++;

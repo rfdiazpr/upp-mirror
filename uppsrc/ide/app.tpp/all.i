@@ -50,10 +50,6 @@ TOPIC("Flags$en-us")
 #include "Flags$en-us.tpp"
 END_TOPIC
 
-TOPIC("adv$en-us")
-#include "adv$en-us.tpp"
-END_TOPIC
-
 TOPIC("macros$en-us")
 #include "macros$en-us.tpp"
 END_TOPIC
@@ -96,4 +92,8 @@ END_TOPIC
 
 TOPIC("PackageTemplates$en-us")
 #include "PackageTemplates$en-us.tpp"
+END_TOPIC
+
+TOPIC("Blitz$en-us")
+#include "Blitz$en-us.tpp"
 END_TOPIC

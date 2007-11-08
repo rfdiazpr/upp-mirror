@@ -549,6 +549,10 @@ public:
 
 	ArrayCtrl& ColumnWidths(const char *s);
 
+	ArrayCtrl& SetScrollBarStyle(const ScrollBar::Style& s)   { sb.SetStyle(s); header.SetScrollBarStyle(s); return *this; }
+	ArrayCtrl& SetHeaderCtrlStyle(const HeaderCtrl::Style& s) { header.SetStyle(s); return *this; }
+
+
 	void Reset();
 
 	typedef ArrayCtrl CLASSNAME;

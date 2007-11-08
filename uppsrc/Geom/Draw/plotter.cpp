@@ -2303,6 +2303,12 @@ void MarkTool::ClearExtent()
 	PutRaw = &MarkTool::PutClip;
 }
 
+void MarkTool::Put(const Array<Pointf>& pt)
+{
+	for(int i = 0; i < pt.GetCount(); i++)
+		Put(pt[i]);
+}
+
 void MarkTool::Paint()
 {
 	if(!plotter.draw)

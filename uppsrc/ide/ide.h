@@ -337,6 +337,7 @@ public:
 
 int  memcmp_i(const char *s, const char *t, int n);
 void SubstituteTpars(Vector<String>& type, const String& tname);
+int  CharFilterMacro(int c);
 
 struct AssistEditor : CodeEditor {
 	virtual bool Key(dword key, int count);
@@ -552,9 +553,7 @@ public:
 
 	bool         stoponerrors;
 
-	DataPusher                buildmode;
-	FrameLeft<Button>         buildmethod;
-	FrameRight<Button>        dropmode;
+	MultiButton               buildmode;
 	PopUpTable                methodlist;
 	PopUpTable                modelist;
 	VectorMap<String, String> recent_buildmode;
@@ -621,11 +620,7 @@ public:
 	int       hilite_ifdef;
 
 	enum { STYLE_NO_REPLACE, STYLE_CONFIRM_REPLACE, STYLE_AUTO_REPLACE };
-	FrameRight<Button>               findwb;
-	FrameRight<Button>               findd;
-	FrameRight<Button>               findsd;
-	FrameRight<Button>               findI;
-	FrameRight<Button>               replaceI;
+
 	struct FindInFiles : WithFindInFilesLayout<TopWindow> {
 		WString itext;
 		virtual bool Key(dword key, int count);

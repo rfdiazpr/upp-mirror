@@ -333,6 +333,8 @@ public:
 	LineEdit& WithCutLine(bool b)             { cutline = b; return *this; }
 	LineEdit& NoCutLine()                     { return WithCutLine(false); }
 
+	LineEdit& SetScrollBarStyle(const ScrollBar::Style& s)   { sb.SetStyle(s); return *this; }
+
 	typedef LineEdit CLASSNAME;
 
 	LineEdit();
@@ -410,13 +412,14 @@ protected:
 	int    GetMousePos(Point p);
 
 public:
-	DocEdit& After(int a)               { after = a; RefreshStyle(); return *this; }
-	DocEdit& SetFont(Font f)            { font = f; RefreshStyle(); return *this; }
-	DocEdit& SetFilter(int (*f)(int c)) { filter = f; return *this; }
-	DocEdit& AutoHideSb(bool b = true)  { sb.AutoHide(b); return *this; }
-	DocEdit& UpDownLeave(bool u = true) { updownleave = u; return *this; }
-	DocEdit& NoUpDownLeave()            { return UpDownLeave(false); }
-	bool     IsUpDownLeave() const      { return updownleave; }
+	DocEdit&  After(int a)                                   { after = a; RefreshStyle(); return *this; }
+	DocEdit&  SetFont(Font f)                                { font = f; RefreshStyle(); return *this; }
+	DocEdit&  SetFilter(int (*f)(int c))                     { filter = f; return *this; }
+	DocEdit&  AutoHideSb(bool b = true)                      { sb.AutoHide(b); return *this; }
+	DocEdit&  UpDownLeave(bool u = true)                     { updownleave = u; return *this; }
+	DocEdit&  NoUpDownLeave()                                { return UpDownLeave(false); }
+	bool      IsUpDownLeave() const                          { return updownleave; }
+	DocEdit&  SetScrollBarStyle(const ScrollBar::Style& s)   { sb.SetStyle(s); return *this; }
 
 	typedef DocEdit CLASSNAME;
 

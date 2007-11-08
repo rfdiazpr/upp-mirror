@@ -15,7 +15,7 @@ class Vector : public MoveableAndDeepCopyOption< Vector<T> > {
 	void     Free();
 	void     __DeepCopy(const Vector& src);
 	T&       Get(int i) const        { ASSERT(i >= 0 && i < items); return vector[i]; }
-	void     Chk() const             { ASSERT(items >= 0); } //GCC 4.0 workaround!!!
+	void     Chk() const             { ASSERT_(items >= 0, "Broken pick semantics"); }
 	void     ReAlloc(int alloc);
 	void     ReAllocF(int alloc);
 	void     Grow();

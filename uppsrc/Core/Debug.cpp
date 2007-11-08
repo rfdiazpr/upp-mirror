@@ -335,7 +335,7 @@ HitCountInspector::~HitCountInspector()
 
 void  HexDump(Stream& s, const void *ptr, int size, int maxsize) {
 	char h[256];
-	sprintf(h, "Memory at 0x%lX, size 0x%lX = %d\n", ptr, size, size);
+	sprintf(h, "Memory at 0x%p, size 0x%lX = %d\n", ptr, size, size);
 	s.Putf(h);
 #ifdef PLATFORM_WIN32
 	if(IsBadReadPtr(ptr, size)) {
@@ -430,7 +430,7 @@ LONG __stdcall sDumpHandler(LPEXCEPTION_POINTERS ep) {
 	}*/
 	CloseHandle(file);
 	char h[200];
-	sprintf(h, "CRASH: %d-%02d-%02d %02d:%02d:%02d code: 0x%X  address: 0x%X",
+	sprintf(h, "CRASH: %d-%02d-%02d %02d:%02d:%02d code: 0x%X  address: 0x%p",
 	        st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond,
 	        er->ExceptionCode, er->ExceptionAddress);
 	UsrLogT("============ CRASH ================================================");

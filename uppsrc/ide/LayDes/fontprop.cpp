@@ -4,15 +4,20 @@ static const char *s_fontname[] = {
 	"StdFont", "ScreenSans", "ScreenSerif", "ScreenFixed", "Roman", "Arial", "Courier"
 };
 
+static const char *s_fontnamez[] = {
+	"StdFontZ", "ScreenSansZ", "ScreenSerifZ", "ScreenFixedZ", "RomanZ", "ArialZ", "CourierZ"
+};
+
 String FormatFont(Font font)
 {
 	int q = font.GetFace();
 	String txt;
+	int h = font.GetHeight();
 	if(q >= 0 && q < __countof(s_fontname))
-		txt << s_fontname[q] << "(";
+		txt << (h ? s_fontnamez : s_fontname)[q] << "(";
 	else
 		txt << "Font(" << AsCString(font.GetFaceName()) << ", ";
-	txt << (font.GetHeight() ? Format("%d)", font.GetHeight()) : ")");
+	txt << (h ? Format("%d)", h) : ")");
 	if(font.IsBold())
 		txt << ".Bold()";
 	if(font.IsItalic())
@@ -51,7 +56,7 @@ struct FontDlg : public WithFontPropertyDlgLayout<TopWindow> {
 void FontDlg::SetFont(Font f)
 {
 	face <<= f.GetFace();
-	height <<= f.GetHeight();
+	height <<= f.GetHeight() ? f.GetHeight() : Null;
 	bold = f.IsBold();
 	italic = f.IsItalic();
 	underline = f.IsUnderline();
@@ -65,6 +70,8 @@ Font FontDlg::GetFont() const
 	f.Face(~face);
 	if(!IsNull(~height))
 		f.Height(~height);
+	else
+		f.Height(0);
 	f.Bold(bold);
 	f.Italic(italic);
 	f.Underline(underline);
@@ -106,13 +113,15 @@ struct FontProperty : public EditorProperty<DataPusher> {
 void FontProperty::Read(CParser& p) {
 	Font f = StdFont();
 	for(int i = 0; i < __countof(s_fontname); i++)
-		if(p.Id(s_fontname[i])) {
+		if(p.Id(s_fontname[i]) || p.Id(s_fontnamez[i])) {
 			f.Face(i);
 			break;
 		}
 	p.PassChar('(');
 	if(p.IsInt())
 		f.Height(p.ReadInt());
+	else
+		f.Height(0);
 	p.PassChar(')');
 	while(p.Char('.')) {
 		if(p.Id("Bold"))

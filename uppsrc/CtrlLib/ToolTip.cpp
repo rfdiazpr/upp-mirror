@@ -65,7 +65,7 @@ void ShowToolTip()
 	if(tipctrl) {
 		String text = tipctrl->GetTip();
 		LLOG("-> showing tip: " << text);
-		Ctrl *top = tipctrl->GetTopCtrl(); //GetTopWindow();
+		Ctrl *top = tipctrl->GetTopCtrl();
 		if(!text.IsEmpty() && top && (top->IsForeground() || top->IsPopUp())) {
 			LLOG("-> foreground");
 			ToolTip& q = AppToolTip();
@@ -85,7 +85,7 @@ bool ToolTipHook(Ctrl *ctrl, bool inframe, int event, Point p, int zdelta, dword
 	if(event == Ctrl::MOUSEMOVE && ctrl != &AppToolTip())
 	{
 		ctrl = Ctrl::GetVisibleChild(ctrl, p, inframe);
-		if(ctrl != tipctrl) {
+		if(ctrl != tipctrl || ctrl->GetTip() != AppToolTip().Get()) {
 			LLOG("ToolTipHook / ctrl change -> " << ::Name(ctrl));
 			tipctrl = ctrl;
 			KillTimeCallback((void *)ToolTipHook);

@@ -194,6 +194,7 @@ bool LoadIml(const String& data, Array<ImlImage>& img, int& format)
 	CParser p(data);
 	format = 0;
 	try {
+		bool premultiply = !p.Id("PREMULTIPLIED");
 		Vector<String> name;
 		Vector<bool> exp;
 		while(p.Id("IMAGE_ID")) {
@@ -234,7 +235,7 @@ bool LoadIml(const String& data, Array<ImlImage>& img, int& format)
 			p.PassChar(')');
 
 			data.Trim(zlen);
-			Vector<Image> m = UnpackImlData(data, false);
+			Vector<Image> m = UnpackImlData(data, data.GetCount());
 			if(m.GetCount() != count || ii + count > name.GetCount())
 				p.ThrowError("");
 			for(int i = 0; i < count; i++) {
@@ -242,6 +243,8 @@ bool LoadIml(const String& data, Array<ImlImage>& img, int& format)
 				c.name = name[ii];
 				c.exp = exp[ii++];
 				c.image = m[i];
+				if(premultiply)
+					c.image = Premultiply(c.image);
 			}
 		}
 		if(!p.IsEof())
@@ -332,6 +335,7 @@ String SaveIml(const Array<ImlImage>& iml, int format) {
 		}
 	}
 	else {
+		out << "PREMULTIPLIED\r\n";
 		for(int i = 0; i < iml.GetCount(); i++) {
 			const ImlImage& c = iml[i];
 			out << "IMAGE_ID(" << c.name << ")";

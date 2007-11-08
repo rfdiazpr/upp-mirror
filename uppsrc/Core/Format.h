@@ -9,11 +9,11 @@ String         Format64(uint64 a);
 String         Format64Hex(uint64 a);
 
 #ifdef CPU_64
-inline String  FormatIntHex(const void *ptr) { return Format64Hex((int64)ptr); }
-inline String  FormatHex(const void *ptr)    { return Format64Hex((int64)ptr); }
+inline String  FormatIntHex(const void *ptr) { return Format64Hex((int64)(uintptr_t)ptr); }
+inline String  FormatHex(const void *ptr)    { return Format64Hex((int64)(uintptr_t)ptr); }
 #else
-inline String  FormatIntHex(const void *ptr) { return FormatIntHex((int)ptr); }
-inline String  FormatHex(const void *ptr)    { return FormatIntHex((int)ptr); }
+inline String  FormatIntHex(const void *ptr) { return FormatIntHex((int)(uintptr_t)ptr); }
+inline String  FormatHex(const void *ptr)    { return FormatIntHex((int)(uintptr_t)ptr); }
 #endif
 
 String         FormatInteger(int a);

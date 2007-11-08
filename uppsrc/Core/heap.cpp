@@ -158,9 +158,10 @@ void FreeFill(dword *ptr, int count)
 
 void FreeCheck(dword *ptr, int count)
 {
-	while(count--)
+	int c = count;
+	while(c--)
 		if(*ptr++ != 0x65657246)
-			HeapPanic("Writes to freed blocks detected", ptr, count);
+			HeapPanic("Writes to freed blocks detected", ptr, sizeof(dword) * count);
 }
 
 #endif

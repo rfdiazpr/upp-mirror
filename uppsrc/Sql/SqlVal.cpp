@@ -12,7 +12,7 @@ SqlCol SqlId::Of(SqlId id) const
 	return id.IsNull() ? ToString() : id.ToString() + '.' + ToString();
 }
 
-SqlCol SqlId::As(const char *as) const
+SqlId SqlId::As(const char *as) const
 {
 	return id.IsNull() ? ToString() : ToString() + SqlCase(MSSQL | PGSQL, " as ")(" ") + as;
 }
@@ -317,6 +317,7 @@ SqlVal NextDay(const SqlVal& date) {//TODO Dialect!
 
 SqlVal SqlNvl(const SqlVal& a, const SqlVal& b) {
 	return SqlFunc(SqlCase
+						(PGSQL, "coalesce")
 						(MY_SQL|SQLITE3, "ifnull")
 						(MSSQL, "isnull")
 						("nvl"),

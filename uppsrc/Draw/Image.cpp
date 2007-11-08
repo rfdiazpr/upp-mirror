@@ -420,8 +420,9 @@ Image Iml::Get(int i)
 						if(cached_data != d.data) {
 							cached_data = d.data;
 							cached = UnpackImlData(String(d.data, d.len));
-							for(int i = 0; i < cached.GetCount(); i++)
-								cached[i] = Premultiply(cached[i]);
+							if(premultiply)
+								for(int i = 0; i < cached.GetCount(); i++)
+									cached[i] = Premultiply(cached[i]);
 						}
 						m.image = cached[i];
 						break;
@@ -456,6 +457,7 @@ Iml::Iml(const Image::Init *img_init, const char **name, int n)
 :	img_init(img_init),
 	name(name)
 {
+	premultiply = true;
 	Init(n);
 }
 

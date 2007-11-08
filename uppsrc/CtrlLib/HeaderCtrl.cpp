@@ -541,6 +541,7 @@ void HeaderCtrl::MouseMove(Point p, dword keyflags) {
 			SetTabWidth0(split, w);
 			Refresh();
 			if(track) {
+				BackPaintHint();
 				Sync();
 				Action();
 				WhenLayout();

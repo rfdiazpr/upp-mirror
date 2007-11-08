@@ -4,6 +4,7 @@
 
 #define IMAGE_META(k, v)
 
+#define PREMULTIPLIED
 #define IMAGE_ID(n)
 #define IMAGE_BEGIN_DATA
 #define IMAGE_END_DATA(n, c)
@@ -59,7 +60,6 @@ UPP::Iml& IMAGECLASS::Iml() {
 	#undef  IMAGE_BEGIN_DATA
 	#undef  IMAGE_DATA
 	#undef  IMAGE_END_DATA
-
 	#define IMAGE_BEGIN_DATA { static const UPP::byte data[] = {
 	#define IMAGE_DATA(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,aa,ab,ac,ad,ae,af,b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,ba,bb,bc,bd,be,bf)\
 	                   a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,aa,ab,ac,ad,ae,af,b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,ba,bb,bc,bd,be,bf,
@@ -67,6 +67,19 @@ UPP::Iml& IMAGECLASS::Iml() {
 	#define IMAGE_END_DATA(n, c)   }; iml.AddData(data, n, c); }
 
 		#include IMAGEFILE
+
+	#undef IMAGE_BEGIN_DATA
+	#undef IMAGE_END_DATA
+	#undef IMAGE_DATA
+	#define IMAGE_BEGIN_DATA
+	#define IMAGE_END_DATA(n, c)
+	#define IMAGE_DATA(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,aa,ab,ac,ad,ae,af,b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,ba,bb,bc,bd,be,bf)
+
+	#undef PREMULTIPLIED
+	#define PREMULTIPLIED iml.Premultiplied();
+		#include IMAGEFILE
+	#undef PREMULTIPLIED
+	#define PREMULTIPLIED
 
 	}
 	return iml;

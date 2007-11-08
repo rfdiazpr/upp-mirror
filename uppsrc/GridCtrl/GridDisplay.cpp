@@ -20,6 +20,18 @@ static Image (*vhdr[])() =
 	GridImg::VHdr5
 };
 
+void GridDisplay::SetDefault()
+{
+	SetTextAlign();
+	SetHorzMargin();
+	SetVertMargin();
+	SetTheme();
+}
+
+WString GridDisplay::GetStdConvertedValue(const Value &v) const
+{
+	return IsString(v) ? v : StdConvert().Format(v);
+}
 
 void GridDisplay::Paint(Draw &w, int x, int y, int cx, int cy, const Value &val, dword style,
 						Color &fg, Color &bg, Font &fnt, bool found, int fs, int fe)
@@ -38,17 +50,22 @@ void GridDisplay::Paint(Draw &w, int x, int y, int cx, int cy, const Value &val,
 
 	if(cx > lm + rm && cy > tm + bm)
 	{
-		if(lm > 0) w.DrawRect(x, y, lm, cy, mg);
-		if(rm > 0) w.DrawRect(x + cx - rm, y, rm, cy, mg);
-		if(tm > 0) w.DrawRect(x, y, cx, tm, mg);
-		if(bm > 0) w.DrawRect(x, y + cy - bm, cx, bm, mg);
-
 		int nx = x + lm;
 		int ny = y + tm;
 		int ncx = cx - lm - rm;
 		int ncy = cy - tm - bm;
-
-		w.DrawRect(nx, ny, cx - lm - rm, cy - tm - bm, bg);
+		
+		if(IsNull(bgImg))
+		{
+			if(lm > 0) w.DrawRect(x, y, lm, cy, mg);
+			if(rm > 0) w.DrawRect(x + cx - rm, y, rm, cy, mg);
+			if(tm > 0) w.DrawRect(x, y, cx, tm, mg);
+			if(bm > 0) w.DrawRect(x, y + cy - bm, cx, bm, mg);
+	
+			w.DrawRect(nx, ny, ncx, ncy, bg);
+		}
+		else
+			w.DrawImage(x, y, cx, cy, bgImg);		
 
 		w.Clip(nx, ny, ncx, ncy);
 
@@ -70,7 +87,9 @@ void GridDisplay::Paint(Draw &w, int x, int y, int cx, int cy, const Value &val,
 		}
 
 		if(!(style & GD::NOTEXT))
-			DrawText(w, nx, nx, ny, ncx, ncy, al, (const wchar *) (WString) val, fnt, fg, bg, found, fs, fe, style & GD::WRAP);
+		{
+			DrawText(w, nx, nx, ny, ncx, ncy, al, GetStdConvertedValue(val), fnt, fg, bg, found, fs, fe, style & GD::WRAP);
+		}
 
 		w.End();
 	}
@@ -81,12 +100,9 @@ void GridDisplay::Paint(Draw &w, int x, int y, int cx, int cy, const Value &val,
 void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, int cx, int cy, const Value &val, dword style,
 		                     bool indicator, bool moved, int sortmode, int sortcol, int sortcnt, bool horizontal)
 {
-	static int ccy = -1;
-
 	bool chameleon = style & GD::CHAMELEON;
 	bool highlight = style & GD::HIGHLIGHT;
 	bool readonly  = style & GD::READONLY;
-
 
 	if(chameleon)
 	{
@@ -129,7 +145,6 @@ void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, in
 
 		Color dark(76, 83, 92);
 		Color bright(White);
-
 
 		if(!firstx) w.DrawRect(x, y, 1, cy, bright);
 		if(!firsty) w.DrawRect(x, y, cx, 1, bright);
@@ -227,7 +242,7 @@ void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, in
 
 		Color fg = style & GD::READONLY ? SColorDisabled() : SColorText();
 
-		DrawText(w, tx, nx, ny, ncx, ncy, al, (const wchar *) (WString) (val), font, fg, SColorPaper, 0, 0, 0, style & GD::WRAP);
+		DrawText(w, tx, nx, ny, ncx, ncy, al, GetStdConvertedValue(val), font, fg, SColorPaper, 0, 0, 0, style & GD::WRAP);
 
 		w.End();
 	}
@@ -235,8 +250,10 @@ void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, in
 
 void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int align, const wchar *s, const Font &font, const Color &fg, const Color &bg, bool found, int fs, int fe, bool wrap)
 {
+	if(*s == 0)
+		return;
+	
 	int tcy = font.Info().GetHeight();
-	//w.Clip(x, y, cx, cy);
 
 	const wchar *p = s;
 	const wchar *t = s;
@@ -280,6 +297,9 @@ void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int al
 		p = s;
 	}
 
+	Size isz = GridImg::Dots2().GetSize();
+	int gcx = cx - (wrap ? 0 : isz.cx); 
+	
 	while(true)
 	{
 		bool nextline = *p == '\n';
@@ -292,21 +312,26 @@ void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int al
 			int tx = x;
 			tsz = GetTextSize(t, font, p - t);
 
-			if(wrap && tsz.cx > cx)
+			if(tsz.cx > gcx)
 			{
 				int size = 0;
 				const wchar * e = t;
 				while(e < p)
 				{
-					size += GetTextSize(e, font, 1).cx;
-					if(size > cx)
+					int tcx = GetTextSize(e, font, 1).cx;
+					size += tcx;
+					if(size > gcx)
 						break;
 					e++;
 				}
+				
 				p = e;
-				if(p == t)
-					p = t + 1;
-				textbreak = true;
+				if(wrap)
+				{
+					textbreak = true;
+					if(p == t)
+						p = t + 1;
+				}
 			}
 
 			if(align & GD::RIGHT)
@@ -329,7 +354,22 @@ void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int al
 				tfg = Black();
 			}
 			
-			w.DrawText(max(mx, tx), ty, t, font, tfg, p - t);
+			bool dots = !wrap && tsz.cx > gcx;
+			if(dots)
+			{
+				w.Clip(x, y, cx, cy);
+				w.DrawImage(x + cx - isz.cx, ty + font.Info().GetAscent() - isz.cy, GridImg::Dots2, tfg);
+				w.End();
+				if(p > t)
+				{
+					w.Clip(x, y, cx - isz.cx , cy);
+					w.DrawText(max(mx, tx), ty, t, font, tfg, p - t);
+					w.End();
+				}
+			}
+			else
+				w.DrawText(max(mx, tx), ty, t, font, tfg, p - t);
+					
 			ty += tcy;
 			t = textbreak ? p : p + 1;
 		}
@@ -345,8 +385,6 @@ void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int al
 		}
 
 	}
-
-	//w.End();
 }
 
 END_UPP_NAMESPACE

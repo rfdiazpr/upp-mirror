@@ -4,6 +4,7 @@ NAMESPACE_UPP
 
 CH_STYLE(ProgressIndicator, Style, StyleDefault)
 {
+	classic = GUI_GlobalStyle() == GUISTYLE_CLASSIC;
 	hlook = CtrlsImg::PI();
 	hchunk = CtrlsImg::PIC();
 	vlook = CtrlsImg::VPI();
@@ -13,9 +14,9 @@ CH_STYLE(ProgressIndicator, Style, StyleDefault)
 Size ProgressIndicator::GetMsz()
 {
 	Size sz = GetSize();
-	Rect mg = ChMargins(style->hlook);
+	Rect mg = ChMargins(style->classic || percent || !IsNull(color) ? EditFieldEdge()
+	                    : sz.cx > sz.cy ? style->hlook : style->vlook);
 	sz.cx -= mg.left + mg.right;
-	mg = ChMargins(style->vlook);
 	sz.cy -= mg.top + mg.bottom;
 	return sz;
 }
@@ -29,42 +30,26 @@ void ProgressIndicator::Paint(Draw& w) {
 	if(total <= 0) {
 		int l = max(msz.cx, msz.cy) & ~7;
 		p0 = pxp - l / 4;
-		if(p0 < 0) {
-			x0 = (pxp - l / 4 + 65536) & 7;
-			p0 = 0;
-		}
 		p = min(p - p0, max(msz.cx, msz.cy) - p0);
 	}
-	if(GUI_GlobalStyle() >= GUISTYLE_XP && !percent) {
-		w.DrawRect(sz, SColorPaper);
-		if(sz.cy > sz.cx) {
-			ChPaint(w, sz, style->vlook);
-			Rect r = ChMargins(style->vlook);
-			ChPaint(w, r.left, sz.cy - r.bottom - p - p0, sz.cx - r.left - r.right, p,
-			        style->vchunk);
-		}
-		else {
-			ChPaint(w, sz, style->hlook);
-			Rect r = ChMargins(style->hlook);
-			ChPaint(w, r.left + p0, r.top, p, sz.cy - r.top - r.bottom, style->hchunk);
-		}
-	}
-	else {
-		DrawBorder(w, sz, InsetBorder());
-		sz -= 4;
+	if(style->classic || percent || !IsNull(color)) {
+		ChPaintEdge(w, sz, EditFieldEdge());
+		Rect mg = ChMargins(EditFieldEdge());
+		sz -= Size(mg.left + mg.right, mg.top + mg.bottom);
 		Rect r1, r2, r3;
-		r1 = r2 = r3 = RectC(2, 2, sz.cx, sz.cy);
+		r1 = r2 = r3 = RectC(mg.left, mg.top, sz.cx, sz.cy);
+		w.Clip(r1);
 		if(sz.cx > sz.cy) {
-			r1.right = r2.left = min(p, sz.cx) + 2 + p0;
-			r3.right = 2 + p0;
+			r1.right = r2.left = min(p, sz.cx) + mg.left + p0;
+			r3.right = mg.left + p0;
 			r3.bottom = r1.bottom;
 		}
 		else {
-			r2.bottom = r1.top = sz.cy - min(p, sz.cy) + 2 + p0;
-			r3.bottom = 2 + p0;
+			r2.bottom = r1.top = sz.cy - min(p, sz.cy) + mg.left + p0;
+			r3.bottom = mg.top + p0;
 			r3.right = r1.right;
 		}
-		w.DrawRect(r1, SColorHighlight);
+		w.DrawRect(r1, Nvl(color, SColorHighlight()));
 		w.DrawRect(r2, SColorPaper);
 		w.DrawRect(r3, SColorPaper);
 		if(percent) {
@@ -79,6 +64,23 @@ void ProgressIndicator::Paint(Draw& w) {
 			w.DrawText(px, py, pt, StdFont(), SColorText);
 			w.End();
 		}
+		w.End();
+	}
+	else {
+		if(sz.cy > sz.cx) {
+			ChPaint(w, sz, style->vlook);
+			Rect r = ChMargins(style->vlook);
+			w.Clip(r.left, r.top, sz.cx - r.left - r.right, sz.cy - r.top - r.bottom);
+			ChPaint(w, r.left, sz.cy - r.bottom - p - p0, sz.cx - r.left - r.right, p,
+			        style->vchunk);
+		}
+		else {
+			ChPaint(w, sz, style->hlook);
+			Rect r = ChMargins(style->hlook);
+			w.Clip(r.left, r.top, sz.cx - r.left - r.right, sz.cy - r.top - r.bottom);
+			ChPaint(w, r.left + p0, r.top, p, sz.cy - r.top - r.bottom, style->hchunk);
+		}
+		w.End();
 	}
 }
 
@@ -116,6 +118,7 @@ ProgressIndicator::ProgressIndicator() {
 	NoWantFocus();
 	total = actual = 0;
 	percent = false;
+	color = Null;
 }
 
 ProgressIndicator::~ProgressIndicator() {}

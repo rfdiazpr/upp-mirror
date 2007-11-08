@@ -19,7 +19,11 @@ NAMESPACE_UPP
 #define LLOG(x)
 
 enum {
-	UM_TASKBAR = WM_USER + 1024,
+	UM_TASKBAR_ = WM_USER + 1024,
+	NIN_BALLOONSHOW_ = WM_USER + 2,
+	NIN_BALLOONHIDE_ = WM_USER + 3,
+	NIN_BALLOONTIMEOUT_ = WM_USER + 4,
+	NIN_BALLOONUSERCLICK_ = WM_USER + 5,
 };
 
 TrayIcon::TrayIcon()
@@ -28,7 +32,7 @@ TrayIcon::TrayIcon()
 	Ctrl::Hide();
 	Zero(nid);
 	nid.sz = IsWin2K() ? sizeof(NotifyIconNew) : sizeof(NotifyIconOld);
-	nid.message = UM_TASKBAR;
+	nid.message = UM_TASKBAR_;
 	nid.hwnd = GetHWND();
 	static int id;
 	nid.id = ++id;
@@ -126,9 +130,29 @@ void TrayIcon::DoMenu(Bar& bar)
 	Menu(bar);
 }
 
+void TrayIcon::BalloonLeftDown()
+{
+	WhenBalloonLeftDown();
+}
+
+void TrayIcon::BalloonShow()
+{
+	WhenBalloonShow();
+}
+
+void TrayIcon::BalloonHide()
+{
+	WhenBalloonHide();
+}
+
+void TrayIcon::BalloonTimeout()
+{
+	WhenBalloonTimeout();
+}
+
 LRESULT TrayIcon::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
-	if(message == UM_TASKBAR)
+	if(message == UM_TASKBAR_)
 		switch(lParam) {
 		case WM_LBUTTONDOWN:
 			LeftDown();
@@ -143,6 +167,18 @@ LRESULT TrayIcon::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_RBUTTONDOWN:
 			::SetForegroundWindow(nid.hwnd);
 			MenuBar::Execute(NULL, THISBACK(DoMenu), GetMousePos());
+			return TRUE;
+		case NIN_BALLOONSHOW_:
+			BalloonShow();
+			return TRUE;
+		case NIN_BALLOONHIDE_:
+			BalloonHide();
+			return TRUE;
+		case NIN_BALLOONTIMEOUT_:
+			BalloonTimeout();
+			return TRUE;
+		case NIN_BALLOONUSERCLICK_:
+			BalloonLeftDown();
 			return TRUE;
 		}
 	return Ctrl::WindowProc(message, wParam, lParam);

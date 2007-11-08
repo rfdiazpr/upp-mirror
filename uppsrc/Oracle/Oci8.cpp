@@ -301,8 +301,6 @@ public:
 	Oracle8RefCursorStub(SqlConnection *cn) : cn(cn) {}
 	virtual SqlConnection *CreateConnection() { return cn; }
 
-	virtual int            GetDialect() const { return ORACLE; }
-
 private:
 	SqlConnection *cn;
 };
@@ -799,7 +797,7 @@ bool   Oracle8::IsOpen() const {
 	return svchp;
 }
 
-bool Oracle8::Open(const String& connect_string, String *warn) {
+bool Oracle8::Open(const String& connect_string, bool use_objects, String *warn) {
 	String name, pwd, server;
 	const char *b = connect_string, *p = b;
 	while(*p && *p != '/' && *p != '@')
@@ -813,10 +811,17 @@ bool Oracle8::Open(const String& connect_string, String *warn) {
 	}
 	if(*p == '@')
 		server = ++p;
-	return Login(name, pwd, server, warn);
+	return Login(name, pwd, server, use_objects, warn);
 }
 
-bool Oracle8::Login(const char *name, const char *pwd, const char *db, String *warn) {
+static void OCIInitError(Oracle8& ora, String infn)
+{
+	ora.Logoff();
+	ora.SetError(NFormat(t_("Error initializing OCI8 library (%s)"), infn),
+		t_("Connecting to Oracle database."), 0, NULL, Sql::CONNECTION_BROKEN);
+}
+
+bool Oracle8::Login(const char *name, const char *pwd, const char *db, bool use_objects, String *warn) {
 	LLOG("Oracle8::Login");
 	level = 0;
 	Logoff();
@@ -824,19 +829,46 @@ bool Oracle8::Login(const char *name, const char *pwd, const char *db, String *w
 	user = ToUpper(String(name));
 	RLOG("Loading OCI8 library");
 	if(!oci8.Load()) {
-		SetError(t_("Error running OCI8 Oracle connection dynamic library."), t_("Connecting to Oracle database."), 0, NULL, Sql::CONNECTION_BROKEN);
+		SetError(t_("Error loading OCI8 Oracle connection dynamic library."),
+			t_("Connecting to Oracle database."), 0, NULL, Sql::CONNECTION_BROKEN);
 		return false;
 	}
 	RLOG("OCI8 loaded -> OCIInitialize, OCIEnvInit");
-	if(oci8.OCIInitialize(OCI_THREADED | OCI_OBJECT, NULL, NULL, NULL, NULL)
-	|| oci8.OCIEnvInit(&envhp, OCI_DEFAULT, 0, NULL)
-	|| !AllocOciHandle(&errhp, OCI_HTYPE_ERROR)
-	|| !AllocOciHandle(&svchp, OCI_HTYPE_SVCCTX)
-	|| !AllocOciHandle(&srvhp, OCI_HTYPE_SERVER)
-	|| !AllocOciHandle(&seshp, OCI_HTYPE_SESSION))
-	{
-		Logoff();
-		SetError(t_("Error initializing OCI8 library."), t_("Connecting to Oracle database."), 0, NULL, Sql::CONNECTION_BROKEN);
+	int accessmode = (use_objects ? OCI_OBJECT : 0)
+#if defined(_MULTITHREADED) || defined(PLATFORM_POSIX)
+		| OCI_THREADED
+#endif
+	;
+	if(oci8.OCIEnvCreate) {
+		if(oci8.OCIEnvCreate(&envhp, accessmode, 0, 0, 0, 0, 0, 0)) {
+			OCIInitError(*this, "OCIEnvCreate");
+			return false;
+		}
+	}
+	else {
+		if(oci8.OCIInitialize(accessmode, 0, 0, 0, 0)) {
+			OCIInitError(*this, "OCIInitialize");
+			return false;
+		}
+		if(oci8.OCIEnvInit(&envhp, OCI_DEFAULT, 0, 0)) {
+			OCIInitError(*this, "OCIEnvInit");
+			return false;
+		}
+	}
+	if(!AllocOciHandle(&errhp, OCI_HTYPE_ERROR)) {
+		OCIInitError(*this, "OCI_HTYPE_ERROR");
+		return false;
+	}
+	if(!AllocOciHandle(&svchp, OCI_HTYPE_SVCCTX)) {
+		OCIInitError(*this, "OCI_HTYPE_SVCCTX");
+		return false;
+	}
+	if(!AllocOciHandle(&srvhp, OCI_HTYPE_SERVER)) {
+		OCIInitError(*this, "OCI_HTYPE_SERVER");
+		return false;
+	}
+	if(!AllocOciHandle(&seshp, OCI_HTYPE_SESSION)) {
+		OCIInitError(*this, "OCI_HTYPE_SESSION");
 		return false;
 	}
 	RLOG("Attributes allocated -> OCIServerAttach");
@@ -894,8 +926,12 @@ void Oracle8::Logoff() {
 	svchp = NULL;
 	FreeOciHandle(errhp, OCI_HTYPE_ERROR);
 	errhp = NULL;
-	FreeOciHandle(envhp, OCI_HTYPE_ENV);
-	envhp = NULL;
+	if(envhp) {
+		FreeOciHandle(envhp, OCI_HTYPE_ENV);
+		envhp = NULL;
+		if(!oci8.OCIEnvCreate)
+			oci8.OCITerminate(OCI_DEFAULT);
+	}
 }
 
 void   Oracle8::PostError() {
@@ -962,21 +998,6 @@ void   Oracle8::RollbackTo(const String& savepoint) {
 Oracle8::Oracle8(T_OCI8& oci8_)
 : oci8(oci8_)
 {
-#ifdef PLATFORM_POSIX
-	char *orahome = getenv("ORACLE_HOME");
-	if(!orahome || !*orahome)
-#ifdef CPU_SPARC
-		orahome = "/ora_sw/app/oracle/product/9.0.1/";
-#else
-		orahome = "/opt/oracle/OraHome1";
-#endif
-#ifdef CPU_SPARC
-	oci8.SetLibName(AppendFileName(orahome, "lib32/libclntsh.so"));
-#else
-	oci8.SetLibName(AppendFileName(orahome, "lib/libclntsh.so"));
-#endif
-//	puts("OCI = " + OCI8.LibName());
-#endif
 	level = 0;
 	envhp = NULL;
 	errhp = NULL;

@@ -13,8 +13,15 @@ void BarPane::Paint(Draw& w)
 {
 	Size sz = GetSize();
 	Ctrl *q = GetParent();
-	if(!q || !q->IsTransparent())
-		w.DrawRect(sz, menu ? (GUI_GlobalStyle() >= GUISTYLE_XP ? SColorMenu : SColorFace) : SColorFace);
+	if(!q || !q->IsTransparent()) {
+		BarCtrl *p = dynamic_cast<BarCtrl *>(q);
+		Value v;
+		if(p) v = p->GetBackground();
+		if(IsNull(v))
+			w.DrawRect(sz, menu ? (GUI_GlobalStyle() >= GUISTYLE_XP ? SColorMenu : SColorFace) : SColorFace);
+		else
+			ChPaint(w, sz, v);
+	}
 	for(int i = 0; i < breakpos.GetCount(); i++)
 		if(horz) {
 			w.DrawRect(0, breakpos[i], sz.cx, 1, SColorShadow);
@@ -463,6 +470,11 @@ Size BarCtrl::SizeCtrl::GetMinSize() const
 	sz.cx = sz.cx <= 0 ? chsz.cx : sz.cx;
 	sz.cy = sz.cy <= 0 ? chsz.cy : sz.cy;
 	return sz;
+}
+
+Value BarCtrl::GetBackground() const
+{
+	return Null;
 }
 
 void BarCtrl::Clear()

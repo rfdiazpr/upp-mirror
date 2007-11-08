@@ -128,8 +128,13 @@ fn DrawSpinButtons(w, r)
 	w.DrawImage((h7 - 5) / 2 + x, (h - h2 - 3) / 2 + r.top + h2, "CtrlsImg::SpD");
 }
 
+fn XMinSize()
+{
+	return Size(8, 13);
+}
+
 subctrl NormalSize {
-	GetMinSize() { sz = GetTextSize("X"); sz.cy += 2; return sz; }
+	GetMinSize() { sz = XMinSize(); sz.cy += 2; return sz; }
 	GetStdSize() { sz = GetMinSize(); sz.cx *= 7; return sz; }
 };
 
@@ -186,7 +191,7 @@ subctrl TextCtrl {
 ctrl Label {
 	group "Static";
 
-	GetMinSize() { return GetTextSize("X", .StdFont); }
+	GetMinSize() { return XMinSize(); }
 	GetStdSize() { sz = GetTextSize("Label", .StdFont); sz.cy += 6; return sz; }
 
 	>TextCtrl;
@@ -217,8 +222,8 @@ ctrl Label {
 ctrl StaticText {
 	group "Static";
 
-	GetMinSize() { return GetTextSize("X", .StdFont); }
-	GetStdSize() { sz = GetTextSize("Label", .StdFont); sz.cy += 6; return sz; }
+	GetMinSize() { return XMinSize(); }
+	GetStdSize() { sz = XMinSize(); sz.cy += 6; return sz; }
 
 	>TextCtrl;
 
@@ -303,7 +308,7 @@ ctrl DataPusher {
 ctrl Button {
 	group "Push";
 
-	GetMinSize() { sz = GetTextSize("X"); sz.cy += 2; return sz; }
+	GetMinSize() { sz = XMinSize(); sz.cy += 2; return sz; }
 	GetStdSize() { sz = GetMinSize(); sz.cx *= 7; return sz; }
 
 	Text   SetLabel ? "Button label";
@@ -338,7 +343,7 @@ ctrl Option {
 	bool   NotNull;
 	Text   Tip @2;
 
-	GetMinSize() { sz = GetTextSize("X"); sz.cy += 2; return sz; }
+	GetMinSize() { sz = XMinSize(); sz.cy += 2; return sz; }
 	GetStdSize() { sz = GetMinSize(); sz.cx *= 7; sz.cy = max(16, sz.cy); return sz; }
 
 	ViewRect(w) {
@@ -367,7 +372,7 @@ ctrl Option {
 ctrl Switch {
 	group "Push";
 
-	GetMinSize() { sz = GetTextSize("X"); sz.cy += 2; return sz; }
+	GetMinSize() { sz = XMinSize(); sz.cy += 2; return sz; }
 	GetStdSize() { sz = GetMinSize(); sz.cx *= 7; sz.cy = max(16, sz.cy); return sz; }
 
 	Doc    SetLabel;
@@ -411,7 +416,7 @@ ctrl Switch {
 ctrl EditField {
 	group "Input fields";
 
-	GetMinSize() { sz = GetTextSize("X"); sz.cy += 6; return sz; }
+	GetMinSize() { sz = XMinSize(); sz.cy += 6; return sz; }
 	GetStdSize() { sz = GetMinSize(); sz.cx *= 8; return sz; }
 
 	Frame SetFrame = InsetFrame();
@@ -443,7 +448,7 @@ ctrl EditField {
 ctrl DocEdit {
 	group "Editors";
 
-	GetMinSize() { sz = GetTextSize("X"); sz.cy += 6; return sz; }
+	GetMinSize() { sz = XMinSize(); sz.cy += 6; return sz; }
 	GetStdSize() { sz = GetMinSize(); sz.cx *= 8; return sz; }
 
 	Frame SetFrame = InsetFrame();
@@ -604,7 +609,7 @@ ctrl EditDoubleSpin {
 ctrl DropList {
 	group "Input fields";
 
-	GetMinSize() { sz = GetTextSize("X"); sz.cy += 6; return sz; }
+	GetMinSize() { sz = XMinSize(); sz.cy += 6; return sz; }
 	GetStdSize() { sz = GetMinSize(); sz.cx *= 8; return sz; }
 
 	Frame SetFrame = InsetFrame();
@@ -739,6 +744,12 @@ fn PaintCenterImage(w, x, y, img)
 	w.DrawImage(x - sz.cx / 2, y - sz.cy / 2, img);
 }
 
+fn PaintCenterText(w, x, y, text, fnt, color)
+{
+	sz = GetTextSize(text, fnt);
+	w.DrawText(x - sz.cx / 2, y - sz.cy / 2, text, fnt, color);
+}
+
 fn PaintRcCenterImage(w, r, img)
 {
 	PaintCenterImage(w, (r.left + r.right) >> 1, (r.top + r.bottom) >> 1, img);
@@ -837,7 +848,7 @@ ctrl ArrayCtrl {
 ctrl RichTextView {
 	group "Complex";
 
-	GetMinSize() { sz = GetTextSize("X"); sz.cy += 6; return sz; }
+	GetMinSize() { sz = XMinSize(); sz.cy += 6; return sz; }
 	GetStdSize() { sz = GetMinSize(); sz.cx *= 8; return sz; }
 
 	Frame SetFrame = InsetFrame() @1;
@@ -861,7 +872,7 @@ ctrl RichTextCtrl {
 
 	>RichTextView;
 
-	GetMinSize() { sz = GetTextSize("X"); sz.cy += 6; return sz; }
+	GetMinSize() { sz = XMinSize(); sz.cy += 6; return sz; }
 	GetStdSize() { sz = GetMinSize(); sz.cx *= 8; return sz; }
 
 	Frame SetFrame = NullFrame() @1;
@@ -877,16 +888,19 @@ ctrl RichTextCtrl {
 	}
 }
 
-ctrl DateTimeCtrl {
+ctrl DropDate {
 	group "Input fields";
 
-	GetMinSize() { sz = GetTextSize("X"); sz.cy += 6; return sz; }
+	GetMinSize() { sz = XMinSize(); sz.cy += 6; return sz; }
 	GetStdSize() { sz = GetMinSize(); sz.cx *= 13; return sz; }
 
 	Frame SetFrame = InsetFrame();
 	bool  SetEditable = true @2 ? "Editable";
 	bool  WantFocus = true;
 	bool  SelectAll = true;
+	bool  SwapMonthYear = false;
+	bool  OneButton = false;
+	bool  NotNull = false;
 	Text  Tip;
 
 	Paint(w) {
@@ -897,7 +911,34 @@ ctrl DateTimeCtrl {
 		DrawEdgeButton(w, RectC(r.right - n, r.top, n, n));
 		w.DrawImage((n - 7) / 2 + r.right - n, (n - 6) / 2 + r.top, "ClassicCtrlsImg::DA");
 		w.DrawText(3, (GetSize().cy - GetTextSize("", Arial(10)).cy) / 2,
-			(.SetEditable ? "" : "R/O ") + "01/05/2007", Arial(10), :SMagenta);
+			(.SetEditable ? "" : "R/O ") + (.NotNull ? "!" : "") + "01/05/2007", Arial(10), :SMagenta);
+	}
+}
+
+ctrl DropTime {
+	group "Input fields";
+
+	GetMinSize() { sz = XMinSize(); sz.cy += 6; return sz; }
+	GetStdSize() { sz = GetMinSize(); sz.cx *= 15; return sz; }
+
+	Frame SetFrame = InsetFrame();
+	bool  SetEditable = true @2 ? "Editable";
+	bool  WantFocus = true;
+	bool  SelectAll = true;
+	bool  SwapMonthYear = false;
+	bool  Seconds = true;
+	bool  NotNull = false;
+	Text  Tip;
+
+	Paint(w) {
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+		w.DrawRect(r, :SWhite);
+		n = r.bottom - r.top;
+		DrawEdgeButton(w, RectC(r.right - n, r.top, n, n));
+		w.DrawImage((n - 7) / 2 + r.right - n, (n - 6) / 2 + r.top, "ClassicCtrlsImg::DA");
+		w.DrawText(3, (GetSize().cy - GetTextSize("", Arial(10)).cy) / 2,
+			(.SetEditable ? "" : "R/O ") + (.NotNull ? "!" : "") + "01/05/2007 10:34:58", Arial(10), :SMagenta);
 	}
 }
 
@@ -910,6 +951,98 @@ fn PaintButton(w, r, img)
 	PaintRcCenterImage(w, r, img);
 }
 
+ctrl Clock {
+	group "Input fields";
+	GetMinSize() { return Size(150, 156); }
+	GetStdSize() { return Size(150, 156); }
+	Frame SetFrame = BlackFrame();
+	bool  SetEditable = true @2 ? "Editable";
+	bool  WantFocus = true;
+	bool  Seconds = true;
+	Text  Tip;
+
+	PaintPtr(w, cmx, cmy, pos, m, d, color, cf) {
+		dx = m * sin(pos * 2 * 3.1415);
+		dy = m * cos(pos * 2 * 3.1415);
+
+		sx = cmx - dx * 35 / 2.0;
+		sy = cmy + dy * 35 / 2.0;
+		ex = cmx + dx * cf;
+		ey = cmy - dy * cf;
+
+		w.DrawLine(sx, sy, ex, ey, d, color);
+	}
+
+	Paint(w) {
+		ts = GetTextSize("X");
+		r = GetRect();
+		ro = GetRect();
+		b = r.bottom;
+		hs = 20;
+		r.bottom = hs;
+		w.DrawImageColor(r, "CtrlImg:Bg", :SColorHighlight, 120);
+		r.top = r.bottom;
+		r.bottom = b;
+		w.DrawRect(r, :SWhite);
+		width = r.right - r.left;
+		height = r.bottom - r.top;
+
+		w.DrawRect(0, hs, 5, ro.bottom - hs, Color(200, 200, 200));
+		w.DrawRect(ro.right - 5, hs, 5, ro.bottom - hs, Color(200, 200, 200));
+
+		cmx = width / 2;
+		cmy = height / 2 + hs;
+
+		cf = min(cmy - 15, cmx) - 5;
+		for(i = 1; i <= 60; i++)
+		{
+			x = cmx + (0.95 * sin(i * 3.1415 / 30.0) * cf);
+			y = cmy - (0.95 * cos(i * 3.1415 / 30.0) * cf);
+			if(i % 5 == 0)
+				w.DrawRect(x, y, 2, 2, :SBlack);
+			else
+				w.DrawRect(x, y, 1, 1, :SBlack);
+		}
+
+		fnt = Arial(10);
+
+		for(i = 1; i <= 12; i++)
+		{
+			x = cmx + (0.8 * sin(i * 3.1415 / 6.0) * cf);
+			y = cmy - (0.8 * cos(i * 3.1415 / 6.0) * cf);
+			PaintCenterText(w, x, y, to_string(i), .fnt, :Black);
+		}
+
+		hour = 10;
+		minute = 34;
+		second = 15;
+
+		tm = hour * 3600 + minute * 60 + second;
+		PaintPtr(w, cmx, cmy, tm / 3600 / 12, 0.5, 5, :SRed, cf);
+		PaintPtr(w, cmx, cmy, tm / 3600, 0.6, 3, :SBlue, cf);
+		PaintPtr(w, cmx, cmy, tm / 60, 0.75, 2, :SBlack, cf);
+
+		r = Rect(ro.left + 3, ro.top + 2, ro.left + 3 + 16, ro.top + 18);
+		PaintRcCenterImage(w, r, "ClassicCtrlsImg::LA");
+		left = r.left;
+		r.left += 15 + 25;
+		r.right += 15 + 25;
+		PaintRcCenterImage(w, r, "ClassicCtrlsImg::RA");
+		PaintCenterText(w, (r.right + left) / 2, (r.top + r.bottom) / 2, to_string(hour), .fnt, :White);
+
+		r = Rect(ro.right - 3 - 16, ro.top + 2, ro.right - 3, ro.top + 18);
+		//PaintButton(w, r, "ClassicCtrlsImg::RA");
+		PaintRcCenterImage(w, r, "ClassicCtrlsImg::RA");
+		right = r.right;
+		r.left -= 15 + 25;
+		r.right -= 15 + 25;
+		PaintRcCenterImage(w, r, "ClassicCtrlsImg::LA");
+		PaintCenterText(w, (right + r.left) / 2, (r.top + r.bottom) / 2, to_string(minute), .fnt, :White);
+
+		DrawCtrlFrame(w, ro, .SetFrame);
+	}
+}
+
 ctrl Calendar {
 	group "Input fields";
 
@@ -920,6 +1053,8 @@ ctrl Calendar {
 	bool  SetEditable = true @2 ? "Editable";
 	bool  WantFocus = true;
 	bool  SelectAll = true;
+	bool  SwapMonthYear = false;
+	bool  OneButton = false;
 	Text  Tip;
 
 	Paint(w) {
@@ -928,8 +1063,9 @@ ctrl Calendar {
 		ro = GetRect();
 		f = StdFont();
 		b = r.bottom;
-		r.bottom = 20;
-		w.DrawRect(r, Color(51, 102, 204));
+		hs = 20;
+		r.bottom = hs;
+		w.DrawImageColor(r, "CtrlImg:Bg", :SColorHighlight, 120);
 		r.top = r.bottom;
 		r.bottom = b;
 		w.DrawRect(r, :SWhite);
@@ -981,21 +1117,21 @@ ctrl Calendar {
 		ts = GetTextSize(today, StdFont().Bold());
 		w.DrawText((r.right - ts.cx) / 2, r.bottom - 3 - ts.cy, today, f.Bold(), :SBlue);
 
-		current = "January 2007";
-		ts = GetTextSize(current, StdFont().Bold());
-		w.DrawText((r.right - ts.cx) / 2, (ro.top + 20 - ts.cy) / 2, current, f.Bold(), :SWhite);
-
 		r = Rect(ro.left + 3, ro.top + 2, ro.left + 3 + 16, ro.top + 18);
-		PaintButton(w, r, "ClassicCtrlsImg::LA");
-		r.left += 15;
-		r.right += 15;
-		PaintButton(w, r, "ClassicCtrlsImg::RA");
+		PaintRcCenterImage(w, r, "ClassicCtrlsImg::LA");
+		left = r.left;
+		r.left += 15 + 65;
+		r.right += 15 + 65;
+		PaintRcCenterImage(w, r, "ClassicCtrlsImg::RA");
+		PaintCenterText(w, (left + r.right) / 2, (r.top + r.bottom) / 2, "January", f.Bold(), :SWhite);
 
 		r = Rect(ro.right - 3 - 16, ro.top + 2, ro.right - 3, ro.top + 18);
-		PaintButton(w, r, "ClassicCtrlsImg::RA");
-		r.left -= 15;
-		r.right -= 15;
-		PaintButton(w, r, "ClassicCtrlsImg::LA");
+		PaintRcCenterImage(w, r, "ClassicCtrlsImg::RA");
+		right = r.right;
+		r.left -= 15 + 40;
+		r.right -= 15 + 40;
+		PaintRcCenterImage(w, r, "ClassicCtrlsImg::LA");
+		PaintCenterText(w, (r.left + right) / 2, (r.top + r.bottom) / 2, "2007", f.Bold(), :SWhite);
 
 		DrawCtrlFrame(w, ro, .SetFrame);
 	}

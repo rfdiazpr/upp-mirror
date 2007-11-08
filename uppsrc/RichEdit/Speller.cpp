@@ -216,8 +216,8 @@ Bits RichEdit::SpellParagraph(const RichPara& para)
 			const wchar *q = s;
 			while(s < end && IsLetter(*s) || s + 1 < end && *s == '\'' && IsLetter(s[1]))
 				s++;
-			if(!SpellWord(q, s - q, lang[q - text]))
-				e.Set(q - text, true, s - q);
+			if(!SpellWord(q, int(s - q), lang[q - text]))
+				e.Set(int(q - text), true, int(s - q));
 		}
 		else
 			s++;

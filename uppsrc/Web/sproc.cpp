@@ -154,7 +154,7 @@ void LocalSlaveProcess::Open(const char *command, const char *envptr) {
 	si.hStdInput  = hInputRead;
 	si.hStdOutput = hOutputWrite;
 	si.hStdError  = hErrorWrite;
-	int n = strlen(command) + 1;
+	int n = (int)strlen(command) + 1;
 	Buffer<char> cmd(n);
 	memcpy(cmd, command, n);
 	bool h = CreateProcess(NULL, cmd, &sa, &sa, TRUE,
@@ -516,7 +516,7 @@ void RemoteSlaveProcess::Open(const char *host, int port, const char *cmdline, c
 	output[0] = output[1] = output[2] = Null;
 	if(!ClientSocket(socket, host, port, true, NULL, REQUEST_TIMEOUT))
 		throw Exc(NFormat(t_("Opening host '%s' / port %d failed, error = %s"), host, port, Socket::GetErrorText()));
-	int len = strlen(cmdline);
+	int len = (int)strlen(cmdline);
 	if(envptr && *envptr) {
 		const char *e = envptr;
 		while(*e)
@@ -587,7 +587,7 @@ void RemoteSlaveProcess::Recv(int part, int timeout)
 		ASSERT(current_part >= 0 && current_part < __countof(output));
 		for(const char *t; e > p && (t = (const char *)memchr(p, 0, e - p));)
 		{
-			output[current_part].Cat(p, t - p);
+			output[current_part].Cat(p, int(t - p));
 			p = t + 1;
 			if(++current_part >= __countof(output))
 			{
@@ -597,7 +597,7 @@ void RemoteSlaveProcess::Recv(int part, int timeout)
 			}
 		}
 		if(p < e)
-			output[current_part].Cat(p, e - p);
+			output[current_part].Cat(p, int(e - p));
 	}
 	SVRLOG("-> finished, current_part = " << current_part);
 }

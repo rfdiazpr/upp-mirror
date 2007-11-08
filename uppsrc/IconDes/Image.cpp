@@ -377,10 +377,12 @@ void IconDes::Colors()
 		int a_mul = int(256 * (double)~dlg.a_mul);
 		int a_add = int(256 * (double)~dlg.a_add);
 		while(s < e) {
+			Unmultiply(t, t, 1);
 			t->r = Saturate255(((r_mul * s->r) >> 8) + r_add);
 			t->g = Saturate255(((g_mul * s->g) >> 8) + g_add);
 			t->b = Saturate255(((b_mul * s->b) >> 8) + b_add);
 			t->a = Saturate255(((a_mul * s->a) >> 8) + a_add);
+			Premultiply(t, t, 1);
 			s++;
 			t++;
 		}

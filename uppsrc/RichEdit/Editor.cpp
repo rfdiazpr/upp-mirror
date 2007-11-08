@@ -554,6 +554,14 @@ RichEdit::RichEdit()
 	style.NoWantFocus();
 	language.NoWantFocus();
 
+	setstyle = &style.InsertButton(0).SetMonoImage(CtrlImg::smallleft()).Tip(t_("Store as style"));
+	setstyle->WhenPush = THISBACK(SetStyle);
+	style.InsertButton(0).SetMonoImage(RichEditImg::ManageStyles()).Tip(t_("Style manager"))
+	     .WhenPush = THISBACK(Styles);
+	style.Tip(t_("Style"));
+
+	style <<= THISBACK(Style);
+
 	pagesz = Size(3968, 6074);
 	unit = UNIT_POINT;
 	zoom = 100;
@@ -644,18 +652,6 @@ RichEdit::RichEdit()
 	ink.Tip(t_("Text color"));
 	paper <<= THISBACK(SetPaper);
 	paper.Tip(t_("Background color"));
-
-	setstyle.SetMonoImage(CtrlImg::smallleft());
-	setstyle <<= THISBACK(SetStyle);
-	setstyle.Tip(t_("Store as style"));
-	styles.SetMonoImage(RichEditImg::ManageStyles());
-	styles <<= THISBACK(Styles);
-	styles.Tip(t_("Style manager"));
-	style.InsertFrame(1, setstyle);
-	style.InsertFrame(1, styles);
-	style.Tip(t_("Style"));
-
-	style <<= THISBACK(Style);
 
 	ReadStyles();
 

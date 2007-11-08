@@ -136,8 +136,9 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 			return 0;
 		case LOOK_MARGINS:
 			return Rect(1, 1, 1, 1);
+		case LOOK_ISBODYOPAQUE:
 		case LOOK_ISOPAQUE:
-			return 1;
+			return !IsNull(c);
 		}
 	}
 	if(IsType<Image>(v)) {
@@ -179,6 +180,37 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 			return img.GetKind() == IMAGE_OPAQUE;
 		if(IsNull(img))
 			return 1;
+		if(op == LOOK_ISBODYOPAQUE) {
+			static VectorMap<int64, bool> btc;
+			int64 key = img.GetSerialId();
+			int q = btc.Find(key);
+			if(q < 0) {
+				bool opaque = true;
+				Rect m = ChMargins(img);
+				Rect r = img.GetSize();
+				r.left += max(m.left, 0);
+				r.right -= max(m.right, 0);
+				r.top += m.top;
+				r.bottom -= m.bottom;
+				int cx = r.right - r.left;
+				if(cx >= 0)
+					for(int y = r.top; y < r.bottom && opaque; y++) {
+						const RGBA *s = img[y] + r.left;
+						const RGBA *e = s + cx;
+						while(s < e) {
+							if(s->a != 255) {
+								opaque = false;
+								break;
+							}
+						}
+					}
+				if(btc.GetCount() > 100)
+					btc.Clear();
+				btc.Add(key, q);
+				return opaque;
+			}
+			return btc[q];
+		}
 		if(op == LOOK_PAINT || op == LOOK_PAINTEDGE) {
 			LTIMING("ChPaint Image");
 			w.Clipoff(r);
@@ -362,6 +394,20 @@ void ChPaintEdge(Draw& w, int x, int y, int cx, int cy, const Value& look)
 	sChOp(w, RectC(x, y, cx, cy), look, LOOK_PAINTEDGE);
 }
 
+void ChPaintBody(Draw& w, const Rect& r, const Value& look)
+{
+	Rect m = ChMargins(look);
+	w.Clip(r);
+	ChPaint(w, Rect(r.left - m.left, r.top - m.top, r.right + m.right, r.bottom + m.bottom),
+	        look);
+	w.End();
+}
+
+void ChPaintBody(Draw& w, int x, int y, int cx, int cy, const Value& look)
+{
+	ChPaintBody(w, RectC(x, y, cx, cy), look);
+}
+
 Rect ChMargins(const Value& look)
 {
 	NilDraw w;
@@ -372,6 +418,52 @@ bool ChIsOpaque(const Value& look)
 {
 	NilDraw w;
 	return sChOp(w, Null, look, LOOK_ISOPAQUE);
+}
+
+bool ChIsBodyOpaque(const Value& look)
+{
+	NilDraw w;
+	return sChOp(w, Null, look, LOOK_ISBODYOPAQUE);
+}
+
+void   DeflateMargins(Rect& r, const Rect& m)
+{
+	r = Rect(r.left + m.left, r.top + m.top, r.right - m.right, r.bottom - m.bottom);
+}
+
+void   ChDeflateMargins(Rect& r, const Value& look)
+{
+	return DeflateMargins(r, ChMargins(look));
+}
+
+void DeflateMargins(Size& sz, const Rect& m)
+{
+	sz = Size(sz.cx + m.left + m.right, sz.cy + m.top + m.bottom);
+}
+
+void ChDeflateMargins(Size& sz, const Value& look)
+{
+	DeflateMargins(sz, ChMargins(look));
+}
+
+void   InflateMargins(Rect& r, const Rect& m)
+{
+	r = Rect(r.left - m.left, r.top - m.top, r.right + m.right, r.bottom + m.bottom);
+}
+
+void   ChInflateMargins(Rect& r, const Value& look)
+{
+	return InflateMargins(r, ChMargins(look));
+}
+
+void InflateMargins(Size& sz, const Rect& m)
+{
+	sz = Size(sz.cx + m.left + m.right, sz.cy + m.top + m.bottom);
+}
+
+void ChInflateMargins(Size& sz, const Value& look)
+{
+	InflateMargins(sz, ChMargins(look));
 }
 
 Image AdjustColors(const Image& img) {

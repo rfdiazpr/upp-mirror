@@ -99,7 +99,9 @@ protected:
 	Value           GetItemDateShort(int i) const;
 	Value           GetItemDateLong(int i) const;
 	Value           GetItemLogical(int i) const;
-	Value           GetItemMemo(int i) const;
+	Value           GetItemMemoString(int i) const;
+	Value           GetItemMemoBinary(int i) const;
+	Value           GetItemMemo(int i, bool binary) const;
 	Value           GetItemEmpty(int i) const;
 	Value           GetItemDouble8(int i) const;
 	Value           GetItemInt4(int i) const;

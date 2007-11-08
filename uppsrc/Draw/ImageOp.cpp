@@ -27,22 +27,29 @@ Size DstSrc(ImageBuffer& dest, Point& p, const Image& src, Rect& sr)
 	return sz;
 }
 
-void Copy(ImageBuffer& dest, Point p, const Image& src, const Rect& srect)
+void DstSrcOp(ImageBuffer& dest, Point p, const Image& src, const Rect& srect,
+              void (*op)(RGBA *t, const RGBA *s, int n))
 {
 	Rect sr = srect;
 	Size sz = DstSrc(dest, p, src, sr);
 	if(sz.cx > 0)
 		while(--sz.cy >= 0)
-			memcpy(dest[p.y++] + p.x, src[sr.top++] + sr.left, sz.cx * sizeof(RGBA));
+			(*op)(dest[p.y++] + p.x, src[sr.top++] + sr.left, sz.cx);
+}
+
+void Copy(ImageBuffer& dest, Point p, const Image& src, const Rect& srect)
+{
+	DstSrcOp(dest, p, src, srect, Copy);
 }
 
 void Over(ImageBuffer& dest, Point p, const Image& src, const Rect& srect)
 {
-	Rect sr = srect;
-	Size sz = DstSrc(dest, p, src, sr);
-	if(sz.cx > 0)
-		while(--sz.cy >= 0)
-			AlphaBlend(dest[p.y++] + p.x, src[sr.top++] + sr.left, sz.cx);
+	DstSrcOp(dest, p, src, srect, AlphaBlend);
+}
+
+void OverStraightOpaque(ImageBuffer& dest, Point p, const Image& src, const Rect& srect)
+{
+	DstSrcOp(dest, p, src, srect, AlphaBlendStraightOpaque);
 }
 
 void  Copy(Image& dest, Point p, const Image& _src, const Rect& srect)
@@ -58,6 +65,14 @@ void  Over(Image& dest, Point p, const Image& _src, const Rect& srect)
 	Image src = _src;
 	ImageBuffer b(dest);
 	Over(b, p, src, srect);
+	dest = b;
+}
+
+void  OverStraightOpaque(Image& dest, Point p, const Image& _src, const Rect& srect)
+{
+	Image src = _src;
+	ImageBuffer b(dest);
+	OverStraightOpaque(b, p, src, srect);
 	dest = b;
 }
 
@@ -512,6 +527,23 @@ Image  RotateAntiClockwise(const Image& img)
 	for(int x = 0; x < sz.cx; x++)
 		for(int y = 0; y < sz.cy; y++)
 			ib[x][y] = img[y][sz.cx - x - 1];
+	return ib;
+}
+
+Image MirrorHorz(const Image& img)
+{
+	Size sz = img.GetSize();
+	Image h = img;
+	ImageBuffer ib(h);
+	for(int y = 0; y < sz.cy; y++) {
+		RGBA *b = ib[y] + 0;
+		RGBA *e = b + sz.cx - 1;
+		while(b < e) {
+			Swap(*b, *e);
+			b++;
+			e--;
+		}
+	}
 	return ib;
 }
 

@@ -5,7 +5,8 @@ charset "UTF-8";
 uses
 	CtrlLib,
 	plugin\sqlite3,
-	GridCtrl;
+	GridCtrl,
+	DropGrid;
 
 file
 	HomeBudget.t,
@@ -18,3 +19,4 @@ file
 
 mainconfig
 	"" = "GUI";
+

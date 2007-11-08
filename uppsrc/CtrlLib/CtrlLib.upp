@@ -33,10 +33,11 @@ file
 	HeaderCtrl.cpp,
 	ArrayCtrl.h,
 	ArrayCtrl.cpp,
+	MultiButton.h,
+	MultiButton.cpp,
 	DropChoice.h,
-	DropBox.cpp,
+	PopupTable.cpp,
 	DropList.cpp,
-	DropPusher.cpp,
 	DropChoice.cpp,
 	StaticCtrl.h,
 	Static.cpp,
@@ -91,7 +92,6 @@ file
 	TrayIconX11.cpp,
 	CtrlUtil.cpp,
 	Update.cpp,
-	XPTheme.dli,
 	Ctrl.iml,
 	Ctrl.lay,
 	CtrlLib.t font 2 charset "UTF-8",
@@ -118,4 +118,3 @@ file
 	COPYING,
 	COPYING-PLAIN,
 	AUTHORS;
-

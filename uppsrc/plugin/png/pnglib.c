@@ -1,5 +1,8 @@
 #ifdef flagWIN32
 
+#define PNG_NO_MMX_CODE
+#define PNG_USE_GLOBAL_ARRAYS
+
 #include "lib/png.c"
 #include "lib/pngerror.c"
 #include "lib/pnggccrd.c"

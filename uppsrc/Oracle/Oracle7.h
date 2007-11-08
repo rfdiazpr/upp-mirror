@@ -14,7 +14,7 @@ NAMESPACE_UPP
 
 class OCI7Connection;
 
-void OCI7SetDllPath(String oci7_path, T_OCI7& oci7 = OCI7());
+void OCI7SetDllPath(String oci7_path, T_OCI7& oci7 = OCI7_());
 
 class Oracle7 : public SqlSession {
 public:
@@ -73,7 +73,7 @@ public:
 
 	void    SetTransactionMode(int mode)            { tmode = mode; }
 
-	Oracle7(T_OCI7& oci7 = OCI7());
+	Oracle7(T_OCI7& oci7 = OCI7_());
 	~Oracle7();
 };
 

@@ -11,7 +11,10 @@ static int s_month_off[] = {
 	181, 212, 243, 273, 304, 334
 };
 
-#define IsLeapYear(year)  ((year) % 4 == 0 && (year) % 100 || (year) % 400 == 0)
+bool IsLeapYear(int year)
+{
+	return ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0);
+}
 
 void Date::Serialize(Stream& s)
 {

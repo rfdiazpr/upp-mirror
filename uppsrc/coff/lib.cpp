@@ -117,7 +117,7 @@ void ArchiveJob::LoadLibrary(String libfile)
 	{
 //		if(*ptr == '\n')
 //			ptr++;
-		int offset = ptr - mapping.Begin();
+		int offset = int(ptr - mapping.Begin());
 		COFF_IMAGE_ARCHIVE_MEMBER_HEADER hdr;
 		memcpy(&hdr, ptr, sizeof(hdr));
 		ptr += sizeof(hdr);
@@ -144,7 +144,7 @@ void ArchiveJob::LoadLibrary(String libfile)
 			const byte *p = nameptr;
 			while(p < namelim && *p && *p != '/')
 				p++;
-			String objname(nameptr, p - nameptr);
+			String objname(nameptr, int(p - nameptr));
 			String objdata(ptr, size);
 			char temp[13];
 			memcpy(temp, hdr.Date, 12);

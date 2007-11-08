@@ -278,8 +278,6 @@ void Ide::Project(Bar& menu) {
 	{
 		mainconfiglist.Enable(idestate == EDITING);
 		buildmode.Enable(idestate == EDITING);
-		buildmethod.Enable(idestate == EDITING);
-		dropmode.Enable(idestate == EDITING);
 		menu.Add(mainconfiglist, 120);
 		menu.Gap(4);
 		menu.Add(buildmode, 120);

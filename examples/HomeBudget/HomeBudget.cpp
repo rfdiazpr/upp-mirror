@@ -1,4 +1,5 @@
 #include <CtrlLib/CtrlLib.h>
+#include <DropGrid/DropGrid.h>
 #include <GridCtrl/GridCtrl.h>
 #include <plugin/sqlite3/lib/sqlite3.h>
 #include <plugin/sqlite3/Sqlite3.h>
@@ -80,7 +81,7 @@ void HomeBudget::Setup()
 
 	money.AddIndex(ID);
 	money.AddColumn(CAT_ID, t_("Category")).Edit(category).SetConvert(category);
-	money.AddColumn(PM, t_("Plus / Minus")).SetDisplay(Single<DispPM>()).NoConvertion().Edit(plusminus);
+	money.AddColumn(PM, t_("Plus / Minus")).SetDisplay(Single<DispPM>()).Edit(plusminus);
 	money.AddColumn(VALUE, t_("Value")).Edit(val).Default(0).SetConvert(Single<ConvDouble>());
 	money.AddColumn(DT, t_("When")).Edit(dt).Default(GetSysDate());
 	money.AddColumn(DESC, t_("Describe")).Edit(es);
@@ -163,11 +164,6 @@ void HomeBudget::Setup()
 	about <<= THISBACK(About);
 	newcat <<= THISBACK(NewCategory);
 	help <<= THISBACK(Help);
-
-	category.DropFocus();
-	dlpm.DropFocus();
-	months.DropFocus();
-	yesno.DropFocus();
 
 	newcat.SetImage(Images::SmallPlus());
 	category.AddFrame(newcat);

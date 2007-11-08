@@ -40,16 +40,19 @@ inline int32 Round(double a)
 }
 
 #ifdef flagDEBUG
-#define LG Log
+#define LG LogGui
 #else
 #define LG
 #endif
-#define LGR Log
+#define LGR //LogCon
 
 extern LineEdit *dlog;
 extern DropList *dlev;
 
-void Log(const char *fmt, ...);
-void Log(int level, const char *fmt, ...);
+void LogGui(const char *fmt, ...);
+void LogGui(int level, const char *fmt, ...);
+
+void LogCon(const char *fmt, ...);
+void LogCon(int level, const char *fmt, ...);
 
 #endif

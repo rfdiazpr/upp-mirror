@@ -191,20 +191,16 @@ static Htmls HtmlButton(const char *text, const char *id)
 
 static String ReadServerVariable(EXTENSION_CONTROL_BLOCK *ecb, const char *varname)
 {
-	int alloc = 16384;
-	Buffer<byte> buffer(alloc);
-	DWORD needed = alloc;
-	LOG("ReadServerVariable(" << varname << ")");
-	if(!ecb->GetServerVariable(ecb->ConnID, (char *)varname, buffer, &needed)) {
-
-		LOG("-> error, alloc = " << (int)needed);
-		buffer.Alloc(alloc = ++needed);
-		if(!ecb->GetServerVariable(ecb->ConnID, (char *)varname, buffer, &needed)) {
-			LOG("-> double error, " << GetErrorMessage(GetLastError()));
-			return String::GetVoid();
-		}
+	byte buffer[1024];
+	DWORD needed = __countof(buffer);
+	if(ecb->GetServerVariable(ecb->ConnID, (char *)varname, buffer, &needed))
+		return String(buffer, (int)needed - 1);
+	StringBuffer strbuf(needed);
+	if(ecb->GetServerVariable(ecb->ConnID, (char *)varname, strbuf, &needed)) {
+		strbuf.SetLength((int)needed - 1);
+		return strbuf;
 	}
-	return String(buffer, (int)needed);
+	return String::GetVoid();
 }
 
 static void WriteHeader(EXTENSION_CONTROL_BLOCK *ecb, const char *response, const char *header)
@@ -330,7 +326,7 @@ private:
 	public:
 		Connection(WIsapiClient& owner, const String& raw_host);
 
-		bool        Run(int conn_id, const HttpQuery& query, EXTENSION_CONTROL_BLOCK *ecb);
+		bool        Run(int conn_id, const HttpQuery& query, One<CheckedSection::Lock>& owner_lock, EXTENSION_CONTROL_BLOCK *ecb);
 		String      RawRun(const HttpQuery& query, EXTENSION_CONTROL_BLOCK *ecb, int& data_length);
 		void        Kill();
 		void        Status();
@@ -359,7 +355,6 @@ private:
 		int             conn_id;
 		CheckedSection  conn_lock;
 		WIsapiClient&   owner;
-		One<CheckedSection::Lock> owner_lock;
 		HttpQuery       query;
 		Socket          socket; // server connection
 	};
@@ -448,19 +443,17 @@ void WIsapiClient::Connection::Status()
 	ISAPILOG("retry ticks = " << (int)retry_ticks);
 }
 
-bool WIsapiClient::Connection::Run(int cid, const HttpQuery& new_query, EXTENSION_CONTROL_BLOCK *ecb)
+bool WIsapiClient::Connection::Run(int cid, const HttpQuery& new_query, One<CheckedSection::Lock>& owner_lock, EXTENSION_CONTROL_BLOCK *ecb)
 {
 	{
 		CheckedSection::Lock conn_guard(conn_lock);
 
-		if(is_busy)
-		{
+		if(is_busy) {
 			CONNLOG("connection busy, ignoring new request " + FormatInt(cid));
 			return false;
 		}
 
-		if(is_error)
-		{
+		if(is_error) {
 			int delta = GetTickCount() - retry_ticks;
 			ISAPILOG("WIsapiClient::Connection; retry in " << delta);
 			if(delta >= 0)
@@ -473,17 +466,20 @@ bool WIsapiClient::Connection::Run(int cid, const HttpQuery& new_query, EXTENSIO
 		is_busy = true;
 	}
 
+	CONNLOG(String() << "before leaving client lock: " << owner.client_lock.Get());
+	CONNLOG(String() << "owner lock = " << FormatIntHex(~owner_lock));
 	owner_lock.Clear();
 //	owner.client_lock.Leave();
-	CONNLOG(String() << "leaving client lock = " << owner.client_lock.Get());
+	CONNLOG(String() << "after leaving client lock: " << owner.client_lock.Get());
 
 	dword start_ticks = GetTickCount();
 
 	int data_length = 0;
 	String error = RawRun(new_query, ecb, data_length);
 
-	CONNLOG(String() << "re-entering client lock = " << owner.client_lock.Get());
+	CONNLOG(String() << "before re-entering client lock: " << owner.client_lock.Get());
 	owner_lock = new CheckedSection::Lock(owner.client_lock);
+	CONNLOG(String() << "after re-entering client lock: " << owner.client_lock.Get());
 //	owner.client_lock.Enter();
 
 	bool is_ok = IsNull(error);
@@ -674,28 +670,25 @@ bool WIsapiClient::Run(int cid, const HttpQuery& query, EXTENSION_CONTROL_BLOCK 
 
 	ISAPILOG("WIsapiClient(" << cid << "): assigning request");
 	enum { ASSIGN_TIMEOUT = 60000 };
-	do
-	{
-		ISAPILOG("WIsapiClient(" << cid << "): entering client lock = " << client_lock.Get());
+	do {
+		ISAPILOG("WIsapiClient(" << cid << "): before entering client lock: " << client_lock.Get());
 		One<CheckedSection::Lock> lock = new CheckedSection::Lock(client_lock);
+		ISAPILOG("WIsapiClient(" << cid << "): after entering client lock: " << client_lock.Get());
 //		client_lock.Enter();
 		if(connections.IsEmpty())
 			return false;
 		int repcnt = connections.GetCount();
 		int i = 0;
-		if(repcnt > 0)
-		{
+		if(repcnt > 0) {
 			int ticks = connections[0].last_msecs;
 			for(int t = 1; t < connections.GetCount(); t++)
 				if(connections[t].last_msecs < ticks)
 					ticks = connections[i = t].last_msecs;
 		}
-		while(--repcnt >= 0)
-		{
+		while(--repcnt >= 0) {
 			Connection& conn = connections[i];
 			ISAPILOG("WIsapiClient(" << cid << "): trying connection #" << i);
-			if(conn.Run(cid, query, ecb))
-			{
+			if(conn.Run(cid, query, lock, ecb)) {
 //				client_lock.Leave();
 				ISAPILOG("WIsapiClient(" << cid << "): request completed, lock = " << client_lock.Get());
 				return true;
@@ -703,9 +696,10 @@ bool WIsapiClient::Run(int cid, const HttpQuery& query, EXTENSION_CONTROL_BLOCK 
 			if(++i >= connections.GetCount())
 				i = 0;
 		}
+		ISAPILOG("WIsapiClient(" << cid << "): before leaving client lock: " << client_lock.Get());
 		lock.Clear();
 //		client_lock.Leave();
-		ISAPILOG("WIsapiClient(" << cid << "): leaving client lock = " << client_lock.Get());
+		ISAPILOG("WIsapiClient(" << cid << "): after leaving client lock: " << client_lock.Get());
 		ISAPIDEBUG(free_event.Wait(500);)
 	}
 	while(int(GetTickCount() - ticks) <= ASSIGN_TIMEOUT);
@@ -745,6 +739,7 @@ dword WIsapiClient::Run(int cid, EXTENSION_CONTROL_BLOCK *ecb)
 
 	AddHeaders(query, ReadServerVariable(ecb, "ALL_RAW"));
 
+	query.Set("$$IPADDR", ReadServerVariable(ecb, "REMOTE_ADDR"));
 	query.Set("$$WISAPI", dll_filename);
 	query.Set("$$METHOD", ecb->lpszMethod);
 	query.Set("$$QUERY",  ecb->lpszQueryString);
@@ -784,14 +779,12 @@ dword WIsapiClient::Run(int cid, EXTENSION_CONTROL_BLOCK *ecb)
 
 	CheckedSection::Lock guard(client_lock);
 	if(connections.IsEmpty())
-		out << t_("Currently there are no servers "
-	"connected.\n"
+		out << t_("Currently there are no servers connected.\n"
 	"You can connect servers using ")
 		<< HtmlLink(query.GetString("$$PATH") + "?configure") / t_("the configuration page")
 		<< ".";
 	else
-		out << t_("No connected server can process the "
-	"current request.");
+		out << t_("No connected server can process the current request.");
 
 	ISAPILOG("WIsapiClient(" << cid << "):->error page: " << out);
 	out = GetHttpErrorPage(query, out, show_headers);

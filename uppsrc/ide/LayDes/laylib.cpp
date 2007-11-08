@@ -163,11 +163,7 @@ Font FontEsc(EscValue v)
 		return Null;
 	Font f = ((SIC_Font *)l.handle)->font;
 	if(f.GetHeight() == 0)
-#ifdef PLATFORM_X11
-		f.Height(12);
-#else
-		f.Height(11);
-#endif
+		f.Height(StdFont().GetHeight());
 	return f;
 }
 
@@ -325,6 +321,17 @@ void EscDraw::DrawRect(EscEscape& e)
 		e.ThrowError("wrong number of arguments in call to 'DrawRect'");
 }
 
+void EscDraw::DrawLine(EscEscape& e)
+{
+	if(e.GetCount() == 4)
+		w.DrawLine(PointEsc(e[0]), PointEsc(e[1]), e.Int(2), ColorEsc(e[3]));
+	else
+	if(e.GetCount() == 6)
+		w.DrawLine(e.Int(0), e.Int(1), e.Int(2), e.Int(3), e.Int(4), ColorEsc(e[5]));
+	else
+		e.ThrowError("wrong number of arguments in call to 'DrawLine'");
+}
+
 void EscDraw::DrawText(EscEscape& e)
 {
 	if(e.GetCount() < 3 || e.GetCount() > 6)
@@ -336,17 +343,17 @@ void EscDraw::DrawText(EscEscape& e)
 	if(e[2].IsInt())
 	{
 		int z = e.Int(2);
-		e.CheckArray(3);			
-		WString text = e[3];		
+		e.CheckArray(3);
+		WString text = e[3];
 		if(e.GetCount() > 4)
-			font = FontEsc(e[4]);		
+			font = FontEsc(e[4]);
 		if(e.GetCount() > 5)
 			color = ColorEsc(e[5]);
 		w.DrawText(x, y, z, text, Nvl(font, StdFont()), color);
 	}
 	else
 	{
-		e.CheckArray(2);			
+		e.CheckArray(2);
 		WString text = e[2];
 		if(e.GetCount() > 3)
 			font = FontEsc(e[3]);
@@ -419,19 +426,48 @@ void EscDraw::GetTextSize(EscEscape& e)
 
 void EscDraw::DrawImage(EscEscape& e)
 {
-	e.CheckArray(2);
-	w.DrawImage(e.Int(0), e.Int(1), GetUscImage((String)e[2]));
+	int cnt = e.GetCount();
+	if(cnt == 2)
+		w.DrawImage(RectEsc(e[0]), GetUscImage((String)e[1]));
+	else
+	if(cnt == 3)
+		w.DrawImage(e.Int(0), e.Int(1), GetUscImage((String)e[2]));
+	else
+	if(cnt == 5)
+		w.DrawImage(e.Int(0), e.Int(1), e.Int(2), e.Int(3), GetUscImage((String)e[4]));
+	else
+		e.ThrowError("wrong number of arguments in call to 'DrawImage'");
+}
+
+void EscDraw::DrawImageColor(EscEscape& e)
+{
+	int cnt = e.GetCount();
+	if(cnt != 4 && cnt != 5 && cnt != 7)
+		e.ThrowError("wrong number of arguments in call to 'DrawImageColor'");
+
+	Image img = Colorize(GetUscImage((String)e[cnt - 3]), ColorEsc(e[cnt - 2]), e.Int(cnt - 1));
+
+	if(cnt == 4)
+		w.DrawImage(RectEsc(e[0]), img);
+	else
+	if(cnt == 5)
+		w.DrawImage(e.Int(0), e.Int(1), img);
+	else
+	if(cnt == 7)
+		w.DrawImage(e.Int(0), e.Int(1), e.Int(2), e.Int(3), img);
 }
 
 EscDraw::EscDraw(EscValue& v, Draw& w)
 	: w(w)
 {
 	v.Escape("DrawRect(...)", this, THISBACK(DrawRect));
+	v.Escape("DrawLine(...)", this, THISBACK(DrawLine));
 	v.Escape("DrawText(...)", this, THISBACK(DrawText));
 	v.Escape("DrawSmartText(...)", this, THISBACK(DrawSmartText));
 	v.Escape("DrawQtf(...)", this, THISBACK(DrawQtf));
 	v.Escape("GetTextSize(...)", this, THISBACK(GetTextSize));
-	v.Escape("DrawImage(x, y, name)", this, THISBACK(DrawImage));
+	v.Escape("DrawImage(...)", this, THISBACK(DrawImage));
+	v.Escape("DrawImageColor(...)", this, THISBACK(DrawImageColor));
 }
 
 ArrayMap<String, EscValue>& LayGlobal()

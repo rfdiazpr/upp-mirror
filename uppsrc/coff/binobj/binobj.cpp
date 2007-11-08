@@ -233,7 +233,7 @@ void BinObj::PrepareSymbolTable(String binfile)
 		Zero(filesym);
 		filesym.SectionNumber = -2;
 		filesym.StorageClass = COFF_IMAGE_SYM_CLASS_FILE;
-		filesym.NumberOfAuxSymbols = binfile.GetLength() / sizeof(COFF_IMAGE_SYMBOL) + 1;
+		filesym.NumberOfAuxSymbols = int(binfile.GetLength() / sizeof(COFF_IMAGE_SYMBOL) + 1);
 		memcpy(symbol_table.GetIter(AddSymbol(filesym, ".file")), binfile, binfile.GetLength() + 1);
 	}
 
@@ -264,7 +264,7 @@ void BinObj::FixAuxSymbols(int data_size)
 		COFF_IMAGE_AUX_SYMBOL msecaux;
 		Zero(msecaux);
 		msecaux.Section.Length = metadata.GetCount();
-		msecaux.Section.NumberOfRelocations = relocations.GetCount() / sizeof(COFF_IMAGE_RELOCATION);
+		msecaux.Section.NumberOfRelocations = int(relocations.GetCount() / sizeof(COFF_IMAGE_RELOCATION));
 		msecaux.Section.Number = SCN_METADATA;
 		memcpy(symbol_table.GetIter(aux_metadata_scn), &msecaux, COFF_IMAGE_SIZEOF_SYMBOL);
 	}
@@ -335,7 +335,7 @@ void BinObj::WriteFile(String objectfile)
 		Zero(hdr);
 		hdr.Machine = COFF_IMAGE_FILE_MACHINE_I386;
 		hdr.NumberOfSections = 2;
-		hdr.TimeDateStamp = time(NULL);
+		hdr.TimeDateStamp = (dword)time(NULL);
 		hdr.PointerToSymbolTable = symtbl_offset;
 		hdr.NumberOfSymbols = symbol_table.GetCount() / COFF_IMAGE_SIZEOF_SYMBOL;
 		hdr.Characteristics = COFF_IMAGE_FILE_LINE_NUMS_STRIPPED
@@ -353,7 +353,7 @@ void BinObj::WriteFile(String objectfile)
 		meta.PointerToRawData = sec1_offset;
 		meta.SizeOfRawData = metadata.GetCount();
 		meta.PointerToRelocations = (relocations.IsEmpty() ? 0 : reloc_offset);
-		meta.NumberOfRelocations = relocations.GetCount() / sizeof(COFF_IMAGE_RELOCATION);
+		meta.NumberOfRelocations = int(relocations.GetCount() / sizeof(COFF_IMAGE_RELOCATION));
 		meta.Characteristics = COFF_IMAGE_SCN_CNT_INITIALIZED_DATA
 			| COFF_IMAGE_SCN_ALIGN_4BYTES
 			| COFF_IMAGE_SCN_MEM_READ | COFF_IMAGE_SCN_MEM_WRITE;
@@ -412,7 +412,7 @@ int BinObj::AddMetaData(int value, int reloc_symbol)
 int BinObj::AddSymbol(COFF_IMAGE_SYMBOL& sym, const char *name)
 {
 	sym.N.Name.Short = sym.N.Name.Long = 0;
-	int nl = strlen(name);
+	int nl = (int)strlen(name);
 	if(nl <= 8)
 		memcpy(sym.N.ShortName, name, nl);
 	else {

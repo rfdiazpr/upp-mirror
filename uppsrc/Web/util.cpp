@@ -92,7 +92,7 @@ String UrlEncode(String s)
 			&& (IsAlNum(*p) || *p == ',' || *p == '.' || *p == '-'))
 			p++;
 		if(p > b)
-			out.Cat(b, p - b);
+			out.Cat(b, int(p - b));
 		if(p >= e)
 			break;
 		if(*p == ' ')
@@ -105,7 +105,7 @@ String UrlEncode(String s)
 
 String UrlEncode(String s, const char *specials)
 {
-	int l = strlen(specials);
+	int l = (int)strlen(specials);
 	const char *p = s, *e = s.End();
 	String out;
 	for(; p < e; p++)
@@ -114,7 +114,7 @@ String UrlEncode(String s, const char *specials)
 		while(p < e && (byte)*p > ' ' && (byte)*p < 127 && memchr(specials, *p, l) == 0)
 			p++;
 		if(p > b)
-			out.Cat(b, p - b);
+			out.Cat(b, int(p - b));
 		if(p >= e)
 			break;
 		if(*p == ' ')
@@ -208,7 +208,7 @@ String EncryptString(String password, String otp_key)
 String BinHexEncode(const char *s, const char *e)
 {
 	static const char bh[] = "0123456789ABCDEF";
-	int l = e - s;
+	int l = int(e - s);
 	StringBuffer out(2 * l);
 	char *p = out;
 	for(; s < e; s++) {
@@ -239,8 +239,8 @@ String Base64Encode(const char *b, const char *e)
 		"0123456789+/";
 	if(b == e)
 		return Null;
-	int out = (e - b + 2) / 3 * 4;
-	int rem = (e - b) % 3;
+	int out = (int(e - b) + 2) / 3 * 4;
+	int rem = int(e - b) % 3;
 	e -= rem;
 	StringBuffer s(out);
 	char *p = s;
@@ -291,7 +291,7 @@ String Base64Decode(const char *b, const char *e)
 /* Fx */0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 	};
 	String out;
-	for(unsigned full = (e - b) >> 2; full; full--)
+	for(unsigned full = unsigned(e - b) >> 2; full; full--)
 	{
 		byte c1 = dec64[b[0]], c2 = dec64[b[1]], c3 = dec64[b[2]], c4 = dec64[b[3]];
 		if((c1 | c2 | c3 | c4) & 0xC0)

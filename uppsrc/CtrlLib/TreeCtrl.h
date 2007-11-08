@@ -268,6 +268,8 @@ public:
 	TreeCtrl& PopUpEx(bool b = true)      { popupex = b; return *this; }
 	TreeCtrl& NoPopUpEx()                 { return PopUpEx(false); }
 
+	TreeCtrl& SetScrollBarStyle(const ScrollBar::Style& s) { sb.SetStyle(s); return *this; }
+
 	typedef TreeCtrl CLASSNAME;
 
 	TreeCtrl();

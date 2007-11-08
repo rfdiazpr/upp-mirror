@@ -4,52 +4,83 @@ NAMESPACE_UPP
 
 const Point Calendar::nullday = Point(-1, -1);
 
+void DrawBg(Draw& w, int x, int y, int cx, int cy, Color c)
+{
+	Image bg = CtrlImg::Bg();
+	Image nbg = Colorize(bg, c, 150);
+	w.DrawImage(x, y, cx, cy, nbg);
+}
+
+void PopUpCtrl::PopUp(Ctrl *owner, Rect &rt)
+{
+	Close();
+	Reset();
+	SetRect(rt);
+	Ctrl::PopUp(owner, true, true, GUI_DropShadows());
+}
+
+void PopUpCtrl::Deactivate()
+{
+	if(WhenDeactivate)
+	{
+		WhenDeactivate();
+	}
+	else if(IsOpen() && IsPopUp())
+	{
+		WhenPopDown();
+		IgnoreMouseClick();
+		Close();
+	}
+}
+
+bool PopUpCtrl::IsPopUp() const
+{
+	return popup || Ctrl::IsPopUp();
+}
+
+void PopUpCtrl::SetPopUp(bool b /* = true*/)
+{
+	popup = b;
+}
+
 Calendar::Calendar()
 {
 	SetFrame(BlackFrame());
-	style = NULL;
 
-	Add(mleft);
-	Add(mright);
-	Add(yleft);
-	Add(yright);
+	Add(spin_year);
+	Add(spin_month);
+	Add(spin_all);
 
-	mleft.Tip(t_("Previous month"));
-	mright.Tip(t_("Next month"));
-	yleft.Tip(t_("Previous year"));
-	yright.Tip(t_("Next year"));
+	spin_month.SetCallbacks(THISBACK(OnMonthLeft), THISBACK(OnMonthRight));
+	spin_month.SetTips(t_("Previous month"), t_("Next month"));
+	spin_year.SetCallbacks(THISBACK(OnYearLeft), THISBACK(OnYearRight));
+	spin_year.SetTips(t_("Previous year"), t_("Next year"));
+	spin_all.SetCallbacks(THISBACK(OnMonthLeft), THISBACK(OnMonthRight));
+	spin_all.SetTips(t_("Previous month"), t_("Next month"));
 
-	mleft  <<= THISBACK(OnMonthLeft);
-	mright <<= THISBACK(OnMonthRight);
-	yleft  <<= THISBACK(OnYearLeft);
-	yright <<= THISBACK(OnYearRight);
-
-	selall     = true;
-	isheader   = false;
-	istoday    = false;
-	washeader  = false;
-	wastoday   = false;
-
-	bs = 5;
+	time_mode = false;
+	swap_month_year = false;
+	one_button = false;
 	first_day = MONDAY;
+	selall = true;
+	bs = 5;
+	style = NULL;
 
 	Reset();
 }
 
 void Calendar::Reset()
 {
-	today = GetSysDate();
+	today = GetSysTime();
 	view = today;
 	view.day = 0;
 	sel = today;
 
-	isheader = false;
 	istoday = false;
-	washeader = false;
 	wastoday = false;
 
 	newday = oldday = nullday;
-	stoday = Format("%s: %s", t_("Today"), Format(today));
+	stoday = Format("%s: %s", t_("Today"), time_mode ? Format(today) : Format(Date(today)));
 }
 
 Calendar& Calendar::SetStyle(const Style& s)
@@ -158,10 +189,6 @@ int Calendar::WeekOfYear(int day, int month, int year) /* ISO-8601 */
 	return weeknum;
 }
 
-void Calendar::LeftDown(Point p, dword keyflags)
-{
-}
-
 void Calendar::LeftUp(Point p, dword keyflags)
 {
 	bool isnewday = newday != nullday;
@@ -193,27 +220,29 @@ void Calendar::LeftUp(Point p, dword keyflags)
 			refall = true;
 		}
 	}
-	else if(!istoday && !isheader)
+	else if(!istoday)
 		return;
 
-	Date dt;
+	Time tm = istoday ? today : view;
 
-	if(istoday)
-		dt = today;
-	else if(isheader)
-		dt = Date(view.year, view.month, 1);
+	if(time_mode)
+		WhenTime(tm);
 	else
-		dt = Date(view.year, view.month, view.day);
-
-	if(IsPopUp())
 	{
-		sel = dt;
+		tm.hour = 0;
+		tm.minute = 0;
+		tm.second = 0;
+	}
+
+	if(PopUpCtrl::IsPopUp())
+	{
+		sel = tm;
 		Deactivate();
 		WhenAction();
 	}
 	else
 	{
-		sel = dt;
+		sel = tm;
 		WhenAction();
 
 		if(refall)
@@ -228,9 +257,7 @@ void Calendar::LeftUp(Point p, dword keyflags)
 
 		RefreshDay(prevday);
 		if(istoday)
-			SetDate(dt);
-		else if(isheader)
-			RefreshDay(firstday);
+			SetDate(tm);
 		else
 			RefreshDay(newday);
 	}
@@ -267,18 +294,12 @@ void Calendar::MouseMove(Point p, dword keyflags)
 		wastoday = istoday;
 		RefreshToday();
 	}
-	isheader = MouseOnHeader(p);
-	if(isheader != washeader)
-	{
-		washeader = isheader;
-		RefreshHeader();
-	}
 }
 
 Image Calendar::CursorImage(Point p, dword keyflags)
 {
 	bool b = (selall == false ? Day(newday) > 0 : true);
-	if((newday != nullday && b) || istoday || isheader)
+	if((newday != nullday && b) || istoday)
 		return CtrlImg::HandCursor();
 	else
 		return Image::Arrow();
@@ -291,16 +312,6 @@ bool Calendar::MouseOnToday(Point p)
 	int x1 = x0 + sztoday.cx;
 	int y0 = sz.cy - (rh + sztoday.cy) / 2;
 	int y1 = y0 + sztoday.cy;
-	return (p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1);
-}
-
-bool Calendar::MouseOnHeader(Point p)
-{
-	Size sz = GetSize();
-	int x0 = (sz.cx - szcurdate.cx) / 2;
-	int x1 = x0 + szcurdate.cx;
-	int y0 = (hs - szcurdate.cy) / 2;
-	int y1 = y0 + szcurdate.cy;
 	return (p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1);
 }
 
@@ -324,8 +335,7 @@ void Calendar::RefreshToday()
 void Calendar::RefreshHeader()
 {
 	Size sz = GetSize();
-	int bw = btnw * 2 + 4;
-	Refresh(bw, 0, sz.cx - bw * 2, hs);
+	Refresh(0, 0, sz.cx, hs);
 }
 
 void Calendar::RefreshAll()
@@ -356,6 +366,9 @@ Size Calendar::ComputeSize()
 {
 	const Style &st = style ? *style : StyleDefault();
 	Font fnt = st.font;
+	spin_all.SetFont(fnt);
+	spin_month.SetFont(fnt);
+	spin_year.SetFont(fnt);
 
 	Size sz = IsPopUp() ? Size(-1, -1) : GetSize();
 	Size tsz = GetTextSize("WW", fnt.NoBold().NoUnderline());
@@ -365,6 +378,7 @@ Size Calendar::ComputeSize()
 
 	colw = (float)(tsz.cx + 6);
 	rowh = (float)(tsz.cy + 4);
+	hs = tsz.cy + 4;
 
 	rsz.cx = bs * 2 + 2 + (int)(colw * (cols + 1));
 	rsz.cy = 4 + (int)(rowh * (rows + 3));
@@ -383,11 +397,7 @@ Size Calendar::ComputeSize()
 	cw = (int)(colw);
 	rh = (int)(rowh);
 
-	hs = rh;
 	ts = rh;
-
-	btnh = rh - 4 - 1;
-	btnw = rh - 4;
 
 	return rsz;
 }
@@ -406,12 +416,18 @@ void Calendar::Paint(Draw &w)
 
 	if(w.IsPainting(0, 0, sz.cx, hs))
 	{
-		w.DrawRect(0, 0, sz.cx, hs, st.header);
+		DrawBg(w, 0, 0, sz.cx, hs, st.header);
 		curdate = Format("%s %d", MonthName(view.month - 1), view.year);
-		szcurdate = GetTextSize(curdate, fnt.Bold());
-		w.DrawText((sz.cx - szcurdate.cx) / 2, (hs - szcurdate.cy) / 2, curdate, fnt.Underline(isheader), st.curdate);
+		String month = MonthName(view.month - 1);
+		String year = AsString(view.year);
+		spin_month.SetText(month);
+		spin_year.SetText(year);
+		if(swap_month_year)
+			spin_all.SetText(month + " " + year);
+		else
+			spin_all.SetText(year + " " + month);
 	}
-	w.DrawRect(0, hs, sz.cx, sz.cy - ts - hs, st.background[0]);
+	w.DrawRect(0, hs, sz.cx, sz.cy - ts - hs, st.bgmain);
 
 	if(w.IsPainting(0, hs, sz.cx, rh))
 	{
@@ -431,7 +447,7 @@ void Calendar::Paint(Draw &w)
 	if(w.IsPainting(0, sz.cy - ts, sz.cx, ts))
 	{
 		sztoday = GetTextSize(stoday, fnt.Bold().Underline(istoday));
-		w.DrawRect(0, sz.cy - ts, sz.cx, ts, st.background[0]);
+		w.DrawRect(0, sz.cy - ts, sz.cx, ts, st.bgtoday);
 		w.DrawText((sz.cx - sztoday.cx) / 2, sz.cy - (ts + sztoday.cy) / 2, stoday, fnt, istoday ? st.selecttoday : st.today);
 	}
 
@@ -461,8 +477,8 @@ void Calendar::Paint(Draw &w)
 
 			if(w.IsPainting(xp, yp, cw, rh))
 			{
-				Color fg = st.foreground[0];
-				Color bg = st.background[0];
+				Color fg = st.fgmain;
+				Color bg = st.bgmain;
 
 				fnt.NoBold().NoUnderline();
 				bool special = false;
@@ -485,8 +501,8 @@ void Calendar::Paint(Draw &w)
 					}
 					if(d == today.day && m == today.month && y == today.year)
 					{
-						fg = st.foreground[1];
-						bg = st.background[1];
+						fg = st.fgtoday;
+						bg = st.bgtoday;
 						fnt.Bold();
 						special = true;
 
@@ -495,8 +511,8 @@ void Calendar::Paint(Draw &w)
 					}
 					if(d == sel.day && m == sel.month && y == sel.year)
 					{
-						fg = st.foreground[2];
-						bg = st.background[2];
+						fg = st.fgselect;
+						bg = st.bgselect;
 						fnt.Bold();
 						special = true;
 
@@ -528,7 +544,7 @@ void Calendar::Paint(Draw &w)
 				if(special)
 				{
 					DrawFrame(w, xp + 1, yp + 1, cw - 2, rh - 2, Black);
-					DrawFrame(w, xp, yp, cw, rh, st.background[0]);
+					DrawFrame(w, xp, yp, cw, rh, st.bgmain);
 				}
 
 				str = AsString(abs(d));
@@ -553,29 +569,40 @@ void Calendar::Paint(Draw &w)
 	lastrow = row;
 }
 
-void Calendar::Deactivate()
+void Calendar::State(int reason)
 {
-	if(IsOpen() && IsPopUp())
+	if(reason == OPEN)
 	{
-		WhenPopDown();
-		IgnoreMouseClick();
-		Close();
+		ComputeSize();
+
+		int yw = 0;
+		int mw = 0;
+		for(int i = 0; i < 12; i++)
+			mw = max(mw, spin_month.GetWidth(MonthName(i)));
+		
+		if(one_button)
+		{
+			yw = spin_year.GetWidth(" 0000", false);
+			spin_all.HCenterPos(mw + yw, 0).TopPos(0, hs);
+		}
+		else
+		{
+			yw = spin_year.GetWidth("0000");
+			
+			spin_month.TopPos(0, hs);
+			spin_year.TopPos(0, hs);
+			if(swap_month_year)
+			{
+				spin_month.RightPos(0, mw);
+				spin_year.LeftPos(0, yw);
+			}
+			else
+			{
+				spin_month.LeftPos(0, mw);
+				spin_year.RightPos(0, yw);
+			}
+		}
 	}
-}
-
-void Calendar::Layout()
-{
-	ComputeSize();
-
-	mleft.LeftPos(2, btnw).TopPos(2, btnh);
-	mleft.SetLeft().DrawEdge(0).SetImage(CtrlImg::smallleft());
-	mright.LeftPos(btnw + 2, btnw).TopPos(2, btnh);
-	mright.SetRight().DrawEdge(0).SetImage(CtrlImg::smallright());
-
-	yright.RightPos(2, btnw).TopPos(2, btnh);
-	yright.SetRight().DrawEdge(0).SetImage(CtrlImg::smallright());
-	yleft.RightPos(btnw + 2, btnw).TopPos(2, btnh);
-	yleft.SetLeft().DrawEdge(0).SetImage(CtrlImg::smallleft());
 }
 
 bool Calendar::Key(dword key, int count)
@@ -586,7 +613,7 @@ bool Calendar::Key(dword key, int count)
 		return true;
 	}
 
-	return false;
+	return Ctrl::Key(key, count);
 }
 
 void Calendar::MouseLeave()
@@ -597,103 +624,724 @@ void Calendar::MouseLeave()
 		wastoday = false;
 		RefreshToday();
 	}
-	else if(isheader)
-	{
-		isheader = false;
-		washeader = false;
-		RefreshHeader();
-	}
 	else
 		MouseMove(Point(-1, -1), 0);
 }
 
-void Calendar::PopUp(Ctrl *owner, Rect &rt)
+Date Calendar::GetDate() const
 {
-	Close();
-	Reset();
-	SetRect(rt);
-	Ctrl::PopUp(owner, true, true, GUI_DropShadows());
+	return sel;
+}
+
+void Calendar::SetDate(int y, int m, int d)
+{
+	SetDate(Date(y, m, d));
 }
 
 void Calendar::SetDate(const Date &dt)
 {
-	sel = !IsNull(dt) && dt.IsValid() ? dt : today;
+	sel = !IsNull(dt) && dt.IsValid() ? Time(dt.year, dt.month, dt.day, 0, 0, 0) : today;
 	view = sel;
 	view.day = 0;
 	RefreshAll();
 }
 
-void Calendar::SetView(const Date &v)
+Date Calendar::GetTime() const
+{
+	return sel;
+}
+
+void Calendar::SetTime(int y, int m, int d, int h, int n, int s)
+{
+	SetTime(Time(y, m, d, h, n, s));
+}
+
+void Calendar::SetTime(const Time &tm)
+{
+	sel = !IsNull(tm) && tm.IsValid() ? tm : today;
+	view = sel;
+	view.day = 0;
+	RefreshAll();
+}
+
+void Calendar::SetView(const Time &v)
 {
 	view = v;
 	view.day = 0;
 	RefreshAll();
 }
 
-CH_STYLE(Calendar, Style, StyleDefault)
+// Clock
+
+void LineCtrl::Paint(Draw& w)
 {
-	header  = SColorHighlight;
+	Size sz = GetSize();
+	w.DrawRect(sz, Color(240, 240, 240));
 
-	background[0] = SColorPaper; 		// main area
-	background[1] = Color(200, 250, 0); 	// today
-	background[2] = Color(255, 254, 220);// selection
+	if(real_pos < 0)
+		return;
 
-	foreground[0] = SColorText; 	// main area
-	foreground[1] = Black;		// today
-	foreground[2] = Black;		// selection
+	if(sz.cx > sz.cy)
+		w.DrawRect(Rect(0, 0, min(sz.cx, real_pos), sz.cy), Blend(SColorHighlight(), White, 200));
+	else
+		w.DrawRect(Rect(0, max(0, real_pos), sz.cx, sz.cy), Blend(SColorHighlight(), White, 200));
+}
 
-	outofmonth 		= Color(180, 180, 180);
-	curdate 		= White;
-	today 			= SColorText;
-	selecttoday 	= SColorMark;
-	cursorday		= SColorText;
-	selectday		= SColorMark;
-	line			= Gray;
-	dayname			= SColorText;
-	week			= SColorText;
-	Font font		= StdFont();
+void LineCtrl::SetPos(Point p)
+{
+	Size sz = GetSize();
+
+	bool vh = sz.cy > sz.cx;
+	int mp = max(sz.cx, sz.cy);
+	real_pos = vh ? p.y : p.x;
+
+	if(real_pos < 0)
+		real_pos = 0;
+	else if(real_pos > mp)
+		real_pos = mp;
+
+	pos = (vh ? mp - real_pos : real_pos) * 100 / mp;
+	Refresh();
+	WhenAction();
+}
+
+int LineCtrl::GetPos()
+{
+	return pos;
+}
+
+void LineCtrl::SetPos(int p)
+{
+	Size sz = GetSize();
+	pos = p;
+	real_pos = p * max(sz.cx, sz.cy) / 100;
+	if(sz.cy > sz.cx)
+		real_pos = sz.cy - real_pos;
+	Refresh();
+}
+
+void LineCtrl::LeftDown(Point p, dword keyflags)
+{
+	SetCapture();
+	SetPos(p);
+}
+
+void LineCtrl::MouseMove(Point p, dword keyflags)
+{
+	if(HasCapture())
+		SetPos(p);
+}
+
+void LineCtrl::LeftUp(Point p, dword keyflags)
+{
+	ReleaseCapture();
+}
+
+LineCtrl::LineCtrl()
+{
+	pos = 0;
+	real_pos = -1;
+	BackPaint();
+}
+
+//Clock
+
+Clock& Clock::SetStyle(const Style& s)
+{
+	style = &s;
+	Refresh();
+	return *this;
+}
+
+void Clock::PaintPtr(int n, Draw& w, Point p, double pos, double m, int d, Color color, Point cf)
+{
+	double dx = m * sin(pos * 2 * M_PI);
+	double dy = m * cos(pos * 2 * M_PI);
+
+	lines[n].s.x = p.x - int(dx * 35 / 2);
+	lines[n].s.y = p.y + int(dy * 35 / 2);
+	lines[n].e.x = p.x + int(dx * cf.x);
+	lines[n].e.y = p.y - int(dy * cf.y);
+
+	w.DrawLine(lines[n].s, lines[n].e, d, color);
+}
+
+void Clock::PaintCenteredText(Draw& w, int x, int y, const char *text, Font fnt, Color c)
+{
+	Size tsz = GetTextSize(text, fnt);
+	w.DrawText(x - tsz.cx / 2, y - tsz.cy / 2, text, fnt, c);
+}
+
+void Clock::PaintCenteredImage(Draw &w, int x, int y, const Image& img)
+{
+	Size isz = img.GetSize();
+	w.DrawImage(x - isz.cx / 2, y - isz.cy / 2, img);
+}
+
+bool Clock::Key(dword key, int count)
+{
+	if(key == K_TAB || key == K_SHIFT_TAB)
+	{
+		if(ed_minute.HasFocus())
+			ed_hour.SetFocus();
+		else if(ed_hour.HasFocus())
+			ed_minute.SetFocus();
+		else
+			ed_hour.SetFocus();
+		return true;
+	}
+	return Ctrl::Key(key, count);
+}
+
+void Clock::CalcSizes()
+{
+	int margin = 3;
+	sz = GetSize();
+	int cx = sz.cx - 7 * 2;
+	int cy = sz.cy - 2 * margin - hs;
+	cm.x = cx / 2 + 7;
+	cm.y = cy / 2 + margin + hs;
+	cf.x = min(cy / 2, cx / 2);
+	cf.y = cf.x;
+}
+
+void Clock::Paint(Draw& w)
+{
+	const Style &st = style ? *style : StyleDefault();
+
+	CalcSizes();
+
+	w.DrawRect(sz, st.bgmain);
+	DrawBg(w, 0, 0, sz.cx, hs, st.header);
+	
+	if(colon)
+		PaintCenteredText(w, sz.cx / 2, hs / 2 - 1, " : ", StdFont().Bold(), SColorHighlightText());
+	
+	//w.DrawEllipse(cm.x - r / 2, cm.y - r / 2, cf.x, cf.x, Blend(st.header, White, 250), PEN_NULL, Black);
+	
+	Font fnt = st.font;
+
+	for(int i = 1; i <= 12; i++) {
+		PaintCenteredText(w,
+		                  cm.x + int(0.8 * sin(i * M_PI / 6.0) * cf.x),
+		                  cm.y - int(0.8 * cos(i * M_PI / 6.0) * cf.y),
+		                  AsString(i), fnt.Bold(i % 3 == 0), SBlack());
+	}
+
+	int cp = cur_point;
+	for(int i = 1; i <= 60; i++) {
+		int x = cm.x + int(0.95 * sin(i * M_PI / 30.0) * cf.x);
+		int y = cm.y - int(0.95 * cos(i * M_PI / 30.0) * cf.y);
+		PaintCenteredImage(w, x, y,
+		                   cur_point == i ? CtrlImg::BigDotH()
+		                                  : i % 5 == 0 ? CtrlImg::BigDot() : CtrlImg::SmallDot());
+	}
+
+	PaintPtr(0, w, cm, cur_time / 3600.0 / 12, 0.5, 5, cur_line == 0 ? st.arrowhl : st.arrowhour, cf);
+	PaintPtr(1, w, cm, cur_time / 3600.0, 0.6, 3, cur_line == 1 ? st.arrowhl : st.arrowminute, cf);
+	if(seconds)
+		PaintPtr(2, w, cm, cur_time / 60.0, 0.75, 2, cur_line == 2 ? st.arrowhl : st.arrowsecond, cf);
+}
+
+int Clock::GetDir(int pp, int cp)
+{
+	dir = 0;
+	if(cp >= 1 && cp <= 30 && pp >= 1 && pp <= 30 ||
+	   cp > 30 && cp <= 60 && pp > 30 && pp <= 60)
+	{
+		dir = pp < cp ? 1 : -1;
+	}
+	else //there is a small problem on 30 when direction is opposite to "correct dir". Fortunatelly it won't hurt us hour/minute change is on 60
+	{
+		if(pp <= 60 && pp > 30 && cp >= 1)
+			dir = 1;
+		else if(pp >= 1 && cp <= 60 && cp > 30)
+			dir = -1;
+	}
+
+	return dir;
+}
+
+Clock::MinMax Clock::SetMinMax(int v, int min, int max)
+{
+	MinMax mm;
+	if(v > max)
+	{
+		mm.diff = 1;
+		mm.value = min;
+	}
+	else if(v < min)
+	{
+		mm.diff = -1;
+		mm.value = max;
+	}
+	else
+	{
+		mm.diff = 0;
+		mm.value = v;
+	}
+	return mm;
+}
+
+int Clock::IncFactor(int dir, int pp, int cp)
+{
+	if(dir > 0 && (pp < 60 && pp > 45 && (cp == 60 || (cp >= 1 && cp < 15))))
+		return 1;
+	if(dir < 0 && ((pp == 60 || (pp >= 1 && pp < 15)) && cp < 60 && cp > 45))
+		return -1;
+
+	return 0;
+}
+
+void Clock::MouseMove(Point p, dword keyflags)
+{
+	if(!HasCapture())
+	{
+		cur_line = GetPointedLine(p);
+		if(cur_line != prv_line)
+		{
+			Refresh();
+			prv_line = cur_line;
+		}
+		if(cur_line < 0)
+			accept_time = !IsCircle(p, cm, cf.x / 2);
+	}
+	else
+	{
+		cur_point = GetPoint(p);
+		if(cur_point != prv_point && cur_point >= 0)
+		{
+			int dir = GetDir(prv_point, cur_point);
+			int inc = IncFactor(dir, prv_point, cur_point);
+			int cp  = cur_point == 60 ? 0 : cur_point;
+
+			if(cur_line == 0)
+			{
+				int h = cp / 5;
+				if(sel.hour >= 12)
+					h += 12;
+				if(inc > 0)
+					h += 12;
+				else if(inc < 0)
+					h -= 12;
+
+				sel.hour = SetMinMax(h, 0, 23).value;
+			}
+			else if(cur_line == 1)
+			{
+				sel.hour = SetMinMax(sel.hour + inc, 0, 23).value;
+				sel.minute = cp;
+			}
+			else
+			{
+				MinMax mm = SetMinMax(sel.minute + inc, 0, 59);
+				int hour = int(sel.hour) + mm.diff;
+				sel.hour = SetMinMax(hour, 0, 23).value;
+				sel.minute = mm.value;
+				sel.second = cp;
+			}
+
+			UpdateTime();
+			prv_point = cur_point;
+		}
+	}
+}
+
+void Clock::LeftDown(Point p, dword keyflags)
+{
+	if(cur_line >= 0)
+		SetCapture();
+	else if(accept_time)
+	{
+		Deactivate();
+		WhenAction();
+	}
+}
+
+void Clock::LeftUp(Point p, dword keyflags)
+{
+	ReleaseCapture();
+	if(cur_point >= 0)
+	{
+		cur_point = -1;
+		prv_point = -1;
+		Refresh();
+	}
+}
+
+Image Clock::CursorImage(Point p, dword keyflags)
+{
+	if(cur_line >= 0 || accept_time)
+		return CtrlImg::HandCursor();
+	else
+		return Image::Arrow();
+}
+
+int Clock::GetPointedLine(Point p)
+{
+	for(int i = 0; i < 2 + int(seconds); i++)
+		if(IsLine(lines[i].s, lines[i].e, p))
+			return i;
+	return -1;
+}
+
+bool Clock::IsLine(Point s, Point e, Point p, double tolerance)
+{
+	int minx = min(s.x, e.x);
+	int maxx = max(s.x, e.x);
+	int miny = min(s.y, e.y);
+	int maxy = max(s.y, e.y);
+
+	if(p.x < minx - tolerance) return false;
+	if(p.x > maxx + tolerance) return false;
+	if(p.y < miny - tolerance) return false;
+	if(p.y > maxy + tolerance) return false;
+
+	int dx = e.x - s.x;
+	int dy = e.y - s.y;
+	double u = (p.x - s.x) * dy - (p.y - s.y) * dx;
+	u *= u;
+	double l = dx * dx + dy * dy;
+	if(l == 0.0)
+		return false;
+	return u / l < tolerance * tolerance;
+}
+
+bool Clock::IsCircle(Point p, Point s, int r)
+{
+	int dx = p.x - s.x;
+	int dy = p.y - s.y;
+	return dx * dx + dy * dy < r * r;
+}
+
+int Clock::GetPoint(Point p, double tolerance /* = 4.0*/)
+{
+	double tcx = 0.95 * cf.x;
+	double tcy = 0.95 * cf.y;
+
+	int dx = p.x - cm.x;
+	int dy = p.y - cm.y;
+
+	double r = sqrt(double(dx * dx + dy * dy));
+	double sa = r != 0 ? dx / r : 0;
+	double ca = r != 0 ? dy / r : 0;
+
+	p.x = cm.x + int(tcx * sa);
+	p.y = cm.y + int(tcy * ca);
+
+	for(int i = 1; i <= 60; i++) {
+		int x = cm.x + int(tcx * sin(i * M_PI / 30));
+		int y = cm.y - int(tcy * cos(i * M_PI / 30));
+		if(abs(p.x - x) + abs(p.y - y) < tolerance)
+			return i;
+	}
+	return -1;
+}
+
+void Clock::Timer()
+{
+	Refresh();
+}
+
+void Clock::UpdateFields()
+{
+	ed_hour <<= sel.hour;
+	ed_minute <<= sel.minute;
+	ln_minute.SetPos(sel.minute * 100 / 59);
+	ln_hour.SetPos(sel.hour * 100 / 23);
+	spin_hour.SetText(Format("%.2d", sel.hour));
+	spin_minute.SetText(Format("%.2d", sel.minute));
+}
+
+void Clock::SetHourEdit()
+{
+	sel.hour = int(~ed_hour);
+	UpdateTime();
+}
+
+void Clock::SetMinuteEdit()
+{
+	sel.minute = int(~ed_minute);
+	UpdateTime();
+}
+
+void Clock::SetHourLine()
+{
+	sel.hour = ln_hour.GetPos() * 23 / 100;
+	UpdateTime();
+}
+
+void Clock::SetMinuteLine()
+{
+	sel.minute = ln_minute.GetPos() * 59 / 100;
+	UpdateTime();
+}
+
+void Clock::SetHourLeft()
+{
+	sel.hour = SetMinMax(--sel.hour, 0, 23).value;
+	UpdateTime();
+}
+
+void Clock::SetHourRight()
+{
+	sel.hour = SetMinMax(++sel.hour, 0, 23).value;
+	UpdateTime();
+}
+
+void Clock::SetMinuteLeft()
+{
+	MinMax mm = SetMinMax(--sel.minute, 0, 59);
+	sel.minute = mm.value;
+	sel.hour = SetMinMax(sel.hour + mm.diff, 0, 23).value;
+	UpdateTime();
+}
+
+void Clock::SetMinuteRight()
+{
+	MinMax mm = SetMinMax(++sel.minute, 0, 59);
+	sel.minute = mm.value;
+	sel.hour = SetMinMax(sel.hour + mm.diff, 0, 23).value;
+	UpdateTime();
+}
+
+void Clock::UpdateTime()
+{
+	cur_time = int(sel.hour) * 3600 + int(sel.minute) * 60 + int(sel.second);
+	UpdateFields();
+	Refresh();
+}
+
+Size Clock::ComputeSize()
+{
+	const Style &st = style ? *style : StyleDefault();
+	spin_hour.SetFont(st.font);
+	spin_minute.SetFont(st.font);
+	Font fnt = st.font;
+	Size tsz = GetTextSize("W", st.font);
+	hs = tsz.cy + 4;
+	//TODO: Find better scaling method.
+	double d = fnt == StdFont() ? 1 : tsz.cy / double(tsz.cx);
+	return Size(int(150.0 * d), int(157.0 * d));
+}
+
+void Clock::State(int reason)
+{
+	if(reason == OPEN)
+	{
+		//spin_hour.LeftPos(0, spin_hour.GetWidth("00")).TopPos(0, hs);
+		//spin_minute.RightPos(0, spin_minute.GetWidth("00")).TopPos(0, hs);
+		int shw = spin_hour.GetWidth("00");
+		int smw = spin_minute.GetWidth("00");
+		spin_hour.HCenterPos(shw, -shw / 2).TopPos(0, hs);
+		spin_minute.HCenterPos(smw, smw / 2).TopPos(0, hs);
+		ln_minute.RightPos(0, 5).VSizePos(hs, 0);
+		ln_hour.LeftPos(0, 5).VSizePos(hs, 0);
+	}
+}
+
+Value Clock::GetData() const
+{
+	return sel;
+}
+
+void Clock::SetData(const Value& v)
+{
+	SetTime((Time) v);
+}
+
+Time Clock::GetTime() const
+{
+	return sel;
+}
+
+void Clock::SetTime(const Time& tm)
+{
+	sel = !IsNull(tm) && tm.IsValid() ? tm : GetSysTime();
+	UpdateTime();
+}
+
+void Clock::SetTime(int h, int n, int s)
+{
+	sel.hour = h;
+	sel.minute = n;
+	sel.second = s;
+	UpdateTime();
+}
+
+void Clock::Reset()
+{
+	sel = GetSysTime();
+	UpdateTime();
+}
+
+Clock::Clock()
+{
+	sel = GetSysTime();
+	UpdateTime();
+
+	Add(ed_hour);
+	Add(ed_minute);
+	Add(ln_hour);
+	Add(ln_minute);
+	Add(spin_hour);
+	Add(spin_minute);
+
+	ed_hour.Min(0).Max(23);
+	ed_minute.Min(0).Max(59);
+	ed_hour <<= THISBACK(SetHourEdit);
+	ed_minute <<= THISBACK(SetMinuteEdit);
+	ln_hour <<= THISBACK(SetHourLine);
+	ln_minute <<= THISBACK(SetMinuteLine);
+	spin_hour.SetCallbacks(THISBACK(SetHourLeft), THISBACK(SetHourRight));
+	spin_hour.SetTips(t_("Previous hour"), t_("Next hour"));
+	spin_minute.SetCallbacks(THISBACK(SetMinuteLeft), THISBACK(SetMinuteRight));
+	spin_minute.SetTips(t_("Previous minute"), t_("Next minute"));
+
+	cur_line = -1;
+	prv_line = -1;
+	cur_hour = -1;
+	cur_minute = -1;
+	cur_second = -1;
+
+	prv_point = -1;
+	cur_point = -1;
+
+	style = NULL;
+	seconds = true;
+	colon = false;
+	accept_time = false;
+
+	SetFrame(BlackFrame());
+	BackPaint();
+}
+
+// CalendarClock
+
+CalendarClock::CalendarClock(int m) : mode(m)
+{
+	if(mode == MODE_TIME)
+	{
+		Add(clock);
+		clock.SetFrame(NullFrame());
+		calendar.SetFrame(NullFrame());
+		SetFrame(BlackFrame());
+		calendar.TimeMode();
+		calendar.WhenTime = THISBACK(UpdateTime);
+	}
+
+	Add(calendar);
+	calendar.WhenDeactivate = THISBACK(Deactivate);
+	clock.WhenDeactivate = THISBACK(Deactivate);
+}
+
+void CalendarClock::UpdateTime(Time &tm)
+{
+	tm.hour = clock.GetHour();
+	tm.minute = clock.GetMinute();
+	tm.second = clock.GetSecond();
+}
+
+void CalendarClock::PopUp(Ctrl *owner, Rect &rt)
+{
+	Close();
+	calendar.Reset();
+	clock.Reset();
+	calendar.SetPopUp(true);
+	clock.SetPopUp(true);
+	SetRect(rt);
+	Ctrl::PopUp(owner, true, true, GUI_DropShadows());
+}
+
+Size CalendarClock::ComputeSize()
+{
+	calendar_size = calendar.GetPopUpSize();
+	clock_size = clock.GetPopUpSize();
+	return mode == MODE_DATE ? calendar_size
+	                         : Size(calendar_size.cx + clock_size.cx + 2, max(calendar_size.cy, clock_size.cy));
+}
+
+void CalendarClock::State(int reason)
+{
+	if(reason == OPEN)
+	{
+		sz = ComputeSize();
+		calendar.LeftPos(0, calendar_size.cx).VSizePos(0, 0);
+		clock.RightPos(0, clock_size.cx).VSizePos(0, 0);
+	}
+}
+
+void CalendarClock::Deactivate()
+{
+	if(IsOpen() && IsPopUp())
+	{
+		WhenPopDown();
+		IgnoreMouseClick();
+		Close();
+		calendar.SetPopUp(false);
+		clock.SetPopUp(false);
+	}
+}
+
+bool CalendarClock::Key(dword key, int count)
+{
+	if(key == K_ESCAPE)
+	{
+		Deactivate();
+		return true;
+	}
+
+	return Ctrl::Key(key, count);
 }
 
 // DateTimeCtrl
 
-DateTimeCtrl::DateTimeCtrl()
+template<class T>
+DateTimeCtrl<T>::DateTimeCtrl(int m) : cc(m)
 {
-	AddFrame(drop);
-	drop.SetMonoImage(CtrlsImg::DA());
-	drop 				<<= THISBACK(OnDrop);
-	calendar 			<<= THISBACK(OnCalChoice);
-	calendar.WhenPopDown  = THISBACK(OnCalClose);
+	drop.AddTo(*this);
+	drop.AddButton().Main() <<= THISBACK(OnDrop);
+	drop.NoDisplay();
+	drop.SetStyle(drop.StyleFrame());
+	cc.calendar   <<= THISBACK(OnCalendarChoice);
+	cc.clock      <<= THISBACK(OnClockChoice);
+	cc.WhenPopDown  = THISBACK(OnClose);
 }
 
-DateTimeCtrl& DateTimeCtrl::SetDate(int y, int m, int d)
+template<class T>
+void DateTimeCtrl<T>::OnCalendarChoice()
 {
-	SetData(Date(y, m, d));
-	return *this;
+	this->SetData(~cc.calendar);
+	this->WhenAction();
 }
 
-void DateTimeCtrl::OnCalChoice()
+template<class T>
+void DateTimeCtrl<T>::OnClockChoice()
 {
-	SetData(~calendar);
-	WhenAction();
+	this->SetData(~cc.clock);
+	this->WhenAction();
 }
 
-void DateTimeCtrl::OnCalClose()
+template<class T>
+void DateTimeCtrl<T>::OnClose()
 {
-	IgnoreMouse(false);
-	SetFocus();
+	//IgnoreMouse(false);
+	this->SetFocus();
 }
 
-void DateTimeCtrl::OnDrop()
+template<class T>
+void DateTimeCtrl<T>::OnDrop()
 {
-	if(!IsEditable())
+	if(!this->IsEditable())
 		return;
 
-	Size sz = calendar.GetCalendarSize();
+	Size sz = cc.GetCalendarClockSize();
+
 	int width = sz.cx;
 	int height = sz.cy;
 
 	Rect rw = Ctrl::GetWorkArea();
-	Rect rs = GetScreenRect();
+	Rect rs = this->GetScreenRect();
 	Rect r;
 	r.left   = rs.left;
 	r.right  = rs.left + width;
@@ -723,18 +1371,37 @@ void DateTimeCtrl::OnDrop()
 		r.right += diff;
 
 	}
-	IgnoreMouse(true);
-	calendar.PopUp(this, r);
-	calendar <<= GetData();
+	//IgnoreMouse(true);
+	cc.PopUp(this, r);
+	cc.calendar <<= this->GetData();
+	cc.clock <<= this->GetData();
+}
+
+DropDate::DropDate() : DateTimeCtrl<EditDate>(CalendarClock::MODE_DATE)
+{}
+
+DropDate& DropDate::SetDate(int y, int m, int d)
+{
+	EditDate::SetData(Date(y, m, d));
+	return *this;
+}
+
+DropTime::DropTime() : DateTimeCtrl<EditTime>(CalendarClock::MODE_TIME)
+{}
+
+DropTime& DropTime::SetTime(int y, int m, int d, int h, int n, int s)
+{
+	EditTime::SetData(Time(y, m, d, h, n, s));
+	return *this;
 }
 
 // FlatButton
 
 FlatButton::FlatButton()
 {
-	hl = Blend(SColorHighlight, White, 200);//Color(235, 240, 243);
-	bg = Blend(SColorHighlight, White, 128);//Color(179, 220, 253);
-	fg = SColorPaper;//White;
+	hl = Blend(SColorHighlight, White, 200);
+	bg = Blend(SColorHighlight, White, 50);
+	fg = SColorPaper;
 	left = true;
 }
 
@@ -751,21 +1418,142 @@ void FlatButton::Paint(Draw &w)
 	Size sz = GetSize();
 	Size isz = img.GetSize();
 
-	w.DrawRect(sz, HasMouse() ? hl : bg);
-
-	if(drawedge)
-		UPP::DrawFrame(w, sz, fg);
-	else
-	{
-		if(!left)
-			DrawFrame(w, sz, bg, fg, fg, fg);
-		else
-			DrawFrame(w, sz, fg, fg, bg, fg);
-	}
-
 	int dx = IsPush() * (left ? -1 : 1);
 	int dy = IsPush();
-	w.DrawImage((sz.cx - isz.cx) / 2 + dx, (sz.cy - isz.cy) / 2 + dy, img);
+	w.DrawImage((sz.cx - isz.cx) / 2 + dx, (sz.cy - isz.cy) / 2 + dy, img, HasMouse() ? SColorHighlightText() : Black);
+}
+
+FlatSpin::FlatSpin()
+{
+	tsz.Clear();
+	left.SetImage(CtrlImg::smallleft());
+	right.SetImage(CtrlImg::smallright());
+	Add(left);
+	Add(right);
+	left.SetLeft();
+	right.SetRight();
+	Transparent();
+	font = StdFont().Bold();
+	selected = false;
+	selectable = false;
+}
+
+FlatSpin& FlatSpin::Selectable(bool b /* = true*/)
+{
+	selectable = b;
+	return *this;
+}
+
+void FlatSpin::SetFont(const Font& fnt)
+{
+	font = fnt;
+	font.Bold();
+}
+
+int FlatSpin::GetWidth(const String& s, bool with_buttons)
+{
+	return (with_buttons ? (CtrlImg::smallleft().GetSize().cx + 8) * 2 : 0) + GetTextSize(s, font).cx;
+}
+
+void FlatSpin::SetText(const String& s)
+{
+	text = s;
+	tsz = GetTextSize(text, font);
+	Refresh();
+}
+
+void FlatSpin::SetTips(const char *tipl, const char *tipr)
+{
+	left.Tip(tipl);
+	right.Tip(tipr);
+}
+
+void FlatSpin::SetCallbacks(const Callback &cbl, const Callback& cbr)
+{
+	left.WhenAction = cbl;
+	right.WhenAction = cbr;
+}
+
+void FlatSpin::Layout()
+{
+	Size sz = GetSize();
+	Size isz = CtrlImg::smallleft().GetSize();
+	left.LeftPos(0, isz.cx + 8).TopPos(0, sz.cy);
+	right.RightPos(0, isz.cx + 8).TopPos(0, sz.cy);
+}
+
+void FlatSpin::Paint(Draw& w)
+{
+	Size sz = GetSize();
+	w.DrawText((sz.cx - tsz.cx) / 2, (sz.cy - tsz.cy) / 2, text, font.Underline(selected), SColorHighlightText());
+}
+
+Image FlatSpin::CursorImage(Point p, dword keyflags)
+{
+	if(selectable && selected)
+		return CtrlImg::HandCursor();
+	else
+		return Image::Arrow();
+}
+
+void FlatSpin::MouseLeave()
+{
+	selected = false;
+	Refresh();
+}
+
+void FlatSpin::MouseMove(Point p, dword keyflags)
+{
+	if(!selectable)
+		return;
+
+	Size sz = GetSize();
+	bool s = selected;
+	selected = p.x >= (sz.cx - tsz.cx) / 2 && p.x <= (sz.cx + tsz.cx) / 2;
+	if(s != selected)
+		Refresh();
+}
+
+void FlatSpin::LeftDown(Point p, dword keyflags)
+{
+	if(selected)
+		WhenAction();
+}
+
+CH_STYLE(Clock, Style, StyleDefault)
+{
+	header        = SColorHighlight;
+	bgmain        = SColorPaper;
+	fgmain        = SColorText;
+	arrowhl       = Green;
+	arrowhour     = Red;
+	arrowminute   = Blue;
+	arrowsecond   = Black;
+	font          = StdFont();
+}
+
+CH_STYLE(Calendar, Style, StyleDefault)
+{
+	header        = SColorHighlight;
+
+	bgmain        = SColorPaper;
+	bgtoday       = SColorPaper;
+	bgselect      = Color(255, 254, 220);
+
+	fgmain        = SColorText;
+	fgtoday       = Black;
+	fgselect      = Black;
+
+	outofmonth    = Color(180, 180, 180);
+	curdate       = White;
+	today         = SColorText;
+	selecttoday   = SColorMark;
+	cursorday     = SColorText;
+	selectday     = SColorMark;
+	line          = Gray;
+	dayname       = SColorText;
+	week          = SColorText;
+	font          = StdFont();
 }
 
 END_UPP_NAMESPACE

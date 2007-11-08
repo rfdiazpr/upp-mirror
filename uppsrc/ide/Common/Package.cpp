@@ -249,7 +249,7 @@ void Package::Load(const char *path) {
 								else
 									p.SkipTerm();
 								file.Top().unknown.Cat(' ');
-								file.Top().unknown.Cat(q, p.GetPtr() - q);
+								file.Top().unknown.Cat(q, int(p.GetPtr() - q));
 							}
 						}
 					}

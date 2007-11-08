@@ -199,7 +199,7 @@ static const char *FindFileMatch(const char *pattern, const char *file, String& 
 	const char *p = cont;
 	while(*p && ToLower(*p) == ToLower(*endptr++))
 		p++;
-	cont.Trim(p - cont.Begin());
+	cont.Trim(int(p - cont.Begin()));
 	return NULL;
 }
 
@@ -246,7 +246,7 @@ void Ide::FindFileName() {
 			}
 		}
 		if(ffdlg.list.GetCount() == 0) {
-			int px = best_err - mask.Begin();
+			int px = int(best_err - mask.Begin());
 			ffdlg.mask.SetSelection(px, ffdlg.mask.GetLength());
 			BeepMuteExclamation();
 		}
@@ -365,7 +365,7 @@ void Ide::FindWildcard() {
 	int l, h;
 	ff.find.GetSelection(l, h);
 	iwc = 0;
-	FindWildcardMenu(THISBACK(InsertWildcard), findwb.GetScreenRect().TopRight(), false);
+	FindWildcardMenu(THISBACK(InsertWildcard), ff.find.GetPushScreenRect().TopRight(), false);
 	if(iwc) {
 		ff.wildcards = true;
 		ff.find.SetFocus();
@@ -389,7 +389,7 @@ void Ide::FindStdDir()
 	Vector<String> d = GetUppDirs();
 	for(int i = 0; i < d.GetCount(); i++)
 		menu.Add(d[i], THISBACK1(FindSetStdDir, d[i]));
-	menu.Execute(&findd, findd.GetScreenRect().BottomLeft());
+	menu.Execute(&ff.folder, ff.folder.GetPushScreenRect().BottomLeft());
 }
 
 void Ide::FindFolder()
@@ -399,21 +399,15 @@ void Ide::FindFolder()
 }
 
 void Ide::ConstructFindInFiles() {
-	ff.find.AddFrame(findwb);
-	findwb.SetMonoImage(CtrlImg::smallright()).NoWantFocus();
-	findwb <<= THISBACK(FindWildcard);
+	ff.find.AddButton().SetMonoImage(CtrlImg::smallright()) <<= THISBACK(FindWildcard);
 	ff.files <<= String("*.cpp *.h *.hpp *.c *.C *.cxx *.cc");
 	ff.files.AddList((String)"*.cpp *.h *.hpp *.c *.C *.cxx *.cc");
 	ff.files.AddList((String)"*.txt");
 	ff.files.AddList((String)"*.*");
-	ff.folder.AddFrame(findd);
-	findd.SetMonoImage(CtrlImg::smalldown()).NoWantFocus();
-	findd <<= THISBACK(FindStdDir);
-	ff.folder.AddFrame(findsd);
-	findsd <<= THISBACK(FindFolder);
-	findsd.SetMonoImage(CtrlImg::smallright()).NoWantFocus();
-	editor.PutI(ff.find, findI);
-	editor.PutI(ff.replace, replaceI);
+	ff.folder.AddButton().SetMonoImage(CtrlImg::smalldown()) <<= THISBACK(FindStdDir);
+	ff.folder.AddButton().SetMonoImage(CtrlImg::smallright()) <<= THISBACK(FindFolder);
+	editor.PutI(ff.find);
+	editor.PutI(ff.replace);
 	CtrlLayoutOKCancel(ff, "Find In Files");
 }
 

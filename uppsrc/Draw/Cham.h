@@ -1,8 +1,9 @@
 enum LookOp {
 	LOOK_PAINT,
-	LOOK_PAINTEDGE,
 	LOOK_MARGINS,
+	LOOK_PAINTEDGE,
 	LOOK_ISOPAQUE,
+	LOOK_ISBODYOPAQUE,
 };
 
 void  ChLookFn(Value (*fn)(Draw& w, const Rect& r, const Value& look, int lookop));
@@ -19,8 +20,20 @@ void   ChPaint(Draw& w, const Rect& r, const Value& look);
 void   ChPaint(Draw& w, int x, int y, int cx, int cy, const Value& look);
 void   ChPaintEdge(Draw& w, const Rect& r, const Value& look);
 void   ChPaintEdge(Draw& w, int x, int y, int cx, int cy, const Value& look);
+void   ChPaintBody(Draw& w, const Rect& r, const Value& look);
+void   ChPaintBody(Draw& w, int x, int y, int cx, int cy, const Value& look);
 Rect   ChMargins(const Value& look);
 bool   ChIsOpaque(const Value& look);
+bool   ChIsBodyOpaque(const Value& look);
+
+void   DeflateMargins(Rect& r, const Rect& margin);
+void   ChDeflateMargins(Rect& r, const Value& look);
+void   DeflateMargins(Size& sz, const Rect& m);
+void   ChDeflateMargins(Size& sz, const Value& look);
+void   InflateMargins(Rect& r, const Rect& m);
+void   ChInflateMargins(Rect& r, const Value& look);
+void   InflateMargins(Size& sz, const Rect& m);
+void   ChInflateMargins(Size& sz, const Value& look);
 
 template <class T>
 struct ChStyle {

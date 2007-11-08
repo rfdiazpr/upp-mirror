@@ -245,10 +245,6 @@ protected:
 		WString itext;
 		virtual bool Key(dword key, int count);
 	} findreplace;
-	FrameRight<Button> findwb;
-	FrameRight<Button> replacewb;
-	FrameRight<Button> findI;
-	FrameRight<Button> replaceI;
 
 	enum {
 		WILDANY = 16,
@@ -386,7 +382,7 @@ public:
 	void    FindWord(bool back);
 	WString GetI();
 	void    SetI(Ctrl *edit);
-	void    PutI(Ctrl& edit, FrameRight<Button>& I);
+	void    PutI(WithDropChoice<EditString>& edit);
 
 	void   MoveNextWord(bool sel);
 	void   MovePrevWord(bool sel);

@@ -32,14 +32,14 @@ struct MLink {
 	MHeader     *Header()              { return (MHeader *)this - 1; }
 };
 
-#define BINS     113
+#define LBINS    113
 #define MAXBLOCK 65504
 
-static word      sBinSz[BINS];
+static word      sBinSz[LBINS];
 static byte      s_SzBin[MAXBLOCK / 8 + 1];
 static byte      s_BlBin[MAXBLOCK / 8 + 1];
 
-static MLink s_freebin[BINS];
+static MLink s_freebin[LBINS];
 static MLink s_mall;
 static MLink s_ball;
 
@@ -52,21 +52,21 @@ inline static void sLInit()
 		int add = minmax(6 * p / 100 / 32 * 32, 32, 2048);
 		p += add;
 	}
-	ASSERT(bi == BINS - 1);
-	sBinSz[BINS - 1] = MAXBLOCK;
+	ASSERT(bi == LBINS - 1);
+	sBinSz[LBINS - 1] = MAXBLOCK;
 	int k = 0;
 	for(int i = 0; i < MAXBLOCK / 8; i++) {
 		while(i * 8 + 7 > sBinSz[k])
 			k++;
 		s_SzBin[i] = k;
 	}
-	k = BINS - 1;
+	k = LBINS - 1;
 	for(int i = MAXBLOCK / 8; i >= 0; i--) {
 		while(i * 8 < sBinSz[k]) k--;
 		s_BlBin[i] = k;
 	}
 	s_BlBin[0] = 0;
-	for(int i = 0; i < BINS; i++)
+	for(int i = 0; i < LBINS; i++)
 		s_freebin[i].LinkSelf();
 	s_mall.LinkSelf();
 	s_ball.LinkSelf();
@@ -154,7 +154,7 @@ void *LAlloc(size_t& size) {
 	int ii = sSzBin((int)size);
 	size = sBinSz[ii];
 
-	while(ii < BINS) {
+	while(ii < LBINS) {
 		MLink *b = &s_freebin[ii];
 		MLink *n = b->next;
 		if(b != n)
@@ -165,7 +165,7 @@ void *LAlloc(size_t& size) {
 	MLink *n = sAddChunk();
 	if(!n)
 		Panic("Out of memory!");
-	return n ? sDivideBlock(n, (int)size, BINS - 1) : NULL;
+	return n ? sDivideBlock(n, (int)size, LBINS - 1) : NULL;
 }
 
 void LFree(void *ptr) {

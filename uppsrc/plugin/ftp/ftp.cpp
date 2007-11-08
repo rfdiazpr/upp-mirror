@@ -31,7 +31,7 @@ bool FtpClient::IsOpen() const
 	return ftpconn;
 }
 
-bool FtpClient::Connect(const char *host, const char *user, const char *password, bool pasv)
+bool FtpClient::Connect(const char *host, const char *user, const char *password, bool pasv, int idletimeout_secs)
 {
 	LOGBLOCK("FtpClient::Connect");
 	Close();
@@ -41,7 +41,7 @@ bool FtpClient::Connect(const char *host, const char *user, const char *password
 		error = "connect aborted";
 		return false;
 	}
-	if(!FtpConnect(host, &ftpconn, perror, &FtpClient::Callback, this, 200)) {
+	if(!FtpConnect(host, &ftpconn, perror, &FtpClient::Callback, this, 200, idletimeout_secs)) {
 		error = perror;
 		return false;
 	}
@@ -82,14 +82,14 @@ bool FtpClient::CheckOpen()
 	return true;
 }
 
-String FtpClient::Load(const char *path, Gate1<String> progress)
+String FtpClient::Load(const char *path)
 {
 	LLOGBLOCK("FtpClient::Load");
 	if(!CheckOpen())
 		return String::GetVoid();
 	netbuf *ftpdata;
 	LLOG("FtpAccess(" << path << ")");
-	if(progress(NFormat(t_("Reading file '%s'"), path))) {
+	if(WhenProgress()) {
 		error = t_("aborted");
 		return String::GetVoid();
 	}
@@ -97,11 +97,9 @@ String FtpClient::Load(const char *path, Gate1<String> progress)
 		error = FtpError(ftpconn);
 		return String::GetVoid();
 	}
-	String result;
+	load_data = Null;
 	int p = 0;
-	for(;;) {
-		if(progress(result))
-			break;
+	while(!WhenProgress()) {
 		byte buffer[1024];
 		int ndata = FtpRead(buffer, sizeof(buffer), ftpdata);
 		LLOG("FtpRead -> " << ndata);
@@ -111,10 +109,11 @@ String FtpClient::Load(const char *path, Gate1<String> progress)
 			return String::GetVoid();
 		}
 		if(ndata == 0) {
-			result.Shrink();
+			load_data.Shrink();
+			error = FtpError(ftpdata);
 			break;
 		}
-		result.Cat(buffer, ndata);
+		load_data.Cat(buffer, ndata);
 #ifdef SLOWTRANSFER
 		int end = GetTickCount() + SLOWTRANSFER;
 		for(int d; (d = end - GetTickCount()) > 0; Sleep(d))
@@ -122,47 +121,54 @@ String FtpClient::Load(const char *path, Gate1<String> progress)
 #endif
 	}
 	FtpClose(ftpdata);
-	return result;
+	return load_data;
 }
 
-bool FtpClient::Save(const char *path, String data, Gate2<int, int> progress)
+bool FtpClient::Save(const char *path, String data)
+{
+	return SaveCount(path, data) == data.GetLength();
+}
+
+int FtpClient::SaveCount(const char *path, String data)
 {
 	LLOGBLOCK("FtpClient::Save");
 	netbuf *ftpdata;
+	save_pos = 0;
+	save_total = data.GetLength();
 	if(!CheckOpen())
-		return false;
+		return 0;
 	LLOG("FtpAccess(" << path << ")");
-	if(progress(0, data.GetLength()))
-		return false;
+	if(WhenProgress())
+		return 0;
 	if(!FtpAccess(path, FTPLIB_FILE_WRITE, FTPLIB_IMAGE, ftpconn, &ftpdata)) {
 		error = FtpError(ftpconn);
-		return false;
+		return 0;
 	}
-	for(int done = 0; done < data.GetLength();) {
-		if(progress(done, data.GetLength())) {
-			error = NFormat(t_("write aborted after %d bytes(s)"), done);
+	while(save_pos < data.GetLength()) {
+		if(WhenProgress()) {
+			error = NFormat(t_("write aborted after %d bytes(s)"), save_pos);
 			FtpClose(ftpdata);
-			return false;
+			return save_pos;
 		}
-		int chunk = min(data.GetLength() - done, 1024);
-		int ndata = FtpWrite((void *)data.GetIter(done), chunk, ftpdata);
+		int chunk = min(data.GetLength() - save_pos, 1024);
+		int ndata = FtpWrite((void *)data.GetIter(save_pos), chunk, ftpdata);
 		LLOG("FtpWrite(" << chunk << ") -> " << ndata);
 		if(ndata <= 0 || ndata > chunk) {
 			error = FtpError(ftpdata);
 			FtpClose(ftpdata);
-			return false;
+			return save_pos;
 		}
-		done += ndata;
+		save_pos += ndata;
 #ifdef SLOWTRANSFER
 		int end = GetTickCount() + SLOWTRANSFER;
 		for(int d; (d = end - GetTickCount()) > 0; Sleep(d))
 			;
 #endif
 	}
-	progress(data.GetLength(), data.GetLength());
+	WhenProgress();
 	LLOG("FtpClose");
 	FtpClose(ftpdata);
-	return true;
+	return save_pos;
 }
 
 bool  FtpClient::Exists(const char *path) {
@@ -207,6 +213,47 @@ bool FtpClient::Delete(const char *path) {
 	LLOGBLOCK("FtpClient::Delete");
 	LLOG("FtpDelete(" << path << ")");
 	return CheckOpen() && !!FtpDelete(path, ftpconn);
+}
+
+String FtpClient::List(const char *path)
+{
+	LLOGBLOCK("FtpClient::List");
+	load_data = Null;
+	if(!CheckOpen())
+		return String::GetVoid();
+	netbuf *ftpdata;
+	LLOG("FtpAccess(" << path << ")");
+	if(WhenProgress()) {
+		error = t_("aborted");
+		return String::GetVoid();
+	}
+	if(!FtpAccess(path, FTPLIB_DIR, FTPLIB_ASCII, ftpconn, &ftpdata)) {
+		error = FtpError(ftpconn);
+		return String::GetVoid();
+	}
+	int p = 0;
+	while(!WhenProgress()) {
+		byte buffer[1024];
+		int ndata = FtpRead(buffer, sizeof(buffer), ftpdata);
+		LLOG("FtpRead -> " << ndata);
+		if(ndata < 0) {
+			error = FtpError(ftpdata);
+			FtpClose(ftpdata);
+			return String::GetVoid();
+		}
+		if(ndata == 0) {
+			load_data.Shrink();
+			break;
+		}
+		load_data.Cat(buffer, ndata);
+	#ifdef SLOWTRANSFER
+		int end = GetTickCount() + SLOWTRANSFER;
+		for(int d; (d = end - GetTickCount()) > 0; Sleep(d))
+			;
+	#endif
+	}
+	FtpClose(ftpdata);
+	return load_data;
 }
 
 void FtpClient::RealizePath(const char *path)

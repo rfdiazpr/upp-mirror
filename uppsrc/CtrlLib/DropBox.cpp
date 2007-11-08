@@ -1,5 +1,6 @@
 #include "CtrlLib.h"
 
+#ifdef OLDDROPLIST
 NAMESPACE_UPP
 
 CH_STYLE(DropList, Style, StyleDefault)
@@ -161,3 +162,4 @@ DropBox::DropBox()
 }
 
 END_UPP_NAMESPACE
+#endif

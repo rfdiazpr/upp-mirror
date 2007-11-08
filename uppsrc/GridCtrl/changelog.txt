@@ -152,9 +152,9 @@
 	- edit in right menu was disabled in some cases
 	+ CancelAll - in this mode esc restore all previous values in edit cell mode (it is default for edit row mode)
 	- fixed some problems with accepting and rejecting grid
-	
+
 	after 705-dev3
-	
+
 	- fixed issues with removing an edited row and calling WhenRemoveRow - now finally is should work fine
 	- edits where not resized if layout changed (regression)
 	- fixed text wrapping for single line
@@ -162,9 +162,9 @@
 	- fixed GetItem and inline attribute problem in GCC
 	- fixed updating cell's value after changing focus from ctrl to ctrl with invalid (not accepted) data
 	- fixed tab key and selecting control focus problem
-	
+
 	after 707-dev1
-	
+
 	* find's options open at fixed position instead of mouse click position
 	- find's edit use GetStdSize() to determine its height (to proper scale at dpi > 96)
 	* in select full row mode ctrl_up/down swaps rows position
@@ -175,9 +175,9 @@
 	- fixed SetCursorId()
 	- fixed wrong value returned by SetCursor(n)
 	+ searching without toolbar
-	
+
 	after 708-dev1
-	
+
 	- toolbar is rebuilt when grid is enabled/disabled (Ctrl::Enable should be virtual!)
 	+ GetCurrentRow() - returns "current row" index - mostly cursor position, but sometimes cursor and current row position can be different
 	- more const correctness fixes
@@ -185,15 +185,15 @@
 	- fixed crash in Append0(n) if n > 1 (R)
 	- fixed crash in Editable called for a row
 	+ EditConvert(Ctrl &ctrl) - synonym for sequence Edit().SetConvert()
-	
+
 	after 708-dev2
-	
+
 	+ CancelAccept() - called in callback When(Insert/Update) cancel inserting/updating operation but do not close edits
 	- fixed crash when dupliacing a row in empty grid
 	+ IsFilled() - opposite to IsEmpty()
-	
+
 	after 709-dev2
-	
+
 	+ IsRowInserted(), IsRowUpdated(), IsRowRemoved - valid in all life-cycle of grid
 	+ RemoveHides() - in this mode grid hide row instead of phisicly remove it
 	- fixed rare crash in PaintFixed()
@@ -201,9 +201,21 @@
 	- fixed resize panel - min size was not set properly in some cases
 	- fixed rare scrolling artifacts
 	+ added FindInRow to find value in given row - returns column number
-	
-	
-	
+
+	after 710-dev1
+
+	- in edit row mode null values in not null controls were not respected if grid was "prefilled" with null data
+	- fixed crash when adding column to filled grid
+	+ grid respects read-only mode now (only resizeing/moving/scrolling works in this mode)
+	- fixed bug in GridCtrl::ItemRect::SetFont - it doesn't work and may lead to crash
+	- fixed strage bug connected with focus and bulit-in toolbar
+	- added WhenChangeCol
+	- added GoTo(int r, int c)
+	- fixed SetCursor(Point). Point was not relative.
+	- fixed searching. If search_hide was disabled after matching 0 rows and then peressing esc or backspace grid displayed nothing
+	- fixed selection removing in remove hides mode (mostly crashes, for one row it worked ok). 
+	- fixed row inserting (after). Previous cursor position didn't disapear (regression)
+	+ SetImage() works for row now
 	
 	
 	

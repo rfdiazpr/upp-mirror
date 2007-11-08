@@ -22,10 +22,12 @@ void    AssertFailed(const char *file, int line, const char *cond);
 
 #ifdef _DEBUG
 
-#define ASSERT(x)        ((x) ? (void)0 : UPP::AssertFailed(__FILE__, __LINE__, #x))
+#define ASSERT_(x, msg)  ((x) ? (void)0 : UPP::AssertFailed(__FILE__, __LINE__, msg))
+#define ASSERT(x)        ASSERT_(x, #x)
 
 #else
 
+#define ASSERT_(x, msg)
 #define ASSERT(x)
 
 #endif

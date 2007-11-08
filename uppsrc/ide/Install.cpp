@@ -94,7 +94,7 @@ bool CreateShellLink(const char *filepath, const char *linkpath, const char *des
 		hres = psl->QueryInterface(IID_IPersistFile, (PVOID *) &ppf);
 		if (SUCCEEDED(hres)) {
 			WCHAR szPath[_MAX_PATH] = { 0 };
-			MultiByteToWideChar(CP_ACP, 0, linkpath, strlen(linkpath), szPath, _MAX_PATH);
+			MultiByteToWideChar(CP_ACP, 0, linkpath, (int)strlen(linkpath), szPath, _MAX_PATH);
 			hres = ppf->Save(szPath, TRUE);
 			ppf->Release();
 		}

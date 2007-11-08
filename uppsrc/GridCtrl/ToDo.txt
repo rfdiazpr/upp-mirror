@@ -21,6 +21,8 @@ Done
 - add update of first/last/vis/col/row in SetFixedCols(), SetFixedRows()
 - add scrolling during moving cursor left/right when selectRow is true
 
+Critical
+---------------------------------
 
 
 Polish

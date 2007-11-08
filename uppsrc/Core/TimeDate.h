@@ -38,6 +38,8 @@ Date operator-(Date a, int b);
 Date& operator+=(Date& a, int b);
 Date& operator-=(Date& a, int b);
 
+bool IsLeapYear(int year);
+
 int  GetDaysOfMonth(int m, int y);
 
 int  DayOfWeek(Date date);
@@ -74,7 +76,7 @@ struct Time : Date, RelOps< Time, Moveable<Time> > {
 
 	static Time High()       { return Time(4000, 1, 1); }
 	static Time Low()        { return Time(-4000, 1, 1); }
-	
+
 	void   Set(int64 scalar);
 	int64  Get();
 

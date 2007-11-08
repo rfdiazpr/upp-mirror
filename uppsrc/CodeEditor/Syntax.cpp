@@ -118,7 +118,7 @@ void CodeEditor::SyntaxState::ScanSyntax(const wchar *ln, const wchar *e)
 		const wchar *id = p;
 		while(p < e && iscid(*p))
 			p++;
-		int idlen = p - id;
+		int idlen = int(p - id);
 		if(id[0] == 'i' && id[1] == 'f'
 		&& (idlen == 2 || idlen == 5 && id[2] == 'd' && id[3] == 'e' && id[4] == 'f'
 		|| idlen == 6 && id[2] == 'n' && id[3] == 'd' && id[4] == 'e' && id[5] == 'f')) {
@@ -248,7 +248,7 @@ void CodeEditor::SyntaxState::ScanSyntax(const wchar *ln, const wchar *e)
 						brk.Add(')');
 						Isx& m = par.Add();
 						m.line = line;
-						m.pos = p - ln;
+						m.pos = int(p - ln);
 						spar++;
 					}
 					else
@@ -257,7 +257,7 @@ void CodeEditor::SyntaxState::ScanSyntax(const wchar *ln, const wchar *e)
 						brk.Add(']');
 						Isx& m = par.Add();
 						m.line = line;
-						m.pos = p - ln;
+						m.pos = int(p - ln);
 						spar++;
 					}
 					else

@@ -596,8 +596,8 @@ void ChHostSkin()
 
 			{
 				DropList::Style& s = DropList::StyleDefault().Write();
-				GtkChButtonWith(s.button, CtrlsImg::DA());
-				GtkChButtonWith(s.squaredbutton, CtrlsImg::DA());
+				GtkChButtonWith(s.look, CtrlsImg::DA());
+				GtkChButtonWith(s.trivial, CtrlsImg::DA());
 			}
 			{
 				SpinButtons::Style& s = SpinButtons::StyleDefault().Write();
@@ -622,8 +622,8 @@ void ChHostSkin()
 
 			{
 				DropList::Style& s = DropList::StyleDefault().Write();
-				GtkChImgWith(s.button, CtrlsImg::DA(), 1);
-				GtkChImgWith(s.squaredbutton, CtrlsImg::DA(), 1);
+				GtkChImgWith(s.look, CtrlsImg::DA(), 1);
+				GtkChImgWith(s.trivial, CtrlsImg::DA(), 1);
 			}
 			{
 				SpinButtons::Style& s = SpinButtons::StyleDefault().Write();

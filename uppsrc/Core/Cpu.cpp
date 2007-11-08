@@ -14,8 +14,6 @@ static void sCheckCPU()
 	static bool done;
 	if(done) return;
 	done = true;
-	dword info1;
-	dword info2;
 #ifdef PLATFORM_OSX11
 //	__asm__("pushl %%ebx\n\tmovl $1, %%eax\n\tcpuid\n\tpopl %%ebx" : "=d" (info1), "=c" (info2) : : "%eax");
 	sHasMMX = true;
@@ -28,6 +26,8 @@ static void sCheckCPU()
 	sHasSSE2 = true;
 #else
 #ifdef COMPILER_MSC
+	dword info1;
+	dword info2;
 	__asm {
 		mov eax, 1
 		cpuid
@@ -35,6 +35,8 @@ static void sCheckCPU()
 		mov info2, ecx
 	}
 #else
+	dword info1;
+	dword info2;
 	__asm__("movl $1, %%eax\n\tcpuid" : "=d" (info1), "=c" (info2) : : "%eax", "%ebx");
 #endif
 	sHasMMX = ((info1 >> 23) & 0x1);
@@ -67,11 +69,17 @@ int CPU_Cores()
 	static int n;
 	ONCELOCK {
 #ifdef PLATFORM_WIN32
+#ifdef CPU_64
+		uint64 pa, sa;
+		GetProcessAffinityMask(GetCurrentProcess(), &pa, &sa);
+		for(int i = 0; i < 64; i++)
+			n += !!(sa & ((uint64)1 << i));
+#else
 		DWORD pa, sa;
 		GetProcessAffinityMask(GetCurrentProcess(), &pa, &sa);
-		DWORD x = 0x80000000;
-		for(int i = 0; i < 32; i++)
+		for(int i = 0; i < 64; i++)
 			n += !!(sa & (1 << i));
+#endif
 #elif defined(PLATFORM_POSIX)
 #ifdef PLATFORM_FREEBSD
 		n = minmax((int)sysconf(_SC_NPROCESSORS_ONLN), 1, 256);

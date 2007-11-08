@@ -193,8 +193,10 @@ void EditorBar::InsertLines(int i, int count) {
 			ignored_next_edit = true;
 		}
 		else {
-			if (li[i].firstedited == 0)
-				li[i].firstedited = li.At(i + count).firstedited;
+			if (li[i].firstedited == 0) {
+				bool fe = li[i].firstedited;
+				li.At(i + count).firstedited = fe;
+			}
 			SetEdited(i + 1, count);
 		}
 	}

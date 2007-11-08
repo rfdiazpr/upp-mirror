@@ -9,6 +9,13 @@ NAMESPACE_UPP
 #define LLOG(x)    // LOG(x)
 #define LTIMING(x) // RTIMING(x)
 
+CH_STYLE(MenuBar, Style, StyleDefault)
+{
+	topitem = item = SColorHighlight();
+	topitemtext = itemtext = SColorHighlightText();
+	topbar = SColorFace();
+}
+
 class MenuItemBase : public Ctrl, public Bar::Item
 {
 public:
@@ -50,7 +57,7 @@ public:
 	virtual void SyncState() = 0;
 
 	void           DrawMenuText(Draw& w, int x, int y, const String& s, Font f, bool enabled, bool hl,
-	                            Color color = SColorMenuText);
+	                            Color color, Color hlcolor);
 	void           PaintTopItem(Draw& w, int state);
 
 	bool           IsItemEnabled() const          { return isenabled; }
@@ -64,7 +71,7 @@ public:
 };
 
 void DrawMenuText(Draw& w, int x, int y, const String& s, Font f, bool enabled,
-                  bool highlight, int mn, Color color = SColorMenuText);
+                  bool highlight, int mn, Color color, Color hltext);
 
 class MenuItem : public MenuItemBase {
 public:
@@ -189,6 +196,7 @@ MenuItemBase::MenuItemBase()
 	accesskey = 0;
 	NoWantFocus();
 	style = &MenuBar::StyleDefault();
+	Transparent();
 }
 
 Bar::Item& MenuItemBase::Text(const char *s)
@@ -287,10 +295,10 @@ void DrawMnemonicText(Draw& w, int x, int y, const String& s, Font font, Color c
 }
 
 void DrawMenuText(Draw& w, int x, int y, const String& s, Font f, bool enabled,
-                  bool hl, int mnemonic, Color color)
+                  bool hl, int mnemonic, Color color, Color hlcolor)
 {
 	if(enabled)
-		DrawMnemonicText(w, x, y, s, f, hl ? SColorHighlightText : color, mnemonic);
+		DrawMnemonicText(w, x, y, s, f, hl ? hlcolor : color, mnemonic);
 	else {
 		if(GUI_GlobalStyle() >= GUISTYLE_XP)
 			DrawMnemonicText(w, x, y, s, f, SColorDisabled, 0);
@@ -301,14 +309,11 @@ void DrawMenuText(Draw& w, int x, int y, const String& s, Font f, bool enabled,
 	}
 }
 
-void MenuItemBase::DrawMenuText(Draw& w, int x, int y, const String& s, Font f, bool enabled, bool hl, Color color)
+void MenuItemBase::DrawMenuText(Draw& w, int x, int y, const String& s, Font f, bool enabled,
+                                bool hl, Color color, Color hlcolor)
 {
-	UPP::DrawMenuText(w, x, y, s, f, enabled, hl, VisibleAccessKeys() ? accesskey : 0, color);
-}
-
-CH_STYLE(MenuBar, Style, StyleDefault)
-{
-	topitem = item = SColorHighlight();
+	UPP::DrawMenuText(w, x, y, s, f, enabled, hl, VisibleAccessKeys() ? accesskey : 0,
+	                  color, hlcolor);
 }
 
 void MenuItemBase::PaintTopItem(Draw& w, int state) {
@@ -316,11 +321,10 @@ void MenuItemBase::PaintTopItem(Draw& w, int state) {
 	if(GUI_GlobalStyle() >= GUISTYLE_XP) {
 		if(state)
 			ChPaint(w, 0, 0, sz.cx, sz.cy, style->topitem);
-		else
-			w.DrawRect(0, 0, sz.cx, sz.cy, SColorFace);
 		String text = GetText();
 		Size isz = GetTextSize(text, StdFont());
-		DrawMenuText(w, 6, (sz.cy - isz.cy) / 2, text, GetFont(), IsItemEnabled(), state);
+		DrawMenuText(w, 6, (sz.cy - isz.cy) / 2, text, GetFont(), IsItemEnabled(), state,
+		             SColorMenuText, style->topitemtext);
 	}
 	else {
 		w.DrawRect(sz, SColorFace);
@@ -328,7 +332,8 @@ void MenuItemBase::PaintTopItem(Draw& w, int state) {
 		static const ColorF b1[] = { (ColorF)1, SColorShadow, SColorShadow, SColorLight, SColorLight, };
 		String text = GetText();
 		Size isz = GetTextSize(text, StdFont());
-		DrawMenuText(w, 6, (sz.cy - isz.cy) / 2, text, GetFont(), IsItemEnabled(), false);
+		DrawMenuText(w, 6, (sz.cy - isz.cy) / 2, text, GetFont(), IsItemEnabled(), false,
+		             SColorMenuText, SColorHighlightText);
 		if(state)
 			DrawBorder(w, 0, 0, sz.cx, sz.cy, state == 2 ? b1 : b0);
 	}
@@ -453,7 +458,8 @@ void MenuItem::Paint(Draw& w)
 		w.DrawImage(2, iy, DisabledImage(li));
 	int x = max(isz.cx, leftgap) + 6;
 	isz = GetTextSize(text, StdFont());
-	DrawMenuText(w, x, (sz.cy - isz.cy) / 2, txt, font, isenabled, hl, SColorMenuText);
+	DrawMenuText(w, x, (sz.cy - isz.cy) / 2, txt, font, isenabled, hl, SColorMenuText,
+	             style->itemtext);
 	isz = ricon.GetSize();
 	if(isenabled)
 		DrawHighlightImage(w, sz.cx - isz.cx, (sz.cy - isz.cy) / 2, ricon, hl, true);
@@ -463,7 +469,7 @@ void MenuItem::Paint(Draw& w)
 	if(!IsEmpty(keydesc)) {
 		isz = GetTextSize(keydesc, StdFont());
 		UPP::DrawMenuText(w, x - isz.cx - 2, (sz.cy - isz.cy) / 2, keydesc, font, isenabled, hl,
-		                  0, SColorMark());
+		                  0, SColorMark(), style->itemtext);
 	}
 }
 
@@ -765,6 +771,11 @@ void TopMenuItem::SyncState()
 }
 
 // -------------------------------------------
+
+Value MenuBar::GetBackground() const
+{
+	return parentmenu || !IsChild() ? Null : style->topbar;
+}
 
 void MenuBar::Clear()
 {

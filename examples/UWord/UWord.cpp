@@ -89,9 +89,6 @@ void UWord::FileBar(Bar& bar)
 void UWord::AboutMenu(Bar& bar)
 {
 	bar.Add("About..", THISBACK(About));
-	bar.Separator();
-	bar.Add("What is this ?", callback(PerformDescription))
-	   .Key(K_SHIFT_F1);
 }
 
 void UWord::MainMenu(Bar& bar)

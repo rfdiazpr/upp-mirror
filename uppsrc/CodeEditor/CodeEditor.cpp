@@ -358,7 +358,7 @@ void CodeEditor::MakeTabsOrSpaces(bool maketabs) {
 			const char *b = p;
 			while(p < e && *p++ != '\n')
 				;
-			out.Cat(b, p - b);
+			out.Cat(b, int(p - b));
 		}
 		else
 		{
@@ -699,9 +699,9 @@ void CodeEditor::Enclose(const char *c1, const char *c2, int l, int h)
 	if((l < 0 || h < 0) && !GetSelection(l, h))
 		return;
 	Insert(l, WString(c1));
-	Insert(h + strlen(c1), WString(c2));
+	Insert(h + (int)strlen(c1), WString(c2));
 	ClearSelection();
-	SetCursor(h + strlen(c1) + strlen(c2));
+	SetCursor(h + (int)strlen(c1) + (int)strlen(c2));
 }
 
 bool CodeEditor::Key(dword code, int count) {
@@ -868,13 +868,13 @@ void CodeEditor::DefaultHlStyles()
 
 
 #define HL_COLOR(x, a, b)    #x,
-static char *s_hl_color[] = {
+static const char *s_hl_color[] = {
 #include "hl_color.i"
 };
 #undef  HL_COLOR
 
 #define HL_COLOR(a, x, b)    x,
-static char *s_hl_name[] = {
+static const char *s_hl_name[] = {
 #include "hl_color.i"
 };
 #undef  HL_COLOR
@@ -966,13 +966,10 @@ String CodeEditor::StoreHlStyles()
 	return r;
 }
 
-void CodeEditor::PutI(Ctrl& edit, FrameRight<Button>& I)
+void CodeEditor::PutI(WithDropChoice<EditString>& edit)
 {
-	edit.AddFrame(I);
-	I.NoWantFocus();
-	I.SetMonoImage(CodeEditorImg::I()).NoWantFocus();
-	I.Tip("Set word/selection (Ctrl+I)");
-	I <<= THISBACK1(SetI, &edit);
+	edit.AddButton().SetMonoImage(CodeEditorImg::I()).Tip("Set word/selection (Ctrl+I)")
+	    <<= THISBACK1(SetI, &edit);
 }
 
 CodeEditor::CodeEditor() {
@@ -983,16 +980,12 @@ CodeEditor::CodeEditor() {
 	bar.SetEditor(this);
 	UndoSteps(10000);
 	SetFont(Courier(16));
-	findreplace.find.AddFrame(findwb);
-	findwb.NoWantFocus();
-	findwb.SetMonoImage(CtrlImg::smallright()).NoWantFocus();
-	findwb <<= THISBACK(FindWildcard);
-	findreplace.replace.AddFrame(replacewb);
-	replacewb.NoWantFocus();
-	replacewb.SetMonoImage(CtrlImg::smallright()).NoWantFocus();
-	replacewb <<= THISBACK(ReplaceWildcard);
-	PutI(findreplace.find, findI);
-	PutI(findreplace.replace, replaceI);
+	findreplace.find.AddButton().SetMonoImage(CtrlImg::smallright())
+		<<= THISBACK(FindWildcard);
+	findreplace.replace.AddButton().SetMonoImage(CtrlImg::smallright())
+		<<= THISBACK(ReplaceWildcard);
+	PutI(findreplace.find);
+	PutI(findreplace.replace);
 	findreplace.amend <<= THISBACK(Replace);
 	findreplace.cancel.Cancel();
 	findreplace.ok.Ok();

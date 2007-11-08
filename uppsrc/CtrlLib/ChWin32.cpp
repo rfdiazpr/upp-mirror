@@ -116,6 +116,14 @@ Image XpImage(int widget, int part, int state, Color color = Null, Size sz = Nul
 	return RecreateAlpha(m[0], m[1]);
 }
 
+bool XpIsAvailable(int widget, int part, int state)
+{
+	HANDLE theme = XpWidget(widget);
+	if(!theme)
+		return false;
+	return XpTheme().IsThemePartDefined(theme, part, state);
+}
+
 int XpMargin(const XpElement& e)
 {
 	int q = xp_margin.Find(e);
@@ -227,7 +235,6 @@ Value XpLookFn(Draw& w, const Rect& rect, const Value& v, int op)
 				r.top--;
 				r.bottom++;
 			}
-//			w.DrawRect(r, SColorFace); //TODO - improve by adding the real transparency support
 			if(htheme) {
 				HDC hdc = w.BeginGdi();
 				XpTheme().DrawThemeBackground(htheme, hdc, e.part, e.state, r, NULL);
@@ -286,6 +293,28 @@ void ChHostSkin()
 		ColoredOverride(CtrlsImg::Iml(), CtrlsImg::Iml());
 		CtrlsImg::Reset();
 		EditFieldIsThin_Write(1);
+
+		int efp = EP_EDITTEXT;
+		int efs = 1;
+		if(IsWinVista()) {
+			efp = 6;
+			efs = 2;
+		}
+		int ebsx = max(2, XpInt(XP_EDIT, efp, efs, 2403/*TMT_BORDERSIZE*/));
+		int ebsy = max(1, XpInt(XP_EDIT, efp, efs, 2403/*TMT_BORDERSIZE*/));
+		Image ee = XpImage(XP_EDIT, efp, efs, SColorFace(), Size(10 * ebsx, 10 * ebsx));
+		ImageBuffer eb(ee);
+		eb.SetHotSpot(Point(ebsx, ebsy));
+		ee = eb;
+		EditFieldEdge_Write(ee);
+
+		int ebs = max(2, XpInt(XP_LISTVIEW, 0, 1, 2403/*TMT_BORDERSIZE*/));
+		ee = XpImage(XP_LISTVIEW, 0, 1, SColorFace(), Size(10 * ebs, 10 * ebs));
+		eb = ee;
+		eb.SetHotSpot(Point(ebs, ebs));
+		ee = eb;
+		ViewEdge_Write(ee);
+
 		for(chCtrlsImg *m = sImgs; m < sImgs + __countof(sImgs); m++)
 			SetXpImages(m->id, m->count, m->widget, m->part, m->state);
 
@@ -326,11 +355,31 @@ void ChHostSkin()
 			s.width = FrameButtonWidth();
 		}
 		{
-			DropList::Style& s = DropList::StyleDefault().Write();
-			Win32Look(s.button, 4, XP_COMBOBOX, CP_DROPDOWNBUTTON);
-			Win32Look(s.squaredbutton, 4, XP_COMBOBOX, CP_DROPDOWNBUTTON);
-			Win32Look(s.edge, XP_COMBOBOX, 0, 0);
-			s.inside = XpInt(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL, 2403/*TMT_BORDERSIZE*/);
+			MultiButton::Style& s = MultiButton::StyleDefault().Write();
+			s.usetrivial = true;
+			if(IsWinVista()) {
+				s.edge = s.sqedge = Null;
+				Win32Look(s.look, 4, XP_COMBOBOX, 5);
+				s.trivialborder = s.border = 0;
+				s.sep1 = XpColor(XP_COMBOBOX, 5, 1, 3822/*TMT_BORDERCOLORHINT*/);
+				s.sep2 = Null;
+				s.sepm = 2;
+				{
+					MultiButton::Style& s = MultiButton::StyleFrame().Write();
+					for(int i = 0; i < 4; i++) {
+						s.left[i] = Unglyph(XpImage(XP_COMBOBOX, 7, i + 1, Null, Size(20, 20)));
+						s.right[i] = Unglyph(XpImage(XP_COMBOBOX, 6, i + 1, Null, Size(20, 20)));
+						s.lmiddle[i] = s.rmiddle[i] = HorzBlend(s.right[i], s.left[i], 6, 14);
+						Win32Look(s.look[i], XP_COMBOBOX, 4, 2);
+					}
+					s.sep1 = Null;
+				}
+			}
+			else {
+				Win32Look(s.trivial, 4, XP_COMBOBOX, CP_DROPDOWNBUTTON);
+				Win32Look(s.edge, XP_COMBOBOX, 0, 0);
+				s.border = s.trivialborder = XpInt(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL, 2403/*TMT_BORDERSIZE*/);
+			}
 		}
 		{
 			HeaderCtrl::Style& s = HeaderCtrl::StyleDefault().Write();
@@ -360,14 +409,11 @@ void ChHostSkin()
 			Win32Look(s.hchunk, XP_PROGRESS, PP_CHUNK);
 			Win32Look(s.vchunk, XP_PROGRESS, PP_CHUNKVERT);
 		}
-
-/*		Image m = XpImage(XP_WINDOW, WP_DIALOG, 0, SColorPaper());
-		if(!IsNull(SimpleColor(m))) {
-			e.widget = XP_WINDOW;
-			e.part = WP_DIALOG;
-			e.state = 0;
-			ChSet("DialogFaceLook", e);
-		}*/
+		if(IsWinVista()) {
+			MenuBar::Style& s = MenuBar::StyleDefault().Write();
+			s.itemtext = XpColor(XP_MENU, 14 /*MENU_POPUPITEM*/, 2 /*HOT*/, 3803/*TMT_TEXTCOLOR*/);
+			Win32Look(s.item, XP_MENU, 14 /*MENU_POPUPITEM*/, 2 /*HOT*/);
+		}
 
 		XpElement e;
 		for(int i = 0; i < 4; i++) {
@@ -382,7 +428,8 @@ void ChHostSkin()
 				s.vthumb[i] = ChLookWith(RawToValue(e), XpImage(XP_SCROLLBAR, SBP_GRIPPERVERT, 1));
 			}
 			Color paper = i == 3 ? SColorFace : SColorPaper;
-			Image m = XpImage(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL + i, paper, Size(24, 24));
+			Image m = XpImage(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL + i, paper, Size(32, 32));
+			Image mm = m;
 			Size isz = m.GetSize();
 			int cbs = XpInt(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL + i, 2403/*TMT_BORDERSIZE*/);
 			if(cbs == 0) {
@@ -390,6 +437,7 @@ void ChHostSkin()
 				Button::StyleLeftEdge().Write().look[i] = Unglyph(Crop(h, 1, 1, isz.cx - 1, isz.cy - 2));
 				m = Crop(h, 0, 1, isz.cx - 1, isz.cy - 2);
 			}
+			bool outer = false;
 			if(cbs == 1 &&
 			   XpBool(XP_COMBOBOX, CP_DROPDOWNBUTTON, CBXS_NORMAL + i, 2203/*TMT_BORDERONLY*/) == 0 &&
 			   XpInt(XP_COMBOBOX, 0, 0, 2403/*TMT_BORDERSIZE*/) == 1 &&
@@ -399,7 +447,7 @@ void ChHostSkin()
 					e.part = CP_DROPDOWNBUTTON;
 					e.state = CBXS_NORMAL + i;
 					e.whista = true;
-					DropList::StyleDefault().Write().button[i] = RawToValue(e);
+					outer = true;
 			}
 			Color c;
 			double gf;
@@ -411,13 +459,35 @@ void ChHostSkin()
 			if(cbs)
 				Button::StyleLeftEdge().Write().look[i] = m;
 
+			MultiButton::StyleDefault().Write().simple[i] = m;
+			MultiButton::StyleFrame().Write().simple[i] = m;
+
 			Button::StyleNormal().Write().monocolor[i] = c;
 			Button::StyleOk().Write().monocolor[i] = c;
 			Button::StyleEdge().Write().monocolor[i] = c;
 			Button::StyleLeftEdge().Write().monocolor[i] = c;
 			Button::StyleScroll().Write().monocolor[i] = c;
 
-			DropList::StyleDefault().Write().squaredbutton[i] = ChLookWith(m, CtrlsImg::DA(), c);
+			MultiButton::StyleDefault().Write().monocolor[i] = c;
+			MultiButton::StyleFrame().Write().monocolor[i] = c;
+			if(!IsWinVista()) {
+				MultiButton::Style& s = MultiButton::StyleDefault().Write();
+				MultiButton::Style& fs = MultiButton::StyleFrame().Write();
+				Image cm = Unglyph(XpImage(XP_COMBOBOX, CP_DROPDOWNBUTTON, i + 1, Null, Size(20, 20)));
+				fs.right[i] = s.right[i] = cm;
+				fs.left[i] = s.left[i] = MirrorHorz(s.right[i]);
+				if(s.border == 0) {
+					mm = Crop(Unglyph(cm), 0, 0, 12, 20);
+					ImageBuffer ib(mm);
+					ib.SetHotSpot(cm.GetHotSpot());
+					mm = ib;
+				}
+				else
+					mm = m;
+				fs.rmiddle[i] = s.rmiddle[i] = mm;
+				fs.lmiddle[i] = s.lmiddle[i] = MirrorHorz(mm);
+			}
+
 			m = Unglyph(XpImage(XP_SCROLLBAR, SBP_ARROWBTN, i + ABS_UPNORMAL, paper));
 			Size msz = m.GetSize();
 
@@ -426,19 +496,6 @@ void ChHostSkin()
 			                                   paper)),
 			                msz.cy / 3, msz.cy * 2 / 3);
 		}
-		int ebs = max(1, XpInt(XP_EDIT, EP_EDITTEXT, 1, 2403/*TMT_BORDERSIZE*/));
-		Image ee = XpImage(XP_EDIT, EP_EDITTEXT, 1, SColorFace(), Size(10 * ebs, 10 * ebs));
-		ImageBuffer eb(ee);
-		eb.SetHotSpot(Point(ebs, ebs));
-		ee = eb;
-		EditFieldEdge_Write(ee);
-
-		ebs = max(1, XpInt(XP_LISTVIEW, 0, 1, 2403/*TMT_BORDERSIZE*/));
-		ee = XpImage(XP_LISTVIEW, 0, 1, SColorFace(), Size(10 * ebs, 10 * ebs));
-		eb = ee;
-		eb.SetHotSpot(Point(ebs + 1, ebs + 1));
-		ee = eb;
-		ViewEdge_Write(ee);
 
 		LabelBoxTextColor_Write(XpColor(XP_BUTTON, BP_GROUPBOX, GBS_NORMAL, 3803/*TMT_TEXTCOLOR*/));
 		LabelBoxColor_Write(XpColor(XP_BUTTON, BP_GROUPBOX, GBS_NORMAL, 3822/*TMT_BORDERCOLORHINT*/));

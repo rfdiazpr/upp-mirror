@@ -5,7 +5,7 @@
 
 static bool HasTail(String s, const char *tail)
 {
-	int tl = strlen(tail);
+	int tl = (int)strlen(tail);
 	int sl = s.GetLength();
 	if(sl < tl)
 		return false;

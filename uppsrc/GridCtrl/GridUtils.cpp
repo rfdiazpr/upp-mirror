@@ -7,28 +7,28 @@ DropList *dlev = NULL;
 
 static int pos = 0;
 
-//void Log(const char *fmt, ...)
-//{
-//	char buffer[1024];
-//	va_list argptr;
-//	va_start(argptr, fmt);
-//	int l = vsprintf(buffer, fmt, argptr);
-//	va_end(argptr);
-//	LOG(buffer);
-//}
-//
-//void Log(int level, const char *fmt, ...)
-//{
-//	char buffer[1024];
-//	va_list argptr;
-//	va_start(argptr, fmt);
-//	int l = vsprintf(buffer, fmt, argptr);
-//	va_end(argptr);
-//	LOG(buffer);
-//}
+void LogCon(const char *fmt, ...)
+{
+	char buffer[1024];
+	va_list argptr;
+	va_start(argptr, fmt);
+	int l = vsprintf(buffer, fmt, argptr);
+	va_end(argptr);
+	LOG(buffer);
+}
+
+void LogCon(int level, const char *fmt, ...)
+{
+	char buffer[1024];
+	va_list argptr;
+	va_start(argptr, fmt);
+	int l = vsprintf(buffer, fmt, argptr);
+	va_end(argptr);
+	LOG(buffer);
+}
 
 
-void Log(const char *fmt, ...)
+void LogGui(const char *fmt, ...)
 {
 	if(!dlog || !dlev || int(~(*dlev)) > 0)
 		return;
@@ -46,7 +46,7 @@ void Log(const char *fmt, ...)
 	dlog->SetCursor(pos);
 }
 
-void Log(int level, const char *fmt, ...)
+void LogGui(int level, const char *fmt, ...)
 {
 	if(!dlog || !dlev || level < int(~(*dlev)))
 		return;

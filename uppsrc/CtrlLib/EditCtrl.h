@@ -108,7 +108,6 @@ protected:
 	void    Finish(bool refresh = true);
 	void    SaveUndo();
 	void    DoAutoFormat();
-	bool    HasBorder();
 	int     GetTy();
 	void    Undo();
 	void    Cut();

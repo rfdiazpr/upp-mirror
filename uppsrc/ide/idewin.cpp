@@ -409,17 +409,13 @@ Ide::Ide()
 	mainconfiglist <<= THISBACK(OnMainConfigList);
 	mainconfiglist.NoDropFocus();
 
-	buildmode <<= THISBACK(SetupOutputMode);
-	buildmode.AddFrame(buildmethod);
-	buildmode.AddFrame(dropmode);
+	buildmode.WhenClick = THISBACK(SetupOutputMode);
 	buildmode.NoWantFocus();
-	buildmethod.SetMonoImage(CtrlImg::SmallDown()).NoWantFocus();
-	buildmethod.WhenPush = THISBACK(DropMethodList);
-	buildmode.Tip("Build mode");
+	buildmode.Tip("Output mode");
+	buildmode.AddButton().Tip("Build method").Left() <<= THISBACK(DropMethodList);
+	buildmode.AddButton().Tip("Build mode") <<= THISBACK(DropModeList);
 	methodlist.Normal();
 	methodlist.WhenSelect = THISBACK(SelectMethod);
-	dropmode.SetMonoImage(CtrlImg::SmallDown()).NoWantFocus();
-	dropmode.WhenPush = THISBACK(DropModeList);
 	modelist.Normal();
 	modelist.WhenSelect = THISBACK(SelectMode);
 	modelist.Add("Debug");
@@ -548,7 +544,7 @@ void Puts(const char *s)
 {
 	dword dummy;
 	if(!SilentMode)
-		WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), s, strlen(s), &dummy, NULL);
+		WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), s, (int)strlen(s), &dummy, NULL);
 }
 #endif
 

@@ -69,6 +69,25 @@ void WorkspaceWork::SavePackage()
 			b.data = String::GetVoid();
 	}
 	actual.Save(pp);
+	String init;
+	String mnm = Filter('_' + actualpackage + "_icpp_init_stub", CharFilterMacro);
+	init << "#ifndef " << mnm << "\r\n";
+	init << "#define " << mnm << "\r\n";
+	Index<String> once;
+	for(int i = 0; i < actual.uses.GetCount(); i++) {
+		String u = actual.uses[i].text;
+		if(once.Find(u) < 0) {
+			once.Add(u);
+			init << "#include \"" << actual.uses[i].text << "/init\"\r\n";
+		}
+	}
+	for(int i = 0; i < actual.GetCount(); i++) {
+		String f = actual[i];
+		if(ToLower(GetFileExt(f)) == ".icpp")
+			init << "#include \"" << f << "\"\r\n";
+	}
+	init << "#endif\r\n";
+	SaveChangedFile(SourcePath(actualpackage, "init"), init);
 }
 
 void WorkspaceWork::RestoreBackup()
@@ -255,7 +274,7 @@ public:
 			}
 			ff.Next();
 		}
-		static char *h[4] = { "src.tpp", "srcdoc.tpp", "srcimp.tpp", "app.tpp" };
+		static const char *h[4] = { "src.tpp", "srcdoc.tpp", "srcimp.tpp", "app.tpp" };
 		for(int i = 0; i < __countof(h); i++) {
 			String s = GetFileTitle(h[i]);
 			if(exist.Find(s) < 0)

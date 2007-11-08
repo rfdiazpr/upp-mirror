@@ -2,6 +2,7 @@
 #define __Oracle_OciCommon__
 
 // excerpt from OCI headers (OCI7 & OCI8)
+NAMESPACE_UPP
 struct OCIEnv;
 struct OCIServer;
 struct OCISession;
@@ -10,6 +11,7 @@ struct OCIBind;
 struct OCIDefine;
 struct OCISnapshot;
 struct OCIParam;
+END_UPP_NAMESPACE
 
 #define oci_boolean int
 typedef void dvoid;
@@ -278,11 +280,11 @@ struct cda_def {
     ub1          rcs9[CDA_SIZE - sizeof (struct cda_head)];        /* filler */
 };
 
-typedef sb4 (*OCICallbackInBind)(dvoid *ictxp, OCIBind *bindp, ub4 iter,
+typedef sb4 (*OCICallbackInBind)(dvoid *ictxp, UPP::OCIBind *bindp, ub4 iter,
 	ub4 index, dvoid **bufpp, ub4 *alenp,
 	ub1 *piecep, dvoid **indp);
 
-typedef sb4 (*OCICallbackOutBind)(dvoid *octxp, OCIBind *bindp, ub4 iter,
+typedef sb4 (*OCICallbackOutBind)(dvoid *octxp, UPP::OCIBind *bindp, ub4 iter,
 	ub4 index, dvoid **bufpp, ub4 **alenp,
 	ub1 *piecep, dvoid **indp,
 	ub2 **rcodep);

@@ -65,7 +65,7 @@ static String NoCr(const char *s)
 		const char *b = s;
 		while(*s && *s != '\r')
 			s++;
-		out.Cat(b, s - b);
+		out.Cat(b, int(s - b));
 		if(*s == '\r')
 			s++;
 	}

@@ -23,6 +23,7 @@ class Bar;
 #include <CtrlLib/LabelBase.h>
 #include <CtrlLib/StaticCtrl.h>
 #include <CtrlLib/PushCtrl.h>
+#include <CtrlLib/MultiButton.h>
 #include <CtrlLib/ScrollBar.h>
 #include <CtrlLib/HeaderCtrl.h>
 #include <CtrlLib/EditCtrl.h>

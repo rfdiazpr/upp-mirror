@@ -62,7 +62,7 @@ static void Send(Socket& socket, const String &s, String *transcript = 0, int ti
 		if(GetTickCount() > end_time)
 			throw Exc(t_("Communication Failure: Timeout."));
 
-		int amount = socket.WriteRaw(p, e - p), err;
+		int amount = socket.WriteRaw(p, int(e - p)), err;
 		if(amount > 0)
 		{ // some data has been sent - reset timeout
 			p += amount;
@@ -247,7 +247,7 @@ bool SmtpMail::Send()
 							else
 							{
 								msg << as_name[a] << ": ";
-								pos = strlen(as_name[a]) + 2;
+								pos = (int)strlen(as_name[a]) + 2;
 							}
 							msg << to[i];
 						}
@@ -277,17 +277,16 @@ bool SmtpMail::Send()
 
 			for(int i = 0; i < text.GetCount(); i++) {
 				String t = text[i], m = mime[i];
-				if(!no_header_sep)
-					msg << "\r\n";
 				if(!no_header) {
 					if(multi || alter)
 						msg << "--" << delimiter << "\r\n";
 					if(IsNull(m))
 						m << "text/plain; charset=\"" << MIMECharsetName(CHARSET_DEFAULT) << "\"";
 					msg << "Content-Type: " << m << "\r\n"
-					"Content-Transfer-Encoding: quoted-printable\r\n"
-					"\r\n";
+					"Content-Transfer-Encoding: quoted-printable\r\n";
 				}
+				if(!no_header_sep)
+					msg << "\r\n";
 				bool begin = true;
 				for(const char *p = t.Begin(), *e = t.End(); p != e; p++)
 					if(*p >= 33 && *p <= 126 && *p != '=' && (*p != '.' || !begin)) {

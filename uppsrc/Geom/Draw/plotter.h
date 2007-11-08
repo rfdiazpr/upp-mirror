@@ -409,6 +409,7 @@ public:
 	void             Flush();
 
 	void             Put(Pointf pt)  { ASSERT(PutRaw); (this->*PutRaw)(pt); }
+	void             Put(const Array<Pointf>& pt);
 
 private:
 	void             PutDummy(Pointf pt);

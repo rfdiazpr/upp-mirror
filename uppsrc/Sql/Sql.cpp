@@ -2,6 +2,8 @@
 
 NAMESPACE_UPP
 
+#define LLOG(x) // DLOG(x)
+
 bool SqlToBool(const String& s) {
 	return !(IsNull(s) || *s == '0' && s[1] == '\0');
 }
@@ -103,7 +105,7 @@ bool Sql::Execute() {
 		cn->starttime = GetTickCount();
 	if(session.usrlog)
 		UsrLogT(9, cn->statement);
-	Stream *s = GetSession().GetTrace();
+	Stream *s = session.GetTrace();
 	if(s) {
 #ifndef NOAPPSQL
 		if(this == &AppCursor())
@@ -111,11 +113,21 @@ bool Sql::Execute() {
 #endif
 		*s << cn->statement << '\n';
 	}
-	session.WhenDatabaseActivity(EXECUTING);
+	session.GetStatus().Statement(cn->statement);
+	session.PassStatus(ActivityStatus::EXECUTING);
 	bool b = cn->Execute();
-	session.WhenDatabaseActivity(END_EXECUTING);
-	if(s && !b)
-		*s << "## ERROR: " << session.GetLastError() << '\n';
+	session.GetStatus().Time(GetTickCount() - cn->starttime);
+	session.PassStatus(ActivityStatus::END_EXECUTING);
+	if(!b) {
+		if(s) {
+			*s << "## ERROR: " << session.GetLastError() << '\n';
+		}
+		session.GetStatus()
+			.Error(session.GetLastError())
+			.ErrorCode(session.GetErrorCode())
+			.ErrorCode(session.GetErrorCodeString());
+		session.PassStatus(ActivityStatus::EXECUTING_ERROR);
+	}
 	return b;
 }
 
@@ -168,12 +180,14 @@ __Expand(E__ExecuteFX)
 
 bool Sql::Fetch() {
 	SqlSession& session = GetSession();
-	session.WhenDatabaseActivity(FETCHING);
+	session.PassStatus(ActivityStatus::FETCHING);
 	int t0 = GetTickCount();
 	bool b = cn->Fetch();
 	int t = GetTickCount();
-	if(!b)
-		session.WhenDatabaseActivity(END_FETCHING);
+	if(!b) {
+		session.GetStatus().Time(t - cn->starttime);
+		session.PassStatus(ActivityStatus::END_FETCHING);
+	}
 	if(t - session.traceslow > cn->starttime)
 		BugLog() << t - cn->starttime << " ms: " << cn->statement << '\n';
 	else
@@ -403,9 +417,9 @@ void Sql::Assign(SqlSource& s) {
 	cn = s.CreateConnection();
 }
 
-void Sql::SetError(String err, String stmt, int code, const char *scode, ERRORCLASS clss) 
+void Sql::SetError(String err, String stmt, int code, const char *scode, ERRORCLASS clss)
 {
-	GetSession().SetError(err, stmt, code, scode, clss); 
+	GetSession().SetError(err, stmt, code, scode, clss);
 }
 
 void   Sql::ClearError()                          { GetSession().ClearError(); }
@@ -477,7 +491,6 @@ void Sql::Detach()
 }
 
 Sql::~Sql() {
-	DLOG("Sql::Detach " << (void *)this);
 	Detach();
 }
 
@@ -489,15 +502,20 @@ SqlSession::SqlSession()
 	usrlog = false;
 	tracetime = false;
 	dialect = 255;
+	errorcode_number = Null;
+	errorclass = Sql::ERROR_UNSPECIFIED;
 }
 
 SqlSession::~SqlSession()
 {
-	DLOG("SqlSession::~SqlSession " << (void *)this);
+/*
+#ifndef NOAPPSQL
 	if(SQL.IsOpen() && &SQL.GetSession() == this) {
-		DLOG("Detaching SQL");
-		SQL.Detach();
+		LLOG("Detaching SQL");
+//		SQL.Detach();
 	}
+#endif
+*/
 }
 
 void           SqlSession::Begin()                                       { NEVER(); }
@@ -549,6 +567,9 @@ void   SqlSession::ClearError()
 {
 	lasterror.Clear();
 	errorstatement.Clear();
+	errorcode_number = Null;
+	errorcode_string = Null;
+	errorclass = Sql::ERROR_UNSPECIFIED;
 }
 
 bool StdStatementExecutor::Execute(const String& stmt)

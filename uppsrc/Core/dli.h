@@ -75,16 +75,16 @@ DLLTYPE& COMBINE(DLIMODULE, _)();
 #ifdef DLI_SOURCE
 #undef DLI_SOURCE
 
-DLLTYPE& DLIMODULE()
-{
-	static DLLTYPE out;
-	out.Load();
-	return out;
-}
-
 DLLTYPE& COMBINE(DLIMODULE, _)()
 {
 	static DLLTYPE out;
+	return out;
+}
+
+DLLTYPE& DLIMODULE()
+{
+	DLLTYPE& out = COMBINE(DLIMODULE, _)();
+	out.Load();
 	return out;
 }
 

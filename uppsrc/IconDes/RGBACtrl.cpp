@@ -140,6 +140,7 @@ void RGBACtrl::MaskSet(int a)
 
 void RGBACtrl::Set(RGBA c)
 {
+	Unmultiply(&c, &c, 1);
 	color = StraightColor(c);
 	ramp <<= color;
 	alpha.SetColor(color);
@@ -152,6 +153,7 @@ RGBA RGBACtrl::Get() const
 	c.a = alpha.Get();
 	if(alpha.IsMask())
 		c.r = c.g = c.b = c.a;
+	Premultiply(&c, &c, 1);
 	return c;
 }
 

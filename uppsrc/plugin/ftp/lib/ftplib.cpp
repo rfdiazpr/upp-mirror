@@ -70,6 +70,7 @@ struct NetBuf {
 	netbuf *data;
 	int cmode;
 	struct timeval idletime;
+	int idletimeout_secs;
 	FtpCallback idlecb;
 	void *idlearg;
 	int xfered;
@@ -134,6 +135,7 @@ static int socket_wait(netbuf *ctl, int write)
 	else
 		rfd = &fd;
 	FD_ZERO(&fd);
+	int idle_end = UPP::msecs() + 1000 * ctl->idletimeout_secs;
 	do
 	{
 		FD_SET(ctl->handle,&fd);
@@ -142,13 +144,17 @@ static int socket_wait(netbuf *ctl, int write)
 		if (rv == -1)
 		{
 			rv = 0;
-			strncpy(ctl->ctrl->response, strerror(errno),
-					sizeof(ctl->ctrl->response));
+			strcpy(ctl->perror, strerror(errno));
 			break;
 		}
 		else if (rv > 0)
 		{
 			rv = 1;
+			break;
+		}
+		else if(UPP::msecs(idle_end) >= 0) {
+			rv = 0;
+			sprintf(ctl->perror, "idle timeout expired (%d secs)", ctl->idletimeout_secs);
 			break;
 		}
 	}
@@ -407,7 +413,7 @@ static int FtpCheckWrite(int sockno, struct timeval *tv)
 * return 1 if connected, 0 if not
 */
 GLOBALDEF int FtpConnect(const char *host, netbuf **nControl, char perror[],
-	FtpCallback idlecb, void *idledata, int idletime_msecs)
+	FtpCallback idlecb, void *idledata, int idletime_msecs, int idletimeout_secs)
 {
 	int sControl;
 	struct sockaddr_in sin;
@@ -475,9 +481,15 @@ GLOBALDEF int FtpConnect(const char *host, netbuf **nControl, char perror[],
 	if (connect(sControl, (struct sockaddr *)&sin, sizeof(sin)) == -1)
 	{
 		if(idlecb && FtpLastError() == ERRPENDING) {
+			int idle_end = GetTickCount() + 1000 * idletimeout_secs;
 			while(!FtpCheckWrite(sControl, &tm)) {
 				if(!idlecb(NULL, -1, idledata)) {
 					strcpy(perror, "connect aborted");
+					net_close(sControl);
+					return 0;
+				}
+				if((int)(GetTickCount() - idle_end) >= 0) {
+					sprintf(perror, "connect timed out (%d secs)", idletimeout_secs);
 					net_close(sControl);
 					return 0;
 				}
@@ -502,6 +514,7 @@ GLOBALDEF int FtpConnect(const char *host, netbuf **nControl, char perror[],
 	ctrl->cmode = FTPLIB_DEFMODE;
 	ctrl->idlecb = idlecb;
 	ctrl->idletime = tm;
+	ctrl->idletimeout_secs = idletimeout_secs;
 	ctrl->idlearg = idledata;
 	ctrl->xfered = 0;
 	ctrl->xfered1 = 0;
@@ -553,6 +566,10 @@ GLOBALDEF int FtpOptions(int opt, long val, netbuf *nControl)
 	case FTPLIB_CALLBACKBYTES:
 		rv = 1;
 		nControl->cbbytes = (int) val;
+		break;
+	case FTPLIB_IDLETIMEOUT:
+		rv = 1;
+		nControl->idletimeout_secs = (int) val;
 		break;
 	}
 	return rv;
@@ -788,6 +805,7 @@ static int FtpOpenPort(netbuf *nControl, netbuf **nData, int mode, int dir)
 	ctrl->dir = dir;
 	ctrl->idletime = nControl->idletime;
 	ctrl->idlearg = nControl->idlearg;
+	ctrl->idletimeout_secs = nControl->idletimeout_secs;
 	ctrl->xfered = 0;
 	ctrl->xfered1 = 0;
 	ctrl->cbbytes = nControl->cbbytes;
@@ -816,10 +834,10 @@ static int FtpAcceptConnection(netbuf *nData, netbuf *nControl)
 		tv = nControl->idletime;
 	else {
 		tv.tv_usec = 0;
-		tv.tv_sec = ACCEPT_TIMEOUT;
+		tv.tv_sec = nData->idletimeout_secs;
 	}
 
-	int t = UPP::msecs();
+	int end_time = UPP::msecs() + 1000 * nData->idletimeout_secs;
 	for(;;) {
 		fd_set mask;
 		FD_ZERO(&mask);
@@ -838,19 +856,19 @@ static int FtpAcceptConnection(netbuf *nData, netbuf *nControl)
 			return 0;
 		}
 		else if (i == 0) {
-			if(nControl->idlecb && UPP::msecs(t) < 1000 * ACCEPT_TIMEOUT) {
-				if(!nControl->idlecb(nControl, -3, nControl->idlearg)) {
-					strcpy(nControl->response, "accept aborted");
-					net_close(nData->handle);
-					nData->handle = 0;
-					return 0;
-				}
-				continue;
+			if(UPP::msecs(end_time) >= 0) {
+				strcpy(nControl->response, "timed out waiting for connection");
+				net_close(nData->handle);
+				nData->handle = 0;
+				return 0;
 			}
-			strcpy(nControl->response, "timed out waiting for connection");
-			net_close(nData->handle);
-			nData->handle = 0;
-			return 0;
+			if(!nControl->idlecb(nControl, -3, nControl->idlearg)) {
+				strcpy(nControl->response, "accept aborted");
+				net_close(nData->handle);
+				nData->handle = 0;
+				return 0;
+			}
+			continue;
 		}
 		else {
 			if (FD_ISSET(nData->handle, &mask)) {
@@ -1015,8 +1033,9 @@ GLOBALDEF int FtpWrite(void *buf, int len, netbuf *nData)
 		nData->xfered1 += i;
 		if (nData->xfered1 > nData->cbbytes)
 		{
-			nData->idlecb(nData, nData->xfered, nData->idlearg);
 			nData->xfered1 = 0;
+			if(!nData->idlecb(nData, nData->xfered, nData->idlearg))
+				return 0;
 		}
 	}
 	LLOG("-> done " << i);
@@ -1395,5 +1414,5 @@ GLOBALDEF void FtpQuit(netbuf *nControl)
 
 GLOBALDEF const char *FtpError(netbuf *nControl)
 {
-		return nControl->perror;
+	return nControl->perror;
 }

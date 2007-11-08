@@ -102,8 +102,8 @@ public:
 	String        operator~() const          { return ToString(); }
 
 	SqlCol        Of(SqlId id) const;
-	SqlCol        As(const char *as) const;
-	SqlCol        As(SqlId id) const         { return As(~~id); }
+	SqlId         As(const char *as) const;
+	SqlId         As(SqlId id) const         { return As(~~id); }
 	SqlId         operator [] (int i) const;
 	SqlId         operator&(const SqlId& s) const;
 
@@ -441,10 +441,10 @@ public:
 	SqlSelect& ForUpdate();
 	SqlSelect& NoWait();
 
-	SqlSelect& GroupBy(SqlVal val)                    { return GroupBy(SqlSet(val)); }
+	SqlSelect& GroupBy(SqlVal a)                      { return GroupBy(SqlSet(a)); }
 	SqlSelect& GroupBy(SqlVal a, SqlVal b)            { return GroupBy(SqlSet(a, b)); }
 	SqlSelect& GroupBy(SqlVal a, SqlVal b, SqlVal c)  { return GroupBy(SqlSet(a, b, c)); }
-	SqlSelect& OrderBy(SqlVal val)                    { return OrderBy(SqlSet(val)); }
+	SqlSelect& OrderBy(SqlVal a)                      { return OrderBy(SqlSet(a)); }
 	SqlSelect& OrderBy(SqlVal a, SqlVal b)            { return OrderBy(SqlSet(a, b)); }
 	SqlSelect& OrderBy(SqlVal a, SqlVal b, SqlVal c)  { return OrderBy(SqlSet(a, b, c)); }
 	SqlSelect& Limit(int limit);

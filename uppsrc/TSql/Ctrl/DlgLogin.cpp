@@ -75,6 +75,11 @@ DlgLogin::DlgLogin()
 	CtrlLayoutOKCancel(*this, DlgLoginHelpTitle());
 	HelpTopic("DlgLogin");
 	Background(StdGradientDisplay());
+	Zoom screen(1, 1);
+	app.SetZoom(screen);
+	version.SetZoom(screen);
+	date.SetZoom(screen);
+	copyright.SetZoom(screen);
 //	app.Font(Roman(1).Bold().Italic());
 //	version.Font(GuiFont().Bold());
 	user.SetFilter(&CharFilterToUpper);

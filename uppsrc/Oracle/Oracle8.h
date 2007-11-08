@@ -2,7 +2,6 @@
 #define ORACLE8_H
 
 #include <Sql/Sql.h>
-
 #include "OraCommon.h"
 #include "OciCommon.h"
 
@@ -25,7 +24,7 @@ struct OCILobLocator;
 #define DLIHEADER   <Oracle/Oci8.dli>
 #include <Core/dli_header.h>
 
-void OCI8SetDllPath(String oci8_path, T_OCI8& oci8 = OCI8());
+void OCI8SetDllPath(String oci8_path, T_OCI8& oci8 = OCI8_());
 
 //#define dword _dword
 //#include <oci.h>
@@ -87,8 +86,8 @@ private:
 	bool           StdMode()   { return  tmode == NORMAL; }
 
 public:
-	bool Login(const char *name, const char *password, const char *connect, String *warn = NULL);
-	bool Open(const String& connect_string, String *warn = NULL);
+	bool Login(const char *name, const char *password, const char *connect, bool use_objects, String *warn = NULL);
+	bool Open(const String& connect_string, bool use_objects, String *warn = NULL);
 	void Logoff();
 
 	enum TransactionMode {
@@ -97,7 +96,7 @@ public:
 	};
 
 	void    SetTransactionMode(int mode)            { tmode = mode; }
-	Oracle8(T_OCI8& oci8 = OCI8());
+	Oracle8(T_OCI8& oci8 = OCI8_());
 	~Oracle8();
 };
 
@@ -132,6 +131,7 @@ public:
 #ifdef text
 #undef text
 #endif
+
 END_UPP_NAMESPACE
 
 #endif

@@ -23,6 +23,8 @@ inline RGBA RGBAZero() { RGBA c; c.r = c.g = c.b = c.a = 0; return c; }
 void Fill(RGBA *t, const RGBA& src, int n);
 void FillColor(RGBA *t, const RGBA& src, int n);
 
+void Copy(RGBA *t, const RGBA *s, int n);
+
 int  Premultiply(RGBA *t, const RGBA *s, int len);
 int  Unmultiply(RGBA *t, const RGBA *s, int len);
 
@@ -263,8 +265,8 @@ public:
 Image Premultiply(const Image& img);
 Image Unmultiply(const Image& img);
 
-Vector<Image> UnpackImlData(const String& data);
-Vector<Image> UnpackImlData(const String& d, bool premul);
+Vector<Image> UnpackImlData(const void *ptr, int len);
+Vector<Image> UnpackImlData(const String& d);
 
 class Iml {
 	struct IImage : Moveable<IImage> {
@@ -281,6 +283,7 @@ class Iml {
 	VectorMap<String, IImage> map;
 	const Image::Init *img_init;
 	const char **name;
+	bool  premultiply;
 
 	void  Init(int n);
 
@@ -293,6 +296,7 @@ public:
 	Image  Get(int i);
 	int    Find(const String& s) const       { return map.Find(s); }
 	void   Set(int i, const Image& img);
+	void   Premultiplied()                   { premultiply = false; }
 
 #ifdef _DEBUG
 	int    GetBinSize() const;

@@ -1,0 +1,12 @@
+uses
+	CtrlLib,
+	Web,
+	ide,
+	PostgreSQL,
+	RichEdit;
+
+file
+	main.cpp;
+
+mainconfig
+	"" = "GUI";

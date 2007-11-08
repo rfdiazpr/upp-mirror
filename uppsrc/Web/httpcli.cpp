@@ -265,7 +265,7 @@ String HttpClient::Execute(Gate2<int, int> progress)
 			error = NFormat(t_("%s:%d: maximum header length exceeded (%d B)"), host, port, max_header_size);
 			return String::GetVoid();
 		}
-		server_headers.Cat(b, e - b);
+		server_headers.Cat(b, int(e - b));
 		server_headers.Cat("\r\n");
 	}
 	String chunked;
@@ -289,7 +289,7 @@ String HttpClient::Execute(Gate2<int, int> progress)
 						p++;
 					if(p >= e)
 						break;
-					int nextline = p + 1 - body.Begin();
+					int nextline = int(p + 1 - body.Begin());
 					p = body.Begin();
 					int part_length = ctoi(*p);
 					if((unsigned)part_length >= 16) {

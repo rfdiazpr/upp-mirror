@@ -131,7 +131,8 @@ Size Ctrl::GetStdSize() const
 	return sz;
 }
 
-Size Ctrl::GetMaxSize() const {
+Size Ctrl::GetMaxSize() const
+{
 	return GetWorkArea().Size();
 }
 
@@ -203,7 +204,7 @@ void Ctrl::SetPos0(LogPos p, bool _inframe)
 				m.ctrl = this;
 				m.from = from;
 				m.to = to;
-				LLOG("SetPos Add " << ::Name(this) << from << " -> " << to);
+				LLOG("SetPos Add " << UPP::Name(this) << from << " -> " << to);
 			}
 			return;
 		}

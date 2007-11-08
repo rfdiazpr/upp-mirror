@@ -1,23 +1,90 @@
 Vista:
-	DropList Chameleon
-	Font without Aero
+	Small scrollbar
+	Vista64 debugging
 
+Windows:
+	"Build mode" "MSC71cdb Debug" looks ugly in XP clearlooks...
+
+	Droplist ID -> strange unncessarry popups
+	VA prompt -> Win1250->WordPad (ide)
+
+Linux:
+	.cfg paths
+	DropList Chameleon
+	OK/Cancel swap
+
+Core:
+
+CtrlLib/CtrlCore:
+	DropList in ArrayCtrl - does not highlight when appears...
+	PosDropDate - Transparent problem (?!)
+
+CtrlLib:
+	"Standard Style" (in default constructor)
+
+	Add IdCtrls reference example
+	Add Timer reference example
+	GetMinSize implemented for widgets to make layout systems work, GetStdSize
+	Zoom &Out issue -> not Z&oom Out
+	FileSel network access
+	Menu bigger than screen....
+	BUttonOption better
+
+	Up/Down arrows in scrollbar (no "NoArrows")
+
+Draw
+	Blending emulation
+
+RichEdit:
+	Selecting text left->right: I beam, right->left arrow?!
+
+Sql:
+	Tutorial
+	SQL/SqlExp tutorial
+
+TheIDE:
+	Fix IconDes - scroll up/down in 3x mode (seems NONAA), undo does now work
+	Add manifest / icon .rc to template.
+	Separate find / log
+	Fix hydra
+
+[22:36] Uno: I found syntax highlighting bug [Offline Message (11/4/2007 [19:38])]
+[22:36] Uno: write in editor [Offline Message (11/4/2007 [19:38])]
+[22:36] Uno: text /*comment*/ *view [Offline Message (11/4/2007 [19:38])]
+[22:36] Uno: now delete space between */ and *view [Offline Message (11/4/2007 [19:38])]
+[22:36] Uno: view is green now :) [Offline Message (11/4/2007 [19:39])]
+[22:36] Uno: it looks like editor treats string */* as end and begining of comment at the same time
+
+
+FAQ: Label::SetData/GetData
+
+// -------
+
+Vista:
+$uvs: END YOUR DELETE
 
 Linux:
 	NetNode
+$uvs: YOUR INSERT
 	.cfg paths
 	DropList Chameleon
 
 Core:
 	Use .dli to use W variants of file functions, to get UNICODE filenames
+$uvs: END YOUR INSERT
+$uvs: YOUR DELETE
+
+Core:
+$uvs: END YOUR DELETE
 	Merge NetNode to filesystem (?)
 	Merssene twister for GUID
 
 CtrlLib:
 	RTL
+$uvs: YOUR INSERT
 	Add IdCtrls reference example
 	Add Timer reference example
-	GetMinSize implemented for widgets to make layout systems work
+	GetMinSize implemented for widgets to make layout systems work, GetStdSize
 	Zoom &Out issue -> not Z&oom Out
 	FileSel
 	Rectangular blocks
@@ -31,11 +98,24 @@ Sql:
 TheIDE:
 	Add manifest / icon .rc to template.
 	Editor run mode
+$uvs: END YOUR INSERT
+$uvs: YOUR DELETE
+    Odpady - RichTextCtrl issue
+    if you click on toolbar button and mouse is still over this button the button should be highlighted
+        - now you must move slightly mouse to restore highlighting.. - if I found time I'll try to fix it myself
+	Rectangular blocks
+
+Sql:
+
+TheIDE:
+$uvs: END YOUR DELETE
 	Text mode for Topic++
 	Text mode for .iml (?)
+$uvs: YOUR INSERT
 	Separate find / log
 	Builders:
 		Fix hydra
+$uvs: END YOUR INSERT
 
 
 //=============================================================================================

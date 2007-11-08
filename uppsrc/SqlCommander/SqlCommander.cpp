@@ -115,7 +115,7 @@ void SqlCommanderApp::Run() {
 		}
 		if(co == "OCI8") {
 			One<Oracle8> oci8 = new Oracle8;
-			if(!oci8->Open(connect)) {
+			if(!oci8->Open(connect, false)) {
 				Exclamation(NFormat("OCI8 login failed: [* \1%s\1].", oci8->GetLastError()));
 				continue;
 			}

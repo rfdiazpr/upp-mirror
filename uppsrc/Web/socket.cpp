@@ -465,7 +465,7 @@ int Socket::WriteWait(const char *s, int length, int timeout_msec)
 	SLOG("WriteWait(@ " << GetNumber() << ": " << length << ", Tmax = " << timeout_msec << ")");
 	ASSERT(IsOpen());
 	if(length < 0 && s)
-		length = strlen(s);
+		length = (int)strlen(s);
 	if(!s || length <= 0 || IsError())
 		return 0;
 /*

@@ -65,10 +65,11 @@ public:
 	virtual void   Paint(Draw& w);
 
 protected:
-	class Color    color;
+	Value bg;
 
 public:
-	StaticRect& Color(class Color _color);
+	StaticRect& Background(const Value& chvalue);
+	StaticRect& Color(class Color c)                   { Background(c); return *this; }
 
 	StaticRect();
 	virtual ~StaticRect();

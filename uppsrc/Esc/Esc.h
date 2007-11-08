@@ -1,5 +1,5 @@
-#ifndef ESC_H
-#define ESC_H
+#ifndef _ESC_ESC_H_
+#define _ESC_ESC_H_
 
 #include <Core/Core.h>
 

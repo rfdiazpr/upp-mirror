@@ -125,7 +125,7 @@ public:
 
 	void          SetHeight(int cy);
 	int           GetHeight() const;
-	
+
 	static const Style& StyleDefault();
 
 	HeaderCtrl&   Invisible(bool inv);
@@ -136,6 +136,8 @@ public:
 	HeaderCtrl&   ReduceLast();
 	HeaderCtrl&   Absolute();
 	HeaderCtrl&   SetStyle(const Style& s)                { style = &s; Refresh(); return *this; }
+
+	HeaderCtrl&   SetScrollBarStyle(const ScrollBar::Style& s)   { sb.SetStyle(s); return *this; }
 
 	static int GetStdHeight()                             { return Draw::GetStdFontCy() + 4; }
 

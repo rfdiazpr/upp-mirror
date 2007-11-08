@@ -2,7 +2,7 @@
 
 int ReadTemplateType(CParser& p)
 {
-	static char *nm[] = { "id", "filename", "option", "select", "text" };
+	static const char *nm[] = { "id", "filename", "option", "select", "text" };
 	for(int i = 0; i < __countof(nm); i++)
 		if(p.Id(nm[i]))
 			return i;

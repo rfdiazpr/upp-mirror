@@ -37,7 +37,7 @@ int CodeEditor::Match(const wchar *f, const wchar *s, int line, bool we, bool ig
 				int nn = Match(f, s, line, we, ignorecase, fi + 1);
 				if(nn >= 0) {
 					SetFound(fi, WILDANY, wild);
-					return s - b + n + nn;
+					return int(s - b) + n + nn;
 				}
 				wild.Cat(*s ? *s : '\n');
 				if(!*s++) return -1;
@@ -79,7 +79,7 @@ int CodeEditor::Match(const wchar *f, const wchar *s, int line, bool we, bool ig
 		else
 		if(*f == '\n') {
 			if(*s != '\0' || ++line >= GetLineCount()) return -1;
-			n += s - b + 1;
+			n += int(s - b) + 1;
 			ln = GetWLine(line);
 			s = b = ln;
 		}
@@ -89,7 +89,7 @@ int CodeEditor::Match(const wchar *f, const wchar *s, int line, bool we, bool ig
 		}
 		f++;
 	}
-	return we && iscid(*s) ? -1 : s - b + n;
+	return we && iscid(*s) ? -1 : int(s - b) + n;
 }
 
 bool CodeEditor::Find(bool back, const wchar *text, bool wholeword, bool ignorecase,
@@ -142,7 +142,7 @@ bool CodeEditor::Find(bool back, const wchar *text, bool wholeword, bool ignorec
 			if(!wb || (s == l || !iscid(s[-1]))) {
 				int n = Match(ft, s, line, we, ignorecase);
 				if(n >= 0) {
-					int pos = GetPos(line, s - l);
+					int pos = GetPos(line, int(s - l));
 					if(!back || pos + n < cursor) {
 						foundsel = true;
 						SetSelection(pos, pos + n);
@@ -430,7 +430,7 @@ void CodeEditor::FindWildcard()
 	int l, h;
 	findreplace.find.GetSelection(l, h);
 	iwc = 0;
-	FindWildcardMenu(THISBACK(InsertWildcard), findwb.GetScreenRect().TopRight(), true,
+	FindWildcardMenu(THISBACK(InsertWildcard), findreplace.find.GetPushScreenRect().TopRight(), true,
 	                 &findreplace);
 	if(iwc) {
 		findreplace.wildcards = true;
@@ -468,7 +468,7 @@ void CodeEditor::ReplaceWildcard()
 	int l, h;
 	findreplace.replace.GetSelection(l, h);
 	iwc = 0;
-	menu.Execute(&findreplace, findwb.GetScreenRect().TopRight());
+	menu.Execute(&findreplace, findreplace.replace.GetPushScreenRect().TopRight());
 	if(iwc) {
 		findreplace.wildcards = true;
 		findreplace.replace.SetFocus();

@@ -14,13 +14,12 @@ void IconShow::Paint(Draw& w)
 	int cx = sz.cx / __countof(color);
 	Size isz = image.GetSize();
 	int n = isz.cx ? minmax(sz.cx / isz.cx, 1, __countof(color)) : 1;
-	Image img = Premultiply(image);
 	for(int i = 0; i < n; i++) {
 		int x = i * sz.cx / n;
 		int cx = (i + 1) * sz.cx / n - x;
 		w.DrawRect(x, 0, cx, sz.cy, color[i]);
 		if(isz.cx)
-			w.DrawImage(x + (cx - isz.cx) / 2, (sz.cy - isz.cy) / 2, img);
+			w.DrawImage(x + (cx - isz.cx) / 2, (sz.cy - isz.cy) / 2, image);
 	}
 }
 

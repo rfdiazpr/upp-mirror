@@ -13,7 +13,6 @@ file
 	tcore.usc,
 	TCore_init.icpp,
 	template.h,
-	dbf.h,
 	util.h,
 	util.cpp,
 	setop.h,

@@ -451,7 +451,7 @@ NAMESPACE_UPP
 
 #include <Core/CoWork.h>
 
-#include <Core/Win32Com.h>
+#include <Core/Win32Util.h>
 
 #if (defined(_DEBUG) || defined(TESTLEAKS)) && defined(PLATFORM_POSIX)
 extern int sMemDiagInitCount;

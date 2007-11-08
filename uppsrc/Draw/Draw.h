@@ -993,10 +993,13 @@ public:
 
 	void Serialize(Stream& s);
 
+	bool IsNullInstance() const    { return data.IsEmpty(); }
+
 	operator Value() const         { return RawValue<Drawing>(*this); }
 	Drawing(const Value& src)      { if(!IsNull(src)) *this = RawValue<Drawing>::Extract(src); }
 
 	Drawing()                      { size = Null; }
+	Drawing(const Nuller&)         { size = Null; }
 
 #ifdef PLATFORM_WIN32
 #ifndef PLATFORM_WINCE

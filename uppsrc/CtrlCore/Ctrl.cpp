@@ -360,6 +360,12 @@ Ctrl& Ctrl::HelpTopic(const char *txt)
 	return *this;
 }
 
+Ctrl& Ctrl::LayoutId(const char *txt)
+{
+	SetInfoPart(4, txt);
+	return *this;
+}
+
 String Ctrl::GetInfoPart(int i) const
 {
 	Vector<String> f = Split(info, '\x7f', false);
@@ -384,6 +390,11 @@ String Ctrl::GetDescription() const
 String Ctrl::GetHelpTopic() const
 {
 	return GetInfoPart(3);
+}
+
+String Ctrl::GetLayoutId() const
+{
+	return GetInfoPart(4);
 }
 
 bool  Ctrl::SetWantFocus() {
@@ -727,6 +738,19 @@ Size Ctrl::LayoutZoom(Size sz)
 	Csizeinit();
 	return LayoutZoom(sz.cx, sz.cy);
 }
+
+Font FontZ(int face, int height)
+{
+	return Font(face, Ctrl::VertLayoutZoom(height));
+}
+
+Font StdFontZ(int height) { return FontZ(Font::STDFONT, height); }
+Font ScreenSansZ(int height) { return FontZ(Font::SCREEN_SANS, height); }
+Font ScreenSerifZ(int height) { return FontZ(Font::SCREEN_SERIF, height); }
+Font ScreenFixedZ(int height) { return FontZ(Font::SCREEN_FIXED, height); }
+Font RomanZ(int height) { return FontZ(Font::ROMAN, height); }
+Font ArialZ(int height) { return FontZ(Font::ARIAL, height); }
+Font CourierZ(int height) { return FontZ(Font::COURIER, height); }
 
 String Ctrl::appname;
 

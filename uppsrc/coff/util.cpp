@@ -73,7 +73,7 @@ String TranslateCygWinPath(const char *path)
 
 const char *EatPrefix(const char *string, const char *prefix)
 {
-	int len = strlen(prefix);
+	int len = (int)strlen(prefix);
 	return (!MemICmp(string, prefix, len) ? string + len : NULL);
 }
 
@@ -178,13 +178,13 @@ String NormalizeRelPath(const char *path)
 				e -= 2;
 				while(e > o && !IsDirSep(e[-1]))
 					e--;
-				out.Trim(e - o);
+				out.Trim(int(e - o));
 				while(IsDirSep(*path))
 					path++;
 				continue;
 			}
 		}
-		out.Cat(b, path - b);
+		out.Cat(b, int(path - b));
 	}
 	return out;
 }
@@ -224,7 +224,7 @@ static String WipeClass(const char *p)
 					p++;
 			}
 			else
-				out.Cat(b, p - b);
+				out.Cat(b, int(p - b));
 		}
 		else
 			out.Cat(*p++);
@@ -444,7 +444,7 @@ static const char *DemangleGccDeclarator(String& out, String& prefix, const char
 					break;
 				if(!first)
 					base.Cat("::");
-				base.Cat(b, p - b);
+				base.Cat(b, int(p - b));
 				if(*p == 'I')
 					p = DemangleGccDeclarator(base, p, templmap, argmap, true);
 				first = false;
@@ -466,7 +466,7 @@ static const char *DemangleGccDeclarator(String& out, String& prefix, const char
 			p = ReadIdent(p, ident);
 			if(p - b < ident)
 				break;
-			base.Cat(b, p - b);
+			base.Cat(b, int(p - b));
 			if(*p == 'I')
 				p = DemangleGccDeclarator(base, p, templmap, argmap, true);
 			break;
@@ -691,7 +691,7 @@ String MaxLenString(const byte *b, int maxlen)
 	const byte *e = b + maxlen;
 	while(e > b && e[-1] == 0)
 		e--;
-	return String(b, e - b);
+	return String(b, int(e - b));
 }
 
 END_UPP_NAMESPACE

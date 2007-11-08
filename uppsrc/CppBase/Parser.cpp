@@ -193,7 +193,7 @@ bool Parser::Key(int code)
 
 int  Parser::GetLine(const char *p)
 {
-	int pos = p - ~file.text;
+	int pos = int(p - ~file.text);
 	int l = 0;
 	int h = file.linepos.GetCount();
 	while(l < h) {
@@ -208,7 +208,7 @@ int  Parser::GetLine(const char *p)
 
 void Parser::Line()
 {
-	int pos = lex.Pos() - ~file.text;
+	int pos = int(lex.Pos() - ~file.text);
 	while(line + 1 < file.linepos.GetCount() && file.linepos[line + 1] <= pos)
 		line++;
 }

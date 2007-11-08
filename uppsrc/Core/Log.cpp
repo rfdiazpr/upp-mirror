@@ -176,8 +176,10 @@ void LogStream::Flush()
 			dword n;
 			WriteFile(hfile, buffer, count, &n, NULL);
 		}
-	if(options & LOG_DBG)
+	if(options & LOG_DBG) {
+		*p = 0;
 		::OutputDebugString((LPCSTR)buffer);
+	}
 #else
 	if(options & LOG_FILE)
 		if(hfile >= 0)

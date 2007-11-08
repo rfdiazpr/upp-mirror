@@ -49,7 +49,11 @@ static Atomic sThreadCount;
 #if defined(PLATFORM_WIN32) || defined(PLATFORM_POSIX)
 static
 #ifdef PLATFORM_WIN32
+#ifdef CPU_64
+unsigned int
+#else
 uintptr_t __stdcall
+#endif
 #else
 void *
 #endif

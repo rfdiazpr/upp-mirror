@@ -4,11 +4,42 @@ const String& BoolToSql(bool b);
 
 class SqlSession;
 
-enum ActivityStatus {
-	FETCHING,
-	END_FETCHING,
-	EXECUTING,
-	END_EXECUTING
+/* TODO: it should be integrated more somehow with SqlSession to not duplicate error fields */
+class ActivityStatus {
+public:
+	enum {
+		NONE,
+		FETCHING,
+		END_FETCHING,
+		EXECUTING,
+		END_EXECUTING,
+		EXECUTING_ERROR
+	};
+private:
+	String error;
+	int    error_code_number;
+	String error_code_string;
+	String statement;
+	int    status;
+	int    time;
+	
+public:
+	ActivityStatus& Error(const String& s)       { error = s;             return *this; }
+	ActivityStatus& ErrorCode(const String& s)   { error_code_string = s; return *this; }
+	ActivityStatus& ErrorCode(int n)             { error_code_number = n; return *this; }
+	ActivityStatus& Statement(const String& s)   { statement = s;         return *this; }
+	ActivityStatus& Status(int s)                { status = s;            return *this; }
+	ActivityStatus& Time(int n)                  { time = n;              return *this; }
+	
+	String          GetStatement() const         { return statement;         }
+	String          GetError() const             { return error;             }
+	int             GetErrorCode() const         { return error_code_number; }
+	String          GetErrorCodeString() const   { return error_code_string; }
+	int             GetStatus() const            { return status;            }
+	int             GetTime() const              { return time;              }
+	
+	bool            operator == (int s) const    { return status == s;       }
+	bool            operator != (int s) const    { return status != s;       }
 };
 
 class SqlExc : public Exc {
@@ -260,6 +291,8 @@ protected:
 	int                           errorcode_number;
 	String                        errorcode_string;
 	Sql::ERRORCLASS               errorclass;
+	
+	ActivityStatus                status;
 
 public:
 	virtual void                  Begin();
@@ -313,8 +346,11 @@ public:
 
 	SqlSession();
 	virtual ~SqlSession();
+	
+	ActivityStatus&               GetStatus()                             { return status; }
+	void                          PassStatus(int s)                       { WhenDatabaseActivity(status.Status(s)); }
 
-	Callback1<ActivityStatus>     WhenDatabaseActivity;
+	Callback1<const ActivityStatus&> WhenDatabaseActivity;
 };
 
 class OciConnection;

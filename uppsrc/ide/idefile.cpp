@@ -333,9 +333,6 @@ void Ide::FlushFile() {
 	editorsplit.Ctrl::Remove();
 	editor.SetFrame(NullFrame());
 	designer.Clear();
-#ifdef UPP_HEAP
-	MemoryShrink();
-#endif
 	SetBar();
 }
 
@@ -350,7 +347,6 @@ void Ide::FileRename(const String& nm)
 }
 
 void Ide::EditFile0(const String& path, byte charset, bool astext, const String& headername) {
-	DLOG("EditFile0 " << path);
 	editor.CheckEdited(false);
 	editor.CloseAssist();
 	if(path.IsEmpty()) return;
@@ -560,9 +556,7 @@ void Ide::ChildDragAndDrop(Point, PasteClip& d)
 void Ide::AddLru()
 {
 	if(editfile.IsEmpty() || tabi) return;
-	DDUMP(editfile);
 	LruAdd(tablru, editfile, 200);
-	DDUMPC(tablru);
 }
 
 static String sExFiles(const char *fn, const char **ext, int cnt)

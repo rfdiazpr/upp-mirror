@@ -84,6 +84,12 @@ private:
 	void operator=(const CtrlFrame&);
 };
 
+struct NullFrameClass : public CtrlFrame {
+	virtual void FrameLayout(Rect& r);
+	virtual void FramePaint(Draw& draw, const Rect& r);
+	virtual void FrameAddSize(Size& sz);
+};
+
 CtrlFrame& NullFrame();
 
 class BorderFrame : public CtrlFrame {
@@ -455,6 +461,7 @@ private:
 #ifdef PLATFORM_X11
 	bool         ignoretakefocus:1;
 #endif
+	bool         backpainthint:1;
 
 	static  Ptr<Ctrl> eventCtrl;
 	static  Ptr<Ctrl> mouseCtrl;
@@ -558,8 +565,10 @@ private:
 	void    SyncScroll();
 	void    CtrlPaint(Draw& w, const Rect& clip);
 	void    RemoveFullRefresh();
-	bool    PaintOpaqueAreas(Draw& w, Point offset, const Rect& clip);
-	void    GatherTransparentAreas(Vector<Rect>& area, Draw& w, Point offset, const Rect& clip);
+	bool    PaintOpaqueAreas(Draw& w, const Rect& r, const Rect& clip, bool nochild = false);
+	void    GatherTransparentAreas(Vector<Rect>& area, Draw& w, Rect r, const Rect& clip);
+	Ctrl   *FindBestOpaque(const Rect& clip);
+	void    UpdateArea0(Draw& draw, const Rect& clip, int backpaint);
 	void    UpdateArea(Draw& draw, const Rect& clip);
 	Ctrl   *GetTopRect(Rect& r, bool inframe);
 	void    DoSync(Ctrl *q, Rect r, bool inframe);
@@ -1070,6 +1079,7 @@ public:
 	void        Refresh(int x, int y, int cx, int cy);
 	void        Refresh();
 	bool        IsFullRefresh() const                    { return fullrefresh; }
+	void        BackPaintHint();
 
 	void        RefreshFrame(const Rect& r);
 	void        RefreshFrame(int x, int y, int cx, int cy);
@@ -1183,11 +1193,13 @@ public:
 	Ctrl&   HelpLine(const char *txt);
 	Ctrl&   Description(const char *txt);
 	Ctrl&   HelpTopic(const char *txt);
+	Ctrl&   LayoutId(const char *txt);
 
 	String  GetTip() const;
 	String  GetHelpLine() const;
 	String  GetDescription() const;
 	String  GetHelpTopic() const;
+	String  GetLayoutId() const;
 
 	void    Add(Ctrl& ctrl)                    { AddChild(&ctrl); }
 	Ctrl&   operator<<(Ctrl& ctrl)             { Add(ctrl); return *this; }
@@ -1320,6 +1332,15 @@ public:
 	Ctrl();
 	virtual ~Ctrl();
 };
+
+Font FontZ(int face, int height = 0);
+Font StdFontZ(int height = 0);
+Font ScreenSansZ(int height = 0);
+Font ScreenSerifZ(int height = 0);
+Font ScreenFixedZ(int height = 0);
+Font RomanZ(int height = 0);
+Font ArialZ(int height = 0);
+Font CourierZ(int height = 0);
 
 int   EditFieldIsThin();
 int   FrameButtonWidth();

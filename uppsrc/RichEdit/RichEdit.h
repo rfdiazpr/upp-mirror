@@ -175,10 +175,10 @@ private:
 	DataPusher               label;
 	DataPusher               indexentry;
 	FrameRight<Button>       gotolabel, gotoentry;
+	MultiButton::SubButton  *setstyle;
 	PopUpTable               gototable;
 	ColorButton              ink, paper;
 	ToolButton               adjustunits;
-	FrameRight<Button>       setstyle, styles;
 	DropList                 style;
 	DropList                 language;
 	Size                     pagesz;

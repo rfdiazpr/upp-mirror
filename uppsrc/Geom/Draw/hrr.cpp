@@ -1467,7 +1467,7 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 					if(part_size.cx <= 0 || part_size.cy <= 0)
 						continue;
 					ImageBuffer part(part_size);
-					RasterCopy(ImageWriter(part), ImageBufferRaster(block.block), Rect(src, part_size));
+					RasterCopy(ImageWriter(part, false), ImageBufferRaster(block.block), Rect(src, part_size));
 					int lin = (int)((px << count) + a.cx + (((py << count) + a.cy) << (count + level)));
 //					TIMING("HRR::Write / save (direct)");
 					if(info.mono || IsNull(info.background)) {
@@ -1511,7 +1511,7 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 				if(downscale) {
 					Size sz = SUNIT << count;
 					ImageBuffer new_data(sz);
-					Rescale(ImageWriter(new_data), sz, ImageBufferRaster(block.block), block.size);
+					Rescale(ImageWriter(new_data, false), sz, ImageBufferRaster(block.block), block.size);
 					block.block = new_data;
 				}
 				else {
@@ -1589,7 +1589,7 @@ bool HRR::Write(Writeback drawback, bool downscale, int level, int px, int py,
 //		TIMING("HRR::Write / put");
 		Rect org = RectC((px & 1) << info.HALF_BITS, (py & 1) << info.HALF_BITS,
 			1 << info.HALF_BITS, 1 << info.HALF_BITS);
-		Rescale(ImageWriter(put->block, org.TopLeft()), org.Size(), ImageBufferRaster(block.block), RUNIT);
+		Rescale(ImageWriter(put->block, org.TopLeft(), false), org.Size(), ImageBufferRaster(block.block), RUNIT);
 	}
 	return true;
 }

@@ -379,6 +379,7 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 			WndDestroyCaret();
 			caretCtrl = NULL;
 			SyncCaret();
+			BackPaintHint();
 		}
 		return 0L;
 	case WM_HELP:

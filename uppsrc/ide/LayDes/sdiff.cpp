@@ -13,7 +13,7 @@ static inline int sMatchLen(const char *a, const char *al, const char *b, const 
 			a++;
 			b++;
 		}
-	return a - q;
+	return int(a - q);
 }
 
 unsigned HashPos(byte *s)

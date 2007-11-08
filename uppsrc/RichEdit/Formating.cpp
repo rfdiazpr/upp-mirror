@@ -283,7 +283,7 @@ void RichEdit::ShowFormat()
 		style <<= formatinfo.styleid;
 	else
 		style <<= Null;
-	setstyle.Enable(!IsSelection());
+	setstyle->Enable(!IsSelection());
 }
 
 void RichEdit::HighLightTab(int r)

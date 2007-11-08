@@ -38,24 +38,24 @@ void WinMetaFile::Paint(Draw& w, int x, int y, int cx, int cy) const {
 
 void WinMetaFile::ReadClipboard() {
 	Clear();
-	if(IsClipboardFormatAvailable(CF_ENHMETAFILE) && OpenClipboard(NULL)) {
-		HENHMETAFILE hemf = (HENHMETAFILE) GetClipboardData(CF_ENHMETAFILE);
+	if(::IsClipboardFormatAvailable(CF_ENHMETAFILE) && ::OpenClipboard(NULL)) {
+		HENHMETAFILE hemf = (HENHMETAFILE) ::GetClipboardData(CF_ENHMETAFILE);
 		if(hemf) Attach(hemf);
-		CloseClipboard();
+		::CloseClipboard();
 	}
 }
 
 void WinMetaFile::WriteClipboard() const {
-	if(hemf && OpenClipboard(NULL)) {
-		EmptyClipboard();
-		SetClipboardData(CF_ENHMETAFILE, CopyEnhMetaFile(hemf, NULL));
-		CloseClipboard();
+	if(hemf && ::OpenClipboard(NULL)) {
+		::EmptyClipboard();
+		::SetClipboardData(CF_ENHMETAFILE, CopyEnhMetaFile(hemf, NULL));
+		::CloseClipboard();
 	}
 }
 
 void WinMetaFile::Clear() {
 	if(hemf && !IsPicked())
-		DeleteEnhMetaFile(hemf);
+		::DeleteEnhMetaFile(hemf);
 	hemf = NULL;
 }
 
@@ -66,7 +66,7 @@ void WinMetaFile::Pick(pick_ WinMetaFile& src) {
 }
 
 void WinMetaFile::Copy(const WinMetaFile& src) {
-	hemf = CopyEnhMetaFile(src.hemf, NULL);
+	hemf = ::CopyEnhMetaFile(src.hemf, NULL);
 	size = src.size;
 }
 
@@ -77,7 +77,7 @@ void WinMetaFile::Attach(HENHMETAFILE _hemf) {
 	info.iType = EMR_HEADER;
 	info.nSize = sizeof(info);
 	info.dSignature = ENHMETA_SIGNATURE;
-	if(_hemf && GetEnhMetaFileHeader(_hemf, sizeof(info), &info)
+	if(_hemf && ::GetEnhMetaFileHeader(_hemf, sizeof(info), &info)
 	   && info.rclFrame.left < info.rclFrame.right
 	   && info.rclFrame.top < info.rclFrame.bottom) {
 		size.cx = 600 * (info.rclFrame.right - info.rclFrame.left) / 2540;
@@ -115,7 +115,7 @@ bool WinMetaFile::Load(const char* path) {
 		PLACEABLE_METAFILEHEADER mfh;
 		file.Get(&mfh, 22);
 		String bits = LoadStream(file);
-		if((hMF = SetMetaFileBitsEx(bits.GetLength(), bits)) == NULL)
+		if((hMF = ::SetMetaFileBitsEx(bits.GetLength(), bits)) == NULL)
 			return false;
 		sz = Size(mfh.right - mfh.left, mfh.bottom - mfh.top);
 	}
@@ -150,10 +150,10 @@ void WinMetaFile::Serialize(Stream& s) {
 	dword size = 0;
 	if(s.IsStoring()) {
 		if(hemf) {
-			size = GetEnhMetaFileBits(hemf, 0, 0);
+			size = ::GetEnhMetaFileBits(hemf, 0, 0);
 			s % size;
 			Buffer<byte> buffer(size);
-			GetEnhMetaFileBits(hemf, size, buffer);
+			::GetEnhMetaFileBits(hemf, size, buffer);
 			s.SerializeRaw(buffer, size);
 		}
 		else
@@ -165,7 +165,7 @@ void WinMetaFile::Serialize(Stream& s) {
 		if(size) {
 			Buffer<byte> buffer(size);
 			s.SerializeRaw(buffer, size);
-			HENHMETAFILE hemf = SetEnhMetaFileBits(size, buffer);
+			HENHMETAFILE hemf = ::SetEnhMetaFileBits(size, buffer);
 			Attach(hemf);
 		}
 	}

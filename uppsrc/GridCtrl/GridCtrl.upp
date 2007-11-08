@@ -16,10 +16,10 @@ options
 	-DLOG_CALLBACKS;
 
 file
-	GridDisplay.h,
-	GridDisplay.cpp,
 	GridCtrl.h,
 	GridCtrl.cpp,
+	GridDisplay.h,
+	GridDisplay.cpp,
 	GridBase.cpp,
 	GridSort.cpp,
 	GridCtrl.iml,
@@ -33,3 +33,4 @@ file
 
 mainconfig
 	"" = "GUI";
+

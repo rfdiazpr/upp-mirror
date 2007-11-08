@@ -100,7 +100,7 @@ void RasterFormat::SetRGBAStraight()
 
 int RasterFormat::IsRGBA() const
 {
-	return (type & 31) == RASTER_32ALPHA && bpos == 0 && gpos == 1 && rpos == 2 && apos == 3;
+	return (type & 31) == RASTER_32PREMULTIPLIED && bpos == 0 && gpos == 1 && rpos == 2 && apos == 3;
 }
 
 static byte bits[16] = { 1, 2, 4, 8, 16, 16, 24, 32, 32, 32 };

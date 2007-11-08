@@ -78,7 +78,7 @@ struct StdHash {
 };
 
 struct PtrHash {
-	unsigned operator()(const void *x) const { return GetHashValue((intptr_t)x); }
+	unsigned operator()(const void *x) const { return GetHashValue((unsigned)(uintptr_t)x); }
 };
 
 template <class T, class V, class HashFn>

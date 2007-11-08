@@ -88,8 +88,10 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 				XTranslateCoordinates(Xdisplay, top->window, Xroot, 0, 0, &x, &y, &dummy);
 			Rect rect = RectC(x, y, e.width, e.height);
 			LLOG("CongigureNotify " << rect);
-			if(GetRect() != rect)
+			if(GetRect() != rect) {
 				SetWndRect(rect);
+				BackPaintHint();
+			}
 		}
 		return;
 	default:

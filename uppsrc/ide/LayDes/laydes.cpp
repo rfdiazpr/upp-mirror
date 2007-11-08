@@ -178,8 +178,8 @@ void LayDes::PaintLayoutItems(Draw& w, int layid, Size size, Index<int>& passed,
 		w.Clipoff(r);
 		if(lr < 0)
 			m.Paint(w, r.Size());
-		else if(i >= cursor.GetCount() ? nocursor : cursor[i])
-		{
+		else
+		if(i >= cursor.GetCount() ? nocursor : cursor[i]) {
 			PaintLayoutItems(w, lr, r.Size(), passed, Vector<bool>());
 			nocursor = false;
 		}
@@ -669,7 +669,6 @@ void  LayDes::MouseMove(Point p, dword keyflags)
 	for(int i = 0; i < cursor.GetCount(); i++) {
 		LayoutItem& m = l.item[cursor[i]];
 		Rect r = itemrect[i];
-		DUMP(r);
 		Size minsize = ignoreminsize ? Size(0, 0) : m.GetMinSize();
 		if(keyflags & K_CTRL)
 			minsize = Size(0, 0);

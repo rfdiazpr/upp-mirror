@@ -14,3 +14,27 @@ PosArrayCtrl
 0 0 -1
 Creature
 0 0 -1
+S_ORDER_ITEM
+0 0 -1
+S_ITEM_BASE
+0 0 -1
+S_ITEM_INFO
+0 0 -1
+Upp::Size_<int>
+0 0 -1
+S_ITEM_DATA
+0 0 -1
+Upp::Rect_<int>
+0 0 -1
+Upp::Image
+0 0 -1
+Upp::Image::Data
+0 0 -1
+Upp::ImageBuffer
+0 0 -1
+Upp::Buffer<Upp::RGBA>
+0 0 -1
+Upp::RGBA
+0 0 -1
+Upp::IconDes::Slot
+0 0 -1

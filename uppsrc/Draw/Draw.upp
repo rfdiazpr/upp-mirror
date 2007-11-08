@@ -67,6 +67,7 @@ file
 	iml.h,
 	iml_header.h,
 	iml_source.h,
+	DrawImg.iml,
 	Chameleon readonly separator,
 	Cham.h,
 	Cham.cpp,

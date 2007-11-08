@@ -62,6 +62,7 @@
 #define FTPLIB_IDLETIME 3
 #define FTPLIB_CALLBACKARG 4
 #define FTPLIB_CALLBACKBYTES 5
+#define FTPLIB_IDLETIMEOUT 6
 
 #ifdef __cplusplus
 extern "C" {
@@ -73,7 +74,7 @@ typedef int (*FtpCallback)(netbuf *nControl, int xfered, void *arg);
 GLOBALREF void FtpInit(void);
 GLOBALREF char *FtpLastResponse(netbuf *nControl);
 GLOBALREF int FtpConnect(const char *host, netbuf **nControl, char perror[512],
-	FtpCallback idlecb, void *idledata, int idletime_msecs);
+	FtpCallback idlecb, void *idledata, int idletime_msecs, int idletimeout_secs);
 GLOBALREF int FtpOptions(int opt, long val, netbuf *nControl);
 GLOBALREF int FtpLogin(const char *user, const char *pass, netbuf *nControl);
 GLOBALREF int FtpAccess(const char *path, int typ, int mode, netbuf *nControl,

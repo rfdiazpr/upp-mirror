@@ -295,7 +295,8 @@ void Draw::CloneClip()
 	if(cloff.GetCount() > 1 && cloff.Top().clipi == cloff[cloff.GetCount() - 2].clipi) {
 		const Vector<Rect>& cl = clip.Top();
 		cloff.Top().clipi = clip.GetCount();
-		clip.Add() <<= cl;
+		Vector<Rect>& c = clip.Add();
+		c <<= clip[clip.GetCount() - 2];
 	}
 }
 

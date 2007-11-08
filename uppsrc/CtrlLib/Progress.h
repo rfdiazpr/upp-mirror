@@ -5,6 +5,7 @@ public:
 
 public:
 	struct Style : ChStyle<Style> {
+		bool  classic;
 		Value vlook, vchunk, hlook, hchunk;
 	};
 
@@ -13,6 +14,7 @@ protected:
 	int   pxp;
 	bool  percent:1;
 	const Style *style;
+	Color color;
 
 	Size GetMsz();
 
@@ -26,12 +28,13 @@ public:
 	int   operator+=(int i)                     { Set(actual + i); return actual; }
 
 	operator int()                              { return actual; }
-	
+
 	static const Style& StyleDefault();
 
 	ProgressIndicator& SetTotal(int _total)     { Set(actual, _total); return *this; }
-	ProgressIndicator& Percent(bool b = true)   { percent = b; return *this; }
+	ProgressIndicator& Percent(bool b = true)   { percent = b; Refresh(); return *this; }
 	ProgressIndicator& NoPercent()              { return Percent(false); }
+	ProgressIndicator& SetColor(Color c)        { color = c; Refresh(); return *this; }
 	ProgressIndicator& SetStyle(const Style& s) { style = &s; Refresh(); return *this; }
 
 	ProgressIndicator();

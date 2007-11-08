@@ -52,20 +52,25 @@ void AutoSetup()
 	String sdk = GetWinRegString("InstallationFolder",
 	                             "Software\\Microsoft\\Microsoft SDKs\\Windows\\v6.0",
 	                             HKEY_CURRENT_USER);
+	String bin8;
 	if(!IsNull(sdk)) {
 		sdk = NormalizePath(sdk);
 		dlg.sdk <<= sdk;
-		dlg.visualcpp8 <<= sdk;
+		dlg.visualcpp8 <<= bin8 = sdk;
 	}
 	else {
-		dlg.visualcpp8 <<= NormalizePathNN(
+		dlg.visualcpp8 <<= bin8 = NormalizePathNN(
 			GetWinRegString("8.0", "SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7")
 		);
 		dlg.sdk <<= NormalizePathNN(GetWinRegString("Install Dir", "SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3"));
 	}
-
 	dlg.visualcppmethod8 <<= "MSC8";
 	dlg.dovisualcpp8 <<= !IsNull(dlg.visualcpp8);
+
+	if(bin8.GetLength() && FileExists(AppendFileName(bin8, "VC\\Bin\\x64\\cl.exe"))) {
+		dlg.dovisualcpp8x64 = true;
+	}
+	dlg.visualcppmethod8x64 <<= "MSC8x64";
 
 	dlg.mysql <<= NormalizePathNN(GetWinRegString("Location", "SOFTWARE\\MySQL AB\\MySQL Server 4.1"));
 
@@ -134,6 +139,49 @@ void AutoSetup()
 	}
 
 	String vs8 = ~dlg.visualcpp8;
+
+	if(!IsNull(vs8) && dlg.dovisualcpp8x64) {
+		String vc = AppendFileName(vs8, "Vc");
+		String m = ~dlg.visualcppmethod8x64;
+		String sdk = ~dlg.sdk;
+		if(IsNull(sdk))
+			sdk = AppendFileName(vc, "PlatformSDK");
+		SaveFile(
+			AppendFileName(dir, m + ".bm"),
+			"BUILDER = \"MSC8X64\";\n"
+			"DEBUG_INFO = \"2\";\n"
+			"DEBUG_BLITZ = \"1\";\n"
+			"DEBUG_LINKMODE = \"0\";\n"
+			"DEBUG_OPTIONS = \"-Od\";\n"
+			"RELEASE_BLITZ = \"0\";\n"
+			"RELEASE_LINKMODE = \"0\";\n"
+			"RELEASE_OPTIONS = \"-O2 -GS-\";\n"
+			"RELEASE_SIZE_OPTIONS = \"-O1 -GS-\";\n"
+			"DEBUGGER = \"\";\n"
+			"REMOTE_HOST = \"\";\n"
+			"REMOTE_OS = \"\";\n"
+			"REMOTE_TRANSFER = \"\";\n"
+			"REMOTE_MAP = \"\";\n"
+			"PATH = " + AsCString(
+			                AppendFileName(vs8, "Common7\\Ide") + ';' +
+							AppendFileName(vc, "Bin\\x64") + ';' +
+							AppendFileName(sdk, "Bin") +
+							exe
+						) + ";\n"
+			"INCLUDE = " + AsCString(
+							AppendFileName(vc, "Include") + ';' +
+							AppendFileName(sdk, "Include") +
+							include
+						   ) + ";\n"
+			"LIB = " + AsCString(
+							AppendFileName(vc, "Lib\\x64") + ';' +
+							AppendFileName(sdk, "Lib\\x64") +
+							lib
+			           ) + ";\n"
+		);
+		SaveFile(AppendFileName(dir, "default_method"), m);
+	}
+
 	if(!IsNull(vs8) && dlg.dovisualcpp8) {
 		String vc = AppendFileName(vs8, "Vc");
 		String m = ~dlg.visualcppmethod8;

@@ -174,14 +174,6 @@ Image EditField::CursorImage(Point, dword)
 	return Image::IBeam();
 }
 
-bool EditField::HasBorder()
-{
-	Rect r = GetRect();
-	Rect q = r;
-	GetFrame().FrameLayout(r);
-	return q.Height() != r.Height();
-}
-
 int  EditField::GetTy()
 {
 	return (GetSize().cy - font.Info().GetHeight()) / 2;
@@ -207,7 +199,6 @@ void EditField::Paints(Draw& w, int& x, int fcy, const wchar *&txt,
 void EditField::Paint(Draw& w)
 {
 	Size sz = GetSize();
-	bool f = HasBorder();
 	const EditField::Style *st = style ? style : &StyleDefault();
 	bool enabled = IsShowEnabled();
 	Color paper = enabled && !IsReadOnly() ? (HasFocus() ? st->focus : st->paper) : st->disabled;
@@ -276,7 +267,7 @@ bool EditField::IsSelection() const
 void EditField::SyncCaret()
 {
 	FontInfo fi = font.Info();
-	SetCaret(GetCaret(cursor) - sc + 2 - fi.GetRightSpace('o'), GetTy(),
+	SetCaret(GetCaret(cursor) - sc + 2 - fi.GetRightSpace('o') + fi.GetLeftSpace('o'), GetTy(),
 	         1, min(GetSize().cy - 2 * GetTy(), fi.GetHeight()));
 }
 
@@ -301,8 +292,9 @@ void EditField::Finish(bool refresh)
 	sz.cx -= 2;
 	if(sz.cx <= 0) return;
 	int x = GetCaret(cursor);
-	if(x > sz.cx + sc - 1) {
-		sc = x - sz.cx + 1;
+	int wx = x + font.Info().GetRightSpace('o');
+	if(wx > sz.cx + sc - 1) {
+		sc = wx - sz.cx + 1;
 		Refresh();
 	}
 	if(x < sc) {

@@ -52,14 +52,14 @@ public:
 	void Insert(int pos, int c)                               { *B::Insert(pos, 1, NULL) = c; }
 	void Insert(int pos, const tchar *s, int count)           { B::Insert(pos, count, s); }
 	void Insert(int pos, const String& s)                     { Insert(pos, s, s.GetCount()); }
-	void Insert(int pos, const char *s)                       { Insert(pos, s, strlen(s)); }
+	void Insert(int pos, const char *s)                       { Insert(pos, s, strlen__(s)); }
 
 	void  Cat(int c)                                          { B::Cat(c); }
 	void  Cat(const tchar *s, int len)                        { B::Cat(s, len); }
 	void  Cat(const tchar *s)                                 { Cat(s, strlen__(s)); }
 	void  Cat(const String& s)                                { Cat(~s, s.GetLength()); }
 	void  Cat(int c, int count);
-	void  Cat(const tchar *s, const tchar *lim)               { ASSERT(s <= lim); Cat(s, lim - s); }
+	void  Cat(const tchar *s, const tchar *lim)               { ASSERT(s <= lim); Cat(s, int(lim - s)); }
 	void  Cat(const String& s, int len)                       { B::Cat(~s, len); }
 	void  Cat(const bchar *s, int len)                        { Cat((const tchar *) s, len); }
 

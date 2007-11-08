@@ -2,35 +2,6 @@
 
 NAMESPACE_UPP
 
-class MultiDisplay : public GridDisplay
-{
-	public:
-		void Paint(Draw &w, int x, int y, int cx, int cy, const Value &val, dword style, Color &fg, Color &bg, Font &fnt, bool found = false, int fs = 0, int fe = 0)
-		{
-			w.DrawRect(x, y, cx, cy, bg);
-
-			int ty = (cy - Draw::GetStdFontCy()) / 2 + 1;
-			int tx = 3;
-
-			if(IsType< Vector<String> >(val))
-			{
-				const Vector<String> &v = ValueTo< Vector<String> >(val);
-				const char * SPACE = " ";
-				int cnt = v.GetCount();
-				for(int i = 0; i < cnt; i++)
-				{
-					fnt.Bold((i + 1) & 1);
-					w.DrawText(tx, ty, v[i], fnt, fg);
-					tx += GetTextSize(v[i], fnt).cx;
-					w.DrawText(tx, ty, SPACE, fnt, fg);
-					tx += GetTextSize(SPACE, fnt).cx;
-				}
-			}
-			else
-				w.DrawText(tx, ty, (String) val, fnt, fg);
-		}
-};
-
 DropGrid::PopUpGrid::PopUpGrid()
 {
 	LiveCursor();
@@ -81,12 +52,16 @@ void DropGrid::PopUpGrid::Deactivate()
 
 DropGrid::DropGrid()
 {
-	WhenPush = THISBACK(Drop);
 	list.WhenCloseData = THISBACK(CloseData);
 	list.WhenCloseNoData = THISBACK(CloseNoData);
 	list.WhenClose = THISBACK(Close);
 	list.WhenSearchCursor = THISBACK(SearchCursor);
 	list.BackPaint();
+	drop.AddButton().Main().WhenPush = THISBACK(Drop);
+	drop.SetStyle(drop.StyleFrame());
+	drop.NoDisplay();
+	drop.AddTo(*this);
+	//SetFrame(EditFieldFrame());
 	EnableDrop(false);
 	list_width = 0;
 	list_height = 0;
@@ -102,7 +77,7 @@ DropGrid::DropGrid()
 	drop_enter = false;
 	data_action = false;
 	searching = true;
-	display = &Single<MultiDisplay>();
+	display = this;
 }
 
 void DropGrid::Close()
@@ -130,8 +105,15 @@ void DropGrid::Drop()
 	if(!IsEditable())
 		return;
 
+	GridDisplay &dsp = list.GetDisplay();
 	if(!header)
+	{
 		list.HideRow(0, false);
+		dsp.SetHorzMargin(2, 2);
+	}
+	else
+		dsp.SetHorzMargin();
+		
 	list.UpdateRows(true); //TODO: try to avoid it..
 
 	Rect rs = GetScreenRect();
@@ -186,47 +168,36 @@ void DropGrid::Drop()
 	list.CenterCursor();
 }
 
+
 void DropGrid::Paint(Draw& w)
 {
 	Size sz = GetSize();
 	w.DrawRect(sz, SColorPaper());
 	GridDisplay &disp = display ? *display : list.GetDisplay();
 	bool hf = HasFocus();
-	bool isnull = IsNull(value);
+	bool isnull = rowid < 0;
 	Color fg = hf ? SColorHighlightText() : IsEnabled() ? SColorText() : SColorDisabled();
 	Color bg = !IsEnabled() ? SColorFace
-	                        : notnull && isnull ? Blend(SColorPaper, Color(255, 0, 0), hf ? 55 : 32)
+	                        : notnull && isnull ? Blend(SColorPaper, Color(255, 0, 0), /*hf ? 55 :*/ 32)
 	                                            : hf ? SColorHighlight() : SColorPaper();
 
+	const int d = 1;
 	if(isnull)
-	{
-		w.DrawRect(1, 1, sz.cx - 2, sz.cy - 2, bg);
-		return;
-	}
-
-	int cnt = value_cols.GetCount();
-	if(cnt > 0)
-	{
-		int r = list.FindRow(rowid);
-		Vector<String> v;
-		for(int i = 0; i < cnt; i++)
-		{
-			Value val = list.Get(r, value_cols[i]);
-			if(IsNull(val))
-				continue;
-			v.Add(list.GetColumn(value_cols[i]).GetName());
-			v.Add(list.GetConvertedColumn(value_cols[i], val));
-		}
-
-		disp.Paint(w, 1, 1, sz.cx - 2, sz.cy - 2, RawPickToValue< Vector<String> >(v), 0, fg, bg, StdFont(), false, 0, 0);
-	}
+		w.DrawRect(d, d, sz.cx - d * 2, sz.cy - d * 2, bg);
 	else
-		disp.Paint(w, 1, 1, sz.cx - 2, sz.cy - 2, list.GetConvertedColumn(value_col, value), 0, fg, bg, StdFont(), false, 0, 0);
+	{
+		Font fnt(StdFont());
+		Paint0(w, 1, 1, d, d, sz.cx - d * 2, sz.cy - d * 2, Format0(Null, rowid), 0, fg, bg/*SColorPaper()*/, fnt);
+	}
+	
+	if(hf)
+		DrawFocus(w, d - 1, d - 1, sz.cx - (d - 1) * 2, sz.cy - (d - 1) * 2);
 }
+
 
 void DropGrid::LeftDown(Point p, dword keyflags)
 {
-	Push();
+	Drop();
 }
 
 void DropGrid::GotFocus()
@@ -237,6 +208,43 @@ void DropGrid::GotFocus()
 void DropGrid::LostFocus()
 {
 	Refresh();
+}
+
+void DropGrid::Paint0(Draw &w, int lm, int rm, int x, int y, int cx, int cy, const Value &val, dword style, Color &fg, Color &bg, Font &fnt, bool found, int fs, int fe)
+{
+	w.DrawRect(x, y, cx, cy, bg);
+	int nx = x + lm;
+	int ny = y + tm;
+	int ncx = cx - lm - rm;
+
+	if(IsType< Vector<String> >(val))
+	{
+		const Vector<String> &v = ValueTo< Vector<String> >(val);
+		const char * SPACE = " ";
+		
+		int tcx = 0;
+		int scx = GetTextSize(SPACE, fnt).cx;
+
+		int cnt = v.GetCount();
+		Size isz = GridImg::Dots2().GetSize();
+		for(int i = 0; i < cnt; i++)
+		{
+			fnt.Bold((i + 1) & 1);
+			Size tsz = GetTextSize(v[i], fnt);
+			DrawText(w, nx, x + lm + tcx, 
+			         ny, tcx + tsz.cx > ncx - isz.cx ? ncx - tcx: tsz.cx + isz.cx, cy,
+			         GD::VCENTER, WString(v[i]), fnt, fg, bg, found, fs, fe, false);
+			tcx += tsz.cx + scx;
+		}
+	}
+	else
+		DrawText(w, nx, nx, ny, ncx, cy, GD::VCENTER, GetStdConvertedValue(val), fnt, fg, bg, found, fs, fe, false);
+}
+
+
+void DropGrid::Paint(Draw &w, int x, int y, int cx, int cy, const Value &val, dword style, Color &fg, Color &bg, Font &fnt, bool found, int fs, int fe)
+{
+	Paint0(w, lm, rm, x, y, cx, cy, val, style, fg, bg, fnt, found, fs, fe);
 }
 
 DropGrid& DropGrid::Width(int w)
@@ -396,6 +404,7 @@ void DropGrid::SetData(const Value& v)
 		list.SetCursor(row);
 		UpdateValue();
 		DoAction(row, data_action);
+		Refresh();
 	}
 	else
 		ClearValue();
@@ -430,6 +439,54 @@ GridCtrl::ItemRect& DropGrid::AddIndex(const char *name)
 GridCtrl::ItemRect& DropGrid::AddIndex(Id id)
 {
 	return list.AddIndex(id);
+}
+
+MultiButton::SubButton& DropGrid::AddButton(int type, Callback &cb)
+{
+	MultiButton::SubButton& btn = drop.InsertButton(1);
+	switch(type)
+	{
+		case BTN_PLUS:
+			btn.SetImage(GridImg::SelPlus);
+			break;				
+		case BTN_SELECT:
+			btn.SetImage(GridImg::SelDots);
+			break;
+		case BTN_LEFT:
+			btn.SetImage(GridImg::SelLeft);
+			break;
+		case BTN_RIGHT:
+			btn.SetImage(GridImg::SelRight);
+			break;
+		case BTN_UP:
+			btn.SetImage(GridImg::SelUp);
+			break;
+		case BTN_DOWN:
+			btn.SetImage(GridImg::SelDn);
+			break;
+	}
+	btn.WhenPush = cb;
+	return btn;
+}
+
+MultiButton::SubButton& DropGrid::AddSelect(Callback &cb)
+{
+	return AddButton(BTN_SELECT, cb);
+}
+
+MultiButton::SubButton& DropGrid::AddPlus(Callback &cb)
+{
+	return AddButton(BTN_PLUS, cb);
+}
+
+MultiButton::SubButton& DropGrid::AddEdit(Callback &cb)
+{
+	return AddButton(BTN_RIGHT, cb);
+}
+
+MultiButton::SubButton& DropGrid::GetButton(int n)
+{
+	return drop.GetButton(n);
 }
 
 void DropGrid::ClearValue()
@@ -508,6 +565,26 @@ void DropGrid::Add(const Vector<Value> &v, int data_offset, int column_offset)
 	EnableDrop();
 }
 
+Value& DropGrid::operator() (int r, int c)
+{
+	return list(r, c);
+}
+
+Value& DropGrid::operator() (int c)
+{
+	return list(c);
+}
+
+Value& DropGrid::operator() (Id id)
+{
+	return list(id);
+}
+
+Value& DropGrid::operator() (int r, Id id)
+{
+	return list(r, id);
+}
+
 GridCtrl::ItemRect& DropGrid::GetRow(int r)
 {
 	return list.GetRow(r);
@@ -521,6 +598,20 @@ int DropGrid::Find(const Value& v, int col)
 int DropGrid::Find(const Value& v, Id id)
 {
 	return list.Find(v, id);
+}
+
+void DropGrid::CancelUpdate()
+{
+	int prevrow = list.GetPrevCursor();
+	if(prevrow >= 0)
+	{
+		list.SetCursor(prevrow);
+		UpdateValue();
+		rowid = list.GetRowId(prevrow);
+		Refresh();
+	}
+	else
+		ClearValue();
 }
 
 void DropGrid::Change(int dir)
@@ -541,7 +632,7 @@ void DropGrid::Change(int dir)
 	if(list.IsValidCursor(c))
 	{
 		list.SetCursor(c);
-		value = list.Get(value_col);
+		UpdateValue();
 		DoAction(c);
 	}
 
@@ -551,6 +642,7 @@ void DropGrid::Change(int dir)
 void DropGrid::SearchCursor()
 {
 	value = list.Get(value_col);
+	rowid = list.GetRowId();
 	Refresh();
 }
 
@@ -564,7 +656,7 @@ bool DropGrid::Key(dword k, int)
 	switch(k)
 	{
 		case K_ALT_DOWN:
-			Push();
+			Drop();
 			break;
 		case K_DOWN:
 		case K_RIGHT:
@@ -581,11 +673,12 @@ bool DropGrid::Key(dword k, int)
 			if(searching && k >= 32 && k < 65536)
 			{
 				if(!list.IsOpen())
-					Push();
+					Drop();
 				list.Search(k);
 			}
 			return false;
 	}
+	return true;
 }
 
 int DropGrid::AddColumns(int cnt)
@@ -644,6 +737,25 @@ bool DropGrid::IsEmpty()
 	return list.IsEmpty();
 }
 
+Vector<String> DropGrid::MakeStringVector(int r) const
+{
+	Vector<String> v;
+	int cnt = value_cols.GetCount();
+	int fc = list.GetFixedColumnCount();
+	if(cnt > 0)
+	{
+		for(int i = 0; i < cnt; i++)
+		{
+			Value val = list.Get(r, value_cols[i]);
+			if(IsNull(val))
+				continue;
+			v.Add(list.GetColumnName(value_cols[i]));
+			v.Add(list.GetStdConvertedColumn(value_cols[i] + fc, val));
+		}
+	}
+	return v;
+}
+
 Value DropGrid::MakeLongValue(int r, bool columns) const
 {
 	if(r < 0)
@@ -653,6 +765,7 @@ Value DropGrid::MakeLongValue(int r, bool columns) const
 	if(cnt > 0)
 	{
 		String v;
+		int fc = list.GetFixedColumnCount();
 		for(int i = 0; i < cnt; i++)
 		{
 			Value val = list.Get(r, value_cols[i]);
@@ -663,7 +776,7 @@ Value DropGrid::MakeLongValue(int r, bool columns) const
 				v += list.GetColumnName(value_cols[i]);
 				v += ' ';
 			}
-			v += list.GetConvertedColumn(value_cols[i], val);
+			v += list.GetStdConvertedColumn(value_cols[i] + fc, val);
 			v += ' ';
 		}
 		return v;
@@ -671,29 +784,57 @@ Value DropGrid::MakeLongValue(int r, bool columns) const
 	return Null;
 }
 
-Value DropGrid::Format(const Value& q) const
+Value DropGrid::Format0(const Value& q, int rowid) const
 {
-	int r = list.Find(q, key_col);
+	int r = rowid >= 0 ? list.FindRow(rowid) : list.Find(q, key_col);
 	if(r < 0)
 		return Null;
 
-//	if(IsNull(value))
-//		return Null;
-
 	if(value_cols.GetCount() > 0)
-		return MakeLongValue(r, format_columns);
+		return RawPickToValue< Vector<String> >(MakeStringVector(r));
 	else
-		return list.GetConvertedColumn(value_col, list.Get(r, value_col));
+		return list.GetConvertedColumn(value_col + list.GetFixedColumnCount(), list.Get(r, value_col));
 }
 
-#define E__Addv(I)    list.Set(q, I - 1, p##I)
-#define E__AddF(I) \
+Value DropGrid::Format(const Value& q) const
+{
+	return Format0(q, -1);
+}
+
+void DropGrid::EnableDrop(bool b)
+{
+	if(IsEnabled() == b)
+		return;
+	for(int i = 0; i < drop.GetButtonCount(); i++)
+		drop.GetButton(i).Enable(b);
+	Enable(b);
+}
+
+GridCtrl::ItemRect& DropGrid::AddRow(int n, int size)
+{
+	EnableDrop();
+	return list.AddRow(n, size);
+}
+
+#define E__Addv0(I)    list.Set(q, I - 1, p##I)
+#define E__AddF0(I) \
 DropGrid& DropGrid::Add(__List##I(E__Value)) { \
 	EnableDrop(true); \
 	int q = AddColumns(I); \
-	__List##I(E__Addv); \
+	__List##I(E__Addv0); \
 	return *this; \
 }
-__Expand(E__AddF)
+__Expand(E__AddF0)
+
+#define E__Addv1(I)    list.Set(q, I - 1, p##I)
+#define E__AddF1(I) \
+GridCtrl::ItemRect& DropGrid::AddRow(__List##I(E__Value)) { \
+	EnableDrop(true); \
+	int q = AddColumns(I); \
+	GridCtrl::ItemRect& ir = list.AddRow(); \
+	__List##I(E__Addv1); \
+	return ir; \
+}
+__Expand(E__AddF1)
 
 END_UPP_NAMESPACE

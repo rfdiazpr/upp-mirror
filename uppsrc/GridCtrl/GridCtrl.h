@@ -34,7 +34,7 @@ class GridPopUpHeader : public Ctrl
 
 	public:
 
-		GridDisplay * display;
+		GridDisplay *display;
 		Value val;
 		int sortmode;
 		int sortcol;
@@ -51,7 +51,7 @@ class GridPopUpHeader : public Ctrl
 class GridButton : public Ctrl
 {
 	private:
-		Image img;	
+		Image img;
 	public:
 		typedef GridButton CLASSNAME;
 		GridButton();
@@ -62,7 +62,7 @@ class GridButton : public Ctrl
 		virtual void MouseLeave();
 		virtual void State(int reason);
 		virtual Size GetStdSize() const;
-	
+
 };
 
 class GridResizePanel : public FrameBottom<Ctrl>
@@ -73,7 +73,7 @@ class GridResizePanel : public FrameBottom<Ctrl>
 		Rect r;
 		Size minsize;
 	public:
-	
+
 		typedef GridResizePanel CLASSNAME;
 		GridResizePanel();
 		virtual void Paint(Draw& w);
@@ -83,7 +83,7 @@ class GridResizePanel : public FrameBottom<Ctrl>
 		virtual void MouseMove(Point p, dword flags);
 		bool MouseOnGrip(const Point &p);
 		void SetMinSize(Size sz);
-		
+
 		Callback WhenClose;
 };
 
@@ -103,7 +103,7 @@ class GridPopUp : public Ctrl
 class GridOperation
 {
 	public:
-	
+
 		enum
 		{
 			INSERT,
@@ -111,39 +111,43 @@ class GridOperation
 			REMOVE,
 			NONE
 		};
-	
+
 	private:
-	
+
 		int operation;
-	
+
 	public:
-	
+
 		GridOperation() : operation(NONE) {}
-		
+
 		void SetOperation(int op)
 		{
 			switch(operation)
 			{
 				case NONE: operation = op; break;
-				case INSERT: 
-					if(op == REMOVE)
+				case UPDATE:
+					if(op == REMOVE || op == NONE)
+						op = NONE;
+					break;
+				case INSERT:
+					if(op == REMOVE || op == NONE)
 						operation = NONE;
 					break;
 			}
 		}
-		
+
 		void Clear() { operation = NONE; }
-		
+
 		GridOperation& operator=(const int op)
 		{
 			SetOperation(op);
 			return *this;
 		}
-		
-		operator int()          { return operation;       }		
+
+		operator int()          { return operation;       }
 		bool operator!=(int op) { return operation != op; }
-		bool operator==(int op) { return operation != op; }
-	
+		bool operator==(int op) { return operation == op; }
+
 };
 
 class CtrlsHolder : public Ctrl
@@ -215,7 +219,7 @@ class GridClipboard : Moveable<GridClipboard>
 class GridCtrl : public Ctrl
 {
 	friend class DropGrid;
-	
+
 	public:
 
 		static int GD_COL_WIDTH;
@@ -275,7 +279,7 @@ class GridCtrl : public Ctrl
 			GE_ROW  = 0,
 			GE_CELL = 1
 		};
-		
+
 		struct CurState
 		{
 			bool newx;
@@ -299,7 +303,7 @@ class GridCtrl : public Ctrl
 			Convert * convert;
 			Callback1<One<Ctrl>&> factory;
 			bool nofactory;
-		
+
 			Edit()
 			{
 				ctrl = NULL;
@@ -307,18 +311,18 @@ class GridCtrl : public Ctrl
 				nofactory = false;
 			}
 		};
-		
+
 		struct Item : Moveable<Item>
 		{
 			friend class ItemRect;
 			friend class GridCtrl;
-		
+
 			Item()
 			{
 				ctrl    = NULL;
 				convert = NULL;
 				display = NULL;
-		
+
 				fs = fe = 0;
 				style = 0;
 				editable = true;
@@ -329,7 +333,7 @@ class GridCtrl : public Ctrl
 				cy = 0;
 				group = -1;
 				isjoined = false;
-		
+
 				modified = false;
 				sync_flag = -1;
 				paint_flag = -1;
@@ -338,22 +342,22 @@ class GridCtrl : public Ctrl
 			{
 				delete ctrl;
 			}
-		
+
 			private:
-		
+
 				bool InvertSelect() { return BitInverse(style, GD::SELECT); }
 				bool IsSelect() { return style & GD::SELECT; }
 				bool IsLive()   { return style & GD::LIVE;   }
 				bool IsCursor() { return style & GD::CURSOR; }
 				bool IsFound()  { return style & GD::FOUND;  }
-		
+
 				void Select(bool s) { BitSet(style, GD::SELECT, s); }
 				void Cursor(bool s) { BitSet(style, GD::CURSOR, s); }
 				void Live(bool s)   { BitSet(style, GD::LIVE, s);   }
 				void Found(bool s)  { BitSet(style, GD::FOUND, s);  }
-		
+
 				bool IsJoined() { return isjoined; }
-		
+
 				int idx, idy, cx, cy, group;
 				bool isjoined:1;
 				int fs, fe;
@@ -363,33 +367,33 @@ class GridCtrl : public Ctrl
 				bool modified:1;
 				int sync_flag;
 				int paint_flag;
-		
+
 				Ptr<Ctrl> ctrl;
-		
+
 				Convert     *convert;
 				GridDisplay *display;
-		
+
 				void SetCtrl(Ctrl * newCtrl);
 				void DropCtrl();
-		
+
 			public:
 				Value val;
-		
+
 				Item& Editable(bool b);
 				Item& NoEditable();
-		
+
 				Item& Clickable(bool b)  { clickable = b;     return *this; }
 				Item& NoClickable()      { clickable = false; return *this; }
-		
+
 		};
 
 		typedef Vector< Vector<Item> > Items;
 		typedef Vector< Edit > Edits;
-		
+
 		class ItemRect : public Moveable<ItemRect>
 		{
 			friend class GridCtrl;
-		
+
 			public:
 				ItemRect()
 				{
@@ -398,7 +402,7 @@ class GridCtrl : public Ctrl
 					id  = uid = n = 0;
 					prop = 1;
 					size = nsize = 0;
-					tsize = tnsize = 0;
+					tsize = 0;
 					sortmode = 0;
 					hidden = false;
 					index = false;
@@ -408,68 +412,63 @@ class GridCtrl : public Ctrl
 					clickable = true;
 					ignore_display = false;
 					style = 0;
-		
+
 					calign = 0;
 					sl = sr = st = sb = 0;
 					sx = sy = 0;
 					join = 0;
-		
+
 					ismin = false;
 					ismax = false;
-		
-					fnt = StdFont();
+
+					fnt = Null;
 					balign = halign = GD::LEFT | GD::VCENTER;
 					wrap = false;
 					modified = false;
 					fg = Null;
 					bg = Null;
-		
+
 					ctrl    = NULL;
 					convert = NULL;
 					display = NULL;
-					
+
 					modified = false;
 					isnew = false;
 					found = false;
-		
+
 					level = 0;
 					data_col = -1;
-					
+
 					operation = GridOperation::NONE;
 				}
-		
+
 			private:
-		
+
 				Items *items;
 				GridCtrl *parent;
 				Edits *edits;
-		
+
 				int level;
-		
-				//Vector<ItemRect *> child;
-		
+
 				Ptr<Ctrl>   ctrl;
 				Convert     *convert;
 				GridDisplay *display;
-		
+
 				Callback1<One<Ctrl>&> factory;
-		
-		//		GridDisplay *display;
-		
+
 				static VectorMap<Id, int> *aliases;
-		
+
 				double pos, size, prop;
 				int npos, nsize;
 				int min, max;
 				int id, uid, n;
 				int sl, sr, st, sb, sx, sy;
-				
+
 				int data_col;
-		
-				double tpos, tsize, tprop;
-				int tnpos, tnsize;
+
+				double tsize;
 				int  join;
-		
+
 				bool hidden;
 				bool index;
 				bool convertion;
@@ -479,66 +478,66 @@ class GridCtrl : public Ctrl
 				bool modified:1;
 				bool isnew:1;
 				bool found:1;
-		
+
 				Value defval;
-		
+
 				dword style;
-		
+
 				bool ismin;
 				bool ismax;
-		
+
 				/* operatory typu friend moga odwolywac sie tylko do zmiennych statycznych klasy */
-		
+
 				static int sortCol;
 				static int sortMode;
-		
+
 				int sortcol;
 				int sortmode;
-		
+
 				int balign, halign, calign;
 				bool wrap;
 				Font fnt;
 				Color fg, bg;
 				Image img;
-				
+
 				GridOperation operation;
-				
+
 				bool ignore_display:1;
-		
+
 				double Left(int scroll = 0)    { return pos - scroll;          }
 				double Right(int scroll = 0)   { return pos + size - scroll;   }
 				double Top(int scroll = 0)     { return pos - scroll;          }
 				double Bottom(int scroll = 0)  { return pos + size - scroll;   }
 				double Width()                 { return size; 				   }
 				double Height()                { return size;				   }
-		
+
 				bool   InvertSelect()          { return BitInverse(style, GD::SELECT); }
 				bool   IsSelect()              { return style & GD::SELECT;    }
 				bool   IsLive()                { return style & GD::LIVE;      }
 				bool   IsCursor()              { return style & GD::CURSOR;    }
 				bool   IsHighlight()           { return style & GD::HIGHLIGHT; }
-				
+
 				bool   IsFound()               { return found;                 }
-		
+
 				void   Select(bool s)          { BitSet(style, GD::SELECT, s);    }
 				void   Cursor(bool s)          { BitSet(style, GD::CURSOR, s);    }
 				void   Live(bool s)            { BitSet(style, GD::LIVE, s);      }
 				void   Highlight(bool s)       { BitSet(style, GD::HIGHLIGHT, s); }
-		
+
 				int    nLeft(int scroll = 0)   { return npos - scroll;         }
 				int    nRight(int scroll = 0)  { return npos + nsize - scroll; }
 				int    nTop(int scroll = 0)    { return npos - scroll;         }
 				int    nBottom(int scroll = 0) { return npos + nsize - scroll; }
 				int    nWidth()                { return nsize; 				   }
 				int    nHeight()               { return nsize;				   }
-		
+
 				ItemRect& Size(int n);
-		
+
 				bool IsMin() { return ismin; }
 				bool IsMax() { return ismax; }
-		
+
 				void ChangeSortMode(bool idsort = true);
-		
+
 				friend bool operator<(const ItemRect& a, const ItemRect& b)
 				{
 					if(sortMode)
@@ -553,11 +552,11 @@ class GridCtrl : public Ctrl
 					else
 						return a.id > b.id;
 				}
-				
+
 				Callback1<int> SyncCtrls;
-				
+
 			public:
-		
+
 				ItemRect& Alias(Id id);
 				ItemRect& Alias(const char * s);
 				ItemRect& Name(String &s);
@@ -571,6 +570,8 @@ class GridCtrl : public Ctrl
 				ItemRect& Edit(Ctrl &ctrl);
 				template<typename T>
 				ItemRect& EditConvert(T &ctrl)                   { return Edit(ctrl).SetConvert(ctrl); }
+				template<typename T>
+				ItemRect& EditConvertDisplay(T &ctrl)            { return Edit(ctrl).SetConvert(ctrl).SetDisplay(ctrl); }
 				ItemRect& SetConvert(Convert &c);
 				ItemRect& SetFormat(const char *fmt);
 				ItemRect& SetDisplay(GridDisplay &gd);
@@ -579,9 +580,9 @@ class GridCtrl : public Ctrl
 				ItemRect& Default(Value v);
 				ItemRect& Index(bool b = true);
 				ItemRect& DataColumn(int n);
-		
+
 				String GetName() const;
-		
+
 				ItemRect& AlignTop()                             { balign = GD::TOP     | GD::LEFT;                return *this; }
 				ItemRect& AlignBottom()                          { balign = GD::BOTTOM  | GD::LEFT;                return *this; }
 				ItemRect& AlignLeft()                            { balign = GD::LEFT    | GD::VCENTER;             return *this; }
@@ -595,7 +596,7 @@ class GridCtrl : public Ctrl
 				ItemRect& AlignBottomLeft()                      { balign = GD::LEFT    | GD::BOTTOM;              return *this; }
 				ItemRect& AlignBottomRight()                     { balign = GD::RIGHT   | GD::BOTTOM;              return *this; }
 				ItemRect& AlignBottomCenter()                    { balign = GD::HCENTER | GD::BOTTOM;              return *this; }
-		
+
 				ItemRect& HeaderAlignTop()                       { halign = GD::TOP     | GD::LEFT;                return *this; }
 				ItemRect& HeaderAlignBottom()                    { halign = GD::BOTTOM  | GD::LEFT;                return *this; }
 				ItemRect& HeaderAlignLeft()                      { halign = GD::LEFT    | GD::VCENTER;             return *this; }
@@ -609,7 +610,7 @@ class GridCtrl : public Ctrl
 				ItemRect& HeaderAlignBottomLeft()                { halign = GD::LEFT    | GD::BOTTOM;              return *this; }
 				ItemRect& HeaderAlignBottomRight()               { halign = GD::RIGHT   | GD::BOTTOM;              return *this; }
 				ItemRect& HeaderAlignBottomCenter()              { halign = GD::HCENTER | GD::BOTTOM;              return *this; }
-		
+
 				ItemRect& CtrlAlignTop(int t = 0, int s = 0)     { calign |= GD::TOP;     st = t; sy = s;         return *this; }
 				ItemRect& CtrlAlignBottom(int b = 0, int s = 0)  { calign |= GD::BOTTOM;  sb = b; sy = s;         return *this; }
 				ItemRect& CtrlAlignLeft(int l = 0, int s = 0)    { calign |= GD::LEFT;    sl = l; sx = s;         return *this; }
@@ -619,31 +620,35 @@ class GridCtrl : public Ctrl
 				ItemRect& CtrlAlignCenter(int s = 0, int d = 0)  { calign |= GD::VCENTER | GD::HCENTER; sx = s; sy = d; return *this; }
 				ItemRect& CtrlAlignHorzPos(int l = 0, int r = 0) { calign |= GD::HPOS;    sl = l; sr = r; sx = 1; return *this; }
 				ItemRect& CtrlAlignVertPos(int t = 0, int b = 0) { calign |= GD::VPOS;    st = t; sb = b; sy = 1; return *this; }
-		
+
 				ItemRect& WrapText()                             { wrap = true; return *this; }
-		
+
 				ItemRect& SetFont(Font &f)                       { fnt = f; return *this; }
 				ItemRect& Bg(Color c)                            { bg = c;  return *this; }
 				ItemRect& Fg(Color c)                            { fg = c;  return *this; }
 				ItemRect& SetImage(const Image& i)               { img = i; return *this;}
-				ItemRect& ClearImage()                           { img = Null; return *this;}		
+				ItemRect& ClearImage()                           { img = Null; return *this;}
 				ItemRect& Ctrls(Callback1<One<Ctrl>&> _factory)	 { (*edits)[id].factory = _factory; return *this; }
 				ItemRect& Ctrls(void (*factory)(One<Ctrl>&))     { return Ctrls(callback(factory)); }
 				template<class T> ItemRect&  Ctrls()             { return Ctrls(DefaultCtrlFactory<T>()); }
 				ItemRect& NoCtrls()                              { (*edits)[id].nofactory = true; return *this; }
 				ItemRect& Option();
-		
+
 				ItemRect& Editable(bool b);
 				ItemRect& NoEditable();
-		
+
 				ItemRect& Sortable(bool b)                       { sortable = b;      return *this; }
 				ItemRect& NoSortable()                           { sortable = false;  return *this; }
-		
+
 				ItemRect& Clickable(bool b)                      { clickable = b;     return *this; }
 				ItemRect& NoClickable()                          { clickable = false; return *this; }
-		
-				bool IsConvertion()                              { return convertion; }
-		
+
+				int  GetId()                                     { return id;                       }
+				int  GetNumber()                                 { return id - parent->fixed_cols;  }
+
+				bool IsConvertion() const                        { return convertion; }
+				bool IsHidden() const                            { return hidden;     }
+
 				void Serialize(Stream &s);
 				void Clear();
 		};
@@ -651,7 +656,7 @@ class GridCtrl : public Ctrl
 		typedef Vector<ItemRect> RectItems;
 		typedef Vector<ItemRect> VItems;
 		typedef Vector<ItemRect> HItems;
-		
+
 		typedef GridCtrl CLASSNAME;
 
 		Items  items;
@@ -668,10 +673,10 @@ class GridCtrl : public Ctrl
 		ScrollBar      sbx;
 		ScrollBar      sby;
 		ToolBar        bar;
-		
+
 		GridResizePanel resize_panel;
 		GridPopUp popup;
-		
+
 		bool resize_panel_open:1;
 
 		FrameLeft<ImageCtrl> findimg;
@@ -784,7 +789,9 @@ class GridCtrl : public Ctrl
 		bool mouse_move:1;
 		bool is_clipboard:1;
 		bool selecting:1;
+		bool enabled:1;
 
+		bool call_whenchangecol:1;
 		bool call_whenchangerow:1;
 		bool call_whenremoverow:1;
 		bool call_whenupdaterow:1;
@@ -818,6 +825,7 @@ class GridCtrl : public Ctrl
 
 		int  selected_rows;
 		int  selected_items;
+		int  colidx;
 		int  rowidx;
 		int  bains;
 		int  coluid;
@@ -854,7 +862,7 @@ class GridCtrl : public Ctrl
 		int    focused_ctrl_id;
 		Value  focused_ctrl_val;
 		int    focused_col;
-		
+
 		WString search_string;
 
 
@@ -943,7 +951,7 @@ class GridCtrl : public Ctrl
 		GridCtrl& SetRowHeight(int n, int height, bool recalc = true);
 		GridCtrl& SetColsMin(int size);
 		GridCtrl& SetColsMax(int size);
-		
+
 		int GetDefaultRowHeight() { return GD_ROW_HEIGHT; }
 
 		GridCtrl& Inserting(bool b = true)        { inserting         = b;  return *this; }
@@ -981,7 +989,7 @@ class GridCtrl : public Ctrl
 		GridCtrl& SearchImmediate(bool b = true)  { search_immediate = b;   return *this; }
 		GridCtrl& SearchHideRows(bool b = true)   { search_hide = b;        return *this; }
 		GridCtrl& SearchDisplay(bool b = true)    { search_display = b;     return *this; }
-		
+
 		GridCtrl& SetToolBar(bool b = true, int align = BarCtrl::BAR_BOTTOM, int frame = 1);
 		ToolBar&  GetToolBar() { return bar; }
 
@@ -1033,10 +1041,11 @@ class GridCtrl : public Ctrl
 		/* Methods */
 
 		ItemRect& InsertColumn(int pos, const char *name = NULL, int size = GD_COL_WIDTH, bool idx = false);
-		ItemRect& AddColumn(Id id, const char *name = NULL, int size = GD_COL_WIDTH, bool idx = false);
+		ItemRect& AddColumn(const Id id, const char *name = NULL, int size = GD_COL_WIDTH, bool idx = false);
+		ItemRect& AddColumn(const String& name, int size = GD_COL_WIDTH, bool idx = false);
 		ItemRect& AddColumn(const char *name = NULL, int size = GD_COL_WIDTH, bool idx = false);
 
-		void RemoveColumn(int n);
+		void RemoveColumn(int n, int count = 1);
 
 		ItemRect& AddHiddenColumn()                 { return AddColumn(0, 0);    }
 		ItemRect& AddHiddenColumn(const char *name) { return AddColumn(name, 0); }
@@ -1056,6 +1065,12 @@ class GridCtrl : public Ctrl
 		#undef   E__Add
 		//$+
 
+		//$-ItemRect& AddRow(const Value& [, const Value& ]...);
+		#define  E__Add(I)      ItemRect& AddRow(__List##I(E__Value));
+			__Expand(E__Add)
+		#undef   E__Add
+		//$+
+
 		int       GetColumnCount() const      { return total_cols - fixed_cols; }
 		int       GetFixedColumnCount() const { return fixed_cols;              }
 
@@ -1065,14 +1080,15 @@ class GridCtrl : public Ctrl
 		ItemRect& GetRow();
 		Item&     GetCell(int n, int m);
 		Item&     GetCell(int n, Id id);
-		
-		int GetCurrentRow();
+
+		int  GetCurrentRow();
+		bool IsCurrentRow();
+		void RestoreCurrentRow();
 
 		int GetWidth(int n = -1);
 		int GetHeight(int n = -1);
 		int GetFixedWidth();
 		int GetFixedHeight();
-
 
 		void Set(int r, int c, const Value &val);
 		void Set(int r, Id id, const Value &val);
@@ -1108,21 +1124,23 @@ class GridCtrl : public Ctrl
 
 		bool IsModified(int r, int c);
 		bool IsModified(int c);
+		bool IsModified(int r, Id id);
+		bool IsModified(Id id);
 		bool IsModifiedRow(int r);
-			
+
 
 		/* valid only in callbacks */
-		
+
 		bool IsNewRow()         { return newrow_inserted || newrow_appended; }
 		bool IsNewRowInserted() { return newrow_inserted; }
 		bool IsNewRowAppended() { return newrow_appended; }
 		bool IsRowRemoved()     { return row_removed; }
 		void CommitNewRow()     { newrow_inserted = newrow_appended = false; }
-		
-		/* deprecated */		
+
+		/* deprecated */
 		bool IsModifiedRow()    { return vitems[rowidx].modified; }
 		bool IsAddedRow()       { return vitems[rowidx].isnew; }
-		
+
 		bool IsUpdatedRow()     { return vitems[rowidx].operation == GridOperation::UPDATE; }
 		bool IsInsertedRow()    { return vitems[rowidx].operation == GridOperation::INSERT; }
 		bool IsRemovedRow()     { return vitems[rowidx].operation == GridOperation::REMOVE; }
@@ -1147,6 +1165,7 @@ class GridCtrl : public Ctrl
 		void RefreshLeft();
 
 		void Repaint(bool recalc_cols = false, bool recalc_rows = false);
+		void Ready(bool b);
 
 		int  GetMouseRow(Point &p, bool relative = true, bool fixed = false, bool full = true);
 		int  GetMouseCol(Point &p, bool relative = true, bool fixed = false, bool full = true);
@@ -1181,8 +1200,9 @@ class GridCtrl : public Ctrl
 		void CancelAccept()     { cancel_accept      = true; }
 
 		void ClearCursor(bool remove = false);
+		void ClearRow(int r = -1, int column_offset = 0);
 		void Clear(bool columns = false);
-		void Reset();	
+		void Reset();
 
 		void Begin();
 		void Next();
@@ -1196,6 +1216,7 @@ class GridCtrl : public Ctrl
 		bool IsPrev();
 
 		int  SetCursor(int n);
+		void SetCursor(const Point& p);
 		int  SetCursorId(int n);
 		int  GetCursor(bool rel = false) const;
 		int  GetPrevCursor(bool rel = false) const;
@@ -1233,7 +1254,8 @@ class GridCtrl : public Ctrl
 		bool GoPageUp(bool scroll = true);
 		bool GoPageDn(bool scroll = true);
 		bool GoFirstVisible(bool scroll = true);
-		void GoTo(int n, bool setcursor = true, bool scroll = true);
+		void GoTo(int r, bool setcursor = true, bool scroll = true);
+		void GoTo(int r, int c, bool setcursor = true, bool scroll = true);
 
 		void SwapCols(int n, int m);
 		bool SwapRows(int n, int m, bool repaint = true);
@@ -1345,8 +1367,9 @@ class GridCtrl : public Ctrl
 		ScrollBar& HorzScroll() { return sbx; }
 		ScrollBar& VertScroll() { return sby; }
 
-		Value GetConvertedColumn(int col, Value &v) const;
-		
+		Value GetConvertedColumn(int col, const Value &v) const;
+		String GetStdConvertedColumn(int col, const Value &v) const;
+
 		bool Search(dword key);
 		int GetResizePanelHeight() const;
 		String GetColumnName(int n) const;
@@ -1360,8 +1383,8 @@ class GridCtrl : public Ctrl
 
 		bool Go0(int jump, bool scroll = true, bool goleft = false, bool ctrlmode = false);
 
-		CurState SetCursor0(Point p, bool mouse = false, bool highlight = false, int dirx = -2, int diry = -2, bool ctrlmode = false);
-		CurState SetCursor0(int x, int y, bool mouse = false, bool highlight = false, int dirx = -2, int diry = -2, bool ctrlmode = false);
+		CurState SetCursor0(Point p, bool mouse = false, bool highlight = false, int dirx = 0, int diry = 0, bool ctrlmode = false);
+		CurState SetCursor0(int x, int y, bool mouse = false, bool highlight = false, int dirx = 0, int diry = 0, bool ctrlmode = false);
 		int SetCursor0(int n);
 
 		bool IsValidCursor(const Point &p, int fc, int lc, int fr, int lr) const;
@@ -1384,7 +1407,7 @@ class GridCtrl : public Ctrl
 		void UpdateSb(bool horz = true, bool vert = true);
 		void UpdateHolder(bool force = false);
 		bool UpdateCols(bool force = false);
-		bool UpdateRows(bool force = false);	
+		bool UpdateRows(bool force = false);
 		bool UpdateSizes();
 		void UpdateHighlighting(int mode, Point p = Null);
 		void UpdateVisColRow(bool col);
@@ -1401,7 +1424,7 @@ class GridCtrl : public Ctrl
 		bool GetCtrlsData(bool samerow = false, bool doall = false, bool updates = true);
 		bool CancelCtrlsData(bool all = false);
 		void UpdateDefaults(int ri);
-		
+
 		int  GetFocusedCtrlIndex();
 		Point GetCtrlPos(Ctrl * ctrl);
 
@@ -1506,10 +1529,9 @@ class GridCtrl : public Ctrl
 		Callback WhenLeftClick;
 		Callback WhenEnter;
 		Callback WhenEscape;
-		Callback WhenEmpty;
 
 		Callback WhenCreateRow;
-		
+
 		Callback WhenInsertRow;
 		Callback WhenUpdateRow;
 		Callback WhenRemoveRow;
@@ -1519,11 +1541,12 @@ class GridCtrl : public Ctrl
 		Callback WhenEditRow;
 		Callback WhenAcceptRow;
 		Callback WhenNewRow;
+		Callback WhenChangeCol;
 		Callback WhenChangeRow;
 		Callback WhenModification;
 
 		Callback WhenCtrlsAction;
-		
+
 		Callback WhenSearchCursor;
 		Callback WhenClose;
 

@@ -4,7 +4,7 @@ NAMESPACE_UPP
 
 int Diff(RGBA a, RGBA b)
 {
-	return max(abs(a.r - b.r), max(abs(a.b - b.b), abs(a.g - b.g)));
+	return max(abs(a.a - b.a), max(abs(a.r - b.r), max(abs(a.b - b.b), abs(a.g - b.g))));
 }
 
 struct InterPoint {
@@ -34,7 +34,7 @@ void InterPoint::Add(int y, int x) {
 		in++;
 }
 
-void Interpolate(ImageBuffer& b, const Rect& rc)
+void Interpolate(ImageBuffer& b, Vector< Vector<bool> >& map, const Rect& rc)
 {
 	Unmultiply(b);
 	int todo;
@@ -43,7 +43,8 @@ void Interpolate(ImageBuffer& b, const Rect& rc)
 		for(int x = rc.left; x < rc.right; x++)
 			for(int y = rc.top; y < rc.bottom; y++) {
 				RGBA& p = b[y][x];
-				if(p.a == 0) {
+				if(map[y][x]) {
+					map[y][x] = 0;
 					InterPoint ip(b);
 					ip.rc = rc;
 					ip.Add(y - 1, x - 1);
@@ -78,7 +79,7 @@ struct ButtonDecomposer {
 	Image dst;
 	int   aa[8];
 	int   maxdiff;
-	Color color;
+	RGBA  color;
 	int   gdiff;
 	int   gcount;
 
@@ -119,9 +120,11 @@ struct ButtonDecomposer {
 			a++;
 		dst = src;
 		ImageBuffer b(dst);
-		color = SColorText;
+		color = SColorText();
 		maxdiff = gdiff = gcount = 0;
+		Vector< Vector<bool> > map;
 		for(int y = a; y < sz.cy - a; y++) {
+			map.At(y).SetCount(sz.cx, false);
 			RGBA *p = b[y];
 			int x = a;
 			Color c = p[x];
@@ -146,8 +149,9 @@ struct ButtonDecomposer {
 				}
 			}
 			Fill(p + x, RGBAZero(), xx - x);
+			map[y].Set(x, true, xx - x);
 		}
-		Interpolate(b, Rect(a, a, sz.cx - a, sz.cy - a));
+		Interpolate(b, map, Rect(a, a, sz.cx - a, sz.cy - a));
 		b.SetHotSpot(Point(a, a));
 		dst = b;
 	}
@@ -207,6 +211,11 @@ Image VertBlend(Image img1, Image img2, int y0, int y1)
 	return b;
 }
 
+Image HorzBlend(Image img1, Image img2, int x0, int x1)
+{
+	return RotateAntiClockwise(VertBlend(RotateClockwise(img1), RotateClockwise(img2), x0, x1));
+}
+
 Image HorzSymm(Image src) {
 	ImageBuffer b(src);
 	Size sz = b.GetSize();
@@ -228,7 +237,6 @@ int ClassifyContent(const Image& m, const Rect& rect)
 			vdup = false;
 			break;
 		}
-	bool hdup = true;
 	int cx = m.GetSize().cx;
 	for(int q = rect.left + 1; q < rect.right; q++) {
 		const RGBA *a = m[rect.top] + rect.left;

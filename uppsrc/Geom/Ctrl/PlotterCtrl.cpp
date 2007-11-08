@@ -38,7 +38,7 @@ PlotterCtrl::PlotterCtrl()
 , delta(0, 0)
 , push_scale(1, 1)
 , push_delta(0, 0)
-, max_scale(1e20, 1e20)
+, max_scale(Null, Null)
 , aspect(1)
 , gap(10, 10, 10, 10)
 , rev_x(false)
@@ -275,9 +275,10 @@ void PlotterCtrl::SetDelta(Pointf d)
 
 void PlotterCtrl::SetZoom(Sizef s, Pointf d)
 {
+	Sizef mid(GetSize() >> 1);
 	scale = AdjustScale(s);
 	Layout();
-	SetDelta(d);
+	SetDelta(mid - (mid - d) * (scale / s));
 	WhenZoom();
 	WhenRescan();
 }
@@ -286,7 +287,7 @@ void PlotterCtrl::SetZoom(double s, Pointf d)
 {
 	ASSERT(IsAspectLocked());
 	double a = (aspect_lock ? 1 : aspect);
-	scale = AdjustScale(Pointf(rev_x ? -s : s, (rev_y ? -s : s) * a));
+	SetZoom(Sizef(rev_x ? -s : s, (rev_y ? -s : s) * a), d);
 	Layout();
 	SetDelta(d);
 	WhenZoom();
@@ -303,9 +304,9 @@ Sizef PlotterCtrl::GetPhysicalZoom() const
 
 Sizef PlotterCtrl::AdjustScale(Sizef sc) const
 {
-	if(fabs(sc.cx) >= max_scale.cx)
+	if(max_scale.cx > 0 && fabs(sc.cx) >= max_scale.cx)
 		sc.cx = (sc.cx >= 0 ? max_scale.cx : -max_scale.cx);
-	if(fabs(sc.cy) >= max_scale.cy)
+	if(max_scale.cy > 0 && fabs(sc.cy) >= max_scale.cy)
 		sc.cy = (sc.cy >= 0 ? max_scale.cy : -max_scale.cy);
 	return sc;
 }

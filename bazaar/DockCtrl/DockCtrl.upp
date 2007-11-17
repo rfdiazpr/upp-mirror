@@ -1,0 +1,23 @@
+description "Dockable/dynamic window managment widget/control.";
+
+uses
+	CtrlCore,
+	CtrlLib,
+	Draw,
+	GridCtrl;
+
+file
+	Resources readonly separator,
+	DockCtrl.lay,
+	DockableCtrl.iml,
+	"Source Files" readonly separator,
+	DockCtrl.cpp,
+	DockPane.cpp,
+	DockWindow.cpp,
+	DockableCtrl.cpp,
+	"Header Files" readonly separator,
+	DockCtrl.h;
+
+mainconfig
+	"" = "GUI";
+

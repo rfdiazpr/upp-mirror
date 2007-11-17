@@ -1,0 +1,7 @@
+LAYOUT(ControlPanelLayout, 352, 196)
+	ITEM(StaticText, dv___0, SetText(t_("Select skin:")).SetAlign(ALIGN_RIGHT).LeftPosZ(8, 56).TopPosZ(6, 19))
+	ITEM(Button, layoutbutton, SetLabel(t_("Reset Layout")).Tip(t_("Press to reset window layout.")).RightPosZ(18, 110).TopPosZ(6, 19))
+	ITEM(ArrayCtrl, list, Inserting(true).HSizePosZ(6, 6).VSizePosZ(36, 8))
+	ITEM(DropList, skinlist, HSizePosZ(72, 144).TopPosZ(6, 19))
+END_LAYOUT
+

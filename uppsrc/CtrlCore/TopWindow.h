@@ -107,6 +107,8 @@ private:
 
 	void        SetupRect();
 
+	void        FixIcons();
+
 	enum { MINIMIZED, MAXIMIZED, OVERLAPPED };
 
 	WString     title;
@@ -200,6 +202,9 @@ public:
 	TopWindow& Icon(const Image& m);
 	TopWindow& LargeIcon(const Image& m);
 	TopWindow& Icon(const Image& smallicon, const Image& largeicon);
+
+	Image      GetIcon() const                        { return icon; }
+	Image      GetLargeIcon() const                   { return largeicon; }
 
 	void       SerializePlacement(Stream& s, bool reminimize = false);
 

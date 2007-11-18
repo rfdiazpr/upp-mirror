@@ -81,6 +81,8 @@ void Calendar::Reset()
 
 	newday = oldday = nullday;
 	stoday = Format("%s: %s", t_("Today"), time_mode ? Format(today) : Format(Date(today)));
+
+	UpdateFields();
 }
 
 Calendar& Calendar::SetStyle(const Style& s)
@@ -98,7 +100,7 @@ void Calendar::OnMonthLeft()
 		if(view.year > 0)
 			view.year--;
 	}
-	RefreshAll();
+	UpdateFields();
 }
 
 void Calendar::OnMonthRight()
@@ -108,19 +110,32 @@ void Calendar::OnMonthRight()
 		view.month = 1;
 		view.year++;
 	}
-	RefreshAll();
+	UpdateFields();
 }
 
 void Calendar::OnYearLeft()
 {
 	if(view.year > 0) view.year--;
-	RefreshAll();
+	UpdateFields();
 }
 
 void Calendar::OnYearRight()
 {
 	view.year++;
-	RefreshAll();
+	UpdateFields();
+}
+
+void Calendar::UpdateFields()
+{
+	String month = MonthName(view.month - 1);
+	String year = AsString(view.year);
+	spin_month.SetText(month);
+	spin_year.SetText(year);
+	if(swap_month_year)
+		spin_all.SetText(month + " " + year);
+	else
+		spin_all.SetText(year + " " + month);
+	Refresh();
 }
 
 int	Calendar::DayOfWeek(int day, int month, int year, int zelleroffset)
@@ -189,7 +204,7 @@ int Calendar::WeekOfYear(int day, int month, int year) /* ISO-8601 */
 	return weeknum;
 }
 
-void Calendar::LeftUp(Point p, dword keyflags)
+void Calendar::LeftDown(Point p, dword keyflags)
 {
 	bool isnewday = newday != nullday;
 	int day = 1;
@@ -248,7 +263,7 @@ void Calendar::LeftUp(Point p, dword keyflags)
 		if(refall)
 		{
 			view.day = 0;
-			RefreshAll();
+			Refresh();
 			Sync();
 			oldday = nullday;
 			MouseMove(p, 0);
@@ -338,11 +353,6 @@ void Calendar::RefreshHeader()
 	Refresh(0, 0, sz.cx, hs);
 }
 
-void Calendar::RefreshAll()
-{
-	Refresh();
-}
-
 Point Calendar::GetDay(Point p)
 {
 	for(int i = 0; i < rows; i++)
@@ -408,6 +418,7 @@ void Calendar::Paint(Draw &w)
 	Font fnt = st.font;
 
 	Size sz = GetSize();
+
 	Size tsz;
 	String str;
 	int d = 1;
@@ -418,14 +429,6 @@ void Calendar::Paint(Draw &w)
 	{
 		DrawBg(w, 0, 0, sz.cx, hs, st.header);
 		curdate = Format("%s %d", MonthName(view.month - 1), view.year);
-		String month = MonthName(view.month - 1);
-		String year = AsString(view.year);
-		spin_month.SetText(month);
-		spin_year.SetText(year);
-		if(swap_month_year)
-			spin_all.SetText(month + " " + year);
-		else
-			spin_all.SetText(year + " " + month);
 	}
 	w.DrawRect(0, hs, sz.cx, sz.cy - ts - hs, st.bgmain);
 
@@ -579,7 +582,7 @@ void Calendar::State(int reason)
 		int mw = 0;
 		for(int i = 0; i < 12; i++)
 			mw = max(mw, spin_month.GetWidth(MonthName(i)));
-		
+
 		if(one_button)
 		{
 			yw = spin_year.GetWidth(" 0000", false);
@@ -588,7 +591,7 @@ void Calendar::State(int reason)
 		else
 		{
 			yw = spin_year.GetWidth("0000");
-			
+
 			spin_month.TopPos(0, hs);
 			spin_year.TopPos(0, hs);
 			if(swap_month_year)
@@ -643,7 +646,7 @@ void Calendar::SetDate(const Date &dt)
 	sel = !IsNull(dt) && dt.IsValid() ? Time(dt.year, dt.month, dt.day, 0, 0, 0) : today;
 	view = sel;
 	view.day = 0;
-	RefreshAll();
+	UpdateFields();
 }
 
 Date Calendar::GetTime() const
@@ -661,14 +664,14 @@ void Calendar::SetTime(const Time &tm)
 	sel = !IsNull(tm) && tm.IsValid() ? tm : today;
 	view = sel;
 	view.day = 0;
-	RefreshAll();
+	UpdateFields();
 }
 
 void Calendar::SetView(const Time &v)
 {
 	view = v;
 	view.day = 0;
-	RefreshAll();
+	UpdateFields();
 }
 
 // Clock
@@ -813,12 +816,12 @@ void Clock::Paint(Draw& w)
 
 	w.DrawRect(sz, st.bgmain);
 	DrawBg(w, 0, 0, sz.cx, hs, st.header);
-	
+
 	if(colon)
 		PaintCenteredText(w, sz.cx / 2, hs / 2 - 1, " : ", StdFont().Bold(), SColorHighlightText());
-	
+
 	//w.DrawEllipse(cm.x - r / 2, cm.y - r / 2, cf.x, cf.x, Blend(st.header, White, 250), PEN_NULL, Black);
-	
+
 	Font fnt = st.font;
 
 	for(int i = 1; i <= 12; i++) {
@@ -1129,6 +1132,7 @@ void Clock::State(int reason)
 {
 	if(reason == OPEN)
 	{
+		ComputeSize();
 		//spin_hour.LeftPos(0, spin_hour.GetWidth("00")).TopPos(0, hs);
 		//spin_minute.RightPos(0, spin_minute.GetWidth("00")).TopPos(0, hs);
 		int shw = spin_hour.GetWidth("00");
@@ -1294,89 +1298,6 @@ bool CalendarClock::Key(dword key, int count)
 	return Ctrl::Key(key, count);
 }
 
-// DateTimeCtrl
-
-template<class T>
-DateTimeCtrl<T>::DateTimeCtrl(int m) : cc(m)
-{
-	drop.AddTo(*this);
-	drop.AddButton().Main() <<= THISBACK(OnDrop);
-	drop.NoDisplay();
-	drop.SetStyle(drop.StyleFrame());
-	cc.calendar   <<= THISBACK(OnCalendarChoice);
-	cc.clock      <<= THISBACK(OnClockChoice);
-	cc.WhenPopDown  = THISBACK(OnClose);
-}
-
-template<class T>
-void DateTimeCtrl<T>::OnCalendarChoice()
-{
-	this->SetData(~cc.calendar);
-	this->WhenAction();
-}
-
-template<class T>
-void DateTimeCtrl<T>::OnClockChoice()
-{
-	this->SetData(~cc.clock);
-	this->WhenAction();
-}
-
-template<class T>
-void DateTimeCtrl<T>::OnClose()
-{
-	//IgnoreMouse(false);
-	this->SetFocus();
-}
-
-template<class T>
-void DateTimeCtrl<T>::OnDrop()
-{
-	if(!this->IsEditable())
-		return;
-
-	Size sz = cc.GetCalendarClockSize();
-
-	int width = sz.cx;
-	int height = sz.cy;
-
-	Rect rw = Ctrl::GetWorkArea();
-	Rect rs = this->GetScreenRect();
-	Rect r;
-	r.left   = rs.left;
-	r.right  = rs.left + width;
-	r.top    = rs.bottom;
-	r.bottom = rs.bottom + height;
-
-	if(r.bottom > rw.bottom)
-	{
-		r.top = rs.top - height;
-		r.bottom = rs.top;
-	}
-	if(r.right > rw.right)
-	{
-		int diff;
-		if(rs.right <= rw.right)
-			diff = rs.right - r.right;
-		else
-			diff = rw.right - r.right;
-
-		r.left += diff;
-		r.right += diff;
-	}
-	if(r.left < rw.left)
-	{
-		int diff = rw.left - r.left;
-		r.left += diff;
-		r.right += diff;
-
-	}
-	//IgnoreMouse(true);
-	cc.PopUp(this, r);
-	cc.calendar <<= this->GetData();
-	cc.clock <<= this->GetData();
-}
-
 DropDate::DropDate() : DateTimeCtrl<EditDate>(CalendarClock::MODE_DATE)
 {}
 
@@ -1403,6 +1324,7 @@ FlatButton::FlatButton()
 	bg = Blend(SColorHighlight, White, 50);
 	fg = SColorPaper;
 	left = true;
+	Transparent();
 }
 
 void FlatButton::DrawFrame(Draw &w, const Rect &r, Color lc, Color tc, Color rc, Color bc)

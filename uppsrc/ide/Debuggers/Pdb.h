@@ -12,7 +12,7 @@
 
 using namespace PdbKeys;
 
-struct Pdb : Debugger, Ctrl {
+struct Pdb : Debugger, ParentCtrl {
 	virtual void Stop();
 	virtual bool IsFinished();
 	virtual bool Key(dword key, int count);

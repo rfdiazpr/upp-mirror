@@ -432,6 +432,8 @@ bool DocEdit::Key(dword key, int cnt)
 		case K_ENTER:
 			key = '\n';
 		default:
+			if(filter && key >= 32 && key < 65535)
+				key = (*filter)(key);
 			if(key >= ' ' && key < 65536 || key == '\n' || key == '\t' || key == K_SHIFT_SPACE) {
 				if(key == K_TAB && !processtab)
 					return false;

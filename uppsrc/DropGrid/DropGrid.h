@@ -9,7 +9,7 @@ NAMESPACE_UPP
 class DropGrid : public Convert, public GridDisplay, public Ctrl
 {
 	public:
-		enum 
+		enum
 		{
 			BTN_SELECT,
 			BTN_LEFT,
@@ -64,6 +64,7 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 		bool drop_enter:1;
 		bool data_action:1;
 		bool searching:1;
+		bool always_drop:1;
 
 		GridDisplay *display;
 
@@ -105,20 +106,23 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 		DropGrid& DropEnter(bool b = true);
 		DropGrid& DataAction(bool b = true);
 		DropGrid& Searching(bool b = true);
+		DropGrid& AlwaysDrop(bool b = true);
 
 		GridCtrl::ItemRect& AddColumn(const char *name, int width = GridCtrl::GD_COL_WIDTH, bool idx = false);
 		GridCtrl::ItemRect& AddColumn(Id id, const char *name, int width = GridCtrl::GD_COL_WIDTH, bool idx = false);
 		GridCtrl::ItemRect& AddIndex(const char *name = NULL);
 		GridCtrl::ItemRect& AddIndex(Id id);
-		
+
 		MultiButton::SubButton& AddButton(int type, Callback &cb);
 		MultiButton::SubButton& AddSelect(Callback &cb);
 		MultiButton::SubButton& AddPlus(Callback &cb);
 		MultiButton::SubButton& AddEdit(Callback &cb);
 
 		MultiButton::SubButton& GetButton(int n);
-		
+
 		int AddColumns(int cnt);
+
+		void SelectTop();
 
 		int SetIndex(int n);
 		int GetIndex() const;
@@ -140,6 +144,7 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 		virtual void LeftDown(Point p, dword keyflags);
 		virtual void GotFocus();
 		virtual void LostFocus();
+		virtual void Serialize(Stream& s);
 
 		void Paint0(Draw &w, int lm, int rm, int x, int y, int cx, int cy, const Value &val, dword style, Color &fg, Color &bg, Font &fnt, bool found = false, int fs = 0, int fe = 0);
 		virtual void Paint(Draw &w, int x, int y, int cx, int cy, const Value &val, dword style, Color &fg, Color &bg, Font &fnt, bool found = false, int fs = 0, int fe = 0);
@@ -154,11 +159,11 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 		void  Set(int r, Id id, const Value& v);
 		void  Set(int r, const Vector<Value> &v, int data_offset = 0, int column_offset = 0);
 		void  Add(const Vector<Value> &v, int data_offset = 0, int column_offset = 0);
-		
+
 		Value& operator() (int r, int c);
 		Value& operator() (int c);
 		Value& operator() (Id id);
-		Value& operator() (int r, Id id);		
+		Value& operator() (int r, Id id);
 
 		GridCtrl::ItemRect& GetRow(int r);
 
@@ -171,9 +176,9 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 		void CancelUpdate();
 
 		virtual Value Format(const Value& q) const;
-		
+
 		GridCtrl::ItemRect& AddRow(int n = 1, int size = GridCtrl::GD_ROW_HEIGHT);
-		DropGrid& Add() { AddRow(); return *this; }	
+		DropGrid& Add() { AddRow(); return *this; }
 
 		//$-DropCtrl& Add(const Value& [, const Value& ]...);
 		#define  E__Add(I)      DropGrid& Add(__List##I(E__Value));
@@ -186,6 +191,8 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 			__Expand(E__Add)
 		#undef   E__Add
 		//$+
+
+		DropGrid& AddSeparator(Color c);
 
 };
 

@@ -217,5 +217,23 @@
 	- fixed row inserting (after). Previous cursor position didn't disapear (regression)
 	+ SetImage() works for row now
 	
+	after 711-dev1
+	
+	- fixed Remove0 - it didn't clear cursor position if cnt > 1
+	- fixed Searching - now the searching flag is respected in immediate searching
+	+ AddSeparator(Color c) - inserts 3 pixel height separator
+	* IsEnd restores rowidx now - it's now more safe to use FOREACH* macros
+	- fixed elipsses in multiline texts
+	- fixed Searching() one more time
+	- some fixes to sorting
+	+ added Skip to ItemRect. If true the given row/col is skipped during Find()
+	+ fixed some regressions with painting header
+	+ added WhenCursor callback and CancelCursor() to cancel changing cursor position from body
+	  of this callback.
+	  
+	
+	
+	
+	
 	
 	

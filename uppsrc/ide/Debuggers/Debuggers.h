@@ -64,7 +64,7 @@ public:
 	DbgDisas();
 };
 
-struct Dbg : Debugger, Ctrl {
+struct Dbg : Debugger, ParentCtrl {
 	virtual void Stop();
 	virtual bool IsFinished();
 

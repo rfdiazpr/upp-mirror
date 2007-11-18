@@ -3,6 +3,20 @@
 
 NAMESPACE_UPP
 
+/*
+bool GridCtrl::operator<(const Vector<Value>& a, const Vector<Value>& b)
+{
+	for(int i = 0; i < SortOrder.GetCount(); i++)
+	{
+		if(sortMode)
+			return (StdValueCompare((*a.items)[a.id][sortCol].val, (*b.items)[b.id][sortCol].val, 0) < 0);
+		else
+			return a.id < b.id;
+
+	}
+}
+*/
+
 void GridCtrl::GSort(int scol)
 {
 	int col;
@@ -155,13 +169,13 @@ GridCtrl& GridCtrl::Sort(int sort_col, int sort_mode, bool multisort, bool repai
 	UpdateCursor();
 
 	if(repaint)
-		Repaint();
+		Repaint(false, true);
 	return *this;
 }
 
 GridCtrl& GridCtrl::Sort(Id id, int sort_mode, bool multisort, bool repaint)
 {
-	return Sort(aliases.Get(id), sort_mode, multisort, repaint);
+	return Sort(aliases.Get(id) - fixed_cols, sort_mode, multisort, repaint);
 }
 
 GridCtrl& GridCtrl::MultiSort(int sort_col, int sort_mode)
@@ -171,7 +185,7 @@ GridCtrl& GridCtrl::MultiSort(int sort_col, int sort_mode)
 
 GridCtrl& GridCtrl::MultiSort(Id id, int sort_mode)
 {
-	return Sort(aliases.Get(id), sort_mode, true);
+	return Sort(aliases.Get(id) - fixed_cols, sort_mode, true);
 }
 
 void GridCtrl::ClearSort()

@@ -315,6 +315,10 @@ SqlVal NextDay(const SqlVal& date) {//TODO Dialect!
 	return SqlFunc("next_day", date);
 }
 
+SqlVal Cast(const char* type, const SqlId& a) {
+	return SqlFunc(type, a);
+}
+
 SqlVal SqlNvl(const SqlVal& a, const SqlVal& b) {
 	return SqlFunc(SqlCase
 						(PGSQL, "coalesce")

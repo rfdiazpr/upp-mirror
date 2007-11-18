@@ -211,7 +211,7 @@ void CommonInit()
 						lang = LNGFromText(cmd[i]);
 						fn = cmd[i];
 						int c = cmd[i][4];
-						if(c >= '0' && c <= '7')
+						if(c >= '0' && c <= '8')
 							charset = c - '0' + CHARSET_WIN1250;
 						if(c >= 'A' && c <= 'J')
 							charset = c - 'A' + CHARSET_ISO8859_1;

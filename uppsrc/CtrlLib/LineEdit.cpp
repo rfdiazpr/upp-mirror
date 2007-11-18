@@ -17,6 +17,7 @@ LineEdit::LineEdit() {
 	bordercolumn = -1;
 	bordercolor = Null;
 	overwrite = false;
+	filter = NULL;
 }
 
 LineEdit::~LineEdit() {}
@@ -516,6 +517,8 @@ void LineEdit::MoveTextEnd(bool sel) {
 bool LineEdit::InsertChar(dword key, int count, bool canow) {
 	if(key == K_TAB && !processtab)
 		return false;
+	if(filter && key >= 32 && key < 65535)
+		key = (*filter)(key);
 	if(!IsReadOnly() && (key >= 32 && key < 65536 || key == '\t' || key == '\n' ||
 	   key == K_ENTER || key == K_SHIFT_SPACE)) {
 		if(key >= 128 && key < 65536 && charset != CHARSET_UNICODE

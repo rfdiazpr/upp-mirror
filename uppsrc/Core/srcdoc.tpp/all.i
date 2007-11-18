@@ -62,3 +62,10 @@ TOPIC("CoreTutorial$en-us")
 #include "CoreTutorial$en-us.tpp"
 END_TOPIC
 
+TOPIC("Caveats$en-us")
+#include "Caveats$en-us.tpp"
+END_TOPIC
+
+TOPIC("Translating$en-us")
+#include "Translating$en-us.tpp"
+END_TOPIC

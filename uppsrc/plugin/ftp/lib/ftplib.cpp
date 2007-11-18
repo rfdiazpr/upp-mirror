@@ -481,14 +481,23 @@ GLOBALDEF int FtpConnect(const char *host, netbuf **nControl, char perror[],
 	if (connect(sControl, (struct sockaddr *)&sin, sizeof(sin)) == -1)
 	{
 		if(idlecb && FtpLastError() == ERRPENDING) {
+		#ifdef PLATFORM_POSIX
+			int idle_end = UPP::GetTickCount() + 1000 * idletimeout_secs;
+		#else
 			int idle_end = GetTickCount() + 1000 * idletimeout_secs;
+		#endif
 			while(!FtpCheckWrite(sControl, &tm)) {
 				if(!idlecb(NULL, -1, idledata)) {
 					strcpy(perror, "connect aborted");
 					net_close(sControl);
 					return 0;
 				}
-				if((int)(GetTickCount() - idle_end) >= 0) {
+		#ifdef PLATFORM_POSIX
+				if((int)(UPP::GetTickCount() - idle_end) >= 0)
+		#else
+				if((int)(GetTickCount() - idle_end) >= 0)
+		#endif
+				{
 					sprintf(perror, "connect timed out (%d secs)", idletimeout_secs);
 					net_close(sControl);
 					return 0;

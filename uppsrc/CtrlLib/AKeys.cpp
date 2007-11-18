@@ -103,12 +103,12 @@ struct KeysDlg : WithKeysLayout<TopWindow> {
 	typedef KeysDlg CLASSNAME;
 
 	KeysDlg() {
-		CtrlLayoutOKCancel(*this, t_("Setup keys"));
+		CtrlLayoutOKCancel(*this, t_("Configure keyboard shortcuts"));
 		group.AddColumn(t_("Group"));
 		group.WhenEnterRow = THISBACK(EnterGroup);
 		keys.AddColumn(t_("Action"), 2);
-		keys.AddColumn(t_("Key 1")).SetDisplay(Single<KeyDisplay>());
-		keys.AddColumn(t_("Key 2")).SetDisplay(Single<KeyDisplay>());
+		keys.AddColumn(t_("Primary")).SetDisplay(Single<KeyDisplay>());
+		keys.AddColumn(t_("Secondary")).SetDisplay(Single<KeyDisplay>());
 		keys.WhenEnterRow = THISBACK(EnterKey);
 		key[0] <<= key[1] <<= THISBACK(SetKey);
 		defaults <<= THISBACK(Defaults);

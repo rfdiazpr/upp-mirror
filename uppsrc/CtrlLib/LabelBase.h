@@ -30,6 +30,7 @@ void DrawFocus(Draw& w, int x, int y, int cx, int cy, Color c = SColorText());
 void DrawFocus(Draw& w, const Rect& r, Color c = SColorText());
 
 void DrawHorzDrop(Draw& w, int x, int y, int cx);
+void DrawVertDrop(Draw& w, int x, int y, int cy);
 
 Point GetDragScroll(Ctrl *ctrl, Point p, Size max);
 Point GetDragScroll(Ctrl *ctrl, Point p, int max = 16);

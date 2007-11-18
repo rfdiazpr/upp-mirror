@@ -286,6 +286,7 @@ private:
 	void     PostDeactivate();
 	void     SyncState();
 	void     SetupRestoreFocus();
+	void     PopUp(Ctrl *owner, Point p, Size rsz = Size(0, 0));
 
 protected:
 	enum {
@@ -305,7 +306,6 @@ public:
 	void     Set(Callback1<Bar&> menu);
 	void     Post(Callback1<Bar&> bar);
 
-	void     PopUp(Ctrl *owner, Point p, Size sz = Size(0, 0));
 	void     PopUp(Point p)                         { PopUp(GetActiveCtrl(), p); }
 	void     PopUp()                                { PopUp(GetMousePos()); }
 

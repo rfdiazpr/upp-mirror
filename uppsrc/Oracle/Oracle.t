@@ -4,7 +4,7 @@
 // Oci7.cpp
 
 T_("Error loading OCI7 Oracle database client library.")
-csCZ("")
+csCZ("Nelze nalézt dynamickou knihovnu OCI7 pro spojení s Oracle")
 trTR("Hata: OCI7 Oracle veritabanı istemci kütüphanesi (Oracle database client "
      "library) yüklenemedi.")
 
@@ -13,7 +13,7 @@ csCZ("Navazuji spojení")
 trTR("Sunucuya bağlanıyor")
 
 T_("Connecting to database server")
-csCZ("")
+csCZ("Spojuji s databází")
 trTR("Veritabanı sunucusuna bağlanıyor")
 
 
@@ -48,14 +48,25 @@ T_("Closing reference cursor")
 csCZ("Zavírám referenční kurzor")
 trTR("Closing reference cursor")
 
+T_("Error initializing OCI8 library (%s)")
+csCZ("Chyba při inicializaci OCI8")
+trTR("")
+
 T_("Connecting to Oracle database.")
 csCZ("Připojování k databázi Oracle")
 trTR("Oracle veritabanına bağlanılıyor...")
 
-T_("Error initializing OCI8 library.")
-csCZ("Chyba při inicializaci knihovny OCI8")
-trTR("OCI8 kütüphanesinin başlatılması sırasında bir hata meytdana geldi.")
+T_("Error loading OCI8 Oracle connection dynamic library.")
+csCZ("Nelze nalézt dynamickou knihovnu OCI8 pro spojení s Oracle")
+trTR("")
 
 T_("Connecting to server '%s'")
 csCZ("Připojování k serveru '%s'")
 trTR("%s sunucusuna bağlanılıyor.")
+
+
+// Obsolete
+
+T_("Error initializing OCI8 library.")
+csCZ("Chyba při inicializaci knihovny OCI8")
+trTR("OCI8 kütüphanesinin başlatılması sırasında bir hata meytdana geldi.")

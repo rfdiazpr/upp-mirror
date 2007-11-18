@@ -1,10 +1,10 @@
 Vista:
-	Small scrollbar
 	Vista64 debugging
+	BIG ScrollButton chameleon problem
 
 Windows:
 	"Build mode" "MSC71cdb Debug" looks ugly in XP clearlooks...
-
+     I found that if child dialog is resizeable the icon set for main app window is not passed to it
 	Droplist ID -> strange unncessarry popups
 	VA prompt -> Win1250->WordPad (ide)
 
@@ -14,39 +14,34 @@ Linux:
 	OK/Cancel swap
 
 Core:
+	Date format: http://www.ultimatepp.org/forum/index.php?t=pmsg_view&&id=1494
 
 CtrlLib/CtrlCore:
-	DropList in ArrayCtrl - does not highlight when appears...
-	PosDropDate - Transparent problem (?!)
 
 CtrlLib:
-	"Standard Style" (in default constructor)
-
 	Add IdCtrls reference example
 	Add Timer reference example
 	GetMinSize implemented for widgets to make layout systems work, GetStdSize
 	Zoom &Out issue -> not Z&oom Out
 	FileSel network access
-	Menu bigger than screen....
 	BUttonOption better
 
 	Up/Down arrows in scrollbar (no "NoArrows")
 
 Draw
-	Blending emulation
 
 RichEdit:
 	Selecting text left->right: I beam, right->left arrow?!
 
 Sql:
 	Tutorial
-	SQL/SqlExp tutorial
+	SQLSqlExp tutorial
 
 TheIDE:
-	Fix IconDes - scroll up/down in 3x mode (seems NONAA), undo does now work
 	Add manifest / icon .rc to template.
 	Separate find / log
 	Fix hydra
+	Special font for .t files
 
 [22:36] Uno: I found syntax highlighting bug [Offline Message (11/4/2007 [19:38])]
 [22:36] Uno: write in editor [Offline Message (11/4/2007 [19:38])]

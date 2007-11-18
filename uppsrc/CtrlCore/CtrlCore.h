@@ -461,7 +461,6 @@ private:
 #ifdef PLATFORM_X11
 	bool         ignoretakefocus:1;
 #endif
-	bool         backpainthint:1;
 
 	static  Ptr<Ctrl> eventCtrl;
 	static  Ptr<Ctrl> mouseCtrl;
@@ -477,6 +476,7 @@ private:
 	static  bool      ignorekeyup;
 	static  bool      mouseinview;
 	static  bool      mouseinframe;
+	static  bool      globalbackpaint;
 	static  int       LoopLevel;
 	static  Ctrl     *LoopCtrl;
 
@@ -745,6 +745,9 @@ protected:
 	static WString Unicode(const String& s);
 	static bool   ClipHas(int type, const char *fmt);
 	static String ClipGet(int type, const char *fmt);
+
+	       void AddXWindow(Window &w);
+	       void RemoveXWindow(Window &w);
 
 public:
 	struct Xclipboard {
@@ -1079,7 +1082,6 @@ public:
 	void        Refresh(int x, int y, int cx, int cy);
 	void        Refresh();
 	bool        IsFullRefresh() const                    { return fullrefresh; }
-	void        BackPaintHint();
 
 	void        RefreshFrame(const Rect& r);
 	void        RefreshFrame(int x, int y, int cx, int cy);
@@ -1176,6 +1178,7 @@ public:
 	Ctrl&   BackPaint(int bp = FULLBACKPAINT)  { backpaint = bp; return *this; }
 	Ctrl&   TransparentBackPaint()             { backpaint = TRANSPARENTBACKPAINT; return *this; }
 	Ctrl&   NoBackPaint()                      { return BackPaint(NOBACKPAINT); }
+	Ctrl&   BackPaintHint();
 	int     GetBackPaint()                     { return backpaint; }
 	Ctrl&   Transparent(bool bp = true)        { transparent = bp; return *this; }
 	Ctrl&   NoTransparent()                    { return Transparent(false); }
@@ -1297,6 +1300,9 @@ public:
 	static Rect   GetDefaultWindowRect();
 	static String GetAppName();
 	static void   SetAppName(const String& appname);
+
+	static void   GlobalBackPaint(bool b = true);
+	static void   GlobalBackPaintHint();
 
 	String      Name() const;
 

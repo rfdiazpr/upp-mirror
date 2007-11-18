@@ -1182,17 +1182,28 @@ void MenuBar::PopUp(Ctrl *owner, Point p, Size rsz)
 	pane.SubMenu();
 	Size sz = pane.Repos(false, r.Height());
 	pane.RightPos(0, sz.cx).BottomPos(0, sz.cy);
+	Size sz0 = sz;
 	sz = AddFrameSize(sz);
+	int pyy = p.y;
+	if(p.y + sz.cy > r.bottom) {
+		if(p.y - r.top > r.bottom - p.y) {
+			int y0 = p.y + rsz.cy;
+			szy = szcy;
+			sz = pane.Repos(false, y0 - max(y0 - sz.cy, r.top) - (sz.cy - sz0.cy));
+			pane.RightPos(0, sz.cx).TopPos(0, sz.cy);
+			sz = AddFrameSize(sz);
+			p.y = y0 - sz.cy;
+		}
+		else {
+			sz = pane.Repos(false, r.bottom - p.y - (sz.cy - sz0.cy));
+			pane.RightPos(0, sz.cx).BottomPos(0, sz.cy);
+			sz = AddFrameSize(sz);
+		}
+	}
 	if(p.x + sz.cx > r.right) {
 		p.x = max(p.x + rsz.cx - sz.cx, 0);
 		szx = szcx;
 		pane.LeftPos(0, sz.cx);
-	}
-	int pyy = p.y;
-	if(p.y + sz.cy > r.bottom) {
-		p.y = max(p.y + rsz.cy - sz.cy, 0);
-		szy = szcy;
-		pane.TopPos(0, sz.cy);
 	}
 	bool eff = parentmenu == NULL || parentmenu->doeffect;
 	if(eff && GUI_PopUpEffect() == GUIEFFECT_SLIDE)

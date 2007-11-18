@@ -176,6 +176,7 @@ void TopWindow::Open(HWND hwnd)
 	}
 	PlaceFocus();
 	SyncCaption();
+	FixIcons();
 }
 
 void TopWindow::Open(Ctrl *owner)

@@ -144,6 +144,21 @@ void TopWindow::SetupRect()
 	}
 }
 
+void TopWindow::FixIcons()
+{
+	TopWindow *q = GetMainWindow();
+	if(q) {
+		if(IsNull(icon)) {
+			icon = q->GetIcon();
+			SyncCaption();
+		}
+		if(IsNull(largeicon)) {
+			largeicon = q->GetIcon();
+			SyncCaption();
+		}
+	}
+}
+
 TopWindow::Abreak *TopWindow::FindAction(int ID)
 {
 	for(int i = 0; i < action.GetCount(); i++)

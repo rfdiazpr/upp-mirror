@@ -4,6 +4,17 @@ Weekend {
 }
 
 ============
+	Menu bigger than screen....
+	Fix IconDes - scroll up/down in 3x mode (seems NONAA), undo does now work
+	"Standard Style" (in default constructor)
+
+
+
+GKS_PosClient-maybe-fixed.exe
+
+	DropList in ArrayCtrl - does not highlight when appears...
+	PosDropDate - Transparent problem (?!)
+
 Vista:
 	Drag preview -> Cursor Image with Alpha
 	Caret in the EditField

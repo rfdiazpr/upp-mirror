@@ -188,7 +188,7 @@ void Ctrl::StateH(int reason)
 
 bool   Ctrl::Accept()
 {
-	if(IsEnabled() && IsVisible() && DisplayError(GetData())) {
+	if(IsEnabled() && IsShown() && DisplayError(GetData())) {
 		SetWantFocus();
 		return false;
 	}

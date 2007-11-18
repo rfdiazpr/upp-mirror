@@ -332,6 +332,7 @@ public:
 	bool      IsShowTabs() const              { return showtabs; }
 	LineEdit& WithCutLine(bool b)             { cutline = b; return *this; }
 	LineEdit& NoCutLine()                     { return WithCutLine(false); }
+	LineEdit& SetFilter(int (*f)(int c))      { filter = f; return *this; }
 
 	LineEdit& SetScrollBarStyle(const ScrollBar::Style& s)   { sb.SetStyle(s); return *this; }
 

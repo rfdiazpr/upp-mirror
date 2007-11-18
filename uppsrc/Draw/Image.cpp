@@ -69,6 +69,7 @@ void ImageBuffer::Set(Image& img)
 		}
 		else {
 			DeepCopy(img.data->buffer);
+			kind = IMAGE_UNKNOWN;
 			img.Clear();
 		}
 	else
@@ -343,7 +344,7 @@ void Image::Data::PaintOnlyShrink()
 static void sMultiply(ImageBuffer& b, int (*op)(RGBA *t, const RGBA *s, int len))
 {
 	if(b.GetKind() != IMAGE_OPAQUE && b.GetKind() != IMAGE_EMPTY)
-		b.SetKind((*op)(~b, ~b, b.GetLength()));
+		(*op)(~b, ~b, b.GetLength());
 }
 
 void Premultiply(ImageBuffer& b)

@@ -400,6 +400,8 @@ bool CPU_SSE3();
 
 int  CPU_Cores();
 
+bool IsDecentMachine();
+
 //Quick fix....
 #ifdef PLATFORM_WINCE
 const char *FromSysChrSet(const wchar *s);

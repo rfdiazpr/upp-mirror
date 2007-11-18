@@ -263,7 +263,7 @@ void Ide::Setup(Bar& menu) {
 		.Help("Log detailed description of build and debug");
 	menu.Add("Environment..", THISBACK(SetupFormat))
 		.Help("Fonts, tabs, indentation, status bar");
-	menu.Add("Keys..", callback(EditKeys))
+	menu.Add("Keyboard shortcuts..", callback(EditKeys))
 		.Help("Edit key bindings");
 	menu.Add("Build methods..", THISBACK(SetupBuildMethods))
 	    .Help("Setup build methods");
@@ -293,10 +293,12 @@ void Ide::Project(Bar& menu) {
 		menu.Add(AK_MAINCONFIG, IdeImg::main_package(), THISBACK(MainConfig))
 			.Help("Configuring compiler, operating system, output application parameters, custom flags");
 	menu.Separator();
-	menu.Add(AK_SYNCT, IdeImg::Language(), THISBACK1(SyncT, false))
+	menu.Add(AK_SYNCT, IdeImg::Language(), THISBACK1(SyncT, 0))
 	    .Help("Synchronize all language translation files of current workspace");
-	menu.AddMenu(AK_TRIMPORT, IdeImg::Language(), THISBACK1(SyncT, true))
-	    .Help("Import runtime translation files ");
+	menu.AddMenu(AK_TRIMPORT, IdeImg::Language(), THISBACK1(SyncT, 1))
+	    .Help("Import runtime translation file");
+	menu.AddMenu(AK_TREXPORT, IdeImg::Language(), THISBACK1(SyncT, 2))
+	    .Help("Export runtime translation file");
 	if(OldLang())
 		menu.Add("Convert s_ -> t_", THISBACK(ConvertST));
 	FilePropertiesMenu(menu);
@@ -320,6 +322,15 @@ void Ide::BuildFileMenu(Bar& menu)
 	menu.Add(b, "Preprocess " + GetFileName(editfile), IdeImg::Header(), THISBACK(Preprocess))
 		.Key(AK_PREPROCESSFILE)
 		.Help("Preprocess current file into temporary file & open in editor");
+}
+
+void Ide::BuildPackageMenu(Bar& menu)
+{
+	bool b = !IdeIsDebugLock() && idestate == EDITING && package.GetCursor() >= 0;
+	menu.Add(b, AK_BUILDPACKAGE, THISBACK(PackageBuild))
+		.Help("Build current package");
+	menu.Add(b, AK_CLEANPACKAGE, THISBACK(PackageClean))
+		.Help("Remove all intermediate files of the current package");
 }
 
 void Ide::BuildMenu(Bar& menu) {
@@ -349,13 +360,10 @@ void Ide::BuildMenu(Bar& menu) {
 
 	menu.MenuSeparator();
 
-	int pi = package.GetCursor();
-	menu.Add(b && pi >= 0, AK_BUILDPACKAGE, THISBACK(PackageBuild))
-		.Help("Build current package");
-	menu.Add(b && pi >= 0, AK_CLEANPACKAGE, THISBACK(PackageClean))
-		.Help("Remove all intermediate files of the current package");
-
-	menu.MenuSeparator();
+	if(menu.IsMenuBar()) {
+		BuildPackageMenu(menu);
+		menu.MenuSeparator();
+	}
 
 	BuildFileMenu(menu);
 

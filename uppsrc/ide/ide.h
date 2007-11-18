@@ -741,10 +741,12 @@ public:
 		void  EditMacro(int i);
 
 	void      Project(Bar& menu);
-		void  SyncT(bool import);
+		void  SyncT(int kind);
 		void  ConvertST();
 
 	void      BuildMenu(Bar& menu);
+		void BuildPackageMenu(Bar& menu);
+
 		Index<String> PackageConfig(const ::Workspace& wspc, int package,
 		                            const VectorMap<String, String>& bm, String mainparam,
 		                            Host& host, Builder& b, String *target = NULL);

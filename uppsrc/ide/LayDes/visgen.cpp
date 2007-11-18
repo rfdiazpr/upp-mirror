@@ -56,10 +56,9 @@ void VisGenDlg::Refresh()
 			n = GetName();
 		}
 		s << "class " << n << " : public With" << layout.name << "<TopWindow> {\n"
-		  << "public:\n"
-		  << "\n"
 		  << "\ttypedef " << n << " CLASSNAME;\n"
 		  << "\n"
+		  << "public:\n"
 		  << "\t" << n << "();\n"
 		  << "};\n"
 		  << "\n"

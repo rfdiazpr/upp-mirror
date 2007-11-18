@@ -38,3 +38,13 @@ Upp::RGBA
 0 0 -1
 Upp::IconDes::Slot
 0 0 -1
+Upp::Array<RoomObject>
+0 0 -1
+Upp::Draw
+0 0 -1
+HDC__
+0 0 -1
+S_PRODUCT_PRICE
+0 0 -1
+S_PRODUCT_PRICE_
+0 0 -1

@@ -62,7 +62,7 @@ class GridDisplay
 		{
 			SetDefault();
 		}
-		
+
 		void SetDefault();
 
 		~GridDisplay() {};
@@ -75,11 +75,11 @@ class GridDisplay
 		void SetTextAlign(int al = GD::TOP | GD::LEFT)  { align = al;                  }
 		void SetHorzMargin(int left = 4, int right = 4) { lm = left; rm = right;  	   }
 		void SetVertMargin(int top = 0, int bottom = 0) { tm = top;  bm = bottom;      }
-		void SetTheme(int th = 5)                       { theme = th;                  }
-		int  GetThemeCount()                            { return 6;                    }
+		void SetTheme(int th = 6)                       { theme = th;                  }
+		int  GetThemeCount()                            { return 7;                    }
 
 		WString GetStdConvertedValue(const Value &v) const;
-		
+
 		void DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int align,
 					  const wchar *s, const Font &font, const Color &fg, const Color &bg,
 					  bool found, int fs, int fe, bool wrap);

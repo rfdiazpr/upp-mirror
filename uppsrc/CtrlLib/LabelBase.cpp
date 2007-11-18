@@ -379,6 +379,15 @@ void DrawHorzDrop(Draw& w, int x, int y, int cx)
 	w.DrawRect(x + cx - 2, y - 1, 1, 4, SColorHighlight);
 }
 
+void DrawVertDrop(Draw& w, int x, int y, int cy)
+{
+	w.DrawRect(x, y, 2, cy, SColorHighlight);
+	w.DrawRect(x - 2, y, 6, 1, SColorHighlight);
+	w.DrawRect(x - 2, y + cy - 1, 6, 1, SColorHighlight);
+	w.DrawRect(x - 1, y + 1, 4, 1, SColorHighlight);
+	w.DrawRect(x - 1, y + cy - 2, 4, 1, SColorHighlight);
+}
+
 Point GetDragScroll(Ctrl *ctrl, Point p, Size max)
 {
 	if(ctrl->IsReadOnly())
@@ -475,10 +484,10 @@ void DisplayPopup::Sync()
 			Rect wa = GetWorkArea();
 			slim = item + ctrl->GetScreenView().TopLeft();
 			Rect r = item;
-			r.right = r.left + sz.cx + 2 * margin;
+			r.right = max(r.right, r.left + sz.cx + 2 * margin);
+			r.bottom = max(r.bottom, r.top + sz.cy);
 			r.Inflate(1, 1);
 			r.Offset(ctrl->GetScreenView().TopLeft());
-//			r.Offset(min(0, wa.right - r.right), min(0, wa.bottom - r.bottom));
 			SetRect(r);
 			if(!IsOpen())
 				Ctrl::PopUp(ctrl, true, false, false);

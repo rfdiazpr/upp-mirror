@@ -10,6 +10,10 @@ ctrl DropGrid {
 	bool  NoHeader = false;
 	bool  Resizeable = true;
 	bool  ColorRows = false;
+	bool  DataAction = false;
+	bool  AlwaysDrop = false;
+	bool  DropEnter = false;
+	bool  Searching = true;
 	bool  NotNull = false;
 	bool  SetEditable = true @2 ? "Editable";
 

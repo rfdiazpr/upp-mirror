@@ -95,4 +95,21 @@ int CPU_Cores()
 
 #endif
 
+#ifdef PLATFORM_WIN32
+bool IsDecentMachine()
+{
+	if(!IsWin2K())
+		return false;
+	MEMORYSTATUS m;
+	GlobalMemoryStatus(&m);
+	return m.dwTotalPhys > 500 * 1024 * 1024;
+
+}
+#else
+bool IsDecentMachine()
+{
+	return true;
+}
+#endif
+
 END_UPP_NAMESPACE

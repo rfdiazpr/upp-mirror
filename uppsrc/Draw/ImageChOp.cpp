@@ -152,6 +152,7 @@ struct ButtonDecomposer {
 			map[y].Set(x, true, xx - x);
 		}
 		Interpolate(b, map, Rect(a, a, sz.cx - a, sz.cy - a));
+		if(a < 2) a = 2;
 		b.SetHotSpot(Point(a, a));
 		dst = b;
 	}
@@ -208,12 +209,18 @@ Image VertBlend(Image img1, Image img2, int y0, int y1)
 		}
 		else
 			memcpy(b[y], img1[y], sz.cx * sizeof(RGBA));
+	b.SetHotSpot(img1.GetHotSpot());
+	b.Set2ndSpot(img1.Get2ndSpot());
 	return b;
 }
 
 Image HorzBlend(Image img1, Image img2, int x0, int x1)
 {
-	return RotateAntiClockwise(VertBlend(RotateClockwise(img1), RotateClockwise(img2), x0, x1));
+	Image m = RotateAntiClockwise(VertBlend(RotateClockwise(img1), RotateClockwise(img2), x0, x1));
+	ImageBuffer b(m);
+	b.SetHotSpot(img1.GetHotSpot());
+	b.Set2ndSpot(img1.Get2ndSpot());
+	return b;
 }
 
 Image HorzSymm(Image src) {
@@ -224,6 +231,8 @@ Image HorzSymm(Image src) {
 		for(int x = 0; x < sz.cx / 2; x++)
 			l[sz.cx - x - 1] = l[x];
 	}
+	b.SetHotSpot(src.GetHotSpot());
+	b.Set2ndSpot(src.Get2ndSpot());
 	return b;
 }
 

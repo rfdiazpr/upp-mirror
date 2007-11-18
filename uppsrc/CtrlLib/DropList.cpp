@@ -85,6 +85,13 @@ void DropList::Cancel() {
 	Sync();
 }
 
+void DropList::Remove(int i)
+{
+	key.Remove(i);
+	list.Remove(i);
+	Adjust();
+}
+
 void DropList::ClearList() {
 	key.Clear();
 	list.Clear();

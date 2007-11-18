@@ -230,5 +230,6 @@ Dbg::Dbg()
 	quickwatch.SetRect(0, 150, 300, 400);
 	quickwatch.Icon(DbgImg::QuickWatch());
 
+	Transparent();
 //	log.Open(ConfigFile("debug.log"));
 }

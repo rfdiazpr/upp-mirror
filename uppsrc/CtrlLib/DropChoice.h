@@ -62,6 +62,7 @@ public:
 
 	DropList&     Add(const Value& key, const Value& value);
 	DropList&     Add(const Value& value)         { return Add(value, value); }
+	void          Remove(int i);
 	void          ClearList();
 	void          Clear();
 

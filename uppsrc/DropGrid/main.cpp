@@ -28,6 +28,7 @@ struct App : public TopWindow
 //		array.AddColumn("Col 1").Edit(dl);
 		//array.AddColumn("Col 2").Option();
 		array.Appending();
+		grid.Searching();
 
 //		grid.AddColumn("Col 0").Edit(dg);
 //		grid.AddColumn("Col 1").Edit(dl);

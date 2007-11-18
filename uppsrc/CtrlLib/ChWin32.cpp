@@ -490,6 +490,7 @@ void ChHostSkin()
 
 			m = Unglyph(XpImage(XP_SCROLLBAR, SBP_ARROWBTN, i + ABS_UPNORMAL, paper));
 			Size msz = m.GetSize();
+			DUMP(m.GetHotSpot());
 
 			Button::StyleScroll().Write().look[i] =
 			      VertBlend(m, Unglyph(XpImage(XP_SCROLLBAR, SBP_ARROWBTN, i + ABS_DOWNNORMAL,

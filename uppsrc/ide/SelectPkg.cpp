@@ -276,6 +276,9 @@ SelectPackageDlg::SelectPackageDlg(const char *title, bool selectvars_, bool mai
 	SyncBrief();
 	description <<= THISBACK(ChangeDescription);
 	ActiveFocus(brief ? (Ctrl&)clist : (Ctrl&)alist);
+	clist.BackPaintHint();
+	alist.BackPaintHint();
+	base.BackPaintHint();
 }
 
 String SelectPackageDlg::Run(String startwith)

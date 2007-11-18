@@ -53,6 +53,7 @@ public:
 
 	class Column : FormatConvert {
 		ArrayCtrl            *arrayctrl;
+		int                   index;
 		Mitor<int>            pos;
 		const Convert        *convert;
 		Ptr<Ctrl>             edit;
@@ -63,11 +64,15 @@ public:
 		bool                  cached;
 		bool                  clickedit;
 		Any                   cache;
+		const ValueOrder     *order;
+		int                 (*cmp)(const Value& a, const Value& b);
+
 
 		void   InvalidateCache(int i);
 		void   InsertCache(int i, int n);
 		void   RemoveCache(int i);
 		void   ClearCache();
+		void   Sorts();
 
 		friend class ArrayCtrl;
 
@@ -91,6 +96,11 @@ public:
 		Column& Cache();
 		Column& Accel(int (*filter)(int))          { accel = filter; return *this; }
 		Column& Accel()                            { return Accel(CharFilterDefaultToUpperAscii); }
+
+		Column& Sorting(const ValueOrder& o);
+		Column& Sorting(int (*c)(const Value& a, const Value& b));
+		Column& Sorting();
+		Column& SortDefault();
 
 		Column& Margin(int m)                      { margin = m; return *this; }
 
@@ -173,6 +183,8 @@ private:
 	int   virtualcount;
 	Point clickpos;
 	int   dropline, dropcol;
+	int   sortcolumn;
+	bool  sortcolumndescending;
 
 	mutable int   selectcount;
 
@@ -202,6 +214,7 @@ private:
 	bool  popupex:1;
 	bool  nobg:1;
 	bool  focussetcursor:1;
+	bool  allsorting:1;
 
 	mutable bool  selectiondirty:1;
 
@@ -273,6 +286,8 @@ private:
 	enum { DND_INSERTLINE = -1, DND_LINE = -2 };
 
 	void   SyncInfo();
+	void   SortA();
+	void   SortB(const Vector<int>& o);
 
 public: // temporary (TRC 06/07/28) // will be removed!
 	Ctrl&  SetCtrl(int i, int j, Ctrl *newctrl) { return SetCtrl(i, j, newctrl, true, true); }
@@ -341,7 +356,8 @@ public:
 	const HeaderCtrl&         HeaderObject() const     { return header; }
 	HeaderCtrl&               HeaderObject()           { return header; }
 
-	void       SerializeHeader(Stream& s)  { header.Serialize(s); }
+	void       SerializeHeader(Stream& s)    { header.Serialize(s); } // deprecated
+	void       SerializeSettings(Stream& s);
 
 	IdInfo&    AddCtrl(Ctrl& ctrl);
 	IdInfo&    AddCtrl(Id id, Ctrl& ctrl);
@@ -446,6 +462,12 @@ public:
 	                = StdValueCompare);
 	void       Sort()                                  { Sort(0); }
 
+	void       ColumnSort(int column, const ValueOrder& order);
+
+	void       SetSortColumn(int ii, bool descending = false);
+	void       ToggleSortColumn(int ii);
+	void       DoColumnSort();
+
 	bool       IsInsert() const                        { return insertmode; }
 
 	void            SetDisplay(int i, int col, const Display& d);
@@ -546,6 +568,9 @@ public:
 	ArrayCtrl& PopUpEx(bool b = true)                  { popupex = b; return *this; }
 	ArrayCtrl& NoPopUpEx()                             { return PopUpEx(false); }
 	ArrayCtrl& NoFocusSetCursor()                      { focussetcursor = false; return *this; }
+	ArrayCtrl& MovingHeader(bool b)                    { header.Moving(b); return *this; }
+	ArrayCtrl& NoMovingHeader()                        { return MovingHeader(false); }
+	ArrayCtrl& AllSorting();
 
 	ArrayCtrl& ColumnWidths(const char *s);
 

@@ -12,6 +12,7 @@ HeaderCtrl::Column::Column()
 	header = NULL;
 	SetAlign(ALIGN_LEFT);
 	paper = Null;
+	index = Null;
 }
 
 HeaderCtrl::Column&  HeaderCtrl::Column::SetMargin(int m)
@@ -83,6 +84,7 @@ HeaderCtrl::Column& HeaderCtrl::Tab(int i) {
 		for(int j = col.GetCount(); j <= i; j++) {
 			Column& c = col.Add();
 			c.header = this;
+			c.index = i;
 		}
 	return col[i];
 }
@@ -119,6 +121,22 @@ HeaderCtrl::Column& HeaderCtrl::Add(const char *text, double ratio)
 void HeaderCtrl::SetTabRatio(int i, double ratio)
 {
 	col[i].ratio = ratio;
+	oszcx = -1;
+	Refresh();
+	WhenLayout();
+}
+
+void HeaderCtrl::SwapTabs(int first, int second)
+{
+	col.Swap(first, second);
+	oszcx = -1;
+	Refresh();
+	WhenLayout();
+}
+
+void HeaderCtrl::MoveTab(int from, int to)
+{
+	col.Move(from, to);
 	oszcx = -1;
 	Refresh();
 	WhenLayout();
@@ -181,9 +199,8 @@ void HeaderCtrl::ReCompute()
 	if(mode == SCROLL)
 		for(int i = 0; i < col.GetCount(); i++) {
 			r.left = r.right;
-			if(col[i].visible) {
+			if(col[i].visible)
 				r.right += (int)col[i].ratio;
-			}
 			tabrect.Add(r);
 		}
 	else {
@@ -378,12 +395,14 @@ void HeaderCtrl::SetTabWidth(int i, int cx) {
 void HeaderCtrl::Paint(Draw& w) {
 	RefreshDistribution();
 	Size sz = GetSize();
+	w.DrawRect(sz, SColorFace());
 	bool ds = !IsShowEnabled();
 	double rs = Denominator();
 	double rr = 0;
 	int x = -sb;
 	light = -1;
 	bool first = true;
+	int dx = Null;
 	for(int i = 0; i < col.GetCount(); i++) {
 		if(col[i].visible) {
 			Rect r;
@@ -398,17 +417,24 @@ void HeaderCtrl::Paint(Draw& w) {
 				r = RectC(x, 0, i == col.GetCount() - 1 ? sz.cx - x : xx - x, sz.cy);
 				x = xx;
 			}
-			bool mousein = HasMouseIn(r.Deflated(1, 0)) && col[i].WhenAction && pushi < 0;
+			bool mousein = HasMouseIn(r.Deflated(1, 0)) && col[i].WhenAction && pushi < 0 &&
+			               !isdrag;
 			if(mousein)
 				light = i;
 			col[i].Paint(first, w,
 			             r.left, r.top, r.Width(), r.Height(), ds, push && i == pushi, mousein);
+			if(isdrag && ti == i)
+				dx = r.left;
 		}
 		if(x >= sz.cx) break;
 	}
 	Column h;
 	h.header = this;
 	h.Paint(first, w, x, 0, 999, sz.cy, false, false, false);
+	if(isdrag) {
+		w.DrawImage(dragx + dragd, 0, dragtab);
+		DrawVertDrop(w, IsNull(dx) ? sz.cx - 2 : dx - (dx > 0), 0, sz.cy);
+	}
 }
 
 void HeaderCtrl::Layout()
@@ -508,7 +534,7 @@ void HeaderCtrl::LeftDown(Point p, dword keyflags) {
 		colRect = GetTabRect(split);
 		return;
 	}
-	pushi = -1 - split;
+	li = pushi = -1 - split;
 	if(!col[pushi].WhenAction) {
 		pushi = -1;
 		return;
@@ -516,6 +542,16 @@ void HeaderCtrl::LeftDown(Point p, dword keyflags) {
 	colRect = GetTabRect(pushi);
 	push = true;
 	Refresh();
+}
+
+void HeaderCtrl::RightDown(Point p, dword)
+{
+	int q = GetSplit(p.x);
+	if(q >= 0 || IsNull(q))
+		return;
+	q = -1 - q;
+	if(col[q].WhenBar)
+		MenuBar::Execute(col[q].WhenBar);
 }
 
 void HeaderCtrl::StartSplitDrag(int s)
@@ -526,6 +562,20 @@ void HeaderCtrl::StartSplitDrag(int s)
 }
 
 void HeaderCtrl::MouseMove(Point p, dword keyflags) {
+	if(isdrag) {
+		ti = GetLastVisibleTab() + 1;
+		for(int i = 0; i < GetCount(); i++)
+			if(col[i].visible) {
+				Rect r = GetTabRect(i).OffsetedHorz(-sb);
+				if(p.x < r.left + r.Width() / 2) {
+					ti = i;
+					break;
+				}
+			}
+		dragx = p.x;
+		Refresh();
+		return;
+	}
 	int q = GetSplit(p.x);
 	q = IsNull(q) || q >= 0 ? -1 : -1 - q;
 	if(q != light)
@@ -541,7 +591,6 @@ void HeaderCtrl::MouseMove(Point p, dword keyflags) {
 			SetTabWidth0(split, w);
 			Refresh();
 			if(track) {
-				BackPaintHint();
 				Sync();
 				Action();
 				WhenLayout();
@@ -550,16 +599,59 @@ void HeaderCtrl::MouseMove(Point p, dword keyflags) {
 	}
 }
 
+void HeaderCtrl::LeftDrag(Point p, dword keyflags)
+{
+	if(li < 0 || !moving) return;
+	int n = 0;
+	for(int i = 0; i < col.GetCount(); i++)
+		if(col[i].visible)
+			n++;
+	if(n < 2)
+		return;
+	push = false;
+	ti = li;
+	pushi = -1;
+	Refresh();
+	Rect r = GetTabRect(li).OffsetedHorz(-sb);
+	Size sz = r.GetSize();
+	ImageDraw iw(sz.cx, sz.cy);
+	bool first = true;
+	col[li].Paint(first, iw, 0, 0, sz.cx, sz.cy, false, false, false);
+	DrawFrame(iw, sz, SColorText());
+	dragtab = iw;
+	dragx = p.x;
+	dragd = r.left - p.x;
+	ImageBuffer ib(dragtab);
+	Unmultiply(ib);
+	RGBA *s = ~ib;
+	RGBA *e = s + ib.GetLength();
+	while(s < e) {
+		s->a >>= 1;
+		s++;
+	}
+	Premultiply(ib);
+	dragtab = ib;
+	isdrag = true;
+}
+
 void HeaderCtrl::MouseLeave()
 {
 	Refresh();
 }
 
 void HeaderCtrl::LeftUp(Point, dword) {
+	if(isdrag) {
+		if(li >= 0 && ti >= 0)
+			MoveTab(li, ti);
+		li = ti = -1;
+		Refresh();
+	}
+	else
 	if(pushi >= 0 && push)
 		col[pushi].WhenAction();
 	push = false;
-	pushi = -1;
+	ti = li = pushi = -1;
+	isdrag = false;
 	Refresh();
 	if(split >= 0 && !track) {
 		Action();
@@ -568,8 +660,8 @@ void HeaderCtrl::LeftUp(Point, dword) {
 }
 
 void HeaderCtrl::CancelMode() {
-	split = pushi = -1;
-	push = false;
+	ti = li = split = pushi = -1;
+	isdrag = push = false;
 }
 
 void HeaderCtrl::ShowTab(int i, bool show) {
@@ -582,11 +674,20 @@ void HeaderCtrl::ShowTab(int i, bool show) {
 	WhenLayout();
 }
 
+int HeaderCtrl::FindIndex(int ndx)
+{
+	if(ndx >= 0 && ndx < col.GetCount() && col[ndx].index == ndx) return ndx;
+	for(int i = 0; i < col.GetCount(); i++)
+		if(col[i].index == ndx)
+			return i;
+	return -1;
+}
+
 #pragma warning(push)
 #pragma warning(disable: 4700) // MSVC6 complaint about n having not been initialized
 
 void HeaderCtrl::Serialize(Stream& s) {
-	int version = 0x01;
+	int version = 0x02;
 	s / version;
 	if(version < 0x01) {
 		int n = col.GetCount();
@@ -605,13 +706,29 @@ void HeaderCtrl::Serialize(Stream& s) {
 	else {
 		int n = col.GetCount();
 		s / n;
+		if(version < 0x02)
 		for(int i = 0; i < n; i++)
-			if(i < col.GetCount())
+			if(i < col.GetCount()) {
 				s % col[i].ratio;
+			}
 			else {
 				int dummy = 0;
-				s / dummy;
+				s % dummy;
 			}
+		else {
+			int t = 0;
+			for(int i = 0; i < col.GetCount(); i++) {
+				int ndx = col[i].index;
+				double r = col[i].ratio;
+				s % ndx;
+				s % r;
+				int q = FindIndex(ndx);
+				if(q >= 0) {
+					col[q].ratio = r;
+					col.Swap(t++, q);
+				}
+			}
+		}
 	}
 	if(s.IsLoading()) {
 		Refresh();
@@ -665,6 +782,7 @@ void HeaderCtrl::Reset()
 	height = 0;
 	style = &StyleDefault();
 	Refresh();
+	moving = false;
 }
 
 void HeaderCtrl::WScroll()
@@ -690,6 +808,7 @@ HeaderCtrl::HeaderCtrl() {
 	sb.WhenScroll = THISBACK(Scroll);
 	WhenScroll = THISBACK(WScroll);
 	sb.WhenVisibility = THISBACK(ScrollVisibility);
+	BackPaintHint();
 }
 
 HeaderCtrl::~HeaderCtrl() {}

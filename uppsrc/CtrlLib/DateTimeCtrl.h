@@ -173,10 +173,12 @@ private:
 	void OnYearLeft();
 	void OnYearRight();
 
+	void UpdateFields();
+
 	bool MouseOnToday(Point p);
 	bool MouseOnHeader(Point p);
 
-	virtual void LeftUp(Point p, dword keyflags);
+	virtual void LeftDown(Point p, dword keyflags);
 	virtual void MouseMove(Point p, dword keyflags);
 	virtual void Paint(Draw &w);
 	virtual bool Key(dword key, int count);
@@ -191,7 +193,6 @@ private:
 	void RefreshDay(Point p);
 	void RefreshToday();
 	void RefreshHeader();
-	void RefreshAll();
 	virtual Size ComputeSize();
 
 public:
@@ -412,15 +413,77 @@ class DateTimeCtrl : public T {
 
 	int mode;
 
-	void OnCalendarChoice();
-	void OnClockChoice();
-	void OnClose();
-	void OnDrop();
+	void OnCalendarChoice() {
+		this->SetData(~cc.calendar);
+		this->WhenAction();
+	}
+	
+	void OnClockChoice() {
+		this->SetData(~cc.clock);
+		this->WhenAction();
+	}
+	
+	void OnClose() {
+		this->SetFocus();
+	}
+	
+	void OnDrop() {
+		if(!this->IsEditable())
+			return;
+	
+		Size sz = cc.GetCalendarClockSize();
+	
+		int width = sz.cx;
+		int height = sz.cy;
+	
+		Rect rw = Ctrl::GetWorkArea();
+		Rect rs = this->GetScreenRect();
+		Rect r;
+		r.left   = rs.left;
+		r.right  = rs.left + width;
+		r.top    = rs.bottom;
+		r.bottom = rs.bottom + height;
+	
+		if(r.bottom > rw.bottom)
+		{
+			r.top = rs.top - height;
+			r.bottom = rs.top;
+		}
+		if(r.right > rw.right)
+		{
+			int diff;
+			if(rs.right <= rw.right)
+				diff = rs.right - r.right;
+			else
+				diff = rw.right - r.right;
+	
+			r.left += diff;
+			r.right += diff;
+		}
+		if(r.left < rw.left)
+		{
+			int diff = rw.left - r.left;
+			r.left += diff;
+			r.right += diff;
+	
+		}
+		cc.PopUp(this, r);
+		cc.calendar <<= this->GetData();
+		cc.clock <<= this->GetData();
+	}
 
 public:
 	typedef DateTimeCtrl CLASSNAME;
 
-	DateTimeCtrl(int m);
+	DateTimeCtrl(int m) : cc(m) {
+		drop.AddTo(*this);
+		drop.AddButton().Main() <<= THISBACK(OnDrop);
+		drop.NoDisplay();
+		drop.SetStyle(drop.StyleFrame());
+		cc.calendar   <<= THISBACK(OnCalendarChoice);
+		cc.clock      <<= THISBACK(OnClockChoice);
+		cc.WhenPopDown  = THISBACK(OnClose);
+	}
 
 	DateTimeCtrl& SetCalendarStyle(const Calendar::Style& style)   { cc.calendar.SetStyle(style); return *this;  }
 	DateTimeCtrl& SetClockStyle(const Clock::Style& style)         { cc.clock.SetStyle(style); return *this;  }

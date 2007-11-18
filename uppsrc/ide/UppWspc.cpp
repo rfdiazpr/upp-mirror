@@ -617,9 +617,13 @@ void WorkspaceWork::PackageMenu(Bar& menu)
 		String act = UnixPath(GetActivePackage());
 		menu.Add(~NFormat("Add package to '%s'", act), IdeImg::package_add(), THISBACK(AddNormalUses));
 		RemovePackageMenu(menu);
-		menu.Separator();
-		menu.Add(package.IsCursor(), "Optimize for speed", THISBACK(TogglePackageSpeed))
-		    .Check(actual.optimize_speed);
+		if(menu.IsMenuBar()) {
+			menu.Separator();
+			menu.Add(package.IsCursor(), "Optimize for speed", THISBACK(TogglePackageSpeed))
+			    .Check(actual.optimize_speed);
+			menu.Separator();
+			BuildPackageMenu(menu);
+		}
 	}
 }
 
@@ -637,6 +641,8 @@ WorkspaceWork::WorkspaceWork()
 	filelist.NoRoundSize();
 	actualfileindex = -1;
 	organizer = false;
+	package.BackPaintHint();
+	filelist.BackPaintHint();
 }
 
 void WorkspaceWork::SerializeClosed(Stream& s)

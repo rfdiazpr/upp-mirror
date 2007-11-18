@@ -4,9 +4,11 @@ public:
 	virtual void  Paint(Draw& draw);
 	virtual Image CursorImage(Point p, dword keyflags);
 	virtual void  LeftDown(Point p, dword keyflags);
+	virtual void  LeftDrag(Point p, dword keyflags);
 	virtual void  MouseMove(Point p, dword keyflags);
 	virtual void  MouseLeave();
 	virtual void  LeftUp(Point, dword);
+	virtual void  RightDown(Point, dword);
 	virtual void  Serialize(Stream& s);
 	virtual void  Layout();
 
@@ -32,6 +34,7 @@ public:
 		int         min, max;
 		int         margin;
 		Color       paper;
+		int         index;
 
 		void        Paint(bool& first, Draw& w,
 		                  int x, int y, int cx, int cy, bool disabled, bool push, bool hl);
@@ -39,7 +42,8 @@ public:
 		friend class HeaderCtrl;
 
 	public:
-		Callback WhenAction;
+		Callback        WhenAction;
+		Callback1<Bar&> WhenBar;
 
 		Column&  Min(int _min)                     { min = _min; return *this; }
 		Column&  Max(int _max)                     { max = _max; return *this; }
@@ -51,6 +55,7 @@ public:
 
 		int      GetMargin() const                 { return margin + 2; }
 		Color    GetPaper() const                  { return paper; }
+		int      GetIndex() const                  { return index; }
 
 		Column();
 	};
@@ -66,11 +71,15 @@ protected:
 	mutable int          oszcx;
 	mutable Vector<Rect> tabrect;
 
-	int   split, pushi;
+	int   split, pushi, li, ti;
+	bool  isdrag;
+	Image dragtab;
+	int   dragd, dragx;
 	Rect  colRect;
 	bool  push:1;
 	bool  track:1;
 	bool  invisible:1;
+	bool  moving:1;
 	byte  mode;
 	int   light;
 	int   height;
@@ -117,6 +126,11 @@ public:
 	void          SetTabWidth(int i, int cx);
 	int           GetTabWidth(int i);
 
+	void          SwapTabs(int first, int second);
+	void          MoveTab(int from, int to);
+	int           GetTabIndex(int i)                      { return col[i].index; }
+	int           FindIndex(int ndx);
+
 	void          StartSplitDrag(int s);
 	int           GetSplit(int x);
 
@@ -136,6 +150,7 @@ public:
 	HeaderCtrl&   ReduceLast();
 	HeaderCtrl&   Absolute();
 	HeaderCtrl&   SetStyle(const Style& s)                { style = &s; Refresh(); return *this; }
+	HeaderCtrl&   Moving(bool b = true)                   { moving = b; return *this; }
 
 	HeaderCtrl&   SetScrollBarStyle(const ScrollBar::Style& s)   { sb.SetStyle(s); return *this; }
 

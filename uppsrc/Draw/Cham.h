@@ -39,11 +39,13 @@ template <class T>
 struct ChStyle {
 	byte status;
 	byte registered;
+	T   *standard;
 
-	T&   Write() const         { T& x = *(T *)this; x.status = 2; return x; }
-	void Assign(const T& src)  { *(T *)this = src; }
+	const T& Standard() const      { return *standard; }
+	T&       Write() const         { T& x = *(T *)this; x.status = 2; return x; }
+	void     Assign(const T& src)  { *(T *)this = src; }
 
-	ChStyle()                  { status = 0; registered = 0; }
+	ChStyle()                      { status = 0; registered = 0; standard = NULL; }
 };
 
 #define CH_STYLE(klass, type, style) \
@@ -58,10 +60,12 @@ void COMBINE5(klass, __, type, __, style)::InitIt() { \
 \
 const klass::Style& klass::style() \
 { \
-	static COMBINE5(klass, __, type, __, style) b; \
+	static COMBINE5(klass, __, type, __, style) b, standard; \
 	if(b.status == 0) { \
 		ChRegisterStyle__(b.status, b.registered, COMBINE5(klass, __, type, __, style)::InitIt); \
 		b.Init(); \
+		standard = b; \
+		b.standard = &standard; \
 		b.status = 1; \
 	} \
 	return b; \

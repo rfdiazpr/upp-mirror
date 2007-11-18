@@ -414,7 +414,55 @@ LangDlg::LangDlg(Vector<TFile>& tfile)
 	Sizeable().Zoomable();
 }
 
-void Ide::SyncT(bool import)
+class ExportTrDlg : public WithExportTrLayout<TopWindow> {
+	SelectDirButton of;
+	typedef ExportTrDlg CLASSNAME;
+
+public:
+	ExportTrDlg();
+};
+
+ExportTrDlg::ExportTrDlg()
+{
+	CtrlLayoutOKCancel(*this, "Export .tr file");
+
+	DlCharsetD(charset);
+	of.Attach(folder);
+
+	charset <<= CHARSET_UTF8;
+	lang <<= LNG_ENGLISH;
+}
+
+String ExportTr(const Vector<TFile>& tfile, int& cs)
+{
+	ExportTrDlg dlg;
+	LoadFromGlobal(dlg, "tr-export");
+	int c = dlg.Run();
+	StoreToGlobal(dlg, "tr-export");
+	if(c != IDOK)
+		return Null;
+	int lng = ~dlg.lang;
+	cs = ~dlg.charset;
+	String fn = AppendFileName(~dlg.folder, LNGAsText(lng) + "." + CharsetName(cs) + ".tr");
+	FileOut out(fn);
+	if(!out) {
+		Exclamation("Unable to open the output file:&[* \1" + fn);
+		return Null;
+	}
+	out << "LANGUAGE " << AsCString(LNGAsText(SetLNGCharset(lng, cs))) << ";\r\n";
+	for(int i = 0; i < tfile.GetCount(); i++) {
+		const TFile& m = tfile[i];
+		out << "// " << m.package << "/" << m.file << "\r\n";
+		for(int j = 0; j < m.map.GetCount(); j++)
+			out << AsCString(m.map.GetKey(j), 70) << ",\r\n"
+			    << "\t" << AsCString(ToCharset(cs, m.map[j].text.Get(lng, ""), CHARSET_UTF8),
+			                         60, "\t", ASCSTRING_SMART)
+			    << ";\r\n\r\n";
+	}
+	return fn;
+}
+
+void Ide::SyncT(int kind)
 {
 	console.Clear();
 	String filepath = SourcePath(GetActivePackage(), GetActiveFileName());
@@ -423,13 +471,15 @@ void Ide::SyncT(bool import)
 	TFile repository;
 	LngParseTFile(ConfigFile("repository.t"), repository.map);
 
-	if(import) {
+	if(kind == 1) {
 		FileSel fs;
 		fs.ActiveDir(AnySourceFs().GetActiveDir());
 		fs.Type("Runtime translation file (*.tr)", "*.tr");
 		fs.AllFilesType();
-		if(!fs.ExecuteOpen())
-			return;
+		LoadFromGlobal(fs, "fs-tr");
+		bool b = fs.ExecuteOpen("Import translation file");
+		StoreToGlobal(fs, "fs-tr");
+		if(!b) return;
 		String tr = LoadFile(~fs);
 		CParser p(tr);
 		try {
@@ -496,6 +546,23 @@ void Ide::SyncT(bool import)
 				if(!IsNull(tle.text[l]))
 					rle.text.GetAdd(tle.text.GetKey(l)) = tle.text[l];
 		}
+	}
+
+	if(kind == 2) {
+		int cs;
+		String fn = ExportTr(tfile, cs);
+		if(!IsNull(fn)) {
+			EditFile(fn);
+			int c = filelist.GetCursor();
+			FlushFile();
+			ActiveFile().charset = (byte)cs;
+			SavePackage();
+			PackageCursor();
+			if(c >= 0)
+				filelist.SetCursor(c);
+			editor.ClearUndo();
+		}
+		return;
 	}
 
 	bool noobsolete = false;

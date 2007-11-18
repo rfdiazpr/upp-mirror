@@ -369,12 +369,14 @@ void MultiButton::Paint(Draw& w)
 	}
 	Rect r, cr;
 	Color text = SColorText();
+	Color paper = Null;
 	int mst = ChState(MAIN);
 	if(ComplexFrame()) {
 		cr = GetSize();
 		cr.left = lx;
 		cr.right = rx;
 		r = cr;
+		paper = HasFocus() ? SColorHighlight() : SColorPaper();
 	}
 	else
 	if(frm) {
@@ -427,7 +429,7 @@ void MultiButton::Paint(Draw& w)
 		w.Clip(cr);
 		display->Paint(w, cr, v,
 		               IsShowEnabled() ? text : SColorDisabled,
-		               Null, f ? Display::CURSOR : Display::FOCUS|Display::CURSOR);
+		               paper, f ? Display::CURSOR : Display::FOCUS|Display::CURSOR);
 		w.End();
 	}
 	if(!frm && HasFocus())

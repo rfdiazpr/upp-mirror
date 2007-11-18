@@ -5,6 +5,8 @@ NAMESPACE_UPP
 #define LLOG(x)     // DLOG(x)
 #define LTIMING(x)  // TIMING(x)
 
+bool Ctrl::globalbackpaint;
+
 void Ctrl::RefreshFrame(const Rect& r) {
 	if(!IsOpen() || !IsVisible() || r.IsEmpty()) return;
 	LTIMING("RefreshFrame");
@@ -200,18 +202,27 @@ Rect Ctrl::GetVoidRect()
 
 #ifdef _DEBUG
 struct sDrawLevelCheck {
-	int   lvl;
-	Draw& w;
-	sDrawLevelCheck(Draw& w) : w(w), lvl(w.GetCloffLevel()) {}
-	~sDrawLevelCheck() { ASSERT(lvl == w.GetCloffLevel()); }
+	Draw&        w;
+	int          lvl;
+	const Ctrl  *q;
+
+	void Check() {
+		ASSERT_(lvl == w.GetCloffLevel(), "Draw::Begin/End mismatch for " + UPP::Name(q));
+	}
+
+	sDrawLevelCheck(Draw& w, const Ctrl *q) : w(w), lvl(w.GetCloffLevel()), q(q) {}
+	~sDrawLevelCheck() { Check(); }
 };
 
-#define LEVELCHECK(w)    sDrawLevelCheck __(w)
+#define LEVELCHECK(w, q)    sDrawLevelCheck __(w, q)
+#define DOLEVELCHECK        __.Check();
 #else
-#define LEVELCHECK(w)
+#define LEVELCHECK(w, q)
+#define DOLEVELCHECK
 #endif
 
 void Ctrl::CtrlPaint(Draw& w, const Rect& clip) {
+	LEVELCHECK(w, this);
 	LTIMING("CtrlPaint");
 	Rect rect = GetRect().GetSize();
 	Rect orect = rect.Inflated(overpaint);
@@ -220,7 +231,7 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip) {
 	Ctrl *q;
 	Rect view = rect;
 	for(int i = 0; i < frame.GetCount(); i++) {
-		LEVELCHECK(w);
+		LEVELCHECK(w, NULL);
 		frame[i].frame->FramePaint(w, view);
 		view = frame[i].view;
 	}
@@ -230,11 +241,12 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip) {
 	for(q = firstchild; q; q = q->next)
 		if(q->IsShown())
 			if(q->InFrame()) {
-				if(IsTransparent() && q->GetRect().Intersects(view)) {
+				if(!viewexcluded && IsTransparent() && q->GetRect().Intersects(view)) {
+					w.Begin();
 					w.ExcludeClip(view);
 					viewexcluded = true;
 				}
-				LEVELCHECK(w);
+				LEVELCHECK(w, q);
 				Point off = q->GetRect().TopLeft();
 				w.Offset(off);
 				q->CtrlPaint(w, clip - off);
@@ -244,9 +256,10 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip) {
 				hasviewctrls = true;
 	if(viewexcluded)
 		w.End();
+	DOLEVELCHECK;
 	if(!oview.IsEmpty()) {
 		if(oview.Intersects(clip) && w.IsPainting(oview)) {
-			LEVELCHECK(w);
+			LEVELCHECK(w, this);
 			if(overpaint) {
 				w.Clip(oview);
 				w.Offset(view.left, view.top);
@@ -266,7 +279,7 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip) {
 		w.Clip(cl);
 		for(q = firstchild; q; q = q->next)
 			if(q->IsShown() && q->InView()) {
-				LEVELCHECK(w);
+				LEVELCHECK(w, q);
 				Rect qr = q->GetRect();
 				Point off = qr.TopLeft() + view.TopLeft();
 				Rect ocl = cl - off;
@@ -323,7 +336,7 @@ bool Ctrl::PaintOpaqueAreas(Draw& w, const Rect& r, const Rect& clip, bool nochi
 		bw.Offset(viewpos - opaque.TopLeft());
 		bw.SetPaintingDraw(w, opaque.TopLeft());
 		{
-			LEVELCHECK(bw);
+			LEVELCHECK(bw, this);
 			Paint(bw);
 		}
 		bw.Put(w, opaque.TopLeft());
@@ -333,7 +346,7 @@ bool Ctrl::PaintOpaqueAreas(Draw& w, const Rect& r, const Rect& clip, bool nochi
 		ShowRepaintRect(w, opaque, Green());
 		w.Offset(viewpos);
 		{
-			LEVELCHECK(w);
+			LEVELCHECK(w, this);
 			Paint(w);
 		}
 		w.End();
@@ -420,7 +433,8 @@ void Ctrl::UpdateArea0(Draw& draw, const Rect& clip, int backpaint)
 {
 	LTIMING("UpdateArea");
 	LLOG("========== UPDATE AREA " << UPP::Name(this) << " ==========");
-	if(backpaint == FULLBACKPAINT || GetTopCtrl()->backpainthint) {
+	Ctrl *tc = GetTopCtrl();
+	if(backpaint == FULLBACKPAINT || globalbackpaint) {
 		ShowRepaintRect(draw, clip, LtRed());
 		BackDraw bw;
 		bw.Create(draw, clip.GetSize());
@@ -428,7 +442,6 @@ void Ctrl::UpdateArea0(Draw& draw, const Rect& clip, int backpaint)
 		bw.SetPaintingDraw(draw, clip.TopLeft());
 		CtrlPaint(bw, clip);
 		bw.Put(draw, clip.TopLeft());
-		GetTopCtrl()->backpainthint = true;
 		LLOG("========== END (FULLBACKPAINT)");
 		return;
 	}
@@ -570,9 +583,22 @@ void Ctrl::SyncMoves()
 	top->scroll_move.Clear();
 }
 
-void Ctrl::BackPaintHint()
+Ctrl& Ctrl::BackPaintHint()
 {
-	GetTopCtrl()->backpainthint = true;
+	if(IsDecentMachine())
+		BackPaint();
+	return *this;
+}
+
+void  Ctrl::GlobalBackPaint(bool b)
+{
+	globalbackpaint = b;
+}
+
+void  Ctrl::GlobalBackPaintHint()
+{
+	if(IsDecentMachine())
+		GlobalBackPaint();
 }
 
 END_UPP_NAMESPACE

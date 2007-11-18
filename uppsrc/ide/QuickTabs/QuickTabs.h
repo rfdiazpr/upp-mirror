@@ -9,6 +9,16 @@ using namespace Upp;
 #define IMAGEFILE <ide/QuickTabs/QuickTabs.iml>
 #include <Draw/iml_header.h>
 
+enum
+{
+	QT_MARGIN = 6,
+	QT_SPACE = 10,
+	QT_SBHEIGHT = 4,
+	QT_SBSEPARATOR = 1,
+	QT_FILEICON = 16,
+	QT_SPACEICON = 5
+};
+
 class TabScrollBar : public Ctrl
 {
 	private:
@@ -57,8 +67,8 @@ struct Tab : Moveable<Tab>
 	Tab() : visible(true), id(-1)
 	{}
 	int Right() { return x + cx; }
-	bool HasMouse(Point &p);
-	bool HasMouseCross(Point &p);
+	bool HasMouse(const Point& p);
+	bool HasMouseCross(const Point& p, int h);
 };
 
 struct Group : Moveable<Group>
@@ -72,66 +82,17 @@ struct Group : Moveable<Group>
 	int last;
 };
 
-class GroupButton : public Ctrl
-{
-	private:
-
-		Vector<Group> groups;
-		Vector<Tab> *tabs;
-		int current;
-
-	public:
-		GroupButton();
-
-		typedef GroupButton CLASSNAME;
-
-		virtual void Paint(Draw &w);
-		virtual void LeftDown(Point p, dword keyflags);
-		virtual void MouseEnter(Point p, dword keyflags);
-		virtual void MouseLeave();
-
-		void SetTabs(Vector<Tab> &t);
-		void Make();
-		int  Find(const String& g);
-		const String& GetNext();
-		void DoList(Bar &bar);
-		void DoCloseGroupsList(Bar &bar);
-		void DoGrouping(int n);
-		void DoCloseGroup(int n);
-
-		String GetName() const           { return current == 0 ? Null : groups[current].path; }
-		int  SetCurrent(const String &s) { current = max(0, Find(s)); return current; }
-		int  SetCurrent(int c)           { int t = current; current = c; return current; }
-		int  GetCurrent() const          { return current;                }
-		void SetActive(int id)           { groups[current].active = id;   }
-		int  GetActive() const           { return groups[current].active; }
-		int  GetFirst() const            { return groups[current].first;  }
-		int  GetLast() const             { return groups[current].last;   }
-		bool IsAll() const               { return current == 0;           }
-
-		Callback WhenGrouping;
-		Callback WhenCloseAll;
-		Callback WhenCloseRest;
-		Callback WhenCloseGroup;
-};
-
 class QuickTabs : public FrameCtrl<Ctrl>
 {
+	public:
+
 	private:
-		enum
-		{
-			MARGIN = 6,
-			SPACE = 10,
-			HEIGHT = 30,
-			FILEICON = 16,
-			SPACEICON = 5
-		};
 
 		int id;
 		FrameBottom<TabScrollBar> sc;
-		FrameLeft<GroupButton> groups;
 		void Scroll();
 
+		Vector<Group> groups;
 		Vector<Tab> tabs;
 		int highlight;
 		int active;
@@ -143,6 +104,9 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		bool isdrag;
 		bool grouping;
 		Point mouse, oldp;
+		int group;
+
+		const TabCtrl::Style *style;
 
 		virtual void Paint(Draw &w);
 		virtual void LeftDown(Point p, dword keysflags);
@@ -152,7 +116,6 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		virtual void MiddleUp(Point p, dword keyflags);
 		virtual void MouseMove(Point p, dword keysflags);
 		virtual void MouseLeave();
-		virtual void Layout();
 		virtual void FrameLayout(Rect &r);
 		virtual void FrameAddSize(Size& sz);
 		virtual void FramePaint(Draw& w, const Rect& r);
@@ -171,14 +134,31 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		int  GetPrev(int n);
 
 		int GetWidth(int n);
-		int GetHeight(int n);
-		int GetTotal();
 		int GetTargetTab(Point p);
 
-		void Group();
+		int GetWidth();
+		int GetHeight();
+
 		void Menu(Bar& bar);
+		void GroupMenu(Bar &bar, int n);
 
 		void CloseAll();
+
+		void MakeGroups();
+		int  FindGroup(const String& g);
+
+		void DoGrouping(int n);
+		void DoCloseGroup(int n);
+
+		String GetGroupName() const      { return group == 0 ? Null : groups[group].path; }
+		int  SetGroup(const String &s)   { group = max(0, FindGroup(s)); return group; }
+		int  SetGroup(int c)             { int t = group; group = c; return group; }
+		int  GetGroup() const            { return group;                }
+		void SetActiveGroup(int id)      { groups[group].active = id;   }
+		int  GetActiveGroup() const      { return groups[group].active; }
+		int  GetFirst() const            { return groups[group].first;  }
+		int  GetLast() const             { return groups[group].last;   }
+		bool IsGroupAll() const          { return group == 0;           }
 
 	public:
 		Callback WhenCloseRest;
@@ -203,8 +183,11 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		void   RenameFile(const String& fn, const String& nn);
 		void   Set(const QuickTabs& t);
 
+		QuickTabs& SetStyle(const TabCtrl::Style& s)  { style = &s; Refresh(); return *this; }
+		static const TabCtrl::Style& StyleDefault();
+
 		int    GetNextId();
-		
+
 		const Vector<Tab>& GetTabs() { return tabs; }
 		int GetPos() { return sc.GetPos(); }
 

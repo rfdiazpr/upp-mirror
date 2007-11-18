@@ -153,12 +153,6 @@ GridCtrl::ItemRect& GridCtrl::ItemRect::Index(bool b)
 	return *this;
 }
 
-GridCtrl::ItemRect& GridCtrl::ItemRect::DataColumn(int n)
-{
-	data_col = n;
-	return *this;
-}
-
 String GridCtrl::ItemRect::GetName() const
 {
 	return (*items)[0][id].val;

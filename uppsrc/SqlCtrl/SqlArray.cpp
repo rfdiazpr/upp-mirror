@@ -195,6 +195,7 @@ void SqlArray::AppendQuery(SqlBool where)
 				GoEnd();
 			else
 				GoBegin();
+		DoColumnSort();
 		WhenPostQuery();
 	}
 }

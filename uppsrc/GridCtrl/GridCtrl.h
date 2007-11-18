@@ -410,6 +410,7 @@ class GridCtrl : public Ctrl
 					editable = true;
 					sortable = true;
 					clickable = true;
+					skip = false;
 					ignore_display = false;
 					style = 0;
 
@@ -437,7 +438,6 @@ class GridCtrl : public Ctrl
 					found = false;
 
 					level = 0;
-					data_col = -1;
 
 					operation = GridOperation::NONE;
 				}
@@ -464,7 +464,6 @@ class GridCtrl : public Ctrl
 				int id, uid, n;
 				int sl, sr, st, sb, sx, sy;
 
-				int data_col;
 
 				double tsize;
 				int  join;
@@ -478,7 +477,8 @@ class GridCtrl : public Ctrl
 				bool modified:1;
 				bool isnew:1;
 				bool found:1;
-
+				bool skip:1;
+				
 				Value defval;
 
 				dword style;
@@ -579,7 +579,6 @@ class GridCtrl : public Ctrl
 				ItemRect& NoConvertion();
 				ItemRect& Default(Value v);
 				ItemRect& Index(bool b = true);
-				ItemRect& DataColumn(int n);
 
 				String GetName() const;
 
@@ -642,6 +641,8 @@ class GridCtrl : public Ctrl
 
 				ItemRect& Clickable(bool b)                      { clickable = b;     return *this; }
 				ItemRect& NoClickable()                          { clickable = false; return *this; }
+				
+				ItemRect& Skip(bool b)                           { skip = b;          return *this; }
 
 				int  GetId()                                     { return id;                       }
 				int  GetNumber()                                 { return id - parent->fixed_cols;  }
@@ -786,6 +787,7 @@ class GridCtrl : public Ctrl
 		bool cancel_insert:1;
 		bool cancel_remove:1;
 		bool cancel_accept:1;
+		bool cancel_cursor:1;
 		bool mouse_move:1;
 		bool is_clipboard:1;
 		bool selecting:1;
@@ -832,6 +834,8 @@ class GridCtrl : public Ctrl
 		int  rowuid;
 		int  rowfnd;
 
+		int  bkp_rowidx;
+
 		int  minRowSelected;
 		int  maxRowSelected;
 
@@ -865,9 +869,6 @@ class GridCtrl : public Ctrl
 
 		WString search_string;
 
-
-	public:
-
 		bool curResizeCol;
 		bool curResizeRow;
 
@@ -879,11 +880,17 @@ class GridCtrl : public Ctrl
 		int hcol, hrow;
 		int dx, dy;
 
-		/* Others */
-
 		GridPopUpHeader pophdr;
 
 		int sortCol;
+
+//		struct SortColumn {
+//			SortColumn(int c, bool f) : col(c), fixed(f) {}
+//			int col;
+//			bool fixed;
+//		};
+//
+//		Vector<SortColumn> sortOrder;
 		Vector<int> sortOrder;
 
 	public:
@@ -1071,6 +1078,8 @@ class GridCtrl : public Ctrl
 		#undef   E__Add
 		//$+
 
+		GridCtrl& AddSeparator(Color c);
+
 		int       GetColumnCount() const      { return total_cols - fixed_cols; }
 		int       GetFixedColumnCount() const { return fixed_cols;              }
 
@@ -1146,7 +1155,7 @@ class GridCtrl : public Ctrl
 		bool IsRemovedRow()     { return vitems[rowidx].operation == GridOperation::REMOVE; }
 		int  GetRowOperation()  { return vitems[rowidx].operation;                          }
 
-		Vector<Value> ReadRow(int n) const;
+		Vector<Value> ReadRow(int n = -1) const;
 		GridCtrl& Add(const Vector<Value> &v, int offset = 0);
 
 		void SetFixedRows(int n = 1);
@@ -1198,6 +1207,7 @@ class GridCtrl : public Ctrl
 		void CancelInsert()     { cancel_insert      = true; }
 		void CancelUpdateCell() { cancel_update_cell = true; }
 		void CancelAccept()     { cancel_accept      = true; }
+		void CancelCursor()     { cancel_cursor      = true; }
 
 		void ClearCursor(bool remove = false);
 		void ClearRow(int r = -1, int column_offset = 0);
@@ -1321,8 +1331,8 @@ class GridCtrl : public Ctrl
 		void StdMenuBar(Bar &bar);
 		void StdToolBar(Bar &bar);
 		void FindOptsBar(Bar &bar);
-		void FindBar(Bar &bar, int cx, int cy = -1);
-		void InfoBar(Bar &bar, int cx, int cy = -1);
+		void FindBar(Bar &bar, int cx);
+		void InfoBar(Bar &bar, int cx);
 		void NavigatingBar(Bar &bar);
 		void RemovingMenu(Bar &bar);
 		void MovingMenu(Bar &bar);
@@ -1543,7 +1553,8 @@ class GridCtrl : public Ctrl
 		Callback WhenNewRow;
 		Callback WhenChangeCol;
 		Callback WhenChangeRow;
-		Callback WhenModification;
+		Callback WhenCursor;
+		Callback WhenAcceptRowAlways;
 
 		Callback WhenCtrlsAction;
 

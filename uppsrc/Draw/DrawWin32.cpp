@@ -320,6 +320,7 @@ NilDraw::~NilDraw() {
 }
 
 void BackDraw::Create(Draw& w, int cx, int cy) {
+	ASSERT(w.GetHandle());
 	DrawLock __;
 	Destroy();
 	size.cx = cx;

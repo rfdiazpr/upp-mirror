@@ -865,6 +865,28 @@ bool Ctrl::WndEnable(bool b)
 	return true;
 }
 
+void Ctrl::AddXWindow(Window &w)
+{
+	int i = Xwindow().Find(None);
+	if(i >= 0)
+		Xwindow().SetKey(i, w);
+	XWindow& cw = i >= 0 ? Xwindow()[i] : Xwindow().Add(w);
+	cw.ctrl    = this;
+	cw.exposed = true;
+	cw.owner   = GetParent();
+	cw.xic     = NULL;
+}
+
+void Ctrl::RemoveXWindow(Window &w)
+{
+	int i = Xwindow().Find(w);
+	if(i >= 0) {
+		Xwindow().SetKey(i, None);
+		Xwindow()[i].ctrl = NULL;
+	}
+
+}
+
 ViewDraw::ViewDraw(Ctrl *ctrl)
 {
 	Ctrl *top = ctrl->GetTopCtrl();

@@ -123,9 +123,9 @@ void DockableCtrl::ContextMenu(Bar& menubar)
 void DockableCtrl::DockableCtrlMenu(Bar& menubar)
 {
 	menubar.Add(t_("Dock"),	THISBACK(DockableDockMenu));
-	menubar.Add(IsFloating() ? 0 : 1, t_("Float"),THISBACK(Float));
+	menubar.Add(IsDocked(), t_("Float"),THISBACK(Float));
 	menubar.Separator();
-	menubar.Add(IsFloating() ? 0 : 1, t_("Hide"), THISBACK(Hide));
+	menubar.Add(IsDocked(), t_("Hide"), THISBACK(Hide));
 	menubar.Add(0, t_("Auto Hide"), THISBACK(AutoHide));	
 	menubar.Separator();
 	menubar.Add(t_("Close"), DockableCtrlImages::I_CloseN(), THISBACK(Shut));

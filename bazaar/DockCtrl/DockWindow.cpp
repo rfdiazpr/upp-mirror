@@ -94,6 +94,11 @@ Rect DockWindow::GetDockView()
 
 void DockWindow::ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags)
 {
+	if(HasDragBar() && child == &_dragbar && event == LEFTDRAG)
+	{
+		Float(); 
+		SendMessage(GetHWND(), WM_NCLBUTTONDOWN, 2, MAKELONG(p.x, p.y));
+	}
 	DockableCtrl::ChildMouseEvent(child, event, p, zdelta, keyflags);
 }
 
@@ -138,50 +143,34 @@ void DockWindow::SetVisualStyle(const Style& st)
 LRESULT  DockWindow::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
 
-	if(message == WM_NCRBUTTONDOWN) 
-	{
-		ContextMenu(*_menubar);
-		return 0;
-	}
-	
-	UINT defmsg = TopWindow::WindowProc(message, wParam, lParam); 
-	POINT pos; GetCursorPos(&pos);
-	
 	if(IsFloating())
 	{
 		switch(message)
 		{
-			case WM_MOVING:
-					GetBase().DoDragAndDrop(*this, Point(pos.x, pos.y));
+			case WM_MOVE:
+					Dragging(true);
+					GetBase().DoDragAndDrop(*this, GetMousePos());
 					break;
 		
-			case WM_NCLBUTTONUP:
-					if(DnDHasTarget() && IsDragged()) 
+			case WM_EXITSIZEMOVE:
+					if(!GetMouseLeft() && DnDHasTarget() && IsDragged()) 
 					{
 						Dock(DnDGetTarget(), State(), Position());
 						Refresh();
 						DnDTargetoutofRange();
-						Dragging(FALSE);
+						Dragging(false);
 					}
 				break;
 			
 			case WM_NCRBUTTONDOWN:
 					ContextMenu(*_menubar);
-				return 0;
-				
-		
-			case WM_NCLBUTTONDOWN:
-					SendMessage(GetHWND(), WM_SYSCOMMAND, 0xf012, (LPARAM)&pos);
-					Dragging();
-					SendMessage(GetHWND(), WM_NCLBUTTONUP, 0, (LPARAM)&pos);
-
-				break;
+				return 1L;
 				
 			default:
 				break;
 		}
 	}
-return defmsg; 
+	return TopWindow::WindowProc(message, wParam, lParam);
 }
 #endif
 
@@ -206,20 +195,7 @@ void DockWindow::DragBarButton::Paint(Draw& d)
 // Nested helper class for DockWindow
 //===============================================
 
-void DockWindow::DragBar::LeftDrag(Point p, dword keyflags)
-{
-	Rect r   = GetDock().GetScreenView();
-	r.top    = GetDock().GetScreenView().top - GetDock().GetChildBarSize().cy;
-	r.right  = r.left + r.Width();
-	r.bottom = r.top  + r.Height();
-	
-	GetDock().Float(); GetDock().Dragging();
-	POINT pos; GetCursorPos(&pos);
 
-	SendMessage(GetDock().GetHWND(), WM_SYSCOMMAND, 0xf012, MAKELONG(p.x, p.y));
-	SendMessage(GetDock().GetHWND(), WM_NCLBUTTONUP, 0, MAKELONG(p.x, p.y));
-	Ctrl::LeftDrag(p,keyflags);
-}
 
 void DockWindow::DragBar::FrameAdd(Ctrl& parent)
 {

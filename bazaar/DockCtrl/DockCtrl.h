@@ -284,8 +284,6 @@ private:
 		
 	protected:
 	
-		void LeftDrag(Point p, dword keyflags);
-
 		void FrameAdd(Ctrl& parent);
 		void FrameRemove();
 		void FrameLayout(Rect& r);

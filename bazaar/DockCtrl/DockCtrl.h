@@ -109,6 +109,9 @@ public:
 	inline bool IsDragged()			{ return _dragstate; }
 	inline bool IsDropped()			{ return _dropstate; }
 
+protected:
+	void DnDDragStart();
+	
 private:
 	int  _dndtarget;
 	bool _dragstate, _dropstate;
@@ -122,7 +125,7 @@ protected:
 	void ContextMenu(Bar& menubar);
 
 	void DockableCtrlMenu(Bar& menubar);
-	void DockableDockMenu(Bar& menubar);
+	void DockableCtrlDockMenu(Bar& menubar);
 
 	virtual void HideDragBar() 	{ _hasdragbar = false;}
 	virtual void ShowDragBar() 	{ _hasdragbar = true; }
@@ -223,18 +226,10 @@ protected:
 	void OnShutButton()									{ DockableCtrl::Shut(); 	}	
 	void OnAutoHideButton()								{ DockableCtrl::AutoHide(); }
 	
-	void LeftDown(Point p, dword keyflags);
-	void LeftUp(Point p, dword keyflags);
-	void RightDown(Point p, dword keyflags);	
-	void RightUp(Point p, dword keyflags);
-	void MouseMove(Point p, dword keyflags);
+	void Paint(Draw& d);
 
 	void ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags);
 
-	void Paint(Draw& d);
-
-protected:
-	
 #ifdef PLATFORM_WIN32
 	virtual LRESULT  WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 #endif

@@ -165,7 +165,6 @@ void DockCtrl::DoDragAndDrop(DockableCtrl& ctrl, Point pos)
 			}
 		}
 
-		Rect droparea = GetPane(i).GetScreenView();
     	if(ctrl.DnDHasTarget()) ctrl.DnDTargetoutofRange();
 		if(GetPane(i).DnDCalcSourcePos(pos)) 
 		{

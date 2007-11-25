@@ -92,42 +92,9 @@ Rect DockWindow::GetDockView()
 	return GetDockRect();
 }
 
-void DockWindow::ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags)
-{
-	if(HasDragBar() && child == &_dragbar && event == LEFTDRAG)
-	{
-		Float(); 
-		SendMessage(GetHWND(), WM_NCLBUTTONDOWN, 2, MAKELONG(p.x, p.y));
-	}
-	DockableCtrl::ChildMouseEvent(child, event, p, zdelta, keyflags);
-}
-
-void DockWindow::LeftDown(Point p, dword keyflags)
-{	
-	TopWindow::LeftDown(p, keyflags);
-}
-
-void DockWindow::LeftUp(Point p, dword keyflags)
-{
-	TopWindow::LeftUp(p, keyflags);
-}
-
-void DockWindow::RightDown(Point p, dword keyflags)
-{
-	DockableCtrl::RightDown(p,keyflags);
-}
-void DockWindow::RightUp(Point p, dword keyflags)
-{
-	DockableCtrl::RightUp(p, keyflags);
-}
-
 void DockWindow::Paint(Draw& d)
 {
 	TopWindow::Paint(d);
-}
-
-void DockWindow::MouseMove(Point p, dword keyflags)
-{
 }
 
 void DockWindow::SetVisualStyle(const Style& st)
@@ -137,6 +104,13 @@ void DockWindow::SetVisualStyle(const Style& st)
 	_menubutton.SetImage(_visualstyle->menubuttonimage[0],_visualstyle->menubuttonimage[1], _visualstyle->menubuttonimage[2]);
 	_autohidebutton.SetImage(_visualstyle->autohidebuttonimage[0], _visualstyle->autohidebuttonimage[1], _visualstyle->autohidebuttonimage[2]);
 	RefreshLayoutDeep();
+}
+
+void DockWindow::ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags)
+{
+	if(HasDragBar() && child == &_dragbar && event == LEFTDRAG) 
+		DnDDragStart();
+	TopWindow::ChildMouseEvent(child, event, p, zdelta, keyflags);
 }
 
 #ifdef PLATFORM_WIN32

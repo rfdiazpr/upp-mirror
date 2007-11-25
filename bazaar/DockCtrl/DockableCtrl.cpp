@@ -122,7 +122,7 @@ void DockableCtrl::ContextMenu(Bar& menubar)
 
 void DockableCtrl::DockableCtrlMenu(Bar& menubar)
 {
-	menubar.Add(t_("Dock"),	THISBACK(DockableDockMenu));
+	menubar.Add(t_("Dock"),	THISBACK(DockableCtrlDockMenu));
 	menubar.Add(IsDocked(), t_("Float"),THISBACK(Float));
 	menubar.Separator();
 	menubar.Add(IsDocked(), t_("Hide"), THISBACK(Hide));
@@ -132,14 +132,23 @@ void DockableCtrl::DockableCtrlMenu(Bar& menubar)
 	
 }
 
-void DockableCtrl::DockableDockMenu(Bar& menubar)
+void DockableCtrl::DockableCtrlDockMenu(Bar& menubar)
 {
 	menubar.Add(Alignment() == dock_top    ? 0 : 1, t_("Top"), callback4(this, &DockableCtrl::Dock, dock_top, State(), Position(), 0));
 	menubar.Add(Alignment() == dock_left   ? 0 : 1, t_("Left"), callback4(this, &DockableCtrl::Dock, dock_left, State(), Position(), 0));
 	menubar.Add(Alignment() == dock_right  ? 0 : 1, t_("Right"), callback4(this, &DockableCtrl::Dock, dock_right, State(), Position(), 0));
 	menubar.Add(Alignment() == dock_bottom ? 0 : 1, t_("Bottom"), callback4(this, &DockableCtrl::Dock, dock_bottom, State(), Position(), 0));
 }
-                           
+
+void DockableCtrl::DnDDragStart()
+{
+	Point p = GetMousePos();
+	Float(); 
+#ifdef PLATFORM_WIN32
+	SendMessage(GetHWND(), WM_NCLBUTTONDOWN, 2, MAKELONG(p.x, p.y));
+#endif
+}
+
 bool DockableCtrl::DnDCalcDragPos(Rect dock, Rect tracker)
 {
 	  return ((((tracker.right >= dock.left) && (tracker.right <= dock.right)) && ((tracker.bottom <= dock.bottom) && (tracker.bottom >= dock.top))) 	||

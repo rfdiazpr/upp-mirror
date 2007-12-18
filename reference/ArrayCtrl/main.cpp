@@ -44,10 +44,10 @@ ArrayCtrlExample::ArrayCtrlExample()
 {
 	CtrlLayoutExit(*this, "ArrayCtrl example");
 
-	array.AddColumn("integer").Sorting();
+	array.AddColumn("integer");
 	array.AddIndex(ID1);
 	array.AddColumn(ID2, "combined").Add(ID1).AddIndex(ID3).SetConvert(Single<MyConvert>());
-	array.AddColumn("editable").Edit(myedit).Sorting();
+	array.AddColumn("editable").Edit(myedit);
 	array.AddColumn("with display").SetDisplay(Single<MyDisplay>());
 	array.AddCtrl(editor);
 	array.AddRowNumColumn("rownum");

@@ -5,16 +5,16 @@ using namespace Upp;
 struct App : TopWindow {
 	Array<Option> option;
 	ArrayCtrl a;
-
+	
 	void Do(int ii)
 	{
 		option[ii].SetFocus();
 		for(int i = 0; i < option.GetCount(); i++)
 			option[i].Enable(i == ii || option[ii]);
 	}
-
+	
 	typedef App CLASSNAME;
-
+	
 	App() {
 		a.AddColumn("Option");
 		for(int i = 0; i < 300; i++) {

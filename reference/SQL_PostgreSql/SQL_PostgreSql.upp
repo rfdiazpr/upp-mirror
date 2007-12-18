@@ -1,3 +1,5 @@
+description "Logging and using PostgreSQL";
+
 uses
 	CtrlLib,
 	PostgreSQL,
@@ -11,3 +13,4 @@ file
 
 mainconfig
 	"" = "GUI";
+

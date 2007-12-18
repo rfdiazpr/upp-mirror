@@ -25,7 +25,7 @@ String FormatField(const DbfStream::Field& f)
 void DbfView::EnterRow()
 {
 	row.Clear();
-	if(!dbf.Fetch(table.GetKey()))
+	if(!dbf.Fetch(table.GetCursor()))
 		return;
 	for(int i = 0; i < dbf.GetFieldCount(); i++)
 		row.Add(FormatField(dbf.GetField(i)), dbf[i]);
@@ -36,17 +36,15 @@ void DbfView::Perform()
 	FileSel fs;
 	LoadFromFile(fs);
 	fs.AllFilesType();
-	fs.Type("dbf", "*.dbf");
+	fs.Type("*.dbf", "dbf");
 	if(!fs.ExecuteOpen("DBF..")) return;
 	StoreToFile(fs);
 	if(!dbf.Open(~fs))
 		Exclamation("Can't open input file");
-	table.AddKey();
 	for(int i = 0; i < min(4, dbf.GetFieldCount()); i++)
 		table.AddColumn(FormatField(dbf.GetField(i)));
 	while(dbf.Fetch()) {
 		Vector<Value> v;
-		v.Add(dbf.GetPos());
 		for(int i = 0; i < min(4, dbf.GetFieldCount()); i++)
 			v.Add(dbf[i]);
 		table.Add(v);
@@ -67,7 +65,8 @@ DbfView::DbfView()
 
 GUI_APP_MAIN
 {
-	SetDefaultCharset(CHARSET_WIN1252);
+	SetDefaultCharset(CHARSET_WIN1250);
+	SetLanguage(LNG_CZECH);
 	Ctrl::NoLayoutZoom();
 
 	DbfView().Perform();

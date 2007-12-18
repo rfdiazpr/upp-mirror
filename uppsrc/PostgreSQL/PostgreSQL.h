@@ -13,7 +13,7 @@
 NAMESPACE_UPP
 
 // Postgre -> Value types
-// Bytea_v values are stored as bytea data, but recived as string type 
+// Bytea_v values are stored as bytea data, but recived as string type
 const int BYTEA_V = 34;
 
 const char *PostgreSQLReadString(const char *s, String& stmt);
@@ -44,7 +44,7 @@ public:
 	virtual Vector<String>        EnumPrimaryKey(String database, String table);
 	virtual String                EnumRowID(String database, String table);
 	virtual Vector<String>        EnumReservedWords();
-	
+
 protected:
 	virtual SqlConnection *CreateConnection();
 
@@ -56,6 +56,7 @@ private:
 	Vector<String>        EnumData(char type, const char *schema = NULL);
 	String                ErrorMessage();
 	String                ErrorCode();
+	int                   level;
 
 public:
 	bool                  Open(const char *connect);
@@ -67,8 +68,9 @@ public:
 	virtual void          Begin();
 	virtual void          Commit();
 	virtual void          Rollback();
-	
-	PostgreSQLSession()  { conn = NULL; Dialect(PGSQL); }
+	virtual int           GetTransactionLevel() const;
+
+	PostgreSQLSession()  { conn = NULL; Dialect(PGSQL); level = 0; }
 	~PostgreSQLSession() { Close(); }
 	PGconn * GetPGConn() { return conn; }
 };

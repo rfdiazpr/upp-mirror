@@ -374,7 +374,7 @@ public:
 	static CalcProcMap& GetGlobals();
 
 public:
-	enum { MAX_STACK_DEPTH = 100 };
+	enum { MAX_STACK_DEPTH = 1000 };
 
 	int                 language;
 	int                 nesting;

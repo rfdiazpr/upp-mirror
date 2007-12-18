@@ -70,7 +70,7 @@ public:
 
 	SqlSchema& SchemaName(String sch)                          { schemaname = sch; return *this; }
 	SqlSchema& MaxIDLen(int n)                                 { maxidlen = n; return *this; }
-	
+
 	int        GetDialect() const                              { return dialect; }
 
 #ifndef NOAPPSQL
@@ -94,6 +94,8 @@ inline void SqlSchemaInitClear(T *a, int n) {
 
 inline void SqlSchemaInitClear(int& a)    { a = Null; }
 inline void SqlSchemaInitClear(double& a) { a = Null; }
+inline void SqlSchemaInitClear(int64& a)  { a = Null; }
+inline void SqlSchemaInitClear(bool& a)   { a = false; }
 
 template <class T>
 inline void SqlSchemaClear(T& a)          { a = Null; }

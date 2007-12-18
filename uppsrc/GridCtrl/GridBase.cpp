@@ -108,6 +108,11 @@ GridCtrl::ItemRect& GridCtrl::ItemRect::Fixed(int n)
 	return Min(n).Max(n);
 }
 
+GridCtrl::ItemRect& GridCtrl::ItemRect::FixedAuto()
+{
+	return Fixed(GetTextSize((String)(*items)[0][id].val, StdFont()).cx + 15);
+}
+
 GridCtrl::ItemRect& GridCtrl::ItemRect::Edit(Ctrl &ctrl)
 {
 	ctrl.Hide();

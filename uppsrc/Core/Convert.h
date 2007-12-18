@@ -3,9 +3,12 @@ inline unsigned stou(const byte *ptr, void *endptr = NULL, unsigned base = 10) {
 unsigned      stou(const wchar *ptr, void *endptr = NULL, unsigned base = 10);
 
 uint64        stou64(const char *s, void *endptr = NULL, unsigned base = 10);
+uint64        stou64(const wchar *s, void *endptr = NULL, unsigned base = 10);
 
 int           ScanInt(const char *ptr, const char **endptr = NULL, int radix = 10);
 int           ScanInt(const wchar *ptr, const wchar **endptr = NULL, int radix = 10);
+
+int64         ScanInt64(const char *ptr, const char **endptr = NULL, int base = 10);
 
 double        ScanDouble(const char *ptr, const char **endptr = NULL, bool accept_comma = true);
 double        ScanDouble(const wchar *ptr, const wchar **endptr = NULL, bool accept_comma = true);
@@ -45,8 +48,8 @@ public:
 	virtual int   Filter(int chr) const;
 
 protected:
-	int  minval, maxval;
-	bool notnull;
+	int64 minval, maxval;
+	bool  notnull;
 
 public:
 	ConvertInt& MinMax(int _min, int _max)        { minval = _min; maxval = _max; return *this; }
@@ -54,8 +57,8 @@ public:
 	ConvertInt& Max(int _max)                     { maxval = _max; return *this; }
 	ConvertInt& NotNull(bool b = true)            { notnull = b; return *this; }
 	ConvertInt& NoNotNull()                       { return NotNull(false); }
-	int         GetMin() const                    { return minval; }
-	int         GetMax() const                    { return maxval; }
+	int         GetMin() const                    { return (int)minval; }
+	int         GetMax() const                    { return (int)maxval; }
 	bool        IsNotNull() const                 { return notnull; }
 
 #ifdef flagSO
@@ -69,6 +72,23 @@ public:
 
 const ConvertInt& StdConvertInt();
 const ConvertInt& StdConvertIntNotNull();
+
+struct ConvertInt64 : public ConvertInt {
+	ConvertInt& MinMax(int64 _min, int64 _max)    { minval = _min; maxval = _max; return *this; }
+	ConvertInt& Min(int64 _min)                   { minval = _min; return *this; }
+	ConvertInt& Max(int64 _max)                   { maxval = _max; return *this; }
+	int64       GetMin() const                    { return minval; }
+	int64       GetMax() const                    { return maxval; }
+
+#ifdef flagSO
+	ConvertInt64(int64 minval = -INT64_MAX, int64 maxval = INT64_MAX, bool notnull = false);
+	virtual ~ConvertInt64();
+#else
+	ConvertInt64(int64 minval = -INT64_MAX, int64 maxval = INT64_MAX, bool notnull = false) {
+		MinMax(minval, maxval); NotNull(notnull);
+	}
+#endif
+};
 
 class ConvertDouble : public Convert {
 public:

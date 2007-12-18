@@ -16,10 +16,10 @@ bool Ctrl::LogMessages
 ;
 #endif
 
-#define LLOG(x)      // LOG(x)
+#define LLOG(x)      // DLOG(x)
 #define LTIMING(x)   // RTIMING(x)
-#define LDUMP(x)     // RDUMP(x)
-#define LDUMPC(x)    // RDUMPC(x)
+#define LDUMP(x)     // DDUMP(x)
+#define LDUMPC(x)    // DDUMPC(x)
 
 // #define SYNCHRONIZE
 
@@ -224,6 +224,7 @@ void Ctrl::TimerAndPaint() {
 		XWindow& xw = Xwindow()[i];
 		if(Xwindow().GetKey(i) && xw.exposed && xw.invalid.GetCount()) {
 			if(xw.ctrl) {
+				LLOG("..and paint " << UPP::Name(xw.ctrl));
 				FocusSync();
 				xw.ctrl->SyncScroll();
 				Vector<Rect> x = xw.invalid;
@@ -458,6 +459,7 @@ void Ctrl::PopUp(Ctrl *owner, bool savebits, bool activate, bool, bool)
 	if(activate && IsEnabled())
 		SetFocus();
 	if(top) top->owner = owner;
+	StateH(OPEN);
 }
 
 Ctrl *Ctrl::GetActiveCtrl()
@@ -786,6 +788,7 @@ void Ctrl::WndCreateCaret(const Rect& cr)
 void Ctrl::Invalidate(XWindow& xw, const Rect& _r)
 {
 	LTIMING("Invalidate");
+	LLOG("Invalidate " << UPP::Name(xw.ctrl) << " " << _r);
 	Vector<Rect> inv;
 	Rect r = _r;
 	int ra = r.Width() * r.Height();

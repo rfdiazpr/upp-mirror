@@ -9,7 +9,7 @@
 **    May you share freely, never taking more than you give.
 **
 *************************************************************************
-** This file contains routines used to translate between UTF-8, 
+** This file contains routines used to translate between UTF-8,
 ** UTF-16, UTF-16BE, and UTF-16LE.
 **
 ** $Id: utf.c,v 1.53 2007/08/07 17:04:59 drh Exp $
@@ -178,7 +178,7 @@ int sqlite3Utf8Read(
 /*
 ** If the TRANSLATE_TRACE macro is defined, the value of each Mem is
 ** printed on stderr on the way into and out of sqlite3VdbeMemTranslate().
-*/ 
+*/
 /* #define TRANSLATE_TRACE 1 */
 
 #ifndef SQLITE_OMIT_UTF16
@@ -209,7 +209,7 @@ int sqlite3VdbeMemTranslate(Mem *pMem, u8 desiredEnc){
   }
 #endif
 
-  /* If the translation is between UTF-16 little and big endian, then 
+  /* If the translation is between UTF-16 little and big endian, then
   ** all that is required is to swap the byte order. This case is handled
   ** differently from the others.
   */
@@ -289,13 +289,13 @@ int sqlite3VdbeMemTranslate(Mem *pMem, u8 desiredEnc){
     if( pMem->enc==SQLITE_UTF16LE ){
       /* UTF-16 Little-endian -> UTF-8 */
       while( zIn<zTerm ){
-        READ_UTF16LE(zIn, c); 
+        READ_UTF16LE(zIn, c);
         WRITE_UTF8(z, c);
       }
     }else{
       /* UTF-16 Little-endian -> UTF-8 */
       while( zIn<zTerm ){
-        READ_UTF16BE(zIn, c); 
+        READ_UTF16BE(zIn, c);
         WRITE_UTF8(z, c);
       }
     }
@@ -328,7 +328,7 @@ translate_out:
 }
 
 /*
-** This routine checks for a byte-order mark at the beginning of the 
+** This routine checks for a byte-order mark at the beginning of the
 ** UTF-16 string stored in *pMem. If one is present, it is removed and
 ** the encoding of the Mem adjusted. This routine does not do any
 ** byte-swapping, it just sets Mem.enc appropriately.
@@ -350,7 +350,7 @@ int sqlite3VdbeMemHandleBom(Mem *pMem){
       bom = SQLITE_UTF16LE;
     }
   }
-  
+
   if( bom ){
     /* This function is called as soon as a string is stored in a Mem*,
     ** from within sqlite3VdbeMemSetStr(). At that point it is not possible
@@ -367,7 +367,7 @@ int sqlite3VdbeMemHandleBom(Mem *pMem){
       rc = sqlite3VdbeMemSetStr(pMem, &z[2], pMem->n-2, bom, SQLITE_TRANSIENT);
       xDel(z);
     }else{
-      rc = sqlite3VdbeMemSetStr(pMem, &pMem->z[2], pMem->n-2, bom, 
+      rc = sqlite3VdbeMemSetStr(pMem, &pMem->z[2], pMem->n-2, bom,
           SQLITE_TRANSIENT);
     }
   }
@@ -379,7 +379,7 @@ int sqlite3VdbeMemHandleBom(Mem *pMem){
 ** pZ is a UTF-8 encoded unicode string. If nByte is less than zero,
 ** return the number of unicode characters in pZ up to (but not including)
 ** the first 0x00 byte. If nByte is not less than zero, return the
-** number of unicode characters in the first nByte of pZ (or up to 
+** number of unicode characters in the first nByte of pZ (or up to
 ** the first 0x00, whichever comes first).
 */
 int sqlite3Utf8CharLen(const char *zIn, int nByte){
@@ -432,7 +432,7 @@ int sqlite3Utf16ByteLen(const void *zIn, int nChar){
     /* Using an "if (SQLITE_UTF16NATIVE==SQLITE_UTF16BE)" construct here
     ** and in other parts of this file means that at one branch will
     ** not be covered by coverage testing on any single host. But coverage
-    ** will be complete if the tests are run on both a little-endian and 
+    ** will be complete if the tests are run on both a little-endian and
     ** big-endian host. Because both the UTF16NATIVE and SQLITE_UTF16BE
     ** macros are constant at compile time the compiler can determine
     ** which branch will be followed. It is therefore assumed that no runtime

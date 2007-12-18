@@ -43,7 +43,7 @@ Table *sqlite3SrcListLookup(Parse *pParse, SrcList *pSrc){
 */
 int sqlite3IsReadOnly(Parse *pParse, Table *pTab, int viewOk){
   if( (pTab->readOnly && (pParse->db->flags & SQLITE_WriteSchema)==0
-        && pParse->nested==0) 
+        && pParse->nested==0)
 #ifndef SQLITE_OMIT_VIRTUALTABLE
       || (pTab->pMod && pTab->pMod->pModule->xUpdate==0)
 #endif
@@ -162,7 +162,7 @@ void sqlite3DeleteFrom(
 
   /* Allocate a cursor used to store the old.* data for a trigger.
   */
-  if( triggers_exist ){ 
+  if( triggers_exist ){
     oldIdx = pParse->nTab++;
   }
 
@@ -238,7 +238,7 @@ void sqlite3DeleteFrom(
         sqlite3VdbeAddOp(v, OP_Clear, pIdx->tnum, iDb);
       }
     }
-  } 
+  }
   /* The usual case: There is a WHERE clause so we have to scan through
   ** the table and pick which records to delete.
   */
@@ -306,7 +306,7 @@ void sqlite3DeleteFrom(
 
       /* This is the beginning of the delete loop when there are no
       ** row triggers */
-      if( !triggers_exist ){ 
+      if( !triggers_exist ){
         addr = sqlite3VdbeAddOp(v, OP_FifoRead, 0, end);
       }
 
@@ -351,7 +351,7 @@ void sqlite3DeleteFrom(
   }
 
   /*
-  ** Return the number of rows that were deleted. If this routine is 
+  ** Return the number of rows that were deleted. If this routine is
   ** generating code because of a call to sqlite3NestedParse(), do not
   ** invoke the callback function.
   */

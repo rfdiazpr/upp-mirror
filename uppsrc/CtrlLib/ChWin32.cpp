@@ -294,23 +294,38 @@ void ChHostSkin()
 		CtrlsImg::Reset();
 		EditFieldIsThin_Write(1);
 
-		int efp = EP_EDITTEXT;
-		int efs = 1;
 		if(IsWinVista()) {
-			efp = 6;
-			efs = 2;
+			int efp = 6;
+			for(int i = 0; i < 4; i++) {
+				int efs = i + 1;
+				int ebsx = max(2, XpInt(XP_EDIT, efp, efs, 2403/*TMT_BORDERSIZE*/));
+				int ebsy = max(1, XpInt(XP_EDIT, efp, efs, 2403/*TMT_BORDERSIZE*/));
+				Image ee = XpImage(XP_EDIT, efp, efs, SColorFace(), Size(10 * ebsx, 10 * ebsx));
+				ImageBuffer eb(ee);
+				eb.SetHotSpot(Point(ebsx, ebsy));
+				ee = eb;
+				EditField::Style& s = EditField::StyleDefault().Write();
+				s.activeedge = true;
+				s.edge[i] = ee;
+			}
 		}
-		int ebsx = max(2, XpInt(XP_EDIT, efp, efs, 2403/*TMT_BORDERSIZE*/));
-		int ebsy = max(1, XpInt(XP_EDIT, efp, efs, 2403/*TMT_BORDERSIZE*/));
-		Image ee = XpImage(XP_EDIT, efp, efs, SColorFace(), Size(10 * ebsx, 10 * ebsx));
-		ImageBuffer eb(ee);
-		eb.SetHotSpot(Point(ebsx, ebsy));
-		ee = eb;
-		EditFieldEdge_Write(ee);
+		else {
+			int efp = EP_EDITTEXT;
+			int efs = 1;
+			int ebsx = max(2, XpInt(XP_EDIT, efp, efs, 2403/*TMT_BORDERSIZE*/));
+			int ebsy = max(1, XpInt(XP_EDIT, efp, efs, 2403/*TMT_BORDERSIZE*/));
+			Image ee = XpImage(XP_EDIT, efp, efs, SColorFace(), Size(10 * ebsx, 10 * ebsx));
+			ImageBuffer eb(ee);
+			eb.SetHotSpot(Point(ebsx, ebsy));
+			ee = eb;
+			EditField::Style& s = EditField::StyleDefault().Write();
+			s.activeedge = false;
+			s.edge[0] = ee;
+		}
 
 		int ebs = max(2, XpInt(XP_LISTVIEW, 0, 1, 2403/*TMT_BORDERSIZE*/));
-		ee = XpImage(XP_LISTVIEW, 0, 1, SColorFace(), Size(10 * ebs, 10 * ebs));
-		eb = ee;
+		Image ee = XpImage(XP_LISTVIEW, 0, 1, SColorFace(), Size(10 * ebs, 10 * ebs));
+		ImageBuffer eb = ee;
 		eb.SetHotSpot(Point(ebs, ebs));
 		ee = eb;
 		ViewEdge_Write(ee);
@@ -328,7 +343,12 @@ void ChHostSkin()
 			Win32Look(s.look, 4, XP_BUTTON, BP_PUSHBUTTON);
 			Win32Look(s.look[0], XP_BUTTON, BP_PUSHBUTTON, PBS_DEFAULTED);
 		}
-		Win32Look(ToolBar::StyleDefault().Write().look, 6, XP_TOOLBAR, 1, 1);
+		{
+			ToolBar::Style& s = ToolBar::StyleDefault().Write();
+			Win32Look(s.buttonstyle.look, 6, XP_TOOLBAR, 1, 1);
+			Win32Look(s.arealook, XP_REBAR, 0, 1);
+		}
+		Win32Look(StatusBar::StyleDefault().Write().look, XP_STATUS, 0, 1);
 		{
 			ScrollBar::Style& s = ScrollBar::StyleDefault().Write();
 			Win32Look(s.hupper, 4, XP_SCROLLBAR, SBP_LOWERTRACKHORZ);
@@ -358,7 +378,7 @@ void ChHostSkin()
 			MultiButton::Style& s = MultiButton::StyleDefault().Write();
 			s.usetrivial = true;
 			if(IsWinVista()) {
-				s.edge = s.sqedge = Null;
+				s.edge = Null;
 				Win32Look(s.look, 4, XP_COMBOBOX, 5);
 				s.trivialborder = s.border = 0;
 				s.sep1 = XpColor(XP_COMBOBOX, 5, 1, 3822/*TMT_BORDERCOLORHINT*/);
@@ -370,8 +390,9 @@ void ChHostSkin()
 						s.left[i] = Unglyph(XpImage(XP_COMBOBOX, 7, i + 1, Null, Size(20, 20)));
 						s.right[i] = Unglyph(XpImage(XP_COMBOBOX, 6, i + 1, Null, Size(20, 20)));
 						s.lmiddle[i] = s.rmiddle[i] = HorzBlend(s.right[i], s.left[i], 6, 14);
-						Win32Look(s.look[i], XP_COMBOBOX, 4, 2);
+						Win32Look(s.look[i], XP_COMBOBOX, 4, i + 1);
 					}
+					s.activeedge = true;
 					s.sep1 = Null;
 				}
 			}
@@ -409,10 +430,13 @@ void ChHostSkin()
 			Win32Look(s.hchunk, XP_PROGRESS, PP_CHUNK);
 			Win32Look(s.vchunk, XP_PROGRESS, PP_CHUNKVERT);
 		}
-		if(IsWinVista()) {
+		{
 			MenuBar::Style& s = MenuBar::StyleDefault().Write();
-			s.itemtext = XpColor(XP_MENU, 14 /*MENU_POPUPITEM*/, 2 /*HOT*/, 3803/*TMT_TEXTCOLOR*/);
-			Win32Look(s.item, XP_MENU, 14 /*MENU_POPUPITEM*/, 2 /*HOT*/);
+			if(IsWinVista()) {
+				s.itemtext = XpColor(XP_MENU, 14 /*MENU_POPUPITEM*/, 2 /*HOT*/, 3803/*TMT_TEXTCOLOR*/);
+				Win32Look(s.item, XP_MENU, 14 /*MENU_POPUPITEM*/, 2 /*HOT*/);
+			}
+			Win32Look(s.arealook, XP_REBAR, 0, 1);
 		}
 
 		XpElement e;
@@ -490,7 +514,6 @@ void ChHostSkin()
 
 			m = Unglyph(XpImage(XP_SCROLLBAR, SBP_ARROWBTN, i + ABS_UPNORMAL, paper));
 			Size msz = m.GetSize();
-			DUMP(m.GetHotSpot());
 
 			Button::StyleScroll().Write().look[i] =
 			      VertBlend(m, Unglyph(XpImage(XP_SCROLLBAR, SBP_ARROWBTN, i + ABS_DOWNNORMAL,

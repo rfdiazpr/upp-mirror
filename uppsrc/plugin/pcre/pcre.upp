@@ -35,4 +35,3 @@ file
 	lib\ucp.h,
 	lib\ucpinternal.h,
 	lib\ucptable.h;
-

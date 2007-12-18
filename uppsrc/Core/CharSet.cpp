@@ -924,9 +924,9 @@ static void sInit()
 	AddCharSetE("windows-1257",CHRTAB_WIN1257,    CHARSET_WIN1257);
 	AddCharSetE("windows-1258",CHRTAB_WIN1258,    CHARSET_WIN1258);
 	AddCharSetE("koi8-r",      CHRTAB_KOI8_R,     CHARSET_WIN1251);
-	AddCharSetE("cp850",       CHRTAB_CP850,      CHARSET_WIN1252);
 	AddCharSetE("cp852",       CHRTAB_CP852,      CHARSET_WIN1250);
 	AddCharSetE("mjk",         CHRTAB_MJK,        CHARSET_WIN1250);
+	AddCharSetE("cp850",       CHRTAB_CP850,      CHARSET_WIN1252);
 #else
 	AddCharSetE("NONE"     ,   CHRTAB_ISO8859_1,   CHARSET_ISO8859_1);
 	AddCharSetE("iso8859-1",   CHRTAB_ISO8859_1,   CHARSET_ISO8859_1);
@@ -953,9 +953,9 @@ static void sInit()
 	AddCharSetE("windows-1257",CHRTAB_WIN1257,     CHARSET_ISO8859_13);
 	AddCharSetE("windows-1258",CHRTAB_WIN1258,     CHARSET_ISO8859_9);
 	AddCharSetE("koi8-r",      CHRTAB_KOI8_R,      CHARSET_ISO8859_5);
-	AddCharSetE("cp850",       CHRTAB_CP850,       CHARSET_ISO8859_1);
 	AddCharSetE("cp852",       CHRTAB_CP852,       CHARSET_ISO8859_2);
 	AddCharSetE("mjk",         CHRTAB_MJK,         CHARSET_ISO8859_2);
+	AddCharSetE("cp850",       CHRTAB_CP850,       CHARSET_ISO8859_1);
 #endif
 }
 

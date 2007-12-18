@@ -135,7 +135,7 @@ void sqlite3Dequote(char *z){
 }
 
 /* An array to map all upper-case characters into their corresponding
-** lower-case character. 
+** lower-case character.
 */
 const unsigned char sqlite3UpperToLower[] = {
 #ifdef SQLITE_ASCII
@@ -496,7 +496,7 @@ int sqlite3PutVarint(unsigned char *p, u64 v){
       v >>= 7;
     }
     return 9;
-  }    
+  }
   n = 0;
   do{
     buf[n++] = (v & 0x7f) | 0x80;
@@ -658,10 +658,10 @@ void *sqlite3HexToBlob(const char *z){
 ** open and is not being used by another thread.  By changing the value
 ** to SQLITE_MAGIC_BUSY we indicate that the connection is in use.
 ** sqlite3SafetyOff() below will change the value back to SQLITE_MAGIC_OPEN
-** when the API exits. 
+** when the API exits.
 **
 ** This routine is a attempt to detect if two threads use the
-** same sqlite* pointer at the same time.  There is a race 
+** same sqlite* pointer at the same time.  There is a race
 ** condition so it is possible that the error is not detected.
 ** But usually the problem will be seen.  The result will be an
 ** error which can be used to debug the application that is
@@ -714,7 +714,7 @@ ThreadData *sqlite3ThreadData(){
 /*
 ** Return a pointer to the ThreadData associated with the calling thread.
 ** If no ThreadData has been allocated to this thread yet, return a pointer
-** to a substitute ThreadData structure that is all zeros. 
+** to a substitute ThreadData structure that is all zeros.
 */
 const ThreadData *sqlite3ThreadDataReadOnly(){
   static const ThreadData zeroData = {0};  /* Initializer to silence warnings
@@ -725,7 +725,7 @@ const ThreadData *sqlite3ThreadDataReadOnly(){
 
 /*
 ** Check to see if the ThreadData for this thread is all zero.  If it
-** is, then deallocate it. 
+** is, then deallocate it.
 */
 void sqlite3ReleaseThreadData(){
   sqlite3OsThreadSpecificData(-1);

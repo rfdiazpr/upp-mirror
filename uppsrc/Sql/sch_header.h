@@ -11,7 +11,6 @@ public:\
 	static SqlSet             Of(SqlId table); \
 	void FieldLayoutRaw(FieldOperator& f, const String& prefix = String()); \
 	void FieldLayout(FieldOperator& f); \
-	operator const SqlSet&() const { return ColumnSet(); } \
 	operator Fields()              { return callback(this, &S_##Table::FieldLayout); } \
 	S_##Table();
 

@@ -5,7 +5,7 @@
 
 NAMESPACE_UPP
 
-#define POLY_TIMING(n) RTIMING(n)
+#define POLY_TIMING(n) // RTIMING(n)
 #define POLY_LOGGING   0 // 1 = on, 0 = off
 
 static bool ContainsPoints(const Point *poly, int count, Point P)

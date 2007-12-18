@@ -21,24 +21,6 @@ unsigned stou(const char *s, void *endptr, unsigned base)
 	return value;
 }
 
-uint64 stou64(const char *s, void *endptr, unsigned base)
-{
-	ASSERT(base >= 2 && base <= 36);
-	unsigned digit = ctoi(*s);
-	if(digit >= base)
-	{ // error
-		if(endptr)
-			*(const char **)endptr = s;
-		return ~0;
-	}
-	uint64 value = digit;
-	while((digit = ctoi(*++s)) < base)
-		value = value * base + digit;
-	if(endptr)
-		*(const char **)endptr = s;
-	return value;
-}
-
 unsigned stou(const wchar *s, void *endptr, unsigned base)
 {
 	ASSERT(base >= 2 && base <= 36);
@@ -54,6 +36,25 @@ unsigned stou(const wchar *s, void *endptr, unsigned base)
 		value = value * base + digit;
 	if(endptr)
 		*(const wchar **)endptr = s;
+	return value;
+}
+
+
+uint64 stou64(const char *s, void *endptr, unsigned base)
+{
+	ASSERT(base >= 2 && base <= 36);
+	unsigned digit = ctoi(*s);
+	if(digit >= base)
+	{ // error
+		if(endptr)
+			*(const char **)endptr = s;
+		return ~0;
+	}
+	uint64 value = digit;
+	while((digit = ctoi(*++s)) < base)
+		value = value * base + digit;
+	if(endptr)
+		*(const char **)endptr = s;
 	return value;
 }
 
@@ -83,6 +84,21 @@ int ScanInt(const wchar *ptr, const wchar **endptr, int base)
 	unsigned u = stou(s, endptr, base);
 	if(~u)
 		return (minus ? -(int)u : (int)u);
+	else
+		return Null;
+}
+
+int64 ScanInt64(const char *ptr, const char **endptr, int base)
+{
+	const char *s = ptr;
+	bool minus = false;
+	while(*s && *s <= ' ')
+		s++;
+	if(*s == '+' || *s == '-')
+		minus = (*s++ == '-');
+	uint64 u = stou64(s, endptr, base);
+	if(~u)
+		return (minus ? -(int64)u : (int64)u);
 	else
 		return Null;
 }
@@ -182,7 +198,7 @@ double ScanDouble(const wchar *p, const wchar **endptr, bool accept_comma)
 Value StrIntValue(const char *s)
 {
 	if(s && *s) {
-		int q = ScanInt(s);
+		int64 q = ScanInt64(s);
 		return IsNull(q) ? ErrorValue(t_("Invalid number !")) : Value(q);
 	}
 	return Null;
@@ -200,6 +216,7 @@ Value StrDblValue(const char *s)
 Value Scan(dword qtype, const String& text) {
 	Date date;
 	switch(qtype) {
+	case INT64_V:
 	case INT_V:
 	case BOOL_V:
 		return StrIntValue(text);
@@ -260,6 +277,8 @@ Convert::~Convert() {}
 Value  Convert::Format(const Value& q) const {
 	if(IsVoid(q) || q.IsNull()) return String();
 	switch(q.GetType()) {
+	case INT64_V:
+		return IntStr64((int64)q);
 	case INT_V:
 	case BOOL_V:
 		return IntStr((int)q);
@@ -298,13 +317,18 @@ Value NotNullError() {
 ConvertInt::ConvertInt(int minval, int maxval, bool notnull)
 : minval(minval), maxval(maxval), notnull(notnull) {}
 ConvertInt::~ConvertInt() {}
+
+ConvertInt64::ConvertInt64(int64 minval, int64 maxval, bool notnull) {
+	MinMax(minval, maxval); NotNull(notnull);
+}
+ConvertInt64::~ConvertInt64() {}
 #endif
 
 Value ConvertInt::Scan(const Value& text) const {
 	Value v = UPP::Scan(INT_V, text);
 	if(IsError(v)) return v;
 	if(IsNull(v)) return notnull ? NotNullError() : v;
-	int m = v;
+	int64 m = v;
 	if(m >= minval && m <= maxval) return v;
 	return ErrorValue(UPP::Format(t_("Number must be between %d and %d."), minval, maxval));
 }

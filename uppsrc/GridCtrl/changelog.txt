@@ -213,12 +213,12 @@
 	- added GoTo(int r, int c)
 	- fixed SetCursor(Point). Point was not relative.
 	- fixed searching. If search_hide was disabled after matching 0 rows and then peressing esc or backspace grid displayed nothing
-	- fixed selection removing in remove hides mode (mostly crashes, for one row it worked ok). 
+	- fixed selection removing in remove hides mode (mostly crashes, for one row it worked ok).
 	- fixed row inserting (after). Previous cursor position didn't disapear (regression)
 	+ SetImage() works for row now
-	
+
 	after 711-dev1
-	
+
 	- fixed Remove0 - it didn't clear cursor position if cnt > 1
 	- fixed Searching - now the searching flag is respected in immediate searching
 	+ AddSeparator(Color c) - inserts 3 pixel height separator
@@ -230,10 +230,3 @@
 	+ fixed some regressions with painting header
 	+ added WhenCursor callback and CancelCursor() to cancel changing cursor position from body
 	  of this callback.
-	  
-	
-	
-	
-	
-	
-	

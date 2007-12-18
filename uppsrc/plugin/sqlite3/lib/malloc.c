@@ -44,7 +44,7 @@
 **     sqlite3OsFree()
 **     sqlite3OsAllocationSize()
 **
-** Functions sqlite3MallocRaw() and sqlite3Realloc() may invoke 
+** Functions sqlite3MallocRaw() and sqlite3Realloc() may invoke
 ** sqlite3_release_memory() if a call to sqlite3OsMalloc() or
 ** sqlite3OsRealloc() fails (or if the soft-heap-limit for the thread is
 ** exceeded). Function sqlite3Malloc() usually invokes
@@ -52,9 +52,9 @@
 **
 ** MALLOC TEST WRAPPER ARCHITECTURE
 **
-** The test wrapper provides extra test facilities to ensure the library 
+** The test wrapper provides extra test facilities to ensure the library
 ** does not leak memory and handles the failure of the underlying OS level
-** allocation system correctly. It is only present if the library is 
+** allocation system correctly. It is only present if the library is
 ** compiled with the SQLITE_MEMDEBUG macro set.
 **
 **     * Guardposts to detect overwrites.
@@ -86,7 +86,7 @@ int sqlite3_release_memory(int n){
 #else
 /* If SQLITE_ENABLE_MEMORY_MANAGEMENT is not defined, then define a version
 ** of sqlite3_release_memory() to be used by other code in this file.
-** This is done for no better reason than to reduce the number of 
+** This is done for no better reason than to reduce the number of
 ** pre-processor #ifndef statements.
 */
 #define sqlite3_release_memory(x) 0    /* 0 == no memory freed */
@@ -98,13 +98,13 @@ int sqlite3_release_memory(int n){
 **
 ** Memory debugging is turned on by defining the SQLITE_MEMDEBUG macro.
 **
-** SQLITE_MEMDEBUG==1    -> Fence-posting only (thread safe) 
+** SQLITE_MEMDEBUG==1    -> Fence-posting only (thread safe)
 ** SQLITE_MEMDEBUG==2    -> Fence-posting + linked list of allocations (not ts)
 ** SQLITE_MEMDEBUG==3    -> Above + backtraces (not thread safe, req. glibc)
 */
 
 /* Figure out whether or not to store backtrace() information for each malloc.
-** The backtrace() function is only used if SQLITE_MEMDEBUG is set to 2 or 
+** The backtrace() function is only used if SQLITE_MEMDEBUG is set to 2 or
 ** greater and glibc is in use. If we don't want to use backtrace(), then just
 ** define it as an empty macro and set the amount of space reserved to 0.
 */
@@ -151,7 +151,7 @@ const char *sqlite3_malloc_id = 0;
 **        <32-bit line number>
 **        <TESTALLOC_FILESIZE bytes containing null-terminated file name>
 **        <TESTALLOC_STACKSIZE bytes of backtrace() output>
-*/ 
+*/
 
 #define TESTALLOC_OFFSET_GUARD1(p)    (sizeof(void *) * 2)
 #define TESTALLOC_OFFSET_DATA(p) ( \
@@ -186,7 +186,7 @@ const char *sqlite3_malloc_id = 0;
 /*
 ** For keeping track of the number of mallocs and frees.   This
 ** is used to check for memory leaks.  The iMallocFail and iMallocReset
-** values are used to simulate malloc() failures during testing in 
+** values are used to simulate malloc() failures during testing in
 ** order to verify that the library correctly handles an out-of-memory
 ** condition.
 */
@@ -255,7 +255,7 @@ static void checkGuards(u32 *p)
 
 /*
 ** The argument is a pointer returned by sqlite3OsMalloc() or Realloc(). The
-** first and last (TESTALLOC_NGUARD*4) bytes are set to known values for use as 
+** first and last (TESTALLOC_NGUARD*4) bytes are set to known values for use as
 ** guard-posts.
 */
 static void applyGuards(u32 *p)
@@ -381,7 +381,7 @@ static void relinkAlloc(void *p)
 
 /*
 ** This function sets the result of the Tcl interpreter passed as an argument
-** to a list containing an entry for each currently outstanding call made to 
+** to a list containing an entry for each currently outstanding call made to
 ** sqliteMalloc and friends by the current thread. Each list entry is itself a
 ** list, consisting of the following (in order):
 **
@@ -391,7 +391,7 @@ static void relinkAlloc(void *p)
 **     * The value of the sqlite3_malloc_id variable ...
 **     * The output of backtrace() (if available) ...
 **
-** Todo: We could have a version of this function that outputs to stdout, 
+** Todo: We could have a version of this function that outputs to stdout,
 ** to debug memory leaks when Tcl is not available.
 */
 #if defined(TCLSH) && defined(SQLITE_DEBUG) && SQLITE_MEMDEBUG>1
@@ -447,7 +447,7 @@ int sqlite3OutstandingMallocs(Tcl_Interp *interp){
 static void * OSMALLOC(int n){
   sqlite3OsEnterMutex();
 #ifdef SQLITE_ENABLE_MEMORY_MANAGEMENT
-  sqlite3_nMaxAlloc = 
+  sqlite3_nMaxAlloc =
       MAX(sqlite3_nMaxAlloc, sqlite3ThreadDataReadOnly()->nAlloc);
 #endif
   assert( !sqlite3_mallocDisallowed );
@@ -494,7 +494,7 @@ static void OSFREE(void *pFree){
 */
 static void * OSREALLOC(void *pRealloc, int n){
 #ifdef SQLITE_ENABLE_MEMORY_MANAGEMENT
-  sqlite3_nMaxAlloc = 
+  sqlite3_nMaxAlloc =
       MAX(sqlite3_nMaxAlloc, sqlite3ThreadDataReadOnly()->nAlloc);
 #endif
   assert( !sqlite3_mallocDisallowed );
@@ -514,7 +514,7 @@ static void OSMALLOC_FAILED(){
 }
 
 #else
-/* Define macros to call the sqlite3OsXXX interface directly if 
+/* Define macros to call the sqlite3OsXXX interface directly if
 ** the SQLITE_MEMDEBUG macro is not defined.
 */
 #define OSMALLOC(x)        sqlite3OsMalloc(x)
@@ -541,7 +541,7 @@ static void OSMALLOC_FAILED(){
 **
 ** If SQLITE_ENABLE_MEMORY_MANAGEMENT is not defined, this routine is
 ** a no-op
-*/ 
+*/
 #ifdef SQLITE_ENABLE_MEMORY_MANAGEMENT
 static int enforceSoftLimit(int n){
   ThreadData *pTsd = sqlite3ThreadData();
@@ -583,7 +583,7 @@ static void updateMemoryUsedCount(int n){
 
 /*
 ** Allocate and return N bytes of uninitialised memory by calling
-** sqlite3OsMalloc(). If the Malloc() call fails, attempt to free memory 
+** sqlite3OsMalloc(). If the Malloc() call fails, attempt to free memory
 ** by calling sqlite3_release_memory().
 */
 void *sqlite3MallocRaw(int n, int doMemManage){
@@ -631,7 +631,7 @@ void *sqlite3Realloc(void *p, int n){
 }
 
 /*
-** Free the memory pointed to by p. p must be either a NULL pointer or a 
+** Free the memory pointed to by p. p must be either a NULL pointer or a
 ** value returned by a previous call to sqlite3Malloc() or sqlite3Realloc().
 */
 void sqlite3FreeX(void *p){
@@ -653,9 +653,9 @@ void *sqlite3MallocX(int n){
 ** sqlite3Malloc
 ** sqlite3ReallocOrFree
 **
-** These two are implemented as wrappers around sqlite3MallocRaw(), 
+** These two are implemented as wrappers around sqlite3MallocRaw(),
 ** sqlite3Realloc() and sqlite3Free().
-*/ 
+*/
 void *sqlite3Malloc(int n, int doMemManage){
   void *p = sqlite3MallocRaw(n, doMemManage);
   if( p ){
@@ -675,10 +675,10 @@ void *sqlite3ReallocOrFree(void *p, int n){
 /*
 ** sqlite3ThreadSafeMalloc() and sqlite3ThreadSafeFree() are used in those
 ** rare scenarios where sqlite may allocate memory in one thread and free
-** it in another. They are exactly the same as sqlite3Malloc() and 
+** it in another. They are exactly the same as sqlite3Malloc() and
 ** sqlite3Free() except that:
 **
-**   * The allocated memory is not included in any calculations with 
+**   * The allocated memory is not included in any calculations with
 **     respect to the soft-heap-limit, and
 **
 **   * sqlite3ThreadSafeMalloc() must be matched with ThreadSafeFree(),
@@ -700,13 +700,13 @@ void sqlite3ThreadSafeFree(void *p){
 
 
 /*
-** Return the number of bytes allocated at location p. p must be either 
-** a NULL pointer (in which case 0 is returned) or a pointer returned by 
+** Return the number of bytes allocated at location p. p must be either
+** a NULL pointer (in which case 0 is returned) or a pointer returned by
 ** sqlite3Malloc(), sqlite3Realloc() or sqlite3ReallocOrFree().
 **
-** The number of bytes allocated does not include any overhead inserted by 
+** The number of bytes allocated does not include any overhead inserted by
 ** any malloc() wrapper functions that may be called. So the value returned
-** is the number of bytes that were available to SQLite using pointer p, 
+** is the number of bytes that were available to SQLite using pointer p,
 ** regardless of how much memory was actually allocated.
 */
 #ifdef SQLITE_ENABLE_MEMORY_MANAGEMENT
@@ -716,9 +716,9 @@ int sqlite3AllocSize(void *p){
 #endif
 
 /*
-** Make a copy of a string in memory obtained from sqliteMalloc(). These 
+** Make a copy of a string in memory obtained from sqliteMalloc(). These
 ** functions call sqlite3MallocRaw() directly instead of sqliteMalloc(). This
-** is because when memory debugging is turned on, these two functions are 
+** is because when memory debugging is turned on, these two functions are
 ** called via macros that record the current file and line number in the
 ** ThreadData structure.
 */
@@ -746,7 +746,7 @@ char *sqlite3StrNDup(const char *z, int n){
 ** Create a string from the 2nd and subsequent arguments (up to the
 ** first NULL argument), store the string in memory obtained from
 ** sqliteMalloc() and make the pointer indicated by the 1st argument
-** point to that string.  The 1st argument must either be NULL or 
+** point to that string.  The 1st argument must either be NULL or
 ** point to memory obtained from sqliteMalloc().
 */
 void sqlite3SetString(char **pz, ...){
@@ -780,13 +780,13 @@ void sqlite3SetString(char **pz, ...){
 
 
 /*
-** This function must be called before exiting any API function (i.e. 
+** This function must be called before exiting any API function (i.e.
 ** returning control to the user) that has called sqlite3Malloc or
 ** sqlite3Realloc.
 **
 ** The returned value is normally a copy of the second argument to this
 ** function. However, if a malloc() failure has occured since the previous
-** invocation SQLITE_NOMEM is returned instead. 
+** invocation SQLITE_NOMEM is returned instead.
 **
 ** If the first argument, db, is not NULL and a malloc() error has occured,
 ** then the connection error-code (the value returned by sqlite3_errcode())
@@ -803,7 +803,7 @@ int sqlite3ApiExit(sqlite3* db, int rc){
   return rc & (db ? db->errMask : 0xff);
 }
 
-/* 
+/*
 ** Set the "malloc has failed" condition to true for this thread.
 */
 void sqlite3FailedMalloc(){

@@ -38,7 +38,7 @@ TopicEditor::TopicEditor()
 	allfonts = false;
 
 	editor.WhenLabel = THISBACK(Label);
-
+	
 	LoadFromGlobal(*this, "topic-editor");
 }
 

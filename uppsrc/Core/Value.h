@@ -236,16 +236,16 @@ struct FnValueOrder : ValueOrder {
 };
 
 template <class T>
-inline dword ValueTypeNo(const T&)            { return StaticTypeNo<T>() + 0x8000000;; }
+inline dword ValueTypeNo(const T&)       { return StaticTypeNo<T>() + 0x8000000;; }
 
-template <class T>
-bool IsType(const Value& x, T* = 0)           { return ValueTypeNo(*(T *)NULL) == x.GetType(); }
-
-template <class T>
-inline bool Value::Is() const
-{
-	return IsType<T>(*this);
-}
+template<> inline dword ValueTypeNo(const int&)     { return INT_V; }
+template<> inline dword ValueTypeNo(const int64&)   { return INT64_V; }
+template<> inline dword ValueTypeNo(const double&)  { return DOUBLE_V; }
+template<> inline dword ValueTypeNo(const bool&)    { return BOOL_V; }
+template<> inline dword ValueTypeNo(const String&)  { return STRING_V; }
+template<> inline dword ValueTypeNo(const WString&) { return WSTRING_V; }
+template<> inline dword ValueTypeNo(const Date&)    { return DATE_V; }
+template<> inline dword ValueTypeNo(const Time&)    { return TIME_V; }
 
 template <class T, dword type, class B = EmptyClass>
 class AssignValueTypeNo : public B {
@@ -255,14 +255,14 @@ public:
 	void operator=(const AssignValueTypeNo&) {} // MSC 6.0 empty base class bug fix
 };
 
-inline dword ValueTypeNo(const int&)     { return INT_V; }
-inline dword ValueTypeNo(const int64&)   { return INT64_V; }
-inline dword ValueTypeNo(const double&)  { return DOUBLE_V; }
-inline dword ValueTypeNo(const bool&)    { return BOOL_V; }
-inline dword ValueTypeNo(const String&)  { return STRING_V; }
-inline dword ValueTypeNo(const WString&) { return WSTRING_V; }
-inline dword ValueTypeNo(const Date&)    { return DATE_V; }
-inline dword ValueTypeNo(const Time&)    { return TIME_V; }
+template <class T>
+bool IsType(const Value& x, T* = 0)           { return ValueTypeNo(*(T *)NULL) == x.GetType(); }
+
+template <class T>
+inline bool Value::Is() const
+{
+	return IsType<T>(*this);
+}
 
 template <class T>
 class RawValueRep : public Value::Void {

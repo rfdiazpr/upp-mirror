@@ -10,3 +10,4 @@ file
 	BmpWrite.cpp,
 	Icon.cpp,
 	BmpReg.icpp;
+

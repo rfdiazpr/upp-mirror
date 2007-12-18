@@ -224,6 +224,7 @@ SqlVal ConvertCharset(const SqlVal& exp, const SqlVal& charset);
 SqlVal ConvertAscii(const SqlVal& exp);
 SqlVal Upper(const SqlVal& exp);
 SqlVal Lower(const SqlVal& exp);
+SqlVal Length(const SqlVal& exp);
 SqlVal UpperAscii(const SqlVal& exp);
 SqlVal Substr(const SqlVal& a, const SqlVal& b);
 SqlVal Substr(const SqlVal& a, const SqlVal& b, const SqlVal& c);
@@ -456,6 +457,7 @@ public:
 	operator SqlSet() const                           { return SqlSet(text, SqlSet::SETOP); }
 	operator SqlStatement() const                     { return SqlStatement(text); }
 
+	SqlSelect(Fields f);
 	SqlSelect(const SqlSet& s)                        { text = ~s; }
 	SqlSelect()                                       {}
 
@@ -479,6 +481,7 @@ SqlSelect operator&(const SqlSelect& s1, const SqlSelect& s2);
 SqlSelect operator-(const SqlSelect& s1, const SqlSelect& s2);
 
 inline SqlSelect Select(const SqlSet& set)  { return SqlSelect(set); }
+inline SqlSelect Select(Fields f)           { return SqlSelect(f); }
 
 #define E__QSelect(I)   SqlSelect Select(__List##I(E__SqlVal));
 __Expand(E__QSelect);

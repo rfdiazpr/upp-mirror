@@ -46,11 +46,13 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 		int value_col;
 		Vector<int> value_cols;
 		PopUpGrid list;
-		MultiButton drop;
+		MultiButtonFrame drop;
 
 	private:
 		int rowid;
+		int trowid;
 		Value value;
+		bool change;
 
 		int list_width;
 		int list_height;
@@ -169,11 +171,16 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 
 		bool IsSelected();
 		bool IsEmpty();
+		bool IsChange();
+		bool IsInit();
 
-		int Find(const Value& v, int col = 0);
-		int Find(const Value& v, Id id);
+		int Find(const Value& v, int col = 0, int opt = 0);
+		int Find(const Value& v, Id id, int opt = 0);
+		int GetCurrentRow() const;
 
 		void CancelUpdate();
+
+		GridCtrl& GetList() { return list; }
 
 		virtual Value Format(const Value& q) const;
 

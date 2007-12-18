@@ -395,7 +395,6 @@ Point Ctrl::GetMouseViewPos() const
 }
 
 void    Ctrl::DoCursorShape() {
-//	DLOG("DoCursorShape " << UPP::Name(mouseCtrl));
 	if(mouseCtrl) {
 		Image m = CursorOverride();
 		if(IsNull(m))

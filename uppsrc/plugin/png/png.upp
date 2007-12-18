@@ -60,3 +60,4 @@ file
 	pnglib.c,
 	pngupp.cpp,
 	pngreg.icpp;
+

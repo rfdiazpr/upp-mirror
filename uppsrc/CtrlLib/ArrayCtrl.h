@@ -66,7 +66,7 @@ public:
 		Any                   cache;
 		const ValueOrder     *order;
 		int                 (*cmp)(const Value& a, const Value& b);
-
+		
 
 		void   InvalidateCache(int i);
 		void   InsertCache(int i, int n);
@@ -96,7 +96,7 @@ public:
 		Column& Cache();
 		Column& Accel(int (*filter)(int))          { accel = filter; return *this; }
 		Column& Accel()                            { return Accel(CharFilterDefaultToUpperAscii); }
-
+		
 		Column& Sorting(const ValueOrder& o);
 		Column& Sorting(int (*c)(const Value& a, const Value& b));
 		Column& Sorting();
@@ -461,9 +461,9 @@ public:
 	void       Sort(Id id, int (*compare)(const Value& v1, const Value& v2)
 	                = StdValueCompare);
 	void       Sort()                                  { Sort(0); }
-
+	
 	void       ColumnSort(int column, const ValueOrder& order);
-
+	
 	void       SetSortColumn(int ii, bool descending = false);
 	void       ToggleSortColumn(int ii);
 	void       DoColumnSort();

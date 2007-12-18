@@ -73,6 +73,8 @@ public:
 
 	void          SetIndex(int i)                 { SetData(GetKey(i)); }
 	int           GetIndex() const                { return FindKey(value); }
+	void          GoBegin()                       { if(GetCount()) SetIndex(0); }
+	void          GoEnd()                         { if(GetCount()) SetIndex(GetCount() - 1); }
 
 	bool          HasKey(const Value& k) const    { return key.Find(k) >= 0; }
 	int           FindKey(const Value& k) const   { return key.Find(k); }

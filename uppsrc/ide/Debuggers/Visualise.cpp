@@ -91,7 +91,7 @@ void Pdb::Visualise(Visual& result, Pdb::Val val, int expandptr, int slen, int m
 		RESULTINT(SINT8, int64)
 		case DBL:
 		case FLT:
-			result.Cat(Format("%.10g", val.fval), Red); break;
+			result.Cat(FormatDouble(val.fval, 20), Red); break;
 		case PFUNC: {
 			result.Cat(FormatIntHex(val.address), Red);
 			FnInfo fi = GetFnInfo(val.address);

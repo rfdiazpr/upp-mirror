@@ -307,7 +307,7 @@ void GridDisplay::DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int al
 		bool endtext  = *p == '\0';
 
 		const wchar * pp = p;
-		
+
 		bool textbreak = false;
 		if(nextline || endtext)
 		{

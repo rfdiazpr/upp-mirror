@@ -9,28 +9,34 @@ void BarPane::LeftDown(Point pt, dword keyflags)
 	WhenLeftClick();
 }
 
-void BarPane::Paint(Draw& w)
+void BarPane::PaintBar(Draw& w, Color shadow, Color light, const Value& pane)
 {
 	Size sz = GetSize();
-	Ctrl *q = GetParent();
-	if(!q || !q->IsTransparent()) {
-		BarCtrl *p = dynamic_cast<BarCtrl *>(q);
-		Value v;
-		if(p) v = p->GetBackground();
-		if(IsNull(v))
-			w.DrawRect(sz, menu ? (GUI_GlobalStyle() >= GUISTYLE_XP ? SColorMenu : SColorFace) : SColorFace);
-		else
-			ChPaint(w, sz, v);
-	}
+	Rect r = GetSize();
 	for(int i = 0; i < breakpos.GetCount(); i++)
 		if(horz) {
-			w.DrawRect(0, breakpos[i], sz.cx, 1, SColorShadow);
-			w.DrawRect(0, breakpos[i] + 1, sz.cx, 1, SColorLight);
+			int y = breakpos[i];
+			Rect rr = r;
+			rr.bottom = y;
+			ChPaint(w, rr, pane);
+			if(!IsNull(shadow))
+				w.DrawRect(0, y++, sz.cx, 1, shadow);
+			if(!IsNull(light))
+				w.DrawRect(0, y++, sz.cx, 1, light);
+			r.top = y;
 		}
 		else {
-			w.DrawRect(breakpos[i], 0, 1, sz.cy, SColorShadow);
-			w.DrawRect(breakpos[i] + 1, 0, 1, sz.cy, SColorLight);
+			int x = breakpos[i];
+			Rect rr = r;
+			rr.right = x;
+			ChPaint(w, rr, pane);
+			if(!IsNull(shadow))
+				w.DrawRect(x++, 0, 1, sz.cy, shadow);
+			if(!IsNull(light))
+				w.DrawRect(x++, 0, 1, sz.cy, light);
+			r.left = x;
 		}
+	ChPaint(w, r, pane);
 }
 
 Size BarPane::Repos(bool _horz, int maxsize)
@@ -217,6 +223,20 @@ Bar::Item& Bar::Item::Description(const char *desc) { return *this; }
 Bar::Item& Bar::Item::Check(bool check)             { return *this; }
 Bar::Item& Bar::Item::Radio(bool check)             { return *this; }
 void       Bar::Item::FinalSync() {}
+
+Bar::Item& Bar::Item::Label(const char *text)
+{
+	ToolButton *b = dynamic_cast<ToolButton *>(this);
+	if(b) b->Label(text, ToolButton::BOTTOMLABEL);
+	return *this;
+}
+
+Bar::Item& Bar::Item::RightLabel(const char *text)
+{
+	ToolButton *b = dynamic_cast<ToolButton *>(this);
+	if(b) b->Label(text, ToolButton::RIGHTLABEL);
+	return *this;
+}
 
 Bar::Item& Bar::Item::Key(KeyInfo& (*key)()) {
 	KeyInfo& k = (*key)();
@@ -586,6 +606,11 @@ void BarCtrl::Layout()
 		else
 			pane.Repos(true, dowrap ? GetSize().cx : INT_MAX);
 	}
+}
+
+void BarCtrl::PaintBar(Draw& w, Color shadow, Color light, const Value& p)
+{
+	pane.PaintBar(w, shadow, light, p);
 }
 
 BarCtrl::BarCtrl() {

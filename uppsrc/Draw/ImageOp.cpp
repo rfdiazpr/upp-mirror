@@ -547,6 +547,24 @@ Image MirrorHorz(const Image& img)
 	return ib;
 }
 
+Image MirrorVert(const Image& img)
+{
+	Size sz = img.GetSize();
+	Image h = img;
+	ImageBuffer ib(h);
+
+	for(int y = 0; y < sz.cy / 2; y++) {
+		RGBA *b = ib[y];
+		RGBA *e = ib[sz.cy - y - 1];
+		for(int x = 0; x < sz.cx; x++) {
+			Swap(*b, *e);
+			b++;
+			e++;
+		}
+	}
+	return ib;
+}
+
 Image Magnify(const Image& img, int nx, int ny)
 {
 	if(nx == 1 && ny == 1)

@@ -76,6 +76,6 @@ file
 	lib\vtab.c,
 	lib\where.c;
 
-Core
+Core 
 
 ;

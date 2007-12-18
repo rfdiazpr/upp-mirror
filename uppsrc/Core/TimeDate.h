@@ -45,6 +45,8 @@ int  GetDaysOfMonth(int m, int y);
 int  DayOfWeek(Date date);
 Date LastDayOfMonth(Date d);
 Date FirstDayOfMonth(Date d);
+Date LastDayOfYear(Date d);
+Date FirstDayOfYear(Date d);
 
 Date AddMonths(Date date, int months);
 Date AddYears(Date date, int years);
@@ -76,7 +78,7 @@ struct Time : Date, RelOps< Time, Moveable<Time> > {
 
 	static Time High()       { return Time(4000, 1, 1); }
 	static Time Low()        { return Time(-4000, 1, 1); }
-
+	
 	void   Set(int64 scalar);
 	int64  Get();
 

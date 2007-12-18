@@ -68,11 +68,11 @@ String MonName(int i, int lang)
 	return i >= 0 && i < 12 ? Nvl(GetLngString(lang, month[i]), GetENUS(month[i])) : String();
 }
 
-static char s_date_format[100] = "%2:02d/%3:02d/%1:4d";
+static char s_date_format[64] = "%2:02d/%3:02d/%1:4d";
 
 void   SetDateFormat(const char *fmt)
 {
-	strcpy(s_date_format, fmt);
+	strncpy(s_date_format, fmt, 63);
 }
 
 String   Format(Date date) {
@@ -82,11 +82,11 @@ String   Format(Date date) {
 	return Format(s_date_format, date.year, date.month, date.day, DayOfWeek(date));
 }
 
-static char s_date_scan[100] = "mdy";
+static char s_date_scan[64] = "mdy";
 
 void   SetDateScan(const char *scan)
 {
-	strcpy(s_date_scan, scan);
+	strncpy(s_date_scan, scan, 63);
 }
 
 const char *StrToDate(Date& d, const char *s)
@@ -152,7 +152,7 @@ const char *StrToDate(Date& d, const char *s)
 }
 
 static bool s_date_letters = true, s_date_upper = true;
-static char s_date_seps[] = "A/\a .-";
+static char s_date_seps[64] = "A/\a .-";
 
 void   SetDateFilter(const char *seps)
 {
@@ -168,7 +168,7 @@ void   SetDateFilter(const char *seps)
 		s_date_upper = true;
 		seps++;
 	}
-	strcpy(s_date_seps, seps);
+	strncpy(s_date_seps, seps, 63);
 }
 
 int  CharFilterDate(int c)
@@ -256,6 +256,20 @@ Date LastDayOfMonth(Date d) {
 
 Date FirstDayOfMonth(Date d) {
 	d.day = 1;
+	return d;
+}
+
+Date LastDayOfYear(Date d)
+{
+	d.day = 31;
+	d.month = 12;
+	return d;
+}
+
+Date FirstDayOfYear(Date d)
+{
+	d.day = 1;
+	d.month = 1;
 	return d;
 }
 

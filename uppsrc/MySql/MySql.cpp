@@ -205,7 +205,7 @@ void MySqlConnection::SetParam(int i, const Value& r) {
 			p = Format("%d", int(r));
 			break;
 		case DOUBLE_V:
-			p = Format("%.10g", double(r));
+			p = FormatDouble(double(r), 20);
 			break;
 		case DATE_V: {
 				Date d = r;

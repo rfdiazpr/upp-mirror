@@ -79,7 +79,7 @@ void PopUpTable::PopUp(Ctrl *owner, int x, int top, int bottom, int width) {
 			popup.Add(BottomPos(0, rt.Height()).LeftPos(0, rt.Width()));
 		}
 		CenterCursor();
-		popup.PopUp(owner, true, true, GUI_GlobalStyle() >= GUISTYLE_XP);
+		popup.PopUp(owner, true, true, GUI_DropShadows());
 		SetFocus();
 		Ctrl::ProcessEvents();
 		Animate(popup, rt, GUIEFFECT_SLIDE);
@@ -87,7 +87,7 @@ void PopUpTable::PopUp(Ctrl *owner, int x, int top, int bottom, int width) {
 	}
 	CenterCursor();
 	SetRect(rt);
-	Ctrl::PopUp(owner, true, true, GUI_GlobalStyle() >= GUISTYLE_XP);
+	Ctrl::PopUp(owner, true, true, GUI_DropShadows());
 	SetFocus();
 	open = true;
 }

@@ -120,7 +120,7 @@ public:
 	Size     ComputeSize(Size pane);
 	void     Add(Ctrl& c)                        { pane.Add(c.SizePos()); }
 	TabCtrl& operator<<(Ctrl& c)                 { Add(c); return *this; }
-
+	
 	static const Style& StyleDefault();
 
 	TabCtrl& AcceptCurrent(bool ac = true)       { accept_current = ac; return *this; }

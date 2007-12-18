@@ -268,25 +268,25 @@ class NetNode : Moveable<NetNode> {
 
 	String      name;
 	String      path;
-
+	
 	static void           Copy(String& t, char *s);
 	static Array<NetNode> Enum0(HANDLE hEnum);
 	static void           SetPtr(String& s, char *& ptr);
-
+	
 	void SetPtrs();
-
+	
 public:
 	String         GetName() const    { return name; }
 	String         GetPath() const    { return path; }
 	Array<NetNode> Enum() const;
-
+	
 	void           Serialize(Stream& s);
-
+	
 	static Array<NetNode> EnumRoot();
-
+	
 	NetNode();
 	NetNode(const NetNode& s)         { *this = s; }
-
+	
 	NetNode& operator=(const NetNode& s);
 };
 

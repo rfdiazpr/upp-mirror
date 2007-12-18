@@ -84,7 +84,7 @@ public:
 	virtual Size ComputeSize() = 0;
 	virtual void Reset() {}
 
-	void PopUp(Ctrl *owner, Rect &rt);
+	void PopUp(Ctrl *owner, const Rect& rt);
 	Size GetPopUpSize() { return ComputeSize(); }
 
 	bool IsPopUp() const;
@@ -395,15 +395,15 @@ public:
 	CalendarClock(int m = MODE_TIME);
 	Callback WhenPopDown;
 
-	virtual void State(int reason);
 	virtual void Deactivate();
 	virtual bool Key(dword key, int count);
+	virtual void Layout();
 
 	Size ComputeSize();
 	Size GetCalendarClockSize() { return ComputeSize(); }
 	void UpdateTime(Time &tm);
 
-	void PopUp(Ctrl *owner, Rect &rt);
+	void PopUp(Ctrl *owner, const Rect& rt);
 };
 
 template<class T>
@@ -417,25 +417,25 @@ class DateTimeCtrl : public T {
 		this->SetData(~cc.calendar);
 		this->WhenAction();
 	}
-	
+
 	void OnClockChoice() {
 		this->SetData(~cc.clock);
 		this->WhenAction();
 	}
-	
+
 	void OnClose() {
 		this->SetFocus();
 	}
-	
+
 	void OnDrop() {
 		if(!this->IsEditable())
 			return;
-	
+
 		Size sz = cc.GetCalendarClockSize();
-	
+
 		int width = sz.cx;
 		int height = sz.cy;
-	
+
 		Rect rw = Ctrl::GetWorkArea();
 		Rect rs = this->GetScreenRect();
 		Rect r;
@@ -443,7 +443,7 @@ class DateTimeCtrl : public T {
 		r.right  = rs.left + width;
 		r.top    = rs.bottom;
 		r.bottom = rs.bottom + height;
-	
+
 		if(r.bottom > rw.bottom)
 		{
 			r.top = rs.top - height;
@@ -456,7 +456,7 @@ class DateTimeCtrl : public T {
 				diff = rs.right - r.right;
 			else
 				diff = rw.right - r.right;
-	
+
 			r.left += diff;
 			r.right += diff;
 		}
@@ -465,7 +465,7 @@ class DateTimeCtrl : public T {
 			int diff = rw.left - r.left;
 			r.left += diff;
 			r.right += diff;
-	
+
 		}
 		cc.PopUp(this, r);
 		cc.calendar <<= this->GetData();

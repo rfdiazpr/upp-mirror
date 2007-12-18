@@ -434,6 +434,7 @@ bool   Sql::WasError() const                      { return GetSession().WasError
 void   Sql::Begin()                               { ClearError(); GetSession().Begin(); }
 void   Sql::Commit()                              { GetSession().Commit(); }
 void   Sql::Rollback()                            { GetSession().Rollback(); }
+int    Sql::GetTransactionLevel()                 { return GetSession().GetTransactionLevel(); }
 
 String Sql::Savepoint()                           { return GetSession().Savepoint(); }
 void   Sql::RollbackTo(const String& savepoint)   { GetSession().RollbackTo(savepoint); }
@@ -524,6 +525,7 @@ void           SqlSession::Rollback()                                    { NEVER
 String         SqlSession::Savepoint()                                   { NEVER(); return Null; }
 void           SqlSession::RollbackTo(const String&)                     { NEVER(); }
 bool           SqlSession::IsOpen() const                                { return false; }
+int            SqlSession::GetTransactionLevel() const                   { return 0; }
 RunScript      SqlSession::GetRunScript() const                          { return NULL; }
 SqlConnection *SqlSession::CreateConnection()                            { return NULL; }
 Vector<String> SqlSession::EnumUsers()                                   { return Vector<String>(); }

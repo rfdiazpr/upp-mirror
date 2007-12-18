@@ -270,9 +270,9 @@ HELPINITBLOCK { RegisterHelpAutoIndex(&HelpCalcAutoIndex); }
 
 Value CalcFunctionNode::Calc(CalcContext& context) const
 {
-	CalcPacket packet(context, name);
-	ScanArgs(packet);
-	return context.Calc(packet);
+	One<CalcPacket> packet = new CalcPacket(context, name);
+	ScanArgs(*packet);
+	return context.Calc(*packet);
 }
 
 String CalcFunctionNode::Format() const
@@ -749,10 +749,16 @@ Value CalcContext::TryCalc(CalcPacket& packet)
 		if(i >= 0) { // try functions
 			none = false;
 			for(; i >= 0; i = level.functions.FindNext(i))
-				if(level.functions[i](packet)) {
-					LLOG(EndIndent << "//TryCalc->" << StdFormat(packet.result));
+				try {
+					if(level.functions[i](packet)) {
+						LLOG(EndIndent << "//TryCalc->" << StdFormat(packet.result));
+						nesting--;
+						return packet.result;
+					}
+				}
+				catch(...) {
 					nesting--;
-					return packet.result;
+					throw;
 				}
 		}
 		if(packet.args.IsEmpty() && (i = level.var_index.Find(packet.name)) >= 0) {
@@ -772,10 +778,16 @@ Value CalcContext::TryCalc(CalcPacket& packet)
 		if(i >= 0) { // try functions
 			none = false;
 			for(; i >= 0; i = level.functions.FindNext(i))
-				if(level.functions[i](packet)) {
-					LLOG(EndIndent << "//TryCalc->" << StdFormat(packet.result));
+				try {
+					if(level.functions[i](packet)) {
+						LLOG(EndIndent << "//TryCalc->" << StdFormat(packet.result));
+						nesting--;
+						return packet.result;
+					}
+				}
+				catch(...) {
 					nesting--;
-					return packet.result;
+					throw;
 				}
 		}
 		if(packet.args.IsEmpty() && (i = level.var_index.Find(packet.name)) >= 0) {
@@ -795,10 +807,16 @@ Value CalcContext::TryCalc(CalcPacket& packet)
 		if(i >= 0) {
 			none = false;
 			for(; i >= 0; i = globals.FindNext(i))
-				if(globals[i](packet)) {
-					LLOG(EndIndent << "//TryCalc->" << StdFormat(packet.result));
+				try {
+					if(globals[i](packet)) {
+						LLOG(EndIndent << "//TryCalc->" << StdFormat(packet.result));
+						nesting--;
+						return packet.result;
+					}
+				}
+				catch(...) {
 					nesting--;
-					return packet.result;
+					throw;
 				}
 		}
 	}

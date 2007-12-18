@@ -232,7 +232,7 @@ void Ctrl::InitWin32(HINSTANCE hInstance)
 	ILOG("SetTimer");
 	utilityHWND = CreateWindow(L_("UPP-TIMER"), L_(""), WS_OVERLAPPED,
 		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-		NULL, NULL, NULL, NULL);
+		NULL, NULL, hInstance, NULL);
 	SetTimer(utilityHWND, 1, 10, NULL);
 	ILOG("Windows");
 	Windows(); //?? TRC: what's the use of this?

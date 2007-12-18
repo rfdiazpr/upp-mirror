@@ -57,6 +57,8 @@ private:
 	void    Position();
 	void    Uset(int a);
 
+	int     ScrollBarSize() const                 { return style->barsize; }
+
 public:
 	Callback WhenScroll;
 	Callback WhenVisibility;

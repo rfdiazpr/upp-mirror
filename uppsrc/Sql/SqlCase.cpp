@@ -174,7 +174,7 @@ String SqlFormat(int x)
 String SqlFormat(double x)
 {
 	if(IsNull(x)) return "NULL";
-	return Format("%.10g", x);
+	return FormatDouble(x, 20);
 }
 
 String SqlFormat(int64 x)

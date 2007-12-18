@@ -48,3 +48,19 @@ S_PRODUCT_PRICE
 0 0 -1
 S_PRODUCT_PRICE_
 0 0 -1
+Upp::Array<OptionInfo>
+0 0 -1
+S_BASEITEM
+0 0 -1
+SubProductInfo
+0 0 -1
+Upp::ArrayMap<int,SubProductInfo,Upp::StdHash<int> >
+0 0 -1
+Upp::String
+0 0 -1
+Upp::Index<int,Upp::StdHash<int> >
+0 0 -1
+S_INVOICE_ITEM
+0 0 -1
+Upp::CharSetData
+0 0 -1

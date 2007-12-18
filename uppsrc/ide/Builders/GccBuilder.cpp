@@ -302,6 +302,9 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 //				PutCompileTime(time, ccount);
 			return true;
 		}
+		IdeConsoleEndGroup();
+		if(!Wait())
+			return false;
 		String product;
 		if(is_shared)
 			product = GetSharedLibPath(package);
@@ -309,6 +312,7 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 			product = CatAnyPath(outdir, GetAnyFileName(package) + ".a");
 		String hproduct = GetHostPath(product);
 		Time producttime = GetFileTime(hproduct);
+//		LOG("hproduct = " << hproduct << ", time = " << producttime);
 		linkfile.Add(GetHostPath(product));
 		for(int i = 0; i < obj.GetCount(); i++)
 			if(GetFileTime(obj[i]) > producttime) {
@@ -346,9 +350,6 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 					for(int i = 0; i < all_libraries.GetCount(); i++)
 						lib << " -l" << GetHostPathQ(all_libraries[i]);
 				}
-				IdeConsoleEndGroup();
-				if(!Wait())
-					return false;
 				if(!Execute(lib) == 0) {
 					DeleteFile(hproduct);
 					return false;

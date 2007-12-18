@@ -6,205 +6,61 @@ NAMESPACE_UPP
 
 CH_STYLE(ToolBar, Style, StyleDefault)
 {
-	CtrlsImageLook(look, CtrlsImg::I_TB, 6);
+	buttonstyle = ToolButton::StyleDefault();
+	buttonminsize = Size(16, 16);
+	maxiconsize = Size(INT_MAX, INT_MAX);
+	arealook = Null;
+	look = SColorFace();
+	shadow = SColorShadow();
+	light = SColorLight();
 }
 
-void ToolButton::UpdateTip()
+ToolBar::ToolBar()
 {
-	LTIMING("UpdateTip");
-	String s = tiptext;
-	if(accel)
-		s << " (" << GetKeyDesc(accel) << ')';
-	Ctrl::Tip(s);
+	pane.Margin(2, 3);
+	smargin = 0;
+	ssize = 8;
+	lock = 0;
+	ii = 0;
+	SetStyle(StyleDefault());
+	buttonminsize = Null;
+	maxiconsize = Null;
+	kind = ToolButton::NOLABEL;
+	arealook = -1;
 }
 
-Bar::Item& ToolButton::Text(const char *text)
+ToolBar::~ToolBar() {}
+
+void PaintBarArea(Draw& w, Ctrl *x, const Value& look, int bottom)
 {
-	ExtractAccessKey(text, tiptext);
-	UpdateTip();
-	return *this;
+	Ctrl *tc = x->GetTopCtrl();
+	Rect sr = tc->GetScreenRect();
+	sr.bottom = Nvl(bottom, tc->GetScreenView().top);
+	sr.Offset(-x->GetScreenRect().TopLeft());
+	ChPaint(w, sr, look);
 }
 
-Bar::Item& ToolButton::Check(bool check)
+void ToolBar::Paint(Draw& w)
 {
-	checked = check;
-	return *this;
-}
-
-Bar::Item& ToolButton::Radio(bool check)
-{
-	return Check(check);
-}
-
-Bar::Item& ToolButton::Key(dword key)
-{
-	if(key) {
-		accel = key;
-		UpdateTip();
+	if(IsTransparent())
+		return;
+	Value look = style->look;
+	if(!IsNull(style->arealook) && (arealook < 0 ? InFrame() : arealook)) {
+		PaintBarArea(w, this, style->arealook, GetScreenRect().bottom);
+		look = Null;
 	}
-	return *this;
+	PaintBar(w, style->shadow, style->light, look);
 }
-
-Bar::Item& ToolButton::Repeat(bool r)
-{
-	repeat = r;
-	return *this;
-}
-
-Bar::Item& ToolButton::Image(const UPP::Image& img)
-{
-	if(!img.IsSame(image)) {
-		image = img;
-		Refresh();
-	}
-	return *this;
-}
-
-Bar::Item& ToolButton::Enable(bool enable)
-{
-	Ctrl::Enable(enable);
-	return *this;
-}
-
-Bar::Item& ToolButton::Tip(const char *tip)
-{
-	tiptext = tip;
-	UpdateTip();
-	return *this;
-}
-
-Bar::Item& ToolButton::Help(const char *help)
-{
-	HelpLine(help);
-	return *this;
-}
-
-Bar::Item& ToolButton::Topic(const char *help)
-{
-	HelpTopic(help);
-	return *this;
-}
-
-Bar::Item& ToolButton::Description(const char *desc)
-{
-	Ctrl::Description(desc);
-	return *this;
-}
-
-void  ToolButton::Paint(Draw& w)
-{
-	LTIMING("ToolButton::Paint");
-	paint_checked = checked;
-	Size sz = GetSize();
-	Size isz = image.GetSize();
-	Ctrl *q = GetParent()->GetParent();
-	if(!q || !q->IsTransparent())
-		w.DrawRect(sz, checked && !HasMouse() ? Blend(SColorFace, SColorLight) : SColorFace);
-	Point center = (sz - isz) / 2;
-	ChPaint(w, sz, look[IsEnabled() ? HasMouse() ? GetMouseLeft() ? CTRL_PRESSED
-						                                          : checked ? 5 : CTRL_HOT
-				                                 : checked ? 4 : CTRL_NORMAL
-					                : CTRL_DISABLED]);
-	if(IsEnabled())
-		DrawHighlightImage(w, center.x, center.y, image, HasMouse());
-	else
-		w.DrawImage(center.x, center.y, DisabledImage(image));
-}
-
-void  ToolButton::MouseEnter(Point, dword)
-{
-	BarCtrl::SendHelpLine(this);
-	Refresh();
-}
-
-void  ToolButton::MouseLeave()
-{
-	BarCtrl::ClearHelpLine(this);
-	Refresh();
-}
-
-Size  ToolButton::GetMinSize() const
-{
-	Size sz = image.GetSize();
-	if(sz.IsEmpty())
-		sz = Size(16, 16);
-	sz += 6;
-	return Size(max(sz.cx, minsize.cx), max(sz.cy, minsize.cy));
-}
-
-void  ToolButton::LeftDown(Point, dword)
-{
-	Refresh();
-	if(repeat)
-		WhenAction();
-}
-
-void  ToolButton::LeftRepeat(Point, dword)
-{
-	Refresh();
-	if(repeat)
-		WhenAction();
-}
-
-void  ToolButton::LeftUp(Point, dword)
-{
-	Refresh();
-	if(!repeat)
-		WhenAction();
-}
-
-bool  ToolButton::HotKey(dword key)
-{
-	if(key == accel) {
-		WhenAction();
-		return true;
-	}
-	return false;
-}
-
-void ToolButton::FinalSync()
-{
-	if(checked != paint_checked)
-		Refresh();
-}
-
-void ToolButton::Reset()
-{
-	Tip("");
-	Help("");
-	Topic("");
-	Description("");
-	repeat = false;
-	accel = 0;
-	checked = false;
-	NoWantFocus();
-	look = ToolBar::StyleDefault().look;
-	minsize = Size(0, 0);
-}
-
-ToolButton::ToolButton()
-{
-	Reset();
-	checked = false;
-	paint_checked = false;
-	Transparent();
-}
-
-String ToolButton::GetDesc() const
-{
-	return tiptext;
-}
-
-ToolButton::~ToolButton() {}
-
-// ------------------------------
 
 Bar::Item& ToolBar::AddItem(Callback cb)
 {
 	ToolButton& m = item.DoIndex(ii++);
 	m.Reset();
 	m.WhenAction = cb;
-	m.SetMinSize(buttonminsize);
+	m.MinSize(IsNull(buttonminsize) ? style->buttonminsize : buttonminsize);
+	m.MaxIconSize(IsNull(maxiconsize) ? style->maxiconsize : maxiconsize);
+	m.Kind(kind);
+	m.SetStyle(style->buttonstyle);
 	pane.Add(&m, Null);
 	return m;
 }
@@ -253,20 +109,22 @@ void ToolBar::Post(Callback1<Bar&> bar)
 
 int ToolBar::GetStdHeight()
 {
-	return 22 + 3;
+	Size sz = StyleDefault().maxiconsize;
+	return sz.cy > 10000 ? 22 + 3 : sz.cy + 6 + 3;
 }
 
-ToolBar::ToolBar()
+StaticBarArea::StaticBarArea()
 {
-	pane.Margin(2, 3);
-	smargin = 0;
-	ssize = 8;
-	lock = 0;
-	ii = 0;
-	SetStyle(StyleDefault());
-	buttonminsize = Size(0, 0);
+	upperframe = true;
 }
 
-ToolBar::~ToolBar() {}
+void StaticBarArea::Paint(Draw& w)
+{
+	if(IsNull(ToolBar().StyleDefault().arealook))
+		ChPaint(w, GetSize(), ToolBar().StyleDefault().look);
+	else
+		PaintBarArea(w, this, ToolBar().StyleDefault().arealook,
+		             upperframe ? Null : GetScreenRect().bottom);
+}
 
 END_UPP_NAMESPACE

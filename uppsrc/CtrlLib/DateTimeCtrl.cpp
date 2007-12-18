@@ -11,7 +11,7 @@ void DrawBg(Draw& w, int x, int y, int cx, int cy, Color c)
 	w.DrawImage(x, y, cx, cy, nbg);
 }
 
-void PopUpCtrl::PopUp(Ctrl *owner, Rect &rt)
+void PopUpCtrl::PopUp(Ctrl *owner, const Rect& rt)
 {
 	Close();
 	Reset();
@@ -1246,7 +1246,7 @@ void CalendarClock::UpdateTime(Time &tm)
 	tm.second = clock.GetSecond();
 }
 
-void CalendarClock::PopUp(Ctrl *owner, Rect &rt)
+void CalendarClock::PopUp(Ctrl *owner, const Rect& rt)
 {
 	Close();
 	calendar.Reset();
@@ -1255,6 +1255,7 @@ void CalendarClock::PopUp(Ctrl *owner, Rect &rt)
 	clock.SetPopUp(true);
 	SetRect(rt);
 	Ctrl::PopUp(owner, true, true, GUI_DropShadows());
+	SetFocus();
 }
 
 Size CalendarClock::ComputeSize()
@@ -1265,14 +1266,11 @@ Size CalendarClock::ComputeSize()
 	                         : Size(calendar_size.cx + clock_size.cx + 2, max(calendar_size.cy, clock_size.cy));
 }
 
-void CalendarClock::State(int reason)
+void CalendarClock::Layout()
 {
-	if(reason == OPEN)
-	{
-		sz = ComputeSize();
-		calendar.LeftPos(0, calendar_size.cx).VSizePos(0, 0);
-		clock.RightPos(0, clock_size.cx).VSizePos(0, 0);
-	}
+	sz = ComputeSize();
+	calendar.LeftPos(0, calendar_size.cx).VSizePos(0, 0);
+	clock.RightPos(0, clock_size.cx).VSizePos(0, 0);
 }
 
 void CalendarClock::Deactivate()
@@ -1327,7 +1325,7 @@ FlatButton::FlatButton()
 	Transparent();
 }
 
-void FlatButton::DrawFrame(Draw &w, const Rect &r, Color lc, Color tc, Color rc, Color bc)
+void FlatButton::DrawFrame(Draw &w, const Rect& r, Color lc, Color tc, Color rc, Color bc)
 {
 	w.DrawRect(r.left, r.top, r.left + 1, r.bottom, lc);
 	w.DrawRect(r.right - 1, r.top, r.right, r.bottom, rc);

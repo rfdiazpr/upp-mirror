@@ -943,7 +943,7 @@ Rect ArrayCtrl::GetCellRect(int i, int col)
 	for(i = 0; header.GetTabIndex(i) != col; i++)
 		x += header.GetTabWidth(i);
 	r.left = x - header.GetScroll();
-	r.right = r.left + header.GetTabWidth(i);
+	r.right = r.left + header.GetTabWidth(i) - vertgrid + (col == column.GetCount() - 1);
 	return r;
 }
 

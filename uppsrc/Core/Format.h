@@ -53,6 +53,7 @@ String         FormatDate(Date date, const char *format, int language = 0);
 String         FormatTime(Time time, const char *format, int language = 0);
 
 inline String  IntStr(int i)         { return FormatInt(i); }
+inline String  IntStr64(int64 i)     { return FormatInt64(i); }
 inline String  DblStr(double d)      { return FormatDouble(d, 10); }
 
 /*

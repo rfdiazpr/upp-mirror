@@ -90,8 +90,8 @@ const char *sqlite3PagerDirname(Pager*);
 const char *sqlite3PagerJournalname(Pager*);
 int sqlite3PagerNosync(Pager*);
 int sqlite3PagerMovepage(Pager*,DbPage*,Pgno);
-void *sqlite3PagerGetData(DbPage *); 
-void *sqlite3PagerGetExtra(DbPage *); 
+void *sqlite3PagerGetData(DbPage *);
+void *sqlite3PagerGetExtra(DbPage *);
 int sqlite3PagerLockingMode(Pager *, int);
 
 #if defined(SQLITE_ENABLE_MEMORY_MANAGEMENT) && !defined(SQLITE_OMIT_DISKIO)

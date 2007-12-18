@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LTIMING(x)  // RTIMING(x)
+#define LTIMING(x) //  RTIMING(x)
 
 #if defined(_DEBUG) && 0
 #include <plugin/png/png.h>
@@ -238,8 +238,12 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 						return 1;
 					if(tile) {
 						LTIMING("Ch-Tiles");
-						img = Rescale(img, Size((tile & 1 ? sr : r).GetWidth(),
-						                    (tile & 2 ? sr : r).GetHeight()), sr);
+						img = CachedRescalePaintOnly(
+								img,
+								Size(max(40, (tile & 1 ? sr : r).GetWidth()),
+						             max(40, (tile & 2 ? sr : r).GetHeight())),
+						        sr
+						);
 						DrawTiles(w, r, img);
 					}
 					else {
@@ -274,8 +278,12 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 							break;
 						default:
 							LTIMING("Ch-linedup");
-							img = Rescale(img, Size(((q & IMAGECONTENT_HORZDUP) ? sr : r).GetWidth(),
-							                    ((q & IMAGECONTENT_VERTDUP) ? sr : r).GetHeight()), sr);
+							img = CachedRescalePaintOnly(
+									img,
+									Size(max(40, ((q & IMAGECONTENT_HORZDUP) ? sr : r).GetWidth()),
+									     max(40, ((q & IMAGECONTENT_VERTDUP) ? sr : r).GetHeight())),
+									sr
+							);
 							LTIMING("Ch-linedup-drawtiles");
 							DrawTiles(w, r, img);
 							break;

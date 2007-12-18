@@ -75,6 +75,7 @@ public:
 		int   overpaint;
 		Font  font;
 		Image ok, cancel, exit;
+		bool  transparent;
 	};
 
 protected:

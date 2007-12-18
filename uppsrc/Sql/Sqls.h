@@ -22,22 +22,22 @@ private:
 	String statement;
 	int    status;
 	int    time;
-	
+
 public:
 	ActivityStatus& Error(const String& s)       { error = s;             return *this; }
 	ActivityStatus& ErrorCode(const String& s)   { error_code_string = s; return *this; }
 	ActivityStatus& ErrorCode(int n)             { error_code_number = n; return *this; }
 	ActivityStatus& Statement(const String& s)   { statement = s;         return *this; }
-	ActivityStatus& Status(int s)                { status = s;            return *this; }
+	ActivityStatus& SetStatus(int s)             { status = s;            return *this; } // Status does not work in Linux (a type or macro?)
 	ActivityStatus& Time(int n)                  { time = n;              return *this; }
-	
+
 	String          GetStatement() const         { return statement;         }
 	String          GetError() const             { return error;             }
 	int             GetErrorCode() const         { return error_code_number; }
 	String          GetErrorCodeString() const   { return error_code_string; }
 	int             GetStatus() const            { return status;            }
 	int             GetTime() const              { return time;              }
-	
+
 	bool            operator == (int s) const    { return status == s;       }
 	bool            operator != (int s) const    { return status != s;       }
 };
@@ -234,6 +234,7 @@ public:
 	void   Begin();
 	void   Commit();
 	void   Rollback();
+	int    GetTransactionLevel();
 
 	String Savepoint();
 	void   RollbackTo(const String& savepoint);
@@ -291,13 +292,14 @@ protected:
 	int                           errorcode_number;
 	String                        errorcode_string;
 	Sql::ERRORCLASS               errorclass;
-	
+
 	ActivityStatus                status;
 
 public:
 	virtual void                  Begin();
 	virtual void                  Commit();
 	virtual void                  Rollback();
+	virtual int                   GetTransactionLevel() const;
 
 	virtual String                Savepoint();
 	virtual void                  RollbackTo(const String& savepoint);
@@ -346,9 +348,9 @@ public:
 
 	SqlSession();
 	virtual ~SqlSession();
-	
+
 	ActivityStatus&               GetStatus()                             { return status; }
-	void                          PassStatus(int s)                       { WhenDatabaseActivity(status.Status(s)); }
+	void                          PassStatus(int s)                       { WhenDatabaseActivity(status.SetStatus(s)); }
 
 	Callback1<const ActivityStatus&> WhenDatabaseActivity;
 };

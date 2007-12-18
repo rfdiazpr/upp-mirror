@@ -355,7 +355,10 @@ void QuickTabs::DrawTab(Draw &w, int i)
 	int cnt = tabs.GetCount();
 
 	Tab &t = tabs[i];
-	int x = t.x - sc.GetPos() + style->margin - style->extendleft;
+
+	int lx = i > 0 ? style->extendleft : 0;
+
+	int x = t.x - sc.GetPos() + style->margin - lx;
 
 	bool ac = i == active;
 	bool hl = i == highlight;
@@ -367,14 +370,24 @@ void QuickTabs::DrawTab(Draw &w, int i)
 	const Value& sv = (cnt == 1 ? style->both : i == 0 ? style->first : i == cnt - 1 ? style->last : style->normal)[ndx];
 
 	if(ac)
-		ChPaint(w, x - style->sel.left, 0, t.cx + style->sel.right + style->sel.left, sz.cy + 1, sv);
+		ChPaint(w, x - style->sel.left,
+		           0,
+		           t.cx + style->sel.right + style->sel.left + lx,
+		           t.cy + style->sel.bottom,
+		           sv);
 	else
-		ChPaint(w, x, style->sel.top, t.cx, t.cy - style->sel.top, sv);
+		ChPaint(w, x,
+		           style->sel.top,
+		           t.cx + lx,
+		           t.cy - style->sel.top,
+		           sv);
 
 	int h = sz.cy + (ac ? 0 : style->sel.top);
 
 	if(crosses && tabs.GetCount() > 1)
-		w.DrawImage(x + t.cx - isz.cx - QT_MARGIN, (h - isz.cy) / 2, (ac || hl) ? (cross == i ? Img::CR2 : ac ? Img::CR1 : Img::CR0) : Img::CR0);
+		w.DrawImage(x + t.cx - isz.cx - QT_MARGIN,
+		            (h - isz.cy) / 2,
+		            (ac || hl) ? (cross == i ? Img::CR2 : ac ? Img::CR1 : Img::CR0) : Img::CR0);
 
 	if(file_icons)
 	{
@@ -412,10 +425,10 @@ void QuickTabs::Paint(Draw &w)
 
 		if(target != active && target != active + 1)
 		{
-			int x = (target == last + 1 ? tabs[last].Right() : tabs[target].x) 
+			int x = (target == last + 1 ? tabs[last].Right() : tabs[target].x)
 			        - sc.GetPos() - (target <= first ? 1 : 2)
-			        + style->margin - style->extendleft;
-			        
+			        + style->margin - (target > 0 ? style->extendleft : 0);
+
 			int y = style->sel.top;
 			int cy = sz.cy - y;
 			Color c(255, 0, 0);
@@ -460,7 +473,7 @@ int QuickTabs::GetWidth()
 
 int QuickTabs::GetHeight()
 {
-	return style->tabheight + /*style->sel.top +*/ style->sel.bottom + QT_SBHEIGHT + QT_SBSEPARATOR;
+	return style->tabheight + style->sel.top /*+ style->sel.bottom */ + QT_SBHEIGHT + QT_SBSEPARATOR;
 }
 
 void QuickTabs::Repos()
@@ -613,19 +626,20 @@ void QuickTabs::MouseMove(Point p, dword keyflags)
 		return;
 	}
 
-	p.x += sc.GetPos() - style->margin + style->extendleft;
+	p.x += sc.GetPos() - style->margin;
 	Size sz = GetSize();
-	
+
 	int h = highlight;
 	bool iscross = false;
 	bool istab = false;
 	for(int i = 0; i < tabs.GetCount(); i++)
 	{
-		if(tabs[i].HasMouse(p))
+		Point np(p.x + (i > 0 ? style->extendleft : 0), p.y);
+		if(tabs[i].HasMouse(np))
 		{
 			istab = true;
 			int h = sz.cy + (active == i ? 0 : style->sel.top);
-			iscross = crosses ? tabs[i].HasMouseCross(p, h) : false;
+			iscross = crosses ? tabs[i].HasMouseCross(np, h) : false;
 			if(highlight != i || (iscross && cross != i))
 			{
 				cross = iscross ? i : -1;

@@ -296,7 +296,7 @@ CONSOLE_APP_MAIN
 {
 	LOG("#ifndef CPP_PART__");
 	LOG("");
-
+	
 	CallbackGen("Callback", "void", 0,
 		"operator bool() const   { return action && action->IsValid(); }\n"
 		"void Execute() const;\n"

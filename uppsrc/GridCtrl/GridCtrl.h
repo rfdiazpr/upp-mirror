@@ -7,9 +7,18 @@ NAMESPACE_UPP
 #include "GridDisplay.h"
 
 #define FOREACH_ROW(x) for(x.Begin(); x.IsEnd(); x.Next())
+#define FOREACH_SELECTED_ROW(x) FOREACH_ROW(x) if(x.IsSelected())
 #define FOREACH_MODIFIED_ROW(x) FOREACH_ROW(x) if(x.IsModifiedRow())
 #define FOREACH_MODIFIED_OR_NEW_ROW(x) FOREACH_ROW(x) if(x.IsModifiedRow() || x.IsAddedRow())
 #define COLUMN(grid, column) (column, grid(column))
+
+namespace GF
+{
+	enum {
+		SKIP_CURRENT_ROW = BIT(0),
+		SKIP_HIDDEN = BIT(1)
+	};
+};
 
 class FindEditString : public EditString
 {
@@ -425,7 +434,6 @@ class GridCtrl : public Ctrl
 					fnt = Null;
 					balign = halign = GD::LEFT | GD::VCENTER;
 					wrap = false;
-					modified = false;
 					fg = Null;
 					bg = Null;
 
@@ -433,8 +441,6 @@ class GridCtrl : public Ctrl
 					convert = NULL;
 					display = NULL;
 
-					modified = false;
-					isnew = false;
 					found = false;
 
 					level = 0;
@@ -474,11 +480,9 @@ class GridCtrl : public Ctrl
 				bool editable;
 				bool sortable;
 				bool clickable;
-				bool modified:1;
-				bool isnew:1;
 				bool found:1;
 				bool skip:1;
-				
+
 				Value defval;
 
 				dword style;
@@ -567,6 +571,7 @@ class GridCtrl : public Ctrl
 				ItemRect& Min(int n);
 				ItemRect& Max(int n);
 				ItemRect& Fixed(int n);
+				ItemRect& FixedAuto();
 				ItemRect& Edit(Ctrl &ctrl);
 				template<typename T>
 				ItemRect& EditConvert(T &ctrl)                   { return Edit(ctrl).SetConvert(ctrl); }
@@ -641,7 +646,7 @@ class GridCtrl : public Ctrl
 
 				ItemRect& Clickable(bool b)                      { clickable = b;     return *this; }
 				ItemRect& NoClickable()                          { clickable = false; return *this; }
-				
+
 				ItemRect& Skip(bool b)                           { skip = b;          return *this; }
 
 				int  GetId()                                     { return id;                       }
@@ -1090,8 +1095,8 @@ class GridCtrl : public Ctrl
 		Item&     GetCell(int n, int m);
 		Item&     GetCell(int n, Id id);
 
-		int  GetCurrentRow();
-		bool IsCurrentRow();
+		int  GetCurrentRow() const;
+		bool IsCurrentRow() const;
 		void RestoreCurrentRow();
 
 		int GetWidth(int n = -1);
@@ -1135,7 +1140,6 @@ class GridCtrl : public Ctrl
 		bool IsModified(int c);
 		bool IsModified(int r, Id id);
 		bool IsModified(Id id);
-		bool IsModifiedRow(int r);
 
 
 		/* valid only in callbacks */
@@ -1143,12 +1147,8 @@ class GridCtrl : public Ctrl
 		bool IsNewRow()         { return newrow_inserted || newrow_appended; }
 		bool IsNewRowInserted() { return newrow_inserted; }
 		bool IsNewRowAppended() { return newrow_appended; }
-		bool IsRowRemoved()     { return row_removed; }
+		bool IsModifiedRow()    { return row_modified > 0; }
 		void CommitNewRow()     { newrow_inserted = newrow_appended = false; }
-
-		/* deprecated */
-		bool IsModifiedRow()    { return vitems[rowidx].modified; }
-		bool IsAddedRow()       { return vitems[rowidx].isnew; }
 
 		bool IsUpdatedRow()     { return vitems[rowidx].operation == GridOperation::UPDATE; }
 		bool IsInsertedRow()    { return vitems[rowidx].operation == GridOperation::INSERT; }
@@ -1181,16 +1181,15 @@ class GridCtrl : public Ctrl
 
 		void UpdateCursor();
 
-		int Find(const Value &v, int col = 0, int start_from = 0) const;
-		int Find(const Value &v, Id id) const;
+		int Find(const Value &v, int col = 0, int start_from = 0, int opt = 0) const;
+		int Find(const Value &v, Id id, int opt = 0) const;
 		int FindInRow(const Value& v, int row = 0, int start_from = 0) const;
 
 		GridDisplay& GetDisplay() { return *display; }
 		GridCtrl&    SetDisplay(GridDisplay &gd) { display = &gd; return *this; }
 
 		bool IsEdit()  { return ctrls; }
-
-		bool StartEdit(int focusmode = 1);
+		bool StartEdit(bool mouse = false);
 		bool SwitchEdit();
 		bool EndEdit(bool accept = true, bool doall = false, bool remove_row = true);
 		bool CancelEdit(bool remove_row = true) { return EndEdit(false, false, remove_row); }
@@ -1296,6 +1295,7 @@ class GridCtrl : public Ctrl
 		int  GetSelectedItemsCount() { return selected_items;    }
 		bool IsSelected(int n, bool relative = true);
 		bool IsSelected(int n, int m, bool relative = true);
+		bool IsSelected();
 
 		void DoInsert0(bool edit, bool after);
 		void DoInsertBefore0(bool edit);
@@ -1345,7 +1345,7 @@ class GridCtrl : public Ctrl
 		void RebuildToolBar() { bar.Set(WhenToolBar); }
 		void SetToolBarInfo(String inf);
 
-		void ClearFound(bool showrows = true);
+		void ClearFound(bool showrows = true, bool clear_string = true);
 
 		bool IsEmpty()        { return total_rows <= fixed_rows; }
 		bool IsFilled()       { return total_rows > fixed_rows;  }
@@ -1407,10 +1407,10 @@ class GridCtrl : public Ctrl
 
 		void SetItemCursor(Point p, bool b, bool highlight);
 
-		void Insert0(int row, int cnt = 1, bool recalc = true, bool refresh = true, int size = GD_ROW_HEIGHT, bool mark_newrow = false);
+		void Insert0(int row, int cnt = 1, bool recalc = true, bool refresh = true, int size = GD_ROW_HEIGHT);
 		bool Remove0(int row, int cnt = 1, bool recalc = true, bool refresh = true, bool whens = true);
-		void Duplicate0(int row, int cnt = 1, bool recalc = true, bool refresh = true, bool mark_newrow = false);
-		int  Append0(int cnt = 1, int size = GD_ROW_HEIGHT, bool refresh = true, bool mark_newrow = false);
+		void Duplicate0(int row, int cnt = 1, bool recalc = true, bool refresh = true);
+		int  Append0(int cnt = 1, int size = GD_ROW_HEIGHT, bool refresh = true);
 
 		void GoCursorLeftRight();
 
@@ -1540,7 +1540,13 @@ class GridCtrl : public Ctrl
 		Callback WhenEnter;
 		Callback WhenEscape;
 
+		Callback WhenStartEdit;
+		Callback WhenEndEdit;
+
 		Callback WhenCreateRow;
+
+		Callback WhenAcceptRow;
+		Callback WhenAcceptedRow;
 
 		Callback WhenInsertRow;
 		Callback WhenUpdateRow;
@@ -1548,13 +1554,10 @@ class GridCtrl : public Ctrl
 
 		Callback WhenUpdateCell;
 
-		Callback WhenEditRow;
-		Callback WhenAcceptRow;
 		Callback WhenNewRow;
 		Callback WhenChangeCol;
 		Callback WhenChangeRow;
 		Callback WhenCursor;
-		Callback WhenAcceptRowAlways;
 
 		Callback WhenCtrlsAction;
 

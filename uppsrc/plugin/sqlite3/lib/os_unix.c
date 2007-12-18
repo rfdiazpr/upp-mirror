@@ -101,7 +101,7 @@ struct unixFile {
 
 /*
 ** Provide the ability to override some OS-layer functions during
-** testing.  This is used to simulate OS crashes to verify that 
+** testing.  This is used to simulate OS crashes to verify that
 ** commits are atomic even in the event of an OS crash.
 */
 #ifdef SQLITE_CRASH_TEST
@@ -179,7 +179,7 @@ struct unixFile {
 ** another as long as we are running on a system that supports threads
 ** overriding each others locks (which now the most common behavior)
 ** or if no locks are held.  But the OsFile.pLock field needs to be
-** recomputed because its key includes the thread-id.  See the 
+** recomputed because its key includes the thread-id.  See the
 ** transferOwnership() function below for additional information
 */
 #if defined(SQLITE_UNIX_THREADS)
@@ -238,7 +238,7 @@ struct unixFile {
 ** cnt>0 means there are cnt shared locks on the file.
 **
 ** Any attempt to lock or unlock a file first checks the locking
-** structure.  The fcntl() system call is only invoked to set a 
+** structure.  The fcntl() system call is only invoked to set a
 ** POSIX lock if the internal lock structure transitions between
 ** a locked and an unlocked state.
 **
@@ -269,7 +269,7 @@ struct unixFile {
 ** (I'm beginning to think that linux threads is an abomination too.)
 ** The consequence of this all is that the hash table for the lockInfo
 ** structure has to include the process id as part of its key because
-** locks in different threads are treated as distinct.  But the 
+** locks in different threads are treated as distinct.  But the
 ** openCnt structure should not include the process id in its
 ** key because close() clears lock on all threads, not just the current
 ** thread.  Were it not for this goofiness in linux threads, we could
@@ -284,9 +284,9 @@ struct unixFile {
 ** inconsistency.  There is no little doubt in my mind that posix
 ** advisory locks and linux threads are profoundly broken.
 **
-** To work around the inconsistencies, we have to test at runtime 
+** To work around the inconsistencies, we have to test at runtime
 ** whether or not threads can override each others locks.  This test
-** is run once, the first time any lock is attempted.  A static 
+** is run once, the first time any lock is attempted.  A static
 ** variable is set to record the results of this test for future
 ** use.
 */
@@ -349,22 +349,22 @@ struct openCnt {
   int *aPending;        /* Malloced space holding fd's awaiting a close() */
 };
 
-/* 
+/*
 ** These hash tables map inodes and file descriptors (really, lockKey and
-** openKey structures) into lockInfo and openCnt structures.  Access to 
+** openKey structures) into lockInfo and openCnt structures.  Access to
 ** these hash tables must be protected by a mutex.
 */
-static Hash lockHash = {SQLITE_HASH_BINARY, 0, 0, 0, 
+static Hash lockHash = {SQLITE_HASH_BINARY, 0, 0, 0,
     sqlite3ThreadSafeMalloc, sqlite3ThreadSafeFree, 0, 0};
-static Hash openHash = {SQLITE_HASH_BINARY, 0, 0, 0, 
+static Hash openHash = {SQLITE_HASH_BINARY, 0, 0, 0,
     sqlite3ThreadSafeMalloc, sqlite3ThreadSafeFree, 0, 0};
 
 #ifdef SQLITE_ENABLE_LOCKING_STYLE
 /*
 ** The locking styles are associated with the different file locking
-** capabilities supported by different file systems.  
+** capabilities supported by different file systems.
 **
-** POSIX locking style fully supports shared and exclusive byte-range locks 
+** POSIX locking style fully supports shared and exclusive byte-range locks
 ** ADP locking only supports exclusive byte-range locks
 ** FLOCK only supports a single file-global exclusive lock
 ** DOTLOCK isn't a true locking style, it refers to the use of a special
@@ -497,7 +497,7 @@ static void *threadLockingTest(void *pArg){
 
 /*
 ** This procedure attempts to determine whether or not threads
-** can override each others locks then sets the 
+** can override each others locks then sets the
 ** threadsOverrideEachOthersLocks variable appropriately.
 */
 static void testThreadLockingBehavior(int fd_orig){
@@ -555,37 +555,37 @@ static void releaseOpenCnt(struct openCnt *pOpen){
 
 #ifdef SQLITE_ENABLE_LOCKING_STYLE
 /*
-** Tests a byte-range locking query to see if byte range locks are 
+** Tests a byte-range locking query to see if byte range locks are
 ** supported, if not we fall back to dotlockLockingStyle.
 */
-static sqlite3LockingStyle sqlite3TestLockingStyle(const char *filePath, 
+static sqlite3LockingStyle sqlite3TestLockingStyle(const char *filePath,
   int fd) {
   /* test byte-range lock using fcntl */
   struct flock lockInfo;
-  
+
   lockInfo.l_len = 1;
   lockInfo.l_start = 0;
   lockInfo.l_whence = SEEK_SET;
   lockInfo.l_type = F_RDLCK;
-  
+
   if (fcntl(fd, F_GETLK, &lockInfo) != -1) {
     return posixLockingStyle;
-  } 
-  
+  }
+
   /* testing for flock can give false positives.  So if if the above test
   ** fails, then we fall back to using dot-lock style locking.
-  */  
+  */
   return dotlockLockingStyle;
 }
 
-/* 
-** Examines the f_fstypename entry in the statfs structure as returned by 
-** stat() for the file system hosting the database file, assigns the 
-** appropriate locking style based on it's value.  These values and 
-** assignments are based on Darwin/OSX behavior and have not been tested on 
+/*
+** Examines the f_fstypename entry in the statfs structure as returned by
+** stat() for the file system hosting the database file, assigns the
+** appropriate locking style based on it's value.  These values and
+** assignments are based on Darwin/OSX behavior and have not been tested on
 ** other systems.
 */
-static sqlite3LockingStyle sqlite3DetectLockingStyle(const char *filePath, 
+static sqlite3LockingStyle sqlite3DetectLockingStyle(const char *filePath,
   int fd) {
 
 #ifdef SQLITE_FIXED_LOCKING_STYLE
@@ -595,30 +595,30 @@ static sqlite3LockingStyle sqlite3DetectLockingStyle(const char *filePath,
 
   if (statfs(filePath, &fsInfo) == -1)
     return sqlite3TestLockingStyle(filePath, fd);
-  
+
   if (fsInfo.f_flags & MNT_RDONLY)
     return noLockingStyle;
-  
+
   if( (!strcmp(fsInfo.f_fstypename, "hfs")) ||
     (!strcmp(fsInfo.f_fstypename, "ufs")) )
                 return posixLockingStyle;
-  
+
   if(!strcmp(fsInfo.f_fstypename, "afpfs"))
     return afpLockingStyle;
-  
-  if(!strcmp(fsInfo.f_fstypename, "nfs")) 
+
+  if(!strcmp(fsInfo.f_fstypename, "nfs"))
     return sqlite3TestLockingStyle(filePath, fd);
-  
+
   if(!strcmp(fsInfo.f_fstypename, "smbfs"))
     return flockLockingStyle;
-  
+
   if(!strcmp(fsInfo.f_fstypename, "msdos"))
     return dotlockLockingStyle;
-  
+
   if(!strcmp(fsInfo.f_fstypename, "webdav"))
     return unsupportedLockingStyle;
-  
-  return sqlite3TestLockingStyle(filePath, fd);  
+
+  return sqlite3TestLockingStyle(filePath, fd);
 #endif /* SQLITE_FIXED_LOCKING_STYLE */
 }
 
@@ -825,7 +825,7 @@ int sqlite3UnixOpenReadWrite(
   int *pReadonly
 ){
   int h;
-  
+
   CRASH_TEST_OVERRIDE(sqlite3CrashOpenReadWrite, zFilename, pId, pReadonly);
   assert( 0==*pId );
   h = open(zFilename, O_RDWR|O_CREAT|O_LARGEFILE|O_BINARY,
@@ -838,7 +838,7 @@ int sqlite3UnixOpenReadWrite(
 #endif
     h = open(zFilename, O_RDONLY|O_LARGEFILE|O_BINARY);
     if( h<0 ){
-      return SQLITE_CANTOPEN; 
+      return SQLITE_CANTOPEN;
     }
     *pReadonly = 1;
   }else{
@@ -885,7 +885,7 @@ int sqlite3UnixOpenExclusive(const char *zFilename, OsFile **pId, int delFlag){
 */
 int sqlite3UnixOpenReadOnly(const char *zFilename, OsFile **pId){
   int h;
-  
+
   CRASH_TEST_OVERRIDE(sqlite3CrashOpenReadOnly, zFilename, pId, 0);
   assert( 0==*pId );
   h = open(zFilename, O_RDONLY|O_LARGEFILE|O_BINARY);
@@ -904,7 +904,7 @@ int sqlite3UnixOpenReadOnly(const char *zFilename, OsFile **pId){
 ** This routine is only meaningful for Unix.  It is a no-op under
 ** windows since windows does not support hard links.
 **
-** If FULL_FSYNC is enabled, this function is not longer useful, 
+** If FULL_FSYNC is enabled, this function is not longer useful,
 ** a FULL_FSYNC sync applies to all pending disk operations.
 **
 ** On success, a handle for a previously open file at *id is
@@ -925,7 +925,7 @@ static int unixOpenDirectory(
   assert( pFile->dirfd<0 );
   pFile->dirfd = h = open(zDirname, O_RDONLY|O_BINARY, 0);
   if( h<0 ){
-    return SQLITE_CANTOPEN; 
+    return SQLITE_CANTOPEN;
   }
 #ifdef FD_CLOEXEC
   fcntl(h, F_SETFD, fcntl(h, F_GETFD, 0) | FD_CLOEXEC);
@@ -971,11 +971,11 @@ int sqlite3UnixTempFileName(char *zBuf){
     }
     zBuf[j] = 0;
   }while( access(zBuf,0)==0 );
-  return SQLITE_OK; 
+  return SQLITE_OK;
 }
 
 /*
-** Check that a given pathname is a directory and is writable 
+** Check that a given pathname is a directory and is writable
 **
 */
 int sqlite3UnixIsDirWritable(char *zBuf){
@@ -1146,7 +1146,7 @@ int sqlite3_fullsync_count = 0;
 static int full_fsync(int fd, int fullSync, int dataOnly){
   int rc;
 
-  /* Record the number of times that we do a normal fsync() and 
+  /* Record the number of times that we do a normal fsync() and
   ** FULLSYNC.  This is used during testing to verify that this procedure
   ** gets called with the correct arguments.
   */
@@ -1169,16 +1169,16 @@ static int full_fsync(int fd, int fullSync, int dataOnly){
     rc = 1;
   }
   /* If the FULLFSYNC failed, fall back to attempting an fsync().
-   * It shouldn't be possible for fullfsync to fail on the local 
+   * It shouldn't be possible for fullfsync to fail on the local
    * file system (on OSX), so failure indicates that FULLFSYNC
-   * isn't supported for this file system. So, attempt an fsync 
-   * and (for now) ignore the overhead of a superfluous fcntl call.  
-   * It'd be better to detect fullfsync support once and avoid 
+   * isn't supported for this file system. So, attempt an fsync
+   * and (for now) ignore the overhead of a superfluous fcntl call.
+   * It'd be better to detect fullfsync support once and avoid
    * the fcntl call every time sync is called.
    */
   if( rc ) rc = fsync(fd);
 
-#else 
+#else
   if( dataOnly ){
     rc = fdatasync(fd);
   }else{
@@ -1256,7 +1256,7 @@ int sqlite3UnixSyncDirectory(const char *zDirname){
   fd = open(zDirname, O_RDONLY|O_BINARY, 0);
   OSTRACE3("DIRSYNC %-3d (%s)\n", fd, zDirname);
   if( fd<0 ){
-    return SQLITE_CANTOPEN; 
+    return SQLITE_CANTOPEN;
   }
   r = fsync(fd);
   close(fd);
@@ -1331,7 +1331,7 @@ static int unixCheckReservedLock(OsFile *id){
       r = 1;
     }
   }
-  
+
   sqlite3OsLeaveMutex();
   OSTRACE3("TEST WR-LOCK %d %d\n", pFile->h, r);
 
@@ -1380,7 +1380,7 @@ static int unixLock(OsFile *id, int locktype){
   **
   ** A process may only obtain a RESERVED lock after it has a SHARED lock.
   ** A RESERVED lock is implemented by grabbing a write-lock on the
-  ** 'reserved byte'. 
+  ** 'reserved byte'.
   **
   ** A process may only obtain a PENDING lock after it has obtained a
   ** SHARED lock. A PENDING lock is implemented by obtaining a write-lock
@@ -1394,7 +1394,7 @@ static int unixLock(OsFile *id, int locktype){
   ** implemented by obtaining a write-lock on the entire 'shared byte
   ** range'. Since all other locks require a read-lock on one of the bytes
   ** within this range, this ensures that no other locks are held on the
-  ** database. 
+  ** database.
   **
   ** The reason a single byte cannot be used instead of the 'shared byte
   ** range' is that some versions of windows do not support read-locks. By
@@ -1444,7 +1444,7 @@ static int unixLock(OsFile *id, int locktype){
   /* If some thread using this PID has a lock via a different OsFile*
   ** handle that precludes the requested lock, return BUSY.
   */
-  if( (pFile->locktype!=pLock->locktype && 
+  if( (pFile->locktype!=pLock->locktype &&
           (pLock->locktype>=PENDING_LOCK || locktype>SHARED_LOCK))
   ){
     rc = SQLITE_BUSY;
@@ -1455,7 +1455,7 @@ static int unixLock(OsFile *id, int locktype){
   ** has a SHARED or RESERVED lock, then increment reference counts and
   ** return SQLITE_OK.
   */
-  if( locktype==SHARED_LOCK && 
+  if( locktype==SHARED_LOCK &&
       (pLock->locktype==SHARED_LOCK || pLock->locktype==RESERVED_LOCK) ){
     assert( locktype==SHARED_LOCK );
     assert( pFile->locktype==0 );
@@ -1474,7 +1474,7 @@ static int unixLock(OsFile *id, int locktype){
   ** acquiring an EXCLUSIVE lock.  For the SHARED lock, the PENDING will
   ** be released.
   */
-  if( locktype==SHARED_LOCK 
+  if( locktype==SHARED_LOCK
       || (locktype==EXCLUSIVE_LOCK && pFile->locktype<PENDING_LOCK)
   ){
     lock.l_type = (locktype==SHARED_LOCK?F_RDLCK:F_WRLCK);
@@ -1541,7 +1541,7 @@ static int unixLock(OsFile *id, int locktype){
       rc = (errno==EINVAL) ? SQLITE_NOLFS : SQLITE_BUSY;
     }
   }
-  
+
   if( rc==SQLITE_OK ){
     pFile->locktype = locktype;
     pLock->locktype = locktype;
@@ -1552,7 +1552,7 @@ static int unixLock(OsFile *id, int locktype){
 
 end_lock:
   sqlite3OsLeaveMutex();
-  OSTRACE4("LOCK    %d %s %s\n", pFile->h, locktypeName(locktype), 
+  OSTRACE4("LOCK    %d %s %s\n", pFile->h, locktypeName(locktype),
       rc==SQLITE_OK ? "ok" : "failed");
   return rc;
 }
@@ -1716,26 +1716,26 @@ struct ByteRangeLockPB2
 
 #define afpfsByteRangeLock2FSCTL        _IOWR('z', 23, struct ByteRangeLockPB2)
 
-/* return 0 on success, 1 on failure.  To match the behavior of the 
-  normal posix file locking (used in unixLock for example), we should 
+/* return 0 on success, 1 on failure.  To match the behavior of the
+  normal posix file locking (used in unixLock for example), we should
   provide 'richer' return codes - specifically to differentiate between
   'file busy' and 'file system error' results */
-static int _AFPFSSetLock(const char *path, int fd, unsigned long long offset, 
+static int _AFPFSSetLock(const char *path, int fd, unsigned long long offset,
                          unsigned long long length, int setLockFlag)
 {
   struct ByteRangeLockPB2       pb;
   int                     err;
-  
+
   pb.unLockFlag = setLockFlag ? 0 : 1;
   pb.startEndFlag = 0;
   pb.offset = offset;
-  pb.length = length; 
+  pb.length = length;
   pb.fd = fd;
-  OSTRACE5("AFPLOCK setting lock %s for %d in range %llx:%llx\n", 
+  OSTRACE5("AFPLOCK setting lock %s for %d in range %llx:%llx\n",
     (setLockFlag?"ON":"OFF"), fd, offset, length);
   err = fsctl(path, afpfsByteRangeLock2FSCTL, &pb, 0);
   if ( err==-1 ) {
-    OSTRACE4("AFPLOCK failed to fsctl() '%s' %d %s\n", path, errno, 
+    OSTRACE4("AFPLOCK failed to fsctl() '%s' %d %s\n", path, errno,
       strerror(errno));
     return 1; /* error */
   } else {
@@ -1752,20 +1752,20 @@ static int _AFPFSSetLock(const char *path, int fd, unsigned long long offset,
 static int afpUnixCheckReservedLock(OsFile *id){
   int r = 0;
   unixFile *pFile = (unixFile*)id;
-  
-  assert( pFile ); 
+
+  assert( pFile );
   afpLockingContext *context = (afpLockingContext *) pFile->lockingContext;
-  
+
   /* Check if a thread in this process holds such a lock */
   if( pFile->locktype>SHARED_LOCK ){
     r = 1;
   }
-  
+
   /* Otherwise see if some other process holds it.
    */
   if ( !r ) {
     /* lock the byte */
-    int failed = _AFPFSSetLock(context->filePath, pFile->h, RESERVED_BYTE, 1,1);  
+    int failed = _AFPFSSetLock(context->filePath, pFile->h, RESERVED_BYTE, 1,1);
     if (failed) {
       /* if we failed to get the lock then someone else must have it */
       r = 1;
@@ -1776,11 +1776,11 @@ static int afpUnixCheckReservedLock(OsFile *id){
     }
   }
   OSTRACE3("TEST WR-LOCK %d %d\n", pFile->h, r);
-  
+
   return r;
 }
 
-/* AFP-style locking following the behavior of unixLock, see the unixLock 
+/* AFP-style locking following the behavior of unixLock, see the unixLock
 ** function comments for details of lock management. */
 static int afpUnixLock(OsFile *id, int locktype)
 {
@@ -1788,10 +1788,10 @@ static int afpUnixLock(OsFile *id, int locktype)
   unixFile *pFile = (unixFile*)id;
   afpLockingContext *context = (afpLockingContext *) pFile->lockingContext;
   int gotPendingLock = 0;
-  
+
   assert( pFile );
   OSTRACE5("LOCK    %d %s was %s pid=%d\n", pFile->h,
-         locktypeName(locktype), locktypeName(pFile->locktype), getpid());  
+         locktypeName(locktype), locktypeName(pFile->locktype), getpid());
   /* If there is already a lock of this type or more restrictive on the
     ** OsFile, do nothing. Don't use the afp_end_lock: exit path, as
     ** sqlite3OsEnterMutex() hasn't been called yet.
@@ -1807,7 +1807,7 @@ static int afpUnixLock(OsFile *id, int locktype)
   assert( pFile->locktype!=NO_LOCK || locktype==SHARED_LOCK );
   assert( locktype!=PENDING_LOCK );
   assert( locktype!=RESERVED_LOCK || pFile->locktype==SHARED_LOCK );
-  
+
   /* This mutex is needed because pFile->pLock is shared across threads
     */
   sqlite3OsEnterMutex();
@@ -1819,42 +1819,42 @@ static int afpUnixLock(OsFile *id, int locktype)
     sqlite3OsLeaveMutex();
     return rc;
   }
-    
+
   /* A PENDING lock is needed before acquiring a SHARED lock and before
     ** acquiring an EXCLUSIVE lock.  For the SHARED lock, the PENDING will
     ** be released.
     */
-  if( locktype==SHARED_LOCK 
+  if( locktype==SHARED_LOCK
       || (locktype==EXCLUSIVE_LOCK && pFile->locktype<PENDING_LOCK)
       ){
-    int failed = _AFPFSSetLock(context->filePath, pFile->h, 
+    int failed = _AFPFSSetLock(context->filePath, pFile->h,
       PENDING_BYTE, 1, 1);
     if (failed) {
       rc = SQLITE_BUSY;
       goto afp_end_lock;
     }
   }
-  
+
   /* If control gets to this point, then actually go ahead and make
     ** operating system calls for the specified lock.
     */
   if( locktype==SHARED_LOCK ){
     int lk, failed;
     int tries = 0;
-    
+
     /* Now get the read-lock */
     /* note that the quality of the randomness doesn't matter that much */
-    lk = random(); 
+    lk = random();
     context->sharedLockByte = (lk & 0x7fffffff)%(SHARED_SIZE - 1);
-    failed = _AFPFSSetLock(context->filePath, pFile->h, 
+    failed = _AFPFSSetLock(context->filePath, pFile->h,
       SHARED_FIRST+context->sharedLockByte, 1, 1);
-    
+
     /* Drop the temporary PENDING lock */
     if (_AFPFSSetLock(context->filePath, pFile->h, PENDING_BYTE, 1, 0)) {
       rc = SQLITE_IOERR_UNLOCK;  /* This should never happen */
       goto afp_end_lock;
     }
-    
+
     if( failed ){
       rc = SQLITE_BUSY;
     } else {
@@ -1873,14 +1873,14 @@ static int afpUnixLock(OsFile *id, int locktype)
     }
     if (!failed && locktype == EXCLUSIVE_LOCK) {
       /* Acquire an EXCLUSIVE lock */
-        
-      /* Remove the shared lock before trying the range.  we'll need to 
+
+      /* Remove the shared lock before trying the range.  we'll need to
       ** reestablish the shared lock if we can't get the  afpUnixUnlock
       */
       if (!_AFPFSSetLock(context->filePath, pFile->h, SHARED_FIRST +
                          context->sharedLockByte, 1, 0)) {
         /* now attemmpt to get the exclusive lock range */
-        failed = _AFPFSSetLock(context->filePath, pFile->h, SHARED_FIRST, 
+        failed = _AFPFSSetLock(context->filePath, pFile->h, SHARED_FIRST,
                                SHARED_SIZE, 1);
         if (failed && _AFPFSSetLock(context->filePath, pFile->h, SHARED_FIRST +
                                     context->sharedLockByte, 1, 1)) {
@@ -1895,16 +1895,16 @@ static int afpUnixLock(OsFile *id, int locktype)
       rc = SQLITE_BUSY;
     }
   }
-  
+
   if( rc==SQLITE_OK ){
     pFile->locktype = locktype;
   }else if( locktype==EXCLUSIVE_LOCK ){
     pFile->locktype = PENDING_LOCK;
   }
-  
+
 afp_end_lock:
     sqlite3OsLeaveMutex();
-  OSTRACE4("LOCK    %d %s %s\n", pFile->h, locktypeName(locktype), 
+  OSTRACE4("LOCK    %d %s %s\n", pFile->h, locktypeName(locktype),
          rc==SQLITE_OK ? "ok" : "failed");
   return rc;
 }
@@ -1925,7 +1925,7 @@ static int afpUnixUnlock(OsFile *id, int locktype) {
   assert( pFile );
   OSTRACE5("UNLOCK  %d %d was %d pid=%d\n", pFile->h, locktype,
          pFile->locktype, getpid());
-  
+
   assert( locktype<=SHARED_LOCK );
   if( pFile->locktype<=locktype ){
     return SQLITE_OK;
@@ -1940,7 +1940,7 @@ static int afpUnixUnlock(OsFile *id, int locktype) {
 
       /* unlock the exclusive range - then re-establish the shared lock */
       if (pFile->locktype==EXCLUSIVE_LOCK) {
-        failed = _AFPFSSetLock(context->filePath, pFile->h, SHARED_FIRST, 
+        failed = _AFPFSSetLock(context->filePath, pFile->h, SHARED_FIRST,
                                  SHARED_SIZE, 0);
         if (!failed) {
           /* successfully removed the exclusive lock */
@@ -1952,7 +1952,7 @@ static int afpUnixUnlock(OsFile *id, int locktype) {
         } else {
           /* This should never happen - failed to unlock the exclusive range */
           rc = SQLITE_IOERR_UNLOCK;
-        } 
+        }
       }
     }
     if (rc == SQLITE_OK && pFile->locktype>=PENDING_LOCK) {
@@ -1960,16 +1960,16 @@ static int afpUnixUnlock(OsFile *id, int locktype) {
         /* failed to release the pending lock */
         rc = SQLITE_IOERR_UNLOCK; /* This should never happen */
       }
-    } 
+    }
     if (rc == SQLITE_OK && pFile->locktype>=RESERVED_LOCK) {
       if (_AFPFSSetLock(context->filePath, pFile->h, RESERVED_BYTE, 1, 0)) {
         /* failed to release the reserved lock */
         rc = SQLITE_IOERR_UNLOCK;  /* This should never happen */
       }
-    } 
+    }
   }
   if( locktype==NO_LOCK ){
-    int failed = _AFPFSSetLock(context->filePath, pFile->h, 
+    int failed = _AFPFSSetLock(context->filePath, pFile->h,
                                SHARED_FIRST + context->sharedLockByte, 1, 0);
     if (failed) {
       rc = SQLITE_IOERR_UNLOCK;  /* This should never happen */
@@ -1982,11 +1982,11 @@ static int afpUnixUnlock(OsFile *id, int locktype) {
 }
 
 /*
- ** Close a file & cleanup AFP specific locking context 
+ ** Close a file & cleanup AFP specific locking context
  */
 static int afpUnixClose(OsFile **pId) {
   unixFile *id = (unixFile*)*pId;
-  
+
   if( !id ) return SQLITE_OK;
   afpUnixUnlock(*pId, NO_LOCK);
   /* free the AFP locking structure */
@@ -1995,7 +1995,7 @@ static int afpUnixClose(OsFile **pId) {
       sqlite3ThreadSafeFree(((afpLockingContext*)id->lockingContext)->filePath);
     sqlite3ThreadSafeFree(id->lockingContext);
   }
-  
+
   if( id->dirfd>=0 ) close(id->dirfd);
   id->dirfd = -1;
   close(id->h);
@@ -2017,7 +2017,7 @@ typedef void flockLockingContext;
 
 static int flockUnixCheckReservedLock(OsFile *id) {
   unixFile *pFile = (unixFile*)id;
-  
+
   if (pFile->locktype == RESERVED_LOCK) {
     return 1; /* already have a reserved lock */
   } else {
@@ -2034,14 +2034,14 @@ static int flockUnixCheckReservedLock(OsFile *id) {
 
 static int flockUnixLock(OsFile *id, int locktype) {
   unixFile *pFile = (unixFile*)id;
-  
-  /* if we already have a lock, it is exclusive.  
+
+  /* if we already have a lock, it is exclusive.
   ** Just adjust level and punt on outta here. */
   if (pFile->locktype > NO_LOCK) {
     pFile->locktype = locktype;
     return SQLITE_OK;
   }
-  
+
   /* grab an exclusive lock */
   int rc = flock(pFile->h, LOCK_EX | LOCK_NB);
   if (rc) {
@@ -2056,20 +2056,20 @@ static int flockUnixLock(OsFile *id, int locktype) {
 
 static int flockUnixUnlock(OsFile *id, int locktype) {
   unixFile *pFile = (unixFile*)id;
-  
+
   assert( locktype<=SHARED_LOCK );
-  
+
   /* no-op if possible */
   if( pFile->locktype==locktype ){
     return SQLITE_OK;
   }
-  
+
   /* shared can just be set because we always have an exclusive */
   if (locktype==SHARED_LOCK) {
     pFile->locktype = locktype;
     return SQLITE_OK;
   }
-  
+
   /* no, really, unlock. */
   int rc = flock(pFile->h, LOCK_UN);
   if (rc)
@@ -2085,15 +2085,15 @@ static int flockUnixUnlock(OsFile *id, int locktype) {
  */
 static int flockUnixClose(OsFile **pId) {
   unixFile *id = (unixFile*)*pId;
-  
+
   if( !id ) return SQLITE_OK;
   flockUnixUnlock(*pId, NO_LOCK);
-  
+
   if( id->dirfd>=0 ) close(id->dirfd);
   id->dirfd = -1;
   sqlite3OsEnterMutex();
-  
-  close(id->h);  
+
+  close(id->h);
   sqlite3OsLeaveMutex();
   id->isOpen = 0;
   OSTRACE2("CLOSE   %-3d\n", id->h);
@@ -2117,9 +2117,9 @@ struct dotlockLockingContext {
 
 static int dotlockUnixCheckReservedLock(OsFile *id) {
   unixFile *pFile = (unixFile*)id;
-  dotlockLockingContext *context = 
+  dotlockLockingContext *context =
     (dotlockLockingContext *) pFile->lockingContext;
-  
+
   if (pFile->locktype == RESERVED_LOCK) {
     return 1; /* already have a reserved lock */
   } else {
@@ -2135,33 +2135,33 @@ static int dotlockUnixCheckReservedLock(OsFile *id) {
 
 static int dotlockUnixLock(OsFile *id, int locktype) {
   unixFile *pFile = (unixFile*)id;
-  dotlockLockingContext *context = 
+  dotlockLockingContext *context =
     (dotlockLockingContext *) pFile->lockingContext;
-  
-  /* if we already have a lock, it is exclusive.  
+
+  /* if we already have a lock, it is exclusive.
   ** Just adjust level and punt on outta here. */
   if (pFile->locktype > NO_LOCK) {
     pFile->locktype = locktype;
-    
+
     /* Always update the timestamp on the old file */
     utimes(context->lockPath,NULL);
     return SQLITE_OK;
   }
-  
+
   /* check to see if lock file already exists */
   struct stat statBuf;
   if (lstat(context->lockPath,&statBuf) == 0){
     return SQLITE_BUSY; /* it does, busy */
   }
-  
+
   /* grab an exclusive lock */
   int fd = open(context->lockPath,O_RDONLY|O_CREAT|O_EXCL,0600);
   if (fd < 0) {
     /* failed to open/create the file, someone else may have stolen the lock */
-    return SQLITE_BUSY; 
+    return SQLITE_BUSY;
   }
   close(fd);
-  
+
   /* got it, set the type and return ok */
   pFile->locktype = locktype;
   return SQLITE_OK;
@@ -2169,22 +2169,22 @@ static int dotlockUnixLock(OsFile *id, int locktype) {
 
 static int dotlockUnixUnlock(OsFile *id, int locktype) {
   unixFile *pFile = (unixFile*)id;
-  dotlockLockingContext *context = 
+  dotlockLockingContext *context =
     (dotlockLockingContext *) pFile->lockingContext;
-  
+
   assert( locktype<=SHARED_LOCK );
-  
+
   /* no-op if possible */
   if( pFile->locktype==locktype ){
     return SQLITE_OK;
   }
-  
+
   /* shared can just be set because we always have an exclusive */
   if (locktype==SHARED_LOCK) {
     pFile->locktype = locktype;
     return SQLITE_OK;
   }
-  
+
   /* no, really, unlock. */
   unlink(context->lockPath);
   pFile->locktype = NO_LOCK;
@@ -2196,7 +2196,7 @@ static int dotlockUnixUnlock(OsFile *id, int locktype) {
  */
 static int dotlockUnixClose(OsFile **pId) {
   unixFile *id = (unixFile*)*pId;
-  
+
   if( !id ) return SQLITE_OK;
   dotlockUnixUnlock(*pId, NO_LOCK);
   /* free the dotlock locking structure */
@@ -2206,13 +2206,13 @@ static int dotlockUnixClose(OsFile **pId) {
         id->lockingContext)->lockPath);
     sqlite3ThreadSafeFree(id->lockingContext);
   }
-  
+
   if( id->dirfd>=0 ) close(id->dirfd);
   id->dirfd = -1;
   sqlite3OsEnterMutex();
-  
+
   close(id->h);
-  
+
   sqlite3OsLeaveMutex();
   id->isOpen = 0;
   OSTRACE2("CLOSE   %-3d\n", id->h);
@@ -2247,14 +2247,14 @@ static int nolockUnixUnlock(OsFile *id, int locktype) {
  */
 static int nolockUnixClose(OsFile **pId) {
   unixFile *id = (unixFile*)*pId;
-  
+
   if( !id ) return SQLITE_OK;
   if( id->dirfd>=0 ) close(id->dirfd);
   id->dirfd = -1;
   sqlite3OsEnterMutex();
-  
+
   close(id->h);
-  
+
   sqlite3OsLeaveMutex();
   id->isOpen = 0;
   OSTRACE2("CLOSE   %-3d\n", id->h);
@@ -2471,10 +2471,10 @@ static const IoMethod sqlite3NolockLockingUnixIoMethod = {
 ** If we run out of memory, close the file and return an error.
 */
 #ifdef SQLITE_ENABLE_LOCKING_STYLE
-/* 
- ** When locking extensions are enabled, the filepath and locking style 
+/*
+ ** When locking extensions are enabled, the filepath and locking style
  ** are needed to determine the unixFile pMethod to use for locking operations.
- ** The locking-style specific lockingContext data structure is created 
+ ** The locking-style specific lockingContext data structure is created
  ** and assigned here also.
  */
 static int allocateUnixFile(
@@ -2527,12 +2527,12 @@ static int allocateUnixFile(
         ** the afpLockingContext */
         int nFilename;
         pNew->pMethod = &sqlite3AFPLockingUnixIoMethod;
-        pNew->lockingContext = 
+        pNew->lockingContext =
           sqlite3ThreadSafeMalloc(sizeof(afpLockingContext));
         nFilename = strlen(zFilename)+1;
-        ((afpLockingContext *)pNew->lockingContext)->filePath = 
+        ((afpLockingContext *)pNew->lockingContext)->filePath =
           sqlite3ThreadSafeMalloc(nFilename);
-        memcpy(((afpLockingContext *)pNew->lockingContext)->filePath, 
+        memcpy(((afpLockingContext *)pNew->lockingContext)->filePath,
                zFilename, nFilename);
         srandomdev();
         break;
@@ -2549,10 +2549,10 @@ static int allocateUnixFile(
         pNew->lockingContext = sqlite3ThreadSafeMalloc(
           sizeof(dotlockLockingContext));
         nFilename = strlen(zFilename) + 6;
-        ((dotlockLockingContext *)pNew->lockingContext)->lockPath = 
+        ((dotlockLockingContext *)pNew->lockingContext)->lockPath =
             sqlite3ThreadSafeMalloc( nFilename );
-        sqlite3_snprintf(nFilename, 
-                ((dotlockLockingContext *)pNew->lockingContext)->lockPath, 
+        sqlite3_snprintf(nFilename,
+                ((dotlockLockingContext *)pNew->lockingContext)->lockPath,
                 "%s.lock", zFilename);
         break;
       }
@@ -2562,7 +2562,7 @@ static int allocateUnixFile(
         break;
       case noLockingStyle:
       case unsupportedLockingStyle:
-      default: 
+      default:
         pNew->pMethod = &sqlite3NolockLockingUnixIoMethod;
     }
     *pId = (OsFile*)pNew;
@@ -2868,7 +2868,7 @@ ThreadData *sqlite3UnixThreadSpecificData(int allocateFlag){
         TSD_COUNTER(+1);
       }
     }
-  }else if( pTsd!=0 && allocateFlag<0 
+  }else if( pTsd!=0 && allocateFlag<0
             && memcmp(pTsd, &zeroData, sizeof(ThreadData))==0 ){
     sqlite3OsFree(pTsd);
     pthread_setspecific(key, 0);

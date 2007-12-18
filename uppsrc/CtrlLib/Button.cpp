@@ -183,6 +183,7 @@ CH_STYLE(Button, Style, StyleNormal)
 	pressoffset = Point(0, 0);
 	focusmargin = 3;
 	overpaint = 0;
+	transparent = true;
 }
 
 CH_STYLE(Button, Style, StyleOk)
@@ -280,7 +281,7 @@ Button& Button::AutoStyle()
 
 void Button::Layout()
 {
-	Transparent(!ChIsOpaque(St()->look[0]));
+	Transparent(St()->transparent);
 }
 
 void Button::RefreshOK(Ctrl *p)

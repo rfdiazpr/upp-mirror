@@ -45,6 +45,7 @@ void ChClassicSkin()
 		Button::Style& s = Button::StyleNormal().Write();
 		s.monocolor[0] = s.monocolor[1] = s.monocolor[2] = s.monocolor[3] = SColorText();
 		s.pressoffset.x = s.pressoffset.y = 1;
+		s.transparent = false;
 	}
 
 	{
@@ -56,7 +57,7 @@ void ChClassicSkin()
 		for(int i = 0; i < 4; i++)
 			s.vthumb[i] = s.hthumb[i] = Button::StyleNormal().look[i];
 	}
-
+	
 	{
 		MultiButton::Style& s = MultiButton::StyleDefault().Write();
 		s.border = s.trivialborder = 2;

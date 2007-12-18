@@ -263,6 +263,10 @@ SqlVal Lower(const SqlVal& exp) {
 	return exp.IsEmpty() ? exp : SqlFunc("lower", exp);
 }
 
+SqlVal Length(const SqlVal& exp) {
+	return exp.IsEmpty() ? exp : SqlFunc("length", exp);
+}
+
 SqlVal UpperAscii(const SqlVal& exp) {
 	return exp.IsEmpty() ? exp : Upper(ConvertAscii(exp));
 }

@@ -29,9 +29,9 @@ public:
 	Draw& Alpha()                         { has_alpha = true; return alpha; }
 
 	operator Image() const;
-
+	
 	Image GetStraight() const;
-
+	
 	ImageDraw(Size sz);
 	ImageDraw(int cx, int cy);
 	~ImageDraw();

@@ -35,6 +35,7 @@ int OidToType(Oid oid)
 		case PGSQL_BOOLOID:
 			return BOOL_V;
 		case PGSQL_INT8OID:
+			return INT64_V;
 		case PGSQL_INT2OID:
 		case PGSQL_INT2VECTOROID:
 		case PGSQL_INT4OID:
@@ -299,6 +300,7 @@ bool PostgreSQLSession::Open(const char *connect)
 		Close();
 		return false;
 	}
+	level = 0;
 	return true;
 }
 
@@ -313,21 +315,30 @@ void PostgreSQLSession::Close()
 
 	PQfinish(conn);
 	conn = NULL;
+	level = 0;
 }
 
 void PostgreSQLSession::Begin()
 {
 	ExecTrans("begin");
+	level++;
 }
 
 void PostgreSQLSession::Commit()
 {
 	ExecTrans("commit");
+	level--;
 }
 
 void PostgreSQLSession::Rollback()
 {
 	ExecTrans("rollback");
+	level--;
+}
+
+int PostgreSQLSession::GetTransactionLevel() const
+{
+	return level;
 }
 
 void PostgreSQLConnection::SetParam(int i, const Value& r)
@@ -361,13 +372,13 @@ void PostgreSQLConnection::SetParam(int i, const Value& r)
 			break;
 		case BOOL_V:
 		case INT_V:
-			p = Format("%d", int(r));
+			p << int(r);
 			break;
 		case INT64_V:
-			p = Format("%ld", int64(r));
+			p << int64(r);
 			break;
 		case DOUBLE_V:
-			p = Format("%.10g", double(r));
+			p = FormatDouble(double(r), 20);
 			break;
 		case DATE_V: {
 				Date d = r;
@@ -498,6 +509,8 @@ void PostgreSQLConnection::GetColumn(int i, Ref f) const
 	switch(info[i].type)
 	{
 		case INT64_V:
+			f.SetValue(ScanInt64(s));
+			break;
 		case INT_V:
 			f.SetValue(atoi(s));
 			break;

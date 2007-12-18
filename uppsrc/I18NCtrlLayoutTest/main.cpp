@@ -3,17 +3,17 @@
 MainDlg::MainDlg()
 {
 	::CtrlLayout( *this, "I18n Layout Test" );
-
+	
 	AddFrame( m_menu );
 	m_menu.Set( THISBACK(OnMenu) );
 	AddFrame( InsetFrame() );
-
+	
 	m_file <<= THISBACK(OnFile);
 	m_pallette <<= THISBACK(OnPallette);
 	m_printer <<= THISBACK(OnPrinter);
-
+	
 	OnChangeLanguage( ::GetCurrentLanguage() );
-
+	
 	m_close <<= Rejector( IDCANCEL );
 }
 
@@ -71,3 +71,4 @@ GUI_APP_MAIN
 	MainDlg dlg;
 	dlg.Run();
 }
+

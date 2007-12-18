@@ -115,14 +115,6 @@ void StdDisplayClass::Paint0(Draw& w, const Rect& r, const Value& q,
 	}
 	else
 		DrawTLText(w, x, tt, r.Width(), txt, font, ink);
-/*
-	if(tsz.cx > r.GetWidth() && !IsNull(paper)) {
-		int wd = min(r.GetWidth() / 4, 8);
-		wd = min(wd, tsz.cx - r.GetWidth());
-		if(wd > 0 && r.GetHeight() > 0)
-			w.DrawImage(r.right - wd, r.top, HorzFadeOut(Size(wd, r.GetHeight()), paper));
-	}
-*/
 }
 
 void StdDisplayClass::Paint(Draw& w, const Rect& r, const Value& q,

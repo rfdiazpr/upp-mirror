@@ -300,9 +300,7 @@ double JPGRaster::Data::ExifF5(const char *s)
 {
 	unsigned num = Exif32(s + 0);
 	unsigned den = Exif32(s + 4);
-	if(den == 0)
-		return Null;
-	return num / (double)den;
+	return num / (double)(den ? den : 1);
 }
 
 int JPGRaster::Data::ExifDir(const char *begin, int offset, IFD_TYPE type)

@@ -245,7 +245,7 @@ protected:
 		WString itext;
 		virtual bool Key(dword key, int count);
 	} findreplace;
-
+	
 	enum {
 		WILDANY = 16,
 		WILDONE,

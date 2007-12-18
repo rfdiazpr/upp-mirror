@@ -262,4 +262,8 @@ inline Rectf PeekIDR(const byte *p)
 String AppendPath(String s, String new_path);
 String AppendPathList(String s, String path_list);
 
+inline unsigned CalcGray(byte r, byte g, byte b) { return b * 26 + g * 153 + r * 77; }
+inline unsigned CalcGray(const byte *p)          { return p[0] * 26 + p[1] * 153 + p[2] * 77; }
+inline unsigned CalcGray(Color c)                { return c.GetB() * 26 + c.GetG() * 153 + c.GetR() * 77; }
+
 END_UPP_NAMESPACE

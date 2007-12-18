@@ -47,7 +47,7 @@ int sqlite3_blob_open(
   int nAttempt = 0;
   int iCol;               /* Index of zColumn in row-record */
 
-  /* This VDBE program seeks a btree cursor to the identified 
+  /* This VDBE program seeks a btree cursor to the identified
   ** db/table/row entry. The reason for using a vdbe program instead
   ** of writing code to use the b-tree layer directly is that the
   ** vdbe program will take advantage of the various transaction,
@@ -55,11 +55,11 @@ int sqlite3_blob_open(
   **
   ** After seeking the cursor, the vdbe executes an OP_Callback.
   ** Code external to the Vdbe then "borrows" the b-tree cursor and
-  ** uses it to implement the blob_read(), blob_write() and 
+  ** uses it to implement the blob_read(), blob_write() and
   ** blob_bytes() functions.
   **
   ** The sqlite3_blob_close() function finalizes the vdbe program,
-  ** which closes the b-tree cursor and (possibly) commits the 
+  ** which closes the b-tree cursor and (possibly) commits the
   ** transaction.
   */
   static const VdbeOpList openBlob[] = {
@@ -159,8 +159,8 @@ int sqlite3_blob_open(
       /* Configure the db number pushed onto the stack */
       sqlite3VdbeChangeP1(v, 2, iDb);
 
-      /* Remove either the OP_OpenWrite or OpenRead. Set the P2 
-      ** parameter of the other to pTab->tnum. 
+      /* Remove either the OP_OpenWrite or OpenRead. Set the P2
+      ** parameter of the other to pTab->tnum.
       */
       sqlite3VdbeChangeToNoop(v, (flags ? 3 : 4), 1);
       sqlite3VdbeChangeP2(v, (flags ? 4 : 3), pTab->tnum);
@@ -169,7 +169,7 @@ int sqlite3_blob_open(
       ** think that the table has one more column than it really
       ** does. An OP_Column to retrieve this imaginary column will
       ** always return an SQL NULL. This is useful because it means
-      ** we can invoke OP_Column to fill in the vdbe cursors type 
+      ** we can invoke OP_Column to fill in the vdbe cursors type
       ** and offset cache without causing any IO.
       */
       sqlite3VdbeChangeP2(v, 5, pTab->nCol+1);
@@ -248,16 +248,16 @@ int sqlite3_blob_close(sqlite3_blob *pBlob){
 
 
 static int blobReadWrite(
-  sqlite3_blob *pBlob, 
-  void *z, 
-  int n, 
-  int iOffset, 
+  sqlite3_blob *pBlob,
+  void *z,
+  int n,
+  int iOffset,
   int (*xCall)(BtCursor*, u32, u32, void*)
 ){
   int rc;
   Incrblob *p = (Incrblob *)pBlob;
   Vdbe *v = (Vdbe *)(p->pStmt);
-  sqlite3 *db;  
+  sqlite3 *db;
 
   /* If there is no statement handle, then the blob-handle has
   ** already been invalidated. Return SQLITE_ABORT in this case.

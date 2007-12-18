@@ -923,11 +923,7 @@ EditField::~EditField() {}
 
 void EditIntSpin::Inc()
 {
-	if(IsReadOnly())
-	{
-		BeepExclamation();
-		return;
-	}
+	if(IsReadOnly()) return;
 	int i = GetData();
 	if(IsNull(i)) {
 		if(IsNull(GetMin()) || GetMin() == INT_MIN) return;
@@ -945,11 +941,7 @@ void EditIntSpin::Inc()
 
 void EditIntSpin::Dec()
 {
-	if(IsReadOnly())
-	{
-		BeepExclamation();
-		return;
-	}
+	if(IsReadOnly()) return;
 	int i = GetData();
 	if(IsNull(i)) {
 		if(IsNull(GetMax()) || GetMax() == INT_MAX) return;

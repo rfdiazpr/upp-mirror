@@ -19,3 +19,4 @@ Known bugs in libpng version 1.2.22
       2) Compile pngtest.c with PNG_DEBUG defined (the bug goes away if
          you try to look at it).
       3) Ignore the crash.  The library itself seems to be OK.
+

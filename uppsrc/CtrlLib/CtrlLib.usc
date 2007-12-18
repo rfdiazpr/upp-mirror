@@ -538,6 +538,14 @@ ctrl EditInt {
 	PaintData(w) { PaintMinMax(w, "int", IntStr(.Min), IntStr(.Max)); }
 }
 
+ctrl EditInt64 {
+	>EditNotNull;
+	int Min;
+	int Max;
+
+	PaintData(w) { PaintMinMax(w, "int64", IntStr(.Min), IntStr(.Max)); }
+}
+
 ctrl EditIntNotNull {
 	>EditInt;
 

@@ -83,6 +83,7 @@ Image Sharpen(const Image& img, int amount = 100);
 Image RotateClockwise(const Image& img);
 Image RotateAntiClockwise(const Image& img);
 Image MirrorHorz(const Image& img);
+Image MirrorVert(const Image& img);
 Image Rotate(const Image& m, int angle);
 
 // Experimental {
@@ -126,7 +127,9 @@ void  SetMakeImageCacheMax(int m);
 
 Image MakeImagePaintOnly(const ImageMaker& m);
 
+Image CachedRescale(const Image& m, Size sz, const Rect& src);
 Image CachedRescale(const Image& m, Size sz);
+Image CachedRescalePaintOnly(const Image& m, Size sz, const Rect& src);
 Image CachedRescalePaintOnly(const Image& m, Size sz);
 
 Image Magnify(const Image& img, int nx, int ny);

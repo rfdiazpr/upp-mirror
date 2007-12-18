@@ -221,6 +221,7 @@ public:
 };
 
 typedef EditMinMax<int, ConvertInt>              EditInt;
+typedef EditMinMax<int64, ConvertInt64>          EditInt64;
 typedef EditMinMax<double, ConvertDouble>        EditDouble;
 typedef EditMinMax<Date, ConvertDate>            EditDate;
 typedef EditMinMax<Time, ConvertTime>            EditTime;

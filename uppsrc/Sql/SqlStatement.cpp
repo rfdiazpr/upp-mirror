@@ -171,6 +171,12 @@ SqlSelect& SqlSelect::FullJoin(SqlId table)
 	return *this;
 }
 
+SqlSelect::SqlSelect(Fields f)
+{
+	SqlSet set(f);
+	text = ~set;
+}
+
 #define E__SCat(I)       set.Cat(p##I)
 
 #define E__QSelectF(I) \

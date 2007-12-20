@@ -64,9 +64,9 @@ const klass::Style& klass::style() \
 	if(b.status == 0) { \
 		ChRegisterStyle__(b.status, b.registered, COMBINE5(klass, __, type, __, style)::InitIt); \
 		b.Init(); \
-		b.status = 1; \
 		standard = b; \
 		b.standard = &standard; \
+		b.status = 1; \
 	} \
 	return b; \
 } \

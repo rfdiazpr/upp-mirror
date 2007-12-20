@@ -7,18 +7,9 @@ NAMESPACE_UPP
 #include "GridDisplay.h"
 
 #define FOREACH_ROW(x) for(x.Begin(); x.IsEnd(); x.Next())
-#define FOREACH_SELECTED_ROW(x) FOREACH_ROW(x) if(x.IsSelected())
 #define FOREACH_MODIFIED_ROW(x) FOREACH_ROW(x) if(x.IsModifiedRow())
 #define FOREACH_MODIFIED_OR_NEW_ROW(x) FOREACH_ROW(x) if(x.IsModifiedRow() || x.IsAddedRow())
 #define COLUMN(grid, column) (column, grid(column))
-
-namespace GF
-{
-	enum {
-		SKIP_CURRENT_ROW = BIT(0),
-		SKIP_HIDDEN = BIT(1)
-	};
-};
 
 class FindEditString : public EditString
 {
@@ -1095,8 +1086,8 @@ class GridCtrl : public Ctrl
 		Item&     GetCell(int n, int m);
 		Item&     GetCell(int n, Id id);
 
-		int  GetCurrentRow() const;
-		bool IsCurrentRow() const;
+		int  GetCurrentRow();
+		bool IsCurrentRow();
 		void RestoreCurrentRow();
 
 		int GetWidth(int n = -1);
@@ -1181,8 +1172,8 @@ class GridCtrl : public Ctrl
 
 		void UpdateCursor();
 
-		int Find(const Value &v, int col = 0, int start_from = 0, int opt = 0) const;
-		int Find(const Value &v, Id id, int opt = 0) const;
+		int Find(const Value &v, int col = 0, int start_from = 0) const;
+		int Find(const Value &v, Id id) const;
 		int FindInRow(const Value& v, int row = 0, int start_from = 0) const;
 
 		GridDisplay& GetDisplay() { return *display; }
@@ -1295,7 +1286,6 @@ class GridCtrl : public Ctrl
 		int  GetSelectedItemsCount() { return selected_items;    }
 		bool IsSelected(int n, bool relative = true);
 		bool IsSelected(int n, int m, bool relative = true);
-		bool IsSelected();
 
 		void DoInsert0(bool edit, bool after);
 		void DoInsertBefore0(bool edit);

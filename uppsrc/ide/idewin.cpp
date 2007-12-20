@@ -317,13 +317,13 @@ void Ide::SetupBars()
 		toolbar.SetFrame(NullFrame());
 		bararea.Add(menubar.LeftPos(0, l).VCenterPos(menubar.GetStdHeight()));
 		bararea.Add(toolbar.HSizePos(l, r).VCenterPos(toolbar.GetStdHeight()));
-		bararea.Add(display.RightPos(0, r).VSizePos(2, 3));
+		bararea.Add(display.RightPos(0, r).VSizePos());
 		bararea.Height(max(menubar.GetStdHeight(), toolbar.GetStdHeight()));
 		AddFrame(bararea);
 	}
 	else {
 		bararea.Add(menubar.LeftPos(0, l).VCenterPos(menubar.GetStdHeight()));
-		bararea.Add(display.RightPos(0, r).VSizePos(2, 3));
+		bararea.Add(display.RightPos(0, r).VSizePos());
 		bararea.Height(menubar.GetStdHeight());
 		AddFrame(bararea);
 		AddFrame(TopSeparatorFrame());
@@ -344,16 +344,24 @@ Ide::Ide()
 
 	Sizeable().Zoomable();
 
-	display.SetFrame(ThinInsetFrame());
+	static const ColorF FatInsetBorder[] = {
+		(ColorF)4,
+		&SColorFace, &SColorFace, &SColorFace, &SColorFace,
+		&SColorFace, &SColorFace, &SColorFace, &SColorFace,
+		&SColorFace, &SColorFace, &SColorFace, &SColorFace,
+		&SColorShadow, &SColorShadow, &SColorLight, &SColorLight,
+	};
+	static BorderFrame fb(FatInsetBorder);
+
+	display.SetFrame(fb);
+	display.NoTransparent();
 	display.SetAlign(ALIGN_CENTER);
 
 	filelist.Columns(2);
 	package.Columns(2);
 
 	menubar.WhenHelp = statusbar;
-	menubar.AreaLook(1);
 	toolbar.WhenHelp = statusbar;
-	toolbar.AreaLook(1);
 	SetupBars();
 	SetBar();
 	WhenClose = THISBACK(Exit);

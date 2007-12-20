@@ -161,17 +161,16 @@ void FreeDll__(HMODULE hmod)
 void *CheckDll__(const char *fn, const char *const *names, UPP::Vector<void *>& plist)
 {
 
-	void *hmod = dlopen(fn, RTLD_LAZY | RTLD_GLOBAL);
+	void *hmod = dlopen(fn, RTLD_LAZY);
 	if(!hmod) {
-		RLOG("Error loading library " << fn << ": " << dlerror());
-/*
 		for(int i = 0; i < 100; i++) {
-			hmod = dlopen(fn + ("." + UPP::AsString(i)), RTLD_LAZY | RTLD_GLOBAL);
+			hmod = dlopen(fn + ("." + UPP::AsString(i)), RTLD_LAZY);
 			if(hmod)
 				break;
 		}
+
 		if(!hmod)
-*/			return 0;
+			return 0;
 	}
 
 	int missing = 0;

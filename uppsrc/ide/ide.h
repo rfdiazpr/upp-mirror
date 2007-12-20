@@ -611,8 +611,8 @@ public:
 	bool      browser_closeesc;
 	bool      bookmark_pos;
 
-	FrameTop<StaticBarArea> bararea;
-	Label                   display;
+	FrameTop<StaticRect> bararea;
+	Label                display;
 
 
 	byte      hilite_scope;

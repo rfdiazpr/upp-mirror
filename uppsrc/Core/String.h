@@ -531,18 +531,6 @@ inline StringBuffer& operator<<(StringBuffer& s, const char& x)
 	return s;
 }
 
-template <class T>
-void RawCat(String& s, const T& x)
-{
-	s.Cat((const char *)&x, sizeof(x));
-}
-
-template <class T>
-void RawCat(StringBuffer& s, const T& x)
-{
-	s.Cat((const char *)&x, sizeof(x));
-}
-
 class WString0 {
 	enum { SMALL = 23 };
 

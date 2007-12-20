@@ -61,9 +61,6 @@ enum {
 	GTK_SLIDER,
 	GTK_ICON,
 	GTK_EXT,
-	GTK_SHADOW,
-	GTK_FOCUS,
-	GTK_FLATBOX,
 
 	GTK_MARGIN1 = 0x0010,
 	GTK_MARGIN2 = 0x0020,
@@ -140,11 +137,6 @@ Image GetGTK(GtkWidget *widget, int state, int shadow, const char *detail, int t
 			                    widget, detail,
 			                    rect.left + margin, rect.top + margin, rcx, rcy);
 			break;
-		case GTK_FLATBOX:
-			gtk_paint_flat_box(style, pixmap, (GtkStateType)state, (GtkShadowType)shadow, &cr,
-			                    widget, detail,
-			                    rect.left + margin, rect.top + margin, rcx, rcy);
-			break;
 		case GTK_CHECK:
 			gtk_paint_check(style, pixmap, (GtkStateType)state, (GtkShadowType)shadow, &cr,
 			                      widget, detail,
@@ -171,19 +163,9 @@ Image GetGTK(GtkWidget *widget, int state, int shadow, const char *detail, int t
 			break;
 		case GTK_EXT:
 			gtk_paint_extension(style, pixmap, (GtkStateType)state, (GtkShadowType)shadow, &cr,
-			                    widget, (gchar *)detail,
-			                    rect.left + margin, rect.top + margin, rcx, rcy,
-			                    (GtkPositionType)t1);
-			break;
-		case GTK_SHADOW:
-		    gtk_paint_shadow(style, pixmap, (GtkStateType)state, (GtkShadowType)shadow, &cr,
-			                 widget, (gchar *)detail,
-			                 rect.left + margin, rect.top + margin, rcx, rcy);
-			break;
-		case GTK_FOCUS:
-		    gtk_paint_focus(style, pixmap, (GtkStateType)state, &cr,
-			                widget, (gchar *)detail,
-			                rect.left + margin, rect.top + margin, rcx, rcy);
+			                          widget, (gchar *)detail,
+			                          rect.left + margin, rect.top + margin, rcx, rcy,
+			                          (GtkPositionType)t1);
 			break;
 		}
 		g_object_unref(pixmap);
@@ -566,8 +548,8 @@ void ChHostSkin()
 		GtkChButton(ts.buttonstyle.look);
 		ts.buttonstyle.look[CTRL_NORMAL] = Null;
 		ts.buttonstyle.look[CTRL_DISABLED] = Null;
-		GtkCh(ts.buttonstyle.look[CTRL_CHECKED], 1, 1);
-		GtkCh(ts.buttonstyle.look[CTRL_HOTCHECKED], 1, 1);
+		GtkCh(ts.buttonstyle.look[4], 1, 1);
+		GtkCh(ts.buttonstyle.look[5], 1, 1);
 	}
 
 	{

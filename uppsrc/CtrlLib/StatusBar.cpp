@@ -60,13 +60,13 @@ InfoCtrl::InfoCtrl()
 	right = false;
 	defaulttext = t_("Ready");
 	Set(Null);
-	Transparent();
 }
 
 void InfoCtrl::Paint(Draw& w)
 {
 	Size sz = GetSize();
 	Rect r = sz;
+	w.DrawRect(r, SColorFace);
 	if(temp) {
 		r.left = 2;
 		temp.Paint(w, r);
@@ -202,28 +202,23 @@ InfoCtrl& InfoCtrl::Right(int w)
 	return *this;
 }
 
-CH_STYLE(StatusBar, Style, StyleDefault)
-{
-	look = SColorFace();
-}
+class TopLtGray2Frame : public CtrlFrame {
+	virtual void FrameLayout(Rect& r);
+	virtual void FramePaint(Draw& draw, const Rect& r);
+	virtual void FrameAddSize(Size& sz);
+};
 
-void StatusBar::TopFrame::FrameLayout(Rect& r)
+void TopLtGray2Frame::FrameLayout(Rect& r)
 {
 	r.top += 2;
 }
 
-void StatusBar::TopFrame::FramePaint(Draw& w, const Rect& r)
+void TopLtGray2Frame::FramePaint(Draw& w, const Rect& r)
 {
-	ChPaint(w, r, style->look);
+	w.DrawRect(r.left, r.top, r.Width(), 2, SColorFace);
 }
 
-void StatusBar::Paint(Draw& w)
-{
-	ChPaint(w, GetScreenRect().Offseted(-GetScreenView().TopLeft()), frame.style->look);
-	InfoCtrl::Paint(w);
-}
-
-void StatusBar::TopFrame::FrameAddSize(Size& sz)
+void TopLtGray2Frame::FrameAddSize(Size& sz)
 {
 	sz.cy += 2;
 }
@@ -231,8 +226,7 @@ void StatusBar::TopFrame::FrameAddSize(Size& sz)
 StatusBar::StatusBar()
 {
 	Height(5 + max(16, Draw::GetStdFontCy()));
-	frame.style = frame.style = &StyleDefault();
-	SetFrame(frame);
+	SetFrame(Single<TopLtGray2Frame>());
 	AddFrame(grip);
 }
 

@@ -63,8 +63,6 @@ file
 	Bar readonly separator,
 	Bar.h,
 	Bar.cpp,
-	MenuImp.h,
-	MenuItem.cpp,
 	MenuBar.cpp,
 	ToolButton.cpp,
 	ToolBar.cpp,
@@ -121,3 +119,4 @@ file
 	COPYING,
 	COPYING-PLAIN,
 	AUTHORS;
+

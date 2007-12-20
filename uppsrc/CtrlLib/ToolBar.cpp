@@ -4,16 +4,6 @@ NAMESPACE_UPP
 
 #define LTIMING(x)  // TIMING(x)
 
-CH_STYLE(ToolBar, Style, StyleDefault)
-{
-	buttonstyle = ToolButton::StyleDefault();
-	buttonminsize = Size(16, 16);
-	maxiconsize = Size(INT_MAX, INT_MAX);
-	arealook = Null;
-	look = SColorFace();
-	shadow = SColorShadow();
-	light = SColorLight();
-}
 
 ToolBar::ToolBar()
 {
@@ -26,30 +16,15 @@ ToolBar::ToolBar()
 	buttonminsize = Null;
 	maxiconsize = Null;
 	kind = ToolButton::NOLABEL;
-	arealook = -1;
 }
 
 ToolBar::~ToolBar() {}
 
-void PaintBarArea(Draw& w, Ctrl *x, const Value& look, int bottom)
+CH_STYLE(ToolBar, Style, StyleDefault)
 {
-	Ctrl *tc = x->GetTopCtrl();
-	Rect sr = tc->GetScreenRect();
-	sr.bottom = Nvl(bottom, tc->GetScreenView().top);
-	sr.Offset(-x->GetScreenRect().TopLeft());
-	ChPaint(w, sr, look);
-}
-
-void ToolBar::Paint(Draw& w)
-{
-	if(IsTransparent())
-		return;
-	Value look = style->look;
-	if(!IsNull(style->arealook) && (arealook < 0 ? InFrame() : arealook)) {
-		PaintBarArea(w, this, style->arealook, GetScreenRect().bottom);
-		look = Null;
-	}
-	PaintBar(w, style->shadow, style->light, look);
+	buttonstyle = ToolButton::StyleDefault();
+	buttonminsize = Size(16, 16);
+	maxiconsize = Size(INT_MAX, INT_MAX);
 }
 
 Bar::Item& ToolBar::AddItem(Callback cb)
@@ -109,22 +84,7 @@ void ToolBar::Post(Callback1<Bar&> bar)
 
 int ToolBar::GetStdHeight()
 {
-	Size sz = StyleDefault().maxiconsize;
-	return sz.cy > 10000 ? 22 + 3 : sz.cy + 6 + 3;
-}
-
-StaticBarArea::StaticBarArea()
-{
-	upperframe = true;
-}
-
-void StaticBarArea::Paint(Draw& w)
-{
-	if(IsNull(ToolBar().StyleDefault().arealook))
-		ChPaint(w, GetSize(), ToolBar().StyleDefault().look);
-	else
-		PaintBarArea(w, this, ToolBar().StyleDefault().arealook,
-		             upperframe ? Null : GetScreenRect().bottom);
+	return 22 + 3;
 }
 
 END_UPP_NAMESPACE

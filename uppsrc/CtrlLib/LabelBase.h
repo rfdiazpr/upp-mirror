@@ -1,6 +1,5 @@
 enum {
-	CTRL_NORMAL, CTRL_HOT, CTRL_PRESSED, CTRL_DISABLED,
-	CTRL_CHECKED, CTRL_HOTCHECKED
+	CTRL_NORMAL, CTRL_HOT, CTRL_PRESSED, CTRL_DISABLED
 };
 
 struct CtrlsImgLook : Vector<Value> { // deprecated - remove after refactoring chameleon

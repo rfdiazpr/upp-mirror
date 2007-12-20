@@ -9,34 +9,28 @@ void BarPane::LeftDown(Point pt, dword keyflags)
 	WhenLeftClick();
 }
 
-void BarPane::PaintBar(Draw& w, Color shadow, Color light, const Value& pane)
+void BarPane::Paint(Draw& w)
 {
 	Size sz = GetSize();
-	Rect r = GetSize();
+	Ctrl *q = GetParent();
+	if(!q || !q->IsTransparent()) {
+		BarCtrl *p = dynamic_cast<BarCtrl *>(q);
+		Value v;
+		if(p) v = p->GetBackground();
+		if(IsNull(v))
+			w.DrawRect(sz, menu ? (GUI_GlobalStyle() >= GUISTYLE_XP ? SColorMenu : SColorFace) : SColorFace);
+		else
+			ChPaint(w, sz, v);
+	}
 	for(int i = 0; i < breakpos.GetCount(); i++)
 		if(horz) {
-			int y = breakpos[i];
-			Rect rr = r;
-			rr.bottom = y;
-			ChPaint(w, rr, pane);
-			if(!IsNull(shadow))
-				w.DrawRect(0, y++, sz.cx, 1, shadow);
-			if(!IsNull(light))
-				w.DrawRect(0, y++, sz.cx, 1, light);
-			r.top = y;
+			w.DrawRect(0, breakpos[i], sz.cx, 1, SColorShadow);
+			w.DrawRect(0, breakpos[i] + 1, sz.cx, 1, SColorLight);
 		}
 		else {
-			int x = breakpos[i];
-			Rect rr = r;
-			rr.right = x;
-			ChPaint(w, rr, pane);
-			if(!IsNull(shadow))
-				w.DrawRect(x++, 0, 1, sz.cy, shadow);
-			if(!IsNull(light))
-				w.DrawRect(x++, 0, 1, sz.cy, light);
-			r.left = x;
+			w.DrawRect(breakpos[i], 0, 1, sz.cy, SColorShadow);
+			w.DrawRect(breakpos[i] + 1, 0, 1, sz.cy, SColorLight);
 		}
-	ChPaint(w, r, pane);
 }
 
 Size BarPane::Repos(bool _horz, int maxsize)
@@ -606,11 +600,6 @@ void BarCtrl::Layout()
 		else
 			pane.Repos(true, dowrap ? GetSize().cx : INT_MAX);
 	}
-}
-
-void BarCtrl::PaintBar(Draw& w, Color shadow, Color light, const Value& p)
-{
-	pane.PaintBar(w, shadow, light, p);
 }
 
 BarCtrl::BarCtrl() {

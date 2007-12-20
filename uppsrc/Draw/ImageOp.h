@@ -127,9 +127,7 @@ void  SetMakeImageCacheMax(int m);
 
 Image MakeImagePaintOnly(const ImageMaker& m);
 
-Image CachedRescale(const Image& m, Size sz, const Rect& src);
 Image CachedRescale(const Image& m, Size sz);
-Image CachedRescalePaintOnly(const Image& m, Size sz, const Rect& src);
 Image CachedRescalePaintOnly(const Image& m, Size sz);
 
 Image Magnify(const Image& img, int nx, int ny);

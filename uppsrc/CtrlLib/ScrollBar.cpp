@@ -547,7 +547,7 @@ CH_IMAGE(SizeGripImg, CtrlsImg::SizeGrip());
 void SizeGrip::Paint(Draw& w)
 {
     Size sz = GetSize();
-    if(!IsTransparent())
+    if(InFrame())
         w.DrawRect(sz, SColorFace);
 #ifdef PLATFORM_X11
     if(_NET_Supported().Find(XAtom("_NET_WM_MOVERESIZE")) >= 0)
@@ -762,7 +762,6 @@ ScrollBars& ScrollBars::FixedBox()
 
 ScrollBars::ScrollBars() {
 	box = &the_box;
-	the_box.NoTransparent();
 	x.WhenScroll = y.WhenScroll = callback(this, &ScrollBars::Scroll);
 	x.WhenLeftClick = y.WhenLeftClick = Proxy(WhenLeftClick);
 	x.AutoHide();

@@ -17,8 +17,11 @@ Value DateIntConvertCls::Scan(const Value& text) const
 	if(IsNull(s))
 		return Null;
 	Date d;
-	if(StrToDate(d, s))
-		return d - Date(1970, 1, 1);
+	if(StrToDate(d, s)) {
+		while(*s == ' ') s++;
+		if(*s == '\0')
+			return d - Date(1970, 1, 1);
+	}
 	return ErrorValue("Invalid date!");
 }
 

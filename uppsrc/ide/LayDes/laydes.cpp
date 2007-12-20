@@ -750,7 +750,7 @@ void LayDes::Group(Bar& bar, const String& group)
 			type.Add(LayoutTypes().GetKey(i));
 	}
 	Sort(type);
-	int h = 3 * StdFont().Info().GetHeight() / 2;
+	int h = StdFont().Info().GetHeight();
 	int w = 8 * h / 3;
 	((MenuBar&)bar).LeftGap(w + 2);
 	int q = 0;
@@ -773,7 +773,7 @@ void LayDes::TemplateGroup(Bar& bar, TempGroup tg)
 			type.Add(LayoutTypes().GetKey(i));
 	}
 	Sort(type);
-	int h = 3 * StdFont().Info().GetHeight() / 2;
+	int h = StdFont().Info().GetHeight();
 	int w = 8 * h / 3;
 	((MenuBar&)bar).LeftGap(w + 2);
 	int q = 0;
@@ -789,7 +789,7 @@ void LayDes::Template(Bar& bar, const String& temp)
 {
 	Index<String> group;
 	Vector<String> type;
-	int h = 3 * StdFont().Info().GetHeight() / 2;
+	int h = StdFont().Info().GetHeight();
 	int w = 8 * h / 3;
 	((MenuBar&)bar).LeftGap(w + 2);
 	int i;
@@ -842,7 +842,6 @@ void LayDes::RightDown(Point p, dword keyflags)
 	if(currentlayout < 0 || HasCapture()) return;
 	dragbase = Normalize(p);
 	MenuBar menu;
-	menu.MaxIconSize(Size(64, 64));
 	int h = StdFont().Info().GetHeight();
 	int w = 8 * h / 3;
 	menu.LeftGap(w + 2);

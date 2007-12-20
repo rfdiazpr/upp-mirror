@@ -4,7 +4,6 @@ public:
 	virtual void FrameLayout(Rect& r);
 
 private:
-
 	struct Tab {
 		PaintRect             info;
 		int                   width;
@@ -46,26 +45,10 @@ class StatusBar : public InfoCtrl {
 public:
 	virtual void FrameLayout(Rect& r);
 	virtual void FrameAddSize(Size& sz);
-	virtual void Paint(Draw& w);
-
-public:
-	struct Style : public ChStyle<Style> {
-		Value look;
-	};
 
 private:
 	int      cy;
 	SizeGrip grip;
-
-	struct TopFrame : public CtrlFrame {
-		virtual void FrameLayout(Rect& r);
-		virtual void FramePaint(Draw& draw, const Rect& r);
-		virtual void FrameAddSize(Size& sz);
-
-		const Style *style;
-	};
-
-	TopFrame frame;
 
 	void    SetText(const String& s)          { Set(s); }
 
@@ -76,10 +59,6 @@ public:
 
 	StatusBar&  Height(int _cy);
 	StatusBar&  NoSizeGrip()                  { RemoveFrame(grip); return *this; }
-
-	static const Style& StyleDefault();
-
-	InfoCtrl& SetStyle(const Style& s)        { frame.style = &s; Refresh(); return *this; }
 
 	StatusBar();
 	~StatusBar();

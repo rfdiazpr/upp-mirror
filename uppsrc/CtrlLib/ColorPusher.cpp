@@ -112,9 +112,13 @@ void ColorButton::Paint(Draw& w)
 	Size sz = GetSize();
 	Size isz = image.GetSize();
 	Point center = (sz - isz) / 2;
-	if(GUI_GlobalStyle() >= GUISTYLE_XP)
-		ChPaint(w, sz, style->look[!IsEnabled() ? CTRL_DISABLED : push ? CTRL_PRESSED
-		                                        : HasMouse() ? CTRL_HOT : CTRL_NORMAL]);
+	if(GUI_GlobalStyle() >= GUISTYLE_XP) {
+		if(push)
+			DrawXPButton(w, sz, BUTTON_PUSH|BUTTON_TOOL);
+		else
+		if(HasMouse())
+			DrawXPButton(w, sz, BUTTON_NORMAL|BUTTON_TOOL);
+	}
 	else {
 		w.DrawRect(sz, SColorFace);
 		if(push)
@@ -142,7 +146,6 @@ void  ColorButton::MouseLeave()
 
 ColorButton::ColorButton()
 {
-	style = &ToolBar::StyleDefault().buttonstyle;
 	SetFrame(NullFrame());
 	NoTrack();
 	Transparent();

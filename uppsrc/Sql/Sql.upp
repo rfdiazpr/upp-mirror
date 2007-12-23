@@ -27,5 +27,5 @@ file
 	Info readonly separator,
 	COPYING,
 	COPYING-PLAIN,
-	AUTHORS;
-
+	AUTHORS,
+	src.tpp;

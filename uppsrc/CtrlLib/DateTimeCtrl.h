@@ -408,7 +408,7 @@ public:
 
 template<class T>
 class DateTimeCtrl : public T {
-	MultiButton drop;
+	MultiButtonFrame drop;
 	CalendarClock cc;
 
 	int mode;

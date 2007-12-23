@@ -14,7 +14,7 @@ DropChoice::DropChoice() {
 
 void DropChoice::EnableDrop(bool b)
 {
-	GetButton(0).Enable(b);
+	MainButton().Enable(b);
 }
 
 void DropChoice::PseudoPush()

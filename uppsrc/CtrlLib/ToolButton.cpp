@@ -8,10 +8,15 @@ CH_STYLE(ToolButton, Style, StyleDefault)
 {
 	CtrlsImageLook(look, CtrlsImg::I_TB, 6);
 	font = StdFont();
-	for(int i = 0; i < 6; i++)
+	for(int i = 0; i < 4; i++)
 		textcolor[i] = Button::StyleNormal().textcolor[i];
-	textcolor[4] = Button::StyleNormal().textcolor[CTRL_NORMAL];
-	textcolor[5] = Button::StyleNormal().textcolor[CTRL_HOT];
+	textcolor[CTRL_CHECKED] = textcolor[CTRL_NORMAL];
+	textcolor[CTRL_HOTCHECKED] = textcolor[CTRL_HOT];
+	for(int i = 0; i < 6; i++) {
+		light[i] = false;
+		contrast[i] = 0;
+	}
+	light[CTRL_PRESSED] = light[CTRL_HOT] = light[CTRL_HOTCHECKED] = true;
 }
 
 ToolButton::ToolButton()
@@ -141,6 +146,33 @@ Bar::Item& ToolButton::Description(const char *desc)
 	return *this;
 }
 
+struct sCachedContrast : public ImageMaker
+{
+	int   d;
+	Image img;
+
+	virtual String Key() const {
+		String s;
+		RawCat(s, d);
+		RawCat(s, img.GetSerialId());
+		return s;
+	}
+
+	virtual Image Make() const {
+		return Contrast(img, 256 + d);
+	}
+};
+
+Image CachedContrast(const Image& m, int d)
+{
+	if(d == 0)
+		return m;
+	sCachedContrast cr;
+	cr.d = d;
+	cr.img = m;
+	return MakeImage(cr);
+}
+
 void  ToolButton::Paint(Draw& w)
 {
 	LTIMING("ToolButton::Paint");
@@ -148,31 +180,34 @@ void  ToolButton::Paint(Draw& w)
 	Size sz = GetSize();
 	UPP::Image image = GetImage();
 	Size isz = image.GetSize();
-	Ctrl *q = GetParent()->GetParent();
-	if(!q || !q->IsTransparent())
-		w.DrawRect(sz, checked && !HasMouse() ? Blend(SColorFace, SColorLight) : SColorFace);
+//	Ctrl *q = GetParent()->GetParent();
+//	if(!q || !q->IsTransparent())
+//		w.DrawRect(sz, checked && !HasMouse() ? Blend(SColorFace, SColorLight) : SColorFace);
 	int li = IsEnabled() ? HasMouse() ? GetMouseLeft() ? CTRL_PRESSED
-						                               : checked ? 5 : CTRL_HOT
-				                       : checked ? 4 : CTRL_NORMAL
+						                               : checked ? CTRL_HOTCHECKED : CTRL_HOT
+				                       : checked ? CTRL_CHECKED : CTRL_NORMAL
 					     : CTRL_DISABLED;
 	ChPaint(w, sz, style->look[li]);
-	Point ip = (sz - isz) / 2;
+	Point off = style->offset[li];
+	Point ip = (sz - isz) / 2 + off;
 	Size tsz;
 	if(kind != NOLABEL)
 		tsz = GetTextSize(text, style->font);
 	if(kind == BOTTOMLABEL) {
 		ip.y = 3;
-		w.DrawText((sz.cx - tsz.cx) / 2, isz.cy + 6, text, style->font, style->textcolor[li]);
+		w.DrawText((sz.cx - tsz.cx) / 2 + off.x, isz.cy + 6 + off.y, text, style->font, style->textcolor[li]);
 	}
-	
 	if(kind == RIGHTLABEL) {
 		ip.x = 3;
-		w.DrawText(isz.cx + 6, (sz.cy - tsz.cy) / 2, text, style->font, style->textcolor[li]);
+		w.DrawText(isz.cx + 6 + off.x, (sz.cy - tsz.cy) / 2 + off.y, text, style->font, style->textcolor[li]);
 	}
-	if(IsEnabled())
-		DrawHighlightImage(w, ip.x, ip.y, image, HasMouse());
+	UPP::Image img = CachedContrast(image, style->contrast[li]);
+	if(!IsEnabled())
+		img = DisabledImage(img);
+	if(IsEnabled() && style->light[li])
+		DrawHighlightImage(w, ip.x, ip.y, img, true);
 	else
-		w.DrawImage(ip.x, ip.y, DisabledImage(image));
+		w.DrawImage(ip.x, ip.y, img);
 }
 
 void  ToolButton::MouseEnter(Point, dword)

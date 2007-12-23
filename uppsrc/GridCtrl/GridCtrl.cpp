@@ -2574,12 +2574,12 @@ GridCtrl::ItemRect& GridCtrl::GetRow()
 	return vitems[rowidx];
 }
 
-int GridCtrl::GetCurrentRow()
+int GridCtrl::GetCurrentRow() const
 {
 	return rowidx - fixed_rows;
 }
 
-bool GridCtrl::IsCurrentRow()
+bool GridCtrl::IsCurrentRow() const
 {
 	return rowidx == curpos.y;
 }
@@ -3753,19 +3753,23 @@ void GridCtrl::UpdateCursor()
 	rowfnd = curpos.y;
 }
 
-int GridCtrl::Find(const Value &v, int col, int start_from) const
+int GridCtrl::Find(const Value &v, int col, int start_from, int opt) const
 {
 	for(int i = fixed_rows + start_from; i < total_rows; i++)
 	{
+		if(opt & GF::SKIP_CURRENT_ROW && i == rowidx)
+			continue;
+		if(opt & GF::SKIP_HIDDEN && vitems[i].hidden)
+			continue;
 		if(!vitems[i].skip && items[vitems[i].id][col + fixed_cols].val == v)
 			return i - fixed_rows;
 	}
 	return -1;
 }
 
-int GridCtrl::Find(const Value &v, Id id) const
+int GridCtrl::Find(const Value &v, Id id, int opt) const
 {
-	return Find(v, aliases.Get(id) - fixed_cols);
+	return Find(v, aliases.Get(id) - fixed_cols, 0, opt);
 }
 
 int GridCtrl::FindInRow(const Value& v, int row, int start_from) const
@@ -6249,6 +6253,11 @@ bool GridCtrl::IsSelected(int n, int m, bool relative)
 	int c = relative ? fixed_cols + m : m;
 	Item &it = GetItem(r, c);
 	return it.IsSelect() || it.IsCursor();
+}
+
+bool GridCtrl::IsSelected()
+{
+	return IsSelected(rowidx, false);
 }
 
 void GridCtrl::ClearSelection()

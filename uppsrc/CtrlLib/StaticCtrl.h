@@ -127,15 +127,26 @@ public:
 };
 
 class SeparatorCtrl : public Ctrl {
-	int margin;
-	int size;
-
 public:
 	virtual Size GetMinSize() const;
 	virtual void Paint(Draw& w);
 
-	SeparatorCtrl& Margin(int w);
+	struct Style : ChStyle<Style> {
+		Value l1, l2;
+	};
+
+private:
+	int          lmargin, rmargin;
+	int          size;
+	const Style *style;
+
+public:
+	static const Style& StyleDefault();
+
+	SeparatorCtrl& Margin(int l, int r);
+	SeparatorCtrl& Margin(int w)                { return Margin(w, w); }
 	SeparatorCtrl& SetSize(int w);
+	SeparatorCtrl& SetStyle(const Style& s)     { style = &s; Refresh(); return *this; }
 
 	SeparatorCtrl();
 };

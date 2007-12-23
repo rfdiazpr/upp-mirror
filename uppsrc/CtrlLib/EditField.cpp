@@ -2,6 +2,25 @@
 
 NAMESPACE_UPP
 
+CH_VALUE(ViewEdge, CtrlsImg::VE());
+
+Value EditFieldEdge()
+{
+	return EditField::StyleDefault().edge[0];
+}
+
+CtrlFrame& EditFieldFrame()
+{
+	static LookFrame m(EditFieldEdge);
+	return m;
+}
+
+CtrlFrame& ViewFrame()
+{
+	static LookFrame m(ViewEdge);
+	return m;
+}
+
 bool IsWCh(int c)
 {
 	return IsLeNum(c) || c == '_';
@@ -50,7 +69,7 @@ int TextArrayOps::GetPrevWord(int cursor)
 
 void LookFrame::FrameLayout(Rect& r)
 {
-	Rect m = ChMargins((*look)());
+	Rect m = ChMargins(Get());
 	r.left += m.left;
 	r.right -= m.right;
 	r.top += m.top;
@@ -59,32 +78,48 @@ void LookFrame::FrameLayout(Rect& r)
 
 void LookFrame::FramePaint(Draw& w, const Rect& r)
 {
-	Value v = (*look)();
-	if(IsType<Image>(v))
-		Image m = v;
-	ChPaintEdge(w, r, (*look)());
+	ChPaintEdge(w, r, Get());
 }
 
 void LookFrame::FrameAddSize(Size& sz)
 {
-	Rect m = ChMargins((*look)());
+	Rect m = ChMargins(Get());
 	sz.cx += m.left + m.right;
 	sz.cy += m.top + m.bottom;
 }
 
-CH_VALUE(EditFieldEdge, CtrlsImg::EFE());
-CH_VALUE(ViewEdge, CtrlsImg::VE());
-
-CtrlFrame& EditFieldFrame()
+void ActiveEdgeFrame::FrameLayout(Rect& r)
 {
-	static LookFrame m(EditFieldEdge);
-	return m;
+	Rect m = ChMargins(edge[0]);
+	r.left += m.left;
+	r.right -= m.right;
+	r.top += m.top;
+	r.bottom -= m.bottom;
 }
 
-CtrlFrame& ViewFrame()
+void ActiveEdgeFrame::FramePaint(Draw& w, const Rect& r)
 {
-	static LookFrame m(ViewEdge);
-	return m;
+	int i = 0;
+	if(ctrl) {
+		i = !ctrl->IsEnabled() ? CTRL_DISABLED
+		    : ctrl->HasFocus() ? CTRL_PRESSED
+		    : mousein ? CTRL_HOT
+		    : CTRL_NORMAL;
+	}
+	ChPaintEdge(w, r, edge[i]);
+}
+
+void ActiveEdgeFrame::FrameAddSize(Size& sz)
+{
+	Rect m = ChMargins(edge[0]);
+	sz.cx += m.left + m.right;
+	sz.cy += m.top + m.bottom;
+}
+
+void ActiveEdgeFrame::Set(const Ctrl *ctrl_, const Value *edge_, bool active)
+{
+	ctrl = active ? ctrl_ : NULL;
+	edge = edge_;
 }
 
 CH_STYLE(EditField, Style, StyleDefault)
@@ -97,15 +132,40 @@ CH_STYLE(EditField, Style, StyleDefault)
 	textdisabled = SColorDisabled();
 	selected = SColorHighlight();
 	selectedtext = SColorHighlightText();
+	for(int i = 0; i < 4; i++)
+		edge[i] = CtrlsImg::EFE();
+	activeedge = false;
+}
+
+bool EditField::FrameIsEdge()
+{
+	return &GetFrame() == &edge;
+}
+
+void EditField::SyncEdge()
+{
+	if(FrameIsEdge() && style->activeedge)
+		RefreshFrame();
+}
+
+void EditField::MouseEnter(Point p, dword keyflags)
+{
+	edge.Mouse(true);
+	SyncEdge();
+}
+
+void EditField::MouseLeave()
+{
+	edge.Mouse(false);
+	SyncEdge();
 }
 
 EditField& EditField::SetStyle(const Style& s)
 {
-	if(style != &s) {
-		style = &s;
-		RefreshLayout();
-		Refresh();
-	}
+	style = &s;
+	edge.Set(this, style->edge, style->activeedge);
+	RefreshLayout();
+	RefreshFrame();
 	return *this;
 }
 
@@ -327,6 +387,7 @@ void EditField::GotFocus()
 		cursor = text.GetLength();
 	}
 	Finish();
+	SyncEdge();
 }
 
 void EditField::LostFocus()
@@ -344,6 +405,7 @@ void EditField::LostFocus()
 		cursor = sc = 0;
 	}
 	Refresh();
+	SyncEdge();
 }
 
 void EditField::LeftDown(Point p, dword flags)
@@ -888,6 +950,8 @@ void EditField::Reset()
 	nobg = false;
 	charset = CHARSET_UNICODE;
 	alignright = false;
+	SetStyle(StyleDefault());
+	SetFrame(edge);
 }
 
 EditField& EditField::SetFont(Font _font)
@@ -913,10 +977,8 @@ EditField& EditField::NullText(const char *text, Color ink)
 
 EditField::EditField()
 {
-	style = NULL;
 	Unicode();
 	Reset();
-	SetFrame(EditFieldFrame());
 }
 
 EditField::~EditField() {}

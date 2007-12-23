@@ -2,6 +2,15 @@
 
 NAMESPACE_UPP
 
+Image WithHotSpots(const Image& m, int x1, int y1, int x2, int y2)
+{
+	Image h = m;
+	ImageBuffer b(h);
+	b.SetHotSpot(Point(x1, y1));
+	b.Set2ndSpot(Point(x2, y2));
+	return b;
+}
+
 Image CreateImage(Size sz, Color color)
 {
 	ImageBuffer ib(sz);

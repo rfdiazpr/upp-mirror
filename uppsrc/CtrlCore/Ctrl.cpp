@@ -244,7 +244,11 @@ void Ctrl::Show(bool ashow) {
 		RefreshFrame();
 		if(parent)
 			StateH(SHOW);
-		else
+// 01/12/2007 - mdelfede
+// added support for windowed controls
+//		else
+		if(top)
+// 01/12/2007 - END
 			WndShow(visible);
 		if(InFrame() && parent)
 			RefreshParentLayout();
@@ -264,7 +268,11 @@ bool Ctrl::IsVisible() const {
 void Ctrl::Enable(bool aenable) {
 	if(enabled != aenable) {
 		enabled = aenable;
-		if(!parent) WndEnable(enabled);
+// 01/12/2007 - mdelfede
+// added support for windowed controls
+//		if(!parent) WndEnable(enabled);
+		if(top) WndEnable(enabled);
+// 01/12/2007 - END
 		if(!enabled && parent && HasFocusDeep())
 			IterateFocusForward(this, GetTopCtrl());
 		RefreshFrame();
@@ -540,6 +548,8 @@ Ctrl::Ctrl() {
 	LLOG("Ctrl::Ctrl");
 	destroying = false;
 	parent = prev = next = firstchild = lastchild = NULL;
+	top = NULL;
+	exitcode = 0;
 	frame.Add().frame = &NullFrame();
 	enabled = visible = wantfocus = initfocus = true;
 	editable = true;

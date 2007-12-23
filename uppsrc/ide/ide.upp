@@ -12,7 +12,8 @@ uses
 	CtrlLib,
 	Web,
 	plugin\bz2,
-	HexView;
+	HexView,
+	art\BlueBar;
 
 link(WIN32 MSC) /MAP;
 

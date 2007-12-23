@@ -236,27 +236,49 @@ Image HorzSymm(Image src) {
 	return b;
 }
 
+bool EqLine(const Image& m, int l1, int l2, int x, int width)
+{
+	return !memcmp(m[l1] + x, m[l2] + x, width * sizeof(RGBA));
+}
+
+bool EqLine(const Image& m, int l1, int l2)
+{
+	return EqLine(m, l1, l2, 0, m.GetWidth());
+}
+
+bool EqColumn(const Image& m, int c1, int c2, int y, int height)
+{
+	int cx = m.GetWidth();
+	const RGBA *a = m[y] + c1;
+	const RGBA *b = m[y] + c2;
+	for(int w = 1; w < height; w++) {
+		if(*a != *b)
+			return false;
+		a += cx;
+		b += cx;
+	}
+	return true;
+}
+
+bool EqColumn(const Image& m, int c1, int c2)
+{
+	return EqColumn(m, c1, c2, 0, m.GetHeight());
+}
+
 int ClassifyContent(const Image& m, const Rect& rect)
 {
 	if(IsNull(rect))
 		return 0;
 	bool vdup = true;
 	for(int q = rect.top + 1; q < rect.bottom; q++)
-		if(memcmp(m[q] + rect.left, m[rect.top] + rect.left, rect.GetWidth() * sizeof(RGBA))) {
+		if(!EqLine(m, q, rect.top, rect.left, rect.GetWidth())) {
 			vdup = false;
 			break;
 		}
 	int cx = m.GetSize().cx;
-	for(int q = rect.left + 1; q < rect.right; q++) {
-		const RGBA *a = m[rect.top] + rect.left;
-		const RGBA *b = m[rect.top] + q;
-		for(int w = 1; w < rect.GetHeight(); w++) {
-			if(*a != *b)
-				return vdup;
-			a += cx;
-			b += cx;
-		}
-	}
+	for(int q = rect.left + 1; q < rect.right; q++)
+		if(!EqColumn(m, rect.left, q, rect.top, rect.GetHeight()))
+			return vdup;
 	return 2 + vdup;
 }
 
@@ -289,11 +311,12 @@ Image RecreateAlpha(const Image& overwhite, const Image& overblack)
 int ImageMargin(const Image& _m, int p, int dist)
 {
 	Image m = Unmultiply(_m);
-	Color c = m[4][4];
+	Color c = m[p][p];
 	int d;
-	for(d = 4; d > 0; d--)
-		if(Diff(m[d][d], c) > 10)
+	for(d = p; d > 0; d--) {
+		if(Diff(m[d][d], c) > dist)
 			break;
+	}
 	return d + 1;
 }
 

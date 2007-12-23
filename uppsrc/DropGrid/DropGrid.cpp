@@ -72,6 +72,7 @@ DropGrid::DropGrid()
 	key_col = 0;
 	value_col = -1;
 	rowid = -1;
+	trowid = -2;
 	notnull = false;
 	format_columns = true;
 	drop_enter = false;
@@ -430,9 +431,10 @@ void DropGrid::SetData(const Value& v)
 void DropGrid::DoAction(int row, bool action)
 {
 	int rid = list.GetRowId(row);
-	if(rid != rowid)
+	if(rid != (trowid >= -1 ? trowid : rowid))
 	{
 		rowid = rid;
+		trowid = -2;
 		if(action)
 			WhenAction();
 	}
@@ -607,14 +609,19 @@ GridCtrl::ItemRect& DropGrid::GetRow(int r)
 	return list.GetRow(r);
 }
 
-int DropGrid::Find(const Value& v, int col)
+int DropGrid::Find(const Value& v, int col, int opt)
 {
-	return list.Find(v, col);
+	return list.Find(v, col, 0, opt);
 }
 
-int DropGrid::Find(const Value& v, Id id)
+int DropGrid::Find(const Value& v, Id id, int opt)
 {
-	return list.Find(v, id);
+	return list.Find(v, id, opt);
+}
+
+int DropGrid::GetCurrentRow() const
+{
+	return list.GetCurrentRow();
 }
 
 void DropGrid::CancelUpdate()
@@ -660,6 +667,8 @@ void DropGrid::Change(int dir)
 
 void DropGrid::SearchCursor()
 {
+	if(trowid < -1)
+		trowid = rowid;
 	value = list.Get(value_col);
 	rowid = list.GetRowId();
 	Refresh();

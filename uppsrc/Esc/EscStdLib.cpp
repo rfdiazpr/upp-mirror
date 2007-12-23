@@ -214,7 +214,7 @@ bool IsDate(const EscValue& v)
 
 bool IsTime(const EscValue& v)
 {
-	return IsDate(v) && v.GetFieldInt("hour"), v.GetFieldInt("minute") && v.GetFieldInt("second");
+	return IsDate(v) && v.HasNumberField("hour") && v.HasNumberField("minute") && v.HasNumberField("second");
 }
 
 void SIC_IsDate(EscEscape& e)

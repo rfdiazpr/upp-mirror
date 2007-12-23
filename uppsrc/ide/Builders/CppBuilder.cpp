@@ -237,6 +237,15 @@ Vector<String> CppBuilder::CustomStep(const String& path)
 	return out;
 }
 
+static Time s_bb = Null;
+
+Time BlitzBaseTime()
+{
+	if(IsNull(s_bb))
+		s_bb = GetSysTime();
+	return max(GetSysTime() - 3600, s_bb);
+}
+
 Blitz CppBuilder::BlitzStep(Vector<String>& sfile, Vector<String>& soptions,
                             Vector<String>& obj, const char *objext,
                             Vector<bool>& optimize)
@@ -263,7 +272,7 @@ Blitz CppBuilder::BlitzStep(Vector<String>& sfile, Vector<String>& soptions,
 		   && HdependBlitzApproved(fn) && IsNull(soptions[i]) && !optimize[i]
 //		   && (fntime < blitztime || !blitzexists)
 //		   && (!FileExists(objfile) || now - fntime > 3600)) { // Causes a strage oscillation
-		   && now - fntime > 3600) {
+		   && fntime < BlitzBaseTime()) {
 			if(HdependFileTime(fn) > blitztime)
 				b.build = true;
 			blitz << "\r\n"

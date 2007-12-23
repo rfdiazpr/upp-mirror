@@ -253,6 +253,8 @@ void Ide::SetupFormat() {
 	ide.chstyle.Add(0, "Host platform");
 	ide.chstyle.Add(1, "Standard");
 	ide.chstyle.Add(2, "Classic");
+	ide.chstyle.Add(3, "Host platform, blue bars");
+	ide.chstyle.Add(4, "Standard, blue bars");
 	for(;;) {
 		int c = dlg.Run();
 		editorfont = ed.Get();

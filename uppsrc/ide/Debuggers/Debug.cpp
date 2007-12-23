@@ -2,7 +2,7 @@
 
 #ifdef COMPILER_MSC
 
-#define LLOG(x)  // LOG(x)
+#define LLOG(x)   LOG(x)
 
 void Pdb::Error()
 {
@@ -179,7 +179,7 @@ void Pdb::AddThread(dword dwThreadId, HANDLE hThread)
 	f.sp = ctx.Rsp;
 	#endif
 	f.hThread = hThread;
-	LLOG("Adding thread " << dwThreadId << ", Thread SP: " << FormatIntHex(ctx.Esp));
+	LLOG("Adding thread " << dwThreadId << ", Thread SP: " << FormatIntHex(ctx.Esp) << ", handle: " << FormatIntHex((dword)(hThread)));
 }
 
 void Pdb::RemoveThread(dword dwThreadId)
@@ -187,6 +187,7 @@ void Pdb::RemoveThread(dword dwThreadId)
 	int q = threads.Find(dwThreadId);
 	if(q >= 0) {
 		Thread& f = threads[q];
+		LLOG("Closing thread " << dwThreadId << ", handle: " << FormatIntHex((dword)(f.hThread)));
 		CloseHandle(f.hThread);
 		threads.Remove(q);
 	}

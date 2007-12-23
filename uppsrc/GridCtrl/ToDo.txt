@@ -43,3 +43,7 @@ to kursor nie zmienia pozycji (bo tam gdzie chce skoczyc jest read-only) a powin
 komorce
 
 gdy nie ma zadnych kolumn Clear ustawia lastVisRow i firstVisRow na 1 co powoduje crash gdy kliknie sie na ciele kontrolki
+
+
+
+gdy index jest na koncu zle czarne miejsce sie rysuje po prawej

@@ -1,6 +1,5 @@
-class BarPane : public Ctrl {
+class BarPane : public ParentCtrl {
 public:
-	virtual void Paint(Draw& w);
 	virtual void LeftDown(Point pt, dword keyflags);
 	virtual void MouseMove(Point p, dword);
 
@@ -24,6 +23,9 @@ private:
 public:
 	Callback WhenLeftClick;
 
+	void  PaintBar(Draw& w, const SeparatorCtrl::Style& ss,
+	               const Value& pane, const Value& iconbar = Null, int iconsz = 0);
+
 	void  IClear();
 	void  Clear();
 	bool  IsEmpty() const                    { return item.IsEmpty(); }
@@ -36,6 +38,8 @@ public:
 
 	Size  Repos(bool horz, int maxsize);
 	Size  GetPaneSize(bool _horz, int maxsize) const;
+
+	int   GetCount() const                   { return breakpos.GetCount() + 1; }
 
 	void  SubMenu()                          { menu = true; }
 
@@ -58,7 +62,7 @@ public:
 		virtual Item& Topic(const char *topic);
 		virtual Item& Description(const char *desc);
 		virtual void  FinalSync();
-		
+
 		Item&   Label(const char *text);
 		Item&   RightLabel(const char *text);
 
@@ -191,9 +195,10 @@ private:
 
 protected:
 	BarPane pane;
-	int     smargin;
 	int     ssize;
 	int     wrap;
+	int     lsepm, rsepm;
+	const SeparatorCtrl::Style *sepstyle;
 
 	void     SyncBar();
 
@@ -217,6 +222,9 @@ public:
 	enum {
 		BAR_LEFT, BAR_RIGHT, BAR_TOP, BAR_BOTTOM
 	};
+
+	void  PaintBar(Draw& w, const SeparatorCtrl::Style& ss,
+	               const Value& pane, const Value& iconbar = Null, int iconsz = 0);
 
 	BarCtrl& Align(int align);
 	BarCtrl& Top()                       { return Align(BAR_TOP); }
@@ -247,6 +255,7 @@ public:
 	virtual void  ChildLostFocus();
 	virtual void  Deactivate();
 	virtual void  CancelMode();
+	virtual void  Paint(Draw& w);
 
 protected:
 	virtual Item& AddItem(Callback cb);
@@ -255,8 +264,15 @@ protected:
 
 public:
 	struct Style : ChStyle<Style> {
-		Value item, topitem, topbar;
+		Value item, topitem[3], topbar;
 		Color itemtext, topitemtext;
+		SeparatorCtrl::Style breaksep;
+		Value look, arealook;
+		Value popupframe, popupbody, popupiconbar;
+		SeparatorCtrl::Style separator;
+		Size  maxiconsize;
+		int   leftgap, textgap;
+		int   lsepm, rsepm;
 	};
 
 private:
@@ -271,6 +287,9 @@ private:
 	int          leftgap;
 	int          lock;
 	const Style *style;
+	int          arealook;
+	Size         maxiconsize;
+	LookFrame    frame;
 
 	friend class MenuItemBase;
 	friend class SubMenuBase;
@@ -327,8 +346,11 @@ public:
 
 	MenuBar& LeftGap(int cx)                        { leftgap = cx; return *this; }
 	MenuBar& SetFont(Font f)                        { font = f; return *this; }
-	MenuBar& SetStyle(const Style& s)               { style = &s; Refresh(); return *this; }
+	MenuBar& SetStyle(const Style& s);
 	Font     GetFont() const                        { return font; }
+	MenuBar& AreaLook(int q = 1)                    { arealook = q; Refresh(); return *this; }
+	MenuBar& MaxIconSize(Size sz)                   { maxiconsize = sz; return *this; }
+	Size     GetMaxIconSize() const                 { return maxiconsize; }
 
 	typedef MenuBar CLASSNAME;
 
@@ -366,6 +388,9 @@ public:
 		Value  look[6];
 		Font   font;
 		Color  textcolor[6];
+		bool   light[6];
+		int    contrast[6];
+		Point  offset[6];
 	};
 
 protected:
@@ -394,23 +419,26 @@ public:
 	enum Kind { NOLABEL, RIGHTLABEL, BOTTOMLABEL, FORCE = 0x80 };
 
 	void  Reset();
-	
+
 	static const Style& StyleDefault();
 
 	ToolButton& SetStyle(const Style& s) { style = &s; Refresh(); return *this; }
 	ToolButton& MinSize(Size sz)         { minsize = sz; return *this; }
 	ToolButton& MaxIconSize(Size sz)     { maxiconsize = sz; return *this; }
 	ToolButton& Kind(int _kind)          { kind = _kind; Refresh(); return *this; }
-	
+
 	ToolButton& Label(const char *text, int kind);
 
 	ToolButton();
 	virtual ~ToolButton();
 };
 
+void PaintBarArea(Draw& w, Ctrl *x, const Value& look, int bottom = Null);
+
 class ToolBar : public BarCtrl {
 public:
 	virtual bool HotKey(dword key);
+	virtual void Paint(Draw& w);
 
 protected:
 	virtual Item& AddItem(Callback cb);
@@ -418,10 +446,13 @@ protected:
 
 public:
 	struct Style : ChStyle<Style> {
-		ToolButton::Style buttonstyle;
-		Size              buttonminsize;
-		Size              maxiconsize;
-		int               buttonkind;
+		ToolButton::Style    buttonstyle;
+		Size                 buttonminsize;
+		Size                 maxiconsize;
+		int                  buttonkind;
+		Value                look, arealook;
+		SeparatorCtrl::Style breaksep;
+		SeparatorCtrl::Style separator;
 	};
 
 private:
@@ -430,6 +461,7 @@ private:
 	int               lock;
 	Callback1<Bar&>   proc;
 	const Style      *style;
+	int               arealook;
 
 	Size              buttonminsize;
 	Size              maxiconsize;
@@ -457,11 +489,26 @@ public:
 	ToolBar& ButtonMinSize(Size sz)                 { buttonminsize = sz; return *this; }
 	ToolBar& MaxIconSize(Size sz)                   { maxiconsize = sz; return *this; }
 	ToolBar& ButtonKind(int _kind)                  { kind = _kind; return *this; }
+	ToolBar& AreaLook(int q = 1)                    { arealook = q; Refresh(); return *this; }
 
 	typedef ToolBar  CLASSNAME;
 
 	ToolBar();
 	virtual ~ToolBar();
+};
+
+class StaticBarArea : public Ctrl {
+public:
+	virtual void Paint(Draw& w);
+
+private:
+	bool upperframe;
+
+public:
+	StaticBarArea& UpperFrame(bool b) { upperframe = b; Refresh(); return *this; }
+	StaticBarArea& NoUpperFrame()     { return UpperFrame(false); }
+
+	StaticBarArea();
 };
 
 class LRUList {

@@ -20,7 +20,18 @@ String NormalizePathNN(const String& path)
 	return IsNull(path) ? path : NormalizePath(path);
 }
 
+
 #ifdef PLATFORM_WIN32
+bool ExistProgram(String& bin, const char *dir, const char *file)
+{
+	String win = NormalizePath(GetWindowsDirectory());
+	if(FileExists(AppendFileName(win.Mid(0, 3) + dir, file))) {
+		bin = win.Mid(0, 3) + dir;
+		return true;
+	}
+	return false;
+}
+
 void AutoSetup()
 {
 	WithAutoSetupLayout<TopWindow> dlg;
@@ -38,7 +49,7 @@ void AutoSetup()
 
 
 	String vs = GetWinRegString("ProductDir", "SOFTWARE\\Microsoft\\VisualStudio\\7.1\\Setup\\VC");
-	dlg.visualcpp <<=
+	dlg.visualcpp71 <<=
 		NormalizePathNN(
 			Nvl(
 				GetWinRegString("InstallLocation",
@@ -46,31 +57,48 @@ void AutoSetup()
 	                            "{362882AE-E40A-4435-B214-6420634C401F}"),
 	            vs)
 	    );
-	dlg.visualcppmethod <<= "MSC71";
-	dlg.dovisualcpp <<= !IsNull(dlg.visualcpp);
+	dlg.visualcppmethod71 <<= "MSC71";
+	dlg.dovisualcpp71 <<= !IsNull(dlg.visualcpp71);
 
-	String sdk = GetWinRegString("InstallationFolder",
+	String sdk8 = GetWinRegString("InstallationFolder",
 	                             "Software\\Microsoft\\Microsoft SDKs\\Windows\\v6.0",
 	                             HKEY_CURRENT_USER);
 	String bin8;
-	if(!IsNull(sdk)) {
-		sdk = NormalizePath(sdk);
-		dlg.sdk <<= sdk;
-		dlg.visualcpp8 <<= bin8 = sdk;
+	if(!IsNull(sdk8)) {
+		sdk8 = NormalizePath(sdk8);
+		dlg.sdk8 <<= sdk8;
+		dlg.sdk71 <<= sdk8;
+		dlg.visualcpp8 <<= bin8 = sdk8;
 	}
 	else {
 		dlg.visualcpp8 <<= bin8 = NormalizePathNN(
 			GetWinRegString("8.0", "SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7")
 		);
-		dlg.sdk <<= NormalizePathNN(GetWinRegString("Install Dir", "SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3"));
+		dlg.sdk8 <<= NormalizePathNN(GetWinRegString("Install Dir", "SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3"));
 	}
 	dlg.visualcppmethod8 <<= "MSC8";
 	dlg.dovisualcpp8 <<= !IsNull(dlg.visualcpp8);
-
 	if(bin8.GetLength() && FileExists(AppendFileName(bin8, "VC\\Bin\\x64\\cl.exe"))) {
 		dlg.dovisualcpp8x64 = true;
 	}
 	dlg.visualcppmethod8x64 <<= "MSC8x64";
+	String  sdk9 = NormalizePathNN(GetWinRegString("InstallationFolder",
+	                                               "Software\\Microsoft\\Microsoft SDKs\\Windows\\v6.0a",
+	                                                HKEY_CURRENT_USER));
+	String bin9;
+	if(!IsNull(sdk9) && FileExists(AppendFileName(sdk9, "VC\\Bin\\cl.exe")))
+		bin9 = sdk9;
+	else
+		ExistProgram(bin9, "Program Files (x86)\\Microsoft Visual Studio 9.0", "VC\\Bin\\cl.exe")
+		|| ExistProgram(bin9, "Program Files\\Microsoft Visual Studio 9.0", "VC\\Bin\\cl.exe");
+	dlg.sdk9 <<= sdk9;
+	dlg.visualcpp9 <<= bin9;
+	dlg.visualcppmethod9 <<= "MSC9";
+	dlg.dovisualcpp9 <<= !IsNull(dlg.visualcpp9);
+	if(bin9.GetLength() && FileExists(AppendFileName(bin9, "VC\\Bin\\x64\\cl.exe"))) {
+		dlg.dovisualcpp9x64 = true;
+	}
+	dlg.visualcppmethod9x64 <<= "MSC9x64";
 
 	dlg.mysql <<= NormalizePathNN(GetWinRegString("Location", "SOFTWARE\\MySQL AB\\MySQL Server 4.1"));
 
@@ -80,8 +108,12 @@ void AutoSetup()
 
 	Array< FrameRight<Button> > bd;
 	DirSel(dlg.mingw, bd.Add());
-	DirSel(dlg.visualcpp, bd.Add());
-	DirSel(dlg.sdk, bd.Add());
+	DirSel(dlg.visualcpp71, bd.Add());
+	DirSel(dlg.visualcpp8, bd.Add());
+	DirSel(dlg.visualcpp9, bd.Add());
+	DirSel(dlg.sdk71, bd.Add());
+	DirSel(dlg.sdk8, bd.Add());
+	DirSel(dlg.sdk9, bd.Add());
 	DirSel(dlg.sdl, bd.Add());
 	DirSel(dlg.mysql, bd.Add());
 	if(dlg.Run() != IDOK)
@@ -138,12 +170,97 @@ void AutoSetup()
 		lib << ";" << AppendFileName(mysql, "lib");
 	}
 
-	String vs8 = ~dlg.visualcpp8;
 
+	String vs9 = ~dlg.visualcpp9;
+	if(!IsNull(vs9) && dlg.dovisualcpp9x64) {
+		String vc = AppendFileName(vs9, "Vc");
+		String m = ~dlg.visualcppmethod9x64;
+		String sdk = ~dlg.sdk9;
+		if(IsNull(sdk))
+			sdk = AppendFileName(vc, "PlatformSDK");
+		SaveFile(
+			AppendFileName(dir, m + ".bm"),
+			"BUILDER = \"MSC9X64\";\n"
+			"DEBUG_INFO = \"2\";\n"
+			"DEBUG_BLITZ = \"1\";\n"
+			"DEBUG_LINKMODE = \"0\";\n"
+			"DEBUG_OPTIONS = \"-Od\";\n"
+			"RELEASE_BLITZ = \"0\";\n"
+			"RELEASE_LINKMODE = \"0\";\n"
+			"RELEASE_OPTIONS = \"-O2 -GS-\";\n"
+			"RELEASE_SIZE_OPTIONS = \"-O1 -GS-\";\n"
+			"DEBUGGER = \"\";\n"
+			"REMOTE_HOST = \"\";\n"
+			"REMOTE_OS = \"\";\n"
+			"REMOTE_TRANSFER = \"\";\n"
+			"REMOTE_MAP = \"\";\n"
+			"PATH = " + AsCString(
+			                AppendFileName(vs9, "Common7\\Ide") + ';' +
+							AppendFileName(vc, "Bin\\x64") + ';' +
+							AppendFileName(sdk, "Bin") +
+							exe
+						) + ";\n"
+			"INCLUDE = " + AsCString(
+							AppendFileName(vc, "Include") + ';' +
+							AppendFileName(sdk, "Include") +
+							include
+						   ) + ";\n"
+			"LIB = " + AsCString(
+							AppendFileName(vc, "Lib\\x64") + ';' +
+							AppendFileName(sdk, "Lib\\x64") +
+							lib
+			           ) + ";\n"
+		);
+		SaveFile(AppendFileName(dir, "default_method"), m);
+	}
+
+	if(!IsNull(vs9) && dlg.dovisualcpp9) {
+		String vc = AppendFileName(vs9, "Vc");
+		String m = ~dlg.visualcppmethod9;
+		String sdk = ~dlg.sdk9;
+		if(IsNull(sdk9))
+			sdk = AppendFileName(vc, "PlatformSDK");
+		SaveFile(
+			AppendFileName(dir, m + ".bm"),
+			"BUILDER = \"MSC9\";\n"
+			"DEBUG_INFO = \"2\";\n"
+			"DEBUG_BLITZ = \"1\";\n"
+			"DEBUG_LINKMODE = \"0\";\n"
+			"DEBUG_OPTIONS = \"-Od\";\n"
+			"RELEASE_BLITZ = \"0\";\n"
+			"RELEASE_LINKMODE = \"0\";\n"
+			"RELEASE_OPTIONS = \"-O2 -GS-\";\n"
+			"RELEASE_SIZE_OPTIONS = \"-O1 -GS-\";\n"
+			"DEBUGGER = \"\";\n"
+			"REMOTE_HOST = \"\";\n"
+			"REMOTE_OS = \"\";\n"
+			"REMOTE_TRANSFER = \"\";\n"
+			"REMOTE_MAP = \"\";\n"
+			"PATH = " + AsCString(
+			                AppendFileName(vs9, "Common7\\Ide") + ';' +
+							AppendFileName(vc, "Bin") + ';' +
+							AppendFileName(sdk, "Bin") +
+							exe
+						) + ";\n"
+			"INCLUDE = " + AsCString(
+							AppendFileName(vc, "Include") + ';' +
+							AppendFileName(sdk, "Include") +
+							include
+						   ) + ";\n"
+			"LIB = " + AsCString(
+							AppendFileName(vc, "Lib") + ';' +
+							AppendFileName(sdk, "Lib") +
+							lib
+			           ) + ";\n"
+		);
+		SaveFile(AppendFileName(dir, "default_method"), m);
+	}
+
+	String vs8 = ~dlg.visualcpp8;
 	if(!IsNull(vs8) && dlg.dovisualcpp8x64) {
 		String vc = AppendFileName(vs8, "Vc");
 		String m = ~dlg.visualcppmethod8x64;
-		String sdk = ~dlg.sdk;
+		String sdk = ~dlg.sdk8;
 		if(IsNull(sdk))
 			sdk = AppendFileName(vc, "PlatformSDK");
 		SaveFile(
@@ -185,8 +302,8 @@ void AutoSetup()
 	if(!IsNull(vs8) && dlg.dovisualcpp8) {
 		String vc = AppendFileName(vs8, "Vc");
 		String m = ~dlg.visualcppmethod8;
-		String sdk = ~dlg.sdk;
-		if(IsNull(sdk))
+		String sdk = ~dlg.sdk8;
+		if(IsNull(sdk8))
 			sdk = AppendFileName(vc, "PlatformSDK");
 		SaveFile(
 			AppendFileName(dir, m + ".bm"),
@@ -224,14 +341,14 @@ void AutoSetup()
 		SaveFile(AppendFileName(dir, "default_method"), m);
 	}
 
-	String vc7 = ~dlg.visualcpp;
+	String vc7 = ~dlg.visualcpp71;
 	if(PathIsEqual(vc7, vs))
 		vs = AppendFileName(GetFileFolder(NormalizePath(vs)), "Common7\\ide") + ";";
 	else
 		vs.Clear();
-	if(!IsNull(vc7) && dlg.dovisualcpp) {
-		String m = ~dlg.visualcppmethod;
-		String sdk = ~dlg.sdk;
+	if(!IsNull(vc7) && dlg.dovisualcpp71) {
+		String m = ~dlg.visualcppmethod71;
+		String sdk = ~dlg.sdk71;
 		if(IsNull(sdk))
 			sdk = AppendFileName(vc7, "PlatformSDK");
 		SaveFile(

@@ -19,6 +19,8 @@ Core:
 	Date format: http://www.ultimatepp.org/forum/index.php?t=pmsg_view&&id=1494
 
 CtrlLib/CtrlCore:
+	DecorationLess windows http://www.ultimatepp.org/forum/index.php?t=msg&goto=13093&#msg_13093
+	                       http://fixunix.com/xwindows/91717-window-without-title-bar.html
 	Dialog icon only if really needed (?)
 
 CtrlLib:

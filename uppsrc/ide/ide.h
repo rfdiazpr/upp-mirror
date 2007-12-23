@@ -43,7 +43,7 @@ public:
 	void               Attach(Ctrl& parent) { parent.AddFrame(button); }
 	void               Title(String t)      { title = t; }
 	String             GetTitle() const     { return title; }
-
+	
 private:
 	void               OnAction();
 
@@ -611,8 +611,8 @@ public:
 	bool      browser_closeesc;
 	bool      bookmark_pos;
 
-	FrameTop<StaticRect> bararea;
-	Label                display;
+	FrameTop<StaticBarArea> bararea;
+	Label                   display;
 
 
 	byte      hilite_scope;

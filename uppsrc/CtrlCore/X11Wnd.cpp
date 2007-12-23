@@ -125,6 +125,49 @@ Ctrl::XWindow *Ctrl::GetXWindow()
 	int q = Xwindow().Find(top->window);
 	return q >= 0 ? &Xwindow()[q] : NULL;
 }
+// 01/12/2007 - mdelfede
+// added support for windowed controls
+
+// Gets handle of window containing control
+Window Ctrl::GetParentWindow(void) const
+{
+	Ctrl const *q = GetParentWindowCtrl();
+	if(q)
+		return q->top->window;
+	else
+		return 0;
+
+} // END Ctrl::GetParentWindow()
+
+// Get control with parentwindow as handle
+Ctrl *Ctrl::GetParentWindowCtrl(void) const
+{
+	Ctrl *q = parent;
+	while(q && !q->top)
+		q = q->parent;
+	return q;
+
+} // END Ctrl::GetParentWindowCtrl()
+
+// Gets the rect inside the parent window
+Rect Ctrl::GetRectInParentWindow(void) const
+{
+  Rect r = GetRect();
+  Ctrl *q = parent;
+  while(q)
+  {
+      if(q->top)
+          break;
+      r += q->GetRect().TopLeft();
+      q = q->parent;
+  }
+  return r;
+
+} // END Ctrl::GetRectInParentWindow()
+
+
+// 01/12/2007 - END
+
 
 bool Ctrl::HookProc(XEvent *event) { return false; }
 
@@ -868,7 +911,9 @@ bool Ctrl::WndEnable(bool b)
 	return true;
 }
 
-void Ctrl::AddXWindow(Window &w)
+// 01/12/2007 - mdelfede
+// added support for windowed controls
+Ctrl::XWindow *Ctrl::AddXWindow(Window &w)
 {
 	int i = Xwindow().Find(None);
 	if(i >= 0)
@@ -878,6 +923,7 @@ void Ctrl::AddXWindow(Window &w)
 	cw.exposed = true;
 	cw.owner   = GetParent();
 	cw.xic     = NULL;
+	return &cw;
 }
 
 void Ctrl::RemoveXWindow(Window &w)
@@ -889,6 +935,42 @@ void Ctrl::RemoveXWindow(Window &w)
 	}
 
 }
+Ctrl::XWindow *Ctrl::XWindowFromWindow(Window &w)
+{
+	int i = Xwindow().Find(w);
+	if(i >= 0)
+		return &Xwindow()[i];
+	else
+		return NULL;
+}
+
+// Synchronizes the native windows inside ctrls
+void Ctrl::SyncNativeWindows(void)
+{
+	ArrayMap<Window, Ctrl::XWindow>& xwindows = Xwindow();
+	for(int i = 0; i < xwindows.GetCount(); i++)
+	{
+		XWindow &xw = xwindows[i];
+		Window w = xwindows.GetKey(i);
+		if(xw.ctrl && xw.ctrl->parent && w)
+		{
+			Window dummy;
+			int x, y;
+			unsigned int width, height, border, depth;
+			XGetGeometry(Xdisplay, w, &dummy, &x, &y, &width, &height, &border, &depth);
+			Rect r = xw.ctrl->GetRectInParentWindow();
+			if( (x != r.left || y != r.top) && (width == r.Width() && height == r.Height()))
+				XMoveWindow(Xdisplay, w, r.left, r.top);
+			else if( (x == r.left || y == r.top) && (width != r.Width() || height != r.Height()))
+				XResizeWindow(Xdisplay, w, r.Width(), r.Height());
+			else if( x != r.left || y != r.top || width != r.Width() || height != r.Height())
+				XMoveResizeWindow(Xdisplay, w, r.left, r.top, r.Width(), r.Height());
+		}
+	}
+
+} // END Ctrl::SyncNativeWindows()
+
+// 01/12/2007 - END
 
 ViewDraw::ViewDraw(Ctrl *ctrl)
 {

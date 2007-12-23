@@ -174,8 +174,10 @@ void  RichTextView::RefreshSel()
 			if(h >= text.GetLength())
 				break;
 		}
-		if(l < 0 || h >= text.GetLength())
-			l = h = cursor;
+		if(l < 0)
+			l = 0;
+		if(h >= text.GetLength())
+			h = text.GetLength();
 	}
 	if(sell == l && selh == h || sell == selh && l == h)
 		return;

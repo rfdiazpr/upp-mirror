@@ -15,19 +15,42 @@ public:
 
 private:
 	Value (*look)();
+	Value lookv;
+	Value Get() const { return look ? (*look)() : lookv; }
 
 public:
-	LookFrame(Value (*look)()) : look(look) {}
+	void  Set(const Value& v)                  { look = NULL; lookv = v; }
+	void  Set(Value (*l)())                    { look = l; }
+	LookFrame(Value (*look)()) : look(look)    {}
+	LookFrame(const Value& v) : lookv(v) { look = NULL; }
+	LookFrame() { look = NULL; }
 };
 
 Value EditFieldEdge();
 Value ViewEdge();
 
-void EditFieldEdge_Write(Value);
 void ViewEdge_Write(Value);
 
 CtrlFrame& EditFieldFrame();
 CtrlFrame& ViewFrame();
+
+class ActiveEdgeFrame : public CtrlFrame {
+public:
+	virtual void FrameLayout(Rect& r);
+	virtual void FramePaint(Draw& w, const Rect& r);
+	virtual void FrameAddSize(Size& sz);
+
+private:
+	const Value *edge;
+	const Ctrl  *ctrl;
+	bool  mousein;
+
+public:
+	void Set(const Ctrl *ctrl, const Value *edge, bool active);
+	void Mouse(bool in) { mousein = in; }
+
+	ActiveEdgeFrame() { edge = NULL; mousein = false; }
+};
 
 class EditField : public Ctrl, private TextArrayOps {
 public:
@@ -41,6 +64,8 @@ public:
 	virtual void  LeftDrag(Point p, dword flags);
 	virtual void  LeftUp(Point p, dword flags);
 	virtual void  RightDown(Point p, dword keyflags);
+	virtual void  MouseEnter(Point p, dword keyflags);
+	virtual void  MouseLeave();
 	virtual Image CursorImage(Point p, dword keyflags);
 	virtual void  DragAndDrop(Point p, PasteClip& d);
 	virtual void  DragRepeat(Point p);
@@ -62,10 +87,14 @@ public:
 		Color invalid;
 		Color text, textdisabled;
 		Color selected, selectedtext;
+		Value edge[4];
+		bool  activeedge;
 	};
 
 protected:
 	const Style *style;
+
+	ActiveEdgeFrame edge;
 
 	WString    text;
 	int        sc;
@@ -98,6 +127,9 @@ protected:
 	bool       nobg:1;
 	bool       alignright:1;
 
+	bool    FrameIsEdge();
+	void    SetEdge(int i);
+	void    SyncEdge();
 	int     GetTextCx(const wchar *text, int n, bool password, Font fnt);
 	void    Paints(Draw& w, int& x, int fcy, const wchar *&txt,
 		           Color ink, Color paper, int n, bool pwd, Font fnt);

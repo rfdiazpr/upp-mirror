@@ -555,9 +555,9 @@ RichEdit::RichEdit()
 	language.NoWantFocus();
 
 	setstyle = &style.InsertButton(0).SetMonoImage(CtrlImg::smallleft()).Tip(t_("Store as style"));
-	setstyle->WhenPush = THISBACK(SetStyle);
+	setstyle->WhenClick = THISBACK(SetStyle);
 	style.InsertButton(0).SetMonoImage(RichEditImg::ManageStyles()).Tip(t_("Style manager"))
-	     .WhenPush = THISBACK(Styles);
+	     .WhenClick = THISBACK(Styles);
 	style.Tip(t_("Style"));
 
 	style <<= THISBACK(Style);

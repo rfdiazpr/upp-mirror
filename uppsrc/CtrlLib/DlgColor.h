@@ -232,11 +232,13 @@ public:
 
 protected:
 	Image      image, nullimage, staticimage;
+	const ToolButton::Style *style;
 
 public:
 	ColorButton& ColorImage(const Image& img)             { image = img; Refresh(); return *this; }
 	ColorButton& NullImage(const Image& img)              { nullimage = img; Refresh(); return *this; }
 	ColorButton& StaticImage(const Image& img)            { staticimage = img; Refresh(); return *this; }
+	ColorButton& SetStyle(const ToolButton::Style& s)     { style = &s; Refresh(); return *this; }
 
 	ColorButton();
 	virtual ~ColorButton();

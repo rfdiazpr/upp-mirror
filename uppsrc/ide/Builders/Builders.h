@@ -86,6 +86,10 @@ struct MscBuilder : CppBuilder {
 	String PdbPch(String package, int slot, bool do_pch) const;
 	bool   HasAnyDebug() const;
 	void   BinObjConsole(String c) { PutConsole(c); }
+	bool   IsMsc89() const;
+	bool   IsMsc86() const;
+	bool   IsMscArm() const;
+	bool   IsMsc64() const;
 };
 
 struct JavaBuilder : CppBuilder {

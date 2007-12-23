@@ -111,7 +111,7 @@ double ScanDouble(const char *p, const char **endptr, bool accept_comma)
 	bool neg = false;
 	if(*p == '+' || *p == '-')
 		neg = (*p++ == '-');
-	if((byte)(*p - '0') >= 10 && !(*p == '.' && (byte)(p[1] - '0') < 10)) {
+	if((byte)(*p - '0') >= 10 && !((*p == '.' || accept_comma && *p == ',') && (byte)(p[1] - '0') < 10)) {
 		if(endptr) *endptr = begin;
 		return Null;
 	}

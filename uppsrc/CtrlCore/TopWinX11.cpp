@@ -90,10 +90,10 @@ void TopWindow::SyncCaption()
 		unsigned long wina[5];
 		int n = 0;
 		Window w = GetWindow();
-		if(GetOwner())
-			wina[n++] = XAtom("_NET_WM_WINDOW_TYPE_DIALOG");
 		if(tool)
 			wina[n++] = XAtom("_NET_WM_WINDOW_TYPE_TOOLBAR");
+		if(GetOwner())
+			wina[n++] = XAtom("_NET_WM_WINDOW_TYPE_DIALOG");
 		wina[n++] = XAtom("_NET_WM_WINDOW_TYPE_NORMAL");
 		XChangeProperty(Xdisplay, GetWindow(), XAtom("_NET_WM_WINDOW_TYPE"), XAtom("ATOM"), 32,
 		                PropModeReplace, (const unsigned char *)wina, n);

@@ -44,12 +44,11 @@ Value StdValueFromEsc(const EscValue& v)
 		return v.GetNumber();
 	if(v.IsArray())
 		return (WString)v;
+	if(IsTime(v))
+		return Time(v.GetFieldInt("year"), v.GetFieldInt("month"), v.GetFieldInt("day"),
+			v.GetFieldInt("hour"), v.GetFieldInt("minute"), v.GetFieldInt("second"));
 	if(IsDate(v))
-		if(v.GetFieldInt("hour") && v.GetFieldInt("minute") && v.GetFieldInt("second"))
-			return Time(v.GetFieldInt("year"), v.GetFieldInt("month"), v.GetFieldInt("day"),
-			            v.GetFieldInt("hour"), v.GetFieldInt("minute"), v.GetFieldInt("second"));
-		else
-			return Date(v.GetFieldInt("year"), v.GetFieldInt("month"), v.GetFieldInt("day"));
+		return Date(v.GetFieldInt("year"), v.GetFieldInt("month"), v.GetFieldInt("day"));
 	return Value();
 }
 

@@ -11,7 +11,11 @@ void Ctrl::RefreshFrame(const Rect& r) {
 	if(!IsOpen() || !IsVisible() || r.IsEmpty()) return;
 	LTIMING("RefreshFrame");
 	LLOG("RefreshRect " << Name() << ' ' << r);
-	if(parent) {
+// 01/12/2007 - mdelfede
+// added support for windowed controls
+//	if(parent) {
+	if(!top) {
+// 01/12/2007 - END
 		if(InFrame())
 			parent->RefreshFrame(r + GetRect().TopLeft());
 		else
@@ -169,7 +173,11 @@ void  Ctrl::ScrollView(int dx, int dy) {
 
 void  Ctrl::SyncScroll()
 {
-	if(parent || !top)
+// 01/12/2007 - mdelfede
+// added support for windowed controls
+//	if(parent || !top)
+	if(!top)
+// 01/12/2007 - END
 		return;
 	Vector<Scroll> scroll = top->scroll;
 	top->scroll.Clear();
@@ -502,7 +510,11 @@ Ctrl *Ctrl::GetTopRect(Rect& r, bool inframe)
 		r &= Rect(GetSize());
 		r.Offset(GetView().TopLeft());
 	}
-	if(parent) {
+// 01/12/2007 - mdelfede
+// added support for windowed controls
+	if(parent && !top) {
+//	if(parent) {
+// 01/12/2007 - END
 		r.Offset(GetRect().TopLeft());
 		return parent->GetTopRect(r, InFrame());
 	}
@@ -521,7 +533,11 @@ void  Ctrl::DoSync(Ctrl *q, Rect r, bool inframe)
 void  Ctrl::Sync()
 {
 	LLOG("Sync " << Name());
-	if(!parent && IsOpen()) {
+// 01/12/2007 - mdelfede
+// added support for windowed controls
+//	if(!parent && IsOpen()) {
+	if(top && IsOpen()) {
+// 01/12/2007 - END
 		LLOG("Sync UpdateWindow " << Name());
 		SyncScroll();
 		WndUpdate();
@@ -541,7 +557,11 @@ void Ctrl::Sync(const Rect& sr)
 
 void Ctrl::DrawCtrlWithParent(Draw& w, int x, int y)
 {
+// 01/12/2007 - mdelfede
+// added support for windowed controls
 	if(parent) {
+//	if(parent &&!top) {
+// 01/12/2007 - END
 		Rect r = GetRect();
 		Ctrl *top = parent->GetTopRect(r, inframe);
 		w.Clip(x, y, r.Width(), r.Height());
@@ -563,7 +583,11 @@ void Ctrl::DrawCtrl(Draw& w, int x, int y)
 
 void Ctrl::SyncMoves()
 {
-	if(parent || !top)
+// 01/12/2007 - mdelfede
+// added support for windowed controls
+//	if(parent || !top)
+	if(!top)
+// 01/12/2007 - END
 		return;
 	for(int i = 0; i < top->move.GetCount(); i++) {
 		MoveCtrl& m = top->move[i];

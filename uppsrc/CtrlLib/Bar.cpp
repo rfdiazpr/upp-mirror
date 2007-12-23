@@ -9,28 +9,47 @@ void BarPane::LeftDown(Point pt, dword keyflags)
 	WhenLeftClick();
 }
 
-void BarPane::Paint(Draw& w)
+void BarPane::PaintBar(Draw& w, const SeparatorCtrl::Style& ss, const Value& pane,
+                       const Value& iconbar, int iconsz)
 {
 	Size sz = GetSize();
-	Ctrl *q = GetParent();
-	if(!q || !q->IsTransparent()) {
-		BarCtrl *p = dynamic_cast<BarCtrl *>(q);
-		Value v;
-		if(p) v = p->GetBackground();
-		if(IsNull(v))
-			w.DrawRect(sz, menu ? (GUI_GlobalStyle() >= GUISTYLE_XP ? SColorMenu : SColorFace) : SColorFace);
-		else
-			ChPaint(w, sz, v);
-	}
+	Rect r = GetSize();
 	for(int i = 0; i < breakpos.GetCount(); i++)
 		if(horz) {
-			w.DrawRect(0, breakpos[i], sz.cx, 1, SColorShadow);
-			w.DrawRect(0, breakpos[i] + 1, sz.cx, 1, SColorLight);
+			int y = breakpos[i];
+			Rect rr = r;
+			rr.bottom = y;
+			ChPaint(w, rr, pane);
+			if(!IsNull(ss.l1))
+				ChPaint(w, 0, y++, sz.cx, 1, ss.l1);
+			if(!IsNull(ss.l2))
+				ChPaint(w, 0, y++, sz.cx, 1, ss.l2);
+			r.top = y;
 		}
 		else {
-			w.DrawRect(breakpos[i], 0, 1, sz.cy, SColorShadow);
-			w.DrawRect(breakpos[i] + 1, 0, 1, sz.cy, SColorLight);
+			int x = breakpos[i];
+			Rect rr = r;
+			rr.right = x;
+			if(!IsNull(iconbar)) {
+				Rect r2 = rr;
+				r2.right = r2.left + iconsz;
+				ChPaint(w, r2, iconbar);
+				rr.left = r2.right;
+			}
+			ChPaint(w, rr, pane);
+			if(!IsNull(ss.l1))
+				ChPaint(w, x++, 0, 1, sz.cy, ss.l1);
+			if(!IsNull(ss.l2))
+				ChPaint(w, x++, 0, 1, sz.cy, ss.l2);
+			r.left = x;
 		}
+	if(!horz && !IsNull(iconbar)) {
+		Rect r2 = r;
+		r2.right = r2.left + iconsz;
+		ChPaint(w, r2, iconbar);
+		r.left = r2.right;
+	}
+	ChPaint(w, r, pane);
 }
 
 Size BarPane::Repos(bool _horz, int maxsize)
@@ -451,7 +470,7 @@ bool BarCtrl::IsEmpty() const
 
 void BarCtrl::Separator()
 {
-	AddNC(separator.DoIndex(sii++).Margin(smargin).SetSize(ssize));
+	AddNC(separator.DoIndex(sii++).Margin(lsepm, rsepm).SetStyle(*sepstyle).SetSize(ssize));
 }
 
 void BarCtrl::AddCtrl(Ctrl *ctrl, Size sz)
@@ -602,15 +621,21 @@ void BarCtrl::Layout()
 	}
 }
 
+void BarCtrl::PaintBar(Draw& w, const SeparatorCtrl::Style& ss, const Value& p, const Value& iconbar, int iconsz)
+{
+	pane.PaintBar(w, ss, p, iconbar, iconsz);
+}
+
 BarCtrl::BarCtrl() {
 	align = BAR_TOP;
 	Ctrl::Add(pane.SizePos());
-	smargin = 2;
+	lsepm = rsepm = 2;
 	ssize = 8;
 	sii = zii = 0;
 	NoWantFocus();
 	pane.WhenLeftClick = Proxy(WhenLeftClick);
 	wrap = 0;
+	sepstyle = &SeparatorCtrl::StyleDefault();
 }
 
 BarCtrl::~BarCtrl() {}

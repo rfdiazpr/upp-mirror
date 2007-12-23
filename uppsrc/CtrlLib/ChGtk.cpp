@@ -61,6 +61,9 @@ enum {
 	GTK_SLIDER,
 	GTK_ICON,
 	GTK_EXT,
+	GTK_SHADOW,
+	GTK_FOCUS,
+	GTK_FLATBOX,
 
 	GTK_MARGIN1 = 0x0010,
 	GTK_MARGIN2 = 0x0020,
@@ -107,7 +110,7 @@ Image GetGTK(GtkWidget *widget, int state, int shadow, const char *detail, int t
 	if(type >= GTK_TOP && type <= GTK_BOTTOM)
 		cy *= 3;
 	type &= ~0xf000;
-	GdkRectangle& allocation = ((GtkWidget*)widget)->allocation;
+	GdkRectangle& allocation = widget->allocation;
 	allocation.x = 0;
 	allocation.y = 0;
 	allocation.width = cx;
@@ -137,6 +140,11 @@ Image GetGTK(GtkWidget *widget, int state, int shadow, const char *detail, int t
 			                    widget, detail,
 			                    rect.left + margin, rect.top + margin, rcx, rcy);
 			break;
+		case GTK_FLATBOX:
+			gtk_paint_flat_box(style, pixmap, (GtkStateType)state, (GtkShadowType)shadow, &cr,
+			                    widget, detail,
+			                    rect.left + margin, rect.top + margin, rcx, rcy);
+			break;
 		case GTK_CHECK:
 			gtk_paint_check(style, pixmap, (GtkStateType)state, (GtkShadowType)shadow, &cr,
 			                      widget, detail,
@@ -163,9 +171,19 @@ Image GetGTK(GtkWidget *widget, int state, int shadow, const char *detail, int t
 			break;
 		case GTK_EXT:
 			gtk_paint_extension(style, pixmap, (GtkStateType)state, (GtkShadowType)shadow, &cr,
-			                          widget, (gchar *)detail,
-			                          rect.left + margin, rect.top + margin, rcx, rcy,
-			                          (GtkPositionType)t1);
+			                    widget, (gchar *)detail,
+			                    rect.left + margin, rect.top + margin, rcx, rcy,
+			                    (GtkPositionType)t1);
+			break;
+		case GTK_SHADOW:
+		    gtk_paint_shadow(style, pixmap, (GtkStateType)state, (GtkShadowType)shadow, &cr,
+			                 widget, (gchar *)detail,
+			                 rect.left + margin, rect.top + margin, rcx, rcy);
+			break;
+		case GTK_FOCUS:
+		    gtk_paint_focus(style, pixmap, (GtkStateType)state, &cr,
+			                widget, (gchar *)detail,
+			                rect.left + margin, rect.top + margin, rcx, rcy);
 			break;
 		}
 		g_object_unref(pixmap);
@@ -393,12 +411,12 @@ void ChCtrlImg(int ii, const char *id, int size, int maxh = INT_MAX)
 
 Image GtkChImgLook(int shadow, int state, int kind)
 {
-	Image m = GetGTK(ChGtkLast(), state, shadow, ChGtkLastDetail(), ChGtkLastType(), 16, 16);
+	Image m = GetGTK(ChGtkLast(), state, shadow, ChGtkLastDetail(), ChGtkLastType(), 32, 32);
 	int g = ImageMargin(m, 4, 10);
 	if(kind == 1)
-		return Crop(m, 0, g, 16 - g, 16 - 2 * g);
+		return WithHotSpots(Crop(m, 0, g, 32 - g, 32 - 2 * g), g, 0, 32 - 2 * g - 1, 0);
 	if(kind == 2)
-		return Crop(m, g, g, 16 - g, 16 - 2 * g);
+		return WithHotSpots(Crop(m, g, g, 32 - g, 32 - 2 * g), 0, 0, 32 - 2 * g - g - 1, 0);
 	return m;
 }
 
@@ -548,8 +566,8 @@ void ChHostSkin()
 		GtkChButton(ts.buttonstyle.look);
 		ts.buttonstyle.look[CTRL_NORMAL] = Null;
 		ts.buttonstyle.look[CTRL_DISABLED] = Null;
-		GtkCh(ts.buttonstyle.look[4], 1, 1);
-		GtkCh(ts.buttonstyle.look[5], 1, 1);
+		GtkCh(ts.buttonstyle.look[CTRL_CHECKED], 1, 1);
+		GtkCh(ts.buttonstyle.look[CTRL_HOTCHECKED], 1, 1);
 	}
 
 	{
@@ -595,7 +613,7 @@ void ChHostSkin()
 			GtkChButton(Button::StyleLeftEdge().Write().look);
 
 			{
-				DropList::Style& s = DropList::StyleDefault().Write();
+				DropList::Style& s = DropList::StyleFrame().Write();
 				GtkChButtonWith(s.look, CtrlsImg::DA());
 				GtkChButtonWith(s.trivial, CtrlsImg::DA());
 			}
@@ -621,9 +639,11 @@ void ChHostSkin()
 			GtkChImgWith(Button::StyleLeftEdge().Write().look, Null, 2);
 
 			{
-				DropList::Style& s = DropList::StyleDefault().Write();
+				DropList::Style& s = DropList::StyleFrame().Write();
 				GtkChImgWith(s.look, CtrlsImg::DA(), 1);
 				GtkChImgWith(s.trivial, CtrlsImg::DA(), 1);
+				GtkChImgWith(s.left, CtrlsImg::DA(), 2);
+				GtkChImgWith(s.right, CtrlsImg::DA(), 1);
 			}
 			{
 				SpinButtons::Style& s = SpinButtons::StyleDefault().Write();
@@ -683,7 +703,8 @@ void ChHostSkin()
 		static GtkWidget *menu_item = gtk_menu_item_new();
 		ChGtkNew(menu_item, "menuitem", GTK_BOX);
 		GtkCh(s.item, 2, 2);
-		GtkCh(s.topitem, 2, 2);
+		GtkCh(s.topitem[1], 2, 2);
+		GtkCh(s.topitem[2], 2, 2);
 	}
 
 	{
@@ -724,6 +745,60 @@ void ChHostSkin()
 		s.extendleft = 2;
 	}
 
+	int efm = 0;
+	{
+		EditField::Style& s = EditField::StyleDefault().Write();
+		Image img;
+		for(int i = 0; i < 4; i++) {
+			GtkWidget *w = Setup(gtk_entry_new());
+			if(i == CTRL_PRESSED)
+				GTK_WIDGET_FLAGS (w) |= GTK_HAS_FOCUS;
+			if(i == CTRL_DISABLED)
+				GTK_WIDGET_FLAGS (w) &= GTK_SENSITIVE;
+			if(i == 0) {
+				img = GetGTK(w, GTK_STATE_NORMAL, GTK_SHADOW_IN,
+				             "entry", GTK_SHADOW, 20, 20);
+				efm = ImageMargin(img, 4, 0);
+			}
+			img = GetGTK(w, GTK_STATE_NORMAL, GTK_SHADOW_IN,
+			             "entry", GTK_SHADOW, 2 * efm + 3, 2 * efm + 3);
+			ImageBuffer eb(img);
+			eb.SetHotSpot(Point(efm, efm));
+			s.edge[i] = Image(eb);
+			s.activeedge = true;
+		}
+		gtk_widget_destroy(w);
+	}
+
+	{
+		MultiButton::Style& s = MultiButton::StyleDefault().Write();
+		s.usetrivial = true;
+		s.trivialsep = true;
+		s.edge[0] = Null;
+		s.overpaint = Button::StyleNormal().overpaint;
+		s.margin.left = 3;
+		for(int i = 0; i < 4; i++)
+			s.left[i] = s.right[i] = s.lmiddle[i] = s.look[i] = Button::StyleNormal().look[i];
+		s.trivialborder = s.border = 0;
+		s.sep2 = SColorShadow();
+		s.sep1 = SColorLight();
+		s.sepm = 4;
+		{
+			MultiButton::Style& s = MultiButton::StyleFrame().Write();
+			for(int i = 0; i < 4; i++) {
+//				s.lmiddle[i] = s.rmiddle[i] = HorzBlend(s.right[i], s.left[i], 6, 14);
+				s.edge[i] = EditField::StyleDefault().edge[i];
+				DUMP(Image(s.edge[i]).GetHotSpot());
+			}
+			s.activeedge = true;
+			s.sep1 = Null;
+			s.trivialborder = s.border = efm;
+			s.usetrivial = true;
+			s.sepm = 0;
+			s.margin = Rect(efm, efm, efm, efm);
+		}
+	}
+
 	ImageBuffer ib;
 	ib.Create(3, 3);
 	Fill(~ib, fc, ib.GetLength());
@@ -737,7 +812,6 @@ void ChHostSkin()
 	ib[2][2] = Color(Null);
 	ib.SetHotSpot(Point(2, 2));
 	CtrlsImg::Set(CtrlsImg::I_VE, ib);
-	DropList::StyleDefault().Write().edge = CtrlsImg::EFE();
 
 	static GtkWidget *popup;
 	static int shadowtype;

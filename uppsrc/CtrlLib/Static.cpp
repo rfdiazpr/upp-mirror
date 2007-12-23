@@ -267,26 +267,31 @@ Size SeparatorCtrl::GetMinSize() const {
 	return Size(size, size);
 }
 
+CH_STYLE(SeparatorCtrl, Style, StyleDefault)
+{
+	l1 = SColorShadow();
+	l2 = Null;
+}
+
 void SeparatorCtrl::Paint(Draw& w) {
 	Size sz = GetSize();
 	if(sz.cx > sz.cy) {
 		int q = sz.cy / 2;
-		w.DrawRect(margin, q - 1, sz.cx - 2 * margin, 1, SColorShadow);
-		if(GUI_GlobalStyle() < GUISTYLE_XP)
-			w.DrawRect(margin, q, sz.cx - 2 * margin, 1, SColorLight);
+		ChPaint(w, lmargin, q - 1, sz.cx - (lmargin + rmargin), 1, style->l1);
+		ChPaint(w, lmargin, q, sz.cx - (lmargin + rmargin), 1, style->l2);
 	}
 	else {
 		int q = sz.cx / 2;
-		w.DrawRect(q - 1, margin, 1, sz.cy - 2 * margin, SColorShadow);
-		if(GUI_GlobalStyle() < GUISTYLE_XP)
-			w.DrawRect(q, margin, 1, sz.cy - 2 * margin, SColorLight);
+		ChPaint(w, q - 1, lmargin, 1, sz.cy - (lmargin + rmargin), style->l1);
+		ChPaint(w, q, lmargin, 1, sz.cy - (lmargin + rmargin), style->l2);
 	}
 };
 
-SeparatorCtrl& SeparatorCtrl::Margin(int w)
+SeparatorCtrl& SeparatorCtrl::Margin(int l, int r)
 {
-	if(w != margin) {
-		margin = w;
+	if(l != lmargin || r != rmargin) {
+		lmargin = l;
+		rmargin = r;
 		Refresh();
 	}
 	return *this;
@@ -306,8 +311,9 @@ SeparatorCtrl::SeparatorCtrl()
 	NoWantFocus();
 	Transparent();
 	Disable();
-	margin = 2;
+	lmargin = rmargin = 2;
 	size = 7;
+	SetStyle(StyleDefault());
 }
 
 void DisplayCtrl::Paint(Draw& w)

@@ -415,14 +415,10 @@ private:
 		Ptr<Ctrl>      owner;
 	};
 
-	union {
-		Ctrl        *prev;
-		Top         *top;
-	};
-	union {
-		Ctrl        *next;
-		int          exitcode;
-	};
+	Top         *top;
+	int          exitcode;
+
+	Ctrl        *prev, *next;
 	Ctrl        *firstchild, *lastchild;//16
 	LogPos       pos;//8
 	Rect16       rect;
@@ -631,7 +627,7 @@ private:
 	static void (*skin)();
 
 	friend void CtrlSetDefaultSkin(void (*fn1)(), void (*fn2)());
-
+	friend class DHCtrl;
 	friend class ViewDraw;
 	friend class TopWindow;
 	friend class TrayIcon;
@@ -746,8 +742,9 @@ protected:
 	static bool   ClipHas(int type, const char *fmt);
 	static String ClipGet(int type, const char *fmt);
 
-	       void AddXWindow(Window &w);
+	       XWindow *AddXWindow(Window &w);
 	       void RemoveXWindow(Window &w);
+	       XWindow *XWindowFromWindow(Window &w);
 
 public:
 	struct Xclipboard {
@@ -776,11 +773,16 @@ public:
 
 	virtual void    EventProc(XWindow& w, XEvent *event);
 	virtual bool    HookProc(XEvent *event);
-	        Window  GetWindow() const         { return parent ? None : top ? top->window : None; }
+	Window  GetWindow() const         { return top ? top->window : None; }
 	static  Ctrl   *CtrlFromWindow(Window w);
 	bool    TrapX11Errors();
 	void    UntrapX11Errors(bool b);
 
+	Window GetParentWindow(void) const;
+	Ctrl *GetParentWindowCtrl(void) const;
+	Rect GetRectInParentWindow(void) const;
+
+	static void SyncNativeWindows(void);
 #endif
 
 private:
@@ -1767,6 +1769,53 @@ public:
 };
 
 #endif
+#endif
+
+#ifdef PLATFORM_X11
+
+class DHCtrl : public Ctrl {
+		bool isInitialized;
+		int isError;
+		bool isMapped;
+		Size CurrentSize;
+		XVisualInfo* UserVisualInfo;
+		String ErrorMessage;
+
+		void MoveSubWindow(void);
+		void MapWindow(bool map);
+		bool Init(void);
+		void Terminate(void);
+
+		virtual void State(int reason);
+
+	protected:
+		Visual     *GetVisual(void);
+		XVisualInfo GetVisualInfo(void);
+
+		virtual XVisualInfo *CreateVisual(void) {return 0;}
+		virtual void SetAttributes(unsigned long &ValueMask, XSetWindowAttributes &attr) {}
+		virtual void Paint(Draw &draw) {}
+		virtual void BeforeInit(void) {}
+		virtual void AfterInit(bool Error) {}
+		virtual void BeforeTerminate(void) {}
+		virtual void AfterTerminate(void) {}
+		virtual void Resize(int w, int h) {}
+
+		void SetError(bool err) { isError = err; }
+		void SetErrorMessage(String const &msg) { ErrorMessage = msg; }
+
+	public:
+		typedef DHCtrl CLASSNAME;
+
+		bool   IsInitialized(void) { return isInitialized; }
+
+		bool   GetError(void) { return isError; }
+		String GetErrorMessage(void) { return ErrorMessage; }
+
+		DHCtrl();
+		~DHCtrl();
+};
+
 #endif
 
 END_UPP_NAMESPACE

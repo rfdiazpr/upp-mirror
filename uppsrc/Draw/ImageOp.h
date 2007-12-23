@@ -1,6 +1,8 @@
 Image CreateImage(Size sz, Color color);
 Image SetColorKeepAlpha(const Image& img, Color c);
 
+Image WithHotSpots(const Image& m, int x1, int y1, int x2, int y2);
+
 void Over(ImageBuffer& dest, Point p, const Image& src, const Rect& srect);
 void Copy(ImageBuffer& dest, Point p, const Image& src, const Rect& srect);
 
@@ -127,7 +129,9 @@ void  SetMakeImageCacheMax(int m);
 
 Image MakeImagePaintOnly(const ImageMaker& m);
 
+Image CachedRescale(const Image& m, Size sz, const Rect& src);
 Image CachedRescale(const Image& m, Size sz);
+Image CachedRescalePaintOnly(const Image& m, Size sz, const Rect& src);
 Image CachedRescalePaintOnly(const Image& m, Size sz);
 
 Image Magnify(const Image& img, int nx, int ny);

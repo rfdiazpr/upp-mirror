@@ -129,7 +129,7 @@ bool Pdb::Create(One<Host> local, const String& exefile, const String& cmdline)
 	running = true;
 
 	RunToException();
-	Sync();
+//	Sync();
 
 	return true;
 }
@@ -241,13 +241,13 @@ Pdb::Pdb()
 void Pdb::CleanupOnExit()
 {
 	if(hProcess != INVALID_HANDLE_VALUE) {
+		while(threads.GetCount())
+			RemoveThread(threads.GetKey(0));
 		UnloadModuleSymbols();
 		SymCleanup(hProcess);
 		CloseHandle(hProcess);
 		hProcess = INVALID_HANDLE_VALUE;
 	}
-	while(threads.GetCount())
-		RemoveThread(threads.GetKey(0));
 }
 
 void Pdb::CopyStack()

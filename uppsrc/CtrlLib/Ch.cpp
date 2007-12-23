@@ -57,10 +57,21 @@ void ChClassicSkin()
 		for(int i = 0; i < 4; i++)
 			s.vthumb[i] = s.hthumb[i] = Button::StyleNormal().look[i];
 	}
-	
+
 	{
 		MultiButton::Style& s = MultiButton::StyleDefault().Write();
 		s.border = s.trivialborder = 2;
+	}
+
+	{
+		SeparatorCtrl::Style& s = SeparatorCtrl::StyleDefault().Write();
+		s.l1 = SColorShadow();
+		s.l2 = SColorLight();
+	}
+
+	{
+		MenuBar::Style& s = MenuBar::StyleDefault().Write();
+		s.popupbody = SColorFace();
 	}
 
 	LabelBoxTextColor_Write(SColorText());

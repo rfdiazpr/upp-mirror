@@ -50,7 +50,7 @@ private:
 	void          Select();
 	void          Cancel();
 	void          Change(int q);
-	void          EnableDrop(bool b = true)         { GetButton(0).Enable(b || alwaysdrop); }
+	void          EnableDrop(bool b = true)         { MainButton().Enable(b || alwaysdrop); }
 	void          Sync();
 
 	typedef       DropList CLASSNAME;
@@ -121,7 +121,7 @@ void Add(DropList& list, const VectorMap<Value, Value>& values);
 void Add(MapConvert& convert, const VectorMap<Value, Value>& values);
 void Add(DropList& list, const MapConvert& convert);
 
-class DropChoice : public MultiButton {
+class DropChoice : public MultiButtonFrame {
 protected:
 	PopUpTable         list;
 	Ctrl              *owner;
@@ -148,7 +148,7 @@ public:
 
 	void        AddHistory(const Value& data, int max = 12);
 
-	void        AddTo(Ctrl& _owner)                   { MultiButton::AddTo(_owner); owner = &_owner; }
+	void        AddTo(Ctrl& _owner)                   { MultiButtonFrame::AddTo(_owner); owner = &_owner; }
 	bool        IsActive() const                      { return IsOpen(); }
 
 //	void        Show(bool b = true)                   { drop.Show(b); }
@@ -176,7 +176,12 @@ public:
 template <class T>
 class WithDropChoice : public T {
 public:
-	virtual bool    Key(dword key, int repcnt);
+	virtual bool   Key(dword key, int repcnt);
+	virtual void   MouseEnter(Point p, dword keyflags);
+	virtual void   MouseLeave();
+	virtual void   GotFocus();
+	virtual void   LostFocus();
+
 
 protected:
 	DropChoice      select;
@@ -229,6 +234,34 @@ WithDropChoice<T>::WithDropChoice() {
 template <class T>
 bool WithDropChoice<T>::Key(dword key, int repcnt) {
 	return select.DoKey(key) || T::Key(key, repcnt);
+}
+
+template <class T>
+void WithDropChoice<T>::MouseEnter(Point p, dword keyflags)
+{
+	select.Refresh();
+	T::MouseEnter(p, keyflags);
+}
+
+template <class T>
+void WithDropChoice<T>::MouseLeave()
+{
+	select.Refresh();
+	T::MouseLeave();
+}
+
+template <class T>
+void WithDropChoice<T>::GotFocus()
+{
+	select.Refresh();
+	T::GotFocus();
+}
+
+template <class T>
+void WithDropChoice<T>::LostFocus()
+{
+	select.Refresh();
+	T::LostFocus();
 }
 
 template <class T>

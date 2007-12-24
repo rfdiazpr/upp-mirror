@@ -313,10 +313,10 @@ int ImageMargin(const Image& _m, int p, int dist)
 	Image m = Unmultiply(_m);
 	Color c = m[p][p];
 	int d;
-	for(d = p; d > 0; d--) {
-		if(Diff(m[d][d], c) > dist)
+	Size sz = m.GetSize();
+	for(d = p; d > 0; d--)
+		if(Diff(m[d][d], c) > dist || Diff(m[sz.cx - d - 1][sz.cy - d - 1], c) > dist)
 			break;
-	}
 	return d + 1;
 }
 

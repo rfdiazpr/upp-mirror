@@ -2,6 +2,7 @@ Image CreateImage(Size sz, Color color);
 Image SetColorKeepAlpha(const Image& img, Color c);
 
 Image WithHotSpots(const Image& m, int x1, int y1, int x2, int y2);
+Image WithHotSpot(const Image& m, int x1, int y1);
 
 void Over(ImageBuffer& dest, Point p, const Image& src, const Rect& srect);
 void Copy(ImageBuffer& dest, Point p, const Image& src, const Rect& srect);

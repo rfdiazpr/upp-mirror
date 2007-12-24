@@ -563,7 +563,7 @@ public:
 	void   SubscriptTool(Bar& bar, dword key = 0);
 	void   InkTool(Bar& bar);
 	void   PaperTool(Bar& bar);
-	void   LanguageTool(Bar& bar, int width = 60);
+	void   LanguageTool(Bar& bar, int width = HZoom(60));
 	void   HyperlinkTool(Bar& bar, int width = 180);
 	void   SpellCheckTool(Bar& bar);
 	void   IndexEntryTool(Bar& bar, int width = 80);

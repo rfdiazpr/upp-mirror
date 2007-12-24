@@ -1289,6 +1289,8 @@ public:
 	static void NoLayoutZoom();
 	static void GetZoomRatio(Size& m, Size& d);
 
+	static int  HZoom(int cx)                            { return HorzLayoutZoom(cx); }
+
 	static bool ClickFocus();
 	static void ClickFocus(bool cf);
 
@@ -1774,46 +1776,46 @@ public:
 #ifdef PLATFORM_X11
 
 class DHCtrl : public Ctrl {
-		bool isInitialized;
-		int isError;
-		bool isMapped;
-		Size CurrentSize;
-		XVisualInfo* UserVisualInfo;
-		String ErrorMessage;
+	bool isInitialized;
+	int isError;
+	bool isMapped;
+	Size CurrentSize;
+	XVisualInfo* UserVisualInfo;
+	String ErrorMessage;
 
-		void MoveSubWindow(void);
-		void MapWindow(bool map);
-		bool Init(void);
-		void Terminate(void);
+	void MoveSubWindow(void);
+	void MapWindow(bool map);
+	bool Init(void);
+	void Terminate(void);
 
-		virtual void State(int reason);
+	virtual void State(int reason);
 
-	protected:
-		Visual     *GetVisual(void);
-		XVisualInfo GetVisualInfo(void);
+protected:
+	Visual     *GetVisual(void);
+	XVisualInfo GetVisualInfo(void);
 
-		virtual XVisualInfo *CreateVisual(void) {return 0;}
-		virtual void SetAttributes(unsigned long &ValueMask, XSetWindowAttributes &attr) {}
-		virtual void Paint(Draw &draw) {}
-		virtual void BeforeInit(void) {}
-		virtual void AfterInit(bool Error) {}
-		virtual void BeforeTerminate(void) {}
-		virtual void AfterTerminate(void) {}
-		virtual void Resize(int w, int h) {}
+	virtual XVisualInfo *CreateVisual(void) {return 0;}
+	virtual void SetAttributes(unsigned long &ValueMask, XSetWindowAttributes &attr) {}
+	virtual void Paint(Draw &draw) {}
+	virtual void BeforeInit(void) {}
+	virtual void AfterInit(bool Error) {}
+	virtual void BeforeTerminate(void) {}
+	virtual void AfterTerminate(void) {}
+	virtual void Resize(int w, int h) {}
 
-		void SetError(bool err) { isError = err; }
-		void SetErrorMessage(String const &msg) { ErrorMessage = msg; }
+	void SetError(bool err) { isError = err; }
+	void SetErrorMessage(String const &msg) { ErrorMessage = msg; }
 
-	public:
-		typedef DHCtrl CLASSNAME;
+public:
+	typedef DHCtrl CLASSNAME;
 
-		bool   IsInitialized(void) { return isInitialized; }
+	bool   IsInitialized(void) { return isInitialized; }
 
-		bool   GetError(void) { return isError; }
-		String GetErrorMessage(void) { return ErrorMessage; }
+	bool   GetError(void) { return isError; }
+	String GetErrorMessage(void) { return ErrorMessage; }
 
-		DHCtrl();
-		~DHCtrl();
+	DHCtrl();
+	~DHCtrl();
 };
 
 #endif

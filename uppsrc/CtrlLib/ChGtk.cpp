@@ -136,6 +136,8 @@ Image GetGTK(GtkWidget *widget, int state, int shadow, const char *detail, int t
 		int t1 = (type & 0xf00) >> 8;
 		switch(type & 15) {
 		case GTK_BOX:
+			gtk_style_apply_default_background(style, pixmap, TRUE, (GtkStateType)state,
+			                                   &cr, rect.left + margin, rect.top + margin, rcx, rcy);
 			gtk_paint_box(style, pixmap, (GtkStateType)state, (GtkShadowType)shadow, &cr,
 			                    widget, detail,
 			                    rect.left + margin, rect.top + margin, rcx, rcy);
@@ -699,15 +701,6 @@ void ChHostSkin()
 	}
 
 	{
-		MenuBar::Style& s = MenuBar::StyleDefault().Write();
-		static GtkWidget *menu_item = gtk_menu_item_new();
-		ChGtkNew(menu_item, "menuitem", GTK_BOX);
-		GtkCh(s.item, 2, 2);
-		GtkCh(s.topitem[1], 2, 2);
-		GtkCh(s.topitem[2], 2, 2);
-	}
-
-	{
 		TabCtrl::Style& s = TabCtrl::StyleDefault().Write();
 		static GtkWidget *tabctrl = gtk_notebook_new();
 		ChGtkNew(tabctrl, "tab", GTK_EXT|GTK_VAL3|GTK_MARGIN3);
@@ -785,11 +778,8 @@ void ChHostSkin()
 		s.sepm = 4;
 		{
 			MultiButton::Style& s = MultiButton::StyleFrame().Write();
-			for(int i = 0; i < 4; i++) {
-//				s.lmiddle[i] = s.rmiddle[i] = HorzBlend(s.right[i], s.left[i], 6, 14);
+			for(int i = 0; i < 4; i++)
 				s.edge[i] = EditField::StyleDefault().edge[i];
-				DUMP(Image(s.edge[i]).GetHotSpot());
-			}
 			s.activeedge = true;
 			s.sep1 = Null;
 			s.trivialborder = s.border = efm;
@@ -814,10 +804,9 @@ void ChHostSkin()
 	CtrlsImg::Set(CtrlsImg::I_VE, ib);
 
 	static GtkWidget *popup;
+	static GtkWidget *bar = Setup(gtk_menu_bar_new());
 	static int shadowtype;
 	if(!popup) {
-		GtkWidget *bar = gtk_menu_bar_new();
-		Setup(bar);
 		gtk_widget_style_get(bar, "shadow_type", &shadowtype, NULL);
 		GtkWidget *item = gtk_menu_item_new();
 		gtk_menu_shell_append(GTK_MENU_SHELL(bar), item);
@@ -826,9 +815,52 @@ void ChHostSkin()
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), popup);
 		gtk_widget_realize(popup);
 	}
-	Color c = GetGTK(popup, 0, 2, "menu", GTK_BOX, 32, 32)[16][16];
+	Image mimg = GetGTK(popup, 0, 2, "menu", GTK_BOX, 32, 32);
+	Color c = mimg[16][16];
 	if(!IsNull(c) && Diff(c, SColorPaper()) < 200) //!!! ClearLooks patch
 		SColorMenu_Write(c);
+	{
+		MenuBar::Style& s = MenuBar::StyleDefault().Write();
+		int m = ImageMargin(mimg, 4, 5);
+		s.popupframe = WithHotSpot(mimg, m, m);
+		s.popupbody = Crop(mimg, m, m, 32 - 2 * m, 32 - 2 * m);
+		s.leftgap = 26;
+	}
+	{
+		MenuBar::Style& s = MenuBar::StyleDefault().Write();
+		static GtkWidget *menu_item;
+		if(!menu_item) {
+			menu_item = gtk_menu_item_new_with_label("M");
+			gtk_menu_shell_append(GTK_MENU_SHELL(popup), menu_item);
+			gtk_widget_realize(menu_item);
+		}
+		ChGtkNew(menu_item, "menuitem", GTK_BOX);
+		int sw = GTK_SHADOW_OUT;
+		if(gtk_major_version > 2 || (gtk_major_version == 2 && gtk_minor_version >= 1))
+			sw = GtkInt("selected_shadow_type");
+		GtkCh(s.item, sw, GTK_STATE_PRELIGHT);
+		s.itemtext = ChGtkColor(2, menu_item);
+		static GtkWidget *top_item;
+		if(!top_item) {
+			top_item = gtk_menu_item_new_with_label("M");
+			gtk_menu_shell_append(GTK_MENU_SHELL(bar), top_item);
+			gtk_widget_realize(top_item);
+		}
+		ChGtkNew(top_item, "menuitem", GTK_BOX);
+		if(gtk_major_version > 2 || (gtk_major_version == 2 && gtk_minor_version >= 1))
+			sw = GtkInt("selected_shadow_type");
+		s.topitem[1]= s.topitem[0];
+		s.topitemtext[1] = s.topitemtext[0];
+		GtkCh(s.topitem[2], sw, GTK_STATE_PRELIGHT);
+		s.topitemtext[2] = ChGtkColor(2, top_item);
+		ChGtkNew(bar, "menubar", GTK_BOX);
+		GtkCh(s.look, GtkInt("shadow_type"), GTK_STATE_NORMAL);
+		s.breaksep.l1 = s.breaksep.l2 = Null;
+	}
+	{
+		ToolBar::Style& s = ToolBar::StyleDefault().Write();
+
+	}
 
 	ChCtrlImg(CtrlImg::I_information, "gtk-dialog-info", 6);
 	ChCtrlImg(CtrlImg::I_question, "gtk-dialog-question", 6);

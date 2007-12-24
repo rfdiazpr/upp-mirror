@@ -33,7 +33,7 @@ void InstallBlueMenuBar()
 	s.arealook = Null;
 	s.look = BlueImg::LK();
 	s.topitem[1] = s.item = BlueImg::BH();
-	s.itemtext = s.topitemtext = SColorText();
+	s.itemtext = s.topitemtext[0] = s.topitemtext[1] = s.topitemtext[2] = SColorText();
 	s.leftgap = 24;
 	s.lsepm = s.leftgap + s.textgap;
 	s.popupiconbar = BlueImg::LR();

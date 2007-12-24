@@ -11,6 +11,14 @@ Image WithHotSpots(const Image& m, int x1, int y1, int x2, int y2)
 	return b;
 }
 
+Image WithHotSpot(const Image& m, int x1, int y1)
+{
+	Image h = m;
+	ImageBuffer b(h);
+	b.SetHotSpot(Point(x1, y1));
+	return b;
+}
+
 Image CreateImage(Size sz, Color color)
 {
 	ImageBuffer ib(sz);
@@ -257,6 +265,7 @@ Image Colorize(const Image& img, Color color, int alpha)
 	const RGBA *s = ~img;
 	const RGBA *e = s + img.GetLength();
 	ImageBuffer w(img.GetSize());
+	Unmultiply(w);
 	RGBA *t = w;
 	byte r = color.GetR();
 	byte g = color.GetG();
@@ -272,6 +281,7 @@ Image Colorize(const Image& img, Color color, int alpha)
 		t++;
 		s++;
 	}
+	Premultiply(w);
 	return w;
 }
 
@@ -286,6 +296,7 @@ Image Contrast(const Image& img, int amount)
 	const RGBA *s = ~img;
 	const RGBA *e = s + img.GetLength();
 	ImageBuffer w(img.GetSize());
+	Unmultiply(w);
 	RGBA *t = w;
 	while(s < e) {
 		t->r = ContrastCh(amount, s->r);
@@ -295,6 +306,7 @@ Image Contrast(const Image& img, int amount)
 		t++;
 		s++;
 	}
+	Premultiply(w);
 	return w;
 }
 

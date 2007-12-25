@@ -64,6 +64,7 @@ enum {
 	GTK_SHADOW,
 	GTK_FOCUS,
 	GTK_FLATBOX,
+	GTK_BGBOX,
 
 	GTK_MARGIN1 = 0x0010,
 	GTK_MARGIN2 = 0x0020,
@@ -135,9 +136,10 @@ Image GetGTK(GtkWidget *widget, int state, int shadow, const char *detail, int t
 		int rcy = max(rect.GetHeight() - 2 * margin, 0);
 		int t1 = (type & 0xf00) >> 8;
 		switch(type & 15) {
-		case GTK_BOX:
+		case GTK_BGBOX:
 			gtk_style_apply_default_background(style, pixmap, TRUE, (GtkStateType)state,
 			                                   &cr, rect.left + margin, rect.top + margin, rcx, rcy);
+		case GTK_BOX:
 			gtk_paint_box(style, pixmap, (GtkStateType)state, (GtkShadowType)shadow, &cr,
 			                    widget, detail,
 			                    rect.left + margin, rect.top + margin, rcx, rcy);
@@ -244,6 +246,7 @@ struct GtkElement {
 	word gtki;
 	byte state;
 	byte shadow;
+	Rect reduce;
 };
 
 struct GtkImageMaker : ImageMaker {
@@ -293,20 +296,34 @@ Value GtkLookFn(Draw& w, const Rect& rect, const Value& v, int op)
 				            m, RectC(4, gm.sz.cy - 7, gm.sz.cx - 8, 5));
 			}
 			else
-				w.DrawImage(r.left, r.top, MakeImagePaintOnly(gm));
+				if(e.reduce.left || e.reduce.right || e.reduce.top || e.reduce.bottom) {
+					Rect rr = e.reduce;
+					rr.SetSize(gm.sz);
+					gm.sz.cx += e.reduce.left + e.reduce.right;
+					gm.sz.cy += e.reduce.top + e.reduce.bottom;
+					w.DrawImage(r.left, r.top, MakeImagePaintOnly(gm), rr);
+				}
+				else
+					w.DrawImage(r.left, r.top, MakeImagePaintOnly(gm));
 			return 1;
 		}
 	}
 	return Null;
 }
 
-Value GtkMakeCh(int shadow, int state)
+Value GtkMakeCh(int shadow, int state, const Rect& r)
 {
 	GtkElement e;
 	e.gtki = ChGtkIs().GetCount() - 1;
 	e.shadow = shadow;
 	e.state = state;
+	e.reduce = r;
 	return RawToValue(e);
+}
+
+Value GtkMakeCh(int shadow, int state)
+{
+	return GtkMakeCh(shadow, state, Rect(0, 0, 0, 0));
 }
 
 void GtkCh(Value& look, int shadow, int state)
@@ -671,7 +688,7 @@ void ChHostSkin()
 		static GtkWidget *hscrollbar = gtk_hscrollbar_new(GTK_ADJUSTMENT(adj));
 		ChGtkNew(hscrollbar, "slider", GTK_SLIDER);
 		GtkChSlider(s.hthumb);
-		ChGtkNew("trough", GTK_BOX);
+		ChGtkNew("trough", GTK_BGBOX);
 		GtkChTrough(s.hupper);
 		GtkChTrough(s.hlower);
 		if(atp) {
@@ -815,9 +832,9 @@ void ChHostSkin()
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), popup);
 		gtk_widget_realize(popup);
 	}
-	Image mimg = GetGTK(popup, 0, 2, "menu", GTK_BOX, 32, 32);
+	Image mimg = GetGTK(popup, 0, 2, "menu", GTK_BGBOX, 32, 32);
 	Color c = mimg[16][16];
-	if(!IsNull(c) && Diff(c, SColorPaper()) < 200) //!!! ClearLooks patch
+	if(!IsNull(c) && Diff(c, SColorPaper()) < 200)
 		SColorMenu_Write(c);
 	{
 		MenuBar::Style& s = MenuBar::StyleDefault().Write();
@@ -825,9 +842,6 @@ void ChHostSkin()
 		s.popupframe = WithHotSpot(mimg, m, m);
 		s.popupbody = Crop(mimg, m, m, 32 - 2 * m, 32 - 2 * m);
 		s.leftgap = 26;
-	}
-	{
-		MenuBar::Style& s = MenuBar::StyleDefault().Write();
 		static GtkWidget *menu_item;
 		if(!menu_item) {
 			menu_item = gtk_menu_item_new_with_label("M");
@@ -853,13 +867,30 @@ void ChHostSkin()
 		s.topitemtext[1] = s.topitemtext[0];
 		GtkCh(s.topitem[2], sw, GTK_STATE_PRELIGHT);
 		s.topitemtext[2] = ChGtkColor(2, top_item);
-		ChGtkNew(bar, "menubar", GTK_BOX);
-		GtkCh(s.look, GtkInt("shadow_type"), GTK_STATE_NORMAL);
-		s.breaksep.l1 = s.breaksep.l2 = Null;
+		ChGtkNew(bar, "menubar", GTK_BGBOX);
+		sw = GtkInt("shadow_type");
+		s.look = GtkMakeCh(sw, GTK_STATE_NORMAL, Rect(0, 0, 0, 1));
+		Image img = GetGTK(bar, GTK_STATE_NORMAL, sw, "menubar", GTK_BOX, 32, 32);
+		s.breaksep.l1 = Color(img[31][15]);
+		TopSeparator1_Write(s.breaksep.l1);
+		s.breaksep.l2 = Null;
 	}
 	{
 		ToolBar::Style& s = ToolBar::StyleDefault().Write();
-
+		static GtkWidget *toolbar;
+		if(!toolbar) {
+			GtkWidget *handle = Setup(gtk_handle_box_new());
+			toolbar = gtk_toolbar_new();
+			gtk_container_add(GTK_CONTAINER(handle), toolbar);
+		}
+		ChGtkNew(toolbar, "toolbar", GTK_BGBOX);
+		int sw = GtkInt("shadow_type");
+		s.arealook = Null;
+		s.look = GtkMakeCh(sw, GTK_STATE_NORMAL, Rect(0, 1, 0, 1));
+		s.breaksep.l1 = MenuBar::StyleDefault().breaksep.l1;
+		Image img = GetGTK(toolbar, GTK_STATE_NORMAL, sw, "toolbar", GTK_BOX, 32, 32);
+		MenuBar::StyleDefault().Write().breaksep.l2 = s.breaksep.l2 = Color(img[0][15]);
+		TopSeparator2_Write(s.breaksep.l2);
 	}
 
 	ChCtrlImg(CtrlImg::I_information, "gtk-dialog-info", 6);
@@ -880,6 +911,8 @@ void ChHostSkin()
 		(*bimg[i].set)(GtkImage(bimg[i].gtk, 4, 16));
 
 	ChLookFn(GtkLookFn);
+
+	SwapOKCancel_Write(true);
 }
 
 END_UPP_NAMESPACE

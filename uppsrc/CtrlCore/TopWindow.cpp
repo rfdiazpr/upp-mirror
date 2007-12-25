@@ -521,4 +521,17 @@ void Maxisize(TopWindow& win, int screencxmax)
 		win.Maximize();
 }
 
+CH_INT(SwapOKCancel, 0);
+
+void ArrangeOKCancel(Ctrl& ok, Ctrl& cancel)
+{
+	if(SwapOKCancel() &&
+	   ok.GetPos().x.GetB() == cancel.GetPos().x.GetB() &&
+	   ok.GetPos().y.GetB() == cancel.GetPos().y.GetB()) {
+	       Ctrl::LogPos h = ok.GetPos();
+	       ok.SetPos(cancel.GetPos());
+	       cancel.SetPos(h);
+	}
+}
+
 END_UPP_NAMESPACE

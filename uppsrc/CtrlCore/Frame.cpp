@@ -77,11 +77,14 @@ CH_INT(EditFieldIsThin, 0);
 
 CtrlFrame& FieldFrame() { return GUI_GlobalStyle() >= GUISTYLE_XP ? XPFieldFrame() : InsetFrame(); }
 
+CH_VALUE(TopSeparator1, SColorShadow());
+CH_VALUE(TopSeparator2, SColorLight());
+
 class TopSeparatorFrameCls : public CtrlFrame {
 	virtual void FrameLayout(Rect& r)                   { r.top += 2; }
 	virtual void FramePaint(Draw& w, const Rect& r) {
-		w.DrawRect(r.left, r.top, r.Width(), 1, SColorShadow);
-		w.DrawRect(r.left, r.top + 1, r.Width(), 1, SColorLight);
+		ChPaint(w, r.left, r.top, r.Width(), 1, TopSeparator1());
+		ChPaint(w, r.left, r.top + 1, r.Width(), 1, TopSeparator2());
 	}
 	virtual void FrameAddSize(Size& sz) { sz.cy += 2; }
 };

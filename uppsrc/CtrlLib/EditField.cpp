@@ -679,6 +679,7 @@ void EditField::LeftDrag(Point p, dword flags)
 		WString sel = text.Mid(sell, selh - sell);
 		ImageDraw iw(ssz);
 		iw.DrawText(0, 0, sel);
+		iw.Alpha().DrawRect(ssz, Black);
 		iw.Alpha().DrawText(0, 0, sel, StdFont(), White);
 		VectorMap<String, ClipData> data;
 		Append(data, sel);

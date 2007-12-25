@@ -17,6 +17,17 @@ struct PromptDlgWnd__ : TopWindow {
 	}
 };
 
+static void sAdd(Ctrl& dlg, int fcy, int bcy, int& bx, int bcx, int gap, Button& b, const char *button, const Image& img)
+{
+	if(button) {
+		dlg << b.BottomPos(fcy, bcy).LeftPos(bx, bcx);
+		b.SetLabel(button);
+		if(!IsNull(img))
+			b.SetImage(img);
+		bx += gap + bcx;
+	}
+}
+
 int Prompt(Callback1<const String&> WhenLink,
            const char *title, const Image& iconbmp, const char *qtf, bool okcancel,
            const char *button1, const char *button2, const char *button3,
@@ -84,23 +95,15 @@ int Prompt(Callback1<const String&> WhenLink,
 	if(button3)
 		bx += gap + bcx;
 	bx = (cx - bx) / 2;
-	dlg << b1.BottomPos(fcy, bcy).LeftPos(bx, bcx);
-	b1.SetLabel(button1);
-	if(!IsNull(im1))
-		b1.SetImage(im1);
-	if(button2) {
-		bx += gap + bcx;
-		dlg << b2.BottomPos(fcy, bcy).LeftPos(bx, bcx);
-		b2.SetLabel(button2);
-		if(!IsNull(im2))
-			b2.SetImage(im2);
+	if(SwapOKCancel()) {
+		sAdd(dlg, fcy, bcy, bx, bcx, gap, b2, button2, im2);
+		sAdd(dlg, fcy, bcy, bx, bcx, gap, b3, button3, im1);
+		sAdd(dlg, fcy, bcy, bx, bcx, gap, b1, button1, im3);
 	}
-	if(button3) {
-		bx += gap + bcx;
-		dlg << b3.BottomPos(fcy, bcy).LeftPos(bx, bcx);
-		b3.SetLabel(button3);
-		if(!IsNull(im3))
-			b3.SetImage(im3);
+	else {
+		sAdd(dlg, fcy, bcy, bx, bcx, gap, b1, button1, im1);
+		sAdd(dlg, fcy, bcy, bx, bcx, gap, b2, button2, im2);
+		sAdd(dlg, fcy, bcy, bx, bcx, gap, b3, button3, im3);
 	}
 	dlg.WhenClose = dlg.Breaker(button3 ? -1 : 0);
 	dlg.Open();

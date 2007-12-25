@@ -216,6 +216,11 @@ public:
 
 void Maxisize(TopWindow& win, int screencxmax);
 
+void ArrangeOKCancel(Ctrl& ok, Ctrl& cancel);
+
+int  SwapOKCancel();
+void SwapOKCancel_Write(int b);
+
 template <class L>
 void InitLayout(Ctrl& ctrl, L& layout)
 {
@@ -255,6 +260,7 @@ void CtrlLayoutOKCancel(T& ctrl, const char *title) {
 	CtrlLayoutOK(ctrl, title);
 	ctrl.Rejector(ctrl.cancel, IDCANCEL);
 	ctrl.cancel.Cancel();
+	ArrangeOKCancel(ctrl.ok, ctrl.cancel);
 }
 
 template <class T>

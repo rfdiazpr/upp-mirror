@@ -140,7 +140,7 @@ String  ConfigFile(const char *file) {
 	}
 	return GetExeDirFile(file);
 #elif defined(PLATFORM_POSIX)
-	String p = GetHomeDirFile("." + GetExeTitle());
+	String p = GetHomeDirFile(".upp/" + GetExeTitle());
 	ONCELOCK
 		RealizeDirectory(p);
 	return AppendFileName(p, file);

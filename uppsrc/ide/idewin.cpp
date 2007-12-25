@@ -343,21 +343,24 @@ void Ide::SetupBars()
 	ClearFrames();
 	int r = HorzLayoutZoom(100);
 	int l = HorzLayoutZoom(320);
+	menubar.Transparent();
 	if(toolbar_in_row) {
 		toolbar.SetFrame(NullFrame());
 		bararea.Add(menubar.LeftPos(0, l).VCenterPos(menubar.GetStdHeight()));
 		bararea.Add(toolbar.HSizePos(l, r).VCenterPos(toolbar.GetStdHeight()));
-		bararea.Add(display.RightPos(0, r).VSizePos(2, 3));
+		bararea.Add(display.RightPos(4, r).VSizePos(2, 3));
 		bararea.Height(max(menubar.GetStdHeight(), toolbar.GetStdHeight()));
 		AddFrame(bararea);
+		toolbar.Transparent();
 	}
 	else {
 		bararea.Add(menubar.LeftPos(0, l).VCenterPos(menubar.GetStdHeight()));
-		bararea.Add(display.RightPos(0, r).VSizePos(2, 3));
+		bararea.Add(display.RightPos(4, r).VSizePos(2, 3));
 		bararea.Height(menubar.GetStdHeight());
 		AddFrame(bararea);
 		AddFrame(TopSeparatorFrame());
 		AddFrame(toolbar);
+		toolbar.NoTransparent();
 	}
 	AddFrame(statusbar);
 	SetBar();
@@ -602,7 +605,7 @@ void AppMain___()
 	const Vector<String>& arg = CommandLine();
 
 	bool firstinstall;
-	
+
 #ifdef PLATFORM_POSIX
 	String home = Environment().Get("UPP_HOME", Null);
 	if(!IsNull(home))

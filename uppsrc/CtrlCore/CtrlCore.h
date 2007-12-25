@@ -1353,6 +1353,8 @@ Font ArialZ(int height = 0);
 Font CourierZ(int height = 0);
 
 int   EditFieldIsThin();
+Value TopSeparator1();
+Value TopSeparator2();
 int   FrameButtonWidth();
 int   ScrollBarArrowSize();
 Color FieldFrameColor();
@@ -1381,6 +1383,8 @@ void GUI_DragDistance_Write(int);
 void GUI_DblClickTime_Write(int);
 
 void  EditFieldIsThin_Write(int);
+void  TopSeparator1_Write(Value);
+void  TopSeparator2_Write(Value);
 void  FrameButtonWidth_Write(int);
 void  ScrollBarArrowSize_Write(int);
 void  FieldFrameColor_Write(Color);

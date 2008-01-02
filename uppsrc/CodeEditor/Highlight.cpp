@@ -502,6 +502,8 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 			if(*p == '.' || *p == 'e' || *p == 'E') {
 				c = INK_CONST_FLOAT;
 				p++;
+				if(*p == '-')
+					p++;
 			}
 			while(IsDigit(*p)) p++;
 			if(c == INK_CONST_OCT && p - t == 1)

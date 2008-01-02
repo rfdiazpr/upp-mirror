@@ -510,11 +510,7 @@ Ctrl *Ctrl::GetTopRect(Rect& r, bool inframe)
 		r &= Rect(GetSize());
 		r.Offset(GetView().TopLeft());
 	}
-// 01/12/2007 - mdelfede
-// added support for windowed controls
-	if(parent && !top) {
-//	if(parent) {
-// 01/12/2007 - END
+	if(parent) {
 		r.Offset(GetRect().TopLeft());
 		return parent->GetTopRect(r, InFrame());
 	}

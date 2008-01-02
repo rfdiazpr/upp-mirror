@@ -190,8 +190,10 @@ void CodeEditor::SyntaxState::ScanSyntax(const wchar *ln, const wchar *e)
 		if(comment) {
 			p = strnext(p, e, '*');
 			if(!p) break;
-			if(*++p == '/')
+			if(*++p == '/') {
 				comment = false;
+				p++;
+			}
 		}
 		else {
 			int pc = 0;

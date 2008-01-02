@@ -97,7 +97,7 @@ file
 	Update.cpp,
 	Ctrl.iml,
 	Ctrl.lay,
-	CtrlLib.t font 2 charset "UTF-8",
+	CtrlLib.t charset "UTF-8",
 	CtrlLib.icpp,
 	Lang readonly separator,
 	Lang.h,
@@ -121,4 +121,3 @@ file
 	COPYING,
 	COPYING-PLAIN,
 	AUTHORS;
-

@@ -88,8 +88,7 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 // added support for windowed controls
 //			if(top)
 //				XTranslateCoordinates(Xdisplay, top->window, Xroot, 0, 0, &x, &y, &dummy);
-			if(top)
-			{
+			if(top) {
 				Window DestW = (parent ? GetParentWindow() : Xroot);
 				XTranslateCoordinates(Xdisplay, top->window, DestW, 0, 0, &x, &y, &dummy);
 			}
@@ -97,10 +96,8 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 			LLOG("CongigureNotify " << rect);
 			if(GetRect() != rect)
 				SetWndRect(rect);
-#ifdef PLATFORM_X11
 			// Synchronizes native windows (NOT the main one)
 			SyncNativeWindows();
-#endif
 // 01/12/2007 - END
 
 		}

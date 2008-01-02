@@ -9,6 +9,7 @@ CH_STYLE(ProgressIndicator, Style, StyleDefault)
 	hchunk = CtrlsImg::PIC();
 	vlook = CtrlsImg::VPI();
 	vchunk = CtrlsImg::VPIC();
+	bound = false;
 }
 
 Size ProgressIndicator::GetMsz()
@@ -31,6 +32,10 @@ void ProgressIndicator::Paint(Draw& w) {
 		int l = max(msz.cx, msz.cy) & ~7;
 		p0 = pxp - l / 4;
 		p = min(p - p0, max(msz.cx, msz.cy) - p0);
+		if(style->bound && p0 < 0) {
+			p += p0;
+			p0 = 0;
+		}
 	}
 	if(style->classic || percent || !IsNull(color)) {
 		ChPaintEdge(w, sz, EditFieldEdge());

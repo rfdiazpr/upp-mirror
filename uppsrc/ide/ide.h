@@ -43,7 +43,7 @@ public:
 	void               Attach(Ctrl& parent) { parent.AddFrame(button); }
 	void               Title(String t)      { title = t; }
 	String             GetTitle() const     { return title; }
-	
+
 private:
 	void               OnAction();
 
@@ -583,6 +583,7 @@ public:
 	Font      consolefont;
 	Font      font1;
 	Font      font2;
+	Font      tfont;
 	int       editortabsize;
 	int       indent_amount;
 	byte      default_charset;

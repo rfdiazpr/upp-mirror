@@ -3,14 +3,15 @@
 
 void Ide::SetupEditor(int f, String hl, String fn)
 {
+	String ext = ToLower(GetFileExt(fn));
 	switch(f) {
 	case 1:  editor.SetFont(font1); break;
 	case 2:  editor.SetFont(font2); break;
 	case 3:  editor.SetFont(consolefont); break;
-	default: editor.SetFont(editorsplit.GetZoom() < 0 && editorsplit.IsHorz() ? veditorfont : editorfont); break;
+	default: editor.SetFont(editorsplit.GetZoom() < 0 && editorsplit.IsHorz() ? veditorfont :
+	                        ext == ".t" ? tfont : editorfont); break;
 	}
 	if(IsNull(hl)) {
-		String ext = ToLower(GetFileExt(fn));
 		if(ext == ".c" || ext == ".cpp" || ext == ".cc" || ext == ".cxx" ||
 		   ext == ".h" || ext == ".hpp" || ext == ".hh" || ext == ".hxx" || ext == ".icpp")
 			editor.Highlight(CodeEditor::HIGHLIGHT_CPP);

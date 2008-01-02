@@ -468,7 +468,7 @@ void TopSubMenuItem::Pull()
 		parentmenu->SetupRestoreFocus();
 	Point p = r.BottomLeft();
 	if(GUI_GlobalStyle() >= GUISTYLE_XP)
-		p.y -= 1;
+		p += style->pullshift;
 	SubMenuBase::Pull(this, p, Size(r.Width(), -r.Height()));
 	if(parentmenu)
 		parentmenu->SyncState();

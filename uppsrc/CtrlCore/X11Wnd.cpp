@@ -152,16 +152,21 @@ Ctrl *Ctrl::GetParentWindowCtrl(void) const
 // Gets the rect inside the parent window
 Rect Ctrl::GetRectInParentWindow(void) const
 {
-  Rect r = GetRect();
-  Ctrl *q = parent;
-  while(q)
-  {
-      if(q->top)
-          break;
-      r += q->GetRect().TopLeft();
-      q = q->parent;
-  }
-  return r;
+	Rect r = GetRect();
+	Ctrl *q = parent;
+	while(q)
+  	{
+		if(q->top)
+			break;
+		r += q->GetRect().TopLeft();
+		q = q->parent;
+	}
+	if(q)
+	{
+		Size ds = q->AddFrameSize(0,0);
+		r.Offset(ds);
+	}
+	return r;
 
 } // END Ctrl::GetRectInParentWindow()
 

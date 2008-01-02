@@ -1,3 +1,19 @@
+    Highlightinh "1e-15"
+    Highlightinh "1e-15"
+
+	DropDate DOES NOT WORK IN LINUX!
+
+	.cfg paths
+	DropList Chameleon
+	OK/Cancel swap
+
+	"Build mode" "MSC71cdb Debug" looks ugly in XP clearlooks...
+     I found that if child dialog is resizeable the icon set for main app window is not passed to it
+	Special font for .t files
+	Selecting text left->right: I beam, right->left arrow?!
+	Fix hydra
+	1 hour theide bug...
+
 Weekend {
 	RichEdit left triple
 	SetWndForeground in SetFocus

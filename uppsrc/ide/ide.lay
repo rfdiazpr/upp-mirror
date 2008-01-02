@@ -334,7 +334,7 @@ LAYOUT(StatLayout, 732, 552)
 	ITEM(Button, ok, SetLabel(t_("OK")).RightPosZ(8, 64).BottomPosZ(8, 24))
 END_LAYOUT
 
-LAYOUT(SetupFontLayout, 532, 132)
+LAYOUT(SetupFontLayout, 532, 172)
 	ITEM(Label, dv___0, SetLabel(t_("Normal")).LeftPosZ(12, 48).TopPosZ(12, 19))
 	ITEM(DropList, face, LeftPosZ(60, 208).TopPosZ(12, 19))
 	ITEM(DropList, height, LeftPosZ(276, 50).TopPosZ(12, 19))
@@ -365,6 +365,12 @@ LAYOUT(SetupFontLayout, 532, 132)
 	ITEM(Option, cbold, SetLabel(t_("Bold")).LeftPosZ(330, 44).TopPosZ(108, 18))
 	ITEM(Option, citalic, SetLabel(t_("Italic")).LeftPosZ(378, 44).TopPosZ(108, 18))
 	ITEM(Option, cnaa, SetLabel(t_("NonAntiAliased")).LeftPosZ(428, 100).TopPosZ(108, 18))
+	ITEM(Label, dv___30, SetLabel(t_(".t file")).LeftPosZ(12, 48).TopPosZ(132, 19))
+	ITEM(DropList, tface, LeftPosZ(60, 208).TopPosZ(132, 19))
+	ITEM(DropList, theight, LeftPosZ(276, 50).TopPosZ(132, 19))
+	ITEM(Option, tbold, SetLabel(t_("Bold")).LeftPosZ(330, 44).TopPosZ(132, 18))
+	ITEM(Option, titalic, SetLabel(t_("Italic")).LeftPosZ(378, 44).TopPosZ(132, 18))
+	ITEM(Option, tnaa, SetLabel(t_("NonAntiAliased")).LeftPosZ(428, 100).TopPosZ(132, 18))
 END_LAYOUT
 
 LAYOUT(SetupHlLayout, 544, 280)
@@ -480,4 +486,3 @@ LAYOUT(TppLayout, 148, 284)
 	ITEM(Button, ok, SetLabel(t_("OK")).LeftPosZ(8, 64).TopPosZ(252, 24))
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).LeftPosZ(76, 64).TopPosZ(252, 24))
 END_LAYOUT
-

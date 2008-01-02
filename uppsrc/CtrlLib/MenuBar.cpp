@@ -46,6 +46,8 @@ CH_STYLE(MenuBar, Style, StyleDefault)
 	leftgap = 16;
 	textgap = 6;
 	lsepm = rsepm = 2;
+	pullshift.x = 0;
+	pullshift.y = -1;
 }
 
 MenuBar::MenuBar()

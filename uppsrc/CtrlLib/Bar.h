@@ -273,6 +273,7 @@ public:
 		Size  maxiconsize;
 		int   leftgap, textgap;
 		int   lsepm, rsepm;
+		Point pullshift;
 	};
 
 private:

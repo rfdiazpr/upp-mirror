@@ -80,7 +80,7 @@ void Ide::ConsolePaste()
 }
 
 void Ide::Serialize(Stream& s) {
-	int version = 5;
+	int version = 6;
 	s.Magic(0x12346);
 	s / version;
 	s % main;
@@ -94,6 +94,8 @@ void Ide::Serialize(Stream& s) {
 	s % package;
 	s % filelist;
 	s % editorfont;
+	if(version >= 6)
+		s % tfont;
 	s % veditorfont;
 	s % consolefont;
 	s % font1;
@@ -460,7 +462,7 @@ Ide::Ide()
 
 	Icon(IdeImg::Package(), IdeImg::Package());
 
-	editorfont = font2 = Courier(13);
+	tfont = editorfont = font2 = Courier(13);
 	veditorfont = consolefont = font1 = Courier(11);
 	editortabsize = 4;
 	indent_amount = 4;
@@ -604,17 +606,18 @@ void AppMain___()
 
 	const Vector<String>& arg = CommandLine();
 
-	bool firstinstall;
+	bool firstinstall = false;
 
 #ifdef PLATFORM_POSIX
 	String home = Environment().Get("UPP_HOME", Null);
 	if(!IsNull(home))
 		SetHomeDirectory(home);
-	FindFile ff(ConfigFile("*.var"));
-	if(!ff)
+	if(LoadFile(ConfigFile("version")) != IDE_VERSION && !FileExists(ConfigFile("noinstall"))) {
 		if(!Install())
 			return;
-	firstinstall = !ff;
+		SaveFile(ConfigFile("version"), IDE_VERSION);
+		firstinstall = true;
+	}
 #endif
 
 #ifdef _DEBUG

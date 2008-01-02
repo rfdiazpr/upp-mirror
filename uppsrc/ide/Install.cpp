@@ -302,15 +302,7 @@ bool Install()
 		return true;
 	}
 	Progress pi;
-	for (;;) {
-		if (dlg.Run() == IDOK) {
-			if (DirectoryExists((String)dlg.path)) {
-				int dlgres = PromptYesNoCancel("Directory exists, overwrite ?");
-				if (dlgres == -1 ) return false;
-				if (dlgres) break;
-			} else break;
-		} else return false;
-	}
+	if(dlg.Run() != IDOK) return true;
 	String upp(dlg.path);
 	String uppsrc;
 	String pp;

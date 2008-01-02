@@ -200,7 +200,12 @@ public:
 	__Expand(E__UpdateId)
 
 	bool        Insert(Fields nf);
+	bool        Insert(Fields nf, const char *table);
+	bool        Insert(Fields nf, SqlId table);
+
 	bool        Update(Fields nf);
+	bool        Update(Fields nf, const char *table);
+	bool        Update(Fields nf, SqlId table);
 
 	bool        Delete(const char *table, const char *key, const Value& keyval);
 	bool        Delete(SqlId table, SqlId key, const Value& keyval);

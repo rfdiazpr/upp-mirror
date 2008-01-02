@@ -371,13 +371,23 @@ struct NfInsert : public FieldOperator {
 	}
 };
 
-bool Sql::Insert(Fields nf) {
+bool Sql::Insert(Fields nf, const char *table) {
 	NfInsert w;
 	w.i = 0;
 	w.sql = this;
 	nf(w);
-	return Execute(String("insert into ") + w.table + '(' + w.clist + ") values(" + w.qlist + ')');
+	return Execute(String("insert into ") + (table ? String(table) : w.table) +
+	               '(' + w.clist + ") values(" + w.qlist + ')');
 }
+
+bool Sql::Insert(Fields nf) {
+	return Insert(nf, NULL);
+}
+
+bool Sql::Insert(Fields nf, SqlId table) {
+	return Insert(nf, (const char *)~table);
+}
+
 
 #define E__Updater(I)  sComma(I, list), list.Cat(c##I), list.Cat(" = ?"), SetParam(I - 1, v##I)
 
@@ -403,13 +413,22 @@ struct NfUpdate : public FieldOperator {
 	}
 };
 
-bool Sql::Update(Fields nf) {
+bool Sql::Update(Fields nf, const char *table) {
 	NfUpdate w;
 	w.i = 0;
 	w.sql = this;
 	nf(w);
 	SetParam(w.i - 1, w.keyval);
-	return Execute(String ("update ") + w.table + " set " + w.list + " where " + w.key + " = ?");
+	return Execute(String ("update ") + (table ? String(table) : w.table) +
+	               " set " + w.list + " where " + w.key + " = ?");
+}
+
+bool Sql::Update(Fields nf) {
+	return Update(nf, NULL);
+}
+
+bool Sql::Update(Fields nf, SqlId table) {
+	return Update(nf, (const char *)~table);
 }
 
 void Sql::Assign(SqlSource& s) {

@@ -186,15 +186,17 @@ void Ide::SetupFormat() {
 	dlg.Add(edt, "Editor");
 	dlg.Add(ide, "IDE");
 	dlg.WhenClose = dlg.Acceptor(IDYES);
-	FontSelectManager ed, vf, con, f1, f2;
+	FontSelectManager ed, vf, con, f1, f2, tf;
 	ed.Set(fnt.face, fnt.height, fnt.bold, fnt.italic, fnt.naa);
 	vf.Set(fnt.vface, fnt.vheight, fnt.vbold, fnt.vitalic, fnt.vnaa);
 	con.Set(fnt.cface, fnt.cheight, fnt.cbold, fnt.citalic, fnt.cnaa);
+	tf.Set(fnt.tface, fnt.theight, fnt.tbold, fnt.titalic, fnt.tnaa);
 	f1.Set(fnt.face1, fnt.height1, fnt.bold1, fnt.italic1, fnt.naa1);
 	f2.Set(fnt.face2, fnt.height2, fnt.bold2, fnt.italic2, fnt.naa2);
 	ed.Set(editorfont);
 	vf.Set(veditorfont);
 	con.Set(consolefont);
+	tf.Set(tfont);
 	f1.Set(font1);
 	f2.Set(font2);
 	DlCharset(edt.charset);
@@ -247,7 +249,7 @@ void Ide::SetupFormat() {
 	ReadHlStyles(hlt.hlstyle);
 	edt.charset <<= (int)default_charset;
 	edt.tabsize <<= rtvr <<=
-		hlt.hlstyle.WhenCtrlsAction = ed.WhenAction =
+		hlt.hlstyle.WhenCtrlsAction = ed.WhenAction = tf.WhenAction =
 		con.WhenAction = f1.WhenAction = f2.WhenAction = dlg.Breaker(222);
 	hlt.hl_restore <<= dlg.Breaker(333);
 	ide.chstyle.Add(0, "Host platform");
@@ -258,6 +260,7 @@ void Ide::SetupFormat() {
 	for(;;) {
 		int c = dlg.Run();
 		editorfont = ed.Get();
+		tfont = tf.Get();
 		veditorfont = vf.Get();
 		consolefont = con.Get();
 		font1 = f1.Get();

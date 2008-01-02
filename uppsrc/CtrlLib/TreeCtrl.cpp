@@ -567,7 +567,7 @@ void TreeCtrl::SetCursorLineSync(int i)
 			sb.ScrollIntoY(line[cursor].y, m.GetSize().cy);
 		}
 		if(!(m.ctrl && m.ctrl->SetWantFocus()))
-			SetFocus();
+			SetWantFocus();
 		WhenCursor();
 		if (!multiselect) WhenSel();
 	}
@@ -705,7 +705,7 @@ void TreeCtrl::DoClick(Point p, dword flags, bool down)
 			selclick = true;
 			return;
 		}
-		SetFocus();
+		SetWantFocus();
 		int q = cursor;
 		SetCursorLine(i, true, false, true);
 		if(multiselect) {
@@ -789,7 +789,7 @@ void TreeCtrl::RightDown(Point p, dword flags)
 	if(p.y + org.y < sb.GetTotal().cy) {
 		int i = FindLine(p.y + org.y);
 		if(i >= 0) {
-			SetFocus();
+			SetWantFocus();
 			SetCursorLine(i);
 		}
 	}

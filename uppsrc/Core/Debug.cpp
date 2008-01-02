@@ -38,7 +38,8 @@ static void sLogFile(char *fn, const char *app = ".log")
 	strcpy(fn, ehome ? ehome : "/root");
 	if(!*fn || (fn += strlen(fn))[-1] != '/')
 		*fn++ = '/';
-	*fn++ = '.';
+	*fn = '\0';
+	strcat(path, ".upp/");
 	const char *exe = procexepath_();
 	if(!exe) {
 		exe = Argv0__;
@@ -48,7 +49,7 @@ static void sLogFile(char *fn, const char *app = ".log")
 		exe = q + 1;
 	if(!exe)
 		exe = "upp";
-	strcpy(fn, exe);
+	strcat(path, exe);
 	mkdir(path, 0755);
 	strcat(path, "/");
 	strcat(path, exe);

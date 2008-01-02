@@ -82,6 +82,11 @@ enum {
 	GTK_LEFT    = 0x4000,
 	GTK_HCENTER = 0x5000,
 	GTK_RIGHT   = 0x6000,
+
+	GTK_DEFLATE1 = 0x10000,
+	GTK_DEFLATE2 = 0x20000,
+	GTK_DEFLATE3 = 0x30000,
+	GTK_DEFLATE4 = 0x40000,
 };
 
 static Image sLastImage;
@@ -247,6 +252,7 @@ struct GtkElement {
 	byte state;
 	byte shadow;
 	Rect reduce;
+	Rect margins;
 };
 
 struct GtkImageMaker : ImageMaker {
@@ -277,12 +283,14 @@ Value GtkLookFn(Draw& w, const Rect& rect, const Value& v, int op)
 		ChGtkI& eg = ChGtkIs()[e.gtki];
 		switch(op) {
 		case LOOK_MARGINS:
-			return Rect(0, 0, 0, 0);
+			return e.margins;
 		case LOOK_ISOPAQUE:
 			return false;
 		}
 		if(op == LOOK_PAINT || op == LOOK_PAINTEDGE) {
 			Rect r = rect.Inflated((eg.type >> 4) & 15);
+			r.Deflate((eg.type >> 16) & 15);
+			if(r.IsEmpty()) return 1;
 			GtkImageMaker gm;
 			gm.e = e;
 			gm.eg = eg;
@@ -311,14 +319,20 @@ Value GtkLookFn(Draw& w, const Rect& rect, const Value& v, int op)
 	return Null;
 }
 
-Value GtkMakeCh(int shadow, int state, const Rect& r)
+Value GtkMakeCh(int shadow, int state, const Rect& r, const Rect& m)
 {
 	GtkElement e;
 	e.gtki = ChGtkIs().GetCount() - 1;
 	e.shadow = shadow;
 	e.state = state;
 	e.reduce = r;
+	e.margins = m;
 	return RawToValue(e);
+}
+
+Value GtkMakeCh(int shadow, int state, const Rect& r)
+{
+	return GtkMakeCh(shadow, state, r, Rect(0, 0, 0, 0));
 }
 
 Value GtkMakeCh(int shadow, int state)
@@ -823,14 +837,24 @@ void ChHostSkin()
 	static GtkWidget *popup;
 	static GtkWidget *bar = Setup(gtk_menu_bar_new());
 	static int shadowtype;
+	static GtkWidget *top_item;
+	static GtkWidget *menu_item;
 	if(!popup) {
 		gtk_widget_style_get(bar, "shadow_type", &shadowtype, NULL);
-		GtkWidget *item = gtk_menu_item_new();
-		gtk_menu_shell_append(GTK_MENU_SHELL(bar), item);
-		gtk_widget_realize(item);
+		top_item = gtk_menu_item_new_with_label("M");
+		gtk_menu_shell_append(GTK_MENU_SHELL(bar), top_item);
+		gtk_widget_realize(top_item);
+		gtk_widget_show(top_item);
 		popup = gtk_menu_new();
-		gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), popup);
+		gtk_menu_item_set_submenu(GTK_MENU_ITEM(top_item), popup);
 		gtk_widget_realize(popup);
+		gtk_widget_show(popup);
+		GTK_MENU_SHELL(bar)->active = true;
+		menu_item = gtk_menu_item_new_with_label("M");
+		gtk_menu_shell_append(GTK_MENU_SHELL(popup), menu_item);
+		gtk_widget_realize(menu_item);
+		gtk_widget_show(menu_item);
+		gtk_widget_show(GTK_MENU(GTK_MENU_ITEM(top_item)->submenu)->toplevel);
 	}
 	Image mimg = GetGTK(popup, 0, 2, "menu", GTK_BGBOX, 32, 32);
 	Color c = mimg[16][16];
@@ -838,28 +862,17 @@ void ChHostSkin()
 		SColorMenu_Write(c);
 	{
 		MenuBar::Style& s = MenuBar::StyleDefault().Write();
+		s.pullshift.y = 0;
 		int m = ImageMargin(mimg, 4, 5);
 		s.popupframe = WithHotSpot(mimg, m, m);
 		s.popupbody = Crop(mimg, m, m, 32 - 2 * m, 32 - 2 * m);
 		s.leftgap = 26;
-		static GtkWidget *menu_item;
-		if(!menu_item) {
-			menu_item = gtk_menu_item_new_with_label("M");
-			gtk_menu_shell_append(GTK_MENU_SHELL(popup), menu_item);
-			gtk_widget_realize(menu_item);
-		}
 		ChGtkNew(menu_item, "menuitem", GTK_BOX);
 		int sw = GTK_SHADOW_OUT;
 		if(gtk_major_version > 2 || (gtk_major_version == 2 && gtk_minor_version >= 1))
 			sw = GtkInt("selected_shadow_type");
 		GtkCh(s.item, sw, GTK_STATE_PRELIGHT);
 		s.itemtext = ChGtkColor(2, menu_item);
-		static GtkWidget *top_item;
-		if(!top_item) {
-			top_item = gtk_menu_item_new_with_label("M");
-			gtk_menu_shell_append(GTK_MENU_SHELL(bar), top_item);
-			gtk_widget_realize(top_item);
-		}
 		ChGtkNew(top_item, "menuitem", GTK_BOX);
 		if(gtk_major_version > 2 || (gtk_major_version == 2 && gtk_minor_version >= 1))
 			sw = GtkInt("selected_shadow_type");
@@ -870,7 +883,7 @@ void ChHostSkin()
 		ChGtkNew(bar, "menubar", GTK_BGBOX);
 		sw = GtkInt("shadow_type");
 		s.look = GtkMakeCh(sw, GTK_STATE_NORMAL, Rect(0, 0, 0, 1));
-		Image img = GetGTK(bar, GTK_STATE_NORMAL, sw, "menubar", GTK_BOX, 32, 32);
+		Image img = GetGTK(bar, GTK_STATE_NORMAL, sw, "menubar", GTK_BGBOX, 32, 32);
 		s.breaksep.l1 = Color(img[31][15]);
 		TopSeparator1_Write(s.breaksep.l1);
 		s.breaksep.l2 = Null;
@@ -888,9 +901,20 @@ void ChHostSkin()
 		s.arealook = Null;
 		s.look = GtkMakeCh(sw, GTK_STATE_NORMAL, Rect(0, 1, 0, 1));
 		s.breaksep.l1 = MenuBar::StyleDefault().breaksep.l1;
-		Image img = GetGTK(toolbar, GTK_STATE_NORMAL, sw, "toolbar", GTK_BOX, 32, 32);
+		Image img = GetGTK(toolbar, GTK_STATE_NORMAL, sw, "toolbar", GTK_BGBOX, 32, 32);
 		MenuBar::StyleDefault().Write().breaksep.l2 = s.breaksep.l2 = Color(img[0][15]);
 		TopSeparator2_Write(s.breaksep.l2);
+	}
+	{
+		ProgressIndicator::Style& s = ProgressIndicator::StyleDefault().Write();
+		static GtkWidget *pg = gtk_progress_bar_new();
+		ChGtkNew(pg, "trough", GTK_BOX);
+		int mx = pg->style->xthickness;
+		int my = pg->style->ythickness;
+		s.hlook = GtkMakeCh(GTK_SHADOW_IN, GTK_STATE_NORMAL, Rect(0, 0, 0, 0), Rect(mx, my, mx, my));
+		ChGtkNew(pg, "bar", GTK_BOX);
+		GtkCh(s.hchunk, GTK_SHADOW_OUT, GTK_STATE_PRELIGHT);
+		s.bound = true;
 	}
 
 	ChCtrlImg(CtrlImg::I_information, "gtk-dialog-info", 6);

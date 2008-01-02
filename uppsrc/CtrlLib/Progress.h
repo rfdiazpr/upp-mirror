@@ -6,6 +6,7 @@ public:
 public:
 	struct Style : ChStyle<Style> {
 		bool  classic;
+		bool  bound;
 		Value vlook, vchunk, hlook, hchunk;
 	};
 

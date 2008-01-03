@@ -162,10 +162,7 @@ Rect Ctrl::GetRectInParentWindow(void) const
 		q = q->parent;
 	}
 	if(q)
-	{
-		Size ds = q->AddFrameSize(0,0);
-		r.Offset(ds);
-	}
+		r += q->GetScreenView() - q->GetScreenRect() ;
 	return r;
 
 }

@@ -15,6 +15,8 @@ CH_STYLE(TabCtrl, Style, StyleDefault)
 	CtrlsImageLook(last, CtrlsImg::I_LTAB, 4);
 	CtrlsImageLook(both, CtrlsImg::I_BTAB, 4);
 	body = CtrlsImg::TABB();
+	for(int i = 0; i < 4; i++)
+		text_color[i] = SColorText();
 }
 
 TabCtrl::Item& TabCtrl::Item::Text(const String& _text)
@@ -98,11 +100,11 @@ void TabCtrl::Item::Layout(int xp, int y, int cy)
 	cx = xp - x;
 }
 
-void TabCtrl::Item::Paint(Draw& w)
+void TabCtrl::Item::Paint(Draw& w, int state)
 {
 	Size sz = pict.GetStdSize();
-	pict.Paint(w, pictpos.x, pictpos.y, sz.cx, sz.cy, SColorText, Null);
-	w.DrawText(textpos.x, textpos.y, text, owner->style->font, SColorText());
+	pict.Paint(w, pictpos.x, pictpos.y, sz.cx, sz.cy, owner->style->text_color[state], Null);
+	w.DrawText(textpos.x, textpos.y, text, owner->style->font, owner->style->text_color[state]);
 }
 
 void TabCtrl::SyncTabs()
@@ -188,7 +190,7 @@ void TabCtrl::PaintTabs(Draw& w)
 					 i == tab.GetCount() - 1 ? style->last : style->normal)
 					[ndx]
 				);
-				t.Paint(w);
+				t.Paint(w, ndx);
 			}
 	}
 }

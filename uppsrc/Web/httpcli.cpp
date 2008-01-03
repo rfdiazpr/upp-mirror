@@ -3,7 +3,7 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x)       RLOG(x)
+#define LLOG(x)       // RLOG(x)
 #define LLOGBLOCK(x)  // RLOGBLOCK(x)
 #define LDUMP(x)      // RDUMP(x)
 
@@ -53,6 +53,10 @@ String HttpClient::ExecuteRedirect(int max_redirect, int retries, Gate2<int, int
 {
 	int nredir = 0;
 	for(;;) {
+		if(progress(0, 0)) {
+			aborted = true;
+			return String::GetVoid();
+		}
 		String data = Execute(progress);
 		if(status_code >= 400 && status_code < 500) {
 			error = status_line;
@@ -60,6 +64,10 @@ String HttpClient::ExecuteRedirect(int max_redirect, int retries, Gate2<int, int
 		}
 		int r = 0;
 		while(data.IsVoid()) {
+			if(progress(0, 0)) {
+				aborted = true;
+				return String::GetVoid();
+			}
 			if(++r >= retries)
 				return String::GetVoid();
 			data = Execute(progress);

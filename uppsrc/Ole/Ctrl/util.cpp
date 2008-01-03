@@ -61,7 +61,7 @@ HRESULT OcxObject::RawQueryInterface(const GUID& iid, void **ppv)
 		else
 			name = "<unknown object>";
 #endif
-		LOGQUERY("\t\tcast ERROR: " << name << " -> " << GetInterfaceName(iid));
+		LOGQUERY("\t\tcast ERROR: " << name << " -> "<< GetInterfaceName(iid) << ", " << Guid(iid));
 #if LOG_QUERIES >= 2
 		OCXLOG("\tGUID = " << Format(iid));
 		for(int i = 0; i < interface_map.GetCount(); i++) {
@@ -87,13 +87,10 @@ HRESULT OcxObject::RawQueryInterface(const GUID& iid, void **ppv)
 	return S_OK;
 }
 
-HRESULT OcxObject::RawGetTypeInfo(unsigned tinfo, LCID lcid, ITypeInfo **ppinfo)
+HRESULT OcxObject::RawGetTypeInfo(IRef<ITypeInfo>& typeinfo, unsigned tinfo, LCID lcid, ITypeInfo **ppinfo)
 {
 	if(tinfo != 0)
 		return DISP_E_BADINDEX;
-	if(!ocx_info)
-		return E_FAIL;
-	IRef<ITypeInfo> typeinfo = ocx_info->GetDispatchTypeInfo();
 	if(!typeinfo)
 		return E_FAIL;
 	// currently ignore lcid
@@ -101,21 +98,16 @@ HRESULT OcxObject::RawGetTypeInfo(unsigned tinfo, LCID lcid, ITypeInfo **ppinfo)
 	return S_OK;
 }
 
-HRESULT OcxObject::RawGetIDsOfNames(REFIID riid, OLECHAR **names, unsigned cnames, LCID lcid, DISPID *dispid)
+HRESULT OcxObject::RawGetIDsOfNames(IRef<ITypeInfo>& typeinfo, REFIID riid, OLECHAR **names, unsigned cnames, LCID lcid, DISPID *dispid)
 {
-	if(!ocx_info)
-		return E_FAIL;
-	IRef<ITypeInfo> typeinfo = ocx_info->GetDispatchTypeInfo();
 	if(!typeinfo)
 		return E_FAIL;
 	return typeinfo->GetIDsOfNames(names, cnames, dispid);
 }
 
-HRESULT OcxObject::RawInvoke(IDispatch *dispatch, DISPID dispid, word flags, DISPPARAMS *params, VARIANT *result, EXCEPINFO *excep, unsigned *arg_err)
+HRESULT OcxObject::RawInvoke(IRef<ITypeInfo>& typeinfo, IDispatch *dispatch, DISPID dispid, word flags, DISPPARAMS *params, VARIANT *result, EXCEPINFO *excep, unsigned *arg_err)
 {
 	LOGINVOKE("IDispatch::Invoke");
-	if(!ocx_info)
-		return E_FAIL;
 	if(dispid == 0) { // convert object to dispatch value
 		if(!result) return E_INVALIDARG;
 		result->vt = VT_DISPATCH;
@@ -123,14 +115,19 @@ HRESULT OcxObject::RawInvoke(IDispatch *dispatch, DISPID dispid, word flags, DIS
 		if(dispatch) dispatch->AddRef();
 		return S_OK;
 	}
-	IRef<ITypeInfo> typeinfo = ocx_info->GetDispatchTypeInfo();
+	if(!typeinfo) {
+		LOG("dispid = " << FormatIntHex(dispid) << ": typeinfo = NULL");
+		return E_FAIL;
+	}
 #if LOG_INVOKES >= 1
 	BSTR names[1] = { NULL };
 	unsigned count = 0;
 	typeinfo->GetNames(dispid, names, 1, &count);
-	String name = "(unknown)";
+	String name;
 	if(names[0])
 		name = BSTRToString(names[0]);
+	else
+		name = FormatIntHex(dispid);
 	switch(flags) {
 	case DISPATCH_METHOD:         name << " - method"; break;
 	case DISPATCH_PROPERTYGET:    name << " - propget"; break;
@@ -143,9 +140,28 @@ HRESULT OcxObject::RawInvoke(IDispatch *dispatch, DISPID dispid, word flags, DIS
 		return E_FAIL;
 	TYPEATTR *attr;
 	typeinfo->GetTypeAttr(&attr);
-	LOGSYSOCX("GetTypeInfo: typekind = " << (int)attr->typekind);
+	LOGINVOKE("GetTypeInfo: typekind = " << (int)attr->typekind);
+//	HRESULT res = typeinfo->Invoke(dispatch, dispid, flags, params, result, excep, arg_err);
+	HRESULT res = DispInvoke(dispatch, ~typeinfo, dispid, flags, params, result, excep, arg_err);
+	if(FAILED(res)) {
+		RLOG("failure: dispid = " << (int)dispid << ", #args = " << (int)params->cArgs
+			<< ", #named args = " << (int)params->cNamedArgs << ", return " << FormatIntHex(result));
+		for(int i = 0; i < (int)params->cArgs; i++) {
+			RLOG("arg[" << i << "] (vt = " << (int)params->rgvarg[i].vt << "): " << StdFormat(AsValue(params->rgvarg[i])));
+		}
+		RLOG("#funcs = " << attr->cFuncs);
+		for(int i = 0; i < attr->cFuncs; i++) {
+			FUNCDESC *func;
+			typeinfo->GetFuncDesc(i, &func);
+			RLOG("memid = " << func->memid << ", cParams " << func->cParams
+			<< ", cParamsOpt = " << func->cParamsOpt << ", cScodes " << func->cScodes
+			<< ", funckind = " << (int)func->funckind << ", invkind " << (int)func->invkind
+			<< ", flags = " << FormatIntHex(func->wFuncFlags));
+
+			typeinfo->ReleaseFuncDesc(func);
+		}
+	}
 	typeinfo->ReleaseTypeAttr(attr);
-	HRESULT res = typeinfo->Invoke(dispatch, dispid, flags, params, result, excep, arg_err);
 	LOGINVOKE("//IDispatch::Invoke");
 	return LOGRESULT(res);
 }
@@ -176,9 +192,9 @@ HRESULT OcxProvideClassInfo::GetGUID(dword guidkind, GUID *guid)
 	return E_INVALIDARG;
 }
 
-OcxTypeInfo::OcxTypeInfo(const GUID& coclass_guid, const GUID& dispatch_guid, const GUID& event_guid,
+OcxTypeInfo::OcxTypeInfo(const GUID& coclass_guid, /*const GUID& dispatch_guid,*/ const GUID& event_guid,
 	New new_fn, String name, const char* help, int ver, bool is_control)
-: coclass_guid(coclass_guid), dispatch_guid(dispatch_guid), event_guid(event_guid)
+: coclass_guid(coclass_guid), /*dispatch_guid(dispatch_guid),*/ event_guid(event_guid)
 , new_fn(new_fn), name(name), help(help), ver(ver), is_control(is_control)
 , object_count(0)
 , refcount(1)
@@ -187,6 +203,7 @@ OcxTypeInfo::OcxTypeInfo(const GUID& coclass_guid, const GUID& dispatch_guid, co
 , registration(0)
 #endif
 {
+	RLOG("OcxTypeInfo ctr (" << name << ", " << Guid(coclass_guid) << ")");
 	OcxTypeLib::Get().Add(*this);
 }
 
@@ -203,16 +220,29 @@ int OcxTypeInfo::DecRef()
 }
 
 GLOBAL_VAR(InitProc, LateInitProc);
+GLOBAL_VAR(InitProc, LateExitProc);
+static bool inited = false;
 
-static void DoLateInit()
+void DoLateInit()
 {
-	static bool late_init = false;
-	if(!late_init) {
+	if(!inited) {
 		INTERLOCKED
-			if(!late_init) {
-				late_init = true;
+			if(!inited) {
+				inited = true;
 				if(LateInitProc())
 					LateInitProc()();
+			}
+	}
+}
+
+void DoLateExit()
+{
+	if(inited) {
+		INTERLOCKED
+			if(inited) {
+				inited = false;
+				if(LateExitProc())
+					LateExitProc()();
 			}
 	}
 }
@@ -244,40 +274,25 @@ HRESULT OcxTypeInfo::LockServer(BOOL lock)
 	return S_OK;
 }
 
+void OcxTypeInfo::GetDispatchTypeInfo(IRef<ITypeInfo>& dest, Guid dispatch_iid)
+{
+	if(!dest) {
+		CriticalSection::Lock lock(critical);
+		if(!dest)
+			dest = OcxTypeLib::Get().GetTypeInfo(dispatch_iid);
+	}
+}
+
 IRef<ITypeInfo> OcxTypeInfo::GetCoClassTypeInfo()
 {
 	if(!coclass_info && !coclass_guid.IsEmpty()) { // oportunity lock used to initialize type info
 		critical.Enter();
 		if(!coclass_info)
-			OcxTypeLib::Get()->GetTypeInfoOfGuid(coclass_guid, coclass_info.Set());
+			coclass_info = OcxTypeLib::Get().GetTypeInfo(coclass_guid);
 		critical.Leave();
 	}
 	return coclass_info;
 }
-
-IRef<ITypeInfo> OcxTypeInfo::GetDispatchTypeInfo()
-{
-	if(!dispatch_info && !dispatch_guid.IsEmpty()) { // oportunity lock used to initialize type info
-		critical.Enter();
-		if(!dispatch_info)
-			OcxTypeLib::Get()->GetTypeInfoOfGuid(dispatch_guid, dispatch_info.Set());
-		critical.Leave();
-	}
-	return dispatch_info;
-}
-
-/*
-ITypeInfoPtr& OcxTypeInfo::GetEventTypeInfo()
-{
-	if(!(bool)event_info && !event_guid.IsEmpty()) { // oportunity lock used to initialize type info
-		critical.Enter();
-		if(!(bool)event_info)
-			OcxTypeLib::Get()->GetTypeInfoOfGuid(event_guid, &event_info);
-		critical.Leave();
-	}
-	return event_info;
-}
-*/
 
 OcxTypeLib::OcxTypeLib()
 : lib_ver(1)
@@ -310,6 +325,39 @@ bool OcxTypeLib::CanUnload() const
 		}
 	OCXLOG("OcxTypeLib::CanUnload succeeded");
 	return true;
+}
+
+IRef<ITypeInfo> OcxTypeLib::GetTypeInfo(const Guid& guid)
+{
+	IRef<ITypeInfo> outinfo;
+	HRESULT hr = GetTypeLib()->GetTypeInfoOfGuid(guid, outinfo.Set());
+	if(FAILED(hr)) {
+		LOGSYSOCX("OcxTypeLib::GetTypeInfo(" << guid << ") -> hr = " << FormatIntHex(hr));
+		for(int i = 0; i < uses_libraries.GetCount(); i++) {
+			if(!uses_libraries[i]) {
+				String libname = uses_libraries.GetKey(i);
+				WString wlibname = libname.ToWString();
+				hr = LoadTypeLib(wlibname, uses_libraries[i].Set());
+				if(!uses_libraries[i]) {
+					LOGSYSOCX("LoadTypeLib(" << libname << ") -> hr = " << FormatIntHex(hr));
+				}
+				else {
+					LOGSYSOCX("LoadTypeLib(" << uses_libraries.GetKey(i) << ") -> succeeded");
+					if(IsFullPath(libname)) {
+						hr = RegisterTypeLib(~uses_libraries[i], const_cast<OLECHAR *>(~wlibname), NULL);
+						LOGSYSOCX("RegisterTypeLib(" << libname << ") -> hr = " << FormatIntHex(hr));
+					}
+				}
+			}
+			if(!!uses_libraries[i]) {
+				hr = uses_libraries[i]->GetTypeInfoOfGuid(guid, outinfo.Set());
+				if(!!outinfo)
+					return outinfo;
+				LOGSYSOCX("GetTypeInfoOfGuid(" << uses_libraries.GetKey(i) << ") -> hr = " << FormatIntHex(hr));
+			}
+		}
+	}
+	return outinfo;
 }
 
 HRESULT OcxTypeLib::Register()
@@ -447,18 +495,25 @@ void OcxTypeLib::RevokeObjects()
 #endif
 */
 
-HRESULT OcxTypeLib::GetFactory(REFCLSID clsid, REFIID iid, void **ppv)
+HRESULT OcxTypeLib::GetFactory(REFCLSID rclsid, REFIID iid, void **ppv)
 {
-	int i;
-	for(i = 0; i < ocx_init.GetCount(); i++)
+	Guid clsid = rclsid;
+	LOGSYSOCX("OcxTypeLib::GetFactory(clsid = " << clsid << ", iid = " << Guid(iid) << ")");
+	RLOG("#ocx_init = " << ocx_init.GetCount());
+
+	for(int i = 0; i < ocx_init.GetCount(); i++)
 		ocx_init[i]();
 	ocx_init.Clear();
 
+	RLOG("#objects = " << objects.GetCount());
+	for(int i = 0; i < objects.GetCount(); i++)
+		RLOG("object[" << i << "] = " << Guid(objects.GetKey(i)));
+
 	*ppv = 0;
-	i = objects.Find(clsid);
-	if(i < 0)
+	int f = objects.Find(clsid);
+	if(f < 0)
 		return CLASS_E_CLASSNOTAVAILABLE;
-	OcxTypeInfo *entry = objects[i];
+	OcxTypeInfo *entry = objects[f];
 	return entry->QueryInterface(iid, ppv);
 }
 
@@ -466,8 +521,15 @@ IRef<ITypeLib>& OcxTypeLib::GetTypeLib()
 {
 	if(!typelib) { // opportunity lock used to initialize type library info
 		critical.Enter();
-		if(!typelib)
-			LoadTypeLib(GetModuleFileName().ToWString(), typelib.Set());
+		if(!typelib) {
+			WString tlibname = GetModuleFileName().ToWString();
+			HRESULT hr = LoadTypeLib(tlibname, typelib.Set());
+			LOGSYSOCX("LoadTypeLib(" << tlibname << ") -> " << FormatIntHex(~typelib) << ", hr = " << FormatIntHex(hr));
+			if(!!typelib) {
+				hr = RegisterTypeLib(~typelib, const_cast<OLECHAR *>(~tlibname), NULL);
+				LOGSYSOCX("RegisterTypeLib -> hr = " << FormatIntHex(hr));
+			}
+		}
 		critical.Leave();
 	}
 	return typelib;
@@ -477,7 +539,7 @@ IRef<ITypeLib>& OcxTypeLib::GetTypeLib()
 STDAPI DllCanUnloadNow()
 {
 	LOGSYSOCX("DllCanUnloadNow");
-	DoLateInit();
+//	DoLateInit();
 	return (OcxTypeLib::Get().CanUnload() ? S_OK : S_FALSE);
 }
 #endif
@@ -485,8 +547,10 @@ STDAPI DllCanUnloadNow()
 #ifdef _USRDLL
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 {
-	LOGSYSOCX("DllGetClassObject");
-	return OcxTypeLib::Get().GetFactory(rclsid, riid, ppv);
+	LOGSYSOCX("DllGetClassObject, riid = " << Guid(riid));
+	HRESULT res = OcxTypeLib::Get().GetFactory(rclsid, riid, ppv);
+	LOGSYSOCX("//DllGetClassObject -> " << FormatIntHex(res, 8) << ", ppv = " << FormatIntHex(*ppv));
+	return res;
 }
 #endif
 

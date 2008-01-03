@@ -4,9 +4,9 @@
 
 NAMESPACE_UPP
 
-word *AllocString(String s)
+LPOLESTR AllocString(String s)
 {
-	word *p = reinterpret_cast<word *>(CoTaskMemAlloc(sizeof(word) * (s.GetLength() + 1))), *d = p;
+	LPOLESTR p = reinterpret_cast<LPOLESTR>(CoTaskMemAlloc(sizeof(OLECHAR) * (s.GetLength() + 1))), d = p;
 	const char *f = s;
 	while(*d++ = *f++)
 		;
@@ -21,41 +21,17 @@ OcxControl::OcxControl()
 	status = CLOSED;
 	stream_inited = false;
 	timer_shutdown = false;
+	extent_size = GetStdSize();
 }
 
 OcxControl::~OcxControl()
 {
 	LOGMETHOD("OcxControl::~OcxControl");
-	if(timer_thread.IsOpen()) {
-		timer_shutdown = true;
-		timer_thread.Wait();
-		LOG("-> timer thread finished");
-	}
 }
 
 bool OcxControl::IsOcxChild()
 {
 	return true;
-}
-
-void OcxControl::TimerThread()
-{
-	LOGMETHOD("OcxControl::TimerThread");
-	int time = GetTickCount();
-	enum { BATCH = 100 };
-	while(!timer_shutdown) {
-		int ntime = GetTickCount();
-		if(ntime - time <= BATCH) {
-			Sleep(BATCH + 5 - (ntime - time));
-			continue;
-		}
-//		RLOG("-> GetHWND");
-		if(HWND hwnd = GetHWND()) {
-//			RLOG("-> posting NCMOUSEMOVE");
-			PostMessage(hwnd, WM_NCMOUSEMOVE, 0, 0);
-		}
-		time = GetTickCount();
-	}
 }
 
 LRESULT OcxControl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
@@ -64,9 +40,8 @@ LRESULT OcxControl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 //	RLOG("message = " << FormatIntHex(message) << ", wParam = " << FormatIntHex(wParam) << ", lParam = " << FormatIntHex(lParam));
 	if(message == WM_GETDLGCODE)
 		return DLGC_WANTALLKEYS | DLGC_WANTARROWS | DLGC_WANTMESSAGE;
-	if(message == WM_NCMOUSEMOVE)
-		TimerProc(GetTickCount());
-	return Ctrl::WindowProc(message, wParam, lParam);
+	LRESULT res = Ctrl::WindowProc(message, wParam, lParam);
+	return res;
 }
 
 bool OcxControl::Open(HWND parent) // parent = 0 - create forged control
@@ -83,6 +58,8 @@ bool OcxControl::Open(HWND parent) // parent = 0 - create forged control
 //		noproc = true;
 //		visible |= !parent;
 	Rect rc = ctrl_rect;
+	if(IsNull(rc))
+		rc = Rect(0, 0, 0, 0);
 	if(!parent)
 	{ // move window away from screen in forged mode
 		rc.Offset(-30000 - rc.left, -30000 - rc.top);
@@ -92,9 +69,6 @@ bool OcxControl::Open(HWND parent) // parent = 0 - create forged control
 
 	Create(parent, (IsEnabled() ? 0 : WS_DISABLED) | (parent ? WS_CHILD : WS_POPUP) | WS_VISIBLE,
 		(parent ? 0 : WS_EX_TOOLWINDOW), false, SW_HIDE, false);
-	if(!timer_thread.IsOpen())
-		timer_thread.Run(callback(this, &OcxControl::TimerThread));
-//	SetTimer(GetHWND(), 12345, 1000, 0);
 
 	Show();
 
@@ -185,7 +159,7 @@ HRESULT OcxControl::GetClientSite(IOleClientSite **res)
 	return LOGRESULT(S_OK);
 }
 
-HRESULT OcxControl::SetHostNames(const word * app_name, const word *doc_name)
+HRESULT OcxControl::SetHostNames(LPCOLESTR app_name, LPCOLESTR doc_name)
 {
 	LOGMETHOD("IOleObject::SetHostNames");
 	return LOGRESULT(S_OK);
@@ -269,7 +243,7 @@ HRESULT OcxControl::GetUserClassID(GUID *guid)
 	return LOGRESULT(S_OK);
 }
 
-HRESULT OcxControl::GetUserType(dword form, word **type)
+HRESULT OcxControl::GetUserType(dword form, LPOLESTR *type)
 {
 	LOGMETHOD("IOleObject::GetUserType");
 	ASSERT(ocx_info);
@@ -280,13 +254,10 @@ HRESULT OcxControl::GetUserType(dword form, word **type)
 HRESULT OcxControl::SetExtent(dword aspect, SIZEL *hi_size)
 {
 	LOGMETHOD("IOleObject::SetExtent(" << hi_size->cx << ", " << hi_size->cy << ")");
-	if(aspect == DVASPECT_CONTENT)
-	{
-//		Size lo = ToHiMetric(GetCtrl().GetMinSize());
-//		Size hi = ToHiMetric(GetCtrl().GetMaxSize());
-//		extent = minmax(Size(*hi_size), lo, hi);
-		Size size = minmax(FromHiMetric(*hi_size), GetMinSize(), GetMaxSize());
-		SetRect(Rect(GetRect().TopLeft(), size));
+	if(aspect == DVASPECT_CONTENT) {
+		extent_size = min(FromHiMetric(*hi_size), GetMaxSize());
+		OCXLOG("Ctrl size = " << extent_size);
+		SetRect(Rect(GetRect().TopLeft(), extent_size));
 	}
 	return LOGRESULT(S_OK);
 }
@@ -294,12 +265,8 @@ HRESULT OcxControl::SetExtent(dword aspect, SIZEL *hi_size)
 HRESULT OcxControl::GetExtent(dword aspect, SIZEL *size)
 {
 	LOGMETHOD("IOleObject::GetExtent");
-	if(aspect == DVASPECT_CONTENT)
-	{
-//		if(extent.cx < 0)
-			*size = ToHiMetric(GetRect().Size());
-//		else
-//			*size = extent;
+	if(aspect == DVASPECT_CONTENT) {
+		*size = ToHiMetric(extent_size);
 		return LOGRESULT(S_OK);
 	}
 	return LOGRESULT(E_NOTIMPL);
@@ -754,7 +721,11 @@ HRESULT OcxControl::UIDeactivate()
 HRESULT OcxControl::SetObjectRects(const RECT *pos, const RECT *clip)
 {
 	LOGMETHOD("IOleInPlaceObject::SetObjectRects(pos = " << Rect(*pos) << ", clip = " << Rect(*clip) << ")");
-	SetRect(*pos);
+	if(!pos || !clip)
+		return LOGRESULT(E_INVALIDARG);
+	Rect rc(Point(pos->left, pos->top), extent_size);
+	OCXLOG("-> Ctrl rc = " << rc << " (extent size = " << extent_size << ")");
+	SetRect(rc);
 	return LOGRESULT(S_OK);
 }
 
@@ -1003,14 +974,12 @@ HRESULT OcxControl::GetActivationPolicy(DWORD *pdwPolicy)
 HRESULT OcxControl::OnInactiveMouseMove(LPCRECT pRectBounds, LONG x, LONG y, DWORD grfKeyState)
 {
 	LOGMETHOD("IPointerInactive::OnInactiveMouseMove");
-	WindowProc(WM_MOUSEMOVE, grfKeyState, MAKELONG(x, y));
 	return S_OK;
 }
 
 HRESULT OcxControl::OnInactiveSetCursor(LPCRECT pRectBounds, LONG x, LONG y, DWORD dwMouseMsg, BOOL fSetAlways)
 {
 	LOGMETHOD("IPointerInactive::InactiveSetCursor");
-	WindowProc(WM_SETCURSOR, HTCLIENT, dwMouseMsg);
 	return S_OK;
 }
 
@@ -1223,10 +1192,10 @@ HRESULT OcxConnectionPointContainer::EnumConnectionPoints(IEnumConnectionPoints 
 HRESULT OcxConnectionPointContainer::FindConnectionPoint(REFIID riid, IConnectionPoint **ppCP)
 {
 	Guid guid(riid);
-	LOGMETHOD("IConnectionPointContainer::FindConnectionPoint(" << guid << ")");
+	LOGMETHOD("IConnectionPointContainer::FindConnectionPoint(" << guid << ", ppCP = " << FormatIntHex(ppCP) << ")");
 	int i = point_map.Find(guid);
-	if(i < 0)
-	{
+	RLOG("point_map.Find(guid) = " << i);
+	if(i < 0) {
 		*ppCP = 0;
 		return LOGRESULT(CONNECT_E_NOCONNECTION);
 	}

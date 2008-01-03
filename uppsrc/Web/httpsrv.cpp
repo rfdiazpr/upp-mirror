@@ -1,7 +1,7 @@
 #include "Web.h"
 #pragma hdrstop
 
-NAMESPACE_UPP
+NAMESPACE_UPP;
 
 #define LLOG(x) // RLOG(x)
 
@@ -46,7 +46,8 @@ String MIMECharsetName(byte charset)
 }
 
 HttpRequest::HttpRequest(HttpServer& server, pick_ Socket& _socket, HttpQuery query_)
-: server(server), socket(_socket), query(query_), request_ticks(GetTickCount())
+: server(server), socket(_socket), query(query_)
+, request_ticks(GetTickCount())
 {
 	socket.Linger(1000);
 #ifdef PLATFORM_WIN32
@@ -182,6 +183,14 @@ void HttpRequest::Error(String err)
 //////////////////////////////////////////////////////////////////////
 // HttpServer::
 
+HttpServer::SocketWrite::SocketWrite(Socket socket_, String data_, int ticks_)
+: socket(socket_), data(data_), done(0), ticks(ticks_)
+{
+#ifdef PLATFORM_WIN32
+	sock_event.Write(socket);
+#endif
+}
+
 HttpServer::HttpServer()
 {
 	show_headers = true;
@@ -212,7 +221,7 @@ void HttpServer::Log(const char *s, int level)
 		return;
 //	VppLog() << s;
 	FileStream fs;
-	if(!fs.Open(logfile, FileStream::APPEND))
+	if(!fs.Open(logfile, FileStream::APPEND) && !fs.Open(logfile, FileStream::CREATE))
 		return;
 	fs.Put(s);
 	int len = (int)fs.GetSize();
@@ -270,17 +279,19 @@ void HttpServer::Close()
 
 bool HttpServer::DelayedWrite()
 {
+//	if(!delayed_writes.IsEmpty())
+//		LogTime("HttpServer::DelayedWrite, #writes = " + FormatInt(delayed_writes.GetCount()), 2);
 	for(int i = delayed_writes.GetCount(); --i >= 0;) {
 		SocketWrite& sw = delayed_writes[i];
 		int part = sw.data.GetLength() - sw.done;
-		int count = sw.socket.WriteWait(sw.data.Begin() + sw.done, sw.data.GetLength() - sw.done, 0);
-		if(count > 0)
-			LogTime(NFormat("HttpServer::DelayedWrite(): %d bytes written on %d", count, sw.socket.GetNumber()), 2);
-		if(count < 0) {
+		int count = max(sw.socket.WriteWait(sw.data.Begin() + sw.done, sw.data.GetLength() - sw.done, 0), 0);
+		if(sw.socket.IsError()) {
 			LogTime(NFormat("HttpServer::DelayedWrite(): %s", Socket::GetErrorText()), 0);
 			delayed_writes.Remove(i);
 			continue;
 		}
+		if(count > 0)
+			LogTime(NFormat("HttpServer::DelayedWrite(): %d bytes written on %d", count, sw.socket.GetNumber()), 2);
 		if((sw.done += count) >= sw.data.GetLength()) {
 			LogTime(NFormat("HttpServer::DelayedWrite(): finished %d (%d left)",
 				sw.socket.GetNumber(), delayed_writes.GetCount() - 1), 2);
@@ -291,29 +302,32 @@ bool HttpServer::DelayedWrite()
 //			sw.socket.StopWrite();
 			delayed_writes.Remove(i);
 		}
+		else if(msecs(sw.ticks) >= max_request_time) {
+			LogTime(NFormat("HttpServer::DelayedWrite(): timeout after sending %d out of %d bytes",
+				sw.done, sw.data.GetLength()), 0);
+			sw.socket.Block(); // set to blocking mode before close
+			sw.socket.StopWrite();
+			sw.socket.Close();
+			delayed_writes.Remove(i);
+		}
 	}
 	return !delayed_writes.IsEmpty();
 }
 
 HttpServer *HttpServer::Wait(const Vector<HttpServer *>& list, int msec)
 {
-	LLOG(String() << "HttpServer::Wait(" << list.GetCount() << " servers for " << msec << " msesc)");
-	int i;
-	for(i = 0; i < list.GetCount(); i++)
-		list[i]->DelayedWrite();
+	Vector<Socket *> read, write;
+	for(int i = 0; i < list.GetCount(); i++) {
+		list[i]->GetReadSockets(read);
+		list[i]->GetWriteSockets(write);
+	}
 	if(msec > 0) {
-		Vector<Socket *> sockets;
-		for(i = 0; i < list.GetCount(); i++) {
-			if(list[i]->socket.IsOpen())
-				sockets.Add(&list[i]->socket);
-			if(list[i]->connection.IsOpen())
-				sockets.Add(&list[i]->connection);
-		}
-		LLOG(String() << "-> Socket::Wait(" << sockets.GetCount() << " sockets)");
-		if(sockets.IsEmpty() || !Socket::Wait(sockets, Vector<Socket *>(), msec))
+		LLOG(String() << "HttpServer::Wait(" << list.GetCount() << " servers for " << msec
+			<< " msecs) -> Socket::Wait(#read = " << read.GetCount() << ", #write = " << write.GetCount() << ")");
+		if(read.IsEmpty() && write.IsEmpty() || !Socket::Wait(read, write, msec))
 			return NULL;
 	}
-	for(i = 0; i < list.GetCount(); i++)
+	for(int i = 0; i < list.GetCount(); i++)
 		if(list[i]->Accept())
 			return list[i];
 	return NULL;
@@ -329,6 +343,32 @@ bool HttpServer::Wait(int msec)
 //	LogTime(NFormat("//wait -> %d", ok), 2);
 	return ok;
 }
+
+void HttpServer::GetReadSockets(Vector<Socket *>& sockets)
+{
+	if(socket.IsOpen())
+		sockets.Add(&socket);
+	if(connection.IsOpen())
+		sockets.Add(&connection);
+}
+
+void HttpServer::GetWriteSockets(Vector<Socket *>& sockets)
+{
+	for(int i = 0; i < delayed_writes.GetCount(); i++)
+		sockets.Add(&delayed_writes[i].socket);
+}
+
+#ifdef PLATFORM_WIN32
+void HttpServer::GetWaitEvents(Vector<Event *>& events)
+{
+	if(socket.IsOpen())
+		events.Add(&sock_event);
+	if(connection.IsOpen())
+		events.Add(&conn_event);
+	for(int i = 0; i < delayed_writes.GetCount(); i++)
+		events.Add(&delayed_writes[i].sock_event);
+}
+#endif
 
 bool HttpServer::Accept()
 {
@@ -393,7 +433,7 @@ One<HttpRequest> HttpServer::GetRequest()
 		switch(request_state) {
 		case RS_FIRST:
 			if(first_line.GetLength() < 4) {
-				int left = min<int>(int(e - p), 4 - first_line.GetLength());
+				int left = min<int>(e - p, 4 - first_line.GetLength());
 				first_line.Cat(p, left);
 				p += left;
 				break;
@@ -401,7 +441,7 @@ One<HttpRequest> HttpServer::GetRequest()
 				int four = Peek32le(first_line);
 				if(four == FOURCHAR('S', 'A', 'P', 'I')) {
 					if(first_line.GetLength() < 8) {
-						int left = min<int>(int(e - p), 8 - first_line.GetLength());
+						int left = min<int>(e - p, 8 - first_line.GetLength());
 						first_line.Cat(p, left);
 						p += left;
 						break;
@@ -439,7 +479,7 @@ One<HttpRequest> HttpServer::GetRequest()
 					LogTime("HTTP request length limit reached, request trashed", 1);
 					return NULL;
 				}
-				first_line.Cat(b, int(p - b));
+				first_line.Cat(b, p - b);
 				if(p >= e)
 					break;
 				p++;
@@ -452,25 +492,25 @@ One<HttpRequest> HttpServer::GetRequest()
 					const char *s = r;
 					while(*r && *r != ' ' && *r != '?')
 						r++;
-					request_query.Set("$$PATH", String(s, r));
+					request_query.Set("$$PATH", UrlDecode(String(s, r)));
 					const char *e = r, *t = r;
 					while(e > s && e[-1] != '/')
 						if(*--e == '.')
 							t = e;
-					request_query.Set("$$TITLE", String(e, t));
+					request_query.Set("$$TITLE", UrlDecode(String(e, t)));
 					if(e > s)
 						e--;
 					t = e;
 					while(e > s && e[-1] != '/')
 						e--;
-					request_query.Set("$$DIR", String(e, t));
+					request_query.Set("$$DIR", UrlDecode(String(e, t)));
 					if(s < r && *s == '/')
 						s++;
 					t = s;
 					while(s < r && *s != '/')
 						s++;
 					if(s < r)
-						request_query.Set("$$ROOT", String(t, s));
+						request_query.Set("$$ROOT", UrlDecode(String(t, s)));
 					if(*r == '?') {
 						s = ++r;
 						while(*r && *r != ' ' && *r != '\n')
@@ -488,6 +528,7 @@ One<HttpRequest> HttpServer::GetRequest()
 						request_query.SetInt("$$HTTP_VERSION", request_version);
 					}
 				}
+				request_query.Set("$$IPADDR", FormatIP(ipaddr));
 				request_query.Set("$$DEFAULT_HEADER", default_header);
 				request_query.Set("$$METHOD", four == FOURCHAR('P', 'O', 'S', 'T') ? "POST"
 					: four == FOURCHAR('H', 'E', 'A', 'D') ? "HEAD" : "GET");
@@ -503,7 +544,7 @@ One<HttpRequest> HttpServer::GetRequest()
 
 		case RS_SAPI:
 			if(sapi_request.GetLength() < sapi_length) {
-				int add = min<int>(int(e - p), sapi_length - sapi_request.GetLength());
+				int add = min<int>(e - p, sapi_length - sapi_request.GetLength());
 				LogTime(NFormat("SAPI request length = %d, collected %d, adding %d",
 					sapi_length, sapi_request.GetLength(), add), 2);
 				sapi_request.Cat(p, add);
@@ -531,8 +572,8 @@ One<HttpRequest> HttpServer::GetRequest()
 				LogTime("Header line too long, request trashed", 1);
 				return NULL;
 			}
-			header_line.Cat(b, int(p - b));
-			LOG("b - b = " << int(p - b) << ", header_line = " << header_line);
+			header_line.Cat(b, p - b);
+			LOG("b - b = " << (p - b) << ", header_line = " << header_line);
 			if(p >= e)
 				break;
 			p++;
@@ -573,7 +614,7 @@ One<HttpRequest> HttpServer::GetRequest()
 					String v = request_query.GetString(var);
 					if(!v.IsEmpty())
 						v.Cat(", ");
-					v.Cat(s, int(r - s));
+					v.Cat(s, r - s);
 					request_query.Set(var, v);
 					headers_length += var.GetLength() + v.GetLength();
 				}
@@ -590,13 +631,13 @@ One<HttpRequest> HttpServer::GetRequest()
 					LogTime("HTTP POST length exceeded, request trashed", 1);
 					return NULL;
 				}
-				post_data.Cat(b, int(p - b));
+				post_data.Cat(b, p - b);
 				if(p >= e)
 					break;
 				p++;
 			}
 			else if(post_data.GetLength() < post_length) {
-				int add = min<int>(post_length - post_data.GetLength(), int(e - p));
+				int add = min<int>(post_length - post_data.GetLength(), e - p);
 				post_data.Cat(p, add);
 				p += add;
 				if(post_data.GetLength() < post_length)
@@ -605,8 +646,9 @@ One<HttpRequest> HttpServer::GetRequest()
 			{
 				String content = request_query.GetString("$$CONTENT_TYPE");
 				static const char mtag[] = "multipart/";
+				request_query.Set("$$POSTDATA", post_data);
 				if(!socket.IsError() && strnicmp(content, mtag, 10))
-					request_query.Set("$$POSTDATA", post_data); // request_query.SetURL(post_data);
+					request_query.SetURL(post_data);
 				else
 					GetHttpPostData(request_query, post_data);
 				One<HttpRequest> req = new HttpRequest(*this, conn, request_query);
@@ -761,7 +803,7 @@ void HttpServer::ReadPostData(Socket& socket, HttpQuery& query)
 void HttpServer::AddWrite(Socket socket, String data)
 {
 	if(data.GetLength() > 0)
-		delayed_writes.Add(new SocketWrite(socket, data));
+		delayed_writes.Add(new SocketWrite(socket, data, msecs()));
 }
 
 bool HttpServer::IsDelayedWrite() const
@@ -771,7 +813,7 @@ bool HttpServer::IsDelayedWrite() const
 
 double HttpServer::GetElapsedTime() const
 {
-	return int(GetSysTime() - start_time) * 1000;
+	return (double)((GetSysTime() - start_time) * 1000);
 }
 
 double HttpServer::GetAvgTime() const
@@ -958,5 +1000,4 @@ String GetHttpErrorPage(HttpQuery query, String err, bool show_query)
 
 	return HtmlTitlePage(t_("Web server error"), body);
 }
-
 END_UPP_NAMESPACE

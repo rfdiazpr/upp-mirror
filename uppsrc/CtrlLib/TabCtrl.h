@@ -32,7 +32,7 @@ public:
 		friend class TabCtrl;
 
 		void Layout(int x, int y, int cy);
-		void Paint(Draw& w);
+		void Paint(Draw& w, int state);
 		int  Right() { return x + cx; }
 
 	public:
@@ -59,6 +59,7 @@ public:
 		int tabheight, margin, extendleft;
 		Rect sel, edge;
 		Value normal[4], first[4], last[4], both[4], body;
+		Color text_color[4];
 		Font font;
 	};
 
@@ -120,7 +121,7 @@ public:
 	Size     ComputeSize(Size pane);
 	void     Add(Ctrl& c)                        { pane.Add(c.SizePos()); }
 	TabCtrl& operator<<(Ctrl& c)                 { Add(c); return *this; }
-	
+
 	static const Style& StyleDefault();
 
 	TabCtrl& AcceptCurrent(bool ac = true)       { accept_current = ac; return *this; }

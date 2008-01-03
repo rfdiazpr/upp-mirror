@@ -155,7 +155,10 @@ Vector<String> Cuprep(const String& m, const VectorMap<String, String>& mac,
 				}
 				if(pinc)
 					for(int i = 0; i < inc.GetCount(); i++)
-						r << v << inc[i] << ' ';
+						if(inc[i].Find(' '))
+							r << v << '"' << inc[i] << "\" ";
+						else
+							r << v << inc[i] << ' ';
 				else
 					r.Cat(mac.Get(v, Null));
 			}

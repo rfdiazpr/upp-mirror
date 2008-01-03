@@ -1787,7 +1787,6 @@ class DHCtrl : public Ctrl {
 	XVisualInfo* UserVisualInfo;
 	String ErrorMessage;
 
-	void MoveSubWindow(void);
 	void MapWindow(bool map);
 	bool Init(void);
 	void Terminate(void);

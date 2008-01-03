@@ -168,9 +168,7 @@ Rect Ctrl::GetRectInParentWindow(void) const
 	}
 	return r;
 
-} // END Ctrl::GetRectInParentWindow()
-
-
+}
 // 01/12/2007 - END
 
 

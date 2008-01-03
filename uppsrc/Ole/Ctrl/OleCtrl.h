@@ -4,6 +4,8 @@
 #include <CtrlCore/CtrlCore.h>
 #include <Ole/Ole.h>
 
+NAMESPACE_UPP
+
 #define OCXLOG RLOG    // redefine to RLOG if you want logs in retail versions
 
 #ifdef _DEBUG
@@ -14,7 +16,7 @@
 //                    // 2 = log all QueryInterface's
 //                    // 3 = dump interface map whenever Query fails
 #define LOG_PERSIST 1 // 1 = log saves / loads
-#define LOG_RESULTS 1 // 1 = log error results
+#define LOG_RESULTS 2 // 1 = log error results
 //                    // 2 = log all results
 #define LOG_ADDREFS 1 // 1 = log AddRef's / Releases
 #define LOG_INVOKES 1 // 1 = log IDispatch::Invoke
@@ -73,13 +75,21 @@
 #define LOGINVOKE(x)
 #endif
 
-NAMESPACE_UPP
-
 typedef void (*InitProc)();
 InitProc& LateInitProc();
+InitProc& LateExitProc();
+
+void DoLateInit();
+void DoLateExit();
 
 #define OCX_APP_MAIN \
 void _DllMainAppInit(); \
+\
+static void _DllMainLateExit() \
+{ \
+	RLOGBLOCK("_DllMainLateExit"); \
+	Ctrl::ExitWin32(); \
+} \
 \
 static void _DllMainLateInit() \
 { \
@@ -90,6 +100,7 @@ static void _DllMainLateInit() \
 	AppInitEnvironment__(); \
 	RLOG("DllMainAppInit"); \
 	_DllMainAppInit(); \
+	LateExitProc() = &_DllMainLateExit; \
 } \
 \
 BOOL WINAPI DllMain(HINSTANCE hinstDll, DWORD fdwReason, LPVOID lpReserved) \
@@ -101,6 +112,9 @@ BOOL WINAPI DllMain(HINSTANCE hinstDll, DWORD fdwReason, LPVOID lpReserved) \
 	RLOG("DllMain(" << FormatIntHex(hinstDll) << ", reason = " << (int)fdwReason << ")"); \
 	if(fdwReason == DLL_PROCESS_ATTACH) { \
 		LateInitProc() = &_DllMainLateInit; \
+	} \
+	else if(fdwReason == DLL_PROCESS_DETACH) { \
+		DoLateExit(); \
 	} \
 	RLOG("//DllMain(" << FormatIntHex(hinstDll) << ", reason = " << (int)fdwReason << ")"); \
 	return true; \
@@ -126,24 +140,23 @@ class OcxTypeInfo;
 
 typedef VectorMap<Guid, void *> InterfaceMap;
 
-template <class T>
-inline void AddInterfaceRaw(InterfaceMap& map, T *iface)
+inline void AddInterfaceRaw(InterfaceMap& map, const Guid& guid, void *iface)
 {
-	map.FindAdd(__uuidof(T), iface);
+	map.Add(guid, iface);
 }
 
 template <class T>
-inline void AddInterface(InterfaceMap& map, T *iface)
+inline void AddInterface(InterfaceMap& map, const Guid& guid, T *iface)
 {
-	AddInterfaceRaw<T>(map, iface);
+	AddInterfaceRaw(map, guid, iface);
 }
 
 #define PARENT_INTERFACE(clss, base) \
 template <> \
-inline void AddInterface(InterfaceMap& map, clss *iface) \
+inline void AddInterface(InterfaceMap& map, const Guid& guid, clss *iface) \
 { \
-	AddInterfaceRaw<clss>(map, iface); \
-	AddInterface<base>(map, iface); \
+	AddInterfaceRaw(map, guid, iface); \
+	AddInterface<base>(map, __uuidof(base), iface); \
 }
 
 PARENT_INTERFACE(IProvideClassInfo2, IProvideClassInfo)
@@ -163,13 +176,18 @@ class OcxObject
 public:
 	OcxObject() : ocx_info(0) {}
 
+	template <class T>
+	void               AddInterface(const Guid& guid, T *iface) { UPP::AddInterface<T>(interface_map, guid, iface); }
+	template <class T>
+	void               AddInterface(T *iface)                   { UPP::AddInterface<T>(interface_map, __uuidof(T), iface); }
+
 	IUnknown          *GetUnknown();
 
 	HRESULT            RawQueryInterface(const GUID& iid, void **ppv);
-	HRESULT            RawGetTypeInfoCount(unsigned *pctinfo) { *pctinfo = 1; return S_OK; }
-	HRESULT            RawGetTypeInfo(unsigned tinfo, LCID lcid, ITypeInfo **ppinfo);
-	HRESULT            RawGetIDsOfNames(REFIID riid, OLECHAR **names, unsigned cnames, LCID lcid, DISPID *dispid);
-	HRESULT            RawInvoke(IDispatch *disp, DISPID dispid, word flags, DISPPARAMS *params, VARIANT *result, EXCEPINFO *excep, unsigned *arg_err);
+
+	static HRESULT     RawGetTypeInfo(IRef<ITypeInfo>& dispatch_info, unsigned tinfo, LCID lcid, ITypeInfo **ppinfo);
+	static HRESULT     RawGetIDsOfNames(IRef<ITypeInfo>& dispatch_info, REFIID riid, OLECHAR **names, unsigned cnames, LCID lcid, DISPID *dispid);
+	static HRESULT     RawInvoke(IRef<ITypeInfo>& dispatch_info, IDispatch *disp, DISPID dispid, word flags, DISPPARAMS *params, VARIANT *result, EXCEPINFO *excep, unsigned *arg_err);
 
 #if LOG_ADDREFS
 	virtual int        AddRef0(const char *name) = 0;
@@ -178,7 +196,7 @@ public:
 
 	static const char *GetObjectName()   { return ""; }          // programmatic object name (synthetic = <ocx name>.<class name>)
 	static const char *GetObjectHelp()   { return ""; }          // user-visible object name (synthetic = <class name> (CONTROL ? " Control " | " Object ") <version>
-	static GUID        GetDispatchGUID() { return __uuidof(0); } // default ingoing dispatch interface
+//	static GUID        GetDispatchGUID() { return __uuidof(0); } // default ingoing dispatch interface
 	static GUID        GetEventGUID()    { return __uuidof(0); } // default outgoing dispatch interface
 
 	enum
@@ -196,7 +214,7 @@ template <class I>
 class Interface : public I, virtual public OcxObject
 {
 public:
-	Interface() { AddInterface<I>(interface_map, this); }
+	Interface() { AddInterface<I>(this); }
 
 #if LOG_ADDREFS
 	virtual ULONG STDMETHODCALLTYPE AddRef()          { return AddRef0(typeid(I).name()); }
@@ -208,16 +226,53 @@ template <class I>
 class DispatchInterface : public Interface<I>
 {
 public:
-	DispatchInterface() { AddInterface<IDispatch>(interface_map, this); }
-	static GUID GetDispatchGUID() { return __uuidof(I); }
+	DispatchInterface() { AddInterface(__uuidof(I), this); AddInterface<IDispatch>(this); }
+//	static GUID GetDispatchGUID() { return __uuidof(I); }
 
 	// IDispatch
 
-	STDMETHOD(GetTypeInfoCount)(unsigned *pctinfo) { return RawGetTypeInfoCount(pctinfo); }
-	STDMETHOD(GetTypeInfo)(unsigned tinfo, LCID lcid, ITypeInfo **ppinfo) { return RawGetTypeInfo(tinfo, lcid, ppinfo); }
-	STDMETHOD(GetIDsOfNames)(REFIID riid, OLECHAR **names, unsigned cnames, LCID lcid, DISPID *dispid) { return RawGetIDsOfNames(riid, names, cnames, lcid, dispid); }
-	STDMETHOD(Invoke)(DISPID dispid, REFIID riid, LCID lcid, word flags, DISPPARAMS *params, VARIANT *result, EXCEPINFO *excep, unsigned *arg_err) { return RawInvoke(static_cast<I *>(this), dispid, flags, params, result, excep, arg_err); }
+	STDMETHOD(GetTypeInfoCount)(unsigned *pctinfo);
+	STDMETHOD(GetTypeInfo)(unsigned tinfo, LCID lcid, ITypeInfo **ppinfo);
+	STDMETHOD(GetIDsOfNames)(REFIID riid, OLECHAR **names, unsigned cnames, LCID lcid, DISPID *dispid);
+	STDMETHOD(Invoke)(DISPID dispid, REFIID riid, LCID lcid, word flags, DISPPARAMS *params, VARIANT *result, EXCEPINFO *excep, unsigned *arg_err);
+
+protected:
+	void            LoadTypeInfo() { ocx_info->GetDispatchTypeInfo(dispatch_info, __uuidof(I)); }
+
+protected:
+	IRef<ITypeInfo> dispatch_info;
 };
+
+template <class I>
+STDMETHODIMP DispatchInterface<I>::GetTypeInfoCount(unsigned *pctinfo)
+{
+	if(!pctinfo) return E_POINTER;
+	*pctinfo = 1;
+	return S_OK;
+}
+
+template <class I>
+STDMETHODIMP DispatchInterface<I>::GetTypeInfo(unsigned tinfo, LCID lcid, ITypeInfo **ppinfo)
+{
+	if(!ppinfo) return E_POINTER;
+	LoadTypeInfo();
+	if(*ppinfo = ~dispatch_info) dispatch_info->AddRef();
+	return S_OK;
+}
+
+template <class I>
+STDMETHODIMP DispatchInterface<I>::GetIDsOfNames(REFIID riid, OLECHAR **names, unsigned cnames, LCID lcid, DISPID *dispid)
+{
+	LoadTypeInfo();
+	return RawGetIDsOfNames(dispatch_info, riid, names, cnames, lcid, dispid);
+}
+
+template <class I>
+STDMETHODIMP DispatchInterface<I>::Invoke(DISPID dispid, REFIID riid, LCID lcid, word flags, DISPPARAMS *params, VARIANT *result, EXCEPINFO *excep, unsigned *arg_err)
+{
+	LoadTypeInfo();
+	return RawInvoke(dispatch_info, static_cast<I *>(this), dispid, flags, params, result, excep, arg_err);
+}
 
 class OcxProvideClassInfo : public Interface<IProvideClassInfo2>
 {
@@ -311,7 +366,7 @@ class OcxTypeInfo : public Interface<IClassFactory>
 public:
 	typedef IUnknown *(*New)(OcxTypeInfo& entry);
 
-	OcxTypeInfo(const GUID& coclass_guid, const GUID& dispatch_guid, const GUID& event_guid,
+	OcxTypeInfo(const GUID& coclass_guid, /*const GUID& dispatch_guid,*/ const GUID& event_guid,
 		New new_fn, String name, const char* help = "", int ver = 0,
 		bool is_control = false);
 
@@ -319,12 +374,13 @@ public:
 	bool            CanUnload() const       { return object_count == 0 && refcount <= 1 && lock_count <= 0; }
 
 	const Guid&     GetCoClassGUID() const  { return coclass_guid; }
-	const Guid&     GetDispatchGUID() const { return dispatch_guid; }
+//	const Guid&     GetDispatchGUID() const { return dispatch_guid; }
 	const Guid&     GetEventGUID() const    { return event_guid; }
 
 	String          GetName() const         { return name; }
 
-	IRef<ITypeInfo> GetDispatchTypeInfo();
+//	IRef<ITypeInfo> GetDispatchTypeInfo();
+	void            GetDispatchTypeInfo(IRef<ITypeInfo>& dest, Guid dispatch_iid);
 	IRef<ITypeInfo> GetCoClassTypeInfo();
 
 	// IUnknown
@@ -346,7 +402,7 @@ public:
 public:
 	long            object_count;  // managed object count
 	IRef<ITypeInfo> coclass_info;  // coclass type info
-	IRef<ITypeInfo> dispatch_info; // ingoing dispatch interface type info
+//	IRef<ITypeInfo> dispatch_info; // ingoing dispatch interface type info
 	CriticalSection critical;      // critical section used for initializations
 
 private:
@@ -381,6 +437,7 @@ public:
 	OcxTypeLib&            DisplayName(String dn)      { display_name = dn; return *this; }
 	String                 GetDisplayName() const      { return display_name; }
 	String                 GetLibName() const;
+	OcxTypeLib&            UsesLibrary(String name)    { uses_libraries.GetAdd(name); return *this; }
 
 	OcxTypeLib&            Version(int _ver)           { lib_ver  = _ver; return *this; }
 	int                    GetVersion() const          { return lib_ver; }
@@ -396,6 +453,8 @@ public:
 
 	void                   Add(OcxTypeInfo& entry)     { objects.FindAdd(entry.coclass_guid, &entry); }
 	void                   AddInit(void (*fn)())       { ocx_init.Add(fn); }
+
+	IRef<ITypeInfo>        GetTypeInfo(const Guid& guid);
 
 	IRef<ITypeLib>&        GetTypeLib();
 	IRef<ITypeLib>&        operator -> ()              { return GetTypeLib(); }
@@ -413,6 +472,7 @@ private:
 	String                 lib_name;
 	String                 display_name;
 	int                    lib_ver;
+	VectorMap<String, IRef<ITypeLib> > uses_libraries;
 };
 
 struct OcxInit { OcxInit(void (*fn)()) { OcxTypeLib::Get().AddInit(fn); } };
@@ -421,7 +481,7 @@ struct OcxInit { OcxInit(void (*fn)()) { OcxTypeLib::Get().AddInit(fn); } };
 #define OCX_OBJECT(type) \
 	static OcxTypeInfo MK__s( \
 		__uuidof(type),                    /* coclass GUID */ \
-		type::GetDispatchGUID(),           /* default ingoing dispatch interface GUID */ \
+		/*type::GetDispatchGUID(),*/       /* default ingoing dispatch interface GUID */ \
 		type::GetEventGUID(),              /* default outgoing dispatch interface GUID */ \
 		OcxObjectWrapper<type>::New,       /* constructor */ \
 		OcxObjectWrapper<type>::GetName(), /* name */ \
@@ -438,7 +498,7 @@ Size FromHiMetric(Size himetric_size);
 Rect GetWindow(HDC hdc);
 Rect GetViewport(HDC hdc);
 
-word        *AllocString(String s);
+LPOLESTR AllocString(String s);
 
 template <class T>
 class SinkMap : public VectorMap<dword, T>
@@ -486,7 +546,7 @@ public:
 
 	STDMETHOD(SetClientSite)(IOleClientSite *site);
 	STDMETHOD(GetClientSite)(IOleClientSite **res);
-	STDMETHOD(SetHostNames)(const word * app_name, const word *doc_name);
+	STDMETHOD(SetHostNames)(LPCOLESTR app_name, LPCOLESTR doc_name);
 	STDMETHOD(Close)(dword save_option);
 	STDMETHOD(SetMoniker)(dword which, IMoniker *moniker);
 	STDMETHOD(GetMoniker)(dword assign, dword which, IMoniker **moniker);
@@ -497,7 +557,7 @@ public:
 	STDMETHOD(Update)();
 	STDMETHOD(IsUpToDate)();
 	STDMETHOD(GetUserClassID)(GUID *guid);
-	STDMETHOD(GetUserType)(dword form, word **type);
+	STDMETHOD(GetUserType)(dword form, LPOLESTR *type);
 	STDMETHOD(SetExtent)(dword aspect, SIZEL *size);
 	STDMETHOD(GetExtent)(dword aspect, SIZEL *size);
 	STDMETHOD(Advise)(IAdviseSink *sink, dword *connection);
@@ -628,7 +688,7 @@ protected:
 
 	enum STATE { CLOSED, /* FORGED, */ ACTIVE, UIACTIVE };
 
-	Thread                       timer_thread;
+//	Thread                       timer_thread;
 	IRef<IOleClientSite>         client_site;
 	IRef<IOleInPlaceSite>        in_place_site;
 	SinkMap< IRef<IAdviseSink> > advise_sinks;
@@ -636,7 +696,10 @@ protected:
 	dword                        view_sink_advf;
 	IRef<IAdviseSink>            view_sink;
 	Rect                         ctrl_rect;
+	Size                         extent_size;
 	STATE                        status;
+//	WPARAM                       ncmm_wParam;
+//	LPARAM                       ncmm_lParam;
 	bool                         stream_inited;
 	bool                         timer_shutdown;
 };

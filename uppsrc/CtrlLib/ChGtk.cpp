@@ -65,6 +65,7 @@ enum {
 	GTK_FOCUS,
 	GTK_FLATBOX,
 	GTK_BGBOX,
+	GTK_FILEICON,
 
 	GTK_MARGIN1 = 0x0010,
 	GTK_MARGIN2 = 0x0020,
@@ -94,10 +95,15 @@ static Image sLastImage;
 Image GetGTK(GtkWidget *widget, int state, int shadow, const char *detail, int type, int cx, int cy)
 {
 	GdkPixbuf *icon;
-	if(type == GTK_ICON) {
+	if(type == GTK_ICON || type == GTK_FILEICON) {
 		gtk_widget_set_sensitive(widget, 1);
 		gtk_widget_set_state(widget, GTK_STATE_NORMAL);
-		icon = gtk_widget_render_icon(widget, detail, (GtkIconSize)state, NULL);
+/*		if(type == GTK_FILEICON) {
+			static GtkFileSystem *fs = gtk_file_system_unix_new();
+			icon = gtk_file_system_render_icon(fs, detail, widget, cx, NULL);
+		}
+		else*/
+			icon = gtk_widget_render_icon(widget, detail, (GtkIconSize)state, NULL);
 		if(!icon) return Null;
 		cx = gdk_pixbuf_get_width(icon);
 		cy = gdk_pixbuf_get_height(icon);
@@ -916,6 +922,9 @@ void ChHostSkin()
 		GtkCh(s.hchunk, GTK_SHADOW_OUT, GTK_STATE_PRELIGHT);
 		s.bound = true;
 	}
+
+	static GtkWidget *ve = Setup(gtk_text_view_new());
+	ViewEdge_Write(WithHotSpot(GetGTK(ve, GTK_STATE_NORMAL, GTK_SHADOW_IN, "frame", GTK_BOX, 32, 32), 2, 2));
 
 	ChCtrlImg(CtrlImg::I_information, "gtk-dialog-info", 6);
 	ChCtrlImg(CtrlImg::I_question, "gtk-dialog-question", 6);

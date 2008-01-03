@@ -79,6 +79,11 @@ public:
 
 	static HttpServer *Wait(const Vector<HttpServer *>& list, int msec);
 	bool               Wait(int msec);
+	void               GetReadSockets(Vector<Socket *>& sockets);
+	void               GetWriteSockets(Vector<Socket *>& sockets);
+#ifdef PLATFORM_WIN32
+	void               GetWaitEvents(Vector<Event *>& events);
+#endif
 	One<HttpRequest>   GetRequest();
 
 	Time               GetStartTime() const           { return start_time; }
@@ -123,14 +128,16 @@ private:
 	class SocketWrite
 	{
 	public:
-		SocketWrite(Socket socket, String data, int ticks = 0)
-		: socket(socket), data(data), done(0), ticks(ticks) {}
+		SocketWrite(Socket socket, String data, int ticks = 0);
 
 	public:
-		Socket socket;
-		String data;
-		int    done;
-		int    ticks;
+		Socket      socket;
+#ifdef PLATFORM_WIN32
+		SocketEvent sock_event;
+#endif
+		String      data;
+		int         done;
+		int         ticks;
 	};
 	Array<SocketWrite> delayed_writes;
 

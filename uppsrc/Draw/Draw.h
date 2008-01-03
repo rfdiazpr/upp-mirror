@@ -55,33 +55,6 @@ extern int         Xconnection;
 
 extern dword   (*Xgetpixel)(int r, int g, int b);
 
-/*
-struct G_obj { int d; };
-
-#ifndef flagNOGTK
-
-#define DLIMODULE   GTK
-#define DLIHEADER   <Draw/gtk.dli>
-#include <Core/dli_header.h>
-
-#define DLIMODULE   GDK
-#define DLIHEADER   <Draw/gdk.dli>
-#include <Core/dli_header.h>
-
-#define DLIMODULE   GPIXBUF
-#define DLIHEADER   <Draw/gpixbuf.dli>
-#include <Core/dli_header.h>
-
-#define DLIMODULE   GOBJ
-#define DLIHEADER   <Draw/gobj.dli>
-#include <Core/dli_header.h>
-
-#define DLIMODULE   GNOME
-#define DLIHEADER   <Draw/gnome.dli>
-#include <Core/dli_header.h>
-
-#endif
-*/
 void          InitX11Draw(const char *dispname = NULL);
 void          InitX11Draw(XDisplay *display);
 

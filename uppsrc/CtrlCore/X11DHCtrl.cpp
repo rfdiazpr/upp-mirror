@@ -36,39 +36,6 @@ DHCtrl::~DHCtrl()
 } // END Destructor class DHCtrl
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// Moves the subwindow according to control position
-void DHCtrl::MoveSubWindow(void)
-{
-	// no action if not initialized
-	if(!isInitialized)
-		return;
-
-	// Gets Ctrl dimension in order to fit window
-	// Dimensiona and position are in terms of parent X11 window
-	// and *not* in terms of parent ctrl !
-	Rect r = GetRectInParentWindow();
-	int x = r.left;
-	int y = r.top;
-	int w = r.Width();
-	int h = r.Height();
-
-	// As X11 windows has no way to know if parent control clips them
-	// or if it has frames inside, we must check if window really fits
-	// inside parent, or change its sizes if needed
-	// In order to not complicate too much things, if parent widget
-	// covers left/top window side, the window is moved to right/bottom
-	// as it fits control, then it's resized, both if needed.
-	// The bad thing is that window may also move if parent widget covers
-	// it on left/top sides.
-	// @@@@@ TO DO @@@@
-
-	// resize window
-//	XMoveResizeWindow(Xdisplay, top->window, x, y, w, h);
-
-} // END DHCtrl::MoveSubWindow()
-
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // Maps/unmaps the window
 void DHCtrl::MapWindow(bool map)
 {
@@ -292,7 +259,7 @@ void DHCtrl::Terminate(void)
 {
 	if(!isInitialized)
 		return;
-
+	
 	// Unmaps the window
 	MapWindow(false);
 
@@ -310,7 +277,8 @@ void DHCtrl::Terminate(void)
 	RemoveXWindow(top->window);
 
 	// Destroys the window
-	XDestroyWindow(Xdisplay, top->window);
+	// Not to do, it's done destroying the parent window by X11 system
+//	XDestroyWindow(Xdisplay, top->window);
 
 	// Destroys created Top struct
 	delete top;
@@ -369,21 +337,6 @@ void DHCtrl::State(int reason)
 				break;
 
 			case LAYOUTPOS  : // = 101,
-				// if size changed, calls Resize
-//				if(GetSize() != CurrentSize)
-//				{
-
-					// adjusts the subwindow
-//					MoveSubWindow();
-
-
-					// reset current size to actual vale
-//					CurrentSize = GetSize();
-
-					// calls user defined resize function
-//					Resize(CurrentSize.cx, CurrentSize.cy);
-//				}
-
 				break;
 
 			default:

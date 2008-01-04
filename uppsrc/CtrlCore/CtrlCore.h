@@ -23,14 +23,6 @@ enum {
 	K_SHIFT_CTRL = K_SHIFT|K_CTRL,
 };
 
-#ifdef PLATFORM_WIN32
-#include "Win32Keys.h"
-#endif
-
-#ifdef PLATFORM_X11
-#include "X11Keys.h"
-#endif
-
 #include "MKeys.h"
 
 enum {

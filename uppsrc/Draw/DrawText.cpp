@@ -81,7 +81,8 @@ Size Draw::GetStdFontSize()
 	if(!StdFontSizeSet) {
 		StdFontSizeSet = true;
 		FontInfo fi = AStdFont.Info();
-		StdFontSize = Size(fi.GetAveWidth(), fi.GetHeight());
+		FontInfo bfi = AStdFont().Bold().Info();
+		StdFontSize = Size(fi.GetAveWidth(), bfi.GetHeight());
 	}
 	return StdFontSize;
 }

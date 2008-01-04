@@ -156,8 +156,7 @@ void MemoryDumpLeaks()
 	           MB_ICONSTOP|MB_OK|MB_APPLMODAL);
 #endif
 #else
-	static const char leaks[] = "Heap leaks detected!\n";
-	write(2, leaks, sizeof(leaks) - 1);
+	PanicMessageBox("Warning", "Heap leaks detected!");
 #endif
 }
 

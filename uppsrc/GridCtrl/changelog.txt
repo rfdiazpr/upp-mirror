@@ -230,3 +230,13 @@
 	+ fixed some regressions with painting header
 	+ added WhenCursor callback and CancelCursor() to cancel changing cursor position from body
 	  of this callback.
+
+	after 711-dev2
+
+	do not remember :)
+
+	after 712-dev1
+
+	* made find stirng control vista compatabile, removed unecessary members
+	- fixed coping/paste and WhenInsertRow/WhenUpdateRow issues (wrong rowidx, one callback call
+	  for multiple rows)

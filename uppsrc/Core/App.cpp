@@ -4,6 +4,10 @@
 #include <shellapi.h>
 #endif
 
+#ifdef PLATFORM_X11
+#include <signal.h>
+#endif
+
 NAMESPACE_UPP
 
 #ifdef PLATFORM_WIN32
@@ -236,6 +240,22 @@ void CommonInit()
 }
 
 #ifdef PLATFORM_POSIX
+
+void s_ill_handler(int)
+{
+	Panic("Illegal instruction!");
+}
+
+void s_segv_handler(int)
+{
+	Panic("Invalid memory access!");
+}
+
+void s_fpe_handler(int)
+{
+	Panic("Invalid arithmetic operation!");
+}
+
 void AppInit__(int argc, const char **argv, const char **envptr)
 {
 	SetLanguage(LNG_ENGLISH);
@@ -254,6 +274,10 @@ void AppInit__(int argc, const char **argv, const char **envptr)
 	for(int i = 1; i < argc; i++)
 		cmd.Add(argv[i]);
 	CommonInit();
+	signal(SIGILL, s_ill_handler);
+	signal(SIGSEGV, s_segv_handler);
+	signal(SIGBUS, s_segv_handler);
+	signal(SIGFPE, s_fpe_handler);
 }
 #endif
 

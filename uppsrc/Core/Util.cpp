@@ -10,6 +10,29 @@ bool PanicMode;
 
 bool    IsPanicMode() { return PanicMode; }
 
+static  void (*sPanicMessageBox)(const char *title, const char *text);
+
+void InstallPanicMessageBox(void (*mb)(const char *title, const char *text))
+{
+	sPanicMessageBox = mb;
+}
+
+void PanicMessageBox(const char *title, const char *text)
+{
+#ifdef PLATFORM_WIN32
+#	ifdef PLATFORM_WINCE
+	MessageBox(::GetActiveWindow(), ToSysChrSet(text), ToSysChrSet(title), MB_ICONSTOP | MB_OK | MB_APPLMODAL);
+#	else
+	MessageBox(::GetActiveWindow(), text, title, MB_ICONSTOP | MB_OK | MB_APPLMODAL);
+#	endif
+#else
+	if(sPanicMessageBox)
+		(*sPanicMessageBox)(title, text);
+	write(2, text, strlen(text));
+	write(2, "\n", 1);
+#endif
+}
+
 void    Panic(const char *msg)
 {
 	if(PanicMode)
@@ -20,14 +43,9 @@ void    Panic(const char *msg)
 	BugLog() << "PANIC: " << msg << "\n";
 	UsrLogT("===== PANIC ================================================");
 	UsrLogT(msg);
+	PanicMessageBox("Fatal error", msg);
+
 #ifdef PLATFORM_WIN32
-
-#	ifdef PLATFORM_WINCE
-	MessageBox(::GetActiveWindow(), ToSysChrSet(msg), L"Fatal error", MB_ICONSTOP | MB_OK | MB_APPLMODAL);
-#	else
-	MessageBox(::GetActiveWindow(), msg, "Fatal error", MB_ICONSTOP | MB_OK | MB_APPLMODAL);
-#	endif
-
 #	ifdef __NOASSEMBLY__
 #		if defined(PLATFORM_WINCE) || defined(WIN64)
 			DebugBreak();
@@ -43,10 +61,7 @@ void    Panic(const char *msg)
 #		endif
 #	endif
 #else
-	write(2, msg, strlen(msg));
-	write(2, "\n", 1);
 #endif
-	LOG(GetLastErrorMessage());
 	abort();
 }
 
@@ -71,12 +86,10 @@ void    AssertFailed(const char *file, int line, const char *cond)
 	BugLog() << "ASSERT FAILED: " << s << "\n";
 	UsrLogT("===== ASSERT FAILED ================================================");
 	UsrLogT(s);
+
+	PanicMessageBox("Fatal error", s);
+
 #ifdef PLATFORM_WIN32
-#ifdef PLATFORM_WINCE
-	MessageBox(::GetActiveWindow(), ToSysChrSet(s), L"Assertion failed", MB_ICONSTOP | MB_OK | MB_APPLMODAL);
-#else
-	MessageBox(::GetActiveWindow(), s, "Assertion failed", MB_ICONSTOP | MB_OK | MB_APPLMODAL);
-#endif
 #	ifdef __NOASSEMBLY__
 #		if defined(PLATFORM_WINCE) || defined(WIN64)
 			DebugBreak();
@@ -92,7 +105,6 @@ void    AssertFailed(const char *file, int line, const char *cond)
 #		endif
 #	endif
 #else
-	write(2, s, strlen(s));
 #endif
 	abort();
 }

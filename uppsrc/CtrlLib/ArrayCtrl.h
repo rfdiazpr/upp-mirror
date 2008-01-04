@@ -66,7 +66,7 @@ public:
 		Any                   cache;
 		const ValueOrder     *order;
 		int                 (*cmp)(const Value& a, const Value& b);
-		
+
 
 		void   InvalidateCache(int i);
 		void   InsertCache(int i, int n);
@@ -96,7 +96,7 @@ public:
 		Column& Cache();
 		Column& Accel(int (*filter)(int))          { accel = filter; return *this; }
 		Column& Accel()                            { return Accel(CharFilterDefaultToUpperAscii); }
-		
+
 		Column& Sorting(const ValueOrder& o);
 		Column& Sorting(int (*c)(const Value& a, const Value& b));
 		Column& Sorting();
@@ -157,10 +157,11 @@ private:
 	};
 
 	struct Line : Moveable<Line> {
-		bool          select;
+		bool          select:1;
+		bool          enabled:1;
 		Vector<Value> line;
 
-		Line() { select = false; }
+		Line() { select = false; enabled = true; }
 	};
 
 	Vector<Line>               array;
@@ -397,6 +398,10 @@ public:
 	void       ClearSelection();
 	bool       IsSel(int i) const;
 
+	void       EnableLine(int i, bool e);
+	void       DisableLine(int i)                               { EnableLine(i, false); }
+	bool       IsLineDisabled(int i) const                      { return array[i].enabled; }
+
 	Vector<Value> ReadRow(int i) const; // deprecated name
 	Vector<Value> GetLine(int i) const                          { return ReadRow(i); }
 
@@ -410,6 +415,9 @@ public:
 	__Expand(E__Add)
 #undef   E__Add
 //$+
+
+	void       AddSeparator();
+
 	void       Insert(int i);
 	void       Insert(int i, int count);
 	void       Insert(int i, const Vector<Value>& v);
@@ -461,9 +469,9 @@ public:
 	void       Sort(Id id, int (*compare)(const Value& v1, const Value& v2)
 	                = StdValueCompare);
 	void       Sort()                                  { Sort(0); }
-	
+
 	void       ColumnSort(int column, const ValueOrder& order);
-	
+
 	void       SetSortColumn(int ii, bool descending = false);
 	void       ToggleSortColumn(int ii);
 	void       DoColumnSort();

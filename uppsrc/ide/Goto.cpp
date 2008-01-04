@@ -135,7 +135,7 @@ GotoDlg::GotoDlg(const String& s)
 				mf.line = p.line;
 				mf.fn = p.GetFile();
 				mf.virt = false;
-				mf.access = m.pos[l].impl ? WITHBODY : PUBLIC;
+				mf.access = m.pos[l].impl ? (int)WITHBODY : (int)PUBLIC;
 				mf.key = global ? String().Cat() << GetFileName(mf.fn) << " (" << p.line << ')' : AsString(p.line);
 				int nl = mf.namespacel + 2;
 				String tp;

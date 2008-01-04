@@ -79,6 +79,7 @@ DropGrid::DropGrid()
 	data_action = false;
 	Searching(true);
 	always_drop = false;
+	must_change = false;
 	display = this;
 	change = false;
 }
@@ -218,6 +219,19 @@ void DropGrid::Serialize(Stream& s)
 	s % rowid;
 	if(s.IsLoading())
 		list.SetCursorId(rowid);
+}
+
+bool DropGrid::Accept()
+{
+	if(!Ctrl::Accept())
+		return false;
+	if(must_change && !change)
+	{
+		Exclamation(t_("Select a value."));
+		SetWantFocus();
+		return false;
+	}
+	return true;
 }
 
 void DropGrid::Paint0(Draw &w, int lm, int rm, int x, int y, int cx, int cy, const Value &val, dword style, Color &fg, Color &bg, Font &fnt, bool found, int fs, int fe)
@@ -382,6 +396,12 @@ DropGrid& DropGrid::AlwaysDrop(bool b /* = true*/)
 	return *this;
 }
 
+DropGrid& DropGrid::MustChange(bool b /* = true*/)
+{
+	must_change = b;
+	return *this;
+}
+
 int DropGrid::GetCount() const
 {
 	return list.GetCount();
@@ -398,6 +418,29 @@ Value DropGrid::GetValue() const
 	return value;
 }
 
+Value DropGrid::GetValue(int r) const
+{
+	return MakeValue(r);
+}
+
+Value DropGrid::FindValue(const Value& v) const
+{
+	int r = list.Find(v, key_col);
+	if(r < 0)
+		return Null;
+
+	return MakeValue(r);
+}
+
+Vector<String> DropGrid::FindVector(const Value& v) const
+{
+	int r = list.Find(v, key_col);
+	if(r < 0)
+		return Vector<String>();
+
+	return MakeVector(r);
+}
+
 Value DropGrid::GetKey() const
 {
 	return rowid >= 0 ? list.Get(key_col) : Null;
@@ -408,10 +451,7 @@ void DropGrid::UpdateValue()
 	if(!list.IsCursor())
 		return;
 
-	if(value_cols.GetCount() > 0)
-		value = MakeLongValue();
-	else
-		value = list.Get(value_col);
+	value = MakeValue();
 }
 
 void DropGrid::SetData(const Value& v)
@@ -421,18 +461,19 @@ void DropGrid::SetData(const Value& v)
 	{
 		list.SetCursor(row);
 		UpdateValue();
-		DoAction(row, data_action);
+		DoAction(row, data_action, false);
 		Refresh();
 	}
 	else
 		ClearValue();
 }
 
-void DropGrid::DoAction(int row, bool action)
+void DropGrid::DoAction(int row, bool action, bool chg)
 {
 	int rid = list.GetRowId(row);
 	if(rid != (trowid >= -1 ? trowid : rowid))
 	{
+		change = chg;
 		rowid = rid;
 		trowid = -2;
 		if(action)
@@ -510,6 +551,7 @@ MultiButton::SubButton& DropGrid::GetButton(int n)
 
 void DropGrid::ClearValue()
 {
+	change = false;
 	value = Null;
 	rowid = -1;
 	list.ClearCursor();
@@ -655,11 +697,9 @@ void DropGrid::Change(int dir)
 
 	if(list.IsValidCursor(c))
 	{
-		change = true;
 		list.SetCursor(c);
 		UpdateValue();
 		DoAction(c);
-		change = false;
 	}
 
 	Refresh();
@@ -781,7 +821,7 @@ bool DropGrid::IsInit()
 	return !change;
 }
 
-Vector<String> DropGrid::MakeStringVector(int r) const
+Vector<String> DropGrid::MakeVector(int r) const
 {
 	Vector<String> v;
 	int cnt = value_cols.GetCount();
@@ -800,10 +840,13 @@ Vector<String> DropGrid::MakeStringVector(int r) const
 	return v;
 }
 
-Value DropGrid::MakeLongValue(int r, bool columns) const
+Value DropGrid::MakeValue(int r, bool columns) const
 {
 	if(r < 0)
 		r = list.GetCursor();
+
+	if(r < 0)
+		return Null;
 
 	int cnt = value_cols.GetCount();
 	if(cnt > 0)
@@ -825,7 +868,8 @@ Value DropGrid::MakeLongValue(int r, bool columns) const
 		}
 		return v;
 	}
-	return Null;
+	else
+		return list.Get(value_col);
 }
 
 Value DropGrid::Format0(const Value& q, int rowid) const
@@ -835,7 +879,7 @@ Value DropGrid::Format0(const Value& q, int rowid) const
 		return Null;
 
 	if(value_cols.GetCount() > 0)
-		return RawPickToValue< Vector<String> >(MakeStringVector(r));
+		return RawPickToValue< Vector<String> >(MakeVector(r));
 	else
 		return list.GetConvertedColumn(value_col + list.GetFixedColumnCount(), list.Get(r, value_col));
 }

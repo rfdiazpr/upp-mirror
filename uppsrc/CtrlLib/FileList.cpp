@@ -294,7 +294,7 @@ FileList::FileList() {
 	edit.SetFrame(BlackFrame());
 	renaming = false;
 	justname = false;
-	accelkey = true;
+	accelkey = false;
 	SetDisplay(*this);
 }
 

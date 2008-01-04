@@ -107,9 +107,20 @@ void DropList::Clear() {
 	Update();
 }
 
-DropList& DropList::Add(const Value& _key, const Value& text) {
+DropList& DropList::Add(const Value& _key, const Value& text)
+{
 	key.Add(_key);
 	list.Add(text);
+	list.Refresh();
+	EnableDrop();
+	Sync();
+	return *this;
+}
+
+DropList& DropList::AddSeparator()
+{
+	key.Add(Null);
+	list.AddSeparator();
 	list.Refresh();
 	EnableDrop();
 	Sync();

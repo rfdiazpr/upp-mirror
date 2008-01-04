@@ -124,7 +124,7 @@ int CharFilterEol(int c) {
 }
 
 Vector<String> Cuprep(const String& m, const VectorMap<String, String>& mac,
-					  const Vector<String>& inc) {
+                      const Vector<String>& inc) {
 	String r;
 	String q = Filter(m, CasFilter);
 	const char *s = q;

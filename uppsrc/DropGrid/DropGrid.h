@@ -67,14 +67,15 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 		bool data_action:1;
 		bool searching:1;
 		bool always_drop:1;
+		bool must_change:1;
 
 		GridDisplay *display;
 
 		void Change(int dir);
 		void SearchCursor();
-		void DoAction(int row, bool action = true);
-		Vector<String> MakeStringVector(int r) const;
-		Value MakeLongValue(int r = -1, bool columns = true) const;
+		void DoAction(int row, bool action = true, bool chg = true);
+		Vector<String> MakeVector(int r) const;
+		Value MakeValue(int r = -1, bool columns = true) const;
 		void UpdateValue();
 		Value Format0(const Value& q, int rowid) const;
 		void EnableDrop(bool b = true);
@@ -109,6 +110,7 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 		DropGrid& DataAction(bool b = true);
 		DropGrid& Searching(bool b = true);
 		DropGrid& AlwaysDrop(bool b = true);
+		DropGrid& MustChange(bool b = true);
 
 		GridCtrl::ItemRect& AddColumn(const char *name, int width = GridCtrl::GD_COL_WIDTH, bool idx = false);
 		GridCtrl::ItemRect& AddColumn(Id id, const char *name, int width = GridCtrl::GD_COL_WIDTH, bool idx = false);
@@ -139,6 +141,9 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 		virtual void SetData(const Value& v);
 
 		Value GetValue() const;
+		Value GetValue(int r) const;
+		Value FindValue(const Value& v) const;
+		Vector<String> FindVector(const Value& v) const;
 		Value GetKey() const;
 
 		virtual bool Key(dword k, int);
@@ -147,6 +152,7 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 		virtual void GotFocus();
 		virtual void LostFocus();
 		virtual void Serialize(Stream& s);
+		virtual bool Accept();
 
 		void Paint0(Draw &w, int lm, int rm, int x, int y, int cx, int cy, const Value &val, dword style, Color &fg, Color &bg, Font &fnt, bool found = false, int fs = 0, int fe = 0);
 		virtual void Paint(Draw &w, int x, int y, int cx, int cy, const Value &val, dword style, Color &fg, Color &bg, Font &fnt, bool found = false, int fs = 0, int fe = 0);

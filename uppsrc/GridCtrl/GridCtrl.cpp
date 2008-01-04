@@ -191,9 +191,7 @@ GridCtrl::GridCtrl() : holder(*this)
 	WhenMenuBar = THISBACK(StdMenuBar);
 	WhenToolBar = THISBACK(StdToolBar);
 
-	findstring <<= THISBACK(DoFind);
-
-	findstring.NoWantFocus();
+	find <<= THISBACK(DoFind);
 
 	StdAppend = THISBACK(DoAppend);
 	StdRemove = THISBACK(DoRemove);
@@ -247,11 +245,8 @@ GridCtrl::GridCtrl() : holder(*this)
 	focused_ctrl_id = -1;
 	focused_col = -1;
 
-	findstring.AddFrame(findimg);
-	findstring.AddFrame(findopts);
-	findopts.SetMonoImage(CtrlImg::smallright()).NoWantFocus();
-	findimg.SetImage(GridImg::Find());
-	findopts <<= THISBACK(ShowFindOpts);
+	find.NullText(t_("Search"));
+	find.WhenBar = THISBACK(FindOptsBar);
 
 	/* frames added at the very end, otherwise there will be strange crash in optimal mode... */
 	sbx.AutoHide();
@@ -337,7 +332,7 @@ void GridCtrl::StdToolBar(Bar &bar)
 
 void GridCtrl::FindBar(Bar &bar, int cx)
 {
-	bar.Add(findstring, cx);
+	bar.Add(find, cx);
 }
 
 void GridCtrl::InfoBar(Bar &bar, int cx)
@@ -366,6 +361,7 @@ GridCtrl& GridCtrl::SetToolBar(bool b, int align, int frame)
 		return *this;
 
 	InsertFrame(frame, bar.Align(align));
+	bar.SetStyle(ToolBar::StyleDefault());
 
 	if(frame == 1)
 		switch(align)
@@ -419,18 +415,18 @@ void GridCtrl::SetFindOpts(int n)
 			search_immediate = !search_immediate;
 			if(!search_immediate)
 			{
-				findstring <<= THISBACK(Nothing);
-				findstring.WhenEnter = THISBACK(DoFind);
+				find <<= THISBACK(Nothing);
+				find.WhenEnter = THISBACK(DoFind);
 			}
 			else
 			{
-				findstring <<= THISBACK(DoFind);
-				findstring.WhenEnter = THISBACK(Nothing);
+				find <<= THISBACK(DoFind);
+				find.WhenEnter = THISBACK(Nothing);
 			}
 			break;
 		case 1:
 			search_hide = !search_hide;
-			if(!String(~findstring).IsEmpty())
+			if(!String(~find).IsEmpty())
 			{
 				if(!search_hide)
 					ShowRows();
@@ -453,11 +449,6 @@ void GridCtrl::SetFindOpts(int n)
 			DoFind();
 			break;
 	}
-}
-
-void GridCtrl::ShowFindOpts()
-{
-	MenuBar::Execute(THISBACK(FindOptsBar), findstring.GetScreenRect().TopRight());
 }
 
 String GridCtrl::RowFormat(const char *s)
@@ -704,6 +695,25 @@ void GridCtrl::SetClipboard()
 	}
 }
 
+void GridCtrl::PasteCallbacks(bool new_row)
+{
+	if(new_row)
+	{
+		LOG("WhenInsertRow() - paste");
+		#ifdef LOG_CALLBACKS
+		LGR(2, "WhenInsertRow() - paste");
+		#endif
+		WhenInsertRow();
+	}
+	else
+	{
+		#ifdef LOG_CALLBACKS
+		LGR(2, "WhenUpdateRow() - paste");
+		#endif
+		WhenUpdateRow();
+	}
+}
+
 void GridCtrl::Paste(int mode)
 {
 	if(!clipboard)
@@ -744,6 +754,8 @@ void GridCtrl::Paste(int mode)
 
 	int lc = -1, lr = -1;
 
+	int tr = total_rows;
+
 	if(!is_gc)
 	{
 		if(is_tc)
@@ -759,35 +771,28 @@ void GridCtrl::Paste(int mode)
 					int r = i;
 					int c = j;
 
+					if(r > pr)
+					{
+						PasteCallbacks(new_row);
+						pr = r;
+					}
+
 					if(cp.x + c < total_cols)
 					{
 						lc = cp.x + c;
 						lr = cp.y + r;
 
-						new_row = lr >= total_rows;
+						rowidx = lr;
+
+						new_row = lr >= tr || mode > 0;
+
 						if(fixed_paste && new_row)
 							break;
 						Set0(lr, lc, cells[j], true);
 					}
 
-					if(r > pr || (i == lines.GetCount() - 1 && j == cells.GetCount() - 1))
-					{
-						if(new_row)
-						{
-							#ifdef LOG_CALLBACKS
-							LGR(2, "WhenInsertRow() - paste");
-							#endif
-							WhenInsertRow();
-						}
-						else
-						{
-							#ifdef LOG_CALLBACKS
-							LGR(2, "WhenUpdateRow() - paste");
-							#endif
-							WhenUpdateRow();
-						}
-						pr = r;
-					}
+					if(i == lines.GetCount() - 1 && j == cells.GetCount() - 1)
+						PasteCallbacks(new_row);
 				}
 			}
 		}
@@ -805,26 +810,17 @@ void GridCtrl::Paste(int mode)
 			bool new_row = ++lc > total_cols - 1;
 			if(new_row || data_end)
 			{
-				if(new_row && lr + 1 >= total_rows)
-				{
-					if(fixed_paste)
-						break;
-					#ifdef LOG_CALLBACKS
-					LGR(2, "WhenInsertRow() - paste");
-					#endif
-					WhenInsertRow();
-				}
-				else
-				{
-					#ifdef LOG_CALLBACKS
-					LGR(2, "WhenUpdateRow() - paste");
-					#endif
-					WhenUpdateRow();
-				}
+				bool nr = lr + 1 >= tr;
+				if(new_row && nr && fixed_paste)
+					break;
+
+				PasteCallbacks(new_row && (nr || mode > 0));
+
 				if(!data_end)
 				{
 					lc = fixed_cols;
 					++lr;
+					rowidx = lr;
 				}
 			}
 		}
@@ -839,35 +835,28 @@ void GridCtrl::Paste(int mode)
 			int r = gc.data[i].row - gc.minpos.y;
 			int c = gc.data[i].col - gc.minpos.x;
 
+			if(r > pr)
+			{
+				PasteCallbacks(new_row);
+				pr = r;
+			}
+
 			if(cp.x + c < total_cols)
 			{
 				lc = cp.x + c;
 				lr = cp.y + r;
 
-				new_row = lr >= total_rows;
+				rowidx = lr;
+
+				new_row = lr >= tr || mode > 0;
+
 				if(fixed_paste && new_row)
 					break;
 				Set0(lr, lc, gc.data[i].v, true);
 			}
 
-			if(r > pr || i == gc.data.GetCount() - 1)
-			{
-				if(new_row)
-				{
-					#ifdef LOG_CALLBACKS
-					LGR(2, "WhenInsertRow() - paste");
-					#endif
-					WhenInsertRow();
-				}
-				else
-				{
-					#ifdef LOG_CALLBACKS
-					LGR(2, "WhenUpdateRow() - paste");
-					#endif
-					WhenUpdateRow();
-				}
-				pr = r;
-			}
+			if(i == gc.data.GetCount() - 1)
+				PasteCallbacks(new_row);
 		}
 	}
 	if(lc >= 0 && lr >= 0)
@@ -1010,7 +999,7 @@ void GridCtrl::Paint(Draw &w)
 		w.Clip(0, 0, fixed_width, fixed_height);
 		display->PaintFixed(w, 1, 1, 0, 0, fixed_width, fixed_height,
 							Value(""),
-							0, false, false,
+							0, StdFont(), false, false,
 							0, -1, 0,
 							true);
 		w.End();
@@ -1059,7 +1048,7 @@ void GridCtrl::Paint(Draw &w)
 					gd->SetLeftImage(hitems[j].img);
 					gd->PaintFixed(w, jj == firstcol, i == 0, x, y, cx, cy,
 								i == 0 ? it.val : GetConvertedColumn(hitems[j].id, it.val),
-								style | en, false, false,
+								style | en, StdFont(), false, false,
 								i == 0 ? hitems[j].sortmode : 0,
 								hitems[j].sortcol,
 								sortOrder.GetCount(),
@@ -1078,7 +1067,7 @@ void GridCtrl::Paint(Draw &w)
 			}
 			display->PaintFixed(w, 0, 1, rx, 0, cx, fixed_height,
 								Value(""),
-								style, false, false,
+								style, StdFont(), false, false,
 								0, -1, 0,
 								true);
 		}
@@ -1127,7 +1116,7 @@ void GridCtrl::Paint(Draw &w)
 
 					gd->PaintFixed(w, firstx, j == 0, x, y, cx, cy,
 									GetConvertedColumn(id, it.val),
-									style | en,
+									style | en, StdFont(),
 									indicator, false, 0, -1, 0, false);
 				}
 			}
@@ -4530,7 +4519,7 @@ bool GridCtrl::Key(dword key, int)
 		case K_CTRL|K_F:
 			if(searching)
 			{
-				findstring.SetFocus();
+				find.SetFocus();
 				return true;
 			}
 			else
@@ -5785,7 +5774,7 @@ bool GridCtrl::Remove0(int row, int cnt /* = 1*/, bool recalc /* = true*/, bool 
 					continue;
 			}
 			if(call_whenremoverow)
-				WhenAcceptedRow();
+				WhenAcceptRow();
 		}
 
 		if(vitems[rowidx].IsSelect())
@@ -6733,7 +6722,7 @@ bool GridCtrl::Match(const WString &f, const WString &s, int &fs, int &fe)
 void GridCtrl::DoFind()
 {
 	UpdateCtrls(UC_CHECK_VIS | UC_HIDE);
-	ShowMatchedRows((WString) ~findstring);
+	ShowMatchedRows((WString) ~find);
 }
 
 bool GridCtrl::WhenInsertRow0()
@@ -7031,12 +7020,40 @@ void GridCtrl::UpdateHighlighting(int mode, Point p)
 }
 
 /*----------------------------------------------------------------------------------------*/
+GridFind::GridFind()
+{
+	MultiButton::SubButton& btn = button.AddButton().Main();
+	btn.WhenPush = THISBACK(Push);
+	btn.SetMonoImage(CtrlImg::smallright());
+
+	button.SetStyle(button.StyleFrame());
+	button.NoDisplay();
+	button.AddTo(*this);
+}
+
+bool GridFind::Key(dword key, int count)
+{
+	if(key == K_ENTER && WhenEnter)
+	{
+		WhenEnter();
+		return true;
+	}
+
+	return EditString::Key(key, count);
+}
+
+void GridFind::Push()
+{
+	MenuBar::Execute(WhenBar, GetScreenRect().TopRight());
+}
+
+/*----------------------------------------------------------------------------------------*/
 void GridPopUpHeader::Paint(Draw &w)
 {
 	Size sz = GetSize();
 	dword style = chameleon ? GD::CHAMELEON : 0;
 	display->PaintFixed(w, 1, 1, 0, 0, sz.cx, sz.cy,
-		                val, style, false, true,
+		                val, style, StdFont(), false, true,
 		                sortmode, sortcol, sortcnt, true);
 }
 

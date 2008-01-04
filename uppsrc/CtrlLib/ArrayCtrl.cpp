@@ -1166,7 +1166,7 @@ void ArrayCtrl::SetCursorEditFocus()
 }
 
 bool ArrayCtrl::SetCursor0(int i, bool dosel) {
-	if(nocursor || GetCount() == 0)
+	if(nocursor || GetCount() == 0 || i >= 0 && i < array.GetCount() && !array[i].enabled)
 		return false;
 	i = minmax(i, 0, GetCount() - 1);
 	bool sel = false;
@@ -1260,6 +1260,11 @@ void ArrayCtrl::Select(int i, bool sel)
 	WhenSelection();
 	WhenSel();
 	SyncInfo();
+}
+
+void ArrayCtrl::EnableLine(int i, bool en)
+{
+	array[i].enabled = en;
 }
 
 void ArrayCtrl::Select(int i, int count, bool sel)
@@ -1695,8 +1700,28 @@ void  ArrayCtrl::Add() {
 
 }
 
-void  ArrayCtrl::Add(const Vector<Value>& v) {
+void  ArrayCtrl::Add(const Vector<Value>& v)
+{
 	Set(array.GetCount(), v);
+}
+
+struct ArrayCtrlSeparatorDisplay : Display {
+	virtual void Paint(Draw& w, const Rect& r, const Value& q, Color ink, Color paper, dword style) const {
+		int y = r.top + r.GetHeight() / 2;
+		w.DrawRect(r, paper);
+		w.DrawRect(r.left, y, r.GetWidth(), 1, SColorShadow());
+		w.DrawRect(r.left, y + 1, r.GetWidth(), 1, SColorLight());
+	}
+};
+
+void ArrayCtrl::AddSeparator()
+{
+	int ii = GetCount();
+	Add();
+	SetLineCy(ii, Draw::GetStdFontCy() / 2);
+	for(int i = 0; i < GetColumnCount(); i++)
+		SetDisplay(ii, i, Single<ArrayCtrlSeparatorDisplay>());
+	DisableLine(ii);
 }
 
 #define E__Addv(I)    Set0(q, I - 1, p##I)

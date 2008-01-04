@@ -18,6 +18,9 @@ void    Panic(const char *msg);
 
 void    AssertFailed(const char *file, int line, const char *cond);
 
+void    InstallPanicMessageBox(void (*mb)(const char *title, const char *text));
+void    PanicMessageBox(const char *title, const char *text);
+
 #define VERIFY(x)        ((x) ? (void)0 : UPP::AssertFailed(__FILE__, __LINE__, #x))
 
 #ifdef _DEBUG

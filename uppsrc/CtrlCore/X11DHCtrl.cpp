@@ -259,7 +259,7 @@ void DHCtrl::Terminate(void)
 {
 	if(!isInitialized)
 		return;
-	
+
 	// Unmaps the window
 	MapWindow(false);
 

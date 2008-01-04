@@ -79,20 +79,28 @@ Image GetFileIcon(const char *path, bool dir, bool force = false)
 }
 #endif
 
+bool MatchSearch(const String& filename, const String& search)
+{
+	return search.GetCount() ? Filter(filename, CharFilterDefaultToUpperAscii).Find(search) >= 0 : true;
+}
+
 bool Load(FileList& list, const String& dir, const char *patterns, bool dirs,
-          Callback3<bool, const String&, Image&> WhenIcon, FileSystemInfo& filesystem)
+          Callback3<bool, const String&, Image&> WhenIcon, FileSystemInfo& filesystem,
+          const String& search)
 {
 	if(dir.IsEmpty()) {
 		Array<FileSystemInfo::FileInfo> root = filesystem.Find(Null);
 		for(int i = 0; i < root.GetCount(); i++)
-			list.Add(root[i].filename,
-#ifdef PLATFORM_WIN32
-				GetFileIcon(root[i].filename, false, true),
-#else
-				GetDriveImage(root[i].root_style),
-#endif
-				Arial(FNTSIZE).Bold(), SColorText, true, -1, Null, SColorDisabled,
-				root[i].root_desc, Arial(FNTSIZE));
+			if(MatchSearch(root[i].filename, search))
+				list.Add(root[i].filename,
+			#ifdef PLATFORM_WIN32
+					GetFileIcon(root[i].filename, false, true),
+			#else
+					GetDriveImage(root[i].root_style),
+			#endif
+					Arial(FNTSIZE).Bold(), SColorText, true, -1, Null, SColorDisabled,
+					root[i].root_desc, Arial(FNTSIZE)
+			);
 	}
 	else {
 		Array<FileSystemInfo::FileInfo> ffi =
@@ -115,7 +123,8 @@ bool Load(FileList& list, const String& dir, const char *patterns, bool dirs,
 			WhenIcon(fi.is_directory, fi.filename, img);
 			bool nd = dirs && !fi.is_directory;
 			if(fi.filename != "." && fi.filename != ".." != 0 &&
-			   (fi.is_directory || PatternMatchMulti(patterns, fi.filename)))
+			   (fi.is_directory || PatternMatchMulti(patterns, fi.filename)) &&
+			   MatchSearch(fi.filename, search))
 				list.Add(fi.filename, img,
 						 fi.is_directory ? Arial(FNTSIZE).Bold() : Arial(FNTSIZE),
 						 nd ? SColorDisabled : SColorText, fi.is_directory,
@@ -217,12 +226,19 @@ String FileSel::GetMask()
 	return emask;
 }
 
-void FileSel::Load() {
+void FileSel::Load()
+{
+	search <<= Null;
+	SearchLoad();
+}
+
+void FileSel::SearchLoad()
+{
 	list.EndEdit();
 	list.Clear();
 	String d = GetDir();
 	String emask = GetMask();
-	if(!UPP::Load(list, d, emask, mode == SELECTDIR, WhenIcon, *filesystem)) {
+	if(!UPP::Load(list, d, emask, mode == SELECTDIR, WhenIcon, *filesystem, ~search)) {
 		Exclamation(t_("[A3* Unable to read the directory !]&&") + DeQtf((String)~dir) + "&&" +
 		            GetErrorMessage(GetLastError()));
 		if(!basedir.IsEmpty() && String(~dir).IsEmpty()) {
@@ -610,6 +626,8 @@ bool FileSel::Key(dword key, int count) {
 		list.SetFocus();
 		return list.Key(key, count);
 	}
+	if(CharFilterDefaultToUpperAscii(key) || key == K_BACKSPACE)
+		return search.Key(key, count);
 	return TopWindow::Key(key, count);
 }
 
@@ -813,18 +831,16 @@ bool FileSel::Execute(int _mode) {
 	file <<= Null;
 	int i;
 	if(basedir.IsEmpty()) {
-		for(i = 0; i < lru.GetCount(); i++)
-			if(IsFullPath(lru[i]) && filesystem->FolderExists(lru[i]))
-				dir.Add(lru[i]);
 	#ifdef PLATFORM_POSIX
 		Array<FileSystemInfo::FileInfo> root = filesystem->Find("/media/*");
+		dir.Add(GetHomeDirectory());
+		dir.Add("/");
 		for(i = 0; i < root.GetCount(); i++) {
 			String ugly = root[i].filename;
 			if(ugly[0] != '.') {
 				dir.Add("/media/" + root[i].filename);
 			}
 		}
-		dir.Add("/");
 	#else
 		Array<FileSystemInfo::FileInfo> root = filesystem->Find(Null);
 		for(i = 0; i < root.GetCount(); i++) {
@@ -835,13 +851,17 @@ bool FileSel::Execute(int _mode) {
 		}
 	#endif
 		if(filesystem->IsPosix() && String(~dir).IsEmpty())
-			dir <<= "/";
-		dir.SetDisplay(Single<FolderDisplay>(), 14);
+			dir <<= GetHomeDirectory();
+		if(lru.GetCount())
+			dir.AddSeparator();
+		for(i = 0; i < lru.GetCount(); i++)
+			if(IsFullPath(lru[i]) && filesystem->FolderExists(lru[i]))
+				dir.Add(lru[i]);
+		dir.SetDisplay(Single<FolderDisplay>(), max(16, Draw::GetStdFontCy()));
 	}
 	else {
-		dir.SetDisplay(Single<HomeDisplay>(), 14);
-		if(filesystem->IsPosix())
-		{
+		dir.SetDisplay(Single<HomeDisplay>(), max(16, Draw::GetStdFontCy()));
+		if(filesystem->IsPosix()) {
 			if(String(~dir)[0] == '/')
 				dir <<= "";
 		}
@@ -1039,6 +1059,10 @@ FileSel::FileSel() {
 	toggle.Tip(t_("Toggle files"));
 	type <<= THISBACK(Load);
 	sortext <<= 0;
+
+	search.NullText("Search", StdFont().Italic(), SColorDisabled());
+	search.SetFilter(CharFilterDefaultToUpperAscii);
+	search <<= THISBACK(SearchLoad);
 
 	filename.SetFont(Arial(FNTSIZE));
 	filename.SetFrame(ThinInsetFrame());

@@ -253,7 +253,6 @@ SelectPackageDlg::SelectPackageDlg(const char *title, bool selectvars_, bool mai
 	ok <<= clist.WhenLeftDouble = alist.WhenLeftDouble = THISBACK(OnOK);
 	clist.Columns(4);
 	clist.WhenEnterItem = clist.WhenKillCursor = THISBACK(ListCursor);
-	clist.NoAccelKey();
 	alist.AddColumn("Package");
 	alist.AddColumn("Description", 3);
 	alist.WhenCursor = THISBACK(ListCursor);

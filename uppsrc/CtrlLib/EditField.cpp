@@ -236,7 +236,7 @@ Image EditField::CursorImage(Point, dword)
 
 int  EditField::GetTy()
 {
-	return (GetSize().cy - font.Info().GetHeight()) / 2;
+	return (GetSize().cy + 1 - font.Info().GetHeight()) / 2;
 }
 
 void EditField::Paints(Draw& w, int& x, int fcy, const wchar *&txt,

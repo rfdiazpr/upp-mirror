@@ -66,6 +66,8 @@ public:
 	void          ClearList();
 	void          Clear();
 
+	DropList&     AddSeparator();
+
 	void          Drop();
 
 	const Value& operator=(const Value& v)        { SetData(v); return v; }
@@ -146,6 +148,9 @@ public:
 	void        Add(const Value& data);
 	void        Serialize(Stream& s);
 
+	int         GetCount() const                      { return list.GetCount(); }
+	Value       Get(int i) const                      { return list.Get(i, 0); }
+
 	void        AddHistory(const Value& data, int max = 12);
 
 	void        AddTo(Ctrl& _owner)                   { MultiButtonFrame::AddTo(_owner); owner = &_owner; }
@@ -197,6 +202,9 @@ public:
 	void            ClearList()                           { select.Clear(); }
 	void            AddList(const Value& data)            { select.Add(data); }
 	void            SerializeList(Stream& s)              { select.Serialize(s); }
+
+	int             GetCount() const                      { return select.GetCount(); }
+	Value           Get(int i) const                      { return select.Get(i); }
 
 	void            AddHistory(int max = 12)              { select.AddHistory(this->GetData(), max); }
 

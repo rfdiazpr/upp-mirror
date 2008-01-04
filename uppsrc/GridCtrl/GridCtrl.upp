@@ -20,6 +20,7 @@ file
 	GridCtrl.cpp,
 	GridDisplay.h,
 	GridDisplay.cpp,
+	GridText.cpp,
 	GridBase.cpp,
 	GridSort.cpp,
 	GridCtrl.iml,

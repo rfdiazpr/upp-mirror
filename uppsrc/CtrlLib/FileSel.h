@@ -84,8 +84,8 @@ public:
 	FileList&   IconWidth(int w)                     { iconwidth = w; Refresh(); return *this; }
 	int         GetIconWidth() const                 { return iconwidth; }
 	FileList&   Renaming(bool b = true)              { renaming = b; return *this; }
-	FileList&   JustName(bool b = true)              { justname = true; Refresh(); return *this; }
-	FileList&   NoAccelKey()                         { accelkey = false; return *this; }
+	FileList&   JustName(bool b = true)              { justname = b; Refresh(); return *this; }
+	FileList&   AccelKey(bool b = true)              { accelkey = b; return *this; }
 
 	typedef FileList CLASSNAME;
 
@@ -95,7 +95,7 @@ public:
 
 bool Load(FileList& list, const String& dir, const char *patterns, bool dirs = false,
           Callback3<bool, const String&, Image&> WhenIcon = CNULL,
-          FileSystemInfo& filesystem = StdFileSystemInfo());
+          FileSystemInfo& filesystem = StdFileSystemInfo(), const String& search = String());
 void SortByName(FileList& list);
 void SortByExt(FileList& list);
 
@@ -152,6 +152,7 @@ protected:
 	void        FileUpdate();
 	void        Rename(const String& on, const String& nn);
 	void        Choice();
+	void        SearchLoad();
 	void        Load();
 	String      FilePath(const String& fn);
 	void        SetDir(const String& dir);

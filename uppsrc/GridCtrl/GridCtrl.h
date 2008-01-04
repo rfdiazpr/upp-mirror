@@ -20,20 +20,22 @@ namespace GF
 	};
 };
 
-class FindEditString : public EditString
+class GridFind : public EditString
 {
+	private:
+		MultiButtonFrame button;
 	public:
-		Callback WhenEnter;
-		virtual bool Key(dword key, int count)
-		{
-			if(key == K_ENTER && WhenEnter)
-			{
-				WhenEnter();
-				return true;
-			}
 
-			return EditString::Key(key, count);
-		}
+		GridFind();
+
+		Callback WhenEnter;
+		Callback1<Bar &> WhenBar;
+
+		virtual bool Key(dword key, int count);
+		void Push();
+
+		typedef GridFind CLASSNAME;
+
 };
 
 class GridPopUpHeader : public Ctrl
@@ -158,6 +160,7 @@ class GridOperation
 		bool operator==(int op) { return operation == op; }
 
 };
+
 
 class CtrlsHolder : public Ctrl
 {
@@ -685,13 +688,8 @@ class GridCtrl : public Ctrl
 
 		bool resize_panel_open:1;
 
-		FrameLeft<ImageCtrl> findimg;
-		FrameRight<Button> findopts;
-		FindEditString findstring;
+		GridFind find;
 		Label info;
-		DropList findplace;
-		Button findbtn;
-		Button findopt;
 		Button close;
 
 		GridDisplay *display;
@@ -1466,7 +1464,6 @@ class GridCtrl : public Ctrl
 		void CloseGrid();
 		String RowFormat(const char *s);
 
-		void ShowFindOpts();
 		void SetFindOpts(int n);
 
 		Item& GetItem(const Point &p) { return GetItem(p.y, p.x); }
@@ -1514,6 +1511,7 @@ class GridCtrl : public Ctrl
 		GridClipboard GetClipboard();
 		void SetClipboard();
 		bool IsClipboardAvailable();
+		void PasteCallbacks(bool new_row);
 		void Paste(int mode = 0);
 		void DoCopy();
 		void DoPaste();
@@ -1569,6 +1567,32 @@ class GridCtrl : public Ctrl
 		Callback StdRemove;
 		Callback StdDuplicate;
 		Callback StdEdit;
+};
+
+class GridText : Ctrl
+{
+	private:
+		GridDisplay display;
+		GridCtrl* parent;
+		const Id* column;
+		Color fg, bg;
+		Font fnt;
+		int align;
+
+	public:
+
+		GridText() {}
+
+		virtual void Paint(Draw& w)
+		{
+			Rect r = GetRect();
+			display.Paint(w, r.left, r.top, r.Width(), r.Height(), parent->Get(*column), 0, fg, bg, fnt);
+		}
+
+		void Ink(Color c)    { fg = c;  }
+		void Paper(Color c)  { bg = c;  }
+		void SetFont(Font f) { fnt = f; }
+		void Column(const Id& c) { column = &c; }
 };
 
 END_UPP_NAMESPACE

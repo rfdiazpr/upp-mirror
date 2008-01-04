@@ -98,7 +98,7 @@ void GridDisplay::Paint(Draw &w, int x, int y, int cx, int cy, const Value &val,
 		w.DrawRect(x, y, cx, cy, bg);
 }
 
-void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, int cx, int cy, const Value &val, dword style,
+void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, int cx, int cy, const Value &val, dword style, Font &fnt,
 		                     bool indicator, bool moved, int sortmode, int sortcol, int sortcnt, bool horizontal)
 {
 	bool chameleon = style & GD::CHAMELEON;
@@ -197,8 +197,8 @@ void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, in
 		{
 			String tcol = AsString(sortcol);
 
-			Size tsz = GetTextSize(tcol, font);
-			w.DrawText(tx, y + (cy - tsz.cy) / 2, tcol, font);
+			Size tsz = GetTextSize(tcol, fnt);
+			w.DrawText(tx, y + (cy - tsz.cy) / 2, tcol, fnt);
 			tx += tsz.cx;
 		}
 
@@ -242,7 +242,7 @@ void GridDisplay::PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, in
 
 		Color fg = style & GD::READONLY ? SColorDisabled() : SColorText();
 
-		DrawText(w, tx, nx, ny, ncx, ncy, al, GetStdConvertedValue(val), font, fg, SColorPaper, 0, 0, 0, style & GD::WRAP);
+		DrawText(w, tx, nx, ny, ncx, ncy, al, GetStdConvertedValue(val), fnt, fg, SColorPaper, 0, 0, 0, style & GD::WRAP);
 
 		w.End();
 	}

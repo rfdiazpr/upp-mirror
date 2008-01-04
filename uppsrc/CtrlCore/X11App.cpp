@@ -295,8 +295,62 @@ void SetX11ErrorHandler()
 	XSetErrorHandler(X11ErrorHandler);
 }
 
+static void sPanicMessageBox(const char *title, const char *text)
+{
+	XDisplay *display = XOpenDisplay(NULL);
+	if(!display)
+		return;
+	int screen = DefaultScreen(display);
+	int x = (DisplayWidth(display, screen) - 600) / 2;
+	int y = (DisplayHeight(display, screen) - 120) / 2;
+	Window win = XCreateSimpleWindow(display, RootWindow(display, screen),
+	                                 x, y, 600, 120, 4,
+	                                 BlackPixel(display, screen),
+	                                 WhitePixel(display, screen));
+	XSizeHints size_hints;
+	size_hints.flags = PPosition|PSize|PMinSize;
+	size_hints.x = x;
+	size_hints.y = x;
+	size_hints.width = 600;
+	size_hints.height = 120;
+	size_hints.min_width = 600;
+	size_hints.min_height = 120;
+	char *h[1]; h[0] = "";
+	XSetStandardProperties(display, win, title, title, None, h, 0, &size_hints);
+	XSelectInput(display, win, ExposureMask|KeyPressMask|ButtonPressMask|StructureNotifyMask);
+	XGCValues values;
+	GC gc = XCreateGC(display, win, 0, &values);
+	XMapWindow(display, win);
+	XFontStruct *font_info = XQueryFont(display, XGContextFromGC(gc));
+	for(;;) {
+		XEvent e;
+		XNextEvent(display, &e);
+		switch(e.type) {
+		case ButtonPress:
+			XFreeFont(display, font_info);
+			XFreeGC(display, gc);
+			XCloseDisplay(display);
+			return;
+		case Expose:
+			int y = 20;
+			const char *b = text;
+			for(;;) {
+				const char *e = strchr(b, '\n');
+				if(!e) break;
+				XDrawString(display, win, gc, 20, y, b, e - b);
+				y += font_info->max_bounds.ascent + font_info->max_bounds.descent;
+				b = e + 1;
+			}
+			XDrawString(display, win, gc, 20, y, b, strlen(b));
+			break;
+		}
+	}
+}
+
 void Ctrl::InitX11(const char *display)
 {
+	InstallPanicMessageBox(sPanicMessageBox);
+
 	InitX11Draw(display);
 	InitTimer();
 	byte dummy[5];

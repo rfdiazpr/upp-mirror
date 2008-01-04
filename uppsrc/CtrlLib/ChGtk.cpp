@@ -26,6 +26,21 @@ END_UPP_NAMESPACE
 #undef Font
 #undef Display
 
+/*
+#define GTK_FILE_SYSTEM_ENABLE_UNSUPPORTED
+#include <gtk/gtkfilesystem.h>
+
+extern "C" {
+	GtkFileSystem *gtk_file_system_unix_new(void);
+
+	GdkPixbuf   *gtk_file_system_render_icon(GtkFileSystem      *file_system,
+	                                         const GtkFilePath  *path,
+	                                         GtkWidget          *widget,
+	                                         gint                pixel_size,
+	                                         GError            **error);
+};
+*/
+
 NAMESPACE_UPP
 
 GtkWidget *gtk__parent()
@@ -65,7 +80,7 @@ enum {
 	GTK_FOCUS,
 	GTK_FLATBOX,
 	GTK_BGBOX,
-	GTK_FILEICON,
+	GTK_THEMEICON,
 
 	GTK_MARGIN1 = 0x0010,
 	GTK_MARGIN2 = 0x0020,
@@ -95,14 +110,13 @@ static Image sLastImage;
 Image GetGTK(GtkWidget *widget, int state, int shadow, const char *detail, int type, int cx, int cy)
 {
 	GdkPixbuf *icon;
-	if(type == GTK_ICON || type == GTK_FILEICON) {
+	if(type == GTK_ICON || type == GTK_THEMEICON) {
 		gtk_widget_set_sensitive(widget, 1);
 		gtk_widget_set_state(widget, GTK_STATE_NORMAL);
-/*		if(type == GTK_FILEICON) {
-			static GtkFileSystem *fs = gtk_file_system_unix_new();
-			icon = gtk_file_system_render_icon(fs, detail, widget, cx, NULL);
-		}
-		else*/
+		if(type == GTK_THEMEICON)
+			icon = gtk_icon_theme_load_icon(gtk_icon_theme_get_for_screen(gtk_widget_get_screen (widget)), detail,
+			                                (GtkIconSize)state, (GtkIconLookupFlags)0, NULL);
+		else
 			icon = gtk_widget_render_icon(widget, detail, (GtkIconSize)state, NULL);
 		if(!icon) return Null;
 		cx = gdk_pixbuf_get_width(icon);
@@ -796,8 +810,8 @@ void ChHostSkin()
 			eb.SetHotSpot(Point(efm, efm));
 			s.edge[i] = Image(eb);
 			s.activeedge = true;
+			gtk_widget_destroy(w);
 		}
-		gtk_widget_destroy(w);
 	}
 
 	{
@@ -860,7 +874,7 @@ void ChHostSkin()
 		gtk_menu_shell_append(GTK_MENU_SHELL(popup), menu_item);
 		gtk_widget_realize(menu_item);
 		gtk_widget_show(menu_item);
-		gtk_widget_show(GTK_MENU(GTK_MENU_ITEM(top_item)->submenu)->toplevel);
+//		gtk_widget_show(GTK_MENU(GTK_MENU_ITEM(top_item)->submenu)->toplevel);
 	}
 	Image mimg = GetGTK(popup, 0, 2, "menu", GTK_BGBOX, 32, 32);
 	Color c = mimg[16][16];

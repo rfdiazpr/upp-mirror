@@ -47,18 +47,15 @@ class GridDisplay
 		Image	rightImg;
 		Image   centerImg;
 		Image	bgImg;
-		Font	font;
 		int 	align;
 		int		lm, rm, tm, bm;
 		int     theme;
-		bool	hgrid;
-		bool	vgrid;
 
 		int 	col, row;
 
 		GridCtrl *parent;
 
-		GridDisplay() : font(StdFont())
+		GridDisplay()
 		{
 			SetDefault();
 		}
@@ -71,7 +68,6 @@ class GridDisplay
 		void SetRightImage(const Image &img)		    { rightImg = img;              }
 		void SetCenterImage(const Image &img)		    { centerImg = img;  	       }
 		void SetBgImage(Image &img)					    { bgImg = img;    	           }
-		void SetFont(Font &fnt)						    { font = fnt;    	           }
 		void SetTextAlign(int al = GD::TOP | GD::LEFT)  { align = al;                  }
 		void SetHorzMargin(int left = 4, int right = 4) { lm = left; rm = right;  	   }
 		void SetVertMargin(int top = 0, int bottom = 0) { tm = top;  bm = bottom;      }
@@ -82,17 +78,19 @@ class GridDisplay
 
 		void DrawText(Draw &w, int mx, int x, int y, int cx, int cy, int align,
 					  const wchar *s, const Font &font, const Color &fg, const Color &bg,
-					  bool found, int fs, int fe, bool wrap);
+					  bool found = false, int fs = 0, int fe = 0, bool wrap = false);
 
 		virtual void Paint(Draw &w, int x, int y, int cx, int cy, const Value &val, dword style,
 				           Color &fg, Color &bg, Font &fnt, bool found = false, int fs = 0, int fe = 0);
 
-		virtual void PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, int cx, int cy, const Value &val, dword style,
+		virtual void PaintFixed(Draw &w, bool firstx, bool firsty, int x, int y, int cx, int cy, const Value &val, dword style, Font &fnt,
 								bool indicator = false, bool moved = false,
 								int sortmode = 0, int sortcol = -1, int sortcnt = 0, bool horizontal = true);
 
 };
 
+struct GridDisplayCtrl : GridDisplay, StaticRect
+{};
 
 extern GridDisplay StdGridDisplay;
 

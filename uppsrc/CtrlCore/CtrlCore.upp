@@ -9,8 +9,8 @@ library(WIN32 !MSC8ARM) "advapi32 comdlg32 comctl32";
 file
 	Core readonly separator,
 	CtrlCore.h,
-	Win32Keys.h,
-	X11Keys.h,
+	Win32Keys.i,
+	X11Keys.i,
 	MKeys.h,
 	Frame.cpp,
 	Ctrl.cpp,

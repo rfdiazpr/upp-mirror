@@ -410,6 +410,7 @@ void MultiButton::Paint(Draw& w)
 		cr = r;
 	}
 	cr.left++;
+	Rect clr = cr;
 	if(!IsNull(valuecy)) {
 		cr.top += (cr.GetHeight() - valuecy) / 2;
 		cr.bottom = cr.top + valuecy;
@@ -417,7 +418,7 @@ void MultiButton::Paint(Draw& w)
 	Value v = convert->Format(value);
 	bool f = HasFocus() && !push && frm;
 	if(cr.left < cr.right && display) {
-		w.Clip(cr);
+		w.Clip(clr);
 		display->Paint(w, cr, v,
 		               IsShowEnabled() ? text : SColorDisabled,
 		               paper, f ? Display::CURSOR : Display::FOCUS|Display::CURSOR);

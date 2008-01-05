@@ -127,7 +127,7 @@ private:
 	void   SetCursorLineSync(int i);
 	void   MoveCursorLine(int c, int incr);
 	void   SetCursorLine(int i, bool sc, bool sel, bool cb);
-	void   SetCursor(int id, bool sc, bool sel, bool cb);
+	void   SetCursor(int id, bool sc, bool sel, bool cb);	
 	void   RemoveCtrls(int itemi);
 	void   SyncCtrls(bool add, Ctrl *restorefocus);
 	bool   Tab(int d);

@@ -125,7 +125,7 @@ public:
 	double        GetTabRatio(int i) const                { return col[i].ratio; }
 	void          SetTabWidth(int i, int cx);
 	int           GetTabWidth(int i);
-
+	
 	void          SwapTabs(int first, int second);
 	void          MoveTab(int from, int to);
 	int           GetTabIndex(int i)                      { return col[i].index; }
@@ -139,7 +139,7 @@ public:
 
 	void          SetHeight(int cy);
 	int           GetHeight() const;
-
+	
 	static const Style& StyleDefault();
 
 	HeaderCtrl&   Invisible(bool inv);

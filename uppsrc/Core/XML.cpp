@@ -216,8 +216,16 @@ void XmlParser::Next()
 				term += 3;
 				return;
 			}
+			bool intdt = false;
 			for(;;) {
-				if(*term == '>') {
+				if (*term == '[')
+					intdt = true;
+				if(*term == '>' && intdt == false) {
+					term++;
+					break;
+				}
+				if(intdt == true && term[0] == ']' && term[1] == '>') {
+					text.Cat(*term++);
 					term++;
 					break;
 				}

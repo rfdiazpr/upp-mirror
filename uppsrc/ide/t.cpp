@@ -428,7 +428,7 @@ ExportTrDlg::ExportTrDlg()
 
 	DlCharsetD(charset);
 	of.Attach(folder);
-
+	
 	charset <<= CHARSET_UTF8;
 	lang <<= LNG_ENGLISH;
 }

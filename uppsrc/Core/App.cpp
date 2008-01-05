@@ -4,7 +4,7 @@
 #include <shellapi.h>
 #endif
 
-#ifdef PLATFORM_X11
+#ifdef PLATFORM_POSIX
 #include <signal.h>
 #endif
 

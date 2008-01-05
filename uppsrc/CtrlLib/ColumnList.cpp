@@ -576,6 +576,7 @@ void ColumnList::Clear() {
 	Update();
 	Refresh();
 	SyncInfo();
+	SetSb();
 }
 
 void ColumnList::Insert(int ii, const Value& val, bool canselect)

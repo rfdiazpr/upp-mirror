@@ -15,8 +15,8 @@ class DockTest : public WithDockTestLayout< DockWindow > {
 public:
 	typedef DockTest CLASSNAME;
 	
-	WithTestLayout1<DockableWindow> docker1;
-	DockableWindow docker2, docker3, docker4, docker5;
+	WithTestLayout1<DockableCtrl> docker1;
+	DockableCtrl docker2, docker3, docker4, docker5;
 	MenuBar menu;
 	ArrayCtrl array1;
 	ToolBar	tool1;
@@ -38,10 +38,10 @@ public:
 		docker4.Icon(CtrlImg::copy()).Add(tree2.SizePos());
 		docker5.Icon(CtrlImg::save()).Add(tool1.SizePos());
 		
-		Dock(DOCK_TOP, docker2.SetMinSize(Size(100, 100)), "ArrayCtrl");
-		Dock(DOCK_LEFT, docker3.SetMinSize(Size(80, 200)), "TreeCtrl");
-		Dock(DOCK_RIGHT, docker4.SetMinSize(Size(80, 200)), "TreeCtrl");
-		Dock(DOCK_BOTTOM, docker5.SetMinSize(Size(90, 22)), "ToolBar");
+		Dock(DOCK_TOP, docker2.SizeHint(Size(100, 100)), "ArrayCtrl");
+		Dock(DOCK_LEFT, docker3.SizeHint(Size(80, 200)), "TreeCtrl");
+		Dock(DOCK_RIGHT, docker4.SizeHint(Size(80, 200)), "TreeCtrl");
+		Dock(DOCK_BOTTOM, docker5.SizeHint(Size(90, 22)), "ToolBar");
 	
 		docker3.AddFrame(menu);
 	
@@ -51,13 +51,14 @@ public:
 		tabbing <<= THISBACK(OnTabbing);
 		simple <<= IsSimple();
 		tabbing <<= IsTabbing();
-		windows <<= THISBACK(ShowWindowStatus);
+//		windows <<= THISBACK(ShowWindowStatus);
 	}
 	
 	virtual void State(int reason)
 	{
+		DockWindow::State(reason);	
 		if (reason == Ctrl::OPEN)
-			Float(docker1);			
+			Float(docker1);	
 	}
 	
 	void OnSimple()

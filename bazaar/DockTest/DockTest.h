@@ -26,6 +26,7 @@ public:
 	DockTest() {
 		// Layout main window
 		CtrlLayout(*this, "Docking Test App");
+		DockLayout(*this);
 		Sizeable().MaximizeBox().MinimizeBox();
 		// Prepare controls
 		FillDataControls();
@@ -57,8 +58,10 @@ public:
 	virtual void State(int reason)
 	{
 		DockWindow::State(reason);	
-		if (reason == Ctrl::OPEN)
+		if (reason == Ctrl::OPEN) {
+			ASSERT(IsOpen());
 			Float(docker1);	
+		}
 	}
 	
 	void OnSimple()

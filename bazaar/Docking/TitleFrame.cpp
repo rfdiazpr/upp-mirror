@@ -47,6 +47,17 @@ void TitleFrame::SetChildPos()
 	}	
 }
 
+TitleFrame & TitleFrame::SetFocusLook(bool _focus)
+{
+	if (focuslook != _focus) {
+		focuslook = _focus; 
+		if (_focus && GetParent() && !GetParent()->HasFocusDeep()) 
+			GetParent()->SetFocus(); 
+		Refresh();
+	} 
+	return *this;
+}
+
 TitleFrame::TitleFrame()
 {
 	style = NULL;

@@ -18,13 +18,12 @@ public:
 	virtual void 	MoveEnd()							{ }
 	virtual void 	TitleContext()						{ }
 	
-	virtual void 	ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags);
 	virtual Image 	FrameMouseEvent(int event, Point p, int zdelta, dword keyflags);
 
-	virtual void	ChildGotFocus()						{ titlebar.SetFocusLook(true); }
-	virtual void	ChildLostFocus()					{ titlebar.SetFocusLook(false); }
+	virtual void	ChildGotFocus()						{ titlebar.SetFocusLook(true); T::ChildGotFocus(); }
+	virtual void	ChildLostFocus()					{ titlebar.SetFocusLook(false); T::ChildLostFocus(); }
 
-	virtual void 	Paint(Draw &w) 						{ w.DrawRect(GetSize(), SColorFace); }
+	virtual void 	Paint(Draw &w) 						{ w.DrawRect(T::GetSize(), SColorFace()); }
 	
 	const Image &		GetIcon() const					{ return titlebar.GetImage(); } // This really should be in TopWindow
 	WithWindowFrame<T> &Icon(const Image& m)			{ titlebar.SetImage(m); return *this; }
@@ -36,6 +35,9 @@ public:
 	WithWindowFrame<T> &AddTitleCtrl(Ctrl &c)			{ titlebar << c; return *this; }
 	WithWindowFrame<T> &NoCloseButton()					{ close.Remove(); return *this; }
 	WithWindowFrame<T> &SetCloseLook(const Value *_look){ close.SetLook(_look); return *this; }	
+	
+	void				AddWindowFrame();
+	void				RemoveWindowFrame();
 private:
 	class MoveResizeLoop : public LocalLoop
 	{
@@ -57,34 +59,48 @@ private:
 	};
 	ImgButton close;
 	TitleFrame titlebar;
-	
+protected:
 	void TitleDrag();
 };
 
 template <class T>
 WithWindowFrame<T>::WithWindowFrame()
 {
-	AddFrame(OutsetFrame());  // TODO: Replace with proper window frame
-	AddFrame(InsetFrame());
-	AddFrame(titlebar); 
-	titlebar.WhenDrag = callback(this, &WithWindowFrame<T>::TitleDrag);
 	titlebar.WhenContext = callback(this, &WithWindowFrame<T>::TitleContext);
 	titlebar.Add(close);
 	close <<= THISBACK(Close);
 }
 
 template <class T>
+void WithWindowFrame<T>::AddWindowFrame()
+{
+	T::InsertFrame(0, OutsetFrame());  // TODO: Replace with proper window frame
+	T::InsertFrame(1, InsetFrame());
+	T::InsertFrame(2, titlebar); 
+	titlebar.WhenDrag = callback(this, &WithWindowFrame<T>::TitleDrag);
+}
+
+template <class T>
+void WithWindowFrame<T>::RemoveWindowFrame()
+{
+	int ix = T::FindFrame(titlebar);
+	for (int i = 0; i < 3; i++)
+		T::RemoveFrame(ix-2);
+	titlebar.WhenDrag.Clear();
+}
+
+template <class T>
 void WithWindowFrame<T>::TitleDrag()
 {
 	MoveResizeLoop mloop;
-	mloop.StartMove(this, GetRect(), GetMousePos());
-	MoveBegin();
+	mloop.StartMove(this, T::GetRect(), GetMousePos());
 }
 
 template <class T>
 Image WithWindowFrame<T>::FrameMouseEvent(int event, Point p, int zdelta, dword keyflags)
 {
-	Rect rstart = GetRect();
+	if (!titlebar.IsChild()) return Image::Arrow();
+	Rect rstart = T::GetRect();
 	Point mstart = GetMousePos();
 	Rect r = Rect(rstart.GetSize()).Deflated(8);
 
@@ -98,7 +114,7 @@ Image WithWindowFrame<T>::FrameMouseEvent(int event, Point p, int zdelta, dword 
 	else if (r.bottom < p.y)
 		sizedir = 3;
 	
-	if (sizedir >= 0 && event == LEFTDOWN) {
+	if (sizedir >= 0 && event == Ctrl::LEFTDOWN) {
 		MoveResizeLoop mloop;
 		mloop.StartResize(this, sizedir, rstart, GetMousePos());
 		return Image::Arrow();
@@ -161,15 +177,18 @@ void WithWindowFrame<T>::MoveResizeLoop::StartMoveResize(WithWindowFrame<T> *w, 
 	if (wnd->GetParent())
 		mstart -= wnd->GetParent()->GetRect().TopLeft();		
 	SetMaster(*wnd);
+	if (sizedir < 0)
+		wnd->MoveBegin();
 	Run();
 }
 
 template <class T>
 void WithWindowFrame<T>::MoveResizeLoop::EndMoveResize()
 {
+	EndLoop();
+	
 	if (sizedir < 0)
 		wnd->MoveEnd();
-	EndLoop();
 }
 
 

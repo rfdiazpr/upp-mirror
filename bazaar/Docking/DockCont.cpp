@@ -32,12 +32,15 @@ void DockCont::StartMouseDrag(const Point &p)
 #elif defined(PLATFORM_X11)
 void DockCont::StartMouseDrag(const Point &p)
 {
+	ContainerBase::TitleDrag();
+/*	This is the code for starting a window drag using a proper X11 window
+	Kept here in case I ever find a way of using it
 	Atom xwndDrag = XAtom("_NET_WM_MOVERESIZE");
 	XEvent e;
 	Zero(e);
 	e.xclient.type = ClientMessage;
 	e.xclient.message_type = xwndDrag;
-	e.xclient.window = *window.GetWindow();
+	e.xclient.window = GetWindow();
 	e.xclient.format = 32;
 	e.xclient.display = Xdisplay;
 	e.xclient.send_event = XTrue;
@@ -49,7 +52,7 @@ void DockCont::StartMouseDrag(const Point &p)
 	
 	XUngrabPointer( Xdisplay, CurrentTime );
 	XSendEvent(Xdisplay, RootWindow(Xdisplay, Xscreenno), XFalse, SubstructureNotifyMask, &e);
-	XFlush(Xdisplay);		
+	XFlush(Xdisplay);	*/
 }
 #endif
 
@@ -97,6 +100,14 @@ void DockCont::Paint(Draw &w)
 		if (!s.title_font.IsNull())
 			w.DrawText(p.x, p.y, s.handle_vert ? 900 : 0, dc.GetTitle(), s.title_font, s.title_ink[focus]);
 	}
+}
+
+void DockCont::LeftDrag(Point p, dword keyflags)
+{
+	Rect r = GetRect();
+	GetCurrentDC().GetStyle().frame->FrameLayout(r);
+	if (r.Contains(p))
+		MoveBegin();
 }
 
 void DockCont::ChildRemoved(Ctrl *child)
@@ -383,6 +394,9 @@ void DockCont::SyncButtons(bool show)
 			autohide.SetLook(s.autohide).RightPos(r.right+2+s.btnsize, s.btnsize).TopPos(r.top+1, s.btnsize);
 			windowpos.SetLook(s.windowpos).RightPos(r.right+3+s.btnsize*2, s.btnsize).TopPos(r.top+1, s.btnsize);				
 		}
+		// Set correct look for the WindowFrame on X11
+		// TODO: Find a better way of doing this.
+		SetCloseLook(s.close);
 	}
 	close.Show(show);
 	autohide.Show(show);
@@ -432,3 +446,4 @@ DockCont::DockCont()
 	*this << close << autohide << windowpos;
 	AddFrame(tabbar);
 }
+

@@ -7,8 +7,10 @@
 class DockBase;
 
 #if defined(PLATFORM_WIN32)
+#define DOCKCONT_WND_OFFSET 4 // Should get from Win API?
 	typedef TopWindow ContainerBase;
-#elif defined(PLTFORM_X11)
+#elif defined(PLATFORM_X11)
+#define DOCKCONT_WND_OFFSET -8 // Move window up slightly
 	typedef WithWindowFrame<TopWindow> ContainerBase;
 #endif
 
@@ -18,13 +20,13 @@ public:
 	typedef DockCont CLASSNAME;
 
 	virtual void Paint(Draw &w);
-	virtual void LeftDrag(Point p, dword keyflags)		{ MoveBegin(); }
+	virtual void LeftDrag(Point p, dword keyflags);
 	virtual void LeftDown(Point p, dword keyflags)		{ SetFocus(); }
 	virtual void RightDown(Point p, dword keyflags) 	{ WindowMenu(tabbar.GetSelected()); }
 	virtual void ChildRemoved(Ctrl *child);
 
-	virtual void ChildGotFocus() 						{ RefreshFocus(true); Ctrl::ChildGotFocus(); }
-	virtual void ChildLostFocus() 						{ RefreshFocus(HasFocusDeep()); Ctrl::ChildLostFocus(); }
+	virtual void ChildGotFocus() 						{ RefreshFocus(true); ContainerBase::ChildGotFocus(); }
+	virtual void ChildLostFocus() 						{ RefreshFocus(HasFocusDeep()); ContainerBase::ChildLostFocus(); }
 	virtual void GotFocus() 							{ RefreshFocus(true); }
 	virtual void LostFocus() 							{ RefreshFocus(HasFocusDeep()); }
 	
@@ -34,8 +36,11 @@ private:
 public:
 	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 	DockCont &SetCloseLook(const Value *_look) 	{ return *this; } // Dummy 
-#elif defined(PLTFORM_X11)
-
+	void FloatOpen(Ctrl *owner)						{ TopWindow::Open(owner); }
+	void FloatClose()								{ TopWindow::Close(); }
+#elif defined(PLATFORM_X11)
+	void FloatOpen(Ctrl *owner)						{ AddWindowFrame(); PopUp(owner, false, true, false, false); }
+	void FloatClose()								{ Ctrl::Close(); RemoveWindowFrame(); }
 #endif
 private:
 	enum DockState {
@@ -114,8 +119,8 @@ public:
 	DockBase *		GetDockBase() const			{ return base; }
 	void			SyncButtons(bool show = true);
 		
-	virtual Size	GetMinSize() const	{ return GetCurrentDC().GetMinSize(); }
-	virtual Size	GetMaxSize() const	{ return GetCurrentDC().GetMaxSize(); }
+	virtual Size	GetMinSize() const	{ return dcs.GetCount() ? GetCurrentDC().GetMinSize() : Size(0, 0); }
+	virtual Size	GetMaxSize() const	{ return dcs.GetCount() ? GetCurrentDC().GetMaxSize() : Size(0, 0); }
 	virtual Size	GetStdSize() const;	
 	Size			GetUserSize() 		{ return usersize; }
 	void 			SetUserSize(Size sz){ usersize = sz; }

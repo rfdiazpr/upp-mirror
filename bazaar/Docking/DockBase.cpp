@@ -4,6 +4,49 @@
 #define DOCK_DND_BORDER		50
 
 /*
+void DockBase::EventProc(XWindow& w, XEvent *event)
+{
+	if (event->type == CirculateRequest) 
+	{
+		XCirculateEvent &e = event->xcirculate;
+		if (e.place == PlaceOnTop)
+			OpenAllFloating();
+		else if (e.place == PlaceOnBottom)
+			CloseAllFloating();
+	}
+	else if (event->type == ConfigureNotify)
+	{
+		return;
+		int q = Xwindow().Find(fw);
+		XConfigureEvent& e = event->xconfigure;		
+		if (e.above == None)
+			CloseAllFloating();
+		else
+			OpenAllFloating();
+			
+	}
+	TopWindow::EventProc(w, event);
+}
+
+void DockBase::CloseAllFloating()
+{
+	for (int i = 0; i < conts.GetCount(); i++) {
+		DockCont &c = conts[i];
+		if (c.IsFloating() && (c.IsOpen() || c.IsPopUp()))
+			c.FloatClose();
+	}
+}
+
+void DockBase::OpenAllFloating()
+{
+	for (int i = 0; i < conts.GetCount(); i++) {
+		DockCont &c = conts[i];
+		if (!c.IsFloating() && !c.IsOpen() && !c.IsPopUp())
+			c.FloatOpen(this);
+	}
+}
+*/
+/*
  * Public interface
 */ 
 void DockBase::Dock(int align, DockableCtrl &dc)
@@ -44,6 +87,8 @@ void DockBase::DockAsTab(DockableCtrl &target, DockableCtrl &dc)
 
 void DockBase::Float(DockableCtrl &dc)
 {
+	ASSERT(DockOwner()->IsOpen());
+
 	Point p = Null;
 	if (dc.GetParent()) p = dc.GetParent()->GetScreenRect().TopLeft();         
 	DockCont *c = GetReleasedContainer(dc);
@@ -214,7 +259,7 @@ void DockBase::Unfloat(DockCont &c)
 {
 	if (c.IsFloating()) {
 		c.SyncUserSize(true, true);
-		c.Close();
+		c.FloatClose();
 		c.StateNotDocked();
 	}
 }
@@ -319,7 +364,7 @@ void DockBase::FloatContainer(DockCont &c, int except, Point p)
 	}	
 	cont->StateFloating(*this);
 	cont->Hide();
-	cont->Open(DockOwner());
+	cont->FloatOpen(DockOwner());
 	Size best = Size(CtrlBestSize(false, c, false), CtrlBestSize(true, c, false));
 	cont->SetRect(Rect(p, best));
 	cont->Show();
@@ -522,7 +567,7 @@ void DockBase::ContainerDragStart(DockCont &dc)
 			move = true;
 		}
 		if (r.top < pt.y) {
-			tl.y += pt.y - r.top + 4;
+			tl.y += pt.y - r.top + DOCKCONT_WND_OFFSET;
 			move = true;
 		}
 		FloatContainer(dc, -1, move ? tl : Null);
@@ -596,7 +641,8 @@ void DockBase::DockLayout(Ctrl &_this, bool autohide)
 
 DockBase::DockBase()
 {
-	simple = tabbing = smart_resize = true;
+	simple = tabbing = true;
+	smart_resize = false;
 	for (int i = 0; i < 4; i++) {
 		db_frame[i].Set(db_dock[i], 100, i).Hide();
 		db_autohide[i].Set(i);

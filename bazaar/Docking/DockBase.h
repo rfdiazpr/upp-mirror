@@ -6,7 +6,7 @@
 #include "DockCont.h"
 #include "SplitterTree.h"
 
-class DockBase : public Pte<DockBase>
+class DockBase : public TopWindow//public Pte<DockBase>
 {
 public:
 	typedef DockBase CLASSNAME;
@@ -18,6 +18,9 @@ public:
 		DOCK_BOTTOM = SplitterFrame::BOTTOM,
 	};
 
+/*	virtual void EventProc(XWindow& w, XEvent *event);
+	void CloseAllFloating();
+	void OpenAllFloating();*/
 private:
 	Array<DockCont> conts;
 	bool simple:1;	
@@ -94,7 +97,7 @@ protected:
 	// Initialisation
 	void DockLayout(Ctrl &_this, bool autohide = true);
 
-	friend DockCont;
+	friend class DockCont;
 private:
 	// Container management
 	DockCont *	GetContainer(DockableCtrl &dc)			{ return dynamic_cast<DockCont *>(dc.GetParent()); }
@@ -127,7 +130,7 @@ private:
 	Rect	GetHlBounds(int align, DockableCtrl &dc, DockableCtrl *target);
 	int 	GetBorderAlign(const Point &p, Rect r, bool tabbing, bool allow_lr = true, bool allow_tb = true);	
 };
-
+/*
 template<class T>
 class WithDocking : public DockBase, public T
 {
@@ -137,7 +140,8 @@ public:
 
 typedef WithDocking<TopWindow> 	DockWindow;
 typedef WithDocking<Ctrl> 		DockCtrl;
-
+*/
+typedef DockBase DockWindow;
 #endif
 
 

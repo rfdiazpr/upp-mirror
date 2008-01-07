@@ -35,8 +35,8 @@ public:
 	virtual void Paint(Draw& draw);
 	
 	virtual void LeftDrag(Point p, dword keyflags)  { SetFocusLook(true); WhenDrag(); }
-	virtual void LeftDown(Point p, dword keyflags) 	{ SetFocusLook(true); WhenContext(); }
-	virtual void RightDown(Point p, dword keyflags) { SetFocusLook(true); }
+	virtual void LeftDown(Point p, dword keyflags) 	{ SetFocusLook(true); }
+	virtual void RightDown(Point p, dword keyflags) { SetFocusLook(true); WhenContext(); }
 	virtual void ChildGotFocus()					{ SetFocusLook(true); }
 	virtual void ChildAdded(Ctrl *child) 			{ SetChildPos(); }
 	virtual void ChildRemoved(Ctrl *child) 			{ SetChildPos(); }
@@ -61,8 +61,8 @@ private:
 public:
 	enum { LEFT, TOP, RIGHT, BOTTOM };
 
+	TitleFrame & 	SetFocusLook(bool _focus = true);
 	TitleFrame & 	SetStyle(const Style &s)		{ style = &s; SetChildPos(); RefreshParentLayout(); return *this; }
-	TitleFrame & 	SetFocusLook(bool _focus = true){ if (focuslook != _focus) {focuslook = _focus; Refresh();} return *this; }
 	bool			IsFocusLook()					{ return focuslook; }
 	TitleFrame & 	SetTitle(const WString &_title) { title = _title; Refresh(); return *this; }
 	const WString &	GetTitle() const				{ return title; }

@@ -417,6 +417,8 @@ void Ide::DebugMenu(Bar& menu)
 //		.Help("Edit conditional breakpoint");
 	menu.Add(!editfile.IsEmpty() /*&& !debuglock*/, AK_CLEARBREAKPOINTS, THISBACK(DebugClearBreakpoints))
 		.Help("Clear all breakpoints");
+	menu.Separator();
+	menu.Add(target.GetCount(), AK_OPENLOG, THISBACK(OpenLog));
 }
 
 void Ide::BrowseMenu(Bar& menu) {

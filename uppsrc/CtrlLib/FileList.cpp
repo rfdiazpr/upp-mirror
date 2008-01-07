@@ -202,7 +202,7 @@ bool FileList::Key(dword key, int count) {
 
 void FileList::Insert(int ii,
                       const String& name, const Image& icon, Font font, Color ink,
-				      bool isdir, int length, Time time, Color extink,
+				      bool isdir, int64 length, Time time, Color extink,
 				      const String& desc, Font descfont, Value data)
 {
 	Value v;
@@ -222,7 +222,7 @@ void FileList::Insert(int ii,
 }
 
 void FileList::Add(const String& name, const Image& icon, Font font, Color ink,
-				   bool isdir, int length, Time time, Color extink,
+				   bool isdir, int64 length, Time time, Color extink,
 				   const String& desc, Font descfont, Value data)
 {
 	Value v;

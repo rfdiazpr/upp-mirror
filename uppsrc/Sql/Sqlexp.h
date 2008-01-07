@@ -564,6 +564,7 @@ public:
 	operator bool() const                            { return !set.IsEmpty(); }
 
 	SqlUpdate(SqlId table) : table(table) {}
+	SqlUpdate::SqlUpdate(Fields f);
 
 //Deprecated!!!
 	bool  Execute(Sql& sql) const                     { return SqlStatement(*this).Execute(sql); }
@@ -574,4 +575,5 @@ public:
 	Value Fetch() const                               { return SqlStatement(*this).Fetch(); }
 };
 
-inline SqlUpdate Update(SqlId table) { return SqlUpdate(table); }
+inline SqlUpdate Update(SqlId table)                  { return SqlUpdate(table); }
+inline SqlUpdate Update(Fields f)                     { return SqlUpdate(f); }

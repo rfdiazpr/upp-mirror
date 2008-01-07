@@ -6,6 +6,9 @@
 T_("Close")
 plPL("Zamknij")
 
+T_("Search")
+plPL("")
+
 T_("Append")
 plPL("Dodaj")
 

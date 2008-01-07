@@ -412,7 +412,7 @@ void MultiButton::Paint(Draw& w)
 	cr.left++;
 	Rect clr = cr;
 	if(!IsNull(valuecy)) {
-		cr.top += (cr.GetHeight() - valuecy) / 2;
+		cr.top += (cr.GetHeight() - valuecy + 1) / 2;
 		cr.bottom = cr.top + valuecy;
 	}
 	Value v = convert->Format(value);

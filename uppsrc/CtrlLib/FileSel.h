@@ -19,7 +19,7 @@ public:
 		String name;
 		Font   font;
 		Color  ink;
-		int    length;
+		int64  length;
 		Time   time;
 		Color  extink;
 		String desc;
@@ -67,11 +67,11 @@ public:
 	void        Insert(int ii,
 	                const String& name, const Image& icon = Null,
 		            Font font = StdFont(), Color ink = SColorText(),
-	                bool isdir = false, int length = 0, Time time = Null, Color extink = Null,
+	                bool isdir = false, int64 length = 0, Time time = Null, Color extink = Null,
 	                const String& desc = Null, Font descfont = Null, Value data = Null);
 	void        Add(const String& name, const Image& icon = Null,
 		            Font font = StdFont(), Color ink = SColorText(),
-	                bool isdir = false, int length = 0, Time time = Null, Color extink = Null,
+	                bool isdir = false, int64 length = 0, Time time = Null, Color extink = Null,
 	                const String& desc = Null, Font descfont = Null, Value data = Null);
 
 	String      GetCurrentName() const;
@@ -95,7 +95,8 @@ public:
 
 bool Load(FileList& list, const String& dir, const char *patterns, bool dirs = false,
           Callback3<bool, const String&, Image&> WhenIcon = CNULL,
-          FileSystemInfo& filesystem = StdFileSystemInfo(), const String& search = String());
+          FileSystemInfo& filesystem = StdFileSystemInfo(), const String& search = String(),
+          bool hidden = true);
 void SortByName(FileList& list);
 void SortByExt(FileList& list);
 

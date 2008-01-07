@@ -215,6 +215,7 @@ Value StrDblValue(const char *s)
 
 Value Scan(dword qtype, const String& text) {
 	Date date;
+	const char *s;
 	switch(qtype) {
 	case INT64_V:
 	case INT_V:
@@ -222,11 +223,16 @@ Value Scan(dword qtype, const String& text) {
 		return StrIntValue(text);
 	case DATE_V:
 		if(text.IsEmpty()) return (Date) Null;
-		if(StrToDate(date, text)) return date;
+		s = StrToDate(date, text);
+		if(s) {
+			while(*s == ' ') s++;
+			if(*s == '\0')
+				return date;
+		}
 		return ErrorValue(t_("Invalid date !"));
 	case TIME_V: {
 		if(text.IsEmpty()) return (Time) Null;
-		const char *s = StrToDate(date, text);
+		s = StrToDate(date, text);
 		if(s)
 			try {
 				CParser p(s);

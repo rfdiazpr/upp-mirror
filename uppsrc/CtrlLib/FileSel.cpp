@@ -8,15 +8,6 @@ NAMESPACE_UPP
 #define FNTSIZE 11
 #endif
 
-Image PosixGetDriveImage(String dir)
-{
-	if(dir.Find("cdrom") == 0 || dir.Find("cdrecorder") == 0)
-		return CtrlImg::CdRom();
-	if(dir.Find("floppy") == 0 || dir.Find("zip") == 0)
-		return CtrlImg::Diskette();
-	return CtrlImg::Hd();
-}
-
 #ifdef PLATFORM_WIN32
 struct FileIconMaker : ImageMaker {
 	String file;
@@ -79,6 +70,134 @@ Image GetFileIcon(const char *path, bool dir, bool force = false)
 }
 #endif
 
+#ifdef PLATFORM_X11
+Image GtkThemeIcon(const char *name, int size);
+
+Image GnomeImage(const char *s)
+{
+	return GtkThemeIcon(String("gnome-") + s, 16);
+}
+
+struct ExtToMime {
+	Index<String> major;
+	Index<String> minor;
+	VectorMap<String, dword> map;
+
+	void Load(const char *file);
+	void Refresh();
+	bool GetMime(const String& ext, String& maj, String& min);
+};
+
+void ExtToMime::Load(const char *fn)
+{
+	FileIn in(fn);
+	if(in)
+		while(!in.IsEof()) {
+			String ln = TrimLeft(TrimRight(in.GetLine()));
+			if(ln[0] != '#') {
+				int q = ln.Find(':');
+				if(q >= 0) {
+					String h = ln.Mid(0, q);
+					int w = h.Find('/');
+					if(w >= 0) {
+						int x = ln.Find("*.", q);
+						if(x >= 0) {
+							String ext = ln.Mid(x + 2);
+							if(ext.GetCount() && map.Find(ext) < 0)
+								map.Add(ext, MAKELONG(minor.FindAdd(h.Mid(w + 1)), major.FindAdd(h.Mid(0, w))));
+						}
+					}
+				}
+			}
+		}
+}
+
+void ExtToMime::Refresh()
+{
+	major.Clear();
+	minor.Clear();
+	map.Clear();
+	Load("/usr/local/share/mime/globs");
+	Load("/usr/share/mime/globs");
+}
+
+bool ExtToMime::GetMime(const String& ext, String& maj, String& min)
+{
+	ONCELOCK {
+		Refresh();
+	}
+	int q = map.Find(ext);
+	if(q < 0)
+		return false;
+	dword x = map[q];
+	maj = major[HIWORD(x)];
+	min = minor[LOWORD(x)];
+	return true;
+}
+
+struct FileExtMaker : ImageMaker {
+	String ext;
+
+	virtual String Key() const {
+		return ext;
+	}
+
+	virtual Image Make() const {
+		String major;
+		String minor;
+		if(!Single<ExtToMime>().GetMime(ext, major, minor))
+			return Null;
+		Image img = GnomeImage("mime-" + major + '-' + minor);
+		return IsNull(img) ? GnomeImage("mime-" + major) : img;
+	}
+};
+
+Image PosixGetDriveImage(String dir)
+{
+	static Image cdrom = GnomeImage("dev-cdrom");
+	static Image harddisk = GnomeImage("dev-harddisk");
+	static Image floppy = GnomeImage("dev-floppy");
+	static Image computer = GnomeImage("dev-computer");
+	if(dir.GetCount() == 0 || dir == "/")
+		return IsNull(computer) ? CtrlImg::Computer() : computer;
+	if(dir.Find("cdrom") == 0 || dir.Find("cdrecorder") == 0)
+		return IsNull(cdrom) ? CtrlImg::CdRom() : cdrom;
+	if(dir.Find("floppy") == 0 || dir.Find("zip") == 0)
+		return IsNull(floppy) ? CtrlImg::Diskette() : floppy;
+	return IsNull(harddisk) ? CtrlImg::Hd() : harddisk;
+}
+
+Image GetFileIcon(const String& folder, const String& filename, bool isdir, bool isexe)
+{
+	static Image file = GnomeImage("fs-regular");
+	static Image dir = GnomeImage("fs-directory");
+	static Image exe = GnomeImage("fs-executable");
+	static Image home = GnomeImage("fs-home");
+	static Image desktop = GnomeImage("fs-desktop");
+	if(isdir) {
+		Image img = dir;
+		if(AppendFileName(folder, filename) == GetHomeDirectory())
+			return home;
+		else
+		if(folder == GetHomeDirectory() && filename == "Desktop")
+			return desktop;
+		else
+		if(folder == "/media" || filename.GetCount() == 0)
+			return PosixGetDriveImage(filename);
+		return dir;
+	}
+	FileExtMaker m;
+	m.ext = GetFileExt(filename);
+	Image img;
+	if(m.ext.GetCount()) {
+		m.ext = m.ext.Mid(1);
+		img = MakeImage(m);
+	}
+	return IsNull(img) ? isexe ? exe : file : img;
+}
+
+#endif
+
 bool MatchSearch(const String& filename, const String& search)
 {
 	return search.GetCount() ? Filter(filename, CharFilterDefaultToUpperAscii).Find(search) >= 0 : true;
@@ -86,7 +205,7 @@ bool MatchSearch(const String& filename, const String& search)
 
 bool Load(FileList& list, const String& dir, const char *patterns, bool dirs,
           Callback3<bool, const String&, Image&> WhenIcon, FileSystemInfo& filesystem,
-          const String& search)
+          const String& search, bool hidden)
 {
 	if(dir.IsEmpty()) {
 		Array<FileSystemInfo::FileInfo> root = filesystem.Find(Null);
@@ -112,26 +231,29 @@ bool Load(FileList& list, const String& dir, const char *patterns, bool dirs,
 	#endif
 		for(int t = 0; t < ffi.GetCount(); t++) {
 			const FileSystemInfo::FileInfo& fi = ffi[t];
-		#ifdef PLATFORM_POSIX
-			Image img = fi.is_directory ? (isdrive ? PosixGetDriveImage(fi.filename) : CtrlImg::Dir())
-			                            : CtrlImg::File();
-		#else
-			Image img = GetFileIcon(AppendFileName(dir, fi.filename), fi.is_directory);
-			if(IsNull(img))
-				img = fi.is_directory ? CtrlImg::Dir() : CtrlImg::File();
-		#endif
-			WhenIcon(fi.is_directory, fi.filename, img);
 			bool nd = dirs && !fi.is_directory;
 			if(fi.filename != "." && fi.filename != ".." != 0 &&
 			   (fi.is_directory || PatternMatchMulti(patterns, fi.filename)) &&
-			   MatchSearch(fi.filename, search))
+			   MatchSearch(fi.filename, search) &&
+			   (hidden || (filesystem.IsWin32() ? !fi.is_hidden : fi.filename[0] != '.'))) {
+			#ifdef PLATFORM_X11
+				Image img = isdrive ? PosixGetDriveImage(fi.filename)
+				                    : GetFileIcon(dir, fi.filename, fi.is_directory, fi.unix_mode & 0111);
+			#else
+				Image img = GetFileIcon(AppendFileName(dir, fi.filename), fi.is_directory);
+			#endif
+				if(IsNull(img))
+					img = fi.is_directory ? CtrlImg::Dir() : CtrlImg::File();
+				WhenIcon(fi.is_directory, fi.filename, img);
 				list.Add(fi.filename, img,
 						 fi.is_directory ? Arial(FNTSIZE).Bold() : Arial(FNTSIZE),
 						 nd ? SColorDisabled : SColorText, fi.is_directory,
-						 fi.is_directory ? -1 : (int)fi.length,
+						 fi.is_directory ? -1 : fi.length,
 						 Null, nd ? SColorDisabled
 						          : fi.is_directory ? SColorText
-						                            : SColorMark);
+						                            : SColorMark
+				);
+			}
 		}
 	}
 	return true;
@@ -193,6 +315,7 @@ String FileSel::GetDir() {
 void FileSel::SetDir(const String& _dir) {
 	dir <<= _dir;
 	Load();
+	Update();
 }
 
 String FileSel::FilePath(const String& fn) {
@@ -238,7 +361,7 @@ void FileSel::SearchLoad()
 	list.Clear();
 	String d = GetDir();
 	String emask = GetMask();
-	if(!UPP::Load(list, d, emask, mode == SELECTDIR, WhenIcon, *filesystem, ~search)) {
+	if(!UPP::Load(list, d, emask, mode == SELECTDIR, WhenIcon, *filesystem, ~search, ~hidden)) {
 		Exclamation(t_("[A3* Unable to read the directory !]&&") + DeQtf((String)~dir) + "&&" +
 		            GetErrorMessage(GetLastError()));
 		if(!basedir.IsEmpty() && String(~dir).IsEmpty()) {
@@ -247,7 +370,7 @@ void FileSel::SearchLoad()
 		}
 		dir <<= olddir;
 		olddir = Null;
-		Load();
+		SearchLoad();
 	}
 	if(d.IsEmpty()) {
 		if(filesystem->IsWin32()) {
@@ -279,6 +402,7 @@ void FileSel::SearchLoad()
 	else
 		SortByName(list);
 	olddir = ~dir;
+	Update();
 }
 
 String TrimDot(String f) {
@@ -451,10 +575,6 @@ void FileSel::Open() {
 					fn.Set(0, ToUpper(fn[0]));
 					if(fn.GetLength() == 2)
 						fn.Cat('\\');
-//					if(GetDriveType(fn) == DRIVE_NO_ROOT_DIR) {
-//						Exclamation(s_(FileSel7));
-//						return;
-//					}
 					SetDir(fn);
 					return;
 				}
@@ -640,6 +760,20 @@ void Catq(String& s, const String& fn) {
 		s << fn;
 }
 
+String FormatFileSize(int64 n)
+{
+	if(n < 10000)
+		return Format("%d B  ", n);
+	else
+	if(n < 10000 * 1024)
+		return Format("%d K  ", n >> 10);
+	else
+	if(n < INT64(10000000) * 1024)
+		return Format("%d M  ", n >> 20);
+	else
+		return Format("%d G  ", n >> 30);
+}
+
 void FileSel::Update() {
 	String fn;
 	if(list.IsSelection()) {
@@ -660,7 +794,7 @@ void FileSel::Update() {
 	filetime = String();
 	if(preview)
 		*preview <<= Null;
-	if(list.IsCursor()) {
+	if(list.IsCursor() && !list.IsSelection()) {
 		fn = list[list.GetCursor()].name;
 		if(fn[1] == ':' && fn.GetLength() <= 3)
 			filename = t_("  Drive");
@@ -674,14 +808,7 @@ void FileSel::Update() {
 				else {
 					if(mode == SAVEAS)
 						file <<= fn;
-					int n = (int)ff[0].length;
-					if(n < 10000)
-						filesize = Format("%d  ", n);
-					else
-					if(n < 10000 * 1024)
-						filesize = Format("%d K  ", n >> 10);
-					else
-						filesize = Format("%d M  ", n >> 20);
+					filesize = FormatFileSize(ff[0].length);
 					if(preview)
 						*preview <<= path;
 				}
@@ -689,6 +816,41 @@ void FileSel::Update() {
 				filetime = "     " + Format(tm);
 			}
 		}
+	}
+	else {
+		int drives = 0;
+		int dirs = 0;
+		int files = 0;
+		int64 length = 0;
+		for(int i = 0; i < list.GetCount(); i++)
+			if(!list.IsSelection() || list.IsSelected(i)) {
+				const FileList::File& f = list[i];
+				if(f.isdir)
+#ifdef PLATFORM_WIN32
+					(*f.name.Last() == ':' ? drives : dirs)++;
+#else
+					dirs++;
+#endif
+				else {
+					files++;
+					length += f.length;
+				}
+			}
+		String s;
+		if(drives)
+			s << drives << t_(" drives(s)");
+		else {
+			if(dirs)
+				s << dirs << t_(" folder(s)");
+			if(files) {
+				if(s.GetCount())
+					s << ", ";
+				s << files << t_(" file(s)");
+			}
+		}
+		filename = "  " + s;
+		if(length)
+			filesize = FormatFileSize(length);
 	}
 	FileUpdate();
 }
@@ -748,19 +910,10 @@ void FolderDisplay::Paint(Draw& w, const Rect& r, const Value& q,
 {
 	String s = q;
 	w.DrawRect(r, paper);
-#ifdef PLATFORM_POSIX
-	Image img;
-	if(s.Find("/media") == 0) {
-		if(s.Find("cdrom") > 0 || s.Find("cdrecorder") > 0)
-			img = CtrlImg::CdRom();
-		if(s.Find("floppy") > 0 || s.Find("zip") > 0)
-			img = CtrlImg::Diskette();
-	}
-	else
-	if(s == "/")
-		img = CtrlImg::Hd();
+#ifdef PLATFORM_X11
+	Image img = GetFileIcon(GetFileFolder(s), GetFileName(s), true, false);
 #else
-	Image img = GetDriveImage(*s.Last());
+	Image img = s.GetCount() ? GetFileIcon(s, false, true) : CtrlImg::Computer();
 #endif
 	if(IsNull(img))
 		img = CtrlImg::Dir();
@@ -815,6 +968,12 @@ bool FileSel::Execute(int _mode) {
 		p = splitter.Ctrl::GetPos().y;
 		p.SetB(q + 20);
 		splitter.SetPosY(p);
+		LogPos ps = search.GetPos();
+		LogPos pl = sort_lbl.GetPos();
+		pl.x.SetB(ps.x.GetB());
+		pl.y.SetA(ok.GetPos().y.GetA());
+		pl.y.SetB(ps.y.GetB());
+		search.SetPos(pl);
 		bidname = false;
 	}
 	else {
@@ -831,9 +990,10 @@ bool FileSel::Execute(int _mode) {
 	file <<= Null;
 	int i;
 	if(basedir.IsEmpty()) {
+		dir.Add(GetHomeDirectory());
 	#ifdef PLATFORM_POSIX
 		Array<FileSystemInfo::FileInfo> root = filesystem->Find("/media/*");
-		dir.Add(GetHomeDirectory());
+		dir.Add(GetHomeDirFile("Desktop"));
 		dir.Add("/");
 		for(i = 0; i < root.GetCount(); i++) {
 			String ugly = root[i].filename;
@@ -842,6 +1002,7 @@ bool FileSel::Execute(int _mode) {
 			}
 		}
 	#else
+		dir.Add(GetWinRegString("Desktop", "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", HKEY_CURRENT_USER));
 		Array<FileSystemInfo::FileInfo> root = filesystem->Find(Null);
 		for(i = 0; i < root.GetCount(); i++) {
 			String ugly = root[i].filename;
@@ -868,31 +1029,32 @@ bool FileSel::Execute(int _mode) {
 	}
 	Rect lr = splitter.GetRect();
 	Rect dr = dir.GetRect();
+	int dp = max(20, dir.Ctrl::GetPos().y.GetB());
 	int px = GetSize().cx - lr.right;
-	if(IsMulti()) {
-		toggle.RightPos(px, 20).TopPos(dr.top, 20);
-		minus.RightPos(px + 20, 20).TopPos(dr.top, 20);
-		plus.RightPos(px + 40, 20).TopPos(dr.top, 20);
-		px += 64;
+/*	if(IsMulti()) { // Cxl: Have we ever used these?!
+		toggle.RightPos(px, dp).TopPos(dr.top, dp);
+		minus.RightPos(px + 2 * dp, dp).TopPos(dr.top, dp);
+		plus.RightPos(px + 3 * dp, dp).TopPos(dr.top, dp);
+		px += 3 * dp;
 		toggle.Show();
 		minus.Show();
 		plus.Show();
 	}
-	else {
+	else {*/
 		toggle.Hide();
 		minus.Hide();
 		plus.Hide();
-	}
+//	}
 	if(mkdir.IsShown()) {
-		mkdir.RightPos(px, 20).TopPos(dr.top, 20);
-		dirup.RightPos(px + 20, 20).TopPos(dr.top, 20);
-		px += 44;
+		mkdir.RightPos(px, dp).TopPos(dr.top, dp);
+		dirup.RightPos(px + dp, dp).TopPos(dr.top, dp);
+		px += 2 * dp;
 	}
 	else {
-		dirup.RightPos(px, 20).TopPos(dr.top, 20);
-		px += 24;
+		dirup.RightPos(px, dp).TopPos(dr.top, dp);
+		px += dp;
 	}
-	dir.HSizePos(dr.left, px);
+	dir.HSizePos(dr.left, px + 4);
 	if(activetype >= 0 && activetype < type.GetCount())
 		type.SetIndex(activetype);
 	int dlc = type.GetCount();
@@ -908,6 +1070,7 @@ bool FileSel::Execute(int _mode) {
 	}
 	list.SetSbPos(lastsby);
 	FileUpdate();
+	Update();
 	int c = TopWindow::Run(appmodal);
 	TopWindow::Close();
 	lastsby = list.GetSbPos();
@@ -946,7 +1109,7 @@ bool FileSel::ExecuteSelectDir(const char *title)
 }
 
 void FileSel::Serialize(Stream& s) {
-	int version = 6;
+	int version = 7;
 	s / version;
 	String ad = ~dir;
 	s / activetype % ad;
@@ -979,6 +1142,9 @@ void FileSel::Serialize(Stream& s) {
 	}
 	if(version >= 6) {
 		s % splitter;
+	}
+	if(version >= 7) {
+		s % hidden;
 	}
 }
 
@@ -1031,8 +1197,10 @@ FileSel::FileSel() {
 	list.WhenLeftDouble = THISBACK(OpenItem2);
 	dirup <<= THISBACK(DirUp);
 	Add(dirup);
-	sortext <<= THISBACK(Load);
- 	Add(sortext);
+	sortext <<= THISBACK(SearchLoad);
+	Add(sortext);
+	hidden <<= THISBACK(SearchLoad);
+	Add(hidden);
 	mkdir <<= THISBACK(MkDir);
 	Add(mkdir);
 	plus <<= THISBACK(Plus);
@@ -1059,7 +1227,7 @@ FileSel::FileSel() {
 	toggle.Tip(t_("Toggle files"));
 	type <<= THISBACK(Load);
 	sortext <<= 0;
-
+	
 	search.NullText("Search", StdFont().Italic(), SColorDisabled());
 	search.SetFilter(CharFilterDefaultToUpperAscii);
 	search <<= THISBACK(SearchLoad);
@@ -1091,6 +1259,8 @@ FileSel::FileSel() {
 	preview_display.SetFrame(FieldFrame());
 
 	SyncSplitter();
+	
+	BackPaintHint();
 }
 
 FileSel::~FileSel() {}

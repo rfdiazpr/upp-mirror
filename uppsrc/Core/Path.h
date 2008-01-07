@@ -129,7 +129,7 @@ public:
 
 	dword       GetMode() const           { return Stat().st_mode; }
 	String      GetName() const           { return name; }
-	int64       GetLength() const         { return Stat().st_size; } // TRC: todo: 64-bit file size in Linux
+	int64       GetLength() const         { return Stat().st_size; }
 	FileTime    GetLastChangeTime() const { return Stat().st_ctime; }
 	FileTime    GetLastAccessTime() const { return Stat().st_atime; }
 	FileTime    GetLastWriteTime() const  { return Stat().st_mtime; }
@@ -246,6 +246,7 @@ public:
 		bool   is_system;
 		bool   is_temporary;
 		char   root_style;
+		dword  unix_mode;
 	};
 
 	virtual int             GetStyle() const;

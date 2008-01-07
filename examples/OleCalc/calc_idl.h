@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0361 */
-/* at Thu Jan 03 20:22:22 2008
+/* at Thu Jan 03 20:47:32 2008
  */
 /* Compiler settings for e:\src\examples\OleCalc\calc.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)

@@ -218,7 +218,7 @@ void XmlParser::Next()
 			}
 			bool intdt = false;
 			for(;;) {
-				if (*term == '[')
+				if (*term == '[') 
 					intdt = true;
 				if(*term == '>' && intdt == false) {
 					term++;

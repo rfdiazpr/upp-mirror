@@ -486,7 +486,7 @@ void WorkspaceWork::FileMenu(Bar& menu)
 	menu.Add("Insert any file(s)", THISBACK1(AddFile, ANY_FILE))
 		.Key(K_SHIFT|K_CTRL_I)
 		.Help("Insert files from anywhere on disk (discouraged in portable packages)");
-	menu.Add(isaux, "Insert output directory file(s)", THISBACK1(AddFile, OUTPUT_FILE))
+	menu.Add(isaux && GetOutputDir().GetCount(), "Insert output directory file(s)", THISBACK1(AddFile, OUTPUT_FILE))
 		.Help("Open file selector in output / intermediate directory for current package");
 	menu.Add(isaux, "Insert Common directory file(s)", THISBACK1(AddFile, COMMON_FILE))
 		.Help("Open file selector in Common directory for current package");

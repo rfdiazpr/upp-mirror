@@ -238,6 +238,23 @@ SqlInsert::SqlInsert(Fields f)
 	table = ifo.table;
 }
 
+struct UpdateFieldOperator : public FieldOperator {
+	SqlUpdate *update;
+
+	virtual void Field(const char *name, Ref f)
+	{
+		update->Column(name, (Value)f);
+	}
+};
+
+SqlUpdate::SqlUpdate(Fields f)
+{
+	UpdateFieldOperator ufo;
+	ufo.update = this;
+	f(ufo);
+	table = ufo.table;
+}
+
 // ------------------------------------
 
 SqlUpdate::operator SqlStatement() const

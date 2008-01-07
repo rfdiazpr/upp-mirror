@@ -26,21 +26,6 @@ END_UPP_NAMESPACE
 #undef Font
 #undef Display
 
-/*
-#define GTK_FILE_SYSTEM_ENABLE_UNSUPPORTED
-#include <gtk/gtkfilesystem.h>
-
-extern "C" {
-	GtkFileSystem *gtk_file_system_unix_new(void);
-
-	GdkPixbuf   *gtk_file_system_render_icon(GtkFileSystem      *file_system,
-	                                         const GtkFilePath  *path,
-	                                         GtkWidget          *widget,
-	                                         gint                pixel_size,
-	                                         GError            **error);
-};
-*/
-
 NAMESPACE_UPP
 
 GtkWidget *gtk__parent()
@@ -114,7 +99,7 @@ Image GetGTK(GtkWidget *widget, int state, int shadow, const char *detail, int t
 		gtk_widget_set_sensitive(widget, 1);
 		gtk_widget_set_state(widget, GTK_STATE_NORMAL);
 		if(type == GTK_THEMEICON)
-			icon = gtk_icon_theme_load_icon(gtk_icon_theme_get_for_screen(gtk_widget_get_screen (widget)), detail,
+			icon = gtk_icon_theme_load_icon(gtk_icon_theme_get_default(), detail,
 			                                (GtkIconSize)state, (GtkIconLookupFlags)0, NULL);
 		else
 			icon = gtk_widget_render_icon(widget, detail, (GtkIconSize)state, NULL);
@@ -196,6 +181,7 @@ Image GetGTK(GtkWidget *widget, int state, int shadow, const char *detail, int t
 			                       (GtkOrientation)t1);
 			break;
 		case GTK_ICON:
+		case GTK_THEMEICON:
 			gdk_draw_pixbuf(pixmap, NULL, icon, 0, 0, 0, 0, -1, -1, (GdkRgbDither)0, 0, 0);
 			break;
 		case GTK_EXT:
@@ -497,6 +483,12 @@ bool IsEmptyImage(const Image& m)
 		s++;
 	}
 	return true;
+}
+
+Image GtkThemeIcon(const char *name, int size)
+{
+	DUMP(name);
+	return GetGTK(gtk__parent(), size, 0, name, GTK_THEMEICON, 0, 0);
 }
 
 void ChHostSkin()
@@ -958,7 +950,7 @@ void ChHostSkin()
 		(*bimg[i].set)(GtkImage(bimg[i].gtk, 4, 16));
 
 	ChLookFn(GtkLookFn);
-
+	
 	SwapOKCancel_Write(true);
 }
 

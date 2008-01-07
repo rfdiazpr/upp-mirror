@@ -261,3 +261,17 @@ void Ide::StopDebug()
 	console.Kill();
 	PosSync();
 }
+
+void Ide::OpenLog()
+{
+	if(target.GetCount() == 0)
+		return;
+#ifdef PLATFORM_WIN32
+	String p = ForceExt(target, ".log");
+#else
+	String p = GetFileTitle(target);
+	p = GetHomeDirFile(".upp/" + p + "/" + p + ".log");
+#endif
+	if(FileExists(p))
+		EditFile(p);
+}

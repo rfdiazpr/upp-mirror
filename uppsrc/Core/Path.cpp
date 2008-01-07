@@ -1007,11 +1007,13 @@ Array<FileSystemInfo::FileInfo> FileSystemInfo::Find(String mask, int max_count)
 				f.length = ff.GetLength();
 #ifdef PLATFORM_POSIX
 				f.creation_time = ff.GetLastChangeTime();
+				f.unix_mode = ff.GetMode();
 #endif
 				f.last_access_time = ff.GetLastAccessTime();
 				f.last_write_time = ff.GetLastWriteTime();
 #ifdef PLATFORM_WIN32
 				f.creation_time = ff.GetCreationTime();
+				f.unix_mode = 0;
 #endif
 				f.read_only = ff.IsReadOnly();
 				f.is_directory = ff.IsDirectory();

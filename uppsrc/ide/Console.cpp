@@ -1,5 +1,13 @@
 #include "ide.h"
 
+class TopTextFrame : public CtrlFrame {
+	virtual void FrameLayout(Rect& r)                   { r.top++; }
+	virtual void FramePaint(Draw& w, const Rect& r) {
+		w.DrawRect(r.left, r.top, r.Width(), 1, TopSeparator1());
+	}
+	virtual void FrameAddSize(Size& sz) { sz.cy++; }
+};
+
 Console::Console() {
 	verbosebuild = false;
 	processes.SetCount(1);
@@ -9,6 +17,10 @@ Console::Console() {
 	SetReadOnly();
 	NoHorzScrollbar();
 	SetColor(PAPER_READONLY, SColorPaper);
+	input.Height(EditString::GetStdHeight());
+	input.SetFrame(Single<TopTextFrame>());
+	AddFrame(input);
+	input.Hide();
 }
 
 void Console::LeftDouble(Point p, dword) {
@@ -56,7 +68,17 @@ void Console::Append(const String& s) {
 
 bool Console::Key(dword key, int count) {
 	if(key == K_ENTER) {
-		WhenSelect();
+		if(input.IsVisible()) {
+			if(processes.GetCount() && processes[0].process)
+#ifdef PLATFORM_POSIX
+				processes[0].process->Write(String(~input) + "\n");
+#else
+				processes[0].process->Write(String(~input) + "\r\n");
+#endif
+			input <<= Null;
+		}
+		else
+			WhenSelect();
 		return true;
 	}
 	return LineEdit::Key(key, count);
@@ -318,4 +340,11 @@ void Console::CheckEndGroup()
 			}
 		}
 	}
+}
+
+void Console::Input(bool b)
+{
+	input.Show(b);
+	if(b)
+		input.SetFocus();
 }

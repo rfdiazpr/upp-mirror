@@ -123,6 +123,11 @@ int IdeConsoleExecute(const char *cmdline, Stream *out, const char *envptr, bool
 	return the_ide ? the_ide->IdeConsoleExecute(cmdline, out, envptr, quiet) : -1;
 }
 
+int IdeConsoleExecuteWithInput(const char *cmdline, Stream *out, const char *envptr, bool quiet)
+{
+	return the_ide ? the_ide->IdeConsoleExecuteWithInput(cmdline, out, envptr, quiet) : -1;
+}
+
 int IdeConsoleExecute(One<SlaveProcess> process, const char *cmdline, Stream *out, bool quiet)
 {
 	return the_ide ? the_ide->IdeConsoleExecute(process, cmdline, out, quiet) : -1;

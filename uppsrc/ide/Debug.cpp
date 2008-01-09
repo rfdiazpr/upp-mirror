@@ -87,7 +87,7 @@ void Ide::BuildAndExecute()
 			ShowConsole();
 			PutConsole(String().Cat() << "Executing: " << cmdline);
 			console.Sync();
-			h->Execute(cmdline);
+			h->ExecuteWithInput(cmdline);
 			PutConsole("Finished in " + GetPrintTime(time));
 			break;
 		case RUN_FILE: {
@@ -262,16 +262,21 @@ void Ide::StopDebug()
 	PosSync();
 }
 
-void Ide::OpenLog()
+String Ide::GetLogPath()
 {
 	if(target.GetCount() == 0)
-		return;
+		return Null;
 #ifdef PLATFORM_WIN32
-	String p = ForceExt(target, ".log");
+	return ForceExt(target, ".log");
 #else
 	String p = GetFileTitle(target);
-	p = GetHomeDirFile(".upp/" + p + "/" + p + ".log");
+	return GetHomeDirFile(".upp/" + p + "/" + p + ".log");
 #endif
+}
+
+void Ide::OpenLog()
+{
+	String p = GetLogPath();
 	if(FileExists(p))
 		EditFile(p);
 }

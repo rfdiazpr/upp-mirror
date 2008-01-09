@@ -71,6 +71,25 @@ Image GetFileIcon(const char *path, bool dir, bool force = false)
 #endif
 
 #ifdef PLATFORM_X11
+
+#ifdef flagNOGTK
+Image PosixGetDriveImage(String dir)
+{
+	if(dir.GetCount() == 0 || dir == "/")
+		return CtrlImg::Computer();
+	if(dir.Find("cdrom") == 0 || dir.Find("cdrecorder") == 0)
+		return CtrlImg::CdRom();
+	if(dir.Find("floppy") == 0 || dir.Find("zip") == 0)
+		return CtrlImg::Diskette();
+	return CtrlImg::Hd();
+}
+
+Image GetFileIcon(const String& folder, const String& filename, bool isdir, bool isexe)
+{
+	return Null;
+}
+
+#else
 Image GtkThemeIcon(const char *name, int size);
 
 Image GnomeImage(const char *s)
@@ -196,6 +215,7 @@ Image GetFileIcon(const String& folder, const String& filename, bool isdir, bool
 	return IsNull(img) ? isexe ? exe : file : img;
 }
 
+#endif
 #endif
 
 bool MatchSearch(const String& filename, const String& search)
@@ -1227,7 +1247,7 @@ FileSel::FileSel() {
 	toggle.Tip(t_("Toggle files"));
 	type <<= THISBACK(Load);
 	sortext <<= 0;
-	
+
 	search.NullText("Search", StdFont().Italic(), SColorDisabled());
 	search.SetFilter(CharFilterDefaultToUpperAscii);
 	search <<= THISBACK(SearchLoad);
@@ -1259,7 +1279,7 @@ FileSel::FileSel() {
 	preview_display.SetFrame(FieldFrame());
 
 	SyncSplitter();
-	
+
 	BackPaintHint();
 }
 

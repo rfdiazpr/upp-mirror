@@ -37,6 +37,7 @@ public:
 	virtual bool             IdeIsBuilding() const = 0;
 	virtual String           IdeGetOneFile() const = 0;
 	virtual int              IdeConsoleExecute(const char *cmdline, Stream *out = NULL, const char *envptr = NULL, bool quiet = false) = 0;
+	virtual int              IdeConsoleExecuteWithInput(const char *cmdline, Stream *out, const char *envptr, bool quiet) = 0;
 	virtual int              IdeConsoleExecute(One<SlaveProcess> process, const char *cmdline, Stream *out = NULL, bool quiet = false) = 0;
 	virtual int              IdeConsoleAllocSlot() = 0;
 	virtual bool             IdeConsoleRun(const char *cmdline, Stream *out = NULL, const char *envptr = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1) = 0;
@@ -76,6 +77,7 @@ const Workspace& GetIdeWorkspace();
 bool             IdeIsBuilding();
 String           IdeGetOneFile();
 int              IdeConsoleExecute(const char *cmdline, Stream *out = NULL, const char *envptr = NULL, bool quiet = false);
+int              IdeConsoleExecuteWithInput(const char *cmdline, Stream *out, const char *envptr, bool quiet);
 int              IdeConsoleExecute(One<SlaveProcess> process, const char *cmdline, Stream *out = NULL, bool quiet = false);
 int              IdeConsoleAllocSlot();
 bool             IdeConsoleRun(const char *cmdline, Stream *out = NULL, const char *envptr = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1);
@@ -335,6 +337,7 @@ struct Host {
 	virtual void               SaveFile(const String& path, const String& data) = 0;
 	virtual String             LoadFile(const String& path) = 0;
 	virtual int                Execute(const char *cmdline) = 0;
+	virtual int                ExecuteWithInput(const char *cmdline) = 0;
 	virtual int                Execute(const char *cmdline, Stream& out) = 0;
 	virtual int                AllocSlot() = 0;
 	virtual bool               Run(const char *cmdline, int slot, String key, int blitz_count) = 0;

@@ -102,6 +102,16 @@ int LocalHost::Execute(const char *cmdline)
 	return q;
 }
 
+int LocalHost::ExecuteWithInput(const char *cmdline)
+{
+	if(cmdout)
+		*cmdout << cmdline << '\n';
+	PutVerbose(cmdline);
+	int q = IdeConsoleExecuteWithInput(FindCommand(exedirs, cmdline), NULL, environment, false);
+	PutVerbose(Format("Exitcode: %d", q));
+	return q;
+}
+
 int LocalHost::Execute(const char *cmdline, Stream& out)
 {
 	PutVerbose(cmdline);
@@ -460,6 +470,13 @@ String  RemoteHost::LoadFile(const String& path)
 }
 
 int RemoteHost::Execute(const char *cmdline)
+{
+	int q = IdeConsoleExecute(StartProcess(cmdline), cmdline);
+	PutVerbose(Format("Exitcode: %d", q));
+	return q;
+}
+
+int RemoteHost::ExecuteWithInput(const char *cmdline)
 {
 	int q = IdeConsoleExecute(StartProcess(cmdline), cmdline);
 	PutVerbose(Format("Exitcode: %d", q));

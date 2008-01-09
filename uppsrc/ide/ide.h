@@ -43,7 +43,7 @@ public:
 	void               Attach(Ctrl& parent) { parent.AddFrame(button); }
 	void               Title(String t)      { title = t; }
 	String             GetTitle() const     { return title; }
-	
+
 private:
 	void               OnAction();
 
@@ -98,6 +98,7 @@ protected:
 	String spooled_output;
 	int console_lock;
 	bool wrap_text;
+	FrameBottom<EditString> input;
 
 	void CheckEndGroup();
 	void FlushConsole();
@@ -133,6 +134,8 @@ public:
 
 	void SetSlots(int s);
 
+	void Input(bool b);
+
 	Console();
 };
 
@@ -155,6 +158,7 @@ struct LocalHost : Host {
 	virtual void               SaveFile(const String& path, const String& data);
 	virtual String             LoadFile(const String& path);
 	virtual int                Execute(const char *cmdline);
+	virtual int                ExecuteWithInput(const char *cmdline);
 	virtual int                Execute(const char *cmdline, Stream& out);
 	virtual int                AllocSlot();
 	virtual bool               Run(const char *cmdline, int slot, String key, int blitz_count);
@@ -189,6 +193,7 @@ struct RemoteHost : Host {
 	virtual void               SaveFile(const String& path, const String& data);
 	virtual String             LoadFile(const String& path);
 	virtual int                Execute(const char *cmdline);
+	virtual int                ExecuteWithInput(const char *cmdline);
 	virtual int                Execute(const char *cmdline, Stream& out);
 	virtual int                AllocSlot();
 	virtual bool               Run(const char *cmdline, int slot, String key, int blitz_count);
@@ -418,6 +423,7 @@ public:
 	virtual   String           IdeGetOneFile() const;
 	virtual   int              IdeConsoleExecute(const char *cmdline, Stream *out = NULL, const char *envptr = NULL, bool quiet = false);
 	virtual   int              IdeConsoleExecute(One<SlaveProcess> process, const char *cmdline, Stream *out = NULL, bool quiet = false);
+	virtual   int              IdeConsoleExecuteWithInput(const char *cmdline, Stream *out, const char *envptr, bool quiet);
 	virtual   int              IdeConsoleAllocSlot();
 	virtual   bool             IdeConsoleRun(const char *cmdline, Stream *out = NULL, const char *envptr = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1);
 	virtual   bool             IdeConsoleRun(One<SlaveProcess> process, const char *cmdline, Stream *out = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1);
@@ -799,7 +805,8 @@ public:
 		void  ConditionalBreak();
 		void  DebugClearBreakpoints();
 		void  OnBreakpoint(int i);
-		
+
+		String GetLogPath();
 		void  OpenLog();
 
 	void      Setup(Bar& menu);

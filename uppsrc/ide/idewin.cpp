@@ -181,6 +181,15 @@ int Ide::IdeConsoleExecute(const char *cmdline, Stream *out, const char *envptr,
 	return console.Execute(cmdline, out, envptr, quiet);
 }
 
+int Ide::IdeConsoleExecuteWithInput(const char *cmdline, Stream *out, const char *envptr, bool quiet)
+{
+	ShowConsole();
+	console.Input(true);
+	int r = console.Execute(cmdline, out, envptr, quiet);
+	console.Input(false);
+	return r;
+}
+
 int Ide::IdeConsoleExecute(One<SlaveProcess> process, const char *cmdline, Stream *out, bool quiet)
 {
 	return console.Execute(process, cmdline, out, quiet);

@@ -521,6 +521,7 @@ public:
 	void Column(SqlId column)                        { Column(column, column); }
 	SqlInsert& operator()(SqlId column, SqlVal val)  { Column(column, val); return *this; }
 	SqlInsert& operator()(SqlId column)              { Column(column, column); return *this; }
+	SqlInsert& operator()(Fields f);
 	SqlInsert& From(SqlId from);
 	SqlInsert& From(SqlSet _from)                    { from = _from; return *this; }
 	SqlInsert& From(SqlVal from)                     { return From(SqlSet(from)); }
@@ -557,6 +558,7 @@ class SqlUpdate {
 public:
 	void Column(SqlId column, SqlVal val);
 	SqlUpdate& operator()(SqlId column, SqlVal val)  { Column(column, val); return *this; }
+	SqlUpdate& operator()(Fields f);
 	SqlUpdate& Where(SqlBool w)                      { where = w; return *this; }
 
 	operator SqlStatement() const;

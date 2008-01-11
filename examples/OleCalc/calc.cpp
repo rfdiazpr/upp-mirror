@@ -13,6 +13,8 @@ class Calculator : public WithCalculatorLayout<OcxRunnableControl>, public Dispa
 	void Eval();
 
 public:
+	virtual void Paint(UPP::Draw& w);
+
 	STDMETHOD(get_Input)(BSTR *result);
 	STDMETHOD(put_Input)(BSTR input);
 	STDMETHOD(Calculate)();
@@ -23,6 +25,11 @@ public:
 };
 
 OCX_OBJECT(Calculator)
+
+void Calculator::Paint(UPP::Draw& w)
+{
+	w.DrawRect(GetSize(), SColorFace());
+}
 
 Calculator::Calculator()
 {
@@ -64,6 +71,8 @@ HRESULT Calculator::get_Output(BSTR *result)
 
 OCX_APP_MAIN
 {
+	InstallCrashDump(); _DBG_
+
 	SetLanguage(LNG_CZECH);
 	SetDefaultCharset(CHARSET_WIN1250);
 }

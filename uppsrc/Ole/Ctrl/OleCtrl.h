@@ -12,7 +12,7 @@ NAMESPACE_UPP
 #define LOG_SYSOCXS 1 // 1 = log system calls (DllCanUnloadNow, DllGetClassObject)
 #define LOG_METHODS 1 // 1 = log method calls
 #define LOG_CREATES 1 // 1 = log instance creations & destructions
-#define LOG_QUERIES 1 // 1 = log failed QueryInterface's
+#define LOG_QUERIES 2 // 1 = log failed QueryInterface's
 //                    // 2 = log all QueryInterface's
 //                    // 3 = dump interface map whenever Query fails
 #define LOG_PERSIST 1 // 1 = log saves / loads
@@ -168,6 +168,7 @@ PARENT_INTERFACE(IOleInPlaceActiveObject, IOleWindow)
 PARENT_INTERFACE(IPersistStorage, IPersist)
 PARENT_INTERFACE(IPersistStream, IPersist)
 PARENT_INTERFACE(IPersistFile, IPersist)
+PARENT_INTERFACE(IClassFactory2, IClassFactory)
 
 class OcxObject
 {
@@ -359,7 +360,7 @@ void OcxObjectWrapper<T>::Destroy()
 	delete this;
 }
 
-class OcxTypeInfo : public Interface<IClassFactory>
+class OcxTypeInfo : public Interface<IClassFactory2>
 {
 	friend class OcxTypeLib;
 
@@ -371,7 +372,7 @@ public:
 		bool is_control = false);
 
 	bool            IsControl() const       { return is_control; }
-	bool            CanUnload() const       { return object_count == 0 && refcount <= 1 && lock_count <= 0; }
+	bool            CanUnload() const;
 
 	const Guid&     GetCoClassGUID() const  { return coclass_guid; }
 //	const Guid&     GetDispatchGUID() const { return dispatch_guid; }
@@ -398,6 +399,16 @@ public:
 
 	STDMETHOD(CreateInstance)(IUnknown *outer, REFIID iid, void **object);
 	STDMETHOD(LockServer)(BOOL lock);
+
+	STDMETHOD(GetLicInfo)(/* [out] */ LICINFO *pLicInfo);
+	STDMETHOD(RequestLicKey)(/* [in] */ DWORD dwReserved, /* [out] */ BSTR *pBstrKey);
+
+	STDMETHOD(CreateInstanceLic)(
+			/* [in] */ IUnknown *pUnkOuter,
+			/* [in] */ IUnknown *pUnkReserved,
+			/* [in] */ REFIID riid,
+			/* [in] */ BSTR bstrKey,
+			/* [iid_is][out] */ PVOID *ppvObj);
 
 public:
 	long            object_count;  // managed object count

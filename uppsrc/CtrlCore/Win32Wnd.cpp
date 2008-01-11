@@ -11,7 +11,7 @@ NAMESPACE_UPP
 #define LOGMESSAGES 0
 #endif
 
-#define ELOG(x)  // RLOG(GetSysTime() << ": " << x)
+#define ELOG(x)  RLOG(GetSysTime() << ": " << x)
 
 template<>
 unsigned GetHashValue(const HWND& h)

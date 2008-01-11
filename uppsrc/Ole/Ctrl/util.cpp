@@ -207,13 +207,24 @@ OcxTypeInfo::OcxTypeInfo(const GUID& coclass_guid, /*const GUID& dispatch_guid,*
 	OcxTypeLib::Get().Add(*this);
 }
 
+bool OcxTypeInfo::CanUnload() const
+{
+	RLOG("OcxTypeInfo::CanUnload(" << name << ", " << Guid(coclass_guid) << ")");
+	RDUMP(object_count);
+	RDUMP(refcount);
+	RDUMP(lock_count);
+	return object_count == 0 && refcount <= 1 && lock_count <= 0;
+}
+
 int OcxTypeInfo::IncRef()
 {
+	RLOG("OcxTypeInfo::IncRef(" << name << " -> " << refcount << ")");
 	return InterlockedIncrement(&refcount);
 }
 
 int OcxTypeInfo::DecRef()
 {
+	RLOG("OcxTypeInfo::DecRef(" << name << " -> " << refcount << ")");
 	int result = InterlockedDecrement(&refcount);
 	VERIFY(result > 0); // if this throws, the factory has been over-released
 	return result;
@@ -249,6 +260,7 @@ void DoLateExit()
 
 HRESULT OcxTypeInfo::CreateInstance(IUnknown *outer, REFIID iid, void **object)
 {
+	RLOG("OcxTypeInfo::CreateInstance(" << name << ", iid = " << Guid(iid) << ")");
 	try {
 		DoLateInit();
 		IRef<IUnknown> unk = new_fn(*this);
@@ -267,11 +279,41 @@ HRESULT OcxTypeInfo::CreateInstance(IUnknown *outer, REFIID iid, void **object)
 
 HRESULT OcxTypeInfo::LockServer(BOOL lock)
 {
+	RLOG("OcxTypeInfo::LockServer(" << name << ", " << lock << ")");
 	if(lock)
 		AtomicInc(lock_count);
 	else
 		VERIFY(AtomicDec(lock_count) >= 0); // over-unlock check
 	return S_OK;
+}
+
+HRESULT OcxTypeInfo::GetLicInfo(/* [out] */ LICINFO *pLicInfo)
+{
+	RLOG("OcxTypeInfo::GetLicInfo(" << name << ")");
+	if(!pLicInfo)
+		return E_INVALIDARG;
+	pLicInfo->fLicVerified = TRUE;
+	pLicInfo->fRuntimeKeyAvail = 0;
+	return S_OK;
+}
+
+HRESULT OcxTypeInfo::RequestLicKey(/* [in] */ DWORD dwReserved, /* [out] */ BSTR *pBstrKey)
+{
+	RLOG("OcxTypeInfo::RequestLicKey(" << name << ")");
+	if(!pBstrKey) return E_INVALIDARG;
+	*pBstrKey = 0;
+	return S_OK;
+}
+
+HRESULT OcxTypeInfo::CreateInstanceLic(
+	/* [in] */ IUnknown *pUnkOuter,
+	/* [in] */ IUnknown *pUnkReserved,
+	/* [in] */ REFIID riid,
+	/* [in] */ BSTR bstrKey,
+	/* [iid_is][out] */ PVOID *ppvObj)
+{
+	RLOG("OcxTypeInfo::CreateInstanceLic(" << name << ")");
+	return CreateInstance(pUnkOuter, riid, ppvObj);
 }
 
 void OcxTypeInfo::GetDispatchTypeInfo(IRef<ITypeInfo>& dest, Guid dispatch_iid)

@@ -271,7 +271,7 @@ Callback callback3(R (*fn)(A, B, C), T1 arg1, T2 arg2, T3 arg3) {
 template <class A, class B, class C, class T1, class T2, class T3>
 Callback callback3(Callback3<A, B, C> cb, T1 arg1, T2 arg2, T3 arg3) {
 	return Callback(
-		new CallbackActionCallArg3<Callback3<A, B,C>, T1, T2, T3>(cb, arg1, arg2, arg3));
+		new CallbackActionCallArg3<Callback3<A, B, C>, T1, T2, T3>(cb, arg1, arg2, arg3));
 }
 
 template <class OBJECT_, class METHOD_, class T1, class T2, class T3, class T4>

@@ -2,6 +2,14 @@
 
 NAMESPACE_UPP
 
+CH_VALUE(DropEdge, ChBorder(BlackBorder()));
+
+CtrlFrame& DropFrame()
+{
+	static LookFrame m(DropEdge);
+	return m;
+}
+
 void PopUpTable::CancelMode() {
 	if(open) {
 		DoClose();
@@ -118,7 +126,7 @@ void PopUpTable::Normal()
 }
 
 PopUpTable::PopUpTable() {
-	SetFrame(BlackFrame());
+	SetFrame(DropFrame());
 	droplines = 16;
 	open = false;
 }

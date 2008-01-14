@@ -107,9 +107,11 @@ struct ChImage : ChStyle<ChImage> { Image value; };
 void ChPaint(Draw& w, const Rect& r, const Value& element);
 void ChPaint(Draw& w, int x, int y, int cx, int cy, const Value& element);
 
-Value ChLookWith(const Value& look, const Image& img);
-Value ChLookWith(const Value& look, const Image& img, Color color);
-Value ChLookWith(const Value& look, const Image& img, Color (*color)(int i), int i);
+Value ChLookWith(const Value& look, const Image& img, Point offset = Point(0, 0));
+Value ChLookWith(const Value& look, const Image& img, Color color, Point offset = Point(0, 0));
+Value ChLookWith(const Value& look, const Image& img, Color (*color)(int i), int i, Point offset = Point(0, 0));
 
 //private:
 void ChRegisterStyle__(byte& state, byte& registered, void (*init)());
+
+Value ChBorder(const ColorF *colors_ltrd);

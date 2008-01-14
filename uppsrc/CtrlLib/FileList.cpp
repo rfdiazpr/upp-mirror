@@ -103,7 +103,7 @@ void FileList::Paint(Draw& w, const Rect& r, const Value& q,
 		             Color ink, Color paper, dword style) const
 {
 	const File& m = ValueTo<File>(q);
-	bool dark = Grayscale(paper) < 120;
+	bool dark = Grayscale(paper) < 150;
 	w.DrawRect(r, paper);
 	int x = r.left + 2;
 	w.DrawImage(x, r.top + (r.Height() - m.icon.GetSize().cy) / 2, m.icon);

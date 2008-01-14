@@ -38,6 +38,7 @@ public:
 		bool  usetrivial;
 		Rect  margin;
 		int   overpaint;
+		int   loff, roff;
 	};
 
 	class SubButton {

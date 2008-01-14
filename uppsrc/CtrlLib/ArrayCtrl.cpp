@@ -551,7 +551,7 @@ void ArrayCtrl::SetLineCy(int i, int cy)
 	}
 	else {
 		while(ln.GetCount() <= i)
-			ln.Add().cy = linecy;
+			ln.Add().cy = Null;
 		ln[i].cy = cy;
 		if(q > 0)
 			Reline(q - 1, ln[q - 1].y);

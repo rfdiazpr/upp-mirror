@@ -72,39 +72,54 @@ struct sChLookWith {
 	Color (*colorfn)(int i);
 	int   ii;
 	Color color;
+	Point offset;
 };
 
-Value ChLookWith(const Value& look, const Image& img)
+Value ChLookWith(const Value& look, const Image& img, Point offset)
 {
 	sChLookWith x;
 	x.look = look;
 	x.img = img;
 	x.colorfn = NULL;
 	x.color = Null;
+	x.offset = offset;
 	return RawToValue(x);
 }
 
-Value ChLookWith(const Value& look, const Image& img, Color color)
+Value ChLookWith(const Value& look, const Image& img, Color color, Point offset)
 {
 	sChLookWith x;
 	x.look = look;
 	x.img = img;
 	x.colorfn = NULL;
 	x.color = color;
+	x.offset = offset;
 	return RawToValue(x);
 }
 
-Value ChLookWith(const Value& look, const Image& img, Color (*color)(int i), int i)
+Value ChLookWith(const Value& look, const Image& img, Color (*color)(int i), int i, Point offset)
 {
 	sChLookWith x;
 	x.look = look;
 	x.img = img;
 	x.colorfn = color;
 	x.ii = i;
+	x.offset = offset;
 	return RawToValue(x);
 }
 
 Value sChOp(Draw& w, const Rect& r, const Value& v, int op);
+
+struct sChBorder {
+	const ColorF *border;
+};
+
+Value ChBorder(const ColorF *colors)
+{
+	sChBorder b;
+	b.border = colors;
+	return RawToValue(b);
+}
 
 Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 {
@@ -113,7 +128,7 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 		if(op == LOOK_PAINT) {
 			LOGPNG(AsString(x.img.GetSerialId()), x.img);
 			ChPaint(w, r, x.look);
-			Point p = r.CenterPos(x.img.GetSize());
+			Point p = r.CenterPos(x.img.GetSize()) + x.offset;
 			if(x.colorfn)
 				w.DrawImage(p.x, p.y, x.img, (*x.colorfn)(x.ii));
 			else
@@ -124,6 +139,21 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 			return 1;
 		}
 		return sChOp(w, r, x.look, op);
+	}
+	if(IsType<sChBorder>(v)) {
+		sChBorder b = ValueTo<sChBorder>(v);
+		int n = (int)(intptr_t)*b.border;
+		switch(op) {
+		case LOOK_PAINTEDGE:
+		case LOOK_PAINT:
+			DrawBorder(w, r, b.border);
+			return 0;
+		case LOOK_MARGINS:
+			return Rect(n, n, n, n);
+		case LOOK_ISBODYOPAQUE:
+		case LOOK_ISOPAQUE:
+			return false;
+		}
 	}
 	if(IsType<Color>(v)) {
 		Color c = v;

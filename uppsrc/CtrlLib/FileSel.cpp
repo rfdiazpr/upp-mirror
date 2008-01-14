@@ -1261,6 +1261,7 @@ FileSel::FileSel() {
 
 	dir <<= THISBACK(Choice);
 	dir.DisplayAll();
+	dir.SetDropLines(24);
 
 	activetype = 0;
 	readonly.Hide();

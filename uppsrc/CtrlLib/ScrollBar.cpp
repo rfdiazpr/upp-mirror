@@ -24,9 +24,14 @@ CH_STYLE(ScrollBar, Style, StyleDefault)
 	CtrlsImageLook(hthumb, CtrlsImg::I_SBHT, CtrlsImg::SBHI());
 	CtrlsImageLook(hlower, CtrlsImg::I_SBHL);
 	Sb(up, CtrlsImg::UA());
+	Sb(up2, CtrlsImg::UA());
 	Sb(down, CtrlsImg::DA());
+	Sb(down2, CtrlsImg::DA());
 	Sb(left, CtrlsImg::LA());
+	Sb(left2, CtrlsImg::LA());
 	Sb(right, CtrlsImg::RA());
+	Sb(right2, CtrlsImg::RA());
+	isup2 = isdown2 = isleft2 = isright2 = false;
 }
 
 ScrollBar::ScrollBar() {
@@ -42,14 +47,22 @@ ScrollBar::ScrollBar() {
 	thumbpos = 0;
 	push = light = -1;
 	Add(prev);
+	Add(prev2);
 	Add(next);
+	Add(next2);
 	NoWantFocus();
 	prev.ScrollStyle().NoWantFocus().Transparent();
-	next.ScrollStyle().NoWantFocus().Transparent();
 	prev.WhenPush = prev.WhenRepeat = callback(this, &ScrollBar::PrevLine);
 	prev.WhenPush << Proxy(WhenLeftClick);
+	prev2.ScrollStyle().NoWantFocus().Transparent();
+	prev2.WhenRepeat = prev.WhenRepeat;
+	prev2.WhenPush = prev.WhenPush;
+	next.ScrollStyle().NoWantFocus().Transparent();
 	next.WhenPush = next.WhenRepeat = callback(this, &ScrollBar::NextLine);
 	next.WhenPush << Proxy(WhenLeftClick);
+	next2.ScrollStyle().NoWantFocus().Transparent();
+	next2.WhenRepeat = next.WhenRepeat;
+	next2.WhenPush = next.WhenPush;
 	SetStyle(StyleDefault());
 	BackPaint();
 }
@@ -59,14 +72,24 @@ ScrollBar::~ScrollBar() {}
 Rect ScrollBar::Slider() const
 {
 	Size sz = GetSize();
+	Rect r;
 	if(IsHorz()) {
-		int cc = sz.cx > 3 * style->arrowsize ? style->arrowsize : 0;
-		return RectC(cc, 0, sz.cx - 2 * cc, sz.cy);
+		int cc = sz.cx > (3 + style->isleft2 + style->isright2) * style->arrowsize ? style->arrowsize : 0;
+		r = RectC(cc, 0, sz.cx - 2 * cc, sz.cy);
+		if(style->isleft2)
+			r.right -= cc;
+		if(style->isright2)
+			r.left += cc;
 	}
 	else {
-		int cc = sz.cy > 3 * style->arrowsize ? style->arrowsize : 0;
-		return RectC(0, cc, sz.cx, sz.cy - 2 * cc);
+		int cc = sz.cy > (3 + style->isup2 + style->isdown2) * style->arrowsize ? style->arrowsize : 0;
+		r = RectC(0, cc, sz.cx, sz.cy - 2 * cc);
+		if(style->isup2)
+			r.bottom -= cc;
+		if(style->isdown2)
+			r.top += cc;
 	}
+	return r;
 }
 
 int& ScrollBar::HV(int& h, int& v) const
@@ -306,6 +329,8 @@ void ScrollBar::Set(int _pagepos, int _pagesize, int _totalsize) {
 			Refresh();
 		prev.Enable(a);
 		next.Enable(a);
+		prev2.Enable(a);
+		next2.Enable(a);
 	}
 	Set(_pagepos);
 }
@@ -438,16 +463,28 @@ void ScrollBar::Layout() {
 	if(IsHorz()) {
 		prev.SetStyle(style->left);
 		next.SetStyle(style->right);
-		int cc = sz.cx > 3 * style->arrowsize ? style->arrowsize : 0;
+		prev2.SetStyle(style->left2);
+		next2.SetStyle(style->right2);
+		int cc = sz.cx > (3 + style->isleft2 + style->isright2) * style->arrowsize ? style->arrowsize : 0;
 		prev.SetRect(0, 0, cc, sz.cy);
 		next.SetRect(sz.cx - cc, 0, cc, sz.cy);
+		prev2.Show(style->isleft2);
+		prev2.SetRect(sz.cx - 2 * cc, 0, cc, sz.cy);
+		next2.Show(style->isright2);
+		next2.SetRect(cc, 0, cc, sz.cy);
 	}
 	else {
 		prev.SetStyle(style->up);
 		next.SetStyle(style->down);
-		int cc = sz.cy > 3 * style->arrowsize ? style->arrowsize : 0;
+		prev2.SetStyle(style->up2);
+		next2.SetStyle(style->down2);
+		int cc = sz.cy > (3 + style->isup2 + style->isdown2) * style->arrowsize ? style->arrowsize : 0;
 		prev.SetRect(0, 0, sz.cx, cc);
 		next.SetRect(0, sz.cy - cc, sz.cx, cc);
+		prev2.Show(style->isup2);
+		prev2.SetRect(0, sz.cy - 2 * cc, sz.cx, cc);
+		next2.Show(style->isdown2);
+		next2.SetRect(0, cc, sz.cx, cc);
 	}
 	Set(pagepos);
 	Refresh();
@@ -513,7 +550,9 @@ ScrollBar& ScrollBar::AutoDisable(bool b) {
 		if(!prev.IsEnabled())
 			Refresh();
 		prev.Enable();
+		prev2.Enable();
 		next.Enable();
+		next2.Enable();
 	}
 	return *this;
 }

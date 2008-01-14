@@ -54,6 +54,7 @@ class XmlParser {
 	String                    text;
 	bool                      empty_tag;
 	bool                      npreserve;
+	bool                      relaxed;
 
 	int                       line;
 
@@ -102,6 +103,8 @@ public:
 
 	int    GetLine() const                                    { return line; }
 	int    GetColumn() const;
+
+	void   Relaxed(bool b)                                    { relaxed = b; }
 
 	XmlParser(const char *s);
 };

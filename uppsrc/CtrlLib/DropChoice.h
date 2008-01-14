@@ -1,3 +1,5 @@
+void DropEdge_Write(Value);
+
 class PopUpTable : public ArrayCtrl {
 public:
 	virtual void Deactivate();

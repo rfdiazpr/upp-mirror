@@ -21,7 +21,7 @@ CH_STYLE(MultiButton, Style, StyleDefault)
 	trivialsep = false;
 	margin = Rect(2, 2, 2, 2);
 	usetrivial = false;
-	overpaint = 0;
+	overpaint = loff = roff = 0;
 }
 
 CH_STYLE(MultiButton, Style, StyleFrame)
@@ -350,6 +350,11 @@ void MultiButton::Paint(Draw& w)
 			Point p = (st == CTRL_PRESSED) * style->pressoffset;
 			p.x += x + (cx - isz.cx) / 2;
 			p.y += (sz.cy - isz.cy) / 2;
+			if(b.left) {
+				if(!left) p.x += style->loff;
+			}
+			else
+				if(!right) p.x += style->roff;
 			if(b.monoimg || IsNull(b.img))
 				w.DrawImage(p.x, p.y, m, style->monocolor[st]);
 			else

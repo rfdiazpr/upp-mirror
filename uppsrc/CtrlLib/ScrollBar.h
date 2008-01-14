@@ -21,6 +21,8 @@ public:
 		Value vupper[4], vthumb[4], vlower[4];
 		Value hupper[4], hthumb[4], hlower[4];
 		Button::Style up, down, left, right;
+		Button::Style up2, down2, left2, right2;
+		bool          isup2, isdown2, isleft2, isright2;
 	};
 
 private:
@@ -33,7 +35,7 @@ private:
 	int8    push;
 	int8    light;
 
-	Button  prev, next;
+	Button  prev, prev2, next, next2;
 	int     pagepos;
 	int     pagesize;
 	int     totalsize;

@@ -145,24 +145,25 @@ void XmlParser::Ent(StringBuffer& out)
 		out.Cat('>');
 	}
 	else
-	if(t[0] == 'a') {
+	if(t[0] == 'a')
 		if(t[1] == 'm' && t[2] == 'p' && t[3] == ';') {
 			t += 4;
 			out.Cat('&');
 		}
-		else if(t[1] == 'p' && t[2] == 'o' && t[3] == 's' && t[4] == ';') {
+		else
+		if(t[1] == 'p' && t[2] == 'o' && t[3] == 's' && t[4] == ';') {
 			t += 5;
 			out.Cat('\'');
 		}
-	}
+		else
+			out.Cat('&');
 	else
 	if(t[0] == 'q' && t[1] == 'u' && t[2] == 'o' && t[3] == 't' && t[4] == ';') {
 		t += 5;
 		out.Cat('\"');
 	}
-	else {
+	else
 		out.Cat('&');
-	}
 	term = t;
 }
 
@@ -218,7 +219,7 @@ void XmlParser::Next()
 			}
 			bool intdt = false;
 			for(;;) {
-				if (*term == '[') 
+				if (*term == '[')
 					intdt = true;
 				if(*term == '>' && intdt == false) {
 					term++;
@@ -416,9 +417,9 @@ bool  XmlParser::End()
 		LLOG("EndTag " << text);
 		if(stack.IsEmpty())
 			throw XmlError(NFormat("Unexpected end-tag: </%s>", text));
-		if(stack.Top().tag != text) {
-			RLOG("Tag/end-tag mismatch: <" << stack.Top().tag << "> </" << text << ">");
-//			throw XmlError(NFormat("Tag/end-tag mismatch: <%s> </%s>", stack.Top().tag, text));
+		if(stack.Top().tag != text && !relaxed) {
+			LLOG("Tag/end-tag mismatch: <" << stack.Top().tag << "> </" << text << ">");
+			throw XmlError(NFormat("Tag/end-tag mismatch: <%s> </%s>", stack.Top().tag, text));
 		}
 		stack.Drop();
 		npreserve = (!stack.IsEmpty() && stack.Top().preserve_blanks);
@@ -573,6 +574,7 @@ int XmlParser::GetColumn() const
 
 XmlParser::XmlParser(const char *s)
 {
+	relaxed = false;
 	empty_tag = false;
 	npreserve = false;
 	begin = term = s;

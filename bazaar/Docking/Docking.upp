@@ -1,0 +1,24 @@
+uses
+	CtrlLib;
+
+file
+	Docking.h,
+	DockableCtrl.h,
+	DockableCtrl.cpp,
+	DockCont.h,
+	DockCont.cpp,
+	Window.iml,
+	TitleFrame.h,
+	TitleFrame.cpp,
+	DockBase.h,
+	DockBase.cpp,
+	WindowFrame.h,
+	SplitterTree.h,
+	SplitterTree.cpp,
+	TabBar.h,
+	TabBar.cpp,
+	TabBar.iml;
+
+mainconfig
+	"" = "GUI";
+

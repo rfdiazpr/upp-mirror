@@ -1,0 +1,28 @@
+uses
+	CtrlLib;
+
+file
+	Docking.h,
+	Docking readonly separator,
+	DockWindow.cpp,
+	DockableCtrl.h,
+	DockableCtrl.cpp,
+	DockCont.h,
+	DockCont.cpp,
+	DockFrame.h,
+	DockFrame.cpp,
+	"X11 Window" readonly separator,
+	WindowFrame.h,
+	TitleFrame.cpp,
+	Window.iml,
+	SplitterTree readonly separator,
+	SplitterTree.h,
+	SplitterTree.cpp,
+	TabBar readonly separator,
+	TabBar.h,
+	TabBar.cpp,
+	TabBar.iml;
+
+mainconfig
+	"" = "GUI";
+

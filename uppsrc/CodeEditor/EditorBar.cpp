@@ -263,7 +263,7 @@ void EditorBar::SetLineInfo(const LineInfo& lf, int total) {
 			li.Add().lineno = i;
 	}
 	else {
-		for(int i = 0; i < lf.GetCount() && li.GetCount() < total; i++) {
+		for(int i = 0; i < lf.GetCount() && (total < 0 || li.GetCount() < total); i++) {
 			const LineInfoRecord& r = lf[i];
 			int l = r.lineno;
 			for(int j = r.count; j-- && li.GetCount() < total;) {
@@ -424,6 +424,17 @@ EditorBar::EditorBar() {
 
 EditorBar::~EditorBar()
 {
+}
+
+void ClearErrors(LineInfo& li)
+{
+	for(int i = 0; i < li.GetCount(); i++)
+		li[i].error = 0;
+}
+
+void SetError(LineInfo& li, int line, int err)
+{
+	li.At(line).error = err;
 }
 
 END_UPP_NAMESPACE

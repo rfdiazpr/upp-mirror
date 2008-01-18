@@ -8,6 +8,8 @@
 #undef int32
 #undef uint32
 
+#define LLOG(x)
+
 
 NAMESPACE_UPP
 
@@ -29,7 +31,7 @@ void dbgAddAlloc(tsize_t s)
 		size_alloc_calls.Add(1);
 		size_free_calls.Add(0);
 	}
-	RLOG("dbgAddAlloc(" << (int)s << "): alloc = " << total_allocated << ", free = " << total_freed << ", diff = " << (total_allocated - total_freed));
+	LLOG("dbgAddAlloc(" << (int)s << "): alloc = " << total_allocated << ", free = " << total_freed << ", diff = " << (total_allocated - total_freed));
 }
 
 void dbgAddFree(tsize_t s)
@@ -44,7 +46,7 @@ void dbgAddFree(tsize_t s)
 		size_alloc_calls.Add(0);
 		size_free_calls.Add(1);
 	}
-	RLOG("dbgAddFree(" << (int)s << "): alloc = " << total_allocated << ", free = " << total_freed << ", diff = " << (total_allocated - total_freed));
+	LLOG("dbgAddFree(" << (int)s << "): alloc = " << total_allocated << ", free = " << total_freed << ", diff = " << (total_allocated - total_freed));
 }
 
 void TiffAllocStat()
@@ -566,7 +568,7 @@ byte *TIFRaster::Data::MapDown(int x, int y, int count, bool read)
 
 void TIFRaster::Data::Flush()
 {
-	RLOG("Flush, cache size = " << cache_size);
+	LLOG("Flush, cache size = " << cache_size);
 	for(int y = 0; y < size.cy; y++)
 		Flush(y);
 	ASSERT(cache_size == 0);
@@ -592,7 +594,7 @@ void TIFRaster::Data::Warning(const char *fn, const char *fmt, va_list ap)
 		int addr = stou(fn + 5);
 		if(addr != -1 && addr != 0) {
 			TIFRaster::Data& wrapper = *reinterpret_cast<TIFRaster::Data *>(addr);
-			RLOG("TIF warning: " << VFormat(fmt, ap));
+			LLOG("TIF warning: " << VFormat(fmt, ap));
 //			RLOG("TiffWrapper::Warning: " << wrapper.errors);
 		}
 	}
@@ -604,7 +606,7 @@ void TIFRaster::Data::Error(const char *fn, const char *fmt, va_list ap)
 		int addr = stou(fn + 5);
 		if(addr != -1 && addr != 0) {
 			Data& wrapper = *reinterpret_cast<Data *>(addr);
-			RLOG("TIF error: " << VFormat(fmt, ap));
+			LLOG("TIF error: " << VFormat(fmt, ap));
 //			RLOG("TiffWrapper::Error: " << wrapper.errors);
 		}
 	}

@@ -42,17 +42,62 @@ Rect GetViewport(HDC hdc)
 	return Rect(pt, sz);
 }
 
-IUnknown *OcxObject::GetUnknown()
+OcxObject::OcxObject()
+: ocx_info(0)
 {
-	ASSERT(!interface_map.IsEmpty());
-	return (IUnknown *)interface_map[0];
+	inner_unknown.owner = this;
+	outer_unknown = NULL;
 }
 
-HRESULT OcxObject::RawQueryInterface(const GUID& iid, void **ppv)
+int OcxObject::ExternalAddRef()
 {
-	int i = 0;
+	if(outer_unknown) {
+		int res = outer_unknown->AddRef();
+#if LOG_ADDREFS
+		OCXLOG("OcxObject::ExternalAddRef -> outer(" << FormatIntHex(outer_unknown) << ") -> " << res);
+#endif
+		return res;
+	}
+	return InternalAddRef();
+}
 
-	if(interface_map.IsEmpty() || iid != IID_IUnknown && (i = interface_map.Find(iid)) < 0) {
+int OcxObject::ExternalRelease()
+{
+	if(outer_unknown) {
+		int res = outer_unknown->Release();
+#if LOG_ADDREFS
+		// note: this might have been destructed by this time
+		OCXLOG("OcxObject::ExternalRelease -> outer(" << FormatIntHex(outer_unknown) << ") -> " << res);
+#endif
+		return res;
+	}
+	return InternalRelease();
+}
+
+HRESULT OcxObject::ExternalQueryInterface(const GUID& iid, void **ppv)
+{
+	if(outer_unknown) {
+		HRESULT hr = outer_unknown->QueryInterface(iid, ppv);
+#if LOG_QUERIES >= 2
+		OCXLOG("OcxObject::ExternalQueryInterface(" << GetInterfaceName(iid) << ") -> outer(" << FormatIntHex(outer_unknown) << ") -> " << FormatIntHex(hr));
+#endif
+		return hr;
+	}
+	return InternalQueryInterface(iid, ppv);
+}
+
+HRESULT OcxObject::InternalQueryInterface(const GUID& iid, void **ppv)
+{
+#if LOG_QUERIES >= 2
+	OCXLOG("OcxObject::InternalQueryInterface -> " << GetInterfaceName(iid));
+#endif
+	int i;
+	IUnknown *punk;
+	if(iid == IID_IUnknown)
+		punk = static_cast<IUnknown *>(&inner_unknown);
+	else if((i = interface_map.Find(iid)) >= 0)
+		punk = interface_map[i];
+	else {
 		*ppv = 0;
 #if LOG_QUERIES >= 1
 		String name;
@@ -62,7 +107,7 @@ HRESULT OcxObject::RawQueryInterface(const GUID& iid, void **ppv)
 			name = "<unknown object>";
 #endif
 		LOGQUERY("\t\tcast ERROR: " << name << " -> "<< GetInterfaceName(iid) << ", " << Guid(iid));
-#if LOG_QUERIES >= 2
+#if LOG_QUERIES >= 3
 		OCXLOG("\tGUID = " << Format(iid));
 		for(int i = 0; i < interface_map.GetCount(); i++) {
 			const GUID& imid = interface_map.GetKey(i);
@@ -74,6 +119,8 @@ HRESULT OcxObject::RawQueryInterface(const GUID& iid, void **ppv)
 #endif
 		return E_NOINTERFACE;
 	}
+	punk->AddRef();
+	*ppv = punk;
 #if LOG_QUERIES >= 2
 	String name;
 	if(ocx_info)
@@ -82,8 +129,6 @@ HRESULT OcxObject::RawQueryInterface(const GUID& iid, void **ppv)
 		name = "<unknown object>";
 	OCXLOG("\t\tcast OK:    " << name << " -> " << GetInterfaceName(iid));
 #endif
-	*ppv = interface_map[i];
-	reinterpret_cast<IUnknown *>(*ppv)->AddRef();
 	return S_OK;
 }
 
@@ -218,16 +263,17 @@ bool OcxTypeInfo::CanUnload() const
 
 int OcxTypeInfo::IncRef()
 {
-	RLOG("OcxTypeInfo::IncRef(" << name << " -> " << refcount << ")");
-	return InterlockedIncrement(&refcount);
+	int res = InterlockedIncrement(&refcount);
+	RLOG("OcxTypeInfo::IncRef(" << name << " -> " << res << ")");
+	return res;
 }
 
 int OcxTypeInfo::DecRef()
 {
-	RLOG("OcxTypeInfo::DecRef(" << name << " -> " << refcount << ")");
-	int result = InterlockedDecrement(&refcount);
-	VERIFY(result > 0); // if this throws, the factory has been over-released
-	return result;
+	int res = InterlockedDecrement(&refcount);
+	RLOG("OcxTypeInfo::DecRef(" << name << " -> " << res << ")");
+	VERIFY(res > 0); // if this throws, the factory has been over-released
+	return res;
 }
 
 GLOBAL_VAR(InitProc, LateInitProc);
@@ -260,12 +306,17 @@ void DoLateExit()
 
 HRESULT OcxTypeInfo::CreateInstance(IUnknown *outer, REFIID iid, void **object)
 {
-	RLOG("OcxTypeInfo::CreateInstance(" << name << ", iid = " << Guid(iid) << ")");
+	RLOG("OcxTypeInfo::CreateInstance(" << name << ", iid = " << Guid(iid) << ", outer = " << FormatIntHex(outer) << ")");
+	if(outer && iid != IID_IUnknown)
+		return CLASS_E_NOAGGREGATION;
 	try {
 		DoLateInit();
-		IRef<IUnknown> unk = new_fn(*this);
+		OcxObject *ocxobj = new_fn(*this);
 		LOGCREATE("\tnew " << name << ": " << object_count << " instances in system");
-		HRESULT hr = unk->QueryInterface(iid, object);
+		if(outer)
+			ocxobj->outer_unknown = outer;
+		HRESULT hr = ocxobj->InternalQueryInterface(iid, object);
+		LOGCREATE("//OcxTypeInfo::CreateInstance -> " << FormatIntHex(hr));
 		return hr;
 	}
 	catch(Exc e) {
@@ -556,7 +607,9 @@ HRESULT OcxTypeLib::GetFactory(REFCLSID rclsid, REFIID iid, void **ppv)
 	if(f < 0)
 		return CLASS_E_CLASSNOTAVAILABLE;
 	OcxTypeInfo *entry = objects[f];
-	return entry->QueryInterface(iid, ppv);
+	HRESULT res = entry->QueryInterface(iid, ppv);
+	LOGSYSOCX("//OcxTypeLib::GetFactory -> " << FormatIntHex(res));
+	return res;
 }
 
 IRef<ITypeLib>& OcxTypeLib::GetTypeLib()

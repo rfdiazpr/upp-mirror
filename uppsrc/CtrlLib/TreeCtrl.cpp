@@ -426,7 +426,7 @@ void TreeCtrl::Dirty(int id)
 void TreeCtrl::Open(int id, bool open)
 {
 	Item& m = item[id];
-	if(m.isopen != open && (m.canopen || !open)) {
+	if(m.isopen != open && (m.canopen || !open || m.child.GetCount())) {
 		m.isopen = open;
 		int q = GetCursor();
 		while(q >= 0) {
@@ -696,7 +696,7 @@ void TreeCtrl::DoClick(Point p, dword flags, bool down)
 		return;
 	int i = FindLine(p.y + org.y);
 	const Line& l = line[i];
-	int x = levelcx + l.level * levelcx - org.x - (levelcx >> 1) /*- org.x*/;
+	int x = levelcx + l.level * levelcx - org.x - (levelcx >> 1);
 	if(p.x > x - 6 && p.x < x + 6) {
 		if(down)
 			Open(l.itemi, !IsOpen(l.itemi));
@@ -706,7 +706,7 @@ void TreeCtrl::DoClick(Point p, dword flags, bool down)
 			selclick = true;
 			return;
 		}
-		SetFocus();
+		SetWantFocus();
 		int q = cursor;
 		SetCursorLine(i, true, false, true);
 		if(multiselect) {

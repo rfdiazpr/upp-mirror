@@ -4,7 +4,7 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x) // RLOG(x)
+#define LLOG(x) // LLOG(x)
 
 //#define DLLFILENAME "ora803.dll"
 #define DLLFILENAME "oci.dll"
@@ -827,13 +827,13 @@ bool Oracle8::Login(const char *name, const char *pwd, const char *db, bool use_
 	Logoff();
 	ClearError();
 	user = ToUpper(String(name));
-	RLOG("Loading OCI8 library");
+	LLOG("Loading OCI8 library");
 	if(!oci8.Load()) {
 		SetError(t_("Error loading OCI8 Oracle connection dynamic library."),
 			t_("Connecting to Oracle database."), 0, NULL, Sql::CONNECTION_BROKEN);
 		return false;
 	}
-	RLOG("OCI8 loaded -> OCIInitialize, OCIEnvInit");
+	LLOG("OCI8 loaded -> OCIInitialize, OCIEnvInit");
 	int accessmode = (use_objects ? OCI_OBJECT : 0)
 #if defined(_MULTITHREADED) || defined(PLATFORM_POSIX)
 		| OCI_THREADED
@@ -871,13 +871,13 @@ bool Oracle8::Login(const char *name, const char *pwd, const char *db, bool use_
 		OCIInitError(*this, "OCI_HTYPE_SESSION");
 		return false;
 	}
-	RLOG("Attributes allocated -> OCIServerAttach");
+	LLOG("Attributes allocated -> OCIServerAttach");
 	if(oci8.OCIServerAttach(srvhp, errhp, (byte *)db, strlen(db), 0)) {
 		SetOciError(NFormat(t_("Connecting to server '%s'"), db), errhp);
 		Logoff();
 		return false;
 	}
-	RLOG("Server attached -> OCIAttrSet, OCISessionBegin");
+	LLOG("Server attached -> OCIAttrSet, OCISessionBegin");
 	in_server = true;
 	sword retcode;
 	if(oci8.OCIAttrSet(svchp, OCI_HTYPE_SVCCTX, srvhp, 0, OCI_ATTR_SERVER, errhp)
@@ -894,7 +894,7 @@ bool Oracle8::Login(const char *name, const char *pwd, const char *db, bool use_
 		int errcode;
 		*warn = OciError(oci8, errhp, &errcode);
 	}
-	RLOG("Session attached, user = " + GetUser());
+	LLOG("Session attached, user = " + GetUser());
 	in_session = true;
 	return true;
 }
@@ -909,13 +909,13 @@ void Oracle8::Logoff() {
 	if(in_session)
 	{
 		in_session = false;
-		RLOG("OCISessionEnd");
+		LLOG("OCISessionEnd");
 		oci8.OCISessionEnd(svchp, errhp, seshp, OCI_DEFAULT);
 	}
 	if(in_server)
 	{
 		in_server = false;
-		RLOG("OCIServerDetach");
+		LLOG("OCIServerDetach");
 		oci8.OCIServerDetach(srvhp, errhp, OCI_DEFAULT);
 	}
 	FreeOciHandle(seshp, OCI_HTYPE_SESSION);

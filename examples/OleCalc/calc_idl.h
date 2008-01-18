@@ -4,9 +4,9 @@
 
 
  /* File created by MIDL compiler version 6.00.0361 */
-/* at Thu Jan 03 20:47:32 2008
+/* at Tue Jan 15 23:06:30 2008
  */
-/* Compiler settings for e:\src\examples\OleCalc\calc.idl:
+/* Compiler settings for d:\examples\OleCalc\calc.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data
@@ -78,7 +78,7 @@ void __RPC_USER MIDL_user_free( void * );
 #define __ICalculator_INTERFACE_DEFINED__
 
 /* interface ICalculator */
-/* [unique][helpstring][dual][uuid][object] */
+/* [helpstring][dual][uuid][object] */
 
 
 EXTERN_C const IID IID_ICalculator;

@@ -237,7 +237,7 @@ void SIC_DumpLocals(EscEscape& e)
 {
 	LOG("--- DUMP of SIC local variables -------------------------");
 	for(int i = 0; i < e.esc.var.GetCount(); i++)
-		RLOG(e.esc.var.GetKey(i) << " = " << e.esc.var[i].ToString());
+		LOG(e.esc.var.GetKey(i) << " = " << e.esc.var[i].ToString());
 	LOG("---------------------------------------------------------");
 }
 #endif

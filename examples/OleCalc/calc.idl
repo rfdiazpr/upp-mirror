@@ -7,8 +7,7 @@ import "oleidl.idl";
 	object,
 	uuid(2CFA5DB2-A740-11d3-981C-000000000000),
 	dual,
-	helpstring("ICalculator Interface"),
-	pointer_default(unique)
+	helpstring("ICalculator Interface")
 ]
 interface ICalculator : IDispatch
 {
@@ -25,7 +24,7 @@ interface ICalculator : IDispatch
 [
 	uuid(2CFA5DB0-A740-11d3-981C-000000000000),
 	version(1.0),
-	helpstring("Cybex Calculator 1.0 Type Library")
+	helpstring("Ultimate Calculator 1.0 Type Library")
 ]
 library Calculator_TypeLib
 {

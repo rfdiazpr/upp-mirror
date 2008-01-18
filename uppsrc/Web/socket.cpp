@@ -27,6 +27,7 @@ void LogSockets(bool ls) { LogSocketFlag = ls; }
 bool IsLogSockets()      { return LogSocketFlag; }
 
 #define SLOG(x) if(!LogSocketFlag) ; else RLOG("[" << GetSysTime() << " @ " << int(GetTickCount() % 10000u) << "] " << x)
+#define LLOG(x)
 
 #ifdef PLATFORM_POSIX
 
@@ -276,7 +277,7 @@ int Socket::Data::Read(void *buf, int amount)
 			return -1;
 		}
 		else
-			RLOG("Socket::Data::Read: fake error after " << fake_error);
+			LLOG("Socket::Data::Read: fake error after " << fake_error);
 	}
 #endif
 	if(res == 0)

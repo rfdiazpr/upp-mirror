@@ -105,7 +105,7 @@ HttpRequest::HttpRequest(HttpServer& server, pick_ Socket& _socket, HttpQuery qu
 		}
 	}
 
-	RLOG("HttpRequest:\n" << query);
+	LLOG("HttpRequest:\n" << query);
 }
 
 void HttpRequest::LogTime(const char *s, int level)

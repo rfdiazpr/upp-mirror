@@ -488,16 +488,11 @@ void Ide::ClearErrorEditor(String file)
 {
 	if(!mark_lines)
 		return;
-
 	if(file == editfile)
 		editor.ClearErrors();
 	else {
-		LineInfo li = editor.GetLineInfo();
 		FileData& fd = Filedata(file);
-		editor.SetLineInfo(fd.lineinfo);
-		editor.ClearErrors();
-		fd.lineinfo = editor.GetLineInfo();
-		editor.SetLineInfo(li);
+		ClearErrors(fd.lineinfo);
 	}
 }
 
@@ -511,23 +506,27 @@ void Ide::SetErrorEditor()
 	int lineno;
 	int error;
 	One<Host> host = CreateHost(false);
+	String    hfile;
+	EditorBar hbar;
 	for(int i = 0; i < console.GetLineCount(); i++) {
 		if(FindLineError(console.GetUtf8Line(i), *host, file, lineno, error)) {
 			if(editfile == file) {
 				editor.SetError(lineno - 1, error);
 				refresh = true;
 			}
-			else
-			{
-				LineInfo li = editor.GetLineInfo();
-				FileData& fd = Filedata(file);
-				editor.SetLineInfo(fd.lineinfo);
-				editor.SetError(lineno - 1, error);
-				fd.lineinfo = editor.GetLineInfo();
-				editor.SetLineInfo(li);
+			else {
+				if(hfile != file) {
+					if(hfile.GetCount())
+						Filedata(hfile).lineinfo = hbar.GetLineInfo();
+					hbar.SetLineInfo(Filedata(file).lineinfo, -1);
+					hfile = file;
+				}
+				hbar.SetError(lineno - 1, error);
 			}
 		}
 	}
+	if(hfile.GetCount())
+		Filedata(hfile).lineinfo = hbar.GetLineInfo();
 	if(refresh)
 		editor.RefreshFrame();
 }

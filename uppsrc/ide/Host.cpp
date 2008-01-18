@@ -1,6 +1,8 @@
 #include "ide.h"
 #pragma hdrstop
 
+#define LLOG(x)
+
 #include <plugin/bz2/bz2.h>
 
 String LocalHost::GetEnvironment()
@@ -268,7 +270,7 @@ void LocalHost::Launch(const char *_cmdline, bool console)
 		const char **envp = env.Begin();
 		execve(args[0], args, (char *const *)envp);
 	}
-	RLOG("Launch pid: " << pid);
+	LLOG("Launch pid: " << pid);
 	sPid().Add(pid);
 #endif
 }

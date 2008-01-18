@@ -245,6 +245,7 @@ HRESULT OcxControl::GetUserClassID(GUID *guid)
 
 HRESULT OcxControl::GetUserType(dword form, LPOLESTR *type)
 {
+//	__asm int 3
 	LOGMETHOD("IOleObject::GetUserType");
 	ASSERT(ocx_info);
 	*type = AllocString(ocx_info->GetName());

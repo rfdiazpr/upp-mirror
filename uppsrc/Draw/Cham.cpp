@@ -112,12 +112,14 @@ Value sChOp(Draw& w, const Rect& r, const Value& v, int op);
 
 struct sChBorder {
 	const ColorF *border;
+	Value face;
 };
 
-Value ChBorder(const ColorF *colors)
+Value ChBorder(const ColorF *colors, const Value& face)
 {
 	sChBorder b;
 	b.border = colors;
+	b.face = face;
 	return RawToValue(b);
 }
 
@@ -144,8 +146,9 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 		sChBorder b = ValueTo<sChBorder>(v);
 		int n = (int)(intptr_t)*b.border;
 		switch(op) {
-		case LOOK_PAINTEDGE:
 		case LOOK_PAINT:
+			ChPaint(w, r.Deflated(n), b.face);
+		case LOOK_PAINTEDGE:
 			DrawBorder(w, r, b.border);
 			return 0;
 		case LOOK_MARGINS:

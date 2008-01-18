@@ -368,7 +368,6 @@ bool LocalSlaveProcess::IsRunning() {
 }
 
 int  LocalSlaveProcess::GetExitCode() {
-	LOG("GetExitCode!");
 #ifdef PLATFORM_WIN32
 	return IsRunning() ? (int)Null : exit_code;
 #endif
@@ -377,7 +376,6 @@ int  LocalSlaveProcess::GetExitCode() {
 		return Nvl(exit_code, -1);
 	int status;
 	if(waitpid(pid, &status, WNOHANG | WUNTRACED) != pid || !DecodeExitCode(status)) {
-		LOG("hang");
 		SVRLOG("GetExitCode() -> -1 (waitpid would hang)");
 		return -1;
 	}

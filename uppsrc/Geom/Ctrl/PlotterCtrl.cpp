@@ -553,7 +553,7 @@ void PlotterCtrl::PostRefresh()
 void PlotterCtrl::Paint(Draw& draw)
 {
 	LOGBLOCK("PlotterCtrl::Paint");
-	RLOG("PlotterCtrl::Paint @ " << GetSysTime());
+	LLOG("PlotterCtrl::Paint @ " << GetSysTime());
 	bool shown = IsDragging();
 	DragHide();
 	Rect clip = draw.GetClip();
@@ -672,17 +672,17 @@ bool PlotterCtrl::Push(Point pt, dword keyflags)
 void PlotterCtrl::Drag(Point start, Point prev, Point curr, dword keyflags)
 {
 	LOG("PlotterCtrl::Drag(" << start << "; prev = " << prev << ", curr = " << curr << ", flags = " << FormatIntHex(keyflags));
-//	RLOG("PlotterCtrl::Drag, short = " << ~short_drag_drop << ", " << (~short_drag_drop
+//	LLOG("PlotterCtrl::Drag, short = " << ~short_drag_drop << ", " << (~short_drag_drop
 //		? typeid(*short_drag_drop).name() : "NULL") << ", long = " << ~drag_drop << ", "
 //		<< (~drag_drop ? typeid(*drag_drop).name() : "NULL"));
 	if(drag_drop) {
 		lock_drag_drop = true;
-//		RLOG("PlotterCtrl::Drag->drag_drop::Drag");
+//		LLOG("PlotterCtrl::Drag->drag_drop::Drag");
 		drag_drop->Drag(drag_start, FromPushClientNull(prev), FromPushClientNull(curr), keyflags);
-//		RLOG("//PlotterCtrl::Drag->drag_drop::Drag");
+//		LLOG("//PlotterCtrl::Drag->drag_drop::Drag");
 		lock_drag_drop = false;
 	}
-//	RLOG("//PlotterCtrl::Drag");
+//	LLOG("//PlotterCtrl::Drag");
 }
 
 void PlotterCtrl::Drop(Point start, Point end, dword keyflags)

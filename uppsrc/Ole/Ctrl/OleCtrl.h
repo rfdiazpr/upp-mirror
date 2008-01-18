@@ -138,9 +138,9 @@ HRESULT    CheckReturnColor(long *ptr, Color c);
 
 class OcxTypeInfo;
 
-typedef VectorMap<Guid, void *> InterfaceMap;
+typedef VectorMap<Guid, IUnknown *> InterfaceMap;
 
-inline void AddInterfaceRaw(InterfaceMap& map, const Guid& guid, void *iface)
+inline void AddInterfaceRaw(InterfaceMap& map, const Guid& guid, IUnknown *iface)
 {
 	map.Add(guid, iface);
 }
@@ -175,25 +175,22 @@ class OcxObject
 	friend class OcxTypeInfo;
 
 public:
-	OcxObject() : ocx_info(0) {}
+	OcxObject();
 
 	template <class T>
 	void               AddInterface(const Guid& guid, T *iface) { UPP::AddInterface<T>(interface_map, guid, iface); }
 	template <class T>
 	void               AddInterface(T *iface)                   { UPP::AddInterface<T>(interface_map, __uuidof(T), iface); }
 
-	IUnknown          *GetUnknown();
+	IUnknown          *OuterUnknown()                           { return outer_unknown ? outer_unknown : &inner_unknown; }
+	IUnknown          *InnerUnknown()                           { return &inner_unknown; }
 
-	HRESULT            RawQueryInterface(const GUID& iid, void **ppv);
+	HRESULT            InternalQueryInterface(const GUID& iid, void **ppv);
+	HRESULT            ExternalQueryInterface(const GUID& iid, void **ppv);
 
 	static HRESULT     RawGetTypeInfo(IRef<ITypeInfo>& dispatch_info, unsigned tinfo, LCID lcid, ITypeInfo **ppinfo);
 	static HRESULT     RawGetIDsOfNames(IRef<ITypeInfo>& dispatch_info, REFIID riid, OLECHAR **names, unsigned cnames, LCID lcid, DISPID *dispid);
 	static HRESULT     RawInvoke(IRef<ITypeInfo>& dispatch_info, IDispatch *disp, DISPID dispid, word flags, DISPPARAMS *params, VARIANT *result, EXCEPINFO *excep, unsigned *arg_err);
-
-#if LOG_ADDREFS
-	virtual int        AddRef0(const char *name) = 0;
-	virtual int        Release0(const char *name) = 0;
-#endif
 
 	static const char *GetObjectName()   { return ""; }          // programmatic object name (synthetic = <ocx name>.<class name>)
 	static const char *GetObjectHelp()   { return ""; }          // user-visible object name (synthetic = <class name> (CONTROL ? " Control " | " Object ") <version>
@@ -206,9 +203,28 @@ public:
 		CONTROL = 0, // override with 1 to make a control class
 	};
 
+	virtual int        InternalAddRef() = 0;
+	virtual int        InternalRelease() = 0;
+
+	int                ExternalAddRef();
+	int                ExternalRelease();
+
 protected:
+	class OcxInnerUnknown : public IUnknown {
+	public:
+		OcxInnerUnknown() : owner(0) {}
+		ULONG STDMETHODCALLTYPE AddRef()                  { return owner->InternalAddRef(); }
+		ULONG STDMETHODCALLTYPE Release()                 { return owner->InternalRelease(); }
+		STDMETHOD(QueryInterface)(REFIID iid, void **ppv) { return owner->InternalQueryInterface(iid, ppv); }
+
+	public:
+		OcxObject *owner;
+	};
+
 	OcxTypeInfo       *ocx_info;
+	IUnknown          *outer_unknown;
 	InterfaceMap       interface_map;
+	OcxInnerUnknown    inner_unknown;
 };
 
 template <class I>
@@ -216,11 +232,6 @@ class Interface : public I, virtual public OcxObject
 {
 public:
 	Interface() { AddInterface<I>(this); }
-
-#if LOG_ADDREFS
-	virtual ULONG STDMETHODCALLTYPE AddRef()          { return AddRef0(typeid(I).name()); }
-	virtual ULONG STDMETHODCALLTYPE Release()         { return Release0(typeid(I).name()); }
-#endif
 };
 
 template <class I>
@@ -294,20 +305,17 @@ public:
 	OcxObjectWrapper() : refcount(0) {}
 	OcxObjectWrapper(OcxTypeInfo& _ocx_info) : refcount(0) { ocx_info = &_ocx_info; _ocx_info.object_count++; }
 
-	static IUnknown      *New()                       { return (new OcxObjectWrapper<T>())->GetUnknown(); }
-	static IUnknown      *New(OcxTypeInfo& _ocx_info) { return (new OcxObjectWrapper<T>(_ocx_info))->GetUnknown(); }
+	static OcxObject     *New()                       { return new OcxObjectWrapper<T>(); }
+	static OcxObject     *New(OcxTypeInfo& _ocx_info) { return new OcxObjectWrapper<T>(_ocx_info); }
 
-	STDMETHOD(QueryInterface)(REFIID iid, void **ppv) { return RawQueryInterface(iid, ppv); }
+	virtual ULONG STDMETHODCALLTYPE AddRef()          { return ExternalAddRef(); }
+	virtual ULONG STDMETHODCALLTYPE Release()         { return ExternalRelease(); }
+	STDMETHOD(QueryInterface)(REFIID iid, void **ppv) { return ExternalQueryInterface(iid, ppv); }
 
 	static String         GetName();
 
-#if LOG_ADDREFS
-	virtual int           AddRef0(const char *iface);
-	virtual int           Release0(const char *iface);
-#else
-	virtual ULONG STDMETHODCALLTYPE AddRef()          { return ++refcount; }
-	virtual ULONG STDMETHODCALLTYPE Release()         { ULONG u = --refcount; if(!u) Destroy(); return u; }
-#endif
+	virtual int           InternalAddRef();
+	virtual int           InternalRelease();
 
 private:
 	void                  Destroy();
@@ -316,27 +324,27 @@ private:
 	ULONG                 refcount;
 };
 
-#if LOG_ADDREFS
 template <class T>
-int OcxObjectWrapper<T>::AddRef0(const char *iface)
+int OcxObjectWrapper<T>::InternalAddRef()
 {
 	++refcount;
-	RLOG("[" << GetTypeName(typeid(*this)) << "] " << iface << "::AddRef(" << refcount << ")");
+#if LOG_ADDREFS
+	RLOG(GetTypeName(typeid(*this)) << "::InternalAddRef(" << refcount << ")");
+#endif
 	return refcount;
 }
-#endif
 
-#if LOG_ADDREFS
 template <class T>
-int OcxObjectWrapper<T>::Release0(const char *iface)
+int OcxObjectWrapper<T>::InternalRelease()
 {
 	int u = --refcount;
-	RLOG("[" << GetTypeName(typeid(*this)) << "] " << iface << "::Release(" << refcount << ")");
+#if LOG_ADDREFS
+	RLOG(GetTypeName(typeid(*this)) << "::InternalRelease(" << refcount << ")");
+#endif
 	if(!u)
 		Destroy();
 	return u;
 }
-#endif
 
 template <class T>
 String OcxObjectWrapper<T>::GetName()
@@ -365,7 +373,7 @@ class OcxTypeInfo : public Interface<IClassFactory2>
 	friend class OcxTypeLib;
 
 public:
-	typedef IUnknown *(*New)(OcxTypeInfo& entry);
+	typedef OcxObject *(*New)(OcxTypeInfo& entry);
 
 	OcxTypeInfo(const GUID& coclass_guid, /*const GUID& dispatch_guid,*/ const GUID& event_guid,
 		New new_fn, String name, const char* help = "", int ver = 0,
@@ -386,14 +394,11 @@ public:
 
 	// IUnknown
 
-#if LOG_ADDREFS
-	virtual int     AddRef0(const char *iface)  { return IncRef(); }
-	virtual int     Release0(const char *iface) { return DecRef(); }
-#else
+	virtual int     InternalAddRef()              { return IncRef(); }
+	virtual int     InternalRelease()             { return DecRef(); }
 	virtual ULONG   STDMETHODCALLTYPE AddRef()    { return IncRef(); }
 	virtual ULONG   STDMETHODCALLTYPE Release()   { return DecRef(); }
-#endif
-	STDMETHOD(QueryInterface)(REFIID iid, void **ppv) { return RawQueryInterface(iid, ppv); }
+	STDMETHOD(QueryInterface)(REFIID iid, void **ppv) { return ExternalQueryInterface(iid, ppv); }
 
 	// IClassFactory
 

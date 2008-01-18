@@ -30,6 +30,8 @@ struct LineInfoRecord {
 
 typedef Array<LineInfoRecord> LineInfo;
 
+void ClearErrors(LineInfo& li);
+
 struct LineInfoRemRecord : Moveable<LineInfoRemRecord> {
 	int    firstedited;
 	int    edited;
@@ -245,7 +247,7 @@ protected:
 		WString itext;
 		virtual bool Key(dword key, int count);
 	} findreplace;
-	
+
 	enum {
 		WILDANY = 16,
 		WILDONE,

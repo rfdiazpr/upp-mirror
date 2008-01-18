@@ -2,7 +2,7 @@
 
 #ifdef COMPILER_MSC
 
-#define LLOG(x)   LOG(x)
+#define LLOG(x)   // LOG(x)
 
 void Pdb::Error()
 {
@@ -337,9 +337,9 @@ bool Pdb::RunToException()
 				terminated = true;
 				CleanupOnExit();
 				if(ContinueDebugEvent(event.dwProcessId, event.dwThreadId, DBG_CONTINUE))
-					RLOG("ContinueDebugEvent(EXIT_PROCESS_DEBUG_EVENT) -> OK");
+					LLOG("ContinueDebugEvent(EXIT_PROCESS_DEBUG_EVENT) -> OK");
 				else
-					RLOG("ContinueDebugEvent -> " << GetErrorMessage(GetLastError()));
+					LLOG("ContinueDebugEvent -> " << GetErrorMessage(GetLastError()));
 				return false;
 			case LOAD_DLL_DEBUG_EVENT: {
 				LLOG("Load dll: " << event.u.LoadDll.lpBaseOfDll);

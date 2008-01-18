@@ -283,11 +283,15 @@ void ChGtkNew(const char *detail, int type)
 }
 
 struct GtkElement {
-	word gtki;
-	byte state;
-	byte shadow;
-	Rect reduce;
-	Rect margins;
+	word  gtki;
+	byte  state;
+	byte  shadow;
+	Rect  reduce;
+	Rect  margins;
+};
+
+enum {
+	GTKELEMENT_TABFLAG = 0x40
 };
 
 struct GtkImageMaker : ImageMaker {
@@ -307,7 +311,7 @@ struct GtkImageMaker : ImageMaker {
 		return key;
 	}
 	virtual Image Make() const {
-		return GetGTK(eg.widget, e.state, e.shadow & 0x7f, eg.detail, eg.type, sz.cx, sz.cy);
+		return GetGTK(eg.widget, e.state, e.shadow & 0x3f, eg.detail, eg.type, sz.cx, sz.cy);
 	}
 };
 
@@ -338,7 +342,7 @@ Value GtkLookFn(Draw& w, const Rect& rect, const Value& v, int op)
 				w.DrawImage(r.left + 4, r.bottom - 7,
 				            m, RectC(4, gm.sz.cy - 7, gm.sz.cx - 8, 5));
 			}
-			else
+			else {
 				if(e.reduce.left || e.reduce.right || e.reduce.top || e.reduce.bottom) {
 					Rect rr = e.reduce;
 					rr.SetSize(gm.sz);
@@ -348,6 +352,11 @@ Value GtkLookFn(Draw& w, const Rect& rect, const Value& v, int op)
 				}
 				else
 					w.DrawImage(r.left, r.top, MakeImagePaintOnly(gm));
+				if((e.shadow & GTKELEMENT_TABFLAG) && r.GetWidth() > 0) {
+					w.DrawRect(r.left, r.top + 3, 1, r.GetHeight() - 6, SColorLight());
+					w.DrawRect(r.right - 1, r.top + 3, 1, r.GetHeight() - 6, SColorShadow());
+				}
+			}
 			return 1;
 		}
 	}
@@ -520,7 +529,6 @@ bool IsEmptyImage(const Image& m)
 
 Image GtkThemeIcon(const char *name, int size)
 {
-	DUMP(name);
 	return GetGTK(gtk__parent(), size, 0, name, GTK_THEMEICON, 0, 0);
 }
 
@@ -633,13 +641,14 @@ void ChHostSkin()
 		ChGtkNew(button, "button", GTK_BOX|GTK_MARGIN3);
 		GtkChButton(s.look);
 
+		po.x = GtkInt("child-displacement-x");
+		po.y = GtkInt("child-displacement-y");
+
 		s.ok = GtkImage("gtk-ok", 4, 16);
 		s.cancel = GtkImage("gtk-cancel", 4, 16);
 		s.exit = GtkImage("gtk-quit", 4, 16);
 
 		ChGtkColor(s.textcolor, 0 * 5);
-		po.x = GtkInt("child-displacement-x");
-		po.y = GtkInt("child-displacement-y");
 		s.pressoffset = po;
 
 		Color c = SColorPaper();
@@ -653,6 +662,21 @@ void ChHostSkin()
 		ts.buttonstyle.look[CTRL_DISABLED] = Null;
 		GtkCh(ts.buttonstyle.look[CTRL_CHECKED], 1, 1);
 		GtkCh(ts.buttonstyle.look[CTRL_HOTCHECKED], 1, 1);
+
+		{
+			HeaderCtrl::Style& hs = HeaderCtrl::StyleDefault().Write();
+			if(engine == "Redmond")
+				for(int i = 0; i < 4; i++)
+					hs.look[i] = s.look[i];
+			else {
+				ChGtkNew(button, "button", GTK_BOX);
+				hs.look[0] = GtkMakeCh(2|GTKELEMENT_TABFLAG, 0, Rect(6, 3, 6, 0));
+				hs.look[1] = GtkMakeCh(2|GTKELEMENT_TABFLAG, 2, Rect(6, 3, 6, 0));
+				hs.look[2] = GtkMakeCh(1|GTKELEMENT_TABFLAG, 1, Rect(6, 3, 6, 0));
+				hs.look[3] = GtkMakeCh(2|GTKELEMENT_TABFLAG, 4, Rect(6, 3, 6, 0));
+				hs.pressoffset = po.x || po.y;
+			}
+		}
 	}
 
 	{
@@ -663,7 +687,7 @@ void ChHostSkin()
 			Setup(def_button);
 			gtk_widget_set(def_button, "can-default", true, NULL);
 			gtk_window_set_default(GTK_WINDOW(gtk__parent()), def_button);
-			ChGtkNew(def_button, "button", GTK_BOX|GTK_MARGIN3);
+			ChGtkNew(def_button, "buttondefault", GTK_BOX|GTK_MARGIN3);
 		}
 		GtkChButton(s.look);
 	}
@@ -710,8 +734,8 @@ void ChHostSkin()
 			}
 			{
 				SpinButtons::Style& s = SpinButtons::StyleDefault().Write();
-				GtkChButtonWith(s.inc.look, CtrlsImg::SpU());
-				GtkChButtonWith(s.dec.look, CtrlsImg::SpD());
+				GtkChButtonWith(s.inc.look, CtrlImg::spinup2());
+				GtkChButtonWith(s.dec.look, CtrlImg::spindown2());
 			}
 		}
 		else {
@@ -745,8 +769,8 @@ void ChHostSkin()
 			}
 			{
 				SpinButtons::Style& s = SpinButtons::StyleDefault().Write();
-				GtkChImgWith(s.inc.look, CtrlsImg::SpU(), 1 * q, po);
-				GtkChImgWith(s.dec.look, CtrlsImg::SpD(), 1 * q, po);
+				GtkChImgWith(s.inc.look, q ? CtrlImg::spinup2() : CtrlImg::spinup3(), 1 * q, po);
+				GtkChImgWith(s.dec.look, q ? CtrlImg::spindown2() : CtrlImg::spindown3(), 1 * q, po);
 			}
 		}
 
@@ -929,6 +953,7 @@ void ChHostSkin()
 	}
 	Image mimg = GetGTK(popup, 0, 2, "menu", GTK_BGBOX, 32, 32);
 	Color c = mimg[16][16];
+	Value rlook;
 	if(!IsNull(c) && Diff(c, SColorPaper()) < 200)
 		SColorMenu_Write(c);
 	{
@@ -947,15 +972,20 @@ void ChHostSkin()
 		ChGtkNew(top_item, "menuitem", GTK_BOX);
 		if(gtk_major_version > 2 || (gtk_major_version == 2 && gtk_minor_version >= 1))
 			sw = GtkInt("selected_shadow_type");
-		s.topitem[1]= s.topitem[0];
 		s.topitemtext[1] = s.topitemtext[0];
+		s.topitem[1] = s.topitem[0];
 		GtkCh(s.topitem[2], sw, GTK_STATE_PRELIGHT);
 		s.topitemtext[2] = ChGtkColor(2, top_item);
-		if(engine == "Geramik")
+		if(engine == "Redmond") {
+			s.topitem[1] = ChBorder(ThinOutsetBorder(), SColorFace());
+			s.topitem[2] = ChBorder(ThinInsetBorder(), SColorFace());
+		}
+		if(engine == "Geramik" || engine == "ThinGeramik")
 			s.topitemtext[2] = SColorText();
 		ChGtkNew(bar, "menubar", GTK_BGBOX);
 		sw = GtkInt("shadow_type");
 		s.look = GtkMakeCh(sw, GTK_STATE_NORMAL, Rect(0, 0, 0, 1));
+		rlook = GtkMakeCh(sw, GTK_STATE_NORMAL, Rect(0, 1, 0, 1));
 		Image img = GetGTK(bar, GTK_STATE_NORMAL, sw, "menubar", GTK_BGBOX, 32, 32);
 		s.breaksep.l1 = Color(img[31][15]);
 		TopSeparator1_Write(s.breaksep.l1);
@@ -973,6 +1003,8 @@ void ChHostSkin()
 		int sw = GtkInt("shadow_type");
 		s.arealook = Null;
 		s.look = GtkMakeCh(sw, GTK_STATE_NORMAL, Rect(0, 1, 0, 1));
+		if(engine == "Redmond")
+			s.look = rlook;
 		s.breaksep.l1 = MenuBar::StyleDefault().breaksep.l1;
 		Image img = GetGTK(toolbar, GTK_STATE_NORMAL, sw, "toolbar", GTK_BGBOX, 32, 32);
 		MenuBar::StyleDefault().Write().breaksep.l2 = s.breaksep.l2 = Color(img[0][15]);
@@ -991,7 +1023,10 @@ void ChHostSkin()
 	}
 
 	static GtkWidget *ve = Setup(gtk_text_view_new());
-	ViewEdge_Write(WithHotSpot(GetGTK(ve, GTK_STATE_NORMAL, GTK_SHADOW_IN, "frame", GTK_BOX, 32, 32), 2, 2));
+	if(engine == "Redmond")
+		ViewEdge_Write(EditFieldEdge());
+	else
+		ViewEdge_Write(WithHotSpot(GetGTK(ve, GTK_STATE_NORMAL, GTK_SHADOW_IN, "frame", GTK_BOX, 32, 32), 2, 2));
 
 	ChCtrlImg(CtrlImg::I_information, "gtk-dialog-info", 6);
 	ChCtrlImg(CtrlImg::I_question, "gtk-dialog-question", 6);
@@ -1012,7 +1047,8 @@ void ChHostSkin()
 
 	ChLookFn(GtkLookFn);
 
-	DropEdge_Write(ViewEdge());
+	if(engine != "Redmond")
+		DropEdge_Write(ViewEdge());
 
 	SwapOKCancel_Write(true);
 }

@@ -139,11 +139,9 @@ bool SelfUpdateSelf()
 	if(cmdline.GetCount() >= 2 && cmdline[0] == "-update")
 	{ // updater
 		String exec = FixArg(cmdline[1]);
-		RLOG("SelfUpdateSelf (updater) / UpdateFile: " << exec);
 		UpdateFile(exec, exe);
 		for(int i = 2; i < cmdline.GetCount(); i++)
 			exec << ' ' << FixArg(cmdline[i]);
-		RLOG("SelfUpdateSelf (updater): " << exec);
 		WinExec(exec, SW_SHOWNORMAL);
 		return true;
 	}

@@ -427,29 +427,27 @@ void FileSel::SearchLoad()
 
 String TrimDot(String f) {
 	int i = f.Find('.');
-	if(i == f.GetLength() - 1)
+	if(i >= 0 && i == f.GetLength() - 1)
 		f.Trim(i);
 	return f;
 }
 
-
 void FileSel::AddName(Vector<String>& fn, String& f) {
 	if(!f.IsEmpty()) {
-		if(f.Find('.') < 0)
-			if(defext.IsEmpty()) {
-				String t = GetMask();
-				int q = t.Find('.');
-				if(q >= 0 && IsAlNum(t[q + 1])) {
-					int w = q + 2;
-					while(IsAlNum(t[w]))
-						w++;
-					f << t.Mid(q, w - q);
-				}
+		if(f.Find('.') < 0) {
+			String t = GetMask();
+			int q = t.Find('.');
+			if(q >= 0 && IsAlNum(t[q + 1])) {
+				int w = q + 2;
+				while(IsAlNum(t[w]))
+					w++;
+				f << t.Mid(q, w - q);
 			}
 			else
+			if(defext.GetCount())
 				f << '.' << defext;
-		else
-			f = TrimDot(f);
+		}
+		f = TrimDot(f);
 		if(f[0] == '\"' && f.GetCount() > 2)
 			fn.Add(f.Mid(1, f.GetCount() - 2));
 		else

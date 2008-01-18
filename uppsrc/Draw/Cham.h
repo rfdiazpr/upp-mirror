@@ -114,4 +114,4 @@ Value ChLookWith(const Value& look, const Image& img, Color (*color)(int i), int
 //private:
 void ChRegisterStyle__(byte& state, byte& registered, void (*init)());
 
-Value ChBorder(const ColorF *colors_ltrd);
+Value ChBorder(const ColorF *colors, const Value& face = SColorFace());

@@ -7,6 +7,8 @@ typedef HMODULE DLLHANDLE;
 typedef void   *DLLHANDLE;
 #endif
 
+#define LLOG(x)
+
 #ifdef PLATFORM_WIN32
 
 #include <winnt.h>
@@ -100,7 +102,6 @@ const char *PeFile::FindExportRaw(const char *name, bool case_sensitive) const
 	return 0;
 }
 
-
 END_UPP_NAMESPACE
 
 HMODULE CheckDll__(const char *fn, const char *const *names, UPP::Vector<void *>& plist)
@@ -133,14 +134,14 @@ HMODULE CheckDll__(const char *fn, const char *const *names, UPP::Vector<void *>
 #endif
 			if(!optional) {
 				if(!missing)
-					RLOG(fn << " missing exports:");
-				RLOG(exp);
+					LLOG(fn << " missing exports:");
+				LLOG(exp);
 				missing++;
 			}
 		plist.Add(proc);
 	}
 	if(missing) {
-		RLOG(missing << " total");
+		LLOG(missing << " total");
 		FreeLibrary(hmod);
 		return 0;
 	}
@@ -163,7 +164,7 @@ void *CheckDll__(const char *fn, const char *const *names, UPP::Vector<void *>& 
 
 	void *hmod = dlopen(fn, RTLD_LAZY | RTLD_GLOBAL);
 	if(!hmod) {
-		RLOG("Error loading library " << fn << ": " << dlerror());
+		LLOG("Error loading library " << fn << ": " << dlerror());
 /*
 		for(int i = 0; i < 100; i++) {
 			hmod = dlopen(fn + ("." + UPP::AsString(i)), RTLD_LAZY | RTLD_GLOBAL);
@@ -182,14 +183,14 @@ void *CheckDll__(const char *fn, const char *const *names, UPP::Vector<void *>& 
 		void *proc = dlsym(hmod, exp);
 		if(!proc && !optional) {
 			if(!missing)
-				RLOG(fn << " missing exports:");
-			RLOG(exp);
+				LLOG(fn << " missing exports:");
+			LLOG(exp);
 		}
 		plist.Add(proc);
 	}
 
 	if(missing) {
-		RLOG(missing << " missing symbols total");
+		LLOG(missing << " missing symbols total");
 		dlclose(hmod);
 		return 0;
 	}

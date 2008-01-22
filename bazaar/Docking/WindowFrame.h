@@ -7,9 +7,7 @@ using namespace Upp;
 #define IMAGECLASS WindowImg
 #define IMAGEFILE <Docking/Window.iml>
 #include <Draw/iml_header.h>
-
-#include <DockBars/WithMoveResize.h>
-
+/*
 class TitleFrame : public CtrlFrame, public Ctrl {
 public:
 	Callback WhenContext;
@@ -152,6 +150,6 @@ Image WithWindowFrame<T>::FrameMouseEvent(int event, Point p, int zdelta, dword 
 	return sizedir >= 0 ? ((sizedir & 1) ? Image::SizeVert() : Image::SizeHorz()) 
 		: Image::Arrow();
 }
-
+*/
 
 #endif

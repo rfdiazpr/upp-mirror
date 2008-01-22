@@ -1,8 +1,7 @@
 description "Bazaar: Docking, by James Thomas";
 
 uses
-	CtrlLib,
-	DockBars;
+	CtrlLib;
 
 file
 	Docking.h,

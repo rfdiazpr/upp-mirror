@@ -3,7 +3,7 @@
 #define IMAGECLASS WindowImg
 #define IMAGEFILE <Docking/Window.iml>
 #include <Draw/iml_source.h>
-
+/*
 void TitleFrame::LeftUp(Point p, dword keyflags)	
 { 
 	if (close == CTRL_PRESSED) 
@@ -77,3 +77,4 @@ CH_STYLE(TitleFrame, Style, StyleDefault)
 	font	= StdFont(12);
 }
 
+*/

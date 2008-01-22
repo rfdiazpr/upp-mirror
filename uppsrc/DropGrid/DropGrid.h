@@ -117,10 +117,10 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 		GridCtrl::ItemRect& AddIndex(const char *name = NULL);
 		GridCtrl::ItemRect& AddIndex(Id id);
 
-		MultiButton::SubButton& AddButton(int type, Callback &cb);
-		MultiButton::SubButton& AddSelect(Callback &cb);
-		MultiButton::SubButton& AddPlus(Callback &cb);
-		MultiButton::SubButton& AddEdit(Callback &cb);
+		MultiButton::SubButton& AddButton(int type, const Callback &cb);
+		MultiButton::SubButton& AddSelect(const Callback &cb);
+		MultiButton::SubButton& AddPlus(const Callback &cb);
+		MultiButton::SubButton& AddEdit(const Callback &cb);
 
 		MultiButton::SubButton& GetButton(int n);
 

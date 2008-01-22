@@ -150,7 +150,7 @@ public:
 
 	ColumnList&  Columns(int _n)                      { ncl = _n; Refresh(); return *this; }
 	int          GetColumns() const                   { return ncl; }
-	ColumnList&  ItemHeight(int _cy)                  { cy = _cy; Refresh(); return *this; }
+	ColumnList&  ItemHeight(int _cy)                  { cy = _cy; RefreshLayout(); Refresh(); return *this; }
 	int          GetItemHeight() const                { return cy; }
 	ColumnList&  RoundSize(bool b = true);
 	ColumnList&  NoRoundSize()                        { return RoundSize(false); }

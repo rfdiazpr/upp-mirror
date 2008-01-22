@@ -566,7 +566,7 @@ public:
 	operator bool() const                            { return !set.IsEmpty(); }
 
 	SqlUpdate(SqlId table) : table(table) {}
-	SqlUpdate::SqlUpdate(Fields f);
+	SqlUpdate(Fields f);
 
 //Deprecated!!!
 	bool  Execute(Sql& sql) const                     { return SqlStatement(*this).Execute(sql); }

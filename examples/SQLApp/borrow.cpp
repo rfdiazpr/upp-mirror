@@ -13,11 +13,12 @@ Value DateIntConvertCls::Format(const Value& q) const
 
 Value DateIntConvertCls::Scan(const Value& text) const
 {
-	String s = text;
-	if(IsNull(s))
+	String txt = text;
+	if(IsNull(txt))
 		return Null;
 	Date d;
-	if(StrToDate(d, s)) {
+	if(StrToDate(d, txt)) {
+		const char *s = txt;
 		while(*s == ' ') s++;
 		if(*s == '\0')
 			return d - Date(1970, 1, 1);

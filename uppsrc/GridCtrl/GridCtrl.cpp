@@ -1,4 +1,3 @@
-#include <CtrlLib/CtrlLib.h>
 #include <GridCtrl/GridCtrl.h>
 
 NAMESPACE_UPP
@@ -966,6 +965,8 @@ void GridCtrl::Paint(Draw &w)
 {
 	static int paintcnt = 0;
 
+	Font stdfont(StdFont());
+
 	Size sz = GetSize();
 	Rect rc = Rect(sz);  //w.GetClip() - it always returns view rect now. bug??
 	int i, j, cx, cy, x, y;
@@ -999,7 +1000,7 @@ void GridCtrl::Paint(Draw &w)
 		w.Clip(0, 0, fixed_width, fixed_height);
 		display->PaintFixed(w, 1, 1, 0, 0, fixed_width, fixed_height,
 							Value(""),
-							0, StdFont(), false, false,
+							0, stdfont, false, false,
 							0, -1, 0,
 							true);
 		w.End();
@@ -1048,7 +1049,7 @@ void GridCtrl::Paint(Draw &w)
 					gd->SetLeftImage(hitems[j].img);
 					gd->PaintFixed(w, jj == firstcol, i == 0, x, y, cx, cy,
 								i == 0 ? it.val : GetConvertedColumn(hitems[j].id, it.val),
-								style | en, StdFont(), false, false,
+								style | en, stdfont, false, false,
 								i == 0 ? hitems[j].sortmode : 0,
 								hitems[j].sortcol,
 								sortOrder.GetCount(),
@@ -1067,7 +1068,7 @@ void GridCtrl::Paint(Draw &w)
 			}
 			display->PaintFixed(w, 0, 1, rx, 0, cx, fixed_height,
 								Value(""),
-								style, StdFont(), false, false,
+								style, stdfont, false, false,
 								0, -1, 0,
 								true);
 		}
@@ -1116,7 +1117,7 @@ void GridCtrl::Paint(Draw &w)
 
 					gd->PaintFixed(w, firstx, j == 0, x, y, cx, cy,
 									GetConvertedColumn(id, it.val),
-									style | en, StdFont(),
+									style | en, stdfont,
 									indicator, false, 0, -1, 0, false);
 				}
 			}
@@ -3767,6 +3768,34 @@ int GridCtrl::FindInRow(const Value& v, int row, int start_from) const
 	{
 		if(!hitems[i].skip && items[row + fixed_rows][hitems[i].id].val == v)
 			return i - fixed_cols;
+	}
+	return -1;
+}
+
+int GridCtrl::FindCurrent(Id id, int opt) const
+{
+	int col = aliases.Get(id) - fixed_cols;
+	return Find(Get(col), col, 0, opt);
+}
+
+int GridCtrl::FindCurrent(Id id0, Id id1, int opt) const
+{
+	int col0 = aliases.Get(id0);
+	int col1 = aliases.Get(id1);
+
+	const Value& val0 = items[vitems[rowidx].id][col0].val;
+	const Value& val1 = items[vitems[rowidx].id][col1].val;
+
+	for(int i = fixed_rows; i < total_rows; i++)
+	{
+		if(opt & GF::SKIP_CURRENT_ROW && i == rowidx)
+			continue;
+		if(opt & GF::SKIP_HIDDEN && vitems[i].hidden)
+			continue;
+		if(!vitems[i].skip &&
+		   items[vitems[i].id][col0].val == val0 &&
+		   items[vitems[i].id][col1].val == val1)
+			return i - fixed_rows;
 	}
 	return -1;
 }
@@ -6934,10 +6963,29 @@ void GridCtrl::JoinFixedCells(int left, int top, int right, int bottom)
 	JoinCells(left, top, right, bottom, false);
 }
 
-void GridCtrl::JoinRow(int n)
+void GridCtrl::JoinRow(int n, int left, int right)
 {
-	JoinCells(0, n, total_cols - fixed_cols - 1, n);
+	if(n < 0)
+		n = rowidx;
+
+	if(left < 0)
+		left = fixed_cols;
+	else
+		left += fixed_cols;
+
+	if(right < 0)
+		right = total_cols - fixed_cols - 1;
+	else
+		right = total_cols - fixed_cols - right;
+
+	JoinCells(left, n, right, n, false);
 }
+
+void GridCtrl::JoinRow(int left, int right)
+{
+	JoinRow(-1, left, right);
+}
+
 
 /*----------------------------------------------------------------------------------------*/
 
@@ -7019,6 +7067,21 @@ void GridCtrl::UpdateHighlighting(int mode, Point p)
 		RefreshRow(0, 0, 1);
 }
 
+#ifdef GRIDSQL
+void GridCtrl::FieldLayout(FieldOperator& f)
+{
+	for(int i = 0; i < total_cols; i++)
+	{
+		if(hitems[i].hidden)
+			continue;
+		int id = hitems[i].id;
+		const Id& key = aliases.GetKey(id);
+		f(key, items[vitems[rowidx].id][id].val);
+	}
+}
+#endif
+
+
 /*----------------------------------------------------------------------------------------*/
 GridFind::GridFind()
 {
@@ -7052,8 +7115,9 @@ void GridPopUpHeader::Paint(Draw &w)
 {
 	Size sz = GetSize();
 	dword style = chameleon ? GD::CHAMELEON : 0;
+	Font stdfont(StdFont());
 	display->PaintFixed(w, 1, 1, 0, 0, sz.cx, sz.cy,
-		                val, style, StdFont(), false, true,
+		                val, style, stdfont, false, true,
 		                sortmode, sortcol, sortcnt, true);
 }
 

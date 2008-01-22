@@ -300,8 +300,8 @@ void SqlConsole::Execute(int type) {
 	}
 	s = TrimRight(macroset.Expand(s));
 //	s.TrimRight();
-	while(s[s.GetLength() - 1] == ';')
-		s.Remove(s.GetLength() - 1, 1);
+	while(*s.Last() == ';')
+		s.Trim(s.GetLength() - 1);
 	int ms0 = GetTickCount();
 	cursor.ClearError();
 	lastquery = s;

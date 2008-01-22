@@ -631,7 +631,7 @@ void ChHostSkin()
 	GTK_TOGGLE_BUTTON(w)->inconsistent = true;
 	GtkIml(CtrlsImg::I_O2, w, 3, "checkbutton", GTK_CHECK|GTK_MARGIN1, is, is);
 	gtk_widget_destroy(w);
-
+	
 	Point po(0, 0);
 
 	{
@@ -722,7 +722,7 @@ void ChHostSkin()
 
 			static GtkWidget *btn = gtk_button_new();
 			ChGtkNew(btn, "button", GTK_BOX);
-
+			
 			GtkChButton(Button::StyleScroll().Write().look);
 			GtkChButton(Button::StyleEdge().Write().look);
 			GtkChButton(Button::StyleLeftEdge().Write().look);
@@ -750,7 +750,7 @@ void ChHostSkin()
 			GtkChArrow(s.up2.look, CtrlsImg::UA(), po);
 			ChGtkNew("vscrollbar", GTK_BGBOX|GTK_VCENTER|GTK_RANGEB);
 			GtkChArrow(s.down2.look, CtrlsImg::DA(), po);
-
+			
 			ChGtkNew("vscrollbar", GTK_BOX|GTK_VCENTER|GTK_RANGEB);
 			GtkCh(Button::StyleScroll().Write().look, "02142222");
 
@@ -1049,7 +1049,7 @@ void ChHostSkin()
 
 	if(engine != "Redmond")
 		DropEdge_Write(ViewEdge());
-
+	
 	SwapOKCancel_Write(true);
 }
 

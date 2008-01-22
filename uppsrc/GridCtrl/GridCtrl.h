@@ -1,5 +1,11 @@
 #ifndef _GridCtrl_GridCtrl_h_
 #define _GridCtrl_GridCtrl_h_
+#define GRIDSQL
+
+#include <CtrlLib/CtrlLib.h>
+#ifdef GRIDSQL
+#include <Sql/Sql.h>
+#endif
 
 NAMESPACE_UPP
 
@@ -10,7 +16,8 @@ NAMESPACE_UPP
 #define FOREACH_SELECTED_ROW(x) FOREACH_ROW(x) if(x.IsSelected())
 #define FOREACH_MODIFIED_ROW(x) FOREACH_ROW(x) if(x.IsModifiedRow())
 #define FOREACH_MODIFIED_OR_NEW_ROW(x) FOREACH_ROW(x) if(x.IsModifiedRow() || x.IsAddedRow())
-#define COLUMN(grid, column) (column, grid(column))
+#define FOREACH_ROW_NOT_CURRENT(x) FOREACH_ROW(x) if(!x.IsCurrentRow())
+#define ASSIGN(grid, column) (column, grid(column))
 
 namespace GF
 {
@@ -1181,6 +1188,9 @@ class GridCtrl : public Ctrl
 
 		int Find(const Value &v, int col = 0, int start_from = 0, int opt = 0) const;
 		int Find(const Value &v, Id id, int opt = 0) const;
+		int FindCurrent(Id id, int opt = GF::SKIP_CURRENT_ROW) const;
+		int FindCurrent(Id id0, Id id1, int opt = GF::SKIP_CURRENT_ROW) const;
+
 		int FindInRow(const Value& v, int row = 0, int start_from = 0) const;
 
 		GridDisplay& GetDisplay() { return *display; }
@@ -1362,9 +1372,8 @@ class GridCtrl : public Ctrl
 
 		void JoinCells(int left, int top, int right, int bottom, bool relative = true);
 		void JoinFixedCells(int left, int top, int right, int bottom);
-		void JoinRow(int n);
-		void JoinCols();
-		void JoinRows();
+		void JoinRow(int n, int left, int right);
+		void JoinRow(int left = -1, int right = -1);
 
 		GridCtrl& Sort(int sort_col, int sort_mode = SORT_UP, bool multisort = false, bool repaint = true);
 		GridCtrl& Sort(Id id, int sort_mode = SORT_UP, bool multisort = false, bool repaint = true);
@@ -1384,6 +1393,11 @@ class GridCtrl : public Ctrl
 
 		void SetCtrlFocus(int col);
 		void SetCtrlFocus(Id id);
+
+		#ifdef GRIDSQL
+		void FieldLayout(FieldOperator& f);
+		operator Fields() { return THISBACK(FieldLayout); }
+		#endif
 
 	private:
 

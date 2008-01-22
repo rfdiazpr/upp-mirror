@@ -692,7 +692,7 @@ void QuickTabs::FramePaint(Draw& w, const Rect& rr)
 {
 	Rect r = rr;
 	r.top += GetHeight();
-	FieldFrame().FramePaint(w, r);
+	ViewFrame().FramePaint(w, r);
 }
 
 void QuickTabs::DragAndDrop(Point p, PasteClip& d)

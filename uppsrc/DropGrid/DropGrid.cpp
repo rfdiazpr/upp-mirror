@@ -501,7 +501,7 @@ GridCtrl::ItemRect& DropGrid::AddIndex(Id id)
 	return list.AddIndex(id);
 }
 
-MultiButton::SubButton& DropGrid::AddButton(int type, Callback &cb)
+MultiButton::SubButton& DropGrid::AddButton(int type, const Callback &cb)
 {
 	MultiButton::SubButton& btn = drop.InsertButton(1);
 	switch(type)
@@ -529,17 +529,17 @@ MultiButton::SubButton& DropGrid::AddButton(int type, Callback &cb)
 	return btn;
 }
 
-MultiButton::SubButton& DropGrid::AddSelect(Callback &cb)
+MultiButton::SubButton& DropGrid::AddSelect(const Callback &cb)
 {
 	return AddButton(BTN_SELECT, cb);
 }
 
-MultiButton::SubButton& DropGrid::AddPlus(Callback &cb)
+MultiButton::SubButton& DropGrid::AddPlus(const Callback &cb)
 {
 	return AddButton(BTN_PLUS, cb);
 }
 
-MultiButton::SubButton& DropGrid::AddEdit(Callback &cb)
+MultiButton::SubButton& DropGrid::AddEdit(const Callback &cb)
 {
 	return AddButton(BTN_RIGHT, cb);
 }

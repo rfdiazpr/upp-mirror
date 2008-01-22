@@ -795,7 +795,7 @@ ColumnList::ColumnList() {
 	sb.WhenScroll = THISBACK(Scroll);
 	sb.AutoHide();
 	Ctrl::SetFrame(ViewFrame());
-	frame = &FieldFrame();
+	frame = &ViewFrame();
 	RoundSize();
 	display = &StdDisplay();
 	multi = false;

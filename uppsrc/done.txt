@@ -1,5 +1,13 @@
+    	BIG ScrollButton chameleon problem
+
+Highlightinh "1e-15"
     Highlightinh "1e-15"
-    Highlightinh "1e-15"
+
+
+	DecorationLess windows http://www.ultimatepp.org/forum/index.php?t=msg&goto=13093&#msg_13093
+	                       http://fixunix.com/xwindows/91717-window-without-title-bar.html
+
+	SQLSqlExp tutorial
 
 	DropDate DOES NOT WORK IN LINUX!
 

@@ -376,7 +376,7 @@ void Ide::EditFile0(const String& path, byte charset, bool astext, const String&
 	if(filetabs)
 		editor.SetFrame(tabs);
 	else
-		editor.SetFrame(FieldFrame());
+		editor.SetFrame(ViewFrame());
 	tabs.SetAddFile(editfile);
 	editor.Enable();
 	editpane.Add(editorsplit);

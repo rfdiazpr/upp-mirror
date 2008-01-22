@@ -137,7 +137,7 @@ Image DockFrame::CursorImage(Point p, dword keyflags)
 {
 	if (SplitterRect().Contains(p))
 		return SplitterTree::CursorImage(p, keyflags);
-	return type == LEFT || type == RIGHT ? Image::SizeHorz() : Image::SizeVert();
+	return (type == LEFT || type == RIGHT) ? Image::SizeHorz() : Image::SizeVert();
 }
 
 DockFrame& DockFrame::Set(int _size, int _type)
@@ -209,10 +209,17 @@ void DockFrame::AnimateRemove(Ctrl &c, int fsz)
 
 	SplitterTree::Swap(c, dummy);
 
-	if (GetFirstChild() == GetLastChild())
-		fsz = 0; // Animate hide
-
-	StartNodeAnimate(dummy, 0);
+	if (GetFirstChild() == GetLastChild())  {
+		fsz = 0;
+		if (size == 0) {
+			dummy.Remove();
+			Hide();
+			return;	
+		}
+	}
+	else
+		StartNodeAnimate(dummy, 0);
+	
 	if (fsz >= 0)
 		StartFrameAnimate(fsz);
 	
@@ -265,26 +272,34 @@ void DockFrame::StartFrameAnimate(int sz)
 		Show();
 }
 
+void DockFrame::EndAnimate()
+{
+	Ctrl::KillTimeCallback(TIMEID_ANIMATE);
+	if (dummy.GetParent())
+		dummy.Remove();
+	if (!GetFirstChild()) {
+		size = 0;
+		Hide();	
+	}	
+	animctrl = NULL;
+	frameinc = 0;
+}
+
 void DockFrame::AnimateTick()
 {
-	if (nodeinc && (~animctrl == NULL || animctrl->GetParent() != this)) {
-		Ctrl::KillTimeCallback(TIMEID_ANIMATE);
-		return;
-	}
+	if (nodeinc && (~animctrl == NULL || animctrl->GetParent() != this))
+		return EndAnimate();
 
 	bool lay = AnimateNode();
-	bool play =  AnimateFrame();
+	bool play = AnimateFrame();
 	
 	if (play)
 		RefreshParentLayout();
 	else if (lay)
 		LayoutNode(animnode->parent, GetNodeRect(animnode->parent));
 	
-	if (!frameinc && !nodeinc) {
-		animctrl = NULL;
-		frameinc = 0;
-		Ctrl::KillTimeCallback(TIMEID_ANIMATE);
-	}
+	if (!frameinc && !nodeinc)
+		return EndAnimate();	
 }
 
 bool DockFrame::AnimateFrame()
@@ -321,12 +336,11 @@ bool DockFrame::AnimateNode()
 	return true;
 }
 
-
-
 DockFrame::DockFrame()
 {
 	type = LEFT;
 	size = size0 = 4;
 	minsize = 0;
 	sizemin = 0;
+	frameinc = nodeinc = 0;
 }

@@ -1,4 +1,5 @@
 #ifndef _Docking_icpp_init_stub
 #define _Docking_icpp_init_stub
 #include "CtrlLib/init"
+#include "DockBars/init"
 #endif

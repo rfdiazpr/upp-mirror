@@ -21,6 +21,48 @@ public:
 		DOCK_BOTTOM = SplitterFrame::BOTTOM,
 	};
 
+protected:
+
+	// DnD interface
+	struct HighlightCtrl : public DockableCtrl
+	{
+		HighlightCtrl() { Transparent(false); }		
+		virtual void Paint(Draw &w);
+		int oldframesize;
+		Rect bounds;
+	};
+	virtual void ContainerDragStart(DockCont &dc);
+	virtual void ContainerDragMove(DockCont &dc);
+	virtual void ContainerDragEnd(DockCont &dc);
+	virtual HighlightCtrl &GetHighlightCtrl()			{ return hlc; }
+		
+	void Highlight(int align, DockableCtrl &dc, DockableCtrl *target);
+	void StopHighlight(bool do_animate);
+
+	int  GetDockAlign(Ctrl &c) const;			
+	int	 GetDockAlign(const Point &p) const;
+	Rect GetDockRect(int align) const;
+	
+	// Container docking/undocking
+	void DockContainer(int align, DockCont &c, int except = -1);
+	void DockContainer(int align, DockableCtrl &target, DockCont &c);
+	void DockContainerAsTab(DockCont &target, DockCont &c);	
+	void FloatContainer(DockCont &c, int except = -1, Point p = Null);
+	void FloatFromTab(DockCont &c, DockableCtrl &dc);
+	void AutoHideContainer(int align, DockCont &c, int except);
+	void CloseContainer(DockCont &c)			{ c.Clear(); Undock(c); DestroyContainer(&c); }
+	
+	void Undock(DockCont &c);
+	void Unfloat(DockCont &c);
+
+	// Helpers
+	bool IsTL(int align) const					{ return align < 2; } // (align == DOCK_LEFT || align == DOCK_TOP)
+	bool IsTB(int align) const					{ return align & 1; } // (align == DOCK_TOP || align == DOCK_BOTTOM)
+	DockableCtrl *GetMouseDockTarget();
+	DockableCtrl *FindDockTarget(DockCont &dc, int &al);
+
+	friend class DockCont;
+
 private:
 	Array<DockCont> conts;
 	bool simple:1;	
@@ -28,22 +70,21 @@ private:
 	bool autohide:1;
 	bool animate:1;
 	bool dockable[4];
+	HighlightCtrl 	hlc;
 	DockFrame		dockframe[4];
 	AutoHideBar		hideframe[4];	
 
 public:	
+	void DockLayout();
+
 	void Dock(int align, DockableCtrl &dc);
 	void Dock(int align, DockableCtrl &dc, const char *title)		{ dc.Title(title); Dock(align, dc); }
 	void Dock(int align, DockableCtrl &target, DockableCtrl &dc);
-
 	void DockAsTab(DockableCtrl &target, DockableCtrl &dc);
-
 	void Float(DockableCtrl &dc, Point p = Null);
-	void Float(DockableCtrl &dc, char *title, Point p = Null) 						{ dc.Title(title); Float(dc, p); }
-
+	void Float(DockableCtrl &dc, char *title, Point p = Null) 		{ dc.Title(title); Float(dc, p); }
 	void AutoHide(DockableCtrl &dc)									{ int al = GetDockAlign(dc); AutoHide(al == DOCK_NONE ? DOCK_TOP : al,  dc); }
 	void AutoHide(int align, DockableCtrl &dc);	
-
 	void Close(DockableCtrl &dc);
 			
 	DockWindow &SetHorzVert()					{ dockframe[0].RootHorz(); dockframe[2].RootHorz(); dockframe[1].RootVert(); dockframe[3].RootVert(); return *this; }
@@ -82,41 +123,10 @@ public:
 	bool		IsAutoHide()					{ return autohide; }
 	
 	DockWindow();		
-protected:
-	// Interface overloads
-	virtual void ContainerDragStart(DockCont &dc);
-	virtual void ContainerDragMove(DockCont &dc);
-	virtual void ContainerDragEnd(DockCont &dc);
 
-	// Container docking/undocking
-	void DockContainer(int align, DockCont &c, int except = -1);
-	void DockContainer(int align, DockableCtrl &target, DockCont &c);
-	void DockContainerAsTab(DockCont &target, DockCont &c);	
-	void FloatContainer(DockCont &c, int except = -1, Point p = Null);
-	void FloatFromTab(DockCont &c, DockableCtrl &dc);
-	void AutoHideContainer(int align, DockCont &c, int except);
-	void CloseContainer(DockCont &c)			{ c.Clear(); Undock(c); DestroyContainer(&c); }
-	
-	void Undock(DockCont &c);
-	void Unfloat(DockCont &c);
-
-	// Helpers
-	bool IsTL(int align) const					{ return (align == DOCK_LEFT || align == DOCK_TOP); }
-	bool IsTB(int align) const					{ return (align == DOCK_TOP || align == DOCK_BOTTOM); }
-	DockableCtrl *GetMouseDockTarget();
-	DockableCtrl *FindDockTarget(DockCont &dc, int &al);
-
-	// DnD interface
-	void Highlight(int align, DockableCtrl &dc, DockableCtrl *target);
-	void StopHighlight(bool do_animate);
-
-	// Initialisation
-	void DockLayout(Ctrl &_this);
-
-	friend class DockCont;
 private:
 	// Container management
-	DockCont *	GetContainer(DockableCtrl &dc)		{ return dynamic_cast<DockCont *>(dc.GetParent()); }
+	DockCont *	GetContainer(DockableCtrl &dc)			{ return dynamic_cast<DockCont *>(dc.GetParent()); }
 	DockCont *  CreateContainer();
 	DockCont *	CreateContainer(DockableCtrl &dc);
 	void		DestroyContainer(DockCont *c);
@@ -127,10 +137,7 @@ private:
 	void 		Dock0(int align, Ctrl &c, bool do_animate = false);
 	void 		Dock0(int align, DockableCtrl &target, Ctrl &c, bool do_animate = false);
 	void 		Undock0(Ctrl &c, bool do_animate = false, int fsz = -1);		
-	int  		GetDockAlign(Ctrl &c) const;			
-	int			GetDockAlign(const Point &p) const;
-	Rect  		GetDockRect(int align) const;
-	SplitterTree *	GetDockTree(Ctrl *c);
+	SplitterTree *GetDockTree(Ctrl *c);
 	
 	Rect 		GetAlignBounds(int al, Rect r, bool center, bool allow_lr = true, bool allow_tb = true);
 	int 		GetPointAlign(const Point p, Rect r, bool center, bool allow_lr = true, bool allow_tb = true);
@@ -138,15 +145,49 @@ private:
 	
 	Size		CtrlBestSize(const Ctrl &c, bool restrict = true) const;
 	void 		SyncFrameSize(int dock, Ctrl &c);
-	
-	// DnD interface
-	struct HighlightCtrl : public DockableCtrl
-	{
-		HighlightCtrl() { Transparent(false); }		
-		virtual void Paint(Draw &w);
-		int oldframesize;
-		Rect bounds;
+};
+
+class PopUpDockWindow : public DockWindow
+{
+public:
+	struct Style : ChStyle<Style> {
+		Value inner[5];
+		Value outer[4];
+		Value highlight;
+		int innersize;
+		int outersize;
 	};	
+	static const Style& StyleDefault();		
+	
+protected:
+	virtual void ContainerDragStart(DockCont &dc);
+	virtual void ContainerDragMove(DockCont &dc);
+	virtual void ContainerDragEnd(DockCont &dc);		
+	
+private:
+	struct PopUpButton : public Ctrl
+	{
+		const Value *icon;
+		const Value *hlight;
+		virtual void Paint(Draw &w)	{ Rect r = GetSize(); ChPaint(w, r, *icon); if (hlight) ChPaint(w, r, *hlight); }
+		PopUpButton() { hlight = NULL; }
+	};
+
+	const Style * 	style;	
+	DockableCtrl *	last_target;
+	PopUpButton *	last_popup;
+	Point 			last_cp;
+	PopUpButton 	inner[5];
+	PopUpButton 	outer[4];	
+	
+	int 	PopUpHighlight(PopUpButton *pb, int cnt);
+	void 	ShowOuterPopUps(DockCont &dc);
+	void 	ShowInnerPopUps(DockCont &dc, DockableCtrl *target);
+	void 	ShowPopUp(PopUpButton &pb, const Rect &r);
+	void 	HidePopUps(bool _inner, bool _outer);	
+public:
+	PopUpDockWindow &	SetStyle(const Style &s);
+	PopUpDockWindow();
 };
 
 #endif

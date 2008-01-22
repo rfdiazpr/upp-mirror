@@ -21,15 +21,9 @@ struct ImgButton : public Pusher
 		ImgButton& 	SetLook(const Value *_look) { look = _look; Refresh(); return *this; }
 };
 
-#if defined(PLATFORM_WIN32)
-#define DOCKCONT_WND_OFFSET 4 // Should get from Win API?
-	typedef TopWindow ContainerBase;
-#elif defined(PLATFORM_X11)
-#define DOCKCONT_WND_OFFSET -8 // Move window up slightly
-	typedef WithWindowFrame<TopWindow> ContainerBase;
-#endif
+#define DOCKCONT_WND_OFFSET 4 // Should get from API?
 
-class DockCont : public ContainerBase
+class DockCont : public TopWindow
 {
 public:
 	typedef DockCont CLASSNAME;
@@ -42,20 +36,15 @@ public:
 	virtual void RightDown(Point p, dword keyflags) 	{ TitleContext(); }
 	
 	virtual void ChildRemoved(Ctrl *child);
-	virtual void ChildGotFocus() 						{ RefreshFocus(true); ContainerBase::ChildGotFocus(); }
-	virtual void ChildLostFocus() 						{ RefreshFocus(HasFocusDeep()); ContainerBase::ChildLostFocus(); }
+	virtual void ChildGotFocus() 						{ RefreshFocus(true); TopWindow::ChildGotFocus(); }
+	virtual void ChildLostFocus() 						{ RefreshFocus(HasFocusDeep()); TopWindow::ChildLostFocus(); }
 	virtual void GotFocus() 							{ RefreshFocus(true); }
 	virtual void LostFocus() 							{ RefreshFocus(HasFocusDeep()); }
 #if defined(PLATFORM_WIN32)
-private:
-	static bool dragging;
 public:
 	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
-	void FloatOpen(Ctrl *owner)						{ TopWindow::Open(owner); }
-	void FloatClose()								{ TopWindow::Close(); }
 #elif defined(PLATFORM_X11)
-	void FloatOpen(Ctrl *owner)						{ AddWindowFrame(); PopUp(owner, false, true, false, false); }
-	void FloatClose()								{ Ctrl::Close(); RemoveWindowFrame(); }
+	virtual void EventProc(XWindow& w, XEvent *event);
 #endif
 private:
 	enum DockState {
@@ -64,7 +53,8 @@ private:
 		STATE_DOCKED, 
 		STATE_AUTOHIDE,
 	};
-
+	
+	bool dragging;
 	DockState	dockstate;	
 	TabBar 		tabbar;
 	ImgButton 	close, autohide, windowpos;	

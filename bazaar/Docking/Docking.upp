@@ -1,5 +1,8 @@
+description "Bazaar: Docking, by James Thomas";
+
 uses
-	CtrlLib;
+	CtrlLib,
+	DockBars;
 
 file
 	Docking.h,
@@ -14,8 +17,8 @@ file
 	"X11 Window" readonly separator,
 	WindowFrame.h,
 	TitleFrame.cpp,
-	Window.iml,
 	SplitterTree readonly separator,
+	Window.iml,
 	SplitterTree.h,
 	SplitterTree.cpp,
 	TabBar readonly separator,

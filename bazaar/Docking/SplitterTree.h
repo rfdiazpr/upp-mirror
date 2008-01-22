@@ -96,6 +96,9 @@ public:
 	bool	IsCtrlNearRoot(Ctrl &c) const; 			// Will return true only if Ctrl is a child of roots only child
 	int 	GetDepth() const						{ return GetDepth(root, 0); }
 	
+	Ctrl *	GetNextSibling(Ctrl &c);
+	Ctrl *	GetPrevSibling(Ctrl &c);
+	
 	bool IsEmpty()									{ return (!root || !root->first); }
 	
 	~SplitterTree();

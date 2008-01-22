@@ -47,12 +47,11 @@ Rect TitleFrame::CloseRect(Rect r)
 	return Rect(r.right - bsz - 1, 1, r.right - 1, r.bottom - 1);
 }
 
-TitleFrame & TitleFrame::SetFocusLook(bool _focus)
+TitleFrame & TitleFrame::SetFocusLook(bool _focus, bool pfocus)
 {
+	if (pfocus && _focus && GetParent() && !GetParent()->HasFocusDeep()) GetParent()->SetFocus(); 
 	if (focuslook != _focus) {
 		focuslook = _focus; 
-		if (_focus && GetParent() && !GetParent()->HasFocusDeep()) 
-			GetParent()->SetFocus(); 
 		Refresh();
 	} 
 	return *this;

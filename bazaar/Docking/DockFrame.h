@@ -41,6 +41,7 @@ private:
 
 	void   StartNodeAnimate(Ctrl &c, int sz);
 	void   StartFrameAnimate(int sz);
+	void   EndAnimate();
 
 	void  AnimateTick();
 	bool  AnimateFrame();

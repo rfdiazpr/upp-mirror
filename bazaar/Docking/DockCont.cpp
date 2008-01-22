@@ -17,8 +17,6 @@ void ImgButton::Paint(Draw &w)
 
 // DockCont (Dockable Container)
 #if	defined(PLATFORM_WIN32)
-bool DockCont::dragging = false;
-
 LRESULT DockCont::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if (message == WM_NCRBUTTONDOWN) {
@@ -44,11 +42,37 @@ void DockCont::StartMouseDrag(const Point &p)
 	SendMessage(GetHWND(), WM_NCLBUTTONDOWN, 2, MAKELONG(p.x, p.y));	
 }
 #elif defined(PLATFORM_X11)
+void DockCont::EventProc(XWindow& w, XEvent *event)
+{
+	if (IsOpen()) {
+		switch(event->type) {
+		case ConfigureNotify:{
+			XConfigureEvent& e = event->xconfigure;
+			if (Point(e.x, e.y) != GetScreenRect().TopLeft()) {
+				if (!dragging)
+					MoveBegin();
+				Moving();				
+				SetFocus();
+				dragging = true;
+			}
+			}
+			break;
+		case FocusIn:
+			XFocusChangeEvent &e = event->xfocus;
+			if (e.mode == NotifyUngrab) {
+				dragging = false;
+				MoveEnd();
+//				SetFocus();
+				return;
+			}
+			break;
+		}
+	}
+	TopWindow::EventProc(w, event);	
+}
+
 void DockCont::StartMouseDrag(const Point &p)
 {
-	ContainerBase::TitleDrag();
-/*	This is the code for starting a window drag using a proper X11 window
-	Kept here in case I ever find a way of using it
 	Atom xwndDrag = XAtom("_NET_WM_MOVERESIZE");
 	XEvent e;
 	Zero(e);
@@ -66,13 +90,13 @@ void DockCont::StartMouseDrag(const Point &p)
 	
 	XUngrabPointer( Xdisplay, CurrentTime );
 	XSendEvent(Xdisplay, RootWindow(Xdisplay, Xscreenno), XFalse, SubstructureNotifyMask, &e);
-	XFlush(Xdisplay);	*/
+	XFlush(Xdisplay);
 }
 #endif
 
 void DockCont::Paint(Draw &w)
 {
-	ContainerBase::Paint(w);
+	TopWindow::Paint(w);
 	if (!IsFloating()) {
 		DockableCtrl &dc = GetCurrentDC();
 		const DockableCtrl::Style &s = *style;
@@ -490,6 +514,7 @@ bool DockCont::IsDockAllowed(int align, int dc_ix) const
 
 DockCont::DockCont()
 {
+	dragging = false;
 	dockstate = STATE_NONE;
 	base = NULL;
 	focus = false;	

@@ -476,6 +476,22 @@ bool SplitterTree::IsCtrlNearRoot(Ctrl &c) const
 	return false;
 }
 
+Ctrl * SplitterTree::GetNextSibling(Ctrl &c)
+{ 
+	Node *l = FindCtrl(root, &c); 
+	return (l && l->next ? l->next->GetCtrl() : NULL); 
+}
+
+Ctrl * SplitterTree::GetPrevSibling(Ctrl &c)
+{
+	Node *l = FindCtrl(root, &c);
+	if (!l) return NULL;
+	Node *n = l->parent->first;
+	while (n && n->next != l)
+		n = n->next;
+	return n ? n->GetCtrl() : NULL;
+}
+
 SplitterTree::~SplitterTree()
 {
 	Clear();

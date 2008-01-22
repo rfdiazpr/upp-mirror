@@ -29,7 +29,7 @@ public:
 	DockTest() {
 		// Layout main window
 		CtrlLayout(*this, "Docking Test App");
-		DockLayout(*this);
+		DockLayout();
 		Sizeable().MaximizeBox().MinimizeBox();
 		// Prepare controls
 		FillDataControls();
@@ -89,9 +89,7 @@ public:
 		DockWindow::State(reason);	
 		if (reason == Ctrl::OPEN) {
 			ASSERT(IsOpen());
-#if defined(PLATFORM_WIN32) 
-			Float(docker1); // This currently doesn't work on X11.
-#endif
+			Float(docker1);
 		}
 	}
 	

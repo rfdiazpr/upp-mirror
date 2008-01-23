@@ -17,8 +17,95 @@ static String ParseGroup(const String &s)
 	return Null;
 }
 
+void FloatFrame::FrameLayout(Rect &r)
+{
+	switch(layout)
+	{
+		case LAYOUT_LEFT:
+			LayoutFrameLeft(r, this, size);
+			break;
+		case LAYOUT_TOP:
+			LayoutFrameTop(r, this, size);
+			break;
+		case LAYOUT_RIGHT:
+			LayoutFrameRight(r, this, size);
+			break;
+		case LAYOUT_BOTTOM:
+			LayoutFrameBottom(r, this, size);
+			break;
+	}
+	r.top += border;
+	r.left += border;
+	r.right -= border;
+	r.bottom -= border;
+}
+
+void FloatFrame::FrameAddSize(Size& sz)
+{
+	sz += border * 2;
+	switch(layout)
+	{
+		case LAYOUT_LEFT:
+			sz.cx += size;
+			break;
+		case LAYOUT_TOP:
+			sz.cy += size;
+			break;
+		case LAYOUT_RIGHT:
+			sz.cx -= size;
+			break;
+		case LAYOUT_BOTTOM:
+			sz.cy -= size;
+			break;		
+	}	
+}
+
+
+void FloatFrame::FramePaint(Draw& w, const Rect& r)
+{
+	if(border > 0)
+	{
+		Rect n = r;
+		switch(layout)
+		{
+			case LAYOUT_LEFT:
+				n.left += size;
+				break;
+			case LAYOUT_TOP:
+				n.top += size;
+				break;
+			case LAYOUT_RIGHT:
+				n.right -= size;
+				break;
+			case LAYOUT_BOTTOM:
+				n.bottom -= size;
+				break;		
+		}
+		FieldFrame().FramePaint(w, n);
+	}
+	else
+		FrameCtrl::FramePaint(w, r);		
+}
+
+
+void FloatFrame::Fix(Size& sz)
+{
+	if(!horizontal)
+		Swap(sz.cx, sz.cy);
+}
+
+void FloatFrame::Fix(Point& p)
+{
+	if(!horizontal)
+		Swap(p.x, p.y);
+}
+
 TabScrollBar::TabScrollBar()
 {
+	FloatFrame::layout = FloatFrame::TOP;
+	FloatFrame::size = QT_SBHEIGHT;
+	FloatFrame::border = 0;
+	
 	total = 0;
 	pos = 0;
 	ps = 0;
@@ -31,6 +118,7 @@ TabScrollBar::TabScrollBar()
 void TabScrollBar::UpdatePos(bool update)
 {
 	sz = GetSize();
+	Fix(sz);
 	if(total <= 0 || sz.cx <= 0)
 		cs = ics = 0;
 	else
@@ -59,10 +147,21 @@ void TabScrollBar::Paint(Draw &w)
 	}
 	Size sz = GetSize();
 	w.DrawRect(sz, White);
-	if(total > sz.cx)
-		w.DrawRect(ffloor(pos), 1, fceil(size), 2, Blue);
+	
+	if(horizontal)
+	{
+		if(total > sz.cx)
+			w.DrawRect(ffloor(pos), 1, fceil(size), 2, Blue);
+		else
+			w.DrawRect(0, 1, sz.cx, 2, Blue);
+	}
 	else
-		w.DrawRect(0, 1, sz.cx, 2, Blue);
+	{
+		if(total > sz.cy)
+			w.DrawRect(1, ffloor(pos), 2, fceil(size), Blue);
+		else
+			w.DrawRect(1, 0, 2, sz.cy, Blue);
+	}
 }
 
 void TabScrollBar::Layout()
@@ -73,6 +172,7 @@ void TabScrollBar::Layout()
 void TabScrollBar::LeftDown(Point p, dword keyflags)
 {
 	SetCapture();
+	Fix(p);
 	old_pos = new_pos = p.x;
 	if(p.x < pos || p.x > pos + size)
 		start_pos = size / 2;
@@ -85,6 +185,7 @@ void TabScrollBar::LeftDown(Point p, dword keyflags)
 void TabScrollBar::LeftUp(Point p, dword keyflags)
 {
 	ReleaseCapture();
+	Fix(p);
 	old_pos = p.x;
 }
 
@@ -93,6 +194,7 @@ void TabScrollBar::MouseMove(Point p, dword keyflags)
 	if(!HasCapture())
 		return;
 
+	Fix(p);
 	new_pos = p.x;
 	UpdatePos();
 	Refresh();
@@ -166,7 +268,6 @@ void TabScrollBar::Set(const TabScrollBar& t)
 
 QuickTabs::QuickTabs()
 {
-	AddFrame(sc.Height(QT_SBHEIGHT));
 	sc.WhenScroll = THISBACK(Scroll);
 	highlight = -1;
 	active = -1;
@@ -185,6 +286,12 @@ QuickTabs::QuickTabs()
 
 	SetStyle(TabCtrl::StyleDefault());
 	BackPaint();
+	
+	FloatFrame::layout = FloatFrame::TOP;
+	FloatFrame::border = 2;
+	FloatFrame::size = GetHeight();	
+	
+	AddFrame(sc);	
 }
 
 void QuickTabs::CloseAll()
@@ -347,15 +454,16 @@ void QuickTabs::DoCloseGroup(int n)
 	SetCursor(-1);
 }
 
-void QuickTabs::DrawTab(Draw &w, int i)
+void QuickTabs::DrawTab(ImageDraw &w, Size &sz, int i)
 {
-	Size sz = GetSize();
-
 	Size isz = Img::CR0().GetSize();
 	int cnt = tabs.GetCount();
 
 	Tab &t = tabs[i];
-	int x = t.x - sc.GetPos() + style->margin - style->extendleft;
+	
+	int lx = i > 0 ? style->extendleft : 0;
+	
+	int x = t.x - sc.GetPos() + style->margin - lx;
 
 	bool ac = i == active;
 	bool hl = i == highlight;
@@ -367,14 +475,24 @@ void QuickTabs::DrawTab(Draw &w, int i)
 	const Value& sv = (cnt == 1 ? style->both : i == 0 ? style->first : i == cnt - 1 ? style->last : style->normal)[ndx];
 
 	if(ac)
-		ChPaint(w, x - style->sel.left, 0, t.cx + style->sel.right + style->sel.left, sz.cy + 1, sv);
+		ChPaint(w, x - style->sel.left, 
+		           0, 
+		           t.cx + style->sel.right + style->sel.left + lx,
+		           t.cy + style->sel.bottom,
+		           sv);
 	else
-		ChPaint(w, x, style->sel.top, t.cx, t.cy - style->sel.top, sv);
+		ChPaint(w, x,
+		           style->sel.top,
+		           t.cx + lx,
+		           t.cy - style->sel.top,
+		           sv);
 
 	int h = sz.cy + (ac ? 0 : style->sel.top);
 
 	if(crosses && tabs.GetCount() > 1)
-		w.DrawImage(x + t.cx - isz.cx - QT_MARGIN, (h - isz.cy) / 2, (ac || hl) ? (cross == i ? Img::CR2 : ac ? Img::CR1 : Img::CR0) : Img::CR0);
+		w.DrawImage(x + t.cx - isz.cx - QT_MARGIN,
+		            (h - isz.cy) / 2,
+		            (ac || hl) ? (cross == i ? Img::CR2 : ac ? Img::CR1 : Img::CR0) : Img::CR0);
 
 	if(file_icons)
 	{
@@ -387,23 +505,44 @@ void QuickTabs::DrawTab(Draw &w, int i)
 	int ty = (h - t.tsz.cy) / 2 + 1;
 	DrawFileName(w, x + QT_MARGIN + (QT_FILEICON + QT_SPACEICON) * int(file_icons), ty,
 	             t.tsz.cx, t.tsz.cy, fn.ToWString(),
-	             false, StdFont(), Black, LtBlue, Null, Null, false);
-
+	             false, StdFont(), Black, LtBlue, Null, Null, false);	             
 }
 
 void QuickTabs::Paint(Draw &w)
 {
 	Size sz = GetSize();
-	w.DrawRect(sz, SColorFace());
-	w.DrawRect(0, sz.cy - 1, sz.cx, 1, Color(128, 128, 128));
+	Fix(sz);
+
+	ImageDraw img(sz);
+
+	img.DrawRect(sz, SColorFace());
+	//w.DrawRect(0, sz.cy - 1, sz.cx, 1, Color(128, 128, 128));
+
 
 	for(int i = 0; i < tabs.GetCount(); i++)
 		if(tabs[i].visible && i != active)
-			DrawTab(w, i);
+			DrawTab(img, sz, i);
 
 	if(active >= 0)
-		DrawTab(w, active);
+		DrawTab(img, sz, active);
 
+	Image nimg;
+	switch(layout)
+	{
+		case LAYOUT_LEFT:
+			nimg = RotateAntiClockwise(img);
+			break;
+		case LAYOUT_TOP:
+			nimg = img;
+			break;
+		case LAYOUT_RIGHT:
+			nimg = RotateClockwise(img);
+			break;
+		case LAYOUT_BOTTOM:
+			nimg = MirrorHorz(MirrorVert(img));
+			break;
+	}
+	w.DrawImage(0, 0, nimg);
 
 	if(target >= 0)
 	{
@@ -412,10 +551,10 @@ void QuickTabs::Paint(Draw &w)
 
 		if(target != active && target != active + 1)
 		{
-			int x = (target == last + 1 ? tabs[last].Right() : tabs[target].x) 
+			int x = (target == last + 1 ? tabs[last].Right() : tabs[target].x)
 			        - sc.GetPos() - (target <= first ? 1 : 2)
-			        + style->margin - style->extendleft;
-			        
+			        + style->margin - (target > 0 ? style->extendleft : 0);
+
 			int y = style->sel.top;
 			int cy = sz.cy - y;
 			Color c(255, 0, 0);
@@ -460,7 +599,7 @@ int QuickTabs::GetWidth()
 
 int QuickTabs::GetHeight()
 {
-	return style->tabheight + /*style->sel.top +*/ style->sel.bottom + QT_SBHEIGHT + QT_SBSEPARATOR;
+	return style->tabheight + style->sel.top + QT_SBHEIGHT + QT_SBSEPARATOR;
 }
 
 void QuickTabs::Repos()
@@ -613,19 +752,20 @@ void QuickTabs::MouseMove(Point p, dword keyflags)
 		return;
 	}
 
-	p.x += sc.GetPos() - style->margin + style->extendleft;
+	p.x += sc.GetPos() - style->margin;
 	Size sz = GetSize();
-	
+
 	int h = highlight;
 	bool iscross = false;
 	bool istab = false;
 	for(int i = 0; i < tabs.GetCount(); i++)
 	{
-		if(tabs[i].HasMouse(p))
+		Point np(p.x + (i > 0 ? style->extendleft : 0), p.y);
+		if(tabs[i].HasMouse(np))
 		{
 			istab = true;
 			int h = sz.cy + (active == i ? 0 : style->sel.top);
-			iscross = crosses ? tabs[i].HasMouseCross(p, h) : false;
+			iscross = crosses ? tabs[i].HasMouseCross(np, h) : false;
 			if(highlight != i || (iscross && cross != i))
 			{
 				cross = iscross ? i : -1;
@@ -657,28 +797,6 @@ void QuickTabs::MouseLeave()
 	highlight = -1;
 	cross = -1;
 	Refresh();
-}
-
-void QuickTabs::FrameLayout(Rect &r)
-{
-	LayoutFrameTop(r, this, GetHeight());
-	r.top += 2;
-	r.left += 2;
-	r.right -= 2;
-	r.bottom -= 2;
-}
-
-void QuickTabs::FrameAddSize(Size& sz)
-{
-	sz += 4;
-	sz.cy += GetHeight();
-}
-
-void QuickTabs::FramePaint(Draw& w, const Rect& rr)
-{
-	Rect r = rr;
-	r.top += GetHeight();
-	FieldFrame().FramePaint(w, r);
 }
 
 void QuickTabs::DragAndDrop(Point p, PasteClip& d)
@@ -876,3 +994,29 @@ void QuickTabs::Set(const QuickTabs& t)
 	Repos();
 	sc.Set(t.sc);
 }
+
+void QuickTabs::SetLayout(int l)
+{
+	layout = l;
+	switch(l)
+	{
+		case LAYOUT_LEFT:
+			horizontal = sc.horizontal = false;
+			sc.layout = LAYOUT_RIGHT;
+			break;
+		case LAYOUT_TOP:
+			horizontal = sc.horizontal = true;
+			sc.layout = LAYOUT_BOTTOM;
+			break;
+		case LAYOUT_RIGHT:
+			horizontal = sc.horizontal = false;
+			sc.layout = LAYOUT_LEFT;
+			break;
+		case LAYOUT_BOTTOM:
+			horizontal = sc.horizontal = true;
+			sc.layout = LAYOUT_TOP;
+			break;
+	}
+	RefreshLayout();
+}
+

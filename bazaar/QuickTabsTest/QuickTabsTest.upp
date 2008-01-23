@@ -1,0 +1,15 @@
+flags
+	QUICKTABS_TEST;
+
+uses
+	CtrlLib,
+	QuickTabs;
+
+file
+	QuickTabsTest.h,
+	QuickTabsTest.cpp,
+	QuickTabsTest.lay;
+
+mainconfig
+	"" = "GUI";
+

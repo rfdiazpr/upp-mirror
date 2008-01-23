@@ -19,7 +19,31 @@ enum
 	QT_SPACEICON = 5
 };
 
-class TabScrollBar : public Ctrl
+struct FloatFrame : FrameCtrl<Ctrl>
+{
+	enum
+	{
+		LAYOUT_LEFT = 0,
+		LAYOUT_TOP = 1,
+		LAYOUT_RIGHT = 2,
+		LAYOUT_BOTTOM = 3
+	};
+	
+	int layout;
+	int size;
+	int border;
+	
+	bool horizontal;
+		
+	FloatFrame() : border(0), size(0), layout(LAYOUT_TOP), horizontal(true) {}
+	virtual void FrameLayout(Rect &r);
+	virtual void FrameAddSize(Size& sz);
+	virtual void FramePaint(Draw& w, const Rect& r);
+	void Fix(Size& sz);
+	void Fix(Point& p);
+};
+
+class TabScrollBar : public FloatFrame
 {
 	private:
 		int total;
@@ -82,14 +106,14 @@ struct Group : Moveable<Group>
 	int last;
 };
 
-class QuickTabs : public FrameCtrl<Ctrl>
+class QuickTabs : public FloatFrame
 {
 	public:
 
 	private:
 
 		int id;
-		FrameBottom<TabScrollBar> sc;
+		TabScrollBar sc;
 		void Scroll();
 
 		Vector<Group> groups;
@@ -116,9 +140,6 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		virtual void MiddleUp(Point p, dword keyflags);
 		virtual void MouseMove(Point p, dword keysflags);
 		virtual void MouseLeave();
-		virtual void FrameLayout(Rect &r);
-		virtual void FrameAddSize(Size& sz);
-		virtual void FramePaint(Draw& w, const Rect& r);
 		virtual void DragAndDrop(Point p, PasteClip& d);
 		virtual void LeftDrag(Point p, dword keyflags);
 		virtual void DragEnter();
@@ -127,7 +148,7 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		virtual void CancelMode();
 		virtual void MouseWheel(Point p, int zdelta, dword keyflags);
 
-		void DrawTab(Draw &w, int i);
+		void DrawTab(ImageDraw &w, Size &sz, int i);
 		void Repos();
 		int  Find(int id);
 		int  GetNext(int n);
@@ -182,6 +203,7 @@ class QuickTabs : public FrameCtrl<Ctrl>
 		void   SetAddFile(const String& fn);
 		void   RenameFile(const String& fn, const String& nn);
 		void   Set(const QuickTabs& t);
+		void   SetLayout(int l);
 
 		QuickTabs& SetStyle(const TabCtrl::Style& s)  { style = &s; Refresh(); return *this; }
 		static const TabCtrl::Style& StyleDefault();

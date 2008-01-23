@@ -426,7 +426,7 @@ void TreeCtrl::Dirty(int id)
 void TreeCtrl::Open(int id, bool open)
 {
 	Item& m = item[id];
-	if(m.isopen != open && (m.canopen || !open)) {
+	if(m.isopen != open && (m.canopen || !open || m.child.GetCount())) {
 		m.isopen = open;
 		int q = GetCursor();
 		while(q >= 0) {
@@ -706,7 +706,7 @@ void TreeCtrl::DoClick(Point p, dword flags, bool down)
 			selclick = true;
 			return;
 		}
-		SetFocus();
+		SetWantFocus();
 		int q = cursor;
 		SetCursorLine(i, true, false, true);
 		if(multiselect) {
@@ -873,12 +873,8 @@ void TreeCtrl::Paint(Draw& w)
 		}
 		if(w.IsPainting(0, y, sz.cx, msz.cy)) {
 			w.DrawRect(op.x, op.y, levelcx2, 1, SColorShadow);
-			if(m.child.GetCount()) {
-				Image im;
-				if(m.canopen)
-					im = m.isopen ? CtrlImg::treeminus() : CtrlImg::treeplus();
-				else
-					im = m.isopen ? CtrlImg::treeminusgrey() : CtrlImg::treeplusgrey();
+			if(m.canopen || m.child.GetCount()) {
+				Image im = m.isopen ? CtrlImg::treeminus() : CtrlImg::treeplus();
 				op -= im.GetSize() / 2;
 				w.DrawImage(op.x, op.y, im);
 			}

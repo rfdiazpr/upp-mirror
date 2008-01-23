@@ -71,8 +71,6 @@ HRESULT Calculator::get_Output(BSTR *result)
 
 OCX_APP_MAIN
 {
-	InstallCrashDump(); _DBG_
-
 	SetLanguage(LNG_CZECH);
 	SetDefaultCharset(CHARSET_WIN1250);
 }

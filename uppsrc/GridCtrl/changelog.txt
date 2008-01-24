@@ -237,6 +237,10 @@
 
 	after 712-dev1
 
-	* made find stirng control vista compatabile, removed unecessary members
+	* made find string control vista compatabile, removed unecessary members
 	- fixed coping/paste and WhenInsertRow/WhenUpdateRow issues (wrong rowidx, one callback call
 	  for multiple rows)
+	+ added German translation
+	* WhenEditRow removed - added WhenStartEdit
+	* WhenAcceptRow is always called now - no metter if any cell in row changed its value or not,
+	  WhenAcceptedRow is called only if there was chanage in a row

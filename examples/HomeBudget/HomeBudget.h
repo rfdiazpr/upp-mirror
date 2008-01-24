@@ -24,7 +24,7 @@ class HomeBudget : public WithHomeBudgetLayout<TopWindow>
 		EditDouble defval, val;
 		EditStringNotNull eg, ec;
 		EditString es;
-		FrameRight<Button> newcat;
+		//FrameRight<Button> newcat;
 
 		int dtid;
 		bool dosummary;

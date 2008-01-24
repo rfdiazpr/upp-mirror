@@ -124,7 +124,7 @@ void HomeBudget::Setup()
 	categories.WhenInsertRow = THISBACK(InsertCategory);
 	categories.WhenUpdateRow = THISBACK(UpdateCategory);
 	categories.WhenRemoveRow = THISBACK(RemoveCategory);
-	categories.WhenModification = THISBACK(UpdateCategories);
+	categories.WhenAcceptRow = THISBACK(UpdateCategories);
 	categories.Appending().Removing().Editing();
 	categories.RejectNullRow();
 	categories.SetToolBar();
@@ -162,11 +162,10 @@ void HomeBudget::Setup()
 	exit <<= THISBACK(Close);
 	options <<= THISBACK(Options);
 	about <<= THISBACK(About);
-	newcat <<= THISBACK(NewCategory);
 	help <<= THISBACK(Help);
 
-	newcat.SetImage(Images::SmallPlus());
-	category.AddFrame(newcat);
+	category.AlwaysDrop().Resizeable(false).Header(false);
+	category.AddPlus(THISBACK(NewCategory));
 
 	dosummary = true;
 }

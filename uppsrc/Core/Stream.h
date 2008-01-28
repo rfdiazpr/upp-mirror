@@ -88,6 +88,9 @@ public:
 	void      Put(const void *data, dword size)  { _Put(data, size); }
 	dword     Get(void *data, dword size)        { return _Get(data, size); }
 
+	void      Put(const String& s);
+	String    Get(dword size);
+
 	void      LoadThrowing()         { style |= STRM_THROW; }
 	void      LoadError();
 
@@ -153,7 +156,6 @@ public:
 	void      PutUtf8(int c);
 
 	void      Put(const char *s);
-	void      Put(const String& s);
 	void      Put(int c, int count);
 	void      Put0(int count)        { Put(0, count); }
 
@@ -301,6 +303,9 @@ public:
 	virtual   bool  IsOpen() const;
 
 public:
+	void Create(void *data, int size);
+
+	MemStream();
 	MemStream(void *data, int size);
 #ifdef flagSO
 	virtual ~MemStream();
@@ -309,7 +314,10 @@ public:
 
 class MemReadStream : public MemStream {
 public:
+	void Create(const void *data, int size);
+
 	MemReadStream(const void *data, int size);
+	MemReadStream();
 };
 
 class BlockStream : public Stream {

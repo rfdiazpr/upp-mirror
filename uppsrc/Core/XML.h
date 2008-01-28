@@ -116,6 +116,9 @@ class XmlNode {
 	Array<XmlNode>            node;
 
 public:
+	static const XmlNode& Void();
+	bool           IsVoid() const                             { return this == &Void(); }
+
 	int            GetType() const                            { return type; }
 	String         GetText() const                            { return text; }
 	String         GetTag() const                             { return text; }
@@ -136,7 +139,7 @@ public:
 	int            GetCount() const                           { return node.GetCount(); }
 	XmlNode&       At(int i)                                  { return node.At(i); }
 	const XmlNode& Node(int i) const                          { return node[i]; }
-	const XmlNode& operator[](int i) const                    { return node[i]; }
+	const XmlNode& operator[](int i) const                    { return i >= 0 && i < node.GetCount() ? node[i] : Void(); }
 	const XmlNode& operator[](const char *tag) const;
 	XmlNode&       Add()                                      { return node.Add(); }
 	void           AddText(const String& txt)                 { Add().CreateText(txt); }

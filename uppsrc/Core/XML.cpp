@@ -603,14 +603,20 @@ XmlNode& XmlNode::GetAdd(const char *tag)
 	return q >= 0 ? node[q] : Add(tag);
 }
 
+const XmlNode& XmlNode::Void()
+{
+	static XmlNode *h;
+	ONCELOCK {
+		static XmlNode empty;
+		h = &empty;
+	}
+	return *h;
+}
+
 const XmlNode& XmlNode::operator[](const char *tag) const
 {
 	int q = FindTag(tag);
-	if(q < 0) {
-		static XmlNode empty; // should really be TLS, but we are using non-public (yet) NTL knowledge to optimize here
-		return empty;
-	}
-	return node[q];
+	return q < 0 ? Void() : node[q];
 }
 
 void XmlNode::Remove(const char *tag)

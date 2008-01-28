@@ -32,7 +32,7 @@ void SQLApp::EditBook()
 		return;
 	if(dlg.Run() != IDOK)
 		return;
-	SQL * dlg.ctrls.Update(BOOK);
+	SQL * dlg.ctrls.Update(BOOK).Where(ID == q);
 	Query(q);
 }
 

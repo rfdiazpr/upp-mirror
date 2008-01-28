@@ -6,9 +6,9 @@
 
 
  /* File created by MIDL compiler version 6.00.0361 */
-/* at Tue Jan 22 18:24:16 2008
+/* at Thu Jan 24 22:09:58 2008
  */
-/* Compiler settings for s:\examples\OleCalc\calc.idl:
+/* Compiler settings for d:\examples\OleCalc\calc.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data
@@ -96,9 +96,9 @@ MIDL_DEFINE_GUID(CLSID, CLSID_Calculator,0x2CFA5DB1,0xA740,0x11d3,0x98,0x1C,0x00
 
 
  /* File created by MIDL compiler version 6.00.0361 */
-/* at Tue Jan 22 18:24:16 2008
+/* at Thu Jan 24 22:09:58 2008
  */
-/* Compiler settings for s:\examples\OleCalc\calc.idl:
+/* Compiler settings for d:\examples\OleCalc\calc.idl:
     Oicf, W1, Zp8, env=Win64 (32b run,appending)
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data

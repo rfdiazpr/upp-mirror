@@ -84,6 +84,16 @@ bool Stream::GetAll(void *data, dword size) {
 	return true;
 }
 
+String Stream::Get(dword size)
+{
+	StringBuffer b(size);
+	int n = Get(~b, size);
+	b.SetCount(n);
+	String s = b;
+	s.Trim(n);
+	return s;
+}
+
 int  Stream::_Get8()
 {
 	int c = Get();
@@ -1013,12 +1023,19 @@ bool  MemStream::IsOpen() const {
 	return true;
 }
 
-MemStream::MemStream(void *data, int size) {
+void MemStream::Create(void *data, int size)
+{
 	style = STRM_WRITE|STRM_READ|STRM_SEEK|STRM_LOADING;
 	ptr = buffer = (byte *) data;
 	wrlim = rdlim = buffer + size;
 	pos = 0;
 }
+
+MemStream::MemStream(void *data, int size) {
+	Create(data, size);
+}
+
+MemStream::MemStream() {}
 
 #ifdef flagSO
 MemStream::~MemStream() {}
@@ -1026,10 +1043,19 @@ MemStream::~MemStream() {}
 
 // ----------------------- Memory read streamer -------------------------
 
-MemReadStream::MemReadStream(const void *data, int size) : MemStream((void *)data, size) {
+void MemReadStream::Create(const void *data, int size)
+{
+	MemStream::Create((void *)data, size);
 	style = STRM_READ|STRM_SEEK|STRM_LOADING;
 	wrlim = buffer;
 }
+
+MemReadStream::MemReadStream(const void *data, int size)
+{
+	Create(data, size);
+}
+
+MemReadStream::MemReadStream() {}
 
 // --------------------------- Size stream -----------------------
 
@@ -1485,7 +1511,7 @@ bool SaveFile(const char *filename, const String& data) {
 }
 
 int64 CopyStream(Stream& dest, Stream& src, int64 count) {
-	int block = (int)min<int64>(count, 1 << 20);
+	int block = (int)min<int64>(count, 65536);
 	Buffer<byte> temp(block);
 	int loaded;
 	int64 done = 0;

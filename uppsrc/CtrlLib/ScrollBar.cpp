@@ -618,6 +618,7 @@ void SizeGrip::LeftDown(Point p, dword flags)
 	if(!q || q->IsMaximized() || !q->IsSizeable()) return;
 #ifdef PLATFORM_WIN32
 	HWND hwnd = q->GetHWND();
+	p = GetMousePos() - q->GetRect().TopLeft();
 	if(hwnd) {
 		::SendMessage(hwnd, WM_SYSCOMMAND, 0xf008, MAKELONG(p.x, p.y));
 		::SendMessage(hwnd, WM_LBUTTONUP, 0, MAKELONG(p.x, p.y));

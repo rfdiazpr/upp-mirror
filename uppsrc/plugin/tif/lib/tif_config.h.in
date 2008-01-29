@@ -52,6 +52,9 @@
 /* Define to 1 if you have the `isascii' function. */
 #undef HAVE_ISASCII
 
+/* Define to 1 if you have the `lfind' function. */
+#undef HAVE_LFIND
+
 /* Define to 1 if you have the `c' library (-lc). */
 #undef HAVE_LIBC
 
@@ -81,6 +84,9 @@
 
 /* Define if you have POSIX threads libraries and header files. */
 #undef HAVE_PTHREAD
+
+/* Define to 1 if you have the <search.h> header file. */
+#undef HAVE_SEARCH_H
 
 /* Define to 1 if you have the `sqrt' function. */
 #undef HAVE_SQRT
@@ -143,8 +149,15 @@
 /* Support LogLuv high dynamic range encoding */
 #undef LOGLUV_SUPPORT
 
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
+
 /* Support LZW algorithm */
 #undef LZW_SUPPORT
+
+/* Support Microsoft Document Imaging format */
+#undef MDI_SUPPORT
 
 /* Support NeXT 2-bit RLE algorithm */
 #undef NEXT_SUPPORT
@@ -180,7 +193,7 @@
 /* Support Pixar log-format algorithm (requires Zlib) */
 #undef PIXARLOG_SUPPORT
 
-/* Define to the necessary symbol if this constant uses a non-standard name on
+/* Define to necessary symbol if this constant uses a non-standard name on
    your system. */
 #undef PTHREAD_CREATE_JOINABLE
 
@@ -194,8 +207,11 @@
 #undef STDC_HEADERS
 
 /* Support strip chopping (whether or not to convert single-strip uncompressed
-   images to mutiple strips of ~8Kb to reduce memory usage) */
+   images to mutiple strips of specified size to reduce memory usage) */
 #undef STRIPCHOP_DEFAULT
+
+/* Default size of the strip in bytes (when strip chopping enabled) */
+#undef STRIP_SIZE_DEFAULT
 
 /* Enable SubIFD tag (330) support */
 #undef SUBIFD_SUPPORT

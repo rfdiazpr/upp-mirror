@@ -1,4 +1,4 @@
-/* $Id: tif_win32.c,v 1.14 2005/01/12 13:00:20 dron Exp $ */
+/* $Id: tif_win32.c,v 1.18 2006/02/07 11:03:29 dron Exp $ */
 
 /*
  * Copyright (c) 1988-1997 Sam Leffler
@@ -199,11 +199,11 @@ TIFFOpen(const char* name, const char* mode)
 	}
 	fd = (thandle_t)CreateFileA(name,
 		(m == O_RDONLY)?GENERIC_READ:(GENERIC_READ | GENERIC_WRITE),
-		FILE_SHARE_READ, NULL, dwMode,
+		FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, dwMode,
 		(m == O_RDONLY)?FILE_ATTRIBUTE_READONLY:FILE_ATTRIBUTE_NORMAL,
 		NULL);
 	if (fd == INVALID_HANDLE_VALUE) {
-		TIFFError(module, "%s: Cannot open", name);
+		TIFFErrorExt(0, module, "%s: Cannot open", name);
 		return ((TIFF *)0);
 	}
 
@@ -244,16 +244,16 @@ TIFFOpenW(const wchar_t* name, const char* mode)
 		(m == O_RDONLY)?FILE_ATTRIBUTE_READONLY:FILE_ATTRIBUTE_NORMAL,
 		NULL);
 	if (fd == INVALID_HANDLE_VALUE) {
-		TIFFError(module, "%S: Cannot open", name);
+		TIFFErrorExt(0, module, "%S: Cannot open", name);
 		return ((TIFF *)0);
 	}
 
 	mbname = NULL;
 	mbsize = WideCharToMultiByte(CP_ACP, 0, name, -1, NULL, 0, NULL, NULL);
 	if (mbsize > 0) {
-		mbname = _TIFFmalloc(mbsize);
+		mbname = (char *)_TIFFmalloc(mbsize);
 		if (!mbname) {
-			TIFFError(module,
+			TIFFErrorExt(0, module,
 			"Can't allocate space for filename conversion buffer");
 			return ((TIFF*)0);
 		}
@@ -264,6 +264,8 @@ TIFFOpenW(const wchar_t* name, const char* mode)
 
 	tif = TIFFFdOpen((int)fd,
 			 (mbname != NULL) ? mbname : "<unknown>", mode);
+	if(!tif)
+		CloseHandle(fd);
 
 	_TIFFfree(mbname);
 

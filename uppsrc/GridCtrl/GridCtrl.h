@@ -17,7 +17,7 @@ NAMESPACE_UPP
 #define FOREACH_MODIFIED_ROW(x) FOREACH_ROW(x) if(x.IsModifiedRow())
 #define FOREACH_MODIFIED_OR_NEW_ROW(x) FOREACH_ROW(x) if(x.IsModifiedRow() || x.IsAddedRow())
 #define FOREACH_ROW_NOT_CURRENT(x) FOREACH_ROW(x) if(!x.IsCurrentRow())
-#define ASSIGN(grid, column) (column, grid(column))
+#define COLUMN(grid, column) (column, grid(column))
 
 namespace GF
 {
@@ -1570,6 +1570,7 @@ class GridCtrl : public Ctrl
 		Callback WhenChangeCol;
 		Callback WhenChangeRow;
 		Callback WhenCursor;
+		Callback WhenEmpty;
 
 		Callback WhenCtrlsAction;
 

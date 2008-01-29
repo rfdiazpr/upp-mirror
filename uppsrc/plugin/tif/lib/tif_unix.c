@@ -1,4 +1,4 @@
-/* $Id: tif_unix.c,v 1.8 2004/11/28 15:04:54 dron Exp $ */
+/* $Id: tif_unix.c,v 1.12 2006/03/21 16:37:51 dron Exp $ */
 
 /*
  * Copyright (c) 1988-1997 Sam Leffler
@@ -30,6 +30,11 @@
  */
 #include "tif_config.h"
 
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+
+#include <stdarg.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 
@@ -37,15 +42,11 @@
 # include <unistd.h>
 #endif
 
-#if HAVE_FCNTL_H
+#ifdef HAVE_FCNTL_H
 # include <fcntl.h>
 #endif
 
-#if HAVE_SYS_TYPES_H
-# include <sys/types.h>
-#endif
-
-#if HAVE_IO_H
+#ifdef HAVE_IO_H
 # include <io.h>
 #endif
 
@@ -170,7 +171,7 @@ TIFFOpen(const char* name, const char* mode)
 	fd = open(name, m, 0666);
 #endif
 	if (fd < 0) {
-		TIFFError(module, "%s: Cannot open", name);
+		TIFFErrorExt(0, module, "%s: Cannot open", name);
 		return ((TIFF *)0);
 	}
 
@@ -181,6 +182,7 @@ TIFFOpen(const char* name, const char* mode)
 }
 
 #ifdef __WIN32__
+#include <windows.h>
 /*
  * Open a TIFF file with a Unicode filename, for read/writing.
  */
@@ -204,7 +206,7 @@ TIFFOpenW(const wchar_t* name, const char* mode)
 
 	fd = _wopen(name, m, 0666);
 	if (fd < 0) {
-		TIFFError(module, "%s: Cannot open", name);
+		TIFFErrorExt(0, module, "%s: Cannot open", name);
 		return ((TIFF *)0);
 	}
 
@@ -213,7 +215,7 @@ TIFFOpenW(const wchar_t* name, const char* mode)
 	if (mbsize > 0) {
 		mbname = _TIFFmalloc(mbsize);
 		if (!mbname) {
-			TIFFError(module,
+			TIFFErrorExt(0, module,
 			"Can't allocate space for filename conversion buffer");
 			return ((TIFF*)0);
 		}

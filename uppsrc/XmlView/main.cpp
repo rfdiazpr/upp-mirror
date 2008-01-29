@@ -7,10 +7,11 @@
 void XmlView::Load(int parent, XmlParser& p)
 {
 	if(p.IsTag()) {
-		String txt = p.ReadTag();
+		String tag = p.ReadTag();
+		String txt = tag;
 		for(int i = 0; i < p.GetAttrCount(); i++)
 			txt << ' ' << p.GetAttr(i) << "=\"" << p[i] << "\"";
-		parent = xml.Add(parent, XmlImg::Tag(), txt);
+		parent = xml.Add(parent, XmlImg::Tag(), tag, txt);
 		while(!p.End()) {
 			if(p.IsEof())
 				throw XmlError("");
@@ -19,16 +20,16 @@ void XmlView::Load(int parent, XmlParser& p)
 	}
 	else
 	if(p.IsText())
-		xml.Add(parent, XmlImg::Text(), NormalizeSpaces(p.ReadText()));
+		xml.Add(parent, XmlImg::Text(), Null, NormalizeSpaces(p.ReadText()));
 	else
 	if(p.IsPI())
-		xml.Add(parent, XmlImg::PI(), NormalizeSpaces(p.ReadPI()));
+		xml.Add(parent, XmlImg::PI(), Null, NormalizeSpaces(p.ReadPI()));
 	else
 	if(p.IsDecl())
-		xml.Add(parent, XmlImg::Decl(), NormalizeSpaces(p.ReadDecl()));
+		xml.Add(parent, XmlImg::Decl(), Null, NormalizeSpaces(p.ReadDecl()));
 	else
 	if(p.IsComment())
-		xml.Add(parent, XmlImg::Comment(), NormalizeSpaces(p.ReadComment()));
+		xml.Add(parent, XmlImg::Comment(), Null, NormalizeSpaces(p.ReadComment()));
 	else
 		NEVER();
 }
@@ -130,9 +131,13 @@ void XmlView::CopyPath()
 {
 	String path;
 	int id = xml.GetCursor();
-	while(c >= 0) {
-		ui = xml.GetParent(c)
+	while(id >= 0) {
+		String tag = xml.Get(id);
+		if(tag.GetCount())
+			path = "[" + AsCString(tag) + "]" + path;
+		id = xml.GetParent(id);
 	}
+	WriteClipboardText(path);
 }
 
 XmlView::XmlView()

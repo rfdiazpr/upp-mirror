@@ -74,8 +74,6 @@ bool UnZip::ReadFile(Stream& out, Gate2<int, int> progress)
 		SetError();
 		return false;
 	}
-	DUMP(crc);
-	DUMP(l);
 	if(crc != crc32 || l != usize) {
 		SetError();
 		return false;

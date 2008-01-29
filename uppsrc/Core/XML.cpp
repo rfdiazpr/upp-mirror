@@ -582,8 +582,9 @@ XmlParser::XmlParser(const char *s)
 	Next();
 }
 
-int XmlNode::FindTag(const char *tag) const
+int XmlNode::FindTag(const char *_tag) const
 {
+	String tag = _tag;
 	for(int i = 0; i < node.GetCount(); i++)
 		if(node[i].type == XML_TAG && node[i].text == tag)
 			return i;

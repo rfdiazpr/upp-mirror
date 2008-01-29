@@ -8,7 +8,7 @@ NAMESPACE_UPP
 
 #ifdef PLATFORM_WIN32
 
-#define LTIMING(x) // RTIMING(x)
+#define LTIMING(x)  RTIMING(x)
 
 bool ImageFallBack
 // = true

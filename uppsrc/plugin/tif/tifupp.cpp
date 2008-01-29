@@ -8,8 +8,9 @@
 #undef int32
 #undef uint32
 
-#define LLOG(x)
+#define LLOG(x) // LOG(x)
 
+// #define DBGALLOC 1
 
 NAMESPACE_UPP
 
@@ -18,9 +19,11 @@ double total_allocated = 0, total_freed = 0;
 unsigned alloc_calls = 0, free_calls = 0, realloc_calls = 0;
 Index<tsize_t> size_index;
 Vector<int> size_alloc_calls, size_free_calls;
+int op_id;
 
-void dbgAddAlloc(tsize_t s)
+void dbgAddAlloc(void *p, tsize_t s)
 {
+	++op_id;
 	total_allocated += s;
 	int i = size_index.Find(s);
 	if(i >= 0)
@@ -31,11 +34,12 @@ void dbgAddAlloc(tsize_t s)
 		size_alloc_calls.Add(1);
 		size_free_calls.Add(0);
 	}
-	LLOG("dbgAddAlloc(" << (int)s << "): alloc = " << total_allocated << ", free = " << total_freed << ", diff = " << (total_allocated - total_freed));
+	LLOG(op_id << " tAlloc(" << s << ") = " << p << ": blks: " << alloc_calls - free_calls << ", alloc = " << total_allocated << ", free = " << total_freed << ", diff = " << (total_allocated - total_freed));
 }
 
-void dbgAddFree(tsize_t s)
+void dbgAddFree(void *p, tsize_t s)
 {
+	++op_id;
 	total_freed += s;
 	int i = size_index.Find(s);
 	if(i >= 0)
@@ -46,7 +50,7 @@ void dbgAddFree(tsize_t s)
 		size_alloc_calls.Add(0);
 		size_free_calls.Add(1);
 	}
-	LLOG("dbgAddFree(" << (int)s << "): alloc = " << total_allocated << ", free = " << total_freed << ", diff = " << (total_allocated - total_freed));
+	LLOG(op_id << " tFree(" << p << ") = " << s << ": blks: " << alloc_calls - free_calls << ", alloc = " << total_allocated << ", free = " << total_freed << ", diff = " << (total_allocated - total_freed));
 }
 
 void TiffAllocStat()
@@ -69,7 +73,7 @@ extern "C" tdata_t _TIFFmalloc(tsize_t s)
 	Poke32le(p, s);
 #if DBGALLOC
 	alloc_calls++;
-	dbgAddAlloc(s);
+	dbgAddAlloc(p, s);
 #endif
 	return (tdata_t)(p + 4);
 }
@@ -80,7 +84,7 @@ extern "C" void    _TIFFfree(tdata_t p)
 		byte *rawp = (byte *)p - 4;
 #if DBGALLOC
 		free_calls++;
-		dbgAddFree(PeekIL(rawp));
+		dbgAddFree(p, Peek32le(rawp));
 #endif
 		delete[] (rawp);
 	}
@@ -96,13 +100,13 @@ extern "C" tdata_t _TIFFrealloc(tdata_t p, tsize_t s)
 	byte *newptr = new byte[s + 4];
 #if DBGALLOC
 	alloc_calls++;
-	dbgAddAlloc(s);
+	dbgAddAlloc(newptr, s);
 #endif
 	if(oldsize) {
 		memcpy(newptr + 4, p, min<int>(oldsize, s));
 #if DBGALLOC
 		free_calls++;
-		dbgAddFree(oldsize);
+		dbgAddFree(newptr, oldsize);
 #endif
 		delete[] ((byte *)p - 4);
 	}

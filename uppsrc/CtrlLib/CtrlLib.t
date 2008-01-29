@@ -1557,8 +1557,8 @@ srSP("Folder ")
 trTR(" Klasör ")
 zhCN("文件夹  ")
 
-T_(" drive(s)")
-csCZ(" disk(y)")
+T_(" drives(s)")
+csCZ("")
 deDE("")
 esES("")
 fiFI("")
@@ -2329,6 +2329,20 @@ zhCN("布局")
 
 
 // Obsolete
+
+T_(" drive(s)")
+csCZ(" disk(y)")
+deDE("")
+esES("")
+fiFI("")
+frFR("")
+huHU("")
+itIT("")
+plPL("")
+ruRU("")
+srSP("")
+trTR("")
+zhCN("")
 
 T_("&Cancel")
 csCZ("&Zrušit")

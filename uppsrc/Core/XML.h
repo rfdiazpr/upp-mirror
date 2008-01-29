@@ -150,6 +150,7 @@ public:
 	void           Remove(const char *tag);
 
 	String         GatherText() const;
+	String         operator~() const                          { return GatherText(); }
 
 	int            GetAttrCount() const                       { return attr.GetCount(); }
 	String         AttrId(int i) const                        { return attr.GetKey(i); }

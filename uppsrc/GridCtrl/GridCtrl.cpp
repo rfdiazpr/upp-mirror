@@ -255,6 +255,7 @@ GridCtrl::GridCtrl() : holder(*this)
 	AddFrame(sby);
 	Ctrl::Add(holder);
 
+	resize_panel_open = false;
 	resize_panel.WhenClose = Proxy(WhenClose);
 
 	resizing = false;
@@ -5851,6 +5852,9 @@ bool GridCtrl::Remove0(int row, int cnt /* = 1*/, bool recalc /* = true*/, bool 
 			oldcur.x = oldcur.y = -1;
 		}
 	}
+
+	if(IsEmpty())
+		WhenEmpty();
 
 	if(ready && recalc)
 	{

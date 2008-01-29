@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LTIMING(x) // RTIMING(x)
+#define LTIMING(x)  RTIMING(x)
 
 int ImageBuffer::ScanKind() const
 {

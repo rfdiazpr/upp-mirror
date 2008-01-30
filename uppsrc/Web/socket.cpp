@@ -321,9 +321,10 @@ SOCKET Socket::Data::AcceptRaw(dword *ipaddr, int timeout_msec)
 		return INVALID_SOCKET;
 	}
 //	puts("Socket::Accept: socket accepted...");
+	dword ip = ntohl(addr.sin_addr.s_addr);
 	if(ipaddr)
-		*ipaddr = Peek32be(&addr.sin_addr);
-	SLOG("Socket::Accept() -> " << (int)connection << " &" << FormatIP(Peek32be(&addr.sin_addr)));
+		*ipaddr = ip;
+	SLOG("Socket::Accept() -> " << (int)connection << " &" << FormatIP(ip));
 	return connection;
 }
 

@@ -136,8 +136,8 @@ inline int    Peek32be(const void *ptr)  { return MAKELONG(Peek16be((byte *)ptr 
 inline int64  Peek64be(const void *ptr)  { return MAKEQWORD(Peek32be((byte *)ptr + 4), Peek32be(ptr)); }
 
 inline void   Poke16be(const void *ptr, int val)    { ((byte *)ptr)[1] = LOBYTE(val); ((byte *)ptr)[0] = HIBYTE(val); }
-inline void   Poke32be(const void *ptr, int val)    { Poke16le(ptr, HIWORD(val)); Poke16le((byte *)ptr + 2, LOWORD(val)); }
-inline void   Poke64be(const void *ptr, int64 val)  { Poke32le(ptr, HIDWORD(val)); Poke32le((byte *)ptr + 4, LODWORD(val)); }
+inline void   Poke32be(const void *ptr, int val)    { Poke16be(ptr, HIWORD(val)); Poke16be((byte *)ptr + 2, LOWORD(val)); }
+inline void   Poke64be(const void *ptr, int64 val)  { Poke32be(ptr, HIDWORD(val)); Poke32be((byte *)ptr + 4, LODWORD(val)); }
 
 inline void   EndianSwap(word& v)   { byte *x = (byte *)(&v); Swap(x[0], x[1]); }
 inline void   EndianSwap(int16& v)  { EndianSwap(*(word *)&v); }

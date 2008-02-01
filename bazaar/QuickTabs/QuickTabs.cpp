@@ -757,9 +757,9 @@ void QuickTabs::MiddleUp(Point p, dword keyflags)
 
 int QuickTabs::GetTargetTab(Point p)
 {
+	Fix(p);
 	p.x += sc.GetPos();
 
-	Fix(p);
 	
 	int f = GetFirst();
 	int l = GetLast();

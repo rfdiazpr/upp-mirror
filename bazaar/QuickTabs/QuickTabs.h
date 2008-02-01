@@ -148,7 +148,8 @@ class QuickTabs : public FloatFrame
 		virtual void CancelMode();
 		virtual void MouseWheel(Point p, int zdelta, dword keyflags);
 
-		void DrawTab(ImageDraw &w, Size &sz, int i);
+		void DrawTab(Draw& w, Size &sz, int i);
+		void DrawLabel(Draw& w, int x, int y, Tab& t);
 		void Repos();
 		int  Find(int id);
 		int  GetNext(int n);
@@ -203,7 +204,8 @@ class QuickTabs : public FloatFrame
 		void   SetAddFile(const String& fn);
 		void   RenameFile(const String& fn, const String& nn);
 		void   Set(const QuickTabs& t);
-		void   SetLayout(int l);
+		
+		QuickTabs&  SetLayout(int l);
 
 		QuickTabs& SetStyle(const TabCtrl::Style& s)  { style = &s; Refresh(); return *this; }
 		static const TabCtrl::Style& StyleDefault();

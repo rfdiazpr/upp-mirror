@@ -1,3 +1,5 @@
+#define FOLDHASH
+
 enum { UNSIGNED_HIBIT = 0x80000000 };
 
 class HashBase : Moveable<HashBase> {

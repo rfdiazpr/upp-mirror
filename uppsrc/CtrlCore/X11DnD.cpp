@@ -1,6 +1,6 @@
 #include "CtrlCore.h"
 
-#define LLOG(x)  // LOG(x)
+#define LLOG(x)   LOG(x)
 
 #ifdef PLATFORM_X11
 
@@ -238,7 +238,7 @@ void DnDLoop::SetFmts(Window w, Atom property)
 		LLOG('\t' << XAtomName(x[i]));
 	}
 	XChangeProperty(Xdisplay, w, property, XAtom("ATOM"),
-	                8 * sizeof(Atom), 0, (unsigned char*)~x,
+	                32, 0, (unsigned char*)~x,
 	                fmt.GetCount());
 }
 
@@ -390,7 +390,7 @@ void Ctrl::DropEvent(XWindow& w, XEvent *event)
 	if(event->xclient.message_type == XdndPosition) {
 		dword x = event->xclient.data.l[2];
 		XdndPos = Point(HIWORD(x), LOWORD(x));
-		LLOG("XdndPosition " << p << ", action " << XAtomName(event->xclient.data.l[4]));
+		LLOG("XdndPosition " << XdndPos << ", action " << XAtomName(event->xclient.data.l[4]));
 		XdndAction = event->xclient.data.l[4] == XdndActionMove ? DND_MOVE : DND_COPY;
 		DnD(src, false);
 	}

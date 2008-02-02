@@ -16,14 +16,14 @@ const RasterFormat *Raster::GetFormat()
 	return NULL;
 }
 
+void Raster::SeekPage(int page)
+{
+	ASSERT(page == 0);
+}
+
 int Raster::GetPageCount()
 {
 	return 1;
-}
-
-void Raster::SeekPage(int ii)
-{
-	ASSERT(ii == 0);
 }
 
 void Raster::Line::Pick(pick_ Line& b)

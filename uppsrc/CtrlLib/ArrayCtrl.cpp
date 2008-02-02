@@ -459,10 +459,12 @@ Value ArrayCtrl::GetColumn(int row, int col) const {
 	const Column& c = column[col];
 	if(c.pos.GetCount() == 0) return row;
 	if(c.pos.GetCount() == 1) return Get0(row, Pos(c.pos[0]));
-	ValueArray va;
-	for(int i = 0; i < c.pos.GetCount(); i++)
-		va.Add(Get0(row, Pos(c.pos[i])));
-	return va;
+	ValueMap vm;
+	for(int i = 0; i < c.pos.GetCount(); i++) {
+		int ii = Pos(c.pos[i]);
+		vm.Add(ii < idx.GetCount() ? idx.GetKey(ii) : Id(), Get0(row, ii));
+	}
+	return vm;
 }
 
 Value ArrayCtrl::GetConvertedColumn(int i, int col) {

@@ -332,8 +332,16 @@ ValueArray::operator Value() const {
 ValueArray::ValueArray(const Value& src)
 {
 	if(!UPP::IsNull(src)) {
-		ASSERT(dynamic_cast<const ValueArray::Data *>(src.GetVoidPtr()));
-		data = (ValueArray::Data *)src.GetVoidPtr();
+		if(IsType<ValueMap>(src)) {
+			ValueArray v = ValueMap(src);
+			data = v.data;
+			data->Retain();
+			return;
+		}
+		else {
+			ASSERT(dynamic_cast<const ValueArray::Data *>(src.GetVoidPtr()));
+			data = (ValueArray::Data *)src.GetVoidPtr();
+		}
 	}
 	else
 		data = &Single<NullData>();
@@ -397,6 +405,146 @@ String AsString(const ValueArray& v) {
 
 INITBLOCK {
 	RichValue<ValueArray>::Register();
+}
+
+bool ValueMap::Data::IsNull() const {
+	return this == &Single<ValueMap::NullData>();
+}
+
+void ValueMap::Data::Serialize(Stream& s) {
+	s % key % value;
+}
+
+unsigned ValueMap::Data::GetHashValue() const {
+	CombineHash w(key.GetCount());
+	for(int i = 0; i < key.GetCount(); i++)
+		w.Put(key[i].GetHashValue());
+	w.Put(value.GetHashValue());
+	return w;
+}
+
+static bool sIsEqual(const Index<Value>& a, const Index<Value>& b) {
+	if(&a == &b) return true;
+	if(a.GetCount() != b.GetCount()) return false;
+	for(int i = 0; i < a.GetCount(); i++) {
+		if(a[i] != b[i]) return false;
+	}
+	return true;
+}
+
+bool ValueMap::Data::IsEqual(const Value::Void *p) {
+	return sIsEqual(((Data *)p)->key, key) && ((Data *)p)->value == value;
+}
+
+bool ValueMap::operator==(const ValueMap& v) const {
+	return sIsEqual(data->key, v.data->key) && data->value == v.data->value;
+}
+
+String ValueMap::Data::AsString() const
+{
+	String s;
+	s << "{ ";
+	for(int i = 0; i < key.GetCount(); i++) {
+		if(i) s << ", ";
+		s << "(" << key[i] << ", " << value[i] << ")";
+	}
+	s << " }";
+	return s;
+}
+
+ValueMap::Data& ValueMap::Create()
+{
+	data = new Data;
+	return *data;
+}
+
+ValueMap::Data& ValueMap::Clone() {
+	if(data->GetRefCount() != 1) {
+		Data *d = new Data;
+		d->key <<= data->key;
+		d->value = data->value;
+		data->Release();
+		data = d;
+	}
+	return *data;
+}
+
+void ValueMap::Init0()
+{
+	data = &Single<NullData>();
+	data->Retain();
+}
+
+ValueMap::ValueMap(const ValueMap& v)
+{
+	data = v.data;
+	data->Retain();
+}
+
+ValueMap::operator Value() const {
+	data->Retain();
+	return Value(data);
+}
+
+ValueMap::ValueMap(const Value& src)
+{
+	if(!IsNull(src)) {
+		if(IsType<ValueArray>(src)) {
+			ValueArray va = src;
+			Init0();
+			for(int i = 0; i < va.GetCount(); i++)
+				Add(i, va[i]);
+			return;
+		}
+		else {
+			ASSERT(dynamic_cast<const ValueMap::Data *>(src.GetVoidPtr()));
+			data = (ValueMap::Data *)src.GetVoidPtr();
+		}
+	}
+	else
+		data = &Single<NullData>();
+	data->Retain();
+}
+
+void ValueMap::Serialize(Stream& s) {
+	if(s.IsLoading()) {
+		data->Release();
+		Create();
+	}
+	data->Serialize(s);
+}
+
+ValueMap::~ValueMap() {
+	ASSERT(data->GetRefCount() > 0);
+	data->Release();
+}
+
+ValueMap& ValueMap::operator=(const ValueMap& v) {
+	v.data->Retain();
+	data->Release();
+	data = v.data;
+	return *this;
+}
+
+void ValueMap::Clear() {
+	data->Release();
+	Init0();
+}
+
+void ValueMap::Add(const Value& key, const Value& value) {
+	Data& d = Clone();
+	d.key.Add(key);
+	d.value.Add(value);
+}
+
+Value ValueMap::operator[](const Value& key) const
+{
+	int q = data->key.Find(key);
+	return q >= 0 ? data->value[q] : ErrorValue();
+}
+
+INITBLOCK {
+	RichValue<Color>::Register();
 }
 
 // ----------------------------------

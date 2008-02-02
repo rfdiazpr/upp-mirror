@@ -203,7 +203,7 @@ void TopicCtrl::SyncDocTree()
 		VectorMap<String, Vector<String> >& package = map[i];
 		for(int i = 0; i < package.GetCount(); i++) {
 			tl.group = package.GetKey(i);
-			if(all || tl.group == "src" || tl.group == "srcdoc") {
+			if(all || tl.group == "src" || tl.group == "srcdoc" || tl.group == "srcimp") {
 				int gid = AddTree(pid, Null, "\1" + tl.group, tl.group);
 				Vector<String> group = package[i];
 				for(int i = 0; i < group.GetCount(); i++) {

@@ -7,12 +7,13 @@ NAMESPACE_UPP
 #pragma optimize("t", on)
 #endif
 
-int Pow2Bound(int i)
+unsigned Pow2Bound(unsigned i)
 {
-	int n = 1;
+	unsigned n = 1;
 	while(n < i) {
 		n <<= 1;
-		ASSERT(n);
+		if(n == 0)
+			return 1 << 31;
 	}
 	return n;
 }
@@ -27,6 +28,12 @@ unsigned PrimeBound(unsigned n)
 	};
 	return *FindUpperBoundIter(prime_tab, prime_tab + __countof(prime_tab), n);
 }
+
+#ifdef FOLDHASH
+inline unsigned HashBound(unsigned i) { return Pow2Bound(i); }
+#else
+inline unsigned HashBound(unsigned i) { return PrimeBound(i); }
+#endif
 
 void HashBase::Free()
 {
@@ -128,7 +135,7 @@ void HashBase::Reindex(int n)
 {
 	ClearIndex();
 	Free();
-	mcount = n = PrimeBound(n);
+	mcount = n = HashBound(n);
 	map = (int *)new byte[n * sizeof(int)];
 	Fill(map, map + n, -1);
 	FinishIndex();
@@ -222,7 +229,7 @@ void HashBase::Set(int i, unsigned _hash) {
 
 void HashBase::Shrink() {
 	hash.Shrink();
-	if((int)PrimeBound(hash.GetCount()) < mcount) {
+	if((int)HashBound(hash.GetCount()) < mcount) {
 		ClearIndex();
 		DoIndex();
 	}
@@ -234,7 +241,7 @@ void HashBase::Reserve(int n)
 {
 	hash.Reserve(n);
 	link.Reserve(n);
-	if((int)PrimeBound(n) > mcount)
+	if((int)HashBound(n) > mcount)
 		Reindex(n);
 }
 

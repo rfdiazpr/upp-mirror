@@ -81,6 +81,7 @@ void MenuBar::Paint(Draw& w)
 		return;
 	if(GetParent())
 		if(!IsNull(style->arealook) && (arealook < 0 ? InFrame() : arealook)) {
+			PaintBarArea(w, this, style->arealook, (GetAlign() != BAR_TOP) ? GetScreenRect().bottom : Null);
 			PaintBarArea(w, this, style->arealook);
 			PaintBar(w, style->breaksep, Null);
 		}

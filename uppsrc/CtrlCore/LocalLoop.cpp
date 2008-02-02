@@ -43,9 +43,9 @@ Image RectTracker::CursorImage(Point, dword)
 	return cursorimage;
 }
 
-static uint64 RectTracker_normal = INT64(0x55aa55aa55aa55aa);
-static uint64 RectTracker_dashed = INT64(0xf0783c1e0f87c3e1);
-static uint64 RectTracker_solid  = INT64(0);
+static uint64 RectTracker_normal = I64(0x55aa55aa55aa55aa);
+static uint64 RectTracker_dashed = I64(0xf0783c1e0f87c3e1);
+static uint64 RectTracker_solid  = I64(0);
 
 RectTracker::RectTracker(Ctrl& master)
 {

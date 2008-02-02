@@ -110,13 +110,13 @@ public:
 		Size  dots;
 		Point hotspot;
 		int   kind;
-		
+
 		Info();
 	};
 
 public:
+	virtual void    SeekPage(int page);
 	virtual int     GetPageCount();
-	virtual void    SeekPage(int ii);
 
 	virtual bool    Create();
 	virtual Size    GetSize() = 0;
@@ -130,7 +130,7 @@ public:
 	int    GetWidth()                              { return GetSize().cx; }
 	int    GetHeight()                             { return GetSize().cy; }
 	Line   operator[](int i)                       { return GetLine(i); }
-	
+
 	Image  GetImage(int x, int y, int cx, int cy, const Gate2<int, int> progress = false);
 	Image  GetImage(const Gate2<int, int> progress = false);
 

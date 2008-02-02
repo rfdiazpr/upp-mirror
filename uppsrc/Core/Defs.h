@@ -231,16 +231,16 @@ typedef long long unsigned uint64;
 typedef uint64             qword;
 
 #ifdef COMPILER_MSC
-	#define INT64(c) ((int64)COMBINE(c, i64))
+	#define I64(c) ((int64)COMBINE(c, i64))
 #else
-	#define INT64(c) ((int64)COMBINE(c, LL))
+	#define I64(c) ((int64)COMBINE(c, LL))
 #endif
 
 #ifndef INT64_MIN
-#define INT64_MIN          INT64(-0x8000000000000000)
+#define INT64_MIN          I64(-0x8000000000000000)
 #endif
 #ifndef INT64_MAX
-#define INT64_MAX          INT64(+0x7FFFFFFFFFFFFFFF)
+#define INT64_MAX          I64(+0x7FFFFFFFFFFFFFFF)
 #endif
 
 #if !defined(PLATFORM_WIN32)

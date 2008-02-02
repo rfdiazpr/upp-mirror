@@ -156,7 +156,8 @@ void MemoryDumpLeaks()
 	           MB_ICONSTOP|MB_OK|MB_APPLMODAL);
 #endif
 #else
-	PanicMessageBox("Warning", "Heap leaks detected!");
+	if(!IsPanicMode())
+		PanicMessageBox("Warning", "Heap leaks detected!");
 #endif
 }
 

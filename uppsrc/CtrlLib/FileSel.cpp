@@ -786,7 +786,7 @@ String FormatFileSize(int64 n)
 	if(n < 10000 * 1024)
 		return Format("%d K  ", n >> 10);
 	else
-	if(n < INT64(10000000) * 1024)
+	if(n < I64(10000000) * 1024)
 		return Format("%d M  ", n >> 20);
 	else
 		return Format("%d G  ", n >> 30);
@@ -1000,6 +1000,7 @@ bool FileSel::Execute(int _mode) {
 				q->Show();
 		Rect r = GetRect();
 		CtrlLayout(*this);
+		ArrangeOKCancel(ok, cancel);
 		SetRect(r);
 	}
 	readonly.Show(rdonly && mode == OPEN);
@@ -1209,6 +1210,7 @@ FileSel& FileSel::Preview(const Display& d)
 FileSel::FileSel() {
 	filesystem = &StdFileSystemInfo();
 	CtrlLayout(*this);
+	ArrangeOKCancel(ok, cancel);
 	Acceptor(ok, IDOK); ok.Ok();
 	Rejector(cancel, IDCANCEL); cancel.Cancel();
 	list.IconWidth(16).Renaming().Columns(3).ClickKill();
@@ -1245,7 +1247,7 @@ FileSel::FileSel() {
 	toggle.Tip(t_("Toggle files"));
 	type <<= THISBACK(Load);
 	sortext <<= 0;
-	
+
 	search.NullText("Search", StdFont().Italic(), SColorDisabled());
 	search.SetFilter(CharFilterDefaultToUpperAscii);
 	search <<= THISBACK(SearchLoad);
@@ -1278,7 +1280,7 @@ FileSel::FileSel() {
 	preview_display.SetFrame(FieldFrame());
 
 	SyncSplitter();
-	
+
 	BackPaintHint();
 }
 

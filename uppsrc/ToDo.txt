@@ -3,6 +3,11 @@ String functions
 New leak debugging
 
 ===================
+// RasterEncoder by mel umoznit nastavit fyzickou velikost obrazku pro ulozeni do souboru
+// v Raster::Info bych zmenil flag alpha na ImageKind
+// dotaz: resi se nejak zrychleni toho generatoru palety, kdyz je ten obrazek mrnavy
+//        (typicky ikony 16 x 16 nebo 32 x 32 pixelu) ?
+
 Vista:
 	Vista64 debugging
 

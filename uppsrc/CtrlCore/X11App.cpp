@@ -10,7 +10,7 @@ NAMESPACE_UPP
 
 #ifdef _DEBUG
 //	#define SYNCHRONIZE
-//	#define X11ERRORMSG
+	#define X11ERRORMSG
 //	#define X11ERRORABORT
 #endif
 
@@ -206,7 +206,7 @@ int X11ErrorHandler(XDisplay *, XErrorEvent *error)
 	return 0;
 #endif
 
-	if(X11ErrorTrap) return 0;
+	if(X11ErrorTrap || IsPanicMode()) return 0;
 
 	static const char *request[] = {
 		"",
@@ -337,15 +337,14 @@ int X11ErrorHandler(XDisplay *, XErrorEvent *error)
 	String e;
 	e << "X Error: " << h;
 	if(error->request_code < __countof(request))
-		e << ", request: " << request[error->request_code];
-	e << ", resource id: " << (int)error->resourceid << " = " << Format("%0X", (int)error->resourceid);
+		e << "\nrequest: " << request[error->request_code];
+	e << "\nresource id: " << (int)error->resourceid << " = " << Format("%0X", (int)error->resourceid);
 
 #ifdef X11ERRORMSG
-	sPanicMessageBox("X11 error", e);
 	#ifdef X11ERRORABORT
-		abort();
-		Panic("Never");
+		Panic(e);
 	#endif
+	sPanicMessageBox("X11 error", e);
 #else
 	RLOG(e);
 	puts(e);
@@ -353,6 +352,9 @@ int X11ErrorHandler(XDisplay *, XErrorEvent *error)
 	BugLog() << e << "\r\n";
 	UsrLogT(e);
 
+#ifdef X11ERRORABORT
+	abort();
+#endif
 	return 0;
 }
 

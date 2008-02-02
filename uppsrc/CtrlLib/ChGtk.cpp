@@ -490,15 +490,28 @@ void ChCtrlImg(int ii, const char *id, int size, int maxh = INT_MAX)
 		CtrlImg::Set(ii, m);
 }
 
+enum {
+	GTK_BOTTOMLINE = 0x100
+};
+
 Image GtkChImgLook(int shadow, int state, int kind)
 {
 	Image m = GetGTK(ChGtkLast(), state, shadow, ChGtkLastDetail(), ChGtkLastType(), 32, 32);
 	int g = ImageMargin(m, 4, 10);
-	if(kind == 1)
-		return WithHotSpots(Crop(m, 0, g, 32 - g, 32 - 2 * g), g, 0, 32 - 2 * g - 1, 0);
-	if(kind == 2)
-		return WithHotSpots(Crop(m, g, g, 32 - g, 32 - 2 * g), 0, 0, 32 - 2 * g - g - 1, 0);
-	return WithHotSpot(m, g, g);
+	if((kind & 7) == 1)
+		m = WithHotSpots(Crop(m, 0, g, 32 - g, 32 - 2 * g), g, 0, 32 - 2 * g - 1, 0);
+	if((kind & 7) == 2)
+		m = WithHotSpots(Crop(m, g, g, 32 - g, 32 - 2 * g), 0, 0, 32 - 2 * g - g - 1, 0);
+	else
+		m = WithHotSpot(m, g, g);
+	if((kind & GTK_BOTTOMLINE) && m.GetHeight() > 0) {
+		ImageBuffer ib(m);
+		RGBA c = SColorShadow();
+		for(int i = 1; i < ib.GetWidth(); i++)
+			ib[ib.GetHeight() - 1][i] = c;
+		m = ib;
+	}
+	return m;
 }
 
 void GtkChImgWith(Value& look, int shadow, int state, const Image& img, Color c, int kind, Point offset = Point(0, 0))
@@ -631,8 +644,10 @@ void ChHostSkin()
 	GTK_TOGGLE_BUTTON(w)->inconsistent = true;
 	GtkIml(CtrlsImg::I_O2, w, 3, "checkbutton", GTK_CHECK|GTK_MARGIN1, is, is);
 	gtk_widget_destroy(w);
-	
+
 	Point po(0, 0);
+
+	int classiq = engine == "Redmond" || engine == "Raleigh" || engine == "Glider" || engine == "Simple";
 
 	{
 		Button::Style& s = Button::StyleNormal().Write();
@@ -665,12 +680,12 @@ void ChHostSkin()
 
 		{
 			HeaderCtrl::Style& hs = HeaderCtrl::StyleDefault().Write();
-			if(engine == "Redmond")
+			if(classiq)
 				for(int i = 0; i < 4; i++)
 					hs.look[i] = s.look[i];
 			else {
 				ChGtkNew(button, "button", GTK_BOX);
-				hs.look[0] = GtkMakeCh(2|GTKELEMENT_TABFLAG, 0, Rect(6, 3, 6, 0));
+				hs.look[0] = GtkMakeCh(2|GTKELEMENT_TABFLAG, /*0*/4, Rect(6, 3, 6, 0));
 				hs.look[1] = GtkMakeCh(2|GTKELEMENT_TABFLAG, 2, Rect(6, 3, 6, 0));
 				hs.look[2] = GtkMakeCh(1|GTKELEMENT_TABFLAG, 1, Rect(6, 3, 6, 0));
 				hs.look[3] = GtkMakeCh(2|GTKELEMENT_TABFLAG, 4, Rect(6, 3, 6, 0));
@@ -687,7 +702,7 @@ void ChHostSkin()
 			Setup(def_button);
 			gtk_widget_set(def_button, "can-default", true, NULL);
 			gtk_window_set_default(GTK_WINDOW(gtk__parent()), def_button);
-			ChGtkNew(def_button, "buttondefault", GTK_BOX|GTK_MARGIN3);
+			ChGtkNew(def_button, "button", GTK_BOX|GTK_MARGIN3);
 		}
 		GtkChButton(s.look);
 	}
@@ -722,7 +737,7 @@ void ChHostSkin()
 
 			static GtkWidget *btn = gtk_button_new();
 			ChGtkNew(btn, "button", GTK_BOX);
-			
+
 			GtkChButton(Button::StyleScroll().Write().look);
 			GtkChButton(Button::StyleEdge().Write().look);
 			GtkChButton(Button::StyleLeftEdge().Write().look);
@@ -750,11 +765,11 @@ void ChHostSkin()
 			GtkChArrow(s.up2.look, CtrlsImg::UA(), po);
 			ChGtkNew("vscrollbar", GTK_BGBOX|GTK_VCENTER|GTK_RANGEB);
 			GtkChArrow(s.down2.look, CtrlsImg::DA(), po);
-			
+
 			ChGtkNew("vscrollbar", GTK_BOX|GTK_VCENTER|GTK_RANGEB);
 			GtkCh(Button::StyleScroll().Write().look, "02142222");
 
-			int q = engine != "Redmond" && engine != "Raleigh";
+			int q = !classiq;
 
 			GtkChImgWith(Button::StyleEdge().Write().look, Null, 1 * q);
 			GtkChImgWith(Button::StyleLeftEdge().Write().look, Null, 2 * q);
@@ -769,7 +784,7 @@ void ChHostSkin()
 			}
 			{
 				SpinButtons::Style& s = SpinButtons::StyleDefault().Write();
-				GtkChImgWith(s.inc.look, q ? CtrlImg::spinup2() : CtrlImg::spinup3(), 1 * q, po);
+				GtkChImgWith(s.inc.look, q ? CtrlImg::spinup2() : CtrlImg::spinup3(), (1|GTK_BOTTOMLINE) * q, po);
 				GtkChImgWith(s.dec.look, q ? CtrlImg::spindown2() : CtrlImg::spindown3(), 1 * q, po);
 			}
 		}
@@ -1049,7 +1064,7 @@ void ChHostSkin()
 
 	if(engine != "Redmond")
 		DropEdge_Write(ViewEdge());
-	
+
 	SwapOKCancel_Write(true);
 }
 

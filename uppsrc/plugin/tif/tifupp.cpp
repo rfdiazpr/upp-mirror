@@ -55,11 +55,6 @@ void dbgAddFree(void *p, tsize_t s)
 
 void TiffAllocStat()
 {
-	DUMP(total_allocated);
-	DUMP(total_freed);
-	DUMP(alloc_calls);
-	DUMP(free_calls);
-	DUMP(realloc_calls);
 	for(int i = 0; i < size_index.GetCount(); i++)
 		if(size_alloc_calls[i] != size_free_calls[i])
 			LOG("Alloc/free mismatch: size = " << size_index[i]
@@ -343,22 +338,20 @@ static void BltPack4(byte *dest, const byte *src, unsigned count)
 		dest[0] = src[0];
 }
 
-class TIFRaster::Data : public TIFFRGBAImage {
-public:
+struct TIFRaster::Data : public TIFFRGBAImage {
 	Data(Stream& stream);
 	~Data();
 
 	bool             Create();
 	Raster::Info     GetInfo();
 	Raster::Line     GetLine(int i);
+	bool             SeekPage(int page);
 
 	static void      Warning(const char* module, const char* fmt, va_list ap);
 	static void      Error(const char* module, const char* fmt, va_list ap);
 
-public:
 	RasterFormat     format;
 
-private:
 	Stream&          stream;
 	TIFF             *tiff;
 
@@ -381,13 +374,11 @@ private:
 	Array<Page>      pages;
 	int              page_index;
 
-public:
 	byte *MapDown(int x, int y, int count, bool read);
 	byte *MapUp(int x, int y, int count, bool read);
 	void  Flush();
 	void  Flush(int y);
 
-public:
 	Size size;
 	int bpp;
 	int row_bytes;
@@ -713,9 +704,12 @@ bool TIFRaster::Data::Create()
 				break;
 			}
 	}
-	TIFFSetDirectory(tiff, 0);
+	return SeekPage(0);
+}
 
-	TIFFSetDirectory(tiff, page_index);
+bool TIFRaster::Data::SeekPage(int page)
+{
+	TIFFSetDirectory(tiff, page_index = page);
 	char emsg[1024];
 	if(!TIFFRGBAImageBegin(this, tiff, 0, emsg)) {
 		TIFFError(TIFFFileName(tiff), emsg);
@@ -730,7 +724,7 @@ bool TIFRaster::Data::Create()
 		separate = put.separate;
 		put.separate = putSeparate;
 	}
-	if(alpha = pages[0].alpha) {
+	if(alpha = pages[page_index].alpha) {
 		format.Set32le(0xFF << 16, 0xFF << 8, 0xFF, 0xFF << 24);
 		bpp = 32;
 	}
@@ -813,7 +807,7 @@ bool TIFRaster::Data::Create()
 
 Raster::Info TIFRaster::Data::GetInfo()
 {
-	const Page& page = pages[0];
+	const Page& page = pages[page_index];
 	Raster::Info out;
 	out.kind = (page.alpha ? IMAGE_ALPHA : IMAGE_OPAQUE);
 	out.bpp = bpp;
@@ -865,6 +859,16 @@ const RGBA *TIFRaster::GetPalette()
 const RasterFormat *TIFRaster::GetFormat()
 {
 	return &data->format;
+}
+
+int TIFRaster::GetPageCount()
+{
+	return data->pages.GetCount();
+}
+
+void TIFRaster::SeekPage(int n)
+{
+	data->SeekPage(n);
 }
 
 class TIFEncoder::Data {

@@ -138,6 +138,7 @@ void Ide::SetMain(const String& package)
 	HideBottom();
 	if(IsNull(e))
 		e = GetFirstFile();
+	SyncRefs();
 	EditFile(e);
 }
 

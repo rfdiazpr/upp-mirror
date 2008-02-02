@@ -8,7 +8,7 @@ NAMESPACE_UPP
 
 class TIFRaster : public StreamRaster {
 public:
-	class Data;
+	struct Data;
 	One<Data> data;
 
 public:
@@ -22,6 +22,9 @@ public:
 	virtual int                 GetPaletteCount();
 	virtual const RGBA         *GetPalette();
 	virtual const RasterFormat *GetFormat();
+
+	virtual int                 GetPageCount();
+	virtual void                SeekPage(int n);
 
 private:
 	bool                        Init();
@@ -45,12 +48,6 @@ public:
 private:
 	int bpp;
 };
-
-// StreamRasterEncoder::SaveFile by melo vracet true / false podle toho, jestli se mu podari ulozit soubor
-// RasterEncoder by mel umoznit nastavit fyzickou velikost obrazku pro ulozeni do souboru
-// v Raster::Info bych zmenil flag alpha na ImageKind
-// dotaz: resi se nejak zrychleni toho generatoru palety, kdyz je ten obrazek mrnavy
-//        (typicky ikony 16 x 16 nebo 32 x 32 pixelu) ?
 
 END_UPP_NAMESPACE
 

@@ -37,7 +37,11 @@ inline int& HashBase::Mapi(int i) const
 inline int& HashBase::Maph(unsigned _hash) const
 {
 	unsigned h = _hash & ~UNSIGNED_HIBIT;
+#ifdef FOLDHASH
+	return map[(mcount - 1) & (((h >> 23) - (h >> 15) - (h >> 7) - h))];
+#else
 	return map[h % mcount];
+#endif
 }
 
 inline void HashBase::DoIndex()

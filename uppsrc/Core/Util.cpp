@@ -62,6 +62,9 @@ void    Panic(const char *msg)
 #	endif
 #else
 #endif
+#if defined(PLATFORM_POSIX) && defined(_DEBUG)
+	__BREAK__;
+#endif
 	abort();
 }
 
@@ -105,6 +108,9 @@ void    AssertFailed(const char *file, int line, const char *cond)
 #		endif
 #	endif
 #else
+#endif
+#if defined(PLATFORM_POSIX) && defined(_DEBUG)
+	__BREAK__;
 #endif
 	abort();
 }

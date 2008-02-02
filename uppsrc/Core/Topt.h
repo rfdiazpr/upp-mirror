@@ -374,7 +374,8 @@ public:
 	IIterator(V& _cont, int ii) : cont(&_cont), ii(ii) {}
 };
 
-int Pow2Bound(int i);
+unsigned Pow2Bound(unsigned i);
+unsigned PrimeBound(unsigned i);
 
 unsigned memhash(const void *ptr, size_t size);
 

@@ -12,7 +12,7 @@ NAMESPACE_UPP
 
 
 bool Ctrl::LogMessages
-// = true
+ = true
 ;
 #endif
 
@@ -442,6 +442,10 @@ void Ctrl::WndDestroy()
 			XDestroyIC(w.xic);
 	}
 	isopen = false;
+	if(focusWindow == top->window)
+		focusWindow = None;
+	if(grabWindow == top->window)
+		grabWindow = None;
 	XDestroyWindow(Xdisplay, top->window);
 	if(i >= 0) {
 		Xwindow().SetKey(i, None);
@@ -681,7 +685,7 @@ void Ctrl::TakeFocus()
 		return;
 	if(ignoretakefocus) {
 		LLOG("IGNORED TAKE_FOCUS (caused by CreateWindow)");
-		if(focusWindow != top->window)
+		if(focusWindow != top->window && focusWindow != None)
 			XSetInputFocus(Xdisplay, focusWindow, RevertToParent, CurrentTime);
 		return;
 	}

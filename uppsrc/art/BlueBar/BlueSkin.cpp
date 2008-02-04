@@ -29,10 +29,10 @@ void InstallBlueToolBar()
 void InstallBlueMenuBar()
 {
 	MenuBar::Style& s = MenuBar::StyleDefault().Write();
-	DDUMP((void *)s.standard);
-	DDUMP((void *)s.Standard().standard);
+//	DDUMP((void *)s.standard);
+//	DDUMP((void *)s.Standard().standard);
 	s = s.Standard();
-	DDUMP((void *)s.standard);
+//	DDUMP((void *)s.standard);
 	s.arealook = Null;
 	s.look = BlueImg::LK();
 	s.topitem[1] = s.item = BlueImg::BH();

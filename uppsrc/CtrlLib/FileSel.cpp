@@ -856,7 +856,7 @@ void FileSel::Update() {
 			}
 		String s;
 		if(drives)
-			s << drives << t_(" drives(s)");
+			s << drives << t_(" drive(s)");
 		else {
 			if(dirs)
 				s << dirs << t_(" folder(s)");

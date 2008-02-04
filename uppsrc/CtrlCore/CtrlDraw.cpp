@@ -419,7 +419,7 @@ Ctrl *Ctrl::FindBestOpaque(const Rect& clip)
 {
 	Ctrl *w = NULL;
 	for(Ctrl *q = GetFirstChild(); q; q = q->GetNext()) {
-		if(q->IsVisible()) {
+		if(q->IsVisible() && GetScreenView().Contains(q->GetScreenRect())) {
 			Rect sw = q->GetScreenView();
 			if((q->GetOpaqueRect() + sw.TopLeft()).Contains(clip)) {
 				w = q;
@@ -529,11 +529,7 @@ void  Ctrl::DoSync(Ctrl *q, Rect r, bool inframe)
 void  Ctrl::Sync()
 {
 	LLOG("Sync " << Name());
-// 01/12/2007 - mdelfede
-// added support for windowed controls
-//	if(!parent && IsOpen()) {
 	if(top && IsOpen()) {
-// 01/12/2007 - END
 		LLOG("Sync UpdateWindow " << Name());
 		SyncScroll();
 		WndUpdate();
@@ -553,11 +549,7 @@ void Ctrl::Sync(const Rect& sr)
 
 void Ctrl::DrawCtrlWithParent(Draw& w, int x, int y)
 {
-// 01/12/2007 - mdelfede
-// added support for windowed controls
 	if(parent) {
-//	if(parent &&!top) {
-// 01/12/2007 - END
 		Rect r = GetRect();
 		Ctrl *top = parent->GetTopRect(r, inframe);
 		w.Clip(x, y, r.Width(), r.Height());
@@ -579,11 +571,7 @@ void Ctrl::DrawCtrl(Draw& w, int x, int y)
 
 void Ctrl::SyncMoves()
 {
-// 01/12/2007 - mdelfede
-// added support for windowed controls
-//	if(parent || !top)
 	if(!top)
-// 01/12/2007 - END
 		return;
 	for(int i = 0; i < top->move.GetCount(); i++) {
 		MoveCtrl& m = top->move[i];

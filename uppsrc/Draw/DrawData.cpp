@@ -3,6 +3,7 @@
 NAMESPACE_UPP
 
 #define LTIMING(x)
+// #define BENCHMARK_RLE
 
 VectorMap<String, void *>& DataDrawer::Map()
 {
@@ -44,18 +45,36 @@ bool IsEqColumn(const Image& m, int x, RGBA c)
 	return true;
 }
 
+
+#ifdef BENCHMARK_RLE
+static int sTotal;
+static int sRle;
+
+EXITBLOCK
+{
+	DUMP(sTotal);
+	DUMP(sRle);
+}
+#endif
+
 void DrawImageBandRLE(Draw& w, int x, int y, const Image& m, int minp)
 {
 	int xi = 0;
 	int cx = m.GetWidth();
 	int ccy = m.GetHeight();
 	Buffer<bool> todo(cx, true);
+#ifdef BENCHMARK_RLE
+	sTotal += cx;
+#endif
 	while(xi < cx) {
 		int xi0 = xi;
 		RGBA c = m[0][xi0];
 		while(w.Dots() && IsEqColumn(m, xi, c) && xi < cx)
 			xi++;
 		if(xi - xi0 >= 16) {
+#ifdef BENCHMARK_RLE
+			sRle += xi - xi0;
+#endif
 			w.DrawRect(x + xi0, y, xi - xi0, ccy, c);
 			Fill(~todo + xi0, ~todo + xi, false);
 		}

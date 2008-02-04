@@ -39,6 +39,8 @@ SQLApp::SQLApp()
 
 	CtrlLayoutOKCancel(query, "Select");
 	query.status = 0;
+	query.borrowed_from.SetConvert(DateIntConvert());
+	query.borrowed_to.SetConvert(DateIntConvert());
 	query.clear <<= THISBACK(ClearQuery);
 }
 

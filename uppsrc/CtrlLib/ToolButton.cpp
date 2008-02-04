@@ -24,6 +24,7 @@ ToolButton::ToolButton()
 	Reset();
 	checked = false;
 	paint_checked = false;
+	SetStyle(ToolBar::StyleDefault().buttonstyle);
 	Transparent();
 }
 

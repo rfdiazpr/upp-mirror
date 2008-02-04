@@ -12,7 +12,7 @@ void SQLApp::Query()
 	if(!IsNull(query.borrowed_from))
 		bdate = BORROWED >= ~query.borrowed_from;
 	if(!IsNull(query.borrowed_to))
-		bdate = BORROWED <= ~query.borrowed_to;
+		bdate = bdate && BORROWED <= ~query.borrowed_to;
 	if(!bdate.IsEmpty())
 		where = where && ID == Select(BOOK_ID).From(BORROW_RECORD).Where(bdate);
 	book.Query(where);

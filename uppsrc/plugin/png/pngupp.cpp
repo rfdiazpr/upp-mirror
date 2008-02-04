@@ -46,7 +46,7 @@ static Size GetDotSize(Size pixel_size, png_uint_32 x_ppm, png_uint_32 y_ppm, in
 {
 	if(unit_type != 1 || !x_ppm || !y_ppm)
 		return Size(0, 0);
-	static const double DOTS_PER_METER = 6e6 / 25.4;
+	static const double DOTS_PER_METER = 6e5 / 25.4;
 	return Size(
 		fround(pixel_size.cx * (DOTS_PER_METER / x_ppm)),
 		fround(pixel_size.cy * (DOTS_PER_METER / y_ppm)));

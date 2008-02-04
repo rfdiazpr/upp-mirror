@@ -66,7 +66,7 @@ const klass::Style& klass::style() \
 		b.Init(); \
 		b.status = 1; \
 		standard = b; \
-		b.standard = &standard; \
+		standard.standard = b.standard = &standard; \
 	} \
 	return b; \
 } \

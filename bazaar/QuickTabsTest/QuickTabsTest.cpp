@@ -19,6 +19,7 @@ App::App()
 	AddFrame(r_tabs);
 	AddFrame(t_tabs);
 	AddFrame(b_tabs);
+	AddFrame(ViewFrame());
 	
 	l_tabs.Crosses(true);	
 	l_tabs.Add("/ala/Test.cpp");

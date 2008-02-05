@@ -3,7 +3,7 @@
 
 #define QUICKTABS_TEST
 #include <CtrlLib/CtrlLib.h>
-#include <ide/QuickTabs/QuickTabs.h>
+#include <QuickTabs/QuickTabs.h>
 
 using namespace Upp;
 

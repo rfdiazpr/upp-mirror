@@ -6,7 +6,7 @@
 using namespace Upp;
 
 #define IMAGECLASS Img
-#define IMAGEFILE <ide/QuickTabs/QuickTabs.iml>
+#define IMAGEFILE <QuickTabs/QuickTabs.iml>
 #include <Draw/iml_header.h>
 
 enum

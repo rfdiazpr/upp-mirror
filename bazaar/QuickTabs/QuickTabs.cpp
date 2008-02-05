@@ -1,8 +1,8 @@
-#include <ide/QuickTabs/QuickTabs.h>
-#include <ide/Common/Common.h>
+#include <QuickTabs/QuickTabs.h>
+//#include <Common/Common.h>
 
 #define IMAGECLASS Img
-#define IMAGEFILE <ide/QuickTabs/QuickTabs.iml>
+#define IMAGEFILE <QuickTabs/QuickTabs.iml>
 #include <Draw/iml_source.h>
 
 static String ParseGroup(const String &s)
@@ -291,7 +291,7 @@ QuickTabs::QuickTabs()
 	BackPaint();
 	
 	FloatFrame::layout = FloatFrame::TOP;
-	FloatFrame::border = 2;
+	FloatFrame::border = 0;
 	FloatFrame::size = GetHeight();	
 	
 	AddFrame(sc);	
@@ -516,7 +516,7 @@ void QuickTabs::DrawTab(Draw& w, Size& sz, int i)
 	if(file_icons)
 	{
 		Image icon = Img::ARH;
-		Image icon = IdeFileImage(t.name);
+		//Image icon = IdeFileImage(t.name);
 		img.DrawImage(QT_MARGIN, (h - icon.GetSize().cx) / 2, icon);
 	}
 	
@@ -549,12 +549,12 @@ void QuickTabs::Paint(Draw &w)
 	Size sz = GetSize();
 	w.DrawRect(sz, SColorFace());
 
-//	if(!horizontal)
-//		w.DrawRect(layout == LAYOUT_LEFT ? sz.cx -1 : 1, 0, 
-//				1, sz.cy, Color(128, 128, 128));
-//	else
-//		w.DrawRect(0, layout == LAYOUT_TOP ? sz.cy - 1 : 1, 
-//				sz.cx, 1, Color(128, 128, 128));
+	if(!horizontal)
+		w.DrawRect(layout == LAYOUT_LEFT ? sz.cx -1 : 1, 0, 
+				1, sz.cy, Color(128, 128, 128));
+	else
+		w.DrawRect(0, layout == LAYOUT_TOP ? sz.cy - 1 : 1, 
+				sz.cx, 1, Color(128, 128, 128));
 
 	Fix(sz);
 

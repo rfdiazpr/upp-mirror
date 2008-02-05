@@ -136,6 +136,7 @@ public:
 };
 
 String Pdf(Report& report);
+bool   DefaultPrint(Report& r, int i, const char *_name = t_("Report"));
 bool   Print(Report& r, int i, const char *name = t_("Report"));
 bool   Perform(Report& r, const char *name = t_("Report"));
 

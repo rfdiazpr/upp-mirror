@@ -1,8 +1,0 @@
-Upp::String
-0 0 -1
-Upp::Buffer<unsigned char>
-0 0 -1
-UnZip
-0 0 -1
-Upp::MenuBar::Style
-0 0 -1

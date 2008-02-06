@@ -476,7 +476,7 @@ public:
 	void       ToggleSortColumn(int ii);
 	void       DoColumnSort();
 	int        GetSortColumn() const                   { return sortcolumn; }
-	bool       GetSortDescending() const               { sortcolumndescending; }
+	bool       IsSortDescending() const                { return sortcolumndescending; }
 
 	bool       IsInsert() const                        { return insertmode; }
 

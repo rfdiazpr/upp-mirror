@@ -162,7 +162,8 @@ subctrl Unknown {
 };
 
 subctrl TextCtrl {
-	>NormalSize;
+	GetMinSize() { sz = XMinSize(); sz.cy += 2; return sz; }
+	GetStdSize() { sz = GetMinSize(); sz.cx *= 8; return sz; }
 
 	Text   SetLabel @1 ? "Label of control" ;
 
@@ -192,7 +193,7 @@ ctrl Label {
 	group "Static";
 
 	GetMinSize() { return XMinSize(); }
-	GetStdSize() { sz = GetTextSize("Label", .StdFont); sz.cy += 6; return sz; }
+	GetStdSize() { sz = GetTextSize("Label", .StdFont); sz.cy += 6; sz.cx *= 1.2; return sz; }
 
 	>TextCtrl;
 
@@ -223,7 +224,7 @@ ctrl StaticText {
 	group "Static";
 
 	GetMinSize() { return XMinSize(); }
-	GetStdSize() { sz = XMinSize(); sz.cy += 6; return sz; }
+	GetStdSize() { sz = XMinSize(); sz.cy += 6; sz.cx *= 5; return sz; }
 
 	>TextCtrl;
 

@@ -10,9 +10,8 @@ bool Print0(Report& r, int i, const char *_name, bool dodlg) {
 	pd.MinMaxPage(0, r.GetCount() - 1);
 	Size pgsz = r.GetPage(0).GetSize();
 	pd.Landscape(pgsz.cx > pgsz.cy);
-	if(dodlg && !pd.Execute(dodlg))
+	if(dodlg && !pd.Execute())
 		return false;
-
 	Draw& w = pd;
 	Size sz = w.GetPageMMs();
 	Point mg = r.GetMargins();
@@ -30,12 +29,12 @@ bool Print0(Report& r, int i, const char *_name, bool dodlg) {
 
 bool Print(Report& r, int i, const char *_name)
 {
-	Print0(r, i, _name, true);
+	return Print0(r, i, _name, true);
 }
 
 bool DefaultPrint(Report& r, int i, const char *_name)
 {
-	Print0(r, i, _name, false);
+	return Print0(r, i, _name, false);
 }
 
 void ReportView::MouseWheel(Point, int zdelta, dword) {

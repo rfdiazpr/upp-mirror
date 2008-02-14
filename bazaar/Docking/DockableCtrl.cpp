@@ -9,6 +9,7 @@ DockableCtrl & DockableCtrl::SizeHint(const Size &min, const Size &max, const Si
 DockableCtrl::DockableCtrl()
 {
 	style = NULL;
+	group = Null;
 	maxsize = Null;
 	stdsize = Null;
 	minsize = Size(0, 0);

@@ -29,6 +29,7 @@ private:
 	Size  parentsize;
 	int   type, minsize, sizemin;
 	int   size, size0;
+	String backup;
 
 	Node 		*animnode;
 	int	  		nodesz, nodeinc, nodeacc;
@@ -38,6 +39,9 @@ private:
 
 	int   BoundSize();
 	Rect  SplitterRect();
+
+	int 	SmartSize(bool vert, Size sz, Ctrl *sibling, Ctrl &c, int &newsz);
+	int 	PropagateSmartSize(Node *n, Node *c, Size minsz, Size stdsz);
 
 	void   StartNodeAnimate(Ctrl &c, int sz);
 	void   StartFrameAnimate(int sz);
@@ -59,12 +63,12 @@ public:
 	DockFrame& Right(int size)   { return Set(size, RIGHT); }
 	DockFrame& Bottom(int size)  { return Set(size, BOTTOM); }
 
-	DockFrame& MinSize(int sz)            { minsize = sz; return *this; }
-	DockFrame& SizeMin(int sz)            { sizemin = sz; return *this; }
+	DockFrame& MinSize(int sz)   { minsize = sz; return *this; }
+	DockFrame& SizeMin(int sz)   { sizemin = sz; return *this; }
 
-	int  GetType() const                  { return type; }
-	int  GetSize() const                  { return size; }
-	void SetSize(int sz)                  { size = sz; RefreshParentLayout(); }
+	int  GetType() const         { return type; }
+	int  GetSize() const         { return size; }
+	void SetSize(int sz)         { size = sz; RefreshParentLayout(); }
 	
 	void   Dock(bool vert, bool before, Ctrl &sibling, Ctrl &c, Size sz);
 	void   DockRoot(Ctrl &c, bool first, Size sz);
@@ -75,10 +79,9 @@ public:
 	void   Remove(Ctrl &c, int fsz = -1);
 
 	void   DockSwap(Ctrl &oldctrl, Ctrl &newctrl);
-	
+		
 	bool   IsAnimating()				  { return frameinc || nodeinc; }
 	
 	DockFrame();
 };
-
 #endif

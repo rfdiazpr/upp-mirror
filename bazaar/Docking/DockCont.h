@@ -29,13 +29,14 @@ public:
 	typedef DockCont CLASSNAME;
 
 	virtual void Paint(Draw &w);
-	virtual void Layout();	
+//	virtual void Layout();	
 	
 	virtual void LeftDrag(Point p, dword keyflags);
 	virtual void LeftDown(Point p, dword keyflags)		{ SetFocus(); }
 	virtual void RightDown(Point p, dword keyflags) 	{ TitleContext(); }
 	
 	virtual void ChildRemoved(Ctrl *child);
+	virtual void ChildAdded(Ctrl *child);
 	virtual void ChildGotFocus() 						{ RefreshFocus(true); TopWindow::ChildGotFocus(); }
 	virtual void ChildLostFocus() 						{ RefreshFocus(HasFocusDeep()); TopWindow::ChildLostFocus(); }
 	virtual void GotFocus() 							{ RefreshFocus(true); }
@@ -54,19 +55,18 @@ private:
 		STATE_AUTOHIDE,
 	};
 	
-	bool dragging;
+	int 		dragging;
 	DockState	dockstate;	
-	TabBar 		tabbar;
+	DockTabBar 	tabbar;
 	ImgButton 	close, autohide, windowpos;	
-	DockWindow *	base;
-	Vector<DockableCtrl *> dcs;
+	DockWindow *base;
 	const DockableCtrl::Style *style;
 	Size usersize;
 	bool focus:1;
 
 	// Callbacks
 	// Tabs
-	void 	TabSelected(int ix);
+	void 	TabSelected();
 	void	TabDragged(int ix);
 	void	TabContext(int ix);
 	// Menus/Buttons
@@ -87,30 +87,31 @@ private:
 	void 	TabsAutoHide(int align, int ix);
 	void 	TabsAutoHide0();
 	void 	TabsFloat(int ix);
-
+	void	TabClosed(Value v)					{ ValueTo<DockableCtrl *>(v)->Remove(); }
+	
 	int 	GetHandleSize(const DockableCtrl::Style &s) const;
 	Rect	GetHandleRect(const DockableCtrl::Style &s) const;
 	Rect	GetFrameRect(const DockableCtrl::Style &s) const;
 
 	void	RefreshFocus(bool _focus)	{ if (focus != _focus) { focus = _focus; Refresh(); } }
 	void 	SyncSize(DockableCtrl &dc);
+	void 	AddContainerSize(Size &sz) const;
+	
+	DockableCtrl *	VCast(const Value &v) const 	{ return ValueTo<DockableCtrl *>(v); }
+	Value 			DCCast(DockableCtrl *dc) const 	{ return RawToValue<DockableCtrl *>(dc); }
 public:
+	DockableCtrl &	Get(int ix) const			{ return *VCast(tabbar.Get(ix)); }
+	DockableCtrl &	GetCurrent() const			{ return Get(tabbar.GetCursor()); }
+	void 			AddFrom(DockCont &cont, int except = -1);
+	int				GetCount() const			{ return tabbar.GetCount(); }
+	void 			Clear();	
+	
 	virtual void 	MoveBegin();
 	virtual void 	Moving();
 	virtual void 	MoveEnd();		
-	virtual void 	TitleContext()				{ WindowMenu(-1); }	
-	void 			WindowMenu(int ix);	
-	
-	DockableCtrl &	GetDC(int ix) const			{ return *dcs[ix]; }
-	DockableCtrl &	GetCurrentDC() const		{ return *dcs[tabbar.GetSelected()]; }
-	void			AddDC(DockableCtrl &dc);
-	void 			AddDCs(DockCont &cont, int except = -1);
-	void			RemoveDC(int ix)			{ dcs[ix]->Remove(); }
-	void			RemoveDC(DockableCtrl &dc)	{ dc.Remove(); }
-	void			SelectDC(int ix)			{ tabbar.SelectTab(ix); TabSelected(ix); }
-	int				GetDCCount() const			{ return dcs.GetCount(); }
-	void 			Clear();
-	
+	virtual void 	TitleContext()				{ TabContext(-1); }	
+	void 			WindowMenu(Bar &bar, int ix, bool noclose);
+		
 	bool 			IsDocked() const			{ return dockstate == STATE_DOCKED; }
 	bool			IsFloating() const			{ return dockstate == STATE_FLOATING; }
 	bool 			IsAutoHide() const			{ return dockstate == STATE_AUTOHIDE; }	

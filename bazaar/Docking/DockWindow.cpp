@@ -5,6 +5,12 @@
 /*
  * Public interface
 */ 
+void DockWindow::State(int reason)
+{
+	if (reason == Ctrl::OPEN && !dockframe[0].GetParent())
+		DockLayout();
+}
+
 void DockWindow::Dock(int align, DockableCtrl &dc)
 {
 	ALIGN_ASSERT(align);
@@ -27,15 +33,15 @@ void DockWindow::DockAsTab(DockableCtrl &target, DockableCtrl &dc)
 	ASSERT(tc);	
 	DockCont *c = GetContainer(dc);
 	if (c) {
-		if (c->GetDCCount() == 1) {
+		if (c->GetCount() == 1) {
 			Undock(*c);
 			Unfloat(*c);
 			DestroyContainer(c);	
 		}
 		else
-			c->RemoveDC(dc);			
+			dc.Remove();			
 	}
-	tc->AddDC(dc);
+	tc->Add(dc);
 }
 
 void DockWindow::Float(DockableCtrl &dc, Point p)
@@ -50,14 +56,14 @@ void DockWindow::AutoHide(int align, DockableCtrl &dc)
 	ALIGN_ASSERT(align);
 	DockCont *c = GetReleasedContainer(dc);
 	c->StateAutoHide(*this);
-	hideframe[align].AddTab(*c, dc.GetTitle());	
+	hideframe[align].AddCtrl(*c, dc.GetGroup());	
 }
 
 void DockWindow::Close(DockableCtrl &dc)
 {
 	DockCont *c = GetContainer(dc);
-	if (c && c->GetDCCount() > 1) {
-		c->RemoveDC(dc);
+	if (c && c->GetCount() > 1) {
+		dc.Remove();
 		c = NULL;
 	}
 	if (c) {
@@ -141,7 +147,7 @@ DockCont * DockWindow::CreateContainer()
 DockCont * DockWindow::CreateContainer(DockableCtrl &dc)
 {
 	DockCont *c = CreateContainer();
-	c->AddDC(dc);
+	c->Add(dc);
 	return c;
 }
 
@@ -155,8 +161,8 @@ void DockWindow::DestroyContainer(DockCont *c)
 DockCont *DockWindow::GetReleasedContainer(DockableCtrl &dc)
 {
 	DockCont *c = GetContainer(dc);
-	if (c && c->GetDCCount() > 1) {
-		c->RemoveDC(dc);
+	if (c && c->GetCount() > 1) {
+		dc.Remove();
 		c->RefreshLayout();
 		c = NULL;
 	}
@@ -197,9 +203,9 @@ void DockWindow::Undock(DockCont &c)
 		}
 		if (c.IsAutoHide()) {
 			for (int i = 0; i < 4; i++) {
-				int ix = hideframe[i].GetTabIx(c);
+				int ix = hideframe[i].FindCtrl(c);
 				if (ix >= 0) {
-					hideframe[i].RemoveTab(ix);
+					hideframe[i].RemoveCtrl(ix);
 					if (layout) hideframe[i].RefreshFrame();
 					break;
 				}
@@ -253,7 +259,7 @@ void DockWindow::DockContainer(int align, DockCont &c, int except)
 	DockCont *cont = &c;
 	if (except >= 0) {
 		cont = CreateContainer();
-		cont->AddDCs(c, except);
+		cont->AddFrom(c, except);
 		c.RefreshLayout();
 	}
 	else {
@@ -277,7 +283,7 @@ void DockWindow::DockContainerAsTab(DockCont &target, DockCont &c)
 {
 	Unfloat(c);
 	Undock(c);	
-	target.AddDCs(c);
+	target.AddFrom(c);
 	DestroyContainer(&c);	
 }
 
@@ -290,7 +296,7 @@ void DockWindow::FloatContainer(DockCont &c, int except, Point p)
 	DockCont *cont = &c;
 	if (except >= 0) {
 		cont = CreateContainer();
-		cont->AddDCs(c, except);
+		cont->AddFrom(c, except);
 		cont->SetRect(c.GetScreenRect());	
 		c.RefreshLayout();	
 	}	
@@ -318,11 +324,11 @@ void DockWindow::FloatFromTab(DockCont &c, DockableCtrl &dc)
 
 void DockWindow::AutoHideContainer(int align, DockCont &c, int except)
 {
-	except = except < 0 ? c.GetDCCount() : except;
+	except = except < 0 ? c.GetCount() : except;
 	for (int i = 0; i < except; i++)
-		AutoHide(align, c.GetDC(0));	
-	while(c.GetDCCount() > 1)
-		AutoHide(align, c.GetDC(1));	
+		AutoHide(align, c.Get(0));	
+	while(c.GetCount() > 1)
+		AutoHide(align, c.Get(1));	
 }
 
 /*
@@ -339,7 +345,7 @@ DockableCtrl *DockWindow::GetMouseDockTarget()
 				mp -= r.TopLeft();
 				c = c->ChildFromPoint(mp);
 				DockCont *cont = dynamic_cast<DockCont *>(c);
-				return cont ? &cont->GetCurrentDC() : NULL;
+				return cont ? &cont->GetCurrent() : NULL;
 			}
 		}
 	}
@@ -375,7 +381,7 @@ Size DockWindow::CtrlBestSize(const Ctrl &c, bool restrict) const
 	Size mx = c.GetMaxSize();
 	Size std = c.GetStdSize();
 	if (restrict) 
-		mx = min(GetSize()/2, mx);
+		mx = minmax(GetSize()/2, mn, mx);
 	return minmax(std, mn, mx);
 }
 
@@ -384,7 +390,8 @@ void DockWindow::Highlight(int align, DockableCtrl &dc, DockableCtrl *target)
 	HighlightCtrl &hl = GetHighlightCtrl();
 	if (&hl == target) return;
 
-	hl.SizeHint(dc.GetMinSize(), dc.GetMaxSize(), dc.GetParent()->GetStdSize()).Show();
+	Ctrl *p = dc.GetParent();
+	hl.SizeHint(p->GetMinSize(), p->GetMaxSize(), p->GetStdSize()).Show();
 	if (target && align != DOCK_NONE) {
 		hl.oldframesize = dockframe[GetDockAlign(*target)].GetSize();	
 		Dock0(align, *target, hl, animate);	
@@ -591,7 +598,7 @@ void DockWindow::ContainerDragMove(DockCont &dc)
 	DockableCtrl *target = FindDockTarget(dc, al);
 	if (al != DOCK_NONE || target) {
 		dc.SyncUserSize(true, true);
-		Highlight(al, dc.GetCurrentDC(), target);
+		Highlight(al, dc.GetCurrent(), target);
 	}
 	else 
 		StopHighlight(animate);
@@ -642,11 +649,16 @@ DockWindow & DockWindow::AutoHide(bool v)
 
 void DockWindow::DockLayout()
 {
+	if (dockframe[0].GetParent())
+		for (int i = 0; i < 4; i++) {
+			RemoveFrame(hideframe[i]);
+			RemoveFrame(dockframe[i]);
+		}
 	// Top, Bottom, Left, Right
-	AddFrame(*hideframe[1]);
-	AddFrame(*hideframe[3]);
-	AddFrame(*hideframe[0]);
-	AddFrame(*hideframe[2]);		
+	AddFrame(hideframe[1]);
+	AddFrame(hideframe[3]);
+	AddFrame(hideframe[0]);
+	AddFrame(hideframe[2]);		
 	AddFrame(dockframe[1]);
 	AddFrame(dockframe[3]);
 	AddFrame(dockframe[0]);
@@ -658,7 +670,7 @@ DockWindow::DockWindow()
 	simple = tabbing = animate = true;
 	for (int i = 0; i < 4; i++) {
 		dockframe[i].Set(100, i).Hide();
-		hideframe[i].Set(i);
+		hideframe[i].SetAlign(i);
 	}
 	AllowDockAll().AutoHide(true).SetVertHorz();
 }
@@ -715,7 +727,7 @@ void PopUpDockWindow::ContainerDragMove(DockCont &dc)
 		if (al == DOCK_NONE)
 			StopHighlight(IsAnimated());		
 		dc.SyncUserSize(true, true);
-		Highlight(al, dc.GetCurrentDC(), target);
+		Highlight(al, dc.GetCurrent(), target);
 	}
 	else  {
 		StopHighlight(IsAnimated());

@@ -133,16 +133,39 @@ void SplitterTree::LayoutNode(Node *p, Rect r)
 	}
 }
 
-Size SplitterTree::GetMinSize(Node *p)
+Size SplitterTree::HVSize(bool vert, const Size &a, const Size &b) 
 {
-	if (Ctrl *c = p->GetCtrl())
-		return c->GetMinSize();
+	return vert ? Size(max(a.cx, b.cx), a.cy + b.cy + 4) : Size(a.cx + b.cx + 4, max(a.cy, b.cy));
+}
+
+Size SplitterTree::GetNodeMinSize(Node *n) 
+{
+	if (n->IsLeaf()) return n->GetCtrl()->GetMinSize();
+	ASSERT(n->first);
 	Size sz(0, 0);
-	for (Node *n = p->first; n; n = n->next) {
-		sz += GetMinSize(n);
-		p->vert ? sz.cy += 4 : sz.cx += 4;
-	}		
-	return sz;
+	Size t;
+	int cnt = -1;
+	for (Node *q = n->first; q; q = q->next) {
+		t = GetNodeMinSize(q);	
+		sz = HVSize(n->vert, t, sz);
+		cnt++;
+	}
+	return sz + cnt*4;
+}
+
+Size SplitterTree::GetNodeMaxSize(Node *n) 
+{
+	if (n->IsLeaf()) return n->GetCtrl()->GetMinSize();
+	ASSERT(n->first);
+	Size sz(0, 0);
+	Size t;
+	int cnt = -1;
+	for (Node *q = n->first; q; q = q->next) {
+		t = GetNodeMaxSize(q);	
+		sz = HVSize(n->vert, t, sz);
+		cnt++;
+	}
+	return sz + cnt*4;
 }
 
 void SplitterTree::ReconcileChildSizes(Node *p)
@@ -169,7 +192,80 @@ void SplitterTree::SetNodeSize(Node *n, const Size &sz)
 	ASSERT(p->first);
 	if ((p->first == p->last))
 		n->sz = 10000;
-	else if (sz.IsNullInstance())
+	else if (sz.IsNullInstance() || !IsVisible())
+		n->sz = 10000/(ChildCount(p));	
+	else {
+		int nsz = p->vert ? sz.cy : sz.cx;
+		int msz = 0;
+		int psz = p->vert ? GetNodeRect(p).Height() : GetNodeRect(p).Width(); // Get total size of parent
+		int cnt = 0;
+
+/*		if (psz <= 0) {
+			cnt = ChildCount(p);
+			int rem = 10000 % cnt;
+			nsz = 10000/cnt;
+			for (Node *q = p->first; q; q = q->next)
+				q->sz = nsz;
+			n->sz += rem;
+			return;
+		}*/
+
+		for (Node *q = p->first; q; q = q->next) {
+			q->sz = p->vert ? GetNodeMinSize(q).cy : GetNodeMinSize(q).cx;
+			if (q == n)	q->sz = min(nsz, q->sz);	
+			msz += q->sz;
+			cnt++;
+		}
+		psz -= (cnt-1) * 4;
+		if (psz <= 0) psz = msz;
+		int dif = psz - msz;
+		int rem = 0;
+		if (dif < 0) {
+			// Not enough space
+			rem = dif % cnt;
+			dif /= cnt;
+			for (Node *q = p->first; q; q = q->next)
+				q->sz += dif;
+			n->sz += rem;
+		}
+		else if (dif > 0) {
+			// We have spare space
+			int t = nsz - n->sz;
+			if (t > dif) {
+				n->sz += dif;
+				dif = 0;
+			}
+			else if (t > 0) {
+				n->sz += t;
+				dif -= t;
+			}		
+			rem = dif % (cnt-1);	
+			dif /= (cnt-1);	
+			for (Node *q = p->first; q; q = q->next)
+				if (q != n) q->sz += dif; 
+			if (p->first == p->last)
+				n->sz += rem;
+			else {
+				if (p->first == n)
+					n->next->sz += rem;
+				else
+					p->first->sz += rem;
+			}
+		}
+		for (Node *q = p->first; q; q = q->next)
+			q->sz = minmax((q->sz * 10000) / psz, 0, 10000);
+	}
+//	ReconcileChildSizes(p);	
+}
+
+/*
+void SplitterTree::SetNodeSize(Node *n, const Size &sz)
+{
+	Node *p = n->parent;
+	ASSERT(p->first);
+	if ((p->first == p->last))
+		n->sz = 10000;
+	else if (sz.IsNullInstance() || !IsVisible())
 		n->sz = 10000/(ChildCount(p) - 1);	
 	else {
 		int newsz = p->vert ? sz.cy : sz.cx;
@@ -178,10 +274,7 @@ void SplitterTree::SetNodeSize(Node *n, const Size &sz)
 			return ReconcileChildSizes(p);	
 		}
 		int psz = p->vert ? GetNodeRect(p).Height() : GetNodeRect(p).Width(); // Get total size of parent
-/*		int msz = p->vert ? GetMinSize(p).cy : GetMinSize(p).cx;
-		if (newsz > psz-msz)
-			newsz = max(p->vert ? GetMinSize(n).cy : GetMinSize(n).cx, psz-msz);
-*/		newsz = (newsz * 10000) / max(psz, 1); // Get new size in internal ratio units
+		newsz = (newsz * 10000) / max(psz, 1); // Get new size in internal ratio units
 		newsz = min(8000, newsz); // Clamp
 		int dif = (newsz - n->sz)/(ChildCount(p)-1); // Calc. how much to take off other nodes
 		n->sz = newsz; // Set node to new size
@@ -196,6 +289,7 @@ void SplitterTree::SetNodeSize(Node *n, const Size &sz)
 	}
 	ReconcileChildSizes(p);	
 }
+*/
 /* Failed attempt at propertional resizing
 void SplitterTree::SetNodeSize(Node *n, const Size &sz)
 {

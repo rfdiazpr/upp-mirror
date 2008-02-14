@@ -151,19 +151,25 @@ DockFrame& DockFrame::Set(int _size, int _type)
 void DockFrame::Dock(bool vert, bool before, Ctrl &sibling, Ctrl &c, Size sz)
 {
 	animctrl = NULL;
-	SplitterTree::AddSiblingUnder(vert, before, sibling, c, sz);
+	int newsz = 0;
+	int fsz = SmartSize(vert, sz, &sibling, c, newsz);
+	SplitterTree::AddSiblingUnder(vert, before, sibling, c, Size(newsz, newsz));
 	if (!IsVisible())
 		Show();
-	//TODO: Smart resize 	
+	if (size != fsz) {
+		size = fsz;
+		RefreshParentLayout();
+	}
 }
 
 void DockFrame::AnimateDock(bool vert, bool before, Ctrl &sibling, Ctrl &c, Size sz)
 {
 	animctrl = NULL;
+	int newsz = 0;
+	int fsz = SmartSize(vert, sz, &sibling, c, newsz);		
 	SplitterTree::AddSiblingUnder(vert, before, sibling, c, Size(0, 0));
-	StartNodeAnimate(c, vert ? sz.cy : sz.cx);
-	//TODO: Smart resize 
-	// StartFrameAnimate(c, vert ? sz.cx : sz.cy);
+	StartNodeAnimate(c, newsz);
+	StartFrameAnimate(fsz);
 	if (IsAnimating())
 		Ctrl::KillSetTimeCallback(-ANIM_INTERVAL, THISBACK(AnimateTick), TIMEID_ANIMATE);	
 }
@@ -171,18 +177,25 @@ void DockFrame::AnimateDock(bool vert, bool before, Ctrl &sibling, Ctrl &c, Size
 void DockFrame::DockRoot(Ctrl &c, bool first, Size sz)
 {
 	animctrl = NULL;
-	SplitterTree::AddRoot(c, first, sz);
-	size = max(IsRootVert() ? sz.cx : sz.cy, size);
+	int newsz = 0;
+	int fsz = SmartSize(IsRootVert(), sz, NULL, c, newsz);
+	SplitterTree::AddRoot(c, first, Size(newsz, newsz));
 	if (!IsVisible())
 		Show();
+	if (size != fsz) {
+		size = fsz;	
+		RefreshParentLayout();
+	}
 }
 
 void DockFrame::AnimateDockRoot(Ctrl &c, bool first, Size sz)
 {
 	animctrl = NULL;
+	int newsz = 0;
+	int fsz = SmartSize(IsRootVert(), sz, NULL, c, newsz);	
 	SplitterTree::AddRoot(c, first, Size(0, 0));
-	StartNodeAnimate(c, IsRootVert() ? sz.cy : sz.cx);
-	StartFrameAnimate(max(IsRootVert() ? sz.cx : sz.cy, IsVisible() ? size : 0));	
+	StartNodeAnimate(c, newsz);
+	StartFrameAnimate(fsz);	
 	if (IsAnimating())
 		Ctrl::KillSetTimeCallback(-ANIM_INTERVAL, THISBACK(AnimateTick), TIMEID_ANIMATE);	
 }
@@ -196,7 +209,7 @@ void DockFrame::Remove(Ctrl &c, int fsz)
 		return;
 	}
 	if (fsz >= 0 && fsz != size && IsVisible()) {
-		size = framesz;
+		size = fsz;
 		RefreshParentLayout();
 	}
 	else
@@ -256,6 +269,93 @@ void DockFrame::StartNodeAnimate(Ctrl &c, int sz)
 		nodeinc = max(nodesz / ANIM_TICKS, 1);
 		nodeacc = 0;	
 	}
+}
+
+int DockFrame::SmartSize(bool vert, Size sz, Ctrl *sibling, Ctrl &c, int &newsz)
+{
+	Size ssz, msz, t;
+	Size cmin = Null;
+	
+	if (!IsVisible()) {
+		newsz = vert ? sz.cy : sz.cx;
+		return vert ? sz.cx : sz.cy;
+	}
+	Node *p = root, *s = NULL, *q;
+	if (sibling) {
+		s = FindCtrl(root, sibling);
+		p = s->parent;
+	}
+	q = p;
+	if (vert != p->vert) {
+		ssz = HVSize(vert, GetNodeRect(s).GetSize(), sz);
+		msz = HVSize(vert, GetNodeMinSize(s), cmin = c.GetMinSize());	
+	}
+	else {
+		ssz = GetNodeRect(p).GetSize();
+		msz = GetNodeMinSize(p);
+		if (vert) {
+			ssz.cx = max(ssz.cx, sz.cx);
+			msz.cx = max(msz.cx, sz.cx);
+		}
+		else {
+			ssz.cy = max(ssz.cy, sz.cy);
+			msz.cy = max(msz.cy, sz.cy);
+		}
+		q = q->parent;
+	}
+	
+	t = min(msz, ssz);
+	ssz = max(msz, ssz);
+	msz = t;
+	
+	int fsz = PropagateSmartSize(q, s, msz, ssz);
+	if (vert != p->vert) {
+		ssz = HVSize(vert, GetNodeRect(s).GetSize(), sz);
+		msz = HVSize(vert, GetNodeMinSize(s), cmin);	
+	}
+	else {
+		ssz = GetNodeRect(p).GetSize();
+		msz = GetNodeMinSize(p);
+	}	
+	if (IsNull(cmin))
+		cmin = c.GetMinSize();
+	newsz = vert ? max(min(sz.cy, ssz.cy - msz.cy), cmin.cy) : max(min(sz.cx, ssz.cx - msz.cx), cmin.cx);
+	return fsz;
+}
+
+int DockFrame::PropagateSmartSize(Node *n, Node *c, Size minsz, Size stdsz)
+{
+	// Have we reached root or tree?
+	if (!n) {
+		Layout();
+		return (GetType() & 1) ? stdsz.cy : stdsz.cx;
+	}
+	int cnt = 0;
+	Size msz(0, 0);
+	Rect r = GetNodeRect(n);
+	Size sz = r.GetSize();
+	for (Node *q = n->first; q; q = q->next) {
+		if (q != c)
+			msz = HVSize(n->vert, msz, GetNodeMinSize(q));
+		cnt++;
+	}
+	bool b = false;
+	if (n->vert && msz.cy + stdsz.cy <= sz.cy || !n->vert && msz.cx + stdsz.cx <= sz.cx) {
+		SetNodeSize(c, stdsz);
+		b = true;
+	}
+	else if (n->vert && msz.cy + minsz.cy <= sz.cy || !n->vert && msz.cx + minsz.cx <= sz.cx)  {
+		SetNodeSize(c, minsz);
+		b = true;
+	}
+	if (b && (n->vert && (stdsz.cx <= sz.cx || minsz.cx <= sz.cx))
+	      || (!n->vert && (stdsz.cy <= sz.cy || minsz.cy <= sz.cy))) {
+		LayoutNode(n, r);
+		return size;
+	}
+	minsz = HVSize(n->vert, minsz, msz);
+	stdsz = HVSize(n->vert, stdsz, msz);
+	return PropagateSmartSize(n->parent, n, minsz, stdsz);
 }
 
 void DockFrame::StartFrameAnimate(int sz)

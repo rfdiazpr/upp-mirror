@@ -21,6 +21,7 @@ public:
 		DOCK_BOTTOM = SplitterFrame::BOTTOM,
 	};
 
+	virtual void State(int reason);
 protected:
 
 	// DnD interface

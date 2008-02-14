@@ -52,9 +52,12 @@ protected:
 	Node *	MouseInBar(const Point &pt, Node *p, Rect r, bool store_nodes);
 	Rect	DragHlRect();
 
-	Size	GetMinSize(Node *p);
+	Size 	HVSize(bool vert, const Size &a, const Size &b);
+	Size 	GetNodeMinSize(Node *n);
+	Size 	GetNodeMaxSize(Node *n);
 	void	ReconcileChildSizes(Node *p);
 	void	SetNodeSize(Node *n, const Size &sz);
+	void 	Relayout();
 
 	Leaf *	NewLeaf(Ctrl &c)					  	{ Leaf *l = new Leaf(&c); internal_block = true; Add(c); internal_block = false; return l; }
 	Node *	NewNode()								{ return new Node(); }

@@ -29,6 +29,7 @@ private:
 	Size			stdsize;
 	Image 			icon;
 	WString 		title;
+	String 			group;
 	bool			dockable[4];
 
 	const Style *	style;
@@ -37,8 +38,8 @@ public:
 
 	const Image &	GetIcon()						{ return icon; }
 	DockableCtrl &	Icon(const Image& m)			{ icon = m; return *this; }
-	DockableCtrl &	Title(const char *_title)		{ title = _title; return *this; }
-	DockableCtrl &	Title(const WString& _title)	{ title = _title; return *this; }
+	DockableCtrl &	Title(const char *_title)		{ title = _title; if (GetParent()) GetParent()->Refresh(); return *this; }
+	DockableCtrl &	Title(const WString& _title)	{ title = _title; if (GetParent()) GetParent()->Refresh(); return *this; }
 	const WString & GetTitle()						{ return title; }
 
 	DockableCtrl &	SizeHint(const Size &min, const Size &max = Null, const Size &std = Null);
@@ -51,6 +52,9 @@ public:
 		
 	DockableCtrl &	SetStyle(const Style &s)		{ style = &s; RefreshParentLayout(); return *this; }
 	const Style &	GetStyle()						{ return style ? *style : StyleDefault(); }
+	
+	virtual const String &GetGroup() const			{ return group; }
+	virtual DockableCtrl &SetGroup(const String &g) { group = g; return *this; }
 	
 	DockableCtrl &	AllowDockAll()					{ return AllowDockLeft().AllowDockRight().AllowDockTop().AllowDockBottom(); }
 	DockableCtrl &	AllowDockNone()					{ return AllowDockLeft(false).AllowDockRight(false).AllowDockTop(false).AllowDockBottom(false); }

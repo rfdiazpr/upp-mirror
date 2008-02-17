@@ -229,14 +229,7 @@ void DockCtrl::RefreshPanel()
                     DockCtrlImages::DefaultImage : ctrl->GetIcon()));
         }
     }
-    
-   int count = 0;
-   count += GetPaneFrame(0).GetTabWindows().GetCount();
-   count += GetPaneFrame(1).GetTabWindows().GetCount();   
-   count += GetPaneFrame(2).GetTabWindows().GetCount();
-   count += GetPaneFrame(3).GetTabWindows().GetCount();   
-   controlpanel.Title(Format("Tab Window Count: %d", count));    
-   controlpanel.Refresh();
+    controlpanel.Refresh();
 }
 
 DockCtrl& DockCtrl::SetStyle(const DockCtrlChStyle::Style& s)

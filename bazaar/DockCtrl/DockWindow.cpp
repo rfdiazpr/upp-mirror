@@ -330,8 +330,6 @@ void TabWindow::Attach0(DockableCtrl& ctrl, int makeactive)
 void TabWindow::Detach(DockableCtrl& ctrl)
 {
 	if(!ctrl.IsFloating()) ctrl.ShowDragBar();
-	if(position == -1 && !ctrl.IsNullInstance()) 
-		position = ctrl.Position() - 1;
 	pane.RemoveChildDock(ctrl);
 	tabs.Close(position);
 	if(!RemoveTabWindow())

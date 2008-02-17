@@ -1,9 +1,3 @@
-//==============================================================================================
-// DockCtrl: A dockable widget framework for U++
-// Author:	 Ismail YILMAZ (A.k.a. Maldoror)
-// Version:	 0.49.9.9a
-//==============================================================================================
-
 #include "DockCtrl/DockCtrl.h"
 
 #define IMAGEFILE <DockCtrl/DockableCtrl.iml>
@@ -17,48 +11,63 @@
 
 DockWindow::DockWindow() : DockableCtrl()
 {
-	_hasmenubar = _hastoolbar = _hasstatusbar = false;
-	_toolbar = NULL; _statusbar = NULL;
+	SetType(TYPE_WINDOCK);
 	
+	hasmenubar 		= false;
+	hastoolbar 		= false;
+	hasstatusbar 	= false;
+	menubar			= NULL;
+	toolbar 		= NULL; 
+	statusbar 		= NULL;
+		
 	ToolWindow().Sizeable().Zoomable().TopMost().BackPaint();
 	
 	_menubutton << THISBACK(OnMenuButton);
 	_shutbutton << THISBACK(OnShutButton);
 	_autohidebutton << THISBACK(OnAutoHideButton);
-	
-	_dragbar <<  _shutbutton.RightPos(2,  14).TopPos(2, 14).Tip(t_("Close"));
-	_dragbar <<  _autohidebutton.RightPos(18, 16).TopPos(2, 14).Tip(t_("Auto Hide"));                                                           
-	_dragbar <<  _menubutton.RightPos(34, 18).TopPos(2, 14).Tip(t_("Window Position")) << GetLabelCtrl().SizePos().LeftPos(6);                                                 
 
 	_dragbar.SetDock(this);
-	_dragbar.Add(GetLabelCtrl().SetAlign(ALIGN_LEFT));
+
+	SetStyle(DockCtrlChStyle::StyleDefault());
+
+	int cx = style->barheight - 8;
+	int cy = style->barheight - 8;	
 	
-	SetVisualStyle(ModernStyle()); //default;
+	_dragbar <<  _shutbutton.RightPos(2, cy).TopPos(2, cy).Tip(t_("Close"));
+	_dragbar <<  _autohidebutton.RightPos(cy + 4, cy).TopPos(2, cy).Tip(t_("Auto Hide"));                                                           
+	_dragbar <<  _menubutton.RightPos((2 * cy) + 6, cy).TopPos(2, cy).Tip(t_("Window Position")); // << GetLabelCtrl().SizePos().LeftPos(6);                                                 
 	SetFrame(FieldFrame());
-	ShowDragBar(); 
+	ShowDragBar(); 	
 }
 
 DockWindow::~DockWindow()
 {
+	//GetLabelCtrl().Remove();
 }
 
-DockWindow& DockWindow::AddMenuBar(MenuBar& menubar)
+DockWindow& DockWindow::AddMenuBar(MenuBar& bar)
 {
-	AddBarCtrl(menubar); _menubar = &menubar; _hasmenubar = true;
-	AddChildBarSize(0, menubar.GetStdHeight());
+	AddBarCtrl(bar); 
+	menubar = &bar; 
+	hasmenubar = true;
+	AddChildBarSize(0, bar.GetStdHeight());
 	return *this;
 }
 
-DockWindow& DockWindow::AddToolBar(ToolBar& toolbar)
+DockWindow& DockWindow::AddToolBar(ToolBar& bar)
 {
-	AddBarCtrl(toolbar); _toolbar = &toolbar; _hastoolbar = true;
-	AddChildBarSize(0, toolbar.GetStdHeight());
+	AddBarCtrl(bar); 
+	toolbar = &bar; 
+	hastoolbar = true;
+	AddChildBarSize(0, bar.GetStdHeight());
 	return *this;
 }
 
-DockWindow& DockWindow::AddStatusBar(StatusBar& statusbar)
+DockWindow& DockWindow::AddStatusBar(StatusBar& bar)
 {
-	AddBarCtrl(statusbar.Height(18)); _statusbar = &statusbar; _hasstatusbar = true;
+	AddBarCtrl(bar.Height(18)); 
+	statusbar = &bar; 
+	hasstatusbar = true;
 	return *this;
 }
 
@@ -66,20 +75,21 @@ void DockWindow::HideDragBar()
 {
 	if(!HasDragBar()) return;
 	RemoveFrame(_dragbar);
-	SubChildBarSize(0, 22); DockableCtrl::HideDragBar();	
+	SubChildBarSize(0,_dragbar.GetHeight()); 
+	DockableCtrl::HideDragBar();	
 }
 
 void DockWindow::ShowDragBar()
 {
 	if(HasDragBar()) return;
 	InsertFrame(0, _dragbar);
-	AddChildBarSize(0, 22); DockableCtrl::ShowDragBar();
+	AddChildBarSize(0, _dragbar.GetHeight()); 
+	DockableCtrl::ShowDragBar();
 }
 
-Rect DockWindow::GetDockRect()
+Rect DockWindow::GetCtrlRect()
 {
 	if(!HasDragBar()) return GetScreenRect();
-
 	Rect bar = _dragbar.GetScreenRect();
 	Rect wnd = GetScreenRect();
 	wnd.top  = bar.top;
@@ -87,29 +97,29 @@ Rect DockWindow::GetDockRect()
 	return wnd;
 }
 
-Rect DockWindow::GetDockView()
-{
-	return GetDockRect();
-}
-
 void DockWindow::Paint(Draw& d)
 {
 	TopWindow::Paint(d);
 }
 
-void DockWindow::SetVisualStyle(const Style& st)
+DockWindow& DockWindow::SetStyle(const DockCtrlChStyle::Style& st)
 {
-	_visualstyle = &st;
-	_shutbutton.SetImage(_visualstyle->shutbuttonimage[0], _visualstyle->shutbuttonimage[1], _visualstyle->shutbuttonimage[2]);
-	_menubutton.SetImage(_visualstyle->menubuttonimage[0],_visualstyle->menubuttonimage[1], _visualstyle->menubuttonimage[2]);
-	_autohidebutton.SetImage(_visualstyle->autohidebuttonimage[0], _visualstyle->autohidebuttonimage[1], _visualstyle->autohidebuttonimage[2]);
+	style = &st;
+	_shutbutton.SetImage(style->barshut[0], style->barshut[1], style->barshut[2]);
+	_menubutton.SetImage(style->barmenu[0],style->barmenu[1], style->barmenu[2]);
+	_autohidebutton.SetImage(style->barhide[0], style->barhide[1], style->barhide[2]);
 	RefreshLayoutDeep();
+return *this;
+}
+
+void DockWindow::MouseMove(Point p, dword keyflags)
+{
+	TopWindow::MouseMove(p, keyflags);
 }
 
 void DockWindow::ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags)
 {
-	if(HasDragBar() && child == &_dragbar && event == LEFTDRAG) 
-		DnDDragStart();
+	if(HasDragBar() && child == &_dragbar && event == LEFTDRAG) StartWindowDrag();
 	TopWindow::ChildMouseEvent(child, event, p, zdelta, keyflags);
 }
 
@@ -123,21 +133,22 @@ LRESULT  DockWindow::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			case WM_MOVE:
 					Dragging(true);
-					GetBase().DoDragAndDrop(*this, GetMousePos());
+					SetDropTarget(DOCK_NONE, GetDropState());
+					GetBase().DoDragAndDrop(*this, GetMousePos(), GetCtrlSize());
 					break;
 		
 			case WM_EXITSIZEMOVE:
-					if(!GetMouseLeft() && DnDHasTarget() && IsDragged()) 
+					if(!GetMouseLeft() && HasDropTarget() && IsDragged()) 
 					{
-						Dock(DnDGetTarget(), State(), Position());
+						Dock(GetDropTarget(), GetDropState(), Position());
 						Refresh();
-						DnDTargetoutofRange();
+						SetDropTarget();
 						Dragging(false);
 					}
 				break;
 			
 			case WM_NCRBUTTONDOWN:
-					ContextMenu(*_menubar);
+					ContextMenu(*menubar);
 				return 1L;
 				
 			default:
@@ -161,7 +172,8 @@ Ctrl& DockWindow::DragBarButton::SetImage(const Image& normal, const Image& high
 
 void DockWindow::DragBarButton::Paint(Draw& d)
 {
- 	d.DrawImage(0, 0, (IsPush() && HasMouse() ? _pimage : (!IsPush() && HasMouse() ? _himage : _nimage)));
+	Size sz = GetSize();
+	d.DrawImage(0 , 0, sz.cx, sz.cy, (IsPush() && HasMouse() ? _pimage : (!IsPush() && HasMouse() ? _himage : _nimage)));
 }
 
 //===============================================
@@ -183,61 +195,332 @@ void DockWindow::DragBar::FrameRemove()
 
 void DockWindow::DragBar::FrameLayout(Rect& r)
 {
-	LayoutFrameTop(r, this, 22);
+	LayoutFrameTop(r, this, GetHeight());
 }
 
 void DockWindow::DragBar::FrameAddSize(Size& s)
 {
-	s += Size(0, 22);
+	s += 4;
+	s.cy += GetHeight();
 }
 
 void DockWindow::DragBar::Paint(Draw& d)
 {
-
-	const Style* style = GetDock().GetVisualStyle();
-	(GUI_GlobalStyle() >= GUISTYLE_XP) && (style != &ClassicStyle()) ? 
-		d.DrawImage(0, 0, GetSize().cx, GetSize().cy, style->barbackgroundimage) : 
+	Size sz = GetSize();
+	
+	Image img = GetDock().GetIcon();
+	bool hasicon = false;
+	
+	const DockCtrlChStyle::Style* style = GetDock().GetStyle();
+	
+	(GUI_GlobalStyle() >= GUISTYLE_XP) && (style != &DockCtrlChStyle::StyleClassic()) ? 
+		ChPaint(d, 0, 0, GetSize().cx, GetSize().cy, style->barbackground[0]) :
 			d.DrawRect(GetSize(), SColorFace());
+
+
+	if(!img.IsNullInstance())
+	{
+		hasicon = true;
+		d.DrawImage(BAR_MARGIN, GetHeight() / img.GetSize().cy, style->barheight - 8, style->barheight - 8, img);
+	}
+
+	d.DrawText(BAR_MARGIN + (BAR_FILEICON + BAR_SPACEICON) * int(hasicon), GetHeight() / 12, GetDock().GetLabel(), style->font);
 }
 
-CH_STYLE(DockWindow, Style, ClassicStyle)
+int DockWindow::DragBar::GetWidth()
 {
-	barbackgroundimage = DockWindowImages::I_DragBarModernN;
-	shutbuttonimage[0] = DockWindowImages::I_CloseN;
-	shutbuttonimage[1] = DockWindowImages::I_CloseH;
-	shutbuttonimage[2] = DockWindowImages::I_CloseP;
-	autohidebuttonimage[0]  = DockWindowImages::I_HideN;
-	autohidebuttonimage[1]  = DockWindowImages::I_HideH;
-	autohidebuttonimage[2]  = DockWindowImages::I_HideP;
-	menubuttonimage[0]  = DockWindowImages::I_DockMenuN;
-	menubuttonimage[1]  = DockWindowImages::I_DockMenuH;
-	menubuttonimage[2]  = DockWindowImages::I_DockMenuP;
+	const DockCtrlChStyle::Style* style = GetDock().GetStyle();
+	_titlesize = GetTextSize(GetDock().GetLabel(), style->font);
+	return BAR_MARGIN * 2 + _titlesize.cx;
 }
 
-CH_STYLE(DockWindow, Style, EnhancedStyle)
+int DockWindow::DragBar::GetHeight()
 {
-	barbackgroundimage = DockWindowImages::I_DragBarEnhancedN;
-	shutbuttonimage[0] = DockWindowImages::I_CloseN;
-	shutbuttonimage[1] = DockWindowImages::I_CloseH;
-	shutbuttonimage[2] = DockWindowImages::I_CloseP;
-	autohidebuttonimage[0]  = DockWindowImages::I_HideN;
-	autohidebuttonimage[1]  = DockWindowImages::I_HideH;
-	autohidebuttonimage[2]  = DockWindowImages::I_HideP;
-	menubuttonimage[0]  = DockWindowImages::I_DockMenuN;
-	menubuttonimage[1]  = DockWindowImages::I_DockMenuH;
-	menubuttonimage[2]  = DockWindowImages::I_DockMenuP;
+	const DockCtrlChStyle::Style* style = GetDock().GetStyle();
+	return style->barheight;
 }
 
-CH_STYLE(DockWindow, Style, ModernStyle)
+
+//----------------------------------------------------------------------------------------------
+
+TabWindow::TabWindow()
 {
-	barbackgroundimage = DockWindowImages::I_DragBarModernN;
-	shutbuttonimage[0] = DockWindowImages::I_CloseModernN;
-	shutbuttonimage[1] = DockWindowImages::I_CloseModernH;
-	shutbuttonimage[2] = DockWindowImages::I_CloseModernP;
-	autohidebuttonimage[0]  = DockWindowImages::I_HideModernN;
-	autohidebuttonimage[1]  = DockWindowImages::I_HideModernH;
-	autohidebuttonimage[2]  = DockWindowImages::I_HideModernP;
-	menubuttonimage[0]  = DockWindowImages::I_DockMenuModernN;
-	menubuttonimage[1]  = DockWindowImages::I_DockMenuModernH;
-	menubuttonimage[2]  = DockWindowImages::I_DockMenuModernP;
+	SetType(TYPE_TABDOCK);
+	
+	destroyed	= false;
+	position	= -1;
+	activectrl	= NULL;
+
+	if(!tabs.IsChild()) AddFrame(tabs.SetLayout(CustomFrame::LAYOUT_BOTTOM));
+	if(!pane.IsChild()) Add(pane.SizePos());
+	
+	tabs.WhenSelect 	= THISBACK(OnActiveTab);
+	tabs.WhenClose  	= THISBACK(OnTabClose);
+	tabs.WhenContext 	= THISBACK(OnTabContextMenu);
+	tabs.WhenDrag		= THISBACK(OnTabDrag);
+	tabs.WhenActive		= THISBACK(OnTabActive);
 }
+
+TabWindow::~TabWindow()
+{
+	position 	= -1;
+	activectrl 	= NULL;
+}
+
+void TabWindow::Attach(DockableCtrl& ctrl, int makeactive)
+{
+	if(ctrl.GetType() == TYPE_TABDOCK)
+		if(((bool) GetBase().DockCtrl::controlpanel.TabOptionNest.Get())) 
+			AttachNested(ctrl, makeactive);				 
+		else
+			AttachNormal(ctrl, makeactive);
+	else
+		Attach0(ctrl, makeactive);
+}
+
+void TabWindow::Detach(DockableCtrl& ctrl)
+{
+	int count = pane.GetCount();
+	if(!ctrl.IsFloating()) ctrl.ShowDragBar();
+	pane.RemoveChildDock(ctrl);
+	tabs.Close(position);
+	if(!RemoveTabWindow())
+	ctrl.SetOwnerTab(NULL);
+	position = -1;
+	GetBase().RefreshPanel();
+}
+
+void TabWindow::AttachNormal(DockableCtrl& ctrl, int makeactive)
+{
+	TabWindow& tabwindow = reinterpret_cast<TabWindow&>(ctrl);
+	PaneSplitter& p = tabwindow.GetChilds();
+	int ncount =  p.GetChildCount();
+	
+	DockableCtrl* lc = p.GetChildAt(ncount);
+
+	if(lc)
+	{
+		bool transfered = false;
+		for(int i = 0; i < ncount - 1 ; i++)
+		{
+			DockableCtrl* c = p.GetChildAt(i + 1);
+			if(c) 
+			{
+				Attach0(*c);
+				transfered = true;
+			}
+		}
+		if(transfered)
+		{
+			Attach0(*lc);
+		}
+		tabwindow.TabWindow::destroyed = true;
+	}
+}
+
+void TabWindow::AttachNested(DockableCtrl& ctrl, int makeactive)
+{
+	Attach0(ctrl, makeactive);
+}
+
+void TabWindow::Attach0(DockableCtrl& ctrl, int makeactive)
+{
+	ctrl.SetOwnerTab(this);
+	ctrl.HideDragBar();
+	tabs.Add(ctrl, makeactive);
+	pane.AddChildDock(ctrl.Style(DOCK_TABBED, STATE_TABBED, 0).SetBase(&GetBase()));
+	GetBase().AddCtrlRecord(ctrl);
+	if(makeactive) pane.Zoom(ctrl.Position() - 1);
+	pane.Layout();
+	SetTabWindowLabel(ctrl);
+	GetBase().RefreshWidgetLayout();
+	GetBase().RefreshPanel();
+}
+
+
+void TabWindow::DetachAll()
+{
+	int ncount = pane.GetChildCount();
+	for(int i = 1; i <= ncount; i++)
+	{
+		DockableCtrl* ctrl = pane.GetChildAt(i);
+		if(ctrl) ctrl->Shut();
+		if(i == ncount) destroyed = true;
+	}
+}
+
+bool TabWindow::RemoveTabWindow()
+{
+	bool tabbed = false;
+	TabWindow *tabwindow = NULL;
+	RefreshSizeHint();
+	Size sizehint = SizeHint();
+	
+	if(pane.GetChildCount() == 1)
+	{
+		RemoveFrame(tabs);
+		if(pane.HasChild())
+		{
+			DockableCtrl *lastctrl = pane.GetChildAt(1);
+			if(lastctrl)
+			{
+				int a = Alignment();
+				int s = State();
+				int p = Position();
+				
+				pane.RemoveChildDock(*lastctrl);
+				if(IsTabbed())
+				{
+					TabInterface& tabs = GetOwnerTab().GetTabs();
+					tabs.Close(tabs.GetActiveTab());
+					GetOwnerTab().Attach(*lastctrl);
+					Shut();
+				}
+				else if(IsFloating())
+				{
+					Rect r = GetRect();
+					lastctrl->FloatEx(GetRect());
+					lastctrl->SetOwnerTab(NULL);
+					Shut();
+				}
+				else
+				{
+					Shut();
+					lastctrl->ShowDragBar();
+					lastctrl->SetSizeHint(sizehint);
+					lastctrl->Dock(a, s, p);
+					lastctrl->SetOwnerTab(NULL);
+				}
+				return destroyed = true;
+			}
+		}
+	}
+return false;
+}
+
+void TabWindow::UpdateTabLayout()
+{
+	// TODO: Remove these lines, and use proper methods instead.
+	bool tl  = (bool) GetBase().DockCtrl::controlpanel.TabOptionAlignment.Get();
+	bool bt  = (bool) GetBase().DockCtrl::controlpanel.TabOptionClose.Get();
+	bool ic  = (bool) GetBase().DockCtrl::controlpanel.TabOptionIcon.Get();
+	
+	tabs.HasButtons(bt);
+	tabs.HasIcons(ic);
+	
+	if(tl)
+	{
+		switch(Alignment())
+		{
+			case DOCK_LEFT:
+				SetLayout(CustomFrame::LAYOUT_RIGHT);
+				break;
+			case DOCK_TOP:
+				SetLayout(CustomFrame::LAYOUT_BOTTOM);
+				break;
+			case DOCK_RIGHT:
+				SetLayout(CustomFrame::LAYOUT_LEFT);
+				break;
+			case DOCK_BOTTOM:
+				SetLayout(CustomFrame::LAYOUT_TOP);
+				break;
+
+		}
+	}
+	else
+		SetLayout(CustomFrame::LAYOUT_BOTTOM);
+}
+
+void TabWindow::StartTabAnimation()
+{
+	UpdateTabLayout();
+	pane.StartAnimation(pane.GetCount() + 1);
+	tabs.Add(t_("Tabbed Window"), true);
+	pane.Zoom(tabs.GetActiveTab());
+}
+
+void TabWindow::StopTabAnimation()
+{
+	pane.StopAnimation();
+	tabs.Close(tabs.GetActiveTab());
+	if(!RemoveTabWindow()) return;
+	position = -1;
+}
+
+
+bool TabWindow::HasCtrlInRange()
+{
+	Rect r = GetCtrlRect();
+	int hrange = r.Width() 	/ 3;
+	int vrange = r.Height()	/ 3;
+	return Rect(r.left + hrange, r.top + vrange, r.right - hrange, r.bottom - vrange).Contains(GetMousePos());
+}
+
+bool TabWindow::HasTabbedDock()
+{
+	return pane.HasChild();
+}
+
+int TabWindow::ChildCount()
+{
+	return pane.GetCount();
+}
+
+void TabWindow::SetActive(int index)
+{
+	if(index >= pane.GetCount()) return;
+	tabs.SetActiveTab(index);
+	pane.Zoom(index);
+}
+
+void TabWindow::SetActive(DockableCtrl& ctrl)
+{
+}
+
+int TabWindow::GetActiveTab()
+{
+	return tabs.GetActiveTab();
+}
+
+DockableCtrl& TabWindow::GetActiveCtrl()
+{
+	return *pane.GetChildAt(GetActiveTab() + 1);
+}
+
+void TabWindow::OnActiveTab()
+{
+	pane.Zoom(tabs.GetActiveTab());
+	if(!pane.HasChild()) return;
+}
+
+void TabWindow::OnTabClose(int id, DockableCtrl& ctrl)
+{
+	position = id;
+	Detach(ctrl);
+}
+
+void TabWindow::OnTabDrag(int id, DockableCtrl& ctrl)
+{
+	position = id;
+	ctrl.StartWindowDrag();
+}
+
+void TabWindow::OnTabContextMenu(int id, DockableCtrl& ctrl)
+{
+	position = id;
+	reinterpret_cast<DockWindow&>(ctrl).OnMenuButton();
+}
+
+void TabWindow::OnTabActive(int id, DockableCtrl& ctrl)
+{
+	position = id;
+	SetTabWindowLabel(ctrl);
+}
+
+void TabWindow::SetTabWindowLabel(DockableCtrl& ctrl)
+{
+	DockableCtrl::SetLabel(ctrl.GetLabel());
+	DockableCtrl::SetIcon(ctrl.GetIcon());
+	RefreshLayoutDeep();
+}
+

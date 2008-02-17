@@ -1,0 +1,8 @@
+#ifndef _DockCtrl_icpp_init_stub
+#define _DockCtrl_icpp_init_stub
+#include "CtrlCore/init"
+#include "CtrlLib/init"
+#include "Draw/init"
+#include "GridCtrl/init"
+#include "QuickTabs/init"
+#endif

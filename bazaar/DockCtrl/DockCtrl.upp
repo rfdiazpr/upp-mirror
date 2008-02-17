@@ -4,15 +4,19 @@ uses
 	CtrlCore,
 	CtrlLib,
 	Draw,
-	GridCtrl;
+	GridCtrl,
+	QuickTabs;
 
 file
 	Resources readonly separator,
 	DockCtrl.lay,
 	DockableCtrl.iml,
 	"Source Files" readonly separator,
+	AutoHideBar.cpp,
+	PaneSplitter.cpp,
+	PaneFrame.cpp,
 	DockCtrl.cpp,
-	DockPane.cpp,
+	DockTabs.cpp,
 	DockWindow.cpp,
 	DockableCtrl.cpp,
 	"Header Files" readonly separator,

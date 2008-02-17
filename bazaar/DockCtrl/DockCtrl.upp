@@ -1,4 +1,4 @@
-description "Dockable/dynamic window managment widget/control.";
+description "Dockable/dynamic widget framework by İsmail Yılmaz";
 
 uses
 	CtrlCore,

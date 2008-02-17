@@ -1,0 +1,6 @@
+#ifndef _DockCtrlExample_icpp_init_stub
+#define _DockCtrlExample_icpp_init_stub
+#include "CtrlLib/init"
+#include "DockCtrl/init"
+#include "RichEdit/init"
+#endif

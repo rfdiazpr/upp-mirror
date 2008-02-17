@@ -388,20 +388,22 @@ void DockCtrl::RefreshWidgetLayout()
 
 void DockCtrl::ResetWidgetLayout()
 {
-	for(int i = 0; i < ctrlrecords.GetCount(); i++)
-	{
-		CtrlRecord *ctrlrecord = GetCtrlRecord(i);
-		if(ctrlrecord)
+	CtrlRecord *ctrlrecord 	= NULL;
+	DockableCtrl* ctrl		= NULL;
+	int ctrlcount 			= ctrlrecords.GetCount();
+	
+	for(int i = 0; i < ctrlcount * 2; i++)
+		if(i < ctrlcount) 
+			GetCtrlRecord(i)->ctrl->Shut();
+		else
 		{
-			DockableCtrl* ctrl = ctrlrecord->ctrl;
-			if(ctrl) 
-			{
-				ctrl->Shut();
-				Dock(ctrl->Style(ctrlrecord->alignment,	ctrlrecord->state, ctrlrecord->position));
-				
-			}
+			ctrlrecord = GetCtrlRecord(i - ctrlcount);
+			if(ctrlrecord)
+				Dock(ctrlrecord->ctrl->Style(
+						ctrlrecord->alignment,	
+						ctrlrecord->state, 
+						ctrlrecord->position));
 		}
-	}	
 }
 
 CH_STYLE(DockCtrlChStyle, Style, StyleClassic)

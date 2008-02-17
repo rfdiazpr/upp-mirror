@@ -278,17 +278,6 @@ void TabWindow::Attach(DockableCtrl& ctrl, int makeactive)
 		Attach0(ctrl, makeactive);
 }
 
-void TabWindow::Detach(DockableCtrl& ctrl)
-{
-	int count = pane.GetCount();
-	if(!ctrl.IsFloating()) ctrl.ShowDragBar();
-	pane.RemoveChildDock(ctrl);
-	tabs.Close(position);
-	if(!RemoveTabWindow())
-	ctrl.SetOwnerTab(NULL);
-	position = -1;
-	GetBase().RefreshPanel();
-}
 
 void TabWindow::AttachNormal(DockableCtrl& ctrl, int makeactive)
 {
@@ -337,6 +326,19 @@ void TabWindow::Attach0(DockableCtrl& ctrl, int makeactive)
 	GetBase().RefreshPanel();
 }
 
+
+void TabWindow::Detach(DockableCtrl& ctrl)
+{
+	if(!ctrl.IsFloating()) ctrl.ShowDragBar();
+	if(position == -1 && !ctrl.IsNullInstance()) 
+		position = ctrl.Position() - 1;
+	pane.RemoveChildDock(ctrl);
+	tabs.Close(position);
+	if(!RemoveTabWindow())
+	ctrl.SetOwnerTab(NULL);
+	position = -1;
+	GetBase().RefreshPanel();
+}
 
 void TabWindow::DetachAll()
 {

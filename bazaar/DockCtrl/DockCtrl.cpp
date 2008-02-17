@@ -20,6 +20,8 @@ Ctrl& DockCtrl::Dock(DockableCtrl& ctrl)
 	ASSERT(base);
     int alignment = ctrl.Alignment();
     ctrl.SetBase(this);
+    AddCtrlRecord(ctrl);
+ 
     if(!ctrl.IsFloating())
     {
         PaneFrame& paneframe = GetPaneFrame(alignment);
@@ -52,7 +54,6 @@ Ctrl& DockCtrl::Dock(DockableCtrl& ctrl)
         }
         
     }
-    AddCtrlRecord(ctrl);
     RefreshPanel();
     return *this;
 }
@@ -229,7 +230,7 @@ void DockCtrl::RefreshPanel()
                     DockCtrlImages::DefaultImage : ctrl->GetIcon()));
         }
     }
-    controlpanel.Refresh();
+   controlpanel.Refresh();
 }
 
 DockCtrl& DockCtrl::SetStyle(const DockCtrlChStyle::Style& s)
@@ -311,6 +312,7 @@ DockCtrl::DockCtrl()
     controlpanel.skinlist.Add(0, t_("Classic")).Add(1, t_("Enhanced")).Add(2, t_("Default")).SetIndex(2);
     controlpanel.skinlist.WhenAction = THISBACK(SelectSkin);
     controlpanel.list.WhenLeftClick = THISBACK(PanelAction); 
+    controlpanel.layoutbutton		<<= THISBACK(ResetWidgetLayout);
     controlpanel.TabOptionAlignment <<= THISBACK(RefreshWidgetLayout);
     controlpanel.TabOptionIcon		<<= THISBACK(RefreshWidgetLayout);
     controlpanel.TabOptionClose		<<= THISBACK(RefreshWidgetLayout);
@@ -381,6 +383,24 @@ void DockCtrl::RefreshWidgetLayout()
 	     	   	tabwindow->GetTabs().HasIcons(ti);
      	   		tabwindow->GetTabs().HasButtons(tb);   						
    		}
+	}	
+}
+
+void DockCtrl::ResetWidgetLayout()
+{
+	for(int i = 0; i < ctrlrecords.GetCount(); i++)
+	{
+		CtrlRecord *ctrlrecord = GetCtrlRecord(i);
+		if(ctrlrecord)
+		{
+			DockableCtrl* ctrl = ctrlrecord->ctrl;
+			if(ctrl) 
+			{
+				ctrl->Shut();
+				Dock(ctrl->Style(ctrlrecord->alignment,	ctrlrecord->state, ctrlrecord->position));
+				
+			}
+		}
 	}	
 }
 

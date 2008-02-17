@@ -797,7 +797,7 @@ public:
 
 	PaneFrame& Vert()							{ dockcontainer.Vert(); return *this; 	}
 	PaneFrame& Horz()							{ dockcontainer.Horz(); return *this; 	}
-	PaneFrame& RefreshPaneFrame()				{ dockcontainer.Layout(); return *this; }
+	PaneFrame& RefreshPaneFrame()				{ RefreshParentLayout(); dockcontainer.Layout(); return *this; }
 	
 	PaneFrame& SetBase(DockCtrl* ctrlbase)		{ base = ctrlbase;	return *this;	}
 	DockCtrl&  GetBase()						{ ASSERT(base); return *base; 		}
@@ -879,6 +879,7 @@ public:
 	void LockPaneFrame(int alignment);
 	
 	DockCtrl&		SetLayout(Ctrl& parent, int cx, int cy);
+	DockCtrl&		SetLayout(Ctrl& parent, Size& sz)			{ return SetLayout(parent, sz.cx / 4, sz.cy / 3); }
 	
 	Ctrl& 			GetBase()					{ ASSERT(base); return *base;	}
 	PaneFrame& 		GetPaneFrame(int alignment)	{ return pane[alignment]; 		}
@@ -890,7 +891,8 @@ public:
 	void		ControlPanel();				
 
 	void RefreshWidgetLayout();
-		              
+	void ResetWidgetLayout();
+			              
 private:
 	void Attach(DockableCtrl& ctrl);
 	void Attach(DockableCtrl* ctrl);

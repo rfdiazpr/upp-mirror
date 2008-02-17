@@ -41,6 +41,9 @@ DockCtrlExample::DockCtrlExample()
 	             
 	// DockCtrl::SetLayout(Ctrl& parent, cx, cy) method must be called before any initialization (except for the child ctrl adding to the dockable widgets).
 	// This method prepares the dockable-widget area.
+	// One of the implication of this layout mechanism is, theoretically, it allows almost infinite number of seperate DockCtrl instance 
+	// in a single Application Window! Namely, you could have numbers of independent dockable window area. This is because, the SetLayout()
+	// methods takes Ctrl as it's base. So, you could even have seperate dockctrl framework in a single dock Widget! ;)
 	dockctrl.SetLayout(*this, GetSize().cx / 4, GetSize().cy / 3);
 	
 	// Magic Stuff...

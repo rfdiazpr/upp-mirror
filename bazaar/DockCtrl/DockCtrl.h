@@ -19,6 +19,9 @@ using namespace UPP;
 #define IMAGEFILE <DockCtrl/DockableCtrl.iml>
 #include <Draw/iml_header.h>
 
+#define TFILE <DockCtrl/DockCtrl.t>
+#include <Core/t.h>
+
 class PaneSplitter;
 class TabInterface;
 class AutoHideBar;
@@ -263,7 +266,7 @@ public:
 	void RemoveChildDock(int position);
 	void RemoveChilds();
 	void ReposChilds();
-	DockableCtrl* GetChildAt(int position); 
+	DockableCtrl* GetChildAt(int position);
 	int  GetChildCount();
 	bool HasChild() const;					
 
@@ -338,7 +341,7 @@ public:
 	inline bool IsAutoHidden()				{ return IsDocked() && dockstate == STATE_AUTO;		}
 	inline bool IsShut()					{ return dockalignment == DOCK_NONE && dockstate == STATE_SHUT;}
 	inline bool IsFloating()				{ return dockalignment == DOCK_NONE && dockstate != STATE_SHUT;}
-	inline bool IsTabbed()					{ return /*dockalignment == DOCK_TABBED &&*/ dockstate == STATE_TABBED;}
+	inline bool IsTabbed()					{ return dockstate == STATE_TABBED;}
 
 	int GetType()							{ return type;	}
 	virtual Size& SizeHint()				{ return size;	}
@@ -366,7 +369,7 @@ public:
 protected:
 	void OpenWindow(Rect& r);
 	void ShutWindow();
-	void OnShutWindow()									{ ShutWindow(); Style(DOCK_NONE, STATE_SHUT, Position()); }
+	void OnShutWindow();									
 
 	virtual void Layout()								{ TopWindow::Layout(); if(IsOpen() && IsFloating()) RefreshSizeHint(); }
 		
@@ -636,7 +639,6 @@ private:
 	void Attach0(DockableCtrl& ctrl, int makeactive = false);
 		
 	bool RemoveTabWindow();
-	void UpdateTabLayout();
 	void SetTabWindowLabel(DockableCtrl& ctrl);
 		
 private:

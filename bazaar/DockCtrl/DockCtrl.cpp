@@ -203,13 +203,13 @@ void DockCtrl::RefreshPanel()
                     if(ctrl->IsFloating())
                         a = t_("FLOATING");
                     else
-                        a = t_("SHUT");
+                        a = t_("NONE");
                     break;     
             }
             switch(ctrl->State())
             {
                 case DockableCtrl::STATE_SHOW:
-                    s = t_("VISIBLE");
+                    s = t_("SHOWN");
                     break;
                 case DockableCtrl::STATE_HIDE:
                     s = t_("HIDDEN");
@@ -394,7 +394,12 @@ void DockCtrl::ResetWidgetLayout()
 	
 	for(int i = 0; i < ctrlcount * 2; i++)
 		if(i < ctrlcount) 
-			GetCtrlRecord(i)->ctrl->Shut();
+		{	
+			ctrlrecord = GetCtrlRecord(i);
+			if(ctrlrecord && !ctrlrecord->ctrl->IsShut())
+				ctrlrecord->ctrl->Shut();
+				
+		}
 		else
 		{
 			ctrlrecord = GetCtrlRecord(i - ctrlcount);
@@ -404,6 +409,7 @@ void DockCtrl::ResetWidgetLayout()
 						ctrlrecord->state, 
 						ctrlrecord->position));
 		}
+	RefreshPanel();
 }
 
 CH_STYLE(DockCtrlChStyle, Style, StyleClassic)

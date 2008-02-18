@@ -155,6 +155,9 @@ void DockableCtrl::Shut()
 	else 
 		GetBase().Detach(*this);
 
+	if(GetType() == TYPE_TABDOCK)
+		(reinterpret_cast<TabWindow&>(*this)).DetachAll();
+	
 	Style(DOCK_NONE, STATE_SHUT, 0);
 	GetBase().RefreshPanel();
 }
@@ -186,6 +189,11 @@ void DockableCtrl::ShutWindow()
 	Remove();
 	SetRect(r);  
 	if(!HasDragBar()) ShowDragBar();
+}
+
+void DockableCtrl::OnShutWindow()
+{
+	ShutWindow(); if(!IsShut()) Shut();
 }
 
 void DockableCtrl::Settings()

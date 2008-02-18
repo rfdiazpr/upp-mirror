@@ -340,13 +340,23 @@ void TabWindow::Detach(DockableCtrl& ctrl)
 
 void TabWindow::DetachAll()
 {
-	int ncount = pane.GetChildCount();
-	for(int i = 1; i <= ncount; i++)
+	DockableCtrl *ctrl = NULL;
+	Ctrl* fc = pane.GetFirstChild();
+	Ctrl* lc = pane.GetLastChild();
+
+	while(fc != lc)
 	{
-		DockableCtrl* ctrl = pane.GetChildAt(i);
+		DockableCtrl* ctrl = reinterpret_cast<DockableCtrl*>(fc);
+		fc = fc->GetNext();
 		if(ctrl) ctrl->Shut();
-		if(i == ncount) destroyed = true;
 	}
+	if(lc)
+	{
+		ctrl = reinterpret_cast<DockableCtrl*>(lc);
+		ctrl->Shut();
+	}
+	if(!pane.GetChildCount()) destroyed = true;
+	GetBase().RefreshPanel();
 }
 
 bool TabWindow::RemoveTabWindow()
@@ -398,42 +408,9 @@ bool TabWindow::RemoveTabWindow()
 return false;
 }
 
-void TabWindow::UpdateTabLayout()
-{
-	// TODO: Remove these lines, and use proper methods instead.
-	bool tl  = (bool) GetBase().DockCtrl::controlpanel.TabOptionAlignment.Get();
-	bool bt  = (bool) GetBase().DockCtrl::controlpanel.TabOptionClose.Get();
-	bool ic  = (bool) GetBase().DockCtrl::controlpanel.TabOptionIcon.Get();
-	
-	tabs.HasButtons(bt);
-	tabs.HasIcons(ic);
-	
-	if(tl)
-	{
-		switch(Alignment())
-		{
-			case DOCK_LEFT:
-				SetLayout(CustomFrame::LAYOUT_RIGHT);
-				break;
-			case DOCK_TOP:
-				SetLayout(CustomFrame::LAYOUT_BOTTOM);
-				break;
-			case DOCK_RIGHT:
-				SetLayout(CustomFrame::LAYOUT_LEFT);
-				break;
-			case DOCK_BOTTOM:
-				SetLayout(CustomFrame::LAYOUT_TOP);
-				break;
-
-		}
-	}
-	else
-		SetLayout(CustomFrame::LAYOUT_BOTTOM);
-}
-
 void TabWindow::StartTabAnimation()
 {
-	UpdateTabLayout();
+	GetBase().RefreshWidgetLayout();
 	pane.StartAnimation(pane.GetCount() + 1);
 	tabs.Add(t_("Tabbed Window"), true);
 	pane.Zoom(tabs.GetActiveTab());
@@ -496,7 +473,7 @@ void TabWindow::OnActiveTab()
 void TabWindow::OnTabClose(int id, DockableCtrl& ctrl)
 {
 	position = id;
-	Detach(ctrl);
+	ctrl.Shut();
 }
 
 void TabWindow::OnTabDrag(int id, DockableCtrl& ctrl)

@@ -9,8 +9,9 @@ uses
 
 file
 	Resources readonly separator,
-	DockCtrl.lay,
 	DockableCtrl.iml,
+	DockCtrl.lay,
+	DockCtrl.t charset "UTF-8",
 	"Source Files" readonly separator,
 	AutoHideBar.cpp,
 	PaneSplitter.cpp,

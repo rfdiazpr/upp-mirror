@@ -21,7 +21,7 @@
 	+ introducing "Complex Dockable Framework" concept. namely, numereous and seperate
 	  DockCtrl can be nested in any standard U++ Ctrl derived class.
 	+ unified (mostly...) Chameleon structure "DockCtrlChStyle" added for easy customization.
-	+ internalization support added. currentyl only Turkish and English languages are supported.
+	+ internationalization support added. currentyl only Turkish and English languages are supported.
 	+ added settings menu
 	+ added SetLayout() method for easy instatiation of DockCtrl class.
 	+ self-explanatory example code is added to the package.

@@ -60,6 +60,7 @@ bool PrinterJob::Execute0(bool dodlg)
 		dlg.Flags |= PD_ALLPAGES;
 	dlg.hwndOwner = GetActiveWindow();
 	dlg.Flags |= PD_RETURNDEFAULT;
+	dlg.nCopies = 1;
 	if(!PrintDlg(&dlg)) return false;
 	if(dlg.hDevMode) {
 		DEVMODE *pDevMode = (DEVMODE*)::GlobalLock(dlg.hDevMode);

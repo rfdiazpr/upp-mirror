@@ -13,7 +13,8 @@ uses
 	Web,
 	plugin\bz2,
 	HexView,
-	art\BlueBar;
+	art\BlueBar,
+	plugin/astyle;
 
 link(WIN32 MSC) /MAP;
 
@@ -48,6 +49,7 @@ file
 	Util.cpp,
 	Macro.cpp,
 	Calc.cpp,
+	FormatCode.cpp,
 	Compile readonly separator,
 	Methods.cpp,
 	AutoSetup.cpp,

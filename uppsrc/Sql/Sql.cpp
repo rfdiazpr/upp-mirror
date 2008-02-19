@@ -188,10 +188,10 @@ bool Sql::Fetch() {
 		session.GetStatus().Time(t - cn->starttime);
 		session.PassStatus(ActivityStatus::END_FETCHING);
 	}
-	if(t - session.traceslow > cn->starttime)
+	if(t - session.traceslow - cn->starttime > 0)
 		BugLog() << t - cn->starttime << " ms: " << cn->statement << '\n';
 	else
-	if(t - t0 > session.traceslow)
+	if(t - t0 - session.traceslow > 0)
 		BugLog() << t - t0 << " ms further fetch: " << cn->statement << '\n';
 	cn->starttime = INT_MAX;
 	return b;

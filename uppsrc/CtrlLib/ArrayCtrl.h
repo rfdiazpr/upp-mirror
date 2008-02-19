@@ -397,7 +397,7 @@ public:
 	bool       IsSelected(int i) const                          { return array[i].select; }
 	void       ClearSelection();
 	bool       IsSel(int i) const;
-
+	
 	void       EnableLine(int i, bool e);
 	void       DisableLine(int i)                               { EnableLine(i, false); }
 	bool       IsLineDisabled(int i) const                      { return array[i].enabled; }

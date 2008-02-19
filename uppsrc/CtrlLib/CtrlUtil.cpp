@@ -16,7 +16,7 @@ void Animate(Ctrl& c, const Rect& target, int type)
 	Rect r0 = c.GetRect();
 	dword time0 = GetTickCount();
 	for(;;) {
-		dword t = GetTickCount() - time0;
+		dword t = (GetTickCount() - time0);
 		if(t > 200)
 			break;
 		if(type == GUIEFFECT_SLIDE) {
@@ -31,6 +31,10 @@ void Animate(Ctrl& c, const Rect& target, int type)
 				r.right = min(r.right + q, target.right);
 			if(r.bottom < target.bottom)
 				r.bottom = min(r.bottom + q, target.bottom);
+			if(r.GetWidth() > target.GetWidth())
+				r.right = r.left + target.GetWidth();
+			if(r.GetHeight() > target.GetHeight())
+				r.bottom = r.top + target.GetHeight();
 			if(r == target)
 				break;
 			c.SetRect(r);

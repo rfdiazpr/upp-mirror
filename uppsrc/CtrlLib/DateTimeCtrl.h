@@ -485,6 +485,9 @@ public:
 		cc.WhenPopDown  = THISBACK(OnClose);
 	}
 
+	virtual void GotFocus()  { drop.RefreshFrame(); }
+	virtual void LostFocus() { drop.RefreshFrame(); }
+
 	DateTimeCtrl& SetCalendarStyle(const Calendar::Style& style)   { cc.calendar.SetStyle(style); return *this;  }
 	DateTimeCtrl& SetClockStyle(const Clock::Style& style)         { cc.clock.SetStyle(style); return *this;  }
 	DateTimeCtrl& SetButtonStyle(const MultiButton::Style& style)  { drop.SetStyle(style); return *this; }

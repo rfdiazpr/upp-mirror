@@ -3,7 +3,7 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x)       // RLOG(x)
+#define LLOG(x)       RLOG(x)
 #define LLOGBLOCK(x)  // RLOGBLOCK(x)
 #define LDUMP(x)      // RDUMP(x)
 
@@ -144,6 +144,7 @@ String HttpClient::Execute(Gate2<int, int> progress)
 	switch(method) {
 		case METHOD_GET:  request << "GET "; break;
 		case METHOD_POST: request << "POST "; break;
+        case METHOD_HEAD: request << "HEAD "; break;
 		default: NEVER(); // invalid method
 	}
 	String host_port = host;
@@ -169,6 +170,8 @@ String HttpClient::Execute(Gate2<int, int> progress)
 		if(method == METHOD_POST)
 			request << "Content-Length: " << postdata.GetLength() << "\r\n";
 	}
+	if(use_proxy && !IsNull(proxy_username))
+		 request << "Proxy-Authorization: basic " << Base64Encode(proxy_username + ':' + proxy_password) << "\r\n";
 	if(!IsNull(username) || !IsNull(password))
 		request << "Authorization: basic " << Base64Encode(username + ":" + password) << "\r\n";
 	request << client_headers << "\r\n" << postdata;
@@ -276,6 +279,8 @@ String HttpClient::Execute(Gate2<int, int> progress)
 		server_headers.Cat(b, int(e - b));
 		server_headers.Cat("\r\n");
 	}
+	if(method == METHOD_HEAD)
+		return String::GetVoid();
 	String chunked;
 	String body;
 	while(body.GetLength() < content_length || content_length < 0 || tc_chunked) {

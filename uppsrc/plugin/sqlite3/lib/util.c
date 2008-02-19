@@ -14,10 +14,9 @@
 ** This file contains functions for allocating memory, comparing
 ** strings, and stuff like that.
 **
-** $Id: util.c,v 1.207 2007/06/26 00:37:28 drh Exp $
+** $Id: util.c,v 1.216 2008/01/23 03:03:05 drh Exp $
 */
 #include "sqliteInt.h"
-#include "os.h"
 #include <stdarg.h>
 #include <ctype.h>
 
@@ -44,15 +43,15 @@
 ** to NULL.
 */
 void sqlite3Error(sqlite3 *db, int err_code, const char *zFormat, ...){
-  if( db && (db->pErr || (db->pErr = sqlite3ValueNew())!=0) ){
+  if( db && (db->pErr || (db->pErr = sqlite3ValueNew(db))!=0) ){
     db->errCode = err_code;
     if( zFormat ){
       char *z;
       va_list ap;
       va_start(ap, zFormat);
-      z = sqlite3VMPrintf(zFormat, ap);
+      z = sqlite3VMPrintf(db, zFormat, ap);
       va_end(ap);
-      sqlite3ValueSetStr(db->pErr, -1, z, SQLITE_UTF8, sqlite3FreeX);
+      sqlite3ValueSetStr(db->pErr, -1, z, SQLITE_UTF8, sqlite3_free);
     }else{
       sqlite3ValueSetStr(db->pErr, 0, 0, SQLITE_UTF8, SQLITE_STATIC);
     }
@@ -79,9 +78,9 @@ void sqlite3Error(sqlite3 *db, int err_code, const char *zFormat, ...){
 void sqlite3ErrorMsg(Parse *pParse, const char *zFormat, ...){
   va_list ap;
   pParse->nErr++;
-  sqliteFree(pParse->zErrMsg);
+  sqlite3_free(pParse->zErrMsg);
   va_start(ap, zFormat);
-  pParse->zErrMsg = sqlite3VMPrintf(zFormat, ap);
+  pParse->zErrMsg = sqlite3VMPrintf(pParse->db, zFormat, ap);
   va_end(ap);
   if( pParse->rc==SQLITE_OK ){
     pParse->rc = SQLITE_ERROR;
@@ -92,7 +91,7 @@ void sqlite3ErrorMsg(Parse *pParse, const char *zFormat, ...){
 ** Clear the error message in pParse, if any
 */
 void sqlite3ErrorClear(Parse *pParse){
-  sqliteFree(pParse->zErrMsg);
+  sqlite3_free(pParse->zErrMsg);
   pParse->zErrMsg = 0;
   pParse->nErr = 0;
 }
@@ -377,7 +376,7 @@ int sqlite3Atoi64(const char *zNum, i64 *pNum){
 ** 9223373036854775808 will not fit in 64 bits.  So it seems safer to return
 ** false.
 */
-int sqlite3FitsIn64Bits(const char *zNum){
+int sqlite3FitsIn64Bits(const char *zNum, int negFlag){
   int i, c;
   int neg = 0;
   if( *zNum=='-' ){
@@ -386,6 +385,7 @@ int sqlite3FitsIn64Bits(const char *zNum){
   }else if( *zNum=='+' ){
     zNum++;
   }
+  if( negFlag ) neg = 1-neg;
   while( *zNum=='0' ){
     zNum++;   /* Skip leading zeros.  Ticket #2454 */
   }
@@ -421,10 +421,16 @@ int sqlite3GetInt32(const char *zNum, int *pValue){
     zNum++;
   }
   while( zNum[0]=='0' ) zNum++;
-  for(i=0; i<10 && (c = zNum[i] - '0')>=0 && c<=9; i++){
+  for(i=0; i<11 && (c = zNum[i] - '0')>=0 && c<=9; i++){
     v = v*10 + c;
   }
-  if( i>9 ){
+
+  /* The longest decimal representation of a 32 bit integer is 10 digits:
+  **
+  **             1234567890
+  **     2^31 -> 2147483648
+  */
+  if( i>10 ){
     return 0;
   }
   if( v-neg>2147483647 ){
@@ -435,25 +441,6 @@ int sqlite3GetInt32(const char *zNum, int *pValue){
   }
   *pValue = (int)v;
   return 1;
-}
-
-/*
-** Check to make sure we have a valid db pointer.  This test is not
-** foolproof but it does provide some measure of protection against
-** misuse of the interface such as passing in db pointers that are
-** NULL or which have been previously closed.  If this routine returns
-** TRUE it means that the db pointer is invalid and should not be
-** dereferenced for any reason.  The calling function should invoke
-** SQLITE_MISUSE immediately.
-*/
-int sqlite3SafetyCheck(sqlite3 *db){
-  int magic;
-  if( db==0 ) return 1;
-  magic = db->magic;
-  if( magic!=SQLITE_MAGIC_CLOSED &&
-         magic!=SQLITE_MAGIC_OPEN &&
-         magic!=SQLITE_MAGIC_BUSY ) return 1;
-  return 0;
 }
 
 /*
@@ -631,17 +618,17 @@ static int hexToInt(int h){
 ** binary value has been obtained from malloc and must be freed by
 ** the calling routine.
 */
-void *sqlite3HexToBlob(const char *z){
+void *sqlite3HexToBlob(sqlite3 *db, const char *z, int n){
   char *zBlob;
   int i;
-  int n = strlen(z);
-  if( n%2 ) return 0;
 
-  zBlob = (char *)sqliteMalloc(n/2);
+  zBlob = (char *)sqlite3DbMallocRaw(db, n/2 + 1);
+  n--;
   if( zBlob ){
     for(i=0; i<n; i+=2){
       zBlob[i/2] = (hexToInt(z[i])<<4) | hexToInt(z[i+1]);
     }
+    zBlob[i/2] = 0;
   }
   return zBlob;
 }
@@ -673,6 +660,7 @@ void *sqlite3HexToBlob(const char *z){
 ** call to sqlite3_close(db) and db has been deallocated.  And we do
 ** not want to write into deallocated memory.
 */
+#ifdef SQLITE_DEBUG
 int sqlite3SafetyOn(sqlite3 *db){
   if( db->magic==SQLITE_MAGIC_OPEN ){
     db->magic = SQLITE_MAGIC_BUSY;
@@ -683,50 +671,54 @@ int sqlite3SafetyOn(sqlite3 *db){
   }
   return 1;
 }
+#endif
 
 /*
 ** Change the magic from SQLITE_MAGIC_BUSY to SQLITE_MAGIC_OPEN.
 ** Return an error (non-zero) if the magic was not SQLITE_MAGIC_BUSY
 ** when this routine is called.
 */
+#ifdef SQLITE_DEBUG
 int sqlite3SafetyOff(sqlite3 *db){
   if( db->magic==SQLITE_MAGIC_BUSY ){
     db->magic = SQLITE_MAGIC_OPEN;
     return 0;
-  }else {
+  }else{
     db->magic = SQLITE_MAGIC_ERROR;
     db->u1.isInterrupted = 1;
     return 1;
   }
 }
+#endif
 
 /*
-** Return a pointer to the ThreadData associated with the calling thread.
+** Check to make sure we have a valid db pointer.  This test is not
+** foolproof but it does provide some measure of protection against
+** misuse of the interface such as passing in db pointers that are
+** NULL or which have been previously closed.  If this routine returns
+** 1 it means that the db pointer is valid and 0 if it should not be
+** dereferenced for any reason.  The calling function should invoke
+** SQLITE_MISUSE immediately.
+**
+** sqlite3SafetyCheckOk() requires that the db pointer be valid for
+** use.  sqlite3SafetyCheckSickOrOk() allows a db pointer that failed to
+** open properly and is not fit for general use but which can be
+** used as an argument to sqlite3_errmsg() or sqlite3_close().
 */
-ThreadData *sqlite3ThreadData(){
-  ThreadData *p = (ThreadData*)sqlite3OsThreadSpecificData(1);
-  if( !p ){
-    sqlite3FailedMalloc();
-  }
-  return p;
+int sqlite3SafetyCheckOk(sqlite3 *db){
+  int magic;
+  if( db==0 ) return 0;
+  magic = db->magic;
+  if( magic!=SQLITE_MAGIC_OPEN &&
+      magic!=SQLITE_MAGIC_BUSY ) return 0;
+  return 1;
 }
-
-/*
-** Return a pointer to the ThreadData associated with the calling thread.
-** If no ThreadData has been allocated to this thread yet, return a pointer
-** to a substitute ThreadData structure that is all zeros.
-*/
-const ThreadData *sqlite3ThreadDataReadOnly(){
-  static const ThreadData zeroData = {0};  /* Initializer to silence warnings
-                                           ** from broken compilers */
-  const ThreadData *pTd = sqlite3OsThreadSpecificData(0);
-  return pTd ? pTd : &zeroData;
-}
-
-/*
-** Check to see if the ThreadData for this thread is all zero.  If it
-** is, then deallocate it.
-*/
-void sqlite3ReleaseThreadData(){
-  sqlite3OsThreadSpecificData(-1);
+int sqlite3SafetyCheckSickOrOk(sqlite3 *db){
+  int magic;
+  if( db==0 ) return 0;
+  magic = db->magic;
+  if( magic!=SQLITE_MAGIC_SICK &&
+      magic!=SQLITE_MAGIC_OPEN &&
+      magic!=SQLITE_MAGIC_BUSY ) return 0;
+  return 1;
 }

@@ -27,6 +27,8 @@
 
 #include "version.h"
 
+#include <plugin/astyle/astyle.h>
+
 enum { REMOTE_TIMEOUT = 2000 };
 
 const char *FindTag(const char *txt, const char *tag);
@@ -43,7 +45,7 @@ public:
 	void               Attach(Ctrl& parent) { parent.AddFrame(button); }
 	void               Title(String t)      { title = t; }
 	String             GetTitle() const     { return title; }
-
+	
 private:
 	void               OnAction();
 
@@ -133,7 +135,7 @@ public:
 	void WrapText(bool w)                     { wrap_text = w; }
 
 	void SetSlots(int s);
-
+	
 	void Input(bool b);
 
 	Console();
@@ -613,6 +615,40 @@ public:
 	int       bordercolumn;
 	Color     bordercolor;
 
+	/* 
+		astyle code formatter control vars
+		added 2008.01.27 by Massimo Del Fedele
+	*/
+	bool	astyle_BracketIndent;
+	bool	astyle_NamespaceIndent;
+	bool	astyle_BlockIndent;
+	bool	astyle_CaseIndent;
+	bool	astyle_ClassIndent;
+	bool	astyle_LabelIndent;
+	bool	astyle_SwitchIndent;
+	bool	astyle_PreprocessorIndent;
+	int		astyle_MinInStatementIndentLength;
+	int		astyle_MaxInStatementIndentLength;
+	bool	astyle_BreakClosingHeaderBracketsMode;
+	bool	astyle_BreakElseIfsMode;
+	bool	astyle_BreakOneLineBlocksMode;
+	bool	astyle_SingleStatementsMode;
+	bool	astyle_BreakBlocksMode;
+	bool	astyle_BreakClosingHeaderBlocksMode;
+	int		astyle_BracketFormatMode;
+	int		astyle_ParensPaddingMode;
+	bool	astyle_ParensUnPaddingMode;
+	bool	astyle_OperatorPaddingMode;
+	bool	astyle_EmptyLineFill;
+	bool	astyle_TabSpaceConversionMode;
+	WString	astyle_TestBox;
+
+	// Formats a string of code with a given formatter
+	WString FormatCodeString(WString const &Src, astyle::ASFormatter &Formatter);
+	
+	// Formats editor's code with Ide format parameters
+	void FormatCode();
+
 	bool      use_target;
 
 	bool      browser_closeesc;
@@ -805,7 +841,7 @@ public:
 		void  ConditionalBreak();
 		void  DebugClearBreakpoints();
 		void  OnBreakpoint(int i);
-
+		
 		String GetLogPath();
 		void  OpenLog();
 

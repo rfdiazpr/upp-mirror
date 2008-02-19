@@ -15,9 +15,9 @@ int AString<B>::Compare(const String& s) const
 	const tchar *be = s.End();
 	for(;;) {
 		if(a >= ae)
-			return b >= be ? 0 : 1;
+			return b >= be ? 0 : -1;
 		if(b >= be)
-			return -1;
+			return 1;
 		int q = cmpval__(*a++) - cmpval__(*b++);
 		if(q)
 			return q;
@@ -31,9 +31,9 @@ int AString<B>::Compare(const char *b) const
 	const tchar *ae = End();
 	for(;;) {
 		if(a >= ae)
-			return *b == 0 ? 0 : 1;
+			return *b == 0 ? 0 : -1;
 		if(*b == 0)
-			return -1;
+			return 1;
 		int q = cmpval__(*a++) - cmpval__(*b++);
 		if(q)
 			return q;

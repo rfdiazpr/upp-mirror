@@ -15,7 +15,7 @@ outside this compilation unit might reference this" and so it will always
 be supplied to the linker. */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"
 #endif
 
 #include "pcre_internal.h"

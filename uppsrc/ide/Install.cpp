@@ -249,38 +249,24 @@ void ChkSupp(const char *s, String& dir)
 		dir = s;
 }
 
-// from the executable name creates a 'default' destination
-// where install upp
 String DefaultInstallFolder()
 {
-	
 	String DefaultFolder;
-
-	// gets executable name
 	String ExeTitle = ToUpper(GetExeTitle());
-
-	// uppercase it...
-	for(int i = 0 ; i < ExeTitle.GetCount();i++)
-	{
+	for(int i = 0 ; i < ExeTitle.GetCount();i++) {
 		if(ExeTitle[i] >= 'a' && ExeTitle[i] <= 'z')
 			ExeTitle.Set(i, ExeTitle[i] + 'A'-'a');
 	}
-
-	// creates folder name basing on exe file name
 	if(ExeTitle.Find("SVN") >= 0)
-		// it's a svn build, install in upp-svn
 		DefaultFolder = "upp-svn";
 	else if(ExeTitle.Find("DEV") >= 0)
-		// it's a dev build, install in upp-dev
 		DefaultFolder = "upp-dev";
 	else
-		// none of the above, assume a normal stable build
-		// so install in upp
 		DefaultFolder = "upp";
 	
 	return DefaultFolder;
 
-} // END DefaultInstallFolder()
+}
 
 struct XInstallDlg : public WithXInstallLayout<TopWindow> {
 
@@ -315,11 +301,6 @@ XInstallDlg::XInstallDlg() {
 	examples = true;
 	tutorial = true;
 	path.AddFrame(pathbrowse);
-	
-	// first checks if already installed previously
-	// in that case, gets previous install path
-	// otherwise defaults to install in home path
-	// the subfolder depends whether its' a stable, devel or svn install
 	if(FileExists(ConfigFile("installpath")))
 		path <<= LoadFile(ConfigFile("installpath"));
 	else
@@ -330,11 +311,7 @@ bool Install()
 {
 	XInstallDlg dlg;
 	String supp;
-// 2008_02_04 mdelfede
-// add support for co-existing stable-devel and svn versions
 	String Folder = DefaultInstallFolder();
-	
-//	ChkSupp(GetHomeDirFile("upp"), supp);
 	ChkSupp("/usr/local/share/" + Folder, supp);
 	ChkSupp("/usr/X11R6/share/" + Folder, supp);
 	ChkSupp("/usr/local/lib/" + Folder, supp);
@@ -350,7 +327,6 @@ bool Install()
 	if(dlg.Run() != IDOK) return true;
 	String upp(dlg.path);
 	
-	// stores install path in config folder
 	SaveFile(ConfigFile("installpath"), upp);
 	
 	String uppsrc;

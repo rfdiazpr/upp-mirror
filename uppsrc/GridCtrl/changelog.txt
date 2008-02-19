@@ -244,3 +244,11 @@
 	* WhenEditRow removed - added WhenStartEdit
 	* WhenAcceptRow is always called now - no metter if any cell in row changed its value or not,
 	  WhenAcceptedRow is called only if there was chanage in a row
+
+	after 2008.1beta
+
+	- commented out DragAndDrop. It caused crashes
+	* IsNewRowOrder() renamed to IsOrderChanged()
+	+ IsDataChanged() - returns true if data in grid were edited
+	+ Crlc-C creates now 2 clipboards - one internal and one textual
+	+ AskRemove() - if set question is shown before deleting a row

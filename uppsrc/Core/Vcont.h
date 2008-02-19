@@ -60,7 +60,7 @@ public:
 	void     Append(const Vector& x)               { Insert(GetCount(), x); }
 	void     Append(const Vector& x, int o, int c) { Insert(GetCount(), x, o, c); }
 	void     AppendPick(pick_ Vector& x)           { InsertPick(GetCount(), x); }
-	int      GetIndex(const T& item) const;
+	int      GetIndex(const T& item) const; //deprecated
 
 	void     Drop(int n = 1)         { ASSERT(n <= GetCount()); Trim(items - n); }
 	T&       Top()                   { ASSERT(GetCount()); return Get(items - 1); }

@@ -43,6 +43,7 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 	protected:
 
 		int key_col;
+		int find_col;
 		int value_col;
 		Vector<int> value_cols;
 		PopUpGrid list;
@@ -93,6 +94,7 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 		DropGrid& Width(int w);
 		DropGrid& Height(int h);
 		DropGrid& SetKeyColumn(int n);
+		DropGrid& SetFindColumn(int n);
 		DropGrid& SetValueColumn(int n);
 		DropGrid& AddValueColumn(int n);
 		DropGrid& AddValueColumns(int first = -1, int last = -1);

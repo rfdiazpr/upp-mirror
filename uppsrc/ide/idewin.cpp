@@ -80,7 +80,7 @@ void Ide::ConsolePaste()
 }
 
 void Ide::Serialize(Stream& s) {
-	int version = 6;
+	int version = 7;
 	s.Magic(0x12346);
 	s / version;
 	s % main;
@@ -148,6 +148,32 @@ void Ide::Serialize(Stream& s) {
 	}
 	if(version >= 5) {
 		s % chstyle;
+	}
+	if(version >= 7)
+	{
+		s % astyle_BracketIndent;
+		s % astyle_NamespaceIndent;
+		s % astyle_BlockIndent;
+		s % astyle_CaseIndent;
+		s % astyle_ClassIndent;
+		s % astyle_LabelIndent;
+		s % astyle_SwitchIndent;
+		s % astyle_PreprocessorIndent;
+		s % astyle_MinInStatementIndentLength;
+		s % astyle_MaxInStatementIndentLength;
+		s % astyle_BreakClosingHeaderBracketsMode;
+		s % astyle_BreakElseIfsMode;
+		s % astyle_BreakOneLineBlocksMode;
+		s % astyle_SingleStatementsMode;
+		s % astyle_BreakBlocksMode;
+		s % astyle_BreakClosingHeaderBlocksMode;
+		s % astyle_BracketFormatMode;
+		s % astyle_ParensPaddingMode;
+		s % astyle_ParensUnPaddingMode;
+		s % astyle_OperatorPaddingMode;
+		s % astyle_EmptyLineFill;
+		s % astyle_TabSpaceConversionMode;
+		s % astyle_TestBox;
 	}
 	s.Magic();
 }
@@ -483,6 +509,34 @@ Ide::Ide()
 	tabs_grouping = true;
 	no_parenthesis_indent = false;
 
+	/* 
+		astyle code formatter control vars
+		added 2008.01.27 by Massimo Del Fedele
+	*/
+	astyle_BracketIndent = false;
+	astyle_NamespaceIndent = true;
+	astyle_BlockIndent = false;
+	astyle_CaseIndent = true;
+	astyle_ClassIndent = true;
+	astyle_LabelIndent = true;
+	astyle_SwitchIndent = true;
+	astyle_PreprocessorIndent = false;
+	astyle_MinInStatementIndentLength = 2;
+	astyle_MaxInStatementIndentLength = 20;
+	astyle_BreakClosingHeaderBracketsMode = true;
+	astyle_BreakElseIfsMode = true;
+	astyle_BreakOneLineBlocksMode = true;
+	astyle_SingleStatementsMode = true;
+	astyle_BreakBlocksMode = true;
+	astyle_BreakClosingHeaderBlocksMode = true;
+	astyle_BracketFormatMode = astyle::BREAK_MODE;
+	astyle_ParensPaddingMode = astyle::PAD_BOTH;
+	astyle_ParensUnPaddingMode = true;
+	astyle_OperatorPaddingMode = true;
+	astyle_EmptyLineFill = false;
+	astyle_TabSpaceConversionMode = false;
+	astyle_TestBox = "#include <stdio.h>\n#ifndef __abcd_h\n#include <abcd.h>\n#endif\n\nvoid test(int a, int b)\n{\n  /* this is a switch */\n  switch(a)\n\n  {\n    case 1:\n      b = 2;\n      break;\n    case 2:\n      b = 4;\n      break;\n    default:\n    break;\n  }\n\n  /* this are more statements on one line */\n  a = 2*a;b=-5;a=2*(b+2)*(a+3)/4;\n\n  /* single line blocks */\n  {int z;z = 2*a+b;}\n\n  /* loop */\n  for(int i = 0;i< 10;i++) { a = b+2*i;}\n\n}\n";
+
 	idestate = EDITING;
 	debuglock = 0;
 
@@ -616,7 +670,7 @@ void AppMain___()
 	const Vector<String>& arg = CommandLine();
 
 	bool firstinstall = false;
-
+	
 #ifdef PLATFORM_POSIX
 	String home = Environment().Get("UPP_HOME", Null);
 	if(!IsNull(home))

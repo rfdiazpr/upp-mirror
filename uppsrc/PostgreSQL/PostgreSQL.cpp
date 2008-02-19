@@ -26,7 +26,7 @@ enum PGSQL_StandardOid {
 	PGSQL_TIMEOID = 1083,
 	PGSQL_TIMESTAMPOID = 1114,
 	PGSQL_TIMESTAMPZOID = 1184,
-	PGSQL_NUMERICOID = 1700,
+	PGSQL_NUMERICOID = 1700
 };
 
 int OidToType(Oid oid)
@@ -256,6 +256,15 @@ Vector<SqlColumnInfo> PostgreSQLSession::EnumColumns(String database, String tab
 
 Vector<String> PostgreSQLSession::EnumPrimaryKey(String database, String table)
 {
+//	SELECT cc.conname, a.attname
+//	 FROM pg_constraint cc
+//	 INNER JOIN pg_class c
+//	    ON c.oid=conrelid
+//	 INNER JOIN pg_attribute a
+//	    ON a.attnum = ANY(conkey)
+//	   AND a.attrelid = c.oid
+//	WHERE contype='p'
+//	AND relname = '?'
 	return Vector<String>(); //TODO
 }
 
@@ -516,6 +525,9 @@ void PostgreSQLConnection::GetColumn(int i, Ref f) const
 			break;
 		case DOUBLE_V:
 			f.SetValue(atof(s));
+			break;
+		case BOOL_V:
+			f.SetValue(*s == 't' ? true : false);
 			break;
 		case DATE_V:
 			f.SetValue(sDate(s));

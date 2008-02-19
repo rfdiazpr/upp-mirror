@@ -65,11 +65,8 @@ bool UnZip::ReadFile(Stream& out, Gate2<int, int> progress)
 		crc = crc32;
 	}
 	else
-	if(method == 8) {
-		if(GetFileTitle(path) == "MenuBar")
-			DLOG("");
+	if(method == 8)
 		l = ZDecompress(out, *zip, csize, progress, true, &crc);
-	}
 	else {
 		SetError();
 		return false;

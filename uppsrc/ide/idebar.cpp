@@ -139,6 +139,12 @@ void Ide::Edit(Bar& menu) {
 		menu.Add(AK_TABSTOSPACES, THISBACK(EditMakeSpaces))
 			.Help("Convert all tabs to spaces");
 
+// 2008_01_27 - mdelfede -- added AStyle code formatter -- START
+		menu.MenuSeparator();
+
+		menu.Add(AK_FORMATCODE, THISBACK(FormatCode))
+			.Help("Reformat code in editor");
+// 2008_01_27 - mdelfede -- added AStyle code formatter -- END
 	}
 
 	if(editor.GetLineCount() && editor.GetUtf8Line(0) == "$uvs: PENDING CONFLICT") {

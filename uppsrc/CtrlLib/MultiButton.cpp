@@ -373,6 +373,7 @@ void MultiButton::Paint(Draw& w)
 		paper = HasFocus() ? SColorHighlight() : SColorPaper();
 		if(HasFocus())
 			text = SColorHighlightText();
+		w.DrawRect(r, paper);
 	}
 	else
 	if(frm) {

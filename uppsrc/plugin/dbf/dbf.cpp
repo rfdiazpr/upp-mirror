@@ -259,7 +259,7 @@ void DbfStream::Field::Serialize(Stream& stream)
 	char buffer[12];
 	ZeroArray(buffer);
 	if(stream.IsStoring())
-		memcpy(buffer, name, min(name.GetLength(), 11));
+		memcpy(buffer, name, min(name.GetLength(), 10));
 	stream.SerializeRaw((byte *)buffer, 11);
 	if(stream.IsLoading()) {
 		name = buffer;

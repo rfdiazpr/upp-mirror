@@ -6,7 +6,7 @@
 and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
-           Copyright (c) 1997-2007 University of Cambridge
+           Copyright (c) 1997-2008 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,7 @@ locale. Now that pcre_maketables is a function visible to the outside world, we
 make use of its code from here in order to be consistent. */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"
 #endif
 
 #include <ctype.h>
@@ -110,7 +110,7 @@ fprintf(f,
   "outside this compilation unit might reference this\" and so it will always\n"
   "be supplied to the linker. */\n\n"
   "#ifdef HAVE_CONFIG_H\n"
-  "#include <config.h>\n"
+  "#include \"config.h\"\n"
   "#endif\n\n"
   "#include \"pcre_internal.h\"\n\n");
 fprintf(f,

@@ -61,7 +61,6 @@ DropGrid::DropGrid()
 	drop.SetStyle(drop.StyleFrame());
 	drop.NoDisplay();
 	drop.AddTo(*this);
-	//SetFrame(EditFieldFrame());
 	EnableDrop(false);
 	list_width = 0;
 	list_height = 0;
@@ -70,6 +69,7 @@ DropGrid::DropGrid()
 	header = true;
 	valuekey = false;
 	key_col = 0;
+	find_col = 0;
 	value_col = -1;
 	rowid = -1;
 	trowid = -2;
@@ -206,12 +206,12 @@ void DropGrid::LeftDown(Point p, dword keyflags)
 
 void DropGrid::GotFocus()
 {
-	Refresh();
+	drop.RefreshFrame();
 }
 
 void DropGrid::LostFocus()
 {
-	Refresh();
+	drop.RefreshFrame();
 }
 
 void DropGrid::Serialize(Stream& s)
@@ -285,7 +285,13 @@ DropGrid& DropGrid::Height(int h)
 
 DropGrid& DropGrid::SetKeyColumn(int n)
 {
-	key_col = n;
+	key_col = find_col = n;
+	return *this;
+}
+
+DropGrid& DropGrid::SetFindColumn(int n)
+{
+	find_col = n;
 	return *this;
 }
 
@@ -477,7 +483,7 @@ void DropGrid::DoAction(int row, bool action, bool chg)
 		rowid = rid;
 		trowid = -2;
 		if(action)
-			WhenAction();
+			UpdateAction();
 	}
 }
 
@@ -555,8 +561,7 @@ void DropGrid::ClearValue()
 	value = Null;
 	rowid = -1;
 	list.ClearCursor();
-	WhenAction();
-	Refresh();
+	UpdateActionRefresh();
 }
 
 void DropGrid::Reset()

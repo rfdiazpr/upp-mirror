@@ -133,6 +133,7 @@ GridCtrl::GridCtrl() : holder(*this)
 	fixed_paste         = false;
 	draw_focus          = false;
 	cancel_all          = false;
+	ask_remove          = false;
 
 	search_hide            = true;
 	search_highlight       = true;
@@ -142,7 +143,8 @@ GridCtrl::GridCtrl() : holder(*this)
 	search_move_cursor     = true;
 	search_display         = true;
 
-	roworder          = false;
+	row_order         = false;
+	row_data          = false;
 
 	reject_null_row   = true;
 	tab_changes_row   = true;
@@ -648,12 +650,18 @@ void GridCtrl::SetClipboard()
 	Point minpos(total_cols, total_rows);
 	Point maxpos(fixed_cols, fixed_rows);
 
+	String tc;
+	int prev_row = -1;
+
 	for(int i = fixed_rows; i < total_rows; i++)
 	{
 		bool row_selected = select_row && IsSelected(i, false);
 		for(int j = fixed_cols; j < total_cols; j++)
 			if(row_selected || IsSelected(i, j, false))
 			{
+				if(prev_row < 0)
+					prev_row = i;
+
 				GridClipboard::ClipboardData &d = gc.data.Add();
 				d.col = j;
 				d.row = i;
@@ -663,6 +671,13 @@ void GridCtrl::SetClipboard()
 				else if(i > maxpos.y) maxpos.y = i;
 				if(j < minpos.x) minpos.x = j;
 				else if(j > maxpos.x) maxpos.x = j;
+
+				if(i != prev_row)
+				{
+					tc += "\r\n";
+					prev_row = i;
+				}
+				tc += d.v.ToString() + '\t';
 			}
 	}
 
@@ -673,6 +688,7 @@ void GridCtrl::SetClipboard()
 	gc.shiftmode = row_selected ? true : shiftmode;
 
 	WriteClipboardFormat(gc);
+	AppendClipboardText(tc);
 
 	Color c0 = bg_select;
 	Color c1 = White;
@@ -2089,6 +2105,7 @@ void GridCtrl::ChildFrameMouseEvent(Ctrl *child, int event, Point p, int zdelta,
 
 void GridCtrl::DragAndDrop(Point p, PasteClip& d)
 {
+	/*
 	moving_body = true;
 	if(curSplitRow != oldMoveRow || scrollLeftRight)
 	{
@@ -2107,7 +2124,7 @@ void GridCtrl::DragAndDrop(Point p, PasteClip& d)
 
 		scrollLeftRight = false;
 	}
-
+	*/
 }
 
 Rect GridCtrl::GetItemRect(int r, int c, bool hgrid, bool vgrid, bool ctrlmode)
@@ -2529,11 +2546,12 @@ Vector<Value> GridCtrl::ReadRow(int n) const
 	return v;
 }
 
-GridCtrl& GridCtrl::Add(const Vector<Value> &v, int offset)
+GridCtrl& GridCtrl::Add(const Vector<Value> &v, int offset, int count)
 {
 	Append0(1, GD_ROW_HEIGHT);
 
-	int cnt = min(v.GetCount(), total_cols - fixed_cols);
+	int cnt = min(count < 0 ? v.GetCount() : count,
+	              total_cols - fixed_cols);
 
 	int r0 = total_rows - 1;
 	int r = vitems[r0].id;
@@ -3920,6 +3938,8 @@ bool GridCtrl::GetCtrlsData(bool samerow, bool doall, bool updates)
 		else if(row_modified)
 		{
 			vitems[curid.y].operation = GridOperation::UPDATE;
+			row_data = true;
+			SetModify();
 
 			#ifdef LOG_CALLBACKS
 			LGR(2, Format("WhenUpdateRow()", curid.y));
@@ -4721,7 +4741,8 @@ bool GridCtrl::MoveRow(int n, int m, bool repaint)
 		Repaint(false, true);
 	}
 
-	roworder = true;
+	row_order = true;
+	SetModify();
 
 	return true;
 }
@@ -4748,7 +4769,8 @@ void GridCtrl::MoveRows(int n, bool onerow)
 
 		vitems.Insert(n - cnt, vi);
 
-		roworder = true;
+		row_order = true;
+		SetModify();
 
 		UpdateCursor();
 		Repaint(false, true);
@@ -4772,7 +4794,8 @@ bool GridCtrl::SwapRows(int n, int m, bool repaint)
 		UpdateCursor();
 		Repaint(false, true);
 	}
-	roworder = true;
+	row_order = true;
+	SetModify();
 	return true;
 }
 
@@ -5751,7 +5774,8 @@ void GridCtrl::Insert0(int row, int cnt /* = 1*/, bool recalc /* = true*/, bool 
 		}
 	}
 
-	roworder = true;
+	row_order = true;
+	SetModify();
 }
 
 bool GridCtrl::Remove0(int row, int cnt /* = 1*/, bool recalc /* = true*/, bool refresh /* = true*/, bool whens /* = true*/)
@@ -5931,6 +5955,8 @@ int GridCtrl::Append0(int cnt, int size, bool refresh)
 		RefreshFrom(k);
 	}
 
+	row_order = true;
+	SetModify();
 	return total_rows - fixed_rows;
 }
 
@@ -5989,7 +6015,8 @@ void GridCtrl::Duplicate0(int row, int cnt, bool recalc, bool refresh)
 		}
 	}
 
-	roworder = true;
+	row_order = true;
+	SetModify();
 }
 
 int GridCtrl::Append(int cnt, bool refresh, int height)
@@ -6376,6 +6403,12 @@ void GridCtrl::DoRemove()
 
 	bool newrow = IsNewRow();
 	CancelEdit(false);
+
+	if(ask_remove)
+	{
+		if(PromptYesNo(Format("Do you really want to delete selected %s ?", selected_rows > 0 ? t_("rows") : t_("row"))) != IDYES)
+			return;
+	}
 
 	int y = curpos.y;
 	int ocy = curpos.y;

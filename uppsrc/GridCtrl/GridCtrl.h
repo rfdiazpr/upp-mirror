@@ -14,8 +14,7 @@ NAMESPACE_UPP
 
 #define FOREACH_ROW(x) for(x.Begin(); x.IsEnd(); x.Next())
 #define FOREACH_SELECTED_ROW(x) FOREACH_ROW(x) if(x.IsSelected())
-#define FOREACH_MODIFIED_ROW(x) FOREACH_ROW(x) if(x.IsModifiedRow())
-#define FOREACH_MODIFIED_OR_NEW_ROW(x) FOREACH_ROW(x) if(x.IsModifiedRow() || x.IsAddedRow())
+#define FOREACH_MODIFIED_ROW(x) FOREACH_ROW(x) if(x.IsUpdatedRow())
 #define FOREACH_ROW_NOT_CURRENT(x) FOREACH_ROW(x) if(!x.IsCurrentRow())
 #define COLUMN(grid, column) (column, grid(column))
 
@@ -749,6 +748,7 @@ class GridCtrl : public Ctrl
 		bool fixed_paste:1;
 		bool draw_focus:1;
 		bool cancel_all:1;
+		bool ask_remove:1;
 
 		bool reject_null_row:1;
 		bool tab_changes_row:1;
@@ -782,7 +782,8 @@ class GridCtrl : public Ctrl
 		bool moving_header:1;
 		bool moving_body:1;
 		bool moving_allowed:1;
-		bool roworder:1;
+		bool row_order:1;
+		bool row_data:1;
 		bool scrollLeftRight:1;
 		bool doscroll:1;
 		bool ready:1;
@@ -987,6 +988,7 @@ class GridCtrl : public Ctrl
 		GridCtrl& Clipboard(bool b = true)        { clipboard         = b;  return *this; }
 		GridCtrl& ExtraPaste(bool b = true)       { extra_paste       = b;  return *this; }
 		GridCtrl& FixedPaste(bool b = true)       { fixed_paste       = b;  return *this; }
+		GridCtrl& AskRemove(bool b = true)        { ask_remove        = b;  return *this; }
 
 		GridCtrl& DrawFocus(bool b = true)        { draw_focus        = b;  return *this; }
 		GridCtrl& CancelAll(bool b = true)        { cancel_all        = b;  return *this; }
@@ -1141,11 +1143,12 @@ class GridCtrl : public Ctrl
 		Value& operator() (const char * alias);
 		Value& operator() (int r, const char * alias);
 
+		using Ctrl::IsModified;
+
 		bool IsModified(int r, int c);
 		bool IsModified(int c);
 		bool IsModified(int r, Id id);
 		bool IsModified(Id id);
-
 
 		/* valid only in callbacks */
 
@@ -1161,7 +1164,7 @@ class GridCtrl : public Ctrl
 		int  GetRowOperation()  { return vitems[rowidx].operation;                          }
 
 		Vector<Value> ReadRow(int n = -1) const;
-		GridCtrl& Add(const Vector<Value> &v, int offset = 0);
+		GridCtrl& Add(const Vector<Value> &v, int offset = 0, int count = -1);
 
 		void SetFixedRows(int n = 1);
 		void SetFixedCols(int n = 1);
@@ -1273,6 +1276,7 @@ class GridCtrl : public Ctrl
 		bool GoFirstVisible(bool scroll = true);
 		void GoTo(int r, bool setcursor = true, bool scroll = true);
 		void GoTo(int r, int c, bool setcursor = true, bool scroll = true);
+		bool GoTop() { return GoBegin(); }
 
 		void SwapCols(int n, int m);
 		bool SwapRows(int n, int m, bool repaint = true);
@@ -1357,8 +1361,9 @@ class GridCtrl : public Ctrl
 
 		bool IsEmpty()        { return total_rows <= fixed_rows; }
 		bool IsFilled()       { return total_rows > fixed_rows;  }
-		bool IsNewRowOrder()  { return roworder; }
-		void SetNewRowOrder() { roworder = true; }
+		bool IsOrderChanged() { return row_order; }
+		bool IsDataChanged()  { return row_data; }
+		bool IsChanged()      { return row_order || row_data; }
 
 		void Serialize(Stream &s);
 

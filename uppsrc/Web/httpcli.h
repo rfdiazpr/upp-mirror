@@ -18,6 +18,7 @@ public:
 	HttpClient&  KeepAlive(bool k)                { keepalive = k; return *this; }
 	HttpClient&  Proxy(String h, int p)           { proxy_host = h; proxy_port = p; return *this; }
 	HttpClient&  Proxy(const char *url);
+	HttpClient&  ProxyAuth(String u, String p)    { proxy_username = u; proxy_password = p; return *this; }
 
 	HttpClient&  Headers(String h)                { client_headers = h; return *this; }
 	HttpClient&  ClearHeaders()                   { return Headers(Null); }
@@ -31,6 +32,7 @@ public:
 	HttpClient&  Method(int m)                    { method = m; return *this; }
 	HttpClient&  Get()                            { return Method(METHOD_GET); }
 	HttpClient&  Post()                           { return Method(METHOD_POST); }
+	HttpClient&  Head()                           { return Method(METHOD_HEAD); }
 
 	HttpClient&  PostData(String pd)              { postdata = pd; return *this; }
 
@@ -68,6 +70,8 @@ public:
 	int          method;
 	String       proxy_host;
 	int          proxy_port;
+	String       proxy_username;
+	String       proxy_password;
 	String       path;
 	String       username;
 	String       password;
@@ -95,6 +99,7 @@ public:
 	enum {
 		METHOD_GET,
 		METHOD_POST,
+		METHOD_HEAD,
 	};
 
 private:

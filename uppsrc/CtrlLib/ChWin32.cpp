@@ -27,12 +27,10 @@ void ChHostSkin()
 #else
 
 #include <uxtheme.h>
-#ifdef _MSC_VER
-#if _MSC_VER > 1400	// Visual C > 2005
+#if defined(_MSC_VER) && _MSC_VER > 1400	// Visual C > 2005
 #include <vssym32.h>
 #else
 #include <tmschema.h>
-#endif
 #endif
 
 #define DLLFILENAME "uxtheme.dll"

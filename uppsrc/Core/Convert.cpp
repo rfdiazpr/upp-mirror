@@ -224,11 +224,14 @@ Value Scan(dword qtype, const String& text) {
 	case DATE_V:
 		if(text.IsEmpty()) return (Date) Null;
 		s = StrToDate(date, text);
-		if(s) {
-			while(*s == ' ') s++;
-			if(*s == '\0')
-				return date;
-		}
+		if(s)
+			for(;;) {
+				if(IsDigit(*s))
+					break;
+				if(*s == '\0')
+					return date;
+				s++;
+			}
 		return ErrorValue(t_("Invalid date !"));
 	case TIME_V: {
 		if(text.IsEmpty()) return (Time) Null;

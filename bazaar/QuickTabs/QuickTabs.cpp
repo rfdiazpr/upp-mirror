@@ -84,7 +84,7 @@ void FloatFrame::FramePaint(Draw& w, const Rect& r)
 		FieldFrame().FramePaint(w, n);
 	}
 	else
-		FrameCtrl::FramePaint(w, r);		
+		FrameCtrl<Ctrl>::FramePaint(w, r);		
 }
 
 

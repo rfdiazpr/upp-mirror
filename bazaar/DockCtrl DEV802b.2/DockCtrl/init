@@ -3,5 +3,4 @@
 #include "CtrlCore/init"
 #include "CtrlLib/init"
 #include "Draw/init"
-#include "GridCtrl/init"
 #endif

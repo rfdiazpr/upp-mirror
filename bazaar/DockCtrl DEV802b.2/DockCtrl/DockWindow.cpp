@@ -319,7 +319,7 @@ void TabWindow::Attach0(DockableCtrl& ctrl, int makeactive)
 	tabs.Add(ctrl, makeactive);
 	pane.AddChildDock(ctrl.Style(DOCK_TABBED, STATE_TABBED, 0).SetBase(&GetBase()));
 	GetBase().AddCtrlRecord(ctrl);
-	if(makeactive) pane.Zoom(ctrl.Position() - 1);
+	if(makeactive) pane.Zoom(GetActiveTab());
 	pane.Layout();
 	RefreshTabWindowLabel(ctrl);
 	GetBase().RefreshWidgetLayout();
@@ -390,8 +390,7 @@ bool TabWindow::RemoveTabWindow()
 				int p = Position();
 				
 				pane.RemoveChildDock(*lastctrl);
-				if(IsShut()) 
-					lastctrl->Shut();
+				if(IsShut()) lastctrl->Shut();
 				if(IsTabbed())
 				{
 					TabInterface& tabs = GetOwnerTab()->GetTabs();
@@ -418,6 +417,8 @@ bool TabWindow::RemoveTabWindow()
 			}
 		}
 	}
+	pane.Layout();
+	if(GetActiveCtrl()) RefreshTabWindowLabel(*GetActiveCtrl());
 return false;
 }
 
@@ -495,9 +496,9 @@ int TabWindow::GetActiveTab()
 	return tabs.GetActiveTab();
 }
 
-DockableCtrl& TabWindow::GetActiveCtrl()
+DockableCtrl* TabWindow::GetActiveCtrl()
 {
-	return *pane.GetChildAt(GetActiveTab() + 1);
+	return pane.GetChildAt(GetActiveTab() + 1);
 }
 
 void TabWindow::OnActiveTab()
@@ -535,13 +536,14 @@ void TabWindow::RefreshTabWindowLabel(DockableCtrl& ctrl)
 	int id = 0;
 	AutoHideBar* hidebar 	= NULL;
 	TabWindow*	 tabwindow	= NULL;
-	
+
 	if(IsTabbed())
 	{
 		TabWindow* tabwindow = GetOwnerTab();
 		while(tabwindow)
 		{
 			int id = tabwindow->GetActiveTab();
+			if(id < 0) break;
 			TabInterface::Tab& sourcetab  = GetTabs().GetTabs().At(GetActiveTab());
 			TabInterface::Tab& targettab  =	tabwindow->GetTabs().GetTabs().At(id);
 			String& label 	= targettab.name = sourcetab.name;
@@ -570,7 +572,6 @@ void TabWindow::RefreshTabWindowLabel(DockableCtrl& ctrl)
 			tabwindow = tabwindow->GetOwnerTab();
 		}
 	}
-
 	else 
 	{
 		if(IsAutoHidden())
@@ -592,4 +593,3 @@ void TabWindow::RefreshTabWindowLabel(DockableCtrl& ctrl)
 		RefreshLayoutDeep();
 	}
 }
-

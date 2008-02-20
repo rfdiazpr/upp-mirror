@@ -96,7 +96,7 @@ void TabInterface::Remove(int n)
 
 void TabInterface::Close(int n)
 {
-	if(tabs.GetCount() == 0 || n < 0) return;
+	if(tabs.GetCount() == 0 || n < 0 || n > tabs.GetCount()) return;
 	if(tabs.GetCount() == 1)
 	{
 		tabs.Remove(0);
@@ -118,6 +118,11 @@ void TabInterface::Close(int n)
 		c = pc;
 	else if(nc >= 0 && pc == -1) 
 		c = nc;
+
+//	c 	= Find(tabs[n].id);
+//	nc	= GetNext(c);
+//	if(nc < 0)
+//		nc = max(0, GetPrev(c));
 	
 	if(hasscrollbar)
 		scrollbar.AddTotal(-tabs[n].cx);
@@ -356,11 +361,13 @@ void TabInterface::Paint(Draw& d)
 
 	Fix(sz);
 	
-	for(int i = 0; i < tabs.GetCount(); i++)
-		if(tabs[i].IsVisible() && active != i)
+	int tabcount = tabs.GetCount();
+	
+	for(int i = 0; i < tabcount; i++)
+		if(tabs[i].IsVisible() && active != i && i < tabcount)
 			DrawTab(d, sz, i);
 	
-	if(active >= 0)
+	if(active >= 0 && active < tabcount)
 		DrawTab(d, sz, active);
 }
 
@@ -400,6 +407,7 @@ void TabInterface::LeftDrag(Point p, dword keyflags)
 	{
 		Fix(p);
 		SetActiveTab(highlight);
+		p.x += (int(hasscrollbar) * scrollbar.GetPos());
 		if(tabs[active].HasMouse(p))
 			WhenDrag(active, *tabs[active].dock);
 	}

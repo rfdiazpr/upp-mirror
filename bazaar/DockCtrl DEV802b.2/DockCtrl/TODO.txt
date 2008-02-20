@@ -5,6 +5,7 @@
 
 To Do:
 ------------------------------------------
+- fix "nested tabbing"...
 - add a self-explanatory "Complex Dockable Framework" example to the package.
 - add "stdsize" variable to the PaneFrame class for better size control.
 - add X11 support.

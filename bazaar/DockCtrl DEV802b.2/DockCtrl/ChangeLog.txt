@@ -37,6 +37,9 @@
 	> public release name DockCtrl DEV802b.2
 	--------------------------------------------------------------------------------------------
 	- fixed a nasty bug in TabWindow Detach() method which led to stack overflow error.
+	  (However, this feature is still in it'a alpha stage. So, it is experimental. There may very well
+	  be bugs... USE IT AT YOUR RISK!)
+	- fixed tab dragging bug which cause to trigger the StartWindowDrag() in tab frame's empty area.
 	- ResetLayout() method fixed and renamed to ResetWidgetLayout(). 
 	- the tabs and tabbed window title showed incorrect info(title, icon) in  "nested tabbing" mode
 	  and in "tabbed autohide" mede. this bug is fixed for both mode by adding 

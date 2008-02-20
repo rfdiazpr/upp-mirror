@@ -614,7 +614,7 @@ public:
 	int	 ChildCount();
 	void SetActive(int index);
 	void SetActive(DockableCtrl& ctrl);
-	DockableCtrl& GetActiveCtrl();
+	DockableCtrl* GetActiveCtrl();
 	int  GetActiveTab();
 	
 	void StartTabAnimation(); 

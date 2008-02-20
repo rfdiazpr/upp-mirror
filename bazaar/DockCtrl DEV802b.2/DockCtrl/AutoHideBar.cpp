@@ -47,8 +47,8 @@ void AutoHideBar::ShowWindow()
 				
 		}
 		popup.SetRect(rr);
-		popup.PopUp(GetParent(), false, true, false, false);
 		popup.Add(hiddenwindow->SizePos());
+		popup.PopUp(GetParent(), false, true, false, false);
 		ctrl = hiddenwindow;
 		Ctrl::ProcessEvents();
 		AdjustSize(rr, s);

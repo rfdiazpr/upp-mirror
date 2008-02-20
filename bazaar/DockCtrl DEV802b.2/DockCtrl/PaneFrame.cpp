@@ -67,7 +67,14 @@ PaneFrame& PaneFrame::AttachAsTab(DockableCtrl& ctrl)
 
 PaneFrame& PaneFrame::AttachAsAuto(DockableCtrl& ctrl)
 {
+	bool horizontal = GetType() == LEFT || GetType() == RIGHT;
 	AutoHideBar& bar = GetBase().GetHideBar(GetType());
+	Size sz = ctrl.SizeHint();
+	if(horizontal)
+		sz.cx < 4 ? ctrl.SetSizeHint(Size(maxsize, sz.cy)) : 0;
+	else
+		sz.cy < 4 ? ctrl.SetSizeHint(Size(sz.cx, maxsize)) : 0;
+		                             
 	bar.Attach(ctrl);
 	GetBase().RefreshWidgetLayout();
 	return RefreshPaneFrame();

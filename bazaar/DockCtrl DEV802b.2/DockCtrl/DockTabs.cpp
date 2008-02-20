@@ -96,64 +96,41 @@ void TabInterface::Remove(int n)
 
 void TabInterface::Close(int n)
 {
-	if(tabs.GetCount() == 0 || n < 0 || n > tabs.GetCount()) return;
-	if(tabs.GetCount() == 1)
-	{
-		tabs.Remove(0);
-		ReposTabs();
-		return;
-	}
-	
-	int c  = -1;
-	int nc = -1;
-	int pc = -1;
-	
-	bool isactive = n == active ? true : false;
-	
-	c = Find(tabs[n].id);
-	nc = GetNext(c);
-	pc = GetPrev(c);
-	
-	if(nc == -1 && pc >= 0)	 
-		c = pc;
-	else if(nc >= 0 && pc == -1) 
-		c = nc;
+	if(tabs.GetCount() <= 1 || n != active)
+			return;
 
-//	c 	= Find(tabs[n].id);
-//	nc	= GetNext(c);
-//	if(nc < 0)
-//		nc = max(0, GetPrev(c));
-	
-	if(hasscrollbar)
-		scrollbar.AddTotal(-tabs[n].cx);
+	int c 	= Find(tabs[n].id);
+	int nc	= GetNext(c);
+	if(nc < 0)
+		nc = max(0, GetPrev(c));
+
+	if(hasscrollbar) scrollbar.AddTotal(-tabs[n].cx);
 	tabs.Remove(n);
 	ReposTabs();
-	if(isactive) 
-		SetActiveTab(c);
+	SetActiveTab(nc);
 }
 
 void TabInterface::CloseAll()
 {
 	for(int i = tabs.GetCount() - 1; i >= 0; i--)
-		if(i != active)	
 			tabs.Remove(i);
 
 	if(hasscrollbar) scrollbar.SetTotal(tabs[0].cx);
 	ReposTabs();
-	SetActiveTab(0);	
+	SetActiveTab(-1);	
 }
 
 void TabInterface::SetActiveTab(int n)
 {
-	if(n == active || tabs.GetCount() == 0) return;
-	for(int i = 0; i < tabs.GetCount(); i++)
-		if(i != n) tabs[i].active = false;
-		else tabs[active = i].active = true;
+	int tabcount = tabs.GetCount();
+
+	if(tabcount == 0) 
+		return;
+
+	if(n < 0 || n >= tabcount)
+		n = max(0, tabcount - 1);
 	
-	int count = tabs.GetCount();
-	if(n >= count) n = count - 1;
-	
-	Tab& t = tabs[n];
+	Tab& t = tabs[active = n];
 	int cx = t.x - (int(hasscrollbar) * scrollbar.GetPos());
 	if(hasscrollbar)
 	{
@@ -168,7 +145,6 @@ void TabInterface::SetActiveTab(int n)
 	}
 	if(HasMouse())MouseMove(GetMouseViewPos(), 0);
 	UpdateActionRefresh();
-	// Do action.
 	WhenSelect();
 }
 
@@ -193,9 +169,7 @@ TabInterface& TabInterface::HasScrollBar(bool b)
 
 int TabInterface::GetActiveTab()
 {
-	for(int i = 0; i < tabs.GetCount(); i++)
-		if(tabs[i].IsActive()) return i;
-	return active = -1;
+	return active;
 }
 
 int TabInterface::Find(int id)
@@ -271,8 +245,8 @@ void TabInterface::DrawLabel(Draw& w, int x, int y, Tab& t, bool isactive)
 	if(horizontal)
 		DrawFileName(w, x + TAB_MARGIN + (TAB_FILEICON + TAB_SPACEICON) * int(hasfileicon), (y - t.textsize.cy) / 2,
 	             t.textsize.cx, t.textsize.cy, fn.ToWString(),
-	             false, StdFont(), Black, LtBlue, 
-	             Null, Null, false);
+	            false, StdFont(), Black, LtBlue, 
+	            Null, Null, false);
 	else
 		w.DrawText((y + t.textsize.cy) / 2 + 1, 
 				x + TAB_MARGIN + (TAB_FILEICON + TAB_SPACEICON) * int(hasfileicon),
@@ -282,12 +256,12 @@ void TabInterface::DrawLabel(Draw& w, int x, int y, Tab& t, bool isactive)
 
 void TabInterface::DrawTab(Draw& w, Size &sz, int i)
 {
-	Size isz = DockCtrlImgs::DClose().GetSize();
-	int cnt  = tabs.GetCount();
-	Tab &t   = tabs[i];
+	Size isz 	= DockCtrlImgs::DClose().GetSize();
+	int cnt 	= tabs.GetCount();
+	Tab &t 		= tabs[i];
 
-	bool ac  = i == active;
-	bool hl  = i == highlight;
+	bool ac 	= i == active;
+	bool hl 	= i == highlight;
 		
 	int lx   = i > 0 ? style->extendleft : 0;
 	int x    = t.x - scrollbar.GetPos() + style->margin - lx;
@@ -310,17 +284,19 @@ void TabInterface::DrawTab(Draw& w, Size &sz, int i)
 				
 	img.DrawRect(0, 0, cx, cy, SColorFace);
 
+	               
 	const Value& sv = (cnt == 1 ? style->both : i == 0 ? style->first : i == cnt - 1 ? style->last : style->normal)[ndx];
 
 	ChPaint(img, 0, 0, cx, cy, sv);
+
 
 	if(hastabbutton && tabs.GetCount())
 		img.DrawImage(t.cx - isz.cx - TAB_MARGIN, 
 				(cy + h - isz.cy) / 2,
 				(ac || hl) ? (tabbutton == i ? DockCtrlImgs::DCloseh : 
-				 ac ? DockCtrlImgs::DCloses : DockCtrlImgs::DClose) : 
-				 DockCtrlImgs::DClose);
-	
+				ac ? DockCtrlImgs::DCloses : DockCtrlImgs::DClose) : 
+				DockCtrlImgs::DClose);
+
 	if(hasfileicon)
 		img.DrawImage(TAB_MARGIN, (cy + h - t.icon.GetSize().cx) / 2, t.icon);
 	
@@ -331,7 +307,7 @@ void TabInterface::DrawTab(Draw& w, Size &sz, int i)
 			nimg = MirrorVert(RotateAntiClockwise(img));
 			break;
 		case LAYOUT_TOP:
-			nimg = img;			
+			nimg = img;	
 			break;
 		case LAYOUT_RIGHT:
 			nimg = RotateClockwise(img);

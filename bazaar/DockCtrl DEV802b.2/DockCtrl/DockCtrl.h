@@ -270,7 +270,7 @@ public:
 	void ReposChilds();
 	DockableCtrl* GetChildAt(int position);
 	int  GetChildCount();
-	bool HasChild() const;					
+	bool HasChild();					
 
 	void StartAnimation(DockableCtrl& dock, int position);
 	void StartAnimation(int position);
@@ -359,7 +359,7 @@ private:
 	
 public:
 	virtual void Dock(int alignment, int state, int position, bool check = true);
-	virtual void FloatEx(Rect& r);
+	virtual void FloatEx(Rect r);
 	virtual void Float();
 	virtual void Show();
 	virtual void Hide();
@@ -383,11 +383,11 @@ protected:
 	DockableCtrl&	SetOwnerBar(AutoHideBar *hidebar)	{ autohidebar = hidebar; return *this;	}
 	AutoHideBar*	GetOwnerBar()						{ /*ASSERT(autohidebar); */ return autohidebar; }	
 	    			            
-	friend DockCtrl;
-	friend DockWindow;
-	friend TabWindow;
-	friend PaneFrame;
-	friend AutoHideBar;
+	friend class DockCtrl;
+	friend class DockWindow;
+	friend class TabWindow;
+	friend class PaneFrame;
+	friend class AutoHideBar;
 	
 private:
 	DockCtrl* 		base;
@@ -511,7 +511,7 @@ private:
 	MenuBar*   menubar;
 	ToolBar*   toolbar;
 	StatusBar* statusbar;
-	friend TabWindow;
+	friend class TabWindow;
 
 //===============================================
 // DockWindow::DragBarButton
@@ -906,7 +906,7 @@ private:
 	void Attach(DockableCtrl* ctrl);
 	void Detach(DockableCtrl& ctrl);
 	void Detach(DockableCtrl* ctrl);
-	void DoDragAndDrop(DockableCtrl& ctrl, Point p, Size& sz);
+	void DoDragAndDrop(DockableCtrl& ctrl, Point p, Size sz);
 
 private:
 	struct CtrlRecord : Moveable<CtrlRecord>
@@ -946,10 +946,10 @@ private:
 	Vector<ImageCtrl*> panelicons;
 	WithControlPanelLayout<TopWindow> controlpanel;
 	
-	friend DockableCtrl;
-	friend DockWindow;
-	friend TabWindow;
-	friend PaneFrame;
+	friend class DockableCtrl;
+	friend class DockWindow;
+	friend class TabWindow;
+	friend class PaneFrame;
 
 public:
 	const	DockCtrlChStyle::Style* style;

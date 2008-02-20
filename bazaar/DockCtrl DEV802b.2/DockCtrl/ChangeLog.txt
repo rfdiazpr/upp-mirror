@@ -8,6 +8,7 @@
 [-] - bugfix
 [*] - change
 
+Recent revisions are added to the current versions logs under date/time info.
 
 0.50
 	> First Public Beta - public release name DockCtrl DEV802b.1
@@ -18,7 +19,7 @@
 	  automatic tab alignment of tabbed windows is made optional.
 	+ autohide feature is implemented.
 	  "tabbed autohiding" introduced.
-	  animated.
+	  animated window (Thanks to Mrjtuk).
 	+ introducing "Complex Dockable Framework" concept. namely, numereous and seperate
 	  DockCtrl can be nested in any standard U++ Ctrl derived class.
 	+ unified (mostly...) Chameleon structure "DockCtrlChStyle" added for easy customization.
@@ -36,6 +37,7 @@
 0.51
 	> public release name DockCtrl DEV802b.2
 	--------------------------------------------------------------------------------------------
+2/19/2008
 	- fixed a nasty bug in TabWindow Detach() method which led to stack overflow error.
 	  (However, this feature is still in it'a alpha stage. So, it is experimental. There may very well
 	  be bugs... USE IT AT YOUR RISK!)
@@ -48,4 +50,8 @@
 	* removed irrelevant packages from the assembly :) (remnants of my early experiments...)
 	* DockCtrlExample is added to the package. now the main package is named DockCtrl Dev802b.2
 	* default and enhanced background skins are polished. now they have more native look.
+2/20/2008
+	+ german translation added (Thanks to Masu).
+	- fixed "call by reference errors" under MingW 3.4.2 (Thanks to Masu)
+	- Tab text alignment, close button detection bugs and scrollbar separator line painting are fixed (Thank to Unodgs).
 

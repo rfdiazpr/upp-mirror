@@ -65,7 +65,7 @@ void DockableCtrl::Dock(int alignment, int state, int position, bool check)
 
 }
 
-void DockableCtrl::FloatEx(Rect& r)
+void DockableCtrl::FloatEx(Rect r)
 {
 	if(IsFloating()) return;
 	if(IsTabbed()) 
@@ -233,10 +233,10 @@ void DockableCtrl::DockableCtrlMenu(Bar& menubar)
 
 void DockableCtrl::DockableCtrlDockMenu(Bar& menubar)
 {
-	menubar.Add(Alignment() == DOCK_TOP  ? 0 : 1, t_("Top"), callback4(this, &DockableCtrl::Dock, DOCK_TOP, STATE_SHOW, Position(), 0));
-	menubar.Add(Alignment() == DOCK_LEFT  ? 0 : 1, t_("Left"), callback4(this, &DockableCtrl::Dock, DOCK_LEFT, STATE_SHOW, Position(), 0));
-	menubar.Add(Alignment() == DOCK_RIGHT ? 0 : 1, t_("Right"), callback4(this, &DockableCtrl::Dock, DOCK_RIGHT, STATE_SHOW, Position(), 0));
-	menubar.Add(Alignment() == DOCK_BOTTOM ? 0 : 1, t_("Bottom"), callback4(this, &DockableCtrl::Dock, DOCK_BOTTOM, STATE_SHOW, Position(), 0));
+	menubar.Add(Alignment() == DOCK_TOP  ? 0 : 1, t_("Top"), THISBACK4(Dock, (int)DOCK_TOP, (int)STATE_SHOW, Position(), 0));
+	menubar.Add(Alignment() == DOCK_LEFT  ? 0 : 1, t_("Left"), THISBACK4(Dock, (int)DOCK_LEFT, (int)STATE_SHOW, Position(), 0));
+	menubar.Add(Alignment() == DOCK_RIGHT ? 0 : 1, t_("Right"), THISBACK4(Dock, (int)DOCK_RIGHT, (int)STATE_SHOW, Position(), 0));
+	menubar.Add(Alignment() == DOCK_BOTTOM ? 0 : 1, t_("Bottom"), THISBACK4(Dock, (int)DOCK_BOTTOM, (int)STATE_SHOW, Position(), 0));
 }
 
 void DockableCtrl::StartWindowDrag()

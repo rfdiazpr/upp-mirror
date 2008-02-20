@@ -50,7 +50,7 @@ Ctrl& DockCtrl::Dock(DockableCtrl& ctrl)
     return *this;
 }
 
-void DockCtrl::DoDragAndDrop(DockableCtrl& ctrl, Point p, Size& sz)
+void DockCtrl::DoDragAndDrop(DockableCtrl& ctrl, Point p, Size sz)
 {
     for(int i = 0; i < 4; i++)
     {   

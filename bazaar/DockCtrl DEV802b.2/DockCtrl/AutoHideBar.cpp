@@ -12,9 +12,13 @@ void AutoHideBar::Detach(DockableCtrl& ctrl)
 {
 	int n = TabInterface::Find(ctrl);
 	if(n == -1) return;
-	Close(n);
+	if(tabs.GetCount() == 1) 
+	{
+		CloseAll();
+		HideBar();
+	}
+	else Close(n);
 	ctrl.SetOwnerBar(NULL);
-	if(tabs.GetCount() == 0) HideBar();
 	HideWindow();
 }
 

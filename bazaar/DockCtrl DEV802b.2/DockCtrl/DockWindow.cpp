@@ -379,43 +379,40 @@ bool TabWindow::RemoveTabWindow()
 	
 	if(pane.GetChildCount() == 1)
 	{
-		RemoveFrame(tabs);
-		if(pane.HasChild())
+		DockableCtrl *lastctrl = pane.GetChildAt(1);
+		if(lastctrl)
 		{
-			DockableCtrl *lastctrl = pane.GetChildAt(1);
-			if(lastctrl)
+			int a = Alignment();
+			int s = State();
+			int p = Position();
+			
+			pane.RemoveChildDock(*lastctrl);
+			if(IsShut()) lastctrl->Shut();
+			if(IsTabbed())
 			{
-				int a = Alignment();
-				int s = State();
-				int p = Position();
-				
-				pane.RemoveChildDock(*lastctrl);
-				if(IsShut()) lastctrl->Shut();
-				if(IsTabbed())
-				{
-					TabInterface& tabs = GetOwnerTab()->GetTabs();
-					tabs.Close(tabs.GetActiveTab());
-					GetOwnerTab()->Attach(*lastctrl);
-					Shut();
-				}
-				else if(IsFloating())
-				{
-					Rect r = GetRect();
-					lastctrl->FloatEx(GetRect());
-					lastctrl->SetOwnerTab(NULL);
-					Shut();
-				}
-				else
-				{
-					Shut();
-					lastctrl->ShowDragBar();
-					lastctrl->SetSizeHint(sizehint);
-					lastctrl->Dock(a, s, p);
-					lastctrl->SetOwnerTab(NULL);
-				}
-				return destroyed = true;
+				TabInterface& tabs = GetOwnerTab()->GetTabs();
+				tabs.Close(tabs.GetActiveTab());
+				GetOwnerTab()->Attach(*lastctrl);
+				Shut();
 			}
+			else if(IsFloating())
+			{
+				Rect r = GetRect();
+				lastctrl->FloatEx(GetRect());
+				lastctrl->SetOwnerTab(NULL);
+				Shut();
+			}
+			else
+			{
+				Shut();
+				lastctrl->ShowDragBar();
+				lastctrl->SetSizeHint(sizehint);
+				lastctrl->Dock(a, s, p);
+				lastctrl->SetOwnerTab(NULL);
+			}
+			return destroyed = true;
 		}
+		RemoveFrame(tabs);
 	}
 	pane.Layout();
 	if(GetActiveCtrl()) RefreshTabWindowLabel(*GetActiveCtrl());

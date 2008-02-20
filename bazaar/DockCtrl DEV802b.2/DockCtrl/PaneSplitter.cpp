@@ -78,10 +78,9 @@ int PaneSplitter::GetChildCount()
 	return IsAnimating() ?  childcount - 1 : childcount;
 }
 
-bool PaneSplitter::HasChild() const
+bool PaneSplitter::HasChild()
 {
-	int childcount = GetCount();
-	return ((GetCount() > 0) ? (childcount == 1 && GetFirstChild() == &animationctrl) ? false : true : false); 
+	return GetChildCount();
 }
 
 void PaneSplitter::StartAnimation(int position)

@@ -133,8 +133,8 @@ void DockableCtrl::AutoHide()
 	
 	if(IsTabbed())
 	{
-		TabWindow *tabwindow = NULL;
-		while((tabwindow = GetOwnerTab()))
+		TabWindow *tabwindow = GetOwnerTab();
+		while(tabwindow)
 		{
 		 	if(tabwindow->IsDocked())
 			{

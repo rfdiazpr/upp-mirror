@@ -92,7 +92,7 @@ struct Tab : Moveable<Tab>
 	{}
 	int Right() { return x + cx; }
 	bool HasMouse(const Point& p);
-	bool HasMouseCross(const Point& p, int h);
+	bool HasMouseCross(const Point& p, int w, int h);
 };
 
 struct Group : Moveable<Group>

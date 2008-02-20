@@ -147,7 +147,7 @@ void TabScrollBar::Paint(Draw &w)
 	}
 	Size sz = GetSize();
 	
-	w.DrawRect(sz, White);
+	w.DrawRect(sz, /*Yellow*/White);
 	
 	if(horizontal)
 	{
@@ -346,14 +346,14 @@ bool Tab::HasMouse(const Point& p)
 	return visible && p.x >= x && p.x < x + cx;
 }
 
-bool Tab::HasMouseCross(const Point& p, int h)
+bool Tab::HasMouseCross(const Point& p, int w, int h)
 {
 	if(!visible)
 		return false;
 
 	Size isz = Img::CR0().GetSize();
 	int iy = (h - isz.cy) / 2;
-	int ix = x + cx - isz.cx - QT_MARGIN;
+	int ix = x + cx - isz.cx - w - QT_MARGIN;
 
 	return p.x >= ix && p.x < ix + isz.cx &&
 	       p.y >= iy && p.y < iy + isz.cy;
@@ -462,7 +462,7 @@ void QuickTabs::DrawLabel(Draw& w, int x, int y, Tab& t)
 	String fn = GetFileName(t.name);
 
 	if(horizontal)
-		DrawFileName(w, x + QT_MARGIN + (QT_FILEICON + QT_SPACEICON) * int(file_icons), (y - t.tsz.cy) / 2 + 1,
+		DrawFileName(w, x + QT_MARGIN + (QT_FILEICON + QT_SPACEICON) * int(file_icons), (y - t.tsz.cy) / 2,
 	             t.tsz.cx, t.tsz.cy, fn.ToWString(),
 	             false, StdFont(), Black, LtBlue, 
 	             Null, Null, false);
@@ -475,7 +475,6 @@ void QuickTabs::DrawLabel(Draw& w, int x, int y, Tab& t)
 
 void QuickTabs::DrawTab(Draw& w, Size& sz, int i)
 {
-
 	Size isz 	= Img::CR0().GetSize();
 	int cnt 	= tabs.GetCount();
 	Tab &t 		= tabs[i];
@@ -485,31 +484,31 @@ void QuickTabs::DrawTab(Draw& w, Size& sz, int i)
 		
 	int lx 		= i > 0 ? style->extendleft : 0;
 	int x 		= t.x - sc.GetPos() + style->margin - lx;
-	int h 		= sz.cy + (ac ? 0 : style->sel.top);
 
 	int ndx = !IsEnabled() ? CTRL_DISABLED :
 		       ac ? CTRL_PRESSED :
 		       hl ? CTRL_HOT : CTRL_NORMAL;
 
 	Image nimg;
-	ImageDraw img(t.cx + lx + (ac ? style->sel.right + style->sel.left : 0),  
-				(ac ? t.cy + style->sel.bottom : t.cy - style->sel.top));
+	
+	int cx = t.cx + lx + (ac ? style->sel.right + style->sel.left : 0);
+	int cy = ac ? t.cy - style->sel.top + style->sel.bottom : t.cy - style->sel.top;
+	
+	int h = style->sel.top + style->sel.bottom;
+	int hs = ac ? 0 : h;
+	if(layout == LAYOUT_RIGHT || layout == LAYOUT_BOTTOM)
+		hs = -hs;
+	
+	ImageDraw img(cx, cy);
+				
+	img.DrawRect(0, 0, cx, cy, SColorFace);
 
 	const Value& sv = (cnt == 1 ? style->both : i == 0 ? style->first : i == cnt - 1 ? style->last : style->normal)[ndx];
 
-	if(ac)
-		ChPaint(img, 0,	0, 	
-				t.cx + style->sel.right + style->sel.left + lx, 
-				t.cy + style->sel.bottom, 
-				sv);
-	else
-		ChPaint(img, 0, 0, 
-				t.cx + lx, 
-				t.cy - style->sel.top, 
-				sv);
+	ChPaint(img, 0, 0, cx, cy, sv);
 
 	if(crosses && tabs.GetCount() > 1)
-		img.DrawImage(t.cx - isz.cx  - QT_MARGIN, (h - isz.cy) /2,
+		img.DrawImage(t.cx - isz.cx  - QT_MARGIN, (cy + h - isz.cy) / 2,
 	            (ac || hl) ? (cross == i ? Img::CR2 : ac ? Img::CR1 : Img::CR0) : 
 	            Img::CR0);
 	
@@ -517,9 +516,10 @@ void QuickTabs::DrawTab(Draw& w, Size& sz, int i)
 	{
 		Image icon = Img::ARH;
 		//Image icon = IdeFileImage(t.name);
-		img.DrawImage(QT_MARGIN, (h - icon.GetSize().cx) / 2, icon);
+		img.DrawImage(QT_MARGIN, (cy + hs - icon.GetSize().cx) / 2, icon);
 	}
 	
+	int shift = 0;
 	switch(layout)
 	{
 		case LAYOUT_LEFT:
@@ -530,30 +530,36 @@ void QuickTabs::DrawTab(Draw& w, Size& sz, int i)
 			break;
 		case LAYOUT_RIGHT:
 			nimg = RotateClockwise(img);
+			shift = QT_SBSEPARATOR;
 			break;
 		case LAYOUT_BOTTOM:
 			nimg = MirrorVert(img);
+			shift = QT_SBSEPARATOR;
 			break;
 	}
 
 	if(ac) 
-		w.DrawImage((horizontal ? x - style->sel.left : 0), (horizontal ?  0 : x), nimg);
+		w.DrawImage(horizontal ? x - style->sel.left : shift, 
+		            horizontal ? shift : x - style->sel.left, 
+		            nimg);
 	else
-		w.DrawImage((horizontal ? x : style->sel.left), (horizontal ? style->sel.top : x), nimg);
+		w.DrawImage(horizontal ? x : style->sel.left - shift, 
+		            horizontal ? style->sel.top - shift : x,
+		            nimg);
 
-	DrawLabel(w, x, h, t); 
+	DrawLabel(w, x, cy + hs, t); 
 }
 
 void QuickTabs::Paint(Draw &w)
 {
 	Size sz = GetSize();
-	w.DrawRect(sz, SColorFace());
+	w.DrawRect(sz, SColorFace/*LtRed*/);
 
 	if(!horizontal)
-		w.DrawRect(layout == LAYOUT_LEFT ? sz.cx -1 : 1, 0, 
+		w.DrawRect(layout == LAYOUT_LEFT ? sz.cx - 1 : 0, 0, 
 				1, sz.cy, Color(128, 128, 128));
 	else
-		w.DrawRect(0, layout == LAYOUT_TOP ? sz.cy - 1 : 1, 
+		w.DrawRect(0, layout == LAYOUT_TOP ? sz.cy - 1 : 0, 
 				sz.cx, 1, Color(128, 128, 128));
 
 	Fix(sz);
@@ -564,7 +570,7 @@ void QuickTabs::Paint(Draw &w)
 
 	if(active >= 0)
 		DrawTab(w, sz, active);
- 
+	 
 	if(target >= 0)
 	{
 		int last = GetLast();
@@ -801,8 +807,15 @@ void QuickTabs::MouseMove(Point p, dword keyflags)
 		if(tabs[i].HasMouse(np))
 		{
 			istab = true;
-			int h = sz.cy + (active == i ? 0 : style->sel.top);
-			iscross = crosses ? tabs[i].HasMouseCross(np, h) : false;
+			//int h = sz.cy + (active == i ? 0 : style->sel.top);
+			int h = style->sel.top + style->sel.bottom;
+			int hs = active == i ? style->sel.top : h;
+			if(layout == LAYOUT_RIGHT || layout == LAYOUT_BOTTOM)
+				hs = -hs;
+			hs += sz.cy;
+			int ws = active == i ? style->sel.left : 0;
+			
+			iscross = crosses ? tabs[i].HasMouseCross(np, ws, hs) : false;
 			if(highlight != i || (iscross && cross != i))
 			{
 				cross = iscross ? i : -1;

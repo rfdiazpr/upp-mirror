@@ -2,7 +2,7 @@
 
 DockCtrlExample::DockCtrlExample()
 {
-	CtrlLayout(*this, "DockCtrl [DEV802b.1] Example - Use 'Settings' menu options to open the control panel");
+	CtrlLayout(*this, "DockCtrl [DEV802b.2] Example - Use 'Settings' menu options to open the control panel");
 	Sizeable().Zoomable().SetRect(GetRect().left, GetRect().top, 1024, 600);
 
 	// Usual U++ widget preperation.
@@ -77,10 +77,11 @@ DockCtrlExample::DockCtrlExample()
 	//					
 
 	dockctrl.Dock(dock3.SetLabel("Dock 1").DockLeft().StateShow().SetIcon(CtrlImg::new_doc()));
-	dockctrl.Dock(dock4.SetLabel("Dock 2").DockRight().StateTabbed().Posit(1).SetIcon(CtrlImg::new_doc()));	// Manual tabbing example
-	dockctrl.Dock(dock5.SetLabel("Dock 3").DockRight().StateTabbed().Posit(1).SetIcon(CtrlImg::new_doc()));	//
 	dockctrl.Dock(dock1.SetLabel("Dock 4").DockTop().StateShow().SetIcon(CtrlImg::new_doc()));
 	dockctrl.Dock(dock2.SetLabel("Dock 5").DockBottom().StateShow().SetIcon(CtrlImg::new_doc()));
+	dockctrl.Dock(dock4.SetLabel("Dock 2").DockRight().StateTabbed().Posit(1).SetIcon(CtrlImg::new_doc()));	// Manual tabbing example
+	dockctrl.Dock(dock5.SetLabel("Dock 3").DockRight().StateTabbed().Posit(1).SetIcon(CtrlImg::new_doc()));	//
+	dockctrl.Dock(dock6.SetLabel("Dock 6").DockLeft().StateAuto().SetIcon(CtrlImg::new_doc()));				// Manual autohide (no need to set position variable).
 	Add(dockctrl);
 
 	//
@@ -137,8 +138,8 @@ void DockCtrlExample::EditMenu(Bar& bar)
 
 GUI_APP_MAIN
 {
-	SetLanguage(LNG_('T','R','T','R'));
-	SetDefaultCharset(CHARSET_UTF8);
+	SetLanguage(::GetSystemLNG());
+//	SetDefaultCharset(CHARSET_UTF8);
 	DockCtrlExample().Run();
 }
 

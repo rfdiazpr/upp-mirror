@@ -172,12 +172,12 @@ public:
 		bool	IsVisible()	{ return visible; }
 		bool	IsHighligted()	{ return highlighted; }
 		bool	HasMouse(const Point& p)	{ return visible && Rect(x, y, x + cx, y + cy).Contains(p);}
-		bool	HasMouseButton(const Point& p, int h) 
-		{ 
+		bool	HasMouseButton(const Point& p, int w, int h) 
+		{
 			if(!visible) return false;
 			Size isz = DockCtrlImgs::DClose().GetSize();
 			int iy = (h - isz.cy) / 2;
-			int ix = x + cx - isz.cx - TAB_MARGIN;
+			int ix = x + cx - isz.cx - w - TAB_MARGIN;
 			return p.x >= ix && p.x < ix + isz.cx && p.y >= iy && p.y < iy + isz.cy;
 		}
 		Tab() : id(-1), active(false), visible(false), highlighted(false) { dock = NULL; }

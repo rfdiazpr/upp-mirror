@@ -266,85 +266,93 @@ void TabInterface::ReposTabs()
 
 void TabInterface::DrawLabel(Draw& w, int x, int y, Tab& t, bool isactive)
 {
+	String fn = GetFileName(t.name);
+
 	if(horizontal)
-		w.DrawText(x + TAB_MARGIN + (TAB_FILEICON + TAB_SPACEICON) * int(hasfileicon), 
-				(y - t.textsize.cy - (isactive ? 1 : 2)) / 2, 
-				t.name, style->font);
+		DrawFileName(w, x + TAB_MARGIN + (TAB_FILEICON + TAB_SPACEICON) * int(hasfileicon), (y - t.textsize.cy) / 2,
+	             t.textsize.cx, t.textsize.cy, fn.ToWString(),
+	             false, StdFont(), Black, LtBlue, 
+	             Null, Null, false);
 	else
-		w.DrawText((y + t.textsize.cy) / 2 + (isactive ? 1 : 0), 
-				x + TAB_MARGIN + (TAB_FILEICON + TAB_SPACEICON) * int(hasfileicon), 
-				2700, t.name, 
-				style->font); 
+		w.DrawText((y + t.textsize.cy) / 2 + 1, 
+				x + TAB_MARGIN + (TAB_FILEICON + TAB_SPACEICON) * int(hasfileicon),
+				2700, fn.ToWString(), 
+				style->font);
 }
 
 void TabInterface::DrawTab(Draw& w, Size &sz, int i)
 {
-	Size isz 	= DockCtrlImgs::DClose().GetSize();
-	int cnt 	= tabs.GetCount();
-	Tab &t 		= tabs[i];
+	Size isz = DockCtrlImgs::DClose().GetSize();
+	int cnt  = tabs.GetCount();
+	Tab &t   = tabs[i];
 
-	bool ac 	= i == active;
-	bool hl 	= i == highlight;
+	bool ac  = i == active;
+	bool hl  = i == highlight;
 		
-	int lx 		= i > 0 ? style->extendleft : 0;
-	int x 		= t.x - scrollbar.GetPos() + style->margin - lx;
-	int h 		= sz.cy + (ac ? 0 : style->sel.top);
+	int lx   = i > 0 ? style->extendleft : 0;
+	int x    = t.x - scrollbar.GetPos() + style->margin - lx;
 
 	int ndx = !IsEnabled() ? CTRL_DISABLED :
 		       ac ? CTRL_PRESSED :
 		       hl ? CTRL_HOT : CTRL_NORMAL;
 
-	Image nimg, niimg;
-	ImageDraw img(t.cx + lx + (ac ? style->sel.right + style->sel.left : 0),  
-				(ac ? t.cy + style->sel.bottom : t.cy - style->sel.top));
+	Image nimg;
+	
+	int cx = t.cx + lx + (ac ? style->sel.right + style->sel.left : 0);
+	int cy = ac ? t.cy - style->sel.top + style->sel.bottom : t.cy - style->sel.top;
+	
+	int h = style->sel.top + style->sel.bottom;
+	int hs = ac ? 0 : h;
+	if(layout == LAYOUT_RIGHT || layout == LAYOUT_BOTTOM)
+		hs = -hs;
+	
+	ImageDraw img(cx, cy);
+				
+	img.DrawRect(0, 0, cx, cy, SColorFace);
 
-	               
 	const Value& sv = (cnt == 1 ? style->both : i == 0 ? style->first : i == cnt - 1 ? style->last : style->normal)[ndx];
 
-	if(ac)
-		ChPaint(img, 0,	0, 	
-				t.cx + style->sel.right + style->sel.left + lx, 
-				t.cy + style->sel.bottom, 
-				sv);
-	else
-		ChPaint(img, 0, 0, 
-				t.cx + lx, 
-				t.cy - style->sel.top, 
-				sv);
-
+	ChPaint(img, 0, 0, cx, cy, sv);
 
 	if(hastabbutton && tabs.GetCount())
 		img.DrawImage(t.cx - isz.cx - TAB_MARGIN, 
-				(h - isz.cy) / 2 + (ac ? 1 : -2),
+				(cy + h - isz.cy) / 2,
 				(ac || hl) ? (tabbutton == i ? DockCtrlImgs::DCloseh : 
-				ac ? DockCtrlImgs::DCloses : DockCtrlImgs::DClose) : 
-				DockCtrlImgs::DClose);
-
+				 ac ? DockCtrlImgs::DCloses : DockCtrlImgs::DClose) : 
+				 DockCtrlImgs::DClose);
+	
 	if(hasfileicon)
-		img.DrawImage(TAB_MARGIN, (h - isz.cy) / 2 + (ac ? 1 : -2), t.icon);
-
+		img.DrawImage(TAB_MARGIN, (cy + h - t.icon.GetSize().cx) / 2, t.icon);
+	
+	int shift = 0;
 	switch(layout)
 	{
 		case LAYOUT_LEFT:
 			nimg = MirrorVert(RotateAntiClockwise(img));
 			break;
 		case LAYOUT_TOP:
-			nimg = img;	
+			nimg = img;			
 			break;
 		case LAYOUT_RIGHT:
 			nimg = RotateClockwise(img);
+			shift = TAB_SBSEPARATOR;
 			break;
 		case LAYOUT_BOTTOM:
 			nimg = MirrorVert(img);
+			shift = TAB_SBSEPARATOR;
 			break;
 	}
 
 	if(ac) 
-		w.DrawImage((horizontal ? x - style->sel.left : 0), (horizontal ?  0 : x - style->sel.left), nimg);
+		w.DrawImage(horizontal ? x - style->sel.left : shift, 
+		            horizontal ? shift : x - style->sel.left, 
+		            nimg);
 	else
-		w.DrawImage((horizontal ? x : style->sel.left), (horizontal ? style->sel.left : x), nimg);
+		w.DrawImage(horizontal ? x : style->sel.left - shift, 
+		            horizontal ? style->sel.top - shift : x,
+		            nimg);
 
-	DrawLabel(w, x, h, t, ac); 	
+	DrawLabel(w, x, cy + hs, t, ac); 	
 }
 
 void TabInterface::Paint(Draw& d)
@@ -447,8 +455,14 @@ void TabInterface::MouseMove(Point p, dword keyflags)
 		if(tabs[i].HasMouse(p))
 		{
 			istab = true;
-			int h = sz.cy + (active == i ? 0 : style->sel.top);
-			istabbutton =  hastabbutton ? tabs[i].HasMouseButton(p, h) : false;
+			//int h = sz.cy + (active == i ? 0 : style->sel.top);
+			int h = style->sel.top + style->sel.bottom;
+			int hs = active == i ? style->sel.top : h;
+			if(layout == LAYOUT_RIGHT || layout == LAYOUT_BOTTOM)
+				hs = -hs;
+			hs += sz.cy;
+			int ws = active == i ? style->sel.left : 0;			
+			istabbutton = hastabbutton ? tabs[i].HasMouseButton(p, ws, hs) : false;
 			if(highlight != i || (istabbutton && tabbutton != i))
 			{
 				tabbutton = istabbutton ? i : -1;
@@ -488,8 +502,6 @@ void TabInterface::MouseLeave()
 	tabbutton = -1;
 	Refresh();
 }
-
-
 
 TabInterface& TabInterface::SetLayout(int l)
 {
@@ -558,7 +570,6 @@ TabInterface::TabScrollBar::TabScrollBar()
 	old_pos = 0;
 	ready = false;
 }
-
 
 void TabInterface::TabScrollBar::Paint(Draw &w)
 {

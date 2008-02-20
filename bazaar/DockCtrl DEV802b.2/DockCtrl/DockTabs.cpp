@@ -361,10 +361,10 @@ void TabInterface::Paint(Draw& d)
 	d.DrawRect(sz, SColorFace());
 
 	if(!horizontal)
-		d.DrawRect(layout == LAYOUT_LEFT ? sz.cx - 1: 1, 0, 
+		d.DrawRect(layout == LAYOUT_LEFT ? sz.cx - 1: 0, 0, 
 				1, sz.cy, LtGray());
 	else
-		d.DrawRect(0, layout == LAYOUT_TOP ? sz.cy  - 1 : 1, 
+		d.DrawRect(0, layout == LAYOUT_TOP ? sz.cy  - 1 : 0, 
 				sz.cx, 1, LtGray());
 
 	Fix(sz);

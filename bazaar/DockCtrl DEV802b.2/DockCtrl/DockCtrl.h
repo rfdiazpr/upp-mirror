@@ -22,6 +22,8 @@ using namespace UPP;
 #define TFILE <DockCtrl/DockCtrl.t>
 #include <Core/t.h>
 
+#include <CtrlLib/Ch.h>
+
 class PaneSplitter;
 class TabInterface;
 class AutoHideBar;
@@ -570,7 +572,7 @@ private:
 		void Paint(Draw& d);
 
 	public:
-		DragBar() : _parent(0), _titlesize(0) {  SetFrame(FieldFrame()); }
+		DragBar() : _parent(0), _titlesize(0) { SetFrame(FieldFrame()); }
 	};
 	
 //===============================================

@@ -289,7 +289,6 @@ void TabInterface::DrawTab(Draw& w, Size &sz, int i)
 
 	ChPaint(img, 0, 0, cx, cy, sv);
 
-
 	if(hastabbutton && tabs.GetCount())
 		img.DrawImage(t.cx - isz.cx - TAB_MARGIN, 
 				(cy + h - isz.cy) / 2,

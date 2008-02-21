@@ -35,7 +35,7 @@ DockWindow::DockWindow() : DockableCtrl()
 	
 	_dragbar <<  _shutbutton.RightPos(2, cy).TopPos(2, cy).Tip(t_("Close"));
 	_dragbar <<  _autohidebutton.RightPos(cy + 4, cy).TopPos(2, cy).Tip(t_("Auto Hide"));                                                           
-	_dragbar <<  _menubutton.RightPos((2 * cy) + 6, cy).TopPos(2, cy).Tip(t_("Window Position")); // << GetLabelCtrl().SizePos().LeftPos(6);                                                 
+	_dragbar <<  _menubutton.RightPos((2 * cy) + 6, cy).TopPos(2, cy).Tip(t_("Window Position"));                                               
 	SetFrame(FieldFrame());
 	ShowDragBar(); 	
 }
@@ -212,11 +212,14 @@ void DockWindow::DragBar::Paint(Draw& d)
 	bool hasicon = false;
 	
 	const DockCtrlChStyle::Style* style = GetDock().GetStyle();
-	
-	(GUI_GlobalStyle() >= GUISTYLE_XP) && (style != &DockCtrlChStyle::StyleClassic()) ? 
-		ChPaint(d, 0, 0, GetSize().cx, GetSize().cy, style->barbackground[0]) :
-			d.DrawRect(GetSize(), SColorFace());
 
+	ImageDraw skin(sz.cx, sz.cy);
+	ChPaint(skin, 0, 0, GetSize().cx, GetSize().cy, style->barbackground[0]);
+	Image imgs = skin;
+
+
+	(GUI_GlobalStyle() >= GUISTYLE_XP) && (style != &DockCtrlChStyle::StyleClassic()) ? 
+		d.DrawImage(GetRect(), imgs, Rect(4, 1, 1, 20)) : d.DrawRect(GetSize(), SColorFace());
 
 	if(!img.IsNullInstance())
 	{

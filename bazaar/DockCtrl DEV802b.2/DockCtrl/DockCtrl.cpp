@@ -446,7 +446,9 @@ CH_STYLE(DockCtrlChStyle, Style, StyleEnhanced)
     tabedge     = Rect(6, 6, 6, 6);
     tabextendleft = 0;
 
-    DockCtrlImgsLook(barbackground, DockCtrlImages::I_EBarBackground, 1);
+   	const ToolBar::Style* defguistyle = &ToolBar::StyleDefault();  
+	barbackground[0] = defguistyle->arealook;
+
     DockCtrlImgsLook(barshut, DockCtrlImages::I_CClose, 3);
     DockCtrlImgsLook(barhide, DockCtrlImages::I_CHide, 3);
     DockCtrlImgsLook(barmenu, DockCtrlImages::I_CMenu, 3);
@@ -468,8 +470,10 @@ CH_STYLE(DockCtrlChStyle, Style, StyleDefault)
     tabedge     = Rect(6, 6, 6, 6);
     tabextendleft = 0;
     
-    DockCtrlImgsLook(barbackground, DockCtrlImages::I_DBarBackground, 1);
-    DockCtrlImgsLook(barshut, DockCtrlImages::I_DClose, 3);
+    const TabCtrl::Style* defguistyle = &TabCtrl::StyleDefault();  
+	barbackground[0] =  defguistyle->normal[0];
+
+	DockCtrlImgsLook(barshut, DockCtrlImages::I_DClose, 3);
     DockCtrlImgsLook(barhide, DockCtrlImages::I_DHide, 3);
     DockCtrlImgsLook(barmenu, DockCtrlImages::I_DMenu, 3);
   

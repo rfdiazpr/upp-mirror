@@ -264,7 +264,7 @@ void TabInterface::DrawTab(Draw& w, Size &sz, int i)
 	bool hl 	= i == highlight;
 		
 	int lx   = i > 0 ? style->extendleft : 0;
-	int x    = t.x - scrollbar.GetPos() + style->margin - lx;
+	int x    = t.x - (hasscrollbar ? scrollbar.GetPos() : 0) + style->margin - lx;
 
 	int ndx = !IsEnabled() ? CTRL_DISABLED :
 		       ac ? CTRL_PRESSED :
@@ -352,6 +352,39 @@ void TabInterface::Paint(Draw& d)
 	
 	if(active >= 0 && active < tabcount)
 		DrawTab(d, sz, active);
+
+	if(target >= 0)
+	{
+		int last = tabs.GetCount() - 1;//GetLast();
+		int first = 0;
+
+		if(target != active && target != active + 1)
+		{
+
+			int x = (target == last + 1 ? tabs[last].Right() : tabs[target].x)
+			        - (hasscrollbar ? scrollbar.GetPos() : 0) - (target <= first ? 1 : 2)
+			        + style->margin - (target > 0 ? style->extendleft : 0);
+
+			int y = style->sel.top;
+			
+			int cy = sz.cy - y;
+			
+			Color c(255, 0, 0);
+			if(horizontal)
+			{
+				d.DrawRect(x + 1, y, 2, cy, c);
+				d.DrawRect(x, y, 4, 1, c);
+				d.DrawRect(x, y + cy - 1, 4, 1, c);
+			}
+			else
+			{
+				Swap(x, y);
+				d.DrawRect(x, y + 1, cy, 2, c);
+				d.DrawRect(x, y, 1, 4, c);
+				d.DrawRect(x + cy - 1, y, 1, 4, c);				
+			}
+		}
+	}
 }
 
 void TabInterface::LeftDown(Point p, dword keyflags)
@@ -384,8 +417,25 @@ void TabInterface::LeftUp(Point p, dword keyflags)
 		ReleaseCapture();
 }
 
+void TabInterface::MiddleDrag(Point p, dword keyflags)
+{
+	isdrag = true;
+	DoDragAndDrop(InternalClip(*this, "tabs"));
+}
+
 void TabInterface::LeftDrag(Point p, dword keyflags)
 {
+	if(keyflags & K_SHIFT)
+		return;
+	if(highlight < 0)
+		return;
+	if(keyflags & K_CTRL)
+	{
+		isdrag = true;
+		DoDragAndDrop(InternalClip(*this, "tabs"));
+		return;
+	}
+	
 	if(highlight >= 0)
 	{
 		Fix(p);
@@ -394,6 +444,7 @@ void TabInterface::LeftDrag(Point p, dword keyflags)
 		if(tabs[active].HasMouse(p))
 			WhenDrag(active, *tabs[active].dock);
 	}
+
 }
 
 
@@ -478,6 +529,90 @@ void TabInterface::MouseLeave()
 	Refresh();
 }
 
+int TabInterface::GetTargetTab(Point p)
+{
+	Fix(p);
+	p.x += (hasscrollbar ? scrollbar.GetPos() : 0);
+
+	int f = 0;
+	int l = tabs.GetCount() - 1;
+
+	if(tabs[f].visible && p.x < tabs[f].x + tabs[f].cx / 2)
+		return f;
+
+	for(int i = l; i >= f; i--)
+		if(tabs[i].visible && p.x >= tabs[i].x + tabs[i].cx / 2)
+			return i == l ? i + 1 : GetNext(i);
+	return -1;
+}
+
+void TabInterface::DragAndDrop(Point p, PasteClip& d)
+{
+	int c = GetTargetTab(p);
+	int tab = isctrl ? highlight : active;
+
+	bool sametab = c == tab || c == tab + 1;
+	bool internal = AcceptInternal<TabInterface>(d, "tabs");
+
+	if(!sametab && d.IsAccepted())
+	{
+		if(internal)
+		{
+			int id = tabs[active].id;
+			Tab t = tabs[tab];
+			tabs.Insert(c, t);
+			tabs.Remove(tab + int(c < tab));
+			active = Find(id);
+			isdrag = false;
+			ReposTabs();
+			return;
+		}
+		else if(d.IsPaste())
+		{
+			CancelMode();
+			return;
+		}
+	}
+	else
+	{
+		//d.Reject();
+		//unfortunately after Reject DragLeave stops working until d is accepted
+	}
+
+	if(c != target)
+	{
+		target = c;
+		Refresh();
+	}
+}
+
+void TabInterface::DragEnter()
+{
+}
+
+void TabInterface::DragLeave()
+{
+	target = -1;
+	Refresh();
+}
+
+void TabInterface::DragRepeat(Point p)
+{
+	{
+		int dx = GetDragScroll(this, p, 16).x;
+		if(dx != 0 && hasscrollbar)
+			scrollbar.AddPos(dx);
+	}
+}
+
+void TabInterface::CancelMode()
+{
+	isdrag = false;
+	target = -1;
+	Refresh();
+}
+
+
 TabInterface& TabInterface::SetLayout(int l)
 {
 	layout = l;
@@ -513,8 +648,11 @@ TabInterface::TabInterface()
 	visible  	= -1;
 	fileicon	= -1;
 	tabbutton	= -1;
-	hasfileicon	= false;
-	hastabbutton = true;
+	target 		= -1;
+	hasfileicon		= false;
+	hastabbutton 	= true;
+	isctrl 			= false;
+	isdrag 			= false;
 	
 	SetStyle(TabCtrl::StyleDefault());
 	CustomFrame::layout = LAYOUT_BOTTOM;

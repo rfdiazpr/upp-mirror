@@ -117,7 +117,7 @@ private:
 		void UpdatePos(bool update = true);
 		bool ready;
 		Size sz;
-
+	
 	public:
 		TabScrollBar();
 
@@ -192,7 +192,9 @@ protected:
 	int active, highlight, visible;
 	int fileicon, tabbutton;
 	bool hastabbutton, hasfileicon, hasscrollbar;
-
+	int target;
+	bool isctrl;
+	bool isdrag;
 public:
 	const TabCtrl::Style *style;
 	TabInterface& SetStyle(const TabCtrl::Style& s)  { style = &s; Refresh(); return *this; }
@@ -236,11 +238,20 @@ protected:
 	virtual void LeftDown(Point p, dword keyflags);
 	virtual void LeftUp(Point p, dword keyflags);
 	virtual void LeftDrag(Point p, dword keyflags);
+	virtual void MiddleDrag(Point p, dword keyflags);	
 	virtual void RightDown(Point p, dword keyflags);
 	virtual void RightUp(Point p, dword keyflags);
 	virtual void MouseMove(Point p, dword keyflags);
 	virtual void MouseWheel(Point p, int zdelta, dword keyflags);
 	virtual void MouseLeave();
+	virtual void DragAndDrop(Point p, PasteClip& d);
+
+	virtual void DragEnter();
+	virtual void DragLeave();
+	virtual void DragRepeat(Point p);
+	virtual void CancelMode();
+
+	int GetTargetTab(Point p);
 
 public:
 	Callback2<int, DockableCtrl&> WhenContext;

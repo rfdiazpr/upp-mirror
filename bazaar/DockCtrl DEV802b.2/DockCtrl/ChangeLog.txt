@@ -62,3 +62,4 @@ Recent revisions are added to the current versions logs under date/time info.
 	  default 	skin = drawed using default TabCtrl style.
 	  enhanced 	skin = drawed using default ToolBar style.
 	  classic	skin = no special draw action (uses current system background).   
+	* tab repositioning for TabWindow and Autohide (using Ctrl + Left drag or with solely Middle Drag) added;  

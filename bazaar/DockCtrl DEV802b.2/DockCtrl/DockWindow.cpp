@@ -219,7 +219,8 @@ void DockWindow::DragBar::Paint(Draw& d)
 
 
 	(GUI_GlobalStyle() >= GUISTYLE_XP) && (style != &DockCtrlChStyle::StyleClassic()) ? 
-		d.DrawImage(GetRect(), imgs, Rect(4, 1, 1, 20)) : d.DrawRect(GetSize(), SColorFace());
+	// See CtrlImgs for proper rectangle value.
+	d.DrawImage(GetRect(), imgs, Rect(4, 1, 2, 20)) : d.DrawRect(GetSize(), SColorFace());
 
 	if(!img.IsNullInstance())
 	{

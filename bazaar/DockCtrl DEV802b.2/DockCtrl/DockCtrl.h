@@ -191,10 +191,12 @@ protected:
 	int id;
 	int active, highlight, visible;
 	int fileicon, tabbutton;
-	bool hastabbutton, hasfileicon, hasscrollbar;
-	int target;
+	bool hastabbutton, hasfileicon, hasscrollbar, isdraggable;
+	int target, source;
 	bool isctrl;
-	bool isdrag;
+	bool isdragged;
+	String	internalname; // not to confuse with different types of ctrls (tabs X autohidebars)
+	
 public:
 	const TabCtrl::Style *style;
 	TabInterface& SetStyle(const TabCtrl::Style& s)  { style = &s; Refresh(); return *this; }
@@ -227,10 +229,11 @@ public:
 	
 	int GetNextId() { return ++id; }
 	
-	TabInterface& HasButtons(bool b) 	{ hastabbutton = b; ReposTabs(); if(IsOpen() && IsChild()) Refresh(); return *this; }
-	TabInterface& HasIcons(bool b)	 	{ hasfileicon  = b;	ReposTabs(); if(IsOpen() && IsChild()) Refresh(); return *this; }
+	TabInterface& HasButtons(bool b) 		{ hastabbutton = b; ReposTabs(); if(IsOpen() && IsChild()) Refresh(); return *this; }
+	TabInterface& HasIcons(bool b)	 		{ hasfileicon  = b;	ReposTabs(); if(IsOpen() && IsChild()) Refresh(); return *this; }
 	TabInterface& HasScrollBar(bool b);	
-	
+	TabInterface& Draggable(bool b = true)	{ isdraggable = b; return *this; }
+		
 	TabInterface& SetLayout(int l);
 		
 protected:
@@ -238,7 +241,7 @@ protected:
 	virtual void LeftDown(Point p, dword keyflags);
 	virtual void LeftUp(Point p, dword keyflags);
 	virtual void LeftDrag(Point p, dword keyflags);
-	virtual void MiddleDrag(Point p, dword keyflags);	
+	virtual void MiddleDrag(Point p, dword keyflags);
 	virtual void RightDown(Point p, dword keyflags);
 	virtual void RightUp(Point p, dword keyflags);
 	virtual void MouseMove(Point p, dword keyflags);
@@ -252,6 +255,7 @@ protected:
 	virtual void CancelMode();
 
 	int GetTargetTab(Point p);
+	int	GetSourceTab(Point p);
 
 public:
 	Callback2<int, DockableCtrl&> WhenContext;

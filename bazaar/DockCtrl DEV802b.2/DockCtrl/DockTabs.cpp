@@ -355,10 +355,10 @@ void TabInterface::Paint(Draw& d)
 
 	if(target >= 0)
 	{
-		int last = tabs.GetCount() - 1;//GetLast();
+		int last = tabs.GetCount() - 1;
 		int first = 0;
 
-		if(target != active && target != active + 1)
+		if(target != source && target != source + 1)
 		{
 
 			int x = (target == last + 1 ? tabs[last].Right() : tabs[target].x)
@@ -370,6 +370,7 @@ void TabInterface::Paint(Draw& d)
 			int cy = sz.cy - y;
 			
 			Color c(255, 0, 0);
+
 			if(horizontal)
 			{
 				d.DrawRect(x + 1, y, 2, cy, c);
@@ -389,6 +390,22 @@ void TabInterface::Paint(Draw& d)
 
 void TabInterface::LeftDown(Point p, dword keyflags)
 {
+	if(keyflags & K_SHIFT)
+	{
+		highlight = -1;
+		Refresh();
+		SetCapture();
+		oldp = p;
+		return;
+	}
+
+	isctrl = keyflags & K_CTRL;
+	if(isctrl)
+	{
+		//isdragged = true;
+		return;
+	}
+
 	if(tabbutton >= 0)
 	{
 		int i = Find(tabbutton);
@@ -413,14 +430,15 @@ void TabInterface::LeftDown(Point p, dword keyflags)
 
 void TabInterface::LeftUp(Point p, dword keyflags)
 {
-	if(HasCapture())
-		ReleaseCapture();
+	ReleaseCapture();
 }
 
 void TabInterface::MiddleDrag(Point p, dword keyflags)
 {
-	isdrag = true;
-	DoDragAndDrop(InternalClip(*this, "tabs"));
+	if(!isdraggable) return;
+	Fix(p);
+	GetSourceTab(p);
+	DoDragAndDrop(InternalClip(*this, Format(internalname, this)));
 }
 
 void TabInterface::LeftDrag(Point p, dword keyflags)
@@ -429,10 +447,13 @@ void TabInterface::LeftDrag(Point p, dword keyflags)
 		return;
 	if(highlight < 0)
 		return;
-	if(keyflags & K_CTRL)
+
+	if(isctrl)
 	{
-		isdrag = true;
-		DoDragAndDrop(InternalClip(*this, "tabs"));
+		Fix(p);
+		GetSourceTab(p);
+		isdragged = true;
+		DoDragAndDrop(InternalClip(*this, Format(internalname, this)));
 		return;
 	}
 	
@@ -524,8 +545,10 @@ void TabInterface::MouseWheel(Point p, int zdelta, dword keyflags)
 
 void TabInterface::MouseLeave()
 {
-	highlight = -1;
-	tabbutton = -1;
+	if(isdragged)
+		return;
+	highlight 	= -1;
+	tabbutton 	= -1;
 	Refresh();
 }
 
@@ -546,13 +569,27 @@ int TabInterface::GetTargetTab(Point p)
 	return -1;
 }
 
+int TabInterface::GetSourceTab(Point p)
+{
+	int cnt = tabs.GetCount();
+	if(((active >= 0 && active < cnt) || (highlight >= 0 && highlight < cnt))) 
+	{
+		for(int i = tabs.GetCount() - 1; i >= 0; i--)
+			if(tabs[i].visible && tabs[i].HasMouse(p))
+				return (source = i);
+	}
+	return (source = -1);	
+}
+
 void TabInterface::DragAndDrop(Point p, PasteClip& d)
 {
 	int c = GetTargetTab(p);
-	int tab = isctrl ? highlight : active;
+	int tab = source; //isctrl ? highlight : active;
+	int ac = GetActiveTab();
+
 
 	bool sametab = c == tab || c == tab + 1;
-	bool internal = AcceptInternal<TabInterface>(d, "tabs");
+	bool internal = AcceptInternal<TabInterface>(d, internalname);
 
 	if(!sametab && d.IsAccepted())
 	{
@@ -563,7 +600,7 @@ void TabInterface::DragAndDrop(Point p, PasteClip& d)
 			tabs.Insert(c, t);
 			tabs.Remove(tab + int(c < tab));
 			active = Find(id);
-			isdrag = false;
+			isdragged = false;
 			ReposTabs();
 			return;
 		}
@@ -607,7 +644,7 @@ void TabInterface::DragRepeat(Point p)
 
 void TabInterface::CancelMode()
 {
-	isdrag = false;
+	isdragged = false;
 	target = -1;
 	Refresh();
 }
@@ -641,18 +678,22 @@ TabInterface& TabInterface::SetLayout(int l)
 
 TabInterface::TabInterface()
 {
-
+	internalname = "tabs";
+	
 	id			= -1;
 	active		= -1;
 	highlight	= -1;
 	visible  	= -1;
 	fileicon	= -1;
 	tabbutton	= -1;
-	target 		= -1;
+	target 		= -1;	// drag target.
+	source		= -1;	// drag source.
+	
 	hasfileicon		= false;
 	hastabbutton 	= true;
+	isdraggable		= true;
 	isctrl 			= false;
-	isdrag 			= false;
+	isdragged		= false;
 	
 	SetStyle(TabCtrl::StyleDefault());
 	CustomFrame::layout = LAYOUT_BOTTOM;

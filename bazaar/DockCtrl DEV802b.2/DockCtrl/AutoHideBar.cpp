@@ -165,12 +165,14 @@ void AutoHideBar::HideBar()
 
 AutoHideBar::AutoHideBar()
 {
+	internalname = "autohidebar";
+	 
 	ctrl = NULL;
-	
 	SetStyle(DockCtrlChStyle::StyleDefault());
 	HasScrollBar(false);
 	HasButtons(false);
 	HasIcons(true);
+	Draggable(true);
 	SetSize(0);
 	
 	TabInterface::WhenHighlight = THISBACK(OnHighlight);

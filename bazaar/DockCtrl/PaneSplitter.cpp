@@ -85,26 +85,32 @@ bool PaneSplitter::HasChild()
 }
 
 void PaneSplitter::StartAnimation(int position)
-{
+{	
 	if(animationctrl.IsOpen()) return;
 	animationctrl.Type(animationtype);
 	if(!HasChild() || position > GetCount()) 
 		Add(animationctrl.SizePos());
-	else AddChildBefore(&animationctrl.SizePos(), (Ctrl *) GetChildAt(position));
+	else 
+		AddChildBefore(&animationctrl.SizePos(), (Ctrl *) GetChildAt(position));
 
-	if(animationtype == TABANIMATION)
+	animating = true;
+
+
+	if(animationtype == TABANIMATION) 
 	{
-		Ctrl* ctrl = GetFirstChild(); 
+		Ctrl* ctrl = GetFirstChild();
 		if(ctrl)
 		{
-			ImageDraw img(animationctrl.GetSize().cx, animationctrl.GetSize().cy);
+			const DockCtrlChStyle::Style& s = DockCtrlChStyle::StyleDefault();
+			Size sz = animationctrl.GetSize();
+			ImageDraw img(sz.cx, sz.cy);
 			ctrl->DrawCtrlWithParent(img, 0, 0);
+			img.DrawImage(sz,s.tabhighlight); 
 			Image i = img;
 			animationctrl.SetAnimImage(i);
 		}
 	}
 
-	animating = true;
 	Animate(position);
 }
 
@@ -116,7 +122,7 @@ void PaneSplitter::StartAnimation(DockableCtrl& dock, int position)
 void PaneSplitter::StopAnimation()
 {
    	if(!animationctrl.IsOpen()) return;
-	animationctrl.Type(animationtype);	
+	animationctrl.Type(animationtype);
    	animationctrl.Remove();
    	animating = false; 
 }
@@ -139,14 +145,8 @@ void PaneSplitter::AnimationCtrl::Paint(Draw& d)
 	if(ctrltype != PaneSplitter::TABANIMATION)
 		d.DrawRect(GetSize(), GUI_GlobalStyle() >= GUISTYLE_XP ? Blend(SColorHighlight, SColorFace) : SColorShadow); 
 	else
-	{
-		const DockCtrlChStyle::Style& s = DockCtrlChStyle::StyleDefault();
 		d.DrawImage(GetSize(), image);
-		d.DrawImage(GetSize(),s.tabhighlight);
-		
-	}
 }
-
 
 //----------------------------------------------------------------------------------------------
 

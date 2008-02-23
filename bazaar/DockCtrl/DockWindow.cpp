@@ -180,7 +180,6 @@ void DockWindow::EventProc(XWindow& w, XEvent *event)
 				Refresh();
 				SetDropTarget();
 				Dragging(false);
-				MoveEnd();
 				return;
 			}
 			break;

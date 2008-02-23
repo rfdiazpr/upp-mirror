@@ -260,8 +260,8 @@ void DockableCtrl::StartWindowDrag()
 	e.xclient.format = 32;
 	e.xclient.display = Xdisplay;
 	e.xclient.send_event = XTrue;
-	e.xclient.data.l[0] = p.x;
-	e.xclient.data.l[1] = p.y;
+	e.xclient.data.l[0] = pt.x;
+	e.xclient.data.l[1] = pt.y;
 	e.xclient.data.l[2] = 8;
 	e.xclient.data.l[3] = 1;
 	e.xclient.data.l[4] = 0;	

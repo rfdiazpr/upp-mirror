@@ -327,10 +327,7 @@ public:
 	Ctrl* GetAnimationCtrl() 			{ return (Ctrl*) &animationctrl; }		
 
 	virtual void Layout();
-
-protected:
-//	virtual void Paint(Draw& d);
-		
+	
 private:
 
 	Array<int> positions;
@@ -340,7 +337,9 @@ private:
 	{
 	public:
 		typedef AnimationCtrl CLASSNAME;
-		void SetAnimImage(Image& img)		{ image = img; }
+		void SetAnimImage(Image& img)		{ image = img;   }
+		Image& GetAnimImage()				{ return image;  }
+		void ClearAnimImage()				{ image.Clear(); }
 		void AnimateVert();
 		void AnimateHorz();
 		void Paint(Draw& d);

@@ -558,8 +558,10 @@ protected:
 	virtual void MouseMove(Point p, dword keyflags);
 	virtual void Paint(Draw& d);	
 
-#ifdef PLATFORM_WIN32
+#if defined(PLATFORM_WIN32)
 	virtual LRESULT  WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+#elif defined(PLATFORM_X11)
+	virtual void EventProc(XWindow& w, XEvent *event)
 #endif
 	
 private: 

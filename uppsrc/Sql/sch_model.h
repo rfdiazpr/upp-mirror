@@ -25,6 +25,19 @@
 #define DOC(x)
 #endif
 
+#ifndef SCHEMA_PREFIX_CPP
+#define SCHEMA_PREFIX_CPP
+#endif
+
+#ifndef ADD_SCHEMA_PREFIX_CPP
+#define ADD_SCHEMA_PREFIX_CPP__(_prefix_cpp_, x) _prefix_cpp_##x
+#define ADD_SCHEMA_PREFIX_CPP_(_prefix_cpp_, x) ADD_SCHEMA_PREFIX_CPP__(_prefix_cpp_, x)
+#define ADD_SCHEMA_PREFIX_CPP(x) ADD_SCHEMA_PREFIX_CPP_(SCHEMA_PREFIX_CPP,x)
+#define ADD_SCHEMA_PREFIX_CPP2__(_prefix_cpp_, x, y) _prefix_cpp_##x##y
+#define ADD_SCHEMA_PREFIX_CPP2_(_prefix_cpp_, x, y) ADD_SCHEMA_PREFIX_CPP2__(_prefix_cpp_, x, y)
+#define ADD_SCHEMA_PREFIX_CPP2(x,y) ADD_SCHEMA_PREFIX_CPP2_(SCHEMA_PREFIX_CPP,x, y)
+#endif
+
 #ifndef DOID
 #define DOID(x)
 #endif

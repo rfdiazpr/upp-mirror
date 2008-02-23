@@ -1,14 +1,15 @@
 // SqlId
 
-#define DOID(x)                 SqlId x(#x);
+#define DOID(x) SqlId ADD_SCHEMA_PREFIX_CPP(x)(#x);
+//#define DOID(x)                 SqlId x(#x);
 
 #include SCHEMADIALECT
 
 // constructor
 
 #define TYPE(x)  S_##x::S_##x() {
-#define COLUMN(type, ctype, name, width, prec)               SqlSchemaInitClear(name);
-#define COLUMN_ARRAY(type, ctype, name, width, prec, items)  SqlSchemaInitClear(name, items);
+#define COLUMN(type, ctype, name, width, prec)               SqlSchemaInitClear(ADD_SCHEMA_PREFIX_CPP(name));
+#define COLUMN_ARRAY(type, ctype, name, width, prec, items)  SqlSchemaInitClear(ADD_SCHEMA_PREFIX_CPP(name), items);
 #define END_TYPE }
 
 #include SCHEMADIALECT
@@ -75,8 +76,8 @@ void S_##x::Clear() { S_##b1::Clear(); S_##b2::Clear(); S_##b3::Clear();
 
 #define VAR(type, x)             x.Clear();
 
-#define COLUMN(type, ctype, name, width, prec)               SqlSchemaClear(name);
-#define COLUMN_ARRAY(type, ctype, name, width, prec, items)  SqlSchemaClear(name, items);
+#define COLUMN(type, ctype, name, width, prec)               SqlSchemaClear(ADD_SCHEMA_PREFIX_CPP(name));
+#define COLUMN_ARRAY(type, ctype, name, width, prec, items)  SqlSchemaClear(ADD_SCHEMA_PREFIX_CPP(name), items);
 
 #define END_TYPE    }
 
@@ -112,11 +113,11 @@ void S_##x::FieldLayoutRaw(FieldOperator& fo, const String& prefix) {\
 	S_##b2::FieldLayoutRaw(fo, prefix);\
 	S_##b3::FieldLayoutRaw(fo, prefix);
 
-#define COLUMN(type, ctype, name, width, prec)               fo(prefix + #name, name);
+#define COLUMN(type, ctype, name, width, prec)               fo(prefix + #name, ADD_SCHEMA_PREFIX_CPP(name));
 #define COLUMN_ARRAY(type, ctype, name, width, prec, items) \
 { \
 	for(int i = 0; i < items; i++)\
-		fo(Format("%s%s%d", ~prefix, #name, i), name[i]); \
+		fo(Format("%s%s%d", ~prefix, #name, i), ADD_SCHEMA_PREFIX_CPP(name)[i]); \
 }
 
 #define VAR(type, x)             x.FieldLayoutRaw(fo, prefix + #x + "$");

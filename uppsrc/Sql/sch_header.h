@@ -24,10 +24,10 @@ public:\
 #define VAR(type, x)             S_##type x;
 
 #define COLUMN(type, ctype, name, width, prec) \
-enum { name##_WIDTH = width, name##_PRECISION = prec }; ctype name;
+enum { ADD_SCHEMA_PREFIX_CPP2(name,_WIDTH) = width, ADD_SCHEMA_PREFIX_CPP2(name,_PRECISION) = prec }; ctype ADD_SCHEMA_PREFIX_CPP(name);
 
 #define COLUMN_ARRAY(type, ctype, name, width, prec, items) \
-enum { name##_WIDTH = width, name##_PRECISION = prec }; ctype name[items];
+enum { ADD_SCHEMA_PREFIX_CPP2(name,_WIDTH) = width, ADD_SCHEMA_PREFIX_CPP2(name,_PRECISION) = prec }; ctype ADD_SCHEMA_PREFIX_CPP(name)[items];
 
 #define END_TYPE                 };
 
@@ -39,6 +39,7 @@ enum { name##_WIDTH = width, name##_PRECISION = prec }; ctype name[items];
 
 // SqlId
 
-#define DOID(x)                  extern SqlId x;
+#define DOID(x) extern SqlId ADD_SCHEMA_PREFIX_CPP(x);
+//#define DOID(x)                  extern SqlId x;
 
 #include SCHEMADIALECT

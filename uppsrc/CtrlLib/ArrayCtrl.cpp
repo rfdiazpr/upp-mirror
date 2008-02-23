@@ -22,6 +22,14 @@ ArrayCtrl::Column& ArrayCtrl::Column::Cache() {
 	return *this;
 }
 
+ArrayCtrl::Column& ArrayCtrl::Column::NoEdit()
+{
+	if(edit)
+		edit->Remove();
+	edit = NULL;
+	return *this;
+}
+
 ArrayCtrl::Column& ArrayCtrl::Column::Edit(Ctrl& e) {
 	e.Hide();
 	e.SetFrame(NullFrame());
@@ -1801,8 +1809,8 @@ void ArrayCtrl::PlaceEdits() {
 	for(int i = 0; i < column.GetCount(); i++) {
 		Column& m = column[i];
 		if(m.edit) {
-			m.edit->Show(editmode);
-			if(editmode)
+			m.edit->Show(editmode && header.IsTabVisible(i));
+			if(m.edit->IsVisible())
 				m.edit->SetRect(GetCellRectM(cursor, i));
 		}
 	}

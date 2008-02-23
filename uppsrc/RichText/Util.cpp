@@ -97,8 +97,7 @@ RichText AsRichText(const wchar *s, const RichPara::Format& f)
 	RichText clip;
 	RichPara p;
 	p.format = f;
-	p.part.Add();
-	p.part[0].format = f;
+	p.part.Add().format = f;
 	RichStyle cs;
 	cs.format = f;
 	cs.format.sscript = 0;

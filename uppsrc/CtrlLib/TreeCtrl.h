@@ -127,7 +127,7 @@ private:
 	void   SetCursorLineSync(int i);
 	void   MoveCursorLine(int c, int incr);
 	void   SetCursorLine(int i, bool sc, bool sel, bool cb);
-	void   SetCursor(int id, bool sc, bool sel, bool cb);	
+	void   SetCursor(int id, bool sc, bool sel, bool cb);
 	void   RemoveCtrls(int itemi);
 	void   SyncCtrls(bool add, Ctrl *restorefocus);
 	bool   Tab(int d);
@@ -181,6 +181,8 @@ public:
 	int    Add(int parentid, const Image& img, Ctrl& ctrl, int cx = 0, int cy = 0, bool withopen = false);
 	void   Remove(int id);
 	void   RemoveChildren(int id);
+
+	void   Swap(int id1, int id2);
 
 	int    GetChildCount(int id) const                         { return item[id].child.GetCount(); }
 	int    GetChild(int id, int i) const                       { return item[id].child[i]; }

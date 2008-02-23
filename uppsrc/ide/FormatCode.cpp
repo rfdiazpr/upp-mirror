@@ -6,17 +6,21 @@ using namespace astyle;
 // CLASS ASStreamIterator
 class ASStreamIterator : public ASSourceIterator
 {
+	protected:
+	
+		enum EolMode { crlf, lf, cr, lfcr } ;
+		WString const &src;
+		int p;
+		EolMode eolMode;
+
 	public:
 		ASStreamIterator(WString const &Src);
 		virtual ~ASStreamIterator() {}
 		virtual bool hasMoreLines() const;
 		virtual WString nextLine();
 		
-	protected:
-	
-		WString const &src;
-		int p;
-
+		WString getEol();
+				
 }; // END Class ASStreamIterator
 
 // Constructor Class ASStreamIterator
@@ -24,8 +28,28 @@ ASStreamIterator::ASStreamIterator(WString const &Src) : ASSourceIterator(), src
 {
 	// initializes buffer pointer
 	p = 0;
+	
+	// initializes Eol Mode
+	eolMode = crlf;
+	
 } // END Constructor Class ASStreamIterator
 
+
+WString ASStreamIterator::getEol()
+{
+	switch(eolMode)
+	{
+		case cr:
+			return "\r";
+		case lf:
+			return "\n";
+		case lfcr:
+			return "\r\n";
+		default:
+			return "\n\r";
+	}
+	
+} // END ASStreamIterator::getEol()
 
 bool ASStreamIterator::hasMoreLines() const
 {
@@ -36,12 +60,30 @@ bool ASStreamIterator::hasMoreLines() const
 WString ASStreamIterator::nextLine()
 {
 	int p2 = p;
-	while(src[p2] && src[p2] != '\n')
+	wchar c1, c2;
+	while(src[p2] && src[p2] != '\n' && src[p2] != '\r')
 		p2++;
 	WString line = src.Mid(p, p2 - p);
 
-	if(src[p2])
-	   p2++;
+	if( (c1 = src[p2]) != 0)
+	{
+		p2++;
+		c2 = src[p2];
+		if(c1 == '\r' && c2 == '\n')
+		{
+			p2++;
+			eolMode = crlf;
+		}
+		else if(c1 == '\n' && c2 == '\r')
+		{
+			p2++;
+			eolMode = lfcr;
+		}
+		else if(c1 == '\n')
+			eolMode = lf;
+		else
+			eolMode = cr;
+	}
 	p = p2;
 
 	return line;
@@ -63,7 +105,7 @@ WString Ide::FormatCodeString(WString const &Src, ASFormatter &Formatter)
 	
 	// Processes all text in source file and put them in output file
 	while (Formatter.hasMoreLines())
-		Dest << Formatter.nextLine() << '\n';
+		Dest << Formatter.nextLine() << streamIterator.getEol();
 	
 	// returns output string
 	return Dest;

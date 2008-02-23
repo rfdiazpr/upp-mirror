@@ -128,6 +128,8 @@ bool Sql::Execute() {
 			.ErrorCode(session.GetErrorCodeString());
 		session.PassStatus(ActivityStatus::EXECUTING_ERROR);
 	}
+	for(int i = 0; i < cn->info.GetCount(); i++)
+		cn->info[i].name = ToUpper(cn->info[i].name);
 	return b;
 }
 

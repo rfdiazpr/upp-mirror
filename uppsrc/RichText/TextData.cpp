@@ -116,7 +116,7 @@ void RichText::Insert(int pos, const RichText& p)
 		pa2.Append(pa1);
 		pa2.format = pa1.format;
 		txt.Put(pi + n, pa2, style);
-		pa2 = p.RichTxt::Get(0, GetStyle(p.GetParaStyle(0)));
+		pa2 = p.RichTxt::Get(0, p.GetStyle(p.GetParaStyle(0)));
 		pa1 = txt.Get(pi, pa2.format.styleid, style);
 		pa1.Trim(pos);
 		pa1.Append(pa2);
@@ -130,7 +130,7 @@ void RichText::Insert(int pos, const RichText& p)
 		pa2 <<= pa0;
 		pa0.Trim(pos);
 		pa2.Mid(pos);
-		pa0.Append(p.RichTxt::Get(0, GetStyle(pa0.format.styleid)));
+		pa0.Append(p.RichTxt::Get(0, p.GetStyle(pa0.format.styleid)));
 		pa0.Append(pa2);
 		txt.Put(pi, pa0, style);
 	}

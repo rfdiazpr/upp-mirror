@@ -1,5 +1,6 @@
 #include "Web.h"
 #pragma hdrstop
+#include <winsock2.h>
 
 NAMESPACE_UPP
 

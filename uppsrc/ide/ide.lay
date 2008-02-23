@@ -459,6 +459,7 @@ LAYOUT(SetupAstyleLayout, 544, 280)
 	ITEM(Button, Test, SetLabel(t_("Test")).LeftPosZ(284, 56).TopPosZ(252, 23))
 	ITEM(LabelBox, dv___30, SetLabel(t_("Test box")).LeftPosZ(344, 196).TopPosZ(4, 272))
 	ITEM(LineEdit, TestBox, SetFont(ScreenFixedZ(11)).LeftPosZ(348, 188).TopPosZ(20, 252))
+	ITEM(Button, Defaults, SetLabel(t_("Upp defaults")).LeftPosZ(176, 72).TopPosZ(252, 23))
 END_LAYOUT
 
 LAYOUT(GotoLayout, 796, 524)

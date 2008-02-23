@@ -182,6 +182,7 @@ class AStyleSetupDialog : public WithSetupAstyleLayout<ParentCtrl> {
 public:
 	AStyleSetupDialog(Ide *_ide);
 	void AstyleTest();
+	void UppDefaults();
 };
 
 AStyleSetupDialog::AStyleSetupDialog(Ide *_ide)
@@ -197,6 +198,7 @@ AStyleSetupDialog::AStyleSetupDialog(Ide *_ide)
 	ParensPaddingMode.Add(astyle::PAD_BOTH, "pad both parenthesis sides with spaces");
 	
 	Test <<= THISBACK(AstyleTest);
+	Defaults << THISBACK(UppDefaults);
 
 }
 
@@ -249,6 +251,32 @@ void AStyleSetupDialog::AstyleTest()
 	
 	// formats text in test box
 	TestBox.Set(ide->FormatCodeString(TestBox.GetW(), Formatter));
+}
+
+void AStyleSetupDialog::UppDefaults()
+{
+	BracketIndent = false;
+	NamespaceIndent = true;
+	BlockIndent = false;
+	CaseIndent = true;
+	ClassIndent = true;
+	LabelIndent = true;
+	SwitchIndent = true;
+	PreprocessorIndent = false;
+	MaxInStatementIndentLength = 20;
+	MinInStatementIndentLength = 2;
+	BreakClosingHeaderBracketsMode = 0;
+	BreakElseIfsMode = true;
+	BreakOneLineBlocksMode = true;
+	SingleStatementsMode = true;
+	BreakBlocksMode = false;
+	BreakClosingHeaderBlocksMode = false;
+	BracketFormatMode.SetIndex(1);
+	ParensPaddingMode.SetIndex(0);
+	ParensUnPaddingMode = true;
+	OperatorPaddingMode = false;
+	EmptyLineFill = false;
+	TabSpaceConversionMode = false;
 }
 
 void Ide::SetupFormat() {

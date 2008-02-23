@@ -85,6 +85,7 @@ public:
 		Column& SetConvert(const Convert& c);
 		Column& SetFormat(const char *fmt);
 		Column& SetDisplay(const Display& d);
+		Column& NoEdit();
 		Column& Edit(Ctrl& e);
 		Column& Ctrls(Callback1<One<Ctrl>&> factory);
 		Column& Ctrls(void (*factory)(One<Ctrl>&)) { return Ctrls(callback(factory)); }
@@ -397,7 +398,7 @@ public:
 	bool       IsSelected(int i) const                          { return array[i].select; }
 	void       ClearSelection();
 	bool       IsSel(int i) const;
-	
+
 	void       EnableLine(int i, bool e);
 	void       DisableLine(int i)                               { EnableLine(i, false); }
 	bool       IsLineDisabled(int i) const                      { return array[i].enabled; }

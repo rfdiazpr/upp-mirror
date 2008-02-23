@@ -46,8 +46,11 @@ TreeCtrl::Node::Node(const Image& img, Ctrl& ctrl, int cx, int cy)
 	Init();
 	SetCtrl(ctrl);
 	image = img;
-	size.cx = cx;
-	size.cy = cy;
+	size = ctrl.GetMinSize();
+	if(cx > 0)
+		size.cx = cx;
+	if(cy > 0)
+		size.cy = cy;
 }
 
 TreeCtrl::TreeCtrl()
@@ -91,13 +94,18 @@ void   TreeCtrl::Layout()
 
 Size   TreeCtrl::Item::GetValueSize() const
 {
-	return display ? display->GetStdSize(value) : StdDisplay().GetStdSize(value);
+	if(IsNull(size))
+		if(ctrl)
+			return ctrl->GetMinSize();
+		else
+			return display ? display->GetStdSize(value) : StdDisplay().GetStdSize(value);
+	else
+		return size;
 }
 
 Size   TreeCtrl::Item::GetCtrlSize() const
 {
-	Size csz = ctrl->GetMinSize();
-	return Size(size.cx ? size.cx : csz.cx, size.cy ? size.cy : csz.cy);
+	return size;
 }
 
 Size   TreeCtrl::Item::GetSize() const
@@ -882,8 +890,6 @@ void TreeCtrl::Paint(Draw& w)
 			x += isz.cx;
 			Color fg, bg;
 			dword st;
-			if(m.ctrl)
-				x += m.GetCtrlSize().cx;
 			if(x < sz.cx) {
 				const Display *d = GetStyle(i, fg, bg, st);
 				w.DrawRect(x, y, vsz.cx + 2 * m.margin, msz.cy, bg);
@@ -1338,6 +1344,14 @@ void TreeCtrl::InsertDrop(int parent, int ii, const TreeCtrl& src, PasteClip& d)
 void TreeCtrl::InsertDrop(int parent, int ii, PasteClip& d)
 {
 	InsertDrop(parent, ii, GetInternal<TreeCtrl>(d), d);
+}
+
+void TreeCtrl::Swap(int id1, int id2)
+{
+	SyncTree();
+	item.Swap(id1, id2);
+	Dirty(id1);
+	Dirty(id2);
 }
 
 void OptionTree::SetRoot(const Image& img, Option& opt, const char *text)

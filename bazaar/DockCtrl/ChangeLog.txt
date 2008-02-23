@@ -70,3 +70,5 @@ Recent revisions are added to the current versions logs under date/time info.
 	* from now on, tab drag-n-drop animation  has transparency effect.
 	- fixed a bug in tab animation which causes to set the active tab to the last tab in the list. now the tabs
 	  correctly set the cursour to the previously active tab if the dnd is cancelled.
+	- fixed a bug in tab animation transparency effect which causes pane's with more than 2 childs to draw the animation
+	  incorrectly.  

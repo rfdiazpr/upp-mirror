@@ -322,22 +322,23 @@ public:
 	void StopAnimation();
 	inline bool IsAnimating() const		{ return animating; }
 	void Animate(int position = 0);
-	void SetAnimationType(int type)		{ animationtype = type; }
+	void SetAnimationType(int type)		{ animationctrl.Type(animationtype = type); }
 	Rect AnimationArea() 				{ return animationctrl.GetScreenRect();}
 	Ctrl* GetAnimationCtrl() 			{ return (Ctrl*) &animationctrl; }		
 
 	virtual void Layout();
+
 	
 private:
 
 	Array<int> positions;
 	void AnimateCallback();
-	
+public:
 	class AnimationCtrl : public Ctrl
 	{
 	public:
 		typedef AnimationCtrl CLASSNAME;
-		void SetAnimImage(Image& img)		{ image = img;   }
+		void SetAnimImage(Image& img)		{ image = img;  Refresh(); }
 		Image& GetAnimImage()				{ return image;  }
 		void ClearAnimImage()				{ image.Clear(); }
 		void AnimateVert();
@@ -351,6 +352,7 @@ private:
 		int ctrltype;
 	};
 	AnimationCtrl animationctrl;
+private:
 	bool animating;
 	int  animationtype;
 	int pos, x, y;
@@ -696,6 +698,8 @@ protected:
 	virtual void OnTabActive(int id, DockableCtrl& ctrl);
 	virtual void OnTabContextMenu(int id, DockableCtrl& ctrl);	
 
+	virtual void Paint(Draw& d);
+	
 private:
 	void AttachNormal(DockableCtrl& ctrl, int makeactive = false);
 	void AttachNested(DockableCtrl& ctrl, int makeactive = false);

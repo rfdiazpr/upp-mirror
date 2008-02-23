@@ -449,7 +449,8 @@ void PaneFrame::StartTabWindowAnimation(DockableCtrl& ctrl, int position)
 {
 	if(DnDHasSource() && &ctrl && (ctrl.Position() == position)) 
 	{
-		if(!HasTabWindow(GetActiveTabWindow())) activetabwindow = AddTabWindow(ctrl);
+		if(!HasTabWindow(GetActiveTabWindow())) 
+				activetabwindow = AddTabWindow(ctrl);
 		if(!GetActiveTabWindow()->IsTabAnimating())
 		{
 			if(dockcontainer.IsAnimating())	dockcontainer.StopAnimation();

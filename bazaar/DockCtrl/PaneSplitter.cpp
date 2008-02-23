@@ -4,7 +4,7 @@
 PaneSplitter::PaneSplitter()
 {
 	animating = false;
-	animationtype = PANEANIMATION;		// by default.
+	SetAnimationType(PANEANIMATION);		// by default.
 	x = 0;
 	y = 0;
 }
@@ -16,7 +16,7 @@ PaneSplitter::~PaneSplitter()
 
 void PaneSplitter::AddChildDock(DockableCtrl& dock)
 {
-	Splitter::Add((Ctrl &)dock);
+	Splitter::Add((Ctrl &)dock.SizePos());
 	ReposChilds();
 }
 
@@ -24,7 +24,7 @@ void PaneSplitter::AddChildDock(DockableCtrl& dock, int position)
 {
 	int count = GetCount();
 	if(!HasChild() || position > count) AddChildDock(dock);
-	else AddChildBefore((Ctrl*) &dock, (Ctrl *) GetChildAt(position)); 	
+	else AddChildBefore((Ctrl*) &dock, (Ctrl *) GetChildAt(position));
 	ReposChilds();
 }
 
@@ -55,6 +55,7 @@ void PaneSplitter::ReposChilds()
 	ctrl->Posit(i);
 	while(ctrl = (DockableCtrl*) ctrl->GetNext())
 		ctrl->Posit(++i);
+	if(IsOpen()) Layout();
 }
 
 DockableCtrl* PaneSplitter::GetChildAt(int position)
@@ -87,18 +88,16 @@ bool PaneSplitter::HasChild()
 void PaneSplitter::StartAnimation(int position)
 {	
 	if(animationctrl.IsOpen()) return;
-	animationctrl.Type(animationtype);
 	if(!HasChild() || position > GetCount()) 
-		Add(animationctrl.SizePos());
+		Splitter::Add(animationctrl.SizePos());
 	else 
 		AddChildBefore(&animationctrl.SizePos(), (Ctrl *) GetChildAt(position));
 
 	animating = true;
 
-
 	if(animationtype == TABANIMATION) 
 	{
-		Ctrl* ctrl = GetFirstChild();
+		Ctrl* ctrl = GetChildAt(GetZoom() + 1);
 		if(ctrl)
 		{
 			const DockCtrlChStyle::Style& s = DockCtrlChStyle::StyleDefault();
@@ -110,7 +109,6 @@ void PaneSplitter::StartAnimation(int position)
 			animationctrl.SetAnimImage(i);
 		}
 	}
-
 	Animate(position);
 }
 

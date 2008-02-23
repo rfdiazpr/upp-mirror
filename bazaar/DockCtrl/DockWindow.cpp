@@ -286,8 +286,8 @@ TabWindow::TabWindow()
 	previous	= -1;
 	activectrl	= NULL;
 
-	if(!tabs.IsChild()) AddFrame(tabs.SetLayout(CustomFrame::LAYOUT_BOTTOM));
-	if(!pane.IsChild()) Add(pane.SizePos());
+	AddFrame(tabs.SetLayout(CustomFrame::LAYOUT_BOTTOM));
+	Add(pane.SizePos());
 	
 	pane.SetAnimationType(PaneSplitter::TABANIMATION);
 	
@@ -482,10 +482,12 @@ void TabWindow::OnShutWindow()
 
 void TabWindow::StartTabAnimation()
 {
+	String title = t_("Tabbed Window");
 	previous = GetActiveTab();
 	GetBase().RefreshWidgetLayout();
 	pane.StartAnimation(pane.GetCount() + 1);
-	tabs.Add(t_("Tabbed Window"), true);
+	tabs.Add(title, true);
+	SetLabel(title);
 	pane.Zoom(GetActiveTab());
 }
 
@@ -496,6 +498,9 @@ void TabWindow::StopTabAnimation()
 	if(!RemoveTabWindow())
 	{
 		SetActive(previous);
+		SetLabel(GetTabs()
+				.GetTabs()
+				.At(GetActiveTab()).dock->GetLabel());
 		return;
 	}
 	position = -1;
@@ -633,6 +638,10 @@ void TabWindow::RefreshTabWindowLabel(DockableCtrl& ctrl)
 		GetTabs().ReposTabs();
 		RefreshLayoutDeep();
 	}
+}
+void TabWindow::Paint(Draw& d)
+{
+	TopWindow::Paint(d);
 }
 
 

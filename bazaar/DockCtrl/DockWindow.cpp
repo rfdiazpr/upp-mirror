@@ -162,16 +162,18 @@ void DockWindow::EventProc(XWindow& w, XEvent *event)
 {
 	if (IsOpen()) {
 		switch(event->type) {
-		case ConfigureNotify:{
+		case ConfigureNotify:
+		{
 			XConfigureEvent& e = event->xconfigure;
 			if (Point(e.x, e.y) != GetScreenRect().TopLeft()) 
 			{
 				Dragging(true);
 				SetDropTarget(DOCK_NONE, GetDropState());
-				GetBase().DoDragAndDrop(*this, GetMousePos(), CtrlGetSize());
+				GetBase().DoDragAndDrop(*this, GetMousePos(), GetCtrlSize());
 				break;
 			}
 			break;
+		}
 		case FocusIn:
 			XFocusChangeEvent &e = event->xfocus;
 			if (e.mode == NotifyUngrab) 
@@ -249,7 +251,7 @@ void DockWindow::DragBar::Paint(Draw& d)
 
 
 	(GUI_GlobalStyle() >= GUISTYLE_XP) && (style != &DockCtrlChStyle::StyleClassic()) ? 
-	// See CtrlImgs for proper rectangle value.
+	// See CtrlsImg for proper rectangle value.
 	d.DrawImage(GetRect(), imgs, Rect(4, 1, 2, 20)) : d.DrawRect(GetSize(), SColorFace());
 
 	if(!img.IsNullInstance())

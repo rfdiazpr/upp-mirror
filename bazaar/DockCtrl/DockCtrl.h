@@ -91,8 +91,10 @@ static Image AlphaHighlight(const Image &img, int alpha)
 	ImageDraw draw(img.GetSize());
 	draw.Alpha().DrawRect(img.GetSize(), Color(alpha, alpha, alpha));
 	draw.DrawImage(0, 0, img);
+	// MingW (5.1.3) fix - Damn, I hate that ever-complaining compiler.
+	Image dimg = draw;
 	// Is there a better way to set hotspots than this?
-	ImageBuffer ib((Image)draw);
+	ImageBuffer ib(dimg);
 	ib.SetHotSpot(Point(1, 1));
 	ib.Set2ndSpot(Point(3, 3));
 	return ib;
@@ -492,9 +494,9 @@ protected:
 //===============================================
 	
 protected:
-	DockableCtrl& AddBarCtrl(CtrlFrame& barctrl)		{ AddFrame(barctrl);  haschildbar = TRUE; return *this; }
-	void AddChildBarSize(int width, int height)			{ childsize.cx += width; childsize.cy += height; }
-	void SubChildBarSize(int width, int height)			{ childsize.cx -= width; childsize.cy -= height; }
+	DockableCtrl& AddBarCtrl(CtrlFrame& barctrl)		{ AddFrame(barctrl);  haschildbar = true; return *this; }
+	void AddChildBarSize(int width, int height)			{ childsize.cx += width; childsize.cy += height; }			//TODO: remove this junk code.
+	void SubChildBarSize(int width, int height)			{ childsize.cx -= width; childsize.cy -= height; }			//
 	virtual void HideDragBar() 							{ hasdragbar = false;		}
 	virtual void ShowDragBar() 							{ hasdragbar = true; 		}
 	bool HasChildBar() const							{ return haschildbar; 		}		
@@ -562,7 +564,7 @@ protected:
 #if defined(PLATFORM_WIN32)
 	virtual LRESULT  WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 #elif defined(PLATFORM_X11)
-	virtual void EventProc(XWindow& w, XEvent *event)
+	virtual void EventProc(XWindow& w, XEvent *event);
 #endif
 	
 private: 

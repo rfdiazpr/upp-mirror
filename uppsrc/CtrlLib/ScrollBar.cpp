@@ -635,7 +635,9 @@ void SizeGrip::LeftDown(Point p, dword flags)
 		m.data.l[0] = p.x;
 		m.data.l[1] = p.y;
 		m.data.l[2] = 4;
-		XSendEvent(Xdisplay, Xroot, 0, (SubstructureNotifyMask|SubstructureRedirectMask),
+  		m.data.l[3] = Button1;
+  		m.data.l[4] = 1;
+  		XSendEvent(Xdisplay, Xroot, 0, (SubstructureNotifyMask|SubstructureRedirectMask),
 		           (XEvent*)&m);
 	}
 #endif

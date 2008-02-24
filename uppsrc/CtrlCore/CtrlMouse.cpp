@@ -399,8 +399,10 @@ void    Ctrl::DoCursorShape() {
 		Image m = CursorOverride();
 		if(IsNull(m))
 			m = mouseCtrl->MEvent0(CURSORIMAGE, mousepos, 0);
-		mouseCtrl->GetTopCtrl()->SetMouseCursor(m);
+		SetMouseCursor(m);
 	}
+	else
+		SetMouseCursor(Image::Arrow());
 }
 
 void    Ctrl::CheckMouseCtrl() {
@@ -599,7 +601,25 @@ Image Ctrl::OverrideCursor(const Image& m)
 	Image om = CursorOverride();
 	CursorOverride() = m;
 	DoCursorShape();
+	if(!mouseCtrl)
+		SetMouseCursor(IsNull(m) ? Image::Arrow() : m);
 	return om;
+}
+
+void WaitCursor::Show() {
+	if(flag)
+		prev = Ctrl::OverrideCursor(Image::Wait());
+	flag = false;
+}
+
+WaitCursor::WaitCursor(bool show) {
+	flag = true;
+	if(show) Show();
+}
+
+WaitCursor::~WaitCursor() {
+	if(!flag)
+		Ctrl::OverrideCursor(prev);
 }
 
 END_UPP_NAMESPACE

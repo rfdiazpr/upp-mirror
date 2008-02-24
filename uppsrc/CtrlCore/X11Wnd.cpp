@@ -189,8 +189,10 @@ void Ctrl::ProcessEvent(XEvent *event)
 		LLOG("Property notify " << XAtomName(event->xproperty.atom)
 		     << " " << (void *)event->xany.window);
 		for(int i = 0; i < Xwindow().GetCount(); i++) {
-			Ctrl *q = Xwindow()[i].ctrl;
-			if(q) q->Refresh();
+			if(Xwindow().GetKey(i)) {
+				Ctrl *q = Xwindow()[i].ctrl;
+				if(q) q->Refresh();
+			}
 		}
 	}
 	if(event->type == SelectionRequest &&
@@ -628,8 +630,7 @@ bool Ctrl::ReleaseWndCapture()
 	return false;
 }
 
-static bool s_waitcursor;
-
+/*
 void Ctrl::SetMouseCursor(const Image& image)
 {
 	if(!top) return;
@@ -653,21 +654,24 @@ void Ctrl::SetMouseCursor(const Image& image)
 		XFlush(Xdisplay);
 	}
 }
+*/
 
-void WaitCursor::Show() {
-	if(s_waitcursor) return;
-	s_waitcursor = true;
-	Ctrl::DoCursorShape(); //TODO - FIXIMAGE
-}
-
-WaitCursor::WaitCursor(bool show) {
-	if(show) Show();
-}
-
-WaitCursor::~WaitCursor() {
-	if(s_waitcursor) {
-		s_waitcursor = false;
-		Ctrl::DoCursorShape();
+void Ctrl::SetMouseCursor(const Image& image)
+{
+	static Image img;
+	static Cursor shc;
+	if(img.GetSerialId() != image.GetSerialId()) {
+		img = image;
+		Cursor hc = X11Cursor(IsNull(img) ? Image::Arrow() : img);
+		for(int i = 0; i < Xwindow().GetCount(); i++) {
+			Window wnd = Xwindow().GetKey(i);
+			if(wnd)
+				XDefineCursor(Xdisplay, wnd, hc);
+		}
+		if(shc)
+			XFreeCursor(Xdisplay, shc);
+		shc = hc;
+		XFlush(Xdisplay);
 	}
 }
 

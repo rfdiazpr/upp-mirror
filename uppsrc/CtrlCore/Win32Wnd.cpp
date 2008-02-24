@@ -1053,23 +1053,6 @@ Rect Ctrl::GetDefaultWindowRect() {
 #endif
 }
 
-void WaitCursor::Show() {
-	if(!prev)
-		prev = ::SetCursor(LoadCursor(NULL, IDC_WAIT));
-}
-
-WaitCursor::WaitCursor(bool show) {
-	prev = NULL;
-	if(show) Show();
-}
-
-WaitCursor::~WaitCursor() {
-	if(prev) {
-		::SetCursor(prev);
-		prev = NULL;
-	}
-}
-
 ViewDraw::ViewDraw(Ctrl *ctrl)
 {
 	Ctrl *top = ctrl->GetTopCtrl();

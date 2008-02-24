@@ -7,7 +7,7 @@ using namespace astyle;
 class ASStreamIterator : public ASSourceIterator
 {
 	protected:
-	
+
 		enum EolMode { crlf, lf, cr, lfcr } ;
 		WString const &src;
 		int p;
@@ -18,9 +18,9 @@ class ASStreamIterator : public ASSourceIterator
 		virtual ~ASStreamIterator() {}
 		virtual bool hasMoreLines() const;
 		virtual WString nextLine();
-		
+
 		WString getEol();
-				
+
 }; // END Class ASStreamIterator
 
 // Constructor Class ASStreamIterator
@@ -28,10 +28,10 @@ ASStreamIterator::ASStreamIterator(WString const &Src) : ASSourceIterator(), src
 {
 	// initializes buffer pointer
 	p = 0;
-	
+
 	// initializes Eol Mode
 	eolMode = crlf;
-	
+
 } // END Constructor Class ASStreamIterator
 
 
@@ -48,13 +48,13 @@ WString ASStreamIterator::getEol()
 		default:
 			return "\n\r";
 	}
-	
+
 } // END ASStreamIterator::getEol()
 
 bool ASStreamIterator::hasMoreLines() const
 {
 	return src[p] != 0;
-	
+
 } // END ASStreamIterator::hasMoreLines()
 
 WString ASStreamIterator::nextLine()
@@ -87,7 +87,7 @@ WString ASStreamIterator::nextLine()
 	p = p2;
 
 	return line;
-	
+
 } // END ASStreamIterator::nextLine()
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -102,14 +102,14 @@ WString Ide::FormatCodeString(WString const &Src, ASFormatter &Formatter)
 
 	// Initializes the formatter to work on selected stream
 	Formatter.init(&streamIterator);
-	
+
 	// Processes all text in source file and put them in output file
 	while (Formatter.hasMoreLines())
 		Dest << Formatter.nextLine() << streamIterator.getEol();
-	
+
 	// returns output string
 	return Dest;
-	
+
 } // END Ide::FormatCodeString()
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -124,13 +124,13 @@ void Ide::FormatCode()
 		Src = editor.GetSelectionW();
 	else
 	 	Src = editor.GetW();
-	
+
 	// Instantiate the formatter object
 	ASFormatter Formatter;
-	
+
 	// Sets up the formatter for C++ formatting
 	Formatter.setCStyle();
-	
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Sets up astyle options
 	Formatter.setBracketIndent(astyle_BracketIndent);
@@ -175,7 +175,7 @@ void Ide::FormatCode()
 	Formatter.setTabSpaceConversionMode(astyle_TabSpaceConversionMode);
 	Formatter.setTabIndentation(editortabsize, indent_spaces ? false : true);
 	Formatter.setSpaceIndentation(indent_spaces ? indent_amount : editortabsize);
-	
+
 	WString Dest = FormatCodeString(Src, Formatter);
 
 	editor.NextUndo();

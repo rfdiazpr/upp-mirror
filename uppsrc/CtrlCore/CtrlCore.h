@@ -575,10 +575,7 @@ private:
 	bool HasWndCapture() const;
 	bool ReleaseWndCapture();
 
-#ifdef PLATFORM_WIN32
-	static
-#endif
-	void SetMouseCursor(const Image& m);
+	static void SetMouseCursor(const Image& m);
 
 	static void DoDeactivate(Ptr<Ctrl> pfocusCtrl, Ptr<Ctrl> nfocusCtrl);
 	static void DoKillFocus(Ptr<Ctrl> pfocusCtrl, Ptr<Ctrl> nfocusCtrl);
@@ -1585,10 +1582,9 @@ public:
 };
 
 class WaitCursor {
-#ifdef PLATFORM_WIN32
-protected:
-	HCURSOR prev;
-#endif
+	Image   prev;
+	bool    flag;
+
 public:
 	void    Show();
 

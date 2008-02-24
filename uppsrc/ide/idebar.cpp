@@ -96,6 +96,8 @@ void Ide::EditSpecial(Bar& menu)
 	    .Help("Transpose characters");
 	menu.Add(AK_COPYWORD, THISBACK(CopyWord))
 	    .Help("Copy the current identifier to the clipboard");
+	menu.Add(AK_FORMATCODE, THISBACK(FormatCode))
+		.Help("Reformat code in editor");
 }
 
 void Ide::Edit(Bar& menu) {
@@ -138,13 +140,6 @@ void Ide::Edit(Bar& menu) {
 			.Help("Convert leading blanks on each line to tabs");
 		menu.Add(AK_TABSTOSPACES, THISBACK(EditMakeSpaces))
 			.Help("Convert all tabs to spaces");
-
-// 2008_01_27 - mdelfede -- added AStyle code formatter -- START
-		menu.MenuSeparator();
-
-		menu.Add(AK_FORMATCODE, THISBACK(FormatCode))
-			.Help("Reformat code in editor");
-// 2008_01_27 - mdelfede -- added AStyle code formatter -- END
 	}
 
 	if(editor.GetLineCount() && editor.GetUtf8Line(0) == "$uvs: PENDING CONFLICT") {

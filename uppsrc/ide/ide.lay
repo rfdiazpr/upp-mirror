@@ -522,3 +522,4 @@ LAYOUT(TppLayout, 148, 284)
 	ITEM(Button, ok, SetLabel(t_("OK")).LeftPosZ(8, 64).TopPosZ(252, 24))
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).LeftPosZ(76, 64).TopPosZ(252, 24))
 END_LAYOUT
+

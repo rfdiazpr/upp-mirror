@@ -190,10 +190,16 @@ Size ParentCtrl::GetStdSize() const
 	return GetMinSize();
 }
 
+Size ParentCtrl::GetMinSize() const
+{
+	return IsNull(minsize) ? Ctrl::GetMinSize() : minsize;
+}
+
 ParentCtrl::ParentCtrl()
 {
 	NoWantFocus();
 	Transparent();
+	minsize = Null;
 }
 
 StaticRect& StaticRect::Background(const Value& chvalue)

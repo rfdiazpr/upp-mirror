@@ -176,7 +176,7 @@ void Ide::ReadHlStyles(ArrayCtrl& hlstyle)
 
 class AStyleSetupDialog : public WithSetupAstyleLayout<ParentCtrl> {
 	Ide *ide;
-
+	
 	typedef AStyleSetupDialog CLASSNAME;
 
 public:
@@ -188,7 +188,7 @@ public:
 AStyleSetupDialog::AStyleSetupDialog(Ide *_ide)
 {
 	ide = _ide;
-
+	
 	BracketFormatMode.Add(astyle::NONE_MODE, "none");
 	BracketFormatMode.Add(astyle::ATTACH_MODE, "attach");
 	BracketFormatMode.Add(astyle::BREAK_MODE, "break");
@@ -196,7 +196,7 @@ AStyleSetupDialog::AStyleSetupDialog(Ide *_ide)
 	ParensPaddingMode.Add(astyle::PAD_INSIDE, "pad parenthesis inside with space");
 	ParensPaddingMode.Add(astyle::PAD_OUTSIDE, "pad parenthesis outside with space");
 	ParensPaddingMode.Add(astyle::PAD_BOTH, "pad both parenthesis sides with spaces");
-
+	
 	Test <<= THISBACK(AstyleTest);
 	Defaults << THISBACK(UppDefaults);
 
@@ -205,7 +205,7 @@ AStyleSetupDialog::AStyleSetupDialog(Ide *_ide)
 void AStyleSetupDialog::AstyleTest()
 {
 	astyle::ASFormatter Formatter;
-
+	
 	// sets up parameters from astyle dialog
 	Formatter.setBracketIndent(BracketIndent);
 	Formatter.setNamespaceIndent(NamespaceIndent);
@@ -248,7 +248,7 @@ void AStyleSetupDialog::AstyleTest()
 	Formatter.setTabSpaceConversionMode(TabSpaceConversionMode);
 	Formatter.setTabIndentation(ide->editortabsize, ide->indent_spaces ? false : true);
 	Formatter.setSpaceIndentation(ide->indent_spaces ? ide->indent_amount : ide->editortabsize);
-
+	
 	// formats text in test box
 	TestBox.Set(ide->FormatCodeString(TestBox.GetW(), Formatter));
 }

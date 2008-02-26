@@ -631,7 +631,7 @@ private:
 		void Paint(Draw& d);
 
 	public:
-		DragBar() : _parent(0), _titlesize(0) { SetFrame(FieldFrame()); }
+		DragBar() : _parent(0), _titlesize(0, 0) { SetFrame(FieldFrame()); }
 	};
 	
 //===============================================
@@ -764,6 +764,7 @@ private:
 		Callback WhenLeave;
 		virtual void ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags); 
 		virtual void Paint(Draw& d) { Ctrl::Paint(d); }
+		PopupWindow() { BackPaint();  }
 	};
 
 	PopupWindow 	popup;

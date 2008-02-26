@@ -72,4 +72,9 @@ Recent revisions are added to the current versions logs under date/time info.
 	  correctly set the cursour to the previously active tab if the dnd is cancelled.
 	- fixed a bug in tab animation transparency effect which causes pane's with more than 2 childs to draw the animation
 	  incorrectly.  
-	- Fixed a nasty bug in AlphaHighlight() function to crash the application when compiled under MingW (5.1.3).  
+	- Fixed a nasty bug in AlphaHighlight() function to crash the application when compiled under MingW (5.1.3) (Thanks to Masu) 
+	
+2/26/2008
+	+ X11 related dnd issues fixed. DockCtrl now has full X11 docking support (Tested On KUBUNTU).
+	+ Russian translation and more accurate layout file for control panel added to the source (Thanks to Anton).
+	

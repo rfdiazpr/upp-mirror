@@ -216,7 +216,7 @@ void DockCtrl::RefreshPanel()
                     s = t_("TABBED");
                     break;
             }
-            controlpanel.list.Add(NULL, Format("%s",ctrl->GetLabel()), a, s, ctrl->Position());
+            controlpanel.list.Add(0, Format("%s",ctrl->GetLabel()), a, s, ctrl->Position());
             controlpanel.list.SetCtrl(i, 0, 
                     (panelicons.At(i))->SetImage(ctrl->GetIcon().IsNullInstance() ? 
                     DockCtrlImages::DefaultImage : ctrl->GetIcon()));

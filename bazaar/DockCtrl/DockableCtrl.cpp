@@ -26,7 +26,9 @@ DockableCtrl::DockableCtrl()
 	WhenClose		= THISBACK(OnShutWindow);
 	size.cx			= 0;
 	size.cy			= 0;
-	childsize.SetNull();	
+	
+	childsize.SetNull();
+	TopWindow::NoCenter().BackPaint();	
 }
 
 DockableCtrl::~DockableCtrl()
@@ -61,8 +63,7 @@ void DockableCtrl::Dock(int alignment, int state, int position, bool check)
 		GetBase().Detach(*this);
 	}
 	Style(alignment, state, position);
-	GetBase().Dock(*this);	
-
+	GetBase().Dock(*this);
 }
 
 void DockableCtrl::FloatEx(Rect r)
@@ -178,7 +179,7 @@ void DockableCtrl::OpenWindow(Rect& r)
 	if(HasDragBar()) HideDragBar();
 	Title(GetLabel());
 	SetRect(r);
-	Open(GetTopWindow());
+	Open();
 	Refresh();
 	Style(DOCK_NONE, STATE_SHOW, 0);
 }

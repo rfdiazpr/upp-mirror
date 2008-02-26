@@ -34,19 +34,31 @@ void AutoHideBar::ShowWindow()
 		{
 			case LAYOUT_LEFT:
 				rr.left	= r.right;
-				s.cy = r.GetHeight(); 
+				s.cy = r.GetHeight();
+#if defined(PLATFORM_X11)				
+				rr.right += 1; 
+#endif
 				break;
 			case LAYOUT_TOP:
 				rr.top = r.bottom;
 				s.cx = r.GetWidth();
+#if defined(PLATFORM_X11)
+				rr.bottom += 1;
+#endif
 				break;
 			case LAYOUT_RIGHT:
 				rr.right = r.left;
 				s.cy = r.GetHeight();
+#if defined(PLATFORM_X11)
+				rr.left -= 1;
+#endif
 				break;
 			case LAYOUT_BOTTOM:
 				rr.bottom = r.top;
 				s.cx = r.GetWidth();
+#if defined(PLATFORM_X11)
+				rr.top -= 1;
+#endif
 				break;			
 				
 		}

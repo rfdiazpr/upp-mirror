@@ -167,9 +167,13 @@ void DockWindow::EventProc(XWindow& w, XEvent *event)
 			XConfigureEvent& e = event->xconfigure;
 			if (Point(e.x, e.y) != GetScreenRect().TopLeft()) 
 			{
-				Dragging(true);
 				SetDropTarget(DOCK_NONE, GetDropState());
-				GetBase().DoDragAndDrop(*this, GetMousePos(), GetCtrlSize());
+				if(!IsDragged());
+				{	
+					Dragging(true);
+					GetBase().DoDragAndDrop(*this, GetMousePos(), GetCtrlSize());
+					SetFocus();
+				}
 				break;
 			}
 			break;
@@ -179,7 +183,6 @@ void DockWindow::EventProc(XWindow& w, XEvent *event)
 			if (e.mode == NotifyUngrab) 
 			{
 				Dock(GetDropTarget(), GetDropState(), Position());
-				Refresh();
 				SetDropTarget();
 				Dragging(false);
 				return;
@@ -248,18 +251,15 @@ void DockWindow::DragBar::Paint(Draw& d)
 	ImageDraw skin(sz.cx, sz.cy);
 	ChPaint(skin, 0, 0, GetSize().cx, GetSize().cy, style->barbackground[0]);
 	Image imgs = skin;
-
-
 	(GUI_GlobalStyle() >= GUISTYLE_XP) && (style != &DockCtrlChStyle::StyleClassic()) ? 
 	// See CtrlsImg for proper rectangle value.
-	d.DrawImage(GetRect(), imgs, Rect(4, 1, 2, 20)) : d.DrawRect(GetSize(), SColorFace());
+	d.DrawImage(GetRect(), imgs, Rect(4, 4, 2, 14)) : d.DrawRect(GetSize(), SColorFace());
 
 	if(!img.IsNullInstance())
 	{
 		hasicon = true;
 		d.DrawImage(BAR_MARGIN, GetHeight() / img.GetSize().cy, style->barheight - 8, style->barheight - 8, img);
 	}
-
 	d.DrawText(BAR_MARGIN + (BAR_FILEICON + BAR_SPACEICON) * int(hasicon), GetHeight() / 12, GetDock().GetLabel(), style->font);
 }
 
@@ -645,5 +645,3 @@ void TabWindow::Paint(Draw& d)
 {
 	TopWindow::Paint(d);
 }
-
-

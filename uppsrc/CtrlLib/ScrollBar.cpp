@@ -645,7 +645,7 @@ void SizeGrip::LeftDown(Point p, dword flags)
 	}
 #endif
 }
-
+ 
 void ScrollBars::Scroll() {
 	WhenScroll();
 }

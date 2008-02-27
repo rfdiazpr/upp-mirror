@@ -56,6 +56,7 @@ struct DrawLabel {
 
 	int       accesskey;
 
+	Size      GetSize(int txtcx, Size sz1, int lspc, Size sz2, int rspc) const;
 	Size      GetSize(int txtcx = INT_MAX) const;
 	Size      Paint(Draw& w, const Rect& r, bool visibleaccesskey = true) const;
 	Size      Paint(Draw& w, int x, int y, int cx, int cy, bool visibleaccesskey = true) const;

@@ -289,16 +289,19 @@ String SelectPackageDlg::Run(String startwith)
 		SyncBase(GetVarsName());
 	else
 		OnBase();
+	String bkvar = GetVarsName();
 	if(finished)
 		return GetCurrentName();
 	alist.FindSetCursor(startwith);
 	clist.FindSetCursor(startwith);
 	ActiveFocus(alist.IsShown() ? (Ctrl&)alist : (Ctrl&)clist);
-	switch(TopWindow::Run())
-	{
+	switch(TopWindow::Run()) {
 	case IDOK:  return GetCurrentName();
 	case IDYES: return selected;
-	default:    return Null;
+	default:
+		LoadVars(bkvar);
+		SyncBase(GetVarsName());
+		return Null;
 	}
 }
 

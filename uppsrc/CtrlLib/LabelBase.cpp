@@ -158,9 +158,12 @@ DrawLabel::DrawLabel()
 
 Size DrawLabel::GetSize(int txtcx) const
 {
+	return GetSize(txtcx, limg.GetSize(), lspc, rimg.GetSize(), rspc);
+}
+
+Size DrawLabel::GetSize(int txtcx, Size sz1, int lspc, Size sz2, int rspc) const
+{
 	Size isz(0, 0);
-	Size sz1 = limg.GetSize();
-	Size sz2 = rimg.GetSize();
 	Size txtsz = *text ? GetSmartTextSize(text, font, txtcx) : paintrect.GetStdSize();
 
 	if(!IsNull(lspc)) {
@@ -201,11 +204,21 @@ Image DisabledImage(const Image& img, bool dis)
 
 Size DrawLabel::Paint(Draw& w, const Rect& r, bool visibleaccesskey) const
 {
+	int lspc = this->lspc;
+	int rspc = this->rspc;
 	Size sz1 = limg.GetSize();
 	Size sz2 = rimg.GetSize();
 	int txtcx = r.GetWidth() - sz1.cx - Nvl(lspc, 0) - sz2.cx - Nvl(rspc, 0);
 	Size txtsz = *text ? GetSmartTextSize(text, font, txtcx) : paintrect.GetStdSize();
-	Size isz = GetSize(txtcx);
+	if(txtsz.cx + sz1.cx + sz2.cx + Nvl(lspc, 0) + Nvl(rspc, 0) > r.GetWidth()) {
+		sz2.cx = 0;
+		rspc = 0;
+	}
+	if(txtsz.cx + sz1.cx + sz2.cx + Nvl(lspc, 0) + Nvl(rspc, 0) > r.GetWidth()) {
+		sz1.cx = 0;
+		lspc = 0;
+	}
+	Size isz = GetSize(txtcx, sz1, lspc, sz2, rspc);
 	Point p, ip;
 	if(align == ALIGN_LEFT)
 		p.x = r.left;
@@ -236,17 +249,19 @@ Size DrawLabel::Paint(Draw& w, const Rect& r, bool visibleaccesskey) const
 	}
 	int iy = push + (r.top + r.bottom - sz1.cy) / 2;
 
-	if(IsNull(lcolor))
-		w.DrawImage(ix, iy, DisabledImage(limg, disabled));
-	else
-		w.DrawImage(ix, iy, limg, lcolor);
+	if(sz1.cx)
+		if(IsNull(lcolor))
+			w.DrawImage(ix, iy, DisabledImage(limg, disabled));
+		else
+			w.DrawImage(ix, iy, limg, lcolor);
 
 	iy = push + (r.top + r.bottom - sz2.cy) / 2;
 	ix = (IsNull(rspc) ? r.right - sz2.cx : p.x + txtsz.cx + rspc) + push;
-	if(IsNull(rcolor))
-		w.DrawImage(ix, iy, DisabledImage(rimg, disabled));
-	else
-		w.DrawImage(ix, iy, rimg, rcolor);
+	if(sz2.cx)
+		if(IsNull(rcolor))
+			w.DrawImage(ix, iy, DisabledImage(rimg, disabled));
+		else
+			w.DrawImage(ix, iy, rimg, rcolor);
 	paintrect.Paint(w, p.x + push, p.y + push, txtsz.cx, isz.cy, color, Null);
 	if(*text) {
 		if(disabled)

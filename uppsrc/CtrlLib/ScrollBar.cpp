@@ -630,7 +630,7 @@ void SizeGrip::LeftDown(Point p, dword flags)
 		XClientMessageEvent m;
 		m.type = ClientMessage;
 		m.serial = 0;
-		m.send_event = true;
+		m.send_event = XTrue;
 		m.window = q->GetWindow();
 		m.message_type = XAtom("_NET_WM_MOVERESIZE");
 		m.format = 32;
@@ -645,7 +645,7 @@ void SizeGrip::LeftDown(Point p, dword flags)
 	}
 #endif
 }
- 
+
 void ScrollBars::Scroll() {
 	WhenScroll();
 }

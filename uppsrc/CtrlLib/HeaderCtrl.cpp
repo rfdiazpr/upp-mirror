@@ -71,7 +71,7 @@ void HeaderCtrl::Column::Paint(bool& first, Draw& w,
 		q = CTRL_PRESSED;
 	if(disabled)
 		q = CTRL_DISABLED;
-	ChPaint(w, x, y, cx, cy, style->look[q]);
+	ChPaint(w, x, y, cx, cy, IsNull(paper) ? style->look[q] : paper.operator Value());
 	x += margin;
 	cx -= 2 * margin;
 	w.Clip(x + 2, y, cx - 4, cy);

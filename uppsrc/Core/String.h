@@ -130,6 +130,11 @@ class String0 : Moveable<String0> {
 	enum { SMALL, MEDIUM = 31 };
 	enum { KIND = 14, SLEN = 15, LLEN = 2 };
 
+#if defined(_DEBUG) && defined(COMPILER_GCC)
+	int          len;
+	const char  *s;
+#endif
+
 	struct Rc {
 		Atomic refcount;
 		int    alloc;
@@ -269,8 +274,10 @@ class String : public Moveable<String, AString<String0> > {
 	void Swap(String& b)                                   { String0::Swap(b); }
 
 #ifdef _DEBUG
+#ifndef COMPILER_GCC
 	int          len;
 	const char  *s;
+#endif
 	friend class String0;
 #endif
 
@@ -306,7 +313,7 @@ public:
 	friend void Swap(String& a, String& b)                 { a.Swap(b); }
 
 	String(const std::string& s)                           { String0::Set(s.c_str(), (int)s.length()); }
-	operator std::string() const                           { return std::string(Begin(), End()); }
+	operator std::string()                          { return std::string(Begin(), End()); }
 };
 
 class StringBuffer : NoCopy {

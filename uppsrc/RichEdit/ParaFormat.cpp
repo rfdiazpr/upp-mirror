@@ -250,7 +250,7 @@ ParaFormating::ParaFormating()
 	tabs.AddColumn(t_("Tab position"), 2).Edit(tabpos).SetConvert(tabpos);
 	tabs.AddColumn(t_("Type"), 2).Edit(tabtype).SetConvert(tabtype).InsertValue(ALIGN_LEFT);
 	tabs.AddColumn(t_("Fill"), 1).Edit(tabfill).SetConvert(tabfill).InsertValue(0);
-	tabs.ColumnWidths("71 101 98");
+	tabs.ColumnWidths("103 89 78");
 	tabs.Appending().Removing().NoAskRemove();
 	tabs.WhenAcceptEdit = tabs.WhenArrayAction = THISBACK(SetMod);
 	linespacing.Add(0, "1.0");

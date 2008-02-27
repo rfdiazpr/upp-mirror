@@ -867,7 +867,7 @@ void FileSel::Update() {
 			}
 		}
 		filename = "  " + s;
-		if(length)
+		if(length >= 0)
 			filesize = FormatFileSize(length);
 	}
 	FileUpdate();

@@ -7,7 +7,7 @@ Size  LNGCtrl::GetMinSize() const
 {
 	int c = EditField::GetStdHeight();
 	int d = 9 * c / 4;
-	return Size(2 * d + 2, c);
+	return Size(2 * d + 2, hi.GetMinSize().cy);
 }
 
 Value LNGCtrl::GetData() const
@@ -62,8 +62,8 @@ void LNGCtrl::Lo()
 LNGCtrl::LNGCtrl() {
 	int c = EditField::GetStdHeight();
 	int d = 9 * c / 4;
-	Add(hi.LeftPos(0, d).TopPos(0, c));
-	Add(lo.LeftPos(d + 2, d).TopPos(0, c));
+	Add(hi.LeftPos(0, d).VSizePos());
+	Add(lo.LeftPos(d + 2, d).VSizePos());
 
 	Index<int> h;
 	for(const int *l = GetAllLanguages(); *l; l++)

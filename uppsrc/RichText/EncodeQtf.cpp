@@ -487,7 +487,7 @@ String   AsQTF(const RichText& text, byte charset, dword options)
 			qtf << "}";
 		}
 		if(lang && !(options & QTF_NOLANG))
-			qtf << "%" << LNGAsText(lang);
+			qtf << "%" << LNGAsText(SetLNGCharset(lang, CHARSET_DEFAULT));
 		qtf << " ";
 		if(crlf)
 			qtf << "\r\n";

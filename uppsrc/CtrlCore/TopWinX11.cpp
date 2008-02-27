@@ -87,7 +87,7 @@ void TopWindow::SyncCaption()
 	LLOG("SyncCaption");
 	SyncTitle();
 	if(IsOpen() && GetWindow()) {
-		unsigned long wina[5];
+		unsigned long wina[6];
 		int n = 0;
 		Window w = GetWindow();
 		if(tool)
@@ -104,6 +104,8 @@ void TopWindow::SyncCaption()
 			wina[n++] = XAtom("_NET_WM_STATE_MAXIMIZED_HORZ");
 			wina[n++] = XAtom("_NET_WM_STATE_MAXIMIZED_VERT");
 		}
+		if(fullscreen)
+			wina[n++] = XAtom("_NET_WM_STATE_FULLSCREEN");
 		XChangeProperty(Xdisplay, GetWindow(), XAtom("_NET_WM_STATE"), XAtom("ATOM"), 32,
 		                PropModeReplace, (const unsigned char *)wina, n);
 		wm_hints->flags = InputHint|WindowGroupHint|StateHint;
@@ -172,47 +174,44 @@ void TopWindow::Open(Ctrl *owner)
 	UsrLogT(3, "OPEN " + Desc(this));
 	LLOG("OPEN " << Name() << " owner: " << UPP::Name(owner));
 	IgnoreMouseUp();
-	if(fullscreen) {
+	if(fullscreen)
 		SetRect(0, 0, Xwidth, Xheight);
-		PopUp(owner, false, false);
-	}
-	else {
+	else
 		CenterRect(owner);
-		LLOG("Open NextRequest " << NextRequest(Xdisplay));
-		Create(owner, false, false);
-		xminsize.cx = xmaxsize.cx = Null;
-		title2.Clear();
-		LLOG("SyncCaption");
-		SyncCaption();
-		LLOG("SyncSizeHints");
-		size_hints->flags = 0;
-		SyncSizeHints();
-		Rect r = GetRect();
-		size_hints->x = r.left;
-		size_hints->y = r.top;
-		size_hints->width = r.Width();
-		size_hints->height = r.Height();
-		size_hints->win_gravity = StaticGravity;
-		size_hints->flags |= PPosition|PSize|PWinGravity;
-		if(owner) {
-			ASSERT(owner->IsOpen());
-			LLOG("XSetTransientForHint");
-			XSetTransientForHint(Xdisplay, GetWindow(), owner->GetWindow());
-		}
-		LLOG("XSetWMNormalHints");
-		XSetWMNormalHints(Xdisplay, GetWindow(), size_hints);
-		Atom protocols[2];
-		protocols[0] = XAtom("WM_DELETE_WINDOW");
-		protocols[1] = XAtom("WM_TAKE_FOCUS");
-		LLOG("XSetWMProtocols");
-		XSetWMProtocols(Xdisplay, GetWindow(), protocols, 2);
-		String x = GetExeTitle().ToString();
-		const char *progname = ~x;
-		class_hint->res_name = (char *)progname;
-		class_hint->res_class = (char *)progname;
-		XSetClassHint(Xdisplay, GetWindow(), class_hint);
-		LLOG("WndShow(" << visible << ")");
+	LLOG("Open NextRequest " << NextRequest(Xdisplay));
+	Create(owner, false, false);
+	xminsize.cx = xmaxsize.cx = Null;
+	title2.Clear();
+	LLOG("SyncCaption");
+	SyncCaption();
+	LLOG("SyncSizeHints");
+	size_hints->flags = 0;
+	SyncSizeHints();
+	Rect r = GetRect();
+	size_hints->x = r.left;
+	size_hints->y = r.top;
+	size_hints->width = r.Width();
+	size_hints->height = r.Height();
+	size_hints->win_gravity = StaticGravity;
+	size_hints->flags |= PPosition|PSize|PWinGravity;
+	if(owner) {
+		ASSERT(owner->IsOpen());
+		LLOG("XSetTransientForHint");
+		XSetTransientForHint(Xdisplay, GetWindow(), owner->GetWindow());
 	}
+	LLOG("XSetWMNormalHints");
+	XSetWMNormalHints(Xdisplay, GetWindow(), size_hints);
+	Atom protocols[2];
+	protocols[0] = XAtom("WM_DELETE_WINDOW");
+	protocols[1] = XAtom("WM_TAKE_FOCUS");
+	LLOG("XSetWMProtocols");
+	XSetWMProtocols(Xdisplay, GetWindow(), protocols, 2);
+	String x = GetExeTitle().ToString();
+	const char *progname = ~x;
+	class_hint->res_name = (char *)progname;
+	class_hint->res_class = (char *)progname;
+	XSetClassHint(Xdisplay, GetWindow(), class_hint);
+	LLOG("WndShow(" << visible << ")");
 	WndShow(visible);
 	if(visible) {
 		XEvent e;

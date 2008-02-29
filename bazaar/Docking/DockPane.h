@@ -54,6 +54,8 @@ public:
 	int 	GetCtrlSize(int i) const				{ return NormalPos(i); }
 	void	SetCtrlSize(int i, int sz)				{ pos[i] = (i == 0) ? sz : sz + pos[i-1]; }
 	
+	void 	Clear()									{ pos.Clear(); }
+	
 	bool	IsAnimating()		 					{ return animix >= 0; }
 	void	SetAnimateRate(int ticks, int ms) 		{ animmaxticks = max(1, ticks);	animinterval = max(0, ms); }
 	int		GetAnimMaxTicks() const					{ return animmaxticks; }

@@ -182,9 +182,10 @@ void DockCont::ChildRemoved(Ctrl *child)
 				tabbar.Close(i);
 				if (tabbar.GetCount())
 					TabSelected();
-				else
-					base->CloseContainer(*this);
+				break;				
 			}
+	if (!tabbar.GetCount())
+		base->CloseContainer(*this);
 }
 
 void DockCont::ChildAdded(Ctrl *child)
@@ -648,8 +649,8 @@ DockCont::DockCont()
 
 void DockCont::Serialize(Stream& s)
 {
-	String ctrl = "CTRL";
-	String cont = "CONT";
+	int ctrl = 'D';
+	int cont = 'C';
 	const Vector<DockableCtrl *> &dcs = base->GetDockableCtrls();
 	
 	if (s.IsStoring()) {		
@@ -673,7 +674,7 @@ void DockCont::Serialize(Stream& s)
 	}
 	else {
 		int cnt;
-		String type;
+		int type;
 		
 		s / type / cnt;
 		ASSERT(type == cont);

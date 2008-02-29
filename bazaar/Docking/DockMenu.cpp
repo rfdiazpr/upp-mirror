@@ -50,7 +50,7 @@ void DockMenu::WindowListMenu(Bar &bar, String group)
 	
 	for (int i = 0; i < dcs.GetCount(); i++) {
 		if (IsNull(group) || group == dcs[i]->GetGroup())
-			bar.Add(AsString(dcs[i]->GetTitle()), THISBACK1(WindowMenu, dcs[i]));
+			bar.Add(AsString(dcs[i]->GetTitle()), dcs[i]->GetIcon(), THISBACK1(WindowMenu, dcs[i]));
 	}
 }
 

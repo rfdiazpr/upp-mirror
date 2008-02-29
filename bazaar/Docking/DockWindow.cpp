@@ -430,10 +430,6 @@ int DockWindow::GetDockAlign(const Ctrl &c) const
 	for (int i = 0; i < 4; i++) 
 		if (dockpane[i].GetParent() == p) return i;
 	return DOCK_NONE;
-/*
-	for (int i = 0; i < 4; i++)
-		if (dockpane[i].HasChildDeep(&c)) return i;
-	return DOCK_NONE;*/
 }
 
 int DockWindow::GetDockAlign(const Point &p) const
@@ -816,13 +812,11 @@ void DockWindow::DockManager()
 
 void DockWindow::DockWindowMenu(Bar &bar)
 {
-	Ctrl *c = bar.GetLastChild()->GetLastChild();
 	if (IsGrouping())
 		menu.GroupListMenu(bar);
 	else
 		menu.WindowListMenu(bar, "All");
-	if (c != bar.GetLastChild()->GetLastChild())
-		bar.Separator();
+	bar.Separator();
 	if (layouts.GetCount()) {
 		bar.Add("Layouts", callback(&menu, &DockMenu::LayoutListMenu));
 		bar.Separator();
@@ -848,27 +842,40 @@ void DockWindow::SerializeWindow(Stream &s)
 void DockWindow::SerializeLayout(Stream &s, bool withsavedlayouts)
 {
 	StopHighlight(false);
-	
+	int cnt = 0;
 	// Groups
-	ArrayMap<String, int> groups;
+	ArrayMap<String, Vector<int> > groups;
 	if (s.IsStoring())
-		for (int i = 0; i < dockers.GetCount(); i++)
-			if (!IsNull(dockers[i]->GetGroup()) && !IsEmpty(dockers[i]->GetGroup()))
-				groups.Add(dockers[i]->GetGroup(), i);
+		for (int i = 0; i < dockers.GetCount(); i++) {
+			String g = dockers[i]->GetGroup();
+			if (!g.IsEmpty()) {
+				int ix = groups.Find(g);
+				if (ix < 0) {
+					groups.Add(dockers[i]->GetGroup(), Vector<int>());
+					ix = groups.GetCount() - 1;
+				}	
+				groups[ix].Add(i);
+			}
+		}
 	s % groups;
 	if (s.IsLoading()) {
 		// Close everything
-		for (int i = 0; i < dockers.GetCount(); i++)
-			Close(*dockers[i]);
+		for (int i = 0; i < conts.GetCount(); i++)
+			CloseContainer(conts[i]);
+		for (int i = 0; i < 4; i++)
+			dockpane[i].Clear();
 		conts.Clear();
 				
 		for (int i = 0; i < dockers.GetCount(); i++)
 			dockers[i]->SetGroup(Null);
 		for (int i = 0; i < groups.GetCount(); i++) {
-			int ix = groups[i];
-			const String &s = groups.GetKey(i);
-			if (ix >= 0 && ix < dockers.GetCount())
-				dockers[ix]->SetGroup(s);
+			Vector<int> &v = groups[i];
+			const String &g = groups.GetKey(i);
+			for (int j = 0; j < v.GetCount(); j++) {
+				int ix = v[j];
+				if (ix >= 0 && ix < dockers.GetCount())
+					dockers[ix]->SetGroup(g);
+			}
 		}
 	}
 			    
@@ -877,7 +884,8 @@ void DockWindow::SerializeLayout(Stream &s, bool withsavedlayouts)
 		for (int i = 0; i < 4; i++) {
 			DockPane &pane = dockpane[i];
 			int fsz = dockframe[i].IsShown() ? dockframe[i].GetSize() : 0;
-			int cnt = pane.GetCount();
+			cnt = pane.GetCount();
+			
 			s / fsz / cnt;
 			DockCont *dc = dynamic_cast<DockCont *>(pane.GetFirstChild());
 			for (int j = 0; dc && j < pane.GetCount(); j++) {
@@ -887,7 +895,6 @@ void DockWindow::SerializeLayout(Stream &s, bool withsavedlayouts)
 			}
 		}
 		// Count Floating
-		int cnt = 0;
 		for (int i = 0; i < conts.GetCount(); i++)
 			if (conts[i].IsFloating()) cnt++;
 		// Write Floating
@@ -900,7 +907,7 @@ void DockWindow::SerializeLayout(Stream &s, bool withsavedlayouts)
 		}
 		// Write Autohidden
 		for (int i = 0; i < 4; i++) {
-			int cnt = hideframe[i].GetCount();
+			cnt = hideframe[i].GetCount();
 			s / cnt;
 			for (int j = 0; j < hideframe[i].GetCount(); j++) {
 				int ix = FindDocker(&hideframe[i].GetCtrl(j)->Get(0));
@@ -910,10 +917,10 @@ void DockWindow::SerializeLayout(Stream &s, bool withsavedlayouts)
 		}		
 	}
 	else {
-		int cnt;
 		// Read docked
 		for (int i = 0; i < 4; i++) {
 			DockPane &pane = dockpane[i];
+			cnt = pane.GetCount();
 			dockframe[i].Hide();
 			int fsz, psz;
 			s / fsz / cnt;

@@ -1,4 +1,4 @@
-description "A Window Docking framework, by James Thomas";
+description "Window Docking framework, by James Thomas";
 
 uses
 	CtrlLib,

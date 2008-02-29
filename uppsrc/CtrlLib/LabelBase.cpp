@@ -479,6 +479,7 @@ void DisplayPopup::MouseMove(Point p, dword flags)
 void DisplayPopup::Paint(Draw& w)
 {
 	Rect r = GetSize();
+	w.DrawRect(r, SColorPaper);
 	display->PaintBackground(w, r, value, ink, paper, style);
 	r.left += margin;
 	display->Paint(w, r, value, ink, paper, style);

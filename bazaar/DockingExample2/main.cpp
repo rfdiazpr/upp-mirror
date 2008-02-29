@@ -100,8 +100,8 @@ void DockingExample::DockInit()
 	// Because we are going to use Serialization and will always have a Layout available we
 	//	don't need to Dock/Float windows manually. Instead we just Register them. 
 	// First our windows. These don't need size hints as they were set already by CtrlLayout
-	Register(toolwindow);
-	Register(optionswindow);
+	Register(toolwindow.Icon(CtrlImg::copy()));
+	Register(optionswindow.Icon(CtrlImg::paste()));
 	// And now our data ctrls
 	Register(Dockable(arrayctrl1, "ArrayCtrl 1").SizeHint(Size(300, 200)));
 	Register(Dockable(treectrl1,  "TreeCtrl 1").SizeHint(Size(300, 200)));

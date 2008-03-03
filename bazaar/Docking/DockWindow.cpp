@@ -907,6 +907,7 @@ void DockWindow::SerializeLayout(Stream &s, bool withsavedlayouts)
 				dc = dynamic_cast<DockCont *>(dc->GetNext());
 			}
 		}
+		cnt = 0;
 		// Count Floating
 		for (int i = 0; i < conts.GetCount(); i++)
 			if (conts[i].IsFloating()) cnt++;

@@ -140,6 +140,7 @@ String RichObjectImageMaker::Key() const
 Image RichObjectImageMaker::Make() const
 {
 	ImageDraw iw(sz);
+	iw.DrawRect(sz, SColorPaper());
 	object.Paint(iw, sz);
 	return iw;
 }
@@ -241,7 +242,6 @@ void RichPara::Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& 
 								im.object = o;
 								im.sz = sz;
 								draw.DrawImage(0, 0, MakeImagePaintOnly(im));
-//								draw.DrawImage(0, 0, MakeImage(im));
 							}
 							else
 								o.Paint(draw, sz);

@@ -77,7 +77,7 @@ int CPU_Cores()
 #else
 		DWORD pa, sa;
 		GetProcessAffinityMask(GetCurrentProcess(), &pa, &sa);
-		for(int i = 0; i < 64; i++)
+		for(int i = 0; i < 32; i++)
 			n += !!(sa & (1 << i));
 #endif
 #elif defined(PLATFORM_POSIX)

@@ -210,13 +210,15 @@ Size DrawLabel::Paint(Draw& w, const Rect& r, bool visibleaccesskey) const
 	Size sz2 = rimg.GetSize();
 	int txtcx = r.GetWidth() - sz1.cx - Nvl(lspc, 0) - sz2.cx - Nvl(rspc, 0);
 	Size txtsz = *text ? GetSmartTextSize(text, font, txtcx) : paintrect.GetStdSize();
-	if(txtsz.cx + sz1.cx + sz2.cx + Nvl(lspc, 0) + Nvl(rspc, 0) > r.GetWidth()) {
-		sz2.cx = 0;
-		rspc = 0;
-	}
-	if(txtsz.cx + sz1.cx + sz2.cx + Nvl(lspc, 0) + Nvl(rspc, 0) > r.GetWidth()) {
-		sz1.cx = 0;
-		lspc = 0;
+	if(txtsz.cx) {
+		if(txtsz.cx + sz1.cx + sz2.cx + Nvl(lspc, 0) + Nvl(rspc, 0) > r.GetWidth()) {
+			sz2.cx = 0;
+			rspc = 0;
+		}
+		if(txtsz.cx + sz1.cx + sz2.cx + Nvl(lspc, 0) + Nvl(rspc, 0) > r.GetWidth()) {
+			sz1.cx = 0;
+			lspc = 0;
+		}
 	}
 	Size isz = GetSize(txtcx, sz1, lspc, sz2, rspc);
 	Point p, ip;

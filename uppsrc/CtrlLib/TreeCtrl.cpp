@@ -278,6 +278,7 @@ void   TreeCtrl::RemoveSubtree(int id)
 		cursor = item[m.parent].linei;
 	if(m.ctrl)
 		m.ctrl->Remove();
+	m.key = Null;
 	m.value = Null;
 	m.image = Null;
 	RemoveChildren(id);
@@ -631,7 +632,7 @@ Value  TreeCtrl::GetValue() const
 int    TreeCtrl::Find(Value key)
 {
 	for(int i = 0; i < item.GetCount(); i++)
-		if(Get(i) == key)
+		if(!item[i].free && Get(i) == key)
 			return i;
 	return -1;
 }

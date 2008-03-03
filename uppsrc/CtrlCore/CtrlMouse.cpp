@@ -395,14 +395,14 @@ Point Ctrl::GetMouseViewPos() const
 }
 
 void    Ctrl::DoCursorShape() {
-	if(mouseCtrl) {
-		Image m = CursorOverride();
-		if(IsNull(m))
-			m = mouseCtrl->MEvent0(CURSORIMAGE, mousepos, 0);
-		SetMouseCursor(m);
-	}
+	Image m = CursorOverride();
+	if(IsNull(m))
+		if(mouseCtrl)
+			SetMouseCursor(mouseCtrl->MEvent0(CURSORIMAGE, mousepos, 0));
+		else
+			SetMouseCursor(Image::Arrow());
 	else
-		SetMouseCursor(Image::Arrow());
+		SetMouseCursor(m);
 }
 
 void    Ctrl::CheckMouseCtrl() {

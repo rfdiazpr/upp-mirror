@@ -288,15 +288,6 @@ void Win32Look(Value& ch, int widget, int part, int state = 1, bool contentm = f
 	Win32Look(&ch, 1, widget, part, state, contentm);
 }
 
-String XpThemeInfo(LPCWSTR pszPropertyName)
-{
-	wchar theme[512], colors[512], size[512];
-	XpTheme().GetCurrentThemeName(theme, 512, colors, 512, size, 512);
-	wchar h[1024];
-	XpTheme().GetThemeDocumentationProperty(theme, pszPropertyName, h, 1000);
-	return FromUnicode(h);
-}
-
 void ChHostSkin()
 {
 	ChSysInit();
@@ -307,9 +298,7 @@ void ChHostSkin()
 		CtrlsImg::Reset();
 		EditFieldIsThin_Write(1);
 
-		bool vista_aero = IsWinVista() && XpThemeInfo(L"ThemeName") == "Aero";
-
-		if(vista_aero) {
+		if(IsWinVista()) {
 			int efp = 6;
 			for(int i = 0; i < 4; i++) {
 				int efs = i + 1;
@@ -393,7 +382,7 @@ void ChHostSkin()
 		{
 			MultiButton::Style& s = MultiButton::StyleDefault().Write();
 			s.usetrivial = true;
-			if(vista_aero) {
+			if(IsWinVista()) {
 				s.edge[0] = Null;
 				Win32Look(s.look, 4, XP_COMBOBOX, 5);
 				s.trivialborder = s.border = 0;
@@ -448,7 +437,7 @@ void ChHostSkin()
 		}
 		{
 			MenuBar::Style& s = MenuBar::StyleDefault().Write();
-			if(vista_aero) {
+			if(IsWinVista()) {
 				s.itemtext = XpColor(XP_MENU, 14 /*MENU_POPUPITEM*/, 2 /*HOT*/, 3803/*TMT_TEXTCOLOR*/);
 				Win32Look(s.item, XP_MENU, 14 /*MENU_POPUPITEM*/, 2 /*HOT*/);
 				Win32Look(s.popupiconbar, XP_MENU, 13, 1);
@@ -516,7 +505,7 @@ void ChHostSkin()
 
 			MultiButton::StyleDefault().Write().monocolor[i] = c;
 			MultiButton::StyleFrame().Write().monocolor[i] = c;
-			if(!vista_aero) {
+			if(!IsWinVista()) {
 				MultiButton::Style& s = MultiButton::StyleDefault().Write();
 				MultiButton::Style& fs = MultiButton::StyleFrame().Write();
 				Image cm = Unglyph(XpImage(XP_COMBOBOX, CP_DROPDOWNBUTTON, i + 1, Null, Size(20, 20)));

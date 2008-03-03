@@ -1,3 +1,5 @@
+ImageBuffer pick
+
 ArrayCtrl changes: http://www.ultimatepp.org/forum/index.php?t=msg&goto=14155&#msg_14155
 
 String functions

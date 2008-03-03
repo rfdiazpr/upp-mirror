@@ -276,6 +276,7 @@ public:
 	int  GetWidth() const               { return GetSize().cx; }
 	int  GetHeight() const              { return GetSize().cy; }
 
+	operator const RGBA *()             { return Image(ib); }
 	operator Image()                    { return Image(ib); }
 };
 

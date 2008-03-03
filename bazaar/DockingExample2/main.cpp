@@ -39,7 +39,7 @@ private:
 	ArrayCtrl 	arrayctrl1, arrayctrl2;
 	TreeCtrl 	treectrl1, 	treectrl2;
 	Button		button;
-	// A menu bar to hold our Windows 
+	// A menu bar to hold our windows 
 	MenuBar menu;
 	
 	
@@ -63,7 +63,7 @@ private:
 */
 DockingExample::DockingExample()
 {
-	Title("DockingExample1 : Advanced Docking");
+	Title("DockingExample1 : Advanced Docking").Sizeable(true).Zoomable(true);
 	
 	// Layout out windows
 	CtrlLayout(toolwindow, 		"Tools");
@@ -77,9 +77,9 @@ DockingExample::DockingExample()
 	//  for optionswindow only. The (int) is for the benefit of GCC
 	// You can also do this for the whole window (see DockWindow::AllowDockLeft() etc)
 	optionswindow.dockleft 		<<= THISBACK2(OnDockAllow, 	(int)DOCK_LEFT, 	&optionswindow.dockleft);		
-	optionswindow.docktop 		<<= THISBACK2(OnDockAllow, 	(int)DOCK_TOP, 	&optionswindow.docktop);		
-	optionswindow.dockright 	<<= THISBACK2(OnDockAllow, 	(int)DOCK_RIGHT, &optionswindow.dockright);		
-	optionswindow.dockbottom 	<<= THISBACK2(OnDockAllow, 	(int)DOCK_BOTTOM,&optionswindow.dockbottom);	
+	optionswindow.docktop 		<<= THISBACK2(OnDockAllow, 	(int)DOCK_TOP, 		&optionswindow.docktop);		
+	optionswindow.dockright 	<<= THISBACK2(OnDockAllow, 	(int)DOCK_RIGHT, 	&optionswindow.dockright);		
+	optionswindow.dockbottom 	<<= THISBACK2(OnDockAllow, 	(int)DOCK_BOTTOM,	&optionswindow.dockbottom);	
 	
 	// Now we put some bogus data in our controls
 	FillArray(arrayctrl1);
@@ -87,7 +87,7 @@ DockingExample::DockingExample()
 	FillArray(arrayctrl2);
 	FillTree(treectrl2);
 	// And add the User-Guide button
-	Add(button.SetLabel("User Guide").LeftPos(4, 100).TopPos(4, 23));
+	Add(button.SetLabel("User Guide").LeftPosZ(4, 100).TopPosZ(4, 23));
 	button <<= THISBACK(OnUserGuide);	
 }
 
@@ -109,7 +109,7 @@ void DockingExample::DockInit()
 	Register(Dockable(treectrl2,  "TreeCtrl 2").SizeHint(Size(300, 200)));
 
 	// Now we're ready to Serialize. The first time you run this example there won't be a data 
-	//  file, but I have included serialized copy in the .EXE to useas Default
+	//  file, but I have included serialized copy in the .EXE to use as Default
 	// Note that we use SerializeWindow, not Serialize.
 	FileIn in(GetDataFile("docklayout.dat"));
 	bool badfile = !in.IsOpen();
@@ -146,7 +146,7 @@ void DockingExample::OnDockAllow(int align, Option *ctrl)
 //  for optionswindow only.
 // You can also do this for the whole window (see DockWindow::AllowDockLeft() etc)
 {
-	optionswindow.AllowDock(align, ~(*ctrl));
+	optionswindow.AllowDock(align, !(bool)~(*ctrl));
 }
 
 

@@ -1,3 +1,5 @@
+description "Simple example of the features of the Docking package";
+
 uses
 	CtrlLib,
 	Docking;

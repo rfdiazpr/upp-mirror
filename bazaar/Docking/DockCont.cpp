@@ -104,10 +104,11 @@ void DockCont::Paint(Draw &w)
 {
 	TopWindow::Paint(w);
 	if (!IsFloating() && !IsTabbed()) {
-		DockableCtrl &dc = GetCurrent();
+		DockableCtrl *dc = GetCurrent0();
+		if (!dc) return;
 		const DockableCtrl::Style &s = *style;
 		//bool focus = HasFocusDeep() ? 1 : 0;
-		Rect r = GetView();
+		Rect r = GetSize();
 		const Rect &m = s.handle_margins;
 		Point p;
 		
@@ -127,7 +128,7 @@ void DockCont::Paint(Draw &w)
 		}
 		ChPaint(w, r, s.handle[focus]);
 		
-		Image img = dc.GetIcon();
+		Image img = dc->GetIcon();
 		if (!img.IsEmpty()) {
 			int isz = hsz;
 			if (s.handle_vert) {
@@ -148,7 +149,7 @@ void DockCont::Paint(Draw &w)
 			else
 			 	r.right = GetClipWidth(r).x - m.right;
 			w.Clip(r);
-			WString text = IsNull(dc.GetGroup()) ? dc.GetTitle() : (WString)Format("%s (%s)", dc.GetTitle(), dc.GetGroup());
+			WString text = IsNull(dc->GetGroup()) ? dc->GetTitle() : (WString)Format("%s (%s)", dc->GetTitle(), dc->GetGroup());
 			w.DrawText(p.x, p.y, s.handle_vert ? 900 : 0, text, s.title_font, s.title_ink[focus]);
 			w.End();
 		}
@@ -166,26 +167,42 @@ Point DockCont::GetClipWidth(const Rect &r) const
 void DockCont::LeftDrag(Point p, dword keyflags)
 {
 	Rect r = GetSize();
-	style->frame->FrameLayout(r);
+	if (style->frame) style->frame->FrameLayout(r);
 	if (r.Contains(p))
 		MoveBegin();
 }
 
+void DockCont::Layout()
+{
+	if (waitsync) {
+		waitsync = false;
+		if (GetCount() == 1) {
+			Value v = tabbar.Get(0);
+			if (IsDockCont(v)) {
+				DockCont *dc = ContCast(v);
+				AddFrom(*dc);
+				base->CloseContainer(*dc);
+				RefreshLayout();
+			}
+		}	
+		if (!tabbar.GetCount())
+			base->CloseContainer(*this);
+		TabSelected();
+	}
+}
+
 void DockCont::ChildRemoved(Ctrl *child)
 {
-	if (!tabbar.GetCount()) return;
+	if (child->GetParent() != this || !tabbar.GetCount()) return;
 	Ctrl *c = dynamic_cast<DockableCtrl *>(child);
 	if (!c) c = dynamic_cast<DockCont *>(child);
 	if (c)
 		for (int i = 0; i < GetCount(); i++)
 			if (c == GetCtrl(i)) {
 				tabbar.Close(i);
-				if (tabbar.GetCount())
-					TabSelected();
+				waitsync = true;
 				break;				
 			}
-	if (!tabbar.GetCount())
-		base->CloseContainer(*this);
 }
 
 void DockCont::ChildAdded(Ctrl *child)
@@ -216,15 +233,16 @@ void DockCont::TabSelected()
 {
 	int ix = tabbar.GetCursor();
 	if (ix >= 0) {
-		DockableCtrl &dc = Get(ix);
+		DockableCtrl *dc = Get0(ix);
+		if (!dc) return;
 		Ctrl *ctrl = GetCtrl(ix);
 		if (ctrl != &(base->GetHighlightCtrl())) {
 			Ctrl *first = &tabbar;
 			for (Ctrl *c = first->GetNext(); c; c = c->GetNext())
 				if (c != ctrl) c->Hide();
 		}
-		style = &dc.GetStyle();
-		Icon(dc.GetIcon()).Title(dc.GetTitle());
+		style = &dc->GetStyle();
+		Icon(dc->GetIcon()).Title(dc->GetTitle());
 		SyncSize(*ctrl, *style);
 		SyncButtons(!IsTabbed() && !IsFloating());
 		ctrl->Show();
@@ -386,15 +404,26 @@ void DockCont::TabsFloat(int ix)
 			base->Float(Get(ix));			
 }
 
+void DockCont::TabClosed(Value v)
+{
+	CtrlCast(v)->Remove();
+	if (IsDockCont(v)) base->CloseContainer(*ContCast(v)); 
+	waitsync = true;
+	Layout();
+	if (tabbar.GetCount() == 1) RefreshLayout();
+}
+
 void DockCont::AddFrom(DockCont &cont, int except)
 {
-	except = except < 0 ? cont.GetCount() : except;
+	bool all = except < 0 || except >= cont.GetCount();
 	for (int i = cont.GetCount() - 1; i >= 0; i--)
 		if (i != except) {
 			Ctrl *c = cont.GetCtrl(i);
 			c->Remove();
 			Add(*c);				
 		}
+	if (all)
+		cont.tabbar.Clear();
 }
 
 void DockCont::Clear()
@@ -606,10 +635,11 @@ bool DockCont::IsDockAllowed0(int align, const Value &v) const
 	return IsDockCont(v) ? ContCast(v)->IsDockAllowed(align, -1) : base->IsDockAllowed(align, *DockCast(v));
 }
 
-DockableCtrl & DockCont::Get(int ix) const
+DockableCtrl * DockCont::Get0(int ix) const
 { 
+	if (ix < 0 || ix > tabbar.GetCount()) return NULL;
 	Value v = tabbar.Get(ix); 
-	return IsDockCont(v) ? ContCast(v)->GetCurrent() : *DockCast(v); 
+	return IsDockCont(v) ? ContCast(v)->GetCurrent0() : DockCast(v); 
 }
 
 WString DockCont::GetTitle(bool force_count) const
@@ -624,15 +654,16 @@ DockCont::DockCont()
 	dragging = false;
 	dockstate = STATE_NONE;
 	base = NULL;
-	focus = false;	
+	focus = false;
+	waitsync = false;	
 	style = NULL;
 	usersize.cx = usersize.cy = Null;
 	BackPaint();
-	
 	ToolWindow().NoCenter().Sizeable(true).MaximizeBox(false).MinimizeBox(false);
 
 	*this << close << autohide << windowpos;
-	
+
+	AddFrame(FieldFrame());	
 	tabbar.AutoHideMin(1);
 	tabbar.WhenCursor 		= THISBACK(TabSelected);
 	tabbar.WhenDrag 		= THISBACK(TabDragged);

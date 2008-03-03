@@ -34,7 +34,7 @@ DockingExample::DockingExample()
 	Title("DockingExample1 : Simple Docking");
 		
 	// This a button so that we can open the Dock Manager
-	Add(button.SetLabel("Manager").LeftPos(4, 100).TopPos(4, 23));
+	Add(button.SetLabel("Manager").LeftPosZ(4, 100).TopPosZ(4, 23));
 	button <<= THISBACK(DockManager);
 	
 	// Now we just put some bogus data in our controls

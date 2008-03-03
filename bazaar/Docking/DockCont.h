@@ -34,6 +34,7 @@ public:
 	virtual void LeftDown(Point p, dword keyflags)		{ SetFocus(); }
 	virtual void RightDown(Point p, dword keyflags) 	{ TitleContext(); }
 	
+	virtual void Layout();
 	virtual void ChildRemoved(Ctrl *child);
 	virtual void ChildAdded(Ctrl *child);
 	virtual void ChildGotFocus() 						{ RefreshFocus(true); TopWindow::ChildGotFocus(); }
@@ -63,6 +64,7 @@ private:
 	const DockableCtrl::Style *style;
 	Size usersize;
 	bool focus:1;
+	bool waitsync:1;
 
 	// Callbacks
 	// Tabs
@@ -87,12 +89,15 @@ private:
 	void 	TabsAutoHide(int align, int ix);
 	void 	TabsAutoHide0();
 	void 	TabsFloat(int ix);
-	void	TabClosed(Value v)								{ ValueTo<DockableCtrl *>(v)->Remove(); if (tabbar.GetCount() == 1) RefreshLayout(); }
+	void	TabClosed(Value v);								
 	
 	int 	GetHandleSize(const DockableCtrl::Style &s) const;
 	Rect	GetHandleRect(const DockableCtrl::Style &s) const;
 	Rect	GetFrameRect(const DockableCtrl::Style &s) const;
 
+	DockableCtrl *Get0(int ix) const;
+	DockableCtrl *GetCurrent0() const							{ return Get0(tabbar.GetCursor()); }
+	
 	Point	GetClipWidth(const Rect &r) const;
 	void 	AddRemoveButton(Ctrl &c, bool state);
 	void	RefreshFocus(bool _focus)	{ if (focus != _focus) 	{ focus = _focus; Refresh(); } }
@@ -110,9 +115,11 @@ private:
 	Value 			ValueCast(DockableCtrl *dc) const 	{ return RawToValue<DockableCtrl *>(dc); }
 	Value 			ValueCast(DockCont *dc) const 		{ return RawToValue<DockCont *>(dc); }
 public:
+	bool quickdestroy;
+
 	void 			SetCursor(int ix)					{ tabbar.SetCursor(ix); TabSelected(); }	
 	int 			GetCursor()	const					{ return tabbar.GetCursor(); }
-	DockableCtrl &	Get(int ix) const;
+	DockableCtrl &	Get(int ix) const					{ return *Get0(ix); }
 	DockableCtrl &	GetCurrent() const					{ return Get(tabbar.GetCursor()); }
 	void 			AddFrom(DockCont &cont, int except = -1);
 	int				GetCount() const					{ return tabbar.GetCount(); }

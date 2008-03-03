@@ -92,6 +92,7 @@ void DockWindow::Close(DockableCtrl &dc)
 	DockCont *c = GetContainer(dc);
 	if (c && c->GetCount() > 1) {
 		dc.Remove();
+		c->Layout();
 		c = NULL;
 	}
 	if (c) CloseContainer(*c);
@@ -109,9 +110,13 @@ void DockWindow::DockGroup(int align, String group, int pos)
 void DockWindow::FloatGroup(String group)
 {
 	bool all = group == "All"; 	
+	Point p = GetScreenRect().TopLeft();
+	Point inc(20, 20);	
 	for (int i = 0; i < dockers.GetCount(); i++)
-		if (all || dockers[i]->GetGroup() == group)
-			Float(*dockers[i]);
+		if (all || dockers[i]->GetGroup() == group) {
+			p += inc;
+			Float(*dockers[i], p);
+		}
 }
 
 void DockWindow::AutoHideGroup(int align, String group)
@@ -159,6 +164,8 @@ void DockWindow::CloseGroup(String group)
 	for (int i = 0; i < dockers.GetCount(); i++)
 		if (all || dockers[i]->GetGroup() == group)
 			Close(*dockers[i]);
+	for (int i = 0; i < conts.GetCount(); i++)
+	conts[i].Layout();
 }
 
 /*
@@ -223,7 +230,10 @@ void DockWindow::Undock0(Ctrl &c, bool do_animate, int fsz)
 	Ctrl *p = c.GetParent();
 	if (p != &dockpane[al]) {
 		c.Remove();
-		if (p) p->RefreshLayout();
+		if (p) {
+			p->Layout();
+			p->RefreshLayout();
+		}
 	}
 	else {
 		if (dockpane[al].GetFirstChild() == dockpane[al].GetLastChild())
@@ -314,8 +324,11 @@ void DockWindow::DockAsTab(DockCont &target, DockableCtrl &dc)
 	if (c) {
 		if (c->GetCount() == 1)
 			CloseContainer(*c);
-		else
-			dc.Remove();			
+		else {
+			Ctrl *c = dc.GetParent();
+			dc.Remove();
+			c->Layout();
+		}
 	}
 	target.Add(dc);
 }

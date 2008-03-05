@@ -1015,9 +1015,11 @@ void GridCtrl::Paint(Draw &w)
 	if(fixed_width > 0 && fixed_height > 0)
 	{
 		w.Clip(0, 0, fixed_width, fixed_height);
+		dword style = chameleon ? GD::CHAMELEON : 0;
+
 		display->PaintFixed(w, 1, 1, 0, 0, fixed_width, fixed_height,
 							Value(""),
-							0, stdfont, false, false,
+							style, stdfont, false, false,
 							0, -1, 0,
 							true);
 		w.End();
@@ -1131,6 +1133,8 @@ void GridCtrl::Paint(Draw &w)
 
 					dword style = vitems[j].style;
 					if(i > 0) style &= ~GD::HIGHLIGHT;
+					if(chameleon)
+						style |= GD::CHAMELEON;
 
 					gd->PaintFixed(w, firstx, j == 0, x, y, cx, cy,
 									GetConvertedColumn(id, it.val),
@@ -1157,6 +1161,13 @@ void GridCtrl::Paint(Draw &w)
 
 		if(x < sz.cx) w.DrawRect(Rect(max(x, rc.left), max(fixed_height, rc.top), sz.cx, sz.cy), SColorPaper);
 		if(y < sz.cy) w.DrawRect(Rect(max(fixed_width, rc.left), max(y, rc.top), sz.cx, sz.cy), SColorPaper);
+
+/*
+		if(fixed_rows <= total_rows)
+		{
+			w.DrawText(
+		}
+*/
 
 		bool hasfocus = HasFocusDeep();
 
@@ -1837,7 +1848,7 @@ void GridCtrl::LeftDown(Point p, dword keyflags)
 
 	WhenLeftClick();
 
-	if(cs.IsValid() && one_click_edit) //&& IsRowEditable() ?
+	if(editing && cs.IsValid() && one_click_edit) //&& IsRowEditable() ?
 		StartEdit(true);
 	else
 		RebuildToolBar();
@@ -1982,7 +1993,8 @@ void GridCtrl::LeftDouble(Point p, dword keyflags)
 	if(!valid_cursor)
 		return;
 
-	StartEdit(true);
+	if(editing)
+		StartEdit(true);
 
 	if(!IsCtrl(curpos))
 	{
@@ -3316,6 +3328,9 @@ bool GridCtrl::UpdateSizes()
 	if(resize_row_mode > 0 && new_fixed_height >= sz.cy)
 		new_fixed_height = GridCtrl::GD_HDR_HEIGHT;
 
+	if(fixed_cols == 1 && !indicator)
+		new_fixed_width = 0;
+
 	fixed_size_changed = false;
 
 	if(new_fixed_width != fixed_width)
@@ -3388,6 +3403,9 @@ bool GridCtrl::Recalc(bool horizontal, RectItems &its, int resize_mode)
 	{
 		int cs = horizontal ? sz.cx - fixed_width
 		                    : sz.cy - fixed_height;
+
+		//int cs = horizontal ? sz.cx : sz.cy;
+
 		if(cs <= 0)
 			return false;
 
@@ -7140,6 +7158,11 @@ bool GridFind::Key(dword key, int count)
 	}
 
 	return EditString::Key(key, count);
+}
+
+Size GridFind::GetMinSize() const
+{
+	return button.GetMinSize();
 }
 
 void GridFind::Push()

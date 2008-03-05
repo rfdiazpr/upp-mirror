@@ -61,7 +61,6 @@ DropGrid::DropGrid()
 	drop.SetStyle(drop.StyleFrame());
 	drop.NoDisplay();
 	drop.AddTo(*this);
-	EnableDrop(false);
 	list_width = 0;
 	list_height = 0;
 	drop_lines = 16;
@@ -78,10 +77,11 @@ DropGrid::DropGrid()
 	drop_enter = false;
 	data_action = false;
 	Searching(true);
-	always_drop = false;
+	always_drop = true;
 	must_change = false;
 	display = this;
 	change = false;
+	EnableDrop(always_drop);
 }
 
 void DropGrid::Close()
@@ -123,7 +123,8 @@ void DropGrid::Drop()
 	Rect rs = GetScreenRect();
 	int width = rs.Width();
 	int resize_height = list.GetResizePanelHeight();
-	int height = list.GetHeight() + 4 + resize_height;
+	int list_height = max(list.GetHeight(), GridCtrl::GD_ROW_HEIGHT + GridCtrl::GD_HDR_HEIGHT * header);
+	int height = list_height + 4 + resize_height;
 	int drop_height = drop_lines * GridCtrl::GD_ROW_HEIGHT + header * GridCtrl::GD_HDR_HEIGHT + 4 + resize_height;
 	if(!display_all && height > drop_height)
 		height = drop_height;
@@ -232,6 +233,11 @@ bool DropGrid::Accept()
 		return false;
 	}
 	return true;
+}
+
+Size DropGrid::GetMinSize() const
+{
+	return drop.GetMinSize();
 }
 
 void DropGrid::Paint0(Draw &w, int lm, int rm, int x, int y, int cx, int cy, const Value &val, dword style, Color &fg, Color &bg, Font &fnt, bool found, int fs, int fe)
@@ -628,7 +634,7 @@ void DropGrid::Add(const Vector<Value> &v, int data_offset, int column_offset)
 {
 	list.AddRow();
 	list.Set(v, data_offset, column_offset);
-	EnableDrop();
+	EnableDrop(always_drop);
 }
 
 Value& DropGrid::operator() (int r, int c)
@@ -874,7 +880,7 @@ Value DropGrid::MakeValue(int r, bool columns) const
 		return v;
 	}
 	else
-		return list.Get(value_col);
+		return list.Get(r, value_col);
 }
 
 Value DropGrid::Format0(const Value& q, int rowid) const
@@ -903,7 +909,7 @@ void DropGrid::EnableDrop(bool b)
 
 GridCtrl::ItemRect& DropGrid::AddRow(int n, int size)
 {
-	EnableDrop();
+	EnableDrop(always_drop);
 	return list.AddRow(n, size);
 }
 

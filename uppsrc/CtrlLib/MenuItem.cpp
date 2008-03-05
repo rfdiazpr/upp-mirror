@@ -307,7 +307,7 @@ Size MenuItem::GetMinSize() const
 		sz2 = GetTextSize(GetKeyDesc(accel), font);
 		sz2.cx += 12;
 	}
-	Size lsz = licon.GetSize();
+	Size lsz = min(maxiconsize, licon.GetSize());
 	Size rsz = ricon.GetSize();
 	return AddFrameSize(Size(max(lsz.cx, leftgap) + sz1.cx + max(sz2.cx, (rsz.cx ? 16 : 0))
 	                         + max(rsz.cx, 16) + textgap + 10,

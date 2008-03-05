@@ -487,6 +487,7 @@ public:
 
 	virtual void GotFocus()  { drop.RefreshFrame(); }
 	virtual void LostFocus() { drop.RefreshFrame(); }
+	virtual Size GetMinSize() const { return drop.GetMinSize(); }
 
 	DateTimeCtrl& SetCalendarStyle(const Calendar::Style& style)   { cc.calendar.SetStyle(style); return *this;  }
 	DateTimeCtrl& SetClockStyle(const Clock::Style& style)         { cc.clock.SetStyle(style); return *this;  }

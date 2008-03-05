@@ -38,6 +38,7 @@ class GridFind : public EditString
 		Callback1<Bar &> WhenBar;
 
 		virtual bool Key(dword key, int count);
+		virtual Size GetMinSize() const;
 		void Push();
 
 		typedef GridFind CLASSNAME;

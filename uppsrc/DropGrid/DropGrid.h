@@ -155,6 +155,7 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 		virtual void LostFocus();
 		virtual void Serialize(Stream& s);
 		virtual bool Accept();
+		virtual Size GetMinSize() const;
 
 		void Paint0(Draw &w, int lm, int rm, int x, int y, int cx, int cy, const Value &val, dword style, Color &fg, Color &bg, Font &fnt, bool found = false, int fs = 0, int fe = 0);
 		virtual void Paint(Draw &w, int x, int y, int cx, int cy, const Value &val, dword style, Color &fg, Color &bg, Font &fnt, bool found = false, int fs = 0, int fe = 0);

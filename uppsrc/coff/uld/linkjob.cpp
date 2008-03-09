@@ -273,6 +273,8 @@ FileMapping& LinkJob::GetMapping(String filename)
 	static FileMapping dummy;
 	if(!nc->mapping.Open(filename))
 		return dummy;
+	if(!nc->mapping.Map(0, nc->mapping.GetFileSize()))
+		return dummy;
 	Cache *pc = ~nc;
 	mapping_cache.Add(filename, -nc);
 	return pc->mapping;
@@ -3761,6 +3763,8 @@ void LinkJob::Link()
 			break;
 		}
 	}
+
+	DUMPC(files_to_load);
 
 	for(int i = 0; i < files_to_load.GetCount(); i++)
 		LoadFile(files_to_load[i], false);

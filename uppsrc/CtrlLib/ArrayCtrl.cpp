@@ -1911,13 +1911,28 @@ String ArrayCtrl::RowFormat(const char *s)
 {
 	return Sprintf(s, ~row_name);
 }
-
+/*
 bool ArrayCtrl::DoRemove()
 {
 	if(IsReadOnly()) return false;
 	if(!IsCursor() || askremove && !PromptOKCancel(RowFormat(t_("Do you really want to delete the selected %s ?"))))
 		return false;
 	Remove(cursor);
+	WhenArrayAction();
+	return true;
+}
+*/
+bool ArrayCtrl::DoRemove()
+{
+	if(IsReadOnly()) return false;
+	if(!IsCursor() || askremove && !PromptOKCancel(RowFormat(t_("Do you really want to delete the selected %s ?"))))
+		return false;
+	if(multiselect)
+		for(int i = GetCount() - 1; i >= 0; i--)
+			if(IsSelected(i))
+				Remove(i);
+	else
+		Remove(cursor);
 	WhenArrayAction();
 	return true;
 }

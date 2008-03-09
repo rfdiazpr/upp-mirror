@@ -290,34 +290,28 @@ String Base64Decode(const char *b, const char *e)
 /* Ex */0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 /* Fx */0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 	};
-	String out;
-	for(unsigned full = unsigned(e - b) >> 2; full; full--)
-	{
-		byte c1 = dec64[b[0]], c2 = dec64[b[1]], c3 = dec64[b[2]], c4 = dec64[b[3]];
-		if((c1 | c2 | c3 | c4) & 0xC0)
-			break; // corrupt input, return data retrieved so far
-		char block[3];
-		block[0] = (c1 << 2) | (c2 >> 4);
-		block[1] = (c2 << 4) | (c3 >> 2);
-		block[2] = (c3 << 6) | (c4 >> 0);
-		out.Cat(block, 3);
-		b += 4;
-	}
-	if(b < e)
-	{
-		byte c1 = dec64[*b++];
-		byte c2 = b < e ? dec64[*b++] : 0xFF;
-		byte c3 = b < e ? dec64[*b++] : 0xFF;
-		byte c4 = b < e ? dec64[*b] : 0xFF;
-		if(!((c1 | c2) & 0xC0))
-		{
-			out.Cat((c1 << 2) | (c2 >> 4));
-			if(!(c3 & 0xC0))
-			{
-				out.Cat((c2 << 4) | (c3 >> 2));
-				if(!(c4 & 0xC0))
-					out.Cat((c3 << 6) | (c4 >> 0));
+	StringBuffer out;
+	byte c[4];
+	int pos = 0;
+	for(; b < e; b++)
+		if((byte)*b > ' ') {
+			byte ch = dec64[(byte)*b];
+			if(ch & 0xC0)
+				break;
+			c[pos++] = ch;
+			if(pos == 4) {
+				out.Cat((c[0] << 2) | (c[1] >> 4));
+				out.Cat((c[1] << 4) | (c[2] >> 2));
+				out.Cat((c[2] << 6) | (c[3] >> 0));
+				pos = 0;
 			}
+		}
+	if(pos >= 2) {
+		out.Cat((c[0] << 2) | (c[1] >> 4));
+		if(pos >= 3) {
+			out.Cat((c[1] << 4) | (c[2] >> 2));
+			if(pos >= 4)
+				out.Cat((c[2] << 6) | (c[3] >> 0));
 		}
 	}
 	return out;
@@ -332,8 +326,7 @@ String ASCII85Encode(const byte *p, int length)
 		dword chunk = (p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3];
 		if(chunk == 0)
 			out.Cat('z');
-		else
-		{
+		else {
 			out.Cat(33 + chunk / (85 * 85 * 85 * 85));
 			out.Cat(33 + (chunk / (85 * 85 * 85)) % 85);
 			out.Cat(33 + (chunk / (85 * 85)) % 85);

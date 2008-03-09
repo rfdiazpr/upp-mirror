@@ -1,6 +1,0 @@
-Upp::RichPara::Format
-0 0 -1
-TiffCtrl
-0 0 -1 
-Upp::ScrollBar
-0 0 -1 

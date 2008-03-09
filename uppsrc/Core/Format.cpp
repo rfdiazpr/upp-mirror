@@ -855,7 +855,7 @@ INITBLOCK {
 	sRegisterFormatters();
 }
 
-String NFormat(int language, const char *s, const Vector<Value>& v)
+String NFormat0(int language, const char *s, const Value **v, int count)
 {
 	sRegisterFormatters();
 	Formatting f;
@@ -903,7 +903,7 @@ String NFormat(int language, const char *s, const Vector<Value>& v)
 			else
 			if(*s == '*') {
 				f.format.Cat(b, (int)(s - b));
-				f.format.Cat(FormatInt(v[pos++]));
+				f.format.Cat(FormatInt(*v[pos++]));
 				b = ++s;
 			}
 			else
@@ -965,7 +965,7 @@ String NFormat(int language, const char *s, const Vector<Value>& v)
 			s++;
 		f.id = String(b, s);
 #ifndef _DEBUG
-		if(pos < 0 || pos >= v.GetCount())
+		if(pos < 0 || pos >= count)
 		{
 			result << "!!ARGPOS=" << pos;
 			if(*s == '`')
@@ -973,7 +973,7 @@ String NFormat(int language, const char *s, const Vector<Value>& v)
 			continue;
 		}
 #endif
-		f.arg = v[pos++];
+		f.arg = *v[pos++];
 		if(n > f.maxn)
 			f.maxn = n;
 		String r;
@@ -1050,25 +1050,37 @@ String NFormat(int language, const char *s, const Vector<Value>& v)
 	}
 }
 
+String NFormat0(const char *s, const Value **v, int count)
+{
+	return NFormat0(GetCurrentLanguage(), s, v, count);
+}
+
+String NFormat(int language, const char *s, const Vector<Value>& v)
+{
+	Buffer<const Value *> bv(v.GetCount());
+	for(int i = 0; i < v.GetCount(); i++)
+		bv[i] = &v[i];
+	return NFormat0(language, s, bv, v.GetCount());
+}
+
 String NFormat(const char *s, const Vector<Value>& v) { return NFormat(GetCurrentLanguage(), s, v); }
+
 //$-
-#define E__NFSetArg(I) arg[I - 1] = COMBINE(p, I)
-#define E__NFValue(I)  Value COMBINE(p, I)
+#define E__NFSetArg(I) arg[I - 1] = &COMBINE(p, I)
+#define E__NFValue(I)  const Value& COMBINE(p, I)
 
 #define E__NFBody(I) \
 String NFormat(const char *fmt, __List##I(E__NFValue)) \
 { \
-	Vector<Value> arg; \
-	arg.SetCount(I); \
+	const Value *arg[I]; \
 	__List##I(E__NFSetArg); \
-	return NFormat(fmt, arg); \
+	return NFormat0(fmt, arg, I); \
 } \
 String NFormat(int language, const char *fmt, __List##I(E__NFValue)) \
 { \
-	Vector<Value> arg; \
-	arg.SetCount(I); \
+	const Value *arg[I]; \
 	__List##I(E__NFSetArg); \
-	return NFormat(language, fmt, arg); \
+	return NFormat0(language, fmt, arg, I); \
 }
 
 __Expand10(E__NFBody)
@@ -1077,21 +1089,19 @@ __Expand10(E__NFBody)
 
 #define E__FBody(I) \
 String Format(const char *fmt, __List##I(E__NFValue)) \
-{ \
-	Vector<Value> arg; \
-	arg.SetCount(I); \
+{\
+	const Value *arg[I]; \
 	__List##I(E__NFSetArg); \
-	return NFormat(fmt, arg); \
+	return NFormat0(fmt, arg, I); \
 } \
 String Format(int language, const char *fmt, __List##I(E__NFValue)) \
 { \
-	Vector<Value> arg; \
-	arg.SetCount(I); \
+	const Value *arg[I]; \
 	__List##I(E__NFSetArg); \
-	return NFormat(language, fmt, arg); \
+	return NFormat0(language, fmt, arg, I); \
 }
 
-__Expand10(E__FBody)
+__Expand20(E__FBody)
 //$+
 String Format(const char *s, const Vector<Value>& v)
 {

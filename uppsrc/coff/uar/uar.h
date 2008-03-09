@@ -3,4 +3,6 @@
 
 #include <coff/coff.h>
 
+using namespace Upp;
+
 #endif

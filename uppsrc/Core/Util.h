@@ -143,7 +143,6 @@ inline void   EndianSwap(word& v)   { byte *x = (byte *)(&v); Swap(x[0], x[1]); 
 inline void   EndianSwap(int16& v)  { EndianSwap(*(word *)&v); }
 inline void   EndianSwap(dword& v)  { byte *x = (byte *)&v; Swap(x[0], x[3]); Swap(x[1], x[2]); }
 inline void   EndianSwap(int& v)    { EndianSwap(*(dword *)&v); }
-//inline void   EndianSwap(long& v)   { EndianSwap(*(dword *)&v); }
 inline void   EndianSwap(int64& v)  { byte *x = (byte *)&v; Swap(x[0], x[7]); Swap(x[1], x[6]); Swap(x[2], x[5]); Swap(x[3], x[4]); }
 inline void   EndianSwap(uint64& v) { EndianSwap(*(int64 *)&v); }
 
@@ -151,7 +150,6 @@ inline word   SwapEndian(word v)    { EndianSwap(v); return v; }
 inline int16  SwapEndian(int16 v)   { EndianSwap(v); return v; }
 inline dword  SwapEndian(dword v)   { EndianSwap(v); return v; }
 inline int    SwapEndian(int v)     { EndianSwap(v); return v; }
-//inline long   SwapEndian(long v)    { EndianSwap(v); return v; }
 inline int64  SwapEndian(int64 v)   { EndianSwap(v); return v; }
 inline uint64 SwapEndian(uint64 v)  { EndianSwap(v); return v; }
 

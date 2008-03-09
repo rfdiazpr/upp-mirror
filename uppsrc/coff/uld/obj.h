@@ -39,7 +39,9 @@ public:
 inline bool operator == (const ObjSec& a, const ObjSec& b) { return a.object == b.object && a.section == b.section; }
 inline bool operator != (const ObjSec& a, const ObjSec& b) { return !(a == b); }
 
+namespace Upp {
 NTL_MOVEABLE(COFF_IMAGE_SYMBOL)
+};
 
 class ObjectFile
 {

@@ -212,6 +212,7 @@ inline void AssertMoveablePtr(T, T) {}
 
 template <class T>
 inline void AssertMoveable0(T *t) { AssertMoveablePtr(&**t, *t); }
+// COMPILATION ERROR HERE MEANS TYPE T WAS NOT MARKED AS Moveable
 
 template <class T, class B = EmptyClass>
 struct Moveable : public B {
@@ -221,8 +222,6 @@ struct Moveable : public B {
 
 template <class T>
 inline void AssertMoveable(T *t = 0) { if(t) AssertMoveable0(t); }
-// COMPILATION ERROR HERE MEANS TYPE T WAS NOT MARKED AS Moveable
-
 
 #if defined(COMPILER_MSC) || defined(COMPILER_GCC) && (__GNUC__ < 4 || __GNUC_MINOR__ < 1)
 	#define NTL_MOVEABLE(T) inline void AssertMoveable0(T *) {}

@@ -79,7 +79,7 @@ void RegisterStringFormatter(const char *id, Formatter f) init_;
 void RegisterDateTimeFormatter(const char *id, Formatter f) init_;
 void RegisterValueFormatter(const char *id, Formatter f) init_;
 
-#define E__NFValue(I)  Value COMBINE(p, I)
+#define E__NFValue(I)  const Value& COMBINE(p, I)
 #define E__NFBody(I) \
 String NFormat(const char *fmt, __List##I(E__NFValue)); \
 String NFormat(int language, const char *fmt, __List##I(E__NFValue));
@@ -102,7 +102,7 @@ String Sprintf(const char *fmt, ...);
 
 #if 1
 
-#define E__NFValue(I)  Value COMBINE(p, I)
+#define E__NFValue(I)  const Value& COMBINE(p, I)
 #define E__NFBody(I) \
 String Format(const char *fmt, __List##I(E__NFValue)); \
 String Format(int language, const char *fmt, __List##I(E__NFValue));

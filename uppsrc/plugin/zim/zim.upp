@@ -1,8 +1,0 @@
-uses
-	plugin\bz2,
-	plugin\z,
-	Draw;
-
-file
-	zim.h,
-	zimage.cpp;

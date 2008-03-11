@@ -42,8 +42,9 @@ void Ide::File(Bar& menu) {
 		menu.AddMenu(CanToggleReadOnly(), AK_READONLY, IdeImg::read_only(), THISBACK(ToggleReadOnly))
 			.Check(editor.IsReadOnly())
 			.Help("Set / clear read-only flag for current file");
-	menu.Add("Export project", THISBACK(ExportProject))
-		.Help("Copy all project files into given directory");
+
+//	menu.Add("Export project", THISBACK(ExportProject))
+//		.Help("Copy all project files into given directory");
 
 	if(menu.IsMenuBar())
 	{
@@ -327,7 +328,8 @@ void Ide::BuildFileMenu(Bar& menu)
 
 void Ide::BuildPackageMenu(Bar& menu)
 {
-	bool b = !IdeIsDebugLock() && idestate == EDITING && package.GetCursor() >= 0;
+	int pi = package.GetCursor();
+	bool b = !IdeIsDebugLock() && idestate == EDITING && pi >= 0 && pi < IdeWorkspace().GetCount();
 	menu.Add(b, AK_BUILDPACKAGE, THISBACK(PackageBuild))
 		.Help("Build current package");
 	menu.Add(b, AK_CLEANPACKAGE, THISBACK(PackageClean))

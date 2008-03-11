@@ -265,7 +265,7 @@ private:
 	int          linecy;
 	int          light;
 
-	int   GetIndex();
+	int   GetIndex() const;
 	int   GetIndex(Point p);
 	bool  DoHot(dword key);
 	void  Updates();
@@ -277,6 +277,8 @@ private:
 public:
 	Switch& SetLabel(int i, const char *text);
 	Switch& SetLabel(const char *text);
+	String  GetLabel() const                                    { return GetLabel(GetIndex()); }
+	String  GetLabel(int i) const                               { return cs[i].label; }
 	Switch& Set(int i, const Value& val, const char *text);
 	Switch& Set(int i, const Value& val);
 	Switch& Add(const Value& val, const char *text);

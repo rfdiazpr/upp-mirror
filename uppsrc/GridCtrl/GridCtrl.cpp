@@ -7029,7 +7029,7 @@ void GridCtrl::JoinRow(int n, int left, int right)
 		left += fixed_cols;
 
 	if(right < 0)
-		right = total_cols - fixed_cols - 1;
+		right = total_cols - fixed_cols;
 	else
 		right = total_cols - fixed_cols - right;
 
@@ -7125,7 +7125,7 @@ void GridCtrl::UpdateHighlighting(int mode, Point p)
 #ifdef GRIDSQL
 void GridCtrl::FieldLayout(FieldOperator& f)
 {
-	for(int i = 0; i < total_cols; i++)
+	for(int i = 1; i < total_cols; i++)
 	{
 		if(hitems[i].hidden)
 			continue;
@@ -7134,6 +7134,20 @@ void GridCtrl::FieldLayout(FieldOperator& f)
 		f(key, items[vitems[rowidx].id][id].val);
 	}
 }
+
+SqlSet GridCtrl::GetColumnList(bool skip_hidden) const
+{
+	SqlSet s;
+	for(int i = 1; i < total_cols; i++)
+	{
+		if(skip_hidden && hitems[i].hidden)
+			continue;
+		int id = hitems[i].id;
+		s.Cat(SqlId(aliases.GetKey(id)));
+	}
+	return s;
+}
+
 #endif
 
 

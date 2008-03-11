@@ -69,6 +69,7 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 		bool searching:1;
 		bool always_drop:1;
 		bool must_change:1;
+		bool null_action:1;
 
 		GridDisplay *display;
 
@@ -113,6 +114,7 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 		DropGrid& Searching(bool b = true);
 		DropGrid& AlwaysDrop(bool b = true);
 		DropGrid& MustChange(bool b = true);
+		DropGrid& NullAction(bool b = true);
 
 		GridCtrl::ItemRect& AddColumn(const char *name, int width = GridCtrl::GD_COL_WIDTH, bool idx = false);
 		GridCtrl::ItemRect& AddColumn(Id id, const char *name, int width = GridCtrl::GD_COL_WIDTH, bool idx = false);
@@ -128,7 +130,7 @@ class DropGrid : public Convert, public GridDisplay, public Ctrl
 
 		int AddColumns(int cnt);
 
-		void SelectTop();
+		void GoTop();
 
 		int SetIndex(int n);
 		int GetIndex() const;

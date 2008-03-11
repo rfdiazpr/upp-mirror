@@ -606,12 +606,13 @@ void Ide::PackageBuild()
 {
 	BeginBuilding();
 	int pi = package.GetCursor();
-	if(pi < 0) return;
 	const Workspace& wspc = IdeWorkspace();
-	Vector<String> linkfile;
-	String linkopt;
-	bool ok = BuildPackage(wspc, pi, 0, 1, mainconfigparam, Null, linkfile, linkopt);
-	EndBuilding(ok);
+	if(pi >= 0 && pi <= wspc.GetCount()) {
+		Vector<String> linkfile;
+		String linkopt;
+		bool ok = BuildPackage(wspc, pi, 0, 1, mainconfigparam, Null, linkfile, linkopt);
+		EndBuilding(ok);
+	}
 }
 
 void Ide::StopBuild()
@@ -648,10 +649,11 @@ void Ide::Clean()
 void Ide::PackageClean()
 {
 	int pi = package.GetCursor();
-	if(pi < 0) return;
-	console.Clear();
 	const Workspace& wspc = IdeWorkspace();
-	CleanPackage(wspc, pi);
+	if(pi >= 0 && pi < wspc.GetCount()) {
+		console.Clear();
+		CleanPackage(wspc, pi);
+	}
 }
 
 void Ide::RebuildAll()

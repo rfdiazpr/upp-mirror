@@ -420,14 +420,13 @@ ctrl EditField {
 	GetMinSize() { sz = XMinSize(); sz.cy += 6; return sz; }
 	GetStdSize() { sz = GetMinSize(); sz.cx *= 8; return sz; }
 
-	Frame SetFrame = InsetFrame();
-	Font  SetFont = StdFont();
-	bool  SetEditable = true @1 ? "Editable";
-	bool  WantFocus = true;
-	int   MaxChars;
-	bool  AlignRight;
-	Text  Tip;
-//	Qtf   SetInfo @1 ? "Info of control" ;
+	bool  AlignRight @1;
+	int   MaxChars @2;
+	Font  SetFont = StdFont() @3;
+	bool  SetEditable = true @4 ? "Editable";
+	Frame SetFrame = InsetFrame() @5;
+	Text  Tip @6;
+	bool  WantFocus = true @7;
 
 	Paint(w) {
 		r = GetRect();

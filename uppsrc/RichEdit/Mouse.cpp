@@ -55,6 +55,7 @@ void RichEdit::SetObjectPos(int pos)
 
 void RichEdit::LeftDown(Point p, dword flags)
 {
+	useraction = true;
 	NextUndo();
 	SetFocus();
 	selclick = false;
@@ -118,6 +119,7 @@ void RichEdit::LeftDown(Point p, dword flags)
 
 void RichEdit::LeftUp(Point p, dword flags)
 {
+	useraction = true;
 	NextUndo();
 	int c = GetMousePos(p);
 	int d = c;
@@ -130,6 +132,7 @@ void RichEdit::LeftUp(Point p, dword flags)
 
 void RichEdit::MouseMove(Point p, dword flags)
 {
+	useraction = true;
 	if(HasCapture() && (flags & K_MOUSELEFT)) {
 		if(tabmove.table && tabmove.column >= 0) {
 			RichTable::Format fmt = text.GetTableFormat(tabmove.table);
@@ -181,6 +184,7 @@ void RichEdit::MouseMove(Point p, dword flags)
 
 void RichEdit::RightDown(Point p, dword flags)
 {
+	useraction = true;
 	NextUndo();
 	MenuBar menu;
 	int l, h;

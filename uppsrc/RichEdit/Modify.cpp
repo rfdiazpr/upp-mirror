@@ -11,7 +11,7 @@ void RichEdit::AddUndo(UndoRec *ur)
 {
 	redo.Clear();
 	SetModify();
-//	modified = true;
+	modified = true;
 	incundoserial = true;
 	while(undo.GetCount() > undosteps)
 		undo.DropHead();
@@ -89,7 +89,7 @@ void RichEdit::Remove(int pos, int len, bool joinnext)
 	fmt.newpage = f.newpage;
 	ModifyFormat(pos, fmt, 0);
 	SetModify();
-//	modified = true;
+	modified = true;
 }
 
 void RichEdit::Insert(int pos, const RichText& txt, bool typing)
@@ -107,7 +107,7 @@ void RichEdit::Insert(int pos, const RichText& txt, bool typing)
 	text.Insert(pos, txt);
 	l = text.GetLength() - l;
 	SetModify();
-//	modified = true;
+	modified = true;
 	if(undo.GetCount()) {
 		UndoRec& u = undo.Tail();
 		if(typing) {
@@ -204,7 +204,7 @@ void RichEdit::Cut()
 void RichEdit::PasteText(const RichText& text)
 {
 	SetModify();
-//	modified = true;
+	modified = true;
 	RemoveSelection();
 	Insert(cursor, text, false);
 	ReadStyles();

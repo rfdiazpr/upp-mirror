@@ -30,7 +30,7 @@ Switch& Switch::Add(const char *text) {
 	return *this;
 }
 
-int Switch::GetIndex() {
+int Switch::GetIndex() const {
 	for(int i = 0; i < cs.GetCount(); i++)
 		if(cs[i].value == value)
 			return i;

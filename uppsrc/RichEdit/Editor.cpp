@@ -376,6 +376,8 @@ void RichEdit::Clear()
 	Refresh();
 	Finish();
 	ReadStyles();
+	SetModify();
+	modified = true;
 }
 
 void RichEdit::SetupLanguage(pick_ Vector<int>& _lng)
@@ -668,7 +670,9 @@ RichEdit::RichEdit()
 	WhenLabel = callback(StdLabelDlg);
 
 	p_size = Size(-1, -1);
-
+	
+	useraction = modified = false;
+	ClearModify();
 	Finish();
 }
 

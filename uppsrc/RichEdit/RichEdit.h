@@ -185,6 +185,7 @@ private:
 	String                   footer;
 	bool                     nolinks;
 	bool                     overwrite;
+	bool                     useraction, modified;
 	static int               fixedlang;
 
 	WithRichFindReplaceLayout<TopWindow> findreplace;

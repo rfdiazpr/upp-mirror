@@ -1403,6 +1403,8 @@ class GridCtrl : public Ctrl
 		#ifdef GRIDSQL
 		void FieldLayout(FieldOperator& f);
 		operator Fields() { return THISBACK(FieldLayout); }
+		operator SqlSet() const { return GetColumnList(); }
+		SqlSet GetColumnList(bool skip_hidden = false) const;
 		#endif
 
 	private:

@@ -86,7 +86,7 @@ String NFormat(int language, const char *fmt, __List##I(E__NFValue));
 
 //$-String NFormat(const char *fmt, Value p1, ...);
 //$ String NFormat(int language, const char *fmt, Value p1, ...);
-__Expand10(E__NFBody)
+__Expand20(E__NFBody)
 //$+
 
 #undef E__NFBody
@@ -107,7 +107,7 @@ String Sprintf(const char *fmt, ...);
 String Format(const char *fmt, __List##I(E__NFValue)); \
 String Format(int language, const char *fmt, __List##I(E__NFValue));
 
-__Expand10(E__NFBody)
+__Expand20(E__NFBody)
 
 #undef E__NFBody
 #undef E__NFValue

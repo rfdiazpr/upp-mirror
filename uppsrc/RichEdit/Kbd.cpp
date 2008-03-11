@@ -4,6 +4,7 @@ NAMESPACE_UPP
 
 bool RichEdit::Key(dword key, int count)
 {
+	useraction = true;
 	NextUndo();
 	if(CursorKey(key, count))
 		return true;

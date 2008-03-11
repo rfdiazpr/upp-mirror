@@ -192,7 +192,6 @@ void RectTracker::MouseMove(Point, dword)
 		}
 	}
 	if(rect != o) {
-		rect.Normalize();
 		rect = Round(rect);
 		if(rect != o) {
 			DrawRect(o, rect);

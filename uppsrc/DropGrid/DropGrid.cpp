@@ -79,6 +79,7 @@ DropGrid::DropGrid()
 	Searching(true);
 	always_drop = true;
 	must_change = false;
+	null_action = true;
 	display = this;
 	change = false;
 	EnableDrop(always_drop);
@@ -414,6 +415,12 @@ DropGrid& DropGrid::MustChange(bool b /* = true*/)
 	return *this;
 }
 
+DropGrid& DropGrid::NullAction(bool b /* = true*/)
+{
+	null_action = b;
+	return *this;
+}
+
 int DropGrid::GetCount() const
 {
 	return list.GetCount();
@@ -567,7 +574,10 @@ void DropGrid::ClearValue()
 	value = Null;
 	rowid = -1;
 	list.ClearCursor();
-	UpdateActionRefresh();
+	if(null_action)
+		UpdateActionRefresh();
+	else
+		UpdateRefresh();
 }
 
 void DropGrid::Reset()
@@ -788,7 +798,7 @@ int DropGrid::AddColumns(int cnt)
 	return list.GetCount();
 }
 
-void DropGrid::SelectTop()
+void DropGrid::GoTop()
 {
 	if(list.IsFilled())
 		SetIndex(0);

@@ -66,6 +66,11 @@ void RichEdit::FinishNF()
 	text.Validate();
 	FixObjectRect();
 	SetupRuler();
+	if(modified) {
+		if(useraction)
+			WhenAction();
+	}
+	useraction = modified = false;
 }
 
 void RichEdit::Finish()

@@ -572,6 +572,7 @@ void RichEdit::Styles()
 	SaveStylesUndo();
 	for(i = 0; i < s.dirty.GetCount(); i++) {
 		SetModify();
+		modified = true;
 		Uuid id = s.dirty[i];
 		int q = s.style.Find(id);
 		if(q >= 0)

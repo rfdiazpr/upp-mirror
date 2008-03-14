@@ -32,7 +32,7 @@ link(SOLARIS) "-Wl,-R -Wl,/usr/local/lib";
 file
 	Core.h,
 	Defs.h,
-	Cpu.cpp,
+	Cpu.cpp optimize_speed,
 	Mt.h,
 	Mt.cpp,
 	OL_Set.cpp,
@@ -43,8 +43,8 @@ file
 	heapdbg.cpp optimize_speed,
 	String.h,
 	AString.hpp,
-	String.cpp,
-	WString.cpp,
+	String.cpp optimize_speed,
+	WString.cpp optimize_speed,
 	StrUtil.cpp optimize_speed,
 	CharSet.h,
 	CharSet.cpp optimize_speed,
@@ -57,7 +57,7 @@ file
 	App.cpp,
 	Stream.h,
 	Stream.cpp optimize_speed,
-	BlockStream.cpp,
+	BlockStream.cpp optimize_speed,
 	Profile.h,
 	Diag.h,
 	Log.cpp,
@@ -141,4 +141,3 @@ file
 mainconfig
 	"Normal" = "",
 	"Remote shared" = "SHARED";
-

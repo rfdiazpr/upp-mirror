@@ -6,9 +6,6 @@ public:
 	NoCopy() {}
 };
 
-template <class T>
-inline void Swap(T& a, T& b) { T tmp = a; a = b; b = tmp; }
-
 template <class I>
 inline void IterSwap(I a, I b) { if(a != b) Swap(*a, *b); }
 

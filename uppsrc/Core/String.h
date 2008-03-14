@@ -1,6 +1,9 @@
 class Nuller;
 
-// #define STRING_EXPERIMENTAL // activate experimental optimizations
+#if defined(CPU_X86) && (defined(COMPILER_MSC) || defined(COMPILER_GCC))
+#define FAST_STRING_COMPARE
+#endif
+
 
 int wstrlen(const wchar *s);
 
@@ -65,11 +68,11 @@ public:
 
 	String& Cat()                                             { return *(String *)this; }
 
-	int    Compare(const String& s) const;
-	int    Compare(const char *s) const;
+	int    Compare(const String& s) const                     { return B::Compare(s); }
+	int    Compare(const tchar *s) const;
 
 	bool   IsEqual(const String& s) const                     { return B::IsEqual(s); }
-	bool   IsEqual(const char *s) const                       { return Compare(s) == 0; }
+	bool   IsEqual(const tchar *s) const                      { return Compare(s) == 0; }
 
 	String Mid(int pos, int length) const;
 	String Mid(int pos) const                                 { return Mid(pos, GetLength() - pos); }
@@ -124,8 +127,6 @@ public:
 	friend String operator+(tchar a, const String& b)          { String c(a, 1); c += b; return c; }
 };
 
-#include "AString.hpp"
-
 class String0 : Moveable<String0> {
 	enum { SMALL, MEDIUM = 31 };
 	enum { KIND = 14, SLEN = 15, LLEN = 2 };
@@ -149,6 +150,7 @@ class String0 : Moveable<String0> {
 		char  *ptr;
 		dword *wptr;
 		qword *qptr;
+		word   v[8];
 		dword  w[4];
 		qword  q[2];
 	};
@@ -172,6 +174,7 @@ class String0 : Moveable<String0> {
 	bool   IsSharedRef() const   { return IsRef() && IsShared(); }
 	int    LAlloc() const        { int b = (byte)chr[KIND]; return b == 255 ? Ref()->alloc : b; }
 	dword  LEqual(const String0& s) const;
+	int    LCompare(const String0& s) const;
 
 	void LSet(const String0& s);
 	void LFree();
@@ -230,6 +233,8 @@ public:
 		#endif
 		       ) == 0;
 	}
+
+	int    Compare(const String0& s) const;
 
 	unsigned GetHashValue() const {
 		return chr[KIND] ? LHashValue() : (unsigned)CombineHash(w[0], w[1], w[2], w[3]);
@@ -313,8 +318,10 @@ public:
 	friend void Swap(String& a, String& b)                 { a.Swap(b); }
 
 	String(const std::string& s)                           { String0::Set(s.c_str(), (int)s.length()); }
-	operator std::string()                          { return std::string(Begin(), End()); }
+	operator std::string() const                           { return std::string(Begin(), End()); }
 };
+
+inline std::string to_string(const String& s)              { return std::string(s.Begin(), s.End()); }
 
 class StringBuffer : NoCopy {
 	char   *begin;
@@ -606,6 +613,7 @@ public:
 
 	unsigned GetHashValue() const             { return memhash(ptr, length * sizeof(wchar)); }
 	bool     IsEqual(const WString0& s) const { return s.length == length && memcmp(ptr, s.ptr, length * sizeof(wchar)) == 0; }
+	int      Compare(const WString0& s) const;
 
 	void Remove(int pos, int count = 1);
 	void Insert(int pos, const wchar *s, int count);
@@ -670,6 +678,8 @@ public:
 	WString(const std::wstring& s);
 	operator std::wstring() const;
 };
+
+inline std::wstring to_string(const WString& s)             { return std::wstring(s.Begin(), s.End()); }
 
 class WStringBuffer : NoCopy {
 	wchar   *begin;
@@ -764,3 +774,5 @@ int CharFilterDefaultToUpperAscii(int c);
 
 String Filter(const char *s, int (*filter)(int));
 String FilterWhile(const char *s, int (*filter)(int));
+
+#include "AString.hpp"

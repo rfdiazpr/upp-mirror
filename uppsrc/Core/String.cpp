@@ -127,6 +127,20 @@ unsigned String0::LHashValue() const
 	return memhash(ptr, l);
 }
 
+int String0::LCompare(const String0& s) const
+{
+	const char *a = Begin();
+	int la = GetLength();
+	const char *b = s.Begin();
+	int lb = s.GetLength();
+	int l = min(la, lb);
+	for(int i = 0; i < l; i++) {
+		int q = (byte)a[i] - (byte)b[i];
+		if(q) return q;
+	}
+	return la - lb;
+}
+
 char *String0::Alloc(int count, char& kind)
 {
 	if(count < 32) {

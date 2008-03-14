@@ -614,12 +614,14 @@ inline int   Cis_nullV(Value v)   { return IsNull(v); }
 inline int   Cis_numberV(Value v) { return IsNumber(v); }
 inline int   Cis_textV(Value v)   { return IsString(v); }
 inline int   Cis_dateV(Value v)   { return IsDateTime(v); }
+inline int   Cis_arrayV(Value v)  { return IsValueArray(v); }
 
 FDECLP(null, 0, &GroupConst)
 FDECLP(is_number, V, &GroupComp)
 FDECLP(is_text, V, &GroupComp)
 FDECLP(is_date, V, &GroupComp)
 FDECLP(is_null, V, &GroupComp)
+FDECLP(is_array, V, &GroupComp)
 
 inline Value CnvlVV(Value a, Value b) { return Nvl(a, b); }
 

@@ -213,6 +213,23 @@ void WString0::Insert(int pos, const wchar *s, int count)
 	Dsyn();
 }
 
+int WString0::Compare(const WString0& s) const
+{
+	const wchar *a = Begin();
+	const wchar *ae = a + GetLength();
+	const wchar *b = s.Begin();
+	const wchar *be = b + s.GetLength();
+	for(;;) {
+		if(a >= ae)
+			return b >= be ? 0 : -1;
+		if(b >= be)
+			return 1;
+		int q = cmpval__(*a++) - cmpval__(*b++);
+		if(q)
+			return q;
+	}
+}
+
 WString& WString::operator=(const wchar *s)
 {
 	int  len = GetCount();

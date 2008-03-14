@@ -7,25 +7,7 @@ void AString<B>::Cat(int c, int count)
 }
 
 template <class B>
-int AString<B>::Compare(const String& s) const
-{
-	const tchar *a = B::Begin();
-	const tchar *ae = End();
-	const tchar *b = s.Begin();
-	const tchar *be = s.End();
-	for(;;) {
-		if(a >= ae)
-			return b >= be ? 0 : -1;
-		if(b >= be)
-			return 1;
-		int q = cmpval__(*a++) - cmpval__(*b++);
-		if(q)
-			return q;
-	}
-}
-
-template <class B>
-int AString<B>::Compare(const char *b) const
+int AString<B>::Compare(const tchar *b) const
 {
 	const tchar *a = B::Begin();
 	const tchar *ae = End();
@@ -122,4 +104,46 @@ template <class B>
 int AString<B>::Find(const tchar *s, int from) const
 {
 	return Find(strlen__(s), s, from);
+}
+
+inline int String0::Compare(const String0& s) const
+{
+#ifdef FAST_STRING_COMPARE
+	if((chr[KIND] | s.chr[KIND]) == 0) {
+	#ifdef CPU_64
+		uint64 a64 = SwapEndian64(q[0]);
+		uint64 b64 = SwapEndian64(s.q[0]);
+		if(a64 != b64)
+			return a64 < b64 ? -1 : 1;
+		uint32 a32 = SwapEndian32(w[2]);
+		uint32 b32 = SwapEndian32(s.w[2]);
+		if(a32 != b32)
+			return a32 < b32 ? -1 : 1;
+	#else
+		uint32 a32 = SwapEndian32(w[0]);
+		uint32 b32 = SwapEndian32(s.w[0]);
+		if(a32 != b32)
+			return a32 < b32 ? -1 : 1;
+		a32 = SwapEndian32(w[1]);
+		b32 = SwapEndian32(s.w[1]);
+		if(a32 != b32)
+			return a32 < b32 ? -1 : 1;
+		a32 = SwapEndian32(w[2]);
+		b32 = SwapEndian32(s.w[2]);
+		if(a32 != b32)
+			return a32 < b32 ? -1 : 1;
+	#endif
+		uint16 a16 = SwapEndian16(v[6]);
+		uint16 b16 = SwapEndian16(s.v[6]);
+		if(a16 != b16)
+			return a16 < b16 ? -1 : 1;
+		return 0;
+	}
+#endif
+/*	int l1 = GetLength();
+	int l2 = s.GetLength();
+	int q = memcmp(Begin(), s.Begin(), min(l1, l2));
+	int q = MemCmp_aligned__(Begin(), s.Begin(), min(l1, l2));
+	return q ? q : l1 - l2;*/
+	return LCompare(s);
 }

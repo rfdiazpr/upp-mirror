@@ -405,6 +405,100 @@ int  CPU_Cores();
 
 bool IsDecentMachine();
 
+template <class T>
+inline void Swap(T& a, T& b) { T tmp = a; a = b; b = tmp; }
+
+#if defined(CPU_UNALIGNED) && defined(CPU_LE)
+inline int    Peek16le(const void *ptr)  { return *(const word *)ptr; }
+inline int    Peek32le(const void *ptr)  { return *(const dword *)ptr; }
+inline int64  Peek64le(const void *ptr)  { return *(const int64 *)ptr; }
+
+inline void   Poke16le(const void *ptr, int val)    { *(word *)ptr = val; }
+inline void   Poke32le(const void *ptr, int val)    { *(dword *)ptr = val; }
+inline void   Poke64le(const void *ptr, int64 val)  { *(int64 *)ptr = val; }
+#else
+inline int    Peek16le(const void *ptr)  { return MAKEWORD(((byte *)ptr)[0], ((byte *)ptr)[1]); }
+inline int    Peek32le(const void *ptr)  { return MAKELONG(Peek16le(ptr), Peek16le((byte *)ptr + 2)); }
+inline int64  Peek64le(const void *ptr)  { return MAKEQWORD(Peek32le(ptr), Peek32le((byte *)ptr + 4)); }
+
+inline void   Poke16le(const void *ptr, int val)    { ((byte *)ptr)[0] = LOBYTE(val); ((byte *)ptr)[1] = HIBYTE(val); }
+inline void   Poke32le(const void *ptr, int val)    { Poke16le(ptr, LOWORD(val)); Poke16le((byte *)ptr + 2, HIWORD(val)); }
+inline void   Poke64le(const void *ptr, int64 val)  { Poke32le(ptr, LODWORD(val)); Poke32le((byte *)ptr + 4, HIDWORD(val)); }
+#endif
+
+inline int    Peek16be(const void *ptr)  { return MAKEWORD(((byte *)ptr)[1], ((byte *)ptr)[0]); }
+inline int    Peek32be(const void *ptr)  { return MAKELONG(Peek16be((byte *)ptr + 2), Peek16be(ptr)); }
+inline int64  Peek64be(const void *ptr)  { return MAKEQWORD(Peek32be((byte *)ptr + 4), Peek32be(ptr)); }
+
+inline void   Poke16be(const void *ptr, int val)    { ((byte *)ptr)[1] = LOBYTE(val); ((byte *)ptr)[0] = HIBYTE(val); }
+inline void   Poke32be(const void *ptr, int val)    { Poke16be(ptr, HIWORD(val)); Poke16be((byte *)ptr + 2, LOWORD(val)); }
+inline void   Poke64be(const void *ptr, int64 val)  { Poke32be(ptr, HIDWORD(val)); Poke32be((byte *)ptr + 4, LODWORD(val)); }
+
+#if defined(CPU_X86) && (defined(COMPILER_GCC) || defined(COMPILER_MSC))
+#ifdef COMPILER_GCC
+#ifdef CPU_64
+inline word   SwapEndian16(word v)    { __asm__("xchgb %b0,%h0" : "=Q" (v) :  "0" (v)); return v; }
+inline int16  SwapEndian16(int16 v)   { __asm__("xchgb %b0,%h0" : "=Q" (v) :  "0" (v)); return v; }
+#else
+inline word   SwapEndian16(word v)    { __asm__("xchgb %b0,%h0" : "=q" (v) :  "0" (v)); return v; }
+inline int16  SwapEndian16(int16 v)   { __asm__("xchgb %b0,%h0" : "=q" (v) :  "0" (v)); return v; }
+#endif
+inline dword  SwapEndian32(dword v)   { __asm__("bswap %0" : "=r" (v) : "0" (v)); return v; }
+inline int    SwapEndian32(int v)     { __asm__("bswap %0" : "=r" (v) : "0" (v)); return v; }
+#endif
+
+#ifdef COMPILER_MSC
+inline word   SwapEndian16(word v)    { return _byteswap_ushort(v); }
+inline int16  SwapEndian16(int16 v)   { return _byteswap_ushort(v); }
+inline dword  SwapEndian32(dword v)   { return _byteswap_ulong(v); }
+inline int    SwapEndian32(int v)     { return _byteswap_ulong(v); }
+#endif
+
+inline void   EndianSwap(word& v)     { v = SwapEndian16(v); }
+inline void   EndianSwap(int16& v)    { v = SwapEndian16(v); }
+inline void   EndianSwap(dword& v)    { v = SwapEndian32(v); }
+inline void   EndianSwap(int& v)      { v = SwapEndian32(v); }
+
+#else
+inline void   EndianSwap(word& v)     { byte *x = (byte *)(&v); Swap(x[0], x[1]); }
+inline void   EndianSwap(int16& v)    { EndianSwap(*(word *)&v); }
+inline void   EndianSwap(dword& v)    { byte *x = (byte *)&v; Swap(x[0], x[3]); Swap(x[1], x[2]); }
+inline void   EndianSwap(int& v)      { EndianSwap(*(dword *)&v); }
+inline word   SwapEndian16(word v)    { EndianSwap(v); return v; }
+inline int16  SwapEndian16(int16 v)   { EndianSwap(v); return v; }
+inline dword  SwapEndian32(dword v)   { EndianSwap(v); return v; }
+inline int    SwapEndian32(int v)     { EndianSwap(v); return v; }
+#endif
+
+#if defined(CPU_AMD64) && (defined(COMPILER_GCC) || defined(COMPILER_MSC))
+#ifdef COMPILER_GCC
+inline uint64  SwapEndian64(uint64 v) { __asm__("bswap %0" : "=r" (v) : "0" (v)); return v; }
+inline int64   SwapEndian64(int64 v)  { __asm__("bswap %0" : "=r" (v) : "0" (v)); return v; }
+#endif
+#ifdef COMPILER_MSC
+inline uint64  SwapEndian64(uint64 v) { return _byteswap_uint64(v); }
+inline int64   SwapEndian64(int64 v)  { return _byteswap_int64(v); }
+#endif
+
+inline void   EndianSwap(int64& v)    { v = SwapEndian64(v); }
+inline void   EndianSwap(uint64& v)   { v = SwapEndian64(v); }
+
+#else
+inline void   EndianSwap(int64& v)    { byte *x = (byte *)&v; Swap(x[0], x[7]); Swap(x[1], x[6]); Swap(x[2], x[5]); Swap(x[3], x[4]); }
+inline void   EndianSwap(uint64& v)   { EndianSwap(*(int64 *)&v); }
+inline int64  SwapEndian64(int64 v)   { EndianSwap(v); return v; }
+inline uint64 SwapEndian64(uint64 v)  { EndianSwap(v); return v; }
+#endif
+
+void EndianSwap(word *v, int count);
+void EndianSwap(int16 *v, int count);
+void EndianSwap(dword *v, int count);
+void EndianSwap(int *v, int count);
+void EndianSwap(int64 *v, int count);
+void EndianSwap(uint64 *v, int count);
+
+int MemCmp_aligned__(const char *a, const char *b, size_t len);
+
 //Quick fix....
 #ifdef PLATFORM_WINCE
 const char *FromSysChrSet(const wchar *s);

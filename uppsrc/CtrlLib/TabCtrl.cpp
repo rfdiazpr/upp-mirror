@@ -485,6 +485,7 @@ TabCtrl::TabCtrl()
 	hot = -1;
 	sel = -1;
 	x0 = 0;
+	accept_current = false;
 	Ctrl::Add(tabs);
 	Ctrl::Add(pane);
 	tabs.BackPaint().IgnoreMouse();

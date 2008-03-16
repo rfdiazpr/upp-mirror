@@ -96,7 +96,7 @@ const int VALUEARRAY_V = 9;
 const int INT64_V  = 10;
 const int BOOL_V   = 11;
 
-const int VALUEMAP_V   = 11;
+const int VALUEMAP_V   = 12;
 
 const int UNKNOWN_V = (int)0xffffffff;
 

@@ -201,7 +201,7 @@ void CommonInit()
 #endif
 
 	Vector<String>& cmd = coreCmdLine__();
-	for(int i = 0; i < cmd.GetCount(); i++)
+	for(int i = 0; i < cmd.GetCount(); i++) {
 		if(cmd[i] == "--export-tr") {
 			{
 				i++;
@@ -236,6 +236,11 @@ void CommonInit()
 			}
 			exit(0);
 		}
+	#ifdef _DEBUG
+		if(cmd[i] == "--memory-breakpoint__" && i + 1 < cmd.GetCount())
+			MemoryBreakpoint(atoi(cmd[i + 1]));
+	#endif
+	}
 	sMainRunning = true;
 }
 
@@ -320,6 +325,9 @@ void AppInit__(int argc, const char **argv)
 void AppExit__()
 {
 	sMainRunning = false;
+#ifdef PLATFORM_POSIX
+	MemoryIgnoreLeaksBegin(); // Qt leaks on app exit...
+#endif
 }
 
 void    LaunchWebBrowser(const String& url)

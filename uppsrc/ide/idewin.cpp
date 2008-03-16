@@ -509,7 +509,7 @@ Ide::Ide()
 	tabs_grouping = true;
 	no_parenthesis_indent = false;
 
-	/* 
+	/*
 		astyle code formatter control vars
 		added 2008.01.27 by Massimo Del Fedele
 	*/
@@ -670,7 +670,7 @@ void AppMain___()
 	const Vector<String>& arg = CommandLine();
 
 	bool firstinstall = false;
-	
+
 #ifdef PLATFORM_POSIX
 	String home = Environment().Get("UPP_HOME", Null);
 	if(!IsNull(home))

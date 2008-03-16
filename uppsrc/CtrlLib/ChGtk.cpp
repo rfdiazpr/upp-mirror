@@ -106,6 +106,7 @@ struct GtkRangeLayout_ {
 
 Image GetGTK(GtkWidget *widget, int state, int shadow, const char *detail, int type, int cx, int cy)
 {
+	MemoryIgnoreLeaksBlock __;
 	GdkPixbuf *icon;
 	if(type == GTK_ICON || type == GTK_THEMEICON) {
 		gtk_widget_set_sensitive(widget, 1);
@@ -547,6 +548,7 @@ Image GtkThemeIcon(const char *name, int size)
 
 void ChHostSkin()
 {
+	MemoryIgnoreLeaksBlock __;
 	static struct { void (*set)(Color); int ii; } col[] = {
 		{ SColorPaper_Write, 6*5 + 0 },
 		{ SColorFace_Write, 1*5 + 0 },

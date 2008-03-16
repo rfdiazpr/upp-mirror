@@ -141,9 +141,6 @@ void *MemoryAllocPermanent(size_t size)
 void HeapPanic(const char *text, void *pos, int size)
 {
 	RLOG("\n\n" << text << "\n");
-	char h[200];
-	sprintf(h, "MemoryWatchFree(%p);\n", pos);
-	RLOG(h);
 	HexDump(VppLog(), pos, size, 64);
 	Panic(text);
 }

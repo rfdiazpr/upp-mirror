@@ -1,5 +1,7 @@
 #include <Core/Core.h>
 
+// This is inspired by http://www.digitalmars.com/d/2.0/cppstrings.html
+
 using namespace Upp;
 
 #define NOOUTPUT

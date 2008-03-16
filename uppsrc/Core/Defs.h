@@ -326,10 +326,7 @@ int   MemoryUsedKb();
 void *MemoryAllocDebug(size_t size);
 void  MemoryFreeDebug(void *ptr);
 
-void         MemoryWatch(void *leak);
-inline void  MemoryWatch(uintptr_t leak)           { MemoryWatch((void *)leak); }
-void         MemoryWatchFree(void *ptr);
-inline void  MemoryWatchFree(uintptr_t leak)       { MemoryWatchFree((void *)leak); }
+void  MemoryBreakpoint(dword serial);
 
 void  MemoryInitDiagnostics();
 void  MemoryDumpLeaks();
@@ -342,7 +339,22 @@ enum MemoryProbeFlags {
 	MEMORY_PROBE_SUMMARY = 16,
 };
 
+#ifdef _DEBUG
+void  MemoryIgnoreLeaksBegin();
+void  MemoryIgnoreLeaksEnd();
+
 void  MemoryCheckDebug();
+#else
+inline void  MemoryIgnoreLeaksBegin() {}
+inline void  MemoryIgnoreLeaksEnd() {}
+
+inline void  MemoryCheckDebug() {}
+#endif
+
+struct MemoryIgnoreLeaksBlock {
+	MemoryIgnoreLeaksBlock()  { MemoryIgnoreLeaksBegin(); }
+	~MemoryIgnoreLeaksBlock() { MemoryIgnoreLeaksEnd(); }
+};
 
 struct MemoryProfile {
 	int allocated[1024];
@@ -496,8 +508,6 @@ void EndianSwap(dword *v, int count);
 void EndianSwap(int *v, int count);
 void EndianSwap(int64 *v, int count);
 void EndianSwap(uint64 *v, int count);
-
-int MemCmp_aligned__(const char *a, const char *b, size_t len);
 
 //Quick fix....
 #ifdef PLATFORM_WINCE

@@ -149,7 +149,7 @@ public:
 	void      Put32le(dword q);
 	void      Put64le(int64 q);
 	void      Put16be(word q)        { Put(&q, 2); }
-	void      Put32be(dword q)         { Put(&q, 4); }
+	void      Put32be(dword q)       { Put(&q, 4); }
 	void      Put64be(int64 q)       { Put(&q, 8); }
 #endif
 

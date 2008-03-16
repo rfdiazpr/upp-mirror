@@ -517,6 +517,31 @@ FDECLP0(date, N, &GroupDate)
 FDECLP0(date, NN, &GroupDate)
 FDECLP0(date, NNN, &GroupDate)
 
+inline Date CdateSD(CalcPacket& packet, String s, Date dflt)
+{
+	Date out;
+	const char *p = StrToDate(out, s);
+	return p ? out : dflt;
+}
+
+inline Date CdateS(CalcPacket& packet, String s)
+{
+	return CdateSD(packet, s, Null);
+}
+
+inline Date CdateT(Time t)
+{
+	return t;
+}
+
+FDECLAP(date, S, &GroupDate)
+FDECLAP(date, SD, &GroupDate)
+FDECLP(date, T, &GroupDate)
+
+inline Time Ctime0() { return GetSysTime(); }
+
+FDECLP0(time, 0, &GroupDate)
+
 bool CtimeNNNNNN(CalcPacket& packet)
 {
 	if(packet.help)
@@ -551,6 +576,25 @@ bool CtimeNNNNNN(CalcPacket& packet)
 }
 
 FDECLQ("CtimeNNNNNN", "time", &GroupDate, &CtimeNNNNNN)
+
+inline Time CtimeSD(CalcPacket& packet, String s, Time dflt)
+{
+	return Nvl((Time)Scan(TIME_V, s), dflt);
+}
+
+inline Time CtimeS(CalcPacket& packet, String s)
+{
+	return CtimeSD(packet, s, Null);
+}
+
+inline Time CtimeD(Date d)
+{
+	return ToTime(d);
+}
+
+FDECLAP(time, S, &GroupDate)
+FDECLAP(time, SD, &GroupDate)
+FDECLP(time, D, &GroupDate)
 
 inline int CyearD(Date date)    { return date.year; }
 inline int CmonthD(Date date)   { return date.month; }
@@ -610,6 +654,7 @@ static int Cyears_betweenDD(Date a, Date b)
 FDECLP(years_between, DD, &GroupDate)
 
 inline Value Cnull0()             { return Value(); }
+inline int   Cis_errorV(Value v)  { return IsError(v); }
 inline int   Cis_nullV(Value v)   { return IsNull(v); }
 inline int   Cis_numberV(Value v) { return IsNumber(v); }
 inline int   Cis_textV(Value v)   { return IsString(v); }
@@ -621,6 +666,7 @@ FDECLP(is_number, V, &GroupComp)
 FDECLP(is_text, V, &GroupComp)
 FDECLP(is_date, V, &GroupComp)
 FDECLP(is_null, V, &GroupComp)
+FDECLP(is_error, V, &GroupComp)
 FDECLP(is_array, V, &GroupComp)
 
 inline Value CnvlVV(Value a, Value b) { return Nvl(a, b); }
@@ -1155,5 +1201,95 @@ static inline bool ClikeSS(WString s, WString m)
 }
 
 FDECLP(like, SS, GroupString)
+
+static String CltrimSS(String s, String trim)
+{
+	int tl = trim.GetLength(), sl = s.GetLength();
+	if(tl == 0 || sl == 0)
+		return s;
+	const char *p = s, *e = s.End();
+	if(tl == 1) {
+		char c = trim[0];
+		while(p < e && *p == c)
+			p++;
+	}
+	else if(tl == 2) {
+		char c1 = trim[0], c2 = trim[1];
+		while(p < e && (*p == c1 || *p == c2))
+			p++;
+	}
+	else {
+		while(p < e && memchr(trim, *p, tl))
+			p++;
+	}
+	return String(p, e);
+}
+
+static String CltrimS(String s) { return CltrimSS(s, " "); }
+
+FDECLP(ltrim, S, GroupString)
+FDECLP(ltrim, SS, GroupString)
+
+static String CrtrimSS(String s, String trim)
+{
+	int tl = trim.GetLength(), sl = s.GetLength();
+	if(tl == 0 || sl == 0)
+		return s;
+	const char *p = s, *e = s.End();
+	if(tl == 1) {
+		char c = trim[0];
+		while(p < e && e[-1] == c)
+			e--;
+	}
+	else if(tl == 2) {
+		char c1 = trim[0], c2 = trim[1];
+		while(p < e && (e[-1] == c1 || e[-1] == c2))
+			e--;
+	}
+	else {
+		while(p < e && memchr(trim, e[-1], tl))
+			e--;
+	}
+	return String(p, e);
+}
+
+static String CrtrimS(String s) { return CrtrimSS(s, " "); }
+
+FDECLP(rtrim, S, GroupString)
+FDECLP(rtrim, SS, GroupString)
+
+static String CtrimSS(String s, String trim)
+{
+	int tl = trim.GetLength(), sl = s.GetLength();
+	if(tl == 0 || sl == 0)
+		return s;
+	const char *p = s, *e = s.End();
+	if(tl == 1) {
+		char c = trim[0];
+		while(p < e && *p == c)
+			p++;
+		while(p < e && e[-1] == c)
+			e--;
+	}
+	else if(tl == 2) {
+		char c1 = trim[0], c2 = trim[1];
+		while(p < e && (*p == c1 || *p == c2))
+			p++;
+		while(p < e && (e[-1] == c1 || e[-1] == c2))
+			e--;
+	}
+	else {
+		while(p < e && memchr(trim, *p, tl))
+			p++;
+		while(p < e && memchr(trim, e[-1], tl))
+			e--;
+	}
+	return String(p, e);
+}
+
+static String CtrimS(String s) { return CtrimSS(s, " "); }
+
+FDECLP(trim, S, GroupString)
+FDECLP(trim, SS, GroupString)
 
 END_UPP_NAMESPACE

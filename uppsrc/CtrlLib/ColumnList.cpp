@@ -581,12 +581,12 @@ void ColumnList::Clear() {
 
 void ColumnList::Insert(int ii, const Value& val, bool canselect)
 {
-	Item& m = item.Insert(ii);
 	int c = -1;
 	if(cursor >= ii) {
 		c = cursor + 1;
 		KillCursor();
 	}
+	Item& m = item.Insert(ii);
 	m.value = val;
 	m.sel = false;
 	m.canselect = canselect;

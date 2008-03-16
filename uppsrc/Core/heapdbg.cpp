@@ -6,11 +6,16 @@ int sMemDiagInitCount = 0;
 
 #if defined(_DEBUG) && defined(UPP_HEAP)
 
+extern bool PanicMode;
+void HeapPanic(const char *text, void *pos, int size);
+
 static StaticCriticalSection sHeapLock2;
 
-struct DbgBlkLink {
-	DbgBlkLink *prev;
-	DbgBlkLink *next;
+struct DbgBlkHeader {
+	size_t        size;
+	DbgBlkHeader *prev;
+	DbgBlkHeader *next;
+	dword         serial;
 
 	void LinkSelf() {
 		next = prev = this;
@@ -19,7 +24,7 @@ struct DbgBlkLink {
 		prev->next = next;
 		next->prev = prev;
 	}
-	void Insert(DbgBlkLink *lnk) {
+	void Insert(DbgBlkHeader *lnk) {
 		lnk->prev = this;
 		lnk->next = next;
 		next->prev = lnk;
@@ -27,37 +32,51 @@ struct DbgBlkLink {
 	}
 };
 
-static void *l_leak[8];
-static int   l_count;
-
-void  MemoryWatch(void *leak)
+static const char *DbgFormat(char *b, DbgBlkHeader *p)
 {
-	if(l_count < 8)
-		l_leak[l_count++] = leak;
+	sprintf(b, "--memory-breakpoint__ %u ", (dword)~(p->serial ^ (uintptr_t)p), (dword)p->size);
+	return b;
 }
 
-void _PLACE_DEBUGER_BREAK_HERE_()
+static void DbgHeapPanic(const char *text, DbgBlkHeader *p)
 {
-	LOG("Memory watch...");
+	char h[256];
+	char b[100];
+	strcpy(h, text);
+	strcat(h, DbgFormat(b, p));
+	HeapPanic(h, p + 1, p->size);
 }
 
-static void *l_wfree[8];
-static int   l_wfcount;
+static DbgBlkHeader dbg_live = { 0, &dbg_live, &dbg_live, 0 };
 
-void  MemoryWatchFree(void *ptr)
+static dword s_allocbreakpoint;
+
+static
+#ifdef flagMT
+#ifdef COMPILER_MSC
+__declspec(thread)
+#else
+__thread
+#endif
+#endif
+dword s_ignoreleaks;
+
+void MemoryIgnoreLeaksBegin()
 {
-	if(l_wfcount < 8)
-		l_wfree[l_wfcount++] = ptr;
+	CriticalSection::Lock __(sHeapLock2);
+	s_ignoreleaks++;
 }
 
-void _PLACE_DEBUGER_FREE_BREAK_HERE_()
+void MemoryIgnoreLeaksEnd()
 {
-	LOG("Memory watch free...");
+	CriticalSection::Lock __(sHeapLock2);
+	s_ignoreleaks--;
 }
 
-static DbgBlkLink dbg_live = { &dbg_live, &dbg_live };
-
-extern bool PanicMode;
+void MemoryBreakpoint(dword serial)
+{
+	s_allocbreakpoint = serial;
+}
 
 void *MemoryAllocDebug(size_t size)
 {
@@ -66,50 +85,33 @@ void *MemoryAllocDebug(size_t size)
 #ifdef _MULTITHREADED
 	sHeapLock2.Enter();
 #endif
-//	if(!dbg_live.next)
-//		dbg_live.LinkSelf();
-	size = (size + 7) & 0xfffffff8;
-	DbgBlkLink *p = (DbgBlkLink *)MemoryAlloc(size + 2 * sizeof(DbgBlkLink));
-	DbgBlkLink *e = (DbgBlkLink *)((byte *)(p + 1) + size);
-	dbg_live.Insert(e);
+	static dword serial_number = 0;
+	DbgBlkHeader *p = (DbgBlkHeader *)MemoryAlloc(sizeof(DbgBlkHeader) + size + sizeof(dword));
+	p->serial = s_ignoreleaks ? 0 : ~ ++serial_number ^ (uintptr_t) p;
+	p->size = size;
+	if(s_allocbreakpoint && s_allocbreakpoint == serial_number)
+		__BREAK__;
 	dbg_live.Insert(p);
-	p++;
+	Poke32le((byte *)(p + 1) + p->size, p->serial);
 #ifdef _MULTITHREADED
 	sHeapLock2.Leave();
 #endif
-	for(int i = 0; i < l_count; i++)
-		if(l_leak[i] == p) {
-			fprintf(stderr, "Allocating leak: %p\n", p);
-			fflush(stderr);
-			LOG("Leak spot allocation: " << FormatIntHex(p));
-			_PLACE_DEBUGER_BREAK_HERE_();
-		}
-	return p;
+	return p + 1;
 }
-
-void HeapPanic(const char *text, void *pos, int size);
 
 void MemoryFreeDebug(void *ptr)
 {
 	if(PanicMode)
 		return;
 	if(!ptr) return;
-//	LOG("T");
 #ifdef _MULTITHREADED
 	CriticalSection::Lock __(sHeapLock2);
 #endif
-	for(int i = 0; i < l_wfcount; i++)
-		if(l_wfree[i] == ptr)
-			_PLACE_DEBUGER_FREE_BREAK_HERE_();
-	DbgBlkLink *p = (DbgBlkLink *)ptr - 1;
-	DbgBlkLink *e = p->next;
-	if(p != e->prev) {
+	DbgBlkHeader *p = (DbgBlkHeader *)ptr - 1;
+	if(Peek32le((byte *)(p + 1) + p->size) != p->serial) {
 		sHeapLock2.Leave();
-		char h[256];
-		sprintf(h, "Heap is corrupted p:%p e->prev:%p", p, e->prev);
-		HeapPanic(h, p + 1, (int)((uintptr_t)p->next - (uintptr_t)(p + 1)));
+		DbgHeapPanic("Heap is corrupted ", p);
 	}
-	e->Unlink();
 	p->Unlink();
 	MemoryFree(p);
 }
@@ -118,11 +120,11 @@ void MemoryCheckDebug()
 {
 	MemoryCheck();
 	CriticalSection::Lock __(sHeapLock2);
-	DbgBlkLink *p = &dbg_live;
-	do {
-		if(p->prev->next != p || p->next->prev != p) {
+	DbgBlkHeader *p = dbg_live.next;
+	while(p != &dbg_live) {
+		if(Peek32le((byte *)(p + 1) + p->size) != p->serial) {
 			sHeapLock2.Leave();
-			HeapPanic("HEAP CHECK: Heap is corrupted", p + 1, (int)((uintptr_t)p->next - (uintptr_t)(p + 1)));
+			DbgHeapPanic("HEAP CHECK: Heap is corrupted ", p);
 		}
 		p = p->next;
 	}
@@ -131,18 +133,32 @@ void MemoryCheckDebug()
 
 void MemoryDumpLeaks()
 {
-	if(!dbg_live.next || dbg_live.next == dbg_live.prev)
+	if(PanicMode)
 		return;
-	BugLog() << "\n\nHeap leaks detected:\n";
-	DbgBlkLink *p = dbg_live.next;
-	for(;;) {
-		BugLog() << Sprintf("MemoryWatch(0x%lX);\n", p + 1);
-		HexDump(VppLog(), p + 1, (dword)((uintptr_t)p->next - (uintptr_t)(p + 1)), 64);
+#ifndef PLATFORM_POSIX
+	if(s_ignoreleaks)
+		Panic("Ignore leaks Begin/End mismatch!");
+#endif
+	MemoryCheckDebug();
+	DbgBlkHeader *p = dbg_live.next;
+	bool leaks = false;
+	while(p != &dbg_live) {
+		if(p->serial) {
+			if(!leaks) {
+				BugLog() << "\n\nHeap leaks detected:\n";
+				VppLog() << "\n\nHeap leaks detected:\n";
+			}
+			leaks = true;
+			char b[100];
+			DbgFormat(b, p);
+			BugLog() << '\n' << b;
+			VppLog() << '\n' << b << ": ";
+			HexDump(VppLog(), p + 1, p->size, 64);
+		}
 		p = p->next;
-		if(p == &dbg_live) break;
-		p = p->next;
-		if(p == &dbg_live) break;
 	}
+	if(!leaks)
+		return;
 #ifdef PLATFORM_WIN32
 #ifdef PLATFORM_WINCE
 	MessageBox(::GetActiveWindow(),

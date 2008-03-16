@@ -255,25 +255,25 @@ void RulerCtrl::Paint(Draw& draw)
 		}
 	}
 	rep_count = 1;
-	rep_delta = 0;
+	double rep_index = 0;
 	if(!IsNull(text_repeat)) {
-		rep_delta = text_repeat * floor(pos1 / text_repeat);
+		rep_index = floor(pos1 / text_repeat);
 		rep_count = ceil(pos2 / text_repeat) - floor(pos1 / text_repeat) + 1;
 	}
 	if(!text_step.IsEmpty() && (!text_value.IsEmpty() || text_convert)
 	&& rep_count > 0 && rep_count * text_step.GetCount() <= TEXT_LIMIT) {
-		int ix = BinFindIndex(text_step, pos1 - rep_delta);
+		int ix = BinFindIndex(text_step, pos1 - rep_index * text_repeat);
 		int ppos = (is_right ? SMALL_SIZE : cheight - cy - SMALL_SIZE);
-		for(int c = fround(rep_count); --c >= 0; ix = 0, rep_delta += text_repeat) {
+		for(int c = fround(rep_count); --c >= 0; ix = 0, rep_index++) {
 			int lim = text_step.GetCount();
-			double dp2 = pos2 - rep_delta;
+			double dp2 = pos2 - rep_index * text_repeat;
 			if(text_step.Top() > dp2) {
 				lim = BinFindIndex(text_step, dp2);
 				if(lim + 1 < text_step.GetCount() && text_step[lim + 1] - dp2 < dp2 - text_step[lim])
 					lim++;
 			}
 			for(; ix < lim; ix++) {
-				double value = text_step[ix] + rep_delta;
+				double value = text_step[ix] + rep_index * text_repeat;
 				int cli = ToClient(value);
 				String text;
 				if(ix < text_value.GetCount())

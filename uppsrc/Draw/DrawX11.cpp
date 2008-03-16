@@ -235,6 +235,7 @@ void InitX11Draw(const char *dispname)
 	}
 	InitX11Draw(XOpenDisplay(dispname));
 #else
+	MemoryIgnoreLeaksBlock __;
 	const Vector<String>& cmd = CommandLine();
 	char **argv = (char**) MemoryAllocPermanent(sizeof(char *) * cmd.GetCount());
 	for(int i = 0; i < cmd.GetCount(); i++)

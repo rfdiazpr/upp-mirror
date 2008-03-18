@@ -10,7 +10,7 @@ NAMESPACE_UPP
 
 #ifdef _DEBUG
 //	#define SYNCHRONIZE
-	#define X11ERRORMSG
+//	#define X11ERRORMSG
 //	#define X11ERRORABORT
 #endif
 

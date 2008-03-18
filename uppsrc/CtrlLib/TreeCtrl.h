@@ -183,6 +183,7 @@ public:
 	void   RemoveChildren(int id);
 
 	void   Swap(int id1, int id2);
+	void   SwapChildren(int parentid, int i1, int i2);
 
 	int    GetChildCount(int id) const                         { return item[id].child.GetCount(); }
 	int    GetChild(int id, int i) const                       { return item[id].child[i]; }

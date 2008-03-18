@@ -48,6 +48,7 @@ public:
 	bool   IsNumber()                         { return IsDigit(*term); }
 	bool   IsNumber(int base);
 	uint32 ReadNumber(int base = 10) throw(Error);
+	uint64 ReadNumber64(int base = 10) throw(Error);
 	bool   IsDouble()                         { return IsInt(); }
 	double ReadDouble() throw(Error);
 	bool   IsString()                         { return IsChar('\"'); };

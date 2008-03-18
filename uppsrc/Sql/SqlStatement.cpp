@@ -74,7 +74,8 @@ SqlSelect& SqlSelect::Having(const SqlBool& exp) {
 }
 
 SqlSelect& SqlSelect::OrderBy(const SqlSet& set) {
-	text << " order by " << ~set;
+	if(!set.IsEmpty())
+		text << " order by " << ~set;
 	return *this;
 }
 

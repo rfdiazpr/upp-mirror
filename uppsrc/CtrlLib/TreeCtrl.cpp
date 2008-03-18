@@ -84,7 +84,10 @@ void TreeCtrl::CancelMode()
 	repoint = Null;
 }
 
-TreeCtrl::~TreeCtrl() {}
+TreeCtrl::~TreeCtrl()
+{
+	Shutdown();
+}
 
 void   TreeCtrl::Layout()
 {
@@ -377,7 +380,10 @@ void TreeCtrl::SyncTree()
 		ReLine(0, 0, treesize);
 	treesize.cy = max(0, treesize.cy);
 	treesize.cx += levelcx;
-	sb.SetTotal(treesize);
+	if(treesize != sb.GetTotal()) {
+		sb.SetTotal(treesize);
+		Refresh();
+	}
 	cursor = -1;
 	dirty = false;
 	if(cursorid >= 0)
@@ -686,7 +692,7 @@ void TreeCtrl::ShiftSelect(int l1, int l2)
 		return;
 	bool b = false;
 	if(l1 > l2)
-		Swap(l1, l2);
+		UPP::Swap(l1, l2);
 	for(int i = 0; i < line.GetCount(); i++)
 		SelectOne0(line[i].itemi, i >= l1 && i <= l2, true);
 }
@@ -740,6 +746,8 @@ void TreeCtrl::DoClick(Point p, dword flags, bool down)
 
 void TreeCtrl::SyncInfo()
 {
+	if(IsShutdown())
+		return;
 	if((HasMouse() || info.HasMouse()) && popupex) {
 		Size sz = GetSize();
 		Point p = GetMouseViewPos();
@@ -1350,9 +1358,23 @@ void TreeCtrl::InsertDrop(int parent, int ii, PasteClip& d)
 void TreeCtrl::Swap(int id1, int id2)
 {
 	SyncTree();
+	Item& i1 = item[id1];
+	Item& i2 = item[id2];
+	for(int i = 0; i < i1.child.GetCount(); i++)
+		item[i1.child[i]].parent = id2;
+	for(int i = 0; i < i2.child.GetCount(); i++)
+		item[i2.child[i]].parent = id1;
 	item.Swap(id1, id2);
 	Dirty(id1);
 	Dirty(id2);
+}
+
+void TreeCtrl::SwapChildren(int parentid, int i1, int i2)
+{
+	SyncTree();
+	Item& parent = item[parentid];
+	UPP::Swap(parent.child[i1], parent.child[i2]);
+	Dirty(parentid);
 }
 
 void OptionTree::SetRoot(const Image& img, Option& opt, const char *text)

@@ -1,6 +1,7 @@
 #ifndef _Docking_DockCont_h_
 #define _Docking_DockCont_h_
 
+#include <Docking/DockMenu.h>
 #include <Docking/DockableCtrl.h>
 #include <Docking/DockTabBar.h>
 
@@ -32,7 +33,7 @@ public:
 	
 	virtual void LeftDrag(Point p, dword keyflags);
 	virtual void LeftDown(Point p, dword keyflags)		{ SetFocus(); }
-	virtual void RightDown(Point p, dword keyflags) 	{ TitleContext(); }
+	virtual void RightDown(Point p, dword keyflags) 	{ WindowMenu(); }
 	
 	virtual void Layout();
 	virtual void ChildRemoved(Ctrl *child);
@@ -56,6 +57,22 @@ private:
 		STATE_TABBED
 	};
 	
+	class DockContMenu : public DockMenu {
+	public:
+		typedef DockContMenu CLASSNAME;
+		DockCont *cont;
+		
+		DockContMenu(DockWindow *dockwindow = NULL) : DockMenu(dockwindow) { };
+		
+		void ContainerMenu(Bar &bar, DockCont *c, bool withgroups  = true);
+	private:		
+		virtual void MenuDock(int align, DockableCtrl *dc);
+		virtual void MenuFloat(DockableCtrl *dc);
+		virtual void MenuAutoHide(int align, DockableCtrl *dc);	
+		virtual void MenuClose(DockableCtrl *dc);	
+	};	
+	friend class DockContMenu;
+		
 	int 		dragging;
 	DockState	dockstate;	
 	DockTabBar 	tabbar;
@@ -67,29 +84,18 @@ private:
 	bool waitsync:1;
 
 	// Callbacks
-	// Tabs
+	// Tab callbacks
 	void 	TabSelected();
 	void	TabDragged(int ix);
 	void	TabContext(int ix);
+	void	TabClosed(Value v);								
 	// Menus/Buttons
 	void 	Float();
 	void 	Dock(int align);
-	void 	AutoHide();
+	void 	AutoHide()											{ AutoHideAlign(GetDockAlign()); }
 	void 	AutoHideAlign(int align);
-	void	DockTo(int align, DockableCtrl *target);
 
-	void	DockMenu(Bar &bar, int ix);
-	void	DockMenuItem(Bar &bar, int ix, int al, int align, const char *str);
-	void	AutoHideMenu(Bar &bar, int ix);
-	void	AutoHideMenuItem(Bar &bar, DockableCtrl &dc, int align, int ix);	
-	int 	DoPrompt(const char *title, const char *text) const;
-	
-	void 	TabsClose(int ix);
-	void 	TabsDock(int align, int ix);
-	void 	TabsAutoHide(int align, int ix);
-	void 	TabsAutoHide0();
-	void 	TabsFloat(int ix);
-	void	TabClosed(Value v);								
+	void 	CloseAll();
 	
 	int 	GetHandleSize(const DockableCtrl::Style &s) const;
 	Rect	GetHandleRect(const DockableCtrl::Style &s) const;
@@ -128,8 +134,7 @@ public:
 	virtual void 	MoveBegin();
 	virtual void 	Moving();
 	virtual void 	MoveEnd();		
-	virtual void 	TitleContext()				{ TabContext(-1); }	
-	void 			WindowMenu(Bar &bar, int ix, bool noclose);
+	virtual void 	WindowMenu();	
 		
 	bool 			IsDocked() const			{ return dockstate == STATE_DOCKED; }
 	int				GetDockAlign() const;		
@@ -152,9 +157,9 @@ public:
 	
 	void 			Grouping(bool grouping)			{ tabbar.Grouping(grouping); GroupRefresh(); }
 	void			GroupRefresh();	
+	void			GetGroups(Vector<String> &groups);
 	
 	void			WindowButtons(bool menu, bool hide, bool close);
-	
 	
 	void			Highlight();
 	

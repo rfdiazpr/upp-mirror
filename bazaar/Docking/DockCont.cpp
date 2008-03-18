@@ -20,7 +20,7 @@ void ImgButton::Paint(Draw &w)
 LRESULT DockCont::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if (message == WM_NCRBUTTONDOWN) {
-		TitleContext();
+		WindowMenu();
 		return 1L;
 	}
 	if (message == WM_NCLBUTTONDOWN && IsFloating() && base)
@@ -50,6 +50,7 @@ void DockCont::StartMouseDrag(const Point &p)
 #elif defined(PLATFORM_X11)
 void DockCont::EventProc(XWindow& w, XEvent *event)
 {
+	
 	if (IsOpen()) {
 		switch(event->type) {
 		case ConfigureNotify:{
@@ -65,7 +66,7 @@ void DockCont::EventProc(XWindow& w, XEvent *event)
 			break;
 		case FocusIn:
 			XFocusChangeEvent &e = event->xfocus;
-			if (e.mode == NotifyUngrab) {
+			if (e.mode == NotifyUngrab && dragging) {
 				dragging = false;
 				MoveEnd();
 //				SetFocus();
@@ -229,6 +230,14 @@ void 	DockCont::MoveBegin()		{ base->ContainerDragStart(*this); }
 void 	DockCont::Moving()			{ base->ContainerDragMove(*this); }
 void 	DockCont::MoveEnd()			{ base->ContainerDragEnd(*this); }	
 
+void DockCont::WindowMenu()
+{
+	MenuBar bar;
+	DockContMenu menu(base);
+	menu.ContainerMenu(bar, this, true);
+	bar.Execute();
+}
+
 void DockCont::TabSelected() 
 {
 	int ix = tabbar.GetCursor();
@@ -280,128 +289,15 @@ void DockCont::TabDragged(int ix)
 void DockCont::TabContext(int ix)
 {
 	MenuBar bar;
-	WindowMenu(bar, ix, true);
+	DockContMenu menu(base);
+	Value v = tabbar.Get(ix);
+	if (IsDockCont(v))
+		menu.ContainerMenu(bar, ContCast(v), false);
+	else
+		menu.WindowMenu(bar, DockCast(v));
+	bar.Separator();
 	tabbar.ContextMenu(bar);
 	bar.Execute();
-}
-
-int DockCont::DoPrompt(const char *title, const char *text) const
-{
-	return GetCount() > 1 ? 
-		Prompt(	Format("%s Tabs", title), Image(), 
-				Format("There are multiple tabs open, which would you like to %s?", text), 
-				"All Tabs", "All Other Tabs", "Only This Tab") 
-		: 1;	
-}
-
-void DockCont::WindowMenu(Bar &bar, int ix, bool noclose)
-{
-	GetCurrent().WindowMenu(bar);
-	bar.Add(true, "Dock", (IsDockedAny() && !IsAutoHide()) ? CtrlImg::MenuCheck1 : CtrlImg::MenuCheck0, THISBACK1(DockMenu, ix));
-	bar.Add(IsDockedAny(), "Float", 	IsFloating() ? CtrlImg::MenuCheck1 : CtrlImg::MenuCheck0, THISBACK1(TabsFloat, ix));
-	if (base->IsAutoHide())
-		bar.Add(true, "Auto-Hide", CtrlImg::MenuCheck0, THISBACK1(AutoHideMenu, ix));
-	bar.Separator();
-	if (!noclose) bar.Add(true, "Close", CtrlImg::Remove(), THISBACK1(TabsClose, ix));	
-}
-
-void DockCont::DockMenu(Bar &bar, int ix)
-{
-	int align = GetDockWindow()->GetDockAlign(*this);
-	DockableCtrl &dc = GetCurrent();
-	int t = DockWindow::DOCK_LEFT;
-	DockMenuItem(bar, ix, t++, align, "Left");
-	DockMenuItem(bar, ix, t++, align, "Top");
-	DockMenuItem(bar, ix, t++, align, "Right");
-	DockMenuItem(bar, ix, t++, align, "Bottom");
-}
-
-void DockCont::DockMenuItem(Bar &bar, int ix, int al, int align, const char *str)
-{
-	bar.Add(IsDockAllowed(al, ix), str, align == al ? CtrlImg::MenuCheck1 : CtrlImg::MenuCheck0, THISBACK2(TabsDock, al, ix));		
-}
-
-void DockCont::AutoHideMenu(Bar &bar, int ix)
-{
-	bar.Add(true, "Left", 	THISBACK2(TabsAutoHide, (int)DockWindow::DOCK_LEFT, ix));
-	bar.Add(true, "Top", 	THISBACK2(TabsAutoHide, (int)DockWindow::DOCK_TOP, ix));
-	bar.Add(true, "Right", 	THISBACK2(TabsAutoHide, (int)DockWindow::DOCK_RIGHT, ix));
-	bar.Add(true, "Bottom", THISBACK2(TabsAutoHide, (int)DockWindow::DOCK_BOTTOM, ix));	
-}
-
-void DockCont::TabsClose(int ix)
-{
-	int resp = -1; // Selected
-	if (ix < 0) {
-		ix = tabbar.GetCursor();
-		resp = DoPrompt("Close", "close");
-	}
-
-	if (resp > 0) // ALL
-		base->CloseContainer(*this);
-	else if (resp == 0) { // All Other
-		Ctrl *tab = GetCtrl(ix);
-		tabbar.Clear();
-		Ctrl *first = &tabbar;
-		for (Ctrl *c = first->GetNext(); c; c = c->GetNext())
-			if (c != tab) c->Remove();
-	}		
-	else // Selected
-		GetCtrl(ix)->Remove();	
-}
-
-void DockCont::TabsDock(int align, int ix)
-{
-	int resp = -1; // Selected
-	if (ix < 0) {
-		ix = tabbar.GetCursor();
-		resp = DoPrompt("Dock", "dock");
-	}
-	if (resp > 0) ix = -1; // ALL
-	if (resp >= 0) // All/All Other
-		base->DockContainer(align, *this, ix);
-	else // Selected
-		IsDockCont(tabbar.Get(ix)) ? 
-			base->DockContainer(align, *ContCast(tabbar.Get(ix)), -1) : 
-			base->Dock(align, Get(ix));	
-}
-
-void DockCont::TabsAutoHide(int align, int ix)
-{
-	int resp = -1; // Selected
-	if (ix < 0) {
-		ix = tabbar.GetCursor();
-		resp = DoPrompt("Hide", "hide");
-	}
-	if (resp > 0) ix = -1; // ALL
-	if (resp >= 0) // All/All Other
-		base->AutoHideContainer(align, *this, ix);
-	else // Selected
-		IsDockCont(tabbar.Get(ix)) ? 
-			base->AutoHideContainer(align, *ContCast(tabbar.Get(ix)), -1) :
-			base->AutoHide(align, Get(ix));		
-}
-
-void DockCont::TabsAutoHide0()
-{
-	ASSERT(GetDockWindow()); 
-	IsAutoHide() ? TabsFloat(0) : TabsAutoHide(GetDockWindow()->GetDockAlign(GetCurrent()), IsAutoHide() ? 1 : -1);		 
-}
-
-void DockCont::TabsFloat(int ix)
-{
-	int resp = -1; // Selected
-	if (ix < 0) {
-		ix = tabbar.GetCursor();
-		resp = DoPrompt("Float", "float");
-	}
-	if (resp > 0) ix = -1; // ALL
-	if (resp >= 0) // All/All Other
-		base->FloatContainer(*this, ix);
-	else // Selected
-		IsDockCont(tabbar.Get(ix)) ? 
-			base->FloatContainer(*ContCast(tabbar.Get(ix)), -1) :
-			base->Float(Get(ix));			
 }
 
 void DockCont::TabClosed(Value v)
@@ -411,6 +307,26 @@ void DockCont::TabClosed(Value v)
 	waitsync = true;
 	Layout();
 	if (tabbar.GetCount() == 1) RefreshLayout();
+}
+
+void DockCont::CloseAll()
+{
+	base->CloseContainer(*this);
+}
+
+void DockCont::Float()
+{
+	base->FloatContainer(*this);
+}
+
+void DockCont::Dock(int align)
+{
+	base->DockContainer(align, *this);
+}
+
+void DockCont::AutoHideAlign(int align)
+{
+	base->AutoHideContainer((align == DockWindow::DOCK_NONE) ? DockWindow::DOCK_TOP : align, *this);
 }
 
 void DockCont::AddFrom(DockCont &cont, int except)
@@ -545,6 +461,29 @@ void DockCont::GroupRefresh()
 	Refresh();
 }
 
+void DockCont::GetGroups(Vector<String> &groups)
+{
+	for (int i = 0; i < tabbar.GetCount(); i++) {
+		Value v = tabbar.Get(i);
+		if (IsDockCont(v))
+			ContCast(v)->GetGroups(groups);
+		else {
+			DockableCtrl *dc = DockCast(v);
+			String g = dc->GetGroup();
+			if (!g.IsEmpty()) {
+				bool found = false;
+				for (int j = 0;	j < groups.GetCount(); j++)
+					if (groups[j] == g) {
+						found = true;
+						break;
+					}
+				if (!found)
+					groups.Add(g);
+			}				
+		}
+	}
+}
+
 void DockCont::WindowButtons(bool menu, bool hide, bool _close)
 {
 	AddRemoveButton(windowpos, menu);
@@ -659,7 +598,10 @@ DockCont::DockCont()
 	style = NULL;
 	usersize.cx = usersize.cy = Null;
 	BackPaint();
-	ToolWindow().NoCenter().Sizeable(true).MaximizeBox(false).MinimizeBox(false);
+#ifdef PLATFORM_WIN32
+	ToolWindow();
+#endif
+	NoCenter().Sizeable(true).MaximizeBox(false).MinimizeBox(false);
 
 	*this << close << autohide << windowpos;
 
@@ -672,10 +614,10 @@ DockCont::DockCont()
 	AddFrame(tabbar);
 	tabbar.SetBottom();	
 
-	close.Tip("Close") 					<<= THISBACK1(TabsClose, -1);
-	autohide.Tip("Auto-Hide") 			<<= THISBACK (TabsAutoHide0);
-	windowpos.Tip("Window Position") 	<<= THISBACK1(TabContext, -1);		
-	WhenClose 							  = THISBACK1(TabsClose, -1);
+	close.Tip(t_("Close")) 					<<= THISBACK(CloseAll);
+	autohide.Tip(t_("Auto-Hide")) 			<<= THISBACK(AutoHide);
+	windowpos.Tip(t_("Window Menu")) 	<<= THISBACK(WindowMenu);		
+	WhenClose 							  = THISBACK(CloseAll);
 }
 
 void DockCont::Serialize(Stream& s)
@@ -733,5 +675,48 @@ void DockCont::Serialize(Stream& s)
 		tabbar.SetCursor(min(tabbar.GetCount()-1, cursor));
 		TabSelected();
 	}	
+}
+
+void DockCont::DockContMenu::ContainerMenu(Bar &bar, DockCont *c, bool withgroups)
+{
+	DockableCtrl *dc = &c->GetCurrent();
+	cont = c;
+		
+	// TODO: Need correct group filtering
+	withgroups = false;
+	
+	// If grouping, find all groups
+	DockMenu::WindowMenu(bar, dc);	
+	if (withgroups && dock->IsGrouping()) {
+		Vector<String> groups;
+		cont->GetGroups(groups);
+		if (groups.GetCount()) {
+			bar.Separator();
+			Sort(groups);
+			for (int i = 0; i < groups.GetCount(); i++)
+				bar.Add(groups[i], THISBACK1(GroupWindowsMenu, groups[i]));
+			bar.Add(t_("All"), THISBACK1(GroupWindowsMenu, String(Null)));	
+		}
+	}	
+}
+
+void DockCont::DockContMenu::MenuDock(int align, DockableCtrl *dc)
+{
+	cont->Dock(align);
+}
+
+void DockCont::DockContMenu::MenuFloat(DockableCtrl *dc)
+{
+	cont->Float();
+}
+
+void DockCont::DockContMenu::MenuAutoHide(int align, DockableCtrl *dc)
+{
+	cont->AutoHideAlign(align);
+}
+
+void DockCont::DockContMenu::MenuClose(DockableCtrl *dc)
+{
+	cont->CloseAll();
 }
 

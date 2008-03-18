@@ -15,6 +15,7 @@ void DockWindow::State(int reason)
 			init = true;	
 		}
 	}
+	TopWindow::State(reason);
 }
 
 void DockWindow::Dock(int align, DockableCtrl &dc, int pos)
@@ -37,7 +38,7 @@ void DockWindow::Float(DockableCtrl &dc, Point p)
 		p = GetScreenRect().TopLeft(); 
 	else
 		Register(dc);        
-	FloatContainer(*GetReleasedContainer(dc), -1, p);
+	FloatContainer(*GetReleasedContainer(dc), p);
 }
 
 void DockWindow::Float(DockableCtrl &dc, const char *title, Point p)
@@ -284,14 +285,6 @@ void DockWindow::FrameAnimateTick()
 void DockWindow::Undock(DockCont &c)
 {
 	if (!c.IsFloating() && !c.IsHidden()) {
-		int dock = GetDockAlign(c);
-		if (dock >= 0 && dock < 4) {
-			Ctrl *p = &c;
-			while (p && p->GetParent() != &dockpane[dock]) p = p->GetParent();
-			ASSERT(p);
-			bool v = !IsTB(dock);		
-			c.SyncUserSize(v, !v);
-		}
 		if (c.IsAutoHide()) {
 			for (int i = 0; i < 4; i++) {
 				int ix = hideframe[i].FindCtrl(c);
@@ -302,8 +295,17 @@ void DockWindow::Undock(DockCont &c)
 				}
 			}				
 		}
-		else
+		else {
+			int dock = GetDockAlign(c);
+			if (dock >= 0 && dock < 4) {
+				Ctrl *p = &c;
+				while (p && p->GetParent() != &dockpane[dock]) p = p->GetParent();
+				ASSERT(p);
+				bool v = !IsTB(dock);		
+				c.SyncUserSize(v, !v);
+			}
 			Undock0(c);		
+		}
 		c.StateNotDocked();
 	}		
 }
@@ -347,18 +349,11 @@ void DockWindow::Dock0(int align, Ctrl &c, int pos, bool do_animate)
 /*
  * Container docking
 */ 
-void DockWindow::DockContainer(int align, DockCont &c, int pos, int except)
+void DockWindow::DockContainer(int align, DockCont &c, int pos)
 {
-	DockCont *cont = &c;
-	if (except >= 0) {
-		cont = CreateContainer();
-		cont->AddFrom(c, except);
-		c.RefreshLayout();
-	}
-	else 
-		Detach(c);
-	cont->StateDocked(*this);
-	Dock0(align, *cont, pos);
+	Detach(c);
+	c.StateDocked(*this);
+	Dock0(align, c, pos);
 }
 
 void DockWindow::DockContainerAsTab(DockCont &target, DockCont &c, bool do_nested)
@@ -374,26 +369,17 @@ void DockWindow::DockContainerAsTab(DockCont &target, DockCont &c, bool do_neste
 	}
 }
 
-void DockWindow::FloatContainer(DockCont &c, int except, Point p)
+void DockWindow::FloatContainer(DockCont &c, Point p)
 {
 	ASSERT(IsOpen());
-	if (c.IsFloating() && except < 0) return;
+	if (c.IsFloating()) return;
 	if (p.IsNullInstance()) 
 		p = GetScreenRect().CenterPoint();
-	DockCont *cont = &c;
-	if (except >= 0) {
-		cont = CreateContainer();
-		cont->AddFrom(c, except);
-		cont->SetRect(c.GetScreenRect());	
-		c.RefreshLayout();	
-	}	
-	else
-		Detach(c);	
-		
-	cont->StateFloating(*this);
+	Detach(c);	
+	c.StateFloating(*this);
 	Size best = CtrlBestSize(c, false);
-	cont->SetRect(Rect(p, best));
-	cont->Open(this);
+	c.SetRect(Rect(p, best));
+	c.Open(this);
 }
 
 void DockWindow::FloatFromTab(DockCont &c, DockCont &tab)
@@ -401,16 +387,14 @@ void DockWindow::FloatFromTab(DockCont &c, DockCont &tab)
 	Rect r = c.GetScreenRect();
 	tab.SetRect(r);
 	tab.StateDocked(*this);
+	c.RefreshLayout();
 	tab.MoveBegin();
 }
 
-void DockWindow::AutoHideContainer(int align, DockCont &c, int except)
+void DockWindow::AutoHideContainer(int align, DockCont &c)
 {
-	except = except < 0 ? c.GetCount() : except;
-	for (int i = 0; i < except; i++)
+	while (c.GetCount() && !c.IsAutoHide())
 		AutoHide(align, c.Get(0));	
-	while(c.GetCount() > 1)
-		AutoHide(align, c.Get(1));	
 }
 
 void DockWindow::CloseContainer(DockCont &c)
@@ -541,7 +525,7 @@ DockCont *DockWindow::FindDockTarget(DockCont &dc, int &dock)
 	
 	// Prepare for highlight
 	if (target) {
-		GetHighlightCtrl().bounds = GetAlignBounds(align, r, IsTabbing());	
+		GetHighlightCtrl().bounds = GetAlignBounds(align, r, IsTabbing(), IsTB(dock), !IsTB(dock));	
 		if (align == DOCK_NONE) 
 			dock = DOCK_NONE; // Tabbing
 		// The following code handles the case of an insertion between two docked controls. In this case we must set 
@@ -562,7 +546,7 @@ DockCont *DockWindow::FindDockTarget(DockCont &dc, int &dock)
 	return target;	
 }
 
-Rect DockWindow::GetAlignBounds(int al, Rect r, bool center)
+Rect DockWindow::GetAlignBounds(int al, Rect r, bool center, bool allow_lr, bool allow_tb)
 {
 	Size border = r.GetSize()/4;
 	switch (al) {
@@ -579,7 +563,10 @@ Rect DockWindow::GetAlignBounds(int al, Rect r, bool center)
 		r.top = r.bottom - (center ? border.cy : (GHalf_(r.top + r.bottom)));
 		return r;
 	}
-	r.Deflate(border);
+	if (allow_lr)
+		r.DeflateHorz(border.cx);
+	if (allow_tb)
+		r.DeflateVert(border.cy);
 	return r;
 }	
 
@@ -680,7 +667,7 @@ void DockWindow::ContainerDragStart(DockCont &dc)
 			Undock0(dc, true);
 			dc.StateNotDocked();
 		}
-		FloatContainer(dc, -1, move ? tl : Null);
+		FloatContainer(dc, move ? tl : Null);
 		dc.StartMouseDrag(pt);
 	}
 }
@@ -828,13 +815,14 @@ void DockWindow::DockWindowMenu(Bar &bar)
 	if (IsGrouping())
 		menu.GroupListMenu(bar);
 	else
-		menu.WindowListMenu(bar, "All");
-	bar.Separator();
+		menu.WindowListMenu(bar, t_("All"));
+	if (dockers.GetCount())
+		bar.Separator();
 	if (layouts.GetCount()) {
-		bar.Add("Layouts", callback(&menu, &DockMenu::LayoutListMenu));
+		bar.Add(t_("Layouts"), callback(&menu, &DockMenu::LayoutListMenu));
 		bar.Separator();
 	}
-	bar.Add("Manage Windows...", THISBACK(DockManager));
+	bar.Add(t_("Manage Windows..."), THISBACK(DockManager));
 }
 
 void DockWindow::SerializeWindow(Stream &s)
@@ -851,6 +839,21 @@ void DockWindow::SerializeWindow(Stream &s)
 	  
 	 if (s.IsLoading()) SyncAll();
 }
+
+void DockWindow::ClearLayout()
+{
+	// Close everything
+	for (int i = 0; i < conts.GetCount(); i++)
+		CloseContainer(conts[i]);
+	for (int i = 0; i < 4; i++) {
+		dockpane[i].Clear(); 
+		hideframe[i].Clear();
+		frameanim[i].inc = 0;
+	}
+	conts.Clear();	
+}
+
+
 
 void DockWindow::SerializeLayout(Stream &s, bool withsavedlayouts)
 {
@@ -872,13 +875,8 @@ void DockWindow::SerializeLayout(Stream &s, bool withsavedlayouts)
 		}
 	s % groups;
 	if (s.IsLoading()) {
-		// Close everything
-		for (int i = 0; i < conts.GetCount(); i++)
-			CloseContainer(conts[i]);
-		for (int i = 0; i < 4; i++)
-			dockpane[i].Clear();
-		conts.Clear();
-				
+		ClearLayout();		
+		
 		for (int i = 0; i < dockers.GetCount(); i++)
 			dockers[i]->SetGroup(Null);
 		for (int i = 0; i < groups.GetCount(); i++) {
@@ -948,7 +946,9 @@ void DockWindow::SerializeLayout(Stream &s, bool withsavedlayouts)
 			if (fsz && pane.GetCount()) {
 				dockframe[i].SetSize(fsz);
 				dockframe[i].Show();
-			}			
+			} 
+			else
+				dockframe[i].SetSize(0);			
 		}	
 		// Read floating
 		s / cnt;

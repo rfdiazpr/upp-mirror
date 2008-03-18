@@ -20,7 +20,8 @@ file
 	DockTabBar.h,
 	DockTabBar.cpp,
 	Docking.iml,
-	Docking.lay;
+	Docking.lay,
+	Docking.t;
 
 mainconfig
 	"" = "GUI";

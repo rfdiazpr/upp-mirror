@@ -5,6 +5,7 @@
 using namespace Upp;
 
 class DockWindow;
+class DockableCtrl;
 
 class DockMenu 
 {
@@ -28,17 +29,21 @@ public:
 	void WindowMenu(Bar &bar, DockableCtrl *dc);
 	void WindowDockMenu(Bar &bar, DockableCtrl *dc)			{ WindowAlignMenu(bar, dc, true); }
 	void WindowHideMenu(Bar &bar, DockableCtrl *dc)			{ WindowAlignMenu(bar, dc, false); }
-private:
+	
+protected:
 	DockWindow *dock;
 
-	void WindowAlignMenu(Bar &bar, DockableCtrl *dc, bool dock);		
+	void WindowAlignMenu(Bar &bar, DockableCtrl *dc, bool dodock);		
 	void GroupAlignMenu(Bar &bar, String group, int mode);		
 	
-	void MenuDock(int align, DockableCtrl *dc);
-	void MenuFloat(DockableCtrl *dc);
-	void MenuAutoHide(int align, DockableCtrl *dc);	
-	void MenuClose(DockableCtrl *dc);
+	virtual void MenuDock(int align, DockableCtrl *dc);
+	virtual void MenuFloat(DockableCtrl *dc);
+	virtual void MenuAutoHide(int align, DockableCtrl *dc);	
+	virtual void MenuClose(DockableCtrl *dc);
 	
 	void MenuLoadLayout(int ix);
+	
+	const char *AlignText(int align);
 };
+
 #endif

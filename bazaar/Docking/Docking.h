@@ -52,15 +52,15 @@ protected:
 	int	 	GetDockAlign(const Point &p) const;
 	
 	// Container docking/undocking
-	void 	DockContainer(int align, DockCont &c, int pos = -1, int except = -1);
+	void 	DockContainer(int align, DockCont &c, int pos = -1);
 	void 	DockAsTab(DockCont &target, DockableCtrl &dc);
 	void 	DockContainerAsTab(DockCont &target, DockCont &c, bool do_nested);	
 	
-	void 	FloatContainer(DockCont &c, int except = -1, Point p = Null);
+	void 	FloatContainer(DockCont &c, Point p = Null);
 	void 	FloatFromTab(DockCont &c, DockableCtrl &tab)	{ FloatFromTab(c, *CreateContainer(tab)); }
 	void 	FloatFromTab(DockCont &c, DockCont &tab);
 	
-	void 	AutoHideContainer(int align, DockCont &c, int except);
+	void 	AutoHideContainer(int align, DockCont &c);
 	void 	CloseContainer(DockCont &c);	
 	
 	DockCont *TabifyGroup(String group);
@@ -76,7 +76,7 @@ protected:
 	DockCont *	FindDockTarget(DockCont &dc, int &al);
 	int 		FindDocker(DockableCtrl *dc);
 	
-	Rect 		GetAlignBounds(int al, Rect r, bool center);
+	Rect 		GetAlignBounds(int al, Rect r, bool center, bool allow_lr = true, bool allow_tb = true);
 	int 		GetPointAlign(const Point p, Rect r, bool center, bool allow_lr = true, bool allow_tb = true);
 	int 		GetQuad(Point p, Rect r);
 
@@ -224,6 +224,8 @@ private:
 	bool		IsFrameAnimating(int align) const		{ return frameanim[align].inc; }	
 	
 	Size		CtrlBestSize(const Ctrl &c, bool restrict = true) const;
+	
+	void		ClearLayout();
 };
 /*
 class PopUpDockWindow : public DockWindow

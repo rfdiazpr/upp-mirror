@@ -8,7 +8,7 @@ DockConfigDlg::DockConfigDlg(DockWindow &dockwindow)
   menu(&dockwindow),
   highlight(NULL)
 {
-	CtrlLayoutOKCancel(*this, "Dockable Window Manager");
+	CtrlLayoutOKCancel(*this, t_("Dockable Window Manager"));
 	Sizeable().Zoomable();
 	
 	// Make backup of layout
@@ -64,7 +64,7 @@ void DockConfigDlg::RefreshTree(bool dogroups)
 	if (dogroups) {
 		tree.NoRoot(true).Clear();
 		groups.Clear();
-		n.Set(-1, "All").CanSelect(false).CanOpen(true);
+		n.Set(-1, t_("All")).CanSelect(false).CanOpen(true);
 		all = tree.Add(0, n);
 		for (int i = 0; i < dockers.GetCount(); i++) {
 			String s = dockers[i]->GetGroup();
@@ -111,10 +111,10 @@ void DockConfigDlg::OnSaveLayout()
 {
 	int ix = ListIndex();
 	String s = (ix >= 0) ? (String)list.Get(ix) : Null;
-	if (EditText(s, "New Layout", "Layout name:", 25)) {
+	if (EditText(s, t_("New Layout"), t_("Layout name:"), 25)) {
 		if (!s.IsEmpty()) {
 			ix = dock.GetLayouts().Find(s);
-			if (ix < 0 || PromptOKCancel(Format("Overwrite layout '%s'?", s))) {
+			if (ix < 0 || PromptOKCancel(Format(t_("Overwrite layout '%s'?"), s))) {
 				dock.SaveLayout(s);
 				if (ix < 0) {
 					list.Add(s);
@@ -140,6 +140,7 @@ void DockConfigDlg::OnLoadLayout()
 void DockConfigDlg::OnDeleteLayout()
 {
 	int ix = ListIndex();
+	if (!PromptOKCancel(Format(t_("Delete layout '%s'?"), (String)list.Get(ix)))) return;
 	dock.DeleteLayout((String)list.Get(ix));
 	list.Remove(ix);
 }
@@ -163,7 +164,7 @@ void DockConfigDlg::OnListCursor()
 void DockConfigDlg::OnNewGroup()
 {
 	String s;
-	if (EditText(s, "New Group", "Group name:", 25)) {
+	if (EditText(s, t_("New Group"), t_("Group name:"), 25)) {
 		if (!s.IsEmpty())
 		if (groups.Find(s) < 0) {
 			int id = tree.Add(0, Image(), Value(-1), Value(s));
@@ -172,7 +173,7 @@ void DockConfigDlg::OnNewGroup()
 			OnTreeCursor();			
 		}
 		else {
-			PromptOK("Groups '%s' already exists.");
+			PromptOK(t_("Group '%s' already exists."));
 			OnNewGroup();
 		}
 	}
@@ -187,7 +188,7 @@ void DockConfigDlg::OnDeleteGroup()
 	if (id == all) return;
 	
 	String s = (String)tree.GetValue(id);
-	if (!PromptOKCancel(Format("Delete group %s?", s))) return;
+	if (!PromptOKCancel(Format(t_("Delete group '%s'?"), s))) return;
 	int ix = groups.Find(s);
 	if (ix >= 0) {
 		String g = Null;
@@ -307,27 +308,27 @@ String DockConfigDlg::DockerString(DockableCtrl *dc) const
 String DockConfigDlg::PositionString(DockableCtrl *dc) const
 {
 	if (dc->IsFloating())
-		return "Floating";
+		return t_("Floating");
 	else if (dc->IsTabbed())
-		return "Tabbed";	
+		return t_("Tabbed");	
 	else if (dc->IsDocked()) {
 		int align = dc->GetDockAlign();
 		switch (align) {
 		case DockWindow::DOCK_LEFT:
-			return Format("Docked(%s)", "Left");
+			return Format(t_("Docked(%s)"), t_("Left"));
 		case DockWindow::DOCK_TOP:
-			return Format("Docked(%s)", "Top");
+			return Format(t_("Docked(%s)"), t_("Top"));
 		case DockWindow::DOCK_RIGHT:
-			return Format("Docked(%s)", "Right");
+			return Format(t_("Docked(%s)"), t_("Right"));
 		case DockWindow::DOCK_BOTTOM:
-			return Format("Docked(%s)", "Bottom");
+			return Format(t_("Docked(%s)"), t_("Bottom"));
 		default:
-			return "Docked";
+			return t_("Docked");
 		}
 	}
 	else if (dc->IsAutoHide())
-		return "Auto-Hide";
+		return t_("Auto-Hide");
 	else 
-		return "Hidden";
+		return t_("Hidden");
 }
 

@@ -232,21 +232,30 @@ void AutoHideBar::ShowAnimate(Ctrl *c)
 	 		break;
 	};
 	// use _NET_FRAME_EXTENTS to properly set ctrl size if popup has additional frame added by window manager?
+
 	c->SetRect(sz);
 	popup << *(ctrl = c);
 	c->Show();
 	popup.SetRect(r);
 	popup.PopUp(GetParent(), false, true, false, false);
-	AdjustSize(r, c->GetStdSize());
+
+	sz = c->GetStdSize();
+	if (IsVert())
+		sz.cx = min(sz.cx, GetParent()->GetSize().cx / 2);
+	else
+		sz.cy = min(sz.cy, GetParent()->GetSize().cy / 2);	
+	AdjustSize(r, sz);
 	Animate(popup, r, GUIEFFECT_SLIDE);
 }
 
 void AutoHideBar::HideAnimate(Ctrl *c)
 {
 	ASSERT(ctrl);
+#ifdef PLATFORM_WIN32
 	Rect r = popup.GetRect();
 	AdjustSize(r, -r.GetSize());
 	Animate(popup, r, GUIEFFECT_SLIDE);
+#endif
 	popup.Close();
 	ctrl->Remove();
 	ctrl = NULL;

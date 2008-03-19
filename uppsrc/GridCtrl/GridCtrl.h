@@ -635,6 +635,10 @@ class GridCtrl : public Ctrl
 				ItemRect& CtrlAlignHorzPos(int l = 0, int r = 0) { calign |= GD::HPOS;    sl = l; sr = r; sx = 1; return *this; }
 				ItemRect& CtrlAlignVertPos(int t = 0, int b = 0) { calign |= GD::VPOS;    st = t; sb = b; sy = 1; return *this; }
 
+				int       GetAlign() const                       { return balign; }
+				int       GetHeaderAlign() const                 { return halign; }
+				int       GetCtrlAlign() const                   { return calign; }
+
 				ItemRect& WrapText()                             { wrap = true; return *this; }
 
 				ItemRect& SetFont(Font &f)                       { fnt = f; return *this; }

@@ -5044,6 +5044,7 @@ void GridCtrl::Clear(bool columns)
 	oldpos.x = sbx;
 	oldpos.y = sby;
 
+	RebuildToolBar();
 	Refresh();
 
 	doscroll = true;

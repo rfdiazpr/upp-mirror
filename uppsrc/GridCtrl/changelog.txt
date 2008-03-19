@@ -253,3 +253,5 @@
 	+ Crlc-C creates now 2 clipboards - one internal and one textual
 	+ AskRemove() - if set question is shown before deleting a row
 	+ editing of row was possible (through double click) even if editing flag was not set
+	- Clear refreshes toolbar now
+	+ added Get*Align() to ItemRect

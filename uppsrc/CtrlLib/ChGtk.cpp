@@ -709,6 +709,7 @@ void ChHostSkin()
 		GtkChButton(s.look);
 	}
 
+	if(engine != "Qt")
 	{
 		ScrollBar::Style& s = ScrollBar::StyleDefault().Write();
 		GtkObject *adj = gtk_adjustment_new(250, 0, 1000, 1, 1, 500);
@@ -727,8 +728,10 @@ void ChHostSkin()
 		ChGtkNew("trough", GTK_BOX);
 		GtkChTrough(s.vupper);
 		GtkChTrough(s.vlower);
-		bool atp = IsEmptyImage(GetGTK(ChGtkLast(), 2, 2, "vscrollbar", GTK_BOX|GTK_TOP, 16, 16));
+		bool atp = IsEmptyImage(GetGTK(ChGtkLast(), 2, 2, "vscrollbar", GTK_BOX|GTK_TOP|GTK_RANGEA, 16, 16));
 		Size asz(s.barsize / 2, s.arrowsize / 2);
+		if(engine == "Qt")
+			atp = false;
 		if(atp) {
 			ChGtkNew("vscrollbar", GTK_ARROW);
 			GtkCh(s.up.look, "02141111");
@@ -842,6 +845,7 @@ void ChHostSkin()
 		gtk_object_sink(adj);
 	}
 
+	if(engine != "Qt")
 	{
 		TabCtrl::Style& s = TabCtrl::StyleDefault().Write();
 		static GtkWidget *tabctrl = gtk_notebook_new();

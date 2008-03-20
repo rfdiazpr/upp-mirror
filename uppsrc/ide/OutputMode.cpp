@@ -129,6 +129,7 @@ struct OutMode : WithOutputModeLayout<TopWindow> {
 	void Load();
 	void Save();
 	void Preset();
+	void SyncLock();
 
 	typedef OutMode CLASSNAME;
 
@@ -149,6 +150,7 @@ void OutMode::Load()
 	LoadFromWorkspace(debug, "outputmode-debug");
 	release.Load(ide.release);
 	LoadFromWorkspace(release, "outputmode-release");
+	SyncLock();
 }
 
 void OutMode::Save()
@@ -180,9 +182,17 @@ void Ide::SerializeOutputMode(Stream& s)
 	s % recent_buildmode;
 }
 
+void OutMode::SyncLock()
+{
+	bool b = GetMethodVars(~method).Get("LINKMODE_LOCK", "") != "1";
+	release.linkmode.Enable(b);
+	debug.linkmode.Enable(b);
+}
+
 void OutMode::Preset()
 {
 	int q = ide.recent_buildmode.Find(~method);
+	SyncLock();
 	if(q < 0) {
 		VectorMap<String, String> map = GetMethodVars(~method);
 		debug.linkmode = atoi(map.Get("DEBUG_LINKMODE", "0"));
@@ -213,6 +223,7 @@ OutMode::OutMode(Ide& ide)
 {
 	CtrlLayoutOKCancel(*this, "Output mode");
 	method <<= THISBACK(Preset);
+	SyncLock();
 }
 
 void Ide::SetupOutputMode()

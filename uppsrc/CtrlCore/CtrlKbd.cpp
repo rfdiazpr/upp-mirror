@@ -318,7 +318,7 @@ bool  Ctrl::HasFocusDeep() const
 	return a && HasChildDeep(a);
 }
 
-String GetKeyDesc(int key)
+String GetKeyDesc(dword key)
 {
 	String desc;
 //	key &= 0xFFFF;
@@ -341,7 +341,7 @@ String GetKeyDesc(int key)
 	else if(key >= K_A && key <= K_Z)
 		desc << (char)('A' + key - K_A);
 	else if(key >= K_F1 && key <= K_F12)
-		desc << Format("F%d", key - K_F1 + 1);
+		desc << Format("F%d", (int)key - K_F1 + 1);
 	else {
 		static struct {
 			int key;
@@ -374,7 +374,7 @@ String GetKeyDesc(int key)
 				desc << GetLngString(nkey[i].name);
 				return desc;
 			}
-		desc << Format("%04x", key);
+		desc << Format("%04x", (int)key);
 	}
 	return desc;
 }

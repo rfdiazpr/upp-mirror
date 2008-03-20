@@ -62,6 +62,9 @@ TreeCtrl::TreeCtrl()
 	multiselect = false;
 	nobg = false;
 	popupex = true;
+	mousemove = false;
+	accel = false;
+	treesize = Size(0, 0);
 	Clear();
 	SetFrame(ViewFrame());
 	AddFrame(sb);
@@ -91,7 +94,13 @@ TreeCtrl::~TreeCtrl()
 
 void   TreeCtrl::Layout()
 {
-	sb.SetPage(sb.GetReducedViewSize());
+	Size full = sb.GetViewSize();
+	Size red = sb.GetReducedViewSize();
+	Size total = sb.GetTotal();
+	if(total.cx > full.cx) full.cy = red.cy;
+	if(total.cy > full.cy) full.cx = red.cx;
+	if(total.cx > full.cx) full.cy = red.cy;
+	sb.SetPage(full);
 	sb.SetLine(item[0].GetSize().cy);
 }
 
@@ -370,7 +379,7 @@ void TreeCtrl::SyncTree()
 	for(int i = 0; i < item.GetCount(); i++)
 		item[i].linei = -1;
 	line.Clear();
-	Size treesize = Size(0, 0);
+	treesize = Size(0, 0);
 	if(noroot) {
 		if(GetChildCount(0))
 			treesize.cy = -item[0].GetSize().cy;
@@ -516,6 +525,32 @@ int  TreeCtrl::GetLineCount()
 {
 	SyncTree();
 	return line.GetCount();
+}
+
+void TreeCtrl::ScrollIntoLine(int i)
+{
+	sb.ScrollIntoY(line[i].y, item[line[i].itemi].GetSize().cy);
+}
+
+void TreeCtrl::CenterLine(int i)
+{
+	int top = line[i].y;
+	int bottom = top + item[line[i].itemi].GetSize().cy;
+	sb.SetY(top + ((bottom - GetSize().cy) >> 1));
+}
+
+void TreeCtrl::ScrollIntoCursor()
+{
+	int c = GetCursorLine();
+	if(c >= 0)
+		ScrollIntoLine(c);
+}
+
+void TreeCtrl::CenterCursor()
+{
+	int c = GetCursorLine();
+	if(c >= 0)
+		CenterLine(c);
 }
 
 void TreeCtrl::MoveCursorLine(int c, int incr)
@@ -770,8 +805,15 @@ void TreeCtrl::SyncInfo()
 	info.Cancel();
 }
 
-void TreeCtrl::MouseMove(Point, dword)
+void TreeCtrl::MouseMove(Point p, dword)
 {
+	if(mousemove && !IsReadOnly()) {
+		Point org = sb;
+		if(p.y + org.y < treesize.cy) {
+			int i = FindLine(p.y + org.y);
+			if(!IsNull(i)) SetCursorLine(i);
+		}
+	}
 	SyncInfo();
 }
 
@@ -1022,8 +1064,41 @@ bool TreeCtrl::Key(dword key, int)
 		if(cid >= 0)
 			Open(cid);
 		break;
-	default:
-		return false;
+	default: {
+			if(accel && key >= ' ' && key < 65536) {
+				int ascii_line = -1;
+				int upper_line = -1;
+				int exact_line = -1;
+				int l = GetCursorLine();
+				for(;;) {
+					if(++l >= GetLineCount())
+						l = 0;
+					if(l == GetCursorLine())
+						break;
+					Value v = GetValue(line[l].itemi);
+					WString w;
+					if(IsString(v)) w = v;
+					else w = StdFormat(v).ToWString();
+					word first = w[0];
+					if(ascii_line < 0 && ToAscii(first) == ToAscii((word)key))
+						ascii_line = l;
+					if(upper_line < 0 && ToUpper(first) == ToUpper((word)key))
+						upper_line = l;
+					if(exact_line < 0 && first == key)
+						exact_line = l;
+				}
+				int ln = (exact_line >= 0 ? exact_line : upper_line >= 0 ? upper_line : ascii_line);
+				if(ln < 0)
+					BeepExclamation();
+				else {
+					int id = GetItemAtLine(ln);
+					Open(id);
+					SetCursor(id);
+				}
+				return true;
+			}
+			return false;
+		}
 	}
 	if(GetCursor() != cid) {
 		if(multiselect && cursor >= 0) {

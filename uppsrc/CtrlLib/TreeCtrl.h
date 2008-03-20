@@ -97,11 +97,14 @@ private:
 	bool         nobg;
 	bool         popupex;
 	bool         chldlck;
+	bool         mousemove;
+	bool         accel;
 
 	bool         selclick;
 	int          dropitem, dropinsert;
 	Point        repoint;
 	int          retime;
+	Size         treesize;
 
 	ScrollBars   sb;
 	Scroller     scroller;
@@ -118,7 +121,6 @@ private:
 	const Display *GetStyle(int i, Color& fg, Color& bg, dword& st);
 	void   Dirty(int id = 0);
 	void   ReLine(int, int, Size&);
-	void   SyncTree();
 	void   RemoveSubtree(int id);
 	void   Scroll();
 	int    FindLine(int y) const;
@@ -148,6 +150,7 @@ private:
 
 protected:
 	virtual void SetOption(int id);
+	void         SyncTree();
 
 public:
 	Callback1<int>  WhenOpen;
@@ -261,15 +264,25 @@ public:
 
 	void         StdLeftDouble();
 
+	void         ScrollIntoLine(int i);
+	void         CenterLine(int i);
+
+	void         ScrollIntoCursor();
+	void         CenterCursor();
+
+	Size         GetTreeSize() const         { return treesize; }
+
 	void   Dump();
 
-	TreeCtrl& NoCursor(bool b = true)     { nocursor = b; if(b) KillCursor(); return *this; }
-	TreeCtrl& NoRoot(bool b = true)       { noroot = b; Dirty(); Refresh(); return *this; }
-	TreeCtrl& LevelCx(int cx)             { levelcx = cx; Dirty(); return *this; }
-	TreeCtrl& MultiSelect(bool b = true)  { multiselect = b; return *this; }
-	TreeCtrl& NoBackground(bool b = true) { nobg = b; Transparent(); Refresh(); return *this; }
-	TreeCtrl& PopUpEx(bool b = true)      { popupex = b; return *this; }
-	TreeCtrl& NoPopUpEx()                 { return PopUpEx(false); }
+	TreeCtrl& NoCursor(bool b = true)        { nocursor = b; if(b) KillCursor(); return *this; }
+	TreeCtrl& NoRoot(bool b = true)          { noroot = b; Dirty(); Refresh(); return *this; }
+	TreeCtrl& LevelCx(int cx)                { levelcx = cx; Dirty(); return *this; }
+	TreeCtrl& MultiSelect(bool b = true)     { multiselect = b; return *this; }
+	TreeCtrl& NoBackground(bool b = true)    { nobg = b; Transparent(); Refresh(); return *this; }
+	TreeCtrl& PopUpEx(bool b = true)         { popupex = b; return *this; }
+	TreeCtrl& NoPopUpEx()                    { return PopUpEx(false); }
+	TreeCtrl& MouseMoveCursor(bool m = true) { mousemove = m; return *this; }
+	TreeCtrl& Accel(bool a = true)           { accel = a; return *this; }
 
 	TreeCtrl& SetScrollBarStyle(const ScrollBar::Style& s) { sb.SetStyle(s); return *this; }
 

@@ -35,7 +35,6 @@ void Ctrl::Xclipboard::Write(int fmt, const ClipData& _data)
 {
 	LLOG("SetSelectionOwner " << XAtomName(fmt));
 	data.GetAdd(fmt) = _data;
-//	if(XGetSelectionOwner(Xdisplay, XAtom("CLIPBOARD") != win)) // 20060926 Nicomeseas&cxl
 	XSetSelectionOwner(Xdisplay, XAtom("CLIPBOARD"), win, CurrentTime);
 }
 
@@ -59,7 +58,7 @@ void Ctrl::Xclipboard::Request(XSelectionRequestEvent *se)
 				LLOG('\t' << sel_formats[i]);
 			}
 			XChangeProperty(Xdisplay, se->requestor, se->property, XAtom("ATOM"),
-			                8 * sizeof(Atom), 0, (unsigned char*)~x,
+			                32, 0, (unsigned char*)~x,
 			                sel_formats.GetCount());
 		}
 		else {
@@ -69,7 +68,7 @@ void Ctrl::Xclipboard::Request(XSelectionRequestEvent *se)
 				LLOG('\t' << XAtomName(x[i]));
 			}
 			XChangeProperty(Xdisplay, se->requestor, se->property, XAtom("ATOM"),
-			                8 * sizeof(Atom), 0, (unsigned char*)~x,
+			                32, 0, (unsigned char*)~x,
 			                data.GetCount());
 		}
 	}

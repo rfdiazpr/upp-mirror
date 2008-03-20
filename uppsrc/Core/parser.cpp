@@ -167,24 +167,6 @@ uint32  CParser::ReadNumber(int base) throw(Error)
 	return n;
 }
 
-uint64  CParser::ReadNumber64(int base) throw(Error)
-{
-	LTIMING("ReadNumber");
-	uint64 n = 0;
-	int q = ctoi(*term);
-	if(q < 0 || q >= base)
-		ThrowError("missing number");
-	for(;;) {
-		int c = ctoi(*term);
-		if(c < 0 || c >= base)
-			break;
-		n = base * n + c;
-		term++;
-	}
-	DoSpaces();
-	return n;
-}
-
 double CParser::ReadDouble() throw(Error)
 {
 	LTIMING("ReadDouble");

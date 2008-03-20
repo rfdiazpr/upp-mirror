@@ -1,4 +1,8 @@
+#ifdef PLATFORM_WIN32
 #define __BREAK__        (*(int *)0 = 0)
+#else
+#define __BREAK__        kill(getpid(), SIGTRAP)
+#endif
 
 #ifdef COMPILER_MSC
 	#pragma warning(disable : 4800)

@@ -1917,10 +1917,11 @@ bool ArrayCtrl::DoRemove()
 	if(IsReadOnly()) return false;
 	if(!IsCursor() || askremove && !PromptOKCancel(RowFormat(t_("Do you really want to delete the selected %s ?"))))
 		return false;
-	if(multiselect)
+	if(multiselect) {
 		for(int i = GetCount() - 1; i >= 0; i--)
 			if(IsSelected(i))
 				Remove(i);
+	}
 	else
 		Remove(cursor);
 	WhenArrayAction();

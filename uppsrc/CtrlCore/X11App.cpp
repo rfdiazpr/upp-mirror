@@ -8,12 +8,6 @@ NAMESPACE_UPP
 
 #ifdef PLATFORM_X11
 
-#ifdef _DEBUG
-//	#define SYNCHRONIZE
-//	#define X11ERRORMSG
-//	#define X11ERRORABORT
-#endif
-
 #define LLOG(x)  // LOG(x)
 
 XIM Ctrl::xim;
@@ -150,6 +144,7 @@ void Ctrl::UntrapX11Errors(bool b)
 
 static void sPanicMessageBox(const char *title, const char *text)
 {
+	Ctrl::ReleaseCtrlCapture();
 	XDisplay *display = XOpenDisplay(NULL);
 	if(!display)
 		return;
@@ -200,11 +195,16 @@ static void sPanicMessageBox(const char *title, const char *text)
 	}
 }
 
+#ifdef _DEBUG
+#define INI_PREFIX "DEBUG_"
+#else
+#define INI_PREFIX
+#endif
+
 int X11ErrorHandler(XDisplay *, XErrorEvent *error)
 {
-#ifndef _DEBUG
-	return 0;
-#endif
+	if(GetIniKey(INI_PREFIX "X11_ERRORS") != "1")
+		return 0;
 
 	if(X11ErrorTrap || IsPanicMode()) return 0;
 
@@ -340,21 +340,13 @@ int X11ErrorHandler(XDisplay *, XErrorEvent *error)
 		e << "\nrequest: " << request[error->request_code];
 	e << "\nresource id: " << (int)error->resourceid << " = " << Format("%0X", (int)error->resourceid);
 
-#ifdef X11ERRORMSG
-	#ifdef X11ERRORABORT
-		Panic(e);
-	#endif
-	sPanicMessageBox("X11 error", e);
-#else
 	RLOG(e);
 	puts(e);
-#endif
 	BugLog() << e << "\r\n";
 	UsrLogT(e);
 
-#ifdef X11ERRORABORT
-	abort();
-#endif
+	Panic(e);
+
 	return 0;
 }
 
@@ -374,9 +366,8 @@ void Ctrl::InitX11(const char *display)
 
 	Xeventtime = CurrentTime;
 	SetX11ErrorHandler();
-#ifdef SYNCHRONIZE
-	XSynchronize(Xdisplay, 1);
-#endif
+	if(INI_PREFIX "X11_SYNCHRONIZE")
+		XSynchronize(Xdisplay, 1);
 	Vector<int> nets = GetPropertyInts(Xroot, XAtom("_NET_SUPPORTED"));
 	for(int i = 0; i < nets.GetCount(); i++)
 		_NET_Supported().Add(nets[i]);

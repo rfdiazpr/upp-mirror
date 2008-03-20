@@ -142,6 +142,7 @@ struct BuildMethods : public WithBuildMethodsLayout<TopWindow>
 	TextSwitch debug_linkmode;
 	TextOption release_blitz;
 	TextSwitch release_linkmode;
+	TextOption linkmode_lock;
 	DirTable   path;
 	DirTable   include;
 	DirTable   lib;
@@ -208,6 +209,7 @@ BuildMethods::BuildMethods()
 	remote_file_access.Add("1", "indirect (transfer)");
 	method.AddCtrl("REMOTE_MAP", remote_path_map);
 	method.AddCtrl("SCRIPT", scriptfile);
+	method.AddCtrl("LINKMODE_LOCK", linkmode_lock);
 	open_script.Attach(scriptfile);
 	open_script.Type("Build scripts (*.bsc)", "*.bsc")
 		.AllFilesType();
@@ -225,6 +227,8 @@ BuildMethods::BuildMethods()
 
 	builder <<= THISBACK(NewBuilder);
 	setdefault <<= THISBACK(SetDefault);
+
+	linkmode_lock.SetLabel("Lock link mode");
 }
 
 void BuildMethods::MethodMenu(Bar& bar)

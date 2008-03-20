@@ -237,6 +237,7 @@
 	#include <semaphore.h>
 	#include <memory.h>
 	#include <dirent.h>
+	#include <signal.h>
 	#ifdef PLATFORM_SOLARIS
 		#include <inttypes.h>
 	#else

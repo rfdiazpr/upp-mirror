@@ -5,9 +5,10 @@ NAMESPACE_UPP
 CH_STYLE(MultiButton, Style, StyleDefault)
 {
 	for(int i = 0; i < 4; i++) {
-		simple[i] = trivial[i] = left[i] = right[i] = lmiddle[i] = rmiddle[i]
+		simple[i] = left[i] = right[i] = lmiddle[i] = rmiddle[i]
 			= Button::StyleEdge().look[i];
 		monocolor[i] = Button::StyleEdge().monocolor[i];
+		look[i] = trivial[i] = ChLookWith(simple[i], CtrlsImg::DA(), monocolor[i]);
 		edge[i] = EditFieldEdge();
 	}
 	activeedge = false;

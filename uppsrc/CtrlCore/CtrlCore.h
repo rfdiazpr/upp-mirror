@@ -1393,7 +1393,7 @@ inline unsigned GetHashValue(Ctrl *x)
 	return (unsigned)(intptr_t)x;
 }
 
-String GetKeyDesc(int key);
+String GetKeyDesc(dword key);
 
 Vector< Ptr<Ctrl> > DisableCtrls(const Vector<Ctrl *>& ctrl, Ctrl *exclude = NULL);
 void EnableCtrls(const Vector< Ptr<Ctrl> >& ctrl);

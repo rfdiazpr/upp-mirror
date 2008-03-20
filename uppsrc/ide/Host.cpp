@@ -199,7 +199,7 @@ void LocalHost::Launch(const char *_cmdline, bool console)
 	memcpy(env, environment, environment.GetCount() + 1);
 	if(CreateProcess(NULL, cmd, &sa, &sa, TRUE,
 		             NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
-	                ~env, NULL, &si, &pi)) {
+		             ~env, NULL, &si, &pi)) {
 		CloseHandle(pi.hProcess);
 		CloseHandle(pi.hThread);
 	}
@@ -207,8 +207,6 @@ void LocalHost::Launch(const char *_cmdline, bool console)
 		PutConsole("Unable to launch " + String(_cmdline));
 #endif
 #ifdef PLATFORM_POSIX
-/*	if(console) // why this does not work?!
-		cmdline = "/usr/bin/xterm -hold -e " + cmdline;*/
 	Buffer<char> cmd_buf(strlen(cmdline) + 1);
 	char *cmd_out = cmd_buf;
 	Vector<char *> args;

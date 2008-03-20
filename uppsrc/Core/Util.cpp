@@ -62,9 +62,7 @@ void    Panic(const char *msg)
 #	endif
 #else
 #endif
-#if defined(PLATFORM_POSIX) && defined(_DEBUG)
 	__BREAK__;
-#endif
 	abort();
 }
 
@@ -109,9 +107,7 @@ void    AssertFailed(const char *file, int line, const char *cond)
 #	endif
 #else
 #endif
-#if defined(PLATFORM_POSIX) && defined(_DEBUG)
 	__BREAK__;
-#endif
 	abort();
 }
 
@@ -350,39 +346,25 @@ void SetIniFile(const char *name) {
 	sIniFile = name;
 }
 
-#ifdef PLATFORM_WIN32
-
 String GetIniKey(const char *name) {
 	static bool loaded;
 	static VectorMap<String, String> key;
 	if(!loaded) {
 		loaded = true;
-		key = LoadIniFile(sIniFile ? sIniFile : ~GetExeDirFile("Q.INI"));
+		key = LoadIniFile(sIniFile ? sIniFile : ~ConfigFile("q.ini"));
+	#ifdef PLATFORM_WIN32
 		if(key.GetCount() == 0)
 			key = LoadIniFile("C:\\Q.INI");
+	#endif
+	#ifdef PLATFORM_POSIX
+		if(key.GetCount() == 0)
+			key = LoadIniFile(GetHomeDirFile("q.ini"));
+	#endif
 	}
 	int i = key.Find(name);
 	if(i < 0) return String();
 	return key[i];
 }
-
-#endif
-
-#ifdef PLATFORM_POSIX
-
-String GetIniKey(const char *name) {
-	static bool loaded;
-	static VectorMap<String, String> key;
-	if(!loaded) {
-		loaded = true;
-		key = LoadIniFile(GetHomeDirFile("Q.INI"));
-	}
-	int i = key.Find(name);
-	if(i < 0) return String();
-	return key[i];
-}
-
-#endif
 
 void TextSettings::Load(const char *filename)
 {

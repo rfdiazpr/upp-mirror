@@ -4,10 +4,6 @@
 #include <shellapi.h>
 #endif
 
-#ifdef PLATFORM_POSIX
-#include <signal.h>
-#endif
-
 NAMESPACE_UPP
 
 #ifdef PLATFORM_WIN32

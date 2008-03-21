@@ -9,23 +9,29 @@ using namespace Upp;
 #define LAYOUTFILE <DockCtrlExample/DockCtrlExample.lay>
 #include <CtrlCore/lay.h>
 
-class DockCtrlExample : public WithDockCtrlExampleLayout<TopWindow> {
+// DockCtrlExample class declaration.
+// Derived from DockCtrl.
+
+class DockCtrlExample : public WithDockCtrlExampleLayout<DockCtrl> {
 public:
 	typedef DockCtrlExample CLASSNAME;
 	DockCtrlExample();
+	~DockCtrlExample();
 	
-
-	DockCtrl 	dockctrl;									// Main Widget 		-	acts as a "server" for it's "client" widgets.
-	DockWindow	dock1, dock2, dock3, dock4, dock5, dock6;	// Actual Widgets 	-	these are the dockable "client" widgets
+	DockWindow						dock1, dock2, dock3, dock4, dock5, dock6;					// Actual Widgets 	-	these are the dockable "client" widgets
+	WithDockLayout<DockWindow>		dock7;														// DockWindow with layout.
+	//------------------------------------------------------------------------------------------
+	RichEdit	richedit;																		// Stuff to "wrap"	
+	TabCtrl		tabctrl;																		//
+	Button		button1, button2, button3;														//
+	ArrayCtrl	array1, array2;																	//
+	MenuBar 	menubar, menubar1;																//
+	ToolBar 	toolbar, toolbar1;																//
+	StatusBar 	statusbar;																		//
+	//------------------------------------------------------------------------------------------
+	virtual void InitDockCtrl();																// DockCtrl initialization functions
+	virtual void InitCustomLayouts();															// 
 	
-	RichEdit	richedit;									// Stuff to "wrap"	
-	TabCtrl		tabctrl;									//
-	Button		button1, button2, button3;					//
-	ArrayCtrl	array1, array2;								//
-	MenuBar 	menubar;									//
-	ToolBar 	toolbar;									//
-	StatusBar 	statusbar;									//
-
 	// Other methods (not necessary; only for demo purpose...
 
 	void Toolbar	(Bar &bar);

@@ -1,10 +1,108 @@
 #include "DockCtrlExample.h"
 
+void DockCtrlExample::InitDockCtrl()
+{
+	// This is an API change (from DEV 803b.1 on).
+	// IntDockCtrl() method is called by DockCtrl at the application start.
+	// Dock initialization must be done here!
+	
+	// Magic Stuff...
+	// DockableCtrl derived widgets use 3 variable to determine their place: 
+	// -----------------------------------------------------------------------------------------
+	// 1) Alignment: 	As usual, it can be left, top, right, bottom.
+	// 2) State:	 	It can be show, hide, autohide, tab, floating, shut.
+	// 3) Position:		Determines the position of the widget, for example 0 means the widget is 
+	//					on its own (usually, at floating state, or shut). So, any "docked" widget
+	//					is at least in position 1. In normal docking mode (no tabbing) system
+	//					adds the dock automatically to the end of the list, so this variable is
+	//					optional for the user. 
+	// -----------------------------------------------------------------------------------------
+	//	Tabbing styles: While any type of manipulation is possible with the above variables,
+	//					tabbing is a little different. (From DockCtrl version DEV803b.1 on, there
+	//					are two ways to tab two (or more) dockable widgets):
+	//
+	//				1)	MANUAL TABBING: As the name may suggest, in "manual" tabbing method use
+	//					state and position combination to "tab" dockable widgets. 
+	//
+	//					Let's assume that we have 3 widgets docked on the "top" pane. And let's
+	//					say that we want to add two more docks on the top pane. We have three
+	//					alternatives: a) We can add it in usual way, and let the framework
+	//					handle the positioning. b) We can determine the position to dock.
+	//					(e.g. if we want to add it to 2. position, position should be 2). 
+	//					c) We can tab docks. Now, to tab a dock, all we have to do is to set the 
+	//					two variables properly: state and position. "State" should be "tabbed".
+	//					"position" should be the position where we want to tab (e.g. If we want
+	//					to tab the first dock then position should be 1).
+	// 
+	//					This is a framework design issue; because, with this way it is easily possible 
+	//					to tab any number of dockable widgets simultaneously. And since it can be 
+	//					confusing sometimes, it is a DEPRECEATED way. 					
+	//
+	//				2)	TABBING USING TABIFYING METHODS: From DockCtrl version DEV803b.1, Tabify()
+	//					method (has 1 overload) is added to the public API. This is the easy and
+	//					reliable way to create tabbed widgets (either normal or nested).
+	//					The Syntax of Tabify is as following;
+	//					
+	//					DockableCtrl&	Tabify(DockableCtrl& ctrl1, DockableCtrl& ctrl2);
+	//					DockableCtrl&	Tabify(DockableCtrl& ctrl1, DockableCtrl& ctrl2, DockableCtrl& ctrl3, DockableCtrl& ctrl4);
+	//				
+	//					As you can see, Tabify method returns DockableCtrl& reference for the created
+	//					tab window, so it's both easy to tab (normal OR nested) numerous widgets simultaneously 
+	//					and the standard docking rules apply to the created tab window (see below).
+						
+
+	Dock(dock1.SetLabel("Dock 1").DockTop().StateShow().SetIcon(CtrlImg::new_doc()));
+	Dock(dock2.SetLabel("Dock 2").DockBottom().StateShow().SetIcon(CtrlImg::new_doc()));
+	Dock(dock4.SetLabel("Dock 4").DockRight().StateTabbed().Posit(1).SetIcon(CtrlImg::new_doc()));			// Manual tabbing example
+	Dock(dock5.SetLabel("Dock 5").DockRight().StateTabbed().Posit(1).SetIcon(CtrlImg::new_doc()));			//
+	Dock(dock6.SetLabel("Dock 6").DockLeft().StateAuto().SetIcon(CtrlImg::new_doc()));						// Manual autohide (no need to set position variable).
+
+	
+
+	// Tabify():
+	// Here is two tabbing examples:
+	// Do not use Dock() for individual widgets when tabifying.
+	// Instead, pass them to the Tabify() method, and then Dock() 
+	// the Tabwindow returned by Tabify().
+	//
+	CtrlLayout(dock7);
+	dock7.SetLabel("Dock 7 - With Layout").SetIcon(CtrlImg::new_doc());										// Layout-ed dock example.
+	dock3.SetLabel("Dock 3").SetIcon(CtrlImg::new_doc());													
+
+	Dock(Tabify(dock3, dock7).DockFloat());																	// Floating + Tabbing example.
+	
+	// Here is another example. This example is mainly for demostrating
+	// "nested tabbing". In order it to work correctly, you shoud
+	// remove "Dock()" from the widgets passed to the method. and 
+	// uncomment the 2 lines below.
+	// 
+	// AllowNestedTabbing()
+	// Dock(Tabify(dock6, dock7, dock4, dock5).DockFloat()); 
+}
+
+void DockCtrlExample::InitCustomLayouts()
+{
+	// This method is called by DockCtrl for predefined custom layouts.
+	
+	// Predefined Layout Support:
+	// --------------------------
+	// From DEV803b.1, DockCtrl has Serialization and Default/Custom layout support.
+	// Also, a "predefined" layout (or, layout template) support is planned. 
+	// It will be be added in time
+	// between somewhere DEV803b.2 - DEV804b.1 ;)
+	//
+}
+
+
 DockCtrlExample::DockCtrlExample()
 {
-	CtrlLayout(*this, "DockCtrl [DEV802b.2] Example - Use 'Settings' menu options to open the control panel");
-	Sizeable().Zoomable().SetRect(GetRect().left, GetRect().top, 1024, 600);
+	// DockCtrl is serializable. So, you can load and save it's configuration (layouts, settings, placements, etc.) easily.
+	LoadFromFile(*this, ConfigFile("dockctrlexamplelayout.bin"));
 
+
+	CtrlLayout(*this, "DockCtrl [DEV803b.1] Example - Use 'Settings' menu options to open the control panel");
+	Sizeable().Zoomable().SetRect(GetRect().left, GetRect().top, 1024, 600);
+	
 	// Usual U++ widget preperation.
 	button1.SetLabel("Hello").LeftPos(10, 100).BottomPos(10, 20);
 	button2.SetLabel("Brave New").HCenterPos(90).BottomPos(10, 20);
@@ -22,70 +120,34 @@ DockCtrlExample::DockCtrlExample()
 		array2.Add(FormatIntRoman(i, true));
 	}
 
+	// At the moment (this will change in near future!) any default BarCtrl should be added BEFORE DockCtrl. 
+	toolbar1.Set(THISBACK(Toolbar));
+	menubar1.Set(THISBACK(Menubar));	
+
 	// Here (but not necessarily) we "wrap" -or, if you prefer "dock" - the above widgets.
 	dock1 << button1 << button2 << button3;
 	dock2 << tabctrl.SizePos();
 	dock3 << array1.SizePos();
-	dock4 << array2.SizePos();
-
+	dock5 << array2.SizePos();
+	
 	// Currently all DockableCtrl derived classes (e.g. DockWindow, TabWindow) can use 3 traditional "bar" ctrls of U++. 
 	// Namely, MenuBar, ToolBar and StatusBar. The aim of the support for seperate bar controls is to extend the DockableCtrl functionality.
 	// So, you should see and use this "bar" support as a customization support for dockctrl framework itself;
 	dock2.AddMenuBar(menubar);
 	dock2.AddStatusBar(statusbar);
 	dock3.AddToolBar(toolbar); 
-	
+
 	menubar.Set(THISBACK(Menubar));	
 	toolbar.Set(THISBACK(Toolbar));
-	
-	             
-	// DockCtrl::SetLayout(Ctrl& parent, cx, cy) method must be called before any initialization (except for the child ctrl adding to the dockable widgets).
-	// This method prepares the dockable-widget area.
-	// One of the implication of this layout mechanism is, theoretically, it allows almost infinite number of seperate DockCtrl instance 
-	// in a single Application Window! Namely, you could have numbers of independent dockable window area. This is because, the SetLayout()
-	// methods takes Ctrl as it's base. So, you could even have seperate dockctrl framework in a single dock Widget! ;)
-	dockctrl.SetLayout(*this, GetSize().cx / 4, GetSize().cy / 3);
-	
-	// Magic Stuff...
-	// DockableCtrl derived widgets use 3 variable to determine their place: 
-	// -----------------------------------------------------------------------------------------
-	// 1) Alignment: 	As usual, it can be left, top, right, bottom.
-	// 2) State:	 	It can be show, hide, autohide, tab, floating, shut.
-	// 3) Position:		Determines the position of the widget, for example 0 means the widget is 
-	//					on its own (usually, at floating state, or shut). So, any "docked" widget
-	//					is at least in position 1. In normal docking mode (no tabbing) system
-	//					adds the dock automatically to the end of the list, so this variable is
-	//					optional for the user. 
-	// -----------------------------------------------------------------------------------------
-	// Tabbing issue:	While any type of manipulation is possible with the above variables, 
-	//					tabbing is a little different. There is no public method available to
-	//					tab two (or more) dockable widget. Instead, we use state and position
-	//					combinations.
-	// 
-	//					Let's assume that we have 3 widgets docked on the "top" pane. And let's
-	//					say that we want to add two more docks on the top pane. We have three
-	//					alternatives: a) We can add it in usual way, and let the framework
-	//					handle the positioning. b) We can determine the position to dock.
-	//					(e.g. if we want to add it to 2. position, position should be 2). 
-	//					c) We can tab docks. Now, to tab a dock, all we have to do is to set the 
-	//					two variables properly: state and position. "State" should be "tabbed".
-	//					"position" should be the position where we want to tab (e.g. If we want
-	//					to tab the first dock then position should be 1).
-	// 
-	//					This is a design issue; because, with this way it is easily possible to
-	//					tab any number of dockable widgets simultaneously.
-	//					
+	Add(richedit.SizePos());	
 
-	dockctrl.Dock(dock3.SetLabel("Dock 1").DockLeft().StateShow().SetIcon(CtrlImg::new_doc()));
-	dockctrl.Dock(dock1.SetLabel("Dock 4").DockTop().StateShow().SetIcon(CtrlImg::new_doc()));
-	dockctrl.Dock(dock2.SetLabel("Dock 5").DockBottom().StateShow().SetIcon(CtrlImg::new_doc()));
-	dockctrl.Dock(dock4.SetLabel("Dock 2").DockRight().StateTabbed().Posit(1).SetIcon(CtrlImg::new_doc()));	// Manual tabbing example
-	dockctrl.Dock(dock5.SetLabel("Dock 3").DockRight().StateTabbed().Posit(1).SetIcon(CtrlImg::new_doc()));	//
-	dockctrl.Dock(dock6.SetLabel("Dock 6").DockLeft().StateAuto().SetIcon(CtrlImg::new_doc()));				// Manual autohide (no need to set position variable).
-	Add(dockctrl);
+	// You can select which sides could be used to dock. See DockBase class 
+	// AllowLeftRight();
+}
 
-	//
-	Add(richedit.SizePos());		
+DockCtrlExample::~DockCtrlExample()
+{
+	StoreToFile(*this, ConfigFile("dockctrlexamplelayout.bin"));
 }
 
 void DockCtrlExample::Toolbar(Bar &bar)
@@ -137,7 +199,8 @@ void DockCtrlExample::EditMenu(Bar& bar)
 
 GUI_APP_MAIN
 {
-	SetLanguage(::GetSystemLNG());
+//	SetLanguage(::GetSystemLNG());
+//	SetDefaultCharset(CHARSET_UTF8);
 	DockCtrlExample().Run();
 }
 

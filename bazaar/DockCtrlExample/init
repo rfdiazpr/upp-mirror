@@ -3,4 +3,5 @@
 #include "CtrlLib/init"
 #include "DockCtrl/init"
 #include "RichEdit/init"
+#include "Web/init"
 #endif

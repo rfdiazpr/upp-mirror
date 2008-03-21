@@ -104,7 +104,7 @@ int ScrollBar::GetHV(int h, int v) const {
 Rect ScrollBar::GetPartRect(int p) const {
 	Rect h = Slider();
 	int sbo = style->overthumb;
-	int off =  GetHV(h.left, h.top);
+	int off = GetHV(h.left, h.top);
 	int ts = thumbsize;
 	if(ts < style->thumbmin)
 		ts = 0;

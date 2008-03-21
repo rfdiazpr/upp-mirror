@@ -709,15 +709,22 @@ void ChHostSkin()
 		GtkChButton(s.look);
 	}
 
-	if(engine != "Qt")
+//_DBG_
+//	if(engine != "Qt")
 	{
 		ScrollBar::Style& s = ScrollBar::StyleDefault().Write();
-		GtkObject *adj = gtk_adjustment_new(250, 0, 1000, 1, 1, 500);
 		s.through = true;
+		int margin = 0;
+		int deflate = 0;
+		if(engine == "Qt") {
+			margin = GTK_MARGIN1;
+			deflate = GTK_DEFLATE1;
+		}
+		GtkObject *adj = gtk_adjustment_new(250, 0, 1000, 1, 1, 500);
 		static GtkWidget *vscrollbar = gtk_vscrollbar_new(GTK_ADJUSTMENT(adj));
-		ChGtkNew(vscrollbar, "slider", GTK_SLIDER|GTK_VAL1);
+		ChGtkNew(vscrollbar, "slider", GTK_SLIDER|GTK_VAL1|margin);
 		GtkChSlider(s.vthumb);
-		Image m = GetGTK(ChGtkLast(), 0, 0, "slider", GTK_SLIDER|GTK_VAL1, 16, 32);
+		Image m = GetGTK(ChGtkLast(), 0, 0, "slider", GTK_SLIDER|GTK_VAL1|margin, 16, 32);
 		s.thumbmin = GtkInt("min-slider-length");
 		s.barsize = GtkInt("slider-width");
 		s.arrowsize = GtkInt("stepper-size");
@@ -725,7 +732,7 @@ void ChHostSkin()
 		s.isright2 = s.isdown2 = GtkInt("has-secondary-forward-stepper");
 		s.isleft2 = s.isup2 = GtkInt("has-secondary-backward-stepper");
 
-		ChGtkNew("trough", GTK_BOX);
+		ChGtkNew("trough", GTK_BGBOX|deflate);
 		GtkChTrough(s.vupper);
 		GtkChTrough(s.vlower);
 		bool atp = IsEmptyImage(GetGTK(ChGtkLast(), 2, 2, "vscrollbar", GTK_BOX|GTK_TOP|GTK_RANGEA, 16, 16));
@@ -809,9 +816,9 @@ void ChHostSkin()
 		FieldFrameColor_Write(fc);
 
 		static GtkWidget *hscrollbar = gtk_hscrollbar_new(GTK_ADJUSTMENT(adj));
-		ChGtkNew(hscrollbar, "slider", GTK_SLIDER);
+		ChGtkNew(hscrollbar, "slider", GTK_SLIDER|margin);
 		GtkChSlider(s.hthumb);
-		ChGtkNew("trough", GTK_BGBOX);
+		ChGtkNew("trough", GTK_BGBOX|margin);
 		GtkChTrough(s.hupper);
 		GtkChTrough(s.hlower);
 		if(atp) {
@@ -840,7 +847,7 @@ void ChHostSkin()
 		adj = gtk_adjustment_new(0, 0, 1000, 1, 1, 500);
 		w = gtk_vscrollbar_new(NULL);
 		Setup(w);
-		s.overthumb = m != GetGTK(w, 0, 0, "slider", GTK_SLIDER|GTK_VAL1, 16, 32);
+		s.overthumb = m != GetGTK(w, 0, 0, "slider", GTK_SLIDER|GTK_VAL1, 16, 32) && engine != "Qt";
 		gtk_widget_destroy(w);
 		gtk_object_sink(adj);
 	}

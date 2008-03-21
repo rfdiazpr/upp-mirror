@@ -1,7 +1,7 @@
 //==============================================================================================
 // DockCtrl: A dockable widget framework for U++
 // Author:	 Ismail YILMAZ
-// Version:	 0.50 (DEV-0802b.1)
+// Version:	 0.52 (DEV-0803b.1)
 //==============================================================================================
 
 #ifndef DOCKCTRL_H
@@ -28,6 +28,7 @@ class PaneSplitter;
 class TabInterface;
 class AutoHideBar;
 class PaneFrame;
+class DockBase;
 class DockCtrl;
 class DockWindow;
 class TabWindow;
@@ -102,37 +103,40 @@ static Image AlphaHighlight(const Image &img, int alpha)
 
 //----------------------------------------------------------------------------------------------
 
-struct CustomFrame : FrameCtrl<Ctrl>
+struct DockCtrlCustomFrame : FrameCtrl<Ctrl>
 {
 public:
-	enum { LAYOUT_LEFT, LAYOUT_TOP, LAYOUT_RIGHT, LAYOUT_BOTTOM };
-
-	int layout;
-	int size;
-	int border;
-	
-	bool horizontal;
+	enum 	{ LAYOUT_LEFT, LAYOUT_TOP, LAYOUT_RIGHT, LAYOUT_BOTTOM };
+	enum 	{ TAB_MARGIN = 6, TAB_SPACE = 20, TAB_SBHEIGHT = 4, TAB_SBSEPARATOR = 1, TAB_FILEICON = 16, TAB_SPACEICON = 5 };
+	enum 	{ BAR_MARGIN = 6, BAR_SPACE = 20, BAR_SBHEIGHT = 4, BAR_SBSEPARATOR = 1, BAR_FILEICON = 16, BAR_SPACEICON = 5 };
 		
-	virtual void FrameLayout(Rect &r);
+	void	SetLayout(int l)	{ layout = l; RefreshLayout();			}
+	void	Fix(Size& sz)		{ if(!horizontal) Swap(sz.cx, sz.cy); 	}
+	void	Fix(Point& p)		{ if(!horizontal) Swap(p.x, p.y);		}
+	void	SetSize(int sz)		{ size = sz;							}
+	bool	IsHorz()			{ return layout == LAYOUT_TOP || layout == LAYOUT_BOTTOM; }
+	bool	IsVert()			{ return !IsHorz(); }
+	
+	virtual void FrameLayout(Rect& r);
 	virtual void FrameAddSize(Size& sz);
 
-	void Fix(Size& sz);
-	void Fix(Point& p);	
+	DockCtrlCustomFrame& 			SetStyle(const DockCtrlChStyle::Style& s);
+	const DockCtrlChStyle::Style*  	GetStyle();	
 
-	bool IsHorz()			{ return layout == LAYOUT_TOP || layout == LAYOUT_BOTTOM; }
-	bool IsVert()			{ return !IsHorz(); }
-	
-	void SetSize(int sz)	{ size = sz; }
-		
-	CustomFrame() : border(0), size(0), layout(LAYOUT_TOP), horizontal(true) {}	
+	int		layout;
+	int 	size;
+	bool	horizontal;
+	const 	DockCtrlChStyle::Style* style;
+	DockCtrlCustomFrame() : layout(LAYOUT_TOP), size(0), horizontal(true) {}	
+
 };
 
-class TabInterface : public CustomFrame
+class TabInterface : public DockCtrlCustomFrame
 {
 private:
 
 
-	class TabScrollBar : public CustomFrame
+	class TabScrollBar : public DockCtrlCustomFrame
 	{
 	private:
 		int total;
@@ -176,15 +180,6 @@ protected:
 	int  GetPos() { return scrollbar.GetPos(); }
 	Point mouse, oldp;
 	TabScrollBar scrollbar; 
-
-	enum 
-	{	TAB_MARGIN = 6, 
-		TAB_SPACE = 20, 
-		TAB_SBHEIGHT = 4, 
-		TAB_SBSEPARATOR = 1, 
-		TAB_FILEICON = 16, 
-		TAB_SPACEICON = 5 
-	};
 	
 public:
 	struct Tab : Moveable<Tab>
@@ -194,7 +189,7 @@ public:
 		int		id;
 		int 	x, y, cx, cy;
 		Size 	textsize;
-		String 	name;
+		String	name;
 		Image	icon;
 		int		Right()	 { return x + cx; };
 		int		Bottom() { return y + cy; };
@@ -241,7 +236,7 @@ public:
 	void SetActiveTab(int n);
 	void SetActiveTab(DockableCtrl& dock);
 	int  GetActiveTab();
-	int  Find(int id);
+	int  Find(int itemid);
 	int	 Find(DockableCtrl& dock);
 	int  GetNext(int n);
 	int  GetPrev(int n);
@@ -309,49 +304,50 @@ public:
 	
 	enum {PANEANIMATION, TABANIMATION };
 	
-	void AddChildDock(DockableCtrl& dock, int position);
-	void AddChildDock(DockableCtrl& dock);
-	void RemoveChildDock(DockableCtrl& dock);
-	void RemoveChildDock(int position);
-	void RemoveChilds();
-	void ReposChilds();
-	DockableCtrl* GetChildAt(int position);
-	int  GetChildCount();
-	bool HasChild();					
+	void 			AddChildDock(DockableCtrl& dock, int position);
+	void 			AddChildDock(DockableCtrl& dock);
+	void 			RemoveChildDock(DockableCtrl& dock);
+	void 			RemoveChildDock(int position);
+	void 			RemoveChilds();
+	void 			ReposChilds();
+	DockableCtrl* 	GetChildAt(int position);
+	int  			GetChildCount();
+	bool 			HasChild();					
 
-	void StartAnimation(DockableCtrl& dock, int position);
-	void StartAnimation(int position);
-	void StopAnimation();
-	inline bool IsAnimating() const		{ return animating; }
-	void Animate(int position = 0);
-	void SetAnimationType(int type)		{ animationctrl.Type(animationtype = type); }
-	Rect AnimationArea() 				{ return animationctrl.GetScreenRect();}
-	Ctrl* GetAnimationCtrl() 			{ return (Ctrl*) &animationctrl; }		
+	void 			StartAnimation(DockableCtrl& dock, int position);
+	void 			StartAnimation(int position);
+	void 			StopAnimation();
+	inline bool 	IsAnimating() const				{ return animating; }
+	void 			Animate(int position = 0);
+	void 			SetAnimationType(int type)		{ animationctrl.Type(animationtype = type); }
+	Rect 			AnimationArea() 				{ return animationctrl.GetScreenRect();}
+	Ctrl* 			GetAnimationCtrl() 				{ return (Ctrl*) &animationctrl; }		
 
-	virtual void Layout();
+	virtual void 	Layout();
 
 	
 private:
+	Array<int> 		positions;
+	void 			AnimateCallback();
 
-	Array<int> positions;
-	void AnimateCallback();
 public:
 	class AnimationCtrl : public Ctrl
 	{
 	public:
-		typedef AnimationCtrl CLASSNAME;
-		void SetAnimImage(Image& img)		{ image = img;  Refresh(); }
-		Image& GetAnimImage()				{ return image;  }
-		void ClearAnimImage()				{ image.Clear(); }
-		void AnimateVert();
-		void AnimateHorz();
-		void Paint(Draw& d);
-		void Type(int type)					{ ctrltype = type; }
+		typedef 	AnimationCtrl CLASSNAME;
+		void 		SetAnimImage(Image& img)		{ image = img;  Refresh(); }
+		Image& 		GetAnimImage()					{ return image;  }
+		void 		ClearAnimImage()				{ image.Clear(); }
+		void 		AnimateVert();
+		void 		AnimateHorz();
+		void 		Paint(Draw& d);
+		void 		Type(int type)					{ ctrltype = type; }
 	public:
 		AnimationCtrl()  { /*SetFrame(FieldFrame()); */ctrltype = PaneSplitter::PANEANIMATION; }
+
 	private:
-		Image image;
-		int ctrltype;
+		Image 		image;
+		int 		ctrltype;
 	};
 	AnimationCtrl animationctrl;
 private:
@@ -371,167 +367,143 @@ class DockableCtrl : public TopWindow
 public:
 	typedef DockableCtrl CLASSNAME;
 	
-	enum { DOCK_LEFT, DOCK_TOP, DOCK_RIGHT, DOCK_BOTTOM, DOCK_TABBED, DOCK_NONE };
-	enum { STATE_SHUT, STATE_SHOW, STATE_HIDE, STATE_AUTO, STATE_TABBED };
-	enum { TYPE_WINDOCK, TYPE_TABDOCK, TYPE_BARDOCK };	
-
-	DockableCtrl& DockTop()					{ dockalignment = DOCK_TOP;		return *this;}
-	DockableCtrl& DockLeft()				{ dockalignment = DOCK_LEFT;	return *this;}			
-	DockableCtrl& DockRight()				{ dockalignment = DOCK_RIGHT;	return *this;}
-	DockableCtrl& DockBottom()				{ dockalignment = DOCK_BOTTOM;	return *this;}
-	DockableCtrl& DockTabbed()				{ dockalignment = DOCK_TABBED;	return *this;}
-
-	DockableCtrl& StateShut()				{ dockstate =  STATE_SHUT;		return *this;}
-	DockableCtrl& StateShow()				{ dockstate =  STATE_SHOW;		return *this;}
-	DockableCtrl& StateHide()				{ dockstate =  STATE_HIDE;		return *this;}
-	DockableCtrl& StateAuto()				{ dockstate =  STATE_AUTO;		return *this;}
-	DockableCtrl& StateTabbed()				{ dockstate =  STATE_TABBED;	return *this;}
+	enum { TYPE_DOCKWINDOW, TYPE_TABWINDOW, TYPE_DOCKBAR };										// Available DockableCtrl types.
+	enum { DOCK_LEFT, DOCK_TOP, DOCK_RIGHT, DOCK_BOTTOM, DOCK_TABBED, DOCK_NONE };				// Possible alignments.
+	enum { STATE_SHUT, STATE_SHOW, STATE_HIDE, STATE_AUTO, STATE_TABBED			};				// Possible states.
 	
-	DockableCtrl& Posit(int position)		{ dockposition = position;		return *this;}
-	
-	DockableCtrl& Style(int alignment, int state, int position);
+	inline bool		IsDockWindow()				{ return docktype == TYPE_DOCKWINDOW; 	}		
+	inline bool		IsTabWindow()				{ return docktype == TYPE_TABWINDOW;	}		
+	inline bool		IsDockBar()					{ return docktype == TYPE_DOCKBAR;		}		
 
-	inline int Alignment() 	const			{ return dockalignment; }
-	inline int State() 		const			{ return dockstate;		}
-	inline int Position()	const			{ return dockposition;	}
-	
-	inline bool IsDocked() 					{ return !IsShut() && !IsTabbed() && !IsFloating();	}
-	inline bool IsHidden()					{ return IsDocked() && dockstate == STATE_HIDE;		}
-	inline bool IsAutoHidden()				{ return IsDocked() && dockstate == STATE_AUTO;		}
-	inline bool IsShut()					{ return dockalignment == DOCK_NONE && dockstate == STATE_SHUT;}
-	inline bool IsFloating()				{ return dockalignment == DOCK_NONE && dockstate != STATE_SHUT;}
-	inline bool IsTabbed()					{ return dockstate == STATE_TABBED;}
+	DockableCtrl& 	DockTop()					{ dockalignment = DOCK_TOP;		return *this;}
+	DockableCtrl& 	DockLeft()					{ dockalignment = DOCK_LEFT;	return *this;}			
+	DockableCtrl& 	DockRight()					{ dockalignment = DOCK_RIGHT;	return *this;}
+	DockableCtrl& 	DockBottom()				{ dockalignment = DOCK_BOTTOM;	return *this;}
+	DockableCtrl&	DockFloat()					{ dockalignment	= DOCK_NONE; dockstate= STATE_SHOW; return *this; }
 
-	int GetType()							{ return type;	}
-	virtual Size& SizeHint()				{ return size;	}
+	DockableCtrl& 	StateShut()					{ dockstate =  STATE_SHUT;		return *this;}
+	DockableCtrl& 	StateShow()					{ dockstate =  STATE_SHOW;		return *this;}
+	DockableCtrl& 	StateHide()					{ dockstate =  STATE_HIDE;		return *this;}
+	DockableCtrl& 	StateAuto()					{ dockstate =  STATE_AUTO;		return *this;}
+	DockableCtrl& 	StateTabbed()				{ dockstate =  STATE_TABBED;	return *this;}
 
-protected:
-	virtual void  SetSizeHint(Size& sz)		{ size = sz; 	}
-	virtual void  RefreshSizeHint();	
-	void SetType(int _type)					{ type = _type; }
-		
-private:
-	int dockalignment, dockstate, dockposition, type;
-	Size size;
+	DockableCtrl& 	Posit(int position)			{ dockposition = position;		return *this;}
+
+	DockableCtrl& 	DockingStyle(int alignment, int state, int position = 0);
 	
-public:
-	virtual void Dock(int alignment, int state, int position, bool check = true);
-	virtual void FloatEx(Rect r);
-	virtual void Float();
-	virtual void Show();
-	virtual void Hide();
-	virtual void AutoHide();
-	virtual void Shut();
-	virtual void Menu();
-	virtual void Settings();
+	inline int 		Alignment() const			{ return dockalignment; }
+	inline int 		State()		const			{ return dockstate;		}
+	inline int 		Position()	const			{ return dockposition;	}
+	
+	inline bool 	IsDocked()					{ return !IsShut() && !IsTabbed() && !IsFloating();	}
+	inline bool		IsHidden()					{ return IsDocked() && dockstate == STATE_HIDE;		}
+	inline bool 	IsAutoHidden()				{ return IsDocked() && dockstate == STATE_AUTO;		}
+	inline bool 	IsShut()					{ return dockalignment == DOCK_NONE && dockstate == STATE_SHUT; }
+	inline bool 	IsFloating()				{ return dockalignment == DOCK_NONE && dockstate != STATE_SHUT; }
+	inline bool 	IsTabbed()					{ return dockstate == STATE_TABBED;	}
+
+	int 			GetType()					{ return docktype;	}							// Returns the type of the derived dockablectrl class.
+	DockBase&		GetBase()					{ ASSERT(dockbase); return *dockbase;	}		// Returns the owner (base) framework.
+ 	String 			GetLabel() 	const			{ return  dockname; }							// Returns the name of the dockablectrl.
+	Image  			GetIcon () 	const 			{ return  dockicon; }  							// Returns the icon associated with the dockablectrl.
+	Size			GetSizeHint()				{ return docksize;	}							// Returns the absolute (ctrl + frames) size of the dockablectrl.
+
+	DockableCtrl& 	SetLabel(String  title);									
+	DockableCtrl& 	SetIcon(Image icon);
+
+	Callback1<Bar&>	WhenContextMenu;
 	
 protected:
-	void OpenWindow(Rect& r);
-	void ShutWindow();
-
-	virtual void OnShutWindow();									
-	virtual void Layout()								{ TopWindow::Layout(); if(IsOpen() && IsFloating()) RefreshSizeHint(); }
-		
-protected:
-	DockableCtrl& 	SetBase(DockCtrl* ctrlbase)			{ base = ctrlbase;		return *this;	}
-	DockCtrl& 		GetBase()							{ ASSERT(base); 		return *base;	}
-	DockableCtrl&	SetOwnerTab(TabWindow *tabwin)		{ tabwindow = tabwin;	return *this;	}
-	TabWindow*		GetOwnerTab()						{ /*ASSERT(tabwindow);*/ return tabwindow;	}
-	DockableCtrl&	SetOwnerBar(AutoHideBar *hidebar)	{ autohidebar = hidebar; return *this;	}
-	AutoHideBar*	GetOwnerBar()						{ /*ASSERT(autohidebar); */ return autohidebar; }	
-	    			            
-	friend class DockCtrl;
-	friend class DockWindow;
-	friend class TabWindow;
-	friend class PaneFrame;
-	friend class AutoHideBar;
-	
-private:
-	DockCtrl* 		base;
-	TabWindow* 		tabwindow;
-	AutoHideBar* 	autohidebar;
-	MenuBar 		menu;
-
-//===============================================
-// DockableCtrl: DnD methods.
-//===============================================
-	
-public:
-	
-	void Dragging(bool state = false)					{ isdragged = state; 	}
-	void Dropping(bool state = false)					{ isdropped = state;	}
-
-	void SetDropTarget(int target = DOCK_NONE, int state = STATE_SHOW)	{ dndtarget = target; dndstate = state;	}
-	int	 GetDropTarget()												{ return dndtarget;		}
-	int  GetDropState()													{ return dndstate;		}
-	bool HasDropTarget()												{ return dndtarget == DOCK_NONE ? false : true;}			
-	bool IsDropTargetAvailable(Rect paneframe, Point p)					{ return paneframe.Contains(p); }
-	
-	inline bool IsDragged()								{ return isdragged; }
-	inline bool IsDropped()								{ return isdropped; }
-
-protected:
-	void StartWindowDrag();
-	
-private:
-	int  dndtarget, dndstate;
-	bool isdragged, isdropped;
-	
-//===============================================
-// DockableCtrl: dock-menu and dragbar methods.
-//===============================================
-
-protected:
-
-	void ContextMenu(Bar& menubar);
-	void DockableCtrlMenu(Bar& menubar);
-	void DockableCtrlDockMenu(Bar& menubar);
-	
-	virtual void Paint(Draw& d);
-
-//===============================================
-// DockableCtrl: BarCtrl-based child ctrl support.
-//===============================================
-	
-protected:
-	DockableCtrl& AddBarCtrl(CtrlFrame& barctrl)		{ AddFrame(barctrl);  haschildbar = true; return *this; }
-	void AddChildBarSize(int width, int height)			{ childsize.cx += width; childsize.cy += height; }			//TODO: remove this junk code.
-	void SubChildBarSize(int width, int height)			{ childsize.cx -= width; childsize.cy -= height; }			//
-	virtual void HideDragBar() 							{ hasdragbar = false;		}
-	virtual void ShowDragBar() 							{ hasdragbar = true; 		}
-	bool HasChildBar() const							{ return haschildbar; 		}		
-	bool HasDragBar() const								{ return hasdragbar; 		}
-
-public:
-	Size&  GetChildBarSize()							{ return childsize; 		}		
+	DockableCtrl&	SetType(int type)			{ docktype = type;	return *this;}	
+	DockableCtrl&	SetBase(DockBase* c)		{ dockbase = c;		return *this;}
+	DockableCtrl&	SetSizeHint(Size sz)		{ docksize = sz;	return *this;}
+	DockableCtrl&	SetSize(Size sz);
+	void			ReSize();
 
 private:
-	Size childsize;
-	bool haschildbar;
-	bool hasdragbar;
+	int				dockalignment;
+	int				dockstate;
+	int				dockposition;
+	int				docktype;
+	Size			docksize;
+	DockBase*		dockbase;
+	Image			dockicon;
+	String			dockname;
+	MenuBar			dockmenu;
+	int				dockdroptarget;
+	int				dockdropstate;
 
+protected:
+	bool 			haschildbar;
+	bool			hasdragbar;
+	bool			isdragged;
+	bool			isdraggable;
 
-//===============================================
-// DockableCtrl: label (title/ID) methods.
-//===============================================	
-	
+	friend class 	DockBase;
+	friend class 	PaneFrame;
+	friend class 	TabWindow;
+	friend class	AutoHideBar;
+
 public:
-	DockableCtrl& SetLabel(String  docktitle);									
-	DockableCtrl& SetIcon(Image dockicon);
+	const DockCtrlChStyle::Style* style;					
 
- 	String GetLabel() const	{ return  title; }
-	Image  GetIcon () const { return  icon;  }  	
-	
-private:
-	String title;
-	Image  icon;
-					
 public:
-	DockableCtrl& Add(Ctrl& ctrl)						{ this << ctrl; return *this; }
-	DockableCtrl& operator<<(Ctrl& ctrl)				{ Add(ctrl);	return *this; }
+	virtual void 	Dock(int alignment, int state, int position, bool check = true) = 0;
+	virtual void 	FloatEx(Rect r)	= 0;
+	virtual void 	Float() 		= 0;
+	virtual void 	Show() 			= 0;
+	virtual void 	Hide() 			= 0;
+	virtual void 	AutoHide() 		= 0;
+	virtual void 	Shut() 			= 0;
+	virtual void 	Menu() 			= 0;
+	virtual void 	Settings();
+	
+	virtual void 	Serialize(Stream& s) = 0;	
+
+public:
+	virtual Rect 	GetCtrlRect() = 0;	
+	virtual Size 	GetCtrlSize() = 0;
+
+public:
+	void 			SetDropTarget(int target = DOCK_NONE, int state = STATE_SHUT)	{ dockdroptarget = target, dockdropstate = state; }
+	int				GetDropTarget	()												{ return dockdroptarget;	}
+	int				GetDropState	()												{ return dockdropstate;		}
+	bool			HasDropTarget	()												{ return (dockdroptarget != DOCK_NONE);}
+	bool			IsDropTargetAvailable(Rect r, Point p)							{ return r.Contains(p);		}
+	
+	void			ForbidDragAndDrop()												{ isdraggable = false;	};
+	void			PermitDragAndDrop()												{ isdraggable = true;	};
+
+protected:
+	void 			StartWindowDrag();
+
+#if defined(PLATFORM_WIN32)
+	virtual LRESULT  WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+#elif defined(PLATFORM_X11)
+	virtual void EventProc(XWindow& w, XEvent *event);
+#endif
+			
+protected:
+	virtual	void 	OpenWindow(Rect& r);
+	virtual void	OpenWindow(int x, int y, int cx, int cy);
+	virtual void 	ShutWindow();
+	virtual void 	ContextMenu();
+	virtual	void 	OnShutWindow();
+	virtual void 	Layout();
+
+public:
+	virtual void 	ShowDragBar()												{ hasdragbar = true; 	}
+	virtual void 	HideDragBar()												{ hasdragbar = false;	}
+	virtual bool 	HasDragBar()												{ return hasdragbar;	}
+	virtual bool 	HasChildBar()												{ return haschildbar;	} 
+
+public:
+	DockableCtrl& 	AddChildBar(CtrlFrame& bar)			{ AddFrame(bar);  haschildbar = true; return *this; }
+	DockableCtrl& 	Add(Ctrl& ctrl)						{ this << ctrl; return *this; }
+	DockableCtrl& 	operator<<(Ctrl& ctrl)				{ Add(ctrl);	return *this; }
 
 	DockableCtrl();
-	~DockableCtrl();
+	~DockableCtrl();	
 };
 
 //----------------------------------------------------------------------------------------------
@@ -540,125 +512,113 @@ class DockWindow : public DockableCtrl
 {
 public:
 	typedef DockWindow CLASSNAME;
-
-	DockWindow&	AddMenuBar(MenuBar& bar);
-	DockWindow& AddToolBar(ToolBar& bar);
-	DockWindow& AddStatusBar(StatusBar& bar);
 	
-	inline bool HasMenuBar()	{ return hasmenubar; 	}
-	inline bool HasToolBar()	{ return hastoolbar; 	}
-	inline bool HasStatusBar()	{ return hasstatusbar;	}
+	DockWindow&		AddMenuBar(MenuBar& bar);
+	DockWindow&		AddToolBar(ToolBar& bar);
+	DockWindow&		AddStatusBar(StatusBar& bar);
+	
+	inline bool 	HasMenuBar	()		{ return hasmenubar; 	}
+	inline bool 	HasToolBar	()		{ return hastoolbar; 	}
+	inline bool 	HasStatusBar()		{ return hasstatusbar;	}
 
-	virtual Rect GetCtrlRect();
-	virtual Rect GetCtrlView()	{ return GetCtrlRect(); 		}	
-	virtual Size GetCtrlSize()	{ return GetCtrlRect().Size();	}
+	virtual Rect 	GetCtrlRect();	
+	virtual Size 	GetCtrlSize();
+	
+	TabWindow*		GetOwnerTab()		{ return ownertab; }
+	AutoHideBar*	GetOwnerBar()		{ return ownerbar; }
+	
+	DockWindow&		SetOwnerTab(TabWindow* tabwindow)	{ ownertab = tabwindow; 	return *this; }
+	DockWindow&		SetOwnerBar(AutoHideBar* hidebar)	{ ownerbar = hidebar;		return *this; }
 
+	virtual void 	Serialize(Stream& s);
+	
+public:
+	virtual void 	Dock(int alignment, int state, int position, bool sizecheck = true);
+	virtual void 	FloatEx(Rect r);
+	virtual void 	Float();
+	virtual void 	Show();
+	virtual void 	Hide();
+	virtual void 	AutoHide();
+	virtual void 	Shut();
+	virtual void 	Menu();
+	
+public:
+	virtual void	ShowDragBar();
+	virtual void	HideDragBar();
+	virtual	DockWindow&	ShowDragBarButtons(bool b = true);
+		
 protected:
-	virtual void OnMenuButton()		{ DockableCtrl::ContextMenu(*menubar); 	}
-	virtual void OnShutButton()		{ DockableCtrl::Shut();					}
-	virtual void OnAutoHideButton()	{ DockableCtrl::AutoHide();				}
-	virtual void ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags);
-	virtual void MouseMove(Point p, dword keyflags);
-	virtual void Paint(Draw& d);	
-
-#if defined(PLATFORM_WIN32)
-	virtual LRESULT  WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
-#elif defined(PLATFORM_X11)
-	virtual void EventProc(XWindow& w, XEvent *event);
-#endif
+	virtual void 	OnMenuButton	();
+	virtual void	OnShutButton	();
+	virtual void	OnAutoHideButton();
+	virtual void 	ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags);
+	virtual void 	MouseMove(Point p, dword keyflags);
+	virtual void 	Paint(Draw& d);	
 	
-private: 
-	bool hasmenubar, hastoolbar, hasstatusbar;
-	MenuBar*   menubar;
-	ToolBar*   toolbar;
-	StatusBar* statusbar;
-	friend class TabWindow;
-
-//===============================================
-// DockWindow::DragBarButton
-// Nested helper class.
-//===============================================
-
+	virtual void	DockWindowMenu(Bar& bar);
+	virtual void	DockWindowDockMenu(Bar& bar);
+	
 private:
-	struct DragBarButton : public Button
-	{
-	public:
-		void  Paint(Draw& d);
-		Ctrl& SetImage(const Image& normal, const Image& highlighted, const Image& pushed);
-
-		const	DockCtrlChStyle::Style* style;
-		static const DockCtrlChStyle::Style& StyleDefault();
-		static const DockCtrlChStyle::Style& StyleClassic();
-		static const DockCtrlChStyle::Style& StyleEnhanced();
-
-		DockWindow& SetStyle(const DockCtrlChStyle::Style& s);
-		const DockCtrlChStyle::Style*  GetStyle()				{ return style ? style : &DockCtrlChStyle::StyleDefault(); 	}
-
-	private:
-		Image _nimage, _himage, _pimage;
-	};
-
-//===============================================
-// DockWindow::DragBar
-// Nested helper class.
-//===============================================
-
-private:
-	class DragBar : public Ctrl, public CtrlFrame
+	class DragBar : public DockCtrlCustomFrame
 	{
 	public:
 		typedef DragBar CLASSNAME;
-		enum {	BAR_MARGIN = 6, BAR_SPACE = 20, BAR_SBHEIGHT = 4, BAR_SBSEPARATOR = 1, BAR_FILEICON = 16, BAR_SPACEICON = 5 };
-
-		void SetColor(const Color& c)			{ _color =  c;		}
-		void SetDock(DockWindow* dock)			{ _parent = dock; 	}
-		DockWindow& GetDock()					{ ASSERT(_parent); return  *_parent; }	
-		int GetWidth();
-		int GetHeight();
+		void		ShowButtons(bool b = true)		{ show 	= b;	if(IsVisible()) Refresh(); }
+		void		SetColor (const Color& c)		{ color = c; 	}
+		void		SetOwner (DockWindow* w)		{ owner = w;	}
+		DockWindow&	GetOwner ()						{ ASSERT(owner); return *owner;	}
+		int 		GetWidth ();
+		int 		GetHeight();
+	
+		virtual		void Paint(Draw& d);
+		virtual		void FrameAddSize(Size& sz);
 		
 	private:
-		Color		_color;
-		DockWindow* _parent;
-		Size		_titlesize;
-		
-	public:
-	
-		void FrameAdd(Ctrl& parent);
-		void FrameRemove();
-		void FrameLayout(Rect& r);
-		void FrameAddSize(Size& s);
-
-		void Paint(Draw& d);
+		DockWindow* owner;
+		Color		color;
+		bool		show;		
 
 	public:
-		DragBar() : _parent(0), _titlesize(0, 0) { SetFrame(FieldFrame()); }
+		DragBar();
+	};
+
+	struct DragBarButton : public Button
+	{
+	public:
+		void  		Paint(Draw& d);
+		Ctrl& 		SetImage(const Image& normal, const Image& highlighted, const Image& pushed);
+	private:
+		const 		DockCtrlChStyle::Style* style;
+		Image 		nimage;
+		Image 		himage;
+		Image 		pimage;
 	};
 	
-//===============================================
-// DockWindow: Dragbar related methods.
-//===============================================
-
-public:
-	virtual void HideDragBar(); 	
-	virtual void ShowDragBar();
-
-//===============================================
-// DockWindow: Chameleon support
-//===============================================
-
-public:
-	const	DockCtrlChStyle::Style* style;
-	DockWindow& SetStyle(const DockCtrlChStyle::Style& s);
-	const DockCtrlChStyle::Style*  GetStyle()				{ return style ? style : &DockCtrlChStyle::StyleDefault(); 	}
-
 private:
-	DragBar _dragbar;
-	DragBarButton _menubutton, _shutbutton, _autohidebutton;
-	
+	bool 			hasmenubar;
+	bool 			hastoolbar;
+	bool 			hasstatusbar;
+	bool			hasbarbuttons;
+	TabWindow*		ownertab;
+	AutoHideBar*	ownerbar;
+	MenuBar* 		menubar;
+	ToolBar* 		toolbar;
+	StatusBar*		statusbar;
+	DragBar			dragbar;
+	DragBarButton	menubutton;
+	DragBarButton	autohidebutton;
+	DragBarButton	shutbutton;
+	friend class 	TabWindow; 
+
+public:
+	DockWindow& SetStyle(const DockCtrlChStyle::Style& s);
+	const DockCtrlChStyle::Style*  GetStyle();
+
 public:
 	DockWindow();
 	~DockWindow();
 };
+
 
 //----------------------------------------------------------------------------------------------
 
@@ -667,57 +627,69 @@ class TabWindow : public DockWindow
 public:
 	typedef TabWindow CLASSNAME;
 	
-	void Attach(DockableCtrl& ctrl, int makeactive = false);
-	void Detach(DockableCtrl& ctrl);
-	void DetachAll();
-	bool HasCtrlInRange();
-	bool HasTabbedDock();
-	int	 ChildCount();
-	void SetActive(int index);
-	void SetActive(DockableCtrl& ctrl);
-	DockableCtrl* GetActiveCtrl();
-	int  GetActiveTab();
-	
-	void StartTabAnimation(); 
-	void StopTabAnimation();	
-	bool IsTabAnimating()				{ return pane.IsAnimating(); 	}
-	bool IsDestroyed()					{ return destroyed;				}	
+	void 			Attach(DockableCtrl& ctrl, int makeactive = false);
+	void 			Detach(DockableCtrl& ctrl);
+	void 			DetachAll();
 
-	TabInterface& 	GetTabs()			{ return tabs;	}
-	PaneSplitter&	GetChilds()			{ return pane; 	}
-	
-	TabWindow&		SetLayout(int n) 	{ if(tabs.IsChild()) RemoveFrame(tabs); AddFrame(tabs.SetLayout(n)); return *this; }
-	
+	void 			SetActive(int index);
+	void 			SetActive(DockableCtrl& ctrl);
+	DockableCtrl* 	GetActiveCtrl();
+	int  			GetActiveTab();
+	int	 			ChildCount();	
+	void 			StartTabAnimation(); 
+	void 			StopTabAnimation();	
+
+	bool 			HasCtrlInRange();
+	bool 			HasTabbedDock();
+	bool 			IsTabAnimating()				{ return animating;		 		}
+	bool 			IsDestroyed()					{ return destroyed;				}	
+
+	TabInterface& 	GetTabs()						{ return tabs;		}
+	DockableCtrl*	GetChildAt(int position);
+	TabWindow*		GetBaseTab();
+	int				GetNestLevel()					{ return nestlevel; }
+
+	void			SetNestLevel(int n);
+	TabWindow&		SetLayout(int n) 				{ if(tabs.IsChild()) RemoveFrame(tabs); AddFrame(tabs.SetLayout(n)); return *this; }
+
+	virtual	void	Serialize(Stream& s);
+
+	virtual void 	FloatEx(Rect r)					{ DockWindow::FloatEx(r); 	RefreshTabWindowLabel(*this); }
+	virtual void 	Float()							{ DockWindow::Float(); 		RefreshTabWindowLabel(*this); }
+		
 protected:
-	void OnMenuButton();
-	void OnShutButton();
-	void OnAutoHideButton();
-	virtual void OnShutWindow();
+	void 			OnMenuButton();
+	void 			OnShutButton();
+	void 			OnAutoHideButton();
+	virtual void 	OnShutWindow();
 		
-	virtual void OnActiveTab();
-	virtual void OnTabClose(int id, DockableCtrl& ctrl);
-	virtual void OnTabDrag(int id, DockableCtrl& ctrl);
-	virtual void OnTabActive(int id, DockableCtrl& ctrl);
-	virtual void OnTabContextMenu(int id, DockableCtrl& ctrl);	
+	virtual void 	OnActiveTab();
+	virtual void 	OnTabClose(int id, DockableCtrl& ctrl);
+	virtual void 	OnTabDrag(int id, DockableCtrl& ctrl);
+	virtual void 	OnTabActive(int id, DockableCtrl& ctrl);
+	virtual void 	OnTabContextMenu(int id, DockableCtrl& ctrl);	
 
-	virtual void Paint(Draw& d);
+	virtual void 	Paint(Draw& d);
 	
 private:
-	void AttachNormal(DockableCtrl& ctrl, int makeactive = false);
-	void AttachNested(DockableCtrl& ctrl, int makeactive = false);
-	void Attach0(DockableCtrl& ctrl, int makeactive = false);
+	void 			AttachNormal(DockableCtrl& ctrl, int makeactive = false);
+	void 			AttachNested(DockableCtrl& ctrl, int makeactive = false);
+	void 			Attach0(DockableCtrl& ctrl, int makeactive = false);
 		
-	void RefreshTabWindowLabel(DockableCtrl& ctrl);
-	bool RemoveTabWindow();
-
+	void 			RefreshTabWindowLabel(DockableCtrl& ctrl);
+	bool 			RemoveTabWindow();
+	void			ReposChilds();
 		
 private:
-	TabInterface tabs;
-	PaneSplitter pane;
-	DockableCtrl* activectrl;
-	int position;
-	bool destroyed;
-	int previous;
+	int 			position;
+	int 			previous;
+	int				nestlevel;
+	int				childcount;
+	bool 			destroyed;
+	bool			animating;
+	Image			animimage;
+	TabInterface 	tabs;
+	DockableCtrl* 	activectrl;
 
 public:
 	TabWindow();
@@ -734,11 +706,14 @@ public:
 	AutoHideBar& 	Attach(DockableCtrl& ctrl);
 	void 			Detach(DockableCtrl& ctrl);
 
-	void ShowBar();
-	void HideBar();
+	void 			ShowBar();
+	void 			HideBar();
 
-	int	 GetSize()			{ return CustomFrame::size; }
-	void SetSize(int sz) 	{ CustomFrame::size = sz; RefreshParentLayout(); }
+	int	 			GetSize()			{ return DockCtrlCustomFrame::size; }
+	void 			SetSize(int sz) 	{ DockCtrlCustomFrame::size = sz; RefreshParentLayout(); }
+
+	DockableCtrl* 	GetChild(int position);
+	int	  			GetCount();
 
 protected:
 
@@ -748,27 +723,27 @@ protected:
 	virtual void 	MouseLeave();
 	virtual void	MouseEnter(Point p, dword keyflags);
 
-
-	void ShowWindow();
-	void HideWindow();
+	void 			ShowWindow();
+	void 			HideWindow();
 	
-	void OnHighlight();
-	void OnClose(int id, DockableCtrl& ctrl);
+	void 			OnHighlight();
+	void 			OnClose(int id, DockableCtrl& ctrl);
 	
-	void AdjustSize(Rect &r, const Size &sz);
+	void 			AdjustSize(Rect &r, const Size &sz);
 
 private:	
 	struct PopupWindow : public Ctrl
 	{
-		Callback WhenEnter;
-		Callback WhenLeave;
-		virtual void ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags); 
-		virtual void Paint(Draw& d) { Ctrl::Paint(d); }
+		Callback 		WhenEnter;
+		Callback 		WhenLeave;
+		virtual void 	ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags); 
+		virtual void 	Paint(Draw& d) { Ctrl::Paint(d); }
 		PopupWindow() { BackPaint();  }
 	};
 
 	PopupWindow 	popup;
 	DockableCtrl* 	ctrl;
+	int				childcount;
 		
 public:
 	const	DockCtrlChStyle::Style* style;
@@ -787,110 +762,112 @@ class PaneFrame : public CtrlFrame, private Ctrl
 public:
 	typedef PaneFrame CLASSNAME;
 
-	PaneFrame& Attach(DockableCtrl& ctrl);
-	PaneFrame& Detach(DockableCtrl& ctrl);
+	PaneFrame& 			Attach(DockableCtrl& ctrl);
+	PaneFrame& 			Detach(DockableCtrl& ctrl);
 
+	void  				ShowFrame();
+ 	void  				ShowFrame(Size sz);
+ 	void  				HideFrame();
+ 	void  				LockFrame();
+ 	void  				UnlockFrame();
 
-	void  ShowFrame();
- 	void  ShowFrame(Size& sz);
- 	void  HideFrame();
- 	void  LockFrame();
- 	void  UnlockFrame();
-
-	bool  HasChild(DockableCtrl& ctrl);
-	DockableCtrl* GetChild(int position);
-	int	  GetCount();
+	bool  				HasChild(DockableCtrl& ctrl);
+	DockableCtrl* 		GetChild(int position);
+	int	  				GetCount();
 	Vector<TabWindow*>& GetTabWindows();
-	
-private:
-	PaneFrame& AttachAsDock(DockableCtrl& ctrl);
-	PaneFrame& AttachAsTab(DockableCtrl& ctrl);
-	PaneFrame& AttachAsAuto(DockableCtrl& ctrl);
 
-	TabWindow*	AddTabWindow(DockableCtrl& ctrl);
-	void		RemoveTabWindow(TabWindow* tabwindow);
-	void		RemoveTabWindow(int position);
-	void 		RemoveTabWindows();
-	void		AddtoTabWindow(DockableCtrl& ctrl);
-	void		RemovefromTabWindow(DockableCtrl& ctrl);
-	void		RemovefromTabWindow(int position);
-	void		RefreshTabWindowList();
-	TabWindow*	FindTabWindow(int position);
-	TabWindow*	FindTabWindow(DockableCtrl& ctrl);
+	TabWindow*			AddTabWindow();
+	void				AddtoTabWindow(DockableCtrl& ctrl);
+	void				RemovefromTabWindow(DockableCtrl& ctrl);
+	void 				RemoveTabWindows();
+		
+private:
+	PaneFrame& 			AttachAsDock(DockableCtrl& ctrl);
+	PaneFrame& 			AttachAsTab(DockableCtrl& ctrl);
+	PaneFrame& 			AttachAsAuto(DockableCtrl& ctrl);
+
+	TabWindow*			AddTabWindow(DockableCtrl& ctrl);
+	void				RemoveTabWindow(TabWindow* tabwindow);
+	void				RemoveTabWindow(int position);
+	void				RemovefromTabWindow(int position);
+	void				RefreshTabWindowList();
+	TabWindow*			FindTabWindow(int position);
+	TabWindow*			FindTabWindow(DockableCtrl& ctrl);
 	
-	inline TabWindow* GetActiveTabWindow();
-	void		SetActiveTabWindow(TabWindow* tabwindow);
-	bool		HasTabWindow(TabWindow* tabwindow);
+	inline TabWindow* 	GetActiveTabWindow();
+	void				SetActiveTabWindow(TabWindow* tabwindow);
+	bool				HasTabWindow(TabWindow* tabwindow);
 			
 
 private:
-	PaneSplitter dockcontainer;
-	AutoHideBar	 hidebar;
-	TabWindow*	 activetabwindow;
-	Vector<TabWindow*> tabwindows;
+	PaneSplitter 		dockcontainer;
+	AutoHideBar	 		hidebar;
+	TabWindow*	 		activetabwindow;
+	Vector<TabWindow*> 	tabwindows;
 		
 public:
-	virtual void FrameAdd(Ctrl& parent);
-	virtual void FrameRemove();
-	virtual void FrameAddSize(Size& sz);
-	virtual void FrameLayout(Rect& r);
+	virtual void 		FrameAdd(Ctrl& parent);
+	virtual void 		FrameRemove();
+	virtual void 		FrameAddSize(Size& sz);
+	virtual void 		FrameLayout(Rect& r);
 
-	virtual void Paint(Draw& draw);
-	virtual void LeftDown(Point p, dword keyflags);
-	virtual void MouseMove(Point p, dword keyflags);
-	virtual void LeftUp(Point p, dword keyflags);
-	virtual Image CursorImage(Point p, dword keyflags);
+	virtual void 		Paint(Draw& draw);
+	virtual void 		LeftDown(Point p, dword keyflags);
+	virtual void 		MouseMove(Point p, dword keyflags);
+	virtual void 		LeftUp(Point p, dword keyflags);
+	virtual Image 		CursorImage(Point p, dword keyflags);
 
 private:
-	Point ref;
-	Size  parentsize;
-	int   type, minsize, sizemin, maxsize;
-	int   size, size0;
-	int	  dndpos;
-	bool  created;
-	bool  locked;
-	int   BoundSize();
-	DockCtrl* base;
-	int	  ncount;
+	Point 				ref;
+	Size  				parentsize;
+	int   				type, minsize, sizemin, maxsize, stdsize;
+	int   				size, size0;
+	int	  				dndpos;
+	bool  				created;
+	bool  				locked;
+	int   				BoundSize();
+	DockBase* 			base;
+	int	  				ncount;
 	
 public:
 	enum { LEFT, TOP, RIGHT, BOTTOM };
 
-	PaneFrame& SetLayout(DockCtrl* basectrl, int alignment, int _maxsize);
+	PaneFrame& 			SetLayout(DockBase* basectrl, int alignment, int _maxsize);
 	
-	PaneFrame& Set(Ctrl& c, int size, int type);
-	PaneFrame& Left(Ctrl& c, int size)    		{ return Set(c, size, LEFT); }
-	PaneFrame& Top(Ctrl& c, int size)    	 	{ return Set(c, size, TOP); }
-	PaneFrame& Right(Ctrl& c, int size)  	 	{ return Set(c, size, RIGHT); }
-	PaneFrame& Bottom(Ctrl& c, int size)  		{ return Set(c, size, BOTTOM); }
+	PaneFrame& 			Set(Ctrl& c, int size, int type);
+	PaneFrame& 			Left(Ctrl& c, int size)    		{ return Set(c, size, LEFT); }
+	PaneFrame& 			Top(Ctrl& c, int size)    	 	{ return Set(c, size, TOP); }
+	PaneFrame& 			Right(Ctrl& c, int size)  	 	{ return Set(c, size, RIGHT); }
+	PaneFrame& 			Bottom(Ctrl& c, int size)  		{ return Set(c, size, BOTTOM); }
 
-	PaneFrame& MinSize(int sz)        		    { minsize = sz; return *this; }
-	PaneFrame& MaxSize(int sz)					{ maxsize = sz; return *this; }
-	PaneFrame& SizeMin(int sz)         			{ sizemin = sz; return *this; }
+	PaneFrame& 			MinSize(int sz)        		    { minsize = sz; return *this; }
+	PaneFrame& 			MaxSize(int sz)					{ maxsize = sz; return *this; }
+	PaneFrame& 			SizeMin(int sz)         		{ sizemin = sz; return *this; }
 
-	PaneFrame& Vert()							{ dockcontainer.Vert(); return *this; 	}
-	PaneFrame& Horz()							{ dockcontainer.Horz(); return *this; 	}
-	PaneFrame& RefreshPaneFrame()				{ RefreshParentLayout(); dockcontainer.Layout(); return *this; }
+	PaneFrame& 			Vert()							{ dockcontainer.Vert(); return *this; 	}
+	PaneFrame& 			Horz()							{ dockcontainer.Horz(); return *this; 	}
+	PaneFrame& 			RefreshPaneFrame()				{ RefreshParentLayout(); dockcontainer.Layout(); return *this; }
 	
-	PaneFrame& SetBase(DockCtrl* ctrlbase)		{ base = ctrlbase;	return *this;	}
-	DockCtrl&  GetBase()						{ ASSERT(base); return *base; 		}
+	PaneFrame& 			SetBase(DockBase* ctrlbase)		{ base = ctrlbase;	return *this;	}
+	DockBase&  			GetBase()						{ ASSERT(base); return *base; 		}
 	
-	int  GetType() const                      	{ return type; }
-	int  GetSize() const                      	{ return size; }
-	void SetSize(int sz)                      	{ size = sz; RefreshParentLayout(); }
+	int  				GetType() const                	{ return type; 		}	
+	int  				GetSize() const                	{ return size; 		}
+	int					GetPaneMaxSize() const			{ return maxsize; 	}	
+	void 				SetSize(int sz)                	{ size = sz; RefreshParentLayout(); }
 
-	Rect GetScreenView()						{ return Ctrl::GetScreenView(); 	}
-	Rect GetScreenRect()						{ return Ctrl::GetScreenRect();		}	
+	Rect 				GetScreenView()					{ return Ctrl::GetScreenView(); 	}
+	Rect 				GetScreenRect()					{ return Ctrl::GetScreenRect();		}	
 	
-	void Enable()								{ Ctrl::Enable(); 	}
-	void Disable()								{ Ctrl::Disable();	}
-	void Show(bool show = true)				  	{ Ctrl::Show(show); }
-	void Hide()								  	{ Ctrl::Hide(); 	}
+	void 				Enable()						{ Ctrl::Enable(); 	}
+	void 				Disable()						{ Ctrl::Disable();	}
+	void 				Show(bool show = true)		  	{ Ctrl::Show(show); }
+	void 				Hide()						  	{ Ctrl::Hide(); 	}
 	
-	bool IsShown()							  	{ return Ctrl::IsShown(); 	}
-	bool IsEnabled()							{ return Ctrl::IsEnabled();	}
-	bool IsCreated()							{ return created;			}
-	bool IsLocked()								{ return locked;			}
+	bool 				IsShown()					  	{ return Ctrl::IsShown(); 	}
+	bool 				IsEnabled()						{ return Ctrl::IsEnabled();	}
+	bool 				IsCreated()						{ return created;			}
+	bool 				IsLocked()						{ return locked;			}
 	         
 public:
 	PaneFrame();
@@ -901,131 +878,194 @@ public:
 //===============================================
 
 public:
-	bool	HasCtrlInRange (DockableCtrl&  ctrl, Point p);
+	bool				HasCtrlInRange(DockableCtrl&  ctrl, Point p);
 	
-	void	StartPaneFrameAnimation(DockableCtrl& ctrl, int position);
-	void	StartTabWindowAnimation(DockableCtrl& ctrl, int position);
-	void	StopPaneFrameAnimation();
-	void	StopTabWindowAnimation();
+	void				StartPaneFrameAnimation(DockableCtrl& ctrl, int position);
+	void				StartTabWindowAnimation(DockableCtrl& ctrl, int position);
+	void				StopPaneFrameAnimation();
+	void				StopTabWindowAnimation();
 		    	                    
 private:
-	bool	CalculateCtrlRange (DockableCtrl& t, Ctrl& c, Point p);
-	bool	CalculateEmptyRange (Ctrl& c, Point p);
+	bool				CalculateCtrlRange(DockableCtrl& t, Ctrl& c, Point p);
+	bool				CalculateEmptyRange(Ctrl& c, Point p);
 
 public:		    	               
-	void	DnDSourceinRange()				{ _dndsource = true;  }
-	void	DnDSourceoutofRange()			{ _dndsource = false; }
-	bool	DnDHasSource()	const			{ return _dndsource;  }
+	void				DnDSourceinRange()				{ _dndsource = true;  }
+	void				DnDSourceoutofRange()			{ _dndsource = false; }
+	bool				DnDHasSource()	const			{ return _dndsource;  }
 		
-	void	DnDAnimate(int position = dnd_none);
+	void				DnDAnimate(int position = dnd_none);
 
-	void	DoDropAnimation(int command = ANIMATE_ALL, int position = dnd_none, DockableCtrl* dock = NULL);	
-	bool	DnDIsAnimating() const			{ return _dndanim;	  }
+	void				DoDropAnimation(int command = ANIMATE_ALL, int position = dnd_none, DockableCtrl* dock = NULL);	
+	bool				DnDIsAnimating() const			{ return _dndanim;	  }
 	
-	void	DnDAnimStart()					{ _dndanim = true; 	  }
-	void 	DnDAnimStop()					{ _dndanim = false;	  }
+	void				DnDAnimStart()					{ _dndanim = true; 	  }
+	void 				DnDAnimStop()					{ _dndanim = false;	  }
 		
 public:
 	enum	{ dnd_first = 1, dnd_last = 2, dnd_tab = 128, dnd_none = -1 };
 	enum	{ TAB_ANIMATION_START, TAB_ANIMATION_STOP, PANE_ANIMATION_START, PANE_ANIMATION_STOP, ANIMATE_ALL};
 		
 private:
-	bool _dndsource;
-	bool _dndanim;
-	int  _dndposition;
-	int  _dndtype;
+	bool 				_dndsource;
+	bool 				_dndanim;
+	int  				_dndposition;
+	int  				_dndtype;
 };
 
 //----------------------------------------------------------------------------------------------
 
-class DockCtrl : public Ctrl
+class DockBase : public TopWindow
 {
 public:
-	typedef DockCtrl CLASSNAME;
+	typedef DockBase CLASSNAME;
 
-	enum { ALLOW_LEFT, ALLOW_TOP, ALLOW_RIGHT, ALLOW_BOTTOM, ALLOW_ALL, ALLOW_NONE };
-	
-	Ctrl& Dock(DockableCtrl& ctrl);
+	Ctrl& 				Dock(DockableCtrl& ctrl);
+	DockableCtrl&		Tabify(DockableCtrl& ctrl1, DockableCtrl& ctrl2);
+	DockableCtrl&		Tabify(DockableCtrl& ctrl1, DockableCtrl& ctrl2, DockableCtrl& ctrl3, DockableCtrl& ctrl4);
 
-	void ShowPaneFrame(int alignment);
-	void HidePaneFrame(int alignment);
-	void LockPaneFrame(int alignment);
-	
-	DockCtrl&		SetLayout(Ctrl& parent, int cx, int cy);
-	DockCtrl&		SetLayout(Ctrl& parent, Size& sz)			{ return SetLayout(parent, sz.cx / 4, sz.cy / 3); }
-	
-	Ctrl& 			GetBase()					{ ASSERT(base); return *base;	}
-	PaneFrame& 		GetPaneFrame(int alignment)	{ return pane[alignment]; 		}
-	AutoHideBar& 	GetHideBar(int alignment)	{ return hide[alignment];		}
-	
-	DockCtrl&	AllowSide(int sides)			{ allowedsides = sides; return *this; 	}
-	DockCtrl& 	SetKey(dword key = 0)			{ ctrlkey = key;	return *this; 		}
-	dword 		GetKey() const					{ return ctrlkey; }
-	void		ControlPanel();				
+	void				AllowAll();
+	void				AllowLeft();								
+	void				AllowTop();							
+	void				AllowRight();						
+	void				AllowBottom();								
+	void				AllowLeftRight();							
+	void				AllowTopBottom();						
+	void				AllowLeftTop();					
+	void				AllowRightBottom();						
+	void				AllowLeftBottom();						
+	void				AllowTopRight();					
 
-	void RefreshWidgetLayout();
-	void ResetWidgetLayout();
-			              
+	void				AllowNestedTabbing(bool b = true);
+		
+	void				ShowLeftPane(bool b = true);
+	void				ShowTopPane(bool b = true);
+	void				ShowRightPane(bool b = true);
+	void				ShowBottomPane(bool b = true);
+	
+	Ctrl& 				GetBase()									{ return (Ctrl&) *this;			}
+	PaneFrame& 			GetPaneFrame(int alignment)					{ return pane[alignment]; 		}
+	AutoHideBar& 		GetHideBar(int alignment)					{ return hide[alignment];		}
+	
+	void				ControlPanel();				
+	void 				RefreshWidgetLayout();
+	void 				ResetWidgetLayout();
+
+	void				SetKey(dword key)							{ hotkey = key; }
+	dword				GetKey()									{ return hotkey;}
+
+	void				AddWidgetLayout(String name, DockableCtrl& ctrl, int alignment, int state, int position = 0);
+	void				SetWidgetLayout(String name);
+	void				SetWidgetLayout(int index);
+		
+	virtual bool		Key(dword key, int count);
+	virtual	void		Serialize(Stream& s);
+
+protected:
+	void				InitFrameWork();
+	void				InitDefaultLayout();
+	void				InitFrameWorkSettings();
+	     
 private:
-	void Attach(DockableCtrl& ctrl);
-	void Attach(DockableCtrl* ctrl);
-	void Detach(DockableCtrl& ctrl);
-	void Detach(DockableCtrl* ctrl);
-	void DoDragAndDrop(DockableCtrl& ctrl, Point p, Size sz);
+	void 				Attach(DockableCtrl& ctrl);
+	void 				Attach(DockableCtrl* ctrl);
+	void 				Detach(DockableCtrl& ctrl);
+	void 				Detach(DockableCtrl* ctrl);
+	void 				DoDragAndDrop(DockableCtrl& ctrl, Point p, Size sz);
 
 private:
 	struct CtrlRecord : Moveable<CtrlRecord>
 	{
-		DockableCtrl* ctrl;
-		int alignment, state, position;
-		CtrlRecord() { ctrl = NULL; }
-		CtrlRecord(DockableCtrl& _ctrl)
-		{
-			ctrl = &_ctrl;
-			alignment = ctrl->Alignment();
-			state = ctrl->State();
-			position = ctrl->Position();
-		}
+		DockableCtrl* 	ctrl;
+		int				id;
+		CtrlRecord()	{ ctrl = NULL; id = 0; }
 	};
-	Vector<CtrlRecord*> ctrlrecords;
-	void AddCtrlRecord(DockableCtrl& ctrl);
-	CtrlRecord* GetCtrlRecord(DockableCtrl* ctrl);
-	CtrlRecord* GetCtrlRecord(int index);
-	void DeleteCtrlRecord(DockableCtrl& ctrl);
-	void DeleteCtrlRecords();
+
+	void				AddCtrlRecord(DockableCtrl& ctrl);
+	void				RemoveCtrlRecord(DockableCtrl& ctrl);
+	void				DeleteCtrlRecords();
+	CtrlRecord*			GetCtrlRecord(DockableCtrl& ctrl);
+	CtrlRecord*			GetCtrlRecordFromIndex(int index);
+	CtrlRecord*			GetCtrlRecordFromGroup(String group);
+	CtrlRecord*			GetCtrlRecordFromId(int id);
+	Vector<CtrlRecord*>& GetCtrlRecords()							{ return ctrls; };
+
+
+	DockableCtrl*		GetDockedWindowFromIndex(int index);
+	TabWindow*			GetTabWindowFromIndex(int index);
+	int					GetTabWindowCount();
+	int					GetDockedWindowCount();
+
+	void				NewWidgetLayout(String name);
+	void				DelWidgetLayout(String name);
+	int					AddWidgetLayout(String name);
+	void				SerializeLayout(Stream& s, bool deflay = false);
+	
+	void				SetSkin(int index);
 
 private:
-	void PanelAction();
-	void SelectSkin ();
-	void RefreshPanel();
+	int					skinindex;
+	int					layoutindex;
+	bool				tabsicons;
+	bool				tabsclose;
+	bool				tabsnested;
+	bool				tabsautoalign;
+	bool				autohideicons;
+	bool				autohideclose;
+	
+	bool				IsSideAllowed(int i)						{ return AllowedSides[i]; }
+	bool				AllowedSides[4];
+		
+private:
+	void 				OnPanelAction();
+	void 				OnSelectSkin ();
+	void				OnSelectLayout();
+	void				OnAddNewLayout();
+	void				OnDeleteLayout();
+	void 				RefreshPanel();
 			
 private:
-	PaneFrame 	pane[4];
-	AutoHideBar	hide[4];
+	Size 				panesize;
+	PaneFrame 			pane[4];
+	AutoHideBar			hide[4];
+	dword				hotkey;
+
+	Vector<ImageCtrl*> 					panelicons;
+	WithControlPanelLayout<TopWindow> 	controlpanel;
+	WithLayoutSettingsLayout<TopWindow>	newlayoutdialog;
+	ArrayMap<String, String>			layouts;
+	String								windowlayout;
+	Vector<CtrlRecord*> 				ctrls;	
 	
-	Ctrl *base;
-	Size panesize;
-	int allowedsides;
-	dword ctrlkey;
-	Vector<TabWindow*> tabwindows;
-	Vector<ImageCtrl*> panelicons;
-	WithControlPanelLayout<TopWindow> controlpanel;
-	
-	friend class DockableCtrl;
-	friend class DockWindow;
-	friend class TabWindow;
-	friend class PaneFrame;
+	friend class 		DockableCtrl;
+	friend class 		DockWindow;
+	friend class 		TabWindow;
+	friend class 		PaneFrame;
 
 public:
-	const	DockCtrlChStyle::Style* style;
-	DockCtrl& SetStyle(const DockCtrlChStyle::Style& s);
-	const DockCtrlChStyle::Style*  GetStyle()				{ return style ? style : &DockCtrlChStyle::StyleDefault(); 	}
+	const DockCtrlChStyle::Style* 	style;
+	DockBase& 						SetStyle(const DockCtrlChStyle::Style& s);
+	const DockCtrlChStyle::Style*  	GetStyle()	{ return style ? style : &DockCtrlChStyle::StyleDefault(); 	}
 
+public:
+	DockBase();
+	~DockBase();
+};
+
+class DockCtrl : public DockBase
+{
+public:
+	typedef DockCtrl CLASSNAME;
+	virtual void InitDockCtrl() 		{}	
+	virtual void InitCustomLayouts()	{}
+	void	State(int reason);
+
+private:
+	bool ctrlinit;
+	
 public:
 	DockCtrl();
 	~DockCtrl();
 };
-
-
 
 #endif

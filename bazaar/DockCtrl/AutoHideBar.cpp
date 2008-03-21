@@ -2,7 +2,9 @@
 
 AutoHideBar& AutoHideBar::Attach(DockableCtrl& ctrl)
 {
-	TabInterface::Add(ctrl.SetOwnerBar(this));
+	DockWindow& c = reinterpret_cast<DockWindow&>(ctrl);
+	TabInterface::Add(c.SetOwnerBar(this));
+	childcount++;
 	ShowBar();
 	active = -1;
 	return *this;
@@ -10,16 +12,32 @@ AutoHideBar& AutoHideBar::Attach(DockableCtrl& ctrl)
 
 void AutoHideBar::Detach(DockableCtrl& ctrl)
 {
-	int n = TabInterface::Find(ctrl);
-	if(n == -1) return;
+	DockWindow& c = reinterpret_cast<DockWindow&>(ctrl);
+	active = TabInterface::Find(ctrl);
+//	if(active == -1) return;
+
 	if(tabs.GetCount() == 1) 
 	{
 		CloseAll();
 		HideBar();
 	}
-	else Close(n);
-	ctrl.SetOwnerBar(NULL);
+	else Close(active);
+	childcount--;
+	c.SetOwnerBar(NULL);
 	HideWindow();
+}
+
+DockableCtrl* AutoHideBar::GetChild(int position)
+{
+	int i = Find(position);
+	if(i >= 0 && i < this->GetTabs().GetCount())
+		return GetTabs().At(i).dock;
+	return NULL;
+}
+
+int AutoHideBar::GetCount()
+{
+	return childcount;
 }
 
 void AutoHideBar::ShowWindow()
@@ -27,7 +45,7 @@ void AutoHideBar::ShowWindow()
 	DockWindow* hiddenwindow = reinterpret_cast<DockWindow*>(tabs[active].dock);
 	if(!hiddenwindow->IsOpen())
 	{
-		Size s  = hiddenwindow->SizeHint();
+		Size s  = hiddenwindow->GetSizeHint();
 		Rect r  = GetScreenRect();
 		Rect rr = r;	
 		switch(layout)
@@ -178,7 +196,6 @@ void AutoHideBar::HideBar()
 AutoHideBar::AutoHideBar()
 {
 	internalname = "autohidebar";
-	 
 	ctrl = NULL;
 	SetStyle(DockCtrlChStyle::StyleDefault());
 	HasScrollBar(false);
@@ -186,6 +203,7 @@ AutoHideBar::AutoHideBar()
 	HasIcons(true);
 	Draggable(false);
 	SetSize(0);
+	childcount = 0;
 	
 	TabInterface::WhenHighlight = THISBACK(OnHighlight);
 	TabInterface::WhenClose		= THISBACK(OnClose);

@@ -12,7 +12,7 @@ file
 	AutoHideBar.cpp,
 	PaneSplitter.cpp,
 	PaneFrame.cpp,
-	DockCtrl.cpp,
+	DockCtrl.cpp charset "UTF-8",
 	DockTabs.cpp,
 	DockWindow.cpp,
 	DockableCtrl.cpp,

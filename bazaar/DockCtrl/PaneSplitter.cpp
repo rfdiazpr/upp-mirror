@@ -55,7 +55,8 @@ void PaneSplitter::ReposChilds()
 	ctrl->Posit(i);
 	while(ctrl = (DockableCtrl*) ctrl->GetNext())
 		ctrl->Posit(++i);
-	if(IsOpen()) Layout();
+	if(IsOpen()) 
+		Layout();
 }
 
 DockableCtrl* PaneSplitter::GetChildAt(int position)

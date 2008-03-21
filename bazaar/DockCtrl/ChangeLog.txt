@@ -77,4 +77,26 @@ Recent revisions are added to the current versions logs under date/time info.
 2/26/2008
 	+ X11 related dnd issues fixed. DockCtrl now has full X11 docking support (Tested On KUBUNTU).
 	+ Russian translation and more accurate layout file for control panel added to the source (Thanks to Anton).
+
+0.52
+	> public release name DockCtrl DEV803b.1
+	--------------------------------------------------------------------------------------------
+3/21/2008
+	+ added full serialization support.
+	+ added default/custom layout support.
+	* DockableCtrl class reworked (now it is more abstract); 
+	* TabWindow class reworked (no longer uses PaneSplitter() class to control child widgets).
+	* DockCtrl class renamed to DockBase class and added a more generic DockCtrl class.
+	* DockBase class derives from TopWindow. 
+	+ added	InitDockCtrl() method for widget initialization.
+	+ added InitCustomLayouts() method for planned "predefined" layout support.
+	+ added Tabify() method (with 1 overload) to simplify widget tabbing.
+	+ added DockFloat() method to DockableCtrl class.
+	+ added ShowDragBarButtons() method to DockWindow class.
+	+ added ForbidDragAndDrop()/PermitDragAndDrop() methods to DockableCtrl base widget class.
+	  dnd behaviour of each DockableCtrl derived widget can be controlled using this method pair. 
+	+ added layout group to the settings window.
+	+ added HotKey support for Settings window (default is CTRL + HOME).
+	+ added methods to control forbid/permit on window sides.
+	- numerous bugfixes, and improvements.
 	

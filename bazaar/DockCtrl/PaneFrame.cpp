@@ -2,14 +2,23 @@
 
 PaneFrame& PaneFrame::Attach(DockableCtrl& ctrl)
 {
-	if(ctrl.IsTabbed()) 
+	if(!GetBase().IsSideAllowed(GetType()))
+	{
+		// if not allowed, then find an allowed pane.
+		for(int i = 0; i < 4; i++)
+			if(GetBase().IsSideAllowed(i)) 
+			{
+				GetBase().Dock(ctrl.DockingStyle(i, ctrl.State(), 0));
+				break;
+			}
+	}
+	else if(ctrl.IsTabbed()) 
 		return AttachAsTab(ctrl);
 	else if(ctrl.IsAutoHidden())
 		return AttachAsAuto(ctrl);
 	else if(ctrl.IsDocked())
 		return AttachAsDock(ctrl);
-	else
-		return *this;
+	return *this;
 }
 
 PaneFrame& PaneFrame::AttachAsDock(DockableCtrl& ctrl)
@@ -20,7 +29,7 @@ PaneFrame& PaneFrame::AttachAsDock(DockableCtrl& ctrl)
 		DnDSourceoutofRange();
 		if(dockcontainer.IsAnimating()) dockcontainer.StopAnimation();
 	}
-	if(ctrl.IsDocked() && !ctrl.IsHidden())	ShowFrame(ctrl.SizeHint());
+	if(ctrl.IsDocked() && !ctrl.IsHidden())	ShowFrame(ctrl.GetSizeHint());
 	dockcontainer.AddChildDock(ctrl, dndpos ? dndpos : ctrl.Position());
 	dndpos = 0;
 	return RefreshPaneFrame();
@@ -46,7 +55,7 @@ PaneFrame& PaneFrame::AttachAsTab(DockableCtrl& ctrl)
 			int cc = dockcontainer.GetChildCount();
 			if(cc == 0) 
 			{
-				ctrl.Style(GetType(), DockableCtrl::STATE_SHOW, 0);
+				ctrl.DockingStyle(GetType(), DockableCtrl::STATE_SHOW, 0);
 				return AttachAsDock(ctrl);
 			}
 			else
@@ -67,11 +76,11 @@ PaneFrame& PaneFrame::AttachAsTab(DockableCtrl& ctrl)
 
 PaneFrame& PaneFrame::AttachAsAuto(DockableCtrl& ctrl)
 {
-	bool horizontal = GetType() == LEFT || GetType() == RIGHT;
+	bool vertical = GetType() == LEFT || GetType() == RIGHT;
 	AutoHideBar& bar = GetBase().GetHideBar(GetType());
-	Size sz = ctrl.SizeHint();
+	Size sz = ctrl.GetSizeHint();
 	Size newsz;
-	if(horizontal) {
+	if(vertical) {
 		if (sz.cx < 4) {
 			newsz = Size(maxsize, sz.cy);
 			ctrl.SetSizeHint(newsz);
@@ -118,11 +127,11 @@ bool PaneFrame::HasChild(DockableCtrl& ctrl)
 
 void PaneFrame::ShowFrame()
 {
-	SetSize(200); 
+	SetSize(stdsize <= 4 ? maxsize : stdsize); 
 	RefreshPaneFrame().Enable();
 }
 
-void PaneFrame::ShowFrame(Size& sz)
+void PaneFrame::ShowFrame(Size sz)
 {
 	bool horizontal = GetType() == LEFT || GetType() == RIGHT;
 	
@@ -140,6 +149,7 @@ void PaneFrame::ShowFrame(Size& sz)
 
 void PaneFrame::HideFrame()
 {
+	stdsize = GetSize();
 	SetSize(0);
 	RefreshPaneFrame().Disable();
 }
@@ -158,6 +168,16 @@ Vector<TabWindow*>& PaneFrame::GetTabWindows()
 	return tabwindows;
 }
 
+TabWindow* PaneFrame::AddTabWindow()
+{
+	TabWindow* tabwindow = NULL;
+	tabwindows.Add(tabwindow = new TabWindow());
+	tabwindow->SetStyle(*GetBase().GetStyle());
+	tabwindow->SetBase(&GetBase());
+	RefreshTabWindowList();
+	return tabwindow;
+}
+
 TabWindow* PaneFrame::AddTabWindow(DockableCtrl& ctrl)
 {
 	Size tabnewsize;
@@ -167,7 +187,7 @@ TabWindow* PaneFrame::AddTabWindow(DockableCtrl& ctrl)
 	if(tabwindow) return activetabwindow = tabwindow;
 	tabwindows.Add(tabwindow = new TabWindow());
 	tabwindow->SetStyle(*GetBase().GetStyle());
-	tabwindow->SetBase(&GetBase()).Style(GetType(), DockableCtrl::STATE_SHOW, position);
+	tabwindow->SetBase(&GetBase()).DockingStyle(GetType(), DockableCtrl::STATE_SHOW, position);
 
 	if(dockcontainer.HasChild())
 	{
@@ -176,7 +196,7 @@ TabWindow* PaneFrame::AddTabWindow(DockableCtrl& ctrl)
 		{
 			child->Shut();
 			tabwindow->Attach(*child);
-			tabnewsize = child->SizeHint();
+			tabnewsize = child->GetSizeHint();
 		}
 	}
 	if(!tabwindow->IsTabbed())
@@ -287,6 +307,7 @@ bool PaneFrame::HasTabWindow(TabWindow* tabwindow)
 
 bool PaneFrame::HasCtrlInRange(DockableCtrl& ctrl, Point p)
 {
+	if(!GetBase().IsSideAllowed(GetType())) return false;
 	Ctrl* first = NULL;
 	Ctrl* last  = NULL;
 
@@ -313,7 +334,7 @@ bool PaneFrame::CalculateCtrlRange(DockableCtrl& t, Ctrl& c, Point p)
 {
 	DockWindow* ctrl = reinterpret_cast<DockWindow*>(&c);
 	ASSERT(ctrl);
-	Rect r = ctrl->GetCtrlView();
+	Rect r = ctrl->GetCtrlRect();
 	int	 position 	= ctrl->Position();
 	int	 hrange  	= r.GetWidth()  / 3;
 	int	 vrange		= r.GetHeight() / 3;
@@ -408,7 +429,7 @@ bool PaneFrame::CalculateEmptyRange(Ctrl& c, Point p)
 		}
 		if(state) 
 		{
-			ShowFrame(ctrl->SizeHint());
+			ShowFrame(ctrl->GetSizeHint());
 			DnDSourceinRange(); 
 			StartPaneFrameAnimation(reinterpret_cast<DockableCtrl&>(c), 1);
 			ctrl->SetDropTarget(GetType(), DockableCtrl::STATE_SHOW);
@@ -493,7 +514,7 @@ void PaneFrame::DnDAnimate(int position)
 
 //----------------------------------------------------------------------------------------------
 
-PaneFrame& PaneFrame::SetLayout(DockCtrl* basectrl, int alignment, int _maxsize)
+PaneFrame& PaneFrame::SetLayout(DockBase* basectrl, int alignment, int _maxsize)
 {
 	ASSERT(basectrl);
 	base = basectrl;
@@ -640,6 +661,7 @@ PaneFrame::PaneFrame()
 	size = size0 = 1;
 	minsize = 0;
 	maxsize = 0;
+	stdsize = 0;
 	sizemin = 0;
 	dndpos	= 0;
 	ncount	= 0;

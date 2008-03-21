@@ -4,7 +4,8 @@
 #define IMAGEFILE <DockCtrl/DockableCtrl.iml>
 #include <Draw/iml_source.h>
 
-void CustomFrame::FrameLayout(Rect &r)
+
+void DockCtrlCustomFrame::FrameLayout(Rect& r)
 {
 	switch(layout)
 	{
@@ -23,7 +24,7 @@ void CustomFrame::FrameLayout(Rect &r)
 	}
 }
 
-void CustomFrame::FrameAddSize(Size& sz)
+void DockCtrlCustomFrame::FrameAddSize(Size& sz)
 {
 	switch(layout)
 	{
@@ -42,25 +43,24 @@ void CustomFrame::FrameAddSize(Size& sz)
 	}	
 }
 
-
-void CustomFrame::Fix(Size& sz)
-{
-	if(!horizontal)
-		Swap(sz.cx, sz.cy);
+DockCtrlCustomFrame& DockCtrlCustomFrame::SetStyle(const DockCtrlChStyle::Style& s)
+{ 
+	style = &s;
+	return *this;
 }
 
-void CustomFrame::Fix(Point& p)
+const DockCtrlChStyle::Style* DockCtrlCustomFrame::GetStyle()
 {
-	if(!horizontal)
-		Swap(p.x, p.y);
+ 	return style ? style : &DockCtrlChStyle::StyleDefault(); 	
 }
+
 
 //----------------------------------------------------------------------------------------------
 
 void TabInterface::Add(String name, bool activate)
 {
 	Tab &t = tabs.Add();
-	if(IsNull(name) || name == "") name = t_("Untitled");
+	if(IsNull(name) || name == t_("")) name = t_("Untitled");
 	else t.name 	= name;
 	t.id 			= GetNextId();
 	t.active 		= activate;
@@ -74,7 +74,7 @@ void TabInterface::Add(String name, bool activate)
 void TabInterface::Add(DockableCtrl& dock, bool activate)
 {
 	Tab &t = tabs.Add();
-	if(IsNull(dock.GetLabel()) || dock.GetLabel() == "") t.name = t_("Untitled");
+	if(dock.GetLabel().IsVoid() || dock.GetLabel() == t_("")) t.name = t_("Untitled");
 	else t.name 	= dock.GetLabel();
 	t.id 			= GetNextId();
 	t.active 		= activate;
@@ -98,7 +98,6 @@ void TabInterface::Close(int n)
 {
 	if(tabs.GetCount() <= 1 || n != active)
 			return;
-
 	int c 	= Find(tabs[n].id);
 	int nc	= GetNext(c);
 	if(nc < 0)
@@ -113,11 +112,16 @@ void TabInterface::Close(int n)
 void TabInterface::CloseAll()
 {
 	for(int i = tabs.GetCount() - 1; i >= 0; i--)
+	{
+			tabs.At(i).dock = NULL;
+			tabs.At(i).id	= -1;
 			tabs.Remove(i);
+	}
 
 	if(hasscrollbar) scrollbar.SetTotal(tabs[0].cx);
 	ReposTabs();
 	SetActiveTab(-1);	
+	id = -1;
 }
 
 void TabInterface::SetActiveTab(int n)
@@ -172,10 +176,10 @@ int TabInterface::GetActiveTab()
 	return active;
 }
 
-int TabInterface::Find(int id)
+int TabInterface::Find(int itemid)
 {
 	for(int i = 0; i < tabs.GetCount(); i++)
-		if(tabs[i].id == id) return i;
+		if(tabs[i].id == itemid) return i;
 	return -1;
 }
 
@@ -645,7 +649,7 @@ void TabInterface::CancelMode()
 
 TabInterface& TabInterface::SetLayout(int l)
 {
-	layout = l;
+	DockCtrlCustomFrame::SetLayout(l);
 	switch(l)
 	{
 		case LAYOUT_LEFT:
@@ -689,7 +693,7 @@ TabInterface::TabInterface()
 	isdragged		= false;
 	
 	SetStyle(TabCtrl::StyleDefault());
-	CustomFrame::layout = LAYOUT_BOTTOM;
+	DockCtrlCustomFrame::layout = LAYOUT_BOTTOM;
 	HasScrollBar(true);
 	SetSize(GetHeight() + 2);	
 	BackPaint();
@@ -705,9 +709,8 @@ TabInterface::~TabInterface()
 
 TabInterface::TabScrollBar::TabScrollBar()
 {
-	CustomFrame::layout = LAYOUT_TOP;
-	CustomFrame::SetSize(TAB_SBHEIGHT);
-	CustomFrame::border = 0;
+	DockCtrlCustomFrame::layout = LAYOUT_TOP;
+	DockCtrlCustomFrame::SetSize(TAB_SBHEIGHT);
 
 	total = 0;
 	pos = 0;

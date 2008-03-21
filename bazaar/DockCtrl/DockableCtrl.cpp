@@ -11,31 +11,25 @@
 
 DockableCtrl::DockableCtrl()
 {
-	dockalignment 	= DOCK_NONE;
-	dockstate		= STATE_SHUT;
-	dockposition	= 0;
-	isdropped 		= false;
-	isdropped		= false;
-	dndtarget		= DOCK_NONE;
-	dndstate		= 0;
-	hasdragbar		= false;
-	haschildbar		= false;
-	base			= NULL;
-	tabwindow		= NULL;	
-	autohidebar		= NULL;
-	WhenClose		= THISBACK(OnShutWindow);
-	size.cx			= 0;
-	size.cy			= 0;
-	
-	childsize.SetNull();
-	TopWindow::NoCenter().BackPaint();	
+	DockingStyle(DOCK_NONE, STATE_SHUT, 0);
+	PermitDragAndDrop();
+	SetDropTarget();	
+	docksize.Clear();
+	hasdragbar	= false;
+	haschildbar	= false;
+	isdragged	= false;
+	isdraggable = true;
+	dockbase 	= NULL;
+	style		= NULL;
+	WhenClose	= THISBACK(OnShutWindow);
+	NoCenter().BackPaint();
 }
 
 DockableCtrl::~DockableCtrl()
 {
 }
 
-DockableCtrl& DockableCtrl::Style(int alignment, int state, int position)
+DockableCtrl& DockableCtrl::DockingStyle(int alignment, int state, int position)
 {
 	dockalignment 	= alignment;
 	dockstate		= state;
@@ -43,164 +37,95 @@ DockableCtrl& DockableCtrl::Style(int alignment, int state, int position)
 	return *this;
 }
 
-void DockableCtrl::Dock(int alignment, int state, int position, bool check)
+DockableCtrl& DockableCtrl::SetLabel(String title)
 {
-	if(Alignment() == alignment && !IsHidden()) return;
-	else if(IsTabbed())	
-	{
-		GetOwnerTab()->Detach(*this);
-		if(state == STATE_TABBED) state = STATE_SHOW;				// TODO: remove
-	}
-	else if(IsFloating()) ShutWindow();
-	else if(IsAutoHidden())	
-	{
-		GetBase().GetHideBar(Alignment()).Detach(*this);
-		if(state == STATE_AUTO) state = STATE_SHOW;					// TODO:: remove
-	}
-	else 
-	{
-		RefreshSizeHint();
-		GetBase().Detach(*this);
-	}
-	Style(alignment, state, position);
-	GetBase().Dock(*this);
+	IsNull(title) || title == t_("") ? dockname = t_("Untitled") :  dockname = title;
+	Title(title);
+	if(IsVisible()) Refresh();
+	return *this;
 }
 
-void DockableCtrl::FloatEx(Rect r)
+DockableCtrl& DockableCtrl::SetIcon(Image icon)
 {
-	if(IsFloating()) return;
-	if(IsTabbed()) 
-	{
-		Size sz = GetOwnerTab()->SizeHint();
-		GetOwnerTab()->Detach(*this);
-		Alignment() == DOCK_LEFT || 
-		Alignment() == DOCK_RIGHT ?
-		r.right  = r.left + sz.cx :
-		r.bottom = r.top + 	sz.cy; 	
-	}
-	else if(IsAutoHidden())	GetBase().GetHideBar(Alignment()).Detach(*this);
-	else if(!IsShut()) GetBase().Detach(*this);
-
-	OpenWindow(r);
-	GetBase().RefreshPanel();
+	dockicon = icon;
+	Icon(dockicon);
+	if(IsVisible()) Refresh();
+	return *this;
 }
 
-void DockableCtrl::Float()
+DockableCtrl& DockableCtrl::SetSize(Size sz)
 {
-	if(IsFloating()) return;
-	Rect  r  =  GetScreenView();
-	Point p  = GetMousePos();
-	if(r.top > p.y) r.top -= r.top - p.y - 4;
-	r.right	 = r.left + r.Width();
-	r.bottom = r.top + r.Height();
-	FloatEx(r);
+	SetSizeHint(sz);
+	Rect r = GetRect();
+	SetRect(r.left, r.top, r.left + sz.cx, r.top + sz.cy);
+	if(IsFloating()) Refresh();
+	else RefreshParentLayout();
+	return *this;
 }
 
-void DockableCtrl::Show()
+void DockableCtrl::ReSize()
 {
-	if(!IsHidden() || IsTabbed()) return;
-	Dock(Alignment(), STATE_SHOW, Position());
-	GetBase().RefreshPanel();
+	docksize = Ctrl::GetSize();
+	for(int i = 0; i < GetFrameCount(); i++) Ctrl::GetFrame(i).FrameAddSize(docksize);	
 }
 
-void DockableCtrl::Hide()
+void DockableCtrl::Layout()
 {
-	if(IsTabbed()) return;
-	if(IsHidden())
-	{
-		Show();
-		return;
-	}
-	ShutWindow();
-	GetBase().Detach(*this);
-	Style(Alignment(), STATE_HIDE, Position());
-	GetBase().RefreshPanel();
-}
-
-void DockableCtrl::AutoHide()
-{
-	if(IsFloating()) return;
-	if(IsAutoHidden())
-	{
-		GetBase().GetHideBar(Alignment()).Detach(*this);
-		GetBase().Dock(this->Style(Alignment(), STATE_SHOW, Position()));
-		return;
-	}
-	RefreshSizeHint();
-
-	int alignment 	= Alignment();
-	int state		= STATE_AUTO;
-	int position	= Position();
-	
-	if(IsTabbed())
-	{
-		TabWindow *tabwindow = GetOwnerTab();
-		while(tabwindow)
-		{
-		 	if(tabwindow->IsDocked())
-			{
-			    alignment 	= tabwindow->Alignment();
-			    position	= tabwindow->Position();
-			    break;
-			}
-			else if(tabwindow->IsFloating()) return;
-			tabwindow = tabwindow->GetOwnerTab();
-		}	
-		GetOwnerTab()->Detach(*this);
-	}
-	else
-	{
-		RefreshSizeHint();
-		GetBase().Detach(*this);
-	}
-	Style(alignment, state, position);
-	GetBase().Dock(*this);
-	GetBase().RefreshPanel();
-}
-
-void DockableCtrl::Shut()
-{
-	if(IsShut()) return;
-	ShutWindow();
-	if(IsTabbed()) GetOwnerTab()->Detach(*this);
-	else if(IsAutoHidden())	GetBase().GetHideBar(Alignment()).Detach(*this);
-	else GetBase().Detach(*this);
-	Style(DOCK_NONE, STATE_SHUT, 0);
-	GetBase().RefreshPanel();
+	TopWindow::Layout(); 
+	if(IsFloating() && IsOpen()) ReSize();
 }
 
 void DockableCtrl::OpenWindow(Rect& r)
 {
 	if(IsPopUp()) Close();
 	if(IsOpen()) return;
-	RefreshSizeHint();
-	r.right  = r.left + size.cx;
-	r.bottom = r.top + size.cy;
-	if(HasDragBar()) HideDragBar();
+	ReSize();
+	r.right  = r.left + docksize.cx;
+	r.bottom = r.top  + docksize.cy;
+	HideDragBar();
 	Title(GetLabel());
 	SetRect(r);
-	Open();
+	Ctrl::Hide();
+	Open(GetOwner());
+	Ctrl::Show();
 	Refresh();
-	Style(DOCK_NONE, STATE_SHOW, 0);
+}
+
+void DockableCtrl::OpenWindow(int x, int y, int cx, int cy)
+{
+	if(IsPopUp()) Close();
+	if(IsOpen()) return;
+	HideDragBar();
+	Title(GetLabel());
+	SetRect(x, y, cx, cy);
+	Ctrl::Hide();
+	Open(GetOwner());
+	Ctrl::Show();
+	Refresh();	
 }
 
 void DockableCtrl::ShutWindow()
 {
 	if(IsPopUp()) Close();
-	RefreshSizeHint();
+	ReSize();
 	if(!IsOpen() || !IsFloating()) return;
 	Rect r 	 = GetRect();
-	r.right  = r.left + size.cx;
-	r.bottom = r.top + size.cy;
+	r.right  = r.left + docksize.cx;
+	r.bottom = r.top  + docksize.cy;
 	Close();
 	Remove();
 	SetRect(r);  
-	if(!HasDragBar()) ShowDragBar();
+	ShowDragBar();
 }
 
 void DockableCtrl::OnShutWindow()
 {
 	Shut();
+}
+
+void DockableCtrl::ContextMenu()
+{
+	MenuBar::Execute(WhenContextMenu); 
 }
 
 void DockableCtrl::Settings()
@@ -210,45 +135,15 @@ void DockableCtrl::Settings()
 
 void DockableCtrl::Menu()
 {
-	ContextMenu(menu);
-}
-
-void DockableCtrl::ContextMenu(Bar& menubar)
-{
-	MenuBar::Execute(THISBACK(DockableCtrlMenu)); 
-}
-
-void DockableCtrl::DockableCtrlMenu(Bar& menubar)
-{
-	menubar.Add(t_("Dock"),	THISBACK(DockableCtrlDockMenu));
-	menubar.Add(!IsFloating(), t_("Float"),THISBACK(Float));
-	menubar.Separator();
-	menubar.Add(IsDocked(), IsHidden() ? t_("Show") : t_("Hide"), THISBACK(Hide));
-	menubar.Add(!IsAutoHidden(), t_("Auto Hide"), THISBACK(AutoHide));	
-	menubar.Separator();
-	menubar.Add(t_("Settings"), THISBACK(Settings));
-	menubar.Separator();
-	menubar.Add(t_("Close"), DockableCtrlImages::CClose(), THISBACK(Shut));
-	
-}
-
-void DockableCtrl::DockableCtrlDockMenu(Bar& menubar)
-{
-	menubar.Add(Alignment() == DOCK_TOP  ? 0 : 1, t_("Top"), THISBACK4(Dock, (int)DOCK_TOP, (int)STATE_SHOW, Position(), 0));
-	menubar.Add(Alignment() == DOCK_LEFT  ? 0 : 1, t_("Left"), THISBACK4(Dock, (int)DOCK_LEFT, (int)STATE_SHOW, Position(), 0));
-	menubar.Add(Alignment() == DOCK_RIGHT ? 0 : 1, t_("Right"), THISBACK4(Dock, (int)DOCK_RIGHT, (int)STATE_SHOW, Position(), 0));
-	menubar.Add(Alignment() == DOCK_BOTTOM ? 0 : 1, t_("Bottom"), THISBACK4(Dock, (int)DOCK_BOTTOM, (int)STATE_SHOW, Position(), 0));
+	ContextMenu();
 }
 
 void DockableCtrl::StartWindowDrag()
 {
 	Point pt = GetMousePos();
-	if(IsTabbed())
-		FloatEx(Rect(pt.x - 4, pt.y + 4, pt.x + size.cx, pt.y + size.cy));
-	else 
-		Float();
+	Float();
 
-// Thanks to mrjtuk (James Thomas) for the X11 window drag code.	
+// Thanks to mrjt (James Thomas) for the X11 window drag code.	
 #if	defined(PLATFORM_WIN32)
 	SendMessage(GetHWND(), WM_NCLBUTTONDOWN, 2, MAKELONG(pt.x, pt.y));
 #elif defined(PLATFORM_X11)
@@ -267,37 +162,84 @@ void DockableCtrl::StartWindowDrag()
 	e.xclient.data.l[3] = 1;
 	e.xclient.data.l[4] = 0;	
 	
-	XUngrabPointer( Xdisplay, CurrentTime );
+	XUngrabPointer(Xdisplay, CurrentTime);
 	XSendEvent(Xdisplay, RootWindow(Xdisplay, Xscreenno), XFalse, SubstructureNotifyMask, &e);
 	XFlush(Xdisplay);
 #endif
 }
 
 
-DockableCtrl& DockableCtrl::SetLabel(String docktitle)
+#if defined(PLATFORM_WIN32)
+LRESULT  DockableCtrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
-	IsNull(docktitle) || docktitle == "" ? title = t_("Untitled") : title = docktitle;
-	if(IsVisible()) Refresh();
-	return *this;
+	if(IsFloating())
+	{
+		switch(message)
+		{
+			case WM_MOVE:
+					if(!isdraggable) break;
+					isdragged = true;
+					SetDropTarget(DOCK_NONE, GetDropState());
+					GetBase().DoDragAndDrop(*this, GetMousePos(), GetCtrlSize());
+					break;
+		
+			case WM_EXITSIZEMOVE:
+					if(!isdraggable) break;
+					if(!GetMouseLeft() && HasDropTarget() && isdragged) 
+					{
+						Dock(GetDropTarget(), GetDropState(), Position());
+						Refresh();
+						SetDropTarget();
+						isdragged = false;
+					}
+				break;
+			
+			case WM_NCRBUTTONDOWN:
+					ContextMenu();
+				return 1L;
+				
+			default:
+				break;
+		}
+	}
+	return TopWindow::WindowProc(message, wParam, lParam);
 }
-
-DockableCtrl& DockableCtrl::SetIcon(Image dockicon)
+#elif defined(PLATFORM_X11)
+void DockableCtrl::EventProc(XWindow& w, XEvent *event)
 {
-	icon = dockicon;
-	if(IsVisible()) Refresh();
-	return *this;
+	if (IsOpen()) 
+	{
+		switch(event->type) {
+		case ConfigureNotify:
+		{
+			if(!isdraggable) break;
+			XConfigureEvent& e = event->xconfigure;
+			if (Point(e.x, e.y) != GetScreenRect().TopLeft()) 
+			{
+				SetDropTarget(DOCK_NONE, GetDropState());
+				if(!isdragged);
+				{	
+					isdragged = true;
+					GetBase().DoDragAndDrop(*this, GetMousePos(), GetCtrlSize());
+					SetFocus();
+				}
+				break;
+			}
+			break;
+		}
+		case FocusIn:
+			if(!isdraggable) break;
+			XFocusChangeEvent &e = event->xfocus;
+			if (e.mode == NotifyUngrab) 
+			{
+				Dock(GetDropTarget(), GetDropState(), Position());
+				SetDropTarget();
+				isdragged = false;
+				return;
+			}
+			break;
+		}
+	}
+	TopWindow::EventProc(w, event);	
 }
-
-void DockableCtrl::RefreshSizeHint()
-{
-	size = GetSize();
-	for(int i = 0; i < GetFrameCount(); i++)
-		GetFrame(i).FrameAddSize(size);
-}
-
-void DockableCtrl::Paint(Draw& d)
-{
-	d.DrawRect(GetSize(), SColorFace());
-}
-
-
+#endif

@@ -114,6 +114,20 @@ int    ClassifyContent(const Image& m, const Rect& rect);
 Image  RecreateAlpha(const Image& overwhite, const Image& overblack);
 int    ImageMargin(const Image& m, int p, int dist);
 
+struct ChPartMaker {
+	Image image;
+	Color border;
+	Color bg;
+
+	bool  t, b, l, r;
+	byte  tl, tr, bl, br;
+
+	void ResetShape();
+	Image Make() const;
+
+	ChPartMaker(const Image& m);
+};
+
 // Image cache
 
 struct ImageMaker {

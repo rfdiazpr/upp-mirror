@@ -251,7 +251,7 @@ bool EqColumn(const Image& m, int c1, int c2, int y, int height)
 	int cx = m.GetWidth();
 	const RGBA *a = m[y] + c1;
 	const RGBA *b = m[y] + c2;
-	for(int w = 1; w < height; w++) {
+	for(int w = 0; w < height; w++) {
 		if(*a != *b)
 			return false;
 		a += cx;
@@ -314,10 +314,56 @@ int ImageMargin(const Image& _m, int p, int dist)
 	Color c = m[p][p];
 	int d;
 	Size sz = m.GetSize();
-	for(d = p; d > 0; d--)
+	for(d = p; d >= 0; d--)
 		if(Diff(m[d][d], c) > dist || Diff(m[sz.cx - d - 1][sz.cy - d - 1], c) > dist)
 			break;
 	return d + 1;
+}
+
+ChPartMaker::ChPartMaker(const Image& m)
+{
+	image = m;
+	border = SColorShadow();
+	bg = Null;
+	ResetShape();
+}
+
+void ChPartMaker::ResetShape()
+{
+	t = b = l = r = true;
+	tl = tr = bl = br = 0;
+}
+
+Image ChPartMaker::Make() const
+{
+	Size sz = image.GetSize();
+	ASSERT(sz.cx >= 6 && sz.cy >= 6);
+	Image h = image;
+	ImageBuffer ib(h);
+	for(int x = 0; x < sz.cx; x++) {
+		if(t)
+			ib[0][x] = x >= tl && x < sz.cx - tr ? border : bg;
+		if(b)
+			ib[sz.cy - 1][x] = x >= bl && x < sz.cx - br ? border : bg;
+	}
+	for(int y = 0; y < sz.cy; y++) {
+		if(l)
+			ib[y][0] = y >= tl && y < sz.cy - bl ? border : bg;
+		if(r)
+			ib[y][sz.cx - 1] = y >= tr && y < sz.cy - br ? border : bg;
+	}
+	if(tl == 2)
+		ib[1][1] = border;
+	if(tr == 2)
+		ib[1][sz.cx - 2] = border;
+	if(bl == 2)
+		ib[sz.cy - 2][1] = border;
+	if(br == 2)
+		ib[sz.cy - 2][sz.cx - 2] = border;
+	int q = max(max(tl, tr), max(br, bl));
+	ib.SetHotSpot(Point(q, q));
+	ib.Set2ndSpot(Point(sz.cx - q - 1, sz.cy - q - 1));
+	return ib;
 }
 
 END_UPP_NAMESPACE

@@ -366,7 +366,7 @@ void Ctrl::InitX11(const char *display)
 
 	Xeventtime = CurrentTime;
 	SetX11ErrorHandler();
-	if(INI_PREFIX "X11_SYNCHRONIZE")
+	if(GetIniKey(INI_PREFIX "X11_SYNCHRONIZE") == "1")
 		XSynchronize(Xdisplay, 1);
 	Vector<int> nets = GetPropertyInts(Xroot, XAtom("_NET_SUPPORTED"));
 	for(int i = 0; i < nets.GetCount(); i++)

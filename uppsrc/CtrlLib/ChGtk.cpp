@@ -28,6 +28,22 @@ END_UPP_NAMESPACE
 
 NAMESPACE_UPP
 
+#if defined(_DEBUG)// && 0
+#include <plugin/png/png.h>
+
+void LOGPNG(const Image& m)
+{
+	static int i;
+	PNGEncoder png;
+	png.SaveFile(ConfigFile(AsString(i++) + ".png"), m);
+}
+
+#else
+
+#define LOGPNG(a)
+
+#endif
+
 GtkWidget *gtk__parent()
 {
 	static GtkWidget *p;
@@ -71,6 +87,7 @@ enum {
 	GTK_MARGIN2 = 0x0020,
 	GTK_MARGIN3 = 0x0030,
 	GTK_MARGIN4 = 0x0040,
+	GTK_XMARGIN = 0x0080,
 
 	GTK_VAL1    = 0x0100,
 	GTK_VAL2    = 0x0200,
@@ -158,7 +175,7 @@ Image GetGTK(GtkWidget *widget, int state, int shadow, const char *detail, int t
 	allocation.height = cy;
 	Image m[2];
 	Color back = White;
-	int margin = (type >> 4) & 15;
+	int margin = (type >> 4) & 7;
 	for(int i = 0; i < 2; i++) {
 		ImageDraw iw(cx + 2 * margin, cy + 2 * margin);
 		iw.DrawRect(0, 0, cx + 2 * margin, cy + 2 * margin, back);
@@ -328,7 +345,7 @@ Value GtkLookFn(Draw& w, const Rect& rect, const Value& v, int op)
 			return false;
 		}
 		if(op == LOOK_PAINT || op == LOOK_PAINTEDGE) {
-			Rect r = rect.Inflated((eg.type >> 4) & 15);
+			Rect r = rect.Inflated(eg.type & GTK_XMARGIN ? 0 : (eg.type >> 4) & 7);
 			r.Deflate((eg.type >> 16) & 15);
 			if(r.IsEmpty()) return 1;
 			GtkImageMaker gm;
@@ -498,7 +515,7 @@ enum {
 Image GtkChImgLook(int shadow, int state, int kind)
 {
 	Image m = GetGTK(ChGtkLast(), state, shadow, ChGtkLastDetail(), ChGtkLastType(), 32, 32);
-	int g = ImageMargin(m, 4, 10);
+	int g = max(1, ImageMargin(m, 4, 10));
 	if((kind & 7) == 1)
 		m = WithHotSpots(Crop(m, 0, g, 32 - g, 32 - 2 * g), g, 0, 32 - 2 * g - 1, 0);
 	if((kind & 7) == 2)
@@ -563,6 +580,11 @@ void ChHostSkin()
 	};
 	for(int i = 0; i < __countof(col); i++)
 		(*col[i].set)(ChGtkColor(col[i].ii, gtk__parent()));
+
+	CtrlsImg::Reset();
+	ColoredOverride(CtrlsImg::Iml(), CtrlsImg::Iml());
+
+	ChLookFn(GtkLookFn);
 
 	char *h;
 	g_object_get(gtk_settings_get_default(), "gtk-theme-name", &h, NULL);
@@ -647,6 +669,19 @@ void ChHostSkin()
 	GtkIml(CtrlsImg::I_O2, w, 3, "checkbutton", GTK_CHECK|GTK_MARGIN1, is, is);
 	gtk_widget_destroy(w);
 
+	if(engine == "Qt") {
+		for(int i = 0; i < 4; i++) {
+			Image m = CtrlsImg::Get(CtrlsImg::I_O2 + i);
+			ImageBuffer ib(m);
+			Size sz = ib.GetSize();
+			if(sz.cx > 6)
+				for(int q = -2; q <= 2; q++)
+					ib[sz.cy / 2 - 1][sz.cx / 2 - q - 1] = i == CTRL_DISABLED ? SColorDisabled() : SColorText();
+			m = ib;
+			CtrlsImg::Set(CtrlsImg::I_O2 + i, m);
+		}
+	}
+
 	Point po(0, 0);
 
 	int classiq = engine == "Redmond" || engine == "Raleigh" || engine == "Glider" || engine == "Simple";
@@ -709,22 +744,13 @@ void ChHostSkin()
 		GtkChButton(s.look);
 	}
 
-//_DBG_
-//	if(engine != "Qt")
 	{
 		ScrollBar::Style& s = ScrollBar::StyleDefault().Write();
 		s.through = true;
-		int margin = 0;
-		int deflate = 0;
-		if(engine == "Qt") {
-			margin = GTK_MARGIN1;
-			deflate = GTK_DEFLATE1;
-		}
 		GtkObject *adj = gtk_adjustment_new(250, 0, 1000, 1, 1, 500);
 		static GtkWidget *vscrollbar = gtk_vscrollbar_new(GTK_ADJUSTMENT(adj));
-		ChGtkNew(vscrollbar, "slider", GTK_SLIDER|GTK_VAL1|margin);
-		GtkChSlider(s.vthumb);
-		Image m = GetGTK(ChGtkLast(), 0, 0, "slider", GTK_SLIDER|GTK_VAL1|margin, 16, 32);
+		ChGtkNew(vscrollbar, "slider", GTK_SLIDER|GTK_VAL1);
+		Image m = GetGTK(ChGtkLast(), 0, 0, "slider", GTK_SLIDER|GTK_VAL1, 16, 32);
 		s.thumbmin = GtkInt("min-slider-length");
 		s.barsize = GtkInt("slider-width");
 		s.arrowsize = GtkInt("stepper-size");
@@ -732,124 +758,219 @@ void ChHostSkin()
 		s.isright2 = s.isdown2 = GtkInt("has-secondary-forward-stepper");
 		s.isleft2 = s.isup2 = GtkInt("has-secondary-backward-stepper");
 
-		ChGtkNew("trough", GTK_BGBOX|deflate);
-		GtkChTrough(s.vupper);
-		GtkChTrough(s.vlower);
-		bool atp = IsEmptyImage(GetGTK(ChGtkLast(), 2, 2, "vscrollbar", GTK_BOX|GTK_TOP|GTK_RANGEA, 16, 16));
-		Size asz(s.barsize / 2, s.arrowsize / 2);
-		if(engine == "Qt")
-			atp = false;
-		if(atp) {
-			ChGtkNew("vscrollbar", GTK_ARROW);
-			GtkCh(s.up.look, "02141111");
-			GtkCh(s.up2.look, "02141111");
-			ChGtkNew("vscrollbar", GTK_ARROW|GTK_VAL1);
-			GtkCh(s.down.look, "02141111");
-			GtkCh(s.down2.look, "02141111");
-
-			static GtkWidget *btn = gtk_button_new();
-			ChGtkNew(btn, "button", GTK_BOX);
-
-			GtkChButton(Button::StyleScroll().Write().look);
-			GtkChButton(Button::StyleEdge().Write().look);
-			GtkChButton(Button::StyleLeftEdge().Write().look);
-
-			{
-				DropList::Style& s = DropList::StyleFrame().Write();
-				GtkChButtonWith(s.look, CtrlsImg::DA());
-				GtkChButtonWith(s.trivial, CtrlsImg::DA());
+		if(engine == "Qt") {
+			for(int i = 0; i < 6; i++)
+				CtrlsImg::Set(CtrlsImg::I_DA + i, CtrlsImg::Get(CtrlsImg::I_kDA + i));
+			int r = Null;
+			for(int i = 0; i < 4; i++) {
+				ImageDraw iw(64, 64);
+				iw.DrawRect(0, 0, 64, 64, SColorFace());
+				ChPaint(iw, Size(64, 64), Button::StyleNormal().look[i == CTRL_HOT ? CTRL_NORMAL : i]);
+				Image m = iw;
+				if(IsNull(r))
+					r = minmax(ImageMargin(m, 4, 50), 0, 2);
+				m = Rescale(Crop(m, 4, 4, 56, 56), 16, 16);
+				ChPartMaker pm(m);
+				pm.tr = pm.tl = r;
+				pm.bl = pm.br = 0;
+				s.up.look[i] = ChLookWith(pm.Make(), CtrlsImg::UA(), ButtonMonoColor(i));
+				pm.tr = pm.tl = 0;
+				pm.t = false;
+				s.down2.look[i] = ChLookWith(pm.Make(), CtrlsImg::DA(), ButtonMonoColor(i));
+				pm.t = true;
+				pm.bl = pm.br = r;
+				s.down.look[i] = ChLookWith(pm.Make(), CtrlsImg::DA(), ButtonMonoColor(i));
+				pm.br = pm.bl = 0;
+				pm.b = false;
+				s.up2.look[i] = ChLookWith(pm.Make(), CtrlsImg::UA(), ButtonMonoColor(i));
+				pm.br = pm.bl = pm.tl = pm.tr = r;
+				pm.b = true;
+				Image bm = pm.Make();
+				Button::StyleScroll().Write().look[i] = bm;
+				pm.ResetShape();
+				pm.t = pm.b = pm.l = false;
+				Image lm = pm.Make();
+				Button::StyleLeftEdge().Write().look[i] = lm;
+				pm.r = false;
+				pm.l = true;
+				Image rm = pm.Make();
+				Button::StyleEdge().Write().look[i] = rm;
+				{
+					DropList::Style& s = DropList::StyleFrame().Write();
+					s.look[i] = s.trivial[i] = s.right[i] = ChLookWith(rm, CtrlsImg::DA());
+					s.left[i] = ChLookWith(lm, CtrlsImg::DA());
+					s.pressoffset = po;
+				}
+				{
+					SpinButtons::Style& s = SpinButtons::StyleDefault().Write();
+					s.dec.look[i] = ChLookWith(rm, CtrlImg::spindown2());
+					pm.b = true;
+					s.inc.look[i] = ChLookWith(pm.Make(), CtrlImg::spinup2());
+				}
+				pm.ResetShape();
+				pm.tl = pm.bl = r;
+				pm.tr = pm.br = 0;
+				s.left.look[i] = ChLookWith(pm.Make(), CtrlsImg::LA(), ButtonMonoColor(i));
+				pm.tl = pm.bl = 0;
+				pm.l = false;
+				s.right2.look[i] = ChLookWith(pm.Make(), CtrlsImg::RA(), ButtonMonoColor(i));
+				pm.l = true;
+				pm.tl = pm.bl = 0;
+				pm.tr = pm.br = r;
+				s.right.look[i] = ChLookWith(pm.Make(), CtrlsImg::RA(), ButtonMonoColor(i));
+				pm.tr = pm.br = 0;
+				pm.r = false;
+				s.left2.look[i] = ChLookWith(pm.Make(), CtrlsImg::LA(), ButtonMonoColor(i));
 			}
-			{
-				SpinButtons::Style& s = SpinButtons::StyleDefault().Write();
-				GtkChButtonWith(s.inc.look, CtrlImg::spinup2());
-				GtkChButtonWith(s.dec.look, CtrlImg::spindown2());
+			ChGtkNew(vscrollbar, "slider", GTK_SLIDER|GTK_VAL1|GTK_MARGIN1|GTK_XMARGIN);
+			GtkChSlider(s.vthumb);
+			s.barsize += 2;
+			s.arrowsize++;
+			for(int i = 0; i < 4; i++) {
+				Image m = CtrlsImg::Get(CtrlsImg::I_SBVU + i);
+				ImageBuffer ib(m);
+				Size sz = ib.GetSize();
+				ib[0][sz.cx - 1] = ib[0][0] = SColorShadow();
+				ib.SetHotSpot(Point(0, 0));
+				ib.Set2ndSpot(Point(sz.cx - 1, 0));
+				m = ib;
+				s.vlower[i] = s.vupper[i] = m;
+				m = CtrlsImg::Get(CtrlsImg::I_SBHU + i);
+				ib = m;
+				sz = ib.GetSize();
+				ib[sz.cy - 1][0] = ib[0][0] = SColorShadow();
+				ib.SetHotSpot(Point(0, 0));
+				ib.Set2ndSpot(Point(0, sz.cy - 1));
+				m = ib;
+				s.hupper[i] = s.hlower[i] = m;
 			}
+			static GtkWidget *hscrollbar = gtk_hscrollbar_new(GTK_ADJUSTMENT(adj));
+			ChGtkNew(hscrollbar, "slider", GTK_SLIDER|GTK_MARGIN1|GTK_XMARGIN);
+			GtkChSlider(s.hthumb);
+			s.overthumb = true;
 		}
 		else {
-			GtkIml(CtrlsImg::I_UA, ChGtkLast(), 0, 0, "vscrollbar", GTK_ARROW|GTK_TOP|GTK_RANGEA, asz.cx, asz.cy);
-			GtkIml(CtrlsImg::I_DA, ChGtkLast(), 0, 0, "vscrollbar", GTK_ARROW|GTK_VAL1|GTK_BOTTOM|GTK_RANGED, asz.cx, asz.cy);
+			GtkChSlider(s.vthumb);
+			ChGtkNew("trough", GTK_BGBOX);
+			GtkChTrough(s.vupper);
+			GtkChTrough(s.vlower);
+			bool atp = IsEmptyImage(GetGTK(ChGtkLast(), 2, 2, "vscrollbar", GTK_BOX|GTK_TOP|GTK_RANGEA, 16, 16));
+			Size asz(s.barsize / 2, s.arrowsize / 2);
+			if(engine == "Qt")
+				atp = false;
+			if(atp) {
+				ChGtkNew("vscrollbar", GTK_ARROW);
+				GtkCh(s.up.look, "02141111");
+				GtkCh(s.up2.look, "02141111");
+				ChGtkNew("vscrollbar", GTK_ARROW|GTK_VAL1);
+				GtkCh(s.down.look, "02141111");
+				GtkCh(s.down2.look, "02141111");
 
-			ChGtkNew("vscrollbar", GTK_BGBOX|GTK_TOP|GTK_RANGEA);
-			GtkChArrow(s.up.look, CtrlsImg::UA(), po);
-			ChGtkNew("vscrollbar", GTK_BGBOX|GTK_BOTTOM|GTK_RANGED);
-			GtkChArrow(s.down.look, CtrlsImg::DA(), po);
-			ChGtkNew("vscrollbar", GTK_BGBOX|GTK_VCENTER|GTK_RANGEC);
-			GtkChArrow(s.up2.look, CtrlsImg::UA(), po);
-			ChGtkNew("vscrollbar", GTK_BGBOX|GTK_VCENTER|GTK_RANGEB);
-			GtkChArrow(s.down2.look, CtrlsImg::DA(), po);
+				static GtkWidget *btn = gtk_button_new();
+				ChGtkNew(btn, "button", GTK_BOX);
 
-			ChGtkNew("vscrollbar", GTK_BOX|GTK_VCENTER|GTK_RANGEB);
-			GtkCh(Button::StyleScroll().Write().look, "02142222");
+				GtkChButton(Button::StyleScroll().Write().look);
+				GtkChButton(Button::StyleEdge().Write().look);
+				GtkChButton(Button::StyleLeftEdge().Write().look);
 
-			int q = !classiq;
-
-			GtkChImgWith(Button::StyleEdge().Write().look, Null, 1 * q);
-			GtkChImgWith(Button::StyleLeftEdge().Write().look, Null, 2 * q);
-
-			{
-				DropList::Style& s = DropList::StyleFrame().Write();
-				GtkChImgWith(s.look, CtrlsImg::DA(), 1 * q, po);
-				GtkChImgWith(s.trivial, CtrlsImg::DA(), 1 * q, po);
-				GtkChImgWith(s.left, CtrlsImg::DA(), 2 * q, po);
-				GtkChImgWith(s.right, CtrlsImg::DA(), 1 * q, po);
-				s.pressoffset = po;
-			}
-			{
-				SpinButtons::Style& s = SpinButtons::StyleDefault().Write();
-				GtkChImgWith(s.inc.look, q ? CtrlImg::spinup2() : CtrlImg::spinup3(), (1|GTK_BOTTOMLINE) * q, po);
-				GtkChImgWith(s.dec.look, q ? CtrlImg::spindown2() : CtrlImg::spindown3(), 1 * q, po);
-			}
-		}
-
-		int d = Diff(fc, SColorPaper());
-		for(int x = 0; x < 4; x++)
-			for(int y = 0; y < 4; y++) {
-				RGBA c = sLastImage[x][y];
-				if(c.a == 255) {
-					int dd = Diff(c, SColorPaper());
-					if(dd > d) {
-						fc = c;
-						d = dd;
-					}
+				{
+					DropList::Style& s = DropList::StyleFrame().Write();
+					GtkChButtonWith(s.look, CtrlsImg::DA());
+					GtkChButtonWith(s.trivial, CtrlsImg::DA());
+				}
+				{
+					SpinButtons::Style& s = SpinButtons::StyleDefault().Write();
+					GtkChButtonWith(s.inc.look, CtrlImg::spinup2());
+					GtkChButtonWith(s.dec.look, CtrlImg::spindown2());
 				}
 			}
-		FieldFrameColor_Write(fc);
+			else {
+				GtkIml(CtrlsImg::I_UA, ChGtkLast(), 0, 0, "vscrollbar", GTK_ARROW|GTK_TOP|GTK_RANGEA, asz.cx, asz.cy);
+				GtkIml(CtrlsImg::I_DA, ChGtkLast(), 0, 0, "vscrollbar", GTK_ARROW|GTK_VAL1|GTK_BOTTOM|GTK_RANGED, asz.cx, asz.cy);
 
-		static GtkWidget *hscrollbar = gtk_hscrollbar_new(GTK_ADJUSTMENT(adj));
-		ChGtkNew(hscrollbar, "slider", GTK_SLIDER|margin);
-		GtkChSlider(s.hthumb);
-		ChGtkNew("trough", GTK_BGBOX|margin);
-		GtkChTrough(s.hupper);
-		GtkChTrough(s.hlower);
-		if(atp) {
-			ChGtkNew("hscrollbar", GTK_ARROW|GTK_VAL2);
-			GtkCh(s.left.look, "02141111");
-			GtkCh(s.left2.look, "02141111");
-			ChGtkNew("hscrollbar", GTK_ARROW|GTK_VAL3);
-			GtkCh(s.right.look, "02141111");
-			GtkCh(s.right2.look, "02141111");
+				ChGtkNew("vscrollbar", GTK_BGBOX|GTK_TOP|GTK_RANGEA);
+				GtkChArrow(s.up.look, CtrlsImg::UA(), po);
+				ChGtkNew("vscrollbar", GTK_BGBOX|GTK_BOTTOM|GTK_RANGED);
+				GtkChArrow(s.down.look, CtrlsImg::DA(), po);
+				ChGtkNew("vscrollbar", GTK_BGBOX|GTK_VCENTER|GTK_RANGEC);
+				GtkChArrow(s.up2.look, CtrlsImg::UA(), po);
+				ChGtkNew("vscrollbar", GTK_BGBOX|GTK_VCENTER|GTK_RANGEB);
+				GtkChArrow(s.down2.look, CtrlsImg::DA(), po);
+
+				ChGtkNew("vscrollbar", GTK_BOX|GTK_VCENTER|GTK_RANGEB);
+				GtkCh(Button::StyleScroll().Write().look, "02142222");
+
+				int q = !classiq;
+
+				GtkChImgWith(Button::StyleEdge().Write().look, Null, 1 * q);
+				GtkChImgWith(Button::StyleLeftEdge().Write().look, Null, 2 * q);
+
+				{
+					DropList::Style& s = DropList::StyleFrame().Write();
+					GtkChImgWith(s.look, CtrlsImg::DA(), 1 * q, po);
+					GtkChImgWith(s.trivial, CtrlsImg::DA(), 1 * q, po);
+					GtkChImgWith(s.left, CtrlsImg::DA(), 2 * q, po);
+					GtkChImgWith(s.right, CtrlsImg::DA(), 1 * q, po);
+					s.pressoffset = po;
+				}
+				{
+					SpinButtons::Style& s = SpinButtons::StyleDefault().Write();
+					GtkChImgWith(s.inc.look, q ? CtrlImg::spinup2() : CtrlImg::spinup3(), (1|GTK_BOTTOMLINE) * q, po);
+					GtkChImgWith(s.dec.look, q ? CtrlImg::spindown2() : CtrlImg::spindown3(), 1 * q, po);
+				}
+			}
+
+			int d = Diff(fc, SColorPaper());
+			for(int x = 0; x < 4; x++)
+				for(int y = 0; y < 4; y++) {
+					RGBA c = sLastImage[x][y];
+					if(c.a == 255) {
+						int dd = Diff(c, SColorPaper());
+						if(dd > d) {
+							fc = c;
+							d = dd;
+						}
+					}
+				}
+			FieldFrameColor_Write(fc);
+
+			static GtkWidget *hscrollbar = gtk_hscrollbar_new(GTK_ADJUSTMENT(adj));
+			ChGtkNew(hscrollbar, "slider", GTK_SLIDER);
+			GtkChSlider(s.hthumb);
+			ChGtkNew("trough", GTK_BGBOX);
+			GtkChTrough(s.hupper);
+			GtkChTrough(s.hlower);
+			if(atp) {
+				ChGtkNew("hscrollbar", GTK_ARROW|GTK_VAL2);
+				GtkCh(s.left.look, "02141111");
+				GtkCh(s.left2.look, "02141111");
+				ChGtkNew("hscrollbar", GTK_ARROW|GTK_VAL3);
+				GtkCh(s.right.look, "02141111");
+				GtkCh(s.right2.look, "02141111");
+			}
+			else {
+				GtkIml(CtrlsImg::I_LA, ChGtkLast(), 0, 0, "hscrollbar", GTK_ARROW|GTK_VAL2|GTK_LEFT|GTK_RANGEA, asz.cy, asz.cx);
+				GtkIml(CtrlsImg::I_RA, ChGtkLast(), 0, 0, "hscrollbar", GTK_ARROW|GTK_VAL3|GTK_RIGHT|GTK_RANGED, asz.cy, asz.cx);
+				ChGtkNew("hscrollbar", GTK_BGBOX|GTK_LEFT|GTK_RANGEA);
+				GtkChArrow(s.left.look, CtrlsImg::LA(), po);
+				ChGtkNew("hscrollbar", GTK_BGBOX|GTK_VCENTER|GTK_RANGEC);
+				GtkChArrow(s.left2.look, CtrlsImg::LA(), po);
+				ChGtkNew("hscrollbar", GTK_BGBOX|GTK_VCENTER|GTK_RANGEB);
+				GtkChArrow(s.right2.look, CtrlsImg::RA());
+				ChGtkNew("hscrollbar", GTK_BGBOX|GTK_RIGHT|GTK_RANGED);
+				GtkChArrow(s.right.look, CtrlsImg::RA(), po);
+			}
+
+			gtk_object_sink(adj);
+
+			adj = gtk_adjustment_new(0, 0, 1000, 1, 1, 500);
+			w = gtk_vscrollbar_new(NULL);
+			Setup(w);
+			s.overthumb = m != GetGTK(w, 0, 0, "slider", GTK_SLIDER|GTK_VAL1, 16, 32) && engine != "Qt";
+			gtk_widget_destroy(w);
+			gtk_object_sink(adj);
+
 		}
-		else {
-			GtkIml(CtrlsImg::I_LA, ChGtkLast(), 0, 0, "hscrollbar", GTK_ARROW|GTK_VAL2|GTK_LEFT|GTK_RANGEA, asz.cy, asz.cx);
-			GtkIml(CtrlsImg::I_RA, ChGtkLast(), 0, 0, "hscrollbar", GTK_ARROW|GTK_VAL3|GTK_RIGHT|GTK_RANGED, asz.cy, asz.cx);
-			ChGtkNew("hscrollbar", GTK_BGBOX|GTK_LEFT|GTK_RANGEA);
-			GtkChArrow(s.left.look, CtrlsImg::LA(), po);
-			ChGtkNew("hscrollbar", GTK_BGBOX|GTK_VCENTER|GTK_RANGEC);
-			GtkChArrow(s.left2.look, CtrlsImg::LA(), po);
-			ChGtkNew("hscrollbar", GTK_BGBOX|GTK_VCENTER|GTK_RANGEB);
-			GtkChArrow(s.right2.look, CtrlsImg::RA());
-			ChGtkNew("hscrollbar", GTK_BGBOX|GTK_RIGHT|GTK_RANGED);
-			GtkChArrow(s.right.look, CtrlsImg::RA(), po);
-		}
-
-		gtk_object_sink(adj);
-
-		adj = gtk_adjustment_new(0, 0, 1000, 1, 1, 500);
-		w = gtk_vscrollbar_new(NULL);
-		Setup(w);
-		s.overthumb = m != GetGTK(w, 0, 0, "slider", GTK_SLIDER|GTK_VAL1, 16, 32) && engine != "Qt";
-		gtk_widget_destroy(w);
-		gtk_object_sink(adj);
 	}
 
 	if(engine != "Qt")
@@ -903,7 +1024,7 @@ void ChHostSkin()
 				GTK_WIDGET_FLAGS (w) &= GTK_SENSITIVE;
 			if(i == 0) {
 				img = GetGTK(w, GTK_STATE_NORMAL, GTK_SHADOW_IN, "entry", GTK_SHADOW, 20, 20);
-				efm = ImageMargin(img, 4, 0);
+				efm = max(ImageMargin(img, 4, 0), 1);
 			}
 			img = GetGTK(w, GTK_STATE_NORMAL, GTK_SHADOW_IN,
 			             "entry", GTK_SHADOW, 2 * efm + 3, 2 * efm + 3);
@@ -1038,6 +1159,8 @@ void ChHostSkin()
 		MenuBar::StyleDefault().Write().breaksep.l2 = s.breaksep.l2 = Color(img[0][15]);
 		TopSeparator2_Write(s.breaksep.l2);
 	}
+
+	if(engine != "Qt")
 	{
 		ProgressIndicator::Style& s = ProgressIndicator::StyleDefault().Write();
 		static GtkWidget *pg = gtk_progress_bar_new();
@@ -1072,8 +1195,6 @@ void ChHostSkin()
 
 	for(int i = 0; i < __countof(bimg); i++)
 		(*bimg[i].set)(GtkImage(bimg[i].gtk, 4, 16));
-
-	ChLookFn(GtkLookFn);
 
 	if(engine != "Redmond")
 		DropEdge_Write(ViewEdge());

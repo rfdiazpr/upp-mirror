@@ -152,15 +152,19 @@ class ConvertTime : public Convert {
 public:
 	virtual Value Scan(const Value& text) const;
 	virtual int   Filter(int chr) const;
+	virtual Value Format(const Value& q) const;
 
 protected:
 	Time minval, maxval;
 	bool notnull;
+	bool seconds;
 
 public:
 	ConvertTime& MinMax(Time _min, Time _max)      { minval = _min; maxval = _max; return *this; }
 	ConvertTime& NotNull(bool b = true)            { notnull = b; return *this; }
 	ConvertTime& NoNotNull()                       { return NotNull(false); }
+	ConvertTime& Seconds(bool b = true)            { seconds = b; return *this; }
+	ConvertTime& NoSeconds()                       { return Seconds(false); }
 	Time         GetMin() const                    { return minval; }
 	Time         GetMax() const                    { return maxval; }
 	bool         IsNotNull() const                 { return notnull; }

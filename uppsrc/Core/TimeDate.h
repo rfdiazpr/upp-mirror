@@ -122,7 +122,7 @@ inline Time&  operator-=(Time& a, double i) { return a -= int64(i); }
 
 Time  GetSysTime();
 
-String Format(Time time);
+String Format(Time time, bool seconds = true);
 
 template<>
 inline String AsString(const Time& time) { return Format(time); }

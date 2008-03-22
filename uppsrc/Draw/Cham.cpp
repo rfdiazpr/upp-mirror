@@ -304,14 +304,16 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 								}
 							}
 						case 0:
+						default:
 							ChDraw(w, r, img, sr);
 							break;
-						default:
 							LTIMING("Ch-linedup");
 							img = CachedRescalePaintOnly(
 									img,
-									Size(max(40, ((q & IMAGECONTENT_HORZDUP) ? sr : r).GetWidth()),
-									     max(40, ((q & IMAGECONTENT_VERTDUP) ? sr : r).GetHeight())),
+									Size((q & IMAGECONTENT_HORZDUP) ? max(min(40, r.GetWidth()), sr.GetWidth())
+									                                : r.GetWidth(),
+									     (q & IMAGECONTENT_VERTDUP) ? max(min(40, r.GetHeight()), sr.GetHeight())
+							                                        : r.GetHeight()),
 									sr
 							);
 							LTIMING("Ch-linedup-drawtiles");

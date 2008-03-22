@@ -397,7 +397,7 @@ int   ConvertDate::Filter(int chr) const {
 }
 
 ConvertTime::ConvertTime(Time minval, Time maxval, bool notnull)
-: minval(minval), maxval(maxval), notnull(notnull) {}
+: minval(minval), maxval(maxval), notnull(notnull), seconds(true) {}
 
 ConvertTime::~ConvertTime()
 {
@@ -420,6 +420,16 @@ int ConvertTime::Filter(int chr) const
 	if(chr == ',')
 		return '.';
 	return 0;
+}
+
+Value ConvertTime::Format(const Value& q) const
+{
+	if(IsVoid(q) || q.IsNull())
+		return String();
+	else if(q.GetType() == TIME_V)
+		return UPP::Format(Time(q), seconds);
+	else
+		return Convert::Format(q);
 }
 
 #ifdef flagSO

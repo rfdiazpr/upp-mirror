@@ -515,4 +515,7 @@ class DropTime : public DateTimeCtrl<EditTime>
 public:
 	DropTime();
 	DropTime& SetTime(int y, int m, int d, int h, int n, int s);
+	DropTime& Seconds(bool b = true)                           { DateTimeCtrl<EditTime>::Seconds(b); EditTime::Seconds(b); return *this; }
+	DropTime& NoSeconds()                                      { return Seconds(false); }
+
 };

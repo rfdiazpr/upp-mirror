@@ -140,6 +140,7 @@ void DockableCtrl::Menu()
 
 void DockableCtrl::StartWindowDrag()
 {
+	if(!isdraggable) return;
 	Point pt = GetMousePos();
 	Float();
 

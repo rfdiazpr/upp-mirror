@@ -43,7 +43,7 @@ DockWindow::~DockWindow()
 
 void DockWindow::Dock(int alignment, int state, int position, bool sizecheck)
 {
-	if(Alignment() == alignment && !IsHidden()) return;
+	if(Alignment() == alignment && (!IsHidden() && !IsAutoHidden())) return;
 	else if(IsTabbed())	GetOwnerTab()->Detach(*this);
 	else if(IsFloating()) ShutWindow();
 	else if(IsAutoHidden())	GetBase().GetHideBar(Alignment()).Detach(*this);
@@ -257,7 +257,9 @@ void DockWindow::ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dw
 	if(HasDragBar() && child == &dragbar)
 	{
 		 if(event == LEFTDRAG) StartWindowDrag();
-		 if(event == RIGHTDOWN && !hasbarbuttons) ContextMenu();
+		 if(event == LEFTDOUBLE && IsAutoHidden()) 
+		 	Dock(Alignment(), STATE_SHOW, Position());
+		 if(event == RIGHTDOWN  && !hasbarbuttons) ContextMenu();
 	}
 	TopWindow::ChildMouseEvent(child, event, p, zdelta, keyflags);
 }

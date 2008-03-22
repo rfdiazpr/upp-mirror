@@ -305,11 +305,15 @@ DockWindow& DockWindow::ShowDragBarButtons(bool b)
 
 void DockWindow::DockWindowMenu(Bar& bar)
 {
+	bool floatingbase = false;
+	TabWindow* c = GetOwnerTab();
+	if(c) floatingbase = GetOwnerTab()->GetBaseTab()->IsFloating();
+
 	bar.Add(t_("Dock"),	THISBACK(DockWindowDockMenu));
 	bar.Add(!IsFloating(), t_("Float"),THISBACK(Float));
 	bar.Separator();
 	bar.Add(IsDocked(), IsHidden() ? t_("Show") : t_("Hide"), THISBACK(Hide));
-	bar.Add(!IsFloating(), t_("Auto Hide"), THISBACK(AutoHide));	
+	bar.Add(!IsFloating() && !floatingbase, t_("Auto Hide"), THISBACK(AutoHide));	
 	bar.Separator();
 	bar.Add(t_("Settings"), THISBACK(Settings));
 	bar.Separator();

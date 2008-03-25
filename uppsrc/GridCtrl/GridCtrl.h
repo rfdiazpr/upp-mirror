@@ -1,6 +1,5 @@
 #ifndef _GridCtrl_GridCtrl_h_
 #define _GridCtrl_GridCtrl_h_
-#define GRIDSQL
 
 #include <CtrlLib/CtrlLib.h>
 #ifdef GRIDSQL
@@ -16,7 +15,6 @@ NAMESPACE_UPP
 #define FOREACH_SELECTED_ROW(x) FOREACH_ROW(x) if(x.IsSelected())
 #define FOREACH_MODIFIED_ROW(x) FOREACH_ROW(x) if(x.IsUpdatedRow())
 #define FOREACH_ROW_NOT_CURRENT(x) FOREACH_ROW(x) if(!x.IsCurrentRow())
-#define COLUMN(grid, column) (column, grid(column))
 
 namespace GF
 {

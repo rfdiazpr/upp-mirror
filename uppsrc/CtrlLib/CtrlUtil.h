@@ -140,7 +140,7 @@ public:
 #ifndef PLATFORM_WINCE
 
 class TrayIcon : private Ctrl {
-	typedef struct NotifyIconOld {
+	struct NotifyIconOld {
 		dword sz;
 		HWND  hwnd;
 		dword id;
@@ -149,7 +149,7 @@ class TrayIcon : private Ctrl {
 		HICON icon;
 		char  tip[64];
 	};
-	typedef struct NotifyIconNew {
+	struct NotifyIconNew {
 		dword sz;
 		HWND  hwnd;
 		dword id;

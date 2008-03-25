@@ -308,6 +308,10 @@ public:
 	void SetRoot(Option& option, const char *text = NULL);
 	void SetRoot(const Image& img, const char *text);
 	void SetRoot(const char *text);
+	int  Insert(int parent, int i, const Image& img, Option& option, const char *text = NULL);
+	int  Insert(int parent, int i, Option& option, const char *text = NULL);
+	int  Insert(int parent, int i, const Image& img, const char *text);
+	int  Insert(int parent, int i, const char *text);
 	int  Add(int parent, const Image& img, Option& option, const char *text = NULL);
 	int  Add(int parent, Option& option, const char *text = NULL);
 	int  Add(int parent, const Image& img, const char *text);
@@ -321,4 +325,38 @@ public:
 
 	OptionTree();
 	~OptionTree();
+};
+
+class PopUpTree : public TreeCtrl {
+public:
+	typedef PopUpTree CLASSNAME;
+	PopUpTree();
+	virtual ~PopUpTree();
+
+	void         PopUp(Ctrl *owner, int x, int top, int bottom, int width);
+	void         PopUp(Ctrl *owner, int width);
+	void         PopUp(Ctrl *owner);
+
+	Callback     WhenCancel;
+	Callback     WhenSelect;
+
+	PopUpTree&   MaxHeight(int maxheight_)          { maxheight = maxheight_; return *this; }
+	int          GetMaxHeight() const               { return maxheight; }
+
+public:
+	virtual void Deactivate();
+	virtual void LeftUp(Point p, dword keyflags);
+	virtual bool Key(dword key, int);
+	virtual void CancelMode();
+
+protected:
+	void         DoClose();
+	void         OpenClose(int i);
+
+protected:
+	int          maxheight;
+	Point        showpos;
+	int          showwidth;
+	bool         up;
+	bool         open;
 };

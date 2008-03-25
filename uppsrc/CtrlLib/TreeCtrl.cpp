@@ -1487,9 +1487,14 @@ void OptionTree::SetRoot(const char *text)
 
 int OptionTree::Add(int parentid, const Image& img, Option& opt, const char *text)
 {
+	return Insert(parentid, GetChildCount(parentid), img, opt, text);
+}
+
+int OptionTree::Insert(int parentid, int i, const Image& img, Option& opt, const char *text)
+{
 	if(text)
 		opt.SetLabel(text);
-	int id = TreeCtrl::Add(parentid, img, opt);
+	int id = TreeCtrl::Insert(parentid, i, img, opt);
 	option.At(id, NULL) = &opt;
 	opt.NoNotNull().BlackEdge();
 	opt <<= THISBACK1(SetOption, id);
@@ -1497,19 +1502,34 @@ int OptionTree::Add(int parentid, const Image& img, Option& opt, const char *tex
 	return id;
 }
 
-int OptionTree::Add(int parentid, Option& opt, const char *text)
-{
-	return Add(parentid, Null, opt.NoNotNull(), text);
-}
-
 int OptionTree::Add(int parentid, const Image& img, const char *text)
 {
-	return Add(parentid, img, aux.Add().NoNotNull(), text);
+	return Insert(parentid, GetChildCount(parentid), img, text);
+}
+
+int OptionTree::Insert(int parentid, int i, const Image& img, const char *text)
+{
+	return Insert(parentid, i, img, aux.Add().NoNotNull(), text);
+}
+
+int OptionTree::Add(int parentid, Option& opt, const char *text)
+{
+	return Insert(parentid, GetChildCount(parentid), opt, text);
+}
+
+int OptionTree::Insert(int parentid, int i, Option& opt, const char *text)
+{
+	return Insert(parentid, i, Null, opt.NoNotNull(), text);
 }
 
 int OptionTree::Add(int parentid, const char *text)
 {
-	return Add(parentid, aux.Add().NoNotNull(), text);
+	return Insert(parentid, GetChildCount(parentid), text);
+}
+
+int OptionTree::Insert(int parentid, int i, const char *text)
+{
+	return Insert(parentid, i, aux.Add().NoNotNull(), text);
 }
 
 void OptionTree::SetChildren(int id, bool b)
@@ -1573,6 +1593,129 @@ int Copy(TreeCtrl& dst, int did, int i, const TreeCtrl& src, int id)
 	for(int i = 0; i < src.GetChildCount(id); i++)
 		Copy(dst, did, i, src, src.GetChild(id, i));
 	return did;
+}
+
+CH_VALUE(TreeDropEdge, ChBorder(BlackBorder()));
+
+CtrlFrame& TreeDropFrame()
+{
+	static LookFrame m(TreeDropEdge);
+	return m;
+}
+
+PopUpTree::PopUpTree() {
+	SetFrame(TreeDropFrame());
+	Accel();
+	MouseMoveCursor();
+	NoPopUpEx();
+	maxheight = 200;
+	open = false;
+	WhenOpen = WhenClose = THISBACK(OpenClose);
+}
+
+PopUpTree::~PopUpTree() {}
+
+void PopUpTree::CancelMode() {
+	if(open) {
+		DoClose();
+		WhenCancel();
+	}
+	TreeCtrl::CancelMode();
+}
+
+void PopUpTree::DoClose() {
+	open = false;
+	Ctrl::Close();
+}
+
+void PopUpTree::Deactivate() {
+	if(open) {
+		DoClose();
+		IgnoreMouseClick();
+		WhenCancel();
+	}
+}
+
+void PopUpTree::LeftUp(Point p, dword keyflags) {
+	TreeCtrl::LeftUp(p, keyflags);
+	if(IsCursor() && !GetData().IsVoid()) {
+		DoClose();
+		WhenSelect();
+	}
+}
+
+bool PopUpTree::Key(dword key, int n) {
+	switch(key) {
+	case K_ENTER:
+	case K_ALT_DOWN:
+		DoClose();
+		WhenSelect();
+		return true;
+	case K_ESCAPE:
+		DoClose();
+		WhenCancel();
+		return true;
+	}
+	return TreeCtrl::Key(key, n);
+}
+
+void PopUpTree::PopUp(Ctrl *owner, int x, int top, int bottom, int width) {
+	DoClose();
+	int h = AddFrameSize(width, maxheight).cy;
+	showpos.x = x;
+	showpos.y = bottom;
+	showwidth = width;
+	Rect area = Ctrl::GetWorkArea();
+	up = false;
+	if(showpos.y + h > area.bottom) {
+		up = true;
+		showpos.y = top;
+	}
+	open = false;
+	Ctrl popup;
+	int ht = AddFrameSize(width, min(maxheight, GetTreeSize().cy)).cy;
+	Rect rt = RectC(showpos.x, showpos.y - (up ? ht : 0), showwidth, ht);
+	if(GUI_PopUpEffect()) {
+		if(up) {
+			popup.SetRect(Rect(rt.left, rt.bottom - 1, rt.right, rt.bottom));
+			popup.Add(TopPos(0, rt.Height()).LeftPos(0, rt.Width()));
+		}
+		else {
+			popup.SetRect(Rect(rt.left, rt.top, rt.right, rt.top + 1));
+			popup.Add(BottomPos(0, rt.Height()).LeftPos(0, rt.Width()));
+		}
+		CenterCursor();
+		popup.PopUp(owner, true, true, GUI_DropShadows());
+		SetFocus();
+		Ctrl::ProcessEvents();
+		Animate(popup, rt, GUIEFFECT_SLIDE);
+		Ctrl::Remove();
+	}
+	CenterCursor();
+	SetRect(rt);
+	Ctrl::PopUp(owner, true, true, GUI_DropShadows());
+	SetFocus();
+	open = true;
+}
+
+void PopUpTree::OpenClose(int i)
+{
+	SyncTree();
+	int ht = AddFrameSize(showwidth, min(maxheight, GetTreeSize().cy)).cy;
+	SetRect(RectC(showpos.x, showpos.y - (up ? ht : 0), showwidth, ht));
+}
+
+void PopUpTree::PopUp(Ctrl *owner, int width)
+{
+	Rect r = owner->GetScreenRect();
+	r.right = r.left + width;
+	PopUp(owner, r.left, r.top, r.bottom, width);
+}
+
+void PopUpTree::PopUp(Ctrl *owner)
+{
+	Rect r = owner->GetScreenRect();
+	PopUp(owner, r.left, r.top, r.bottom, r.Width());
 }
 
 END_UPP_NAMESPACE

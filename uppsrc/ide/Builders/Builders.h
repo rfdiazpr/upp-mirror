@@ -21,7 +21,9 @@ struct CppBuilder : Builder {
 
 	String                 GetSharedLibPath(const String& package) const;
 	String                 GetHostPath(const String& path) const;
+	String                 GetHostPathShort(const String& path) const;
 	String                 GetHostPathQ(const String& path) const;
+	String                 GetHostPathShortQ(const String& path) const;
 	String                 GetLocalPath(const String& path) const;
 	Vector<Host::FileInfo> GetFileInfo(const Vector<String>& path) const;
 	Host::FileInfo         GetFileInfo(const String& path) const;
@@ -42,6 +44,7 @@ struct CppBuilder : Builder {
 	Vector<String>         CustomStep(const String& file);
 
 	String                 Includes(const char *sep);
+	String                 IncludesShort(const char *sep);
 	String                 IncludesDefinesTargetTime();
 
 	String                 GetMakePath(String fn) const;

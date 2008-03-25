@@ -290,7 +290,7 @@ void HomeBudget::RemoveGroup()
 {
 	if(categories.IsEmpty())
 	{
-		SQL & Delete(GROUPS).Where(ID == groups(0));
+		SQL & Delete(GROUPS).Where(ID == groups(ID));
 	}
 	else
 	{
@@ -320,7 +320,7 @@ struct AddNewCat : WithNewCategoryLayout<TopWindow>
 		SQL * Select(ID, NAME).From(GROUPS);
 		while(SQL.Fetch())
 		{
-			groups.Add(SQL[0], SQL[1]);
+			groups.Add(SQL[ID], SQL[NAME]);
 			cnt++;
 		}
 
@@ -451,7 +451,11 @@ void HomeBudget::RemoveCategory()
 {
 	try
 	{
-		SQL * ::Select(CAT_ID, NAME).From(MONEY, CATEGORIES).Where(CAT_ID == categories(ID) && ID.Of(CATEGORIES) == categories(ID)).Limit(1);
+		SQL * ::Select(CAT_ID, NAME)
+			.From(MONEY, CATEGORIES)
+			.Where(CAT_ID == categories(ID) && ID.Of(CATEGORIES) == categories(ID))
+			.Limit(1);
+
 		if(SQL.Fetch())
 		{
 			PromptOK(Format(t_("Item '%s' can't be removed. It is used in calculations."), AsString(SQL[1])));
@@ -481,7 +485,6 @@ void HomeBudget::InsertMoney()
 
 		money(ID) = SQL.GetInsertedId();
 
-		//to trzeba robic tylko dla ostatniej kategori do automatycznego wstawienia
 		if(dosummary)
 			UpdateSummary();
 	}
@@ -532,8 +535,8 @@ void HomeBudget::InsertDate()
 {
 	try
 	{
-		SQL & ::Insert(DATES)(DT, month(1));
-		month(0) = dtid = (int) SQL.GetInsertedId();
+		SQL & ::Insert(DATES)(DT, month(DT));
+		month(ID) = dtid = (int) SQL.GetInsertedId();
 		EnableMoney();
 	}
 	catch(SqlExc &e)
@@ -552,7 +555,7 @@ void HomeBudget::UpdateDate()
 {
 	try
 	{
-		SQL & ::Update(DATES)(DT, month(1)).Where(ID == month(ID));
+		SQL & ::Update(DATES)(DT, month(DT)).Where(ID == month(ID));
 	}
 	catch(SqlExc &e)
 	{
@@ -607,9 +610,9 @@ void HomeBudget::AcceptDate()
 	while(SQL.Fetch())
 	{
 		money.Add();
-		money(CAT_ID) = SQL[0];
-		money(VALUE) = SQL[1];
-		money(PM) = SQL[2];
+		money(CAT_ID) = SQL[ID];
+		money(VALUE) = SQL[DEFVALUE];
+		money(PM) = SQL[PM];
 		InsertMoney();
 		money.RefreshNewRow();
 	}

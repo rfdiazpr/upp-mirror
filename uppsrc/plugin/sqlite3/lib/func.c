@@ -16,7 +16,7 @@
 ** sqliteRegisterBuildinFunctions() found at the bottom of the file.
 ** All other code has file scope.
 **
-** $Id: func.c,v 1.183 2008/01/21 16:22:46 drh Exp $
+** $Id: func.c,v 1.186 2008/03/06 09:58:50 mlcreech Exp $
 */
 #include "sqliteInt.h"
 #include <ctype.h>
@@ -875,7 +875,7 @@ static void trimFunc(
   const unsigned char *zIn;         /* Input string */
   const unsigned char *zCharSet;    /* Set of characters to trim */
   int nIn;                          /* Number of bytes in input */
-  int flags;                        /* 1: trimleft  2: trimright  3: trim */
+  sqlite3_intptr_t flags;           /* 1: trimleft  2: trimright  3: trim */
   int i;                            /* Loop counter */
   unsigned char *aLen;              /* Length of each character in zCharSet */
   unsigned char **azChar;           /* Individual characters in zCharSet */
@@ -916,7 +916,7 @@ static void trimFunc(
     }
   }
   if( nChar>0 ){
-    flags = (int)sqlite3_user_data(context);
+    flags = (sqlite3_intptr_t)sqlite3_user_data(context);
     if( flags & 1 ){
       while( nIn>0 ){
         int len;
@@ -1146,6 +1146,7 @@ static void test_auxdata(
   for(i=0; i<nArg; i++){
     char const *z = (char*)sqlite3_value_text(argv[i]);
     if( z ){
+      int n;
       char *zAux = sqlite3_get_auxdata(pCtx, i);
       if( zAux ){
         zRet[i*2] = '1';
@@ -1153,10 +1154,10 @@ static void test_auxdata(
       }else {
         zRet[i*2] = '0';
       }
-
-      zAux = contextMalloc(pCtx, strlen(z)+1);
+      n = strlen(z) + 1;
+      zAux = contextMalloc(pCtx, n);
       if( zAux ){
-        strcpy(zAux, z);
+        memcpy(zAux, z, n);
         sqlite3_set_auxdata(pCtx, i, zAux, free_test_auxdata);
       }
       zRet[i*2+1] = ' ';
@@ -1458,7 +1459,7 @@ void sqlite3RegisterBuiltinFunctions(sqlite3 *db){
     if( argType==0xff ){
       pArg = db;
     }else{
-      pArg = (void*)(int)argType;
+      pArg = (void*)(sqlite3_intptr_t)argType;
     }
     sqlite3CreateFunc(db, aFuncs[i].zName, aFuncs[i].nArg,
         aFuncs[i].eTextRep, pArg, aFuncs[i].xFunc, 0, 0);
@@ -1477,7 +1478,7 @@ void sqlite3RegisterBuiltinFunctions(sqlite3 *db){
   sqlite3AttachFunctions(db);
 #endif
   for(i=0; i<sizeof(aAggs)/sizeof(aAggs[0]); i++){
-    void *pArg = (void*)(int)aAggs[i].argType;
+    void *pArg = (void*)(sqlite3_intptr_t)aAggs[i].argType;
     sqlite3CreateFunc(db, aAggs[i].zName, aAggs[i].nArg, SQLITE_UTF8,
         pArg, 0, aAggs[i].xStep, aAggs[i].xFinalize);
     if( aAggs[i].needCollSeq ){

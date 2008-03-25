@@ -22,11 +22,11 @@
 
 /*
 ** When debugging the code generator in a symbolic debugger, one can
-** set the sqlite3_vdbe_addop_trace to 1 and all opcodes will be printed
+** set the sqlite3VdbeAddopTrace to 1 and all opcodes will be printed
 ** as they are added to the instruction stream.
 */
 #ifdef SQLITE_DEBUG
-int sqlite3_vdbe_addop_trace = 0;
+int sqlite3VdbeAddopTrace = 0;
 #endif
 
 
@@ -142,7 +142,7 @@ int sqlite3VdbeAddOp3(Vdbe *p, int op, int p1, int p2, int p3){
   i = p->nOp;
   assert( p->magic==VDBE_MAGIC_INIT );
   if( p->nOpAlloc<=i ){
-    resizeOpArray(p, p->nOpAlloc*2 + 100);
+    resizeOpArray(p, p->nOpAlloc ? p->nOpAlloc*2 : 1024/sizeof(Op));
     if( p->db->mallocFailed ){
       return 0;
     }
@@ -157,7 +157,7 @@ int sqlite3VdbeAddOp3(Vdbe *p, int op, int p1, int p2, int p3){
   pOp->p4type = P4_NOTUSED;
   p->expired = 0;
 #ifdef SQLITE_DEBUG
-  if( sqlite3_vdbe_addop_trace ) sqlite3VdbePrintOp(0, i, &p->aOp[i]);
+  if( sqlite3VdbeAddopTrace ) sqlite3VdbePrintOp(0, i, &p->aOp[i]);
 #endif
   return i;
 }
@@ -335,7 +335,8 @@ int sqlite3VdbeAddOpList(Vdbe *p, int nOp, VdbeOpList const *aOp){
   int addr;
   assert( p->magic==VDBE_MAGIC_INIT );
   if( p->nOp + nOp > p->nOpAlloc ){
-    resizeOpArray(p, p->nOp*2 + nOp);
+    resizeOpArray(p, p->nOpAlloc ? p->nOpAlloc*2 : 1024/sizeof(Op));
+    assert( p->nOp+nOp<=p->nOpAlloc || p->db->mallocFailed );
   }
   if( p->db->mallocFailed ){
     return 0;
@@ -359,7 +360,7 @@ int sqlite3VdbeAddOpList(Vdbe *p, int nOp, VdbeOpList const *aOp){
       pOut->p4.p = 0;
       pOut->p5 = 0;
 #ifdef SQLITE_DEBUG
-      if( sqlite3_vdbe_addop_trace ){
+      if( sqlite3VdbeAddopTrace ){
         sqlite3VdbePrintOp(0, i+addr, &p->aOp[i+addr]);
       }
 #endif
@@ -528,7 +529,9 @@ void sqlite3VdbeChangeP4(Vdbe *p, int addr, const char *zP4, int n){
   freeP4(pOp->p4type, pOp->p4.p);
   pOp->p4.p = 0;
   if( n==P4_INT32 ){
-    pOp->p4.i = (int)zP4;
+    /* Note: this cast is safe, because the origin data point was an int
+    ** that was cast to a (const char *). */
+    pOp->p4.i = (int)(sqlite3_intptr_t)zP4;
     pOp->p4type = n;
   }else if( zP4==0 ){
     pOp->p4.p = 0;
@@ -735,11 +738,15 @@ void sqlite3VdbePrintOp(FILE *pOut, int pc, Op *pOp){
 ** Release an array of N Mem elements
 */
 static void releaseMemArray(Mem *p, int N){
-  if( p ){
+  if( p && N ){
+    sqlite3 *db = p->db;
+    int malloc_failed = db->mallocFailed;
     while( N-->0 ){
       assert( N<2 || p[0].db==p[1].db );
-      sqlite3VdbeMemSetNull(p++);
+      sqlite3VdbeMemRelease(p);
+      p++->flags = MEM_Null;
     }
+    db->mallocFailed = malloc_failed;
   }
 }
 
@@ -786,6 +793,7 @@ int sqlite3VdbeList(
     rc = SQLITE_ERROR;
     sqlite3SetString(&p->zErrMsg, sqlite3ErrStr(p->rc), (char*)0);
   }else{
+    char *z;
     Op *pOp = &p->aOp[i];
     if( p->explain==1 ){
       pMem->flags = MEM_Int;
@@ -819,31 +827,46 @@ int sqlite3VdbeList(
       pMem++;
     }
 
-    pMem->flags = MEM_Ephem|MEM_Str|MEM_Term;     /* P4 */
-    pMem->z = displayP4(pOp, pMem->zShort, sizeof(pMem->zShort));
-    assert( pMem->z!=0 );
-    pMem->n = strlen(pMem->z);
+    if( sqlite3VdbeMemGrow(pMem, 32, 0) ){            /* P4 */
+      p->db->mallocFailed = 1;
+      return SQLITE_NOMEM;
+    }
+    pMem->flags = MEM_Dyn|MEM_Str|MEM_Term;
+    z = displayP4(pOp, pMem->z, 32);
+    if( z!=pMem->z ){
+      sqlite3VdbeMemSetStr(pMem, z, -1, SQLITE_UTF8, 0);
+    }else{
+      assert( pMem->z!=0 );
+      pMem->n = strlen(pMem->z);
+      pMem->enc = SQLITE_UTF8;
+    }
     pMem->type = SQLITE_TEXT;
-    pMem->enc = SQLITE_UTF8;
     pMem++;
 
     if( p->explain==1 ){
-      pMem->flags = MEM_Str|MEM_Term|MEM_Short;
-      pMem->n = sprintf(pMem->zShort, "%.2x", pOp->p5);   /* P5 */
-      pMem->z = pMem->zShort;
+      if( sqlite3VdbeMemGrow(pMem, 4, 0) ){
+        p->db->mallocFailed = 1;
+        return SQLITE_NOMEM;
+      }
+      pMem->flags = MEM_Dyn|MEM_Str|MEM_Term;
+      pMem->n = 2;
+      sqlite3_snprintf(3, pMem->z, "%.2x", pOp->p5);   /* P5 */
       pMem->type = SQLITE_TEXT;
       pMem->enc = SQLITE_UTF8;
       pMem++;
 
-      pMem->flags = MEM_Null;                       /* Comment */
 #ifdef SQLITE_DEBUG
       if( pOp->zComment ){
         pMem->flags = MEM_Str|MEM_Term;
         pMem->z = pOp->zComment;
         pMem->n = strlen(pMem->z);
         pMem->enc = SQLITE_UTF8;
-      }
+      }else
 #endif
+      {
+        pMem->flags = MEM_Null;                       /* Comment */
+        pMem->type = SQLITE_NULL;
+      }
     }
 
     p->nResColumn = 8 - 5*(p->explain-1);
@@ -878,7 +901,7 @@ void sqlite3VdbePrintSql(Vdbe *p){
 void sqlite3VdbeIOTraceSql(Vdbe *p){
   int nOp = p->nOp;
   VdbeOp *pOp;
-  if( sqlite3_io_trace==0 ) return;
+  if( sqlite3IoTrace==0 ) return;
   if( nOp<1 ) return;
   pOp = &p->aOp[0];
   if( pOp->opcode==OP_Trace && pOp->p4.z!=0 ){
@@ -896,7 +919,7 @@ void sqlite3VdbeIOTraceSql(Vdbe *p){
       }
     }
     z[j] = 0;
-    sqlite3_io_trace("SQL %s\n", z);
+    sqlite3IoTrace("SQL %s\n", z);
   }
 }
 #endif /* !SQLITE_OMIT_TRACE && SQLITE_ENABLE_IOTRACE */
@@ -1058,6 +1081,9 @@ static void closeAllCursorsExceptActiveVtabs(Vdbe *p){
 static void Cleanup(Vdbe *p){
   int i;
   closeAllCursorsExceptActiveVtabs(p);
+  for(i=1; i<=p->nMem; i++){
+    MemSetTypeFlag(&p->aMem[i], MEM_Null);
+  }
   releaseMemArray(&p->aMem[1], p->nMem);
   sqlite3VdbeFifoClear(&p->sFifo);
   if( p->contextStack ){
@@ -2133,8 +2159,10 @@ int sqlite3VdbeRecordCompare(
   Mem mem2;
   mem1.enc = pKeyInfo->enc;
   mem1.db = pKeyInfo->db;
+  mem1.flags = 0;
   mem2.enc = pKeyInfo->enc;
   mem2.db = pKeyInfo->db;
+  mem2.flags = 0;
 
   idx1 = GetVarint(aKey1, szHdr1);
   d1 = szHdr1;
@@ -2159,8 +2187,8 @@ int sqlite3VdbeRecordCompare(
     /* Do the comparison
     */
     rc = sqlite3MemCompare(&mem1, &mem2, i<nField ? pKeyInfo->aColl[i] : 0);
-    if( mem1.flags & MEM_Dyn ) sqlite3VdbeMemRelease(&mem1);
-    if( mem2.flags & MEM_Dyn ) sqlite3VdbeMemRelease(&mem2);
+    if( mem1.flags&MEM_Dyn ) sqlite3VdbeMemRelease(&mem1);
+    if( mem2.flags&MEM_Dyn ) sqlite3VdbeMemRelease(&mem2);
     if( rc!=0 ){
       break;
     }
@@ -2222,6 +2250,8 @@ int sqlite3VdbeIdxRowid(BtCursor *pCur, i64 *rowid){
   if( nCellKey<=0 ){
     return SQLITE_CORRUPT_BKPT;
   }
+  m.flags = 0;
+  m.db = 0;
   rc = sqlite3VdbeMemFromBtree(pCur, 0, nCellKey, 1, &m);
   if( rc ){
     return rc;
@@ -2261,6 +2291,8 @@ int sqlite3VdbeIdxKeyCompare(
     *res = 0;
     return SQLITE_OK;
   }
+  m.db = 0;
+  m.flags = 0;
   rc = sqlite3VdbeMemFromBtree(pC->pCursor, 0, nCellKey, 1, &m);
   if( rc ){
     return rc;

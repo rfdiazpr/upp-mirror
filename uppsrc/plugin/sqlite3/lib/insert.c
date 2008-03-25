@@ -12,7 +12,7 @@
 ** This file contains C code routines that are called by the parser
 ** to handle INSERT statements in SQLite.
 **
-** $Id: insert.c,v 1.228 2008/01/25 15:04:50 drh Exp $
+** $Id: insert.c,v 1.231 2008/03/06 09:58:50 mlcreech Exp $
 */
 #include "sqliteInt.h"
 
@@ -218,14 +218,15 @@ static void autoIncEnd(
     Vdbe *v = pParse->pVdbe;
     Db *pDb = &pParse->db->aDb[iDb];
     int j1;
+    int iRec = ++pParse->nMem;    /* Memory cell used for record */
 
     assert( v );
     sqlite3OpenTable(pParse, iCur, iDb, pDb->pSchema->pSeqTab, OP_OpenWrite);
     j1 = sqlite3VdbeAddOp1(v, OP_NotNull, memId+1);
     sqlite3VdbeAddOp2(v, OP_NewRowid, iCur, memId+1);
     sqlite3VdbeJumpHere(v, j1);
-    sqlite3VdbeAddOp3(v, OP_MakeRecord, memId-1, 2, memId-1);
-    sqlite3VdbeAddOp3(v, OP_Insert, iCur, memId-1, memId+1);
+    sqlite3VdbeAddOp3(v, OP_MakeRecord, memId-1, 2, iRec);
+    sqlite3VdbeAddOp3(v, OP_Insert, iCur, iRec, memId+1);
     sqlite3VdbeChangeP5(v, OPFLAG_APPEND);
     sqlite3VdbeAddOp1(v, OP_Close, iCur);
   }
@@ -1192,7 +1193,8 @@ void sqlite3GenerateConstraintChecks(
     regR = sqlite3GetTempReg(pParse);
     sqlite3VdbeAddOp2(v, OP_SCopy, regRowid-hasTwoRowids, regR);
     j3 = sqlite3VdbeAddOp4(v, OP_IsUnique, baseCur+iCur+1, 0,
-                           regR, (char*)aRegIdx[iCur], P4_INT32);
+                           regR, (char*)(sqlite3_intptr_t)aRegIdx[iCur],
+                           P4_INT32);
 
     /* Generate code that executes if the new index entry is not unique */
     assert( onError==OE_Rollback || onError==OE_Abort || onError==OE_Fail

@@ -422,15 +422,16 @@ int os2Lock( sqlite3_file *id, int locktype ){
 ** non-zero, otherwise zero.
 */
 int os2CheckReservedLock( sqlite3_file *id ){
-  APIRET rc = NO_ERROR;
+  int r = 0;
   os2File *pFile = (os2File*)id;
   assert( pFile!=0 );
   if( pFile->locktype>=RESERVED_LOCK ){
-    rc = 1;
-    OSTRACE3( "TEST WR-LOCK %d %d (local)\n", pFile->h, rc );
+    r = 1;
+    OSTRACE3( "TEST WR-LOCK %d %d (local)\n", pFile->h, r );
   }else{
     FILELOCK  LockArea,
               UnlockArea;
+    APIRET rc = NO_ERROR;
     memset(&LockArea, 0, sizeof(LockArea));
     memset(&UnlockArea, 0, sizeof(UnlockArea));
     LockArea.lOffset = RESERVED_BYTE;
@@ -440,17 +441,18 @@ int os2CheckReservedLock( sqlite3_file *id ){
     rc = DosSetFileLocks( pFile->h, &UnlockArea, &LockArea, 2000L, 1L );
     OSTRACE3( "TEST WR-LOCK %d lock reserved byte rc=%d\n", pFile->h, rc );
     if( rc == NO_ERROR ){
-      int r;
+      APIRET rcu = NO_ERROR; /* return code for unlocking */
       LockArea.lOffset = 0L;
       LockArea.lRange = 0L;
       UnlockArea.lOffset = RESERVED_BYTE;
       UnlockArea.lRange = 1L;
-      r = DosSetFileLocks( pFile->h, &UnlockArea, &LockArea, 2000L, 1L );
-      OSTRACE3( "TEST WR-LOCK %d unlock reserved byte r=%d\n", pFile->h, r );
+      rcu = DosSetFileLocks( pFile->h, &UnlockArea, &LockArea, 2000L, 1L );
+      OSTRACE3( "TEST WR-LOCK %d unlock reserved byte r=%d\n", pFile->h, rcu );
     }
-    OSTRACE3( "TEST WR-LOCK %d %d (remote)\n", pFile->h, rc );
+    r = !(rc == NO_ERROR);
+    OSTRACE3( "TEST WR-LOCK %d %d (remote)\n", pFile->h, r );
   }
-  return rc;
+  return r;
 }
 
 /*
@@ -641,15 +643,8 @@ static int os2Open(
     OSTRACE1( "OPEN normal file attribute\n" );
   }
 
-  //ulOpenMode |= flags & (SQLITE_OPEN_MAIN_DB | SQLITE_OPEN_TEMP_DB) ?
-  //                  OPEN_FLAGS_RANDOM : OPEN_FLAGS_SEQUENTIAL;
-  if( flags & (SQLITE_OPEN_MAIN_DB | SQLITE_OPEN_TEMP_DB) ){
-    ulOpenMode |= OPEN_FLAGS_RANDOM;
-    OSTRACE1( "OPEN random access\n" );
-  }else{
-    ulOpenMode |= OPEN_FLAGS_SEQUENTIAL;
-    OSTRACE1( "OPEN sequential access\n" );
-  }
+  /* always open in random access mode for possibly better speed */
+  ulOpenMode |= OPEN_FLAGS_RANDOM;
   ulOpenMode |= OPEN_FLAGS_FAIL_ON_ERROR;
 
   rc = DosOpen( (PSZ)zName,

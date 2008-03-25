@@ -12,38 +12,15 @@
 ** This file contains the C functions that implement a memory
 ** allocation subsystem for use by SQLite.
 **
-** $Id: mem2.c,v 1.19 2008/01/22 21:30:53 drh Exp $
+** $Id: mem2.c,v 1.22 2008/02/19 15:15:16 drh Exp $
 */
+#include "sqliteInt.h"
 
 /*
 ** This version of the memory allocator is used only if the
-** SQLITE_MEMDEBUG macro is defined and SQLITE_OMIT_MEMORY_ALLOCATION
-** is not defined.
+** SQLITE_MEMDEBUG macro is defined
 */
-#if defined(SQLITE_MEMDEBUG)
-
-/*
-** We will eventually construct multiple memory allocation subsystems
-** suitable for use in various contexts:
-**
-**    *  Normal multi-threaded builds
-**    *  Normal single-threaded builds
-**    *  Debugging builds
-**
-** This version is suitable for use in debugging builds.
-**
-** Features:
-**
-**    * Every allocate has guards at both ends.
-**    * New allocations are initialized with randomness
-**    * Allocations are overwritten with randomness when freed
-**    * Optional logs of malloc activity generated
-**    * Summary of outstanding allocations with backtraces to the
-**      point of allocation.
-**    * The ability to simulate memory allocation failure
-*/
-#include "sqliteInt.h"
-#include <stdio.h>
+#ifdef SQLITE_MEMDEBUG
 
 /*
 ** The backtrace functionality is only available with GLIBC
@@ -55,6 +32,7 @@
 # define backtrace(A,B) 0
 # define backtrace_symbols_fd(A,B,C)
 #endif
+#include <stdio.h>
 
 /*
 ** Each memory allocation looks like this:
@@ -244,6 +222,18 @@ static struct MemBlockHdr *sqlite3MemsysGetHeader(void *pAllocation){
 }
 
 /*
+** Return the number of bytes currently allocated at address p.
+*/
+int sqlite3MallocSize(void *p){
+  struct MemBlockHdr *pHdr;
+  if( !p ){
+    return 0;
+  }
+  pHdr = sqlite3MemsysGetHeader(p);
+  return pHdr->iSize;
+}
+
+/*
 ** Allocate nByte bytes of memory.
 */
 void *sqlite3_malloc(int nByte){
@@ -392,7 +382,7 @@ void *sqlite3_realloc(void *pPrior, int nByte){
 ** A value of zero turns of backtracing.  The number is always rounded
 ** up to a multiple of 2.
 */
-void sqlite3_memdebug_backtrace(int depth){
+void sqlite3MemdebugBacktrace(int depth){
   if( depth<0 ){ depth = 0; }
   if( depth>20 ){ depth = 20; }
   depth = (depth+1)&0xfe;
@@ -402,7 +392,7 @@ void sqlite3_memdebug_backtrace(int depth){
 /*
 ** Set the title string for subsequent allocations.
 */
-void sqlite3_memdebug_settitle(const char *zTitle){
+void sqlite3MemdebugSettitle(const char *zTitle){
   int n = strlen(zTitle) + 1;
   enterMem();
   if( n>=sizeof(mem.zTitle) ) n = sizeof(mem.zTitle)-1;
@@ -416,7 +406,7 @@ void sqlite3_memdebug_settitle(const char *zTitle){
 ** Open the file indicated and write a log of all unfreed memory
 ** allocations into that log.
 */
-void sqlite3_memdebug_dump(const char *zFilename){
+void sqlite3MemdebugDump(const char *zFilename){
   FILE *out;
   struct MemBlockHdr *pHdr;
   void **pBt;
@@ -452,5 +442,17 @@ void sqlite3_memdebug_dump(const char *zFilename){
   fclose(out);
 }
 
+/*
+** Return the number of times sqlite3_malloc() has been called.
+*/
+int sqlite3MemdebugMallocCount(){
+  int i;
+  int nTotal = 0;
+  for(i=0; i<NCSIZE; i++){
+    nTotal += mem.sizeCnt[i];
+  }
+  return nTotal;
+}
 
-#endif /* SQLITE_MEMDEBUG && !SQLITE_OMIT_MEMORY_ALLOCATION */
+
+#endif /* SQLITE_MEMDEBUG */

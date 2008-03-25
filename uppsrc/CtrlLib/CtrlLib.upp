@@ -106,8 +106,8 @@ file
 	Ch.h,
 	Ch.cpp,
 	XPTheme.dli,
-	ChWin32.cpp,
 	Ctrls.iml,
+	ChWin32.cpp,
 	ChGtk.cpp,
 	ClassicCtrls.iml,
 	Meta readonly separator,
@@ -121,3 +121,4 @@ file
 	COPYING,
 	COPYING-PLAIN,
 	AUTHORS;
+

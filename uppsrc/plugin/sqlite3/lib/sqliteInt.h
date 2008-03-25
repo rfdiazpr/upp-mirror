@@ -11,10 +11,42 @@
 *************************************************************************
 ** Internal interface definitions for SQLite.
 **
-** @(#) $Id: sqliteInt.h,v 1.659 2008/02/02 04:47:09 danielk1977 Exp $
+** @(#) $Id: sqliteInt.h,v 1.673 2008/03/14 13:02:08 mlcreech Exp $
 */
 #ifndef _SQLITEINT_H_
 #define _SQLITEINT_H_
+
+/*
+** Include the configuration header output by 'configure' if it was run
+** (otherwise we get an empty default).
+*/
+#include "config.h"
+
+/* Needed for various definitions... */
+#define _GNU_SOURCE
+
+/*
+** Include standard header files as necessary
+*/
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
+
+/*
+** If possible, use the C99 intptr_t type to define an integral type of
+** equivalent size to a pointer.  (Technically it's >= sizeof(void *), but
+** practically it's == sizeof(void *)).  We fall back to an int if this type
+** isn't defined.
+*/
+#ifdef HAVE_INTPTR_T
+  typedef intptr_t sqlite3_intptr_t;
+#else
+  typedef int sqlite3_intptr_t;
+#endif
+
 
 /*
 ** The macro unlikely() is a hint that surrounds a boolean
@@ -115,6 +147,40 @@
 #else
 # define SQLITE_THREADSAFE 1
 #endif
+#endif
+
+/*
+** Exactly one of the following macros must be defined in order to
+** specify which memory allocation subsystem to use.
+**
+**     SQLITE_SYSTEM_MALLOC          // Use normal system malloc()
+**     SQLITE_MEMDEBUG               // Debugging version of system malloc()
+**     SQLITE_MEMORY_SIZE            // internal allocator #1
+**     SQLITE_MMAP_HEAP_SIZE         // internal mmap() allocator
+**     SQLITE_POW2_MEMORY_SIZE       // internal power-of-two allocator
+**
+** If none of the above are defined, then set SQLITE_SYSTEM_MALLOC as
+** the default.
+*/
+#if defined(SQLITE_SYSTEM_MALLOC)+defined(SQLITE_MEMDEBUG)+\
+    defined(SQLITE_MEMORY_SIZE)+defined(SQLITE_MMAP_HEAP_SIZE)+\
+    defined(SQLITE_POW2_MEMORY_SIZE)>1
+# error "At most one of the following compile-time configuration options\
+ is allows: SQLITE_SYSTEM_MALLOC, SQLITE_MEMDEBUG, SQLITE_MEMORY_SIZE,\
+ SQLITE_MMAP_HEAP_SIZE, SQLITE_POW2_MEMORY_SIZE"
+#endif
+#if defined(SQLITE_SYSTEM_MALLOC)+defined(SQLITE_MEMDEBUG)+\
+    defined(SQLITE_MEMORY_SIZE)+defined(SQLITE_MMAP_HEAP_SIZE)+\
+    defined(SQLITE_POW2_MEMORY_SIZE)==0
+# define SQLITE_SYSTEM_MALLOC 1
+#endif
+
+/*
+** If SQLITE_MALLOC_SOFT_LIMIT is defined, then try to keep the
+** sizes of memory allocations below this value where possible.
+*/
+#if defined(SQLITE_POW2_MEMORY_SIZE) && !defined(SQLITE_MALLOC_SOFT_LIMIT)
+# define SQLITE_MALLOC_SOFT_LIMIT 1024
 #endif
 
 /*
@@ -248,19 +314,39 @@
 **         cc '-DUINTPTR_TYPE=long long int' ...
 */
 #ifndef UINT32_TYPE
-# define UINT32_TYPE unsigned int
+# ifdef HAVE_UINT32_T
+#  define UINT32_TYPE uint32_t
+# else
+#  define UINT32_TYPE unsigned int
+# endif
 #endif
 #ifndef UINT16_TYPE
-# define UINT16_TYPE unsigned short int
+# ifdef HAVE_UINT16_T
+#  define UINT16_TYPE uint16_t
+# else
+#  define UINT16_TYPE unsigned short int
+# endif
 #endif
 #ifndef INT16_TYPE
-# define INT16_TYPE short int
+# ifdef HAVE_INT16_T
+#  define INT16_TYPE int16_t
+# else
+#  define INT16_TYPE short int
+# endif
 #endif
 #ifndef UINT8_TYPE
-# define UINT8_TYPE unsigned char
+# ifdef HAVE_UINT8_T
+#  define UINT8_TYPE uint8_t
+# else
+#  define UINT8_TYPE unsigned char
+# endif
 #endif
 #ifndef INT8_TYPE
-# define INT8_TYPE signed char
+# ifdef HAVE_INT8_T
+#  define INT8_TYPE int8_t
+# else
+#  define INT8_TYPE signed char
+# endif
 #endif
 #ifndef LONGDOUBLE_TYPE
 # define LONGDOUBLE_TYPE long double
@@ -278,7 +364,7 @@ typedef UINT8_TYPE i8;             /* 1-byte signed integer */
 ** evaluated at runtime.
 */
 #ifdef SQLITE_AMALGAMATION
-const int sqlite3One;
+const int sqlite3one;
 #else
 extern const int sqlite3one;
 #endif
@@ -337,6 +423,7 @@ struct BusyHandler {
 */
 typedef struct AggInfo AggInfo;
 typedef struct AuthContext AuthContext;
+typedef struct Bitvec Bitvec;
 typedef struct CollSeq CollSeq;
 typedef struct Column Column;
 typedef struct Db Db;
@@ -375,6 +462,7 @@ typedef struct WhereLevel WhereLevel;
 
 #include "os.h"
 #include "mutex.h"
+
 
 /*
 ** Each database file to be accessed by the system is an instance
@@ -1418,12 +1506,12 @@ struct Parse {
   int nTableLock;        /* Number of locks in aTableLock */
   TableLock *aTableLock; /* Required table locks for shared-cache mode */
 #endif
+  int regRowid;        /* Register holding rowid of CREATE TABLE entry */
+  int regRoot;         /* Register holding root page number for new objects */
 
   /* Above is constant between recursions.  Below is reset before and after
   ** each recursion */
 
-  int regRowid;        /* Register holding rowid of CREATE TABLE entry */
-  int regRoot;         /* Register holding root page number for new objects */
   int nVar;            /* Number of '?' variables seen in the SQL so far */
   int nVarExpr;        /* Number of used slots in apVarExpr[] */
   int nVarExprAlloc;   /* Number of allocated slots in apVarExpr[] */
@@ -1683,6 +1771,7 @@ char *sqlite3DbStrDup(sqlite3*,const char*);
 char *sqlite3DbStrNDup(sqlite3*,const char*, int);
 void *sqlite3DbReallocOrFree(sqlite3 *, void *, int);
 void *sqlite3DbRealloc(sqlite3 *, void *, int);
+int sqlite3MallocSize(void *);
 
 char *sqlite3MPrintf(sqlite3*,const char*, ...);
 char *sqlite3VMPrintf(sqlite3*,const char*, va_list);
@@ -1731,6 +1820,12 @@ void sqlite3AddColumnType(Parse*,Token*);
 void sqlite3AddDefaultValue(Parse*,Expr*);
 void sqlite3AddCollateType(Parse*, Token*);
 void sqlite3EndTable(Parse*,Token*,Token*,Select*);
+
+Bitvec *sqlite3BitvecCreate(u32);
+int sqlite3BitvecTest(Bitvec*, u32);
+int sqlite3BitvecSet(Bitvec*, u32);
+void sqlite3BitvecClear(Bitvec*, u32);
+void sqlite3BitvecDestroy(Bitvec*);
 
 void sqlite3CreateView(Parse*,Token*,Token*,Token*,Select*,int,int);
 
@@ -1826,6 +1921,7 @@ void sqlite3RegisterDateTimeFunctions(sqlite3*);
 int sqlite3SafetyCheckOk(sqlite3*);
 int sqlite3SafetyCheckSickOrOk(sqlite3*);
 void sqlite3ChangeCookie(Parse*, int);
+void sqlite3MaterializeView(Parse*, Select*, Expr*, u32, int);
 
 #ifndef SQLITE_OMIT_TRIGGER
   void sqlite3BeginTrigger(Parse*, Token*,Token*,int,int,IdList*,SrcList*,
@@ -2074,16 +2170,16 @@ void sqlite3Put4byte(u8*, u32);
 
 /*
 ** If the SQLITE_ENABLE IOTRACE exists then the global variable
-** sqlite3_io_trace is a pointer to a printf-like routine used to
+** sqlite3IoTrace is a pointer to a printf-like routine used to
 ** print I/O tracing messages.
 */
 #ifdef SQLITE_ENABLE_IOTRACE
-# define IOTRACE(A)  if( sqlite3_io_trace ){ sqlite3_io_trace A; }
+# define IOTRACE(A)  if( sqlite3IoTrace ){ sqlite3IoTrace A; }
   void sqlite3VdbeIOTraceSql(Vdbe*);
 #else
 # define IOTRACE(A)
 # define sqlite3VdbeIOTraceSql(X)
 #endif
-SQLITE_EXTERN void (*sqlite3_io_trace)(const char*,...);
+SQLITE_EXTERN void (*sqlite3IoTrace)(const char*,...);
 
 #endif

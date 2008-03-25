@@ -13,7 +13,7 @@
 ** interface, and routines that contribute to loading the database schema
 ** from disk.
 **
-** $Id: prepare.c,v 1.75 2008/01/23 03:03:05 drh Exp $
+** $Id: prepare.c,v 1.78 2008/03/08 12:23:31 drh Exp $
 */
 #include "sqliteInt.h"
 #include <ctype.h>
@@ -491,7 +491,7 @@ int sqlite3SchemaToIndex(sqlite3 *db, Schema *pSchema){
 /*
 ** Compile the UTF-8 encoded SQL statement zSql into a statement handle.
 */
-int sqlite3Prepare(
+static int sqlite3Prepare(
   sqlite3 *db,              /* Database handle. */
   const char *zSql,         /* UTF-8 encoded SQL statement. */
   int nBytes,               /* Length of zSql in bytes. */
@@ -681,7 +681,10 @@ int sqlite3_prepare(
   sqlite3_stmt **ppStmt,    /* OUT: A pointer to the prepared statement */
   const char **pzTail       /* OUT: End of parsed string */
 ){
-  return sqlite3LockAndPrepare(db,zSql,nBytes,0,ppStmt,pzTail);
+  int rc;
+  rc = sqlite3LockAndPrepare(db,zSql,nBytes,0,ppStmt,pzTail);
+  assert( rc==SQLITE_OK || ppStmt==0 || *ppStmt==0 );  /* VERIFY: F13021 */
+  return rc;
 }
 int sqlite3_prepare_v2(
   sqlite3 *db,              /* Database handle. */
@@ -690,7 +693,10 @@ int sqlite3_prepare_v2(
   sqlite3_stmt **ppStmt,    /* OUT: A pointer to the prepared statement */
   const char **pzTail       /* OUT: End of parsed string */
 ){
-  return sqlite3LockAndPrepare(db,zSql,nBytes,1,ppStmt,pzTail);
+  int rc;
+  rc = sqlite3LockAndPrepare(db,zSql,nBytes,1,ppStmt,pzTail);
+  assert( rc==SQLITE_OK || ppStmt==0 || *ppStmt==0 );  /* VERIFY: F13021 */
+  return rc;
 }
 
 
@@ -753,7 +759,10 @@ int sqlite3_prepare16(
   sqlite3_stmt **ppStmt,    /* OUT: A pointer to the prepared statement */
   const void **pzTail       /* OUT: End of parsed string */
 ){
-  return sqlite3Prepare16(db,zSql,nBytes,0,ppStmt,pzTail);
+  int rc;
+  rc = sqlite3Prepare16(db,zSql,nBytes,0,ppStmt,pzTail);
+  assert( rc==SQLITE_OK || ppStmt==0 || *ppStmt==0 );  /* VERIFY: F13021 */
+  return rc;
 }
 int sqlite3_prepare16_v2(
   sqlite3 *db,              /* Database handle. */
@@ -762,7 +771,10 @@ int sqlite3_prepare16_v2(
   sqlite3_stmt **ppStmt,    /* OUT: A pointer to the prepared statement */
   const void **pzTail       /* OUT: End of parsed string */
 ){
-  return sqlite3Prepare16(db,zSql,nBytes,1,ppStmt,pzTail);
+  int rc;
+  rc = sqlite3Prepare16(db,zSql,nBytes,1,ppStmt,pzTail);
+  assert( rc==SQLITE_OK || ppStmt==0 || *ppStmt==0 );  /* VERIFY: F13021 */
+  return rc;
 }
 
 #endif /* SQLITE_OMIT_UTF16 */

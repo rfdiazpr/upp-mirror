@@ -30,9 +30,26 @@ String CppBuilder::GetHostPath(const String& path) const
 	return host->GetHostPath(path);
 }
 
+String CppBuilder::GetHostPathShort(const String& path) const
+{
+#ifdef PLATFORM_WIN32
+	const dword SHORT_PATH_LENGTH = 2048;
+	char short_path[SHORT_PATH_LENGTH];
+	dword length = ::GetShortPathName((LPCTSTR) path, (LPTSTR) short_path, SHORT_PATH_LENGTH);
+	if(length > 0)
+		return String(short_path, length);
+#endif
+	return path;
+}
+
 String CppBuilder::GetHostPathQ(const String& path) const
 {
 	return '\"' + GetHostPath(path) + '\"';
+}
+
+String CppBuilder::GetHostPathShortQ(const String& path) const
+{
+	return '\"' + GetHostPathShort(path) + '\"';
 }
 
 String CppBuilder::GetLocalPath(const String& path) const
@@ -319,6 +336,14 @@ String CppBuilder::Includes(const char *sep)
 	String cc;
 	for(int i = 0; i < include.GetCount(); i++)
 		cc << sep << GetHostPathQ(include[i]);
+	return cc;
+}
+
+String CppBuilder::IncludesShort(const char *sep)
+{
+	String cc;
+	for(int i = 0; i < include.GetCount(); i++)
+		cc << sep << GetHostPathShortQ(include[i]);
 	return cc;
 }
 

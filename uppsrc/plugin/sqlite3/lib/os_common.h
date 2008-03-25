@@ -37,16 +37,16 @@ unsigned int sqlite3_pending_byte = 0x40000000;
 #endif
 
 #ifdef SQLITE_DEBUG
-int sqlite3_os_trace = 0;
-#define OSTRACE1(X)         if( sqlite3_os_trace ) sqlite3DebugPrintf(X)
-#define OSTRACE2(X,Y)       if( sqlite3_os_trace ) sqlite3DebugPrintf(X,Y)
-#define OSTRACE3(X,Y,Z)     if( sqlite3_os_trace ) sqlite3DebugPrintf(X,Y,Z)
-#define OSTRACE4(X,Y,Z,A)   if( sqlite3_os_trace ) sqlite3DebugPrintf(X,Y,Z,A)
-#define OSTRACE5(X,Y,Z,A,B) if( sqlite3_os_trace ) sqlite3DebugPrintf(X,Y,Z,A,B)
+int sqlite3OSTrace = 0;
+#define OSTRACE1(X)         if( sqlite3OSTrace ) sqlite3DebugPrintf(X)
+#define OSTRACE2(X,Y)       if( sqlite3OSTrace ) sqlite3DebugPrintf(X,Y)
+#define OSTRACE3(X,Y,Z)     if( sqlite3OSTrace ) sqlite3DebugPrintf(X,Y,Z)
+#define OSTRACE4(X,Y,Z,A)   if( sqlite3OSTrace ) sqlite3DebugPrintf(X,Y,Z,A)
+#define OSTRACE5(X,Y,Z,A,B) if( sqlite3OSTrace ) sqlite3DebugPrintf(X,Y,Z,A,B)
 #define OSTRACE6(X,Y,Z,A,B,C) \
-    if(sqlite3_os_trace) sqlite3DebugPrintf(X,Y,Z,A,B,C)
+    if(sqlite3OSTrace) sqlite3DebugPrintf(X,Y,Z,A,B,C)
 #define OSTRACE7(X,Y,Z,A,B,C,D) \
-    if(sqlite3_os_trace) sqlite3DebugPrintf(X,Y,Z,A,B,C,D)
+    if(sqlite3OSTrace) sqlite3DebugPrintf(X,Y,Z,A,B,C,D)
 #else
 #define OSTRACE1(X)
 #define OSTRACE2(X,Y)
@@ -86,19 +86,22 @@ static unsigned int elapse;
 ** is used for testing the I/O recovery logic.
 */
 #ifdef SQLITE_TEST
-int sqlite3_io_error_hit = 0;
-int sqlite3_io_error_pending = 0;
-int sqlite3_io_error_persist = 0;
+int sqlite3_io_error_hit = 0;            /* Total number of I/O Errors */
+int sqlite3_io_error_hardhit = 0;        /* Number of non-benign errors */
+int sqlite3_io_error_pending = 0;        /* Count down to first I/O error */
+int sqlite3_io_error_persist = 0;        /* True if I/O errors persist */
+int sqlite3_io_error_benign = 0;         /* True if errors are benign */
 int sqlite3_diskfull_pending = 0;
 int sqlite3_diskfull = 0;
+#define SimulateIOErrorBenign(X) sqlite3_io_error_benign=(X)
 #define SimulateIOError(CODE)  \
-  if( sqlite3_io_error_pending || sqlite3_io_error_hit ) \
-     if( sqlite3_io_error_pending-- == 1 \
-         || (sqlite3_io_error_persist && sqlite3_io_error_hit) ) \
-                { local_ioerr(); CODE; }
+  if( (sqlite3_io_error_persist && sqlite3_io_error_hit) \
+       || sqlite3_io_error_pending-- == 1 )  \
+              { local_ioerr(); CODE; }
 static void local_ioerr(){
   IOTRACE(("IOERR\n"));
-  sqlite3_io_error_hit = 1;
+  sqlite3_io_error_hit++;
+  if( !sqlite3_io_error_benign ) sqlite3_io_error_hardhit++;
 }
 #define SimulateDiskfullError(CODE) \
    if( sqlite3_diskfull_pending ){ \
@@ -112,6 +115,7 @@ static void local_ioerr(){
      } \
    }
 #else
+#define SimulateIOErrorBenign(X)
 #define SimulateIOError(A)
 #define SimulateDiskfullError(A)
 #endif

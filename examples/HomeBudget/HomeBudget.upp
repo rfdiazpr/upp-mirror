@@ -13,7 +13,6 @@ file
 	HomeBudget.sch,
 	HomeBudget.h,
 	HomeBudget.cpp,
-	HomeBudget.rc,
 	HomeBudget.iml,
 	HomeBudget.lay;
 

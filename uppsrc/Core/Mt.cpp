@@ -59,7 +59,6 @@ void *
 #endif
 sThreadRoutine(void *arg)
 {
-	LOG("sThreadRoutine");
 	Callback *cb = (Callback *)arg;
 	AtomicInc(sThreadCount);
 	(*cb)();

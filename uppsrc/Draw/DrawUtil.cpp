@@ -597,7 +597,7 @@ void DrawDragRect(Draw& w, const Rect& rect1, const Rect& rect2, const Rect& cli
 {
 	char bd[8];
 	for(int i = 0; i < 8; i++)
-		bd[i] = (byte)(pattern >> (8 * (7 - i)));
+		bd[i] = ~(byte)(pattern >> (8 * (7 - i)));
 	Pixmap stipple = XCreateBitmapFromData(Xdisplay, w.GetDrawable(), bd, 8, 8);
 	Point offset = w.GetOffset();
 	GC gc = XCreateGC(Xdisplay, w.GetDrawable(), 0, 0);

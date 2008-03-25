@@ -16,7 +16,7 @@
 ** so is applicable.  Because this module is responsible for selecting
 ** indices, you might also think of this module as the "query optimizer".
 **
-** $Id: where.c,v 1.286 2008/01/23 12:52:41 drh Exp $
+** $Id: where.c,v 1.290 2008/03/17 17:08:33 drh Exp $
 */
 #include "sqliteInt.h"
 
@@ -29,8 +29,8 @@
 ** Trace output macros
 */
 #if defined(SQLITE_TEST) || defined(SQLITE_DEBUG)
-int sqlite3_where_trace = 0;
-# define WHERETRACE(X)  if(sqlite3_where_trace) sqlite3DebugPrintf X
+int sqlite3WhereTrace = 0;
+# define WHERETRACE(X)  if(sqlite3WhereTrace) sqlite3DebugPrintf X
 #else
 # define WHERETRACE(X)
 #endif
@@ -517,19 +517,22 @@ static int isLikeOrGlob(
   sqlite3 *db,      /* The database */
   Expr *pExpr,      /* Test this expression */
   int *pnPattern,   /* Number of non-wildcard prefix characters */
-  int *pisComplete  /* True if the only wildcard is % in the last character */
+  int *pisComplete, /* True if the only wildcard is % in the last character */
+  int *pnoCase      /* True if uppercase is equivalent to lowercase */
 ){
   const char *z;
   Expr *pRight, *pLeft;
   ExprList *pList;
   int c, cnt;
-  int noCase;
   char wc[3];
   CollSeq *pColl;
 
-  if( !sqlite3IsLikeFunction(db, pExpr, &noCase, wc) ){
+  if( !sqlite3IsLikeFunction(db, pExpr, pnoCase, wc) ){
     return 0;
   }
+#ifdef SQLITE_EBCDIC
+  if( *pnoCase ) return 0;
+#endif
   pList = pExpr->pList;
   pRight = pList->a[0].pExpr;
   if( pRight->op!=TK_STRING ){
@@ -545,8 +548,8 @@ static int isLikeOrGlob(
     /* No collation is defined for the ROWID.  Use the default. */
     pColl = db->pDfltColl;
   }
-  if( (pColl->type!=SQLITE_COLL_BINARY || noCase) &&
-      (pColl->type!=SQLITE_COLL_NOCASE || !noCase) ){
+  if( (pColl->type!=SQLITE_COLL_BINARY || *pnoCase) &&
+      (pColl->type!=SQLITE_COLL_NOCASE || !*pnoCase) ){
     return 0;
   }
   sqlite3DequoteExpr(db, pRight);
@@ -716,6 +719,7 @@ static void exprAnalyze(
   Bitmask prereqAll;
   int nPattern;
   int isComplete;
+  int noCase;
   int op;
   Parse *pParse = pWC->pParse;
   sqlite3 *db = pParse->db;
@@ -834,6 +838,7 @@ static void exprAnalyze(
     exprAnalyzeAll(pSrc, &sOr);
     assert( sOr.nTerm>=2 );
     j = 0;
+    if( db->mallocFailed ) goto or_not_possible;
     do{
       assert( j<sOr.nTerm );
       iColumn = sOr.a[j].leftColumn;
@@ -886,8 +891,16 @@ or_not_possible:
 #ifndef SQLITE_OMIT_LIKE_OPTIMIZATION
   /* Add constraints to reduce the search space on a LIKE or GLOB
   ** operator.
+  **
+  ** A like pattern of the form "x LIKE 'abc%'" is changed into constraints
+  **
+  **          x>='abc' AND x<'abd' AND x LIKE 'abc%'
+  **
+  ** The last character of the prefix "abc" is incremented to form the
+  ** termination condidtion "abd".  This trick of incrementing the last
+  ** is not 255 and if the character set is not EBCDIC.
   */
-  if( isLikeOrGlob(db, pExpr, &nPattern, &isComplete) ){
+  if( isLikeOrGlob(db, pExpr, &nPattern, &isComplete, &noCase) ){
     Expr *pLeft, *pRight;
     Expr *pStr1, *pStr2;
     Expr *pNewExpr1, *pNewExpr2;
@@ -903,8 +916,12 @@ or_not_possible:
     }
     pStr2 = sqlite3ExprDup(db, pStr1);
     if( !db->mallocFailed ){
+      u8 c, *pC;
       assert( pStr2->token.dyn );
-      ++*(u8*)&pStr2->token.z[nPattern-1];
+      pC = (u8*)&pStr2->token.z[nPattern-1];
+      c = *pC;
+      if( noCase ) c = sqlite3UpperToLower[c];
+      *pC = c + 1;
     }
     pNewExpr1 = sqlite3PExpr(pParse, TK_GE, sqlite3ExprDup(db,pLeft), pStr1, 0);
     idxNew1 = whereClauseInsert(pWC, pNewExpr1, TERM_VIRTUAL|TERM_DYNAMIC);
@@ -1160,7 +1177,7 @@ static double estLog(double N){
 #if !defined(SQLITE_OMIT_VIRTUALTABLE) && defined(SQLITE_DEBUG)
 static void TRACE_IDX_INPUTS(sqlite3_index_info *p){
   int i;
-  if( !sqlite3_where_trace ) return;
+  if( !sqlite3WhereTrace ) return;
   for(i=0; i<p->nConstraint; i++){
     sqlite3DebugPrintf("  constraint[%d]: col=%d termid=%d op=%d usabled=%d\n",
        i,
@@ -1178,7 +1195,7 @@ static void TRACE_IDX_INPUTS(sqlite3_index_info *p){
 }
 static void TRACE_IDX_OUTPUTS(sqlite3_index_info *p){
   int i;
-  if( !sqlite3_where_trace ) return;
+  if( !sqlite3WhereTrace ) return;
   for(i=0; i<p->nConstraint; i++){
     sqlite3DebugPrintf("  usage[%d]: argvIdx=%d omit=%d\n",
        i,
@@ -1384,6 +1401,16 @@ static double bestVirtualIndex(
   TRACE_IDX_INPUTS(pIdxInfo);
   rc = pTab->pVtab->pModule->xBestIndex(pTab->pVtab, pIdxInfo);
   TRACE_IDX_OUTPUTS(pIdxInfo);
+  (void)sqlite3SafetyOn(pParse->db);
+
+  for(i=0; i<pIdxInfo->nConstraint; i++){
+    if( !pIdxInfo->aConstraint[i].usable && pUsage[i].argvIndex>0 ){
+      sqlite3ErrorMsg(pParse,
+          "table %s: xBestIndex returned an invalid plan", pTab->zName);
+      return 0.0;
+    }
+  }
+
   if( rc!=SQLITE_OK ){
     if( rc==SQLITE_NOMEM ){
       pParse->db->mallocFailed = 1;
@@ -1391,7 +1418,6 @@ static double bestVirtualIndex(
       sqlite3ErrorMsg(pParse, "%s", sqlite3ErrStr(rc));
     }
   }
-  (void)sqlite3SafetyOn(pParse->db);
   *(int*)&pIdxInfo->nOrderBy = nOrderBy;
 
   return pIdxInfo->estimatedCost;

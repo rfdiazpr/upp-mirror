@@ -12,7 +12,7 @@
 ** This file contains C code routines that are called by the parser
 ** to handle SELECT statements in SQLite.
 **
-** $Id: select.c,v 1.411 2008/01/25 15:04:50 drh Exp $
+** $Id: select.c,v 1.415 2008/03/04 17:45:01 mlcreech Exp $
 */
 #include "sqliteInt.h"
 
@@ -522,7 +522,6 @@ static void selectInnerLoop(
   int eDest = pDest->eDest;   /* How to dispose of results */
   int iParm = pDest->iParm;   /* First argument to disposal method */
   int nResultCol;             /* Number of result columns */
-  int nToFree;                /* Number of result columns to release */
 
   if( v==0 ) return;
   assert( pEList!=0 );
@@ -542,13 +541,10 @@ static void selectInnerLoop(
   }else{
     nResultCol = pEList->nExpr;
   }
-  if( pDest->iMem>0 ){
-    regResult = pDest->iMem;
-    nToFree = 0;
-  }else{
-    pDest->iMem = regResult = sqlite3GetTempRange(pParse, nResultCol);
-    nToFree = nResultCol;
+  if( pDest->iMem==0 ){
+    pDest->iMem = sqlite3GetTempRange(pParse, nResultCol);
   }
+  regResult = pDest->iMem;
   if( nColumn>0 ){
     for(i=0; i<nColumn; i++){
       sqlite3VdbeAddOp3(v, OP_Column, srcTab, i, regResult+i);
@@ -694,7 +690,6 @@ static void selectInnerLoop(
         pushOntoSorter(pParse, pOrderBy, p, r1);
         sqlite3ReleaseTempReg(pParse, r1);
       }else if( eDest==SRT_Subroutine ){
-        nToFree = 0;  /* Preserve registers. Subroutine will need them. */
         sqlite3VdbeAddOp2(v, OP_Gosub, 0, iParm);
       }else{
         sqlite3VdbeAddOp2(v, OP_ResultRow, regResult, nColumn);
@@ -721,7 +716,6 @@ static void selectInnerLoop(
     sqlite3VdbeAddOp2(v, OP_AddImm, p->iLimit, -1);
     sqlite3VdbeAddOp2(v, OP_IfZero, p->iLimit, iBreak);
   }
-  sqlite3ReleaseTempRange(pParse, regResult, nToFree);
 }
 
 /*
@@ -816,8 +810,8 @@ static void generateSortTail(
       int j1;
       assert( nColumn==1 );
       j1 = sqlite3VdbeAddOp1(v, OP_IsNull, regRow);
-      sqlite3VdbeAddOp4(v, OP_MakeRecord, regRow, 1, regRow, &p->affinity, 1);
-      sqlite3VdbeAddOp2(v, OP_IdxInsert, iParm, regRow);
+      sqlite3VdbeAddOp4(v, OP_MakeRecord, regRow, 1, regRowid, &p->affinity, 1);
+      sqlite3VdbeAddOp2(v, OP_IdxInsert, iParm, regRowid);
       sqlite3VdbeJumpHere(v, j1);
       break;
     }
@@ -2423,6 +2417,10 @@ static void substSelect(
 **        subquery does not have both an ORDER BY and a LIMIT clause.
 **        (See ticket #2339)
 **
+**  (16)  The outer query is not an aggregate or the subquery does
+**        not contain ORDER BY.  (Ticket #2942)  This used to not matter
+**        until we introduced the group_concat() function.
+**
 ** In this routine, the "p" parameter is a pointer to the outer query.
 ** The subquery is p->pSrc->a[iFrom].  isAgg is true if the outer query
 ** uses aggregates and subqueryIsAgg is true if the subquery uses aggregates.
@@ -2480,6 +2478,7 @@ static int flattenSubquery(
   if( (p->disallowOrderBy || p->pOrderBy) && pSub->pOrderBy ){
      return 0;                                           /* Restriction (11) */
   }
+  if( isAgg && pSub->pOrderBy ) return 0;                /* Restriction (16) */
 
   /* Restriction 3:  If the subquery is a join, make sure the subquery is
   ** not used as the right operand of an outer join.  Examples of why this
@@ -3149,16 +3148,6 @@ int sqlite3Select(
   }
 #endif
 
-  /* Check for the special case of a min() or max() function by itself
-  ** in the result set.
-  */
-#if 0
-  if( simpleMinMaxQuery(pParse, p, pDest) ){
-    rc = 0;
-    goto select_end;
-  }
-#endif
-
   /* Check to see if this is a subquery that can be "flattened" into its parent.
   ** If flattening is a possiblity, do so and return immediately.
   */
@@ -3623,7 +3612,7 @@ select_end:
 ** code base.  Then are intended to be called from within the debugger
 ** or from temporary "printf" statements inserted for debugging.
 */
-void sqlite3PrintExpr(Expr *p){
+static void sqlite3PrintExpr(Expr *p){
   if( p->token.z && p->token.n>0 ){
     sqlite3DebugPrintf("(%.*s", p->token.n, p->token.z);
   }else{
@@ -3639,7 +3628,7 @@ void sqlite3PrintExpr(Expr *p){
   }
   sqlite3DebugPrintf(")");
 }
-void sqlite3PrintExprList(ExprList *pList){
+static void sqlite3PrintExprList(ExprList *pList){
   int i;
   for(i=0; i<pList->nExpr; i++){
     sqlite3PrintExpr(pList->a[i].pExpr);
@@ -3648,7 +3637,7 @@ void sqlite3PrintExprList(ExprList *pList){
     }
   }
 }
-void sqlite3PrintSelect(Select *p, int indent){
+static void sqlite3PrintSelect(Select *p, int indent){
   sqlite3DebugPrintf("%*sSELECT(%p) ", indent, "", p);
   sqlite3PrintExprList(p->pEList);
   sqlite3DebugPrintf("\n");

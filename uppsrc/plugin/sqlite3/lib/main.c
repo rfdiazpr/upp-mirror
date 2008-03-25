@@ -14,7 +14,7 @@
 ** other files are for internal use by SQLite and should not be
 ** accessed by users of the library.
 **
-** $Id: main.c,v 1.417 2008/01/31 15:31:02 danielk1977 Exp $
+** $Id: main.c,v 1.421 2008/03/07 21:37:19 drh Exp $
 */
 #include "sqliteInt.h"
 #include <ctype.h>
@@ -36,7 +36,7 @@ int sqlite3_threadsafe(void){ return SQLITE_THREADSAFE; }
 ** I/O active are written using this function.  These messages
 ** are intended for debugging activity only.
 */
-void (*sqlite3_io_trace)(const char*, ...) = 0;
+void (*sqlite3IoTrace)(const char*, ...) = 0;
 
 /*
 ** If the following global variable points to a string which is the
@@ -944,6 +944,17 @@ static int openDatabase(
   int rc;
   CollSeq *pColl;
 
+  /* Remove harmful bits from the flags parameter */
+  flags &=  ~( SQLITE_OPEN_DELETEONCLOSE |
+               SQLITE_OPEN_MAIN_DB |
+               SQLITE_OPEN_TEMP_DB |
+               SQLITE_OPEN_TRANSIENT_DB |
+               SQLITE_OPEN_MAIN_JOURNAL |
+               SQLITE_OPEN_TEMP_JOURNAL |
+               SQLITE_OPEN_SUBJOURNAL |
+               SQLITE_OPEN_MASTER_JOURNAL
+             );
+
   /* Allocate the sqlite data structure */
   db = sqlite3MallocZero( sizeof(sqlite3) );
   if( db==0 ) goto opendb_out;
@@ -979,7 +990,7 @@ static int openDatabase(
   if( !db->pVfs ){
     rc = SQLITE_ERROR;
     db->magic = SQLITE_MAGIC_SICK;
-    sqlite3Error(db, rc, "no such vfs: %s", (zVfs?zVfs:"(null)"));
+    sqlite3Error(db, rc, "no such vfs: %s", zVfs);
     goto opendb_out;
   }
 
@@ -987,10 +998,11 @@ static int openDatabase(
   ** and UTF-16, so add a version for each to avoid any unnecessary
   ** conversions. The only error that can occur here is a malloc() failure.
   */
-  if( createCollation(db, "BINARY", SQLITE_UTF8, 0, binCollFunc, 0) ||
-      createCollation(db, "BINARY", SQLITE_UTF16BE, 0, binCollFunc, 0) ||
-      createCollation(db, "BINARY", SQLITE_UTF16LE, 0, binCollFunc, 0) ||
-      createCollation(db, "RTRIM", SQLITE_UTF8, (void*)1, binCollFunc, 0) ||
+  createCollation(db, "BINARY", SQLITE_UTF8, 0, binCollFunc, 0);
+  createCollation(db, "BINARY", SQLITE_UTF16BE, 0, binCollFunc, 0);
+  createCollation(db, "BINARY", SQLITE_UTF16LE, 0, binCollFunc, 0);
+  createCollation(db, "RTRIM", SQLITE_UTF8, (void*)1, binCollFunc, 0);
+  if( db->mallocFailed ||
       (db->pDfltColl = sqlite3FindCollSeq(db, SQLITE_UTF8, "BINARY", 6, 0))==0
   ){
     assert( db->mallocFailed );
@@ -1091,7 +1103,8 @@ static int openDatabase(
 #endif
 
 opendb_out:
-  if( db && db->mutex ){
+  if( db ){
+    assert( db->mutex!=0 );
     sqlite3_mutex_leave(db->mutex);
   }
   if( SQLITE_NOMEM==(rc = sqlite3_errcode(db)) ){
@@ -1142,7 +1155,8 @@ int sqlite3_open16(
   if( zFilename8 ){
     rc = openDatabase(zFilename8, ppDb,
                       SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, 0);
-    if( rc==SQLITE_OK && *ppDb ){
+    assert( *ppDb || rc==SQLITE_NOMEM );
+    if( rc==SQLITE_OK ){
       rc = sqlite3_exec(*ppDb, "PRAGMA encoding = 'UTF-16'", 0, 0, 0);
       if( rc!=SQLITE_OK ){
         sqlite3_close(*ppDb);
@@ -1331,7 +1345,9 @@ int sqlite3_table_column_metadata(
   /* Ensure the database schema has been loaded */
   (void)sqlite3SafetyOn(db);
   sqlite3_mutex_enter(db->mutex);
+  sqlite3BtreeEnterAll(db);
   rc = sqlite3Init(db, &zErrMsg);
+  sqlite3BtreeLeaveAll(db);
   if( SQLITE_OK!=rc ){
     goto error_out;
   }

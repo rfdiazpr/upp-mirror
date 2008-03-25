@@ -232,7 +232,7 @@ void CommonInit()
 			}
 			exit(0);
 		}
-	#ifdef _DEBUG
+	#if defined(_DEBUG) && defined(UPP_HEAP)
 		if(cmd[i] == "--memory-breakpoint__" && i + 1 < cmd.GetCount())
 			MemoryBreakpoint(atoi(cmd[i + 1]));
 	#endif

@@ -25,7 +25,7 @@ void DockWindow::Dock(int align, DockableCtrl &dc, int pos)
 	DockContainer(align, *GetReleasedContainer(dc), pos);
 }
 
-void DockWindow::DockAsTab(DockableCtrl &target, DockableCtrl &dc)
+void DockWindow::Tabify(DockableCtrl &target, DockableCtrl &dc)
 {
 	ASSERT(GetContainer(target));	
 	Register(dc);
@@ -225,7 +225,7 @@ void DockWindow::SyncAll()
 /*
  * Docking/Undocking helpers
 */ 
-void DockWindow::Undock0(Ctrl &c, bool do_animate, int fsz)
+void DockWindow::Undock0(Ctrl &c, bool do_animate, int fsz, bool ishighlight)
 {
 	int al = GetDockAlign(c);
 	Ctrl *p = c.GetParent();
@@ -239,7 +239,7 @@ void DockWindow::Undock0(Ctrl &c, bool do_animate, int fsz)
 	else {
 		if (dockpane[al].GetFirstChild() == dockpane[al].GetLastChild())
 			fsz = 0;
-		dockpane[al].Undock(c, do_animate);
+		dockpane[al].Undock(c, do_animate, ishighlight); // TODO: fix nasty hack
 		if (fsz >= 0) {
 			do_animate ? StartFrameAnimate(al, fsz) : dockframe[al].SetSize(fsz);
 			if (!do_animate && fsz == 0)
@@ -252,10 +252,11 @@ void DockWindow::Undock0(Ctrl &c, bool do_animate, int fsz)
 void DockWindow::StartFrameAnimate(int align, int targetsize)
 {
 	FrameAnim &a = frameanim[align];
-//	if (a.inc != 0) dockframe[align].SetSize(a.target);
+	if (a.inc)
+		dockframe[align].SetSize(a.target);
 	a.target = max(targetsize, 0);
 	a.inc = (targetsize - dockframe[align].GetSize()) / dockpane[0].GetAnimMaxTicks();
-	if (a.inc == 0)
+	if (!a.inc) 
 		a.inc = (targetsize > dockframe[align].GetSize()) ? 1 : -1;
 	KillSetTimeCallback(-dockpane[0].GetAnimInterval(), THISBACK(FrameAnimateTick), TIMEID_ANIMATE);
 }
@@ -281,7 +282,6 @@ void DockWindow::FrameAnimateTick()
 	if (done)
 		KillTimeCallback(TIMEID_ANIMATE);
 }
-
 void DockWindow::Undock(DockCont &c)
 {
 	if (!c.IsFloating() && !c.IsHidden()) {
@@ -335,15 +335,16 @@ void DockWindow::DockAsTab(DockCont &target, DockableCtrl &dc)
 	target.Add(dc);
 }
 
-void DockWindow::Dock0(int align, Ctrl &c, int pos, bool do_animate)
+void DockWindow::Dock0(int align, Ctrl &c, int pos, bool do_animate, bool ishighlight)
 {
 	Size sz = CtrlBestSize(c);
 	int fsz = IsTB(align) ? sz.cy : sz.cx;
 	if (!dockframe[align].IsShown())
 		dockframe[align].Show();
-	if (fsz > dockframe[align].GetSize())
+	if (fsz > dockframe[align].GetSize()) {
 		do_animate ? StartFrameAnimate(align, fsz) : dockframe[align].SetSize(fsz);
-	dockpane[align].Dock(c, sz, pos, do_animate);
+	}
+	dockpane[align].Dock(c, sz, pos, do_animate, ishighlight);
 }
 
 /*
@@ -447,52 +448,8 @@ Size DockWindow::CtrlBestSize(const Ctrl &c, bool restrict) const
 	return minmax(std, mn, mx);
 }
 
-void DockWindow::StartHighlight(DockCont *dc)
-{
-	int align = DOCK_NONE;
-	DockCont *target = FindDockTarget(*dc, align);
-	if (align != DOCK_NONE || target) {
-		dc->SyncUserSize(true, true);
-		Highlight(align, *dc, target);
-	}
-	else 
-		StopHighlight(animate);
-}
-
-void DockWindow::Highlight(int align, DockCont &cont, DockCont *target)
-{
-	HighlightCtrl &hl = GetHighlightCtrl();
-	DockableCtrl &dc = cont.GetCurrent();
-	ASSERT(&hl != (Ctrl *)&cont);
-
-	hl.SizeHint(cont.GetMinSize(), cont.GetMaxSize(), cont.GetStdSize()).Show();
-	hl.oldframesize = dockframe[align].GetSize();	
-	
-	if (align != DOCK_NONE) {
-		hl.isnested = false;
-		hl.nestedkey = 0;
-		hl.highlight = &dc.GetStyle().highlight[0];
-		int pos = target ? dockpane[align].FindIndex(*target) : -1;
-		Dock0(align, hl, pos, animate);
-	}
-	else if (target && IsTabbing()) {
-		hl.Title(cont.GetTitle(true)).Icon(dc.GetIcon());
-		hl.isnested = IsNestedTabs() && (cont.GetCount() > 1);
-		hl.nestedkey =  (cont.GetCount() > 1) ? NestedToggleKey() : 0;
-		hl.highlight = &dc.GetStyle().highlight[1];
-		DockAsTab(*target, hl);	
-	}
-}
-
-void DockWindow::StopHighlight(bool do_animate)
-{
-	HighlightCtrl &hl = GetHighlightCtrl();
-	if (hl.GetParent()) Undock0(hl, do_animate, hl.oldframesize);
-}
-
 DockCont *DockWindow::FindDockTarget(DockCont &dc, int &dock)
 {
-
 	Point p = GetMousePos();
 	Rect r = GetScreenView();
 	DockCont *target = NULL;
@@ -517,7 +474,7 @@ DockCont *DockWindow::FindDockTarget(DockCont &dc, int &dock)
 	}
 	
 	if (dock != DOCK_NONE && (!dc.IsDockAllowed(dock) 
-		 || dockpane[dock].IsAnimating() || IsFrameAnimating(dock))
+		 || IsPaneAnimating(dock) || IsFrameAnimating(dock))
 		 || (dock == DOCK_NONE && !target)) {
 		dock = DOCK_NONE;
 		return NULL;
@@ -628,7 +585,10 @@ int DockWindow::GetQuad(Point p, Rect r)
 
 void DockWindow::HighlightCtrl::Paint(Draw &w)
 {	
-	if (isnested || (GetMouseFlags() & nestedkey)) {
+	if (!img.IsEmpty())
+		w.DrawImage(0, 0, img);
+	bool nest = (GetMouseFlags() & nestedkey) ? !isnested : isnested;
+	if (nest) {
 		Rect r = GetSize();
 		Rect t = r;
 		const TabCtrl::Style &s = TabCtrl::StyleDefault();
@@ -639,11 +599,64 @@ void DockWindow::HighlightCtrl::Paint(Draw &w)
 		ChPaint(w, r, *highlight);
 		ChPaint(w, t, *highlight);
 	}
-	else if (!isnested || (GetMouseFlags() & nestedkey))
+	else 
 		ChPaint(w, GetSize(), *highlight);
 }
 
+void DockWindow::HighlightCtrl::SetHighlight(const Value &hl, bool _isnested, dword _nestedkey, Image bg)
+{
+	nestedkey = _nestedkey;
+	isnested = _isnested;
+	highlight = &hl;
+	img = bg;
+}
+
 // Drag and Drop interface
+void DockWindow::StartHighlight(DockCont *dc)
+{
+	int align = DOCK_NONE;
+	DockCont *target = FindDockTarget(*dc, align);
+	if (align != DOCK_NONE || target) {
+		dc->SyncUserSize(true, true);
+		Highlight(align, *dc, target);
+	}
+	else 
+		StopHighlight(animate);
+}
+
+void DockWindow::Highlight(int align, DockCont &cont, DockCont *target)
+{
+	HighlightCtrl &hl = GetHighlightCtrl();
+	DockableCtrl &dc = cont.GetCurrent();
+	ASSERT(&hl != (Ctrl *)&cont);
+
+	hl.SizeHint(cont.GetMinSize(), cont.GetMaxSize(), cont.GetStdSize()).Show();
+	
+	if (align != DOCK_NONE) {
+		hl.SetHighlight(dc.GetStyle().highlight[0], false, 0);
+		hl.oldframesize = dockframe[align].GetSize();	
+		int pos = target ? dockpane[align].FindIndex(*target) : -1;
+		Dock0(align, hl, pos, animate, true);
+	}
+	else if (target && IsTabbing()) {
+		hl.Title(cont.GetTitle(true)).Icon(dc.GetIcon());
+		hl.SetHighlight(dc.GetStyle().highlight[1], IsNestedTabs() && (cont.GetCount() > 1),
+		             (cont.GetCount() > 1) ? NestedToggleKey() : 0, 
+		             target->GetHighlightImage());
+		DockAsTab(*target, hl);	
+	}
+}
+
+void DockWindow::StopHighlight(bool do_animate)
+{
+	HighlightCtrl &hl = GetHighlightCtrl();
+	if (hl.GetParent()) {
+		int al = (hl.GetParent()->GetParent()->GetParent() == this) ? GetDockAlign(hl) : DOCK_NONE; // Docked but not tabbed
+		Undock0(hl, do_animate, hl.oldframesize, true);
+		hl.ClearHighlight();
+	}
+}
+
 void DockWindow::ContainerDragStart(DockCont &dc)
 {
 	if (!dc.IsFloating()) {
@@ -706,7 +719,7 @@ void DockWindow::ContainerDragEnd(DockCont &dc)
 	}
 	else if (DockCont *target = dynamic_cast<DockCont *>(p)) {
 		StopHighlight(false);
-		bool nest = GetCtrl() ? !IsNestedTabs() : IsNestedTabs();
+		bool nest = (GetMouseFlags() & NestedToggleKey()) ? !IsNestedTabs() : IsNestedTabs();
 		DockContainerAsTab(*target, dc, nest && dc.GetCount() > 1);
 	}
 	else
@@ -853,12 +866,13 @@ void DockWindow::ClearLayout()
 	conts.Clear();	
 }
 
-
-
 void DockWindow::SerializeLayout(Stream &s, bool withsavedlayouts)
 {
 	StopHighlight(false);
 	int cnt = 0;
+	
+	s.Magic();
+	
 	// Groups
 	ArrayMap<String, Vector<int> > groups;
 	if (s.IsStoring())
@@ -895,13 +909,11 @@ void DockWindow::SerializeLayout(Stream &s, bool withsavedlayouts)
 		for (int i = 0; i < 4; i++) {
 			DockPane &pane = dockpane[i];
 			int fsz = dockframe[i].IsShown() ? dockframe[i].GetSize() : 0;
-			cnt = pane.GetCount();
 			
-			s / fsz / cnt;
+			s / fsz % pane;
 			DockCont *dc = dynamic_cast<DockCont *>(pane.GetFirstChild());
 			for (int j = 0; dc && j < pane.GetCount(); j++) {
-				fsz = pane.GetCtrlSize(j);
-				s / fsz % *dc;
+				s % *dc;
 				dc = dynamic_cast<DockCont *>(dc->GetNext());
 			}
 		}
@@ -932,16 +944,15 @@ void DockWindow::SerializeLayout(Stream &s, bool withsavedlayouts)
 		// Read docked
 		for (int i = 0; i < 4; i++) {
 			DockPane &pane = dockpane[i];
-			cnt = pane.GetCount();
 			dockframe[i].Hide();
-			int fsz, psz;
-			s / fsz / cnt;
+			int fsz;
+			s / fsz % pane;
 
-			for (int j = 0; j < cnt; j++) {
+			for (int j = 0; j < pane.GetCount(); j++) {
 				DockCont *dc = CreateContainer();
-				s / psz % *dc;
+				s % *dc;
 				dc->StateDocked(*this);
-				pane.QuickDock(*dc, psz);
+				pane << *dc;
 			}
 			if (fsz && pane.GetCount()) {
 				dockframe[i].SetSize(fsz);
@@ -978,6 +989,8 @@ void DockWindow::SerializeLayout(Stream &s, bool withsavedlayouts)
 	s % haslay;
 	if (withsavedlayouts && (s.IsStoring() || haslay))
 		s % layouts;
+	
+	s.Magic();
 }
 
 int DockWindow::SaveLayout(String name)
@@ -1026,53 +1039,60 @@ DockWindow::DockWindow()
 
 // PopUpDockWindow
 #define POPUP_SPACING 0
-/*
+
 void PopUpDockWindow::ContainerDragStart(DockCont &dc)
 {
 	DockWindow::ContainerDragStart(dc);
-
 	last_target = NULL;
-	last_popup = NULL;
-	last_cp = Null;
+	last_popup = NULL;	
 }
 
 void PopUpDockWindow::ContainerDragMove(DockCont &dc)
 {
-	// Is the highlight the same as last time?
+	int align = DOCK_NONE;
+
+	// Is the highlight the same as last time? (Quick escape)
 	if (last_popup && last_popup->IsPopUp() && last_popup->GetRect().Contains(GetMousePos()))
-		return; // Don't need to do anything
+		return;
 	
 	DockCont *target = GetMouseDockTarget();
-	if (target && !dc.IsDockAllowed(GetDockAlign(*target))) target = NULL;
+	int dock = DOCK_NONE;
+	if (target) {
+		dock = GetDockAlign(*target);
+		if (!dc.IsDockAllowed(dock)) 
+			target = NULL;
+	}
+	bool target_changed =  (target != last_target) 
+						&& !GetHighlightCtrl().GetParent() 
+						&& (!target || !IsPaneAnimating(dock));
 	
 	// Hide show inner popups as necessary
 	if (!target && last_target != NULL)
 		HidePopUps(true, false);
-	else if (target != last_target)
+	else if (target_changed)
 		ShowInnerPopUps(dc, target);
-	ShowOuterPopUps(dc);
+	ShowOuterPopUps(dc);		
 	last_target = target;
 	
-	// Is the mouse in an inner popup?
-	int al = DOCK_NONE;
-	int hal = DOCK_NONE;
-	hal = PopUpHighlight(inner, 5);
-	if (target && hal >= 0) 
-		al = (hal == 4) ? DOCK_NONE : hal;
-	else
+	// Get potential alignment
+	align = PopUpHighlight(inner, 5);
+	if (align == DOCK_NONE) {
 		target = NULL;
-	
-	// Is the mouse in an outer popup?
-	hal = PopUpHighlight(outer, 4);
-	if (al == DOCK_NONE && hal != DOCK_NONE)
-		al = hal;
+		last_target = NULL;
+		align = PopUpHighlight(outer, 4);
+	}
+	else if (align == 4)
+		align = DOCK_NONE;
+	else if (target) {
+		target = IsTL(align) ? target : dynamic_cast<DockCont*>(target->GetNext());
+		align = dock;
+	}
 	
 	// Do highlight
-	if (al != DOCK_NONE || target) {
-		if (al == DOCK_NONE)
-			StopHighlight(IsAnimated());		
+	if (align != DOCK_NONE || target) {
+		if (align == DOCK_NONE) StopHighlight(false);
 		dc.SyncUserSize(true, true);
-		Highlight(al, dc.GetCurrent(), target);
+		Highlight(align, dc, target);
 	}
 	else  {
 		StopHighlight(IsAnimated());
@@ -1083,8 +1103,9 @@ void PopUpDockWindow::ContainerDragMove(DockCont &dc)
 void PopUpDockWindow::ContainerDragEnd(DockCont &dc)
 {
 	HidePopUps(true, true);
+	DockWindow::ContainerDragEnd(dc);	
 	last_target = NULL;
-	DockWindow::ContainerDragEnd(dc);
+	last_popup = NULL;	
 }
 
 int PopUpDockWindow::PopUpHighlight(PopUpButton *pb, int cnt)
@@ -1130,20 +1151,16 @@ void PopUpDockWindow::ShowInnerPopUps(DockCont &dc, DockCont *target)
 	Rect wrect = GetScreenRect();
 	Size psz(style->innersize, style->innersize);
 	Rect prect = Rect(psz);	
+	Point cp;
 	psz /= 2;
 
-	if (target != last_target) {
-		last_cp = target->GetScreenRect().CenterPoint();
-		int d = psz.cy * 5;
-		last_cp.x = minmax(last_cp.x, wrect.left + d, wrect.right - d);
-		last_cp.y = minmax(last_cp.y, wrect.top + d, wrect.bottom - d);		
-	}
-	Point cp = last_cp;
-	
-	bool lr = !IsSimple() || (IsTB(GetDockAlign(*target)) ? !IsHorzVert() : IsHorzVert());
-	bool tb = !IsSimple() || !lr; // Whether top/bottom sub docking allowed
+	cp = target->GetScreenRect().CenterPoint();
+	int d = psz.cy * 5;
+	cp.x = minmax(cp.x, wrect.left + d, wrect.right - d);
+	cp.y = minmax(cp.y, wrect.top + d, wrect.bottom - d);		
 
-	if (lr) {
+	int align = GetDockAlign(*target);
+	if (IsTB(align)) { // Left/right docking allowed
 		ShowPopUp(inner[DOCK_LEFT], prect.Offseted(cp.x - psz.cx*3, cp.y - psz.cy));	
 		ShowPopUp(inner[DOCK_RIGHT], prect.Offseted(cp.x + psz.cx, cp.y - psz.cy));	
 	}
@@ -1151,7 +1168,7 @@ void PopUpDockWindow::ShowInnerPopUps(DockCont &dc, DockCont *target)
 		inner[DOCK_LEFT].Close();	
 		inner[DOCK_RIGHT].Close();
 	}
-	if (tb) {
+	if (!IsTB(align)) { // Top/bottom docking allowed
 		ShowPopUp(inner[DOCK_TOP], prect.Offseted(cp.x - psz.cx, cp.y - psz.cy*3));
 		ShowPopUp(inner[DOCK_BOTTOM], prect.Offseted(cp.x - psz.cx, cp.y + psz.cy));
 	}
@@ -1193,6 +1210,7 @@ PopUpDockWindow & PopUpDockWindow::SetStyle(const Style &s)
 PopUpDockWindow::PopUpDockWindow()
 {
 	SetStyle(StyleDefault());
+	this->AnimateDelay(0);
 }
 
 CH_STYLE(PopUpDockWindow, Style, StyleDefault)
@@ -1213,5 +1231,5 @@ CH_STYLE(PopUpDockWindow, Style, StyleDefault)
 	innersize = 25;
 	outersize = 25;
 }
-*/
+
 

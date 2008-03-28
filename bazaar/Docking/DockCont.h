@@ -77,11 +77,11 @@ private:
 	DockState	dockstate;	
 	DockTabBar 	tabbar;
 	ImgButton 	close, autohide, windowpos;	
+	Size 		usersize;
+	bool 		focus:1;
+	bool 		waitsync:1;	
 	DockWindow *base;
 	const DockableCtrl::Style *style;
-	Size usersize;
-	bool focus:1;
-	bool waitsync:1;
 
 	// Callbacks
 	// Tab callbacks
@@ -117,7 +117,7 @@ private:
 	DockCont *		ContCast(const Value &v) const 		{ return ValueTo<DockCont *>(v); } 
 	DockableCtrl *	DockCast(const Value &v) const 		{ return ValueTo<DockableCtrl *>(v); }
 	bool			IsDockCont(const Value &v) const	{ return IsType<DockCont *>(v); }
-	Ctrl * 			GetCtrl(int ix)						{ return CtrlCast(tabbar.Get(ix)); }
+	Ctrl * 			GetCtrl(int ix) const				{ return CtrlCast(tabbar.Get(ix)); }
 	Value 			ValueCast(DockableCtrl *dc) const 	{ return RawToValue<DockableCtrl *>(dc); }
 	Value 			ValueCast(DockCont *dc) const 		{ return RawToValue<DockCont *>(dc); }
 public:
@@ -162,6 +162,7 @@ public:
 	void			WindowButtons(bool menu, bool hide, bool close);
 	
 	void			Highlight();
+	Image 			GetHighlightImage();
 	
 	virtual Size	GetMinSize() const;
 	virtual Size	GetMaxSize() const;

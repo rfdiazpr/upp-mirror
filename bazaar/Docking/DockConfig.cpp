@@ -70,7 +70,7 @@ void DockConfigDlg::RefreshTree(bool dogroups)
 			String s = dockers[i]->GetGroup();
 			int group = s.IsEmpty() ? -1 : groups.Find(s);
 			if (!s.IsEmpty() && group < 0) {
-				n.Set(-1, s);
+				n.Set(groups.GetCount(), s);
 				group = tree.Add(0, n);
 				tree.Open(group);
 				groups.Add(s, group);
@@ -102,8 +102,12 @@ void DockConfigDlg::OnTreeContext(Bar &bar)
 		if (p != 0) {
 			menu.WindowMenu(bar, dockers[(int)tree.Get(id)]);
 			bar.Separator();
-			menu.GroupMenu(bar, (String)tree.GetValue(p));
 		}
+		menu.GroupMenu(bar, (String)tree.GetValue((p==0) ? id : p));
+		if (p == 0 && id != all) {
+			bar.Separator();
+			bar.Add(t_("Delete Group"), THISBACK1(DeleteGroup, id));	
+		}			
 	}
 }
 
@@ -148,9 +152,11 @@ void DockConfigDlg::OnDeleteLayout()
 void DockConfigDlg::OnTreeCursor()
 {
 	int id = tree.GetCursor();
-	int p = (id >= 0) ? tree.GetParent(id) : -1;
-	deletegroup.Enable(p > 0 && p != all);
-	if (id >= 0 && p > 0)
+	if (id < 0) { deletegroup.Disable(); return; }
+	int p = tree.GetParent(id);
+	if (p == 0)
+		deletegroup.Enable();
+	else
 		Highlight(dockers[(int)tree.Get(id)]);
 }
 
@@ -166,16 +172,16 @@ void DockConfigDlg::OnNewGroup()
 	String s;
 	if (EditText(s, t_("New Group"), t_("Group name:"), 25)) {
 		if (!s.IsEmpty())
-		if (groups.Find(s) < 0) {
-			int id = tree.Add(0, Image(), Value(-1), Value(s));
-			groups.Add(s, id);
-			tree.SetCursor(list.GetCount()-1);
-			OnTreeCursor();			
-		}
-		else {
-			PromptOK(t_("Group '%s' already exists."));
-			OnNewGroup();
-		}
+			if (groups.Find(s) < 0) {
+				int id = tree.Add(0, Image(), Value(-1), Value(s));
+				groups.Add(s, id);
+				tree.SetCursor(list.GetCount()-1);
+				OnTreeCursor();			
+			}
+			else {
+				PromptOK(t_("Group '%s' already exists."));
+				OnNewGroup();
+			}
 	}
 }
 
@@ -186,7 +192,11 @@ void DockConfigDlg::OnDeleteGroup()
 	int p = tree.GetParent(id);
 	if (p != 0) id = p;
 	if (id == all) return;
-	
+	DeleteGroup(id);
+}
+
+void DockConfigDlg::DeleteGroup(int id)
+{	
 	String s = (String)tree.GetValue(id);
 	if (!PromptOKCancel(Format(t_("Delete group '%s'?"), s))) return;
 	int ix = groups.Find(s);
@@ -225,7 +235,6 @@ void DockConfigDlg::OnTreeDrag()
 {
 	if (tree.GetCursor() >= 0 && tree.GetParent(tree.GetCursor()) == 0)
 		return;
-
 	if(tree.DoDragAndDrop(InternalClip(tree, "dockwindowdrag"),
 	                       tree.GetDragSample(), DND_MOVE) == DND_MOVE)
 		tree.RemoveSelection();

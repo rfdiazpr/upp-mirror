@@ -33,11 +33,11 @@ LRESULT DockCont::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 			dragging++;
 		}
 		Moving();
-		dragging = true;
+		dragging = 2;
 	}
 	else if (message == WM_EXITSIZEMOVE && IsFloating() && base && !GetMouseLeft() && dragging) {
 		MoveEnd();
-		dragging = false;
+		dragging = 0;
 	}
 		
 	return TopWindow::WindowProc(message, wParam, lParam);
@@ -54,25 +54,26 @@ void DockCont::EventProc(XWindow& w, XEvent *event)
 	if (IsOpen()) {
 		switch(event->type) {
 		case ConfigureNotify:{
-			XConfigureEvent& e = event->xconfigure;
-			if (Point(e.x, e.y) != GetScreenRect().TopLeft()) {
-				if (!dragging)
-					MoveBegin();
-				Moving();				
-				SetFocus();
-				dragging = true;
-			}
-			}
-			break;
-		case FocusIn:
-			XFocusChangeEvent &e = event->xfocus;
-			if (e.mode == NotifyUngrab && dragging) {
-				dragging = false;
-				MoveEnd();
-//				SetFocus();
-				return;
+				XConfigureEvent& e = event->xconfigure;
+				if (Point(e.x, e.y) != GetScreenRect().TopLeft()) {
+					if (!dragging)
+						MoveBegin();
+					Moving();				
+					SetFocus();
+					dragging = true;
+				}
 			}
 			break;
+		case FocusIn: {
+				XFocusChangeEvent &e = event->xfocus;
+				if (e.mode == NotifyUngrab && dragging) {
+					dragging = false;
+					MoveEnd();
+	//				SetFocus();
+					return;
+				}
+				break;
+			}
 		}
 	}
 	TopWindow::EventProc(w, event);	
@@ -245,11 +246,9 @@ void DockCont::TabSelected()
 		DockableCtrl *dc = Get0(ix);
 		if (!dc) return;
 		Ctrl *ctrl = GetCtrl(ix);
-		if (ctrl != &(base->GetHighlightCtrl())) {
-			Ctrl *first = &tabbar;
-			for (Ctrl *c = first->GetNext(); c; c = c->GetNext())
-				if (c != ctrl) c->Hide();
-		}
+		Ctrl *first = &tabbar;
+		for (Ctrl *c = first->GetNext(); c; c = c->GetNext())
+			if (c != ctrl) c->Hide();
 		style = &dc->GetStyle();
 		Icon(dc->GetIcon()).Title(dc->GetTitle());
 		SyncSize(*ctrl, *style);
@@ -294,7 +293,7 @@ void DockCont::TabContext(int ix)
 	if (IsDockCont(v))
 		menu.ContainerMenu(bar, ContCast(v), false);
 	else
-		menu.WindowMenu(bar, DockCast(v));
+		menu.WindowMenuNoClose(bar, DockCast(v));
 	bar.Separator();
 	tabbar.ContextMenu(bar);
 	bar.Execute();
@@ -306,7 +305,8 @@ void DockCont::TabClosed(Value v)
 	if (IsDockCont(v)) base->CloseContainer(*ContCast(v)); 
 	waitsync = true;
 	Layout();
-	if (tabbar.GetCount() == 1) RefreshLayout();
+	if (tabbar.GetCount() == 1) 
+		RefreshLayout();
 }
 
 void DockCont::CloseAll()
@@ -513,6 +513,16 @@ void DockCont::Highlight()
 	ChPaint(v, r, style->highlight);
 }
 
+Image DockCont::GetHighlightImage()
+{
+	Ctrl *ctrl = GetCtrl(GetCursor());
+	Size sz = ctrl->GetRect().GetSize();
+	ImageDraw img(sz);
+	int hsz = (!IsFloating() && !IsTabbed()) ? 0 : GetHandleSize(*style);
+	ctrl->DrawCtrlWithParent(img, style->handle_vert ? -hsz : 0, style->handle_vert ? 0 : -hsz);
+	return img;
+}
+
 void DockCont::AddContainerSize(Size &sz) const
 {
 	if (style) {
@@ -611,13 +621,14 @@ DockCont::DockCont()
 	tabbar.WhenDrag 		= THISBACK(TabDragged);
 	tabbar.WhenContext 		= THISBACK(TabContext);
 	tabbar.WhenClose 		= THISBACK(TabClosed);
+	tabbar.WhenCloseAll		= THISBACK(RefreshLayout);
 	AddFrame(tabbar);
 	tabbar.SetBottom();	
 
-	close.Tip(t_("Close")) 					<<= THISBACK(CloseAll);
-	autohide.Tip(t_("Auto-Hide")) 			<<= THISBACK(AutoHide);
+	close.Tip(t_("Close")) 				<<= THISBACK(CloseAll);
+	autohide.Tip(t_("Auto-Hide")) 		<<= THISBACK(AutoHide);
 	windowpos.Tip(t_("Window Menu")) 	<<= THISBACK(WindowMenu);		
-	WhenClose 							  = THISBACK(CloseAll);
+	WhenClose 							= THISBACK(CloseAll);
 }
 
 void DockCont::Serialize(Stream& s)

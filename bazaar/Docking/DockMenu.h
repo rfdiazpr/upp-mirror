@@ -26,6 +26,7 @@ public:
 	void GroupHideMenu(Bar &bar, String group) 				{ GroupAlignMenu(bar, group, 1); }
 	void GroupTabDockMenu(Bar &bar, String group)			{ GroupAlignMenu(bar, group, 2); }
 
+	void WindowMenuNoClose(Bar &bar, DockableCtrl *dc);
 	void WindowMenu(Bar &bar, DockableCtrl *dc);
 	void WindowDockMenu(Bar &bar, DockableCtrl *dc)			{ WindowAlignMenu(bar, dc, true); }
 	void WindowHideMenu(Bar &bar, DockableCtrl *dc)			{ WindowAlignMenu(bar, dc, false); }

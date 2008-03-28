@@ -298,6 +298,7 @@ void TabBar::CloseAll()
 	MakeGroups();
 	Repos();
 	SetCursor(0);
+	WhenCloseAll();
 }
 
 int TabBar::GetNextId()

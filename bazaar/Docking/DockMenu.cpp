@@ -80,12 +80,17 @@ void DockMenu::GroupWindowsMenu(Bar &bar, String group)
 
 void DockMenu::WindowMenu(Bar &bar, DockableCtrl *dc)
 {
+	WindowMenuNoClose(bar, dc);
+	bar.Separator();
+	bar.Add(true, t_("Close"), CtrlImg::Remove(), THISBACK1(MenuClose, dc));				
+}
+
+void DockMenu::WindowMenuNoClose(Bar &bar, DockableCtrl *dc)
+{
 	bar.Add(true, t_("Dock"), 		THISBACK1(WindowDockMenu, dc)).Check(dc->IsDocked() || dc->IsTabbed());
 	bar.Add(true, t_("Float"), 		THISBACK1(MenuFloat, dc)).Check(dc->IsFloating());
 	if (dock->IsAutoHide()) 
 		bar.Add(true, t_("Auto-Hide"), 	THISBACK1(WindowHideMenu, dc)).Check(dc->IsAutoHide());
-	bar.Separator();
-	bar.Add(true, t_("Close"), CtrlImg::Remove(), THISBACK1(MenuClose, dc));				
 }
 
 void DockMenu::GroupAlignMenu(Bar &bar, String group, int mode)

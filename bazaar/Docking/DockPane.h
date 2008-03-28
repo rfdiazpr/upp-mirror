@@ -18,18 +18,19 @@ private:
 		virtual Size GetMinSize() const { return minsize; }
 		virtual Size GetStdSize() const { return stdsize; }
 	};
-	DummyCtrl dummy;
-	int 	animix;
-	int 	animtick;
-	int 	animinc;
-	int 	animinterval;
-	int 	animmaxticks;
+	DummyCtrl 	dummy;
+	int 		animtick;
+	int 		animinterval;
+	int 		animmaxticks;
+	Vector<int>	animpos;
+	Vector<int>	savedpos;
 
-	void 	StartAnimate(int ix, Size sz);
+	void 	StartAnimate(int ix, Size sz, bool restore);
 	void 	AnimateTick();
 	void 	EndAnimate();
 
-	void 	SmartRepos(int ix, int pos);
+	void 	SmartRepos(Vector<int> &p, int ix, int pos);
+	void 	SimpleRepos(Vector<int> &p, int ix, int pos);
 	int 	GetMinPos(int notix);
 	void 	FixChildSizes();
 	
@@ -47,19 +48,23 @@ public:
 	int 	GetCount() const						{ return pos.GetCount(); }
 	
 	void	Swap(Ctrl &child, Ctrl &newctrl);
-	void	Dock(Ctrl &newctrl, Size sz, int pos, bool animate);
-	void 	Undock(Ctrl &newctrl, bool animate);
-	void 	QuickDock(Ctrl &ctrl, int sz);
+	void	Dock(Ctrl &newctrl, Size sz, int pos, bool animate, bool save = false);
+	void 	Undock(Ctrl &newctrl, bool animate, bool restore = false);
+	
+	void	SavePos()								{ savedpos <<= pos; }
+	void	RestorePos()							{ ASSERT(savedpos.GetCount() == pos.GetCount()); pos <<= savedpos; Layout(); }
 	
 	int 	GetCtrlSize(int i) const				{ return NormalPos(i); }
 	void	SetCtrlSize(int i, int sz)				{ pos[i] = (i == 0) ? sz : sz + pos[i-1]; }
 	
-	void 	Clear()									{ pos.Clear(); }
+	void 	Clear()									{ pos.Clear(); savedpos.Clear(); }
 	
-	bool	IsAnimating()		 					{ return animix >= 0; }
+	bool	IsAnimating() const	 					{ return animpos.GetCount(); }
 	void	SetAnimateRate(int ticks, int ms) 		{ animmaxticks = max(1, ticks);	animinterval = max(0, ms); }
 	int		GetAnimMaxTicks() const					{ return animmaxticks; }
 	int		GetAnimInterval() const					{ return animinterval; }
+	
+	virtual void Serialize(Stream &s)				{ s % pos; if (s.IsLoading()) FixChildSizes(); }
 	
 	DockPane();
 };

@@ -44,7 +44,6 @@ private:
 	
 	DockCont *		GetContainer() const;
 	
-	
 public:
 	Callback1<Bar &> WhenMenuBar;
 

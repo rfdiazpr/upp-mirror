@@ -229,6 +229,7 @@ public:
 	Callback WhenHighlight;
 	Callback WhenCursor;
 	Callback1<Value> WhenClose;
+	Callback WhenCloseAll;
 
 	TabBar();
 

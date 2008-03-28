@@ -113,8 +113,7 @@ private:
 		int inc;			
 	};
 	FrameAnim 					frameanim[4];
-	int 						animdelay;
-	
+	int 						animdelay;	
 public:	
 	void 		DockLayout();
 

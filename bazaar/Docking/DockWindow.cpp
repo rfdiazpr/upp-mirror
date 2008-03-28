@@ -651,7 +651,6 @@ void DockWindow::StopHighlight(bool do_animate)
 {
 	HighlightCtrl &hl = GetHighlightCtrl();
 	if (hl.GetParent()) {
-		int al = (hl.GetParent()->GetParent()->GetParent() == this) ? GetDockAlign(hl) : DOCK_NONE; // Docked but not tabbed
 		Undock0(hl, do_animate, hl.oldframesize, true);
 		hl.ClearHighlight();
 	}
@@ -711,6 +710,22 @@ void DockWindow::ContainerDragEnd(DockCont &dc)
 	if (p) 
 		for (int i = 0; i < 4; i++)
 			if (p == &dockpane[i]) align = i;
+
+	if (IsAnimated() && (p || align != DOCK_NONE)) {
+		int max = dockpane[0].GetAnimMaxTicks();
+		Rect dr = dc.GetRect();
+		Rect r = GetHighlightCtrl().GetScreenRect() - dr;
+		r.left /= max;
+		r.right /= max;
+		r.top /= max;
+		r.bottom /= max;
+		for (int i = 0; i < max; i++) {
+			dr += r;
+			dc.SetRect(dr);
+			ProcessEvents();
+			Sleep(dockpane[0].GetAnimInterval());
+		}
+	}
 
 	if (align != DOCK_NONE) {
 		Unfloat(dc);

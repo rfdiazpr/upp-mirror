@@ -11,11 +11,13 @@
 
 DockCtrl::DockCtrl() : DockBase()
 {
+	ctrlinit = false;
 	AllowAll();
 }
 
 DockCtrl::~DockCtrl()
 {
+	ctrlinit = false;
 }
 
 void DockCtrl::State(int reason)

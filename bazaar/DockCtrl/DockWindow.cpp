@@ -32,7 +32,7 @@ DockWindow::DockWindow() : DockableCtrl()
 	SetFrame(FieldFrame());
 	ShowDragBar();
 	ShowDragBarButtons(true);
-	Sizeable().Zoomable().ToolWindow().TopMost().MinimizeBox().MaximizeBox().BackPaint();
+	Sizeable().Zoomable().ToolWindow().TopMost(false).MinimizeBox().MaximizeBox().BackPaint();
 	WhenContextMenu	= THISBACK(DockWindowMenu);		
 
 }

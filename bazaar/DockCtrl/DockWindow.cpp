@@ -830,15 +830,15 @@ void TabWindow::RefreshTabWindowLabel(DockableCtrl& ctrl)
 	if(IsTabbed())
 	{
 		TabWindow* tabwindow = GetOwnerTab();
-		TabInterface::Tab& sourcetab  = GetTabs().GetTabs().At(GetActiveTab());
-		String& label 	= sourcetab.name;
-		Image& icon 	= sourcetab.icon;
 		while(tabwindow)
 		{
 			int id = tabwindow->GetActiveTab();
 			if(id < 0) break;
-
-			tabwindow->GetTabs().SetActiveTabTitle(label, icon);
+			TabInterface::Tab& sourcetab  = GetTabs().GetTabs().At(GetActiveTab());
+			TabInterface::Tab& targettab  =	tabwindow->GetTabs().GetTabs().At(id);
+			String& label 	= targettab.name = sourcetab.name;
+			Image& icon 	= targettab.icon = sourcetab.icon;
+			tabwindow->GetTabs().ReposTabs();
 			if(!tabwindow->GetOwnerTab())
 			{
 				if(tabwindow->IsAutoHidden())
@@ -847,19 +847,20 @@ void TabWindow::RefreshTabWindowLabel(DockableCtrl& ctrl)
 					id = hidebar->Find((DockableCtrl&)*tabwindow);
 					if(id >= 0)
 					{
-						hidebar->SetActiveTabTitle(label, icon);
+						TabInterface::Tab& t = hidebar->GetTabs().At(id);
+						t.name = label;
+						t.icon = icon;
+						hidebar->ReposTabs();
 						hidebar->Refresh();
 					}
 						
 				}
-				tabwindow->SetLabel(label).SetIcon(icon).RefreshLayoutDeep();
+				tabwindow->SetLabel(label);
+				tabwindow->SetIcon (icon);
 			}
-			tabwindow->SetLabel(label).SetIcon(icon).RefreshLayoutDeep();
+			tabwindow->RefreshLayoutDeep();
 			tabwindow = tabwindow->GetOwnerTab();
 		}
-		tabwindow = GetBaseTab();
-		tabwindow->GetTabs().SetActiveTabTitle(label, icon);
-		tabwindow->SetLabel(label).SetIcon(icon).RefreshLayoutDeep();
 	}
 	else 
 	{
@@ -869,7 +870,10 @@ void TabWindow::RefreshTabWindowLabel(DockableCtrl& ctrl)
 			id = hidebar->Find((DockableCtrl&)*this);
 			if(id >= 0)
 			{
-				hidebar->SetActiveTabTitle(ctrl.GetLabel(), ctrl.GetIcon());
+				TabInterface::Tab& t = hidebar->GetTabs().At(id);
+				t.name = ctrl.GetLabel();
+				t.icon = ctrl.GetIcon();
+				hidebar->ReposTabs();
 				hidebar->Refresh();
 			}
 		}

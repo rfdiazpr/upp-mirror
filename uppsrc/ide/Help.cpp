@@ -15,7 +15,7 @@ Size MakeLogo(Ctrl& parent, Array<Ctrl>& ctrl)
 	Label& v = ctrl.Create<Label>();
 	Label& v1 = ctrl.Create<Label>();
 	l.SetImage(logo);
-	Size sz = Size(isz.cx, isz.cy/* + 100*/);
+	Size sz = Size(isz.cx, isz.cy + 80);
 	v = IDE_VERSION;
 	v.LeftPos(300, 100).TopPos(90, 40);
 	if(sizeof(void *) == 8) {
@@ -31,13 +31,13 @@ Size MakeLogo(Ctrl& parent, Array<Ctrl>& ctrl)
 	l.Add(v1);
 	parent.Add(ctrl.Create<StaticRect>().Color(White).SizePos());
 	parent.Add(l.TopPos(0, isz.cy).LeftPos(0, isz.cx));
-/*	parent.Add(ctrl.Create<StaticRect>().Color(Blue).LeftPos(2, isz.cx - 4).TopPos(isz.cy, 1));
+	parent.Add(ctrl.Create<StaticRect>().Color(Blue).LeftPos(2, isz.cx - 4).TopPos(isz.cy, 1));
 	RichTextView& w = ctrl.Create<RichTextView>();
 	w.SetQTF(GetTopic("ide/app/Sponsor$en-us"));
-	w.PageWidth(4000);
+	w.PageWidth(2900);
 	w.NoSb();
 	w.SetFrame(NullFrame());
-	parent.Add(w.TopPos(isz.cy + 3, 99).LeftPos(0, isz.cx));*/
+	parent.Add(w.TopPos(isz.cy + 3, 99).LeftPos(0, isz.cx));
 	return sz;
 }
 

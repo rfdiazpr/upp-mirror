@@ -226,14 +226,22 @@ ctrl StaticText {
 	GetMinSize() { return XMinSize(); }
 	GetStdSize() { sz = XMinSize(); sz.cy += 6; sz.cx *= 5; return sz; }
 
-	>TextCtrl;
-
 	Doc    SetText ? "Label of control" ;
 	Align  SetAlign = ALIGN_LEFT;
 	Font   SetFont = StdFont();
 	Color  SetInk = :SBlack;
 	Frame  SetFrame @1;
 //	Qtf    SetInfo @1 ? "Info of control" ;
+
+	ViewRect(w) {
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+		return r;
+	}
+	ViewSize(w) {
+		r = ViewRect(w);
+		return Size(r.right - r.left, r.bottom - r.top);
+	}
 
 	Paint(w) {
 		sz = ViewSize(w);

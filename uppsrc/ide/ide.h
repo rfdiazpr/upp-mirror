@@ -45,7 +45,7 @@ public:
 	void               Attach(Ctrl& parent) { parent.AddFrame(button); }
 	void               Title(String t)      { title = t; }
 	String             GetTitle() const     { return title; }
-	
+
 private:
 	void               OnAction();
 
@@ -135,7 +135,7 @@ public:
 	void WrapText(bool w)                     { wrap_text = w; }
 
 	void SetSlots(int s);
-	
+
 	void Input(bool b);
 
 	Console();
@@ -415,7 +415,7 @@ public:
 	virtual   void   FileSelected();
 	virtual   void   Serialize(Stream& s);
 	virtual   void   FileRename(const String& nm);
-	virtual   void   ChildDragAndDrop(Point p, PasteClip& d);
+	virtual   void   DragAndDrop(Point p, PasteClip& d);
 
 	virtual   void      PutConsole(const char *s);
 	virtual   void      PutVerbose(const char *s);
@@ -615,7 +615,7 @@ public:
 	int       bordercolumn;
 	Color     bordercolor;
 
-	/* 
+	/*
 		astyle code formatter control vars
 		added 2008.01.27 by Massimo Del Fedele
 	*/
@@ -645,7 +645,7 @@ public:
 
 	// Formats a string of code with a given formatter
 	WString FormatCodeString(WString const &Src, astyle::ASFormatter &Formatter);
-	
+
 	// Formats editor's code with Ide format parameters
 	void FormatCode();
 
@@ -841,7 +841,7 @@ public:
 		void  ConditionalBreak();
 		void  DebugClearBreakpoints();
 		void  OnBreakpoint(int i);
-		
+
 		String GetLogPath();
 		void  OpenLog();
 

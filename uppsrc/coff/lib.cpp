@@ -84,7 +84,7 @@ void ArchiveJob::LoadFile(String file)
 	FileMapping mapping;
 	if(!mapping.Open(file))
 		throw Exc(NFormat("%s: file failed to open", file));
-	objects[AddObject(file, mapping.GetData(), mapping.GetTime())].ReadObject();
+	objects[AddObject(file, mapping.GetData(0, (dword)mapping.GetFileSize()), mapping.GetTime())].ReadObject();
 }
 
 int ArchiveJob::AddObject(String filename, String object_data, Time filetime)

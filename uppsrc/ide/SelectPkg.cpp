@@ -136,7 +136,7 @@ struct SelectPackageDlg : public WithListLayout<TopWindow> {
 		String package;
 		String description;
 		String path;
-		Vector<String> ws;
+		String stxt;
 
 		bool operator<(const PkInfo& b) const { return PackageLess(package, b.package); }
 	};
@@ -490,8 +490,7 @@ void SelectPackageDlg::Load(String upp, String dir, int progress_pos, int progre
 				pk.package = pkg;
 				pk.description = p.description;
 				pk.path = pf;
-				pk.ws = Split(ToUpper(pk.package), DirSep);
-				pk.ws.Append(Split(ToUpper(pk.description), ' '));
+				pk.stxt = ToUpper(pk.package + pk.description);
 			}
 		}
 		int ppos = progress_pos + i * progress_count / folders.GetCount();
@@ -561,7 +560,7 @@ void SelectPackageDlg::SyncList()
 	bpd.fnt.Bold();
 	String s = ~search;
 	for(int i = 0; i < packages.GetCount(); i++)
-		if(Match(packages[i].ws, s)) {
+		if(packages[i].stxt.Find(s) >= 0) {
 			clist.Add(packages[i].package, IdeImg::Package());
 			alist.Add(packages[i].package, packages[i].description);
 			alist.SetDisplay(alist.GetCount() - 1, 0, pd);

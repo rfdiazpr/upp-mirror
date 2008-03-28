@@ -273,7 +273,7 @@ FileMapping& LinkJob::GetMapping(String filename)
 	static FileMapping dummy;
 	if(!nc->mapping.Open(filename))
 		return dummy;
-	if(!nc->mapping.Map(0, nc->mapping.GetFileSize()))
+	if(!nc->mapping.Map(0, (dword)nc->mapping.GetFileSize()))
 		return dummy;
 	Cache *pc = ~nc;
 	mapping_cache.Add(filename, -nc);
@@ -3659,7 +3659,7 @@ void LinkJob::BuildLibrary()
 		FileMapping& mapping = GetMapping(of.object_file);
 		if(!mapping.IsOpen())
 			throw Exc(NFormat("%s: error opening file", of.object_file));
-		of.archive_index = job.AddObject(of.object_file, mapping.GetData(), mapping.GetTime());
+		of.archive_index = job.AddObject(of.object_file, mapping.GetData(0, (dword)mapping.GetFileSize()), mapping.GetTime());
 		String t = GetFileTitle(of.object_file);
 		if(!msgline.IsEmpty() && msgline.GetLength() + t.GetLength() > 70) {
 			msg << msgline << "\n\t";

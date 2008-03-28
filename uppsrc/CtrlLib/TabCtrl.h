@@ -47,6 +47,8 @@ public:
 		Item&          Enable(bool _en = true);
 		Item&          Disable()                        { return Enable(false); }
 		bool           IsEnabled() const                { return enabled; }
+		Ctrl          *GetCtrl()                        { return ctrl; }
+		const Ctrl    *GetCtrl() const                  { return ctrl; }
 
 		Item();
 

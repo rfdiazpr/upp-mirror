@@ -355,11 +355,6 @@ inline void  MemoryIgnoreLeaksEnd() {}
 inline void  MemoryCheckDebug() {}
 #endif
 
-struct MemoryIgnoreLeaksBlock {
-	MemoryIgnoreLeaksBlock()  { MemoryIgnoreLeaksBegin(); }
-	~MemoryIgnoreLeaksBlock() { MemoryIgnoreLeaksEnd(); }
-};
-
 struct MemoryProfile {
 	int allocated[1024];
 	int fragmented[1024];
@@ -392,6 +387,9 @@ inline void   MemoryCheck() {}
 inline void   MemoryCheckDebug() {}
 inline int    MemoryUsedKb() { return 0; }
 
+inline void  MemoryIgnoreLeaksBegin() {}
+inline void  MemoryIgnoreLeaksEnd() {}
+
 struct MemoryProfile {
 	int allocated[1024];
 	int fragmented[1024];
@@ -409,6 +407,11 @@ struct MemoryProfile {
 inline MemoryProfile *PeakMemoryProfile() { return NULL; }
 
 #endif
+
+struct MemoryIgnoreLeaksBlock {
+	MemoryIgnoreLeaksBlock()  { MemoryIgnoreLeaksBegin(); }
+	~MemoryIgnoreLeaksBlock() { MemoryIgnoreLeaksEnd(); }
+};
 
 #ifdef CPU_X86
 bool CPU_MMX();
@@ -493,7 +496,7 @@ inline int64   SwapEndian64(int64 v)  { __asm__("bswap %0" : "=r" (v) : "0" (v))
 #endif
 #ifdef COMPILER_MSC
 inline uint64  SwapEndian64(uint64 v) { return _byteswap_uint64(v); }
-inline int64   SwapEndian64(int64 v)  { return _byteswap_int64(v); }
+inline int64   SwapEndian64(int64 v)  { return _byteswap_uint64(v); }
 #endif
 
 inline void   EndianSwap(int64& v)    { v = SwapEndian64(v); }

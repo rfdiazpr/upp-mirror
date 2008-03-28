@@ -1,3 +1,10 @@
+Shell_NotifyIconA and NOTIFYICONDATAA.
+
+[21:31] micio: open theide, open help from toolbar
+[21:32] micio: open "used packages", than click cycling on src and srcdoc (not open them, just click cycling on them....)
+[21:32] micio: after some clicks, you should see part of help tree disappear
+[21:33] micio: (i meand used packages - core, than cycling on src and srcdoc)
+
 ImageBuffer pick
 
 ArrayCtrl changes: http://www.ultimatepp.org/forum/index.php?t=msg&goto=14155&#msg_14155
@@ -5,6 +12,8 @@ ArrayCtrl changes: http://www.ultimatepp.org/forum/index.php?t=msg&goto=14155&#m
 String functions
 
 String Compare
+
+Stream::GetLine
 
 New leak debugging
 

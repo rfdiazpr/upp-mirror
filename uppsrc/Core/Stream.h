@@ -526,7 +526,7 @@ public:
 
 	int64       GetFileSize() const       { return filesize; }
 	Time        GetTime() const;
-	String      GetData() const           { ASSERT(IsOpen()); return String(base, size); }
+	String      GetData(int64 offset, dword len);
 
 	int64       GetOffset() const         { return offset; }
 	dword       GetCount() const          { return size; }

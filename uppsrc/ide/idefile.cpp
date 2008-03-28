@@ -541,7 +541,7 @@ void Ide::EditAnyFile() {
 	FileSelected();
 }
 
-void Ide::ChildDragAndDrop(Point, PasteClip& d)
+void Ide::DragAndDrop(Point, PasteClip& d)
 {
 	if(AcceptFiles(d)) {
 		Vector<String> f = GetFiles(d);

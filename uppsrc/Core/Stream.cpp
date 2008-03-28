@@ -273,13 +273,21 @@ int Stream::GetUtf8()
 }
 
 String Stream::GetLine() {
-	String result;
+	StringBuffer result;
 	for(;;) {
+/*		if(ptr < rdlim) {
+			const byte *q = ptr;
+			byte *r = ptr;
+			while(r < rdlim && *r != '\n')
+				r++;
+			ptr = r;
+			result.Cat((const char *)q, r - q);
+		}*/
 		int c = Get();
-		if(c < 0)
-			return result.IsEmpty() ? String::GetVoid() : result;
 		if(c == '\n')
 			return result;
+		if(c < 0)
+			return result.GetCount() == 0 ? String::GetVoid() : result;
 		if(c != '\r')
 			result.Cat(c);
 	}
@@ -1465,6 +1473,16 @@ Time FileMapping::GetTime() const
 #ifdef PLATFORM_POSIX
 	return Time(hfstat.st_mtime);
 #endif
+}
+
+String FileMapping::GetData(int64 offset, dword len)
+{
+	if(IsOpen() && Map(offset, len))
+		return String(base, len);
+	else {
+		NEVER();
+		return String::GetVoid();
+	}
 }
 
 String ReadStdIn()

@@ -68,7 +68,7 @@ void DockCtrlExample::InitDockCtrl()
 	CtrlLayout(dock7);
 	dock7.SetLabel("Dock 7 - With Layout").SetIcon(CtrlImg::new_doc());										// Layout-ed dock example.
 	dock3.SetLabel("Dock 3").SetIcon(CtrlImg::new_doc());													
-
+	
 	Dock(Tabify(dock3, dock7).DockFloat());																	// Floating + Tabbing example.
 	
 	// Here is another example. This example is mainly for demostrating
@@ -82,15 +82,20 @@ void DockCtrlExample::InitDockCtrl()
 
 void DockCtrlExample::InitCustomLayouts()
 {
-	// This method is called by DockCtrl for predefined custom layouts.
+	// This method is called by DockCtrl for predefined custom layouts/groups.
 	
-	// Predefined Layout Support:
-	// --------------------------
-	// From DEV803b.1, DockCtrl has Serialization and Default/Custom layout support.
-	// Also, a "predefined" layout (or, layout template) support is planned. 
-	// It will be be added in time
-	// between somewhere DEV803b.2 - DEV804b.1 ;)
-	//
+	// Predefined Group Example
+	// ------------------------
+	// You need to take two simple steps to add a predefined widget group to DockCtrl based application:
+	// Step 1: Add the group using WidgetGroup() method.
+	// Step 2: Use "%" operator to add ctrls to group. 
+	
+	WidgetGroup("Predefined Group 1") % dock1 % dock2 % dock3 % dock4;
+	WidgetGroup("Predefined Group 2") % dock5 % dock6 % dock7;
+	
+	// Predefined Layout Example
+	// -------------------------
+	// NOT IMPLEMENTED YET. TO BE WRITTEN (SOON)...
 }
 
 
@@ -100,7 +105,7 @@ DockCtrlExample::DockCtrlExample()
 	LoadFromFile(*this, ConfigFile("dockctrlexamplelayout.bin"));
 
 
-	CtrlLayout(*this, "DockCtrl [DEV803b.1] Example - Use 'Settings' menu options to open the control panel");
+	CtrlLayout(*this, "DockCtrl [DEV803b.2] Example - Use 'Settings' menu options to open the control panel");
 	Sizeable().Zoomable().SetRect(GetRect().left, GetRect().top, 1024, 600);
 	
 	// Usual U++ widget preperation.
@@ -199,7 +204,7 @@ void DockCtrlExample::EditMenu(Bar& bar)
 
 GUI_APP_MAIN
 {
-//	SetLanguage(::GetSystemLNG());
+	SetLanguage(::GetSystemLNG());
 //	SetDefaultCharset(CHARSET_UTF8);
 	DockCtrlExample().Run();
 }

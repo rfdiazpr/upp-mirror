@@ -104,5 +104,12 @@ Recent revisions are added to the current versions logs under date/time info.
 	+ double clicking on a dragbar of a authidden dockwindow will cause it go into docked state.
 	+ added "stdsize" variable to the PaneFrame class.
 	+ added ShowXXXXPane() (X:left/top/right/bottom) public methods to the Dockbase class. 
+
+3/27/2008
+	+ added widget grouping (both predefined/default and user) support. 
+	+ added WidgetGroup() method and defined "%" operator for widget grouping.
+	+ added group manager to the settings window.
+	* tab window creation/managment mechanism changed.
+	
 	 
 	

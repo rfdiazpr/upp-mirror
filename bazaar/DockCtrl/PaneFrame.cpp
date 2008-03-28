@@ -80,13 +80,16 @@ PaneFrame& PaneFrame::AttachAsAuto(DockableCtrl& ctrl)
 	AutoHideBar& bar = GetBase().GetHideBar(GetType());
 	Size sz = ctrl.GetSizeHint();
 	Size newsz;
+	Size hidesz;
+	hidesz += GetBase().GetHideBar(GetType()).GetHeight() + 4;
+	
 	if(vertical) {
-		if (sz.cx < 4) {
+		if (sz.cx < hidesz.cx) {
 			newsz = Size(maxsize, sz.cy);
 			ctrl.SetSizeHint(newsz);
 		}
 	} else {
-		if (sz.cy < 4) {
+		if (sz.cy < hidesz.cy) {
 			newsz = Size(sz.cx, maxsize);
 			ctrl.SetSizeHint(newsz);
 		}
@@ -170,22 +173,25 @@ Vector<TabWindow*>& PaneFrame::GetTabWindows()
 
 TabWindow* PaneFrame::AddTabWindow()
 {
+	Vector<TabWindow*>& tl = GetBase().GetTabWindows();
 	TabWindow* tabwindow = NULL;
-	tabwindows.Add(tabwindow = new TabWindow());
+	tl.Add(tabwindow = new TabWindow());
 	tabwindow->SetStyle(*GetBase().GetStyle());
 	tabwindow->SetBase(&GetBase());
-	RefreshTabWindowList();
+	GetBase().RefreshTabWindowList();
 	return tabwindow;
 }
 
 TabWindow* PaneFrame::AddTabWindow(DockableCtrl& ctrl)
 {
 	Size tabnewsize;
+	Vector<TabWindow*>& tl = GetBase().GetTabWindows();
+	
 	int position = ctrl.Position();
 	if(position == 0) ++position;
 	TabWindow *tabwindow = FindTabWindow(position);
 	if(tabwindow) return activetabwindow = tabwindow;
-	tabwindows.Add(tabwindow = new TabWindow());
+	tl.Add(tabwindow = new TabWindow());
 	tabwindow->SetStyle(*GetBase().GetStyle());
 	tabwindow->SetBase(&GetBase()).DockingStyle(GetType(), DockableCtrl::STATE_SHOW, position);
 
@@ -202,52 +208,34 @@ TabWindow* PaneFrame::AddTabWindow(DockableCtrl& ctrl)
 	if(!tabwindow->IsTabbed())
 		if(tabwindow->IsDocked() && !tabwindow->IsHidden()) ShowFrame(tabnewsize);
 		dockcontainer.AddChildDock(*tabwindow, (dndpos == 0 || tabwindow->Position()) ? tabwindow->Position() : dndpos);
-	RefreshTabWindowList();
+	GetBase().RefreshTabWindowList();
 	return activetabwindow = tabwindow;	
 }
 
 void PaneFrame::RemoveTabWindow(TabWindow* tabwindow)
 {
-	for(int i = 0 ; i < tabwindows.GetCount(); i++)
-		if(tabwindows[i] == tabwindow)
-		{
-			delete tabwindows[i];							
-			if(tabwindow == GetActiveTabWindow()) 
-				SetActiveTabWindow(NULL);
-		}
+	//TODO: Remove.
 }
 
 void PaneFrame::RemoveTabWindow(int position)
 {
-	if(position == 0) return;
-	for(int i = 0; i < tabwindows.GetCount(); i++)
-		if(tabwindows.At(i)->Position() == position) tabwindows.Remove(i);	// TODO: change ??? 
-			SetActiveTabWindow(NULL);
+	//TODO: Remove.
 }
 
 void PaneFrame::RemoveTabWindows()
 {
-	for(int i = 0 ; i < tabwindows.GetCount(); i++)
-		if(tabwindows.At(i)) delete tabwindows.At(i);
-	SetActiveTabWindow(NULL);	
+	//TODO: Remove.
 }
 
 void PaneFrame::RefreshTabWindowList()
 {
-	for(int i = 0; i < tabwindows.GetCount(); i++)
-		if(tabwindows.At(i)->IsDestroyed())
-		{
-			TabWindow *t = tabwindows.At(i);
-			tabwindows.Remove(i);
-			if(t == GetActiveTabWindow())
-				SetActiveTabWindow(NULL);
-			delete t;
-		}
+	GetBase().RefreshTabWindowList();
+	SetActiveTabWindow(NULL);
 }
 
 void PaneFrame::AddtoTabWindow(DockableCtrl& ctrl)
 {
-	TabWindow* tabwindow 	=	FindTabWindow(ctrl.Position());
+	TabWindow* tabwindow 	=  FindTabWindow(ctrl.Position());
 	if(!tabwindow) tabwindow = AddTabWindow(ctrl);
 	tabwindow->Attach(ctrl);
 }
@@ -269,13 +257,15 @@ TabWindow* PaneFrame::FindTabWindow(int position)
 {
 	if(position <= 0) return NULL;
 	TabWindow * tabwindow = NULL;
-	
-	for(int i = 0; i < tabwindows.GetCount(); i++)
+
+	Vector<TabWindow*>& tl = GetBase().GetTabWindows();	
+		
+	for(int i = 0; i < tl.GetCount(); i++)
 	{
-		tabwindow = tabwindows.At(i);
+		tabwindow = tl.At(i);
 		if(tabwindow->Position() == position && 
-			tabwindow->Alignment() == GetType() &&
-			tabwindow->State() != DockableCtrl::STATE_TABBED)
+		tabwindow->Alignment() == GetType() && 
+		tabwindow->State() != DockableCtrl::STATE_TABBED)
 		return tabwindow;
 	}
 	return NULL;
@@ -298,9 +288,9 @@ void PaneFrame::SetActiveTabWindow(TabWindow* tabwindow)
 
 bool PaneFrame::HasTabWindow(TabWindow* tabwindow)
 {
-	for(int i = 0; i < tabwindows.GetCount(); i++)
-		if(tabwindow == tabwindows.At(i))
-			return true;
+	Vector<TabWindow*>& tl = GetBase().GetTabWindows();
+	for(int i = 0; i < tl.GetCount(); i++)
+		if(tabwindow == tl.At(i)) return true;
 	return false;
 }
 
@@ -470,6 +460,7 @@ void PaneFrame::StartTabWindowAnimation(DockableCtrl& ctrl, int position)
 {
 	if(DnDHasSource() && &ctrl && (ctrl.Position() == position)) 
 	{
+		RefreshTabWindowList();
 		if(!HasTabWindow(GetActiveTabWindow())) 
 				activetabwindow = AddTabWindow(ctrl);
 		if(!GetActiveTabWindow()->IsTabAnimating())
@@ -495,7 +486,7 @@ void PaneFrame::StopTabWindowAnimation()
 		if(GetActiveTabWindow()->IsTabAnimating())
 		{
 			GetActiveTabWindow()->StopTabAnimation();
-			SetActiveTabWindow(NULL);
+			RefreshTabWindowList();
 		}
 	RefreshPaneFrame();
 }
@@ -672,5 +663,4 @@ PaneFrame::PaneFrame()
 
 PaneFrame::~PaneFrame()
 {
-	RemoveTabWindows();
 }

@@ -27,14 +27,12 @@ void DockCtrl::State(int reason)
 			InitFrameWork();
 			InitDockCtrl ();
 			InitDefaultLayout();
-			InitCustomLayouts();	
+			InitCustomLayouts();
 			InitFrameWorkSettings();
 			ctrlinit = true;
 		}
 	}
 }
-
-
 
 //===============================================
 // DockBase class:
@@ -46,7 +44,8 @@ Ctrl& DockBase::Dock(DockableCtrl& ctrl)
     int alignment = ctrl.Alignment();
     // Register ctrl.
     ctrl.SetBase(this);
-    if(!ctrl.IsFloating()) AddCtrlRecord(ctrl);
+	AddCtrlRecord(ctrl);
+	// Dock...
      switch(alignment)
    	{
        		case DockableCtrl::DOCK_LEFT:
@@ -69,7 +68,6 @@ Ctrl& DockBase::Dock(DockableCtrl& ctrl)
              		ctrl.FloatEx(Rect(0, 0, panesize.cx / 4, panesize.cy / 3));
              		ctrl.NoCenter();
              	}
-             	AddCtrlRecord(ctrl);
                 break;
    	}
 	RefreshPanel();
@@ -89,9 +87,72 @@ DockableCtrl& DockBase::Tabify(DockableCtrl& ctrl1, DockableCtrl& ctrl2)
 	return (DockableCtrl&) *tabwindow;	
 }
 
+DockableCtrl& DockBase::Tabify(String groupname, DockableCtrl& ctrl1, DockableCtrl& ctrl2)
+{
+	return (DockableCtrl&) dynamic_cast<TabWindow&>(Tabify(ctrl1, ctrl2)).SetGroup(groupname);
+}
+
 DockableCtrl& DockBase::Tabify(DockableCtrl& ctrl1, DockableCtrl& ctrl2, DockableCtrl& ctrl3, DockableCtrl& ctrl4)
 {
 	return Tabify(Tabify(ctrl1, ctrl2), Tabify(ctrl3, ctrl4));
+}
+
+DockableCtrl& DockBase::Tabify(String groupname, DockableCtrl& ctrl1, DockableCtrl& ctrl2, DockableCtrl& ctrl3, DockableCtrl& ctrl4)
+{
+	return (DockableCtrl&) dynamic_cast<TabWindow&>(Tabify(ctrl1, ctrl2, ctrl3, ctrl4)).SetGroup(groupname);
+}
+
+void DockBase::TabifyGroupAndDock(String groupname, int alignment)
+{
+	Dock(TabifyGroup(groupname).DockingStyle(alignment, DockableCtrl::STATE_SHOW));	
+}
+
+void DockBase::TabifyGroupAndAutoHide(String groupname, int alignment)
+{
+	Dock(TabifyGroup(groupname).DockingStyle(alignment, DockableCtrl::STATE_AUTO));	
+}
+
+void DockBase::TabifyGroupAndFloat(String groupname)
+{
+	Dock(TabifyGroup(groupname).DockFloat());	
+}
+
+DockableCtrl& DockBase::TabifyGroup(String name)
+{
+	DockableCtrl* ctrl = NULL;
+	Vector<int>& ids = groups.Get(name);
+	int ncount = ids.GetCount();
+	ASSERT(ncount);
+	TabWindow* tabwindow = GetPaneFrame(0).AddTabWindow();
+	ASSERT(tabwindow);
+	for(int i = 0; i < ncount; i++) tabwindow->Attach(*GetCtrlRecordFromId(ids[i])->ctrl);
+	tabwindow->SetGroup(name);
+	return (DockableCtrl&) *tabwindow;
+}
+
+DockBase& DockBase::WidgetGroup(String name)
+{
+	NewWidgetGroup(predefinedgroup = name);
+	return *this;
+}
+
+DockBase& DockBase::operator%(DockableCtrl& ctrl)
+{
+	int id = GetCtrlRecord(ctrl)->id;
+	if(!FindWidgetinGroup(predefinedgroup, id))	
+		AddWidgettoGroup(predefinedgroup, id);
+	return *this;
+}
+
+DockBase& DockBase::WidgetLayout(String name)
+{
+	NewWidgetLayout(predefinedgroup = name);
+	return *this;
+}
+
+DockBase& DockBase::operator/(DockableCtrl& ctrl)
+{
+	return *this;
 }
 
 void DockBase::DoDragAndDrop(DockableCtrl& ctrl, Point p, Size sz)
@@ -259,12 +320,13 @@ void DockBase::ControlPanel()
 {
     if(controlpanel.IsOpen()) return;
     controlpanel.Open(GetTopWindow());
+   	RefreshGroups();
     RefreshPanel(); 
 }
 
 void DockBase::OnPanelAction()
 {
-    CtrlRecord* ctrlrecord = GetCtrlRecordFromIndex(controlpanel.list.GetClickRow());
+    CtrlRecord* ctrlrecord = GetCtrlRecordFromIndex(listtab.list.GetClickRow());
     if(ctrlrecord) 
     	ctrlrecord->ctrl->Menu();
 }
@@ -272,7 +334,7 @@ void DockBase::OnPanelAction()
 void DockBase::RefreshPanel()
 {
     if(!controlpanel.IsOpen() || !controlpanel.IsVisible()) return;
-    controlpanel.list.Clear();
+    listtab.list.Clear();
     for(int i = 0; i < GetCtrlRecords().GetCount(); i++) 
     {
         int 	alignment 	= 0;
@@ -333,16 +395,18 @@ void DockBase::RefreshPanel()
                 s = t_("TABBED");
                 break;
         }
-        controlpanel.list.Add(0, Format("%s",ctrl->GetLabel()), a, s, ctrl->Position());
-        controlpanel.list.SetCtrl(i, 0, (panelicons.At(i))->SetImage(ctrl->GetIcon().IsNullInstance() ? 
-                    DockCtrlImages::DefaultImage : ctrl->GetIcon()));
+  
+ 		listtab.list.Add(0, Format("%s",ctrl->GetLabel()), a, s, ctrl->Position());
+		listtab.list.SetCtrl(i, 0, (panelicons.At(i))->SetImage(ctrl->GetIcon().IsNullInstance() ? 
+                   DockCtrlImages::DefaultImage : ctrl->GetIcon()));
       }
    controlpanel.Refresh();
 }
 
 void DockBase::Serialize(Stream& s)
 {
-	String 	layout	= "CTRLSLAYOUT";
+	String 	layout	= "CTRLSLAYOUTS";
+	String	group	= "CTRLGROUPS";
 	String 	settings = "DOCKCTRLSETTINGS";
 	int version = 1;	
 	int n = 0;
@@ -383,6 +447,19 @@ void DockBase::Serialize(Stream& s)
 			String lname = controlpanel.layoutlist.GetKey(i);
 			s / lname; 
 		}
+		
+		s / group;
+		// Write Groups.
+		//int j = predefinedgroups + 1;
+		n = groups.GetCount(); 
+		s / n;
+		for(int i = 0; i < n; i++)
+		{
+			String key 	= groups.GetKey(i);
+			Vector<int>& ids = groups.Get(key);
+			s / key;
+			ids.Serialize(s);	
+		}
 	}
 	else
 	{
@@ -418,7 +495,18 @@ void DockBase::Serialize(Stream& s)
 			s / lname;
 			controlpanel.layoutlist.Add(lname);
 		}
-		
+		s / group;
+		// Read Groups.
+		s / n;
+		for(int i = 0; i < n; i++)
+		{
+			String key;
+			Vector<int> ids;
+			ids.Clear();
+			s / key;
+			ids.Serialize(s);
+			groups.FindAdd(key, ids);
+		}
 		// Write Ctrl values.
 		controlpanel.TabOptionIcon 		<<= tabsicons;
 		controlpanel.TabOptionClose 	<<= tabsclose;
@@ -444,6 +532,7 @@ void DockBase::InitDefaultLayout()
 {
 	String name = t_("Default");
 	if(layouts.Find(name) < 0) NewWidgetLayout(name);
+	NewWidgetGroup(name);
 }
 
 void DockBase::SetSkin(int index)
@@ -513,50 +602,73 @@ void DockBase::InitFrameWork()
 
 DockBase::DockBase()
 {
+	isready = false;
     panesize.Clear();
     LeftPos(0, 0).TopPos(0,0);
+	CtrlLayout(listtab);
+	CtrlLayout(grouptab);
     CtrlLayout(controlpanel);
-	CtrlLayoutOKCancel(newlayoutdialog, t_("Add new layout")); 
    	controlpanel.CenterScreen().Sizeable().Zoomable().Title(t_("Settings"));
-    controlpanel.list.AddColumn();
-    controlpanel.list.AddColumn(t_("Window Title"));
-    controlpanel.list.AddColumn(t_("Alignment"));
-    controlpanel.list.AddColumn(t_("State"));
-    controlpanel.list.AddColumn(t_("Position"));
-    controlpanel.list.EvenRowColor();
-    controlpanel.list.SetLineCy(StdFont().GetHeight() + 2);
+    listtab.list.AddColumn();
+    listtab.list.AddColumn(t_("Window Title"));
+    listtab.list.AddColumn(t_("Alignment"));
+    listtab.list.AddColumn(t_("State"));
+    listtab.list.AddColumn(t_("Position"));
+    listtab.list.EvenRowColor();
+    listtab.list.SetLineCy(16);
+
+	grouptab.grouptree.MultiSelect();
+	controlpanel.panel.Add(listtab.SizePos(), t_("Status"));
+	controlpanel.panel.Add(grouptab.SizePos(), t_("Group Manager"));
+
     controlpanel.skinlist.Add(0, String(t_("Default"))).Add(1, String(t_("Classic"))).Add(2, String(t_("Enhanced"))).SetIndex(skinindex);
     controlpanel.skinlist.WhenAction 	= THISBACK(OnSelectSkin);
     controlpanel.layoutlist.WhenAction	= THISBACK(OnSelectLayout);
-    controlpanel.list.WhenLeftClick 	= THISBACK(OnPanelAction); 
-    controlpanel.layoutbutton		<<= THISBACK(ResetWidgetLayout);
-	controlpanel.layoutadd			<<= THISBACK(OnAddNewLayout);
-	controlpanel.layoutdelete		<<= THISBACK(OnDeleteLayout);
-    controlpanel.TabOptionAlignment <<= THISBACK(RefreshWidgetLayout);
-    controlpanel.TabOptionIcon		<<= THISBACK(RefreshWidgetLayout);
-    controlpanel.TabOptionClose		<<= THISBACK(RefreshWidgetLayout);
-    controlpanel.AutoOptionClose	<<= THISBACK(RefreshWidgetLayout);
-    controlpanel.AutoOptionIcon		<<= THISBACK(RefreshWidgetLayout);
+    listtab.list.WhenLeftClick 			= THISBACK(OnPanelAction); 
+    grouptab.grouptree.WhenDropInsert	= THISBACK(GroupDrop);
+    grouptab.grouptree.WhenDrag			= THISBACK(GroupDrag);
+    grouptab.grouptree.WhenBar			= THISBACK(GroupMenu);
+	grouptab.grouptree.WhenCursor		= THISBACK(GroupSelect);
+	   
+	grouptab.groupadd					<<= THISBACK(OnAddNewGroup);
+	grouptab.groupdelete				<<= THISBACK(OnDeleteGroup);
+    controlpanel.layoutbutton			<<= THISBACK(ResetWidgetLayout);
+	controlpanel.layoutadd				<<= THISBACK(OnAddNewLayout);
+	controlpanel.layoutdelete			<<= THISBACK(OnDeleteLayout);
+    controlpanel.TabOptionAlignment		<<= THISBACK(RefreshWidgetLayout);
+    controlpanel.TabOptionIcon			<<= THISBACK(RefreshWidgetLayout);
+    controlpanel.TabOptionClose			<<= THISBACK(RefreshWidgetLayout);
+    controlpanel.AutoOptionClose		<<= THISBACK(RefreshWidgetLayout);
+    controlpanel.AutoOptionIcon			<<= THISBACK(RefreshWidgetLayout);
 
-	controlpanel.TabOptionIcon 		<<= tabsicons;
-	controlpanel.TabOptionClose 	<<= tabsclose;
-	controlpanel.TabOptionNest		<<= tabsnested;
-	controlpanel.TabOptionAlignment <<= tabsautoalign;
+	controlpanel.TabOptionIcon 			<<= tabsicons;
+	controlpanel.TabOptionClose 		<<= tabsclose;
+	controlpanel.TabOptionNest			<<= tabsnested;
+	controlpanel.TabOptionAlignment	 	<<= tabsautoalign;
 
-	controlpanel.AutoOptionIcon 	<<= autohideicons;
-	controlpanel.AutoOptionClose 	<<= autohideclose;
+	controlpanel.AutoOptionIcon 		<<= autohideicons;
+	controlpanel.AutoOptionClose 		<<= autohideclose;
+	
+	grouptab.groupdelete.Disable();
 	SetKey(K_CTRL_HOME);
 }
 
 DockBase::~DockBase()
 {
-    for(int i = 0; i < panelicons.GetCount(); i++)
-        delete panelicons.At(i);
+ 	CleanUp();
+    panesize.Clear();
+}
+
+void DockBase::CleanUp()
+{
+	for(int i = 0; i < panelicons.GetCount(); i++)
+		delete panelicons.At(i);
 	for(int i = 0; i < layouts.GetCount(); i++)
 		layouts.Remove(i);
-
-    DeleteCtrlRecords();
-    panesize.Clear();
+	for(int i = 0; i < groups.GetCount(); i++)
+		groups.Remove(i);
+ 	RemoveTabWindows();
+    DeleteCtrlRecords();	
 }
 
 void DockBase::RefreshWidgetLayout()
@@ -576,7 +688,7 @@ void DockBase::RefreshWidgetLayout()
 		tabwindow = GetTabWindowFromIndex(i);
 		if(tabsautoalign)
 		{
-			switch(tabwindow->Alignment())
+			switch(tabwindow->GetBaseTab()->Alignment())
 			{
        			case DockableCtrl::DOCK_LEFT:
 					tabwindow->SetLayout(DockCtrlCustomFrame::LAYOUT_RIGHT);  
@@ -601,33 +713,21 @@ void DockBase::RefreshWidgetLayout()
 
 void DockBase::OnAddNewLayout()
 {
-	newlayoutdialog.layoutstring.Clear();
-	
-	for(;;)
+	String name;
+	if(EditText(name, t_("Add new layout"), t_("Layout name:"), 32))
 	{
-		switch(newlayoutdialog.Execute())
+		if(IsNull(name)) 
 		{
-			case IDOK:
-			{
-				String name = newlayoutdialog.layoutstring;
-				if(IsNull(name))
-				{
-					Exclamation(t_("You must enter a name for the new layout"));
-					break;
-				}
-				else if(layouts.Find(name) >= 0)
-				{
-					if(!PromptOKCancel(Format(t_("Layout '%s' adready exists. Do you want to overwrite it?"), name)))
-					break;
-				}
-		
-				NewWidgetLayout(name);
-				RefreshPanel();
-				return;
-			}
-			case IDCANCEL:
+			Exclamation(t_("You must enter a name for the new layout"));
 			return;
 		}
+		else if(layouts.Find(name) >= 0)
+		{
+			if(!PromptOKCancel(Format(t_("Layout '%s' adready exists. Do you want to overwrite it?"), name)))
+			return;
+		}
+		NewWidgetLayout(name);
+		RefreshPanel();
 	}
 }
 
@@ -717,25 +817,14 @@ DockableCtrl* DockBase::GetDockedWindowFromIndex(int index)
 
 TabWindow* DockBase::GetTabWindowFromIndex(int index)
 {
-	Vector<TabWindow*> tabs;
-	tabs.Clear();
-	for(int i = 0; i < 4; i++)
-	{
-		int n = GetPaneFrame(i).GetTabWindows().GetCount();
-		if(n) 
-			for(int j = 0; j < n; j++) 
-				tabs.Add(GetPaneFrame(i).GetTabWindows().At(j));
-	}
-	TabWindow * tabwindow = (tabs.GetCount() ? tabs.At(index) : NULL);
+	TabWindow* tabwindow = tabwindows.At(index);
+	ASSERT(tabwindow);
 	return tabwindow;
 }
 
 int DockBase::GetTabWindowCount()
 {
-	int tabcount = 0;
-	for(int i = 0; i < 4; i++)
-		tabcount += GetPaneFrame(i).GetTabWindows().GetCount();
-	return tabcount;
+	return tabwindows.GetCount();
 }
 
 int DockBase::GetDockedWindowCount()
@@ -745,6 +834,28 @@ int DockBase::GetDockedWindowCount()
 		if(i < 4) dockcount += GetPaneFrame(i).GetCount();
 		else dockcount += GetHideBar(i - 4).GetCount();
 	return dockcount;
+}
+
+void DockBase::RemoveTabWindows()
+{
+	for(int i = 0 ; i < tabwindows.GetCount(); i++)
+		if(tabwindows.At(i)) delete tabwindows.At(i);	
+}
+
+void DockBase::RefreshTabWindowList()
+{
+	for(int i = 0; i < tabwindows.GetCount(); i++)
+		if(tabwindows.At(i)->IsDestroyed())
+		{
+			TabWindow *t = tabwindows.At(i);
+			tabwindows.Remove(i);
+			delete t;
+		}
+}
+
+Vector<TabWindow*>& DockBase::GetTabWindows()
+{
+	return tabwindows;
 }
 
 void DockBase::NewWidgetLayout(String name)
@@ -810,7 +921,7 @@ void DockBase::SerializeLayout(Stream& s, bool deflay)
 {
 	CtrlRecord* record	= NULL;
 	DockableCtrl* ctrl	= NULL;
-	
+	TreeCtrl& tree		= grouptab.grouptree;	
 	String  name;
 	int		panesize	= 0;
 	int 	type 		= 0;
@@ -823,6 +934,10 @@ void DockBase::SerializeLayout(Stream& s, bool deflay)
 	
 		if(s.IsStoring())
 		{
+			// Remove unused TabWindows (BugFix).
+			RefreshTabWindowList();
+			// Write Tabbing mode.
+			s % tabsnested;
 			// Write Widgets.
 			// Write Docked (shown or hidden) and AutoHidden widgets.
 			childcount = GetDockedWindowCount();
@@ -877,6 +992,11 @@ void DockBase::SerializeLayout(Stream& s, bool deflay)
 			// Close All widgets.
 			for(int i = 0; i < GetTabWindowCount(); i++)	GetTabWindowFromIndex(i)->DetachAll();
 			for(int i = 0; i < ctrls.GetCount(); i++) 		GetCtrlRecordFromIndex(i)->ctrl->Shut();
+			// Remove unused TabWindows (BugFix).
+			RefreshTabWindowList();
+			// Read Tabbing Mode
+			s % tabsnested;
+			controlpanel.TabOptionNest <<= tabsnested;
 			// Read Docked (shown or hidden) and AutoHidden widgets.
 			s / childcount;
 			if(childcount)
@@ -921,6 +1041,288 @@ void DockBase::ResetWidgetLayout()
 	controlpanel.layoutlist.SetIndex(layoutindex = 0);
 	SetWidgetLayout(layoutindex);
 	RefreshPanel();
+}
+
+void DockBase::NewWidgetGroup(String name, bool predefined)
+{
+	predefined  = true;
+	TreeCtrl& tree = grouptab.grouptree;
+	Vector<int> ids;
+	ids.Clear();
+	int group = groups.FindAdd(name, ids);
+	if(tree.Find(name) < 0) tree.Add(0, DockCtrlImages::DefaultImage(), Value(name));
+
+	if(name != t_("Default")) return; 
+	for(int i = 0; i < ctrls.GetCount(); i++)
+	{
+		DockableCtrl * ctrl = ctrls[i]->ctrl;
+		int id	= ctrls[i]->id;
+		ids.Add(ctrls[i]->id);
+		tree.Add(tree.Find(name), ctrl->GetIcon(), Value(id), Value(ctrl->GetLabel()));
+	}
+	groups[group] = ids;
+}
+
+bool DockBase::AddWidgettoGroup(String name, DockableCtrl& ctrl)
+{
+	CtrlRecord* record = GetCtrlRecord(ctrl);
+	if(!record || name == t_("Default")) return false;
+	NewWidgetGroup(name);
+	Vector<int>& ids = groups.Get(name);
+	for(int i = 0; i < ids.GetCount(); i++)
+	if(ids[i] == record->id)
+	{
+		Exclamation(Format(t_("Error: Widget (%s) is already in the group '%s'"), ctrl.GetLabel(), name));
+		return false;
+	}
+	ids.Add(record->id);
+	grouptab.grouptree.Add(grouptab.grouptree.Find(name), ctrl.GetIcon(), Value(record->id), Value(ctrl.GetLabel()));
+	return true;
+}
+
+bool DockBase::AddWidgettoGroup(String name, int id)
+{
+	CtrlRecord* record = GetCtrlRecordFromId(id);
+	if(!record) return false;
+	return AddWidgettoGroup(name, *record->ctrl);
+}
+
+bool DockBase::DeleteWidgetfromGroup(String name, DockableCtrl& ctrl)
+{
+	CtrlRecord* record = GetCtrlRecord(ctrl);
+	if(groups.Find(name) < 0 || name == t_("Default") || !record) return false;
+	Vector<int>& ids = groups.Get(name);
+	for(int i = 0; i < ids.GetCount(); i++) if(record->id == ids[i]) ids.Remove(i);
+	return true;
+}
+
+bool DockBase::DeleteWidgetfromGroup(String name, int id)
+{
+	CtrlRecord* record = GetCtrlRecordFromId(id);
+	if(!record) return false;
+	return DeleteWidgetfromGroup(name, *record->ctrl);	
+}
+
+int DockBase::AddWidgetGroup(String name)
+{
+	return 1;
+}
+
+void DockBase::DeleteWidgetGroup(String name)
+{
+	TreeCtrl& tree = grouptab.grouptree;
+	if(name == t_("Default")) return;
+	if(PromptOKCancel(Format(t_("Do you really want to delete group '%s'"), name)))
+	{
+		groups.RemoveKey(name);
+		int id = tree.Find(name);
+		if(id >= 0) 
+		{
+			tree.RemoveChildren(id);
+			tree.Remove(id);
+		}
+		tree.Refresh();
+	}
+	
+}
+
+Vector<int>& DockBase::FindWidgetGroup(String name)
+{
+	return groups.Get(name);
+}
+
+bool DockBase::FindWidgetinGroup(String name, int id)
+{
+	Vector<int>& ids = FindWidgetGroup(name);
+	for(int i = 0; i < ids.GetCount(); i++)
+		if(ids[i] == id) return true;
+	return false;
+}
+
+void DockBase::OnAddNewGroup()
+{
+	String name;
+	if(EditText(name, t_("Add new group"), t_("Group name:"), 32))
+	{
+		if(IsNull(name)) 
+		{
+			Exclamation(t_("You must enter a name for the new group"));
+			return;
+		}
+		else if(groups.Find(name) >= 0)
+		{
+			if(!PromptOKCancel(Format(t_("Group '%s' adready exists. Do you want to overwrite it?"), name)))
+			return;
+		}
+		NewWidgetGroup(name);
+		RefreshPanel();
+	}
+}
+
+void DockBase::OnDeleteGroup()
+{
+	TreeCtrl& tree = grouptab.grouptree;
+	int id = tree.GetCursor();
+	if(id == 0) return;
+	DeleteWidgetGroup(tree.GetValue(tree.GetCursor()));
+}
+
+void DockBase::GroupDrop(int parent, int ii, PasteClip& d)
+{
+	if (parent == 0) return d.Reject();
+
+	TreeCtrl& tree = grouptab.grouptree;
+	int p = tree.GetParent(parent);
+	if (p != 0)	parent = p;
+	
+	if(AcceptInternal<TreeCtrl>(d, "DockCtrlGroupTreeDrag")) 
+	{
+		Vector<int> sel = tree.GetSel();
+		for (int i = 0; i < sel.GetCount(); i++) 
+		{
+
+			int id = tree.Get(sel[i]);
+			String group = (String) tree.GetValue(parent);
+			if(group == t_("Default") || FindWidgetinGroup(group, id)) 
+				return d.Reject();
+			AddWidgettoGroup(group, id);
+			tree.Open(parent);
+		}
+		return;
+	}
+	tree.SetFocus();
+}
+
+void DockBase::GroupDrag()
+{
+	TreeCtrl& tree = grouptab.grouptree;
+	int idc = -1;
+	if (tree.GetCursor() >= 0 && tree.GetParent(tree.GetCursor()) <= 0)
+		return;
+	if(tree.DoDragAndDrop(InternalClip(tree, "DockCtrlGroupTreeDrag"), tree.GetDragSample()) == DND_MOVE)
+	{
+		int parent = tree.GetParent(tree.GetCursor());
+		idc = tree.GetCursor();
+		String name = tree.GetValue(idc);
+		String group = (String) tree.GetValue(parent);
+		int id = tree.Get(idc);
+		if(DeleteWidgetfromGroup(group, id)) tree.Remove(idc);
+	}
+	tree.Refresh();
+}
+
+void DockBase::GroupSelect()
+{
+	TreeCtrl& tree = grouptab.grouptree;
+	int root = tree.GetCursor();
+	if(root < 0) return;
+	int id = tree.GetParent(root);
+	String group = (String) tree.GetValue(root);
+	grouptab.groupdelete.Enable(id == 0 && group != t_("Default"));
+}
+
+void DockBase::RefreshGroups()
+{
+	TreeCtrl& tree = grouptab.grouptree;
+	tree.Clear();
+	tree.SetRoot(DockCtrlImages::DefaultImage(), t_("Available Widget Groups"));
+	tree.Open(0);
+	for(int i = 0; i < groups.GetCount(); i++)
+	{
+		String group = groups.GetKey(i);
+		Vector<int>& ids = groups.Get(group);
+		tree.Add(0, DockCtrlImages::DefaultImage(), group);
+		for(int j = 0; j < ids.GetCount(); j++)
+		{	
+			CtrlRecord* record = GetCtrlRecordFromId(ids[j]);
+			ASSERT(record);
+			tree.Add(tree.Find(group), record->ctrl->GetIcon(), Value(record->id), Value(record->ctrl->GetLabel()));		
+		}
+	}
+}
+
+void DockBase::GroupMenu(Bar& bar)
+{
+	TreeCtrl& tree = grouptab.grouptree;
+	int id = tree.GetCursor();
+	if(id < 0) return;
+	id = tree.GetParent(id);
+	activegroup = (String) tree.GetValue(tree.GetCursor());
+	if(id >= 0)
+	{
+		if(id == 0 && tree.GetChildCount(id))
+		{
+			bar.Add(Format(t_("Dock Group '%s'"), activegroup), THISBACK1(GroupDockMenu, 0));
+			bar.Add(Format(t_("AutoHide Group '%s'"), activegroup), THISBACK1(GroupDockMenu, 1));
+			bar.Add(Format(t_("Float Group '%s'"), activegroup), THISBACK3(GroupMenuAction, activegroup, 2, -1));
+			bar.Separator();
+			bar.Add(tree.GetChildCount(tree.GetCursor()) > 1, Format(t_("Tabify Group '%s' and..."), activegroup), THISBACK1(GroupTabifyMenu, 3));
+			bar.Separator();
+			bar.Add(activegroup != t_("Default"), Format(t_("Delete Group '%s'"), activegroup), THISBACK1(DeleteWidgetGroup, activegroup));
+			bar.Separator();
+			bar.Add(Format(t_("Close Group '%s'"), activegroup), DockCtrlImages::CClose(), THISBACK3(GroupMenuAction, activegroup, -1, -1));
+		
+		}
+		if(id > 0)
+		{
+			Vector<int> sel = tree.GetSel();
+			for(int i = 0; i < sel.GetCount(); i++)	id = tree.Get(sel[i]);
+			CtrlRecord* record = GetCtrlRecordFromId(id);
+			ASSERT(record);
+			record->ctrl->Menu();
+		}
+	}
+	else bar.Add(t_("Add New Group..."), THISBACK(OnAddNewGroup));
+}
+
+void DockBase::GroupDockMenu(Bar& bar, int command)
+{
+	if(IsSideAllowed(DockableCtrl::DOCK_TOP)) bar.Add(t_("Top"), THISBACK3(GroupMenuAction, activegroup, (int) command, (int)DockableCtrl::DOCK_TOP));
+	if(IsSideAllowed(DockableCtrl::DOCK_LEFT)) bar.Add(t_("Left"), THISBACK3(GroupMenuAction, activegroup, (int) command, (int)DockableCtrl::DOCK_LEFT));
+	if(IsSideAllowed(DockableCtrl::DOCK_RIGHT)) bar.Add(t_("Right"), THISBACK3(GroupMenuAction, activegroup, (int) command, (int)DockableCtrl::DOCK_RIGHT));
+	if(IsSideAllowed(DockableCtrl::DOCK_BOTTOM)) bar.Add(t_("Bottom"), THISBACK3(GroupMenuAction, activegroup, (int) command, (int)DockableCtrl::DOCK_BOTTOM));
+}
+
+void DockBase::GroupTabifyMenu(Bar& bar, int command)
+{
+	bar.Add(t_("Dock"), THISBACK1(GroupDockMenu, 3));
+	bar.Add(t_("Auto Hide"), THISBACK1(GroupDockMenu, 4));
+	bar.Add(t_("Float"), THISBACK3(GroupMenuAction, activegroup, 5, -1));
+}
+
+void DockBase::GroupMenuAction(String name, int command, int alignment)
+{
+	DockableCtrl* ctrl = NULL;
+	Vector<int>& ids = groups.Get(name);
+	int ncount = ids.GetCount();
+
+	bool aligned = (alignment >= DockableCtrl::DOCK_LEFT && alignment <= DockableCtrl::DOCK_BOTTOM);
+
+	for(int i = 0; i < ncount * 2; i++)
+	{
+		if(i < ncount)
+		{
+			ctrl = GetCtrlRecordFromId(ids[i])->ctrl;
+			ASSERT(ctrl);
+			ctrl->Shut();
+		}
+		else
+		{
+			if(i == ncount) RefreshTabWindowList();
+			ctrl = GetCtrlRecordFromId(ids[i - ncount])->ctrl;
+			ASSERT(ctrl);
+
+			switch(command)
+			{
+				case 0: Dock(ctrl->DockingStyle(alignment, DockableCtrl::STATE_SHOW)); break;
+				case 1: Dock(ctrl->SetSizeHint(Size(0,0)).DockingStyle(alignment, DockableCtrl::STATE_AUTO)); break;
+				case 2: Dock(ctrl->DockFloat()); break;
+				case 3:	if (i - ncount == 0) TabifyGroupAndDock(name, alignment); break;
+				case 4: if (i - ncount == 0) TabifyGroupAndAutoHide(name, alignment); break;
+				case 5: if (i - ncount == 0) TabifyGroupAndFloat(name); break;
+			}
+		}
+	}
 }
 
 bool DockBase::Key(dword key, int count)

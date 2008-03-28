@@ -1,7 +1,7 @@
 //==============================================================================================
 // DockCtrl: A dockable widget framework for U++
 // Author:	 Ismail YILMAZ
-// Version:	 0.52 (DEV-0803b.1)
+// Version:	 0.52 (DEV-0803b.2)
 //==============================================================================================
 
 #ifndef DOCKCTRL_H
@@ -235,6 +235,7 @@ public:
 	
 	void SetActiveTab(int n);
 	void SetActiveTab(DockableCtrl& dock);
+	void SetActiveTabTitle(String name, Image icon);
 	int  GetActiveTab();
 	int  Find(int itemid);
 	int	 Find(DockableCtrl& dock);
@@ -395,11 +396,11 @@ public:
 	inline int 		State()		const			{ return dockstate;		}
 	inline int 		Position()	const			{ return dockposition;	}
 	
-	inline bool 	IsDocked()					{ return !IsShut() && !IsTabbed() && !IsFloating();	}
-	inline bool		IsHidden()					{ return IsDocked() && dockstate == STATE_HIDE;		}
-	inline bool 	IsAutoHidden()				{ return IsDocked() && dockstate == STATE_AUTO;		}
-	inline bool 	IsShut()					{ return dockalignment == DOCK_NONE && dockstate == STATE_SHUT; }
-	inline bool 	IsFloating()				{ return dockalignment == DOCK_NONE && dockstate != STATE_SHUT; }
+	inline bool 	IsDocked()					{ return !IsShut() && !IsTabbed() && !IsFloating();					}
+	inline bool		IsHidden()					{ return IsDocked() && dockstate == STATE_HIDE;						}
+	inline bool 	IsAutoHidden()				{ return IsDocked() && dockstate == STATE_AUTO;						}
+	inline bool 	IsShut()					{ return dockalignment == DOCK_NONE && dockstate == STATE_SHUT; 	}
+	inline bool 	IsFloating()				{ return dockalignment == DOCK_NONE && dockstate != STATE_SHUT; 	}
 	inline bool 	IsTabbed()					{ return dockstate == STATE_TABBED;	}
 
 	int 			GetType()					{ return docktype;	}							// Returns the type of the derived dockablectrl class.
@@ -490,7 +491,7 @@ protected:
 	virtual void 	ContextMenu();
 	virtual	void 	OnShutWindow();
 	virtual void 	Layout();
-
+	virtual void	Paint(Draw& d)												{ d.DrawRect(GetSize(), SColorFace()); }	
 public:
 	virtual void 	ShowDragBar()												{ hasdragbar = true; 	}
 	virtual void 	HideDragBar()												{ hasdragbar = false;	}
@@ -554,7 +555,8 @@ protected:
 	virtual void 	ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags);
 	virtual void 	MouseMove(Point p, dword keyflags);
 	virtual void 	Paint(Draw& d);	
-	
+
+public:
 	virtual void	DockWindowMenu(Bar& bar);
 	virtual void	DockWindowDockMenu(Bar& bar);
 	
@@ -631,6 +633,7 @@ public:
 	void 			Detach(DockableCtrl& ctrl);
 	void 			DetachAll();
 
+	TabWindow&		SetGroup(String name)			{ groupname = name; groupwindow = true; return *this;}
 	void 			SetActive(int index);
 	void 			SetActive(DockableCtrl& ctrl);
 	DockableCtrl* 	GetActiveCtrl();
@@ -641,6 +644,7 @@ public:
 
 	bool 			HasCtrlInRange();
 	bool 			HasTabbedDock();
+	bool			IsGroupWindow()					{ return groupwindow;			}
 	bool 			IsTabAnimating()				{ return animating;		 		}
 	bool 			IsDestroyed()					{ return destroyed;				}	
 
@@ -687,6 +691,8 @@ private:
 	int				childcount;
 	bool 			destroyed;
 	bool			animating;
+	bool			groupwindow;
+	String			groupname;
 	Image			animimage;
 	TabInterface 	tabs;
 	DockableCtrl* 	activectrl;
@@ -780,7 +786,9 @@ public:
 	void				AddtoTabWindow(DockableCtrl& ctrl);
 	void				RemovefromTabWindow(DockableCtrl& ctrl);
 	void 				RemoveTabWindows();
-		
+
+	void				RefreshTabWindowList();
+			
 private:
 	PaneFrame& 			AttachAsDock(DockableCtrl& ctrl);
 	PaneFrame& 			AttachAsTab(DockableCtrl& ctrl);
@@ -790,7 +798,6 @@ private:
 	void				RemoveTabWindow(TabWindow* tabwindow);
 	void				RemoveTabWindow(int position);
 	void				RemovefromTabWindow(int position);
-	void				RefreshTabWindowList();
 	TabWindow*			FindTabWindow(int position);
 	TabWindow*			FindTabWindow(DockableCtrl& ctrl);
 	
@@ -922,7 +929,13 @@ public:
 
 	Ctrl& 				Dock(DockableCtrl& ctrl);
 	DockableCtrl&		Tabify(DockableCtrl& ctrl1, DockableCtrl& ctrl2);
+	DockableCtrl&		Tabify(String groupname, DockableCtrl& ctrl1, DockableCtrl& ctrl2);
 	DockableCtrl&		Tabify(DockableCtrl& ctrl1, DockableCtrl& ctrl2, DockableCtrl& ctrl3, DockableCtrl& ctrl4);
+	DockableCtrl&		Tabify(String groupname, DockableCtrl& ctrl1, DockableCtrl& ctrl2, DockableCtrl& ctrl3, DockableCtrl& ctrl4);
+
+	void				TabifyGroupAndDock(String groupname, int alignment);
+	void				TabifyGroupAndAutoHide(String groupname, int alignment);
+	void				TabifyGroupAndFloat(String groupname);
 
 	void				AllowAll();
 	void				AllowLeft();								
@@ -957,7 +970,7 @@ public:
 	void				AddWidgetLayout(String name, DockableCtrl& ctrl, int alignment, int state, int position = 0);
 	void				SetWidgetLayout(String name);
 	void				SetWidgetLayout(int index);
-		
+
 	virtual bool		Key(dword key, int count);
 	virtual	void		Serialize(Stream& s);
 
@@ -965,6 +978,9 @@ protected:
 	void				InitFrameWork();
 	void				InitDefaultLayout();
 	void				InitFrameWorkSettings();
+	
+	void				FrameWorkReady(bool b = true)				{ isready =  b;		}
+	bool				IsFrameWorkReady()							{ return isready; 	}
 	     
 private:
 	void 				Attach(DockableCtrl& ctrl);
@@ -980,7 +996,7 @@ private:
 		int				id;
 		CtrlRecord()	{ ctrl = NULL; id = 0; }
 	};
-
+	
 	void				AddCtrlRecord(DockableCtrl& ctrl);
 	void				RemoveCtrlRecord(DockableCtrl& ctrl);
 	void				DeleteCtrlRecords();
@@ -990,17 +1006,47 @@ private:
 	CtrlRecord*			GetCtrlRecordFromId(int id);
 	Vector<CtrlRecord*>& GetCtrlRecords()							{ return ctrls; };
 
-
 	DockableCtrl*		GetDockedWindowFromIndex(int index);
 	TabWindow*			GetTabWindowFromIndex(int index);
 	int					GetTabWindowCount();
 	int					GetDockedWindowCount();
 
+//	TabWindow*			AddTabWindow();
+//	TabWindow*			AddTabWindow(DockableCtrl ctrl);
+	void				RemoveTabWindows();
+	void				RefreshTabWindowList();
+	Vector<TabWindow*>&	GetTabWindows();
+	
+	void				SerializeLayout(Stream& s, bool deflay = false);
+
+protected:
 	void				NewWidgetLayout(String name);
 	void				DelWidgetLayout(String name);
 	int					AddWidgetLayout(String name);
-	void				SerializeLayout(Stream& s, bool deflay = false);
+
+	void				NewWidgetGroup(String name, bool predefined = false);
+	bool				AddWidgettoGroup(String name, DockableCtrl& ctrl);
+	bool				AddWidgettoGroup(String name, int id);
+	bool				DeleteWidgetfromGroup(String name, DockableCtrl& ctrl);
+	bool				DeleteWidgetfromGroup(String name, int id);	
+	int					AddWidgetGroup(String name);
+	void				DeleteWidgetGroup(String name);
+	Vector<int>&		FindWidgetGroup(String name);
+	bool				FindWidgetinGroup(String name, int id);
+
+private:
+	void				GroupDrop(int parent, int ii, PasteClip& d);	
+	void				GroupDrag();
+	void				GroupSelect();
+	void				GroupMenu(Bar& bar);
+	void				GroupDockMenu(Bar& bar, int command);
+	void				GroupTabifyMenu(Bar& bar, int command);
+	void				GroupMenuAction(String name, int command, int alignment);
+
+	void				RefreshGroups();
 	
+	DockableCtrl&		TabifyGroup(String name);
+			
 	void				SetSkin(int index);
 
 private:
@@ -1012,7 +1058,7 @@ private:
 	bool				tabsautoalign;
 	bool				autohideicons;
 	bool				autohideclose;
-	
+	bool				isready;
 	bool				IsSideAllowed(int i)						{ return AllowedSides[i]; }
 	bool				AllowedSides[4];
 		
@@ -1022,21 +1068,33 @@ private:
 	void				OnSelectLayout();
 	void				OnAddNewLayout();
 	void				OnDeleteLayout();
+	void				OnAddNewGroup();
+	void				OnDeleteGroup();
 	void 				RefreshPanel();
+	void				CleanUp();
 			
 private:
 	Size 				panesize;
 	PaneFrame 			pane[4];
 	AutoHideBar			hide[4];
 	dword				hotkey;
+	String				predefinedlayout;
+	String				predefinedgroup;
+	String				activegroup;
 
-	Vector<ImageCtrl*> 					panelicons;
 	WithControlPanelLayout<TopWindow> 	controlpanel;
-	WithLayoutSettingsLayout<TopWindow>	newlayoutdialog;
-	ArrayMap<String, String>			layouts;
-	String								windowlayout;
-	Vector<CtrlRecord*> 				ctrls;	
+	WithWidgetListLayout<ParentCtrl>	listtab;
+	WithWidgetGroupsLayout<ParentCtrl>	grouptab;
 	
+	TreeCtrl							grouptree;
+	TabCtrl								paneltab;
+		
+	Vector<TabWindow*>					tabwindows;
+	Array<ImageCtrl*> 					panelicons;
+	ArrayMap<String, String>			layouts;
+	ArrayMap<String, Vector<int>>		groups;
+	Vector<CtrlRecord*> 				ctrls;
+		
 	friend class 		DockableCtrl;
 	friend class 		DockWindow;
 	friend class 		TabWindow;
@@ -1046,6 +1104,12 @@ public:
 	const DockCtrlChStyle::Style* 	style;
 	DockBase& 						SetStyle(const DockCtrlChStyle::Style& s);
 	const DockCtrlChStyle::Style*  	GetStyle()	{ return style ? style : &DockCtrlChStyle::StyleDefault(); 	}
+
+public:
+	DockBase& WidgetGroup(String name);
+	DockBase& operator%(DockableCtrl& ctrl);
+	DockBase& WidgetLayout(String name);
+	DockBase& operator/(DockableCtrl& ctrl);
 
 public:
 	DockBase();
@@ -1059,7 +1123,7 @@ public:
 	virtual void InitDockCtrl() 		{}	
 	virtual void InitCustomLayouts()	{}
 	void	State(int reason);
-
+	void	Serialize(Stream& s)		{ DockBase::Serialize(s); }
 private:
 	bool ctrlinit;
 	

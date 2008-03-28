@@ -177,7 +177,7 @@ LRESULT  DockableCtrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		switch(message)
 		{
-			case WM_MOVE:
+			case WM_MOVING:
 					if(!isdraggable) break;
 					isdragged = true;
 					SetDropTarget(DOCK_NONE, GetDropState());

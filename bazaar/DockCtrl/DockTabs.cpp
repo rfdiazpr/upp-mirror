@@ -96,7 +96,7 @@ void TabInterface::Remove(int n)
 
 void TabInterface::Close(int n)
 {
-	if(tabs.GetCount() <= 1 || n != active)
+	if(tabs.GetCount() < 1 || n >= tabs.GetCount())			// !!!
 			return;
 	int c 	= Find(tabs[n].id);
 	int nc	= GetNext(c);
@@ -117,8 +117,7 @@ void TabInterface::CloseAll()
 			tabs.At(i).id	= -1;
 			tabs.Remove(i);
 	}
-
-	if(hasscrollbar) scrollbar.SetTotal(tabs[0].cx);
+	if(hasscrollbar) scrollbar.SetTotal(0);//scrollbar.SetTotal(tabs[0].cx);
 	ReposTabs();
 	SetActiveTab(-1);	
 	id = -1;
@@ -155,6 +154,15 @@ void TabInterface::SetActiveTab(int n)
 void TabInterface::SetActiveTab(DockableCtrl& dock)
 {
 	SetActiveTab(Find(dock));	
+}
+
+void TabInterface::SetActiveTabTitle(String name, Image icon)
+{
+	if(active < 0) return;
+	Tab& t = tabs.At(active);
+	t.name = name;
+	t.icon = icon;
+	ReposTabs();
 }
 
 TabInterface& TabInterface::HasScrollBar(bool b)

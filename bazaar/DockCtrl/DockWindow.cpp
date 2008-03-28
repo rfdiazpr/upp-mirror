@@ -32,7 +32,7 @@ DockWindow::DockWindow() : DockableCtrl()
 	SetFrame(FieldFrame());
 	ShowDragBar();
 	ShowDragBarButtons(true);
-	Sizeable().Zoomable().TopMost().MinimizeBox().MaximizeBox().BackPaint();
+	Sizeable().Zoomable().ToolWindow().TopMost().MinimizeBox().MaximizeBox().BackPaint();
 	WhenContextMenu	= THISBACK(DockWindowMenu);		
 
 }
@@ -125,26 +125,16 @@ void DockWindow::AutoHide()
 		GetBase().Dock(this->DockingStyle(Alignment(), STATE_SHOW, Position()));
 		return;
 	}
-	ReSize();
-
 	int alignment 	= Alignment();
 	int state		= STATE_AUTO;
 	int position	= Position();
 	
 	if(IsTabbed())
 	{
-		TabWindow *tabwindow = GetOwnerTab();
-		while(tabwindow)
-		{
-		 	if(tabwindow->IsDocked())
-			{
-			    alignment 	= tabwindow->Alignment();
-			    position	= tabwindow->Position();
-			    break;
-			}
-			else if(tabwindow->IsFloating()) return;
-			tabwindow = tabwindow->GetOwnerTab();
-		}	
+		TabWindow* tabwindow = GetOwnerTab()->GetBaseTab();
+		if(tabwindow->IsFloating()) return;
+		alignment 	= tabwindow->Alignment();
+		position	= tabwindow->Position();
 		GetOwnerTab()->Detach(*this);
 	}
 	else
@@ -256,10 +246,9 @@ void DockWindow::ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dw
 {
 	if(HasDragBar() && child == &dragbar)
 	{
-		 if(event == LEFTDRAG) StartWindowDrag();
-		 if(event == LEFTDOUBLE && IsAutoHidden()) 
-		 	Dock(Alignment(), STATE_SHOW, Position());
-		 if(event == RIGHTDOWN  && !hasbarbuttons) ContextMenu();
+		if(event == LEFTDRAG) StartWindowDrag();
+		if(event == LEFTDOUBLE && IsAutoHidden()) Dock(Alignment(), STATE_SHOW, Position());
+		if(event == RIGHTDOWN  && !hasbarbuttons) ContextMenu();
 	}
 	TopWindow::ChildMouseEvent(child, event, p, zdelta, keyflags);
 }
@@ -307,7 +296,7 @@ void DockWindow::DockWindowMenu(Bar& bar)
 {
 	bool floatingbase = false;
 	TabWindow* c = GetOwnerTab();
-	if(c) floatingbase = GetOwnerTab()->GetBaseTab()->IsFloating();
+	if(c) floatingbase = c->GetBaseTab()->IsFloating();
 
 	bar.Add(t_("Dock"),	THISBACK(DockWindowDockMenu));
 	bar.Add(!IsFloating(), t_("Float"),THISBACK(Float));
@@ -454,6 +443,7 @@ TabWindow::TabWindow()
 	
 	destroyed	= false;
 	animating	= false;
+	groupwindow = false;
 	position	= -1;
 	previous	= -1;
 	nestlevel	=  0;
@@ -475,6 +465,7 @@ TabWindow::~TabWindow()
 	previous	= -1;
 	nestlevel	=  0;
 	childcount	=  0;
+	groupwindow = false;
 	activectrl 	= NULL;
 }
 
@@ -482,7 +473,7 @@ void TabWindow::Attach(DockableCtrl& ctrl, int makeactive)
 {
 	if(ctrl.IsTabWindow())
 	{
-		if(GetBase().DockBase::tabsnested) AttachNested(ctrl, makeactive);				 
+		if(GetBase().DockBase::tabsnested || IsGroupWindow()) AttachNested(ctrl, makeactive);				 
 		else AttachNormal(ctrl, makeactive);
 	}
 	else Attach0(ctrl, makeactive);
@@ -545,8 +536,10 @@ void TabWindow::Detach(DockableCtrl& ctrl)
 	Size sz = GetBaseTab()->GetSizeHint();
 	if(!ctrl.IsFloating()) ctrl.ShowDragBar();
 	ctrl.Remove();
+	int id = tabs.Find(ctrl);
+	if(id >= 0) tabs.Close(id);
+	else if(position >= 0) tabs.Close(position);
 	childcount--;
-	tabs.Close(position);
 	ReposChilds();
 	ctrl.SetSizeHint(sz);
 	RemoveTabWindow();
@@ -604,6 +597,8 @@ bool TabWindow::RemoveTabWindow()
 	if(ChildCount() == 1)
 	{
 		DockWindow* lastctrl = reinterpret_cast<DockWindow*>(GetChildAt(1));
+		tabs.CloseAll();
+		RemoveFrame(tabs);
 		if(lastctrl)
 		{
 			int a = Alignment();
@@ -611,11 +606,11 @@ bool TabWindow::RemoveTabWindow()
 			int p = Position();
 			
 			lastctrl->Remove();
+			childcount = 0;
 			if(IsShut()) lastctrl->Shut();
 			if(IsTabbed())
 			{
 				TabInterface& tabs = GetOwnerTab()->GetTabs();
-				tabs.Close(tabs.GetActiveTab());
 				GetOwnerTab()->Attach(*lastctrl);
 				Shut();
 			}
@@ -637,8 +632,6 @@ bool TabWindow::RemoveTabWindow()
 				lastctrl->Dock(a, s, p);
 				lastctrl->SetOwnerTab(NULL);
 			}
-			RemoveFrame(tabs);
-			childcount = 0;
 			DockingStyle(DOCK_NONE, STATE_SHUT, 0);
 			return destroyed = true;
 		}
@@ -735,6 +728,7 @@ void TabWindow::StopTabAnimation()
 	if(!RemoveTabWindow())
 	{
 		SetActive(previous);
+		if(GetActiveTab())
 		SetLabel(GetTabs()
 				.GetTabs()
 				.At(GetActiveTab()).dock->GetLabel());
@@ -836,15 +830,15 @@ void TabWindow::RefreshTabWindowLabel(DockableCtrl& ctrl)
 	if(IsTabbed())
 	{
 		TabWindow* tabwindow = GetOwnerTab();
+		TabInterface::Tab& sourcetab  = GetTabs().GetTabs().At(GetActiveTab());
+		String& label 	= sourcetab.name;
+		Image& icon 	= sourcetab.icon;
 		while(tabwindow)
 		{
 			int id = tabwindow->GetActiveTab();
 			if(id < 0) break;
-			TabInterface::Tab& sourcetab  = GetTabs().GetTabs().At(GetActiveTab());
-			TabInterface::Tab& targettab  =	tabwindow->GetTabs().GetTabs().At(id);
-			String& label 	= targettab.name = sourcetab.name;
-			Image& icon 	= targettab.icon = sourcetab.icon;
-			tabwindow->GetTabs().ReposTabs();
+
+			tabwindow->GetTabs().SetActiveTabTitle(label, icon);
 			if(!tabwindow->GetOwnerTab())
 			{
 				if(tabwindow->IsAutoHidden())
@@ -853,22 +847,19 @@ void TabWindow::RefreshTabWindowLabel(DockableCtrl& ctrl)
 					id = hidebar->Find((DockableCtrl&)*tabwindow);
 					if(id >= 0)
 					{
-						TabInterface::Tab& t = hidebar->GetTabs().At(id);
-						t.name = label;
-						t.icon = icon;
-						hidebar->ReposTabs();
+						hidebar->SetActiveTabTitle(label, icon);
 						hidebar->Refresh();
 					}
 						
 				}
-				tabwindow->SetLabel(label);
-				tabwindow->SetIcon (icon);
+				tabwindow->SetLabel(label).SetIcon(icon).RefreshLayoutDeep();
 			}
-			tabwindow->SetLabel(label);
-			tabwindow->SetIcon(icon);
-			tabwindow->RefreshLayoutDeep();
+			tabwindow->SetLabel(label).SetIcon(icon).RefreshLayoutDeep();
 			tabwindow = tabwindow->GetOwnerTab();
 		}
+		tabwindow = GetBaseTab();
+		tabwindow->GetTabs().SetActiveTabTitle(label, icon);
+		tabwindow->SetLabel(label).SetIcon(icon).RefreshLayoutDeep();
 	}
 	else 
 	{
@@ -878,10 +869,7 @@ void TabWindow::RefreshTabWindowLabel(DockableCtrl& ctrl)
 			id = hidebar->Find((DockableCtrl&)*this);
 			if(id >= 0)
 			{
-				TabInterface::Tab& t = hidebar->GetTabs().At(id);
-				t.name = ctrl.GetLabel();
-				t.icon = ctrl.GetIcon();
-				hidebar->ReposTabs();
+				hidebar->SetActiveTabTitle(ctrl.GetLabel(), ctrl.GetIcon());
 				hidebar->Refresh();
 			}
 		}
@@ -891,6 +879,7 @@ void TabWindow::RefreshTabWindowLabel(DockableCtrl& ctrl)
 		RefreshLayoutDeep();
 	}
 }
+
 void TabWindow::Paint(Draw& d)
 {
 	IsTabAnimating() ? d.DrawImage(GetSize(), animimage) :	TopWindow::Paint(d);
@@ -926,6 +915,8 @@ void TabWindow::Serialize(Stream& s)
 		newsize.Serialize(s);
 		s / childcount;
 		s / activetab;
+		s % groupwindow;
+		s / groupname;
 		if(!GetOwnerTab() && IsFloating()) 
 		{
 			r.Serialize(s);
@@ -942,6 +933,8 @@ void TabWindow::Serialize(Stream& s)
 		newsize.Serialize(s);
 		s / childcount; 
 		s / activetab;
+		s % groupwindow;
+		s / groupname;
 
 		if(!tabwindow)
 		{

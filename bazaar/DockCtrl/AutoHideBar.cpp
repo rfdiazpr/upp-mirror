@@ -14,8 +14,6 @@ void AutoHideBar::Detach(DockableCtrl& ctrl)
 {
 	DockWindow& c = reinterpret_cast<DockWindow&>(ctrl);
 	active = TabInterface::Find(ctrl);
-//	if(active == -1) return;
-
 	if(tabs.GetCount() == 1) 
 	{
 		CloseAll();
@@ -82,7 +80,8 @@ void AutoHideBar::ShowWindow()
 		}
 		popup.SetRect(rr);
 		popup.Add(hiddenwindow->SizePos());
-		popup.PopUp(GetParent(), false, true, false, false);
+		hiddenwindow->Ctrl::Show();
+		popup.PopUp(GetOwner(), false, true, false, false);
 		ctrl = hiddenwindow;
 		Ctrl::ProcessEvents();
 		AdjustSize(rr, s);

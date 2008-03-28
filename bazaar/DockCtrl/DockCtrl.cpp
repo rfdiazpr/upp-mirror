@@ -602,6 +602,10 @@ void DockBase::InitFrameWork()
 
 DockBase::DockBase()
 {
+	skinindex =	layoutindex = 0;
+	tabsicons =	tabsclose =	tabsautoalign = true;
+	tabsnested = false;
+	autohideicons =	autohideclose = true;
 	isready = false;
     panesize.Clear();
     LeftPos(0, 0).TopPos(0,0);

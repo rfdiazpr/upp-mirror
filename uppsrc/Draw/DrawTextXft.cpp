@@ -4,7 +4,7 @@ NAMESPACE_UPP
 
 #ifdef PLATFORM_XFT
 
-#define LLOG(x)       //LOG(x)
+#define LLOG(x)       LOG(x)
 #define LTIMING(x)    //RTIMING(x)
 
 struct XFTFontFaceInfo {
@@ -28,10 +28,9 @@ ArrayMap<String, XFTFontFaceInfo>& XFTFontFace()
 FontInfo::Data::Data()
 {
 	refcount = 1;
-	for(int i = 0; i < 256; i++)
-		width[i] = NULL;
+	for(int i = 0; i < 64; i++)
+		base[i] = NULL;
 	xftfont = NULL;
-	default_width = NULL;
 }
 
 FontInfo::Data::~Data()
@@ -41,40 +40,25 @@ FontInfo::Data::~Data()
 		XftFontClose(Xdisplay, xftfont0);
 	if(xftfont)
 		XftFontClose(Xdisplay, xftfont);
-	for(int i = 0; i < 256; i++)
-		if(width[i] && width[i] != default_width) delete[] width[i];
-	if(default_width)
-		delete[] default_width;
+	for(int i = 0; i < 64; i++)
+		if(base[i]) delete[] base[i];
 }
 
-void FontInfo::Data::GetMetrics(int page, CharMetrics *t)
+void FontInfo::Data::GetMetrics(CharMetrics *t, int from, int count)
 {
 	DrawLock __;
 	LTIMING("GetMetrics");
-	LLOG("GetMetrics " << font << " char:" << page * 256 << ", 256");
+	LLOG("GetMetrics " << font << " " << from << ", " << count);
 	if(xftfont) {
-		wchar h[1];//TODO Optimize!!!
-		for(int i = 0; i < 256; i++) {
+		for(int i = 0; i < count; i++) {
 			LTIMING("XftTextExtents16");
-			*h = (page << 8) + i;
+			wchar h = from + i;
 			XGlyphInfo info;
-			XftTextExtents16(Xdisplay, xftfont0, h, 1, &info);
+			XftTextExtents16(Xdisplay, xftfont0, &h, 1, &info);
 			t[i].width = info.xOff;
 			t[i].lspc = -info.x;
 			t[i].rspc = info.xOff - info.width + info.x;
 		}
-
-/*		FT_UInt h[1];
-		for(int i = 0; i < 256; i++) {
-			LTIMING("XftTextExtents16");
-			*h = XftCharIndex(Xdisplay, xftfont, (page << 8) + i);
-			XGlyphInfo info;
-			XftGlyphExtents(Xdisplay, xftfont, h, 1, &info);
-			t[i].width = info.xOff;
-			t[i].lspc = -info.x;
-			t[i].rspc = info.xOff - info.width + info.x;
-		}
-*/
 	}
 }
 
@@ -220,12 +204,11 @@ FontInfo Draw::Acquire(Font font, int angle, int device)
 		if(f == fh) break;
 		if(f->font == font && f->angle == angle && f->device == device)
 		{
-			LLOG("Reusing " << f->font << " count:" << f->count);
+			LLOG("Reusing " << f->font);
 			if(f->InList(LRU)) {
 				f->Unlink(LRU);
 				FontCached--;
-				LLOG("Removing from cache " << f->font << " count:" << f->count <<
-				            " cached:" << FontCached);
+				LLOG("Removing from cache " << f->font << " cached:" << FontCached);
 			}
 			f->refcount++;
 			return f;

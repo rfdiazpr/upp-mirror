@@ -2,7 +2,6 @@
 
 NAMESPACE_UPP
 
-
 #ifdef PLATFORM_WIN32
 
 #define LLOG(x)     //  LOG(x)
@@ -183,9 +182,8 @@ FontInfo::Data::Data()
 {
 	refcount = 1;
 	hfont = NULL;
-	for(int i = 0; i < 256; i++)
-		width[i] = NULL;
-	default_width = NULL;
+	for(int i = 0; i < 64; i++)
+		base[i] = NULL;
 }
 
 FontInfo::Data::~Data()
@@ -193,55 +191,73 @@ FontInfo::Data::~Data()
 	DrawLock __;
 	if(hfont)
 		DeleteObject(hfont);
-	for(int i = 0; i < 256; i++)
-		if(width[i] && width[i] != default_width) delete[] width[i];
-	if(default_width)
-		delete[] default_width;
+	for(int i = 0; i < 64; i++)
+		if(base[i]) delete[] base[i];
 }
 
-void FontInfo::Data::GetMetrics(int page, CharMetrics *t)
+int sGetCW(HDC hdc, wchar *h, int n)
+{
+	SIZE sz;
+	return GetTextExtentPoint32W(hdc, h, n, &sz) ? sz.cx : 0;
+}
+
+void FontInfo::Data::GetMetrics(CharMetrics *t, int from, int count)
 {
 	DrawLock __;
 	HDC hdc = ScreenHDC();
 	HFONT ohfont = (HFONT) ::SelectObject(hdc, hfont);
-	page <<= 8;
-	bool abca = false, abcw = false;
-	ABC abc[256];
-#ifdef PLATFORM_WINCE
-	if(scaleable)
-		abcw = ::GetCharABCWidths(hdc, 0, 255, abc);
-#else
-	if(scaleable && !(abcw = ::GetCharABCWidthsW(hdc, page, page + 255, abc)))
-		abca = ::GetCharABCWidthsA(hdc, 0, 255, abc);
-#endif
-	if(abcw)
-	{
-		for(ABC *s = abc, *lim = abc + 256; s < lim; s++, t++)
-		{
-			t->width = s->abcA + s->abcB + s->abcC;
-			t->lspc = s->abcA;
-			t->rspc = s->abcC;
+	if(from >= 8192) {
+		TIMING("GetMetricsSlow");
+		wchar h[3];
+		h[0] = 'x';
+		h[1] = 'x';
+		h[2] = 'x';
+		int w0 = sGetCW(hdc, h, 2);
+		for(int i = 0; i < count; i++) {
+			h[1] = from + i;
+			t[i].width = sGetCW(hdc, h, 3) - w0;
+			t[i].lspc = t[i].rspc = 0;
 		}
 	}
-	else
-	{
-		int wb[256];
+	else {
+		bool abca = false, abcw = false;
+		Buffer<ABC> abc(count);
 #ifdef PLATFORM_WINCE
-		::GetCharWidth32(hdc, page, page + 255, wb);
+		if(scaleable)
+			abcw = ::GetCharABCWidths(hdc, from, from + count - 1, abc);
 #else
-		::GetCharWidthW(hdc, page, page + 255, wb);
+		if(scaleable && !(abcw = ::GetCharABCWidthsW(hdc, from, from + count - 1, abc)))
+			abca = ::GetCharABCWidthsA(hdc, from, from + count - 1, abc);
 #endif
-		for(int *s = wb, *lim = wb + 256; s < lim; s++, t++)
+		if(abcw)
 		{
-			t->width = *s - overhang;
-			if(abca)
+			for(ABC *s = abc, *lim = abc + count; s < lim; s++, t++)
 			{
-				ABC aa = abc[(byte)ToAscii(page++)];
-				t->lspc = aa.abcA;
-				t->rspc = aa.abcC;
+				t->width = s->abcA + s->abcB + s->abcC;
+				t->lspc = s->abcA;
+				t->rspc = s->abcC;
 			}
-			else
-				t->lspc = t->rspc = 0;
+		}
+		else
+		{
+			Buffer<int> wb(count);
+#ifdef PLATFORM_WINCE
+			::GetCharWidth32(hdc, from, from + count - 1, wb);
+#else
+			::GetCharWidthW(hdc, from, from + count - 1, wb);
+#endif
+			for(int *s = wb, *lim = wb + count; s < lim; s++, t++)
+			{
+				t->width = *s - overhang;
+				if(abca)
+				{
+					ABC aa = abc[(byte)ToAscii(from++)];
+					t->lspc = aa.abcA;
+					t->rspc = aa.abcC;
+				}
+				else
+					t->lspc = t->rspc = 0;
+			}
 		}
 	}
 	::SelectObject(hdc, ohfont);
@@ -348,7 +364,7 @@ FontInfo Draw::Acquire(Font font, HDC hdc, int angle, int device)
 		::GetKerningPairs(hdc, n, kp);
 		const KERNINGPAIR *p = kp;
 		while(n--) {
-			f->kerning.Add(MAKEWORD(p->wFirst, p->wSecond), p->iKernAmount);
+			f->kerning.Add(MAKELONG(p->wFirst, p->wSecond), p->iKernAmount);
 			p++;
 		}
 	}

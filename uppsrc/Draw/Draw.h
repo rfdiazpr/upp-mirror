@@ -212,7 +212,7 @@ template<>
 String AsString(const Font& f);
 
 class FontInfo : Moveable<FontInfo> {
-	struct CharMetrics {
+	struct CharMetrics : Moveable<CharMetrics> {
 		int  width;
 		int  lspc;
 		int  rspc;
@@ -221,8 +221,21 @@ class FontInfo : Moveable<FontInfo> {
 		     { return width == b.width && lspc == b.lspc && rspc == b.rspc; }
 	};
 
+	struct Kinfo : Moveable<Kinfo> {
+		CharMetrics std;
+		byte       *flags;
+
+		Kinfo() {
+			flags = NULL;
+		}
+		~Kinfo() {
+			if(flags)
+				delete[] flags;
+		}
+	};
+
 	struct Data : public Link<Data, 2> {
-		void         GetMetrics(int page, CharMetrics *t);
+		void         GetMetrics(CharMetrics *t, int from, int count);
 	#ifdef PLATFORM_X11
 		void         CreateFont(int i, int cs);
 	#endif
@@ -251,8 +264,13 @@ class FontInfo : Moveable<FontInfo> {
 		int          firstchar;
 		int          charcount;
 		int          default_char;
-		CharMetrics *width[256];
-		CharMetrics *default_width;
+
+		CharMetrics *base[64];
+
+		Mutex         xmutex;
+		Vector<Kinfo> kinfo;
+		VectorMap<dword, CharMetrics> xx;
+
 		bool         fixedpitch;
 		bool         scaleable;
 		int          spacebefore;
@@ -266,7 +284,7 @@ class FontInfo : Moveable<FontInfo> {
 		String       filename;
 	#endif
 
-		VectorMap<word, int> kerning;
+		VectorMap<dword, int> kerning;
 
 		Data();
 		~Data();
@@ -279,7 +297,8 @@ class FontInfo : Moveable<FontInfo> {
 
 	CharMetrics       *CreateMetricsPage(int page) const;
 	CharMetrics       *GetPage(int page) const;
-	void               ComposeMetrics(Font fnt, CharMetrics *m) const;
+	void               ComposeMetrics(Font fnt, CharMetrics *m, int from) const;
+	CharMetrics        GetCM(int c) const;
 
 	void       Release();
 	void       Retain(const FontInfo& f);
@@ -302,7 +321,7 @@ public:
 	int        operator[](int c) const            { return GetWidth(c); }
 	int        GetLeftSpace(int c) const;
 	int        GetRightSpace(int c) const;
-	int        GetKerning(int c1, int c2) const   { return ptr->kerning.Get(MAKEWORD(c1, c2), 0); }
+	int        GetKerning(int c1, int c2) const   { return ptr->kerning.Get(MAKELONG(c1, c2), 0); }
 	bool       IsFixedPitch() const               { return ptr->fixedpitch; }
 	bool       IsScaleable() const                { return ptr->scaleable; }
 

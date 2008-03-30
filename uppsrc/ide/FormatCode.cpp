@@ -173,8 +173,10 @@ void Ide::FormatCode()
 	Formatter.setOperatorPaddingMode(astyle_OperatorPaddingMode);
 	Formatter.setEmptyLineFill(astyle_EmptyLineFill);
 	Formatter.setTabSpaceConversionMode(astyle_TabSpaceConversionMode);
-	Formatter.setTabIndentation(editortabsize, indent_spaces ? false : true);
-	Formatter.setSpaceIndentation(indent_spaces ? indent_amount : editortabsize);
+	if(!indent_spaces)
+		Formatter.setTabIndentation(editortabsize, true);
+	else
+		Formatter.setSpaceIndentation(indent_amount);
 
 	WString Dest = FormatCodeString(Src, Formatter);
 

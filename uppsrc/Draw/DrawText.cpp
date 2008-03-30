@@ -206,25 +206,56 @@ bool FontInfo::IsEqual(byte _charset, Font f, int angle, int device) const
 	       charset == _charset;
 }
 
-int FontInfo::GetWidth(int c) const {
+FontInfo::CharMetrics FontInfo::GetCM(int c) const
+{
+//	CharMetrics mm;
+//	ptr->GetMetrics(&mm, c, 1);
+//	return mm;
+
 	if(c < 0) c = (byte)c;
 	if(charset != CHARSET_UNICODE)
 		c = ToUnicode(c, charset);
-	return c < 65536 ? GetPage(c >> 8)[c & 0xff].width : 0;
+	ASSERT(c < 65536);
+	if(c >= 65536) {
+		CharMetrics h;
+		h.width = h.lspc = h.rspc = 0;
+		return h;
+	}
+	if(c < 2048)
+		return GetPage(c >> 5)[c & 31];
+	Mutex::Lock __(ptr->xmutex);
+	Kinfo& ki = ptr->kinfo.At((c >> 10) - 2);
+	if(!ki.flags) {
+		ki.flags = new byte[128];
+		memset(ki.flags, 0, 128);
+		ptr->GetMetrics(&ki.std, c, 1);
+	}
+	int fi = (c >> 3) & 127;
+	int fm = 1 << (c & 7);
+	if(ki.flags[fi] & fm)
+		return ki.std;
+	int q = ptr->xx.Find(c);
+	if(q >= 0)
+		return ptr->xx[q];
+	CharMetrics m;
+	ptr->GetMetrics(&m, c, 1);
+	if(m == ki.std)
+		ki.flags[fi] |= fm;
+	else
+		ptr->xx.Add(c, m);
+	return m;
+}
+
+int FontInfo::GetWidth(int c) const {
+	return GetCM(c).width;
 }
 
 int FontInfo::GetLeftSpace(int c) const {
-	if(c < 0) c = (byte)c;
-	if(charset != CHARSET_UNICODE)
-		c = ToUnicode(c, charset);
-	return c < 65536 ? GetPage(c >> 8)[c & 0xff].lspc : 0;
+	return GetCM(c).lspc;
 }
 
 int FontInfo::GetRightSpace(int c) const {
-	if(c < 0) c = (byte)c;
-	if(charset != CHARSET_UNICODE)
-		c = ToUnicode(c, charset);
-	return c < 65536 ? GetPage(c >> 8)[c & 0xff].rspc : 0;
+	return GetCM(c).rspc;
 }
 
 void Draw::Release(FontInfo::Data *font) {
@@ -327,34 +358,18 @@ FontInfo::CharMetrics *FontInfo::CreateMetricsPage(int page) const
 {
 	DrawLock __;
 	CharMetrics *cm;
-	if(page >= 46 && !ptr->default_width) {
-		ptr->default_width = new CharMetrics[256];
-		ptr->GetMetrics(page, ptr->default_width);
-		for(int i = 0; i < 256; i++)
-			if(ptr->default_width[i].width) {
-				for(int j = 0; j < 256; j++)
-					ptr->default_width[j] = ptr->default_width[i];
-				break;
-			}
-	}
-	cm = new CharMetrics[256];
-	ptr->GetMetrics(page, cm);
-	if(page == 1)
-		ComposeMetrics(ptr->font, cm);
-	if(page >= 46) {
-		for(int i = 0; i < 256; i++)
-			if(!(cm[i] == ptr->default_width[i]) && cm[i].width)
-				return cm;
-		delete[] cm;
-		cm = ptr->default_width;
-	}
+	cm = new CharMetrics[32];
+	ptr->GetMetrics(cm, page << 5, 32);
+	if(page >= 8 && page < 12)
+		ComposeMetrics(ptr->font, cm, page);
 	return cm;
 }
 
 FontInfo::CharMetrics *FontInfo::GetPage(int page) const
 {
-	ONCELOCK_PTR(ptr->width[page], CreateMetricsPage(page));
-	return ptr->width[page];
+	ASSERT(page >= 0 && page < 64);
+	ONCELOCK_PTR(ptr->base[page], CreateMetricsPage(page));
+	return ptr->base[page];
 }
 
 void Draw::DrawText(int x, int y, int angle, const wchar *text, Font font,

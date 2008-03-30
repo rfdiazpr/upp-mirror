@@ -167,12 +167,12 @@ gc_info[128] = {
 
 Draw& ScreenInfo();
 
-void FontInfo::ComposeMetrics(Font fnt, CharMetrics *m) const
+void FontInfo::ComposeMetrics(Font fnt, CharMetrics *m, int page) const
 {
 	if(fnt.GetFaceInfo() & Font::COMPOSED) {
 		FontInfo fi = ScreenInfo().GetFontInfoW(fnt);
-		for(int i = 0; i < 128; i++) {
-			int c = gc_info[i].ascii;
+		for(int i = 0; i < 32; i++) {
+			int c = gc_info[i + (page - 8) * 32].ascii;
 			m[i].lspc = fi.GetLeftSpace(c);
 			m[i].width = fi[c];
 			m[i].rspc = fi.GetRightSpace(c);

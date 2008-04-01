@@ -307,6 +307,13 @@ void RasterBaseCtrl::Layout(void)
 	
 	// calculates image scale factor
 	imageScale = CalcScale(imageScale, rasterWidth, maxHeight);
+	
+	// stops layouting if imagescale is null
+	if(!imageScale)
+	{
+		inside = false;
+		return;
+	}
 
 	// now calculate gaps to be exactly 10 pixels in every zoom factor
 	int gapSize = iscale(10, 1000, imageScale);
@@ -320,7 +327,10 @@ void RasterBaseCtrl::Layout(void)
 	int cacheHeight;
 	vScrollBar.SetPage(GetSize().cy);
 	vScrollBar.SetTotal(scaledRasterHeight);
-	vScrollBar.Set(iscale(vScrollPos, scaledRasterHeight, vScrollMax));
+	if(vScrollMax)
+		vScrollBar.Set(iscale(vScrollPos, scaledRasterHeight, vScrollMax));
+	else
+		vScrollBar.Set(0);
 	if(GetSize().cy <= scaledRasterHeight)
 	{
 		if(hasVScrollBar)
@@ -336,7 +346,10 @@ void RasterBaseCtrl::Layout(void)
 	int cacheWidth;
 	hScrollBar.SetPage(GetSize().cx);
 	hScrollBar.SetTotal(scaledRasterWidth);
-	hScrollBar.Set(iscale(hScrollPos, scaledRasterWidth, hScrollMax));
+	if(hScrollMax)
+		hScrollBar.Set(iscale(hScrollPos, scaledRasterWidth, hScrollMax));
+	else
+		hScrollBar.Set(0);
 	if(GetSize().cx <= scaledRasterWidth)
 	{
 		if(hasHScrollBar)

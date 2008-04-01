@@ -51,8 +51,11 @@ bool RasterCtrl::Open(String const &fileName)
 		Close();
 	
 	// opens file and associate to raster
-	imageStream.Open(fileName);
+	if(!imageStream.Open(fileName))
+		return false;
 	raster = StreamRaster::OpenAny(imageStream);
+	if(!raster)
+		return false;
 	
 	// loads pages in array of memoryrasters
 	pages.Clear();
@@ -75,6 +78,8 @@ bool RasterCtrl::Open(String const &fileName)
 	// signal page changed to thumbs and view
 	thumbs->Layout();
 	view->Layout();
+	
+	return true;
 	
 } // END RasterCtrl::Open()
 
@@ -100,12 +105,14 @@ void RasterCtrl::Close()
 // sets thumbnails on/off
 bool RasterCtrl::ShowThumbnails(bool s)
 {
+	bool prev = hasThumbnails;
+	
 	if(s)
 		hSplitter.Horz().SetPos(2000);
 	else
 		hSplitter.Horz().SetPos(0);
 	hasThumbnails = s;
-
+	return prev;
 	
 } // END RasterCtrl::ShowThumbnails()
 

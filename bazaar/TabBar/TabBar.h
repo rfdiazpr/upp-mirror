@@ -136,8 +136,6 @@ protected:
 private:
 	int id;
 	TabScrollBar sc;
-	Scroller scroller;
-	void Scroll();
 
 	Vector<Group> groups;
 	Vector<Tab> tabs;
@@ -165,7 +163,8 @@ private:
 	void DrawTab(Draw &w, const Style &s, const Size &sz, int i, bool enable);
 	int  TabPos(const String &g, bool &first, int i, int j, bool inactive);	
 	void SyncScrollBar(int total);
-	
+	void Scroll();
+
 	int  FindId(int id) const;
 	int  GetNext(int n) const;
 	int  GetPrev(int n) const;

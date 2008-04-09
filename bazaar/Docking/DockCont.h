@@ -29,19 +29,16 @@ class DockCont : public TopWindow
 public:
 	typedef DockCont CLASSNAME;
 
-	virtual void Paint(Draw &w);
-	
-	virtual void LeftDrag(Point p, dword keyflags);
 	virtual void LeftDown(Point p, dword keyflags)		{ SetFocus(); }
 	virtual void RightDown(Point p, dword keyflags) 	{ WindowMenu(); }
 	
 	virtual void Layout();
 	virtual void ChildRemoved(Ctrl *child);
 	virtual void ChildAdded(Ctrl *child);
-	virtual void ChildGotFocus() 						{ RefreshFocus(true); TopWindow::ChildGotFocus(); }
-	virtual void ChildLostFocus() 						{ RefreshFocus(HasFocusDeep()); TopWindow::ChildLostFocus(); }
-	virtual void GotFocus() 							{ RefreshFocus(true); }
-	virtual void LostFocus() 							{ RefreshFocus(HasFocusDeep()); }
+	virtual void ChildGotFocus() 						{ handle.RefreshFocus(true); TopWindow::ChildGotFocus(); }
+	virtual void ChildLostFocus() 						{ handle.RefreshFocus(HasFocusDeep()); TopWindow::ChildLostFocus(); }
+	virtual void GotFocus() 							{ handle.RefreshFocus(true); }
+	virtual void LostFocus() 							{ handle.RefreshFocus(HasFocusDeep()); }
 #if defined(PLATFORM_WIN32)
 public:
 	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
@@ -73,12 +70,30 @@ private:
 	};	
 	friend class DockContMenu;
 		
+	struct Handle : public FrameCtrl<Ctrl>
+	{
+		Callback WhenContext;
+		Callback WhenLeftDrag;
+		Handle() 										{ dc = NULL; focus = false; }
+		DockableCtrl *dc;
+		bool focus;
+		virtual void FrameLayout(Rect& r);
+		virtual void FrameAddSize(Size& sz);
+		
+		virtual void Paint(Draw &w);
+		virtual void LeftDrag(Point p, dword keyflags)	{ RefreshFocus(true); WhenLeftDrag(); }
+		virtual void RightDown(Point p, dword keyflags) { RefreshFocus(true); WhenContext(); }
+		
+		void	RefreshFocus(bool _focus);
+		int		GetHandleSize(const DockableCtrl::Style &s) const;
+	};
+		
 	int 		dragging;
 	DockState	dockstate;	
 	DockTabBar 	tabbar;
+	Handle 		handle;
 	ImgButton 	close, autohide, windowpos;	
 	Size 		usersize;
-	bool 		focus:1;
 	bool 		waitsync:1;	
 	DockWindow *base;
 	const DockableCtrl::Style *style;
@@ -96,22 +111,14 @@ private:
 	void 	AutoHideAlign(int align);
 
 	void 	CloseAll();
-	
-	int 	GetHandleSize(const DockableCtrl::Style &s) const;
-	Rect	GetHandleRect(const DockableCtrl::Style &s) const;
-	Rect	GetFrameRect(const DockableCtrl::Style &s) const;
 
 	DockableCtrl *Get0(int ix) const;
 	DockableCtrl *GetCurrent0() const							{ return Get0(tabbar.GetCursor()); }
 	
-	Point	GetClipWidth(const Rect &r) const;
 	void 	AddRemoveButton(Ctrl &c, bool state);
-	void	RefreshFocus(bool _focus)	{ if (focus != _focus) 	{ focus = _focus; Refresh(); } }
-	void 	SyncSize(Ctrl &c, const DockableCtrl::Style &s);
-	void	SyncCurrent();
 	void 	AddContainerSize(Size &sz) const;
 	bool 	IsDockAllowed0(int align, const Value &v) const;
-	void	SyncButtons(bool show);
+	void	SyncButtons(DockableCtrl &dc);
 
 	Ctrl *			CtrlCast(const Value &v) const		{ return IsDockCont(v) ? (Ctrl *)ContCast(v) : (Ctrl *)DockCast(v); }
 	DockCont *		ContCast(const Value &v) const 		{ return ValueTo<DockCont *>(v); } 
@@ -121,8 +128,6 @@ private:
 	Value 			ValueCast(DockableCtrl *dc) const 	{ return RawToValue<DockableCtrl *>(dc); }
 	Value 			ValueCast(DockCont *dc) const 		{ return RawToValue<DockCont *>(dc); }
 public:
-	bool quickdestroy;
-
 	void 			SetCursor(int ix)					{ tabbar.SetCursor(ix); TabSelected(); }	
 	int 			GetCursor()	const					{ return tabbar.GetCursor(); }
 	DockableCtrl &	Get(int ix) const					{ return *Get0(ix); }
@@ -153,7 +158,7 @@ public:
 	void			StartMouseDrag(const Point &p);
 	
 	DockWindow *	GetDockWindow() const			{ return base; }
-	void			SyncButtons()					{ SyncButtons(IsDockedAny() && !IsTabbed()); }
+	void			SyncButtons()					{ if (GetCount()) SyncButtons(GetCurrent()); }
 	
 	void 			Grouping(bool grouping)			{ tabbar.Grouping(grouping); GroupRefresh(); }
 	void			GroupRefresh();	

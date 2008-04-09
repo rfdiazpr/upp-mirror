@@ -25,7 +25,6 @@ public:
 		Value close[4];
 		Value windowpos[4];
 		Value autohide[4];
-		int btnsize;
 		Value highlight[2]; // Opaque, transparent
 	};	
 	static const Style& StyleDefault();		

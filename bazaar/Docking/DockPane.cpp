@@ -64,38 +64,89 @@ void DockPane::SmartRepos(Vector<int> &p, int ix, int inc)
 		p[0] = 10000;
 		return;
 	}
-
-	for (int i = cnt-1; i > 0; i--)
-		p[i] -= p[i-1];	
 	
 	int n = 0;
-//	int msz = 0;
-	int tsz = 0;
-//	Vector<int> minpos;
-//	minpos.SetCount(cnt);
+	int minsize = 0;
+	int maxsize = 0;
+	int totalsize = 0;
+	Vector<int> minpos;
+	Vector<int> maxpos;
+	minpos.SetCount(cnt);
+	maxpos.SetCount(cnt);
 	
+	// Convert pos to non-cumulative sizes
+	for (int i = cnt-1; i > 0; i--)
+		p[i] -= p[i-1];	
+
+	// Find min, max, and total sizes (int pos units)
 	for (Ctrl *c = GetFirstChild(); c; c = c->GetNext()) {
 		if (n != ix) {
-//			minpos[n] = min(ClientToPos(c->GetMinSize()), p[n]);
-//			msz += minpos[n];
-			tsz += p[n];
+			minpos[n] = min(ClientToPos(c->GetMinSize()), p[n]);
+			maxpos[n] = max(ClientToPos(c->GetMaxSize()), p[n]);
+			minsize += minpos[n];
+			maxsize += maxpos[n];
+			totalsize += p[n];
 		}
 		n++;
 	}
-	int dif = tsz - inc;
+
+	int dif = totalsize - inc;
 	int sum = 0;
+		
 	p[ix] += inc;
+	// Scale to minsize + proportional share of remaining space
 	for (int i = 0; i < cnt; i++) {
-		int t = p[i];
 		if (i != ix)
-			p[i] = (p[i]*dif) / tsz ;
+			p[i] = (minpos[i] + p[i]*dif) / totalsize;
 		sum += p[i];
-		t = p[i];
-		t++;
-	}	
+	}
+	if (totalsize > minsize && totalsize < maxsize) {	
+		dif = 0;
+		// Restrict to max size
+		for (int i = 0; i < cnt; i++)
+			if (i != ix && p[i] > maxpos[i]) {
+				dif += p[i] - maxpos[i];
+				p[i] = maxpos[i];
+				totalsize -= p[i];
+			}
+		// Share out newly spare space to ctrls that are less than maxsize
+		if (dif) {
+			sum = 0;
+			for (int i = 0; i < cnt; i++) {
+				if (i != ix && p[i] < maxpos[i])						
+					p[i] += (p[i]*dif) / totalsize;
+				sum += p[i];				
+			}
+		}
+	}
+	else if (totalsize < minsize) {
+		int resizemin = (totalsize + inc) / (cnt*4);
+		if (totalsize > cnt*resizemin) {
+			// Enforce an absolute minimum size
+			dif = 0;
+			sum = 0;
+			for (int i = 0; i < cnt; i++) {
+				if (i != ix && p[i] < resizemin && minpos[i] > p[i]) {
+					dif += resizemin - p[i];
+					p[i] = resizemin;	
+				}
+			}
+			totalsize -= cnt*resizemin;
+			for (int i = 0; i < cnt; i++) {
+				if (i != ix) {
+					int v = p[i] - resizemin;
+					if (v > 0)
+						p[i] -= (v*dif) / totalsize;
+				}
+				sum += p[i];
+			}
+		}
+	}
+	// Do remainder
 	dif = sum - 10000;
 	if (dif)
-		p[ix] += dif;
+		p[ix] += dif;		
+	// Return to cumulative sizes
 	for (int i = 1; i < cnt; i++)
 		p[i] += p[i-1];	
 }
@@ -123,12 +174,9 @@ void DockPane::SimpleRepos(Vector<int> &p, int ix, int inc)
 	int sum = 0;
 	p[ix] += inc;
 	for (int i = 0; i < cnt; i++) {
-		int t = p[i];
 		if (i != ix)
 			p[i] = (p[i]*dif) / tsz ;
 		sum += p[i];
-		t = p[i];
-		t++;
 	}	
 	dif = sum - 10000;
 	if (dif)

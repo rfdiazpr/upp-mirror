@@ -49,7 +49,9 @@ protected:
 	virtual HighlightCtrl &	GetHighlightCtrl()							{ return hlc; }	
 	void 			StartHighlight(DockCont *dcptr);		
 	void 			Highlight(int align, DockCont &cont, DockCont *target);
-	void 			StopHighlight(bool do_animate);
+	void 			StopHighlight(bool do_animatehl);
+	// Animation
+	void			FloatAnimate(DockCont &dc, Rect target);
 	// Called by containers to signal drag-drop events
 	virtual void 	ContainerDragStart(DockCont &dc);
 	virtual void 	ContainerDragMove(DockCont &dc);
@@ -82,20 +84,21 @@ protected:
 	bool			IsFrameAnimating(int align) const		{ return frameanim[align].inc; }	
 	bool			IsPaneAnimating(int align) const		{ return dockpane[align].IsAnimating(); }
 
-
 	friend class DockCont;
 
 private:
 	bool init;
 	bool tabbing;
 	bool autohide;
-	bool animate;
+	bool animatehl;
+	bool animatewnd;
 	bool nestedtabs;
 	bool grouping;
 	bool menubtn;
 	bool closebtn;
 	bool hidebtn;
 	bool dockable[4];
+	dword nesttoggle;
 
 	Array<DockCont> 			conts;
 	Vector<DockableCtrl *> 		dockers;
@@ -148,9 +151,11 @@ public:
 	void 			SetFrameSize(int align, int size);
 
 	DockWindow &	AnimateDelay(int ms)			{ animdelay = max(ms, 0); return *this; }
-	DockWindow &	Animate(bool animate = true, int ticks = 10, int interval = 20);
+	DockWindow &	Animate(bool highlight = true, bool window = true, int ticks = 10, int interval = 20);
 	DockWindow &	NoAnimate()						{ return Animate(false); }
-	bool			IsAnimated() const				{ return animate; }
+	bool			IsAnimated() const				{ return animatehl || animatewnd; }
+	bool			IsAnimatedWindows() const		{ return animatehl; }
+	bool			IsAnimatedHighlight() const		{ return animatewnd; }
 	
 	DockWindow &	Tabbing(bool _tabbing = true) 	{ tabbing = _tabbing; return *this; }
 	DockWindow &	NoTabbing()						{ return Tabbing(false); }
@@ -177,7 +182,8 @@ public:
 	DockWindow &	AutoHide(bool v = true);
 	bool			IsAutoHide()					{ return autohide; }
 	
-	dword			NestedToggleKey()				{ return K_CTRL | K_SHIFT; }
+	dword			NestedToggleKey()				{ return nesttoggle; }
+	dword			SetNestedToggleKey(dword key) 	{ nesttoggle = key; }
 	
 	DockWindow &	WindowButtons(bool menu, bool hide, bool close);
 	bool			HasMenuButtons() const			{ return menubtn; }	
@@ -221,8 +227,8 @@ private:
 	void 			SyncAll();
 
 	// Helpers		
-	void 			Dock0(int align, Ctrl &c, int pos, bool do_animate = false, bool ishighlight = false);
-	void 			Undock0(Ctrl &c, bool do_animate = false, int fsz = -1, bool ishighlight = false);		
+	void 			Dock0(int align, Ctrl &c, int pos, bool do_animatehl = false, bool ishighlight = false);
+	void 			Undock0(Ctrl &c, bool do_animatehl = false, int fsz = -1, bool ishighlight = false);		
 	
 	void			StartFrameAnimate(int align, int targetsize);
 	void			FrameAnimateTick();

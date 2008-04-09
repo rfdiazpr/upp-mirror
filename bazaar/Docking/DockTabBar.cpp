@@ -207,45 +207,42 @@ void AutoHideBar::ShowAnimate(Ctrl *c)
 	if (c == ctrl) return;
 	if (popup.IsPopUp()) popup.Close();
 	
-	Rect r = Ctrl::GetScreenRect();
+	Rect target = Ctrl::GetScreenRect();
 	Size sz = c->GetStdSize();
 	switch (GetAlign()) {
 	 	case DockTabBar::LEFT: 
-	 		sz.cy = r.Height();
-	 		r.left = r.right;
-	 		r.right += 5; // Popups don't work on Linux if width or hieght is 0
+	 		sz.cy = target.Height();
+	 		target.left = target.right;
 	 		break;
 	 	case DockTabBar::TOP:
-	 		sz.cx = r.Width();
-	 		r.top = r.bottom;
-	 		r.bottom += 5; // Popups don't work on Linux if width or hieght is 0
+	 		sz.cx = target.Width();
+	 		target.top = target.bottom;
 	 		break;
 	 	case DockTabBar::RIGHT: 
-	 		sz.cy = r.Height();
-	 		r.right = r.left;
-	 		r.left -= 5; // Popups don't work on Linux if width or hieght is 0
+	 		sz.cy = target.Height();
+	 		target.right = target.left;
 	 		break;
 	 	case DockTabBar::BOTTOM:
-	 		sz.cx = r.Width();
-	 		r.bottom = r.top;
-	 		r.top -= 5; // Popups don't work on Linux if width or hieght is 0
+	 		sz.cx = target.Width();
+	 		target.bottom = target.top;
 	 		break;
 	};
-	// use _NET_FRAME_EXTENTS to properly set ctrl size if popup has additional frame added by window manager?
+	if (IsVert())
+		sz.cx = min(sz.cx, GetParent()->GetSize().cx / 2);
+	else
+		sz.cy = min(sz.cy, GetParent()->GetSize().cy / 2);
+
+	Rect init = target;
+	AdjustSize(init, Size(5, 5));
+	AdjustSize(target, sz);
 
 	c->SetRect(sz);
 	popup << *(ctrl = c);
 	c->Show();
-	popup.SetRect(r);
-	popup.PopUp(GetParent(), false, true, false, false);
 
-	sz = c->GetStdSize();
-	if (IsVert())
-		sz.cx = min(sz.cx, GetParent()->GetSize().cx / 2);
-	else
-		sz.cy = min(sz.cy, GetParent()->GetSize().cy / 2);	
-	AdjustSize(r, sz);
-	Animate(popup, r, GUIEFFECT_SLIDE);
+	popup.SetRect(init);
+	popup.PopUp(GetParent(), false, true, false, false);
+	Animate(popup, target, GUIEFFECT_SLIDE);
 }
 
 void AutoHideBar::HideAnimate(Ctrl *c)
@@ -261,6 +258,7 @@ void AutoHideBar::HideAnimate(Ctrl *c)
 	ctrl = NULL;
 	DockTabBar::SetCursor(-1);
 }
+
 /*
 void AutoHideBar::AnimateSizeMinus(Size sz)
 {
@@ -305,15 +303,20 @@ int AutoHideBar::FindCtrl(DockCont &c) const
 	return -1;
 }
 
+void AutoHideBar::TabDrag(int ix)
+{
+	GetCtrl(ix)->MoveBegin(); 
+}
+
 AutoHideBar::AutoHideBar()
 {
 	ctrl = NULL;
 	AutoHideMin(0).CanEmpty();
 	popup.WhenEnter = THISBACK2(MouseEnter, Point(0, 0), 0);
 	popup.WhenLeave = THISBACK(MouseLeave);
-	popup.AddFrame(FieldFrame());
 	DockTabBar::WhenHighlight = THISBACK(TabHighlight);
 	TabBar::WhenClose = THISBACK(TabClose);
+	WhenDrag = THISBACK(TabDrag);
 }
 
 void AutoHideBar::HidePopup::ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags)

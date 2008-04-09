@@ -80,6 +80,7 @@ private:
 	Ctrl *	ctrl;
 	HidePopup popup;
 	
+	void 	TabDrag(int ix);
 	void 	TabHighlight();	
 	void	TabClose(Value v);				
 	void	ShowAnimate(Ctrl *c);

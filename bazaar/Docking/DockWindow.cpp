@@ -225,7 +225,7 @@ void DockWindow::SyncAll()
 /*
  * Docking/Undocking helpers
 */ 
-void DockWindow::Undock0(Ctrl &c, bool do_animate, int fsz, bool ishighlight)
+void DockWindow::Undock0(Ctrl &c, bool do_animatehl, int fsz, bool ishighlight)
 {
 	int al = GetDockAlign(c);
 	Ctrl *p = c.GetParent();
@@ -239,10 +239,10 @@ void DockWindow::Undock0(Ctrl &c, bool do_animate, int fsz, bool ishighlight)
 	else {
 		if (dockpane[al].GetFirstChild() == dockpane[al].GetLastChild())
 			fsz = 0;
-		dockpane[al].Undock(c, do_animate, ishighlight); // TODO: fix nasty hack
+		dockpane[al].Undock(c, do_animatehl, ishighlight); // TODO: fix nasty hack
 		if (fsz >= 0) {
-			do_animate ? StartFrameAnimate(al, fsz) : dockframe[al].SetSize(fsz);
-			if (!do_animate && fsz == 0)
+			do_animatehl ? StartFrameAnimate(al, fsz) : dockframe[al].SetSize(fsz);
+			if (!do_animatehl && fsz == 0)
 				dockframe[al].Hide();
 		}
 			
@@ -335,16 +335,16 @@ void DockWindow::DockAsTab(DockCont &target, DockableCtrl &dc)
 	target.Add(dc);
 }
 
-void DockWindow::Dock0(int align, Ctrl &c, int pos, bool do_animate, bool ishighlight)
+void DockWindow::Dock0(int align, Ctrl &c, int pos, bool do_animatehl, bool ishighlight)
 {
 	Size sz = CtrlBestSize(c);
 	int fsz = IsTB(align) ? sz.cy : sz.cx;
 	if (!dockframe[align].IsShown())
 		dockframe[align].Show();
 	if (fsz > dockframe[align].GetSize()) {
-		do_animate ? StartFrameAnimate(align, fsz) : dockframe[align].SetSize(fsz);
+		do_animatehl ? StartFrameAnimate(align, fsz) : dockframe[align].SetSize(fsz);
 	}
-	dockpane[align].Dock(c, sz, pos, do_animate, ishighlight);
+	dockpane[align].Dock(c, sz, pos, do_animatehl, ishighlight);
 }
 
 /*
@@ -621,7 +621,7 @@ void DockWindow::StartHighlight(DockCont *dc)
 		Highlight(align, *dc, target);
 	}
 	else 
-		StopHighlight(animate);
+		StopHighlight(IsAnimatedHighlight());
 }
 
 void DockWindow::Highlight(int align, DockCont &cont, DockCont *target)
@@ -636,7 +636,7 @@ void DockWindow::Highlight(int align, DockCont &cont, DockCont *target)
 		hl.SetHighlight(dc.GetStyle().highlight[0], false, 0);
 		hl.oldframesize = dockframe[align].GetSize();	
 		int pos = target ? dockpane[align].FindIndex(*target) : -1;
-		Dock0(align, hl, pos, animate, true);
+		Dock0(align, hl, pos, IsAnimatedHighlight(), true);
 	}
 	else if (target && IsTabbing()) {
 		hl.Title(cont.GetTitle(true)).Icon(dc.GetIcon());
@@ -647,13 +647,31 @@ void DockWindow::Highlight(int align, DockCont &cont, DockCont *target)
 	}
 }
 
-void DockWindow::StopHighlight(bool do_animate)
+void DockWindow::StopHighlight(bool do_animatehl)
 {
 	HighlightCtrl &hl = GetHighlightCtrl();
 	if (hl.GetParent()) {
-		Undock0(hl, do_animate, hl.oldframesize, true);
+		Undock0(hl, do_animatehl, hl.oldframesize, true);
 		hl.ClearHighlight();
 	}
+}
+
+void DockWindow::FloatAnimate(DockCont &dc, Rect target)
+{
+	int max = dockpane[0].GetAnimMaxTicks();
+	Rect dr = dc.GetRect();
+	target -= dr;
+	target.top += 16; // Fudge for titlebar. Should get from OS?
+	target.left /= max;
+	target.right /= max;
+	target.top /= max;
+	target.bottom /= max;
+	for (int i = 0; i < max; i++) {
+		dr += target;
+		dc.SetRect(dr);
+		ProcessEvents();
+		Sleep(dockpane[0].GetAnimInterval());
+	}	
 }
 
 void DockWindow::ContainerDragStart(DockCont &dc)
@@ -673,9 +691,9 @@ void DockWindow::ContainerDragStart(DockCont &dc)
 			move = true;
 		}
 		// Note: Due to different bugfix, at this point a dragged tab will have docked state but 
-		//	no parent and should not be animated
+		//	no parent and should not be animatehld
 		dc.SyncUserSize(true, true);
-		if (animate && dc.IsDocked() && dc.GetParent()) {
+		if (IsAnimatedHighlight() && dc.IsDocked() && dc.GetParent()) {
 			Undock0(dc, true);
 			dc.StateNotDocked();
 		}
@@ -690,7 +708,7 @@ void DockWindow::ContainerDragMove(DockCont &dc)
 	Point p = GetMousePos();
 	if (hl.GetParent()) {
 		if (!hl.bounds.Contains(p))
-			StopHighlight(animate);
+			StopHighlight(IsAnimatedHighlight());
 		return KillTimeCallback(TIMEID_ANIMATE_DELAY);
 	}	
 	animdelay ? 
@@ -711,20 +729,8 @@ void DockWindow::ContainerDragEnd(DockCont &dc)
 		for (int i = 0; i < 4; i++)
 			if (p == &dockpane[i]) align = i;
 
-	if (IsAnimated() && (p || align != DOCK_NONE)) {
-		int max = dockpane[0].GetAnimMaxTicks();
-		Rect dr = dc.GetRect();
-		Rect r = GetHighlightCtrl().GetScreenRect() - dr;
-		r.left /= max;
-		r.right /= max;
-		r.top /= max;
-		r.bottom /= max;
-		for (int i = 0; i < max; i++) {
-			dr += r;
-			dc.SetRect(dr);
-			ProcessEvents();
-			Sleep(dockpane[0].GetAnimInterval());
-		}
+	if (animatewnd && (p || align != DOCK_NONE)) {
+		FloatAnimate(dc, hl.GetScreenRect());
 	}
 
 	if (align != DOCK_NONE) {
@@ -753,9 +759,10 @@ void DockWindow::SetFrameSize(int align, int size)
 	dockframe[align].SetSize(size);
 }
 
-DockWindow & DockWindow::Animate(bool _animate, int ticks, int interval)
+DockWindow & DockWindow::Animate(bool highlight, bool window, int ticks, int interval)
 {
-	animate = _animate;
+	animatehl = highlight;
+	animatewnd = window;
 	ticks = max(ticks, 1);
 	interval = max(interval, 1);
 	for (int i = 0; i < 4; i++) 
@@ -862,10 +869,18 @@ void DockWindow::SerializeWindow(Stream &s)
 	
 	SerializeLayout(s, true);
 	
-	s % tabbing % autohide % animate % nestedtabs 
+	s % tabbing % autohide % animatehl % nestedtabs 
 	  % grouping % menubtn % closebtn % hidebtn;
 	  
-	 if (s.IsLoading()) SyncAll();
+	if (s.IsLoading()) {
+		// Note: Ensure correct load of added params. Can be depreciated in future and added to main
+		//  serialization above.
+		if (!s.IsEof())
+			s % nesttoggle;
+		SyncAll();
+	}
+	else
+		s % nesttoggle;
 }
 
 void DockWindow::ClearLayout()
@@ -1038,10 +1053,10 @@ DockWindow::DockWindow()
 {
 	menu.Set(*this);
 	init = false;
-	tabbing = animate = grouping = true;
+	tabbing = grouping = true;
 	nestedtabs = false;
+	nesttoggle = K_CTRL | K_SHIFT;
 	menubtn = closebtn = hidebtn = true;
-	animdelay = 100;
 	
 	for (int i = 0; i < 4; i++) {
 		dockframe[i].Set(dockpane[i], 0, i);
@@ -1049,7 +1064,7 @@ DockWindow::DockWindow()
 		hideframe[i].SetAlign(i);
 		dockframe[i].Hide();
 	}
-	AllowDockAll().AutoHide(true);
+	AllowDockAll().AutoHide(true).Animate().AnimateDelay(40);
 }
 
 // PopUpDockWindow
@@ -1110,7 +1125,7 @@ void PopUpDockWindow::ContainerDragMove(DockCont &dc)
 		Highlight(align, dc, target);
 	}
 	else  {
-		StopHighlight(IsAnimated());
+		StopHighlight(IsAnimatedHighlight());
 		last_popup = NULL;
 	}
 }
@@ -1225,7 +1240,7 @@ PopUpDockWindow & PopUpDockWindow::SetStyle(const Style &s)
 PopUpDockWindow::PopUpDockWindow()
 {
 	SetStyle(StyleDefault());
-	this->AnimateDelay(0);
+	AnimateDelay(0);
 }
 
 CH_STYLE(PopUpDockWindow, Style, StyleDefault)

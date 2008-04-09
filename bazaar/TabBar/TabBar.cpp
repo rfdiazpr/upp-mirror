@@ -658,7 +658,7 @@ void TabBar::Paint(Draw &w)
 
 void TabBar::Scroll()
 {
-	if (IsVisible()) scroller.Scroll(*this, IsVert() ? Point(0, sc.GetPos()) : Point(sc.GetPos(), 0));
+	Refresh();
 }
 
 int TabBar::GetWidth(int n)

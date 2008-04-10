@@ -468,24 +468,18 @@ Image DockCont::GetHighlightImage()
 	return img;
 }
 
-void DockCont::AddContainerSize(Size &sz) const
-{
-	tabbar.AddFrameSize(sz);
-	handle.AddFrameSize(sz);
-}
-
 Size DockCont::GetMinSize() const
 { 
+	if (ignoreminsize) return Size(0, 0);
 	Size sz = tabbar.GetCount() ? GetCurrent().GetMinSize() : Size(0, 0); 
-	AddContainerSize(sz);
+	sz = AddFrameSize(sz);
 	return sz;
 }
 
 Size DockCont::GetMaxSize() const	
 { 
 	Size sz = tabbar.GetCount() ? GetCurrent().GetMaxSize() : Size(0, 0);
-	AddContainerSize(sz);
-	return sz;
+	return AddFrameSize(sz);
 }
 
 Size DockCont::GetStdSize() const
@@ -496,8 +490,7 @@ Size DockCont::GetStdSize() const
 		if (IsNull(sz.cx)) sz.cx = std.cx;
 		if (IsNull(sz.cy)) sz.cy = std.cy;
 	}
-	AddContainerSize(sz);
-	return sz;
+	return AddFrameSize(sz);
 }
 
 void DockCont::SyncUserSize(bool h, bool v)
@@ -647,6 +640,7 @@ DockCont::DockCont()
 	dockstate = STATE_NONE;
 	base = NULL;
 	waitsync = false;	
+	ignoreminsize = false;
 	usersize.cx = usersize.cy = Null;
 	BackPaint();
 #ifdef PLATFORM_WIN32

@@ -659,6 +659,7 @@ void DockWindow::StopHighlight(bool do_animatehl)
 void DockWindow::FloatAnimate(DockCont &dc, Rect target)
 {
 	int max = dockpane[0].GetAnimMaxTicks();
+	dc.IgnoreMinSize(true);
 	Rect dr = dc.GetRect();
 	target -= dr;
 	target.top += 16; // Fudge for titlebar. Should get from OS?
@@ -672,6 +673,7 @@ void DockWindow::FloatAnimate(DockCont &dc, Rect target)
 		ProcessEvents();
 		Sleep(dockpane[0].GetAnimInterval());
 	}	
+	dc.IgnoreMinSize(false);
 }
 
 void DockWindow::ContainerDragStart(DockCont &dc)

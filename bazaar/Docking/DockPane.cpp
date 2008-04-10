@@ -6,6 +6,18 @@ int DockPane::ClientToPos(const Size &p)
 	return minmax(vert ? 10000 * p.cy / (GetSize().cy - w) : 10000 * p.cx / (GetSize().cx - w), 0, 9999);	
 }
 
+void DockPane::CumulativePos(Vector<int> &p) const
+{
+	for (int i = 1; i < p.GetCount(); i++)
+		p[i] += p[i-1];		
+}
+
+void DockPane::NonCumulativePos(Vector<int> &p) const
+{
+	for (int i = p.GetCount()-1; i > 0; i--)
+		p[i] -= p[i-1];		
+}
+
 void DockPane::StartAnimate(int ix, Size sz, bool restore)
 {
 	if (restore) {
@@ -13,19 +25,22 @@ void DockPane::StartAnimate(int ix, Size sz, bool restore)
 		animpos <<= savedpos;
 	}
 	else {
-		int tsz = ClientToPos(sz) - NormalPos(ix);
-		int msz = GetMinPos(ix);
-		
-		if (msz < 10000 && msz+tsz > 10000) {
-			Ctrl *c = FindCtrl(ix);
-			int min = ClientToPos(c->GetMinSize());
-			if (min < tsz) {
-				int std = ClientToPos(c->GetStdSize());
-				tsz = (std < tsz) ? std : min;
-			}
-		}
+		int tsz = ClientToPos(sz);
 		animpos <<= pos;
-		SmartRepos(animpos, ix, tsz);
+		if (tsz) {
+			int msz = GetMinPos(ix);
+			if (msz < 10000 && msz+tsz > 10000) {
+				Ctrl *c = FindCtrl(ix);
+				int min = ClientToPos(c->GetMinSize());
+				if (min < tsz) {
+					int std = ClientToPos(c->GetStdSize());
+					tsz = (std < tsz) ? std : min;
+				}
+			}
+			SmartReposUp(animpos, ix, tsz);
+		}
+		else
+			SmartReposDown(animpos, ix);
 	}
 	animtick = 0;	
 	SetTimeCallback(-animinterval, THISBACK(AnimateTick), TIMEID_ANIMATE);
@@ -53,102 +68,167 @@ void DockPane::EndAnimate()
 		pos.Remove(FindIndex(dummy));	
 		dummy.Remove();
 	}
-	FixChildSizes(); 
+	//FixChildSizes(); 
 	Layout();
 }
 
-void DockPane::SmartRepos(Vector<int> &p, int ix, int inc)
+void DockPane::SmartReposDown(Vector<int> &p, int ix) 
 {
-	int cnt = p.GetCount();
-	if (cnt == 1) {
-		p[0] = 10000;
-		return;
-	}
-	
 	int n = 0;
-	int minsize = 0;
+	int sum = 0;
+	int dif = 0;
 	int maxsize = 0;
 	int totalsize = 0;
-	Vector<int> minpos;
+	int sparesize = 0;
+	int cnt = p.GetCount();
 	Vector<int> maxpos;
-	minpos.SetCount(cnt);
 	maxpos.SetCount(cnt);
-	
-	// Convert pos to non-cumulative sizes
-	for (int i = cnt-1; i > 0; i--)
-		p[i] -= p[i-1];	
 
-	// Find min, max, and total sizes (int pos units)
+	if (p.GetCount() == 1) {
+		p[0] = 0;
+		return;
+	}
+
+	// Convert pos to non-cumulative sizes
+	NonCumulativePos(p);
+
+	// Find max, and total sizes (in pos units)
 	for (Ctrl *c = GetFirstChild(); c; c = c->GetNext()) {
 		if (n != ix) {
-			minpos[n] = min(ClientToPos(c->GetMinSize()), p[n]);
 			maxpos[n] = max(ClientToPos(c->GetMaxSize()), p[n]);
-			minsize += minpos[n];
 			maxsize += maxpos[n];
 			totalsize += p[n];
 		}
 		n++;
 	}
-
-	int dif = totalsize - inc;
-	int sum = 0;
+	
+	sparesize = p[ix];
+	p[ix] = 0;		
+	for (int i = 0; i < cnt; i++)
+		p[i] += iscale(sparesize, p[i], totalsize);
 		
-	p[ix] += inc;
-	// Scale to minsize + proportional share of remaining space
-	for (int i = 0; i < cnt; i++) {
-		if (i != ix)
-			p[i] = (minpos[i] + p[i]*dif) / totalsize;
-		sum += p[i];
-	}
-	if (totalsize > minsize && totalsize < maxsize) {	
+	// Restrict to max size
+	if (maxsize > 10000) {
+		totalsize = 0;
 		dif = 0;
-		// Restrict to max size
 		for (int i = 0; i < cnt; i++)
-			if (i != ix && p[i] > maxpos[i]) {
-				dif += p[i] - maxpos[i];
-				p[i] = maxpos[i];
-				totalsize -= p[i];
+			if (i != ix) {
+				if (p[i] > maxpos[i]) {
+					dif += p[i] - maxpos[i];
+					p[i] = maxpos[i];
+				}
+				else	
+					totalsize += p[i];
 			}
-		// Share out newly spare space to ctrls that are less than maxsize
-		if (dif) {
-			sum = 0;
+		// Share out extra spare space to ctrls that are less than maxsize
+		while (dif > 1) {
+			int sum = 0;
 			for (int i = 0; i < cnt; i++) {
-				if (i != ix && p[i] < maxpos[i])						
-					p[i] += (p[i]*dif) / totalsize;
-				sum += p[i];				
-			}
-		}
-	}
-	else if (totalsize < minsize) {
-		int resizemin = (totalsize + inc) / (cnt*4);
-		if (totalsize > cnt*resizemin) {
-			// Enforce an absolute minimum size
-			dif = 0;
-			sum = 0;
-			for (int i = 0; i < cnt; i++) {
-				if (i != ix && p[i] < resizemin && minpos[i] > p[i]) {
-					dif += resizemin - p[i];
-					p[i] = resizemin;	
+				if (i != ix && p[i] < maxpos[i]) { 
+					int t = max(1, min((p[i]*dif) / totalsize, maxpos[i] - p[i]));
+					p[i] += t;
+					sum += t;
 				}
 			}
-			totalsize -= cnt*resizemin;
-			for (int i = 0; i < cnt; i++) {
-				if (i != ix) {
-					int v = p[i] - resizemin;
-					if (v > 0)
-						p[i] -= (v*dif) / totalsize;
-				}
-				sum += p[i];
-			}
+			dif -= sum;
 		}
 	}
+
 	// Do remainder
-	dif = sum - 10000;
+	dif = Sum(p, 0) - 10000;
+	if (dif) 
+		p[ix] += dif;
+	// Return to cumulative sizes	
+	CumulativePos(p);	
+}
+
+void DockPane::SmartReposUp(Vector<int> &p, int ix, int sz) 
+{
+	int n = 0;
+	int sum = 0;
+	int dif = 0;
+	int minsize = 0;
+	int maxsize = 0;
+	int totalsize = 0;
+	int cnt = p.GetCount();
+	int resizemin = max(10000 / (cnt*4), PosToClient(30));
+	Vector<int> minpos;
+	Vector<int> maxpos;
+	maxpos.SetCount(cnt);
+	minpos.SetCount(cnt);
+		
+	// Convert pos to non-cumulative sizes
+	NonCumulativePos(p);
+	
+	// Find min, max, and total sizes (in pos units)
+	for (Ctrl *c = GetFirstChild(); c; c = c->GetNext()) {
+		minpos[n] = min(ClientToPos(c->GetMinSize()), p[n]);
+		maxpos[n] = max(ClientToPos(c->GetMaxSize()), p[n]);
+		maxsize += maxpos[n];		
+		if (n != ix)
+			minsize += minpos[n];
+		n++;
+	}
+	totalsize = 10000 - sz - minsize;
+	
+	for (int i = 0; i < cnt; i++)
+		if (i != ix)
+			p[i] = minpos[i] + iscale(p[i], totalsize, 10000);
+	p[ix] = sz;
+		
+	// Enforce an absolute minimum size
+	dif = 0;
+	minsize += minpos[ix];
+	for (int i = 0; i < cnt; i++) {
+		if (p[i] < resizemin && minpos[i] > p[i]) {
+			dif += resizemin - p[i];
+			p[i] = resizemin;	
+		}
+	}
+	if (dif) {
+		totalsize = 10000 - cnt*resizemin;
+		for (int i = 0; i < cnt; i++) {
+			int t = p[i] - resizemin;
+			if (t > 0)
+				p[i] -= (t*dif) / totalsize;
+		}
+	}
+
+	// Restrict to max size
+	if (maxsize > 10000) {
+		totalsize = 0;
+		dif = 0;
+		for (int i = 0; i < cnt; i++)
+			if (i != ix) {
+				if (p[i] > maxpos[i]) {
+					dif += p[i] - maxpos[i];
+					p[i] = maxpos[i];
+				}
+				else	
+					totalsize += p[i];
+			}
+			else if (p[i] < maxpos[i])
+				totalsize += p[i];
+		// Share out extra spare space to ctrls that are less than maxsize
+		while (dif > 1) {
+			int sum = 0;
+			for (int i = 0; i < cnt; i++) {
+				if (p[i] < maxpos[i]) { 
+					int t = max(1, min((p[i]*dif) / totalsize, maxpos[i] - p[i]));
+					p[i] += t;
+					sum += t;
+				}
+			}
+			dif -= sum;
+		}
+	}	
+	
+	// Do remainder
+	dif = Sum(p, 0) - 10000;
 	if (dif)
-		p[ix] += dif;		
+		p[ix] += dif;	
 	// Return to cumulative sizes
-	for (int i = 1; i < cnt; i++)
-		p[i] += p[i-1];	
+	CumulativePos(p);
 }
 
 void DockPane::SimpleRepos(Vector<int> &p, int ix, int inc)
@@ -159,8 +239,8 @@ void DockPane::SimpleRepos(Vector<int> &p, int ix, int inc)
 		return;
 	}
 
-	for (int i = cnt-1; i > 0; i--)
-		p[i] -= p[i-1];	
+	// Convert pos to non-cumulative sizes
+	NonCumulativePos(p);
 	
 	int n = 0;
 	int tsz = 0;
@@ -181,8 +261,8 @@ void DockPane::SimpleRepos(Vector<int> &p, int ix, int inc)
 	dif = sum - 10000;
 	if (dif)
 		p[ix] += dif;
-	for (int i = 1; i < cnt; i++)
-		p[i] += p[i-1];	
+	// Return to cumulative sizes
+	CumulativePos(p);
 }
 
 int DockPane::GetMinPos(int notix)
@@ -272,7 +352,7 @@ void DockPane::Dock(Ctrl &newctrl, Size sz, int ps, bool animate, bool save)
 		StartAnimate(ps, sz, false);
 	else {
 		if (cnt)
-			SmartRepos(pos, ps, tsz);
+			SmartReposUp(pos, ps, tsz);
 		else
 			pos[ps] = 10000;
 		Layout();
@@ -293,9 +373,9 @@ void DockPane::Undock(Ctrl &child, bool animate, bool restore)
 	else {
 		if (restore) 
 			RestorePos();
+		SmartReposDown(pos, ix);
 		child.Remove();
 		pos.Remove(ix);	
-		FixChildSizes();
 		Layout();	
 	}
 }

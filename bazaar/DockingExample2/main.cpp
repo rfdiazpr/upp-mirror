@@ -63,7 +63,7 @@ private:
 */
 DockingExample::DockingExample()
 {
-	Title("DockingExample1 : Advanced Docking").Sizeable(true).Zoomable(true);
+	Title("DockingExample2 : Advanced Docking").Sizeable(true).Zoomable(true);
 	
 	// Layout out windows
 	CtrlLayout(toolwindow, 		"Tools");

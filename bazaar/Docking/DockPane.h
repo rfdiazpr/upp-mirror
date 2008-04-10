@@ -29,13 +29,16 @@ private:
 	void 	AnimateTick();
 	void 	EndAnimate();
 
-	void 	SmartRepos(Vector<int> &p, int ix, int pos);
-	void 	SimpleRepos(Vector<int> &p, int ix, int pos);
+	void 	SmartReposUp(Vector<int> &p, int ix, int sz);
+	void 	SmartReposDown(Vector<int> &p, int ix);
+	void 	SimpleRepos(Vector<int> &p, int ix, int sz);
 	int 	GetMinPos(int notix);
 	void 	FixChildSizes();
 	
 	int 	NormalPos(int ix) const			{ return (ix > 0) ? pos[ix] - pos[ix-1] : pos[ix]; }
 	int		ClientToPos(const Size &sz);
+	void	CumulativePos(Vector<int> &p) const;
+	void	NonCumulativePos(Vector<int> &p) const;
 	
 	enum { TIMEID_ACTION_CHECK = Ctrl::TIMEID_COUNT,
 		   TIMEID_ANIMATE,

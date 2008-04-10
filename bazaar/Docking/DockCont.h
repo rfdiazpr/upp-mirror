@@ -95,6 +95,7 @@ private:
 	ImgButton 	close, autohide, windowpos;	
 	Size 		usersize;
 	bool 		waitsync:1;	
+	bool		ignoreminsize:1;
 	DockWindow *base;
 	const DockableCtrl::Style *style;
 
@@ -116,7 +117,6 @@ private:
 	DockableCtrl *GetCurrent0() const							{ return Get0(tabbar.GetCursor()); }
 	
 	void 	AddRemoveButton(Ctrl &c, bool state);
-	void 	AddContainerSize(Size &sz) const;
 	bool 	IsDockAllowed0(int align, const Value &v) const;
 	void	SyncButtons(DockableCtrl &dc);
 
@@ -140,6 +140,8 @@ public:
 	virtual void 	Moving();
 	virtual void 	MoveEnd();		
 	virtual void 	WindowMenu();	
+		
+	void			IgnoreMinSize(bool nomin) 	{ ignoreminsize = nomin; }
 		
 	bool 			IsDocked() const			{ return dockstate == STATE_DOCKED; }
 	int				GetDockAlign() const;		

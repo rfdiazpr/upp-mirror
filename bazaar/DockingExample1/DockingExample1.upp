@@ -1,4 +1,4 @@
-description "Simple example of the features of the Docking package";
+description "Bazaar: Docking example showing basic usage. Author: James Thomas (mrjt)";
 
 uses
 	CtrlLib,

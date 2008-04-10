@@ -1,4 +1,4 @@
-description "Window Docking framework, by James Thomas";
+description "Bazaar: Window Docking framework. Author: James Thomas (mrjt)";
 
 uses
 	CtrlLib,

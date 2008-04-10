@@ -17,7 +17,7 @@ void DockTabBar::FrameLayout(Rect& r)
 void DockTabBar::FrameAddSize(Size& sz)
 {
 	if (!IsAutoHide()) 
-		TabBar::AddFrameSize(sz);
+		TabBar::FrameAddSize(sz);
 }
 
 void DockTabBar::DrawTabData(Draw& w, Point p, const Size &sz, const Value& q, const Font &font, Color ink, dword style)
@@ -315,7 +315,7 @@ AutoHideBar::AutoHideBar()
 	popup.WhenEnter = THISBACK2(MouseEnter, Point(0, 0), 0);
 	popup.WhenLeave = THISBACK(MouseLeave);
 	DockTabBar::WhenHighlight = THISBACK(TabHighlight);
-	TabBar::WhenClose = THISBACK(TabClose);
+	WhenClose = THISBACK(TabClose);
 	WhenDrag = THISBACK(TabDrag);
 }
 

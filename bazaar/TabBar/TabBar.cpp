@@ -31,21 +31,7 @@ void AlignedFrame::FrameLayout(Rect &r)
 void AlignedFrame::FrameAddSize(Size& sz)
 {
 	sz += border * 2;
-	switch(layout)
-	{
-		case LEFT:
-			sz.cx += framesize;
-			break;
-		case TOP:
-			sz.cy += framesize;
-			break;
-		case RIGHT:
-			sz.cx -= framesize;
-			break;
-		case BOTTOM:
-			sz.cy -= framesize;
-			break;		
-	}	
+	IsVert() ? sz.cx += framesize : sz.cy += framesize;
 }
 
 void AlignedFrame::FramePaint(Draw& w, const Rect& r)

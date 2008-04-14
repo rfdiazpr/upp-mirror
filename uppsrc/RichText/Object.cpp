@@ -260,7 +260,7 @@ RichObject CreateDrawingObject(const Drawing& dwg, int cx, int cy)
 Size RichObjectTypeDrawingCls::GetPixelSize(const Value& data) const
 {
 	if(IsTypeRaw<Data>(data))
-		return ValueTo<Data>(data).dot_size;
+		return ValueTo<Data>(data).drawing.GetSize(); // dot_size; TRC 08/04/04
 	return Size(0, 0);
 }
 
@@ -301,6 +301,87 @@ void RichObjectTypeDrawingCls::Paint(const Value& data, Draw& w, Size sz) const
 
 INITBLOCK {
 	RichObject::Register("Drawing", &Single<RichObjectTypeDrawingCls>());
+};
+
+struct RichObjectTypePNGCls : public RichObjectType
+{
+	virtual String GetTypeName(const Value&) const;
+	virtual Size   GetPhysicalSize(const Value& data) const;
+	virtual Size   GetPixelSize(const Value& data) const;
+	virtual void   Paint(const Value& data, Draw& w, Size sz) const;
+	virtual Value  Read(const String& s) const;
+	virtual String Write(const Value& v) const;
+};
+
+RichObjectType *RichObjectTypePNG() { return &Single<RichObjectTypePNGCls>(); }
+
+String RichObjectTypePNGCls::GetTypeName(const Value&) const
+{
+	return "PING";
+}
+
+RichObject CreatePNGObject(const Image& img, Size dot_size, Size out_size)
+{
+	RichObject obj(RichObjectTypePNG(), PNGEncoder().SaveString(img));
+	if(!IsNull(out_size))
+		obj.SetSize(out_size);
+	return obj;
+}
+
+RichObject CreatePNGObject(const Image& img, int cx, int cy)
+{
+	Size dsz = img.GetSize();
+	return CreatePNGObject(img, dsz, cx || cy ? GetRatioSize(dsz, cx, cy) : dsz);
+}
+
+Size RichObjectTypePNGCls::GetPixelSize(const Value& data) const
+{
+	if(IsString(data)) {
+		StringStream strm(data);
+		One<StreamRaster> ras = StreamRaster::OpenAny(strm);
+		if(!!ras)
+			return ras->GetSize();
+	}
+	return Size(0, 0);
+}
+
+Size RichObjectTypePNGCls::GetPhysicalSize(const Value& data) const
+{
+	if(IsString(data)) {
+		StringStream strm(data);
+		One<StreamRaster> ras = StreamRaster::OpenAny(strm);
+		if(!!ras)
+			return ras->GetInfo().dots;
+	}
+	return Size(0, 0);
+}
+
+Value RichObjectTypePNGCls::Read(const String& s) const
+{
+	return s;
+}
+
+String RichObjectTypePNGCls::Write(const Value& v) const
+{
+	return v;
+}
+
+void RichObjectTypePNGCls::Paint(const Value& data, Draw& w, Size sz) const
+{
+	if(IsString(data)) {
+		StringStream strm(data);
+		One<StreamRaster> ras = StreamRaster::OpenAny(strm);
+		if(!!ras) {
+			w.DrawRect(sz, White);
+			w.DrawImage(Rect(sz), ras->GetImage());
+			return;
+		}
+	}
+	w.DrawRect(sz, LtRed());
+}
+
+INITBLOCK {
+	RichObject::Register("PING", &Single<RichObjectTypePNGCls>());
 };
 
 END_UPP_NAMESPACE

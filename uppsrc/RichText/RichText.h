@@ -116,7 +116,7 @@ struct RichObjectType : Moveable<RichObjectType> {
 	virtual void   Menu(Bar& bar, RichObject& ex) const;
 	virtual void   DefaultAction(RichObject& ex) const;
 	virtual String GetLink(const Value& data, Point pt, Size sz) const;
-	
+
 	virtual bool   Accept(PasteClip& clip);
 	virtual Value  Read(PasteClip& clip);
 	virtual String GetClipFmts() const;
@@ -191,6 +191,8 @@ public:
 
 RichObject CreateDrawingObject(const Drawing& dwg, Size dot_size, Size size);
 RichObject CreateDrawingObject(const Drawing& dwg, int cx = 0, int cy = 0);
+RichObject CreatePNGObject(const Image& img, Size dot_size, Size size);
+RichObject CreatePNGObject(const Image& img, Size dot_size, Size size);
 RichObject CreateImageObject(const Image& img, int cx = 0, int cy = 0);
 
 struct RichPara;

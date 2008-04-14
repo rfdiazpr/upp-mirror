@@ -487,6 +487,11 @@ public:
 
 	virtual void    SetData(const Value& data);
 	virtual Value   GetData() const;
+	virtual bool    Accept();
+
+public:
+	Callback        WhenSetData;
+	Gate            WhenAccept;
 
 private:
 	void            OnArrayAction();

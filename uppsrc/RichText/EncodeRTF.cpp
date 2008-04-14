@@ -1,5 +1,7 @@
 #include "RichText.h"
 
+#include <plugin/png/png.h>
+
 NAMESPACE_UPP
 
 static int GetParaHeight(const Array<RichPara::Part>& parts)
@@ -49,6 +51,8 @@ private:
 	void            PutText(const char *text);
 	void            PutObject(const RichObject& object);
 	void            PutTabs(const Vector<RichPara::Tab>& tabs);
+	void            PutBinHex(const byte *data, int count);
+	void            PutBinHex(const String& s)        { PutBinHex(s, s.GetLength()); }
 
 	bool            PutParaFormat(const RichPara::Format& pf, const RichPara::Format& difpf);
 	bool            PutCharFormat(const RichPara::CharFormat& cf, const RichPara::CharFormat& difcf, bool pn);
@@ -199,11 +203,23 @@ void RTFEncoder::Command(const char *cmd, int param)
 
 void RTFEncoder::PutText(const char *text)
 {
-	while(*text)
-	{
+	while(*text) {
 		if(*text == '{' || *text == '}' || *text == '\\')
 			stream.Put('\\');
 		stream.Put(*text++);
+	}
+}
+
+void RTFEncoder::PutBinHex(const byte *b, int count)
+{
+	enum { BLOCK = 32 };
+	for(int l = count; l > 0; l -= BLOCK) {
+		stream.PutCrLf();
+		for(const byte *e = b + min<int>(l, BLOCK); b < e; b++) {
+			static const char binhex[] = "0123456789abcdef";
+			stream.Put(binhex[*b >> 4]);
+			stream.Put(binhex[*b & 15]);
+		}
 	}
 }
 
@@ -239,35 +255,30 @@ void RTFEncoder::PutObject(const RichObject& object)
 #ifndef PLATFORM_WINCE
 	Size log_size = object.GetPixelSize(), out_size = object.GetSize();
 	if(log_size.cx <= 0 || log_size.cy <= 0) log_size = out_size;
-	Size scale = out_size * 100 / log_size;
+//	Size scale = out_size * 100 / log_size;
 	Group pict_grp(this, "pict");
-	Command("wmetafile", 8);
-	Command("picw", 2540 * DotTwips(out_size.cx) / 1440);
-	Command("pich", 2540 * DotTwips(out_size.cy) / 1440);
+	Command("picw", log_size.cx);
+	Command("pich", log_size.cy);
 	Command("picwgoal", DotTwips(out_size.cx));
 	Command("pichgoal", DotTwips(out_size.cy));
 //	Command("picscalex", scale.cx);
 //	Command("picscaley", scale.cy);
-	WinMetaFileDraw wmd(log_size.cx, log_size.cy);
-	object.Paint(wmd, log_size);
-	WinMetaFile wmf = wmd.Close();
-	HENHMETAFILE hemf = wmf.GetHEMF();
-	int size = GetWinMetaFileBits(hemf, 0, 0, MM_ANISOTROPIC, ScreenHDC());
-	if(size > 0)
-	{
-		Buffer<byte> buffer(size);
-		GetWinMetaFileBits(hemf, size, buffer, MM_ANISOTROPIC, ScreenHDC());
-		enum { BLOCK = 32 };
-		const byte *b = buffer;
-		for(int l = size; l > 0; l -= BLOCK)
-		{
-			stream.PutCrLf();
-			for(const byte *e = b + min<int>(l, BLOCK); b < e; b++)
-			{
-				static const char binhex[] = "0123456789abcdef";
-				stream.Put(binhex[*b >> 4]);
-				stream.Put(binhex[*b & 15]);
-			}
+
+	if(object.GetTypeName() == "PING") {
+		Command("pngblip");
+		PutBinHex(object.GetData());
+	}
+	else {
+		Command("wmetafile", 8);
+		WinMetaFileDraw wmd(log_size.cx, log_size.cy);
+		object.Paint(wmd, log_size);
+		WinMetaFile wmf = wmd.Close();
+		HENHMETAFILE hemf = wmf.GetHEMF();
+		int size = GetWinMetaFileBits(hemf, 0, 0, MM_ANISOTROPIC, ScreenHDC());
+		if(size > 0) {
+			Buffer<byte> buffer(size);
+			GetWinMetaFileBits(hemf, size, buffer, MM_ANISOTROPIC, ScreenHDC());
+			PutBinHex(buffer, size);
 		}
 	}
 #endif
@@ -278,8 +289,7 @@ bool RTFEncoder::PutParaFormat(const RichPara::Format& pf, const RichPara::Forma
 {
 	int64 pos = stream.GetPos();
 	if(pf.align != difpf.align)
-		switch(pf.align)
-		{
+		switch(pf.align) {
 		case ALIGN_NULL:
 		case ALIGN_LEFT:    Command("ql"); break;
 		case ALIGN_CENTER:  Command("qc"); break;
@@ -288,14 +298,12 @@ bool RTFEncoder::PutParaFormat(const RichPara::Format& pf, const RichPara::Forma
 		default:            NEVER();
 		}
 	int oind = difpf.indent, olm = difpf.lm;
-	if(difpf.bullet != RichPara::BULLET_NONE)
-	{
+	if(difpf.bullet != RichPara::BULLET_NONE) {
 		olm += oind;
 		oind = -oind;
 	}
 	int nind = pf.indent, nlm = pf.lm;
-	if(pf.bullet != RichPara::BULLET_NONE)
-	{
+	if(pf.bullet != RichPara::BULLET_NONE) {
 		nlm += nind;
 		nind = -nind;
 	}
@@ -312,19 +320,16 @@ bool RTFEncoder::PutParaFormat(const RichPara::Format& pf, const RichPara::Forma
 
 void RTFEncoder::PutTabs(const Vector<RichPara::Tab>& tabs)
 {
-	for(int i = 0; i < tabs.GetCount(); i++)
-	{
+	for(int i = 0; i < tabs.GetCount(); i++) {
 		RichPara::Tab t = tabs[i];
-		switch(t.align)
-		{
+		switch(t.align) {
 		case ALIGN_NULL:
 		case ALIGN_LEFT:   break;
 		case ALIGN_CENTER: Command("tqc"); break;
 		case ALIGN_RIGHT:  Command("tqr"); break;
 		default: NEVER();
 		}
-		switch(t.fillchar)
-		{
+		switch(t.fillchar) {
 		case 0: break;
 		case 1: Command("tldot"); break;
 		case 2: Command("tlhyph"); break;
@@ -385,7 +390,6 @@ void RTFEncoder::PutHeader()
 		}
 
 	Command("deff", 0);
-
 	{
 		Group ftbl(this, "fonttbl");
 		for(int i = 0; i < used_faces.GetCount(); i++) {

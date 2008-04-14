@@ -6420,14 +6420,14 @@ void GridCtrl::DoRemove()
 	if(!valid_cursor && selected_rows == 0)
 		return;
 
-	bool newrow = IsNewRow();
-	CancelEdit(false);
-
 	if(ask_remove)
 	{
-		if(PromptYesNo(Format("Do you really want to delete selected %s ?", selected_rows > 0 ? t_("rows") : t_("row"))) != IDYES)
+		if(!PromptYesNo(Format("Do you really want to delete selected %s ?", selected_rows > 0 ? t_("rows") : t_("row"))))
 			return;
 	}
+
+	bool newrow = IsNewRow();
+	CancelEdit(false);
 
 	int y = curpos.y;
 	int ocy = curpos.y;

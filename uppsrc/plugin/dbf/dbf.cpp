@@ -14,6 +14,33 @@ inline int DeleteShareFlag()
 #endif
 }
 
+struct DbfCharset {
+	byte dbf_code;
+	byte charset;
+};
+
+static DbfCharset _dbfCharsets[] = {
+//	{ 0x01, CHARSET_UNKNOWN }, // DOS USA, CP437
+//	{ 0x02, CHARSET_UNKNOWN }, // DOS multilingual, CP850
+	{ 0x03, CHARSET_WIN1252 }, // Windows ANSI, CP1252
+//	{ 0x04, CHARSET_UNKNOWN }, // Standard Macintosh
+	{ 0x64, CHARSET_CP852   }, // EE MS-DOS, CP852
+//	{ 0x65, CHARSET_UNKNOWN }, // Nordic MS-DOS, CP865
+//	{ 0x66, CHARSET_UNKNOWN }, // Russian MS-DOS, CP866
+//	{ 0x67, CHARSET_UNKNOWN }, // Icelandic MS-DOS
+	{ 0x68, CHARSET_MJK     }, // Kamenicky (Czech) MS-DOS
+//	{ 0x69, CHARSET_UNKNOWN }, // Mazovia (Polish) MS-DOS
+//	{ 0x6A, CHARSET_UNKNOWN }, // Greek MS-DOS (437G)
+//	{ 0x6B, CHARSET_UNKNOWN }, // Turkish MS-DOS
+//	{ 0x96, CHARSET_UNKNOWN }, // Russian Macintosh
+//	{ 0x97, CHARSET_UNKNOWN }, // East European Macintosh
+//	{ 0x98, CHARSET_UNKNOWN }, // Greek Macintosh
+	{ 0xC8, CHARSET_WIN1250 },
+//	{ 0xC9, CHARSET_UNKNOWN }, // Russian Windows
+//	{ 0xCA, CHARSET_UNKNOWN }, // Turkish Windows
+//	{ 0xCB, CHARSET_UNKNOWN }, // Greek Windows
+};
+
 static void sStreamIL(Stream& s, int& x)
 {
 	if(s.IsLoading())
@@ -134,7 +161,7 @@ String DbfStream::Field::Format(Value value, byte charset) const
 				}
 			}
 			else {
-				if(fabs(v) >= 0.1 && ilog10(fabs(v)) + decimal + 3 <= width)
+				if(v == 0 || ilog10(fabs(v)) + 2 <= width)
 					out = FormatDoubleFix(v, decimal);
 				if(out.IsEmpty() || out.GetLength() > width)
 					out = FormatDoubleExp(v, min<int>(decimal, width - 6));
@@ -288,24 +315,6 @@ bool DbfStream::Check(const char *filename, bool write)
 	return DbfStream().Open(filename, write, CHARSET_DEFAULT);
 }
 
-void DbfStream::SetCharset(byte cs)
-{
-	charset = cs;
-	byte dest = GetDefaultCharset();
-/*
-	if(dest == CHARSET_UTF8)
-		dest = CHARSET_WIN1252;
-	codepage_cv = false;
-	for(int i = 0; i < 256; i++) {
-		codepage_uni[i] = ToUnicode(i, charset);
-		codepage_map[i] = FromUnicode(codepage_uni[i], dest);
-		codepage_rev[i] = FromUnicode(ToUnicode(i, dest), charset);
-		if(codepage_map[i] != i)
-			codepage_cv = true;
-	}
-*/
-}
-
 bool DbfStream::Open(const char *file, bool write, byte _charset, bool _delete_share)
 {
 	Close();
@@ -369,8 +378,13 @@ bool DbfStream::StreamHeader(bool full)
 	}
 	sStreamIW(dbf, row_width);
 	if(dbf.IsStoring()) {
+		dbf.Put(0, 17);
+		int i = __countof(_dbfCharsets);
+		while(--i >= 0 && _dbfCharsets[i].charset != charset)
+			;
+		dbf.Put(i >= 0 ? _dbfCharsets[i].dbf_code : 0);
 	//	dbf.PutIL(lang_code);
-		dbf.Put(0, 20); // padding bytes
+		dbf.Put16(0);
 	}
 	else
 		dbf.SeekCur(20);
@@ -448,7 +462,7 @@ bool DbfStream::StreamHeader(bool full)
 
 bool DbfStream::DoOpen(byte _charset)
 {
-	SetCharset(_charset);
+	charset = _charset;
 	dirty = false;
 	dirty_header = false;
 	row_index = Null;
@@ -461,7 +475,7 @@ bool DbfStream::DoOpen(byte _charset)
 
 bool DbfStream::DoCreate(const Array<Field>& _fields, byte _charset)
 {
-	SetCharset(_charset);
+	charset = _charset;
 	rows = 0;
 	dirty = false;
 	dirty_header = false;
@@ -677,6 +691,7 @@ Vector<Value> DbfStream::FetchRow(int row)
 
 void DbfStream::WriteRow(int row, const Vector<Value>& values)
 {
+	RTIMING("DbfStream::WriteRow");
 	ASSERT(row >= 0);
 	FlushRow();
 	if(values.GetCount() < fields.GetCount())
@@ -883,6 +898,7 @@ Value DbfStream::GetItemMemo(int i, bool binary) const
 		if(pos >= dbt.GetSize())
 			return Value();
 		dbt.Seek(pos);
+		String out;
 		if(dbt.GetIL() == 0x8FFFF) { // dBASE IV memo with explicit length
 			unsigned len = dbt.GetIL();
 			if(len <= 0 || len > dbt.GetLeft())
@@ -895,47 +911,19 @@ Value DbfStream::GetItemMemo(int i, bool binary) const
 				if(p = (byte *)memchr(buffer, '\0', len)) len = p - buffer;
 				if(p = (byte *)memchr(buffer, '\x1A', len)) len = p - buffer;
 			}
-/*
-			if(codepage_cv) {
-				byte *p = buffer, *e = p + len;
-				for(const char *page = codepage_map; p != e; p++)
-					*p = page[*p];
-			}
-*/
-			String s(buffer, len);
-			if(binary || charset == GetDefaultCharset())
-				return s;
-			return ToUnicode(s, charset);
+			out = String(buffer, len);
 		}
 		else { // dBASE III memo with 1A1A separator
-			String out;
 			Buffer<byte> buffer(dbt_block_size + 1);
 			bool eof = false;
 			for(int b; !eof && (b = dbt.Get(buffer, dbt_block_size + 1)) > 0;) {
 				byte *p = buffer, *e = p + b;
-/*
-				if(codepage_cv) {
-					for(const char *page = codepage_map; p <= e; p++)
-						if((*p = page[*p]) == '\x1A') {
-							if(++p == e)
-								break;
-							if((*p = page[*p]) == '\x1A') {
-								e = p - 1;
-								eof = true;
-								break;
-							}
-						}
-				}
-				else
-				{
-*/
 				while((p = (byte *)memchr(p, '\x1A', e - p)) != 0)
 					if(++p < e && *p++ == '\x1A') { // double EOF found
 						e = p - 2;
 						eof = true;
 						break;
 					}
-//				}
 				int l = e - buffer;
 				if(!eof && l > dbt_block_size) {
 					dbt.SeekCur(dbt_block_size - l);
@@ -944,9 +932,10 @@ Value DbfStream::GetItemMemo(int i, bool binary) const
 				if(l > 0)
 					out.Cat(buffer, l);
 			}
-
-			return out;
 		}
+		if(binary || charset == GetDefaultCharset())
+			return out;
+		return ToUnicode(out, charset);
 	}
 	return Value();
 }

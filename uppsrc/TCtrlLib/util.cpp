@@ -702,6 +702,7 @@ void ArrayPair::UpdateGUI()
 ValueArrayCtrl::ValueArrayCtrl()
 {
 	WhenArrayAction = THISBACK(OnArrayAction);
+	WhenAccept = true;
 }
 
 void ValueArrayCtrl::SetData(const Value& data)
@@ -714,6 +715,7 @@ void ValueArrayCtrl::SetData(const Value& data)
 		for(int c = 0; c < cols.GetCount(); c++)
 			Set(r, c, cols[c]);
 	}
+	WhenSetData();
 }
 
 Value ValueArrayCtrl::GetData() const
@@ -726,6 +728,11 @@ Value ValueArrayCtrl::GetData() const
 		rows.Add(cols);
 	}
 	return rows;
+}
+
+bool ValueArrayCtrl::Accept()
+{
+	return WhenAccept() && ArrayCtrl::Accept();
 }
 
 void ValueArrayCtrl::OnArrayAction()

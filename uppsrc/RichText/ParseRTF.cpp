@@ -2,10 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x) // LOG(x)
-
-RichObject CreateDrawingObject(const Drawing& dwg, Size dot_size, Size out_size = Null);
-RichObject CreateImageObject(const Image& img, Size dot_size, Size out_size = Null);
+#define LLOG(x) LOG(x)
 
 static String FromCString(const char *p, const char **endptr = NULL)
 {
@@ -75,6 +72,7 @@ private:
 		void          ReadField();
 		bool          ReadField(const char *def);
 		void          ReadPict();
+		void          ReadShape();
 
 	void          ReadParaStyle();
 	void          ReadTableStyle();
@@ -90,7 +88,7 @@ private:
 
 	TOKEN         token;
 	bool          is_full;
-	bool          new_dest;
+//	bool          new_dest;
 	bool          next_command;
 	WString       text;
 	String        command;
@@ -103,6 +101,11 @@ private:
 		int end_dots;
 		bool merge_first;
 		bool merge;
+	};
+
+	struct Face : Moveable<Face> {
+		int  face;
+		byte charset;
 	};
 
 	struct TableState {
@@ -129,6 +132,8 @@ private:
 		bool                 in_table;
 		int                  itap;
 		bool                 nestprop;
+		bool                 new_dest;
+		byte                 charset;
 	};
 
 	Array<State>  stack;
@@ -137,11 +142,12 @@ private:
 	RichPara::CharFormat plain_format;
 	RichPara::Format pard_format;
 	RichCell::Format std_cell_format;
-	byte          charset;
+	byte          plain_charset;
+	byte          default_charset;
 	int           default_font;
 	Alignment     tab_align;
 	byte          tab_fill;
-	Vector<int>   face_table;
+	Vector<Face>  face_table;
 	Vector<Color> color_table;
 	int           paper_width;
 	int           left_margin;
@@ -157,12 +163,16 @@ RTFParser::RTFParser(const char *rtf)
 : rtf_begin(rtf)
 , rtf(rtf)
 {
+#ifdef _DEBUG
+	SaveFile(ConfigFile("rtfparser.rtf"), rtf);
 	LOG(rtf);
+#endif
 	is_full = false;
 	next_command = false;
 	default_font = 0;
-	charset = CHARSET_WIN1250;
+	plain_charset = default_charset = state.charset = CHARSET_WIN1250;
 	state.uc_value = 1;
+	state.new_dest = false;
 	plain_format.Face(Font::ARIAL).Height(100);
 	std_cell_format.align = ALIGN_TOP;
 	std_cell_format.margin = Rect(25, 25, 25, 25);
@@ -307,7 +317,7 @@ RTFParser::TOKEN RTFParser::Fetch()
 		if((byte)*rtf < ' ')
 			rtf++;
 		else if(*rtf != '\\')
-			c = ToUnicode(*rtf++, charset);
+			c = ToUnicode(*rtf++, state.charset);
 		else
 			switch(rtf++, *rtf++)
 			{
@@ -347,17 +357,16 @@ RTFParser::TOKEN RTFParser::Fetch()
 							c1 = c1 * 16 + c2;
 							rtf++;
 						}
-						c = ToUnicode(c1, charset);
+						c = ToUnicode(c1, state.charset);
 					}
 					break;
 				}
 
 				default: {
 					if(IsAlpha(*--rtf) || *rtf == '*' && rtf[1] == '\\' && IsAlpha(rtf[2])) {
-						new_dest = false;
 						if(*rtf == '*') {
 							rtf += 2;
-							new_dest = true;
+							state.new_dest = true;
 						}
 						const char *b = rtf;
 						while(IsAlpha(*++rtf))
@@ -421,9 +430,10 @@ bool RTFParser::PassEndGroup(int level)
 
 void RTFParser::Skip()
 {
-	if(token == T_GROUP || token == T_COMMAND && new_dest)
-		SkipGroup();
+	bool is_group = (token == T_GROUP || token == T_COMMAND && state.new_dest);
 	is_full = false;
+	if(is_group)
+		SkipGroup();
 }
 
 void RTFParser::SkipGroup(int level)
@@ -441,7 +451,7 @@ void RTFParser::ReadItem()
 		ReadText();
 	if(rtf == p && is_full) {
 		is_full = false;
-		if(token == T_COMMAND && new_dest)
+		if(token == T_COMMAND && state.new_dest)
 			SkipGroup();
 	}
 }
@@ -462,7 +472,7 @@ void RTFParser::ReadText(const WString& text)
 {
 	if(!IsNull(state.dest))
 		return;
-	LLOG("Output text: <" << FromUnicode(text, charset) << ">, " << state.charformat);
+	LLOG("Output text: <" << FromUnicode(text, state.charset) << ">, " << state.charformat);
 	para.Cat(text, state.charformat);
 }
 
@@ -502,8 +512,7 @@ void RTFParser::ReadCharSet()
 	else if(PassQ("pc")) {}
 	else if(PassQ("pca")) {}
 	else if(PassQ("ansicpg")) {
-		static const struct
-		{
+		static const struct {
 			int  ansicpg;
 			byte charset;
 		}
@@ -520,7 +529,7 @@ void RTFParser::ReadCharSet()
 		};
 		for(int c = 0; c < __countof(charsets); c++)
 			if(charsets[c].ansicpg == command_arg) {
-				charset = charsets[c].charset;
+				default_charset = state.charset = charsets[c].charset;
 				break;
 			}
 	}
@@ -534,20 +543,50 @@ void RTFParser::ReadFaceTable()
 			Skip();
 			continue;
 		}
-		int f = -1, b = Font::ARIAL;
+		Face n;
+		n.face = Font::ARIAL;
+		n.charset = default_charset;
 		while(!PassEndGroup()) {
 			if(PassCmd("f"))
 				fx = command_arg;
 			else if(PassCmd("fnil"))
 				;
 			else if(PassCmd("froman"))
-				b = Font::ROMAN;
+				n.face = Font::ROMAN;
 			else if(PassCmd("fswiss"))
-				b = Font::ARIAL;
+				n.face = Font::ARIAL;
 			else if(PassCmd("fmodern"))
-				b = Font::COURIER;
+				n.face = Font::COURIER;
 			else if(PassCmd("ftech"))
-				b = Font::SYMBOL;
+				n.face = Font::SYMBOL;
+			else if(PassCmd("fcharset")) {
+				switch(command_arg) {
+					case 0: n.charset = CHARSET_WIN1252; break; // ANSI
+					case 1: n.charset = default_charset; break; // Default
+					case 2: n.charset = CHARSET_WIN1252; break; // Symbol
+					case 3: break; // Invalid
+					case 77: break; // Mac
+					case 128: break; // Shift Jis
+					case 129: break; // Hangul
+					case 130: break; // Johab
+					case 134: break; // GB2312
+					case 136: break; // Big5
+					case 161: n.charset = CHARSET_WIN1253; break; // Greek
+					case 162: n.charset = CHARSET_WIN1254; break; // Turkish
+					case 163: break; // Vietnamese
+					case 177: n.charset = CHARSET_WIN1255; break; // Hebrew
+					case 178: break; // Arabic
+					case 179: break; // Arabic Traditional
+					case 180: break; // Arabic user
+					case 181: break; // Hebrew user
+					case 186: break; // Baltic
+					case 204: n.charset = CHARSET_WIN1251; break; // Russian
+					case 222: break; // Thai
+					case 238: n.charset = CHARSET_WIN1250; break; // Eastern European
+					case 254: break; // PC 437
+					case 255: n.charset = CHARSET_WIN1252; break; // OEM
+				}
+			}
 /*			else if(PassText()) {
 				String s = FromUnicode(text, charset);
 				if(!s.IsEmpty() && *s.Last() == ';')
@@ -564,13 +603,16 @@ void RTFParser::ReadFaceTable()
 			else
 				Skip();
 		}
-		if(fx >= 0 && fx < MAX_FONTS)
-		{
+		if(fx >= 0 && fx < MAX_FONTS) {
 //			if(f < 0) // Cxl 2005-11-29
-				f = b;
-			if(default_font == fx)
-				plain_format.Face(f);
-			face_table.At(fx++, Font::ARIAL) = f;
+			if(default_font == fx) {
+				plain_format.Face(n.face);
+				plain_charset = n.charset;
+			}
+			Face dflt;
+			dflt.face = Font::ARIAL;
+			dflt.charset = default_charset;
+			face_table.At(fx++, dflt) = n;
 		}
 	}
 }
@@ -600,6 +642,8 @@ void RTFParser::ReadMisc()
 		ReadField();
 	else if(PassQ("pict"))
 		ReadPict();
+	else if(PassQ("shpinst"))
+		ReadShape();
 	else if(PassQ("endash"))
 		ReadChar(0x2013);
 	else if(PassQ("emdash"))
@@ -625,22 +669,22 @@ void RTFParser::ReadMisc()
 void RTFParser::ReadField()
 {
 	bool ign_rslt = false;
-	while(!PassEndGroup())
-		if(PassGroup()) {
-			int level = Level();
+	int level = Level();
+	while(!PassEndGroup(level))
+		if(PassGroup() && Level() == level + 1) {
 			if(PassCmd("fldinst")) {
 				WString source;
 				for(; !PassEndGroup(); Skip())
 					if(PassText())
 						source.Cat(text);
-				if(ReadField(FromUnicode(source, charset)))
+				if(ReadField(FromUnicode(source, state.charset)))
 					ign_rslt = true;
+				continue;
 			}
 			else if(PassCmd("fldrslt")) {
 				if(!ign_rslt)
 					ReadItemGroup();
 			}
-			SkipGroup(level);
 		}
 		else
 			Skip();
@@ -678,7 +722,7 @@ bool RTFParser::ReadField(const char *p)
 			height = state.charformat.GetHeight();
 		if(code >= 0 && code < 255) {
 			state.charformat.Face(face).Height(height);
-			ReadText(WString(ToUnicode(code, charset), 1));
+			ReadText(WString(ToUnicode(code, state.charset), 1));
 			return true;
 		}
 	}
@@ -695,6 +739,7 @@ void RTFParser::DefaultParaStyle()
 	state.nestprop = false;
 	state.rowmargin = Rect(25, 25, 25, 25);
 	state.cellmarginunits = state.rowmarginunits = Rect(0, 0, 0, 0);
+	state.charset = plain_charset;
 }
 
 void RTFParser::ReadParaStyle()
@@ -780,8 +825,10 @@ void RTFParser::ReadParaStyle()
 
 void RTFParser::ReadCharStyle()
 {
-	if(PassQ("plain"))
+	if(PassQ("plain")) {
 		state.charformat = plain_format;
+		state.charset = plain_charset;
+	}
 	else if(PassQ("b"))
 		state.charformat.Bold(command_arg != 0);
 	else if(PassQ("i"))
@@ -802,10 +849,11 @@ void RTFParser::ReadCharStyle()
 		state.charformat.sscript = 2;
 	else if(PassQ("nosupersub"))
 		state.charformat.sscript = 0;
-	else if(PassQ("f") && command_arg >= 0 && command_arg < face_table.GetCount())
-	{
-		LLOG("font = " << command_arg << ", face = " << face_table[command_arg]);
-		state.charformat.Face(face_table[command_arg]);
+	else if(PassQ("f") && command_arg >= 0 && command_arg < face_table.GetCount()) {
+		LLOG("font = " << command_arg << ", face = " << face_table[command_arg].face
+			<< ", charset = " << face_table[command_arg].charset);
+		state.charformat.Face(face_table[command_arg].face);
+		state.charset = face_table[command_arg].charset;
 	}
 	else if(PassQ("fs"))
 		state.charformat.Height(PointDotHeight(command_arg));
@@ -817,9 +865,21 @@ void RTFParser::ReadCharStyle()
 	{} // state.language = ...
 }
 
+void RTFParser::ReadShape()
+{
+	int level = Level();
+	while(!PassEndGroup(level))
+		if(PassCmd("shppict")) {
+			state.new_dest = false;
+			ReadItemGroup();
+		}
+		else
+			is_full = false;
+}
+
 void RTFParser::ReadPict()
 {
-	Size log_size(1, 1), out_size(1, 1);
+	Size log_size(1, 1), out_size(1, 1), scaling(100, 100);
 	Rect crop(0, 0, 0, 0);
 	enum BLIPTYPE { UNK_BLIP, EMF_BLIP, PNG_BLIP, JPEG_BLIP, WMF_BLIP, DIB_BLIP };
 	BLIPTYPE blip_type = UNK_BLIP;
@@ -838,8 +898,8 @@ void RTFParser::ReadPict()
 			else if(PassQ("pich"))       log_size.cy = minmax<int>(command_arg, 0, 30000);
 			else if(PassQ("picwgoal"))   out_size.cx = TwipDotSize(command_arg);
 			else if(PassQ("pichgoal"))   out_size.cy = TwipDotSize(command_arg);
-			else if(PassQ("picscalex"))  {}
-			else if(PassQ("picscaley"))  {}
+			else if(PassQ("picscalex"))  scaling.cx = minmax<int>(command_arg, 1, 1000);
+			else if(PassQ("picscaley"))  scaling.cy = minmax<int>(command_arg, 1, 1000);
 			else if(PassQ("piccropl"))   crop.left   = TwipDotSize(command_arg);
 			else if(PassQ("piccropt"))   crop.top    = TwipDotSize(command_arg);
 			else if(PassQ("piccropr"))   crop.right  = TwipDotSize(command_arg);
@@ -857,11 +917,13 @@ void RTFParser::ReadPict()
 		}
 		else
 			Skip();
-	DrawingDraw dd(log_size);
+	Size final_size = minmax(iscale(out_size, scaling, Size(100, 100)), Size(1, 1), Size(30000, 30000));
+	Size drawing_size;
+	DrawingDraw dd;
 #ifdef PLATFORM_WIN32
 #ifndef PLATFORM_WINCE
-	if(blip_type == EMF_BLIP || blip_type == WMF_BLIP)
-	{
+	if(blip_type == EMF_BLIP || blip_type == WMF_BLIP) {
+		dd.Create(drawing_size = log_size);
 		WinMetaFile wmf;
 		if(blip_type == EMF_BLIP)
 			wmf = WinMetaFile(SetEnhMetaFileBits(blip_data.GetLength(), blip_data));
@@ -874,20 +936,16 @@ void RTFParser::ReadPict()
 			wmf = WinMetaFile(SetWinMetaFileBits(blip_data.GetLength(), blip_data, ScreenHDC(), &mfp));
 		}
 		wmf.Paint(dd, log_size);
+		para.Cat(CreateDrawingObject(dd, out_size, final_size), state.charformat);
 	}
 	else
 #endif
 #endif
-	if(blip_type == DIB_BLIP || blip_type == PNG_BLIP || blip_type == JPEG_BLIP)
-	{
+	if(blip_type == DIB_BLIP || blip_type == PNG_BLIP || blip_type == JPEG_BLIP) {
 		//FIXIMAGE
 		Image image = StreamRaster::LoadStringAny(blip_data);
-		dd.DrawImage(0, 0, image);
+		para.Cat(CreatePNGObject(image, out_size, final_size), state.charformat);
 	}
-	else
-		return;
-
-	para.Cat(CreateDrawingObject(dd, log_size, out_size), state.charformat);
 }
 
 String RTFParser::ReadBinHex(char& odd) const

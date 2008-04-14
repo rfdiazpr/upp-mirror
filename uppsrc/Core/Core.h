@@ -466,7 +466,7 @@ NTL_MOVEABLE(RECT)
 
 END_UPP_NAMESPACE
 
-#if (defined(TESTLEAKS) || defined(_DEBUG)) && defined(PLATFORM_POSIX) && !defined(PLATFORM_OSX11)
+#if (defined(TESTLEAKS) || defined(_DEBUG)) && defined(PLATFORM_POSIX) && !defined(PLATFORM_OSX11) && defined(UPP_HEAP)
 
 //Place it to the begining of each file to be the first function called in whole executable...
 

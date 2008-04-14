@@ -134,7 +134,7 @@ void DropGrid::Drop()
 
 	if(list_width > width)
 		width = list_width;
-	if(list_height > height)
+	if(display_all && list_height > height) //check this
 		height = list_height;
 
 	Rect rw = Ctrl::GetWorkArea();

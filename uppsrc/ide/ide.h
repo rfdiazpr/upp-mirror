@@ -84,7 +84,7 @@ protected:
 	};
 
 	struct Group {
-		Group() : count(0), finished(false), msecs(0), raw_msecs(0), start_time(::msecs()) {}
+		Group() : count(0), start_time(::msecs()), finished(false), msecs(0), raw_msecs(0) {}
 
 		int               count;
 		int               start_time;

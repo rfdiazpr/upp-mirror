@@ -1,5 +1,4 @@
 #include "ide.h"
-#pragma hdrstop
 
 #define LLOG(x)
 
@@ -154,7 +153,7 @@ One<SlaveProcess> LocalHost::StartProcess(const char *cmdline)
 }
 
 #ifdef PLATFORM_POSIX
-#pragma BLITZ_APPROVE
+//#BLITZ_APPROVE
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -218,7 +217,6 @@ void LocalHost::Launch(const char *_cmdline, bool console)
 		if(*p++ == '\"')
 			while(*p && *p++ != '\"')
 				;
-	const char *app = cmd_out;
 	args.Add(cmd_out);
 	memcpy(cmd_out, b, p - b);
 	cmd_out += p - b;

@@ -213,59 +213,23 @@ void Draw::DrawPolyPolylineOp(const Point *vertices, int vertex_count,
 }
 
 static void DrawPolyPolyPolygonRaw(Draw& draw, const Point *vertices, int vertex_count,
-	const int *subpolygon_counts, int subpolygon_count_count,
-	const int *disjunct_polygon_counts, int disjunct_polygon_count_count)
+	const int *subpolygon_counts, int subpolygon_count_count, const int *, int)
 {
 	DrawLock __;
-	for(int i = 0; i < disjunct_polygon_count_count; i++, disjunct_polygon_counts++)
-	{
-		int poly = *disjunct_polygon_counts;
-		int sub = 1;
-		if(*subpolygon_counts < poly)
-			if(disjunct_polygon_count_count > 1)
-			{
-				const int *se = subpolygon_counts;
-				int total = 0;
-				while(total < poly)
-					total += *se++;
-				sub = se - subpolygon_counts;
-			}
-			else
-				sub = subpolygon_count_count;
-		Point offset = draw.GetOffset();
-//		if(sub == 1)
-		{
-			Buffer<XPoint> out_points(poly);
-			const Point *in = vertices;
-			for(XPoint *out = out_points, *end = out + poly; out < end; out++, in++)
-			{
-				out -> x = (short)(in -> x + offset.x);
-				out -> y = (short)(in -> y + offset.y);
-			}
-			XFillPolygon(Xdisplay, draw.GetDrawable(), draw.GetGC(), out_points, poly, Nonconvex, CoordModeOrigin);
+	Point offset = draw.GetOffset();
+	const Point *in = vertices;
+	for(int i = 0; i < subpolygon_count_count; i++) {
+		int n = subpolygon_counts[i];
+		Buffer<XPoint> out_points(n);
+		XPoint *t = out_points;
+		XPoint *e = t + n;
+		while(t < e) {
+			t->x = (short)(in->x + offset.x);
+			t->y = (short)(in->y + offset.y);
+			t++;
+			in++;
 		}
-/*
-		else
-		{
-			Vector<Point> split_vertices;
-			ASSERT(sizeof(XPoint) <= sizeof(Point)); // modify algorithm when not
-			Vector<int> split_counts;
-			SplitPolygon(vertices, poly, subpolygon_counts, sub, split_vertices, split_counts, draw.GetClip());
-			const Point *sv = split_vertices.Begin();
-			XPoint *dv = reinterpret_cast<XPoint *>(split_vertices.Begin());
-			for(const int *sc = split_counts.Begin(), *se = split_counts.End(); sc < se; sc++)
-			{
-				for(XPoint *db = dv, *de = dv + *sc; db < de; db++, sv++)
-				{
-					db -> x = (short)(sv -> x + offset.x);
-					db -> y = (short)(sv -> y + offset.y);
-				}
-				XFillPolygon(Xdisplay, draw.GetDrawable(), draw.GetGC(), dv, *sc, Nonconvex, CoordModeOrigin);
-			}
-		}
-*/
-		vertices += poly;
-		subpolygon_counts += sub;
+		XFillPolygon(Xdisplay, draw.GetDrawable(), draw.GetGC(), out_points, n, Nonconvex, CoordModeOrigin);
 	}
 }
 

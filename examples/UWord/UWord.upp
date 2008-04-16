@@ -3,7 +3,8 @@ description "Wordprocessor application";
 uses
 	CtrlLib,
 	RichEdit,
-	PdfDraw;
+	PdfDraw,
+	plugin\jpg;
 
 file
 	UWord.cpp,
@@ -12,4 +13,3 @@ file
 mainconfig
 	"" = "GUI",
 	"" = "GUI .NOGTK";
-

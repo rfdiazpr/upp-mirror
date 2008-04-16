@@ -108,6 +108,27 @@ public:
 	struct Lock;
 };
 
+/* Win32 RWMutex implementation by Chris Thomasson, cristom@comcast.net */
+
+class RWMutex {
+    LONG   m_count, m_rdwake;
+    HANDLE m_wrwset, m_rdwset;
+    CRITICAL_SECTION m_wrlock;
+
+public:
+	void EnterWrite();
+	void LeaveWrite();
+
+	void EnterRead();
+	void LeaveRead();
+
+	RWMutex();
+	~RWMutex();
+
+	struct ReadLock;
+	struct WriteLock;
+};
+
 #endif
 
 #ifdef PLATFORM_POSIX
@@ -136,6 +157,23 @@ public:
 	~Mutex();
 };
 
+class RWMutex {
+	pthread_rwlock_t rwlock[1];
+
+public:
+	void EnterWrite();
+	void LeaveWrite();
+
+	void EnterRead();
+	void LeaveRead();
+
+	RWMutex();
+	~RWMutex();
+
+	struct ReadLock;
+	struct WriteLock;
+};
+
 #endif
 
 inline int  AtomicRead(const volatile Atomic& t)      { ReadMemoryBarrier(); return t; }
@@ -144,20 +182,47 @@ inline void AtomicWrite(volatile Atomic& t, int val)  { WriteMemoryBarrier(); t 
 struct Mutex::Lock {
 	Mutex& s;
 	Lock(Mutex& s) : s(s) { s.Enter(); }
-	~Lock()                         { s.Leave(); }
+	~Lock()               { s.Leave(); }
+};
+
+struct RWMutex::ReadLock {
+	RWMutex& s;
+	ReadLock(RWMutex& s) : s(s) { s.EnterRead(); }
+	~ReadLock()                 { s.LeaveRead(); }
+};
+
+struct RWMutex::WriteLock {
+	RWMutex& s;
+	WriteLock(RWMutex& s) : s(s) { s.EnterWrite(); }
+	~WriteLock()                 { s.LeaveWrite(); }
 };
 
 class StaticMutex {
 	volatile Mutex *section;
-	byte                      buffer[sizeof(Mutex)];
+	byte            buffer[sizeof(Mutex)];
 
 	void Initialize();
 
 public:
 	Mutex& Get()         { if(!section) Initialize(); return *const_cast<Mutex *>(section); }
 	operator Mutex&()    { return Get(); }
-	void Enter()                   { Get().Enter();}
-	void Leave()                   { Get().Leave(); }
+	void Enter()         { Get().Enter();}
+	void Leave()         { Get().Leave(); }
+};
+
+class StaticRWMutex {
+	volatile RWMutex *rw;
+	byte              buffer[sizeof(RWMutex)];
+
+	void Initialize();
+
+public:
+	RWMutex& Get()       { if(!rw) Initialize(); return *const_cast<RWMutex *>(rw); }
+	operator RWMutex&()  { return Get(); }
+	void EnterRead()     { Get().EnterRead();}
+	void LeaveRead()     { Get().LeaveRead(); }
+	void EnterWrite()    { Get().EnterWrite();}
+	void LeaveWrite()    { Get().LeaveWrite(); }
 };
 
 #define INTERLOCKED \
@@ -210,13 +275,9 @@ inline int  AtomicInc(volatile Atomic& t)             { ++t; return t; }
 inline int  AtomicDec(volatile Atomic& t)             { --t; return t; }
 inline int  AtomicXAdd(volatile Atomic& t, int incr)  { Atomic x = t; t += incr; return x; }
 
-class Mutex {
-public:
+struct Mutex {
 	void  Enter()                {}
 	void  Leave()                {}
-
-	Mutex()            {}
-	~Mutex()           {}
 
 	struct Lock;
 };
@@ -228,8 +289,31 @@ struct Mutex::Lock {
 	~Lock()                {}
 };
 
+struct RWMutex {
+	void EnterWrite() {}
+	void LeaveWrite() {}
+
+	void EnterRead() {}
+	void LeaveRead() {}
+
+	struct ReadLock;
+	struct WriteLock;
+};
+
+struct RWMutex::ReadLock {
+	ReadLock(RWMutex&) {}
+	~ReadLock()        {}
+};
+
+struct RWMutex::WriteLock {
+	WriteLock(RWMutex&) {}
+	~WriteLock()        {}
+};
+
+typedef RWMutex StaticRWMutex;
+
 #define INTERLOCKED
-#define INTERLOCKED_(x)
+#define INTERLOCKED_(x) { x.Enter(); }
 
 #define ONCELOCK \
 for(static bool o_b_; !o_b_; o_b_ = true)

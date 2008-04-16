@@ -233,7 +233,7 @@ bool RTFEncoder::PutCharFormat(const RichPara::CharFormat& cf, const RichPara::C
 		Command("pnf" + pn2, used_faces.Find(cf.GetFace()));
 	if((t = DotPoints(2 * tabs(cf.GetHeight()))) != DotPoints(2 * tabs(difcf.GetHeight())))
 		Command("pnfs" + pn2, t);
-	if(!pn && (t = cf.sscript) != difcf.sscript)
+	if(!pn && dword(t = cf.sscript) != difcf.sscript)
 		Command(t == 0 ? "nosupersub" : t == 1 ? "super" : "sub");
 	if((f = cf.IsBold())          != difcf.IsBold())          Command((f ? "pnb" : "pnb0") + pn2);
 	if((f = cf.IsItalic())        != difcf.IsItalic())        Command((f ? "pni" : "pni0") + pn2);
@@ -508,7 +508,6 @@ void RTFEncoder::PutTable(const RichTable& table, int nesting, int dot_width)
 				case ALIGN_BOTTOM: rowfmt << "\\clvertalb"; break;
 			}
 			cellindex.Add(c);
-			int cell_start = column_pos[c];
 			if(cell.hspan)
 				c += cell.hspan;
 			int cell_end = column_pos[c + 1];

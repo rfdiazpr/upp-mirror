@@ -249,6 +249,56 @@ Semaphore::~Semaphore()
 
 Mutex& sMutexLock();
 
+/* Win32 RWMutex implementation by Chris Thomasson, cristom@comcast.net */
+
+void RWMutex::EnterWrite()
+{
+	EnterCriticalSection ( &m_wrlock );
+	LONG count = InterlockedExchangeAdd(&m_count, -LONG_MAX);
+	if(count < LONG_MAX)
+		if(InterlockedExchangeAdd ( &m_rdwake, LONG_MAX - count ) + LONG_MAX - count )
+			WaitForSingleObject ( m_wrwset, INFINITE );
+}
+
+void RWMutex::LeaveWrite()
+{
+	LONG count = InterlockedExchangeAdd ( &m_count, LONG_MAX );
+	if (count < 0)
+	    ReleaseSemaphore ( m_rdwset, count * -1, 0 );
+	LeaveCriticalSection ( &m_wrlock );
+}
+
+void RWMutex::EnterRead()
+{
+    LONG count = InterlockedDecrement ( &m_count );
+    if(count < 0)
+        WaitForSingleObject ( m_rdwset, INFINITE );
+}
+
+void RWMutex::LeaveRead()
+{
+	LONG count = InterlockedIncrement ( &m_count );
+	if ( count < 1 )
+		if ( ! InterlockedDecrement ( &m_rdwake ) )
+			SetEvent ( m_wrwset );
+}
+
+RWMutex::RWMutex()
+        : m_count ( LONG_MAX ),
+        m_rdwake ( 0 ),
+        m_wrwset ( CreateEvent ( 0, FALSE, FALSE, 0 ) ),
+        m_rdwset ( CreateSemaphore ( 0, 0, LONG_MAX, 0 ) )
+{
+    InitializeCriticalSection ( &m_wrlock );
+}
+
+RWMutex::~RWMutex()
+{
+    DeleteCriticalSection ( &m_wrlock );
+    CloseHandle ( m_rdwset );
+    CloseHandle ( m_wrwset );
+}
+
 #endif
 
 #ifdef PLATFORM_POSIX
@@ -283,6 +333,36 @@ Mutex::Mutex()
 Mutex::~Mutex()
 {
 	pthread_mutex_destroy(mutex);
+}
+
+void RWMutex::EnterWrite()
+{
+	pthread_rwlock_wrlock(rwlock);
+}
+
+void RWMutex::LeaveWrite()
+{
+	pthread_rwlock_unlock(rwlock);
+}
+
+void RWMutex::EnterRead()
+{
+	pthread_rwlock_rdlock(rwlock);
+}
+
+void RWMutex::LeaveRead()
+{
+	pthread_rwlock_unlock(rwlock);
+}
+
+RWMutex::RWMutex()
+{
+	pthread_rwlock_init(rwlock, NULL);
+}
+
+RWMutex::~RWMutex()
+{
+	pthread_rwlock_destroy(rwlock);
 }
 
 /*
@@ -339,6 +419,16 @@ void StaticMutex::Initialize()
 		Mutex *cs = new(buffer) Mutex;
 		WriteMemoryBarrier();
 		section = cs;
+	}
+}
+
+void StaticRWMutex::Initialize()
+{
+	Mutex::Lock __(sMutexLock());
+	if(!rw) {
+		RWMutex *cs = new(buffer) RWMutex;
+		WriteMemoryBarrier();
+		rw = cs;
 	}
 }
 

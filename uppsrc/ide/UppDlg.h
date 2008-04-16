@@ -212,6 +212,7 @@ struct WorkspaceWork {
 	typedef WorkspaceWork CLASSNAME;
 
 	WorkspaceWork();
+	virtual ~WorkspaceWork() {}
 };
 
 struct PackageEditor : WorkspaceWork, WithUppLayout<TopWindow> {

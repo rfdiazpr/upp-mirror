@@ -193,7 +193,6 @@ void Ide::Statistics()
 					fs.oldest = max(d, fs.oldest);
 					fs.newest = min(d, fs.newest);
 					String data = LoadFile(file);
-					int ln = 0;
 					for(const char *s = data; *s; s++)
 						if(*s == '\n')
 							fs.lines++;

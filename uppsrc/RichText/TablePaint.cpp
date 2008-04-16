@@ -113,7 +113,6 @@ void RichTable::Paint(PageDraw& pw, RichContext rc, const PaintInfo& _pi) const
 	pg.Deflate(frameln);
 	int hy = min(format.header, cell.GetCount());
 	Rect hpg = pg;
-	int page0 = rc.py.page;
 	if(tab.hasheader) {
 		hpg.bottom = pi.zoom * tab.header[hy - 1].pyy.y;
 		pg.top = hpg.bottom + gridln;
@@ -187,7 +186,6 @@ PageY RichTable::GetTop(RichContext rc) const
 RichCaret RichTable::GetCaret(int pos, RichContext rc) const
 {
 	ASSERT(pos >= 0);
-	int p = pos;
 	int nx = format.column.GetCount();
 	int ny = cell.GetCount();
 	int ti = 0;
@@ -248,7 +246,6 @@ RichHotPos  RichTable::GetHotPos(int x, PageY y, int tolerance, RichContext rc) 
 	int nx = format.column.GetCount();
 	int ny = cell.GetCount();
 	const TabLayout& tab = Realize(rc);
-	int pos = 0;
 	if(abs(x - tab.page.left) <= tolerance) {
 		hp.table = 0;
 		hp.column = RICHHOT_LM;

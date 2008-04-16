@@ -25,7 +25,7 @@ String FmtColor(Color c)
 String LngFmt(const RichPara::CharFormat& a, const RichPara::CharFormat& b, dword lang)
 {
 	String fmt;
-	if(lang != b.language)
+	if(lang != (dword)b.language)
 		if(b.language)
 			fmt << "%" << LNGAsText(b.language);
 		else
@@ -215,7 +215,6 @@ void QTFEncodePara(String& qtf, const RichPara& p, const RichPara::Format& style
 			int n = 0;
 			qtf.Reserve(8 * data.GetLength() / 7);
 			while(q < slim - 7) {
-				byte seven = 0;
 				byte data[8];
 				data[0] = ((q[0] & 0x80) >> 7) |
 				          ((q[1] & 0x80) >> 6) |

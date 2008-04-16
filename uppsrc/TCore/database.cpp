@@ -2426,7 +2426,7 @@ void DataTable::Describe(Stream& stream, int flags)
 
 	stream << "tabulka '" << table_name << "' (" << row_index.GetCount() << " øádkù)\n"
 		"{\n";
-	stream.Begin();
+//	stream.Begin();
 	int i;
 	for(i = 0; i < columns.GetCount(); i++)
 		columns[i].Describe(stream, flags);
@@ -2436,7 +2436,7 @@ void DataTable::Describe(Stream& stream, int flags)
 		for(i = 0; i < index.GetCount(); i++)
 			stream << Format(Get(index[i])) << "\n";
 	}
-	stream.End();
+//	stream.End();
 	stream << "}\n";
 }
 
@@ -2876,10 +2876,10 @@ void DataBase::Describe(Stream& stream, int flags)
 {
 	stream << "Ultimate DataBase\n"
 		"{\n";
-	stream.Begin();
+//	stream.Begin();
 	for(int i = 0; i < tables.GetCount(); i++)
 		tables[i].Describe(stream, flags);
-	stream.End();
+//	stream.End();
 	stream << "}\n";
 }
 

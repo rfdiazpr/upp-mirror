@@ -253,7 +253,6 @@ int  RichTable::GetInvalid(PageY& top, PageY& bottom, RichContext rc) const
 	   && r_py == rc.py && tab[min(GetRows() - 1, r_row + cell[r_row][r_column].vspan)].pyy == r_pyy) {
 		const PaintRow& pr = tab[r_row];
 		const RichCell& cl = cell[r_row][r_column];
-		const PaintCell& pc = pr[r_column];
 		top = pr.py;
 		bottom = tab[min(cell.GetCount() - 1, r_row + cl.vspan)].pyy;
 		return 0;

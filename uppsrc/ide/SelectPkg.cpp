@@ -178,7 +178,6 @@ bool SelectPackageDlg::Key(dword key, int count)
 
 void SelectPackageDlg::Serialize(Stream& s)
 {
-	int version = 0;
 	SerializePlacement(s);
 	s % brief;
 }

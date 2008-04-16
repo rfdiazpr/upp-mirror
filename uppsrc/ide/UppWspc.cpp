@@ -1,5 +1,4 @@
 #include "ide.h"
-#pragma hdrstop
 
 const char tempaux[] = "<temp-aux>";
 const char prjaux[] = "<prj-aux>";

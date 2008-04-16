@@ -164,7 +164,7 @@ bool PNGRaster::Create()
 	int num_trans = 0;
 
 	png_get_tRNS(data->png_ptr, data->info_ptr, &trans_colors, &num_trans, &trans_values);
-	bool has_mask = (num_trans > 0);
+//	bool has_mask = (num_trans > 0);
 
 //	AlphaArray im(width, height, out_bpp, 4, NULL, Vector<Color>(), has_mask ? 8 : 0, 4);
 //	im.SetDotSize(GetDotSize(im.GetSize(), x_ppm, y_ppm, unit_type));

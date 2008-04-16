@@ -300,7 +300,7 @@ ImageDraw::operator Image() const
 		for(int y = 0; y < size.cy; y++) {
 			fmt.Read(line, s, size.cx, palette);
 			for(int x = 0; x < size.cx; x++)
-				(t++)->a = line[x].g;
+				(t++)->a = line[x].r;
 			s += xim->bytes_per_line;
 		}
 		XDestroyImage(xim);

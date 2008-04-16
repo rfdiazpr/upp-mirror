@@ -1,5 +1,4 @@
 #include "ide.h"
-#pragma hdrstop
 
 void Ide::MakeTitle()
 {
@@ -414,7 +413,6 @@ bool Ide::FindLineError(String ln, Host& host, String& file, int& lineno, int& e
 										p++;
 									if(*p == '\"')
 										p++;
-									const char *b = p;
 									fake_file.Clear();
 									while(*p && *p != '\"')
 										if(*p == '/')
@@ -720,7 +718,6 @@ void Ide::ExportProject() {
 void Ide::SerializeWorkspace(Stream& s) {
 	int i;
 	int version = 7;
-	int n = 0;
 	s / version;
 	s.Magic(0x12345);
 	if(s.IsStoring()) {

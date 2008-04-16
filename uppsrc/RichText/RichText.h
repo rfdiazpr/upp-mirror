@@ -98,6 +98,8 @@ struct PageDraw {
 	virtual Draw& Page(int i) = 0;
 
 	operator Draw&()       { return Info(); }
+
+	virtual ~PageDraw() {}
 };
 
 class RichObject;
@@ -436,6 +438,7 @@ struct SimplePageDraw : PageDraw {
 	virtual Draw& Page(int);
 
 	SimplePageDraw(Draw& w) : w(w) {}
+	virtual ~SimplePageDraw() {}
 };
 
 struct PrintPageDraw : PageDraw {
@@ -448,6 +451,7 @@ struct PrintPageDraw : PageDraw {
 	void  SetPage(int _page)  { page = _page; }
 
 	PrintPageDraw(Draw& w) : w(w) {}
+	virtual ~PrintPageDraw() {}
 };
 
 END_UPP_NAMESPACE

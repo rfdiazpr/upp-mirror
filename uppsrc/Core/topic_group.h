@@ -1,4 +1,4 @@
-#pragma BLITZ_APPROVE
+//#BLITZ_APPROVE
 
 #ifndef TOPIC_VERA
 #define TOPIC_VERA 0

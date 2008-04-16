@@ -1,5 +1,4 @@
 #include "bmp.h"
-#pragma hdrstop
 
 NAMESPACE_UPP
 

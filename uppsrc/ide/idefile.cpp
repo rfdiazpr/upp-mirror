@@ -1,5 +1,4 @@
 #include "ide.h"
-#pragma hdrstop
 
 void Ide::SetupEditor(int f, String hl, String fn)
 {

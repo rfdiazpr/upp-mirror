@@ -142,8 +142,6 @@ void RichTxt::Paint(PageDraw& pw, RichContext rc, const PaintInfo& _pi) const
 				n.Next(*pp.number);
 			}
 			PageY next = GetNextPageY(parti, rc);
-			int nbefore = 0;
-			int nline = 0;
 			if(next >= pi.top) {
 				int nbefore = 0;
 				int nline = 0;
@@ -180,7 +178,6 @@ void RichTxt::Paint(PageDraw& pw, RichContext rc, const PaintInfo& _pi) const
 
 RichCaret RichTxt::GetCaret(int pos, RichContext rc) const
 {
-	int pos0 = pos;
 	int parti = 0;
 	if(pos > GetLength())
 		pos = GetLength();

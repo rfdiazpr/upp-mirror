@@ -1,5 +1,4 @@
 #include "ide.h"
-#pragma hdrstop
 
 #include <plugin/bz2/bz2.h>
 
@@ -80,7 +79,6 @@ bool Ide::SyncHostFiles(RemoteHost& host)
 	Vector<String> fdata;
 	ArrayMap<String, TransferFileInfo> info;
 	Vector<int> nocrsize;
-	int ticks = msecs(-1000);
 	const Workspace& wspc = IdeWorkspace();
 	int p;
 	for(p = 0; p < wspc.GetCount(); p++) {

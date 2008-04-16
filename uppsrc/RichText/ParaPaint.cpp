@@ -501,7 +501,6 @@ void  RichPara::GatherLabels(Vector<RichValPos>& info, const Rect& page, PageY p
 	if(!pl.GetCount())
 		return;
 	Line& li = pl[0];
-	int linecy = li.Sum();
 	if(BreaksPage(py, pl, 0, page)) {
 		py.y = page.top;
 		py.page++;

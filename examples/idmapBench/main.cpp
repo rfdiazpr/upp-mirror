@@ -43,20 +43,20 @@ void BenchNTL(const char *file) {
 	for(;;) {
 		int c = in.Get();
 		if(c < 0) break;
-		if(isalpha(c) || c == '_') {
+		if(IsAlpha(c) || c == '_') {
 			String id;
 			id.Cat(c);
 			c = in.Get();
-			while(c >= 0 && (isalnum(c) || c == '_')) {
+			while(c >= 0 && (IsAlNum(c) || c == '_')) {
 				id.Cat(c);
 				c = in.Get();
 			}
 			map.GetAdd(id).Add(line);
 		}
 		else
-		if(isdigit(c))
+		if(IsDigit(c))
 			do c = in.Get();
-			while(c >= 0 && (isalnum(c) || c == '.'));
+			while(c >= 0 && (IsAlNum(c) || c == '.'));
 		if(c == '\n')
 			++line;
 	}

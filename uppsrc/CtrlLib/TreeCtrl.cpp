@@ -104,6 +104,31 @@ void   TreeCtrl::Layout()
 	sb.SetLine(item[0].GetSize().cy);
 }
 
+// 2008-04-08 mrjt
+Size   TreeCtrl::Item::GetValueSize() const
+{
+	return display ? display->GetStdSize(value) : StdDisplay().GetStdSize(value);
+}
+
+Size   TreeCtrl::Item::GetCtrlSize() const
+{
+	return IsNull(size) ? (ctrl ? ctrl->GetStdSize() : Size(0, 0)) : size;
+}
+
+Size   TreeCtrl::Item::GetSize() const
+{
+	Size sz = GetValueSize();
+	Size csz = GetCtrlSize();
+	sz += Size(2 * margin, 2 * margin);
+	Size isz = image.GetSize();
+	sz.cx += isz.cx;
+	sz.cy = max(sz.cy, isz.cy);
+	sz.cx += csz.cx;
+	sz.cy = max(sz.cy, csz.cy);
+	return sz;
+}
+
+/*
 Size   TreeCtrl::Item::GetValueSize() const
 {
 	if(IsNull(size))
@@ -129,6 +154,7 @@ Size   TreeCtrl::Item::GetSize() const
 	sz.cy = max(sz.cy, isz.cy);
 	return sz;
 }
+*/
 
 void   TreeCtrl::SetRoot(const TreeCtrl::Node& n)
 {
@@ -725,7 +751,6 @@ void TreeCtrl::ShiftSelect(int l1, int l2)
 {
 	if(!multiselect)
 		return;
-	bool b = false;
 	if(l1 > l2)
 		UPP::Swap(l1, l2);
 	for(int i = 0; i < line.GetCount(); i++)
@@ -941,6 +966,8 @@ void TreeCtrl::Paint(Draw& w)
 			x += isz.cx;
 			Color fg, bg;
 			dword st;
+			if(m.ctrl) // 2008-04-08 mrjt
+				x += m.GetCtrlSize().cx;
 			if(x < sz.cx) {
 				const Display *d = GetStyle(i, fg, bg, st);
 				w.DrawRect(x, y, vsz.cx + 2 * m.margin, msz.cy, bg);
@@ -1023,7 +1050,6 @@ bool TreeCtrl::Tab(int d)
 	Item& m = item[line[cursor].itemi];
 	if(m.ctrl && m.ctrl->HasFocusDeep())
 		return false;
-	int i = cursor;
 	for(int i = cursor + d; i >= 0 && i < line.GetCount(); i += d) {
 		Item& m = item[line[i].itemi];
 		if(m.ctrl && m.ctrl->SetWantFocus())

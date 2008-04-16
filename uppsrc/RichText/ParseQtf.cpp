@@ -748,7 +748,6 @@ void RichQtfParser::Parse(const char *qtf, byte _accesskey)
 			if(text.GetLength() || paragraph.GetCount())
 				EndPart();
 			table.Add();
-			RichTable& t = Table();
 			int r = IsDigit(*term) ? ReadNumber() : 1;
 			Table().AddColumn(r);
 			while(Key(':'))

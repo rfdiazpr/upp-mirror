@@ -36,7 +36,7 @@ String BZ2Decompress(String s, Gate2<int, int> progress)
 	String out;
 	while(BZ2_bzDecompress(&z) == BZ_OK)
 	{
-		if(z.avail_out == buf_size)
+		if(z.avail_out == (dword)buf_size)
 		{ // no output generated - assume error
 			BZ2_bzDecompressEnd(&z);
 			return String::GetVoid();

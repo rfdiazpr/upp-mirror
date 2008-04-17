@@ -599,7 +599,7 @@ int StdValueCompare(const Value& a, const Value& b, int language)
 	bool na = IsNull(a), nb = IsNull(b);
 	if(na || nb)
 		return !na ? 1 : !nb ? -1 : 0;
-	int ta = a.GetType(), tb = b.GetType();
+	dword ta = a.GetType(), tb = b.GetType();
 	if((ta == INT_V || ta == BOOL_V) && (tb == INT_V || tb == BOOL_V))
 		return cmp<int>(a, b);
 	if((ta == BOOL_V || ta == INT_V || ta == INT64_V || ta == DOUBLE_V)

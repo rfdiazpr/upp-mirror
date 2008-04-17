@@ -320,7 +320,6 @@ void LayoutItem::Paint(Draw& w, Size sz, bool sample)
 			UnknownPaint(dw);
 		else {
 			try {
-				const LayoutType& m = LayoutTypes()[q];
 				EscValue ctrl = CreateEsc();
 				if(ctrl.MapGet("Paint").IsLambda()) {
 					if(sample) {

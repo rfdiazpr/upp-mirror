@@ -286,7 +286,6 @@ String Parser::TemplatePnames()
 
 String Parser::ReadOper() {
 	const char *p = lex.Pos();
-	const char *p1 = p;
 	Key(tk_operator);
 	int level = 0;
 	if(Key('('))
@@ -462,7 +461,6 @@ void Parser::ParamList(Decl& d) {
 int Parser::RPtr()
 {
 	int n = 0;
-	int q = 0;
 	int tlevel = 0;
 	for(;;) {
 		int t = lex[n];
@@ -548,7 +546,6 @@ void Parser::Declarator(Decl& d, const char *p)
 	}
 	EatInitializers();
 	while(Key('[')) {
-		const char *p = lex.Pos();
 		int level = 1;
 		while(level && lex != t_eof) {
 			if(Key('[')) level++;
@@ -644,7 +641,6 @@ Array<Parser::Decl> Parser::Declaration(bool l0, bool more)
 		a.istructor = true;
 		++lex;
 		ParamList(a);
-		const char *p1 = lex.Pos();
 		Qualifier();
 		a.natural = String(p, lex.Pos());
 		EatInitializers();
@@ -656,7 +652,6 @@ Array<Parser::Decl> Parser::Declaration(bool l0, bool more)
 		a.name = ReadOper();
 		Key('(');
 		ParamList(a);
-		const char *p1 = lex.Pos();
 		Qualifier();
 		a.function = true;
 		a.natural = String(p, lex.Pos());
@@ -671,7 +666,6 @@ Array<Parser::Decl> Parser::Declaration(bool l0, bool more)
 		a.istructor = true;
 		if(Key('('))
 			ParamList(a);
-		const char *p1 = lex.Pos();
 		Qualifier();
 		a.natural = String(p, lex.Pos());
 		EatInitializers();
@@ -1120,7 +1114,6 @@ bool Parser::Nest(const String& tp, const String& tn) {
 String DeTemp(const char *s)
 {
 	String r;
-	int l = 0;
 	return r;
 }
 

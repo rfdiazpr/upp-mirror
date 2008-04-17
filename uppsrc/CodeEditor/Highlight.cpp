@@ -487,7 +487,6 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 		if(pair == MAKELONG('0', 'x') || pair == MAKELONG('0', 'X')) {
 			hls.Put(2, hl_style[INK_CONST_HEX]);
 			p += 2;
-			int q = 0;
 			const wchar *t = p;
 			while(IsXDigit(*p))
 				p++;

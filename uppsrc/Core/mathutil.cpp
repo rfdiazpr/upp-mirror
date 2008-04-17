@@ -1,13 +1,16 @@
 #include "Core.h"
 
-// iscale: computes x * y / z.
-
 NAMESPACE_UPP
+
+// iscale: computes x * y / z.
 
 int iscale(int x, int y, int z)
 {
 #ifdef __NOASSEMBLY__
-	return int(x * (double)y / z);
+	int64 res = x;
+	res *= y;
+	res /= z;
+	return (int)res;
 #else
 	__asm
 	{
@@ -23,7 +26,12 @@ int iscale(int x, int y, int z)
 int iscalefloor(int x, int y, int z)
 {
 #ifdef __NOASSEMBLY__
-	return (int)ffloor(x * (double)y / z);
+	int64 res = x;
+	int64 mulres = res * y;
+	res = mulres / z;
+	if(res * z != mulres)
+		res--;
+	return (int)res;
 #else
 	__asm
 	{
@@ -43,7 +51,12 @@ int iscalefloor(int x, int y, int z)
 int iscaleceil(int x, int y, int z)
 {
 #ifdef __NOASSEMBLY__
-	return fceil(x * (double)y / z);
+	int64 res = x;
+	int64 mulres = res * y;
+	res = mulres / z;
+	if(res * z != mulres)
+		res++;
+	return (int)res;
 #else
 	__asm
 	{

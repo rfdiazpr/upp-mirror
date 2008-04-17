@@ -640,7 +640,6 @@ String PdfDraw::Finish()
 		}
 	}
 */
-	int rgi = 0;
 	Vector<int> fontobj;
 	for(int i = 0; i < pdffont.GetCount(); i++) {
 		Font fnt = pdffont.GetKey(i);
@@ -754,7 +753,6 @@ String PdfDraw::Finish()
 	#endif
 
 			TTFReader ttf;
-			int max = 0;
 			if(!ttf.Open(fontbuffer))
 				return Null;
 

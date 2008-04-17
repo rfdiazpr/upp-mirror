@@ -497,7 +497,6 @@ void MenuBar::PopUp(Ctrl *owner, Point p, Size rsz)
 	pane.RightPos(0, sz.cx).BottomPos(0, sz.cy);
 	Size sz0 = sz;
 	sz = AddFrameSize(sz);
-	int pyy = p.y;
 	if(p.y + sz.cy > r.bottom) {
 		if(p.y - r.top > r.bottom - p.y) {
 			int y0 = p.y + rsz.cy;

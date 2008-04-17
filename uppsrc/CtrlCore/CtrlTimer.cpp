@@ -107,12 +107,12 @@ void  Ctrl::InitTimer()
 }
 
 void  Ctrl::SetTimeCallback(int delay_ms, Callback cb, int id) {
-	ASSERT(id >= 0 && id < sizeof(Ctrl));
+	ASSERT(id >= 0 && (size_t)id < (int)sizeof(Ctrl));
 	UPP::SetTimeCallback(delay_ms, cb, (byte *)this + id);
 }
 
 void  Ctrl::KillTimeCallback(int id) {
-	ASSERT(id >= 0 && id < sizeof(Ctrl));
+	ASSERT(id >= 0 && (size_t)id < sizeof(Ctrl));
 	UPP::KillTimeCallback((byte *)this + id);
 }
 
@@ -133,7 +133,7 @@ void  Ctrl::KillPostCallback(Callback cb, int id)
 }
 
 bool  Ctrl::ExistsTimeCallback(int id) const {
-	ASSERT(id >= 0 && id < sizeof(Ctrl));
+	ASSERT(id >= 0 && (size_t)id < sizeof(Ctrl));
 	return UPP::ExistsTimeCallback((byte *)this + id);
 }
 

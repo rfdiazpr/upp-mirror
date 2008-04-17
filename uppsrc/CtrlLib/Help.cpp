@@ -166,7 +166,6 @@ void HelpWindow::OpenDeep(int id)
 
 void HelpWindow::Serialize(Stream& s)
 {
-	int version = 0;
 	s % zoom.m;
 	s % tree_view;
 	SerializePlacement(s);

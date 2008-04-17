@@ -415,7 +415,6 @@ void CodeEditor::MovePrevWord(bool sel) {
 void CodeEditor::MoveNextBrk(bool sel) {
 	int p = GetCursor();
 	int e = GetLength();
-	int c = GetChar(p);
 	if(!islbrkt(GetChar(p)))
 		while(p < e && !islbrkt(GetChar(p))) p++;
 	else {

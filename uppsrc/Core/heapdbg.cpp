@@ -34,7 +34,7 @@ struct DbgBlkHeader {
 
 static const char *DbgFormat(char *b, DbgBlkHeader *p)
 {
-	sprintf(b, "--memory-breakpoint__ %u ", (dword)~(p->serial ^ (uintptr_t)p), (dword)p->size);
+	sprintf(b, "--memory-breakpoint__ %u ", (dword)~(p->serial ^ (uintptr_t)p));
 	return b;
 }
 
@@ -108,7 +108,7 @@ void MemoryFreeDebug(void *ptr)
 	CriticalSection::Lock __(sHeapLock2);
 #endif
 	DbgBlkHeader *p = (DbgBlkHeader *)ptr - 1;
-	if(Peek32le((byte *)(p + 1) + p->size) != p->serial) {
+	if((dword)Peek32le((byte *)(p + 1) + p->size) != p->serial) {
 		sHeapLock2.Leave();
 		DbgHeapPanic("Heap is corrupted ", p);
 	}
@@ -122,7 +122,7 @@ void MemoryCheckDebug()
 	CriticalSection::Lock __(sHeapLock2);
 	DbgBlkHeader *p = dbg_live.next;
 	while(p != &dbg_live) {
-		if(Peek32le((byte *)(p + 1) + p->size) != p->serial) {
+		if((dword)Peek32le((byte *)(p + 1) + p->size) != p->serial) {
 			sHeapLock2.Leave();
 			DbgHeapPanic("HEAP CHECK: Heap is corrupted ", p);
 		}

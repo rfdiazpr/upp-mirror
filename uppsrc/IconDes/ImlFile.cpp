@@ -8,7 +8,7 @@ public:
 	enum ENCODING { COLOR_RLE, MONO_RLE, MONO_PACKED };
 
 	AlphaImageInfo(Size size = Size(0, 0), int encoding = COLOR_RLE, Point hotspot = Point(0, 0))
-		: size(size), encoding(encoding), hotspot(hotspot) {}
+		: encoding(encoding), size(size), hotspot(hotspot) {}
 
 	void               Serialize(Stream& stream);
 
@@ -21,7 +21,6 @@ public:
 String AlphaToRLE(const Image& aa)
 {
 	String result;
-	int last = 0;
 	for(int y = 0; y < aa.GetHeight(); y++) {
 		result.Cat(PackRLE(aa[y], aa.GetWidth()));
 		result.Cat(0x80);
@@ -286,11 +285,6 @@ static void PutOctalString(Stream& out, const char *b, const char *e, bool split
 			out.Put(Sprintf("\\%o", (byte)*b++));
 	}
 	out.Put('\"');
-}
-
-static void PutOctalString(Stream& out, const String& s, bool split = false)
-{
-	PutOctalString(out, s.Begin(), s.End(), split);
 }
 
 String SaveIml(const Array<ImlImage>& iml, int format) {

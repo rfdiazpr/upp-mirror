@@ -752,7 +752,7 @@ RefCon<Formula> FormulaParser::RunComma()
 			formulas.Add();
 		formulas.Top().Add() = RunTextBin();
 	}
-	while((row = Check('&')) || Check(','));
+	while((row = Check('&')) != 0 || Check(','));
 	return new FormulaMatrix(formulas,
 		new FormulaText(", ", Font(state.font)(tht), state.color));
 }

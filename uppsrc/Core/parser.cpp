@@ -3,7 +3,7 @@
 NAMESPACE_UPP
 
 #define LLOG(x)    // LOG(x)
-#define LTIMING(x) // RTIMING(x)
+#define LTIMING(x)  RTIMING(x)
 
 void CParser::ThrowError(const char *s) {
 	LLOG("CParser::Error: " << s);
@@ -46,7 +46,8 @@ bool CParser::Spaces0() {
 
 bool CParser::Id0(const char *s) {
 	LTIMING("Id");
-	const char *t = term + 2;
+	const char *t = term + 1;
+	s++;
 	while(*s) {
 		if(*t != *s)
 			return false;
@@ -88,11 +89,14 @@ String CParser::ReadId() throw(Error) {
 	LTIMING("ReadId");
 	if(!IsId())
 		ThrowError("missing id");
-	StringBuffer result;
-	while(iscid(*term))
-		result.Cat(*term++);
+	String result;
+	const char *b = term;
+	const char *p = b;
+	while(iscid(*p))
+		p++;
+	term = p;
 	DoSpaces();
-	return result;
+	return String(b, p - b);
 }
 
 String CParser::ReadIdt() throw(Error) {
@@ -219,7 +223,7 @@ String CParser::ReadOneString(int delim, bool chkend) throw(Error) {
 	if(!IsChar(delim))
 		ThrowError("missing string");
 	term++;
-	String result;
+	StringBuffer result;
 	for(;;) {
 		if(*term == delim) {
 			term++;
@@ -278,6 +282,7 @@ String CParser::ReadOneString(int delim, bool chkend) throw(Error) {
 		}
 	}
 	DoSpaces();
+	return result;
 }
 
 String CParser::ReadOneString(bool chkend) throw(Error)
@@ -355,7 +360,7 @@ CParser::CParser(const char *ptr)
 }
 
 CParser::CParser(const char *ptr, const char *fn, int line)
-: term(ptr), fn(fn), line(line)
+: term(ptr), line(line), fn(fn)
 {
 	skipspaces = true;
 	Spaces();

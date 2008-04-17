@@ -18,6 +18,8 @@ class TTFReader {
 		TTFStream& operator%(uint32& q);
 		TTFStream& operator%(int16& q);
 		TTFStream& operator%(uint16& q);
+		
+		virtual ~TTFStream() {}
 	};
 
 	struct TTFStreamIn : TTFStream {
@@ -32,6 +34,8 @@ class TTFReader {
 		int    Get16();
 		int    Get32();
 		String Get(int n);
+		
+		virtual ~TTFStreamIn() {}
 	};
 
 	struct TTFStreamOut : TTFStream {
@@ -45,6 +49,8 @@ class TTFReader {
 		void   Put(const String& s) { out.Cat(s); }
 
 		operator String() const     { return out; }
+
+		virtual ~TTFStreamOut() {}
 	};
 
 	String font;

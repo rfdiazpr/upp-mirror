@@ -149,8 +149,6 @@ int Lex::GetCharacter()
 	return (byte)c;
 }
 
-#pragma optimize("t", on)
-
 void Lex::Next()
 {
 	while((byte)*ptr <= ' ') {
@@ -338,8 +336,6 @@ void Lex::Next()
 		return;
 	}
 }
-
-#pragma optimize("t", off)
 
 bool Lex::Prepare(int pos) {
 	while(term.GetCount() <= pos) {

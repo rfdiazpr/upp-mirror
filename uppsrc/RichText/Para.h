@@ -146,6 +146,7 @@ struct RichPara {
 		                             const CharFormat& fmt) = 0;
 		virtual void        Menu(Bar& bar, String *param) const {}
 		virtual void        DefaultAction(String *param) const {}
+		virtual ~FieldType() {}
 	};
 
 	struct HeightInfo {

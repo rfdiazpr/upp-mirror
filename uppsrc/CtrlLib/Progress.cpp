@@ -25,7 +25,6 @@ Size ProgressIndicator::GetMsz()
 void ProgressIndicator::Paint(Draw& w) {
 	Size sz = GetSize();
 	Size msz = GetMsz();
-	int x0 = 0;
 	int p0 = 0;
 	int p = pxp;
 	if(total <= 0) {

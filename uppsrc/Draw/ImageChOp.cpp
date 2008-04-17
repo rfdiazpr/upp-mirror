@@ -275,7 +275,6 @@ int ClassifyContent(const Image& m, const Rect& rect)
 			vdup = false;
 			break;
 		}
-	int cx = m.GetSize().cx;
 	for(int q = rect.left + 1; q < rect.right; q++)
 		if(!EqColumn(m, rect.left, q, rect.top, rect.GetHeight()))
 			return vdup;

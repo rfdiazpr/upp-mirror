@@ -375,7 +375,7 @@ void PostgreSQLConnection::SetParam(int i, const Value& r)
 				int *err = NULL;
 				int n = PQescapeStringConn(conn, q + 1, v, v.GetLength(), err);
 				q[1 + n] = '\'';
-				b.SetCount(2 + n); //TODO - check this fix
+				b.SetCount(2 + n);
 				p = b;
 			}
 			break;

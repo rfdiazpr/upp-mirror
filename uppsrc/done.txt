@@ -1,3 +1,11 @@
+
+String Compare
+
+Stream::GetLine
+
+New leak debugging
+
+
     	BIG ScrollButton chameleon problem
 
 Highlightinh "1e-15"

@@ -312,7 +312,7 @@ FontInfo Draw::Acquire(Font font, HDC hdc, int angle, int device)
 	LOGFONT lfnt;
 	Zero(lfnt);
 	lfnt.lfHeight = font.GetHeight() ? -abs(font.GetHeight()) : -12;
-	lfnt.lfWeight = font.GetWidth(), angle, angle, font.IsBold() ? FW_BOLD : FW_NORMAL;
+	lfnt.lfWeight = font.IsBold() ? FW_BOLD : FW_NORMAL;
 	lfnt.lfItalic = font.IsItalic();
 	lfnt.lfUnderline = font.IsUnderline();
 	lfnt.lfStrikeOut = font.IsStrikeout();

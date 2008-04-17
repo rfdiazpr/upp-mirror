@@ -625,7 +625,7 @@ void RichPara::Mid(int pos)
 #ifdef _DEBUG
 void RichPara::Dump()
 {
-	LOG("RichPara dump" << BeginIndent);
+	LOG("RichPara dump" << LOG_BEGIN);
 	LOG("BEFORE: " << format.before);
 	LOG("INDENT: " << format.indent);
 	LOG("LM: " << format.lm);
@@ -640,7 +640,7 @@ void RichPara::Dump()
 	for(i = 0; i < part.GetCount(); i++)
 		LOG("Part[" << i << "] = \"" << part[i].text << "\" "
 		    << part[i].format);
-	LOG(EndIndent << "---------");
+	LOG(LOG_END << "---------");
 }
 
 

@@ -22,10 +22,9 @@ void Ide::FileBookmark(Bar& menu) {
 			.Key(K_CTRL_0 + i);
 	}
 	menu.MenuBreak();
-	for(i = 0; i < 10; i++) {
-		Bar::Item& m = menu.Add("Set", THISBACK1(BookKey, K_SHIFT_CTRL_0 + i))
-			               .Key(K_SHIFT_CTRL_0 + i);
-	}
+	for(i = 0; i < 10; i++)
+		menu.Add("Set", THISBACK1(BookKey, K_SHIFT_CTRL_0 + i))
+		    .Key(K_SHIFT_CTRL_0 + i);
 }
 
 void Ide::File(Bar& menu) {

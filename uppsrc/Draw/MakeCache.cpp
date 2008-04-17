@@ -89,7 +89,7 @@ public:
 	virtual Image  Make() const;
 
 	SimpleImageMaker(const Image& image, Image (*make)(const Image& image))
-	:	image(image), make(make) {}
+	:	make(make),image(image) {}
 };
 
 String SimpleImageMaker::Key() const

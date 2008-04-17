@@ -209,7 +209,6 @@ void RichEdit::RightDown(Point p, dword flags)
 			if(!object) return;
 			o = object;
 			o.Menu(menu);
-			const RichObjectType& t = object.GetType();
 			if(!menu.IsEmpty())
 				menu.Separator();
 			menu.Add(t_("Object position.."), THISBACK(AdjustObjectSize));
@@ -247,7 +246,6 @@ void RichEdit::RightDown(Point p, dword flags)
 				CutTool(menu);
 			}
 			else {
-				int c = cursor;
 				WString w = GetWordAtCursor();
 				if(!w.IsEmpty() && !SpellWord(w, w.GetLength(),
 				                              fixedlang ? fixedlang : formatinfo.language)) {

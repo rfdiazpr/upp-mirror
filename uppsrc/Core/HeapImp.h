@@ -45,7 +45,7 @@ void  MFree_Reduce(MCache& m, int k);
 
 #define NKLASS      16
 #define CACHEMAX    31
-#define CACHERES    (CACHEMAX / 2)
+#define CACHERES    16
 
 void FreeFill(dword *ptr, int count);
 void FreeCheck(dword *ptr, int count);

@@ -1021,7 +1021,8 @@ bool FileSel::Execute(int _mode) {
 			}
 		}
 	#else
-		dir.Add(GetWinRegString("Desktop", "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", HKEY_CURRENT_USER));
+		const char *fs = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders";
+		dir.Add(FromSystemCharset(GetWinRegString("Desktop", fs, HKEY_CURRENT_USER)));
 		Array<FileSystemInfo::FileInfo> root = filesystem->Find(Null);
 		for(i = 0; i < root.GetCount(); i++) {
 			String ugly = root[i].filename;

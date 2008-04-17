@@ -1485,8 +1485,6 @@ Image ArrayCtrl::CursorImage(Point p, dword)
 
 void ArrayCtrl::RightDown(Point p, dword flags) {
 	if((flags & (K_CTRL|K_SHIFT)) == 0) {
-		int c = cursor;
-		bool b = HasFocus();
 		DoPoint(p, false);
 		ClickColumn(p);
 		if(cursor >= 0 && multiselect) {

@@ -347,7 +347,6 @@ void TopicEditor::Repair()
 	StartBrowserBase();
 	RichText text = editor.CopyText(0, editor.GetLength());
 	RichPara def;
-	bool cont = false;
 	for(int i = 0; i < text.GetPartCount(); i++)
 		if(text.IsPara(i)) {
 			RichPara para = text.Get(i);

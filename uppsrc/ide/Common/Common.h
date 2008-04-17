@@ -65,6 +65,8 @@ public:
 	virtual bool      IdeDebugUnLock() = 0;
 	virtual bool      IdeIsDebugLock() const = 0;
 	virtual void      IdeSetBar() = 0;
+	
+	virtual ~IdeContext() {}
 };
 
 IdeContext *TheIde();
@@ -127,6 +129,8 @@ struct IdeModule {
 	virtual IdeDesigner *CreateDesigner(Ide *ide, const char *path, byte charset) { return CreateDesigner(path, charset); }
 	virtual IdeDesigner *CreateDesigner(const char *path, byte charset)           { return NULL; }
 	virtual void         Serialize(Stream& s) {}
+	
+	virtual ~IdeModule() {}
 };
 
 void       RegisterIdeModule(IdeModule& module);

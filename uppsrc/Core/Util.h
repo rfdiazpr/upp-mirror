@@ -230,6 +230,7 @@ bool InScList(const char *s, const char *list);
 
 struct TextTest {
 	virtual const char *Accept(const char *s) const = 0;
+	virtual ~TextTest() {}
 };
 
 class CharFilterTextTest : public TextTest {
@@ -238,7 +239,7 @@ class CharFilterTextTest : public TextTest {
 public:
 	virtual const char *Accept(const char *s) const;
 	CharFilterTextTest(int (*filter)(int));
-	~CharFilterTextTest();
+	virtual ~CharFilterTextTest();
 };
 
 Vector<String> Split(const char *s, const TextTest& delim, bool ignoreempty = true);

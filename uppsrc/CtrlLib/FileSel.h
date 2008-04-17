@@ -32,6 +32,7 @@ public:
 	class Order {
 	public:
 		virtual bool operator()(const File& a, const File& b) const = 0;
+		virtual ~Order() {}
 	};
 
 private:

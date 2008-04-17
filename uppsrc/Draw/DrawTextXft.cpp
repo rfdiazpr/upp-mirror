@@ -237,7 +237,6 @@ FontInfo Draw::Acquire(Font font, int angle, int device)
 	f->avewidth = f->maxwidth;
 	f->default_char = '?';
 	f->fixedpitch = font.GetFaceInfo() & Font::FIXEDPITCH;
-	unsigned long a;
 	f->underline_thickness = max(hg / 20, 1);
 	f->underline_position = max(hg / 15, int(f->descent > 0));
 	if(angle) {
@@ -279,7 +278,6 @@ void Draw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font,
 	c.pixel = GetXPixel(ink.GetR(), ink.GetG(), ink.GetB());
 	if(angle) {
 		int xpos = 0;
-		int pfi = -1;
 		for(int i = 0; i < n; i++) {
 			wchar h = text[i];
 			XftDrawString16(xftdraw, &c, fd->xftfont,

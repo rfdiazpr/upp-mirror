@@ -161,7 +161,6 @@ void  EscValue::Escape(const char *method, EscHandle *h, Callback1<EscEscape&> e
 void Scan(ArrayMap<String, EscValue>& global, const char *file, const char *filename)
 {
 	LTIMING("Scan");
-	int limit = 0;
 	CParser p(file, filename);
 	while(!p.IsEof()) {
 		EscValue& v = global.GetPut(p.ReadId());;

@@ -204,7 +204,6 @@ Vector<dword> AAGetMap(int& dmin, int& dmax, int dclipmin, int dclipmax,
 				int pos = spos / dw;
 				int rel = spos % dw;
 				last += out[0] = pos * times - last;
-				int w1 = rel * avail / dw;
 				out[1] = avail - (out[2] = curve[rel * COUNT_STRETCH_CURVE / dw]);
 			}
 			out += 3;

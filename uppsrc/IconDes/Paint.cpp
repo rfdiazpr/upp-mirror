@@ -11,7 +11,6 @@ void IconShow::Paint(Draw& w)
 	Size sz = GetSize();
 	static Color color[] = { White(), WhiteGray(), LtGray(), Gray(), Black(),
 	                         Yellow(), Brown(), Red(), Green(), Blue(), Cyan(), Magenta() };
-	int cx = sz.cx / __countof(color);
 	Size isz = image.GetSize();
 	int n = isz.cx ? minmax(sz.cx / isz.cx, 1, __countof(color)) : 1;
 	for(int i = 0; i < n; i++) {

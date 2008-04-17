@@ -76,7 +76,7 @@ int sPalCv::Get(int g)
 }
 
 sPalCv::sPalCv(const RGBA *palette, int ncolors, PaletteCv& cv_pal)
-:	cv_pal(cv_pal), ncolors(ncolors), palette(palette)
+:	cv_pal(cv_pal), palette(palette), ncolors(ncolors)
 {
 	byte ender[256];
 	for(int b = 0; b < RASTER_MAP_B; b++) {
@@ -107,7 +107,7 @@ sPalCv::sPalCv(const RGBA *palette, int ncolors, PaletteCv& cv_pal)
 
 sPalCv::sPalCv(const RGBA *palette, int ncolors, PaletteCv& cv_pal,
                int histogram[RASTER_MAP_R][RASTER_MAP_G][RASTER_MAP_B])
-:	cv_pal(cv_pal), ncolors(ncolors), palette(palette)
+:	cv_pal(cv_pal), palette(palette), ncolors(ncolors)
 {
 	for(int b = 0; b < RASTER_MAP_B; b++) {
 		for(int r = 0; r < RASTER_MAP_R; r++) {

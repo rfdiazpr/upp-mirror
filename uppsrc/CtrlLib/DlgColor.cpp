@@ -1335,8 +1335,8 @@ private:
 };
 
 ColorSelectorImpl::ColorSelectorImpl(ColorSelector& parent)
-: parent(parent), paint_color_display(t_("(transparent)"))
-, wheel(false), ramp(true)
+: paint_color_display(t_("(transparent)"))
+, parent(parent), wheel(false), ramp(true)
 {
 	Transparent();
 	CtrlLayout(*this);

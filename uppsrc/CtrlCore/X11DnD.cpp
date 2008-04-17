@@ -81,7 +81,7 @@ void DnDLoop::Sync()
 	if(Xdnd_waiting_status)
 		return;
 	bool tx = Ctrl::TrapX11Errors();
-	Window root, child;
+	Window root;
 	unsigned int d1;
 	int x, y, d2;
 	Window tgt = Xroot;
@@ -161,11 +161,11 @@ void Ctrl::DropStatusEvent(XEvent *event)
 	if(event->type != ClientMessage)
 		return;
 	LLOG("DropStatus Client Message " << XAtomName(event->xclient.message_type));
-	if(event->type == ClientMessage && dndloop && event->xclient.data.l[0] == dndloop->target) {
+	if(event->type == ClientMessage && dndloop && event->xclient.data.l[0] == (int)dndloop->target) {
 		if(event->xclient.message_type == XdndStatus && Xdnd_waiting_status) {
 			LLOG("XdndStatus, xdnd action: " << XAtomName(event->xclient.data.l[4]));
 			Xdnd_status = (event->xclient.data.l[1] & 1) ?
-			                 event->xclient.data.l[4] == XdndActionMove ? DND_MOVE : DND_COPY
+			                 event->xclient.data.l[4] == (int)XdndActionMove ? DND_MOVE : DND_COPY
 			              : DND_NONE;
 			Xdnd_waiting_status = false;
 		}
@@ -173,7 +173,7 @@ void Ctrl::DropStatusEvent(XEvent *event)
 			LLOG("XdndFinished, xdnd action: " << XAtomName(event->xclient.data.l[2]));
 			if(Xdnd_version == 5)
 				Xdnd_status = (event->xclient.data.l[1] & 1) ?
-				                 event->xclient.data.l[2] == XdndActionMove ? DND_MOVE : DND_COPY
+				                 event->xclient.data.l[2] == (int)XdndActionMove ? DND_MOVE : DND_COPY
 				              : DND_NONE;
 			Xdnd_waiting_finished = false;
 		}
@@ -223,6 +223,7 @@ bool DnDLoop::Key(dword, int)
 {
 	LLOG("DnDLoop::Key");
 	Sync();
+	return false;
 }
 
 Image DnDLoop::CursorImage(Point, dword)
@@ -391,7 +392,7 @@ void Ctrl::DropEvent(XWindow& w, XEvent *event)
 		dword x = event->xclient.data.l[2];
 		XdndPos = Point(HIWORD(x), LOWORD(x));
 		LLOG("XdndPosition " << XdndPos << ", action " << XAtomName(event->xclient.data.l[4]));
-		XdndAction = event->xclient.data.l[4] == XdndActionMove ? DND_MOVE : DND_COPY;
+		XdndAction = event->xclient.data.l[4] == (int)XdndActionMove ? DND_MOVE : DND_COPY;
 		DnD(src, false);
 	}
 	if(event->xclient.message_type == XdndLeave)

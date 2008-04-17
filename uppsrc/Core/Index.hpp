@@ -283,6 +283,13 @@ void AIndex<T, V, HashFn>::Remove(int i)
 }
 
 template <class T, class V, class HashFn>
+void AIndex<T, V, HashFn>::Remove(int i, int count)
+{
+	key.Remove(i, count);
+	hash.Remove(i, count);
+}
+
+template <class T, class V, class HashFn>
 void AIndex<T, V, HashFn>::Remove(const int *sorted_list, int count)
 {
 	key.Remove(sorted_list, count);

@@ -392,7 +392,6 @@ void Ide::MacroExecute(EscEscape& e)
 
 void Ide::MacroLaunch(EscEscape& e)
 {
-	int time = msecs();
 	String cmdline = e[0];
 	One<Host> h = CreateHostRunDir();
 	h->ChDir(Nvl(rundir, GetFileFolder(target)));

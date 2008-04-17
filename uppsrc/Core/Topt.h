@@ -11,8 +11,6 @@ inline void IterSwap(I a, I b) { if(a != b) Swap(*a, *b); }
 
 class EmptyClass
 {
-public:
-//	void operator=(const EmptyClass&) {} // MSC 6.0 empty base class bug fix
 };
 
 template <class T, class B = EmptyClass>
@@ -23,8 +21,6 @@ public:
 	friend bool operator != (const T& a, const T& b)  { return !(a == b); }
 	friend bool operator <= (const T& a, const T& b)  { return !(b < a); }
 	friend bool operator >= (const T& a, const T& b)  { return !(a < b); }
-
-//	void operator=(const RelOps& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
 };
 
 template <class U, class V, class B = EmptyClass>
@@ -34,8 +30,6 @@ public:
 	friend U& operator -= (U& a, const V& b)          { a += -b; return a; }
 	friend U  operator +  (const U& a, const V& b)    { U x(a); x += b; return x; }
 	friend U  operator -  (const U& a, const V& b)    { U x(a); x += -b; return x; }
-
-//	void operator=(const AddOps& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
 };
 
 template <class T, class B = EmptyClass>
@@ -44,8 +38,6 @@ class PostfixOps : public B
 public:
 	friend T operator ++ (T& i, int)                  { T x = i; ++i; return x; }
 	friend T operator -- (T& i, int)                  { T x = i; --i; return x; }
-
-//	void operator=(const PostfixOps& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
 };
 
 template <class T, int (*compare)(T a, T b), class B = EmptyClass>
@@ -58,8 +50,6 @@ public:
 	friend bool operator != (T a, T b) { return (*compare)(a, b) != 0; }
 	friend bool operator <= (T a, T b) { return (*compare)(a, b) <= 0; }
 	friend bool operator >= (T a, T b) { return (*compare)(a, b) >= 0; }
-
-//	void operator=(const CompareRelOps& b) { B::operator = (b); } // MSC 6.0 empty base class bug fix
 };
 
 template <class T, class B = EmptyClass>

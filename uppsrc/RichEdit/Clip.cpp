@@ -85,7 +85,6 @@ void RichEdit::DragAndDrop(Point p, PasteClip& d)
 	Rect r = Null;
 	if(dropcursor >= 0 && dropcursor < text.GetLength()) {
 		RichCaret pr = text.GetCaret(dropcursor, pagesz);
-		int h = pr.Height();
 		Zoom zoom = GetZoom();
 		Rect tr = GetTextRect();
 		r = RectC(pr.left * zoom + tr.left - 1,

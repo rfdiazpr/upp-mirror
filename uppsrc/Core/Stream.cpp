@@ -57,10 +57,8 @@ void Stream::Flush() {}
 
 Stream::Stream() {
 	pos = style = 0;
-	buffer = ptr = rdlim = wrlim = NULL;
-	beginofline = true;
-//	radix = usedefault;
-	depth = 0;
+	buffer = NULL;
+	ptr = rdlim = wrlim = NULL;
 }
 
 Stream::~Stream() {}
@@ -273,24 +271,36 @@ int Stream::GetUtf8()
 }
 
 String Stream::GetLine() {
-	StringBuffer result;
+	byte *q = ptr;
+	while(q < rdlim)
+		if(*q == '\n') {
+			String result((const char *)ptr, q - ptr - (q > ptr && q[-1] == '\r'));
+			ptr = q + 1;
+			return result;
+		}
+		else
+			q++;
+	String result((const char *)ptr, q - ptr);
+	ptr = q;
 	for(;;) {
-/*		if(ptr < rdlim) {
-			const byte *q = ptr;
-			byte *r = ptr;
-			while(r < rdlim && *r != '\n')
-				r++;
-			ptr = r;
-			result.Cat((const char *)q, r - q);
-		}*/
+		byte *q = ptr;
+		while(q < rdlim && *q != '\n')
+			q++;
+		result.Cat(ptr, q - ptr);
+		ptr = q;
 		int c = Get();
 		if(c == '\n')
-			return result;
-		if(c < 0)
-			return result.GetCount() == 0 ? String::GetVoid() : result;
-		if(c != '\r')
-			result.Cat(c);
+			break;
+		if(c < 0) {
+			if(result.GetCount() == 0)
+				return String::GetVoid();
+			break;
+		}
+		result.Cat(c);
 	}
+	if(*result.Last() == '\r')
+		result.Trim(result.GetLength() - 1);
+	return result;
 }
 
 #ifdef CPU_LE
@@ -369,11 +379,7 @@ void Stream::PutUtf8(int c)
 
 void Stream::Put(const char *s)
 {
-	Put(s, (int)strlen(s));
-}
-
-void Stream::Put(const String& s) {
-	Put((const char *) s, s.GetLength());
+	while(*s) Put(*s++);
 }
 
 void Stream::Put(int c, int count) {
@@ -409,35 +415,6 @@ void  Stream::Put(Stream& s, int64 size, dword click) {
 		Put(buffer.operator const byte *(), click);
 		size -= n;
 	}
-}
-
-void  Stream::Putf(int c)
-{
-	if(beginofline) {
-		beginofline = false;
-		for(int a = depth; a--;)
-			Put('\t');
-	}
-	if(c == '\n') {
-		PutEol();
-		beginofline = true;
-	}
-	else
-	if(c != '\r')
-		Put(c);
-}
-
-void  Stream::Putf(const char *s)
-{
-	while(*s) Putf(*s++);
-}
-
-void  Stream::Putf(const String& s)
-{
-	const char *p = s.Begin();
-	const char *e = s.End();
-	while(p < e)
-		Putf(*p++);
 }
 
 void Stream::SerializeRLE(byte *data, dword size)
@@ -1219,16 +1196,27 @@ Stream& NilStream()
 
 #ifndef PLATFORM_WINCE
 class CoutStream : public Stream {
-	virtual void    _Put(int w) {
-	#ifdef PLATFORM_WIN32
+	void Put0(int w) {
+#ifdef PLATFORM_WIN32
 		static HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
 		char s[1];
 		s[0] = w;
 		dword dummy;
 		WriteFile(h, s, 1, &dummy, NULL);
-	#else
+#else
 		putchar(w);
-	#endif
+#endif
+	}
+	virtual void    _Put(int w) {
+		if(w == '\n') {
+#ifdef PLATFORM_WIN32
+			Put0('\r');
+#endif
+			Put0('\n');
+		}
+		else
+		if(w != '\r')
+			Put0(w);
 	}
 	virtual   bool  IsOpen() const { return true; }
 };
@@ -1503,7 +1491,7 @@ String LoadStream(Stream& in) {
 		in.ClearError();
 		int size = (int)in.GetLeft();
 		StringBuffer s(size);
-		if(size != 0xffffffff)
+		if((dword)size != 0xffffffff)
 			in.Get(s, size);
 		if(!in.IsError())
 			return s;
@@ -1639,7 +1627,7 @@ int StreamHeading(Stream& stream, int ver, int minver, int maxver, const char* t
 	dword len = text.GetLength();
 	stream.Pack(len);
 	if(stream.IsLoading()) {
-		if(stream.IsError() || len != text.GetLength()) {
+		if(stream.IsError() || (int)len != text.GetLength()) {
 			stream.SetError();
 			return Null;
 		}

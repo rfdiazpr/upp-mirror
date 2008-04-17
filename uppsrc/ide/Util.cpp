@@ -1,7 +1,7 @@
 #include "ide.h"
 
 FileSelButton::FileSelButton(MODE mode, const char *title)
-: mode(mode), title(title)
+: title(title), mode(mode)
 {
 	button.NoWantFocus();
 	button.SetImage(CtrlImg::right_arrow());

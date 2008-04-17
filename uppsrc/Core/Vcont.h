@@ -61,6 +61,7 @@ public:
 	void     Append(const Vector& x, int o, int c) { Insert(GetCount(), x, o, c); }
 	void     AppendPick(pick_ Vector& x)           { InsertPick(GetCount(), x); }
 	int      GetIndex(const T& item) const; //deprecated
+	void     Swap(int i1, int i2)    { UPP::Swap(Get(i1), Get(i2)); }
 
 	void     Drop(int n = 1)         { ASSERT(n <= GetCount()); Trim(items - n); }
 	T&       Top()                   { ASSERT(GetCount()); return Get(items - 1); }
@@ -109,7 +110,7 @@ public:
 	Iterator         End()                  { return (T*)vector + items; }
 	Iterator         GetIter(int i)         { ASSERT(i >= 0 && i <= items); return Begin() + i; }
 
-// Optimalizations
+// Optimizations
 	friend void Swap(Vector& a, Vector& b)  { UPP::Swap(a.items, b.items); UPP::Swap(a.alloc, b.alloc); UPP::Swap(a.vector, b.vector); }
 	friend void Append(Vector& dst, const Vector& src)         { dst.Append(src); }
 

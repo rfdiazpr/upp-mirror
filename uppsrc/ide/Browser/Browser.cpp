@@ -211,7 +211,6 @@ void Browser::LoadNest(const String& nest, ArrayMap<String, CppItemInfo>& item, 
 
 void Browser::EnterNesting()
 {
-	CppBase& base = BrowserBase();
 	item.Clear();
 	if(nesting.IsCursor()) {
 		ArrayMap<String, CppItemInfo> m;
@@ -219,10 +218,7 @@ void Browser::EnterNesting()
 		for(int i = 0; i < m.GetCount(); i++)
 			item.Add(RawToValue(m[i]));
 		item.Sort(FnValueOrder(ItemCompare));
-//		if(item.GetCount())
-//			item.SetCursor(0);
 	}
-//	EnterItem();
 }
 
 void Browser::EnterItem()

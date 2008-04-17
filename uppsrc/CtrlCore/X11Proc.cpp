@@ -26,7 +26,6 @@ void Ctrl::SyncMousePos()
 {
 	LTIMING("XQueryPointer");
 	int x, y, xx, yy;
-	unsigned int mask;
 	Window dm1, dm2;
 	Ctrl::mousePos = Null;
 	if(XQueryPointer(Xdisplay, Xroot, &dm1, &dm2, &x, &y, &xx, &yy, &sKbdState))
@@ -190,7 +189,7 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 			if(keysym == XK_Meta_L || keysym == XK_Meta_R || keysym == XK_Alt_L ||
 			   keysym == XK_Alt_R || keysym == XK_Super_L || keysym == XK_Super_R ||
 			   keysym == XK_Hyper_L || keysym == XK_Hyper_R || keysym == XK_ISO_Prev_Group) {
-				keysym == XK_Meta_L;
+				keysym = XK_Meta_L;
 				if(pressed)
 					sKbdState |= Mod1Mask;
 				else
@@ -232,7 +231,7 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 					return;
 				}
 			if(GetShift() && chr == 0) {
-				static int k[] = { 41, 33, 64, 35, 36, 37, 94, 38, 42, 40 };
+				static dword k[] = { 41, 33, 64, 35, 36, 37, 94, 38, 42, 40 };
 				for(int i = 0; i < 10; i++)
 					if(keysym == k[i]) {
 						DispatchKey(KEYtoK(i + K_0)|up, count);

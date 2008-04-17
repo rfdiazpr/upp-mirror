@@ -1,5 +1,4 @@
 #include "Web.h"
-#pragma hdrstop
 
 NAMESPACE_UPP
 
@@ -459,9 +458,9 @@ int LocateLine(String old_file, int old_line, String new_file)
 	if(old_line >= old_lines.GetCount())
 		return new_lines.GetCount();
 	String line = old_lines[old_line];
-	int hash = old_hash[old_line];
+	//int hash = old_hash[old_line]; Mirek: unused
+	//int fore_count = old_lines.GetCount() - old_line - 1;
 	int best_match = 0, best_value = 0;
-	int fore_count = old_lines.GetCount() - old_line - 1;
 	for(int r = 0; r < 10 && !best_value; r++)
 	{
 		int src = (r & 1 ? old_line + (r >> 1) + 1 : old_line - (r >> 1));
@@ -549,7 +548,7 @@ HttpQuery& HttpQuery::SetURL(String url)
 		p++;
 	p = (*p == '?' ? p + 1 : ~url);
 
-	const char *e = url.End();
+	// const char *e = url.End(); Mirek:unused
 	while(*p)
 	{
 		const char *last = p;

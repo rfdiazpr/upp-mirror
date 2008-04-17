@@ -232,7 +232,6 @@ void HeaderCtrl::ReCompute()
 
 void HeaderCtrl::Distribute(const Vector<int>& sci, double delta)
 {
-	double rest = 0;
 	Vector<int> ci(sci, 1);
 	int szcx = GetSize().cx;
 	if(szcx == 0)
@@ -683,8 +682,10 @@ int HeaderCtrl::FindIndex(int ndx)
 	return -1;
 }
 
+#ifdef COMPILER_MSC
 #pragma warning(push)
 #pragma warning(disable: 4700) // MSVC6 complaint about n having not been initialized
+#endif
 
 void HeaderCtrl::Serialize(Stream& s) {
 	int version = 0x02;
@@ -736,7 +737,9 @@ void HeaderCtrl::Serialize(Stream& s) {
 	}
 }
 
+#ifdef COMPILER_MSC
 #pragma warning(pop)
+#endif
 
 void HeaderCtrl::FrameAdd(Ctrl& parent)
 {

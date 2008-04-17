@@ -331,7 +331,7 @@ class Parser {
 		int change;
 		int &count;
 		RecursionCounter(int &count_i, int change_i = 1) :
-		  count(count_i), change(change_i)
+		  change(change_i), count(count_i)
 		{
 		  count += change;
 		}

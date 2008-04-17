@@ -109,7 +109,7 @@ bool GifLocalInfo::Load(Stream& stream)
 			}
 			else if(code == 0xFE) { // comment
 				stream.Seek(next);
-				while(len = stream.Get()) {
+				while((len = stream.Get()) != 0) {
 					int old = comment.GetLength();
 					StringBuffer b(old + len);
 					memcpy(b, comment, old);
@@ -1273,7 +1273,7 @@ private:
 };
 
 GIFEncoder::Data::Data(Stream& stream, RasterFormat& format)
-: stream(stream), format(format)
+: format(format), stream(stream)
 {
 }
 

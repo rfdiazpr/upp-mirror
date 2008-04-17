@@ -1,5 +1,4 @@
 #include "Web.h"
-#pragma hdrstop
 
 NAMESPACE_UPP
 
@@ -59,7 +58,7 @@ static void Send(Socket& socket, const String &s, String *transcript = 0, int ti
 	const char *p = s.Begin(), *e = s.End();
 	while(p != e)
 	{
-		if(GetTickCount() > end_time)
+		if((dword)GetTickCount() > end_time)
 			throw Exc(t_("Communication Failure: Timeout."));
 
 		int amount = socket.WriteRaw(p, int(e - p)), err;
@@ -89,7 +88,7 @@ static String SendRecv(Socket& socket, const String& s, String *transcript = 0, 
 	dword end_time = (timeout >= 0 ? GetTickCount() + 1000 * timeout : 0xFFFFFFFF);
 	for(;;)
 	{
-		if(GetTickCount() > end_time)
+		if((dword)GetTickCount() > end_time)
 			throw Exc(t_("Communication Failure: Timeout."));
 		char buffer[100];
 		int amount = socket.ReadRaw(buffer, sizeof(buffer)), err;

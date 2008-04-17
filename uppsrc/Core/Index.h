@@ -43,6 +43,7 @@ public:
 	Vector<int> GetUnlinked() const;
 
 	void  Remove(int i);
+	void  Remove(int i, int count);
 	void  Remove(const int *sorted_list, int count);
 	void  Insert(int i, unsigned hash);
 
@@ -143,6 +144,7 @@ public:
 	void     Insert(int i, const T& k, unsigned h);
 	void     Insert(int i, const T& k);
 	void     Remove(int i);
+	void     Remove(int i, int count);
 	void     Remove(const int *sorted_list, int count);
 	void     Remove(const Vector<int>& sorted_list);
 	int      RemoveKey(const T& k, unsigned h);

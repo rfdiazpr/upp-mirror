@@ -1529,6 +1529,7 @@ public:
 public:
 	struct Rounder {
 		virtual Rect Round(const Rect& r) = 0;
+		virtual ~Rounder() {}
 	};
 
 protected:

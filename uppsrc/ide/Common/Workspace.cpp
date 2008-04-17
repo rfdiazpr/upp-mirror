@@ -179,7 +179,7 @@ String SourcePath(const String& package, const String& file) {
 String GetAnyFileName(const char *path)
 {
 	const char *p = path;
-	for(char c; c = *path++;)
+	for(char c; (c = *path++) != 0;)
 		if(c == '\\' || c == '/' || c == ':')
 			p = path;
 	return p;

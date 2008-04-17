@@ -1,6 +1,4 @@
 #include "coff.h"
-#pragma hdrstop
-
 
 NAMESPACE_UPP
 

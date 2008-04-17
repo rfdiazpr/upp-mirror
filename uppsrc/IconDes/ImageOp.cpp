@@ -92,7 +92,6 @@ void InterpolateImage(Image& img, const Rect& _rc)
 	Image imp = CreateImage(rc.GetSize(), Null);
 	Over(imp, Point(0, 0), m, m.GetSize());
 	Progress pi("Interpolating...");
-	int n = rc.GetWidth() * rc.GetHeight();
 	for(int qq = 0; qq < 2000; qq++) {
 		InterpolateFilter f;
 		f.todo = 0;

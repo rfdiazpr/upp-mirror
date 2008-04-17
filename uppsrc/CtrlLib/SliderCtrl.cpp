@@ -3,9 +3,9 @@
 NAMESPACE_UPP
 
 SliderCtrl::SliderCtrl()
-: min(0)
+: value(Null)
+, min(0)
 , max(100)
-, value(Null)
 , step(1)
 , round_step(true)
 {

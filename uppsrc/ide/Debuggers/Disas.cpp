@@ -19,7 +19,6 @@ void DbgDisas::Paint(Draw& w)
 {
 	Size sz = GetSize();
 	Size box = GetBox();
-	int nl = sz.cy / box.cy + 1;
 	int i = sb;
 	int y = 0;
 	while(i < inst.GetCount() && y < sz.cy) {

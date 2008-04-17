@@ -165,12 +165,6 @@ String ZDecompress(const String& s, Gate2<int, int> progress)
 	return ZDecompress(~s, s.GetCount(), progress);
 }
 
-static String write_gzip_header()
-{
-	byte buffer[10] = { GZ_MAGIC1, GZ_MAGIC2, Z_DEFLATED, 0, 0, 0, 0, 0, 0, OS_CODE };
-	return String(buffer, 10);
-}
-
 int GZCompress(Stream& out, Stream& in, int size, Gate2<int, int> progress)
 {
 	static byte gzip_header[10] = { GZ_MAGIC1, GZ_MAGIC2, Z_DEFLATED, 0, 0, 0, 0, 0, 0, OS_CODE };
@@ -220,7 +214,7 @@ int GZDecompress(Stream& out, Stream& in, int size, Gate2<int, int> progress)
 	}
 	dword crc;
 	int sz = ZDecompress(out, in, size, progress, true, &crc);
-	return sz < 0 || in.Get32le() != crc || in.Get32le() != sz ? -1 : sz;
+	return sz < 0 || in.Get32le() != (int)crc || in.Get32le() != sz ? -1 : sz;
 }
 
 int GZCompress(Stream& out, Stream& in, Gate2<int, int> progress = false)

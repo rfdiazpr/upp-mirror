@@ -1133,7 +1133,6 @@ bool utf8check(const char *_s, int len)
 
 int utf8len(const char *_s, int _len)
 {
-	WString result;
 	const byte *s = (const byte *)_s;
 	const byte *lim = s + _len;
 	int len = 0;
@@ -1214,7 +1213,6 @@ WString FromUtf8(const char *_s, int len)
 	int tlen = utf8len(_s, len);
 	WStringBuffer result(tlen);
 	wchar *t = result;
-	wchar *b = t;
 	if(len > 4)
 		while(s < lim - 4) {
 			word code = (byte)*s++;

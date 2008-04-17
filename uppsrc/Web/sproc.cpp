@@ -1,8 +1,7 @@
 #include "Web.h"
-#pragma hdrstop
 
 #ifdef PLATFORM_POSIX
-#pragma BLITZ_APPROVE
+//#BLITZ_APPROVE
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -10,6 +9,7 @@
 
 NAMESPACE_UPP
 
+/* Mirek:unused
 static void WriteLog(const String& s)
 {
 #ifdef PLATFORM_POSIX
@@ -21,6 +21,7 @@ static void WriteLog(const String& s)
 	close(fd);
 #endif
 }
+*/
 
 #define DO_SVRLOG 0
 
@@ -571,7 +572,7 @@ void RemoteSlaveProcess::Recv(int part, int timeout)
 	}
 //	LOG("RemoteSlaveProcess::Recv(" << part << ")");
 	unsigned end = (IsNull(timeout) ? (unsigned)-1 : GetTickCount() + timeout);
-	while(GetTickCount() <= end && (socket.Peek() || current_part <= part))
+	while(GetTickCount() <= (int)end && (socket.Peek() || current_part <= part))
 	{
 		String data = socket.Read(0);
 		SVRLOG("-> [" << current_part << "] = " << data.GetLength() << " bytes: <" << data << ">");

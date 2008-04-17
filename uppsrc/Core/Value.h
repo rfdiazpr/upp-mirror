@@ -77,28 +77,28 @@ inline int            Nvl(int a)                               { return Nvl(a, 0
 inline int64          Nvl(int64 a)                             { return Nvl(a, (int64)0); }
 inline double         Nvl(double a)                            { return Nvl(a, 0.0); }
 
-const int VOID_V    = 0;
+const dword VOID_V    = 0;
 
-const int INT_V     = 1;
-const int DOUBLE_V  = 2;
-const int STRING_V  = 3;
-const int DATE_V    = 4;
-const int TIME_V    = 5;
+const dword INT_V     = 1;
+const dword DOUBLE_V  = 2;
+const dword STRING_V  = 3;
+const dword DATE_V    = 4;
+const dword TIME_V    = 5;
 
-const int ERROR_V   = 6;
+const dword ERROR_V   = 6;
 
-const int VALUE_V   = 7;
+const dword VALUE_V   = 7;
 
-const int WSTRING_V = 8;
+const dword WSTRING_V = 8;
 
-const int VALUEARRAY_V = 9;
+const dword VALUEARRAY_V = 9;
 
-const int INT64_V  = 10;
-const int BOOL_V   = 11;
+const dword INT64_V  = 10;
+const dword BOOL_V   = 11;
 
-const int VALUEMAP_V   = 12;
+const dword VALUEMAP_V   = 12;
 
-const int UNKNOWN_V = (int)0xffffffff;
+const dword UNKNOWN_V = (dword)0xffffffff;
 
 class Value : Moveable<Value> {
 public:
@@ -221,6 +221,7 @@ int StdValueCompareDesc(const Value& a, const Value& b);
 
 struct ValueOrder {
 	virtual bool operator()(const Value& a, const Value& b) const = 0;
+	virtual ~ValueOrder() {}
 };
 
 struct StdValueOrder : ValueOrder {
@@ -494,6 +495,7 @@ struct RefManager {
 	virtual bool  IsNull(const void *)              { return false; }
 	virtual void  SetValue(void *, const Value& v)  { NEVER(); }
 	virtual void  SetNull(void *)                   { NEVER(); }
+	virtual ~RefManager() {}
 };
 
 
@@ -502,6 +504,7 @@ struct RawRef : public RefManager {
 	virtual void  SetValue(void *p, const Value& v) { *(T *) p = RawValue<T>::Extract(v); }
 	virtual Value GetValue(const void *p)           { return RawValue<T>(*(const T *) p); }
 	virtual int   GetType()                         { return ValueTypeNo(*(T *)NULL); }
+	virtual ~RawRef() {}
 };
 
 template <class T>
@@ -700,4 +703,5 @@ class ValueGen {
 public:
 	virtual Value  Get() = 0;
 	Value operator++()                           { return Get(); }
+	virtual ~ValueGen() {}
 };

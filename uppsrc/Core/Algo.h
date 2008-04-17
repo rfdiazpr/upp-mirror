@@ -851,6 +851,129 @@ void Sort(T& c)
 	Sort(c.Begin(), c.End(), StdLess<VT>());
 }
 
+template <class T>
+struct StableSortItem {
+	const T& value;
+	int      index;
+	
+	StableSortItem(const T& value, int index) : value(value), index(index) {}
+};
+
+template <class II, class T>
+struct StableSortIterator {
+	II          ii;
+	int        *vi;
+	
+	typedef StableSortIterator<II, T> Iter;
+
+	Iter&       operator ++ ()               { ++ii; ++vi; return *this; }
+	Iter&       operator -- ()               { --ii; --vi; return *this; }
+	Iter        operator +  (int i) const    { return Iter(ii + i, vi + i); }
+	Iter        operator -  (int i) const    { return Iter(ii - i, vi - i); }
+	int         operator -  (Iter b) const   { return (int)(ii - b.ii); }
+	bool        operator == (Iter b) const   { return ii == b.ii; }
+	bool        operator != (Iter b) const   { return ii != b.ii; }
+	bool        operator <  (Iter b) const   { return ii <  b.ii; }
+
+	StableSortItem<T> operator*() const      { return StableSortItem<T>(*ii, *vi); }
+
+	friend void IterSwap(Iter a, Iter b)     { IterSwap(a.ii, b.ii); IterSwap(a.vi, b.vi); }
+
+	StableSortIterator(II ii, int *vi) : ii(ii), vi(vi) {}
+};
+
+template <class T, class Less>
+struct StableSortLess_ {
+	const Less& less;
+
+	bool operator()(const StableSortItem<T>& a, const StableSortItem<T>& b) const {
+		if(less(a.value, b.value)) return true;
+		return less(b.value, a.value) ? false : a.index < b.index;
+	}
+	
+	StableSortLess_(const Less& less) : less(less) {}
+};
+
+template <class I, class Less, class T>
+void StableSort_(I begin, I end, const Less& less, const T *)
+{
+	int count = end - begin;
+	Buffer<int> h(count);
+	for(int i = 0; i < count; i++)
+		h[i] = i;
+	Sort(StableSortIterator<I, T>(begin, ~h),
+	     StableSortIterator<I, T>(end, ~h + count),
+	     StableSortLess_<T, Less>(less));
+}
+
+template <class I, class Less>
+void StableSort(I begin, I end, const Less& less)
+{
+	if(begin != end)
+		StableSort_(begin, end, less, &*begin);
+}
+
+template <class T, class Less>
+void StableSort(T& c, const Less& less)
+{
+	StableSort(c.Begin(), c.End(), less);
+}
+
+template <class T>
+void StableSort(T& c)
+{
+	StableSort(c.Begin(), c.End(), StdLess<typename T::ValueType>());
+}
+
+template <class T, class Cmp>
+struct StableSortLessCmp_ {
+	const Cmp& cmp;
+	bool operator()(const StableSortItem<T>& a, const StableSortItem<T>& b) const {
+		int q = SgnCompare(a.value, b.value);
+		return q ? q < 0 : a.index < b.index;
+	}
+	
+	StableSortLessCmp_(const Cmp& cmp) : cmp(cmp) {}
+};
+
+template <class I, class Cmp, class T>
+void StableSortCmp_(I begin, I end, const Cmp& cmp, const T *)
+{
+	int count = end - begin;
+	Buffer<int> h(count);
+	for(int i = 0; i < count; i++)
+		h[i] = i;
+	Sort(StableSortIterator<I, T>(begin, ~h),
+	     StableSortIterator<I, T>(end, ~h + count),
+	     StableSortLessCmp_<T, Cmp>(cmp));
+}
+
+template <class I, class Cmp>
+void StableSortCmp(I begin, I end, const Cmp& cmp)
+{
+	if(begin != end)
+		StableSortCmp_(begin, end, cmp, &*begin);
+}
+
+template <class T, class Cmp>
+void StableSortCmp(T& c, const Cmp& cmp)
+{
+	StableSortCmp(c.Begin(), c.End(), cmp);
+}
+
+template <class T>
+struct StdCmp {
+	int operator()(const T& a, const T& b) const {
+		return SgnCompare(a, b);
+	}
+};
+
+template <class T>
+void StableSortCmp(T& c)
+{
+	StableSort(c.Begin(), c.End(), StdCmp<typename T::ValueType>());
+}
+
 template <class II, class VI, class K>
 struct IndexSortIterator
 {
@@ -905,6 +1028,70 @@ inline void IndexSort(KC& keys, VC& values)
 		__IndexSort(keys.Begin(), keys.End(), values.Begin(), StdLess<KT>(), (KT *)0);
 }
 
+template <class II, class VI, class K, class Less>
+inline void __StableIndexSort(II begin, II end, VI pair, const Less& less, const K *)
+{
+	StableSort(IndexSortIterator<II, VI, K>(begin, pair),
+		IndexSortIterator<II, VI, K>(end, pair + (end - begin)),
+		less);
+}
+
+template <class II, class VI, class Less>
+inline void StableIndexSort(II begin, II end, VI pair, const Less& less)
+{
+	if(begin != end)
+		__StableIndexSort(begin, end, pair, less, &*begin);
+}
+
+template <class KC, class VC, class Less>
+inline void StableIndexSort(KC& keys, VC& values, const Less& less)
+{
+	typedef typename KC::ValueType KT;
+	ASSERT(keys.GetCount() == values.GetCount());
+	if(keys.GetCount() >= 2)
+		__StableIndexSort(keys.Begin(), keys.End(), values.Begin(), less, (KT *)0);
+}
+
+template <class KC, class VC>
+inline void StableIndexSort(KC& keys, VC& values)
+{
+	typedef typename KC::ValueType KT;
+	if(keys.GetCount() >= 2)
+		__StableIndexSort(keys.Begin(), keys.End(), values.Begin(), StdLess<KT>(), (KT *)0);
+}
+
+template <class II, class VI, class K, class Cmp>
+inline void __StableIndexSortCmp(II begin, II end, VI pair, const Cmp& cmp, const K *)
+{
+	StableSortCmp(IndexSortIterator<II, VI, K>(begin, pair),
+	              IndexSortIterator<II, VI, K>(end, pair + (end - begin)),
+	              cmp);
+}
+
+template <class II, class VI, class Cmp>
+inline void StableIndexSortCmp(II begin, II end, VI pair, const Cmp& cmp)
+{
+	if(begin != end)
+		__StableIndexSortCmp(begin, end, pair, cmp, &*begin);
+}
+
+template <class KC, class VC, class Cmp>
+inline void StableIndexSortCmp(KC& keys, VC& values, const Cmp& cmp)
+{
+	typedef typename KC::ValueType KT;
+	ASSERT(keys.GetCount() == values.GetCount());
+	if(keys.GetCount() >= 2)
+		__StableIndexSortCmp(keys.Begin(), keys.End(), values.Begin(), cmp, (KT *)0);
+}
+
+template <class KC, class VC>
+inline void StableIndexSortCmp(KC& keys, VC& values)
+{
+	typedef typename KC::ValueType KT;
+	if(keys.GetCount() >= 2)
+		__StableIndexSortCmp(keys.Begin(), keys.End(), values.Begin(), StdCmp<KT>(), (KT *)0);
+}
+
 template <class II, class VI, class WI, class K>
 struct IndexSort2Iterator
 {
@@ -933,8 +1120,8 @@ inline void __IndexSort2(II begin, II end, VI pair1, WI pair2, const Less& less,
 {
 	int count = end - begin;
 	Sort(IndexSort2Iterator<II, VI, WI, K>(begin, pair1, pair2),
-		IndexSort2Iterator<II, VI, WI, K>(end, pair1 + count, pair2 + count),
-		less);
+	     IndexSort2Iterator<II, VI, WI, K>(end, pair1 + count, pair2 + count),
+	     less);
 }
 
 template <class II, class VI, class WI, class Less>
@@ -959,6 +1146,72 @@ inline void IndexSort2(KC& keys, VC& values1, WC& values2)
 	typedef typename KC::ValueType KT;
 	if(keys.GetCount() >= 2)
 		__IndexSort2(keys.Begin(), keys.End(), values1.Begin(), values2.Begin(), StdLess<KT>(), (KT *)0);
+}
+
+template <class II, class VI, class WI, class K, class Less>
+inline void __StableIndexSort2(II begin, II end, VI pair1, WI pair2, const Less& less, const K *)
+{
+	int count = end - begin;
+	StableSort(IndexSort2Iterator<II, VI, WI, K>(begin, pair1, pair2),
+	           IndexSort2Iterator<II, VI, WI, K>(end, pair1 + count, pair2 + count),
+	           less);
+}
+
+template <class II, class VI, class WI, class Less>
+inline void StableIndexSort2(II begin, II end, VI pair1, WI pair2, const Less& less)
+{
+	if(begin != end)
+		__StableIndexSort2(begin, end, pair1, pair2, less, &*begin);
+}
+
+template <class KC, class VC, class WC, class Less>
+inline void StableIndexSort2(KC& keys, VC& values1, WC& values2, const Less& less)
+{
+	typedef typename KC::ValueType KT;
+	ASSERT(keys.GetCount() == values1.GetCount() && keys.GetCount() == values2.GetCount());
+	if(keys.GetCount() >= 2)
+		__StableIndexSort2(keys.Begin(), keys.End(), values1.Begin(), values2.Begin(), less, (KT *)0);
+}
+
+template <class KC, class VC, class WC>
+inline void StableIndexSort2(KC& keys, VC& values1, WC& values2)
+{
+	typedef typename KC::ValueType KT;
+	if(keys.GetCount() >= 2)
+		__StableIndexSort2(keys.Begin(), keys.End(), values1.Begin(), values2.Begin(), StdLess<KT>(), (KT *)0);
+}
+
+template <class II, class VI, class WI, class K, class Cmp>
+inline void __StableIndexSort2Cmp(II begin, II end, VI pair1, WI pair2, const Cmp& cmp, const K *)
+{
+	int count = end - begin;
+	StableSortCmp(IndexSort2Iterator<II, VI, WI, K>(begin, pair1, pair2),
+	              IndexSort2Iterator<II, VI, WI, K>(end, pair1 + count, pair2 + count),
+	              cmp);
+}
+
+template <class II, class VI, class WI, class Cmp>
+inline void StableIndexSort2Cmp(II begin, II end, VI pair1, WI pair2, const Cmp& cmp)
+{
+	if(begin != end)
+		__StableIndexSort2Cmp(begin, end, pair1, pair2, cmp, &*begin);
+}
+
+template <class KC, class VC, class WC, class Cmp>
+inline void StableIndexSort2Cmp(KC& keys, VC& values1, WC& values2, const Cmp& cmp)
+{
+	typedef typename KC::ValueType KT;
+	ASSERT(keys.GetCount() == values1.GetCount() && keys.GetCount() == values2.GetCount());
+	if(keys.GetCount() >= 2)
+		__StableIndexSort2Cmp(keys.Begin(), keys.End(), values1.Begin(), values2.Begin(), cmp, (KT *)0);
+}
+
+template <class KC, class VC, class WC>
+inline void StableIndexSort2Cmp(KC& keys, VC& values1, WC& values2)
+{
+	typedef typename KC::ValueType KT;
+	if(keys.GetCount() >= 2)
+		__StableIndexSort2Cmp(keys.Begin(), keys.End(), values1.Begin(), values2.Begin(), StdCmp<KT>(), (KT *)0);
 }
 
 template <class II, class VI, class WI, class XI, class K>
@@ -1019,6 +1272,75 @@ inline void IndexSort3(KC& keys, VC& values1, WC& values2, XC& values3)
 		__IndexSort3(keys.Begin(), keys.End(), values1.Begin(), values2.Begin(), values3.Begin(), StdLess<KT>(), (KT *)0);
 }
 
+template <class II, class VI, class WI, class XI, class K, class Less>
+inline void __StableIndexSort3(II begin, II end, VI pair1, WI pair2, XI pair3, const Less& less, const K *)
+{
+	int count = end - begin;
+	StableSort(IndexSort3Iterator<II, VI, WI, XI, K>(begin, pair1, pair2, pair3),
+	           IndexSort3Iterator<II, VI, WI, XI, K>(end, pair1 + count, pair2 + count, pair3 + count),
+	           less);
+}
+
+template <class II, class VI, class WI, class XI, class Less>
+inline void StableIndexSort3(II begin, II end, VI pair1, WI pair2, XI pair3, const Less& less)
+{
+	if(begin != end)
+		__StableIndexSort3(begin, end, pair1, pair2, pair3, less, &*begin);
+}
+
+template <class KC, class VC, class WC, class XC, class Less>
+inline void StableIndexSort3(KC& keys, VC& values1, WC& values2, XC& values3, const Less& less)
+{
+	typedef typename KC::ValueType KT;
+	ASSERT(keys.GetCount() == values1.GetCount() && keys.GetCount() == values2.GetCount()
+		&& keys.GetCount() == values3.GetCount());
+	if(keys.GetCount() >= 2)
+		__StableIndexSort3(keys.Begin(), keys.End(), values1.Begin(), values2.Begin(), values3.Begin(), less, (KT *)0);
+}
+
+template <class KC, class VC, class WC, class XC>
+inline void StableIndexSort3(KC& keys, VC& values1, WC& values2, XC& values3)
+{
+	typedef typename KC::ValueType KT;
+	if(keys.GetCount() >= 2)
+		__StableIndexSort3(keys.Begin(), keys.End(), values1.Begin(), values2.Begin(), values3.Begin(), StdLess<KT>(), (KT *)0);
+}
+
+template <class II, class VI, class WI, class XI, class K, class Cmp>
+inline void __StableIndexSort3Cmp(II begin, II end, VI pair1, WI pair2, XI pair3, const Cmp& cmp, const K *)
+{
+	int count = end - begin;
+	StableSortCmp(IndexSort3Iterator<II, VI, WI, XI, K>(begin, pair1, pair2, pair3),
+	              IndexSort3Iterator<II, VI, WI, XI, K>(end, pair1 + count, pair2 + count, pair3 + count),
+	              cmp);
+}
+
+template <class II, class VI, class WI, class XI, class Cmp>
+inline void StableIndexSort3Cmp(II begin, II end, VI pair1, WI pair2, XI pair3, const Cmp& cmp)
+{
+	if(begin != end)
+		__StableIndexSort3Cmp(begin, end, pair1, pair2, pair3, cmp, &*begin);
+}
+
+template <class KC, class VC, class WC, class XC, class Cmp>
+inline void StableIndexSort3Cmp(KC& keys, VC& values1, WC& values2, XC& values3, const Cmp& cmp)
+{
+	typedef typename KC::ValueType KT;
+	ASSERT(keys.GetCount() == values1.GetCount() && keys.GetCount() == values2.GetCount()
+		&& keys.GetCount() == values3.GetCount());
+	if(keys.GetCount() >= 2)
+		__StableIndexSort3Cmp(keys.Begin(), keys.End(), values1.Begin(), values2.Begin(), values3.Begin(), cmp, (KT *)0);
+}
+
+template <class KC, class VC, class WC, class XC>
+inline void StableIndexSort3Cmp(KC& keys, VC& values1, WC& values2, XC& values3)
+{
+	typedef typename KC::ValueType KT;
+	if(keys.GetCount() >= 2)
+		__StableIndexSort3Cmp(keys.Begin(), keys.End(), values1.Begin(), values2.Begin(), values3.Begin(), StdCmp<KT>(), (KT *)0);
+}
+
+
 template <class I, class V>
 struct SortOrderIterator : PostfixOps< SortOrderIterator<I, V> >
 {
@@ -1072,76 +1394,36 @@ inline Vector<int> GetSortOrder(const C& container)
 	return GetSortOrder(container.Begin(), container.End(), StdLess<V>());
 }
 
-template <class I, class Less, class T>
-void StableSort__(int n, I begin, I end, const Less& less, T *temp)
+template <class I, class T>
+struct StableSortOrderIterator : PostfixOps< StableSortOrderIterator<I, T> >
 {
-	if(n > 1) {
-		int n2 = n / 2;
-		I mid = begin + n2;
-		StableSort__(n2, begin, mid, less, temp);
-		StableSort__(n - n2, mid, end, less, temp);
-		I i1 = begin;
-		I i2 = mid;
-		T *t = temp;
-		for(;;) {
-			if(i1 == mid) {
-				while(i2 != end)
-					::new(t++) T(*i2++);
-				break;
-			}
-			if(i2 == end) {
-				while(i1 != mid)
-					::new(t++) T(*i1++);
-				break;
-			}
-			if(less(*i2, *i1))
-				::new(t++) T(*i2++);
-			else
-				::new(t++) T(*i1++);
-		}
-		t = temp;
-		while(begin != end)
-			*begin++ = *t++;
-		DestroyArray(temp, t);
-	}
-}
+	typedef StableSortOrderIterator<I, T> Iter;
 
-template <class I, class Less, class T>
-void StableSort__(I begin, I end, const Less& less, const T&)
-{
-	int n = (int)(end - begin);
-	T *temp = (T*) new byte[sizeof(T) * n];
-	StableSort__(n, begin, end, less, temp);
-	delete[] (byte *)temp;
-}
+	StableSortOrderIterator(int *ii, I vi) : ii(ii), vi(vi) {}
 
-template <class I, class Less>
-void StableSort(I begin, I end, const Less& less)
-{
-	StableSort__(begin, end, less, *begin);
-}
+	Iter&       operator ++ ()               { ++ii; return *this; }
+	Iter&       operator -- ()               { --ii; return *this; }
+	Iter        operator +  (int i) const    { return Iter(ii + i, vi); }
+	Iter        operator -  (int i) const    { return Iter(ii - i, vi); }
+	int         operator -  (Iter b) const   { return int(ii - b.ii); }
+	bool        operator == (Iter b) const   { return ii == b.ii; }
+	bool        operator != (Iter b) const   { return ii != b.ii; }
+	bool        operator <  (Iter b) const   { return ii < b.ii; }
+	friend void IterSwap    (Iter a, Iter b) { IterSwap(a.ii, b.ii); }
 
-template <class C, class Less>
-void StableSort(C& a, const Less& less)
-{
-	StableSort(a.Begin(), a.End(), less);
-}
+	StableSortItem<T> operator*() const      { return StableSortItem<T>(*(vi + *ii), *ii); }
 
-template <class C>
-void StableSort(C& a)
-{
-	StableSort(a, StdLess<typename C::ValueType>());
-}
-
-template <class I, class Less>
-struct StableSortOrderLess {
-	I           data;
-	const Less *less;
-
-	bool operator()(const int& a, const int& b) const {
-		return (*less)(*(data + a), *(data + b));
-	}
+	int        *ii;
+	I           vi;
 };
+
+template <class I, class T, class Less>
+inline void __StableSortOrder(int *ibegin, int *iend, I data, const Less& less, const T *)
+{
+	Sort(StableSortOrderIterator<I, T>(ibegin, data),
+	     StableSortOrderIterator<I, T>(iend, data),
+	     StableSortLess_<T, Less>(less));
+}
 
 template <class I, class Less>
 inline Vector<int> GetStableSortOrder(I begin, I end, const Less& less)
@@ -1150,11 +1432,8 @@ inline Vector<int> GetStableSortOrder(I begin, I end, const Less& less)
 	index.SetCount((int)(end - begin));
 	for(int i = index.GetCount(); --i >= 0; index[i] = i)
 		;
-	StableSortOrderLess<I, Less> oless;
-	oless.data = begin;
-	oless.less = &less;
 	if(begin != end)
-		StableSort(index.Begin(), index.End(), oless);
+		__StableSortOrder(index.Begin(), index.End(), begin, less, &*begin);
 	return index;
 }
 
@@ -1171,83 +1450,37 @@ inline Vector<int> GetStableSortOrder(const C& container)
 	return GetStableSortOrder(container.Begin(), container.End(), StdLess<V>());
 }
 
-template <class I, class IV, class Less, class T, class TV>
-void StableIndexSort__(int n, I begin, I end, IV beginv, const Less& less, T *temp, TV *tempv)
+template <class I, class T, class Cmp>
+inline void __StableSortOrderCmp(int *ibegin, int *iend, I data, const Cmp& cmp, const T *)
 {
-	if(n > 1) {
-		int n2 = n / 2;
-		I mid = begin + n2;
-		IV midv = beginv + n2;
-		StableIndexSort__(n2, begin, mid, beginv, less, temp, tempv);
-		StableIndexSort__(n - n2, mid, end, midv, less, temp, tempv);
-		I i1 = begin;
-		IV i1v = beginv;
-		I i2 = mid;
-		IV i2v = midv;
-		T *t = temp;
-		TV *tv = tempv;
-		for(;;) {
-			if(i1 == mid) {
-				while(i2 != end) {
-					::new(t++) T(*i2++);
-					::new(tv++) TV(*i2v++);
-				}
-				break;
-			}
-			if(i2 == end) {
-				while(i1 != mid) {
-					::new(t++) T(*i1++);
-					::new(tv++) TV(*i1v++);
-				}
-				break;
-			}
-			if(less(*i2, *i1)) {
-				::new(t++) T(*i2++);
-				::new(tv++) TV(*i2v++);
-			}
-			else {
-				::new(t++) T(*i1++);
-				::new(tv++) TV(*i1v++);
-			}
-		}
-		t = temp;
-		tv = tempv;
-		while(begin != end) {
-			*begin++ = *t++;
-			*beginv++ = *tv++;
-		}
-		DestroyArray(temp, t);
-		DestroyArray(tempv, tv);
-	}
+	Sort(StableSortOrderIterator<I, T>(ibegin, data),
+	     StableSortOrderIterator<I, T>(iend, data),
+	     StableSortLessCmp_<T, Cmp>(cmp));
 }
 
-template <class I, class IV, class Less, class T, class TV>
-void StableIndexSort__(I begin, I end, IV beginv, const Less& less, const T&, const TV&)
+template <class I, class Cmp>
+inline Vector<int> GetStableSortOrderCmp(I begin, I end, const Cmp& cmp)
 {
-	int n = end - begin;
-	T *temp = (T*) new byte[sizeof(T) * n];
-	TV *tempv = (TV*) new byte[sizeof(T) * n];
-	StableIndexSort__(n, begin, end, beginv, less, temp, tempv);
-	delete[] (byte *)temp;
-	delete[] (byte *)tempv;
+	Vector<int> index;
+	index.SetCount((int)(end - begin));
+	for(int i = index.GetCount(); --i >= 0; index[i] = i)
+		;
+	if(begin != end)
+		__StableSortOrderCmp(index.Begin(), index.End(), begin, cmp, &*begin);
+	return index;
 }
 
-template <class I, class IV, class Less>
-void StableIndexSort(I begin, I end, IV beginv, const Less& less)
+template <class C, class Cmp>
+inline Vector<int> GetStableSortOrderCmp(const C& container, const Cmp& cmp)
 {
-	StableIndexSort__(begin, end, beginv, less, *begin, *beginv);
+	return GetStableSortOrderCmp(container.Begin(), container.End(), cmp);
 }
 
-template <class C, class CV, class Less>
-void StableIndexSort(C& a, CV& v, const Less& less)
+template <class C>
+inline Vector<int> GetStableSortOrderCmp(const C& container)
 {
-	StableIndexSort(a.Begin(), a.End(), v.Begin(), less);
-}
-
-template <class C, class CV>
-void StableIndexSort(C& a, CV& v)
-{
-	StableIndexSort(a, v, StdLess<typename C::ValueType>());
+	typedef typename C::ValueType V;
+	return GetStableSortOrderCmp(container.Begin(), container.End(), StdCmp<V>());
 }
 
 template <class DC, class I, class F>

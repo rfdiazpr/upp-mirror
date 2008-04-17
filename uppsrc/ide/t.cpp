@@ -428,7 +428,7 @@ ExportTrDlg::ExportTrDlg()
 
 	DlCharsetD(charset);
 	of.Attach(folder);
-	
+
 	charset <<= CHARSET_UTF8;
 	lang <<= LNG_ENGLISH;
 }
@@ -565,7 +565,6 @@ void Ide::SyncT(int kind)
 		return;
 	}
 
-	bool noobsolete = false;
 	LangDlg dlg(tfile);
 	LoadFromWorkspace(dlg, "Tdlg");
 	switch(dlg.Execute()) {

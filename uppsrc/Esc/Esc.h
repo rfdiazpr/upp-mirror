@@ -250,7 +250,7 @@ struct Esc : public CParser {
 
 	Esc(ArrayMap<String, EscValue>& global, const char *s, int& oplimit,
 	    const String& fn, int line = 1)
-	: global(global), CParser(s, fn, line), op_limit(oplimit)
+	: CParser(s, fn, line), global(global), op_limit(oplimit)
 	{ r_stack_level = stack_level;  skipexp = false; }
 	~Esc() { stack_level = r_stack_level; }
 };

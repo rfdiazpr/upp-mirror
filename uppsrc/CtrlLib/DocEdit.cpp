@@ -142,7 +142,6 @@ void DocEdit::Paint(Draw& w) {
 				           p >= sell && p < selh ? color[PAPER_SELECTED] : bg);
 				y += fmt.fi.GetHeight();
 			}
-			int h = pos + text.GetLength();
 			w.DrawRect(1, y, cx, after, color[PAPER_NORMAL]);
 			y += after;
 		}
@@ -203,7 +202,6 @@ int  DocEdit::GetCursorPos(Point p) {
 			if(l >= fmt.line.GetCount())
 				return pos + text.GetLength();
 			const int *w = fmt.width + fmt.line[l];
-			const int *w0 = w;
 			const int *e = fmt.width + fmt.LineEnd(l);
 			while(w < e) {
 				if(p.x < x + *w / 2)
@@ -316,7 +314,6 @@ void DocEdit::LostFocus() {
 void DocEdit::VertMove(int delta, bool select, bool scs) {
 	int hy = GetY(para.GetCount());
 	Point p = GetCaret(cursor);
-	int a = p.y - sb;
 	int yy = p.y;
 	for(;;) {
 		p.y += delta;

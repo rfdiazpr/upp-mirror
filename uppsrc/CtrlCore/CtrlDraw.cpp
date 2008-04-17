@@ -327,7 +327,6 @@ bool Ctrl::PaintOpaqueAreas(Draw& w, const Rect& r, const Rect& clip, bool nochi
 	if(backpaint == EXCLUDEPAINT)
 		return w.ExcludeClip(r);
 	Rect cview = clip & (GetView() + off);
-	bool b = true;
 	for(Ctrl *q = lastchild; q; q = q->prev)
 		if(!q->PaintOpaqueAreas(w, q->GetRect() + (q->InView() ? viewpos : off),
 		                        q->InView() ? cview : clip))
@@ -441,7 +440,6 @@ void Ctrl::UpdateArea0(Draw& draw, const Rect& clip, int backpaint)
 {
 	LTIMING("UpdateArea");
 	LLOG("========== UPDATE AREA " << UPP::Name(this) << " ==========");
-	Ctrl *tc = GetTopCtrl();
 	if(backpaint == FULLBACKPAINT || globalbackpaint) {
 		ShowRepaintRect(draw, clip, LtRed());
 		BackDraw bw;

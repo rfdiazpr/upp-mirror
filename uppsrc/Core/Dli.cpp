@@ -1,5 +1,4 @@
 #include "Core.h"
-#pragma hdrstop
 
 #ifdef PLATFORM_WIN32
 typedef HMODULE DLLHANDLE;

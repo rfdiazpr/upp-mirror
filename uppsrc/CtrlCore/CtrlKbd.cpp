@@ -344,30 +344,32 @@ String GetKeyDesc(dword key)
 		desc << Format("F%d", (int)key - K_F1 + 1);
 	else {
 		static struct {
-			int key;
+			dword key;
 			const char *name;
 		} nkey[] = {
-			K_TAB, tt_("key\vTab"), K_SPACE, tt_("key\vSpace"), K_RETURN, tt_("key\vEnter"), K_BACKSPACE, tt_("key\vBackspace"),
-			K_CAPSLOCK, tt_("key\vCaps Lock"), K_ESCAPE, tt_("key\vEsc"),
-			K_PAGEUP, tt_("key\vPage Up"), K_PAGEDOWN, tt_("key\vPage Down"),
-			K_END, tt_("key\vEnd"), K_HOME, tt_("key\vHome"),
-			K_LEFT, tt_("key\vLeft"), K_UP, tt_("key\vUp"), K_RIGHT, tt_("key\vRight"), K_DOWN, tt_("key\vDown"),
-			K_INSERT, tt_("key\vInsert"), K_DELETE, tt_("key\vDelete"), K_BREAK, tt_("key\vBreak"),
-			K_MULTIPLY, tt_("key\vNum[*]"), K_ADD, tt_("key\vNum[+]"), K_SUBTRACT, tt_("key\vNum[-]"), K_DIVIDE, tt_("key\vNum[/]"),
-			K_ALT_KEY, tt_("key\vAlt"), K_SHIFT_KEY, tt_("key\vShift"), K_CTRL_KEY, tt_("key\vCtrl"),
+			{ K_TAB, tt_("key\vTab") }, { K_SPACE, tt_("key\vSpace") },
+			{ K_RETURN, tt_("key\vEnter") }, { K_BACKSPACE, tt_("key\vBackspace") },
+			{ K_CAPSLOCK, tt_("key\vCaps Lock") }, { K_ESCAPE, tt_("key\vEsc") },
+			{ K_PAGEUP, tt_("key\vPage Up") }, { K_PAGEDOWN, tt_("key\vPage Down") },
+			{ K_END, tt_("key\vEnd") }, { K_HOME, tt_("key\vHome") },
+			{ K_LEFT, tt_("key\vLeft") }, { K_UP, tt_("key\vUp") },
+			{ K_RIGHT, tt_("key\vRight") }, { K_DOWN, tt_("key\vDown") },
+			{ K_INSERT, tt_("key\vInsert") }, { K_DELETE, tt_("key\vDelete") },{ K_BREAK, tt_("key\vBreak") },
+			{ K_MULTIPLY, tt_("key\vNum[*]") }, { K_ADD, tt_("key\vNum[+]") }, { K_SUBTRACT, tt_("key\vNum[-]") }, { K_DIVIDE, tt_("key\vNum[/]") },
+			{ K_ALT_KEY, tt_("key\vAlt") }, { K_SHIFT_KEY, tt_("key\vShift") }, { K_CTRL_KEY, tt_("key\vCtrl") },
 		#ifdef PLATFORM_X11
-			0x10060, "[`]", 0x1002d, "[-]", 0x1003d, "[=]", 0x1005c, "[\\]",
-			0x1005b, "[[]", 0x1005d, "[]]",
-			0x1003b, "[;]", 0x10027, "[']",
-			0x1002c, "[,]", 0x1002e, "[.]", 0x1005f, "[/]",
+			{ 0x10060, "[`]" }, { 0x1002d, "[-]" }, { 0x1003d, "[=]" }, { 0x1005c, "[\\]" },
+			{ 0x1005b, "[[]" }, { 0x1005d, "[]]" },
+			{ 0x1003b, "[;]" }, { 0x10027, "[']" },
+			{ 0x1002c, "[,]" }, { 0x1002e, "[.]" }, { 0x1005f, "[/]" },
 		#endif
 		#ifdef PLATFORM_WIN32
-			0x100c0, "[`]", 0x100bd, "[-]", 0x100bb, "[=]", 0x100dc, "[\\]",
-			0x100db, "[[]", 0x100dd, "[]]",
-			0x100ba, "[;]", 0x100de, "[']",
-			0x100bc, "[,]", 0x100be, "[.]", 0x100bf, "[/]",
+			{ 0x100c0, "[`]" }, { 0x100bd, "[-]" }, { 0x100bb, "[=]" }, { 0x100dc, "[\\]" },
+			{ 0x100db, "[[]" }, { 0x100dd, "[]]" },
+			{ 0x100ba, "[;]" }, { 0x100de, "[']" },
+			{ 0x100bc, "[,]" }, { 0x100be, "[.]" }, { 0x100bf, "[/]" },
 		#endif
-			0, NULL
+			{ 0, NULL }
 		};
 		for(int i = 0; nkey[i].key; i++)
 			if(nkey[i].key == key) {

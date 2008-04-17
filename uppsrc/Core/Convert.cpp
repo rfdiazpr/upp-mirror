@@ -1,5 +1,4 @@
 #include "Core.h"
-#pragma hdrstop
 
 NAMESPACE_UPP
 

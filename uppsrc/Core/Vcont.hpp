@@ -113,7 +113,6 @@ void Vector<T>::AddN(int n)
 	Chk();
 	ASSERT(n >= 0);
 	if(items + n <= alloc) {
-		const T *w = vector + items;
 		ConstructArray(vector + items, vector + items + n);
 		items += n;
 	}

@@ -1,6 +1,5 @@
 #include "Core.h"
-#pragma hdrstop
-#pragma BLITZ_APPROVE
+//#BLITZ_APPROVE
 
 #ifdef PLATFORM_POSIX
 #include <sys/types.h>

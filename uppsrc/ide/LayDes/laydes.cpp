@@ -885,7 +885,6 @@ void  LayDes::LoadItems()
 {
 	int nitems = CurrentLayout().item.GetCount();
 	item.SetCount(nitems);
-	LayoutData& l = CurrentLayout();
 	for(int i = 0; i < nitems; i++)
 		LoadItem(i);
 	property.Clear();
@@ -1392,7 +1391,6 @@ void LayDes::ItemClick()
 	if(currentlayout < 0)
 		return;
 	SaveState();
-	int c = cursor.GetCount() ? cursor.Top() : -1;
 	if(GetShift()) {
 		if(cursor.GetCount()) {
 			int i = minmax(item.GetCursor(), 0, cursor.Top());

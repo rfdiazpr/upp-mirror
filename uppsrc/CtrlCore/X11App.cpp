@@ -82,7 +82,6 @@ String ReadPropertyData(Window w, Atom property, Atom rtype)
 	int format;
 	unsigned long nitems, after;
 	unsigned char *ptr;
-	XEvent event;
 	String r;
 	if(XGetWindowProperty(Xdisplay, w, property, 0, 0, XFalse, AnyPropertyType,
 	                      &type, &format, &nitems, &after, &ptr) == Success && type != None) {
@@ -135,6 +134,7 @@ bool Ctrl::TrapX11Errors()
 {
 	bool b = X11ErrorTrap;
 	X11ErrorTrap = true;
+	return b;
 }
 
 void Ctrl::UntrapX11Errors(bool b)

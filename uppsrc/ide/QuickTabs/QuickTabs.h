@@ -152,7 +152,7 @@ class QuickTabs : public FrameCtrl<Ctrl>
 
 		String GetGroupName() const      { return group == 0 ? Null : groups[group].path; }
 		int  SetGroup(const String &s)   { group = max(0, FindGroup(s)); return group; }
-		int  SetGroup(int c)             { int t = group; group = c; return group; }
+		int  SetGroup(int c)             { group = c; return group; }
 		int  GetGroup() const            { return group;                }
 		void SetActiveGroup(int id)      { groups[group].active = id;   }
 		int  GetActiveGroup() const      { return groups[group].active; }

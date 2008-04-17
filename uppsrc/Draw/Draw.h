@@ -331,6 +331,9 @@ public:
 #ifdef PLATFORM_XFT
 	String     GetFileName() const;
 #endif
+#ifdef PLATFORM_WIN32
+	HFONT      GetHFONT() const                   { return ptr->hfont; }
+#endif
 
 	void       Clear()                            { Release(); ptr = NULL; }
 	bool       IsEmpty() const                    { return !ptr; }

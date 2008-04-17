@@ -12,7 +12,7 @@
 
 NAMESPACE_UPP
 
-#pragma BLITZ_APPROVE
+//#BLITZ_APPROVE
 
 void Uuid::Serialize(Stream& s) {
 	int version = 0;

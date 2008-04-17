@@ -224,7 +224,7 @@ void TopWindow::Open(Ctrl *owner)
 		for(int i = 0; i < 50; i++) {
 			if(XCheckTypedWindowEvent(Xdisplay, top->window, FocusIn, &e)) {
 				ProcessEvent(&e);
-				if(e.xfocus.window = top->window)
+				if(e.xfocus.window == top->window)
 					break;
 			}
 			Sleep(10);

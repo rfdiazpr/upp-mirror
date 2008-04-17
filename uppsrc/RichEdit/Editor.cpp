@@ -216,7 +216,6 @@ void RichEdit::Layout()
 
 Rect RichEdit::GetCaretRect(const RichCaret& pr) const
 {
-	int h = pr.Height();
 	Zoom zoom = GetZoom();
 	Rect tr = GetTextRect();
 	Rect r = RectC(pr.left * zoom + tr.left, GetPosY(pr) + (pr.lineascent - pr.caretascent) * zoom - sb,
@@ -670,7 +669,7 @@ RichEdit::RichEdit()
 	WhenLabel = callback(StdLabelDlg);
 
 	p_size = Size(-1, -1);
-	
+
 	useraction = modified = false;
 	ClearModify();
 	Finish();

@@ -1,6 +1,5 @@
 #include "Core.h"
-#pragma hdrstop
-#pragma BLITZ_APPROVE
+//#BLITZ_APPROVE
 #include <float.h>
 
 NAMESPACE_UPP

@@ -1,4 +1,4 @@
-#pragma BLITZ_APPROVE
+//#BLITZ_APPROVE
 
 #define IMAGE_KEEP
 

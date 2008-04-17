@@ -516,12 +516,12 @@ void Ctrl::Dump(Stream& s) const {
 	LG("Data: " << GetData().ToString());
 	if(firstchild) {
 		LG("Children");
-		s.Begin();
+		s << LOG_BEGIN;
 		for(Ctrl *q = GetFirstChild(); q; q = q->GetNext()) {
 			q->Dump(s);
 			LG("------");
 		}
-		s.End();
+		s << LOG_END;
 	}
 	else
 		LG("No child");

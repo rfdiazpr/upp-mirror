@@ -59,7 +59,6 @@ enum {
 };
 
 bool Match(const char *f, const char *s, bool we, bool ignorecase) {
-	int n = 0;
 	while(*f) {
 		if(*f == WILDANY) {
 			f++;
@@ -159,7 +158,7 @@ bool Ide::SearchInFile(const String& fn, const String& pattern, bool wholeword, 
 
 static bool RawFileMatch(const char *pattern, const char *file, const char *& endptr)
 {
-	for(char c; c = *pattern++;)
+	for(char c; (c = *pattern++) != 0;)
 		if(c == '*')
 		{
 			do

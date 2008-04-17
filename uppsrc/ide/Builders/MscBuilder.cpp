@@ -1,8 +1,8 @@
 #include "Builders.h"
-#pragma hdrstop
 
 #include <coff/binobj/binobj.h>
 
+#ifdef PLATFORM_WIN32
 static bool HasTail(String s, const char *tail)
 {
 	int tl = (int)strlen(tail);
@@ -14,6 +14,7 @@ static bool HasTail(String s, const char *tail)
 			return false;
 	return *tail == 0;
 }
+#endif
 
 static void AddObjectExports(const char *path, Index<String>& out)
 {
@@ -240,7 +241,6 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 		Blitz b = BlitzStep(sfile, soptions, obj, ".obj", optimize);
 		if(b.build) {
 			PutConsole("BLITZ:" + b.info);
-			int time = GetTickCount();
 			int slot = AllocSlot();
 			if(slot < 0 || ! Run(cc + PdbPch(package, slot, false)
 			+ " -Tp " + GetHostPathQ(b.path) + " -Fo" + GetHostPathQ(b.object), slot, GetHostPath(b.object), b.count))
@@ -253,7 +253,6 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 	soptions.AppendPick(isoptions);
 	optimize.AppendPick(ioptimize);
 
-	int time = GetTickCount();
 	int ccount = 0;
 
 //	if(sContainsPchOptions(cc))

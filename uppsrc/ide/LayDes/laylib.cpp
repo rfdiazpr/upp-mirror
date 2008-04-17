@@ -109,8 +109,6 @@ void SIC_Print(EscEscape& e)
 		e.ThrowError("invalid argument to 'print'");
 }
 
-static void sNop(EscEscape&) {}
-
 bool GetOptFlag(EscEscape& e) {
 	if(!e.GetCount())
 		return true;
@@ -396,7 +394,7 @@ void EscDraw::DrawQtf(EscEscape& e)
 {
 	if(e.GetCount() < 5 || e.GetCount() > 6)
 		e.ThrowError("wrong number of arguments in call to 'DrawQtf'");
-	int zoom = e.Int(0);
+//	int zoom = e.Int(0);
 	int x = e.Int(1);
 	int y = e.Int(2);
 	e.CheckArray(3);

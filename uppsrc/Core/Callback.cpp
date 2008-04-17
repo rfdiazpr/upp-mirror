@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#pragma BLITZ_APPROVE
+//#BLITZ_APPROVE
 #define CPP_PART__
 #include "Cbgen.h"
 

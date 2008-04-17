@@ -78,7 +78,6 @@ static WString sReadLn(const wchar *p)
 	WStringBuffer wbuf;
 	while(*p && *p <= ' ')
 		p++;
-	const wchar *b = p;
 	while(*p && !(*p == '/' && (p[1] == '/' || p[1] == '*'))) {
 		if(*p <= ' ') {
 			while(*++p && *p <= ' ')

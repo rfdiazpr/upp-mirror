@@ -277,7 +277,6 @@ Blitz CppBuilder::BlitzStep(Vector<String>& sfile, Vector<String>& soptions,
 	Vector<bool>   excludedoptimize;
 	b.object = CatAnyPath(outdir, "$blitz" + String(objext));
 	Time blitztime = GetFileTime(b.object);
-	bool blitzexists = FileExists(b.object);
 	String blitz;
 	b.count = 0;
 	b.build = false;

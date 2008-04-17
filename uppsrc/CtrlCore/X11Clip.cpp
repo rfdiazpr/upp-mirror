@@ -102,11 +102,11 @@ void Ctrl::Xclipboard::Request(XSelectionRequestEvent *se)
 
 String Ctrl::Xclipboard::Read(int fmt, int selection, int property)
 {
-	if(data.GetCount() && selection == XAtom("CLIPBOARD")) {
+	if(data.GetCount() && (dword)selection == XAtom("CLIPBOARD")) {
 		int q = data.Find(fmt);
 		return q >= 0 ? data[q].Render() : String();
 	}
-	if(sel_ctrl && selection == XAtom("PRIMARY"))
+	if(sel_ctrl && (dword)selection == XAtom("PRIMARY"))
 		return sel_ctrl->GetSelectionData(XAtomName(fmt));
 	XConvertSelection(Xdisplay, selection, fmt, property, win, CurrentTime);
 	XFlush(Xdisplay);
@@ -194,7 +194,7 @@ bool Ctrl::Xclipboard::IsAvailable(int fmt, const char *type)
 	int c = formats.GetCount() / sizeof(Atom);
 	const Atom *m = (Atom *) ~formats;
 	for(int i = 0; i < c; i++) {
-		if(m[i] == fmt)
+		if(m[i] == (dword)fmt)
 			return true;
 	}
 	return false;

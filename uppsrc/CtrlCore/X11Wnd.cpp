@@ -32,7 +32,7 @@ struct XEventMap {
 }
 sXevent[] = {
 #include "X11Event.i"
-	0, NULL
+	{ 0, NULL }
 };
 
 ArrayMap<Window, Ctrl::XWindow>& Ctrl::Xwindow()
@@ -845,7 +845,6 @@ void Ctrl::Invalidate(XWindow& xw, const Rect& _r)
 	int ra = r.Width() * r.Height();
 	for(int i = 0; i < xw.invalid.GetCount(); i++) {
 		const Rect& ir = xw.invalid[i];
-		int ia = ir.Width() * ir.Height();
 		Rect ur = r | ir;
 		if(ur.Width() * ur.Height() < 2 * (ir.Width() * ir.Height() + ra))
 			r = ur;
@@ -967,11 +966,11 @@ void Ctrl::SyncNativeWindows(void)
 			unsigned int width, height, border, depth;
 			XGetGeometry(Xdisplay, w, &dummy, &x, &y, &width, &height, &border, &depth);
 			Rect r = xw.ctrl->GetRectInParentWindow();
-			if( (x != r.left || y != r.top) && (width == r.Width() && height == r.Height()))
+			if( (x != r.left || y != r.top) && ((int)width == r.Width() && (int)height == r.Height()))
 				XMoveWindow(Xdisplay, w, r.left, r.top);
-			else if( (x == r.left || y == r.top) && (width != r.Width() || height != r.Height()))
+			else if( (x == r.left || y == r.top) && ((int)width != r.Width() || (int)height != r.Height()))
 				XResizeWindow(Xdisplay, w, r.Width(), r.Height());
-			else if( x != r.left || y != r.top || width != r.Width() || height != r.Height())
+			else if( x != r.left || y != r.top || (int)width != r.Width() || (int)height != r.Height())
 				XMoveResizeWindow(Xdisplay, w, r.left, r.top, r.Width(), r.Height());
 		}
 	}

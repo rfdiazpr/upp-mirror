@@ -1,5 +1,4 @@
 #include "Common.h"
-#pragma hdrstop
 
 #define IMAGECLASS IdeCommonImg
 #define IMAGEFILE  <ide/Common/common.iml>

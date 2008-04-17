@@ -420,8 +420,8 @@ NAMESPACE_UPP
 #include <Core/BiCont.h>
 #include <Core/Index.h>
 #include <Core/Map.h>
-#include <Core/Algo.h>
 #include <Core/Other.h>
+#include <Core/Algo.h>
 #include <Core/Vcont.hpp>
 #include <Core/Index.hpp>
 

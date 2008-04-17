@@ -1,5 +1,4 @@
 #include "Web.h"
-#pragma hdrstop
 
 NAMESPACE_UPP
 

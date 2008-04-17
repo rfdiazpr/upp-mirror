@@ -1,5 +1,4 @@
 #include "Core.h"
-#pragma hdrstop
 
 #ifdef PLATFORM_WIN32
 #include <wingdi.h>
@@ -737,6 +736,7 @@ int LanguageInfo::Compare(const wchar *a, const wchar *b, int a_length, int b_le
 	return sgn(little);
 }
 
+/*
 static bool ContainsAccents(const wchar *s)
 {
 	for(; *s; s++)
@@ -744,6 +744,7 @@ static bool ContainsAccents(const wchar *s)
 			return true;
 	return false;
 }
+*/
 
 class DefaultWildcardCompare : public LanguageInfo::WildcardCompare
 {

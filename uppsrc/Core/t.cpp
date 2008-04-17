@@ -133,7 +133,7 @@ static const LngRec *sFindLngRec(const char *id, int lang, dword mask)
 		if(q >= 0) {
 			const Vector<LngRec>& r = m.map[q];
 			for(int i = 0; i < r.GetCount(); i++)
-				if((r[i].lang & mask) == lang)
+				if(int(r[i].lang & mask) == lang)
 					return &r[i];
 		}
 	}

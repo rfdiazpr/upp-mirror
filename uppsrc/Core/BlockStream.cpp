@@ -93,7 +93,7 @@ bool BlockStream::SyncPage()
 		Flush();
 		pagepos = pos;
 		LLOG("Read:" << pagepos << ", " << n);
-		if(n > 0 && Read(pagepos, buffer, n) != n) {
+		if(n > 0 && (int)Read(pagepos, buffer, n) != n) {
 			SetLastError();
 			return false;
 		}

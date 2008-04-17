@@ -405,9 +405,6 @@ bool Package::Save(const char *path) const {
 	if(config.GetCount()) {
 		out << "mainconfig\n";
 		for(int i = 0; i < config.GetCount(); i++) {
-			const char *o[] = {
-				"normal", "remote", "external", "console"
-			};
 			const Config& f = config[i];
 			if(i) out << ",\n";
 			out << '\t' << AsCString(f.name) << " = " << AsCString(f.param);

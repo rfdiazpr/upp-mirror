@@ -112,6 +112,7 @@ public:
 
 	struct Order {
 		virtual bool operator()(const Vector<Value>& row1, const Vector<Value>& row2) const = 0;
+		virtual ~Order() {}
 	};
 
 private:

@@ -11,12 +11,6 @@ ArrayCtrl changes: http://www.ultimatepp.org/forum/index.php?t=msg&goto=14155&#m
 
 String functions
 
-String Compare
-
-Stream::GetLine
-
-New leak debugging
-
 ===================
 // RasterEncoder by mel umoznit nastavit fyzickou velikost obrazku pro ulozeni do souboru
 // v Raster::Info bych zmenil flag alpha na ImageKind

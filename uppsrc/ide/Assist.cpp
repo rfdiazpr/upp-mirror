@@ -681,7 +681,6 @@ bool AssistEditor::Key(dword key, int count)
 	int bcc = c > 0 ? GetChar(c - 1) : 0;
 	bool b = CodeEditor::Key(key, count);
 	if(assist.IsOpen()) {
-		int c = GetCursor();
 		if(!iscid(key) &&
 		   !(iscid(cc) && (key == K_DELETE || key == K_RIGHT)) &&
 		   !(iscid(bcc) && (key == K_LEFT || key == K_BACKSPACE))) {

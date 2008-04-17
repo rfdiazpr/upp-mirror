@@ -1,5 +1,4 @@
 #include "Builders.h"
-#pragma hdrstop
 
 #include <Esc/Esc.h>
 

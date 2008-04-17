@@ -1,5 +1,4 @@
 #include "Web.h"
-#pragma hdrstop
 
 #ifdef PLATFORM_WIN32
 #include <winsock2.h>
@@ -643,7 +642,7 @@ int Socket::ReadCount(void *buffer, int count, int timeout_msec)
 
 String Socket::ReadCount(int count, int timeout_msec)
 {
-	int end_ticks = msecs() + timeout_msec;
+	// int end_ticks = msecs() + timeout_msec; Mirek:unused
 	if(count == 0)
 		return Null;
 	StringBuffer out(count);

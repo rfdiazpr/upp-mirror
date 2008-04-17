@@ -1,5 +1,4 @@
 #include <Core/Core.h>
-#pragma hdrstop
 
 #include "ndisasm.h"
 

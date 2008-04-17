@@ -138,6 +138,7 @@ protected:
 
 	struct ParaOp {
 		virtual bool operator()(RichTxt::Para& p) = 0;
+		virtual ~ParaOp() {}
 	};
 	bool             Update(ParaOp& op);
 	RichTxt&         GetText0(int& pos, bool update);
@@ -219,11 +220,13 @@ public:
 	struct UpdateIterator {
 		enum { CONTINUE = 0, STOP = 1, UPDATE = 2 };
 		virtual int operator()(int pos, RichPara& para) = 0;
+		virtual ~UpdateIterator() {}
 	};
 	bool                  Iterate(UpdateIterator& r, int gpos, const RichStyles& s);
 
 	struct Iterator {
 		virtual bool operator()(int pos, const RichPara& para) = 0;
+		virtual ~Iterator() {}
 	};
 	bool                  Iterate(Iterator& r, int gpos, const RichStyles& s) const;
 

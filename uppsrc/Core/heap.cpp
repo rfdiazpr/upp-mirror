@@ -1,5 +1,5 @@
 #include <Core/Core.h>
-#pragma BLITZ_APPROVE
+//#BLITZ_APPROVE
 
 #ifdef PLATFORM_POSIX
 #include <sys/mman.h>
@@ -191,13 +191,13 @@ __thread
 MCache mcache[16];
 
 static MPage sFull[NKLASS][1] = {
-#define SFULL(x)   MPAGE(sFull, x)
+#define SFULL(x)   { MPAGE(sFull, x) },
 	SFULL(0)  SFULL(1)  SFULL(2)  SFULL(3)  SFULL(4)  SFULL(5)  SFULL(6)  SFULL(7)
 	SFULL(8)  SFULL(9)  SFULL(10) SFULL(11) SFULL(12) SFULL(13) SFULL(14) SFULL(15)
 };
 
 static MPage sWork[NKLASS][1] = {
-#define SWORK(x)   MPAGE(sWork, x)
+#define SWORK(x)   { MPAGE(sWork, x) },
 	SWORK(0)  SWORK(1)  SWORK(2)  SWORK(3)  SWORK(4)  SWORK(5)  SWORK(6)  SWORK(7)
 	SWORK(8)  SWORK(9)  SWORK(10) SWORK(11) SWORK(12) SWORK(13) SWORK(14) SWORK(15)
 };

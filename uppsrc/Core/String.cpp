@@ -277,7 +277,7 @@ void String0::Cat(const char *s, int len)
 		if(SLen() + len < 14) {
 			memcpy(chr + SLen(), s, len);
 			SLen() += len;
-			chr[SLen()] = 0;
+			chr[(int)SLen()] = 0;
 			Dsyn();
 			return;
 		}
@@ -347,8 +347,17 @@ bool String::IsVoid() const
 	return IsRef() && ptr == (char *)(voidptr + 1);
 }
 
+WString String::ToWString() const
+{
+	return WString(Begin(), GetCount());
+}
+
 String::String(StringBuffer& b)
 {
+	if(b.begin == b.buffer) {
+		String0::Set(b.begin, b.end - b.begin);
+		return;
+	}
 	int l = b.GetLength();
 	if(l <= 14) {
 		Zero();
@@ -365,11 +374,6 @@ String::String(StringBuffer& b)
 	}
 	b.Zero();
 	Dsyn();
-}
-
-WString String::ToWString() const
-{
-	return WString(Begin(), GetCount());
 }
 
 char *StringBuffer::Alloc(int count, int& alloc)
@@ -390,6 +394,8 @@ char *StringBuffer::Alloc(int count, int& alloc)
 
 void StringBuffer::Free()
 {
+	if(begin == buffer)
+		return;
 	int all = (int)(limit - begin);
 	if(all == 31)
 		MFree_S(begin);
@@ -397,12 +403,12 @@ void StringBuffer::Free()
 		MemoryFree((Rc *)begin - 1);
 }
 
-void StringBuffer::Expand(int n, const char *cat, int l)
+void StringBuffer::Realloc(int n, const char *cat, int l)
 {
 	int al;
 	int ep = (int)(end - begin);
 	char *p = Alloc(n, al);
-	memcpy(p, begin, GetLength());
+	memcpy(p, begin, min(GetLength(), n));
 	if(cat) {
 		memcpy(p + ep, cat, l);
 		ep += l;
@@ -415,20 +421,19 @@ void StringBuffer::Expand(int n, const char *cat, int l)
 
 void StringBuffer::Expand()
 {
-	Expand(GetLength() * 2);
+	Realloc(GetLength() * 2);
 }
 
 void StringBuffer::SetLength(int l)
 {
-	if(l > (limit - begin))
-		Expand(l);
+	Realloc(l);
 	end = begin + l;
 }
 
 void StringBuffer::Cat(const char *s, int l)
 {
 	if(end + l > limit)
-		Expand(max(GetLength(), l) + GetLength(), s, l);
+		Realloc(max(GetLength(), l) + GetLength(), s, l);
 	else {
 		memcpy(end, s, l);
 		end += l;
@@ -438,7 +443,7 @@ void StringBuffer::Cat(const char *s, int l)
 void StringBuffer::Cat(int c, int l)
 {
 	if(end + l > limit)
-		Expand(max(GetLength(), l) + GetLength(), NULL, l);
+		Realloc(max(GetLength(), l) + GetLength(), NULL, l);
 	memset(end, c, l);
 	end += l;
 }

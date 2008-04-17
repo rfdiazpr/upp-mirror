@@ -252,6 +252,13 @@ void HashBase::Remove(int i)
 	Reindex();
 }
 
+void HashBase::Remove(int i, int count)
+{
+	hash.Remove(i, count);
+	ClearIndex();
+	Reindex();
+}
+
 void HashBase::Remove(const int *sorted_list, int count)
 {
 	hash.Remove(sorted_list, count);

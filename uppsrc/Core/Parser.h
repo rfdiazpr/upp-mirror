@@ -38,7 +38,7 @@ public:
 	void   PassChar(char c) throw(Error);
 	void   PassChar2(char c1, char c2) throw(Error);
 	void   PassChar3(char c1, char c2, char c3) throw(Error);
-	bool   Id(const char *s)                  { return term[0] == s[0] && term[1] == s[1] && Id0(s + 2); }
+	bool   Id(const char *s)                  { return term[0] == s[0] && (s[1] == 0 || term[1] == s[1]) && Id0(s); }
 	void   PassId(const char *s) throw(Error);
 	bool   IsId()                             { return iscib(*term); }
 	String ReadId() throw(Error);

@@ -292,14 +292,14 @@ dword ParseKeyDesc(CParser& p)
 		int key;
 		const char *name;
 	} nkey[] = {
-		K_TAB, "Tab", K_SPACE, "Space", K_RETURN, "Enter", K_BACKSPACE, "Backspace",
-		K_CAPSLOCK, "Caps Lock", K_ESCAPE, "Esc",
-		K_END, "End", K_HOME, "Home",
-		K_LEFT, "Left", K_UP, "Up", K_RIGHT, "Right", K_DOWN, "Down",
-		K_INSERT, "Insert", K_DELETE, "Delete",
-		K_ALT_KEY, "Alt", K_SHIFT_KEY, "Shift", K_CTRL_KEY, "Ctrl",
-		K_F10, "F10", K_F11, "F11", K_F12, "F12", K_PAGEUP, "PageUp", K_PAGEDOWN, "PageDown",
-		0, NULL
+		{ K_TAB, "Tab" }, { K_SPACE, "Space" }, { K_RETURN, "Enter" }, { K_BACKSPACE, "Backspace" },
+		{ K_CAPSLOCK, "Caps Lock" }, { K_ESCAPE, "Esc" },
+		{ K_END, "End" }, { K_HOME, "Home" },
+		{ K_LEFT, "Left" }, { K_UP, "Up" }, { K_RIGHT, "Right" }, { K_DOWN, "Down" },
+		{ K_INSERT, "Insert" }, { K_DELETE, "Delete" },
+		{ K_ALT_KEY, "Alt" }, { K_SHIFT_KEY, "Shift" }, { K_CTRL_KEY, "Ctrl" },
+		{ K_F10, "F10" }, { K_F11, "F11" }, { K_F12, "F12" }, { K_PAGEUP, "PageUp" }, { K_PAGEDOWN, "PageDown" },
+		{ 0, NULL }
 	};
 	static VectorMap<String, int> map;
 	if(map.GetCount() == 0) {

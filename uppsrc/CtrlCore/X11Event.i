@@ -1,4 +1,4 @@
-#pragma BLITZ_APPROVE
+//#BLITZ_APPROVE
 
 x_Event(KeyPress)
 x_Event(KeyRelease)

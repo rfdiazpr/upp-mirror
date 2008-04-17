@@ -107,6 +107,7 @@ public:
 	Callback1<Bar&> Get()                                { return proc; }
 
 	SubMenuBase()                                        { parentmenu = NULL; }
+	virtual ~SubMenuBase() {}
 };
 
 class SubMenuItem : public MenuItem, public SubMenuBase {

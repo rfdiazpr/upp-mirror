@@ -50,19 +50,19 @@ bool CppBase::IsType(int i) const
 }
 
 Nestfo::Nestfo(const CppBase& base, int nesti)
-	: base(base), nesti(nesti)
+	: nesti(nesti), base(base)
 {
 	Init();
 }
 
 Nestfo::Nestfo(int nesti, const CppBase& base)
-	: base(base), nesti(nesti)
+	: nesti(nesti), base(base)
 {
 	Init();
 }
 
 Nestfo::Nestfo(const CppBase& base, const String& nest)
-	: base(base), nesti(base.Find(nest))
+	: nesti(base.Find(nest)), base(base)
 {
 	Init();
 }

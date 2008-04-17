@@ -22,7 +22,6 @@ int Splitter::GetChildCount() const
 
 void   Splitter::Layout() {
 	Size sz = GetSize();
-	int l = vert ? sz.cy : sz.cx;
 	int count = GetChildCount();
 	if(count == 0)
 		return;

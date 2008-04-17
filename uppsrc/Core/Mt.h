@@ -118,13 +118,13 @@ class RWMutex {
 public:
 	void EnterWrite();
 	void LeaveWrite();
-
+	
 	void EnterRead();
 	void LeaveRead();
-
+	
 	RWMutex();
 	~RWMutex();
-
+	
 	struct ReadLock;
 	struct WriteLock;
 };
@@ -163,13 +163,13 @@ class RWMutex {
 public:
 	void EnterWrite();
 	void LeaveWrite();
-
+	
 	void EnterRead();
 	void LeaveRead();
-
+	
 	RWMutex();
 	~RWMutex();
-
+	
 	struct ReadLock;
 	struct WriteLock;
 };
@@ -292,10 +292,10 @@ struct Mutex::Lock {
 struct RWMutex {
 	void EnterWrite() {}
 	void LeaveWrite() {}
-
+	
 	void EnterRead() {}
 	void LeaveRead() {}
-
+	
 	struct ReadLock;
 	struct WriteLock;
 };

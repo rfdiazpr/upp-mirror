@@ -242,7 +242,7 @@ public:
 
 	void Cat(int c) {
 		if(SLen() < 14)
-			chr[SLen()++] = c;
+			chr[int(SLen()++)] = c;
 		else
 			LCat(c);
 		Dsyn();
@@ -327,15 +327,16 @@ class StringBuffer : NoCopy {
 	char   *begin;
 	char   *end;
 	char   *limit;
+	char    buffer[256];
 
 	friend class String;
 
 	typedef String0::Rc Rc;
 
 	char *Alloc(int len, int& alloc);
-	void  Expand(int n, const char *cat = NULL, int l = 0);
+	void  Realloc(int n, const char *cat = NULL, int l = 0);
 	void  Expand();
-	void  Zero()                    { static char h[1]; begin = end = limit = h; }
+	void  Zero()                    { begin = end = buffer; limit = begin + 256; }
 	void  Free();
 	void  Set(String& s);
 
@@ -367,7 +368,7 @@ public:
 	StringBuffer()                  { Zero(); }
 	StringBuffer(String& s)         { Set(s); }
 	StringBuffer(int len)           { Zero(); SetLength(len); }
-	~StringBuffer()                 { Free(); }
+	~StringBuffer()                 { if(begin != buffer) Free(); }
 };
 
 inline bool  IsEmpty(const String& s)      { return s.IsEmpty(); }

@@ -271,7 +271,6 @@ void sOnceInitBlends()
 		for(int Fa = 0; Fa <= 255; Fa++)
 			for(int Ba = 0; Ba <= 255; Ba++) {
 				double A = (Fa / 255.0 + Ba / 255.0 - Fa / 255.0 * Ba / 255.0);
-				double dDa = 255 * A;
 				sblends[(Ba << 8) + Fa].a = minmax((int)(255 * A + 0.5), 0, 255);
 				sblends[(Ba << 8) + Fa].m = A > 0.001 ? int(256 * (Fa / 255.0) / A + 0.5) : 0;
 			}

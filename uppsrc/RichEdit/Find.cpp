@@ -122,7 +122,6 @@ RichText RichEdit::ReplaceText()
 	formatinfo.ApplyTo(p.format);
 	p.part.Add();
 	formatinfo.ApplyTo(p[0].format);
-	int style = 0;
 	p.part.Top().text = findreplace.replace.GetText();
 	clip.Cat(p);
 	return clip;

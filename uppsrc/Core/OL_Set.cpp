@@ -1,4 +1,4 @@
-#pragma BLITZ_PROHIBIT
+//#BLITZ_PROHIBIT
 
 #ifndef flagNONAMESPACE
 namespace Upp {

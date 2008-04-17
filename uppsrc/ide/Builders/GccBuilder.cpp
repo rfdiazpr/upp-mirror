@@ -1,5 +1,4 @@
 #include "Builders.h"
-#pragma hdrstop
 
 #include <coff/binobj/binobj.h>
 #include <plugin/bz2/bz2.h>
@@ -206,7 +205,6 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 		Blitz b = BlitzStep(sfile, soptions, obj, ".o", optimize);
 		if(b.build) {
 			PutConsole("BLITZ:" + b.info);
-			int time = GetTickCount();
 			int slot = AllocSlot();
 			if(slot < 0 || !Run(String().Cat() << cc << ' '
 			<< GetHostPathQ(b.path) << " -o " << GetHostPathQ(b.object), slot, GetHostPath(b.object), b.count))
@@ -219,7 +217,6 @@ bool GccBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 	soptions.AppendPick(isoptions);
 	optimize.AppendPick(ioptimize);
 
-	int time = GetTickCount();
 	int ccount = 0;
 	for(i = 0; i < sfile.GetCount(); i++) {
 		if(!IdeIsBuilding())

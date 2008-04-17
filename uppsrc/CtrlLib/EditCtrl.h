@@ -5,6 +5,8 @@ struct TextArrayOps {
 	bool GetWordSelection(int c, int& sell, int& selh);
 	int  GetNextWord(int c);
 	int  GetPrevWord(int c);
+	
+	virtual ~TextArrayOps() {}
 };
 
 class LookFrame : public CtrlFrame {

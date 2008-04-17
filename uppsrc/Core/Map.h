@@ -61,6 +61,7 @@ public:
 	T&       Insert(int i, const K& k)             { key.Insert(i, k); return value.Insert(i); }
 	void     Insert(int i, const K& k, const T& x) { key.Insert(i, k); value.Insert(i, x); }
 	void     Remove(int i)                         { key.Remove(i); value.Remove(i); }
+	void     Remove(int i, int count)              { key.Remove(i, count); value.Remove(i, count); }
 	void     Remove(const int *sl, int n)          { key.Remove(sl, n); value.Remove(sl, n); }
 	void     Remove(const Vector<int>& sl)         { Remove(sl, sl.GetCount()); }
 	int      RemoveKey(const K& k);
@@ -100,9 +101,9 @@ public:
 	V                PickValues() pick_            { return value; }
 
 	AMap()                                         {}
-	AMap(const AMap& s, int) : value(s.value, 0), key(s.key, 0) {}
-	AMap(pick_ Index<K, HashFn>& ndx, pick_ V& val) : key(ndx), value(val) {}
-	AMap(pick_ Vector<K>& ndx, pick_ V& val) : key(ndx), value(val) {}
+	AMap(const AMap& s, int) : key(s.key, 0), value(s.value, 0) {}
+	AMap(pick_ Index<K, HashFn>& ndx, pick_ V& val) : value(val), key(ndx) {}
+	AMap(pick_ Vector<K>& ndx, pick_ V& val) : value(val), key(ndx) {}
 
 	typedef K        KeyType;
 	typedef typename Index<K, HashFn>::ConstIterator KeyConstIterator;

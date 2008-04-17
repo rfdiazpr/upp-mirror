@@ -197,7 +197,7 @@ void CommonInit()
 #endif
 
 	Vector<String>& cmd = coreCmdLine__();
-	for(int i = 0; i < cmd.GetCount(); i++) {
+	for(int i = 0; i < cmd.GetCount();) {
 		if(cmd[i] == "--export-tr") {
 			{
 				i++;
@@ -233,8 +233,14 @@ void CommonInit()
 			exit(0);
 		}
 	#if defined(_DEBUG) && defined(UPP_HEAP)
-		if(cmd[i] == "--memory-breakpoint__" && i + 1 < cmd.GetCount())
+		if(cmd[i] == "--memory-breakpoint__" && i + 1 < cmd.GetCount()) {
+			cmd.Remove(i);
 			MemoryBreakpoint(atoi(cmd[i + 1]));
+		}
+		else
+			i++;
+	#else
+		i++;
 	#endif
 	}
 	sMainRunning = true;
@@ -261,7 +267,7 @@ void AppInit__(int argc, const char **argv, const char **envptr)
 {
 	SetLanguage(LNG_ENGLISH);
 	sSetArgv0__(argv[0]);
-	for(const char *var; var = *envptr; envptr++)
+	for(const char *var; (var = *envptr) != 0; envptr++)
 	{
 		const char *b = var;
 		while(*var && *var != '=')

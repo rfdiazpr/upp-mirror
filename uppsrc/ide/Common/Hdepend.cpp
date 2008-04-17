@@ -119,7 +119,6 @@ void Hdepend::ScanFile(const String& path, int map_index) {
 	Info& info = map[map_index];
 	String src = LoadFile(path);
 	const char *term = src;
-	bool remark = false;
 	info.depend.Clear();
 	info.bydefine.Clear();
 	info.guarded = false;
@@ -140,6 +139,14 @@ void Hdepend::ScanFile(const String& path, int map_index) {
 		}
 		else
 		if(term[0] == '/' && term[1] == '/') {
+			if(term[2] == '#') {
+				CParser p(term + 3);
+				if(p.Id("BLITZ_APPROVE") || p.Id("once"))
+					info.guarded = true;
+				else
+				if(p.Id("BLITZ_PROHIBIT"))
+					info.blitzprohibit = true;
+			}
 			while(*term) {
 				if(*term == '\n') break;
 				term++;
@@ -187,12 +194,13 @@ void Hdepend::ScanFile(const String& path, int map_index) {
 				if(term[0] == 'p' && term[1] == 'r' && term[2] == 'a' &&
 				   term[3] == 'g' && term[4] == 'm' && term[5] == 'a' &&
 				   (term[6] == ' ' || term[6] == '\t')) {
-				       CParser p(term + 6);
-				       if(p.Id("BLITZ_APPROVE") || p.Id("once"))
-				           info.guarded = true;
-				       if(p.Id("BLITZ_PROHIBIT"))
-				           info.blitzprohibit = true;
-				       term = p.GetPtr();
+					CParser p(term + 6);
+					if(p.Id("BLITZ_APPROVE") || p.Id("once"))
+						info.guarded = true;
+					else
+					if(p.Id("BLITZ_PROHIBIT"))
+						info.blitzprohibit = true;
+					term = p.GetPtr();
 				}
 			}
 			else if(IsAlpha(*term) || *term == '_') {

@@ -126,8 +126,8 @@ public:
 	void            Warning(const char *title, const char *text, int timeout = 10) { Message(title, text, timeout); }
 	void            Error(const char *title, const char *text, int timeout = 10)   { Message(title, text, timeout); }
 
-	TrayIcon&  Icon(const Image &img)                      { icon = img; Refresh(); }
-	TrayIcon&  Tip(const char *text)                       { Ctrl::Tip(text); }
+	TrayIcon&  Icon(const Image &img)                      { icon = img; Refresh(); return *this; }
+	TrayIcon&  Tip(const char *text)                       { Ctrl::Tip(text); return *this; }
 
 	typedef TrayIcon CLASSNAME;
 
@@ -281,6 +281,7 @@ class CtrlRetriever {
 public:
 	struct Item {
 		virtual void Retrieve() = 0;
+		virtual ~Item() {}
 	};
 
 private:
@@ -293,6 +294,7 @@ private:
 		T     *value;
 
 		virtual void Retrieve()  { *value = ~*ctrl; }
+		virtual ~CtrlItem() {}
 	};
 
 	Array<Item> item;

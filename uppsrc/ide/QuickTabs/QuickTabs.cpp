@@ -456,7 +456,7 @@ void QuickTabs::Add(const char *name, bool make_active)
 {
 	Tab &t = tabs.Add();
 
-	int cnt = tabs.GetCount() - 1;
+//	int cnt = tabs.GetCount() - 1; Mirek: unused
 	t.name = name;
 	t.group = GetFileFolder(name);
 	t.id = GetNextId();
@@ -467,7 +467,7 @@ void QuickTabs::Add(const char *name, bool make_active)
 
 int QuickTabs::GetWidth()
 {
-	int j = GetLast();
+//	int j = GetLast(); Mirek: unused
 	return tabs[GetLast()].Right() + style->margin * 2;
 }
 

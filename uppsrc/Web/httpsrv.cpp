@@ -1,5 +1,4 @@
 #include "Web.h"
-#pragma hdrstop
 
 NAMESPACE_UPP
 
@@ -283,7 +282,7 @@ bool HttpServer::DelayedWrite()
 //		LogTime("HttpServer::DelayedWrite, #writes = " + FormatInt(delayed_writes.GetCount()), 2);
 	for(int i = delayed_writes.GetCount(); --i >= 0;) {
 		SocketWrite& sw = delayed_writes[i];
-		int part = sw.data.GetLength() - sw.done;
+//		int part = sw.data.GetLength() - sw.done; Mirek:unused
 		int count = max(sw.socket.WriteWait(sw.data.Begin() + sw.done, sw.data.GetLength() - sw.done, 0), 0);
 		if(sw.socket.IsError()) {
 			LogTime(NFormat("HttpServer::DelayedWrite(): %s", Socket::GetErrorText()), 0);

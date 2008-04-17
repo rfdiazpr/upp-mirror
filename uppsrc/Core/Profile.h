@@ -54,7 +54,9 @@ private:
 #define RTIMING(x) \
 	static TimingInspector COMBINE(sTmStat, __LINE__)(x); \
 	TimingInspector::Routine COMBINE(sTmStatR, __LINE__)(COMBINE(sTmStat, __LINE__));
-#define RHITCOUNT(n) \
-	{ static HitCountInspector hitcount(n); hitcount.Step(); }
+
 #define RACTIVATE_TIMING()    TimingInspector::Activate(true);
 #define RDEACTIVATE_TIMING()  TimingInspector::Activate(false);
+
+#define RHITCOUNT(n) \
+	{ static HitCountInspector hitcount(n); hitcount.Step(); }

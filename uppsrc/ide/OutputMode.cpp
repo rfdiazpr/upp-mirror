@@ -79,7 +79,6 @@ void ModePane::Save(TargetMode& m)
 	m.def.debug = ~debug;
 	m.def.blitz = ~blitz;
 	m.package.Clear();
-	const Workspace& wspc = GetIdeWorkspace();
 	for(int i = 0; i < package.GetCount(); i++) {
 		PackageMode k;
 		k.debug = package.Get(i, 1);

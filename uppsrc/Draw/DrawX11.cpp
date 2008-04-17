@@ -89,7 +89,6 @@ bool sAllocColor(int xr, int xg, int xb)
 void sAllocColors()
 {
 	int r, g, b;
-	XColor ce;
 	for(r = 0; r < 2; r++)
 		for(g = 0; g < 2; g++)
 			for(b = 0; b < 2; b++)
@@ -188,7 +187,6 @@ void InitX11Draw(XDisplay *display)
 	}
 	else {
 		sAllocColors();
-		dword color[256];
 		int colorcount = max(1 << Xdepth, 256);
 		Buffer<XColor> cs(colorcount);
 		int i;
@@ -294,7 +292,6 @@ void SetClip(GC gc, const Vector<Rect>& cl)
 void Draw::CloneClip()
 {
 	if(cloff.GetCount() > 1 && cloff.Top().clipi == cloff[cloff.GetCount() - 2].clipi) {
-		const Vector<Rect>& cl = clip.Top();
 		cloff.Top().clipi = clip.GetCount();
 		Vector<Rect>& c = clip.Add();
 		c <<= clip[clip.GetCount() - 2];
@@ -342,10 +339,10 @@ void Draw::SetLineStyle(int width)
 			const char *dash;
 			int   len;
 		} ds[] = {
-			dash, __countof(dash),
-			dot, __countof(dot),
-			dashdot, __countof(dashdot),
-			dashdotdot, __countof(dashdotdot)
+			{ dash, __countof(dash) },
+			{ dot, __countof(dot) },
+			{ dashdot, __countof(dashdot) },
+			{ dashdotdot, __countof(dashdotdot) }
 		};
 		int i = -(width - PEN_DASH);
 		ASSERT(i >= 0 && i < 4);

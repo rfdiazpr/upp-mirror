@@ -17,8 +17,7 @@ enum {
 struct StreamError {};
 struct LoadingError : StreamError {};
 
-enum BeginIndentEnum { BeginIndent };
-enum EndIndentEnum { EndIndent };
+enum EOLenum { EOL };
 
 class Stream {
 protected:
@@ -29,8 +28,6 @@ protected:
 	byte  *wrlim;
 
 	unsigned style:6;
-	unsigned beginofline:1;
-	unsigned depth:9;
 	unsigned errorcode:16;
 
 	enum {
@@ -85,10 +82,10 @@ public:
 	int       Term()                 { return ptr < rdlim ? *ptr : _Term(); }
 	int       Get()                  { return ptr < rdlim ? *ptr++ : _Get(); }
 
-	void      Put(const void *data, dword size)  { _Put(data, size); }
-	dword     Get(void *data, dword size)        { return _Get(data, size); }
+	void      Put(const void *data, dword size)  { if(ptr + size <= wrlim) { memcpy(ptr, data, size); ptr += size; } else _Put(data, size); }
+	dword     Get(void *data, dword size)        { if(ptr + size <= rdlim) { memcpy(data, ptr, size); ptr += size; return size; } return _Get(data, size); }
 
-	void      Put(const String& s);
+	void      Put(const String& s)               { Put((const char *) s, s.GetLength()); }
 	String    Get(dword size);
 
 	void      LoadThrowing()         { style |= STRM_THROW; }
@@ -98,9 +95,9 @@ public:
 
 	int       Get8()                 { return ptr < rdlim ? *ptr++ : _Get8(); }
 #ifdef CPU_X86
-	int       Get16()                { if(ptr >= rdlim - 1) return _Get16(); int q = *(word *)ptr; ptr += 2; return q; }
-	int       Get32()                { if(ptr >= rdlim - 3) return _Get32(); int q = *(dword *)ptr; ptr += 4; return q; }
-	int64     Get64()                { if(ptr >= rdlim - 7) return _Get64(); int64 q = *(int64 *)ptr; ptr += 8; return q; }
+	int       Get16()                { if(ptr + 1 >= rdlim) return _Get16(); int q = *(word *)ptr; ptr += 2; return q; }
+	int       Get32()                { if(ptr + 3 >= rdlim) return _Get32(); int q = *(dword *)ptr; ptr += 4; return q; }
+	int64     Get64()                { if(ptr + 7 >= rdlim) return _Get64(); int64 q = *(int64 *)ptr; ptr += 8; return q; }
 #else
 	int       Get16()                { return _Get16(); }
 	int       Get32()                { return _Get32(); }
@@ -128,9 +125,9 @@ public:
 	String    GetLine();
 
 #ifdef CPU_X86
-	void      Put16(word q)          { if(ptr < wrlim - 1) { *(word *)ptr = q; ptr += 2; } else Put(&q, 2); }
-	void      Put32(dword q)         { if(ptr < wrlim - 3) { *(dword *)ptr = q; ptr += 4; } else Put(&q, 4); }
-	void      Put64(int64 q)         { if(ptr < wrlim - 7) { *(int64 *)ptr = q; ptr += 8; } else Put(&q, 8); }
+	void      Put16(word q)          { if(ptr + 1 < wrlim) { *(word *)ptr = q; ptr += 2; } else Put(&q, 2); }
+	void      Put32(dword q)         { if(ptr + 3 < wrlim) { *(dword *)ptr = q; ptr += 4; } else Put(&q, 4); }
+	void      Put64(int64 q)         { if(ptr + 7 < wrlim) { *(int64 *)ptr = q; ptr += 8; } else Put(&q, 8); }
 #else
 	void      Put16(word q)          { Put(&q, 2); }
 	void      Put32(dword q)         { Put(&q, 4); }
@@ -159,12 +156,14 @@ public:
 	void      Put(int c, int count);
 	void      Put0(int count)        { Put(0, count); }
 
-	void      PutCrLf()              { Put('\r'); Put('\n'); }
+	void      PutCrLf()              { Put16(MAKEWORD('\r', '\n')); }
 #ifdef PLATFORM_WIN32
 	void      PutEol()               { PutCrLf(); }
 #else
 	void      PutEol()               { Put('\n'); }
 #endif
+
+	Stream&   operator<<(EOLenum)    { PutEol(); return *this; }
 
 	void      PutLine(const char *s);
 	void      PutLine(const String& s);
@@ -174,18 +173,6 @@ public:
 	bool      GetAllW(wchar *s, int count)          { return GetAll(s, count * 2); }
 
 	void      Put(Stream& s, int64 size = INT64_MAX, dword click = 4096);
-
-//  Stream as formatted text output or log, slower but with begin/end justification
-
-	void      Putf(int c);
-	void      Putf(const char *s);
-	void      Putf(const String& s);
-
-	void      Begin()                      { depth++; }
-	void      End()                        { depth--; }
-
-	Stream&   operator<<(BeginIndentEnum)  { Begin(); return *this; }
-	Stream&   operator<<(EndIndentEnum)    { End(); return *this; }
 
 //  Stream as serialization streamer
 	void      SetLoading()                 { ASSERT(style & STRM_READ); style |= STRM_LOADING; }
@@ -593,25 +580,25 @@ inline Stream& operator%(Stream& s, T& x)
 
 inline Stream& operator<<(Stream& s, const char *x)
 {
-	s.Putf(x);
+	s.Put(x);
 	return s;
 }
 
 inline Stream& operator<<(Stream& s, char *x)
 {
-	s.Putf(x);
+	s.Put(x);
 	return s;
 }
 
 inline Stream& operator<<(Stream& s, const String &x)
 {
-	s.Putf(x);
+	s.Put(x);
 	return s;
 }
 
 inline Stream& operator<<(Stream& s, char x)
 {
-	s.Putf((int) x);
+	s.Put((int) x);
 	return s;
 }
 

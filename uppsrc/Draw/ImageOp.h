@@ -75,6 +75,7 @@ Image Rescale(const Image& src, int cx, int cy);
 
 struct ImageFilter9 {
 	virtual RGBA operator()(const RGBA **mx) = 0;
+	virtual ~ImageFilter9() {}
 };
 
 Image Filter(const Image& img, ImageFilter9& filter);

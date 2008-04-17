@@ -1,4 +1,4 @@
-#pragma BLITZ_APPROVE
+//#BLITZ_APPROVE
 
 HL_COLOR(INK_NORMAL, "Normal text", 1)
 HL_COLOR(PAPER_NORMAL, "Normal background", 0)

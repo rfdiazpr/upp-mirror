@@ -831,7 +831,6 @@ void Clock::Paint(Draw& w)
 		                  AsString(i), fnt.Bold(i % 3 == 0), SBlack());
 	}
 
-	int cp = cur_point;
 	for(int i = 1; i <= 60; i++) {
 		int x = cm.x + int(0.95 * sin(i * M_PI / 30.0) * cf.x);
 		int y = cm.y - int(0.95 * cos(i * M_PI / 30.0) * cf.y);

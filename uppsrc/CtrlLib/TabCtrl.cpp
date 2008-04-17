@@ -252,7 +252,6 @@ void TabCtrl::ScrollInto(int i)
 	if(i < 0)
 		return;
 	Item& t = tab[i];
-	int cx = tabs.GetSize().cx;
 	int tr = TabsRight();
 	if(t.Right() > tr) {
 		x0 += t.Right() - tr;

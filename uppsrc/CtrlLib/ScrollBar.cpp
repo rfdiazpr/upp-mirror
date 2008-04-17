@@ -240,10 +240,8 @@ void ScrollBar::LeftDown(Point p, dword) {
 }
 
 void ScrollBar::MouseMove(Point p, dword) {
-	if(HasCapture() && push == 2) {
-		int opos = thumbpos;
+	if(HasCapture() && push == 2)
 		Drag(p);
-	}
 	else
 	if(light != GetMousePart())
 		Refresh();
@@ -458,7 +456,6 @@ bool ScrollBar::HorzKey(dword key) {
 }
 
 void ScrollBar::Layout() {
-	bool horz = IsHorz();
 	Size sz = GetSize();
 	if(IsHorz()) {
 		prev.SetStyle(style->left);

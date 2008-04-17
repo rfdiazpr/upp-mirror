@@ -29,6 +29,8 @@ LogStream::LogStream()
 	sizelimit = 0;
 	*filename = 0;
 	options = LOG_FILE;
+	depth = 0;
+	bol = false;
 }
 
 LogStream::~LogStream() {}
@@ -92,7 +94,7 @@ void LogStream::Create(const char *path, bool append)
 		MoveFile(filename, backup);
 	#endif
 #elif defined(PLATFORM_POSIX)
-	!rename(filename, backup);
+	rename(filename, backup);
 #else
 	#error
 #endif
@@ -144,8 +146,8 @@ void LogStream::Create(const char *path, bool append)
 	sprintf(h, "* %s %02d.%02d.%04d %02d:%02d:%02d, user: %s\n",
 	           FromSysChrSet(exe),
 	           t.day, t.month, t.year, t.hour, t.minute, t.second, user);
-	dword n;
 #ifdef PLATFORM_WIN32
+	dword n;
 	WriteFile(hfile, h, (dword)strlen(h), &n, NULL);
 	if(part) {
 		sprintf(h, ", #%d", part);
@@ -195,9 +197,26 @@ void LogStream::Flush()
 
 void LogStream::Put0(int w)
 {
-	*p++ = w;
-	if(w == '\n' || p == buffer + 512)
-		Flush();
+	if(w == LOG_BEGIN)
+		depth++;
+	else
+	if(w == LOG_END)
+		depth--;
+	else {
+		if(bol) {
+			bol = false;
+			for(int q = depth; q--;)
+				Put0('\t');
+		}
+		*p++ = w;
+		if(w == '\n') {
+			Flush();
+			bol = true;
+		}
+		else
+		if(p == buffer + 512)
+			Flush();
+	}
 }
 
 void LogStream::_Put(int w)

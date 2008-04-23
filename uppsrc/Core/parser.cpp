@@ -3,7 +3,7 @@
 NAMESPACE_UPP
 
 #define LLOG(x)    // LOG(x)
-#define LTIMING(x)  RTIMING(x)
+#define LTIMING(x) // RTIMING(x)
 
 void CParser::ThrowError(const char *s) {
 	LLOG("CParser::Error: " << s);

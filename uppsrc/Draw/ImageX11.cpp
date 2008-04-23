@@ -342,7 +342,7 @@ Image sX11Cursor__(int c)
 
 #include <X11/cursorfont.h>
 
-#define FCURSOR_(x) { INTERLOCKED { static Image m = sX11Cursor__(x); return m; } }
+#define FCURSOR_(x) { Image h; INTERLOCKED { static Image m = sX11Cursor__(x); h = m; } return h; }
 
 Image Image::Arrow() FCURSOR_(XC_left_ptr)
 Image Image::Wait() FCURSOR_(XC_watch)

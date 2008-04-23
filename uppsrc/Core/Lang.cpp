@@ -1086,6 +1086,7 @@ const LanguageInfo& GetLanguageInfo(int lcode)
 		recent = lcode;
 		return *(rinfo = &map[f]);
 	}
+	return *rinfo;
 }
 
 const LanguageInfo& GetLanguageInfo()

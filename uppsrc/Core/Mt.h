@@ -135,21 +135,25 @@ public:
 
 typedef _Atomic_word Atomic;
 
+inline int  AtomicXAdd(volatile Atomic& t, int incr)  { using namespace __gnu_cxx; return __exchange_and_add(&t, incr); }
+
+inline int  AtomicInc(volatile Atomic& t)             { return AtomicXAdd(t, +1) + 1; }
+inline int  AtomicDec(volatile Atomic& t)             { return AtomicXAdd(t, -1) - 1; }
+
+/*
 inline int  AtomicInc(volatile Atomic& t)             { using namespace __gnu_cxx; __atomic_add(&t, 1); return t; }
 inline int  AtomicDec(volatile Atomic& t)             { using namespace __gnu_cxx; __atomic_add(&t, -1); return t; }
-inline int  AtomicXAdd(volatile Atomic& t, int incr)  { using namespace __gnu_cxx; return __exchange_and_add(&t, incr); }
+*/
 
 class Mutex {
 protected:
 	pthread_mutex_t  mutex[1];
-	void            *threadid;
-	int              count;
 
 	Mutex(int)         {}
 
 public:
-	void  Enter();
-	void  Leave();
+	void  Enter()      { pthread_mutex_lock(mutex); }
+	void  Leave()      { pthread_mutex_unlock(mutex); }
 
 	struct Lock;
 
@@ -161,11 +165,10 @@ class RWMutex {
 	pthread_rwlock_t rwlock[1];
 
 public:
-	void EnterWrite();
-	void LeaveWrite();
-	
-	void EnterRead();
-	void LeaveRead();
+	void EnterWrite()  { pthread_rwlock_wrlock(rwlock); }
+	void LeaveWrite()  { pthread_rwlock_unlock(rwlock); }
+	void EnterRead()   { pthread_rwlock_rdlock(rwlock); }
+	void LeaveRead()   { pthread_rwlock_unlock(rwlock); }
 	
 	RWMutex();
 	~RWMutex();

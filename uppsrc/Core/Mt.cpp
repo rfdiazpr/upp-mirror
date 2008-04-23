@@ -303,56 +303,16 @@ RWMutex::~RWMutex()
 
 #ifdef PLATFORM_POSIX
 
-static __thread byte sThreadId;
-
-void Mutex::Enter()
-{
-	if(threadid == &sThreadId)
-		count++;
-	else {
-		pthread_mutex_lock(mutex);
-		threadid = &sThreadId;
-		count = 1;
-	}
-}
-
-void Mutex::Leave()
-{
-	if(--count == 0) {
-		threadid = NULL;
-		pthread_mutex_unlock(mutex);
-	}
-}
+static pthread_mutex_t sMutexInit = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
 Mutex::Mutex()
 {
-	threadid = NULL;
-	pthread_mutex_init(mutex, NULL);;
+	*mutex = sMutexInit;
 }
 
 Mutex::~Mutex()
 {
 	pthread_mutex_destroy(mutex);
-}
-
-void RWMutex::EnterWrite()
-{
-	pthread_rwlock_wrlock(rwlock);
-}
-
-void RWMutex::LeaveWrite()
-{
-	pthread_rwlock_unlock(rwlock);
-}
-
-void RWMutex::EnterRead()
-{
-	pthread_rwlock_rdlock(rwlock);
-}
-
-void RWMutex::LeaveRead()
-{
-	pthread_rwlock_unlock(rwlock);
 }
 
 RWMutex::RWMutex()

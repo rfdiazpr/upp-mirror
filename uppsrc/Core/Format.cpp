@@ -168,7 +168,7 @@ String FormatInteger(int a)            { return IsNull(a) ? String() : FormatInt
 String FormatUnsigned(unsigned long a) { return Sprintf("%u", a); }
 String FormatDouble(double a)          { return IsNull(a) ? String() : FormatDouble(a, 10, FD_REL); }
 String FormatBool(bool a)              { return a ? "true" : "false"; }
-String FormatPtr(const void *p)        { return Sprintf("0x%lX", p); }
+String FormatPtr(const void *p)        { return "0x" + FormatHex(p); }
 
 String FormatInt64(int64 a)
 {

@@ -188,6 +188,7 @@ private:
 	int   dropline, dropcol;
 	int   sortcolumn;
 	bool  sortcolumndescending;
+	int   acceptingrow;
 
 	mutable int   selectcount;
 

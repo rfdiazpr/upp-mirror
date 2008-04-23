@@ -654,12 +654,14 @@ void ArrayCtrl::ChildGotFocus()
 {
 	if(cursor >= 0)
 		RefreshRow(cursor);
-	Point p = FindCellCtrl(GetFocusCtrl());
-	if(!IsNull(p))
-		if(nocursor)
-			ScrollInto(p.y);
-		else
-			SetCursor(p.y);
+	if(!acceptingrow) {
+		Point p = FindCellCtrl(GetFocusCtrl());
+		if(!IsNull(p))
+			if(nocursor)
+				ScrollInto(p.y);
+			else
+				SetCursor(p.y);
+	}
 	Ctrl::ChildGotFocus();
 }
 
@@ -1105,8 +1107,13 @@ bool ArrayCtrl::AcceptRow() {
 	for(i = 0; i < control.GetCount(); i++)
 		if(!control[i].ctrl->Accept())
 			return false;
-	if(!WhenAcceptRow()) return false;
-	if(!UpdateRow()) return false;
+	acceptingrow++;
+	bool ar = WhenAcceptRow() && UpdateRow();
+	acceptingrow--;
+	if(!ar) {
+		SetCursorEditFocus();
+		return false;
+	}
 	bool b = editmode;
 	EndEdit();
 	SetCtrls();
@@ -2291,6 +2298,7 @@ void ArrayCtrl::Reset() {
 	focussetcursor = true;
 	sortcolumn = -1;
 	allsorting = false;
+	acceptingrow = 0;
 }
 
 void ArrayCtrl::CancelMode()

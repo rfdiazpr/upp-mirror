@@ -1,5 +1,7 @@
 #include "Core.h"
 
+// #define LOGAF
+
 NAMESPACE_UPP
 
 int sMemDiagInitCount = 0;
@@ -96,11 +98,21 @@ void *MemoryAllocDebug(size_t size)
 #ifdef _MULTITHREADED
 	sHeapLock2.Leave();
 #endif
+#ifdef LOGAF
+	char h[200];
+	sprintf(h, "ALLOCATED %d at %p - %p", size, p + 1, (byte *)(p + 1) + size);
+	DLOG(h);
+#endif
 	return p + 1;
 }
 
 void MemoryFreeDebug(void *ptr)
 {
+#ifdef LOGAF
+	char h[200];
+	sprintf(h, "FREE %p", ptr);
+	DLOG(h);
+#endif
 	if(PanicMode)
 		return;
 	if(!ptr) return;

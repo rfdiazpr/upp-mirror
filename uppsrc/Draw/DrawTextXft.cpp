@@ -4,7 +4,7 @@ NAMESPACE_UPP
 
 #ifdef PLATFORM_XFT
 
-#define LLOG(x)       LOG(x)
+#define LLOG(x)       //LOG(x)
 #define LTIMING(x)    //RTIMING(x)
 
 struct XFTFontFaceInfo {

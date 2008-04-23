@@ -4,8 +4,8 @@ NAMESPACE_UPP
 
 #ifdef _MULTITHREADED
 
-#define LLOG(x)  // LOG(x)
-#define LDUMP(x) // DUMP(x)
+#define LLOG(x)   //  LOG(x)
+#define LDUMP(x)  //  DUMP(x)
 
 CoWork::Pool& CoWork::pool()
 {
@@ -25,7 +25,6 @@ CoWork::Pool::~Pool()
 	LLOG("Quit");
 	MJob job;
 	job.work = NULL;
-	int q = 0;
 	lock.Enter();
 	jobs.Clear();
 	jobs.Add(job);

@@ -190,6 +190,7 @@ dword BlockStream::_Get(void *data, dword size) {
 		SyncPage();
 		memcpy(data, buffer + pos0 - pos, size);
 		ptr = buffer + pos1 - pos;
+		_Term();
 	}
 	else {
 		int last = int(pos1 - pg1);

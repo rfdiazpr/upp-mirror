@@ -188,10 +188,12 @@ BuildMethods::BuildMethods()
 	method.AddCtrl("DEBUG_BLITZ", debug_blitz);
 	method.AddCtrl("DEBUG_LINKMODE", debug_linkmode);
 	method.AddCtrl("DEBUG_OPTIONS", debug_options);
+	method.AddCtrl("DEBUG_FLAGS", debug_flags);
 	method.AddCtrl("RELEASE_BLITZ", release_blitz);
 	method.AddCtrl("RELEASE_LINKMODE", release_linkmode);
 	method.AddCtrl("RELEASE_OPTIONS", speed_options);
 	method.AddCtrl("RELEASE_SIZE_OPTIONS", size_options);
+	method.AddCtrl("RELEASE_FLAGS", release_flags);
 	method.AddCtrl("DEBUGGER", debugger);
 	method.AddCtrl("PATH", path);
 	method.AddCtrl("INCLUDE", include);
@@ -227,7 +229,7 @@ BuildMethods::BuildMethods()
 
 	builder <<= THISBACK(NewBuilder);
 	setdefault <<= THISBACK(SetDefault);
-	
+
 	linkmode_lock.SetLabel("Lock link mode");
 }
 

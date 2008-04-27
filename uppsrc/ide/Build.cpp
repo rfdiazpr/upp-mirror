@@ -16,6 +16,7 @@ Index<String> Ide::PackageConfig(const Workspace& wspc, int package,
 	String packagepath = PackagePath(wspc[package]);
 	const Package& pkg = wspc.package[package];
 	Index<String> cfg;
+	mainparam << ' ' << bm.Get(targetmode ? "RELEASE_FLAGS" : "DEBUG_FLAGS", NULL);
 	cfg = SplitFlags(mainparam, package == 0, wspc.GetAllAccepts(package));
 	cfg.FindAdd(bm.Get("BUILDER", "GCC"));
 	const TargetMode& m = GetTargetMode();

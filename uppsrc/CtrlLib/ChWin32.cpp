@@ -361,6 +361,7 @@ void ChHostSkin()
 		{
 			ToolBar::Style& s = ToolBar::StyleDefault().Write();
 			Win32Look(s.buttonstyle.look, 6, XP_TOOLBAR, 1, 1);
+			Win32Look(ToolButton::StyleDefault().Write().look, 6, XP_TOOLBAR, 1, 1);
 			Win32Look(s.arealook, XP_REBAR, 0, 1);
 			s.breaksep.l2 = SColorLight();
 		}

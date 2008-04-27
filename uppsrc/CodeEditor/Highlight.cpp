@@ -247,7 +247,7 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 		static const char *upp[] = {
 			"byte", "word", "dword", "__countof", "pick_", "wchar", "NULL",
 			"int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "qword",
-			"INTERLOCKED_", "INTERLOCKED", "ONCELOCK", "ONCELOCK_",
+			"INTERLOCKED_", "INTERLOCKED", "ONCELOCK", "ONCELOCK_", "INITBLOCK", "EXITBLOCK",
 			NULL
 		};
 		static const char *usc[] = {

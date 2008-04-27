@@ -176,6 +176,8 @@ void sCleanZombies(int signal_number)
 }
 #endif
 
+String LinuxHostConsole = "/usr/bin/xterm -e";
+
 void LocalHost::Launch(const char *_cmdline, bool console)
 {
 	String cmdline = FindCommand(exedirs, _cmdline);
@@ -206,8 +208,16 @@ void LocalHost::Launch(const char *_cmdline, bool console)
 		PutConsole("Unable to launch " + String(_cmdline));
 #endif
 #ifdef PLATFORM_POSIX
-/*	if(console) // why this does not work?!
-		cmdline = "/usr/bin/xterm -hold -e " + cmdline;*/
+	String script = ConfigFile("console-script-" + AsString(getpid()));
+	if(console) {
+		FileStream out(script, FileStream::CREATE, 0777);
+		out << "#!/bin/sh\n"
+		    << cmdline << '\n'
+		    << "echo \"<--- Finished, press any key to close the window --->\"\nread\n";
+		cmdline = LinuxHostConsole + " bash " + script;
+	}
+	DUMP(LoadFile(script));
+	SaveFile(GetHomeDirFile("test"), LoadFile(script));
 	Buffer<char> cmd_buf(strlen(cmdline) + 1);
 	char *cmd_out = cmd_buf;
 	Vector<char *> args;
@@ -269,6 +279,7 @@ void LocalHost::Launch(const char *_cmdline, bool console)
 		env.Add(NULL);
 		const char **envp = env.Begin();
 		execve(args[0], args, (char *const *)envp);
+		abort();
 	}
 	LLOG("Launch pid: " << pid);
 	sPid().Add(pid);

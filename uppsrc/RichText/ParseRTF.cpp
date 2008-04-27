@@ -4,6 +4,8 @@ NAMESPACE_UPP
 
 #define LLOG(x) LOG(x)
 
+static int TwipDotsLim(int twips) { return minmax<int>(TwipDots(twips), 0, MAX_DOTS); }
+
 static String FromCString(const char *p, const char **endptr = NULL)
 {
 	if(endptr) {
@@ -775,15 +777,15 @@ void RTFParser::ReadParaStyle()
 	else if(PassQ("qj"))
 		state.format.align = ALIGN_JUSTIFY;
 	else if(PassQ("fi"))
-		state.first_indent = TwipDots(command_arg);
+		state.first_indent = TwipDotsLim(command_arg);
 	else if(PassQ("li"))
-		state.left_margin = TwipDots(command_arg);
+		state.left_margin = TwipDotsLim(command_arg);
 	else if(PassQ("ri"))
-		state.right_margin = TwipDots(command_arg);
+		state.right_margin = TwipDotsLim(command_arg);
 	else if(PassQ("sb"))
-		state.format.before = TwipDots(command_arg);
+		state.format.before = TwipDotsLim(command_arg);
 	else if(PassQ("sa"))
-		state.format.after = TwipDots(command_arg);
+		state.format.after = TwipDotsLim(command_arg);
 	else if(PassQ("widctlpar"))
 		state.format.orphan = true;
 	else if(PassQ("nowidctlpar"))
@@ -920,9 +922,11 @@ void RTFParser::ReadPict()
 	Size final_size = minmax(iscale(out_size, scaling, Size(100, 100)), Size(1, 1), Size(30000, 30000));
 	Size drawing_size;
 	DrawingDraw dd;
+	RichObject object;
 #ifdef PLATFORM_WIN32
 #ifndef PLATFORM_WINCE
 	if(blip_type == EMF_BLIP || blip_type == WMF_BLIP) {
+		log_size = min(log_size, GetFitSize(log_size, final_size));
 		dd.Create(drawing_size = log_size);
 		WinMetaFile wmf;
 		if(blip_type == EMF_BLIP)
@@ -936,7 +940,7 @@ void RTFParser::ReadPict()
 			wmf = WinMetaFile(SetWinMetaFileBits(blip_data.GetLength(), blip_data, ScreenHDC(), &mfp));
 		}
 		wmf.Paint(dd, log_size);
-		para.Cat(CreateDrawingObject(dd, out_size, final_size), state.charformat);
+		object = CreateDrawingObject(dd, out_size, final_size);
 	}
 	else
 #endif
@@ -944,7 +948,12 @@ void RTFParser::ReadPict()
 	if(blip_type == DIB_BLIP || blip_type == PNG_BLIP || blip_type == JPEG_BLIP) {
 		//FIXIMAGE
 		Image image = StreamRaster::LoadStringAny(blip_data);
-		para.Cat(CreatePNGObject(image, out_size, final_size), state.charformat);
+		object = CreatePNGObject(image, out_size, final_size);
+	}
+	if(object) {
+		LLOG("object (" << object.GetTypeName() << ", " << object.Write().GetLength() << " B), pixel size "
+			<< object.GetPixelSize() << ", final size " << object.GetSize());
+		para.Cat(object, state.charformat);
 	}
 }
 
@@ -1019,7 +1028,7 @@ void RTFParser::ReadTableStyle()
 	else if(PassQ("trqr")) {}
 	else if(PassQ("trqc")) {}
 	else if(PassQ("trleft")) {
-		ts.tableformat.lm = TwipDots(command_arg);
+		ts.tableformat.lm = TwipDotsLim(command_arg);
 	}
 	else if(PassQ("trbrdrl")) {}
 	else if(PassQ("trbrdrt")) {}
@@ -1029,13 +1038,13 @@ void RTFParser::ReadTableStyle()
 	else if(PassQ("trftsWidth")) {}
 	else if(PassQ("trautofit")) {}
 	else if(PassQ("trpaddl"))
-		state.rowmargin.left = TwipDots(command_arg);
+		state.rowmargin.left = TwipDotsLim(command_arg);
 	else if(PassQ("trpaddt"))
-		state.rowmargin.top = TwipDots(command_arg);
+		state.rowmargin.top = TwipDotsLim(command_arg);
 	else if(PassQ("trpaddr"))
-		state.rowmargin.right = TwipDots(command_arg);
+		state.rowmargin.right = TwipDotsLim(command_arg);
 	else if(PassQ("trpaddb"))
-		state.rowmargin.bottom = TwipDots(command_arg);
+		state.rowmargin.bottom = TwipDotsLim(command_arg);
 	else if(PassQ("trpaddfl"))
 		state.rowmarginunits.left = command_arg;
 	else if(PassQ("trpaddft"))
@@ -1045,13 +1054,13 @@ void RTFParser::ReadTableStyle()
 	else if(PassQ("trpaddfb"))
 		state.rowmarginunits.bottom = command_arg;
 	else if(PassQ("clpadl"))
-		state.cellformat.margin.left = TwipDots(command_arg);
+		state.cellformat.margin.left = TwipDotsLim(command_arg);
 	else if(PassQ("clpadt"))
-		state.cellformat.margin.top = TwipDots(command_arg);
+		state.cellformat.margin.top = TwipDotsLim(command_arg);
 	else if(PassQ("clpadr"))
-		state.cellformat.margin.right = TwipDots(command_arg);
+		state.cellformat.margin.right = TwipDotsLim(command_arg);
 	else if(PassQ("clpadb"))
-		state.cellformat.margin.bottom = TwipDots(command_arg);
+		state.cellformat.margin.bottom = TwipDotsLim(command_arg);
 	else if(PassQ("clpadfl"))
 		state.cellmarginunits.left = command_arg;
 	else if(PassQ("clpadft"))
@@ -1078,7 +1087,7 @@ void RTFParser::ReadTableStyle()
 	else if(PassQ("clwWidth")) {}
 	else if(PassQ("cellx")) {
 		Cell& newcell = ts.cells.Top().At(ts.stylecol++);
-		newcell.end_dots = TwipDots(command_arg);
+		newcell.end_dots = TwipDotsLim(command_arg);
 		newcell.format = state.cellformat;
 		if(state.cellmarginunits.left == 0) newcell.format.margin.left = state.rowmargin.left;
 		if(state.cellmarginunits.top == 0) newcell.format.margin.top = state.rowmargin.top;

@@ -1,2 +1,2 @@
-Upp::BarCtrl
-0 0 -1 
+Upp::String0
+0 0 -1

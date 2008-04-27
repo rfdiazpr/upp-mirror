@@ -305,6 +305,7 @@ CodeEditor::SyntaxState CodeEditor::ScanSyntax(int line) {
 		}
 	if(st.macro != SyntaxState::MACRO_CONT)
 		st.macro = SyntaxState::MACRO_OFF;
+	line = min(line, GetLineCount());
 	while(st.line < line) {
 		if(st.macro != SyntaxState::MACRO_CONT)
 			st.macro = SyntaxState::MACRO_OFF;

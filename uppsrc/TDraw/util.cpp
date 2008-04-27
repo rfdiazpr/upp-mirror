@@ -686,6 +686,35 @@ static void DrawPolyPolygonRaw(GC gc, Drawable drawable, Point offset,
 }
 #endif
 
+/*
+#ifdef PLATFORM_X11
+Pixmap GetPatternPixmap(int64 pattern)
+{
+	static VectorMap<int64, Image> cache;
+	int f = cache.Find(pattern);
+	if(f >= 0)
+		return cache[f];
+	if(cache.GetCount() >= 1000)
+		cache.Clear();
+	ImageBuffer new_image(Size(8, 8));
+	for(int p = 0; p < 64; p++) {
+		RGBA rgba = { 0, 0, 0, pattern & (1 << p) ? 255 : 0 };
+		new_
+		new_image[p] = (pattern & (1 << p) ? RGBAZero() :
+	new_image.(8, 8);
+	PixelArray px;
+	px.CreateMono(8, 8, 1);
+	for(int p = 0; p < 8; p++)
+		*px.GetUpScan(p) = (byte)(~pattern >> (8 * p));
+	ImageMaskDraw im(new_image);
+	px.Paint(im);
+	im.Close();
+	cache.Add(pattern, new_image);
+	return new_image;
+}
+#endif
+*/
+
 void DrawPolyPolyPolygon(Draw& draw, const Point *vertices, int vertex_count,
 	const int *subpolygon_counts, int subpolygon_count_count,
 	const int *disjunct_polygon_counts, int disjunct_polygon_count_count,
@@ -737,14 +766,20 @@ void DrawPolyPolyPolygon(Draw& draw, const Point *vertices, int vertex_count,
 	XGCValues gcv;
 	gcv.function = is_xor ? X11_ROP2_XOR : X11_ROP2_COPY;
 	GC fill_gc = NULL;
-	if(!IsNull(color))
-	{
+	Image pattern_image;
+	if(!IsNull(color)) {
 		gcv.foreground = GetXPixel(color) ^ xor_pixel;
-		fill_gc = XCreateGC(Xdisplay, draw.GetDrawable(), GCForeground | GCFunction, &gcv);
+		int fmask = GCForeground | GCFunction;
+		if(pattern) {
+			pattern_image = GetPatternImage(pattern);
+			gcv.stipple = pattern_image.GetMaskPixmap();
+			gcv.fill_style = FillStippled;
+			fmask |= GCStipple | GCFillStyle;
+		}
+		fill_gc = XCreateGC(Xdisplay, draw.GetDrawable(), fmask, &gcv);
 	}
 	GC line_gc = NULL;
-	if(!IsNull(outline))
-	{
+	if(!IsNull(outline)) {
 		gcv.foreground = GetXPixel(outline) ^ xor_pixel;
 		gcv.line_width = width;
 		line_gc = XCreateGC(Xdisplay, draw.GetDrawable(), GCForeground | GCFunction | GCLineWidth, &gcv);

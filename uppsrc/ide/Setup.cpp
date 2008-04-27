@@ -277,6 +277,11 @@ void AStyleSetupDialog::UppDefaults()
 	TabSpaceConversionMode = false;
 }
 
+void SetConsole(EditString *e, const char *text)
+{
+	*e <<= text;
+}
+
 void Ide::SetupFormat() {
 	FormatDlg dlg;
 	dlg.Title("Format setup");
@@ -285,6 +290,16 @@ void Ide::SetupFormat() {
 	WithSetupEditorLayout<ParentCtrl> edt;
 	WithSetupIdeLayout<ParentCtrl> ide;
 	AStyleSetupDialog ast(this);
+#ifdef PLATFORM_WIN32
+	ide.console_txt.Hide();
+	ide.console.Hide();
+	ide.kde.Hide();
+	ide.gnome.Hide();
+	ide.xterm.Hide();
+#endif
+	ide.kde <<= callback2(SetConsole, &ide.console, "/usr/bin/konsole -e");
+	ide.gnome <<= callback2(SetConsole, &ide.console, "/usr/bin/gnome-terminal -x");
+	ide.xterm <<= callback2(SetConsole, &ide.console, "/usr/bin/xterm -e");
 	dlg.Add(fnt, "Fonts");
 	dlg.Add(hlt, "Syntax highlighting");
 	dlg.Add(edt, "Editor");
@@ -343,6 +358,7 @@ void Ide::SetupFormat() {
 		(ide.commentdp, editor.commentdp)
 		(ide.hydra1_threads, hydra1_threads)
 		(ide.chstyle, chstyle)
+		(ide.console, LinuxHostConsole)
 		(ast.BracketIndent,					astyle_BracketIndent)
 		(ast.NamespaceIndent,               astyle_NamespaceIndent)
 		(ast.BlockIndent,                   astyle_BlockIndent)

@@ -199,6 +199,7 @@ public:
 	void                    AddColumn(int cx);
 	void                    SetPick(int i, int j, pick_ RichTxt& text);
 	RichTxt                 GetPick(int i, int j);
+	const RichTxt&          Get(int i, int j) const                { return cell[i][j].text; }
 	void                    SetQTF(int i, int j, const char *qtf);
 	void                    SetFormat(int i, int j, const RichCell::Format& fmt);
 	const RichCell::Format& GetFormat(int i, int j)                { return cell[i][j].format; }

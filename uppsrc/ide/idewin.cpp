@@ -80,7 +80,7 @@ void Ide::ConsolePaste()
 }
 
 void Ide::Serialize(Stream& s) {
-	int version = 7;
+	int version = 8;
 	s.Magic(0x12346);
 	s / version;
 	s % main;
@@ -175,6 +175,8 @@ void Ide::Serialize(Stream& s) {
 		s % astyle_TabSpaceConversionMode;
 		s % astyle_TestBox;
 	}
+	if(version >= 8)
+		s % LinuxHostConsole;
 	s.Magic();
 }
 

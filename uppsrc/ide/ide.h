@@ -141,6 +141,8 @@ public:
 	Console();
 };
 
+extern String LinuxHostConsole;
+
 struct LocalHost : Host {
 	Vector<String> exedirs;
 	String         environment;

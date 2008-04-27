@@ -1,3 +1,5 @@
+mutable and ONCELOCK!
+
 Shell_NotifyIconA and NOTIFYICONDATAA.
 
 [21:31] micio: open theide, open help from toolbar

@@ -422,6 +422,7 @@ public:
 	void  Reset();
 
 	static const Style& StyleDefault();
+	static const Style& StyleSolid();
 
 	ToolButton& SetStyle(const Style& s) { style = &s; Refresh(); return *this; }
 	ToolButton& MinSize(Size sz)         { minsize = sz; return *this; }

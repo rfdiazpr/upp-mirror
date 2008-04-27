@@ -19,12 +19,32 @@ CH_STYLE(ToolButton, Style, StyleDefault)
 	light[CTRL_PRESSED] = light[CTRL_HOT] = light[CTRL_HOTCHECKED] = true;
 }
 
+CH_STYLE(ToolButton, Style, StyleSolid)
+{
+	const Button::Style& bs = Button::StyleNormal();
+	look[0] = bs.look[0];
+	look[1] = bs.look[1];
+	look[2] = bs.look[2];
+	look[3] = bs.look[3];
+	look[4] = bs.look[2];
+	look[5] = bs.look[1];
+	font = StdFont();
+	for(int i = 0; i < 4; i++)
+		textcolor[i] = Button::StyleNormal().textcolor[i];
+	textcolor[CTRL_CHECKED] = textcolor[CTRL_NORMAL];
+	textcolor[CTRL_HOTCHECKED] = textcolor[CTRL_HOT];
+	for(int i = 0; i < 6; i++) {
+		light[i] = false;
+		contrast[i] = 0;
+	}
+	light[CTRL_PRESSED] = light[CTRL_HOT] = light[CTRL_HOTCHECKED] = true;
+}
+
 ToolButton::ToolButton()
 {
 	Reset();
 	checked = false;
 	paint_checked = false;
-	SetStyle(ToolBar::StyleDefault().buttonstyle);
 	Transparent();
 }
 

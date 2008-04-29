@@ -273,6 +273,12 @@ typedef uint64             qword;
 
 #define init_
 
+#ifdef COMPILER_MSC
+#define thread__ __declspec(thread) 
+#else
+#define thread__ __thread 
+#endif
+
 #define BINARY(i, f) \
 extern "C" byte *i; \
 extern "C" int COMBINE(i, _length);

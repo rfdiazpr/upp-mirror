@@ -440,7 +440,7 @@ void Ctrl::UpdateArea0(Draw& draw, const Rect& clip, int backpaint)
 {
 	LTIMING("UpdateArea");
 	LLOG("========== UPDATE AREA " << UPP::Name(this) << " ==========");
-	if(backpaint == FULLBACKPAINT || globalbackpaint) {
+	if(backpaint == FULLBACKPAINT || globalbackpaint && !hasdhctrl && !dynamic_cast<DHCtrl *>(this)) {
 		ShowRepaintRect(draw, clip, LtRed());
 		BackDraw bw;
 		bw.Create(draw, clip.GetSize());

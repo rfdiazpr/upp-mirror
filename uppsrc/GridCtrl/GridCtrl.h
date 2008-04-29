@@ -1,6 +1,6 @@
 #ifndef _GridCtrl_GridCtrl_h_
 #define _GridCtrl_GridCtrl_h_
-
+//#define GRIDSQL
 #include <CtrlLib/CtrlLib.h>
 #ifdef GRIDSQL
 #include <Sql/Sql.h>
@@ -642,7 +642,7 @@ class GridCtrl : public Ctrl
 				ItemRect& SetFont(Font &f)                       { fnt = f; return *this; }
 				ItemRect& Bg(Color c)                            { bg = c;  return *this; }
 				ItemRect& Fg(Color c)                            { fg = c;  return *this; }
-				ItemRect& SetImage(const Image& i)               { img = i; return *this;}
+				ItemRect& SetImage(const Image& i)               { img = i; return *this; }
 				ItemRect& ClearImage()                           { img = Null; return *this;}
 				ItemRect& Ctrls(Callback1<One<Ctrl>&> _factory)	 { (*edits)[id].factory = _factory; return *this; }
 				ItemRect& Ctrls(void (*factory)(One<Ctrl>&))     { return Ctrls(callback(factory)); }
@@ -1194,6 +1194,7 @@ class GridCtrl : public Ctrl
 
 		int Find(const Value &v, int col = 0, int start_from = 0, int opt = 0) const;
 		int Find(const Value &v, Id id, int opt = 0) const;
+		int Find(const Value &v0, Id id0, const Value &v1, Id id1, int opt = 0) const;
 		int FindCurrent(Id id, int opt = GF::SKIP_CURRENT_ROW) const;
 		int FindCurrent(Id id0, Id id1, int opt = GF::SKIP_CURRENT_ROW) const;
 
@@ -1573,6 +1574,7 @@ class GridCtrl : public Ctrl
 		Callback WhenInsertRow;
 		Callback WhenUpdateRow;
 		Callback WhenRemoveRow;
+		Callback WhenDuplicateRow;
 
 		Callback WhenUpdateCell;
 

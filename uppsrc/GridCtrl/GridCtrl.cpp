@@ -3419,7 +3419,8 @@ bool GridCtrl::Recalc(bool horizontal, RectItems &its, int resize_mode)
 
 		double sumprop = 0;
 		for(int i = fixed; i < cnt; i++)
-			sumprop += its[i].prop;
+			if(!its[i].hidden)
+				sumprop += its[i].prop;
 
 		double ics = cs / sumprop;
 		sumprop = 0;
@@ -3457,7 +3458,7 @@ bool GridCtrl::Recalc(bool horizontal, RectItems &its, int resize_mode)
 			if(its[i].hidden)
 			{
 				its[i].size = 0;
-				its[i].prop = 0;
+				//its[i].prop = 0;
 				continue;
 			}
 
@@ -3815,13 +3816,10 @@ int GridCtrl::FindCurrent(Id id, int opt) const
 	return Find(Get(col), col, 0, opt);
 }
 
-int GridCtrl::FindCurrent(Id id0, Id id1, int opt) const
+int GridCtrl::Find(const Value &v0, Id id0, const Value&v1, Id id1, int opt) const
 {
 	int col0 = aliases.Get(id0);
 	int col1 = aliases.Get(id1);
-
-	const Value& val0 = items[vitems[rowidx].id][col0].val;
-	const Value& val1 = items[vitems[rowidx].id][col1].val;
 
 	for(int i = fixed_rows; i < total_rows; i++)
 	{
@@ -3830,11 +3828,22 @@ int GridCtrl::FindCurrent(Id id0, Id id1, int opt) const
 		if(opt & GF::SKIP_HIDDEN && vitems[i].hidden)
 			continue;
 		if(!vitems[i].skip &&
-		   items[vitems[i].id][col0].val == val0 &&
-		   items[vitems[i].id][col1].val == val1)
+		   items[vitems[i].id][col0].val == v0 &&
+		   items[vitems[i].id][col1].val == v1)
 			return i - fixed_rows;
 	}
 	return -1;
+}
+
+int GridCtrl::FindCurrent(Id id0, Id id1, int opt) const
+{
+	int col0 = aliases.Get(id0);
+	int col1 = aliases.Get(id1);
+
+	const Value& val0 = items[vitems[rowidx].id][col0].val;
+	const Value& val1 = items[vitems[rowidx].id][col1].val;
+
+	return Find(val0, id0, val1, id1, opt);
 }
 
 void GridCtrl::UpdateDefaults(int ri)
@@ -4600,6 +4609,7 @@ bool GridCtrl::Key(dword key, int)
 				if(cnt > 0)
 				{
 					search_string.Remove(cnt - 1);
+					find <<= search_string;
 					ShowMatchedRows(search_string);
 				}
 				return true;
@@ -4654,6 +4664,9 @@ bool GridCtrl::Search(dword key)
 		search_string += (wchar) key;
 		if(!ShowMatchedRows(search_string) && search_string.GetCount() > 0)
 			search_string.Remove(search_string.GetCount() - 1);
+		else
+			find <<= search_string;
+
 		return true;
 	}
 	return false;
@@ -5708,12 +5721,15 @@ bool GridCtrl::StartEdit(bool mouse)
 	if(!valid_cursor || !IsRowEditable())
 		return false;
 
+	ctrls = true;
+
+	WhenStartEdit();
+
 	SetCtrlsData();
 	int opt = UC_SHOW | UC_FOCUS | UC_GOFIRST | UC_CURSOR | UC_CTRLS;
 	if(mouse)
 		opt |= UC_MOUSE;
 	UpdateCtrls(opt);
-	WhenStartEdit();
 	return true;
 }
 
@@ -6408,6 +6424,8 @@ void GridCtrl::DoDuplicate0()
 		Duplicate0(GetMinRowSelected(), selected_rows);
 	}
 
+	WhenDuplicateRow();
+
 	if(cy > 0)
 		SetCursor0(curpos.x < 0 ? firstVisCol : curpos.x, max(fixed_rows, min(total_rows - 1, cy)));
 }
@@ -6422,7 +6440,7 @@ void GridCtrl::DoRemove()
 
 	if(ask_remove)
 	{
-		if(!PromptYesNo(Format("Do you really want to delete selected %s ?", selected_rows > 0 ? t_("rows") : t_("row"))))
+		if(!PromptYesNo(Format(t_("Do you really want to delete selected %s ?"), selected_rows > 0 ? t_("rows") : t_("row"))))
 			return;
 	}
 

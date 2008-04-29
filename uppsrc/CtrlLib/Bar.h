@@ -424,12 +424,13 @@ public:
 	static const Style& StyleDefault();
 	static const Style& StyleSolid();
 
+	bool		IsChecked()				 { return checked; }
+
 	ToolButton& SetStyle(const Style& s) { style = &s; Refresh(); return *this; }
 	ToolButton& MinSize(Size sz)         { minsize = sz; return *this; }
 	ToolButton& MaxIconSize(Size sz)     { maxiconsize = sz; return *this; }
 	ToolButton& Kind(int _kind)          { kind = _kind; Refresh(); return *this; }
-
-	ToolButton& Label(const char *text, int kind);
+	ToolButton& Label(const char *text, int kind = ToolButton::RIGHTLABEL);
 
 	ToolButton();
 	virtual ~ToolButton();

@@ -7,16 +7,23 @@ NAMESPACE_UPP
 #pragma optimize("t", on)
 #endif
 
+static StaticMutex   cpp_file_mutex;
 static Index<String> cpp_file;
 
 int GetCppFileIndex(const String& path)
 {
-	return cpp_file.FindAdd(path);
+	INTERLOCKED_(cpp_file_mutex) {
+		return cpp_file.FindAdd(path);
+	}
+	return -1;
 }
 
 const String& GetCppFile(int i)
 {
-	return cpp_file[i];
+	INTERLOCKED_(cpp_file_mutex) {
+		return cpp_file[i];
+	}
+	return String();
 }
 /*
 void  CppPos::Serialize(Stream& s)

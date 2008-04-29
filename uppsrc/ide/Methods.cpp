@@ -229,7 +229,7 @@ BuildMethods::BuildMethods()
 
 	builder <<= THISBACK(NewBuilder);
 	setdefault <<= THISBACK(SetDefault);
-
+	
 	linkmode_lock.SetLabel("Lock link mode");
 }
 

@@ -44,8 +44,11 @@ void *MAlloc_Get(MCache& m, int k);
 void  MFree_Reduce(MCache& m, int k);
 
 #define NKLASS      16
-#define CACHEMAX    31
-#define CACHERES    16
+//#define CACHEMAX    31
+//#define CACHERES    16
+
+#define CACHEMAX    1023
+#define CACHERES    512
 
 void FreeFill(dword *ptr, int count);
 void FreeCheck(dword *ptr, int count);

@@ -255,3 +255,7 @@
 	+ editing of row was possible (through double click) even if editing flag was not set
 	- Clear refreshes toolbar now
 	+ added Get*Align() to ItemRect
+
+	after 2008.1beta2
+
+	- hiding/showing columns works again in proportional mode (R)

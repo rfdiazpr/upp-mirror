@@ -121,9 +121,14 @@ int GetTickCount() {
 }
 #endif
 
-TimeStop::TimeStop()
+void TimeStop::Reset()
 {
 	starttime = GetTickCount();
+}
+
+TimeStop::TimeStop()
+{
+	Reset();
 }
 
 String TimeStop::ToString() const

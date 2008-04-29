@@ -21,7 +21,7 @@ CH_STYLE(ToolButton, Style, StyleDefault)
 
 CH_STYLE(ToolButton, Style, StyleSolid)
 {
-	const Button::Style& bs = Button::StyleNormal();
+	const Button::Style& bs = Button::StyleNormal(); 
 	look[0] = bs.look[0];
 	look[1] = bs.look[1];
 	look[2] = bs.look[2];
@@ -89,6 +89,7 @@ Bar::Item& ToolButton::Text(const char *txt)
 Bar::Item& ToolButton::Check(bool check)
 {
 	checked = check;
+	Refresh();
 	return *this;
 }
 
@@ -215,12 +216,12 @@ void  ToolButton::Paint(Draw& w)
 	if(kind != NOLABEL)
 		tsz = GetTextSize(text, style->font);
 	if(kind == BOTTOMLABEL) {
-		ip.y = 3;
-		w.DrawText((sz.cx - tsz.cx) / 2 + off.x, isz.cy + 6 + off.y, text, style->font, style->textcolor[li]);
+		ip.y  -= tsz.cy / 2 + 1;
+		w.DrawText((sz.cx - tsz.cx) / 2 + off.x, ip.y + isz.cy + 2 + off.y, text, style->font, style->textcolor[li]);
 	}
 	if(kind == RIGHTLABEL) {
-		ip.x = 3;
-		w.DrawText(isz.cx + 6 + off.x, (sz.cy - tsz.cy) / 2 + off.y, text, style->font, style->textcolor[li]);
+		ip.x -= tsz.cx / 2 + 2;
+		w.DrawText(ip.x + isz.cx + 3 + off.x, (sz.cy - tsz.cy) / 2 + off.y, text, style->font, style->textcolor[li]);
 	}
 	UPP::Image img = CachedContrast(image, style->contrast[li]);
 	if(!IsEnabled())

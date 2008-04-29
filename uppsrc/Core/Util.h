@@ -15,6 +15,7 @@ class TimeStop : Moveable<TimeStop> {
 public:
 	int    Elapsed() const           { return GetTickCount() - starttime; }
 	String ToString() const;
+	void   Reset();
 
 	TimeStop();
 };

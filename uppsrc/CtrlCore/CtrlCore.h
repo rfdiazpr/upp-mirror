@@ -443,6 +443,7 @@ private:
 	bool         popupgrab:1;
 	byte         backpaint:2;//2
 	bool         GLX:1;
+	bool         hasdhctrl:1;
 
 	bool         akv:1;
 	bool         destroying:1;
@@ -560,7 +561,8 @@ private:
 	void    UpdateArea(Draw& draw, const Rect& clip);
 	Ctrl   *GetTopRect(Rect& r, bool inframe);
 	void    DoSync(Ctrl *q, Rect r, bool inframe);
-
+	bool    HasDHCtrl() const;
+	void    SyncDHCtrl();
 	void    SetInfoPart(int i, const char *txt);
 	String  GetInfoPart(int i) const;
 

@@ -145,8 +145,8 @@ void HeapPanic(const char *text, void *pos, int size)
 	Panic(text);
 }
 
-#ifdef _DEBUG
-
+//#ifdef _DEBUG
+#if 1 // @@@@@ WORKAROUND !!!!!
 void FreeFill(dword *ptr, int count)
 {
 	while(count--)

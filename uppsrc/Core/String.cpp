@@ -24,7 +24,8 @@ static inline void MFree_S(void *ptr)
 	MCache& m = mcache[1];
 	((FreeLink *)ptr)->next = m.list;
 	m.list = (FreeLink *)ptr;
-#ifdef _DEBUG
+//#ifdef _DEBUG
+#if 1 // @@@@ WORKAROUND !!!!!
 #ifdef CPU_64
 	FreeFill((dword *)ptr + 2, 32 / 4 - 2);
 #else

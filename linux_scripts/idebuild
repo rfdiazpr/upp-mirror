@@ -115,7 +115,7 @@ fi
 #now finds ide executable - prefers newest versions rather than 'theide' stable
 #as if it's possible uses latest devel to build stuffs
 #gathers also the ide cfg folder - new way, subfolder of ~/.Upp
-executables="ide ide-svn ide-dev theide-svn theide-dev theide"
+executables="theide-svn theide-dev theide ide"
 idecfgfolder=""
 for executable in $executables
 do

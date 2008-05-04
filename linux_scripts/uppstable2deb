@@ -65,12 +65,10 @@ dst=$(rel2abs $2)
 uppdeb="`which uppdeb`"
 if [ x$uppdeb = x ]
 then
-	uppdeb="/home/massimo/sources/uppdeb/uppdeb"
-fi
-idebuild="`which idebuild`"
-if [ x$idebuild = x ]
-then
-	idebuild="/home/massimo/sources/uppdeb/idebuild"
+	# couldn't find it on path, just try on this script's path
+	LSOF=$(lsof -p $$ 2>/dev/null | grep -E "/"$(basename $0)"$")
+	uppdeb=$(echo $LSOF | sed -r s/'^([^\/]+)\/'/'\/'/1 2>/dev/null)
+	uppdeb=$(dirname $uppdeb)/uppdeb
 fi
 if [ ! -f $uppdeb ]
 then
@@ -78,7 +76,14 @@ then
 	echo "Please check if it's on current path"
 	exit 1
 fi
-
+idebuild="`which idebuild`"
+if [ x$idebuild = x ]
+then
+	# couldn't find it on path, just try on this script's path
+	LSOF=$(lsof -p $$ 2>/dev/null | grep -E "/"$(basename $0)"$")
+	idebuild=$(echo $LSOF | sed -r s/'^([^\/]+)\/'/'\/'/1 2>/dev/null)
+	idebuild=$(dirname $idebuild)/idebuild
+fi
 if [ ! -f $idebuild ]
 then
 	echo "ERROR - Could not find 'idebuild' script"

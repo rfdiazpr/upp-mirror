@@ -3,12 +3,17 @@
 # quick go to create deb package from local svn repo
 #
 #################################################################
-#		REPLACE PATHS WITH YOUR OWN			#
+#		REPLACE VALUES WITH YOUR OWN			#
 # SVN repository full path
-SVN_REPO="/home/massimo/sources/uppsvn"
+BETA_PATH="/home/massimo/sources/uppbeta"
 #
 # Destination path for generated debian
 DEST_PATH="/home/massimo/sources/uppdeb"
+#
+# Mantainer name and email
+MANTAINER="Massimo Del Fedele"
+#
+EMAIL="max@veneto.com"
 #################################################################
 #
 # checks if svn repo and destination path are ok

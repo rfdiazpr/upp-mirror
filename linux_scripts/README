@@ -22,7 +22,8 @@ USAGE :
 	but a working IDE is needed. If you still don't have it, just install a debian svn package
 	downloadable from forum.
 
-3)	Edit doXXX scripts to adjust your local paths (repositories, destination path)
+3)	Edit doXXX scripts to adjust your local paths and personal data
+	(repositories, destination path, mantainer name and email)
 	Paths are set on scripts beginning -- see comments
 
 4)	Just run the requested script

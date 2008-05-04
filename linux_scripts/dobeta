@@ -3,12 +3,17 @@
 # quick go to create deb package from beta sources
 #
 #################################################################
-#		REPLACE PATHS WITH YOUR OWN			#
+#		REPLACE VALUES WITH YOUR OWN			#
 # SVN repository full path
 BETA_PATH="/home/massimo/sources/uppbeta"
 #
 # Destination path for generated debian
 DEST_PATH="/home/massimo/sources/uppdeb"
+#
+# Mantainer name and email
+MANTAINER="Massimo Del Fedele"
+#
+EMAIL="max@veneto.com"
 #################################################################
 #
 # checks if beta repo and destination path are ok
@@ -26,22 +31,22 @@ then
 	exit 1
 fi
 
-#locates 'uppdev2deb' script - first try on path
-uppdev2deb="`which uppdev2deb`"
-if [ x$uppdev2deb = x ]
+#locates 'uppbeta2deb' script - first try on path
+uppbeta2deb="`which uppbeta2deb`"
+if [ x$uppbeta2deb = x ]
 then
 	# couldn't find it on path, just try on this script's path
 	LSOF=$(lsof -p $$ 2>/dev/null | grep -E "/"$(basename $0)"$")
-	uppdev2deb=$(echo $LSOF | sed -r s/'^([^\/]+)\/'/'\/'/1 2>/dev/null)
-	uppdev2deb=$(dirname $uppdev2deb)/uppdev2deb
+	uppbeta2deb=$(echo $LSOF | sed -r s/'^([^\/]+)\/'/'\/'/1 2>/dev/null)
+	uppbeta2deb=$(dirname $uppbeta2deb)/uppbeta2deb
 fi
-if [ ! -f $uppdev2deb ]
+if [ ! -f $uppbeta2deb ]
 then
-	echo "ERROR - Could not find 'uppdev2deb' script"
+	echo "ERROR - Could not find 'uppbeta2deb' script"
 	echo "Please check if it's on current path"
 	exit 1
 fi
 
-#just run uppdev2deb with my params
+#just run uppbeta2deb with my params
 $uppbeta2deb $BETA_PATH $DEST_PATH
 

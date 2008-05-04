@@ -3,12 +3,17 @@
 # quick go to create deb package from my stable repo
 #
 #################################################################
-#		REPLACE PATHS WITH YOUR OWN			#
-# UPP developement three path
-STABLE_PATH="/home/massimo/sources/uppstable"
+#		REPLACE VALUES WITH YOUR OWN			#
+# SVN repository full path
+BETA_PATH="/home/massimo/sources/uppbeta"
 #
 # Destination path for generated debian
 DEST_PATH="/home/massimo/sources/uppdeb"
+#
+# Mantainer name and email
+MANTAINER="Massimo Del Fedele"
+#
+EMAIL="max@veneto.com"
 #################################################################
 #
 # checks if stable repo and destination path are ok

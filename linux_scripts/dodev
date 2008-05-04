@@ -6,7 +6,7 @@
 #################################################################
 #		REPLACE VALUES WITH YOUR OWN			#
 # SVN repository full path
-BETA_PATH="/home/massimo/sources/uppbeta"
+DEV_PATH="/home/massimo/sources/uppbeta"
 #
 # Destination path for generated debian
 DEST_PATH="/home/massimo/sources/uppdeb"

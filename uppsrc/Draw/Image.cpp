@@ -341,6 +341,15 @@ void Image::Data::PaintOnlyShrink()
 	}
 }
 
+Draw& ImageDraw::Alpha()
+{
+	if(!has_alpha) {
+		alpha.DrawRect(size, GrayColor(0));
+		has_alpha = true;
+	}
+	return alpha;
+}
+
 static void sMultiply(ImageBuffer& b, int (*op)(RGBA *t, const RGBA *s, int len))
 {
 	if(b.GetKind() != IMAGE_OPAQUE && b.GetKind() != IMAGE_EMPTY)

@@ -56,6 +56,22 @@ inline void AssertST() { ASSERT(Thread::IsST()); }
 void ReadMemoryBarrier();
 void WriteMemoryBarrier();
 
+template <class U>
+inline bool ReadWithBarrier(const volatile U& b)
+{
+	volatile bool tmp = b;
+	ReadMemoryBarrier();
+	return tmp;
+}
+
+template <class U, class V>
+inline void BarrierWrite(volatile U& ptr, V data)
+{
+	WriteMemoryBarrier();
+	ptr = data;
+}
+
+
 class Semaphore {
 #ifdef PLATFORM_WIN32
 	HANDLE     handle;
@@ -78,7 +94,7 @@ class StaticSemaphore {
 	void Initialize();
 
 public:
-	Semaphore& Get()             { ReadMemoryBarrier(); if(!semaphore) Initialize(); return *const_cast<Semaphore *>(semaphore); }
+	Semaphore& Get()             { if(!ReadWithBarrier(semaphore)) Initialize(); return *const_cast<Semaphore *>(semaphore); }
 	operator Semaphore&()        { return Get(); }
 	void Wait()                  { Get().Wait(); }
 	void Release()               { Get().Release(); }
@@ -118,13 +134,13 @@ class RWMutex {
 public:
 	void EnterWrite();
 	void LeaveWrite();
-	
+
 	void EnterRead();
 	void LeaveRead();
-	
+
 	RWMutex();
 	~RWMutex();
-	
+
 	struct ReadLock;
 	struct WriteLock;
 };
@@ -169,18 +185,18 @@ public:
 	void LeaveWrite()  { pthread_rwlock_unlock(rwlock); }
 	void EnterRead()   { pthread_rwlock_rdlock(rwlock); }
 	void LeaveRead()   { pthread_rwlock_unlock(rwlock); }
-	
+
 	RWMutex();
 	~RWMutex();
-	
+
 	struct ReadLock;
 	struct WriteLock;
 };
 
 #endif
 
-inline int  AtomicRead(const volatile Atomic& t)      { ReadMemoryBarrier(); return t; }
-inline void AtomicWrite(volatile Atomic& t, int val)  { WriteMemoryBarrier(); t = val; }
+inline int  AtomicRead(const volatile Atomic& t)      { return ReadWithBarrier(t); }
+inline void AtomicWrite(volatile Atomic& t, int val)  { BarrierWrite(t, val); }
 
 struct Mutex::Lock {
 	Mutex& s;
@@ -207,7 +223,7 @@ class StaticMutex {
 	void Initialize();
 
 public:
-	Mutex& Get()         { if(!section) Initialize(); return *const_cast<Mutex *>(section); }
+	Mutex& Get()         { if(!Readsection) Initialize(); return *const_cast<Mutex *>(section); }
 	operator Mutex&()    { return Get(); }
 	void Enter()         { Get().Enter();}
 	void Leave()         { Get().Leave(); }
@@ -244,26 +260,20 @@ for(UPP::H_l_ i_ss_lock__(cs); i_ss_lock__.b; i_ss_lock__.b = false)
 void Set__(volatile bool& b);
 
 #define ONCELOCK \
-for(static volatile bool o_b_; ReadMemoryBarrier(), !o_b_;) \
+for(static volatile bool o_b_; !ReadWithBarrier(o_b_);) \
 	for(static StaticMutex o_ss_; !o_b_;) \
-		for(Mutex::Lock o_ss_lock__(o_ss_); !o_b_; WriteMemoryBarrier(), Set__(o_b_))
+		for(Mutex::Lock o_ss_lock__(o_ss_); !o_b_; BarrierWrite(o_b_, true))
 
 #define ONCELOCK_(o_b_) \
-for(static StaticMutex o_ss_; ReadMemoryBarrier(), !o_b_;) \
-	for(Mutex::Lock o_ss_lock__(o_ss_); !o_b_; WriteMemoryBarrier(), Set__(o_b_))
-
-template <class U, class V>
-void dirty_trick_MemoryBarrier(U& ptr, V data) {
-	WriteMemoryBarrier();
-	ptr = data;
-}
+for(static StaticMutex o_ss_; !ReadWithBarrier(o_b_);) \
+	for(Mutex::Lock o_ss_lock__(o_ss_); !o_b_; BarrierWrite(o_b_, true))
 
 #define ONCELOCK_PTR(ptr, init) \
-if((ReadMemoryBarrier(), !ptr)) { \
+if(!ReadWithBarrier(ptr)) { \
 	static StaticMutex cs; \
 	cs.Enter(); \
 	if(!ptr) \
-		dirty_trick_MemoryBarrier(ptr, init); \
+		BarrierWrite(ptr, init); \
 	cs.Leave(); \
 }
 
@@ -295,10 +305,10 @@ struct Mutex::Lock {
 struct RWMutex {
 	void EnterWrite() {}
 	void LeaveWrite() {}
-	
+
 	void EnterRead() {}
 	void LeaveRead() {}
-	
+
 	struct ReadLock;
 	struct WriteLock;
 };

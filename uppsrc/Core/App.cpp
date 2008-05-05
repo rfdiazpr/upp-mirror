@@ -234,8 +234,8 @@ void CommonInit()
 		}
 	#if defined(_DEBUG) && defined(UPP_HEAP)
 		if(cmd[i] == "--memory-breakpoint__" && i + 1 < cmd.GetCount()) {
-			cmd.Remove(i);
 			MemoryBreakpoint(atoi(cmd[i + 1]));
+			cmd.Remove(i, 2);
 		}
 		else
 			i++;
@@ -344,7 +344,7 @@ void    LaunchWebBrowser(const String& url)
 	for(int i = 0; i < __countof(browser); i++)
 		if(system("which " + String(browser[i])) == 0) {
 			system(String(browser[i]) + " " + url + " &");
-			break;	
+			break;
 		}
 #endif
 }

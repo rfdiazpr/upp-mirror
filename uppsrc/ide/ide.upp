@@ -76,4 +76,3 @@ mainconfig
 custom() "",
 	"",
 	"$(OUTDIR)/$(FILE).obj";
-

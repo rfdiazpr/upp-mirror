@@ -199,25 +199,11 @@ EXITBLOCK { MemoryDumpLeaks(); }
 #endif
 
 #ifdef COMPILER_GCC
-/*
-struct MemoryInitDiagCls {
-	~MemoryInitDiagCls() { MemoryDumpLeaks(); }
-};
-*/
 
 void MemoryInitDiagnostics()
 {
-//	static MemoryInitDiagCls diagcls;
-/*
-	static bool b;
-	if(!b) {
-		static
-		atexit(MemoryDumpLeaks);
-		b = true;
-		MemoryWatch(0x417FDE60);
-	}
-*/
 }
+
 #endif
 
 #endif

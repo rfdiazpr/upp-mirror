@@ -110,7 +110,7 @@ public:
 		Size  dots;
 		Point hotspot;
 		int   kind;
-		
+
 		Info();
 	};
 
@@ -130,7 +130,7 @@ public:
 	int    GetWidth()                              { return GetSize().cx; }
 	int    GetHeight()                             { return GetSize().cy; }
 	Line   operator[](int i)                       { return GetLine(i); }
-	
+
 	Image  GetImage(int x, int y, int cx, int cy, const Gate2<int, int> progress = false);
 	Image  GetImage(const Gate2<int, int> progress = false);
 

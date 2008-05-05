@@ -1,20 +1,25 @@
 template <class T>
 class BiVector : MoveableAndDeepCopyOption< BiVector<T> > {
 protected:
-	T          *vector;
-	int         start;
-	mutable int items;
-	int         alloc;
+	T       *vector;
+	int      start;
+	int      items;
+	int      alloc;
 
-	int      EI() const              { return (start + items - 1) % alloc; }
+//	int      Ix(int i)               { i += start; if(i >= alloc) i -= alloc; return i; }
+//	int      Ix(int i)               { return (start + i) % alloc; }
+//	int      Ix(int i) const         { return i < alloc - start ? i + start : i + start - alloc; }
+	int      Ix(int i) const         { return i + start < alloc ? i + start : i + start - alloc; }
+
+	int      EI() const              { return /*(start + items - 1) % alloc;*/Ix(items - 1); }
 	void     ReAlloc(int newalloc);
 	void     Add0();
 	void     DeepCopy0(const BiVector& src);
-	T       *AddHead0()              { AssertMoveable<T>(); Add0(); return &vector[start = (start + alloc - 1) % alloc]; }
+	T       *AddHead0()              { AssertMoveable<T>(); Add0(); return &vector[start = Ix(alloc - 1)/*(start + alloc - 1) % alloc*/]; }
 	T       *AddTail0()              { AssertMoveable<T>(); Add0(); return &vector[EI()]; }
 	void     Free();
 	void     Pick(pick_ BiVector& x) { vector = x.vector; start = x.start; items = x.items;
-	                                   alloc = x.alloc; x.items = -1; }
+	                                   alloc = x.alloc; ((BiVector&)x).items = -1; }
 	void     Copy(T *dst, int start, int count) const;
 
 public:
@@ -32,13 +37,17 @@ public:
 	T&       Tail()                  { ASSERT(items > 0); return vector[EI()]; }
 	const T& Head() const            { ASSERT(items > 0); return vector[start]; }
 	const T& Tail() const            { ASSERT(items > 0); return vector[EI()]; }
-	void     DropHead()              { (&Head())->T::~T(); items--; start = (start + 1) % alloc; }
+	void     DropHead()              { (&Head())->T::~T(); items--; start = Ix(1)/*(start + 1) % alloc*/; }
 	void     DropTail()              { (&Tail())->T::~T(); items--; }
 
+/*
 	T&       operator[](int i)       { ASSERT(i >= 0 && i < items);
 	                                   return vector[(start + i) % alloc]; }
 	const T& operator[](int i) const { ASSERT(i >= 0 && i < items);
 	                                   return vector[(start + i) % alloc]; }
+*/
+	T&       operator[](int i)       { ASSERT(i >= 0 && i < items); return vector[Ix(i)]; }
+	const T& operator[](int i) const { ASSERT(i >= 0 && i < items); return vector[Ix(i)]; }
 	void     Shrink();
 	void     Reserve(int n);
 	int      GetAlloc() const        { return alloc; }

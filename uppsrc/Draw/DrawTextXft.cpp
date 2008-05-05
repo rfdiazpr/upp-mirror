@@ -62,7 +62,7 @@ void FontInfo::Data::GetMetrics(CharMetrics *t, int from, int count)
 	}
 }
 
-char *basic_fonts[] = {
+const char *basic_fonts[] = {
 	"sans-serif",
 	"serif",
 	"sans-serif",

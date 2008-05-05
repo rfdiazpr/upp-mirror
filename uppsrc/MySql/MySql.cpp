@@ -248,11 +248,11 @@ bool MySqlConnection::Execute() {
 		return false;
 	}
 	result = mysql_store_result(mysql);
-	if(trace) {
+/*	if(trace) { // cxl 2005-5-2, duplicated traces...
 		if(session.IsTraceTime())
 			*trace << Format("--------------\nexec %d ms:\n", msecs(time));
 		*trace << ToString() << '\n';
-	}
+	}*/
 	if(result) {
 		rows = (int)mysql_affected_rows(mysql);
 		int fields = mysql_num_fields(result);

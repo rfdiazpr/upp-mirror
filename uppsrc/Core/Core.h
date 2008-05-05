@@ -475,7 +475,7 @@ struct MemDiagCls {
 	MemDiagCls()  { if(!UPP::sMemDiagInitCount++) UPP::MemoryInitDiagnostics(); }
 	~MemDiagCls() { if(!--UPP::sMemDiagInitCount) UPP::MemoryDumpLeaks(); }
 };
-static const MemDiagCls sMemDiagHelper;
+static const MemDiagCls sMemDiagHelper__upp__;
 //$+
 
 

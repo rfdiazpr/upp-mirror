@@ -184,7 +184,7 @@ DEBUG_LINKMODE = "1";
 DEBUG_OPTIONS = "-O0";
 RELEASE_BLITZ = "0";
 RELEASE_LINKMODE = "1";
-RELEASE_OPTIONS = "-O3 -ffunction-sections";
+RELEASE_OPTIONS = "-O3 -ffunction-sections -fno-inline-functions";
 RELEASE_SIZE_OPTIONS = "-Os -finline-limit=20";
 DEBUGGER = "gdb";
 PATH = "";

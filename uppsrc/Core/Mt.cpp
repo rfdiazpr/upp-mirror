@@ -194,13 +194,16 @@ static bool sSSE2 = CPU_SSE2();
 
 void ReadMemoryBarrier()
 {
+#ifdef CPU_AMD64
+	#ifdef COMPILER_MSC
+		_mm_lfence();
+	#else
+		__asm__("lfence");
+	#endif
+#else
 	if(sSSE2)
 	#ifdef COMPILER_MSC
-		#ifdef CPU_AMD64
-			_mm_lfence();
-		#else
-			__asm lfence;
-		#endif
+		__asm lfence;
 	#else
 		__asm__("lfence");
 	#endif
@@ -208,19 +211,28 @@ void ReadMemoryBarrier()
 		static Atomic x;
 		AtomicInc(x);
 	}
+#endif
 }
 
 void WriteMemoryBarrier() {
-	if(sSSE2)
+#ifdef CPU_AMD64
 	#ifdef COMPILER_MSC
-		#ifdef CPU_AMD64
-			_mm_sfence();
-  		#else
-			__asm sfence;
-		#endif
- 	#else
+		_mm_sfence();
+	#else
 		__asm__("sfence");
 	#endif
+#else
+	if(sSSE2)
+	#ifdef COMPILER_MSC
+		__asm sfence;
+	#else
+		__asm__("sfence");
+	#endif
+	else {
+		static Atomic x;
+		AtomicInc(x);
+	}
+#endif
 }
 
 #endif
@@ -270,9 +282,9 @@ void RWMutex::LeaveWrite()
 
 void RWMutex::EnterRead()
 {
-    LONG count = InterlockedDecrement ( &m_count );
-    if(count < 0)
-        WaitForSingleObject ( m_rdwset, INFINITE );
+	LONG count = InterlockedDecrement ( &m_count );
+	if(count < 0)
+		WaitForSingleObject ( m_rdwset, INFINITE );
 }
 
 void RWMutex::LeaveRead()
@@ -284,19 +296,19 @@ void RWMutex::LeaveRead()
 }
 
 RWMutex::RWMutex()
-        : m_count ( LONG_MAX ),
-        m_rdwake ( 0 ),
-        m_wrwset ( CreateEvent ( 0, FALSE, FALSE, 0 ) ),
-        m_rdwset ( CreateSemaphore ( 0, 0, LONG_MAX, 0 ) )
+:	m_count ( LONG_MAX ),
+	m_rdwake ( 0 ),
+	m_wrwset ( CreateEvent ( 0, FALSE, FALSE, 0 ) ),
+	m_rdwset ( CreateSemaphore ( 0, 0, LONG_MAX, 0 ) )
 {
-    InitializeCriticalSection ( &m_wrlock );
+	InitializeCriticalSection ( &m_wrlock );
 }
 
 RWMutex::~RWMutex()
 {
-    DeleteCriticalSection ( &m_wrlock );
-    CloseHandle ( m_rdwset );
-    CloseHandle ( m_wrwset );
+	DeleteCriticalSection ( &m_wrlock );
+	CloseHandle ( m_rdwset );
+	CloseHandle ( m_wrwset );
 }
 
 #endif
@@ -375,31 +387,22 @@ Semaphore::~Semaphore()
 void StaticMutex::Initialize()
 {
 	Mutex::Lock __(sMutexLock());
-	if(!section) {
-		Mutex *cs = new(buffer) Mutex;
-		WriteMemoryBarrier();
-		section = cs;
-	}
+	if(!ReadWithBarrier(section))
+		BarrierWrite(section, new(buffer) Mutex);
 }
 
 void StaticRWMutex::Initialize()
 {
 	Mutex::Lock __(sMutexLock());
-	if(!rw) {
-		RWMutex *cs = new(buffer) RWMutex;
-		WriteMemoryBarrier();
-		rw = cs;
-	}
+	if(!ReadWithBarrier(rw))
+		BarrierWrite(rw, new(buffer) RWMutex);
 }
 
 void StaticSemaphore::Initialize()
 {
 	Mutex::Lock __(sMutexLock());
-	if(!semaphore) {
-		Semaphore *cs = new(buffer) Semaphore;
-		WriteMemoryBarrier();
-		semaphore = cs;
-	}
+	if(!ReadWithBarrier(semaphore))
+		BarrierWrite(semaphore, new(buffer) Semaphore);
 }
 
 #endif

@@ -11,9 +11,9 @@ BETA_PATH="/home/massimo/sources/uppbeta"
 DEST_PATH="/home/massimo/sources/uppdeb"
 #
 # Mantainer name and email
-MANTAINER="Massimo Del Fedele"
+export MAINTAINER="Massimo Del Fedele"
 #
-EMAIL="max@veneto.com"
+export EMAIL="max@veneto.com"
 #################################################################
 #
 # checks if beta repo and destination path are ok

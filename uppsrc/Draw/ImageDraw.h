@@ -26,12 +26,12 @@ class ImageDraw : public Draw, NoCopy {
 	Image Get(bool pm) const;
 
 public:
-	Draw& Alpha();
+	Draw& Alpha();                       
 
 	operator Image() const;
-
+	
 	Image GetStraight() const;
-
+	
 	ImageDraw(Size sz);
 	ImageDraw(int cx, int cy);
 	~ImageDraw();

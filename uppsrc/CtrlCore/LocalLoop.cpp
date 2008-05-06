@@ -164,7 +164,7 @@ void RectTracker::MouseMove(Point, dword)
 			if (rect.right < rect.left) {
 				Swap(rect.right, rect.left);
 				rect.InflateHorz(1);
-			}
+			}	
 		}
 		if(ty == ALIGN_NULL) {
 			rect.bottom = min(org.bottom - op.y + p.y, maxrect.bottom);

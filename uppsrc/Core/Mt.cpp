@@ -200,7 +200,7 @@ void ReadMemoryBarrier()
 	#else
 		__asm__("lfence");
 	#endif
-#else
+#else	
 	if(sSSE2)
 	#ifdef COMPILER_MSC
 		__asm lfence;
@@ -221,7 +221,7 @@ void WriteMemoryBarrier() {
 	#else
 		__asm__("sfence");
 	#endif
-#else
+#else	
 	if(sSSE2)
 	#ifdef COMPILER_MSC
 		__asm sfence;

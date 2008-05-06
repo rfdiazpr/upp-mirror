@@ -1154,8 +1154,7 @@ void TreeCtrl::GotFocus()
 			if(m.ctrl && m.ctrl->SetWantFocus())
 				break;
 		}
-	else
-		RefreshLine(cursor);
+	RefreshLine(cursor);
 	if(GetSelectCount() > 1)
 		Refresh();
 	SyncInfo();

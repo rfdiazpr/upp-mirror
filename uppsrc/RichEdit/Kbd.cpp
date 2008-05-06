@@ -109,8 +109,20 @@ bool RichEdit::Key(dword key, int count)
 	case K_ESCAPE:
 		CloseFindReplace();
 		return false;
-	case K_CTRL_SPACE:
+	case K_CTRL_C:
+	case K_CTRL_INSERT:
+		Copy();
+		return true;
+	case K_CTRL_X:
+	case K_SHIFT_DELETE:
+		Cut();
+		return true;
+	case K_CTRL_V:
+	case K_SHIFT_INSERT:
+		Paste();
+		return true;
 	case K_SHIFT_CTRL_SPACE:
+	case K_CTRL_SPACE:
 		key = 160;
 	case K_TAB:
 		if(cursorp.table && cursorp.posintab == cursorp.tablen) {
@@ -121,9 +133,6 @@ bool RichEdit::Key(dword key, int count)
 			cursor = anchor = cursor + 1;
 			break;
 		}
-	case K_CTRL_C: case K_CTRL_INSERT:  Copy(); return true;
-	case K_CTRL_X: case K_SHIFT_DELETE: Cut(); return true;
-	case K_CTRL_V: case K_SHIFT_INSERT: Paste(); return true;
 	default:
 		if(key == K_SHIFT_SPACE)
 			key = ' ';

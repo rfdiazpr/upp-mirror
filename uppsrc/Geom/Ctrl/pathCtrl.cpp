@@ -92,7 +92,7 @@ static double CalcDecadicStep(double scale, int minfine, int mincoarse, int& fin
 		return Null;
 	}
 	int exp = ffloor(log10(mu));
-	double lo = pow(10, exp);
+	double lo = pow(10.0, exp);
 	int tc = (lo * 5 <= mu ? 5 : lo * 2 <= mu ? 2 : 1);
 	double mf = scale * lo * tc / minfine;
 	int tf = 1;

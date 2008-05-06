@@ -190,9 +190,11 @@ void Thread::Sleep(int msec)
 
 #ifdef CPU_X86
 
-static bool sSSE2 = CPU_SSE2();
+#ifndef CPU_SSE2
 
-void ReadMemoryBarrier()
+static bool sSSE2 = false; //CPU_SSE2();
+
+inline void ReadMemoryBarrier()
 {
 #ifdef CPU_AMD64
 	#ifdef COMPILER_MSC
@@ -200,7 +202,7 @@ void ReadMemoryBarrier()
 	#else
 		__asm__("lfence");
 	#endif
-#else	
+#else
 	if(sSSE2)
 	#ifdef COMPILER_MSC
 		__asm lfence;
@@ -221,7 +223,7 @@ void WriteMemoryBarrier() {
 	#else
 		__asm__("sfence");
 	#endif
-#else	
+#else
 	if(sSSE2)
 	#ifdef COMPILER_MSC
 		__asm sfence;
@@ -234,6 +236,7 @@ void WriteMemoryBarrier() {
 	}
 #endif
 }
+#endif
 
 #endif
 
@@ -260,6 +263,20 @@ Semaphore::~Semaphore()
 }
 
 Mutex& sMutexLock();
+
+
+typedef BOOL (WINAPI *TEC)(LPCRITICAL_SECTION lpCriticalSection);
+
+static TEC sTec;
+
+bool Mutex::TryEnter()
+{
+	if(!sTec) {
+		if(HMODULE hDLL = LoadLibrary("Kernel32"))
+			sTec = (TEC) GetProcAddress(hDLL, "TryEnterCriticalSection");
+	}
+	return (*sTec)(&section);
+}
 
 /* Win32 RWMutex implementation by Chris Thomasson, cristom@comcast.net */
 

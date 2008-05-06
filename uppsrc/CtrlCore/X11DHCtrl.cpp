@@ -295,6 +295,11 @@ void DHCtrl::Terminate(void)
 // State handler
 void DHCtrl::State(int reason)
 {
+	Window dummy;
+	int x, y;
+	unsigned int width, height, border, depth;
+	Rect r;
+
 	// No handling if in error state
 	if( isError)
 		return;
@@ -334,9 +339,16 @@ void DHCtrl::State(int reason)
 				break;
 
 			case POSITION   : // = 100,
-				break;
-
 			case LAYOUTPOS  : // = 101,
+				r = GetRectInParentWindow();
+				XGetGeometry(Xdisplay, top->window, &dummy, &x, &y, &width, &height, &border, &depth);
+				if( (x != r.left || y != r.top) && ((int)width == r.Width() && (int)height == r.Height()))
+					XMoveWindow(Xdisplay, top->window, r.left, r.top);
+				else if( (x == r.left || y == r.top) && ((int)width != r.Width() || (int)height != r.Height()))
+					XResizeWindow(Xdisplay, top->window, r.Width(), r.Height());
+				else if( x != r.left || y != r.top || (int)width != r.Width() || (int)height != r.Height())
+					XMoveResizeWindow(Xdisplay, top->window, r.left, r.top, r.Width(), r.Height());
+
 				break;
 
 			default:

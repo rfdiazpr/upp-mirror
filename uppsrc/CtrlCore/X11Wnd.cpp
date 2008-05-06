@@ -162,7 +162,7 @@ Rect Ctrl::GetRectInParentWindow(void) const
 		q = q->parent;
 	}
 	if(q)
-		r += q->GetScreenView() - q->GetScreenRect() ;
+		r += q->GetScreenView().TopLeft() - q->GetScreenRect().TopLeft() ;
 	return r;
 
 }

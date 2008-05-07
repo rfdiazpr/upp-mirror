@@ -158,12 +158,16 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 			LLOG("Key Xeventtime: " << Xeventtime << " count:" << count);
 			KeySym keysym;
 			int    chr = 0;
+			WString wtext;
 			if(pressed && w.xic) {
 				Status status;
 				int len = Xutf8LookupString(w.xic, &event->xkey, buff, sizeof(buff), &keysym, &status);
 				buff[len] = 0;
-				if(status == XLookupChars || status == XLookupBoth)
-				    chr = FromUtf8(buff, len)[0];
+				if(status == XLookupChars || status == XLookupBoth) {
+					chr = FromUtf8(buff, len)[0];
+					if(status == XLookupChars)
+						wtext = FromUtf8(buff, len);
+				}
 				else
 				if(status != XLookupKeySym && status != XLookupBoth)
 				    keysym = 0;
@@ -260,8 +264,11 @@ void Ctrl::EventProc(XWindow& w, XEvent *event)
 
 			if((chr == 32 || chr == 9 || chr == 13) && !pressed)
 				DispatchKey(chr|K_KEYUP, count);
-			if(chr && pressed)
+			if(chr && pressed) {
 				DispatchKey(chr, count);
+				for(int ii = 1; ii < wtext.GetLength(); ii++)
+					DispatchKey(wtext[ii], count);
+			}
 		}
 		break;
 	case ButtonPress: {

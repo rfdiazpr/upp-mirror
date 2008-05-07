@@ -168,7 +168,6 @@ Rect Ctrl::GetRectInParentWindow(void) const
 }
 // 01/12/2007 - END
 
-
 bool Ctrl::HookProc(XEvent *event) { return false; }
 
 void DnDRequest(XSelectionRequestEvent *se);

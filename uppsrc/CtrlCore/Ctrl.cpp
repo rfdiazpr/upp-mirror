@@ -318,7 +318,6 @@ bool Ctrl::IsModified() const
 
 void Ctrl::SetCaret(int x, int y, int cx, int cy)
 {
-//	DLOG("SetCaret " << x << ", " << y << ", " << cx << ", " << cy);
 	caretx = x;
 	carety = y;
 	caretcx = cx;
@@ -327,11 +326,15 @@ void Ctrl::SetCaret(int x, int y, int cx, int cy)
 
 void Ctrl::SetCaret(const Rect& r)
 {
-//	DLOG("SetCaret " << r);
 	caretx = r.left;
 	carety = r.top;
 	caretcx = r.GetWidth();
 	caretcy = r.GetHeight();
+}
+
+Rect Ctrl::GetCaret() const
+{
+	return RectC(caretx, carety, caretcx, caretcy);
 }
 
 void Ctrl::KillCaret()
@@ -568,6 +571,7 @@ Ctrl::Ctrl() {
 	modify = false;
 	unicode = false;
 	popupgrab = false;
+	fullrefresh = false;
 }
 
 void KillTimeCallbacks(void *id, void *idlim);

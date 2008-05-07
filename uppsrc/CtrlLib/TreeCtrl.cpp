@@ -350,9 +350,9 @@ void   TreeCtrl::Clear()
 	item[0].parent = -1;
 	item[0].canopen = true;
 	freelist = -1;
+	selectcount = 0;
 	Dirty();
 	cursor = anchor = -1;
-	selectcount = 0;
 }
 
 void TreeCtrl::RemoveCtrls(int itemi)

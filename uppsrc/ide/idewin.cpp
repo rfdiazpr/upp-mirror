@@ -430,6 +430,8 @@ Ide::Ide()
 	SetBar();
 	WhenClose = THISBACK(Exit);
 
+	toolbar_in_row = false;
+
 	editorsplit.Vert(editor, editor2);
 	editorsplit.Zoom(0);
 	SyncEditorSplit();

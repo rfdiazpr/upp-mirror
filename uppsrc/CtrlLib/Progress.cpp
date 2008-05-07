@@ -123,6 +123,7 @@ ProgressIndicator::ProgressIndicator() {
 	total = actual = 0;
 	percent = false;
 	color = Null;
+	pxp = 0;
 }
 
 ProgressIndicator::~ProgressIndicator() {}

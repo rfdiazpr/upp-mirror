@@ -972,6 +972,9 @@ void CodeEditor::PutI(WithDropChoice<EditString>& edit)
 }
 
 CodeEditor::CodeEditor() {
+	bracket_flash = true;
+	highlight_bracket_pos0 = 0;
+	bracket_start = 0;
 	stat_edit_time = 0;
 	last_key_time = Null;
 	CtrlLayout(findreplace);

@@ -1131,6 +1131,7 @@ public:
 
 	void    SetCaret(int x, int y, int cx, int cy);
 	void    SetCaret(const Rect& r);
+	Rect    GetCaret() const;
 	void    KillCaret();
 
 	static Ctrl *GetFocusCtrl()                { return FocusCtrl(); }

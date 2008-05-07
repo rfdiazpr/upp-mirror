@@ -176,8 +176,8 @@ int CharFilterFileName(int c)
 
 BuildMethods::BuildMethods()
 :	path("PATH - executable directories"),
-	include("INCLUDE - directories for include files"),
-	lib("LIB - directories for library files")
+	include("INCLUDE directories"),
+	lib("LIB directories")
 {
 	CtrlLayoutOKCancel(*this, "Build methods");
 	method.AddColumn("Method").Edit(name);
@@ -229,7 +229,7 @@ BuildMethods::BuildMethods()
 
 	builder <<= THISBACK(NewBuilder);
 	setdefault <<= THISBACK(SetDefault);
-	
+
 	linkmode_lock.SetLabel("Lock link mode");
 }
 

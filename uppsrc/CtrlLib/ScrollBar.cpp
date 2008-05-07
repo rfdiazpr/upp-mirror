@@ -63,6 +63,7 @@ ScrollBar::ScrollBar() {
 	next2.ScrollStyle().NoWantFocus().Transparent();
 	next2.WhenRepeat = next.WhenRepeat;
 	next2.WhenPush = next.WhenPush;
+	style = NULL;
 	SetStyle(StyleDefault());
 	BackPaint();
 }

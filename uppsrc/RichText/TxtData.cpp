@@ -401,6 +401,7 @@ bool RichTxt::Iterate(Iterator& r, int gpos, const RichStyles& s) const
 void RichTxt::Init()
 {
 	r_type = ALL;
+	r_parti = 0;
 	tabcount = length = 0;
 }
 

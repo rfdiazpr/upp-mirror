@@ -26,6 +26,7 @@ inline const wchar *strnext(const wchar *p, const wchar *end, int ch) {
 }
 
 void CodeEditor::SyntaxState::Clear() {
+	spar = 0;
 	line = cl = bl = pl = 0;
 	linecont = linecomment = comment = string = false;
 	macro = MACRO_OFF;

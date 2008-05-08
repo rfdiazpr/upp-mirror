@@ -236,18 +236,18 @@ DropList& DropList::AlwaysDrop(bool e)
 
 DropList::DropList()
 {
-	list.Normal();
-	list.WhenSelect = THISBACK(Select);
-	list.WhenCancel = THISBACK(Cancel);
 	displayall = false;
 	valueconvert = &NoConvert();
 	valuedisplay = NULL;
 	dropfocus = false;
 	notnull = false;
 	alwaysdrop = false;
+	AddButton().Main().WhenPush = THISBACK(Drop);
 	NoInitFocus();
 	EnableDrop(false);
-	AddButton().Main().WhenPush = THISBACK(Drop);
+	list.Normal();
+	list.WhenSelect = THISBACK(Select);
+	list.WhenCancel = THISBACK(Cancel);
 }
 
 DropList::~DropList() {}

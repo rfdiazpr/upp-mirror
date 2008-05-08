@@ -482,7 +482,7 @@ void TabBar::TabCenter(Point &p, const Size &sz, int h)
 		p.x += (sz.cx - h) / 2 * ((GetAlign() == LEFT) ? 1 : -1);	
 }
 
-void TabBar::DrawTabData(Draw& w, Point p, const Size &sz, const Value& q, const Font &font, Color ink, dword style)
+void TabBar::PaintTabData(Draw& w, Point p, const Size &sz, const Value& q, const Font &font, Color ink, dword style)
 {
 	WString txt;
 	Font f = font;
@@ -502,7 +502,7 @@ void TabBar::DrawTabData(Draw& w, Point p, const Size &sz, const Value& q, const
 	w.DrawText(p.x, p.y, TextAngle(), txt, f, i);	
 }
 
-void TabBar::DrawTab(Draw &w, const Style &s, const Size &sz, int n, bool enable)
+void TabBar::PaintTab(Draw &w, const Style &s, const Size &sz, int n, bool enable)
 {
 	TabBar::Tab &t = tabs[n];
 	int cnt = tabs.GetCount();
@@ -565,11 +565,12 @@ void TabBar::DrawTab(Draw &w, const Style &s, const Size &sz, int n, bool enable
 	if (display)
 		display->Paint(w, Rect(p, tsz),	t.data, s.text_color[ndx], SColorDisabled(), ndx);
 	else {
-		DrawTabData(w, p, tsz,
+		PaintTabData(w, p, tsz,
 			t.data, s.font,
 			s.text_color[ndx], ndx);
 	}		
 }
+
 void TabBar::Paint(Draw &w)
 {
 	const Style &st = *style[GetAlign()];
@@ -582,18 +583,24 @@ void TabBar::Paint(Draw &w)
 		w.DrawRect(0, (GetAlign() == TOP) ? sz.cy - 1 : 1, sz.cx, 1, Color(128, 128, 128));	
 
 	if (!tabs.GetCount()) return;
-	int cxy = IsVert() ? sz.cy : sz.cx;
-	for(int i = 0; i < tabs.GetCount(); i++)
-		if(tabs[i].visible && i != active) {
-			DrawTab(w, st, sz, i, IsEnabled());
-			if (tabs[i].x > cxy) break;
-		}
+	
+	int limt = sc.GetPos() + (IsVert() ? sz.cy : sz.cx);
+	for(int i = 0; i < tabs.GetCount(); i++) {
+		Tab &tab = tabs[i]; 
+		if(tab.visible && i != active 
+			&& tab.x < limt && tab.x + tab.cx > sc.GetPos())
+			PaintTab(w, st, sz, i, IsEnabled());
+	}
 	if (inactiveshadow)
-		for(int i = 0; i < tabs.GetCount() && tabs[i].x < cxy; i++)
-			if(!tabs[i].visible && i != active)
-				DrawTab(w, st, sz, i, false);			
+		for(int i = 0; i < tabs.GetCount(); i++) {
+			Tab &tab = tabs[i]; 
+			if(!tab.visible && i != active 
+				&& tab.x < limt && tab.x + tab.cx > sc.GetPos())
+				PaintTab(w, st, sz, i, IsEnabled());
+		}
+				
 	if(active >= 0)
-		DrawTab(w, st, sz, active, true);
+		PaintTab(w, st, sz, active, true);
 
 	if(target >= 0)
 	{
@@ -610,7 +617,7 @@ void TabBar::Paint(Draw &w)
 				img.DrawRect(tsz, SColorFace());
 				Point temp = Point(tab.x, tab.y);
 				tab.x = tab.y = 0;
-				DrawTab(img, st, sz, dragtab, true);
+				PaintTab(img, st, sz, dragtab, true);
 				dragimg = img;
 				tab.x = temp.x;
 				tab.y = temp.y;
@@ -758,8 +765,11 @@ void TabBar::SyncScrollBar(int total)
 		bool v = GetFrameSize() > h;
 		bool nv = sc.IsScrollable();
 		sc.Show(nv);
-		if (v != nv) 
-			SetFrameSize((nv ? sc.GetFrameSize() : 0) + h, false);		
+		if (v != nv) {
+			SetFrameSize((nv ? sc.GetFrameSize() : 0) + h, false);	
+			RefreshParentLayout();
+		}
+			
 	}
 	else
 		sc.Show();
@@ -1178,6 +1188,12 @@ const TabBar::Style& TabBar::AlignStyle(int align, Style &s)
 	for (int i = 0; i < 4; i++) s.normal[i] =  	AlignValue(align, s.normal[i], sz);
 	for (int i = 0; i < 4; i++) s.both[i] =  	AlignValue(align, s.both[i], sz);
 	return s;
+}
+
+CH_STYLE(TabBar, Style, StyleDefault)
+{
+	Assign(TabCtrl::StyleDefault());
+	TabBar::ResetStyles();
 }
 
 const TabBar::Style& TabBar::StyleLeft()

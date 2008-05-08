@@ -160,7 +160,7 @@ private:
 	static Style leftstyle, rightstyle, bottomstyle;
 	const Style *style[4];
 	
-	void DrawTab(Draw &w, const Style &s, const Size &sz, int i, bool enable);
+	void PaintTab(Draw &w, const Style &s, const Size &sz, int i, bool enable);
 	int  TabPos(const String &g, bool &first, int i, int j, bool inactive);	
 	void SyncScrollBar(int total);
 	void Scroll();
@@ -206,7 +206,7 @@ protected:
 	void NewGroup(const String &name, const Value &data = Value());
 
 	// Sub-class display overide & helpers
-	virtual void DrawTabData(Draw& w, Point p, const Size &sz, const Value& q, const Font &font, 
+	virtual void PaintTabData(Draw& w, Point p, const Size &sz, const Value& q, const Font &font, 
 		Color ink, dword style);
 	virtual Size GetStdSize(Value &q); 
 

@@ -152,7 +152,7 @@ public:
 
 	DockWindow &	AnimateDelay(int ms)			{ animdelay = max(ms, 0); return *this; }
 	DockWindow &	Animate(bool highlight = true, bool window = true, int ticks = 10, int interval = 20);
-	DockWindow &	NoAnimate()						{ return Animate(false); }
+	DockWindow &	NoAnimate()						{ return Animate(false, false); }
 	bool			IsAnimated() const				{ return animatehl || animatewnd; }
 	bool			IsAnimatedWindows() const		{ return animatehl; }
 	bool			IsAnimatedHighlight() const		{ return animatewnd; }

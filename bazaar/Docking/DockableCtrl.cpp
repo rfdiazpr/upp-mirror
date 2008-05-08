@@ -117,7 +117,7 @@ Image StandardHighlight(Color inside, Color border)
 Image AlphaHighlight(const Image &img, int alpha)
 {
 	ImageDraw draw(img.GetSize());
-	draw.Alpha().DrawRect(img.GetSize(), Color(alpha, alpha, alpha));
+	draw.Alpha().DrawRect(img.GetSize(), GrayColor(alpha));
 	draw.DrawImage(0, 0, img);
 	// Is there a better way to set hotspots than this?
 	Image temp = (Image)draw; // GCC

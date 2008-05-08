@@ -20,7 +20,7 @@ void DockTabBar::FrameAddSize(Size& sz)
 		TabBar::FrameAddSize(sz);
 }
 
-void DockTabBar::DrawTabData(Draw& w, Point p, const Size &sz, const Value& q, const Font &font, Color ink, dword style)
+void DockTabBar::PaintTabData(Draw& w, Point p, const Size &sz, const Value& q, const Font &font, Color ink, dword style)
 {
 	DockableCtrl *d;
 	WString txt;
@@ -325,11 +325,5 @@ void AutoHideBar::HidePopup::ChildMouseEvent(Ctrl *child, int event, Point p, in
 		WhenLeave();
 	else if (event != MOUSEMOVE) 
 		WhenEnter();
-}
-
-CH_STYLE(TabBar, Style, StyleDefault)
-{
-	Assign(TabCtrl::StyleDefault());
-	TabBar::ResetStyles();
 }
 

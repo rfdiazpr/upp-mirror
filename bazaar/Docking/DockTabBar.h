@@ -31,7 +31,7 @@ protected:
 	bool icons:1;
 //	PasteClip *clip;
 	
-	virtual void DrawTabData(Draw& w, Point p, const Size &sz, const Value& q, const Font &font, 
+	virtual void PaintTabData(Draw& w, Point p, const Size &sz, const Value& q, const Font &font, 
 		Color ink, dword style);
 	virtual Size GetStdSize(Value &q); 	
 

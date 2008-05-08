@@ -21,6 +21,7 @@ file
 	DockTabBar.cpp,
 	Docking.iml,
 	Docking.lay,
+	src.tpp,
 	Docking.t;
 
 mainconfig

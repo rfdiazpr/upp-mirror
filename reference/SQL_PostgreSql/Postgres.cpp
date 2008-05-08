@@ -31,7 +31,7 @@ bool PostgreSQLTest::OpenDB()
 	//schema
 	Progress p;
 	p.SetText(t_("Creating _DEBUG database"));
-	SqlSchema sch(POSTGRESS);
+	SqlSchema sch(PGSQL);
 	StdStatementExecutor se(m_session);
 	All_Tables(sch);
 	if(sch.ScriptChanged(SqlSchema::UPGRADE))

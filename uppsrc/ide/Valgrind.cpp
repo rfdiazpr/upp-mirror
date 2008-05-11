@@ -17,7 +17,7 @@ void Ide::Valgrind()
 	h->ChDir(Nvl(rundir, GetFileFolder(target)));
 	String cmdline;
 	String fn = GetTempFileName();
-	cmdline << "valgrind --xml=yes --num-callers=40 --log-file-exactly=" << fn << ' ';
+	cmdline << "valgrind --xml=yes --num-callers=40 --log-file=" << fn << ' ';
 	cmdline << '\"' << h->GetHostPath(target) << "\" ";
 	cmdline << runarg;
 	ConsoleClear();

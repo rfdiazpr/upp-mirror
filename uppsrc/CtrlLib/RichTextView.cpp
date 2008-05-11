@@ -377,8 +377,6 @@ void LinkInRichTextClipboard__();
 
 RichTextView::RichTextView()
 {
-	SetFrame(ViewFrame());
-	AddFrame(sb);
 	cx = 3968;
 	sizetracking = false;
 	sb.SetLine(100);
@@ -390,8 +388,10 @@ RichTextView::RichTextView()
 	highlight = -1;
 	hldec = true;
 	WhenLink = callback(LaunchWebBrowser);
-	NoWantFocus();
 	anchor = cursor = sell = selh = 0;
+	SetFrame(ViewFrame());
+	AddFrame(sb);
+	NoWantFocus();
 }
 
 RichTextView::~RichTextView() {}

@@ -44,8 +44,11 @@ void *MAlloc_Get(MCache& m, int k);
 void  MFree_Reduce(MCache& m, int k);
 
 #define NKLASS      16
+
 #define CACHEMAX    31
 #define CACHERES    15
+
+#define CACHETH     9
 
 void FreeFill(dword *ptr, int count);
 void FreeCheck(dword *ptr, int count);
@@ -54,6 +57,26 @@ void  *SysAllocRaw(size_t size);
 void   SysFreeRaw(void *ptr, size_t size);
 
 void  *AllocRaw64KB();
+
+extern MemoryProfile *sPeak;
+extern bool sWasPeak;
+
+inline void sDoPeakProfile()
+{
+	if(sWasPeak) {
+		*sPeak = MemoryProfile();
+		sWasPeak = false;
+	}
+}
+
+inline void sHeapStat(int k)
+{
+#ifdef flagHEAPSTAT
+	extern int sHeapStats[16];
+	INTERLOCKED
+		sHeapStats[k]++;
+#endif
+}
 
 void  *LAlloc(size_t& size);
 void   LFree(void *ptr);

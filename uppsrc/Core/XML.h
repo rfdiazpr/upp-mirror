@@ -69,7 +69,9 @@ public:
 	bool   IsTag();
 	String ReadTag();
 	bool   Tag(const char *tag);
+	bool   Tag(const String& tag);
 	void   PassTag(const char *tag);
+	void   PassTag(const String& tag);
 	bool   IsEnd();
 	bool   End();
 	void   PassEnd();

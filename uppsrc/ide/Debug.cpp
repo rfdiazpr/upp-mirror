@@ -133,7 +133,7 @@ void Ide::BuildAndDebug0(const String& srcfile)
 		else
 			h->Launch('\"' + dbg + "\" \""
 //			          + h->GetHostPath(srcfile) + ' '
-			          + h->GetHostPath(target) + "\"");
+			          + h->GetHostPath(target) + "\"", true);
 	}
 }
 

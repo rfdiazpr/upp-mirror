@@ -153,8 +153,16 @@ void    PanicMessageBox(const char *title, const char *text);
 #define MK__s            MK__s_(__LINE__)
 #endif
 
+#ifdef flagCHECKINIT
+void InitBlockBegin__(const char *fn, int line);
+void InitBlockEnd__(const char *fn, int line);
+#else
+inline void InitBlockBegin__(const char *, int) {}
+inline void InitBlockEnd__(const char *, int) {}
+#endif
+
 struct Callinit {
-	Callinit(void (*fn)()) { fn(); }
+	Callinit(void (*fn)(), const char *cpp, int line) { InitBlockBegin__(cpp, line); fn(); InitBlockEnd__(cpp, line); }
 };
 
 struct Callexit {
@@ -164,15 +172,15 @@ struct Callexit {
 
 // deprecated, use INITBLOCK
 #define INITCODE(x) \
-static void COMBINE(MK__s, _fn)() { x } static UPP::Callinit MK__s(COMBINE(MK__s, _fn));
+static void COMBINE(MK__s, _fn)() { x } static UPP::Callinit MK__s(COMBINE(MK__s, _fn), __FILE__, __LINE__);
 
 
 #define INITBLOCK \
-static void COMBINE(MK__s, _fn)(); static UPP::Callinit MK__s(COMBINE(MK__s, _fn)); \
+static void COMBINE(MK__s, _fn)(); static UPP::Callinit MK__s(COMBINE(MK__s, _fn), __FILE__, __LINE__); \
 static void COMBINE(MK__s, _fn)()
 
 #define INITBLOCK_(x) \
-static void COMBINE(x, _fn)(); static UPP::Callinit x(COMBINE(x, _fn)); \
+static void COMBINE(x, _fn)(); static UPP::Callinit x(COMBINE(x, _fn), __FILE__, __LINE__); \
 static void COMBINE(x, _fn)()
 
 
@@ -274,9 +282,9 @@ typedef uint64             qword;
 #define init_
 
 #ifdef COMPILER_MSC
-#define thread__ __declspec(thread) 
+#define thread__ __declspec(thread)
 #else
-#define thread__ __thread 
+#define thread__ __thread
 #endif
 
 #define BINARY(i, f) \
@@ -349,7 +357,7 @@ enum MemoryProbeFlags {
 	MEMORY_PROBE_SUMMARY = 16,
 };
 
-#ifdef _DEBUG
+#ifdef HEAPDBG
 void  MemoryIgnoreLeaksBegin();
 void  MemoryIgnoreLeaksEnd();
 
@@ -420,10 +428,10 @@ struct MemoryIgnoreLeaksBlock {
 };
 
 #ifdef CPU_X86
-bool CPU_MMX();
-bool CPU_SSE();
-bool CPU_SSE2();
-bool CPU_SSE3();
+bool CpuMMX();
+bool CpuSSE();
+bool CpuSSE2();
+bool CpuSSE3();
 #endif
 
 int  CPU_Cores();

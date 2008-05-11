@@ -6,12 +6,9 @@ protected:
 	int      items;
 	int      alloc;
 
-//	int      Ix(int i)               { i += start; if(i >= alloc) i -= alloc; return i; }
-//	int      Ix(int i)               { return (start + i) % alloc; }
-//	int      Ix(int i) const         { return i < alloc - start ? i + start : i + start - alloc; }
 	int      Ix(int i) const         { return i + start < alloc ? i + start : i + start - alloc; }
 
-	int      EI() const              { return /*(start + items - 1) % alloc;*/Ix(items - 1); }
+	int      EI() const              { return Ix(items - 1); }
 	void     ReAlloc(int newalloc);
 	void     Add0();
 	void     DeepCopy0(const BiVector& src);
@@ -37,16 +34,10 @@ public:
 	T&       Tail()                  { ASSERT(items > 0); return vector[EI()]; }
 	const T& Head() const            { ASSERT(items > 0); return vector[start]; }
 	const T& Tail() const            { ASSERT(items > 0); return vector[EI()]; }
-	void     DropHead()              { (&Head())->T::~T(); items--; start = Ix(1)/*(start + 1) % alloc*/; }
+	void     DropHead()              { (&Head())->T::~T(); items--; start = Ix(1); }
 	void     DropTail()              { (&Tail())->T::~T(); items--; }
-
-/*
-	T&       operator[](int i)       { ASSERT(i >= 0 && i < items);
-	                                   return vector[(start + i) % alloc]; }
-	const T& operator[](int i) const { ASSERT(i >= 0 && i < items);
-	                                   return vector[(start + i) % alloc]; }
-*/
-	T&       operator[](int i)       { ASSERT(i >= 0 && i < items); return vector[Ix(i)]; }
+	void     DropHead(int n)         { while(n-- > 0) DropHead(); }
+	void     DropTail(int n)         { while(n-- > 0) DropTail(); }
 	const T& operator[](int i) const { ASSERT(i >= 0 && i < items); return vector[Ix(i)]; }
 	void     Shrink();
 	void     Reserve(int n);

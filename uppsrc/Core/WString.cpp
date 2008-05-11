@@ -8,6 +8,7 @@ NAMESPACE_UPP
 
 static inline void *MAlloc_WS()
 {
+	sHeapStat(2);
 	MCache& m = mcache[2];
 	FreeLink *l = m.list;
 	if(l) {
@@ -33,8 +34,13 @@ static inline void MFree_WS(void *ptr)
 	FreeFill((dword *)ptr + 1, 48 / 4 - 1);
 #endif
 #endif
+#ifdef ACSIZE
+	if(++m.count > 240)
+		MFree_Reduce(m, 2);
+#else
 	if(++m.count > CACHEMAX)
 		MFree_Reduce(m, 2);
+#endif
 }
 
 #else
@@ -83,9 +89,7 @@ wchar *WString0::Insert(int pos, int count, const wchar *s)
 {
 	ASSERT(pos >= 0 && count >= 0 && pos <= GetCount());
 	int newlen = length + count;
-	if(newlen < alloc && !IsShared()) {
-		if(s >= ptr + pos && s <= ptr + length)
-			s += count;
+	if(newlen < alloc && !IsShared() && (!s || s < ptr || s > ptr + length)) {
 		if(pos < length)
 			memmove(ptr + pos + count, ptr + pos, (length - pos) * sizeof(wchar));
 		length = newlen;

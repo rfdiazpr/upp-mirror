@@ -2264,9 +2264,6 @@ void ArrayCtrl::SerializeSettings(Stream& s)
 
 
 void ArrayCtrl::Reset() {
-	Clear();
-	linecy = Draw::GetStdFontCy();
-	sb.SetLine(linecy);
 	header.Reset();
 	idx.Clear();
 	column.Clear();
@@ -2299,6 +2296,9 @@ void ArrayCtrl::Reset() {
 	sortcolumn = -1;
 	allsorting = false;
 	acceptingrow = 0;
+	linecy = Draw::GetStdFontCy();
+	Clear();
+	sb.SetLine(linecy);
 }
 
 void ArrayCtrl::CancelMode()

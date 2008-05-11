@@ -13,4 +13,5 @@
 #include "plugin\bz2/init"
 #include "HexView/init"
 #include "art\BlueBar/init"
+#include "plugin/astyle/init"
 #endif

@@ -467,6 +467,9 @@ Iml::Iml(const Image::Init *img_init, const char **name, int n)
 :	img_init(img_init),
 	name(name)
 {
+#ifdef flagCHECKINIT
+	RLOG("Constructing iml " << *name);
+#endif
 	premultiply = true;
 	Init(n);
 }
@@ -490,6 +493,9 @@ static VectorMap<String, Iml *>& sImgMap()
 
 void Register(const char *imageclass, Iml& list)
 {
+#ifdef flagCHECKINIT
+	RLOG("Registering iml " << imageclass);
+#endif
 	INTERLOCKED_(sImgMapLock)
 		sImgMap().GetAdd(imageclass) = &list;
 }

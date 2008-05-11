@@ -12,7 +12,8 @@ void TopWindow::SyncSizeHints()
 	Size max = GetMaxSize();
 	if(!sizeable)
 		min = max = GetRect().Size();
-	if(min != xminsize || max != xmaxsize) {
+	Window w = GetWindow();
+	if(w && (min != xminsize || max != xmaxsize)) {
 		xminsize = min;
 		xmaxsize = max;
 		size_hints->min_width = min.cx;
@@ -20,9 +21,7 @@ void TopWindow::SyncSizeHints()
 		size_hints->max_width = max.cx;
 		size_hints->max_height = max.cy;
 		size_hints->flags = PMinSize|PMaxSize;
-		Window w = GetWindow();
-		if(w)
-			XSetWMNormalHints(Xdisplay, w, size_hints);
+		XSetWMNormalHints(Xdisplay, w, size_hints);
 	}
 }
 

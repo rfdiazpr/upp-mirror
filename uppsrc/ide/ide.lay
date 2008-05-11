@@ -323,15 +323,16 @@ LAYOUT(AddLangLayout, 148, 68)
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).LeftPosZ(76, 64).TopPosZ(36, 24))
 END_LAYOUT
 
-LAYOUT(XInstallLayout, 336, 164)
+LAYOUT(XInstallLayout, 336, 176)
 	ITEM(Option, uppsrc, SetLabel(t_("Create user copy of uppsrc package (Ultimate++)")).LeftPosZ(8, 320).TopPosZ(8, 17))
 	ITEM(Option, reference, SetLabel(t_("Create user copy of reference package (reference examples)")).LeftPosZ(8, 320).TopPosZ(28, 17))
 	ITEM(Option, tutorial, SetLabel(t_("Create user copy of tutorials package")).LeftPosZ(8, 320).TopPosZ(68, 17))
 	ITEM(Option, examples, SetLabel(t_("Create user copy of examples package")).LeftPosZ(8, 320).TopPosZ(48, 17))
-	ITEM(Button, ok, SetLabel(t_("OK")).LeftPosZ(196, 64).TopPosZ(128, 24))
-	ITEM(Button, cancel, SetLabel(t_("Cancel")).LeftPosZ(264, 64).TopPosZ(128, 24))
-	ITEM(EditField, path, LeftPosZ(84, 244).TopPosZ(96, 17))
-	ITEM(Label, out, SetLabel(t_("Output Folder:")).LeftPosZ(8, 76).TopPosZ(96, 17))
+	ITEM(Button, ok, SetLabel(t_("OK")).LeftPosZ(196, 64).TopPosZ(144, 24))
+	ITEM(Button, cancel, SetLabel(t_("Cancel")).LeftPosZ(264, 64).TopPosZ(144, 24))
+	ITEM(EditField, path, LeftPosZ(84, 244).TopPosZ(116, 17))
+	ITEM(Label, out, SetLabel(t_("Output Folder:")).LeftPosZ(4, 76).TopPosZ(116, 17))
+	ITEM(Option, bazaar, SetLabel(t_("Create user copy of bazaar package")).LeftPosZ(8, 320).TopPosZ(88, 16))
 END_LAYOUT
 
 LAYOUT(StatLayout, 732, 552)

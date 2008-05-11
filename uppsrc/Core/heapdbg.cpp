@@ -6,7 +6,7 @@ NAMESPACE_UPP
 
 int sMemDiagInitCount = 0;
 
-#if defined(_DEBUG) && defined(UPP_HEAP)
+#if defined(HEAPDBG) && defined(UPP_HEAP)
 
 extern bool PanicMode;
 void HeapPanic(const char *text, void *pos, int size);

@@ -129,7 +129,7 @@ static void *sDivideBlock(MLink *b, int size, int ii)
 static StaticCriticalSection llock;
 
 void *LAlloc(size_t& size) {
-	CriticalSection::Lock __(llock);
+	llock.Enter();
 	static bool inited;
 	if(!inited) {
 		sLInit();
@@ -146,6 +146,7 @@ void *LAlloc(size_t& size) {
 		MHeader *h = (MHeader *)((byte *)b + 32);
 		h->size = 0;
 		h->free = false;
+		llock.Leave();
 		return (byte *)b + 40;
 	}
 	LTIMING("Large alloc");
@@ -157,15 +158,22 @@ void *LAlloc(size_t& size) {
 	while(ii < LBINS) {
 		MLink *b = &s_freebin[ii];
 		MLink *n = b->next;
-		if(b != n)
-			return sDivideBlock(n, (int)size, ii);
+		if(b != n) {
+			void *ptr = sDivideBlock(n, (int)size, ii);
+			llock.Leave();
+			sDoPeakProfile();
+			return ptr;
+		}
 		ii++;
 	}
 
 	MLink *n = sAddChunk();
 	if(!n)
 		Panic("Out of memory!");
-	return n ? sDivideBlock(n, (int)size, LBINS - 1) : NULL;
+	void *ptr = sDivideBlock(n, (int)size, LBINS - 1);
+	llock.Leave();
+	sDoPeakProfile();
+	return ptr;
 }
 
 void LFree(void *ptr) {

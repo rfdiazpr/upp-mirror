@@ -836,6 +836,8 @@ public:
 		void  BuildAndDebug(bool runto);
 		void  BuildAndExtDebug();
 		void  BuildAndExtDebugFile();
+		bool  IsValgrind();
+		void  Valgrind();
 
 		void  StartDebug();
 		void  StopDebug();

@@ -198,6 +198,9 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 		if(opt == R_SPEED || pkg.optimize_speed)
 			cc = cc_speed;
 	}
+	
+	if(HasFlag("SSE2"))
+		cc << " /arch:SSE2";
 
 	Vector<String> sfile, isfile;
 	Vector<String> soptions, isoptions;

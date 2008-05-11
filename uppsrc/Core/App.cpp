@@ -339,7 +339,7 @@ void    LaunchWebBrowser(const String& url)
 #endif
 #ifdef PLATFORM_POSIX
 	const char * browser[] = {
-		"htmlview", "x-www-browser", "firefox", "konqueror", "opera", "epiphany", "galeon", "netscape"
+		"htmlview", "xdg-open", "x-www-browser", "firefox", "konqueror", "opera", "epiphany", "galeon", "netscape"
 	};
 	for(int i = 0; i < __countof(browser); i++)
 		if(system("which " + String(browser[i])) == 0) {

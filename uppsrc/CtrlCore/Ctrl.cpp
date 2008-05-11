@@ -572,6 +572,7 @@ Ctrl::Ctrl() {
 	unicode = false;
 	popupgrab = false;
 	fullrefresh = false;
+	akv = false;
 }
 
 void KillTimeCallbacks(void *id, void *idlim);

@@ -169,6 +169,9 @@ void Value::Serialize(Stream& s) {
 }
 
 void Value::Register(dword w, Void* (*c)(Stream& s)) init_ {
+#ifdef flagCHECKINIT
+	RLOG("Register valuetype " << w);
+#endif
 	AssertST();
 	ASSERT(w != UNKNOWN_V);
 	ASSERT(w < 0x8000000);

@@ -51,10 +51,10 @@ INITBLOCK {
 //	sCheckCPU();
 }
 
-bool CPU_MMX()  { sCheckCPU(); return sHasMMX; }
-bool CPU_SSE()  { sCheckCPU(); return sHasSSE; }
-bool CPU_SSE2() { sCheckCPU(); return sHasSSE2; }
-bool CPU_SSE3() { sCheckCPU(); return sHasSSE3; }
+bool CpuMMX()  { sCheckCPU(); return sHasMMX; }
+bool CpuSSE()  { sCheckCPU(); return sHasSSE; }
+bool CpuSSE2() { sCheckCPU(); return sHasSSE2; }
+bool CpuSSE3() { sCheckCPU(); return sHasSSE3; }
 
 #ifdef PLATFORM_POSIX
 #ifdef PLATFORM_FREEBSD

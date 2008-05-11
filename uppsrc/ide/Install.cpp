@@ -261,11 +261,11 @@ String DefaultInstallFolder()
 		DefaultFolder = "upp-svn";
 	else if(ExeTitle.Find("DEV") >= 0)
 		DefaultFolder = "upp-dev";
-	else if(ExeTitle.Find("BETA") >= 0)
+	else if(ExeTitle.Find("BETA") >= 0) 
 		DefaultFolder = "upp-beta";
 	else
 		DefaultFolder = "upp";
-
+	
 	return DefaultFolder;
 
 }
@@ -302,6 +302,7 @@ XInstallDlg::XInstallDlg() {
 	reference = true;
 	examples = true;
 	tutorial = true;
+	bazaar = true;
 	path.AddFrame(pathbrowse);
 	if(FileExists(ConfigFile("installpath")))
 		path <<= LoadFile(ConfigFile("installpath"));
@@ -328,9 +329,9 @@ bool Install()
 	Progress pi;
 	if(dlg.Run() != IDOK) return true;
 	String upp(dlg.path);
-
+	
 	SaveFile(ConfigFile("installpath"), upp);
-
+	
 	String uppsrc;
 	String pp;
 	String out = AppendFileName(upp, "out");
@@ -373,7 +374,16 @@ bool Install()
 	else
 		u = AppendFileName(supp, "tutorial");
 	SaveFile(ConfigFile("tutorial.var"), "UPP = " + AsCString(u + ';' + uppsrc) + pp);
+	if(dlg.bazaar) {
+		if(!CopyFolder(pi, AppendFileName(upp, "bazaar"), AppendFileName(supp, "bazaar")))
+			return false;
+		u = AppendFileName(upp, "bazaar");
+	}
+	else
+		u = AppendFileName(supp, "bazaar");
+	SaveFile(ConfigFile("bazaar.var"), "UPP = " + AsCString(u + ';' + uppsrc) + pp);
 	SaveFile(ConfigFile("MyApps.var"), "UPP = " + AsCString(AppendFileName(upp, "MyApps;" + uppsrc)) + pp);
+	SaveFile(ConfigFile("MyApps-Bazaar.var"), "UPP = " + AsCString(AppendFileName(upp, "MyApps;") + AppendFileName(upp, "bazaar;") + uppsrc) + pp);
 	String bm = ConfigFile("GCC.bm");
 	if(IsNull(LoadFile(bm)))
 		SaveFile(bm, LoadFile(AppendFileName(supp, "GCC.bm")));

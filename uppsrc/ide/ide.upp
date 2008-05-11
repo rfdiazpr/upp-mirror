@@ -57,6 +57,7 @@ file
 	Host.cpp,
 	Build.cpp,
 	Debug.cpp,
+	Valgrind.cpp,
 	Resources readonly separator,
 	ide.iml,
 	ide.lay,
@@ -71,9 +72,9 @@ file
 mainconfig
 	"" = "GUI",
 	"" = "GUI .USEMALLOC",
-	"" = ".NOGTK GUI";
+	"" = ".NOGTK GUI",
+	"" = "GUI HEAPDBG CHECKINIT";
 
 custom() "",
 	"",
 	"$(OUTDIR)/$(FILE).obj";
-

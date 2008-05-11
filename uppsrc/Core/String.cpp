@@ -8,6 +8,7 @@ NAMESPACE_UPP
 
 static inline void *MAlloc_S()
 {
+	sHeapStat(1);
 	MCache& m = mcache[1];
 	FreeLink *l = m.list;
 	if(l) {
@@ -31,8 +32,13 @@ static inline void MFree_S(void *ptr)
 	FreeFill((dword *)ptr + 1, 32 / 4 - 1);
 #endif
 #endif
+#ifdef ACSIZE
+	if(++m.count > 240)
+		MFree_Reduce(m, 1);
+#else
 	if(++m.count > CACHEMAX)
 		MFree_Reduce(m, 1);
+#endif
 }
 
 #else
@@ -161,9 +167,7 @@ char *String0::Insert(int pos, int count, const char *s)
 	int len = GetCount();
 	int newlen = len + count;
 	char *str = (char *)Begin();
-	if(newlen < GetAlloc() && !IsSharedRef()) {
-		if(s >= str + pos && s <= str + len)
-			s += count;
+	if(newlen < GetAlloc() && !IsSharedRef() && (!s || s < str || s > str + len)) {
 		if(pos < len)
 			memmove(str + pos + count, str + pos, len - pos);
 		if(IsSmall())

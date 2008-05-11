@@ -246,20 +246,6 @@ void InitX11Draw(const char *dispname)
 	InitX11Draw(gdk_x11_display_get_xdisplay(d));
 	gtk_widget_destroy(w);
 #endif
-/*
-#ifndef flagNOGTK
-	if(GTK() && GDK() && GOBJ()) {
-	}
-	else
-#endif
-	{
-		if(!dispname || !*dispname) {
-			int f = Environment().Find("DISPLAY");
-			dispname = (f >= 0 ? ~Environment()[f] : ":0.0");
-		}
-		InitX11Draw(XOpenDisplay(dispname));
-	}
-*/
 }
 
 #ifdef PLATFORM_XFT

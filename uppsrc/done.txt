@@ -1,4 +1,9 @@
+============
+valgrind support in TheIDE
 
+XmlParser::Tag(const String&)
+
+============
 String Compare
 
 Stream::GetLine

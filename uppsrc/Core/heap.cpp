@@ -11,11 +11,13 @@ NAMESPACE_UPP
 
 #include "HeapImp.h"
 
-//#define _DEBUG
+//#define HEAPDBG
 
 #define LTIMING(x) // RTIMING(x)
+#define ATIMING(x) // RTIMING(x)
 
 MemoryProfile *sPeak;
+bool sWasPeak;
 int sKB;
 
 int MemoryUsedKb()
@@ -32,11 +34,10 @@ MemoryProfile *PeakMemoryProfile()
 	return NULL;
 }
 
-
 void *SysAllocRaw(size_t size)
 {
 	LTIMING("SysAllocRaw");
-	if(sPeak) *sPeak = MemoryProfile();
+	if(sPeak) sWasPeak = true;
 	sKB += int(((size + 4095) & ~4095) >> 10);
 #ifdef PLATFORM_WIN32
 	void *ptr = VirtualAlloc(NULL, size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
@@ -145,7 +146,7 @@ void HeapPanic(const char *text, void *pos, int size)
 	Panic(text);
 }
 
-#ifdef _DEBUG
+#ifdef HEAPDBG
 
 void FreeFill(dword *ptr, int count)
 {
@@ -176,7 +177,7 @@ void MPage::Format(int k)
 	freecount = 0;
 	free = 32 + count * sz - sz;
 	freelist = NULL;
-#ifdef _DEBUG
+#ifdef HEAPDBG
 	FreeFill((dword *)((byte *)this + 32), (4096 - 32) / 4);
 #endif
 }
@@ -204,10 +205,10 @@ static MPage sWork[NKLASS][1] = {
 
 static MPage sFree[1] = { MPAGE(&sFree, 0) };
 
-static inline FreeLink *sMAllocKN(int k)
+static inline FreeLink *sMAllocKN(int k, int n = CACHERES)
 {
+	ATIMING("sMAllocKN");
 	MPage *p = sWork[k]->next;
-	int n = CACHERES;
 	int sz = Ksz(k);
 	FreeLink *l = NULL;
 	for(;;) {
@@ -269,16 +270,17 @@ void *MAlloc_Get(MCache& m, int k)
 	sHeapLock.Enter();
 	l = sMAllocKN(k);
 	sHeapLock.Leave();
+	sDoPeakProfile();
 	m.list = l->next;
 	m.count = CACHERES - 1;
 	return l;
 }
 
-#ifdef _DEBUG
+#ifdef HEAPDBG
 
 void *CheckFree(void *p, int k)
 {
-	ASSERT(((MPage *)((uintptr_t)p & ~(uintptr_t)4095))->klass == k);
+	ASSERT((((MPage *)((uintptr_t)p & ~(uintptr_t)4095))->klass & 15) == k);
 #ifdef CPU_64
 	FreeCheck((dword *)p + 2, (Ksz(k) >> 2) - 2);
 #else
@@ -298,19 +300,29 @@ void *MemoryAllocSz(size_t& size)
 	if(sz <= 256) {
 		LTIMING("Small alloc");
 		int k = ((int)sz - 1) >> 4;
-		MCache& m = mcache[k];
-		FreeLink *l = m.list;
-		if(l == NULL) {
-			ASSERT(m.count == 0);
-			sHeapLock.Enter();
-			l = sMAllocKN(k);
-			sHeapLock.Leave();
-			m.count = CACHERES;
-		}
-		m.count--;
-		m.list = l->next;
+		sHeapStat(k);
 		size = Ksz(k);
-		return CheckFree(l, k);
+		if(k < CACHETH) {
+			MCache& m = mcache[k];
+			FreeLink *l = m.list;
+			if(l == NULL) {
+				ASSERT(m.count == 0);
+				sHeapLock.Enter();
+				l = sMAllocKN(k);
+				sHeapLock.Leave();
+				sDoPeakProfile();
+				m.count = CACHERES;
+			}
+			m.count--;
+			m.list = l->next;
+			return CheckFree(l, k);
+		}
+		else {
+			sHeapLock.Enter();
+			FreeLink *l = sMAllocKN(k, 1);
+			sHeapLock.Leave();
+			return CheckFree(l, k);
+		}
 	}
 	return LAlloc(size);
 }
@@ -319,26 +331,37 @@ void *MemoryAlloc(size_t sz)
 {
 	if(sz == 0) sz = 1;
 	if(sz <= 256) {
-		LTIMING("Small alloc");
+		ATIMING("Small alloc");
 		int k = ((int)sz - 1) >> 4;
-		MCache& m = mcache[k];
-		FreeLink *l = m.list;
-		if(l == NULL) {
-			ASSERT(m.count == 0);
-			sHeapLock.Enter();
-			l = sMAllocKN(k);
-			sHeapLock.Leave();
-			m.count = CACHERES;
+		sHeapStat(k);
+		if(k < CACHETH) {
+			MCache& m = mcache[k];
+			FreeLink *l = m.list;
+			if(l == NULL) {
+				ASSERT(m.count == 0);
+				sHeapLock.Enter();
+				l = sMAllocKN(k);
+				sHeapLock.Leave();
+				sDoPeakProfile();
+				m.count = CACHERES;
+			}
+			m.count--;
+			m.list = l->next;
+			return CheckFree(l, k);
 		}
-		m.count--;
-		m.list = l->next;
-		return CheckFree(l, k);
+		else {
+			sHeapLock.Enter();
+			FreeLink *l = sMAllocKN(k, 1);
+			sHeapLock.Leave();
+			return CheckFree(l, k);
+		}
 	}
 	return LAlloc(sz);
 }
 
 void MFree_Reduce(MCache& m, int k)
 {
+	ATIMING("MFree_Reduce");
 	FreeLink *l = m.list;
 	sHeapLock.Enter();
 	for(int i = 0; i < CACHERES; i++) {
@@ -357,18 +380,18 @@ void MemoryFree(void *ptr)
 	if(((dword)(uintptr_t)ptr) & 8)
 		LFree(ptr);
 	else {
-		LTIMING("Small free");
+		ATIMING("Small free");
 		MPage *p = (MPage *)((uintptr_t)ptr & ~(uintptr_t)4095);
 		int k = p->klass;
-		ASSERT((((uintptr_t)ptr & (uintptr_t)4095) - 32) % Ksz(k) == 0);
-#ifdef _DEBUG
+		ASSERT((((uintptr_t)ptr & (uintptr_t)4095) - 32) % Ksz(k & 15) == 0);
+#ifdef HEAPDBG
 #ifdef CPU_64
-		FreeFill((dword *)ptr + 2, (Ksz(k) >> 2) - 2);
+		FreeFill((dword *)ptr + 2, (Ksz(k & 15) >> 2) - 2);
 #else
-		FreeFill((dword *)ptr + 1, (Ksz(k) >> 2) - 1);
+		FreeFill((dword *)ptr + 1, (Ksz(k & 15) >> 2) - 1);
 #endif
 #endif
-		if(k < 9) {
+		if(k < CACHETH) {
 			MCache& m = mcache[k];
 			((FreeLink *)ptr)->next = m.list;
 			m.list = (FreeLink *)ptr;
@@ -426,18 +449,18 @@ void MemoryCheck()
 		while(p != sWork[i]) {
 			FreeLink *l = p->freelist;
 			while(l) {
-				CheckFree(l, p->klass);
+				CheckFree(l, p->klass & 15);
 				l = l->next;
 			}
 			ASSERT(p->free <= 4096);
-			ASSERT(((MPage *)((uintptr_t)p & ~(uintptr_t)4095))->klass == i);
+			ASSERT((((MPage *)((uintptr_t)p & ~(uintptr_t)4095))->klass & 15) == i);
 			ASSERT(p->count == (4096 - 32) / Ksz(i));
 			p = p->next;
 		}
 		p = sFull[i]->next;
 		while(p != sFull[i]) {
 			ASSERT(p->free <= 4096);
-			ASSERT(((MPage *)((uintptr_t)p & ~(uintptr_t)4095))->klass == i);
+			ASSERT((((MPage *)((uintptr_t)p & ~(uintptr_t)4095))->klass & 15) == i);
 			ASSERT(p->count == (4096 - 32) / Ksz(i));
 			p = p->next;
 		}
@@ -447,6 +470,7 @@ void MemoryCheck()
 
 void MemoryProfile::Make()
 {
+	sHeapLock.Enter();
 	memset(this, 0, sizeof(MemoryProfile));
 	for(int i = 0; i < NKLASS; i++) {
 		MPage *p = sFull[i]->next;
@@ -467,16 +491,24 @@ void MemoryProfile::Make()
 		freepages++;
 		p = p->next;
 	}
+	sHeapLock.Leave();
 
 	LMake(*this);
 }
 
 MemoryProfile::MemoryProfile()
 {
-	sHeapLock.Enter();
 	Make();
-	sHeapLock.Leave();
 }
+
+#ifdef flagHEAPSTAT
+int sHeapStats[16];
+
+EXITBLOCK {
+	for(int i = 0; i < 16; i++)
+		RLOG(Ksz(i) << ": " << sHeapStats[i]);
+}
+#endif
 
 #endif
 

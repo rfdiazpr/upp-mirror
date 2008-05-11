@@ -23,7 +23,8 @@ const String& GetCppFile(int i)
 	INTERLOCKED_(cpp_file_mutex) {
 		return cpp_file[i];
 	}
-	return String();
+	static String x;
+	return x;
 }
 /*
 void  CppPos::Serialize(Stream& s)

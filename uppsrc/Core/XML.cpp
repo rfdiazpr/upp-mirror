@@ -398,7 +398,27 @@ bool  XmlParser::Tag(const char *tag)
 	return false;
 }
 
+bool  XmlParser::Tag(const String& tag)
+{
+	if(IsTag() && text == tag) {
+		LLOG("Tag " << text);
+		stack.Add(Nesting(text, npreserve));
+		attr = nattr;
+		attr1 = nattr1;
+		attrval1 = nattrval1;
+		Next();
+		return true;
+	}
+	return false;
+}
+
 void  XmlParser::PassTag(const char *tag)
+{
+	if(!Tag(tag))
+		throw XmlError(String().Cat() << '\'' << tag << "'\' tag expected");
+}
+
+void  XmlParser::PassTag(const String& tag)
 {
 	if(!Tag(tag))
 		throw XmlError(String().Cat() << '\'' << tag << "'\' tag expected");

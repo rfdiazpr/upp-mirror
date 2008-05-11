@@ -56,10 +56,45 @@ inline void AssertST() { ASSERT(Thread::IsST()); }
 void ReadMemoryBarrier();
 void WriteMemoryBarrier();
 
-template <class U>
-inline bool ReadWithBarrier(const volatile U& b)
+#ifdef CPU_SSE2
+inline void ReadMemoryBarrier()
 {
-	volatile bool tmp = b;
+#ifdef CPU_AMD64
+	#ifdef COMPILER_MSC
+		_mm_lfence();
+	#else
+		__asm__("lfence");
+	#endif
+#else	
+	#ifdef COMPILER_MSC
+		__asm lfence;
+	#else
+		__asm__("lfence");
+	#endif
+#endif
+}
+
+inline void WriteMemoryBarrier() {
+#ifdef CPU_AMD64
+	#ifdef COMPILER_MSC
+		_mm_sfence();
+	#else
+		__asm__("sfence");
+	#endif
+#else	
+	#ifdef COMPILER_MSC
+		__asm sfence;
+	#else
+		__asm__("sfence");
+	#endif
+#endif
+}
+#endif
+
+template <class U>
+inline U ReadWithBarrier(const volatile U& b)
+{
+	/*volatile*/ U tmp = b;
 	ReadMemoryBarrier();
 	return tmp;
 }
@@ -115,6 +150,7 @@ protected:
 	Mutex(int)         {}
 
 public:
+	bool  TryEnter();
 	void  Enter()                { EnterCriticalSection(&section); }
 	void  Leave()                { LeaveCriticalSection(&section); }
 
@@ -168,6 +204,7 @@ protected:
 	Mutex(int)         {}
 
 public:
+	bool  TryEnter()   { return pthread_mutex_trylock(mutex); }
 	void  Enter()      { pthread_mutex_lock(mutex); }
 	void  Leave()      { pthread_mutex_unlock(mutex); }
 
@@ -223,8 +260,9 @@ class StaticMutex {
 	void Initialize();
 
 public:
-	Mutex& Get()         { if(!Readsection) Initialize(); return *const_cast<Mutex *>(section); }
+	Mutex& Get()         { if(!ReadWithBarrier(section)) Initialize(); return *const_cast<Mutex *>(section); }
 	operator Mutex&()    { return Get(); }
+	bool TryEnter()      { return Get().TryEnter();}
 	void Enter()         { Get().Enter();}
 	void Leave()         { Get().Leave(); }
 };
@@ -236,7 +274,7 @@ class StaticRWMutex {
 	void Initialize();
 
 public:
-	RWMutex& Get()       { if(!rw) Initialize(); return *const_cast<RWMutex *>(rw); }
+	RWMutex& Get()       { if(!ReadWithBarrier(rw)) Initialize(); return *const_cast<RWMutex *>(rw); }
 	operator RWMutex&()  { return Get(); }
 	void EnterRead()     { Get().EnterRead();}
 	void LeaveRead()     { Get().LeaveRead(); }

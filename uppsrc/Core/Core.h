@@ -153,12 +153,19 @@
 	#define OSTRING
 #endif
 
+#ifdef flagHEAPDBG
+	#define HEAPDBG
+#endif
+
 #if defined(flagDEBUG)
 	#ifndef _DEBUG
 		#define _DEBUG
 	#endif
 	#ifndef TESTLEAKS
 		#define TESTLEAKS
+	#endif
+	#ifndef HEAPDBG
+		#define HEAPDBG
 	#endif
 #else
 	#ifndef _RELEASE
@@ -202,9 +209,13 @@
 		#define CPU_AMD64
 		#define CPU_64
 		#define __NOASSEMBLY__
+		#define CPU_SSE2
 	#else
 		#define CPU_IA32
 		#define CPU_32
+		#ifdef flagSSE2
+			#define CPU_SSE2
+		#endif
 	#endif
 	#define CPU_LE
 	#define CPU_LITTLE_ENDIAN
@@ -370,7 +381,7 @@ END_UPP_NAMESPACE
 #ifdef UPP_HEAP
 #include <new>
 
-#ifdef _DEBUG
+#ifdef HEAPDBG
 
 inline void *operator new(size_t size) throw(std::bad_alloc) { void *ptr = UPP::MemoryAllocDebug(size); return ptr; }
 inline void operator  delete(void *ptr) throw()              { UPP::MemoryFreeDebug(ptr); }
@@ -454,7 +465,7 @@ NAMESPACE_UPP
 
 #include <Core/Win32Util.h>
 
-#if (defined(_DEBUG) || defined(TESTLEAKS)) && defined(PLATFORM_POSIX)
+#if (defined(HEAPDBG) || defined(TESTLEAKS)) && defined(PLATFORM_POSIX)
 extern int sMemDiagInitCount;
 #endif
 
@@ -466,13 +477,13 @@ NTL_MOVEABLE(RECT)
 
 END_UPP_NAMESPACE
 
-#if (defined(TESTLEAKS) || defined(_DEBUG)) && defined(PLATFORM_POSIX) && !defined(PLATFORM_OSX11) && defined(UPP_HEAP)
+#if (defined(TESTLEAKS) || defined(HEAPDBG)) && defined(PLATFORM_POSIX) && !defined(PLATFORM_OSX11) && defined(UPP_HEAP)
 
 //Place it to the begining of each file to be the first function called in whole executable...
 
 //$-
 struct MemDiagCls {
-	MemDiagCls()  { if(!UPP::sMemDiagInitCount++) UPP::MemoryInitDiagnostics(); }
+	MemDiagCls() { if(!UPP::sMemDiagInitCount++) UPP::MemoryInitDiagnostics(); }
 	~MemDiagCls() { if(!--UPP::sMemDiagInitCount) UPP::MemoryDumpLeaks(); }
 };
 static const MemDiagCls sMemDiagHelper__upp__;

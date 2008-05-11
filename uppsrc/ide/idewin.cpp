@@ -422,15 +422,21 @@ Ide::Ide()
 	filelist.Columns(2);
 	package.Columns(2);
 
+	filetabs = true;
+	auto_enclose = false;
+	mark_lines = true;
+
+	idestate = EDITING;
+	debuglock = 0;
+
 	menubar.WhenHelp = statusbar;
 	menubar.AreaLook(1);
 	toolbar.WhenHelp = statusbar;
 	toolbar.AreaLook(1);
+	toolbar_in_row = false;
 	SetupBars();
 	SetBar();
 	WhenClose = THISBACK(Exit);
-
-	toolbar_in_row = false;
 
 	editorsplit.Vert(editor, editor2);
 	editorsplit.Zoom(0);
@@ -541,9 +547,6 @@ Ide::Ide()
 	astyle_TabSpaceConversionMode = false;
 	astyle_TestBox = "#include <stdio.h>\n#ifndef __abcd_h\n#include <abcd.h>\n#endif\n\nvoid test(int a, int b)\n{\n  /* this is a switch */\n  switch(a)\n\n  {\n    case 1:\n      b = 2;\n      break;\n    case 2:\n      b = 4;\n      break;\n    default:\n    break;\n  }\n\n  /* this are more statements on one line */\n  a = 2*a;b=-5;a=2*(b+2)*(a+3)/4;\n\n  /* single line blocks */\n  {int z;z = 2*a+b;}\n\n  /* loop */\n  for(int i = 0;i< 10;i++) { a = b+2*i;}\n\n}\n";
 
-	idestate = EDITING;
-	debuglock = 0;
-
 	console.WhenSelect = THISBACK(FindError);
 	console.SetSlots(hydra1_threads);
 
@@ -588,10 +591,6 @@ Ide::Ide()
 	doc.WhenTopic = THISBACK(OpenATopic);
 
 	editor.NoCutLine();
-
-	filetabs = true;
-	auto_enclose = false;
-	mark_lines = true;
 
 	bordercolumn = 96;
 	bordercolor = SColorFace();

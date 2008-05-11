@@ -491,6 +491,10 @@ DisplayPopup::DisplayPopup()
 {
 	SetFrame(BlackFrame());
 	display = NULL;
+	paper = ink = Null;
+	style = 0;
+	item = slim = Null;
+	margin = 0;
 }
 
 void DisplayPopup::Sync()

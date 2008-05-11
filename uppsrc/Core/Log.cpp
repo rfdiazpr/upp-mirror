@@ -258,5 +258,26 @@ void UnlockLog()
 
 #endif
 
+#ifdef flagCHECKINIT
+
+void InitBlockBegin__(const char *fn, int line) {
+	RLOG(fn << " " << line << " init block");
+#ifdef HEAPDBG
+	MemoryCheckDebug();
+#else
+	MemoryCheck();
+#endif
+}
+
+void InitBlockEnd__(const char *fn, int line) {
+	RLOG(fn << " " << line << " init block finished");
+#ifdef HEAPDBG
+	MemoryCheckDebug();
+#else
+	MemoryCheck();
+#endif
+}
+
+#endif
 
 END_UPP_NAMESPACE

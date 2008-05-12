@@ -81,7 +81,7 @@ void AlignedFrame::Fix(Point& p)
 
 // TabScrollBar
 TabScrollBar::TabScrollBar()
-{	
+{
 	Clear();
 }
 
@@ -311,7 +311,7 @@ void TabBar::ContextMenu(Bar& bar)
 	}
 	bar.Separator();
 
-	bar.Add("Close all tabs except current", THISBACK(CloseAll));
+	bar.Add("Close others", THISBACK(CloseAll));
 }
 
 void TabBar::GroupMenu(Bar &bar, int n)
@@ -438,13 +438,14 @@ Value TabBar::AlignValue(int align, const Value &v, const Size &isz)
 	if (align == TOP) return v;
 	if (IsTypeRaw<Image>(v)) {
 		switch(align) {
-			case AlignedFrame::LEFT: 	 return RotateAntiClockwise((Image)v);
+			case AlignedFrame::LEFT:   return RotateAntiClockwise((Image)v);
 			case AlignedFrame::RIGHT:  return RotateClockwise((Image)v);
 			case AlignedFrame::BOTTOM: return MirrorVert((Image)v);
 		}
 	}
 	else if (!IsTypeRaw<Color>(v)) {
 		ImageDraw w(isz.cx, isz.cy);
+		w.DrawRect(isz, SColorFace());
 		ChPaint(w, isz, v);
 		ImageBuffer img;
 		Image temp = (Image)w;
@@ -453,19 +454,19 @@ Value TabBar::AlignValue(int align, const Value &v, const Size &isz)
 				temp = RotateAntiClockwise(temp);
 				img = temp; // GCC
 				img.SetHotSpot(Point(1, 5));
-				img.Set2ndSpot(Point(0, isz.cx/2));
+				img.Set2ndSpot(Point(isz.cy / 2, isz.cx / 2));
 				break;
 			case AlignedFrame::RIGHT: 
 				temp = RotateClockwise(temp);
 				img = temp;
-				img.SetHotSpot(Point(isz.cy-10, isz.cx-10));
-				img.Set2ndSpot(Point(isz.cy/2, isz.cx/2));
+				img.SetHotSpot(Point(isz.cy - 10, isz.cx - 10));
+				img.Set2ndSpot(Point(isz.cy / 2, isz.cx / 2));
 				break;
 			case AlignedFrame::BOTTOM:
 				temp = MirrorVert(temp);
 				img = temp;
 				img.SetHotSpot(Point(10, 10));
-				img.Set2ndSpot(Point(isz.cx/2, isz.cy/2));
+				img.Set2ndSpot(Point(isz.cx / 2, isz.cy / 2));
 				break;
 
 		}
@@ -516,19 +517,26 @@ void TabBar::PaintTab(Draw &w, const Style &s, const Size &sz, int n, bool enabl
 		       ac ? CTRL_PRESSED :
 		       hl ? CTRL_HOT : CTRL_NORMAL;
 
-	const Value& sv = (cnt == 1 ? s.both : n == 0 ? s.first : n == cnt - 1 ? s.last : s.normal)[ndx];
+	int c = align == LEFT ? cnt - n : n;	
+	const Value& sv = (cnt == 1 ? s.both : c == 0 ? s.first : c == cnt - 1 ? s.last : s.normal)[ndx];
 
+	int lx = n > 0 ? s.extendleft : 0;
+	int x = t.x - sc.GetPos() + s.margin - lx;
+	
 	if (ac) {
-		p = Point(t.x - sc.GetPos() + s.margin - s.extendleft - s.sel.left, 0);
-		tsz = Size(t.cx + s.sel.right + s.sel.left, t.cy + s.sel.bottom);
-		if (align == LEFT)  { 
-			p.x += s.sel.left;
-			tsz.cx += s.sel.left;
-		}
+		p = Point(x - s.sel.left, 0);		
+		tsz = Size(t.cx + lx + s.sel.right + s.sel.left, t.cy + s.sel.bottom);
 	}
 	else {
-		p = Point(t.x - sc.GetPos() + s.margin - s.extendleft, (IsBR() ? s.sel.bottom : s.sel.top));
-		tsz = Size(t.cx + s.sel.right + s.sel.left, t.cy - s.sel.top);
+		p = Point(x, s.sel.top);
+		tsz = Size(t.cx + lx, t.cy - s.sel.top);
+	}
+
+	if (align == BOTTOM) {
+		p.y -= s.sel.top - QT_SBSEPARATOR;
+	}
+	if (align == RIGHT) {
+		p.y -= s.sel.top - QT_SBSEPARATOR;
 	}
 	
 	if (IsVert())
@@ -555,9 +563,14 @@ void TabBar::PaintTab(Draw &w, const Style &s, const Size &sz, int n, bool enabl
 	tsz.cx -= QT_MARGIN * 2;
 	switch (align) {
 	case BOTTOM:
-		if (ac)	p.y -= s.sel.top; break;
-	case RIGHT: p.y = sz.cx - p.y; break;
-	case LEFT: p.x += tsz.cx;
+		if (ac)	
+			p.y -= s.sel.top;
+		break;
+	case RIGHT: 
+		p.y = sz.cx - p.y;
+		break;
+	case LEFT: 
+		p.x += tsz.cx;
 	}
 	tsz.cx -= isz.cx;		
 	Fix(p);
@@ -573,14 +586,15 @@ void TabBar::PaintTab(Draw &w, const Style &s, const Size &sz, int n, bool enabl
 
 void TabBar::Paint(Draw &w)
 {
-	const Style &st = *style[GetAlign()];
+	int align = GetAlign();
+	const Style &st = *style[align];
 	Size sz = GetSize();
 	
 	w.DrawRect(sz, SColorFace());
 
 	IsVert() ? 
-		w.DrawRect((GetAlign() == LEFT) ? sz.cx -1 : 1, 0, 1, sz.cy, Color(128, 128, 128)) :
-		w.DrawRect(0, (GetAlign() == TOP) ? sz.cy - 1 : 1, sz.cx, 1, Color(128, 128, 128));	
+		w.DrawRect(align == LEFT ? sz.cx - 1 : 0, 0, 1, sz.cy, Color(128, 128, 128)):
+		w.DrawRect(0, align == TOP ? sz.cy - 1 : 0, sz.cx, 1, Color(128, 128, 128));	
 
 	if (!tabs.GetCount()) return;
 	
@@ -704,13 +718,12 @@ TabBar& TabBar::Insert(int ix, const Value &data, String group, bool make_active
 int TabBar::GetWidth()const
 {
 	if (!tabs.GetCount()) return 0;
-	int j = GetLast();
 	return tabs[GetLast()].Right() + style[GetAlign()]->margin * 2;
 }
 
 int TabBar::GetStyleHeight(const Style &s)
 {
-	return s.tabheight + s.sel.top /*+ style->sel.bottom */ + QT_SBSEPARATOR;
+	return s.tabheight + s.sel.top + QT_SBSEPARATOR;
 }
 
 void TabBar::Repos()
@@ -769,7 +782,6 @@ void TabBar::SyncScrollBar(int total)
 			SetFrameSize((nv ? sc.GetFrameSize() : 0) + h, false);	
 			RefreshParentLayout();
 		}
-			
 	}
 	else
 		sc.Show();
@@ -833,7 +845,7 @@ TabBar& TabBar::AutoScrollHide(bool b)
 }
 
 TabBar& TabBar::InactiveShadow(bool b)
-{ 
+{
 	inactiveshadow = b; 
 	if (b) Repos(); 
 	return *this;

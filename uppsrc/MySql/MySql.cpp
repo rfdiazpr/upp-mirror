@@ -23,7 +23,7 @@ private:
 	Vector<String> param;
 	MYSQL_RES     *result;
 	MYSQL_ROW      row;
-	dword         *len;
+	unsigned long *len;
 	int            rows;
 	int            lastid;
 
@@ -313,7 +313,7 @@ bool MySqlConnection::Fetch() {
 	if(result) {
 		row = mysql_fetch_row(result);
 		if(row) {
-			len = (dword *)mysql_fetch_lengths(result);
+			len = mysql_fetch_lengths(result);
 			return true;
 		}
 	}

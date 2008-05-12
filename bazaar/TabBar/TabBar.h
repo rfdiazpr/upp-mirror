@@ -232,6 +232,7 @@ public:
 
 	TabBar();
 
+	TabBar& Add(const char* name, bool make_active = false)                         { return Add(name, Null, make_active); }   
 	TabBar& Add(const Value &data, bool make_active = false)						{ return Add(data, Null, make_active); }
 	TabBar& Add(const Value &data, String group = Null, bool make_active = false);
 	TabBar& Insert(int ix, const Value &data, bool make_active = false)	{ return Insert(ix, data, Null, make_active); }

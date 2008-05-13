@@ -90,6 +90,9 @@ void *MemoryAllocDebug(size_t size)
 	static dword serial_number = 0;
 	DbgBlkHeader *p = (DbgBlkHeader *)MemoryAlloc(sizeof(DbgBlkHeader) + size + sizeof(dword));
 	p->serial = s_ignoreleaks ? 0 : ~ ++serial_number ^ (uintptr_t) p;
+	if(size == 568) {
+//		__asm int 3
+	}
 	p->size = size;
 	if(s_allocbreakpoint && s_allocbreakpoint == serial_number)
 		__BREAK__;

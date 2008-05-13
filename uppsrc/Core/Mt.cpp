@@ -60,7 +60,6 @@ void *
 sThreadRoutine(void *arg)
 {
 	Callback *cb = (Callback *)arg;
-	AtomicInc(sThreadCount);
 	(*cb)();
 	AtomicDec(sThreadCount);
 	delete cb;
@@ -80,6 +79,7 @@ bool Thread::IsST()
 
 bool Thread::Run(Callback _cb)
 {
+	AtomicInc(sThreadCount);
 	threadr = true;
 	Detach();
 	Callback *cb = new Callback(_cb);
@@ -96,7 +96,7 @@ bool Thread::Run(Callback _cb)
 
 int Thread::GetCount()
 {
-	return sThreadCount;
+	return ReadWithBarrier(sThreadCount);
 }
 
 static Atomic  sShutdown;
@@ -169,10 +169,8 @@ void Thread::Priority(int percent)
 void Thread::Start(Callback cb)
 {
 	Thread t;
-	LOG("Thread::Start");
 	t.Run(cb);
 	t.Detach();
-	LOG("Thread::Detached");
 }
 
 void Thread::Sleep(int msec)

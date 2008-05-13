@@ -2,7 +2,7 @@ description "GUI core system";
 
 uses
 	Draw,
-	plugin/bmp;
+	plugin\bmp;
 
 library(WIN32 !MSC8ARM) "advapi32 comdlg32 comctl32";
 

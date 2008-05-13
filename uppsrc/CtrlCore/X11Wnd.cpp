@@ -158,11 +158,11 @@ Rect Ctrl::GetRectInParentWindow(void) const
   	{
 		if(q->top)
 			break;
-		r += q->GetRect().TopLeft();
+		r += q->GetRect().TopLeft() + q->GetView().TopLeft();
 		q = q->parent;
 	}
 	if(q)
-		r += q->GetScreenView().TopLeft() - q->GetScreenRect().TopLeft() ;
+		r += q->GetView().TopLeft();
 	return r;
 
 }
@@ -973,7 +973,6 @@ void Ctrl::SyncNativeWindows(void)
 				XMoveResizeWindow(Xdisplay, w, r.left, r.top, r.Width(), r.Height());
 		}
 	}
-
 } // END Ctrl::SyncNativeWindows()
 
 // 01/12/2007 - END

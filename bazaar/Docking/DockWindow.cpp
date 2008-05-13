@@ -1066,7 +1066,7 @@ DockWindow::DockWindow()
 		hideframe[i].SetAlign(i);
 		dockframe[i].Hide();
 	}
-	AllowDockAll().AutoHide(true).Animate().AnimateDelay(40);
+	AllowDockAll().AutoHide(true).Animate().AnimateDelay(30);
 }
 
 // PopUpDockWindow

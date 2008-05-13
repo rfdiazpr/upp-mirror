@@ -264,7 +264,7 @@ TabBar::TabBar()
 	grouping = true;
 	isctrl = false;
 	isdrag = false;
-	inactiveshadow = false;
+	inactivedisabled = false;
 	autoscrollhide = false;
 	neverempty = 1;
 
@@ -623,7 +623,7 @@ void TabBar::Paint(Draw &w)
 			PaintTab(w, st, sz, i, IsEnabled());
 	}
 	// Draw inactive groups
-	if (inactiveshadow)
+	if (inactivedisabled)
 		for (int i = first; i <= last; i++) {
 			if(!tabs[i].visible && i != active)
 				PaintTab(w, st, sz, i, !IsEnabled());
@@ -776,7 +776,7 @@ void TabBar::Repos()
 	j = 0;
 	for(int i = 0; i < tabs.GetCount(); i++)
 		j = TabPos(g, first, i, j, false);
-	if (inactiveshadow)
+	if (inactivedisabled)
 		for(int i = 0; i < tabs.GetCount(); i++)
 			if (!tabs[i].visible)
 				j = TabPos(g, first, i, j, true);
@@ -882,9 +882,9 @@ TabBar& TabBar::AutoScrollHide(bool b)
 	return *this;
 }
 
-TabBar& TabBar::InactiveShadow(bool b)
+TabBar& TabBar::InactiveDisabled(bool b)
 {
-	inactiveshadow = b; 
+	inactivedisabled = b; 
 	if (b) Repos(); 
 	return *this;
 }

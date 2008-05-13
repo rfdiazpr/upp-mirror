@@ -149,7 +149,7 @@ private:
 	bool autoscrollhide:1;		
 	bool nosel:1;
 	bool nohl:1;
-	bool inactiveshadow:1;
+	bool inactivedisabled:1;
 	int neverempty;
 	Point mouse, oldp;
 	int group;
@@ -232,10 +232,11 @@ public:
 
 	TabBar();
 
-	TabBar& Add(const char* name, bool make_active = false)                         { return Add(name, Null, make_active); }   
-	TabBar& Add(const Value &data, bool make_active = false)						{ return Add(data, Null, make_active); }
+	TabBar& Add(const Value &data)											{ return Add(data, Null, false); }
+	TabBar& Add(const Value &data, bool make_active)						{ return Add(data, Null, make_active); }
+	TabBar& Add(const Value &data, const char *group, bool make_active = false) { return Add(data, String(group), make_active); }
 	TabBar& Add(const Value &data, String group, bool make_active = false);
-	TabBar& Insert(int ix, const Value &data, bool make_active = false)	{ return Insert(ix, data, Null, make_active); }
+	TabBar& Insert(int ix, const Value &data, bool make_active = false)		{ return Insert(ix, data, Null, make_active); }
 	TabBar& Insert(int ix, const Value &data, String group = Null, bool make_active = false);
 	void 	Close(int n);
 	void 	Clear();
@@ -243,7 +244,7 @@ public:
 	TabBar& Crosses(bool b = true);
 	TabBar& Grouping(bool b = true);		
 	TabBar& AutoScrollHide(bool b = true);
-	TabBar& InactiveShadow(bool b = true);
+	TabBar& InactiveDisabled(bool b = true);
 	
 	TabBar& SetDisplay(const Display &d) 	{ display = &d; Refresh(); }
 	

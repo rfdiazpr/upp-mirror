@@ -196,6 +196,7 @@ protected:
 	virtual void MouseWheel(Point p, int zdelta, dword keyflags);
 	virtual void FrameSet();
 	virtual void FrameLayout(Rect& r);
+	virtual void Layout();
 
 	void Repos();
 	void MakeGroups();

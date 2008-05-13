@@ -815,14 +815,14 @@ void TabBar::SyncScrollBar(int total)
 		bool v = sc.IsScrollable();
 		if (sc.IsShown() != v) {
 			SetFrameSize((v ? sc.GetFrameSize() : 0) + GetHeight(), false);
-			if (IsOpen()) {
-				sc.Show(v);	
-				RefreshParentLayout();
-			}
+			sc.Show(v);	
+			RefreshParentLayout();
 		}
 	}
-	else
+	else {
+		SetFrameSize(sc.GetFrameSize() + GetHeight(), false);
 		sc.Show();
+	}
 }
 
 int TabBar::FindId(int id) const
@@ -878,6 +878,8 @@ TabBar& TabBar::Grouping(bool b)
 TabBar& TabBar::AutoScrollHide(bool b)
 {
 	autoscrollhide = b;
+	sc.Hide();
+	SetFrameSize(GetHeight(), false);
 	SyncScrollBar(GetWidth());
 	return *this;
 }
@@ -896,6 +898,7 @@ void TabBar::FrameSet()
 	sc.Clear();
 	sc.SetFrameSize(QT_SBHEIGHT).SetAlign((al >= 2) ? al - 2 : al + 2);
 	sc <<= THISBACK(Scroll);
+	sc.Hide();
 	if (!sc.IsChild())
 		AddFrame(sc);
 
@@ -916,9 +919,13 @@ void TabBar::ResetStyles()
 
 void TabBar::FrameLayout(Rect& r)
 {
+	AlignedFrame::FrameLayout(r);	
+}
+
+void TabBar::Layout()
+{
 	if (autoscrollhide && tabs.GetCount()) 
 		SyncScrollBar(-1); 
-	AlignedFrame::FrameLayout(r);	
 }
 
 int TabBar::Find(const Value &v) const

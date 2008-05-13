@@ -247,8 +247,8 @@ void TabScrollBar::Set(const TabScrollBar& t)
 
 bool TabScrollBar::IsScrollable() const
 {
-	return IsHorz() && total > sz.cx && sz.cx > 0
-		|| IsVert() && total > sz.cy && sz.cy > 0;
+	// Note: sz already 'fixed'
+	return total > sz.cx && sz.cx > 0;
 }
 
 // TabBar
@@ -264,8 +264,8 @@ TabBar::TabBar()
 	grouping = true;
 	isctrl = false;
 	isdrag = false;
-	inactiveshadow = true;
-	autoscrollhide = true;
+	inactiveshadow = false;
+	autoscrollhide = false;
 	neverempty = 1;
 
 	style[0] = style[1] = style[2] = style[3] = NULL;
@@ -599,68 +599,106 @@ void TabBar::Paint(Draw &w)
 	if (!tabs.GetCount()) return;
 	
 	int limt = sc.GetPos() + (IsVert() ? sz.cy : sz.cx);
+	
+	int first = 0;
+	int last = tabs.GetCount()-1;
+	// Find first visible tab
 	for(int i = 0; i < tabs.GetCount(); i++) {
 		Tab &tab = tabs[i]; 
-		if(tab.visible && i != active 
-			&& tab.x < limt && tab.x + tab.cx > sc.GetPos())
+		if (tab.x + tab.cx > sc.GetPos()) {
+			first = i;
+			break;
+		}
+	}
+	// Find last visible tab
+	for(int i = first+1; i < tabs.GetCount(); i++) { 
+		if (tabs[i].x > limt) {
+			last = i;
+			break;
+		}
+	}
+	// Draw active group
+	for (int i = first; i <= last; i++) {
+		if(tabs[i].visible && i != active)
 			PaintTab(w, st, sz, i, IsEnabled());
 	}
+	// Draw inactive groups
 	if (inactiveshadow)
-		for(int i = 0; i < tabs.GetCount(); i++) {
-			Tab &tab = tabs[i]; 
-			if(!tab.visible && i != active 
-				&& tab.x < limt && tab.x + tab.cx > sc.GetPos())
-				PaintTab(w, st, sz, i, IsEnabled());
+		for (int i = first; i <= last; i++) {
+			if(!tabs[i].visible && i != active)
+				PaintTab(w, st, sz, i, !IsEnabled());
 		}
-				
-	if(active >= 0)
+			
+	// Draw selected tab
+	if(active >= first && active <= last)
 		PaintTab(w, st, sz, active, true);
-
+	// Draw drag highlights
 	if(target >= 0)
 	{
-		int dragtab = isctrl ? highlight : active;
-		if(target != dragtab && target != dragtab + 1)
-		{
-			Tab &tab = tabs[dragtab];
-			Size tsz(tab.cx, IsVert() ? sz.cx : sz.cy);			
-			Fix(tsz);
-			if (dragimg.IsEmpty()) {
-				int alpha = 180;
-				ImageDraw img(tsz);
-				img.Alpha().DrawRect(tsz, Color(alpha, alpha, alpha));
-				img.DrawRect(tsz, SColorFace());
-				Point temp = Point(tab.x, tab.y);
-				tab.x = tab.y = 0;
-				PaintTab(img, st, sz, dragtab, true);
-				dragimg = img;
-				tab.x = temp.x;
-				tab.y = temp.y;
-			}			
-			int last = GetLast();
-			int first = GetFirst();
+		// Draw target marker
+		int drag = isctrl ? highlight : active;
+		if(target != drag && target != drag + 1)
+		{			
+			last = GetLast();
+			first = GetFirst();
 			int x = (target == last + 1 ? tabs[last].Right() : tabs[target].x)
 			        - sc.GetPos() - (target <= first ? 1 : 2)
 			        + st.margin - (target > 0 ? st.extendleft : 0);
-			if (IsVert())
-				w.DrawImage(0, x - tsz.cx/2, tsz.cy, tsz.cx, dragimg); 
-			else
-				w.DrawImage(x - tsz.cx/2, 0, tsz.cx, tsz.cy, dragimg); 
-/*			int y = st.sel.top;
-			Color c(255, 0, 0);
+			int y = st.sel.top;
 			int cy = sz.cy - y;
 			if (IsHorz()) {
-				w.DrawRect(x + 1, y, 2, cy, c);
-				w.DrawRect(x, y, 4, 1, c);
-				w.DrawRect(x, y + cy - 1, 4, 1, c);			
+				w.DrawRect(x + 1, y, 2, cy, SRed());
+				w.DrawRect(x, y, 4, 1, SRed());
+				w.DrawRect(x, y + cy - 1, 4, 1, SRed());			
 			}
 			else{
-				w.DrawRect(y, x + 1, cy, 2, c);
-				w.DrawRect(y, x, 1, 4, c);
-				w.DrawRect(y + cy - 1, x, 1, 4, c);			
+				w.DrawRect(y, x + 1, cy, 2, SRed());
+				w.DrawRect(y, x, 1, 4, SRed());
+				w.DrawRect(y + cy - 1, x, 1, 4, SRed());			
 			}
-*/		}
-
+		}
+		// Draw transparent drag image
+		Point mouse = GetMousePos() - GetScreenRect().TopLeft();
+		Size isz 	= dragtab.GetSize();
+		if (IsHorz())
+			w.DrawImage(mouse.x - isz.cx/2, 0, isz.cx, isz.cy, dragtab);
+		else
+			w.DrawImage(0, mouse.y - isz.cy/2, isz.cx, isz.cy, dragtab);		
 	}
+}
+
+Image TabBar::GetDragSample()
+{
+	return GetDragSample(highlight);
+}
+
+Image TabBar::GetDragSample(int n)
+{
+	if (n < 0) return Image();
+	Tab &tab = tabs[n];
+	Size tsz(tab.cx, tab.cy);			
+	Fix(tsz);
+
+	ImageDraw iw(tsz);
+	iw.DrawRect(tsz, SColorFace());
+	
+	Point temp = Point(tab.x, tab.y);
+	tab.x = sc.GetPos();
+	tab.y = 0;
+	PaintTab(iw, *style[GetAlign()], GetSize(), n, true);
+	tab.x = temp.x; tab.y = temp.y;
+	
+	Image img = iw;
+	ImageBuffer ib(img);
+	Unmultiply(ib);
+	RGBA *s = ~ib;
+	RGBA *e = s + ib.GetLength();
+	while(s < e) {
+		s->a = 180;
+		s++;
+	}
+	Premultiply(ib);
+	return ib;
 }
 
 void TabBar::Scroll()
@@ -774,13 +812,13 @@ void TabBar::SyncScrollBar(int total)
 	if (total > 0)
 		sc.SetTotal(total);			
 	if (autoscrollhide) {
-		int h = GetHeight();
-		bool v = GetFrameSize() > h;
-		bool nv = sc.IsScrollable();
-		sc.Show(nv);
-		if (v != nv) {
-			SetFrameSize((nv ? sc.GetFrameSize() : 0) + h, false);	
-			RefreshParentLayout();
+		bool v = sc.IsScrollable();
+		if (sc.IsShown() != v) {
+			SetFrameSize((v ? sc.GetFrameSize() : 0) + GetHeight(), false);
+			if (IsOpen()) {
+				sc.Show(v);	
+				RefreshParentLayout();
+			}
 		}
 	}
 	else
@@ -866,7 +904,7 @@ void TabBar::FrameSet()
 	style[2] = &StyleRight(); 
 	style[3] = &StyleBottom(); 
 
-	SyncScrollBar(0);
+	SyncScrollBar(GetWidth());
 }
 
 void TabBar::ResetStyles()
@@ -1067,18 +1105,13 @@ void TabBar::DragAndDrop(Point p, PasteClip& d)
 		//d.Reject();
 		//unfortunately after Reject DragLeave stops working until d is accepted
 	}
-
-	if(c != target)
-	{
-		target = c;
-		Refresh();
-	}
+	target = c;
+	Refresh();
 }
 
 void TabBar::CancelMode()
 {
 	isdrag = false;
-	dragimg.Clear();
 	target = -1;
 	Refresh();
 }
@@ -1091,6 +1124,7 @@ void TabBar::LeftDrag(Point p, dword keyflags)
 		return;
 
 	isdrag = true;
+	dragtab = GetDragSample();
 	DoDragAndDrop(InternalClip(*this, "tabs"));
 }
 
@@ -1101,7 +1135,6 @@ void TabBar::DragEnter()
 void TabBar::DragLeave()
 {
 	target = -1;
-	dragimg.Clear();
 	Refresh();
 }
 
@@ -1109,9 +1142,10 @@ void TabBar::DragRepeat(Point p)
 {
 	if(target >= 0)
 	{
-		int dx = GetDragScroll(this, p, 16).x;
-		if(dx != 0)
-			sc.AddPos(dx);
+		Point dx = GetDragScroll(this, p, 16);
+		Fix(dx);
+		if(dx.x != 0)
+			sc.AddPos(dx.x);
 	}
 }
 

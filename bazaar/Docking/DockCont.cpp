@@ -657,7 +657,7 @@ DockCont::DockCont()
 	tabbar.WhenContext 		= THISBACK(TabContext);
 	tabbar.WhenClose 		= THISBACK(TabClosed);
 	tabbar.WhenCloseAll		= THISBACK(RefreshLayout);
-	tabbar.SetBottom();	
+	tabbar.AutoScrollHide().InactiveShadow().SetBottom();	
 
 	handle << close << autohide << windowpos;
 	handle.WhenContext = THISBACK(WindowMenu);

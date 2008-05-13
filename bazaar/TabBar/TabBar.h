@@ -67,7 +67,6 @@ class TabScrollBar : public AlignedFrame
 		void RefreshScroll();
 		bool ready;
 		Size sz;
-
 	public:
 		TabScrollBar();
 
@@ -155,12 +154,13 @@ private:
 	Point mouse, oldp;
 	int group;
 	const Display *display;
-	Image dragimg;
+	Image dragtab;
 	
 	static Style leftstyle, rightstyle, bottomstyle;
 	const Style *style[4];
 	
-	void PaintTab(Draw &w, const Style &s, const Size &sz, int i, bool enable);
+	void 	PaintTab(Draw &w, const Style &s, const Size &sz, int i, bool enable);
+	
 	int  TabPos(const String &g, bool &first, int i, int j, bool inactive);	
 	void SyncScrollBar(int total);
 	void Scroll();
@@ -171,7 +171,7 @@ private:
 
 	int GetWidth(int n);
 	int GetWidth() const;
-	int GetHeight() const				{ return TabBar::GetStyleHeight(*style[TOP]); }
+	int GetHeight() const				{ return TabBar::GetStyleHeight(*style[GetAlign()]); }
 	static int 	GetStyleHeight(const Style& s);
 	
 	int   GetNextId();
@@ -234,7 +234,7 @@ public:
 
 	TabBar& Add(const char* name, bool make_active = false)                         { return Add(name, Null, make_active); }   
 	TabBar& Add(const Value &data, bool make_active = false)						{ return Add(data, Null, make_active); }
-	TabBar& Add(const Value &data, String group = Null, bool make_active = false);
+	TabBar& Add(const Value &data, String group, bool make_active = false);
 	TabBar& Insert(int ix, const Value &data, bool make_active = false)	{ return Insert(ix, data, Null, make_active); }
 	TabBar& Insert(int ix, const Value &data, String group = Null, bool make_active = false);
 	void 	Close(int n);
@@ -279,6 +279,9 @@ public:
 
 	TabBar& NeverEmpty(int limit = 1)	{ neverempty = max(limit, 1); Refresh(); return *this; }
 	TabBar& CanEmpty()					{ neverempty = 0; Refresh(); return *this; }
+
+	Image 	GetDragSample();
+	Image 	GetDragSample(int n);
 
 	TabBar& SetStyle(int align, const Style& s)  	{ ASSERT(align >= 0 && align < 4); style[align] = &s; Refresh(); return *this; }
 	static const Style& StyleDefault();

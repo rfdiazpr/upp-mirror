@@ -111,11 +111,23 @@ done
 
 #do an svn update in svn folder, just to be sure that's the latest
 cd $src
-echo "Updating svn...."
-svn up > /dev/null
 
 #gets svn release
-release="`svn up | sed s/[^0-9]//g`"
+if [ -e ./.svn/entries ]
+then
+    while read release
+    do
+        if [ "$release" = "dir" ]
+        then
+            read release
+            break
+        fi
+    done < ./.svn/entries
+else
+    echo "$0: error: file not found!"
+    exit 1
+fi
+
 echo "building .deb for SVN release $release"
 
 #now patch uppsrc/ide/version.h file to match current svn build

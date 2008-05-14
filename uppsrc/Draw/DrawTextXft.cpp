@@ -146,6 +146,11 @@ dword Font::GetFaceInfo(int index) {
 	return w;
 }
 
+int    gtk_antialias = -1;
+int    gtk_hinting = -1;
+String gtk_hintstyle;
+String gtk_rgba;
+
 XftFont *Draw::CreateXftFont(Font font, int angle)
 {
 	LTIMING("CreateXftFont");
@@ -157,6 +162,15 @@ XftFont *Draw::CreateXftFont(Font font, int angle)
 	if(i < 0 || i >= XFTFontFace().GetCount())
 		i = 0;
 	const char *face = i < 7 ? basic_fonts[i] : ~XFTFontFace().GetKey(i);
+	XftPattern *p = XftPatternCreate();
+	p = XftPatternBuild(p,
+	          XFT_FAMILY, XftTypeString, face,
+	          XFT_SLANT, XftTypeInteger, int(font.IsItalic() ? 110 : 0),
+	          XFT_PIXEL_SIZE, XftTypeInteger, hg,
+	          XFT_WEIGHT, XftTypeInteger, int(font.IsBold() ? 200 : 100),
+	          XFT_ANTIALIAS, XftTypeBool, FcBool(!font.IsNonAntiAliased() && gtk_antialias),
+	          XFT_MINSPACE, XftTypeBool, (FcBool)1,
+	          (void *)NULL);
 	if(angle) {
 		XftMatrix mx;
 		SinCos(angle, sina, cosa);
@@ -164,25 +178,25 @@ XftFont *Draw::CreateXftFont(Font font, int angle)
 		mx.xy = -sina;
 		mx.yx = sina;
 		mx.yy = cosa;
-		xftfont = XftFontOpen(Xdisplay, Xscreenno,
-		                      XFT_FAMILY, XftTypeString, face,
-		                      XFT_SLANT, XftTypeInteger, int(font.IsItalic() ? 110 : 0),
-		                      XFT_PIXEL_SIZE, XftTypeInteger, hg,
-		                      XFT_MATRIX, XftTypeMatrix, &mx,
-		                      XFT_WEIGHT, XftTypeInteger, int(font.IsBold() ? 200 : 100),
-		                      XFT_ANTIALIAS, XftTypeBool, FcBool(!font.IsNonAntiAliased()),
-		                      XFT_MINSPACE, XftTypeBool, (FcBool)1,
-		                      (void *)0);
+		XftPatternAddMatrix(p, XFT_MATRIX, &mx);
 	}
-	else
-		xftfont = XftFontOpen(Xdisplay, Xscreenno,
-		                      XFT_FAMILY, XftTypeString, face,
-		                      XFT_SLANT, XftTypeInteger, int(font.IsItalic() ? 110 : 0),
-		                      XFT_PIXEL_SIZE, XftTypeInteger, hg,
-		                      XFT_WEIGHT, XftTypeInteger, int(font.IsBold() ? 200 : 100),
-		                      XFT_ANTIALIAS, XftTypeBool, FcBool(!font.IsNonAntiAliased()),
-		                      XFT_MINSPACE, XftTypeBool, (FcBool)1,
-	                          (void *)0);
+/*	if(gtk_hinting >= 0)
+		XftPatternAddBool(p, FC_HINTING, gtk_hinting);
+	const char *hs[] = { "hintnone", "hintslight", "hintmedium", "hintfull" };
+	for(int i = 0; i < 4; i++)
+		if(gtk_hintstyle == hs[i])
+			XftPatternAddInteger(p, FC_HINT_STYLE, i);
+	const char *rgba[] = { "_", "rgb", "bgr", "vrgb", "vbgr" };
+	for(int i = 0; i < __countof(rgba); i++)
+		if(gtk_rgba == rgba[i])
+			XftPatternAddInteger(p, XFT_RGBA, i);*/
+//	XftPatternAddBool(p, FC_HINTING, (FcBool)1);
+//	XftPatternAddInteger(p, FC_HINT_STYLE, FC_HINT_FULL);
+//	XftPatternAddInteger(p, FC_RGBA, 1);
+//	XftPatternAddBool(p, FC_ANTIALIAS, FcBool(0));
+	XftResult result;
+	xftfont = XftFontOpenPattern(Xdisplay, XftFontMatch(Xdisplay, Xscreenno, p, &result));
+	XftPatternDestroy(p);
 	return xftfont;
 }
 

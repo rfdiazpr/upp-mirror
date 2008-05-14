@@ -36,9 +36,10 @@ public:
 	const T& Tail() const            { ASSERT(items > 0); return vector[EI()]; }
 	void     DropHead()              { (&Head())->T::~T(); items--; start = Ix(1); }
 	void     DropTail()              { (&Tail())->T::~T(); items--; }
-	void     DropHead(int n)         { while(n-- > 0) DropHead(); }
-	void     DropTail(int n)         { while(n-- > 0) DropTail(); }
+	void     DropHead(int n)         { while(n-- > 0) BiVector<T>::DropHead(); }
+	void     DropTail(int n)         { while(n-- > 0) BiVector<T>::DropTail(); }
 	const T& operator[](int i) const { ASSERT(i >= 0 && i < items); return vector[Ix(i)]; }
+	T&       operator[](int i)       { ASSERT(i >= 0 && i < items); return vector[Ix(i)]; }
 	void     Shrink();
 	void     Reserve(int n);
 	int      GetAlloc() const        { return alloc; }

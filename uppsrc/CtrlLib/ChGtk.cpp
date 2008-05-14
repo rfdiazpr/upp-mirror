@@ -109,7 +109,7 @@ enum {
 	GTK_RANGEA =  0x100000,
 	GTK_RANGEB =  0x200000,
 	GTK_RANGEC =  0x400000,
-	GTK_RANGED =  0x800000,	
+	GTK_RANGED =  0x800000,
 };
 
 static Image sLastImage;
@@ -563,6 +563,25 @@ Image GtkThemeIcon(const char *name, int size)
 	return GetGTK(gtk__parent(), size, 0, name, GTK_THEMEICON, 0, 0);
 }
 
+int GtkStyleInt(const char *name)
+{
+	int h = Null;
+	g_object_get(gtk_settings_get_default(), name, &h, NULL);
+	return h;
+}
+
+String GtkStyleString(const char *name)
+{
+	const char *h = "";
+	g_object_get(gtk_settings_get_default(), name, &h, NULL);
+	return h;
+}
+
+extern int    gtk_antialias;
+extern int    gtk_hinting;
+extern String gtk_hintstyle;
+extern String gtk_rgba;
+
 void ChHostSkin()
 {
 	MemoryIgnoreLeaksBlock __;
@@ -586,23 +605,20 @@ void ChHostSkin()
 
 	ChLookFn(GtkLookFn);
 
-	char *h;
-	g_object_get(gtk_settings_get_default(), "gtk-theme-name", &h, NULL);
-	String engine = h;
+	String engine = GtkStyleString("gtk-theme-name");
 
 	int fontname = Font::ARIAL;
 	int fontheight = 13;
 	bool bold = false;
 	bool italic = false;
 
-	char *font_name = "";
-	g_object_get(gtk_settings_get_default(), "gtk-font-name", &font_name, NULL);
-#ifdef _DEBUG
-	int xdpi = 100 * 1024;
-#else
-	int xdpi = 72 * 1024;
-#endif
-	g_object_get(gtk_settings_get_default(), "gtk-xft-dpi", &xdpi, NULL);
+	const char *font_name = GtkStyleString("gtk-font-name");
+	int xdpi = Nvl(GtkStyleInt("gtk-xft-dpi"), 72 * 1024);
+
+	gtk_antialias = Nvl(GtkStyleInt("gtk-xft-antialias"), -1);
+	gtk_hinting = Nvl(GtkStyleInt("gtk-xft-hinting"), -1);
+	gtk_hintstyle = GtkStyleString("gtk-xft-hintstyle");
+	gtk_rgba = GtkStyleString("gtk-xft-rgba");
 
 	const char *q = strrchr(font_name, ' ');
 	if(q) {
@@ -668,7 +684,7 @@ void ChHostSkin()
 	GTK_TOGGLE_BUTTON(w)->inconsistent = true;
 	GtkIml(CtrlsImg::I_O2, w, 3, "checkbutton", GTK_CHECK|GTK_MARGIN1, is, is);
 	gtk_widget_destroy(w);
-	
+
 	if(engine == "Qt") {
 		for(int i = 0; i < 4; i++) {
 			Image m = CtrlsImg::Get(CtrlsImg::I_O2 + i);
@@ -754,7 +770,7 @@ void ChHostSkin()
 		s.thumbmin = GtkInt("min-slider-length");
 		s.barsize = GtkInt("slider-width");
 		s.arrowsize = GtkInt("stepper-size");
-		
+
 		s.isright2 = s.isdown2 = GtkInt("has-secondary-forward-stepper");
 		s.isleft2 = s.isup2 = GtkInt("has-secondary-backward-stepper");
 
@@ -823,7 +839,7 @@ void ChHostSkin()
 				s.left2.look[i] = ChLookWith(pm.Make(), CtrlsImg::LA(), ButtonMonoColor(i));
 			}
 			ChGtkNew(vscrollbar, "slider", GTK_SLIDER|GTK_VAL1|GTK_MARGIN1|GTK_XMARGIN);
-			GtkChSlider(s.vthumb);	
+			GtkChSlider(s.vthumb);
 			s.barsize += 2;
 			s.arrowsize++;
 			for(int i = 0; i < 4; i++) {
@@ -865,14 +881,14 @@ void ChHostSkin()
 				ChGtkNew("vscrollbar", GTK_ARROW|GTK_VAL1);
 				GtkCh(s.down.look, "02141111");
 				GtkCh(s.down2.look, "02141111");
-	
+
 				static GtkWidget *btn = gtk_button_new();
 				ChGtkNew(btn, "button", GTK_BOX);
-	
+
 				GtkChButton(Button::StyleScroll().Write().look);
 				GtkChButton(Button::StyleEdge().Write().look);
 				GtkChButton(Button::StyleLeftEdge().Write().look);
-	
+
 				{
 					DropList::Style& s = DropList::StyleFrame().Write();
 					GtkChButtonWith(s.look, CtrlsImg::DA());
@@ -887,7 +903,7 @@ void ChHostSkin()
 			else {
 				GtkIml(CtrlsImg::I_UA, ChGtkLast(), 0, 0, "vscrollbar", GTK_ARROW|GTK_TOP|GTK_RANGEA, asz.cx, asz.cy);
 				GtkIml(CtrlsImg::I_DA, ChGtkLast(), 0, 0, "vscrollbar", GTK_ARROW|GTK_VAL1|GTK_BOTTOM|GTK_RANGED, asz.cx, asz.cy);
-	
+
 				ChGtkNew("vscrollbar", GTK_BGBOX|GTK_TOP|GTK_RANGEA);
 				GtkChArrow(s.up.look, CtrlsImg::UA(), po);
 				ChGtkNew("vscrollbar", GTK_BGBOX|GTK_BOTTOM|GTK_RANGED);
@@ -896,15 +912,15 @@ void ChHostSkin()
 				GtkChArrow(s.up2.look, CtrlsImg::UA(), po);
 				ChGtkNew("vscrollbar", GTK_BGBOX|GTK_VCENTER|GTK_RANGEB);
 				GtkChArrow(s.down2.look, CtrlsImg::DA(), po);
-	
+
 				ChGtkNew("vscrollbar", GTK_BOX|GTK_VCENTER|GTK_RANGEB);
 				GtkCh(Button::StyleScroll().Write().look, "02142222");
-	
+
 				int q = !classiq;
-	
+
 				GtkChImgWith(Button::StyleEdge().Write().look, Null, 1 * q);
 				GtkChImgWith(Button::StyleLeftEdge().Write().look, Null, 2 * q);
-	
+
 				{
 					DropList::Style& s = DropList::StyleFrame().Write();
 					GtkChImgWith(s.look, CtrlsImg::DA(), 1 * q, po);
@@ -919,7 +935,7 @@ void ChHostSkin()
 					GtkChImgWith(s.dec.look, q ? CtrlImg::spindown2() : CtrlImg::spindown3(), 1 * q, po);
 				}
 			}
-	
+
 			int d = Diff(fc, SColorPaper());
 			for(int x = 0; x < 4; x++)
 				for(int y = 0; y < 4; y++) {
@@ -933,7 +949,7 @@ void ChHostSkin()
 					}
 				}
 			FieldFrameColor_Write(fc);
-	
+
 			static GtkWidget *hscrollbar = gtk_hscrollbar_new(GTK_ADJUSTMENT(adj));
 			ChGtkNew(hscrollbar, "slider", GTK_SLIDER);
 			GtkChSlider(s.hthumb);
@@ -960,16 +976,16 @@ void ChHostSkin()
 				ChGtkNew("hscrollbar", GTK_BGBOX|GTK_RIGHT|GTK_RANGED);
 				GtkChArrow(s.right.look, CtrlsImg::RA(), po);
 			}
-	
+
 			gtk_object_sink(adj);
-	
+
 			adj = gtk_adjustment_new(0, 0, 1000, 1, 1, 500);
 			w = gtk_vscrollbar_new(NULL);
 			Setup(w);
 			s.overthumb = m != GetGTK(w, 0, 0, "slider", GTK_SLIDER|GTK_VAL1, 16, 32) && engine != "Qt";
 			gtk_widget_destroy(w);
 			gtk_object_sink(adj);
-			
+
 		}
 	}
 
@@ -1159,7 +1175,7 @@ void ChHostSkin()
 		MenuBar::StyleDefault().Write().breaksep.l2 = s.breaksep.l2 = Color(img[0][15]);
 		TopSeparator2_Write(s.breaksep.l2);
 	}
-	
+
 	if(engine != "Qt")
 	{
 		ProgressIndicator::Style& s = ProgressIndicator::StyleDefault().Write();

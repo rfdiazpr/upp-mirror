@@ -973,6 +973,7 @@ void Ctrl::SyncNativeWindows(void)
 				XMoveResizeWindow(Xdisplay, w, r.left, r.top, r.Width(), r.Height());
 		}
 	}
+
 } // END Ctrl::SyncNativeWindows()
 
 // 01/12/2007 - END

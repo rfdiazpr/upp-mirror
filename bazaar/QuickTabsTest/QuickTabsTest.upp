@@ -1,3 +1,5 @@
+description "Bazzar: Quick tabs test. Author: Daniel Kos (unodgs)";
+
 flags
 	QUICKTABS_TEST;
 

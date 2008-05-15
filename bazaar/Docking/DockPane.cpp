@@ -380,6 +380,27 @@ void DockPane::Undock(Ctrl &child, bool animate, bool restore)
 	}
 }
 
+Rect DockPane::GetFinalAnimRect(Ctrl &ctrl)
+{
+	ASSERT(ctrl.GetParent() == this);
+	if (!IsAnimating())
+		return ctrl.GetRect();
+	int ix = FindIndex(ctrl);
+	ASSERT(ix >= 0 && ix < animpos.GetCount());
+	
+	Rect r = GetRect();
+	int prev = ix ? animpos[ix-1] : 0;
+	if (IsHorz()) {
+		r.left += PosToClient(prev) + width*(ix);
+		r.right = r.left + PosToClient(animpos[ix] - prev);				
+	}
+	else {
+		r.top += PosToClient(prev) + width*(ix);
+		r.bottom = r.top + PosToClient(animpos[ix] - prev);
+	}
+	return r;	
+}
+
 DockPane::DockPane()
 {
 	animtick = 0;

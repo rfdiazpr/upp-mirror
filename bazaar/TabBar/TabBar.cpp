@@ -265,7 +265,7 @@ TabBar::TabBar()
 	isctrl = false;
 	isdrag = false;
 	inactivedisabled = false;
-	autoscrollhide = false;
+	autoscrollhide = true;
 	neverempty = 1;
 
 	style[0] = style[1] = style[2] = style[3] = NULL;

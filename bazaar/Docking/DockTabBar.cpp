@@ -120,7 +120,7 @@ DockTabBar::DockTabBar()
 {
 	autohide = -1; 
 	icons = true;
-//	clip = NULL;
+	AutoScrollHide().InactiveDisabled();
 }
 
 // AutoHide bar
@@ -311,7 +311,7 @@ void AutoHideBar::TabDrag(int ix)
 AutoHideBar::AutoHideBar()
 {
 	ctrl = NULL;
-	AutoHideMin(0).CanEmpty();
+	AutoHideMin(0).InactiveDisabled().CanEmpty();
 	popup.WhenEnter = THISBACK2(MouseEnter, Point(0, 0), 0);
 	popup.WhenLeave = THISBACK(MouseLeave);
 	DockTabBar::WhenHighlight = THISBACK(TabHighlight);

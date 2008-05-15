@@ -29,9 +29,9 @@ LRESULT DockCont::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 	return TopWindow::WindowProc(message, wParam, lParam);
 }
 
-void DockCont::StartMouseDrag(const Point &p)
+void DockCont::StartMouseDrag()
 {
-	SendMessage(GetHWND(), WM_NCLBUTTONDOWN, 2, MAKELONG(p.x, p.y));	
+	SendMessage(GetHWND(), WM_NCLBUTTONDOWN, 2, MAKELONG(GetMousePos().x, GetMousePos().y));	
 }
 #elif defined(PLATFORM_X11)
 void DockCont::EventProc(XWindow& w, XEvent *event)
@@ -65,7 +65,7 @@ void DockCont::EventProc(XWindow& w, XEvent *event)
 	TopWindow::EventProc(w, event);	
 }
 
-void DockCont::StartMouseDrag(const Point &p)
+void DockCont::StartMouseDrag()
 {
 	Atom xwndDrag = XAtom("_NET_WM_MOVERESIZE");
 	XEvent e;
@@ -76,8 +76,8 @@ void DockCont::StartMouseDrag(const Point &p)
 	e.xclient.format = 32;
 	e.xclient.display = Xdisplay;
 	e.xclient.send_event = XTrue;
-	e.xclient.data.l[0] = p.x;
-	e.xclient.data.l[1] = p.y;
+	e.xclient.data.l[0] = GetMousePos().x;
+	e.xclient.data.l[1] = GetMousePos().y;
 	e.xclient.data.l[2] = 8;
 	e.xclient.data.l[3] = 1;
 	e.xclient.data.l[4] = 0;	
@@ -657,7 +657,7 @@ DockCont::DockCont()
 	tabbar.WhenContext 		= THISBACK(TabContext);
 	tabbar.WhenClose 		= THISBACK(TabClosed);
 	tabbar.WhenCloseAll		= THISBACK(RefreshLayout);
-	tabbar.AutoScrollHide().InactiveDisabled().SetBottom();	
+	tabbar.SetBottom();	
 
 	handle << close << autohide << windowpos;
 	handle.WhenContext = THISBACK(WindowMenu);

@@ -76,6 +76,7 @@ protected:
 	Rect 			GetAlignBounds(int al, Rect r, bool center, bool allow_lr = true, bool allow_tb = true);
 	int 			GetPointAlign(const Point p, Rect r, bool center, bool allow_lr = true, bool allow_tb = true);
 	int 			GetQuad(Point p, Rect r);
+	Rect			GetFinalAnimRect(int align, Ctrl &c);
 	// Helpers
 	bool 			IsTL(int align) const								{ return align < 2; } //ie (align == DOCK_LEFT || align == DOCK_TOP)
 	bool 			IsTB(int align) const								{ return align & 1; } //ie (align == DOCK_TOP || align == DOCK_BOTTOM)
@@ -150,16 +151,16 @@ public:
 	bool 			IsDockVisible(int align) const	{ ASSERT(align >= 0 && align <= 4); return dockpane[align].IsVisible(); }
 	void 			SetFrameSize(int align, int size);
 
-	DockWindow &	AnimateDelay(int ms)			{ animdelay = max(ms, 0); return *this; }
+	DockWindow &	AnimateDelay(int ms)				{ animdelay = max(ms, 0); return *this; }
 	DockWindow &	Animate(bool highlight = true, bool window = true, int ticks = 10, int interval = 20);
-	DockWindow &	NoAnimate()						{ return Animate(false, false); }
-	bool			IsAnimated() const				{ return animatehl || animatewnd; }
-	bool			IsAnimatedWindows() const		{ return animatehl; }
-	bool			IsAnimatedHighlight() const		{ return animatewnd; }
+	DockWindow &	NoAnimate()							{ return Animate(false, false); }
+	bool			IsAnimated() const					{ return animatehl || animatewnd; }
+	bool			IsAnimatedWindows() const			{ return animatewnd; }
+	bool			IsAnimatedHighlight() const			{ return animatehl; }
 	
-	DockWindow &	Tabbing(bool _tabbing = true) 	{ tabbing = _tabbing; return *this; }
-	DockWindow &	NoTabbing()						{ return Tabbing(false); }
-	bool			IsTabbing() const				{ return tabbing; }
+	DockWindow &	Tabbing(bool _tabbing = true) 		{ tabbing = _tabbing; return *this; }
+	DockWindow &	NoTabbing()							{ return Tabbing(false); }
+	bool			IsTabbing() const					{ return tabbing; }
 
 	DockWindow &	NestedTabs(bool _nestedtabs = true)	{ nestedtabs = _nestedtabs; return *this; }
 	DockWindow &	NoNestedTabs()						{ return NestedTabs(false); }

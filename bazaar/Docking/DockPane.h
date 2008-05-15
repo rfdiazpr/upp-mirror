@@ -28,7 +28,7 @@ private:
 	void 	StartAnimate(int ix, Size sz, bool restore);
 	void 	AnimateTick();
 	void 	EndAnimate();
-
+	
 	void 	SmartReposUp(Vector<int> &p, int ix, int sz);
 	void 	SmartReposDown(Vector<int> &p, int ix);
 	void 	SimpleRepos(Vector<int> &p, int ix, int sz);
@@ -66,6 +66,7 @@ public:
 	void	SetAnimateRate(int ticks, int ms) 		{ animmaxticks = max(1, ticks);	animinterval = max(0, ms); }
 	int		GetAnimMaxTicks() const					{ return animmaxticks; }
 	int		GetAnimInterval() const					{ return animinterval; }
+	Rect	GetFinalAnimRect(Ctrl &ctrl);
 	
 	virtual void Serialize(Stream &s)				{ s % pos; if (s.IsLoading()) FixChildSizes(); }
 	

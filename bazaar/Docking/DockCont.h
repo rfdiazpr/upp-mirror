@@ -157,7 +157,7 @@ public:
 	void			StateAutoHide(DockWindow &dock)				{ StateDocked(dock); Hide(); dockstate = STATE_AUTOHIDE; }
 	void			StateTabbed(DockWindow &dock)				{ StateFloating(dock); Hide(); dockstate = STATE_TABBED; }
 	
-	void			StartMouseDrag(const Point &p);
+	void			StartMouseDrag();
 	
 	DockWindow *	GetDockWindow() const			{ return base; }
 	void			SyncButtons()					{ if (GetCount()) SyncButtons(GetCurrent()); }

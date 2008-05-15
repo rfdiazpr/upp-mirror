@@ -387,7 +387,7 @@ void DockWindow::FloatFromTab(DockCont &c, DockCont &tab)
 {
 	Rect r = c.GetScreenRect();
 	tab.SetRect(r);
-	tab.StateDocked(*this);
+	tab.StateNotDocked(this);
 	c.RefreshLayout();
 	tab.MoveBegin();
 }
@@ -583,6 +583,34 @@ int DockWindow::GetQuad(Point p, Rect r)
 	}
 }
 
+Rect DockWindow::GetFinalAnimRect(int align, Ctrl &c)
+{
+	if (c.GetParent() != &dockpane[align])
+		// c is docked as a tab
+		return c.GetScreenRect();
+	
+	Rect r = dockpane[align].GetFinalAnimRect(c);
+	r.Offset(dockpane[align].GetScreenRect().TopLeft());
+	if (IsFrameAnimating(align)) {
+		switch (align) {
+		case DOCK_LEFT:
+			r.right = r.left + frameanim[align].target - 4;
+			break;
+		case DOCK_TOP:
+			r.bottom = r.top + frameanim[align].target - 4;
+			break;
+		case DOCK_RIGHT:
+			r.left = r.right - frameanim[align].target - 4;
+			break;
+		case DOCK_BOTTOM:
+			r.top = r.bottom - frameanim[align].target - 4;
+			break;
+		}		
+	}
+	return r;	
+}
+
+// HighlightCtrl
 void DockWindow::HighlightCtrl::Paint(Draw &w)
 {	
 	if (!img.IsEmpty())
@@ -692,15 +720,13 @@ void DockWindow::ContainerDragStart(DockCont &dc)
 			tl.y += pt.y - r.top + DOCKCONT_WND_OFFSET;
 			move = true;
 		}
-		// Note: Due to different bugfix, at this point a dragged tab will have docked state but 
-		//	no parent and should not be animatehld
 		dc.SyncUserSize(true, true);
 		if (IsAnimatedHighlight() && dc.IsDocked() && dc.GetParent()) {
 			Undock0(dc, true);
 			dc.StateNotDocked();
 		}
 		FloatContainer(dc, move ? tl : Null);
-		dc.StartMouseDrag(pt);
+		dc.StartMouseDrag();
 	}
 }
 
@@ -731,9 +757,8 @@ void DockWindow::ContainerDragEnd(DockCont &dc)
 		for (int i = 0; i < 4; i++)
 			if (p == &dockpane[i]) align = i;
 
-	if (animatewnd && (p || align != DOCK_NONE)) {
-		FloatAnimate(dc, hl.GetScreenRect());
-	}
+	if (animatewnd && (p || align != DOCK_NONE))
+		FloatAnimate(dc, GetFinalAnimRect(align, hl));
 
 	if (align != DOCK_NONE) {
 		Unfloat(dc);

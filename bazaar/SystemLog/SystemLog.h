@@ -19,7 +19,22 @@ class SystemLog
 		typedef SystemLog CLASSNAME;
 
 		// log levels - in a platform-independent way
-		enum Levels { EMERGENCY = 0x01, ALERT = 0x02, CRITICAL = 0x04, ERROR = 0x08, WARNING = 0x10, NOTICE = 0x20, INFO = 0x40, DEBUG = 0x80, ALLERR = 0x0f, ALL = 0x7f, ALLDEBUG = 0xff};
+#ifdef ERROR
+#undef ERROR
+#endif
+		enum Levels { 
+			EMERGENCY 	= 0x01, 
+			ALERT 		= 0x02, 
+			CRITICAL 	= 0x04, 
+			ERROR 		= 0x08, 
+			WARNING 	= 0x10, 
+			NOTICE 		= 0x20, 
+			INFO 		= 0x40, 
+			DEBUG 		= 0x80, 
+			ALLERR 		= 0x0f, 
+			ALL 		= 0x7f, 
+			ALLDEBUG 	= 0xff
+		};
 
 	private:
 
@@ -46,6 +61,7 @@ class SystemLog
 		int platform(Levels level);
 #elif defined(PLATFORM_WIN32)
 		dword platform(Levels level);
+		HANDLE log;
 #endif
 
 	public:
@@ -70,7 +86,7 @@ class SystemLog
 		// enables/disables sys log ouptut
 		SystemLog &EnableSysLog(bool enable = true) { FSysLogEnabled = enable; return *this; }
 		
-		// enabkes/disables standard upp log output
+		// enables/disables standard upp log output
 		SystemLog &EnableUppLog(bool enable = true) { FUppLogEnabled = enable; return *this; }
 
 		// closes current log stream
@@ -108,9 +124,6 @@ class SystemLog
 		inline SystemLog &Info(String const &message)		{ return WriteLog(INFO			, message); }
 		inline SystemLog &Debug(String const &message)		{ return WriteLog(DEBUG			, message);	}
 };
-#ifdef PLATFORM_WIN32
-bool SetWinRegExpandString(const String& string, const char *value, const char *path, HKEY base_key);
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Streaming-Like operators

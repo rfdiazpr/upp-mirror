@@ -2,6 +2,10 @@
 
 NAMESPACE_UPP
 
+#ifdef ERROR
+#undef ERROR
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Global log object
 SystemLog SysLog;
@@ -103,7 +107,7 @@ SystemLog &SystemLog::Open(String const &name, String const &dllPath)
 		if (!SetWinRegInt(eventTypes, "TypesSupported", path, HKEY_LOCAL_MACHINE))
 			return *this;
 	}
-	log = RegisterEventSource(NULL, logName);
+	log = RegisterEventSource(NULL, FLogName);
 	if (log == NULL)
 		return *this;
 #endif
@@ -158,7 +162,7 @@ String SystemLog::LevelName(Levels level)
 		case CRITICAL :
 			return "CRITICAL :: ";
 		case ERROR :
-			return "ERRROR   :: ";
+			return "ERROR   :: ";
 		case WARNING :
 			return "WARNING  :: ";
 		case NOTICE :
@@ -198,7 +202,7 @@ SystemLog &SystemLog::WriteLog(Levels level, String const &message)
 		array[0] = (const char *)msg;
 		if (log == NULL)
 			return *this;
-		if (!ReportEvent(log, platform(level), 0, 0x00000001L, NULL, 1, 0, &array[0], NULL))
+		if (!ReportEvent(log, (WORD)platform(level), 0, 0x00000001L, NULL, 1, 0, &array[0], NULL))
 			return *this;
 #endif
 	}
@@ -216,16 +220,4 @@ SystemLog &SystemLog::WriteLog(Levels level, String const &message)
 	return *this;
 }
 
-#ifdef PLATFORM_WIN32
-bool SetWinRegExpandString(const String& string, const char *value, const char *path, HKEY base_key)
-{
-	HKEY key = 0;
-	if (RegCreateKeyEx(base_key, path, 0, NULL, REG_OPTION_NON_VOLATILE,
-					   KEY_ALL_ACCESS, NULL, &key, NULL) != ERROR_SUCCESS)
-		return false;
-	bool ok = (RegSetValueEx(key, value, 0,	REG_EXPAND_SZ, string, string.GetLength() + 1) == ERROR_SUCCESS);
-	RegCloseKey(key);
-	return ok;
-}
-#endif
 END_UPP_NAMESPACE

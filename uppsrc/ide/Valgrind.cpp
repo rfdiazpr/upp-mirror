@@ -11,13 +11,44 @@ bool Ide::IsValgrind()
 
 void Ide::Valgrind()
 {
+	static String ValgrindLogFile = "";
+	static bool hasValgrind = true;
+	
+	// runs valgrind --help to find if the correct option is
+	// --log-file-exactly (ubuntu 7.04) or --log-file (ubuntu 8.04)
+	if(hasValgrind && ValgrindLogFile == "")
+	{
+		One<Host> h = CreateHostRunDir();
+		String fn = GetTempFileName();
+		FileOut f(fn);
+		String cmdline;
+		if(!IsNull(h->Execute("valgrind --help", f)))
+		{
+			f.Close();
+			String txt = LoadFile(fn);
+			RLOG(txt << "MAX");
+			DeleteFile(fn);
+			if(txt.Find("--log-file-exactly") > 0)
+			   ValgrindLogFile = "--log-file-exactly";
+			else if (txt.Find("--log-file") > 0)
+			   ValgrindLogFile = "--log-file";
+			else
+				hasValgrind = false;
+		}
+		else
+			hasValgrind = false;
+	}
+	if(!hasValgrind)
+		return;
+	
 	if(!Build())
 		return;
 	One<Host> h = CreateHostRunDir();
 	h->ChDir(Nvl(rundir, GetFileFolder(target)));
 	String cmdline;
 	String fn = GetTempFileName();
-	cmdline << "valgrind --xml=yes --num-callers=40 --log-file=" << fn << ' ';
+//	cmdline << "valgrind --xml=yes --num-callers=40 --log-file-exactly=" << fn << ' ';
+	cmdline << "valgrind --xml=yes --num-callers=40 " << ValgrindLogFile << "=" << fn << ' ';
 	cmdline << '\"' << h->GetHostPath(target) << "\" ";
 	cmdline << runarg;
 	ConsoleClear();

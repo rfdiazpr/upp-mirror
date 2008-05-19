@@ -138,6 +138,12 @@ GridCtrl::ItemRect& GridCtrl::ItemRect::SetConvert(Convert &c)
 	return *this;
 }
 
+GridCtrl::ItemRect& GridCtrl::ItemRect::NoConvert()
+{
+	(*edits)[id].convert = NULL;
+	return *this;
+}
+
 GridCtrl::ItemRect& GridCtrl::ItemRect::NoConvertion()
 {
 	convertion = false;

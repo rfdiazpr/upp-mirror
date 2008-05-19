@@ -99,6 +99,7 @@ GridCtrl::GridCtrl() : holder(*this)
 	draw_last_vert_line = true;
 	sorting             = false;
 	live_cursor         = false;
+	row_changing        = true;
 	edit_mode           = GE_ROW;
 	one_click_edit      = false;
 	coloringMode        = 0;
@@ -107,6 +108,7 @@ GridCtrl::GridCtrl() : holder(*this)
 	edit_ctrls          = false;
 	sorting             = true;
 	sorting_multicol    = true;
+	header              = true;
 
 	cancel_update_cell  = false;
 	cancel_update       = false;
@@ -277,6 +279,7 @@ void GridCtrl::StdToolBar(Bar &bar)
 {
 	bool e = IsEnabled();
 	bool c = e && IsCursor();
+	bool d = c && IsRowEditable();
 
 	if(appending)
 		bar.Add(e, t_("Append"), GridImg::Append(), StdAppend);
@@ -285,14 +288,14 @@ void GridCtrl::StdToolBar(Bar &bar)
 		bar.Add(c, t_("Insert "), GridImg::Insert(), StdInsert);
 
 	if(duplicating)
-		bar.Add(c, t_("Duplicate"), GridImg::Duplicate(), StdDuplicate);
+		bar.Add(d, t_("Duplicate"), GridImg::Duplicate(), StdDuplicate);
 
 	if(removing)
-		bar.Add(c, t_("Delete "), GridImg::Delete(), StdRemove);
+		bar.Add(d, t_("Delete "), GridImg::Delete(), StdRemove);
 
 	if(editing)
 	{
-		bar.Add(!ctrls && c, t_("Edit"), GridImg::Modify(), StdEdit);
+		bar.Add(!ctrls && d, t_("Edit"), GridImg::Modify(), StdEdit);
 		if(accepting)
 			bar.Add(ctrls, t_("Accept"), GridImg::Commit(), THISBACK(DoEndEdit));
 		if(canceling)
@@ -462,6 +465,7 @@ String GridCtrl::RowFormat(const char *s)
 void GridCtrl::StdMenuBar(Bar &bar)
 {
 	bool c = IsCursor();
+	bool e = c && IsRowEditable();
 	bool isitem = false;
 
 	if(inserting)
@@ -518,7 +522,7 @@ void GridCtrl::StdMenuBar(Bar &bar)
 
 	if(editing)
 	{
-		bar.Add(!ctrls && c, t_("Edit"), StdEdit)
+		bar.Add(!ctrls && e, t_("Edit"), StdEdit)
 		   .Image(GridImg::Modify())
 		   .Help(RowFormat(t_("Edit active %s.")))
 		   .Key(K_ENTER);
@@ -562,7 +566,7 @@ void GridCtrl::StdMenuBar(Bar &bar)
 
 void GridCtrl::RemovingMenu(Bar &bar)
 {
-	bool c = IsCursor();
+	bool c = IsCursor() && IsRowEditable();
 	bar.Add(c && (keep_last_row ? GetCount() > 1 : true), t_("Delete "), StdRemove)
 	   .Image(GridImg::Delete())
 	   .Help(RowFormat(t_("Delete active %s.")))
@@ -986,6 +990,13 @@ void GridCtrl::Paint(Draw &w)
 
 	Size sz = GetSize();
 	Rect rc = Rect(sz);  //w.GetClip() - it always returns view rect now. bug??
+
+	if(!ready)
+	{
+		w.DrawRect(rc, SColorPaper);
+		return;
+	}
+
 	int i, j, cx, cy, x, y;
 	bool skip;
 	Rect r;
@@ -1299,13 +1310,17 @@ void GridCtrl::Paint(Draw &w)
 						}
 						if(!IsNull(t.font))  fnt = t.font;
 						dword s = 0;
-						if(t.align == ALIGN_LEFT)
-							s = GD::LEFT;
-						else if(t.align == ALIGN_RIGHT)
-							s = GD::RIGHT;
-						else if(t.align == ALIGN_CENTER)
-							s = GD::HCENTER;
-						style |= s;
+						if(!IsNull(t.align))
+						{
+							if(t.align == ALIGN_LEFT)
+								s = GD::LEFT;
+							else if(t.align == ALIGN_RIGHT)
+								s = GD::RIGHT;
+							else if(t.align == ALIGN_CENTER)
+								s = GD::HCENTER;
+							style &= ~GD::HALIGN;
+							style |= s;
+						}
 					}
 					else
 						val = hi.IsConvertion() && vi.IsConvertion() ? GetConvertedColumn(id, it.val) : it.val;
@@ -1470,8 +1485,16 @@ GridCtrl::ItemRect& GridCtrl::AddColumn(const char *name, int size, bool idx)
 			firstVisCol = lastVisCol;
 	}
 
-	if(vitems[0].nsize == 0)
+	if(header && vitems[0].nsize == 0)
+	{
 		vitems[0].size = vitems[0].nsize = GD_HDR_HEIGHT;
+		vitems[0].hidden = false;
+	}
+	else
+	{
+		vitems[0].size = vitems[0].nsize = 0;
+		vitems[0].hidden = true;
+	}
 
 	edits.Add();
 
@@ -2788,6 +2811,9 @@ GridCtrl::CurState GridCtrl::SetCursor0(int x, int y, bool mouse, bool highlight
 GridCtrl::CurState GridCtrl::SetCursor0(Point p, bool mouse, bool highlight, int dirx, int diry, bool ctrlmode)
 {
 	CurState cs;
+	if(!row_changing)
+		return cs;
+
 	WhenCursor();
 	if(cancel_cursor)
 	{
@@ -3273,33 +3299,20 @@ void GridCtrl::CalcIntPos(RectItems &its, int n, int maxsize, int cnt, int resiz
 	its[0].npos = 0;
 
 	int last_vis = 1;
+	int hidden = 0;
 
-	if(!renumber)
+	for(int i = (renumber ? 1 : max(1, n)); i <= cnt ; i++)
 	{
-		for(int i = max(1, n); i <= cnt ; i++)
-		{
-			its[i].npos = Round(its[i].Left());
-			its[i - 1].nsize = its[i].npos - its[i - 1].npos;
-			if(!its[i].hidden)
-				last_vis = i;
-		}
-	}
-	else
-	{
+		its[i].npos = Round(its[i].Left());
+		its[i - 1].nsize = its[i].npos - its[i - 1].npos;
 
-		int hidden = 0;
-
-		for(int i = 1; i <= cnt ; i++)
-		{
-			its[i].npos = Round(its[i].Left());
-			its[i - 1].nsize = its[i].npos - its[i - 1].npos;
-
+		if(renumber)
 			its[i].n = hidden;
-			if(its[i].hidden)
-				hidden++;
-			else
-				last_vis = i;
-		}
+
+		if(its[i].hidden)
+			hidden++;
+		else
+			last_vis = i;
 	}
 
 	last_vis = cnt;
@@ -3393,6 +3406,9 @@ bool GridCtrl::Recalc(bool horizontal, RectItems &its, int resize_mode)
 	int tcnt = cnt;
 
 	its[0].pos = 0;
+
+	if(!horizontal && !header)
+		its[0].size = 0;
 
 	if(resize_mode == 0)
 	{
@@ -5050,15 +5066,18 @@ void GridCtrl::Clear(bool columns)
 
 	row_modified = 0;
 
-	UpdateSizes();
-	UpdateHolder();
-	UpdateSb();
+	if(ready)
+	{
+		UpdateSizes();
+		UpdateHolder();
+		UpdateSb();
 
-	oldpos.x = sbx;
-	oldpos.y = sby;
+		oldpos.x = sbx;
+		oldpos.y = sby;
 
-	RebuildToolBar();
-	Refresh();
+		RebuildToolBar();
+		Refresh();
+	}
 
 	doscroll = true;
 }

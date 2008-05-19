@@ -259,3 +259,7 @@
 	after 2008.1beta2
 
 	- hiding/showing columns works again in proportional mode (R)
+	- align value from AttrText was inproperly passed to cell style
+	+ added Header(bool) - to turn on/off the header
+	- some fixes to Ready()
+	+ added RowChanging(bool) - false -> changing row is not possible

@@ -586,6 +586,7 @@ class GridCtrl : public Ctrl
 				template<typename T>
 				ItemRect& EditConvertDisplay(T &ctrl)            { return Edit(ctrl).SetConvert(ctrl).SetDisplay(ctrl); }
 				ItemRect& SetConvert(Convert &c);
+				ItemRect& NoConvert();
 				ItemRect& SetFormat(const char *fmt);
 				ItemRect& SetDisplay(GridDisplay &gd);
 				ItemRect& IgnoreDisplay();
@@ -722,9 +723,11 @@ class GridCtrl : public Ctrl
 		bool draw_last_vert_line:1;
 		bool sorting:1;
 		bool sorting_multicol:1;
+		bool header:1;
 		bool live_cursor:1;
 		bool ctrlRowMode:1;
 		bool ctrlColMode:1;
+		bool row_changing:1;
 		int  coloringMode;
 
 		int  resize_paint_mode;
@@ -939,6 +942,7 @@ class GridCtrl : public Ctrl
 		GridCtrl& LiveCursor(bool b = true)   	  { live_cursor         = b; return *this; }
 		GridCtrl& Sorting(bool b = true)      	  { sorting             = b; return *this; }
 		GridCtrl& MultiSorting(bool b = true) 	  { sorting_multicol    = b; return *this; }
+		GridCtrl& Header(bool b = true)           { header              = b; return *this; }
 		GridCtrl& EditMode(int m)      			  { edit_mode           = m; return *this; }
 		GridCtrl& EditRow()         			  { edit_mode           = GE_ROW;  return *this; }
 		GridCtrl& EditCell()         			  { edit_mode           = GE_CELL; return *this; }
@@ -992,6 +996,7 @@ class GridCtrl : public Ctrl
 		GridCtrl& ExtraPaste(bool b = true)       { extra_paste       = b;  return *this; }
 		GridCtrl& FixedPaste(bool b = true)       { fixed_paste       = b;  return *this; }
 		GridCtrl& AskRemove(bool b = true)        { ask_remove        = b;  return *this; }
+		GridCtrl& RowChanging(bool b = true)      { row_changing      = b;  return *this; }
 
 		GridCtrl& DrawFocus(bool b = true)        { draw_focus        = b;  return *this; }
 		GridCtrl& CancelAll(bool b = true)        { cancel_all        = b;  return *this; }

@@ -23,7 +23,7 @@ class SystemLog
 		{
 			LEMERGENCY	= 0x01,
 			LALERT		= 0x02,
-			LCRITICA	 = 0x04,
+			LCRITICAL	= 0x04,
 			LERROR		= 0x08,
 			LWARNING	= 0x10,
 			LNOTICE		= 0x20,

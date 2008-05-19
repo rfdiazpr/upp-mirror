@@ -165,9 +165,9 @@ void SystemLog::Flush()
 		const char *array[2];
 		array[0] = (const char *)msg;
 		if (log == NULL)
-			return *this;
+			return;
 		if (!ReportEvent(log, (WORD)platform(FLastLevel), 0, 0x00000001L, NULL, 1, 0, &array[0], NULL))
-			return *this;
+			return;
 #endif
 	}
 }

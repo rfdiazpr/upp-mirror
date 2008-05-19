@@ -2,10 +2,6 @@
 
 NAMESPACE_UPP
 
-#ifdef ERROR
-#undef ERROR
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Global log object
 SystemLog SysLog;
@@ -18,23 +14,23 @@ dword SystemLog::platform(Levels level)
 #endif
 {
 #ifdef PLATFORM_POSIX
-	if(level & EMERGENCY)	return LOG_EMERG;
-	if(level & ALERT)		return LOG_ALERT;
-	if(level & CRITICAL)	return LOG_CRIT;
-	if(level & ERROR)		return LOG_ERR;
-	if(level & WARNING)		return LOG_WARNING;
-	if(level & NOTICE)		return LOG_NOTICE;
-	if(level & INFO)		return LOG_INFO;
-	if(level & DEBUG)		return LOG_DEBUG;
+	if(level & LEMERGENCY)	return LOG_EMERG;
+	if(level & LALERT)		return LOG_ALERT;
+	if(level & LCRITICAL)	return LOG_CRIT;
+	if(level & LERROR)		return LOG_ERR;
+	if(level & LWARNING)	return LOG_WARNING;
+	if(level & LNOTICE)		return LOG_NOTICE;
+	if(level & LINFO)		return LOG_INFO;
+	if(level & LDEBUG)		return LOG_DEBUG;
 #elif defined(PLATFORM_WIN32)
-	if(level & EMERGENCY)	return EVENTLOG_ERROR_TYPE;
-	if(level & ALERT)		return EVENTLOG_ERROR_TYPE;
-	if(level & CRITICAL)	return EVENTLOG_ERROR_TYPE;
-	if(level & ERROR)		return EVENTLOG_ERROR_TYPE;
-	if(level & WARNING)		return EVENTLOG_WARNING_TYPE;
-	if(level & NOTICE)		return EVENTLOG_INFORMATION_TYPE;
-	if(level & INFO)		return EVENTLOG_INFORMATION_TYPE;
-	if(level & DEBUG)		return EVENTLOG_INFORMATION_TYPE;
+	if(level & LEMERGENCY)	return EVENTLOG_ERROR_TYPE;
+	if(level & LALERT)		return EVENTLOG_ERROR_TYPE;
+	if(level & LCRITICAL)	return EVENTLOG_ERROR_TYPE;
+	if(level & LERROR)		return EVENTLOG_ERROR_TYPE;
+	if(level & LWARNING)	return EVENTLOG_WARNING_TYPE;
+	if(level & LNOTICE)		return EVENTLOG_INFORMATION_TYPE;
+	if(level & LINFO)		return EVENTLOG_INFORMATION_TYPE;
+	if(level & LDEBUG)		return EVENTLOG_INFORMATION_TYPE;
 #endif
 
 	// should not happen....
@@ -55,6 +51,12 @@ SystemLog::SystemLog()
 	FSysLogEnabled = false;
 	FUppLogEnabled = true;
 	
+	// initializes log buffer
+	FBuffer = "";
+	
+	// initializes starting log level
+	FLastLevel = LERROR;
+	
 } // END Constructor class SystemLog
 		
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,6 +74,9 @@ void SystemLog::Close()
 {
 	if (FOpened)
 	{
+		// flushes log buffer
+		Flush();
+		
 #ifdef PLATFORM_POSIX
 		closelog();
 #elif defined(PLATFORM_WIN32)
@@ -120,9 +125,60 @@ SystemLog &SystemLog::Open(String const &name, String const &dllPath)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
+// flushes log buffer
+void SystemLog::Flush()
+{
+	// if no log opened, or buffer empty, does nothing
+	if (!FOpened || FBuffer == "" || !(FEnabledLevels & FLastLevel))
+	{
+		FBuffer = "";
+		return;
+	}
+	
+	// Inserts log level name on buffer's head
+	String msg = LevelName(FLastLevel) + FBuffer;
+	
+	// wipes buffer
+	FBuffer = "";
+	
+	// outputs buffer to enabled log streams
+
+	// if upp log enabled, log on upp app log file
+	if(FUppLogEnabled)
+		LOG(msg);
+	
+	// if CErr is enabled and message is an error one, logs to CErr()
+	if(FCerrEnabled && (FLastLevel & LALLERR))
+//		Cerr() << FLogName << " : " << msg << "\n";
+		fprintf(stderr, "%s : %s\n", (const char *)FLogName, (const char *)msg);
+	else if(FCoutEnabled)
+		fprintf(stdout, "%s : %s\n", (const char *)FLogName, (const char *)msg);
+//		Cout() << FLogName << " : " << msg << "\n";
+
+	// if syslog enabled, logs on syslog
+	if(FSysLogEnabled)
+	{
+
+#ifdef PLATFORM_POSIX
+		syslog(platform(FLastLevel), msg);
+#elif defined(PLATFORM_WIN32)
+		const char *array[2];
+		array[0] = (const char *)msg;
+		if (log == NULL)
+			return *this;
+		if (!ReportEvent(log, (WORD)platform(FLastLevel), 0, 0x00000001L, NULL, 1, 0, &array[0], NULL))
+			return *this;
+#endif
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
 // enable specified level(s)
 SystemLog &SystemLog::EnableLevels(byte Levels)
 {
+	// flushes log buffer if needed
+	Flush();
+	
 	FEnabledLevels |= Levels;
 	
 	return *this;
@@ -133,6 +189,9 @@ SystemLog &SystemLog::EnableLevels(byte Levels)
 // disable specified level(s)
 SystemLog &SystemLog::DisableLevels(byte Levels)
 {
+	// flushes log buffer if needed
+	Flush();
+	
 	FEnabledLevels &= ~Levels;
 	
 	return *this;
@@ -143,6 +202,9 @@ SystemLog &SystemLog::DisableLevels(byte Levels)
 // sets enabled lebels to 'Levels'
 SystemLog &SystemLog::SetLevels(byte Levels)
 {
+	// flushes log buffer if needed
+	Flush();
+	
 	FEnabledLevels = Levels;
 	
 	return *this;
@@ -155,21 +217,21 @@ String SystemLog::LevelName(Levels level)
 {
 	switch(level)
 	{
-		case EMERGENCY :
+		case LEMERGENCY :
 			return "EMERGENCY:: ";
-		case ALERT :
+		case LALERT :
 			return "ALERT    :: ";
-		case CRITICAL :
+		case LCRITICAL :
 			return "CRITICAL :: ";
-		case ERROR :
-			return "ERROR   :: ";
-		case WARNING :
+		case LERROR :
+			return "ERROR    :: ";
+		case LWARNING :
 			return "WARNING  :: ";
-		case NOTICE :
+		case LNOTICE :
 			return "NOTICE   :: ";
-		case INFO :
+		case LINFO :
 			return "INFO     :: ";
-		case DEBUG :
+		case LDEBUG :
 			return "DEBUG    :: ";
 		default:
 			return "UNKNOWN  :: ";
@@ -177,6 +239,30 @@ String SystemLog::LevelName(Levels level)
 	
 } // END SystemLog::LevelName()
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+// sets current use level
+SystemLog &SystemLog::SetLevel(Levels level)
+{
+	if(FLastLevel != level)
+	{
+		Flush();
+		FLastLevel = level;
+	}
+	return *this;
+
+} // END SystemLog::SetLevel()
+
+SystemLog &SystemLog::operator()(Levels level)
+{
+	if(FLastLevel != level)
+	{
+		Flush();
+		FLastLevel = level;
+	}
+	return *this;
+
+} // END SystemLog::operator()
+	
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // writes log message at required level
 SystemLog &SystemLog::WriteLog(Levels level, String const &message)
@@ -189,34 +275,25 @@ SystemLog &SystemLog::WriteLog(Levels level, String const &message)
 	if(!(FEnabledLevels & level))
 		return *this;
 	
-	String msg = LevelName(level) + message;
+	// if changing log level, flushes previous buffer
+	if(FLastLevel != level)
+		Flush();
 	
-	// if syslog enabled, logs on syslog
-	if(FSysLogEnabled)
+	// sets last level as current
+	FLastLevel = level;
+	
+	// appends current message to buffer
+	int start = 0;
+	int nl = 0;
+	while( nl < message.GetCount() && (nl = message.Find('\n', start)) >= 0)
 	{
-
-#ifdef PLATFORM_POSIX
-		syslog(platform(level), msg);
-#elif defined(PLATFORM_WIN32)
-		const char *array[2];
-		array[0] = (const char *)msg;
-		if (log == NULL)
-			return *this;
-		if (!ReportEvent(log, (WORD)platform(level), 0, 0x00000001L, NULL, 1, 0, &array[0], NULL))
-			return *this;
-#endif
+		FBuffer += message.Mid(start, nl-start);
+		Flush();
+		start = nl+1;
 	}
-
-	// if upp log enabled, log on upp app log file
-	if(FUppLogEnabled)
-		LOG(msg);
+	if(start < message.GetCount())
+		FBuffer += message.Mid(start);
 	
-	// if CErr is enabled and message is an error one, logs to CErr()
-	if(FCerrEnabled && (level & ALLERR))
-		Cerr() << FLogName << " : " << msg << "\n";
-	else if(FCoutEnabled)
-		Cout() << FLogName << " : " << msg << "\n";
-
 	return *this;
 }
 

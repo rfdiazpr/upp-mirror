@@ -19,21 +19,19 @@ class SystemLog
 		typedef SystemLog CLASSNAME;
 
 		// log levels - in a platform-independent way
-#ifdef ERROR
-#undef ERROR
-#endif
-		enum Levels { 
-			EMERGENCY 	= 0x01, 
-			ALERT 		= 0x02, 
-			CRITICAL 	= 0x04, 
-			ERROR 		= 0x08, 
-			WARNING 	= 0x10, 
-			NOTICE 		= 0x20, 
-			INFO 		= 0x40, 
-			DEBUG 		= 0x80, 
-			ALLERR 		= 0x0f, 
-			ALL 		= 0x7f, 
-			ALLDEBUG 	= 0xff
+		enum Levels
+		{
+			LEMERGENCY	= 0x01,
+			LALERT		= 0x02,
+			LCRITICA	 = 0x04,
+			LERROR		= 0x08,
+			LWARNING	= 0x10,
+			LNOTICE		= 0x20,
+			LINFO		= 0x40,
+			LDEBUG		= 0x80,
+			LALLERR		= 0x0f,
+			LALL		= 0x7f,
+			LALLDEBUG	= 0xff
 		};
 
 	private:
@@ -56,13 +54,18 @@ class SystemLog
 		// last log level used -- uset to allow contatenation of operator <<
 		Levels FLastLevel;
 		
-		// gets platfor-dependent log level
+		// gets platform-dependent log level
 #ifdef PLATFORM_POSIX
 		int platform(Levels level);
 #elif defined(PLATFORM_WIN32)
 		dword platform(Levels level);
 		HANDLE log;
 #endif
+
+		// libe buffer, to overcome limitation of system log calls
+		// that appends a newline on each operation, making impossible to concatenate
+		// output on a single line with operator <<
+		String FBuffer;
 
 	public:
 
@@ -91,6 +94,9 @@ class SystemLog
 
 		// closes current log stream
 		void Close();
+		
+		// flushes current log buffer
+		void Flush();
 
 		// enables/disables/set log levels
 		
@@ -107,22 +113,23 @@ class SystemLog
 		String LevelName(Levels level);
 		
 		// sets current use level
-		SystemLog &SetLevel(Levels level) { FLastLevel = level; return *this; }
-		SystemLog &operator()(Levels level) { FLastLevel = level; return *this; }
+		SystemLog &SetLevel(Levels level);
+		SystemLog &operator()(Levels level);
 	
 		// writes log message at required level
 		SystemLog &WriteLog(Levels level, String const &message);
 		SystemLog &WriteLog(String const &message) { return WriteLog(FLastLevel, message); }
 		
 		// shortcuts for various log levels
-		inline SystemLog &Emergency(String const &message)	{ return WriteLog(EMERGENCY		, message); }
-		inline SystemLog &Alert(String const &message)		{ return WriteLog(ALERT			, message); }
-		inline SystemLog &Critical(String const &message)	{ return WriteLog(CRITICAL		, message);	}
-		inline SystemLog &Error(String const &message)		{ return WriteLog(ERROR			, message);	}
-		inline SystemLog &Warning(String const &message)	{ return WriteLog(WARNING		, message);	}
-		inline SystemLog &Notice(String const &message)		{ return WriteLog(NOTICE		, message);	}
-		inline SystemLog &Info(String const &message)		{ return WriteLog(INFO			, message); }
-		inline SystemLog &Debug(String const &message)		{ return WriteLog(DEBUG			, message);	}
+		inline SystemLog &Emergency(String const &message)	{ return WriteLog(LEMERGENCY	, message); }
+		inline SystemLog &Alert(String const &message)		{ return WriteLog(LALERT		, message); }
+		inline SystemLog &Critical(String const &message)	{ return WriteLog(LCRITICAL		, message);	}
+		inline SystemLog &Error(String const &message)		{ return WriteLog(LERROR		, message);	}
+		inline SystemLog &Warning(String const &message)	{ return WriteLog(LWARNING		, message);	}
+		inline SystemLog &Notice(String const &message)		{ return WriteLog(LNOTICE		, message);	}
+		inline SystemLog &Info(String const &message)		{ return WriteLog(LINFO			, message); }
+		inline SystemLog &Debug(String const &message)		{ return WriteLog(LDEBUG		, message);	}
+		
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

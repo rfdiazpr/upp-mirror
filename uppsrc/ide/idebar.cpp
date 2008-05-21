@@ -411,9 +411,11 @@ void Ide::DebugMenu(Bar& menu)
 			.Help("Build application & run external debugger (see Base setup, default \"msdev.exe\")");
 		menu.Add(b, AK_DEBUGFILEEXT, THISBACK(BuildAndExtDebugFile))
 			.Help("Build application & run external debugger, trying to start with current file");
+	#ifdef PLATFORM_POSIX
 		if(IsValgrind())
 			menu.Add(b, AK_VALGRIND, THISBACK(Valgrind))
 				.Help("Build application & run in valgring");
+	#endif
 
 		menu.Separator();
 	}

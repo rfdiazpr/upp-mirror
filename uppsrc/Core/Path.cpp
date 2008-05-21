@@ -49,17 +49,13 @@ bool PatternMatch(const char *p, const char *s) {
 	q = strchr(p, '.');
 	if(q) {
 		if(q[1] == '\0') {
-			char h[32];
 			if(strchr(s, '.')) return false;
-			strcpy(h, p);
-			h[(int)(q - p)] = '\0';
+			String h(p, q);
 			return strecmp0(h, s);
 		}
 		else
 		if(q[1] == '*' && q[2] == '\0') {
-			char h[32];
-			strcpy(h, p);
-			h[(int)(q - p)] = '\0';
+			String h(p, q);
 			return strecmp0(h, s) || strecmp0(p, s);
 		}
 	}

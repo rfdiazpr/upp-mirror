@@ -80,7 +80,9 @@ void MemoryBreakpoint(dword serial)
 	s_allocbreakpoint = serial;
 }
 
-void *MemoryAllocDebug(size_t size)
+void *MemoryAlloc_(size_t size);
+
+void *MemoryAlloc(size_t size)
 {
 	if(PanicMode)
 		return malloc(size);
@@ -88,7 +90,7 @@ void *MemoryAllocDebug(size_t size)
 	sHeapLock2.Enter();
 #endif
 	static dword serial_number = 0;
-	DbgBlkHeader *p = (DbgBlkHeader *)MemoryAlloc(sizeof(DbgBlkHeader) + size + sizeof(dword));
+	DbgBlkHeader *p = (DbgBlkHeader *)MemoryAlloc_(sizeof(DbgBlkHeader) + size + sizeof(dword));
 	p->serial = s_ignoreleaks ? 0 : ~ ++serial_number ^ (uintptr_t) p;
 	if(size == 568) {
 //		__asm int 3
@@ -109,7 +111,15 @@ void *MemoryAllocDebug(size_t size)
 	return p + 1;
 }
 
-void MemoryFreeDebug(void *ptr)
+void *MemoryAllocSz(size_t& size)
+{
+	size = (size + 15) & ~((size_t)15);
+	return MemoryAlloc(size);
+}
+
+void MemoryFree_(void *ptr);
+
+void MemoryFree(void *ptr)
 {
 #ifdef LOGAF
 	char h[200];
@@ -128,7 +138,7 @@ void MemoryFreeDebug(void *ptr)
 		DbgHeapPanic("Heap is corrupted ", p);
 	}
 	p->Unlink();
-	MemoryFree(p);
+	MemoryFree_(p);
 }
 
 void MemoryCheckDebug()

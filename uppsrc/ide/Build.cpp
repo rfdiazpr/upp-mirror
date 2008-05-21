@@ -294,8 +294,6 @@ String Ide::OutDir(const Index<String>& cfg, const String& package, const Vector
 	Vector<String> x;
 	bool dbg = cfg.Find("DEBUG_FULL") >= 0 || cfg.Find("DEBUG_MINIMAL") >= 0;
 	if(cfg.Find("DEBUG") >= 0) {
-		if(dbg)
-			excl.Add("DEBUG");
 		excl.Add("BLITZ");
 		if(cfg.Find("BLITZ") < 0)
 			x.Add("NOBLITZ");

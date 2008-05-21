@@ -14,6 +14,8 @@ public:
 	double&        operator () (int r)               { return Right(r); }
 	double         operator () (int r) const         { return Right(r); }
 
+	void           AddLSI(const double *bases, double value);
+
 	Vector<double> Solve();
 
 	static void    SelfTest();

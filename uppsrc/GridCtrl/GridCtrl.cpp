@@ -1490,7 +1490,7 @@ GridCtrl::ItemRect& GridCtrl::AddColumn(const char *name, int size, bool idx)
 		vitems[0].size = vitems[0].nsize = GD_HDR_HEIGHT;
 		vitems[0].hidden = false;
 	}
-	else
+	if(!header)
 	{
 		vitems[0].size = vitems[0].nsize = 0;
 		vitems[0].hidden = true;

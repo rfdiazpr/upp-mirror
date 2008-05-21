@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#ifdef UPP_HEAP
+#if defined(UPP_HEAP) && !defined(HEAPDBG)
 
 #include "HeapImp.h"
 
@@ -43,8 +43,8 @@ static inline void MFree_S(void *ptr)
 
 #else
 
-static inline void *MAlloc_S()          { return malloc(32); }
-static inline void  MFree_S(void *ptr)  { free(ptr); }
+static inline void *MAlloc_S()          { return new byte[32]; }
+static inline void  MFree_S(void *ptr)  { delete[] (byte *)ptr; }
 
 #endif
 

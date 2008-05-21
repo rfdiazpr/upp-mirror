@@ -313,7 +313,7 @@ void TimingInspector::End() {
 	}
 }
 
-String TimingInspector::Dump() const {
+String TimingInspector::Dump() {
 	String s = Sprintf("TIMING %-15s: ", name);
 	if(call_count == 0)
 		return s + "No active hit";

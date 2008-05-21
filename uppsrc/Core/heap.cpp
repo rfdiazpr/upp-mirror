@@ -293,6 +293,7 @@ void *CheckFree(void *p, int k)
 inline void *CheckFree(void *p, int) { return p; }
 #endif
 
+#ifndef HEAPDBG
 void *MemoryAllocSz(size_t& size)
 {
 	size_t sz = size;
@@ -326,8 +327,13 @@ void *MemoryAllocSz(size_t& size)
 	}
 	return LAlloc(size);
 }
+#endif
 
+#ifdef HEAPDBG
+void *MemoryAlloc_(size_t sz)
+#else
 void *MemoryAlloc(size_t sz)
+#endif
 {
 	if(sz == 0) sz = 1;
 	if(sz <= 256) {
@@ -374,7 +380,11 @@ void MFree_Reduce(MCache& m, int k)
 	m.count -= CACHERES;
 }
 
+#ifdef HEAPDBG
+void MemoryFree_(void *ptr)
+#else
 void MemoryFree(void *ptr)
+#endif
 {
 	if(!ptr) return;
 	if(((dword)(uintptr_t)ptr) & 8)

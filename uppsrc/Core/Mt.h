@@ -4,6 +4,41 @@ inline void AssertST() {}
 
 #ifdef _MULTITHREADED
 
+#ifdef COMPILER_MSC
+#define thread__ __declspec(thread)
+#else
+#define thread__ __thread
+#endif
+
+#ifdef flagPROFILEMT
+class Mutex;
+class StaticMutex;
+
+struct MtInspector {
+	const char *name;
+	int   number;
+	int   locked;
+	int   blocked;
+
+	static MtInspector *Dumi();
+
+	MtInspector(const char *s, int n = -1) { name = s; number = n; locked = blocked = 0; }
+	~MtInspector();
+};
+
+#define PROFILEMT(mutex) \
+	{ static MtInspector MK__s(__FILE__, __LINE__); mutex.Set(MK__s); }
+
+#define PROFILEMT_(mutex, id) \
+	{ static MtInspector MK__s(id); mutex.Set(MK__s); }
+
+#else
+
+#define PROFILEMT(mutex)
+#define PROFILEMT_(mutex, id)
+
+#endif
+
 class Callback;
 
 class Thread {
@@ -65,7 +100,7 @@ inline void ReadMemoryBarrier()
 	#else
 		__asm__("lfence");
 	#endif
-#else	
+#else
 	#ifdef COMPILER_MSC
 		__asm lfence;
 	#else
@@ -81,7 +116,7 @@ inline void WriteMemoryBarrier() {
 	#else
 		__asm__("sfence");
 	#endif
-#else	
+#else
 	#ifdef COMPILER_MSC
 		__asm sfence;
 	#else
@@ -105,7 +140,6 @@ inline void BarrierWrite(volatile U& ptr, V data)
 	WriteMemoryBarrier();
 	ptr = data;
 }
-
 
 class Semaphore {
 #ifdef PLATFORM_WIN32
@@ -135,6 +169,8 @@ public:
 	void Release()               { Get().Release(); }
 };
 
+struct MtInspector;
+
 #ifdef PLATFORM_WIN32
 
 typedef LONG Atomic;
@@ -146,15 +182,25 @@ inline int  AtomicXAdd(volatile Atomic& t, int incr)  { return InterlockedExchan
 class Mutex {
 protected:
 	CRITICAL_SECTION section;
+	MtInspector        *mti;
 
 	Mutex(int)         {}
 
 public:
 	bool  TryEnter();
-	void  Enter()                { EnterCriticalSection(&section); }
 	void  Leave()                { LeaveCriticalSection(&section); }
 
+#ifdef flagPROFILEMT
+	void  Enter()                { if(!TryEnter()) { mti->blocked++; EnterCriticalSection(&section); }; mti->locked++; }
+	void  Set(MtInspector& m)    { mti = &m; }
+
+	Mutex()                      { mti = MtInspector::Dumi(); InitializeCriticalSection(&section); }
+#else
+	void  Enter()                { EnterCriticalSection(&section); }
+
 	Mutex()                      { InitializeCriticalSection(&section); }
+#endif
+
 	~Mutex()                     { DeleteCriticalSection(&section); }
 
 	struct Lock;
@@ -200,18 +246,22 @@ inline int  AtomicDec(volatile Atomic& t)             { using namespace __gnu_cx
 class Mutex {
 protected:
 	pthread_mutex_t  mutex[1];
-
-	Mutex(int)         {}
+	MtInspector     *mti;
 
 public:
-	bool  TryEnter()   { return pthread_mutex_trylock(mutex); }
-	void  Enter()      { pthread_mutex_lock(mutex); }
-	void  Leave()      { pthread_mutex_unlock(mutex); }
+	bool  TryEnter()          { return pthread_mutex_trylock(mutex) == 0; }
+#ifdef flagPROFILEMT
+	void  Enter()             { if(!TryEnter()) { mti->blocked++; pthread_mutex_lock(mutex); } mti->locked++; }
+	void  Set(MtInspector& m) { mti = &m; }
+#else
+	void  Enter()             { pthread_mutex_lock(mutex); }
+#endif
+	void  Leave()             { pthread_mutex_unlock(mutex); }
 
 	struct Lock;
 
 	Mutex();
-	~Mutex();
+	~Mutex()           { pthread_mutex_destroy(mutex); }
 };
 
 class RWMutex {
@@ -260,11 +310,14 @@ class StaticMutex {
 	void Initialize();
 
 public:
-	Mutex& Get()         { if(!ReadWithBarrier(section)) Initialize(); return *const_cast<Mutex *>(section); }
-	operator Mutex&()    { return Get(); }
-	bool TryEnter()      { return Get().TryEnter();}
-	void Enter()         { Get().Enter();}
-	void Leave()         { Get().Leave(); }
+	Mutex& Get()               { if(!ReadWithBarrier(section)) Initialize(); return *const_cast<Mutex *>(section); }
+	operator Mutex&()          { return Get(); }
+	bool TryEnter()            { return Get().TryEnter();}
+	void Enter()               { Get().Enter();}
+	void Leave()               { Get().Leave(); }
+#ifdef flagPROFILEMT
+	void Set(MtInspector& mti) { Get().Set(mti); }
+#endif
 };
 
 class StaticRWMutex {
@@ -317,6 +370,11 @@ if(!ReadWithBarrier(ptr)) { \
 
 #else
 
+#define thread__
+
+#define PROFILEMT(mutex)
+#define PROFILEMT_(mutex, id)
+
 typedef int Atomic;
 
 inline int  AtomicRead(const volatile Atomic& t)      { return t; }
@@ -327,6 +385,7 @@ inline int  AtomicDec(volatile Atomic& t)             { --t; return t; }
 inline int  AtomicXAdd(volatile Atomic& t, int incr)  { Atomic x = t; t += incr; return x; }
 
 struct Mutex {
+	bool  TryEnter()             { return true; }
 	void  Enter()                {}
 	void  Leave()                {}
 

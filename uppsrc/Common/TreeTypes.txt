@@ -1,0 +1,4 @@
+MSmall
+0 0 -1
+MSmall::Page
+0 0 -1

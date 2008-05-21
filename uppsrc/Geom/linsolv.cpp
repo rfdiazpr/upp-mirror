@@ -15,6 +15,18 @@ LinearSolver::LinearSolver(int count, double tolerance)
 		left_rows[i] = left_cols[i] = i;
 }
 
+void LinearSolver::AddLSI(const double *bases, double value)
+{
+	double *row = matrix.Begin();
+	const double *bi = bases;
+	for(int i = 0; i < rows; i++) {
+		const double *bj = bases;
+		for(int j = 0; j < rows; j++)
+			*row++ += *bi * *bj++;
+		*row++ += *bi++ * value;
+	}
+}
+
 Vector<double> LinearSolver::Solve()
 {
 	while(!left_rows.IsEmpty())

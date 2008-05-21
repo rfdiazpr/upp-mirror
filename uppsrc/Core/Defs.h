@@ -148,7 +148,7 @@ void    PanicMessageBox(const char *title, const char *text);
 #define MK__s_(x)        MK__s__(x)
 
 #ifdef  flagBLITZ
-#define MK__s            MK__s_(COMBINE(BLITZ_INDEX__, __LINE__))
+#define MK__s            MK__s_(COMBINE3(BLITZ_INDEX__, _, __LINE__))
 #else
 #define MK__s            MK__s_(__LINE__)
 #endif
@@ -281,12 +281,6 @@ typedef uint64             qword;
 
 #define init_
 
-#ifdef COMPILER_MSC
-#define thread__ __declspec(thread)
-#else
-#define thread__ __thread
-#endif
-
 #define BINARY(i, f) \
 extern "C" byte *i; \
 extern "C" int COMBINE(i, _length);
@@ -341,9 +335,6 @@ void  MemoryShrink();
 int   MemoryUsedKb();
 
 
-void *MemoryAllocDebug(size_t size);
-void  MemoryFreeDebug(void *ptr);
-
 void  MemoryBreakpoint(dword serial);
 
 void  MemoryInitDiagnostics();
@@ -395,8 +386,6 @@ inline void  *MemoryAllocSz(size_t &size)  { return new byte[size]; }
 inline void   MemoryFree(void *p)          { delete[] (byte *) p; }
 inline void   MemoryShrink()               {}
 inline void   MemoryInitDiagnostics()      {}
-inline void  *MemoryAllocDebug(dword size) {}
-inline void   MemoryFreeDebug(void *p)     {}
 inline void   MemoryCheck() {}
 inline void   MemoryCheckDebug() {}
 inline int    MemoryUsedKb() { return 0; }

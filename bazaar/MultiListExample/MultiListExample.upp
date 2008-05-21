@@ -1,0 +1,11 @@
+uses
+	CtrlLib,
+	MultiList;
+
+file
+	main.cpp,
+	MultiListExample.iml;
+
+mainconfig
+	"" = "GUI";
+

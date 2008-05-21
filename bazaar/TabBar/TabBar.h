@@ -99,12 +99,12 @@ public:
 protected:
 	enum
 	{
-		QT_MARGIN = 6,
-		QT_SPACE = 10,
-		QT_SBHEIGHT = 4,
-		QT_SBSEPARATOR = 1,
-		QT_FILEICON = 16,
-		QT_SPACEICON = 5
+		TB_MARGIN = 6,
+		TB_SPACE = 10,
+		TB_SBHEIGHT = 4,
+		TB_SBSEPARATOR = 1,
+		TB_FILEICON = 16,
+		TB_SPACEICON = 5
 	};	
 	struct Tab : Moveable<Tab>
 	{
@@ -159,7 +159,7 @@ private:
 	static Style leftstyle, rightstyle, bottomstyle;
 	const Style *style[4];
 	
-	void 	PaintTab(Draw &w, const Style &s, const Size &sz, int i, bool enable);
+	void 	PaintTab(Draw &w, const Style &s, const Size &sz, int i, bool enable, bool dragsample = false);
 	
 	int  TabPos(const String &g, bool &first, int i, int j, bool inactive);	
 	void SyncScrollBar(int total);
@@ -211,7 +211,7 @@ protected:
 		Color ink, dword style);
 	virtual Size GetStdSize(Value &q); 
 
-	int		TextAngle()		{ return AlignedFrame::IsVert() ? (GetAlign() == LEFT ? 900 : 2700) : 0; }
+	int		GetTextAngle()	{ return AlignedFrame::IsVert() ? (GetAlign() == LEFT ? 900 : 2700) : 0; }
 	void 	TabCenterText(Point &p, const Size &sz, const Font &f)	{ TabCenter(p, sz, f.GetHeight()); }
 	void 	TabCenter(Point &p, const Size &sz, const Size &hsz)	{ TabCenter(p, sz, IsVert() ? sz.cx : sz.cy); }
 	void 	TabCenter(Point &p, const Size &sz, int h);

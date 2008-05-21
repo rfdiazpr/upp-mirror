@@ -332,7 +332,7 @@ bool TabBar::Tab::HasMouseCross(const Point& p, int h, int type) const
 
 	Size isz = TabBarImg::CR0().GetSize();
 	int iy = (h - isz.cy) / 2;
-	int ix = x + (type ? cx - isz.cx - QT_MARGIN : QT_MARGIN);
+	int ix = x + (type ? cx - isz.cx - TB_MARGIN : TB_MARGIN);
 
 	return p.x >= ix && p.x < ix + isz.cx &&
 	       p.y >= iy && p.y < iy + isz.cy;
@@ -488,7 +488,7 @@ void TabBar::PaintTabData(Draw& w, Point p, const Size &sz, const Value& q, cons
 	WString txt;
 	Font f = font;
 	Color i = ink;
-	int a = TextAngle();
+	int a = GetTextAngle();
 
 	if(IsType<AttrText>(q)) {
 		const AttrText& t = ValueTo<AttrText>(q);
@@ -500,13 +500,13 @@ void TabBar::PaintTabData(Draw& w, Point p, const Size &sz, const Value& q, cons
 	else
 		txt = IsString(q) ? q : StdConvert().Format(q);
 	TabCenterText(p, sz, font);
-	w.DrawText(p.x, p.y, TextAngle(), txt, f, i);	
+	w.DrawText(p.x, p.y, GetTextAngle(), txt, f, i);	
 }
 
-void TabBar::PaintTab(Draw &w, const Style &s, const Size &sz, int n, bool enable)
+void TabBar::PaintTab(Draw &w, const Style &s, const Size &sz, int n, bool enable, bool dragsample)
 {
 	TabBar::Tab &t = tabs[n];
-	int cnt = tabs.GetCount();
+	int cnt = dragsample ? 1 : tabs.GetCount();
 	Size tsz, isz(0, 0);
 	Point p;
 	int align = GetAlign();
@@ -533,10 +533,10 @@ void TabBar::PaintTab(Draw &w, const Style &s, const Size &sz, int n, bool enabl
 	}
 
 	if (align == BOTTOM) {
-		p.y -= s.sel.top - QT_SBSEPARATOR;
+		p.y -= s.sel.top - TB_SBSEPARATOR;
 	}
 	if (align == RIGHT) {
-		p.y -= s.sel.top - QT_SBSEPARATOR;
+		p.y -= s.sel.top - TB_SBSEPARATOR;
 	}
 	
 	if (IsVert())
@@ -546,21 +546,23 @@ void TabBar::PaintTab(Draw &w, const Style &s, const Size &sz, int n, bool enabl
 	
 	if(crosses && cnt > neverempty) {
 		Point cp;
-		const Image &cimg = TabBarImg::CR0(); // Use style?
+		const Image &cimg = TabBarImg::CR0(); 
+		// Use style? - yes it should be styled, but win32 dosn't support crosses on tabs,
+		// maybe we should use some generic cross with some magic heuristic styling..
 		isz = cimg.GetSize();		
 		Fix(isz);
 		if (align == LEFT)
-			cp.x = p.x + QT_MARGIN;
+			cp.x = p.x + TB_MARGIN;
 		else
-			cp.x = p.x + tsz.cx - isz.cx - QT_MARGIN;
+			cp.x = p.x + tsz.cx - isz.cx - TB_MARGIN;
 		cp.y = p.y + (tsz.cy - isz.cy) / 2;
 		Fix(cp);
 		w.DrawImage(cp.x, cp.y, (ac || hl) ? (cross == n ? TabBarImg::CR2 : ac ? TabBarImg::CR1 : TabBarImg::CR0) : TabBarImg::CR0);
 		isz.cx += 2;
 	}
 
-	p.x += QT_MARGIN;
-	tsz.cx -= QT_MARGIN * 2;
+	p.x += TB_MARGIN;
+	tsz.cx -= TB_MARGIN * 2;
 	switch (align) {
 	case BOTTOM:
 		if (ac)	
@@ -676,7 +678,8 @@ Image TabBar::GetDragSample(int n)
 {
 	if (n < 0) return Image();
 	Tab &tab = tabs[n];
-	Size tsz(tab.cx, tab.cy);			
+	const Style& st = *style[GetAlign()];
+	Size tsz(tab.cx + st.extendleft + st.sel.right + st.sel.left, tab.cy);			
 	Fix(tsz);
 
 	ImageDraw iw(tsz);
@@ -685,7 +688,7 @@ Image TabBar::GetDragSample(int n)
 	Point temp = Point(tab.x, tab.y);
 	tab.x = sc.GetPos();
 	tab.y = 0;
-	PaintTab(iw, *style[GetAlign()], GetSize(), n, true);
+	PaintTab(iw, st, GetSize(), n, true, true);
 	tab.x = temp.x; tab.y = temp.y;
 	
 	Image img = iw;
@@ -710,7 +713,7 @@ int TabBar::GetWidth(int n)
 {
 	Tab &t = tabs[n];
 	t.tsz = GetStdSize(t.data);
-	return QT_MARGIN * 2 + t.tsz.cx + (QT_SPACE + TabBarImg::CR0().GetSize().cx) * crosses;
+	return TB_MARGIN * 2 + t.tsz.cx + (TB_SPACE + TabBarImg::CR0().GetSize().cx) * crosses;
 }
 
 Size TabBar::GetStdSize(Value &q)
@@ -761,7 +764,7 @@ int TabBar::GetWidth()const
 
 int TabBar::GetStyleHeight(const Style &s)
 {
-	return s.tabheight + s.sel.top + QT_SBSEPARATOR;
+	return s.tabheight + s.sel.top + TB_SBSEPARATOR;
 }
 
 void TabBar::Repos()
@@ -896,7 +899,7 @@ void TabBar::FrameSet()
 	int al = GetAlign();
 	Ctrl::ClearFrames();
 	sc.Clear();
-	sc.SetFrameSize(QT_SBHEIGHT).SetAlign((al >= 2) ? al - 2 : al + 2);
+	sc.SetFrameSize(TB_SBHEIGHT).SetAlign((al >= 2) ? al - 2 : al + 2);
 	sc <<= THISBACK(Scroll);
 	sc.Hide();
 	if (!sc.IsChild())

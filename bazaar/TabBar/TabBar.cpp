@@ -322,20 +322,17 @@ void TabBar::GroupMenu(Bar &bar, int n)
 
 bool TabBar::Tab::HasMouse(const Point& p) const
 {
-	return visible && p.x >= x && p.x < x + cx;
+	return visible && p.x >= tb_x && p.x < tb_x + tb_cx &&
+	                  p.y >= tb_y && p.y < tb_y + tb_cy;
 }
 
-bool TabBar::Tab::HasMouseCross(const Point& p, int h, int type) const
+bool TabBar::Tab::HasMouseCross(const Point& p) const
 {
 	if(!visible)
 		return false;
 
-	Size isz = TabBarImg::CR0().GetSize();
-	int iy = (h - isz.cy) / 2;
-	int ix = x + (type ? cx - isz.cx - TB_MARGIN : TB_MARGIN);
-
-	return p.x >= ix && p.x < ix + isz.cx &&
-	       p.y >= iy && p.y < iy + isz.cy;
+	return p.x >= cr_x && p.x < cr_x + cr_cx &&
+	       p.y >= cr_y && p.y < cr_y + cr_cy;
 }
 
 int TabBar::FindGroup(const String& g) const
@@ -540,9 +537,21 @@ void TabBar::PaintTab(Draw &w, const Style &s, const Size &sz, int n, bool enabl
 	}
 	
 	if (IsVert())
+	{
 		ChPaint(w, p.y, p.x, tsz.cy, tsz.cx, sv);
+		t.tb_x = p.y;
+		t.tb_y = p.x;
+		t.tb_cx = tsz.cy;
+		t.tb_cy = tsz.cx;
+	}
 	else 
+	{
 		ChPaint(w, p.x, p.y, tsz.cx, tsz.cy, sv);
+		t.tb_x = p.x;
+		t.tb_y = p.y;
+		t.tb_cx = tsz.cx;
+		t.tb_cy = tsz.cy;
+	}
 	
 	if(crosses && cnt > neverempty) {
 		Point cp;
@@ -557,6 +566,10 @@ void TabBar::PaintTab(Draw &w, const Style &s, const Size &sz, int n, bool enabl
 			cp.x = p.x + tsz.cx - isz.cx - TB_MARGIN;
 		cp.y = p.y + (tsz.cy - isz.cy) / 2;
 		Fix(cp);
+		t.cr_x = cp.x;
+		t.cr_y = cp.y;
+		t.cr_cx = isz.cx;
+		t.cr_cy = isz.cy;
 		w.DrawImage(cp.x, cp.y, (ac || hl) ? (cross == n ? TabBarImg::CR2 : ac ? TabBarImg::CR1 : TabBarImg::CR0) : TabBarImg::CR0);
 		isz.cx += 2;
 	}
@@ -679,11 +692,10 @@ Image TabBar::GetDragSample(int n)
 	if (n < 0) return Image();
 	Tab &tab = tabs[n];
 	const Style& st = *style[GetAlign()];
-	Size tsz(tab.cx + st.extendleft + st.sel.right + st.sel.left, tab.cy);			
-	Fix(tsz);
 
+	Size tsz(tab.tb_cx, tab.tb_cy);
 	ImageDraw iw(tsz);
-	iw.DrawRect(tsz, SColorFace());
+	iw.DrawRect(tsz, SColorFace()); //this need to be fixed - if inactive tab is dragged gray edges are visible
 	
 	Point temp = Point(tab.x, tab.y);
 	tab.x = sc.GetPos();
@@ -1022,29 +1034,24 @@ void TabBar::MouseWheel(Point p, int zdelta, dword keyflags)
 
 void TabBar::MouseMove(Point p, dword keyflags)
 {
-	Fix(p);
 	if(HasCapture())
 	{
+		Fix(p);
 		sc.AddPos(p.x - oldp.x, true);
 		oldp = p;
+		Refresh();
 		return;
 	}
-
-	p.x += sc.GetPos() - style[1]->margin;
-	Size sz = GetSize();
-	Fix(sz);
 
 	int h = highlight;
 	bool iscross = false;
 	bool istab = false;
 	for(int i = 0; i < tabs.GetCount(); i++)
 	{
-		Point np(p.x + (i > 0 ? style[1]->extendleft : 0), p.y);
-		if(tabs[i].HasMouse(np))
+		if(tabs[i].HasMouse(p))
 		{
 			istab = true;
-			int h = sz.cy + (active == i ? 0 : style[1]->sel.top);
-			iscross = crosses ? tabs[i].HasMouseCross(np, h, GetAlign()) : false;
+			iscross = crosses ? tabs[i].HasMouseCross(p) : false;
 			if(highlight != i || (iscross && cross != i))
 			{
 				cross = iscross ? i : -1;

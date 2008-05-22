@@ -113,13 +113,20 @@ protected:
 		bool visible;
 		int x, cx;
 		int y, cy;
+
+		int cr_x, cr_y;
+		int cr_cx, cr_cy;
+		
+		int tb_x, tb_y;
+		int tb_cx, tb_cy;
+		
 		int id;
 		Size tsz;
 		Tab() : visible(true), id(-1)
 		{}
 		int Right() const { return x + cx; } 
 		bool HasMouse(const Point& p) const;
-		bool HasMouseCross(const Point& p, int h, int type) const;
+		bool HasMouseCross(const Point& p) const;
 	};
 	
 	struct Group : Moveable<Group>

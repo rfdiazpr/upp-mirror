@@ -2881,24 +2881,27 @@ GridCtrl::CurState GridCtrl::SetCursor0(Point p, bool mouse, bool highlight, int
 
 			newvalid = cur && !hidden && clickable && group;
 
-			if(ctrlmode)
+			if(newvalid)
 			{
-				if(newvalid)
+				int idx = hitems[tmpcur.x].id;
+				int idy = vitems[tmpcur.y].id;
+
+				Item &it = items[idy][idx];
+
+				newvalid = it.clickable;
+
+				if(newvalid && ctrlmode)
 				{
-					int idx = hitems[tmpcur.x].id;
-					int idy = vitems[tmpcur.y].id;
-
-					Item &it = items[idy][idx];
-
 					Ctrl * ctrl = it.ctrl;
 					if(!ctrl && ctrls)
 						ctrl = edits[idx].ctrl;
 
-					if(ctrl && it.editable && it.clickable && ctrl->IsEnabled())
+					if(ctrl && it.editable && ctrl->IsEnabled())
 						break;
 				}
 			}
-			else if(newvalid)
+
+			if(newvalid)
 				break;
 
 			if(quit || (dirx == 0 && diry == 0))
@@ -7383,7 +7386,7 @@ void GridResizePanel::MouseMove(Point p, dword flags)
 
 /*----------------------------------------------------------------------------------------*/
 
-/* after this assist++ see nothing */
+/* after this assist++ sees nothing */
 
 #define E__Addv0(I)    Set(q, I - 1, p##I)
 #define E__AddF0(I) \

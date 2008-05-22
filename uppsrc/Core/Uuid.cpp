@@ -35,16 +35,12 @@ static StaticCriticalSection sUuidLock;
 Uuid Uuid::Create() {
 	CriticalSection::Lock _(sUuidLock);
 	static int fd;
-	if(!fd)
+	ONCELOCK {
 		fd = open("/dev/urandom", O_RDONLY);
-	ASSERT(fd > 0);
-	static byte uuid[sizeof(Uuid)];
-	if(uuid[0] == 0) {
-		read(fd, uuid, sizeof(Uuid));
-		uuid[0] = 255;
+		ASSERT(fd > 0);
 	}
-	else
-		uuid[0]--;
+	static byte uuid[sizeof(Uuid)];
+	read(fd, uuid, sizeof(Uuid));
 	return *(Uuid *)uuid;
 }
 

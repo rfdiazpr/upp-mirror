@@ -2,12 +2,6 @@
 
 NAMESPACE_UPP
 
-#ifdef PLATFORM_XFT
-#define FNTSIZE 12
-#else
-#define FNTSIZE 11
-#endif
-
 #ifdef PLATFORM_WIN32
 struct FileIconMaker : ImageMaker {
 	String file;
@@ -237,8 +231,8 @@ bool Load(FileList& list, const String& dir, const char *patterns, bool dirs,
 			#else
 					GetDriveImage(root[i].root_style),
 			#endif
-					Arial(FNTSIZE).Bold(), SColorText, true, -1, Null, SColorDisabled,
-					root[i].root_desc, Arial(FNTSIZE)
+					StdFont().Bold(), SColorText, true, -1, Null, SColorDisabled,
+					root[i].root_desc, StdFont()
 			);
 	}
 	else {
@@ -265,13 +259,14 @@ bool Load(FileList& list, const String& dir, const char *patterns, bool dirs,
 				if(IsNull(img))
 					img = fi.is_directory ? CtrlImg::Dir() : CtrlImg::File();
 				WhenIcon(fi.is_directory, fi.filename, img);
-				list.Add(fi.filename, img,
-						 fi.is_directory ? Arial(FNTSIZE).Bold() : Arial(FNTSIZE),
-						 nd ? SColorDisabled : SColorText, fi.is_directory,
+				list.Add(fi.filename, fi.is_hidden ? Contrast(img, 200) :img,
+						 StdFont().Bold(fi.is_directory),
+						 nd ? SColorDisabled : fi.is_hidden ? Blend(SColorText, Gray, 200) : SColorText, fi.is_directory,
 						 fi.is_directory ? -1 : fi.length,
 						 Null, nd ? SColorDisabled
 						          : fi.is_directory ? SColorText
-						                            : SColorMark
+						                            : fi.is_hidden ? Blend(SColorMark, Gray, 200)
+						                                           : SColorMark
 				);
 			}
 		}
@@ -937,8 +932,8 @@ void FolderDisplay::Paint(Draw& w, const Rect& r, const Value& q,
 		img = CtrlImg::Dir();
 	w.DrawImage(r.left, r.top + (r.Height() - img.GetSize().cx) / 2, img);
 	w.DrawText(r.left + 20,
-	           r.top + (r.Height() - Arial(FNTSIZE).Bold().Info().GetHeight()) / 2,
-			   ~s, Arial(FNTSIZE).Bold(), ink);
+	           r.top + (r.Height() - StdFont().Bold().Info().GetHeight()) / 2,
+			   ~s, StdFont().Bold(), ink);
 }
 
 struct HomeDisplay : public Display {
@@ -948,8 +943,8 @@ struct HomeDisplay : public Display {
 		w.DrawImage(r.left, r.top + (r.Height() - CtrlImg::Home().GetSize().cx) / 2,
 			        CtrlImg::Home());
 		w.DrawText(r.left + 20,
-		           r.top + (r.Height() - Arial(FNTSIZE).Bold().Info().GetHeight()) / 2,
-				   String(q), Arial(FNTSIZE).Bold(), ink);
+		           r.top + (r.Height() - StdFont().Bold().Info().GetHeight()) / 2,
+				   String(q), StdFont().Bold(), ink);
 	}
 };
 
@@ -1253,11 +1248,11 @@ FileSel::FileSel() {
 	search.SetFilter(CharFilterDefaultToUpperAscii);
 	search <<= THISBACK(SearchLoad);
 
-	filename.SetFont(Arial(FNTSIZE));
+	filename.SetFont(StdFont());
 	filename.SetFrame(ThinInsetFrame());
-	filesize.SetFont(Arial(FNTSIZE)).SetAlign(ALIGN_RIGHT);
+	filesize.SetFont(StdFont()).SetAlign(ALIGN_RIGHT);
 	filesize.SetFrame(ThinInsetFrame());
-	filetime.SetFont(Arial(FNTSIZE));
+	filetime.SetFont(StdFont());
 	filetime.SetFrame(ThinInsetFrame());
 
 	dir <<= THISBACK(Choice);

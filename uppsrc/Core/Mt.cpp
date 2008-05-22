@@ -238,6 +238,21 @@ void WriteMemoryBarrier() {
 
 #endif
 
+#ifdef flagPROFILEMT
+MtInspector *MtInspector::Dumi()
+{
+	static MtInspector h(NULL);
+	return &h;
+}
+
+MtInspector::~MtInspector()
+{
+	if(name)
+		RLOG("Mutex " << name << " " << number << ' ' << blocked << "/" << locked <<
+		     " = " << Sprintf("%.4f", (double)blocked / locked) << " blocked/locked times");
+}
+#endif
+
 #ifdef PLATFORM_WIN32
 
 void Semaphore::Release()
@@ -330,16 +345,15 @@ RWMutex::~RWMutex()
 
 #ifdef PLATFORM_POSIX
 
-static pthread_mutex_t sMutexInit = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
-
 Mutex::Mutex()
 {
-	*mutex = sMutexInit;
-}
-
-Mutex::~Mutex()
-{
-	pthread_mutex_destroy(mutex);
+	pthread_mutexattr_t mutex_attr[1];
+	pthread_mutexattr_init(mutex_attr);
+	pthread_mutexattr_settype(mutex_attr, PTHREAD_MUTEX_RECURSIVE);
+	pthread_mutex_init(mutex, mutex_attr);
+#ifdef flagPROFILEMT
+	mti = MtInspector::Dumi();
+#endif
 }
 
 RWMutex::RWMutex()

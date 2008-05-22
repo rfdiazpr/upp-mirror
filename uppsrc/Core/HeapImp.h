@@ -72,7 +72,7 @@ inline void sDoPeakProfile()
 inline void sHeapStat(int k)
 {
 #ifdef flagHEAPSTAT
-	extern int sHeapStats[16];
+	extern int sHeapStats[18];
 	INTERLOCKED
 		sHeapStats[k]++;
 #endif

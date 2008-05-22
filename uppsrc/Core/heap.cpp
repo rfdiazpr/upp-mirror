@@ -207,6 +207,7 @@ static MPage sFree[1] = { MPAGE(&sFree, 0) };
 
 static inline FreeLink *sMAllocKN(int k, int n = CACHERES)
 {
+	PROFILEMT(sHeapLock);
 	ATIMING("sMAllocKN");
 	MPage *p = sWork[k]->next;
 	int sz = Ksz(k);
@@ -512,11 +513,13 @@ MemoryProfile::MemoryProfile()
 }
 
 #ifdef flagHEAPSTAT
-int sHeapStats[16];
+int sHeapStats[18];
 
 EXITBLOCK {
 	for(int i = 0; i < 16; i++)
 		RLOG(Ksz(i) << ": " << sHeapStats[i]);
+	RLOG("Large: " << sHeapStats[16]);
+	RLOG("Huge: " << sHeapStats[17]);
 }
 #endif
 

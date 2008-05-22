@@ -182,13 +182,18 @@ int CppItemInfoDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 		img = BrowserImg::macro();
 		break;
 	}
+
+	int ry = (r.top + r.bottom) / 2;
+	int by = ry - bk.GetSize().cy / 2;
+	int iy = ry - img.GetSize().cy / 2;
+
 	if(focuscursor) {
-		DrawHighlightImage(w, x, r.top + 1, bk);
-		w.DrawImage(x, r.top + 1, img);
+		DrawHighlightImage(w, x, by, bk);
+		w.DrawImage(x, iy, img);
 	}
 	else {
-		w.DrawImage(x, r.top + 1, bk);
-		w.DrawImage(x, r.top + 1, img);
+		w.DrawImage(x, by, bk);
+		w.DrawImage(x, iy, img);
 	}
 	if(m.inherited) {
 		w.DrawImage(x + 10, r.top, BrowserImg::inherited());
@@ -196,12 +201,12 @@ int CppItemInfoDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 			w.DrawRect(x + 10, r.top + 7 + 2 * i, 7, 1, SColorText);
 	}
 	x += 20;
-	int y = r.top + 2;
+	int y = r.top;
 	int x0 = x;
 	Vector<ItemTextPart> n = ParseItemNatural(m);
 	for(int i = 0; i < n.GetCount(); i++) {
 		ItemTextPart& p = n[i];
-		Font f = Arial(11);
+		Font f = StdFont();
 		Color ink = SColorText;
 		switch(p.type) {
 		case ITEM_PNAME:

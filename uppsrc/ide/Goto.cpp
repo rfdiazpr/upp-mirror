@@ -156,7 +156,6 @@ GotoDlg::GotoDlg(const String& s)
 	list.AddColumn("Nesting").SetDisplay(Single<CppNestingInfoDisplay>());
 	list.AddColumn().SetDisplay(Single<CppItemInfoDisplay>());
 	list.AddColumn(global ? "Position" : "Line");
-	list.SetLineCy(Arial(11).Info().GetHeight() + 3);
 	if(global)
 		list.ColumnWidths("181 466 112");
 	else

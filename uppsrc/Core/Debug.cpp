@@ -284,11 +284,13 @@ TimingInspector::TimingInspector(const char *_name) {
 }
 
 TimingInspector::~TimingInspector() {
+	Mutex::Lock __(mutex);
 	if(this == &s_zero()) return;
 	StdLog() << Dump() << "\r\n";
 }
 
 void TimingInspector::Start() {
+	Mutex::Lock __(mutex);
 	if(!active) return;
 	if(!nesting_depth++)
 		start_time = tmGetTime();
@@ -297,6 +299,7 @@ void TimingInspector::Start() {
 }
 
 void TimingInspector::End() {
+	Mutex::Lock __(mutex);
 	if(!active) return;
 	all_count++;
 	if(!--nesting_depth) {
@@ -314,6 +317,7 @@ void TimingInspector::End() {
 }
 
 String TimingInspector::Dump() {
+	Mutex::Lock __(mutex);
 	String s = Sprintf("TIMING %-15s: ", name);
 	if(call_count == 0)
 		return s + "No active hit";
@@ -331,6 +335,7 @@ String TimingInspector::Dump() {
 
 HitCountInspector::~HitCountInspector()
 {
+	Mutex::Lock __(mutex);
 	RLOG("HITCOUNT " << name << ": hit count = " << hitcount);
 }
 

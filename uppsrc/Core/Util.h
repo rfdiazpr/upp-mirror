@@ -112,6 +112,24 @@ T& Reconstruct(T& object)
 	return object;
 }
 
+template <class T>
+inline void Dbl_Unlink(T *x)
+{
+	x->prev->next = x->next; x->next->prev = x->prev;
+}
+
+template <class T>
+inline void Dbl_LinkAfter(T *x, T *lnk)
+{
+	x->prev = lnk; x->next = lnk->next; x->next->prev = x; lnk->next = x;
+}
+
+template <class T>
+inline void Dbl_Self(T *x)
+{
+	x->prev = x->next = x;
+}
+
 #define ZeroArray(x)       memset((x), 0, sizeof(x))
 
 // Math utils

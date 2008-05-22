@@ -129,6 +129,7 @@ static void *sDivideBlock(MLink *b, int size, int ii)
 static StaticCriticalSection llock;
 
 void *LAlloc(size_t& size) {
+	PROFILEMT(llock);
 	llock.Enter();
 	static bool inited;
 	if(!inited) {
@@ -137,6 +138,7 @@ void *LAlloc(size_t& size) {
 	}
 	if(size > MAXBLOCK) {
 		LTIMING("Big alloc");
+		sHeapStat(17);
 		MLink *b = (MLink *)SysAllocRaw(size + 40);
 		if(!b)
 			Panic("Out of memory!");
@@ -150,6 +152,7 @@ void *LAlloc(size_t& size) {
 		return (byte *)b + 40;
 	}
 	LTIMING("Large alloc");
+	sHeapStat(16);
 	if(size < 256)
 		size = 256;
 	int ii = sSzBin((int)size);

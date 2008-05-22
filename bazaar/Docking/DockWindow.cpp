@@ -379,7 +379,7 @@ void DockWindow::FloatContainer(DockCont &c, Point p)
 	Detach(c);	
 	c.StateFloating(*this);
 	Size best = CtrlBestSize(c, false);
-	c.SetRect(Rect(p, best));
+	c.SetRect(Rect(p-best/2, best));
 	c.Open(this);
 }
 
@@ -711,21 +711,16 @@ void DockWindow::ContainerDragStart(DockCont &dc)
 		Rect r = dc.GetScreenRect();
 		Point pt = GetMousePos();
 		Point tl = r.TopLeft();
-		bool move = false;
-		if (r.left > pt.x || r.right < pt.x) {
+		if (r.left > pt.x || r.right < pt.x)
 			tl.x += pt.x - r.left - r.Width()/2;
-			move = true;
-		}
-		if (r.top < pt.y) {
+		if (r.top < pt.y)
 			tl.y += pt.y - r.top + DOCKCONT_WND_OFFSET;
-			move = true;
-		}
 		dc.SyncUserSize(true, true);
 		if (IsAnimatedHighlight() && dc.IsDocked() && dc.GetParent()) {
 			Undock0(dc, true);
 			dc.StateNotDocked();
 		}
-		FloatContainer(dc, move ? tl : Null);
+		FloatContainer(dc, tl);
 		dc.StartMouseDrag();
 	}
 }
@@ -1073,7 +1068,6 @@ void DockWindow::EnableFloating(bool enable)
 	for (int i = 0; i < conts.GetCount(); i++)
 		if (conts[i].IsFloating())
 			conts[i].Enable(enable);
-	
 }
 
 DockWindow::DockWindow()

@@ -374,12 +374,12 @@ void DockWindow::FloatContainer(DockCont &c, Point p)
 {
 	ASSERT(IsOpen());
 	if (c.IsFloating()) return;
-	if (p.IsNullInstance()) 
-		p = GetScreenRect().CenterPoint();
 	Detach(c);	
 	c.StateFloating(*this);
 	Size best = CtrlBestSize(c, false);
-	c.SetRect(Rect(p-best/2, best));
+	if (p.IsNullInstance()) 
+		p = GetScreenRect().CenterPoint() - best/2;
+	c.SetRect(Rect(p, best));
 	c.Open(this);
 }
 

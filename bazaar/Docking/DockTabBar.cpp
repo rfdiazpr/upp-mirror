@@ -50,14 +50,14 @@ void DockTabBar::PaintTabData(Draw& w, Point p, const Size &sz, const Value& q, 
 			ip.y -= isz.cy;
 		if (IsVert()) {
 			w.DrawImage(ip.x-1, ip.y, icon);
-			p.y += (isz.cy + QT_SPACEICON) * ((al == LEFT) ? -1 : 1);
+			p.y += (isz.cy + TB_SPACEICON) * ((al == LEFT) ? -1 : 1);
 		}
 		else {			
 			w.DrawImage(ip.x, ip.y-2, icon);
-			p.x += isz.cx + QT_SPACEICON;
+			p.x += isz.cx + TB_SPACEICON;
 		}	
 	}
-	w.DrawText(p.x, p.y, TextAngle(), txt, font, ink);
+	w.DrawText(p.x, p.y, GetTextAngle(), txt, font, ink);
 }
 
 Size DockTabBar::GetStdSize(Value &q)
@@ -75,7 +75,7 @@ Size DockTabBar::GetStdSize(Value &q)
 		v = d->GetTitle();
 	}
 	Size sz = TabBar::GetStdSize(v);
-	sz.cx += (IsVert() ? d->GetIcon().GetHeight() : d->GetIcon().GetWidth()) + QT_SPACEICON;
+	sz.cx += (IsVert() ? d->GetIcon().GetHeight() : d->GetIcon().GetWidth()) + TB_SPACEICON;
 	return sz;
 }
 

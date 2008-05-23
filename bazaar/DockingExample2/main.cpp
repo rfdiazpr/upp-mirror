@@ -107,7 +107,6 @@ void DockingExample::DockInit()
 	Register(Dockable(treectrl1,  "TreeCtrl 1").SizeHint(Size(300, 200)));
 	Register(Dockable(arrayctrl2, "ArrayCtrl 2").SizeHint(Size(300, 200)));
 	Register(Dockable(treectrl2,  "TreeCtrl 2").SizeHint(Size(300, 200)));
-
 	// Now we're ready to Serialize. The first time you run this example there won't be a data 
 	//  file, but I have included serialized copy in the .EXE to use as Default
 	// Note that we use SerializeWindow, not Serialize.

@@ -31,16 +31,19 @@ protected:
 	// DnD interface
 	struct HighlightCtrl : public DockableCtrl
 	{
-		HighlightCtrl() 		{ Transparent(false); }	
-		void ClearHighlight() 	{ img.Clear(); }
-		void SetHighlight(const Value &hl, bool _isnested, dword _nestedkey, Image bg = Image());
+		HighlightCtrl() 		{ BackPaint(); }	
+		void ClearHighlight() 	{ img.Clear(); buffer.Clear(); }
+		void SetHighlight(const Value &hl, bool _isnested, bool cannest, Image bg = Image());
+		void SetNested(bool _isnested);
+		void CreateBuffer();
 		virtual void Paint(Draw &w);
 		int oldframesize;
 		Rect bounds;
 	private:
 		Image img;
-		dword nestedkey;
+		Image buffer;
 		bool isnested;
+		bool cannest;
 		const Value *highlight;
 	};
 	
@@ -51,7 +54,6 @@ protected:
 	void 			Highlight(int align, DockCont &cont, DockCont *target);
 	void 			StopHighlight(bool do_animatehl);
 	// Animation
-	void			FloatAnimate(DockCont &dc, Rect target);
 	// Called by containers to signal drag-drop events
 	virtual void 	ContainerDragStart(DockCont &dc);
 	virtual void 	ContainerDragMove(DockCont &dc);
@@ -84,6 +86,7 @@ protected:
 	int	 			GetDockAlign(const Point &p) const;
 	bool			IsFrameAnimating(int align) const		{ return frameanim[align].inc; }	
 	bool			IsPaneAnimating(int align) const		{ return dockpane[align].IsAnimating(); }
+	bool			CheckNesting() const					{ return (GetMouseFlags() & nesttoggle) ? !nestedtabs : nestedtabs; }
 
 	friend class DockCont;
 

@@ -8,8 +8,9 @@ int DockPane::ClientToPos(const Size &p)
 
 void DockPane::CumulativePos(Vector<int> &p) const
 {
-	for (int i = 1; i < p.GetCount(); i++)
+	for (int i = 1; i < p.GetCount()-1; i++)
 		p[i] += p[i-1];		
+	p.Top() = 10000;
 }
 
 void DockPane::NonCumulativePos(Vector<int> &p) const

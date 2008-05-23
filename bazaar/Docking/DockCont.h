@@ -95,7 +95,7 @@ private:
 	ImgButton 	close, autohide, windowpos;	
 	Size 		usersize;
 	bool 		waitsync:1;	
-	bool		ignoreminsize:1;
+	bool		animating:1;
 	DockWindow *base;
 	const DockableCtrl::Style *style;
 
@@ -141,7 +141,7 @@ public:
 	virtual void 	MoveEnd();		
 	virtual void 	WindowMenu();	
 		
-	void			IgnoreMinSize(bool nomin) 	{ ignoreminsize = nomin; }
+	void 			Animate(Rect target, int ticks, int interval = 0);
 		
 	bool 			IsDocked() const			{ return dockstate == STATE_DOCKED; }
 	int				GetDockAlign() const;		

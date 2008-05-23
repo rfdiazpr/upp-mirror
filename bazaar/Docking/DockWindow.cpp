@@ -8,11 +8,12 @@
 void DockWindow::State(int reason)
 {
 	if (reason == Ctrl::OPEN) {
-		if (!hideframe[0].GetParent()) 
+		if (!hideframe[0].GetParent())
 			DockLayout();
 		if (!init) {
 			DockInit();
 			init = true;	
+			StopHighlight(false);
 		}
 	}
 	TopWindow::State(reason);
@@ -613,30 +614,54 @@ Rect DockWindow::GetFinalAnimRect(int align, Ctrl &c)
 // HighlightCtrl
 void DockWindow::HighlightCtrl::Paint(Draw &w)
 {	
-	if (!img.IsEmpty())
-		w.DrawImage(0, 0, img);
-	bool nest = (GetMouseFlags() & nestedkey) ? !isnested : isnested;
-	if (nest) {
-		Rect r = GetSize();
-		Rect t = r;
-		const TabCtrl::Style &s = TabCtrl::StyleDefault();
-		t.bottom -= s.tabheight + s.sel.top + 1;	// Nasty bodge! See TabBar::GetStyleHeight
-		r.top = t.bottom-1;
-		r.right = max(min(150, r.GetWidth()/3), 20);
-		r.left += 10;
-		ChPaint(w, r, *highlight);
-		ChPaint(w, t, *highlight);
-	}
-	else 
+	if (buffer.IsEmpty())
 		ChPaint(w, GetSize(), *highlight);
+	else
+		w.DrawImage(0, 0, buffer);
 }
 
-void DockWindow::HighlightCtrl::SetHighlight(const Value &hl, bool _isnested, dword _nestedkey, Image bg)
+void DockWindow::HighlightCtrl::SetHighlight(const Value &hl, bool _isnested, bool _cannest, Image bg)
 {
-	nestedkey = _nestedkey;
-	isnested = _isnested;
 	highlight = &hl;
-	img = bg;
+	img = bg;	
+	buffer.Clear();
+	cannest = _cannest;
+	isnested = cannest && _isnested;
+	CreateBuffer();
+}
+
+void DockWindow::HighlightCtrl::SetNested(bool _isnested)
+{
+	static int count = 0;
+	bool nest = cannest && _isnested;
+	if (nest != isnested) {
+		isnested = nest;		
+		CreateBuffer();
+	}
+}
+
+void DockWindow::HighlightCtrl::CreateBuffer()
+{
+	if (!img.IsEmpty()) {
+		Size sz = img.GetSize();
+		ImageDraw w(sz);
+		w.DrawImage(0, 0, img);
+		if (isnested) {
+			Rect r = sz;
+			Rect t = r;
+			const TabCtrl::Style &s = TabBar::StyleDefault();
+			t.bottom -= s.tabheight + s.sel.top + 1;	// Nasty bodge! See TabBar::GetStyleHeight
+			r.top = t.bottom-1;
+			r.right = max(min(150, r.GetWidth()/3), 20);
+			r.left += 10;
+			ChPaint(w, r, *highlight);
+			ChPaint(w, t, *highlight);
+		}
+		else
+			ChPaint(w, sz, *highlight);			
+		buffer = w;
+		Refresh();
+	}	
 }
 
 // Drag and Drop interface
@@ -668,8 +693,7 @@ void DockWindow::Highlight(int align, DockCont &cont, DockCont *target)
 	}
 	else if (target && IsTabbing()) {
 		hl.Title(cont.GetTitle(true)).Icon(dc.GetIcon());
-		hl.SetHighlight(dc.GetStyle().highlight[1], IsNestedTabs() && (cont.GetCount() > 1),
-		             (cont.GetCount() > 1) ? NestedToggleKey() : 0, 
+		hl.SetHighlight(dc.GetStyle().highlight[1], CheckNesting(), cont.GetCount() > 1, 
 		             target->GetHighlightImage());
 		DockAsTab(*target, hl);	
 	}
@@ -682,26 +706,6 @@ void DockWindow::StopHighlight(bool do_animatehl)
 		Undock0(hl, do_animatehl, hl.oldframesize, true);
 		hl.ClearHighlight();
 	}
-}
-
-void DockWindow::FloatAnimate(DockCont &dc, Rect target)
-{
-	int max = dockpane[0].GetAnimMaxTicks();
-	dc.IgnoreMinSize(true);
-	Rect dr = dc.GetRect();
-	target -= dr;
-	target.top += 16; // Fudge for titlebar. Should get from OS?
-	target.left /= max;
-	target.right /= max;
-	target.top /= max;
-	target.bottom /= max;
-	for (int i = 0; i < max; i++) {
-		dr += target;
-		dc.SetRect(dr);
-		ProcessEvents();
-		Sleep(dockpane[0].GetAnimInterval());
-	}	
-	dc.IgnoreMinSize(false);
 }
 
 void DockWindow::ContainerDragStart(DockCont &dc)
@@ -732,6 +736,8 @@ void DockWindow::ContainerDragMove(DockCont &dc)
 	if (hl.GetParent()) {
 		if (!hl.bounds.Contains(p))
 			StopHighlight(IsAnimatedHighlight());
+		else
+			hl.SetNested(CheckNesting());
 		return KillTimeCallback(TIMEID_ANIMATE_DELAY);
 	}	
 	animdelay ? 
@@ -753,7 +759,7 @@ void DockWindow::ContainerDragEnd(DockCont &dc)
 			if (p == &dockpane[i]) align = i;
 
 	if (animatewnd && (p || align != DOCK_NONE))
-		FloatAnimate(dc, GetFinalAnimRect(align, hl));
+		dc.Animate(GetFinalAnimRect(align, hl), dockpane[0].GetAnimMaxTicks(), 5);
 
 	if (align != DOCK_NONE) {
 		Unfloat(dc);
@@ -762,8 +768,7 @@ void DockWindow::ContainerDragEnd(DockCont &dc)
 	}
 	else if (DockCont *target = dynamic_cast<DockCont *>(p)) {
 		StopHighlight(false);
-		bool nest = (GetMouseFlags() & NestedToggleKey()) ? !IsNestedTabs() : IsNestedTabs();
-		DockContainerAsTab(*target, dc, nest && dc.GetCount() > 1);
+		DockContainerAsTab(*target, dc, CheckNesting() && dc.GetCount() > 1);
 	}
 	else
 		StopHighlight(false);
@@ -892,17 +897,10 @@ void DockWindow::SerializeWindow(Stream &s)
 	SerializeLayout(s, true);
 	
 	s % tabbing % autohide % animatehl % nestedtabs 
-	  % grouping % menubtn % closebtn % hidebtn;
+	  % grouping % menubtn % closebtn % hidebtn % nesttoggle;
 	  
-	if (s.IsLoading()) {
-		// Note: Ensure correct load of added params. Can be depreciated in future and added to main
-		//  serialization above.
-		if (!s.IsEof())
-			s % nesttoggle;
+	if (s.IsLoading())
 		SyncAll();
-	}
-	else
-		s % nesttoggle;
 }
 
 void DockWindow::ClearLayout()

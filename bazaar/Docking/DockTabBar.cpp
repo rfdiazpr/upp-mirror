@@ -49,15 +49,15 @@ void DockTabBar::PaintTabData(Draw& w, Point p, const Size &sz, const Value& q, 
 		else if (al == LEFT)
 			ip.y -= isz.cy;
 		if (IsVert()) {
-			w.DrawImage(ip.x - 1, ip.y, icon);
-			p.y += (isz.cy + TB_SPACEICON) * ((al == LEFT) ? -1 : 1);
+			w.DrawImage(ip.x-1, ip.y, icon);
+			p.y += (isz.cy + QT_SPACEICON) * ((al == LEFT) ? -1 : 1);
 		}
 		else {			
-			w.DrawImage(ip.x, ip.y - 2, icon);
-			p.x += isz.cx + TB_SPACEICON;
+			w.DrawImage(ip.x, ip.y-2, icon);
+			p.x += isz.cx + QT_SPACEICON;
 		}	
 	}
-	w.DrawText(p.x, p.y, GetTextAngle(), txt, font, ink);
+	w.DrawText(p.x, p.y, TextAngle(), txt, font, ink);
 }
 
 Size DockTabBar::GetStdSize(Value &q)
@@ -75,7 +75,7 @@ Size DockTabBar::GetStdSize(Value &q)
 		v = d->GetTitle();
 	}
 	Size sz = TabBar::GetStdSize(v);
-	sz.cx += (IsVert() ? d->GetIcon().GetHeight() : d->GetIcon().GetWidth()) + TB_SPACEICON;
+	sz.cx += (IsVert() ? d->GetIcon().GetHeight() : d->GetIcon().GetWidth()) + QT_SPACEICON;
 	return sz;
 }
 
@@ -93,29 +93,8 @@ void DockTabBar::LeftDrag(Point p, dword keyflags)
 		return TabBar::LeftDrag(p, keyflags &= ~K_SHIFT);
 	if (GetHighlight() >= 0)
 		WhenDrag(GetHighlight());	
-//	clip = NULL;
-//	TabBar::LeftDrag(p, keyflags);
-}
-/*
-void DockTabBar::DragAndDrop(Point p, PasteClip& d)
-{
-	if (&GetInternal<TabBar>(d) != this) return;	
-	clip = &d;
-	TabBar::DragAndDrop(p, d);
 }
 
-void DockTabBar::DragLeave()
-{
-	if (!GetShift() && clip) {
-		ReleaseCapture();
-		clip->Reject();
-		clip = NULL;
-		if (GetHighlight() >= 0)
-			WhenDrag(GetHighlight());
-	}
-	return TabBar::DragLeave();
-}
-*/
 DockTabBar::DockTabBar()
 {
 	autohide = -1; 
@@ -181,7 +160,7 @@ void AutoHideBar::TabHighlight()
 		return;
 	else if (ctrl) {
 		if (c) {
-			if (popup.IsOpen())
+			if (popup.IsPopUp())
 				popup.Close();
 			ctrl->Remove();
 			ctrl = NULL;
@@ -190,8 +169,13 @@ void AutoHideBar::TabHighlight()
 			HideAnimate(ctrl);
 	}
 	if (c) {
+		ASSERT(ix >= 0 && ix < GetCount());
+		// Clear WhenHighlight ot prevent stack overflow. Perhaps a better solution should be found...
+		Callback cb = WhenHighlight;
+		WhenHighlight = Callback();
 		SetCursor(ix);
 		ShowAnimate(c);
+		WhenHighlight = cb;
 	}
 }
 
@@ -237,10 +221,11 @@ void AutoHideBar::ShowAnimate(Ctrl *c)
 	AdjustSize(target, sz);
 
 	c->SetRect(sz);
+	c->SizePos();
 	popup << *(ctrl = c);
 	c->Show();
 
-	popup.SetRect(init);
+	popup.SetRect(target);
 	popup.PopUp(GetParent(), false, true, false, false);
 	Animate(popup, target, GUIEFFECT_SLIDE);
 }
@@ -259,22 +244,6 @@ void AutoHideBar::HideAnimate(Ctrl *c)
 	DockTabBar::SetCursor(-1);
 }
 
-/*
-void AutoHideBar::AnimateSizeMinus(Size sz)
-{
-	Rect r = popup.GetScreenRect();
-	AdjustSize(r, sz);
-	if ((IsVert() && r.Width() <= 12) || (!IsVert() && r.Height() <= 12)) {
-		popup.Close();
-		ctrl->Remove();
-		ctrl = NULL;
-		Ctrl::KillTimeCallback(TIMEID_ANIMATE);
-	}
-	else
-		popup.SetRect(r);
-}
-*/
-
 void AutoHideBar::AdjustSize(Rect &r, const Size &sz)
 {
 	switch (DockTabBar::GetAlign()) {
@@ -290,7 +259,7 @@ void AutoHideBar::AdjustSize(Rect &r, const Size &sz)
 	 	case DockTabBar::BOTTOM:
 	 		r.top -= sz.cy;
 	 		break;
-	};
+	};		
 }
 
 int AutoHideBar::FindCtrl(DockCont &c) const

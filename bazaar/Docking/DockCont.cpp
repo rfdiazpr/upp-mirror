@@ -5,6 +5,8 @@
 #if	defined(PLATFORM_WIN32)
 LRESULT DockCont::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
+	if (animating) 
+		return TopWindow::WindowProc(message, wParam, lParam);
 	if (message == WM_NCRBUTTONDOWN) {
 		WindowMenu();
 		return 1L;
@@ -22,8 +24,8 @@ LRESULT DockCont::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 		dragging = 2;
 	}
 	else if (message == WM_EXITSIZEMOVE && IsFloating() && base && !GetMouseLeft() && dragging) {
-		MoveEnd();
 		dragging = 0;
+		MoveEnd();
 	}
 		
 	return TopWindow::WindowProc(message, wParam, lParam);
@@ -37,7 +39,7 @@ void DockCont::StartMouseDrag()
 void DockCont::EventProc(XWindow& w, XEvent *event)
 {
 	
-	if (IsOpen()) {
+	if (IsOpen() && !animating) {
 		switch(event->type) {
 		case ConfigureNotify:{
 				XConfigureEvent& e = event->xconfigure;
@@ -55,7 +57,6 @@ void DockCont::EventProc(XWindow& w, XEvent *event)
 				if (e.mode == NotifyUngrab && dragging) {
 					dragging = false;
 					MoveEnd();
-	//				SetFocus();
 					return;
 				}
 				break;
@@ -243,6 +244,29 @@ void DockCont::WindowMenu()
 	DockContMenu menu(base);
 	menu.ContainerMenu(bar, this, true);
 	bar.Execute();
+}
+
+void DockCont::Animate(Rect target, int ticks, int interval)
+{
+	if (!IsOpen() || GetParent()) return;
+	animating = true;	
+	Rect dr = GetRect();
+	target -= dr;
+#ifdef PLATFORM_WIN32
+	target.top += 16; // Fudge for titlebar. Should get from OS?
+#endif
+	target.left /= ticks;
+	target.right /= ticks;
+	target.top /= ticks;
+	target.bottom /= ticks;
+	for (int i = 0; i < ticks; i++) {
+		dr += target;
+		SetRect(dr);
+		Sync();
+		ProcessEvents();
+		Sleep(interval);
+	}	
+	animating = false;	
 }
 
 void DockCont::TabSelected() 
@@ -463,14 +487,18 @@ void DockCont::Highlight()
 Image DockCont::GetHighlightImage()
 {
 	Ctrl *ctrl = GetCtrl(GetCursor());
-	ImageDraw img(ctrl->GetRect().GetSize());
+	if (!ctrl) return Image();
+	Size sz = ctrl->GetRect().GetSize();
+	if (tabbar.IsAutoHide())
+		sz.cy -= tabbar.GetFrameSize();
+	ImageDraw img(sz);
 	ctrl->DrawCtrlWithParent(img);
 	return img;
 }
 
 Size DockCont::GetMinSize() const
 { 
-	if (ignoreminsize) return Size(0, 0);
+	if (animating) return Size(0, 0);
 	Size sz = tabbar.GetCount() ? GetCurrent().GetMinSize() : Size(0, 0); 
 	sz = AddFrameSize(sz);
 	return sz;
@@ -640,7 +668,7 @@ DockCont::DockCont()
 	dockstate = STATE_NONE;
 	base = NULL;
 	waitsync = false;	
-	ignoreminsize = false;
+	animating = false;
 	usersize.cx = usersize.cy = Null;
 	BackPaint();
 #ifdef PLATFORM_WIN32
@@ -667,3 +695,4 @@ DockCont::DockCont()
 	windowpos.Tip(t_("Window Menu")) 	<<= THISBACK(WindowMenu);		
 	WhenClose 							= THISBACK(CloseAll);
 }
+

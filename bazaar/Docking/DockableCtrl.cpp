@@ -76,6 +76,7 @@ DockableCtrl::DockableCtrl()
 	stdsize = Null;
 	minsize = Size(0, 0);
 	AllowDockAll();
+	BackPaint();
 }
 
 
@@ -146,7 +147,7 @@ CH_STYLE(DockableCtrl, Style, StyleDefault)
 	DockableCtrlImgsLook(windowpos, DockingImg::I_DMenud, 4);
 	DockableCtrlImgsLook(autohide, DockingImg::I_DHided, 4);
 	
-	Image img = StandardHighlight(Blend(SColorHighlight, SColorPaper, 90), SColorHighlight);
+	Image img = StandardHighlight(Blend(SColorHighlight, SColorPaper, 90), Blend(SColorHighlight, SBlack, 90));
 	highlight[0] = img;	
 	highlight[1] = AlphaHighlight(img, 160);	
 }

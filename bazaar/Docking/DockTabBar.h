@@ -69,6 +69,7 @@ private:
 
 	struct HidePopup : public Ctrl
 	{
+		HidePopup() { BackPaint(); }
 		Callback WhenEnter;
 		Callback WhenLeave;
 		virtual void ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags); 

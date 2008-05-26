@@ -1,4 +1,2 @@
-MSmall
-0 0 -1
-MSmall::Page
+Heap::DLink
 0 0 -1

@@ -515,7 +515,7 @@ void AssistEditor::Assist()
 
 void AssistEditor::PopUpAssist(bool auto_insert)
 {
-	int lcy = StdFont().Info().GetHeight();
+	int lcy = max(16, Arial(VertLayoutZoom(11)).Info().GetHeight());
 	type.Clear();
 	type.Add(AttrText("<all>").Ink(SColorHighlight()));
 	for(int i = 0; i < assist_type.GetCount(); i++) {

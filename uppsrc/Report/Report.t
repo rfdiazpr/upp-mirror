@@ -8,6 +8,7 @@ csCZ("Výstupní sestava")
 huHU("Jelentés")
 itIT("Report")
 ruRU("Отчёт")
+plPL("Raport")
 
 
 // ReportDlg.cpp
@@ -17,9 +18,13 @@ csCZ("&Tisk")
 huHU("&Nyomtatás")
 itIT("&Stampa")
 ruRU("&Печать")
+plPL("Drukuj")
 
 
 // Report.lay
+
+T_("Page")
+plPL("Strona")
 
 T_("1 / 1")
 csCZ("1 / 1")
@@ -32,6 +37,7 @@ csCZ("Na šířku")
 huHU("Oldalsáv")
 itIT("Direzione")
 ruRU("По бокам")
+plPL("Liczba stron")
 
 T_("&1 page\n&2 pages\n&4 pages\n&8 pages")
 csCZ("&1 strana\n&2 strany\n&4 strany\n&8 stran")
@@ -44,15 +50,18 @@ csCZ("Čísla &stránek")
 huHU("&Oldalszámok")
 itIT("&Numero pagine")
 ruRU("&Номера страниц")
+plPL("Numery stron")
 
 T_("PDF export..")
 csCZ("PDF export..")
 huHU("PDF export..")
 itIT("")
 ruRU("")
+plPL("Eksportuj PDF..")
 
 T_("Cancel")
 csCZ("Storno")
 huHU("Mégsem")
 itIT("Annulla")
 ruRU("Отмена")
+plPL("Anuluj")

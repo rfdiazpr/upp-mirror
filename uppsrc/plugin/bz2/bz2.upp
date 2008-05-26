@@ -19,3 +19,4 @@ file
 	lib/decompress.c,
 	lib/huffman.c,
 	lib/randtable.c;
+

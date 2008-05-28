@@ -106,25 +106,29 @@ protected:
 		TB_FILEICON = 16,
 		TB_SPACEICON = 5
 	};	
+
 	struct Tab : Moveable<Tab>
 	{
+		int id;
+
 		Value data;
 		String group;	
-		bool visible;
-		int x, cx;
-		int y, cy;
 
-		int cr_x, cr_y;
-		int cr_cx, cr_cy;
+		bool visible;
+		bool frozen;
+
+		Point pos;
+		Size  size;
+
+		Point cross_pos;
+		Size  cross_size;
 		
-		int tb_x, tb_y;
-		int tb_cx, tb_cy;
+		Point real_pos;
+		Size  real_size;
 		
-		int id;
-		Size tsz;
 		Tab() : visible(true), id(-1)
 		{}
-		int Right() const { return x + cx; } 
+		int Right() const { return pos.x + size.cx; } 
 		bool HasMouse(const Point& p) const;
 		bool HasMouseCross(const Point& p) const;
 	};
@@ -178,8 +182,9 @@ private:
 
 	int GetWidth(int n);
 	int GetWidth() const;
-	int GetHeight() const				{ return TabBar::GetStyleHeight(*style[GetAlign()]); }
-	static int 	GetStyleHeight(const Style& s);
+	int GetHeight() const;
+	
+	static int GetStyleHeight(const Style& s);
 	
 	int   GetNextId();
 	int   GetScrollPos() 				{ return sc.GetPos(); }		

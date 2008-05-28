@@ -280,7 +280,7 @@ void TabBar::CloseAll()
 		if(i != active)
 			tabs.Remove(i);
 
-	SyncScrollBar(tabs[0].cx);
+	SyncScrollBar(tabs[0].size.cx);
 	MakeGroups();
 	Repos();
 	SetCursor(0);
@@ -322,8 +322,8 @@ void TabBar::GroupMenu(Bar &bar, int n)
 
 bool TabBar::Tab::HasMouse(const Point& p) const
 {
-	return visible && p.x >= tb_x && p.x < tb_x + tb_cx &&
-	                  p.y >= tb_y && p.y < tb_y + tb_cy;
+	return visible && p.x >= real_pos.x && p.x < real_pos.x + real_size.cx &&
+	                  p.y >= real_pos.y && p.y < real_pos.y + real_size.cy;
 }
 
 bool TabBar::Tab::HasMouseCross(const Point& p) const
@@ -331,8 +331,8 @@ bool TabBar::Tab::HasMouseCross(const Point& p) const
 	if(!visible)
 		return false;
 
-	return p.x >= cr_x && p.x < cr_x + cr_cx &&
-	       p.y >= cr_y && p.y < cr_y + cr_cy;
+	return p.x >= cross_pos.x && p.x < cross_pos.x + cross_size.cx &&
+	       p.y >= cross_pos.y && p.y < cross_pos.y + cross_size.cy;
 }
 
 int TabBar::FindGroup(const String& g) const
@@ -518,15 +518,15 @@ void TabBar::PaintTab(Draw &w, const Style &s, const Size &sz, int n, bool enabl
 	const Value& sv = (cnt == 1 ? s.both : c == 0 ? s.first : c == cnt - 1 ? s.last : s.normal)[ndx];
 
 	int lx = n > 0 ? s.extendleft : 0;
-	int x = t.x - sc.GetPos() + s.margin - lx;
+	int x = t.pos.x - sc.GetPos() + s.margin - lx;
 	
 	if (ac) {
 		p = Point(x - s.sel.left, 0);		
-		tsz = Size(t.cx + lx + s.sel.right + s.sel.left, t.cy + s.sel.bottom);
+		tsz = Size(t.size.cx + lx + s.sel.right + s.sel.left, t.size.cy + s.sel.bottom);
 	}
 	else {
 		p = Point(x, s.sel.top);
-		tsz = Size(t.cx + lx, t.cy - s.sel.top);
+		tsz = Size(t.size.cx + lx, t.size.cy - s.sel.top);
 	}
 
 	if (align == BOTTOM) {
@@ -535,23 +535,13 @@ void TabBar::PaintTab(Draw &w, const Style &s, const Size &sz, int n, bool enabl
 	if (align == RIGHT) {
 		p.y -= s.sel.top - TB_SBSEPARATOR;
 	}
-	
-	if (IsVert())
-	{
-		ChPaint(w, p.y, p.x, tsz.cy, tsz.cx, sv);
-		t.tb_x = p.y;
-		t.tb_y = p.x;
-		t.tb_cx = tsz.cy;
-		t.tb_cy = tsz.cx;
-	}
-	else 
-	{
-		ChPaint(w, p.x, p.y, tsz.cx, tsz.cy, sv);
-		t.tb_x = p.x;
-		t.tb_y = p.y;
-		t.tb_cx = tsz.cx;
-		t.tb_cy = tsz.cy;
-	}
+
+	t.real_pos = p;
+	t.real_size = tsz;
+	Fix(t.real_pos);
+	Fix(t.real_size);
+		
+	ChPaint(w, t.real_pos.x, t.real_pos.y, t.real_size.cx, t.real_size.cy, sv);
 	
 	if(crosses && cnt > neverempty) {
 		Point cp;
@@ -566,10 +556,8 @@ void TabBar::PaintTab(Draw &w, const Style &s, const Size &sz, int n, bool enabl
 			cp.x = p.x + tsz.cx - isz.cx - TB_MARGIN;
 		cp.y = p.y + (tsz.cy - isz.cy) / 2;
 		Fix(cp);
-		t.cr_x = cp.x;
-		t.cr_y = cp.y;
-		t.cr_cx = isz.cx;
-		t.cr_cy = isz.cy;
+		t.cross_pos = cp;
+		t.cross_size = isz;
 		w.DrawImage(cp.x, cp.y, (ac || hl) ? (cross == n ? TabBarImg::CR2 : ac ? TabBarImg::CR1 : TabBarImg::CR0) : TabBarImg::CR0);
 		isz.cx += 2;
 	}
@@ -620,14 +608,14 @@ void TabBar::Paint(Draw &w)
 	// Find first visible tab
 	for(int i = 0; i < tabs.GetCount(); i++) {
 		Tab &tab = tabs[i]; 
-		if (tab.x + tab.cx > sc.GetPos()) {
+		if (tab.pos.x + tab.size.cx > sc.GetPos()) {
 			first = i;
 			break;
 		}
 	}
 	// Find last visible tab
-	for(int i = first+1; i < tabs.GetCount(); i++) { 
-		if (tabs[i].x > limt) {
+	for(int i = first + 1; i < tabs.GetCount(); i++) { 
+		if (tabs[i].pos.x > limt) {
 			last = i;
 			break;
 		}
@@ -656,7 +644,7 @@ void TabBar::Paint(Draw &w)
 		{			
 			last = GetLast();
 			first = GetFirst();
-			int x = (target == last + 1 ? tabs[last].Right() : tabs[target].x)
+			int x = (target == last + 1 ? tabs[last].Right() : tabs[target].pos.x)
 			        - sc.GetPos() - (target <= first ? 1 : 2)
 			        + st.margin - (target > 0 ? st.extendleft : 0);
 			int y = st.sel.top;
@@ -693,15 +681,16 @@ Image TabBar::GetDragSample(int n)
 	Tab &tab = tabs[n];
 	const Style& st = *style[GetAlign()];
 
-	Size tsz(tab.tb_cx, tab.tb_cy);
+	Size tsz(tab.real_size);
 	ImageDraw iw(tsz);
 	iw.DrawRect(tsz, SColorFace()); //this need to be fixed - if inactive tab is dragged gray edges are visible
 	
-	Point temp = Point(tab.x, tab.y);
-	tab.x = sc.GetPos();
-	tab.y = 0;
+	Point temp = tab.pos;
+	tab.pos.x = sc.GetPos();
+	tab.pos.y = 0;
 	PaintTab(iw, st, GetSize(), n, true, true);
-	tab.x = temp.x; tab.y = temp.y;
+	tab.pos.x = temp.x; 
+	tab.pos.y = temp.y;
 	
 	Image img = iw;
 	ImageBuffer ib(img);
@@ -724,8 +713,8 @@ void TabBar::Scroll()
 int TabBar::GetWidth(int n)
 {
 	Tab &t = tabs[n];
-	t.tsz = GetStdSize(t.data);
-	return TB_MARGIN * 2 + t.tsz.cx + (TB_SPACE + TabBarImg::CR0().GetSize().cx) * crosses;
+	Size tsz = GetStdSize(t.data);
+	return TB_MARGIN * 2 + tsz.cx + (TB_SPACE + TabBarImg::CR0().GetSize().cx) * crosses;
 }
 
 Size TabBar::GetStdSize(Value &q)
@@ -768,15 +757,20 @@ TabBar& TabBar::Insert(int ix, const Value &data, String group, bool make_active
 	return *this;	
 }
 
-int TabBar::GetWidth()const
+int TabBar::GetWidth() const
 {
 	if (!tabs.GetCount()) return 0;
 	return tabs[GetLast()].Right() + style[GetAlign()]->margin * 2;
 }
 
+int TabBar::GetHeight() const
+{
+	return TabBar::GetStyleHeight(*style[GetAlign()]) + TB_SBSEPARATOR;
+}
+
 int TabBar::GetStyleHeight(const Style &s)
 {
-	return s.tabheight + s.sel.top + TB_SBSEPARATOR;
+	return s.tabheight + s.sel.top;
 }
 
 void TabBar::Repos()
@@ -803,22 +797,22 @@ int TabBar::TabPos(const String &g, bool &first, int i, int j, bool inactive)
 	bool v = IsNull(g) ? true : g == tabs[i].group;
 	if(v)
 	{
-		tabs[i].x = first ? 0 : tabs[j].Right();
+		tabs[i].pos.x = first ? 0 : tabs[j].Right();
 		j = i;
 		first = false;
 	}
 	else {
-		tabs[i].x = 0;
+		tabs[i].pos.x = 0;
 		if (inactive) {
-			tabs[i].x = tabs[j].Right();
+			tabs[i].pos.x = tabs[j].Right();
 			return (j = i);
 		}
 	}
 
 	tabs[i].visible = v;
-	tabs[i].y = 0;
-	tabs[i].cx = GetWidth(i);
-	tabs[i].cy = style[1]->tabheight + style[1]->sel.top;
+	tabs[i].pos.y = 0;
+	tabs[i].size.cx = GetWidth(i);
+	tabs[i].size.cy = GetStyleHeight(*style[1]);
 	return j;	
 }
 
@@ -1014,11 +1008,11 @@ int TabBar::GetTargetTab(Point p)
 	int f = GetFirst();
 	int l = GetLast();
 
-	if(tabs[f].visible && p.x < tabs[f].x + tabs[f].cx / 2)
+	if(tabs[f].visible && p.x < tabs[f].pos.x + tabs[f].size.cx / 2)
 		return f;
 
 	for(int i = l; i >= f; i--)
-		if(tabs[i].visible && p.x >= tabs[i].x + tabs[i].cx / 2)
+		if(tabs[i].visible && p.x >= tabs[i].pos.x + tabs[i].size.cx / 2)
 			return i == l ? i + 1 : GetNext(i);
 //		if(tabs[i].visible && p.x >= tabs[i].x && p.x <= tabs[i].x + tabs[i].cx)
 //			return i;
@@ -1193,14 +1187,14 @@ void TabBar::SetCursor(int n)
 
 	SetGroupActive(tabs[n].id);
 
-	int cx = tabs[n].x - sc.GetPos();
+	int cx = tabs[n].pos.x - sc.GetPos();
 	if(cx < 0)
 		sc.AddPos(cx - 10);
 	else
 	{
 		Size sz = Ctrl::GetSize();
 		Fix(sz);
-		cx = tabs[n].x + tabs[n].cx - sz.cx - sc.GetPos();
+		cx = tabs[n].pos.x + tabs[n].size.cx - sz.cx - sc.GetPos();
 		if(cx > 0)
 			sc.AddPos(cx + 10);
 	}
@@ -1236,7 +1230,7 @@ void TabBar::Close(int n)
 			nc = max(0, GetPrev(c));
 		SetGroupActive(tabs[nc].id);
 	}
-	sc.AddTotal(-tabs[n].cx);
+	sc.AddTotal(-tabs[n].size.cx);
 	tabs.Remove(n);
 	MakeGroups();
 	Repos();

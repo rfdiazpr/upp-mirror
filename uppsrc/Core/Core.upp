@@ -38,6 +38,8 @@ file
 	OL_Set.cpp,
 	Global.h,
 	HeapImp.h,
+	heaputil.cpp optimize_speed,
+	sheap.cpp optimize_speed,
 	lheap.cpp optimize_speed,
 	heap.cpp optimize_speed,
 	heapdbg.cpp optimize_speed,

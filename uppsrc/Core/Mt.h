@@ -249,11 +249,12 @@ protected:
 	MtInspector     *mti;
 
 public:
-	bool  TryEnter()          { return pthread_mutex_trylock(mutex) == 0; }
 #ifdef flagPROFILEMT
-	void  Enter()             { if(!TryEnter()) { mti->blocked++; pthread_mutex_lock(mutex); } mti->locked++; }
+	bool  TryEnter()          { bool b = pthread_mutex_trylock(mutex) == 0; mti->locked += b; return b; }
+	void  Enter()             { if(pthread_mutex_trylock(mutex) != 0) { mti->blocked++; pthread_mutex_lock(mutex); } mti->locked++; }
 	void  Set(MtInspector& m) { mti = &m; }
 #else
+	bool  TryEnter()          { return pthread_mutex_trylock(mutex) == 0; }
 	void  Enter()             { pthread_mutex_lock(mutex); }
 #endif
 	void  Leave()             { pthread_mutex_unlock(mutex); }

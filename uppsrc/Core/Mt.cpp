@@ -248,8 +248,8 @@ MtInspector *MtInspector::Dumi()
 MtInspector::~MtInspector()
 {
 	if(name)
-		RLOG("Mutex " << name << " " << number << ' ' << blocked << "/" << locked <<
-		     " = " << Sprintf("%.4f", (double)blocked / locked) << " blocked/locked times");
+		RLOG("Mutex " << name << '(' << number << ") " << blocked << "/" << locked <<
+		     " = " << Sprintf("%.4f", locked ? (double)blocked / locked : 0) << " blocked/locked times");
 }
 #endif
 
@@ -288,7 +288,15 @@ bool Mutex::TryEnter()
 		if(HMODULE hDLL = LoadLibrary("Kernel32"))
 			sTec = (TEC) GetProcAddress(hDLL, "TryEnterCriticalSection");
 	}
+/* TODO! TryEntery0
+#ifdef flagPROFILEMT
+	bool b = (*sTec)(&section);
+	mti->blocked += b;
+	return b;
+#else
+*/
 	return (*sTec)(&section);
+//#endif
 }
 
 /* Win32 RWMutex implementation by Chris Thomasson, cristom@comcast.net */

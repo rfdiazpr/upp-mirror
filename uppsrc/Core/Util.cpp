@@ -414,9 +414,9 @@ String TextSettings::Get(const char *group, const char *key) const
 // --------------------------------------------------------------
 
 String timeFormat(double s) {
-	if(s < 0.001) return Sprintf("%5.1f us", s * 1.0e6);
-	if(s < 1) return Sprintf("%5.1f ms", s * 1.0e3);
-	return Sprintf("%5.1f s ", s);
+	if(s < 0.001) return Sprintf("%5.2f us", s * 1.0e6);
+	if(s < 1) return Sprintf("%5.2f ms", s * 1.0e3);
+	return Sprintf("%5.2f s ", s);
 }
 
 String Garble(const char *s, const char *e)

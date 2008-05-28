@@ -329,9 +329,12 @@ void *MemoryAllocPermanent(size_t size);
 void *MemoryAllocSz(size_t& size);
 void *MemoryAlloc(size_t size);
 void  MemoryFree(void *ptr);
+void *MemoryAlloc32();
+void  MemoryFree32(void *ptr);
+void *MemoryAlloc48();
+void  MemoryFree48(void *ptr);
 void  MemoryFreeThread();
 void  MemoryCheck();
-void  MemoryShrink();
 int   MemoryUsedKb();
 
 
@@ -371,8 +374,6 @@ struct MemoryProfile {
 	int large_free_size[1024];
 	int large_free_total;
 
-	void Make();
-
 	MemoryProfile();
 };
 
@@ -384,7 +385,10 @@ inline void  *MemoryAllocPermanent(size_t size)                { return malloc(s
 inline void  *MemoryAlloc(size_t size)     { return new byte[size]; }
 inline void  *MemoryAllocSz(size_t &size)  { return new byte[size]; }
 inline void   MemoryFree(void *p)          { delete[] (byte *) p; }
-inline void   MemoryShrink()               {}
+inline void  *MemoryAlloc32()              { return new byte[32]; }
+inline void  *MemoryAlloc48()              { return new byte[48]; }
+inline void   MemoryFree32(void *ptr)      { delete[] (byte *)ptr; }
+inline void   MemoryFree48(void *ptr)      { delete[] (byte *)ptr; }
 inline void   MemoryInitDiagnostics()      {}
 inline void   MemoryCheck() {}
 inline void   MemoryCheckDebug() {}

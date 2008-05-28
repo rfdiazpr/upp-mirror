@@ -4,6 +4,8 @@
 
 NAMESPACE_UPP
 
+#include "HeapImp.h"
+
 int sMemDiagInitCount = 0;
 
 #if defined(HEAPDBG) && defined(UPP_HEAP)
@@ -141,6 +143,11 @@ void MemoryFree(void *ptr)
 	MemoryFree_(p);
 }
 
+void *MemoryAlloc32()             { return MemoryAlloc(32); }
+void  MemoryFree32(void *ptr)     { return MemoryFree(ptr); }
+void *MemoryAlloc48()             { return MemoryAlloc(48); }
+void  MemoryFree48(void *ptr)     { return MemoryFree(ptr); }
+
 void MemoryCheckDebug()
 {
 	MemoryCheck();
@@ -200,6 +207,7 @@ void MemoryDumpLeaks()
 	if(!IsPanicMode())
 		PanicMessageBox("Warning", "Heap leaks detected!");
 #endif
+	Heap::AuxFinalCheck();
 }
 
 #ifdef COMPILER_MSC

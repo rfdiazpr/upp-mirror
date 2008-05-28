@@ -2,59 +2,11 @@
 
 NAMESPACE_UPP
 
-#if defined(UPP_HEAP) && !defined(HEAPDBG)
-
-#include "HeapImp.h"
-
-static inline void *MAlloc_WS()
-{
-	sHeapStat(2);
-	MCache& m = mcache[2];
-	FreeLink *l = m.list;
-	if(l) {
-		m.list = l->next;
-		m.count--;
-		return l;
-	}
-	else {
-		void *ptr = MAlloc_Get(m, 2);
-		return ptr;
-	}
-}
-
-static inline void MFree_WS(void *ptr)
-{
-	MCache& m = mcache[2];
-	((FreeLink *)ptr)->next = m.list;
-	m.list = (FreeLink *)ptr;
-#ifdef _DEBUG
-#ifdef CPU_64
-	FreeFill((dword *)ptr + 2, 48 / 4 - 2);
-#else
-	FreeFill((dword *)ptr + 1, 48 / 4 - 1);
-#endif
-#endif
-#ifdef ACSIZE
-	if(++m.count > 240)
-		MFree_Reduce(m, 2);
-#else
-	if(++m.count > CACHEMAX)
-		MFree_Reduce(m, 2);
-#endif
-}
-
-#else
-
-static inline void *MAlloc_WS()          { return new byte[48]; }
-static inline void  MFree_WS(void *ptr)  { delete[] (byte *)ptr; }
-
-#endif
-
 wchar *WString0::Alloc(int& count)
 {
 	if(count <= SMALL) {
 		count = SMALL;
-		wchar *p = (wchar *)MAlloc_WS();
+		wchar *p = (wchar *)MemoryAlloc48();
 		return p;
 	}
 	size_t sz = sizeof(Atomic) + (count + 1) * sizeof(wchar);
@@ -73,7 +25,7 @@ void WString0::Free()
 				MemoryFree(&rc);
 		}
 		else
-			MFree_WS(ptr);
+			MemoryFree48(ptr);
 }
 
 #ifdef _DEBUG
@@ -138,7 +90,7 @@ void WString0::Set(const WString0& src)
 		AtomicInc(Rc());
 	}
 	else {
-		ptr = (wchar *)MAlloc_WS();
+		ptr = (wchar *)MemoryAlloc48();
 		qword *t = (qword *)ptr;
 		qword *s = (qword *)src.ptr;
 		t[0] = s[0];
@@ -320,7 +272,7 @@ void WStringBuffer::Zero()
 wchar *WStringBuffer::Alloc(int count, int& alloc)
 {
 	if(count <= 23) {
-		wchar *s = (wchar *)MAlloc_WS();
+		wchar *s = (wchar *)MemoryAlloc48();
 		alloc = WString0::SMALL;
 		return s;
 	}
@@ -337,7 +289,7 @@ void WStringBuffer::Free()
 {
 	int all = (int)(limit - begin);
 	if(all == WString0::SMALL)
-		MFree_WS(begin);
+		MemoryFree48(begin);
 	if(all > WString0::SMALL)
 		MemoryFree((Atomic *)begin - 1);
 }

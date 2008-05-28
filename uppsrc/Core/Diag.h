@@ -226,3 +226,5 @@ template <class C>
 void DumpContainer3(Stream& s, const C& c) {
 	DumpContainer3(s, c.Begin(), c.End());
 }
+
+String AsString(MemoryProfile& mem);

@@ -2,54 +2,6 @@
 
 NAMESPACE_UPP
 
-#if defined(UPP_HEAP) && !defined(HEAPDBG)
-
-#include "HeapImp.h"
-
-static inline void *MAlloc_S()
-{
-	sHeapStat(1);
-	MCache& m = mcache[1];
-	FreeLink *l = m.list;
-	if(l) {
-		m.list = l->next;
-		m.count--;
-		return l;
-	}
-	else
-		return MAlloc_Get(m, 1);
-}
-
-static inline void MFree_S(void *ptr)
-{
-	MCache& m = mcache[1];
-	((FreeLink *)ptr)->next = m.list;
-	m.list = (FreeLink *)ptr;
-#ifdef _DEBUG
-#ifdef CPU_64
-	FreeFill((dword *)ptr + 2, 32 / 4 - 2);
-#else
-	FreeFill((dword *)ptr + 1, 32 / 4 - 1);
-#endif
-#endif
-#ifdef ACSIZE
-	if(++m.count > 240)
-		MFree_Reduce(m, 1);
-#else
-	if(++m.count > CACHEMAX)
-		MFree_Reduce(m, 1);
-#endif
-}
-
-#else
-
-static inline void *MAlloc_S()          { return new byte[32]; }
-static inline void  MFree_S(void *ptr)  { delete[] (byte *)ptr; }
-
-#endif
-
-
-
 #ifdef _DEBUG
 void String0::Dsyn()
 {
@@ -71,7 +23,7 @@ void String0::LSet(const String0& s)
 			AtomicInc(s.Ref()->refcount);
 	}
 	else {
-		ptr = (char *)MAlloc_S();
+		ptr = (char *)MemoryAlloc32();
 		qptr[0] = s.qptr[0];
 		qptr[1] = s.qptr[1];
 		qptr[2] = s.qptr[2];
@@ -89,7 +41,7 @@ void String0::LFree()
 		}
 	}
 	else
-		MFree_S(ptr);
+		MemoryFree32(ptr);
 }
 
 dword String0::LEqual(const String0& s) const
@@ -151,7 +103,7 @@ char *String0::Alloc(int count, char& kind)
 {
 	if(count < 32) {
 		kind = MEDIUM;
-		return (char *)MAlloc_S();
+		return (char *)MemoryAlloc32();
 	}
 	size_t sz = sizeof(Rc) + count + 1;
 	Rc *rc = (Rc *)MemoryAlloc(sz);
@@ -255,7 +207,7 @@ void String0::Trim(int pos)
 void String0::LCat(int c)
 {
 	if(IsSmall()) {
-		qword *x = (qword *)MAlloc_S();
+		qword *x = (qword *)MemoryAlloc32();
 		x[0] = q[0];
 		x[1] = q[1];
 		LLen() = SLen();
@@ -383,7 +335,7 @@ String::String(StringBuffer& b)
 char *StringBuffer::Alloc(int count, int& alloc)
 {
 	if(count <= 31) {
-		char *s = (char *)MAlloc_S();
+		char *s = (char *)MemoryAlloc32();
 		alloc = 31;
 		return s;
 	}
@@ -402,7 +354,7 @@ void StringBuffer::Free()
 		return;
 	int all = (int)(limit - begin);
 	if(all == 31)
-		MFree_S(begin);
+		MemoryFree32(begin);
 	if(all > 31)
 		MemoryFree((Rc *)begin - 1);
 }
@@ -457,7 +409,7 @@ void StringBuffer::Set(String& s)
 	s.UnShare();
 	int l = s.GetLength();
 	if(s.GetAlloc() == 14) {
-		begin = (char *)MAlloc_S();
+		begin = (char *)MemoryAlloc32();
 		limit = begin + 31;
 		memcpy(begin, s.Begin(), l);
 		end = begin + l;

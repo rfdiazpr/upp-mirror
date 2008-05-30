@@ -82,7 +82,7 @@ struct Heap {
 	Page     *empty[NKLASS];
 	FreeLink *cache[NKLASS];
 	int       cachen[NKLASS];
-
+	
 	bool      initialized;
 
 	static word  BinSz[LBINS];
@@ -98,7 +98,7 @@ struct Heap {
 
 	static DLink big[1];
 	static Heap  aux;
-
+	
 #ifdef HEAPDBG
 	static void  DbgFreeFill(void *ptr, int size);
 	static void  DbgFreeCheck(void *ptr, int size);

@@ -132,8 +132,9 @@ HMODULE CheckDll__(const char *fn, const char *const *names, UPP::Vector<void *>
 		if(!name || !(proc = (void *)GetProcAddress(hmod, name)))
 #endif
 			if(!optional) {
-				if(!missing)
+				if(!missing) {
 					LLOG(fn << " missing exports:");
+				}
 				LLOG(exp);
 				missing++;
 			}

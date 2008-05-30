@@ -19,7 +19,7 @@ struct MtInspector {
 	int   number;
 	int   locked;
 	int   blocked;
-
+	
 	static MtInspector *Dumi();
 
 	MtInspector(const char *s, int n = -1) { name = s; number = n; locked = blocked = 0; }
@@ -100,7 +100,7 @@ inline void ReadMemoryBarrier()
 	#else
 		__asm__("lfence");
 	#endif
-#else
+#else	
 	#ifdef COMPILER_MSC
 		__asm lfence;
 	#else
@@ -116,7 +116,7 @@ inline void WriteMemoryBarrier() {
 	#else
 		__asm__("sfence");
 	#endif
-#else
+#else	
 	#ifdef COMPILER_MSC
 		__asm sfence;
 	#else

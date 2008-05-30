@@ -545,8 +545,9 @@ class GridCtrl : public Ctrl
 
 				ItemRect& Size(int n);
 
-				bool IsMin() { return ismin; }
-				bool IsMax() { return ismax; }
+				bool IsMin()   { return ismin; }
+				bool IsMax()   { return ismax; }
+				bool IsFixed() { return ismin && ismax; }
 
 				void ChangeSortMode(bool idsort = true);
 
@@ -1110,6 +1111,8 @@ class GridCtrl : public Ctrl
 		Item&     GetCell(int n, int m);
 		Item&     GetCell(int n, Id id);
 
+		bool IsColumn(const Id& id);
+
 		int  GetCurrentRow() const;
 		bool IsCurrentRow() const;
 		void RestoreCurrentRow();
@@ -1301,6 +1304,7 @@ class GridCtrl : public Ctrl
 		void MoveRows(int n, bool onerow = false);
 
 		int  GetCount() const;
+		int  GetRowCount() const { return GetCount(); }
 		int  GetFixedCount() const;
 		int  GetTotalCount() const;
 
@@ -1374,6 +1378,8 @@ class GridCtrl : public Ctrl
 		bool IsDataChanged()  { return row_data; }
 		bool IsChanged()      { return row_order || row_data; }
 
+		bool IsRowEditable();
+
 		void Serialize(Stream &s);
 
 		Ctrl * GetCtrl(int r, int c);
@@ -1430,8 +1436,6 @@ class GridCtrl : public Ctrl
 		bool IsValidCursorAll(const Point &p) const;
 		bool IsValidCursor(const Point &p) const;
 		bool IsValidCursor(int c) const;
-
-		bool IsRowEditable();
 
 		void SetItemCursor(Point p, bool b, bool highlight);
 
@@ -1581,6 +1585,8 @@ class GridCtrl : public Ctrl
 		Callback WhenRemoveRow;
 		Callback WhenDuplicateRow;
 
+		Callback WhenCancelNewRow;
+
 		Callback WhenUpdateCell;
 
 		Callback WhenNewRow;
@@ -1589,6 +1595,7 @@ class GridCtrl : public Ctrl
 		Callback WhenCursor;
 		Callback WhenEmpty;
 
+		Callback WhenCtrlAction;
 		Callback WhenCtrlsAction;
 
 		Callback WhenSearchCursor;

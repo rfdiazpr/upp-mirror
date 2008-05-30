@@ -2122,6 +2122,7 @@ void GridCtrl::ChildAction(Ctrl *child, int event)
 
 			SetCursor0(cp, false);
 			UpdateCtrls(UC_SHOW | UC_FOCUS | UC_CTRLS_OFF);
+			WhenCtrlAction();
 		}
 	}
 }
@@ -2598,6 +2599,11 @@ GridCtrl& GridCtrl::Add(const Vector<Value> &v, int offset, int count)
 	return *this;
 }
 
+bool GridCtrl::IsColumn(const Id& id)
+{
+	return valid_cursor ? hitems[curpos.x].id == aliases.Get(id) : false;
+}
+
 GridCtrl::ItemRect& GridCtrl::GetColumn(int n)
 {
 	return hitems[GetIdCol(n + fixed_cols)];
@@ -2901,7 +2907,7 @@ GridCtrl::CurState GridCtrl::SetCursor0(Point p, bool mouse, bool highlight, int
 				}
 			}
 
-			if(newvalid)
+			if(newvalid && !ctrlmode)
 				break;
 
 			if(quit || (dirx == 0 && diry == 0))
@@ -3512,10 +3518,9 @@ int GridCtrl::GetSplitCol(const Point &p, int splitSize, bool full)
 		return -1;
 
 	int diff = 0;
-	int size = splitSize >= 0 ? splitSize : 0;
 	if(p.x > fixed_width || moving_body || moving_header)
 	{
-		if(!full && !full_col_resizing && p.y > fixed_height)
+		if(!full && !full_col_resizing && p.y >= fixed_height)
 			return -1;
 		diff = sbx;
 	}
@@ -3561,10 +3566,9 @@ int GridCtrl::GetSplitRow(const Point &p, int splitSize, bool full)
 		return -1;
 
 	int diff = 0;
-	int size = splitSize >= 0 ? splitSize : 0;
 	if(p.y > fixed_height || moving_body || moving_header)
 	{
-		if(!full && !moving_header && !full_row_resizing && p.x > fixed_width)
+		if(!full && !moving_header && !full_row_resizing && p.x >= fixed_width)
 			return -1;
 		diff = sby;
 	}
@@ -5773,7 +5777,10 @@ bool GridCtrl::EndEdit(bool accept, bool doall, bool remove_row)
 			newrow_inserted = false;
 			newrow_appended = false;
 			if(remove_row)
+			{
+				WhenCancelNewRow();
 				Remove0(curpos.y, 1, true, true, false);
+			}
 		}
 	}
 	WhenEndEdit();
@@ -6349,7 +6356,8 @@ void GridCtrl::DoCtrlSelect()
 
 bool GridCtrl::IsSelected(int n, bool relative)
 {
-	int id = vitems[n + (relative ? fixed_rows : 0)].id;
+	//int id = vitems[n + (relative ? fixed_rows : 0)].id;
+	int id = n + (relative ? fixed_rows : 0);
 	return vitems[id].IsSelect() || vitems[id].IsCursor();
 }
 
@@ -6855,6 +6863,7 @@ bool GridCtrl::WhenInsertRow0()
 	WhenInsertRow();
 	if(cancel_insert)
 	{
+		WhenCancelNewRow();
 		Remove0(curpos.y, 1, true, true, false);
 		cancel_insert = false;
 		return false;

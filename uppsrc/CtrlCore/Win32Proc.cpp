@@ -207,6 +207,7 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 	case WM_NCRBUTTONDOWN:
 	case WM_NCMBUTTONDOWN:
 		ClickActivateWnd();
+		IgnoreMouseUp();
 		break;
 #endif
 	case WM_MOUSEMOVE:

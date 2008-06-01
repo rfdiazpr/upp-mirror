@@ -370,7 +370,7 @@ void Time::Set(int64 scalar)
 	second = n % 60;
 }
 
-int64 Time::Get()
+int64 Time::Get() const
 {
 	return Date::Get() * (int64)24 * 3600 + hour * 3600 + minute * 60 + second;
 }

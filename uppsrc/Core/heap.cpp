@@ -14,6 +14,8 @@ StaticMutex Heap::mutex;
 
 void Heap::Init()
 {
+	if(initialized)
+		return;
 	LLOG("Init heap " << (void *)this);
 	for(int i = 0; i < NKLASS; i++) {
 		int sz = Ksz(i);
@@ -69,8 +71,9 @@ void Heap::FreeRemote()
 void Heap::Shutdown()
 {
 	LLOG("Shutdown");
-	FreeRemote();
 	Mutex::Lock __(mutex);
+	Init();
+	FreeRemoteRaw();
 	for(int i = 0; i < NKLASS; i++) {
 		LLOG("Free cache " << i);
 		FreeLink *l = cache[i];
@@ -142,6 +145,7 @@ int Heap::CheckPageFree(FreeLink *l, int k)
 
 void Heap::Check() {
 	Mutex::Lock __(mutex);
+	Init();
 	if(!work[0]->next)
 		Init();
 	for(int i = 0; i < NKLASS; i++) {
@@ -204,6 +208,7 @@ void Heap::AssertLeaks(bool b)
 void Heap::AuxFinalCheck()
 {
 	Mutex::Lock __(mutex);
+	aux.Init();
 	aux.FreeRemoteRaw();
 	aux.Check();
 	if(!aux.work[0]->next)

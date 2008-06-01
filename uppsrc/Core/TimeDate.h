@@ -80,7 +80,7 @@ struct Time : Date, RelOps< Time, Moveable<Time> > {
 	static Time Low()        { return Time(-4000, 1, 1); }
 
 	void   Set(int64 scalar);
-	int64  Get();
+	int64  Get() const;
 
 	Time()                   { hour = minute = second = 0; }
 	Time(const Nuller&)      { hour = minute = second = 0; }

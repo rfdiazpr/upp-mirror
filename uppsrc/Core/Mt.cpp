@@ -4,7 +4,7 @@ NAMESPACE_UPP
 
 #ifdef _MULTITHREADED
 
-Mutex& sMutexLock()
+static Mutex& sMutexLock()
 {
 	static Mutex *section;
 	if(!section) {

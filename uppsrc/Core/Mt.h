@@ -238,11 +238,6 @@ inline int  AtomicXAdd(volatile Atomic& t, int incr)  { using namespace __gnu_cx
 inline int  AtomicInc(volatile Atomic& t)             { return AtomicXAdd(t, +1) + 1; }
 inline int  AtomicDec(volatile Atomic& t)             { return AtomicXAdd(t, -1) - 1; }
 
-/*
-inline int  AtomicInc(volatile Atomic& t)             { using namespace __gnu_cxx; __atomic_add(&t, 1); return t; }
-inline int  AtomicDec(volatile Atomic& t)             { using namespace __gnu_cxx; __atomic_add(&t, -1); return t; }
-*/
-
 class Mutex {
 protected:
 	pthread_mutex_t  mutex[1];

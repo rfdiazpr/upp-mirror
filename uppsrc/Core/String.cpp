@@ -24,10 +24,9 @@ void String0::LSet(const String0& s)
 	}
 	else {
 		ptr = (char *)MemoryAlloc32();
-		qptr[0] = s.qptr[0];
-		qptr[1] = s.qptr[1];
-		qptr[2] = s.qptr[2];
-		qptr[3] = s.qptr[3];
+		qword *d = qptr;
+		const qword *q = s.qptr;
+		d[0] = q[0]; d[1] = q[1]; d[2] = q[2]; d[3] = q[3];
 	}
 }
 

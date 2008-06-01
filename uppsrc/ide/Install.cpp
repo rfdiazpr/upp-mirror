@@ -387,6 +387,11 @@ bool Install()
 	String bm = ConfigFile("GCC.bm");
 	if(IsNull(LoadFile(bm)))
 		SaveFile(bm, LoadFile(AppendFileName(supp, "GCC.bm")));
+	// 2008/06/01 -- add valgrind suppression file
+	String ValgSupp = ConfigFile("valgrind.supp");
+	if(IsNull(LoadFile(ValgSupp)))
+		SaveFile(ValgSupp, LoadFile(AppendFileName(supp, "uppsrc/ide/valgrind.supp")));
+	// 2008/06/01 -- END
 	PromptOK("Ultimate`+`+ user setup was finished.&Press OK to launch TheIDE.");
 	return true;
 }

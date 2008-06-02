@@ -24,10 +24,10 @@ void ToolTip::Paint(Draw& w)
 void ToolTip::PopUp(Ctrl *owner, Point p, bool effect)
 {
 	LLOG("ToolTip::PopUp" << Desc(owner) << " @ " << p);
-	Rect r = GetWorkArea();
+	Rect r = owner->GetWorkArea();
 	Size sz = GetMinSize();
-	p.x = max(p.x + sz.cx > r.right ? r.right - sz.cx : p.x, 0);
-	p.y = max(p.y + sz.cy > r.bottom ? r.bottom - sz.cy : p.y, 0);
+	p.x = max(p.x + sz.cx > r.right ? r.right - sz.cx : p.x, r.left);
+	p.y = max(p.y + sz.cy > r.bottom ? r.bottom - sz.cy : p.y, r.top);
 	if(GUI_PopUpEffect() == GUIEFFECT_SLIDE && effect)
 		SetRect(p.x, p.y, sz.cx, 1);
 	else
@@ -75,7 +75,7 @@ void ShowToolTip()
 			KillTimeCallback((void *)EndShowMode);
 			return;
 		}
-		LLOG("-> background / empty text, top = " << ::Name(top));
+		LLOG("-> background / empty text, top = " << UPP::Name(top));
 	}
 	SetTimeCallback(200, callback(EndShowMode), (void *)EndShowMode);
 }
@@ -84,9 +84,10 @@ bool ToolTipHook(Ctrl *ctrl, bool inframe, int event, Point p, int zdelta, dword
 {
 	if(event == Ctrl::MOUSEMOVE && ctrl != &AppToolTip())
 	{
+		LLOG("ToolTipHook MOUSEMOVE");
 		ctrl = Ctrl::GetVisibleChild(ctrl, p, inframe);
-		if(ctrl != tipctrl || ctrl->GetTip() != AppToolTip().Get()) {
-			LLOG("ToolTipHook / ctrl change -> " << ::Name(ctrl));
+		if(ctrl != tipctrl || ctrl->GetTip() != AppToolTip().Get() && showmode) {
+			LLOG("ToolTipHook / ctrl change " << UPP::Name(ctrl) << " -> " << UPP::Name(ctrl));
 			tipctrl = ctrl;
 			KillTimeCallback((void *)ToolTipHook);
 			if(showmode)
@@ -98,10 +99,12 @@ bool ToolTipHook(Ctrl *ctrl, bool inframe, int event, Point p, int zdelta, dword
 		}
 	}
 	if(event == Ctrl::MOUSELEAVE) {
+		LLOG("ToolTipHook MOUSELEAVE");
 		CloseToolTip();
 		SetTimeCallback(1000, callback(EndShowMode), (void *)EndShowMode);
 	}
 	if((event & Ctrl::ACTION) == Ctrl::DOWN) {
+		LLOG("ToolTipHook DOWN");
 		CloseToolTip();
 		EndShowMode();
 	}

@@ -282,7 +282,7 @@ bool Ctrl::IsAlphaSupported()
 	return SetLayeredWindowAttributes();
 }
 
-void Ctrl::IsCompositedGui()
+bool Ctrl::IsCompositedGui()
 {
 	return false;
 }

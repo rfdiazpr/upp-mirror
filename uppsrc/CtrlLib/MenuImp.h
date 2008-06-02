@@ -1,5 +1,8 @@
 #include "CtrlLib.h"
 
+#ifndef CtrlCore_MenuImp_h
+#define CtrlCore_MenuImp_h
+
 NAMESPACE_UPP
 
 class MenuItemBase : public Ctrl, public Bar::Item
@@ -174,3 +177,5 @@ public:
 };
 
 END_UPP_NAMESPACE
+
+#endif

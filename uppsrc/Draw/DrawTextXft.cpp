@@ -177,34 +177,31 @@ XftFont *Draw::CreateXftFont(Font font, int angle)
 		mx.yy = cosa;
 		FcPatternAddMatrix(p, FC_MATRIX, &mx);
 	}
-
-/*
-	FcBool antialias = FcFalse;
-	 FcPatternGetBool( p, FC_ANTIALIAS, 0, &antialias );
-	DUMP(antialias);
-	 antialias = FcFalse;
-//	 FcPatternDel(p, FC_ANTIALIAS);
-	 XftPatternAddBool(p, FC_ANTIALIAS, FcTrue);
-	 FcPatternGetBool( p, FC_ANTIALIAS, 0, &antialias );
-	DUMP(antialias);
-*/
-
-	if(gtk_antialias >= 0)
-		FcPatternAddBool(p, FC_ANTIALIAS, gtk_antialias);
-	if(gtk_hinting >= 0)
-		XftPatternAddBool(p, FC_HINTING, gtk_hinting);
+	FcResult result;
+	FcPattern *m = XftFontMatch(Xdisplay, Xscreenno, p, &result);
+	if(font.IsNonAntiAliased() || gtk_antialias >= 0) {
+		FcPatternDel(m, FC_ANTIALIAS);
+		FcPatternAddBool(m, FC_ANTIALIAS,
+		                 font.IsNonAntiAliased() ? FcFalse : gtk_antialias ? FcTrue : FcFalse);
+	}
+	if(gtk_hinting >= 0) {
+		FcPatternDel(m, FC_HINTING);
+		FcPatternAddBool(m, FC_HINTING, gtk_hinting);
+	}
 	const char *hs[] = { "hintnone", "hintslight", "hintmedium", "hintfull" };
 	for(int i = 0; i < 4; i++)
-		if(gtk_hintstyle == hs[i])
-			XftPatternAddInteger(p, FC_HINT_STYLE, i);
+		if(gtk_hintstyle == hs[i]) {
+			FcPatternDel(m, FC_HINT_STYLE);
+			FcPatternAddInteger(m, FC_HINT_STYLE, i);
+		}
 	const char *rgba[] = { "_", "rgb", "bgr", "vrgb", "vbgr" };
 	for(int i = 0; i < __countof(rgba); i++)
-		if(gtk_rgba == rgba[i])
-			XftPatternAddInteger(p, XFT_RGBA, i);
-
-	XftResult result;
-	xftfont = XftFontOpenPattern(Xdisplay, XftFontMatch(Xdisplay, Xscreenno, p, &result));
-	XftPatternDestroy(p);
+		if(gtk_rgba == rgba[i]) {
+			FcPatternDel(m, FC_RGBA);
+			FcPatternAddInteger(m, FC_RGBA, i);
+		}
+	xftfont = XftFontOpenPattern(Xdisplay, m);
+	FcPatternDestroy(p);
 	return xftfont;
 }
 

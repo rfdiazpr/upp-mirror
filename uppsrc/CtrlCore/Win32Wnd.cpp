@@ -19,6 +19,13 @@ unsigned GetHashValue(const HWND& h)
 	return (unsigned)(intptr_t)h;
 }
 
+static bool PeekMsg(MSG& msg)
+{
+	if(!PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) return false;
+	return IsWindowUnicode(msg.hwnd) ? PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)
+	                                 : PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
+}
+
 static bool sFinished;
 
 static BOOL CALLBACK sDumpWindow(HWND hwnd, LPARAM lParam) {
@@ -118,13 +125,16 @@ DWORD WINAPI Ctrl::Win32OverwatchThread(LPVOID)
 	ELOG("OverWatch 1");
 	ExitLoopEvent().Set();
 	ELOG("OverWatch 2");
-    MSG Msg;
-    while(GetMessage(&Msg, NULL, 0, 0) > 0) {
+	MSG Msg;
+	while(GetMessage(&Msg, NULL, 0, 0) > 0) {
         TranslateMessage(&Msg);
-        DispatchMessage(&Msg);
+	if(IsWindowUnicode(Msg.hwnd))
+		DispatchMessageW(&Msg);
+	else
+		DispatchMessage(&Msg);
     }
 	ELOG("OverWatch 3");
-    return 0;
+	return 0;
 }
 #endif
 #endif
@@ -272,6 +282,11 @@ bool Ctrl::IsAlphaSupported()
 	return SetLayeredWindowAttributes();
 }
 
+void Ctrl::IsCompositedGui()
+{
+	return false;
+}
+
 void Ctrl::ExitWin32()
 {
 	RenderAllFormats();
@@ -285,7 +300,7 @@ void Ctrl::ExitWin32()
 			::DestroyWindow(hwnd);
 	}
 	MSG msg;
-	while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+	while(PeekMsg(msg))
 		if(msg.message != WM_QUIT)
 			::PostQuitMessage(0);
 #ifndef flagDLL
@@ -612,13 +627,16 @@ static void sProcessMSG(MSG& msg)
 	if(msg.message != WM_SYSKEYDOWN && msg.message != WM_SYSKEYUP
 	|| PassWindowsKey((dword)msg.wParam) || msg.wParam == VK_MENU) //17.11 Mirek - fix to get windows menu invoked on Alt+Space
 		TranslateMessage(&msg); // 04/09/07: TRC fix to make barcode reader going better
-	DispatchMessage(&msg);
+	if(IsWindowUnicode(msg.hwnd))
+		DispatchMessageW(&msg);
+	else
+		DispatchMessage(&msg);
 }
 
 bool Ctrl::IsWaitingEvent()
 {
 	MSG msg;
-	return ::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
+	return PeekMsg(msg);
 }
 
 bool Ctrl::ProcessEvent(bool *quit)
@@ -628,7 +646,7 @@ bool Ctrl::ProcessEvent(bool *quit)
 	if(!GetMouseLeft() && !GetMouseRight() && !GetMouseMiddle())
 		ReleaseCtrlCapture();
 	MSG msg;
-	if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+	if(PeekMsg(msg)) {
 		if(msg.message == WM_QUIT && quit)
 			*quit = true;
 //		LLOG(GetSysTime() << " % " << (unsigned)msecs() % 10000 << ": sProcessMSG " << FormatIntHex(msg.message));

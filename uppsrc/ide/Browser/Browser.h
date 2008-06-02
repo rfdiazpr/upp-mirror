@@ -16,6 +16,13 @@
 
 enum { WITHBODY = 33 };
 
+inline Font BrowserFont()
+#ifdef PLATFORM_WIN32
+{ return Arial(Ctrl::VertLayoutZoom(11)); }
+#else
+{ return Arial(Ctrl::VertLayoutZoom(9)); }
+#endif
+
 struct CppNestingInfo {
 	String nesting;
 	int    namespacel;
@@ -358,11 +365,11 @@ public:
 
 	void Open(const String& grouppath);
 	void GoTo(const String& topic, const String& link);
-	
+
 	static int  GetSerial();
 
 	static void SerializeEditPos(Stream& s);
-	
+
 	void Serialize(Stream& s);
 
 	TopicEditor();

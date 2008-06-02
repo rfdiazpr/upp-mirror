@@ -1296,6 +1296,7 @@ public:
 	static Rect   GetDefaultWindowRect();
 	static String GetAppName();
 	static void   SetAppName(const String& appname);
+	static bool   IsCompositedGui();
 
 	static void   GlobalBackPaint(bool b = true);
 	static void   GlobalBackPaintHint();

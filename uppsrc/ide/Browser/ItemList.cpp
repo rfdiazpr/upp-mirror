@@ -206,7 +206,7 @@ int CppItemInfoDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 	Vector<ItemTextPart> n = ParseItemNatural(m);
 	for(int i = 0; i < n.GetCount(); i++) {
 		ItemTextPart& p = n[i];
-		Font f = Arial(Ctrl::VertLayoutZoom(11));
+		Font f = BrowserFont();
 		Color ink = SColorText;
 		switch(p.type) {
 		case ITEM_PNAME:
@@ -273,7 +273,7 @@ Size CppItemInfoDisplay::GetStdSize(const Value& q) const
 {
 	NilDraw w;
 	return Size(DoPaint(w, Rect(0, 0, INT_MAX, INT_MAX), q, Null, Null, 0),
-	            max(16, Arial(Ctrl::VertLayoutZoom(11)).Info().GetHeight()));
+	            max(16, BrowserFont().Info().GetHeight()));
 }
 
 String ItemList::Item(int i)
@@ -318,7 +318,7 @@ ItemList::ItemList()
 {
 	display.htopic = -1;
 	SetDisplay(display);
-	ItemHeight(Arial(11).Info().GetHeight() + 3);
+	ItemHeight(BrowserFont().Info().GetHeight() + 3);
 	NoRoundSize();
 	NoWantFocus();
 	active_topics = false;

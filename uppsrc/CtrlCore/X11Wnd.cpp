@@ -386,12 +386,16 @@ void Ctrl::Create(Ctrl *owner, bool redirect, bool savebits)
 	swa.background_pixmap = None;
 	swa.override_redirect = redirect;
 	swa.save_under = savebits;
+	Color c = SColorPaper();
+	swa.background_pixel = GetXPixel(c.GetR(), c.GetG(), c.GetB());
 	Rect r = GetRect();
 	isopen = true;
 	Window w = XCreateWindow(Xdisplay, RootWindow(Xdisplay, Xscreenno),
 	                         r.left, r.top, r.Width(), r.Height(),
 	                         0, CopyFromParent, InputOutput, CopyFromParent,
-	                         CWBackPixmap|CWBitGravity|CWSaveUnder|CWOverrideRedirect, &swa);
+	                         CWBitGravity|CWSaveUnder|CWOverrideRedirect|
+	                         (IsCompositedGui() ? CWBackPixel : CWBackPixmap),
+	                         &swa);
 	if(!w) XError("XCreateWindow failed !");
 	int i = Xwindow().Find(None);
 	if(i >= 0) Xwindow().SetKey(i, w);
@@ -517,6 +521,12 @@ Ctrl *Ctrl::GetActiveCtrl()
 
 bool  Ctrl::IsAlphaSupported() { return false; }
 void  Ctrl::SetAlpha(byte alpha) {}
+
+bool Ctrl::IsCompositedGui()
+{
+	static bool b = XGetSelectionOwner(Xdisplay, XAtom(String().Cat() << "_NET_WM_CM_S" << Xscreenno)) != None;
+	return b;
+}
 
 Ctrl *Ctrl::GetOwner()
 {

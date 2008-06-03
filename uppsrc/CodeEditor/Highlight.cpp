@@ -207,17 +207,21 @@ void CodeEditor::Bracket(int pos, HlSt& hls)
 			             hl_style[pos == highlight_bracket_pos0 ? PAPER_BRACKET0 : PAPER_BRACKET].color);
 }
 
-void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int pos)
+Index<String> CodeEditor::keyword[HIGHLIGHT_COUNT];
+Index<String> CodeEditor::name[HIGHLIGHT_COUNT];
+Index<String> CodeEditor::kw_upp_macros;
+Index<String> CodeEditor::kw_sql_base;
+Index<String> CodeEditor::kw_sql_bool;
+Index<String> CodeEditor::kw_sql_func;
+
+const Index<String>& CodeEditor::CppKeywords()
 {
-	LTIMING("HighlightLine");
-	if(highlight < 0 || highlight >= HIGHLIGHT_COUNT)
-		return;
-	static Index<String> keyword[HIGHLIGHT_COUNT];
-	static Index<String> name[HIGHLIGHT_COUNT];
-	static Index<String> kw_upp_macros;
-	static Index<String> kw_sql_base;
-	static Index<String> kw_sql_bool;
-	static Index<String> kw_sql_func;
+	InitKeywords();
+	return keyword[0];
+}
+
+void CodeEditor::InitKeywords()
+{
 	if(keyword[0].GetCount() == 0)
 	{
 		static const char *cpp[] = {
@@ -355,6 +359,14 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 		while(*q)
 			kw_sql_bool.Add(*q++);
 	}
+}
+
+void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int pos)
+{
+	LTIMING("HighlightLine");
+	if(highlight < 0 || highlight >= HIGHLIGHT_COUNT)
+		return;
+	InitKeywords();
 	WString text = GetWLine(line);
 	SyntaxState ss = ScanSyntax(line);
 	SyntaxState sm = ScanSyntax(line + 1);

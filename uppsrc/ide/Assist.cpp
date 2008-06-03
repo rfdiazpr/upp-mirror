@@ -4,6 +4,14 @@
 #define LDUMPC(x)   //DUMPC(x)
 #define LLOG(x)     //LOG(x)
 
+class IndexSeparatorFrameCls : public CtrlFrame {
+	virtual void FrameLayout(Rect& r)                   { r.right -= 1; }
+	virtual void FramePaint(Draw& w, const Rect& r) {
+		w.DrawRect(r.right - 1, r.top, 1, r.Height(), SColorShadow);
+	}
+	virtual void FrameAddSize(Size& sz) { sz.cx += 2; }
+};
+
 AssistEditor::AssistEditor()
 {
 	assist.NoHeader();
@@ -19,6 +27,20 @@ AssistEditor::AssistEditor()
 	popup.SetPos(2000);
 	auto_assist = true;
 	commentdp = false;
+
+	InsertFrame(1, indexframe);
+	indexframe.Left(indexpane, HorzLayoutZoom(140));
+	int q = indexpane.GetStdSize().cy;
+	indexpane.Add(searchindex.HSizePos().TopPos(0, q));
+	indexpane.Add(index.HSizePos().VSizePos(q, 0));
+	index.AddColumn("").Margin(2);
+	index.AddIndex();
+	index.NoHeader().AutoHideSb().NoGrid();
+	index.SetFrame(Single<IndexSeparatorFrameCls>());
+	index.WhenLeftClick = index.WhenLeftDouble = THISBACK(IndexClick);
+	searchindex.SetFilter(CharFilterAlphaToUpper);
+	searchindex <<= THISBACK(SearchIndex);
+	showindex = true;
 }
 
 Vector<String> TemplatePars(const String& type)
@@ -638,6 +660,8 @@ bool AssistEditor::InCode()
 
 bool AssistEditor::Key(dword key, int count)
 {
+	if(searchindex.HasFocus())
+		return IndexKey(key);
 	if(popup.IsOpen()) {
 		int k = key & ~K_CTRL;
 		ArrayCtrl& kt = key & K_CTRL ? type : assist;
@@ -666,7 +690,7 @@ bool AssistEditor::Key(dword key, int count)
 		}
 	}
 #ifdef _DEBUG
-	if(key == K_F12) {
+	if(key == K_ALT_F12) {
 		PutConsole("Type is");
 		String tp;
 		Vector<String> h = ReadBack(GetCursor(), tp);

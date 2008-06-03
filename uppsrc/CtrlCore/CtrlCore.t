@@ -4,7 +4,7 @@
 // CtrlKbd.cpp
 
 T_("key\vCtrl+")
-deDE("Strg")
+deDE("Strg+")
 esES("")
 fiFI("Ctrl+")
 huHU("Ctrl+")

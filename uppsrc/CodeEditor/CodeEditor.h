@@ -147,6 +147,11 @@ public:
 	void         CheckEdited(bool e = true) { check_edited = e; }
 	bool         GetCheckEdited()           { return check_edited; }
 
+	enum {
+		HIGHLIGHT_NONE = -1, HIGHLIGHT_CPP = 0, HIGHLIGHT_USC, HIGHLIGHT_JAVA, HIGHLIGHT_T, HIGHLIGHT_CALC,
+		HIGHLIGHT_COUNT
+	};
+
 protected:
 	virtual void HighlightLine(int line, Vector<Highlight>& h, int pos);
 	virtual void PreInsert(int pos, const WString& s);
@@ -162,7 +167,15 @@ protected:
 
 	virtual void NewScrollPos();
 
-	EditorBar bar;
+	EditorBar   bar;
+	Vector<int> line2;
+
+	static Index<String> keyword[HIGHLIGHT_COUNT];
+	static Index<String> name[HIGHLIGHT_COUNT];
+	static Index<String> kw_upp_macros;
+	static Index<String> kw_sql_base;
+	static Index<String> kw_sql_bool;
+	static Index<String> kw_sql_func;
 
 	struct Isx : Moveable<Isx> {
 		int    line;
@@ -247,7 +260,7 @@ protected:
 		WString itext;
 		virtual bool Key(dword key, int count);
 	} findreplace;
-	
+
 	enum {
 		WILDANY = 16,
 		WILDONE,
@@ -270,6 +283,8 @@ protected:
 	int    highlight;
 
 	struct HlSt;
+
+	static void InitKeywords();
 
 	const wchar *HlString(HlSt& hls, const wchar *p);
 
@@ -316,11 +331,6 @@ protected:
 	void   Periodic();
 
 public:
-	enum {
-		HIGHLIGHT_NONE = -1, HIGHLIGHT_CPP = 0, HIGHLIGHT_USC, HIGHLIGHT_JAVA, HIGHLIGHT_T, HIGHLIGHT_CALC,
-		HIGHLIGHT_COUNT
-	};
-
 #define HL_COLOR(x, a, b)      x,
 	enum {
 #include "hl_color.i"
@@ -425,6 +435,8 @@ public:
 	void     GotoLine(int line);
 	void     EnableBreakpointing()                    { bar.EnableBreakpointing(true); }
 	void     DisableBreakpointing()                   { bar.EnableBreakpointing(false); }
+	void     Renumber2();
+	int      GetLine2(int i) const;
 
 	void     HiliteScope(byte b)                      { hilite_scope = b; Refresh(); }
 	void     HiliteBracket(byte b)                    { hilite_bracket = b; Refresh(); }
@@ -451,6 +463,8 @@ public:
 
 	CodeEditor();
 	virtual ~CodeEditor();
+
+	static const Index<String>& CppKeywords();
 };
 
 END_UPP_NAMESPACE

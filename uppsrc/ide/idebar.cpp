@@ -432,6 +432,9 @@ void Ide::DebugMenu(Bar& menu)
 void Ide::BrowseMenu(Bar& menu) {
 	menu.AddMenu(AK_TOGGLEBROWSER, IdeImg::browser(), THISBACK1(ToggleBottom, BBROWSER))
 	     .Check(IsBottomShown() && btabs.GetCursor() == BBROWSER);
+	menu.AddMenu(AK_TOGGLEINDEX, IdeImg::index(), THISBACK(ToggleIndex))
+	     .Check(editor.IsIndex());
+	menu.Add(AK_SEARCHINDEX, THISBACK(SearchIndex));
 	menu.Add(!designer, AK_GOTO, THISBACK(Goto));
 	menu.Add(AK_GOTOGLOBAL, THISBACK(GotoGlobal));
 	menu.Add(AK_QUERY, BrowserImg::Query(), THISBACK(Query));

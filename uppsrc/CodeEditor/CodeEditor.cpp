@@ -76,10 +76,26 @@ void CodeEditor::ClearLines() {
 
 void CodeEditor::InsertLines(int line, int count) {
 	bar.InsertLines(line, count);
+	if(line <= line2.GetCount())
+		line2.Insert(line, GetLine2(line), count);
 }
 
 void CodeEditor::RemoveLines(int line, int count) {
 	bar.RemoveLines(line, count);
+	if(line + count <= line2.GetCount())
+		line2.Remove(line, count);
+}
+
+void CodeEditor::Renumber2()
+{
+	line2.SetCount(GetLineCount());
+	for(int i = 0; i < GetLineCount(); i++)
+		line2[i] = i;
+}
+
+int CodeEditor::GetLine2(int i) const
+{
+	return line2.GetCount() ? line2[min(line2.GetCount() - 1, i)] : 0;
 }
 
 void CodeEditor::NewScrollPos() {

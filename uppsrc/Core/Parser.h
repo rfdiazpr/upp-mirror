@@ -18,7 +18,7 @@ protected:
 	void        DoSpaces()                    { if(skipspaces) Spaces(); }
 
 public:
-	struct Error : public Exc                 { /*const char *term; */Error(const char *s) : Exc(s) {}};
+	struct Error : public Exc                 { Error(const char *s) : Exc(s) {} };
 
 	void   ThrowError(const char *s);
 
@@ -77,6 +77,9 @@ public:
 
 	int    GetLine() const                    { return line; }
 	String GetFileName() const                { return fn; }
+
+	void   Set(const char *ptr, const char *fn, int line = 1);
+	void   Set(const char *ptr);
 
 	CParser(const char *ptr);
 	CParser(const char *ptr, const char *fn, int line = 1);

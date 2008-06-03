@@ -373,6 +373,21 @@ CParser::CParser()
 	skipspaces = true;
 }
 
+void CParser::Set(const char *_ptr, const char *_fn, int _line)
+{
+	term = _ptr;
+	fn = _fn;
+	line = _line;
+	skipspaces = true;
+	Spaces();
+}
+
+void CParser::Set(const char *_ptr)
+{
+	Set(_ptr, "", 1);
+}
+
+
 inline void NextCStringLine(String& t, const char *linepfx, int& pl)
 {
 	t << "\"\r\n" << (linepfx ? linepfx : "") << "\"";

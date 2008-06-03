@@ -353,6 +353,19 @@ struct AssistEditor : CodeEditor {
 	virtual void LostFocus();
 	virtual void MouseWheel(Point p, int zdelta, dword keyflags);
 	virtual void LeftDown(Point p, dword keyflags);
+	virtual void SelectionChanged();
+
+	SplitterFrame  indexframe;
+	EditString     searchindex;
+	ArrayCtrl      index;
+	StaticRect     indexpane;
+	bool           showindex;
+	struct IndexItem : Moveable<IndexItem> {
+		String text;
+		Color  ink;
+		int    line;
+	};
+	Vector<IndexItem> indexitem;
 
 	Splitter       popup;
 	ArrayCtrl      assist;
@@ -397,6 +410,18 @@ struct AssistEditor : CodeEditor {
 
 	void           SwapSContext(Parser& p);
 
+	void           CreateIndex();
+
+	void           SyncIndex();
+	void           IndexSync();
+	void           SearchIndex();
+	void           IndexClick();
+	void           SyncIndexCursor();
+	bool           IndexKey(dword key);
+	bool           IsIndex();
+	void           ShowIndex(bool b);
+
+	void           SerializeIndex(Stream& s);
 
 	typedef AssistEditor CLASSNAME;
 
@@ -862,6 +887,8 @@ public:
 		void  QueryId();
 		void  About();
 		void  OpenATopic();
+		void  ToggleIndex();
+		void  SearchIndex();
 		void  Goto();
 		void  GotoGlobal();
 		void  ScanFile();

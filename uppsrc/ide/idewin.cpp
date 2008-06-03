@@ -80,7 +80,7 @@ void Ide::ConsolePaste()
 }
 
 void Ide::Serialize(Stream& s) {
-	int version = 8;
+	int version = 9;
 	s.Magic(0x12346);
 	s / version;
 	s % main;
@@ -177,6 +177,8 @@ void Ide::Serialize(Stream& s) {
 	}
 	if(version >= 8)
 		s % LinuxHostConsole;
+	if(version >= 9)
+		editor.SerializeIndex(s);
 	s.Magic();
 }
 

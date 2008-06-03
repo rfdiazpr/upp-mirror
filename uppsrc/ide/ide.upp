@@ -36,6 +36,7 @@ file
 	Bottom.cpp,
 	t.cpp,
 	Assist.cpp,
+	Index.cpp,
 	Virtuals.cpp,
 	Thisbacks.cpp,
 	Goto.cpp,

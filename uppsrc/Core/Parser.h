@@ -77,7 +77,7 @@ public:
 
 	int    GetLine() const                    { return line; }
 	String GetFileName() const                { return fn; }
-
+	
 	void   Set(const char *ptr, const char *fn, int line = 1);
 	void   Set(const char *ptr);
 

@@ -266,6 +266,8 @@ Vector<String> Split(const char *s, int (*filter)(int), bool ignoreempty = true)
 Vector<String> Split(const char *s, int chr, bool ignoreempty = true);
 String Join(const Vector<String>& im, const String& delim);
 
+WString Join(const Vector<WString>& im, const WString& delim);
+
 class StringC {
 	BitAndPtr bap;
 

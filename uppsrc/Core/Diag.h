@@ -56,6 +56,7 @@ Stream&  UsrLogT(int indent, const char *line);
 void     DeleteUsrLog();
 
 Stream&  BugLog();
+void     DeactivateBugLog();
 
 Stream&  StdLog();
 enum LogOptions {

@@ -125,8 +125,17 @@ void sTime(char *h, const char *ext)
 	sLogFile(h, th);
 }
 
+bool snobuglog;
+
+void DeactivateBugLog()
+{
+	snobuglog = true;
+}
+
 Stream&  BugLog()
 {
+	if(snobuglog)
+		return NilStream();
 	static LogStream *s;
 	if(!s) {
 		INTERLOCKED

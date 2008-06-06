@@ -76,7 +76,9 @@ String MscBuilder::CmdLine()
 		cc = "cl -GS- ";
 	else
 		cc = HasFlag("INTEL") ? "icl" : "cl";
-	cc << (IsMsc64() ? " -nologo -Wp64 -W3 -GR -c" : " -nologo -W3 -GR -c");
+// TRC 080605-documentation says Wp64 works in 32-bit compilation only
+//	cc << (IsMsc64() ? " -nologo -Wp64 -W3 -GR -c" : " -nologo -W3 -GR -c");
+	cc << " -nologo -W3 -GR -c";
 	cc << IncludesDefinesTargetTime();
 	return cc;
 }
@@ -198,7 +200,7 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 		if(opt == R_SPEED || pkg.optimize_speed)
 			cc = cc_speed;
 	}
-	
+
 	if(HasFlag("SSE2"))
 		cc << " /arch:SSE2";
 

@@ -260,7 +260,7 @@ protected:
 		WString itext;
 		virtual bool Key(dword key, int count);
 	} findreplace;
-
+	
 	enum {
 		WILDANY = 16,
 		WILDONE,
@@ -283,7 +283,7 @@ protected:
 	int    highlight;
 
 	struct HlSt;
-
+	
 	static void InitKeywords();
 
 	const wchar *HlString(HlSt& hls, const wchar *p);

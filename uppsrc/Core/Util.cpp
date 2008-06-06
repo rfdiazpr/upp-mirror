@@ -305,6 +305,14 @@ String Join(const Vector<String>& im, const String& delim) {
 	return r;
 }
 
+WString Join(const Vector<WString>& im, const WString& delim) {
+	WString r;
+	for(int i = 0; i < im.GetCount(); i++) {
+		if(i) r.Cat(delim);
+		r.Cat(im[i]);
+	}
+	return r;
+}
 // ---------------------------
 
 VectorMap<String, String> LoadIniFile(const char *filename) {

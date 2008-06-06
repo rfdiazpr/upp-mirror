@@ -2,11 +2,13 @@
 
 void AssistEditor::CreateIndex()
 {
-	if(!assist_active)
-		return;
 	searchindex.Clear();
 	Renumber2();
 	indexitem.Clear();
+	if(!assist_active) {
+		indexframe.Show(false);
+		return;
+	}
 	const Index<String>& cppkeywords = CppKeywords();
 	String sop = "operator";
 	String klass;

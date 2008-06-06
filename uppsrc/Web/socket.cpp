@@ -312,7 +312,7 @@ bool Socket::Data::Accept(Socket& socket, dword *ipaddr, bool nodelay, int timeo
 SOCKET Socket::Data::AcceptRaw(dword *ipaddr, int timeout_msec)
 {
 	ASSERT(IsOpen());
-	if(!Peek(timeout_msec, false))
+	if(!IsNull(timeout_msec) && !Peek(timeout_msec, false))
 		return INVALID_SOCKET;
 	sockaddr_in addr;
 	Zero(addr);
@@ -402,7 +402,13 @@ void Socket::Data::Block(bool b)
 	if(fcntl(socket, F_SETFL, (fcntl(socket, F_GETFL, 0) & ~O_NONBLOCK) | (b ? 0 : O_NONBLOCK)))
 		SetSockError("fcntl(O_[NON]BLOCK)");
 #endif
-	is_blocking = false;
+	is_blocking = b;
+}
+
+void Socket::Data::Reuse()
+{
+	int optval = 1;
+	setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (const char *)&optval, sizeof(optval));
 }
 
 /*

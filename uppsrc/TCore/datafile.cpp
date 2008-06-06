@@ -442,7 +442,7 @@ void DataFile::Export(Stream& stream)
 				stream.PutCrLf();
 			else
 				do {
-					const char *b = p + min(e - p, 32);
+					const char *b = p + min<ptrdiff_t>(e - p, 32);
 					stream.Put('\t');
 					static const char hex[] = "0123456789abcdef";
 					while(p < b) {

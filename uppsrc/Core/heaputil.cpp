@@ -63,6 +63,8 @@ void *SysAllocRaw(size_t size)
 #else
 	void *ptr =  mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
 #endif
+	if(ptr == MAP_FAILED)
+		ptr = NULL;
 #endif
 	if(!ptr)
 		Panic("Out of memory!");

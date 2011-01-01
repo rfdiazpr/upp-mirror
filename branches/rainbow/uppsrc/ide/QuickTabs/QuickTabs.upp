@@ -1,0 +1,12 @@
+description "\377B";
+
+uses
+	CtrlLib;
+
+file
+	QuickTabs.h,
+	QuickTabs.cpp,
+	QuickTabs.iml,
+	Info readonly separator,
+	Copying;
+

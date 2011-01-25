@@ -1,0 +1,9 @@
+description "collection of some usefull / to-be-descussed interfaces\377";
+
+uses
+	Core;
+
+file
+	Gen.h,
+	Gen.cpp;
+

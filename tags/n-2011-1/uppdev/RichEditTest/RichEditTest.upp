@@ -1,0 +1,15 @@
+uses
+	RichEdit,
+	plugin\jpg;
+
+file
+	main.cpp,
+	todo.txt,
+	test.tpp;
+
+mainconfig
+	"" = "GUI",
+	"" = "GUI NOGTK",
+	"" = "GUI MT",
+	"" = "GUI USEMALLOC";
+

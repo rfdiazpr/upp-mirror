@@ -1,0 +1,9 @@
+uses
+	CtrlLib,
+	CtrlFinder,
+	RectCtrl;
+
+file
+	CtrlMover.h,
+	CtrlMover.cpp;
+

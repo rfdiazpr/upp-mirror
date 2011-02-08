@@ -1,0 +1,12 @@
+uses
+	Core,
+	Gen,
+	RectCtrl,
+	LogPosCtrl,
+	CtrlFinder,
+	CtrlMover;
+
+file
+	CtrlPos.h,
+	CtrlPos.cpp;
+

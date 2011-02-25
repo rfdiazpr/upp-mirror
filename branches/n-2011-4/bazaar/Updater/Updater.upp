@@ -1,0 +1,17 @@
+description "Web Installer/Updater module\377";
+
+uses
+	CtrlLib,
+	Web,
+	SysExecGui,
+	ProductVersion,
+	ProductVersion;
+
+file
+	Updater.t,
+	Updater.iml,
+	Windows.cpp,
+	Posix.cpp,
+	Updater.h,
+	Updater.cpp;
+

@@ -1,0 +1,10 @@
+description "Tree Container template based on Array container\377";
+
+uses
+	Core;
+
+file
+	Tree.h,
+	Tree.cpp,
+	src.tpp;
+

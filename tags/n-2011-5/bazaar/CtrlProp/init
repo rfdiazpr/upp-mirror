@@ -1,0 +1,8 @@
+#ifndef _CtrlProp_icpp_init_stub
+#define _CtrlProp_icpp_init_stub
+#include "CtrlLib/init"
+#include "LogPosCtrl/init"
+#include "ValueCtrl/init"
+#include "Gen/init"
+#include "Property/init"
+#endif

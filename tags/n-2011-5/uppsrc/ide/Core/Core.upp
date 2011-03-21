@@ -1,0 +1,18 @@
+description "TheIDE - common library\377B";
+
+uses
+	CtrlLib,
+	Esc;
+
+file
+	Core.h,
+	Core.cpp,
+	Hdepend.cpp optimize_speed,
+	Package.cpp,
+	Workspace.cpp,
+	usc.cpp,
+	Host.h,
+	Host.cpp,
+	Info readonly separator,
+	Copying;
+

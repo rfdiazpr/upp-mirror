@@ -1,0 +1,11 @@
+#include "Py.h"
+
+INITBLOCK
+{
+	Py_Initialize();
+}
+
+EXITBLOCK
+{
+	Py_Finalize();
+}

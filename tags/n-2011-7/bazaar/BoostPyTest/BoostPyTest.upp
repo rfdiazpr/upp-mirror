@@ -1,0 +1,18 @@
+uses
+	CtrlLib,
+	PyConsoleCtrl,
+	ValueCtrl,
+	CtrlLibBoostPy;
+
+file
+	world.h,
+	world.cpp,
+	BoostPyTest.h,
+	compile.txt,
+	modules.cppi,
+	main.cpp,
+	BoostPyTest.lay;
+
+mainconfig
+	"" = "GUI MT SSE2 BOOSTPY";
+

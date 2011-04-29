@@ -1,0 +1,44 @@
+acceptflags
+	NOSSL;
+
+uses
+	Web;
+
+library(WIN32 !NOSSL !SHARED !DEBUG MT) "out32mt\\ssleay32 out32mt\\libeay32";
+
+library(WIN32 !NOSSL !SHARED !DEBUG !MT) "out32mt\\ssleay32 out32mt\\libeay32";
+
+library(WIN32) gdi32;
+
+library(LINUX !NOSSL) "crypto ssl";
+
+library(WIN32 !NOSSL SHARED) "out32dll\\ssleay32.lib out32dll\\libeay32.lib ";
+
+library(WIN32 !NOSSL !SHARED DEBUG) "out32dbg\\ssleay32 out32dbg\\libeay32";
+
+link(WIN32 DEBUG MSC SO) /nodefaultlib:libc;
+
+link(WIN32 MT MSC SO) /nodefaultlib:libc;
+
+link(WIN32 DEBUG MSC71 SO) /nodefaultlib:libc;
+
+link(WIN32 MT MSC71 SO) /nodefaultib:libc;
+
+link(WIN32 DEBUG MSC) /nodefaultlib:libc;
+
+link(WIN32 MT MSC) /nodefaultlib:libc;
+
+link(WIN32 DEBUG MSC71) /nodefaultlib:libc;
+
+link(WIN32 MT MSC71) /nodefaultlib:libc;
+
+file
+	WebSSL.h,
+	util.cpp,
+	httpscli.cpp,
+	src.tpp,
+	srcimp.tpp,
+	srcdoc.tpp,
+	Info readonly separator,
+	Copying;
+

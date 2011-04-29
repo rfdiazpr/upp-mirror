@@ -1,0 +1,18 @@
+uses
+	CtrlLib,
+	Py,
+	CoreBoostPy;
+
+file
+	Common.h,
+	CtrlCore.h,
+	CtrlCore.cpp,
+	SliderCtrl.h,
+	SliderCtrl.cpp,
+	ValueCtrl.h,
+	ValueCtrl.cpp,
+	EditCtrl.h,
+	EditCtrl.cpp,
+	CtrlLibBoostPy.h,
+	CtrlLibBoostPy.cpp;
+

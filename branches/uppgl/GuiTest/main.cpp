@@ -260,7 +260,7 @@ GUI_APP_MAIN
 {
 	//Skulpture sk;	
 	//ChHostSkin();
-	ChClassicSkin();
-	//ChStdSkin();
+	//ChClassicSkin();
+	ChStdSkin();
 	App().Run();
 }

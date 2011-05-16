@@ -5,6 +5,7 @@ NAMESPACE_UPP
 #define LLOG(x) //  LOG(x)
 
 LineEdit::LineEdit() {
+	RootCtrl();	
 	isdrag = false;
 	nohbar = false;
 	showtabs = false;

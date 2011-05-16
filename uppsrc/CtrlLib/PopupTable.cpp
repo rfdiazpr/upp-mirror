@@ -92,6 +92,7 @@ void PopUpTable::PopUp(Ctrl *owner, int x, int top, int bottom, int width) {
 		popup->SetRect(Rect(rt.left, rt.top, rt.right, rt.top + 1));
 		popup->Add(BottomPos(0, rt.Height()).LeftPos(0, rt.Width()));
 	}
+#ifndef flagOPENGL
 	if(GUI_PopUpEffect()) {
 		CenterCursor();
 		popup->PopUp(owner, true, true, GUI_DropShadows());
@@ -100,6 +101,7 @@ void PopUpTable::PopUp(Ctrl *owner, int x, int top, int bottom, int width) {
 		Animate(*popup, rt, GUIEFFECT_SLIDE);
 //		Ctrl::Remove();
 	}
+#endif
 	if(!open) {
 		popup->SetRect(rt);
 		if(!popup->IsOpen())

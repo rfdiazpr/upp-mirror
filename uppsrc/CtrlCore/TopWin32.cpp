@@ -113,7 +113,10 @@ void TopWindow::SyncCaption0()
 	style &= ~(WS_THICKFRAME|WS_MINIMIZEBOX|WS_MAXIMIZEBOX|WS_SYSMENU|WS_POPUP|WS_DLGFRAME);
 	exstyle &= ~(WS_EX_TOOLWINDOW|WS_EX_DLGMODALFRAME);
 	style |= WS_CAPTION;
+
+#ifndef flagOPENGL
 	if(hasdhctrl)
+#endif
 		style |= WS_CLIPSIBLINGS|WS_CLIPCHILDREN;
 	if(minimizebox)
 		style |= WS_MINIMIZEBOX;
@@ -223,9 +226,55 @@ void TopWindow::Open(HWND hwnd)
 		                                    state == MINIMIZED  ? SW_MINIMIZE :
 		                                                          SW_MAXIMIZE, false);
 	}
+	
 	PlaceFocus();
 	SyncCaption();
 	FixIcons();
+	
+#ifdef flagOPENGL
+	isdhctrl = true;
+	hDC = ::GetDC(GetHWND());
+	if(!hDC)
+		return;
+	PIXELFORMATDESCRIPTOR pfd;
+	memset(&pfd, 0, sizeof(pfd));
+	pfd.nSize = sizeof(pfd);
+	pfd.nVersion = 1;
+	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL | PFD_SUPPORT_COMPOSITION;
+	pfd.iPixelType = PFD_TYPE_RGBA;
+	pfd.cColorBits = 32;
+	pfd.cDepthBits = 24;
+	pfd.cStencilBits = 1;
+	pfd.iLayerType = PFD_MAIN_PLANE;
+	int pf = ChoosePixelFormat(hDC, &pfd);
+	if(!pf) {
+		
+		RLOG("OpenGL: ChoosePixelFormat error");
+		DestroyGL();
+		return;
+	}
+	if(!SetPixelFormat(hDC, pf, &pfd)) {
+		RLOG("OpenGL: SetPixelFormat error");
+		DestroyGL();
+		return;
+	}
+	DescribePixelFormat(hDC, pf, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
+	hRC = wglCreateContext(hDC);
+	ActivateGLContext();
+	GLenum err = glewInit();
+	if(err != GLEW_OK)
+	{
+		RLOG("OpenGL: Glew library initialization error: " + String((const char*) glewGetErrorString(err)));
+		DestroyGL();
+		return;
+	}
+	SetTimeCallback(-10, THISBACK(Repaint), 1);
+#endif	
+}
+
+void TopWindow::Repaint()
+{
+	::InvalidateRect(GetHWND(), NULL, false);
 }
 
 void TopWindow::Open(Ctrl *owner)
@@ -324,6 +373,29 @@ bool TopWindow::IsTopMost() const
 {
 	return GetExStyle() & WS_EX_TOPMOST;
 }
+
+#ifdef flagOPENGL
+void TopWindow::DestroyGL()
+{
+	if (hDC != NULL && hRC != NULL)
+	{
+		ActivateGLContext();
+		wglMakeCurrent(NULL, NULL);
+	}
+	
+	if(hRC)
+	    wglDeleteContext(hRC);
+	if(hDC)
+	    ReleaseDC(GetHWND(), hDC);
+}
+
+void TopWindow::ActivateGLContext()
+{
+	if (hRC != NULL && wglGetCurrentContext() != hRC)
+		wglMakeCurrent(hDC, hRC);
+}
+
+#endif
 
 #endif
 

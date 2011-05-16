@@ -222,14 +222,16 @@ void RTFEncoder::Command(const char *cmd, int param)
 
 void RTFEncoder::PutText(const wchar *text)
 {
-	for(; *text; text++)
-		if((uint16)*text >= 128)
-			stream.Put(NFormat("\\u%d?", (int16)*text));
+	for(; *text; text++) {
+		if((uint16)*text >= 128) {
+			stream.Put(NFormat("\\u%d\\'%02x", (int16)*text, FromUnicode(*text, CHARSET_DEFAULT)));
+		}
 		else {
 			if(*text == '{' || *text == '}' || *text == '\\')
 				stream.Put('\\');
 			stream.Put((byte)*text);
 		}
+	}
 }
 
 void RTFEncoder::PutBinHex(const byte *b, int count)
@@ -294,6 +296,7 @@ void RTFEncoder::PutObject(const RichObject& object)
 	}
 	else {
 		Command("wmetafile", 8);
+#ifndef flagOPENGL
 		WinMetaFileDraw wmd(log_size.cx, log_size.cy);
 		object.Paint(wmd, log_size);
 		WinMetaFile wmf = wmd.Close();
@@ -304,6 +307,7 @@ void RTFEncoder::PutObject(const RichObject& object)
 			GetWinMetaFileBits(hemf, size, buffer, MM_ANISOTROPIC, ScreenHDC());
 			PutBinHex(buffer, size);
 		}
+#endif
 	}
 #endif
 #endif

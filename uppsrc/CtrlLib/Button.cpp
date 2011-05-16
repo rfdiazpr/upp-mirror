@@ -168,6 +168,7 @@ int Pusher::GetVisualState() const
 }
 
 Pusher::Pusher() {
+	RootCtrl();
 	keypush = push = clickfocus = false;
 	accesskey = 0;
 	font = StdFont();

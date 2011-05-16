@@ -298,6 +298,20 @@ void DrawTiles(Draw& w, int x, int y, int cx, int cy, const Image& img) {
 	w.End();
 }
 
+void DrawTiles2(Draw& w, int x, int y, int cx, int cy, const Image& img, const Size& isz, const Rect& src) {
+	w.Clip(x, y, cx, cy);
+	Size sz = isz;
+	for(int a = x; a < x + cx; a += sz.cx)
+		for(int b = y; b < y + cy; b += sz.cy)
+			w.DrawImage(a, b, isz.cx, isz.cy, img, src);
+	w.End();
+}
+
+void DrawTiles2(Draw& w, const Rect& rect, const Image& img,  const Size& isz, const Rect& src)
+{
+	DrawTiles2(w, rect.left, rect.top, rect.GetWidth(), rect.GetHeight(), img, isz, src);
+}
+
 void DrawTiles(Draw& w, const Rect& rect, const Image& img)
 {
 	DrawTiles(w, rect.left, rect.top, rect.GetWidth(), rect.GetHeight(), img);

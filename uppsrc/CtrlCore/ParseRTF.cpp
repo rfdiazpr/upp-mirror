@@ -936,6 +936,7 @@ void RTFParser::ReadPict()
 	if(blip_type == EMF_BLIP || blip_type == WMF_BLIP) {
 		log_size = min(log_size, GetFitSize(log_size, final_size));
 		dd.Create(drawing_size = log_size);
+#ifndef flagOPENGL
 		WinMetaFile wmf;
 		if(blip_type == EMF_BLIP)
 			wmf = WinMetaFile(SetEnhMetaFileBits(blip_data.GetLength(), blip_data));
@@ -948,6 +949,7 @@ void RTFParser::ReadPict()
 			wmf = WinMetaFile(SetWinMetaFileBits(blip_data.GetLength(), blip_data, ScreenHDC(), &mfp));
 		}
 		wmf.Paint(dd, log_size);
+#endif
 		object = CreateDrawingObject(dd, out_size, final_size);
 	}
 	else

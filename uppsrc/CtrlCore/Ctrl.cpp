@@ -608,6 +608,7 @@ Ctrl::Ctrl() {
 	fullrefresh = false;
 	akv = false;
 	hasdhctrl = false;
+	rootctrl = false;
 }
 
 void KillTimeCallbacks(void *id, void *idlim);
@@ -675,6 +676,13 @@ void Ctrl::Close()
 	Ctrl *q = GetTopCtrl();
 	if(!q->top) return;
 	DoRemove();
+#ifdef flagOPENGL
+	if(parent && popup)
+	{
+		parent->RemoveChild(this);
+		popup = false;
+	}
+#endif
 	if(parent) return;
 	StateH(CLOSE);
 	bool vis = visible;

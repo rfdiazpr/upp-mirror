@@ -5,11 +5,15 @@ NAMESPACE_UPP
 #define LLOG(x)     // DLOG(x)
 #define LTIMING(x)  // TIMING(x)
 
+#ifndef flagOPENGL
+
 bool Ctrl::globalbackpaint;
 
 void Ctrl::RefreshFrame(const Rect& r) {
 	GuiLock __;
 	if(!IsOpen() || !IsVisible() || r.IsEmpty()) return;
+	InvalidateRect(GetHWND(), r, false);
+
 	LTIMING("RefreshFrame");
 	LLOG("RefreshRect " << Name() << ' ' << r);
 #ifdef PLATFORM_WIN32
@@ -249,7 +253,7 @@ struct sDrawLevelCheck {
 #define DOLEVELCHECK
 #endif
 
-void Ctrl::PaintCaret(SystemDraw& w)
+void Ctrl::PaintCaret(Draw& w)
 {
 	GuiLock __;
 #ifdef PLATFORM_X11
@@ -258,7 +262,7 @@ void Ctrl::PaintCaret(SystemDraw& w)
 #endif
 }
 
-void Ctrl::CtrlPaint(SystemDraw& w, const Rect& clip) {
+void Ctrl::CtrlPaint(Draw& w, const Rect& clip, Ctrl* debugctrl) {
 	GuiLock __;
 	LEVELCHECK(w, this);
 	LTIMING("CtrlPaint");
@@ -483,7 +487,10 @@ void Ctrl::UpdateArea0(SystemDraw& draw, const Rect& clip, int backpaint)
 	GuiLock __;
 	LTIMING("UpdateArea");
 	LLOG("========== UPDATE AREA " << UPP::Name(this) << " ==========");
-	if(backpaint == FULLBACKPAINT || globalbackpaint && !hasdhctrl && !dynamic_cast<DHCtrl *>(this)) {
+
+	DHCtrl* dhctrl = dynamic_cast<DHCtrl *>(this);
+
+	if(backpaint == FULLBACKPAINT || globalbackpaint && !hasdhctrl && !dhctrl) {
 		ShowRepaintRect(draw, clip, LtRed());
 		BackDraw bw;
 		bw.Create(draw, clip.GetSize());
@@ -517,6 +524,7 @@ void Ctrl::UpdateArea0(SystemDraw& draw, const Rect& clip, int backpaint)
 		LLOG("========== END");
 		return;
 	}
+	
 	CtrlPaint(draw, clip);
 	LLOG("========== END");
 }
@@ -671,5 +679,7 @@ void  Ctrl::GlobalBackPaintHint()
 	if(IsDecentMachine())
 		GlobalBackPaint();
 }
+
+#endif
 
 END_UPP_NAMESPACE

@@ -434,7 +434,6 @@ void Ctrl::EventLoop0(Ctrl *ctrl)
 			ProcessEvent(&event);
 		}
 		TimerAndPaint();
-		SweepMkImageCache();
 	}
 
 	if(ctrl)

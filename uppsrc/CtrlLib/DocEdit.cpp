@@ -489,6 +489,7 @@ void DocEdit::RightDown(Point p, dword w)
 
 DocEdit::DocEdit()
 {
+	RootCtrl();
 	updownleave = false;
 	cx = 0;
 	filter = NULL;

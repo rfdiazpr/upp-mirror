@@ -145,7 +145,6 @@ void MySqlSession::Rollback()
 		SetError(mysql_error(mysql), rtrans);
 	if(level > 0) level--;
 }
-
 int MySqlSession::GetTransactionLevel() const
 {
 	return level;

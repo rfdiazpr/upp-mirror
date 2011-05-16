@@ -2725,7 +2725,7 @@ WString InitCaps(const wchar *s)
 			r.Cat(ToUpper(*s));
 		else
 			r.Cat(ToLower(*s));
-		spc = !IsLeNum(*s);
+		spc = IsSpace(*s);
 		s++;
 	}
 	return r;
@@ -2742,7 +2742,7 @@ WString InitCaps(const WString& s)
 			r[i] = ToUpper(c);
 		else
 			r[i] = ToLower(c);
-		spc = !IsLeNum(c);
+		spc = IsSpace(c);
 	}
 	return r;
 }
@@ -2773,7 +2773,20 @@ WString ToAscii(const WString& w)
 
 String InitCaps(const char *s, byte charset)
 {
-	return FromUnicode(InitCaps(ToUnicode(s, charset)), charset);
+	charset = ResolveCharset(charset);
+	if(charset == CHARSET_UTF8)
+		return ToUtf8(InitCaps(FromUtf8(s)));
+	StringBuffer r;
+	bool spc = true;
+	while(*s) {
+		if(spc)
+			r.Cat(ToUpper(*s, charset));
+		else
+			r.Cat(ToLower(*s, charset));
+		spc = IsSpace(*s);
+		s++;
+	}
+	return r;
 }
 
 String ToUpper(const char *s, byte charset)

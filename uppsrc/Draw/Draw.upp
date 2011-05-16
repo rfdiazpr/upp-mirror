@@ -10,7 +10,7 @@ uses
 
 library(WIN32 !MSC8ARM) "user32 gdi32";
 
-library(LINUX) "dl freetype";
+library(LINUX) dl;
 
 library(BSD !XLFD) "fontconfig freetype expat";
 
@@ -27,6 +27,7 @@ file
 	Font.cpp,
 	FontCR.cpp,
 	FontWin32.cpp,
+	FontOpenGL.cpp,
 	FontFc.cpp,
 	Draw.cpp,
 	DrawText.cpp,

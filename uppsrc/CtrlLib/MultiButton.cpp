@@ -377,7 +377,7 @@ void MultiButton::Paint(Draw& w)
 			if(tsz.cx > 0) {
 				if(isz.cx > 0)
 					p.x += isz.cx + LB_IMAGE;
-				w.DrawText(p.x, (sz.cy - tsz.cy) / 2, b.label);
+				w.DrawText(p.x, (sz.cy - tsz.cy) / 2, b.label, StdFont(), st == CTRL_DISABLED ? SColorDisabled() : SColorText());
 			}
 		}
 		(b.left ? left : right) = true;
@@ -624,6 +624,7 @@ void MultiButton::PseudoPush()
 
 MultiButton::MultiButton()
 {
+	RootCtrl();
 	Transparent();
 	SetStyle(StyleDefault());
 	display = &StdDisplay();

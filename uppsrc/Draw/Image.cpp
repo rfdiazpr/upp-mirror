@@ -125,13 +125,13 @@ Size ImageBuffer::GetDPI()
 void  (Image::Data::*Image::Data::sSysInit)();
 void  (Image::Data::*Image::Data::sSysRelease)();
 int   (Image::Data::*Image::Data::sGetResCount)() const;
-void  (Image::Data::*Image::Data::sPaint)(SystemDraw& w, int x, int y, const Rect& src, Color c);
+void  (Image::Data::*Image::Data::sPaint)(BaseDraw& w, int x, int y, const Rect& src, Color c);
 
 void Image::Data::InitSystemImage(
 	void  (Image::Data::*fSysInit)(),
 	void  (Image::Data::*fSysRelease)(),
 	int   (Image::Data::*fGetResCount)() const,
-	void  (Image::Data::*fPaint)(SystemDraw& w, int x, int y, const Rect& src, Color c)
+	void  (Image::Data::*fPaint)(BaseDraw& w, int x, int y, const Rect& src, Color c)
 )
 {
 	Image::Data::sSysInit = fSysInit;
@@ -159,7 +159,7 @@ int Image::Data::GetResCount() const
 	return 0;
 }
 
-void Image::Data::Paint(SystemDraw& w, int x, int y, const Rect& src, Color c)
+void Image::Data::Paint(BaseDraw& w, int x, int y, const Rect& src, Color c)
 {
 	if(sPaint)
 		(this->*sPaint)(w, x, y, src, c);
@@ -267,7 +267,7 @@ int Image::GetKind() const
 	return data ? data->GetKind() : IMAGE_EMPTY;
 }
 
-void Image::PaintImage(SystemDraw& w, int x, int y, const Rect& src, Color c) const
+void Image::PaintImage(BaseDraw& w, int x, int y, const Rect& src, Color c) const
 {
 	if(data)
 		data->Paint(w, x, y, src, c);

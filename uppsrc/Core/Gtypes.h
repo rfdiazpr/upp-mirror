@@ -9,7 +9,7 @@ struct Size_ : Moveable< Size_<T> > {
 	void          Clear()                      { cx = cy = 0; }
 	bool          IsEmpty() const              { return cx == 0 || cy == 0; }
 
-	void          SetNull()                    { cx = cy = Null; }
+	void          SetNull()                    { cx = Null; }
 	bool          IsNullInstance() const       { return UPP::IsNull(cx); }
 
 	Size_&        operator+=(Size_ p)          { cx  += p.cx; cy  += p.cy; return *this; }
@@ -213,7 +213,6 @@ struct Rect_ : Moveable< Rect_<T> > {
 	void   Clear()                          { left = top = right = bottom = 0; }
 
 	bool   IsEmpty() const                  { return right <= left || bottom <= top; }
-	void   SetNull();
 	bool   IsNullInstance() const;
 
 	Pt     TopLeft() const                  { return Pt(left, top); }
@@ -351,7 +350,7 @@ struct Rect_ : Moveable< Rect_<T> > {
 	Rect_(const Rect_<double>& r) { Set((T)r.left, (T)r.top, (T)r.right, (T)r.bottom); }
 	Rect_(const Rect_<int64>& r) { Set((T)r.left, (T)r.top, (T)r.right, (T)r.bottom); }
 
-	Rect_(const Nuller&)             { SetNull(); }
+	Rect_(const Nuller&);
 
 	operator Value() const           { return RichValue<Rect_>(*this); }
 	/*explicit */Rect_(const Value& src) { *this = RichValue<Rect_>::Extract(src); }
@@ -369,14 +368,12 @@ struct Rect_ : Moveable< Rect_<T> > {
 };
 
 template <class T>
-inline void Rect_<T>::SetNull()
-{
-	left = right = top = bottom = Null;
+inline Rect_<T>::Rect_(const Nuller&) {
+	left = top = right = bottom = Null;
 }
 
 template <>
-inline void Rect_<double>::SetNull()
-{
+inline Rect_<double>::Rect_(const Nuller&) {
 	left = top = 0;
 	right = bottom = -1;
 }

@@ -18,6 +18,44 @@ enum {
 	IDEXIT = 9999
 };
 
+#ifdef flagOPENGL
+struct ValueSlider : Ctrl
+{
+	bool shaded;
+	bool immediate;
+	Color src;
+	Color dst;
+		
+	float pos;
+	float minValue;
+	float maxValue;
+	String text;
+	
+	typedef ValueSlider CLASSNAME;
+	
+	ValueSlider();
+
+	virtual void Paint(Draw &w);
+	virtual void LeftDown(Point p, dword keyflags);
+	virtual void LeftUp(Point p, dword keyflags);
+	virtual void MouseMove(Point p, dword keyflags);
+	
+	void SetPos(float p, float minValue, float maxValue);
+	float  GetPos();
+	
+	Callback WhenLeftUp;
+};
+
+struct InfoPanel : Ctrl
+{
+	ValueSlider alphaSlider;
+	ValueSlider angleSlider;
+
+	virtual void Paint(Draw& w);
+	InfoPanel();
+};
+#endif
+
 class TopWindow : public Ctrl {
 public:
 	virtual Size     GetMinSize() const;
@@ -37,7 +75,21 @@ public:
 public:
 	virtual LRESULT  WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 
+public:
+#ifdef flagOPENGL
+	HDC    hDC;
+	HGLRC  hRC;
+	InfoPanel infoPanel;
+	float alpha;
+	float angle;
+	void DestroyGL();
+	void ActivateGLContext();
+	void InitInfoPanel();
+	void SetAlpha();
+	void SetAngle();
+#endif
 private:
+
 	dword       style;
 	dword       exstyle;
 	HICON       ico, lico;
@@ -155,6 +207,7 @@ public:
 	void        SetMinSize(Size sz)                 { minsize = sz; }
 
 #ifdef PLATFORM_WIN32
+	void       Repaint();
 	void       Open(HWND ownerhwnd);
 	TopWindow& Style(dword _style);
 	dword      GetStyle() const                       { return style; }
@@ -215,6 +268,7 @@ public:
 	
 	Image      GetIcon() const                        { return icon; }
 	Image      GetLargeIcon() const                   { return largeicon; }
+	Rect       GetWindowSize() const 				  { return rect; }
 
 	void       SerializePlacement(Stream& s, bool reminimize = false);
 

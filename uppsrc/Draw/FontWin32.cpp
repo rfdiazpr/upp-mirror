@@ -1,4 +1,5 @@
 #include "Draw.h"
+#include <CtrlCore/DrawOpenGL.h>
 
 NAMESPACE_UPP
 
@@ -241,6 +242,13 @@ Vector<FaceInfo> GetAllFacesSys()
 
 GlyphInfo  GetGlyphInfoSys(Font font, int chr)
 {
+#ifdef flagOPENGL
+	static GlyphInfo gi;
+	const OpenGLFont& fi = Resources::StdFont();
+	gi.width = fi.chars[chr - 32].xadvance;
+	return gi;
+#else
+
 	static Font      fnt[GLYPHINFOCACHE];
 	static int       pg[GLYPHINFOCACHE];
 	static GlyphInfo li[GLYPHINFOCACHE][256];
@@ -332,6 +340,7 @@ GlyphInfo  GetGlyphInfoSys(Font font, int chr)
 		::SelectObject(hdc, ohfont);
 	}
 	return li[q][chr & 255];
+#endif
 }
 
 #endif

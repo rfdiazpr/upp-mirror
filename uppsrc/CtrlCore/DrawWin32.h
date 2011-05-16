@@ -1,8 +1,7 @@
-#ifdef PLATFORM_WIN32
 
 NAMESPACE_UPP
 
-class SystemDraw : public Draw {
+class WinDraw : public Draw {
 public:
 	virtual dword GetInfo() const;
 	virtual Size  GetPageSize() const;
@@ -97,7 +96,7 @@ protected:
 	HDC   handle;
 	Point actual_offset;
 
-	SystemDraw();
+	WinDraw();
 	void   Init();
 	void   InitClip(const Rect& clip);
 
@@ -133,8 +132,8 @@ public:
 	void  Attach(HDC ahandle)            { handle = ahandle; Init(); }
 	HDC   Detach()                       { Unselect(); HDC h = handle; handle = NULL; return h; }
 
-	SystemDraw(HDC hdc);
-	virtual ~SystemDraw();
+	WinDraw(HDC hdc);
+	virtual ~WinDraw();
 };
 
 #ifndef PLATFORM_WINCE
@@ -148,8 +147,8 @@ class WinMetaFile/* : NoCopy */{
 //	void     Copy(const WinMetaFile& src);
 
 public:
-	void         Attach(HENHMETAFILE emf);
-	HENHMETAFILE Detach();
+	void          Attach(HENHMETAFILE emf);
+	HENHMETAFILE *Detach();
 	
 	void     Set(const void *data, dword len);
 	void     Set(const String& data)        { Set(~data, data.GetCount()); }
@@ -190,7 +189,7 @@ public:
 	HENHMETAFILE GetHEMF() const                  { ChkP(); return hemf; }
 };
 
-class WinMetaFileDraw : public SystemDraw {
+class WinMetaFileDraw : public WinDraw {
 	Size size;
 
 public:
@@ -213,14 +212,14 @@ String  AsWMF(const Drawing& iw);
 
 #endif
 
-class ScreenDraw : public SystemDraw {
+class ScreenDraw : public WinDraw {
 public:
 	ScreenDraw(bool ic = false);
 	~ScreenDraw();
 };
 
 #ifndef PLATFORM_WINCE
-class PrintDraw : public SystemDraw {
+class PrintDraw : public WinDraw {
 public:
 	virtual void StartPage();
 	virtual void EndPage();
@@ -262,13 +261,5 @@ inline void     DrawRect(HDC hdc, const Rect& rc)                 { Rectangle(hd
 HDC      ScreenHDC();
 HPALETTE GetQlibPalette();
 
-Image Win32Icon(LPCSTR id, int iconsize = 0);
-Image Win32Icon(int id, int iconsize = 0);
-Image Win32Cursor(LPCSTR id);
-Image Win32Cursor(int id);
-HICON IconWin32(const Image& img, bool cursor = false);
-Image Win32DllIcon(const char *dll, int ii, bool large);
-
 END_UPP_NAMESPACE
 
-#endif

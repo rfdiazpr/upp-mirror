@@ -1,0 +1,5 @@
+#ifndef _Skulpture_icpp_init_stub
+#define _Skulpture_icpp_init_stub
+#include "CtrlLib/init"
+#include "Theme/init"
+#endif

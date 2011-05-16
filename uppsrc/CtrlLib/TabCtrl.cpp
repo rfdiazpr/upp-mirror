@@ -543,6 +543,7 @@ void TabCtrl::Reset()
 
 TabCtrl::TabCtrl()
 {
+	RootCtrl();
 	hot = -1;
 	sel = -1;
 	x0 = 0;

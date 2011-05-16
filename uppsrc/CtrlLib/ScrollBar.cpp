@@ -35,6 +35,7 @@ CH_STYLE(ScrollBar, Style, StyleDefault)
 }
 
 ScrollBar::ScrollBar() {
+	RootCtrl();	
 	minthumb = 16;
 	pagepos = pagesize = totalsize = 0;
 	linesize = 1;

@@ -4,7 +4,7 @@ NAMESPACE_UPP
 
 #define LTIMING(x)
 
-void SystemDraw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, const Rect& src, Color color)
+void BaseDraw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, const Rect& src, Color color)
 {
 	GuiLock __;
 	LTIMING("DrawImageOp");
@@ -39,7 +39,6 @@ void SystemDraw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, con
 	if(tonative)
 		EndNative();
 }
-
 
 Draw& ImageDraw::Alpha()
 {

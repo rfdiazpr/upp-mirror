@@ -1,5 +1,5 @@
 #include "Draw.h"
-
+#include <CtrlCore/DrawOpenGL.h>
 NAMESPACE_UPP
 
 
@@ -27,6 +27,11 @@ WString TextUnicode(const char *s, int n, byte cs, Font font)
 void Draw::DrawText(int x, int y, int angle, const wchar *text, Font font,
 		            Color ink, int n, const int *dx)
 {
+#ifdef flagOPENGL
+	if(IsNull(ink))
+		return;
+	DrawTextOp(x, y, angle, text, font, ink, n, dx);
+#else
 	if(IsNull(ink)) return;
 	if(n < 0)
 		n = wstrlen(text);
@@ -85,21 +90,9 @@ void Draw::DrawText(int x, int y, int angle, const wchar *text, Font font,
 			}
 			GlyphMetrics(gi, font, chr);
 		}
-		else {
-			Font fnt = Arial(font.GetHeight());
-			wchar chr = 0x25a1;
-			gi = GetGlyphInfo(fnt, chr);
-			if(!gi.IsNormal()) {
-				chr = ' ';
-				gi = GetGlyphInfo(fnt, chr);
-			}
-			if(angle)
-				DrawTextOp(int(x + cosa * d), int(y - sina * d), angle, &chr, fnt, ink, 1, NULL);
-			else
-				DrawTextOp(x + d, y, 0, &chr, fnt, ink, 1, NULL);
-		}
 		d += dx ? *dx++ : gi.width;
 	}
+#endif
 }
 
 // ----------------------------
@@ -169,6 +162,9 @@ void Draw::DrawText(int x, int y, const String& text, Font font, Color ink, cons
 
 Size GetTextSize(const wchar *text, Font font, int n)
 {
+#ifdef flagOPENGL
+	return GetTextSize(text, Resources::StdFont(font.IsBold()), n); 
+#else
 	FontInfo fi = font.Info();
 	if(n < 0)
 		n = wstrlen(text);
@@ -181,6 +177,7 @@ Size GetTextSize(const wchar *text, Font font, int n)
 	}
 	sz.cy = fi.GetHeight();
 	return sz;
+#endif
 }
 
 Size GetTextSize(const WString& text, Font font)

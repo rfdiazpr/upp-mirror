@@ -126,15 +126,14 @@ AIndex<T, V, HashFn>::AIndex(const V& s, int) : key(s, 1) {
 }
 
 template <class T, class V, class HashFn>
-T& AIndex<T, V, HashFn>::Add(const T& x, unsigned _hash) {
-	T& t = key.Add(x);
+void AIndex<T, V, HashFn>::Add(const T& x, unsigned _hash) {
+	key.Add(x);
 	hash.Add(_hash);
-	return t;
 }
 
 template <class T, class V, class HashFn>
-T& AIndex<T, V, HashFn>::Add(const T& x) {
-	return Add(x, hashfn(x));
+void AIndex<T, V, HashFn>::Add(const T& x) {
+	Add(x, hashfn(x));
 }
 
 template <class T, class V, class HashFn>
@@ -215,16 +214,14 @@ int  AIndex<T, V, HashFn>::FindAdd(const T& key) {
 }
 
 template <class T, class V, class HashFn>
-T&  AIndex<T, V, HashFn>::Set(int i, const T& x, unsigned _hash) {
-	T& t = key[i];
-	t = x;
+void  AIndex<T, V, HashFn>::Set(int i, const T& x, unsigned _hash) {
+	key[i] = x;
 	hash.Set(i, _hash);
-	return t;
 }
 
 template <class T, class V, class HashFn>
-T&  AIndex<T, V, HashFn>::Set(int i, const T& x) {
-	return Set(i, x, hashfn(x));
+void  AIndex<T, V, HashFn>::Set(int i, const T& x) {
+	Set(i, x, hashfn(x));
 }
 
 #ifdef UPP
@@ -267,17 +264,15 @@ void AIndex<T, V, HashFn>::Sweep()
 }
 
 template <class T, class V, class HashFn>
-T& AIndex<T, V, HashFn>::Insert(int i, const T& k, unsigned h) {
+void AIndex<T, V, HashFn>::Insert(int i, const T& k, unsigned h) {
 	key.Insert(i, k);
 	hash.Insert(i, h);
-	return key[i];
 }
 
 template <class T, class V, class HashFn>
-T& AIndex<T, V, HashFn>::Insert(int i, const T& k) {
+void AIndex<T, V, HashFn>::Insert(int i, const T& k) {
 	key.Insert(i, k);
 	hash.Insert(i, hashfn(k));
-	return key[i];
 }
 
 template <class T, class V, class HashFn>
@@ -329,26 +324,25 @@ int AIndex<T, V, HashFn>::RemoveKey(const T& k)
 // ------------------
 
 template <class T, class HashFn>
-T& ArrayIndex<T, HashFn>::Add(T *newt, unsigned _hash) {
+void ArrayIndex<T, HashFn>::Add(T *newt, unsigned _hash) {
+	B::key.Add(newt);
 	B::hash.Add(_hash);
-	return B::key.Add(newt);
 }
 
 template <class T, class HashFn>
-T& ArrayIndex<T, HashFn>::Add(T *newt) {
-	return Add(newt, B::hashfn(*newt));
+void ArrayIndex<T, HashFn>::Add(T *newt) {
+	Add(newt, B::hashfn(*newt));
 }
 
 template <class T, class HashFn>
-T& ArrayIndex<T, HashFn>::Set(int i, T *newt, unsigned _hash) {
-	T& t = B::key.Set(i, newt);
+void ArrayIndex<T, HashFn>::Set(int i, T *newt, unsigned _hash) {
+	B::key.Set(i, newt);
 	B::hash.Set(i, _hash);
-	return t;
 }
 
 template <class T, class HashFn>
-T& ArrayIndex<T, HashFn>::Set(int i, T *newt) {
-	return Set(i, newt, B::hashfn(*newt));
+void ArrayIndex<T, HashFn>::Set(int i, T *newt) {
+	Set(i, newt, B::hashfn(*newt));
 }
 
 // --------------------

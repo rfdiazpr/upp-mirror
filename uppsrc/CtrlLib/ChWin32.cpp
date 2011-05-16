@@ -240,9 +240,25 @@ Value XpLookFn(Draw& w, const Rect& rect, const Value& v, int op)
 			if(htheme) {
 				SystemDraw *sw = dynamic_cast<SystemDraw *>(&w);
 				if(sw) {
-					HDC hdc = sw->BeginGdi();
-					XpTheme().DrawThemeBackground(htheme, hdc, e.part, e.state, r, NULL);
-					sw->EndGdi();
+					static VectorMap<XpElement, Image> cache;
+					
+					int n = cache.Find(e);
+					if(n >= 0)
+						sw->DrawImage(r, cache[n]);
+					else
+					{
+						Size sz(256, 256);
+						ImageDraw iw(sz);
+						HDC hdc = iw.BeginGdi();
+						XpTheme().DrawThemeBackground(htheme, hdc, e.part, e.state, Rect(sz), NULL);
+						iw.EndGdi();
+						Image img = iw;
+						cache.Add(e, img);											
+						sw->DrawImage(r, img);
+					}
+					//HDC hdc = sw->BeginGdi();
+					//XpTheme().DrawThemeBackground(htheme, hdc, e.part, e.state, r, NULL);
+					//sw->EndGdi();
 				}
 			}
 			if(e.whista)
@@ -301,6 +317,7 @@ String XpThemeInfo(LPCWSTR pszPropertyName)
 void ChHostSkin()
 {
 	ChSysInit();
+	//#ifndef flagOPENGL
 	if(XpWidget(XP_BUTTON)) {
 		LLOG("XP theme !");
 		GUI_GlobalStyle_Write(GUISTYLE_XP);
@@ -557,6 +574,7 @@ void ChHostSkin()
 		ChLookFn(XpLookFn);
 	}
 	else
+	//#endif
 		ChClassicSkin();
 }
 

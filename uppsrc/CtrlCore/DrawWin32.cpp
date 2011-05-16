@@ -1,15 +1,12 @@
 #include "SystemDraw.h"
-
 NAMESPACE_UPP
 
 #define LLOG(x) // LOG(x)
 #define LTIMING(x) // RTIMING(x)
 
-#ifdef PLATFORM_WIN32
-
 static COLORREF sLightGray;
 
-Rect SystemDraw::GetVirtualScreenArea()
+Rect WinDraw::GetVirtualScreenArea()
 {
 	GuiLock __;
 	return RectC(GetSystemMetrics(SM_XVIRTUALSCREEN),
@@ -18,17 +15,17 @@ Rect SystemDraw::GetVirtualScreenArea()
 		GetSystemMetrics(SM_CYVIRTUALSCREEN));
 }
 
-dword SystemDraw::GetInfo() const
+dword WinDraw::GetInfo() const
 {
 	return DATABANDS|(native || !(style & DOTS) ? style|NATIVE : style);
 }
 
-Size SystemDraw::GetPageSize() const
+Size WinDraw::GetPageSize() const
 {
 	return native && Dots() ? nativeSize : pageSize;
 }
 
-Size SystemDraw::GetNativeDpi() const
+Size WinDraw::GetNativeDpi() const
 {
 	return Dots() ? nativeDpi : Size(96, 96);
 }
@@ -46,7 +43,7 @@ HPALETTE GetQlibPalette()
 {
 	static HPALETTE hQlibPalette;
 	if(hQlibPalette) return hQlibPalette;
-	SystemDraw::InitColors();
+	WinDraw::InitColors();
 	LOGPALETTE *pal = (LOGPALETTE *) new byte[sizeof(LOGPALETTE) + 256 * sizeof(PALETTEENTRY)];
 	pal->palNumEntries = 0;
 	pal->palVersion    = 0x300;
@@ -63,7 +60,7 @@ HPALETTE GetQlibPalette()
 }
 #endif
 
-SystemDraw& GLOBAL_VP(ScreenDraw, ScreenInfo, (true))
+WinDraw& GLOBAL_VP(ScreenDraw, ScreenInfo, (true))
 
 HDC ScreenHDC()
 {
@@ -75,10 +72,10 @@ HDC ScreenHDC()
 }
 
 static bool _AutoPalette = true;
-bool SystemDraw::AutoPalette() { return _AutoPalette; }
-void SystemDraw::SetAutoPalette(bool ap) { _AutoPalette = ap; }
+bool WinDraw::AutoPalette() { return _AutoPalette; }
+void WinDraw::SetAutoPalette(bool ap) { _AutoPalette = ap; }
 
-COLORREF SystemDraw::GetColor(Color c) const {
+COLORREF WinDraw::GetColor(Color c) const {
 	COLORREF color = c;
 #ifdef PLATFORM_WINCE
 	return color;
@@ -113,11 +110,11 @@ COLORREF SystemDraw::GetColor(Color c) const {
 #endif
 }
 
-void SystemDraw::InitColors()
+void WinDraw::InitColors()
 {
 }
 
-void SystemDraw::SetColor(Color color)
+void WinDraw::SetColor(Color color)
 {
 	GuiLock __;
 	LLOG("SetColor " << color);
@@ -141,7 +138,7 @@ void SystemDraw::SetColor(Color color)
 	}
 }
 
-void SystemDraw::SetDrawPen(int width, Color color) {
+void WinDraw::SetDrawPen(int width, Color color) {
 	GuiLock __;
 	if(IsNull(width))
 		width = PEN_NULL;
@@ -163,38 +160,38 @@ void SystemDraw::SetDrawPen(int width, Color color) {
 	}
 }
 
-void SystemDraw::SetOrg() {
+void WinDraw::SetOrg() {
 	GuiLock __;
 #ifdef PLATFORM_WINCE
 	::SetViewportOrgEx(handle, actual_offset.x, actual_offset.y, 0);
 #else
-	LLOG("SystemDraw::SetOrg: clip = " << GetClip() << ", offset = " << actual_offset);
+	LLOG("WinDraw::SetOrg: clip = " << GetClip() << ", offset = " << actual_offset);
 	::SetWindowOrgEx(handle, -actual_offset.x, -actual_offset.y, 0);
-	LLOG("//SystemDraw::SetOrg: clip = " << GetClip());
+	LLOG("//WinDraw::SetOrg: clip = " << GetClip());
 #endif
 }
 
 #ifndef PLATFORM_WINCE
-Point SystemDraw::LPtoDP(Point p) const {
+Point WinDraw::LPtoDP(Point p) const {
 	GuiLock __;
 	::LPtoDP(handle, p, 1);
 	return p;
 }
 
-Point SystemDraw::DPtoLP(Point p) const {
+Point WinDraw::DPtoLP(Point p) const {
 	GuiLock __;
 	::DPtoLP(handle, p, 1);
 	return p;
 }
 
-Rect  SystemDraw::LPtoDP(const Rect& r) const {
+Rect  WinDraw::LPtoDP(const Rect& r) const {
 	GuiLock __;
 	Rect w = r;
 	::LPtoDP(handle, reinterpret_cast<POINT *>(&w), 2);
 	return w;
 }
 
-Rect  SystemDraw::DPtoLP(const Rect& r) const {
+Rect  WinDraw::DPtoLP(const Rect& r) const {
 	GuiLock __;
 	Rect w = r;
 	::LPtoDP(handle, reinterpret_cast<POINT *>(&w), 2);
@@ -202,12 +199,12 @@ Rect  SystemDraw::DPtoLP(const Rect& r) const {
 }
 #endif
 
-Size SystemDraw::GetSizeCaps(int i, int j) const {
+Size WinDraw::GetSizeCaps(int i, int j) const {
 	GuiLock __;
 	return Size(GetDeviceCaps(handle, i), GetDeviceCaps(handle, j));
 }
 
-void SystemDraw::DotsMode()
+void WinDraw::DotsMode()
 {
 	::SetMapMode(handle, MM_ANISOTROPIC);
 	::SetViewportExtEx(handle, nativeDpi.cx, nativeDpi.cy, NULL);
@@ -216,7 +213,7 @@ void SystemDraw::DotsMode()
 	::SetWindowOrgEx(handle, 0, 0, NULL);
 }
 
-void SystemDraw::BeginNative()
+void WinDraw::BeginNative()
 {
 	if(GetPixelsPerInch() != nativeDpi && ++native == 1) {
 		::SetMapMode(handle, MM_TEXT);
@@ -226,7 +223,7 @@ void SystemDraw::BeginNative()
 	}
 }
 
-void SystemDraw::EndNative()
+void WinDraw::EndNative()
 {
 	if(GetPixelsPerInch() == nativeDpi && --native == 0) {
 		DotsMode();
@@ -235,12 +232,12 @@ void SystemDraw::EndNative()
 	}
 }
 
-int SystemDraw::GetCloffLevel() const
+int WinDraw::GetCloffLevel() const
 {
 	return cloff.GetCount();
 }
 
-void SystemDraw::LoadCaps() {
+void WinDraw::LoadCaps() {
 	GuiLock __;
 	color16 = false;
 	palette = (GetDeviceCaps(handle, RASTERCAPS) & RC_PALETTE);
@@ -251,7 +248,7 @@ void SystemDraw::LoadCaps() {
 	is_mono = GetDeviceCaps(handle, BITSPIXEL) == 1 && GetDeviceCaps(handle, PLANES) == 1;
 }
 
-void SystemDraw::Cinit() {
+void WinDraw::Cinit() {
 	GuiLock __;
 	lastColor = Color::FromCR(COLORREF(-5));
 	lastPenColor = Color::FromCR(COLORREF(-5));
@@ -261,7 +258,7 @@ void SystemDraw::Cinit() {
 	actPen = orgPen = NULL;
 }
 
-void SystemDraw::Init() {
+void WinDraw::Init() {
 	GuiLock __;
 	drawingclip = Rect(-(INT_MAX >> 1), -(INT_MAX >> 1), +(INT_MAX >> 1), +(INT_MAX >> 1));
 	Cinit();
@@ -275,17 +272,17 @@ void SystemDraw::Init() {
 	LoadCaps();
 }
 
-void SystemDraw::InitClip(const Rect& clip)
+void WinDraw::InitClip(const Rect& clip)
 {
 	drawingclip = clip;
 }
 
-void SystemDraw::Reset() {
+void WinDraw::Reset() {
 	GuiLock __;
 	style = GUI;
 }
 
-SystemDraw::SystemDraw() {
+WinDraw::WinDraw() {
 	GuiLock __;
 	native = 0;
 	InitColors();
@@ -294,7 +291,7 @@ SystemDraw::SystemDraw() {
 	handle = NULL;
 }
 
-SystemDraw::SystemDraw(HDC hdc) {
+WinDraw::WinDraw(HDC hdc) {
 	GuiLock __;
 	native = 0;
 	InitColors();
@@ -302,7 +299,7 @@ SystemDraw::SystemDraw(HDC hdc) {
 	Attach(hdc);
 }
 
-void SystemDraw::Unselect0() {
+void WinDraw::Unselect0() {
 	GuiLock __;
 	if(orgPen) SelectObject(handle, orgPen);
 	if(orgBrush) SelectObject(handle, orgBrush);
@@ -311,32 +308,32 @@ void SystemDraw::Unselect0() {
 	Cinit();
 }
 
-void SystemDraw::Unselect() {
+void WinDraw::Unselect() {
 	GuiLock __;
 	while(cloff.GetCount())
 		End();
 	Unselect0();
 }
 
-SystemDraw::~SystemDraw() {
+WinDraw::~WinDraw() {
 	GuiLock __;
 	if(handle)
 		Unselect();
 }
 
-HDC SystemDraw::BeginGdi() {
+HDC WinDraw::BeginGdi() {
 	GuiLock __;
 	Begin();
 	return handle;
 }
 
-void SystemDraw::EndGdi() {
+void WinDraw::EndGdi() {
 	GuiLock __;
 	Unselect0();
 	End();
 }
 
-void BackDraw::Create(SystemDraw& w, int cx, int cy) {
+void BackDraw::Create(WinDraw& w, int cx, int cy) {
 	ASSERT(w.GetHandle());
 	GuiLock __;
 	Destroy();
@@ -357,7 +354,7 @@ void BackDraw::Create(SystemDraw& w, int cx, int cy) {
 	InitClip(size);
 }
 
-void BackDraw::Put(SystemDraw& w, int x, int y) {
+void BackDraw::Put(WinDraw& w, int x, int y) {
 	GuiLock __;
 	ASSERT(handle);
 	LTIMING("BackDraw::Put");
@@ -437,7 +434,7 @@ void PrintDraw::EndPage()
 }
 
 PrintDraw::PrintDraw(HDC hdc, const char *docname)
-   : SystemDraw(hdc)
+   : WinDraw(hdc)
 {
 	GuiLock __;
 	DOCINFO di;
@@ -460,9 +457,6 @@ PrintDraw::~PrintDraw() {
 	DeleteDC(handle);
 	handle = NULL;
 }
-#endif
-
 
 #endif
-
 END_UPP_NAMESPACE

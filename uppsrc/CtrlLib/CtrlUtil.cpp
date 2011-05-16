@@ -12,6 +12,7 @@ NAMESPACE_UPP
 
 void Animate(Ctrl& c, const Rect& target, int type)
 {
+#ifndef flagOPENGL
 	if(type < 0)
 		type = GUI_PopUpEffect();
 	Rect r0 = c.GetRect();
@@ -54,6 +55,7 @@ void Animate(Ctrl& c, const Rect& target, int type)
 		}
 	c.SetRect(target);
 	c.SetAlpha(255);
+#endif
 }
 
 void Animate(Ctrl& c, int x, int y, int cx, int cy, int type)

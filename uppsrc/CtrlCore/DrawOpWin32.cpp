@@ -2,12 +2,10 @@
 
 NAMESPACE_UPP
 
-#ifdef PLATFORM_WIN32
-
 #define LLOG(x)      // LOG(x)
 #define LTIMING(x)   // RTIMING(x)
 
-void SystemDraw::BeginOp()
+void WinDraw::BeginOp()
 {
 	LTIMING("Begin");
 	GuiLock __;
@@ -24,7 +22,7 @@ void SystemDraw::BeginOp()
 	}
 }
 
-void SystemDraw::OffsetOp(Point p)
+void WinDraw::OffsetOp(Point p)
 {
 	GuiLock __;
 	Begin();
@@ -34,7 +32,7 @@ void SystemDraw::OffsetOp(Point p)
 	SetOrg();
 }
 
-bool SystemDraw::ClipOp(const Rect& r)
+bool WinDraw::ClipOp(const Rect& r)
 {
 	GuiLock __;
 	Begin();
@@ -42,7 +40,7 @@ bool SystemDraw::ClipOp(const Rect& r)
 	return IntersectClip(r);
 }
 
-bool SystemDraw::ClipoffOp(const Rect& r)
+bool WinDraw::ClipoffOp(const Rect& r)
 {
 	GuiLock __;
 	Begin();
@@ -56,7 +54,7 @@ bool SystemDraw::ClipoffOp(const Rect& r)
 	return q;
 }
 
-void SystemDraw::EndOp()
+void WinDraw::EndOp()
 {
 	GuiLock __;
 	LTIMING("End");
@@ -71,7 +69,7 @@ void SystemDraw::EndOp()
 	cloff.Drop();
 }
 
-bool SystemDraw::ExcludeClipOp(const Rect& r)
+bool WinDraw::ExcludeClipOp(const Rect& r)
 {
 	GuiLock __;
 #ifdef PLATFORM_WINCE
@@ -89,7 +87,7 @@ bool SystemDraw::ExcludeClipOp(const Rect& r)
 	return q == SIMPLEREGION || q == COMPLEXREGION;
 }
 
-bool SystemDraw::IntersectClipOp(const Rect& r)
+bool WinDraw::IntersectClipOp(const Rect& r)
 {
 	GuiLock __;
 #ifdef PLATFORM_WINCE
@@ -106,22 +104,22 @@ bool SystemDraw::IntersectClipOp(const Rect& r)
 	return q == SIMPLEREGION || q == COMPLEXREGION;
 }
 
-bool SystemDraw::IsPaintingOp(const Rect& r) const
+bool WinDraw::IsPaintingOp(const Rect& r) const
 {
 	GuiLock __;
 	LTIMING("IsPainting");
-	LLOG("SystemDraw::IsPaintingOp r: " << r);
+	LLOG("WinDraw::IsPaintingOp r: " << r);
 	return ::RectVisible(handle, r);
 }
 
-Rect SystemDraw::GetPaintRect() const
+Rect WinDraw::GetPaintRect() const
 {
 	GuiLock __;
 	LTIMING("GetPaintRect");
 	return drawingclip;
 }
 
-void SystemDraw::DrawRectOp(int x, int y, int cx, int cy, Color color)
+void WinDraw::DrawRectOp(int x, int y, int cx, int cy, Color color)
 {
 	GuiLock __;
 	LTIMING("DrawRect");
@@ -136,7 +134,7 @@ void SystemDraw::DrawRectOp(int x, int y, int cx, int cy, Color color)
 	}
 }
 
-void SystemDraw::DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color)
+void WinDraw::DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color)
 {
 	GuiLock __;
 	if(IsNull(width) || IsNull(color)) return;
@@ -147,7 +145,7 @@ void SystemDraw::DrawLineOp(int x1, int y1, int x2, int y2, int width, Color col
 
 #ifndef PLATFORM_WINCE
 
-void SystemDraw::DrawPolyPolylineOp(const Point *vertices, int vertex_count,
+void WinDraw::DrawPolyPolylineOp(const Point *vertices, int vertex_count,
                             const int *counts, int count_count,
 	                        int width, Color color, Color doxor)
 {
@@ -171,7 +169,7 @@ void SystemDraw::DrawPolyPolylineOp(const Point *vertices, int vertex_count,
 }
 
 static void DrawPolyPolyPolygonRaw(
-	SystemDraw& draw, const Point *vertices, int vertex_count,
+	WinDraw& draw, const Point *vertices, int vertex_count,
 	const int *subpolygon_counts, int subpolygon_count_count,
 	const int *disjunct_polygon_counts, int disjunct_polygon_count_count)
 {
@@ -201,7 +199,7 @@ static void DrawPolyPolyPolygonRaw(
 	}
 }
 
-void SystemDraw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
+void WinDraw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
 	const int *subpolygon_counts, int subpolygon_count_count,
 	const int *disjunct_polygon_counts, int disjunct_polygon_count_count,
 	Color color, int width, Color outline, uint64 pattern, Color doxor)
@@ -274,7 +272,7 @@ void SystemDraw::DrawPolyPolyPolygonOp(const Point *vertices, int vertex_count,
 	}
 }
 
-void SystemDraw::DrawArcOp(const Rect& rc, Point start, Point end, int width, Color color)
+void WinDraw::DrawArcOp(const Rect& rc, Point start, Point end, int width, Color color)
 {
 	GuiLock __;
 	SetDrawPen(width, color);
@@ -283,14 +281,12 @@ void SystemDraw::DrawArcOp(const Rect& rc, Point start, Point end, int width, Co
 
 #endif
 
-void SystemDraw::DrawEllipseOp(const Rect& r, Color color, int width, Color pencolor)
+void WinDraw::DrawEllipseOp(const Rect& r, Color color, int width, Color pencolor)
 {
 	GuiLock __;
 	SetColor(color);
 	SetDrawPen(width, pencolor);
 	::Ellipse(GetHandle(), r.left, r.top, r.right, r.bottom);
 }
-
-#endif
 
 END_UPP_NAMESPACE

@@ -2707,6 +2707,7 @@ void ArrayCtrl::InsertDrop(int line, PasteClip& d)
 }
 
 ArrayCtrl::ArrayCtrl() {
+	RootCtrl();
 	cursor = -1;
 	Reset();
 	AddFrame(sb);

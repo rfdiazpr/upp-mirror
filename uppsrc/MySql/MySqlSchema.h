@@ -40,7 +40,6 @@
 #define AUTO_INCREMENT             INLINE_ATTRIBUTE("auto_increment")
 #define KEY                        INLINE_ATTRIBUTE("key")
 #define NOT_NULL                   INLINE_ATTRIBUTE("not null")
-#define SQLDEFAULT(v)              INLINE_ATTRIBUTE("default " #v)
 
 #define INDEX                      ATTRIBUTE("alter table @t add index IDX_@x (@c);", \
                                              "alter table @t drop index IDX_@x;")
@@ -56,7 +55,9 @@
 
 #define INNODB                     TABLE_SUFFIX(" type=InnoDB")
 
+
 #include <Sql/sch_model.h>
+
 
 #undef INT
 #undef INT_ARRAY
@@ -90,7 +91,6 @@
 #undef AUTO_INCREMENT
 #undef KEY
 #undef NOT_NULL
-#undef SQLDEFAULT
 
 #undef INDEX
 

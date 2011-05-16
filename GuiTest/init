@@ -1,0 +1,10 @@
+#ifndef _GuiTest_icpp_init_stub
+#define _GuiTest_icpp_init_stub
+#include "CtrlLib/init"
+#include "GridCtrl/init"
+#include "Theme/init"
+#include "Skulpture/init"
+#include "DropGrid/init"
+#include "plugin\glew/init"
+#include "Math3d/init"
+#endif

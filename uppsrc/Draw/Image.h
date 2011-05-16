@@ -150,12 +150,12 @@ private:
 		void        SysInitImp();
 		void        SysReleaseImp();
 		int         GetResCountImp() const;
-		void        PaintImp(SystemDraw& w, int x, int y, const Rect& src, Color c);
+		void        PaintImp(BaseDraw& w, int x, int y, const Rect& src, Color c);
 
 		void        SysInit();
 		void        SysRelease();
 		int         GetResCount() const;
-		void        Paint(SystemDraw& w, int x, int y, const Rect& src, Color c);
+		void        Paint(BaseDraw& w, int x, int y, const Rect& src, Color c);
 
 		int         GetKind();
 		void        PaintOnlyShrink();
@@ -166,14 +166,14 @@ private:
 		static void  (Image::Data::*sSysInit)();
 		static void  (Image::Data::*sSysRelease)();
 		static int   (Image::Data::*sGetResCount)() const;
-		static void  (Image::Data::*sPaint)(SystemDraw& w, int x, int y, const Rect& src, Color c);
+		static void  (Image::Data::*sPaint)(BaseDraw& w, int x, int y, const Rect& src, Color c);
 
 		friend void InstallSystemImage();
 		static void InitSystemImage(
 			void  (Image::Data::*fSysInit)(),
 			void  (Image::Data::*fSysRelease)(),
 			int   (Image::Data::*fGetResCount)() const,
-			void  (Image::Data::*fPaint)(SystemDraw& w, int x, int y, const Rect& src, Color c)
+			void  (Image::Data::*fPaint)(BaseDraw& w, int x, int y, const Rect& src, Color c)
 		);
 	};
 
@@ -187,9 +187,9 @@ private:
 	friend class ImageBuffer;
 	friend struct Data;
 
-	friend class SystemDraw;
+	friend class BaseDraw;
 
-	void PaintImage(SystemDraw& w, int x, int y, const Rect& src, Color c) const;
+	void PaintImage(BaseDraw& w, int x, int y, const Rect& src, Color c) const;
 
 	friend void SetPaintOnly___(Image& m);
 	friend void DrawImageBandRLE(Draw& w, int x, int y, const Image& m, int minp);
@@ -340,3 +340,21 @@ Size   GetImageStringDots(const String& src);
 
 #include "Raster.h"
 #include "ImageOp.h"
+
+#ifdef PLATFORM_WIN32
+#ifndef PLATFORM_WINCE
+
+Image Win32Icon(LPCSTR id, int iconsize = 0);
+Image Win32Icon(int id, int iconsize = 0);
+Image Win32Cursor(LPCSTR id);
+Image Win32Cursor(int id);
+HICON IconWin32(const Image& img, bool cursor = false);
+Image Win32DllIcon(const char *dll, int ii, bool large);
+
+#endif
+#endif
+
+#ifdef PLATFORM_X11
+Image X11Cursor(int c);
+void *CursorX11(const Image& img);
+#endif

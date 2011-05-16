@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-SystemDraw& ScreenInfo();
+BaseDraw& ScreenInfo();
 
 bool BackDraw::IsPaintingOp(const Rect& r) const
 {

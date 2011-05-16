@@ -1,7 +1,0 @@
-uses Core;
-
-file
-	"Ntl04.cpp";
-
-mainconfig
-	"" = "";

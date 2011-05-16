@@ -306,6 +306,7 @@ void Switch::CancelMode() {
 }
 
 Switch::Switch() {
+	RootCtrl();
 	linecy = 16;
 	mincy = 0;
 	Transparent();

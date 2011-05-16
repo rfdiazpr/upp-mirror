@@ -104,12 +104,16 @@ void SetSurface(HDC dc, int x, int y, int cx, int cy, const RGBA *pixels)
 
 void SetSurface(SystemDraw& w, int x, int y, int cx, int cy, const RGBA *pixels)
 {
+#ifndef flagOPENGL
 	SetSurface(w.GetHandle(), x, y, cx, cy, pixels);
+#endif
 }
 
 void SetSurface(SystemDraw& w, const Rect& dest, const RGBA *pixels, Size psz, Point poff)
 {
+#ifndef flagOPENGL
 	SetSurface(w.GetHandle(), dest, pixels, psz, poff);
+#endif
 }
 
 class DrawSurface : NoCopy {
@@ -119,7 +123,7 @@ class DrawSurface : NoCopy {
 	HDC          dc, dcMem;
 	HBITMAP      hbmp, hbmpOld;
 
-	void  Init(SystemDraw& w, int x, int y, int cx, int cy);
+	void  Init(BaseDraw& w, int x, int y, int cx, int cy);
 	RGBA* Line(int i) const { ASSERT(i >= 0 && i < size.cy); return (RGBA *)pixels + size.cx * (size.cy - i - 1); }
 
 public:
@@ -129,12 +133,12 @@ public:
 	const RGBA *operator[](int i) const { return Line(i); }
 	int         GetLineDelta() const    { return -size.cx; }
 
-	DrawSurface(SystemDraw& w, const Rect& r);
-	DrawSurface(SystemDraw& w, int x, int y, int cx, int cy);
+	DrawSurface(BaseDraw& w, const Rect& r);
+	DrawSurface(BaseDraw& w, int x, int y, int cx, int cy);
 	~DrawSurface();
 };
 
-void DrawSurface::Init(SystemDraw& w, int _x, int _y, int cx, int cy)
+void DrawSurface::Init(BaseDraw& w, int _x, int _y, int cx, int cy)
 {
 	GuiLock __;
 	dc = w.GetHandle();
@@ -148,12 +152,12 @@ void DrawSurface::Init(SystemDraw& w, int _x, int _y, int cx, int cy)
 	::BitBlt(dcMem, 0, 0, cx, cy, dc, x, y, SRCCOPY);
 }
 
-DrawSurface::DrawSurface(SystemDraw& w, const Rect& r)
+DrawSurface::DrawSurface(BaseDraw& w, const Rect& r)
 {
 	Init(w, r.left, r.top, r.Width(), r.Height());
 }
 
-DrawSurface::DrawSurface(SystemDraw& w, int x, int y, int cx, int cy)
+DrawSurface::DrawSurface(BaseDraw& w, int x, int y, int cx, int cy)
 {
 	Init(w, x, y, cx, cy);
 }
@@ -259,7 +263,7 @@ void Image::Data::CreateHBMP(HDC dc, const RGBA *data)
 	ResCount++;
 }
 
-void Image::Data::PaintImp(SystemDraw& w, int x, int y, const Rect& src, Color c)
+void Image::Data::PaintImp(BaseDraw& w, int x, int y, const Rect& src, Color c)
 {
 	GuiLock __;
 	SystemData& sd = Sys();
@@ -342,7 +346,7 @@ void Image::Data::PaintImp(SystemDraw& w, int x, int y, const Rect& src, Color c
 		if(!sd.himg) {
 			LTIMING("Image Alpha create");
 			BitmapInfo32__ bi(sz.cx, sz.cy);
-			sd.himg = CreateDIBSection(ScreenHDC(), bi, DIB_RGB_COLORS, (void **)&sd.section, NULL, 0);
+			//sd.himg = CreateDIBSection(ScreenHDC(), bi, DIB_RGB_COLORS, (void **)&sd.section, NULL, 0);
 			ResCount++;
 			memcpy(sd.section, ~buffer, buffer.GetLength() * sizeof(RGBA));
 		}

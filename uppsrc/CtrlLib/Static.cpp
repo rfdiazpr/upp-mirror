@@ -21,6 +21,7 @@ void StaticText::LabelUpdate() {
 
 StaticText::StaticText()
 {
+	RootCtrl();
 	NoWantFocus();
 	IgnoreMouse();
 	Transparent();

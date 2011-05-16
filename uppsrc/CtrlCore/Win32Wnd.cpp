@@ -14,6 +14,23 @@ NAMESPACE_UPP
 #define ELOGW(x)  // RLOG(GetSysTime() << ": " << x) // Only activate in MT!
 #define ELOG(x)   // RLOG(GetSysTime() << ": " << x)
 
+
+#ifdef flagOPENGL
+int   Ctrl::WndCaretTime;
+bool  Ctrl::WndCaretVisible;
+
+void  Ctrl::AnimateCaret()
+{
+	GuiLock __;
+	int v = !(((GetTickCount() - WndCaretTime) / 500) & 1);
+	if(v != int(WndCaretVisible)) {
+		RefreshCaret();
+		WndCaretVisible = v;
+	}
+}
+
+#endif
+
 template<>
 unsigned GetHashValue(const HWND& h)
 {
@@ -139,6 +156,7 @@ DWORD WINAPI Ctrl::Win32OverwatchThread(LPVOID)
 		else
 			DispatchMessage(&Msg);
     }
+
 	ELOGW("OverWatch 3");
 	return 0;
 }
@@ -163,6 +181,9 @@ LRESULT CALLBACK Ctrl::UtilityProc(HWND hWnd, UINT message, WPARAM wParam, LPARA
 {
 	sClipMap();
 	switch(message) {
+	case WM_TIMER:
+		TimerProc(GetTickCount());
+		return 0;
 	case WM_RENDERFORMAT:
 		RenderFormat((dword)wParam);
 		return 0;
@@ -214,20 +235,20 @@ void Ctrl::InitWin32(HINSTANCE hInstance)
 	{
 		WNDCLASSW  wc;
 		Zero(wc);
-		wc.style         = CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW;
+		wc.style         = CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW|CS_OWNDC;
 		wc.lpfnWndProc   = (WNDPROC)Ctrl::WndProc;
 		wc.hInstance     = hInstance;
 		wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
-		wc.hbrBackground = IsWinVista() ? (HBRUSH)(COLOR_WINDOW+1) : (HBRUSH)NULL;
+		wc.hbrBackground = (HBRUSH)NULL;
 		wc.lpszClassName = L"UPP-CLASS-W";
 		RegisterClassW(&wc);
-		wc.style         = 0x20000|CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW;
+		wc.style         = 0x20000|CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW|CS_OWNDC;
 		wc.lpszClassName = L"UPP-CLASS-DS-W";
 		RegisterClassW(&wc);
-		wc.style         = CS_SAVEBITS|CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW;
+		wc.style         = CS_SAVEBITS|CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW|CS_OWNDC;
 		wc.lpszClassName = L"UPP-CLASS-SB-W";
 		RegisterClassW(&wc);
-		wc.style         = 0x20000|CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW|CS_SAVEBITS;
+		wc.style         = 0x20000|CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW|CS_SAVEBITS|CS_OWNDC;
 		wc.lpszClassName = L"UPP-CLASS-SB-DS-W";
 		RegisterClassW(&wc);
 	}
@@ -235,23 +256,23 @@ void Ctrl::InitWin32(HINSTANCE hInstance)
 	ILOG("RegisterClassA");
 	WNDCLASS  wc;
 	Zero(wc);
-	wc.style         = CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW;
+	wc.style         = CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW|CS_OWNDC;
 	wc.lpfnWndProc   = (WNDPROC)Ctrl::WndProc;
 	wc.hInstance     = hInstance;
 	wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
-	wc.hbrBackground = IsWinVista() ? (HBRUSH)(COLOR_WINDOW+1) : (HBRUSH)NULL;
+	wc.hbrBackground = (HBRUSH)NULL;
 	wc.lpszClassName = L_("UPP-CLASS-A");
 	RegisterClass(&wc);
 	if(IsWinXP()) {
-		wc.style         = 0x20000|CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW;
+		wc.style         = 0x20000|CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW|CS_OWNDC;
 		wc.lpszClassName = L_("UPP-CLASS-DS-A");
 		RegisterClass(&wc);
 	}
-	wc.style         = CS_SAVEBITS|CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW;
+	wc.style         = CS_SAVEBITS|CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW|CS_OWNDC;
 	wc.lpszClassName = L_("UPP-CLASS-SB-A");
 	RegisterClass(&wc);
 	if(IsWinXP()) {
-		wc.style         = 0x20000|CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW|CS_SAVEBITS;
+		wc.style         = 0x20000|CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW|CS_SAVEBITS|CS_OWNDC;
 		wc.lpszClassName = L_("UPP-CLASS-SB-DS-A");
 		RegisterClass(&wc);
 	}
@@ -268,21 +289,8 @@ void Ctrl::InitWin32(HINSTANCE hInstance)
 		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 		NULL, NULL, hInstance, NULL);
 	SetTimer(utilityHWND, 1, 10, NULL);
-	ILOG("Windows");
-	Windows(); //?? TRC: what's the use of this?
-
 	ChSync();
-
 	OleInitialize(NULL);
-
-/* TRC 05/11/14: moved to GuiSleep to avoid thread creation in OCX DllMain
-	DWORD dummy;
-	OverwatchThread = CreateThread(NULL, 0x100000, Win32OverwatchThread, NULL, 0, &dummy);
-	ExitLoopEvent().Wait();
-*/
-
-// TRC 05/11/18: pSetLayeredWindowAttributes moved to GLOBAL_VAR (see below) to make OCX initialization simpler
-
 	Csizeinit();
 #undef ILOG
 }
@@ -828,12 +836,10 @@ bool Ctrl::ProcessEvents(bool *quit)
 {
 	if(ProcessEvent(quit)) {
 		while(ProcessEvent(quit) && (!LoopCtrl || LoopCtrl->InLoop())); // LoopCtrl-MF 071008
-		TimerProc(GetTickCount());
 		SweepMkImageCache();
 		return true;
 	}
 	SweepMkImageCache();
-	TimerProc(GetTickCount());
 	return false;
 }
 
@@ -1208,7 +1214,7 @@ void Ctrl::WndUpdate0r(const Rect& r)
 		HRGN hrgn = CreateRectRgn(0, 0, 0, 0);
 		if(GetUpdateRgn(hwnd, hrgn, FALSE) != NULLREGION) {
 			SelectClipRgn(hdc, hrgn);
-			SystemDraw draw(hdc);
+			SystemDraw draw(hdc, r.GetSize());
 			bool hcr = focusCtrl && focusCtrl->GetTopCtrl() == top &&
 			           caretRect.Intersects(r + top->GetRect().TopLeft());
 			if(hcr) ::HideCaret(hwnd);
@@ -1240,7 +1246,6 @@ void  Ctrl::WndScrollView0(const Rect& r, int dx, int dy)
 
 void Ctrl::PopUpHWND(HWND owner, bool savebits, bool activate, bool dropshadow, bool topmost)
 {
-	LLOG("POPUP");
 	popup = false;
 	Create(owner, WS_POPUP, topmost ? WS_EX_TOPMOST : 0, savebits,
 	       owner || !activate ? SW_SHOWNOACTIVATE : SW_SHOW,
@@ -1253,8 +1258,18 @@ void Ctrl::PopUpHWND(HWND owner, bool savebits, bool activate, bool dropshadow, 
 void Ctrl::PopUp(Ctrl *owner, bool savebits, bool activate, bool dropshadow, bool topmost)
 {
 	popup = false;
+#ifndef flagOPENGL
 	Ctrl *q = owner ? owner->GetTopCtrl() : GetActiveCtrl();
 	PopUpHWND(q ? q->GetHWND() : NULL, savebits, activate, dropshadow, topmost);
+#else
+	Ctrl *q = owner->GetTopWindow();
+	Rect r = GetRect() - q->GetScreenView().TopLeft();
+	SetRect(r);
+	q->Add(*this);
+	popup = true;
+	if(activate)
+		SetFocus();
+#endif
 	if(top) top->owner = owner;
 }
 

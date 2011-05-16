@@ -4,11 +4,18 @@
 #include <Draw/Draw.h>
 
 #ifdef PLATFORM_WIN32
+#include <plugin/glew/glew.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include "DrawOpenGL.h"
 #include "DrawWin32.h"
+#define SystemDraw OpenGLDraw
+#define BaseDraw WinDraw
 #endif
 
 #ifdef PLATFORM_X11
 #include "DrawX11.h"
+#define BaseDraw X11Draw
 #endif
 
 NAMESPACE_UPP
@@ -29,7 +36,7 @@ struct GuiLock {
 bool ScreenInPaletteMode();
 Size GetScreenSize();
 
-class BackDraw : public SystemDraw {
+class BackDraw : public BaseDraw {
 public:
 	virtual bool  IsPaintingOp(const Rect& r) const;
 
@@ -47,11 +54,11 @@ protected:
 
 
 public:
-	void  Put(SystemDraw& w, int x, int y);
-	void  Put(SystemDraw& w, Point p)                  { Put(w, p.x, p.y); }
+	void  Put(BaseDraw& w, int x, int y);
+	void  Put(BaseDraw& w, Point p)                  { Put(w, p.x, p.y); }
 
-	void Create(SystemDraw& w, int cx, int cy);
-	void Create(SystemDraw& w, Size sz)                { Create(w, sz.cx, sz.cy); }
+	void Create(BaseDraw& w, int cx, int cy);
+	void Create(BaseDraw& w, Size sz)                { Create(w, sz.cx, sz.cy); }
 //	void Create(int cx, int cy);
 //	void Create(Size sz)                               { Create(sz.cx, sz.cy); }
 	void Destroy();
@@ -69,7 +76,7 @@ public:
 	void Create(Draw& w, Size sz)                { Create(*(SystemDraw*)&w, sz.cx, sz.cy); }*/
 };
 
-class ImageDraw : public SystemDraw {
+class ImageDraw : public BaseDraw {
 	Size    size;
 
 #ifdef PLATFORM_WIN32
@@ -84,11 +91,11 @@ class ImageDraw : public SystemDraw {
 
 	Section     rgb;
 	Section     a;
-	SystemDraw  alpha;
+	BaseDraw  alpha;
 #endif
 
 #ifdef PLATFORM_X11
-	SystemDraw   alpha;
+	BaseDraw   alpha;
 #endif
 
 	bool    has_alpha;
@@ -110,7 +117,7 @@ public:
 
 typedef ImageDraw SystemImageDraw;
 
-void DrawDragRect(SystemDraw& w, const Rect& rect1, const Rect& rect2, const Rect& clip, int n,
+void DrawDragRect(BaseDraw& w, const Rect& rect1, const Rect& rect2, const Rect& clip, int n,
                   Color color, uint64 pattern);
 
 void SetSurface(Draw& w, const Rect& dest, const RGBA *pixels, Size srcsz, Point poff);

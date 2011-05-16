@@ -24,8 +24,15 @@ Value NotNullError();
 
 class Convert {
 public:
+#ifdef flagSO
 	Convert();
 	virtual ~Convert();
+#else
+	#ifdef __clang__
+	Convert(){};
+	#endif
+	virtual ~Convert() {}
+#endif
 
 	virtual Value  Format(const Value& q) const;
 	virtual Value  Scan(const Value& text) const;
@@ -170,7 +177,6 @@ public:
 	Time         GetMin() const                    { return minval; }
 	Time         GetMax() const                    { return maxval; }
 	bool         IsNotNull() const                 { return notnull; }
-	bool         IsSeconds() const                 { return seconds; }
 
 	ConvertTime(Time minval = ToTime(Date::Low()), Time maxval = ToTime(Date::High()), bool notnull = false);
 	virtual ~ConvertTime();
@@ -196,8 +202,6 @@ public:
 	ConvertString& TrimLeft(bool b = true)         { trimleft = b; return *this; }
 	ConvertString& TrimRight(bool b = true)        { trimright = b; return *this; }
 	ConvertString& TrimBoth(bool b = true)         { return TrimLeft(b).TrimRight(b); }
-	bool           IsTrimLeft() const              { return trimleft; }
-	bool           IsTrimRight() const             { return trimright; }
 
 #ifdef flagSO
 	ConvertString(int maxlen = INT_MAX, bool notnull = false);
@@ -213,8 +217,9 @@ const ConvertString& StdConvertStringNotNull();
 
 class NoConvertClass : public Convert {
 public:
-	NoConvertClass();
-
+#ifdef __clang__
+	NoConvertClass(){};
+#endif
 	virtual Value  Format(const Value& q) const;
 };
 

@@ -248,6 +248,7 @@ DropList& DropList::AlwaysDrop(bool e)
 
 DropList::DropList()
 {
+	RootCtrl();
 	displayall = false;
 	valueconvert = &NoConvert();
 	valuedisplay = NULL;

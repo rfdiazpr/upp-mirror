@@ -92,6 +92,7 @@ bool PrinterJob::Execute0(bool dodlg)
 		::GlobalFree(dlg.hDevMode);
 	if(dlg.hDevNames)
 		::GlobalFree(dlg.hDevNames);
+#ifndef flagOPENGL
 	if(hdc) {
 		draw = new PrintDraw(hdc, Nvl(name, Ctrl::GetAppName()));
 		page.Clear();
@@ -105,6 +106,7 @@ bool PrinterJob::Execute0(bool dodlg)
 					page.Add(i);
 		return true;
 	}
+#endif
 	return false;
 }
 

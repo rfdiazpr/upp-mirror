@@ -1,4 +1,0 @@
-LAYOUT(TestEditIntLayout, 448, 412)
-	ITEM(EditIntSpin, edt, LeftPosZ(68, 48).TopPosZ(52, 19))
-END_LAYOUT
-

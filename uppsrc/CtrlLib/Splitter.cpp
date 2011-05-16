@@ -248,6 +248,7 @@ Splitter& Splitter::SetStyle(const Style& s)
 }
 
 Splitter::Splitter() {
+	RootCtrl();
 	chstyle = NULL;
 	style = -1;
 	vert = false;

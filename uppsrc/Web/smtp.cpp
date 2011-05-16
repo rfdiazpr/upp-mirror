@@ -69,7 +69,7 @@ static void Send(Socket& socket, const String &s, String *transcript = 0, int ti
 		}
 		else if(amount == 0)
 			throw Exc(t_("Error writing data to socket: communication port closed."));
-		else if((err = Socket::GetErrorCode()) != SOCKERR(EWOULDBLOCK)) {
+		else if((err = Socket::GetErrorCode()) != WSAEWOULDBLOCK) {
 			String str;
 			throw Exc(str << t_("Error writing data to socket, error code: ") << err);
 		}
@@ -112,7 +112,7 @@ static String SendRecv(Socket& socket, const String& s, String *transcript = 0, 
 		}
 		else if(amount == 0)
 			throw Exc(t_("Error reading data from socket: communication port closed."));
-		else if((err = Socket::GetErrorCode()) != SOCKERR(EWOULDBLOCK))
+		else if((err = Socket::GetErrorCode()) != WSAEWOULDBLOCK)
 			throw Exc(NFormat(t_("Error reading socket, error code: %s"), err));
 		else
 			Sleep(100);

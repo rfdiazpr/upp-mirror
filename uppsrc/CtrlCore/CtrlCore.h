@@ -27,6 +27,15 @@ enum {
 
 #include "MKeys.h"
 
+#ifdef flagOPENGL
+enum TransformState {
+	TS_BEFORE_CTRL_PAINT,
+	TS_AFTER_CTRL_PAINT,
+	TS_BEFORE_PAINT,
+	TS_AFTER_PAINT
+};
+#endif
+
 enum {
 	DELAY_MINIMAL = 0
 };
@@ -422,6 +431,7 @@ private:
 	Mitor<Frame> frame;//16
 	String       info;//16
 	int16        caretx, carety, caretcx, caretcy;//8
+	SystemDraw*  draw;
 
 	byte         overpaint;
 
@@ -448,6 +458,7 @@ private:
 	bool         popupgrab:1;
 	byte         backpaint:2;//2
 	bool         hasdhctrl:1;
+	bool         rootctrl:1;
 #ifdef PLATFORM_WIN32
 	bool         isdhctrl:1;
 #endif
@@ -533,8 +544,10 @@ private:
 	Image   MouseEventH(int event, Point p, int zdelta, dword keyflags);
 	Image   FrameMouseEventH(int event, Point p, int zdelta, dword keyflags);
 	Image   MEvent0(int e, Point p, int zd);
+protected:
 	Image   DispatchMouse(int e, Point p, int zd = 0);
-	Image   DispatchMouseEvent(int e, Point p, int zd = 0);
+	virtual Image   DispatchMouseEvent(int e, Point p, int zd = 0);
+private:
 	void    LogMouseEvent(const char *f, const Ctrl *ctrl, int event, Point p, int zdelta, dword keyflags);
 
 	struct CallBox;
@@ -564,17 +577,19 @@ private:
 	bool    AddScroll(const Rect& sr, int dx, int dy);
 	Rect    GetClippedView();
 	void    ScrollRefresh(const Rect& r, int dx, int dy);
-	void ScrollCtrl(Top *top, Ctrl *q, const Rect& r, Rect cr, int dx, int dy);
+	void	ScrollCtrl(Top *top, Ctrl *q, const Rect& r, Rect cr, int dx, int dy);
 	void    SyncScroll();
-	void    PaintCaret(SystemDraw& w);
-	void    CtrlPaint(SystemDraw& w, const Rect& clip);
+	void    PaintCaret(Draw& w);
+	void    CtrlPaint(Draw& w, const Rect& clip, Ctrl* debugctrl = NULL);
 	void    RemoveFullRefresh();
 	bool    PaintOpaqueAreas(SystemDraw& w, const Rect& r, const Rect& clip, bool nochild = false);
 	void    GatherTransparentAreas(Vector<Rect>& area, SystemDraw& w, Rect r, const Rect& clip);
 	Ctrl   *FindBestOpaque(const Rect& clip);
 	void    UpdateArea0(SystemDraw& draw, const Rect& clip, int backpaint);
 	void    UpdateArea(SystemDraw& draw, const Rect& clip);
+	public:
 	Ctrl   *GetTopRect(Rect& r, bool inframe);
+	private:
 	void    DoSync(Ctrl *q, Rect r, bool inframe);
 	bool    HasDHCtrl() const;
 	void    SyncDHCtrl();
@@ -634,10 +649,11 @@ private:
 	void WndScrollView0(const Rect& r, int dx, int dy);
 	void WndScrollView(const Rect& r, int dx, int dy);
 	void WndUpdate0();
+	public:
 	void WndUpdate();
 	void WndUpdate0r(const Rect& r);
 	void WndUpdate(const Rect& r);
-
+private:
 	void WndFree();
 	void WndDestroy0();
 	void WndDestroy();
@@ -716,6 +732,16 @@ public:
 #endif
 
 	typedef Ctrl CLASSNAME;
+
+#ifdef flagOPENGL
+private:
+	static int		WndCaretTime;
+	static bool		WndCaretVisible;
+	static void 	AnimateCaret();
+public:
+	virtual void    Render() {}
+	virtual void    ApplyTransform(TransformState state) {}
+#endif
 
 #ifdef PLATFORM_X11
 protected:
@@ -1239,6 +1265,8 @@ public:
 	Ctrl&   NoActiveX()                        { return ActiveX(false); }
 	bool    IsActiveX() const                  { return activex; }
 #endif
+	Ctrl&   RootCtrl()                         { rootctrl = true; return *this; }
+	bool    IsRootCtrl() const                 { return rootctrl; } 
 
 	Ctrl&   Info(const char *txt)              { info = txt; return *this; }
 	String  GetInfo() const                    { return info; }
@@ -1257,6 +1285,8 @@ public:
 
 	void    Add(Ctrl& ctrl)                    { AddChild(&ctrl); }
 	Ctrl&   operator<<(Ctrl& ctrl)             { Add(ctrl); return *this; }
+	
+	void    SetDraw(SystemDraw* d)             { draw = d; }
 
 	void    Remove();
 
@@ -1557,7 +1587,7 @@ public:
 	~Modality()      { End(); }
 };
 
-class ViewDraw : public SystemDraw {
+class ViewDraw : public BaseDraw {
 public:
 	ViewDraw(Ctrl *ctrl);
 	~ViewDraw();
@@ -1849,6 +1879,7 @@ void GuiMainFn_()
 
 class DHCtrl : public Ctrl {
 public:
+	Draw* draw;
 	virtual void    State(int reason);
 	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 	virtual void    NcCreate(HWND hwnd);

@@ -40,8 +40,8 @@ rCtrl]&]
 [s0; &]
 [ {{10000F(128)G(128)@1 [s0;%% [* Public Method List]]}}&]
 [s3; &]
-[s5;:ToolBar`:`:Set`(Callback1`<Bar`&`>`): [@(0.0.255) void]_[* Set]([_^topic`:`/`/Core`/src`/Callbacks`$en`-us`#Callback1`:`:class^ C
-allback1][@(0.0.255) <]Bar[@(0.0.255) `&>]_[*@3 bar])&]
+[s5;:ToolBar`:`:Set`(Callback1`<Bar`&`>`): [@(0.0.255) void]_[* Set]([_^Callback1^ Callback
+1][@(0.0.255) <]Bar[@(0.0.255) `&>]_[*@3 bar])&]
 [s2;%% This method sets the new content to the ToolBar. Content should 
 always be provided as Bar routine `- items should never be Add 
 directly. You should call this each time status of any ToolBar 
@@ -49,8 +49,8 @@ button changes. ToolBar contains smart refresh logic so that
 only items actually changed are repainted.&]
 [s3;%% &]
 [s4; &]
-[s5;:ToolBar`:`:Post`(Callback1`<Bar`&`>`): [@(0.0.255) void]_[* Post]([_^topic`:`/`/Core`/src`/Callbacks`$en`-us`#Callback1`:`:class^ C
-allback1][@(0.0.255) <]Bar[@(0.0.255) `&>]_[*@3 bar])&]
+[s5;:ToolBar`:`:Post`(Callback1`<Bar`&`>`): [@(0.0.255) void]_[* Post]([_^Callback1^ Callba
+ck1][@(0.0.255) <]Bar[@(0.0.255) `&>]_[*@3 bar])&]
 [s2;%% Deprecated `- do not use.&]
 [s3;%% &]
 [s4; &]
@@ -85,4 +85,4 @@ tyle][@(0.0.255) `&]_[* StyleDefault]()&]
 ][*@3;3 ChStyle][@(0.0.255)3 <][*3 Style][@(0.0.255)3 >][3 _]&]
 [s9;%% This structure defines the visual style of a ToolBar.&]
 [s3; &]
-[s0; ]
+[s0;%% ]

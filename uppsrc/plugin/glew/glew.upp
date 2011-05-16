@@ -1,0 +1,9 @@
+options(WIN32) "-D_WIN32 -DGLEW_STATIC";
+
+file
+	glew.h,
+	lib\glew.c,
+	lib\glew.h,
+	lib\glxew.h,
+	lib\wglew.h;
+

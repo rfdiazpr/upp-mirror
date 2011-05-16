@@ -4,7 +4,7 @@ NAMESPACE_UPP
 
 #ifdef PLATFORM_WIN32
 
-SystemDraw&  ScreenInfo();
+BaseDraw&  ScreenInfo();
 
 bool ScreenInPaletteMode()
 {
@@ -28,7 +28,7 @@ HRGN GetFrameRgn(const Rect& rect, int n) {
 	return rgn;
 }
 
-void DrawDragRect(SystemDraw& w, const Rect& _rect1, const Rect& _rect2, const Rect& _clip, int n, Color color, uint64 pattern)
+void DrawDragRect(BaseDraw& w, const Rect& _rect1, const Rect& _rect2, const Rect& _clip, int n, Color color, uint64 pattern)
 {
 	Point o = w.GetOffset();
 	Rect rect1 = _rect1 + o;

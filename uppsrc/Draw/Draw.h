@@ -7,10 +7,15 @@
 
 NAMESPACE_UPP
 
+#ifdef PLATFORM_WIN32
+#define BaseDraw WinDraw
+#endif
+
 class Drawing;
 class Draw;
 class Painting;
 class SystemDraw;
+class BaseDraw;
 class ImageDraw;
 
 #ifdef _MULTITHREADED
@@ -242,6 +247,23 @@ inline int  GetStdFontCy()                          { return GetStdFontSize().cy
 Font StdFont();
 
 inline Font StdFont(int h)                          { return StdFont().Height(h); }
+
+
+/*
+struct ScreenSans : public Font  { ScreenSans(int n = 0) : Font(SCREEN_SANS, n) {} };
+struct ScreenSerif : public Font { ScreenSerif(int n = 0) : Font(SCREEN_SERIF, n) {} };
+struct ScreenFixed : public Font { ScreenFixed(int n = 0) : Font(SCREEN_FIXED, n) {} };
+
+struct Roman     : public Font { Roman(int n) : Font(ROMAN, n) {} };
+struct Arial     : public Font { Arial(int n) : Font(ARIAL, n) {} };
+struct Courier   : public Font { Courier(int n) : Font(COURIER, n) {} };
+
+#ifdef PLATFORM_WIN32
+struct Symbol    : public Font { Symbol(int n) : Font(SYMBOL, n) {} };
+struct WingDings : public Font { WingDings(int n) : Font(WINGDINGS, n) {} };
+struct Tahoma    : public Font { Tahoma(int n) : Font(TAHOMA, n) {} };
+#endif
+*/
 
 inline Font Serif(int n = 0) { return Font(Font::SCREEN_SERIF, n); }
 inline Font SansSerif(int n = 0) { return Font(Font::SCREEN_SANS, n); }
@@ -591,6 +613,13 @@ public:
 	static Size GetStdFontSize()                        { return UPP::GetStdFontSize(); }
 	static int  GetStdFontCy()                          { return GetStdFontSize().cy; }
 	Size   GetPagePixels() const                        { return GetPageSize(); }
+	
+
+#ifdef PLATFORM_WIN32_
+	static void Flush();
+	HDC   BeginGdi();
+	void  EndGdi();
+#endif
 };
 
 void DrawImageBandRLE(Draw& w, int x, int y, const Image& m, int minp);
@@ -797,6 +826,9 @@ void DrawRect(Draw& w, int x, int y, int cx, int cy, const Image& img, bool ra =
 
 void DrawTiles(Draw& w, int x, int y, int cx, int cy, const Image& img);
 void DrawTiles(Draw& w, const Rect& rect, const Image& img);
+
+void DrawTiles2(Draw& w, int x, int y, int cx, int cy, const Image& img, const Size& isz, const Rect& src);
+void DrawTiles2(Draw& w, const Rect& rect, const Image& img, const Size& isz, const Rect& src);
 
 void DrawFatFrame(Draw& w, int x, int y, int cx, int cy, Color color, int n);
 void DrawFatFrame(Draw& w, const Rect& r, Color color, int n);

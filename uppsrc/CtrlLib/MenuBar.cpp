@@ -243,7 +243,7 @@ void MenuBar::SyncState()
 void MenuBar::ChildGotFocus()
 {
 	if(submenu && !submenuitem->HasFocusDeep() && !ExistsTimeCallback()) {
-	   	if(submenu->IsOpen())
+		if(submenu->IsOpen())
 			submenu->DelayedClose();
 	}
 	KillDelayedClose();

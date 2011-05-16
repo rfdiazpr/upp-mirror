@@ -230,6 +230,7 @@ void StatusBar::TopFrame::FrameAddSize(Size& sz)
 
 StatusBar::StatusBar()
 {
+	RootCtrl();
 	Height(5 + max(16, Draw::GetStdFontCy()));
 	frame.style = &StyleDefault();
 	SetFrame(frame);

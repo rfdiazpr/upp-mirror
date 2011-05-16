@@ -92,6 +92,7 @@ void TopWindow::Close()
 			AcceptBreak(IDOK);
 		return;
 	}
+	KillTimeCallback(1);
 	backup.Clear();
 	if(IsOpen()) IgnoreMouseUp();
 	Ctrl::Close();
@@ -497,6 +498,143 @@ void TopWindow::SerializePlacement(Stream& s, bool reminimize)
 #endif
 }
 
+#ifdef flagOPENGL
+
+ValueSlider::ValueSlider()
+{
+	pos = 0;
+	shaded = true;
+	immediate = false;
+	src = Color(255, 255, 0);
+	dst = Color(255, 153, 51);
+}
+
+void ValueSlider::Paint(Draw &w)
+{
+	Size sz = GetSize();
+
+	w.DrawRect(0, 0, sz.cx, 1, Black);
+	w.DrawRect(0, sz.cy - 1, sz.cx, 1, Black);
+	w.DrawRect(0, 0, 1, sz.cy, Black);
+	w.DrawRect(sz.cx - 1, 0, 1, sz.cy, Black);
+		
+	int t = (int) ((pos * sz.cx) / (maxValue - minValue));
+	if(t < 1) t = 1;
+	if(t > sz.cx - 1) t = sz.cx - 1;
+	
+	if(shaded)
+	{
+		for(int i = 1; i < t; i++)
+			w.DrawRect(i, 1, 1, sz.cy - 2, Blend(src, dst, 256 * i / (sz.cx - 1)));
+	}
+	else
+	{
+		w.DrawRect(Rect(1, 1, t, sz.cy - 1), dst);
+	}
+
+	if(t < sz.cx - 1)
+		w.DrawRect(Rect(t, 1, sz.cx - 1, sz.cy - 1), Color(245, 245, 255));
+
+	String s = Format("%s : %.2f", text, pos);
+	Size tsz = GetTextSize(s, StdFont());
+	w.DrawText((sz.cx - tsz.cx) / 2, (sz.cy - tsz.cy) / 2, s);
+}
+
+void ValueSlider::LeftDown(Point p, dword keyflags)
+{
+	pos = minValue + (p.x * maxValue) / (float) GetSize().cx;
+	Refresh();
+	SetCapture();
+	if(immediate)
+		WhenAction();
+}
+
+void ValueSlider::LeftUp(Point p, dword keyflags)
+{
+	ReleaseCapture();
+	if(!immediate)
+		WhenAction();
+}
+
+void ValueSlider::MouseMove(Point p, dword keyflags)
+{
+	if(HasCapture())
+	{
+		pos = minValue + (p.x * maxValue) / (float) GetSize().cx;
+		if(pos > maxValue) pos = maxValue;
+		if(pos < minValue) pos = minValue;
+		Refresh();
+		if(immediate)
+			WhenAction();
+	}	
+}
+
+void ValueSlider::SetPos(float p, float minv, float maxv)
+{
+	pos = p;
+	minValue = minv;
+	maxValue = maxv;
+	Refresh();
+}
+
+float ValueSlider::GetPos()
+{
+	return pos;
+}
+
+InfoPanel::InfoPanel()
+{
+	Add(alphaSlider.RightPos(110, 100).BottomPos(2, 24));
+	Add(angleSlider.RightPos(5, 100).BottomPos(2, 24));
+	
+	alphaSlider.shaded = true;
+	angleSlider.shaded = true;
+	alphaSlider.immediate = true;
+	angleSlider.immediate = true;
+}
+
+void InfoPanel::Paint(Draw& w)
+{
+	Size sz = GetSize();
+	Size wsz = GetTopWindow()->GetSize();
+	w.DrawRect(sz, Color(74, 125, 153));
+	w.DrawRect(0, 0, sz.cx, 1, Black);
+	w.DrawRect(sz.cx - 1, 0, 1, sz.cy, Black);
+	String info = Format("FPS: %.2f, Textures: %d, Size: %d, %d", GetFps(), Resources::textures.GetCount(), wsz.cx, wsz.cy);
+	w.DrawText(5, sz.cy - 22, info, StdFont(), White);
+}
+
+void TopWindow::InitInfoPanel()
+{
+	static bool init = true;
+	
+	if(!init)
+		return;
+	init = false;
+	
+	Size sz = rect.GetSize();
+	Add(infoPanel.LeftPos(0, 470).BottomPos(0, 30));
+	
+	infoPanel.alphaSlider.SetPos(alpha, 0.f, 255.f);
+	infoPanel.alphaSlider.text = "Alpha";
+	infoPanel.alphaSlider.WhenAction = THISBACK(SetAlpha);
+
+	infoPanel.angleSlider.SetPos(angle, 0.f, 360.f);
+	infoPanel.angleSlider.text = "Angle";
+	infoPanel.angleSlider.WhenAction = THISBACK(SetAngle);
+}
+
+void TopWindow::SetAlpha()
+{
+	alpha = infoPanel.alphaSlider.GetPos();
+}
+
+void TopWindow::SetAngle()
+{
+	angle = infoPanel.angleSlider.GetPos();
+}
+#endif
+
 struct DialogBackground : public Display {
 	void Paint(Draw& w, const Rect& r, const Value& q, Color ink, Color paper, dword style) const
 	{
@@ -529,6 +667,10 @@ TopWindow::TopWindow()
 	overlapped.Clear();
 	dokeys = true;
 	fullscreen = frameless = urgent = false;
+#ifdef flagOPENGL
+	alpha = 255;
+	angle = 0.f;
+#endif
 }
 
 TopWindow::~TopWindow()

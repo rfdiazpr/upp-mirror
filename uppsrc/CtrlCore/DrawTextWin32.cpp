@@ -2,20 +2,19 @@
 
 NAMESPACE_UPP
 
-#ifdef PLATFORM_WIN32
-
 #define LLOG(x)
 
 HFONT GetWin32Font(Font fnt, int angle);
 
-void SystemDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font, Color ink,
+void WinDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font, Color ink,
                       int n, const int *dx) {
 	Std(font);
 	while(n > 30000) {
 		DrawTextOp(x, y, angle, text, font, ink, 30000, dx);
-		if(dx)
+		if(dx) {
 			for(int i = 0; i < 30000; i++)
 				x += *dx++;
+		}
 		else
 			x += GetTextSize(text, font, 30000).cx;
 		n -= 30000;
@@ -40,7 +39,5 @@ void SystemDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 		              n, dx);
 	::SelectObject(handle, orgfont);
 }
-
-#endif
 
 END_UPP_NAMESPACE

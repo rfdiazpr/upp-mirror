@@ -1,0 +1,41 @@
+LAYOUT(TopLayout, 908, 364)
+	ITEM(GridCtrl, grid, Inserting(true).Appending(true).Duplicating(true).Moving(true).Removing(true).Accepting(true).Canceling(true).Navigating(true).Searching(true).Indicator(true).LiveCursor(true).ColorRows(true).LeftPosZ(4, 344).VSizePosZ(4, 4))
+	ITEM(MyButton, b0, SetLabel(t_("Button 0")).LeftPosZ(356, 92).TopPosZ(4, 28))
+	ITEM(MyButton, b1, SetLabel(t_("Button 1")).LeftPosZ(356, 92).TopPosZ(40, 28))
+	ITEM(MyButton, b2, SetLabel(t_("Button 2")).LeftPosZ(356, 92).TopPosZ(76, 28))
+	ITEM(MyButton, b3, SetLabel(t_("MyButton 3")).LeftPosZ(356, 92).TopPosZ(112, 28))
+	ITEM(MyButton, b4, SetLabel(t_("MyButton 4")).LeftPosZ(356, 92).TopPosZ(148, 28))
+	ITEM(MyButton, b5, SetLabel(t_("MyButton 5")).LeftPosZ(356, 92).TopPosZ(184, 28))
+	ITEM(MyButton, b6, SetLabel(t_("MyButton 6")).LeftPosZ(356, 92).TopPosZ(220, 28))
+	ITEM(MyButton, b7, SetLabel(t_("MyButton 7")).LeftPosZ(356, 92).TopPosZ(256, 28))
+	ITEM(MyButton, b9, SetLabel(t_("MyButton 9")).LeftPosZ(452, 92).VSizePosZ(4, 4))
+	ITEM(MyButton, b8, SetLabel(t_("MyButton 8")).LeftPosZ(356, 92).VSizePosZ(292, 4))
+	ITEM(TabCtrl, tab, HSizePosZ(552, 4).VSizePosZ(4, 4))
+END_LAYOUT
+
+LAYOUT(BottomLayout, 736, 520)
+	ITEM(LabelBox, dv___0, SetLabel(t_("Group I")).HSizePosZ(4, 4).VSizePosZ(0, 4))
+	ITEM(DocEdit, dv___1, LeftPosZ(16, 208).TopPosZ(24, 140))
+	ITEM(Calendar, dv___2, LeftPosZ(16, 236).TopPosZ(172, 156))
+	ITEM(Clock, dv___3, LeftPosZ(264, 150).TopPosZ(172, 156))
+	ITEM(EditDoubleSpin, dv___4, LeftPosZ(232, 124).TopPosZ(24, 19))
+	ITEM(DropDate, dv___5, LeftPosZ(232, 124).TopPosZ(48, 19))
+	ITEM(ProgressIndicator, progress, LeftPosZ(232, 124).TopPosZ(72, 24))
+	ITEM(ArrayCtrl, array, HSizePosZ(420, 12).VSizePosZ(16, 12))
+END_LAYOUT
+
+LAYOUT(Tab0Layout, 484, 328)
+	ITEM(Option, dv___0, SetLabel(t_("Option 0")).LeftPosZ(12, 128).TopPosZ(8, 16))
+	ITEM(Option, dv___1, SetLabel(t_("Option 1")).LeftPosZ(12, 128).TopPosZ(28, 16))
+	ITEM(Option, dv___2, SetLabel(t_("Option 2")).LeftPosZ(12, 128).TopPosZ(48, 16))
+	ITEM(Option, dv___3, SetLabel(t_("Option 3")).LeftPosZ(12, 128).TopPosZ(68, 16))
+	ITEM(Switch, dv___4, SetLabel(t_("Switch 0\nSwitch 1\nSwitch 2\nSwitch 3\nSwitch 4\nSwitch 5")).LeftPosZ(156, 100).TopPosZ(8, 104))
+	ITEM(SliderCtrl, slider, HSizePosZ(8, 12).TopPosZ(116, 24))
+	ITEM(DropList, list, LeftPosZ(8, 216).TopPosZ(148, 19))
+	ITEM(DropGrid, list2, ColorRows(true).LeftPosZ(8, 216).TopPosZ(172, 19))
+END_LAYOUT
+
+LAYOUT(Tab1Layout, 400, 332)
+	ITEM(MyButton, dv___0, SetLabel(t_("BIG BUTTON!!!")).LeftPosZ(8, 256).TopPosZ(8, 256))
+END_LAYOUT
+

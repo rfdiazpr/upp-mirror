@@ -1,0 +1,19 @@
+description "GLCtrl widget example\377";
+
+uses
+	CtrlLib,
+	GridCtrl,
+	Theme,
+	Skulpture,
+	DropGrid,
+	plugin\glew;
+
+file
+	main.lay,
+	main.usc,
+	main.cpp,
+	main.iml;
+
+mainconfig
+	"" = "GUI OPENGL";
+

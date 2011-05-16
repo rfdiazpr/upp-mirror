@@ -1,0 +1,7 @@
+ctrl MyButton {
+	>Button;
+}
+
+ctrl MyButton2 {
+	>Button;
+}

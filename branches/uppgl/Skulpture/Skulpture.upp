@@ -1,0 +1,12 @@
+uses
+	CtrlLib,
+	Theme;
+
+file
+	Skulpture.h,
+	main.cpp,
+	Skulpture.iml;
+
+mainconfig
+	"" = "GUI";
+

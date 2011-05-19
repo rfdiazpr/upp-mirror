@@ -1,0 +1,240 @@
+#ifndef _Gen_Gen_h
+#define _Gen_Gen_h
+
+#include <Core/Core.h>
+
+#include "Misc.h"
+
+NAMESPACE_UPP
+
+//copyable interface, implementing the Copy function, used i.e. by PolyDeepCopyNew
+template<class T, class B = EmptyClass>
+class Copyable : public B
+{
+public:
+	virtual ~Copyable() {}
+	virtual T* Copy() const                    { return PartialCopy(); }
+	virtual T* PartialCopy() const             = 0;
+};
+
+//when exporting an iterface at base lavel which is implemented/derived at top
+template<class T, class B = EmptyClass>
+class TypeHook : public B
+{
+public:
+	virtual const T& GetT() const              = 0;
+	virtual T& GetT()                          = 0;
+	
+	operator const T&() const                  { return GetT(); }
+	operator T&()                              { return GetT(); }
+};
+
+//copyable interface defining the common base class C, without implementing Copy
+//makes possible to clone things and accessing some defined interface
+template<class C, class B = EmptyClass>
+class PolyCopyableHook : public PolyDeepCopyNew<PolyCopyableHook<C,B>, TypeHook<C, Copyable<PolyCopyableHook<C,B>, B> > >
+{
+};
+
+// implements the base class accessors. 
+//B is the derived type, i.e. EditInt, C is common base class, i.e. Ctrl
+//forward another baseclass CB to extend CopyableC interface
+template<class T, class B, class C, class CB = EmptyClass>
+class PolyElement : public PolyDeepCopyNew<T, B>, public PolyCopyableHook<C, CB>
+{
+public:
+	virtual const C& GetT() const              { return *this; }
+	virtual C& GetT()                          { return *this; }
+};
+
+//by providing additional information about the common base class
+//with template specialization can be defined what is copied
+template<class B, class C, class CB = EmptyClass>
+class PolyElementWrap : public PolyElement<PolyElementWrap<B,C,CB>,B,C,CB> 
+{
+public:
+	virtual PolyElementWrap* PartialCopy() const { return new PolyElementWrap(); }
+};
+
+//declares a class Serializable for Stream
+//maybe redundant because of global template for operator%(Stream& s, T& t)
+//which calls t.Serialize()
+//but to ensure implementation
+template<class B = EmptyClass>
+class Serializeable : public B
+{
+public:
+	virtual void Serialize(Stream& s)          = 0;
+};
+
+template<class T>
+void SerializeStore(Stream& s, const T& x)
+{
+	ASSERT(s.IsStoring());
+	s % const_cast<T&>(x);
+}
+
+//declares a class Xmlizeable
+//maybe redundant because of global template Xmlize(XmlIO xml, T&t)
+//which calls t.Xmlize()
+//but to ensure implementations
+template<class B = EmptyClass>
+class Xmlizeable : public B
+{
+public:
+	virtual void Xmlize(XmlIO xml)             = 0;
+};
+
+//most times it is a good idea to implement both
+template<class B = EmptyClass>
+class Persistable : public Xmlizeable<Serializeable<B> > {};
+
+//a helper when using a class with XmlParser for DOM/SAX parsing
+template<class B = EmptyClass>
+class XmlParseable : public B
+{
+public:
+	virtual String ToXML()                     = 0;
+	virtual void   LoadXML(XmlParser& p)       = 0;
+};
+
+typedef void*(*GlobalInstancerType)();
+VectorMap<Value, GlobalInstancerType>& GetGlobalInstancerMap();
+
+//Instancer help class, for maps of Instancers. the static Map should
+//somewhere be ONCELOCK initialized with the elements
+//B is the common base class, T should be the derived class, to ensure
+//proper pointer arithmetic
+template<class B>
+class Instancer
+{
+public:
+	typedef B*(*InstancerType)();
+	template<class T = B>
+	class Typed
+	{
+	public:
+		static B* GetInstance() { return new T(); }
+		static InstancerType GetInstancer() { return &GetInstance; }
+		static GlobalInstancerType GetGlobalInstancer() { return (GlobalInstancerType)&GetInstance; }
+	};
+	static VectorMap<Value, InstancerType>& Map() { static VectorMap<Value, InstancerType> map; return map; }
+};
+
+template<class T> String TypeOfS(T* = NULL) { return String(typeid(T).name()); }
+
+//in polymorph environment, type info is needed, i.e. when xmlizing/serializing elements
+//to know later which one to instantiate..best used with Instancer
+class Typer
+{
+	friend class TyperRegistrar;
+public:
+	String TypeOf() const { ASSERT(tf); return (*tf)(); } //no virtual, dont permit override
+	Typer() : tf(NULL) {}
+private:
+	String (*tf)();
+};
+
+class TyperRegistrar
+{
+public:
+	static void Register(Typer& t, String (*tf)()) { t.tf = tf; }	
+};
+
+template<class T, class B = EmptyClass>
+class TyperT : public B, public TyperRegistrar
+{
+public:
+	TyperT() { TyperRegistrar::Register((T&)(*this), &Invoke); }
+protected:
+	static inline String Invoke() { return TypeOfS<T>((T*)NULL); }
+};
+
+//to declare a class beeing partaker in Instanciating.
+//T is the interface / class that should be acessible at base
+template<class T>
+class Instancing : public TypeHook<T, Typer> {};
+
+//a visiting interface
+template<class T, class B = EmptyClass>
+class Visiting : public B
+{
+public:
+	typedef Visiting<T,B> CLASSNAME;
+	Visiting() : pt(NULL) {}
+
+	virtual void Visit(T& t) { pt = &t; Reload(); }
+	virtual void Reload() { }
+	virtual void Clear() { pt = NULL; }
+
+	bool IsVisiting() const { return pt; }
+	bool IsEmpty() const { return !IsVisiting(); }
+	
+	T& Get() const { return *pt; }
+
+protected:
+	T* pt;
+};
+
+template<class T = double>
+class Scaler
+{
+public:
+	Scaler() : mn(0), mx(0) {}
+	Scaler(const T& mn, const T& mx) : mn(mn), mx(mx) {}
+
+	inline void Min(const T& t) { mn = t; }
+	inline T Min() const { return mn; }
+	inline void Max(const T& t) { mx = t; }
+	inline T Max() const { return mx; }
+	inline void MinMax(const T& _mn, const T& _mx) { mn = _mn; mx = _mx; }
+
+	//scales local dimension value t to foreign dimensions d
+	//returned in foreign dimension
+	inline T To(const Scaler& d, const T& t) { return (t-mn)*(d.mx-d.mn)/(mx-mn)+d.mn; }
+	//scales foreign dimension value t from foreign s to local dimension
+	//return in local dimension
+	inline T From(const Scaler& s, const T& t) { return (t-s.mn)*(mx-mn)/(s.mx-s.mn)+mn; }
+
+	inline T operator() (const Scaler& s, const T& t) { return From(s, t); }
+protected:
+	T mn, mx;	
+};
+
+//some Link helpers
+
+//returns count of linked elements
+//not counting the reported l element, which most times is LinkOwner anyway.
+template<class T>
+int GetLinkCount(const T& l, bool f = true)
+{
+	int c = 0;
+	const T *list = l.GetPtr(), *e = list;
+	if(f) while((e = e->GetNext()) != list) ++c;
+	else  while((e = e->GetPrev()) != list) ++c;
+	return c;
+}
+
+template<class T>
+inline void ChkLinkCount(const T& l) { ASSERT(GetLinkCount(l, true) == GetLinkCount(l, false)); }
+
+template<class T>
+inline void ChkLink(const T& l, bool f = true)
+{
+	if(f) ASSERT(l.GetNext()->GetPrev() == l.GetPtr());
+	else  ASSERT(l.GetPrev()->GetNext() == l.GetPtr());
+}
+
+template<class T>
+int ChkLinkDeep(const T& l, bool f = true)
+{
+	int c = 0;
+	const T *list = l.GetPtr(), *e = list;
+	do { ChkLink(*e); ++c; }
+	while((e = e->GetNext()) != list);
+	return --c;
+}
+
+END_UPP_NAMESPACE
+
+#endif

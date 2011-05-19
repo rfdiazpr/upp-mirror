@@ -1,0 +1,16 @@
+description "Report example\377";
+
+uses
+	CtrlLib,
+	Report,
+	plugin\pcre;
+
+file
+	RepGen.h,
+	RepGen.cpp,
+	src.tpp,
+	srcdoc.tpp;
+
+mainconfig
+	"" = "GUI";
+

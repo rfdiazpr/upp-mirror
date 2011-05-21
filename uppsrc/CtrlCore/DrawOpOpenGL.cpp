@@ -10,53 +10,103 @@ NAMESPACE_UPP
 #define LLOG(x)      // LOG(x)
 #define LTIMING(x)   // RTIMING(x)
 
-void planeEquation(double eq[4], float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3)
+void OpenGLDraw::PlaneEquation(double eq[4], float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3)
 {
-	eq[0] = y1 * (z2 - z3) + y2*(z3-z1) + y3*(z1-z2);
-	eq[1] = (z1*(x2 - x3)) + (z2*(x3 - x1)) + (z3*(x1 - x2));
-	eq[2] = (x1*(y2 - y3)) + (x2*(y3 - y1)) + (x3*(y1 - y2));
-	eq[3] = -((x1*((y2*z3) - (y3*z2))) + (x2*((y3*z1) - (y1*z3))) + (x3*((y1*z2) - (y2*z1))));
+	eq[0] = y1 * (z2 - z3) + 
+	        y2 * (z3 - z1) + 
+	        y3 * (z1 - z2);
+
+	eq[1] = z1 * (x2 - x3) + 
+	        z2 * (x3 - x1) +
+	        z3 * (x1 - x2);
+	        
+	eq[2] = x1 * (y2 - y3) +
+	        x2 * (y3 - y1) +
+	        x3 * (y1 - y2);
+	        
+	eq[3] = -(x1 * (y2 * z3 - y3 * z2) + 
+	          x2 * (y3 * z1 - y1 * z3) +
+	          x3 * (y1 * z2 - y2 * z1));
 }
 
-void OpenGLDraw::SetClip(const Rect& r)
+void OpenGLDraw::SetClipRect(const Rect& r)
 {
-	//glColor4ub(255, 0, 0, 10);
-	//glRecti(r.left, r.top, r.right, r.bottom);
-	last_clip = r;
 	clip = r;
+#if CLIP_MODE != 2
 	for(int i = 0; i < ci; i++)
 		clip &= cloff[i].drawing_clip;
-	
-	/*float ix1 = clip.left;
-	float iy1 = clip.top;
-	float iz = 0;
-	float ix2 = clip.right;
-	float iy2 = clip.bottom;
+#endif
+}
+
+void OpenGLDraw::ScissorClip(const Rect& r)
+{
+	glScissor(clip.left, drawing_size.cy - clip.top - clip.Height(), clip.Width(), clip.Height());	
+}
+
+void OpenGLDraw::PlaneClip(const Rect& r)
+{
+	float cl = (float) clip.left;
+	float ct = (float) clip.top;
+	float cr = (float) clip.right;
+	float cb = (float) clip.bottom;
 	
 	double eq[4];
-	planeEquation(eq, ix1,iy1,iz, ix1,iy2,iz, ix1,iy2,iz+1.0f);	
+	
+	PlaneEquation(eq, cl, ct, 0, cl, cb, 0, cl, cb, +1.0f);	
 	glClipPlane(GL_CLIP_PLANE0, eq);
 	glEnable(GL_CLIP_PLANE0);
 	
-	planeEquation(eq,ix2,iy1,iz, ix2,iy2,iz, ix2,iy2,iz-1.0f);	
+	PlaneEquation(eq, cr, ct, 0, cr, cb, 0, cr, cb, -1.0f);	
 	glClipPlane(GL_CLIP_PLANE1, eq);
 	glEnable(GL_CLIP_PLANE1);
 
-	planeEquation(eq, ix1,iy1,iz, ix2,iy1,iz, ix2,iy1,iz-1.0f);	
+	PlaneEquation(eq, cl, ct, 0, cr, ct, 0, cr, ct, -1.0f);	
 	glClipPlane(GL_CLIP_PLANE2, eq);
 	glEnable(GL_CLIP_PLANE2);
 
-	planeEquation(eq, ix1,iy2,iz, ix2,iy2,iz, ix2,iy2,iz+1.0f);	
+	PlaneEquation(eq, cl, cb, 0, cr, cb, 0, cr, cb, +1.0f);	
 	glClipPlane(GL_CLIP_PLANE3, eq);
-	glEnable(GL_CLIP_PLANE3);*/
+	glEnable(GL_CLIP_PLANE3);
+}
 
-	//glScissor(rr.left, drawing_size.cy - rr.top - rr.Height(), rr.Width(), rr.Height());
-	
-	if(clip_offset.x != 0 || clip_offset.y != 0)
+void OpenGLDraw::StencilClip(const Rect& r, int mode)
+{
+	clip = r;
+
+	glColorMask(0, 0, 0, 0);
+
+	if(mode == 0)
 	{
-		clip -= clip.TopLeft();
-		clip += clip_offset;
+		glStencilOp(GL_KEEP, GL_INCR, GL_INCR);
+		glStencilFunc(GL_GEQUAL, ci, ~0);
+		glRecti(clip.left, clip.top, clip.right, clip.bottom);
+		glStencilFunc(GL_EQUAL, ci, ~0);
 	}
+	else
+	{
+		glStencilOp(GL_DECR, GL_DECR, GL_DECR);
+		glStencilFunc(GL_ALWAYS, ci, ~0);
+		glRecti(clip.left, clip.top, clip.right, clip.bottom);		
+		glStencilFunc(GL_EQUAL, ci - 1, ~0);
+	}
+				
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	glColorMask(1, 1, 1, 1);
+}
+
+void OpenGLDraw::SetClip(const Rect& r, int mode)
+{
+	//glColor4ub(255, 0, 0, 10);
+	//glRecti(r.left, r.top, r.right, r.bottom);
+	SetClipRect(r);
+
+#if CLIP_MODE == 0
+	ScissorClip(r);
+#elif CLIP_MODE == 1
+	PlaneClip(r);
+#elif CLIP_MODE == 2
+	StencilClip(r, mode);
+#endif
 }
 
 void OpenGLDraw::BeginOp()
@@ -65,15 +115,21 @@ void OpenGLDraw::BeginOp()
 	w.clipping = false;
 	w.org = drawing_offset;
 	w.drawing_clip = drawing_clip;	
+	//DrawFrame(*this, w.drawing_clip, White);
 }
 
 void OpenGLDraw::EndOp()
 {
 	ASSERT(ci);
+#if CLIP_MODE == 2
+	SetClip(drawing_clip, 1);
+#endif
 	Cloff& w = cloff[--ci];
 	drawing_offset = w.org;
 	drawing_clip = w.drawing_clip;
-	SetClip(drawing_clip);
+#if CLIP_MODE != 2
+	SetClip(drawing_clip, 1);
+#endif
 }
 
 void OpenGLDraw::OffsetOp(Point p)
@@ -136,6 +192,7 @@ void OpenGLDraw::DrawRectOp(int x, int y, int cx, int cy, Color color)
 	int dx = sx + cx;
 	int dy = sy + cy;
 
+#if CLIP_MODE == 3
 	if(sx > clip.right || sy > clip.bottom)
 		return;
 
@@ -150,6 +207,7 @@ void OpenGLDraw::DrawRectOp(int x, int y, int cx, int cy, Color color)
 		dx = clip.right;
 	if(dy > clip.bottom)
 		dy = clip.bottom;
+#endif
 	
 	glColor4ub(color.GetR(), color.GetG(), color.GetB(), (int) alpha);
 	glRecti(sx, sy, dx, dy);
@@ -164,11 +222,13 @@ void OpenGLDraw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, con
 	int dx = sx + cx;
 	int dy = sy + cy;
 
+#if CLIP_MODE == 3
 	if(sx > clip.right || sy > clip.bottom)
 		return;
 
 	if(dx < clip.left || dy < clip.top)
 		return;
+#endif
 	
 	float tl = (float) src.left;
 	float tr = (float) src.right;
@@ -178,6 +238,7 @@ void OpenGLDraw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, con
 	float sw = (float) src.GetWidth();
 	float sh = (float) src.GetHeight();
 
+#if CLIP_MODE == 3
 	if(sx < clip.left)
 	{
 		int dl = clip.left - sx;
@@ -205,6 +266,7 @@ void OpenGLDraw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, con
 		tb -= db * sh / (float) cy;
 		dy = clip.bottom;
 	}
+#endif
 	
 	Resources::Bind(img);
 

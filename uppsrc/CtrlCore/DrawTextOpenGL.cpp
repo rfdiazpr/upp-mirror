@@ -133,8 +133,10 @@ void OpenGLDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 			int sy = ci.yoffset + y + drawing_offset.y;
 			int dx = sx + ci.width;
 			int dy = sy + ci.height;
-							
+
+			#if CLIP_MODE == 3
 			if(sx <= clip.right && sy <= clip.bottom && dx >= clip.left && dy >= clip.top)
+			#endif
 			{
 				float tl = (float) ci.x;
 				float tt = (float) ci.y;
@@ -144,6 +146,7 @@ void OpenGLDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 				float sw = (float) fi.scaleW;
 				float sh = (float) fi.scaleH;
 				
+				#if CLIP_MODE == 3
 				if(sx < clip.left)
 				{
 					tl += (clip.left - sx);
@@ -167,6 +170,7 @@ void OpenGLDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 					tb -= dy - clip.bottom;
 					dy = clip.bottom;
 				}
+				#endif
 				
 				float tw = 1.f / sw;
 				float th = 1.f / sh;

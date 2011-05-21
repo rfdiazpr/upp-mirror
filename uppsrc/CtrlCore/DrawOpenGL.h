@@ -4,6 +4,14 @@ NAMESPACE_UPP
 
 float GetFps();
 
+#define CLIP_MODE 3
+/*
+0 - Scissor clip
+1 - Plane clip
+2 - Stencil clip
+3 - Manual clip
+*/
+
 struct OpenGLFont : Moveable<OpenGLFont>
 {
 	int scaleW;
@@ -70,7 +78,13 @@ class OpenGLDraw : public Draw {
 public:
 	virtual dword GetInfo() const;
 	virtual Size  GetPageSize() const;
-	void SetClip(const Rect& r);
+
+	void PlaneEquation(double eq[4], float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3);
+	void SetClipRect(const Rect& r);
+	void ScissorClip(const Rect& r);
+	void PlaneClip(const Rect& r);
+	void StencilClip(const Rect& r, int mode = 0);
+	void SetClip(const Rect& r, int mode = 0);
 
 	virtual void BeginOp();
 	virtual void EndOp();
@@ -127,15 +141,11 @@ private:
 public:
 	Rect         drawing_clip;
 	Size         drawing_size;
-	Point 		 drawing_offset, drawing_offset2;
-	Rect         clip, clip2;
-	Point        clip_offset;
-	Rect         last_clip;
+	Point 		 drawing_offset;
+	Rect         clip;
 	float        alpha;
 	float        angle;
 	
-	void PushOffset(int dx, int dy);
-	void PopOffset();
 private:
 	Array<Cloff> cloff;
 	int ci;

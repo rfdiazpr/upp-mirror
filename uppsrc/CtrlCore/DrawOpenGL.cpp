@@ -145,7 +145,6 @@ void OpenGLDraw::Reset() {
 	drawing_offset = Point(0, 0);
 	alpha = 255;
 	angle = 0.f;
-	clip_offset.Clear();
 }
 
 OpenGLDraw::OpenGLDraw() {
@@ -157,7 +156,6 @@ OpenGLDraw::OpenGLDraw(HDC hdc, Size sz) {
 	drawing_clip = sz;
 	drawing_size = sz;
 	clip = sz;
-	last_clip = sz;
 	Init();
 }
 
@@ -166,6 +164,14 @@ void OpenGLDraw::Init()
 	glViewport(0, 0, (GLsizei) drawing_size.cx, (GLsizei) drawing_size.cy);
 	glEnable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
+#if CLIP_MODE == 0
+	glEnable(GL_SCISSOR_TEST);
+#elif CLIP_MODE == 2
+	glEnable(GL_STENCIL_TEST);
+	glStencilFunc(GL_ALWAYS, 0, ~0);
+	glStencilFunc(GL_KEEP, GL_KEEP, GL_KEEP);
+	glClearStencil(0);
+#endif
 	glEnable(GL_LINE_SMOOTH);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glClearColor(0.f, 0.f, 0.f, 1.f);
@@ -177,7 +183,7 @@ void OpenGLDraw::Init()
 
 void OpenGLDraw::Clear()
 {
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
 void OpenGLDraw::FlatView()
@@ -193,25 +199,6 @@ void OpenGLDraw::FlatView()
 	glTranslatef(dx, dy, 0.f);
 	glRotatef(angle, 0, 0, 1);
 	glTranslatef(-dx, -dy, 0.f);
-}
-
-void OpenGLDraw::PushOffset(int dx, int dy)
-{
-	drawing_offset2 = drawing_offset;
-	clip2 = clip;
-	
-	drawing_offset.x = dx;
-	drawing_offset.y = dy;
-	clip_offset.x = dx;
-	clip_offset.y = dy;
-	SetClip(last_clip);
-}
-
-void OpenGLDraw::PopOffset()
-{
-	drawing_offset = drawing_offset2;
-	clip = clip2;
-	clip_offset.Clear();
 }
 
 OpenGLDraw::~OpenGLDraw() {

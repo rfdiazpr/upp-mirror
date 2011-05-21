@@ -244,7 +244,7 @@ void TopWindow::Open(HWND hwnd)
 	pfd.iPixelType = PFD_TYPE_RGBA;
 	pfd.cColorBits = 32;
 	pfd.cDepthBits = 24;
-	pfd.cStencilBits = 1;
+	pfd.cStencilBits = 8;
 	pfd.iLayerType = PFD_MAIN_PLANE;
 	int pf = ChoosePixelFormat(hDC, &pfd);
 	if(!pf) {

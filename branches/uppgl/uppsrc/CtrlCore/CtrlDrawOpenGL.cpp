@@ -126,9 +126,7 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip, Ctrl* debugctrl) {
 		return;
 	
 	SystemDraw& sw = (SystemDraw&) w;
-	
-	glPushMatrix();
-	
+		
 	if(this == debugctrl)
 	{
 		sw.alpha = 255;
@@ -137,7 +135,8 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip, Ctrl* debugctrl) {
 	}
 	else
 	{
-		ApplyTransform(TS_BEFORE_CTRL_PAINT);		
+		glPushMatrix();
+		ApplyTransform(TS_BEFORE_CTRL_PAINT);
 	}
 		
 	Ctrl *q;
@@ -173,6 +172,7 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip, Ctrl* debugctrl) {
 	DOLEVELCHECK;
 	
 	if(!oview.IsEmpty() && oview.Intersects(clip)) {
+		glPushMatrix();
 		LEVELCHECK(w, this);
 		if(overpaint) {
 			w.Clip(oview);
@@ -188,6 +188,7 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip, Ctrl* debugctrl) {
 			PaintCaret(w);
 			w.End();
 		}
+		glPopMatrix();
 	}
 	
 	if(hasviewctrls && !view.IsEmpty()) {
@@ -208,9 +209,12 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip, Ctrl* debugctrl) {
 				w.End();
 			}
 	}
-	
-	ApplyTransform(TS_AFTER_CTRL_PAINT);
-	glPopMatrix();
+
+	if(this != debugctrl)
+	{
+		ApplyTransform(TS_AFTER_CTRL_PAINT);
+		glPopMatrix();
+	}
 }
 
 int sShowRepaint;

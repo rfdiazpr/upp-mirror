@@ -22,51 +22,41 @@ struct MyButton : Button
 		dir = 0;
 	}
 	
-	virtual void Paint(Draw& w)
+	virtual void ApplyTransform(TransformState state)
 	{
-		Sizef bsz = GetSize();
-		ChangeSize();
-
-		if(diff == 1.f)
+		if(state == TS_BEFORE_CTRL_PAINT)
 		{
-			Button::Paint(w);
-			w.DrawImage(-15, -5, (int) bsz.cx + 30, (int) bsz.cy + 10, Img::ChromeIcon());
-		}
-		else
-		{
-			OpenGLDraw& glw = (OpenGLDraw&) w;
-	
-			int dx = glw.drawing_offset.x;
-			int dy = glw.drawing_offset.y;
-	
-			float ddx = dx + (float) (bsz.cx / 2.f);
-			float ddy = dy + (float) (bsz.cy / 2.f);
+			Rect r = GetSize();
+			GetTopRect(r, InFrame());
+			
+			float dx = (float) (r.left + r.right) / 2.f;
+			float dy = (float) (r.top + r.bottom) / 2.f;
 		
-			glMatrixMode(GL_MODELVIEW);
-			glPushMatrix();
-			glLoadIdentity();
-		
-			glTranslatef(ddx, ddy, 0);
+			glTranslatef(dx, dy, 0);
 			glScalef(diff, diff, 0);
-	
-			glw.PushOffset((int) -bsz.cx / 2, (int) -bsz.cy / 2);
-	
-			Button::Paint(w);
-			w.DrawImage(-15, -5, (int) bsz.cx + 30, (int) bsz.cy + 10, Img::ChromeIcon());
-			glw.PopOffset();	
-			glPopMatrix();
+			glTranslatef(-dx, -dy, 0);
 		}
 	}
-	
+
+	virtual void Paint(Draw& w)
+	{
+		ChangeSize();
+		Button::Paint(w);
+		Size sz = GetSize();
+		Size isz = sz - 5;
+
+		w.DrawImage((sz.cx - isz.cx) / 2, (sz.cy - isz.cy) / 2, isz.cx, isz.cy, Img::ChromeIcon());	
+	}
+		
 	void ChangeSize()
 	{
 		if(dir == 0)
 			return;
 		
 		diff += dir / 30.f;
-		if(diff > 1.32f)
+		if(diff > 2.12f)
 		{
-			diff = 1.32f;
+			diff = 2.12f;
 			dir = 0;
 		}
 		else if(diff < 1.f)
@@ -74,11 +64,12 @@ struct MyButton : Button
 			diff = 1.f;
 			dir = 0;
 		}
+		
 	}
 	
 	virtual void MouseEnter(Point p, dword keys)
 	{
-		dir = 1;
+		dir = 1;	
 	}
 	
 	virtual void MouseLeave()

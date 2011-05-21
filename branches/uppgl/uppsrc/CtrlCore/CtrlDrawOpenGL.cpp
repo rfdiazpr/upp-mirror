@@ -129,6 +129,9 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip, Ctrl* debugctrl) {
 		
 	if(this == debugctrl)
 	{
+		#if CLIP_MODE == 2
+		glDisable(GL_STENCIL_TEST);
+		#endif
 		sw.alpha = 255;
 		sw.angle = 0;
 		sw.FlatView();
@@ -214,6 +217,12 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip, Ctrl* debugctrl) {
 	{
 		ApplyTransform(TS_AFTER_CTRL_PAINT);
 		glPopMatrix();
+	}
+	else
+	{
+		#if CLIP_MODE == 2
+		glEnable(GL_STENCIL_TEST);
+		#endif
 	}
 }
 

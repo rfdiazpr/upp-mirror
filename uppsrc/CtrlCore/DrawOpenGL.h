@@ -4,7 +4,7 @@ NAMESPACE_UPP
 
 float GetFps();
 
-#define CLIP_MODE 3
+#define CLIP_MODE 2
 /*
 0 - Scissor clip
 1 - Plane clip
@@ -149,6 +149,7 @@ public:
 private:
 	Array<Cloff> cloff;
 	int ci;
+	int cn;
 
 	void Reset();
 

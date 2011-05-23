@@ -142,6 +142,7 @@ void OpenGLDraw::InitClip(const Rect& clip)
 void OpenGLDraw::Reset() {
 	cloff.SetCount(20);
 	ci = 0;
+	cn = 0;
 	drawing_offset = Point(0, 0);
 	alpha = 255;
 	angle = 0.f;

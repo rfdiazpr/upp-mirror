@@ -71,8 +71,6 @@ void OpenGLDraw::PlaneClip(const Rect& r)
 
 void OpenGLDraw::StencilClip(const Rect& r, int mode)
 {
-	clip = r;
-
 	glColorMask(0, 0, 0, 0);
 
 	if(mode == 0)
@@ -81,6 +79,7 @@ void OpenGLDraw::StencilClip(const Rect& r, int mode)
 		glStencilFunc(GL_GEQUAL, ci, ~0);
 		glRecti(clip.left, clip.top, clip.right, clip.bottom);
 		glStencilFunc(GL_EQUAL, ci, ~0);
+		++cn;
 	}
 	else
 	{
@@ -88,6 +87,7 @@ void OpenGLDraw::StencilClip(const Rect& r, int mode)
 		glStencilFunc(GL_ALWAYS, ci, ~0);
 		glRecti(clip.left, clip.top, clip.right, clip.bottom);		
 		glStencilFunc(GL_EQUAL, ci - 1, ~0);
+		--cn;
 	}
 				
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
@@ -115,14 +115,14 @@ void OpenGLDraw::BeginOp()
 	w.clipping = false;
 	w.org = drawing_offset;
 	w.drawing_clip = drawing_clip;	
-	//DrawFrame(*this, w.drawing_clip, White);
 }
 
 void OpenGLDraw::EndOp()
 {
 	ASSERT(ci);
 #if CLIP_MODE == 2
-	SetClip(drawing_clip, 1);
+	if(ci == cn)
+		SetClip(drawing_clip, 1);
 #endif
 	Cloff& w = cloff[--ci];
 	drawing_offset = w.org;

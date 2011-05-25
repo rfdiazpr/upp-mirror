@@ -115,6 +115,7 @@ void OpenGLDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 
 	glColor4ub(ink.GetR(), ink.GetG(), ink.GetB(), (int) alpha);
 	glEnable(GL_TEXTURE_2D);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	
 	while(*s && n > 0)
 	{
@@ -129,10 +130,10 @@ void OpenGLDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 	
 			Resources::Bind(fi.pages[ci.page], true);
 
-			int sx = ci.xoffset + x + drawing_offset.x;
-			int sy = ci.yoffset + y + drawing_offset.y;
-			int dx = sx + ci.width;
-			int dy = sy + ci.height;
+			float sx = (float) ci.xoffset + x + drawing_offset.x;
+			float sy = (float) ci.yoffset + y + drawing_offset.y;
+			float dx = sx + ci.width;
+			float dy = sy + ci.height;
 
 			#if CLIP_MODE == 3
 			if(sx <= clip.right && sy <= clip.bottom && dx >= clip.left && dy >= clip.top)
@@ -180,12 +181,23 @@ void OpenGLDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 				tr *= tw;
 				tb *= th;
 		
-				glBegin(GL_QUADS);
-					glTexCoord2d(tl, tt); glVertex2i(sx, sy);
-					glTexCoord2d(tr, tt); glVertex2i(dx, sy);
-					glTexCoord2d(tr, tb); glVertex2i(dx, dy);
-					glTexCoord2d(tl, tb); glVertex2i(sx, dy);
-				glEnd();
+				float vtx[] = {
+					sx, dy,
+					sx, sy,
+					dx, dy,
+					dx, sy
+				};
+			
+				float crd[] = {
+					tl, tb,
+					tl, tt,
+					tr, tb,
+					tr, tt
+				};
+			
+				glTexCoordPointer(2, GL_FLOAT, 0, crd);
+				glVertexPointer(2, GL_FLOAT, 0, vtx);
+				glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			}
 	
 			x += ci.xadvance;
@@ -199,6 +211,7 @@ void OpenGLDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 		--n;
 	}
 
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisable(GL_TEXTURE_2D);
 }
 

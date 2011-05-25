@@ -150,6 +150,7 @@ private:
 	Array<Cloff> cloff;
 	int ci;
 	int cn;
+	int cd;
 
 	void Reset();
 

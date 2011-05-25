@@ -580,7 +580,7 @@ private:
 	void	ScrollCtrl(Top *top, Ctrl *q, const Rect& r, Rect cr, int dx, int dy);
 	void    SyncScroll();
 	void    PaintCaret(Draw& w);
-	void    CtrlPaint(Draw& w, const Rect& clip, Ctrl* debugctrl = NULL);
+	void    CtrlPaint(Draw& w, const Rect& clip, Ctrl* debugctrl = NULL, int depth = 0);
 	void    RemoveFullRefresh();
 	bool    PaintOpaqueAreas(SystemDraw& w, const Rect& r, const Rect& clip, bool nochild = false);
 	void    GatherTransparentAreas(Vector<Rect>& area, SystemDraw& w, Rect r, const Rect& clip);

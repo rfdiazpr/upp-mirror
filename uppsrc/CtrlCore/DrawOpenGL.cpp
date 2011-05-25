@@ -143,6 +143,7 @@ void OpenGLDraw::Reset() {
 	cloff.SetCount(20);
 	ci = 0;
 	cn = 0;
+	cd = 0;
 	drawing_offset = Point(0, 0);
 	alpha = 255;
 	angle = 0.f;
@@ -177,7 +178,6 @@ void OpenGLDraw::Init()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glClearDepth(1.0f);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glColor4f(1.f, 1.f, 1.f, 1.f);
 }

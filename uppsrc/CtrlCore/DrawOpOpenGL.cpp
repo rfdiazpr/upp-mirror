@@ -71,27 +71,41 @@ void OpenGLDraw::PlaneClip(const Rect& r)
 
 void OpenGLDraw::StencilClip(const Rect& r, int mode)
 {
+	
 	glColorMask(0, 0, 0, 0);
-
 	if(mode == 0)
 	{
-		glStencilOp(GL_KEEP, GL_INCR, GL_INCR);
-		glStencilFunc(GL_GEQUAL, ci, ~0);
-		glRecti(clip.left, clip.top, clip.right, clip.bottom);
-		glStencilFunc(GL_EQUAL, ci, ~0);
 		++cn;
+		glStencilOp(GL_KEEP, GL_INCR, GL_INCR);
+		glStencilFunc(GL_GEQUAL, cn, ~0);
+		glRecti(clip.left, clip.top, clip.right, clip.bottom);
+		glStencilFunc(GL_EQUAL, cn, ~0);
 	}
 	else
 	{
 		glStencilOp(GL_DECR, GL_DECR, GL_DECR);
-		glStencilFunc(GL_ALWAYS, ci, ~0);
+		glStencilFunc(GL_ALWAYS, cn, ~0);
 		glRecti(clip.left, clip.top, clip.right, clip.bottom);		
-		glStencilFunc(GL_EQUAL, ci - 1, ~0);
+		glStencilFunc(GL_EQUAL, cn - 1, ~0);
 		--cn;
 	}
+	/*	
+	if(mode == 0)
+	{
+		glColorMask(0, 0, 0, 0);
+		glStencilOp(GL_KEEP, GL_INCR_WRAP, GL_INCR_WRAP);
+		glStencilFunc(GL_EQUAL, cn, ~0);
+		glRecti(clip.left, clip.top, clip.right, clip.bottom);
+		glStencilFunc(GL_LEQUAL, ++cn, ~0);
+		glColorMask(1, 1, 1, 1);
+	}
+	else
+	{
+		glStencilFunc(GL_LEQUAL, --cn, ~0);
+	}*/
 				
-	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	glColorMask(1, 1, 1, 1);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
 
 void OpenGLDraw::SetClip(const Rect& r, int mode)
@@ -112,7 +126,7 @@ void OpenGLDraw::SetClip(const Rect& r, int mode)
 void OpenGLDraw::BeginOp()
 {
 	Cloff& w = cloff[ci++];
-	w.clipping = false;
+	w.clipping = true;
 	w.org = drawing_offset;
 	w.drawing_clip = drawing_clip;	
 }
@@ -121,7 +135,7 @@ void OpenGLDraw::EndOp()
 {
 	ASSERT(ci);
 #if CLIP_MODE == 2
-	if(ci == cn)
+	if(cloff[ci - 1].clipping)
 		SetClip(drawing_clip, 1);
 #endif
 	Cloff& w = cloff[--ci];
@@ -135,8 +149,8 @@ void OpenGLDraw::EndOp()
 void OpenGLDraw::OffsetOp(Point p)
 {
 	BeginOp();
+	cloff[ci - 1].clipping = false;
 	drawing_offset += p;
-	SetClip(drawing_clip);
 }
 
 bool OpenGLDraw::ClipOp(const Rect& r)
@@ -164,7 +178,6 @@ bool OpenGLDraw::ExcludeClipOp(const Rect& r)
 bool OpenGLDraw::IntersectClipOp(const Rect& r)
 {
 	Cloff& w = cloff[ci];
-	w.clipping = true;
 	drawing_clip = r + drawing_offset;
 	SetClip(drawing_clip);
 	return true;
@@ -187,10 +200,10 @@ void OpenGLDraw::DrawRectOp(int x, int y, int cx, int cy, Color color)
 	
 	if(cx <= 0 || cy <= 0) return;
 
-	int sx = x + drawing_offset.x;
-	int sy = y + drawing_offset.y;
-	int dx = sx + cx;
-	int dy = sy + cy;
+	float sx = (float) x + drawing_offset.x;
+	float sy = (float) y + drawing_offset.y;
+	float dx = sx + cx;
+	float dy = sy + cy;
 
 #if CLIP_MODE == 3
 	if(sx > clip.right || sy > clip.bottom)
@@ -210,17 +223,26 @@ void OpenGLDraw::DrawRectOp(int x, int y, int cx, int cy, Color color)
 #endif
 	
 	glColor4ub(color.GetR(), color.GetG(), color.GetB(), (int) alpha);
-	glRecti(sx, sy, dx, dy);
+	
+	float vtx[] = {
+		sx, dy,
+		sx, sy,
+		dx, dy,
+		dx, sy
+	};
+	
+	glVertexPointer(2, GL_FLOAT, 0, vtx);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
 void OpenGLDraw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, const Rect& src, Color color)
 {
 	if(cx <= 0 || cy <= 0) return;
 
-	int sx = x + drawing_offset.x;
-	int sy = y + drawing_offset.y;
-	int dx = sx + cx;
-	int dy = sy + cy;
+	float sx = (float) x + drawing_offset.x;
+	float sy = (float) y + drawing_offset.y;
+	float dx = sx + cx;
+	float dy = sy + cy;
 
 #if CLIP_MODE == 3
 	if(sx > clip.right || sy > clip.bottom)
@@ -285,12 +307,25 @@ void OpenGLDraw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, con
 	
 	glEnable(GL_TEXTURE_2D);
 
-	glBegin(GL_QUADS);
-		glTexCoord2d(tl, tt); glVertex2i(sx, sy);
-		glTexCoord2d(tr, tt); glVertex2i(dx, sy);
-		glTexCoord2d(tr, tb); glVertex2i(dx, dy);
-		glTexCoord2d(tl, tb); glVertex2i(sx, dy);
-	glEnd();
+	float vtx[] = {
+		sx, dy,
+		sx, sy,
+		dx, dy,
+		dx, sy
+	};
+
+	float crd[] = {
+		tl, tb,
+		tl, tt,
+		tr, tb,
+		tr, tt
+	};
+
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glTexCoordPointer(2, GL_FLOAT, 0, crd);
+	glVertexPointer(2, GL_FLOAT, 0, vtx);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	
 	glDisable(GL_TEXTURE_2D);
 }

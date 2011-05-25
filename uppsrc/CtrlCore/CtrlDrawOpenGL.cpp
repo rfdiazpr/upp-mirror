@@ -115,7 +115,7 @@ void Ctrl::PaintCaret(Draw& w)
 		w.DrawRect(caretx, carety, caretcx, caretcy, Black);
 }
 
-void Ctrl::CtrlPaint(Draw& w, const Rect& clip, Ctrl* debugctrl) {
+void Ctrl::CtrlPaint(Draw& w, const Rect& clip, Ctrl* debugctrl, int depth) {
 	GuiLock __;
 	LEVELCHECK(w, this);
 	LTIMING("CtrlPaint");
@@ -164,7 +164,7 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip, Ctrl* debugctrl) {
 				LEVELCHECK(w, q);
 				Point off = q->GetRect().TopLeft();
 				w.Offset(off);
-				q->CtrlPaint(w, clip - off, debugctrl);
+				q->CtrlPaint(w, clip - off, debugctrl, depth + 1);
 				w.End();
 			}
 			else
@@ -186,10 +186,12 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip, Ctrl* debugctrl) {
 			w.End();
 		}
 		else {
-			w.Clipoff(view);
+			if(depth > 0) 
+				w.Clipoff(view);
 			Paint(w);
 			PaintCaret(w);
-			w.End();
+			if(depth > 0)
+				w.End();
 		}
 		glPopMatrix();
 	}
@@ -206,7 +208,7 @@ void Ctrl::CtrlPaint(Draw& w, const Rect& clip, Ctrl* debugctrl) {
 				Rect ocl = cl - off;
 				if(ocl.Intersects(Rect(qr.GetSize()).Inflated(overpaint))) {
 					w.Offset(off);
-					q->CtrlPaint(w, rr - off, debugctrl);
+					q->CtrlPaint(w, rr - off, debugctrl, depth + 1);
 					w.End();
 				}
 				w.End();

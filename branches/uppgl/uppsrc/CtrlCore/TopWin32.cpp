@@ -268,7 +268,8 @@ void TopWindow::Open(HWND hwnd)
 		DestroyGL();
 		return;
 	}
-	SetTimeCallback(-10, THISBACK(Repaint), 1);
+	wglSwapIntervalEXT(0);
+	SetTimeCallback(-16, THISBACK(Repaint), 1);
 #endif	
 }
 

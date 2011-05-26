@@ -243,6 +243,7 @@ struct App : TopWindow
 
 		++point.x;
 
+		glEnable(GL_SCISSOR_TEST);
 		((OpenGLDraw&) w).FlatView();
 	}
 };

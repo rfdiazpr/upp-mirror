@@ -115,7 +115,14 @@ void OpenGLDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 
 	glColor4ub(ink.GetR(), ink.GetG(), ink.GetB(), (int) alpha);
 	glEnable(GL_TEXTURE_2D);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+	#if CLIP_MODE == 3
+	float cl = (float) clip.left;
+	float ct = (float) clip.top;
+	float cr = (float) clip.right;
+	float cb = (float) clip.bottom;
+	#endif
+	//glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	
 	while(*s && n > 0)
 	{
@@ -148,28 +155,28 @@ void OpenGLDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 				float sh = (float) fi.scaleH;
 				
 				#if CLIP_MODE == 3
-				if(sx < clip.left)
+				if(sx < cl)
 				{
-					tl += (clip.left - sx);
-					sx = clip.left;
+					tl += (cl - sx);
+					sx = cl;
 				}
 				
-				if(sy < clip.top)
+				if(sy < ct)
 				{
-					tt += (clip.top - sy);
-					sy = clip.top;
+					tt += (ct - sy);
+					sy = ct;
 				}
 				
-				if(dx > clip.right)
+				if(dx > cr)
 				{
-					tr -= dx - clip.right;
-					dx = clip.right;
+					tr -= dx - cr;
+					dx = cr;
 				}
 				
-				if(dy > clip.bottom)
+				if(dy > cb)
 				{
-					tb -= dy - clip.bottom;
-					dy = clip.bottom;
+					tb -= dy - cb;
+					dy = cb;
 				}
 				#endif
 				
@@ -181,22 +188,24 @@ void OpenGLDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 				tr *= tw;
 				tb *= th;
 		
-				float vtx[] = {
+				/*float vtx[] = {
 					sx, dy,
 					sx, sy,
 					dx, dy,
 					dx, sy
-				};
+				};*/
 			
-				float crd[] = {
+/*				float crd[] = {
 					tl, tb,
 					tl, tt,
 					tr, tb,
 					tr, tt
-				};
-			
-				glTexCoordPointer(2, GL_FLOAT, 0, crd);
-				glVertexPointer(2, GL_FLOAT, 0, vtx);
+				};*/
+				SetVec(vtx, sx, sy, dx, dy);
+				SetVec(crd, tl, tt, tr, tb);
+
+				//glTexCoordPointer(2, GL_FLOAT, 0, crd);
+				//glVertexPointer(2, GL_FLOAT, 0, vtx);
 				glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			}
 	
@@ -211,7 +220,7 @@ void OpenGLDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 		--n;
 	}
 
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisable(GL_TEXTURE_2D);
 }
 

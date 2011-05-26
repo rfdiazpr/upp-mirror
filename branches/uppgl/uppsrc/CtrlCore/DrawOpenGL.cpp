@@ -9,7 +9,7 @@ NAMESPACE_UPP
 #if defined(PLATFORM_WIN32) && defined(flagOPENGL)
 
 int64 Resources::currentSerialId = -1;
-Index<int64> Resources::textures;
+ArrayMap<int64, Texture> Resources::textures;
 VectorMap<String, OpenGLFont> Resources::fonts;
 
 float GetFps()
@@ -50,10 +50,8 @@ float GetFps()
 	return fps;
 }
 
-
-void Texture::Add(const Rect& r)
+void Texture::AddPart(int64 serialId, const Image& img)
 {
-	Size rsz = r.GetSize();	
 }
 
 int64 Resources::Bind(const Image& img, bool linear)
@@ -163,7 +161,8 @@ OpenGLDraw::OpenGLDraw(HDC hdc, Size sz) {
 
 void OpenGLDraw::Init()
 {
-	glViewport(0, 0, (GLsizei) drawing_size.cx, (GLsizei) drawing_size.cy);
+	glVertexPointer(2, GL_FLOAT, 0, vtx);
+	glTexCoordPointer(2, GL_FLOAT, 0, crd);	
 	glEnable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
 #if CLIP_MODE == 0
@@ -179,6 +178,7 @@ void OpenGLDraw::Init()
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glClearDepth(1.0f);
 	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);	
 	glColor4f(1.f, 1.f, 1.f, 1.f);
 }
 
@@ -189,6 +189,7 @@ void OpenGLDraw::Clear()
 
 void OpenGLDraw::FlatView()
 {
+	glViewport(0, 0, (GLsizei) drawing_size.cx, (GLsizei) drawing_size.cy);
 	float aspect = drawing_size.cx / (float) drawing_size.cy;
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();

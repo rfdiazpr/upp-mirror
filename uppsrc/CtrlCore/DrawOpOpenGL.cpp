@@ -40,15 +40,15 @@ void OpenGLDraw::SetClipRect(const Rect& r)
 
 void OpenGLDraw::ScissorClip(const Rect& r)
 {
-	glScissor(clip.left, drawing_size.cy - clip.top - clip.Height(), clip.Width(), clip.Height());	
+	glScissor(r.left, drawing_size.cy - r.top - r.Height(), r.Width(), r.Height());
 }
 
 void OpenGLDraw::PlaneClip(const Rect& r)
 {
-	float cl = (float) clip.left;
-	float ct = (float) clip.top;
-	float cr = (float) clip.right;
-	float cb = (float) clip.bottom;
+	float cl = (float) r.left;
+	float ct = (float) r.top;
+	float cr = (float) r.right;
+	float cb = (float) r.bottom;
 	
 	double eq[4];
 	
@@ -69,42 +69,67 @@ void OpenGLDraw::PlaneClip(const Rect& r)
 	glEnable(GL_CLIP_PLANE3);
 }
 
+void OpenGLDraw::SetVec(float* v, float sx, float sy, float dx, float dy)
+{
+	v[0] = sx; v[1] = dy;
+	v[2] = sx; v[3] = sy;
+	v[4] = dx; v[5] = dy;
+	v[6] = dx; v[7] = sy;
+}
+
+void OpenGLDraw::SetVec(float* v, int sx, int sy, int dx, int dy)
+{
+	v[0] = (float) sx; v[1] = (float) dy;
+	v[2] = (float) sx; v[3] = (float) sy;
+	v[4] = (float) dx; v[5] = (float) dy;
+	v[6] = (float) dx; v[7] = (float) sy;
+}
+
 void OpenGLDraw::StencilClip(const Rect& r, int mode)
 {
+	/*float vtx[] = {
+		(float) r.left, (float) r.bottom,
+		(float) r.left, (float) r.top,
+		(float) r.right, (float) r.bottom,
+		(float) r.right, (float) r.top
+	};*/
+	
+	SetVec(vtx, r.left, r.top, r.right, r.bottom);
+	//glVertexPointer(2, GL_FLOAT, 0, vtx);
 	
 	glColorMask(0, 0, 0, 0);
 	if(mode == 0)
 	{
 		++cn;
 		glStencilOp(GL_KEEP, GL_INCR, GL_INCR);
-		glStencilFunc(GL_GEQUAL, cn, ~0);
-		glRecti(clip.left, clip.top, clip.right, clip.bottom);
-		glStencilFunc(GL_EQUAL, cn, ~0);
+		glStencilFunc(GL_GEQUAL, cn, ~0);	
 	}
 	else
 	{
-		glStencilOp(GL_DECR, GL_DECR, GL_DECR);
-		glStencilFunc(GL_ALWAYS, cn, ~0);
-		glRecti(clip.left, clip.top, clip.right, clip.bottom);		
-		glStencilFunc(GL_EQUAL, cn - 1, ~0);
 		--cn;
+		glStencilOp(GL_KEEP, GL_DECR, GL_DECR);
+		glStencilFunc(GL_ALWAYS, cn, ~0);
 	}
-	/*	
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glStencilFunc(GL_LEQUAL, cn, ~0);
+	glColorMask(1, 1, 1, 1);
+	
+	/*
 	if(mode == 0)
 	{
 		glColorMask(0, 0, 0, 0);
 		glStencilOp(GL_KEEP, GL_INCR_WRAP, GL_INCR_WRAP);
 		glStencilFunc(GL_EQUAL, cn, ~0);
-		glRecti(clip.left, clip.top, clip.right, clip.bottom);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 		glStencilFunc(GL_LEQUAL, ++cn, ~0);
 		glColorMask(1, 1, 1, 1);
+		//cn = cd;
 	}
 	else
 	{
 		glStencilFunc(GL_LEQUAL, --cn, ~0);
-	}*/
-				
-	glColorMask(1, 1, 1, 1);
+	}
+	*/			
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
 
@@ -115,11 +140,11 @@ void OpenGLDraw::SetClip(const Rect& r, int mode)
 	SetClipRect(r);
 
 #if CLIP_MODE == 0
-	ScissorClip(r);
+	ScissorClip(clip);
 #elif CLIP_MODE == 1
-	PlaneClip(r);
+	PlaneClip(clip);
 #elif CLIP_MODE == 2
-	StencilClip(r, mode);
+	StencilClip(clip, mode);
 #endif
 }
 
@@ -142,7 +167,8 @@ void OpenGLDraw::EndOp()
 	drawing_offset = w.org;
 	drawing_clip = w.drawing_clip;
 #if CLIP_MODE != 2
-	SetClip(drawing_clip, 1);
+	if(cloff[ci].clipping)
+		SetClip(drawing_clip, 1);
 #endif
 }
 
@@ -206,32 +232,40 @@ void OpenGLDraw::DrawRectOp(int x, int y, int cx, int cy, Color color)
 	float dy = sy + cy;
 
 #if CLIP_MODE == 3
-	if(sx > clip.right || sy > clip.bottom)
+	float cl = (float) clip.left;
+	float ct = (float) clip.top;
+	float cr = (float) clip.right;
+	float cb = (float) clip.bottom;
+
+	if(sx > cr || sy > cb)
 		return;
 
-	if(dx < clip.left || dy < clip.top)
+	if(dx < cl || dy < ct)
 		return;
 	
-	if(sx < clip.left)
-		sx = clip.left;
-	if(sy < clip.top)
-		sy = clip.top;
-	if(dx > clip.right)
-		dx = clip.right;
-	if(dy > clip.bottom)
-		dy = clip.bottom;
+	if(sx < cl)
+		sx = cl;
+	if(sy < ct)
+		sy = ct;
+	if(dx > cr)
+		dx = cr;
+	if(dy > cb)
+		dy = cb;
 #endif
 	
 	glColor4ub(color.GetR(), color.GetG(), color.GetB(), (int) alpha);
 	
-	float vtx[] = {
+/*	float vtx[] = {
 		sx, dy,
 		sx, sy,
 		dx, dy,
 		dx, sy
-	};
+	};*/
 	
-	glVertexPointer(2, GL_FLOAT, 0, vtx);
+	SetVec(vtx, sx, sy, dx, dy);
+	
+	
+	//glVertexPointer(2, GL_FLOAT, 0, vtx);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
@@ -261,32 +295,37 @@ void OpenGLDraw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, con
 	float sh = (float) src.GetHeight();
 
 #if CLIP_MODE == 3
-	if(sx < clip.left)
+	float cl = (float) clip.left;
+	float ct = (float) clip.top;
+	float cr = (float) clip.right;
+	float cb = (float) clip.bottom;
+
+	if(sx < cl)
 	{
-		int dl = clip.left - sx;
+		float dl = cl - sx;
 		tl += dl * sw / (float) cx;
-		sx = clip.left;
+		sx = cl;
 	}
 	
-	if(sy < clip.top)
+	if(sy < ct)
 	{
-		int dt = clip.top - sy;
+		float dt = ct - sy;
 		tt += dt * sh / (float) cy;
-		sy = clip.top;
+		sy = ct;
 	}
 	
-	if(dx > clip.right)
+	if(dx > cr)
 	{
-		int dr = dx - clip.right;
+		float dr = dx - cr;
 		tr -= dr * sw / (float) cx;
-		dx = clip.right;
+		dx = cr;
 	}
 	
-	if(dy > clip.bottom)
+	if(dy > cb)
 	{
-		int db = dy - clip.bottom;
+		float db = dy - cb;
 		tb -= db * sh / (float) cy;
-		dy = clip.bottom;
+		dy = cb;
 	}
 #endif
 	
@@ -307,25 +346,27 @@ void OpenGLDraw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, con
 	
 	glEnable(GL_TEXTURE_2D);
 
-	float vtx[] = {
+	/*float vtx[] = {
 		sx, dy,
 		sx, sy,
 		dx, dy,
 		dx, sy
-	};
+	};*/
 
-	float crd[] = {
+	/*float crd[] = {
 		tl, tb,
 		tl, tt,
 		tr, tb,
 		tr, tt
-	};
+	};*/
 
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glTexCoordPointer(2, GL_FLOAT, 0, crd);
-	glVertexPointer(2, GL_FLOAT, 0, vtx);
+	//glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glTexCoordPointer(2, GL_FLOAT, 0, crd);
+	//glVertexPointer(2, GL_FLOAT, 0, vtx);
+	SetVec(vtx, sx, sy, dx, dy);
+	SetVec(crd, tl, tt, tr, tb);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	
 	glDisable(GL_TEXTURE_2D);
 }

@@ -54,19 +54,18 @@ struct OpenGLFont : Moveable<OpenGLFont>
 
 };
 
-struct Texture
+struct Texture : Moveable<Texture>
 {
 	Size sz;
-	Point curpos;
-	
-	Vector<Rect> parts;
-	void Add(const Rect& r);
+	Point curpos;	
+	VectorMap<int64, Rect> parts;
+	void AddPart(int64 serialId, const Image& img);
 };
 
 struct Resources
 {
 	static int64 currentSerialId;
-	static Index<int64> textures;
+	static ArrayMap<int64, Texture> textures;
 	static VectorMap<String, OpenGLFont> fonts;
 	static int64 Bind(const Image& img, bool linear = false);
 	static bool Bind(int64 serialId, bool force = false);
@@ -134,6 +133,10 @@ private:
 	};
 	
 	float current_color[4];
+	float vtx[8];
+	float crd[8];
+	void SetVec(float* v, float sx, float sy, float dx, float dy);
+	void SetVec(float* v, int sx, int sy, int dx, int dy);
 	
 	void SaveCurrentColor();
 	void RestoreLastColor();
@@ -142,7 +145,7 @@ public:
 	Rect         drawing_clip;
 	Size         drawing_size;
 	Point 		 drawing_offset;
-	Rect         clip;
+	Rect		 clip;
 	float        alpha;
 	float        angle;
 	

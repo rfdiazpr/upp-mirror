@@ -14,14 +14,14 @@ LAYOUT(TopLayout, 908, 364)
 END_LAYOUT
 
 LAYOUT(BottomLayout, 736, 520)
-	ITEM(LabelBox, dv___0, SetLabel(t_("Group I")).HSizePosZ(4, 4).VSizePosZ(0, 4))
+	ITEM(LabelBox, dv___0, SetLabel(t_("Group I")).HSizePosZ(4, 4).VSizePosZ(0, 92))
 	ITEM(DocEdit, dv___1, LeftPosZ(16, 208).TopPosZ(24, 140))
 	ITEM(Calendar, dv___2, LeftPosZ(16, 236).TopPosZ(172, 156))
 	ITEM(Clock, dv___3, LeftPosZ(264, 150).TopPosZ(172, 156))
 	ITEM(EditDoubleSpin, dv___4, LeftPosZ(232, 124).TopPosZ(24, 19))
 	ITEM(DropDate, dv___5, LeftPosZ(232, 124).TopPosZ(48, 19))
 	ITEM(ProgressIndicator, progress, LeftPosZ(232, 124).TopPosZ(72, 24))
-	ITEM(ArrayCtrl, array, HSizePosZ(420, 12).VSizePosZ(16, 12))
+	ITEM(ArrayCtrl, array, HSizePosZ(420, 12).TopPosZ(16, 492))
 END_LAYOUT
 
 LAYOUT(Tab0Layout, 484, 328)

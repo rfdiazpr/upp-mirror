@@ -533,7 +533,8 @@ void MenuBar::PopUp(Ctrl *owner, Point p, Size rsz)
 		szx = szcx;
 		pane.LeftPos(0, sz.cx);
 	}
-	bool eff = parentmenu == NULL || parentmenu->doeffect;
+	bool eff = false;
+	//bool eff = parentmenu == NULL || parentmenu->doeffect;
 	if(eff && GUI_PopUpEffect() == GUIEFFECT_SLIDE)
 		SetRect(szx ? p.x + sz.cx : p.x, szy ? p.y + sz.cy : p.y, parentmenu ? sz.cx : 1, 1);
 	else

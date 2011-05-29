@@ -269,8 +269,36 @@ void TopWindow::Open(HWND hwnd)
 		return;
 	}
 	wglSwapIntervalEXT(0);
-	SetTimeCallback(-16, THISBACK(Repaint), 1);
+	SetTimeCallback(-10, THISBACK(Repaint), 1);
 #endif	
+}
+
+#ifdef flagOPENGL
+void TopWindow::DrawScreen()
+{
+	if(!painting)
+	{
+		ActivateGLContext();
+		InitInfoPanel();
+		Size csz = rect.GetSize();
+		Rect clip(csz);
+		SystemDraw draw(hDC, csz);
+		draw.alpha = alpha;
+		draw.angle = angle;
+		draw.FlatView();
+		draw.Clear();
+		ApplyTransform(TS_BEFORE_PAINT);
+		CtrlPaint(draw, clip, &infoPanel);
+		AnimateCaret();
+		ApplyTransform(TS_AFTER_PAINT);
+		SwapBuffers(hDC);
+		painting = false;
+	}
+}
+#endif
+
+void TopWindow::IdleTime()
+{
 }
 
 void TopWindow::Repaint()

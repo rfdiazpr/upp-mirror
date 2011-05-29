@@ -171,6 +171,8 @@ public:
 	virtual ~OpenGLDraw();
 	void FlatView();
 	void Clear();
+	void PushContext();
+	void PopContext();
 };
 
 Size GetTextSize(const wchar *text, const OpenGLFont& fi, int n);

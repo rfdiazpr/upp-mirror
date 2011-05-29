@@ -671,6 +671,7 @@ TopWindow::TopWindow()
 	alpha = 255;
 	angle = 0.f;
 #endif
+	cliptobounds = false;
 }
 
 TopWindow::~TopWindow()

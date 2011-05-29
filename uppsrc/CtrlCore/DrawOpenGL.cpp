@@ -161,12 +161,17 @@ OpenGLDraw::OpenGLDraw(HDC hdc, Size sz) {
 
 void OpenGLDraw::Init()
 {
-	glVertexPointer(2, GL_FLOAT, 0, vtx);
-	glTexCoordPointer(2, GL_FLOAT, 0, crd);	
+	//glVertexPointer(2, GL_FLOAT, 0, vtx);
+	//glTexCoordPointer(2, GL_FLOAT, 0, crd);	
 	glEnable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
 #if CLIP_MODE == 0
 	glEnable(GL_SCISSOR_TEST);
+#elif CLIP_MODE == 1
+	glEnable(GL_CLIP_PLANE0);
+	glEnable(GL_CLIP_PLANE1);
+	glEnable(GL_CLIP_PLANE2);
+	glEnable(GL_CLIP_PLANE3);
 #elif CLIP_MODE == 2
 	glEnable(GL_STENCIL_TEST);
 	glStencilFunc(GL_ALWAYS, 0, ~0);
@@ -178,13 +183,19 @@ void OpenGLDraw::Init()
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glClearDepth(1.0f);
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);	
+	//glEnableClientState(GL_TEXTURE_COORD_ARRAY);	
 	glColor4f(1.f, 1.f, 1.f, 1.f);
 }
 
 void OpenGLDraw::Clear()
 {
+#if CLIP_MODE == 0
+	glDisable(GL_SCISSOR_TEST);
+#endif
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+#if CLIP_MODE == 0
+	glEnable(GL_SCISSOR_TEST);
+#endif
 }
 
 void OpenGLDraw::FlatView()
@@ -202,6 +213,16 @@ void OpenGLDraw::FlatView()
 	glRotatef(angle, 0, 0, 1);
 	glTranslatef(-dx, -dy, 0.f);
 }
+
+void OpenGLDraw::PushContext()
+{
+}
+
+void OpenGLDraw::PopContext()
+{
+	FlatView();
+}
+
 
 OpenGLDraw::~OpenGLDraw() {
 }

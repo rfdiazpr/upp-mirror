@@ -75,15 +75,16 @@ void PopUpTable::PopUp(Ctrl *owner, int x, int top, int bottom, int width) {
 	int h = AddFrameSize(width, min(droplines * GetLineCy(), GetTotalCy())).cy;
 	Rect rt = RectC(x, bottom, width, h);
 	Rect area = Ctrl::GetWorkArea(Point(x, top));
+	open = false;
+	popup.Create();
+	popup->table = this;
+#ifndef flagOPENGL
 	bool up = false;
 	if(rt.bottom > area.bottom) {
 		up = true;
 		rt.top = top - h;
 		rt.bottom = rt.top + h;
 	}
-	open = false;
-	popup.Create();
-	popup->table = this;
 	if(up) {
 		popup->SetRect(Rect(rt.left, rt.bottom - 1, rt.right, rt.bottom));
 		popup->Add(TopPos(0, rt.Height()).LeftPos(0, rt.Width()));
@@ -92,7 +93,6 @@ void PopUpTable::PopUp(Ctrl *owner, int x, int top, int bottom, int width) {
 		popup->SetRect(Rect(rt.left, rt.top, rt.right, rt.top + 1));
 		popup->Add(BottomPos(0, rt.Height()).LeftPos(0, rt.Width()));
 	}
-#ifndef flagOPENGL
 	if(GUI_PopUpEffect()) {
 		CenterCursor();
 		popup->PopUp(owner, true, true, GUI_DropShadows());
@@ -101,6 +101,8 @@ void PopUpTable::PopUp(Ctrl *owner, int x, int top, int bottom, int width) {
 		Animate(*popup, rt, GUIEFFECT_SLIDE);
 //		Ctrl::Remove();
 	}
+#else	
+	popup->Add(SizePos());
 #endif
 	if(!open) {
 		popup->SetRect(rt);

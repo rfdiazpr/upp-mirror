@@ -70,6 +70,7 @@ public:
 	virtual void     Close();
 	virtual String   GetDesc() const;
 	virtual void     ChildGotFocus();
+	virtual void     IdleTime();
 
 #ifdef PLATFORM_WIN32
 public:
@@ -87,6 +88,7 @@ public:
 	void InitInfoPanel();
 	void SetAlpha();
 	void SetAngle();
+	void DrawScreen();	
 #endif
 private:
 
@@ -158,6 +160,11 @@ private:
 	void        SyncTitle();
 	void        SyncCaption0();
 	void        SyncCaption();
+
+#ifdef PLATFORM_X11
+	void        SyncState();
+	void        SyncState0();
+#endif
 
 	void        SetupRect();
 	

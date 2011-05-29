@@ -122,7 +122,7 @@ void OpenGLDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 	float cr = (float) clip.right;
 	float cb = (float) clip.bottom;
 	#endif
-	//glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	
 	while(*s && n > 0)
 	{
@@ -188,24 +188,24 @@ void OpenGLDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 				tr *= tw;
 				tb *= th;
 		
-				/*float vtx[] = {
+				float vtx[] = {
 					sx, dy,
 					sx, sy,
 					dx, dy,
 					dx, sy
-				};*/
+				};
 			
-/*				float crd[] = {
+				float crd[] = {
 					tl, tb,
 					tl, tt,
 					tr, tb,
 					tr, tt
-				};*/
-				SetVec(vtx, sx, sy, dx, dy);
-				SetVec(crd, tl, tt, tr, tb);
+				};
+				//SetVec(vtx, sx, sy, dx, dy);
+				//SetVec(crd, tl, tt, tr, tb);
 
-				//glTexCoordPointer(2, GL_FLOAT, 0, crd);
-				//glVertexPointer(2, GL_FLOAT, 0, vtx);
+				glTexCoordPointer(2, GL_FLOAT, 0, crd);
+				glVertexPointer(2, GL_FLOAT, 0, vtx);
 				glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			}
 	
@@ -220,7 +220,7 @@ void OpenGLDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 		--n;
 	}
 
-	//glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisable(GL_TEXTURE_2D);
 }
 

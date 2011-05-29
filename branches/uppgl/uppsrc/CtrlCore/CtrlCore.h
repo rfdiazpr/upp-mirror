@@ -459,6 +459,7 @@ private:
 	byte         backpaint:2;//2
 	bool         hasdhctrl:1;
 	bool         rootctrl:1;
+	bool         cliptobounds:1;
 #ifdef PLATFORM_WIN32
 	bool         isdhctrl:1;
 #endif
@@ -1265,8 +1266,10 @@ public:
 	Ctrl&   NoActiveX()                        { return ActiveX(false); }
 	bool    IsActiveX() const                  { return activex; }
 #endif
-	Ctrl&   RootCtrl()                         { rootctrl = true; return *this; }
+	Ctrl&   RootCtrl(bool b = true)            { rootctrl = b; return *this; }
 	bool    IsRootCtrl() const                 { return rootctrl; } 
+	Ctrl&   ClipToBounds(bool b = true)        { cliptobounds = b; return *this; }
+	bool    IsClipToBounds() const             { return cliptobounds; } 
 
 	Ctrl&   Info(const char *txt)              { info = txt; return *this; }
 	String  GetInfo() const                    { return info; }
@@ -1334,6 +1337,8 @@ public:
 	static void  EventLoop(Ctrl *loopctrl = NULL);
 	static int   GetLoopLevel()     { return LoopLevel; }
 	static Ctrl *GetLoopCtrl()      { return LoopCtrl; }
+	
+	virtual void   IdleTime() {}
 
 	void   EndLoop();
 	void   EndLoop(int code);

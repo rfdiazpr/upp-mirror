@@ -101,28 +101,12 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 		}
 #endif
 #ifdef flagOPENGL
-	case WM_PAINT:
-		if(!painting)
-		{
-			painting = true;
-			TopWindow* tw = (TopWindow*) this;
-			tw->ActivateGLContext();
-			tw->InitInfoPanel();
-			Size csz = rect.GetSize();
-			Rect clip(csz);
-			SystemDraw draw(tw->hDC, csz);
-			draw.alpha = tw->alpha;
-			draw.angle = tw->angle;
-			draw.FlatView();
-			draw.Clear();
-			ApplyTransform(TS_BEFORE_PAINT);
-			CtrlPaint(draw, clip, &tw->infoPanel);
-			AnimateCaret();
-			ApplyTransform(TS_AFTER_PAINT);
-			SwapBuffers(tw->hDC);
-			painting = false;
-		}
+	case WM_PAINT: {
+		TopWindow* tw = (TopWindow*) this;
+		tw->DrawScreen();
+		ValidateRect(hwnd, NULL);
 		return 0L;
+	}
 #else
 	case WM_PAINT:
 		ASSERT(hwnd);
@@ -466,8 +450,12 @@ LRESULT Ctrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) {
 	case WM_GETMINMAXINFO:
 		{
 			MINMAXINFO *mmi = (MINMAXINFO *)lParam;
-			Rect minr(Point(50, 50), GetMinSize());
-			Rect maxr(Point(50, 50), GetMaxSize());
+			Rect frmrc = Size(200, 200);
+			::AdjustWindowRect(frmrc, WS_OVERLAPPEDWINDOW, FALSE);
+			Size msz = Ctrl::GetWorkArea().Deflated(-frmrc.left, -frmrc.top,
+				           frmrc.right - 200, frmrc.bottom - 200).GetSize();
+			Rect minr(Point(50, 50), min(msz, GetMinSize()));
+			Rect maxr(Point(50, 50), min(msz, GetMaxSize()));
 			dword style = ::GetWindowLong(hwnd, GWL_STYLE);
 			dword exstyle = ::GetWindowLong(hwnd, GWL_EXSTYLE);
 			AdjustWindowRectEx(minr, style, FALSE, exstyle);

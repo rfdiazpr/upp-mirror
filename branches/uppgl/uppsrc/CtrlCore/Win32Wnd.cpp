@@ -132,8 +132,8 @@ LRESULT CALLBACK Ctrl::OverwatchWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 
 DWORD WINAPI Ctrl::Win32OverwatchThread(LPVOID)
 {
-    WNDCLASS  wc;
-    Zero(wc);
+	WNDCLASS  wc;
+	Zero(wc);
 	wc.style         = CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW;
 	wc.lpfnWndProc   = (WNDPROC)OverwatchWndProc;
 	wc.hInstance     = hInstance;
@@ -156,7 +156,6 @@ DWORD WINAPI Ctrl::Win32OverwatchThread(LPVOID)
 		else
 			DispatchMessage(&Msg);
     }
-
 	ELOGW("OverWatch 3");
 	return 0;
 }
@@ -181,9 +180,6 @@ LRESULT CALLBACK Ctrl::UtilityProc(HWND hWnd, UINT message, WPARAM wParam, LPARA
 {
 	sClipMap();
 	switch(message) {
-	case WM_TIMER:
-		TimerProc(GetTickCount());
-		return 0;
 	case WM_RENDERFORMAT:
 		RenderFormat((dword)wParam);
 		return 0;
@@ -836,10 +832,12 @@ bool Ctrl::ProcessEvents(bool *quit)
 {
 	if(ProcessEvent(quit)) {
 		while(ProcessEvent(quit) && (!LoopCtrl || LoopCtrl->InLoop())); // LoopCtrl-MF 071008
+		TimerProc(GetTickCount());
 		SweepMkImageCache();
 		return true;
 	}
 	SweepMkImageCache();
+	TimerProc(GetTickCount());
 	return false;
 }
 
@@ -867,6 +865,7 @@ void Ctrl::EventLoop0(Ctrl *ctrl)
 		if(EndSession()) break;
 //		LLOG(GetSysTime() << " % " << (unsigned)msecs() % 10000 << ": EventLoop / ProcessEvents");
 		ProcessEvents(&quit);
+		ctrl->IdleTime();
 //		LLOG(GetSysTime() << " % " << (unsigned)msecs() % 10000 << ": EventLoop / after ProcessEvents");
 	}
 
@@ -1117,10 +1116,10 @@ bool Ctrl::IsWndForeground() const
 void Ctrl::WndEnable0(bool *b)
 {
 	GuiLock __;
-	LLOG("Ctrl::WndEnable(" << b << ") in " << UPP::Name(this) << ", focusCtrlWnd = " << UPP::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
+//	LLOG("Ctrl::WndEnable(" << b << ") in " << UPP::Name(this) << ", focusCtrlWnd = " << UPP::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
 	if(*b)
 		ReleaseCapture();
-	LLOG("//Ctrl::WndEnable(" << b << ") -> false " <<UPP::Name(this) << ", focusCtrlWnd = " <<UPP::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
+//	LLOG("//Ctrl::WndEnable(" << b << ") -> false " <<UPP::Name(this) << ", focusCtrlWnd = " <<UPP::Name(focusCtrlWnd) << ", raw = " << (void *)::GetFocus());
 }
 
 void Ctrl::SetWndFocus0(bool *b)
@@ -1246,6 +1245,7 @@ void  Ctrl::WndScrollView0(const Rect& r, int dx, int dy)
 
 void Ctrl::PopUpHWND(HWND owner, bool savebits, bool activate, bool dropshadow, bool topmost)
 {
+	LLOG("POPUP");
 	popup = false;
 	Create(owner, WS_POPUP, topmost ? WS_EX_TOPMOST : 0, savebits,
 	       owner || !activate ? SW_SHOWNOACTIVATE : SW_SHOW,

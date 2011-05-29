@@ -72,7 +72,6 @@ void DHCtrl::State(int reason)
 DHCtrl::DHCtrl()
 {
 	hwnd = NULL;
-	draw = NULL;
 	isdhctrl = true;
 }
 

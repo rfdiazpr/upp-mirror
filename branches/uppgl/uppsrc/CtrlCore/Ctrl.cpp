@@ -609,6 +609,7 @@ Ctrl::Ctrl() {
 	akv = false;
 	hasdhctrl = false;
 	rootctrl = false;
+	cliptobounds = true;
 }
 
 void KillTimeCallbacks(void *id, void *idlim);

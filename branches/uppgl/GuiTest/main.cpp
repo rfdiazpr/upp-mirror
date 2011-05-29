@@ -182,6 +182,9 @@ struct App : TopWindow
 	
 	virtual void Paint(Draw& w)
 	{
+		OpenGLDraw& glw = (OpenGLDraw&) w;
+		glw.PushContext();
+		
 		Size sz = GetSize();
 		
 		glShadeModel(GL_SMOOTH);
@@ -196,7 +199,6 @@ struct App : TopWindow
 		
 		glBindTexture(GL_TEXTURE_2D, 0);
 		
-		glDisable(GL_SCISSOR_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);		
 		glLoadIdentity();
@@ -243,8 +245,7 @@ struct App : TopWindow
 
 		++point.x;
 
-		glEnable(GL_SCISSOR_TEST);
-		((OpenGLDraw&) w).FlatView();
+		glw.PopContext();
 	}
 };
 
@@ -252,7 +253,7 @@ GUI_APP_MAIN
 {
 	//Skulpture sk;	
 	//ChHostSkin();
-	//ChClassicSkin();
-	ChStdSkin();
+	ChClassicSkin();
+	//ChStdSkin();
 	App().Run();
 }

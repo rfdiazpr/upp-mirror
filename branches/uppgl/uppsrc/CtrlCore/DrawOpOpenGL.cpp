@@ -54,19 +54,15 @@ void OpenGLDraw::PlaneClip(const Rect& r)
 	
 	PlaneEquation(eq, cl, ct, 0, cl, cb, 0, cl, cb, +1.0f);	
 	glClipPlane(GL_CLIP_PLANE0, eq);
-	glEnable(GL_CLIP_PLANE0);
 	
 	PlaneEquation(eq, cr, ct, 0, cr, cb, 0, cr, cb, -1.0f);	
 	glClipPlane(GL_CLIP_PLANE1, eq);
-	glEnable(GL_CLIP_PLANE1);
 
 	PlaneEquation(eq, cl, ct, 0, cr, ct, 0, cr, ct, -1.0f);	
 	glClipPlane(GL_CLIP_PLANE2, eq);
-	glEnable(GL_CLIP_PLANE2);
 
 	PlaneEquation(eq, cl, cb, 0, cr, cb, 0, cr, cb, +1.0f);	
 	glClipPlane(GL_CLIP_PLANE3, eq);
-	glEnable(GL_CLIP_PLANE3);
 }
 
 void OpenGLDraw::SetVec(float* v, float sx, float sy, float dx, float dy)
@@ -87,15 +83,15 @@ void OpenGLDraw::SetVec(float* v, int sx, int sy, int dx, int dy)
 
 void OpenGLDraw::StencilClip(const Rect& r, int mode)
 {
-	/*float vtx[] = {
+	float vtx[] = {
 		(float) r.left, (float) r.bottom,
 		(float) r.left, (float) r.top,
 		(float) r.right, (float) r.bottom,
 		(float) r.right, (float) r.top
-	};*/
+	};
 	
-	SetVec(vtx, r.left, r.top, r.right, r.bottom);
-	//glVertexPointer(2, GL_FLOAT, 0, vtx);
+	//SetVec(vtx, r.left, r.top, r.right, r.bottom);
+	glVertexPointer(2, GL_FLOAT, 0, vtx);
 	
 	glColorMask(0, 0, 0, 0);
 	if(mode == 0)
@@ -255,17 +251,17 @@ void OpenGLDraw::DrawRectOp(int x, int y, int cx, int cy, Color color)
 	
 	glColor4ub(color.GetR(), color.GetG(), color.GetB(), (int) alpha);
 	
-/*	float vtx[] = {
+	float vtx[] = {
 		sx, dy,
 		sx, sy,
 		dx, dy,
 		dx, sy
-	};*/
+	};
 	
-	SetVec(vtx, sx, sy, dx, dy);
+	//SetVec(vtx, sx, sy, dx, dy);
 	
 	
-	//glVertexPointer(2, GL_FLOAT, 0, vtx);
+	glVertexPointer(2, GL_FLOAT, 0, vtx);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
@@ -346,27 +342,27 @@ void OpenGLDraw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, con
 	
 	glEnable(GL_TEXTURE_2D);
 
-	/*float vtx[] = {
+	float vtx[] = {
 		sx, dy,
 		sx, sy,
 		dx, dy,
 		dx, sy
-	};*/
+	};
 
-	/*float crd[] = {
+	float crd[] = {
 		tl, tb,
 		tl, tt,
 		tr, tb,
 		tr, tt
-	};*/
+	};
 
-	//glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	//glTexCoordPointer(2, GL_FLOAT, 0, crd);
-	//glVertexPointer(2, GL_FLOAT, 0, vtx);
-	SetVec(vtx, sx, sy, dx, dy);
-	SetVec(crd, tl, tt, tr, tb);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glTexCoordPointer(2, GL_FLOAT, 0, crd);
+	glVertexPointer(2, GL_FLOAT, 0, vtx);
+	//SetVec(vtx, sx, sy, dx, dy);
+	//SetVec(crd, tl, tt, tr, tb);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	//glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	
 	glDisable(GL_TEXTURE_2D);
 }

@@ -1,5 +1,7 @@
 Image GetDriveImage(char drive_style);
 
+Image GetFileIcon(const char *path, bool dir, bool force = false);
+
 void DrawFileName(Draw& w, int x, int y, int wcx, int cy, const WString& mname, bool isdir, Font font,
                   Color ink, Color extink, const WString& desc = Null, Font descfont = Null,
                   bool justname = false, Color underline = Null);

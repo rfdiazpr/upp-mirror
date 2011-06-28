@@ -1,0 +1,22 @@
+uses
+	CtrlLib,
+	Py,
+	CoreBoostPy;
+
+file
+	Common.h,
+	CtrlCore.cpp,
+	Pusher.cpp,
+	Button.cpp,
+	ButtonOption.cpp,
+	Option.cpp,
+	Switch.cpp,
+	SliderCtrl.cpp,
+	ValueCtrl.h,
+	ValueCtrl.cpp,
+	EditCtrl.cpp,
+	Progress.cpp,
+	Misc.cpp,
+	CtrlLibBoostPy.h,
+	CtrlLibBoostPy.cpp;
+

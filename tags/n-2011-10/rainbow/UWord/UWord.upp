@@ -1,0 +1,18 @@
+description "Wordprocessor application\377";
+
+uses
+	CtrlLib,
+	RichEdit,
+	PdfDraw,
+	plugin\jpg,
+	WinAlt,
+	Skeleton;
+
+file
+	UWord.cpp,
+	UWord.iml;
+
+mainconfig
+	"" = "GUI WINALT",
+	"" = "GUI SKELETON";
+

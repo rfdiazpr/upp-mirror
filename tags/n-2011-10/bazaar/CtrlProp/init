@@ -1,0 +1,122 @@
+#ifndef _CtrlProp_icpp_init_stub
+#define _CtrlProp_icpp_init_stub
+#include "CtrlLib/init"
+#include "LogPosCtrl/init"
+#include "ValueCtrl/init"
+#include "Gen/init"
+#include "Property/init"
+#define BLITZ_INDEX__ FFC2270AB0FB33D678F5561A07F438A77
+#include "Ctrl.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ FB4183220157DADB51535992BE9ADFC12
+#include "Pusher.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F4BC91299C20A6B9D8543A53AC29C4DD4
+#include "Button.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F5F54889575415D7DA9E011B22CAD4677
+#include "ButtonOption.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ FAB6FBE1CC30704B6E85F4C560F470868
+#include "Option.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F19FC452F7E8FC5DF9AF5FAB26E19CDC4
+#include "Switch.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ FE5BA8D3795F0AEA139224D0CE165D7B5
+#include "EditField.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F2B034460C632BA9E18DCCEF898064609
+#include "EditString.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ FCE260609A5532B2A1E3CF5D3E6B44E48
+#include "EditInt.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ FBF49E638A7C7E464F03424D1AFF39E22
+#include "EditInt64.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F3132A0EDB96002892759BB2DBEF1CC9F
+#include "EditDouble.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ FE0D87E3E2113BEA9B177CD5A2786B002
+#include "EditStringNotNull.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F0ECB3DDD44A907D388AF81DBFB2A6C93
+#include "EditIntNotNull.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F5397628FE5A93A84D77BEFC1ECA67EA6
+#include "EditInt64NotNull.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F5F589B1CE1B79516B109AD1AD14BBBDE
+#include "EditDoubleNotNull.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ FE06FB7B5E32C6D2828597A81ACAEF624
+#include "EditIntSpin.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F4617D89FBF7F0381ED15A40F31611221
+#include "EditInt64Spin.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F4EF437BC4BDF79A5BE083049E0903B72
+#include "EditDoubleSpin.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F4446E8336B47C63BD2DCA7BD57595C9D
+#include "EditIntNotNullSpin.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F509BE4B7BB17734D065674715E03B86F
+#include "EditInt64NotNullSpin.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ FD5D326864DA1DD80729FDC51D7C5CA78
+#include "EditDoubleNotNullSpin.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F09F8F48362E6C915B81A36386271E80B
+#include "EditDate.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ FE6E5B6C3F6BAB1A7201A5123CDE2305C
+#include "EditTime.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F60DCD6B01D912776843181D1D3724D1E
+#include "EditDateNotNull.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F7D709718A03B1A9E0AC038DFBEDE79CE
+#include "EditTimeNotNull.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F9AE32D2324197279D4FCF442CDF6C0ED
+#include "TextCtrl.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F4F3878C4A91F673762FB3A63F26182D7
+#include "LineEdit.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F26C70D98845F1C603D404C5CD2C161D5
+#include "DocEdit.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F79087F1CC260466FFA1EAD8914E36E9F
+#include "StaticText.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ FF876FA80BC41C8BC263238671A0075CF
+#include "Label.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F57E0A8F51EA69357C483096AE268C95A
+#include "LabelBox.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F6582304123ECBEE22680EA2F77A51451
+#include "ParentCtrl.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F1532A61E89187887BCBB051F1D0C44ED
+#include "StaticRect.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ FFD30132CA05AA27133EC27B2C07E5ED1
+#include "ImageCtrl.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F2CE5D540E87DAE77F2D959612019FCC8
+#include "DisplayCtrl.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F0E31EDFC7BADB57A6116CA552C17DD50
+#include "Picture.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F4540B0520E33F322636959BD513569CF
+#include "SeparatorCtrl.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F2C3719B6302762034D27F7F463A33ACE
+#include "SliderCtrl.icpp"
+#undef BLITZ_INDEX__
+#endif

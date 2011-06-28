@@ -1,0 +1,14 @@
+description "change Ctrl LogPos in a live environment\377";
+
+uses
+	Core,
+	Gen,
+	RectCtrl,
+	LogPosCtrl,
+	CtrlFinder,
+	CtrlMover;
+
+file
+	CtrlPos.h,
+	CtrlPos.cpp;
+

@@ -1,0 +1,18 @@
+uses
+	CtrlLib;
+
+include
+	gdfgsdfg;
+
+file
+	h.iml,
+	bak.tpp,
+	AccessKey.h,
+	test.key,
+	translate.t,
+	main.cpp,
+	AccessKey.lay;
+
+mainconfig
+	"" = "GUI ST";
+

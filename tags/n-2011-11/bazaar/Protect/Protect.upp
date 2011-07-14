@@ -1,0 +1,23 @@
+description "Software copy protection module\377";
+
+uses
+	Core,
+	Cypher,
+	MySql,
+	Web,
+	ProductVersion;
+
+file
+	ProtectStatus.h,
+	ProtectStatus.cpp,
+	Protect.h,
+	Protect.cpp,
+	ProtectDB.sch,
+	ProtectDB.h,
+	ProtectDB.cpp,
+	ProtectServer.h,
+	ProtectServer.cpp,
+	ProtectClient.h,
+	ProtectClient.cpp,
+	srcdoc.tpp;
+

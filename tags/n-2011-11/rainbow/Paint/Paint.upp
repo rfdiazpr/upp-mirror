@@ -1,0 +1,24 @@
+description "Paint method and Draw example\377";
+
+uses
+	CtrlLib,
+	RichEdit;
+
+uses(WINFB) WinFb;
+
+uses(LINUXFB) LinuxFb;
+
+uses(SDLFB) SDLFb;
+
+uses(WINGL) WinGl;
+
+file
+	Draw.cpp;
+
+mainconfig
+	"" = "GUI WINFB",
+	"" = "GUI LINUXFB",
+	"" = "GUI WINGL",
+	"" = "GUI SDLFB",
+	"" = "GUI";
+

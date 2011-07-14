@@ -1,0 +1,42 @@
+uses
+	Painter;
+
+library(WIN32 GCC) "glaux glu32 opengl32";
+
+library(LINUX) "GL GLU";
+
+options
+	"-D_WIN32 -DGLEW_STATIC";
+
+file
+	WinGl.h,
+	ResGl.h,
+	FontGl.h,
+	Keys.h,
+	Draw.cpp,
+	DrawOp.cpp,
+	DrawText.cpp,
+	Win.cpp,
+	Wnd.cpp,
+	Proc.cpp,
+	After.h,
+	Event.cpp,
+	Top.h,
+	Top.cpp,
+	TopFrame.h,
+	TopFrame.cpp,
+	Ctrl.h,
+	Ctrl.cpp,
+	Clip.cpp,
+	Dnd.cpp,
+	Image.cpp,
+	ChSysInit.cpp,
+	Util.cpp,
+	Glew readonly separator,
+	glew.h,
+	glxew.h,
+	wglew.h,
+	glew.c,
+	Resources readonly separator,
+	WinGl.iml;
+

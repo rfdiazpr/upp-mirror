@@ -1,0 +1,10 @@
+uses
+	CtrlLib;
+
+file
+	switch.lay,
+	main.cpp;
+
+mainconfig
+	"" = "GUI";
+

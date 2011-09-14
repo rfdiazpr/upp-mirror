@@ -1,0 +1,10 @@
+#ifndef _ide_Browser_icpp_init_stub
+#define _ide_Browser_icpp_init_stub
+#include "CppBase/init"
+#include "ide\Common/init"
+#include "PdfDraw/init"
+#include "RichEdit/init"
+#define BLITZ_INDEX__ FB5C792D5E6989A57EBD963D0F3A0F4E9
+#include "TopicI.icpp"
+#undef BLITZ_INDEX__
+#endif

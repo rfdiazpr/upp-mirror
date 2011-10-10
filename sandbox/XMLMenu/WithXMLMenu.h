@@ -292,6 +292,10 @@ template<class T> void WithXMLMenu<T>::DragLoop(Point dragPoint)
 	// popup-ize the toolbar
 	dragToolBar->Popup(dragPoint);
 	
+	// this is needed for X11, otherwise the GetMouseLeft() function
+	// may return false even if mouse is down after un-floating
+	Sleep(30);
+
 	// loop up to mouse button is released
 	Point ps, pp;
 	do

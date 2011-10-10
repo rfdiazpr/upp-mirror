@@ -54,6 +54,9 @@ LRESULT DragWindow::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 void DragWindow::EventProc(XWindow& w, XEvent *event)
 {
+	// first, send event to TopWindow
+	TopWindow::EventProc(w, event);
+	
 	if(event->type == FocusOut && event->xfocus.mode == NotifyGrab)
 	{
 		Rect r = GetScreenRect();
@@ -61,7 +64,6 @@ void DragWindow::EventProc(XWindow& w, XEvent *event)
 		y = r.top;
 		width = r.Width();
 		height = r.Height();
-		TopWindow::EventProc(w, event);
 	}
 	else if(event->type == FocusIn && event->xfocus.mode == NotifyUngrab)
 	{
@@ -71,12 +73,10 @@ void DragWindow::EventProc(XWindow& w, XEvent *event)
 			dragging = false;
 			x = y = width = height = -1;
 		}
-		TopWindow::EventProc(w, event);
 	}
 	else if(event->type == ConfigureNotify)
 	{
 		// give time to eventually resize the window rect
-		TopWindow::EventProc(w, event);
 		Ctrl::ProcessEvents();
 
 		// check if we're really dragging the window or just
@@ -103,8 +103,6 @@ void DragWindow::EventProc(XWindow& w, XEvent *event)
 			WindowDragged(DRAG_DRAG, Point(x + width / 2, y));
 		}
 	}
-	else
-		TopWindow::EventProc(w, event);
 }
 
 #endif

@@ -291,10 +291,13 @@ template<class T> void WithXMLMenu<T>::DragLoop(Point dragPoint)
 	
 	// popup-ize the toolbar
 	dragToolBar->Popup(dragPoint);
-	
+
+#ifdef PLATFORM_POSIX
 	// this is needed for X11, otherwise the GetMouseLeft() function
 	// may return false even if mouse is down after un-floating
 	Sleep(30);
+	dragToolBar->SetCapture();
+#endif
 
 	// loop up to mouse button is released
 	Point ps, pp;
@@ -327,6 +330,10 @@ template<class T> void WithXMLMenu<T>::DragLoop(Point dragPoint)
 	}
 	while(GetMouseLeft());
 	
+#ifdef PLATFORM_POSIX
+	dragToolBar->ReleaseCapture();
+#endif
+
 	// if dropped on a frame, dock there
 	if(preDockFrame)
 	{

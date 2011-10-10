@@ -434,15 +434,4 @@ XMLToolBar &XMLToolBar::UnPreDock(XMLToolBarFrame &f)
 	return *this;
 }
 
-// mouse handler -- handles moves when ctrl is in popup state
-Image XMLToolBar::MouseEvent(int event, Point p, int zdelta, dword keyflags)
-{
-	// handles events JUST when ctl is in popup state
-	if(!IsPopUp())
-		return Image::Arrow();
-
-	// query the controller interface
-	return iFace->PopupMouseEvent(event, p, zdelta, keyflags);
-}
-
 END_UPP_NAMESPACE

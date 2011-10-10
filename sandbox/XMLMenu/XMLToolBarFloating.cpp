@@ -45,7 +45,8 @@ void XMLToolBarFloating::Close(void)
 	inside = true;
 
 	RemoveChild(toolBar);
-	Ctrl::Close();
+	TopWindow::Close();
+	IgnoreMouse();
 	// restore previous focus ctrl
 	if(focusCtrl)
 		focusCtrl->SetFocus();

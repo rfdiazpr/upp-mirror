@@ -55,9 +55,6 @@ class XMLToolBar : public ParentCtrl
 		// gets toolbar align
 		int GetAlign(void);
 		
-		// mouse handler -- handles moves when ctrl is in popup state
-		virtual Image MouseEvent(int event, Point p, int zdelta, dword keyflags);
-		
 	public:
 	
 		typedef XMLToolBar CLASSNAME;

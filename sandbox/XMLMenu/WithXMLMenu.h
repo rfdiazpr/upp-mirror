@@ -14,9 +14,6 @@ class XMLMenuInterface
 	
 	public:
 	
-		// mouse events sent from popupped toolbar
-		virtual Image PopupMouseEvent(int event, Point p, int zdelta, dword keyflags) = 0;
-		
 		// mouse events sent from floating toolbar
 		virtual void FloatingDraggedEvent(XMLToolBar &tb, Point p) = 0;
 };
@@ -40,8 +37,8 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		
 		// dragging flag
 		bool dragging;
-		Point dragPoint;
-		
+
+		// toolbar being dragged		
 		Ptr<XMLToolBar> dragToolBar;
 		
 		// pre-docking stuffs
@@ -81,14 +78,11 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		// child frame mouse event handler captures the click on toolbar's frames
 		virtual void ChildFrameMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags);
 		
-		// mouse event handler -- once captured click on child's frame, to mouse processing
-		virtual Image MouseEvent(int event, Point p, int zdelta, dword keyflags);
-		
-		// mouse events sent from popupped toolbar
-		virtual Image PopupMouseEvent(int event, Point p, int zdelta, dword keyflags);
-
 		// mouse events sent from floating toolbar
 		virtual void FloatingDraggedEvent(XMLToolBar &tb, Point p);
+
+		// the drag loop
+		void DragLoop(Point startP);
 		
 		MenuBar &GetMenuBar(void) { return menuBar; }
 };
@@ -248,89 +242,63 @@ template<class T> void WithXMLMenu<T>::ChildFrameMouseEvent(Ctrl *child, int eve
 	// handles just left down event
 	if(event != Ctrl::LEFTDOWN)
 		return;
+	
+	// ignore re-entrant events
+	if(dragging)
+		return;
 
 	// reacts just to events related to XMLToolBar
 	dragToolBar = dynamic_cast<XMLToolBar *>(child);
 	if(!dragToolBar)
 		return;
 
-	// grab mouse
-	Ctrl::SetCapture();
+	// setup drag point for dragging the toolbar
+	Point dragPoint = p + dragToolBar->GetScreenRect().TopLeft();
 	
-	// start dragging
+	// execute the drag loop
+	DragLoop(dragPoint);
+}
+
+// mouse events sent from floating toolbar
+template<class T> void WithXMLMenu<T>::FloatingDraggedEvent(XMLToolBar &tb, Point p)
+{
+	// ignore event if toolbar is not floating
+	// should not happen, but.....
+	if(!tb.GetIsFloating())
+		return;
+	
+	// ignode re-entrant events
+	if(dragging)
+		return;
+
+	// setup drag toolbar
+	dragToolBar = &tb;
+	
+	// run drag loop
+	DragLoop(p);
+}
+
+template<class T> void WithXMLMenu<T>::DragLoop(Point dragPoint)
+{
+	// marks dragging active to avoid re-entrant events
 	dragging = true;
 	
-	// (can't start dragging on tb, we don't have a right start point here)
-}
-
-// mouse event handler -- once captured click on child's frame, to mouse processing
-template<class T> Image WithXMLMenu<T>::MouseEvent(int event, Point p, int zdelta, dword keyflags)
-{
-	// just handle draggings
-	if(!dragging || (dragToolBar && dragToolBar->GetIsPopUp()))
-		return Image::Arrow();
-
-	// translate point in frame coords	
-	p += Ctrl::GetView().TopLeft();
+	// check if dragtoolbar is valid -- interna error if not
+	ASSERT(dragToolBar);
 	
-	// gets same point in screen coordinates
-	Point ps = p + Ctrl::GetScreenRect().TopLeft();
+	// ignore mouse events on main control, when dragging
+	Ctrl::IgnoreMouse();
 	
-	// we're just interested in MOUSEMOVE, other events are
-	// handled by Popup event handler directly
-	if(event == Ctrl::MOUSEMOVE)
-	{
-		// if toolbar is still not popupized, do it and move
-		// correctly at mouse position
-		if(!dragToolBar->GetIsPopUp())
-		{
-			Ctrl::ReleaseCapture();
-			Point pp = dragToolBar->GetScreenRect().TopLeft();
-
-			// from here, ctrl is popup AND grabs mouse pointer
-			// so following moves are done in XMLToolBar
-			dragToolBar->Popup(pp);
-			dragToolBar->SetCapture();
-			dragPoint = ps;
-			dragToolBar->MouseEvent(event, ps - dragToolBar->GetScreenRect().TopLeft(), zdelta, keyflags);
-		}
-	}
-	else if(event != Ctrl::CURSORIMAGE)
-	{
-		// DLOG("**** MouseEvent GOT BAD EVENT : " << FormatIntHex(event, 4));
-	}
-	return Image::Arrow();
-}
-
-// mouse events sent from popupped toolbar
-template<class T> Image WithXMLMenu<T>::PopupMouseEvent(int event, Point p, int zdelta, dword keyflags)
-{
-	// just handles events when dragging
-	if(!dragging)
-		return Image::Arrow();
+	// popup-ize the toolbar
+	dragToolBar->Popup(dragPoint);
 	
-	// get screen point
-	Point ps = p + dragToolBar->GetRect().TopLeft();
-	Point pp = ps - Ctrl::GetRect().TopLeft();
-	
-	// on LEFTUP, stop dragging
-	if(event == Ctrl::LEFTUP)
+	// loop up to mouse button is released
+	Point ps, pp;
+	do
 	{
-		dragToolBar->ReleaseCapture();
-		dragging = false;
-
-		// if dropped on a frame, dock there
-		if(preDockFrame)
-		{
-			dragToolBar->UnPreDock(*preDockFrame);
-			dragToolBar->Dock(*preDockFrame, pp);
-		}
-		else
-			// otherwise float it
-			dragToolBar->Float(ps);
-	}
-	else if(event == Ctrl::MOUSEMOVE)
-	{
+		Ctrl::ProcessEvents();
+		ps = GetMousePos();
+		pp = ps - Ctrl::GetRect().TopLeft();
 		Rect r = dragToolBar->GetRect();
 		r = r + ps - dragPoint;
 		dragPoint = ps;
@@ -353,40 +321,29 @@ template<class T> Image WithXMLMenu<T>::PopupMouseEvent(int event, Point p, int 
 			dragToolBar->PopSquare(ps);
 		Ctrl::RefreshLayout();
 	}
-	else if(event != Ctrl::CURSORIMAGE)
+	while(GetMouseLeft());
+	
+	// if dropped on a frame, dock there
+	if(preDockFrame)
 	{
-		// DLOG("**** PopupMouseEvent GOT BAD EVENT : " << FormatIntHex(event, 4));
-		Ctrl::ReleaseCtrlCapture();
-		dragToolBar->SetCapture();
+		DLOG("DOCKING WINDOW....");
+		dragToolBar->UnPreDock(*preDockFrame);
+		dragToolBar->Dock(*preDockFrame, pp);
+		DLOG("DONE DOCKING WINDOW....");
+	}
+	else
+	{
+		DLOG("FLOATING WINDOW....");
+		// otherwise float it
+		dragToolBar->Float(ps);
+		DLOG("DONE FLOATING WINDOW....");
 	}
 
-	return Image::Arrow();
-}
+	// re-accepts mouse events
+	Ctrl::NoIgnoreMouse();
 
-// mouse events sent from floating toolbar
-template<class T> void WithXMLMenu<T>::FloatingDraggedEvent(XMLToolBar &tb, Point p)
-{
-	if(!tb.GetIsFloating())
-		return;
-
-	// marks dragging active
-	dragging = true;
-	
-	// setup drag toolbar
-	dragToolBar = &tb;
-	
-	// popupize it
-	dragToolBar->Popup(p);
-
-	// this one is needed otherwise popupped ctrl
-	// don't get the focus/grabbing... don't know why
-	Sleep(100);
-
-	// capture mouse events on popupped control
-	Ctrl::ReleaseCtrlCapture();
-	dragToolBar->SetCapture();
-
-	// from now, all is handled on pupup events
+	// end dragging mode
+	dragging = false;
 }
 
 END_UPP_NAMESPACE

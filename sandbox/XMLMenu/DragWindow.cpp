@@ -6,7 +6,8 @@ NAMESPACE_UPP
 
 LRESULT DragWindow::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
-	LPRECT lpRect = (LPRECT)lParam;
+	// first, send event to TopWindow handler
+	LRESULT lresult = TopWindow::WindowProc(message, wParam, lParam);
 	switch(message)
 	{
 		case WM_SIZE:
@@ -22,6 +23,7 @@ LRESULT DragWindow::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_MOVING:
 			if(sizeMoving)
 			{
+				LPRECT lpRect = (LPRECT)lParam;
 				x = lpRect->left;
 				y = lpRect->top;
 				width = lpRect->right - lpRect->left;
@@ -45,7 +47,7 @@ LRESULT DragWindow::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 			dragging = false;
 			break;
 	}
-	return TopWindow::WindowProc(message, wParam, lParam);
+	return lresult;
 }
 
 #else

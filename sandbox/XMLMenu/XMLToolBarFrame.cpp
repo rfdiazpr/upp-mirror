@@ -165,15 +165,15 @@ void XMLToolBarFrame::FrameLayout(Rect& r)
 	}
 	
 	// fixup control inside frame
-	Ctrl::LogPos cp(
-		Ctrl::PosSize(frameRect.left, 2),
-		Ctrl::PosSize(frameRect.top, 2)
+	toolBarContainer.SetFrameRect(
+		frameRect.left,
+		frameRect.top,
+		frameRect.GetSize().cx - 2,
+		frameRect.GetSize().cy - 2
 	);
-	toolBarContainer.SetPos(cp, true);
 	
 	// layouts toolbars inside frame
 	Layout();
-	
 }
 
 void XMLToolBarFrame::FrameAddSize(Size& sz)

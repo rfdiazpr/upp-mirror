@@ -90,7 +90,8 @@ XMLToolBar &XMLToolBar::SetState(XMLToolBarState state)
 	ClearFrames();
 	
 	// if docked or popup, add the dragging frame
-	if(GetIsDocked() || (GetIsPopUp() && toolBarState != TOOLBAR_SQUARE_POPUP))
+//	if(GetIsDocked() || (GetIsPopUp()  && toolBarState != TOOLBAR_SQUARE_POPUP))
+	if(!GetIsFloating())
 	{
 		dragFrame.Align(GetAlign());
 		AddFrame(dragFrame);
@@ -116,7 +117,7 @@ int XMLToolBar::GetAlign(void)
 			return ToolBar::BAR_LEFT;
 			
 		case TOOLBAR_SQUARE_POPUP :
-			return ToolBar::BAR_TOP;
+			return ToolBar::BAR_LEFT;
 			
 		case TOOLBAR_TOP :
 			return ToolBar::BAR_TOP;

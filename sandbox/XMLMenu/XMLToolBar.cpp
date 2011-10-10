@@ -393,9 +393,8 @@ XMLToolBar &XMLToolBar::CloseBar(void)
 	}
 	// close floating container, if any
 	else if(GetIsFloating() && floating)
-	{
-		floating->Close();
-	}
+		floating.Clear();
+
 	SetState(TOOLBAR_CLOSED);
 	return *this;
 }

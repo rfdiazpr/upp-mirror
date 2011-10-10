@@ -12,7 +12,9 @@ class XMLToolBarFloating : public DragWindow
 	private:
 	
 		Ptr<XMLToolBar> toolBar;
+#ifdef PLATFORM_POSIX
 		Ptr<Ctrl> focusCtrl;
+#endif
 
 	protected:
 	
@@ -20,9 +22,6 @@ class XMLToolBarFloating : public DragWindow
 		virtual void WindowDragged(DragWindow::DragEvent e, Point p);
 		
 	public:
-	
-		// handle close event
-		virtual void Close(void);
 	
 		XMLToolBarFloating(XMLToolBar &tb, Point p);
 		~XMLToolBarFloating();

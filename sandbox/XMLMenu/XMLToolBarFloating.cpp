@@ -17,8 +17,10 @@ XMLToolBarFloating::XMLToolBarFloating(XMLToolBar &tb, Point p)
 	// stores toolbar
 	toolBar = &tb;
 	
+#ifdef PLATFORM_POSIX
 	// stores current focus ctrl
 	focusCtrl = GetFocusCtrl();
+#endif
 
 	// sets size and position of container
 	ToolWindow();
@@ -34,23 +36,14 @@ XMLToolBarFloating::XMLToolBarFloating(XMLToolBar &tb, Point p)
 
 XMLToolBarFloating::~XMLToolBarFloating()
 {
-}
-
-// handle close event
-void XMLToolBarFloating::Close(void)
-{
-	static volatile bool inside = false;
-	if(inside)
-		return;
-	inside = true;
-
 	RemoveChild(toolBar);
-	TopWindow::Close();
-	IgnoreMouse();
+	Close();
+
 	// restore previous focus ctrl
+#ifdef PLATFORM_POSIX
 	if(focusCtrl)
 		focusCtrl->SetFocus();
-	inside = false;
+#endif
 }
 
 END_UPP_NAMESPACE

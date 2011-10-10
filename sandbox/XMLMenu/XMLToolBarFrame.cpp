@@ -168,8 +168,8 @@ void XMLToolBarFrame::FrameLayout(Rect& r)
 	toolBarContainer.SetFrameRect(
 		frameRect.left,
 		frameRect.top,
-		frameRect.GetSize().cx - 2,
-		frameRect.GetSize().cy - 2
+		frameRect.GetSize().cx,
+		frameRect.GetSize().cy
 	);
 	
 	// layouts toolbars inside frame

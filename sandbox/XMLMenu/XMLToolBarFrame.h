@@ -1,7 +1,7 @@
 #ifndef _XMLToolBarFrame_h_
 #define _XMLToolBarFrame_h_
 
-#include "XMLToolBarContainer.h"
+#include "XMLToolBarCtrl.h"
 
 NAMESPACE_UPP
 
@@ -10,7 +10,7 @@ NAMESPACE_UPP
 // (for BAR_LEFT and BAR_RIGHT)
 class XMLToolBarFrame : public CtrlFrame, public Pte<XMLToolBarFrame>
 {
-	friend class XMLToolBar;
+	friend class XMLToolBarCtrl;
 	private:
 		Ptr<Ctrl> parent;
 	
@@ -33,10 +33,10 @@ class XMLToolBarFrame : public CtrlFrame, public Pte<XMLToolBarFrame>
 		ParentCtrl toolBarContainer;
 		
 		// alignment of toolbarline
-		XMLToolBar::XMLToolBarState toolBarState;
+		XMLToolBarCtrl::XMLToolBarState toolBarState;
 	
 		// the toolbars on this frame
-		Array<Ptr<XMLToolBar> >toolBars;
+		Array<Ptr<XMLToolBarCtrl> >toolBars;
 		
 		// the positions inside a frame, as Size struct
 		// where cx is position inside a row and cy is the row
@@ -55,7 +55,7 @@ class XMLToolBarFrame : public CtrlFrame, public Pte<XMLToolBarFrame>
 		Ctrl::LogPos toolBarPos;
 		
 		// current dragging toolbar
-		Ptr<XMLToolBar> dragToolBar;
+		Ptr<XMLToolBarCtrl> dragToolBar;
 		
 		// predocking stuffs
 		bool preDocking;
@@ -79,33 +79,33 @@ class XMLToolBarFrame : public CtrlFrame, public Pte<XMLToolBarFrame>
 		virtual void FrameRemove(void);
 		
 		// find index of a docked XMLToolBar; -1 if not found
-		int FindIndex(XMLToolBar &tb);
+		int FindIndex(XMLToolBarCtrl &tb);
 		
 		// gets dock target giving point in frame
-		bool GetDockTarget(XMLToolBar &tb, Point p, int &dockLine, bool &insert, int &col);
+		bool GetDockTarget(XMLToolBarCtrl &tb, Point p, int &dockLine, bool &insert, int &col);
 
 		// docks a toolbar into this frame
 		// eventually undocks it from other frames, unfloats it or open it
-		XMLToolBarFrame &Dock(XMLToolBar &tb, int row, int col);
-		XMLToolBarFrame &Dock(XMLToolBar &tb, Point p);
+		XMLToolBarFrame &Dock(XMLToolBarCtrl &tb, int row, int col);
+		XMLToolBarFrame &Dock(XMLToolBarCtrl &tb, Point p);
 
 		// closes (undocking it) an XMLToolBar from this frame
-		XMLToolBarFrame &Undock(XMLToolBar &tb);
+		XMLToolBarFrame &Undock(XMLToolBarCtrl &tb);
 		
 	public:
 	
-		XMLToolBarFrame(XMLToolBar::XMLToolBarState align);
+		XMLToolBarFrame(XMLToolBarCtrl::XMLToolBarState align);
 		~XMLToolBarFrame();
 		
 		// lays toolbars inside frame
 		virtual void Layout(void);
 		
 		// gets toolbar align
-		XMLToolBar::XMLToolBarState GetToolBarState() { return toolBarState; }
+		XMLToolBarCtrl::XMLToolBarState GetToolBarState() { return toolBarState; }
 		
 		// gets toolbar at given mouse point; point is in parent rect coordinates
 		// returns NULL if not grabbed a toolbar
-		XMLToolBar *GetToolBarAt(Point p);
+		XMLToolBarCtrl *GetToolBarAt(Point p);
 		
 		// gets isDragging flag
 		bool GetDragging(void) { return dragging; }
@@ -114,8 +114,8 @@ class XMLToolBarFrame : public CtrlFrame, public Pte<XMLToolBarFrame>
 		bool Contains(Point p);
 		
 		// pre-docking handling
-		XMLToolBarFrame &PreDock(XMLToolBar &tb, Point p);
-		XMLToolBarFrame &UnPreDock(XMLToolBar &tb);
+		XMLToolBarFrame &PreDock(XMLToolBarCtrl &tb, Point p);
+		XMLToolBarFrame &UnPreDock(XMLToolBarCtrl &tb);
 
 };
 

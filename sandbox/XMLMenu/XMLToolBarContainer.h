@@ -1,7 +1,7 @@
 #ifndef _XMLToolBarContainer_h_
 #define _XMLToolBarContainer_h_
 
-#include "XMLToolBar.h"
+#include "XMLToolBarCtrl.h"
 
 NAMESPACE_UPP
 
@@ -10,7 +10,7 @@ class XMLToolBarFrameBorder : public CtrlFrame
 {
 	private:
 	
-		XMLToolBar::XMLToolBarState state;
+		XMLToolBarCtrl::XMLToolBarState state;
 	
 	protected:
 	

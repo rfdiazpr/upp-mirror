@@ -1,5 +1,5 @@
 #include "XMLToolBarFloating.h"
-#include "XMLToolBar.h"
+#include "XMLToolBarCtrl.h"
 #include "WithXMLMenu.h"
 
 NAMESPACE_UPP
@@ -12,7 +12,7 @@ void XMLToolBarFloating::WindowDragged(DragWindow::DragEvent e, Point p)
 		iFace->FloatingDraggedEvent(*toolBar, p);
 }
 
-XMLToolBarFloating::XMLToolBarFloating(XMLToolBar &tb, Point p)
+XMLToolBarFloating::XMLToolBarFloating(XMLToolBarCtrl &tb, Point p)
 {
 	// stores toolbar
 	toolBar = &tb;

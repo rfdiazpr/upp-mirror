@@ -11,10 +11,14 @@ file
 	XMLToolBarFloating.cpp,
 	XMLDragFrame.h,
 	XMLDragFrame.cpp,
-	XMLToolBar.h,
-	XMLToolBar.cpp,
+	XMLToolBarCtrl.h,
+	XMLToolBarCtrl.cpp,
 	XMLToolBarFrame.h,
 	XMLToolBarFrame.cpp,
+	XMLCommand.h,
+	XMLCommand.cpp,
+	XMLToolBar.h,
+	XMLToolBar.cpp,
 	WithXMLMenu.h,
 	WithXMLMenu.cpp;
 

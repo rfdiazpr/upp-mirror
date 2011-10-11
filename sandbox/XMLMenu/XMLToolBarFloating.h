@@ -6,12 +6,12 @@
 NAMESPACE_UPP
 
 // container for floating toolbars
-class XMLToolBar;
+class XMLToolBarCtrl;
 class XMLToolBarFloating : public DragWindow
 {
 	private:
 	
-		Ptr<XMLToolBar> toolBar;
+		Ptr<XMLToolBarCtrl> toolBar;
 #ifdef PLATFORM_POSIX
 		Ptr<Ctrl> focusCtrl;
 #endif
@@ -23,7 +23,7 @@ class XMLToolBarFloating : public DragWindow
 		
 	public:
 	
-		XMLToolBarFloating(XMLToolBar &tb, Point p);
+		XMLToolBarFloating(XMLToolBarCtrl &tb, Point p);
 		~XMLToolBarFloating();
 };
 

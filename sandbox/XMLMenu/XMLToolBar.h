@@ -1,119 +1,96 @@
-#ifndef _XMLToolBar_h_
-#define _XMLToolBar_h_
+#ifndef _XMLMenuItem_h_
+#define _XMLMenuItem_h_
 
-#include "XMLDragFrame.h"
-#include "XMLToolBarFloating.h"
+#include "XMLToolBarCtrl.h"
+#include "XMLCommand.h"
 
 NAMESPACE_UPP
 
-// XMLToolBar class : a container for ToolBar and its drag handle
-class XMLToolBarFrame;
-class XMLMenuInterface;
-class XMLToolBar : public ParentCtrl
+// a menu/bar item : combine a command with label, icon, tooltip.....
+class XMLToolBar;
+class XMLToolBarItem
 {
-	template<class T> friend class WithXMLMenu;
-	public:
-		typedef enum { TOOLBAR_CLOSED, TOOLBAR_FLOATING, TOOLBAR_HORZ_POPUP, TOOLBAR_VERT_POPUP, TOOLBAR_SQUARE_POPUP, TOOLBAR_TOP, TOOLBAR_BOTTOM, TOOLBAR_LEFT, TOOLBAR_RIGHT } XMLToolBarState;
-	
-	friend class XMLToolBarFrame;
+	friend class XMLToolBar;
 	private:
+		// the command entry
+		String commandId;
+		
+		// the command label, if any
+		String label;
+		
+		// icon, if any
+		Image icon;
+		
+		// tooltip, if any
+		String tooltip;
+		
+		// a submenu, if any
+		One<XMLToolBar> subMenu;
+		
+	public:
+		String const &GetId(void) const				{ return commandId; }
+		String const &GetLabel(void) const			{ return label; }
+		Image const &GetIcon(void) const			{ return icon; }
+		String const &GetTooltip(void) const		{ return tooltip; }
+		XMLToolBar const &GetSubMenu(void) const	{ return *subMenu; }
+		
+		// xml support
+		void Xmlize(XmlIO xml);
+};
 
-		// just to access BarPane::GetSize()...
-		struct SizeToolBar : ToolBar
-		{
-			Size GetPaneSize(bool horz, int max = INT_MAX) { return pane.GetPaneSize(horz, max); }
-		};
+// a menu/bar : an array of menu/bar items -- builds up a toolbar or a menu
+class XMLToolBar
+{
+	friend class XMLMenuItem;
+	private:
+		// bar name
+		String name;
+		
+		// items
+		Array<XMLToolBarItem> items;
+		
+		// position of toolbar
+		XMLToolBarCtrl::XMLToolBarState state;
+		int row, col;
+		
+	public:
+		// add an entry, various ways
+		XMLToolBar &SetName(String const &name);
+		XMLToolBar &Add(String const &commandId);
+		XMLToolBar &Add(String const &commandId, String const &label);
+		XMLToolBar &Add(String const &commandId, Image const &icon);
+		XMLToolBar &Add(String const &commandId, String const &label, Image const &icon);
+		XMLToolBar &Add(String const &commandId, Image const &icon, String const &tooltip);
+		XMLToolBar &Add(String const &commandId, String const &label, String const &tooltip);
+		XMLToolBar &Add(String const &commandId, String const &label, Image const &icon, String const &tooltip);
 
-		// link to floating window, if undocked
-		// @@@@ to do
+		// add a submenu entry
+		XMLToolBar &Add(XMLToolBar const &subMenu);
+		
+		// add a submenu entry by callback
+		XMLToolBar &Add(Callback1<XMLToolBar &> bar);
+
+		// gets toolbar name
+		String const &GetName(void) const				{ return name; }
+		
+		// gets toolbar items
+		Array<XMLToolBarItem> const &GetItems(void) const	{ return items; }
+
+		// sets the commands by a callback
+		void Set(Callback1<XMLToolBar &> bar);
+
+		// xml support
+		void Xmlize(XmlIO xml);
+};
+
+class XMLToolBars : public Array<XMLToolBar>
+{
+	private:
 	
-		// the embedded toolbar
-		ToolBar toolBar;
-		
-		// drag frame
-		XMLDragFrame dragFrame;
-		
-		// pointer containing owning frame, if any
-		Ptr<XMLToolBarFrame> toolBarFrame;
-		
-		// container when floating, if any
-		One<XMLToolBarFloating> floating;
-		
-		// interface of owning WithXMLMenu, if any
-		XMLMenuInterface *iFace;
-		
-		// current or last docking status of this toolbar
-		XMLToolBarState toolBarState, prevState;
-		int dockedRow, dockedCol;
-		int undockedX, undockedY;
-		
 	protected:
 	
-		// lays toolbar and handle inside control
-		virtual void Layout(void);
-		
-		// gets toolbar align
-		int GetAlign(void);
-		
 	public:
 	
-		typedef XMLToolBar CLASSNAME;
-
-		// constructor
-		XMLToolBar(XMLMenuInterface *iFace);
-		
-		// destructor
-		~XMLToolBar();
-		
-		XMLMenuInterface *GetInterface(void) { return iFace; }
-		
-		// gets toolbar size when completely inlined horizontally
-		virtual Size GetHorzSize(void);
-		
-		// gets toolbar size when completely inlined vertically
-		virtual Size GetVertSize(void);
-		
-		// gets toolbar size when squared
-		Size GetSquaredSize(void);
-		
-		// get docked state
-		bool GetIsDocked();
-		
-		// get floating state
-		bool GetIsFloating();
-		
-		// get opened state
-		bool GetIsOpened();
-		
-		// get popup state
-		bool GetIsPopUp();
-		
-		// sets toolbar state
-		XMLToolBar &SetState(XMLToolBarState state);
-		XMLToolBarState GetState(void) { return toolBarState; }
-		
-		// floats the toolbar at a given position
-		XMLToolBarFloating &Float(Point p);
-		
-		// popups the toolbar at a given position
-		XMLToolBar &Popup(Point p);
-		XMLToolBar &PopHorz(Point p);
-		XMLToolBar &PopVert(Point p);
-		XMLToolBar &PopSquare(Point p);
-		
-		// pre-Dock and pre-Undock a toolbar inside frame
-		XMLToolBar &PreDock(XMLToolBarFrame &f, Point p);
-		XMLToolBar &UnPreDock(XMLToolBarFrame &f);
-		
-		// docks the toolbar at a position inside a frame
-		XMLToolBar &Dock(XMLToolBarFrame &f, int row, int col);
-		XMLToolBar &Dock(XMLToolBarFrame &f, Point p);
-		
-		// closes the toolbar
-		XMLToolBar &CloseBar(void);
-
-		// toolbar callback -- to be removed once XML is in place
-		void Set(Callback1<Bar &>bar) { toolBar.Set(bar); }
 };
 
 END_UPP_NAMESPACE

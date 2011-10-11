@@ -53,29 +53,29 @@ GUI_APP_MAIN
 	
 	testXMLMenu.GetMenuBar().Set(STDBACK(toolBarCb));
 	
-	XMLToolBar *tb;
+	XMLToolBarCtrl *tb;
 	
-	tb = new XMLToolBar(&testXMLMenu);
+	tb = new XMLToolBarCtrl(&testXMLMenu);
 	tb->Set(STDBACK(toolBarCb));
 	testXMLMenu.AddTop(tb, 0, 50);
 	
-	tb = new XMLToolBar(&testXMLMenu);
+	tb = new XMLToolBarCtrl(&testXMLMenu);
 	tb->Set(STDBACK(toolBarCb));
 	testXMLMenu.AddTop(tb, 0, 550);
 	
-	tb = new XMLToolBar(&testXMLMenu);
+	tb = new XMLToolBarCtrl(&testXMLMenu);
 	tb->Set(STDBACK(toolBarCb));
 	testXMLMenu.AddTop(tb, 1, 300);
 	
-	tb = new XMLToolBar(&testXMLMenu);
+	tb = new XMLToolBarCtrl(&testXMLMenu);
 	tb->Set(STDBACK(toolBarCb));
 	testXMLMenu.AddLeft(tb, 0, 50);
 	
-	tb = new XMLToolBar(&testXMLMenu);
+	tb = new XMLToolBarCtrl(&testXMLMenu);
 	tb->Set(STDBACK(toolBarCb));
 	testXMLMenu.AddRight(tb, 0, 100);
 	
-	tb = new XMLToolBar(&testXMLMenu);
+	tb = new XMLToolBarCtrl(&testXMLMenu);
 	tb->Set(STDBACK(toolBarCb));
 	testXMLMenu.AddBottom(tb, 0, 200);
 	

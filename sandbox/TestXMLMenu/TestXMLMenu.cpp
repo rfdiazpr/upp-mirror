@@ -27,7 +27,6 @@ static void toolBarCb(Bar &bar)
 	bar.Add(t_("Print")			, TestImg::Print()			, callback(dummyCb));
 	bar.Add(t_("Next")			, TestImg::Next()			, callback(dummyCb));
 	bar.Add(t_("Previous")		, TestImg::Previous()		, callback(dummyCb));
-/*
 	bar.Add(t_("Settings")		, TestImg::Settings()		, callback(dummyCb));
 	bar.Add(t_("Help")			, TestImg::Help()			, callback(dummyCb));
 	bar.Add(t_("Quit")			, TestImg::Quit()			, callback(dummyCb));
@@ -38,19 +37,63 @@ static void toolBarCb(Bar &bar)
 	bar.Add(t_("ListAdd")		, TestImg::ListAdd()		, callback(dummyCb));
 	bar.Add(t_("ListRemove")	, TestImg::ListRemove()		, callback(dummyCb));
 	bar.Add(t_("RtfImport")		, TestImg::RtfImport()		, callback(dummyCb));
-*/
+}
+
+// commands generator callback
+static void commandCb(XMLCommands &cmds)
+{
+	cmds
+		.Add("New"			, callback(dummyCb))
+		.Add("NewCalc"		, callback(dummyCb))
+		.Add("Open"			, callback(dummyCb))
+		.Add("Save"			, callback(dummyCb))
+		.Add("SaveAs"		, callback(dummyCb))
+		.Add("JobInfo"		, callback(dummyCb))
+		.Add("PrintPreview"	, callback(dummyCb))
+		.Add("Print"		, callback(dummyCb))
+		.Add("Next"			, callback(dummyCb))
+		.Add("Previous"		, callback(dummyCb))
+		.Add("Settings"		, callback(dummyCb))
+		.Add("Help"			, callback(dummyCb))
+		.Add("Quit"			, callback(dummyCb))
+		.Add("Exit"			, callback(dummyCb))
+		.Add("Flag"			, callback(dummyCb))
+		.Add("Remove"		, callback(dummyCb))
+		.Add("Delete"		, callback(dummyCb))
+		.Add("ListAdd"		, callback(dummyCb))
+		.Add("ListRemove"	, callback(dummyCb))
+		.Add("RtfImport"	, callback(dummyCb))
+	;
+}
+
+// menu structure callback
+void menuCb(XMLToolBar &tb)
+{
+	tb
+		.Add("File", tb.SubMenu()
+			.Add("New", t_("New"))
+			.Add("NewCalc", t_("NewCalc"))
+		)
+		.Add("Printer", tb.SubMenu()
+			.Add("Print", t_("Print"))
+			.Add("PrintPreview", t_("PrintPreview"))
+		)
+	;
 }
 
 GUI_APP_MAIN
 {
 
-/*
-	DragWindow w;
-	w.Sizeable().Zoomable();
-	w.Run();
-*/
+	// create window with dockable menus/toolbars
 	TestXMLMenu testXMLMenu;
 	
+	// adds built-in commands
+	testXMLMenu.SetCommands(STDBACK(commandCb));
+	
+	// build default menu structure
+	testXMLMenu.SetMenu(STDBACK(menuCb));
+	
+/*
 	testXMLMenu.GetMenuBar().Set(STDBACK(toolBarCb));
 	
 	XMLToolBarCtrl *tb;
@@ -78,6 +121,7 @@ GUI_APP_MAIN
 	tb = new XMLToolBarCtrl(&testXMLMenu);
 	tb->Set(STDBACK(toolBarCb));
 	testXMLMenu.AddBottom(tb, 0, 200);
+*/
 	
 	testXMLMenu.Sizeable().Zoomable();
 	testXMLMenu.Run();

@@ -5,9 +5,11 @@
 
 NAMESPACE_UPP
 
+////////////////////////////////////////////////////////////////////////////////////
 // a single command, i.e. available entry for menu and bars
 class XMLCommand
 {
+	friend class XMLCommands;
 	private:
 		// embedded control, if any
 		Ptr<Ctrl> control;
@@ -22,14 +24,15 @@ class XMLCommand
 		bool custom;
 
 	public:
-		Ctrl *GetCtrl(void);
-		Callback &GetCallback(void);
-		bool GetIsEnabled(void);
-		bool GetIsCustom(void);
+		Ctrl *GetCtrl(void) const				{ return control;	}
+		Callback const &GetCallback(void) const	{ return callback;	}
+		bool GetIsEnabled(void) const			{ return enabled;	}
+		bool GetIsCustom(void) const			{ return custom;	}
 		
 		bool operator==(XMLCommand &other) const;
 };
 
+////////////////////////////////////////////////////////////////////////////////////
 // an array of available commands
 class XMLCommands
 {
@@ -56,13 +59,16 @@ class XMLCommands
 		XMLCommands &Add(bool enabled, String const &id, Ctrl &ctrl);
 
 		// get all available command IDs
-		Array<String> const &GetIds(void);
+		Vector<String> const &GetIds(void) const;
 		
 		// get a command for a given id
-		XMLCommand &GetCommand(String const &id);
+		XMLCommand const &Get(String const &id) const { return commands.Get(id); }
 		
 		// sets the commands by a callback
 		void Set(Callback1<XMLCommands &> commands);
+		
+		// checks wether a command is present given its id
+		bool Has(String const &id) const { return commands.Find(id) >= 0; }
 };
 
 END_UPP_NAMESPACE

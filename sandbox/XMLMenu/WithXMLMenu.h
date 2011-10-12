@@ -28,8 +28,11 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		// the available commands
 		XMLCommands commands;
 	
-		// the configurable menu bars
+		// the configurable toolbars
 		XMLToolBars toolBars;
+		
+		// the configurable menu bar
+		XMLToolBar menuBar;
 	
 		// the four corner XMLToolbarFrame frames
 		XMLToolBarFrame topFrame;
@@ -58,7 +61,17 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		int FindIndex(XMLToolBarCtrl &tb);
 		int FindFloating(XMLToolBarCtrl &tb);
 		
+		// menu and toolbars setter callbacks
+		void SetMenuBar0(Bar &bar, Array<XMLToolBarItem> const *items);
+		void SetMenuBar(Bar &bar) { SetMenuBar0(bar, NULL); }
+		void SetToolBar(Bar &bar, int tbIdx);
+		
+		// calls user command handler, passing command ID to it
+		void callUserHandler(String const &s) { UserCmdHandler(s); }
+		
 	public:
+	
+		typedef WithXMLMenu<T> CLASSNAME;
 	
 		WithXMLMenu();
 		~WithXMLMenu();
@@ -92,7 +105,14 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		// the drag loop
 		void DragLoop(Point startP);
 		
-		MenuBar &GetMenuBar(void) { return menuBarCtrl; }
+		// user commands handler
+		Callback1<String> UserCmdHandler;
+		
+		// sets builtin commands
+		void SetCommands(Callback1<XMLCommands &> cmds);
+		
+		// sets menu entries
+		void SetMenu(Callback1<XMLToolBar &> tb);
 };
 
 template<class T> WithXMLMenu<T>::WithXMLMenu() :
@@ -345,17 +365,13 @@ template<class T> void WithXMLMenu<T>::DragLoop(Point dragPoint)
 	// if dropped on a frame, dock there
 	if(preDockFrame)
 	{
-		DLOG("DOCKING WINDOW....");
 		dragToolBar->UnPreDock(*preDockFrame);
 		dragToolBar->Dock(*preDockFrame, pp);
-		DLOG("DONE DOCKING WINDOW....");
 	}
 	else
 	{
-		DLOG("FLOATING WINDOW....");
 		// otherwise float it
 		dragToolBar->Float(ps);
-		DLOG("DONE FLOATING WINDOW....");
 	}
 
 	// re-accepts mouse events
@@ -363,6 +379,77 @@ template<class T> void WithXMLMenu<T>::DragLoop(Point dragPoint)
 
 	// end dragging mode
 	dragging = false;
+}
+
+// menu and toolbars setter callbacks
+template<class T> void WithXMLMenu<T>::SetMenuBar0(Bar &bar, Array<XMLToolBarItem> const *items)
+{
+	// get menu bar items
+	if(!items)
+		items = &menuBar.GetItems();
+	
+	for(int i = 0; i < items->GetCount(); i++)
+	{
+		// get current item
+		XMLToolBarItem const &item = (*items)[i];
+		
+		// submenu handling
+		if(item.IsSubMenu())
+		{
+			bar.Add(item.GetLabel(), THISBACK1(SetMenuBar0, &item.GetSubMenu().GetItems()));
+			continue;
+		}
+
+		// get command id and find command
+		// if not found, just skip it
+		String id = item.GetId();
+		if(!commands.Has(id))
+			continue;
+		
+		// get command from id
+		XMLCommand const &cmd = commands.Get(id);
+		
+		// get callback from command
+		bool isCustom = cmd.GetIsCustom();
+		Callback handler;
+		if(isCustom)
+			handler = THISBACK1(callUserHandler, id);
+		else
+			handler = cmd.GetCallback();
+		
+		// get remaining item data
+		String label = item.GetLabel();
+		if(label == "")
+			label = id;
+		Image const &img = item.GetIcon();
+		
+		Ctrl *ctrl = cmd.GetCtrl();
+		bool enabled = cmd.GetIsEnabled();
+		
+		// adds to menu
+		if(ctrl)
+			bar.Add(*ctrl);
+		else
+			bar.Add(enabled, label, img, handler);
+	}
+}
+
+template<class T> void WithXMLMenu<T>::SetToolBar(Bar &bar, int tbIdx)
+{
+}
+
+// sets builtin commands
+template<class T> void WithXMLMenu<T>::SetCommands(Callback1<XMLCommands &> cmds)
+{
+	cmds(commands);
+	menuBarCtrl.Set(THISBACK(SetMenuBar));
+}
+
+// sets menu entries
+template<class T> void WithXMLMenu<T>::SetMenu(Callback1<XMLToolBar &> tb)
+{
+	tb(menuBar);
+	menuBarCtrl.Set(THISBACK(SetMenuBar));
 }
 
 END_UPP_NAMESPACE

@@ -6,6 +6,7 @@
 
 NAMESPACE_UPP
 
+////////////////////////////////////////////////////////////////////////////////////
 // a menu/bar item : combine a command with label, icon, tooltip.....
 class XMLToolBar;
 class XMLToolBarItem
@@ -33,15 +34,17 @@ class XMLToolBarItem
 		Image const &GetIcon(void) const			{ return icon; }
 		String const &GetTooltip(void) const		{ return tooltip; }
 		XMLToolBar const &GetSubMenu(void) const	{ return *subMenu; }
+		bool IsSubMenu(void) const					{ return !subMenu.IsEmpty(); }
 		
 		// xml support
 		void Xmlize(XmlIO xml);
 };
 
+////////////////////////////////////////////////////////////////////////////////////
 // a menu/bar : an array of menu/bar items -- builds up a toolbar or a menu
 class XMLToolBar
 {
-	friend class XMLMenuItem;
+	friend class XMLToolBarItem;
 	private:
 		// bar name
 		String name;
@@ -54,6 +57,15 @@ class XMLToolBar
 		int row, col;
 		
 	public:
+		// constructor
+		XMLToolBar();
+		
+		// pick constructor
+		XMLToolBar(XMLToolBar pick_ &tb);
+		
+		// copy operator
+		XMLToolBar &operator=(XMLToolBar pick_ &tb);
+		
 		// add an entry, various ways
 		XMLToolBar &SetName(String const &name);
 		XMLToolBar &Add(String const &commandId);
@@ -65,7 +77,10 @@ class XMLToolBar
 		XMLToolBar &Add(String const &commandId, String const &label, Image const &icon, String const &tooltip);
 
 		// add a submenu entry
-		XMLToolBar &Add(XMLToolBar const &subMenu);
+		XMLToolBar &Add(String const &subLabel, XMLToolBar pick_ &subMenu);
+		
+		// creates a submenu entry
+		XMLToolBar SubMenu(void);
 		
 		// add a submenu entry by callback
 		XMLToolBar &Add(Callback1<XMLToolBar &> bar);
@@ -83,6 +98,7 @@ class XMLToolBar
 		void Xmlize(XmlIO xml);
 };
 
+////////////////////////////////////////////////////////////////////////////////////
 class XMLToolBars : public Array<XMLToolBar>
 {
 	private:
@@ -90,6 +106,8 @@ class XMLToolBars : public Array<XMLToolBar>
 	protected:
 	
 	public:
+	
+		XMLToolBars &Add(String const &name);
 	
 };
 

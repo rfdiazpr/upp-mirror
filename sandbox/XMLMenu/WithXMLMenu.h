@@ -1,24 +1,10 @@
 #ifndef _WithXMLMenu_h_
 #define _WithXMLMenu_h_
 
-#include "XMLToolBarFrame.h"
-#include "XMLCommand.h"
-#include "XMLToolBar.h"
+#include "XMLMenuInterface.h"
+#include "XMLMenuEditor.h"
 
 NAMESPACE_UPP
-
-// interface part -- to support backlink from childs
-class XMLMenuInterface
-{
-	private:
-	
-	protected:
-	
-	public:
-	
-		// mouse events sent from floating toolbar
-		virtual void FloatingDraggedEvent(XMLToolBarCtrl &tb, Point p) = 0;
-};
 
 // main XML menu template
 template<class T> class WithXMLMenu : public T, public XMLMenuInterface
@@ -54,7 +40,7 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		
 		// pre-docking stuffs
 		Ptr<XMLToolBarFrame> preDockFrame;
-
+		
 		// menu and toolbars setter callbacks
 		void SetMenuBar0(Bar &bar, Array<XMLToolBarItem> const *items);
 		void SetMenuBar(Bar &bar) { SetMenuBar0(bar, NULL); }
@@ -77,6 +63,15 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		// mouse events sent from floating toolbar
 		virtual void FloatingDraggedEvent(XMLToolBarCtrl &tb, Point p);
 
+		// run the menu editor
+		void runEditorCb(void) { XMLMenuEditor(this).RunAppModal(); }
+		
+		// right click context menu
+		void ContextMenu(Bar& bar) { bar.Add(t_("Customize"), THISBACK(runEditorCb)); }
+
+		// right click event sent from various controls
+		virtual void RightClickEvent(Point p) { MenuBar::Execute(THISBACK(ContextMenu)); }
+
 		// the drag loop
 		void DragLoop(Point startP);
 		
@@ -98,6 +93,9 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 
 		// sets toolbars entries
 		void SetToolBars(Callback1<XMLToolBars &> tb);
+		
+		// gets/sets commands, menu and toolbars
+		virtual XMLCommands const &GetCommands(void) { return commands; }
 };
 
 template<class T> WithXMLMenu<T>::WithXMLMenu() :

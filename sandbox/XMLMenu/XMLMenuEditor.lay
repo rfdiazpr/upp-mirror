@@ -1,0 +1,10 @@
+LAYOUT(XMLMenuEditorLayout, 536, 304)
+	ITEM(Button, okButton, SetLabel(t_("Ok")).LeftPosZ(4, 68).TopPosZ(280, 20))
+	ITEM(Button, cancelButton, SetLabel(t_("Cancel")).LeftPosZ(464, 68).TopPosZ(280, 20))
+	ITEM(LabelBox, dv___2, SetLabel(t_("Available commands")).LeftPosZ(4, 164).TopPosZ(4, 272))
+	ITEM(Button, remCmdBtn, LeftPosZ(8, 20).TopPosZ(200, 20))
+	ITEM(Button, addCmdBtn, LeftPosZ(8, 20).TopPosZ(52, 20))
+	ITEM(ColumnList, commandList, LeftPosZ(32, 132).TopPosZ(20, 252))
+	ITEM(TabCtrl, tabCtrl, LeftPosZ(172, 360).TopPosZ(4, 272))
+END_LAYOUT
+

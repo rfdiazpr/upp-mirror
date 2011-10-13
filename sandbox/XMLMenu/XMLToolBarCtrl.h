@@ -117,6 +117,9 @@ class XMLToolBarCtrl : public ParentCtrl
 
 		// toolbar callback -- to be removed once XML is in place
 		void Set(Callback1<Bar &>bar) { toolBar.Set(bar); }
+		
+		// right mouse click handler -- forwards to main class context menu
+		virtual void ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags);
 
 		// constructor
 		XMLToolBarCtrl(XMLMenuInterface *iFace);

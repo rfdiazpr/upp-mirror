@@ -434,4 +434,11 @@ XMLToolBarCtrl &XMLToolBarCtrl::UnPreDock(XMLToolBarFrame &f)
 	return *this;
 }
 
+// right mouse click handler -- forwards to main class context menu
+void XMLToolBarCtrl::ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags)
+{
+	if(event == RIGHTDOWN)
+		iFace->RightClickEvent(p);
+}
+
 END_UPP_NAMESPACE

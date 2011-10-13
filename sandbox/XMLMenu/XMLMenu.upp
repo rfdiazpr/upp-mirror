@@ -19,6 +19,11 @@ file
 	XMLCommand.cpp,
 	XMLToolBar.h,
 	XMLToolBar.cpp,
+	XMLMenuInterface.h,
+	XMLMenuInterface.cpp,
+	XMLMenuEditor.lay,
+	XMLMenuEditor.h,
+	XMLMenuEditor.cpp,
 	WithXMLMenu.h,
 	WithXMLMenu.cpp;
 

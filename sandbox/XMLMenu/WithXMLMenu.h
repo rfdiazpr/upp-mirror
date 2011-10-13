@@ -64,7 +64,9 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		// menu and toolbars setter callbacks
 		void SetMenuBar0(Bar &bar, Array<XMLToolBarItem> const *items);
 		void SetMenuBar(Bar &bar) { SetMenuBar0(bar, NULL); }
-		void SetToolBar(Bar &bar, int tbIdx);
+
+		void SetToolBar0(Bar &bar, int tbIdx, Array<XMLToolBarItem> const *items);
+		void SetToolBar(Bar &bar, int tbIdx) { SetToolBar0(bar, tbIdx, NULL); }
 		
 		// calls user command handler, passing command ID to it
 		void callUserHandler(String const &s) { UserCmdHandler(s); }
@@ -113,6 +115,9 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		
 		// sets menu entries
 		void SetMenu(Callback1<XMLToolBar &> tb);
+
+		// sets toolbars entries
+		void SetToolBars(Callback1<XMLToolBars &> tb);
 };
 
 template<class T> WithXMLMenu<T>::WithXMLMenu() :
@@ -396,7 +401,7 @@ template<class T> void WithXMLMenu<T>::SetMenuBar0(Bar &bar, Array<XMLToolBarIte
 		// submenu handling
 		if(item.IsSubMenu())
 		{
-			bar.Add(item.GetLabel(), THISBACK1(SetMenuBar0, &item.GetSubMenu().GetItems()));
+			bar.Add(item.GetLabel(), item.GetIcon(), THISBACK1(SetMenuBar0, &item.GetSubMenu().GetItems()));
 			continue;
 		}
 
@@ -434,8 +439,56 @@ template<class T> void WithXMLMenu<T>::SetMenuBar0(Bar &bar, Array<XMLToolBarIte
 	}
 }
 
-template<class T> void WithXMLMenu<T>::SetToolBar(Bar &bar, int tbIdx)
+template<class T> void WithXMLMenu<T>::SetToolBar0(Bar &bar, int tbIdx, Array<XMLToolBarItem> const *items)
 {
+	// get menu bar items
+	if(!items)
+		items = &toolBars[tbIdx].GetItems();
+	
+	for(int i = 0; i < items->GetCount(); i++)
+	{
+		// get current item
+		XMLToolBarItem const &item = (*items)[i];
+		
+		// submenu handling
+		if(item.IsSubMenu())
+		{
+			bar.Add(item.GetLabel(), item.GetIcon(), THISBACK2(SetToolBar0, tbIdx, &item.GetSubMenu().GetItems()));
+			continue;
+		}
+
+		// get command id and find command
+		// if not found, just skip it
+		String id = item.GetId();
+		if(!commands.Has(id))
+			continue;
+		
+		// get command from id
+		XMLCommand const &cmd = commands.Get(id);
+		
+		// get callback from command
+		bool isCustom = cmd.GetIsCustom();
+		Callback handler;
+		if(isCustom)
+			handler = THISBACK1(callUserHandler, id);
+		else
+			handler = cmd.GetCallback();
+		
+		// get remaining item data
+		String label = item.GetLabel();
+		if(label == "")
+			label = id;
+		Image const &img = item.GetIcon();
+		
+		Ctrl *ctrl = cmd.GetCtrl();
+		bool enabled = cmd.GetIsEnabled();
+		
+		// adds to menu
+		if(ctrl)
+			bar.Add(*ctrl);
+		else
+			bar.Add(enabled, label, img, handler);
+	}
 }
 
 // sets builtin commands
@@ -451,6 +504,22 @@ template<class T> void WithXMLMenu<T>::SetMenu(Callback1<XMLToolBar &> tb)
 	tb(menuBar);
 	menuBarCtrl.Set(THISBACK(SetMenuBar));
 }
+
+// sets toolbars entries
+template<class T> void WithXMLMenu<T>::SetToolBars(Callback1<XMLToolBars &> tb)
+{
+	tb(toolBars);
+	toolBarCtrls.Clear();
+	for(int iBar = 0; iBar < toolBars.GetCount(); iBar++)
+	{
+		XMLToolBar &toolBar = toolBars[iBar];
+		toolBarCtrls.Add(new XMLToolBarCtrl(this));
+		XMLToolBarCtrl &toolBarCtrl = toolBarCtrls.Top();
+		Reposition(&toolBarCtrl, toolBar.GetState(), toolBar.Getx(), toolBar.Gety());
+		toolBarCtrls[iBar].Set(THISBACK1(SetToolBar, iBar));
+	}
+}
+
 
 END_UPP_NAMESPACE
 

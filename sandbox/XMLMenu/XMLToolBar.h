@@ -54,7 +54,7 @@ class XMLToolBar
 		
 		// position of toolbar
 		XMLToolBarCtrl::XMLToolBarState state;
-		int row, col;
+		int x, y;
 		
 	public:
 		// constructor
@@ -67,7 +67,10 @@ class XMLToolBar
 		XMLToolBar &operator=(XMLToolBar pick_ &tb);
 		
 		// add an entry, various ways
-		XMLToolBar &SetName(String const &name);
+		XMLToolBar &SetName(String const &_name)							{ name = _name; return *this; }
+		XMLToolBar &SetState(XMLToolBarCtrl::XMLToolBarState _state)		{ state = _state; return *this; }
+		XMLToolBar &SetPos(int _x, int _y)									{ x = _x; y = _y; return *this; }
+
 		XMLToolBar &Add(String const &commandId);
 		XMLToolBar &Add(String const &commandId, String const &label);
 		XMLToolBar &Add(String const &commandId, Image const &icon);
@@ -78,6 +81,7 @@ class XMLToolBar
 
 		// add a submenu entry
 		XMLToolBar &Add(String const &subLabel, XMLToolBar pick_ &subMenu);
+		XMLToolBar &Add(String const &subLabel, Image const &icon, XMLToolBar pick_ &subMenu);
 		
 		// creates a submenu entry
 		XMLToolBar SubMenu(void);
@@ -87,6 +91,11 @@ class XMLToolBar
 
 		// gets toolbar name
 		String const &GetName(void) const				{ return name; }
+		
+		// get toolbar state and position
+		XMLToolBarCtrl::XMLToolBarState GetState(void)	{ return state; }
+		int Getx(void)									{ return x; }
+		int Gety(void)									{ return y; }
 		
 		// gets toolbar items
 		Array<XMLToolBarItem> const &GetItems(void) const	{ return items; }
@@ -99,7 +108,7 @@ class XMLToolBar
 };
 
 ////////////////////////////////////////////////////////////////////////////////////
-class XMLToolBars : public Array<XMLToolBar>
+class XMLToolBars : public ArrayMap<String, XMLToolBar>
 {
 	private:
 	
@@ -107,8 +116,14 @@ class XMLToolBars : public Array<XMLToolBar>
 	
 	public:
 	
-		XMLToolBars &Add(String const &name);
-	
+		// adds a new toolbar
+		XMLToolBars &Add(String const &name, XMLToolBar pick_ &tb);
+		
+		// returns an empty toolbar at a given pos and state
+		XMLToolBar ToolBar(XMLToolBarCtrl::XMLToolBarState state, int row, int col);
+
+		// creates a submenu entry
+		XMLToolBar SubMenu(void);
 };
 
 END_UPP_NAMESPACE

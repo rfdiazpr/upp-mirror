@@ -14,8 +14,8 @@ XMLToolBar::XMLToolBar()
 	name = "";
 	items.Clear();
 	state = XMLToolBarCtrl::TOOLBAR_TOP;
-	row = 0;
-	col = 0;
+	x = 0;
+	y = 0;
 }
 
 // pick constructor
@@ -24,8 +24,8 @@ XMLToolBar::XMLToolBar(XMLToolBar pick_ &tb)
 	name = tb.name;
 	items = tb.items;
 	state = tb.state;
-	row = tb.row;
-	col = tb.col;
+	x = tb.x;
+	y = tb.y;
 }
 
 // copy operator
@@ -34,18 +34,12 @@ XMLToolBar &XMLToolBar::operator=(XMLToolBar pick_ &tb)
 	name = tb.name;
 	items = tb.items;
 	state = tb.state;
-	row = tb.row;
-	col = tb.col;
+	x = tb.x;
+	y = tb.y;
 	return *this;
 }
 
 // add an entry, various ways
-XMLToolBar &XMLToolBar::SetName(String const &_name)
-{
-	name = _name;
-	return *this;
-}
-
 XMLToolBar &XMLToolBar::Add(String const &commandId)
 {
 	XMLToolBarItem *item = new XMLToolBarItem;
@@ -87,7 +81,7 @@ XMLToolBar &XMLToolBar::Add(String const &commandId, String const &label, Image 
 	XMLToolBarItem *item = new XMLToolBarItem;
 	item->commandId = commandId;
 	item->label = label;
-	item->icon = Null;
+	item->icon = icon;
 	item->subMenu.Clear();
 	item->tooltip = "";
 	items.Add(item);
@@ -141,6 +135,17 @@ XMLToolBar &XMLToolBar::Add(String const &subLabel, XMLToolBar pick_ &subMenu)
 	return *this;
 }
 
+XMLToolBar &XMLToolBar::Add(String const &subLabel, Image const &icon, XMLToolBar pick_ &subMenu)
+{
+	XMLToolBarItem *item = new XMLToolBarItem;
+	item->label = subLabel;
+	item->icon = icon;
+	item->subMenu = new XMLToolBar(subMenu);
+	item->subMenu->name = subLabel;
+	items.Add(item);
+	return *this;
+}
+
 // creates a submenu entry
 XMLToolBar XMLToolBar::SubMenu(void)
 {
@@ -159,5 +164,29 @@ void XMLToolBar::Set(Callback1<XMLToolBar &> bar)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
+
+// adds a new toolbar
+XMLToolBars &XMLToolBars::Add(String const &name, XMLToolBar pick_ &tb)
+{
+	ArrayMap<String, XMLToolBar>::Add(name, tb);
+	Top().SetName(name);
+	return *this;
+}
+
+// returns an empty toolbar at a given pos and state
+XMLToolBar XMLToolBars::ToolBar(XMLToolBarCtrl::XMLToolBarState state, int row, int col)
+{
+	XMLToolBar res;
+	res.SetState(state);
+	res.SetPos(row, col);
+	return res;
+}
+
+// creates a submenu entry
+XMLToolBar XMLToolBars::SubMenu(void)
+{
+	return XMLToolBar();
+}
+
 
 END_UPP_NAMESPACE

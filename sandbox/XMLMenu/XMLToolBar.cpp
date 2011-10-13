@@ -168,7 +168,7 @@ void XMLToolBar::Set(Callback1<XMLToolBar &> bar)
 // adds a new toolbar
 XMLToolBars &XMLToolBars::Add(String const &name, XMLToolBar pick_ &tb)
 {
-	ArrayMap<String, XMLToolBar>::Add(name, tb);
+	ArrayMap<String, XMLToolBar>::AddPick(name, tb);
 	Top().SetName(name);
 	return *this;
 }

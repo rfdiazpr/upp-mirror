@@ -55,12 +55,6 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		// pre-docking stuffs
 		Ptr<XMLToolBarFrame> preDockFrame;
 
-	protected:
-	
-		// finds index of a given toolbar, -1 if none
-		int FindIndex(XMLToolBarCtrl &tb);
-		int FindFloating(XMLToolBarCtrl &tb);
-		
 		// menu and toolbars setter callbacks
 		void SetMenuBar0(Bar &bar, Array<XMLToolBarItem> const *items);
 		void SetMenuBar(Bar &bar) { SetMenuBar0(bar, NULL); }
@@ -71,29 +65,8 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		// calls user command handler, passing command ID to it
 		void callUserHandler(String const &s) { UserCmdHandler(s); }
 		
-	public:
-	
-		typedef WithXMLMenu<T> CLASSNAME;
-	
-		WithXMLMenu();
-		~WithXMLMenu();
-		
-		// adds a toolbar, hidden, undocked, centered on screen and floating when opened
-		WithXMLMenu<T> &Add(XMLToolBarCtrl *tb);
-		
-		// adds a toolbar, at a requested location and docking state
-		WithXMLMenu<T> &Add(XMLToolBarCtrl *tb, XMLToolBarCtrl::XMLToolBarState state, int aPos = -1, int bPos = -1);
-		WithXMLMenu<T> &AddTop(XMLToolBarCtrl *tb, int aPos = -1, int bPos = -1);
-		WithXMLMenu<T> &AddBottom(XMLToolBarCtrl *tb, int aPos = -1, int bPos = -1);
-		WithXMLMenu<T> &AddLeft(XMLToolBarCtrl *tb, int aPos = -1, int bPos = -1);
-		WithXMLMenu<T> &AddRight(XMLToolBarCtrl *tb, int aPos = -1, int bPos = -1);
-		WithXMLMenu<T> &AddFloating(XMLToolBarCtrl *tb, int aPos = -1, int bPos = -1);
-		
-		// removes a toolbar
-		WithXMLMenu<T> &Remove(XMLToolBarCtrl *tb);
-		
 		// docks/undocks/hide a toolbar
-		WithXMLMenu<T> &Reposition(XMLToolBarCtrl *tb, XMLToolBarCtrl::XMLToolBarState state, int aPos = -1, int bPos = -1);
+		WithXMLMenu<T> &Reposition(XMLToolBarCtrl *tb, XMLToolBarState state, int aPos = -1, int bPos = -1);
 		
 		// query a dock frame under screen point
 		XMLToolBarFrame *QueryDockFrame(Point p);
@@ -106,6 +79,13 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 
 		// the drag loop
 		void DragLoop(Point startP);
+		
+	public:
+	
+		typedef WithXMLMenu<T> CLASSNAME;
+	
+		WithXMLMenu();
+		~WithXMLMenu();
 		
 		// user commands handler
 		Callback1<String> UserCmdHandler;
@@ -121,10 +101,10 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 };
 
 template<class T> WithXMLMenu<T>::WithXMLMenu() :
-	topFrame		(XMLToolBarCtrl::TOOLBAR_TOP),
-	bottomFrame		(XMLToolBarCtrl::TOOLBAR_BOTTOM),
-	leftFrame		(XMLToolBarCtrl::TOOLBAR_LEFT),
-	rightFrame		(XMLToolBarCtrl::TOOLBAR_RIGHT)
+	topFrame		(TOOLBAR_TOP),
+	bottomFrame		(TOOLBAR_BOTTOM),
+	leftFrame		(TOOLBAR_LEFT),
+	rightFrame		(TOOLBAR_RIGHT)
 {
 	T::AddFrame(menuBarCtrl);
 	
@@ -144,106 +124,32 @@ template<class T> WithXMLMenu<T>::~WithXMLMenu()
 {
 }
 
-// finds index of a given toolbar, -1 if none
-template<class T> int WithXMLMenu<T>::FindIndex(XMLToolBarCtrl &tb)
-{
-	for(int i = 0; i < toolBarCtrls.GetCount(); i++)
-		if(&toolBarCtrls[i] == &tb)
-			return i;
-	return -1;
-}
-	
-template<class T> int WithXMLMenu<T>::FindFloating(XMLToolBarCtrl &tb)
-{
-	for(int i = 0; i < toolBarCtrls.GetCount(); i++)
-		if(&toolBarCtrls[i] == &tb && tb.GetIsFloating())
-			return i;
-	return -1;
-}
-
-// adds a toolbar, hidden, undocked, centered on screen and floating when opened first time,
-// on previous undocked position for next times
-template<class T> WithXMLMenu<T> &WithXMLMenu<T>::Add(XMLToolBarCtrl *tb)
-{
-	if(FindIndex(tb) >= 0)
-		return *this;
-	toolBarCtrls.Add(tb);
-}
-
-// adds a toolbar, at a requested location and docking state
-template<class T> WithXMLMenu<T> &WithXMLMenu<T>::Add(XMLToolBarCtrl *tb, XMLToolBarCtrl::XMLToolBarState state, int aPos, int bPos)
-{
-	// check if already there, we don't want it added again
-	if(FindIndex(*tb) < 0)
-		toolBarCtrls.Add(tb);
-	
-	// reposition the toolbar
-	Reposition(tb, state, aPos, bPos);
-	
-	return *this;
-}
-
-template<class T> WithXMLMenu<T> &WithXMLMenu<T>::AddTop(XMLToolBarCtrl *tb, int aPos, int bPos)
-{
-	return Add(tb, XMLToolBarCtrl::TOOLBAR_TOP, aPos, bPos);
-}
-
-template<class T> WithXMLMenu<T> &WithXMLMenu<T>::AddBottom(XMLToolBarCtrl *tb, int aPos, int bPos)
-{
-	return Add(tb, XMLToolBarCtrl::TOOLBAR_BOTTOM, aPos, bPos);
-}
-
-template<class T> WithXMLMenu<T> &WithXMLMenu<T>::AddLeft(XMLToolBarCtrl *tb, int aPos, int bPos)
-{
-	return Add(tb, XMLToolBarCtrl::TOOLBAR_LEFT, aPos, bPos);
-}
-
-template<class T> WithXMLMenu<T> &WithXMLMenu<T>::AddRight(XMLToolBarCtrl *tb, int aPos, int bPos)
-{
-	return Add(tb, XMLToolBarCtrl::TOOLBAR_RIGHT, aPos, bPos);
-}
-
-template<class T> WithXMLMenu<T> &WithXMLMenu<T>::AddFloating(XMLToolBarCtrl *tb, int aPos, int bPos)
-{
-	return Add(tb, XMLToolBarCtrl::TOOLBAR_FLOATING, aPos, bPos);
-}
-
-// removes a toolbar
-template<class T> WithXMLMenu<T> &WithXMLMenu<T>::Remove(XMLToolBarCtrl *tb)
-{
-	int i = FindIndex(*tb);
-	if(i < 0)
-		return *this;
-	tb->Close();
-	toolBarCtrls.Remove(i);
-}
-
 // docks/undocks/hide a toolbar
-template<class T> WithXMLMenu<T> &WithXMLMenu<T>::Reposition(XMLToolBarCtrl *tb, XMLToolBarCtrl::XMLToolBarState state, int aPos, int bPos)
+template<class T> WithXMLMenu<T> &WithXMLMenu<T>::Reposition(XMLToolBarCtrl *tb, XMLToolBarState state, int aPos, int bPos)
 {
 	switch(state)
 	{
-		case XMLToolBarCtrl::TOOLBAR_CLOSED :
+		case TOOLBAR_CLOSED :
 			tb->Close();
 			break;
 			
-		case XMLToolBarCtrl::TOOLBAR_FLOATING :
+		case TOOLBAR_FLOATING :
 			tb->Float(Point(aPos, bPos));
 			break;
 			
-		case XMLToolBarCtrl::TOOLBAR_TOP :
+		case TOOLBAR_TOP :
 			tb->Dock(topFrame, aPos, bPos);
 			break;
 			
-		case XMLToolBarCtrl::TOOLBAR_BOTTOM :
+		case TOOLBAR_BOTTOM :
 			tb->Dock(bottomFrame, aPos, bPos);
 			break;
 			
-		case XMLToolBarCtrl::TOOLBAR_LEFT :
+		case TOOLBAR_LEFT :
 			tb->Dock(leftFrame, aPos, bPos);
 			break;
 			
-		case XMLToolBarCtrl::TOOLBAR_RIGHT :
+		case TOOLBAR_RIGHT :
 			tb->Dock(rightFrame, aPos, bPos);
 			break;
 			
@@ -350,8 +256,8 @@ template<class T> void WithXMLMenu<T>::DragLoop(Point dragPoint)
 		preDockFrame = QueryDockFrame(pp);
 		if(preDockFrame)
 		{
-			XMLToolBarCtrl::XMLToolBarState state = preDockFrame->GetToolBarState();
-			if(state == XMLToolBarCtrl::TOOLBAR_TOP || state == XMLToolBarCtrl::TOOLBAR_BOTTOM)
+			XMLToolBarState state = preDockFrame->GetToolBarState();
+			if(state == TOOLBAR_TOP || state == TOOLBAR_BOTTOM)
 				dragToolBar->PopHorz(ps);
 			else
 				dragToolBar->PopVert(ps);

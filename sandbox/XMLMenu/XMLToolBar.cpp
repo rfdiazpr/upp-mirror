@@ -13,7 +13,7 @@ XMLToolBar::XMLToolBar()
 {
 	name = "";
 	items.Clear();
-	state = XMLToolBarCtrl::TOOLBAR_TOP;
+	state = TOOLBAR_TOP;
 	x = 0;
 	y = 0;
 }
@@ -174,7 +174,7 @@ XMLToolBars &XMLToolBars::Add(String const &name, XMLToolBar pick_ &tb)
 }
 
 // returns an empty toolbar at a given pos and state
-XMLToolBar XMLToolBars::ToolBar(XMLToolBarCtrl::XMLToolBarState state, int row, int col)
+XMLToolBar XMLToolBars::ToolBar(XMLToolBarState state, int row, int col)
 {
 	XMLToolBar res;
 	res.SetState(state);

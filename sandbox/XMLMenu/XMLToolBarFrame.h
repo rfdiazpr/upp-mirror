@@ -11,6 +11,8 @@ NAMESPACE_UPP
 class XMLToolBarFrame : public CtrlFrame, public Pte<XMLToolBarFrame>
 {
 	friend class XMLToolBarCtrl;
+	template <class T> friend class WithXMLMenu;
+	
 	private:
 		Ptr<Ctrl> parent;
 	
@@ -33,7 +35,7 @@ class XMLToolBarFrame : public CtrlFrame, public Pte<XMLToolBarFrame>
 		ParentCtrl toolBarContainer;
 		
 		// alignment of toolbarline
-		XMLToolBarCtrl::XMLToolBarState toolBarState;
+		XMLToolBarState toolBarState;
 	
 		// the toolbars on this frame
 		Array<Ptr<XMLToolBarCtrl> >toolBars;
@@ -45,24 +47,10 @@ class XMLToolBarFrame : public CtrlFrame, public Pte<XMLToolBarFrame>
 		// between them before repositioning
 		Array<Size> relativePositions;
 		
-		// dragging stuffs
-		bool dragging;
-		
-		// current drag point
-		Point dragPoint;
-		
-		// position of dragged toolbar before dragging
-		Ctrl::LogPos toolBarPos;
-		
-		// current dragging toolbar
-		Ptr<XMLToolBarCtrl> dragToolBar;
-		
 		// predocking stuffs
 		bool preDocking;
 		Rect preDockRect;
 		
-	protected:
-	
 		// recalculates relative toolbar's positions
 		// needed after adding or removing a toolbar
 		void Reposition(void);
@@ -92,31 +80,21 @@ class XMLToolBarFrame : public CtrlFrame, public Pte<XMLToolBarFrame>
 		// closes (undocking it) an XMLToolBar from this frame
 		XMLToolBarFrame &Undock(XMLToolBarCtrl &tb);
 		
-	public:
-	
-		XMLToolBarFrame(XMLToolBarCtrl::XMLToolBarState align);
-		~XMLToolBarFrame();
-		
 		// lays toolbars inside frame
 		virtual void Layout(void);
-		
-		// gets toolbar align
-		XMLToolBarCtrl::XMLToolBarState GetToolBarState() { return toolBarState; }
-		
-		// gets toolbar at given mouse point; point is in parent rect coordinates
-		// returns NULL if not grabbed a toolbar
-		XMLToolBarCtrl *GetToolBarAt(Point p);
-		
-		// gets isDragging flag
-		bool GetDragging(void) { return dragging; }
-
-		// check whether a point is inside the frame
-		bool Contains(Point p);
 		
 		// pre-docking handling
 		XMLToolBarFrame &PreDock(XMLToolBarCtrl &tb, Point p);
 		XMLToolBarFrame &UnPreDock(XMLToolBarCtrl &tb);
 
+		// check whether a point is inside the frame
+		bool Contains(Point p);
+		
+		// gets toolbar align
+		XMLToolBarState GetToolBarState() { return toolBarState; }
+		
+		XMLToolBarFrame(XMLToolBarState align);
+		~XMLToolBarFrame();
 };
 
 END_UPP_NAMESPACE

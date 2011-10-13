@@ -7,7 +7,6 @@ NAMESPACE_UPP
 // needed after adding or removing a toolbar
 void XMLToolBarFrame::Reposition(void)
 {
-//DLOG("------------REPOSITIONING --------------------------------");
 	// clears position mapper
 	posMapper.Clear();
 	
@@ -26,9 +25,7 @@ void XMLToolBarFrame::Reposition(void)
 		vPos.Add(sz.cy);
 	}
 	Sort(vPos);
-//DLOG("Sorted vert positions :");
-//for(int ii = 0; ii < vPos.GetCount(); ii++)
-//	DLOG("vPos[" << ii << "] = " << vPos[ii]);
+
 	VectorMap<int, int>vMap;
 	int v = 0;
 	for(int iPos = 0; iPos < vPos.GetCount(); iPos++)
@@ -71,15 +68,15 @@ void XMLToolBarFrame::Reposition(void)
 			Size sz;
 			switch(toolBarState)
 			{
-				case XMLToolBarCtrl::TOOLBAR_LEFT :
-				case XMLToolBarCtrl::TOOLBAR_RIGHT :
+				case TOOLBAR_LEFT :
+				case TOOLBAR_RIGHT :
 					sz = tb.GetVertSize();
 					rowHeight = max(rowHeight, sz.cx);
 					minNextPos = ps[i] + sz.cy + 2; // 2 pixels gap between columns
 					break;
 
-				case XMLToolBarCtrl::TOOLBAR_TOP :
-				case XMLToolBarCtrl::TOOLBAR_BOTTOM :
+				case TOOLBAR_TOP :
+				case TOOLBAR_BOTTOM :
 					sz = tb.GetHorzSize();
 					rowHeight = max(rowHeight, sz.cy);
 					minNextPos = ps[i] + sz.cx + 2; // 2 pixels gap between columns
@@ -99,7 +96,7 @@ void XMLToolBarFrame::Reposition(void)
 	frameSize = curVPos;
 
 	// if reversed direction, fixup cols
-	if(toolBarState == XMLToolBarCtrl::TOOLBAR_RIGHT || toolBarState == XMLToolBarCtrl::TOOLBAR_BOTTOM)
+	if(toolBarState == TOOLBAR_RIGHT || toolBarState == TOOLBAR_BOTTOM)
 	{
 		int lastPos = posMapper.GetKey(posMapper.GetCount()-1);
 		for(int iRow = 0; iRow < posMapper.GetCount(); iRow++)
@@ -116,7 +113,7 @@ void XMLToolBarFrame::FrameLayout(Rect& r)
 
 	switch(toolBarState)
 	{
-		case XMLToolBarCtrl::TOOLBAR_LEFT:
+		case TOOLBAR_LEFT:
 			r.left += frameSize + 4;
 			frameRect.right = r.left;
 			frameP11 = Point(frameRect.left, frameRect.top);
@@ -127,7 +124,7 @@ void XMLToolBarFrame::FrameLayout(Rect& r)
 			frameRect.right -= 2;
 			break;
 			
-		case XMLToolBarCtrl::TOOLBAR_RIGHT:
+		case TOOLBAR_RIGHT:
 			r.right -= frameSize + 4;
 			frameRect.left = r.right;
 			frameP11 = Point(frameRect.left, frameRect.top);
@@ -138,7 +135,7 @@ void XMLToolBarFrame::FrameLayout(Rect& r)
 			frameRect.right -= 2;
 			break;
 
-		case XMLToolBarCtrl::TOOLBAR_TOP:
+		case TOOLBAR_TOP:
 			r.top += frameSize + 4;
 			frameRect.bottom = r.top;
 			frameP11 = Point(frameRect.left, frameRect.top);
@@ -149,7 +146,7 @@ void XMLToolBarFrame::FrameLayout(Rect& r)
 			frameRect.bottom -= 2;
 			break;
 
-		case XMLToolBarCtrl::TOOLBAR_BOTTOM:
+		case TOOLBAR_BOTTOM:
 			r.bottom -= frameSize + 4;
 			frameRect.top = r.bottom;
 			frameP11 = Point(frameRect.left, frameRect.top);
@@ -181,13 +178,13 @@ void XMLToolBarFrame::FrameAddSize(Size& sz)
 	Reposition();
 	switch(toolBarState)
 	{
-		case XMLToolBarCtrl::TOOLBAR_LEFT:
-		case XMLToolBarCtrl::TOOLBAR_RIGHT:
+		case TOOLBAR_LEFT:
+		case TOOLBAR_RIGHT:
 			sz.cx += frameSize + 4;
 			break;
 			
-		case XMLToolBarCtrl::TOOLBAR_TOP:
-		case XMLToolBarCtrl::TOOLBAR_BOTTOM:
+		case TOOLBAR_TOP:
+		case TOOLBAR_BOTTOM:
 			sz.cy += frameSize + 4;
 			break;
 			
@@ -232,15 +229,15 @@ void XMLToolBarFrame::Layout(void)
 			int x1, y1, x2, y2;
 			switch(toolBarState)
 			{
-				case XMLToolBarCtrl::TOOLBAR_LEFT :
-				case XMLToolBarCtrl::TOOLBAR_RIGHT :
+				case TOOLBAR_LEFT :
+				case TOOLBAR_RIGHT :
 					sz = tb.GetVertSize();
 					x1 = rowPos;
 					y1 = colPos;
 					break;
 					
-				case XMLToolBarCtrl::TOOLBAR_TOP :
-				case XMLToolBarCtrl::TOOLBAR_BOTTOM :
+				case TOOLBAR_TOP :
+				case TOOLBAR_BOTTOM :
 					sz = tb.GetHorzSize();
 					x1 = colPos;
 					y1 = rowPos;
@@ -273,7 +270,6 @@ void XMLToolBarFrame::FrameAdd(Ctrl &_parent)
 {
 	parent = &_parent;
 	parent->AddChild(&toolBarContainer);
-//	toolBarContainer.SetPos(Ctrl::LogPos(Ctrl::PosSize(2, 2), Ctrl::PosSize(2, 2)), true);
 	Layout();
 }
 
@@ -283,15 +279,10 @@ void XMLToolBarFrame::FrameRemove(void)
 	parent = NULL;
 }
 
-XMLToolBarFrame::XMLToolBarFrame(XMLToolBarCtrl::XMLToolBarState _toolBarState)
+XMLToolBarFrame::XMLToolBarFrame(XMLToolBarState _toolBarState)
 {
 	parent = NULL;
 	toolBarState = _toolBarState;
-	
-	// reset dragging
-	dragging = 0;
-	dragPoint = Point(-1, -1);
-	dragToolBar = NULL;
 	
 	preDocking = false;
 }
@@ -351,22 +342,22 @@ bool XMLToolBarFrame::GetDockTarget(XMLToolBarCtrl &tb, Point p, int &dockLine, 
 	int framePos;
 	switch(toolBarState)
 	{
-		case XMLToolBarCtrl::TOOLBAR_LEFT :
+		case TOOLBAR_LEFT :
 			framePos = p.x;
 			col = p.y;
 			break;
 			
-		case XMLToolBarCtrl::TOOLBAR_RIGHT :
+		case TOOLBAR_RIGHT :
 			framePos = sz.cx - p.x;
 			col = p.y;
 			break;
 			
-		case XMLToolBarCtrl::TOOLBAR_TOP :
+		case TOOLBAR_TOP :
 			framePos = p.y;
 			col = p.x;
 			break;
 			
-		case XMLToolBarCtrl::TOOLBAR_BOTTOM :
+		case TOOLBAR_BOTTOM :
 			framePos = sz.cy - p.y;
 			col = p.x;
 			break;
@@ -412,8 +403,7 @@ XMLToolBarFrame &XMLToolBarFrame::Dock(XMLToolBarCtrl &tb, Point p)
 	bool insert;
 	if(!GetDockTarget(tb, p, dockLine, insert, col))
 		return *this;
-//DLOG("------------DOCKING --------------------------------");
-//DLOG("p:" << p << " DockLine:" << dockLine << " insert:" << insert << " col:" << col);
+
 	// if needed, shift all positions to make place for this toolbar line
 	if(insert)
 	{
@@ -450,7 +440,7 @@ XMLToolBarFrame &XMLToolBarFrame::Undock(XMLToolBarCtrl &tb)
 	relativePositions.Remove(i);
 	
 	// signals closed toolbar
-	tb.toolBarState = XMLToolBarCtrl::TOOLBAR_CLOSED;
+	tb.toolBarState = TOOLBAR_CLOSED;
 	tb.toolBarFrame = NULL;
 
 	// reposition the frame
@@ -473,7 +463,6 @@ XMLToolBarFrame &XMLToolBarFrame::PreDock(XMLToolBarCtrl &tb, Point p)
 	if(!GetDockTarget(tb, p, dockLine, insert, col))
 		return *this;
 	preDocking = true;
-//DLOG("PREDOCKING");
 
 	// if needed, shift all positions to make place for this toolbar line
 	if(insert)
@@ -488,8 +477,6 @@ XMLToolBarFrame &XMLToolBarFrame::PreDock(XMLToolBarCtrl &tb, Point p)
 	toolBars.Add(&tb);
 	Reposition();
 	Layout();
-//DLOG("END PREDOCKING");
-//	Ctrl::ProcessEvents();
 	return *this;
 }
 
@@ -497,31 +484,13 @@ XMLToolBarFrame &XMLToolBarFrame::UnPreDock(XMLToolBarCtrl &tb)
 {
 	if(!preDocking)
 		return *this;
-//DLOG("PREUNDOCKING");
 	relativePositions.Trim(relativePositions.GetCount() - 1);
 	toolBars.Trim(toolBars.GetCount() - 1);
 	Reposition();
 	parent->Refresh(preDockRect);
 	Layout();
-//DLOG("END PREUNDOCKING");
-//	Ctrl::ProcessEvents();
 	preDocking = false;
 	return *this;
-}
-
-// gets toolbar at given mouse point; point is in parent rect coordinates
-// returns NULL if not grabbed a toolbar
-XMLToolBarCtrl *XMLToolBarFrame::GetToolBarAt(Point p)
-{
-	p -= toolBarContainer.GetRect().TopLeft();
-	for(int iToolBar = 0; iToolBar < toolBars.GetCount(); iToolBar++)
-	{
-		XMLToolBarCtrl *tb = toolBars[iToolBar];
-		Rect r = tb->GetRect();
-		if(r.Contains(p))
-			return tb;
-	}
-	return NULL;
 }
 
 // check whether a point is inside the frame

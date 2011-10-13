@@ -53,7 +53,7 @@ class XMLToolBar
 		Array<XMLToolBarItem> items;
 		
 		// position of toolbar
-		XMLToolBarCtrl::XMLToolBarState state;
+		XMLToolBarState state;
 		int x, y;
 		
 	public:
@@ -68,7 +68,7 @@ class XMLToolBar
 		
 		// add an entry, various ways
 		XMLToolBar &SetName(String const &_name)							{ name = _name; return *this; }
-		XMLToolBar &SetState(XMLToolBarCtrl::XMLToolBarState _state)		{ state = _state; return *this; }
+		XMLToolBar &SetState(XMLToolBarState _state)		{ state = _state; return *this; }
 		XMLToolBar &SetPos(int _x, int _y)									{ x = _x; y = _y; return *this; }
 
 		XMLToolBar &Add(String const &commandId);
@@ -93,7 +93,7 @@ class XMLToolBar
 		String const &GetName(void) const				{ return name; }
 		
 		// get toolbar state and position
-		XMLToolBarCtrl::XMLToolBarState GetState(void)	{ return state; }
+		XMLToolBarState GetState(void)	{ return state; }
 		int Getx(void)									{ return x; }
 		int Gety(void)									{ return y; }
 		
@@ -120,7 +120,7 @@ class XMLToolBars : public ArrayMap<String, XMLToolBar>
 		XMLToolBars &Add(String const &name, XMLToolBar pick_ &tb);
 		
 		// returns an empty toolbar at a given pos and state
-		XMLToolBar ToolBar(XMLToolBarCtrl::XMLToolBarState state, int row, int col);
+		XMLToolBar ToolBar(XMLToolBarState state, int row, int col);
 
 		// creates a submenu entry
 		XMLToolBar SubMenu(void);

@@ -402,21 +402,21 @@ XMLToolBarCtrl &XMLToolBarCtrl::CloseBar(void)
 // pre-Dock and pre-Undock a toolbar inside frame
 XMLToolBarCtrl &XMLToolBarCtrl::PreDock(XMLToolBarFrame &f, Point p)
 {
-	ASSERT(toolBarState == XMLToolBarCtrl::TOOLBAR_HORZ_POPUP || toolBarState == XMLToolBarCtrl::TOOLBAR_VERT_POPUP);
+	ASSERT(toolBarState == TOOLBAR_HORZ_POPUP || toolBarState == TOOLBAR_VERT_POPUP);
 	
 	// dock into given frame and set docked state
 	f.PreDock(*this, p);
 	toolBarFrame = &f;
 	switch(f.GetToolBarState())
 	{
-		case XMLToolBarCtrl::TOOLBAR_LEFT :
-		case XMLToolBarCtrl::TOOLBAR_RIGHT :
-			SetState(XMLToolBarCtrl::TOOLBAR_VERT_POPUP);
+		case TOOLBAR_LEFT :
+		case TOOLBAR_RIGHT :
+			SetState(TOOLBAR_VERT_POPUP);
 			break;
 			
-		case XMLToolBarCtrl::TOOLBAR_TOP :
-		case XMLToolBarCtrl::TOOLBAR_BOTTOM :
-			SetState(XMLToolBarCtrl::TOOLBAR_HORZ_POPUP);
+		case TOOLBAR_TOP :
+		case TOOLBAR_BOTTOM :
+			SetState(TOOLBAR_HORZ_POPUP);
 			break;
 		default:
 			NEVER();

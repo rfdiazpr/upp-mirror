@@ -7,13 +7,13 @@ NAMESPACE_UPP
 
 class XMLDragFrame : public CtrlFrame
 {
+	friend class XMLToolBarCtrl;
+	
 	private:
 	
 		Ptr<Ctrl> parent;
 		
 		int align;
-	
-	protected:
 	
 		// frame painting
 		virtual void FramePaint(Draw& w, const Rect& r);
@@ -22,8 +22,6 @@ class XMLDragFrame : public CtrlFrame
 		virtual void FrameAdd(Ctrl &_parent);
 		virtual void FrameRemove(void);
 
-	public:
-	
 		// frame layout functions
 		virtual void FrameLayout(Rect &r);
 		virtual void FrameAddSize(Size &s);

@@ -6,16 +6,29 @@
 
 NAMESPACE_UPP
 
+typedef enum
+{
+	TOOLBAR_CLOSED,
+	TOOLBAR_FLOATING,
+	TOOLBAR_HORZ_POPUP,
+	TOOLBAR_VERT_POPUP,
+	TOOLBAR_SQUARE_POPUP,
+	TOOLBAR_TOP,
+	TOOLBAR_BOTTOM,
+	TOOLBAR_LEFT,
+	TOOLBAR_RIGHT
+	
+} XMLToolBarState;
+
 // XMLToolBar class : a container for ToolBar and its drag handle
 class XMLToolBarFrame;
 class XMLMenuInterface;
 class XMLToolBarCtrl : public ParentCtrl
 {
 	template<class T> friend class WithXMLMenu;
-	public:
-		typedef enum { TOOLBAR_CLOSED, TOOLBAR_FLOATING, TOOLBAR_HORZ_POPUP, TOOLBAR_VERT_POPUP, TOOLBAR_SQUARE_POPUP, TOOLBAR_TOP, TOOLBAR_BOTTOM, TOOLBAR_LEFT, TOOLBAR_RIGHT } XMLToolBarState;
-	
 	friend class XMLToolBarFrame;
+	friend class XMLToolBarFloating;
+
 	private:
 
 		// just to access BarPane::GetSize()...
@@ -47,24 +60,14 @@ class XMLToolBarCtrl : public ParentCtrl
 		int dockedRow, dockedCol;
 		int undockedX, undockedY;
 		
-	protected:
-	
 		// lays toolbar and handle inside control
 		virtual void Layout(void);
 		
 		// gets toolbar align
 		int GetAlign(void);
 		
-	public:
-	
 		typedef XMLToolBarCtrl CLASSNAME;
 
-		// constructor
-		XMLToolBarCtrl(XMLMenuInterface *iFace);
-		
-		// destructor
-		~XMLToolBarCtrl();
-		
 		XMLMenuInterface *GetInterface(void) { return iFace; }
 		
 		// gets toolbar size when completely inlined horizontally
@@ -114,6 +117,14 @@ class XMLToolBarCtrl : public ParentCtrl
 
 		// toolbar callback -- to be removed once XML is in place
 		void Set(Callback1<Bar &>bar) { toolBar.Set(bar); }
+
+		// constructor
+		XMLToolBarCtrl(XMLMenuInterface *iFace);
+		
+	public:
+		// destructor
+		~XMLToolBarCtrl();
+		
 };
 
 END_UPP_NAMESPACE

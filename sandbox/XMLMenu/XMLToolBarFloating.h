@@ -9,6 +9,8 @@ NAMESPACE_UPP
 class XMLToolBarCtrl;
 class XMLToolBarFloating : public DragWindow
 {
+	friend class XMLToolBarCtrl;
+	
 	private:
 	
 		Ptr<XMLToolBarCtrl> toolBar;
@@ -16,14 +18,12 @@ class XMLToolBarFloating : public DragWindow
 		Ptr<Ctrl> focusCtrl;
 #endif
 
-	protected:
-	
 		// handler for window drag events
 		virtual void WindowDragged(DragWindow::DragEvent e, Point p);
 		
-	public:
-	
 		XMLToolBarFloating(XMLToolBarCtrl &tb, Point p);
+
+	public:
 		~XMLToolBarFloating();
 };
 

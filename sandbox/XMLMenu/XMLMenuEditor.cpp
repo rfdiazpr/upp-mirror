@@ -2,6 +2,72 @@
 
 NAMESPACE_UPP
 
+////////////////////////////////////////////////////////////////////////////////
+// constructor
+XMLBarEditor::XMLBarEditor()
+{
+	bar = NULL;
+	item = NULL;
+	itemSize = itemPane.GetLayoutSize();
+	CtrlLayout(itemPane);
+	Add(vertSplitter);
+	vertSplitter.Vert(barTree, itemPane);
+}
+
+// gets minimum size of bar editor
+Size XMLBarEditor::GetMinSize(void)
+{
+	return Size(itemSize.cx, itemSize.cy * 2);
+}
+
+// layouts control
+void XMLBarEditor::Layout(void)
+{
+	int h = GetSize().cy;
+	if(h)
+		vertSplitter.SetPos(10000 * (h - itemSize.cy) / h);
+}
+		
+// sets bar being edited
+void XMLBarEditor::SetBar(XMLToolBar &bar)
+{
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// constructor
+XMLBarsEditor::XMLBarsEditor()
+{
+	// get toolbar/menu selector pane sizes, it's width will be fixed too
+	selectorSize = barListPane.GetLayoutSize();
+	
+	CtrlLayout(barListPane);
+
+	Add(horzSplitter.SizePos());
+	horzSplitter.Horz(barListPane, barEditor);
+}
+
+// gets minimum size of bar editor
+Size XMLBarsEditor::GetMinSize(void)
+{
+	return Size(
+		selectorSize.cx + barEditor.GetMinSize().cx,
+		max(selectorSize.cy, barEditor.GetMinSize().cy)
+	);
+}
+
+// adjust layout on win changes
+void XMLBarsEditor::Layout(void)
+{
+	horzSplitter.SetPos(10000 * selectorSize.cx / GetSize().cx);
+}
+
+// set title
+void XMLBarsEditor::SetTitle(const char *s)
+{
+	barListPane.title = s;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 void XMLMenuEditor::cancelCb(void)
 {
 	Break(IDCANCEL);
@@ -22,43 +88,47 @@ XMLMenuEditor::XMLMenuEditor(XMLMenuInterface *_iFace) : iFace(_iFace)
 	okButton.Ok() <<= THISBACK(okCb);
 	cancelButton.Cancel() <<= THISBACK(cancelCb);
 	
-	// gets size of item editor pane, we keep that one fixed size
-	itemSize = itemPane.GetLayoutSize();
-	
-	// get command pane size, that one will be fixed too
+	// get command pane size, that one will be fixed in width
 	cmdSize = cmdPane.GetLayoutSize();
+	
+	// gets menu/bar editor minimum sizes
+	editorSize = menusEditor.GetMinSize();
+	
+	// now calculate tabctrl minimum sizes
+	int tx = editorSize.cx;
+	int ty = cmdSize.cy;
+	tabCtrlSize = Size(tx, ty);
 	
 	// gets button vertical neede size
 	buttonVertSize = GetLayoutSize().cy - horzSplitter.GetSize().cy;
 	
 	// adds items to horz splitter
-	horzSplitter.Horz(cmdPane, rightPane);
+	horzSplitter.Horz(cmdPane, tabCtrl);
+	
+	// adds items to tabctrl
+	tabCtrl.Add(menusEditor.SizePos(), t_("Menus"));
+	tabCtrl.Add(barsEditor.SizePos(), t_("ToolBars"));
 
 	// adds layout to all ctrls
 	CtrlLayout(cmdPane);
-	CtrlLayout(rightPane);
-	CtrlLayout(tabsPane);
-	CtrlLayout(itemPane);
-	CtrlLayout(menuTree);
+	
+	// set title for selector panes
+	menusEditor.SetTitle(t_("Available menus"));
+	barsEditor.SetTitle(t_("Available toolbars"));
 	
 	// adjust window width to accomodate at least itemPane and cmdPane
-	minWidth = itemSize.cx + cmdSize.cx;
+	minWidth = cmdSize.cx + tabCtrlSize.cx;
 	
 	// adjust window height to accomodate cmdPane
 	minHeight = cmdSize.cy;
 	
-	// setup tabs
-	tabsPane.tabCtrl.Add(menuTree, t_("Menu"));
-	tabsPane.tabCtrl.Add(t_("ToolBars"));
+	SetMinSize(Size(minWidth, minHeight));
 	
 	int w = max(GetSize().cx, minWidth);
 	int h = max(GetSize().cy - buttonVertSize, minHeight);
 	int wr = w;
 	int hr = h + buttonVertSize;
 	SetRect(GetRect().left, GetRect().top, wr, hr);
-	
-	// adds items to vertical splitter
-	rightPane.vertSplitter.Vert(tabsPane, itemPane);
 	
 	Sizeable();
 	
@@ -75,8 +145,6 @@ void XMLMenuEditor::Layout(void)
 {
 	// adjust splitter sizes
 	horzSplitter.SetPos(10000 * cmdSize.cx / GetSize().cx);
-	int netH = GetSize().cy - buttonVertSize;
-	rightPane.vertSplitter.SetPos(10000 * (netH - itemSize.cy) / netH);
 }
 		
 // gets commands from iFace and fills the command list

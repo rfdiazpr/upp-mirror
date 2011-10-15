@@ -3,12 +3,9 @@ LAYOUT(CmdBoxLayout, 156, 296)
 	ITEM(ColumnList, commandList, HSizePosZ(8, 8).VSizePosZ(16, 8))
 END_LAYOUT
 
-LAYOUT(TabItemLayout, 260, 348)
-	ITEM(Splitter, vertSplitter, HSizePosZ(0, 0).VSizePosZ(0, 0))
-END_LAYOUT
-
-LAYOUT(TabsLayout, 396, 200)
-	ITEM(TabCtrl, tabCtrl, HSizePosZ(0, 4).VSizePosZ(0, 0))
+LAYOUT(BarListLayout, 156, 296)
+	ITEM(LabelBox, title, SetLabel(t_("Available toolbars")).HSizePosZ(4, 4).VSizePosZ(0, 4))
+	ITEM(ColumnList, barList, HSizePosZ(8, 8).VSizePosZ(16, 8))
 END_LAYOUT
 
 LAYOUT(ItemEditorLayout, 340, 104)
@@ -26,9 +23,5 @@ LAYOUT(MenuEditorLayout, 536, 304)
 	ITEM(Button, okButton, SetLabel(t_("Ok")).LeftPosZ(4, 68).BottomPosZ(4, 20))
 	ITEM(Button, cancelButton, SetLabel(t_("Cancel")).RightPosZ(4, 68).BottomPosZ(4, 20))
 	ITEM(Splitter, horzSplitter, HSizePosZ(0, 0).VSizePosZ(0, 28))
-END_LAYOUT
-
-LAYOUT(TabMenuLayout, 400, 200)
-	ITEM(TreeCtrl, menuTree, HSizePosZ(0, 0).VSizePosZ(0, 0))
 END_LAYOUT
 

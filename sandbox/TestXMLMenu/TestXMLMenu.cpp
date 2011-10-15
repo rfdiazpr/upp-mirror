@@ -42,37 +42,41 @@ static void commandCb(XMLCommands &cmds)
 }
 
 // menu structure callback
-void menuCb(XMLToolBar &tb)
+void menuCb(XMLToolBars &tb)
 {
 	tb
-		.Add("File", tb.SubMenu()
-			.Add("New"		, t_("New")		, TestImg::New())
-			.Add("Open"		, t_("Open")	, TestImg::Open())
-			.Add("Save"		, t_("Save")	, TestImg::Save())
-			.Add("SaveAs"	, t_("SaveAs")	, TestImg::SaveAs())
-			.Add("Quit"		, t_("Quit")	, TestImg::Quit())
-		)
-		.Add("Calc", tb.SubMenu()
-			.Add("NewCalc"	, t_("NewCalc")	, TestImg::NewCalc())
-		)
-		.Add("Printer", tb.SubMenu()
-			.Add("Print", t_("Print"), TestImg::Print())
-			.Add("PrintPreview", t_("PrintPreview"), TestImg::PrintPreview())
-		)
-		.Add("Other", tb.SubMenu()
-			.Add("Next"			, TestImg::Next())
-			.Add("Previous"		, TestImg::Previous())
-			.Add("Settings"		, TestImg::Settings())
-			.Add("Help"			, TestImg::Help())
-			.Add("More"	, tb.SubMenu()
-				.Add("Flag"			, TestImg::Flag())
-				.Add("Remove"		, TestImg::Remove())
-				.Add("Delete"		, TestImg::Delete())
-				.Add("ListAdd"		, TestImg::ListAdd())
-				.Add("ListRemove"	, TestImg::ListRemove())
-				.Add("RtfImport"	, TestImg::RtfImport())
+		.Add("Main", tb.MenuBar()
+			.Add("File", tb.SubMenu()
+				.Add("New"		, t_("New")		, TestImg::New())
+				.Add("Open"		, t_("Open")	, TestImg::Open())
+				.Add("Save"		, t_("Save")	, TestImg::Save())
+				.Add("SaveAs"	, t_("SaveAs")	, TestImg::SaveAs())
+				.Add("Quit"		, t_("Quit")	, TestImg::Quit())
 			)
-			.Add("Exit"			, TestImg::Exit())
+			.Add("Calc", tb.SubMenu()
+				.Add("NewCalc"	, t_("NewCalc")	, TestImg::NewCalc())
+			)
+			.Add("Printer", tb.SubMenu()
+				.Add("Print", t_("Print"), TestImg::Print())
+				.Add("PrintPreview", t_("PrintPreview"), TestImg::PrintPreview())
+			)
+			.Add("Other", tb.SubMenu()
+				.Add("Next"			, TestImg::Next())
+				.Add("Previous"		, TestImg::Previous())
+				.Add("Settings"		, TestImg::Settings())
+				.Add("Help"			, TestImg::Help())
+				.Add("More"	, tb.SubMenu()
+					.Add("Flag"			, TestImg::Flag())
+					.Add("Remove"		, TestImg::Remove())
+					.Add("Delete"		, TestImg::Delete())
+				)
+				.Add("Exit"			, TestImg::Exit())
+			)
+		)
+		.Add("Context", tb.MenuBar()
+			.Add("ListAdd"		, TestImg::ListAdd())
+			.Add("ListRemove"	, TestImg::ListRemove())
+			.Add("RtfImport"	, TestImg::RtfImport())
 		)
 	;
 }
@@ -114,6 +118,14 @@ void toolBarsCb(XMLToolBars &tb)
 	;
 }
 
+// context menu handler
+void TestXMLMenu::RightDown(Point p, dword)
+{
+	MenuBar *menu = GetContextMenu("Context");
+	if(menu)
+		menu->Execute();
+}
+
 GUI_APP_MAIN
 {
 
@@ -124,10 +136,13 @@ GUI_APP_MAIN
 	testXMLMenu.SetCommands(STDBACK(commandCb));
 	
 	// build default menu structure
-	testXMLMenu.SetMenu(STDBACK(menuCb));
+	testXMLMenu.SetMenuBars(STDBACK(menuCb));
 	
 	// build default toolbars structure
 	testXMLMenu.SetToolBars(STDBACK(toolBarsCb));
+	
+	// don't allow dock bottom
+//	testXMLMenu.NoDockBottom();
 	
 	testXMLMenu.Sizeable().Zoomable();
 	testXMLMenu.Run();

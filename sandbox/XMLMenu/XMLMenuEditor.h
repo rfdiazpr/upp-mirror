@@ -28,6 +28,9 @@ class XMLMenuEditor : public WithMenuEditorLayout<TopWindow>
 		// item editor
 		WithItemEditorLayout<ParentCtrl> itemPane;
 		
+		// menu tree inside tab
+		WithTabMenuLayout<ParentCtrl> menuTree;
+		
 		// vertical size of button area
 		int buttonVertSize;
 		

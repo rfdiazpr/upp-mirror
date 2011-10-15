@@ -121,6 +121,7 @@ class XMLToolBars : public ArrayMap<String, XMLToolBar>
 		
 		// returns an empty toolbar at a given pos and state
 		XMLToolBar ToolBar(XMLToolBarState state, int row, int col);
+		XMLToolBar MenuBar(void) { return ToolBar(TOOLBAR_TOP, 0, 0); }
 
 		// creates a submenu entry
 		XMLToolBar SubMenu(void);

@@ -17,8 +17,10 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		// the configurable toolbars
 		XMLToolBars toolBars;
 		
-		// the configurable menu bar
-		XMLToolBar menuBar;
+		// the configurable menu bars
+		// the bar named 'Main' is the main menu
+		// others are context menus
+		XMLToolBars menuBars;
 	
 		// the four corner XMLToolbarFrame frames
 		XMLToolBarFrame topFrame;
@@ -26,11 +28,19 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		XMLToolBarFrame leftFrame;
 		XMLToolBarFrame rightFrame;
 		
-		// the menu bar control
-		MenuBar menuBarCtrl;
+		// the menu bars
+		Array<MenuBar> menuBarCtrls;
 	
 		// toolbar controls storage area
 		Array<XMLToolBarCtrl> toolBarCtrls;
+		
+		// flags stating allowed dock point and main menu bar
+		bool dockTop, dockBottom, dockLeft, dockRight;
+		bool mainMenu;
+		
+		// refrash frames when menu/toolbars changed
+		// or docking points changed
+		void RefreshFrames(void);
 		
 		// dragging flag
 		bool dragging;
@@ -42,8 +52,8 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		Ptr<XMLToolBarFrame> preDockFrame;
 		
 		// menu and toolbars setter callbacks
-		void SetMenuBar0(Bar &bar, Array<XMLToolBarItem> const *items);
-		void SetMenuBar(Bar &bar) { SetMenuBar0(bar, NULL); }
+		void SetMenuBar0(Bar &bar, int mnIdx, Array<XMLToolBarItem> const *items);
+		void SetMenuBar(Bar &bar, int mnIdx) { SetMenuBar0(bar, mnIdx, NULL); }
 
 		void SetToolBar0(Bar &bar, int tbIdx, Array<XMLToolBarItem> const *items);
 		void SetToolBar(Bar &bar, int tbIdx) { SetToolBar0(bar, tbIdx, NULL); }
@@ -89,13 +99,29 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		void SetCommands(Callback1<XMLCommands &> cmds);
 		
 		// sets menu entries
-		void SetMenu(Callback1<XMLToolBar &> tb);
+		void SetMenuBars(Callback1<XMLToolBars &> tb);
 
 		// sets toolbars entries
 		void SetToolBars(Callback1<XMLToolBars &> tb);
 		
 		// gets/sets commands, menu and toolbars
 		virtual XMLCommands const &GetCommands(void) { return commands; }
+		
+		// controls docking and main menu behaviour
+		WithXMLMenu<T> &DockTop(bool b = true)		{ dockTop = b;		RefreshFrames(); return *this; } 
+		WithXMLMenu<T> &NoDockTop(void)				{ return DockTop(false); }
+		WithXMLMenu<T> &DockBottom(bool b = true)	{ dockBottom = b;	RefreshFrames(); return *this; } 
+		WithXMLMenu<T> &NoDockBottom(void)			{ return DockBottom(false); }
+		WithXMLMenu<T> &DockLeft(bool b = true)		{ dockLeft = b;		RefreshFrames(); return *this; } 
+		WithXMLMenu<T> &NoDockLeft(void)			{ return DockLeft(false); }
+		WithXMLMenu<T> &DockRight(bool b = true)	{ dockRight = b;	RefreshFrames(); return *this; } 
+		WithXMLMenu<T> &NoDockRight(void)			{ return DockRight(false); }
+		
+		WithXMLMenu<T> &MainMenu(bool b = true)		{ mainMenu = b; RefreshFrames(); return *this; }
+		WithXMLMenu<T> &NoMainMenu(void)			{ return MainMenu(false); }
+		
+		// gets a context menu by name -- NULL if none
+		MenuBar *GetContextMenu(String const &name);
 };
 
 template<class T> WithXMLMenu<T>::WithXMLMenu() :
@@ -104,23 +130,53 @@ template<class T> WithXMLMenu<T>::WithXMLMenu() :
 	leftFrame		(TOOLBAR_LEFT),
 	rightFrame		(TOOLBAR_RIGHT)
 {
-	T::AddFrame(menuBarCtrl);
-	
-	T::AddFrame(topFrame);
-	T::AddFrame(bottomFrame);
-	T::AddFrame(leftFrame);
-	T::AddFrame(rightFrame);
+	// allows, by default, docking on 4 corners and embeds
+	// main menu too
+	dockTop = dockBottom = dockLeft = dockRight = true;
+	mainMenu = true;
 	
 	dragging = false;
 	dragToolBar = NULL;
 	
 	preDockFrame = NULL;
+
+	RefreshFrames();
 	
 }
 
 template<class T> WithXMLMenu<T>::~WithXMLMenu()
 {
 }
+
+// refrash frames when menu/toolbars changed
+// or docking points changed
+template<class T> void WithXMLMenu<T>::RefreshFrames(void)
+{
+	// removes all frames
+	T::ClearFrames();
+	
+	// adds main menu
+	if(mainMenu)
+	{
+		int mainIdx = menuBars.Find("Main");
+		if(mainIdx >= 0)
+		{
+			MenuBar &bar = menuBarCtrls[mainIdx];
+			T::AddFrame(bar);
+		}
+	}
+
+	// add docking frames
+	if(dockTop)
+		T::AddFrame(topFrame);
+	if(dockBottom)
+		T::AddFrame(bottomFrame);
+	if(dockLeft)
+		T::AddFrame(leftFrame);
+	if(dockRight)
+		T::AddFrame(rightFrame);
+}
+		
 
 // docks/undocks/hide a toolbar
 template<class T> WithXMLMenu<T> &WithXMLMenu<T>::Reposition(XMLToolBarCtrl *tb, XMLToolBarState state, int aPos, int bPos)
@@ -161,13 +217,13 @@ template<class T> WithXMLMenu<T> &WithXMLMenu<T>::Reposition(XMLToolBarCtrl *tb,
 template<class T> XMLToolBarFrame *WithXMLMenu<T>::QueryDockFrame(Point p)
 {
 	// reset point to be on control rect
-	if(topFrame.Contains(p))
+	if(dockTop && topFrame.Contains(p))
 		return &topFrame;
-	else if(bottomFrame.Contains(p))
+	else if(dockBottom && bottomFrame.Contains(p))
 		return &bottomFrame;
-	else if(leftFrame.Contains(p))
+	else if(dockLeft && leftFrame.Contains(p))
 		return &leftFrame;
-	else if(rightFrame.Contains(p))
+	else if(dockRight && rightFrame.Contains(p))
 		return &rightFrame;
 	else
 		return NULL;
@@ -291,11 +347,11 @@ template<class T> void WithXMLMenu<T>::DragLoop(Point dragPoint)
 }
 
 // menu and toolbars setter callbacks
-template<class T> void WithXMLMenu<T>::SetMenuBar0(Bar &bar, Array<XMLToolBarItem> const *items)
+template<class T> void WithXMLMenu<T>::SetMenuBar0(Bar &bar, int mnIdx, Array<XMLToolBarItem> const *items)
 {
 	// get menu bar items
 	if(!items)
-		items = &menuBar.GetItems();
+		items = &menuBars[mnIdx].GetItems();
 	
 	for(int i = 0; i < items->GetCount(); i++)
 	{
@@ -305,7 +361,7 @@ template<class T> void WithXMLMenu<T>::SetMenuBar0(Bar &bar, Array<XMLToolBarIte
 		// submenu handling
 		if(item.IsSubMenu())
 		{
-			bar.Add(item.GetLabel(), item.GetIcon(), THISBACK1(SetMenuBar0, &item.GetSubMenu().GetItems()));
+			bar.Add(item.GetLabel(), item.GetIcon(), THISBACK2(SetMenuBar0, mnIdx, &item.GetSubMenu().GetItems()));
 			continue;
 		}
 
@@ -398,15 +454,40 @@ template<class T> void WithXMLMenu<T>::SetToolBar0(Bar &bar, int tbIdx, Array<XM
 // sets builtin commands
 template<class T> void WithXMLMenu<T>::SetCommands(Callback1<XMLCommands &> cmds)
 {
+	// setup commands
 	cmds(commands);
-	menuBarCtrl.Set(THISBACK(SetMenuBar));
+	
+	// refresh menus
+	for(int iBar = 0; iBar < menuBars.GetCount(); iBar++)
+		menuBarCtrls[iBar].Set(THISBACK1(SetMenuBar, iBar));
+	
+	// refresh toolbars
+	for(int iBar = 0; iBar < toolBars.GetCount(); iBar++)
+		toolBarCtrls[iBar].Set(THISBACK1(SetToolBar, iBar));
+	
+	// refresh frames
+	RefreshFrames();
 }
 
 // sets menu entries
-template<class T> void WithXMLMenu<T>::SetMenu(Callback1<XMLToolBar &> tb)
+template<class T> void WithXMLMenu<T>::SetMenuBars(Callback1<XMLToolBars &> tb)
 {
-	tb(menuBar);
-	menuBarCtrl.Set(THISBACK(SetMenuBar));
+	tb(menuBars);
+	menuBarCtrls.Clear();
+	for(int iBar = 0; iBar < menuBars.GetCount(); iBar++)
+	{
+		menuBarCtrls.Add(new MenuBar);
+
+		// workaround for main menu... without this one
+		// it appears as a popup menu
+		if(menuBars[iBar].GetName() == "Main")
+			T::AddFrame(menuBarCtrls[iBar]);
+
+		menuBarCtrls[iBar].Set(THISBACK1(SetMenuBar, iBar));
+	}
+
+	// refresh toolbars
+	RefreshFrames();
 }
 
 // sets toolbars entries
@@ -422,8 +503,19 @@ template<class T> void WithXMLMenu<T>::SetToolBars(Callback1<XMLToolBars &> tb)
 		Reposition(&toolBarCtrl, toolBar.GetState(), toolBar.Getx(), toolBar.Gety());
 		toolBarCtrls[iBar].Set(THISBACK1(SetToolBar, iBar));
 	}
+
+	// refresh toolbars
+	RefreshFrames();
 }
 
+// gets a context menu by name -- NULL if none
+template<class T> MenuBar *WithXMLMenu<T>::GetContextMenu(String const &name)
+{
+	int idx = menuBars.Find(name);
+	if(idx < 0)
+		return NULL;
+	return &menuBarCtrls[idx];
+}
 
 END_UPP_NAMESPACE
 

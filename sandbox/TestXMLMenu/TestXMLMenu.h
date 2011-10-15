@@ -11,10 +11,14 @@ using namespace Upp;
 
 class TestXMLMenu : public WithXMLMenu<TopWindow>
 {
+		// context menu handler
+		virtual void RightDown(Point p, dword);
+
 	public:
 		typedef TestXMLMenu CLASSNAME;
 
 		TestXMLMenu();
+		
 };
 
 #endif

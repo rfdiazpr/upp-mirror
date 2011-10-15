@@ -39,6 +39,7 @@ XMLMenuEditor::XMLMenuEditor(XMLMenuInterface *_iFace) : iFace(_iFace)
 	CtrlLayout(rightPane);
 	CtrlLayout(tabsPane);
 	CtrlLayout(itemPane);
+	CtrlLayout(menuTree);
 	
 	// adjust window width to accomodate at least itemPane and cmdPane
 	minWidth = itemSize.cx + cmdSize.cx;
@@ -47,7 +48,7 @@ XMLMenuEditor::XMLMenuEditor(XMLMenuInterface *_iFace) : iFace(_iFace)
 	minHeight = cmdSize.cy;
 	
 	// setup tabs
-	tabsPane.tabCtrl.Add(t_("Menu"));
+	tabsPane.tabCtrl.Add(menuTree, t_("Menu"));
 	tabsPane.tabCtrl.Add(t_("ToolBars"));
 	
 	int w = max(GetSize().cx, minWidth);

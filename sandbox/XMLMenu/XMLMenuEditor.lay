@@ -28,3 +28,7 @@ LAYOUT(MenuEditorLayout, 536, 304)
 	ITEM(Splitter, horzSplitter, HSizePosZ(0, 0).VSizePosZ(0, 28))
 END_LAYOUT
 
+LAYOUT(TabMenuLayout, 400, 200)
+	ITEM(TreeCtrl, menuTree, HSizePosZ(0, 0).VSizePosZ(0, 0))
+END_LAYOUT
+

@@ -1,10 +1,30 @@
-LAYOUT(XMLMenuEditorLayout, 536, 304)
-	ITEM(Button, okButton, SetLabel(t_("Ok")).LeftPosZ(4, 68).TopPosZ(280, 20))
-	ITEM(Button, cancelButton, SetLabel(t_("Cancel")).LeftPosZ(464, 68).TopPosZ(280, 20))
-	ITEM(LabelBox, dv___2, SetLabel(t_("Available commands")).LeftPosZ(4, 164).TopPosZ(4, 272))
-	ITEM(Button, remCmdBtn, LeftPosZ(8, 20).TopPosZ(200, 20))
-	ITEM(Button, addCmdBtn, LeftPosZ(8, 20).TopPosZ(52, 20))
-	ITEM(ColumnList, commandList, LeftPosZ(32, 132).TopPosZ(20, 252))
-	ITEM(TabCtrl, tabCtrl, LeftPosZ(172, 360).TopPosZ(4, 272))
+LAYOUT(CmdBoxLayout, 156, 296)
+	ITEM(LabelBox, dv___0, SetLabel(t_("Available commands")).HSizePosZ(4, 4).VSizePosZ(0, 4))
+	ITEM(ColumnList, commandList, HSizePosZ(8, 8).VSizePosZ(16, 8))
+END_LAYOUT
+
+LAYOUT(TabItemLayout, 260, 348)
+	ITEM(Splitter, vertSplitter, HSizePosZ(0, 0).VSizePosZ(0, 0))
+END_LAYOUT
+
+LAYOUT(TabsLayout, 396, 200)
+	ITEM(TabCtrl, tabCtrl, HSizePosZ(0, 4).VSizePosZ(0, 0))
+END_LAYOUT
+
+LAYOUT(ItemEditorLayout, 340, 104)
+	ITEM(EditString, tooltip, LeftPosZ(96, 136).TopPosZ(80, 19))
+	ITEM(Label, dv___1, SetLabel(t_("Icon :")).LeftPosZ(248, 88).TopPosZ(0, 20))
+	ITEM(Label, dv___2, SetLabel(t_("Command id :")).LeftPosZ(0, 92).TopPosZ(0, 20))
+	ITEM(EditString, cmdId, LeftPosZ(96, 136).TopPosZ(0, 19))
+	ITEM(Label, dv___4, SetLabel(t_("Label :")).LeftPosZ(0, 92).TopPosZ(40, 20))
+	ITEM(EditString, label, LeftPosZ(96, 136).TopPosZ(40, 19))
+	ITEM(Label, dv___6, SetLabel(t_("Tooltip :")).LeftPosZ(0, 92).TopPosZ(80, 20))
+	ITEM(ImageCtrl, dv___7, LeftPosZ(248, 88).TopPosZ(24, 76))
+END_LAYOUT
+
+LAYOUT(MenuEditorLayout, 536, 304)
+	ITEM(Button, okButton, SetLabel(t_("Ok")).LeftPosZ(4, 68).BottomPosZ(4, 20))
+	ITEM(Button, cancelButton, SetLabel(t_("Cancel")).RightPosZ(4, 68).BottomPosZ(4, 20))
+	ITEM(Splitter, horzSplitter, HSizePosZ(0, 0).VSizePosZ(0, 28))
 END_LAYOUT
 

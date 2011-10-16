@@ -44,8 +44,7 @@ void XMLBarEditor::RefreshBar(int treeRoot, XMLToolBar *subBar)
 	for(int iChild = 0; iChild < barTree.GetChildCount(treeRoot); iChild++)
 	{
 		int iNode = barTree.GetChild(treeRoot, iChild);
-		XMLToolBarItem &item = barItems.Get(iNode);
-		subBar->items.Add(new XMLToolBarItem(item, 0));
+		subBar->items.Add(new XMLToolBarItem(ValueTo<XMLToolBarItem>(barTree.Get(iNode)), 0));
 		if(barTree.GetChildCount(iNode))
 		{
 			subBar->items.Top().subMenu = new XMLToolBar;
@@ -66,7 +65,6 @@ void XMLBarEditor::SetBar(XMLToolBar *_bar)
 	
 	bar = _bar;
 	barTree.Clear();
-	barItems.Clear();
 	if(!bar)
 		return;
 	buildTree(0, bar);
@@ -81,9 +79,8 @@ void XMLBarEditor::buildTree(int root, XMLToolBar const *bar)
 	for(int iItem = 0; iItem < items.GetCount(); iItem++)
 	{
 		XMLToolBarItem const &item = items[iItem];
-		TreeCtrl::Node node(item.GetIcon(), item.GetLabel());
+		TreeCtrl::Node node(item.GetIcon(), RawDeepToValue(item), item.GetLabel());
 		int iNode = barTree.Add(root, node);
-		barItems.Add(iNode, new XMLToolBarItem(item, 0));
 		if(items[iItem].IsSubMenu())
 			buildTree(iNode, &items[iItem].GetSubMenu());
 	}
@@ -179,6 +176,13 @@ void XMLMenuEditor::cancelCb(void)
 
 void XMLMenuEditor::okCb(void)
 {
+	// updates edited toolbars
+	if(iFace)
+	{
+		//iFace->SetCommands(
+		iFace->SetMenuBars(menusEditor.GetToolBars());
+		iFace->SetToolBars(barsEditor.GetToolBars());
+	}
 	Break(IDOK);
 	Close();
 }

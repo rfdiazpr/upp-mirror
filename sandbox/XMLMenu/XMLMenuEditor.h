@@ -14,6 +14,7 @@ NAMESPACE_UPP
 // bar editor class -- allow editing of a single menu/toolbar
 class XMLBarEditor : public ParentCtrl
 {
+	friend class XMLBarsEditor;
 	private:
 		// toolbar being edited
 		XMLToolBar *bar;
@@ -33,7 +34,7 @@ class XMLBarEditor : public ParentCtrl
 		// of TreeCtrl::Node
 		// beware, items here don't contain sub-bars, this is handled
 		// by TreeCtrl. Ugly solution, but didn't found a simpler one
-		ArrayMap<int, XMLToolBarItem> barItems;
+//		ArrayMap<int, XMLToolBarItem> barItems;
 
 		// vertical splitter dividing tree from item editor
 		Splitter vertSplitter;
@@ -116,7 +117,7 @@ class XMLBarsEditor : public ParentCtrl
 		void SetToolBars(XMLToolBars const &tb);
 		
 		// gets the local copy of toolbars
-		XMLToolBars &GetToolBars(void) { return toolBars; }
+		XMLToolBars &GetToolBars(void) { barEditor.RefreshBar(); return toolBars; }
 };
 
 ////////////////////////////////////////////////////////////////////////////////

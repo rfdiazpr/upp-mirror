@@ -25,6 +25,21 @@ XMLToolBarItem::XMLToolBarItem(const XMLToolBarItem &item, int dummy)
 	subMenu		<<= item.subMenu;
 }
 
+#ifdef flagDEBUG
+// debugging stuff -- dumps bar content
+void XMLToolBarItem::Dump(int level)
+{
+	String spacer;
+	spacer.Cat(' ', level);
+	DLOG(spacer << "commandId:" << commandId);
+	DLOG(spacer << "label    :" << label);
+	DLOG(spacer << "tooltip  :" << tooltip);
+	DLOG(spacer << "submenu  :" << FormatHex(~subMenu));
+	if(subMenu)
+		subMenu->Dump(level+2);
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////////
 // XMLToolBar
 
@@ -193,6 +208,21 @@ void XMLToolBar::Set(Callback1<XMLToolBar &> bar)
 {
 }
 
+#ifdef flagDEBUG
+// debugging stuff -- dumps bar content
+void XMLToolBar::Dump(int level)
+{
+	String spacer;
+	spacer.Cat(' ', level);
+	DLOG(spacer << "Name:" << name << "  ITEMS:" << items.GetCount());
+	for(int iItem = 0; iItem < items.GetCount(); iItem++)
+	{
+		DLOG(spacer << "ITEM #" << iItem);
+		items[iItem].Dump(level + 2);
+	}
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////////
 
 // adds a new toolbar
@@ -218,5 +248,18 @@ XMLToolBar XMLToolBars::SubMenu(void)
 	return XMLToolBar();
 }
 
+#ifdef flagDEBUG
+// debugging stuff -- dumps bar content
+void XMLToolBars::Dump(int level)
+{
+	String spacer;
+	spacer.Cat(' ', level);
+	for(int iBar = 0; iBar < GetCount(); iBar++)
+	{
+		DLOG(spacer << "TOOLBAR #" << iBar);
+		operator[](iBar).Dump(level + 2);
+	}
+}
+#endif
 
 END_UPP_NAMESPACE

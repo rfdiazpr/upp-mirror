@@ -45,6 +45,11 @@ class XMLToolBarItem : DeepCopyOption<XMLToolBarItem>
 		
 		// copy constructor
 		XMLToolBarItem(const XMLToolBarItem &item, int dummy);
+
+#ifdef flagDEBUG
+		// debugging stuff -- dumps bar content
+		void Dump(int level = 0);
+#endif
 };
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -116,6 +121,11 @@ class XMLToolBar : DeepCopyOption<XMLToolBar>
 
 		// xml support
 		void Xmlize(XmlIO xml);
+
+#ifdef flagDEBUG
+		// debugging stuff -- dumps bar content
+		void Dump(int level = 0);
+#endif
 };
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -136,6 +146,11 @@ class XMLToolBars : public ArrayMap<String, XMLToolBar>
 
 		// creates a submenu entry
 		XMLToolBar SubMenu(void);
+
+#ifdef flagDEBUG
+		// debugging stuff -- dumps bar content
+		void Dump(int level = 0);
+#endif
 };
 
 END_UPP_NAMESPACE

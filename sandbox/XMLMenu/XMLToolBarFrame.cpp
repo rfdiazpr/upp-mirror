@@ -275,6 +275,8 @@ void XMLToolBarFrame::FrameAdd(Ctrl &_parent)
 
 void XMLToolBarFrame::FrameRemove(void)
 {
+	toolBars.Clear();
+	relativePositions.Clear();
 	parent->RemoveChild(&toolBarContainer);
 	parent = NULL;
 }

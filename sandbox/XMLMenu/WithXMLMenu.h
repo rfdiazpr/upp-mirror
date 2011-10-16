@@ -85,6 +85,9 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		// the drag loop
 		void DragLoop(Point startP);
 		
+		// refresh menus and bars
+		void RefreshBars(void);
+
 	public:
 	
 		typedef WithXMLMenu<T> CLASSNAME;
@@ -105,9 +108,12 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		void SetToolBars(Callback1<XMLToolBars &> tb);
 		
 		// gets/sets commands, menu and toolbars
-		virtual XMLCommands const &GetCommands(void) { return commands; }
-		virtual XMLToolBars const &GetMenuBars(void) { return menuBars; }
-		virtual XMLToolBars const &GetToolBars(void) { return toolBars; }
+		virtual XMLCommands const &GetCommands(void)	{ return commands; }
+		virtual void SetCommands(XMLCommands &cmds)		{ commands = cmds; RefreshBars(); }
+		virtual XMLToolBars const &GetMenuBars(void)	{ return menuBars; }
+		virtual void SetMenuBars(XMLToolBars &tb)		{ DLOG("\n\nBEFORE"); menuBars.Dump(); menuBars = tb; DLOG("\n\nAFTER"); menuBars.Dump();  RefreshBars(); }
+		virtual XMLToolBars const &GetToolBars(void)	{ return toolBars; }
+		virtual void SetToolBars(XMLToolBars &tb)		{ toolBars = tb;   RefreshBars(); }
 		
 		// controls docking and main menu behaviour
 		WithXMLMenu<T> &DockTop(bool b = true)		{ dockTop = b;		RefreshFrames(); return *this; } 
@@ -453,28 +459,12 @@ template<class T> void WithXMLMenu<T>::SetToolBar0(Bar &bar, int tbIdx, Array<XM
 	}
 }
 
-// sets builtin commands
-template<class T> void WithXMLMenu<T>::SetCommands(Callback1<XMLCommands &> cmds)
+// refresh menus and bars
+template<class T> void WithXMLMenu<T>::RefreshBars(void)
 {
-	// setup commands
-	cmds(commands);
-	
-	// refresh menus
-	for(int iBar = 0; iBar < menuBars.GetCount(); iBar++)
-		menuBarCtrls[iBar].Set(THISBACK1(SetMenuBar, iBar));
-	
-	// refresh toolbars
-	for(int iBar = 0; iBar < toolBars.GetCount(); iBar++)
-		toolBarCtrls[iBar].Set(THISBACK1(SetToolBar, iBar));
-	
-	// refresh frames
-	RefreshFrames();
-}
+	T::ClearFrames();
 
-// sets menu entries
-template<class T> void WithXMLMenu<T>::SetMenuBars(Callback1<XMLToolBars &> tb)
-{
-	tb(menuBars);
+	// refresh menus
 	menuBarCtrls.Clear();
 	for(int iBar = 0; iBar < menuBars.GetCount(); iBar++)
 	{
@@ -486,16 +476,10 @@ template<class T> void WithXMLMenu<T>::SetMenuBars(Callback1<XMLToolBars &> tb)
 			T::AddFrame(menuBarCtrls[iBar]);
 
 		menuBarCtrls[iBar].Set(THISBACK1(SetMenuBar, iBar));
+		T::RemoveFrame(menuBarCtrls[iBar]);
 	}
-
+	
 	// refresh toolbars
-	RefreshFrames();
-}
-
-// sets toolbars entries
-template<class T> void WithXMLMenu<T>::SetToolBars(Callback1<XMLToolBars &> tb)
-{
-	tb(toolBars);
 	toolBarCtrls.Clear();
 	for(int iBar = 0; iBar < toolBars.GetCount(); iBar++)
 	{
@@ -505,9 +489,37 @@ template<class T> void WithXMLMenu<T>::SetToolBars(Callback1<XMLToolBars &> tb)
 		Reposition(&toolBarCtrl, toolBar.GetState(), toolBar.Getx(), toolBar.Gety());
 		toolBarCtrls[iBar].Set(THISBACK1(SetToolBar, iBar));
 	}
+	
+	// refresh frames
+	RefreshFrames();
+}
+
+// sets builtin commands
+template<class T> void WithXMLMenu<T>::SetCommands(Callback1<XMLCommands &> cmds)
+{
+	// setup commands
+	cmds(commands);
+	
+	// refresh bars and frames
+	RefreshBars();
+}
+
+// sets menu entries
+template<class T> void WithXMLMenu<T>::SetMenuBars(Callback1<XMLToolBars &> tb)
+{
+	tb(menuBars);
 
 	// refresh toolbars
-	RefreshFrames();
+	RefreshBars();
+}
+
+// sets toolbars entries
+template<class T> void WithXMLMenu<T>::SetToolBars(Callback1<XMLToolBars &> tb)
+{
+	tb(toolBars);
+
+	// refresh toolbars
+	RefreshBars();
 }
 
 // gets a context menu by name -- NULL if none

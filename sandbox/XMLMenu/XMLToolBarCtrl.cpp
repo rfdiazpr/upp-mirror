@@ -19,12 +19,10 @@ XMLToolBarCtrl::XMLToolBarCtrl(XMLMenuInterface *_iFace)
 	
 	// undocked, at screen center
 	Rect r = GetScreenRect();
-	undockedX = r.left + r.Width() / 2;
-	undockedY = r.top + r.Height() / 2;
+	floatingPos = Point(r.left + r.Width() / 2, r.top + r.Height() / 2);
 	
 	// docked, after last line, at left
-	dockedRow = 1000;
-	dockedCol = 0;
+	dockedPos = Point(0, 1000);
 }
 
 XMLToolBarCtrl::~XMLToolBarCtrl()
@@ -98,6 +96,42 @@ XMLToolBarCtrl &XMLToolBarCtrl::SetState(XMLToolBarState state)
 	}
 	return *this;
 }
+
+// gets bar position
+Point XMLToolBarCtrl::GetPosition(void)
+{
+	switch(toolBarState)
+	{
+		case TOOLBAR_CLOSED :
+		case TOOLBAR_HORZ_POPUP :
+		case TOOLBAR_VERT_POPUP :
+		case TOOLBAR_SQUARE_POPUP :
+			switch(prevState)
+			{
+				case TOOLBAR_TOP :
+				case TOOLBAR_BOTTOM :
+				case TOOLBAR_LEFT :
+				case TOOLBAR_RIGHT :
+					return dockedPos;
+				default :
+					return floatingPos;
+			}
+			break;
+
+		case TOOLBAR_FLOATING :
+			return floatingPos;
+
+		case TOOLBAR_TOP :
+		case TOOLBAR_BOTTOM :
+		case TOOLBAR_LEFT :
+		case TOOLBAR_RIGHT :
+			return dockedPos;
+		default :
+			NEVER();
+			return dockedPos;
+	}
+}
+
 
 // gets toolbar align
 int XMLToolBarCtrl::GetAlign(void)
@@ -268,6 +302,7 @@ XMLToolBarFloating &XMLToolBarCtrl::Float(Point p)
 	
 	// create the floating window
 	floating = new XMLToolBarFloating(*this, p);
+	floatingPos = p;
 	
 	return *floating;
 }
@@ -356,8 +391,8 @@ XMLToolBarCtrl &XMLToolBarCtrl::Dock(XMLToolBarFrame &f, int row, int col)
 	// dock into given frame and set docked state
 	f.Dock(*this, row, col);
 	toolBarFrame = &f;
-	SetState(f.GetToolBarState());
 	prevState = toolBarState;
+	SetState(f.GetToolBarState());
 	return *this;
 }
 
@@ -369,8 +404,8 @@ XMLToolBarCtrl &XMLToolBarCtrl::Dock(XMLToolBarFrame &f, Point p)
 	// dock into given frame and set docked state
 	f.Dock(*this, p);
 	toolBarFrame = &f;
-	SetState(f.GetToolBarState());
 	prevState = toolBarState;
+	SetState(f.GetToolBarState());
 	return *this;
 }
 

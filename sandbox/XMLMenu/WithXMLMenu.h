@@ -87,6 +87,9 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		
 		// refresh menus and bars
 		void RefreshBars(void);
+		
+		// sync bars from ctrls
+		void SyncBars(void);
 
 	public:
 	
@@ -112,7 +115,7 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		virtual void SetCommands(XMLCommands &cmds)		{ commands = cmds; RefreshBars(); }
 		virtual XMLToolBars const &GetMenuBars(void)	{ return menuBars; }
 		virtual void SetMenuBars(XMLToolBars &tb)		{ DLOG("\n\nBEFORE"); menuBars.Dump(); menuBars = tb; DLOG("\n\nAFTER"); menuBars.Dump();  RefreshBars(); }
-		virtual XMLToolBars const &GetToolBars(void)	{ return toolBars; }
+		virtual XMLToolBars const &GetToolBars(void)	{ SyncBars(); return toolBars; }
 		virtual void SetToolBars(XMLToolBars &tb)		{ toolBars = tb;   RefreshBars(); }
 		
 		// controls docking and main menu behaviour
@@ -187,7 +190,7 @@ template<class T> void WithXMLMenu<T>::RefreshFrames(void)
 		
 
 // docks/undocks/hide a toolbar
-template<class T> WithXMLMenu<T> &WithXMLMenu<T>::Reposition(XMLToolBarCtrl *tb, XMLToolBarState state, int aPos, int bPos)
+template<class T> WithXMLMenu<T> &WithXMLMenu<T>::Reposition(XMLToolBarCtrl *tb, XMLToolBarState state, int x, int y)
 {
 	switch(state)
 	{
@@ -196,23 +199,23 @@ template<class T> WithXMLMenu<T> &WithXMLMenu<T>::Reposition(XMLToolBarCtrl *tb,
 			break;
 			
 		case TOOLBAR_FLOATING :
-			tb->Float(Point(aPos, bPos));
+			tb->Float(Point(x, y));
 			break;
 			
 		case TOOLBAR_TOP :
-			tb->Dock(topFrame, aPos, bPos);
+			tb->Dock(topFrame, x, y);
 			break;
 			
 		case TOOLBAR_BOTTOM :
-			tb->Dock(bottomFrame, aPos, bPos);
+			tb->Dock(bottomFrame, x, y);
 			break;
 			
 		case TOOLBAR_LEFT :
-			tb->Dock(leftFrame, aPos, bPos);
+			tb->Dock(leftFrame, x, y);
 			break;
 			
 		case TOOLBAR_RIGHT :
-			tb->Dock(rightFrame, aPos, bPos);
+			tb->Dock(rightFrame, x, y);
 			break;
 			
 		default:
@@ -481,17 +484,34 @@ template<class T> void WithXMLMenu<T>::RefreshBars(void)
 	
 	// refresh toolbars
 	toolBarCtrls.Clear();
+DLOG("REFRESHING...");
 	for(int iBar = 0; iBar < toolBars.GetCount(); iBar++)
 	{
 		XMLToolBar &toolBar = toolBars[iBar];
 		toolBarCtrls.Add(new XMLToolBarCtrl(this));
 		XMLToolBarCtrl &toolBarCtrl = toolBarCtrls.Top();
-		Reposition(&toolBarCtrl, toolBar.GetState(), toolBar.Getx(), toolBar.Gety());
+DLOG("Pos : " << Point(toolBar.Getx(), toolBar.Gety()));
 		toolBarCtrls[iBar].Set(THISBACK1(SetToolBar, iBar));
+		Reposition(&toolBarCtrl, toolBar.GetState(), toolBar.Getx(), toolBar.Gety());
 	}
+DLOG("END");
 	
 	// refresh frames
 	RefreshFrames();
+}
+
+// sync bars from ctrls
+template<class T> void WithXMLMenu<T>::SyncBars(void)
+{
+DLOG("SYNCING...");
+	for(int i = 0; i < toolBars.GetCount(); i++)
+	{
+		Point p = toolBarCtrls[i].GetPosition();
+DLOG("Pos : " << p);
+		XMLToolBarState state = toolBarCtrls[i].GetState();
+		toolBars[i].SetPos(p.x, p.y).SetState(state);
+	}
+DLOG("END");
 }
 
 // sets builtin commands

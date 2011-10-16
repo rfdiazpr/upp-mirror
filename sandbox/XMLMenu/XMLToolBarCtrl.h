@@ -1,24 +1,11 @@
 #ifndef _XMLToolBar_h_
 #define _XMLToolBar_h_
 
+#include "XMLToolBar.h"
 #include "XMLDragFrame.h"
 #include "XMLToolBarFloating.h"
 
 NAMESPACE_UPP
-
-typedef enum
-{
-	TOOLBAR_CLOSED,
-	TOOLBAR_FLOATING,
-	TOOLBAR_HORZ_POPUP,
-	TOOLBAR_VERT_POPUP,
-	TOOLBAR_SQUARE_POPUP,
-	TOOLBAR_TOP,
-	TOOLBAR_BOTTOM,
-	TOOLBAR_LEFT,
-	TOOLBAR_RIGHT
-	
-} XMLToolBarState;
 
 // XMLToolBar class : a container for ToolBar and its drag handle
 class XMLToolBarFrame;
@@ -57,8 +44,8 @@ class XMLToolBarCtrl : public ParentCtrl
 		
 		// current or last docking status of this toolbar
 		XMLToolBarState toolBarState, prevState;
-		int dockedRow, dockedCol;
-		int undockedX, undockedY;
+		Point dockedPos;
+		Point floatingPos;
 		
 		// lays toolbar and handle inside control
 		virtual void Layout(void);
@@ -94,6 +81,9 @@ class XMLToolBarCtrl : public ParentCtrl
 		// sets toolbar state
 		XMLToolBarCtrl &SetState(XMLToolBarState state);
 		XMLToolBarState GetState(void) { return toolBarState; }
+		
+		// gets bar position
+		Point GetPosition(void);
 		
 		// floats the toolbar at a given position
 		XMLToolBarFloating &Float(Point p);

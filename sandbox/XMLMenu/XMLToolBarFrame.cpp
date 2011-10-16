@@ -102,7 +102,6 @@ void XMLToolBarFrame::Reposition(void)
 		for(int iRow = 0; iRow < posMapper.GetCount(); iRow++)
 			posMapper.SetKey(iRow, lastPos - posMapper.GetKey(iRow));
 	}
-
 }
 
 void XMLToolBarFrame::FrameLayout(Rect& r)
@@ -311,7 +310,7 @@ int XMLToolBarFrame::FindIndex(XMLToolBarCtrl &tb)
 
 // docks a toolbar into this frame
 // internal function -- called by XMLToolBar one
-XMLToolBarFrame &XMLToolBarFrame::Dock(XMLToolBarCtrl &tb, int row, int col)
+XMLToolBarFrame &XMLToolBarFrame::Dock(XMLToolBarCtrl &tb, int col, int row)
 {
 	// if already docked here, just do nothing
 	if(FindIndex(tb) >= 0)
@@ -327,6 +326,7 @@ XMLToolBarFrame &XMLToolBarFrame::Dock(XMLToolBarCtrl &tb, int row, int col)
 	relativePositions.Add(Size(col, row));
 	Reposition();
 	Layout();
+	tb.dockedPos = Point(relativePositions.Top().cx, relativePositions.Top().cy);
 	return *this;
 }
 
@@ -420,6 +420,7 @@ XMLToolBarFrame &XMLToolBarFrame::Dock(XMLToolBarCtrl &tb, Point p)
 	toolBarContainer.AddChild(&tb);
 	Reposition();
 	Layout();
+	tb.dockedPos = Point(relativePositions.Top().cx, relativePositions.Top().cy);
 	return *this;
 }
 
@@ -430,11 +431,10 @@ XMLToolBarFrame &XMLToolBarFrame::Undock(XMLToolBarCtrl &tb)
 	int i = FindIndex(tb);
 	if(i < 0)
 		return *this;
-	
+
 	// store inside toolbar last docked position
 	Size &sz = relativePositions[i];
-	toolBars[i]->dockedRow = sz.cy;
-	toolBars[i]->dockedCol = sz.cx;
+	toolBars[i]->dockedPos= Point(sz.cx, sz.cy);
 	
 	// remove from toolbars and positions list
 	toolBars.Remove(i);

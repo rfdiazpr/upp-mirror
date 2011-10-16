@@ -1,10 +1,23 @@
 #ifndef _XMLMenuItem_h_
 #define _XMLMenuItem_h_
 
-#include "XMLToolBarCtrl.h"
 #include "XMLCommand.h"
 
 NAMESPACE_UPP
+
+typedef enum
+{
+	TOOLBAR_CLOSED,
+	TOOLBAR_FLOATING,
+	TOOLBAR_HORZ_POPUP,
+	TOOLBAR_VERT_POPUP,
+	TOOLBAR_SQUARE_POPUP,
+	TOOLBAR_TOP,
+	TOOLBAR_BOTTOM,
+	TOOLBAR_LEFT,
+	TOOLBAR_RIGHT
+	
+} XMLToolBarState;
 
 ////////////////////////////////////////////////////////////////////////////////////
 // a menu/bar item : combine a command with label, icon, tooltip.....

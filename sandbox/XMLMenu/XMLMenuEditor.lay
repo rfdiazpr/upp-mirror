@@ -8,7 +8,7 @@ LAYOUT(BarListLayout, 156, 296)
 	ITEM(ColumnList, barList, HSizePosZ(8, 8).VSizePosZ(16, 8))
 END_LAYOUT
 
-LAYOUT(ItemEditorLayout, 340, 104)
+LAYOUT(ItemEditorLayout, 344, 104)
 	ITEM(EditString, tooltip, LeftPosZ(96, 136).TopPosZ(80, 19))
 	ITEM(Label, dv___1, SetLabel(t_("Icon :")).LeftPosZ(248, 88).TopPosZ(0, 20))
 	ITEM(Label, dv___2, SetLabel(t_("Command id :")).LeftPosZ(0, 92).TopPosZ(0, 20))
@@ -16,7 +16,7 @@ LAYOUT(ItemEditorLayout, 340, 104)
 	ITEM(Label, labelName, SetLabel(t_("Label :")).LeftPosZ(0, 92).TopPosZ(40, 20))
 	ITEM(EditString, label, LeftPosZ(96, 136).TopPosZ(40, 19))
 	ITEM(Label, dv___6, SetLabel(t_("Tooltip :")).LeftPosZ(0, 92).TopPosZ(80, 20))
-	ITEM(ImageCtrl, icon, LeftPosZ(248, 88).TopPosZ(24, 76))
+	ITEM(Button, icon, LeftPosZ(248, 88).TopPosZ(24, 76))
 END_LAYOUT
 
 LAYOUT(MenuEditorLayout, 536, 304)

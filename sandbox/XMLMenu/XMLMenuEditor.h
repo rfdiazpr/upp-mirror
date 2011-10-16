@@ -19,8 +19,8 @@ class XMLBarEditor : public ParentCtrl
 		// toolbar being edited
 		XMLToolBar *bar;
 		
-		// current item, if any
-		XMLToolBarItem *curItem;
+		// current icon, if any
+		Image curIcon;
 		
 		// size of item editor
 		Size itemSize;
@@ -50,6 +50,9 @@ class XMLBarEditor : public ParentCtrl
 		
 		// item selection callback
 		void itemSelCb(void);
+		
+		// fields modified callback
+		void fieldsModCb(void);
 		
 		// refresh current bar
 		void RefreshBar(int treeRoot = 0, XMLToolBar *subBar = NULL);
@@ -115,7 +118,7 @@ class XMLBarsEditor : public ParentCtrl
 		void SetToolBars(XMLToolBars const &tb);
 		
 		// gets the local copy of toolbars
-		XMLToolBars &GetToolBars(void) { barEditor.RefreshBar(); return toolBars; }
+		XMLToolBars &GetToolBars(void);
 };
 
 ////////////////////////////////////////////////////////////////////////////////

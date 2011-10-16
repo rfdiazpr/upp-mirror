@@ -7,7 +7,7 @@ NAMESPACE_UPP
 XMLBarEditor::XMLBarEditor()
 {
 	bar = NULL;
-	curItem = NULL;
+	curIcon = Null;
 	itemSize = itemPane.GetLayoutSize();
 	CtrlLayout(itemPane);
 	Add(vertSplitter);
@@ -17,6 +17,10 @@ XMLBarEditor::XMLBarEditor()
 	barTree.WhenDropInsert = THISBACK(dropInsertCb);
 	barTree.WhenDrag = THISBACK(dragCb);
 	barTree.WhenSel  = THISBACK(itemSelCb);
+	
+	itemPane.cmdId		<<= THISBACK(fieldsModCb);
+	itemPane.label		<<= THISBACK(fieldsModCb);
+	itemPane.tooltip	<<= THISBACK(fieldsModCb);
 }
 
 // gets minimum size of bar editor
@@ -155,6 +159,7 @@ void XMLBarEditor::itemSelCb()
 		itemPane.label		= item.GetLabel();
 		itemPane.tooltip	= item.GetTooltip();
 		itemPane.icon.SetImage(item.GetIcon());
+		curIcon = item.GetIcon();
 	}
 	else
 	{
@@ -164,9 +169,34 @@ void XMLBarEditor::itemSelCb()
 		itemPane.label		= String(barTree.GetValue(0));
 		itemPane.tooltip.Clear();
 		itemPane.icon.SetImage(Null);
+		curIcon = Null;
 	}
 }
+
+// fields modified callback
+void XMLBarEditor::fieldsModCb(void)
+{
+	// get selected node
+	int i = barTree.GetCursor();
+	if( i < 0 || bar == 0)
+		return;
+	if(i == 0)
+	{
+		bar->SetName(itemPane.label);
+		barTree.SetRoot(Null, itemPane.label);
+		return;
+	}
+
+	XMLToolBarItem item(ValueTo<XMLToolBarItem>(barTree.Get(i)), 0);
+	item.label		= itemPane.label;
+	item.commandId	= itemPane.cmdId;
+	item.tooltip	= itemPane.tooltip;
+	item.icon		= curIcon;
+	TreeCtrl::Node node(item.GetIcon(), RawDeepToValue(item), item.GetLabel());
+	barTree.SetNode(i, node);
+}
 		
+
 ////////////////////////////////////////////////////////////////////////////////
 // constructor
 XMLBarsEditor::XMLBarsEditor()
@@ -210,6 +240,15 @@ void XMLBarsEditor::SetToolBars(XMLToolBars const &tb)
 	barListPane.barList.Clear();
 	for(int iBar = 0; iBar < toolBars.GetCount(); iBar++)
 		barListPane.barList.Add(toolBars[iBar].GetName());
+}
+
+// gets the local copy of toolbars
+XMLToolBars &XMLBarsEditor::GetToolBars(void)
+{
+	barEditor.RefreshBar();
+	for(int i = 0; i < toolBars.GetCount(); i++)
+		toolBars.SetKey(i, toolBars[i].GetName());
+	return toolBars;
 }
 
 // bar selection callback

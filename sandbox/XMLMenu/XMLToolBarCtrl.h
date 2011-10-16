@@ -24,9 +24,6 @@ class XMLToolBarCtrl : public ParentCtrl
 			Size GetPaneSize(bool horz, int max = INT_MAX) { return pane.GetPaneSize(horz, max); }
 		};
 
-		// link to floating window, if undocked
-		// @@@@ to do
-	
 		// the embedded toolbar
 		ToolBar toolBar;
 		

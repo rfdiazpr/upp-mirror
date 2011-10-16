@@ -14,9 +14,6 @@ class XMLToolBarFloating : public DragWindow
 	private:
 	
 		Ptr<XMLToolBarCtrl> toolBar;
-#ifdef PLATFORM_POSIX
-		Ptr<Ctrl> focusCtrl;
-#endif
 
 		// handler for window drag events
 		virtual void WindowDragged(DragWindow::DragEvent e, Point p);

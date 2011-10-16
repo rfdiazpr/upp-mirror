@@ -40,7 +40,6 @@ void XMLBarEditor::Layout(void)
 // refresh current bar
 void XMLBarEditor::RefreshBar(int treeRoot, XMLToolBar *subBar)
 {
-	DLOG("Refreshing, treeRoot=" << treeRoot << "  subBar:" << FormatHex(subBar));
 	if(!subBar)
 		subBar = bar;
 	if(!subBar)

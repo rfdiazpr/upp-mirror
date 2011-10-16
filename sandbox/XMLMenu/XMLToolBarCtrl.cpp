@@ -343,7 +343,11 @@ XMLToolBarCtrl &XMLToolBarCtrl::Popup(Point p)
 
 	// move it at requested point
 	SetRect(p.x, p.y, sz.cx, sz.cy);
-	
+
+	// damned workaround for popupping control
+	// Upp can't find a right owner in many cases (BUG!)
+	Ctrl *t = dynamic_cast<Ctrl *>(iFace);
+	t->Activate();
 	PopUp();
 
 	return *this;
@@ -472,8 +476,10 @@ XMLToolBarCtrl &XMLToolBarCtrl::UnPreDock(XMLToolBarFrame &f)
 // right mouse click handler -- forwards to main class context menu
 void XMLToolBarCtrl::ChildMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags)
 {
+	// we need to use PostCallback here, otherwise if sending ctrl gets destroyed on the way
+	// Upp try to dispatch the mouse event to it, crashing
 	if(event == RIGHTDOWN)
-		iFace->RightClickEvent(p);
+		Ctrl::PostCallback(callback1(iFace, &XMLMenuInterface::RightClickEvent, p));
 }
 
 END_UPP_NAMESPACE

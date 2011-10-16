@@ -114,7 +114,7 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		virtual XMLCommands const &GetCommands(void)	{ return commands; }
 		virtual void SetCommands(XMLCommands &cmds)		{ commands = cmds; RefreshBars(); }
 		virtual XMLToolBars const &GetMenuBars(void)	{ return menuBars; }
-		virtual void SetMenuBars(XMLToolBars &tb)		{ DLOG("\n\nBEFORE"); menuBars.Dump(); menuBars = tb; DLOG("\n\nAFTER"); menuBars.Dump();  RefreshBars(); }
+		virtual void SetMenuBars(XMLToolBars &tb)		{ menuBars = tb; RefreshBars(); }
 		virtual XMLToolBars const &GetToolBars(void)	{ SyncBars(); return toolBars; }
 		virtual void SetToolBars(XMLToolBars &tb)		{ toolBars = tb;   RefreshBars(); }
 		
@@ -484,17 +484,14 @@ template<class T> void WithXMLMenu<T>::RefreshBars(void)
 	
 	// refresh toolbars
 	toolBarCtrls.Clear();
-DLOG("REFRESHING...");
 	for(int iBar = 0; iBar < toolBars.GetCount(); iBar++)
 	{
 		XMLToolBar &toolBar = toolBars[iBar];
 		toolBarCtrls.Add(new XMLToolBarCtrl(this));
 		XMLToolBarCtrl &toolBarCtrl = toolBarCtrls.Top();
-DLOG("Pos : " << Point(toolBar.Getx(), toolBar.Gety()));
 		toolBarCtrls[iBar].Set(THISBACK1(SetToolBar, iBar));
 		Reposition(&toolBarCtrl, toolBar.GetState(), toolBar.Getx(), toolBar.Gety());
 	}
-DLOG("END");
 	
 	// refresh frames
 	RefreshFrames();
@@ -503,15 +500,12 @@ DLOG("END");
 // sync bars from ctrls
 template<class T> void WithXMLMenu<T>::SyncBars(void)
 {
-DLOG("SYNCING...");
 	for(int i = 0; i < toolBars.GetCount(); i++)
 	{
 		Point p = toolBarCtrls[i].GetPosition();
-DLOG("Pos : " << p);
 		XMLToolBarState state = toolBarCtrls[i].GetState();
 		toolBars[i].SetPos(p.x, p.y).SetState(state);
 	}
-DLOG("END");
 }
 
 // sets builtin commands

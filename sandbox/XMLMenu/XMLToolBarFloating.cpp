@@ -17,11 +17,6 @@ XMLToolBarFloating::XMLToolBarFloating(XMLToolBarCtrl &tb, Point p)
 	// stores toolbar
 	toolBar = &tb;
 	
-#ifdef PLATFORM_POSIX
-	// stores current focus ctrl
-	focusCtrl = GetFocusCtrl();
-#endif
-
 	// sets size and position of container
 	ToolWindow();
 	Size sz = toolBar->GetSquaredSize();
@@ -38,12 +33,6 @@ XMLToolBarFloating::~XMLToolBarFloating()
 {
 	RemoveChild(toolBar);
 	Close();
-
-	// restore previous focus ctrl
-#ifdef PLATFORM_POSIX
-	if(focusCtrl)
-		focusCtrl->SetFocus();
-#endif
 }
 
 END_UPP_NAMESPACE

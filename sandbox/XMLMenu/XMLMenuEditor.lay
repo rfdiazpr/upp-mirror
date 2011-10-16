@@ -13,10 +13,10 @@ LAYOUT(ItemEditorLayout, 340, 104)
 	ITEM(Label, dv___1, SetLabel(t_("Icon :")).LeftPosZ(248, 88).TopPosZ(0, 20))
 	ITEM(Label, dv___2, SetLabel(t_("Command id :")).LeftPosZ(0, 92).TopPosZ(0, 20))
 	ITEM(EditString, cmdId, LeftPosZ(96, 136).TopPosZ(0, 19))
-	ITEM(Label, dv___4, SetLabel(t_("Label :")).LeftPosZ(0, 92).TopPosZ(40, 20))
+	ITEM(Label, labelName, SetLabel(t_("Label :")).LeftPosZ(0, 92).TopPosZ(40, 20))
 	ITEM(EditString, label, LeftPosZ(96, 136).TopPosZ(40, 19))
 	ITEM(Label, dv___6, SetLabel(t_("Tooltip :")).LeftPosZ(0, 92).TopPosZ(80, 20))
-	ITEM(ImageCtrl, dv___7, LeftPosZ(248, 88).TopPosZ(24, 76))
+	ITEM(ImageCtrl, icon, LeftPosZ(248, 88).TopPosZ(24, 76))
 END_LAYOUT
 
 LAYOUT(MenuEditorLayout, 536, 304)

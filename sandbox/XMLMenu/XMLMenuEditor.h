@@ -19,6 +19,9 @@ class XMLBarEditor : public ParentCtrl
 		// toolbar being edited
 		XMLToolBar *bar;
 		
+		// current item, if any
+		XMLToolBarItem *curItem;
+		
 		// size of item editor
 		Size itemSize;
 	
@@ -28,14 +31,6 @@ class XMLBarEditor : public ParentCtrl
 		// tree ctrl containing bar structure
 		TreeCtrl barTree;
 		
-		// map pairing tree nodes with XMLToolBarItems
-		// needed because we can't store custom data on tree
-		// it would be better to make tree to handle derived classes
-		// of TreeCtrl::Node
-		// beware, items here don't contain sub-bars, this is handled
-		// by TreeCtrl. Ugly solution, but didn't found a simpler one
-//		ArrayMap<int, XMLToolBarItem> barItems;
-
 		// vertical splitter dividing tree from item editor
 		Splitter vertSplitter;
 		
@@ -52,6 +47,9 @@ class XMLBarEditor : public ParentCtrl
 		
 		// dropping between elements (inserts between)
 		void dropInsertCb(int parent, int ii, PasteClip& d);
+		
+		// item selection callback
+		void itemSelCb(void);
 		
 		// refresh current bar
 		void RefreshBar(int treeRoot = 0, XMLToolBar *subBar = NULL);

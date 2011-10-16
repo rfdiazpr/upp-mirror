@@ -7,6 +7,7 @@ NAMESPACE_UPP
 XMLBarEditor::XMLBarEditor()
 {
 	bar = NULL;
+	curItem = NULL;
 	itemSize = itemPane.GetLayoutSize();
 	CtrlLayout(itemPane);
 	Add(vertSplitter);
@@ -15,7 +16,7 @@ XMLBarEditor::XMLBarEditor()
 	// drag'n drop
 	barTree.WhenDropInsert = THISBACK(dropInsertCb);
 	barTree.WhenDrag = THISBACK(dragCb);
-	
+	barTree.WhenSel  = THISBACK(itemSelCb);
 }
 
 // gets minimum size of bar editor
@@ -108,6 +109,61 @@ void XMLBarEditor::dropInsertCb(int parent, int ii, PasteClip& d)
 		barTree.SetCursor(barTree.Insert(parent, ii, Image(), GetString(d)));
 		barTree.SetFocus();
 		return;
+	}
+}
+		
+// item selection callback
+void XMLBarEditor::itemSelCb()
+{
+	// get selected node
+	int i = barTree.GetCursor();
+
+	// if none, just disable input fields and return
+	if(i < 0)
+	{
+		itemPane.Disable();
+		return;
+	}
+
+	// enable input pane
+	itemPane.Enable();
+	
+	// enable label and tooltip fields
+	itemPane.label.Enable();
+
+	// disable command field, it'll be filled
+	// by command bar anyways
+	itemPane.cmdId.Disable();
+	
+	// if not the root, treat as an item
+	// otherwise allow just to edit bar name
+	if(i > 0)
+	{
+		itemPane.tooltip.Enable();
+		
+		// fetch node data
+		XMLToolBarItem const &item = ValueTo<XMLToolBarItem>(barTree.Get(i));
+		
+		bool hasChilds = barTree.GetChildCount(i);
+	
+		// fill fields
+		if(hasChilds)
+			itemPane.cmdId.Clear();
+		else
+			itemPane.cmdId		= item.GetId();
+		itemPane.labelName = t_("Label :");
+		itemPane.label		= item.GetLabel();
+		itemPane.tooltip	= item.GetTooltip();
+		itemPane.icon.SetImage(item.GetIcon());
+	}
+	else
+	{
+		itemPane.tooltip.Disable();
+		itemPane.cmdId.Clear();
+		itemPane.labelName = t_("Bar name :");
+		itemPane.label		= String(barTree.GetValue(0));
+		itemPane.tooltip.Clear();
+		itemPane.icon.SetImage(Null);
 	}
 }
 		

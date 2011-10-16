@@ -18,8 +18,7 @@ class XMLBarEditor : public ParentCtrl
 		// toolbar being edited
 		XMLToolBar *bar;
 		
-		// bar item being edited
-		XMLToolBarItem *item;
+		// size of item editor
 		Size itemSize;
 	
 		// item editor pane
@@ -27,6 +26,14 @@ class XMLBarEditor : public ParentCtrl
 		
 		// tree ctrl containing bar structure
 		TreeCtrl barTree;
+		
+		// map pairing tree nodes with XMLToolBarItems
+		// needed because we can't store custom data on tree
+		// it would be better to make tree to handle derived classes
+		// of TreeCtrl::Node
+		// beware, items here don't contain sub-bars, this is handled
+		// by TreeCtrl. Ugly solution, but didn't found a simpler one
+		ArrayMap<int, XMLToolBarItem> barItems;
 
 		// vertical splitter dividing tree from item editor
 		Splitter vertSplitter;
@@ -34,6 +41,20 @@ class XMLBarEditor : public ParentCtrl
 		// layouts control
 		void Layout(void);
 		
+		// builds bar tree
+		void buildTree(int root, XMLToolBar const *bar);
+		
+		// drag and drop support
+				
+		// dragging element
+		void dragCb(void);
+		
+		// dropping between elements (inserts between)
+		void dropInsertCb(int parent, int ii, PasteClip& d);
+		
+		// refresh current bar
+		void RefreshBar(int treeRoot = 0, XMLToolBar *subBar = NULL);
+
 	protected:
 	
 	public:
@@ -46,13 +67,17 @@ class XMLBarEditor : public ParentCtrl
 		Size GetMinSize(void);
 		
 		// sets bar being edited
-		void SetBar(XMLToolBar &bar);
+		void SetBar(XMLToolBar *bar);
+		
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 class XMLBarsEditor : public ParentCtrl
 {
 	private:
+	
+		// local copy of toolbars being edited
+		XMLToolBars toolBars;
 	
 		// MenuBars and ToolBars lists
 		WithBarListLayout<ParentCtrl> barListPane;
@@ -65,10 +90,15 @@ class XMLBarsEditor : public ParentCtrl
 		
 		// size of selector
 		Size selectorSize;
+
+		// bar selection callback
+		void barSelCb(void);
 	
 	protected:
 	
 	public:
+	
+		typedef XMLBarsEditor CLASSNAME;
 	
 		// constructor
 		XMLBarsEditor();
@@ -81,6 +111,12 @@ class XMLBarsEditor : public ParentCtrl
 
 		// set title
 		void SetTitle(const char *s);
+		
+		// sets the local copy of toolbars
+		void SetToolBars(XMLToolBars const &tb);
+		
+		// gets the local copy of toolbars
+		XMLToolBars &GetToolBars(void) { return toolBars; }
 };
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -9,9 +9,10 @@ NAMESPACE_UPP
 ////////////////////////////////////////////////////////////////////////////////////
 // a menu/bar item : combine a command with label, icon, tooltip.....
 class XMLToolBar;
-class XMLToolBarItem
+class XMLToolBarItem : DeepCopyOption<XMLToolBarItem>
 {
 	friend class XMLToolBar;
+	friend class XMLBarEditor;
 	private:
 		// the command entry
 		String commandId;
@@ -38,13 +39,20 @@ class XMLToolBarItem
 		
 		// xml support
 		void Xmlize(XmlIO xml);
+		
+		// constructor
+		XMLToolBarItem();
+		
+		// copy constructor
+		XMLToolBarItem(const XMLToolBarItem &item, int dummy);
 };
 
 ////////////////////////////////////////////////////////////////////////////////////
 // a menu/bar : an array of menu/bar items -- builds up a toolbar or a menu
-class XMLToolBar
+class XMLToolBar : DeepCopyOption<XMLToolBar>
 {
 	friend class XMLToolBarItem;
+	friend class XMLBarEditor;
 	private:
 		// bar name
 		String name;
@@ -63,13 +71,16 @@ class XMLToolBar
 		// pick constructor
 		XMLToolBar(XMLToolBar pick_ &tb);
 		
+		// copy constructor
+		XMLToolBar(XMLToolBar const &tb, int dummy);
+		
 		// copy operator
 		XMLToolBar &operator=(XMLToolBar pick_ &tb);
 		
 		// add an entry, various ways
-		XMLToolBar &SetName(String const &_name)							{ name = _name; return *this; }
-		XMLToolBar &SetState(XMLToolBarState _state)		{ state = _state; return *this; }
-		XMLToolBar &SetPos(int _x, int _y)									{ x = _x; y = _y; return *this; }
+		XMLToolBar &SetName(String const &_name)		{ name = _name; return *this; }
+		XMLToolBar &SetState(XMLToolBarState _state)	{ state = _state; return *this; }
+		XMLToolBar &SetPos(int _x, int _y)				{ x = _x; y = _y; return *this; }
 
 		XMLToolBar &Add(String const &commandId);
 		XMLToolBar &Add(String const &commandId, String const &label);

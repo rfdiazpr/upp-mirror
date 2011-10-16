@@ -106,6 +106,8 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		
 		// gets/sets commands, menu and toolbars
 		virtual XMLCommands const &GetCommands(void) { return commands; }
+		virtual XMLToolBars const &GetMenuBars(void) { return menuBars; }
+		virtual XMLToolBars const &GetToolBars(void) { return toolBars; }
 		
 		// controls docking and main menu behaviour
 		WithXMLMenu<T> &DockTop(bool b = true)		{ dockTop = b;		RefreshFrames(); return *this; } 

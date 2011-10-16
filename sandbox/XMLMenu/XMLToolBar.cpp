@@ -5,6 +5,26 @@ NAMESPACE_UPP
 ////////////////////////////////////////////////////////////////////////////////////
 // XMLToolBarItem
 
+// constructor
+XMLToolBarItem::XMLToolBarItem()
+{
+	commandId	= "";
+	label		= "";
+	icon		= Null;
+	tooltip		= "";
+	subMenu.Clear();
+}
+		
+// copy constructor
+XMLToolBarItem::XMLToolBarItem(const XMLToolBarItem &item, int dummy)
+{
+	commandId	= item.commandId;
+	label		= item.label;
+	icon		= item.icon;
+	tooltip		= item.tooltip;
+	subMenu		<<= item.subMenu;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////
 // XMLToolBar
 
@@ -28,6 +48,16 @@ XMLToolBar::XMLToolBar(XMLToolBar pick_ &tb)
 	y = tb.y;
 }
 
+// copy constructor
+XMLToolBar::XMLToolBar(XMLToolBar const &tb, int dummy)
+{
+	name = tb.name;
+	items <<= tb.items;
+	state = tb.state;
+	x = tb.x;
+	y = tb.y;
+}
+		
 // copy operator
 XMLToolBar &XMLToolBar::operator=(XMLToolBar pick_ &tb)
 {

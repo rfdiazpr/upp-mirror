@@ -24,6 +24,8 @@ class XMLMenuInterface
 		
 		// gets/sets commands, menu and toolbars
 		virtual XMLCommands const &GetCommands(void) = 0;
+		virtual XMLToolBars const &GetMenuBars(void) = 0;
+		virtual XMLToolBars const &GetToolBars(void) = 0;
 };
 
 END_UPP_NAMESPACE

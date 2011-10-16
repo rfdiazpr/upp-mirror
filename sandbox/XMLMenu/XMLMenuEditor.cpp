@@ -7,11 +7,15 @@ NAMESPACE_UPP
 XMLBarEditor::XMLBarEditor()
 {
 	bar = NULL;
-	item = NULL;
 	itemSize = itemPane.GetLayoutSize();
 	CtrlLayout(itemPane);
 	Add(vertSplitter);
 	vertSplitter.Vert(barTree, itemPane);
+	
+	// drag'n drop
+	barTree.WhenDropInsert = THISBACK(dropInsertCb);
+	barTree.WhenDrag = THISBACK(dragCb);
+	
 }
 
 // gets minimum size of bar editor
@@ -28,11 +32,88 @@ void XMLBarEditor::Layout(void)
 		vertSplitter.SetPos(10000 * (h - itemSize.cy) / h);
 }
 		
-// sets bar being edited
-void XMLBarEditor::SetBar(XMLToolBar &bar)
+// refresh current bar
+void XMLBarEditor::RefreshBar(int treeRoot, XMLToolBar *subBar)
 {
+	DLOG("Refreshing, treeRoot=" << treeRoot << "  subBar:" << FormatHex(subBar));
+	if(!subBar)
+		subBar = bar;
+	if(!subBar)
+		return;
+	subBar->items.Clear();
+	for(int iChild = 0; iChild < barTree.GetChildCount(treeRoot); iChild++)
+	{
+		int iNode = barTree.GetChild(treeRoot, iChild);
+		XMLToolBarItem &item = barItems.Get(iNode);
+		subBar->items.Add(new XMLToolBarItem(item, 0));
+		if(barTree.GetChildCount(iNode))
+		{
+			subBar->items.Top().subMenu = new XMLToolBar;
+			RefreshBar(iNode, ~subBar->items.Top().subMenu);
+		}
+		else
+			subBar->items.Top().subMenu.Clear();
+	}
 }
 
+// sets bar being edited
+void XMLBarEditor::SetBar(XMLToolBar *_bar)
+{
+	// if changing bar, update current one if not null
+	// before changing it
+	if(bar && bar != _bar)
+		RefreshBar();
+	
+	bar = _bar;
+	barTree.Clear();
+	barItems.Clear();
+	if(!bar)
+		return;
+	buildTree(0, bar);
+	barTree.SetRoot(Null, bar->GetName());
+	barTree.OpenDeep(0);
+}
+
+// builds bar tree
+void XMLBarEditor::buildTree(int root, XMLToolBar const *bar)
+{
+	Array<XMLToolBarItem> const &items = bar->GetItems();
+	for(int iItem = 0; iItem < items.GetCount(); iItem++)
+	{
+		XMLToolBarItem const &item = items[iItem];
+		TreeCtrl::Node node(item.GetIcon(), item.GetLabel());
+		int iNode = barTree.Add(root, node);
+		barItems.Add(iNode, new XMLToolBarItem(item, 0));
+		if(items[iItem].IsSubMenu())
+			buildTree(iNode, &items[iItem].GetSubMenu());
+	}
+}
+
+// dragging element
+void XMLBarEditor::dragCb(void)
+{
+	if(barTree.DoDragAndDrop(InternalClip(barTree, "mytreedrag"), barTree.GetDragSample()) == DND_MOVE)
+		barTree.RemoveSelection();
+}
+
+// dropping between elements (inserts between)
+void XMLBarEditor::dropInsertCb(int parent, int ii, PasteClip& d)
+{
+	barTree.AdjustAction(parent, d);
+	if(AcceptInternal<TreeCtrl>(d, "mytreedrag"))
+	{
+		barTree.InsertDrop(parent, ii, d);
+		barTree.SetFocus();
+		return;
+	}
+	if(AcceptText(d))
+	{
+		barTree.SetCursor(barTree.Insert(parent, ii, Image(), GetString(d)));
+		barTree.SetFocus();
+		return;
+	}
+}
+		
 ////////////////////////////////////////////////////////////////////////////////
 // constructor
 XMLBarsEditor::XMLBarsEditor()
@@ -44,6 +125,8 @@ XMLBarsEditor::XMLBarsEditor()
 
 	Add(horzSplitter.SizePos());
 	horzSplitter.Horz(barListPane, barEditor);
+	
+	barListPane.barList.WhenSel << THISBACK(barSelCb);
 }
 
 // gets minimum size of bar editor
@@ -67,6 +150,26 @@ void XMLBarsEditor::SetTitle(const char *s)
 	barListPane.title = s;
 }
 
+// sets the local copy of toolbars
+void XMLBarsEditor::SetToolBars(XMLToolBars const &tb)
+{
+	toolBars <<= tb;
+	barListPane.barList.Clear();
+	for(int iBar = 0; iBar < toolBars.GetCount(); iBar++)
+		barListPane.barList.Add(toolBars[iBar].GetName());
+}
+
+// bar selection callback
+void XMLBarsEditor::barSelCb(void)
+{
+	
+	int idx = barListPane.barList.GetCursor();
+	if(idx < 0)
+		barEditor.SetBar(NULL);
+	else
+		barEditor.SetBar(&toolBars[idx]);
+}
+	
 ////////////////////////////////////////////////////////////////////////////////
 void XMLMenuEditor::cancelCb(void)
 {
@@ -134,6 +237,10 @@ XMLMenuEditor::XMLMenuEditor(XMLMenuInterface *_iFace) : iFace(_iFace)
 	
 	// reads the commands and put them into list
 	GetCommands();
+	
+	// sets toolbars in bars editors
+	menusEditor.SetToolBars(iFace->GetMenuBars());
+	barsEditor.SetToolBars(iFace->GetToolBars());
 }
 
 XMLMenuEditor::~XMLMenuEditor()

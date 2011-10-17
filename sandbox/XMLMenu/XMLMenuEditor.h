@@ -151,6 +151,20 @@ class XMLMenuEditor : public WithMenuEditorLayout<TopWindow>
 
 		// minimum window width and height
 		int minWidth, minHeight;
+		
+		// fills (or updates) command list
+		void FillCmdList(void);
+
+		// check wether a command is used in a menu
+		bool cmdInUse(String const &cmdId) const;
+		
+		// commandlist context menu
+		void cmdContextCb(Bar &bar);
+		void cmdContextAddCb(void);
+		void cmdContextRemoveCb(void);
+		
+		// commandlist double-click handler
+		void cmdDblClickCb(void);
 	
 	protected :
 	

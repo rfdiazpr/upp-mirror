@@ -396,6 +396,24 @@ XMLMenuEditor::XMLMenuEditor(XMLMenuInterface *_iFace) : iFace(_iFace)
 	
 	// reads the commands and put them into list
 	commands <<= iFace->GetCommands();
+	FillCmdList();
+	
+	// sets toolbars in bars editors
+	menusEditor.SetToolBars(iFace->GetMenuBars());
+	barsEditor.SetToolBars(iFace->GetToolBars());
+	
+	// setup handlers for command pane
+	cmdPane.commandList.WhenLeftDouble << THISBACK(cmdDblClickCb);
+	cmdPane.commandList.WhenBar << THISBACK(cmdContextCb);
+}
+
+XMLMenuEditor::~XMLMenuEditor()
+{
+}
+
+// fills (or updates) command list
+void XMLMenuEditor::FillCmdList(void)
+{
 	commands.Sort();
 	Vector<String> const &ids = commands.GetIds();
 	cmdPane.commandList.Clear();
@@ -409,14 +427,6 @@ XMLMenuEditor::XMLMenuEditor(XMLMenuInterface *_iFace) : iFace(_iFace)
 		else
 			cmdPane.commandList.Add(ids[i], RedDisp);
 	}
-	
-	// sets toolbars in bars editors
-	menusEditor.SetToolBars(iFace->GetMenuBars());
-	barsEditor.SetToolBars(iFace->GetToolBars());
-}
-
-XMLMenuEditor::~XMLMenuEditor()
-{
 }
 
 // adjust layout on win changes
@@ -424,6 +434,43 @@ void XMLMenuEditor::Layout(void)
 {
 	// adjust splitter sizes
 	horzSplitter.SetPos(10000 * cmdSize.cx / GetSize().cx);
+}
+
+// check wether a command is used in a menu
+bool XMLMenuEditor::cmdInUse(String const &cmdId) const
+{
+	return false;
+}
+		
+// commandlist context menu
+void XMLMenuEditor::cmdContextCb(Bar &bar)
+{
+	// get current selection
+	int i = cmdPane.commandList.GetCursor();
+	if(i < 0)
+		return;
+	String cmdId = cmdPane.commandList.Get(i);
+	XMLCommand const &cmd = commands[i]; 
+	bar.Add(t_("Add custom command"), THISBACK(cmdContextAddCb));
+	if(!cmd.GetIsCustom())
+		bar.Add(false, t_("Can't remove built-in command"), THISBACK(cmdContextRemoveCb));
+	else if(cmdInUse(cmdId))
+		bar.Add(false, t_("Can't remove - command in use"), THISBACK(cmdContextRemoveCb));
+	else
+		bar.Add(t_("Remove custom command"), THISBACK(cmdContextRemoveCb));
+}
+
+void XMLMenuEditor::cmdContextAddCb(void)
+{
+}
+
+void XMLMenuEditor::cmdContextRemoveCb(void)
+{
+}
+
+// commandlist double-click handler
+void XMLMenuEditor::cmdDblClickCb(void)
+{
 }
 		
 END_UPP_NAMESPACE

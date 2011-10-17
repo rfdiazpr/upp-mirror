@@ -82,5 +82,34 @@ Vector<String> const &XMLCommands::GetIds(void) const
 {
 	return commands.GetKeys();
 }
+
+// sort items - alphabetically, but first built-in commands, then custom ones
+XMLCommands &XMLCommands::Sort(void)
+{
+	Array<XMLCommand> builtIn, custom;
+	Array<String> builtInIdx, customIdx;
+	for(int i = 0; i < commands.GetCount(); i++)
+	{
+		if(commands[i].GetIsCustom())
+		{
+			custom.Add(commands[i]);
+			customIdx.Add(commands.GetKey(i));
+		}
+		else
+		{
+			builtIn.Add(commands[i]);
+			builtInIdx.Add(commands.GetKey(i));
+		}
+	}
+	IndexSort(customIdx, custom);
+	IndexSort(builtInIdx, builtIn);
+	commands.Clear();
+	for(int i = 0; i < builtIn.GetCount(); i++)
+		commands.Add(builtInIdx[i], builtIn[i]);
+	for(int i = 0; i < custom.GetCount(); i++)
+		commands.Add(customIdx[i], custom[i]);
+	
+	return *this;
+}
 		
 END_UPP_NAMESPACE

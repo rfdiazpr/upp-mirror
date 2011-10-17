@@ -4,6 +4,17 @@
 
 NAMESPACE_UPP
 
+// colored Display
+class ColDisp : public Display
+{
+		Color color;
+	public :
+		ColDisp(Color const &c) { color = c; }
+		virtual void Paint(Draw& w, const Rect& r, const Value& q, Color ink, Color paper, dword style) const
+			{ Display::Paint(w, r, q, color, paper, style); }
+};
+static ColDisp RedDisp(Red());
+
 ////////////////////////////////////////////////////////////////////////////////
 // constructor
 XMLBarEditor::XMLBarEditor()
@@ -323,7 +334,7 @@ void XMLMenuEditor::okCb(void)
 	// updates edited toolbars
 	if(iFace)
 	{
-		//iFace->SetCommands(
+		iFace->SetCommands(commands);
 		iFace->SetMenuBars(menusEditor.GetToolBars());
 		iFace->SetToolBars(barsEditor.GetToolBars());
 	}
@@ -384,7 +395,20 @@ XMLMenuEditor::XMLMenuEditor(XMLMenuInterface *_iFace) : iFace(_iFace)
 	Sizeable();
 	
 	// reads the commands and put them into list
-	GetCommands();
+	commands <<= iFace->GetCommands();
+	commands.Sort();
+	Vector<String> const &ids = commands.GetIds();
+	cmdPane.commandList.Clear();
+	for(int i = 0; i < ids.GetCount(); i++)
+	{
+		// built in commands (un-modifiable) are in red color
+		// custom ones in normal color
+		XMLCommand const &cmd = commands[i];
+		if(cmd.GetIsCustom())
+			cmdPane.commandList.Add(ids[i]);
+		else
+			cmdPane.commandList.Add(ids[i], RedDisp);
+	}
 	
 	// sets toolbars in bars editors
 	menusEditor.SetToolBars(iFace->GetMenuBars());
@@ -402,13 +426,4 @@ void XMLMenuEditor::Layout(void)
 	horzSplitter.SetPos(10000 * cmdSize.cx / GetSize().cx);
 }
 		
-// gets commands from iFace and fills the command list
-void XMLMenuEditor::GetCommands(void)
-{
-	Vector<String> const &ids = iFace->GetCommands().GetIds();
-	cmdPane.commandList.Clear();
-	for(int i = 0; i < ids.GetCount(); i++)
-		cmdPane.commandList.Add(ids[i]);
-}
-	
 END_UPP_NAMESPACE

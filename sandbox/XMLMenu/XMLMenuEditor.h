@@ -136,6 +136,9 @@ class XMLMenuEditor : public WithMenuEditorLayout<TopWindow>
 		
 		// the menus and bars editors
 		XMLBarsEditor menusEditor, barsEditor;
+		
+		// local copy of commands
+		XMLCommands commands;
 
 		// right pane - contains tab ctrl
 		TabCtrl tabCtrl;
@@ -157,9 +160,6 @@ class XMLMenuEditor : public WithMenuEditorLayout<TopWindow>
 		// adjust layout on win changes
 		void Layout(void);
 		
-		// gets commands from iFace and fills the command list
-		void GetCommands(void);
-	
 	public :
 	
 		typedef XMLMenuEditor CLASSNAME;

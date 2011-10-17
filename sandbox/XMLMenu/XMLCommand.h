@@ -34,12 +34,21 @@ class XMLCommand
 
 ////////////////////////////////////////////////////////////////////////////////////
 // an array of available commands
-class XMLCommands
+class XMLCommands : DeepCopyOption<XMLCommands>
 {
 	private:
 		ArrayMap<String, XMLCommand> commands;
 
 	public:
+		// default constructor
+		XMLCommands() {}
+		
+		// copy constructor
+		XMLCommands(XMLCommands const &cmds, int dummy) : commands(cmds.commands, 0) {}
+		
+		// pick constructor
+		XMLCommands(XMLCommands pick_ &cmds) : commands(cmds.commands) {}
+			
 		// adds a custom command
 		XMLCommands &Add(String const &id);
 		
@@ -69,6 +78,13 @@ class XMLCommands
 		
 		// checks wether a command is present given its id
 		bool Has(String const &id) const { return commands.Find(id) >= 0; }
+		
+		// array access
+		XMLCommand const &operator[](int idx) const { return commands[idx]; }
+		XMLCommand &operator[](int idx) { return commands[idx]; }
+		
+		// sort items - alphabetically, but first built-in commands, then custom ones
+		XMLCommands &Sort(void);
 };
 
 END_UPP_NAMESPACE

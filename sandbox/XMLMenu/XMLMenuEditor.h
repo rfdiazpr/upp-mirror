@@ -54,6 +54,9 @@ class XMLBarEditor : public ParentCtrl
 		// fields modified callback
 		void fieldsModCb(void);
 		
+		// image selection callback
+		void imageSelCb(void);
+	
 		// refresh current bar
 		void RefreshBar(int treeRoot = 0, XMLToolBar *subBar = NULL);
 
@@ -95,7 +98,7 @@ class XMLBarsEditor : public ParentCtrl
 
 		// bar selection callback
 		void barSelCb(void);
-	
+		
 	protected:
 	
 	public:

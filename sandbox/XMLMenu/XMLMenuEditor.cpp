@@ -1,5 +1,7 @@
 #include "XMLMenuEditor.h"
 
+#include <plugin/bmp/bmp.h>
+
 NAMESPACE_UPP
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -21,6 +23,10 @@ XMLBarEditor::XMLBarEditor()
 	itemPane.cmdId		<<= THISBACK(fieldsModCb);
 	itemPane.label		<<= THISBACK(fieldsModCb);
 	itemPane.tooltip	<<= THISBACK(fieldsModCb);
+	
+	itemPane.icon		<<= THISBACK(imageSelCb);
+	
+	itemPane.Disable();
 }
 
 // gets minimum size of bar editor
@@ -142,6 +148,7 @@ void XMLBarEditor::itemSelCb()
 	// otherwise allow just to edit bar name
 	if(i > 0)
 	{
+		itemPane.icon.Enable();
 		itemPane.tooltip.Enable();
 		
 		// fetch node data
@@ -162,6 +169,7 @@ void XMLBarEditor::itemSelCb()
 	}
 	else
 	{
+		itemPane.icon.Disable();
 		itemPane.tooltip.Disable();
 		itemPane.cmdId.Clear();
 		itemPane.labelName = t_("Bar name :");
@@ -195,6 +203,44 @@ void XMLBarEditor::fieldsModCb(void)
 	barTree.SetNode(i, node);
 }
 		
+// image selection callback
+void XMLBarEditor::imageSelCb(void)
+{
+	static String lastPath = "";
+	
+	// opens a file selector, allows selection of some
+	// kind of image formats
+	FileSelector fs;
+	fs.ActiveDir(lastPath);
+	fs.Type(t_("Image files"), "*.png,*.jpg,*.ico,*.bmp");
+	if(!fs.ExecuteOpen(t_("Select icon file")))
+		return;
+	String path = fs.Get();
+	lastPath = GetFileFolder(path);
+	String ext = ToUpper(GetFileExt(path));
+	Image img;
+	if(ext != ".ICO")
+		img = StreamRaster::LoadFileAny(path);
+	else
+	{
+		String data = LoadFile(path);
+		Vector<Image> imgVec;
+		try
+		{
+		 	imgVec = ReadIcon(data);
+		}
+		catch(...)
+		{
+		}
+		if(imgVec.GetCount())
+			img = imgVec[0];
+		else
+			img = Null;
+	}
+	curIcon = img;
+	itemPane.icon.SetImage(img);
+	fieldsModCb();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // constructor
@@ -239,6 +285,10 @@ void XMLBarsEditor::SetToolBars(XMLToolBars const &tb)
 	barListPane.barList.Clear();
 	for(int iBar = 0; iBar < toolBars.GetCount(); iBar++)
 		barListPane.barList.Add(toolBars[iBar].GetName());
+	
+	// select first item
+	if(barListPane.barList.GetCount())
+		barListPane.barList.SetCursor(0);
 }
 
 // gets the local copy of toolbars

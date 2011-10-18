@@ -30,6 +30,7 @@ XMLBarEditor::XMLBarEditor()
 	barTree.WhenDropInsert = THISBACK(dropInsertCb);
 	barTree.WhenDrag = THISBACK(dragCb);
 	barTree.WhenSel  = THISBACK(itemSelCb);
+	barTree.WhenBar = THISBACK(treeContextCb);
 	
 	itemPane.cmdId		<<= THISBACK(fieldsModCb);
 	itemPane.label		<<= THISBACK(fieldsModCb);
@@ -81,7 +82,6 @@ void XMLBarEditor::SetBar(XMLToolBar *_bar)
 {
 	// if changing bar, update current one if not null
 	// before changing it
-DLOG("_bar : " << FormatHex(_bar) << "   bar : " << FormatHex(bar));
 	if(bar && bar != _bar)
 		RefreshBar();
 	
@@ -252,6 +252,80 @@ void XMLBarEditor::imageSelCb(void)
 	curIcon = img;
 	itemPane.icon.SetImage(img);
 	fieldsModCb();
+}
+
+// barTree context menu
+void XMLBarEditor::treeContextCb(Bar &b)
+{
+	// if no toolbar selected in, no menu
+	if(!bar)
+		return;
+	
+	int i = barTree.GetCursor();
+	if(i > 0)
+	{
+		b.Add(t_("Insert new item before current"), THISBACK1(treeContextAddCb, 1));
+		b.Add(t_("Insert new item after current"), THISBACK1(treeContextAddCb, 2));
+	}
+	if(barTree.GetChildCount(i))
+	{
+		b.Add(t_("Insert new child item at top"), THISBACK1(treeContextAddCb, 3));
+		b.Add(t_("Append new child item at bottom"), THISBACK1(treeContextAddCb, 4));
+	}
+	else
+		b.Add(t_("Insert new child item"), THISBACK1(treeContextAddCb, 4));
+	if(i > 0)
+		b.Add(t_("Remove item"), THISBACK(treeContextRemoveCb));
+}
+
+void XMLBarEditor::treeContextAddCb(int mode)
+{
+	int id = barTree.GetCursor();
+	int parentId = 0;
+	int childIdx;
+	int newId = 0;
+	Value v = RawToValue(XMLToolBarItem());
+	switch(mode)
+	{
+		case 1:
+			parentId = barTree.GetParent(id);
+			childIdx = barTree.GetChildIndex(parentId, id);
+			newId = barTree.Insert(parentId, childIdx, Null, v, "");
+			break;
+
+		case 2:
+			parentId = barTree.GetParent(id);
+			childIdx = barTree.GetChildIndex(parentId, id);
+			newId = barTree.Insert(parentId, childIdx + 1, Null, v, "");
+			break;
+
+		case 3:
+			newId = barTree.Insert(id, 0, Null, v, "");
+			break;
+
+		case 4:
+			newId = barTree.Add(id, Null, v, "");
+			break;
+		
+		default:
+			NEVER();
+	}
+	RefreshBar();
+	barTree.SetCursor(newId);
+	itemPane.label.SetFocus();
+}
+
+void XMLBarEditor::treeContextRemoveCb(void)
+{
+	int id = barTree.GetCursor();
+	if(id > 0)
+	{
+		int line = barTree.GetCursorLine();
+		barTree.Remove(id);
+		RefreshBar();
+		barTree.SetCursorLine(line);
+		itemPane.label.SetFocus();
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////

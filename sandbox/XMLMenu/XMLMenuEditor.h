@@ -76,6 +76,11 @@ class XMLBarEditor : public ParentCtrl
 		
 		// sets command id into currently selected item
 		void SetCommandId(String const &cmdId) { itemPane.cmdId = cmdId; fieldsModCb(); }
+		
+		// barTree context menu
+		void treeContextCb(Bar &bar);
+		void treeContextAddCb(int mode);
+		void treeContextRemoveCb(void);
 };
 
 ////////////////////////////////////////////////////////////////////////////////

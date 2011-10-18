@@ -21,11 +21,12 @@ class XMLToolBarCtrl : public ParentCtrl
 		// just to access BarPane::GetSize()...
 		struct SizeToolBar : ToolBar
 		{
+			SizeToolBar() { Gap(0); ToolGap(0); pane.Margin(0, 0); }
 			Size GetPaneSize(bool horz, int max = INT_MAX) { return pane.GetPaneSize(horz, max); }
 		};
 
 		// the embedded toolbar
-		ToolBar toolBar;
+		SizeToolBar toolBar;
 		
 		// drag frame
 		XMLDragFrame dragFrame;

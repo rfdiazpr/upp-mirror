@@ -13,6 +13,7 @@ class XMLCommand
 	private:
 		// embedded control, if any
 		Ptr<Ctrl> control;
+		Size ctrlSize;
 		
 		// associated callback, if any
 		Callback callback;
@@ -25,6 +26,7 @@ class XMLCommand
 
 	public:
 		Ctrl *GetCtrl(void) const				{ return control;	}
+		Size const &GetCtrlSize(void) const		{ return ctrlSize;	}
 		Callback const &GetCallback(void) const	{ return callback;	}
 		bool GetIsEnabled(void) const			{ return enabled;	}
 		bool GetIsCustom(void) const			{ return custom;	}
@@ -57,6 +59,7 @@ class XMLCommands : DeepCopyOption<XMLCommands>
 		
 		// adds a control
 		XMLCommands &Add(String const &id, Ctrl &ctrl);
+		XMLCommands &Add(String const &id, Ctrl &ctrl, Size const &size);
 		
 		// adds a custom command, allows enable/disable item
 		XMLCommands &Add(bool enabled, String const &id);
@@ -66,6 +69,7 @@ class XMLCommands : DeepCopyOption<XMLCommands>
 		
 		// adds a control, allows enable/disable item
 		XMLCommands &Add(bool enabled, String const &id, Ctrl &ctrl);
+		XMLCommands &Add(bool enabled, String const &id, Ctrl &ctrl, Size const &size);
 		
 		// removes a command
 		XMLCommands &Remove(int idx) { commands.Remove(idx); return *this; }

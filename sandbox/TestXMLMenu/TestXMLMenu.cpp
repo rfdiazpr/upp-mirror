@@ -34,6 +34,7 @@ void TestXMLMenu::commandCb(XMLCommands &cmds)
 		.Add("ListAdd"		, callback(dummyCb))
 		.Add("ListRemove"	, callback(dummyCb))
 		.Add("RtfImport"	, callback(dummyCb))
+		.Add("TestControl"	, testDrop, Size(150, 0))
 	;
 }
 
@@ -87,9 +88,11 @@ void toolBarsCb(XMLToolBars &tb)
 			.Add("Save"		, t_("Save")	, TestImg::Save())
 			.Add("SaveAs"	, t_("SaveAs")	, TestImg::SaveAs())
 			.Add("Quit"		, t_("Quit")	, TestImg::Quit())
+		
 		)
 		.Add("Calc", tb.ToolBar(TOOLBAR_TOP, 10, 0)
 			.Add("NewCalc"	, t_("NewCalc")	, TestImg::NewCalc())
+			.Add("TestControl")
 		)
 		.Add("Printer", tb.ToolBar(TOOLBAR_LEFT, 0, 0)
 			.Add("Print", t_("Print"), TestImg::Print())
@@ -116,6 +119,14 @@ void toolBarsCb(XMLToolBars &tb)
 
 TestXMLMenu::TestXMLMenu()
 {
+	testDrop
+		.Add("Some lines")
+		.Add("Inside DropList")
+		.Add("To show")
+		.Add("Embedded controls")
+		.Add("In custom menus")
+	;
+
 	// adds built-in commands
 	SetCommands(THISBACK(commandCb));
 	
@@ -124,6 +135,7 @@ TestXMLMenu::TestXMLMenu()
 	
 	// build default toolbars structure
 	SetToolBars(STDBACK(toolBarsCb));
+	
 	
 	// don't allow dock bottom
 //	testXMLMenu.NoDockBottom();

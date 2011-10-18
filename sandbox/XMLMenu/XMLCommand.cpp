@@ -30,15 +30,20 @@ XMLCommands &XMLCommands::Add(String const &id, Callback cb)
 }
 
 // adds a control
-XMLCommands &XMLCommands::Add(String const &id, Ctrl &ctrl)
+XMLCommands &XMLCommands::Add(String const &id, Ctrl &ctrl, Size const &size)
 {
 	XMLCommand *cmd = new XMLCommand;
 	cmd->control = &ctrl;
+	cmd->ctrlSize = size;
 	cmd->enabled = true;
 	cmd->custom = false;
 	cmd->callback.Clear();
 	commands.Add(id, cmd);
 	return *this;
+}
+XMLCommands &XMLCommands::Add(String const &id, Ctrl &ctrl)
+{
+	return Add(id, ctrl, Size(-1, -1));
 }
 
 // adds a custom command, allows enable/disable item
@@ -66,15 +71,20 @@ XMLCommands &XMLCommands::Add(bool enabled, String const &id, Callback cb)
 }
 
 // adds a control, allows enable/disable item
-XMLCommands &XMLCommands::Add(bool enabled, String const &id, Ctrl &ctrl)
+XMLCommands &XMLCommands::Add(bool enabled, String const &id, Ctrl &ctrl, Size const &size)
 {
 	XMLCommand *cmd = new XMLCommand;
 	cmd->control = &ctrl;
+	cmd->ctrlSize = size;
 	cmd->enabled = true;
 	cmd->custom = false;
 	cmd->callback.Clear();
 	commands.Add(id, cmd);
 	return *this;
+}
+XMLCommands &XMLCommands::Add(bool enabled, String const &id, Ctrl &ctrl)
+{
+	return Add(enabled, id, ctrl, Size(-1, -1));
 }
 
 // get all available command IDs

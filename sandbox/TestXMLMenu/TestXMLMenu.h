@@ -17,6 +17,8 @@ class TestXMLMenu : public WithXMLMenu<TopWindow>
 		void commandCb(XMLCommands &cmds);
 		
 		void quitCb(void) { Break(0); Close(); }
+		
+		DropList testDrop;
 
 	public:
 		typedef TestXMLMenu CLASSNAME;

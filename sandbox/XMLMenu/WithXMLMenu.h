@@ -404,7 +404,12 @@ template<class T> void WithXMLMenu<T>::SetMenuBar0(Bar &bar, int mnIdx, Array<XM
 		
 		// adds to menu
 		if(ctrl)
-			bar.Add(*ctrl);
+		{
+			if(cmd.GetCtrlSize() == Size(-1, -1))
+				bar.Add(enabled, *ctrl);
+			else
+				bar.Add(enabled, *ctrl, cmd.GetCtrlSize());
+		}
 		else
 			bar.Add(enabled, label, img, handler);
 	}
@@ -456,7 +461,12 @@ template<class T> void WithXMLMenu<T>::SetToolBar0(Bar &bar, int tbIdx, Array<XM
 		
 		// adds to menu
 		if(ctrl)
-			bar.Add(*ctrl);
+		{
+			if(cmd.GetCtrlSize() == Size(-1, -1))
+				bar.Add(enabled, *ctrl);
+			else
+				bar.Add(enabled, *ctrl, cmd.GetCtrlSize());
+		}
 		else
 			bar.Add(enabled, label, img, handler);
 	}

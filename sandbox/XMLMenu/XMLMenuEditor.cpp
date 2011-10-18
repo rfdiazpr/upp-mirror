@@ -81,6 +81,7 @@ void XMLBarEditor::SetBar(XMLToolBar *_bar)
 {
 	// if changing bar, update current one if not null
 	// before changing it
+DLOG("_bar : " << FormatHex(_bar) << "   bar : " << FormatHex(bar));
 	if(bar && bar != _bar)
 		RefreshBar();
 	
@@ -266,6 +267,7 @@ XMLBarsEditor::XMLBarsEditor()
 	horzSplitter.Horz(barListPane, barEditor);
 	
 	barListPane.barList.WhenSel << THISBACK(barSelCb);
+	barListPane.barList.WhenBar << THISBACK(barContextCb);
 }
 
 // gets minimum size of bar editor
@@ -335,6 +337,46 @@ bool XMLBarsEditor::IsUsingCommand(String const &cmdId) const
 	return false;
 }
 	
+// bar list context menu
+void XMLBarsEditor::barContextCb(Bar &bar)
+{
+	// get current selection
+	int i = barListPane.barList.GetCursor();
+	if(i < 0)
+		return;
+	String barName = barListPane.barList.Get(i);
+	bar.Add(t_("Add new bar"), THISBACK(barContextAddCb));
+	bar.Add(Format(t_("Remove bar '%s'"), barName), THISBACK(barContextRemoveCb));
+}
+
+void XMLBarsEditor::barContextAddCb(void)
+{
+	XMLBarAdd add(toolBars);
+	int res = add.RunAppModal();
+	add.Close();
+	if(res == IDOK)
+	{
+		toolBars.Add(~add.barName, XMLToolBar());
+		barListPane.barList.Add(~add.barName);
+		barListPane.barList.SetCursor(barListPane.barList.GetCount() - 1);
+	}
+}
+
+void XMLBarsEditor::barContextRemoveCb(void)
+{
+	int i = barListPane.barList.GetCursor();
+	if(i < 0)
+		return;
+	barListPane.barList.SetCursor(-1);
+	barEditor.SetBar(NULL);
+	barListPane.barList.Remove(i);
+	toolBars.Remove(i);
+	if(barListPane.barList.GetCount() > i)
+		barListPane.barList.SetCursor(i);
+	else if(barListPane.barList.GetCount())
+		barListPane.barList.SetCursor(barListPane.barList.GetCount()-1);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 void XMLMenuEditor::cancelCb(void)
 {

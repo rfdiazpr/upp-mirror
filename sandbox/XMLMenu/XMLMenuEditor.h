@@ -79,6 +79,40 @@ class XMLBarEditor : public ParentCtrl
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+class XMLBarAdd : public WithBarAddLayout<TopWindow>
+{
+	private :
+		XMLToolBars &bars;
+	
+	protected :
+		void okCb(void)
+		{
+			if(~barName == "")
+			{
+				Exclamation(t_("Invalid empty bar name"));
+				return;
+			}
+			if(bars.Find(barName) >= 0)
+			{
+				Exclamation(Format(t_("Bar '%s' already present"), ~barName));
+				return;
+			}
+			Break(IDOK);
+		}
+		void cancelCb(void) { Break(IDCANCEL);}
+	
+	public :
+		typedef XMLBarAdd CLASSNAME;
+		
+		XMLBarAdd(XMLToolBars &t) : bars(t)
+		{
+			CtrlLayout(*this);
+			okBtn.Ok() << THISBACK(okCb);
+			cancelBtn.Cancel() << THISBACK(cancelCb);
+		}
+};
+
+////////////////////////////////////////////////////////////////////////////////
 class XMLBarsEditor : public ParentCtrl
 {
 	private:
@@ -100,6 +134,11 @@ class XMLBarsEditor : public ParentCtrl
 
 		// bar selection callback
 		void barSelCb(void);
+		
+		// bar list context menu
+		void barContextCb(Bar &bar);
+		void barContextAddCb(void);
+		void barContextRemoveCb(void);
 		
 	protected:
 	

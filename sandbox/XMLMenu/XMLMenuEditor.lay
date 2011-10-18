@@ -32,3 +32,10 @@ LAYOUT(CmdAddLayout, 236, 76)
 	ITEM(Label, dv___3, SetLabel(t_("New command Id :")).LeftPosZ(8, 220).TopPosZ(4, 20))
 END_LAYOUT
 
+LAYOUT(BarAddLayout, 236, 76)
+	ITEM(EditString, barName, LeftPosZ(8, 220).TopPosZ(28, 19))
+	ITEM(Button, cancelBtn, SetLabel(t_("Cancel")).LeftPosZ(168, 64).TopPosZ(52, 20))
+	ITEM(Button, okBtn, SetLabel(t_("Ok")).LeftPosZ(4, 64).TopPosZ(52, 20))
+	ITEM(Label, dv___3, SetLabel(t_("New bar name :")).LeftPosZ(8, 220).TopPosZ(4, 20))
+END_LAYOUT
+

@@ -164,6 +164,13 @@ class XMLToolBars : public ArrayMap<String, XMLToolBar>
 		// debugging stuff -- dumps bar content
 		void Dump(int level = 0);
 #endif
+
+		// xml support
+		void Xmlize(XmlIO xml)
+		{
+			ArrayMap<String, XMLToolBar> &tb = dynamic_cast<ArrayMap<String, XMLToolBar> &>(*this);
+			XmlizeMap<String, XMLToolBar>(xml, "toolbarname", "toolbar", tb);
+		}
 };
 
 END_UPP_NAMESPACE

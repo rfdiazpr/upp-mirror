@@ -32,6 +32,9 @@ class XMLCommand
 		bool GetIsCustom(void) const			{ return custom;	}
 		
 		bool operator==(XMLCommand &other) const;
+		
+		// xml support
+		void Xmlize(XmlIO xml);
 };
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -92,6 +95,9 @@ class XMLCommands : DeepCopyOption<XMLCommands>
 		
 		// sort items - alphabetically, but first built-in commands, then custom ones
 		XMLCommands &Sort(void);
+		
+		// xml support
+		void Xmlize(XmlIO xml);
 };
 
 END_UPP_NAMESPACE

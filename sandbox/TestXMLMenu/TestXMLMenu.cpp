@@ -155,8 +155,14 @@ GUI_APP_MAIN
 
 	// create window with dockable menus/toolbars
 	TestXMLMenu testXMLMenu;
+
+	String path = AppendFileName(GetHomeDirectory(), "TestXMLMenu.xml");
+	if(FileExists(path))
+		LoadFromXMLFile(testXMLMenu, path);
 	
 	testXMLMenu.Sizeable().Zoomable();
 	testXMLMenu.Run();
+	
+	StoreAsXMLFile(testXMLMenu, "SavedMenu", path);
 }
 

@@ -133,6 +133,9 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		
 		// gets a context menu by name -- NULL if none
 		MenuBar *GetContextMenu(String const &name);
+		
+		// xml support
+		void Xmlize(XmlIO xml);
 };
 
 template<class T> WithXMLMenu<T>::WithXMLMenu() :
@@ -553,6 +556,18 @@ template<class T> MenuBar *WithXMLMenu<T>::GetContextMenu(String const &name)
 	if(idx < 0)
 		return NULL;
 	return &menuBarCtrls[idx];
+}
+
+// xml support
+template<class T> void WithXMLMenu<T>::Xmlize(XmlIO xml)
+{
+	xml
+		("commands"		, commands)
+		("menubars"		, menuBars)
+		("toolbars"		, toolBars)
+	;
+	if(xml.IsLoading())
+		RefreshBars();
 }
 
 END_UPP_NAMESPACE

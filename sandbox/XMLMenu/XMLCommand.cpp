@@ -4,6 +4,25 @@ NAMESPACE_UPP
 
 ////////////////////////////////////////////////////////////////////////////////////
 
+// xml support
+void XMLCommand::Xmlize(XmlIO xml)
+{
+	// just custom commands get streamed, so we don't need to
+	// stream anything, just set values on load
+	if(xml.IsLoading())
+	{
+		enabled = true;
+		custom = true;
+		control = NULL;
+		ctrlSize = Size(-1, -1);
+		callback.Clear();
+	}
+	else
+	{
+		ASSERT(custom == true);
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////////
 // adds a custom command
 XMLCommands &XMLCommands::Add(String const &id)
@@ -126,6 +145,39 @@ XMLCommands &XMLCommands::Sort(void)
 		commands.Add(customIdx[i], custom[i]);
 	
 	return *this;
+}
+
+// xml support
+void XMLCommands::Xmlize(XmlIO xml)
+{
+	// just stream CUSTOM commands; embedded ones are defined
+	// by application and can't be edited
+	if(xml.IsLoading())
+	{
+		// wipe all custom commands currently present
+		for(int i = commands.GetCount() - 1; i >= 0; i--)
+			if(commands[i].GetIsCustom())
+				commands.Remove(i);
+
+		// stream in new commands
+		ArrayMap<String, XMLCommand> newCmds;
+		xml("commands", newCmds);
+		
+		// appends new commands to current list
+		for(int i = 0; i < newCmds.GetCount(); i++)
+			commands.Add(newCmds.GetKey(i), newCmds[i]);
+	}
+	else
+	{
+		// extract custom commands from current ones
+		ArrayMap<String, XMLCommand> custCmds;
+		for(int i = 0; i < commands.GetCount(); i++)
+			if(commands[i].GetIsCustom())
+				custCmds.Add(commands.GetKey(i), commands[i]);
+		
+		// stream out custom commands
+		xml("commands", custCmds);
+	}
 }
 		
 END_UPP_NAMESPACE

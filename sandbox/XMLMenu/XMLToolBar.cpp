@@ -40,6 +40,46 @@ void XMLToolBarItem::Dump(int level)
 }
 #endif
 
+// xml support
+void XMLToolBarItem::Xmlize(XmlIO xml)
+{
+	xml
+		("commandId"	, commandId)
+		("label"		, label)
+		("tooltip"		, tooltip)
+	;
+	if(xml.IsLoading())
+	{
+		XMLToolBar *sub = new XMLToolBar;
+		xml("submenu", *sub);
+		subMenu = sub;
+		if(!sub->GetItems().GetCount())
+			subMenu.Clear();
+		
+		String encoded;
+		xml("icon", encoded);
+		String compressed = Decode64(encoded);
+		String s = GZDecompress(compressed);
+		StringStream ss(s);
+		ss.SetLoading();
+		icon.Serialize(ss);
+	}
+	else
+	{
+		XMLToolBar sub;
+		if(subMenu)
+			sub <<= *subMenu;
+		xml("submenu", sub);
+		
+		StringStream ss;
+		ss.SetStoring();
+		icon.Serialize(ss);
+		String compressed = GZCompress(ss);
+		String encoded = Encode64(compressed);
+		xml("icon", encoded);
+	}
+}
+		
 ////////////////////////////////////////////////////////////////////////////////////
 // XMLToolBar
 
@@ -222,6 +262,28 @@ void XMLToolBar::Dump(int level)
 	}
 }
 #endif
+
+// xml support
+void XMLToolBar::Xmlize(XmlIO xml)
+{
+	xml
+		("name"		, name)
+		("state"	, (int &)state)
+	;
+	if(xml.IsLoading())
+	{
+		Point p;
+		xml("position", p);
+		x = p.x;
+		y = p.y;
+	}
+	else
+	{
+		Point p(x, y);
+		xml("position", p);
+	}
+	xml("items"	, items);
+}
 
 ////////////////////////////////////////////////////////////////////////////////////
 

@@ -341,11 +341,11 @@ bool XMLBarsEditor::IsUsingCommand(String const &cmdId) const
 void XMLBarsEditor::barContextCb(Bar &bar)
 {
 	// get current selection
+	bar.Add(t_("Add new bar"), THISBACK(barContextAddCb));
 	int i = barListPane.barList.GetCursor();
 	if(i < 0)
 		return;
 	String barName = barListPane.barList.Get(i);
-	bar.Add(t_("Add new bar"), THISBACK(barContextAddCb));
 	bar.Add(Format(t_("Remove bar '%s'"), barName), THISBACK(barContextRemoveCb));
 }
 

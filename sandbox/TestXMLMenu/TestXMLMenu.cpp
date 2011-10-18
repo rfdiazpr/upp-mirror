@@ -6,16 +6,12 @@ using namespace Upp;
 #define IMAGEFILE <TestXMLMenu/TestXMLMenu.iml>
 #include <Draw/iml_source.h>
 
-TestXMLMenu::TestXMLMenu()
-{
-}
-
 static void dummyCb(void)
 {
 }
 
 // commands generator callback
-static void commandCb(XMLCommands &cmds)
+void TestXMLMenu::commandCb(XMLCommands &cmds)
 {
 	cmds
 		.Add("New"			, callback(dummyCb))
@@ -27,10 +23,10 @@ static void commandCb(XMLCommands &cmds)
 		.Add("PrintPreview"	, callback(dummyCb))
 		.Add("Print"		, callback(dummyCb))
 		.Add("Next"			, callback(dummyCb))
-		.Add("Previous"		, callback(dummyCb))
-		.Add("Settings"		, callback(dummyCb))
-		.Add("Help"			, callback(dummyCb))
-		.Add("Quit"			, callback(dummyCb))
+		.Add("Previous")	// custom command
+		.Add("Settings")	// custom command
+		.Add("Help")		// custom command
+		.Add("Quit"			, THISBACK(quitCb))
 		.Add("Exit"			, callback(dummyCb))
 		.Add("Flag"			, callback(dummyCb))
 		.Add("Remove"		, callback(dummyCb))
@@ -118,6 +114,22 @@ void toolBarsCb(XMLToolBars &tb)
 	;
 }
 
+TestXMLMenu::TestXMLMenu()
+{
+	// adds built-in commands
+	SetCommands(THISBACK(commandCb));
+	
+	// build default menu structure
+	SetMenuBars(STDBACK(menuCb));
+	
+	// build default toolbars structure
+	SetToolBars(STDBACK(toolBarsCb));
+	
+	// don't allow dock bottom
+//	testXMLMenu.NoDockBottom();
+	
+}
+
 // context menu handler
 void TestXMLMenu::RightDown(Point p, dword)
 {
@@ -131,18 +143,6 @@ GUI_APP_MAIN
 
 	// create window with dockable menus/toolbars
 	TestXMLMenu testXMLMenu;
-	
-	// adds built-in commands
-	testXMLMenu.SetCommands(STDBACK(commandCb));
-	
-	// build default menu structure
-	testXMLMenu.SetMenuBars(STDBACK(menuCb));
-	
-	// build default toolbars structure
-	testXMLMenu.SetToolBars(STDBACK(toolBarsCb));
-	
-	// don't allow dock bottom
-//	testXMLMenu.NoDockBottom();
 	
 	testXMLMenu.Sizeable().Zoomable();
 	testXMLMenu.Run();

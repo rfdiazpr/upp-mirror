@@ -14,6 +14,10 @@ class TestXMLMenu : public WithXMLMenu<TopWindow>
 		// context menu handler
 		virtual void RightDown(Point p, dword);
 
+		void commandCb(XMLCommands &cmds);
+		
+		void quitCb(void) { Break(0); Close(); }
+
 	public:
 		typedef TestXMLMenu CLASSNAME;
 

@@ -367,10 +367,15 @@ void XMLBarsEditor::barContextRemoveCb(void)
 	int i = barListPane.barList.GetCursor();
 	if(i < 0)
 		return;
-	barListPane.barList.SetCursor(-1);
+
+	// the double SetBar(NULL) is needed because, when deleting
+	// row from barList, the WhenSel event is triggered and app
+	// try to refresh a deleted bar, otherwise
 	barEditor.SetBar(NULL);
 	barListPane.barList.Remove(i);
+	barEditor.SetBar(NULL);
 	toolBars.Remove(i);
+
 	if(barListPane.barList.GetCount() > i)
 		barListPane.barList.SetCursor(i);
 	else if(barListPane.barList.GetCount())

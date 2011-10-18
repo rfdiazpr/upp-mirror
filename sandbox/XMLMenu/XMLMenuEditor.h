@@ -74,6 +74,8 @@ class XMLBarEditor : public ParentCtrl
 		// sets bar being edited
 		void SetBar(XMLToolBar *bar);
 		
+		// sets command id into currently selected item
+		void SetCommandId(String const &cmdId) { itemPane.cmdId = cmdId; fieldsModCb(); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -122,6 +124,46 @@ class XMLBarsEditor : public ParentCtrl
 		
 		// gets the local copy of toolbars
 		XMLToolBars &GetToolBars(void);
+		
+		// query if a command is in use by a toolbar
+		bool IsUsingCommand(String const &cmdId) const;
+		
+		// sets command id into currently selected item of currently selected toolbar
+		void SetCommandId(String const &cmdId) { barEditor.SetCommandId(cmdId); }
+};
+
+////////////////////////////////////////////////////////////////////////////////
+class XMLCmdAdd : public WithCmdAddLayout<TopWindow>
+{
+	private :
+		XMLCommands &cmds;
+	
+	protected :
+		void okCb(void)
+		{
+			if(~cmdId == "")
+			{
+				Exclamation(t_("Invalid empty command Id"));
+				return;
+			}
+			if(cmds.Has(cmdId))
+			{
+				Exclamation(Format(t_("Command '%s' already present"), ~cmdId));
+				return;
+			}
+			Break(IDOK);
+		}
+		void cancelCb(void) { Break(IDCANCEL);}
+	
+	public :
+		typedef XMLCmdAdd CLASSNAME;
+		
+		XMLCmdAdd(XMLCommands &c) : cmds(c)
+		{
+			CtrlLayout(*this);
+			okBtn.Ok() << THISBACK(okCb);
+			cancelBtn.Cancel() << THISBACK(cancelCb);
+		}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -321,6 +321,19 @@ void XMLBarsEditor::barSelCb(void)
 	else
 		barEditor.SetBar(&toolBars[idx]);
 }
+
+// query if a command is in use by a toolbar
+bool XMLBarsEditor::IsUsingCommand(String const &cmdId) const
+{
+	for(int iBar = 0; iBar < toolBars.GetCount(); iBar++)
+	{
+		Array<XMLToolBarItem> const &items = toolBars[iBar].GetItems();
+		for(int iItem = 0; iItem < items.GetCount(); iItem++)
+			if(items[iItem].GetId() == cmdId)
+				return true;
+	}
+	return false;
+}
 	
 ////////////////////////////////////////////////////////////////////////////////
 void XMLMenuEditor::cancelCb(void)
@@ -439,6 +452,10 @@ void XMLMenuEditor::Layout(void)
 // check wether a command is used in a menu
 bool XMLMenuEditor::cmdInUse(String const &cmdId) const
 {
+	if(menusEditor.IsUsingCommand(cmdId))
+		return true;
+	if(barsEditor.IsUsingCommand(cmdId))
+		return true;
 	return false;
 }
 		
@@ -462,15 +479,39 @@ void XMLMenuEditor::cmdContextCb(Bar &bar)
 
 void XMLMenuEditor::cmdContextAddCb(void)
 {
+	XMLCmdAdd add(commands);
+	int res = add.RunAppModal();
+	add.Close();
+	if(res == IDOK)
+	{
+		commands.Add(add.cmdId);
+		FillCmdList();
+		cmdPane.commandList.SetCursor(cmdPane.commandList.Find(~add.cmdId));
+	}
 }
 
 void XMLMenuEditor::cmdContextRemoveCb(void)
 {
+	int i = cmdPane.commandList.GetCursor();
+	if(i < 0)
+		return;
+	cmdPane.commandList.Remove(i);
+	commands.Remove(i);
+	FillCmdList();
 }
 
 // commandlist double-click handler
 void XMLMenuEditor::cmdDblClickCb(void)
 {
+	int iCmd = cmdPane.commandList.GetCursor();
+	if(iCmd < 0)
+		return;
+	String cmdId = cmdPane.commandList.Get(iCmd);
+	int iTab = tabCtrl.Get();
+	if(iTab == 0)
+		menusEditor.SetCommandId(cmdId);
+	else
+		barsEditor.SetCommandId(cmdId);
 }
 		
 END_UPP_NAMESPACE

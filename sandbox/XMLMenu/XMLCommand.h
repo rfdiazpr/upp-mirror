@@ -66,6 +66,9 @@ class XMLCommands : DeepCopyOption<XMLCommands>
 		
 		// adds a control, allows enable/disable item
 		XMLCommands &Add(bool enabled, String const &id, Ctrl &ctrl);
+		
+		// removes a command
+		XMLCommands &Remove(int idx) { commands.Remove(idx); return *this; }
 
 		// get all available command IDs
 		Vector<String> const &GetIds(void) const;

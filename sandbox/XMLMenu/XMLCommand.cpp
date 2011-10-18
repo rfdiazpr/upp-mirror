@@ -83,6 +83,12 @@ Vector<String> const &XMLCommands::GetIds(void) const
 	return commands.GetKeys();
 }
 
+struct XMLCmdLess
+{
+	bool operator()(String const &a, String const &b) const
+		{ return ToUpper(a) < ToUpper(b); }
+};
+	
 // sort items - alphabetically, but first built-in commands, then custom ones
 XMLCommands &XMLCommands::Sort(void)
 {
@@ -101,8 +107,8 @@ XMLCommands &XMLCommands::Sort(void)
 			builtInIdx.Add(commands.GetKey(i));
 		}
 	}
-	IndexSort(customIdx, custom);
-	IndexSort(builtInIdx, builtIn);
+	IndexSort(customIdx, custom, XMLCmdLess());
+	IndexSort(builtInIdx, builtIn, XMLCmdLess());
 	commands.Clear();
 	for(int i = 0; i < builtIn.GetCount(); i++)
 		commands.Add(builtInIdx[i], builtIn[i]);

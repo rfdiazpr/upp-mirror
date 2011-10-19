@@ -288,7 +288,11 @@ Size XMLToolBarCtrl::GetSquaredSize(void)
 	int hor = (int)sqrt(area);
 	if(hor < vSz.cx)
 		hor = vSz.cx;
-	return t->GetPaneSize(true, hor);
+	Size sz = t->GetPaneSize(true, hor);
+	dragFrame.Align(ToolBar::BAR_LEFT);
+	dragFrame.FrameAddSize(sz);
+	dragFrame.Align(GetAlign());
+	return sz;
 }
 
 // floats the toolbar at a given position

@@ -9,7 +9,7 @@ XMLToolBarCtrl::XMLToolBarCtrl(XMLMenuInterface *_iFace)
 {
 	// stores interface to menu handler
 	iFace = _iFace;
-	
+
 	// adds the toolbar
 	Add(toolBar.SizePos());
 	

@@ -144,6 +144,7 @@ template<class T> WithXMLMenu<T>::WithXMLMenu() :
 	leftFrame		(TOOLBAR_LEFT),
 	rightFrame		(TOOLBAR_RIGHT)
 {
+DLOG("XMLMenu : " << FormatHex(this));
 	// allows, by default, docking on 4 corners and embeds
 	// main menu too
 	dockTop = dockBottom = dockLeft = dockRight = true;
@@ -568,8 +569,11 @@ template<class T> void WithXMLMenu<T>::Xmlize(XmlIO xml)
 		("menubars"		, menuBars)
 		("toolbars"		, toolBars)
 	;
+	// here too, we use postcallback because we must
+	// wait that top window is opened before refreshing toolbars
+	// don't know if it's the right way, but.....
 	if(xml.IsLoading())
-		RefreshBars();
+		T::PostCallback(THISBACK(RefreshBars));
 }
 
 END_UPP_NAMESPACE

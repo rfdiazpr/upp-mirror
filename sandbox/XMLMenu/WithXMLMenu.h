@@ -308,12 +308,11 @@ template<class T> void WithXMLMenu<T>::DragLoop(Point dragPoint)
 #endif
 
 	// loop up to mouse button is released
-	Point ps, pp;
+	Point ps;
 	do
 	{
 		Ctrl::ProcessEvents();
 		ps = GetMousePos();
-		pp = ps - Ctrl::GetRect().TopLeft();
 		Rect r = dragToolBar->GetRect();
 		r = r + ps - dragPoint;
 		dragPoint = ps;
@@ -322,7 +321,7 @@ template<class T> void WithXMLMenu<T>::DragLoop(Point dragPoint)
 		// query an eventual dock frame under mouse
 		if(preDockFrame)
 			preDockFrame->UnPreDock(*dragToolBar);
-		preDockFrame = QueryDockFrame(pp);
+		preDockFrame = QueryDockFrame(ps);
 		if(preDockFrame)
 		{
 			XMLToolBarState state = preDockFrame->GetToolBarState();
@@ -330,7 +329,7 @@ template<class T> void WithXMLMenu<T>::DragLoop(Point dragPoint)
 				dragToolBar->PopHorz(ps);
 			else
 				dragToolBar->PopVert(ps);
-			preDockFrame->PreDock(*dragToolBar, pp);
+			preDockFrame->PreDock(*dragToolBar, ps);
 		}
 		else
 			dragToolBar->PopSquare(ps);
@@ -346,7 +345,7 @@ template<class T> void WithXMLMenu<T>::DragLoop(Point dragPoint)
 	if(preDockFrame)
 	{
 		dragToolBar->UnPreDock(*preDockFrame);
-		dragToolBar->Dock(*preDockFrame, pp);
+		dragToolBar->Dock(*preDockFrame, ps);
 	}
 	else
 	{

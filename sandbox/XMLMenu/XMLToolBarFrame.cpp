@@ -334,9 +334,9 @@ XMLToolBarFrame &XMLToolBarFrame::Dock(XMLToolBarCtrl &tb, int col, int row)
 bool XMLToolBarFrame::GetDockTarget(XMLToolBarCtrl &tb, Point p, int &dockLine, bool &insert, int &col)
 {
 	// nothing if point outside frame
-	if(!toolBarContainer.GetRect().Contains(p))
+	if(!toolBarContainer.GetScreenRect().Contains(p))
 		return false;
-	p -= toolBarContainer.GetRect().TopLeft();
+	p -= toolBarContainer.GetScreenRect().TopLeft();
 	Size sz = toolBarContainer.GetRect().GetSize();
 	
 	// ok, it's inside the frame, we must now search for
@@ -454,7 +454,7 @@ XMLToolBarFrame &XMLToolBarFrame::Undock(XMLToolBarCtrl &tb)
 	return *this;
 }
 
-// pre-docking handling
+// pre-docking handling -- Point p in SCREEN COORDINATES
 XMLToolBarFrame &XMLToolBarFrame::PreDock(XMLToolBarCtrl &tb, Point p)
 {
 	if(preDocking)
@@ -496,10 +496,13 @@ XMLToolBarFrame &XMLToolBarFrame::UnPreDock(XMLToolBarCtrl &tb)
 	return *this;
 }
 
-// check whether a point is inside the frame
-bool XMLToolBarFrame::Contains(Point p)
+// check whether a point (in SCREEN coordinates) is inside the frame
+bool XMLToolBarFrame::Contains(Point ps)
 {
-	return frameRect.Contains(p);
+	if(!this->parent)
+		return false;
+	ps -= parent->GetScreenRect().TopLeft();
+	return frameRect.Contains(ps);
 }
 
 

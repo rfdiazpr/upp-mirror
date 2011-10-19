@@ -66,7 +66,8 @@ void XMLBarEditor::RefreshBar(int treeRoot, XMLToolBar *subBar)
 	for(int iChild = 0; iChild < barTree.GetChildCount(treeRoot); iChild++)
 	{
 		int iNode = barTree.GetChild(treeRoot, iChild);
-		subBar->items.Add(new XMLToolBarItem(ValueTo<XMLToolBarItem>(barTree.Get(iNode)), 0));
+		XMLToolBarItem const &item = ValueTo<XMLToolBarItem>(barTree.Get(iNode));
+		subBar->items.Add(new XMLToolBarItem(item, 0));
 		if(barTree.GetChildCount(iNode))
 		{
 			subBar->items.Top().subMenu = new XMLToolBar;
@@ -284,7 +285,8 @@ void XMLBarEditor::treeContextAddCb(int mode)
 	int parentId = 0;
 	int childIdx;
 	int newId = 0;
-	Value v = RawToValue(XMLToolBarItem());
+	Value v;
+	CreateRawValue<XMLToolBarItem>(v);
 	switch(mode)
 	{
 		case 1:
@@ -356,6 +358,8 @@ Size XMLBarsEditor::GetMinSize(void)
 // adjust layout on win changes
 void XMLBarsEditor::Layout(void)
 {
+	if(!GetSize().cx)
+		return;
 	horzSplitter.SetPos(10000 * selectorSize.cx / GetSize().cx);
 }
 

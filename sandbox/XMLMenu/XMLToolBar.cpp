@@ -25,6 +25,16 @@ XMLToolBarItem::XMLToolBarItem(const XMLToolBarItem &item, int dummy)
 	subMenu		<<= item.subMenu;
 }
 
+// pick constructor
+XMLToolBarItem::XMLToolBarItem(XMLToolBarItem pick_ &item)
+{
+	commandId	= item.commandId;
+	label		= item.label;
+	icon		= item.icon;
+	tooltip		= item.tooltip;
+	subMenu		= item.subMenu;
+}
+
 #ifdef flagDEBUG
 // debugging stuff -- dumps bar content
 void XMLToolBarItem::Dump(int level)

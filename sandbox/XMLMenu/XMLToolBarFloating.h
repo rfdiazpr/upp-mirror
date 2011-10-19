@@ -18,7 +18,12 @@ class XMLToolBarFloating : public DragWindow
 		// handler for window drag events
 		virtual void WindowDragged(DragWindow::DragEvent e, Point p);
 		
+		// constructor
 		XMLToolBarFloating(XMLToolBarCtrl &tb, Point p);
+		
+		// close handler -- if done manually (closing window)
+		// sets toolbar state to TOOLBAR_CLOSED
+		void Close(void);
 
 	public:
 		~XMLToolBarFloating();

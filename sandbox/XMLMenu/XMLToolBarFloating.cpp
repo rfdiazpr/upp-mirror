@@ -29,6 +29,15 @@ XMLToolBarFloating::XMLToolBarFloating(XMLToolBarCtrl &tb, Point p)
 	TopMost(true, true);
 }
 
+// close handler -- if done manually (closing window)
+// sets toolbar state to TOOLBAR_CLOSED
+void XMLToolBarFloating::Close(void)
+{
+	if(toolBar && this->HasChild(toolBar))
+		toolBar->SetState(TOOLBAR_CLOSED);
+	TopWindow::Close();
+}
+
 XMLToolBarFloating::~XMLToolBarFloating()
 {
 	RemoveChild(toolBar);

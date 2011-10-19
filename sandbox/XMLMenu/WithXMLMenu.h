@@ -67,6 +67,10 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		// query a dock frame under screen point
 		XMLToolBarFrame *QueryDockFrame(Point p);
 
+		// frame mouse event, captures right click on docking frames
+		// allowing to activate 'customize' even without any toolbar displayed
+		Image FrameMouseEvent(int event, Point p, int zdelta, dword keyflags);
+
 		// child frame mouse event handler captures the click on toolbar's frames
 		virtual void ChildFrameMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags);
 		
@@ -244,10 +248,29 @@ template<class T> XMLToolBarFrame *WithXMLMenu<T>::QueryDockFrame(Point p)
 		return NULL;
 }
 
+// frame mouse event, captures right click on docking frames
+// allowing to activate 'customize' even without any toolbar displayed
+template<class T> Image WithXMLMenu<T>::FrameMouseEvent(int event, Point p, int zdelta, dword keyflags)
+{
+	// handles just left down events
+	if(event != Ctrl::RIGHTDOWN)
+		return T::FrameMouseEvent(event, p, zdelta, keyflags);
+
+	Ctrl::PostCallback(THISBACK1(RightClickEvent, p));
+	return T::FrameMouseEvent(event, p, zdelta, keyflags);
+}
+
 // child frame mouse event handler captures the click on toolbar's frames
 template<class T> void WithXMLMenu<T>::ChildFrameMouseEvent(Ctrl *child, int event, Point p, int zdelta, dword keyflags)
 {
-	// handles just left down event
+	// allow context menu even on child frames
+	if(event == Ctrl::RIGHTDOWN)
+	{
+		Ctrl::PostCallback(THISBACK1(RightClickEvent, p));
+		return;
+	}
+
+	// handles just left down events
 	if(event != Ctrl::LEFTDOWN)
 		return;
 	

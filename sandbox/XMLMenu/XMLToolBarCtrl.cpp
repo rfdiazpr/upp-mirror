@@ -344,11 +344,13 @@ XMLToolBarCtrl &XMLToolBarCtrl::Popup(Point p)
 	// move it at requested point
 	SetRect(p.x, p.y, sz.cx, sz.cy);
 
-	// damned workaround for popupping control
-	// Upp can't find a right owner in many cases (BUG!)
-	Ctrl *t = dynamic_cast<Ctrl *>(iFace);
-	t->Activate();
-	PopUp();
+	// last try.... try to find a suitable owner for popup
+	// this one was quite hard
+	Ctrl *owner = dynamic_cast<Ctrl *>(iFace);
+	Ctrl *topCtrl = owner->GetTopCtrl();
+	while(owner && owner->GetParent() && owner->GetParent() != topCtrl)
+		owner = owner->GetParent();
+	PopUp(owner);
 
 	return *this;
 }

@@ -561,6 +561,8 @@ template<class T> MenuBar *WithXMLMenu<T>::GetContextMenu(String const &name)
 // xml support
 template<class T> void WithXMLMenu<T>::Xmlize(XmlIO xml)
 {
+	if(xml.IsStoring())
+		SyncBars();
 	xml
 		("commands"		, commands)
 		("menubars"		, menuBars)

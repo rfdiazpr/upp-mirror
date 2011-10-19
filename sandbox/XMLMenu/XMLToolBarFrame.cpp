@@ -277,6 +277,7 @@ void XMLToolBarFrame::FrameRemove(void)
 	toolBars.Clear();
 	relativePositions.Clear();
 	parent->RemoveChild(&toolBarContainer);
+	posMapper.Clear();
 	parent = NULL;
 }
 

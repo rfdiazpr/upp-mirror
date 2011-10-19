@@ -9,7 +9,10 @@ using namespace Upp;
 #define IMAGEFILE <TestXMLMenu/TestXMLMenu.iml>
 #include <Draw/iml_header.h>
 
-class TestXMLMenu : public WithXMLMenu<TopWindow>
+#define LAYOUTFILE <TestXMLMenu/TestXMLMenu.lay>
+#include <CtrlCore/lay.h>
+
+class TestXMLMenu : public WithTestXMLMenuLayout<TopWindow>
 {
 		// context menu handler
 		virtual void RightDown(Point p, dword);
@@ -19,9 +22,12 @@ class TestXMLMenu : public WithXMLMenu<TopWindow>
 		void quitCb(void) { Break(0); Close(); }
 		
 		DropList testDrop;
-
+		
 	public:
 		typedef TestXMLMenu CLASSNAME;
+
+		WithXMLMenu<StaticRect> menuCtrl;
+		LineEdit bottomCtrl;
 
 		TestXMLMenu();
 		

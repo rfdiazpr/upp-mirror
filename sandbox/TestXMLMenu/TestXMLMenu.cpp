@@ -119,6 +119,11 @@ void toolBarsCb(XMLToolBars &tb)
 
 TestXMLMenu::TestXMLMenu()
 {
+	CtrlLayout(*this);
+	splitter.Vert(menuCtrl.SizePos(), bottomCtrl.SizePos());
+	splitter.SetPos(8000);
+	menuCtrl.Color(Black());
+	
 	testDrop
 		.Add("Some lines")
 		.Add("Inside DropList")
@@ -128,13 +133,13 @@ TestXMLMenu::TestXMLMenu()
 	;
 
 	// adds built-in commands
-	SetCommands(THISBACK(commandCb));
+	menuCtrl.SetCommands(THISBACK(commandCb));
 	
 	// build default menu structure
-	SetMenuBars(STDBACK(menuCb));
+	menuCtrl.SetMenuBars(STDBACK(menuCb));
 	
 	// build default toolbars structure
-	SetToolBars(STDBACK(toolBarsCb));
+	menuCtrl.SetToolBars(STDBACK(toolBarsCb));
 	
 	
 	// don't allow dock bottom
@@ -145,7 +150,7 @@ TestXMLMenu::TestXMLMenu()
 // context menu handler
 void TestXMLMenu::RightDown(Point p, dword)
 {
-	MenuBar *menu = GetContextMenu("Context");
+	MenuBar *menu = menuCtrl.GetContextMenu("Context");
 	if(menu)
 		menu->Execute();
 }
@@ -158,11 +163,11 @@ GUI_APP_MAIN
 
 	String path = AppendFileName(GetHomeDirectory(), "TestXMLMenu.xml");
 	if(FileExists(path))
-		LoadFromXMLFile(testXMLMenu, path);
+		LoadFromXMLFile(testXMLMenu.menuCtrl, path);
 	
 	testXMLMenu.Sizeable().Zoomable();
 	testXMLMenu.Run();
 	
-	StoreAsXMLFile(testXMLMenu, "SavedMenu", path);
+	StoreAsXMLFile(testXMLMenu.menuCtrl, "SavedMenu", path);
 }
 

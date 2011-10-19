@@ -5,6 +5,7 @@ uses
 
 file
 	TestXMLMenu.iml,
+	TestXMLMenu.lay,
 	TestXMLMenu.h,
 	TestXMLMenu.cpp;
 

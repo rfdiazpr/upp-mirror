@@ -80,8 +80,11 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		// run the menu editor
 		void runEditorCb(void) { XMLMenuEditor(this).RunAppModal(); }
 		
+		// toggles bar visibility
+		void toggleBarCb(int iBar);
+		
 		// right click context menu
-		void ContextMenu(Bar& bar) { bar.Add(t_("Customize"), THISBACK(runEditorCb)); }
+		void ContextMenu(Bar& bar);
 
 		// right click event sent from various controls
 		virtual void RightClickEvent(Point p) { MenuBar::Execute(THISBACK(ContextMenu)); }
@@ -596,6 +599,49 @@ template<class T> void WithXMLMenu<T>::Xmlize(XmlIO xml)
 	// don't know if it's the right way, but.....
 	if(xml.IsLoading())
 		T::PostCallback(THISBACK(RefreshBars));
+}
+
+// toggles bar visibility
+template<class T> void WithXMLMenu<T>::toggleBarCb(int iBar)
+{
+	XMLToolBarCtrl &tb = toolBarCtrls[iBar];
+	if(tb.GetState() == TOOLBAR_CLOSED)
+	{
+		switch(tb.prevState)
+		{
+			case TOOLBAR_LEFT :
+			case TOOLBAR_RIGHT :
+			case TOOLBAR_TOP :
+			case TOOLBAR_BOTTOM :
+			case TOOLBAR_FLOATING :
+				Reposition(&tb, tb.prevState, tb.toolBarPos.x, tb.toolBarPos.y);
+				break;
+			default:
+				Reposition(&tb, TOOLBAR_FLOATING, tb.toolBarPos.x, tb.toolBarPos.y);
+		}
+	}
+	else
+		tb.CloseBar();
+	T::Layout();
+}
+		
+// right click context menu
+template<class T> void WithXMLMenu<T>::ContextMenu(Bar& bar)
+{
+	// add customize command
+	bar.Add(t_("Customize"), THISBACK(runEditorCb));
+	
+	// allow open/close bars
+	if(!toolBars.GetCount())
+		return;
+	bar.Separator();
+	for(int iBar = 0; iBar < toolBars.GetCount(); iBar++)
+	{
+		XMLToolBarCtrl &toolBarCtrl = toolBarCtrls[iBar];
+		String const &barName = toolBars.GetKey(iBar);
+		Bar::Item &item = bar.Add(barName, THISBACK1(toggleBarCb, iBar));
+		item.Check(toolBarCtrl.GetState() != TOOLBAR_CLOSED);
+	}
 }
 
 END_UPP_NAMESPACE

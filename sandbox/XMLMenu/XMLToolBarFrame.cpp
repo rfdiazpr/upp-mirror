@@ -327,7 +327,7 @@ XMLToolBarFrame &XMLToolBarFrame::Dock(XMLToolBarCtrl &tb, int col, int row)
 	relativePositions.Add(Size(col, row));
 	Reposition();
 	Layout();
-	tb.dockedPos = Point(relativePositions.Top().cx, relativePositions.Top().cy);
+	tb.toolBarPos = Point(relativePositions.Top().cx, relativePositions.Top().cy);
 	return *this;
 }
 
@@ -421,7 +421,7 @@ XMLToolBarFrame &XMLToolBarFrame::Dock(XMLToolBarCtrl &tb, Point p)
 	toolBarContainer.AddChild(&tb);
 	Reposition();
 	Layout();
-	tb.dockedPos = Point(relativePositions.Top().cx, relativePositions.Top().cy);
+	tb.toolBarPos = Point(relativePositions.Top().cx, relativePositions.Top().cy);
 	return *this;
 }
 
@@ -435,7 +435,7 @@ XMLToolBarFrame &XMLToolBarFrame::Undock(XMLToolBarCtrl &tb)
 
 	// store inside toolbar last docked position
 	Size &sz = relativePositions[i];
-	toolBars[i]->dockedPos= Point(sz.cx, sz.cy);
+	toolBars[i]->toolBarPos= Point(sz.cx, sz.cy);
 	
 	// remove from toolbars and positions list
 	toolBars.Remove(i);

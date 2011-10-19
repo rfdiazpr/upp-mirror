@@ -17,12 +17,9 @@ XMLToolBarCtrl::XMLToolBarCtrl(XMLMenuInterface *_iFace)
 	SetState(TOOLBAR_CLOSED);
 	prevState = TOOLBAR_TOP;
 	
-	// undocked, at screen center
-	Rect r = GetScreenRect();
-	floatingPos = Point(r.left + r.Width() / 2, r.top + r.Height() / 2);
-	
-	// docked, after last line, at left
-	dockedPos = Point(0, 1000);
+	// initialize position
+	toolBarPos = Point(0, 100);
+	prevToolBarPos = Point(0, 100);
 }
 
 XMLToolBarCtrl::~XMLToolBarCtrl()
@@ -112,23 +109,23 @@ Point XMLToolBarCtrl::GetPosition(void)
 				case TOOLBAR_BOTTOM :
 				case TOOLBAR_LEFT :
 				case TOOLBAR_RIGHT :
-					return dockedPos;
+					return toolBarPos;
 				default :
-					return floatingPos;
+					return toolBarPos;
 			}
 			break;
 
 		case TOOLBAR_FLOATING :
-			return floatingPos;
+			return toolBarPos;
 
 		case TOOLBAR_TOP :
 		case TOOLBAR_BOTTOM :
 		case TOOLBAR_LEFT :
 		case TOOLBAR_RIGHT :
-			return dockedPos;
+			return toolBarPos;
 		default :
 			NEVER();
-			return dockedPos;
+			return toolBarPos;
 	}
 }
 
@@ -306,7 +303,7 @@ XMLToolBarFloating &XMLToolBarCtrl::Float(Point p)
 	
 	// create the floating window
 	floating = new XMLToolBarFloating(*this, p);
-	floatingPos = p;
+	toolBarPos = p;
 	
 	return *floating;
 }
@@ -423,8 +420,11 @@ XMLToolBarCtrl &XMLToolBarCtrl::Dock(XMLToolBarFrame &f, Point p)
 XMLToolBarCtrl &XMLToolBarCtrl::CloseBar(void)
 {
 	// saves last state before closing an oriented toolbar
-	if(toolBarState != TOOLBAR_CLOSED && toolBarState != TOOLBAR_FLOATING)
+	if(toolBarState != TOOLBAR_CLOSED /* && toolBarState != TOOLBAR_FLOATING */)
+	{
 		prevState = toolBarState;
+		prevToolBarPos = toolBarPos;
+	}
 	
 	// close if displayed as popup
 	if(IsPopUp())

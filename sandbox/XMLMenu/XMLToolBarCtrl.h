@@ -42,8 +42,7 @@ class XMLToolBarCtrl : public ParentCtrl
 		
 		// current or last docking status of this toolbar
 		XMLToolBarState toolBarState, prevState;
-		Point dockedPos;
-		Point floatingPos;
+		Point toolBarPos, prevToolBarPos;
 		
 		// lays toolbar and handle inside control
 		virtual void Layout(void);

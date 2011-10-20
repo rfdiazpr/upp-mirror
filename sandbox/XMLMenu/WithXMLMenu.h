@@ -207,6 +207,7 @@ template<class T> WithXMLMenu<T> &WithXMLMenu<T>::Reposition(XMLToolBarCtrl *tb,
 	{
 		case TOOLBAR_CLOSED :
 			tb->Close();
+			tb->toolBarPos = p;
 			break;
 			
 		case TOOLBAR_FLOATING :

@@ -34,7 +34,10 @@ XMLToolBarFloating::XMLToolBarFloating(XMLToolBarCtrl &tb, Point p)
 void XMLToolBarFloating::Close(void)
 {
 	if(toolBar && this->HasChild(toolBar))
+	{
+		toolBar->SetPrevState(toolBar->GetState());
 		toolBar->SetState(TOOLBAR_CLOSED);
+	}
 	TopWindow::Close();
 }
 

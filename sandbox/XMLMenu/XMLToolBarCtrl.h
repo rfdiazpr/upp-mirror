@@ -42,17 +42,17 @@ class XMLToolBarCtrl : public ParentCtrl
 		
 		// current or last docking status of this toolbar
 		XMLToolBarState toolBarState, prevState;
-		Point toolBarPos, prevToolBarPos;
+		Point toolBarPos;
 		
 		// lays toolbar and handle inside control
 		virtual void Layout(void);
 		
 		// gets toolbar align
-		int GetAlign(void);
+		int GetAlign(void) const;
 		
 		typedef XMLToolBarCtrl CLASSNAME;
 
-		XMLMenuInterface *GetInterface(void) { return iFace; }
+		XMLMenuInterface *GetInterface(void) const { return iFace; }
 		
 		// gets toolbar size when completely inlined horizontally
 		virtual Size GetHorzSize(void);
@@ -64,23 +64,25 @@ class XMLToolBarCtrl : public ParentCtrl
 		Size GetSquaredSize(void);
 		
 		// get docked state
-		bool GetIsDocked();
+		bool GetIsDocked() const;
 		
 		// get floating state
-		bool GetIsFloating();
+		bool GetIsFloating() const;
 		
 		// get opened state
-		bool GetIsOpened();
+		bool GetIsOpened() const;
 		
 		// get popup state
-		bool GetIsPopUp();
+		bool GetIsPopUp() const;
 		
 		// sets toolbar state
 		XMLToolBarCtrl &SetState(XMLToolBarState state);
-		XMLToolBarState GetState(void) { return toolBarState; }
+		XMLToolBarState GetState(void) const					{ return toolBarState; }
+		XMLToolBarCtrl &SetPrevState(XMLToolBarState state)		{ prevState = state; return *this; }
+		XMLToolBarState GetPrevState(void) const				{ return prevState; }
 		
 		// gets bar position
-		Point GetPosition(void);
+		Point GetPosition(void) const;
 		
 		// floats the toolbar at a given position
 		XMLToolBarFloating &Float(Point p);

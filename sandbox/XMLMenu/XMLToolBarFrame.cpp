@@ -490,7 +490,7 @@ XMLToolBarFrame &XMLToolBarFrame::UnPreDock(XMLToolBarCtrl &tb)
 	relativePositions.Trim(relativePositions.GetCount() - 1);
 	toolBars.Trim(toolBars.GetCount() - 1);
 	Reposition();
-	parent->Refresh(preDockRect);
+//	parent->Refresh(preDockRect);
 	Layout();
 	preDocking = false;
 	return *this;

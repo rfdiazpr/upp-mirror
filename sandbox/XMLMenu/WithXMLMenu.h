@@ -530,6 +530,7 @@ template<class T> void WithXMLMenu<T>::RefreshBars(void)
 		XMLToolBarCtrl &toolBarCtrl = toolBarCtrls.Top();
 		toolBarCtrls[iBar].Set(THISBACK1(SetToolBar, iBar));
 		Reposition(&toolBarCtrl, toolBar.GetState(), toolBar.Getx(), toolBar.Gety());
+		toolBarCtrls[iBar].SetPrevState(toolBar.GetPrevState());
 	}
 	
 	// refresh frames
@@ -541,9 +542,11 @@ template<class T> void WithXMLMenu<T>::SyncBars(void)
 {
 	for(int i = 0; i < toolBars.GetCount(); i++)
 	{
-		Point p = toolBarCtrls[i].GetPosition();
-		XMLToolBarState state = toolBarCtrls[i].GetState();
-		toolBars[i].SetPos(p.x, p.y).SetState(state);
+		XMLToolBarCtrl const &c = toolBarCtrls[i];
+		Point p = c.GetPosition();
+		XMLToolBarState state = c.GetState();
+		XMLToolBarState prevState = c.GetPrevState();
+		toolBars[i].SetPos(p.x, p.y).SetState(state).SetPrevState(prevState);
 	}
 }
 
@@ -622,7 +625,7 @@ template<class T> void WithXMLMenu<T>::toggleBarCb(int iBar)
 	}
 	else
 		tb.CloseBar();
-	T::Layout();
+	T::RefreshLayout();
 }
 		
 // right click context menu

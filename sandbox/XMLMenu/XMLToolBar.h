@@ -82,7 +82,7 @@ class XMLToolBar : DeepCopyOption<XMLToolBar>
 		Array<XMLToolBarItem> items;
 		
 		// position of toolbar
-		XMLToolBarState state;
+		XMLToolBarState state, prevState;
 		int x, y;
 		
 	public:
@@ -101,6 +101,7 @@ class XMLToolBar : DeepCopyOption<XMLToolBar>
 		// add an entry, various ways
 		XMLToolBar &SetName(String const &_name)		{ name = _name; return *this; }
 		XMLToolBar &SetState(XMLToolBarState _state)	{ state = _state; return *this; }
+		XMLToolBar &SetPrevState(XMLToolBarState _state){ prevState = _state; return *this; }
 		XMLToolBar &SetPos(int _x, int _y)				{ x = _x; y = _y; return *this; }
 
 		XMLToolBar &Add(String const &commandId);
@@ -125,15 +126,13 @@ class XMLToolBar : DeepCopyOption<XMLToolBar>
 		String const &GetName(void) const				{ return name; }
 		
 		// get toolbar state and position
-		XMLToolBarState GetState(void)	{ return state; }
+		XMLToolBarState GetState(void)					{ return state; }
+		XMLToolBarState GetPrevState(void)				{ return prevState; }
 		int Getx(void)									{ return x; }
 		int Gety(void)									{ return y; }
 		
 		// gets toolbar items
 		Array<XMLToolBarItem> const &GetItems(void) const	{ return items; }
-
-		// sets the commands by a callback
-		void Set(Callback1<XMLToolBar &> bar);
 
 		// xml support
 		void Xmlize(XmlIO xml);

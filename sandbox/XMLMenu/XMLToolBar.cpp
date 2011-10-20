@@ -99,6 +99,7 @@ XMLToolBar::XMLToolBar()
 	name = "";
 	items.Clear();
 	state = TOOLBAR_TOP;
+	prevState = TOOLBAR_TOP;
 	x = 0;
 	y = 0;
 }
@@ -119,6 +120,7 @@ XMLToolBar::XMLToolBar(XMLToolBar const &tb, int dummy)
 	name = tb.name;
 	items <<= tb.items;
 	state = tb.state;
+	prevState = tb.prevState;
 	x = tb.x;
 	y = tb.y;
 }
@@ -129,6 +131,7 @@ XMLToolBar &XMLToolBar::operator=(XMLToolBar pick_ &tb)
 	name = tb.name;
 	items = tb.items;
 	state = tb.state;
+	prevState = tb.prevState;
 	x = tb.x;
 	y = tb.y;
 	return *this;
@@ -253,11 +256,6 @@ XMLToolBar &XMLToolBar::Add(Callback1<XMLToolBar &> bar)
 	return *this;
 }
 
-// sets the commands by a callback
-void XMLToolBar::Set(Callback1<XMLToolBar &> bar)
-{
-}
-
 #ifdef flagDEBUG
 // debugging stuff -- dumps bar content
 void XMLToolBar::Dump(int level)
@@ -279,6 +277,7 @@ void XMLToolBar::Xmlize(XmlIO xml)
 	xml
 		("name"		, name)
 		("state"	, (int &)state)
+		("prevstate", (int &)prevState)
 	;
 	if(xml.IsLoading())
 	{

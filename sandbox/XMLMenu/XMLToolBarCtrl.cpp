@@ -19,7 +19,6 @@ XMLToolBarCtrl::XMLToolBarCtrl(XMLMenuInterface *_iFace)
 	
 	// initialize position
 	toolBarPos = Point(0, 100);
-	prevToolBarPos = Point(0, 100);
 }
 
 XMLToolBarCtrl::~XMLToolBarCtrl()
@@ -95,43 +94,14 @@ XMLToolBarCtrl &XMLToolBarCtrl::SetState(XMLToolBarState state)
 }
 
 // gets bar position
-Point XMLToolBarCtrl::GetPosition(void)
+Point XMLToolBarCtrl::GetPosition(void) const
 {
-	switch(toolBarState)
-	{
-		case TOOLBAR_CLOSED :
-		case TOOLBAR_HORZ_POPUP :
-		case TOOLBAR_VERT_POPUP :
-		case TOOLBAR_SQUARE_POPUP :
-			switch(prevState)
-			{
-				case TOOLBAR_TOP :
-				case TOOLBAR_BOTTOM :
-				case TOOLBAR_LEFT :
-				case TOOLBAR_RIGHT :
-					return toolBarPos;
-				default :
-					return toolBarPos;
-			}
-			break;
-
-		case TOOLBAR_FLOATING :
-			return toolBarPos;
-
-		case TOOLBAR_TOP :
-		case TOOLBAR_BOTTOM :
-		case TOOLBAR_LEFT :
-		case TOOLBAR_RIGHT :
-			return toolBarPos;
-		default :
-			NEVER();
-			return toolBarPos;
-	}
+	return toolBarPos;
 }
 
 
 // gets toolbar align
-int XMLToolBarCtrl::GetAlign(void)
+int XMLToolBarCtrl::GetAlign(void) const
 {
 	switch(toolBarState)
 	{
@@ -169,7 +139,7 @@ int XMLToolBarCtrl::GetAlign(void)
 }
 
 // get docked state
-bool XMLToolBarCtrl::GetIsDocked()
+bool XMLToolBarCtrl::GetIsDocked() const
 {
 	switch(toolBarState)
 	{
@@ -193,7 +163,7 @@ bool XMLToolBarCtrl::GetIsDocked()
 }
 
 // get floating state
-bool XMLToolBarCtrl::GetIsFloating()
+bool XMLToolBarCtrl::GetIsFloating() const
 {
 	switch(toolBarState)
 	{
@@ -217,7 +187,7 @@ bool XMLToolBarCtrl::GetIsFloating()
 }
 
 // get floating state
-bool XMLToolBarCtrl::GetIsOpened()
+bool XMLToolBarCtrl::GetIsOpened() const
 {
 	switch(toolBarState)
 	{
@@ -241,7 +211,7 @@ bool XMLToolBarCtrl::GetIsOpened()
 }
 
 // get popup state
-bool XMLToolBarCtrl::GetIsPopUp()
+bool XMLToolBarCtrl::GetIsPopUp() const
 {
 	return IsPopUp();
 }
@@ -398,7 +368,6 @@ XMLToolBarCtrl &XMLToolBarCtrl::Dock(XMLToolBarFrame &f, int row, int col)
 	// dock into given frame and set docked state
 	f.Dock(*this, row, col);
 	toolBarFrame = &f;
-	prevState = toolBarState;
 	SetState(f.GetToolBarState());
 	return *this;
 }
@@ -411,7 +380,6 @@ XMLToolBarCtrl &XMLToolBarCtrl::Dock(XMLToolBarFrame &f, Point p)
 	// dock into given frame and set docked state
 	f.Dock(*this, p);
 	toolBarFrame = &f;
-	prevState = toolBarState;
 	SetState(f.GetToolBarState());
 	return *this;
 }
@@ -419,12 +387,10 @@ XMLToolBarCtrl &XMLToolBarCtrl::Dock(XMLToolBarFrame &f, Point p)
 // closes the toolbar
 XMLToolBarCtrl &XMLToolBarCtrl::CloseBar(void)
 {
-	// saves last state before closing an oriented toolbar
-	if(toolBarState != TOOLBAR_CLOSED /* && toolBarState != TOOLBAR_FLOATING */)
-	{
+	// saves last state before closing a toolbar
+	// this is used to toggle it on demand
+	if(toolBarState != TOOLBAR_CLOSED && !IsPopUp())
 		prevState = toolBarState;
-		prevToolBarPos = toolBarPos;
-	}
 	
 	// close if displayed as popup
 	if(IsPopUp())

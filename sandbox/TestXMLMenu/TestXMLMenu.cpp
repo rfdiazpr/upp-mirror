@@ -130,6 +130,7 @@ TestXMLMenu::TestXMLMenu()
 		.Add("To show")
 		.Add("Embedded controls")
 		.Add("In custom menus")
+		.SetIndex(0)
 	;
 
 	// adds built-in commands
@@ -142,8 +143,8 @@ TestXMLMenu::TestXMLMenu()
 	menuCtrl.SetToolBars(STDBACK(toolBarsCb));
 	
 	
-	// don't allow dock bottom
-//	testXMLMenu.NoDockBottom();
+	// don't allow dock right
+//	menuCtrl.NoDockBottom();
 	
 }
 

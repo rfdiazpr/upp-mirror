@@ -100,8 +100,7 @@ XMLToolBar::XMLToolBar()
 	items.Clear();
 	state = TOOLBAR_TOP;
 	prevState = TOOLBAR_TOP;
-	x = 0;
-	y = 0;
+	position.Clear();
 }
 
 // pick constructor
@@ -110,8 +109,7 @@ XMLToolBar::XMLToolBar(XMLToolBar pick_ &tb)
 	name = tb.name;
 	items = tb.items;
 	state = tb.state;
-	x = tb.x;
-	y = tb.y;
+	position = tb.position;
 }
 
 // copy constructor
@@ -121,8 +119,7 @@ XMLToolBar::XMLToolBar(XMLToolBar const &tb, int dummy)
 	items <<= tb.items;
 	state = tb.state;
 	prevState = tb.prevState;
-	x = tb.x;
-	y = tb.y;
+	position = tb.position;
 }
 		
 // copy operator
@@ -132,8 +129,7 @@ XMLToolBar &XMLToolBar::operator=(XMLToolBar pick_ &tb)
 	items = tb.items;
 	state = tb.state;
 	prevState = tb.prevState;
-	x = tb.x;
-	y = tb.y;
+	position = tb.position;
 	return *this;
 }
 
@@ -278,20 +274,9 @@ void XMLToolBar::Xmlize(XmlIO xml)
 		("name"		, name)
 		("state"	, (int &)state)
 		("prevstate", (int &)prevState)
+		("position"	, position)
+		("items"	, items)
 	;
-	if(xml.IsLoading())
-	{
-		Point p;
-		xml("position", p);
-		x = p.x;
-		y = p.y;
-	}
-	else
-	{
-		Point p(x, y);
-		xml("position", p);
-	}
-	xml("items"	, items);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -305,11 +290,11 @@ XMLToolBars &XMLToolBars::Add(String const &name, XMLToolBar pick_ &tb)
 }
 
 // returns an empty toolbar at a given pos and state
-XMLToolBar XMLToolBars::ToolBar(XMLToolBarState state, int row, int col)
+XMLToolBar XMLToolBars::ToolBar(XMLToolBarState state, Point p)
 {
 	XMLToolBar res;
 	res.SetState(state);
-	res.SetPos(row, col);
+	res.SetPosition(p);
 	return res;
 }
 

@@ -98,8 +98,8 @@ class XMLToolBarCtrl : public ParentCtrl
 		XMLToolBarCtrl &UnPreDock(XMLToolBarFrame &f);
 		
 		// docks the toolbar at a position inside a frame
-		XMLToolBarCtrl &Dock(XMLToolBarFrame &f, int row, int col);
 		XMLToolBarCtrl &Dock(XMLToolBarFrame &f, Point p);
+		XMLToolBarCtrl &DockAt(XMLToolBarFrame &f, Point p);
 		
 		// closes the toolbar
 		XMLToolBarCtrl &CloseBar(void);

@@ -62,7 +62,7 @@ template<class T> class WithXMLMenu : public T, public XMLMenuInterface
 		void callUserHandler(String const &s) { UserCmdHandler(s); }
 		
 		// docks/undocks/hide a toolbar
-		WithXMLMenu<T> &Reposition(XMLToolBarCtrl *tb, XMLToolBarState state, int aPos = -1, int bPos = -1);
+		WithXMLMenu<T> &Reposition(XMLToolBarCtrl *tb, XMLToolBarState state, Point p);
 		
 		// query a dock frame under screen point
 		XMLToolBarFrame *QueryDockFrame(Point p);
@@ -201,7 +201,7 @@ template<class T> void WithXMLMenu<T>::RefreshFrames(void)
 		
 
 // docks/undocks/hide a toolbar
-template<class T> WithXMLMenu<T> &WithXMLMenu<T>::Reposition(XMLToolBarCtrl *tb, XMLToolBarState state, int x, int y)
+template<class T> WithXMLMenu<T> &WithXMLMenu<T>::Reposition(XMLToolBarCtrl *tb, XMLToolBarState state, Point p)
 {
 	switch(state)
 	{
@@ -210,23 +210,23 @@ template<class T> WithXMLMenu<T> &WithXMLMenu<T>::Reposition(XMLToolBarCtrl *tb,
 			break;
 			
 		case TOOLBAR_FLOATING :
-			tb->Float(Point(x, y));
+			tb->Float(p);
 			break;
 			
 		case TOOLBAR_TOP :
-			tb->Dock(topFrame, x, y);
+			tb->Dock(topFrame, p);
 			break;
 			
 		case TOOLBAR_BOTTOM :
-			tb->Dock(bottomFrame, x, y);
+			tb->Dock(bottomFrame, p);
 			break;
 			
 		case TOOLBAR_LEFT :
-			tb->Dock(leftFrame, x, y);
+			tb->Dock(leftFrame, p);
 			break;
 			
 		case TOOLBAR_RIGHT :
-			tb->Dock(rightFrame, x, y);
+			tb->Dock(rightFrame, p);
 			break;
 			
 		default:
@@ -371,7 +371,7 @@ template<class T> void WithXMLMenu<T>::DragLoop(Point dragPoint)
 	if(preDockFrame)
 	{
 		dragToolBar->UnPreDock(*preDockFrame);
-		dragToolBar->Dock(*preDockFrame, ps);
+		dragToolBar->DockAt(*preDockFrame, ps);
 	}
 	else
 	{
@@ -529,7 +529,7 @@ template<class T> void WithXMLMenu<T>::RefreshBars(void)
 		toolBarCtrls.Add(new XMLToolBarCtrl(this));
 		XMLToolBarCtrl &toolBarCtrl = toolBarCtrls.Top();
 		toolBarCtrls[iBar].Set(THISBACK1(SetToolBar, iBar));
-		Reposition(&toolBarCtrl, toolBar.GetState(), toolBar.Getx(), toolBar.Gety());
+		Reposition(&toolBarCtrl, toolBar.GetState(), toolBar.GetPosition());
 		toolBarCtrls[iBar].SetPrevState(toolBar.GetPrevState());
 	}
 	
@@ -546,7 +546,7 @@ template<class T> void WithXMLMenu<T>::SyncBars(void)
 		Point p = c.GetPosition();
 		XMLToolBarState state = c.GetState();
 		XMLToolBarState prevState = c.GetPrevState();
-		toolBars[i].SetPos(p.x, p.y).SetState(state).SetPrevState(prevState);
+		toolBars[i].SetPosition(p).SetState(state).SetPrevState(prevState);
 	}
 }
 
@@ -617,10 +617,10 @@ template<class T> void WithXMLMenu<T>::toggleBarCb(int iBar)
 			case TOOLBAR_TOP :
 			case TOOLBAR_BOTTOM :
 			case TOOLBAR_FLOATING :
-				Reposition(&tb, tb.prevState, tb.toolBarPos.x, tb.toolBarPos.y);
+				Reposition(&tb, tb.prevState, tb.toolBarPos);
 				break;
 			default:
-				Reposition(&tb, TOOLBAR_FLOATING, tb.toolBarPos.x, tb.toolBarPos.y);
+				Reposition(&tb, TOOLBAR_FLOATING, tb.toolBarPos);
 		}
 	}
 	else

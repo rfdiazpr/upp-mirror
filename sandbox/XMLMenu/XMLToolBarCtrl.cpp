@@ -360,18 +360,6 @@ XMLToolBarCtrl &XMLToolBarCtrl::PopSquare(Point p)
 }
 
 // docks the toolbar at a position inside a frame
-XMLToolBarCtrl &XMLToolBarCtrl::Dock(XMLToolBarFrame &f, int row, int col)
-{
-	// close bar
-	CloseBar();
-
-	// dock into given frame and set docked state
-	f.Dock(*this, row, col);
-	toolBarFrame = &f;
-	SetState(f.GetToolBarState());
-	return *this;
-}
-
 XMLToolBarCtrl &XMLToolBarCtrl::Dock(XMLToolBarFrame &f, Point p)
 {
 	// close bar
@@ -379,6 +367,18 @@ XMLToolBarCtrl &XMLToolBarCtrl::Dock(XMLToolBarFrame &f, Point p)
 
 	// dock into given frame and set docked state
 	f.Dock(*this, p);
+	toolBarFrame = &f;
+	SetState(f.GetToolBarState());
+	return *this;
+}
+
+XMLToolBarCtrl &XMLToolBarCtrl::DockAt(XMLToolBarFrame &f, Point p)
+{
+	// close bar
+	CloseBar();
+
+	// dock into given frame and set docked state
+	f.DockAt(*this, p);
 	toolBarFrame = &f;
 	SetState(f.GetToolBarState());
 	return *this;

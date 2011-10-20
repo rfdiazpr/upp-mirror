@@ -74,8 +74,8 @@ class XMLToolBarFrame : public CtrlFrame, public Pte<XMLToolBarFrame>
 
 		// docks a toolbar into this frame
 		// eventually undocks it from other frames, unfloats it or open it
-		XMLToolBarFrame &Dock(XMLToolBarCtrl &tb, int row, int col);
 		XMLToolBarFrame &Dock(XMLToolBarCtrl &tb, Point p);
+		XMLToolBarFrame &DockAt(XMLToolBarCtrl &tb, Point p);
 
 		// closes (undocking it) an XMLToolBar from this frame
 		XMLToolBarFrame &Undock(XMLToolBarCtrl &tb);

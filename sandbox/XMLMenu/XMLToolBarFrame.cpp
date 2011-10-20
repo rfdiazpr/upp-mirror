@@ -311,7 +311,7 @@ int XMLToolBarFrame::FindIndex(XMLToolBarCtrl &tb)
 
 // docks a toolbar into this frame
 // internal function -- called by XMLToolBar one
-XMLToolBarFrame &XMLToolBarFrame::Dock(XMLToolBarCtrl &tb, int col, int row)
+XMLToolBarFrame &XMLToolBarFrame::Dock(XMLToolBarCtrl &tb, Point p)
 {
 	// if already docked here, just do nothing
 	if(FindIndex(tb) >= 0)
@@ -324,7 +324,7 @@ XMLToolBarFrame &XMLToolBarFrame::Dock(XMLToolBarCtrl &tb, int col, int row)
 	// dock here the frame
 	toolBars.Add(&tb);
 	toolBarContainer.AddChild(&tb);
-	relativePositions.Add(Size(col, row));
+	relativePositions.Add(p);
 	Reposition();
 	Layout();
 	tb.toolBarPos = Point(relativePositions.Top().cx, relativePositions.Top().cy);
@@ -395,7 +395,7 @@ bool XMLToolBarFrame::GetDockTarget(XMLToolBarCtrl &tb, Point p, int &dockLine, 
 	return true;
 }
 
-XMLToolBarFrame &XMLToolBarFrame::Dock(XMLToolBarCtrl &tb, Point p)
+XMLToolBarFrame &XMLToolBarFrame::DockAt(XMLToolBarCtrl &tb, Point p)
 {
 	// should not happen, but....
 	if(FindIndex(tb) >= 0)

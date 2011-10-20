@@ -83,7 +83,7 @@ class XMLToolBar : DeepCopyOption<XMLToolBar>
 		
 		// position of toolbar
 		XMLToolBarState state, prevState;
-		int x, y;
+		Point position;
 		
 	public:
 		// constructor
@@ -102,7 +102,7 @@ class XMLToolBar : DeepCopyOption<XMLToolBar>
 		XMLToolBar &SetName(String const &_name)		{ name = _name; return *this; }
 		XMLToolBar &SetState(XMLToolBarState _state)	{ state = _state; return *this; }
 		XMLToolBar &SetPrevState(XMLToolBarState _state){ prevState = _state; return *this; }
-		XMLToolBar &SetPos(int _x, int _y)				{ x = _x; y = _y; return *this; }
+		XMLToolBar &SetPosition(Point p)				{ position = p; return *this; }
 
 		XMLToolBar &Add(String const &commandId);
 		XMLToolBar &Add(String const &commandId, String const &label);
@@ -128,8 +128,7 @@ class XMLToolBar : DeepCopyOption<XMLToolBar>
 		// get toolbar state and position
 		XMLToolBarState GetState(void)					{ return state; }
 		XMLToolBarState GetPrevState(void)				{ return prevState; }
-		int Getx(void)									{ return x; }
-		int Gety(void)									{ return y; }
+		Point GetPosition(void)							{ return position; }
 		
 		// gets toolbar items
 		Array<XMLToolBarItem> const &GetItems(void) const	{ return items; }
@@ -156,8 +155,9 @@ class XMLToolBars : public ArrayMap<String, XMLToolBar>
 		XMLToolBars &Add(String const &name, XMLToolBar pick_ &tb);
 		
 		// returns an empty toolbar at a given pos and state
-		XMLToolBar ToolBar(XMLToolBarState state, int row, int col);
-		XMLToolBar MenuBar(void) { return ToolBar(TOOLBAR_TOP, 0, 0); }
+		XMLToolBar ToolBar(XMLToolBarState state, Point p);
+		XMLToolBar ToolBar(XMLToolBarState state, int col, int row) { return ToolBar(state, Point(col, row)); }
+		XMLToolBar MenuBar(void) { return ToolBar(TOOLBAR_TOP, Point(0, 0)); }
 
 		// creates a submenu entry
 		XMLToolBar SubMenu(void);

@@ -1,0 +1,20 @@
+#ifndef _ide_Builders_icpp_init_stub
+#define _ide_Builders_icpp_init_stub
+#include "coff\binobj/init"
+#include "ide\Core/init"
+#define BLITZ_INDEX__ F5D63248A216048F12A96280BF9CB1E86
+#include "GccBuilder.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F58692EE5FAB064756C1AE099CA890EDA
+#include "MscBuilder.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F5A4713C90AFE78208C685537F21EFDF9
+#include "OwcBuilder.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F9915670F587B8AA51BB4595212B2EC34
+#include "JavaBuilder.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F9D46EF492170960498EA1803DF22DF89
+#include "ScriptBuilder.icpp"
+#undef BLITZ_INDEX__
+#endif

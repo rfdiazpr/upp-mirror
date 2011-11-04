@@ -1,0 +1,13 @@
+uses
+	Core;
+
+file
+	test.json,
+	JSON.h,
+	JSON.cpp,
+	encode.cpp,
+	main.cpp;
+
+mainconfig
+	"" = "SSE2";
+

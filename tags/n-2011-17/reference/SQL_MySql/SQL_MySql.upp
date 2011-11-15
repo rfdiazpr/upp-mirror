@@ -1,0 +1,11 @@
+uses
+	Core,
+	MySql;
+
+file
+	schema.sch,
+	main.cpp;
+
+mainconfig
+	"" = ".MYSQLDLL";
+

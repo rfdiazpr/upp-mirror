@@ -4,9 +4,8 @@ uses
 file
 	test.json,
 	JSON.h,
-	JSON.cpp,
-	encode.cpp,
-	main.cpp;
+	main.cpp,
+	bench.txt;
 
 mainconfig
 	"" = "SSE2";

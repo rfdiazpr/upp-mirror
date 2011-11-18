@@ -1,0 +1,6 @@
+{
+	sum = 0;
+	for(x = 0; x < 1; x = x + step)
+		for(y = 0; y < 1; y = y + step)
+			sum = sum + 1 / (1 - x * y + x - y);
+}

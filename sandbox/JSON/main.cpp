@@ -1,31 +1,47 @@
 #include "JSON.h"
 
+#ifdef _DEBUG
+#define N 1
+#else
+#define N 10000
+#endif
+
 CONSOLE_APP_MAIN
 {
-	String x = LoadFile(GetDataFile("test.json"));
-	JSONParser p(x);
-	Value json = ParseJSON(p);
-	DDUMP(json);
-	Json js(json);
-	DDUMP(js["age"]);
-	Json phone_number = js["phoneNumber"];
-	for(int i = 0; i < phone_number.GetCount(); i++) {
-		DDUMP(phone_number[i]["number"]);
-		DDUMP(phone_number[i]["type"]);
+	String j0, j1, j2;
+	for(int i = 0; i < N; i++) {
+		RTIMING("Automated");
+		JsonArray a;
+		for(int i = 0; i < 100; i++)
+			a << Json("first", i)("second", AsString(i));
+		j0 = a;
 	}
-//	js["age"] = 10;
-	DDUMP(EncodeJson(js, true));
-	DDUMP(EncodeJson(json, false));
-
-	DLOG("=========================================================================");
-	CParser p2(x);
-	p2.PassChar('[');
-	if(!p2.Char(']')) {
-		do {
-			LOG("---------------");
-			DDUMP(ParseJSON2(p2));
+	RDUMP(j0);
+	for(int i = 0; i < N; i++) {
+		RTIMING("SemiOptimized");
+		String s = "[";
+		for(int i = 0; i < 100; i++) {
+			if(i)
+				s << ',';
+			s << '{' << AsCString("first") << ':' << i << ',' << AsCString("second") << ':' << AsCString(AsString(i)) << '}';
 		}
-		while(p2.Char(','));
-		p2.PassChar(']');
+		s << ']';
+		j2 = s;
 	}
+	RDUMP(j2);
+	for(int i = 0; i < N; i++) {
+		RTIMING("Optimized");
+		String s = "[";
+		for(int i = 0; i < 100; i++) {
+			if(i)
+				s << ',';
+			s << "{\"first\":" << i << ",\"second\":" << AsCString(AsString(i)) << '}';
+		}
+		s << ']';
+		j1 = s;
+	}
+	RDUMP(j1);
+	RDUMP(j1 == j0 && j2 == j0);
+	
+	RDUMP(AsJSON(ParseJSON(j1), true));
 }

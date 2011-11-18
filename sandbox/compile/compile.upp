@@ -1,0 +1,12 @@
+uses
+	Core;
+
+file
+	compile.h,
+	compile.cpp,
+	program.txt,
+	main.cpp;
+
+mainconfig
+	"" = "SSE2";
+

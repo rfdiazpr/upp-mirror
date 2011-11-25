@@ -1,0 +1,18 @@
+#include "uwf.h"
+
+void TestView(Http& h)
+{
+	h << "Request: " + h.arg[0];
+}
+
+void TestView2(Http& h)
+{
+	h << "Test2";
+	for(int i = 0; i < h.arg.GetCount(); i++)
+		h << " " << h.arg[i];
+}
+
+INITBLOCK {
+	RegisterView("test/*", TestView);
+	RegisterView("test/*/bla/*", TestView2);
+}

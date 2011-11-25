@@ -1,0 +1,8 @@
+#ifndef _uwf_icpp_init_stub
+#define _uwf_icpp_init_stub
+#include "Core/init"
+#include "Web/init"
+#define BLITZ_INDEX__ Fa9e0be9f03acd3c0bf55dafe2fb87964
+#include "page.icpp"
+#undef BLITZ_INDEX__
+#endif

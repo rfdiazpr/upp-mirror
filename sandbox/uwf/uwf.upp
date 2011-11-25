@@ -1,0 +1,19 @@
+uses
+	Core,
+	Web;
+
+file
+	uwf.h,
+	util.cpp,
+	Dispatch.cpp,
+	page.icpp,
+	template.tpl,
+	uwf.cpp;
+
+mainconfig
+	"" = "SSE2 MT";
+
+custom() ".tpl",
+	"cp $(PATH) $(EXEDIR)/$(PACKAGE)/$(RELPATH)",
+	"$(EXEDIR)/$(PACKAGE)/$(RELPATH)";
+

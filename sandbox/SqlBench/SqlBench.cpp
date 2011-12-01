@@ -54,7 +54,8 @@ CONSOLE_APP_MAIN
 	sql*Insert(SIMPLE_TEST1)(ID,2)(NAME,"Jon")(LASTNAME,"Goober")(BDATE,20000103);
 	LOG(sql.ToString());
 
-	RDUMP(sql.Compile(Select(ID, NAME, LASTNAME).From(SIMPLE_TEST1).Where(BDATE == GetSysDate())));
+	RDUMP(sql.Compile(Select(ID(ID, NAME, LASTNAME)).From(SIMPLE_TEST1).Where(BDATE == GetSysDate())));
+	RDUMP(sql.Compile(Select(ID(NAME)).From(SIMPLE_TEST1).Where(BDATE == GetSysDate())));
 
 
 	RDUMP(sql.Compile(Select(NAME(ID, NAME, LASTNAME), LASTNAME)

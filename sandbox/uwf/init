@@ -2,7 +2,8 @@
 #define _uwf_icpp_init_stub
 #include "Core/init"
 #include "Web/init"
-#define BLITZ_INDEX__ Fa9e0be9f03acd3c0bf55dafe2fb87964
+#include "Wpp/init"
+#define BLITZ_INDEX__ Ff90acbfebd9da9299bdefd9f011d5741
 #include "page.icpp"
 #undef BLITZ_INDEX__
 #endif

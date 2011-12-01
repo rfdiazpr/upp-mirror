@@ -1,0 +1,28 @@
+uses
+	Web,
+	Draw,
+	plugin\png,
+	plugin\jpg;
+
+file
+	Wpp.h,
+	Util.cpp,
+	Dispatch.cpp,
+	Static.cpp;
+
+custom() ".html",
+	"cp $(PATH) $(EXEDIR)/static/$(PACKAGE)/$(RELPATH)",
+	"$(EXEDIR)/static/$(PACKAGE)/$(RELPATH)";
+
+custom() ".tpl",
+	"cp $(PATH) $(EXEDIR)/template/$(PACKAGE)/$(RELPATH)",
+	"$(EXEDIR)/template/$(PACKAGE)/$(RELPATH)";
+
+custom() ".css",
+	"cp $(PATH) $(EXEDIR)/static/$(PACKAGE)/$(RELPATH)",
+	"$(EXEDIR)/static/$(PACKAGE)/$(RELPATH)";
+
+custom() ".js",
+	"cp $(PATH) $(EXEDIR)/static/$(PACKAGE)/$(RELPATH)",
+	"$(EXEDIR)/static/$(PACKAGE)/$(RELPATH)";
+

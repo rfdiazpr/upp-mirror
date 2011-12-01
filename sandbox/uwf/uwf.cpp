@@ -1,6 +1,14 @@
 #include "uwf.h"
 #include <wincon.h>
 
+#define IMAGECLASS TestImg
+#define IMAGEFILE <uwf/test.iml>
+#include <Draw/iml_header.h>
+
+#define IMAGECLASS TestImg
+#define IMAGEFILE <uwf/test.iml>
+#include <Draw/iml_source.h>
+
 int number;
 
 
@@ -31,7 +39,8 @@ CONSOLE_APP_MAIN
 		return;
 	}
 	Cout() << "Server socket opened\n";
-	for(;;) {
+	while(!Exit) {
+		Cout() << "Exit: " << Exit << "\n";
 		Socket request;
 		if(server.Accept(request)) {
 			if(Exit)

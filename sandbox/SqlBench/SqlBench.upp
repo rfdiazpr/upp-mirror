@@ -1,0 +1,12 @@
+uses
+	Core,
+	plugin\sqlite3;
+
+file
+	test.sch,
+	SqlBench.cpp;
+
+mainconfig
+	"" = "SSE2",
+	"" = "SSE2 EXPERIMENTAL";
+

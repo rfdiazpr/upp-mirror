@@ -12,7 +12,24 @@ void TestView2(Http& h)
 		h << " " << h.arg[i];
 }
 
+void Quit(Http&)
+{
+	extern bool Exit;
+	Exit = true;
+	Cout() << "Recieved quit\n";
+}
+
 INITBLOCK {
+	RegisterView("quit", Quit);
 	RegisterView("test/*", TestView);
 	RegisterView("test/*/bla/*", TestView2);
 }
+
+/*
+WWW_PAGE("/edit-name/*")
+{
+	int id = Int(0);
+	WithEditNameLayout<WppForm> dlg;
+	StdDbEdit(dlg, id);
+}
+*/

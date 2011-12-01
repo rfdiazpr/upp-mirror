@@ -1,4 +1,4 @@
-#include "uwf.h"
+#include "Wpp.h"
 
 #define LLOG(x) LOG(x)
 
@@ -41,7 +41,7 @@ String HttpResponse(int code, const char *phrase, const String& data, const char
 		"Content-Length: " << data.GetCount() << "\r\n"
 		"Connection: close\r\n";
 	if(content_type)
-		r << "Content-Type: text/xml\r\n";
+		r << "Content-Type: " << content_type << "\r\n";
 	r << "\r\n" << data;
 	return r;
 }

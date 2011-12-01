@@ -1,0 +1,12 @@
+optimize_speed;
+
+uses
+	Core;
+
+file
+	FastFormat.cpp;
+
+mainconfig
+	"" = "SSE2",
+	"" = "SSE2 EXPERIMENTAL";
+

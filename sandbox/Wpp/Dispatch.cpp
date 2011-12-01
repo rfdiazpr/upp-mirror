@@ -1,4 +1,4 @@
-#include "uwf.h"
+#include "Wpp.h"
 
 #define LLOG(x)   DLOG(x)
 
@@ -7,10 +7,15 @@ struct DispatchNode : Moveable<DispatchNode> {
 	Callback1<Http&>       view;
 };
 
-Vector<DispatchNode> DispatchMap;
+static Vector<DispatchNode>& sDispatchMap()
+{
+	static Vector<DispatchNode> x;
+	return x;
+}
 
 void DumpDispatchMap()
 {
+	Vector<DispatchNode>& DispatchMap = sDispatchMap();
 	for(int i = 0; i < DispatchMap.GetCount(); i++) {
 		LLOG("-------------");
 		String sub;
@@ -23,6 +28,7 @@ void DumpDispatchMap()
 void RegisterView(const char *path, Callback1<Http&> view)
 {
 	LLOG("RegisterView " << path);
+	Vector<DispatchNode>& DispatchMap = sDispatchMap();
 	Vector<String> h = Split(path, '/');
 	if(DispatchMap.GetCount() == 0)
 		DispatchMap.Add();
@@ -54,6 +60,7 @@ void RegisterView(const char *path, void (*view)(Http&))
 void GetBestDispatch(const Vector<String>& h, int ii, const DispatchNode& n, Vector<String>& arg,
                      Callback1<Http&>& view, Vector<String>& final_arg)
 {
+	Vector<DispatchNode>& DispatchMap = sDispatchMap();
 	LOGBEGIN();
 	if(ii >= h.GetCount()) {
 		if(n.view && (!view || arg.GetCount() < final_arg.GetCount())) {
@@ -79,6 +86,7 @@ void GetBestDispatch(const Vector<String>& h, int ii, const DispatchNode& n, Vec
 
 void Dispatch(Socket& http)
 {
+	Vector<DispatchNode>& DispatchMap = sDispatchMap();
 	Http hdr;
 	if(hdr.Read(http)) {
 		int len = hdr.GetLength();
@@ -87,14 +95,20 @@ void Dispatch(Socket& http)
 		if(hdr.method == "GET") {
 			Vector<String> h = Split(hdr.uri, '/');
 			DDUMPC(h);
-			if(h.GetCount()) {
-				Vector<String> arg;
-				Callback1<Http&> view;
-				if(DispatchMap.GetCount())
-					GetBestDispatch(h, 0, DispatchMap[0], arg, view, hdr.arg);
-				view(hdr);
+			for(int i = 0; i < 1000; i++) {
+				RTIMING("Benchmark");
+				hdr.response.Clear();
+				if(h.GetCount()) {
+					Vector<String> arg;
+					Callback1<Http&> view;
+					if(DispatchMap.GetCount())
+						GetBestDispatch(h, 0, DispatchMap[0], arg, view, hdr.arg);
+					view(hdr);
+				}
 			}
-			http.Write(HttpResponse(200, "OK", hdr.response));
+			LLOG("Reponse: ");
+			LLOG(hdr.response);
+			http.Write(HttpResponse(hdr.code, hdr.code_text, hdr.response, hdr.content_type));
 		}
 	}
 }

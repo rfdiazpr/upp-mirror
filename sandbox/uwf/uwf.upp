@@ -1,19 +1,16 @@
 uses
 	Core,
-	Web;
+	Web,
+	Wpp;
 
 file
 	uwf.h,
-	util.cpp,
-	Dispatch.cpp,
 	page.icpp,
 	template.tpl,
-	uwf.cpp;
+	test.html,
+	uwf.cpp,
+	test.iml;
 
 mainconfig
 	"" = "SSE2 MT";
-
-custom() ".tpl",
-	"cp $(PATH) $(EXEDIR)/$(PACKAGE)/$(RELPATH)",
-	"$(EXEDIR)/$(PACKAGE)/$(RELPATH)";
 

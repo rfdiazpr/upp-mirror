@@ -1,0 +1,10 @@
+uses
+	Core,
+	Wpp;
+
+file
+	tpl.cpp;
+
+mainconfig
+	"" = "SSE2";
+

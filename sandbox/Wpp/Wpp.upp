@@ -8,7 +8,11 @@ file
 	Wpp.h,
 	Util.cpp,
 	Dispatch.cpp,
-	Static.cpp;
+	Static.cpp,
+	Templates.h,
+	Exe.cpp,
+	Compile.cpp,
+	srcimp.tpp;
 
 custom() ".html",
 	"cp $(PATH) $(EXEDIR)/static/$(PACKAGE)/$(RELPATH)",

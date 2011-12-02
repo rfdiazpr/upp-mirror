@@ -40,4 +40,6 @@ void RegisterView(const char *path, void (*view)(Http&));
 
 void Dispatch(Socket& http);
 
+#include "Templates.h"
+
 #endif

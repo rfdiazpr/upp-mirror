@@ -1,0 +1,11 @@
+optimize_speed;
+
+uses
+	Core;
+
+file
+	strlen.cpp;
+
+mainconfig
+	"" = "SSE2";
+

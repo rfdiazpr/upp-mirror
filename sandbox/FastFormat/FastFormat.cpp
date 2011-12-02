@@ -77,8 +77,14 @@ inline void fastmemcpy(char *t, const char *s, int len)
 	}
 }
 
+int N;
+String SN;
+
 CONSOLE_APP_MAIN
 {
+	N = strlen("Hello!");
+	SN = "Hello ";
+	SN << "world!";
 	Date d = GetSysDate();
 	StringBuffer b;
 	b.Reserve(100);

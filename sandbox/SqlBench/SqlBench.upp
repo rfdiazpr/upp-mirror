@@ -4,6 +4,7 @@ uses
 
 file
 	test.sch,
+	h.txt,
 	SqlBench.cpp;
 
 mainconfig

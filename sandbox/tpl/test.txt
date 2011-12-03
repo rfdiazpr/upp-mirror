@@ -1,0 +1,48 @@
+Hello world!
+
+Now, this is interesting: $n, is not it?
+Something else: $(12 * n + s)
+
+$if(n == 12)n is 12$endif
+
+$if(n > 12)
+	n is greater than 12
+$else
+	n is less than 12
+$endif
+
+$for(i in a)
+	$Cycle(i._index, "Even", "Odd")
+	$if(i._first)
+		This is first value
+	$endif
+	$if(i._last)
+		This is last value
+	$endif
+	$i._index. value is: $i
+$endfor
+
+$for(i in n)
+	ERROR
+$else
+	n is empty
+$endfor
+
+And now MAP:
+
+$for(i in map)
+	Value: $i
+	First: $i._first
+	Last:  $i._last
+	Index: $i._index
+	Key:   $i._key
+$endfor
+
+Name:    $map.NAME
+Surname: $map.SURNAME
+Email:   $map.EMAIL
+Nested:  $map.NESTED.NAME, $map.NESTED.SURNAME, $map.NESTED.EMAIL
+
+$map
+
+End of file.

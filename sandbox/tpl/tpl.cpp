@@ -8,7 +8,7 @@ VectorMap<String, Value> var;
 Value Eval(const char *s)
 {
 	One<Exe> exe = Compile(s, var.GetIndex());
-	return Run(exe, var.GetValues());
+	return Render(exe, var.GetValues());
 }
 
 void Test(const char *s, Value val)
@@ -16,11 +16,31 @@ void Test(const char *s, Value val)
 	ASSERT(Eval(s) == val);
 }
 
+Value Cycle(const Vector<Value>& arg)
+{
+	if(arg.GetCount() < 3 && !IsNumber(arg[0]))
+		return String();
+	return arg[1 + int(arg[0]) % (arg.GetCount() - 1)];
+}
+
 CONSOLE_APP_MAIN
 {
+	Compiler::Register("Cycle", Cycle);
+
 	var.Add("n", 12);
 	var.Add("s", "Hello world!");
+	ValueArray va;
+	va << "One" << "Two" << "Three" << "Four" << "Five" << "Six";
+	var.Add("a", va);
+	
+	ValueMap m;
+	m.Add("NAME", "John");
+	m.Add("SURNAME", "Smith");
+	m.Add("EMAIL", "smith@earth.org");
+	m.Add("NESTED", m);
 
+	var.Add("map", m);
+/*
 	DDUMP(FormatIntHex(Eval("1 && 0")));
 	
 	DDUMP(Eval("123"));
@@ -65,4 +85,15 @@ CONSOLE_APP_MAIN
 	      
 	DDUMP(Eval("1 > 10 ? \"ano\" : \"ne\""));
 	DDUMP(Eval("5 * 5 > 10 ? \"ano\" : \"ne\""));
+*/
+	One<Exe> exe = Compile(LoadFile(GetDataFile("test.txt")), var.GetIndex());
+
+#ifndef _DEBUG
+	for(int i = 0; i < 100000; i++) {
+		RTIMING("Benchmark");
+		Render(exe, var.GetValues());
+	}
+#endif
+
+	LOG(Render(exe, var.GetValues()));	
 }

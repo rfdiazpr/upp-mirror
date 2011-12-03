@@ -1,6 +1,7 @@
 #include "Wpp.h"
 
-#define LLOG(x)   DLOG(x)
+#define LLOG(x)  // DLOG(x)
+#define LTIMING(x)
 
 struct DispatchNode : Moveable<DispatchNode> {
 	VectorMap<String, int> subnode;
@@ -69,10 +70,7 @@ void GetBestDispatch(const Vector<String>& h, int ii, const DispatchNode& n, Vec
 		}
 		return;
 	}
-	DDUMPC(n.subnode.GetKeys());
-	DDUMP(h[ii]);
 	int qq = n.subnode.Get(h[ii], -1);
-	DDUMP(qq);
 	if(qq >= 0)
 		GetBestDispatch(h, ii + 1, DispatchMap[qq], arg, view, final_arg);
 	qq = n.subnode.Get(String(), -1);
@@ -94,9 +92,8 @@ void Dispatch(Socket& http)
 		Cout() << hdr.method << " " << hdr.uri << "\n";
 		if(hdr.method == "GET") {
 			Vector<String> h = Split(hdr.uri, '/');
-			DDUMPC(h);
 			for(int i = 0; i < 1000; i++) {
-				RTIMING("Benchmark");
+				LTIMING("Benchmark");
 				hdr.response.Clear();
 				if(h.GetCount()) {
 					Vector<String> arg;

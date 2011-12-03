@@ -1,0 +1,21 @@
+<html>
+<body>
+
+$set(x = 10)
+
+$for(x in set)
+	$if(x._first)This is the first row!$endif
+	<td>$(x._index + 1).<td>$x.COL1</td><td>$x.COL2</td><td>$x.COL3</td>
+	$if(x._last)This was the last row!$endif
+$else
+	There are no rows in the table
+$loop
+
+</body>
+</html>
+
+TIMING Benchmark      :  2.59 s  - 25.93 us ( 2.60 s  / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+
+TIMING Benchmark      :  1.91 s  - 19.09 us ( 1.91 s  / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+
+TIMING Benchmark      :  1.71 s  - 17.13 us ( 1.72 s  / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000

@@ -80,16 +80,28 @@ inline void fastmemcpy(char *t, const char *s, int len)
 int N;
 String SN;
 
+String FastFormat(unsigned n)
+{
+	char h[11];
+	char *s = h + 9;
+	*s = n % 10 + '0'; s--; n = n / 10;
+	*s = n % 10 + '0'; s -= !!n; n = n / 10;
+	*s = n % 10 + '0'; s -= !!n; n = n / 10;
+	*s = n % 10 + '0'; s -= !!n; n = n / 10;
+	*s = n % 10 + '0'; s -= !!n; n = n / 10;
+	*s = n % 10 + '0'; s -= !!n; n = n / 10;
+	*s = n % 10 + '0'; s -= !!n; n = n / 10;
+	*s = n % 10 + '0'; s -= !!n; n = n / 10;
+	*s = n % 10 + '0'; s -= !!n;
+	return String(s + 1, h);
+}
+
 CONSOLE_APP_MAIN
 {
-	N = strlen("Hello!");
-	SN = "Hello ";
-	SN << "world!";
-	Date d = GetSysDate();
-	StringBuffer b;
-	b.Reserve(100);
-	FastFormatDate(b, d, '/');
-	RDUMP((String)b);
+	DDUMP(FastFormat(0));
+	DDUMP(FastFormat(123));
+	DDUMP(FastFormat(0xffffffff));
+	LOG(0xffffffff);
 /*	
 	for(int i = 0; i < 100000; i++) {
 		StringBuffer b;
@@ -97,80 +109,4 @@ CONSOLE_APP_MAIN
 		ASSERT((String)b == Format("%010d", i));
 	}
 */	
-
-#ifdef _DEBUG
-	return;
-#endif
-
-	String str;
-	for(int i = 0; i < 10000000; i++) {
-		str.Clear();
-		RTIMING("Cat 18");
-		str.Cat("Hello", 5);
-		str.Cat("Hello", 5);
-		str.Cat("Hello", 5);
-	}
-	for(int i = 0; i < 10000000; i++) {
-		str.Clear();
-		RTIMING("Cat 40");
-		str.Cat("Hello", 5);
-		str.Cat("Hello", 5);
-		str.Cat("Hello", 5);
-		str.Cat("Hello", 5);
-		str.Cat("Hello", 5);
-		str.Cat("Hello", 5);
-		str.Cat("Hello", 5);
-		str.Cat("Hello", 5);
-	}
-	return;
-
-	char h[8];
-	char j[8] = "memcpy";
-	for(int i = 0; i < 10000000; i++) {
-		j[3] = i;
-		RTIMING("memcpy");
-		memcpy(h, j, 7);
-	}
-	for(int i = 0; i < 10000000; i++) {
-		j[3] = i;
-		RTIMING("fast_memcpy");
-		fastmemcpy(h, j, 7);
-	}
-	
-	RDUMP(h);
-	
-
-	return;
-	for(int i = 0; i < 1000000; i++) {
-		RTIMING("FastFormat");
-		StringBuffer b;
-		FastFormat(b, i, 10);
-	}
-	for(int i = 0; i < 1000000; i++) {
-		RTIMING("FastFormat4");
-		StringBuffer b;
-		FastFormat4(b, i);
-	}
-
-	for(int i = 0; i < 1000000; i++) {
-		RTIMING("FastFormat4h");
-		char h[4];
-		FastFormat4(b, i);
-	}
-
-	for(int i = 0; i < 100000; i++) {
-		RTIMING("Format");
-		Format("%010d", i);
-	}
-	
-	for(int i = 0; i < 100000; i++) {
-		RTIMING("FormatDate");
-		Format("%04d/%02d/%02d", (int)d.year, (int)d.month, (int)d.day);
-	}
-	for(int i = 0; i < 100000; i++) {
-		RTIMING("FatFormatDate");
-		StringBuffer h;
-		FastFormatDate(h, d, '/');
-	}
-
 }

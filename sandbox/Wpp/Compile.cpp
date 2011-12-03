@@ -1,5 +1,20 @@
 #include "Wpp.h"
 
+VectorMap<String, Value (*)(const Vector<Value>& v)> Compiler::functions;
+
+void Compiler::Register(const String& id, Value (*fn)(const Vector<Value>& v))
+{
+	functions.GetAdd(id) = fn;
+}
+
+int Compiler::ForVar(String id, int i)
+{
+	if(i + 1 < var.GetCount() && forvar[i])
+		return i + 1;
+	p.ThrowError(id + " is not 'for' iterator");
+	return 0;
+}
+
 One<Exe> Compiler::Prim()
 {
 	One<Exe> result;
@@ -15,9 +30,49 @@ One<Exe> Compiler::Prim()
 	if(p.IsId()) {
 		String id = p.ReadId();
 		int n = var.Find(id);
+		if(p.Char('(')) {
+			ExeFn& fn = result.Create<ExeFn>();
+			fn.fn = functions.Get(id, NULL);
+			if(!fn.fn)
+				p.ThrowError("function not found '" + id + "'");
+			if(!p.Char(')')) {
+				do {
+					fn.arg.Add(Exp().Detach());
+				}
+				while(p.Char(','));
+				p.PassChar(')');
+			}
+			return result;
+		}
 		if(n < 0)
 			p.ThrowError("unknown variable " + id);
-		result.Create<ExeVar>().var_index = n;
+		else
+		if(p.Char('.')) {
+			if(p.Id("_first"))
+				result.Create<ExeFirst>().var_index = ForVar(id, n);
+			else
+			if(p.Id("_last"))
+				result.Create<ExeLast>().var_index = ForVar(id, n);
+			else
+			if(p.Id("_index"))
+				result.Create<ExeIndex>().var_index = ForVar(id, n);
+			else
+			if(p.Id("_key"))
+				result.Create<ExeKey>().var_index = ForVar(id, n);
+			else {
+				result.Create<ExeVar>().var_index = n;
+				do {
+					One<Exe> r;
+					ExeField& f = r.Create<ExeField>();
+					f.value = result;
+					f.id = p.ReadId();
+					result = r;
+				}
+				while(p.Char('.'));
+			}
+		}
+		else
+			result.Create<ExeVar>().var_index = n;
 	}
 	else
 	if(p.Char('(')) {
@@ -174,11 +229,78 @@ One<Exe> Compiler::Exp()
 	return Conditional();
 }
 
+void Compiler::ExeBlock::AddText(const char *b, const char *s)
+{
+	if(s > b)
+		item.Create<ExeConst>().value = String(b, s);
+}
+
+One<Exe> Compiler::Block()
+{
+	One<Exe> result;
+	ExeBlock& blk = result.Create<ExeBlock>();
+	const char *s = p.GetSpacePtr();
+	const char *b = s;
+	int line = 1;
+	while(*s) {
+		if(*s == '$') {
+			if(s[1] == '$')
+				s += 2;
+			else {
+				blk.AddText(b, s);
+				p.Set(s + 1, NULL, line);
+				if(p.Id("if")) {
+					ExeCond& c = blk.item.Create<ExeCond>();
+					p.PassChar('(');
+					c.cond = Exp();
+					p.PassChar(')');
+					c.ontrue = Block();
+					if(p.Id("else"))
+						c.onfalse = Block();
+					p.PassId("endif");
+				}
+				else
+				if(p.Id("for")) {
+					ExeFor& c = blk.item.Create<ExeFor>();
+					p.PassChar('(');
+					int q = var.GetCount();
+					var.Add(p.ReadId());
+					var.Add(Null); // LoopInfo placeholder
+					forvar.Add(true);
+					forvar.Add(true);
+					p.PassId("in");
+					c.value = Exp();
+					p.PassChar(')');
+					c.body = Block();
+					var.Trim(q);
+					forvar.SetCount(q);
+					if(p.Id("else"))
+						c.onempty = Block();
+					p.PassId("endfor");
+				}
+				else
+				if(p.IsId("else") || p.IsId("endif") || p.IsId("endfor"))
+					return result;
+				else
+					blk.item.Add(Prim().Detach());
+				b = s = p.GetSpacePtr();
+				line = p.GetLine();
+			}
+		}
+		else
+		if(*s++ == '\n')
+			line++;
+	}
+	blk.AddText(b, s);
+	p.Set(s, NULL, line);
+	return result;
+}
+
 One<Exe> Compile(const char *code, const Index<String>& vars)
 {
 	Compiler c(code, vars);
 	try {
-		return c.Exp();
+		return c.Block();
 	}
 	catch(CParser::Error e) {
 		One<Exe> result;

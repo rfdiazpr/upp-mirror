@@ -3,7 +3,9 @@ uses
 	Wpp;
 
 file
-	tpl.cpp;
+	tpl.cpp,
+	test.txt,
+	test.thtml;
 
 mainconfig
 	"" = "SSE2";

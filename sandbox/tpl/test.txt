@@ -1,7 +1,8 @@
 Hello world!
 
 <li>$"<li>"</li>
-
+<li>$raw("<li>")</li>
+ 
 Now, this is interesting: $n, is not it?
 Something else: $(12 * n + s)
 
@@ -17,7 +18,7 @@ $else
 $endif
 
 $for(i in a)
-	$Cycle(i._index, "Even", "Odd")
+	$cycle(i._index, "Even", "Odd")
 	$if(i._first)
 		This is first value
 	$endif

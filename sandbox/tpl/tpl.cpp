@@ -27,7 +27,7 @@ Value Raw(const Vector<Value>& arg)
 {
 	RawHtmlText r;
 	for(int i = 0; i < arg.GetCount(); i++)
-		r.text.Cat(AsString(arg[i]);
+		r.text.Cat(AsString(arg[i]));
 	return RawToValue(r);
 }
 
@@ -43,9 +43,9 @@ Value MakeMap(const Vector<Value>& arg)
 
 CONSOLE_APP_MAIN
 {
-	Compiler::Register("Cycle", Cycle);
+	Compiler::Register("cycle", Cycle);
 	Compiler::Register("MakeMap", MakeMap);
-	Compiler::Register("Raw", Raw);
+	Compiler::Register("raw", Raw);
 
 	var.Add("n", 12);
 	var.Add("s", "Hello world!");

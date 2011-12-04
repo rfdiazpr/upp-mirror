@@ -264,7 +264,7 @@ static void sCatAsString(StringBuffer& out, const Value& v)
 	if(IsNull(v))
 		return;
 	if(v.Is<RawHtmlText>())
-		b.Cat(ValueTo<RawHtmlText>(v).text);
+		out.Cat(ValueTo<RawHtmlText>(v).text);
 	else {
 		const char *s;
 		String h;

@@ -36,11 +36,17 @@ One<Exe> Compiler::Prim()
 			if(!fn.fn)
 				p.ThrowError("function not found '" + id + "'");
 			if(!p.Char(')')) {
-				do {
+				do
 					fn.arg.Add(Exp().Detach());
-				}
 				while(p.Char(','));
 				p.PassChar(')');
+			}
+			while(p.Char('.')) {
+				One<Exe> r;
+				ExeField& f = r.Create<ExeField>();
+				f.value = result;
+				f.id = p.ReadId();
+				result = r;
 			}
 			return result;
 		}
@@ -231,8 +237,11 @@ One<Exe> Compiler::Exp()
 
 void Compiler::ExeBlock::AddText(const char *b, const char *s)
 {
-	if(s > b)
-		item.Create<ExeConst>().value = String(b, s);
+	if(s > b) {
+		RawHtmlText t;
+		t.text = String(b, s);
+		item.Create<ExeConst>().value = RawToValue(t);
+	}
 }
 
 One<Exe> Compiler::Block()

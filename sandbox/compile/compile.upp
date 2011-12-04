@@ -10,3 +10,7 @@ file
 mainconfig
 	"" = "SSE2";
 
+custom() "",
+	"",
+	"";
+

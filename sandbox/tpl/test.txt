@@ -1,14 +1,19 @@
 Hello world!
 
+<li>$"<li>"</li>
+
 Now, this is interesting: $n, is not it?
 Something else: $(12 * n + s)
 
 $if(n == 12)n is 12$endif
 
 $if(n > 12)
-	n is greater than 12
+	n ($n) is greater than 12
 $else
-	n is less than 12
+	n ($n) is less than 12 or equal to 12
+	$for(i in a)
+		$i._index
+	$endfor
 $endif
 
 $for(i in a)
@@ -44,5 +49,12 @@ Email:   $map.EMAIL
 Nested:  $map.NESTED.NAME, $map.NESTED.SURNAME, $map.NESTED.EMAIL
 
 $map
+
+$MakeMap()
+
+Name:    $MakeMap().NAME
+Surname: $MakeMap().SURNAME
+Email:   $MakeMap().EMAIL
+Nested:  $MakeMap().NESTED.NAME, $MakeMap().NESTED.SURNAME, $MakeMap().NESTED.EMAIL
 
 End of file.

@@ -3,6 +3,10 @@ struct Exe {
 	virtual ~Exe() {}
 };
 
+struct RawHtmlText {
+	String text;
+};
+
 struct Compiler {
 	static VectorMap<String, Value (*)(const Vector<Value>& arg)> functions;
 

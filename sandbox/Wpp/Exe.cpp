@@ -75,6 +75,11 @@ Value Compiler::ExeAdd::Eval(Vector<Value>& stack, StringBuffer& out) const
 		return (String)v1 + (String)v2;
 	if(IsNumber(v1) && IsNumber(v2))
 		return (double)v1 + (double)v2;
+	if(v1.Is<RawHtmlText>() || v2.Is<RawHtmlText>()) {
+		RawHtmlText h;
+		h.text = AsString(v1) + AsString(v2);
+		return RawToValue(h);
+	}
 	return AsString(v1) + AsString(v2);
 }
 
@@ -248,19 +253,56 @@ Value Compiler::ExeKey::Eval(Vector<Value>& stack, StringBuffer& out) const
 }
 
 force_inline
-static void sCatAsString(StringBuffer& b, const Value& v)
+void HtmlEscape(StringBuffer& out, const char *s)
 {
-	if(!v.IsVoid())
+	String result;
+}
+
+force_inline
+static void sCatAsString(StringBuffer& out, const Value& v)
+{
+	if(IsNull(v))
+		return;
+	if(v.Is<RawHtmlText>())
+		b.Cat(ValueTo<RawHtmlText>(v).text);
+	else {
+		const char *s;
+		String h;
 		if(v.Is<String>())
-			b.Cat(ValueTo<String>(v));
-		else
-			b.Cat(AsString(v));
+			s = ValueTo<String>(v);
+		else {
+			h = AsString(v);
+			s = h;
+		}
+		while(*s) {
+			if(*s == 31)
+				out.Cat("&nbsp;");
+			else
+			if(*s == '<')
+				out.Cat("&lt;");
+			else
+			if(*s == '>')
+				out.Cat("&gt;");
+			else
+			if(*s == '&')
+				out.Cat("&amp;");
+			else
+			if(*s == '\"')
+				out.Cat("&quot;");
+			else
+			if((byte)*s < ' ')
+				out.Cat(NFormat("&#%d;", (byte)*s));
+			else
+				out.Cat(*s);
+			s++;
+		}
+	}
 }
 
 Value Compiler::ExeFor::Eval(Vector<Value>& stack, StringBuffer& out) const
 {
 	Value array = value->Eval(stack, out);
-	if(array.GetCount() == 0)
+	if(array.GetCount() == 0 && onempty)
 		return onempty->Eval(stack, out);
 	ValueMap m;
 	bool map = array.Is<ValueMap>();

@@ -23,9 +23,29 @@ Value Cycle(const Vector<Value>& arg)
 	return arg[1 + int(arg[0]) % (arg.GetCount() - 1)];
 }
 
+Value Raw(const Vector<Value>& arg)
+{
+	RawHtmlText r;
+	for(int i = 0; i < arg.GetCount(); i++)
+		r.text.Cat(AsString(arg[i]);
+	return RawToValue(r);
+}
+
+Value MakeMap(const Vector<Value>& arg)
+{
+	ValueMap m;
+	m.Add("NAME", "John");
+	m.Add("SURNAME", "Smith");
+	m.Add("EMAIL", "smith@earth.org");
+	m.Add("NESTED", m);	
+	return m;
+}
+
 CONSOLE_APP_MAIN
 {
 	Compiler::Register("Cycle", Cycle);
+	Compiler::Register("MakeMap", MakeMap);
+	Compiler::Register("Raw", Raw);
 
 	var.Add("n", 12);
 	var.Add("s", "Hello world!");

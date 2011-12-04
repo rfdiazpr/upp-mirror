@@ -39,6 +39,19 @@ void FastFormatDate(StringBuffer& r, Date d, char sep)
 	r.Cat(h, 10);
 }
 
+void FastFormat8(char *h, unsigned number)
+{
+	char h[8];
+	h[7] = number % 10 + '0'; number /= 10;
+	h[6] = number % 10 + '0'; number /= 10;
+	h[5] = number % 10 + '0'; number /= 10;
+	h[4] = number % 10 + '0'; number /= 10;	
+	h[3] = number % 10 + '0'; number /= 10;
+	h[2] = number % 10 + '0'; number /= 10;
+	h[1] = number % 10 + '0'; number /= 10;
+	h[0] = number % 10 + '0'; number /= 10;	
+}
+
 void FastFormat4(StringBuffer& r, unsigned number)
 {
 	char h[4];
@@ -80,28 +93,91 @@ inline void fastmemcpy(char *t, const char *s, int len)
 int N;
 String SN;
 
-String FastFormat(unsigned n)
+String FastFormat_(int ii)
 {
-	char h[11];
-	char *s = h + 9;
-	*s = n % 10 + '0'; s--; n = n / 10;
-	*s = n % 10 + '0'; s -= !!n; n = n / 10;
-	*s = n % 10 + '0'; s -= !!n; n = n / 10;
-	*s = n % 10 + '0'; s -= !!n; n = n / 10;
-	*s = n % 10 + '0'; s -= !!n; n = n / 10;
-	*s = n % 10 + '0'; s -= !!n; n = n / 10;
-	*s = n % 10 + '0'; s -= !!n; n = n / 10;
-	*s = n % 10 + '0'; s -= !!n; n = n / 10;
-	*s = n % 10 + '0'; s -= !!n;
-	return String(s + 1, h);
+	char h[12];
+	char *s = h + 11;
+	bool neg = false;
+	unsigned n = ii;
+	if(ii < 0) {
+		n = -ii;
+		neg = true;
+	}
+	do {
+		*s-- = n % 10 + '0';
+		n = n / 10;
+	}
+	while(n);
+	if(neg)
+		*s-- = '-';
+	return String(s + 1, h + 12);
+}
+
+String FastFormat(int ii)
+{
+	char h[12];
+	bool neg = false;
+	unsigned n = ii;
+	if(ii < 0) {
+		n = -ii;
+		neg = true;
+	}
+
+#define DIGIT(I) \
+	h[I] = n % 10 + '0'; n /= 10; \
+	if(n == 0) \
+		if(neg) { \
+			h[I - 1] = '-'; \
+			return String(h + I - 1, h + 12); \
+		} \
+		else \
+			return String(h + I, h + 12);
+	
+	DIGIT(11);
+	DIGIT(10);
+	DIGIT(9);
+	DIGIT(8);
+	DIGIT(7);
+	DIGIT(6);
+	DIGIT(5);
+	DIGIT(4);
+	DIGIT(3);
+	DIGIT(2);
+	h[1] = n % 10 + '0'; n /= 10; \
+	if(neg) {
+		h[0] = '-';
+		return String(h, h + 12);
+	}
+	else
+		return String(h + 1, h + 12);
+
+#undef DIGIT
 }
 
 CONSOLE_APP_MAIN
 {
-	DDUMP(FastFormat(0));
-	DDUMP(FastFormat(123));
-	DDUMP(FastFormat(0xffffffff));
-	LOG(0xffffffff);
+	RDUMP(FastFormat(0));
+	RDUMP(FastFormat(123));
+	RDUMP(FastFormat(-123));
+	RDUMP(FastFormat(0x7fffffff));
+	RDUMP(FastFormat(0x80000000));
+	RDUMP(FastFormat(0xffffffff));
+	LOG(0x7fffffff);
+#ifndef _DEBUG
+	int sm = 0;
+	for(int i = 0; i < 10000000; i++) {
+		RTIMING("FormatInt");
+		sm += FormatInt(i).GetCount();
+	}
+	for(int i = 0; i < 10000000; i++) {
+		RTIMING("FastFormat");
+		sm += FastFormat(i).GetCount();
+	}
+	for(int i = 0; i < 10000000; i++) {
+		RTIMING("FastFormat_");
+		sm += FastFormat_(i).GetCount();
+	}
+#endif
 /*	
 	for(int i = 0; i < 100000; i++) {
 		StringBuffer b;

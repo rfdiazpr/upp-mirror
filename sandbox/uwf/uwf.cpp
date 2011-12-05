@@ -53,7 +53,8 @@ CONSOLE_APP_MAIN
 			if(Exit)
 				break;
 			Cout() << " request accepted\n";
-			Dispatch(request);
+			Http http;
+			http.Dispatch(request);
 		}
 		else
 			Cout() << " ...tick...\n";

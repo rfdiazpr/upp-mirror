@@ -6,12 +6,15 @@ uses
 
 file
 	Wpp.h,
-	Util.cpp,
-	Dispatch.cpp,
-	Static.cpp,
 	Templates.h,
 	Exe.cpp,
 	Compile.cpp,
+	Http.h,
+	Util.cpp,
+	Dispatch.cpp,
+	Render.cpp,
+	Util readonly separator,
+	Static.cpp,
 	StdLib.icpp;
 
 custom() ".css",

@@ -82,37 +82,42 @@ void GetBestDispatch(const Vector<String>& h, int ii, const DispatchNode& n, Vec
 	LOGEND();
 }
 
-void Dispatch(Socket& http)
+void Http::Dispatch(Socket& socket)
 {
 	Vector<DispatchNode>& DispatchMap = sDispatchMap();
-	Http hdr;
-	if(hdr.Read(http)) {
-		int len = hdr.GetLength();
-		hdr.content = http.ReadCount(len);
-		DDUMPM(hdr.field);
-		LLOG(hdr.content);
-		Cout() << hdr.method << " " << hdr.uri << "\n";
-		int q = hdr.uri.Find('?');
+	if(Read(socket)) {
+		int len = GetLength();
+		content = socket.ReadCount(len);
+		LLOG(content);
+		Cout() << method << " " << uri << "\n";
+		int q = uri.Find('?');
 		if(q >= 0) {
-			hdr.ParseRequest(~hdr.uri + q + 1);
-			hdr.uri.Trim(q);
+			ParseRequest(~uri + q + 1);
+			uri.Trim(q);
 		}
-		DDUMP(hdr.GetHeader("Content-Type"));
-		if(hdr.method == "POST" &&
-		   hdr.GetHeader("content-type") == "application/x-www-form-urlencoded")
-			hdr.ParseRequest(hdr.content);
-		DDUMPM(hdr.request);
-		Vector<String> h = Split(hdr.uri, '/');
-		hdr.content_type = "text/html";
+		if(method == "POST" &&
+		   GetHeader("content-type") == "application/x-www-form-urlencoded")
+			ParseRequest(content);
+		Vector<String> h = Split(uri, '/');
 		if(h.GetCount()) {
-			Vector<String> arg;
+			Vector<String> a;
 			Callback1<Http&> view;
 			if(DispatchMap.GetCount())
-				GetBestDispatch(h, 0, DispatchMap[0], arg, view, hdr.arg);
-			view(hdr);
+				GetBestDispatch(h, 0, DispatchMap[0], a, view, arg);
+			view(*this);
 		}
-		LLOG("Reponse: ");
-		LLOG(hdr.response);
-		http.Write(HttpResponse(hdr.code, hdr.code_text, hdr.response, hdr.content_type));
+		String r;
+		r <<
+			"HTTP/1.0 " << code << ' ' << code_text << "\r\n"
+			"Date: " <<  WwwFormat(GetUtcTime()) << "\r\n"
+			"Server: U++\r\n"
+			"Content-Length: " << response.GetCount() << "\r\n"
+			"Connection: close\r\n"
+			"Content-Type: " << content_type << "\r\n"
+			"\r\n";
+		LLOG(r);
+		socket.Write(r);
+		LLOG(response);
+		socket.Write(response);
 	}
 }

@@ -11,7 +11,7 @@ static String ReadLine(Socket& s)
 	return t;
 }
 
-bool HttpHeader::Read(Socket& http)
+bool Http::Read(Socket& http)
 {
 	String s = ReadLine(http);
 	Vector<String> h = Split(s, ' '); // Optimize!
@@ -20,13 +20,13 @@ bool HttpHeader::Read(Socket& http)
 	method = h[0];
 	uri = h[1];
 	version = h[2];
-	field.Clear();
+	hdrfield.Clear();
 	for(;;) {
 		s = ReadLine(http);
 		if(s.IsEmpty()) break;
 		int q = s.Find(':');
 		if(q >= 0)
-			field.GetAdd(ToLower(s.Mid(0, q))) = TrimLeft(s.Mid(q + 1));
+			hdrfield.GetAdd(ToLower(s.Mid(0, q))) = TrimLeft(s.Mid(q + 1));
 	}
 	return !http.IsError();
 }

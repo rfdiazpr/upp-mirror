@@ -16,21 +16,6 @@ void Test(const char *s, Value val)
 	ASSERT(Eval(s) == val);
 }
 
-Value Cycle(const Vector<Value>& arg)
-{
-	if(arg.GetCount() < 3 && !IsNumber(arg[0]))
-		return String();
-	return arg[1 + int(arg[0]) % (arg.GetCount() - 1)];
-}
-
-Value Raw(const Vector<Value>& arg)
-{
-	RawHtmlText r;
-	for(int i = 0; i < arg.GetCount(); i++)
-		r.text.Cat(AsString(arg[i]));
-	return RawToValue(r);
-}
-
 Value MakeMap(const Vector<Value>& arg)
 {
 	ValueMap m;

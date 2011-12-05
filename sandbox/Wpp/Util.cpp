@@ -31,13 +31,33 @@ bool HttpHeader::Read(Socket& http)
 	return !http.IsError();
 }
 
+void Http::ParseRequest(const char *p)
+{
+	while(*p) {
+		const char *last = p;
+		while(*p && *p != '=' && *p != '&')
+			p++;
+		String key = UrlDecode(last, p);
+		if(*p == '=')
+			p++;
+		last = p;
+		while(*p && *p != '&')
+			p++;
+		DUMP(key);
+		DUMP(UrlDecode(last, p));
+		request.GetAdd(key) = UrlDecode(last, p);
+		if(*p)
+			p++;
+	}
+}
+
 String HttpResponse(int code, const char *phrase, const String& data, const char *content_type)
 {
 	String r;
 	r <<
 		"HTTP/1.0 " << code << ' ' << phrase << "\r\n"
 		"Date: " <<  WwwFormat(GetUtcTime()) << "\r\n"
-		"Server: Centrum-Nos SaleCrm\r\n"
+		"Server: U++\r\n"
 		"Content-Length: " << data.GetCount() << "\r\n"
 		"Connection: close\r\n";
 	if(content_type)

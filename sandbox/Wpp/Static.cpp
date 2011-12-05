@@ -41,14 +41,10 @@ void ServeIml(Http& http)
 		name = name.Mid(0, q);
 	}
 	Image m = GetImlImage(http.arg[0] + ':' + name);
-	if(ext == "jpg" || ext == "JPG" || ext == "jpeg" || ext == "JPEG") {
-		http.content_type = "image/jpeg";
-		http << JPGEncoder().SaveString(m);
-	}
-	else {
-		http.content_type = "image/png";
-		http << PNGEncoder().SaveString(m);
-	}
+	if(ext == "jpg" || ext == "JPG" || ext == "jpeg" || ext == "JPEG")
+		http.Content("image/jpeg", JPGEncoder().SaveString(m));
+	else
+		http.Content("image/png", PNGEncoder().SaveString(m));
 }
 
 INITBLOCK {

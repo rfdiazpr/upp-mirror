@@ -6,7 +6,9 @@ uses
 file
 	uwf.h,
 	page.icpp,
-	template.tpl,
+	app.icpp,
+	test.whtml,
+	submit.whtml,
 	test.html,
 	uwf.cpp,
 	test.iml;

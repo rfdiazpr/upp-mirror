@@ -12,21 +12,21 @@ file
 	Templates.h,
 	Exe.cpp,
 	Compile.cpp,
-	srcimp.tpp;
+	StdLib.icpp;
 
-custom() ".html",
+custom() ".css",
 	"cp $(PATH) $(EXEDIR)/static/$(PACKAGE)/$(RELPATH)",
 	"$(EXEDIR)/static/$(PACKAGE)/$(RELPATH)";
 
-custom() ".tpl",
-	"cp $(PATH) $(EXEDIR)/template/$(PACKAGE)/$(RELPATH)",
-	"$(EXEDIR)/template/$(PACKAGE)/$(RELPATH)";
-
-custom() ".css",
+custom() ".html",
 	"cp $(PATH) $(EXEDIR)/static/$(PACKAGE)/$(RELPATH)",
 	"$(EXEDIR)/static/$(PACKAGE)/$(RELPATH)";
 
 custom() ".js",
 	"cp $(PATH) $(EXEDIR)/static/$(PACKAGE)/$(RELPATH)",
 	"$(EXEDIR)/static/$(PACKAGE)/$(RELPATH)";
+
+custom() ".whtml",
+	"cp $(PATH) $(EXEDIR)/template/$(PACKAGE)/$(RELPATH)",
+	"$(EXEDIR)/template/$(PACKAGE)/$(RELPATH)";
 

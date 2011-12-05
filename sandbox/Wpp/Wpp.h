@@ -12,23 +12,33 @@ struct HttpHeader {
 	String method;
 	String uri;
 	String version;
+	String content;
 	
 	VectorMap<String, String> field;
 	
 	bool Read(Socket& http);
 	
-	int  GetLength() const          { return atoi(field.Get("content-length", Null)); }
+	String GetHeader(const char *s) const  { return field.Get(s, Null); }
+	int    GetLength() const               { return atoi(GetHeader("content-length")); }
 };
 
 struct Http : HttpHeader {
-	Vector<String> arg;
+	VectorMap<String, String> request; 
+	Vector<String>            arg;
 	
 	int    code;
 	String code_text;
 	String response;
 	String content_type;
 	
-	Http& operator<<(const String& s) { response << s; return *this; }
+	void  ParseRequest(const char *s);
+	
+	String operator[](const char *id) const           { return request.Get(id, String()); }
+	String operator[](int i)                          { return i >= 0 && i < arg.GetCount() ? arg[i] : String(); }
+	
+	Http& ContentType(const char *s)                  { content_type = s; return *this; }
+	Http& Content(const char *s, const String& data)  { content_type = s; response = data; return *this; }
+	Http& operator<<(const String& s)                 { response << s; return *this; }
 	
 	Http() { code = 200; content_type = "text/html; charset=UTF-8"; }
 };

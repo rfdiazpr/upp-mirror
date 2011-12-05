@@ -1,5 +1,8 @@
 #include "uwf.h"
+
+#ifdef PLATFORM_WIN32
 #include <wincon.h>
+#endif
 
 #define IMAGECLASS TestImg
 #define IMAGEFILE <uwf/test.iml>
@@ -18,6 +21,7 @@ bool Exit;
 
 int Port = 8001;
 
+#ifdef PLATFORM_WIN32
 BOOL WINAPI CtrlCHandlerRoutine(__in  DWORD dwCtrlType)
 {
 	LOG("Ctrl+C handler");
@@ -28,11 +32,14 @@ BOOL WINAPI CtrlCHandlerRoutine(__in  DWORD dwCtrlType)
 	h.Write("quit");
 	return TRUE;
 }
+#endif
 
 CONSOLE_APP_MAIN
 {
 	LOG("About to start");
+#ifdef PLATFORM_WIN32
 	SetConsoleCtrlHandler(CtrlCHandlerRoutine, true);
+#endif
 	Socket server;
 	if(!ServerSocket(server, Port, true, 5)) {
 		Cout() << "Cannot open server socket!\n";

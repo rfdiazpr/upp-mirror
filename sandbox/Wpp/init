@@ -4,4 +4,7 @@
 #include "Draw/init"
 #include "plugin\png/init"
 #include "plugin\jpg/init"
+#define BLITZ_INDEX__ Fddc1a3f1e3bfefd00382db80bc1c864c
+#include "StdLib.icpp"
+#undef BLITZ_INDEX__
 #endif

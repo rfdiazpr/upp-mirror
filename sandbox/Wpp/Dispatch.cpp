@@ -1,6 +1,6 @@
 #include "Wpp.h"
 
-#define LLOG(x)  // DLOG(x)
+#define LLOG(x)   DLOG(x)
 #define LTIMING(x)
 
 struct DispatchNode : Moveable<DispatchNode> {
@@ -88,24 +88,31 @@ void Dispatch(Socket& http)
 	Http hdr;
 	if(hdr.Read(http)) {
 		int len = hdr.GetLength();
-		String data = http.ReadCount(len);
+		hdr.content = http.ReadCount(len);
+		DDUMPM(hdr.field);
+		LLOG(hdr.content);
 		Cout() << hdr.method << " " << hdr.uri << "\n";
-		if(hdr.method == "GET") {
-			Vector<String> h = Split(hdr.uri, '/');
-			for(int i = 0; i < 1000; i++) {
-				LTIMING("Benchmark");
-				hdr.response.Clear();
-				if(h.GetCount()) {
-					Vector<String> arg;
-					Callback1<Http&> view;
-					if(DispatchMap.GetCount())
-						GetBestDispatch(h, 0, DispatchMap[0], arg, view, hdr.arg);
-					view(hdr);
-				}
-			}
-			LLOG("Reponse: ");
-			LLOG(hdr.response);
-			http.Write(HttpResponse(hdr.code, hdr.code_text, hdr.response, hdr.content_type));
+		int q = hdr.uri.Find('?');
+		if(q >= 0) {
+			hdr.ParseRequest(~hdr.uri + q + 1);
+			hdr.uri.Trim(q);
 		}
+		DDUMP(hdr.GetHeader("Content-Type"));
+		if(hdr.method == "POST" &&
+		   hdr.GetHeader("content-type") == "application/x-www-form-urlencoded")
+			hdr.ParseRequest(hdr.content);
+		DDUMPM(hdr.request);
+		Vector<String> h = Split(hdr.uri, '/');
+		hdr.content_type = "text/html";
+		if(h.GetCount()) {
+			Vector<String> arg;
+			Callback1<Http&> view;
+			if(DispatchMap.GetCount())
+				GetBestDispatch(h, 0, DispatchMap[0], arg, view, hdr.arg);
+			view(hdr);
+		}
+		LLOG("Reponse: ");
+		LLOG(hdr.response);
+		http.Write(HttpResponse(hdr.code, hdr.code_text, hdr.response, hdr.content_type));
 	}
 }

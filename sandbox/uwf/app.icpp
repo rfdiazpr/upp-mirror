@@ -1,0 +1,23 @@
+#include "uwf.h"
+
+void Testy(Http& h)
+{
+	h("FIRSTNAME", "John")
+	 ("LASTNAME", "Smith")
+	.Render("uwf/test.whtml");
+}
+
+INITBLOCK {
+	RegisterView("*", Testy);
+}
+
+void Submit(Http& h)
+{
+	h("FIRSTNAME", h["firstname"])
+	 ("LASTNAME", h["lastname"])
+	.Render("uwf/submit.whtml");
+}
+
+INITBLOCK {
+	RegisterView("submit", Submit);
+}

@@ -13,8 +13,40 @@ using namespace Upp;
 
 #include <Sql/sch_source.h>
 
+void Test(String a, String b)
+{
+	String c = a + b;
+	Cout() << c;
+}
+
+void Test1(String& a, String& b)
+{
+	String c = a + b;
+	Cout() << c;
+}
+
+void Test2(SqlId a, SqlId b)
+{
+	String c = ~a + ~b;
+	Cout() << c;
+}
+
+String alfa = "0", beta = "1";
+
 CONSOLE_APP_MAIN
 {
+	SqlId myid("FOO");
+	
+	DDUMP(~myid);
+	DDUMP(~myid);
+	return;
+	
+	
+	Test(alfa, beta);
+	Test(alfa, beta);
+	Test1(alfa, beta);
+	Test2(NAME, LASTNAME);
+
 	LOG("-- Starting new run of Sqlite3 simple test");
 #ifdef _DEBUG
 	LOG("Debug mode!");

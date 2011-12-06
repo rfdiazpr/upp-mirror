@@ -8,6 +8,6 @@ file
 	SqlBench.cpp;
 
 mainconfig
-	"" = "SSE2",
+	"" = "SSE2 MT",
 	"" = "SSE2 EXPERIMENTAL";
 

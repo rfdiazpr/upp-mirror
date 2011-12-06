@@ -9,13 +9,13 @@ file
 	Templates.h,
 	Exe.cpp,
 	Compile.cpp,
+	StdLib.icpp,
 	Http.h,
 	Util.cpp,
 	Dispatch.cpp,
 	Render.cpp,
 	Util readonly separator,
-	Static.cpp,
-	StdLib.icpp;
+	Static.cpp;
 
 custom() ".css",
 	"cp $(PATH) $(EXEDIR)/static/$(PACKAGE)/$(RELPATH)",

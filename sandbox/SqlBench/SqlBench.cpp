@@ -37,8 +37,8 @@ CONSOLE_APP_MAIN
 {
 	SqlId myid("FOO");
 	
-	DDUMP(~myid);
-	DDUMP(~myid);
+	RDUMP(~myid);
+	RDUMP(~myid);
 	return;
 	
 	

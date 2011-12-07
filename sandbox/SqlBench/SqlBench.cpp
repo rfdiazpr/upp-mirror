@@ -7,9 +7,7 @@ using namespace Upp;
 #define SCHEMADIALECT <plugin/sqlite3/Sqlite3Schema.h>
 #include "Sql/sch_header.h"
 
-#ifdef _DEBUG
 #include <Sql/sch_schema.h>
-#endif
 
 #include <Sql/sch_source.h>
 
@@ -58,29 +56,25 @@ CONSOLE_APP_MAIN
 
 	Sqlite3Session sqlite3;
 	sqlite3.LogErrors(true);
+	sqlite3.SetTrace();
 	if(!sqlite3.Open(ConfigFile("simple.db"))) {
 		LOG("Can't create or open database file\n");
 		return;
 	}
 
 	SQL = sqlite3;
-
+	
 	// Update the schema to match the schema described in "simple.sch"
-#ifdef _DEBUG
 	SqlSchema sch(SQLITE3);
 	StdStatementExecutor se(sqlite3);
 	All_Tables(sch);
-	if(sch.ScriptChanged(SqlSchema::UPGRADE))
-		Sqlite3PerformScript(sch.Upgrade(),se);
-	if(sch.ScriptChanged(SqlSchema::ATTRIBUTES)) {
-		Sqlite3PerformScript(sch.Attributes(),se);
-	}
+	Sqlite3PerformScript(sch.Upgrade(),se);
+	Sqlite3PerformScript(sch.Attributes(),se);
 	if(sch.ScriptChanged(SqlSchema::CONFIG)) {
 		Sqlite3PerformScript(sch.ConfigDrop(),se);
 		Sqlite3PerformScript(sch.Config(),se);
 	}
 	sch.SaveNormal();
-#endif
 
 	Sql sql;
 	sql*Insert(TABLE1)(ID,0)(NAME,"Joe")(LASTNAME,"Smith")(BDATE,20000101);
@@ -89,6 +83,38 @@ CONSOLE_APP_MAIN
 	LOG(sql.ToString());
 	sql*Insert(TABLE1)(ID,2)(NAME,"Jon")(LASTNAME,"Goober")(BDATE,20000103);
 	LOG(sql.ToString());
+	
+	LOG(GetSchColumns("TABLE3"));
+
+	sqlite3.SetTrace();
+
+	int sum = 0;
+	Date date = GetSysDate();
+#ifndef _DEBUG
+	SqlCol BD("BDATE");
+	for(int i = 0; i < 1000000; i++) {
+		RTIMING("SqlBool");
+		sum += (~(BD == date)).GetCount();
+	}
+	for(int i = 0; i < 100000; i++) {
+		RTIMING("JoinRef");
+		sum += sql.Compile(
+			Select(ID(ID, NAME, LASTNAME))
+			.From(TABLE1)
+			.RightJoinRef(TABLE2).On(IsNull(BDATE))
+			.Where(BDATE == date)
+		).GetCount();
+	}
+	for(int i = 0; i < 100000; i++) {
+		RTIMING("JoinFixed");
+		sum += sql.Compile(
+			Select(ID(ID, NAME, LASTNAME))
+			.From(TABLE1)
+			.RightJoin(TABLE2).On(TABLE1_ID.Of(TABLE2) == ID.Of(TABLE1) && IsNull(BDATE))
+			.Where(BDATE == date)
+		).GetCount();
+	}
+#endif
 
 	RLOG(sql.Compile(
 		Select(ID(ID, NAME, LASTNAME))
@@ -102,6 +128,18 @@ CONSOLE_APP_MAIN
 	    .RightJoinRef(TABLE2).On(IsNull(BDATE))
 	    .Where(BDATE == GetSysDate())));
 
+	RLOG(sql.Compile(
+		Select(ID(ID, NAME, LASTNAME))
+		.From(TABLE1.As("T1"))
+	    .RightJoinRef(SqlId(~TABLE2.As("T2"))).On(IsNull(BDATE))
+	    .Where(BDATE == GetSysDate())));
+
+	RLOG(sql.Compile(
+		Select(ID(ID, NAME, LASTNAME))
+		.From(TABLE1)
+	    .RightJoinRef(SqlId(~TABLE2.As("T2"))).On(IsNull(BDATE))
+	    .Where(BDATE == GetSysDate())));
+
 	RDUMP(sql.Compile(Select(ID(ID, NAME, LASTNAME)).From(TABLE1).Where(BDATE == GetSysDate())));
 	RDUMP(sql.Compile(Select(ID(ID, NAME, LASTNAME)).From(TABLE1).Where(BDATE == GetSysDate())));
 	RDUMP(sql.Compile(Select(ID(NAME)).From(TABLE1).Where(BDATE == GetSysDate())));
@@ -110,8 +148,7 @@ CONSOLE_APP_MAIN
 	RDUMP(sql.Compile(Select(NAME(ID, NAME, LASTNAME), LASTNAME)
 	                  .From(TABLE1).Where(BDATE == GetSysDate())));
 
-	return;
-
+#ifndef _DEBUG
 	String x;
 	Date d = GetSysDate();
 	for(int i = 0; i < 1000000; i++) {
@@ -126,9 +163,14 @@ CONSOLE_APP_MAIN
 		}
 	}
 
+	int count = 0;
 	for(int i = 0; i < 10000; i++) {
 		RTIMING("Create sql execute");
-		
-		SQL * Select(ID, NAME, LASTNAME).From(TABLE1).Where(BDATE == i);
+		Sql sql;
+		sql * Select(ID, NAME, LASTNAME).From(TABLE1).Where(BDATE >= 200);
+		while(sql.Fetch())
+			count++;
 	}
+	RDUMP(count / 10000);
+#endif
 }

@@ -35,11 +35,15 @@ String alfa = "0", beta = "1";
 
 CONSOLE_APP_MAIN
 {
+
+/*
+	DDUMP(~FindSchJoin("TABLE1,TABLE2"));
+	DDUMP(~FindSchJoin("TABLE2,TABLE1"));
+*/	
 	SqlId myid("FOO");
 	
 	RDUMP(~myid);
 	RDUMP(~myid);
-	return;
 	
 	
 	Test(alfa, beta);
@@ -79,19 +83,32 @@ CONSOLE_APP_MAIN
 #endif
 
 	Sql sql;
-	sql*Insert(SIMPLE_TEST1)(ID,0)(NAME,"Joe")(LASTNAME,"Smith")(BDATE,20000101);
+	sql*Insert(TABLE1)(ID,0)(NAME,"Joe")(LASTNAME,"Smith")(BDATE,20000101);
 	LOG(sql.ToString());
-	sql*Insert(SIMPLE_TEST1)(ID,1)(NAME,"Mike")(LASTNAME,"Smith")(BDATE,20000102);
+	sql*Insert(TABLE1)(ID,1)(NAME,"Mike")(LASTNAME,"Smith")(BDATE,20000102);
 	LOG(sql.ToString());
-	sql*Insert(SIMPLE_TEST1)(ID,2)(NAME,"Jon")(LASTNAME,"Goober")(BDATE,20000103);
+	sql*Insert(TABLE1)(ID,2)(NAME,"Jon")(LASTNAME,"Goober")(BDATE,20000103);
 	LOG(sql.ToString());
 
-	RDUMP(sql.Compile(Select(ID(ID, NAME, LASTNAME)).From(SIMPLE_TEST1).Where(BDATE == GetSysDate())));
-	RDUMP(sql.Compile(Select(ID(NAME)).From(SIMPLE_TEST1).Where(BDATE == GetSysDate())));
+	RLOG(sql.Compile(
+		Select(ID(ID, NAME, LASTNAME))
+		.From(TABLE1)
+	    .InnerJoinRef(TABLE2)
+	    .Where(BDATE == GetSysDate())));
+
+	RLOG(sql.Compile(
+		Select(ID(ID, NAME, LASTNAME))
+		.From(TABLE1)
+	    .RightJoinRef(TABLE2).On(IsNull(BDATE))
+	    .Where(BDATE == GetSysDate())));
+
+	RDUMP(sql.Compile(Select(ID(ID, NAME, LASTNAME)).From(TABLE1).Where(BDATE == GetSysDate())));
+	RDUMP(sql.Compile(Select(ID(ID, NAME, LASTNAME)).From(TABLE1).Where(BDATE == GetSysDate())));
+	RDUMP(sql.Compile(Select(ID(NAME)).From(TABLE1).Where(BDATE == GetSysDate())));
 
 
 	RDUMP(sql.Compile(Select(NAME(ID, NAME, LASTNAME), LASTNAME)
-	                  .From(SIMPLE_TEST1).Where(BDATE == GetSysDate())));
+	                  .From(TABLE1).Where(BDATE == GetSysDate())));
 
 	return;
 
@@ -101,7 +118,7 @@ CONSOLE_APP_MAIN
 		SqlSelect s;
 		{
 			RTIMING("Create sql select");
-			s = Select(ID, NAME, LASTNAME).From(SIMPLE_TEST1).Where(BDATE == d);
+			s = Select(ID, NAME, LASTNAME).From(TABLE1).Where(BDATE == d);
 		}
 		{
 			RTIMING("Compile sql select");
@@ -112,6 +129,6 @@ CONSOLE_APP_MAIN
 	for(int i = 0; i < 10000; i++) {
 		RTIMING("Create sql execute");
 		
-		SQL * Select(ID, NAME, LASTNAME).From(SIMPLE_TEST1).Where(BDATE == i);
+		SQL * Select(ID, NAME, LASTNAME).From(TABLE1).Where(BDATE == i);
 	}
 }

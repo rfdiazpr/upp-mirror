@@ -38,7 +38,7 @@ void FastFormatDate(StringBuffer& r, Date d, char sep)
 	FastFormat2(h + 8, d.day);
 	r.Cat(h, 10);
 }
-
+/*
 void FastFormat8(char *h, unsigned number)
 {
 	char h[8];
@@ -51,7 +51,7 @@ void FastFormat8(char *h, unsigned number)
 	h[1] = number % 10 + '0'; number /= 10;
 	h[0] = number % 10 + '0'; number /= 10;	
 }
-
+*/
 void FastFormat4(StringBuffer& r, unsigned number)
 {
 	char h[4];
@@ -93,6 +93,33 @@ inline void fastmemcpy(char *t, const char *s, int len)
 int N;
 String SN;
 
+void FastFormat_(StringBuffer& b, int ii)
+{
+	char h[12];
+	char *s = h + 11;
+	bool neg = false;
+	unsigned n = ii;
+	if(ii < 0) {
+		n = -ii;
+		neg = true;
+	}
+	do {
+		*s-- = n % 10 + '0';
+		n = n / 10;
+	}
+	while(n);
+	if(neg)
+		*s-- = '-';
+	b.Cat(s + 1, h + 12);
+}
+
+String FastFormat1_(int ii)
+{
+	StringBuffer b;
+	FastFormat_(b, ii);
+	return b;
+}
+
 String FastFormat_(int ii)
 {
 	char h[12];
@@ -110,7 +137,7 @@ String FastFormat_(int ii)
 	while(n);
 	if(neg)
 		*s-- = '-';
-	return String(s + 1, h + 12);
+	return String(s + 1, h + 12);	
 }
 
 String FastFormat(int ii)
@@ -169,12 +196,16 @@ CONSOLE_APP_MAIN
 		RTIMING("FormatInt");
 		sm += FormatInt(i).GetCount();
 	}
-	for(int i = 0; i < 10000000; i++) {
+	for(int i = 0; i < 50000000; i++) {
 		RTIMING("FastFormat");
 		sm += FastFormat(i).GetCount();
 	}
-	for(int i = 0; i < 10000000; i++) {
+	for(int i = 0; i < 50000000; i++) {
 		RTIMING("FastFormat_");
+		sm += FastFormat_(i).GetCount();
+	}
+	for(int i = 0; i < 50000000; i++) {
+		RTIMING("FastFormat1_");
 		sm += FastFormat_(i).GetCount();
 	}
 #endif

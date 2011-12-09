@@ -1,3 +1,14 @@
-2149888
+TIMING Create sql execute: 403.12 ms - 40.31 us (404.00 ms / 10000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 10000
+TIMING Compile sql select:  1.91 s  -  1.91 us ( 2.00 s  / 1000000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1000000
+TIMING Create sql select:  1.82 s  -  1.82 us ( 1.91 s  / 1000000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1000000
+TIMING JoinFixed      : 295.16 ms -  2.95 us (304.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING JoinRef        : 278.16 ms -  2.78 us (287.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING SqlBool        :  1.04 s  - 103.77 ns ( 1.92 s  / 10000000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 10000000
 
-2149888
+----------------------------
+TIMING Create sql execute: 395.19 ms - 39.52 us (396.00 ms / 10000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 10000
+TIMING Compile sql select:  1.90 s  -  1.90 us ( 1.98 s  / 1000000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1000000
+TIMING Create sql select:  1.80 s  -  1.80 us ( 1.88 s  / 1000000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1000000
+TIMING JoinFixed      : 308.88 ms -  3.09 us (317.00 ms / 100000 ), min:  0.00 ns, max:  2.00 ms, nesting: 1 - 100000
+TIMING JoinRef        : 272.88 ms -  2.73 us (281.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING SqlBool        :  1.11 s  - 111.41 ns ( 1.93 s  / 10000000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 10000000

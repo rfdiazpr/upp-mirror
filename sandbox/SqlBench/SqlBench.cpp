@@ -33,7 +33,19 @@ String alfa = "0", beta = "1";
 
 CONSOLE_APP_MAIN
 {
-
+	SqlBool b = NAME == 123;
+	
+	SqlSet xxx = Select(NAME).From(TABLE1) - Select(NAME).From(TABLE2);
+	RDUMP(~xxx);
+	SqlSelect sel = xxx;
+	RDUMP(SqlStatement(sel).Get(PGSQL));
+	
+	alfa = "11";
+	alfa = ~(TABLE1(NAME, LASTNAME, NAME, LASTNAME, NAME, LASTNAME));
+	
+	RDUMP(alfa);
+	
+	RLOG(~((25 + NAME) * 3));
 /*
 	DDUMP(~FindSchJoin("TABLE1,TABLE2"));
 	DDUMP(~FindSchJoin("TABLE2,TABLE1"));
@@ -92,7 +104,7 @@ CONSOLE_APP_MAIN
 	Date date = GetSysDate();
 #ifndef _DEBUG
 	SqlCol BD("BDATE");
-	for(int i = 0; i < 1000000; i++) {
+	for(int i = 0; i < 10000000; i++) {
 		RTIMING("SqlBool");
 		sum += (~(BD == date)).GetCount();
 	}
@@ -155,7 +167,7 @@ CONSOLE_APP_MAIN
 		SqlSelect s;
 		{
 			RTIMING("Create sql select");
-			s = Select(ID, NAME, LASTNAME).From(TABLE1).Where(BDATE == d);
+			s = Select(ID, NAME, LASTNAME).From(TABLE1).Where(BDATE == d && ID == 123 && Like(NAME, "John%"));
 		}
 		{
 			RTIMING("Compile sql select");

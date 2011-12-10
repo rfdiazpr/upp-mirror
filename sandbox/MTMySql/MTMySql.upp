@@ -1,0 +1,11 @@
+uses
+	Core,
+	MySql;
+
+file
+	Test.sch,
+	MTMySql.cpp;
+
+mainconfig
+	"" = "SSE2 MT";
+

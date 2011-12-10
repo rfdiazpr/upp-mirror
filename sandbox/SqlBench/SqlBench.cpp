@@ -31,6 +31,29 @@ void Test2(SqlId a, SqlId b)
 
 String alfa = "0", beta = "1";
 
+void DoWork()
+{
+	Sqlite3Session sqlite3;
+	sqlite3.LogErrors(true);
+	sqlite3.SetTrace();
+	sqlite3.SetBusyTimeout(10000);
+	if(!sqlite3.Open(ConfigFile("simple.db"))) {
+		LOG("Can't create or open database file\n");
+		return;
+	}
+
+	SQL = sqlite3;
+	DUMP((void *)&SQL);
+	for(int i = 0; i < 100; i++)
+		SQL * Insert(TABLE1)(ID, (int)Random())(NAME, AsString(Random()));
+	Sql sql;
+	sql * Select(NAME).From(TABLE1);
+	String h;
+	while(sql.Fetch())
+		h << sql[NAME] << '\n';
+	DUMP(h);
+}
+
 CONSOLE_APP_MAIN
 {
 	SqlBool b = NAME == 123;
@@ -87,6 +110,16 @@ CONSOLE_APP_MAIN
 		Sqlite3PerformScript(sch.Config(),se);
 	}
 	sch.SaveNormal();
+
+	Thread t1, t2;
+	
+	t1.Run(callback(DoWork));
+	t2.Run(callback(DoWork));
+	
+	t1.Wait();
+	t2.Wait();
+
+	return;
 
 	Sql sql;
 	sql*Insert(TABLE1)(ID,0)(NAME,"Joe")(LASTNAME,"Smith")(BDATE,20000101);

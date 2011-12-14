@@ -127,15 +127,20 @@ void Http::Dispatch(Socket& socket)
 			view(*this);
 		}
 		String r;
-		r <<
-			"HTTP/1.0 " << code << ' ' << code_text << "\r\n"
-			"Date: " <<  WwwFormat(GetUtcTime()) << "\r\n"
-			"Server: U++\r\n"
-			"Content-Length: " << response.GetCount() << "\r\n"
-			"Connection: close\r\n"
-			"Content-Type: " << content_type << "\r\n"
-			<< cookies <<
-			"\r\n";
+		if(redirect.GetCount()) {
+			r << "HTTP/1.1 " << code << " Found\r\n";
+			r << "Location: " << redirect << "\r\n";
+		}
+		else
+			r <<
+				"HTTP/1.0 " << code << ' ' << code_text << "\r\n"
+				"Date: " <<  WwwFormat(GetUtcTime()) << "\r\n"
+				"Server: U++\r\n"
+				"Content-Length: " << response.GetCount() << "\r\n"
+				"Connection: close\r\n"
+				"Content-Type: " << content_type << "\r\n"
+				<< cookies <<
+				"\r\n";
 		LLOG(r);
 		socket.Write(r);
 		LLOG(response);

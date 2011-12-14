@@ -12,6 +12,7 @@ struct Http {
 	VectorMap<String, Value>  var;
 	String                    signature;
 	
+	String redirect;
 	int    code;
 	String code_text;
 	String response;
@@ -47,6 +48,8 @@ public:
 	Http& SetCookie(const char *id, const String& value,
 	                Time expires = Null, const char *path = NULL,
 	                const char *domain = NULL, bool secure = false, bool httponly = false);
+
+	Http& Redirect(const char *url, int code_ = 302)  { code = code_; redirect = url; return *this; }
 	
 	Http() { code = 200; content_type = "text/html; charset=UTF-8"; }
 };

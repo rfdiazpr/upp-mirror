@@ -15,12 +15,25 @@ INITBLOCK {
 	RegisterView("*", Testy);
 }
 
-void Submit(Http& h)
+String firstname, lastname;
+
+void Info(Http& h)
 {
-	h("FIRSTNAME", h["firstname"])
-	 ("LASTNAME", h["lastname"])
+	h("FIRSTNAME", firstname)
+	 ("LASTNAME", lastname)
 	 ("COOKIE", h["mycookie"])
 	.Render("uwf/submit.whtml");
+}
+
+INITBLOCK {
+	RegisterView("info", Info);
+}
+
+void Submit(Http& h)
+{
+	firstname = h["firstname"];
+	lastname = h["lastname"];
+	h.Redirect("info");
 }
 
 INITBLOCK {

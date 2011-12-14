@@ -5,7 +5,9 @@ $set(x = 10)
 
 $for(x in set)
 	$if(x._first)This is the first row!$endif
-	<td>$(x._index + 1).<td>$x.COL1</td><td>$x.COL2</td><td>$x.COL3</td>
+	<td>$(x._index + 1).<td>$x.COL1</td><td>$x.COL2</td><td>$x.COL3</td><td>
+		<a href=$EDIT(x.ID)>Edit</a>
+		<a href=$REMOVE(x.ID)>Remove</a>
 	$if(x._last)This was the last row!$endif
 $else
 	There are no rows in the table

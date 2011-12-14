@@ -3,9 +3,9 @@
 void Testy(Http& h)
 {
 	h
-	.SetCookie("mycookie", "Hello world")
-	.SetCookie("mycookie2", "Test cookie *^*&^#")
-	.SetCookie("mycookie3", "Cookie no. 3")
+		.SetCookie("mycookie", "Hello world")
+		.SetCookie("mycookie2", "Test cookie *^*&^#")
+		.SetCookie("mycookie3", "Cookie no. 3")
 		("FIRSTNAME", "John")
 	 	("LASTNAME", "Smith")
 	.Render("uwf/test.whtml");
@@ -17,11 +17,14 @@ INITBLOCK {
 
 String firstname, lastname;
 
-String picture;
+Vector<String> picture;
 
 void Picture(Http& http)
 {
-	http.Content("image/png", picture);
+	int ii = atoi(http[0]);
+	DDUMP(ii);
+	DDUMP(picture[ii].GetCount());
+	http.Content("image/jpeg", ii >= 0 && ii < picture.GetCount() ? picture[ii] : Null);
 }
 
 void Info(Http& h)
@@ -29,21 +32,22 @@ void Info(Http& h)
 	h("FIRSTNAME", firstname)
 	 ("LASTNAME", lastname)
 	 ("COOKIE", h["mycookie"])
-	 ("PICTURE", "picture.png")
+	 ("PICTURE", Format("/picture/%d", atoi(h[0])))
 	.Render("uwf/submit.whtml");
 }
 
 INITBLOCK {
-	RegisterView("info", Info);
-	RegisterView("picture.png", Picture);
+	RegisterView("info/*", Info);
+	RegisterView("picture/*", Picture);
 }
 
 void Submit(Http& h)
 {
 	firstname = h["firstname"];
 	lastname = h["lastname"];
-	picture = h["file"];
-	h.Redirect("info");
+	int n = picture.GetCount();
+	picture.Add(h["file"]);
+	h.Redirect(Format("/info/%d", n));
 }
 
 INITBLOCK {

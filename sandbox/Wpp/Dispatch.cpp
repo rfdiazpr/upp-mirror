@@ -95,9 +95,29 @@ void Http::Dispatch(Socket& socket)
 			ParseRequest(~uri + q + 1);
 			uri.Trim(q);
 		}
+		for(int i = hdrfield.Find("cookie"); i >= 0; i = hdrfield.FindNext(i)) {
+			const String& h = hdrfield[i];
+			int q = 0;
+			for(;;) {
+				int qq = h.Find('=', q);
+				if(qq < 0)
+					break;
+				String id = ToLower(TrimBoth(h.Mid(q, qq - q)));
+				qq++;
+				DUMP(id);
+				q = h.Find(';', qq);
+				if(q < 0) {
+					request.Add(id, UrlDecode(h.Mid(qq)));
+					break;
+				}
+				request.Add(id, UrlDecode(h.Mid(qq, q - qq)));
+				q++;
+			}
+		}
 		if(method == "POST" &&
 		   GetHeader("content-type") == "application/x-www-form-urlencoded")
 			ParseRequest(content);
+		DUMPM(request);
 		Vector<String> h = Split(uri, '/');
 		if(h.GetCount()) {
 			Vector<String> a;
@@ -114,6 +134,7 @@ void Http::Dispatch(Socket& socket)
 			"Content-Length: " << response.GetCount() << "\r\n"
 			"Connection: close\r\n"
 			"Content-Type: " << content_type << "\r\n"
+			<< cookies <<
 			"\r\n";
 		LLOG(r);
 		socket.Write(r);

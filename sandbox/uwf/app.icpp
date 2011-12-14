@@ -2,8 +2,12 @@
 
 void Testy(Http& h)
 {
-	h("FIRSTNAME", "John")
-	 ("LASTNAME", "Smith")
+	h
+	.SetCookie("mycookie", "Hello world")
+	.SetCookie("mycookie2", "Test cookie *^*&^#")
+	.SetCookie("mycookie3", "Cookie no. 3")
+		("FIRSTNAME", "John")
+	 	("LASTNAME", "Smith")
 	.Render("uwf/test.whtml");
 }
 
@@ -15,6 +19,7 @@ void Submit(Http& h)
 {
 	h("FIRSTNAME", h["firstname"])
 	 ("LASTNAME", h["lastname"])
+	 ("COOKIE", h["mycookie"])
 	.Render("uwf/submit.whtml");
 }
 

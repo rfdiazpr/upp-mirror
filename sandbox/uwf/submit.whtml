@@ -6,5 +6,6 @@
 <html>
 <body>
 	Hi $FIRSTNAME $LASTNAME !
+	The cookie was $COOKIE
 </body>
 </html>

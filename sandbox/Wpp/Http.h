@@ -17,6 +17,8 @@ struct Http {
 	String response;
 	String content_type;
 	
+	String cookies;
+	
 	
 	bool Read(Socket& http);
 	
@@ -38,6 +40,13 @@ public:
 	
 	Http& operator()(const char *id, const Value& v)  { signature << id << ';'; var.Add(id, v); return *this; }
 	Http& Render(const String& template_name);
+	
+	Http& SetRawCookie(const char *id, const String& value,
+	                   Time expires = Null, const char *path = NULL,
+	                   const char *domain = NULL, bool secure = false, bool httponly = false);
+	Http& SetCookie(const char *id, const String& value,
+	                Time expires = Null, const char *path = NULL,
+	                const char *domain = NULL, bool secure = false, bool httponly = false);
 	
 	Http() { code = 200; content_type = "text/html; charset=UTF-8"; }
 };

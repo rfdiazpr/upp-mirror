@@ -114,9 +114,14 @@ void Http::Dispatch(Socket& socket)
 				q++;
 			}
 		}
-		if(method == "POST" &&
-		   GetHeader("content-type") == "application/x-www-form-urlencoded")
-			ParseRequest(content);
+		request_content_type = GetHeader("content-type");
+		String rc = ToLower(request_content_type);
+		if(method == "POST")
+			if(rc.StartsWith("application/x-www-form-urlencoded"))
+				ParseRequest(content);
+			else
+			if(rc.StartsWith("multipart/"))
+				ReadMultiPart(content);
 		DUMPM(request);
 		Vector<String> h = Split(uri, '/');
 		if(h.GetCount()) {

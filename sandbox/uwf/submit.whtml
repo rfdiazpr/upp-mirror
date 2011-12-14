@@ -7,5 +7,7 @@
 <body>
 	Hi $FIRSTNAME $LASTNAME !
 	The cookie was $COOKIE
+	
+	<img src="$PICTURE" />
 </body>
 </html>

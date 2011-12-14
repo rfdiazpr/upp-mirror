@@ -17,6 +17,7 @@ struct Http {
 	String code_text;
 	String response;
 	String content_type;
+	String request_content_type;
 	
 	String cookies;
 	
@@ -25,6 +26,7 @@ struct Http {
 	
 	void  ParseRequest(const char *s);
 	const One<Exe>& GetTemplate(const String& template_name);
+	void  ReadMultiPart(const String& content);
 
 public:
 	void Dispatch(Socket& socket);

@@ -1,6 +1,6 @@
 <html>
 <body>
- <FORM action="submit" method="post" accept-charset="utf-8">
+ <FORM action="submit" method="post" accept-charset="utf-8" enctype="multipart/form-data">
     <P>
     First name: <INPUT type="text" name="firstname" value="$FIRSTNAME"><BR>
     Last name: <INPUT type="text" name="lastname" value="$LASTNAME"><BR>
@@ -10,6 +10,7 @@
     <INPUT type="submit" value="Send" name="OK">
     <INPUT type="submit" value="Special" name="Spec">
     <INPUT type="reset">
+    <INPUT type="file" name="file" id="file" /> 
     </P>
  </FORM>
 </body>

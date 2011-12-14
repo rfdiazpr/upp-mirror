@@ -17,22 +17,32 @@ INITBLOCK {
 
 String firstname, lastname;
 
+String picture;
+
+void Picture(Http& http)
+{
+	http.Content("image/png", picture);
+}
+
 void Info(Http& h)
 {
 	h("FIRSTNAME", firstname)
 	 ("LASTNAME", lastname)
 	 ("COOKIE", h["mycookie"])
+	 ("PICTURE", "picture.png")
 	.Render("uwf/submit.whtml");
 }
 
 INITBLOCK {
 	RegisterView("info", Info);
+	RegisterView("picture.png", Picture);
 }
 
 void Submit(Http& h)
 {
 	firstname = h["firstname"];
 	lastname = h["lastname"];
+	picture = h["file"];
 	h.Redirect("info");
 }
 

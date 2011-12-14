@@ -95,8 +95,8 @@ String SN;
 
 void FastFormat_(StringBuffer& b, int ii)
 {
-	char h[12];
-	char *s = h + 11;
+	char h[16];
+	char *s = h + 15;
 	bool neg = false;
 	unsigned n = ii;
 	if(ii < 0) {

@@ -1,0 +1,9 @@
+uses
+	Core;
+
+file
+	TestMT.cpp;
+
+mainconfig
+	"" = "SSE2 MT";
+

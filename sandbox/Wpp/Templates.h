@@ -8,7 +8,7 @@ struct RawHtmlText {
 };
 
 struct Compiler {
-	static VectorMap<String, Value (*)(const Vector<Value>& arg)> functions;
+	static VectorMap<String, Value (*)(const Vector<Value>& arg)>& functions();
 
 	static bool IsTrue(const Value& v);
 	
@@ -162,3 +162,7 @@ struct Compiler {
 One<Exe> Compile(const char *code, const Index<String>& vars);
 
 String Render(const One<Exe>& exe, Vector<Value>& var);
+
+void                      SetTemplatePath(const char *path);
+
+String                    GetPreprocessedTemplate(const String& name);

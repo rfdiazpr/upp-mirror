@@ -1,10 +1,14 @@
 #include "Wpp.h"
 
-VectorMap<String, Value (*)(const Vector<Value>& v)> Compiler::functions;
+VectorMap<String, Value (*)(const Vector<Value>& v)>& Compiler::functions()
+{
+	static VectorMap<String, Value (*)(const Vector<Value>& v)> x;
+	return x;
+}
 
 void Compiler::Register(const String& id, Value (*fn)(const Vector<Value>& v))
 {
-	functions.GetAdd(id) = fn;
+	functions().GetAdd(id) = fn;
 }
 
 int Compiler::ForVar(String id, int i)
@@ -32,7 +36,7 @@ One<Exe> Compiler::Prim()
 		int n = var.Find(id);
 		if(p.Char('(')) {
 			ExeFn& fn = result.Create<ExeFn>();
-			fn.fn = functions.Get(id, NULL);
+			fn.fn = functions().Get(id, NULL);
 			if(!fn.fn)
 				p.ThrowError("function not found '" + id + "'");
 			if(!p.Char(')')) {

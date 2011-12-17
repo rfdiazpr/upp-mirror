@@ -1,0 +1,12 @@
+#include test1.witz
+
+#define BODY
+Let us iterate through the body:
+$for(i in array)
+	Value: $i
+	First: $i._first
+	Last:  $i._last
+	Index: $i._index
+$endfor
+
+#define TITLE This is a new title!

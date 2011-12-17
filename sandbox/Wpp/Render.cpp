@@ -16,7 +16,7 @@ const One<Exe>& Http::GetTemplate(const String& template_name)
 		return template_cache[q];
 	LLOG("About to compile: " << sgn);
 	One<Exe>& exe = template_cache.Add(sgn);
-	exe = Compile(LoadFile(GetExeDirFile("template/" + template_name)), var.GetIndex());
+	exe = Compile(GetPreprocessedTemplate(template_name), var.GetIndex());
 	return exe;
 }
 

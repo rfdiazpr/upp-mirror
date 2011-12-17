@@ -28,10 +28,19 @@ Value MakeMap(const Vector<Value>& arg)
 
 CONSOLE_APP_MAIN
 {
-	Compiler::Register("cycle", Cycle);
-	Compiler::Register("MakeMap", MakeMap);
-	Compiler::Register("raw", Raw);
-
+	SetTemplatePath("u:/sandbox/tpl");
+	
+	DDUMP(GetPreprocessedTemplate("test1.witz:MAIN"));
+	DDUMP(GetPreprocessedTemplate("test2.witz:MAIN"));
+	
+	Http http;
+	ValueArray va;
+	va << "One" << "Two" << "Three" << "Four" << "Five" << "Six";
+	http("array", va).Render("test2.witz:MAIN");
+	DDUMP(http.GetResponse());
+	
+	return;
+/*	
 	var.Add("n", 12);
 	var.Add("s", "Hello world!");
 	ValueArray va;
@@ -44,7 +53,7 @@ CONSOLE_APP_MAIN
 	m.Add("EMAIL", "smith@earth.org");
 	m.Add("NESTED", m);
 
-	var.Add("map", m);
+	var.Add("map", m);*/
 /*
 	DDUMP(FormatIntHex(Eval("1 && 0")));
 	

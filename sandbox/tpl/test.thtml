@@ -21,3 +21,18 @@ TIMING Benchmark      :  2.59 s  - 25.93 us ( 2.60 s  / 100000 ), min:  0.00 ns,
 TIMING Benchmark      :  1.91 s  - 19.09 us ( 1.91 s  / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
 
 TIMING Benchmark      :  1.71 s  - 17.13 us ( 1.72 s  / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+
+##
+This is MAIN definition
+This is element1: #ELEMENT1
+This is element2: #ELEMENT2
+#LOOP
+#7
+##AKFA
+
+
+#define ELEMENT1 First element1 definition
+#define ELEMENT2 First element2 definition
+
+#define LOOP
+Test of infinite recursion: #LOOP

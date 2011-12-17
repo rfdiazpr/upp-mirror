@@ -5,6 +5,8 @@ uses
 file
 	tpl.cpp,
 	test.txt,
+	test1.witz,
+	test2.witz,
 	test.thtml;
 
 mainconfig

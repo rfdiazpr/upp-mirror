@@ -1,0 +1,13 @@
+#define TITLE This is the test of my funny application
+
+#define BODY  No body yet!
+
+#define MAIN
+
+<html>
+<body>
+#TITLE
+
+#BODY
+</body>
+</html>

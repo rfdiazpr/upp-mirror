@@ -53,6 +53,8 @@ public:
 
 	Http& Redirect(const char *url, int code_ = 302)  { code = code_; redirect = url; return *this; }
 	
+	String GetResponse() const                        { return response; }
+	
 	Http() { code = 200; content_type = "text/html; charset=UTF-8"; }
 };
 

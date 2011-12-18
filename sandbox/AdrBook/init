@@ -1,0 +1,5 @@
+#ifndef _AdrBook_icpp_init_stub
+#define _AdrBook_icpp_init_stub
+#include "Core/init"
+#include "Wpp/init"
+#endif

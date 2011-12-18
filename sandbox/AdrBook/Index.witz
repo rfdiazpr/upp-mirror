@@ -1,0 +1,11 @@
+#include Style.witz
+
+#define BODY
+	$NAME
+	$for(p in PARAM)
+		<p>$p._index: $p <a href=$Params(p, p._index)>Edit</a></p>
+	$endfor
+
+<a href=$New>Insert new person</a>
+<br>
+<a href=$Params(1, 2)>Params(1, 2)</a>

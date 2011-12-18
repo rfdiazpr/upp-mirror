@@ -1,0 +1,18 @@
+#include Style.witz
+
+#define BODY
+ <FORM action="submit" method="post" accept-charset="utf-8" enctype="multipart/form-data">
+    <P>
+    First name: <INPUT type="text" name="firstname"><BR>
+    Last name: <INPUT type="text" name="lastname"><BR>
+    email: <INPUT type="text" name="email"><BR>
+    <INPUT type="radio" name="sex" value="Male" checked> Male<BR>
+    <INPUT type="radio" name="sex" value="Female"> Female<BR>
+    <INPUT type="submit" value="Send" name="OK">
+    <INPUT type="submit" value="Special" name="Spec">
+    <INPUT type="reset">
+    <INPUT type="file" name="file" id="file" /> 
+    </P>
+ </FORM>
+
+#define TITLE Please enter a new person!

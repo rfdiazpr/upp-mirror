@@ -7,6 +7,8 @@ struct RawHtmlText {
 	String text;
 };
 
+Value Raw(const String& s);
+
 struct Compiler {
 	static VectorMap<String, Value (*)(const Vector<Value>& arg)>& functions();
 
@@ -87,6 +89,14 @@ struct Compiler {
 	
 	struct ExeFn : Exe {
 		Value (*fn)(const Vector<Value>& arg);
+		
+		Array<Exe> arg;
+
+		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
+	};
+
+	struct ExeLink : Exe {
+		const Vector<String> *part;
 		
 		Array<Exe> arg;
 

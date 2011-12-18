@@ -7,12 +7,15 @@ void SetTemplatePath(const char *path)
 	template_path = path;
 }
 
-String LoadTemplate(const char *file)
+String LoadTemplate(const char *file, const char *search_path)
 {
-	String s = GetFileOnPath(file, template_path);
-	if(IsNull(s))
+	DDUMP(file);
+	DDUMP(search_path);
+	String path = GetFileOnPath(file, search_path);
+	DDUMP(path);
+	if(IsNull(path))
 		return Null;
-	FileIn in(s);
+	FileIn in(path);
 	String r;
 	while(in && !in.IsEof()) {
 		String line = in.GetLine();
@@ -24,13 +27,18 @@ String LoadTemplate(const char *file)
 				q = file.Find('\t');
 			if(q >= 0)
 				file = file.Mid(0, q);
-			r << LoadTemplate(file);
+			r << LoadTemplate(file, GetFileFolder(path) + ';' + search_path);
 		}
 		else
 			r << line;
 		r << "\r\n";
 	}
 	return r;
+}
+
+String LoadTemplate(const char *file)
+{
+	return LoadTemplate(file, template_path);
 }
 
 VectorMap<String, String> GetTemplateDefs(const char *file)

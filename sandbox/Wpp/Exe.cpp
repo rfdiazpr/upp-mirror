@@ -228,6 +228,26 @@ Value Compiler::ExeFn::Eval(Vector<Value>& stack, StringBuffer& out) const
 	return (*fn)(v);
 }
 
+Value Compiler::ExeLink::Eval(Vector<Value>& stack, StringBuffer& out) const
+{
+	Vector<Value> v;
+	v.SetCount(arg.GetCount());
+	for(int i = 0; i < arg.GetCount(); i++)
+		v[i] = arg[i].Eval(stack, out);
+	out << "\"/";
+	for(int i = 0; i < part->GetCount(); i++) {
+		const String& p = (*part)[i];
+		if(i)
+			out << '/';
+		if((byte)*p < 32)
+			out << UrlEncode(AsString(v[(byte)*p]));
+		else
+			out << p;
+	}
+	out << "\"";
+	return Value();
+}
+
 Value Compiler::ExeFirst::Eval(Vector<Value>& stack, StringBuffer& out) const
 {
 	const LoopInfo& f = ValueTo<LoopInfo>(stack[var_index]);
@@ -250,12 +270,6 @@ Value Compiler::ExeKey::Eval(Vector<Value>& stack, StringBuffer& out) const
 {
 	const LoopInfo& f = ValueTo<LoopInfo>(stack[var_index]);
 	return f.key;
-}
-
-force_inline
-void HtmlEscape(StringBuffer& out, const char *s)
-{
-	String result;
 }
 
 force_inline

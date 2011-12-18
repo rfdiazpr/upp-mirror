@@ -17,7 +17,7 @@ INITBLOCK {
 	SetStaticPath(Null);
 }
 
-void ServeStaticPage(Http& http)
+URL_VIEW(ServeStaticPage, "static/**")
 {
 	String file = "static/" + Join(http.arg, "/");
 	for(int i = 0; i < sPath.GetCount(); i++) {
@@ -27,11 +27,7 @@ void ServeStaticPage(Http& http)
 	}
 }
 
-INITBLOCK {
-	RegisterView("static/*/*", ServeStaticPage); // Extend this to more than single 
-}
-
-void ServeIml(Http& http)
+URL_VIEW(ServeIml, "iml/*/*")
 {
 	String name = http.arg[1];
 	int q = name.Find('.');
@@ -45,8 +41,4 @@ void ServeIml(Http& http)
 		http.Content("image/jpeg", JPGEncoder().SaveString(m));
 	else
 		http.Content("image/png", PNGEncoder().SaveString(m));
-}
-
-INITBLOCK {
-	RegisterView("iml/*/*", ServeIml);
 }

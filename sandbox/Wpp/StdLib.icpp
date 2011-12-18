@@ -7,6 +7,13 @@ Value Cycle(const Vector<Value>& arg)
 	return arg[1 + int(arg[0]) % (arg.GetCount() - 1)];
 }
 
+Value Raw(const String& s)
+{
+	RawHtmlText r;
+	r.text = s;
+	return RawToValue(r);
+}
+
 Value Raw(const Vector<Value>& arg)
 {
 	RawHtmlText r;

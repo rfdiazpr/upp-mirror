@@ -36,6 +36,7 @@ public:
 
 	String operator[](const char *id) const           { return request.Get(id, String()); }
 	String operator[](int i)                          { return i >= 0 && i < arg.GetCount() ? arg[i] : String(); }
+	int    GetParamCount() const                      { return arg.GetCount(); }
 	
 	Http& ContentType(const char *s)                  { content_type = s; return *this; }
 	Http& Content(const char *s, const String& data)  { content_type = s; response = data; return *this; }
@@ -60,7 +61,10 @@ public:
 
 String HttpResponse(int code, const char *phrase, const String& data, const char *content_type = NULL);
 
-void RegisterView(const char *path, Callback1<Http&> view);
-void RegisterView(const char *path, void (*view)(Http&));
+void RegisterView(void (*view)(Http&), const char *id, const char *path);
+
+#define URL_VIEW(name, path) void name(Http& http); INITBLOCK { RegisterView(name, #name, path); } void name(Http& http)
+
+Vector<String> *GetUrlViewLinkParts(const String& id);
 
 void Dispatch(Socket& http);

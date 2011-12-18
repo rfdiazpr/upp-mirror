@@ -19,6 +19,17 @@ int Compiler::ForVar(String id, int i)
 	return 0;
 }
 
+int CountLinkArgs(const Vector<String>& part)
+{
+	int args = 0;
+	for(int i = 0; i < part.GetCount(); i++) {
+		int p = (byte)*part[i];
+		if(p >= 0 && p < 30)
+			args = max(args, p + 1);
+	}
+	return args;
+}
+
 One<Exe> Compiler::Prim()
 {
 	One<Exe> result;
@@ -35,27 +46,52 @@ One<Exe> Compiler::Prim()
 		String id = p.ReadId();
 		int n = var.Find(id);
 		if(p.Char('(')) {
-			ExeFn& fn = result.Create<ExeFn>();
-			fn.fn = functions().Get(id, NULL);
-			if(!fn.fn)
-				p.ThrowError("function not found '" + id + "'");
-			if(!p.Char(')')) {
-				do
-					fn.arg.Add(Exp().Detach());
-				while(p.Char(','));
-				p.PassChar(')');
+			Value (*f)(const Vector<Value>& arg) = functions().Get(id, NULL);
+			if(!f) {
+				Vector<String> *part = GetUrlViewLinkParts(id);
+				if(!part)
+					p.ThrowError("function nor link not found '" + id + "'");
+				ExeLink& ln = result.Create<ExeLink>();
+				ln.part = part;
+				if(!p.Char(')')) {
+					do
+						ln.arg.Add(Exp().Detach());
+					while(p.Char(','));
+					p.PassChar(')');
+				}
+				if(CountLinkArgs(*part) != ln.arg.GetCount())
+					p.ThrowError("invalid number of link arguments '" + id + "'");
 			}
-			while(p.Char('.')) {
-				One<Exe> r;
-				ExeField& f = r.Create<ExeField>();
-				f.value = result;
-				f.id = p.ReadId();
-				result = r;
+			else {
+				ExeFn& fn = result.Create<ExeFn>();
+				fn.fn = f;
+				if(!p.Char(')')) {
+					do
+						fn.arg.Add(Exp().Detach());
+					while(p.Char(','));
+					p.PassChar(')');
+				}
+				while(p.Char('.')) {
+					One<Exe> r;
+					ExeField& f = r.Create<ExeField>();
+					f.value = result;
+					f.id = p.ReadId();
+					result = r;
+				}
 			}
 			return result;
 		}
-		if(n < 0)
-			p.ThrowError("unknown variable " + id);
+		if(n < 0) {
+			Vector<String> *part = GetUrlViewLinkParts(id);
+			if(!part)
+				p.ThrowError("variable nor link not found '" + id + "'");
+			DUMP(id);
+			DUMPC(*part);
+			if(CountLinkArgs(*part) != 0)
+				p.ThrowError("invalid number of link arguments '" + id + "'");
+			ExeConst& c = result.Create<ExeConst>();
+			c.value = Raw(String("\"/").Cat() << UrlEncode(Join(*part, "/")) << '\"');
+		}
 		else
 		if(p.Char('.')) {
 			if(p.Id("_first"))

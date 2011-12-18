@@ -43,8 +43,6 @@ void Http::ParseRequest(const char *p)
 		last = p;
 		while(*p && *p != '&')
 			p++;
-		DUMP(key);
-		DUMP(UrlDecode(last, p));
 		request.GetAdd(key) = UrlDecode(last, p);
 		if(*p)
 			p++;

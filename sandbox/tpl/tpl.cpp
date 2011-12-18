@@ -38,6 +38,9 @@ CONSOLE_APP_MAIN
 	va << "One" << "Two" << "Three" << "Four" << "Five" << "Six";
 	http("array", va).Render("test2.witz:MAIN");
 	DDUMP(http.GetResponse());
+
+	http.Render("test2.witz:MAIN");
+	DDUMP(http.GetResponse());
 	
 	return;
 /*	

@@ -1,0 +1,16 @@
+<html>
+<body>
+ <FORM action=$SUBMIT method="post" accept-charset="utf-8" enctype="multipart/form-data">
+    <P>
+    First name: <INPUT type="text" name="firstname" value="$FIRSTNAME"><BR>
+    Last name: <INPUT type="text" name="lastname" value="$LASTNAME"><BR>
+    email: <INPUT type="text" name="email"><BR>
+    <INPUT type="radio" name="sex" value="Male" checked> Male<BR>
+    <INPUT type="radio" name="sex" value="Female"> Female<BR>
+    <INPUT type="submit" value="Send" name="OK">
+    <INPUT type="reset">
+    <INPUT type="file" name="file" id="file" /> 
+    </P>
+ </FORM>
+</body>
+</html>

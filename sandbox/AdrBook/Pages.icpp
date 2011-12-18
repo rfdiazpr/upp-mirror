@@ -1,0 +1,91 @@
+#include "AdrBook.h"
+
+URL_VIEW(Picture, "person/*/picture")
+{
+	http.Content("image/jpeg", LoadFile(ConfigFile(http[0] + ".data")));
+}
+
+URL_VIEW(HomePage, "index.html")
+{
+	ValueArray person;
+	Sql sql;
+	sql * Select(ID, FIRSTNAME, LASTNAME, EMAIL, SEX)
+	      .From(PERSON)
+	      .OrderBy(LASTNAME);
+	while(sql.Fetch()) {
+		ValueMap vm;
+		for(int i = 0; i < sql.GetColumns(); i++)
+			vm.Add(ToUpper(sql.GetColumnInfo(i).name), sql[i]);
+		vm.Add("HASPICTURE", FileExists(ConfigFile(AsString(sql[ID]) + ".data")));
+		person.Add(vm);
+	}
+	http
+		("PERSON", person)
+	.Render("AdrBook/Index.witz");
+}
+
+URL_VIEW(NotFound, "**")
+{
+	http.Redirect("/index.html");
+}
+
+URL_VIEW(SubmitNew, "submit")
+{
+	SQL * Insert(PERSON)
+			(FIRSTNAME, http["firstname"])
+			(LASTNAME, http["lastname"])
+			(EMAIL, http["email"])
+			(SEX, http["sex"])
+	;
+	SaveFile(ConfigFile(AsString(SQL.GetInsertedId()) + ".data"), http["file"]);
+	http.Redirect("/index.html");
+}
+
+URL_VIEW(New, "new")
+{
+	http("EDIT", 0).Render("AdrBook/Dialog.witz");
+}
+
+URL_VIEW(SubmitEdit, "submit/edit/*")
+{
+	int id = atoi(http[0]);
+	SQL * Update(PERSON)
+			(FIRSTNAME, http["firstname"])
+			(LASTNAME, http["lastname"])
+			(EMAIL, http["email"])
+			(SEX, http["sex"])
+			.Where(ID == atoi(http[0]));
+	;
+	String file = http["file"];
+	if(file.GetCount())
+		SaveFile(ConfigFile(AsString(id) + ".data"), file);
+	http.Redirect("/index.html");
+}
+
+URL_VIEW(Edit, "person/*/edit")
+{
+	int id = atoi(http[0]);
+	Sql sql;
+	sql * Select(FIRSTNAME, LASTNAME, EMAIL, SEX)
+	      .From(PERSON)
+	      .Where(ID == id);
+	if(!sql.Fetch()) {
+		http.Redirect("/index.html");
+		return;
+	}
+	http
+		("ID", id)
+		("FIRSTNAME", sql[FIRSTNAME])
+		("LASTNAME", sql[LASTNAME])
+		("EMAIL", sql[EMAIL])
+		("SEX", sql[SEX])
+		("EDIT", 1)
+	.Render("AdrBook/Dialog.witz");
+}
+
+URL_VIEW(Delete, "person/*/delete")
+{
+	SQL * Delete(PERSON).Where(ID == atoi(http[0]));
+	DeleteFile(ConfigFile(atoi(http[0]) + ".data"));
+	http.Redirect("/index.html");
+}

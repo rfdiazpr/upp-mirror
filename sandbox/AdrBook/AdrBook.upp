@@ -2,15 +2,17 @@ description "The first attempt to create web application (using Skylark)\377";
 
 uses
 	Core,
-	Wpp;
+	Wpp,
+	plugin/sqlite3;
 
 file
 	AdrBook.h,
+	Model.sch,
+	Pages.icpp,
+	AdrBook.cpp,
 	Style.witz,
 	Dialog.witz,
-	Index.witz,
-	Pages.cpp,
-	AdrBook.cpp;
+	Index.witz;
 
 mainconfig
 	"" = "SSE2";

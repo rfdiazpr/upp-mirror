@@ -122,6 +122,18 @@ void GetBestDispatch(const Vector<String>& h, int ii, const DispatchNode& n, Vec
 			bd.view = n.view;
 			bd.matched_parts = matched_parts;
 		}
+		if(h.GetCount() == 0) {
+			int q = n.subnode.Find(String());
+			while(q >= 0) {
+				const DispatchNode& an = DispatchMap[n.subnode[q]];
+				if(an.argpos == DISPATCH_VARARGS && an.view) {
+					bd.view = an.view;
+					bd.arg.Clear();
+					break;
+				}
+				q = n.subnode.FindNext(q);
+			}
+		}
 		return;
 	}
 	int qq = n.subnode.Get(h[ii], -1);
@@ -203,15 +215,14 @@ void Http::Dispatch(Socket& socket)
 				ReadMultiPart(content);
 		DUMPM(request);
 		Vector<String> h = Split(uri, '/');
-		if(h.GetCount()) {
-			Vector<String> a;
-			BestDispatch bd(arg);
-			if(DispatchMap.GetCount())
-				GetBestDispatch(h, 0, DispatchMap[0], a, bd, 0, 0);
-			DUMPC(arg);
-			if(bd.view)
-				(*bd.view)(*this);
-		}
+		DUMPC(h);
+		Vector<String> a;
+		BestDispatch bd(arg);
+		if(DispatchMap.GetCount())
+			GetBestDispatch(h, 0, DispatchMap[0], a, bd, 0, 0);
+		DUMPC(arg);
+		if(bd.view)
+			(*bd.view)(*this);
 		String r;
 		if(redirect.GetCount()) {
 			r << "HTTP/1.1 " << code << " Found\r\n";

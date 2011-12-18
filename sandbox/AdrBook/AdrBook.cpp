@@ -1,5 +1,9 @@
 #include "AdrBook.h"
 
+#include <Sql/sch_schema.h>
+
+#include <Sql/sch_source.h>
+
 #ifdef PLATFORM_WIN32
 #include <wincon.h>
 #endif
@@ -27,7 +31,25 @@ BOOL WINAPI CtrlCHandlerRoutine(__in  DWORD dwCtrlType)
 
 CONSOLE_APP_MAIN
 {
-	SetTemplatePath("u:/sandbox");
+	SetTemplatePath("/home/cxl/sandbox;u:/sandbox");
+
+	Sqlite3Session sqlite3;
+
+	sqlite3.LogErrors();
+	sqlite3.SetTrace();
+	if(!sqlite3.Open(ConfigFile("person.db"))) {
+		LOG("Can't create or open database file\n");
+		return;
+	}
+	SQL = sqlite3;
+
+	SqlSchema sch(SQLITE3);
+	StdStatementExecutor se(sqlite3);
+	All_Tables(sch);
+	Sqlite3PerformScript(sch.Upgrade(), se);
+	Sqlite3PerformScript(sch.Attributes(), se);
+	sch.SaveNormal();
+
 	LOG("About to start");
 #ifdef PLATFORM_WIN32
 	SetConsoleCtrlHandler(CtrlCHandlerRoutine, true);

@@ -1,11 +1,27 @@
 #include Style.witz
 
 #define BODY
-	$NAME
-	$for(p in PARAM)
-		<p>$p._index: $p <a href=$Params(p, p._index)>Edit</a></p>
-	$endfor
-
+<table border="1">
+<tr>
+  <th>First Name</th>
+  <th>Last Name</th>
+  <th>Email</th>
+  <th>Sex</th>
+  <th>Action</th>
+</tr>
+$for(i in PERSON)
+	<tr>
+	  <td>$i.FIRSTNAME</td>
+	  <td>$i.LASTNAME</td>
+	  <td>$i.EMAIL</td>
+	  <td>$(i.SEX == "M" ? "Male" : "Female")</td>
+	  <td><a href=$Edit(i.ID)>Edit</a> <a href=$Delete(i.ID)>Delete</a>
+	  	$if(i.HASPICTURE)
+	  		<a href=$Picture(i.ID)>Show picture</a>
+	  	$endif
+	  </td>
+	</tr>
+$endfor
+</table>
+<p/>
 <a href=$New>Insert new person</a>
-<br>
-<a href=$Params(1, 2)>Params(1, 2)</a>

@@ -83,10 +83,10 @@ One<Exe> Compiler::Prim()
 		}
 		if(n < 0) {
 			Vector<String> *part = GetUrlViewLinkParts(id);
-			if(!part)
-				p.ThrowError("variable nor link not found '" + id + "'");
-			DUMP(id);
-			DUMPC(*part);
+			if(!part) {
+				ExeConst& c = result.Create<ExeConst>();
+				return result;
+			}
 			if(CountLinkArgs(*part) != 0)
 				p.ThrowError("invalid number of link arguments '" + id + "'");
 			ExeConst& c = result.Create<ExeConst>();

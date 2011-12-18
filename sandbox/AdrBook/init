@@ -2,4 +2,8 @@
 #define _AdrBook_icpp_init_stub
 #include "Core/init"
 #include "Wpp/init"
+#include "plugin/sqlite3/init"
+#define BLITZ_INDEX__ Fae4376289ab1f8489ac4e62d3fd4b6d5
+#include "Pages.icpp"
+#undef BLITZ_INDEX__
 #endif

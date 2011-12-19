@@ -16,9 +16,7 @@ $for(i in PERSON)
 	  <td>$i.EMAIL</td>
 	  <td>$(i.SEX == "M" ? "Male" : "Female")</td>
 	  <td><a href=$Edit(i.ID)>Edit</a> <a href=$Delete(i.ID)>Delete</a>
-	  	$if(i.HASPICTURE)
-	  		<a href=$Picture(i.ID)>Show picture</a>
-	  	$endif
+	  	$if(i.HASPICTURE) <a href=$Picture(i.ID)>Show picture</a> $endif
 	  </td>
 	</tr>
 $endfor

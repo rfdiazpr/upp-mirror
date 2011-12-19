@@ -25,3 +25,29 @@ Http& Http::Render(const String& template_name)
 	response << ::Render(GetTemplate(template_name), var.GetValues());
 	return *this;
 }
+
+Http& Http::Redirect(void (*view)(Http&), const Vector<Value>& arg)
+{
+	Redirect(MakeLink(view, arg));
+}
+
+Http& Http::Redirect(void (*view)(Http&))
+{
+	Vector<Value> arg;
+	Redirect(view, arg);
+}
+
+Http& Http::Redirect(void (*view)(Http&), const Value& v1)
+{
+	Vector<Value> arg;
+	arg.Add(v1);
+	Redirect(view, arg);
+}
+
+Http& Http::Redirect(void (*view)(Http&), const Value& v1, const Value& v2)
+{
+	Vector<Value> arg;
+	arg.Add(v1);
+	arg.Add(v2);
+	Redirect(view, arg);
+}

@@ -1,3 +1,5 @@
+void MakeLink(StringBuffer& out, const Vector<String>& part, const Vector<Value>& arg);
+
 struct Http {
 	String method;
 	String uri;
@@ -52,7 +54,11 @@ public:
 	                Time expires = Null, const char *path = NULL,
 	                const char *domain = NULL, bool secure = false, bool httponly = false);
 
-	Http& Redirect(const char *url, int code_ = 302)  { code = code_; redirect = url; return *this; }
+	Http& Redirect(const char *url, int code_ = 302)      { code = code_; redirect = url; return *this; }
+	Http& Redirect(void (*view)(Http&), const Vector<Value>& arg);
+	Http& Redirect(void (*view)(Http&));
+	Http& Redirect(void (*view)(Http&), const Value& v1);
+	Http& Redirect(void (*view)(Http&), const Value& v1, const Value& v2);
 	
 	String GetResponse() const                        { return response; }
 	
@@ -67,4 +73,4 @@ void RegisterView(void (*view)(Http&), const char *id, const char *path);
 
 Vector<String> *GetUrlViewLinkParts(const String& id);
 
-void Dispatch(Socket& http);
+String MakeLink(void (*view)(Http&), const Vector<Value>& arg);

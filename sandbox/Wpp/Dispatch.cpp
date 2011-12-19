@@ -26,6 +26,12 @@ static VectorMap<String, Vector<String> >& sLinkMap()
 	return x;
 }
 
+static Index<uintptr_t>& sViewIndex()
+{
+	static Index<uintptr_t> x;
+	return x;
+}
+
 void DumpDispatchMap()
 {
 	Vector<DispatchNode>& DispatchMap = sDispatchMap();
@@ -46,10 +52,22 @@ Vector<String> *GetUrlViewLinkParts(const String& id)
 	return &sLinkMap()[q];
 }
 
+String MakeLink(void (*view)(Http&), const Vector<Value>& arg)
+{
+	int q = sViewIndex().Find((uintptr_t)view);
+	ASSERT(q >= 0); // -> Internal server error
+	if(q < 0)
+		return String();
+	StringBuffer out;
+	MakeLink(out, sLinkMap()[q], arg);
+	return out;
+}
+
 void RegisterView0(void (*view)(Http&), const char *id, const char *path, bool primary)
 {
 	LLOG("RegisterView " << path);
 	Vector<String>& linkpart = sLinkMap().GetAdd(id);
+	sViewIndex().FindAdd((uintptr_t)view);
 	Vector<DispatchNode>& DispatchMap = sDispatchMap();
 	Vector<String> h = Split(path, '/');
 	if(DispatchMap.GetCount() == 0)
@@ -63,7 +81,7 @@ void RegisterView0(void (*view)(Http&), const char *id, const char *path, bool p
 		if(*s == '*') {
 			int argpos = Null;
 			if(IsDigit(s[1]))
-				linkargpos = argpos = minmax(atoi(~s + 1), 0, 30);				
+				linkargpos = argpos = minmax(atoi(~s + 1), 0, 30);
 			else
 			if(s[1] == '*')
 				argpos = DISPATCH_VARARGS;
@@ -97,6 +115,7 @@ void RegisterView0(void (*view)(Http&), const char *id, const char *path, bool p
 
 void RegisterView(void (*view)(Http&), const char *id, const char *path)
 {
+	ASSERT_(sViewIndex().Find((uintptr_t)view) < 0, "duplicate view function registration " + String(id));
 	Vector<String> h = Split(path, ';');
 	for(int i = 0; i < h.GetCount(); i++)
 		RegisterView0(view, id, h[i], i == 0);

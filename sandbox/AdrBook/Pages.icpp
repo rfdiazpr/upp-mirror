@@ -12,21 +12,17 @@ URL_VIEW(HomePage, "index.html")
 	sql * Select(ID, FIRSTNAME, LASTNAME, EMAIL, SEX)
 	      .From(PERSON)
 	      .OrderBy(LASTNAME);
-	while(sql.Fetch()) {
-		ValueMap vm;
-		for(int i = 0; i < sql.GetColumns(); i++)
-			vm.Add(ToUpper(sql.GetColumnInfo(i).name), sql[i]);
+	ValueMap vm;
+	while(sql.Fetch(vm)) {
 		vm.Add("HASPICTURE", FileExists(ConfigFile(AsString(sql[ID]) + ".data")));
 		person.Add(vm);
 	}
-	http
-		("PERSON", person)
-	.Render("AdrBook/Index.witz");
+	http("PERSON", person).Render("AdrBook/Index.witz");
 }
 
 URL_VIEW(NotFound, "**")
 {
-	http.Redirect("/index.html");
+	http.Redirect(HomePage);
 }
 
 URL_VIEW(SubmitNew, "submit")
@@ -38,7 +34,7 @@ URL_VIEW(SubmitNew, "submit")
 			(SEX, http["sex"])
 	;
 	SaveFile(ConfigFile(AsString(SQL.GetInsertedId()) + ".data"), http["file"]);
-	http.Redirect("/index.html");
+	http.Redirect(HomePage);
 }
 
 URL_VIEW(New, "new")
@@ -59,7 +55,7 @@ URL_VIEW(SubmitEdit, "submit/edit/*")
 	String file = http["file"];
 	if(file.GetCount())
 		SaveFile(ConfigFile(AsString(id) + ".data"), file);
-	http.Redirect("/index.html");
+	http.Redirect(HomePage);
 }
 
 URL_VIEW(Edit, "person/*/edit")
@@ -70,7 +66,7 @@ URL_VIEW(Edit, "person/*/edit")
 	      .From(PERSON)
 	      .Where(ID == id);
 	if(!sql.Fetch()) {
-		http.Redirect("/index.html");
+		http.Redirect(HomePage);
 		return;
 	}
 	http
@@ -87,5 +83,5 @@ URL_VIEW(Delete, "person/*/delete")
 {
 	SQL * Delete(PERSON).Where(ID == atoi(http[0]));
 	DeleteFile(ConfigFile(atoi(http[0]) + ".data"));
-	http.Redirect("/index.html");
+	http.Redirect(HomePage);
 }

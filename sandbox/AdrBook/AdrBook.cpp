@@ -50,6 +50,8 @@ CONSOLE_APP_MAIN
 	Sqlite3PerformScript(sch.Attributes(), se);
 	sch.SaveNormal();
 
+	sqlite3.ThrowOnError();
+
 	LOG("About to start");
 #ifdef PLATFORM_WIN32
 	SetConsoleCtrlHandler(CtrlCHandlerRoutine, true);

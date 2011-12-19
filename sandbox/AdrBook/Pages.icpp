@@ -9,7 +9,7 @@ URL_VIEW(HomePage, "index.html")
 {
 	ValueArray person;
 	Sql sql;
-	sql * Select(ID, FIRSTNAME, LASTNAME, EMAIL, SEX)
+	sql * Select(ID, FIRSTNAME, LASTNAME, EMAIL, SEX, SqlId("ERROR"))
 	      .From(PERSON)
 	      .OrderBy(LASTNAME);
 	ValueMap vm;

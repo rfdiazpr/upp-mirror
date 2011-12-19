@@ -39,7 +39,7 @@ void DumpDispatchMap()
 		LLOG("-------------");
 		String sub;
 		for(int j = 0; j < DispatchMap[i].subnode.GetCount(); j++)
-			sub << DispatchMap[i].subnode.GetKey(j) << "->" << Nvl(DispatchMap[i].subnode[j], "*") << ", ";
+			sub << DispatchMap[i].subnode.GetKey(j) << "->" << DispatchMap[i].subnode[j] << ", ";
 		LLOG(i << " " << (bool)DispatchMap[i].view << ": " << sub);
 	}			
 }
@@ -240,8 +240,17 @@ void Http::Dispatch(Socket& socket)
 		if(DispatchMap.GetCount())
 			GetBestDispatch(h, 0, DispatchMap[0], a, bd, 0, 0);
 		DUMPC(arg);
-		if(bd.view)
-			(*bd.view)(*this);
+		if(bd.view) {
+			try {
+				(*bd.view)(*this);
+			}
+			catch(SqlExc e) {
+				response << "Internal server error<br>"
+				         << "SQL ERROR: " << e;
+				code = 500;
+				code_text = "Internal server error";
+			}
+		}
 		String r;
 		if(redirect.GetCount()) {
 			r << "HTTP/1.1 " << code << " Found\r\n";

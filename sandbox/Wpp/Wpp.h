@@ -5,6 +5,7 @@
 #include <Draw/Draw.h>
 #include <plugin/png/png.h>
 #include <plugin/jpg/jpg.h>
+#include <Sql/Sql.h>
 
 using namespace Upp;
 

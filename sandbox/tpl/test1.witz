@@ -9,5 +9,17 @@
 #TITLE
 
 #BODY
+
+-------------
+Iterating array:
+$for(i in [1, 2, "last"])
+	Test $i
+$endfor
+
+Iterating map:
+$for(i in { "alfa":123, "beta":"text" })
+	Test $i._key: $i
+$endfor
+
 </body>
 </html>

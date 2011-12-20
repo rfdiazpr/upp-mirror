@@ -1,4 +1,4 @@
-#include "Wpp.h"
+#include "Skylark.h"
 
 VectorMap<String, Value (*)(const Vector<Value>& v)>& Compiler::functions()
 {
@@ -119,6 +119,26 @@ One<Exe> Compiler::Prim()
 		}
 		else
 			result.Create<ExeVar>().var_index = n;
+	}
+	else
+	if(p.Char('{')) {
+		ExeMap& m = result.Create<ExeMap>();
+		do {
+			m.key.Add(Exp().Detach());
+			p.PassChar(':');
+			m.value.Add(Exp().Detach());
+		}
+		while(p.Char(','));
+		p.PassChar('}');
+	}
+	else
+	if(p.Char('[')) {
+		ExeArray& m = result.Create<ExeArray>();
+		do {
+			m.item.Add(Exp().Detach());
+		}
+		while(p.Char(','));
+		p.PassChar(']');
 	}
 	else
 	if(p.Char('(')) {

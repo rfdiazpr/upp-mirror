@@ -6,8 +6,8 @@ uses
 	Sql;
 
 file
-	Wpp.h,
-	Templates.h,
+	Skylark.h,
+	Witz.h,
 	Preprocess.cpp,
 	Exe.cpp,
 	Compile.cpp,

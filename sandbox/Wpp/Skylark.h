@@ -9,7 +9,7 @@
 
 using namespace Upp;
 
-#include "Templates.h"
+#include "Witz.h"
 #include "Http.h"
 
 #endif

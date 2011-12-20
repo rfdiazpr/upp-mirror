@@ -1,5 +1,5 @@
 #include <Core/Core.h>
-#include <Wpp/Wpp.h>
+#include <Wpp/Skylark.h>
 
 using namespace Upp;
 
@@ -28,7 +28,7 @@ Value MakeMap(const Vector<Value>& arg)
 
 CONSOLE_APP_MAIN
 {
-	SetTemplatePath("u:/sandbox/tpl");
+	SetTemplatePath("/home/cxl/sandbox/tpl;u:/sandbox/tpl");
 	
 	DDUMP(GetPreprocessedTemplate("test1.witz:MAIN"));
 	DDUMP(GetPreprocessedTemplate("test2.witz:MAIN"));

@@ -1,4 +1,4 @@
-#include "Wpp.h"
+#include "Skylark.h"
 
 String template_path;
 
@@ -9,10 +9,7 @@ void SetTemplatePath(const char *path)
 
 String LoadTemplate(const char *file, const char *search_path)
 {
-	DDUMP(file);
-	DDUMP(search_path);
 	String path = GetFileOnPath(file, search_path);
-	DDUMP(path);
 	if(IsNull(path))
 		return Null;
 	FileIn in(path);

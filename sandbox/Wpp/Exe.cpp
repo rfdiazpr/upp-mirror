@@ -1,4 +1,4 @@
-#include "Wpp.h"
+#include "Skylark.h"
 
 #define LTIMING(x)
 
@@ -21,6 +21,22 @@ Value Compiler::ExeVar::Eval(Vector<Value>& stack, StringBuffer& out) const
 Value Compiler::ExeConst::Eval(Vector<Value>& stack, StringBuffer& out) const
 {
 	return value;
+}
+
+Value Compiler::ExeArray::Eval(Vector<Value>& stack, StringBuffer& out) const
+{
+	ValueArray va;
+	for(int i = 0; i < item.GetCount(); i++)
+		va.Add(item[i].Eval(stack, out));
+	return va;
+}
+
+Value Compiler::ExeMap::Eval(Vector<Value>& stack, StringBuffer& out) const
+{
+	ValueMap m;
+	for(int i = 0; i < key.GetCount(); i++)
+		m.Add(key[i].Eval(stack, out), value[i].Eval(stack, out));
+	return m;
 }
 
 Value Compiler::ExeNot::Eval(Vector<Value>& stack, StringBuffer& out) const

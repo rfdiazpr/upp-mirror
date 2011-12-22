@@ -209,7 +209,7 @@ void MakeLink(StringBuffer& out, const Vector<String>& part, const Vector<Value>
 				out << UrlEncode(AsString(arg[q]));
 		}
 		else
-			out << p;
+			out << UrlEncode(p);
 	}
 	bool get = false;
 	for(int i = 0; i < arg.GetCount(); i++)

@@ -5,7 +5,7 @@ URL_VIEW(Picture, "person/*/picture")
 	http.Content("image/jpeg", LoadFile(ConfigFile(http[0] + ".data")));
 }
 
-URL_VIEW(HomePage, "index.html")
+URL_VIEW(HomePage, "stránčička.html")
 {
 	ValueArray person;
 	SqlBool where;

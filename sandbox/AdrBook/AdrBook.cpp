@@ -44,10 +44,9 @@ CONSOLE_APP_MAIN
 	SQL = sqlite3;
 
 	SqlSchema sch(SQLITE3);
-	StdStatementExecutor se(sqlite3);
 	All_Tables(sch);
-	Sqlite3PerformScript(sch.Upgrade(), se);
-	Sqlite3PerformScript(sch.Attributes(), se);
+	SqlPerformScript(sch.Upgrade());
+	SqlPerformScript(sch.Attributes());
 	sch.SaveNormal();
 
 	sqlite3.ThrowOnError();

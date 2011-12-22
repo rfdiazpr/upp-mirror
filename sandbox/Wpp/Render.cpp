@@ -7,8 +7,12 @@ ArrayMap<String, One<Exe> > template_cache;
 
 const One<Exe>& Http::GetTemplate(const String& template_name)
 {
-	String sgn = signature;
-	sgn << ':' << template_name;
+	DDUMPM(var);
+	StringBuffer s;
+	for(int i = 0; i < var.GetCount(); i++)
+		s << var.GetKey(i) << ';';
+	s << ':' << template_name;
+	String sgn = s;
 	LLOG("Trying to retrieve " << sgn << " from cache");
 	Mutex::Lock __(template_cache_lock);
 	int q = template_cache.Find(sgn);
@@ -29,12 +33,14 @@ Http& Http::Render(const String& template_name)
 Http& Http::Redirect(void (*view)(Http&), const Vector<Value>& arg)
 {
 	Redirect(MakeLink(view, arg));
+	return *this;
 }
 
 Http& Http::Redirect(void (*view)(Http&))
 {
 	Vector<Value> arg;
 	Redirect(view, arg);
+	return *this;
 }
 
 Http& Http::Redirect(void (*view)(Http&), const Value& v1)
@@ -42,6 +48,7 @@ Http& Http::Redirect(void (*view)(Http&), const Value& v1)
 	Vector<Value> arg;
 	arg.Add(v1);
 	Redirect(view, arg);
+	return *this;
 }
 
 Http& Http::Redirect(void (*view)(Http&), const Value& v1, const Value& v2)
@@ -50,4 +57,5 @@ Http& Http::Redirect(void (*view)(Http&), const Value& v1, const Value& v2)
 	arg.Add(v1);
 	arg.Add(v2);
 	Redirect(view, arg);
+	return *this;
 }

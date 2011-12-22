@@ -43,7 +43,7 @@ void Http::ParseRequest(const char *p)
 		last = p;
 		while(*p && *p != '&')
 			p++;
-		request.GetAdd(key) = UrlDecode(last, p);
+		var.GetAdd(key) = UrlDecode(last, p);
 		if(*p)
 			p++;
 	}
@@ -185,10 +185,10 @@ void Http::ReadMultiPart(const String& buffer)
 		}
 		if(!name.IsEmpty()) { // add variables
 			if(!filename.IsEmpty())
-				request.GetAdd(name + ".filename") = filename;
+				var.GetAdd(name + ".filename") = filename;
 			if(!content_type.IsEmpty())
-				request.GetAdd(name + ".content_type") = content_type;
-			request.Add(name, String(b, p));
+				var.GetAdd(name + ".content_type") = content_type;
+			var.Add(name, String(b, p));
 		}
 		p += delta;
 		while(*p && *p++ != '\n')
@@ -197,7 +197,7 @@ void Http::ReadMultiPart(const String& buffer)
 }
 
 void MakeLink(StringBuffer& out, const Vector<String>& part, const Vector<Value>& arg)
-{
+{// Could by optimized (by 50%?)
 	out.Cat("/");
 	for(int i = 0; i < part.GetCount(); i++) {
 		const String& p = part[i];
@@ -211,4 +211,20 @@ void MakeLink(StringBuffer& out, const Vector<String>& part, const Vector<Value>
 		else
 			out << p;
 	}
+	bool get = false;
+	for(int i = 0; i < arg.GetCount(); i++)
+		if(IsValueMap(arg[i])) {
+			if(get)
+				out << '&';
+			else
+				out << '?';
+			get = true;
+			ValueMap m = arg[i];
+			for(int i = 0; i < m.GetCount(); i++) {
+				if(i)
+					out << '&';
+				out << UrlEncode(AsString(m.GetKeys()[i])) << '=' << UrlEncode(AsString(m.GetValues()[i]));
+			}
+		}
+	
 }

@@ -8,11 +8,9 @@ struct Http {
 	
 	VectorMap<String, String> hdrfield;
 
-	VectorMap<String, String> request; 
 	Vector<String>            arg;
 	
 	VectorMap<String, Value>  var;
-	String                    signature;
 	
 	String redirect;
 	int    code;
@@ -36,7 +34,7 @@ public:
 	String GetHeader(const char *s) const  { return hdrfield.Get(s, Null); }
 	int    GetLength() const               { return atoi(GetHeader("content-length")); }
 
-	String operator[](const char *id) const           { return request.Get(id, String()); }
+	String operator[](const char *id) const           { return var.Get(id, Null); }
 	String operator[](int i)                          { return i >= 0 && i < arg.GetCount() ? arg[i] : String(); }
 	int    GetParamCount() const                      { return arg.GetCount(); }
 	
@@ -44,7 +42,7 @@ public:
 	Http& Content(const char *s, const String& data)  { content_type = s; response = data; return *this; }
 	Http& operator<<(const String& s)                 { response << s; return *this; }
 	
-	Http& operator()(const char *id, const Value& v)  { signature << id << ';'; var.Add(id, v); return *this; }
+	Http& operator()(const char *id, const Value& v)  { var.Add(id, v); return *this; }
 	Http& Render(const String& template_name);
 	
 	Http& SetRawCookie(const char *id, const String& value,

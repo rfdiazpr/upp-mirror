@@ -59,7 +59,7 @@ One<Exe> Compiler::Prim()
 					while(p.Char(','));
 					p.PassChar(')');
 				}
-				if(CountLinkArgs(*part) != ln.arg.GetCount())
+				if(CountLinkArgs(*part) > ln.arg.GetCount())
 					p.ThrowError("invalid number of link arguments '" + id + "'");
 			}
 			else {
@@ -87,8 +87,8 @@ One<Exe> Compiler::Prim()
 				ExeConst& c = result.Create<ExeConst>();
 				return result;
 			}
-			if(CountLinkArgs(*part) != 0)
-				p.ThrowError("invalid number of link arguments '" + id + "'");
+//			if(CountLinkArgs(*part) != 0)
+//				p.ThrowError("invalid number of link arguments '" + id + "'");
 			ExeConst& c = result.Create<ExeConst>();
 			c.value = Raw(String("\"/").Cat() << UrlEncode(Join(*part, "/")) << '\"');
 		}

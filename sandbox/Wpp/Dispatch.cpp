@@ -217,10 +217,10 @@ void Http::Dispatch(Socket& socket)
 				DUMP(id);
 				q = h.Find(';', qq);
 				if(q < 0) {
-					request.Add(id, UrlDecode(h.Mid(qq)));
+					var.Add(id, UrlDecode(h.Mid(qq)));
 					break;
 				}
-				request.Add(id, UrlDecode(h.Mid(qq, q - qq)));
+				var.Add(id, UrlDecode(h.Mid(qq, q - qq)));
 				q++;
 			}
 		}
@@ -232,7 +232,7 @@ void Http::Dispatch(Socket& socket)
 			else
 			if(rc.StartsWith("multipart/"))
 				ReadMultiPart(content);
-		DUMPM(request);
+		DUMPM(var);
 		Vector<String> h = Split(uri, '/');
 		DUMPC(h);
 		Vector<String> a;

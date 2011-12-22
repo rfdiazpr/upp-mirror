@@ -8,20 +8,52 @@ URL_VIEW(Picture, "person/*/picture")
 URL_VIEW(HomePage, "index.html")
 {
 	ValueArray person;
+	SqlBool where;
+	String s = http["search"];
+	if(!IsNull(s)) {
+		s << '%';
+		where = Like(FIRSTNAME, s) || Like(LASTNAME, s) || Like(EMAIL, s);
+	}
+	int perpage = atoi(http["perpage"]);
+	perpage = max(perpage, 10);
+	int pages = int(SQL % Select(SqlCountRows()).From(PERSON).Where(where)) / perpage;
+	int page = atoi(http["page"]);
 	Sql sql;
 	sql * Select(ID, FIRSTNAME, LASTNAME, EMAIL, SEX)
 	      .From(PERSON)
-	      .OrderBy(LASTNAME);
+	      .Where(where)
+	      .OrderBy(LASTNAME)
+	      .Limit(page * perpage, perpage);
 	ValueMap vm;
 	while(sql.Fetch(vm)) {
 		vm.Add("HASPICTURE", FileExists(ConfigFile(AsString(sql[ID]) + ".data")));
 		person.Add(vm);
 	}
-	http("PERSON", person).Render("AdrBook/Index.witz");
+	ValueArray pg;
+	for(int i = 0; i < pages; i++)
+		pg.Add(i);
+	http("PERSON", person)("PAGES", pg).Render("AdrBook/Index.witz");
 }
 
 URL_VIEW(NotFound, "**")
 {
+	http.Redirect(HomePage);
+}
+
+URL_VIEW(InsertTestData, "testdata")
+{
+	static const char *name[] = {
+		"John", "Smith", "Calamity", "Jane", "Carl", "Gustav", "Barack", "Obama",
+		"Bush", "Clinton", "Dave", "Tiger", "Woods", "Sombody", "Else"
+	};
+	SQL * Delete(PERSON).Where(SqlBool::True());
+	for(int i = 0; i < 100; i++)
+		SQL * Insert(PERSON)
+				(FIRSTNAME, name[Random(__countof(name))])
+				(LASTNAME, name[Random(__countof(name))])
+				(EMAIL, String().Cat() << name[Random(__countof(name))] << "@mail.com")
+				(SEX, Random(2) == 0 ? "M" : "F")
+		;
 	http.Redirect(HomePage);
 }
 

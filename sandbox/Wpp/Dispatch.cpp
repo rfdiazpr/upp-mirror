@@ -205,6 +205,7 @@ void Http::Dispatch(Socket& socket)
 			ParseRequest(~uri + q + 1);
 			uri.Trim(q);
 		}
+		uri = UrlDecode(uri);
 		for(int i = hdrfield.Find("cookie"); i >= 0; i = hdrfield.FindNext(i)) {
 			const String& h = hdrfield[i];
 			int q = 0;

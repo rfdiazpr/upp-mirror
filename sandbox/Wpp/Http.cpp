@@ -197,7 +197,7 @@ void Http::ReadMultiPart(const String& buffer)
 }
 
 void MakeLink(StringBuffer& out, const Vector<String>& part, const Vector<Value>& arg)
-{// Could by optimized (by 50%?)
+{// Could by optimized by moving out as parameter to UrlEncode
 	out.Cat("/");
 	for(int i = 0; i < part.GetCount(); i++) {
 		const String& p = part[i];

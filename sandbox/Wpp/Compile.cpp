@@ -90,7 +90,14 @@ One<Exe> Compiler::Prim()
 //			if(CountLinkArgs(*part) != 0)
 //				p.ThrowError("invalid number of link arguments '" + id + "'");
 			ExeConst& c = result.Create<ExeConst>();
-			c.value = Raw(String("\"/").Cat() << UrlEncode(Join(*part, "/")) << '\"');
+			String l = "\"/";
+			for(int i = 0; i < (*part).GetCount(); i++) {
+				if(i)
+					l << '/';
+				l << UrlEncode((*part)[i]);
+			}
+			l << '\"';
+			c.value = Raw(l);
 		}
 		else
 		if(p.Char('.')) {

@@ -8,10 +8,12 @@ enum { DISPATCH_VARARGS = -1 };
 struct DispatchNode : Moveable<DispatchNode> {
 	VectorMap<String, int> subnode;
 	void   (*view)(Http&);
-	String method;
 	int    argpos;
+	int    method;
+	
+	enum { GET, POST };
 
-	DispatchNode() { view = NULL; argpos = Null; }
+	DispatchNode() { view = NULL; argpos = Null; method = GET; }
 };
 
 static Vector<DispatchNode>& sDispatchMap()
@@ -55,7 +57,8 @@ Vector<String> *GetUrlViewLinkParts(const String& id)
 String MakeLink(void (*view)(Http&), const Vector<Value>& arg)
 {
 	int q = sViewIndex().Find((uintptr_t)view);
-	ASSERT(q >= 0); // -> Internal server error
+	if(q < 0)
+		throw Exc("Invalid view");
 	if(q < 0)
 		return String();
 	StringBuffer out;
@@ -63,16 +66,23 @@ String MakeLink(void (*view)(Http&), const Vector<Value>& arg)
 	return out;
 }
 
-void RegisterView0(void (*view)(Http&), const char *id, const char *path, bool primary)
+void RegisterView0(void (*view)(Http&), const char *id, String path, bool primary)
 {
 	LLOG("RegisterView " << path);
 	Vector<String>& linkpart = sLinkMap().GetAdd(id);
 	sViewIndex().FindAdd((uintptr_t)view);
 	Vector<DispatchNode>& DispatchMap = sDispatchMap();
+	int method = DispatchNode::GET;
+	int q = path.Find(':');
+	if(q >= 0) {
+		if(path.Mid(q + 1) == "POST")
+			method = DispatchNode::POST;
+		path = path.Mid(0, q);
+	}
 	Vector<String> h = Split(path, '/');
 	if(DispatchMap.GetCount() == 0)
 		DispatchMap.Add();
-	int q = 0;
+	q = 0;
 	int linkargpos = 0;
 	for(int i = 0; i < h.GetCount(); i++) {
 		String s = h[i];
@@ -95,10 +105,7 @@ void RegisterView0(void (*view)(Http&), const char *id, const char *path, bool p
 		}
 		else {
 			if(primary)
-				if(linkpart.GetCount() && (byte)*linkpart.Top() >= 32)
-					linkpart.Top() << '/' << s;
-				else
-					linkpart.Add(s);
+				linkpart.Add(s);
 			q = n.subnode.Get(s, -1);
 			if(q < 0) {
 				q = DispatchMap.GetCount();
@@ -109,16 +116,70 @@ void RegisterView0(void (*view)(Http&), const char *id, const char *path, bool p
 		}
 	}
 	ASSERT_(!DispatchMap[q].view, "duplicate view " + String(path));
+	DDUMP(method);
+	DDUMPC(linkpart);
 	DispatchMap[q].view = view;
-	DumpDispatchMap();
+	DispatchMap[q].method = method;
+//	DumpDispatchMap();
+}
+
+struct ViewData {
+	void (*view)(Http&);
+	String id;
+	String path;
+};
+
+static Array<ViewData>& sViewData()
+{
+	static Array<ViewData> x;
+	return x;
 }
 
 void RegisterView(void (*view)(Http&), const char *id, const char *path)
 {
-	ASSERT_(sViewIndex().Find((uintptr_t)view) < 0, "duplicate view function registration " + String(id));
-	Vector<String> h = Split(path, ';');
-	for(int i = 0; i < h.GetCount(); i++)
-		RegisterView0(view, id, h[i], i == 0);
+	Array<ViewData>& v = sViewData();
+	ViewData& w = v.Add();
+	w.view = view;
+	w.id = id;
+	w.path = path;
+}
+
+static VectorMap<String, String>& sViewVar()
+{
+	static VectorMap<String, String> x;
+	return x;
+}
+
+void SetViewVar(const char *id, const char *value)
+{
+	sViewVar().GetAdd(id) = value;
+}
+
+static String& sRoot()
+{
+	static String x;
+	return x;
+}
+
+void SetViewRoot(const char *root)
+{
+	sRoot() = root;
+}
+
+void FinalizeViews()
+{
+	Array<ViewData>& w = sViewData();
+	for(int i = 0; i < w.GetCount(); i++) {
+		const ViewData& v = w[i];
+		ASSERT_(sViewIndex().Find((uintptr_t)v.view) < 0, "duplicate view function registration " + String(v.id));
+		DDUMP(v.path);
+		DDUMP(ReplaceVars(sRoot() + '/' + v.path, sViewVar(), '$'));
+		Vector<String> h = Split(ReplaceVars(sRoot() + '/' + v.path, sViewVar(), '$'), ';');
+		DDUMPC(h);
+		for(int i = 0; i < h.GetCount(); i++)
+			RegisterView0(v.view, v.id, h[i], i == 0);
+	}
+	w.Clear();
 }
 
 struct BestDispatch {
@@ -130,34 +191,34 @@ struct BestDispatch {
 	BestDispatch(Vector<String>& arg) : arg(arg) { matched_parts = -1; matched_params = 0; view = NULL; }
 };
 
-void GetBestDispatch(const Vector<String>& h, int ii, const DispatchNode& n, Vector<String>& arg,                     
+void GetBestDispatch(int method,
+                     const Vector<String>& part, int ii, const DispatchNode& n, Vector<String>& arg,                     
                      BestDispatch& bd, int matched_parts, int matched_params)
 {
 	Vector<DispatchNode>& DispatchMap = sDispatchMap();
-	if(ii >= h.GetCount()) {
-		if(n.view && (matched_parts > bd.matched_parts ||
-		              matched_parts == bd.matched_parts && matched_params > bd.matched_params)) {
+	if(ii >= part.GetCount()) {
+		if(n.view && n.method == method &&
+		   (matched_parts > bd.matched_parts ||
+		    matched_parts == bd.matched_parts && matched_params > bd.matched_params)) {
 			bd.arg <<= arg;
 			bd.view = n.view;
 			bd.matched_parts = matched_parts;
 		}
-		if(h.GetCount() == 0) {
-			int q = n.subnode.Find(String());
-			while(q >= 0) {
-				const DispatchNode& an = DispatchMap[n.subnode[q]];
-				if(an.argpos == DISPATCH_VARARGS && an.view) {
-					bd.view = an.view;
-					bd.arg.Clear();
-					break;
-				}
-				q = n.subnode.FindNext(q);
+		int q = n.subnode.Find(String());
+		while(q >= 0) {
+			const DispatchNode& an = DispatchMap[n.subnode[q]];
+			if(an.argpos == DISPATCH_VARARGS && an.view && an.method == method) {
+				bd.view = an.view;
+				bd.arg.Clear();
+				break;
 			}
+			q = n.subnode.FindNext(q);
 		}
 		return;
 	}
-	int qq = n.subnode.Get(h[ii], -1);
+	int qq = n.subnode.Get(part[ii], -1);
 	if(qq >= 0)
-		GetBestDispatch(h, ii + 1, DispatchMap[qq], arg, bd, matched_parts + 1, matched_params);
+		GetBestDispatch(method, part, ii + 1, DispatchMap[qq], arg, bd, matched_parts + 1, matched_params);
 	int q = n.subnode.Find(String());
 	while(q >= 0) {
 		int qq = n.subnode[q];
@@ -166,10 +227,10 @@ void GetBestDispatch(const Vector<String>& h, int ii, const DispatchNode& n, Vec
 		int apos = an.argpos;
 		LLOG(" *" << qq << " apos: " << apos);
 		if(apos == DISPATCH_VARARGS) {
-			if(an.view && (matched_parts > bd.matched_parts ||
-			               matched_parts == bd.matched_parts && matched_params > bd.matched_params)) {
+			if(an.view && an.method == method &&
+			   (matched_parts > bd.matched_parts || matched_parts == bd.matched_parts && matched_params > bd.matched_params)) {
 				bd.arg <<= arg;
-				bd.arg.Append(h, ii, h.GetCount() - ii);
+				bd.arg.Append(part, ii, part.GetCount() - ii);
 				bd.view = an.view;
 				bd.matched_parts = matched_parts;
 			}
@@ -177,13 +238,13 @@ void GetBestDispatch(const Vector<String>& h, int ii, const DispatchNode& n, Vec
 		else {
 			String pv;
 			if(IsNull(apos))
-				arg.Add(h[ii]);
+				arg.Add(part[ii]);
 			else {
 				String& at = arg.At(apos);
 				pv = at;
-				at = h[ii];
+				at = part[ii];
 			}
-			GetBestDispatch(h, ii + 1, an, arg, bd, matched_parts, matched_params + 1);
+			GetBestDispatch(method, part, ii + 1, an, arg, bd, matched_parts, matched_params + 1);
 			if(!IsNull(apos))
 				arg[apos] = pv;
 		}
@@ -200,12 +261,21 @@ void Http::Dispatch(Socket& socket)
 		content = socket.ReadCount(len);
 		LLOG(content);
 		Cout() << method << " " << uri << "\n";
+		request_content_type = GetHeader("content-type");
+		String rc = ToLower(request_content_type);
+		bool post = method == "POST";
+		if(post)
+			if(rc.StartsWith("application/x-www-form-urlencoded"))
+				ParseRequest(content);
+			else
+			if(rc.StartsWith("multipart/"))
+				ReadMultiPart(content);
 		int q = uri.Find('?');
 		if(q >= 0) {
-			ParseRequest(~uri + q + 1);
+			if(!post)
+				ParseRequest(~uri + q + 1);
 			uri.Trim(q);
 		}
-		uri = UrlDecode(uri);
 		for(int i = hdrfield.Find("cookie"); i >= 0; i = hdrfield.FindNext(i)) {
 			const String& h = hdrfield[i];
 			int q = 0;
@@ -225,21 +295,15 @@ void Http::Dispatch(Socket& socket)
 				q++;
 			}
 		}
-		request_content_type = GetHeader("content-type");
-		String rc = ToLower(request_content_type);
-		if(method == "POST")
-			if(rc.StartsWith("application/x-www-form-urlencoded"))
-				ParseRequest(content);
-			else
-			if(rc.StartsWith("multipart/"))
-				ReadMultiPart(content);
 		DUMPM(var);
-		Vector<String> h = Split(uri, '/');
-		DUMPC(h);
+		Vector<String> part = Split(uri, '/');
+		for(int i = 0; i < part.GetCount(); i++)
+			part[i] = UrlDecode(part[i]);
+		DUMPC(part);
 		Vector<String> a;
 		BestDispatch bd(arg);
 		if(DispatchMap.GetCount())
-			GetBestDispatch(h, 0, DispatchMap[0], a, bd, 0, 0);
+			GetBestDispatch(post ? DispatchNode::POST : DispatchNode::GET, part, 0, DispatchMap[0], a, bd, 0, 0);
 		DUMPC(arg);
 		if(bd.view) {
 			try {
@@ -251,6 +315,17 @@ void Http::Dispatch(Socket& socket)
 				code = 500;
 				code_text = "Internal server error";
 			}
+			catch(Exc e) {
+				response << "Internal server error<br>"
+				         << e;
+				code = 500;
+				code_text = "Internal server error";
+			}
+		}
+		else {
+			response << "Page not found";
+			code = 404;
+			code_text = "Not found";
 		}
 		String r;
 		if(redirect.GetCount()) {

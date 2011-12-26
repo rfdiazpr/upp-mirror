@@ -61,39 +61,26 @@ VectorMap<String, String> GetTemplateDefs(const char *file)
 	return def;
 }
 
-int CharFilter20toHash(int c)
-{
-	return c == 20 ? '#' : c;
-}
-
 int CharFilterIsCrLf(int c)
 {
 	return c == '\r' || c == '\n' ? c : 0;
 }
 
-String GetPreprocessedTemplate(const String& name)
+String ReplaceVars(const String& src, const VectorMap<String, String>& def, int chr)
 {
-	String id = "MAIN";
-	String file = name;
-	int q = file.Find(':');
-	if(q >= 0) {
-		id = file.Mid(q + 1);
-		file = file.Mid(0, q);
-	}
 	Index<String> expanded;
-	VectorMap<String, String> def = GetTemplateDefs(file);
-	String r = def.Get(id, Null);
+	String r = src;
 	bool again;
 	do {
 		again = false;
 		String rr;
 		const char *s = ~r;
 		for(;;) {
-			const char *q = strchr(s, '#');
+			const char *q = strchr(s, chr);
 			if(q) {
 				rr.Cat(s, q);
 				CParser p(q + 1);
-				if(p.Char('#') || !p.IsId())
+				if(p.Char(chr) || !p.IsId())
 					rr << (char)20;
 				else {
 					String id = p.ReadId();
@@ -115,6 +102,24 @@ String GetPreprocessedTemplate(const String& name)
 		r = rr;
 	}
 	while(again);
-	r = Filter(r, CharFilter20toHash);
+	return r;
+}
+
+int CharFilter20toHash(int c)
+{
+	return c == 20 ? '#' : c;
+}
+
+String GetPreprocessedTemplate(const String& name)
+{
+	String id = "MAIN";
+	String file = name;
+	int q = file.Find(':');
+	if(q >= 0) {
+		id = file.Mid(q + 1);
+		file = file.Mid(0, q);
+	}
+	VectorMap<String, String> def = GetTemplateDefs(file);
+	String r = Filter(ReplaceVars(def.Get(id, Null), def, '#'), CharFilter20toHash);
 	return Join(Split(r, CharFilterIsCrLf), "\r\n");
 }

@@ -72,3 +72,9 @@ void RegisterView(void (*view)(Http&), const char *id, const char *path);
 Vector<String> *GetUrlViewLinkParts(const String& id);
 
 String MakeLink(void (*view)(Http&), const Vector<Value>& arg);
+
+void FinalizeViews(); // Remove later
+
+void SetViewRoot(const char *root);
+void SetViewVar(const char *id, const char *value);
+

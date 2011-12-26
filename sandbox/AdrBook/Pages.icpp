@@ -5,7 +5,7 @@ URL_VIEW(Picture, "person/*/picture")
 	http.Content("image/jpeg", LoadFile(ConfigFile(http[0] + ".data")));
 }
 
-URL_VIEW(HomePage, "stránčička.html")
+URL_VIEW(HomePage, "$base/stránčička.html")
 {
 	ValueArray person;
 	SqlBool where;
@@ -57,7 +57,7 @@ URL_VIEW(InsertTestData, "testdata")
 	http.Redirect(HomePage);
 }
 
-URL_VIEW(SubmitNew, "submit")
+URL_VIEW(SubmitNew, "submit:POST")
 {
 	SQL * Insert(PERSON)
 			(FIRSTNAME, http["firstname"])
@@ -74,7 +74,7 @@ URL_VIEW(New, "new")
 	http("EDIT", 0).Render("AdrBook/Dialog.witz");
 }
 
-URL_VIEW(SubmitEdit, "submit/edit/*")
+URL_VIEW(SubmitEdit, "submit/edit/*:POST")
 {
 	int id = atoi(http[0]);
 	SQL * Update(PERSON)

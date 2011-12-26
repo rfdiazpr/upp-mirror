@@ -250,6 +250,7 @@ Value Compiler::ExeLink::Eval(Vector<Value>& stack, StringBuffer& out) const
 	v.SetCount(arg.GetCount());
 	for(int i = 0; i < arg.GetCount(); i++)
 		v[i] = arg[i].Eval(stack, out);
+	DDUMPC(*part);
 	out << "\"";
 	MakeLink(out, *part, v);
 	out << "\"";

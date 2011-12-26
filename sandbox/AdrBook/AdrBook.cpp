@@ -50,6 +50,11 @@ CONSOLE_APP_MAIN
 	sch.SaveNormal();
 
 	sqlite3.ThrowOnError();
+	
+	SetViewRoot("root");
+	SetViewVar("base", "asdfasdf");
+	
+	FinalizeViews();
 
 	LOG("About to start");
 #ifdef PLATFORM_WIN32

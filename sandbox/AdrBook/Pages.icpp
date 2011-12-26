@@ -59,12 +59,15 @@ URL_VIEW(InsertTestData, "testdata")
 
 URL_VIEW(SubmitNew, "submit:POST")
 {
+	SQL * http.Insert(PERSON);
+/*
 	SQL * Insert(PERSON)
 			(FIRSTNAME, http["firstname"])
 			(LASTNAME, http["lastname"])
 			(EMAIL, http["email"])
 			(SEX, http["sex"])
 	;
+*/
 	SaveFile(ConfigFile(AsString(SQL.GetInsertedId()) + ".data"), http["file"]);
 	http.Redirect(HomePage);
 }
@@ -77,6 +80,8 @@ URL_VIEW(New, "new")
 URL_VIEW(SubmitEdit, "submit/edit/*:POST")
 {
 	int id = atoi(http[0]);
+	SQL * http.Update(PERSON).Where(ID == atoi(http[0]));
+/*
 	SQL * Update(PERSON)
 			(FIRSTNAME, http["firstname"])
 			(LASTNAME, http["lastname"])
@@ -84,6 +89,7 @@ URL_VIEW(SubmitEdit, "submit/edit/*:POST")
 			(SEX, http["sex"])
 			.Where(ID == atoi(http[0]));
 	;
+*/
 	String file = http["file"];
 	if(file.GetCount())
 		SaveFile(ConfigFile(AsString(id) + ".data"), file);
@@ -103,10 +109,7 @@ URL_VIEW(Edit, "person/*/edit")
 	}
 	http
 		("ID", id)
-		("FIRSTNAME", sql[FIRSTNAME])
-		("LASTNAME", sql[LASTNAME])
-		("EMAIL", sql[EMAIL])
-		("SEX", sql[SEX])
+		(sql)
 		("EDIT", 1)
 	.Render("AdrBook/Dialog.witz");
 }

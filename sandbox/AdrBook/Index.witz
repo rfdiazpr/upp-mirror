@@ -23,18 +23,18 @@ $for(i in PERSON)
 	  <td>$i.EMAIL</td>
 	  <td>$(i.SEX == "M" ? "Male" : "Female")</td>
 	  <td><a href=$Edit(i.ID)>Edit</a> <a href=$Delete(i.ID)>Delete</a>
-	  	$if(i.HASPICTURE) <a href=$Picture(i.ID)>Show picture</a> $endif
+	  	$if(i.HASPICTURE) <a href=$Picture(i.ID)>Show picture</a> $/
 	  </td>
 	</tr>
-$endfor
+$/
 </table>
 <p/>
 <a href=$New>Insert new person</a>
 <a href=$InsertTestData>Insert test data</a>
 $for(i in PAGES)
 	<a href=$HomePage({"page":i, "search":search, "perpage":perpage})>$(i + 1)</a>
-$endfor
+$/
 Per page:
 $for(i in [10, 20, 50, 100, 250])
 	<a href=$HomePage({"page":page, "search":search, "perpage":i})>$(i)</a>
-$endfor
+$/

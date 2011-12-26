@@ -43,6 +43,13 @@ public:
 	Http& operator<<(const String& s)                 { response << s; return *this; }
 	
 	Http& operator()(const char *id, const Value& v)  { var.Add(id, v); return *this; }
+	Http& operator()(const ValueMap& map);
+
+	Http&     operator()(const Sql& sql);
+	Http&     operator()(Fields rec);
+	SqlUpdate Update(SqlId table);
+	SqlInsert Insert(SqlId table);
+
 	Http& Render(const String& template_name);
 	
 	Http& SetRawCookie(const char *id, const String& value,

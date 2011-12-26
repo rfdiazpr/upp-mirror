@@ -333,7 +333,8 @@ One<Exe> Compiler::Block()
 					c.ontrue = Block();
 					if(p.Id("else"))
 						c.onfalse = Block();
-					p.PassId("endif");
+					if(!p.Char('/'))
+						p.PassId("endif");
 				}
 				else
 				if(p.Id("for")) {
@@ -352,10 +353,11 @@ One<Exe> Compiler::Block()
 					forvar.SetCount(q);
 					if(p.Id("else"))
 						c.onempty = Block();
-					p.PassId("endfor");
+					if(!p.Char('/'))
+						p.PassId("endfor");
 				}
 				else
-				if(p.IsId("else") || p.IsId("endif") || p.IsId("endfor"))
+				if(p.IsId("else") || p.IsId("endif") || p.IsId("endfor") || p.IsChar('/'))
 					return result;
 				else
 					blk.item.Add(Prim().Detach());

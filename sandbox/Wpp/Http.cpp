@@ -230,5 +230,4 @@ void MakeLink(StringBuffer& out, const Vector<String>& part, const Vector<Value>
 				out << UrlEncode(AsString(m.GetKeys()[i])) << '=' << UrlEncode(AsString(m.GetValues()[i]));
 			}
 		}
-	
 }

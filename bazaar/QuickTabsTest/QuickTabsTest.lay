@@ -1,5 +1,0 @@
-LAYOUT(QuickTabsLayout, 516, 419)
-	ITEM(EditString, file, HSizePosZ(3, 3).TopPosZ(4, 19))
-	ITEM(Option, stacking, SetLabel(t_("Stacking")).LeftPosZ(3, 96).TopPosZ(25, 16))
-END_LAYOUT
-

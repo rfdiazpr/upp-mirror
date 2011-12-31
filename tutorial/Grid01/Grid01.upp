@@ -1,9 +1,0 @@
-uses
-	CtrlLib,
-	GridCtrl;
-
-file
-	main.cpp;
-
-mainconfig
-	"" = "GUI";

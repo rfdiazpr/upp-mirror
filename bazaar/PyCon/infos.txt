@@ -1,2 +1,0 @@
-some infos about execution modes
-http://boost.cppll.jp/HEAD/libs/python/doc/tutorial/doc/using_the_interpreter.html

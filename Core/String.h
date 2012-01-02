@@ -144,8 +144,8 @@ public:
 };
 
 class String0 : Moveable<String0> {
-	enum { SMALL, MEDIUM = 31 };
-	enum { KIND = 14, SLEN = 15, LLEN = 2 };
+	enum { SMALL = 0, MEDIUM = 31 }; // SMALL has to be 0 because of GetSpecial
+	enum { KIND = 14, SLEN = 15, LLEN = 2, SPECIAL = 13 };
 
 #if defined(_DEBUG) && defined(COMPILER_GCC)
 	int          len;
@@ -205,10 +205,19 @@ class String0 : Moveable<String0> {
 
 	static String0::Rc voidptr[2];
 
-	void Swap(String0& b)                           { UPP::Swap(q[0], b.q[0]); UPP::Swap(q[1], b.q[1]); Dsyn(); b.Dsyn(); }
+	void Swap(String0& b)         { UPP::Swap(q[0], b.q[0]); UPP::Swap(q[1], b.q[1]); Dsyn(); b.Dsyn(); }
+	
+	void SetSpecial(byte value)   { ASSERT(IsSmall() && GetCount() == 0); chr[SPECIAL] = value; }
+	byte GetSpecial() const       { return (chr[SLEN] | chr[KIND]) == 0 ? chr[SPECIAL] : 0; }
+#ifdef CPU_LITTLE_ENDIAN
+	bool IsSpecial(byte v) const  { return w[3] == MAKELONG(MAKEWORD(0, v), 0); }
+#else
+	bool IsSpecial(byte v) const  { return w[3] == MAKELONG(0, MAKEWORD(v, 0)); }
+#endif
 
 	friend class String;
 	friend class StringBuffer;
+	friend class Value;
 
 protected:
 	void Zero()                  { q[0] = q[1] = 0; Dsyn(); }
@@ -304,7 +313,7 @@ class String : public Moveable<String, AString<String0> > {
 #endif
 
 	void AssignLen(const char *s, int slen);
-
+	
 public:
 	const String& operator+=(char c)                       { Cat(c); return *this; }
 	const String& operator+=(const char *s)                { Cat(s); return *this; }

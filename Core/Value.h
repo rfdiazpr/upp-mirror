@@ -82,20 +82,48 @@ public:
 		friend class Value;
 	};
 
+	struct Sval {
+		bool       (*IsNull)(const void *p);
+		void       (*Serialize)(void *p, Stream& s);
+		unsigned   (*GetHashValue)(const void *p);
+		bool       (*IsEqual)(const void *p1, const void *p2);
+		bool       (*IsPolyEqual)(const void *p, const Value& v);
+		String     (*AsString)(const void *p);
+		void       (*Copy)(void *t, const void *s);
+		void       (*Destroy)(void *t);
+	};
+	
 protected:
 	static VectorMap<dword, Void* (*)(Stream& s) >& Typemap();
+	static Sval *map[256];
 
-	Void    *ptr;
-
+	String   data;
+	Void    *&ptr()                  { ASSERT(IsLarge()); return *(Void **)&data; }
+	Void     *ptr() const            { ASSERT(IsLarge()); return *(Void **)&data; }
+	
 	void     SetVoidVal();
+	bool     IsString() const        { return data.GetSpecial() == 0; }
+	bool     IsLarge() const         { return data.GetSpecial() == 255; }
+	void     InitLarge(Void *p)      { data.SetSpecial(255); ptr() = p; }
+
+	template <class T>
+	void     InitSmall0(const T& init);
+
+	template <class T>
+	void     InitSmall(const T& init);
+	
+	template <class T>
+	T&       GetSmall() const        { return *(T*)&data; }
+	
+	int      GetOtherInt() const;
 
 public:
 	static  void Register(dword w, Void* (*c)(Stream& s)) init_;
 	
-	dword    GetType() const         { return ptr->GetType(); }
+	dword    GetType() const;
 	bool     IsError() const         { return GetType() == ERROR_V; }
 	bool     IsVoid() const          { return GetType() == VOID_V || IsError(); }
-	bool     IsNull() const          { return ptr->IsNull(); }
+	bool     IsNull() const;
 
 	template <class T>
 	bool     Is() const;
@@ -105,14 +133,15 @@ public:
 	operator Date() const;
 	operator Time() const;
 	operator double() const;
-	operator int() const;
+	operator int() const             { return data.IsSpecial(INT_V) ? GetSmall<int>() : GetOtherInt(); }
+
 	operator int64() const;
 	operator bool() const;
 
 	Value(const String& s);
 	Value(const WString& s);
 	Value(const char *s);
-	Value(int i);
+	Value(int i)                     { InitSmall0(i); }
 	Value(int64 i);
 	Value(double d);
 	Value(bool b);
@@ -141,8 +170,8 @@ public:
 	Value();
 	~Value();
 
-	Value(Void *p)                        { ptr = p; }
-	const Void *GetVoidPtr() const        { return ptr; }
+	Value(Void *p)                        { InitLarge(ptr()); }
+	const Void *GetVoidPtr() const        { ASSERT(IsLarge()); return ptr(); }
 };
 
 #define VALUE_COMPARE(T) \
@@ -260,11 +289,49 @@ dword GetValueTypeNo() { return ValueTypeNo((T*)NULL); }
 
 template <class T>
 bool IsType(const Value& x, T* = 0)           { return GetValueTypeNo<T>() == x.GetType(); }
-
 template <class T>
 inline bool Value::Is() const
 {
 	return IsType<T>(*this);
+}
+
+template <class T>
+struct SvoFn {
+	static bool       IsNull(const void *p)                      { return UPP::IsNull(*(T *)p); }
+	static void       Serialize(void *p, Stream& s)              { s % *(T*)p; }
+	static unsigned   GetHashValue(const void *p)                { return UPP::GetHashValue(*(T*)p); }
+	static bool       IsEqual(const void *p1, const void *p2)    { return *(T*)p1 == *(T*)p2; }
+	static bool       IsPolyEqual(const void *p, const Value& v) { return UPP::IsPolyEqual(*(T*)p, v); }
+	static String     AsString(const void *p)                    { return UPP::AsString(*(T*)p); }
+	static void       Copy(void *t, const void *s)               { *(T*)t = *(T*)s; }
+	static void       Destroy(void *t)                           { ((T*)t)->T::~T(); }
+};
+
+#define SVO_FN(id, T) \
+	static Value::Sval id[] = { \
+		SvoFn<T>::IsNull, SvoFn<T>::Serialize, SvoFn<T>::GetHashValue, SvoFn<T>::IsEqual, \
+		SvoFn<T>::IsPolyEqual, SvoFn<T>::AsString, SvoFn<T>::Copy, SvoFn<T>::Destroy \
+	};
+
+
+template <class T>
+void Value::InitSmall0(const T& init)
+{
+	int typeno = GetValueTypeNo<T>();
+	ASSERT(typeno >= 0 && typeno < 256);
+	data.SetSpecial(typeno);
+	new(&data) T(init);
+}
+
+template <class T>
+void Value::InitSmall(const T& init)
+{
+	SVO_FN(sval, T)
+	int typeno = GetValueTypeNo<T>();
+	ASSERT(typeno >= 0 && typeno < 256);
+	map[typeno] = sval;
+	data.SetSpecial(typeno);
+	new(&data) T(init);
 }
 
 template <class T>

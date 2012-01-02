@@ -9,26 +9,58 @@ const Nuller Null;
 #define LTIMING(x) // RTIMING(x)
 
 unsigned Value::GetHashValue() const {
-	return IsNull() ? 0 : ptr->GetHashValue();
+	ASSERT(IsLarge());
+	return IsNull() ? 0 : ptr()->GetHashValue();
 }
 
 Value& Value::operator=(const Value& v) {
 	if(this == &v) return *this;
-	ptr->Release();
-	ptr = v.ptr;
-	ptr->Retain();
+	if(IsLarge())
+		ptr()->Release();
+	data.Clear();
+	if(v.IsString())
+		data = v.data;
+	else {
+		ASSERT(v.IsLarge());
+		InitLarge(v.ptr());
+		ptr()->Retain();
+	}
 	return *this;
 }
 
 Value::Value(const Value& v) {
-	ptr = v.ptr;
-	ptr->Retain();
+	if(IsString())
+		data = v.data;
+	else {
+		ASSERT(IsLarge());
+		InitLarge(v.ptr());
+		ptr()->Retain();
+	}
+}
+
+dword Value::GetType() const
+{
+	byte st = data.GetSpecial();
+	return st == 255 ? ptr()->GetType() : st == 0 ? STRING_V : st == 3 ? VOID_V : st;
+}
+
+bool Value::IsNull() const
+{
+	if(IsString())
+		return data.GetCount() == 0;
+	int type = data.GetSpecial();
+	if(type == 3)
+		return true;
+	if(type != 255)
+		return map[type]->IsNull(&data);
+	return ptr()->IsNull();
 }
 
 void Value::SetVoidVal()
 {
-	ptr = &Single<Void>();
-	ptr->Retain();
+	ASSERT(IsLarge());
+	ptr() = &Single<Void>();
+	ptr()->Retain();
 }
 
 Value::Value() {
@@ -36,42 +68,49 @@ Value::Value() {
 }
 
 Value::~Value() {
-	ptr->Release();
+	int t = data.GetSpecial();
+	if(t == 255)
+		ptr()->Release();
+	else
+	if(t)
+		map[t]->Destroy(&data);
 }
 
 bool Value::operator==(const Value& v) const {
-	if(ptr == v.ptr) return true;
+	if(IsLarge() && ptr() == v.ptr()) return true;
 	bool an = IsNull();
 	bool bn = v.IsNull();
 	if(an || bn) return an && bn;
+	if(IsString() && v.IsString())
+		return data == v.data;
 	if(GetType() == v.GetType())
-		return ptr->IsEqual(v.ptr);
-	return ptr->IsPolyEqual(v) || v.ptr->IsPolyEqual(*this);
+		return ptr()->IsEqual(v.ptr());
+	return ptr()->IsPolyEqual(v) || v.ptr()->IsPolyEqual(*this);
 }
 
-Value::Value(const String& s)  { ptr = new RichValueRep<String>(s); }
-Value::Value(const WString& s) { ptr = new RichValueRep<WString>(s); }
-Value::Value(const char *s)    { ptr = new RichValueRep<String>(s); }
-Value::Value(int i)            { ptr = new RichValueRep<int>(i); }
-Value::Value(int64 i)          { ptr = new RichValueRep<int64>(i); }
-Value::Value(double d)         { ptr = new RichValueRep<double>(d); }
-Value::Value(bool b)           { ptr = new RichValueRep<bool>(b); }
-Value::Value(Date d)           { ptr = new RichValueRep<Date>(d); }
-Value::Value(Time t)           { ptr = new RichValueRep<Time>(t); }
-Value::Value(const Nuller&)    { ptr = new RichValueRep<int>(Null); }
+Value::Value(const String& s)  { data = s; }
+Value::Value(const WString& s) { InitLarge(new RichValueRep<WString>(s)); }
+Value::Value(const char *s)    { data = s; }
+Value::Value(int64 i)          { InitLarge(new RichValueRep<int64>(i)); }
+Value::Value(double d)         { InitLarge(new RichValueRep<double>(d)); }
+Value::Value(bool b)           { InitLarge(new RichValueRep<bool>(b)); }
+Value::Value(Date d)           { InitLarge(new RichValueRep<Date>(d)); }
+Value::Value(Time t)           { InitLarge(new RichValueRep<Time>(t)); }
+Value::Value(const Nuller&)    { InitLarge(new RichValueRep<int>(Null)); }
 
 Value::operator String() const
 {
+	if(IsString())
+		return data;
 	if(IsNull()) return Null;
-	return GetType() == WSTRING_V ? RichValue<WString>::Extract(*this).ToString()
-		                          : RichValue<String>::Extract(*this);
+	return RichValue<WString>::Extract(*this).ToString();
 }
 
 Value::operator WString() const
 {
 	if(IsNull()) return Null;
 	return GetType() == WSTRING_V ? RichValue<WString>::Extract(*this)
-		                          : RichValue<String>::Extract(*this).ToWString();
+		                          : RichValue<String>::Extract(*this).ToWString();//!!!
 }
 
 Value::operator Date() const
@@ -97,11 +136,10 @@ Value::operator double() const
 		                        : RichValue<double>::Extract(*this);
 }
 
-Value::operator int() const
+int Value::GetOtherInt() const
 {
 	if(IsNull()) return Null;
-	return GetType() == INT_V   ? RichValue<int>::Extract(*this)
-	     : GetType() == BOOL_V ? int(RichValue<bool>::Extract(*this))
+	return GetType() == BOOL_V ? int(RichValue<bool>::Extract(*this))
 	     : GetType() == INT64_V ? int(RichValue<int64>::Extract(*this))
 		                        : int(RichValue<double>::Extract(*this));
 }
@@ -126,6 +164,14 @@ VectorMap<dword, Value::Void *(*)(Stream& s)>& Value::Typemap()
 	static VectorMap<dword, Value::Void *(*)(Stream& s)> x;
 	return x;
 }
+
+SVO_FN(s_String, String);
+SVO_FN(s_int, int);
+
+Value::Sval *Value::map[256] = {
+	s_String,
+	s_int,
+};
 
 Value::Void *ValueArrayDataCreate(Stream& s)
 {
@@ -168,11 +214,12 @@ void Value::Serialize(Stream& s) {
 	dword type;
 	if(s.IsLoading()) {
 		s / type;
-		ptr->Release();
+		ASSERT(IsLarge());
+		ptr()->Release();
 		typedef Void* (*vp)(Stream& s);
 		vp *cr = Typemap().FindPtr(type);
 		if(cr)
-			ptr = (**cr)(s);
+			ptr() = (**cr)(s);
 		else {
 			SetVoidVal();
 			if(type != VOID_V && type != ERROR_V)
@@ -183,7 +230,8 @@ void Value::Serialize(Stream& s) {
 		type = GetType();
 		ASSERT_(!type || type == ERROR_V || type == UNKNOWN_V || Typemap().Find(type) >= 0, "Missing RichValueType<" + AsString(type) + ">::Register");
 		s / type;
-		ptr->Serialize(s);
+		ASSERT(IsLarge());
+		ptr()->Serialize(s);
 	}
 }
 
@@ -198,7 +246,9 @@ void Value::Register(dword w, Void* (*c)(Stream& s)) init_ {
 }
 
 String  Value::ToString() const {
-	return ptr->AsString();
+	if(IsString())
+		return data;
+	return ptr()->AsString();
 }
 
 class ValueErrorCls : public RichValueRep<String> {

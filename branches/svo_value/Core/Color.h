@@ -52,8 +52,8 @@ public:
 
 	Color(const Nuller&)               { SetNull(); }
 
-	operator Value() const             { return RichValue<Color>(*this); }
-	Color(const Value& q)              { color = RichValue<Color>::Extract(q).color; }
+	operator Value() const             { return Value(*this, true); }
+	Color(const Value& q)              { color = q.To<Color>().color; }
 
 	operator RGBA() const;
 	Color(RGBA rgba);

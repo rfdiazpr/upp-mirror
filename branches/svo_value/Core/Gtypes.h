@@ -354,7 +354,7 @@ struct Rect_ : Moveable< Rect_<T> > {
 	Rect_(const Nuller&)             { SetNull(); }
 
 	operator Value() const           { return RichValue<Rect_>(*this); }
-	/*explicit */Rect_(const Value& src) { *this = RichValue<Rect_>::Extract(src); }
+	Rect_(const Value& src)          { *this = RichValue<Rect_>::Extract(src); }
 
 	void     Serialize(Stream& s)    { s % left % top % right % bottom; }
 

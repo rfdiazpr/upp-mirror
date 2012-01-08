@@ -30,8 +30,8 @@ options(XGNU) -ffunction-sections;
 link(SOLARIS) "-Wl,-R -Wl,/usr/local/lib";
 
 file
-	config.h,
 	Core.h,
+	config.h,
 	Defs.h,
 	Cpu.cpp optimize_speed,
 	Mt.h,
@@ -98,7 +98,10 @@ file
 	TimeDate.h,
 	TimeDate.cpp optimize_speed,
 	Value.h,
+	Value.hpp,
 	Value.cpp optimize_speed,
+	ValueUtil.h,
+	ValueUtil.cpp,
 	Complex.h,
 	Format.h,
 	Format.cpp optimize_speed,

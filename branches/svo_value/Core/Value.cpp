@@ -8,155 +8,134 @@ const Nuller Null;
 
 #define LTIMING(x) // RTIMING(x)
 
-unsigned Value::GetHashValue() const {
-	ASSERT(IsLarge());
-	return IsNull() ? 0 : ptr()->GetHashValue();
+unsigned Value::GetOtherHashValue() const {
+	if(IsNull())
+		return 0;
+	byte st = data.GetSt();
+	if(st == REF)
+		return ptr()->GetHashValue();
+	return svo[st]->GetHashValue(&data);
+}
+
+void Value::RefRelease()
+{
+	ptr()->Release();
+}
+
+void Value::RefRetain()
+{
+	ptr()->Retain();
 }
 
 Value& Value::operator=(const Value& v) {
 	if(this == &v) return *this;
-	if(IsLarge())
-		ptr()->Release();
-	data.Clear();
-	if(v.IsString())
-		data = v.data;
-	else {
-		ASSERT(v.IsLarge());
-		InitLarge(v.ptr());
+	Free();
+	data = v.data;
+	if(IsRef())
 		ptr()->Retain();
-	}
 	return *this;
-}
-
-Value::Value(const Value& v) {
-	if(IsString())
-		data = v.data;
-	else {
-		ASSERT(IsLarge());
-		InitLarge(v.ptr());
-		ptr()->Retain();
-	}
 }
 
 dword Value::GetType() const
 {
-	byte st = data.GetSpecial();
-	return st == 255 ? ptr()->GetType() : st == 0 ? STRING_V : st == 3 ? VOID_V : st;
+	if(data.IsString())
+		return STRING_V;
+	byte st = data.GetSt();
+	return st == REF ? ptr()->GetType() : st == VOID ? VOID_V : st;
 }
 
 bool Value::IsNull() const
 {
 	if(IsString())
 		return data.GetCount() == 0;
-	int type = data.GetSpecial();
-	if(type == 3)
+	int st = data.GetSt();
+	if(st == VOID)
 		return true;
-	if(type != 255)
-		return map[type]->IsNull(&data);
-	return ptr()->IsNull();
+	if(st == REF)
+		return ptr()->IsNull();
+	return svo[st]->IsNull(&data);
 }
 
-void Value::SetVoidVal()
+bool Value::IsPolyEqual(const Value& v) const
 {
-	ASSERT(IsLarge());
-	ptr() = &Single<Void>();
-	ptr()->Retain();
-}
-
-Value::Value() {
-	SetVoidVal();
-}
-
-Value::~Value() {
-	int t = data.GetSpecial();
-	if(t == 255)
-		ptr()->Release();
-	else
-	if(t)
-		map[t]->Destroy(&data);
+	int st = data.GetSpecial();
+	if(st == REF)
+		return ptr()->IsPolyEqual(v);
+	if(svo[st] && svo[st]->IsPolyEqual(&data, v))
+		return true;
+	return IsNull() && v.IsNull();
 }
 
 bool Value::operator==(const Value& v) const {
-	if(IsLarge() && ptr() == v.ptr()) return true;
-	bool an = IsNull();
-	bool bn = v.IsNull();
-	if(an || bn) return an && bn;
 	if(IsString() && v.IsString())
 		return data == v.data;
-	if(GetType() == v.GetType())
+	if(GetType() != v.GetType())
+		return IsPolyEqual(v) || v.IsPolyEqual(*this);
+	int st = data.GetSpecial();
+	if(st == REF)
 		return ptr()->IsEqual(v.ptr());
-	return ptr()->IsPolyEqual(v) || v.ptr()->IsPolyEqual(*this);
+	if(st == VOID)
+		return v.IsVoid();
+	return svo[st]->IsEqual(&data, &v.data);
 }
 
-Value::Value(const String& s)  { data = s; }
-Value::Value(const WString& s) { InitLarge(new RichValueRep<WString>(s)); }
-Value::Value(const char *s)    { data = s; }
-Value::Value(int64 i)          { InitLarge(new RichValueRep<int64>(i)); }
-Value::Value(double d)         { InitLarge(new RichValueRep<double>(d)); }
-Value::Value(bool b)           { InitLarge(new RichValueRep<bool>(b)); }
-Value::Value(Date d)           { InitLarge(new RichValueRep<Date>(d)); }
-Value::Value(Time t)           { InitLarge(new RichValueRep<Time>(t)); }
-Value::Value(const Nuller&)    { InitLarge(new RichValueRep<int>(Null)); }
-
-Value::operator String() const
-{
-	if(IsString())
-		return data;
-	if(IsNull()) return Null;
-	return RichValue<WString>::Extract(*this).ToString();
-}
+Value::Value(const WString& s) { InitRef(new RichValueRep<WString>(s)); }
 
 Value::operator WString() const
 {
 	if(IsNull()) return Null;
 	return GetType() == WSTRING_V ? RichValue<WString>::Extract(*this)
-		                          : RichValue<String>::Extract(*this).ToWString();//!!!
+		                          : ((String)(*this)).ToWString();//!!!
 }
 
-Value::operator Date() const
+Date Value::GetOtherDate() const
 {
 	if(IsNull()) return Null;
-	return GetType() == DATE_V ? RichValue<Date>::Extract(*this)
-		                       : Date(RichValue<Time>::Extract(*this));
+	return GetSmall<Time>();
 }
 
-Value::operator Time() const
+Time Value::GetOtherTime() const
 {
 	if(IsNull()) return Null;
-	return GetType() == DATE_V ? ToTime(RichValue<Date>::Extract(*this))
-		                       : RichValue<Time>::Extract(*this);
+	return ToTime(GetSmall<Date>());	
 }
 
-Value::operator double() const
+String Value::GetOtherString() const
 {
 	if(IsNull()) return Null;
-	return GetType() == INT_V   ? double(RichValue<int>::Extract(*this))
-	     : GetType() == BOOL_V ? double(RichValue<bool>::Extract(*this))
-	     : GetType() == INT64_V ? double(RichValue<int64>::Extract(*this))
-		                        : RichValue<double>::Extract(*this);
+	return RichValue<WString>::Extract(*this).ToString();
 }
 
 int Value::GetOtherInt() const
 {
 	if(IsNull()) return Null;
-	return GetType() == BOOL_V ? int(RichValue<bool>::Extract(*this))
-	     : GetType() == INT64_V ? int(RichValue<int64>::Extract(*this))
-		                        : int(RichValue<double>::Extract(*this));
+	return data.IsSpecial(BOOL_V) ? (int)GetSmall<bool>() :
+	       data.IsSpecial(INT64_V) ? (int)GetSmall<int64>() :
+	       (int)GetSmall<double>();
 }
 
-Value::operator int64() const
+int64 Value::GetOtherInt64() const
 {
 	if(IsNull()) return Null;
-	return GetType() == INT_V   ? int64(RichValue<int>::Extract(*this))
-	     : GetType() == BOOL_V ? int64(RichValue<bool>::Extract(*this))
-	     : GetType() == INT64_V ? RichValue<int64>::Extract(*this)
-		                        : int64(RichValue<double>::Extract(*this));
+	return data.IsSpecial(BOOL_V) ? (int64)GetSmall<bool>() :
+	       data.IsSpecial(INT_V) ? (int64)GetSmall<int>() :
+	       (int64)GetSmall<double>();
 }
 
-Value::operator bool() const
+double Value::GetOtherDouble() const
 {
-	if(IsNull()) return false;
-	return operator int();
+	if(IsNull()) return Null;
+	return data.IsSpecial(BOOL_V) ? (double)GetSmall<bool>() :
+	       data.IsSpecial(INT_V) ? (double)GetSmall<int>() :
+	       (double)GetSmall<int64>();
+}
+
+bool Value::GetOtherBool() const
+{
+	if(IsNull()) return Null;
+	return data.IsSpecial(DOUBLE_V) ? (bool)GetSmall<double>() :
+	       data.IsSpecial(INT_V) ? (bool)GetSmall<int>() :
+	       (bool)GetSmall<int64>();
 }
 
 VectorMap<dword, Value::Void *(*)(Stream& s)>& Value::Typemap()
@@ -167,10 +146,47 @@ VectorMap<dword, Value::Void *(*)(Stream& s)>& Value::Typemap()
 
 SVO_FN(s_String, String);
 SVO_FN(s_int, int);
+SVO_FN(s_double, double);
+SVO_FN(s_int64, int64);
+SVO_FN(s_bool, bool);
+SVO_FN(s_date, Date);
+SVO_FN(s_time, Time);
 
-Value::Sval *Value::map[256] = {
-	s_String,
-	s_int,
+struct SvoVoidFn {
+	static bool       IsNull(const void *p)                      { return true; }
+	static void       Serialize(void *p, Stream& s)              {}
+	static unsigned   GetHashValue(const void *p)                { return 0; }
+	static bool       IsEqual(const void *p1, const void *p2)    { return true; }
+	static bool       IsPolyEqual(const void *p, const Value& v) { return false; }
+	static String     AsString(const void *p)                    { return String(); }
+};
+
+static Value::Sval s_void[] = { \
+	SvoVoidFn::IsNull, SvoVoidFn::Serialize, SvoVoidFn::GetHashValue, SvoVoidFn::IsEqual,
+	SvoVoidFn::IsPolyEqual, SvoVoidFn::AsString
+};
+
+Value::Sval *Value::svo[256] = {
+	s_String, // STRING_V
+	s_int, // INT_V
+
+	s_double, //DOUBLE_V  = 2;
+	s_void, //VOID_V  = 3;
+	s_date, //DATE_V    = 4;
+	s_time, //TIME_V    = 5;
+
+	NULL, //ERROR_V   = 6;
+
+	NULL, //VALUE_V   = 7;
+
+	NULL, //WSTRING_V = 8;
+
+	NULL, //VALUEARRAY_V = 9;
+
+	s_int64, //INT64_V  = 10;
+	s_bool, //BOOL_V   = 11;
+
+	NULL, //VALUEMAP_V   = 12;
 };
 
 Value::Void *ValueArrayDataCreate(Stream& s)
@@ -190,14 +206,14 @@ Value::Void *ValueMapDataCreate(Stream& s)
 static void sRegisterStd()
 {
 	ONCELOCK {
-		RichValue<int>::Register();
-		RichValue<int64>::Register();
-		RichValue<bool>::Register();
-		RichValue<double>::Register();
-		RichValue<String>::Register();
+//		RichValue<int>::Register();
+//		RichValue<int64>::Register();
+//		RichValue<bool>::Register();
+//		RichValue<double>::Register();
+//		RichValue<String>::Register();
 		RichValue<WString>::Register();
-		RichValue<Date>::Register();
-		RichValue<Time>::Register();
+//		RichValue<Date>::Register();
+//		RichValue<Time>::Register();
 		RichValue<Complex>::Register();
 		Value::Register(VALUEARRAY_V, ValueArrayDataCreate);
 		Value::Register(VALUEMAP_V, ValueMapDataCreate);
@@ -214,24 +230,44 @@ void Value::Serialize(Stream& s) {
 	dword type;
 	if(s.IsLoading()) {
 		s / type;
-		ASSERT(IsLarge());
-		ptr()->Release();
-		typedef Void* (*vp)(Stream& s);
-		vp *cr = Typemap().FindPtr(type);
-		if(cr)
-			ptr() = (**cr)(s);
+		Free();
+		int st = type == VOID_V ? VOID : type == STRING_V ? STRING : type;
+		if(st == STRING)
+			s % data;
+		else
+		if(st < 255 && svo[st]) {
+			data.SetSpecial(type);
+			svo[st]->Serialize(&data, s);
+		}
 		else {
-			SetVoidVal();
-			if(type != VOID_V && type != ERROR_V)
-				s.LoadError();
+			typedef Void* (*vp)(Stream& s);
+			vp *cr = Typemap().FindPtr(type);
+			if(cr)
+				InitRef((**cr)(s));
+			else {
+				Free();
+				data.SetSpecial(3);
+				if(type != VOID_V && type != ERROR_V)
+					s.LoadError();
+			}
 		}
 	}
 	else {
 		type = GetType();
-		ASSERT_(!type || type == ERROR_V || type == UNKNOWN_V || Typemap().Find(type) >= 0, "Missing RichValueType<" + AsString(type) + ">::Register");
 		s / type;
-		ASSERT(IsLarge());
-		ptr()->Serialize(s);
+		int st = data.GetSpecial();
+		ASSERT_(!type || type == ERROR_V || type == UNKNOWN_V || st == STRING ||
+		        (IsRef() ? Typemap().Find(type) >= 0 : st < 255 && svo[st]),
+		        AsString(type) + " is not registred for serialization");
+		if(st == VOID)
+			return;
+		if(st == STRING)
+			s % data;
+		else
+		if(IsRef())
+			ptr()->Serialize(s);
+		else
+			svo[st]->Serialize(&data, s);
 	}
 }
 
@@ -246,9 +282,14 @@ void Value::Register(dword w, Void* (*c)(Stream& s)) init_ {
 }
 
 String  Value::ToString() const {
+	if(IsNull())
+		return Null;
 	if(IsString())
 		return data;
-	return ptr()->AsString();
+	if(IsRef())
+		return ptr()->AsString();
+	int st = data.GetSpecial();
+	return svo[st]->AsString(&data);
 }
 
 class ValueErrorCls : public RichValueRep<String> {
@@ -281,451 +322,6 @@ const Value& ErrorValue() {
 String GetErrorText(const Value& v) {
 	ASSERT(IsError(v));
 	return ((RichValueRep<String> *)v.GetVoidPtr())->Get();
-}
-
-// ----------------------------------
-
-struct Ref::ValueRef : public RefManager {
-	virtual int   GetType()                            { return VALUE_V; }
-	virtual Value GetValue(const void *ptr)            { return *(Value *) ptr; }
-	virtual bool  IsNull(const void *ptr)              { return UPP::IsNull(*(Value *) ptr); }
-	virtual void  SetValue(void *ptr, const Value& v)  { *(Value *) ptr = v; }
-	virtual void  SetNull(void *ptr)                   { *(Value *) ptr = Null; }
-};
-
-Ref::Ref(String& s)  { ptr = &s; m = &Single< RichRef<String> >(); }
-Ref::Ref(WString& s) { ptr = &s; m = &Single< RichRef<WString> >(); }
-Ref::Ref(int& i)     { ptr = &i; m = &Single< RichRef<int> >(); }
-Ref::Ref(int64& i)   { ptr = &i; m = &Single< RichRef<int64> >(); }
-Ref::Ref(double& d)  { ptr = &d; m = &Single< RichRef<double> >(); }
-Ref::Ref(bool& b)    { ptr = &b; m = &Single< RichRef<bool> >(); }
-Ref::Ref(Date& d)    { ptr = &d; m = &Single< RichRef<Date> >(); }
-Ref::Ref(Time& t)    { ptr = &t; m = &Single< RichRef<Time> >(); }
-Ref::Ref(Value& v)   { ptr = &v; m = &Single< ValueRef >(); }
-
-// ----------------------------------
-
-bool ValueArray::Data::IsNull() const
-{
-	return this == &Single<ValueArray::NullData>();
-}
-
-void ValueArray::Data::Serialize(Stream& s)
-{
-	s % data;
-}
-
-unsigned ValueArray::Data::GetHashValue() const
-{
-	CombineHash w(data.GetCount());
-	for(int i = 0; i < data.GetCount(); i++)
-		w.Put(data[i].GetHashValue());
-	return w;
-}
-
-static bool sCmp(const Vector<Value>& a, const Vector<Value>& b)
-{
-	if(&a == &b) return true;
-	if(a.GetCount() != b.GetCount()) return false;
-	for(int i = 0; i < a.GetCount(); i++)
-		if(a[i] != b[i]) return false;
-	return true;
-}
-
-bool ValueArray::Data::IsEqual(const Value::Void *p)
-{
-	return sCmp(((Data *)p)->data, data);
-}
-
-bool ValueArray::operator==(const ValueArray& v) const
-{
-	return sCmp(data->data, v.data->data);
-}
-
-static String sAsString(const Vector<Value>& v)
-{
-	String s;
-	s << "[";
-	for(int i = 0; i < v.GetCount(); i++) {
-		if(i) s << ", ";
-		s << v[i];
-	}
-	s << "]";
-	return s;
-}
-
-String ValueArray::Data::AsString() const
-{
-	return sAsString(data);
-}
-
-Vector<Value>& ValueArray::Create()
-{
-	data = new Data;
-	return data->data;
-}
-
-Vector<Value>& ValueArray::Clone() {
-	if(data->GetRefCount() != 1) {
-		Data *d = new Data;
-		d->data <<= data->data;
-		data->Release();
-		data = d;
-	}
-	return data->data;
-}
-
-void ValueArray::Init0()
-{
-	data = &Single<NullData>();
-	data->Retain();
-}
-
-ValueArray::ValueArray(const ValueArray& v) {
-	data = v.data;
-	data->Retain();
-}
-
-ValueArray::ValueArray(pick_ Vector<Value>& v)
-{
-	Create() = v;
-}
-
-ValueArray::ValueArray(const Vector<Value>& v, int deep)
-{
-	Create() <<= v;
-}
-
-ValueArray::operator Value() const {
-	data->Retain();
-	return Value(data);
-}
-
-ValueArray::ValueArray(const Value& src)
-{
-	if(!UPP::IsNull(src)) {
-		if(IsType<ValueMap>(src)) {
-			ValueArray v = ValueMap(src);
-			data = v.data;
-			data->Retain();
-			return;
-		}
-		else {
-			ASSERT(dynamic_cast<const ValueArray::Data *>(src.GetVoidPtr()));
-			data = (ValueArray::Data *)src.GetVoidPtr();
-		}
-	}
-	else
-		data = &Single<NullData>();
-	data->Retain();
-}
-
-void ValueArray::Serialize(Stream& s) {
-	if(s.IsLoading()) {
-		data->Release();
-		Create();
-	}
-	data->Serialize(s);
-}
-
-ValueArray::~ValueArray() {
-	ASSERT(data->GetRefCount() > 0);
-	data->Release();
-}
-
-ValueArray& ValueArray::operator=(const ValueArray& v) {
-	v.data->Retain();
-	data->Release();
-	data = v.data;
-	return *this;
-}
-
-void ValueArray::SetCount(int n) {
-	Clone().SetCount(n);
-}
-
-void ValueArray::SetCount(int n, const Value& v)
-{
-	Clone().SetCount(n, v);
-}
-
-void ValueArray::Clear() {
-	Clone().Clear();
-}
-
-void ValueArray::Add(const Value& v) {
-	Clone().Add(v);
-}
-
-void ValueArray::Set(int i, const Value& v) {
-	ASSERT(i >= 0);
-	Clone().At(i) = v;
-}
-
-void ValueArray::Remove(int i, int count)
-{
-	Clone().Remove(i, count);
-}
-
-void ValueArray::Insert(int i, const ValueArray& va)
-{
-	if(va.data == data) {
-		ValueArray va2 = va;
-		Clone().Insert(i, va2.Get());
-	}
-	else
-		Clone().Insert(i, va.Get());
-}
-
-const Value& ValueArray::Get(int i) const {
-	ASSERT(i >= 0 && i < GetCount());
-	return data->data[i];
-}
-
-template<>
-String AsString(const ValueArray& v) {
-	return sAsString(v.Get());
-}
-
-bool ValueMap::Data::IsNull() const {
-	return this == &Single<ValueMap::NullData>();
-}
-
-void ValueMap::Data::Serialize(Stream& s) {
-	s % key % value;
-}
-
-unsigned ValueMap::Data::GetHashValue() const {
-	CombineHash w(key.GetCount());
-	for(int i = 0; i < key.GetCount(); i++)
-		w.Put(key[i].GetHashValue());
-	w.Put(value.GetHashValue());
-	return w;
-}
-
-static bool sIsEqual(const Index<Value>& a, const Index<Value>& b) {
-	if(&a == &b) return true;
-	if(a.GetCount() != b.GetCount()) return false;
-	for(int i = 0; i < a.GetCount(); i++) {
-		if(a[i] != b[i]) return false;
-	}
-	return true;
-}
-
-bool ValueMap::Data::IsEqual(const Value::Void *p) {
-	return sIsEqual(((Data *)p)->key, key) && ((Data *)p)->value == value;
-}
-
-bool ValueMap::operator==(const ValueMap& v) const {
-	return sIsEqual(data->key, v.data->key) && data->value == v.data->value;
-}
-
-String ValueMap::Data::AsString() const
-{
-	String s;
-	s << "{ ";
-	for(int i = 0; i < key.GetCount(); i++) {
-		if(i) s << ", ";
-		s << key[i] << ": " << value[i];
-	}
-	s << " }";
-	return s;
-}
-
-ValueMap::Data& ValueMap::Create()
-{
-	data = new Data;
-	return *data;
-}
-
-ValueMap::Data& ValueMap::Clone() {
-	if(data->GetRefCount() != 1) {
-		Data *d = new Data;
-		d->key <<= data->key;
-		d->value = data->value;
-		data->Release();
-		data = d;
-	}
-	return *data;
-}
-
-void ValueMap::Init0()
-{
-	data = &Single<NullData>();
-	data->Retain();
-}
-
-ValueMap::ValueMap(const ValueMap& v)
-{
-	data = v.data;
-	data->Retain();
-}
-
-ValueMap::ValueMap(pick_ Index<Value>& k, pick_ Vector<Value>& v)
-{
-	Data& d = Create();
-	d.key = k;
-	d.value = ValueArray(v);
-}
-
-ValueMap::ValueMap(const Index<Value>& k, const Vector<Value>& v, int deep)
-{
-	Data& d = Create();
-	d.key <<= k;
-	Vector<Value> _v(v, 0);
-	d.value = ValueArray(_v);
-}
-
-ValueMap::operator Value() const {
-	data->Retain();
-	return Value(data);
-}
-
-ValueMap::ValueMap(const Value& src)
-{
-	if(!IsNull(src)) {
-		if(IsType<ValueArray>(src)) {
-			ValueArray va = src;
-			Init0();
-			for(int i = 0; i < va.GetCount(); i++)
-				Add(i, va[i]);
-			return;
-		}
-		else {
-			ASSERT(dynamic_cast<const ValueMap::Data *>(src.GetVoidPtr()));
-			data = (ValueMap::Data *)src.GetVoidPtr();
-		}
-	}
-	else
-		data = &Single<NullData>();
-	data->Retain();
-}
-
-void ValueMap::Serialize(Stream& s) {
-	if(s.IsLoading()) {
-		data->Release();
-		Create();
-	}
-	data->Serialize(s);
-}
-
-ValueMap::~ValueMap() {
-	ASSERT(data->GetRefCount() > 0);
-	data->Release();
-}
-
-ValueMap& ValueMap::operator=(const ValueMap& v) {
-	v.data->Retain();
-	data->Release();
-	data = v.data;
-	return *this;
-}
-
-void ValueMap::Clear() {
-	data->Release();
-	Init0();
-}
-
-void ValueMap::Add(const Value& key, const Value& value) {
-	Data& d = Clone();
-	d.key.Add(key);
-	d.value.Add(value);
-}
-
-void ValueMap::Set(const Value& key, const Value& value)
-{
-	Data& d = Clone();
-	int i = d.key.Find(key);
-	if(i >= 0)
-		d.value.Set(i, value);
-	else {
-		d.key.Add(key);
-		d.value.Add(value);
-	}
-}
-
-void ValueMap::SetAt(int i, const Value& v) {
-	Clone().value.Set(i, v);
-}
-
-void ValueMap::SetKey(int i, const Value& k) {
-	Clone().key.Set(i, k);
-}
-
-void ValueMap::Remove(int i)
-{
-	Data& d = Clone();
-	d.key.Remove(i);
-	d.value.Remove(i);
-}
-
-const Value& ValueMap::operator[](const Value& key) const
-{
-	int q = data->key.Find(key);
-	return q >= 0 ? data->value[q] : ErrorValue();
-}
-
-// ----------------------------------
-
-int StdValueCompare(const Value& a, const Value& b, int language)
-{
-	LTIMING("StdValueCompare");
-
-	bool na = IsNull(a), nb = IsNull(b);
-	if(na || nb)
-		return !na ? 1 : !nb ? -1 : 0;
-	dword ta = a.GetType(), tb = b.GetType();
-	if((ta == INT_V || ta == BOOL_V) && (tb == INT_V || tb == BOOL_V))
-		return cmp<int>(a, b);
-	if((ta == BOOL_V || ta == INT_V || ta == INT64_V || ta == DOUBLE_V)
-	&& (tb == BOOL_V || tb == INT_V || tb == INT64_V || tb == DOUBLE_V))
-		return cmp<double>(a, b);
-	if(ta == DATE_V && tb == DATE_V)
-		return cmp<Date>(a, b);
-	if((ta == DATE_V || ta == TIME_V) && (tb == DATE_V || tb == TIME_V))
-		return cmp<Time>(a, b);
-	if((ta == STRING_V || ta == WSTRING_V) && (tb == STRING_V || tb == WSTRING_V))
-		return GetLanguageInfo(language).Compare(WString(a), WString(b));
-	return cmp<int>(ta, tb);
-}
-
-int StdValueCompare(const Value& a, const Value& b)
-{
-	return StdValueCompare(a, b, GetCurrentLanguage());
-}
-
-int StdValueCompareDesc(const Value& a, const Value& b, int language)
-{
-	return -StdValueCompare(a, b, language);
-}
-
-int StdValueCompareDesc(const Value& a, const Value& b)
-{
-	return -StdValueCompare(a, b);
-}
-
-StdValueOrder::StdValueOrder(int l) : language(l) {}
-
-bool StdValueOrder::operator()(const Value& a, const Value& b) const
-{
-	return StdValueCompare(a, b, language) < 0;
-}
-
-bool FnValueOrder::operator()(const Value& a, const Value& b) const
-{
-	return (*fn)(a, b) < 0;
-}
-
-bool StdValuePairOrder::operator()(const Value& k1, const Value& v1, const Value& k2, const Value& v2) const
-{
-	int q = StdValueCompare(k1, k2, language);
-	if(q) return q < 0;
-	return StdValueCompare(v1, v2, language);
-}
-
-bool FnValuePairOrder::operator()(const Value& keya, const Value& valuea, const Value& keyb, const Value& valueb) const
-{
-	return (*fn)(keya, valuea, keyb, valueb) < 0;
 }
 
 END_UPP_NAMESPACE

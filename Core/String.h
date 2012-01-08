@@ -144,13 +144,8 @@ public:
 };
 
 class String0 : Moveable<String0> {
-	enum { SMALL = 0, MEDIUM = 31 }; // SMALL has to be 0 because of GetSpecial
+	enum { SMALL = 0, MEDIUM = 31 }; // SMALL has to be 0 because of GetSpecial and because is it ending zero
 	enum { KIND = 14, SLEN = 15, LLEN = 2, SPECIAL = 13 };
-
-#if defined(_DEBUG) && defined(COMPILER_GCC)
-	int          len;
-	const char  *s;
-#endif
 
 	struct Rc {
 		Atomic refcount;
@@ -170,6 +165,12 @@ class String0 : Moveable<String0> {
 		dword  w[4];
 		qword  q[2];
 	};
+
+
+#if defined(_DEBUG) && defined(COMPILER_GCC)
+	int          len;
+	const char  *s;
+#endif
 
 #ifdef _DEBUG
 	void Dsyn();
@@ -207,13 +208,12 @@ class String0 : Moveable<String0> {
 
 	void Swap(String0& b)         { UPP::Swap(q[0], b.q[0]); UPP::Swap(q[1], b.q[1]); Dsyn(); b.Dsyn(); }
 	
-	void SetSpecial(byte value)   { ASSERT(IsSmall() && GetCount() == 0); chr[SPECIAL] = value; }
+	void SetSpecial(byte st)      { ASSERT(IsSmall() && GetCount() == 0); w[3] = MAKE4B(0, st, 0, 0); }
 	byte GetSpecial() const       { return (chr[SLEN] | chr[KIND]) == 0 ? chr[SPECIAL] : 0; }
-#ifdef CPU_LITTLE_ENDIAN
-	bool IsSpecial(byte v) const  { return w[3] == MAKELONG(MAKEWORD(0, v), 0); }
-#else
-	bool IsSpecial(byte v) const  { return w[3] == MAKELONG(0, MAKEWORD(v, 0)); }
-#endif
+	byte GetSt() const            { return chr[SPECIAL]; }
+	bool IsSpecial() const        { return !v[7] && v[6]; }
+	bool IsString() const         { return !IsSpecial(); }
+	bool IsSpecial(byte st) const { return w[3] == MAKE4B(0, st, 0, 0); }
 
 	friend class String;
 	friend class StringBuffer;
@@ -497,7 +497,7 @@ template<>
 inline String AsString(const String& s)     { return s; }
 
 template<>
-inline unsigned GetHashValue(const String& s) { return memhash(~s, s.GetLength()); }
+inline unsigned GetHashValue(const String& s) { return s.GetHashValue(); }
 
 int CompareNoCase(const String& a, const String& b, byte encoding = 0);
 int CompareNoCase(const String& a, const char *b, byte encoding = 0);

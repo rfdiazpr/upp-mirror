@@ -241,6 +241,7 @@ NAMESPACE_UPP
 #include "Index.hpp"
 
 #include "Value.h"
+#include "ValueUtil.h"
 #include "Gtypes.h"
 #include "Color.h"
 #include "Complex.h"

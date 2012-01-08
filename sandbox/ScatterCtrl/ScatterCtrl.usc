@@ -1,0 +1,72 @@
+ctrl ScatterCtrl {
+	group "Extra";
+
+	GetMinSize() {sz.cx=150; sz.cy = 100; return sz; }
+	GetStdSize() {sz.cx=300; sz.cy = 200; return sz; }
+	
+	Frame  SetFrame @20;
+	Color  SetColor =:White @1;
+	Text SetTitle @5;
+	Font SetTitleFont @6;
+	Color SetTitleColor =:Black @7;
+	int H_Border =30 @2;
+	int V_Border =30 @3;
+	Color SetPlotAreaColor =:WhiteGray @4;
+	Text SetLabelX @8;
+	Text SetLabelY @9;
+	Font SetLabelsFont @10;
+	Color SetLabelsColor=:Black @11;
+	Color SetAxisColor =:Black @12;
+	int SetAxisWidth =6 @13;
+	Color SetGridColor=:Color(102,102,102);
+	int SetGridWidth=1;
+	bool ShowHGrid=true;
+	bool ShowVGrid=true;
+	bool ShowLegend=true;
+	int SetLegendWeight=80;	
+	bool SetFastViewX=false;
+	bool SetSequentialXAll=false;
+
+	Paint(w) {          
+		r = GetRect();
+		w.DrawRect(r, .SetColor);
+		DrawCtrlFrame(w, r, .SetFrame);
+		sz = GetSize();
+		textsize = GetTextSize(.SetTitle, .SetTitleFont); 
+		if(.SetTitle=="") 
+			textsize.cy = 0;
+		hMargin = 0;
+		if(.H_Border > 0) 
+			hMargin = .H_Border;		
+		vMargin = 0;
+		if(.V_Border > 0) 
+			vMargin = .V_Border;
+		w.DrawRect(hMargin-1, vMargin - 1 + textsize.cy, sz.cx-2*hMargin+2, -2*vMargin + 2 - textsize.cy + sz.cy, :Gray);
+		aw = 6;
+		if(.SetAxisWidth >= 6) 
+			aw = .SetAxisWidth;
+		
+		w.DrawRect(hMargin-int(aw/6), vMargin+textsize.cy,
+					-2*hMargin+int(aw/6)+sz.cx, -2*vMargin+int(aw/6)-textsize.cy+sz.cy,
+					.SetAxisColor);
+					
+		gx0 = hMargin;
+		gy0 = vMargin + textsize.cy;					
+		gwidth = sz.cx-2*hMargin;
+		gheight = -2*vMargin - textsize.cy + sz.cy;
+		
+		w.DrawRect(gx0, gy0, gwidth, gheight, .SetPlotAreaColor);
+		w.DrawLine(gx0, 			  gy0 + gheight,      gx0 + gwidth*0.25, gy0 + gheight*0.5, 2, :SLtRed);
+		w.DrawLine(gx0 + gwidth*0.25, gy0 + gheight*0.5,  gx0 + gwidth*0.5,  gy0 + gheight*0.75, 2, :SLtRed);
+		w.DrawLine(gx0 + gwidth*0.5,  gy0 + gheight*0.75, gx0 + gwidth*0.75, gy0 + gheight*0.25, 2, :SLtRed);
+		w.DrawLine(gx0 + gwidth*0.75, gy0 + gheight*0.25, gx0 + gwidth, 	 gy0 + gheight*0.5, 2, :SLtRed);
+		
+		w.DrawText((sz.cx - textsize.cx)/2, 4, .SetTitle, .SetTitleFont, .SetTitleColor);
+		lx = GetTextSize(.SetLabelX,.SetLabelsFont);
+		ly = GetTextSize(.SetLabelY,.SetLabelsFont);
+		
+		w.DrawText(int((sz.cx-lx.cx)/2), sz.cy -(ly.cy+2),  .SetLabelX,.SetLabelsFont, .SetLabelsColor);
+		w.DrawText(2,int((sz.cy+textsize.cy+ly.cx)/2), 900, .SetLabelY,.SetLabelsFont, .SetLabelsColor);	
+	}
+};
+

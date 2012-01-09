@@ -72,6 +72,8 @@ template <class T>
 inline bool Value::Is() const
 {
 	dword t = GetValueTypeNo<T>();
+	if(t > 0x80000000)
+		return IsRef() && dynamic_cast<const RawValueRep<T> *>(GetVoidPtr());
 	if(t == STRING_V)
 		return IsString();
 	if(t == VOID_V)
@@ -79,7 +81,7 @@ inline bool Value::Is() const
 	if(t == INT_V || t == INT64_V || t == DOUBLE_V || t == BOOL_V ||
 	   t == DATE_V || t == TIME_V)
 	   	return Is((byte)t);
-	return t < 255 && Is((byte)t) || Is(REF) && ptr()->GetType() == t;
+	return t < 255 && Is((byte)t) || IsRef() && ptr()->GetType() == t;
 }
 
 template <class T>
@@ -100,3 +102,9 @@ void Value::Register()
 {
 	RichValue<T>::Register();
 }
+
+template <class T> // Deprecated
+bool IsTypeRaw(const Value& value, T * = 0) {
+	return value.Is<T>();
+}
+

@@ -435,7 +435,7 @@ public:
 };
 
 template <class T>
-inline Value RichToValue(const T& data)                          { return RichValue<T>(data); }
+inline Value RichToValue(const T& data)                   { return RichValue<T>(data); }
 
 Value        ErrorValue(const char *s);
 Value        ErrorValue(const String& s);

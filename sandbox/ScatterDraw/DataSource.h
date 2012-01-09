@@ -9,10 +9,18 @@ class DataSource {
 public:
 	DataSource() : isParam(false) {}
 	virtual ~DataSource() {};	
+	virtual double z(int id) 	{return Null;};
 	virtual double y(int id) 	{return Null;};
 	virtual double x(int id) 	{return Null;};
 	virtual int GetCount()		{return Null;};
 	bool IsParam()				{return isParam;};
+	virtual double MinZ() {
+		double minVal = -DOUBLE_NULL;
+		for (int i = 0; i < GetCount(); ++i)
+			if (minVal > z(i))
+				minVal = z(i);
+		return minVal;
+	}	
 	virtual double MinY() {
 		double minVal = -DOUBLE_NULL;
 		for (int i = 0; i < GetCount(); ++i)
@@ -27,6 +35,13 @@ public:
 				minVal = x(i);
 		return minVal;
 	}
+	virtual double MaxZ() {
+		double maxVal = DOUBLE_NULL;
+		for (int i = 0; i < GetCount(); ++i)
+			if (maxVal < z(i))
+				maxVal = z(i);
+		return maxVal;
+	}		
 	virtual double MaxY() {
 		double maxVal = DOUBLE_NULL;
 		for (int i = 0; i < GetCount(); ++i)
@@ -40,7 +55,7 @@ public:
 			if (maxVal < x(i))
 				maxVal = x(i);
 		return maxVal;
-	}	
+	}			
 	virtual double AvgY() {
 		double ret = 0;
 		for (int i = 0; i < GetCount(); ++i)
@@ -64,7 +79,8 @@ private:
 	double x0, deltaX;
 	
 public:
-	CArrayY(double *yData, int numData, double x0, double deltaX) : yData(yData), numData(numData), x0(x0), deltaX(deltaX) {};
+	CArrayY(double *yData, int numData, double x0, double deltaX) : 
+								yData(yData), numData(numData), x0(x0), deltaX(deltaX) {};
 	virtual inline double y(int id) 	{return yData[id];};
 	virtual inline double x(int id) 	{return id*deltaX + x0;};
 	virtual inline int GetCount()		{return numData;};
@@ -77,6 +93,20 @@ private:
 
 public:
 	CArrayXY(double *xData, double *yData, int numData) : xData(xData), yData(yData), numData(numData) {};
+	virtual inline double y(int id)	{return yData[id];};
+	virtual inline double x(int id) {return xData[id];};
+	virtual inline int GetCount()	{return numData;};
+};
+
+class CArrayXYZ : public DataSource {
+private:
+	double *xData, *yData, *zData;
+	int numData;
+
+public:
+	CArrayXYZ(double *xData, double *yData, double *zData, int numData) : 
+								xData(xData), yData(yData), zData(zData), numData(numData) {};
+	virtual inline double z(int id)	{return zData[id];};
 	virtual inline double y(int id)	{return yData[id];};
 	virtual inline double x(int id) {return xData[id];};
 	virtual inline int GetCount()	{return numData;};

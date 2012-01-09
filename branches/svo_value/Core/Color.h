@@ -52,7 +52,7 @@ public:
 
 	Color(const Nuller&)               { SetNull(); }
 
-	operator Value() const             { return Value(*this, true); }
+	operator Value() const             { return SvoValue(*this); }
 	Color(const Value& q)              { color = q.To<Color>().color; }
 
 	operator RGBA() const;

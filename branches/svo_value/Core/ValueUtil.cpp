@@ -173,9 +173,7 @@ void ValueArray::Clear() {
 }
 
 void ValueArray::Add(const Value& v) {
-	DDUMP(v);
 	Clone().Add(v);
-	DDUMP(*this);
 }
 
 void ValueArray::Set(int i, const Value& v) {
@@ -351,7 +349,6 @@ void ValueMap::Add(const Value& key, const Value& value) {
 	Data& d = Clone();
 	d.key.Add(key);
 	d.value.Add(value);
-	DDUMP(d.value);
 }
 
 void ValueMap::Set(const Value& key, const Value& value)
@@ -384,7 +381,6 @@ void ValueMap::Remove(int i)
 const Value& ValueMap::operator[](const Value& key) const
 {
 	int q = data->key.Find(key);
-	DDUMP(data->value);
 	return q >= 0 ? data->value[q] : ErrorValue();
 }
 

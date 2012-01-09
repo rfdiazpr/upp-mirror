@@ -1,3 +1,6 @@
+template <class T> // deprecated, use member Is
+bool IsType(const Value& x, T* = 0)           { return x.Is<T>(); }
+
 template <class T>
 struct SvoFn {
 	static bool       IsNull(const void *p)                      { return UPP::IsNull(*(T *)p); }
@@ -43,8 +46,9 @@ T& Value::GetSmall() const
 }
 
 template <class T>
-const T& Value::To() const
+T Value::To() const
 {
+	dword t = GetValueTypeNo<T>();
 	if(IsRef())
 		return RichValue<T>::Extract(*this);
 	return GetSmall<T>();
@@ -53,8 +57,15 @@ const T& Value::To() const
 template <class T>
 inline bool Value::Is() const
 {
-	int t = GetValueTypeNo<T>();
-	return IsType<T>(*this);
+	dword t = GetValueTypeNo<T>();
+	if(t == STRING_V)
+		return IsString();
+	if(t == VOID_V)
+		return IsVoid();
+	if(t == INT_V || t == INT64_V || t == DOUBLE_V || t == BOOL_V ||
+	   t == DATE_V || t == TIME_V)
+	   	return Is((byte)t);
+	return t < 255 && Is((byte)t) || Is(REF) && ptr()->GetType() == t;
 }
 
 template <class T>

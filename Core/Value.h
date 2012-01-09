@@ -128,16 +128,16 @@ public:
 	template <class T>
 	bool     Is() const;
 	template <class T>
-	const T& To() const;
+	T        To() const;
 
-	operator String() const          { return data.IsString() ? data : GetOtherString(); }
+	operator String() const          { return IsString() ? data : GetOtherString(); }
 	operator WString() const;
-	operator Date() const            { return data.IsSpecial(DATE_V) ? GetSmall<Date>() : GetOtherDate(); }
-	operator Time() const            { return data.IsSpecial(TIME_V) ? GetSmall<Time>() : GetOtherTime(); }
-	operator double() const          { return data.IsSpecial(DOUBLE_V) ? GetSmall<double>() : GetOtherDouble(); }
-	operator int() const             { return data.IsSpecial(INT_V) ? GetSmall<int>() : GetOtherInt(); }
-	operator int64() const           { return data.IsSpecial(INT64_V) ? GetSmall<int64>() : GetOtherInt64(); }
-	operator bool() const            { return data.IsSpecial(BOOL_V) ? GetSmall<bool>() : GetOtherBool(); }
+	operator Date() const            { return Is(DATE_V) ? GetSmall<Date>() : GetOtherDate(); }
+	operator Time() const            { return Is(TIME_V) ? GetSmall<Time>() : GetOtherTime(); }
+	operator double() const          { return Is(DOUBLE_V) ? GetSmall<double>() : GetOtherDouble(); }
+	operator int() const             { return Is(INT_V) ? GetSmall<int>() : GetOtherInt(); }
+	operator int64() const           { return Is(INT64_V) ? GetSmall<int64>() : GetOtherInt64(); }
+	operator bool() const            { return Is(BOOL_V) ? GetSmall<bool>() : GetOtherBool(); }
 
 	Value(const String& s)           { data = s; }
 	Value(const WString& s);
@@ -180,6 +180,11 @@ public:
 	friend void Swap(Value& a, Value& b)  { Swap(a.data, b.data); }
 };
 
+template <class T>
+Value SvoValue(const T& x) {
+	return Value(x, false);
+}
+
 #define VALUE_COMPARE(T) \
 inline bool operator==(const Value& v, T x)   { return (T)v == x; } \
 inline bool operator==(T x, const Value& v)   { return (T)v == x; } \
@@ -215,15 +220,11 @@ inline bool IsFloatValueTypeNo(int q)    { return (dword)q == DOUBLE_V; }
 inline bool IsNumberValueTypeNo(int q)   { return IsIntegerValueTypeNo(q) || IsFloatValueTypeNo(q); }
 inline bool IsDateTimeValueTypeNo(int q) { return (dword)q == DATE_V || (dword)q == TIME_V; }
 
-inline bool IsVoid(const Value& v)     { return v.GetType() == VOID_V; }
-inline bool IsError(const Value& v)    { return v.GetType() == ERROR_V; }
-inline bool IsString(const Value& v)   { return v.GetType() == STRING_V || v.GetType() == WSTRING_V; }
-inline bool IsNumber(const Value& v)   { return v.GetType() == DOUBLE_V || v.GetType() == INT_V
-                                                || v.GetType() == INT64_V || v.GetType() == BOOL_V; }
-inline bool IsDateTime(const Value& v) { return v.GetType() == DATE_V || v.GetType() == TIME_V; }
-
-template <class T>
-bool IsType(const Value& x, T* = 0)           { return GetValueTypeNo<T>() == x.GetType(); }
+inline bool IsVoid(const Value& v)     { return v.IsVoid(); }
+inline bool IsError(const Value& v)    { return v.IsError(); }
+inline bool IsString(const Value& v)   { return v.Is<String>() || v.Is<WString>(); }
+inline bool IsNumber(const Value& v)   { return v.Is<double>() || v.Is<int>() || v.Is<int64>() || v.Is<bool>(); }
+inline bool IsDateTime(const Value& v) { return v.Is<Date>() || v.Is<Time>(); }
 
 template <class T>
 class RawValueRep : public Value::Void {

@@ -257,11 +257,6 @@ public:
 };
 
 template <class T>
-bool IsTypeRaw(const Value& value, T * = 0) {
-	return !IsVoid(value) && dynamic_cast<const RawValueRep<T> *>(value.GetVoidPtr());
-}
-
-template <class T>
 class RawValue : public Value {
 protected:
 	typedef RawValueRep<T> Rep;
@@ -274,7 +269,7 @@ public:
 		return Rep::Cast(v.GetVoidPtr())->Get();
 	}
 	static const T& Extract(const Value& v, const T& dflt) {
-		return IsTypeRaw<T>(v) ? Rep::Cast(v.GetVoidPtr())->Get() : dflt;
+		return v.Is<T>() ? Rep::Cast(v.GetVoidPtr())->Get() : dflt;
 	}
 };
 

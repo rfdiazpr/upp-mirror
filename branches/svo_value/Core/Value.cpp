@@ -19,6 +19,7 @@ unsigned Value::GetOtherHashValue() const {
 
 void Value::RefRelease()
 {
+	ASSERT(ptr()->GetType() >= 255 || !svo[ptr()->GetType()]); // Check that svo type is not registered as Ref
 	ptr()->Release();
 }
 

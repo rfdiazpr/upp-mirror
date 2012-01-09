@@ -120,7 +120,7 @@ Color Blend(Color c1, Color c2, int alpha)
 }
 
 INITBLOCK {
-	RichValue<Color>::Register();
+	Value::SvoRegister<Color>();
 }
 
 int  Grayscale(const Color& c)

@@ -41,14 +41,28 @@ void Value::InitSmall(const T& init)
 template <class T>
 T& Value::GetSmall() const
 {
-	ASSERT(data.IsSpecial((byte)GetValueTypeNo<T>()));
+	dword t = GetValueTypeNo<T>();
+	ASSERT(t < 255 && (t == STRING_V ? IsString() : Is((byte)t)));
 	return *(T*)&data;
+}
+
+template <class T>
+void Value::SvoRegister()
+{
+	dword t = GetValueTypeNo<T>();
+	ASSERT(t < 255);
+	SVO_FN(sval, T)
+	svo[t] = sval;
 }
 
 template <class T>
 T Value::To() const
 {
 	dword t = GetValueTypeNo<T>();
+	if(t == VALUEARRAY_V)
+		return *(T*)&ValueArray(*this);
+	if(t == VALUEMAP_V)
+		return *(T*)&ValueMap(*this);
 	if(IsRef())
 		return RichValue<T>::Extract(*this);
 	return GetSmall<T>();

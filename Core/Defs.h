@@ -333,6 +333,9 @@ inline int StaticTypeNo() {
 	return typeno;
 }
 
+template <class D, class S>
+inline D brutal_cast(const S& source) { return *(D *)&source; }
+
 class NoCopy {
 private:
 	NoCopy(const NoCopy&);

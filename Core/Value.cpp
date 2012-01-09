@@ -41,7 +41,7 @@ dword Value::GetType() const
 	if(data.IsString())
 		return STRING_V;
 	byte st = data.GetSt();
-	return st == REF ? ptr()->GetType() : st == VOID ? VOID_V : st;
+	return st == REF ? ptr()->GetType() : st == VOIDV ? VOID_V : st;
 }
 
 bool Value::IsNull() const
@@ -49,7 +49,7 @@ bool Value::IsNull() const
 	if(IsString())
 		return data.GetCount() == 0;
 	int st = data.GetSt();
-	if(st == VOID)
+	if(st == VOIDV)
 		return true;
 	if(st == REF)
 		return ptr()->IsNull();
@@ -74,7 +74,7 @@ bool Value::operator==(const Value& v) const {
 	int st = data.GetSpecial();
 	if(st == REF)
 		return ptr()->IsEqual(v.ptr());
-	if(st == VOID)
+	if(st == VOIDV)
 		return v.IsVoid();
 	return svo[st]->IsEqual(&data, &v.data);
 }
@@ -171,7 +171,7 @@ Value::Sval *Value::svo[256] = {
 	s_int, // INT_V
 
 	s_double, //DOUBLE_V  = 2;
-	s_void, //VOID_V  = 3;
+	s_void, //VOIDV_V  = 3;
 	s_date, //DATE_V    = 4;
 	s_time, //TIME_V    = 5;
 
@@ -231,12 +231,12 @@ void Value::Serialize(Stream& s) {
 	if(s.IsLoading()) {
 		s / type;
 		Free();
-		int st = type == VOID_V ? VOID : type == STRING_V ? STRING : type;
+		int st = type == VOID_V ? VOIDV : type == STRING_V ? STRING : type;
 		if(st == STRING)
 			s % data;
 		else
 		if(st < 255 && svo[st]) {
-			data.SetSpecial(type);
+			data.SetSpecial((byte)type);
 			svo[st]->Serialize(&data, s);
 		}
 		else {
@@ -259,7 +259,7 @@ void Value::Serialize(Stream& s) {
 		ASSERT_(!type || type == ERROR_V || type == UNKNOWN_V || st == STRING ||
 		        (IsRef() ? Typemap().Find(type) >= 0 : st < 255 && svo[st]),
 		        AsString(type) + " is not registred for serialization");
-		if(st == VOID)
+		if(st == VOIDV)
 			return;
 		if(st == STRING)
 			s % data;

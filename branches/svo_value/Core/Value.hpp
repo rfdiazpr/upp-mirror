@@ -38,7 +38,7 @@ void Value::InitSmall(const T& init)
 template <class T>
 T& Value::GetSmall() const
 {
-	ASSERT(data.IsSpecial(GetValueTypeNo<T>()));
+	ASSERT(data.IsSpecial((byte)GetValueTypeNo<T>()));
 	return *(T*)&data;
 }
 
@@ -54,8 +54,6 @@ template <class T>
 inline bool Value::Is() const
 {
 	int t = GetValueTypeNo<T>();
-	if(st == 
-	return GetValueTypeNo<T>() == x.GetType();
 	return IsType<T>(*this);
 }
 

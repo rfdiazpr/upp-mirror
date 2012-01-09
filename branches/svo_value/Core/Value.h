@@ -82,7 +82,7 @@ public:
 	};
 	
 protected:
-	enum { STRING = 0, REF = 255, VOID = 3 };
+	enum { STRING = 0, REF = 255, VOIDV = 3 };
 
 	static VectorMap<dword, Void* (*)(Stream& s) >& Typemap();
 	static Sval *svo[256];
@@ -122,7 +122,7 @@ public:
 	
 	dword    GetType() const;
 	bool     IsError() const         { return GetType() == ERROR_V; }
-	bool     IsVoid() const          { return Is(VOID) || IsError(); }
+	bool     IsVoid() const          { return Is(VOIDV) || IsError(); }
 	bool     IsNull() const;
 
 	template <class T>
@@ -168,7 +168,7 @@ public:
 	const Value& operator[](const char *key) const;
 	const Value& operator[](const Id& key) const;
 
-	Value()                               { data.SetSpecial(VOID); }
+	Value()                               { data.SetSpecial(VOIDV); }
 	~Value()                              { if(IsRef()) RefRelease(); }
 
 	Value(Void *p)                        { InitRef(p); }

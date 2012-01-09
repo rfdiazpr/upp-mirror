@@ -117,8 +117,18 @@ protected:
 
 	bool     IsPolyEqual(const Value& v) const;
 
+	template <class T>
+	Value(const T& value, bool pod);
+	
+	template <class T> friend Value SvoValue(const T& x);
+
 public:
 	static  void Register(dword w, Void* (*c)(Stream& s)) init_;
+
+	template <class T>
+	static  void Register()          { RichValue<T>::Register(); }
+	template <class T>
+	static  void SvoRegister();
 	
 	dword    GetType() const;
 	bool     IsError() const         { return GetType() == ERROR_V; }
@@ -171,12 +181,12 @@ public:
 	Value()                               { data.SetSpecial(VOIDV); }
 	~Value()                              { if(IsRef()) RefRelease(); }
 
+	template <class T>
+	static bool FitsSvo()                 { return sizeof(T) <= 8; }
+
 	Value(Void *p)                        { InitRef(p); }
 	const Void *GetVoidPtr() const        { ASSERT(IsRef()); return ptr(); }
-	
-	template <class T>
-	Value(const T& value, bool pod);
-	
+
 	friend void Swap(Value& a, Value& b)  { Swap(a.data, b.data); }
 };
 

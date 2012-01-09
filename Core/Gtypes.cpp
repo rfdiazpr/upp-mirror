@@ -2,14 +2,23 @@
 
 NAMESPACE_UPP
 
-INITBLOCK {
-	Point p;
-	RichValue<Point>::Register();
-	RichValue<Point64>::Register();
-	RichValue<Pointf>::Register();
-	RichValue<Size>::Register();
-	RichValue<Size64>::Register();
-	RichValue<Sizef>::Register();
+template <class T>
+static void sReg()
+{
+	if(Value::FitsSvo<T>())
+		Value::SvoRegister<T>();
+	else
+		Value::Register<T>();
+}
+
+INITBLOCK
+{
+	sReg<Point>();
+	sReg<Point64>();
+	sReg<Pointf>();
+	sReg<Size>();
+	sReg<Size64>();
+	sReg<Sizef>();
 	RichValue<Rect>::Register();
 	RichValue<Rect64>::Register();
 	RichValue<Rectf>::Register();

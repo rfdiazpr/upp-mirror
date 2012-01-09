@@ -60,9 +60,9 @@ T Value::To() const
 {
 	dword t = GetValueTypeNo<T>();
 	if(t == VALUEARRAY_V)
-		return *(T*)&ValueArray(*this);
+		return brutal_cast<T>(ValueArray(*this)); // This only gets invoked when T is ValueArray
 	if(t == VALUEMAP_V)
-		return *(T*)&ValueMap(*this);
+		return brutal_cast<T>(ValueMap(*this)); // This only gets invoked when T is ValueMap
 	if(IsRef())
 		return RichValue<T>::Extract(*this);
 	return GetSmall<T>();
@@ -93,4 +93,10 @@ unsigned Value::GetHashValue() const
 {
 	return IsString() ? data.GetCount() ? data.GetHashValue() : 0
 	                  : GetOtherHashValue();
+}
+
+template <class T>
+void Value::Register()
+{
+	RichValue<T>::Register();
 }

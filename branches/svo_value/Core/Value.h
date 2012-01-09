@@ -126,7 +126,7 @@ public:
 	static  void Register(dword w, Void* (*c)(Stream& s)) init_;
 
 	template <class T>
-	static  void Register()          { RichValue<T>::Register(); }
+	static  void Register();
 	template <class T>
 	static  void SvoRegister();
 	

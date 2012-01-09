@@ -1,8 +1,5 @@
 enum _CNULL { CNULL };
 
-template <class D, class S>
-inline D brutal_cast(const S& source) { return *(D *)&source; }
-
 #include "Cbgen.h"
 #include "Callback0.h"
 #include "Callback1.h"

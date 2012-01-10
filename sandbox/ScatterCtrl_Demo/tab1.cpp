@@ -10,7 +10,7 @@ Tab1::Tab1()
 	HSizePos().VSizePos();
 	
 	s1 << Pointf(10, 26) << Pointf(20, 37) << Pointf(30, 31) << Pointf(40, 33) << Pointf(50, 28);
-	scatter.AddSeries(s1).Legend("Series 1").Opacity(0.3);
+	scatter.AddSeries(s1).Legend("Series 1").Opacity(0.3).Fill();
 	
 	s2y[0] = 22; s2y[1] = 33; s2y[2] = 27; s2y[3] = 29; s2y[4] = 24;
 	scatter.AddSeries(s2y, 5, 10, 10).Legend("Series 2").Id(SERIE2).PlotStyle<LineSeriesPlot>()
@@ -32,8 +32,9 @@ Tab1::Tab1()
 	int barWidth = 4;
 	scatter.AddSeries(s5).Legend("Series 5").PlotStyle<BarSeriesPlot>(barWidth).Dash("").NoMark().Fill();
 	
-	//scatter.AddTrendline(SERIE2, 100, LINE);
+	//scatter.AddTrendline(SERIE2, 100, LINE);		// To come :-)
 	//scatter.AddTrendline(SERIE2, 100, POLINOMIAL, 3);
 	scatter.SetRange(60, 50).SetMajorUnits(10, 10);
 	scatter.ShowInfo().ShowContextMenu().SetPopText("h", "v", "v2");
 }
+

@@ -482,7 +482,9 @@ ScatterDraw::ScatterBasicSeries::ScatterBasicSeries()
 
 void ScatterDraw::ScatterBasicSeries::Init(int id)
 {
-	color = markColor = GetNewColor(id);
+	color = GetNewColor(id);
+	markColor = Color(max(color.GetR()-30, 0), max(color.GetG()-30, 0), max(color.GetB()-30, 0));
+	
 	dash = GetNewDash(id);
 	markPlot = GetNewMarkPlot(id);
 }
@@ -648,8 +650,10 @@ ScatterDraw &ScatterDraw::Fill(Color color)
 {
 	int id = series.GetCount() - 1;
 
-	if (IsNull(color))
+	if (IsNull(color)) {
 		color = GetNewColor(id);
+		color = Color(min(color.GetR()+30, 255), min(color.GetG()+30, 255), min(color.GetB()+30, 255));
+	}
 	series[id].fillColor = color;
 	
 	Refresh();
@@ -660,8 +664,10 @@ ScatterDraw &ScatterDraw::MarkColor(Color color)
 {
 	int id = series.GetCount() - 1;
 
-	if (IsNull(color))
+	if (IsNull(color)) {
 		color = GetNewColor(id);
+		color = Color(max(color.GetR()-30, 0), max(color.GetG()-30, 0), max(color.GetB()-30, 0));
+	}
 	series[id].markColor = color;
 	
 	Refresh();
@@ -880,7 +886,7 @@ Image ScatterDraw::GetImage(const int &scale)
 	ASSERT(mode != MD_DRAW);
 #endif
 
-	ImageBuffer ib(size);	
+	ImageBuffer ib(scale*GetSize());	
 	BufferPainter bp(ib, mode);
 	
 	SetDrawing(bp, scale);
@@ -1223,14 +1229,31 @@ void DrawLineOpa(Draw& w, const int x0, const int y0, const int x1, const int y1
 	DrawPolylineOpa(w, p, scale, opacity, thick, _color, dash, background);
 }
 
+void DashScaled(Painter& w, const String dash, double scale)
+{
+	if (!dash.IsEmpty()) {		
+		Vector<double> d;
+		double start = 0;
+		CParser p(dash);
+		try {
+			while(!p.IsEof())
+				if(p.Char(':'))
+					start = p.ReadDouble();
+				else
+					d.Add(scale*p.ReadDouble());
+		}
+		catch(CParser::Error) {}
+		w.Dash(d, scale*start);
+	}
+}
+
 void DrawLineOpa(Painter& w, const int x0, const int y0, const int x1, const int y1, const int &scale, 
 				const double opacity, double thick, const Color &color, String dash, 
 				const Color &background) 
 {	
 	w.Move(Pointf(x0, y0));
 	w.Line(Pointf(x1, y1));
-	if (dash[0] != '\0')
-		w.Dash(dash);
+	DashScaled(w, dash, scale);
 	w.Opacity(opacity);				// Before Stroke()
 	w.Stroke(thick*scale, color);
 }
@@ -1299,8 +1322,7 @@ void DrawPolylineOpa(Painter& w, const Vector<Point> &p, const int &scale, const
 	w.Move(p[0]);
 	for (int i = 1; i < p.GetCount(); ++i) 
 		w.Line(p[i]);
-	if (dash[0] != '\0')
-		w.Dash(dash);
+	DashScaled(w, dash, scale);
 	w.Opacity(opacity);				// Before Stroke()
 	w.Stroke(thick*scale, color);
 }
@@ -1337,4 +1359,3 @@ INITBLOCK{
 	MarkPlot::Register<XMarkPlot>("X");
 	MarkPlot::Register<RhombMarkPlot>("Rhomb");
 }
-

@@ -57,7 +57,7 @@ private:
 			p.Remove(0);
 			p.Remove(p.GetCount()-1);
 		}
-		DrawPolylineOpa(w, p, scale, opacity, thick, color, pattern, background);		
+		DrawPolylineOpa(w, p, scale, 1, thick, color, pattern, background);		
 	}
 	
 public:
@@ -65,13 +65,13 @@ public:
 				double thick, const Color &color, String pattern, const Color &background, 
 				const Color &fillColor, double fx, double fy, int y0) const 
 	{
-		DoPaint(w, p, scale, opacity, fround(scale*thick), color, pattern, background, fillColor, y0);		
+		DoPaint(w, p, scale, opacity, fround(thick), color, pattern, background, fillColor, y0);		
 	}
 	void Paint(Painter& w, Vector<Point> &p, const int &scale, const double opacity, 
 				double thick, const Color &color, String pattern, const Color &background, 
 				const Color &fillColor, double fx, double fy, int y0) const 
 	{
-		DoPaint(w, p, scale, opacity, fround(scale*thick), color, pattern, background, fillColor, y0);		
+		DoPaint(w, p, scale, opacity, fround(thick), color, pattern, background, fillColor, y0);		
 	}
 };
 
@@ -100,7 +100,7 @@ private:
 			ps.Remove(0);
 			ps.Remove(ps.GetCount()-1);
 		}
-		DrawPolylineOpa(w, ps, scale, opacity, fround(scale*thick), color, pattern, background);
+		DrawPolylineOpa(w, ps, scale, 1, fround(thick), color, pattern, background);
 	}
 	
 public:
@@ -125,12 +125,12 @@ private:
 				double thick, const Color &color, String pattern, const Color &background, 
 				const Color &fillColor, double fx, int y0) const 
 	{
-		int sc = fround(scale*thick);
 		for (int i = 0; i < p.GetCount(); ++i) {
 			FillRectangleOpa(w, p[i].x-width*fx, y0, p[i].x+width*fx, p[i].y, scale, opacity, background, fillColor);
-			DrawLineOpa(w, fround(p[i].x-width*fx), y0, 	  fround(p[i].x-width*fx), p[i].y, scale, opacity, sc, color, pattern, background);
-			DrawLineOpa(w, fround(p[i].x-width*fx), p[i].y, fround(p[i].x+width*fx), p[i].y, scale, opacity, sc, color, pattern, background);
-			DrawLineOpa(w, fround(p[i].x+width*fx), y0, 	  fround(p[i].x+width*fx), p[i].y, scale, opacity, sc, color, pattern, background);
+			Vector<Point> ps;
+			ps << Pointf(fround(p[i].x-width*fx), y0) << Pointf(fround(p[i].x-width*fx), p[i].y) 
+			   << Pointf(fround(p[i].x+width*fx), p[i].y) << Pointf(fround(p[i].x+width*fx), y0);
+			DrawPolylineOpa(w, ps, scale, 1, fround(thick), color, pattern, background);
 		}
 	}
 	double width;

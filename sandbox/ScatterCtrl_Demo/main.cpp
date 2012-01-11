@@ -54,6 +54,8 @@ ScatterCtrl_Demo::ScatterCtrl_Demo()
 	bSaveJPG <<= THISBACK(SaveJPG);
 #ifdef PLATFORM_WIN32
 	bSaveEMF <<= THISBACK(SaveEMF);
+#else
+	bSaveEMF.Hide();
 #endif
 	bCopyClipboard <<= THISBACK(CopyClipboard);
 	

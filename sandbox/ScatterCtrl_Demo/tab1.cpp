@@ -38,3 +38,8 @@ Tab1::Tab1()
 	scatter.ShowInfo().ShowContextMenu().SetPopText("h", "v", "v2");
 }
 
+/*
+INITBLOCK {
+	RegisterExample("Basic", new Tab1);
+}
+*/

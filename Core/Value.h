@@ -158,7 +158,7 @@ public:
 	Value(bool b)                    { InitSmall0(b); }
 	Value(Date d)                    { InitSmall0(d); }
 	Value(Time t)                    { InitSmall0(t); }
-	Value(const Nuller&)             {}
+	Value(const Nuller&)             { InitSmall0((int)Null); }
 
 	bool operator==(const Value& v) const;
 	bool operator!=(const Value& v) const { return !operator==(v); }

@@ -175,6 +175,8 @@ void ScatterCtrl::SetDrawing(T& w, const int& scale) {
 	if (!IsNull(popLT) && popLT != popRB) {
 		DrawVArrow(w, popLT.x, popLT.y, popLT.x, popRB.y, 1, 4, 15, SColorHighlight());
 		DrawHArrow(w, popLT.x, popRB.y, popRB.x, popRB.y, 1, 4, 15, SColorHighlight());
+		Ctrl::Refresh(min(popLT.x-4, popRB.x-4), min(popLT.y-4, popRB.y-4), 
+					  abs(popRB.x-popLT.x) + 9, abs(popRB.y-popLT.y) + 9);
 	}
 }
 

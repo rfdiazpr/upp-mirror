@@ -326,7 +326,6 @@ void ScatterCtrl::MouseMove(Point pt, dword)
 			popText.AppearOnlyOpen(this);
 			
 			ProcessPopUp(pt);
-			Refresh();
 		}
 	}	
 }

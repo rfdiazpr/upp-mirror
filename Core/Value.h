@@ -149,9 +149,9 @@ public:
 	operator int64() const           { return Is(INT64_V) ? GetSmall<int64>() : GetOtherInt64(); }
 	operator bool() const            { return Is(BOOL_V) ? GetSmall<bool>() : GetOtherBool(); }
 
-	Value(const String& s)           { data = s; }
+	Value(const String& s) : data(s) {}
 	Value(const WString& s);
-	Value(const char *s)             { data = s; }
+	Value(const char *s) : data(s)   {}
 	Value(int i)                     { InitSmall0(i); }
 	Value(int64 i)                   { InitSmall0(i); }
 	Value(double d)                  { InitSmall0(d); }

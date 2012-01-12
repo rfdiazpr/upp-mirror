@@ -1,7 +1,7 @@
 #include "ScatterCtrl_Demo.h"
 
 
-Tab9::Tab9()
+void Tab9::Init()
 {
 	CtrlLayout(*this);	
 	HSizePos().VSizePos();
@@ -20,4 +20,8 @@ Tab9::Tab9()
 	sequentialX = true;
 	OnFastView();
 	OnSequentialX();
+}
+
+INITBLOCK {
+	RegisterExample("Big dataset", new Tab9);
 }

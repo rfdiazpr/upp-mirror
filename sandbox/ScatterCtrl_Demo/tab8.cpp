@@ -1,7 +1,7 @@
 #include "ScatterCtrl_Demo.h"
 
 
-Tab8::Tab8()
+void Tab8::Init()
 {
 	CtrlLayout(*this);	
 	HSizePos().VSizePos();
@@ -29,4 +29,8 @@ Tab8::Tab8()
 		   .SetMarkWidth(1, 4);
 	scatter.ShowInfo()
 		   .ShowContextMenu();	
+}
+
+INITBLOCK {
+	RegisterExample("Secondary Y", new Tab8);
 }

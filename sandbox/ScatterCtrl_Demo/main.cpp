@@ -29,16 +29,9 @@ void RegisterExample(const char *name, ScatterDemo *ctrl)
 	
 GUI_APP_MAIN
 {
-	RegisterExample("Basic", new Tab1);
-	RegisterExample("Functions", new Tab2);
-	RegisterExample("Parametric Functions", new Tab3);
-	RegisterExample("Formatting", new Tab4);
-	RegisterExample("Dynamic", new Tab5);
-	RegisterExample("Log", new Tab6);
-	RegisterExample("Operations", new Tab7);	
-	RegisterExample("Secondary Y", new Tab8);
-	RegisterExample("Big dataset", new Tab9);
-	
+	for (int i = 0; i < Examples().GetCount(); ++i)
+		Examples()[i].ctrl->Init();
+
 	ScatterCtrl_Demo().Run();
 }
 

@@ -4,7 +4,7 @@ enum {
 	SERIE2
 };
 
-Tab1::Tab1()
+void Tab1::Init()
 {
 	CtrlLayout(*this);	
 	HSizePos().VSizePos();
@@ -38,8 +38,6 @@ Tab1::Tab1()
 	scatter.ShowInfo().ShowContextMenu().SetPopText("h", "v", "v2");
 }
 
-/*
 INITBLOCK {
 	RegisterExample("Basic", new Tab1);
 }
-*/

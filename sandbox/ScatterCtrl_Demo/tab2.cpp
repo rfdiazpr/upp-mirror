@@ -9,7 +9,7 @@ void   vfunct1(double& y, double x) {y = 0;}
 void   vfunct2(double& y, double x) {y = x*x;}
 void   vfunct3(double& y, double x) {y = -x*x;}
 
-Tab2::Tab2()
+void Tab2::Init()
 {
 	CtrlLayout(*this);	
 	HSizePos().VSizePos();
@@ -19,4 +19,8 @@ Tab2::Tab2()
 	scatter.AddSeries(&funct1).Legend("y = 3");
 	scatter.AddSeries(&funct2).Legend("x^2-5");
 	scatter.AddSeries(&funct3).Legend("-x^2-5");
+}
+
+INITBLOCK {	
+	RegisterExample("Functions", new Tab2);
 }

@@ -1,7 +1,7 @@
 #include "ScatterCtrl_Demo.h"
 
 
-Tab6::Tab6()
+void Tab6::Init()
 {
 	CtrlLayout(*this);	
 	HSizePos().VSizePos();
@@ -18,4 +18,8 @@ Tab6::Tab6()
 void Tab6::FormatX(String& s, int i, double d)
 {
 	s = FormatDoubleExp(d, 1);
+}
+
+INITBLOCK {
+	RegisterExample("Log", new Tab6);
 }

@@ -14,6 +14,7 @@ using namespace Upp;
 
 
 struct ScatterDemo : ParentCtrl {
+	virtual void Init() = 0;
 	virtual ScatterCtrl &Scatter() = 0;
 };
 
@@ -22,7 +23,8 @@ void RegisterExample(const char *name, ScatterDemo *ctrl);
 class Tab1 : public WithTab1<ScatterDemo> {
 public:
 	typedef Tab1 CLASSNAME;
-	Tab1();
+	
+	virtual void Init();
 	virtual ScatterCtrl &Scatter()	{return scatter;};
 
 private:
@@ -36,7 +38,8 @@ private:
 class Tab2 : public WithTab2<ScatterDemo> {
 public:
 	typedef Tab2 CLASSNAME;
-	Tab2();
+	
+	void Init();
 	virtual ScatterCtrl &Scatter()	{return scatter;};
 	
 	Callback back1, back2, back3;
@@ -45,14 +48,16 @@ public:
 class Tab3 : public WithTab3<ScatterDemo> {
 public:
 	typedef Tab3 CLASSNAME;
-	Tab3();
+	
+	void Init();
 	virtual ScatterCtrl &Scatter()	{return scatter;};
 };
 
 class Tab4 : public WithTab4<ScatterDemo> {
 public:
 	typedef Tab4 CLASSNAME;
-	Tab4();
+	
+	void Init();
 	virtual ScatterCtrl &Scatter()	{return scatter;};
 	
 private:
@@ -62,7 +67,8 @@ private:
 class Tab5 : public WithTab5<ScatterDemo> {
 public:
 	typedef Tab5 CLASSNAME;
-	Tab5();
+	
+	void Init();
 	void Animate();
 	void Start();
 	void Stop();
@@ -81,7 +87,8 @@ private:
 class Tab6 : public WithTab6<ScatterDemo> {
 public:
 	typedef Tab6 CLASSNAME;
-	Tab6();
+	
+	void Init();
 	void FormatX(String& s, int i, double d);	
 	virtual ScatterCtrl &Scatter()	{return scatter;};
 
@@ -93,7 +100,7 @@ class Tab7 : public WithTab7<ScatterDemo> {
 public:
 	typedef Tab7 CLASSNAME;
 	
-	Tab7();		
+	void Init();		
 	void AddSeries();
 	void RemoveFirstSeries();
 	void RemoveLastSeries();
@@ -108,7 +115,7 @@ class Tab8 : public WithTab8<ScatterDemo> {
 public:
 	typedef Tab8 CLASSNAME;
 
-	Tab8();
+	void Init();
 	void MyFormat(String& s, int i, double d)
 	{
 		s=Format("%Mon",fround(d)); 
@@ -128,7 +135,8 @@ private:
 class Tab9 : public WithTab9<ScatterDemo> {
 public:
 	typedef Tab9 CLASSNAME;
-	Tab9();
+	
+	void Init();
 	void OnFastView()		{scatter.SetFastViewX(fastView);};
 	void OnSequentialX()	{scatter.SetSequentialXAll(sequentialX);};
 	virtual ScatterCtrl &Scatter()	{return scatter;};

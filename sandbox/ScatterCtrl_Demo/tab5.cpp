@@ -1,7 +1,7 @@
 #include "ScatterCtrl_Demo.h"
 
 
-Tab5::Tab5()
+void Tab5::Init()
 {
 	CtrlLayout(*this);	
 	HSizePos().VSizePos();
@@ -74,4 +74,8 @@ void Tab5::Minus()
 {
 	scatter.SetRange(scatter.GetXRange()*2, 100);
 	scatter.Refresh();
+}
+
+INITBLOCK {
+	RegisterExample("Dynamic", new Tab5);
 }

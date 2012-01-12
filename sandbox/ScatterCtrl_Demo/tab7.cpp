@@ -1,7 +1,7 @@
 #include "ScatterCtrl_Demo.h"
 
 
-Tab7::Tab7()
+void Tab7::Init()
 {
 	CtrlLayout(*this);	
 	HSizePos().VSizePos();
@@ -45,4 +45,8 @@ void Tab7::RemoveAllSeries()
 {
 	scatter.RemoveAllSeries();
 	series.Clear();
+}
+
+INITBLOCK {
+	RegisterExample("Operations", new Tab7);	
 }

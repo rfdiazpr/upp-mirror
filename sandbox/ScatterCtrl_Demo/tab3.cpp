@@ -15,7 +15,7 @@ void para5(Pointf& xy, double t) {xy = Pointf(-0.25+0.5*t, 0);}
 void para1p(Pointf& xy, double t, double a, double b) 	{xy = Pointf(a*cos(2*M_PI*t),b*sin(2*M_PI*t));}
 void para3p(Pointf& xy, double t, double a) 			{xy = Pointf(a+(0.5+t)*cos(6*M_PI*t),(0.5+t)*sin(6*M_PI*t));}
 
-Tab3::Tab3()
+void Tab3::Init()
 {
 	CtrlLayout(*this);	
 	HSizePos().VSizePos();
@@ -32,4 +32,8 @@ Tab3::Tab3()
 	scatter.AddSeries(STDBACK(para5), 2).Legend("HLine").NoMark();
 	scatter.AddSeries(STDBACK2(para1p, 4.0, 0.25), 50, 0, 1).Legend("Circle2").NoMark();
 	scatter.AddSeries(STDBACK2(para1p, 2.0, 0.5), 50, 0, 1).Legend("Circle2").NoMark();
+}
+
+INITBLOCK {
+	RegisterExample("Parametric Functions", new Tab3);
 }

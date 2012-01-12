@@ -1,7 +1,7 @@
 #include "ScatterCtrl_Demo.h"
 
 
-Tab4::Tab4()
+void Tab4::Init()
 {
 	CtrlLayout(*this);	
 	HSizePos().VSizePos();
@@ -19,4 +19,8 @@ Tab4::Tab4()
 	scatter.Graduation_FormatX(ScatterCtrl::MON)
 		   .SetLabelY("Temperature [176ºC]")
 		   .SetMarkWidth(1, 4);
+}
+
+INITBLOCK {
+	RegisterExample("Formatting", new Tab4);
 }

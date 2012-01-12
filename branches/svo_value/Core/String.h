@@ -297,8 +297,8 @@ public:
 
 	String0& operator=(const String0& s) { Free(); Set(s); return *this; }
 
-	String0()                       { Zero(); }
-	~String0()                      { Free(); }
+	String0()                   {}
+	~String0()                  { Free(); }
 };
 
 class String : public Moveable<String, AString<String0> > {
@@ -327,8 +327,8 @@ public:
 	void   Shrink()                                        { *this = String(Begin(), GetLength()); }
 	int    GetCharCount() const;
 
-	String()                                               {}
-	String(const Nuller&)                                  {}
+	String()                                               { Zero(); }
+	String(const Nuller&)                                  { Zero(); }
 	String(const String& s)                                { String0::Set(s); }
 	String(const char *s);
 	String(const String& s, int n)                         { ASSERT(n >= 0 && n <= s.GetLength()); String0::Set(~s, n); }

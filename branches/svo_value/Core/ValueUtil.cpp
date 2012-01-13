@@ -201,6 +201,15 @@ const Value& ValueArray::Get(int i) const {
 	return data->data[i];
 }
 
+Value ValueArray::GetAndClear(int i)
+{
+	ASSERT(i >= 0 && i < GetCount());
+	Vector<Value>& x = Clone();
+	Value v = x[i];
+	x[i] = Value();
+	return v;
+}
+
 template<>
 String AsString(const ValueArray& v) {
 	return sAsString(v.Get());
@@ -382,6 +391,13 @@ const Value& ValueMap::operator[](const Value& key) const
 {
 	int q = data->key.Find(key);
 	return q >= 0 ? data->value[q] : ErrorValue();
+}
+
+Value ValueMap::GetAndClear(const Value& key)
+{
+	Data& d = Clone();
+	int q = d.key.Find(key);
+	return q < 0 ? ErrorValue() : d.value.GetAndClear(q);
 }
 
 // ----------------------------------

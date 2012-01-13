@@ -95,9 +95,10 @@ protected:
 	bool     Is(byte v) const        { return data.IsSpecial(v); }
 	bool     IsRef() const           { return Is(REF); }
 	void     InitRef(Void *p)        { data.SetSpecial(REF); ptr() = p; }
-	void     Free()                  { if(IsRef()) ptr()->Release(); data.Clear(); }
+	void     Free()                  { if(IsRef()) ptr()->Release(); }
 	void     RefRelease();
 	void     RefRetain();
+	void     SetLarge(const Value& v);
 
 	template <class T>
 	void     InitSmall0(const T& init);
@@ -152,13 +153,13 @@ public:
 	Value(const String& s) : data(s) {}
 	Value(const WString& s);
 	Value(const char *s) : data(s)   {}
-	Value(int i)                     { InitSmall0(i); }
-	Value(int64 i)                   { InitSmall0(i); }
-	Value(double d)                  { InitSmall0(d); }
-	Value(bool b)                    { InitSmall0(b); }
-	Value(Date d)                    { InitSmall0(d); }
-	Value(Time t)                    { InitSmall0(t); }
-	Value(const Nuller&)             { InitSmall0((int)Null); }
+	Value(int i)                     : data(i, INT_V, String::SPECIAL) {}
+	Value(int64 i)                   : data(i, INT64_V, String::SPECIAL) {}
+	Value(double d)                  : data(d, DOUBLE_V, String::SPECIAL) {}
+	Value(bool b)                    : data(b, BOOL_V, String::SPECIAL) {}
+	Value(Date d)                    : data(d, DATE_V, String::SPECIAL) {}
+	Value(Time t)                    : data(t, TIME_V, String::SPECIAL) {}
+	Value(const Nuller&)             : data((int)Null, INT_V, String::SPECIAL) {}
 
 	bool operator==(const Value& v) const;
 	bool operator!=(const Value& v) const { return !operator==(v); }
@@ -170,7 +171,13 @@ public:
 	unsigned GetHashValue() const;
 
 	Value& operator=(const Value& v);
-	Value(const Value& v) : data(v.data)  { if(IsRef()) RefRetain(); }
+//	Value(const Value& v) : data(v.data)  { if(IsRef()) RefRetain(); }
+	Value(const Value& v) : data(String::SPECIAL) {
+		if(v.IsRef() || v.data.IsLarge())
+			SetLarge(v);
+		else
+			data.SetSmall(v.data);
+	}
 	
 	int   GetCount() const;
 	const Value& operator[](int i) const;
@@ -178,7 +185,7 @@ public:
 	const Value& operator[](const char *key) const;
 	const Value& operator[](const Id& key) const;
 
-	Value()                               { data.SetSpecial(VOIDV); }
+	Value()                               : data((int)Null, INT_V, String::SPECIAL) {}
 	~Value()                              { if(IsRef()) RefRelease(); }
 
 	template <class T>

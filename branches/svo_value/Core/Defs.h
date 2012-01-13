@@ -524,11 +524,11 @@ inline void   Poke32be(const void *ptr, int val)    { Poke16be(ptr, HIWORD(val))
 inline void   Poke64be(const void *ptr, int64 val)  { Poke32be(ptr, HIDWORD(val)); Poke32be((byte *)ptr + 4, LODWORD(val)); }
 
 #ifdef CPU_LITTLE_ENDIAN
-#define MAKE2B(b0, b1)                  MAKEWORD(b0, b1); }
-#define MAKE4B(b0, b1, b2, b3)          MAKELONG(MAKEWORD(b0, b1), MAKEWORD(b2, b3));
+#define MAKE2B(b0, b1)                  MAKEWORD(b0, b1);
+#define MAKE4B(b0, b1, b2, b3)          MAKELONG(MAKEWORD(b0, b1), MAKEWORD(b2, b3))
 #else
-#define MAKE2B(b0, b1)                  MAKEWORD(b1, b0); }
-#define MAKE4B(b0, b1, b2, b3)          MAKELONG(MAKEWORD(b2, b3), MAKEWORD(b0, b1));
+#define MAKE2B(b0, b1)                  MAKEWORD(b1, b0);
+#define MAKE4B(b0, b1, b2, b3)          MAKELONG(MAKEWORD(b2, b3), MAKEWORD(b0, b1))
 #endif
 
 #if defined(CPU_X86) && (defined(COMPILER_GCC) || defined(COMPILER_MSC))

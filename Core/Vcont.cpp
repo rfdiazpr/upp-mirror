@@ -54,7 +54,7 @@ void VectorGrow_(void *v_, int sizeofT)
 #ifdef _DEBUG
 	VectorReAlloc_(v, max(v->alloc + 1, 2 * v->alloc), sizeofT);
 #else
-	VectorReAlloc_(v, max(v->alloc + 1, int(v->alloc + ((unsigned)v->alloc >> 1))), sizeofT);
+	VectorReAlloc_(v, max(v->alloc + 1, int(v->alloc + ((unsigned)v->alloc >> 1)) + 1), sizeofT);
 //	VectorReAlloc_(v, max(v->alloc + 1, max(2 * v->alloc, 16 / sizeofT)), sizeofT);
 //	VectorReAlloc_(v, max(v->alloc + 1, 2 * v->alloc), sizeofT);
 #endif

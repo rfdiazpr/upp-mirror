@@ -139,7 +139,7 @@ public:
 	template <class T>
 	bool     Is() const;
 	template <class T>
-	T        To() const;
+	const T& To() const;
 
 	operator String() const          { return IsString() ? data : GetOtherString(); }
 	operator WString() const;
@@ -370,15 +370,17 @@ inline bool IsPolyEqual(const WString& x, const Value& v) {
 }
 
 inline unsigned ValueGetHashValue(const bool& x) {
-	return UPP::GetHashValue((double)x);
+	return UPP::GetHashValue((int64)x);
 }
 
 inline unsigned ValueGetHashValue(const int& x) {
-	return UPP::GetHashValue((double)x);
+	return UPP::GetHashValue((int64)x);
 }
 
-inline unsigned ValueGetHashValue(const int64& x) {
-	return UPP::GetHashValue((double)x);
+inline unsigned ValueGetHashValue(const double& x) {
+	if(x >= INT64_MIN && x <= INT64_MAX && (int64)x == x)
+		return UPP::GetHashValue((int64)x);
+	return UPP::GetHashValue(x);
 }
 
 inline unsigned ValueGetHashValue(const Date& x) {

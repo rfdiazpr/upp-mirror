@@ -56,13 +56,26 @@ void Value::SvoRegister()
 }
 
 template <class T>
-T Value::To() const
+const T& Value::To() const
 {
 	dword t = GetValueTypeNo<T>();
-	if(t == VALUEARRAY_V)
-		return brutal_cast<T>(ValueArray(*this)); // This only gets invoked when T is ValueArray
-	if(t == VALUEMAP_V)
-		return brutal_cast<T>(ValueMap(*this)); // This only gets invoked when T is ValueMap
+#ifndef _DEBUG
+	if(t == VALUEARRAY_V) {
+		ASSERT(ptr()->GetType() == VALUEARRAY_V);
+		return *(T*)this; // Questionable, but effective
+	}
+	if(t == VALUEMAP_V) {
+		ASSERT(ptr()->GetType() == VALUEMAP_V);
+		return *(T*)this; // Questionable, but effective
+	}
+#endif
+	if(t == STRING_V) {
+		ASSERT(IsString());
+		return *(T*)&data; // Only active when T is String..
+	}
+	if(t == INT_V || t == INT64_V || t == DOUBLE_V || t == BOOL_V ||
+	   t == DATE_V || t == TIME_V)
+		return GetSmall<T>();
 	if(IsRef())
 		return RichValue<T>::Extract(*this);
 	return GetSmall<T>();

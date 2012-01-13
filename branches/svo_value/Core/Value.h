@@ -185,7 +185,7 @@ public:
 	const Value& operator[](const char *key) const;
 	const Value& operator[](const Id& key) const;
 
-	Value()                               : data((int)Null, INT_V, String::SPECIAL) {}
+	Value()                               : data((int)Null, VOIDV, String::SPECIAL) {}
 	~Value()                              { if(IsRef()) RefRelease(); }
 
 	template <class T>

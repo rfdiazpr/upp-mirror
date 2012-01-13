@@ -217,6 +217,7 @@ public:
 	ValueArray& operator<<(const Value& v)    { Add(v); return *this; }
 	void Set(int i, const Value& v);
 	const Value& Get(int i) const;
+	Value GetAndClear(int i);
 	const Vector<Value>& Get() const          { return data->data; }
 
 	void Remove(int i, int count = 1);
@@ -307,6 +308,8 @@ public:
 	const Value& operator[](const String& s) const{ return operator[](Value(s)); }
 	const Value& operator[](const char *s) const  { return operator[](Value(s)); }
 	const Value& operator[](const Id& k) const    { return operator[](Value(k.ToString())); }
+	
+	Value GetAndClear(const Value& key);
 
 	unsigned GetHashValue() const                 { return data->GetHashValue(); }
 	void     Serialize(Stream& s);

@@ -37,6 +37,16 @@ Value& Value::operator=(const Value& v) {
 	return *this;
 }
 
+void Value::SetLarge(const Value& v)
+{
+	if(v.IsRef()) {
+		data.SetSmall(v.data);
+		RefRetain();
+	}
+	else
+		data.LSet(v.data);
+}
+
 dword Value::GetType() const
 {
 	if(data.IsString())

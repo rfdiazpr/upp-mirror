@@ -208,29 +208,30 @@ class String0 : Moveable<String0> {
 
 	void Swap(String0& b)         { UPP::Swap(q[0], b.q[0]); UPP::Swap(q[1], b.q[1]); Dsyn(); b.Dsyn(); }
 	
-	void SetSpecial(byte st)      { ASSERT(IsSmall() && GetCount() == 0); w[3] = MAKE4B(0, st, 0, 0); }
+	void SetSpecial0(byte st)     { w[3] = MAKE4B(0, st, 0, 0); }
+	void SetSpecial(byte st)      { ASSERT(IsSmall() && GetCount() == 0); SetSpecial0(st); }
 	byte GetSpecial() const       { return (chr[SLEN] | chr[KIND]) == 0 ? chr[SPECIAL] : 0; }
 	byte GetSt() const            { return chr[SPECIAL]; }
 	bool IsSpecial() const        { return !v[7] && v[6]; }
 	bool IsString() const         { return !IsSpecial(); }
 	bool IsSpecial(byte st) const { return w[3] == MAKE4B(0, st, 0, 0); }
-
+	
 	friend class String;
 	friend class StringBuffer;
 	friend class Value;
 
 protected:
-	void Zero()                  { q[0] = q[1] = 0; Dsyn(); }
-	void Free()                  { if(IsLarge()) LFree(); }
+	void Zero()                     { q[0] = q[1] = 0; Dsyn(); }
+	void Free()                     { if(IsLarge()) LFree(); }
+	void SetSmall(const String0& s) { q[0] = s.q[0]; q[1] = s.q[1]; }
 	void Set(const String0& s) {
-		if(s.IsSmall()) { q[0] = s.q[0]; q[1] = s.q[1]; }
-		else LSet(s);
+		if(s.IsSmall()) SetSmall(s); else LSet(s);
 		Dsyn();
 	}
 	void Assign(const String0& s) {
 		if(s.IsSmall()) {
-			if(IsLarge()) LFree();
-			q[0] = s.q[0]; q[1] = s.q[1];
+			Free();
+			SetSmall(s);
 		}
 		else
 			if(this != &s) {
@@ -313,6 +314,17 @@ class String : public Moveable<String, AString<String0> > {
 #endif
 
 	void AssignLen(const char *s, int slen);
+	
+	enum SSPECIAL { SPECIAL };
+	
+	template <class T>
+	String(const T& x, byte st, SSPECIAL) {
+		*(T*)chr = x;
+		SetSpecial0(st);
+	}
+	String(SSPECIAL) {}
+
+	friend class Value;
 	
 public:
 	const String& operator+=(char c)                       { Cat(c); return *this; }

@@ -19,7 +19,9 @@ file
 	tab6.cpp,
 	tab7.cpp,
 	tab8.cpp,
-	tab9.cpp;
+	tab9.cpp,
+	tab10.cpp,
+	symbol.iml;
 
 mainconfig
 	"" = "GUI";

@@ -145,6 +145,17 @@ private:
 	Vector<Pointf> s1,s2;
 };
 
+class Tab10 : public WithTab10<ScatterDemo> {
+public:
+	typedef Tab10 CLASSNAME;
+	
+	void Init();
+	virtual ScatterCtrl &Scatter()	{return scatter;};
+
+private:
+	double sx[5], sy[5];
+};
+
 class ScatterCtrl_Demo : public WithScatterCtrl_Demo<TopWindow> {
 	typedef ScatterCtrl_Demo CLASSNAME;
 	

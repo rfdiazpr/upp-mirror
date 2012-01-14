@@ -59,3 +59,7 @@ LAYOUT(Tab9, 380, 348)
 	ITEM(Label, dv___3, SetLabel(t_("It includes two series with 100000 points.\nTo work with Painter it requires SetFastView and SetSequentialX to be true. \nIf not the program could get stuck.")).HSizePosZ(16, 4).BottomPosZ(28, 44))
 END_LAYOUT
 
+LAYOUT(Tab10, 380, 292)
+	ITEM(ScatterCtrl, scatter, SetTitle(t_("User graph")).SetTitleFont(SansSerifZ(14).Bold()).SetLabelsFont(StdFontZ(11)).HSizePosZ(16, 12).VSizePosZ(16, 16))
+END_LAYOUT
+

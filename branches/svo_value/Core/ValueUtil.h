@@ -191,6 +191,7 @@ class ValueArray : AssignValueTypeNo<ValueArray, VALUEARRAY_V, Moveable<ValueArr
 	void  Init0();
 	
 	friend Value::Void *ValueArrayDataCreate(Stream& s);
+	friend class Value;
 
 public:
 	ValueArray()                              { Init0(); }
@@ -262,6 +263,7 @@ class ValueMap : AssignValueTypeNo<ValueMap, VALUEMAP_V, Moveable<ValueMap> >{
 	void  Init0();
 
 	friend Value::Void *ValueMapDataCreate(Stream& s);
+	friend class Value;
 
 public:
 	ValueMap()                               { Init0(); }
@@ -322,37 +324,6 @@ public:
 inline bool IsValueArray(const Value& v) { return v.GetType() == VALUEARRAY_V || v.GetType() == VALUEMAP_V; }
 inline bool IsValueMap(const Value& v)   { return IsValueArray(v); }
 
-inline
-int Value::GetCount() const
-{
-	return IsValueArray(*this) ? ValueArray(*this).GetCount() : 0;
-}
-
-inline
-const Value& Value::operator[](int i) const
-{
-	ASSERT(IsValueArray(*this));
-	return ValueArray(*this)[i];
-}
-
-inline
-const Value& Value::operator[](const String& key) const
-{
-	return IsValueMap(*this) ? ValueMap(*this)[key] : ErrorValue();
-}
-
-inline
-const Value& Value::operator[](const char *key) const
-{
-	return IsValueMap(*this) ? ValueMap(*this)[key] : ErrorValue();
-}
-
-inline
-const Value& Value::operator[](const Id& key) const
-{
-	return IsValueMap(*this) ? ValueMap(*this)[key] : ErrorValue();
-}
-
 class ValueGen {
 public:
 	virtual Value  Get() = 0;
@@ -360,3 +331,5 @@ public:
 	virtual ~ValueGen() {}
 };
 
+
+#include "Value.hpp"

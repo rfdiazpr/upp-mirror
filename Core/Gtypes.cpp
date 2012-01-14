@@ -5,7 +5,7 @@ NAMESPACE_UPP
 template <class T>
 static void sReg()
 {
-	if(Value::FitsSvo<T>())
+	if(FitsSvoValue<T>())
 		Value::SvoRegister<T>();
 	else
 		Value::Register<T>();

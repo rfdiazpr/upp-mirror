@@ -266,6 +266,12 @@ ValueMap::Data& ValueMap::Create()
 	return *data;
 }
 
+const Value& ValueMap::Data::Get(const Value& k) const
+{
+	int q = key.Find(k);
+	return q >= 0 ? value[q] : ErrorValue();
+}
+
 ValueMap::Data& ValueMap::Clone() {
 	if(data->GetRefCount() != 1) {
 		Data *d = new Data;
@@ -389,8 +395,7 @@ void ValueMap::Remove(int i)
 
 const Value& ValueMap::operator[](const Value& key) const
 {
-	int q = data->key.Find(key);
-	return q >= 0 ? data->value[q] : ErrorValue();
+	return data->Get(key);
 }
 
 Value ValueMap::GetAndClear(const Value& key)

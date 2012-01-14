@@ -317,22 +317,6 @@ extern "C" int COMBINE(i, _length)[]; \
 extern "C" int COMBINE(i, _count); \
 extern "C" char *COMBINE(i, _files)[];
 
-int RegisterTypeNo__(const char *type);
-
-template <class T>
-int RegisterTypeNo___()
-{
-	return RegisterTypeNo__(typeid(T).name());
-}
-
-template <class T>
-inline int StaticTypeNo() {
-	static int typeno = -1;
-	if(typeno < 0)
-		typeno = RegisterTypeNo___<T>();
-	return typeno;
-}
-
 template <class D, class S>
 inline D brutal_cast(const S& source) { return *(D *)&source; }
 

@@ -16,12 +16,12 @@ public:
 	static void Register(const String& name)
 	{
 		classMap().FindAdd(name, __Create<T>);
-		typeMap().FindAdd(typeid(T).name(),name);
+		typeMap().FindAdd(typeid(T).name(), name);
 	}
 	static void Unregister(const String& name)
 	{
-		int i=TypeIndex(name);
-		ASSERT(i>=0);
+		int i = TypeIndex(name);
+		ASSERT(i >= 0);
 		classMap().Remove(i);
 		typeMap().Remove(i);
 	}
@@ -161,12 +161,12 @@ public:
 	static void Register(const String& name)
 	{
 		classMap().FindAdd(name, __Create<T>);
-		typeMap().FindAdd(typeid(T).name(),name);
+		typeMap().FindAdd(typeid(T).name(), name);
 	}
 	static void Unregister(const String& name)
 	{
-		int i=TypeIndex(name);
-		ASSERT(i>=0);
+		int i = TypeIndex(name);
+		ASSERT(i >= 0);
 		classMap().Remove(i);
 		typeMap().Remove(i);
 	}

@@ -448,8 +448,14 @@ String ScatterDraw::GetNewDash(int id)
 
 MarkPlot *ScatterDraw::GetNewMarkPlot(int id)
 {
-	if (id < MarkPlot::GetCount())
-		return MarkPlot::Create(id);
+	switch(id) {
+	case 0:	return new CircleMarkPlot();
+	case 1:	return new SquareMarkPlot();
+	case 2:	return new TriangleMarkPlot();
+	case 3:	return new CrossMarkPlot();
+	case 4:	return new XMarkPlot();
+	case 5:	return new RhombMarkPlot();
+	}
 	return new CircleMarkPlot();
 }
 

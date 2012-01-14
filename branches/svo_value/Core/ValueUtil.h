@@ -91,17 +91,17 @@ struct RefManager {
 
 template <class T>
 struct RawRef : public RefManager {
-	virtual void  SetValue(void *p, const Value& v) { *(T *) p = RawValue<T>::Extract(v); }
-	virtual Value GetValue(const void *p)           { return RawValue<T>(*(const T *) p); }
+	virtual void  SetValue(void *p, const Value& v) { *(T *) p = v.To<T>(); }
+	virtual Value GetValue(const void *p)           { return RawToValue(*(const T *) p); }
 	virtual int   GetType()                         { return GetValueTypeNo<T>(); }
 	virtual ~RawRef() {}
 };
 
 template <class T>
 struct RichRef : public RawRef<T> {
-	virtual Value GetValue(const void *p)           { return RichValue<T>(*(T *) p); }
+	virtual Value GetValue(const void *p)           { return RichToValue(*(T *) p); }
 	virtual bool  IsNull(const void *p)             { return UPP::IsNull(*(T *) p); }
-	virtual void  SetValue(void *p, const Value& v) { *(T *) p = T(v); }
+	virtual void  SetValue(void *p, const Value& v) { *(T *) p = v.Get<T>(); }
 	virtual void  SetNull(void *p)                  { UPP::SetNull(*(T *)p); }
 };
 
@@ -249,7 +249,7 @@ class ValueMap : AssignValueTypeNo<ValueMap, VALUEMAP_V, Moveable<ValueMap> >{
 		virtual bool       IsEqual(const Value::Void *p);
 		virtual String     AsString() const;
 
-		int GetRefCount() const     { return AtomicRead(refcount); }
+		const Value& Get(const Value& key) const;
 
 		Index<Value> key;
 		ValueArray   value;
@@ -283,6 +283,8 @@ public:
 	void Clear();
 	int  GetCount() const                     { return data->value.GetCount(); }
 	bool IsEmpty() const                      { return data->value.IsEmpty(); }
+	const Value& GetKey(int i) const          { return data->key[i]; }
+	const Value& GetValue(int i) const        { return data->value[i]; }
 
 	void Add(const Value& key, const Value& value);
 	void Add(const String& s, const Value& value) { Add(Value(s), value); }
@@ -320,9 +322,6 @@ public:
 	bool operator==(const ValueMap& v) const;
 	bool operator!=(const ValueMap& v) const      { return !operator==(v); }
 };
-
-inline bool IsValueArray(const Value& v) { return v.GetType() == VALUEARRAY_V || v.GetType() == VALUEMAP_V; }
-inline bool IsValueMap(const Value& v)   { return IsValueArray(v); }
 
 class ValueGen {
 public:

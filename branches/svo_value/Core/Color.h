@@ -52,8 +52,8 @@ public:
 
 	Color(const Nuller&)               { SetNull(); }
 
-	operator Value() const             { return SvoValue(*this); }
-	Color(const Value& q)              { color = q.To<Color>().color; }
+	operator Value() const             { return SvoToValue(*this); }
+	Color(const Value& q)              { color = q.Get<Color>().color; }
 
 	operator RGBA() const;
 	Color(RGBA rgba);

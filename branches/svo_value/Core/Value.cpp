@@ -228,7 +228,6 @@ INITBLOCK {
 	sRegisterStd();
 }
 
-
 void Value::Serialize(Stream& s) {
 	sRegisterStd();
 	dword type;
@@ -294,6 +293,56 @@ String  Value::ToString() const {
 		return ptr()->AsString();
 	int st = data.GetSpecial();
 	return svo[st]->AsString(&data);
+}
+
+int Value::GetCount() const
+{
+	if(IsRef()) {
+		dword t = ptr()->GetType();
+		if(t == VALUEARRAY_V)
+			return ((ValueArray::Data *)ptr())->data.GetCount();
+		if(t == VALUEMAP_V)
+			return ((ValueMap::Data *)ptr())->value.GetCount();
+	}
+	return ErrorValue();
+}
+
+const Value& Value::operator[](int i) const
+{
+	if(IsRef()) {
+		dword t = ptr()->GetType();
+		if(t == VALUEARRAY_V)
+			return ((ValueArray::Data *)ptr())->data[i];
+		if(t == VALUEMAP_V)
+			return ((ValueMap::Data *)ptr())->value[i];
+	}
+	return ErrorValue();
+}
+
+const Value& Value::operator[](const String& key) const
+{
+	if(IsRef() && ptr()->GetType() == VALUEMAP_V)
+		return ((ValueMap::Data *)ptr())->Get(key);
+	return ErrorValue();	
+}
+
+String Value::GetName() const
+{
+	if(IsRef())
+		return typeid(*ptr()).name();
+	if(IsString())
+		return "String";
+	static Tuple2<byte, const char *> tp[] = {
+		{ INT_V, "int" },
+		{ DOUBLE_V, "double" },
+		{ VOIDV, "void" },
+		{ DATE_V, "Date" },
+		{ TIME_V, "Time" },
+		{ INT64_V, "int64" },
+		{ BOOL_V, "bool" },
+	};
+	Tuple2<byte, const char *> *x = FindTuple(tp, __countof(tp), data.GetSpecial());
+	return x ? String(x->b) : AsString(GetType());
 }
 
 class ValueErrorCls : public RichValueRep<String> {

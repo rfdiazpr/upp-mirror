@@ -72,8 +72,8 @@ struct Size_ : Moveable< Size_<T> > {
 
 	Size_(const Nuller&)                       { cx = cy = Null; }
 
-	operator Value() const                     { return Value::FitsSvo<Size_>() ? SvoValue(*this) : RichToValue(*this); }
-	Size_(const Value& src)                    { *this = src.To<Size_>(); }
+	operator Value() const                     { return FitsSvoValue<Size_>() ? SvoToValue(*this) : RichToValue(*this); }
+	Size_(const Value& src)                    { *this = src.Get<Size_>(); }
 
 	void Serialize(Stream& s)                  { s % cx % cy; }
 
@@ -174,8 +174,8 @@ struct Point_ : Moveable< Point_<T> > {
 
 	Point_(const Nuller&)                           { x = y = Null; }
 
-	operator Value() const                          { return Value::FitsSvo<Point_>() ? SvoValue(*this) : RichValue<Point_>(*this); }
-	Point_(const Value& src)                        { *this = src.To<Point_>(); }
+	operator Value() const                          { return FitsSvoValue<Point_>() ? SvoToValue(*this) : RichToValue(*this); }
+	Point_(const Value& src)                        { *this = src.Get<Point_>(); }
 
 	void Serialize(Stream& s)                       { s % x % y; }
 

@@ -217,14 +217,7 @@ Value::Void *ValueMapDataCreate(Stream& s)
 static void sRegisterStd()
 {
 	ONCELOCK {
-//		RichValue<int>::Register();
-//		RichValue<int64>::Register();
-//		RichValue<bool>::Register();
-//		RichValue<double>::Register();
-//		RichValue<String>::Register();
 		RichValue<WString>::Register();
-//		RichValue<Date>::Register();
-//		RichValue<Time>::Register();
 		RichValue<Complex>::Register();
 		Value::Register(VALUEARRAY_V, ValueArrayDataCreate);
 		Value::Register(VALUEMAP_V, ValueMapDataCreate);

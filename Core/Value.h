@@ -95,13 +95,11 @@ protected:
 	bool     Is(byte v) const        { return data.IsSpecial(v); }
 	bool     IsRef() const           { return Is(REF); }
 	void     InitRef(Void *p)        { data.SetSpecial(REF); ptr() = p; }
-	void     Free()                  { if(IsRef()) ptr()->Release(); }
 	void     RefRelease();
 	void     RefRetain();
+	void     Free()                  { if(IsRef()) RefRelease(); }
 	void     SetLarge(const Value& v);
 
-	template <class T>
-	void     InitSmall0(const T& init);
 	template <class T>
 	void     InitSmall(const T& init);
 	template <class T>
@@ -171,13 +169,7 @@ public:
 	unsigned GetHashValue() const;
 
 	Value& operator=(const Value& v);
-//	Value(const Value& v) : data(v.data)  { if(IsRef()) RefRetain(); }
-	Value(const Value& v) : data(String::SPECIAL) {
-		if(v.IsRef() || v.data.IsLarge())
-			SetLarge(v);
-		else
-			data.SetSmall(v.data);
-	}
+	Value(const Value& v);
 	
 	int   GetCount() const;
 	const Value& operator[](int i) const;
@@ -449,5 +441,3 @@ String       GetErrorText(const Value& v);
 
 inline bool          IsNull(const Value& v)               { return v.IsNull(); }
 inline const Value&  Nvl(const Value& a, const Value& b)  { return IsNull(a) ? b : a; }
-
-#include "Value.hpp"

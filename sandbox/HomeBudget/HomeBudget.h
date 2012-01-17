@@ -8,6 +8,15 @@ class HomeBudgetHelp : public HelpWindow
 		virtual Topic AcquireTopic(const String& topic);
 };
 
+class HomeBudget;
+
+class HomeBudgetExport : public WithExportLayout<TopWindow>{
+	typedef HomeBudgetExport CLASSNAME;
+	public:
+		HomeBudgetExport(const HomeBudget& hb);
+		void OnSwitch();
+};
+
 class HomeBudget : public WithHomeBudgetLayout<TopWindow>
 {
 	public:
@@ -27,6 +36,7 @@ class HomeBudget : public WithHomeBudgetLayout<TopWindow>
 
 		int dtid;
 		int lang;
+		int inst_id;
 
 		HomeBudget();
 
@@ -66,6 +76,8 @@ class HomeBudget : public WithHomeBudgetLayout<TopWindow>
 		void Options();
 		void About();
 		void Setup();
+		void Export();
+		void Import();
 
 		void Help();
 

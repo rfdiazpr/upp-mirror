@@ -63,9 +63,9 @@ struct DispPM : GridDisplay
 	}
 };
 
-HomeBudget::HomeBudget()
+HomeBudget::HomeBudget(): lang(0)
 {
-	lang = 0;
+	inst_id = Random();
 }
 
 void HomeBudget::Setup()
@@ -164,6 +164,8 @@ void HomeBudget::Setup()
 	options <<= THISBACK(Options);
 	about <<= THISBACK(About);
 	help <<= THISBACK(Help);
+	imp <<= THISBACK(Import);
+	exp <<= THISBACK(Export);
 
 	category.Resizeable(false).Header(false);
 	category.AddPlus(THISBACK(NewCategory));
@@ -171,13 +173,24 @@ void HomeBudget::Setup()
 
 void HomeBudget::Serialize(Stream &s)
 {
-	int version = 1;
+	int version = 2;
 	s / version;
 	SerializePlacement(s);
 	s % spl;
 	s % lang;
 	//s % categories;
 	//s % money;
+	if (version > 1){
+		s / inst_id;
+	} else {
+		try {
+			SQL.Execute("alter table MONEY add INST integer;");
+			SQL * ::Update(MONEY)(INST,inst_id);
+		}
+		catch(SqlExc &e) {
+			Exclamation("[ Failed to update database:&& ][* " + DeQtfLf(e) + "]");
+		}
+	}
 }
 
 void HomeBudget::GenMonthList(int year)
@@ -488,7 +501,8 @@ void HomeBudget::InsertMoney()
 			(PM,     money(PM))
 			(VALUE,  money(VALUE))
 			(DT,     money(DT))
-			(DESC,   money(DESC));
+			(DESC,   money(DESC))
+			(INST,   inst_id);
 
 		money(ID) = SQL.GetInsertedId();
 
@@ -512,6 +526,7 @@ void HomeBudget::UpdateMoney()
 			(VALUE,  money(VALUE))
 			(DT,     money(DT))
 			(DESC,   money(DESC))
+			(INST,   inst_id)
 			.Where(ID == money(ID));
 
 		UpdateSummary();
@@ -812,9 +827,15 @@ void HomeBudget::About()
 {
 	WithAboutLayout<TopWindow> dlg;
 	CtrlLayoutCancel(dlg, t_("About"));
-	dlg.info.NoSb();
+	dlg.info.NoSb(false).AutoHideSb();
 	Size sz = dlg.info.GetSize();
-	dlg.info.SetQTF(GetTopic(String("HomeBudget/src/About$") + (lang == 0 ? "en-us" : "pl-pl")), Zoom(150, 1400));
+	String lng("en-us");
+	switch(lang) {
+	case 1: lng = "cs-cz"; break;
+	case 2: lng = "pl-pl"; break;
+	default: break;
+	}
+	dlg.info.SetQTF(GetTopic(String("HomeBudget/src/About$") + lng), Zoom(150, 1400));
 	dlg.info.SetZoom(Zoom(1, 1));
 	dlg.Execute();
 }
@@ -832,6 +853,171 @@ void HomeBudget::Help()
 
 HomeBudgetHelp::HomeBudgetHelp()
 {
+}
+
+HomeBudgetExport::HomeBudgetExport(const HomeBudget& hb)
+{
+	what=0;
+	what<<=THISBACK(OnSwitch);
+	OnSwitch();
+	
+	months.AddIndex();
+	months.AddColumn(t_("Month")).SetConvert(Single<ConvMonth>());
+	for(int i=0;i<hb.month.GetRowCount();i++){
+		months.AddRow(hb.month.Get(i,ID),hb.month.Get(i,DT));
+	}
+	months.Select(0,months.GetRowCount());
+
+	groups.AddIndex();
+	groups.AddColumn(t_("Groups"));
+	for(int i=0;i<hb.groups.GetRowCount();i++){
+		groups.AddRow(hb.groups.Get(i,ID),hb.groups.Get(i,NAME));
+	}
+	groups.Select(0,groups.GetRowCount());
+	
+	CtrlLayoutOKCancel(*this, "Export");
+}
+
+void HomeBudgetExport::OnSwitch()
+{
+	bool b=~what;
+	months.Enable(b);
+	groups.Enable(b);
+}
+
+void HomeBudget::Export()
+{
+	HomeBudgetExport dlg(*this);
+	dlg.file <<= GetHomeDirFile("export.csv");
+	if(dlg.ExecuteOK()){
+		SqlSet mlist, glist;
+		bool all=int(~dlg.what) == 0;
+		for(int i=0;i<dlg.months.GetRowCount();i++){
+			if(all || dlg.months.IsSelected(i))
+				mlist.Cat(SqlVal(IntStr(dlg.months.Get(i,0))));
+		}
+		for(int i=0;i<dlg.groups.GetRowCount();i++){
+			if(all || dlg.groups.IsSelected(i))
+				glist.Cat(SqlVal(IntStr(dlg.groups.Get(i,0))));
+		}
+		FileOut f(String(~dlg.file));
+		SQL & Select(DT).From(DATES).Where(In(ID,mlist));
+		while(SQL.Fetch())
+			f << "D\t"
+			  << Date(SQL[DT]).Get() << '\n';
+		SQL & Select(NAME).From(GROUPS).Where(In(ID,glist));
+		while(SQL.Fetch())
+			f << "G\t"
+			  << SQL[NAME] << '\n';
+		SQL & Select(NAME.Of(GROUPS),NAME.Of(CATEGORIES),DEFVALUE,PM,INNEWMONTH)
+		      .From(CATEGORIES)
+		      .InnerJoin(GROUPS).On(GR_ID.Of(CATEGORIES)==ID.Of(GROUPS))
+		      .Where(In(GR_ID,glist));
+		while(SQL.Fetch())
+			f << "C\t"
+			  << SQL[0] << '\t'
+			  << SQL[1] << '\t'
+			  << SQL[2] << '\t'
+			  << SQL[3] << '\t'
+			  << SQL[4] << '\n';
+		SQL & Select(DT.Of(DATES),NAME.Of(GROUPS),NAME.Of(CATEGORIES),
+		            PM.Of(MONEY),VALUE.Of(MONEY),DT.Of(MONEY),DESC,INST)
+		      .From(MONEY)
+		      .InnerJoin(CATEGORIES).On(CAT_ID==ID.Of(CATEGORIES))
+		      .InnerJoin(DATES).On(ID.Of(DATES)==DT_ID.Of(MONEY))
+		      .InnerJoin(GROUPS).On(ID.Of(GROUPS)==GR_ID.Of(CATEGORIES))
+		      .Where(In(ID.Of(DATES),mlist) && In(ID.Of(GROUPS),glist));
+		while(SQL.Fetch())
+			f << "M\t"
+			  << Date(SQL[0]).Get() << '\t'
+			  << SQL[1] << '\t'
+			  << SQL[2] << '\t'
+			  << SQL[3] << '\t'
+			  << SQL[4] << '\t'
+			  << Date(SQL[5]).Get() << '\t'
+			  << SQL[6] << '\t'
+			  << SQL[7] << '\n';
+		f.Close();
+	}
+}
+
+void HomeBudget::Import()
+{
+	FileSelector fs;
+	fs.Set(GetHomeDirectory());
+	if(!fs.ExecuteOpen()) return;
+	FileIn f(fs.Get());
+	try
+	{
+		while(!f.IsEof()){
+			Vector<String> line=Split(f.GetLine(),'\t');
+			Date d,dd;
+			switch(line[0][0]) {
+			case 'D':
+				d.Set(StrInt(line[1]));
+				SQL & Select(ID).From(DATES).Where(DT == d);
+				if(!SQL.Fetch())
+					SQL & Insert(DATES)(DT, d);
+				break;
+			case 'G':
+				SQL.Execute("SELECT GROUPS.ID FROM GROUPS WHERE GROUPS.NAME='"+line[1]+"'");
+				if(!SQL.Fetch())
+					SQL & Insert(GROUPS)(NAME, line[1]);
+				break;
+			case 'C':
+				SQL.Execute("SELECT GROUPS.ID FROM CATEGORIES JOIN GROUPS ON CATEGORIES.GR_ID=GROUPS.ID WHERE GROUPS.NAME='"+line[1]+"' AND CATEGORIES.NAME='"+line[2]+"'");
+				if(!SQL.Fetch()){
+					SQL & Select(ID).From(GROUPS).Where(NAME==line[1]);
+					if(!SQL.Fetch()) NEVER();
+					int gid = SQL[0];
+					SQL & Insert(CATEGORIES)(GR_ID,gid)
+					                        (NAME,line[2])
+					                        (DEFVALUE,line[3])
+					                        (PM,line[4])
+					                        (INNEWMONTH,line[5]);
+				}
+				break;
+			case 'M':
+				d.Set(StrInt(line[1]));
+				dd.Set(StrInt(line[6]));
+				SQL.Execute("SELECT MONEY.ID FROM MONEY "
+					"JOIN DATES ON (MONEY.DT_ID=DATES.ID) "
+					"JOIN CATEGORIES ON (CAT_ID=CATEGORIES.ID) "
+					"JOIN GROUPS ON (GROUPS.ID=CATEGORIES.GR_ID) "
+					"WHERE (DATES.DT="+Format("'%i-%02i-01'",d.year,d.month)+" AND GROUPS.NAME='"+line[2]+
+					"' AND CATEGORIES.NAME='"+line[3]+"' AND MONEY.PM="+line[4]+" AND VALUE="+line[5]+" AND DESC='"+line[7]+
+					"' AND INST='"+line[8]+"' AND MONEY.DT="+Format("'%i-%02i-%02i'",dd.year,dd.month,dd.day)+")");
+				if(!SQL.Fetch()){
+					SQL & Select(ID.Of(CATEGORIES)).From(CATEGORIES).
+					InnerJoin(GROUPS).On(ID.Of(GROUPS)==GR_ID.Of(CATEGORIES)).
+					Where(NAME.Of(CATEGORIES)==line[3] && NAME.Of(GROUPS)==line[2]);
+					if(!SQL.Fetch()) NEVER();
+					int cid = SQL[0];
+					SQL & Select(ID).From(DATES).Where(DT==d);
+					if(!SQL.Fetch()) NEVER();
+					int did = SQL[0];
+					SQL & Insert(MONEY)(DT_ID,did)
+					                   (CAT_ID,cid)
+					                   (PM,line[4])
+					                   (VALUE,line[5])
+					                   (DT,dd)
+					                   (DESC,line[7])
+					                   (INST,line[8]);
+				}
+				break;
+			default:
+				NEVER();
+			}
+			//reload everything
+			LoadDates();
+			LoadGroups();
+			LoadCategories(groups.GetCurrentRow());
+			LoadMoney(months.GetCurrentRow());
+		}
+	}
+	catch(SqlExc &e) {
+		Exclamation("[* " + DeQtfLf(e) + "]");
+	}
 }
 
 Topic HomeBudgetHelp::AcquireTopic(const String& topic)

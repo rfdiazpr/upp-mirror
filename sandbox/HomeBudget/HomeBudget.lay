@@ -4,19 +4,21 @@ LAYOUT(HomeBudgetLayout, 748, 400)
 	ITEM(Button, about, SetLabel(t_("About")).LeftPosZ(4, 76).BottomPosZ(4, 26))
 	ITEM(Button, help, SetLabel(t_("Help")).LeftPosZ(84, 76).BottomPosZ(4, 26))
 	ITEM(Button, options, SetLabel(t_("Options")).LeftPosZ(164, 76).BottomPosZ(4, 26))
+	ITEM(Button, exp, SetLabel(t_("Export ...")).LeftPosZ(244, 76).BottomPosZ(4, 26))
+	ITEM(Button, imp, SetLabel(t_("Import ...")).LeftPosZ(324, 76).BottomPosZ(4, 26))
 	ITEM(Button, exit, SetLabel(t_("Exit")).RightPosZ(6, 76).BottomPosZ(4, 26))
-	ITEM(LabelBox, dv___6, SetLabel(t_("Summary")).HSizePosZ(132, 224).BottomPosZ(34, 148))
-	ITEM(StaticText, dv___7, SetText(t_("Income:")).SetFont(StdFontZ(18).Bold()).LeftPosZ(140, 88).BottomPosZ(144, 22))
+	ITEM(LabelBox, dv___8, SetLabel(t_("Summary")).HSizePosZ(132, 224).BottomPosZ(34, 148))
+	ITEM(StaticText, dv___9, SetText(t_("Income:")).SetFont(StdFontZ(18).Bold()).LeftPosZ(140, 88).BottomPosZ(144, 22))
 	ITEM(StaticText, plus, SetFont(StdFontZ(18).Bold()).HSizePosZ(232, 376).BottomPosZ(144, 22))
-	ITEM(StaticText, dv___9, SetText(t_("Spent:")).SetFont(StdFontZ(18).Bold()).LeftPosZ(140, 88).BottomPosZ(118, 24))
+	ITEM(StaticText, dv___11, SetText(t_("Spent:")).SetFont(StdFontZ(18).Bold()).LeftPosZ(140, 88).BottomPosZ(118, 24))
 	ITEM(StaticText, minus, SetFont(StdFontZ(18).Bold()).HSizePosZ(232, 376).BottomPosZ(120, 22))
 	ITEM(StaticText, rest_label, SetText(t_("Rest:")).SetFont(StdFontZ(18).Bold()).LeftPosZ(140, 88).BottomPosZ(96, 22))
 	ITEM(StaticText, rest, SetFont(StdFontZ(18).Bold()).HSizePosZ(232, 376).BottomPosZ(96, 22))
-	ITEM(StaticText, dv___13, SetText(t_("Amount from prev. month:")).SetFont(StdFontZ(18).Bold()).LeftPosZ(140, 268).BottomPosZ(72, 22))
+	ITEM(StaticText, dv___15, SetText(t_("Amount from prev. month:")).SetFont(StdFontZ(18).Bold()).LeftPosZ(140, 268).BottomPosZ(72, 22))
 	ITEM(StaticText, prev_month, SetFont(StdFontZ(18).Bold()).HSizePosZ(412, 232).BottomPosZ(72, 22))
-	ITEM(StaticText, dv___15, SetText(t_("Final rest:")).SetFont(StdFontZ(18).Bold()).LeftPosZ(140, 268).BottomPosZ(48, 22))
+	ITEM(StaticText, dv___17, SetText(t_("Final rest:")).SetFont(StdFontZ(18).Bold()).LeftPosZ(140, 268).BottomPosZ(48, 22))
 	ITEM(StaticText, real_rest, SetFont(StdFontZ(18).Bold()).HSizePosZ(412, 232).BottomPosZ(48, 22))
-	ITEM(LabelBox, dv___17, SetLabel(t_("Most expensive")).RightPosZ(4, 216).BottomPosZ(34, 148))
+	ITEM(LabelBox, dv___19, SetLabel(t_("Most expensive")).RightPosZ(4, 216).BottomPosZ(34, 148))
 	ITEM(TabCtrl, tabmost, RightPosZ(12, 200).BottomPosZ(42, 124))
 END_LAYOUT
 
@@ -28,7 +30,7 @@ LAYOUT(OptionsLayout, 216, 86)
 END_LAYOUT
 
 LAYOUT(AboutLayout, 456, 288)
-	ITEM(RichTextView, info, SetFrame(BlackFrame()).HSizePosZ(4, 4).TopPosZ(4, 252))
+	ITEM(RichTextView, info, AutoHideSb(true).SetFrame(BlackFrame()).HSizePosZ(4, 4).TopPosZ(4, 252))
 	ITEM(Button, cancel, SetLabel(t_("OK")).HCenterPosZ(72, 0).TopPosZ(260, 24))
 END_LAYOUT
 
@@ -48,5 +50,16 @@ LAYOUT(NewGroupLayout, 204, 56)
 	ITEM(EditString, name, LeftPosZ(68, 130).TopPosZ(4, 19))
 	ITEM(Button, ok, SetLabel(t_("OK")).LeftPosZ(48, 74).TopPosZ(28, 24))
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).LeftPosZ(126, 74).TopPosZ(28, 24))
+END_LAYOUT
+
+LAYOUT(ExportLayout, 332, 328)
+	ITEM(Label, dv___0, SetLabel(t_("File:")).LeftPosZ(8, 38).TopPosZ(8, 20))
+	ITEM(EditString, file, HSizePosZ(52, 4).TopPosZ(8, 19))
+	ITEM(Label, dv___2, SetLabel(t_("Export:")).LeftPosZ(8, 38).TopPosZ(32, 20))
+	ITEM(Switch, what, SetLabel(t_("All\nSelected only")).HSizePosZ(52, 4).TopPosZ(36, 32))
+	ITEM(GridCtrl, months, HorzGrid(false).VertGrid(false).MultiSelect(true).LeftPosZ(8, 156).VSizePosZ(72, 40))
+	ITEM(GridCtrl, groups, HorzGrid(false).VertGrid(false).MultiSelect(true).HSizePosZ(168, 8).VSizePosZ(72, 40))
+	ITEM(Button, ok, SetLabel(t_("Export")).LeftPosZ(24, 68).BottomPosZ(4, 28))
+	ITEM(Button, cancel, SetLabel(t_("Cancel")).HCenterPosZ(68, 130).BottomPosZ(4, 28))
 END_LAYOUT
 

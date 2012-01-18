@@ -49,7 +49,7 @@ void Value::SetLarge(const Value& v)
 
 dword Value::GetType() const
 {
-	if(data.IsString())
+	if(IsString())
 		return STRING_V;
 	byte st = data.GetSt();
 	return st == REF ? ptr()->GetType() : st == VOIDV ? VOID_V : st;

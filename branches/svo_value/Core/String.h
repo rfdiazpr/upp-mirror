@@ -213,7 +213,6 @@ class String0 : Moveable<String0> {
 	byte GetSpecial() const       { return (chr[SLEN] | chr[KIND]) == 0 ? chr[SPECIAL] : 0; }
 	byte GetSt() const            { return chr[SPECIAL]; }
 	bool IsSpecial() const        { return !v[7] && v[6]; }
-	bool IsString() const         { return !IsSpecial(); }
 	bool IsSpecial(byte st) const { return w[3] == MAKE4B(0, st, 0, 0); }
 	
 	friend class String;

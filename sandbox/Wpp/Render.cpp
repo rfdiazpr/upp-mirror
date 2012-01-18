@@ -1,6 +1,7 @@
 #include "Skylark.h"
 
-#define LLOG(x) LOG(x)
+#define LLOG(x) // DLOG(x)
+#define LTIMING(x) RTIMING(x)
 
 Http& Http::operator()(const ValueMap& map)
 {
@@ -34,6 +35,27 @@ Http& Http::operator()(const Sql& sql)
 	for(int i = 0; i < n; i++)
 		(*this)(sql.GetColumnInfo(i).name, sql[i]);
 	return *this;
+}
+
+Http& Http::Link(const char *id, void (*view)(Http&), const Vector<Value>& arg)
+{
+	var.Add(id, Raw('\"' + MakeLink(view, arg) + '\"'));
+	return *this;
+}
+
+Http& Http::operator()(const char *id, void (*view)(Http&))
+{
+	return Link(id, view, Vector<Value>());
+}
+
+Http& Http::operator()(const char *id, void (*view)(Http&), const Value& arg1)
+{
+	return Link(id, view, Vector<Value>() << arg1);
+}
+
+Http& Http::operator()(const char *id, void (*view)(Http&), const Value& arg1, const Value& arg2)
+{
+	return Link(id, view, Vector<Value>() << arg1 << arg2);
 }
 
 SqlUpdate Http::Update(SqlId table)
@@ -71,11 +93,14 @@ ArrayMap<String, One<Exe> > template_cache;
 
 const One<Exe>& Http::GetTemplate(const String& template_name)
 {
-	DDUMPM(var);
+	LTIMING("GetTemplate");
 	StringBuffer s;
-	for(int i = 0; i < var.GetCount(); i++)
-		s << var.GetKey(i) << ';';
-	s << ':' << template_name;
+	{
+		LTIMING("MakeSignature");
+		for(int i = 0; i < var.GetCount(); i++)
+			s << var.GetKey(i) << ';';
+		s << ':' << template_name;
+	}
 	String sgn = s;
 	LLOG("Trying to retrieve " << sgn << " from cache");
 	Mutex::Lock __(template_cache_lock);
@@ -83,6 +108,7 @@ const One<Exe>& Http::GetTemplate(const String& template_name)
 	if(q >= 0)
 		return template_cache[q];
 	LLOG("About to compile: " << sgn);
+	LTIMING("Compile");
 	One<Exe>& exe = template_cache.Add(sgn);
 	exe = Compile(GetPreprocessedTemplate(template_name), var.GetIndex());
 	return exe;
@@ -90,6 +116,7 @@ const One<Exe>& Http::GetTemplate(const String& template_name)
 
 Http& Http::Render(const String& template_name)
 {
+	LTIMING("Render");
 	response << ::Render(GetTemplate(template_name), var.GetValues());
 	return *this;
 }

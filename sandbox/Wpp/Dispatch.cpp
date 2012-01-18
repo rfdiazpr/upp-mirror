@@ -1,7 +1,7 @@
 #include "Skylark.h"
 
-#define LLOG(x)   DLOG(x)
-#define LTIMING(x)
+#define LLOG(x)    // DLOG(x)
+#define LTIMING(x) RTIMING(x)
 
 enum { DISPATCH_VARARGS = -1 };
 
@@ -116,8 +116,6 @@ void RegisterView0(void (*view)(Http&), const char *id, String path, bool primar
 		}
 	}
 	ASSERT_(!DispatchMap[q].view, "duplicate view " + String(path));
-	DDUMP(method);
-	DDUMPC(linkpart);
 	DispatchMap[q].view = view;
 	DispatchMap[q].method = method;
 //	DumpDispatchMap();
@@ -172,10 +170,7 @@ void FinalizeViews()
 	for(int i = 0; i < w.GetCount(); i++) {
 		const ViewData& v = w[i];
 		ASSERT_(sViewIndex().Find((uintptr_t)v.view) < 0, "duplicate view function registration " + String(v.id));
-		DDUMP(v.path);
-		DDUMP(ReplaceVars(sRoot() + '/' + v.path, sViewVar(), '$'));
 		Vector<String> h = Split(ReplaceVars(sRoot() + '/' + v.path, sViewVar(), '$'), ';');
-		DDUMPC(h);
 		for(int i = 0; i < h.GetCount(); i++)
 			RegisterView0(v.view, v.id, h[i], i == 0);
 	}
@@ -261,87 +256,94 @@ void Http::Dispatch(Socket& socket)
 		content = socket.ReadCount(len);
 		LLOG(content);
 		Cout() << method << " " << uri << "\n";
-		request_content_type = GetHeader("content-type");
-		String rc = ToLower(request_content_type);
-		bool post = method == "POST";
-		if(post)
-			if(rc.StartsWith("application/x-www-form-urlencoded"))
-				ParseRequest(content);
-			else
-			if(rc.StartsWith("multipart/"))
-				ReadMultiPart(content);
-		int q = uri.Find('?');
-		if(q >= 0) {
-			if(!post)
-				ParseRequest(~uri + q + 1);
-			uri.Trim(q);
-		}
-		for(int i = hdrfield.Find("cookie"); i >= 0; i = hdrfield.FindNext(i)) {
-			const String& h = hdrfield[i];
-			int q = 0;
-			for(;;) {
-				int qq = h.Find('=', q);
-				if(qq < 0)
-					break;
-				String id = ToLower(TrimBoth(h.Mid(q, qq - q)));
-				qq++;
-				DUMP(id);
-				q = h.Find(';', qq);
-				if(q < 0) {
-					var.Add(id, UrlDecode(h.Mid(qq)));
-					break;
-				}
-				var.Add(id, UrlDecode(h.Mid(qq, q - qq)));
-				q++;
-			}
-		}
-		DUMPM(var);
-		Vector<String> part = Split(uri, '/');
-		for(int i = 0; i < part.GetCount(); i++)
-			part[i] = UrlDecode(part[i]);
-		DUMPC(part);
-		Vector<String> a;
-		BestDispatch bd(arg);
-		if(DispatchMap.GetCount())
-			GetBestDispatch(post ? DispatchNode::POST : DispatchNode::GET, part, 0, DispatchMap[0], a, bd, 0, 0);
-		DUMPC(arg);
-		if(bd.view) {
-			try {
-				(*bd.view)(*this);
-			}
-			catch(SqlExc e) {
-				response << "Internal server error<br>"
-				         << "SQL ERROR: " << e;
-				code = 500;
-				code_text = "Internal server error";
-			}
-			catch(Exc e) {
-				response << "Internal server error<br>"
-				         << e;
-				code = 500;
-				code_text = "Internal server error";
-			}
-		}
-		else {
-			response << "Page not found";
-			code = 404;
-			code_text = "Not found";
-		}
 		String r;
-		if(redirect.GetCount()) {
-			r << "HTTP/1.1 " << code << " Found\r\n";
-			r << "Location: " << redirect << "\r\n";
+		for(int i = 0; i < benchmark; i++) {
+			var.Clear();
+			arg.Clear();
+			LTIMING("Request processing");
+			request_content_type = GetHeader("content-type");
+			String rc = ToLower(request_content_type);
+			bool post = method == "POST";
+			if(post)
+				if(rc.StartsWith("application/x-www-form-urlencoded"))
+					ParseRequest(content);
+				else
+				if(rc.StartsWith("multipart/"))
+					ReadMultiPart(content);
+			int q = uri.Find('?');
+			if(q >= 0) {
+				if(!post)
+					ParseRequest(~uri + q + 1);
+				uri.Trim(q);
+			}
+			for(int i = hdrfield.Find("cookie"); i >= 0; i = hdrfield.FindNext(i)) {
+				const String& h = hdrfield[i];
+				int q = 0;
+				for(;;) {
+					int qq = h.Find('=', q);
+					if(qq < 0)
+						break;
+					String id = ToLower(TrimBoth(h.Mid(q, qq - q)));
+					qq++;
+					DUMP(id);
+					q = h.Find(';', qq);
+					if(q < 0) {
+						var.Add(id, UrlDecode(h.Mid(qq)));
+						break;
+					}
+					var.Add(id, UrlDecode(h.Mid(qq, q - qq)));
+					q++;
+				}
+			}
+			DUMPM(var);
+			Vector<String> part = Split(uri, '/');
+			for(int i = 0; i < part.GetCount(); i++)
+				part[i] = UrlDecode(part[i]);
+			DUMPC(part);
+			Vector<String> a;
+			BestDispatch bd(arg);
+			if(DispatchMap.GetCount())
+				GetBestDispatch(post ? DispatchNode::POST : DispatchNode::GET, part, 0, DispatchMap[0], a, bd, 0, 0);
+			DUMPC(arg);
+			response.Clear();
+			if(bd.view) {
+				try {
+					(*bd.view)(*this);
+				}
+				catch(SqlExc e) {
+					response << "Internal server error<br>"
+					         << "SQL ERROR: " << e;
+					code = 500;
+					code_text = "Internal server error";
+				}
+				catch(Exc e) {
+					response << "Internal server error<br>"
+					         << e;
+					code = 500;
+					code_text = "Internal server error";
+				}
+			}
+			else {
+				response << "Page not found";
+				code = 404;
+				code_text = "Not found";
+			}
+			r.Clear();
+			if(redirect.GetCount()) {
+				r << "HTTP/1.1 " << code << " Found\r\n";
+				r << "Location: " << redirect << "\r\n";
+			}
+			else
+				r <<
+					"HTTP/1.0 " << code << ' ' << code_text << "\r\n"
+					"Date: " <<  WwwFormat(GetUtcTime()) << "\r\n"
+					"Server: U++\r\n"
+					"Content-Length: " << response.GetCount() << "\r\n"
+					"Connection: close\r\n"
+					"Content-Type: " << content_type << "\r\n"
+					<< cookies <<
+					"\r\n";
 		}
-		else
-			r <<
-				"HTTP/1.0 " << code << ' ' << code_text << "\r\n"
-				"Date: " <<  WwwFormat(GetUtcTime()) << "\r\n"
-				"Server: U++\r\n"
-				"Content-Length: " << response.GetCount() << "\r\n"
-				"Connection: close\r\n"
-				"Content-Type: " << content_type << "\r\n"
-				<< cookies <<
-				"\r\n";
 		LLOG(r);
 		socket.Write(r);
 		LLOG(response);

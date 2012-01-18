@@ -1,5 +1,7 @@
 #include "Skylark.h"
 
+#define LLOG(x)  DLOG(x)
+
 VectorMap<String, Value (*)(const Vector<Value>& v)>& Compiler::functions()
 {
 	static VectorMap<String, Value (*)(const Vector<Value>& v)> x;
@@ -378,7 +380,11 @@ One<Exe> Compile(const char *code, const Index<String>& vars)
 {
 	Compiler c(code, vars);
 	try {
-		return c.Block();
+		One<Exe> exe = c.Block();
+		LLOG("Before optimization node count: " << c.GetNodeCount(exe));
+		c.Optimize(exe);
+		LLOG("After optimization node count: " << c.GetNodeCount(exe));
+		return exe;
 	}
 	catch(CParser::Error e) {
 		One<Exe> result;

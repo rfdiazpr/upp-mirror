@@ -1,7 +1,7 @@
 #include Style.witz
 
 #define BODY
- <FORM action=$(EDIT ? SubmitEdit(ID) : SubmitNew) method="post" accept-charset="utf-8" enctype="multipart/form-data">
+ <FORM action=$ACTION method="post" accept-charset="utf-8" enctype="multipart/form-data">
     <P>
     First name: <INPUT type="text" name="firstname" value="$FIRSTNAME"><BR>
     Last name: <INPUT type="text" name="lastname" value="$LASTNAME"><BR>

@@ -1,6 +1,6 @@
 #include "Skylark.h"
 
-#define LTIMING(x)
+#define LTIMING(x) // RTIMING(x)
 
 force_inline
 bool Compiler::IsTrue(const Value& v)
@@ -235,6 +235,11 @@ Value Compiler::ExeField::Eval(Vector<Value>& stack, StringBuffer& out) const
 	return value->Eval(stack, out)[id];	
 }
 
+Value Compiler::ExeVarField::Eval(Vector<Value>& stack, StringBuffer& out) const
+{
+	return stack[var_index][id];
+}
+
 Value Compiler::ExeFn::Eval(Vector<Value>& stack, StringBuffer& out) const
 {
 	Vector<Value> v;
@@ -246,15 +251,30 @@ Value Compiler::ExeFn::Eval(Vector<Value>& stack, StringBuffer& out) const
 
 Value Compiler::ExeLink::Eval(Vector<Value>& stack, StringBuffer& out) const
 {
+	LTIMING("ExeLink");
 	Vector<Value> v;
 	v.SetCount(arg.GetCount());
-	for(int i = 0; i < arg.GetCount(); i++)
+	for(int i = 0; i < arg.GetCount(); i++) {
+		LTIMING("arg eval");
 		v[i] = arg[i].Eval(stack, out);
-	DDUMPC(*part);
-	out << "\"";
-	MakeLink(out, *part, v);
-	out << "\"";
-	return Value();
+	}
+	StringBuffer r;
+	r << "\"";
+	MakeLink(r, *part, v);
+	r << "\"";
+	return Raw(r);
+}
+
+Value Compiler::ExeLinkVarField1::Eval(Vector<Value>& stack, StringBuffer& out) const
+{
+	LTIMING("ExeLinkVarField");
+	Vector<Value> v;
+	v.Add(stack[var_index][id]);
+	StringBuffer r;
+	r << "\"";
+	MakeLink(r, *part, v);
+	r << "\"";
+	return Raw(r);
 }
 
 Value Compiler::ExeFirst::Eval(Vector<Value>& stack, StringBuffer& out) const
@@ -284,19 +304,24 @@ Value Compiler::ExeKey::Eval(Vector<Value>& stack, StringBuffer& out) const
 force_inline
 static void sCatAsString(StringBuffer& out, const Value& v)
 {
+	LTIMING("sCatAsString");
 	if(IsNull(v))
 		return;
-	if(v.Is<RawHtmlText>())
+	if(v.Is<RawHtmlText>()) {
+		LTIMING("Cat RawHtml");
 		out.Cat(ValueTo<RawHtmlText>(v).text);
+	}
 	else {
 		const char *s;
 		String h;
 		if(v.Is<String>())
 			s = ValueTo<String>(v);
 		else {
+			LTIMING("AsString");
 			h = AsString(v);
 			s = h;
 		}
+		LTIMING("Escape html");
 		while(*s) {
 			if(*s == 31)
 				out.Cat("&nbsp;");
@@ -324,6 +349,7 @@ static void sCatAsString(StringBuffer& out, const Value& v)
 
 Value Compiler::ExeFor::Eval(Vector<Value>& stack, StringBuffer& out) const
 {
+	LTIMING("ExeFor");
 	Value array = value->Eval(stack, out);
 	if(array.GetCount() == 0 && onempty)
 		return onempty->Eval(stack, out);
@@ -359,6 +385,7 @@ Value Compiler::ExeBlock::Eval(Vector<Value>& stack, StringBuffer& out) const
 
 String Render(const One<Exe>& exe, Vector<Value>& var)
 {
+	LTIMING("Render0");
 	StringBuffer b;
 	Value v = exe->Eval(var, b);
 	b.Cat(AsString(v));

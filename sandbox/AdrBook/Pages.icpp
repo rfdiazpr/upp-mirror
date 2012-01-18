@@ -18,16 +18,18 @@ URL_VIEW(HomePage, "$base/stránčička.html")
 	perpage = max(perpage, 10);
 	int pages = int(SQL % Select(SqlCountRows()).From(PERSON).Where(where)) / perpage;
 	int page = atoi(http["page"]);
+	ValueMap vm;
+	{ RTIMING("SQL");
 	Sql sql;
 	sql * Select(ID, FIRSTNAME, LASTNAME, EMAIL, SEX)
 	      .From(PERSON)
 	      .Where(where)
 	      .OrderBy(LASTNAME)
 	      .Limit(page * perpage, perpage);
-	ValueMap vm;
 	while(sql.Fetch(vm)) {
 		vm.Add("HASPICTURE", FileExists(ConfigFile(AsString(sql[ID]) + ".data")));
 		person.Add(vm);
+	}
 	}
 	ValueArray pg;
 	for(int i = 0; i < pages; i++)
@@ -74,7 +76,7 @@ URL_VIEW(SubmitNew, "submit:POST")
 
 URL_VIEW(New, "new")
 {
-	http("EDIT", 0).Render("AdrBook/Dialog.witz");
+	http("ACTION", SubmitNew).Render("AdrBook/Dialog.witz");
 }
 
 URL_VIEW(SubmitEdit, "submit/edit/*:POST")
@@ -110,7 +112,7 @@ URL_VIEW(Edit, "person/*/edit")
 	http
 		("ID", id)
 		(sql)
-		("EDIT", 1)
+		("ACTION", SubmitEdit, id)
 	.Render("AdrBook/Dialog.witz");
 }
 

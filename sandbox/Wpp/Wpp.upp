@@ -10,6 +10,7 @@ file
 	Witz.h,
 	Preprocess.cpp,
 	Compile.cpp,
+	Optimize.cpp,
 	Exe.cpp,
 	StdLib.icpp,
 	Http.h,

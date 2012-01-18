@@ -1,0 +1,56 @@
+http://127.0.0.1:8001/root/asdfasdf/str%C3%A1n%C4%8Di%C4%8Dka.html?search=Calamity
+
+TIMING MakeLink       : 30.36 ms - 867.63 ns (32.00 ms / 34993 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 34993
+TIMING Compile        :  0.00 ns -  0.00 ns ( 0.00 ns / 2 ), min:  0.00 ns, max:  0.00 ns, nesting: 1 - 2
+TIMING MakeSignature  : 953.16 us - 953.16 ns ( 1.00 ms / 1000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1000
+TIMING GetTemplate    : 953.16 us - 953.16 ns ( 1.00 ms / 1000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1000
+TIMING Render         : 84.95 ms - 84.95 us (85.00 ms / 1000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1000
+TIMING SQL            : 299.95 ms - 299.95 us (300.00 ms / 1000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1000
+TIMING Request processing: 424.95 ms - 424.95 us (425.00 ms / 1000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1000
+
+-------------------
+TIMING MakeLink       : 23.51 ms - 671.88 ns (25.00 ms / 34993 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 34993
+TIMING Compile        : 11.00 ms -  5.50 ms (11.00 ms / 2 ), min:  0.00 ns, max: 11.00 ms, nesting: 1 - 2
+TIMING MakeSignature  : 957.45 us - 957.45 ns ( 1.00 ms / 1000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1000
+TIMING GetTemplate    : 11.96 ms - 11.96 us (12.00 ms / 1000 ), min:  0.00 ns, max: 11.00 ms, nesting: 1 - 1000
+TIMING Render         : 90.96 ms - 90.96 us (91.00 ms / 1000 ), min:  0.00 ns, max: 11.00 ms, nesting: 1 - 1000
+TIMING SQL            : 316.96 ms - 316.96 us (317.00 ms / 1000 ), min:  0.00 ns, max: 13.00 ms, nesting: 1 - 1000
+TIMING Request processing: 438.96 ms - 438.96 us (439.00 ms / 1000 ), min:  0.00 ns, max: 24.00 ms, nesting: 1 - 1000
+
+====================
+svo_value:
+TIMING MakeLink       : 73.42 ms - 524.49 ns (81.00 ms / 139993 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 139993
+TIMING Compile        :  0.00 ns -  0.00 ns ( 0.00 ns / 2 ), min:  0.00 ns, max:  0.00 ns, nesting: 1 - 2
+TIMING MakeSignature  :  0.00 ns -  0.00 ns ( 0.00 ns / 4000 ), min:  0.00 ns, max:  0.00 ns, nesting: 1 - 4000
+TIMING GetTemplate    :  1.78 ms - 445.89 ns ( 2.00 ms / 4000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 4000
+TIMING Render         : 331.78 ms - 82.95 us (332.00 ms / 4000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 4000
+TIMING SQL            :  1.21 s  - 301.70 us ( 1.21 s  / 4000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 4000
+TIMING Request processing:  1.66 s  - 416.20 us ( 1.67 s  / 4000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 4000
+------------------------
+old_value:
+TIMING MakeLink       : 58.73 ms - 419.49 ns (65.00 ms / 139993 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 139993
+TIMING Compile        :  0.00 ns -  0.00 ns ( 0.00 ns / 2 ), min:  0.00 ns, max:  0.00 ns, nesting: 1 - 2
+TIMING MakeSignature  :  1.82 ms - 455.18 ns ( 2.00 ms / 4000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 4000
+TIMING GetTemplate    :  3.82 ms - 955.18 ns ( 4.00 ms / 4000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 4000
+TIMING Render         : 344.82 ms - 86.21 us (345.00 ms / 4000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 4000
+TIMING SQL            :  1.20 s  - 300.46 us ( 1.20 s  / 4000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 4000
+TIMING Request processing:  1.70 s  - 424.96 us ( 1.70 s  / 4000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 4000
+
+
+----------------------------
+TIMING MakeLink       : 47.68 ms - 340.56 ns (54.00 ms / 139993 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 139993
+TIMING arg eval       : 69.68 ms - 497.71 ns (76.00 ms / 139993 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 139993
+TIMING ExeLink        : 170.68 ms -  1.22 us (177.00 ms / 139993 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 139993
+TIMING AsString       : 23.05 ms - 130.97 ns (31.00 ms / 175992 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 175992
+TIMING ExeField       : 32.17 ms - 113.28 ns (45.00 ms / 284001 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 284001
+TIMING ExeFor         : 523.46 ms - 43.62 us (524.00 ms / 12000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 12000
+TIMING Escape html    : 11.24 ms - 52.05 ns (21.00 ms / 215993 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 215993
+TIMING Cat RawHtml    : 25.61 ms - 47.42 ns (50.00 ms / 539978 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 539978
+TIMING sCatAsString   : 174.66 ms - 166.67 ns (222.00 ms / 1047955 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1047955
+TIMING Render0        : 539.82 ms - 134.95 us (540.00 ms / 4000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 4000
+TIMING Compile        :  0.00 ns -  0.00 ns ( 0.00 ns / 2 ), min:  0.00 ns, max:  0.00 ns, nesting: 1 - 2
+TIMING MakeSignature  :  1.82 ms - 454.83 ns ( 2.00 ms / 4000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 4000
+TIMING GetTemplate    :  5.82 ms -  1.45 us ( 6.00 ms / 4000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 4000
+TIMING Render         : 547.82 ms - 136.95 us (548.00 ms / 4000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 4000
+TIMING SQL            :  1.17 s  - 292.45 us ( 1.17 s  / 4000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 4000
+TIMING Request processing:  1.89 s  - 473.45 us ( 1.89 s  / 4000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 4000

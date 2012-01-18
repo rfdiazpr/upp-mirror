@@ -35,8 +35,10 @@ CONSOLE_APP_MAIN
 
 	Sqlite3Session sqlite3;
 
+#ifdef _DEBUG
 	sqlite3.LogErrors();
 	sqlite3.SetTrace();
+#endif
 	if(!sqlite3.Open(ConfigFile("person.db"))) {
 		LOG("Can't create or open database file\n");
 		return;
@@ -74,7 +76,11 @@ CONSOLE_APP_MAIN
 				break;
 			Cout() << " request accepted\n";
 			Http http;
+		#ifndef _DEBUG
+			http.Benchmark(4000);
+		#endif
 			http.Dispatch(request);
+//			break;
 		}
 		else
 			Cout() << " ...tick...\n";

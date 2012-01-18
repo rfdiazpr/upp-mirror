@@ -21,12 +21,14 @@ struct Http {
 	
 	String cookies;
 	
+	int    benchmark;
 	
 	bool Read(Socket& http);
 	
 	void  ParseRequest(const char *s);
 	const One<Exe>& GetTemplate(const String& template_name);
 	void  ReadMultiPart(const String& content);
+	Http& Link(const char *id, void (*view)(Http&), const Vector<Value>& arg);
 
 public:
 	void Dispatch(Socket& socket);
@@ -44,6 +46,9 @@ public:
 	
 	Http& operator()(const char *id, const Value& v)  { var.Add(id, v); return *this; }
 	Http& operator()(const ValueMap& map);
+	Http& operator()(const char *id, void (*view)(Http&));
+	Http& operator()(const char *id, void (*view)(Http&), const Value& arg1);
+	Http& operator()(const char *id, void (*view)(Http&), const Value& arg1, const Value& arg2);
 
 	Http&     operator()(const Sql& sql);
 	Http&     operator()(Fields rec);
@@ -67,7 +72,9 @@ public:
 	
 	String GetResponse() const                        { return response; }
 	
-	Http() { code = 200; content_type = "text/html; charset=UTF-8"; }
+	void Benchmark(int n = 10)                        { benchmark = n; }
+
+	Http() { code = 200; content_type = "text/html; charset=UTF-8"; benchmark = 1; }
 };
 
 String HttpResponse(int code, const char *phrase, const String& data, const char *content_type = NULL);

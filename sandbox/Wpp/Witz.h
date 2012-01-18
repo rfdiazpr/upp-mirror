@@ -100,6 +100,13 @@ struct Compiler {
 		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
 	};
 	
+	struct ExeVarField : Exe {
+		int    var_index;
+		String id;
+
+		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
+	};
+	
 	struct ExeFn : Exe {
 		Value (*fn)(const Vector<Value>& arg);
 		
@@ -112,6 +119,15 @@ struct Compiler {
 		const Vector<String> *part;
 		
 		Array<Exe> arg;
+
+		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
+	};
+
+	struct ExeLinkVarField1 : Exe {
+		const Vector<String> *part;
+		
+		int    var_index;
+		String id;
 
 		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
 	};
@@ -157,6 +173,8 @@ struct Compiler {
 	CParser       p;
 	Index<String> var;
 	Vector<bool>  forvar;
+	bool          optimized;
+	int           count_node;
 
 	int ForVar(String id, int i);
 
@@ -179,6 +197,17 @@ struct Compiler {
 	
 	static void Register(const String& id, Value (*fn)(const Vector<Value>& arg));
 	
+	typedef Compiler CLASSNAME;
+
+	void Iterate(Array<Exe>& a, Callback1< One<Exe>& > op);
+	void Iterate(One<Exe>& exe, Callback1< One<Exe>& > op);
+	void OptimizeConst(One<Exe>& exe);
+	void Optimize(One<Exe>& exe);
+
+	void CountNodes(One<Exe>& exe);
+
+	int  GetNodeCount(One<Exe>& exe);
+
 	Compiler(const char *code, const Index<String>& var) : p(code), var(var, 1) { forvar.SetCount(var.GetCount(), false); }
 };
 

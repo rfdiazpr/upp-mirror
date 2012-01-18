@@ -12,7 +12,8 @@ file
 	AdrBook.cpp,
 	Style.witz,
 	Dialog.witz,
-	Index.witz;
+	Index.witz,
+	benchmark.txt;
 
 mainconfig
 	"" = "SSE2";

@@ -1,6 +1,7 @@
 #include "Skylark.h"
 
 #define LLOG(x) LOG(x)
+#define LTIMING(x) RTIMING(x)
 
 static String ReadLine(Socket& s)
 {
@@ -196,24 +197,47 @@ void Http::ReadMultiPart(const String& buffer)
 	}
 }
 
+static const char hex_digits[] = "0123456789ABCDEF";
+
+void UrlEncode(StringBuffer& out, const String& s)
+{
+	static bool ok[256];
+	ONCELOCK {
+		for(int ch = 0; ch < 256; ch++)
+			ok[ch] = IsAlNum(ch) || ch == ',' || ch == '.' || ch == '-' || ch == '_';
+	}
+	const char *p = s, *e = s.End();
+	for(; p < e; p++)
+	{
+		const char *b = p;
+		while(p < e && ok[(byte)*p])
+			p++;
+		if(p > b)
+			out.Cat(b, int(p - b));
+		if(p >= e)
+			break;
+		if(*p == ' ')
+			out << '+';
+		else
+			out << '%' << hex_digits[(*p >> 4) & 15] << hex_digits[*p & 15];
+	}
+}
+
 void MakeLink(StringBuffer& out, const Vector<String>& part, const Vector<Value>& arg)
-{// Could by optimized by moving out as parameter to UrlEncode
+{
+	LTIMING("MakeLink");
 	out.Cat("/");
-	DDUMPC(arg);
-	DDUMPC(part);
 	for(int i = 0; i < part.GetCount(); i++) {
 		const String& p = part[i];
 		if(i)
 			out << '/';
 		int q = (byte)*p;
-		if(q < 32)
-			DDUMP(arg[q]);
 		if(q < 32) {
 			if(q >= 0 && q < arg.GetCount())
-				out << UrlEncode(AsString(arg[q]));
+				UrlEncode(out, AsString(arg[q]));
 		}
 		else
-			out << UrlEncode(p);
+			UrlEncode(out, p);
 	}
 	bool get = false;
 	for(int i = 0; i < arg.GetCount(); i++)
@@ -227,7 +251,9 @@ void MakeLink(StringBuffer& out, const Vector<String>& part, const Vector<Value>
 			for(int i = 0; i < m.GetCount(); i++) {
 				if(i)
 					out << '&';
-				out << UrlEncode(AsString(m.GetKeys()[i])) << '=' << UrlEncode(AsString(m.GetValues()[i]));
+				UrlEncode(out, AsString(m.GetKeys()[i]));
+				out << '=';
+				UrlEncode(out, AsString(m.GetValues()[i]));
 			}
 		}
 }

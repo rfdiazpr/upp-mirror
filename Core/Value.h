@@ -2,6 +2,8 @@ class Id;
 class ValueArray;
 class ValueMap;
 
+#define SVO_VALUE
+
 const dword VOID_V    = 0;
 
 const dword INT_V     = 1;
@@ -90,7 +92,7 @@ protected:
 	Void    *&ptr()                  { ASSERT(IsRef()); return *(Void **)&data; }
 	Void     *ptr() const            { ASSERT(IsRef()); return *(Void **)&data; }
 	
-	bool     IsString() const        { return data.IsString(); }
+	bool     IsString() const        { return !data.IsSpecial(); }
 	bool     Is(byte v) const        { return data.IsSpecial(v); }
 	bool     IsRef() const           { return Is(REF); }
 	void     InitRef(Void *p)        { data.SetSpecial(REF); ptr() = p; }

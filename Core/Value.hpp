@@ -301,21 +301,21 @@ bool IsType(const Value& x, T* = 0)           { return x.Is<T>(); }
 
 template <class T>
 struct RawValue : public Value { // Deprecated
-	RawValue(const T& x) : Value(RawToValue(x)) {}
-	static const T& Extract(const Value& v) { return v.To<T>(); }
+	RawValue(const T& x) : Value(RawToValue(x))            {}
+	static const T& Extract(const Value& v)                { return v.To<T>(); }
 	static const T& Extract(const Value& v, const T& dflt) { return v.Is<T>() ? v.To<T>() : dflt; }
 };
 
 template <class T>
 struct RichValue : public Value { // Deprecated
 public:
-	RichValue(const T& x) : Value(RichToValue<T>(x)) {}
-	static void Register() init_ { Value::Register<T>(); }
-	static const T& Extract(const Value& v) { v.Get<T>(); }
+	RichValue(const T& x) : Value(RichToValue<T>(x))       {}
+	static void Register() init_                           { Value::Register<T>(); }
+	static const T& Extract(const Value& v)                { return v.Get<T>(); }
 };
 
 template <class T> // Deprecated
-inline const T& ValueTo(const Value& v)                { return v.To<T>(); }
+inline const T& ValueTo(const Value& v)                    { return v.To<T>(); }
 
 template <class T> // Deprecated
-inline const T& ValueTo(const Value& v, const T& dflt) { return v.Is<T>() ? v.To<T>() : dflt; }
+inline const T& ValueTo(const Value& v, const T& dflt)     { return v.Is<T>() ? v.To<T>() : dflt; }

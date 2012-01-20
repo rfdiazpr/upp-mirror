@@ -1,0 +1,10 @@
+uses
+	Draw;
+
+file
+	ClassFactory.h,
+	ClassFactory.cpp,
+	PolyXML.h,
+	src.tpp,
+	srcdoc.tpp;
+

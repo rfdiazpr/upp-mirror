@@ -111,7 +111,7 @@ struct SvoFn {
 };
 
 #define SVO_FN(id, T) \
-	static Value::Sval id[] = { \
+	static Value::Sval id = { \
 		SvoFn<T>::IsNull, SvoFn<T>::Serialize, SvoFn<T>::GetHashValue, SvoFn<T>::IsEqual, \
 		SvoFn<T>::IsPolyEqual, SvoFn<T>::AsString \
 	};
@@ -123,7 +123,7 @@ void Value::InitSmall(const T& init)
 	SVO_FN(sval, T)
 	int typeno = GetValueTypeNo<T>();
 	ASSERT(typeno >= 0 && typeno < 256);
-	svo[typeno] = sval;
+	svo[typeno] = &sval;
 	data.SetSpecial(typeno);
 	new(&data) T(init);
 }
@@ -142,7 +142,7 @@ void Value::SvoRegister()
 	dword t = GetValueTypeNo<T>();
 	ASSERT(t < 255);
 	SVO_FN(sval, T)
-	svo[t] = sval;
+	svo[t] = &sval;
 }
 
 template <class T>
@@ -210,8 +210,8 @@ const T& GetStaticNull()
 template <class T>
 inline const T& Value::Get() const
 {
-	dword t = GetValueTypeNo<T>();
 #ifndef _DEBUG
+	dword t = GetValueTypeNo<T>();
 	if(t == VALUEARRAY_V) {
 		ASSERT(ptr()->GetType() == VALUEARRAY_V);
 		return *(T*)this; // Illegal, but works -> better than crash in release mode

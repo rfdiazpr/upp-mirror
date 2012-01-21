@@ -172,19 +172,19 @@ struct SvoVoidFn {
 	static String     AsString(const void *p)                    { return String(); }
 };
 
-static Value::Sval s_void[] = { \
+static Value::Sval s_void = { \
 	SvoVoidFn::IsNull, SvoVoidFn::Serialize, SvoVoidFn::GetHashValue, SvoVoidFn::IsEqual,
 	SvoVoidFn::IsPolyEqual, SvoVoidFn::AsString
 };
 
 Value::Sval *Value::svo[256] = {
-	s_String, // STRING_V
-	s_int, // INT_V
+	&s_String, // STRING_V
+	&s_int, // INT_V
 
-	s_double, //DOUBLE_V  = 2;
-	s_void, //VOIDV_V  = 3;
-	s_date, //DATE_V    = 4;
-	s_time, //TIME_V    = 5;
+	&s_double, //DOUBLE_V  = 2;
+	&s_void, //VOIDV_V  = 3;
+	&s_date, //DATE_V    = 4;
+	&s_time, //TIME_V    = 5;
 
 	NULL, //ERROR_V   = 6;
 
@@ -194,8 +194,8 @@ Value::Sval *Value::svo[256] = {
 
 	NULL, //VALUEARRAY_V = 9;
 
-	s_int64, //INT64_V  = 10;
-	s_bool, //BOOL_V   = 11;
+	&s_int64, //INT64_V  = 10;
+	&s_bool, //BOOL_V   = 11;
 
 	NULL, //VALUEMAP_V   = 12;
 };

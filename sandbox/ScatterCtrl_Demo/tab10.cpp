@@ -66,8 +66,14 @@ void Tab10::Init()
 	scatter.ShowInfo().ShowContextMenu();
 }
 
+ScatterDemo *Construct10()
+{
+	static Tab10 tab;
+	return &tab;
+}
+
 INITBLOCK {
-	RegisterExample("User graph", new Tab10);
+	RegisterExample("User graph", Construct10);
 
 	SeriesPlot::Register<MyPlot>("My plot");
 	MarkPlot::Register<MyMark>("My mark");

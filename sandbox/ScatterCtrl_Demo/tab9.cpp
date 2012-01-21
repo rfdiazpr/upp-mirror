@@ -22,6 +22,12 @@ void Tab9::Init()
 	OnSequentialX();
 }
 
+ScatterDemo *Construct9()
+{
+	static Tab9 tab;
+	return &tab;
+}
+
 INITBLOCK {
-	RegisterExample("Big dataset", new Tab9);
+	RegisterExample("Big dataset", Construct9);
 }

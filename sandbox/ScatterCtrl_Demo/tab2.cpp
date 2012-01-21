@@ -21,6 +21,12 @@ void Tab2::Init()
 	scatter.AddSeries(&funct3).Legend("-x^2-5");
 }
 
+ScatterDemo *Construct2()
+{
+	static Tab2 tab;
+	return &tab;
+}
+
 INITBLOCK {	
-	RegisterExample("Functions", new Tab2);
+	RegisterExample("Functions", Construct2);
 }

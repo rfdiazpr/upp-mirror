@@ -9,7 +9,7 @@
 
 
 struct Example {
-	One <ScatterDemo> ctrl;
+	ScatterDemo* (*ctrl)();
 	String name;
 };
 
@@ -19,7 +19,7 @@ Array<Example>& Examples()
 	return x;
 };
 
-void RegisterExample(const char *name, ScatterDemo *ctrl)
+void RegisterExample(const char *name, ScatterDemo* (*ctrl)())
 {
 	Example& x = Examples().Add();
 	x.name = name;
@@ -30,7 +30,7 @@ void RegisterExample(const char *name, ScatterDemo *ctrl)
 GUI_APP_MAIN
 {
 	for (int i = 0; i < Examples().GetCount(); ++i)
-		Examples()[i].ctrl->Init();
+		Examples()[i].ctrl()->Init();
 
 	ScatterCtrl_Demo().Run();
 }
@@ -40,7 +40,7 @@ ScatterCtrl_Demo::ScatterCtrl_Demo()
 	CtrlLayout(*this, "Scatter Test");
 	
 	for (int i = 0; i < Examples().GetCount(); ++i)
-		tab.Add(*(Examples()[i].ctrl), Examples()[i].name);
+		tab.Add(*(Examples()[i].ctrl()), Examples()[i].name);
 
 	bPreview <<= THISBACK(Preview);
 	bSavePNG <<= THISBACK(SavePNG);
@@ -68,7 +68,7 @@ void ScatterCtrl_Demo::Preview()
 {
 	Report r;	
 	
-	const Drawing &w = Examples()[tab.Get()].ctrl->Scatter().GetDrawing();
+	const Drawing &w = Examples()[tab.Get()].ctrl()->Scatter().GetDrawing();
 	r.DrawDrawing(300, 300, w.GetSize().cx, w.GetSize().cy, w);
 
 	Perform(r);
@@ -78,14 +78,14 @@ void ScatterCtrl_Demo::SavePNG()
 {
 	int ntab = tab.Get();	
 	
-	Examples()[ntab].ctrl->Scatter().SaveToImage(Format("scatter%d.png", ntab));	
+	Examples()[ntab].ctrl()->Scatter().SaveToImage(Format("scatter%d.png", ntab));	
 }
 
 void ScatterCtrl_Demo::SaveJPG()
 {
 	int ntab = tab.Get();	
 	
-	Examples()[ntab].ctrl->Scatter().SaveToImage(Format("scatter%d.jpg", ntab));				
+	Examples()[ntab].ctrl()->Scatter().SaveToImage(Format("scatter%d.jpg", ntab));				
 }
 
 #ifdef PLATFORM_WIN32
@@ -93,18 +93,18 @@ void ScatterCtrl_Demo::SaveEMF()
 {
 	int ntab = tab.Get();	
 	
-	Examples()[ntab].ctrl->Scatter().SaveAsMetafile(Format("scatter%d.emf", ntab));				
+	Examples()[ntab].ctrl()->Scatter().SaveAsMetafile(Format("scatter%d.emf", ntab));				
 }
 #endif
 
 void ScatterCtrl_Demo::CopyClipboard()
 {
-	Examples()[tab.Get()].ctrl->Scatter().SaveToClipboard();	
+	Examples()[tab.Get()].ctrl()->Scatter().SaveToClipboard();	
 }
 
 void ScatterCtrl_Demo::SetMode()
 {
-	for (int i = 0; i < Examples().GetCount(); ++i) 
-		Examples()[i].ctrl->Scatter().SetMode(~paintMode);
+	for (int i = 0; i < Examples().GetCount(); ++i)
+		Examples()[i].ctrl()->Scatter().SetMode(~paintMode);
 }
 

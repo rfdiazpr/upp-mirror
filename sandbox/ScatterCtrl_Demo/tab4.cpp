@@ -21,6 +21,12 @@ void Tab4::Init()
 		   .SetMarkWidth(1, 4);
 }
 
+ScatterDemo *Construct4()
+{
+	static Tab4 tab;
+	return &tab;
+}
+
 INITBLOCK {
-	RegisterExample("Formatting", new Tab4);
+	RegisterExample("Formatting", Construct4);
 }

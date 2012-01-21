@@ -38,6 +38,12 @@ void Tab1::Init()
 	scatter.ShowInfo().ShowContextMenu().SetPopText("h", "v", "v2");
 }
 
+ScatterDemo *Construct1()
+{
+	static Tab1 tab;
+	return &tab;
+}
+
 INITBLOCK {
-	RegisterExample("Basic", new Tab1);
+	RegisterExample("Basic", Construct1);
 }

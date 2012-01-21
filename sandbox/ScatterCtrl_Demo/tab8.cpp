@@ -31,6 +31,12 @@ void Tab8::Init()
 		   .ShowContextMenu();	
 }
 
+ScatterDemo *Construct8()
+{
+	static Tab8 tab;
+	return &tab;
+}
+
 INITBLOCK {
-	RegisterExample("Secondary Y", new Tab8);
+	RegisterExample("Secondary Y", Construct8);
 }

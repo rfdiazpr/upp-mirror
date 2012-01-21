@@ -76,6 +76,12 @@ void Tab5::Minus()
 	scatter.Refresh();
 }
 
+ScatterDemo *Construct5()
+{
+	static Tab5 tab;
+	return &tab;
+}
+
 INITBLOCK {
-	RegisterExample("Dynamic", new Tab5);
+	RegisterExample("Dynamic", Construct5);
 }

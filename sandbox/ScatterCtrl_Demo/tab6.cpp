@@ -20,6 +20,12 @@ void Tab6::FormatX(String& s, int i, double d)
 	s = FormatDoubleExp(d, 1);
 }
 
+ScatterDemo *Construct6()
+{
+	static Tab6 tab;
+	return &tab;
+}
+
 INITBLOCK {
-	RegisterExample("Log", new Tab6);
+	RegisterExample("Log", Construct6);
 }

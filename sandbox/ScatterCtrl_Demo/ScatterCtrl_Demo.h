@@ -14,11 +14,11 @@ using namespace Upp;
 
 
 struct ScatterDemo : ParentCtrl {
-	virtual void Init() = 0;
-	virtual ScatterCtrl &Scatter() = 0;
+	virtual void Init() {};
+	virtual ScatterCtrl &Scatter() {};
 };
 
-void RegisterExample(const char *name, ScatterDemo *ctrl);
+void RegisterExample(const char *name, ScatterDemo* (*ctrl)());
 
 class Tab1 : public WithTab1<ScatterDemo> {
 public:

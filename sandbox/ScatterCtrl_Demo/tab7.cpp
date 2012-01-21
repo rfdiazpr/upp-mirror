@@ -47,6 +47,12 @@ void Tab7::RemoveAllSeries()
 	series.Clear();
 }
 
+ScatterDemo *Construct7()
+{
+	static Tab7 tab;
+	return &tab;
+}
+
 INITBLOCK {
-	RegisterExample("Operations", new Tab7);	
+	RegisterExample("Operations", Construct7);	
 }

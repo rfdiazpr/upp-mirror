@@ -34,6 +34,12 @@ void Tab3::Init()
 	scatter.AddSeries(STDBACK2(para1p, 2.0, 0.5), 50, 0, 1).Legend("Circle2").NoMark();
 }
 
+ScatterDemo *Construct3()
+{
+	static Tab3 tab;
+	return &tab;
+}
+
 INITBLOCK {
-	RegisterExample("Parametric Functions", new Tab3);
+	RegisterExample("Parametric Functions", Construct3);
 }

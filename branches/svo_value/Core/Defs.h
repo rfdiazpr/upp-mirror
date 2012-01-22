@@ -595,3 +595,6 @@ void __LOGF__(const char *format, ...);
 #else
 inline void __LOGF__(const char *format, ...);
 #endif
+
+template <class T>
+void IGNORE_RESULT(const T& x) {}

@@ -12,14 +12,14 @@ struct Ref::ValueRef : public RefManager {
 	virtual void  SetNull(void *ptr)                   { *(Value *) ptr = Null; }
 };
 
-Ref::Ref(String& s)  { ptr = &s; m = &Single< RichRef<String> >(); }
-Ref::Ref(WString& s) { ptr = &s; m = &Single< RichRef<WString> >(); }
-Ref::Ref(int& i)     { ptr = &i; m = &Single< RichRef<int> >(); }
-Ref::Ref(int64& i)   { ptr = &i; m = &Single< RichRef<int64> >(); }
-Ref::Ref(double& d)  { ptr = &d; m = &Single< RichRef<double> >(); }
-Ref::Ref(bool& b)    { ptr = &b; m = &Single< RichRef<bool> >(); }
-Ref::Ref(Date& d)    { ptr = &d; m = &Single< RichRef<Date> >(); }
-Ref::Ref(Time& t)    { ptr = &t; m = &Single< RichRef<Time> >(); }
+Ref::Ref(String& s)  { ptr = &s; m = &Single< StdRef<String> >(); }
+Ref::Ref(WString& s) { ptr = &s; m = &Single< StdRef<WString> >(); }
+Ref::Ref(int& i)     { ptr = &i; m = &Single< StdRef<int> >(); }
+Ref::Ref(int64& i)   { ptr = &i; m = &Single< StdRef<int64> >(); }
+Ref::Ref(double& d)  { ptr = &d; m = &Single< StdRef<double> >(); }
+Ref::Ref(bool& b)    { ptr = &b; m = &Single< StdRef<bool> >(); }
+Ref::Ref(Date& d)    { ptr = &d; m = &Single< StdRef<Date> >(); }
+Ref::Ref(Time& t)    { ptr = &t; m = &Single< StdRef<Time> >(); }
 Ref::Ref(Value& v)   { ptr = &v; m = &Single< ValueRef >(); }
 
 // ----------------------------------

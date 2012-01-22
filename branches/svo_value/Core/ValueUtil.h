@@ -88,21 +88,14 @@ struct RefManager {
 	virtual ~RefManager() {}
 };
 
-
 template <class T>
-struct RawRef : public RefManager {
-	virtual void  SetValue(void *p, const Value& v) { *(T *) p = v.To<T>(); }
-	virtual Value GetValue(const void *p)           { return RawToValue(*(const T *) p); }
-	virtual int   GetType()                         { return GetValueTypeNo<T>(); }
-	virtual ~RawRef() {}
-};
-
-template <class T>
-struct RichRef : public RawRef<T> {
-	virtual Value GetValue(const void *p)           { return RichToValue(*(T *) p); }
-	virtual bool  IsNull(const void *p)             { return UPP::IsNull(*(T *) p); }
+struct StdRef : public RefManager {
 	virtual void  SetValue(void *p, const Value& v) { *(T *) p = v.Get<T>(); }
+	virtual Value GetValue(const void *p)           { return (Value)(*(const T *) p); }
+	virtual int   GetType()                         { return GetValueTypeNo<T>(); }
+	virtual bool  IsNull(const void *p)             { return UPP::IsNull(*(T *) p); }
 	virtual void  SetNull(void *p)                  { UPP::SetNull(*(T *)p); }
+	virtual ~StdRef() {}
 };
 
 class Ref : Moveable<Ref> {
@@ -156,8 +149,8 @@ inline Value&   RefValue(Ref f)   { ASSERT(f.GetType() == VALUE_V);
                                     return *(Value *)f.GetVoidPtr(); }
 
 template <class T>
-Ref RawAsRef(T& x) {
-	return Ref(&x, &Single< RawRef<T> >());
+Ref AsRef(T& x) {
+	return Ref(&x, &Single< RichRef<T> >());
 }
 
 template <class T>

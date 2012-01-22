@@ -79,7 +79,7 @@ public:
 	
 	RawValueRep(const T& v) : v(v)            {}
 	RawValueRep(pick_ T& v, VPICK) : v(v)     {}
-	RawValueRep(pick_ T& v, VDEEP) : v(v, 1)  {}
+	RawValueRep(const T& v, VDEEP) : v(v, 1)  {}
 	RawValueRep()                             {}
 };
 

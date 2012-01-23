@@ -1025,14 +1025,11 @@ inline bool Even(int val)	  	{return !(val%2);}
 
 Vector <double> GetLineDash(String dash) 
 {
-	double start = 0;
 	Vector<double> d;
 	CParser p(dash);
 	try {
 		while(!p.IsEof())
-			if(p.Char(':'))
-				start = p.ReadDouble();
-			else
+			if(!p.Char(':'))
 				d.Add(p.ReadDouble());
 	}
 	catch(CParser::Error) {}

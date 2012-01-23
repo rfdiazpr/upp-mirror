@@ -31,12 +31,5 @@ $/
 <p/>
 <a href=$New>Insert new person</a>
 <a href=$InsertTestData>Insert test data</a>
-$for(i in PAGES)
-	<a href=$HomePage({"page":i, "search":search, "perpage":perpage})>$(i + 1)</a>
-$/
-Per page:
-$for(i in [10, 20, 50, 100, 250])
-	<a href=$HomePage({"page":page, "search":search, "perpage":i})>$(i)</a>
-$/
-
+$PAGINATION
 <br>Const folding test: $(-(1 + 1 + 1 + 1) / -4)

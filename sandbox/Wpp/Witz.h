@@ -53,14 +53,14 @@ struct Compiler {
 	};
 
 	struct ExeArray : Exe {
-		Array<Exe> item;
+		Vector< One<Exe> > item;
 		
 		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
 	};
 
 	struct ExeMap : Exe {
-		Array<Exe> key;
-		Array<Exe> value;
+		Vector< One<Exe> > key;
+		Vector< One<Exe> > value;
 		
 		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
 	};
@@ -110,7 +110,7 @@ struct Compiler {
 	struct ExeFn : Exe {
 		Value (*fn)(const Vector<Value>& arg);
 		
-		Array<Exe> arg;
+		Vector< One<Exe> > arg;
 
 		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
 	};
@@ -118,7 +118,7 @@ struct Compiler {
 	struct ExeLink : Exe {
 		const Vector<String> *part;
 		
-		Array<Exe> arg;
+		Vector< One<Exe> > arg;
 
 		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
 	};
@@ -153,7 +153,7 @@ struct Compiler {
 	};
 
 	struct ExeBlock : Exe {
-		Array<Exe> item;
+		Vector< One<Exe> > item;
 		
 		void AddText(const char *b, const char *s);
 
@@ -199,7 +199,7 @@ struct Compiler {
 	
 	typedef Compiler CLASSNAME;
 
-	void Iterate(Array<Exe>& a, Callback1< One<Exe>& > op);
+	void Iterate(Vector< One<Exe> >& a, Callback1< One<Exe>& > op);
 	void Iterate(One<Exe>& exe, Callback1< One<Exe>& > op);
 	void OptimizeConst(One<Exe>& exe);
 	void Optimize(One<Exe>& exe);

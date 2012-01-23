@@ -1,0 +1,7 @@
+$for(i in PAGES)
+	<a href=$HomePage({"page":i, "search":search, "perpage":perpage})>$(i + 1)</a>
+$/
+Per page:
+$for(i in [10, 20, 50, 100, 250])
+	<a href=$HomePage({"page":page, "search":search, "perpage":i})>$(i)</a>
+$/

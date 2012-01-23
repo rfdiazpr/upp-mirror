@@ -2,15 +2,10 @@
 
 #define LLOG(x)   DLOG(x)
 
-void Compiler::Iterate(Array<Exe>& a, Callback1< One<Exe>& > op)
+void Compiler::Iterate(Vector< One<Exe> >& a, Callback1< One<Exe>& > op)
 {
-	One<Exe> h;
-	h.Create();
-	for(int i = 0; i < a.GetCount(); i++) {
-		One<Exe> x = a.Swap(i, h.Detach());
-		op(x);
-		h = a.Swap(i, x.Detach());
-	}
+	for(int i = 0; i < a.GetCount(); i++)
+		op(a[i]);
 }
 
 void Compiler::OptimizeConst(One<Exe>& exe)
@@ -112,7 +107,7 @@ void Compiler::Optimize(One<Exe>& exe)
 		}
 		if(ExeLink *e = dynamic_cast<ExeLink *>(~exe)) {
 			ExeVarField *e1;
-			if(e->arg.GetCount() == 1 && (e1 = dynamic_cast<ExeVarField *>(&(e->arg[0])))) {
+			if(e->arg.GetCount() == 1 && (e1 = dynamic_cast<ExeVarField *>(~e->arg[0]))) {
 				One<Exe> oxe;
 				ExeLinkVarField1& o = oxe.Create<ExeLinkVarField1>();
 				o.id = e1->id;
@@ -124,11 +119,11 @@ void Compiler::Optimize(One<Exe>& exe)
 			}
 		}
 		if(ExeBlock *e = dynamic_cast<ExeBlock *>(~exe)) {
-			Array<Exe>& m = e->item;
+			Vector< One<Exe> >& m = e->item;
 			int i = 0;
 			while(i < m.GetCount() - 1) {
-				ExeConst *e1 = dynamic_cast<ExeConst *>(&m[i]);
-				ExeConst *e2 = dynamic_cast<ExeConst *>(&m[i + 1]);
+				ExeConst *e1 = dynamic_cast<ExeConst *>(~m[i]);
+				ExeConst *e2 = dynamic_cast<ExeConst *>(~m[i + 1]);
 				if(e1 && e2 && e1->value.Is<RawHtmlText>() && e2->value.Is<RawHtmlText>()) {
 					RawHtmlText t;
 					t.text = ValueTo<RawHtmlText>(e1->value).text + ValueTo<RawHtmlText>(e2->value).text;

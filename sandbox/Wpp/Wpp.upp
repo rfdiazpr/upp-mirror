@@ -16,6 +16,7 @@ file
 	Http.h,
 	Http.cpp,
 	Dispatch.cpp,
+	Sql.cpp,
 	Render.cpp,
 	Util readonly separator,
 	Static.cpp;

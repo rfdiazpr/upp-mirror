@@ -13,6 +13,7 @@ file
 	Style.witz,
 	Dialog.witz,
 	Index.witz,
+	pagination.witz,
 	benchmark.txt;
 
 mainconfig

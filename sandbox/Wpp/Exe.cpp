@@ -27,7 +27,7 @@ Value Compiler::ExeArray::Eval(Vector<Value>& stack, StringBuffer& out) const
 {
 	ValueArray va;
 	for(int i = 0; i < item.GetCount(); i++)
-		va.Add(item[i].Eval(stack, out));
+		va.Add(item[i]->Eval(stack, out));
 	return va;
 }
 
@@ -35,7 +35,7 @@ Value Compiler::ExeMap::Eval(Vector<Value>& stack, StringBuffer& out) const
 {
 	ValueMap m;
 	for(int i = 0; i < key.GetCount(); i++)
-		m.Add(key[i].Eval(stack, out), value[i].Eval(stack, out));
+		m.Add(key[i]->Eval(stack, out), value[i]->Eval(stack, out));
 	return m;
 }
 
@@ -245,7 +245,7 @@ Value Compiler::ExeFn::Eval(Vector<Value>& stack, StringBuffer& out) const
 	Vector<Value> v;
 	v.SetCount(arg.GetCount());
 	for(int i = 0; i < arg.GetCount(); i++)
-		v[i] = arg[i].Eval(stack, out);
+		v[i] = arg[i]->Eval(stack, out);
 	return (*fn)(v);
 }
 
@@ -256,7 +256,7 @@ Value Compiler::ExeLink::Eval(Vector<Value>& stack, StringBuffer& out) const
 	v.SetCount(arg.GetCount());
 	for(int i = 0; i < arg.GetCount(); i++) {
 		LTIMING("arg eval");
-		v[i] = arg[i].Eval(stack, out);
+		v[i] = arg[i]->Eval(stack, out);
 	}
 	StringBuffer r;
 	r << "\"";
@@ -378,7 +378,7 @@ Value Compiler::ExeBlock::Eval(Vector<Value>& stack, StringBuffer& out) const
 {
 	int q = stack.GetCount();
 	for(int i = 0; i < item.GetCount(); i++)
-		sCatAsString(out, item[i].Eval(stack, out));
+		sCatAsString(out, item[i]->Eval(stack, out));
 	stack.SetCount(q);
 	return Value();
 }

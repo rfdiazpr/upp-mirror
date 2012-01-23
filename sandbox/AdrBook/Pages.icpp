@@ -5,6 +5,20 @@ URL_VIEW(Picture, "person/*/picture")
 	http.Content("image/jpeg", LoadFile(ConfigFile(http[0] + ".data")));
 }
 
+Tuple2<int, int> Pagination(Http& http, int total)
+{
+	int perpage = max(atoi(http["perpage"]), 10);
+	perpage = max(perpage, 10);
+	int pages = total / perpage;
+	int page = atoi(http["page"]);
+	ValueArray pg;
+	for(int i = 0; i < pages; i++)
+		pg.Add(i);
+	http("PAGES", pg);
+	http("PAGINATION", http.RenderHtml("AdrBook/pagination.witz"));
+	return MakeTuple(page * perpage, perpage);
+}
+
 URL_VIEW(HomePage, "$base/stránčička.html")
 {
 	ValueArray person;
@@ -14,27 +28,21 @@ URL_VIEW(HomePage, "$base/stránčička.html")
 		s << '%';
 		where = Like(FIRSTNAME, s) || Like(LASTNAME, s) || Like(EMAIL, s);
 	}
-	int perpage = atoi(http["perpage"]);
-	perpage = max(perpage, 10);
-	int pages = int(SQL % Select(SqlCountRows()).From(PERSON).Where(where)) / perpage;
-	int page = atoi(http["page"]);
 	ValueMap vm;
 	{ RTIMING("SQL");
+	Tuple2<int, int> pg = Pagination(http, int(SQL % Select(SqlCountRows()).From(PERSON).Where(where)));
 	Sql sql;
 	sql * Select(ID, FIRSTNAME, LASTNAME, EMAIL, SEX)
 	      .From(PERSON)
 	      .Where(where)
 	      .OrderBy(LASTNAME)
-	      .Limit(page * perpage, perpage);
+	      .Limit(pg.a, pg.b);
 	while(sql.Fetch(vm)) {
 		vm.Add("HASPICTURE", FileExists(ConfigFile(AsString(sql[ID]) + ".data")));
 		person.Add(vm);
 	}
 	}
-	ValueArray pg;
-	for(int i = 0; i < pages; i++)
-		pg.Add(i);
-	http("PERSON", person)("PAGES", pg).Render("AdrBook/Index.witz");
+	http("PERSON", person).Render("AdrBook/Index.witz");
 }
 
 URL_VIEW(NotFound, "**")

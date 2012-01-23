@@ -56,6 +56,7 @@ public:
 	SqlInsert Insert(SqlId table);
 
 	Http& Render(const String& template_name);
+	Value RenderHtml(const String& template_name);
 	
 	Http& SetRawCookie(const char *id, const String& value,
 	                   Time expires = Null, const char *path = NULL,

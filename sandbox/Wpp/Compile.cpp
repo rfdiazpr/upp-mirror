@@ -57,7 +57,7 @@ One<Exe> Compiler::Prim()
 				ln.part = part;
 				if(!p.Char(')')) {
 					do
-						ln.arg.Add(Exp().Detach());
+						ln.arg.AddPick(Exp());
 					while(p.Char(','));
 					p.PassChar(')');
 				}
@@ -69,7 +69,7 @@ One<Exe> Compiler::Prim()
 				fn.fn = f;
 				if(!p.Char(')')) {
 					do
-						fn.arg.Add(Exp().Detach());
+						fn.arg.AddPick(Exp());
 					while(p.Char(','));
 					p.PassChar(')');
 				}
@@ -85,13 +85,10 @@ One<Exe> Compiler::Prim()
 		}
 		if(n < 0) {
 			Vector<String> *part = GetUrlViewLinkParts(id);
+			ExeConst& c = result.Create<ExeConst>();
 			if(!part) {
-				ExeConst& c = result.Create<ExeConst>();
 				return result;
 			}
-//			if(CountLinkArgs(*part) != 0)
-//				p.ThrowError("invalid number of link arguments '" + id + "'");
-			ExeConst& c = result.Create<ExeConst>();
 			String l = "\"/";
 			for(int i = 0; i < (*part).GetCount(); i++) {
 				if(i)
@@ -133,9 +130,9 @@ One<Exe> Compiler::Prim()
 	if(p.Char('{')) {
 		ExeMap& m = result.Create<ExeMap>();
 		do {
-			m.key.Add(Exp().Detach());
+			m.key.AddPick(Exp());
 			p.PassChar(':');
-			m.value.Add(Exp().Detach());
+			m.value.AddPick(Exp());
 		}
 		while(p.Char(','));
 		p.PassChar('}');
@@ -144,7 +141,7 @@ One<Exe> Compiler::Prim()
 	if(p.Char('[')) {
 		ExeArray& m = result.Create<ExeArray>();
 		do {
-			m.item.Add(Exp().Detach());
+			m.item.AddPick(Exp());
 		}
 		while(p.Char(','));
 		p.PassChar(']');
@@ -200,14 +197,14 @@ One<Exe> Compiler::Shift()
 {
 	One<Exe> result = Add();
 	for(;;)
-		if(p.Char2('<', '<'))
-			result = Create<ExeSll>(result, Add());
-		else
 		if(p.Char3('>', '>', '>'))
 			result = Create<ExeSrl>(result, Add());
 		else
 		if(p.Char2('>', '>'))
 			result = Create<ExeSra>(result, Add());
+		else
+		if(p.Char2('<', '<'))
+			result = Create<ExeSll>(result, Add());
 		else
 			return result;
 }
@@ -309,7 +306,7 @@ void Compiler::ExeBlock::AddText(const char *b, const char *s)
 	if(s > b) {
 		RawHtmlText t;
 		t.text = String(b, s);
-		item.Create<ExeConst>().value = RawToValue(t);
+		item.Add().Create<ExeConst>().value = RawToValue(t);
 	}
 }
 
@@ -328,7 +325,7 @@ One<Exe> Compiler::Block()
 				blk.AddText(b, s);
 				p.Set(s + 1, NULL, line);
 				if(p.Id("if")) {
-					ExeCond& c = blk.item.Create<ExeCond>();
+					ExeCond& c = blk.item.Add().Create<ExeCond>();
 					p.PassChar('(');
 					c.cond = Exp();
 					p.PassChar(')');
@@ -340,7 +337,7 @@ One<Exe> Compiler::Block()
 				}
 				else
 				if(p.Id("for")) {
-					ExeFor& c = blk.item.Create<ExeFor>();
+					ExeFor& c = blk.item.Add().Create<ExeFor>();
 					p.PassChar('(');
 					int q = var.GetCount();
 					var.Add(p.ReadId());
@@ -362,7 +359,7 @@ One<Exe> Compiler::Block()
 				if(p.IsId("else") || p.IsId("endif") || p.IsId("endfor") || p.IsChar('/'))
 					return result;
 				else
-					blk.item.Add(Prim().Detach());
+					blk.item.AddPick(Prim());
 				b = s = p.GetSpacePtr();
 				line = p.GetLine();
 			}

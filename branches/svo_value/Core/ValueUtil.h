@@ -90,8 +90,8 @@ struct RefManager {
 
 template <class T>
 struct StdRef : public RefManager {
-	virtual void  SetValue(void *p, const Value& v) { *(T *) p = v.Get<T>(); }
-	virtual Value GetValue(const void *p)           { return (Value)(*(const T *) p); }
+	virtual void  SetValue(void *p, const Value& v) { *(T *) p = (T)v; }
+	virtual Value GetValue(const void *p)           { return *(const T *) p; }
 	virtual int   GetType()                         { return GetValueTypeNo<T>(); }
 	virtual bool  IsNull(const void *p)             { return UPP::IsNull(*(T *) p); }
 	virtual void  SetNull(void *p)                  { UPP::SetNull(*(T *)p); }
@@ -150,12 +150,7 @@ inline Value&   RefValue(Ref f)   { ASSERT(f.GetType() == VALUE_V);
 
 template <class T>
 Ref AsRef(T& x) {
-	return Ref(&x, &Single< RichRef<T> >());
-}
-
-template <class T>
-Ref RichAsRef(T& x) {
-	return Ref(&x, &Single< RichRef<T> >());
+	return Ref(&x, &Single< StdRef<T> >());
 }
 
 #define E__Value(I)   Value p##I

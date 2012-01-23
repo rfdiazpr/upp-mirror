@@ -23,10 +23,6 @@ ScatterDraw& ScatterDraw::SetTitleColor(const Color& colorTitle)
 	titleColor = colorTitle;
 	return *this;
 }
-void MyBreak()
-{
-	int kk = 1;	
-}
 
 void ScatterDraw::SetLabels(const String& _xLabel, const String& _yLabel, const String& _yLabel2)
 {
@@ -1088,40 +1084,36 @@ Size GetTextSizeMultiline(Array <Size> &sizes) {
 	return ret;
 }
 	
-ScatterDraw::ScatterDraw():
-	title (""),
-	titleColor(SColorText),
-	graphColor(White),
-	titleFont(Roman(20)),
-	xLabel(""),yLabel(""),
-	labelsFont(StdFont()),
-	labelsColor(SColorText),
-	plotAreaColor(SColorLtFace),
-	axisColor(SColorText),
-	axisWidth(6),
-	px(30),
-	py(30),
-	xRange(100.0),
-	yRange(100.0),
-	yRange2(100.0),
-	xMajorUnit(xRange/10),
-	yMajorUnit(yRange/5),
-	xMin(0.0), yMin(0.0), yMin2(0.0),
-	xMinUnit(0.0), yMinUnit(0.0), yMinUnit2(0.0),
-	logX(false), logY(false), logY2(false),
-	cbModifFormatX(NULL),cbModifFormatY(NULL),cbModifFormatY2(NULL),
-	cbModifFormatDeltaX(NULL),cbModifFormatDeltaY(NULL),cbModifFormatDeltaY2(NULL),
-	gridColor(SColorDkShadow),
-	gridWidth(1),
-	drawXReticle(true), drawYReticle(true), drawY2Reticle(false),
-	drawVGrid(true), drawHGrid(true),
-	showLegend(true),legendWeight(80),
-	//antialiasing(MODE_NOAA),
-	minXZoom(-1), maxXZoom(-1), minYZoom(-1), maxYZoom(-1), fastViewX(false), 
-	sequentialXAll(false), size(0, 0),
-	mode(MD_ANTIALIASED), zoomStyleX(TO_CENTER), zoomStyleY(TO_CENTER),
-	maxMajorUnitsX(Null), maxMajorUnitsY(Null)
+ScatterDraw::ScatterDraw()
 {
+	mode = MD_ANTIALIASED;
+	size = Size(0, 0);
+	titleColor = SColorText();
+	graphColor = White();
+	titleFont = Roman(20);
+	labelsFont = StdFont();
+	labelsColor = SColorText();
+	plotAreaColor = SColorLtFace();
+	axisColor = SColorText();
+	axisWidth = 6;
+	px = py = 30;
+	xRange = yRange = yRange2 = 100.0;
+	xMajorUnit = xRange / 10;
+	yMajorUnit = yRange / 5;
+	xMin = yMin = yMin2 = xMinUnit = yMinUnit = yMinUnit2 = 0.0;
+	logX = logY = logY2 = false;
+	gridColor = SColorDkShadow();
+	gridWidth = 1;
+	drawXReticle = true; drawYReticle = true;
+	drawY2Reticle = false;
+	drawVGrid = drawHGrid = showLegend = true;
+	legendWeight = 80;
+	//antialiasing(MODE_NOAA),
+	minXZoom = maxXZoom = minYZoom = maxYZoom = -1;
+	fastViewX = false;
+	sequentialXAll = false;
+	zoomStyleX = zoomStyleY = TO_CENTER;
+	maxMajorUnitsX = maxMajorUnitsY = Null;
 	Color(graphColor);	
 }
 

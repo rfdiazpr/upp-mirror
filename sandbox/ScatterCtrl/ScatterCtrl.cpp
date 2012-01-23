@@ -166,6 +166,7 @@ void ScatterCtrl::DoMouseAction(bool down, Point pt, MouseAction action, int val
 	case CONTEXT_MENU:	if(showContextMenu)
 							MenuBar::Execute(THISBACK(ContextMenu));
 						break;
+	case NO_ACTION:;
 	}
 }
 
@@ -411,17 +412,17 @@ void ScatterCtrl::InsertSeries(int id, ArrayCtrl &data, bool useCols, int idX, i
 	InsertSeries<ArrayCtrlXY>(id, data, useCols, idX, idY, beginData, numData);
 }
 
-ScatterCtrl::ScatterCtrl():
-	paintInfo(false),
-	mouseHandlingX(false), mouseHandlingY(false), isScrolling(false), isLabelPopUp(false),      
-	offset(10,12),
-	popTextX("x"), popTextY("y1"), popTextY2("y2"), 
-	popLT(Null), popRB(Null), showContextMenu(false)
+ScatterCtrl::ScatterCtrl()
+:	offset(10,12)
 {
+	paintInfo = mouseHandlingX = mouseHandlingY = isScrolling = isLabelPopUp = false;
+	popTextX = "x";
+	popTextY = "y1";
+	popTextY2 = "y2";
+	popLT = popRB = Null;
+	showContextMenu = false;
 	Color(graphColor);	
 	BackPaint();
 	popText.SetColor(SColorFace);        
 	SetMouseBehavior(defaultMouse);
 }
-
-

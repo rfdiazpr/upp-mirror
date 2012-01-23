@@ -15,7 +15,7 @@ using namespace Upp;
 
 struct ScatterDemo : ParentCtrl {
 	virtual void Init() {};
-	virtual ScatterCtrl &Scatter() {};
+	virtual ScatterCtrl &Scatter() = 0;
 };
 
 void RegisterExample(const char *name, ScatterDemo* (*ctrl)());

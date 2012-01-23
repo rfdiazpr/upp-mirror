@@ -4,10 +4,10 @@ uses
 	Painter;
 
 file
-	ScatterDraw.cpp,
 	ScatterDraw.h,
-	ScatterDraw.t,
 	DrawingFunctions.h,
 	Plot.h,
-	DataSource.h;
+	DataSource.h,
+	ScatterDraw.cpp,
+	ScatterDraw.t;
 

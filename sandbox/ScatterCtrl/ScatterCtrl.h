@@ -47,15 +47,26 @@ private:
 	int numData;
 
 public:
+	GridCtrlXY() : data(0), useCols(true), idX(0), idY(1), beginData(0), numData(Null) {};
 	GridCtrlXY(GridCtrl &data, bool useCols = true, int idX = 0, int idY = 1, int beginData = 0, int _numData = Null) : 
 		data(&data), useCols(useCols), idX(idX), idY(idY), beginData(beginData), numData(_numData)
 	{
+		Init(data, useCols, idX, idY, beginData, _numData);
+	}
+	void Init(GridCtrl &_data, bool _useCols = true, int _idX = 0, int _idY = 1, int _beginData = 0, int _numData = Null) 
+	{
+		data = &_data;
+		useCols = _useCols;
+		idX = _idX;
+		idY = _idY;
+		beginData = _beginData;
+		numData = _numData;
 		if (IsNull(_numData)) {
 			if (!useCols)
-				numData = data.GetColumnCount() - beginData;
+				numData = data->GetColumnCount() - beginData;
 			else
-				numData = data.GetCount() - beginData;
-		}
+				numData = data->GetCount() - beginData;
+		}		
 	}
 	virtual inline double y(int id)	{return useCols ? data->Get(beginData + id, idY) : data->Get(idY, beginData + id);};
 	virtual inline double x(int id) {

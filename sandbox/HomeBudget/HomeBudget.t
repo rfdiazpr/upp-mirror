@@ -15,29 +15,28 @@ T_("Categories")
 csCZ("Kategorie")
 plPL("Kategorie")
 
-T_("Category")
-csCZ("Kategorie")
-plPL("Kategoria")
+T_("Options")
+csCZ("Nastaven\303\255")
+plPL("Ustawienia")
 
-T_("Plus / Minus")
-csCZ("Plus / M\303\255nus")
-plPL("Plus / Minus")
+T_("Database was cleared")
+csCZ("Datab\303\241ze byla vymaz\303\241na")
+plPL("Baza danych zosta\305\202a wyczyszczona")
 
-T_("Value")
-csCZ("Hodnota")
-plPL("Ile")
+T_("About")
+csCZ("O programu")
+plPL("O programie")
 
-T_("When")
-csCZ("Kdy")
-plPL("Kiedy")
+T_("No help available yet")
+csCZ("N\303\241pov\304\233da zat\303\255m nen\303\255 dostupn\303\241")
+plPL("Pomoc nie jest obecnie dost\304\231pna")
 
-T_("Describe")
-csCZ("Popis")
-plPL("Opis")
+T_("Can't create or open database file")
+csCZ("Nelze vytvo\305\231it nebo otev\305\231\303\255t soubor s datab\303\241z\303\255")
+plPL("Nie mo\305\274na utworzy\304\207 lub otworzy\304\207 bazy danych")
 
-T_("Month")
-csCZ("M\304\233s\303\255c")
-plPL("Miesi\304\205c")
+
+// Categories.cpp
 
 T_("Name")
 csCZ("N\303\241zev")
@@ -47,17 +46,13 @@ T_("Default value")
 csCZ("V\303\275choz\303\255 hodnota")
 plPL("Warto\305\233\304\207 domy\305\233lna")
 
+T_("Plus / Minus")
+csCZ("Plus / M\303\255nus")
+plPL("Plus / Minus")
+
 T_("Default for a new month")
 csCZ("Hodnota v nov\303\251m m\304\233s\303\255ci")
 plPL("Domy\305\233lnie w nowym miesi\304\205cu")
-
-T_("Amount")
-csCZ("\304\214\303\241stka")
-plPL("Ile")
-
-T_("Product")
-csCZ("Produkt")
-plPL("Produkt")
 
 T_("Minus")
 csCZ("M\303\255nus")
@@ -92,31 +87,50 @@ csCZ("Polo\305\276ku '%s' nelze odebrat. Je pou\305\276ita ve v\303\275po\304\21
 plPL("Nie mo\305\274na usun\304\205\304\207 pozycji '%s'. Jest wykorzystywana "
      "w rozliczeniach.")
 
-T_("Options")
-csCZ("Nastaven\303\255")
-plPL("Ustawienia")
 
-T_("Database was cleared")
-csCZ("Datab\303\241ze byla vymaz\303\241na")
-plPL("Baza danych zosta\305\202a wyczyszczona")
+// Expenses.cpp
 
-T_("About")
-csCZ("O programu")
-plPL("O programie")
+T_("Category")
+csCZ("Kategorie")
+plPL("Kategoria")
 
-T_("No help available yet")
-csCZ("N\303\241pov\304\233da zat\303\255m nen\303\255 dostupn\303\241")
-plPL("Pomoc nie jest obecnie dost\304\231pna")
+T_("Value")
+csCZ("Hodnota")
+plPL("Ile")
 
-T_("Can't create or open database file")
-csCZ("Nelze vytvo\305\231it nebo otev\305\231\303\255t soubor s datab\303\241z\303\255")
-plPL("Nie mo\305\274na utworzy\304\207 lub otworzy\304\207 bazy danych")
+T_("When")
+csCZ("Kdy")
+plPL("Kiedy")
+
+T_("Describe")
+csCZ("Popis")
+plPL("Opis")
+
+T_("Month")
+csCZ("M\304\233s\303\255c")
+plPL("Miesi\304\205c")
+
+T_("Amount")
+csCZ("\304\214\303\241stka")
+plPL("Ile")
+
+T_("Product")
+csCZ("Produkt")
+plPL("Produkt")
 
 
 // HomeBudget.lay
 
 T_("Help")
 csCZ("N\303\241pov\304\233da")
+plPL("")
+
+T_("Export ...")
+csCZ("Export ...")
+plPL("")
+
+T_("Import ...")
+csCZ("Import ...")
 plPL("")
 
 T_("Exit")
@@ -156,7 +170,7 @@ csCZ("Jazyk")
 plPL("J\304\231zyk")
 
 T_("OK")
-csCZ("")
+csCZ("OK")
 plPL("")
 
 T_("Clear all data from database")
@@ -169,6 +183,22 @@ plPL("")
 
 T_("Cancel")
 csCZ("Zru\305\241it")
+plPL("")
+
+T_("File:")
+csCZ("Soubor:")
+plPL("")
+
+T_("Export:")
+csCZ("Export:")
+plPL("")
+
+T_("All\nSelected only")
+csCZ("V\305\241e\nPouze vybran\303\251")
+plPL("")
+
+T_("Export")
+csCZ("Export")
 plPL("")
 
 

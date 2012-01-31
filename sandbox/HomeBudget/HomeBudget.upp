@@ -11,6 +11,9 @@ uses
 file
 	HomeBudget.h,
 	HomeBudget.cpp,
+	Categories.cpp,
+	Expenses.cpp,
+	Export.cpp,
 	HomeBudget.sch,
 	HomeBudget.t,
 	HomeBudget.iml,

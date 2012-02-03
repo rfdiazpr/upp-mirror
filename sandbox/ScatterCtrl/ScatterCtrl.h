@@ -7,17 +7,18 @@
 
 using namespace Upp;
 
-class ArrayCtrlXY : public DataSource {
+class ArrayCtrlSource : public DataSource {
 private:
 	ArrayCtrl *data;
 	bool useCols;
-	int idX, idY;
+	int idX, idY, idZ;
 	int beginData;
 	int numData;
 
 public:
-	ArrayCtrlXY(ArrayCtrl &data, bool useCols = true, int idX = 0, int idY = 1, int beginData = 0, int _numData = Null) : 
-		data(&data), useCols(useCols), idX(idX), idY(idY), beginData(beginData), numData(_numData) 
+	ArrayCtrlSource() : data(0), useCols(true), idX(0), idY(1), idZ(2), beginData(0), numData(Null) {};
+	ArrayCtrlSource(ArrayCtrl &data, bool useCols = true, int idX = 0, int idY = 1, int idZ = 2, int beginData = 0, int _numData = Null) : 
+		data(&data), useCols(useCols), idX(idX), idY(idY), idZ(idZ), beginData(beginData), numData(_numData) 
 	{
 		if (IsNull(_numData)) {
 			if (!useCols)
@@ -26,6 +27,7 @@ public:
 				numData = data.GetCount() - beginData;
 		}
 	}
+	virtual inline double z(int id)	{return useCols ? data->Get(beginData + id, idZ) : data->Get(idZ, beginData + id);};
 	virtual inline double y(int id)	{return useCols ? data->Get(beginData + id, idY) : data->Get(idY, beginData + id);};
 	virtual inline double x(int id) {
 		if (IsNull(idX))
@@ -38,27 +40,28 @@ public:
 
 #include <GridCtrl/GridCtrl.h>
 
-class GridCtrlXY : public DataSource {
+class GridCtrlSource : public DataSource {
 private:
 	GridCtrl *data;
 	bool useCols;
-	int idX, idY;
+	int idX, idY, idZ;
 	int beginData;
 	int numData;
 
 public:
-	GridCtrlXY() : data(0), useCols(true), idX(0), idY(1), beginData(0), numData(Null) {};
-	GridCtrlXY(GridCtrl &data, bool useCols = true, int idX = 0, int idY = 1, int beginData = 0, int _numData = Null) : 
-		data(&data), useCols(useCols), idX(idX), idY(idY), beginData(beginData), numData(_numData)
+	GridCtrlSource() : data(0), useCols(true), idX(0), idY(1), idZ(2), beginData(0), numData(Null) {};
+	GridCtrlSource(GridCtrl &data, bool useCols = true, int idX = 0, int idY = 1, int idZ = 2, int beginData = 0, int _numData = Null) : 
+		data(&data), useCols(useCols), idX(idX), idY(idY), idZ(idZ), beginData(beginData), numData(_numData)
 	{
-		Init(data, useCols, idX, idY, beginData, _numData);
+		Init(data, useCols, idX, idY, idZ, beginData, _numData);
 	}
-	void Init(GridCtrl &_data, bool _useCols = true, int _idX = 0, int _idY = 1, int _beginData = 0, int _numData = Null) 
+	void Init(GridCtrl &_data, bool _useCols = true, int _idX = 0, int _idY = 1, int _idZ = 2, int _beginData = 0, int _numData = Null) 
 	{
 		data = &_data;
 		useCols = _useCols;
 		idX = _idX;
 		idY = _idY;
+		idZ = _idZ;
 		beginData = _beginData;
 		numData = _numData;
 		if (IsNull(_numData)) {
@@ -68,6 +71,7 @@ public:
 				numData = data->GetCount() - beginData;
 		}		
 	}
+	virtual inline double z(int id)	{return useCols ? data->Get(beginData + id, idZ) : data->Get(idZ, beginData + id);};
 	virtual inline double y(int id)	{return useCols ? data->Get(beginData + id, idY) : data->Get(idY, beginData + id);};
 	virtual inline double x(int id) {
 		if (IsNull(idX))
@@ -133,9 +137,9 @@ public:
 	ScatterCtrl& V_Border(const int& poz_y)						{ScatterDraw::V_Border(poz_y);		 	 	return *this;};
 	
 	using ScatterDraw::AddSeries; 
-	ScatterCtrl &AddSeries(ArrayCtrl &data, bool useCols = true, int idX = 0, int idY = 1, int beginData = 0, int numData = Null);
+	ScatterCtrl &AddSeries(ArrayCtrl &data, bool useCols = true, int idX = 0, int idY = 1, int idZ = 2, int beginData = 0, int numData = Null);
 	using ScatterDraw::InsertSeries; 
-	void InsertSeries(int id, ArrayCtrl &data, bool useCols = true, int idX = 0, int idY = 1, int beginData = 0, int numData = Null);	
+	void InsertSeries(int id, ArrayCtrl &data, bool useCols = true, int idX = 0, int idY = 1, int idZ = 2, int beginData = 0, int numData = Null);	
 	
 private:
 	bool paintInfo;

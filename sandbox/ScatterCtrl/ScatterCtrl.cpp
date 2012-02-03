@@ -401,15 +401,15 @@ void ScatterCtrl::SaveToImage(String fileName)
 		Exclamation(Format(t_("File format \"%s\" not found"), GetFileExt(fileName)));
 }
 
-ScatterCtrl &ScatterCtrl::AddSeries(ArrayCtrl &data, bool useCols, int idX, int idY, int beginData, int numData)
+ScatterCtrl &ScatterCtrl::AddSeries(ArrayCtrl &data, bool useCols, int idX, int idY, int idZ, int beginData, int numData)
 {
-	AddSeries<ArrayCtrlXY>(data, useCols, idX, idY, beginData, numData);
+	AddSeries<ArrayCtrlSource>(data, useCols, idX, idY, beginData, numData);
 	return *this;
 }
 
-void ScatterCtrl::InsertSeries(int id, ArrayCtrl &data, bool useCols, int idX, int idY, int beginData, int numData)
+void ScatterCtrl::InsertSeries(int id, ArrayCtrl &data, bool useCols, int idX, int idY, int idZ, int beginData, int numData)
 {
-	InsertSeries<ArrayCtrlXY>(id, data, useCols, idX, idY, beginData, numData);
+	InsertSeries<ArrayCtrlSource>(id, data, useCols, idX, idY, beginData, numData);
 }
 
 ScatterCtrl::ScatterCtrl()

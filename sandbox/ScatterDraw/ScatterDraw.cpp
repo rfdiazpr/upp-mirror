@@ -493,12 +493,12 @@ void ScatterDraw::ScatterBasicSeries::Init(int id)
 
 ScatterDraw &ScatterDraw::AddSeries(double *yData, int numData, double x0, double deltaX)
 {
-	return AddSeries<CArrayY>(yData, numData, x0, deltaX);
+	return AddSeries<CArray>(yData, numData, x0, deltaX);
 }
 	
 ScatterDraw &ScatterDraw::AddSeries(double *xData, double *yData, int numData)
 {
-	return AddSeries<CArrayXY>(xData, yData, numData);
+	return AddSeries<CArray>(xData, yData, numData);
 }
 
 ScatterDraw &ScatterDraw::AddSeries(Vector<double> &xData, Vector<double> &yData)
@@ -561,12 +561,12 @@ ScatterDraw &ScatterDraw::_AddSeries(DataSource *data)
 
 void ScatterDraw::InsertSeries(int id, double *yData, int numData, double x0, double deltaX)
 {
-	InsertSeries<CArrayY>(id, yData, numData, x0, deltaX);
+	InsertSeries<CArray>(id, yData, numData, x0, deltaX);
 }
 	
 void ScatterDraw::InsertSeries(int id, double *xData, double *yData, int numData)
 {
-	InsertSeries<CArrayXY>(id, xData, yData, numData);
+	InsertSeries<CArray>(id, xData, yData, numData);
 }
 
 void ScatterDraw::InsertSeries(int id, Vector<double> &xData, Vector<double> &yData)
@@ -1095,8 +1095,8 @@ ScatterDraw::ScatterDraw()
 	axisWidth = 6;
 	px = py = 30;
 	xRange = yRange = yRange2 = 100.0;
-	xMajorUnit = xRange / 10;
-	yMajorUnit = yRange / 5;
+	//xMajorUnit = xRange / 10;
+	//yMajorUnit = yRange / 5;
 	xMin = yMin = yMin2 = xMinUnit = yMinUnit = yMinUnit2 = 0.0;
 	logX = logY = logY2 = false;
 	gridColor = SColorDkShadow();
@@ -1111,6 +1111,7 @@ ScatterDraw::ScatterDraw()
 	sequentialXAll = false;
 	zoomStyleX = zoomStyleY = TO_CENTER;
 	maxMajorUnitsX = maxMajorUnitsY = Null;
+	SetMajorUnitsNum(5, 10);
 	Color(graphColor);	
 }
 

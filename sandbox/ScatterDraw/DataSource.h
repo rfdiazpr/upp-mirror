@@ -1,12 +1,10 @@
 #ifndef _ScatterDraw_DataSource_h_
 #define _ScatterDraw_DataSource_h_
 
-//#include <Core/Core.h>
-
-//using namespace Upp;
-
 class DataSource {
 public:
+	typedef double (DataSource::*Getdatafun)(int id);
+
 	DataSource() : isParam(false) {}
 	virtual ~DataSource() {};	
 	virtual double z(int id) 	{return Null;};
@@ -14,102 +12,60 @@ public:
 	virtual double x(int id) 	{return Null;};
 	virtual int GetCount()		{return Null;};
 	bool IsParam()				{return isParam;};
-	virtual double MinZ() {
-		double minVal = -DOUBLE_NULL;
-		for (int i = 0; i < GetCount(); ++i)
-			if (minVal > z(i))
-				minVal = z(i);
-		return minVal;
-	}	
-	virtual double MinY() {
-		double minVal = -DOUBLE_NULL;
-		for (int i = 0; i < GetCount(); ++i)
-			if (minVal > y(i))
-				minVal = y(i);
-		return minVal;
-	}
-	virtual double MinX() {
-		double minVal = -DOUBLE_NULL;
-		for (int i = 0; i < GetCount(); ++i)
-			if (minVal > x(i))
-				minVal = x(i);
-		return minVal;
-	}
-	virtual double MaxZ() {
-		double maxVal = DOUBLE_NULL;
-		for (int i = 0; i < GetCount(); ++i)
-			if (maxVal < z(i))
-				maxVal = z(i);
-		return maxVal;
-	}		
-	virtual double MaxY() {
-		double maxVal = DOUBLE_NULL;
-		for (int i = 0; i < GetCount(); ++i)
-			if (maxVal < y(i))
-				maxVal = y(i);
-		return maxVal;
-	}	
-	virtual double MaxX() {
-		double maxVal = DOUBLE_NULL;
-		for (int i = 0; i < GetCount(); ++i)
-			if (maxVal < x(i))
-				maxVal = x(i);
-		return maxVal;
-	}			
-	virtual double AvgY() {
-		double ret = 0;
-		for (int i = 0; i < GetCount(); ++i)
-			ret += y(i);
-		return ret/GetCount();
-	}
-	virtual double AvgX() {
-		double ret = 0;
-		for (int i = 0; i < GetCount(); ++i)
-			ret += x(i);
-		return ret/GetCount();
-	}
+
+	virtual double MinX() {return Min(&DataSource::x);}	
+	virtual double MinY() {return Min(&DataSource::y);}	
+	virtual double MinZ() {return Min(&DataSource::z);}	
+
+	virtual double MaxX() {return Max(&DataSource::x);}				
+	virtual double MaxY() {return Max(&DataSource::y);}	
+	virtual double MaxZ() {return Max(&DataSource::z);}	
+
+	virtual double AvgX() {return Avg(&DataSource::x);}	
+	virtual double AvgY() {return Avg(&DataSource::y);}					
+	virtual double AvgZ() {return Avg(&DataSource::z);}	
+	
 protected:
 	bool isParam;
+
+	#define Membercall(fun)	(this->*fun)
+		
+	double Min(Getdatafun getdata) {
+		double minVal = -DOUBLE_NULL;
+		for (int i = 0; i < GetCount(); ++i)
+			if (minVal > Membercall(getdata)(i))
+				minVal = Membercall(getdata)(i);
+		return minVal;		
+	}
+	virtual double Max(Getdatafun getdata) {
+		double maxVal = DOUBLE_NULL;
+		for (int i = 0; i < GetCount(); ++i)
+			if (maxVal < Membercall(getdata)(i))
+				maxVal = Membercall(getdata)(i);
+		return maxVal;
+	}
+	virtual double Avg(Getdatafun getdata) {
+		double ret = 0;
+		for (int i = 0; i < GetCount(); ++i)
+			ret += Membercall(getdata)(i);
+		return ret/GetCount();
+	}
 };
 
-class CArrayY : public DataSource {
+class CArray : public DataSource {
 private:
-	double *yData;
+	double *xData, *yData, *zData;
 	int numData;
 	double x0, deltaX;
 	
 public:
-	CArrayY(double *yData, int numData, double x0, double deltaX) : 
-								yData(yData), numData(numData), x0(x0), deltaX(deltaX) {};
+	CArray(double *yData, int numData, double x0, double deltaX) : yData(yData), numData(numData), x0(x0), deltaX(deltaX), xData(0) {};
+	CArray(double *xData, double *yData, int numData) : xData(xData), yData(yData), numData(numData), zData(0), x0(0), deltaX(0) {};
+	CArray(double *xData, double *yData, double *zData, int numData) : xData(xData), yData(yData), zData(zData), numData(numData), x0(0), deltaX(0) {};
+	virtual inline double z(int id)		{ASSERT(zData);	return zData[id];};
 	virtual inline double y(int id) 	{return yData[id];};
-	virtual inline double x(int id) 	{return id*deltaX + x0;};
+	virtual inline double x(int id) 	{return xData ? xData[id] : id*deltaX + x0;};
 	virtual inline int GetCount()		{return numData;};
-};
-
-class CArrayXY : public DataSource {
-private:
-	double *xData, *yData;
-	int numData;
-
-public:
-	CArrayXY(double *xData, double *yData, int numData) : xData(xData), yData(yData), numData(numData) {};
-	virtual inline double y(int id)	{return yData[id];};
-	virtual inline double x(int id) {return xData[id];};
-	virtual inline int GetCount()	{return numData;};
-};
-
-class CArrayXYZ : public DataSource {
-private:
-	double *xData, *yData, *zData;
-	int numData;
-
-public:
-	CArrayXYZ(double *xData, double *yData, double *zData, int numData) : 
-								xData(xData), yData(yData), zData(zData), numData(numData) {};
-	virtual inline double z(int id)	{return zData[id];};
-	virtual inline double y(int id)	{return yData[id];};
-	virtual inline double x(int id) {return xData[id];};
-	virtual inline int GetCount()	{return numData;};
 };
 
 template <class Y>

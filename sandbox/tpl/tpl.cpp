@@ -28,6 +28,7 @@ Value MakeMap(const Vector<Value>& arg)
 
 CONSOLE_APP_MAIN
 {
+#ifdef _DEBUG0
 	SetTemplatePath("/home/cxl/sandbox/tpl;u:/sandbox/tpl");
 	
 	DDUMP(GetPreprocessedTemplate("test1.witz:MAIN"));
@@ -43,18 +44,8 @@ CONSOLE_APP_MAIN
 	DDUMP(http.GetResponse());
 	
 	return;
+#endif
 /*	
-	var.Add("n", 12);
-	var.Add("s", "Hello world!");
-	ValueArray va;
-	va << "One" << "Two" << "Three" << "Four" << "Five" << "Six";
-	var.Add("a", va);
-	
-	ValueMap m;
-	m.Add("NAME", "John");
-	m.Add("SURNAME", "Smith");
-	m.Add("EMAIL", "smith@earth.org");
-	m.Add("NESTED", m);
 
 	var.Add("map", m);*/
 /*
@@ -104,6 +95,18 @@ CONSOLE_APP_MAIN
 	DDUMP(Eval("5 * 5 > 10 ? \"ano\" : \"ne\""));
 */
 	One<Exe> exe = Compile(LoadFile(GetDataFile("test.txt")), var.GetIndex());
+
+	var.Add("n", 12);
+	var.Add("s", "Hello world!");
+	ValueArray va;
+	va << "One" << "Two" << "Three" << "Four" << "Five" << "Six";
+	var.Add("a", va);
+	
+	ValueMap m;
+	m.Add("NAME", "John");
+	m.Add("SURNAME", "Smith");
+	m.Add("EMAIL", "smith@earth.org");
+	m.Add("NESTED", m);
 
 #ifndef _DEBUG
 	for(int i = 0; i < 100000; i++) {

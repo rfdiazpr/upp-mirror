@@ -4,7 +4,7 @@ uses
 
 file
 	tpl.cpp,
-	test.txt,
+	test.witz,
 	test1.witz,
 	test2.witz,
 	test.thtml;

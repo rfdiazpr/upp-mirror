@@ -1,0 +1,11 @@
+uses
+	Core;
+
+file
+	Structurize.cpp,
+	benchmark.txt;
+
+mainconfig
+	"" = "SSE2 SVO_VALUE",
+	"" = "SSE2";
+

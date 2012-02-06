@@ -1,0 +1,69 @@
+* /home/cxl/upp/out/sandbox/GCC.Shared.Sse2.Svo_Value/Structurize 06.02.2012 16:32:50, user: cxl
+
+TIMING Serialize one  : 46.31 ms - 463.07 ns (51.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING Jsonize one    : 293.31 ms -  2.93 us (298.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING Serialize      : 11.53 ms -  1.15 us (12.00 ms / 10000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 10000
+TIMING LoadFromJsonTree: 40.53 ms -  4.05 us (41.00 ms / 10000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 10000
+TIMING StoreAsJsonTree: 109.53 ms - 10.95 us (110.00 ms / 10000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 10000
+TIMING Jsonize tree   : 152.53 ms - 15.25 us (153.00 ms / 10000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 10000
+TIMING JSONIZE        : 321.53 ms - 32.15 us (322.00 ms / 10000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 10000
+
+* /home/cxl/upp/out/sandbox/GCC.Shared.Sse2.Svo_Value/Structurize 06.02.2012 16:47:34, user: cxl
+
+TIMING Serialize one  : 53.21 ms - 532.09 ns (58.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING Jsonize one    : 255.21 ms -  2.55 us (260.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING Serialize      : 10.52 ms -  1.05 us (11.00 ms / 10000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 10000
+TIMING LoadFromJsonTree: 32.52 ms -  3.25 us (33.00 ms / 10000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 10000
+TIMING StoreAsJsonTree: 84.52 ms -  8.45 us (85.00 ms / 10000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 10000
+TIMING Jsonize tree   : 117.52 ms - 11.75 us (118.00 ms / 10000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 10000
+TIMING JSONIZE        : 280.52 ms - 28.05 us (281.00 ms / 10000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 10000
+
+* /home/cxl/upp/out/sandbox/GCC.Shared.Sse2.Svo_Value/Structurize 06.02.2012 16:51:29, user: cxl
+
+TIMING Serialize one  : 496.46 ms - 496.46 ns (540.00 ms / 1000000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1000000
+TIMING Jsonize one    :  2.56 s  -  2.56 us ( 2.60 s  / 1000000 ), min:  0.00 ns, max:  2.00 ms, nesting: 1 - 1000000
+TIMING Serialize      : 126.65 ms -  1.27 us (131.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING LoadFromJsonTree: 316.65 ms -  3.17 us (321.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING StoreAsJsonTree: 806.65 ms -  8.07 us (811.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING Jsonize tree   :  1.12 s  - 11.24 us ( 1.13 s  / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING JSONIZE        :  2.79 s  - 27.86 us ( 2.79 s  / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+
+* /home/cxl/upp/out/sandbox/GCC.Shared.Sse2/Structurize 06.02.2012 16:53:05, user: cxl
+
+TIMING Serialize one  : 466.45 ms - 466.45 ns (511.00 ms / 1000000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1000000
+TIMING Jsonize one    :  2.76 s  -  2.76 us ( 2.80 s  / 1000000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1000000
+TIMING Serialize      : 120.54 ms -  1.21 us (125.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING LoadFromJsonTree: 473.54 ms -  4.74 us (478.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING StoreAsJsonTree: 740.54 ms -  7.41 us (745.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING Jsonize tree   :  1.21 s  - 12.13 us ( 1.22 s  / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING JSONIZE        :  2.94 s  - 29.41 us ( 2.94 s  / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+
+* /home/cxl/upp/out/sandbox/GCC.Shared.Sse2.Svo_Value/Structurize 06.02.2012 17:02:08, user: cxl
+
+TIMING Serialize one  : 488.94 ms - 488.94 ns (530.00 ms / 1000000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1000000
+TIMING Jsonize one    :  2.51 s  -  2.51 us ( 2.55 s  / 1000000 ), min:  0.00 ns, max:  5.00 ms, nesting: 1 - 1000000
+TIMING Serialize      : 120.89 ms -  1.21 us (125.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING LoadFromJsonTree: 298.89 ms -  2.99 us (303.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING StoreAsJsonTree: 803.89 ms -  8.04 us (808.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING Jsonize tree   :  1.10 s  - 11.05 us ( 1.11 s  / 100000 ), min:  0.00 ns, max:  3.00 ms, nesting: 1 - 100000
+TIMING JSONIZE        :  2.77 s  - 27.66 us ( 2.77 s  / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+
+* /home/cxl/upp/out/sandbox/GCC.Shared.Sse2.Svo_Value/Structurize 06.02.2012 17:04:43, user: cxl
+
+TIMING Serialize one  : 479.84 ms - 479.84 ns (528.00 ms / 1000000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1000000
+TIMING Jsonize one    :  2.47 s  -  2.47 us ( 2.52 s  / 1000000 ), min:  0.00 ns, max:  3.00 ms, nesting: 1 - 1000000
+TIMING Serialize      : 125.18 ms -  1.25 us (130.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING LoadFromJsonTree: 276.18 ms -  2.76 us (281.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING StoreAsJsonTree: 791.18 ms -  7.91 us (796.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING Jsonize tree   :  1.06 s  - 10.59 us ( 1.06 s  / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING JSONIZE        :  2.74 s  - 27.36 us ( 2.74 s  / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+
+* /home/cxl/upp/out/sandbox/GCC.Shared.Sse2.Svo_Value/Structurize 06.02.2012 17:06:34, user: cxl
+
+TIMING Serialize one  : 471.44 ms - 471.44 ns (517.00 ms / 1000000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1000000
+TIMING Jsonize one    :  2.48 s  -  2.48 us ( 2.52 s  / 1000000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1000000
+TIMING Serialize      : 127.44 ms -  1.27 us (132.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING LoadFromJsonTree: 277.44 ms -  2.77 us (282.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING StoreAsJsonTree: 768.44 ms -  7.68 us (773.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING Jsonize tree   :  1.04 s  - 10.40 us ( 1.04 s  / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000
+TIMING JSONIZE        :  2.71 s  - 27.10 us ( 2.71 s  / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 100000

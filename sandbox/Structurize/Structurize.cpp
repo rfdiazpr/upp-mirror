@@ -8,8 +8,8 @@ class JsonIO {
 	Value          tgt;
 
 public:
-	bool IsLoading() const { return src; }
-	bool IsStoring() const { return !src; }
+	bool IsLoading() const                       { return src; }
+	bool IsStoring() const                       { return !src; }
 	
 	const Value& Get() const                     { ASSERT(IsLoading()); return *src; }
 	void         Set(const Value& v)             { ASSERT(IsStoring() && !map); tgt = v; }
@@ -19,8 +19,8 @@ public:
 	template <class T>
 	JsonIO& operator()(const char *key, T& value);
 	
-	JsonIO(const Value& src) : src(&src) {}
-	JsonIO() { src = NULL; }
+	JsonIO(const Value& src) : src(&src)         {}
+	JsonIO()                                     { src = NULL; }
 };
 
 template <class T>

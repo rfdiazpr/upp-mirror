@@ -1,8 +1,6 @@
-#include <Core/Core.h>
+#include "Json.h"
 
 using namespace Upp;
-
-
 
 struct Test {
 	int a, b;
@@ -20,13 +18,36 @@ struct Test {
 
 CONSOLE_APP_MAIN
 {
+	ArrayMap<double, Test> maptest;
 	Array<Test> test;
 	for(int i = 0; i < 10; i++) {
 		Test t;
 		t.a = 1 + i;
 		t.b = 23 + i;
 		test.Add(t);
+		maptest.Add(1.0 / (i + 1), t);
 	}
+	
+	RDUMP(StoreAsJson(test));
+	RDUMP(StoreAsJsonValue(maptest));
+	RDUMP(StoreAsJson(maptest));
+
+	Index<String> x;
+	x.Add("One");
+	x.Add("Two");
+	x.Add("Three");
+	
+	RDUMP(StoreAsJson(x));
+	Index<String> x2;
+	LoadFromJson(x2, StoreAsJson(x));
+	RDUMP(StoreAsJson(x2));
+	x.Unlink(1);
+	RDUMP(StoreAsJson(x));
+	
+
+	ArrayMap<double, Test> map2;
+	LoadFromJson(map2, StoreAsJson(maptest));
+	RDUMP(StoreAsJson(map2));
 	
 	String json = StoreAsJson(test);
 	RDUMP(json);
@@ -47,18 +68,18 @@ CONSOLE_APP_MAIN
 	for(int i = 0; i < N; i++) {
 		Array<Test> test2;
 		RTIMING("Jsonize tree");
-		LoadFromJsonTree(test2, StoreAsJsonTree(test));
+		LoadFromJsonValue(test2, StoreAsJsonValue(test));
 	}
 	Value tree;
 	for(int i = 0; i < N; i++) {
 		Array<Test> test2;
 		RTIMING("StoreAsJsonTree");
-		tree = StoreAsJsonTree(test);
+		tree = StoreAsJsonValue(test);
 	}
 	for(int i = 0; i < N; i++) {
 		Array<Test> test2;
 		RTIMING("LoadFromJsonTree");
-		LoadFromJsonTree(test2, tree);
+		LoadFromJsonValue(test2, tree);
 	}
 	for(int i = 0; i < N; i++) {
 		Array<Test> test2;

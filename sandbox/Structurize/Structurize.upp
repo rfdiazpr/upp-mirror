@@ -2,6 +2,8 @@ uses
 	Core;
 
 file
+	Json.h,
+	Json.cpp,
 	Structurize.cpp,
 	benchmark.txt;
 

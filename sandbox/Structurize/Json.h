@@ -26,6 +26,10 @@ public:
 	JsonIO()                                     { src = NULL; }
 };
 
+struct JsonizeError : Exc {
+	JsonizeError(const String& s) : Exc(s) {}
+};
+
 template <class T>
 void Jsonize(JsonIO& io, T& var)
 {
@@ -89,19 +93,10 @@ bool LoadFromJson(T& var, const char *json)
 	return true;
 }
 
-template <class T>
-void JsonizeValue(JsonIO& io, T& var)
-{ // bad code
-	if(io.IsLoading())
-		var = io.Get();
-	else
-		io.Set(var);
-}
-
-template<> inline void Jsonize(JsonIO& io, int& var)      { JsonizeValue(io, var); } // Check for correct types
-template<> inline void Jsonize(JsonIO& io, double& var)   { JsonizeValue(io, var); }
-template<> inline void Jsonize(JsonIO& io, bool& var)     { JsonizeValue(io, var); }
-template<> inline void Jsonize(JsonIO& io, String& var)   { JsonizeValue(io, var); }
+template<> inline void Jsonize(JsonIO& io, int& var);
+template<> inline void Jsonize(JsonIO& io, double& var);
+template<> inline void Jsonize(JsonIO& io, bool& var);
+template<> inline void Jsonize(JsonIO& io, String& var);
 
 template <class T, class V>
 void JsonizeArray(JsonIO& io, T& array)

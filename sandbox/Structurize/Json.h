@@ -87,16 +87,24 @@ bool LoadFromJson(T& var, const char *json)
 	try {
 		LoadFromJsonValue(var, ParseJSON(json));
 	}
-	catch(CParser::Error& e) {
+	catch(CParser::Error) {
+		return false;
+	}
+	catch(JsonizeError) {
 		return false;
 	}
 	return true;
 }
 
-template<> inline void Jsonize(JsonIO& io, int& var);
-template<> inline void Jsonize(JsonIO& io, double& var);
-template<> inline void Jsonize(JsonIO& io, bool& var);
-template<> inline void Jsonize(JsonIO& io, String& var);
+template<> void Jsonize(JsonIO& io, int& var);
+template<> void Jsonize(JsonIO& io, int64& var);
+template<> void Jsonize(JsonIO& io, double& var);
+template<> void Jsonize(JsonIO& io, bool& var);
+template<> void Jsonize(JsonIO& io, String& var);
+template<> void Jsonize(JsonIO& io, WString& var);
+template<> void Jsonize(JsonIO& io, Date& var);
+template<> void Jsonize(JsonIO& io, Time& var);
+template<> void Jsonize(JsonIO& io, Complex& var);
 
 template <class T, class V>
 void JsonizeArray(JsonIO& io, T& array)

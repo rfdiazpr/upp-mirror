@@ -15,9 +15,43 @@ struct Test {
 	}
 };
 
+template <class T>
+void TestJsonize(T x)
+{
+	DLOG("==============================");
+	DDUMP(x);
+	String json = StoreAsJson(x);
+	DDUMP(json);
+	T y;
+	CHECK(LoadFromJson(y, json));
+	DDUMP(y);
+	ASSERT(x == y);
+	
+	if(Value(x).Is<bool>())
+		return;
+
+	json = StoreAsJson((T)Null);
+	DDUMP(json);
+	CHECK(LoadFromJson(y, json));
+	DDUMP(y);
+	ASSERT(IsNull(y));
+}
+
 
 CONSOLE_APP_MAIN
 {
+	TestJsonize((int)1);
+	TestJsonize(true);
+	TestJsonize(false);
+	TestJsonize(1.1);
+	TestJsonize(String("hello"));
+	TestJsonize(WString("world"));
+	TestJsonize(Date(2012, 7, 20));
+	TestJsonize(Time(2012, 7, 20, 20, 55, 59));
+	TestJsonize(I64(123456));
+	TestJsonize(I64(INT_MAX) + I64(INT_MAX));
+	TestJsonize(Complex(1.23, 1.33));
+
 	ArrayMap<double, Test> maptest;
 	Array<Test> test;
 	for(int i = 0; i < 10; i++) {

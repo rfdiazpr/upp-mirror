@@ -257,3 +257,40 @@ void MakeLink(StringBuffer& out, const Vector<String>& part, const Vector<Value>
 			}
 		}
 }
+
+Http& Http::RenderResult(const String& template_name)
+{
+	LTIMING("Render");
+	response << ::Render(GetTemplate(template_name), var.GetValues());
+	return *this;
+}
+
+Http& Http::Redirect(void (*view)(Http&), const Vector<Value>& arg)
+{
+	Redirect(MakeLink(view, arg));
+	return *this;
+}
+
+Http& Http::Redirect(void (*view)(Http&))
+{
+	Vector<Value> arg;
+	Redirect(view, arg);
+	return *this;
+}
+
+Http& Http::Redirect(void (*view)(Http&), const Value& v1)
+{
+	Vector<Value> arg;
+	arg.Add(v1);
+	Redirect(view, arg);
+	return *this;
+}
+
+Http& Http::Redirect(void (*view)(Http&), const Value& v1, const Value& v2)
+{
+	Vector<Value> arg;
+	arg.Add(v1);
+	arg.Add(v2);
+	Redirect(view, arg);
+	return *this;
+}

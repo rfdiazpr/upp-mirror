@@ -1,6 +1,6 @@
 #include "Skylark.h"
 
-#define LLOG(x)   DLOG(x)
+#define LLOG(x)   // DLOG(x)
 
 void Compiler::Iterate(Vector< One<Exe> >& a, Callback1< One<Exe>& > op)
 {
@@ -87,9 +87,9 @@ void Compiler::Optimize(One<Exe>& exe)
 	if(!exe)
 		return;
 	bool optimized2 = false;
-#ifdef _DEBUG
+#ifdef _DEBUG0
 	String name = "Optimizing " + String(typeid(*~exe).name());
-	LOGBLOCK(name);
+	LLOGBLOCK(name);
 #endif
 	do {
 		optimized = false;
@@ -127,9 +127,9 @@ void Compiler::Optimize(One<Exe>& exe)
 				if(e1 && e2 && e1->value.Is<RawHtmlText>() && e2->value.Is<RawHtmlText>()) {
 					RawHtmlText t;
 					t.text = ValueTo<RawHtmlText>(e1->value).text + ValueTo<RawHtmlText>(e2->value).text;
-					One<ExeConst> oxe;
+					One<Exe> oxe;
 					oxe.Create<ExeConst>().value = RawToValue(t);
-					m.Set(i, oxe.Detach());
+					m[i] = oxe;
 					m.Remove(i + 1);
 					optimized = true;
 					LLOG("OPTIMIZED ExeBlock constant folding");

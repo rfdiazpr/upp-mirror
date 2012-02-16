@@ -7,15 +7,19 @@ URL_VIEW(Picture, "person/*/picture")
 
 Tuple2<int, int> Pagination(Http& http, int total)
 {
-	int perpage = max(atoi(http["perpage"]), 10);
+	String pp = http["perpage"];
+	int perpage = Nvl((int)http["session_perpage"], 10);
+	if(!IsNull(pp))
+		perpage = max(atoi((String)http["perpage"]), 10);
+	http.SetSession("session_perpage", perpage);
 	perpage = max(perpage, 10);
 	int pages = total / perpage;
-	int page = atoi(http["page"]);
+	int page = atoi((String)http["page"]);
 	ValueArray pg;
 	for(int i = 0; i < pages; i++)
 		pg.Add(i);
 	http("PAGES", pg);
-	http("PAGINATION", http.RenderHtml("AdrBook/pagination.witz"));
+	http.Render("PAGINATION", "AdrBook/pagination.witz");
 	return MakeTuple(page * perpage, perpage);
 }
 
@@ -42,7 +46,7 @@ URL_VIEW(HomePage, "$base/stránčička.html")
 		person.Add(vm);
 	}
 	}
-	http("PERSON", person).Render("AdrBook/Index.witz");
+	http("PERSON", person).RenderResult("AdrBook/Index.witz");
 }
 
 URL_VIEW(NotFound, "**")
@@ -84,12 +88,12 @@ URL_VIEW(SubmitNew, "submit:POST")
 
 URL_VIEW(New, "new")
 {
-	http("ACTION", SubmitNew).Render("AdrBook/Dialog.witz");
+	http("ACTION", SubmitNew).RenderResult("AdrBook/Dialog.witz");
 }
 
 URL_VIEW(SubmitEdit, "submit/edit/*:POST")
 {
-	int id = atoi(http[0]);
+	int id = atoi((String)http[0]);
 	SQL * http.Update(PERSON).Where(ID == atoi(http[0]));
 /*
 	SQL * Update(PERSON)
@@ -121,7 +125,7 @@ URL_VIEW(Edit, "person/*/edit")
 		("ID", id)
 		(sql)
 		("ACTION", SubmitEdit, id)
-	.Render("AdrBook/Dialog.witz");
+	.RenderResult("AdrBook/Dialog.witz");
 }
 
 URL_VIEW(Delete, "person/*/delete")

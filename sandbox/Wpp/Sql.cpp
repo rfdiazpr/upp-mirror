@@ -1,23 +1,23 @@
 #include "Skylark.h"
 
-struct sFieldsToHttp : public FieldOperator {
-	Http& http;
+struct sFieldsToRenderer : public FieldOperator {
+	Renderer& http;
 
 	void Field(const char *name, Ref f) {
 		http(name, f);
 	}
 	
-	sFieldsToHttp(Http& http) : http(http) {}
+	sFieldsToRenderer(Renderer& http) : http(http) {}
 };
 
-Http& Http::operator()(Fields rec)
+Renderer& Renderer::operator()(Fields rec)
 {
-	sFieldsToHttp x(*this);
+	sFieldsToRenderer x(*this);
 	rec(x);
 	return *this;
 }
 
-Http& Http::operator()(const Sql& sql)
+Renderer& Renderer::operator()(const Sql& sql)
 {
 	int n = sql.GetColumns();
 	for(int i = 0; i < n; i++)
@@ -25,7 +25,7 @@ Http& Http::operator()(const Sql& sql)
 	return *this;
 }
 
-SqlUpdate Http::Update(SqlId table)
+SqlUpdate Renderer::Update(SqlId table)
 {
 	Vector<String> col = GetSchColumns(~table);
 	SqlUpdate u(table);
@@ -40,7 +40,7 @@ SqlUpdate Http::Update(SqlId table)
 	return u;
 }
 
-SqlInsert Http::Insert(SqlId table)
+SqlInsert Renderer::Insert(SqlId table)
 {
 	Vector<String> col = GetSchColumns(~table);
 	SqlInsert y(table);

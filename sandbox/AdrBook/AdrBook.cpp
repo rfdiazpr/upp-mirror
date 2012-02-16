@@ -1,12 +1,7 @@
 #include "AdrBook.h"
 
 #include <Sql/sch_schema.h>
-
 #include <Sql/sch_source.h>
-
-#ifdef PLATFORM_WIN32
-#include <wincon.h>
-#endif
 
 int number;
 
@@ -33,6 +28,7 @@ CONSOLE_APP_MAIN
 {
 	SetTemplatePath("/home/cxl/sandbox;u:/sandbox");
 
+#if 0
 	Sqlite3Session sqlite3;
 
 #ifdef _DEBUG
@@ -44,19 +40,36 @@ CONSOLE_APP_MAIN
 		return;
 	}
 	SQL = sqlite3;
+	sqlite3.ThrowOnError();
 
 	SqlSchema sch(SQLITE3);
+#else
+	MySqlSession mysql;
+#ifdef _DEBUG
+	mysql.LogErrors();
+	mysql.SetTrace();
+#endif
+	SqlId::UseQuotes();
+	if(!mysql.Connect("root", "Passw0rd", "test")) {
+		LOG("Can't create or open database file\n");
+		return;
+	}
+	SQL = mysql;
+	
+	SqlSchema sch(MY_SQL);
+#endif
+
 	All_Tables(sch);
 	SqlPerformScript(sch.Upgrade());
 	SqlPerformScript(sch.Attributes());
 	sch.SaveNormal();
-
-	sqlite3.ThrowOnError();
 	
 	SetViewRoot("root");
 	SetViewVar("base", "asdfasdf");
 	
 	FinalizeViews();
+
+	SQL.GetSession().ThrowOnError();
 
 	LOG("About to start");
 #ifdef PLATFORM_WIN32
@@ -76,8 +89,10 @@ CONSOLE_APP_MAIN
 				break;
 			Cout() << " request accepted\n";
 			Http http;
+		#if 0
 		#ifndef _DEBUG
 			http.Benchmark(4000);
+		#endif
 		#endif
 			http.Dispatch(request);
 //			break;

@@ -1,6 +1,6 @@
 #include "Skylark.h"
 
-#define LLOG(x)    // DLOG(x)
+#define LLOG(x)    DLOG(x)
 #define LTIMING(x) RTIMING(x)
 
 enum { DISPATCH_VARARGS = -1 };
@@ -306,6 +306,7 @@ void Http::Dispatch(Socket& socket)
 				GetBestDispatch(post ? DispatchNode::POST : DispatchNode::GET, part, 0, DispatchMap[0], a, bd, 0, 0);
 			DUMPC(arg);
 			response.Clear();
+			LoadSession();
 			if(bd.view) {
 				try {
 					(*bd.view)(*this);
@@ -328,6 +329,7 @@ void Http::Dispatch(Socket& socket)
 				code = 404;
 				code_text = "Not found";
 			}
+			SaveSession();
 			r.Clear();
 			if(redirect.GetCount()) {
 				r << "HTTP/1.1 " << code << " Found\r\n";

@@ -14,10 +14,11 @@ file
 	Exe.cpp,
 	StdLib.icpp,
 	Http.h,
-	Http.cpp,
-	Dispatch.cpp,
+	Renderer.cpp,
 	Sql.cpp,
-	Render.cpp,
+	Http.cpp,
+	Session.cpp,
+	Dispatch.cpp,
 	Util readonly separator,
 	Static.cpp;
 

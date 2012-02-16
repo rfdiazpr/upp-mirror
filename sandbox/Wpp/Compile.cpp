@@ -1,6 +1,6 @@
 #include "Skylark.h"
 
-#define LLOG(x)  DLOG(x)
+#define LLOG(x)  // DLOG(x)
 
 VectorMap<String, Value (*)(const Vector<Value>& v)>& Compiler::functions()
 {

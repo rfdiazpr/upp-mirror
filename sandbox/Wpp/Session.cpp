@@ -30,6 +30,8 @@ void Http::LoadSession()
 	LoadFromFile(callback1(SerializeSession, &session_var), SessionFile(session_id));
 	LLOG("Loaded session: " << session_id);
 	LDUMPM(session_var);
+	for(int i = 0; i < session_var.GetCount(); i++)
+		var.Add(session_var.GetKey(i), session_var[i]);
 }
 
 void Http::SaveSession()

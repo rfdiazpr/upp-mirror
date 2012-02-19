@@ -1,7 +1,7 @@
 #include "Skylark.h"
 
-#define LLOG(x)    DLOG(x)
-#define LTIMING(x) RTIMING(x)
+#define LLOG(x)    // DLOG(x)
+#define LTIMING(x) // RTIMING(x)
 
 Renderer& Renderer::operator()(const ValueMap& map)
 {
@@ -61,7 +61,6 @@ const One<Exe>& Renderer::GetTemplate(const String& template_name)
 
 String Renderer::RenderString(const String& template_name)
 {
-	DDUMP(::Render(GetTemplate(template_name), var.GetValues()));
 	return ::Render(GetTemplate(template_name), var.GetValues());
 }
 

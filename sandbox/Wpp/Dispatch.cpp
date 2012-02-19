@@ -10,6 +10,7 @@ struct DispatchNode : Moveable<DispatchNode> {
 	void   (*view)(Http&);
 	int    argpos;
 	int    method;
+	String id;
 	
 	enum { GET, POST };
 
@@ -118,6 +119,7 @@ void RegisterView0(void (*view)(Http&), const char *id, String path, bool primar
 	ASSERT_(!DispatchMap[q].view, "duplicate view " + String(path));
 	DispatchMap[q].view = view;
 	DispatchMap[q].method = method;
+	DispatchMap[q].id = id;
 //	DumpDispatchMap();
 }
 
@@ -182,6 +184,7 @@ struct BestDispatch {
 	int             matched_parts;
 	int             matched_params;
 	Vector<String>& arg;
+	String          id;
 	
 	BestDispatch(Vector<String>& arg) : arg(arg) { matched_parts = -1; matched_params = 0; view = NULL; }
 };
@@ -198,6 +201,7 @@ void GetBestDispatch(int method,
 			bd.arg <<= arg;
 			bd.view = n.view;
 			bd.matched_parts = matched_parts;
+			bd.id = n.id;
 		}
 		int q = n.subnode.Find(String());
 		while(q >= 0) {
@@ -228,6 +232,7 @@ void GetBestDispatch(int method,
 				bd.arg.Append(part, ii, part.GetCount() - ii);
 				bd.view = an.view;
 				bd.matched_parts = matched_parts;
+				bd.id = an.id;
 			}
 		}
 		else {
@@ -309,6 +314,7 @@ void Http::Dispatch(Socket& socket)
 			LoadSession();
 			if(bd.view) {
 				try {
+					viewid = bd.id;
 					(*bd.view)(*this);
 				}
 				catch(SqlExc e) {
@@ -335,20 +341,22 @@ void Http::Dispatch(Socket& socket)
 				r << "HTTP/1.1 " << code << " Found\r\n";
 				r << "Location: " << redirect << "\r\n";
 			}
-			else
+			else {
 				r <<
 					"HTTP/1.0 " << code << ' ' << code_text << "\r\n"
 					"Date: " <<  WwwFormat(GetUtcTime()) << "\r\n"
 					"Server: U++\r\n"
 					"Content-Length: " << response.GetCount() << "\r\n"
 					"Connection: close\r\n"
-					"Content-Type: " << content_type << "\r\n"
-					<< cookies <<
-					"\r\n";
+					"Content-Type: " << content_type << "\r\n";
+				for(int i = 0; i < cookies.GetCount(); i++)
+					r << cookies[i];
+				r << "\r\n";
+			}
 		}
-		LLOG(r);
+//		LLOG(r);
 		socket.Write(r);
-		LLOG(response);
+//		LLOG(response);
 		socket.Write(response);
 	}
 }

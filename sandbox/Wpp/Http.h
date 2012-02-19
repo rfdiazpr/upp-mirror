@@ -33,6 +33,7 @@ struct Http : Renderer {
 	String uri;
 	String version;
 	String content;
+	String viewid;
 	
 	VectorMap<String, String> hdrfield;
 	Vector<String>            arg;
@@ -46,7 +47,7 @@ struct Http : Renderer {
 	String content_type;
 	String request_content_type;
 	
-	String cookies;
+	VectorMap<String, String> cookies;
 	
 	int    benchmark;
 	
@@ -75,10 +76,16 @@ public:
 	String GetHeader(const char *s) const              { return hdrfield.Get(s, Null); }
 	int    GetLength() const                           { return atoi(GetHeader("content-length")); }
 
+	String GetViewId() const                           { return viewid; }
+
 	Value  operator[](const char *id) const            { return Renderer::operator[](id); }
-	String operator[](int i)                           { return i >= 0 && i < arg.GetCount() ? arg[i] : String(); }
-	int    GetParamCount() const                       { return arg.GetCount(); }
+	String operator[](int i) const                     { return i >= 0 && i < arg.GetCount() ? arg[i] : String(); }
 	
+	int    Int(const char *id) const;
+	int    Int(int i) const;
+	
+	int    GetParamCount() const                       { return arg.GetCount(); }
+
 	Http&  ContentType(const char *s)                  { content_type = s; return *this; }
 	Http&  Content(const char *s, const String& data)  { content_type = s; response = data; return *this; }
 	Http&  operator<<(const String& s)                 { response << s; return *this; }

@@ -71,19 +71,43 @@ Http& Http::SetRawCookie(const char *id, const String& value, Time expires,
                          const char *path, const char *domain, bool secure,
                          bool httponly)
 {
-	cookies << "Set-Cookie:" << ' ' << id << '=' << value;
+	String& c = cookies.GetAdd(id);
+	c.Clear();
+	c << "Set-Cookie:" << ' ' << id << '=' << value;
 	if(!IsNull(expires))
-		cookies << "; " << WwwFormat(expires);
+		c << "; " << WwwFormat(expires);
 	if(path && *path)
-		cookies << "; Path=" << path;
+		c << "; Path=" << path;
 	if(domain && *domain)
-		cookies << "; Domain=" << domain;
+		c << "; Domain=" << domain;
 	if(secure)
-		cookies << "; Secure";
+		c << "; Secure";
 	if(httponly)
-		cookies << "; HttpOnly";
-	cookies << "\r\n";
+		c << "; HttpOnly";
+	c << "\r\n";
 	return *this;
+}
+
+int Http::Int(const char *id) const
+{
+	Value v = operator[](id);
+	if(v.Is<int>())
+		return v;
+	if(IsString(v))
+		return ScanInt((String)v);
+	if(IsNull(v))
+		return Null;
+	if(IsNumber(v)) {
+		double d = v;
+		if(d > INT_MIN && d <= INT_MAX)
+			return (int)d;
+	}
+	return Null;
+}
+
+int Http::Int(int i) const
+{
+	return ScanInt(operator[](i));
 }
 
 Http& Http::SetCookie(const char *id, const String& value, Time expires,

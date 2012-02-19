@@ -7,12 +7,17 @@ URL_VIEW(Picture, "person/*/picture")
 
 Tuple2<int, int> Pagination(Http& http, int total)
 {
-	String pp = http["perpage"];
-	int perpage = Nvl((int)http["session_perpage"], 10);
+	String ppid = http.GetViewId() + "_perpage";
+	DDUMP(ppid);
+	DDUMP(http.Int(ppid));
+	int perpage = Nvl(http.Int(ppid), 10);
+	int pp = http.Int("perpage");
+	DDUMP(perpage);
+	DDUMP(pp);
 	if(!IsNull(pp))
-		perpage = max(atoi((String)http["perpage"]), 10);
-	http.SetSession("session_perpage", perpage);
+		perpage = pp;
 	perpage = max(perpage, 10);
+	http.SetSession(ppid, perpage);
 	int pages = total / perpage;
 	int page = atoi((String)http["page"]);
 	ValueArray pg;

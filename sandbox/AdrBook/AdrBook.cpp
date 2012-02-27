@@ -63,9 +63,15 @@ CONSOLE_APP_MAIN
 	SqlPerformScript(sch.Upgrade());
 	SqlPerformScript(sch.Attributes());
 	sch.SaveNormal();
+	SQL.ClearError();
+	SQLR.ClearError();
 	
 	SetViewRoot("root");
 	SetViewVar("base", "asdfasdf");
+	
+	SessionConfig cfg;
+	cfg.table = SES;
+	SetSessionConfig(cfg);
 	
 	FinalizeViews();
 

@@ -1,0 +1,11 @@
+#ifndef _Skylark_icpp_init_stub
+#define _Skylark_icpp_init_stub
+#include "Web/init"
+#include "Draw/init"
+#include "plugin\png/init"
+#include "plugin\jpg/init"
+#include "Sql/init"
+#define BLITZ_INDEX__ Fbcbe92f6f31c12c24645daf810e7dbe9
+#include "StdLib.icpp"
+#undef BLITZ_INDEX__
+#endif

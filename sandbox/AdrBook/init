@@ -1,10 +1,11 @@
 #ifndef _AdrBook_icpp_init_stub
 #define _AdrBook_icpp_init_stub
 #include "Core/init"
-#include "Wpp/init"
 #include "plugin/sqlite3/init"
 #include "MySql/init"
-#define BLITZ_INDEX__ F036b7fda800f6eed69e8f628b2748270
+#include "AdrBook/init"
+#include "Skylark/init"
+#define BLITZ_INDEX__ F1ab41a977a0ee36eea93bdb58304b635
 #include "Pages.icpp"
 #undef BLITZ_INDEX__
 #endif

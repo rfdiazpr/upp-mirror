@@ -2,9 +2,10 @@ description "The first attempt to create web application (using Skylark)\377";
 
 uses
 	Core,
-	Wpp,
 	plugin/sqlite3,
-	MySql;
+	MySql,
+	AdrBook,
+	Skylark;
 
 file
 	AdrBook.h,

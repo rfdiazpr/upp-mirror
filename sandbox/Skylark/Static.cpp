@@ -27,16 +27,16 @@ URL_VIEW(ServeStaticPage, "static/**")
 	}
 }
 
-URL_VIEW(ServeIml, "iml/*/*")
+URL_VIEW(ServeIml, "iml/*")
 {
-	String name = http.arg[1];
+	String name = http.arg[0];
 	int q = name.Find('.');
 	String ext;
 	if(q >= 0) {
 		ext = name.Mid(q + 1);
 		name = name.Mid(0, q);
 	}
-	Image m = GetImlImage(http.arg[0] + ':' + name);
+	Image m = GetImlImage(name);
 	if(ext == "jpg" || ext == "JPG" || ext == "jpeg" || ext == "JPEG")
 		http.Content("image/jpeg", JPGEncoder().SaveString(m));
 	else

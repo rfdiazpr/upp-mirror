@@ -19,6 +19,7 @@ file
 	Http.cpp,
 	Session.cpp,
 	Dispatch.cpp,
+	App.cpp,
 	Util readonly separator,
 	Static.cpp;
 

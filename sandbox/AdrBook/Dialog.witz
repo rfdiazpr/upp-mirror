@@ -1,4 +1,4 @@
-#include Style.witz
+#include Base.witz
 
 #define BODY
  <FORM action=$ACTION method="post" accept-charset="utf-8" enctype="multipart/form-data">

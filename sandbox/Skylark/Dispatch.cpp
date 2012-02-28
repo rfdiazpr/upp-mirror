@@ -358,9 +358,7 @@ void Http::Dispatch(Socket& socket)
 				r << "\r\n";
 			}
 		}
-//		LLOG(r);
 		socket.Write(r);
-//		LLOG(response);
 		socket.Write(response);
 	}
 }

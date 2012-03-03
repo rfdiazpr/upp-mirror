@@ -1,0 +1,9 @@
+uses
+	Core;
+
+file
+	SearchString.cpp;
+
+mainconfig
+	"" = "SSE2";
+

@@ -37,9 +37,34 @@ void TestJsonize(T x)
 	ASSERT(IsNull(y));
 }
 
+struct TestValue : ValueType<TestValue, 678> {
+	int x;
+	String ToString() const { return AsString(x); }
+	void Serialize(Stream& s) { s % x; }
+	
+	operator Value() const  { return RichToValue(*this); }
+	
+	TestValue() { x = 0; }
+};
+
+INITBLOCK {
+	Value::Register<TestValue>();
+}
+
 
 CONSOLE_APP_MAIN
 {
+	{
+		TestValue a;
+		a.x = 1234567;
+		Value v = a;
+		DDUMP(v);
+		String h = StoreAsString(v);
+		Value vv;
+		LoadFromString(vv, h);
+		DDUMP(vv);
+	}
+	
 	TestJsonize((int)1);
 	TestJsonize(true);
 	TestJsonize(false);

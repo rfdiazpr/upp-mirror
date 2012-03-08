@@ -125,7 +125,7 @@ public:
 	ScatterCtrl& SetLegendWeight(const int& weight)				{ScatterDraw::SetLegendWeight(weight); 		return *this;};
 	ScatterCtrl& SetAxisColor(const class::Color& axis_color)	{ScatterDraw::SetAxisColor(axis_color);		return *this;};
 	ScatterCtrl& SetAxisWidth(const int& axis_width)			{ScatterDraw::SetAxisWidth(axis_width);		return *this;};
-	ScatterCtrl& SetTitle(const String& title)		 			{ScatterDraw::SetTitle(title); 			return *this;};
+	ScatterCtrl& SetTitle(const String& title)		 			{ScatterDraw::SetTitle(title); 				return *this;};
 	ScatterCtrl& SetTitleFont(const Font& fontTitle) 			{ScatterDraw::SetTitleFont(fontTitle); 		return *this;};
 	ScatterCtrl& SetTitleColor(const class::Color& colorTitle)	{ScatterDraw::SetTitleColor(colorTitle);	return *this;};
 	ScatterCtrl& SetLabelsFont(const Font& fontLabels) 			{ScatterDraw::SetLabelsFont(fontLabels); 	return *this;};
@@ -133,8 +133,12 @@ public:
 	ScatterCtrl& SetLabelX(const String& _xLabel)				{ScatterDraw::SetLabelX(_xLabel); 			return *this;};
 	ScatterCtrl& SetLabelY(const String& _yLabel)				{ScatterDraw::SetLabelY(_yLabel); 			return *this;};
 	ScatterCtrl& SetLabelY2(const String& _yLabel)				{ScatterDraw::SetLabelY2(_yLabel); 			return *this;};
-	ScatterCtrl& H_Border(const int& poz_x)						{ScatterDraw::H_Border(poz_x);		 		return *this;};
-	ScatterCtrl& V_Border(const int& poz_y)						{ScatterDraw::V_Border(poz_y);		 	 	return *this;};
+	ScatterCtrl& SetPlotAreaMargin(const int hLeft, const int hRight, const int vTop, const int vBottom)
+																{ScatterDraw::SetPlotAreaMargin(hLeft, hRight, vTop, vBottom); return *this;};
+	ScatterCtrl& SetPlotAreaLeftMargin(const int margin)		{ScatterDraw::SetPlotAreaLeftMargin(margin);return *this;};
+	ScatterCtrl& SetPlotAreaTopMargin(const int margin)			{ScatterDraw::SetPlotAreaTopMargin(margin);return *this;};
+	ScatterCtrl& SetPlotAreaRightMargin(const int margin)		{ScatterDraw::SetPlotAreaRightMargin(margin);return *this;};
+	ScatterCtrl& SetPlotAreaBottomMargin(const int margin)		{ScatterDraw::SetPlotAreaBottomMargin(margin);return *this;};
 	
 	using ScatterDraw::AddSeries; 
 	ScatterCtrl &AddSeries(ArrayCtrl &data, bool useCols = true, int idX = 0, int idY = 1, int idZ = 2, int beginData = 0, int numData = Null);

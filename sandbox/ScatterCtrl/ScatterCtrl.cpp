@@ -72,12 +72,12 @@ ScatterCtrl &ScatterCtrl::ShowInfo(bool show)
 
 void ScatterCtrl::ProcessPopUp(const Point & pt)
 {
-	double _x= (popLT.x-px)*xRange/(GetSize().cx-2*px-1)+xMin;		
-	double _y= (GetSize().cy-py-popLT.y-1)*yRange/(GetSize().cy-2*py-titleFont.GetHeight()-1)+yMin;
-	double _y2=(GetSize().cy-py-popLT.y-1)*yRange2/(GetSize().cy-2*py-titleFont.GetHeight()-1)+yMin2;
-	double x= (pt.x-px)*xRange/(GetSize().cx-2*px-1)+xMin;		
-	double y= (GetSize().cy-py-pt.y-1)*yRange/(GetSize().cy-2*py-titleFont.GetHeight()-1)+yMin;
-	double y2=(GetSize().cy-py-pt.y-1)*yRange2/(GetSize().cy-2*py-titleFont.GetHeight()-1)+yMin2;
+	double _x  = (popLT.x - hPlotLeft)*xRange/(GetSize().cx - (hPlotLeft + hPlotRight)-1) + xMin;		
+	double _y  = (GetSize().cy - vPlotTop-popLT.y-1)*yRange/(GetSize().cy - 2*(vPlotTop + vPlotBottom) - titleFont.GetHeight()-1) + yMin;
+	double _y2 = (GetSize().cy - vPlotTop-popLT.y-1)*yRange2/(GetSize().cy - 2*(vPlotTop + vPlotBottom) - titleFont.GetHeight()-1) + yMin2;
+	double x   = (pt.x - hPlotLeft)*xRange/(GetSize().cx - (hPlotLeft + hPlotRight)-1) + xMin;		
+	double y   = (GetSize().cy - vPlotTop - pt.y-1)*yRange/(GetSize().cy - 2*(vPlotTop + vPlotBottom) - titleFont.GetHeight()-1) + yMin;
+	double y2  = (GetSize().cy - vPlotTop - pt.y-1)*yRange2/(GetSize().cy - 2*(vPlotTop + vPlotBottom) - titleFont.GetHeight()-1) + yMin2;
 	
 	double dx  = x  - _x;
 	double dy  = y  - _y;
@@ -196,8 +196,8 @@ void ScatterCtrl::ProcessMouse(bool down, Point &pt, bool ctrl, bool alt, bool s
 void ScatterCtrl::LabelPopUp(bool down, Point &pt) 
 {
 	if (down) {
-		if(paintInfo && px <=pt.x && pt.x<= GetSize().cx-px && (py + titleFont.GetHeight())<=pt.y && pt.y<= GetSize().cy-py)
-		{
+		if(paintInfo && hPlotLeft <= pt.x && pt.x <= GetSize().cx - hPlotRight && 
+		  				(vPlotTop + titleFont.GetHeight()) <= pt.y && pt.y <= GetSize().cy - vPlotBottom) {
 			popText.AppearOnly(this);
 			
 			isLabelPopUp = true;
@@ -207,8 +207,7 @@ void ScatterCtrl::LabelPopUp(bool down, Point &pt)
 			ProcessPopUp(pt);		
 		}	
 	} else {
-		if(paintInfo && isLabelPopUp) 
-		{
+		if(paintInfo && isLabelPopUp) {
 			popText.Close();
 			isLabelPopUp = false;
 			popLT = popRB = Null;
@@ -225,8 +224,8 @@ void ScatterCtrl::Scrolling(bool down, Point &pt, bool isOut)
 {
 	static Image mouseImg;
 	if (down) {
-		if((mouseHandlingX || mouseHandlingY) && px <=pt.x && pt.x<= GetSize().cx-px && (py + titleFont.GetHeight())<=pt.y && pt.y<= GetSize().cy-py)
-		{
+		if((mouseHandlingX || mouseHandlingY) && hPlotLeft <= pt.x && pt.x <= GetSize().cx - hPlotRight && 
+			(vPlotTop + titleFont.GetHeight()) <= pt.y && pt.y <= GetSize().cy - vPlotBottom) {
 			butDownX = pt.x;
 			butDownY = pt.y;	
 			isScrolling = true;
@@ -292,7 +291,7 @@ void ScatterCtrl::MouseMove(Point pt, dword)
 	{
 		int shiftX = pt.x - butDownX;
 		if (mouseHandlingX && shiftX != 0) {
-			double deltaX = shiftX*xRange/(GetSize().cx - 2*px - 1);
+			double deltaX = shiftX*xRange/(GetSize().cx - (hPlotLeft + hPlotRight) - 1);
 			xMin -= deltaX;
 			xMinUnit += deltaX;
 			AdjustMinUnitX();
@@ -300,12 +299,12 @@ void ScatterCtrl::MouseMove(Point pt, dword)
 		}
 		int shiftY = pt.y - butDownY;
 		if (mouseHandlingY && shiftY != 0) {
-			double deltaY = -shiftY*yRange/(GetSize().cy - 2*py - 1);
+			double deltaY = -shiftY*yRange/(GetSize().cy - (vPlotTop + vPlotBottom) - 1);
 			yMin -= deltaY;
 			yMinUnit += deltaY;
 			AdjustMinUnitY();
 			if (drawY2Reticle) {
-				double deltaY2 = -shiftY*yRange2/(GetSize().cy - 2*py - 1);
+				double deltaY2 = -shiftY*yRange2/(GetSize().cy - 2*(vPlotTop + vPlotBottom) - 1);
 				yMin2 -= deltaY2;
 				yMinUnit2 += deltaY2;
 				AdjustMinUnitY2();
@@ -319,7 +318,8 @@ void ScatterCtrl::MouseMove(Point pt, dword)
 		}
 	} 
 	if(isLabelPopUp) {
-		if (paintInfo && px <=pt.x && pt.x<= GetSize().cx-px && (py + titleFont.GetHeight())<=pt.y && pt.y<= GetSize().cy-py) 
+		if (paintInfo && hPlotLeft <= pt.x && pt.x <= GetSize().cx - hPlotRight && 
+						(vPlotTop + titleFont.GetHeight()) <= pt.y && pt.y <= GetSize().cy - vPlotBottom) 
 		{
 			if (IsNull(popLT))
 				popLT = pt;
@@ -387,10 +387,6 @@ void ScatterCtrl::SaveToImage(String fileName)
 	    }
         fileName = fs;
 	} 
-	if (FileExists(fileName)) {
-		if (!PromptOKCancel(Format(t_("File \"%s\" found.&Do you want to overwrite it?"), DeQtf(fileName))))
-			return;
-	}
 	if (GetFileExt(fileName) == ".png") {
 		PNGEncoder encoder;
 		encoder.SaveFile(fileName, GetImage(3));

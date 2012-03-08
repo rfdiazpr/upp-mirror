@@ -55,7 +55,7 @@ ScatterCtrl_Demo::ScatterCtrl_Demo()
 	paintMode.Add(ScatterDraw::MD_ANTIALIASED, "Painter Antialiased")
 			 .Add(ScatterDraw::MD_NOAA, 	   "Painter No-Antialiased")
 			 .Add(ScatterDraw::MD_SUBPIXEL,    "Painter Subpixel")
-			 .Add(ScatterDraw::MD_DRAW, 	   "Draw");
+			 .Add(ScatterDraw::MD_DRAW, 	   "Draw"); 
 
 	paintMode <<= THISBACK(SetMode);
 	paintMode.SetData(ScatterDraw::MD_ANTIALIASED);

@@ -61,24 +61,32 @@ ScatterDraw& ScatterDraw::SetLabelsColor(const Color& colorLabels)
 	return *this;
 }
 
-ScatterDraw& ScatterDraw::SetPlotAreaPoz(const int& poz_x, const int& poz_y)
+ScatterDraw& ScatterDraw::SetPlotAreaMargin(const int hLeft, const int hRight, const int vTop, const int vBottom)
 {
-	px = poz_x;
-	py = poz_y;
+	hPlotLeft   = hLeft;	
+	hPlotRight  = hRight;
+	vPlotTop    = vTop;
+	vPlotBottom = vBottom;
 	return *this;
 }
 
-ScatterDraw& ScatterDraw::H_Border(const int& poz_x)
-{
-	if(poz_x>=0) 
-		px = poz_x;
+ScatterDraw& ScatterDraw::SetPlotAreaLeftMargin(const int margin) {	
+	hPlotLeft = margin;	
 	return *this;
 }
 
-ScatterDraw& ScatterDraw::V_Border(const int& poz_y)
-{
-	if(poz_y>=0) 
-		py = poz_y;
+ScatterDraw& ScatterDraw::SetPlotAreaRightMargin(const int margin) {	
+	hPlotRight = margin;	
+	return *this;
+}
+
+ScatterDraw& ScatterDraw::SetPlotAreaTopMargin(const int margin) {	
+	vPlotTop = margin;	
+	return *this;
+}
+
+ScatterDraw& ScatterDraw::SetPlotAreaBottomMargin(const int margin) {	
+	vPlotBottom = margin;	
 	return *this;
 }
 
@@ -156,7 +164,7 @@ ScatterDraw &ScatterDraw::SetDrawY2Reticle(bool set)
 
 void ScatterDraw::DrawLegend(Draw& w, const int& scale) const
 {
-	int nmr = fround((GetSize().cx-2*px)/legendWeight);	//max number of labels per row
+	int nmr = fround((GetSize().cx-2*(hPlotLeft + hPlotRight))/legendWeight);	//max number of labels per row
 	if (nmr < 0) 
 		return;
 	int nLab = series.GetCount();	//number of labels
@@ -290,7 +298,7 @@ ScatterDraw &ScatterDraw::SetXYMin(double xmin, double ymin, double ymin2)
 	return *this;
 }
 
-void ScatterDraw::FitToData(bool Y) {
+void ScatterDraw::FitToData(bool vertical) {
 	double minx, maxx, miny, miny2, maxy, maxy2;
 	minx = miny = miny2 = -DOUBLE_NULL;
 	maxx = maxy = maxy2 = DOUBLE_NULL;
@@ -305,7 +313,7 @@ void ScatterDraw::FitToData(bool Y) {
 				maxx = series[j].PointsData()->x(i);
 		}
 	}
-	if (Y) {
+	if (vertical) {
 		for (int j = 0; j < series.GetCount(); j++) {
 			if (series[j].opacity == 0)
 				continue;
@@ -331,7 +339,7 @@ void ScatterDraw::FitToData(bool Y) {
 		AdjustMinUnitX();
 		xRange = maxx - minx;
 	}
-	if (Y) {
+	if (vertical) {
 		if (miny != -DOUBLE_NULL) {
 			miny = min((miny-yMin)/yRange, (miny2-yMin2)/yRange2);
 			maxy = max((maxy-yMin-yRange)/yRange, (maxy2-yMin2-yRange2)/yRange2);
@@ -898,27 +906,27 @@ Image ScatterDraw::GetImage(const int &scale)
 
 double ScatterDraw::GetXByPoint(const int x) 
 {
-	return (x-GetH_Border())*GetXRange()/(GetSize().cx-2*GetH_Border()-1)+GetXMin();		
+	return (x - hPlotLeft)*GetXRange()/(GetSize().cx - (hPlotLeft + hPlotRight) - 1) + GetXMin();		
 }
 
 double ScatterDraw::GetYByPoint(const int y) 
 {
-	return (GetSize().cy-GetV_Border()-y-1)*GetYRange()/(GetSize().cy-2*GetV_Border()-GetTitleFont().GetHeight()-1)+GetYMin();
+	return (GetSize().cy - vPlotTop - y - 1)*GetYRange()/(GetSize().cy - (vPlotTop + vPlotBottom) - GetTitleFont().GetHeight() - 1) + GetYMin();
 }
 
 double ScatterDraw::GetY2ByPoint(const int y) 
 {
-	return (GetSize().cy-GetV_Border()-y-1)*GetY2Range()/(GetSize().cy-2*GetV_Border()-GetTitleFont().GetHeight()-1)+GetYMin2();
+	return (GetSize().cy - vPlotTop - y - 1)*GetY2Range()/(GetSize().cy - (vPlotTop + vPlotBottom) - GetTitleFont().GetHeight() - 1) + GetYMin2();
 }
 
 double ScatterDraw::GetXPointByValue(const double x) 
 {
-	return (x-GetXMin())/GetXRange()*(GetSize().cx-2*GetH_Border()-1)+GetH_Border();
+	return (x - GetXMin())/GetXRange()*(GetSize().cx - (hPlotLeft + hPlotRight) - 1) + hPlotLeft;
 }
 
 double ScatterDraw::GetYPointByValue(const double y) 
 {
-	return (GetSize().cy-GetV_Border()-1)-(y-GetYMin())/GetYRange()*(GetSize().cy-2*GetV_Border()-GetTitleFont().GetHeight()-1);
+	return (GetSize().cy - vPlotTop - 1) - (y - GetYMin())/GetYRange()*(GetSize().cy - (vPlotTop + vPlotBottom) - GetTitleFont().GetHeight() - 1);
 }
 
 void ScatterDraw::Zoom(double scale, bool mouseX, bool mouseY) 
@@ -927,10 +935,7 @@ void ScatterDraw::Zoom(double scale, bool mouseX, bool mouseY)
 	mouseX = mouseX && ((maxXZoom > 0 && xRange*scale < maxXZoom) || (maxXZoom < 0));
 	mouseY = mouseY && ((minYZoom > 0 && yRange*scale > minYZoom) || (minYZoom < 0));
 	mouseY = mouseY && ((maxYZoom > 0 && yRange*scale < maxYZoom) || (maxYZoom < 0));
-	//mouseX = mouseX && (!mouseHandlingY || mouseY);	
-	//mouseY = mouseY && (!mouseHandlingX || mouseX);
-	if (mouseX)
-	{
+	if (mouseX) {
 		if (zoomStyleX == TO_CENTER) {
 			double oldXMin = xMin;
 			xMin += xRange*(1-scale)/2.;
@@ -945,8 +950,7 @@ void ScatterDraw::Zoom(double scale, bool mouseX, bool mouseY)
 				xMajorUnit *= 10;
 		}
 	}
-	if (mouseY)
-	{
+	if (mouseY) {
 		if (zoomStyleY == TO_CENTER) {
 			double oldYMin = yMin;
 			yMin += yRange*(1-scale)/2.;
@@ -1093,10 +1097,8 @@ ScatterDraw::ScatterDraw()
 	plotAreaColor = SColorLtFace();
 	axisColor = SColorText();
 	axisWidth = 6;
-	px = py = 30;
+	hPlotLeft = hPlotRight = vPlotTop = vPlotBottom = 30;
 	xRange = yRange = yRange2 = 100.0;
-	//xMajorUnit = xRange / 10;
-	//yMajorUnit = yRange / 5;
 	xMin = yMin = yMin2 = xMinUnit = yMinUnit = yMinUnit2 = 0.0;
 	logX = logY = logY2 = false;
 	gridColor = SColorDkShadow();
@@ -1105,7 +1107,6 @@ ScatterDraw::ScatterDraw()
 	drawY2Reticle = false;
 	drawVGrid = drawHGrid = showLegend = true;
 	legendWeight = 80;
-	//antialiasing(MODE_NOAA),
 	minXZoom = maxXZoom = minYZoom = maxYZoom = -1;
 	fastViewX = false;
 	sequentialXAll = false;

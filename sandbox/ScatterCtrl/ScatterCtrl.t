@@ -47,10 +47,7 @@ T_("Plot has not been saved")
 caES("El gr\303\240fic no s'ha desat")
 esES("El gr\303\241fico no ha sido guardado")
 
-T_("File \"%s\" found.&Do you want to overwrite it?")
-caES("Fitxer \"%s\" trobat. Vols sobreescriure'l?")
-esES("Fichero \"%s\" encontrado.&\302\277Quieres sobreescribirlo?")
-
 T_("File format \"%s\" not found")
 caES("Format \"%s\" no trobat")
 esES("Formato \"%s\" no encontrado")
+

@@ -17,7 +17,7 @@ struct ScatterDemo : ParentCtrl {
 	virtual void Init() {};
 	virtual ScatterCtrl &Scatter() = 0;
 };
-
+ 
 void RegisterExample(const char *name, ScatterDemo* (*ctrl)());
 
 class Tab1 : public WithTab1<ScatterDemo> {

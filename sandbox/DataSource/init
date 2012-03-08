@@ -1,0 +1,4 @@
+#ifndef _DataSource_icpp_init_stub
+#define _DataSource_icpp_init_stub
+#include "Core/init"
+#endif

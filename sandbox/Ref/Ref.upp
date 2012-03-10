@@ -5,5 +5,5 @@ file
 	Ref.cpp;
 
 mainconfig
-	"" = "SSE2";
+	"" = "SSE2 SVO_VALUE";
 

@@ -1,0 +1,15 @@
+uses
+	Core,
+	Web;
+
+file
+	TcpSocket.h,
+	Util.cpp,
+	TcpSocket.cpp,
+	HttpRequest.h,
+	HttpRequest.cpp,
+	main.cpp;
+
+mainconfig
+	"" = "SSE2";
+

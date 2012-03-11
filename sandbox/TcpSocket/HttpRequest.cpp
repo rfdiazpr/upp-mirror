@@ -581,8 +581,8 @@ String RequestHttp::ExecuteRedirect(int max_redirect, int retries, Gate2<int, in
 
 bool RequestHttp::CreateClientSocket()
 {
-	if(!ClientSocket(socket, socket_host, socket_port ? socket_port : DEFAULT_HTTP_PORT,
-	true, NULL, 0, false)) {
+	if(!socket.CreateClient(socket, socket_host, socket_port ? socket_port : DEFAULT_HTTP_PORT,
+	                        true, NULL, 0, false)) {
 		error = TcpSocket::GetErrorText();
 		return false;
 	}

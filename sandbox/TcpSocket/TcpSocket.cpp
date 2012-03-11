@@ -832,21 +832,21 @@ void TcpSocket::SetSockError(SOCKET socket, const char *context)
 	SetSockError(socket, context, errorcode, TcpSocketErrorDesc(GetErrorCode()));
 }
 
-bool ServerTcpSocket(TcpSocket& socket, int port, bool nodelay, int listen_count, bool blocking, bool reuse)
+bool TcpSocket::OpenClient(const char *host, int port, bool nodelay, dword *my_addr, int timeout, bool is_blocking)
 {
 	TcpSocket::Data *data = new TcpSocket::Data;
-	socket.Attach(data);
-	if(data->OpenServer(port, nodelay, listen_count, blocking, reuse))
+	Attach(data);
+	if(data->OpenClient(host, port, nodelay, my_addr, timeout, blocking))
 		return true;
 	socket.Clear();
 	return false;
 }
 
-bool ClientTcpSocket(TcpSocket& socket, const char *host, int port, bool nodelay, dword *my_addr, int timeout, bool blocking)
+bool ServerTcpSocket(TcpSocket& socket, int port, bool nodelay, int listen_count, bool blocking, bool reuse)
 {
 	TcpSocket::Data *data = new TcpSocket::Data;
 	socket.Attach(data);
-	if(data->OpenClient(host, port, nodelay, my_addr, timeout, blocking))
+	if(data->OpenServer(port, nodelay, listen_count, blocking, reuse))
 		return true;
 	socket.Clear();
 	return false;

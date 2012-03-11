@@ -110,19 +110,12 @@ ERRINFO(WSASYSCALLFAILURE,        "System call failure.")
 
 #endif
 
-TcpSocket::Data::Data()
-: socket(INVALID_SOCKET)
-, is_blocking(true)
-//, is_error(false)
-, is_eof(false)
-, fake_error(0)
+void TcpSocket::Reset()
 {
-	sock = NULL;
-}
-
-Value TcpSocket::Data::GetInfo(String info) const
-{
-	return ErrorValue(info);
+	is_blocking = true;
+	is_eof = false;
+	fake_error = 0;
+	socket = INVALID_SOCKET;
 }
 
 bool TcpSocket::Data::Open(bool block)
@@ -171,7 +164,7 @@ Mutex& GetHostByNameMutex()
 	return m;
 }
 
-String TcpSocket::Data::GetPeerAddr() const
+String TcpSocket::GetPeerAddr() const
 {
 	if(!IsOpen())
 		return Null;
@@ -263,15 +256,17 @@ bool TcpSocket::Data::OpenClient(const char *host, int port, bool nodelay, dword
 	return true;
 }
 
-bool TcpSocket::Data::Close(int msecs_timeout)
+bool TcpSocket::Close(int msecs_timeout)
 {
 	SLOG("TcpSocket::Data::Close(" << (int)socket << ", timeout = " << msecs_timeout << ")");
 	bool ok = CloseRaw(msecs_timeout);
+	if(ok)
+		socket = INVALID_SOCKET;
 	SLOG("//TcpSocket::Data::Close, ok = " << ok);
 	return ok;
 }
 
-bool TcpSocket::Data::CloseRaw(int msecs_timeout)
+bool TcpSocket::CloseRaw(int msecs_timeout)
 {
 	if(socket == INVALID_SOCKET)
 		return false;
@@ -297,7 +292,7 @@ bool TcpSocket::Data::CloseRaw(int msecs_timeout)
 	return ok;
 }
 
-int TcpSocket::Data::Read(void *buf, int amount)
+int TcpSocket::ReadRaw(void *buf, int amount)
 {
 	int res = recv(socket, (char *)buf, amount, 0);
 #if FAKESLOWLINE
@@ -326,7 +321,7 @@ int TcpSocket::Data::Read(void *buf, int amount)
 	return res;
 }
 
-int TcpSocket::Data::Write(const void *buf, int amount)
+int TcpSocket::WriteRaw(const void *buf, int amount)
 {
 	int res = send(socket, (const char *)buf, amount, 0);
 	if(res == 0 || res < 0 && TcpSocket::GetErrorCode() != IS_BLOCKED)
@@ -334,18 +329,16 @@ int TcpSocket::Data::Write(const void *buf, int amount)
 	return res;
 }
 
-bool TcpSocket::Data::Accept(TcpSocket& socket, dword *ipaddr, bool nodelay, int timeout_msec)
+bool TcpSocket::Accept(TcpSocket& socket, dword *ipaddr, bool nodelay, int timeout_msec)
 {
 	SOCKET connection = AcceptRaw(ipaddr, timeout_msec);
 	if(connection == INVALID_SOCKET)
 		return false;
-	One<TcpSocket::Data> data = new Data;
-	data->Attach(connection, nodelay, is_blocking);
-	socket.Attach(data);
+	socket.Attach(connection, nodelay, is_blocking);
 	return true;
 }
 
-SOCKET TcpSocket::Data::AcceptRaw(dword *ipaddr, int timeout_msec)
+SOCKET TcpSocket::AcceptRaw(dword *ipaddr, int timeout_msec)
 {
 	ASSERT(IsOpen());
 	if(!IsNull(timeout_msec) && !Peek(timeout_msec, false))
@@ -353,13 +346,11 @@ SOCKET TcpSocket::Data::AcceptRaw(dword *ipaddr, int timeout_msec)
 	sockaddr_in addr;
 	Zero(addr);
 	socklen_t addr_len = sizeof(addr);
-//	puts("TcpSocket::Accept: accepting socket...");
 	SOCKET connection = accept(socket, (sockaddr *)&addr, &addr_len);
 	if(connection == INVALID_SOCKET) {
 		SetSockError("accept");
 		return INVALID_SOCKET;
 	}
-//	puts("TcpSocket::Accept: socket accepted...");
 	dword ip = ntohl(addr.sin_addr.s_addr);
 	if(ipaddr)
 		*ipaddr = ip;
@@ -367,14 +358,14 @@ SOCKET TcpSocket::Data::AcceptRaw(dword *ipaddr, int timeout_msec)
 	return connection;
 }
 
-void TcpSocket::Data::AttachRaw(SOCKET s, bool blocking)
+void TcpSocket::AttachRaw(SOCKET s, bool blocking)
 {
 	CloseRaw(0);
 	socket = s;
 	is_blocking = blocking;
 }
 
-void TcpSocket::Data::Attach(SOCKET s, bool nodelay, bool blocking)
+void TcpSocket::Attach(SOCKET s, bool nodelay, bool blocking)
 {
 	AttachRaw(s, blocking);
 	if(nodelay)
@@ -383,7 +374,7 @@ void TcpSocket::Data::Attach(SOCKET s, bool nodelay, bool blocking)
 		Block(false);
 }
 
-bool TcpSocket::Data::Peek(int timeout_msec, bool write)
+bool TcpSocket::Peek(int timeout_msec, bool write)
 {
 	if(!write && !leftover.IsEmpty())
 		return true;
@@ -418,7 +409,7 @@ void TcpSocket::Data::SetSockError(const String& context, int errorcode, const S
 		sock->SetSockError(socket, context, errorcode, errordesc);
 }
 
-void TcpSocket::Data::NoDelay()
+void TcpSocket::NoDelay()
 {
 	ASSERT(IsOpen());
 	int __true = 1;
@@ -427,7 +418,7 @@ void TcpSocket::Data::NoDelay()
 		SetSockError("setsockopt(TCP_NODELAY)");
 }
 
-void TcpSocket::Data::Linger(int msecs)
+void TcpSocket::Linger(int msecs)
 {
 	ASSERT(IsOpen());
 	linger ls;
@@ -438,7 +429,7 @@ void TcpSocket::Data::Linger(int msecs)
 		SetSockError("setsockopt(SO_LINGER)");
 }
 
-void TcpSocket::Data::Block(bool b)
+void TcpSocket::Block(bool b)
 {
 	ASSERT(IsOpen());
 #ifdef PLATFORM_WIN32
@@ -474,7 +465,7 @@ void TcpSocket::Data::ReadTimeout(int msecs)
 }
 */
 
-void TcpSocket::Data::StopWrite()
+void TcpSocket::StopWrite()
 {
 	ASSERT(IsOpen());
 	if(shutdown(socket, SD_SEND))
@@ -622,7 +613,7 @@ bool TcpSocket::PeekAbort(int timeout_msec)
 	data->leftover = Null;
 	char buffer;
 	int count = -1;
-	if(data->Peek(timeout_msec, false))
+	if(Peek(timeout_msec, false))
 		count = data->Read(&buffer, 1);
 	left.Cat(data->leftover);
 	if(count > 0)
@@ -836,9 +827,9 @@ bool TcpSocket::OpenClient(const char *host, int port, bool nodelay, dword *my_a
 {
 	TcpSocket::Data *data = new TcpSocket::Data;
 	Attach(data);
-	if(data->OpenClient(host, port, nodelay, my_addr, timeout, blocking))
+	if(data->OpenClient(host, port, nodelay, my_addr, timeout, is_blocking))
 		return true;
-	socket.Clear();
+	Clear();
 	return false;
 }
 

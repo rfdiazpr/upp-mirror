@@ -5,5 +5,5 @@ using namespace Upp;
 
 CONSOLE_APP_MAIN
 {
-	
+	DDUMP(RequestHttpGet("www.idnes.cz"));
 }

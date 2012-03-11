@@ -1,6 +1,5 @@
 uses
-	Core,
-	Web;
+	Core;
 
 file
 	TcpSocket.h,

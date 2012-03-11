@@ -1287,7 +1287,7 @@ void DrawPolylineOpa(Draw& w, const Vector<Point> &p, const int &scale, const do
 		Vector <double> &pat = GetDashedArray(dash);
 		int iPat = 0; 
 		
-		double len = pat[0]*scale;			// Pixels por barra
+		double len = pat[0]*scale;			// Pixels per bar
 		Pointf begin, end;
 		begin = p[0];
 		for (int i = 1; i < p.GetCount();) {

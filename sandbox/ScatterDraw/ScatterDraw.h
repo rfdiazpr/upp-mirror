@@ -349,6 +349,8 @@ public:
 	int GetCount() 	{return series.GetCount();}
 	bool IsEmpty()	{return series.IsEmpty();}
 	
+	virtual void Refresh() {};
+	
 protected:
 	int mode;
 	Size size;
@@ -392,8 +394,6 @@ protected:
 	int legendWeight;
 	
 	void DrawLegend(Draw& w,const int& scale) const;
-
-	virtual void Refresh() {};
 
 	void Scrolling(bool down, Point &pt, bool isOut = false);
 	

@@ -57,7 +57,6 @@ public:
 		Data();
 		virtual ~Data() { CloseRaw(0); }
 
-		bool                    Open(bool is_blocking);
 		bool                    OpenServer(int port, bool nodelay, int listen_count, bool is_blocking, bool reuse = true);
 		bool                    OpenClient(const char *host, int port, bool nodelay, dword *my_addr, int timeout, bool is_blocking);
 
@@ -78,25 +77,23 @@ public:
 		friend void AttachTcpSocket(TcpSocket& socket, SOCKET hsocket, bool blocking);
 	};
 #endif
+	bool                    is_blocking;
 	SOCKET                  socket;
 	String                  leftover;
-	bool                    is_blocking;
 	bool                    is_eof;
-#ifndef NOFAKEERROR
-	int                     fake_error;
-#endif
-	bool            is_error;
-	int             errorcode;
-	String          errordesc;
+	bool                    is_error;
+	int                     errorcode;
+	String                  errordesc;
 
 	SOCKET                  AcceptRaw(dword *ipaddr, int timeout_msec);
+	bool                    Open(bool is_blocking);
+	bool                    CloseRaw(int msecs_timeout);
 	void                    Attach(SOCKET socket, bool nodelay, bool is_blocking);
 	void                    AttachRaw(SOCKET s, bool blocking);
 
 protected:
-	void     SetSockError(const char *context)        { SetSockError(INVALID_SOCKET, context); }
-	void     SetSockError(SOCKET socket, const char *context);
-	void     SetSockError(SOCKET socket, const char *context, int code, const char *errordesc);
+	void     SetSockError(const char *context);
+	void     SetSockError(const char *context, const char *errordesc);
 	
 	void     Reset();
 
@@ -105,7 +102,7 @@ private:
 	friend bool SSLSecureTcpSocket(TcpSocket& socket);
 
 public:
-	TcpSocket()                                              { ClearError(); socket = INVALID_SOCKET; }
+	TcpSocket()                                              { ClearError(); Reset(); }
 	~TcpSocket()                                             { Close(); }
 
 	static void     Init();
@@ -113,8 +110,8 @@ public:
 	void            Clear()                                  { Close(); }
 
 	bool            IsOpen() const                           { return socket != INVALID_SOCKET; }
+	bool            IsEof() const                            { return is_eof && leftover.IsEmpty(); }
 
-	bool            IsEof() const                            { return is_eof && leftover.IsEmpty();; }
 	bool            IsError() const                          { return is_error; }
 	void            ClearError()                             { is_error = false; errorcode = 0; errordesc.Clear(); }
 	int             GetError() const                         { return errorcode; }
@@ -134,8 +131,8 @@ public:
 	void            Block(bool b = true);
 	void            NoBlock()                                { Block(false); }
 
-	static bool     Wait(const Vector<SOCKET>& read, const Vector<SOCKET>& write, int timeout_msec);
-	static bool     Wait(const Vector<TcpSocket *>& read, const Vector<TcpSocket *>& write, int timeout_msec);
+//	static bool     Wait(const Vector<SOCKET>& read, const Vector<SOCKET>& write, int timeout_msec);
+//	static bool     Wait(const Vector<TcpSocket *>& read, const Vector<TcpSocket *>& write, int timeout_msec);
 
 	bool            Peek(int timeout_msec = 0, bool write = false);
 	bool            PeekWrite(int timeout_msec = 0)          { return Peek(timeout_msec, true); }
@@ -157,7 +154,7 @@ public:
 	void            Write(const char *s, int length)         { WriteWait(s, length, Null); }
 	void            Write(String s)                          { Write(s.Begin(), s.GetLength()); }
 
-	void            StopWrite()                              { StopWrite(); }
+	void            StopWrite();
 
 	static String   GetHostName();
 

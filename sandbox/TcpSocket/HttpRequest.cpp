@@ -6,9 +6,9 @@ NAMESPACE_UPP
 bool RequestHttp_Trace__;
 
 #ifdef _DEBUG
-#define LLOG(x)      if(RequestHttp_Trace__) RLOG(x); else;
+#define LLOG(x)      LOG(x)
 #else
-#define LLOG(x)
+#define LLOG(x)      if(RequestHttp_Trace__) RLOG(x); else;
 #endif
 
 void RequestHttp::Trace(bool b)
@@ -81,6 +81,8 @@ RequestHttp& RequestHttp::Proxy(const char *p)
 String RequestHttp::ReadUntilProgress(char until, int start_time, int end_time, Gate2<int, int> progress)
 {
 	String out;
+	DDUMP(socket.IsEof());
+	DDUMP(socket.IsError());
 	while(!socket.IsEof() && !socket.IsError()) {
 		out.Cat(socket.Read(1000, 1000));
 		int f = out.Find('\n');

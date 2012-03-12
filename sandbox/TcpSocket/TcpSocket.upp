@@ -7,7 +7,8 @@ file
 	TcpSocket.cpp,
 	HttpRequest.h,
 	HttpRequest.cpp,
-	main.cpp;
+	main.cpp,
+	todo.txt;
 
 mainconfig
 	"" = "SSE2";

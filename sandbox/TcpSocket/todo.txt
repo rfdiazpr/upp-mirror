@@ -1,0 +1,3 @@
+ReadUntil - Gate<String>
+
+UnRead & leftover?

@@ -7,16 +7,13 @@
 
 NAMESPACE_UPP
 
-#define FAKEERROR 0
-#define FAKESLOWLINE 0 // 57600 // Bd fake line speed, 0 = off
-
 #ifdef PLATFORM_WIN32
 #pragma comment(lib, "ws2_32.lib")
 #endif
 
 enum {
 	NB_TIMEOUT  = 30000,
-	SOCKBUFSIZE = 65536,
+	SOCKBUFSIZE = 65536, // Too big!!!
 
 #ifdef PLATFORM_WIN32
 	IS_BLOCKED = SOCKERR(EWOULDBLOCK),
@@ -25,12 +22,6 @@ enum {
 #endif
 };
 
-static bool LogTcpSocketFlag = false;
-
-void LogTcpSockets(bool ls) { LogTcpSocketFlag = ls; }
-bool IsLogTcpSockets()      { return LogTcpSocketFlag; }
-
-#define SLOG(x)  if(!LogTcpSocketFlag) ; else RLOG("[" << GetSysTime() << " @ " << int(GetTickCount() % 10000u) << "] " << x)
 #define LLOG(x)  // LOG(x)
 
 #ifdef PLATFORM_POSIX
@@ -46,66 +37,54 @@ const char *TcpSocketErrorDesc(int code)
 
 const char *TcpSocketErrorDesc(int code)
 {
-	switch(code) {
-#define ERRINFO(code, desc) case code: return desc " (" #code ")";
-
-ERRINFO(WSAEINTR,                 "Interrupted function call.")
-ERRINFO(WSAEACCES,                "Permission denied.")
-ERRINFO(WSAEFAULT,                "Bad address.")
-ERRINFO(WSAEINVAL,                "Invalid argument.")
-ERRINFO(WSAEMFILE,                "Too many open files.")
-ERRINFO(WSAEWOULDBLOCK,           "Resource temporarily unavailable.")
-ERRINFO(WSAEINPROGRESS,           "Operation now in progress.")
-ERRINFO(WSAEALREADY,              "Operation already in progress.")
-ERRINFO(WSAENOTSOCK,              "TcpSocket operation on nonsocket.")
-ERRINFO(WSAEDESTADDRREQ,          "Destination address required.")
-ERRINFO(WSAEMSGSIZE,              "Message too long.")
-ERRINFO(WSAEPROTOTYPE,            "Protocol wrong type for socket.")
-ERRINFO(WSAENOPROTOOPT,           "Bad protocol option.")
-ERRINFO(WSAEPROTONOSUPPORT,       "Protocol not supported.")
-ERRINFO(WSAESOCKTNOSUPPORT,       "TcpSocket type not supported.")
-ERRINFO(WSAEOPNOTSUPP,            "Operation not supported.")
-ERRINFO(WSAEPFNOSUPPORT,          "Protocol family not supported.")
-ERRINFO(WSAEAFNOSUPPORT,          "Address family not supported by protocol family.")
-ERRINFO(WSAEADDRINUSE,            "Address already in use.")
-ERRINFO(WSAEADDRNOTAVAIL,         "Cannot assign requested address.")
-ERRINFO(WSAENETDOWN,              "Network is down.")
-ERRINFO(WSAENETUNREACH,           "Network is unreachable.")
-ERRINFO(WSAENETRESET,             "Network dropped connection on reset.")
-ERRINFO(WSAECONNABORTED,          "Software caused connection abort.")
-ERRINFO(WSAECONNRESET,            "Connection reset by peer.")
-ERRINFO(WSAENOBUFS,               "No buffer space available.")
-ERRINFO(WSAEISCONN,               "TcpSocket is already connected.")
-ERRINFO(WSAENOTCONN,              "TcpSocket is not connected.")
-ERRINFO(WSAESHUTDOWN,             "Cannot send after socket shutdown.")
-ERRINFO(WSAETIMEDOUT,             "Connection timed out.")
-ERRINFO(WSAECONNREFUSED,          "Connection refused.")
-ERRINFO(WSAEHOSTDOWN,             "Host is down.")
-ERRINFO(WSAEHOSTUNREACH,          "No route to host.")
-ERRINFO(WSAEPROCLIM,              "Too many processes.")
-ERRINFO(WSASYSNOTREADY,           "Network subsystem is unavailable.")
-ERRINFO(WSAVERNOTSUPPORTED,       "Winsock.dll version out of range.")
-ERRINFO(WSANOTINITIALISED,        "Successful WSAStartup not yet performed.")
-ERRINFO(WSAEDISCON,               "Graceful shutdown in progress.")
-ERRINFO(WSATYPE_NOT_FOUND,        "Class type not found.")
-ERRINFO(WSAHOST_NOT_FOUND,        "Host not found.")
-ERRINFO(WSATRY_AGAIN,             "Nonauthoritative host not found.")
-ERRINFO(WSANO_RECOVERY,           "This is a nonrecoverable error.")
-ERRINFO(WSANO_DATA,               "Valid name, no data record of requested type.")
-//ERRINFO(WSA_INVALID_HANDLE,       "Specified event object handle is invalid.")
-//ERRINFO(WSA_INVALID_PARAMETER,    "One or more parameters are invalid.")
-//ERRINFO(WSA_IO_INCOMPLETE,        "Overlapped I/O event object not in signaled state.")
-//ERRINFO(WSA_IO_PENDING,           "Overlapped operations will complete later.")
-//ERRINFO(WSA_NOT_ENOUGH_MEMORY,    "Insufficient memory available.")
-//ERRINFO(WSA_OPERATION_ABORTED,    "Overlapped operation aborted.")
-//ERRINFO(WSAINVALIDPROCTABLE,      "Invalid procedure table from service provider.")
-//ERRINFO(WSAINVALIDPROVIDER,       "Invalid service provider version number.")
-//ERRINFO(WSAPROVIDERFAILEDINIT,    "Unable to initialize a service provider.")
-ERRINFO(WSASYSCALLFAILURE,        "System call failure.")
-
-#undef ERRINFO
-	default: return "Unknown error code.";
-	}
+	static Tuple2<int, const char *> err[] = {
+		{ WSAEINTR,                 "Interrupted function call." },
+		{ WSAEACCES,                "Permission denied." },
+		{ WSAEFAULT,                "Bad address." },
+		{ WSAEINVAL,                "Invalid argument." },
+		{ WSAEMFILE,                "Too many open files." },
+		{ WSAEWOULDBLOCK,           "Resource temporarily unavailable." },
+		{ WSAEINPROGRESS,           "Operation now in progress." },
+		{ WSAEALREADY,              "Operation already in progress." },
+		{ WSAENOTSOCK,              "TcpSocket operation on nonsocket." },
+		{ WSAEDESTADDRREQ,          "Destination address required." },
+		{ WSAEMSGSIZE,              "Message too long." },
+		{ WSAEPROTOTYPE,            "Protocol wrong type for socket." },
+		{ WSAENOPROTOOPT,           "Bad protocol option." },
+		{ WSAEPROTONOSUPPORT,       "Protocol not supported." },
+		{ WSAESOCKTNOSUPPORT,       "TcpSocket type not supported." },
+		{ WSAEOPNOTSUPP,            "Operation not supported." },
+		{ WSAEPFNOSUPPORT,          "Protocol family not supported." },
+		{ WSAEAFNOSUPPORT,          "Address family not supported by protocol family." },
+		{ WSAEADDRINUSE,            "Address already in use." },
+		{ WSAEADDRNOTAVAIL,         "Cannot assign requested address." },
+		{ WSAENETDOWN,              "Network is down." },
+		{ WSAENETUNREACH,           "Network is unreachable." },
+		{ WSAENETRESET,             "Network dropped connection on reset." },
+		{ WSAECONNABORTED,          "Software caused connection abort." },
+		{ WSAECONNRESET,            "Connection reset by peer." },
+		{ WSAENOBUFS,               "No buffer space available." },
+		{ WSAEISCONN,               "TcpSocket is already connected." },
+		{ WSAENOTCONN,              "TcpSocket is not connected." },
+		{ WSAESHUTDOWN,             "Cannot send after socket shutdown." },
+		{ WSAETIMEDOUT,             "Connection timed out." },
+		{ WSAECONNREFUSED,          "Connection refused." },
+		{ WSAEHOSTDOWN,             "Host is down." },
+		{ WSAEHOSTUNREACH,          "No route to host." },
+		{ WSAEPROCLIM,              "Too many processes." },
+		{ WSASYSNOTREADY,           "Network subsystem is unavailable." },
+		{ WSAVERNOTSUPPORTED,       "Winsock.dll version out of range." },
+		{ WSANOTINITIALISED,        "Successful WSAStartup not yet performed." },
+		{ WSAEDISCON,               "Graceful shutdown in progress." },
+		{ WSATYPE_NOT_FOUND,        "Class type not found." },
+		{ WSAHOST_NOT_FOUND,        "Host not found." },
+		{ WSATRY_AGAIN,             "Nonauthoritative host not found." },
+		{ WSANO_RECOVERY,           "This is a nonrecoverable error." },
+		{ WSANO_DATA,               "Valid name, no data record of requested type." },
+		{ WSASYSCALLFAILURE,        "System call failure." },
+	};
+	const Tuple2<int, const char *> *x = FindTuple(err, __countof(err), code);
+	return x ? x->b : "Unknown error code.";
 }
 
 #endif
@@ -114,24 +93,10 @@ void TcpSocket::Reset()
 {
 	is_blocking = true;
 	is_eof = false;
-	fake_error = 0;
 	socket = INVALID_SOCKET;
 }
 
-bool TcpSocket::Data::Open(bool block)
-{
-	Init();
-	Close(0);
-	is_blocking = block;
-	ClearError();
-	if((socket = ::socket(PF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
-		return false;
-	SLOG("TcpSocket::Data::Open() -> " << (int)socket);
-	if(!block)
-		Block(false);
-	return true;
-}
-
+/*
 bool TcpSocket::Data::OpenServer(int port, bool nodelay, int listen_count, bool block, bool reuse)
 {
 	if(!Open(block))
@@ -157,12 +122,10 @@ bool TcpSocket::Data::OpenServer(int port, bool nodelay, int listen_count, bool 
 	}
 	return true;
 }
+*/
 
-Mutex& GetHostByNameMutex()
-{
-	static StaticCriticalSection m;
-	return m;
-}
+
+static StaticCriticalSection s_hostbyname_lock;
 
 String TcpSocket::GetPeerAddr() const
 {
@@ -182,16 +145,30 @@ String TcpSocket::GetPeerAddr() const
 #endif
 }
 
-bool TcpSocket::Data::OpenClient(const char *host, int port, bool nodelay, dword *my_addr, int timeout, bool block)
+bool TcpSocket::Open(bool block)
 {
-	SLOG("TcpSocket::Data::OpenClient(" << host << ':' << port << ", timeout " << timeout << ", block " << block << ')');
+	Init();
+	Close(0);
+	is_blocking = block;
+	ClearError();
+	if((socket = ::socket(PF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
+		return false;
+	LLOG("TcpSocket::Data::Open() -> " << (int)socket);
+	if(!block)
+		Block(false);
+	return true;
+}
+
+bool TcpSocket::OpenClient(const char *host, int port, bool nodelay, dword *my_addr, int timeout, bool block)
+{
+	LLOG("TcpSocket::Data::OpenClient(" << host << ':' << port << ", timeout " << timeout << ", block " << block << ')');
 
 	int ticks = msecs();
 	sockaddr_in sin;
 	sockaddr_in addr;
 
 	{
-		CriticalSection::Lock __(GetHostByNameMutex());
+		CriticalSection::Lock __(s_hostbyname_lock);
 		TcpSocket::Init();
 		hostent *he = gethostbyname(host);
 		if(!he) {
@@ -226,13 +203,6 @@ bool TcpSocket::Data::OpenClient(const char *host, int port, bool nodelay, dword
 	if(my_addr)
 		*my_addr = sin.sin_addr.s_addr;
 
-#if FAKEERROR
-	fake_error = (rand() * 11111) % 100000;
-	SLOG("TcpSocket::OpenClient -> fake error = " << fake_error);
-#else
-	fake_error = 0;
-#endif
-
 	if(!connect(socket, (sockaddr *)&addr, sizeof(addr)))
 		return true;
 
@@ -244,7 +214,7 @@ bool TcpSocket::Data::OpenClient(const char *host, int port, bool nodelay, dword
 #endif
 	{
 		SetSockError(NFormat("connect(%s:%d)", host, port));
-		SLOG("TcpSocket::Data::OpenClient -> connect error, returning false");
+		LLOG("TcpSocket::Data::OpenClient -> connect error, returning false");
 		return false;
 	}
 /*
@@ -258,11 +228,11 @@ bool TcpSocket::Data::OpenClient(const char *host, int port, bool nodelay, dword
 
 bool TcpSocket::Close(int msecs_timeout)
 {
-	SLOG("TcpSocket::Data::Close(" << (int)socket << ", timeout = " << msecs_timeout << ")");
+	LLOG("TcpSocket::Data::Close(" << (int)socket << ", timeout = " << msecs_timeout << ")");
 	bool ok = CloseRaw(msecs_timeout);
 	if(ok)
 		socket = INVALID_SOCKET;
-	SLOG("//TcpSocket::Data::Close, ok = " << ok);
+	LLOG("//TcpSocket::Data::Close, ok = " << ok);
 	return ok;
 }
 
@@ -274,7 +244,7 @@ bool TcpSocket::CloseRaw(int msecs_timeout)
 	SOCKET old_socket = socket;
 	socket = INVALID_SOCKET;
 	if(old_socket != INVALID_SOCKET) {
-		SLOG("TcpSocket::Data::CloseRaw(" << (int)old_socket << ")");
+		LLOG("TcpSocket::Data::CloseRaw(" << (int)old_socket << ")");
 		int res;
 #if defined(PLATFORM_WIN32)
 		res = closesocket(old_socket);
@@ -288,37 +258,8 @@ bool TcpSocket::CloseRaw(int msecs_timeout)
 			ok = false;
 		}
 	}
-	SLOG("//TcpSocket::Data::CloseRaw, ok = " << ok);
+	LLOG("//TcpSocket::Data::CloseRaw, ok = " << ok);
 	return ok;
-}
-
-int TcpSocket::ReadRaw(void *buf, int amount)
-{
-	int res = recv(socket, (char *)buf, amount, 0);
-#if FAKESLOWLINE
-	if(res > 0) {
-		int end = msecs() + iscale(res, 10000, FAKESLOWLINE) + 10;
-		for(int delta; (delta = end - msecs()) > 0; Sleep(delta))
-			;
-	}
-#endif
-#ifndef NOFAKEERROR
-	if(fake_error && res > 0) {
-		if((fake_error -= res) <= 0) {
-			fake_error = 0;
-			if(sock)
-				sock->SetSockError(socket, "recv", 1, "fake error");
-			return -1;
-		}
-		else
-			LLOG("TcpSocket::Data::Read: fake error after " << fake_error);
-	}
-#endif
-	if(res == 0)
-		is_eof = true;
-	else if(res < 0 && TcpSocket::GetErrorCode() != IS_BLOCKED)
-		SetSockError("recv");
-	return res;
 }
 
 int TcpSocket::WriteRaw(const void *buf, int amount)
@@ -354,7 +295,7 @@ SOCKET TcpSocket::AcceptRaw(dword *ipaddr, int timeout_msec)
 	dword ip = ntohl(addr.sin_addr.s_addr);
 	if(ipaddr)
 		*ipaddr = ip;
-	SLOG("TcpSocket::Accept() -> " << (int)connection << " &" << FormatIP(ip));
+	LLOG("TcpSocket::Accept() -> " << (int)connection << " &" << FormatIP(ip));
 	return connection;
 }
 
@@ -374,46 +315,11 @@ void TcpSocket::Attach(SOCKET s, bool nodelay, bool blocking)
 		Block(false);
 }
 
-bool TcpSocket::Peek(int timeout_msec, bool write)
-{
-	if(!write && !leftover.IsEmpty())
-		return true;
-	if(timeout_msec < 0 || socket == INVALID_SOCKET)
-		return false;
-	fd_set set[1];
-	FD_ZERO(set);
-	int maxindex = (int)socket;
-	FD_SET(socket, set);
-	timeval tval;
-	tval.tv_sec = timeout_msec / 1000;
-	tval.tv_usec = 1000 * (timeout_msec % 1000);
-	int avail;
-	if(write) {
-		avail = select(maxindex + 1, 0, set, 0, &tval);
-	}
-	else {
-		avail = select(maxindex + 1, set, 0, 0, &tval);
-	}
-	return avail > 0;
-}
-
-void TcpSocket::Data::SetSockError(const String& context)
-{
-	int errorcode = TcpSocket::GetErrorCode();
-	SetSockError(context, errorcode, TcpSocketErrorDesc(errorcode));
-}
-
-void TcpSocket::Data::SetSockError(const String& context, int errorcode, const String& errordesc)
-{
-	if(sock)
-		sock->SetSockError(socket, context, errorcode, errordesc);
-}
-
 void TcpSocket::NoDelay()
 {
 	ASSERT(IsOpen());
 	int __true = 1;
-	SLOG("NoDelay(" << (int)socket << ")");
+	LLOG("NoDelay(" << (int)socket << ")");
 	if(setsockopt(socket, IPPROTO_TCP, TCP_NODELAY, (const char *)&__true, sizeof(__true)))
 		SetSockError("setsockopt(TCP_NODELAY)");
 }
@@ -450,7 +356,7 @@ void TcpSocket::Data::WriteTimeout(int msecs)
 	if(IsNull(msecs)) msecs = 0;
 	if(setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, (const char *)&msecs, sizeof(msecs))) {
 		SetSockError("setsockopt(SO_SNDTIMEO)");
-		SLOG("msecs = " << msecs);
+		LLOG("msecs = " << msecs);
 	}
 }
 */
@@ -494,18 +400,9 @@ String TcpSocket::GetHostName()
 	return buffer;
 }
 
-bool TcpSocket::Close(int msecs_timeout)
-{
-	if(!data)
-		return false;
-	bool res = data->Close(msecs_timeout);
-	data = NULL;
-	return res;
-}
-
 int TcpSocket::WriteWait(const char *s, int length, int timeout_msec)
 {
-	SLOG("WriteWait(@ " << GetNumber() << ": " << length << ", Tmax = " << timeout_msec << ")");
+	LLOG("WriteWait(@ " << GetNumber() << ": " << length << ", Tmax = " << timeout_msec << ")");
 	ASSERT(IsOpen());
 	if(length < 0 && s)
 		length = (int)strlen(s);
@@ -515,28 +412,28 @@ int TcpSocket::WriteWait(const char *s, int length, int timeout_msec)
 	if(data->is_blocking) {
 //		data->WriteTimeout(timeout_msec);
 		int count = data->Write(s, length);
-		SLOG("WriteWait(blocking, " << length << ", " << timeout_msec << ") -> " << count);
+		LLOG("WriteWait(blocking, " << length << ", " << timeout_msec << ") -> " << count);
 		if(count == 0) {
 			SetSockError("WriteWait(blocking)->broken line");
 			return 0;
 		}
 		if(count < 0 / * && TcpSocket::GetErrorCode() != SOCKERR(ETIMEDOUT)* /)
 			SetSockError("WriteWait(blocking)");
-		SLOG("//WriteWait(blocking) -> " << count);
+		LLOG("//WriteWait(blocking) -> " << count);
 		return max(count, 0);
 	}
 */
 	int done = 0;
 	int end_ticks = msecs() + timeout_msec;
-	bool peek = data->is_blocking;
+	bool peek = is_blocking;
 	while(done < length) {
 		if(peek) {
 			int delta = IsNull(timeout_msec) ? NB_TIMEOUT : max(end_ticks - msecs(), 0);
 			if(!PeekWrite(delta))
 				return done;
-			peek = data->is_blocking;
+			peek = is_blocking;
 		}
-		int count = data->Write(s + done, length - done);
+		int count = WriteRaw(s + done, length - done);
 		if(IsError())
 			return done;
 		if(count > 0)
@@ -544,106 +441,84 @@ int TcpSocket::WriteWait(const char *s, int length, int timeout_msec)
 		else
 			peek = true;
 	}
-	SLOG("//WriteWait() -> " << done);
+	LLOG("//WriteWait() -> " << done);
 	return done;
 }
 
-bool TcpSocket::Wait(const Vector<SOCKET>& read, const Vector<SOCKET>& write, int timeout_msec)
+bool TcpSocket::Peek(int timeout_msec, bool write) // Redo to bitmask options
 {
-	if(timeout_msec < 0 || read.IsEmpty() && write.IsEmpty())
+	if(!write && !leftover.IsEmpty())
+		return true;
+	if(timeout_msec < 0 && !IsNull(timeout_msec) || socket == INVALID_SOCKET)
 		return false;
-	fd_set rdset[1], wrset[1];
-	FD_ZERO(rdset);
-	FD_ZERO(wrset);
-	SLOG("TcpSocket::Wait(" << read.GetCount() << " SOCKETs for read, " << write.GetCount() << " SOCKETs for write, " << timeout_msec << " msecs)");
-	int maxindex = -1;
-	int i;
-	for(i = 0; i < read.GetCount(); i++)
-		if(read[i] != INVALID_SOCKET) {
-			SLOG("-> add read socket " << (int)read[i]);
-			FD_SET(read[i], rdset);
-			maxindex = max<int>(maxindex, (int)read[i]);
-		}
-	for(i = 0; i < write.GetCount(); i++)
-		if(write[i] != INVALID_SOCKET) {
-			SLOG("-> add write socket " << (int)write[i]);
-			FD_SET(write[i], wrset);
-			maxindex = max<int>(maxindex, (int)write[i]);
-		}
-	if(maxindex < 0)
-		return false;
-//	LOGHEXDUMP(set, sizeof(set));
+	fd_set set[1];
+	FD_ZERO(set);
+	int maxindex = (int)socket;
+	FD_SET(socket, set);
+	timeval *tvalp = NULL;
 	timeval tval;
-	tval.tv_sec = timeout_msec / 1000;
-	tval.tv_usec = 1000 * (timeout_msec % 1000);
-	int avail = select(maxindex + 1, read.IsEmpty() ? 0 : rdset, write.IsEmpty() ? 0 : wrset, 0, &tval);
-	SLOG("//TcpSocket::Wait -> avail = " << avail);
-//	if(avail) { LOG("select() -> " << avail); }
-//	puts(STR "TcpSocket::Peek: timeout = " << timeout_msec << ", avail = " << avail);
+	if(!IsNull(timeout_msec)) {
+		tval.tv_sec = timeout_msec / 1000;
+		tval.tv_usec = 1000 * (timeout_msec % 1000);
+		tvalp = &tval;
+	}
+	int avail;
+	if(write)
+		avail = write ? select(maxindex + 1, NULL, set, NULL, &tval) : select(maxindex + 1, set, NULL, NULL, &tval);
 	return avail > 0;
 }
 
-bool TcpSocket::Wait(const Vector<TcpSocket *>& read, const Vector<TcpSocket *>& write, int timeout_msec)
+bool TcpSocket::PeekAbort(int timeout_msec) // ????
 {
-	SLOG("TcpSocket::Wait(" << read.GetCount() << " TcpSockets for read, " << write.GetCount() << " TcpSockets for write, " << timeout_msec << " msecs)");
-	Vector<SOCKET> readfds, writefds;
-	int i;
-	readfds.Reserve(read.GetCount());
-	for(i = 0; i < read.GetCount(); i++)
-		if(read[i]->IsOpen()) {
-			if(read[i]->data->Peek(0, false))
-				return true;
-			readfds.Add(read[i]->GetTcpSocket());
-		}
-	writefds.Reserve(write.GetCount());
-	for(i = 0; i < write.GetCount(); i++)
-		if(write[i]->IsOpen()) {
-			if(write[i]->data->Peek(0, true))
-				return true;
-			writefds.Add(write[i]->GetTcpSocket());
-		}
-	return Wait(readfds, writefds, timeout_msec);
-}
-
-bool TcpSocket::PeekAbort(int timeout_msec)
-{
-	if(!data)
+	if(!IsOpen())
 		return true;
-	String left = data->leftover;
-	data->leftover = Null;
+	String left = leftover;
+	leftover.Clear();
 	char buffer;
 	int count = -1;
 	if(Peek(timeout_msec, false))
-		count = data->Read(&buffer, 1);
-	left.Cat(data->leftover);
+		count = ReadRaw(&buffer, 1);
+	left.Cat(leftover);
 	if(count > 0)
 		left.Cat(buffer);
-	data->leftover = left;
+	leftover = left;
 	return count == 0;
+}
+
+int TcpSocket::ReadRaw(void *buf, int amount)
+{
+	int res = recv(socket, (char *)buf, amount, 0);
+	if(res == 0)
+		is_eof = true;
+	else
+	if(res < 0 && GetErrorCode() != IS_BLOCKED)
+		SetSockError("recv");
+	return res;
 }
 
 String TcpSocket::Read(int timeout, int maxlen)
 {
-	if(!data->leftover.IsEmpty()) {
-		String out = data->leftover;
-		data->leftover = Null;
+	if(!IsOpen())
+		return String::GetVoid();
+	if(leftover.GetCount()) {
+		String out = leftover;
+		leftover = Null;
 		return out;
 	}
 	if(IsError() || IsEof())
 		return String::GetVoid();
 	int ticks = GetTickCount(), end_ticks = ticks + timeout;
-	if(data->is_blocking && !IsNull(timeout)
-	|| !data->is_blocking && timeout != 0)
+	if(is_blocking && !IsNull(timeout) || !is_blocking && timeout != 0)
 		if(!Peek(IsNull(timeout) ? NB_TIMEOUT : end_ticks - ticks))
 			return Null;
-	char buffer[SOCKBUFSIZE];
-	int count = data->Read(buffer, min<int>(maxlen, sizeof(buffer)));
-	SLOG("recv(" << GetNumber() << ") -> " << count << ": " << String(buffer, max(count, 64)));
-	if(data->IsError())
+	char buffer[SOCKBUFSIZE]; // Too big!!!
+	int count = ReadRaw(buffer, min<int>(maxlen, sizeof(buffer)));
+	LLOG("recv(" << GetNumber() << ") -> " << count << ": " << String(buffer, max(count, 64)));
+	if(IsError())
 		return String::GetVoid();
 	if(count <= 0) {
-		if(!data->IsEof()) {
-			SLOG("TcpSocket::Read(" << GetNumber() << ") -> ewouldblock");
+		if(!IsEof()) {
+			LLOG("TcpSocket::Read(" << GetNumber() << ") -> ewouldblock");
 		}
 		return Null;
 	}
@@ -652,29 +527,27 @@ String TcpSocket::Read(int timeout, int maxlen)
 
 int TcpSocket::ReadCount(void *buffer, int count, int timeout_msec)
 {
-	SLOG("ReadCount(@" << GetNumber() << ": " << count << ", Tmax = " << timeout_msec << ")");
+	LLOG("ReadCount(@" << GetNumber() << ": " << count << ", Tmax = " << timeout_msec << ")");
 	int done = 0;
-	if(!data->leftover.IsEmpty()) {
-//		SLOG("-> leftover = <" << BinHexEncode(data->leftover) << ">");
-		done = min(data->leftover.GetLength(), count);
-		memcpy(buffer, data->leftover, done);
-		if(done < data->leftover.GetLength()) {
-			data->leftover.Remove(0, done);
+	if(leftover.GetCount()) {
+//		LLOG("-> leftover = <" << BinHexEncode(data->leftover) << ">");
+		done = min(leftover.GetLength(), count);
+		memcpy(buffer, ~leftover, done);
+		if(done < leftover.GetCount()) {
+			leftover.Remove(0, done);
 			return done;
 		}
-		data->leftover.Clear();
+		leftover.Clear();
 	}
 	int end_ticks = msecs() + timeout_msec;
-	while(done < count && !IsError() && !IsEof()) {
-//		SLOG("ReadCount(@" << GetNumber() << ": " << count << ", done " << done << ") -> peek");
+	while(done < count && !IsError() && !IsEof()) { // Hard waiting if IsNull, should block here!
 		if(!IsNull(timeout_msec) && !Peek(max(end_ticks - msecs(), 0)))
 			break;
-//		SLOG("ReadCount(@" << GetNumber() << ": " << count << ", done " << done << ") -> read");
 		int part = ReadRaw((char *)buffer + done, count - done);
 		if(part > 0)
 			done += part;
 	}
-	SLOG("//ReadCount -> " << done);
+	LLOG("//ReadCount -> " << done);
 	return done;
 }
 
@@ -703,7 +576,7 @@ String TcpSocket::ReadCount(int count, int timeout_msec)
 
 String TcpSocket::ReadUntil(char term, int timeout, int maxlen)
 {
-	SLOG("TcpSocket::RecvUntil(term = " << (int)term << ", maxlen = " << maxlen << ", timeout = " << timeout << ")");
+	LLOG("TcpSocket::RecvUntil(term = " << (int)term << ", maxlen = " << maxlen << ", timeout = " << timeout << ")");
 	ASSERT(IsOpen() && maxlen != 0);
 	int ticks = GetTickCount(), end_ticks = IsNull(timeout) ? int(Null) : ticks + timeout, seek = 0;
 	String out = Read(timeout, maxlen);
@@ -713,7 +586,7 @@ String TcpSocket::ReadUntil(char term, int timeout, int maxlen)
 	for(;;) {
 		int f = out.Find((byte)term, seek);
 		if(f >= 0) {
-			data->leftover = String(out.Begin() + f + 1, out.GetLength() - f - 1) + data->leftover;
+			leftover = String(out.Begin() + f + 1, out.GetLength() - f - 1) + leftover;
 			return out.Left(f);
 		}
 		seek = out.GetLength();
@@ -723,7 +596,7 @@ String TcpSocket::ReadUntil(char term, int timeout, int maxlen)
 			return out;
 		String part = Read(timeout, maxlen - out.GetLength());
 		if(part.IsVoid()) {
-			SLOG("term " << (int)term << " not found in: " << out);
+			LLOG("term " << (int)term << " not found in: " << out);
 			return out;
 		}
 		out.Cat(part);
@@ -740,7 +613,7 @@ int Find(const String& s, Gate1<int> term, int seek)
 
 String TcpSocket::ReadUntil(Gate1<int> term, int& termchar, int timeout, int maxlen)
 {
-	SLOG("TcpSocket::RecvUntil(term = " << (int)term << ", maxlen = " << maxlen << ", timeout = " << timeout << ")");
+	LLOG("TcpSocket::RecvUntil(term = " << (int)term << ", maxlen = " << maxlen << ", timeout = " << timeout << ")");
 	ASSERT(IsOpen() && maxlen != 0);
 	int ticks = GetTickCount(), end_ticks = IsNull(timeout) ? int(Null) : ticks + timeout, seek = 0;
 	String out = Read(timeout, maxlen);
@@ -751,7 +624,7 @@ String TcpSocket::ReadUntil(Gate1<int> term, int& termchar, int timeout, int max
 		int f = Find(out, term, seek);
 		if(f >= 0) {
 			termchar = out[f];
-			data->leftover = String(out.Begin() + f + 1, out.GetLength() - f - 1) + data->leftover;
+			leftover = String(out.Begin() + f + 1, out.GetLength() - f - 1) + leftover;
 			return out.Left(f);
 		}
 		seek = out.GetLength();
@@ -761,7 +634,7 @@ String TcpSocket::ReadUntil(Gate1<int> term, int& termchar, int timeout, int max
 			return out;
 		String part = Read(timeout, maxlen - out.GetLength());
 		if(part.IsVoid()) {
-			SLOG("term " << (int)term << " not found in: " << out);
+			LLOG("term " << (int)term << " not found in: " << out);
 			return out;
 		}
 		out.Cat(part);
@@ -771,25 +644,26 @@ String TcpSocket::ReadUntil(Gate1<int> term, int& termchar, int timeout, int max
 void TcpSocket::UnRead(const void *buffer, int len)
 {
 	ASSERT(len >= 0);
-	ASSERT(!!data);
+	ASSERT(IsOpen());
 	if(len > 0)
-		data->leftover.Insert(0, (const char *)buffer, len);
+		leftover.Insert(0, (const char *)buffer, len);
 }
 
 String TcpSocket::PeekCount(int count, int timeout_msec)
 {
 	String s = ReadCount(count, timeout_msec);
-	data->leftover.Insert(0, s);
+	leftover.Insert(0, s);
 	return s;
 }
 
 String TcpSocket::PeekUntil(char term, int timeout_msec, int maxlen)
 {
 	String s = ReadUntil(term, timeout_msec, maxlen);
-	data->leftover.Insert(0, s);
+	leftover.Insert(0, s);
 	return s;
 }
 
+// This part should be completely removed, replaced by new error handling
 static thread__ char s_errortext[201];
 static thread__ int  s_errortextlen;
 
@@ -800,15 +674,15 @@ String TcpSocket::GetErrorText()
 
 void TcpSocket::SetErrorText(String text)
 {
-	SLOG("TcpSocket::SetLastErrorText = " << text);
+	LLOG("TcpSocket::SetLastErrorText = " << text);
 	s_errortextlen = min(text.GetLength(), 200);
 	memcpy(s_errortext, ~text, s_errortextlen + 1);
 }
 
-void TcpSocket::SetSockError(SOCKET socket, const char *context, int code, const char *errdesc)
+void TcpSocket::SetSockError(const char *context, const char *errdesc)
 {
 	String err;
-	errorcode = code;
+	errorcode = GetErrorCode();
 	if(socket != INVALID_SOCKET)
 		err << "socket(" << (int)socket << ") / ";
 	err << context << ": " << errdesc;
@@ -817,37 +691,9 @@ void TcpSocket::SetSockError(SOCKET socket, const char *context, int code, const
 	SetErrorText(err);
 }
 
-void TcpSocket::SetSockError(SOCKET socket, const char *context)
+void TcpSocket::SetSockError(const char *context)
 {
-	errorcode = GetErrorCode();
-	SetSockError(socket, context, errorcode, TcpSocketErrorDesc(GetErrorCode()));
-}
-
-bool TcpSocket::OpenClient(const char *host, int port, bool nodelay, dword *my_addr, int timeout, bool is_blocking)
-{
-	TcpSocket::Data *data = new TcpSocket::Data;
-	Attach(data);
-	if(data->OpenClient(host, port, nodelay, my_addr, timeout, is_blocking))
-		return true;
-	Clear();
-	return false;
-}
-
-bool ServerTcpSocket(TcpSocket& socket, int port, bool nodelay, int listen_count, bool blocking, bool reuse)
-{
-	TcpSocket::Data *data = new TcpSocket::Data;
-	socket.Attach(data);
-	if(data->OpenServer(port, nodelay, listen_count, blocking, reuse))
-		return true;
-	socket.Clear();
-	return false;
-}
-
-void AttachTcpSocket(TcpSocket& socket, SOCKET s, bool blocking)
-{
-	One<TcpSocket::Data> data = new TcpSocket::Data;
-	data->AttachRaw(s, blocking);
-	socket.Attach(data);
+	SetSockError(context, TcpSocketErrorDesc(GetErrorCode()));
 }
 
 END_UPP_NAMESPACE

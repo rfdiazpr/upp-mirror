@@ -6,5 +6,5 @@ using namespace Upp;
 CONSOLE_APP_MAIN
 {
 	DDUMP(sizeof(fd_set));
-	DDUMP(RequestHttpGet("www.idnes.cz"));
+	DDUMP(RequestHttpGet("www.ultimatepp.com"));
 }

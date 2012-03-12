@@ -78,11 +78,11 @@ RequestHttp& RequestHttp::Proxy(const char *p)
 	return *this;
 }
 
-String RequestHttp::ReadUntilProgress(char until, int start_time, int end_time, Gate2<int, int> progress)
+// This is to be removed
+String RequestHttp::ReadUntilProgress(char until, int start_time, int end_time,
+                                      Gate2<int, int> progress)
 {
 	String out;
-	DDUMP(socket.IsEof());
-	DDUMP(socket.IsError());
 	while(!socket.IsEof() && !socket.IsError()) {
 		out.Cat(socket.Read(1000, 1000));
 		int f = out.Find('\n');
@@ -93,13 +93,14 @@ String RequestHttp::ReadUntilProgress(char until, int start_time, int end_time, 
 		}
 		int t = msecs();
 		if(t >= end_time) {
-			socket.SetErrorText(NFormat(t_("%s:%d receiving headers timed out"), host, port));
+			socket.SetSockError(NFormat(t_("%s:%d receiving headers timed out"), host, port));
 			break;
 		}
 		if(progress(msecs(start_time), end_time - start_time)) {
 			aborted = true;
 			break;
 		}
+		socket.Peek(progress ? 20 : Null);
 	}
 	return String::GetVoid();
 }
@@ -227,7 +228,7 @@ String RequestHttp::Execute(Gate2<int, int> progress)
 	LLOG("socket host = " << socket_host << ":" << socket_port);
 	if(!socket.IsOpen() && !CreateClientSocket())
 		return String::GetVoid();
-	while(!socket.PeekWrite(1000)) {
+	while(!socket.PeekWrite(progress ? 20 : 1000)) {
 		int time = msecs();
 		if(time >= end_time) {
 			error = NFormat(t_("%s:%d: connecting to host timed out"), socket_host, socket_port);
@@ -295,7 +296,7 @@ String RequestHttp::Execute(Gate2<int, int> progress)
 	while(msecs() < end_time) {
 		int nwrite = socket.WriteWait(request.GetIter(written), min(request.GetLength() - written, 1000), 1000);
 		if(socket.IsError()) {
-			error = TcpSocket::GetErrorText();
+			error = socket.GetErrorDesc();
 			Close();
 			return String::GetVoid();
 		}
@@ -322,7 +323,7 @@ String RequestHttp::Execute(Gate2<int, int> progress)
 		String line = ReadUntilProgress('\n', start_time, end_time, progress);
 		LLOG("< " << line);
 		if(socket.IsError()) {
-			error = TcpSocket::GetErrorText();
+			error = socket.GetErrorDesc();
 			Close();
 			return String::GetVoid();
 		}
@@ -516,7 +517,7 @@ String RequestHttp::Execute(Gate2<int, int> progress)
 			LLOG("-> partial input: open = " << socket.IsOpen()
 				<< ", error " << socket.IsError() << ", eof " << socket.IsEof());
 			if(socket.IsError())
-				error = TcpSocket::GetErrorText();
+				error = socket.GetErrorDesc();
 			else if(!tc_chunked && content_length > 0 && body.GetLength() < content_length)
 				error = NFormat(t_("Partial input: %d out of %d"), body.GetLength(), content_length);
 			break;
@@ -584,8 +585,8 @@ String RequestHttp::ExecuteRedirect(int max_redirect, int retries, Gate2<int, in
 bool RequestHttp::CreateClientSocket()
 {
 	if(!socket.OpenClient(socket_host, socket_port ? socket_port : DEFAULT_HTTP_PORT,
-	                      true, NULL, 0, false)) {
-		error = TcpSocket::GetErrorText();
+	                      true, NULL, 0)) {
+		error = socket.GetErrorDesc();
 		return false;
 	}
 //	socket.Linger(0); // Mirek 1/2011 - does not seem to be necessary for client

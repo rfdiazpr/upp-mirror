@@ -1,0 +1,148 @@
+* u:\upp\out\uppdev\MSC9.Debug_Full.Release\Flex.exe 16.03.2012 09:06:41, user: cxl
+
+
+size (times)         std::vector      Vector        Flex
+      8 (125000x)        0.000 s     0.000 s     0.078 s NBLK:256, blocks:0
+     16 (62500x)         0.000 s     0.000 s     0.062 s NBLK:256, blocks:0
+     32 (31250x)         0.000 s     0.000 s     0.063 s NBLK:256, blocks:0
+     64 (15625x)         0.000 s     0.000 s     0.062 s NBLK:256, blocks:0
+    128 (7812x)          0.000 s     0.000 s     0.078 s NBLK:256, blocks:0
+    256 (3906x)          0.000 s     0.000 s     0.094 s NBLK:256, blocks:0
+    512 (1953x)          0.000 s     0.000 s     0.125 s NBLK:256, blocks:1
+   1024 (976x)           0.000 s     0.000 s     0.171 s NBLK:256, blocks:3
+   2048 (488x)           0.000 s     0.000 s     0.203 s NBLK:256, blocks:7
+   4096 (244x)           0.000 s     0.000 s     0.249 s NBLK:256, blocks:15
+   8192 (122x)           0.000 s     0.000 s     0.266 s NBLK:256, blocks:31
+  16384 (61x)            0.000 s     0.000 s     0.296 s NBLK:256, blocks:63
+  32768 (30x)            0.000 s     0.000 s     0.343 s NBLK:512, blocks:63
+  65536 (15x)            0.000 s     0.000 s     0.437 s NBLK:512, blocks:127
+Total Elapsed 2527 ms
+
+* u:\upp\out\uppdev\MSC9.Debug_Full.Release\Flex.exe 16.03.2012 09:00:51, user: cxl
+
+
+size (times)         std::vector      Vector        Flex
+      8 (125000x)        0.000 s     0.000 s     0.078 s NBLK:16, blocks:0
+     16 (62500x)         0.000 s     0.000 s     0.063 s NBLK:16, blocks:0
+     32 (31250x)         0.000 s     0.000 s     0.078 s NBLK:16, blocks:1
+     64 (15625x)         0.000 s     0.000 s     0.078 s NBLK:16, blocks:3
+    128 (7812x)          0.000 s     0.000 s     0.078 s NBLK:32, blocks:3
+    256 (3906x)          0.000 s     0.000 s     0.109 s NBLK:32, blocks:7
+    512 (1953x)          0.000 s     0.000 s     0.141 s NBLK:64, blocks:7
+   1024 (976x)           0.000 s     0.000 s     0.156 s NBLK:64, blocks:15
+   2048 (488x)           0.000 s     0.000 s     0.187 s NBLK:64, blocks:31
+   4096 (244x)           0.000 s     0.000 s     0.218 s NBLK:128, blocks:31
+   8192 (122x)           0.000 s     0.000 s     0.250 s NBLK:128, blocks:63
+  16384 (61x)            0.000 s     0.000 s     0.312 s NBLK:256, blocks:63
+  32768 (30x)            0.000 s     0.000 s     0.359 s NBLK:512, blocks:63
+  65536 (15x)            0.000 s     0.000 s     0.437 s NBLK:512, blocks:127
+Total Elapsed 2544 ms
+
+* u:\upp\out\uppdev\MSC9.Debug_Full.Release\Flex.exe 16.03.2012 09:07:31, user: cxl
+
+
+size (times)         std::vector      Vector        Flex
+      8 (125000x)        0.000 s     0.000 s     0.078 s NBLK:64, blocks:0
+     16 (62500x)         0.000 s     0.000 s     0.063 s NBLK:64, blocks:0
+     32 (31250x)         0.000 s     0.000 s     0.062 s NBLK:64, blocks:0
+     64 (15625x)         0.000 s     0.000 s     0.062 s NBLK:64, blocks:0
+    128 (7812x)          0.000 s     0.000 s     0.094 s NBLK:64, blocks:1
+    256 (3906x)          0.000 s     0.000 s     0.109 s NBLK:64, blocks:3
+    512 (1953x)          0.000 s     0.000 s     0.141 s NBLK:64, blocks:7
+   1024 (976x)           0.000 s     0.000 s     0.156 s NBLK:64, blocks:15
+   2048 (488x)           0.000 s     0.000 s     0.172 s NBLK:64, blocks:31
+   4096 (244x)           0.000 s     0.000 s     0.203 s NBLK:128, blocks:31
+   8192 (122x)           0.000 s     0.000 s     0.250 s NBLK:128, blocks:63
+  16384 (61x)            0.000 s     0.000 s     0.296 s NBLK:256, blocks:63
+  32768 (30x)            0.000 s     0.000 s     0.343 s NBLK:512, blocks:63
+  65536 (15x)            0.000 s     0.000 s     0.437 s NBLK:512, blocks:127
+Total Elapsed 2466 ms
+
+* u:\upp\out\sandbox\MSC9\Flex.exe 17.03.2012 09:51:55, user: cxl
+
+========= int
+------ 10 elements 1000000x
+Order FindAdd: 328ms, info: NBLK:64, blocks:0
+Order Find: 78ms, matches: 10
+Index FindAdd: 702ms
+Index Find: 78ms, matches: 10
+tree  insert: 577ms
+tree  find: 140ms, matches: 10
+------ 100 elements 100000x
+Order FindAdd: 827ms, info: NBLK:64, blocks:1
+Order Find: 234ms, matches: 100
+Index FindAdd: 562ms
+Index Find: 78ms, matches: 100
+tree  insert: 639ms
+tree  find: 203ms, matches: 100
+------ 1000 elements 10000x
+Order FindAdd: 1966ms, info: NBLK:64, blocks:15
+Order Find: 733ms, matches: 1000
+Index FindAdd: 546ms
+Index Find: 109ms, matches: 1000
+tree  insert: 1560ms
+tree  find: 905ms, matches: 1000
+------ 10000 elements 1000x
+Order FindAdd: 3214ms, info: NBLK:256, blocks:39
+Order Find: 1139ms, matches: 10000
+Index FindAdd: 796ms
+Index Find: 140ms, matches: 10000
+tree  insert: 2262ms
+tree  find: 1622ms, matches: 10000
+------ 100000 elements 100x
+Order FindAdd: 5788ms, info: NBLK:1024, blocks:97
+Order Find: 1545ms, matches: 100000
+Index FindAdd: 983ms
+Index Find: 203ms, matches: 100000
+tree  insert: 3058ms
+tree  find: 2402ms, matches: 100000
+------ 1000000 elements 10x
+Order FindAdd: 13994ms, info: NBLK:2048, blocks:488
+Order Find: 2387ms, matches: 1000000
+Index FindAdd: 1903ms
+Index Find: 655ms, matches: 1000000
+tree  insert: 7114ms
+tree  find: 6677ms, matches: 1000000
+========= String
+------ 10 elements 1000000x
+Order FindAdd: 639ms, info: NBLK:32, blocks:0
+Order Find: 265ms, matches: 10
+Index FindAdd: 921ms
+Index Find: 187ms, matches: 10
+tree  insert: 702ms
+tree  find: 234ms, matches: 10
+------ 100 elements 100000x
+Order FindAdd: 1513ms, info: NBLK:32, blocks:3
+Order Find: 499ms, matches: 100
+Index FindAdd: 811ms
+Index Find: 203ms, matches: 100
+tree  insert: 843ms
+tree  find: 390ms, matches: 100
+------ 1000 elements 10000x
+Order FindAdd: 3182ms, info: NBLK:64, blocks:15
+Order Find: 1185ms, matches: 1000
+Index FindAdd: 718ms
+Index Find: 249ms, matches: 1000
+tree  insert: 1685ms
+tree  find: 1030ms, matches: 1000
+------ 10000 elements 1000x
+Order FindAdd: 5850ms, info: NBLK:256, blocks:39
+Order Find: 1887ms, matches: 10000
+Index FindAdd: 1124ms
+Index Find: 265ms, matches: 10000
+tree  insert: 2402ms
+tree  find: 1779ms, matches: 10000
+------ 100000 elements 100x
+Order FindAdd: 12605ms, info: NBLK:1024, blocks:97
+Order Find: 2683ms, matches: 100000
+Index FindAdd: 1420ms
+Index Find: 390ms, matches: 100000
+tree  insert: 4166ms
+tree  find: 3510ms, matches: 100000
+------ 1000000 elements 10x
+Order FindAdd: 43509ms, info: NBLK:2048, blocks:488
+Order Find: 4618ms, matches: 1000000
+Index FindAdd: 2543ms
+Index Find: 1107ms, matches: 1000000
+tree  insert: 8970ms
+tree  find: 8159ms, matches: 1000000

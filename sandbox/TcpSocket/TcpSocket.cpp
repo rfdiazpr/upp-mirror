@@ -136,7 +136,34 @@ bool TcpSocket::Data::OpenServer(int port, bool nodelay, int listen_count, bool 
 	return true;
 }
 */
+bool TcpSocket::Accept(TcpSocket& socket, dword *ipaddr, int timeout_msec)
+{
+	SOCKET connection = socket.AcceptRaw(ipaddr, timeout_msec);
+	if(connection == INVALID_SOCKET)
+		return false;
+	socket.Attach(connection);
+	return true;
+}
 
+SOCKET TcpSocket::AcceptRaw(dword *ipaddr, int timeout_msec)
+{
+	ASSERT(IsOpen());
+	if(!IsNull(timeout_msec) && !Peek(timeout_msec, false)) // !! Why peek?
+		return INVALID_SOCKET;
+	sockaddr_in addr;
+	Zero(addr);
+	socklen_t addr_len = sizeof(addr);
+	SOCKET connection = accept(socket, (sockaddr *)&addr, &addr_len);
+	if(connection == INVALID_SOCKET) {
+		SetSockError("accept");
+		return INVALID_SOCKET;
+	}
+	dword ip = ntohl(addr.sin_addr.s_addr);
+	if(ipaddr)
+		*ipaddr = ip;
+	LLOG("TcpSocket::Accept() -> " << (int)connection << " &" << FormatIP(ip));
+	return connection;
+}
 
 String TcpSocket::GetPeerAddr() const
 {
@@ -171,40 +198,11 @@ bool TcpSocket::Open()
 #else
 	if(fcntl(socket, F_SETFL, (fcntl(socket, F_GETFL, 0) | O_NONBLOCK)))
 		SetSockError("fcntl(O_[NON]BLOCK)");
-#endif	if(!block)
+#endif
 
 	FD_ZERO(fdset);
 	FD_SET(socket, fdset);
 	return true;
-}
-
-bool TcpSocket::Accept(TcpSocket& socket, dword *ipaddr, int timeout_msec)
-{
-	SOCKET connection = socket.AcceptRaw(ipaddr, timeout_msec);
-	if(connection == INVALID_SOCKET)
-		return false;
-	socket.Attach(connection);
-	return true;
-}
-
-SOCKET TcpSocket::AcceptRaw(dword *ipaddr, int timeout_msec)
-{
-	ASSERT(IsOpen());
-	if(!IsNull(timeout_msec) && !Peek(timeout_msec, false)) // !! Why peek?
-		return INVALID_SOCKET;
-	sockaddr_in addr;
-	Zero(addr);
-	socklen_t addr_len = sizeof(addr);
-	SOCKET connection = accept(socket, (sockaddr *)&addr, &addr_len);
-	if(connection == INVALID_SOCKET) {
-		SetSockError("accept");
-		return INVALID_SOCKET;
-	}
-	dword ip = ntohl(addr.sin_addr.s_addr);
-	if(ipaddr)
-		*ipaddr = ip;
-	LLOG("TcpSocket::Accept() -> " << (int)connection << " &" << FormatIP(ip));
-	return connection;
 }
 
 void TcpSocket::NoDelay()
@@ -324,7 +322,7 @@ bool TcpSocket::WouldBlock()
 {
 	int c = GetErrorCode();
 #ifdef PLATFORM_POSIX
-	return c == SOCKERR(EWOULDBLOCK) || c == SOCKERROR(EAGAIN);
+	return c == SOCKERR(EWOULDBLOCK) || c == SOCKERR(EAGAIN);
 #endif
 #ifdef PLATFORM_WIN32
 	return c == SOCKERR(EWOULDBLOCK);

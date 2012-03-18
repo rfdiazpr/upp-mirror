@@ -5,9 +5,10 @@ file
 	Flex.h,
 	Flex.hpp,
 	Order.h,
+	Order2.h,
 	results.txt,
-	Flex.cpp optimize_speed,
 	bench.txt,
+	Flex.cpp optimize_speed,
 	log.txt;
 
 mainconfig

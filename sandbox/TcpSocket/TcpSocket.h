@@ -56,8 +56,9 @@ class TcpSocket {
 	String                  errordesc;
 	fd_set                  fdset[1];
 
+	bool                    CloseRaw();
 	SOCKET                  AcceptRaw(dword *ipaddr, int timeout_msec);
-	bool                    Open();
+	bool                    Open(int family, int type, int protocol);
 	static int              GetErrorCode();
 	static bool             WouldBlock();
 
@@ -129,7 +130,7 @@ public:
 	static String   GetHostName();
 
 public:
-	bool            OpenClient(const char *host, int port, bool nodelay, dword *my_addr, int timeout);
+	bool            OpenClient(const char *host, int port);
 	void            Attach(SOCKET socket);
 	bool            Accept(TcpSocket& socket, dword *ipaddr = 0, int timeout_msec = DEFAULT_CONNECT_TIMEOUT);
 	bool            Close(int msecs_timeout = 0);

@@ -183,28 +183,6 @@ String TcpSocket::GetPeerAddr() const
 #endif
 }
 
-bool TcpSocket::Open()
-{
-	Init();
-	Close(0);
-	ClearError();
-	if((socket = ::socket(PF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
-		return false;
-	LLOG("TcpSocket::Data::Open() -> " << (int)socket);
-#ifdef PLATFORM_WIN32
-	u_long arg = 1;
-	if(ioctlsocket(socket, FIONBIO, &arg))
-		SetSockError("ioctlsocket(FIO[N]BIO)");
-#else
-	if(fcntl(socket, F_SETFL, (fcntl(socket, F_GETFL, 0) | O_NONBLOCK)))
-		SetSockError("fcntl(O_[NON]BLOCK)");
-#endif
-
-	FD_ZERO(fdset);
-	FD_SET(socket, fdset);
-	return true;
-}
-
 void TcpSocket::NoDelay()
 {
 	ASSERT(IsOpen());
@@ -225,58 +203,66 @@ void TcpSocket::Linger(int msecs)
 		SetSockError("setsockopt(SO_LINGER)");
 }
 
+bool TcpSocket::Open(int family, int type, int protocol)
+{
+	Init();
+	Close(0);
+	ClearError();
+	if((socket = ::socket(family, type, protocol)) == INVALID_SOCKET)
+		return false;
+	LLOG("TcpSocket::Data::Open() -> " << (int)socket);
+#ifdef PLATFORM_WIN32
+	u_long arg = 1;
+	if(ioctlsocket(socket, FIONBIO, &arg))
+		SetSockError("ioctlsocket(FIO[N]BIO)");
+#else
+	if(fcntl(socket, F_SETFL, (fcntl(socket, F_GETFL, 0) | O_NONBLOCK)))
+		SetSockError("fcntl(O_[NON]BLOCK)");
+#endif
+	FD_ZERO(fdset);
+	FD_SET(socket, fdset);
+	return true;
+}
+
 void TcpSocket::Attach(SOCKET s)
 {
 	Close(0);
 	socket = s;
 }
 
-bool TcpSocket::OpenClient(const char *host, int port, bool nodelay, dword *my_addr, int timeout)
+bool TcpSocket::OpenClient(const char *host, int port)
 {
-	LLOG("TcpSocket::Data::OpenClient(" << host << ':' << port << ", timeout " << timeout << ')');
+	LLOG("TcpSocket::Data::OpenClient(" << host << ':' << port << ')');
 
-	int ticks = msecs();
-	sockaddr_in sin;
-	sockaddr_in addr;
-	
 	Init();
 
-	INTERLOCKED { // Consider variant without mutex (gethostbyname_r)
-		hostent *he = gethostbyname(host);
-		if(!he) {
-			SetSockError(NFormat("gethostbyname(%s) failed", host));
-			return false;
-		}
+	addrinfo hints;
+	memset(&hints, 0, sizeof(addrinfo));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
 
-		Zero(sin);
-		sin.sin_family = AF_INET;
-		sin.sin_port = htons(0);
-		sin.sin_addr.s_addr = htonl(INADDR_ANY);
-
-		Zero(addr);
-		addr.sin_family = AF_INET;
-		addr.sin_port = htons(port);
-		addr.sin_addr = *(in_addr *)(he -> h_addr_list[0]);
-	}
-
-	if(!Open())
+	addrinfo *result;
+	if(getaddrinfo(host, ~AsString(port), &hints, &result) || !result) {
+		SetSockError(NFormat("getaddrinfo(%s) failed", host));
 		return false;
-
-	if(nodelay)
-		NoDelay();
-
-	while(bind(socket, (const sockaddr *)&sin, sizeof(sin))) {
-		if(TcpSocket::GetErrorCode() != SOCKERR(EINPROGRESS) || !IsNull(timeout) && msecs(ticks) >= timeout) {
-			SetSockError(NFormat("bind(host=%s, port=%d)", FormatIP(Peek32be(&addr.sin_addr)), port));
+	}
+	
+	addrinfo *rp = result;
+	for(;;) {
+		if(Open(rp->ai_family, rp->ai_socktype, rp->ai_protocol)) {
+			if(connect(socket, rp->ai_addr, rp->ai_addrlen) == 0 || GetErrorCode() == SOCKERR(EINPROGRESS))
+				break;
+			CloseRaw();
+		}
+		rp = rp->ai_next;
+		if(!rp) {
+			SetSockError(NFormat("unable to open or bind socket for %s", host));
+			freeaddrinfo(result);
 			return false;
 		}
-		Sleep(500);
-	}
-	if(my_addr)
-		*my_addr = sin.sin_addr.s_addr;
+    }
 
-	if(!connect(socket, (sockaddr *)&addr, sizeof(addr)))
-		return true;
+	freeaddrinfo(result);
 
 	int err = TcpSocket::GetErrorCode();
 #ifdef PLATFORM_WIN32
@@ -292,11 +278,8 @@ bool TcpSocket::OpenClient(const char *host, int port, bool nodelay, dword *my_a
 	return true;
 }
 
-bool TcpSocket::Close(int msecs_timeout)
+bool TcpSocket::CloseRaw()
 {
-	if(socket == INVALID_SOCKET)
-		return false;
-	bool ok = !IsError() && Peek(msecs_timeout, true);
 	SOCKET old_socket = socket;
 	socket = INVALID_SOCKET;
 	if(old_socket != INVALID_SOCKET) {
@@ -311,11 +294,17 @@ bool TcpSocket::Close(int msecs_timeout)
 #endif
 		if(res && !IsError()) {
 			SetSockError("close");
-			ok = false;
+			return false;
 		}
 	}
-	LLOG("//TcpSocket::Close ok = " << ok);
-	return ok;
+	return true;
+}
+
+bool TcpSocket::Close(int msecs_timeout)
+{
+	if(socket == INVALID_SOCKET)
+		return false;
+	return !IsError() && Peek(msecs_timeout, true) && CloseRaw();
 }
 
 bool TcpSocket::WouldBlock()

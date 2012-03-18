@@ -190,11 +190,6 @@ void Flex<T>::Remove(int i, const T& x)
 }
 */
 
-#define DDUMP(i)   //DUMP(i)
-#define DDUMPC(i)  //DUMPC(i)
-#define DLOG(i)    //LOG(i)
-
-
 template<class T> template <class Less>
 inline int Flex<T>::LBound(const T& x, int l, int h, const Less& less) const
 {

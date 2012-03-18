@@ -42,25 +42,11 @@ class Flex {
 	template <class Less>
 	int FindLowerBound0(const T& x, const Less& less) const;
 
-	template <class T>
-	int BoundL(const T& x, int l, int h) const
-	{
-		while(l < h) {
-			int mid = (l + h) >> 1;
-			if((*this)[mid] < x)
-				l = mid + 1;
-			else
-				h = mid;
-		}
-		return l;
-	}
-
-
 public:
 	T& operator[](int i) {
 		return data[((i + offset[i >> SHIFT]) & MASK) + (i & ~MASK)];
 	}
-
+// data[(MASK & offset[i >> SHIFT] + index[i]) + (i & ~MASK)];
 	const T& operator[](int i) const {
 		return data[((i + offset[i >> SHIFT]) & MASK) + (i & ~MASK)];
 	}
@@ -94,5 +80,6 @@ public:
 
 #include "Flex.hpp"
 #include "Order.h"
+#include "Order2.h"
 
 #endif

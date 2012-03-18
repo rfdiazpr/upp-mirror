@@ -3,10 +3,11 @@
 #include <vector>
 #include <list>
 
+template <class T>
 void Test(int N = 400)
 {
 	Vector<int> a;
-	Flex<int> b;
+	T b;
 	for(int i = 0; i < N; i++) {
 		int pos = i ? rand() % i : 0;
 		a.Insert(pos, i);
@@ -322,7 +323,9 @@ void InsertBench(const T& data, int from = 10, int to = 500000, bool compare = f
 	VppLog() << "\n" << FillRight("size (times)", 20)
 	         << FillLeft("std::vector", 12)
 	         << FillLeft("Vector", 12)
-	         << FillLeft("Flex", 12) << "\n";
+	         << FillLeft("Flex", 12)
+	         << FillLeft("Order2", 12)
+	         << "\n";
 	double total = 0;
 	for(int n = from; n < to; n += n) {
 		Buffer<int> rnd(n);
@@ -361,7 +364,19 @@ void InsertBench(const T& data, int from = 10, int to = 500000, bool compare = f
 				info = v.GetInfo();
 			}
 			total += tm.Elapsed();
-			VppLog() << FillLeft(tm.ToString() + " s", 12) << ' ' << info;
+			VppLog() << FillLeft(tm.ToString() + " s", 12);
+		}
+		{
+			TimeStop tm;
+			String info;
+			for(int q = 0; q < N; q++) {
+				Order2<T> v;
+				for(int i = 0; i < n; i++)
+					v.Insert(rnd[i], x);
+				info = v.GetInfo();
+			}
+			total += tm.Elapsed();
+			VppLog() << FillLeft(tm.ToString() + " s", 12);
 		}
 		VppLog() << "\n";
 	}
@@ -385,11 +400,13 @@ void IterateBenchmark(int elements = 10000000)
 		Vector<int> b;
 		Array<int> c;
 		std::list<int> d;
+		Order2<int> e;
 		for(int i = 0; i < elements; i++) {
 			a.Insert(a.GetCount(), i);
 			b.Add(i);
 			c.Add(i);
 			d.push_back(i);
+			e.Insert(e.GetCount(), i);
 		}
 		{
 			TimeStop tm;
@@ -400,6 +417,16 @@ void IterateBenchmark(int elements = 10000000)
 					sum += a[i];
 			}
 			RLOG("Flex " << tm << ", sum = " << sum);
+		}
+		{
+			TimeStop tm;
+			unsigned sum = 0;
+			for(int n = 0; n < N; n++) {
+				sum = 0;
+				for(int i = 0; i < e.GetCount(); i++)
+					sum += e[i];
+			}
+			RLOG("Order2 " << tm << ", sum = " << sum);
 		}
 		{
 			TimeStop tm;
@@ -440,7 +467,7 @@ CONSOLE_APP_MAIN
 {
 	StdLogSetup(LOG_COUT|LOG_FILE);
 //	TestMap(); return;
-//	Test(1000000); return;
+//	Test< Order2<int> >(1000000); return;
 //	TestUpperBound(); return;
 //	Test(400); TestLowerBound(); return;
 
@@ -453,9 +480,9 @@ CONSOLE_APP_MAIN
 //	InsertBench<int>(0, 8, 70000);/* IterateBenchmark(5000000);*/ return;
 
 
-//	InsertBenchmark(); return;
-//	IterateBenchmark(); return;
-	SetBenchmark("100000"); return;
+	InsertBenchmark(); return;
+	IterateBenchmark(); return;
+	SetBenchmark("5000 10000 20000 100000"); return;
 //	SetBenchmark("10 100 1000 10000 100000"); return;
 //	Test();	return;
 //	ScaleBench(); return;

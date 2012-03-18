@@ -97,26 +97,28 @@ public:
 	
 
 	SOCKET          GetSOCKET() const                        { return socket; }
-
 	String          GetPeerAddr() const;
+
+	void            Attach(SOCKET socket);
+	bool            Connect(const char *host, int port);
+	void            CreateServer(int listen);
+	bool            Accept(TcpSocket& socket, dword *ipaddr = 0, int timeout_msec = DEFAULT_CONNECT_TIMEOUT);
+	bool            Close(int msecs_timeout = 0);
 
 	void            NoDelay();
 	void            Linger(int msecs);
 	void            NoLinger()                               { Linger(Null); }
-
-//	static bool     Wait(const Vector<SOCKET>& read, const Vector<SOCKET>& write, int timeout_msec);
-//	static bool     Wait(const Vector<TcpSocket *>& read, const Vector<TcpSocket *>& write, int timeout_msec);
+	void            Reuse(bool reuse = true);
 
 	bool            Peek(int timeout_msec = 0, bool write = false);
 	bool            PeekWrite(int timeout_msec = 0)          { return Peek(timeout_msec, true); }
 
 	int             Recv(void *buffer, int maxlen);
-	String          Read(int timeout_msec = Null, int maxlen = 4096);
+	String          Read(int timeout = Null, int maxlen = 4096);
 	int             ReadCount(void *buffer, int count, int timeout_msec = Null);
-	String          ReadCount(int count, int timeout_msec = Null);
-	String          ReadUntil(Gate1<int> term, int& termchar, int timeout = Null, int maxlen = 2000000);
-	String          ReadUntil(int term, int timeout, int maxlen);
-	String          ReadUntil(int (*term)(int c), int timeout, int maxlen);
+	String          ReadCount(int count, int timeout = Null);
+	String          ReadUntil(int term, int timeout = Null, int maxlen = 2000000, Gate step = Gate(), int steptime = 20);
+	String          ReadLine(int timeout = Null, int maxlen = 2000000, Gate abort = Gate(), int steptime = 20);
 	void            UnRead(const void *buffer, int len);
 	void            UnRead(const String& data)               { UnRead(data.Begin(), data.GetLength()); }
 
@@ -128,18 +130,7 @@ public:
 	void            StopWrite();
 
 	static String   GetHostName();
-
-public:
-	bool            OpenClient(const char *host, int port);
-	void            Attach(SOCKET socket);
-	bool            Accept(TcpSocket& socket, dword *ipaddr = 0, int timeout_msec = DEFAULT_CONNECT_TIMEOUT);
-	bool            Close(int msecs_timeout = 0);
 };
-
-bool ServerTcpSocket(TcpSocket& socket, int port, bool nodelay = true, int listen_count = 5, bool is_blocking = true, bool reuse = true);
-bool ClientTcpSocket(TcpSocket& socket, const char *host, int port, bool nodelay = true, dword *my_addr = NULL, int timeout = DEFAULT_CONNECT_TIMEOUT, bool is_blocking = true);
-void AttachTcpSocket(TcpSocket& socket, SOCKET s, bool blocking);
-
 #include "HttpRequest.h"
 
 END_UPP_NAMESPACE

@@ -2,8 +2,8 @@ uses
 	Core;
 
 file
-	TcpSocket.h,
 	Util.cpp,
+	TcpSocket.h,
 	TcpSocket.cpp,
 	HttpRequest.h,
 	HttpRequest.cpp,

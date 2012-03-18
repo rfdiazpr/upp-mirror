@@ -109,8 +109,7 @@ void TcpSocket::Reset()
 	socket = INVALID_SOCKET;
 }
 
-/*
-bool TcpSocket::Data::OpenServer(int port, bool nodelay, int listen_count, bool block, bool reuse)
+bool TcpSocket::Listen(int port, int listen_count, bool block, bool reuse)
 {
 	if(!Open(block))
 		return false;
@@ -121,10 +120,6 @@ bool TcpSocket::Data::OpenServer(int port, bool nodelay, int listen_count, bool 
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(port);
 	sin.sin_addr.s_addr = htonl(INADDR_ANY);
-	if(reuse) {
-		int optval = 1;
-		setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (const char *)&optval, sizeof(optval));
-	}
 	if(bind(socket, (const sockaddr *)&sin, sizeof(sin))) {
 		SetSockError(NFormat("bind(port=%d)", port));
 		return false;
@@ -135,7 +130,7 @@ bool TcpSocket::Data::OpenServer(int port, bool nodelay, int listen_count, bool 
 	}
 	return true;
 }
-*/
+
 bool TcpSocket::Accept(TcpSocket& socket, dword *ipaddr, int timeout_msec)
 {
 	SOCKET connection = socket.AcceptRaw(ipaddr, timeout_msec);
@@ -203,6 +198,13 @@ void TcpSocket::Linger(int msecs)
 		SetSockError("setsockopt(SO_LINGER)");
 }
 
+void TcpSocket::Reuse(bool reuse)
+{
+	int optval = reuse;
+	if(setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (const char *)&optval, sizeof(optval)))
+		SetSockError("setsockopt(SO_REUSEADDR)");
+}
+
 bool TcpSocket::Open(int family, int type, int protocol)
 {
 	Init();
@@ -230,7 +232,7 @@ void TcpSocket::Attach(SOCKET s)
 	socket = s;
 }
 
-bool TcpSocket::OpenClient(const char *host, int port)
+bool TcpSocket::Connect(const char *host, int port)
 {
 	LLOG("TcpSocket::Data::OpenClient(" << host << ':' << port << ')');
 
@@ -263,18 +265,6 @@ bool TcpSocket::OpenClient(const char *host, int port)
     }
 
 	freeaddrinfo(result);
-
-	int err = TcpSocket::GetErrorCode();
-#ifdef PLATFORM_WIN32
-	if(err != SOCKERR(EWOULDBLOCK))
-#else
-	if(err != SOCKERR(EINPROGRESS))
-#endif
-	{
-		SetSockError(NFormat("connect(%s:%d)", host, port));
-		LLOG("TcpSocket::Data::OpenClient -> connect error, returning false");
-		return false;
-	}
 	return true;
 }
 
@@ -481,49 +471,42 @@ int Find(const String& s, Gate1<int> term, int seek)
 	return -1;
 }
 
-String TcpSocket::ReadUntil(Gate1<int> term, int& termchar, int timeout, int maxlen)
+String TcpSocket::ReadUntil(int term, int timeout, int maxlen, Gate abort, int steptime)
 {
-	LLOG("TcpSocket::RecvUntil(term = " << (int)term << ", maxlen = " << maxlen << ", timeout = " << timeout << ")");
+	LLOG("Socket::ReadUntil(term = " << (int)term << ", maxlen = " << maxlen << ", timeout = " << timeout << ")");
 	ASSERT(IsOpen() && maxlen != 0);
-	int ticks = GetTickCount(), end_ticks = IsNull(timeout) ? int(Null) : ticks + timeout, seek = 0;
-	String out = Read(timeout, maxlen);
-	if(out.IsVoid())
-		return out;
-
-	for(;;) {
-		for(int f = seek; f < out.GetCount(); f++) {
-			if(term((byte)out[f])) {
-				termchar = out[f];
-				leftover = String(out.Begin() + f + 1, out.GetLength() - f - 1) + leftover;
-				return out.Left(f);
-			}
-		}
-		seek = out.GetLength();
-		ticks = GetTickCount();
-		if(!IsNull(timeout)) timeout = end_ticks - ticks;
-		if(!IsNull(timeout) && timeout <= 0 || out.GetLength() >= maxlen)
-			return out;
-		String part = Read(timeout, maxlen - out.GetLength());
-		if(part.IsVoid()) {
-			LLOG("term " << (int)term << " not found in: " << out);
+	int end_time = IsNull(timeout) ? INT_MAX : msecs() + timeout;
+	String out = leftover;
+	int from = 0;
+	while(!IsEof() && !IsError()) {
+		int f = out.Find(term, from);
+		if(f >= 0) {
+			leftover = out.Mid(f + 1) + leftover;
+			out.Trim(f);
 			return out;
 		}
-		out.Cat(part);
+		if(msecs() >= end_time) {
+			SetSockError("timeout");
+			break;
+		}
+		if(abort())
+			break;
+		from = leftover.GetCount();
+		int n = maxlen - from;
+		if(n <= 0)
+			break;
+		Peek(abort ? steptime : Null);
+		out.Cat(Read(0, n));
 	}
+	return String::GetVoid();
 }
 
-String TcpSocket::ReadUntil(int term, int timeout, int maxlen)
+String TcpSocket::ReadLine(int timeout, int maxlen, Gate step, int steptime)
 {
-	Chr h;
-	h.chr = term;
-	return ReadUntil(callback(&h, &Chr::Check), timeout, maxlen);
-}
-
-String TcpSocket::ReadUntil(int (*term)(int c), int timeout, int maxlen)
-{
-	Filter h;
-	h.filter = term;
-	return ReadUntil(callback(&h, &Filter::Check), timeout, maxlen);
+	String ln = ReadUntil('\n', timeout, maxlen, step, steptime);
+	if(*ln.Last() == '\r')
+		ln.Trim(ln.GetCount() - 1);
+	return ln;
 }
 
 void TcpSocket::UnRead(const void *buffer, int len)

@@ -208,6 +208,18 @@ RequestHttp& RequestHttp::Header(const char *id, const String& data)
 	return *this;
 }
 
+struct ProGate {
+	Gate2<int, int> progress;
+	int done, total;
+	
+	bool Do() { return progress(done, total); }
+	
+	operator Gate() { return callback(this, &ProGate::Do); }
+	
+	ProGate(Gate2<int, int> progres, int done = 0, int total = 0)
+	:	progress(progress), done(done), total(total) {}
+};
+
 String RequestHttp::Execute(Gate2<int, int> progress)
 {
 	int start_time = msecs();
@@ -320,7 +332,7 @@ String RequestHttp::Execute(Gate2<int, int> progress)
 	bool tc_chunked = false;
 	bool ce_gzip = false;
 	for(;;) {
-		String line = ReadUntilProgress('\n', start_time, end_time, progress);
+		String line = socket.ReadLine(end_time - msecs(), 100000, ProGate(progress));
 		LLOG("< " << line);
 		if(socket.IsError()) {
 			error = socket.GetErrorDesc();

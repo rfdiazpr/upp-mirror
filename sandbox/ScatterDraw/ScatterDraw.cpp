@@ -164,19 +164,19 @@ ScatterDraw &ScatterDraw::SetDrawY2Reticle(bool set)
 
 void ScatterDraw::DrawLegend(Draw& w, const int& scale) const
 {
-	int nmr = fround((GetSize().cx-2*(hPlotLeft + hPlotRight))/legendWeight);	//max number of labels per row
-	if (nmr < 0) 
+	int nmr = fround((GetSize().cx - 2*(hPlotLeft + hPlotRight))/legendWeight);	//max number of labels per row
+	if (nmr <= 0) 
 		return;
 	int nLab = series.GetCount();	//number of labels
 	int Nc;							//number of complete rows
 	int LCR;						//number of labels on complete row
 	int R;							//number of remaining labels on incomplete row
 	if(nmr > nLab) {
-		Nc = 0;      LCR = 0;      R = nLab;
+		Nc = 0;      	LCR = 0; 	R = nLab;
 	} else if (nmr == nLab) {   
-		Nc = 1;      LCR = nLab;      R = 0;
+		Nc = 1;      	LCR = nLab; R = 0;
 	} else {                
-		Nc = nLab/nmr;  LCR = nmr;    R = nLab%nmr;
+		Nc = nLab/nmr;  LCR = nmr;	R = nLab%nmr;
 	}
 	for(int j = 0; j <= Nc; j++) {
 		int start = nLab - (j+1)*LCR;
@@ -1355,4 +1355,9 @@ INITBLOCK{
 	MarkPlot::Register<CrossMarkPlot>("Cross");
 	MarkPlot::Register<XMarkPlot>("X");
 	MarkPlot::Register<RhombMarkPlot>("Rhomb");
+}
+
+void GoBreakpoint()
+{
+	int kk = 1;
 }

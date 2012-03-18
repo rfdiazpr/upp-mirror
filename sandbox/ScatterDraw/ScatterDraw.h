@@ -353,7 +353,6 @@ public:
 	
 protected:
 	int mode;
-	Size size;
 	class ::Color graphColor;	
 	String title;
 	Font titleFont;
@@ -430,6 +429,7 @@ protected:
 	bool logX, logY, logY2;	
 	
 private:
+	Size size;
 	static void ParseTextMultiline(const String &text, Font fnt, 
 								   Upp::Array <String> &texts, Upp::Array <Size> &sizes);
 };
@@ -437,6 +437,9 @@ private:
 template <class T>
 void ScatterDraw::SetDrawing(T& w, const int& scale)
 {
+	if (GetSize().cx == 0 || GetSize().cy == 0)
+		return;
+	
 	w.DrawRect(scale*GetSize(), graphColor);
 	
 	if (typeid(T) == typeid(BufferPainter)) {
@@ -446,21 +449,23 @@ void ScatterDraw::SetDrawing(T& w, const int& scale)
 	
 	Size sz(0, 0); 
 	
-	if(!title.IsEmpty()) {
+	int titleHeight = !title.IsEmpty() ? scale*titleFont.GetHeight() : 0;
+	
+	if(titleHeight > 0) {
 		Font fontTitle6;
 		fontTitle6 = titleFont;
-		fontTitle6.Height(scale*titleFont.GetHeight());
+		fontTitle6.Height(titleHeight);
 		fontTitle6.Width(scale*titleFont.GetWidth());
 		sz = GetTextSize(title, fontTitle6);
 		DrawText(w, (scale*GetSize().cx - sz.cx)/2., scale*2., 0, title, fontTitle6, titleColor);   
 	}
 	
-	w.Offset(Point(scale*hPlotLeft, scale*vPlotTop + scale*titleFont.GetHeight()));
+	w.Offset(Point(scale*hPlotLeft, scale*vPlotTop + titleHeight));
 	if(showLegend) 
 		DrawLegend(w, scale);
 	
 	int plotW = scale*(GetSize().cx - (hPlotLeft + hPlotRight));
-	int plotH = scale*(GetSize().cy - (vPlotTop + vPlotBottom) - titleFont.GetHeight());
+	int plotH = scale*(GetSize().cy - (vPlotTop + vPlotBottom)) - titleHeight;
 
 	Font fontLabel;
 	fontLabel = labelsFont;
@@ -542,6 +547,7 @@ void ScatterDraw::SetDrawing(T& w, const int& scale)
 template <class T>
 void ScatterDraw::Plot(T& w, const int& scale, const int& plotW, const int& plotH)
 {
+GoBreakpoint();
 	double d1 = xRange/xMajorUnit;
 	double d2 = yRange/yMajorUnit;
 

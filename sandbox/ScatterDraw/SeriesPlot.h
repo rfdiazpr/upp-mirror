@@ -75,6 +75,7 @@ public:
 	}
 };
 
+
 class StaggeredSeriesPlot : public SeriesPlot {
 private:
 	template <class T>

@@ -547,7 +547,6 @@ void ScatterDraw::SetDrawing(T& w, const int& scale)
 template <class T>
 void ScatterDraw::Plot(T& w, const int& scale, const int& plotW, const int& plotH)
 {
-GoBreakpoint();
 	double d1 = xRange/xMajorUnit;
 	double d2 = yRange/yMajorUnit;
 

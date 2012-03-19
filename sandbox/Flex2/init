@@ -1,0 +1,4 @@
+#ifndef _Flex2_icpp_init_stub
+#define _Flex2_icpp_init_stub
+#include "Core/init"
+#endif

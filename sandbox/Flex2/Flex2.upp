@@ -1,0 +1,9 @@
+uses
+	Core;
+
+file
+	Flex2.cpp;
+
+mainconfig
+	"" = "SSE2";
+

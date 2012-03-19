@@ -55,7 +55,6 @@ class TcpSocket {
 	bool                    ipv6;
 	int                     errorcode;
 	String                  errordesc;
-	fd_set                  fdset[1];
 
 	bool                    CloseRaw();
 	SOCKET                  AcceptRaw(dword *ipaddr, int timeout_msec);

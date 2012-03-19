@@ -3,6 +3,8 @@
 
 #ifdef PLATFORM_WIN32
 #include <winsock2.h>
+#include <Ws2ipdef.h>
+#include <Ws2tcpip.h>
 #endif
 
 NAMESPACE_UPP
@@ -98,7 +100,7 @@ void TcpSocket::Init()
 #if defined(PLATFORM_WIN32)
 	ONCELOCK {
 		WSADATA wsadata;
-		WSAStartup(0x101, &wsadata);
+		WSAStartup(MAKEWORD(2, 2), &wsadata);
 	}
 #endif
 }
@@ -135,8 +137,14 @@ bool TcpSocket::Listen(int port, int listen_count, bool ipv6_, bool reuse)
 	if(!Open(ipv6 ? AF_INET6 : AF_INET, SOCK_STREAM, 0))
 		return false;
 	sockaddr_in sin;
+#ifdef PLATFORM_WIN32
+	SOCKADDR_IN6 sin6;
+	if(ipv6)
+#else
 	sockaddr_in6 sin6;
-	if(ipv6) {
+	if(ipv6 && IsWinVista())
+#endif
+	{
 		Zero(sin6);
 		sin.sin_family = AF_INET6;
 		sin.sin_port = htons(port);
@@ -233,6 +241,7 @@ bool TcpSocket::Connect(const char *host, int port)
 	memset(&hints, 0, sizeof(addrinfo));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
 
 	addrinfo *result;
 	if(getaddrinfo(host, ~AsString(port), &hints, &result) || !result) {
@@ -243,7 +252,8 @@ bool TcpSocket::Connect(const char *host, int port)
 	addrinfo *rp = result;
 	for(;;) {
 		if(Open(rp->ai_family, rp->ai_socktype, rp->ai_protocol)) {
-			if(connect(socket, rp->ai_addr, rp->ai_addrlen) == 0 || GetErrorCode() == SOCKERR(EINPROGRESS))
+			if(connect(socket, rp->ai_addr, rp->ai_addrlen) == 0 ||
+			   GetErrorCode() == SOCKERR(EINPROGRESS) || GetErrorCode() == SOCKERR(EWOULDBLOCK))
 				break;
 			CloseRaw();
 		}

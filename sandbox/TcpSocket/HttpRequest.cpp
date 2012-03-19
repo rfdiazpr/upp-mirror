@@ -216,7 +216,7 @@ struct ProGate {
 	
 	operator Gate() { return callback(this, &ProGate::Do); }
 	
-	ProGate(Gate2<int, int> progres, int done = 0, int total = 0)
+	ProGate(Gate2<int, int> progress, int done = 0, int total = 0)
 	:	progress(progress), done(done), total(total) {}
 };
 

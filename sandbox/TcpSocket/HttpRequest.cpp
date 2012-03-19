@@ -596,7 +596,7 @@ String RequestHttp::ExecuteRedirect(int max_redirect, int retries, Gate2<int, in
 
 bool RequestHttp::CreateClientSocket()
 {
-	if(!socket.OpenClient(socket_host, socket_port ? socket_port : DEFAULT_HTTP_PORT)) {
+	if(!socket.Connect(socket_host, socket_port ? socket_port : DEFAULT_HTTP_PORT)) {
 		error = socket.GetErrorDesc();
 		return false;
 	}

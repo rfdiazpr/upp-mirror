@@ -107,20 +107,34 @@ void TcpSocket::Reset()
 {
 	is_eof = false;
 	socket = INVALID_SOCKET;
+	ipv6 = false;
 }
 
-bool TcpSocket::Listen(int port, int listen_count, bool block, bool reuse)
+bool TcpSocket::Listen(int port, int listen_count, bool ipv6_, bool reuse)
 {
-	if(!Open(block))
+	ipv6 = ipv6_;
+	if(!Open(ipv6 ? AF_INET6 : AF_INET, SOCK_STREAM, 0))
 		return false;
-	if(nodelay)
-		NoDelay();
 	sockaddr_in sin;
-	Zero(sin);
-	sin.sin_family = AF_INET;
-	sin.sin_port = htons(port);
-	sin.sin_addr.s_addr = htonl(INADDR_ANY);
-	if(bind(socket, (const sockaddr *)&sin, sizeof(sin))) {
+	sockaddr_in6 sin6;
+	if(ipv6) {
+		Zero(sin6);
+		sin.sin_family = AF_INET6;
+		sin.sin_port = htons(port);
+		sin.sin_addr.s_addr = htonl(INADDR_ANY);
+	}
+	else {
+		Zero(sin);
+		sin.sin_family = AF_INET;
+		sin.sin_port = htons(port);
+		sin.sin_addr.s_addr = htonl(INADDR_ANY);
+	}
+	if(reuse) {
+		int optval = 1;
+		setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (const char *)&optval, sizeof(optval));
+	}
+	if(bind(socket, ipv6 ? (const sockaddr *)&sin6 : (const sockaddr *)&sin,
+	        ipv6 ? sizeof(sin6) : sizeof(sin))) {
 		SetSockError(NFormat("bind(port=%d)", port));
 		return false;
 	}
@@ -131,33 +145,19 @@ bool TcpSocket::Listen(int port, int listen_count, bool block, bool reuse)
 	return true;
 }
 
-bool TcpSocket::Accept(TcpSocket& socket, dword *ipaddr, int timeout_msec)
+bool TcpSocket::Accept(TcpSocket& ls, int timeout)
 {
-	SOCKET connection = socket.AcceptRaw(ipaddr, timeout_msec);
-	if(connection == INVALID_SOCKET)
+	CloseRaw();
+	if(timeout && !ls.Peek(timeout))
 		return false;
-	socket.Attach(connection);
-	return true;
-}
-
-SOCKET TcpSocket::AcceptRaw(dword *ipaddr, int timeout_msec)
-{
-	ASSERT(IsOpen());
-	if(!IsNull(timeout_msec) && !Peek(timeout_msec, false)) // !! Why peek?
-		return INVALID_SOCKET;
-	sockaddr_in addr;
-	Zero(addr);
-	socklen_t addr_len = sizeof(addr);
-	SOCKET connection = accept(socket, (sockaddr *)&addr, &addr_len);
-	if(connection == INVALID_SOCKET) {
+	if(!Open(ls.ipv6 ? AF_INET6 : AF_INET, SOCK_STREAM, 0))
+		return false;
+	socket = accept(ls.GetSOCKET(), NULL, NULL);
+	if(socket == INVALID_SOCKET) {
 		SetSockError("accept");
-		return INVALID_SOCKET;
+		return false;
 	}
-	dword ip = ntohl(addr.sin_addr.s_addr);
-	if(ipaddr)
-		*ipaddr = ip;
-	LLOG("TcpSocket::Accept() -> " << (int)connection << " &" << FormatIP(ip));
-	return connection;
+	return true;
 }
 
 String TcpSocket::GetPeerAddr() const
@@ -198,17 +198,10 @@ void TcpSocket::Linger(int msecs)
 		SetSockError("setsockopt(SO_LINGER)");
 }
 
-void TcpSocket::Reuse(bool reuse)
-{
-	int optval = reuse;
-	if(setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (const char *)&optval, sizeof(optval)))
-		SetSockError("setsockopt(SO_REUSEADDR)");
-}
-
 bool TcpSocket::Open(int family, int type, int protocol)
 {
 	Init();
-	Close(0);
+	CloseRaw();
 	ClearError();
 	if((socket = ::socket(family, type, protocol)) == INVALID_SOCKET)
 		return false;
@@ -228,7 +221,7 @@ bool TcpSocket::Open(int family, int type, int protocol)
 
 void TcpSocket::Attach(SOCKET s)
 {
-	Close(0);
+	CloseRaw();
 	socket = s;
 }
 
@@ -273,7 +266,7 @@ bool TcpSocket::CloseRaw()
 	SOCKET old_socket = socket;
 	socket = INVALID_SOCKET;
 	if(old_socket != INVALID_SOCKET) {
-		LLOG("TcpSocket::Close(" << (int)old_socket << ")");
+		LLOG("TcpSocket::CloseRaw(" << (int)old_socket << ")");
 		int res;
 #if defined(PLATFORM_WIN32)
 		res = closesocket(old_socket);
@@ -290,11 +283,11 @@ bool TcpSocket::CloseRaw()
 	return true;
 }
 
-bool TcpSocket::Close(int msecs_timeout)
+bool TcpSocket::Close(int timeout)
 {
 	if(socket == INVALID_SOCKET)
 		return false;
-	return !IsError() && Peek(msecs_timeout, true) && CloseRaw();
+	return !IsError() && Peek(timeout, true) && CloseRaw();
 }
 
 bool TcpSocket::WouldBlock()
@@ -308,27 +301,29 @@ bool TcpSocket::WouldBlock()
 #endif
 }
 
-bool TcpSocket::Peek(int timeout_msec, bool write) // !! Redo to bitmask options
+bool TcpSocket::Peek(int timeout, bool write)
 {
 	if(!write && !leftover.IsEmpty())
 		return true;
-	if(timeout_msec < 0 && !IsNull(timeout_msec) || socket == INVALID_SOCKET)
+	if(timeout < 0 && !IsNull(timeout) || socket == INVALID_SOCKET)
 		return false;
 	timeval *tvalp = NULL;
 	timeval tval;
-	if(!IsNull(timeout_msec)) {
-		tval.tv_sec = timeout_msec / 1000;
-		tval.tv_usec = 1000 * (timeout_msec % 1000);
+	if(!IsNull(timeout)) {
+		tval.tv_sec = timeout / 1000;
+		tval.tv_usec = 1000 * (timeout % 1000);
+		DDUMP(tval.tv_sec);
+		DDUMP(tval.tv_usec);
 		tvalp = &tval;
 	}
-	int avail = write ? select((int)socket + 1, NULL, fdset, NULL, &tval)
-	                  : select((int)socket + 1, fdset, NULL, NULL, &tval);
-	LLOG("Peek(" << timeout_msec << ", " << write << ") avail: " << avail);
+	int avail = select((int)socket + 1, write ? NULL : fdset, write ? fdset : NULL, NULL, &tval);
+	LLOG("Peek(" << timeout << ", " << write << ") avail: " << avail);
 	return avail > 0;
 }
 
 int TcpSocket::Send(const void *buf, int amount)
 {
+	DDUMP(GetPeerAddr());
 	int res = send(socket, (const char *)buf, amount, 0);
 	if(res < 0 && WouldBlock())
 		res = 0;
@@ -369,6 +364,7 @@ int TcpSocket::WriteWait(const char *s, int length, int timeout_msec)
 			return done;
 		peek = false;
 		int count = Send(s + done, length - done);
+		DDUMP(count);
 		if(IsError())
 			return done;
 		if(count > 0)
@@ -415,6 +411,7 @@ String TcpSocket::Read(int timeout, int maxlen)
 	}
 	if(IsError() || IsEof())
 		return String::GetVoid();
+	DDUMP(timeout);
 	if(timeout && !Peek(timeout))
 		return Null;
 	char buffer[4096];
@@ -424,23 +421,18 @@ String TcpSocket::Read(int timeout, int maxlen)
 	return String(buffer, count);
 }
 
-int TcpSocket::ReadCount(void *buffer, int count, int timeout_msec)
+int TcpSocket::ReadCount(void *buffer, int count, int timeout)
 {
-	LLOG("ReadCount(@" << socket << ": " << count << ", Tmax = " << timeout_msec << ")");
+	LLOG("ReadCount(@" << socket << ": " << count << ", Tmax = " << timeout << ")");
 	int done = 0;
 	if(leftover.GetCount()) {
-//		LLOG("-> leftover = <" << BinHexEncode(data->leftover) << ">");
 		done = min(leftover.GetCount(), count);
 		memcpy(buffer, ~leftover, done);
-		if(done <= leftover.GetCount()) {
-			leftover.Remove(0, done);
-			return done;
-		}
-		leftover.Clear();
+		leftover.Remove(0, done);
 	}
-	int end_ticks = msecs() + timeout_msec;
-	while(done < count && !IsError() && !IsEof()) { // Hard waiting if IsNull, should block here!
-		if(!IsNull(timeout_msec) && !Peek(max(end_ticks - msecs(), 0)))
+	int end_ticks = msecs() + Nvl(timeout);
+	while(done < count && !IsError() && !IsEof()) {
+		if(!Peek(IsNull(timeout) ? (int)Null : max(end_ticks - msecs(), 0)))
 			break;
 		int part = Recv((char *)buffer + done, count - done);
 		if(part > 0)
@@ -450,13 +442,12 @@ int TcpSocket::ReadCount(void *buffer, int count, int timeout_msec)
 	return done;
 }
 
-String TcpSocket::ReadCount(int count, int timeout_msec)
+String TcpSocket::ReadCount(int count, int timeout)
 {
-	// int end_ticks = msecs() + timeout_msec; Mirek:unused
 	if(count == 0)
 		return Null;
 	StringBuffer out(count);
-	int done = ReadCount(out, count, timeout_msec);
+	int done = ReadCount(out, count, timeout);
 	if(!done && IsEof())
 		return String::GetVoid();
 	out.SetLength(done);
@@ -478,6 +469,9 @@ String TcpSocket::ReadUntil(int term, int timeout, int maxlen, Gate abort, int s
 	int end_time = IsNull(timeout) ? INT_MAX : msecs() + timeout;
 	String out = leftover;
 	int from = 0;
+	
+//	_DBG_; abort.Clear();
+	
 	while(!IsEof() && !IsError()) {
 		int f = out.Find(term, from);
 		if(f >= 0) {
@@ -495,8 +489,8 @@ String TcpSocket::ReadUntil(int term, int timeout, int maxlen, Gate abort, int s
 		int n = maxlen - from;
 		if(n <= 0)
 			break;
-		Peek(abort ? steptime : Null);
-		out.Cat(Read(0, n));
+		out.Cat(Read(abort ? /*steptime*/200 : end_time - msecs(), n));
+		DDUMP(out.GetCount());
 	}
 	return String::GetVoid();
 }

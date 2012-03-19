@@ -52,6 +52,7 @@ class TcpSocket {
 	String                  leftover;
 	bool                    is_eof;
 	bool                    is_error;
+	bool                    ipv6;
 	int                     errorcode;
 	String                  errordesc;
 	fd_set                  fdset[1];
@@ -101,21 +102,21 @@ public:
 
 	void            Attach(SOCKET socket);
 	bool            Connect(const char *host, int port);
-	void            CreateServer(int listen);
-	bool            Accept(TcpSocket& socket, dword *ipaddr = 0, int timeout_msec = DEFAULT_CONNECT_TIMEOUT);
-	bool            Close(int msecs_timeout = 0);
+	bool            Listen(int port, int listen_count, bool ipv6 = false, bool reuse = true);
+	bool            Accept(TcpSocket& listen_socket, int timeout = Null);
+	bool            Close(int timeout = Null);
 
 	void            NoDelay();
 	void            Linger(int msecs);
 	void            NoLinger()                               { Linger(Null); }
 	void            Reuse(bool reuse = true);
 
-	bool            Peek(int timeout_msec = 0, bool write = false);
-	bool            PeekWrite(int timeout_msec = 0)          { return Peek(timeout_msec, true); }
+	bool            Peek(int timeout = 0, bool write = false);
+	bool            PeekWrite(int timeout = 0)               { return Peek(timeout, true); }
 
 	int             Recv(void *buffer, int maxlen);
 	String          Read(int timeout = Null, int maxlen = 4096);
-	int             ReadCount(void *buffer, int count, int timeout_msec = Null);
+	int             ReadCount(void *buffer, int count, int timeout = Null);
 	String          ReadCount(int count, int timeout = Null);
 	String          ReadUntil(int term, int timeout = Null, int maxlen = 2000000, Gate step = Gate(), int steptime = 20);
 	String          ReadLine(int timeout = Null, int maxlen = 2000000, Gate abort = Gate(), int steptime = 20);

@@ -1,0 +1,16 @@
+uses
+	UNSCtrl;
+
+library(COCOA & WIN32) " objc gnustep-base  gnustep-gui  ffi m   libstdc++";
+
+options(COCOA) -fconstant-string-class=NSConstantString;
+
+file
+	arisnotes.txt,
+	main.cpp;
+
+mainconfig
+	"COC_TEST" = "GUI SKELETON USEMALLOC COCOA TEST_UNS",
+	"COC_TEST TERMINAL" = "SKELETON USEMALLOC COCOA TEST_UNS",
+	"" = "GUI COCOA USEMALLOC .NOGTK TEST_UNS";
+

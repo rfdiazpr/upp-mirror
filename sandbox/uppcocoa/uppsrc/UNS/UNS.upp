@@ -1,0 +1,32 @@
+uses
+	Core,
+	RichText;
+
+library(COCOA & WIN32) " objc  gnustep-base  gnustep-gui  ffi m   libstdc++ opengl32 glu32";
+
+library(COCOA & OSX11) ;
+
+options(COCOA) -fconstant-string-class=NSConstantString;
+
+link(COCOA & OSX11) " -framework OpenGL";
+
+file
+	arisnotes.txt,
+	UNS.h,
+	UNSDef.h,
+	UNSUtils.mm,
+	UNSApplication.h,
+	UNSApplication.mm,
+	UNSApplicationDelegate.h,
+	UNSApplicationDelegate.mm,
+	UNSImage.h,
+	UNSImage.mm,
+	UNSView.h,
+	UNSView.mm,
+	UNSViewGL.mm,
+	UNSWindow.h,
+	UNSWindow.mm;
+
+mainconfig
+	"" = "TEST_UNS USEMALLOC COCOA WIN32 OBJC";
+

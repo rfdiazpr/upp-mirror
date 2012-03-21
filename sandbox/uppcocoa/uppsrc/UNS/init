@@ -1,0 +1,5 @@
+#ifndef _UNS_icpp_init_stub
+#define _UNS_icpp_init_stub
+#include "Core/init"
+#include "RichText/init"
+#endif

@@ -1,0 +1,2 @@
+ -fgnu-runtime -fconstant-string-class=NSConstantString
+from aris ide version (ask until patch) with terminal output flags: SKELETON USEMALLOC COCOA TEST_UNS

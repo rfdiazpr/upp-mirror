@@ -1,0 +1,4 @@
+#ifndef _UNStest_icpp_init_stub
+#define _UNStest_icpp_init_stub
+#include "UNSCtrl/init"
+#endif

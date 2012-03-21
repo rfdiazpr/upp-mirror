@@ -1,0 +1,16 @@
+description "UNS testing with minimized Ctrl\377";
+
+uses
+	Core,
+	UNS;
+
+file
+	arisnotes.txt,
+	UNSCtrl.h,
+	UNSCtrlApp.mm,
+	UNSCtrl.mm,
+	CocWnd.h,
+	CocWnd.cpp,
+	GLCtrl.cpp,
+	GLfunctions.cpp;
+

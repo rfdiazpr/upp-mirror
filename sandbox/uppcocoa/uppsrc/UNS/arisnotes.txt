@@ -1,0 +1,18 @@
+ -fgnu-runtime -fconstant-string-class=NSConstantString
+
+ this package might need renaming...
+ 
+on XWindows XGrabPointer=SetWndCapture on MS WIN and mouse pointer is "glued" to the window?
+future mouse events will be reported to this window even while the cursor goes outside of this window
+on Cocoa set delegate setdrag??
+
+GuiPlatformGetTopRect CHECK
+
+
+objc_collect_if_needed  test if memory leaks!!!
+
+TODO:
+1. Text & Fonts
+1.1 bottom limit
+1.2 draw onto memory and then blit?
+...

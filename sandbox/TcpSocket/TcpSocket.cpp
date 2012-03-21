@@ -327,7 +327,6 @@ bool TcpSocket::Peek(int timeout, bool write)
 	FD_ZERO(fdset);
 	FD_SET(socket, fdset);
 	int avail = select((int)socket + 1, write ? NULL : fdset, write ? fdset : NULL, NULL, tvalp);
-	DDUMP(GetErrorDesc());
 	LLOG("//Peek(" << timeout << ", " << write << ") avail: " << avail);
 	return avail > 0;
 }
@@ -374,7 +373,6 @@ int TcpSocket::WriteWait(const char *s, int length, int timeout_msec)
 			return done;
 		peek = false;
 		int count = Send(s + done, length - done);
-		DDUMP(count);
 		if(IsError())
 			return done;
 		if(count > 0)
@@ -397,7 +395,6 @@ int TcpSocket::Recv(void *buf, int amount)
 	else
 	if(res < 0)
 		SetSockError("recv");
-	LOGHEXDUMP(buf, res);
 	LLOG("recv(" << socket << "): " << res << " bytes: "
 	     << AsCString((char *)buf, (char *)buf + min(res, 16))
 	     << (res ? "" : IsEof() ? ", EOF" : ", WOULDBLOCK"));
@@ -412,7 +409,6 @@ String TcpSocket::Read(int timeout, int maxlen)
 		return String::GetVoid();
 	
 	String out;
-	DDUMP(leftover.GetCount());
 	if(leftover.GetCount()) {
 		if(leftover.GetCount() < maxlen) {
 			out = leftover;
@@ -426,14 +422,12 @@ String TcpSocket::Read(int timeout, int maxlen)
 	}
 	if(IsError() || IsEof())
 		return String::GetVoid();
-	DDUMP(timeout);
-//	if(timeout && !Peek(timeout))
-//		return Null;
+	if(timeout && !Peek(timeout))
+		return Null;
 	if(timeout)
 		Peek(timeout);
 	char buffer[4096];
 	int count = Recv(buffer, min<int>(maxlen, sizeof(buffer)));
-	DDUMP(count);
 	if(IsError())
 		return String::GetVoid();
 	return out + String(buffer, count);
@@ -509,8 +503,7 @@ String TcpSocket::ReadUntil(int term, int timeout, int maxlen, Gate abort, int s
 		int n = maxlen - from;
 		if(n <= 0)
 			break;
-		out.Cat(Read(abort ? 20/*steptime*/ : end_time - msecs(), n));
-		DDUMP(out.GetCount());
+		out.Cat(Read(abort ? steptime : end_time - msecs(), n));
 	}
 	return String::GetVoid();
 }

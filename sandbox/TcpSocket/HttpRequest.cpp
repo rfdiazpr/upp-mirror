@@ -63,6 +63,9 @@ RequestHttp& RequestHttp::URL(const char *u)
 	if(*u == ':')
 		port = ScanInt(u + 1, &u);
 	path = u;
+	int q = path.Find('#');
+	if(q >= 0)
+		path.Trim(q);
 	return *this;
 }
 
@@ -306,7 +309,7 @@ String RequestHttp::Execute(Gate2<int, int> progress)
 	LLOG("request: " << request);
 	int written = 0;
 	while(msecs() < end_time) {
-		int nwrite = socket.WriteWait(request.GetIter(written), min(request.GetLength() - written, 1000), 1000);
+		int nwrite = socket.WriteWait(request.GetIter(written), min(request.GetLength() - written, 1000), progress ? 20 : 1000);
 		if(socket.IsError()) {
 			error = socket.GetErrorDesc();
 			Close();

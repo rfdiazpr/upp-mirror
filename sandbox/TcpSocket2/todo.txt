@@ -1,0 +1,5 @@
+ReadUntil - Gate<String> x
+
+UnRead & leftover? x
+
+Stream::Peek ( == Term)

@@ -47,37 +47,54 @@ static const int DEFAULT_CONNECT_TIMEOUT = 5000;
 
 static const int SOCKKIND_STD = 1; // GetKind() for ordinary socket
 
+struct Timeout {
+	Gate  abort;
+	int   abortstep;
+	int   ms;
+	bool  endtime;
+	
+	int Get() { return endtime ? ms - msec() : ms; }
+	
+	Timeout& Abort(Gate gate_, int abortstep_ = 10) { abort = abort_; abortstep = abortstep_; return *this; }
+	Timeout& EndTime(
+	
+	Timeout(int msec)
+};
+
 class TcpSocket {
+	enum { BUFFERSIZE = 512 }
 	SOCKET                  socket;
-	String                  leftover;
+	char                    buffer[BUFFERSIZE];
+	char                   *ptr;
+	char                   *end;
 	bool                    is_eof;
 	bool                    is_error;
 	bool                    ipv6;
 	int                     errorcode;
 	String                  errordesc;
+	int                     progressstep;
+	int                     endtime;
 
 	bool                    CloseRaw();
 	SOCKET                  AcceptRaw(dword *ipaddr, int timeout_msec);
 	bool                    Open(int family, int type, int protocol);
+	int                     Recv(void *buffer, int maxlen);
+	void                    ReadBuffer()
+	int                     Get0();
+	int                     Read0();
+	void                    Reset();
+
 	static int              GetErrorCode();
 	static bool             WouldBlock();
 
-	void     Reset();
-
-	struct Chr {
-		int chr;
-		
-		bool Check(int c) const { return c == chr; }
-	};
-
-	struct Filter {
-		int (*filter)(int c);
-		
-		bool Check(int c) const { return (*filter)(c); }
-	};
-
 public:
-	TcpSocket()                                              { ClearError(); Reset(); }
+	Gate<int, int>  WhenProgress;
+	
+	TcpSocket&      Timeout(int ms);
+	TcpSocket&      EndTime(int ms);
+	TcpSocket&      Blocking();
+
+	TcpSocket()                                              { ClearError(); Reset(); abortstep = 20; endtime = Null; }
 	~TcpSocket()                                             { Close(); }
 
 	static void     Init();
@@ -91,11 +108,7 @@ public:
 	void            ClearError()                             { is_error = false; errorcode = 0; errordesc.Clear(); }
 	int             GetError() const                         { return errorcode; }
 	String          GetErrorDesc() const                     { return errordesc; }
-
-	void            SetSockError(const char *context); // Remove later when new Until is available
-	void            SetSockError(const char *context, const char *errordesc);
 	
-
 	SOCKET          GetSOCKET() const                        { return socket; }
 	String          GetPeerAddr() const;
 
@@ -112,17 +125,15 @@ public:
 
 	bool            Peek(int timeout = 0, bool write = false);
 	bool            PeekWrite(int timeout = 0)               { return Peek(timeout, true); }
-
-	int             Recv(void *buffer, int maxlen);
-	String          Read(int timeout = Null, int maxlen = 4096);
-	int             ReadCount(void *buffer, int count, int timeout = Null);
-	String          ReadCount(int count, int timeout = Null);
-	String          ReadUntil(int term, int timeout = Null, int maxlen = 2000000, Gate step = Gate(), int steptime = 20);
-	String          ReadLine(int timeout = Null, int maxlen = 2000000, Gate abort = Gate(), int steptime = 20);
-	void            UnRead(const void *buffer, int len);
-	void            UnRead(const String& data)               { UnRead(data.Begin(), data.GetLength()); }
-
 	
+	bool            WaitRead(int timeout = Null)             { return Peek(timeout); }
+
+	int             Peek()                                   { return ptr < end ? *ptr : Peek0(); }
+	int             Term()                                   { return Peek(); }
+	int             Get()                                    { return ptr < end ? *ptr++ : Get0(); }
+	int             Read(void *buffer, int len);
+	String          Read(int len);
+	String          ReadLine(int maxlen = 2000000, int timeout = Null, Gate abort = Gate(), int steptime = 20);
 
 	int             Send(const void *buffer, int maxlen);
 	int             WriteWait(const char *s, int length, int timeout_msec = 0);
@@ -133,6 +144,7 @@ public:
 
 	static String   GetHostName();
 };
+
 #include "HttpRequest.h"
 
 END_UPP_NAMESPACE

@@ -3,20 +3,20 @@
 
 NAMESPACE_UPP
 
-bool HttpRequest_Trace__;
+bool RequestHttp_Trace__;
 
 #ifdef _DEBUG
 #define LLOG(x)      LOG(x)
 #else
-#define LLOG(x)      if(HttpRequest_Trace__) RLOG(x); else;
+#define LLOG(x)      if(RequestHttp_Trace__) RLOG(x); else;
 #endif
 
-void HttpRequest::Trace(bool b)
+void RequestHttp::Trace(bool b)
 {
-	HttpRequest_Trace__ = b;
+	RequestHttp_Trace__ = b;
 }
 
-void HttpRequest::Init()
+void RequestHttp::Init()
 {
 	port = 0;
 	timeout_msecs = DEFAULT_TIMEOUT_MSECS;
@@ -30,18 +30,22 @@ void HttpRequest::Init()
 }
 
 
-HttpRequest::HttpRequest()
+RequestHttp::RequestHttp()
 {
 	Init();
 }
 
-HttpRequest::HttpRequest(const char *url)
+RequestHttp::RequestHttp(const char *url)
 {
 	Init();
 	URL(url);
 }
 
-HttpRequest& HttpRequest::URL(const char *u)
+RequestHttp::~RequestHttp()
+{
+}
+
+RequestHttp& RequestHttp::URL(const char *u)
 {
 	const char *t = u;
 	while(*t && *t != '?')
@@ -65,7 +69,7 @@ HttpRequest& HttpRequest::URL(const char *u)
 	return *this;
 }
 
-HttpRequest& HttpRequest::Proxy(const char *p)
+RequestHttp& RequestHttp::Proxy(const char *p)
 {
 	const char *t = p;
 	while(*p && *p != ':')
@@ -77,7 +81,7 @@ HttpRequest& HttpRequest::Proxy(const char *p)
 	return *this;
 }
 
-HttpRequest& HttpRequest::Post(const char *id, const String& data)
+RequestHttp& RequestHttp::Post(const char *id, const String& data)
 {
 	Post();
 	if(postdata.GetCount())
@@ -86,7 +90,7 @@ HttpRequest& HttpRequest::Post(const char *id, const String& data)
 	return *this;
 }
 
-HttpRequest& HttpRequest::UrlVar(const char *id, const String& data)
+RequestHttp& RequestHttp::UrlVar(const char *id, const String& data)
 {
 	int c = *path.Last();
 	if(hasurlvar && c != '&')
@@ -98,7 +102,7 @@ HttpRequest& HttpRequest::UrlVar(const char *id, const String& data)
 	return *this;
 }
 
-String HttpRequest::CalculateDigest(String authenticate) const
+String RequestHttp::CalculateDigest(String authenticate) const
 {
 	const char *p = authenticate;
 	String realm, qop, nonce, opaque;
@@ -174,43 +178,37 @@ String HttpRequest::CalculateDigest(String authenticate) const
 	return auth;
 }
 
-HttpRequest& HttpRequest::Header(const char *id, const String& data)
+RequestHttp& RequestHttp::Header(const char *id, const String& data)
 {
 	client_headers << id << ": " << data << "\r\n";
 	return *this;
 }
 
-void HttpRequest::HttpError(const char *s)
-{
-	error = NFormat(t_("%s:%d: ") + String(s), host, port);
-	Close();
-}
+struct ProGate {
+	Gate2<int, int> progress;
+	int done, total;
+	
+	bool Do() { return progress(done, total); }
+	
+	operator Gate() { return callback(this, &ProGate::Do); }
+	
+	ProGate(Gate2<int, int> progress, int done = 0, int total = 0)
+	:	progress(progress), done(done), total(total) {}
+};
 
-bool HttpRequest::Problem()
+String RequestHttp::Execute(Gate2<int, int> progress)
 {
-	if(IsTimeout()) {
-		HttpError("connection timed out");
-		return true;
-	}
-	if(IsAbort()) {
-		HttpError("connection was aborted");
-		return true;
-	}
-	if(IsSocketError()) {
-		Close();
-		return true;
-	}
-	return false;
-}
+	socket.Timeout(10000);
 
-String HttpRequest::Execute0()
-{
+	int start_time = msecs();
+	int end_time = start_time + timeout_msecs;
+	aborted = false;
 	server_headers = Null;
 	status_line = Null;
 	status_code = 0;
 	is_redirect = false;
 	redirect_url = Null;
-	if(IsOpen())
+	if(socket.IsOpen() && IsError())
 		Close();
 	error = Null;
 	use_proxy = !IsNull(proxy_host);
@@ -218,12 +216,10 @@ String HttpRequest::Execute0()
 	socket_port = (use_proxy ? proxy_port : port);
 
 	LLOG("socket host = " << socket_host << ":" << socket_port);
-
-	if(!Connect(socket_host, socket_port ? socket_port : DEFAULT_HTTP_PORT)) {
+	if(!socket.IsOpen() && !CreateClientSocket())
 		return String::GetVoid();
-	}
 
-	if(!WaitWrite()) {
+	if(!socket.WaitWrite()) {
 		error = NFormat(t_("%s:%d: connecting to host timed out"), socket_host, socket_port);
 		Close();
 		return String::GetVoid();
@@ -250,7 +246,7 @@ String HttpRequest::Execute0()
 	if(port)
 		host_port << ':' << port;
 	String url;
-	url << "http://" << host_port << Nvl(path, "/");
+	url << (IsSecure() ? "https://" : "http://") << host_port << Nvl(path, "/");
 	if(use_proxy)
 		request << url;
 	else
@@ -281,8 +277,12 @@ String HttpRequest::Execute0()
 	LLOG("host = " << host << ", port = " << port);
 	LLOG("request: " << request);
 
-	if(!PutAll(request)) {
-		Problem();
+	if(!socket.Put(request)) {
+		if(socket.IsError())
+			error = socket.GetErrorDesc();
+		else
+			error = NFormat(t_("%s:%d: timed out sending request to server"), host, port);
+		Close();
 		return String::GetVoid();
 	}
 
@@ -292,14 +292,19 @@ String HttpRequest::Execute0()
 	bool tc_chunked = false;
 	bool ce_gzip = false;
 	for(;;) {
-		String line = GetLine();
+		String line = socket.GetLine();
 		LLOG("< " << line);
-		if(Problem())
+		if(socket.IsError()) {
+			error = socket.GetErrorDesc();
+			Close();
 			return String::GetVoid();
+		}
+
 		if(expect_status) {
 			status_line = line;
 			if(status_line.GetLength() < 5 || MemICmp(status_line, "HTTP/", 5)) {
-				HttpError("invalid server response: " + status_line);
+				error = NFormat(t_("%s:%d: invalid server response: %s"), host, port, status_line);
+				Close();
 				return String::GetVoid();
 			}
 	
@@ -387,6 +392,9 @@ String HttpRequest::Execute0()
 		server_headers.Cat("\r\n");
 	}
 
+//	if(!keepalive) // mirek 110812
+//		socket.StopWrite();
+
 	if(method == METHOD_HEAD) {
 		Close();
 		return String::GetVoid();
@@ -394,14 +402,20 @@ String HttpRequest::Execute0()
 	String chunked;
 	body.Clear();
 
+	DDUMP(tc_chunked);
+
 	while(body.GetLength() < content_length || content_length < 0 || tc_chunked) {
-		if(Problem())
+		if(msecs(end_time) >= 0) {
+			DLOG("TIMEOUT");
+			error = NFormat(t_("%s:%d: timed out when receiving server response"), host, port);
+			Close();
 			return String::GetVoid();
-		String part = TcpSocket::Get(2048);
+		}
+		String part = socket.Get(1000);
 		LLOG("received part: " << part.GetLength());
 		if(!part.IsEmpty()) {
 			if(body.GetLength() + part.GetLength() > max_content_size) {
-				HttpError("maximum content size exceeded: " + AsString(body.GetLength() + part.GetLength()));
+				error = Format(t_("Maximum content size exceeded: %d"), body.GetLength() + part.GetLength());
 				goto EXIT;
 			}
 			body.Cat(part);
@@ -428,12 +442,15 @@ String HttpRequest::Execute0()
 							p = b;
 							while(*p && *p != '\n')
 								p++;
-							if(!*p && !IsEof()) {
-								if(Problem())
-									return String::GetVoid();
+							if(!*p && socket.IsOpen() && !socket.IsError() && !socket.IsEof()) {
+								if(msecs(end_time) >= 0) {
+									error = NFormat("Timeout reading footer block (%d B).", body.GetLength());
+									break;
+								}
 								if(body.GetLength() > 3)
 									body.Remove(0, body.GetLength() - 3);
-								String part = TcpSocket::Get(2048);
+								String part = socket.Get(1000);
+								DLOG("chunked part recieved len:" << part.GetLength());
 								body.Cat(part);
 								continue;
 							}
@@ -454,25 +471,39 @@ String HttpRequest::Execute0()
 						continue;
 					}
 					for(;;) {
-						String part = TcpSocket::Get(2048);
+						String part = socket.Get(1000);
 						DLOG("Chunked part reading len: " << part.GetCount());
-						if(Problem())
-							return String::GetVoid();
+						if(part.IsEmpty()) {
+							DLOG("Chunked timeout");
+							error = NFormat("Timeout reading Transfer-encoding: chunked block (%d B).", part_length);
+							goto EXIT;
+						}
 						body.Cat(part);
 						if(body.GetLength() >= part_length) {
 							chunked.Cat(body, part_length);
 							body.Remove(0, part_length);
 							break;
 						}
+						if(progress(chunked.GetLength() + body.GetLength(), 0)) {
+							aborted = true;
+							goto EXIT;
+						}
 					}
 				}
 		}
 
-		if(!IsOpen() || Problem()) {
-			LLOG("-> partial input: open = " << IsOpen()
-				<< ", error " << IsError() << " (" << GetErrorDesc() << ")" << ", eof " << IsEof());
-			if(!tc_chunked && content_length > 0 && body.GetLength() < content_length)
-				HttpError(Format(t_("Partial input: %d out of %d"), body.GetLength(), content_length));
+		if(!socket.IsOpen() || socket.IsError() || socket.IsEof()) {
+			LLOG("-> partial input: open = " << socket.IsOpen()
+				<< ", error " << socket.IsError() << " (" << socket.GetErrorDesc() << ")" << ", eof " << socket.IsEof());
+			if(socket.IsError())
+				error = socket.GetErrorDesc();
+			else if(!tc_chunked && content_length > 0 && body.GetLength() < content_length)
+				error = NFormat(t_("Partial input: %d out of %d"), body.GetLength(), content_length);
+			break;
+		}
+		if(progress(chunked.GetLength() + body.GetLength(), max(content_length, 0))) {
+			LLOG("-> user abort");
+			aborted = true;
 			break;
 		}
 		DDUMP(body.GetLength());
@@ -480,8 +511,7 @@ String HttpRequest::Execute0()
 	}
 
 EXIT:
-	Problem();
-	if(!keepalive)
+	if(!keepalive || socket.IsError() || socket.IsEof())
 		Close();
 
 	if(tc_chunked)
@@ -492,11 +522,15 @@ EXIT:
 	return body;
 }
 
-String HttpRequest::Execute(int max_redirect, int retries)
+String RequestHttp::ExecuteRedirect(int max_redirect, int retries, Gate2<int, int> progress)
 {
 	int nredir = 0;
 	for(;;) {
-		String data = Execute0();
+		if(progress(0, 0)) {
+			aborted = true;
+			return String::GetVoid();
+		}
+		String data = Execute(progress);
 		if(status_code == 401 && !IsNull(username) && !IsNull(authenticate)) {
 			if(++nredir > max_redirect) {
 				error = NFormat("Maximum number of digest authentication attempts exceeded: %d", max_redirect);
@@ -511,9 +545,13 @@ String HttpRequest::Execute(int max_redirect, int retries)
 		}
 		int r = 0;
 		while(data.IsVoid()) {
+			if(progress(0, 0)) {
+				aborted = true;
+				return String::GetVoid();
+			}
 			if(++r >= retries)
 				return String::GetVoid();
-			data = Execute0();
+			data = Execute(progress);
 		}
 		if(!IsRedirect())
 			return data;
@@ -523,6 +561,58 @@ String HttpRequest::Execute(int max_redirect, int retries)
 		}
 		URL(GetRedirectURL());
 	}
+}
+
+bool RequestHttp::CreateClientSocket()
+{
+	if(!socket.Connect(socket_host, socket_port ? socket_port : DEFAULT_HTTP_PORT)) {
+		error = socket.GetErrorDesc();
+		return false;
+	}
+//	socket.Linger(0); // Mirek 1/2011 - does not seem to be necessary for client
+	return true;
+}
+
+bool RequestHttp::IsSecure()
+{
+	return false;
+}
+
+String RequestHttpGet(String url, String proxy, String username, String password,
+	String *server_headers, String *error, Gate2<int, int> progress,
+	int timeout, int num_redirect, int retries)
+{
+	RequestHttp client;
+	String out = client
+		.URL(url)
+		.User(username, password)
+		.TimeoutMsecs(timeout)
+		.Proxy(proxy)
+		.ExecuteRedirect(num_redirect, progress, progress);
+	if(server_headers)
+		*server_headers = client.GetHeaders();
+	if(error)
+		*error = client.GetError();
+	return out;
+}
+
+String RequestHttpGet(String url, String proxy, String *server_headers, String *error,
+	Gate2<int, int> progress, int timeout, int max_redirect, int retries)
+{
+	return RequestHttpGet(url, proxy, Null, Null, server_headers, error, progress, timeout, max_redirect, retries);
+}
+
+String RequestHttpGet(String url, String username, String password,
+	String *server_headers, String *error, Gate2<int, int> progress,
+	int timeout, int num_redirect, int retries)
+{
+	return RequestHttpGet(url, Null, username, password, server_headers, error, progress, timeout, num_redirect, retries);
+}
+
+String RequestHttpGet(String url, String *server_headers, String *error,
+	Gate2<int, int> progress, int timeout, int max_redirect, int retries)
+{
+	return RequestHttpGet(url, Null, Null, Null, server_headers, error, progress, timeout, max_redirect, retries);
 }
 
 END_UPP_NAMESPACE

@@ -7,6 +7,8 @@ file
 	TcpSocket.cpp,
 	HttpRequest.h,
 	HttpRequest.cpp,
+	HttpRequest2.h,
+	HttpRequest2.cpp,
 	main.cpp,
 	todo.txt;
 

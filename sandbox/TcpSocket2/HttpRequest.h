@@ -1,85 +1,13 @@
-#ifndef _Web_httpcli_h_
-#define _Web_httpcli_h_
+#ifndef _TcpSocket2_HttpRequest_h_
+#define _TcpSocket2_HttpRequest_h_
 
-class RequestHttp
-{
-public:
-	RequestHttp();
-	RequestHttp(const char *url);
-	virtual ~RequestHttp();
-
-	RequestHttp&  TimeoutMsecs(int t)              { timeout_msecs = t; return *this; }
-	RequestHttp&  MaxHeaderSize(int m)             { max_header_size = m; return *this; }
-	RequestHttp&  MaxContentSize(int m)            { max_content_size = m; return *this; }
-
-	RequestHttp&  Host(String h)                   { host = h; return *this; }
-	RequestHttp&  Port(int p)                      { port = p; return *this; }
-	RequestHttp&  Path(String p)                   { path = p; return *this; }
-	RequestHttp&  User(String u, String p)         { username = u; password = p; return *this; }
-	RequestHttp&  Digest()                         { force_digest = true; return *this; }
-	RequestHttp&  Digest(String d)                 { digest = d; return *this; }
-	RequestHttp&  URL(const char *url);
-	RequestHttp&  Url(const char *id, const String& data);
-	RequestHttp&  KeepAlive(bool k)                { keepalive = k; return *this; }
-	RequestHttp&  Proxy(String host, int port)     { proxy_host = host; proxy_port = port; return *this; }
-	RequestHttp&  Proxy(const char *url);
-	RequestHttp&  ProxyAuth(String usr, String pwd){  proxy_username = usr; proxy_password = pwd; return *this; }
-
-	RequestHttp&  Headers(String h)                { client_headers = h; return *this; }
-	RequestHttp&  ClearHeaders()                   { return Headers(Null); }
-	RequestHttp&  AddHeaders(String h)             { client_headers.Cat(h); return *this; }
-	RequestHttp&  Header(const char *id, const String& data);
-
-	RequestHttp&  StdHeaders(bool sh)              { std_headers = sh; return *this; }
-	RequestHttp&  NoStdHeaders()                   { return StdHeaders(false); }
-	RequestHttp&  Accept(String a)                 { accept = a; return *this; }
-	RequestHttp&  Agent(String a)                  { agent = a; return *this; }
-	RequestHttp&  ContentType(String a)            { contenttype = a; return *this; }
-
-	RequestHttp&  Method(int m)                    { method = m; return *this; }
-	RequestHttp&  Get()                            { return Method(METHOD_GET); }
-	RequestHttp&  Post()                           { return Method(METHOD_POST); }
-	RequestHttp&  Head()                           { return Method(METHOD_HEAD); }
-	RequestHttp&  Put()                            { return Method(METHOD_PUT); }
-
-	RequestHttp&  PostData(String pd)              { postdata = pd; return *this; }
-	RequestHttp&  PostUData(String pd)             { return PostData(UrlEncode(pd)); }
-	RequestHttp&  Post(const String& data)         { Post(); return PostData(data); }
-	RequestHttp&  Post(const char *id, const String& data);
-
-	RequestHttp&  UrlVar(const char *id, const String& data);
-	RequestHttp&  operator()(const char *id, const String& data) { return UrlVar(id, data); }
-
-	String       Execute(Gate2<int, int> progress = false);
-	String       ExecuteRedirect(int max_redirect = DEFAULT_MAX_REDIRECT,
-		int retries = DEFAULT_RETRIES, Gate2<int, int> progress = false);
-
-	bool         IsError() const                  { return !IsNull(error); }
-	String       GetError() const                 { return error; }
-	bool         IsAborted() const                { return aborted; }
-
-	int          GetStatusCode() const            { return status_code; }
-	String       GetStatusLine() const            { return status_line; }
-	String       GetHeaders() const               { return server_headers; }
-	String       GetBody() const                  { return body; }
-
-	bool         IsRedirect() const               { return is_redirect; }
-	String       GetRedirectURL() const           { return redirect_url; }
-
-	String       CalculateDigest(String authenticate) const;
-
-	void         Close()                          { socket.Close(); }
-
-	static void  Trace(bool b = true);
-
+class HttpRequest : public TcpSocket {
+	bool         Problem();
+	void         HttpError(const char *s);
+	String       Execute0();
 	
-	virtual bool CreateClientSocket();
-	virtual bool IsSecure();
-
 public:
-	TcpSocket       socket;
 	bool         keepalive;
-	bool         aborted;
 	bool         force_digest;
 	String       error;
 	String       body;
@@ -142,25 +70,76 @@ private:
 protected:
 	bool         use_proxy;
 	String       ReadUntilProgress(char until, int start_time, int end_time, Gate2<int, int> progress);
+
+public:
+	enum Phase {
+		NONE,
+		REQUEST, HEADER, BODY, CHUNK_HEADER, CHUNK_BODY,
+	};
+	
+	HttpRequest&  TimeoutMsecs(int t)              { timeout_msecs = t; return *this; }
+	HttpRequest&  MaxHeaderSize(int m)             { max_header_size = m; return *this; }
+	HttpRequest&  MaxContentSize(int m)            { max_content_size = m; return *this; }
+
+	HttpRequest&  Host(String h)                   { host = h; return *this; }
+	HttpRequest&  Port(int p)                      { port = p; return *this; }
+	HttpRequest&  Path(String p)                   { path = p; return *this; }
+	HttpRequest&  User(String u, String p)         { username = u; password = p; return *this; }
+	HttpRequest&  Digest()                         { force_digest = true; return *this; }
+	HttpRequest&  Digest(String d)                 { digest = d; return *this; }
+	HttpRequest&  URL(const char *url);
+	HttpRequest&  Url(const char *id, const String& data);
+	HttpRequest&  KeepAlive(bool k)                { keepalive = k; return *this; }
+	HttpRequest&  Proxy(String host, int port)     { proxy_host = host; proxy_port = port; return *this; }
+	HttpRequest&  Proxy(const char *url);
+	HttpRequest&  ProxyAuth(String usr, String pwd){  proxy_username = usr; proxy_password = pwd; return *this; }
+
+	HttpRequest&  Headers(String h)                { client_headers = h; return *this; }
+	HttpRequest&  ClearHeaders()                   { return Headers(Null); }
+	HttpRequest&  AddHeaders(String h)             { client_headers.Cat(h); return *this; }
+	HttpRequest&  Header(const char *id, const String& data);
+
+	HttpRequest&  StdHeaders(bool sh)              { std_headers = sh; return *this; }
+	HttpRequest&  NoStdHeaders()                   { return StdHeaders(false); }
+	HttpRequest&  Accept(String a)                 { accept = a; return *this; }
+	HttpRequest&  Agent(String a)                  { agent = a; return *this; }
+	HttpRequest&  ContentType(String a)            { contenttype = a; return *this; }
+
+	HttpRequest&  Method(int m)                    { method = m; return *this; }
+	HttpRequest&  Get()                            { return Method(METHOD_GET); }
+	HttpRequest&  Post()                           { return Method(METHOD_POST); }
+	HttpRequest&  Head()                           { return Method(METHOD_HEAD); }
+	HttpRequest&  Put()                            { return Method(METHOD_PUT); }
+
+	HttpRequest&  PostData(String pd)              { postdata = pd; return *this; }
+	HttpRequest&  PostUData(String pd)             { return PostData(UrlEncode(pd)); }
+	HttpRequest&  Post(const String& data)         { Post(); return PostData(data); }
+	HttpRequest&  Post(const char *id, const String& data);
+
+	HttpRequest&  UrlVar(const char *id, const String& data);
+	HttpRequest&  operator()(const char *id, const String& data) { return UrlVar(id, data); }
+
+	bool         IsSocketError() const            { return TcpSocket::IsError(); }
+	bool         IsHttpError() const              { return !IsNull(error) ; }
+	bool         IsError() const                  { return IsSocketError() || IsHttpError(); }
+	String       GetErrorDesc() const             { return IsSocketError() ? TcpSocket::GetErrorDesc() : error; }
+
+	int          GetStatusCode() const            { return status_code; }
+	String       GetStatusLine() const            { return status_line; }
+	String       GetHeaders() const               { return server_headers; }
+	String       GetBody() const                  { return body; }
+
+	bool         IsRedirect() const               { return is_redirect; }
+	String       GetRedirectURL() const           { return redirect_url; }
+
+	String       CalculateDigest(String authenticate) const;
+	
+	static void  Trace(bool b = true);
+
+	String       Execute(int max_redirect = DEFAULT_MAX_REDIRECT, int retries = DEFAULT_RETRIES);
+
+	HttpRequest();
+	HttpRequest(const char *url);
 };
-
-String RequestHttpGet(String url, String *server_headers = NULL, String *error = NULL,
-	Gate2<int, int> progress = false, int timeout = RequestHttp::DEFAULT_TIMEOUT_MSECS,
-	int max_redirect = RequestHttp::DEFAULT_MAX_REDIRECT, int retries = RequestHttp::DEFAULT_RETRIES);
-
-String RequestHttpGet(String url, String username, String password,
-	String *server_headers = NULL, String *error = NULL,
-	Gate2<int, int> progress = false, int timeout = RequestHttp::DEFAULT_TIMEOUT_MSECS,
-	int max_redirect = RequestHttp::DEFAULT_MAX_REDIRECT, int retries = RequestHttp::DEFAULT_RETRIES);
-
-String RequestHttpGet(String url, String proxy,
-	String *server_headers = NULL, String *error = NULL,
-	Gate2<int, int> progress = false, int timeout = RequestHttp::DEFAULT_TIMEOUT_MSECS,
-	int max_redirect = RequestHttp::DEFAULT_MAX_REDIRECT, int retries = RequestHttp::DEFAULT_RETRIES);
-
-String RequestHttpGet(String url, String proxy, String username, String password,
-	String *server_headers = NULL, String *error = NULL,
-	Gate2<int, int> progress = false, int timeout = RequestHttp::DEFAULT_TIMEOUT_MSECS,
-	int max_redirect = RequestHttp::DEFAULT_MAX_REDIRECT, int retries = RequestHttp::DEFAULT_RETRIES);
 
 #endif

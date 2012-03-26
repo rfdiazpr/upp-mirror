@@ -47,67 +47,76 @@ static const int DEFAULT_CONNECT_TIMEOUT = 5000;
 
 static const int SOCKKIND_STD = 1; // GetKind() for ordinary socket
 
-struct Timeout {
-	Gate  abort;
-	int   abortstep;
-	int   ms;
-	bool  endtime;
-	
-	int Get() { return endtime ? ms - msec() : ms; }
-	
-	Timeout& Abort(Gate gate_, int abortstep_ = 10) { abort = abort_; abortstep = abortstep_; return *this; }
-	Timeout& EndTime(
-	
-	Timeout(int msec)
-};
+enum { WAIT_READ = 1, WAIT_WRITE = 2, WAIT_EXCEPTION = 3 };
 
 class TcpSocket {
-	enum { BUFFERSIZE = 512 }
+	enum { BUFFERSIZE = 512 };
 	SOCKET                  socket;
 	char                    buffer[BUFFERSIZE];
 	char                   *ptr;
 	char                   *end;
 	bool                    is_eof;
 	bool                    is_error;
+	bool                    is_timeout;
+	bool                    is_abort;
 	bool                    ipv6;
+
+	bool                    global;
+	int                     timeout;
+	int                     starttime;
+	int                     waitstep;
+	int                     done;
+
 	int                     errorcode;
 	String                  errordesc;
-	int                     progressstep;
-	int                     endtime;
+
 
 	bool                    CloseRaw();
 	SOCKET                  AcceptRaw(dword *ipaddr, int timeout_msec);
 	bool                    Open(int family, int type, int protocol);
 	int                     Recv(void *buffer, int maxlen);
-	void                    ReadBuffer()
-	int                     Get0();
-	int                     Read0();
+	int                     Send(const void *buffer, int maxlen);
+
+	void                    ReadBuffer();
+	int                     Get_();
+	int                     Peek_();
+
 	void                    Reset();
+
+	void SetSockError(const char *context, const char *errdesc);
+	void SetSockError(const char *context);
 
 	static int              GetErrorCode();
 	static bool             WouldBlock();
 
 public:
-	Gate<int, int>  WhenProgress;
+	Callback        WhenWait;
 	
-	TcpSocket&      Timeout(int ms);
-	TcpSocket&      EndTime(int ms);
-	TcpSocket&      Blocking();
+	TcpSocket&      Timeout(int ms)                          { timeout = ms; global = false; return *this; }
+	TcpSocket&      GlobalTimeout(int ms);
+	TcpSocket&      Blocking()                               { return Timeout(Null); }
+	
+	int             GetDone() const                          { return done; }
 
-	TcpSocket()                                              { ClearError(); Reset(); abortstep = 20; endtime = Null; }
+	TcpSocket();
 	~TcpSocket()                                             { Close(); }
 
 	static void     Init();
 
-	void            Clear()                                  { Close(); }
-
 	bool            IsOpen() const                           { return socket != INVALID_SOCKET; }
-	bool            IsEof() const                            { return is_eof && leftover.IsEmpty(); }
+	bool            IsEof() const                            { return is_eof && ptr == end; }
 
 	bool            IsError() const                          { return is_error; }
 	void            ClearError()                             { is_error = false; errorcode = 0; errordesc.Clear(); }
 	int             GetError() const                         { return errorcode; }
 	String          GetErrorDesc() const                     { return errordesc; }
+
+	bool            IsTimeout() const                        { return is_timeout; }
+	void            ClearTimeout()                           { is_timeout = false; }
+	
+	void            Abort()                                  { is_abort = true; }
+	bool            IsAbort() const                          { return IsAbort(); }
+	void            ClearAbort()                             { is_abort = false; }
 	
 	SOCKET          GetSOCKET() const                        { return socket; }
 	String          GetPeerAddr() const;
@@ -115,36 +124,37 @@ public:
 	void            Attach(SOCKET socket);
 	bool            Connect(const char *host, int port);
 	bool            Listen(int port, int listen_count, bool ipv6 = false, bool reuse = true);
-	bool            Accept(TcpSocket& listen_socket, int timeout = Null);
-	bool            Close(int timeout = Null);
+	bool            Accept(TcpSocket& listen_socket);
+	bool            Close();
+	void            Shutdown();
 
 	void            NoDelay();
 	void            Linger(int msecs);
 	void            NoLinger()                               { Linger(Null); }
 	void            Reuse(bool reuse = true);
-
-	bool            Peek(int timeout = 0, bool write = false);
-	bool            PeekWrite(int timeout = 0)               { return Peek(timeout, true); }
 	
-	bool            WaitRead(int timeout = Null)             { return Peek(timeout); }
+	bool            Wait(dword flags);
+	bool            WaitRead()                               { return Wait(WAIT_READ); }
+	bool            WaitWrite()                              { return Wait(WAIT_WRITE); }
 
-	int             Peek()                                   { return ptr < end ? *ptr : Peek0(); }
+	int             Peek()                                   { return ptr < end ? *ptr : Peek_(); }
 	int             Term()                                   { return Peek(); }
-	int             Get()                                    { return ptr < end ? *ptr++ : Get0(); }
-	int             Read(void *buffer, int len);
-	String          Read(int len);
-	String          ReadLine(int maxlen = 2000000, int timeout = Null, Gate abort = Gate(), int steptime = 20);
+	int             Get()                                    { return ptr < end ? *ptr++ : Get_(); }
+	int             Get(void *buffer, int len);
+	String          Get(int len);
+	int             GetAll(void *buffer, int len)            { return Get(buffer, len) == len; }
+	String          GetAll(int len)                          { String s = Get(len); return s.GetCount() == len ? s : String::GetVoid(); }
+	String          GetLine(int maxlen = 2000000);
 
-	int             Send(const void *buffer, int maxlen);
-	int             WriteWait(const char *s, int length, int timeout_msec = 0);
-	void            Write(const char *s, int length)         { WriteWait(s, length, Null); }
-	void            Write(String s)                          { Write(s.Begin(), s.GetLength()); }
-
-	void            StopWrite();
+	int             Put(const char *s, int len);
+	int             Put(const String& s)                     { return Put(s.Begin(), s.GetLength()); }
+	bool            PutAll(const char *s, int len)           { return Put(s, len) == len; }
+	bool            PutAll(const String& s)                  { return Put(s) == s.GetCount(); }
 
 	static String   GetHostName();
 };
 
 #include "HttpRequest.h"
+#include "HttpRequest2.h"
 
 END_UPP_NAMESPACE

@@ -79,7 +79,7 @@ HttpRequest& HttpRequest::Proxy(const char *p)
 
 HttpRequest& HttpRequest::Post(const char *id, const String& data)
 {
-	Post();
+	POST();
 	if(postdata.GetCount())
 		postdata << '&';
 	postdata << id << '=' << UrlEncode(data);
@@ -205,13 +205,12 @@ bool HttpRequest::Problem()
 
 String HttpRequest::Execute0()
 {
+	if(IsOpen())
+		Close();
+
 	server_headers = Null;
 	status_line = Null;
 	status_code = 0;
-	is_redirect = false;
-	redirect_url = Null;
-	if(IsOpen())
-		Close();
 	error = Null;
 	use_proxy = !IsNull(proxy_host);
 	socket_host = (use_proxy ? proxy_host : host);
@@ -220,12 +219,6 @@ String HttpRequest::Execute0()
 	LLOG("socket host = " << socket_host << ":" << socket_port);
 
 	if(!Connect(socket_host, socket_port ? socket_port : DEFAULT_HTTP_PORT)) {
-		return String::GetVoid();
-	}
-
-	if(!WaitWrite()) {
-		error = NFormat(t_("%s:%d: connecting to host timed out"), socket_host, socket_port);
-		Close();
 		return String::GetVoid();
 	}
 
@@ -286,114 +279,61 @@ String HttpRequest::Execute0()
 		return String::GetVoid();
 	}
 
-	bool expect_status = true;
-	
-	int content_length = -1;
-	bool tc_chunked = false;
-	bool ce_gzip = false;
+	String hdrs;
+	int line = 0;
 	for(;;) {
-		String line = GetLine();
-		LLOG("< " << line);
-		if(Problem())
-			return String::GetVoid();
-		if(expect_status) {
-			status_line = line;
-			if(status_line.GetLength() < 5 || MemICmp(status_line, "HTTP/", 5)) {
-				HttpError("invalid server response: " + status_line);
+		int c = Get();
+		if(c < 0) {
+			if(Problem())
 				return String::GetVoid();
-			}
-	
-			status_code = 0;
-			const char *p = status_line.Begin() + 5;
-			while(*p && *p != ' ')
-				p++;
-			if(*p == ' ' && IsDigit(*++p))
-				status_code = stou(p);
-			
-			is_redirect = (status_code >= 300 && status_code < 400);
-			expect_status = false;
-			continue;
 		}
-
-		const char *p = line;
-		for(p = line; *p && (byte)*p <= ' '; p++)
-			;
-		const char *b = p, *e = line.End();
-		while(e > b && (byte)e[-1] < ' ')
-			e--;
-		if(b >= e) {
-			if(status_code == 100) {
-				expect_status = true;
-				continue;
-			}
-			break;
+		else {
+			if(c == '\n')
+				line++;
+			else
+			if(c != '\r')
+				line = 0;
+			hdrs.Cat(c);
+			if(line == 2)
+				break;
 		}
-		static const char cl[] = "content-length:";
-		static const char ce[] = "content-encoding:";
-		static const char te[] = "transfer-encoding:";
-		static const char lo[] = "location:";
-		static const char au[] = "www-authenticate:";
-		static const int CL_LENGTH = sizeof(cl) - 1;
-		static const int CE_LENGTH = sizeof(ce) - 1;
-		static const int TE_LENGTH = sizeof(te) - 1;
-		static const int LO_LENGTH = sizeof(lo) - 1;
-		static const int AU_LENGTH = sizeof(au) - 1;
-		if(!MemICmp(p, cl, CL_LENGTH)) {
-			for(p += CL_LENGTH; *p == ' '; p++)
-				;
-			if(IsDigit(*p)) {
-				content_length = stou(p);
-				if(content_length > max_content_size) {
-					error = NFormat(t_("%s:%d: maximum data length exceeded (%d B)"), host, port, max_content_size);
-					Close();
-					return String::GetVoid();
-				}
-			}
-		}
-		else if(!MemICmp(p, ce, CE_LENGTH)) {
-			for(p += CE_LENGTH; *p == ' '; p++)
-				;
-			static const char gzip[] = "gzip";
-			if(e - p == sizeof(gzip) - 1 && !memcmp(p, gzip, sizeof(gzip) - 1))
-				ce_gzip = true;
-		}
-		else if(!MemICmp(p, te, TE_LENGTH)) {
-			for(p += TE_LENGTH; *p == ' '; p++)
-				;
-			static const char ch[] = "chunked";
-			if(e - p == sizeof(ch) - 1 && !memcmp(p, ch, sizeof(ch) - 1))
-				tc_chunked = true;
-		}
-		else if(!MemICmp(p, lo, LO_LENGTH)) {
-			for(p += LO_LENGTH; *p == ' '; p++)
-				;
-			redirect_url = String(p, e);
-			int q = redirect_url.Find('?');
-			int p = path.Find('?');
-			if(p >= 0 && q < 0)
-				redirect_url.Cat(path.GetIter(p));
-		}
-		else if(!MemICmp(p, au, AU_LENGTH)) {
-			for(p += AU_LENGTH; *p == ' '; p++)
-				;
-			authenticate = String(p, e);
-		}
-		if(server_headers.GetLength() + (e - b) + 2 > max_header_size) {
-			error = NFormat(t_("%s:%d: maximum header length exceeded (%d B)"), host, port, max_header_size);
-			Close();
-			return String::GetVoid();
-		}
-		server_headers.Cat(b, int(e - b));
-		server_headers.Cat("\r\n");
 	}
+	DDUMP(hdrs);
+	
+	if(!header.Parse(hdrs)) {
+		HttpError("invalid http header");
+		return String::GetVoid();
+	}
+	
+	DDUMP(header.method);
+	DDUMP(header.uri);
+	DDUMP(header.version);
+	DDUMPM(header.fields);
+
+	int  content_length = Nvl(ScanInt(header["content-length"]), -1);
+	DDUMP(content_length);
+
+	bool ce_gzip = TrimBoth(header["content-encoding"]) == "gzip";
+	DDUMP(ce_gzip);
+	
+	bool tc_chunked = TrimBoth(header["transfer-encoding"]) == "chunked";
+	redirect_url = TrimLeft(header["location"]);
+	int q = redirect_url.Find('?');
+	int p = path.Find('?');
+	if(p >= 0 && q < 0)
+		redirect_url.Cat(path.Mid(p));
+	DDUMP(tc_chunked);
+
+	authenticate = TrimLeft(header["www-authenticate"]);
+	DDUMP(authenticate);
 
 	if(method == METHOD_HEAD) {
 		Close();
 		return String::GetVoid();
 	}
+
 	String chunked;
 	body.Clear();
-
 	while(body.GetLength() < content_length || content_length < 0 || tc_chunked) {
 		if(Problem())
 			return String::GetVoid();
@@ -454,7 +394,7 @@ String HttpRequest::Execute0()
 						continue;
 					}
 					for(;;) {
-						String part = TcpSocket::Get(2048);
+						String part = Get(2048);
 						DLOG("Chunked part reading len: " << part.GetCount());
 						if(Problem())
 							return String::GetVoid();
@@ -515,13 +455,13 @@ String HttpRequest::Execute(int max_redirect, int retries)
 				return String::GetVoid();
 			data = Execute0();
 		}
-		if(!IsRedirect())
+		if(status_code < 300)
 			return data;
 		if(++nredir > max_redirect) {
 			error = NFormat("Maximum number of redirections exceeded: %d", max_redirect);
 			return String::GetVoid();
 		}
-		URL(GetRedirectURL());
+		URL(redirect_url);
 	}
 }
 

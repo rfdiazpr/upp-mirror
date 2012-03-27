@@ -1,12 +1,27 @@
 #ifndef _TcpSocket2_HttpRequest_h_
 #define _TcpSocket2_HttpRequest_h_
 
+struct HttpHeader {
+	String                    method;
+	String                    uri;
+	String                    version;
+	VectorMap<String, String> fields;
+	
+	String operator[](const char *id) { return fields.Get(id, Null); }
+	
+	bool Parse(const String& hdrs);
+};
+
 class HttpRequest : public TcpSocket {
 	bool         Problem();
 	void         HttpError(const char *s);
 	String       Execute0();
 	
 public:
+	HttpHeader   header;
+
+
+
 	bool         keepalive;
 	bool         force_digest;
 	String       error;
@@ -36,13 +51,11 @@ public:
 	bool         is_post;
 	bool         std_headers;
 	bool         hasurlvar;
-	bool         is_redirect;
 
 	int          status_code;
 	String       status_line;
 	String       server_headers;
 
-	String       redirect_url;
 	String       authenticate;
 	
 	String       socket_host;
@@ -63,6 +76,8 @@ public:
 		METHOD_HEAD,
 		METHOD_PUT,
 	};
+	
+	String redirect_url;
 
 private:
 	void         Init();
@@ -106,14 +121,14 @@ public:
 	HttpRequest&  ContentType(String a)            { contenttype = a; return *this; }
 
 	HttpRequest&  Method(int m)                    { method = m; return *this; }
-	HttpRequest&  Get()                            { return Method(METHOD_GET); }
-	HttpRequest&  Post()                           { return Method(METHOD_POST); }
+	HttpRequest&  GET()                            { return Method(METHOD_GET); }
+	HttpRequest&  POST()                           { return Method(METHOD_POST); }
 	HttpRequest&  Head()                           { return Method(METHOD_HEAD); }
-	HttpRequest&  Put()                            { return Method(METHOD_PUT); }
+	HttpRequest&  PUT()                            { return Method(METHOD_PUT); }
 
 	HttpRequest&  PostData(String pd)              { postdata = pd; return *this; }
 	HttpRequest&  PostUData(String pd)             { return PostData(UrlEncode(pd)); }
-	HttpRequest&  Post(const String& data)         { Post(); return PostData(data); }
+	HttpRequest&  Post(const String& data)         { POST(); return PostData(data); }
 	HttpRequest&  Post(const char *id, const String& data);
 
 	HttpRequest&  UrlVar(const char *id, const String& data);
@@ -128,9 +143,6 @@ public:
 	String       GetStatusLine() const            { return status_line; }
 	String       GetHeaders() const               { return server_headers; }
 	String       GetBody() const                  { return body; }
-
-	bool         IsRedirect() const               { return is_redirect; }
-	String       GetRedirectURL() const           { return redirect_url; }
 
 	String       CalculateDigest(String authenticate) const;
 	

@@ -119,6 +119,7 @@ void TcpSocket::Reset()
 	ptr = end = buffer;
 	is_error = false;
 	is_timeout = false;
+	is_abort = false;
 }
 
 TcpSocket::TcpSocket()
@@ -371,7 +372,7 @@ bool TcpSocket::Wait(dword flags)
 		return false;
 	is_timeout = false;
 	for(;;) {
-		if(IsError() || IsTimeout() || IsAbort())
+		if(IsError() || IsAbort())
 			return false;
 		int to = end_time - msecs();
 		if(WhenWait)

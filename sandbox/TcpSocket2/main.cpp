@@ -7,5 +7,7 @@ CONSOLE_APP_MAIN
 {
 	DDUMP(sizeof(fd_set));
 //	DDUMP(RequestHttpGet("www.ultimatepp.com"));
-	DDUMP(RequestHttpGet("www.idnes.cz"));
+	DDUMP(HttpRequest("www.idnes.cz").Execute());
+	DLOG("=======================");
+	DDUMP(HttpRequest("www.ultimatepp.org").Execute());
 }

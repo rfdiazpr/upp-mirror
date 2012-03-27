@@ -115,7 +115,7 @@ public:
 	void            ClearTimeout()                           { is_timeout = false; }
 	
 	void            Abort()                                  { is_abort = true; }
-	bool            IsAbort() const                          { return IsAbort(); }
+	bool            IsAbort() const                          { return is_abort; }
 	void            ClearAbort()                             { is_abort = false; }
 	
 	SOCKET          GetSOCKET() const                        { return socket; }

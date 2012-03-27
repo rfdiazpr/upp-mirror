@@ -164,4 +164,25 @@ String Base64Decode(const char *b, const char *e)
 	return out;
 }
 
+bool HttpHeader::Parse(const String& hdrs)  // Optimize!
+{
+	StringStream ss(hdrs);
+	String s = ss.GetLine();
+	fields.Clear();
+	Vector<String> h = Split(s, ' ');
+	if(h.GetCount() != 3)
+		return false;
+	method = h[0];
+	uri = h[1];
+	version = h[2];
+	while(!ss.IsEof()) {
+		s = ss.GetLine();
+		if(s.IsEmpty()) break;
+		int q = s.Find(':');
+		if(q >= 0)
+			fields.Add(ToLower(s.Mid(0, q))) = TrimLeft(s.Mid(q + 1));
+	}
+	return true;
+}
+
 END_UPP_NAMESPACE

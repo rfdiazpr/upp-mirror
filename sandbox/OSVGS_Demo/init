@@ -1,0 +1,7 @@
+#ifndef _OSVGS_Demo_icpp_init_stub
+#define _OSVGS_Demo_icpp_init_stub
+#include "CtrlLib/init"
+#include "Painter/init"
+#include "GLCtrl/init"
+#include "OSVGS/init"
+#endif

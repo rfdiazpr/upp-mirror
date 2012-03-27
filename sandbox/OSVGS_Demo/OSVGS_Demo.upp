@@ -1,0 +1,19 @@
+description "Draw, Painter and OpenGL test and development application\377";
+
+uses
+	CtrlLib,
+	Painter,
+	GLCtrl,
+	OSVGS;
+
+library(MSC) D2D1.lib;
+
+library(WIN32 GCC) "glaux glu32 opengl32";
+
+file
+	main.cpp,
+	Copying;
+
+mainconfig
+	"" = "GUI";
+

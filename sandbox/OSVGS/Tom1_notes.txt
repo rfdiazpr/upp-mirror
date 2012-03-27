@@ -1,0 +1,47 @@
+OSVGS		2012-03-27
+
+Introduction
+
+OSVGS is a wheel re-invented.  So, why on earth did I waste my time on this?  
+
+I wish to provide a one-stop-vector-graphics-shop (hence the name OSVGS) for U++. This means 
+multiple backends behind a single interface. Whenever new useful backends become available, 
+it should be reasonably easy to write OSVGS support for it and keep old code source compatible 
+with new platforms.  Initially there is support for Draw, Painter, OpenGL and Direct2D.  
+
+The interface supports almost the same level of functionality as Draw.  A major design goal is
+to be able to map the API efficiently to the underlying backend.  This results in small transfer
+sizes for vector data and (hopefully) optimal acceleration results on target.  If the target 
+supports antialiasing, it is a welcome feature that gets utilized.  The wide dashed lines 
+supported by OSVGS -- a feature I have been missing in Draw for several years now -- are 
+currently missing in Draw backend, but are possible to add for GDI and X. The x,y coordinate 
+values are doubles instead of ints and mapping is generally pixel based.  Colors are always of 
+RGBA type.  
+
+OSVGS prototypes the mappings from a simple API to various backends.  The initial position for 
+OSVGS is inside the Paint() or GLPaint() routine. Some initialization may be done in the 
+backend, so it would be advantageous to have separate constructor and connect-to-target 
+routines to optimize this.  
+
+---
+
+The OSVGS is a work in progress.  What is missing? 
+
+1. DrawText for OpenGL is really missing entirely.  If some guru could pick up e.g. Painter 
+DrawText implementation and convert it to work inside OSVGSOpenGL::DrawText, it would be just 
+great!
+
+2. Antialiasing for OpenGL works probably best with FSAA or MSAA, but it may not be possible to 
+initialize from inside a windows application with default Windows supported OpenGL 1.1.  (It can 
+be done for e.g. NVidia GPUs using their control panel applet.) If someone knows a compatible 
+OpenGL way to enable it inside an app, please report to me.
+
+3. Wide dashed lines for GDI and X11 targets.  
+
+4. Initializing antialiasing flag works only on Direct2D target.
+
+Best regards,
+
+Tom
+
+Tom1 at ultimatepp forum.

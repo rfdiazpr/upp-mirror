@@ -1,0 +1,11 @@
+description "One-stop-vector-graphics-shop\377";
+
+file
+	Tom1_notes.txt,
+	OSVGS.h,
+	OSVGSDirect2D.cpp,
+	OSVGSDraw.cpp,
+	OSVGSOpenGL.cpp,
+	OSVGSPainter.cpp,
+	Copying;
+

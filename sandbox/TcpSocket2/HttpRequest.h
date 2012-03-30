@@ -2,72 +2,34 @@
 #define _TcpSocket2_HttpRequest_h_
 
 struct HttpHeader {
-	String                    method;
-	String                    uri;
-	String                    version;
+	String                    first_line;
 	VectorMap<String, String> fields;
 	
 	String operator[](const char *id) { return fields.Get(id, Null); }
-	
+
+	bool   Response(String& protocol, int& code, String& reason);
+	bool   Request(String& method, String& uri, String& version);
+
+	void Clear();	
 	bool Parse(const String& hdrs);
 };
 
 class HttpRequest : public TcpSocket {
-	bool         Problem();
-	void         HttpError(const char *s);
-	String       Execute0();
-	
-public:
+	int          phase;
+	String       data;
+	int          count;
+
 	HttpHeader   header;
 
-
-
-	bool         keepalive;
-	bool         force_digest;
 	String       error;
 	String       body;
 
-	int          timeout_msecs;
-	int          max_header_size;
-	int          max_content_size;
-
-	String       host;
-	int          port;
-	int          method;
-	String       proxy_host;
-	int          proxy_port;
-	String       proxy_username;
-	String       proxy_password;
-	String       path;
-	String       username;
-	String       password;
-	String       digest;
-	String       client_headers;
-	String       accept;
-	String       agent;
-	String       contenttype;
-	String       postdata;
-
-	bool         is_post;
-	bool         std_headers;
-	bool         hasurlvar;
-
-	int          status_code;
-	String       status_line;
-	String       server_headers;
-
-	String       authenticate;
-	
-	String       socket_host;
-	int          socket_port;
-
 	enum {
 		DEFAULT_HTTP_PORT        = 80,
-		DEFAULT_TIMEOUT_MSECS    = 120000,
 		DEFAULT_MAX_HEADER_SIZE  = 1000000,
 		DEFAULT_MAX_CONTENT_SIZE = 10000000,
-		DEFAULT_MAX_REDIRECT     = 5,
-		DEFAULT_RETRIES          = 3,
+		DEFAULT_MAX_REDIRECTS    = 5,
+		DEFAULT_MAX_RETRIES      = 3,
 	};
 
 	enum {
@@ -76,82 +38,130 @@ public:
 		METHOD_HEAD,
 		METHOD_PUT,
 	};
-	
-	String redirect_url;
 
-private:
+	int          max_header_size;
+	int          max_content_size;
+	int          max_redirects;
+	int          max_retries;
+
+	String       host;
+	int          port;
+	String       proxy_host;
+	int          proxy_port;
+	String       proxy_username;
+	String       proxy_password;
+	String       path;
+
+	int          method;
+	String       accept;
+	String       agent;
+	bool         force_digest;
+	bool         is_post;
+	bool         std_headers;
+	bool         hasurlvar;
+	String       contenttype;
+	String       username;
+	String       password;
+	String       digest;
+	String       request_headers;
+	String       postdata;
+
+	String       protocol;
+	int          status_code;
+	String       response_phrase;
+	
+	int          retry_count;
+	int          redirect_count;
+
 	void         Init();
 
-protected:
-	bool         use_proxy;
-	String       ReadUntilProgress(char until, int start_time, int end_time, Gate2<int, int> progress);
+	void         StartPhase(int s);
+	void         StartBody();
+	bool         SendingData();
+	bool         ReadingHeader();
+	bool         ReadingBody();
+	void         StartRequest();
+	void         ReadingChunkHeader();
+	void         Finish();
+
+	void         HttpError(const char *s);
+	String       Execute0();
+
+	String       CalculateDigest(const String& authenticate) const;
 
 public:
-	enum Phase {
-		NONE,
-		REQUEST, HEADER, BODY, CHUNK_HEADER, CHUNK_BODY,
-	};
-	
-	HttpRequest&  TimeoutMsecs(int t)              { timeout_msecs = t; return *this; }
-	HttpRequest&  MaxHeaderSize(int m)             { max_header_size = m; return *this; }
-	HttpRequest&  MaxContentSize(int m)            { max_content_size = m; return *this; }
+	HttpRequest&  MaxHeaderSize(int m)                   { max_header_size = m; return *this; }
+	HttpRequest&  MaxContentSize(int m)                  { max_content_size = m; return *this; }
+	HttpRequest&  MaxRedirect(int n)                     { max_redirects = n; return *this; }
+	HttpRequest&  MaxRetries(int n)                      { max_retries = n; return *this; }
 
-	HttpRequest&  Host(String h)                   { host = h; return *this; }
-	HttpRequest&  Port(int p)                      { port = p; return *this; }
-	HttpRequest&  Path(String p)                   { path = p; return *this; }
-	HttpRequest&  User(String u, String p)         { username = u; password = p; return *this; }
-	HttpRequest&  Digest()                         { force_digest = true; return *this; }
-	HttpRequest&  Digest(String d)                 { digest = d; return *this; }
+	HttpRequest&  Method(int m)                          { method = m; return *this; }
+	HttpRequest&  GET()                                  { return Method(METHOD_GET); }
+	HttpRequest&  POST()                                 { return Method(METHOD_POST); }
+	HttpRequest&  HEAD()                                 { return Method(METHOD_HEAD); }
+	HttpRequest&  PUT()                                  { return Method(METHOD_PUT); }
+
+	HttpRequest&  Host(const String& h)                  { host = h; return *this; }
+	HttpRequest&  Port(int p)                            { port = p; return *this; }
+	HttpRequest&  Path(const String& p)                  { path = p; return *this; }
+	HttpRequest&  User(const String& u, const String& p) { username = u; password = p; return *this; }
+	HttpRequest&  Digest()                               { force_digest = true; return *this; }
+	HttpRequest&  Digest(const String& d)                { digest = d; return *this; }
 	HttpRequest&  URL(const char *url);
 	HttpRequest&  Url(const char *id, const String& data);
-	HttpRequest&  KeepAlive(bool k)                { keepalive = k; return *this; }
-	HttpRequest&  Proxy(String host, int port)     { proxy_host = host; proxy_port = port; return *this; }
-	HttpRequest&  Proxy(const char *url);
-	HttpRequest&  ProxyAuth(String usr, String pwd){  proxy_username = usr; proxy_password = pwd; return *this; }
-
-	HttpRequest&  Headers(String h)                { client_headers = h; return *this; }
-	HttpRequest&  ClearHeaders()                   { return Headers(Null); }
-	HttpRequest&  AddHeaders(String h)             { client_headers.Cat(h); return *this; }
-	HttpRequest&  Header(const char *id, const String& data);
-
-	HttpRequest&  StdHeaders(bool sh)              { std_headers = sh; return *this; }
-	HttpRequest&  NoStdHeaders()                   { return StdHeaders(false); }
-	HttpRequest&  Accept(String a)                 { accept = a; return *this; }
-	HttpRequest&  Agent(String a)                  { agent = a; return *this; }
-	HttpRequest&  ContentType(String a)            { contenttype = a; return *this; }
-
-	HttpRequest&  Method(int m)                    { method = m; return *this; }
-	HttpRequest&  GET()                            { return Method(METHOD_GET); }
-	HttpRequest&  POST()                           { return Method(METHOD_POST); }
-	HttpRequest&  Head()                           { return Method(METHOD_HEAD); }
-	HttpRequest&  PUT()                            { return Method(METHOD_PUT); }
-
-	HttpRequest&  PostData(String pd)              { postdata = pd; return *this; }
-	HttpRequest&  PostUData(String pd)             { return PostData(UrlEncode(pd)); }
-	HttpRequest&  Post(const String& data)         { POST(); return PostData(data); }
-	HttpRequest&  Post(const char *id, const String& data);
-
 	HttpRequest&  UrlVar(const char *id, const String& data);
 	HttpRequest&  operator()(const char *id, const String& data) { return UrlVar(id, data); }
+	HttpRequest&  PostData(const String& pd)              { postdata = pd; return *this; }
+	HttpRequest&  PostUData(const String& pd)             { return PostData(UrlEncode(pd)); }
+	HttpRequest&  Post(const String& data)                { POST(); return PostData(data); }
+	HttpRequest&  Post(const char *id, const String& data);
+
+	HttpRequest&  Headers(const String& h)                { request_headers = h; return *this; }
+	HttpRequest&  ClearHeaders()                          { return Headers(Null); }
+	HttpRequest&  AddHeaders(const String& h)             { request_headers.Cat(h); return *this; }
+	HttpRequest&  Header(const char *id, const String& data);
+
+	HttpRequest&  StdHeaders(bool sh)                     { std_headers = sh; return *this; }
+	HttpRequest&  NoStdHeaders()                          { return StdHeaders(false); }
+	HttpRequest&  Accept(const String& a)                 { accept = a; return *this; }
+	HttpRequest&  Agent(const String& a)                  { agent = a; return *this; }
+	HttpRequest&  ContentType(const String& a)            { contenttype = a; return *this; }
+
+	HttpRequest&  Proxy(const String& host, int port)     { proxy_host = host; proxy_port = port; return *this; }
+	HttpRequest&  Proxy(const char *url);
+	HttpRequest&  ProxyAuth(const String& u, const String& p) {  proxy_username = u; proxy_password = p; return *this; }
 
 	bool         IsSocketError() const            { return TcpSocket::IsError(); }
 	bool         IsHttpError() const              { return !IsNull(error) ; }
 	bool         IsError() const                  { return IsSocketError() || IsHttpError(); }
 	String       GetErrorDesc() const             { return IsSocketError() ? TcpSocket::GetErrorDesc() : error; }
+	void         ClearError()                     { TcpSocket::ClearError(); error.Clear(); }
 
+	String       GetHeader(const char *s)         { return header[s]; }
+	String       operator[](const char *s)        { return GetHeader(s); }
+	String       GetRedirectUrl();
+	int          GetContentLength();
 	int          GetStatusCode() const            { return status_code; }
-	String       GetStatusLine() const            { return status_line; }
-	String       GetHeaders() const               { return server_headers; }
-	String       GetBody() const                  { return body; }
+	String       GetResponsePhrase() const        { return response_phrase; }
+	String       GetContent() const               { return body; }
 
-	String       CalculateDigest(String authenticate) const;
+	enum Phase {
+		START, REQUEST, HEADER, BODY, CHUNK_HEADER, CHUNK_BODY, TRAILER, FINISHED, FAILED
+	};
+
+	bool    Do();
+	int     GetPhase() const                      { return phase; }
+	bool    InProgress() const                    { return phase != FAILED && phase != FINISHED; }
+	bool    IsFailure() const                     { return phase == FAILED; }
+	bool    IsSuccess() const                     { return phase == FINISHED && status_code >= 200 && status_code < 300; }
+
+	String  Execute();
 	
-	static void  Trace(bool b = true);
-
-	String       Execute(int max_redirect = DEFAULT_MAX_REDIRECT, int retries = DEFAULT_RETRIES);
-
 	HttpRequest();
 	HttpRequest(const char *url);
+
+	
+	static void  Trace(bool b = true);
 };
 
 #endif

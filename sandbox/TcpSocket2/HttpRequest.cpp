@@ -19,16 +19,19 @@ void HttpRequest::Trace(bool b)
 void HttpRequest::Init()
 {
 	port = 0;
-	timeout_msecs = DEFAULT_TIMEOUT_MSECS;
+	proxy_port = 0;
 	max_header_size = DEFAULT_MAX_HEADER_SIZE;
 	max_content_size = DEFAULT_MAX_CONTENT_SIZE;
-	keepalive = false;
+	max_redirects = DEFAULT_MAX_REDIRECTS;
+	max_retries = DEFAULT_MAX_RETRIES;
 	force_digest = false;
 	std_headers = true;
 	hasurlvar = false;
 	method = METHOD_GET;
+	phase = START;
+	redirect_count = 0;
+	retry_count = 0;
 }
-
 
 HttpRequest::HttpRequest()
 {
@@ -98,7 +101,7 @@ HttpRequest& HttpRequest::UrlVar(const char *id, const String& data)
 	return *this;
 }
 
-String HttpRequest::CalculateDigest(String authenticate) const
+String HttpRequest::CalculateDigest(const String& authenticate) const
 {
 	const char *p = authenticate;
 	String realm, qop, nonce, opaque;
@@ -154,21 +157,20 @@ String HttpRequest::CalculateDigest(String authenticate) const
 	String cnonce = FormatIntHex(Random(), 8);
 	String hv;
 	hv << ha1
-	<< ':' << nonce
-	<< ':' << FormatIntHex(nc, 8)
-	<< ':' << cnonce
-	<< ':' << qop << ':' << ha2;
+	   << ':' << nonce
+	   << ':' << FormatIntHex(nc, 8)
+	   << ':' << cnonce
+	   << ':' << qop << ':' << ha2;
 	String ha = MD5String(hv);
 	String auth;
-	auth
-	<< "username=" << AsCString(username)
-	<< ", realm=" << AsCString(realm)
-	<< ", nonce=" << AsCString(nonce)
-	<< ", uri=" << AsCString(path)
-	<< ", qop=" << AsCString(qop)
-	<< ", nc=" << AsCString(FormatIntHex(nc, 8))
-	<< ", cnonce=" << cnonce
-	<< ", response=" << AsCString(ha);
+	auth << "username=" << AsCString(username)
+	     << ", realm=" << AsCString(realm)
+	     << ", nonce=" << AsCString(nonce)
+	     << ", uri=" << AsCString(path)
+	     << ", qop=" << AsCString(qop)
+	     << ", nc=" << AsCString(FormatIntHex(nc, 8))
+	     << ", cnonce=" << cnonce
+	     << ", response=" << AsCString(ha);
 	if(!IsNull(opaque))
 		auth << ", opaque=" << AsCString(opaque);
 	return auth;
@@ -176,67 +178,240 @@ String HttpRequest::CalculateDigest(String authenticate) const
 
 HttpRequest& HttpRequest::Header(const char *id, const String& data)
 {
-	client_headers << id << ": " << data << "\r\n";
+	request_headers << id << ": " << data << "\r\n";
 	return *this;
 }
 
 void HttpRequest::HttpError(const char *s)
 {
 	error = NFormat(t_("%s:%d: ") + String(s), host, port);
+	LLOG("HTTP ERROR: " << error);
 	Close();
 }
 
-bool HttpRequest::Problem()
+void HttpRequest::StartPhase(int s)
 {
-	if(IsTimeout()) {
-		HttpError("connection timed out");
-		return true;
-	}
-	if(IsAbort()) {
-		HttpError("connection was aborted");
-		return true;
-	}
-	if(IsSocketError()) {
-		Close();
-		return true;
-	}
-	return false;
+	LLOG("Starting status " << s);
+	phase = s;
+	data.Clear();
 }
 
-String HttpRequest::Execute0()
+bool HttpRequest::Do()
 {
-	if(IsOpen())
-		Close();
-
-	server_headers = Null;
-	status_line = Null;
-	status_code = 0;
-	error = Null;
-	use_proxy = !IsNull(proxy_host);
-	socket_host = (use_proxy ? proxy_host : host);
-	socket_port = (use_proxy ? proxy_port : port);
-
-	LLOG("socket host = " << socket_host << ":" << socket_port);
-
-	if(!Connect(socket_host, socket_port ? socket_port : DEFAULT_HTTP_PORT)) {
-		return String::GetVoid();
+	int c1, c2;
+	switch(phase) {
+	case START:
+		retry_count = 0;
+		redirect_count = 0;
+		StartRequest();
+		break;
+	case REQUEST:
+		if(SendingData())
+			break;
+		StartPhase(HEADER);
+		break;
+	case HEADER:
+		if(ReadingHeader())
+			break;
+		StartBody();
+		break;
+	case BODY:
+		if(ReadingBody())
+			break;
+		Finish();
+		break;
+	case CHUNK_HEADER:
+		ReadingChunkHeader();
+		break;
+	case CHUNK_BODY:
+		if(ReadingBody())
+			break;
+		c1 = Get();
+		c2 = Get();
+		if(c1 != '\r' || c2 != '\n')
+			HttpError("missing ending CRLF in chunked transfer");
+		StartPhase(CHUNK_HEADER);
+		break;
+	case TRAILER:
+		if(ReadingHeader())
+			break;
+		header.Parse(data);
+		Finish();
+		break;
+	default:
+		NEVER();
 	}
 
-	String request;
+	if(phase != FAILED)
+		if(IsSocketError() || IsError())
+			phase = FAILED;
+		else
+		if(IsTimeout()) {
+			HttpError("connection timed out");
+			phase = FAILED;
+		}
+		else
+		if(IsAbort()) {
+			HttpError("connection was aborted");
+			phase = FAILED;
+		}
+	
+	if(phase == FAILED) {
+		if(retry_count++ < max_retries) {
+			LLOG("HTTP retry on error " << GetErrorDesc());
+			StartRequest();
+		}
+	}
+	return phase != FINISHED && phase != FAILED;
+}
+
+void HttpRequest::Finish()
+{
+	Close();
+	if(status_code == 401 && !IsNull(username)) {
+		String authenticate = header["www-authenticate"];
+		if(authenticate.GetCount() && redirect_count++ < max_redirects) {
+			LLOG("HTTP auth digest");
+			Digest(CalculateDigest(authenticate));
+			StartRequest();
+			return;
+		}
+	}
+	if(status_code >= 300 && status_code < 400) {
+		String url = GetRedirectUrl();
+		if(url.GetCount() && redirect_count++ < max_redirects) {
+			LLOG("HTTP redirect " << url);
+			URL(url);
+			StartRequest();
+			retry_count = 0;
+			return;
+		}
+	}
+	if(GetHeader("content-encoding") == "gzip")
+		body = GZDecompress(body);
+	phase = FINISHED;
+}
+
+void HttpRequest::ReadingChunkHeader()
+{
+	for(;;) {
+		int c = Get();
+		if(c < 0)
+			break;
+		else
+		if(c == '\n') {
+			LLOG("Chunk header: " << data);
+			int n = ScanInt(~data, NULL, 16);
+			if(IsNull(n)) {
+				HttpError("invalid chunk header");
+				break;
+			}
+			if(n == 0) {
+				StartPhase(TRAILER);
+				break;
+			}
+			count += n;
+			StartPhase(CHUNK_BODY);
+			break;
+		}
+		if(c != '\r')
+			data.Cat(c);
+	}
+}
+
+String HttpRequest::GetRedirectUrl()
+{
+	String redirect_url = TrimLeft(header["location"]);
+	int q = redirect_url.Find('?');
+	int p = path.Find('?');
+	if(p >= 0 && q < 0)
+		redirect_url.Cat(path.Mid(p));
+	return redirect_url;
+}
+
+int   HttpRequest::GetContentLength()
+{
+	return Nvl(ScanInt(header["content-length"]), -1);
+}
+
+void HttpRequest::StartBody()
+{
+	LLOG("HTTP Header received: ");
+	LLOG(data);
+	header.Clear();
+	if(!header.Parse(data)) {
+		HttpError("invalid HTTP header");
+		return;
+	}
+	
+	if(!header.Response(protocol, status_code, response_phrase)) {
+		HttpError("invalid HTTP response");
+		return;
+	}
+	
+	LLOG("HTTP status code: " << status_code);
+
+	count = GetContentLength();
+	
+	if(count > 0)
+		body.Reserve(count);
+
+	if(method == METHOD_HEAD)
+		phase = FINISHED;
+	else
+	if(header["transfer-encoding"] == "chunked") {
+		count = 0;
+		StartPhase(CHUNK_HEADER);
+	}
+	else
+		StartPhase(BODY);
+	body.Clear();
+}
+
+bool HttpRequest::ReadingBody()
+{
+	LLOG("HTTP reading data " << count);
+	for(;;) {
+		int n = 2048;
+		if(count >= 0)
+			n = min(n, count - body.GetLength());
+		String s = Get(n);
+		if(s.GetCount() + body.GetCount() > max_content_size) {
+			HttpError("content length exceeded " + AsString(max_content_size));
+			return true;
+		}
+		body.Cat(s);
+		if(count < 0 ? IsEof() : body.GetCount() >= count)
+			return false;
+	}
+}
+
+void HttpRequest::StartRequest()
+{
+	Close();
+	ClearError();
+	bool use_proxy = !IsNull(proxy_host);
+
+	int p = use_proxy ? proxy_port : port;
+	if(!Connect(use_proxy ? proxy_host : host, p ? p : DEFAULT_HTTP_PORT))
+		return;
+
+	StartPhase(REQUEST);
+	count = 0;
 	String ctype = contenttype;
 	switch(method) {
-		case METHOD_GET:  request << "GET "; break;
+		case METHOD_GET:  data << "GET "; break;
 		case METHOD_POST:
-			request << "POST ";
+			data << "POST ";
 			if(IsNull(ctype))
 				ctype = "application/x-www-form-urlencoded";
 			break;
 		case METHOD_PUT:
-			request << "PUT ";
+			data << "PUT ";
 			if(IsNull(ctype))
 				ctype = "application/x-www-form-urlencoded";
 			break;
-		case METHOD_HEAD: request << "HEAD "; break;
+		case METHOD_HEAD: data << "HEAD "; break;
 		default: NEVER(); // invalid method
 	}
 	String host_port = host;
@@ -245,224 +420,70 @@ String HttpRequest::Execute0()
 	String url;
 	url << "http://" << host_port << Nvl(path, "/");
 	if(use_proxy)
-		request << url;
+		data << url;
 	else
-		request << Nvl(path, "/");
-	request << " HTTP/1.1\r\n";
+		data << Nvl(path, "/");
+	data << " HTTP/1.1\r\n";
 	if(std_headers) {
-		request
-			<< "URL: " << url << "\r\n"
-			<< "Host: " << host_port << "\r\n"
-			<< "Connection: " << (keepalive ? "keep-alive" : "close") << "\r\n";
-		if(keepalive)
-			request << "Keep-alive: 300\r\n"; // 5 minutes (?)
-		request << "Accept: " << Nvl(accept, "*/*") << "\r\n";
-		request << "Accept-Encoding: gzip\r\n";
-		request << "Agent: " << Nvl(agent, "Ultimate++ HTTP client") << "\r\n";
-		if(method == METHOD_POST || method == METHOD_PUT)
-			request << "Content-Length: " << postdata.GetLength() << "\r\n";
+		data << "URL: " << url << "\r\n"
+		     << "Host: " << host_port << "\r\n"
+		     << "Connection: close\r\n"
+		     << "Accept: " << Nvl(accept, "*/*") << "\r\n"
+		     << "Accept-Encoding: gzip\r\n"
+		     << "Agent: " << Nvl(agent, "Ultimate++ HTTP client") << "\r\n";
+		if(postdata.GetCount())
+			data << "Content-Length: " << postdata.GetCount() << "\r\n";
 		if(ctype.GetCount())
-			request << "Content-Type: " << ctype << "\r\n";
+			data << "Content-Type: " << ctype << "\r\n";
 	}
 	if(use_proxy && !IsNull(proxy_username))
-		 request << "Proxy-Authorization: Basic " << Base64Encode(proxy_username + ':' + proxy_password) << "\r\n";
+		 data << "Proxy-Authorization: Basic " << Base64Encode(proxy_username + ':' + proxy_password) << "\r\n";
 	if(!IsNull(digest))
-		request << "Authorization: Digest " << digest << "\r\n";
-	else if(!force_digest && (!IsNull(username) || !IsNull(password)))
-		request << "Authorization: Basic " << Base64Encode(username + ":" + password) << "\r\n";
-	request << client_headers << "\r\n" << postdata;
-	LLOG("host = " << host << ", port = " << port);
-	LLOG("request: " << request);
-
-	if(!PutAll(request)) {
-		Problem();
-		return String::GetVoid();
-	}
-
-	String hdrs;
-	int line = 0;
-	for(;;) {
-		int c = Get();
-		if(c < 0) {
-			if(Problem())
-				return String::GetVoid();
-		}
-		else {
-			if(c == '\n')
-				line++;
-			else
-			if(c != '\r')
-				line = 0;
-			hdrs.Cat(c);
-			if(line == 2)
-				break;
-		}
-	}
-	DDUMP(hdrs);
-	
-	if(!header.Parse(hdrs)) {
-		HttpError("invalid http header");
-		return String::GetVoid();
-	}
-	
-	DDUMP(header.method);
-	DDUMP(header.uri);
-	DDUMP(header.version);
-	DDUMPM(header.fields);
-
-	int  content_length = Nvl(ScanInt(header["content-length"]), -1);
-	DDUMP(content_length);
-
-	bool ce_gzip = TrimBoth(header["content-encoding"]) == "gzip";
-	DDUMP(ce_gzip);
-	
-	bool tc_chunked = TrimBoth(header["transfer-encoding"]) == "chunked";
-	redirect_url = TrimLeft(header["location"]);
-	int q = redirect_url.Find('?');
-	int p = path.Find('?');
-	if(p >= 0 && q < 0)
-		redirect_url.Cat(path.Mid(p));
-	DDUMP(tc_chunked);
-
-	authenticate = TrimLeft(header["www-authenticate"]);
-	DDUMP(authenticate);
-
-	if(method == METHOD_HEAD) {
-		Close();
-		return String::GetVoid();
-	}
-
-	String chunked;
-	body.Clear();
-	while(body.GetLength() < content_length || content_length < 0 || tc_chunked) {
-		if(Problem())
-			return String::GetVoid();
-		String part = TcpSocket::Get(2048);
-		LLOG("received part: " << part.GetLength());
-		if(!part.IsEmpty()) {
-			if(body.GetLength() + part.GetLength() > max_content_size) {
-				HttpError("maximum content size exceeded: " + AsString(body.GetLength() + part.GetLength()));
-				goto EXIT;
-			}
-			body.Cat(part);
-			if(tc_chunked)
-				for(;;) {
-					const char *p = body.Begin(), *e = body.End();
-					while(p < e && *p != '\n')
-						p++;
-					if(p >= e)
-						break;
-					int nextline = int(p + 1 - body.Begin());
-					p = body.Begin();
-					int part_length = ctoi(*p);
-					if((unsigned)part_length >= 16) {
-						body.Remove(0, nextline);
-						continue;
-					}
-					for(int i; (unsigned)(i = ctoi(*++p)) < 16; part_length = part_length * 16 + i)
-						;
-					body.Remove(0, nextline);
-					if(part_length <= 0) {
-						for(;;) {
-							const char *b = body.Begin();
-							p = b;
-							while(*p && *p != '\n')
-								p++;
-							if(!*p && !IsEof()) {
-								if(Problem())
-									return String::GetVoid();
-								if(body.GetLength() > 3)
-									body.Remove(0, body.GetLength() - 3);
-								String part = TcpSocket::Get(2048);
-								body.Cat(part);
-								continue;
-							}
-							const char *l = p;
-							if(*p == '\n')
-								p++;
-							if(l > b && l[-1] == '\r')
-								l--;
-							if(l == b)
-								break;
-							server_headers.Cat(b, int(p - b));
-						}
-						goto EXIT;
-					}
-					if(body.GetLength() >= part_length) {
-						chunked.Cat(body, part_length);
-						body.Remove(0, part_length);
-						continue;
-					}
-					for(;;) {
-						String part = Get(2048);
-						DLOG("Chunked part reading len: " << part.GetCount());
-						if(Problem())
-							return String::GetVoid();
-						body.Cat(part);
-						if(body.GetLength() >= part_length) {
-							chunked.Cat(body, part_length);
-							body.Remove(0, part_length);
-							break;
-						}
-					}
-				}
-		}
-
-		if(!IsOpen() || Problem()) {
-			LLOG("-> partial input: open = " << IsOpen()
-				<< ", error " << IsError() << " (" << GetErrorDesc() << ")" << ", eof " << IsEof());
-			if(!tc_chunked && content_length > 0 && body.GetLength() < content_length)
-				HttpError(Format(t_("Partial input: %d out of %d"), body.GetLength(), content_length));
-			break;
-		}
-		DDUMP(body.GetLength());
-		DDUMP(content_length);
-	}
-
-EXIT:
-	Problem();
-	if(!keepalive)
-		Close();
-
-	if(tc_chunked)
-		body = chunked;
-
-	if(ce_gzip)
-		body = GZDecompress(body);
-	return body;
+		data << "Authorization: Digest " << digest << "\r\n";
+	else
+	if(!force_digest && (!IsNull(username) || !IsNull(password)))
+		data << "Authorization: Basic " << Base64Encode(username + ":" + password) << "\r\n";
+	data << request_headers << "\r\n" << postdata; // !!! POST PHASE !!!
+	LLOG("HTTP REQUEST " << host << ":" << port);
+	LLOG("HTTP request:\n" << data);
 }
 
-String HttpRequest::Execute(int max_redirect, int retries)
+bool HttpRequest::SendingData()
 {
-	int nredir = 0;
 	for(;;) {
-		String data = Execute0();
-		if(status_code == 401 && !IsNull(username) && !IsNull(authenticate)) {
-			if(++nredir > max_redirect) {
-				error = NFormat("Maximum number of digest authentication attempts exceeded: %d", max_redirect);
-				return String::GetVoid();
-			}
-			Digest(CalculateDigest(authenticate));
-			continue;
-		}
-		if(status_code >= 400 && status_code < 500) {
-			error = status_line;
-			return String::GetVoid();
-		}
-		int r = 0;
-		while(data.IsVoid()) {
-			if(++r >= retries)
-				return String::GetVoid();
-			data = Execute0();
-		}
-		if(status_code < 300)
-			return data;
-		if(++nredir > max_redirect) {
-			error = NFormat("Maximum number of redirections exceeded: %d", max_redirect);
-			return String::GetVoid();
-		}
-		URL(redirect_url);
+		int n = min(2048, data.GetLength() - count);
+		n = Put(~data + count, n);
+		if(n == 0)
+			break;
+		count += n;
 	}
+	return count < data.GetLength();
+}
+
+bool HttpRequest::ReadingHeader()
+{
+	for(;;) {
+		int c = Get();
+		if(c < 0)
+			return false;
+		else
+			data.Cat(c);
+		if(data.GetCount() > 3) {
+			const char *h = data.Last();
+			if(h[0] == '\n' && (h[-1] == '\r' && h[-2] == '\n' || h[-1] == '\n'))
+				return false;
+		}
+		if(data.GetCount() > max_header_size) {
+			HttpError("HTTP header exceeded " + AsString(max_header_size));
+			return true;
+		}
+	}
+}
+
+String HttpRequest::Execute()
+{
+	while(Do());
+	return IsSuccess() ? GetContent() : String::GetVoid();
 }
 
 END_UPP_NAMESPACE

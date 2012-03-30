@@ -13,13 +13,7 @@ NAMESPACE_UPP
 #pragma comment(lib, "ws2_32.lib")
 #endif
 
-static String sLogTime()
-{
-	static int start = msecs();
-	return Format("TCP %5d", msecs() - start);
-}
-
-#define LLOG(x)   DLOG(sLogTime() << " " << x)
+#define LLOG(x)  // DLOG("TCP " << x)
 
 #ifdef PLATFORM_POSIX
 
@@ -477,7 +471,7 @@ int TcpSocket::Peek_()
 
 int TcpSocket::Get(void *buffer, int count)
 {
-	LLOG("Read " << count);
+	LLOG("Get " << count);
 
 	if(!IsOpen() || IsError() || IsEof() || IsAbort())
 		return 0;
@@ -499,7 +493,7 @@ int TcpSocket::Get(void *buffer, int count)
 	int part = Recv((char *)buffer + done, count - done);
 	if(part > 0)
 		done += part;
-	while(timeout > 0 && part >= 0 && done < count && !IsError() && !IsEof()) {
+	while(timeout != 0 && part >= 0 && done < count && !IsError() && !IsEof()) {
 		if(!WaitRead())
 			break;
 		part = Recv((char *)buffer + done, count - done);

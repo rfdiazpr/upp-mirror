@@ -164,17 +164,17 @@ String Base64Decode(const char *b, const char *e)
 	return out;
 }
 
-bool HttpHeader::Parse(const String& hdrs)  // Optimize!
+void HttpHeader::Clear()
+{
+	first_line.Clear();
+	fields.Clear();
+}
+
+bool HttpHeader::Parse(const String& hdrs)
 {
 	StringStream ss(hdrs);
 	String s = ss.GetLine();
-	fields.Clear();
-	Vector<String> h = Split(s, ' ');
-	if(h.GetCount() != 3)
-		return false;
-	method = h[0];
-	uri = h[1];
-	version = h[2];
+	first_line = s;
 	while(!ss.IsEof()) {
 		s = ss.GetLine();
 		if(s.IsEmpty()) break;
@@ -183,6 +183,39 @@ bool HttpHeader::Parse(const String& hdrs)  // Optimize!
 			fields.Add(ToLower(s.Mid(0, q))) = TrimLeft(s.Mid(q + 1));
 	}
 	return true;
+}
+
+bool HttpHeader::Request(String& method, String& uri, String& version)
+{
+	const char *s = first_line;
+	if((byte)*s <= ' ')
+		return false;
+	method.Clear();
+	while(*s != ' ' && *s)
+		method.Cat(*s++);
+	while(*s == ' ')
+		s++;
+	if(!*s)
+		return false;
+	uri.Clear();
+	while(*s != ' ' && *s)
+		uri.Cat(*s++);
+	while(*s == ' ')
+		s++;
+	if(!*s)
+		return false;
+	version = s;
+	return true;
+}
+
+bool HttpHeader::Response(String& protocol, int& code, String& reason)
+{
+	String c;
+	if(Request(protocol, c, reason)) {
+		code = ScanInt(c);
+		return !IsNull(code);
+	}
+	return false;
 }
 
 END_UPP_NAMESPACE

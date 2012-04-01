@@ -1,3 +1,5 @@
+#if 0
+
 #include <Core/Core.h>
 #include "TcpSocket.h"
 
@@ -616,3 +618,5 @@ String RequestHttpGet(String url, String *server_headers, String *error,
 }
 
 END_UPP_NAMESPACE
+
+#endif

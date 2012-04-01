@@ -1,3 +1,5 @@
+#if 0
+
 #ifndef _Web_httpcli_h_
 #define _Web_httpcli_h_
 
@@ -162,5 +164,7 @@ String RequestHttpGet(String url, String proxy, String username, String password
 	String *server_headers = NULL, String *error = NULL,
 	Gate2<int, int> progress = false, int timeout = RequestHttp::DEFAULT_TIMEOUT_MSECS,
 	int max_redirect = RequestHttp::DEFAULT_MAX_REDIRECT, int retries = RequestHttp::DEFAULT_RETRIES);
+
+#endif
 
 #endif

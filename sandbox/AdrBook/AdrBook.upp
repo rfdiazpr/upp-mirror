@@ -4,7 +4,8 @@ uses
 	Core,
 	plugin/sqlite3,
 	MySql,
-	Skylark;
+	Skylark,
+	Web/SSL;
 
 file
 	AdrBook.h,

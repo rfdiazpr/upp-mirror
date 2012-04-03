@@ -1,0 +1,4 @@
+#ifndef _GuiWebSpider_icpp_init_stub
+#define _GuiWebSpider_icpp_init_stub
+#include "CtrlLib/init"
+#endif

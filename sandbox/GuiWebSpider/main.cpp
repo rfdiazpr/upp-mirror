@@ -55,7 +55,7 @@ void WebSpider::Run()
 	while(IsOpen()) {
 		Title(AsString(n++));
 		ProcessEvents();
-		while(todo.GetCount() && work.GetCount() < 30) {
+		while(todo.GetCount() && work.GetCount() < 60) {
 			String url = todo.Head();
 			todo.DropHead();
 			Work& w = work.Add();
@@ -63,6 +63,7 @@ void WebSpider::Run()
 			w.line = list.GetCount();
 			list.Add(url);
 			list.GoEnd();
+			DDUMP(url);
 		}
 		SocketWaitEvent we;
 		for(int i = 0; i < work.GetCount(); i++)
@@ -106,7 +107,7 @@ WebSpider::WebSpider()
 
 GUI_APP_MAIN
 {
-//	HttpRequest::Trace();
+	HttpRequest::Trace();
 
 	WebSpider().Run();
 }

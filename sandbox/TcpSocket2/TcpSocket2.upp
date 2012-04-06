@@ -4,6 +4,8 @@ uses
 file
 	HttpRequest2.h,
 	HttpRequest2.cpp,
+	NetAddressInfo.h,
+	NetAddressInfo.cpp,
 	main.cpp,
 	todo.txt;
 

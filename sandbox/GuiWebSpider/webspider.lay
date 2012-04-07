@@ -1,0 +1,7 @@
+LAYOUT(SpiderLayout, 680, 504)
+	ITEM(ArrayCtrl, work, LeftPosZ(4, 356).TopPosZ(4, 476))
+	ITEM(ArrayCtrl, success, LeftPosZ(364, 312).TopPosZ(4, 244))
+	ITEM(ArrayCtrl, failed, LeftPosZ(364, 312).TopPosZ(252, 228))
+	ITEM(Label, status, LeftPosZ(4, 672).TopPosZ(484, 17))
+END_LAYOUT
+

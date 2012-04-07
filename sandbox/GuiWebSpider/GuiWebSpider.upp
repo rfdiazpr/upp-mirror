@@ -2,6 +2,7 @@ uses
 	CtrlLib;
 
 file
+	webspider.lay,
 	main.cpp;
 
 mainconfig

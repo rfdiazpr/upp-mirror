@@ -2,17 +2,19 @@
 
 using namespace Upp;
 
-struct WebSpider : public TopWindow {
-	ArrayCtrl list;
-	
+#define LAYOUTFILE <GuiWebSpider/webspider.lay>
+#include <CtrlCore/lay.h>
+
+struct WebSpider : public WithSpiderLayout<TopWindow> {
 	BiVector<String> todo;
 	Index<String>    done;
 	
 	struct Work {
 		HttpRequest http;
-		int         line;
+		String      url;
 	};
-	Array<Work>      work;
+	Array<Work>      http;
+	int64            total;
 	
 	void ExtractUrls(const String& html);
 
@@ -55,42 +57,47 @@ void WebSpider::Run()
 	while(IsOpen()) {
 		Title(AsString(n++));
 		ProcessEvents();
-		while(todo.GetCount() && work.GetCount() < 60) {
+		while(todo.GetCount() && http.GetCount() < 30) {
 			String url = todo.Head();
 			todo.DropHead();
-			Work& w = work.Add();
+			Work& w = http.Add();
+			w.url = url;
 			w.http.Url(url).MaxRetries(0).RequestTimeout(20000).Timeout(0);
-			w.line = list.GetCount();
-			list.Add(url);
-			list.GoEnd();
-			DDUMP(url);
+			work.Add(url);
+			work.HeaderTab(0).SetText(Format("URL (%d)", work.GetCount()));
 		}
 		SocketWaitEvent we;
-		for(int i = 0; i < work.GetCount(); i++)
-			we.Add(work[i].http);
+		for(int i = 0; i < http.GetCount(); i++)
+			we.Add(http[i].http);
 		we.Wait(10);
 		int i = 0;
-		while(i < work.GetCount()) {
-			Work& w = work[i];
+		while(i < http.GetCount()) {
+			Work& w = http[i];
 			w.http.Do();
+			int q = work.Find(w.url);
 			if(w.http.InProgress()) {
-				list.Set(w.line, 1, String().Cat() << "Working: " << w.http.GetPhase());
+				if(q >= 0)
+					work.Set(q, 1, w.http.GetPhaseName());
 				i++;
 			}
 			else {
 				if(w.http.IsSuccess()) {
 					String html = w.http;
-					list.Set(w.line, 1, String().Cat() << "SUCCESS: " << w.http.GetStatusCode() << ' ' << w.http.GetReasonPhrase() << " (" << html.GetCount() << " bytes)");
+					total += html.GetCount();
+					success.Add(w.url, String().Cat() << w.http.GetStatusCode() << ' '
+					                   << w.http.GetReasonPhrase() << " (" << html.GetCount() << " bytes)");
+					success.HeaderTab(0).SetText(Format("Success (%d)", success.GetCount()));
+					success.HeaderTab(1).SetText(Format("Response (%` KB)", total >> 10));
 					ExtractUrls(html);
 				}
-				else
-					if(w.http.IsError()) {
-						list.Set(w.line, 1, String().Cat() << "FAILED: " << w.http.GetErrorDesc());
-						DLOG(list.Get(w.line, 0) << ' ' << w.http.GetErrorDesc());
-					}
-					else
-						list.Set(w.line, 1, String().Cat() << "FAILED: " << w.http.GetStatusCode() << ' ' << w.http.GetReasonPhrase());
-				work.Remove(i);
+				else {
+					failed.Add(w.url, w.http.IsError() ? String().Cat() << w.http.GetErrorDesc()
+					                                   : String().Cat() << w.http.GetStatusCode()
+					                                     << ' ' << w.http.GetReasonPhrase());
+					failed.HeaderTab(0).SetText(Format("failed (%d)", failed.GetCount()));
+				}
+				http.Remove(i);
+				work.Remove(q);
 			}
 		}
 	}
@@ -98,10 +105,14 @@ void WebSpider::Run()
 
 WebSpider::WebSpider()
 {
-	Title("WebSpider");
-	list.AddColumn("URL");
-	list.AddColumn("Status");
-	Add(list.SizePos());
+	CtrlLayout(*this, "WebSpider");
+	work.AddColumn("URL");
+	work.AddColumn("Status");
+	success.AddColumn("Success");
+	success.AddColumn("Response");
+	failed.AddColumn("Failed");
+	failed.AddColumn("Reason");
+	total = 0;
 	Zoomable().Sizeable();
 }
 

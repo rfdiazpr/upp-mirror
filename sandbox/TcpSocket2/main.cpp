@@ -1,4 +1,4 @@
-#include <Core/Core.h>
+#include "HttpRequest2.h"
 
 using namespace Upp;
 
@@ -23,17 +23,27 @@ CONSOLE_APP_MAIN
 
 //	HttpRequest h("www.ultimatepp.org"); // Normal
 
-	DDUMP(Encode64("hello world!"));
-	DDUMP(Base64Encode("hello world!"));
-
 	HttpRequest::Trace();
+	
+	if(0) {
+		IpAddrInfo f;
+		f.Start("www.ultimatepp.org", 80);
+		while(f.InProgress()) {
+			DDUMP(msecs());
+			Sleep(1);
+		}
+		DDUMP((void *)f.GetResult());
+		DDUMP(f.Execute("www.google.cz", 80));
+		DDUMP((void *)f.GetResult());
+		return;
+	}
 
 	if(1) {
 		HttpRequest h("www.google.cz/search"); // Normal
-		h.Timeout(0);
+		h.Timeout(Null);
 		DDUMP(h.Execute());
 	}
-	if(0) {
+	if(1) {
 		HttpRequest h("www.ultimatepp.org"); // Normal
 		h.Timeout(0);
 		DDUMP(h.Execute());

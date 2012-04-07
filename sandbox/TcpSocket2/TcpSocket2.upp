@@ -3,12 +3,10 @@ uses
 
 file
 	HttpRequest2.h,
-	HttpRequest2.cpp,
-	NetAddressInfo.h,
 	NetAddressInfo.cpp,
 	main.cpp,
 	todo.txt;
 
 mainconfig
-	"" = "SSE2";
+	"" = "SSE2 MT";
 

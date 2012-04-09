@@ -39,11 +39,17 @@ CONSOLE_APP_MAIN
 	}
 
 	if(1) {
+		HttpRequest h("https://www.google.cz/");
+		h.Timeout(Null);
+		DDUMP(h.Execute());
+	}
+
+	if(0) {
 		HttpRequest h("www.google.cz/search"); // Normal
 		h.Timeout(Null);
 		DDUMP(h.Execute());
 	}
-	if(1) {
+	if(0) {
 		HttpRequest h("www.ultimatepp.org"); // Normal
 		h.Timeout(0);
 		DDUMP(h.Execute());

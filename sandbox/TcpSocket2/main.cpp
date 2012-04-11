@@ -38,9 +38,24 @@ CONSOLE_APP_MAIN
 		return;
 	}
 
+	
+
+
 	if(1) {
-		HttpRequest h("https://www.google.cz/");
-		h.Timeout(Null);
+		HttpRequest h("http://aasoucekcar.cz/");
+		h.Timeout(10);
+		DDUMP(h.Execute());
+	}
+
+//		HttpRequest h("http://www.drevostavby.cz/cz/");
+//		HttpRequest h("http://Copypartner.cz/servis-tiskaren");// http://www.heckl.cz/
+//		HttpRequest h("http://url.hurra.com/cgi-local/ProxyUrl.cgi?ad_id=1628942305&kw={Keyword}&GOOGLE_TYPE={ifsearch:SEARCH}{ifcontent:CONTENT}&GOOGLE_PLACEMENT={placement}");
+//		HttpRequest h("http://www.abaut.cz/kotevni-technika-3");
+//		h.Header("Cookie", "PHPSESSID=Bi7l7Q5opolAjS3tAHtIO4CWxbM9QQOx6sRiVRs_sNC4xLxW1N3f-pQWCMiNqT7b; path=/");
+//		HttpRequest h("http://insolvence.jex.cz/");
+
+	if(0) {
+		HttpRequest h("http://www.insolvence.jex.cz/");
 		DDUMP(h.Execute());
 	}
 

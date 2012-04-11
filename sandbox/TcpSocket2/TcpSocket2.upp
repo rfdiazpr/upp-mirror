@@ -1,6 +1,5 @@
 uses
-	Core,
-	Core\SSL;
+	Core;
 
 file
 	HttpRequest2.h,

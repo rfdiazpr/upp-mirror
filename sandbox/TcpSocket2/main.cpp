@@ -41,8 +41,9 @@ CONSOLE_APP_MAIN
 	
 
 
-	if(0) {
-		HttpRequest h("http://aasoucekcar.cz/");
+	if(1) {
+		
+		HttpRequest h("http://www.moto-brzdy.cz/produkty/");
 		h.Timeout(10);
 		DDUMP(h.Execute());
 	}
@@ -59,7 +60,7 @@ CONSOLE_APP_MAIN
 		DDUMP(h.Execute());
 	}
 
-	if(1) {
+	if(0) {
 		HttpRequest h("https://www.google.cz/search"); // Normal
 		h.Timeout(Null);
 		DDUMP(h.Execute());

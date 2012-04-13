@@ -42,12 +42,17 @@ CONSOLE_APP_MAIN
 
 
 	if(1) {
-		
-		HttpRequest h("http://www.moto-brzdy.cz/produkty/");
-		h.Timeout(10);
+		HttpRequest h(
+			"http://www.koupelny-instalace.cz/"
+		);
+//		h.Accept("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+//		h.Header("Accept-Language", "cs,en-us;q=0.7,en;q=0.3");
+		h.UserAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20100101 Firefox/11.0");
 		DDUMP(h.Execute());
+		DDUMP(h.GetContent());
 	}
 
+//			"http://www.moto-brzdy.cz/produkty/"
 //		HttpRequest h("http://www.drevostavby.cz/cz/");
 //		HttpRequest h("http://Copypartner.cz/servis-tiskaren");// http://www.heckl.cz/
 //		HttpRequest h("http://url.hurra.com/cgi-local/ProxyUrl.cgi?ad_id=1628942305&kw={Keyword}&GOOGLE_TYPE={ifsearch:SEARCH}{ifcontent:CONTENT}&GOOGLE_PLACEMENT={placement}");

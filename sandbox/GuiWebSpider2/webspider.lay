@@ -1,0 +1,6 @@
+LAYOUT(SpiderLayout, 680, 504)
+	ITEM(ArrayCtrl, failed, HSizePosZ(320, 4).VSizePosZ(4, 4))
+	ITEM(ArrayCtrl, success, LeftPosZ(4, 312).TopPosZ(4, 244))
+	ITEM(ArrayCtrl, notfound, LeftPosZ(4, 312).BottomPosZ(4, 248))
+END_LAYOUT
+

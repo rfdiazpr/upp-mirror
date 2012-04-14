@@ -38,18 +38,44 @@ CONSOLE_APP_MAIN
 		return;
 	}
 
-	
-
-
 	if(1) {
 		HttpRequest h(
-			"http://www.koupelny-instalace.cz/"
+			"https://www.google.cz/search"
+		);
+		h.Timeout(0);
+		h.SSLProxy("90.182.182.154");
+		DDUMP(h.Execute());
+	}
+
+
+	if(0) {
+		HttpRequest h(
+//			"http://dev.w3.org/cvsweb/html5/spec/Overview.html"
+//		    "https://www.servis24.cz"
+//			"http://en.wordpress.com/"
+			"https://www.google.cz/search"
+//			"http://www.koupelny-instalace.cz/"
 		);
 //		h.Accept("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
 //		h.Header("Accept-Language", "cs,en-us;q=0.7,en;q=0.3");
 		h.UserAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20100101 Firefox/11.0");
+		h.Timeout(0);
 		DDUMP(h.Execute());
-		DDUMP(h.GetContent());
+		DDUMP(h.GetContent().GetCount());
+		
+//		DDUMP(h.GetContent());
+		const SSLInfo *f = h.GetSSLInfo();
+		if(f) {
+			DUMP(f->cipher);
+			DUMP(f->cert_avail);
+			DUMP(f->cert_verified);
+			DUMP(f->cert_subject);
+			DUMP(f->cert_issuer);
+			DUMP(f->cert_notbefore);
+			DUMP(f->cert_notafter);
+			DUMP(f->cert_version);
+			DUMP(f->cert_serial);
+		}
 	}
 
 //			"http://www.moto-brzdy.cz/produkty/"

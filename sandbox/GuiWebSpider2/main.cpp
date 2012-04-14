@@ -2,7 +2,7 @@
 
 using namespace Upp;
 
-#define LAYOUTFILE <GuiWebSpider/webspider.lay>
+#define LAYOUTFILE <GuiWebSpider2/webspider.lay>
 #include <CtrlCore/lay.h>
 
 struct WebSpider : public WithSpiderLayout<TopWindow> {
@@ -17,6 +17,9 @@ struct WebSpider : public WithSpiderLayout<TopWindow> {
 	int64            total;
 	
 	void ExtractUrls(const String& html);
+	void Url(ArrayCtrl *a);
+	
+	typedef WebSpider CLASSNAME;
 
 public:
 	void Run();
@@ -65,8 +68,6 @@ void WebSpider::Run()
 			w.http.Url(url)
 			      .UserAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20100101 Firefox/11.0")
 			      .Timeout(0);
-			work.Add(url);
-			work.HeaderTab(0).SetText(Format("URL (%d)", work.GetCount()));
 		}
 		SocketWaitEvent we;
 		for(int i = 0; i < http.GetCount(); i++)
@@ -76,10 +77,7 @@ void WebSpider::Run()
 		while(i < http.GetCount()) {
 			Work& w = http[i];
 			w.http.Do();
-			int q = work.Find(w.url);
 			if(w.http.InProgress()) {
-				if(q >= 0)
-					work.Set(q, 1, w.http.GetPhaseName());
 				i++;
 			}
 			else {
@@ -93,34 +91,45 @@ void WebSpider::Run()
 					ExtractUrls(html);
 				}
 				else {
-					failed.Add(w.url, w.http.IsError() ? String().Cat() << w.http.GetErrorDesc()
-					                                   : String().Cat() << w.http.GetStatusCode()
-					                                     << ' ' << w.http.GetReasonPhrase());
-					failed.HeaderTab(0).SetText(Format("failed (%d)", failed.GetCount()));
+					ArrayCtrl& f = w.http.GetStatusCode() == 404 ? notfound : failed;
+					f.Add(w.url, w.http.IsError() ? String().Cat() << w.http.GetErrorDesc()
+					                              : String().Cat() << w.http.GetStatusCode()
+					                                               << ' '
+					                                               << w.http.GetReasonPhrase());
+					f.HeaderTab(0).SetText(Format("failed (%d)", f.GetCount()));
 				}
 				http.Remove(i);
-				work.Remove(q);
 			}
 		}
+	}
+}
+
+void WebSpider::Url(ArrayCtrl *a)
+{
+	String url = a->GetKey();
+	if(url.GetCount()) {
+		WriteClipboardText(url);
+		LaunchWebBrowser(url);
 	}
 }
 
 WebSpider::WebSpider()
 {
 	CtrlLayout(*this, "WebSpider");
-	work.AddColumn("URL");
-	work.AddColumn("Status");
 	success.AddColumn("Success");
 	success.AddColumn("Response");
+	success.WhenLeftDouble = THISBACK1(Url, &success);
+	notfound.AddColumn("Not found");
+	notfound.AddColumn("Reason");
+	notfound.WhenLeftDouble = THISBACK1(Url, &notfound);
 	failed.AddColumn("Failed");
 	failed.AddColumn("Reason");
+	failed.WhenLeftDouble = THISBACK1(Url, &failed);
 	total = 0;
 	Zoomable().Sizeable();
 }
 
 GUI_APP_MAIN
 {
-	HttpRequest::Trace();
-
 	WebSpider().Run();
 }

@@ -53,6 +53,8 @@ void WebSpider::ExtractUrls(const String& html)
 void WebSpider::Run()
 {
 	String seed = "www.ultimatepp.org";
+	if(!EditText(seed, "GuiWebSpider", "Seed URL"))
+		return;
 	todo.AddTail(seed);
 	done.Add(seed);
 	Open();

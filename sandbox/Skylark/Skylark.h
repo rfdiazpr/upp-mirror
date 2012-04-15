@@ -1,7 +1,6 @@
 #ifndef _Wpp_Wpp_h
 #define _Wpp_Wpp_h
 
-#include <Web/Web.h>
 #include <Draw/Draw.h>
 #include <plugin/png/png.h>
 #include <plugin/jpg/jpg.h>
@@ -13,9 +12,9 @@ using namespace Upp;
 #include "Http.h"
 
 class SkylarkApp {
-	Socket server;
-	Mutex  accept_mutex;
-	void   ThreadRun();
+	TcpSocket server;
+	Mutex     accept_mutex;
+	void      ThreadRun();
 	
 	typedef SkylarkApp CLASSNAME;
 

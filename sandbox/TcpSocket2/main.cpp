@@ -42,8 +42,8 @@ CONSOLE_APP_MAIN
 		HttpRequest h(
 			"https://www.google.cz/search"
 		);
-		h.Timeout(0);
-		h.SSLProxy("90.182.182.154");
+//		h.Timeout(0);
+//		h.SSLProxy("90.182.182.154");
 		DDUMP(h.Execute());
 	}
 

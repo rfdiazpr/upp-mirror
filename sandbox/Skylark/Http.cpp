@@ -3,18 +3,11 @@
 #define LLOG(x) LOG(x)
 #define LTIMING(x) RTIMING(x)
 
-static String ReadLine(Socket& s)
-{
-	String t = s.ReadUntil('\n');
-	if(*t.Last() == '\r')
-		t.Trim(t.GetCount() - 1);
-	LLOG(t);
-	return t;
-}
-
-bool Http::Read(Socket& http)
+bool Http::Read(TcpSocket& http)
 { // Add length sanity check here...
-	String s = ReadLine(http);
+	String s = http.GetLine();
+	if(s.IsVoid())
+		return false;
 	Vector<String> h = Split(s, ' '); // Optimize!
 	if(h.GetCount() != 3)
 		return false;
@@ -23,7 +16,9 @@ bool Http::Read(Socket& http)
 	version = h[2];
 	hdrfield.Clear();
 	for(;;) {
-		s = ReadLine(http);
+		s = http.GetLine();
+		if(s.IsVoid())
+			return false;
 		if(s.IsEmpty()) break;
 		int q = s.Find(':');
 		if(q >= 0)

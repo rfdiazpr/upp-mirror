@@ -253,12 +253,12 @@ void GetBestDispatch(int method,
 	}
 }
 
-void Http::Dispatch(Socket& socket)
+void Http::Dispatch(TcpSocket& socket)
 {
 	Vector<DispatchNode>& DispatchMap = sDispatchMap();
 	if(Read(socket)) {
 		int len = GetLength();
-		content = socket.ReadCount(len);
+		content = socket.GetAll(len);
 		LLOG(content);
 		Cout() << method << " " << uri << "\n";
 		String r;
@@ -358,7 +358,7 @@ void Http::Dispatch(Socket& socket)
 				r << "\r\n";
 			}
 		}
-		socket.Write(r);
-		socket.Write(response);
+		socket.PutAll(r);
+		socket.PutAll(response);
 	}
 }

@@ -51,7 +51,7 @@ struct Http : Renderer {
 	
 	int    benchmark;
 	
-	bool   Read(Socket& http);
+	bool   Read(TcpSocket& http);
 	
 	void   ParseRequest(const char *s);
 	void   ReadMultiPart(const String& content);
@@ -71,7 +71,7 @@ public:
 	Http&  Render(const char *id, const String& template_name) { Renderer::Render(id, template_name); return *this; }
 	Value  Render(const String& template_name)         { return Renderer::Render(template_name); }
 
-	void   Dispatch(Socket& socket);
+	void   Dispatch(TcpSocket& socket);
 
 	String GetHeader(const char *s) const              { return hdrfield.Get(s, Null); }
 	int    GetLength() const                           { return atoi(GetHeader("content-length")); }

@@ -1,5 +1,4 @@
 uses
-	Web,
 	Draw,
 	plugin\png,
 	plugin\jpg,

@@ -33,13 +33,13 @@ void SkylarkApp::RunThread()
 	SQLR.GetSession().ThrowOnError();
 
 	for(;;) {
-		Socket request;
+		TcpSocket request;
 		accept_mutex.Enter();
 		if(Exit) {
 			accept_mutex.Leave();
 			break;
 		}
-		bool b = server.Accept(request);
+		bool b = request.Timeout(2000).Accept(server);
 		accept_mutex.Leave();
 		if(Exit)
 			break;
@@ -64,7 +64,7 @@ void SkylarkApp::Run(int threads)
 	SetConsoleCtrlHandler(CtrlCHandlerRoutine, true);
 #endif
 
-	if(!ServerSocket(server, Port, true, 5)) {
+	if(!server.Listen(Port, 5)) {
 		Cout() << "Cannot open server socket!\n";
 		return;
 	}

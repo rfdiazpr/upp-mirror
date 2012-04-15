@@ -40,7 +40,8 @@ CONSOLE_APP_MAIN
 
 	if(1) {
 		HttpRequest h(
-			"https://www.google.cz/search"
+//			"https://www.google.cz/search"
+			"www.ultimatepp.com"
 		);
 //		h.Timeout(0);
 //		h.SSLProxy("90.182.182.154");

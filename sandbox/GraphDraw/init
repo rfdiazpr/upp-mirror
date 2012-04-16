@@ -1,0 +1,5 @@
+#ifndef _GraphDraw_icpp_init_stub
+#define _GraphDraw_icpp_init_stub
+#include "Painter/init"
+#include "ScatterDraw/init"
+#endif

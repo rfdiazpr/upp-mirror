@@ -1,0 +1,18 @@
+description "Graph drawing\377";
+
+uses
+	Painter,
+	ScatterDraw;
+
+file
+	CoordinateConverter.h,
+	GraphDraw.cpp,
+	GraphDraw.h,
+	GraphFunctions.h,
+	GridStepIterator.h,
+	GraphDraw.iml,
+	SeriesConfig.h,
+	SeriesGroup.h,
+	GraphElement.h,
+	GraphFunctions.h;
+

@@ -1,0 +1,6 @@
+LAYOUT(GraphDraw_testLayout, 664, 444)
+	ITEM(MyGraphCtrl, g4, HSizePosZ(4, 4).VSizePosZ(280, 4))
+	ITEM(MyGraphCtrl, g3, HSizePosZ(212, 4).TopPosZ(4, 272))
+	ITEM(MyGraphCtrl, g1, LeftPosZ(4, 204).TopPosZ(4, 272))
+END_LAYOUT
+

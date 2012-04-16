@@ -1,0 +1,17 @@
+description "GRaphics display control\377";
+
+uses
+	CtrlLib,
+	Painter,
+	ScatterDraw,
+	GraphDraw;
+
+file
+	GraphCtrl.iml,
+	GraphCtrl.lay,
+	GraphCtrl.h,
+	GraphCtrl.cpp;
+
+mainconfig
+	"" = "GUI SSE2";
+

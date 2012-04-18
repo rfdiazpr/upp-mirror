@@ -21,8 +21,8 @@ void ScatterCtrl::SaveAsMetafile(const char* file)
 {
 	GuiLock __;
 	WinMetaFileDraw wmfd;	
-	wmfd.Create(6*GetSize().cx,6*GetSize().cy,"ScatterCtrl","chart",file);
-	SetDrawing<Draw>(wmfd, 6);	
+	wmfd.Create(copyRatio*GetSize().cx, copyRatio*GetSize().cy, "ScatterCtrl", "chart", file);
+	SetDrawing<Draw>(wmfd, copyRatio);	
 	wmfd.Close();	
 }
 
@@ -31,12 +31,12 @@ void ScatterCtrl::SaveToClipboard(bool saveAsMetafile)
 	GuiLock __;
 	if (saveAsMetafile) {
 		WinMetaFileDraw wmfd;	
-		wmfd.Create(6*GetSize().cx,6*GetSize().cy, "ScatterCtrl", "chart");
-		SetDrawing<Draw>(wmfd, 6);	
+		wmfd.Create(copyRatio*GetSize().cx, copyRatio*GetSize().cy, "ScatterCtrl", "chart");
+		SetDrawing<Draw>(wmfd, copyRatio);	
 		WinMetaFile wmf = wmfd.Close();	 
 		wmf.WriteClipboard();
 	} else {
-		Image img = GetImage(3);
+		Image img = GetImage(copyRatio);
 		WriteClipboardImage(img);	
 	}
 }
@@ -45,7 +45,7 @@ void ScatterCtrl::SaveToClipboard(bool saveAsMetafile)
 void ScatterCtrl::SaveToClipboard(bool) 
 {
 	GuiLock __;
-	Image img = GetImage(3);
+	Image img = GetImage(copyRatio);
 	WriteClipboardImage(img);
 }
 
@@ -73,11 +73,11 @@ ScatterCtrl &ScatterCtrl::ShowInfo(bool show)
 void ScatterCtrl::ProcessPopUp(const Point & pt)
 {
 	double _x  = (popLT.x - hPlotLeft)*xRange/(GetSize().cx - (hPlotLeft + hPlotRight)-1) + xMin;		
-	double _y  = (GetSize().cy - vPlotTop-popLT.y-1)*yRange/(GetSize().cy - 2*(vPlotTop + vPlotBottom) - titleFont.GetHeight()-1) + yMin;
-	double _y2 = (GetSize().cy - vPlotTop-popLT.y-1)*yRange2/(GetSize().cy - 2*(vPlotTop + vPlotBottom) - titleFont.GetHeight()-1) + yMin2;
+	double _y  = -(popLT.y - vPlotTop - titleFont.GetHeight())*yRange/(GetSize().cy - (vPlotTop + vPlotBottom + titleFont.GetHeight())+1) + yMin + yRange;		
+	double _y2 = -(popLT.y - vPlotTop - titleFont.GetHeight())*yRange2/(GetSize().cy - (vPlotTop + vPlotBottom + titleFont.GetHeight())+1) + yMin2 + yRange2;		
 	double x   = (pt.x - hPlotLeft)*xRange/(GetSize().cx - (hPlotLeft + hPlotRight)-1) + xMin;		
-	double y   = (GetSize().cy - vPlotTop - pt.y-1)*yRange/(GetSize().cy - 2*(vPlotTop + vPlotBottom) - titleFont.GetHeight()-1) + yMin;
-	double y2  = (GetSize().cy - vPlotTop - pt.y-1)*yRange2/(GetSize().cy - 2*(vPlotTop + vPlotBottom) - titleFont.GetHeight()-1) + yMin2;
+	double y   = -(pt.y - vPlotTop - titleFont.GetHeight())*yRange/(GetSize().cy - (vPlotTop + vPlotBottom + titleFont.GetHeight())+1) + yMin + yRange;		
+	double y2  = -(pt.y - vPlotTop - titleFont.GetHeight())*yRange2/(GetSize().cy - (vPlotTop + vPlotBottom + titleFont.GetHeight())+1) + yMin2 + yRange2;		
 	
 	double dx  = x  - _x;
 	double dy  = y  - _y;
@@ -146,7 +146,7 @@ void ScatterCtrl::ProcessPopUp(const Point & pt)
 		if (stry2 != _stry2)		
 			str << "; " + popTextY2 + ": " + stry2 + "; Δ" + popTextY2 + ": " + dstry2;
 	}
-	const Point p2 = pt+offset;
+	const Point p2 = pt + offset;
 	popText.SetText(str).Move(this,p2.x,p2.y);
 }
 
@@ -345,7 +345,9 @@ void ScatterCtrl::MouseZoom(int zdelta, bool hor, bool ver)
 
 Image ScatterCtrl::CursorImage(Point p, dword keyflags)
 {
-	return ScatterImg::cursor1();
+	if (paintInfo)
+		return ScatterImg::cursor1();
+	return Image::Arrow();
 }
 
 ScatterCtrl &ScatterCtrl::SetMouseHandling(bool valx, bool valy) 
@@ -370,10 +372,10 @@ void ScatterCtrl::ContextMenu(Bar& bar)
 		bar.Separator();
 	}
 	bar.Add(t_("Copy"), ScatterImg::Copy(), 		THISBACK1(SaveToClipboard, false)).Key(K_CTRL_C);
-	bar.Add(t_("Save to file"), ScatterImg::Save(), THISBACK1(SaveToImage, Null));
+	bar.Add(t_("Save to file"), ScatterImg::Save(), THISBACK1(SaveToFile, Null));
 }
 
-void ScatterCtrl::SaveToImage(String fileName)
+void ScatterCtrl::SaveToFile(String fileName)
 {
 	GuiLock __;
 	if (IsNull(fileName)) {
@@ -389,10 +391,10 @@ void ScatterCtrl::SaveToImage(String fileName)
 	} 
 	if (GetFileExt(fileName) == ".png") {
 		PNGEncoder encoder;
-		encoder.SaveFile(fileName, GetImage(3));
+		encoder.SaveFile(fileName, GetImage(copyRatio));
 	} else if (GetFileExt(fileName) == ".jpg") {	
 		JPGEncoder encoder(90);
-		encoder.SaveFile(fileName, GetImage(3));		
+		encoder.SaveFile(fileName, GetImage(copyRatio));		
 	} else
 		Exclamation(Format(t_("File format \"%s\" not found"), GetFileExt(fileName)));
 }
@@ -408,8 +410,7 @@ void ScatterCtrl::InsertSeries(int id, ArrayCtrl &data, bool useCols, int idX, i
 	InsertSeries<ArrayCtrlSource>(id, data, useCols, idX, idY, beginData, numData);
 }
 
-ScatterCtrl::ScatterCtrl()
-:	offset(10,12)
+ScatterCtrl::ScatterCtrl() : offset(10,12), copyRatio(3)
 {
 	paintInfo = mouseHandlingX = mouseHandlingY = isScrolling = isLabelPopUp = false;
 	popTextX = "x";

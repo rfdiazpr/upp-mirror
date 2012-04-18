@@ -12,5 +12,6 @@ file
 	ScatterCtrl.usc,
 	ScatterCtrl.iml,
 	PopUpText.cpp,
-	PopUpText.h;
+	PopUpText.h,
+	src.tpp;
 

@@ -113,7 +113,7 @@ public:
 	void SaveAsMetafile(const char* file);
 #endif	
 	void SaveToClipboard(bool saveAsMetafile = false);
-	void SaveToImage(String fileName = Null);
+	void SaveToFile(String fileName = Null);
 	
 	virtual void Refresh() {Ctrl::Refresh();};
 	virtual Size GetSize() const {return Ctrl::GetSize();};
@@ -145,6 +145,9 @@ public:
 	using ScatterDraw::InsertSeries; 
 	void InsertSeries(int id, ArrayCtrl &data, bool useCols = true, int idX = 0, int idY = 1, int idZ = 2, int beginData = 0, int numData = Null);	
 	
+	void SetCopyRatio(int ratio)		{copyRatio = ratio;}
+	int GetCopyRatio()					{return copyRatio;}
+	
 private:
 	bool paintInfo;
 	Point clickPoint;
@@ -152,6 +155,7 @@ private:
 	String popTextX, popTextY, popTextY2;
 	Point popLT, popRB;
 	const Point offset;
+	int copyRatio;
 
 	int butDownX, butDownY;
 	bool isScrolling, isLabelPopUp;

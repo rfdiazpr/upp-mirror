@@ -29,5 +29,5 @@ ScatterDemo *Construct9()
 }
 
 INITBLOCK {
-	RegisterExample("Big dataset", Construct9);
+	RegisterExample("Big dataset", Construct9, __FILE__);
 }

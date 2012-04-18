@@ -28,5 +28,5 @@ ScatterDemo *Construct2()
 }
 
 INITBLOCK {	
-	RegisterExample("Functions", Construct2);
+	RegisterExample("Functions", Construct2, __FILE__);
 }

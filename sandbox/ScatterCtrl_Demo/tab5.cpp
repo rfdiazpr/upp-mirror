@@ -83,5 +83,5 @@ ScatterDemo *Construct5()
 }
 
 INITBLOCK {
-	RegisterExample("Dynamic", Construct5);
+	RegisterExample("Dynamic", Construct5, __FILE__);
 }

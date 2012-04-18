@@ -38,5 +38,5 @@ ScatterDemo *Construct8()
 }
 
 INITBLOCK {
-	RegisterExample("Secondary Y", Construct8);
+	RegisterExample("Secondary Y", Construct8, __FILE__);
 }

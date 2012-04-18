@@ -45,5 +45,5 @@ ScatterDemo *Construct1()
 }
 
 INITBLOCK {
-	RegisterExample("Basic", Construct1);
+	RegisterExample("Basic", Construct1, __FILE__);
 }

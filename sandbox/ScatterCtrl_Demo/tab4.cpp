@@ -28,5 +28,5 @@ ScatterDemo *Construct4()
 }
 
 INITBLOCK {
-	RegisterExample("Formatting", Construct4);
+	RegisterExample("Formatting", Construct4, __FILE__);
 }

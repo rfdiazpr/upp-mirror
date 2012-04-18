@@ -27,5 +27,5 @@ ScatterDemo *Construct6()
 }
 
 INITBLOCK {
-	RegisterExample("Log", Construct6);
+	RegisterExample("Log", Construct6, __FILE__);
 }

@@ -41,5 +41,5 @@ ScatterDemo *Construct3()
 }
 
 INITBLOCK {
-	RegisterExample("Parametric Functions", Construct3);
+	RegisterExample("Parametric Functions", Construct3, __FILE__);
 }

@@ -11,6 +11,7 @@
 struct Example {
 	ScatterDemo* (*ctrl)();
 	String name;
+	int index;
 };
 
 Array<Example>& Examples()
@@ -19,16 +20,19 @@ Array<Example>& Examples()
 	return x;
 };
 
-void RegisterExample(const char *name, ScatterDemo* (*ctrl)())
+void RegisterExample(const char *name, ScatterDemo* (*ctrl)(), String fileName)
 {
 	Example& x = Examples().Add();
 	x.name = name;
 	x.ctrl = ctrl;
+	x.index = ScanInt(GetFileName(fileName).Mid(3, 2));
 }
 
-	
+bool CompareExamples(Example &a, Example &b) {return a.index < b.index;}
+
 GUI_APP_MAIN
 {
+	Sort(Examples(), CompareExamples);
 	for (int i = 0; i < Examples().GetCount(); ++i)
 		Examples()[i].ctrl()->Init();
 
@@ -78,14 +82,14 @@ void ScatterCtrl_Demo::SavePNG()
 {
 	int ntab = tab.Get();	
 	
-	Examples()[ntab].ctrl()->Scatter().SaveToImage(Format("scatter%d.png", ntab));	
+	Examples()[ntab].ctrl()->Scatter().SaveToFile(Format("scatter%d.png", ntab));	
 }
 
 void ScatterCtrl_Demo::SaveJPG()
 {
 	int ntab = tab.Get();	
 	
-	Examples()[ntab].ctrl()->Scatter().SaveToImage(Format("scatter%d.jpg", ntab));				
+	Examples()[ntab].ctrl()->Scatter().SaveToFile(Format("scatter%d.jpg", ntab));				
 }
 
 #ifdef PLATFORM_WIN32

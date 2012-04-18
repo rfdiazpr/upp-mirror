@@ -18,7 +18,7 @@ struct ScatterDemo : ParentCtrl {
 	virtual ScatterCtrl &Scatter() = 0;
 };
  
-void RegisterExample(const char *name, ScatterDemo* (*ctrl)());
+void RegisterExample(const char *name, ScatterDemo* (*ctrl)(), String fileName);
 
 class Tab1 : public WithTab1<ScatterDemo> {
 public:

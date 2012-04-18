@@ -73,7 +73,7 @@ ScatterDemo *Construct10()
 }
 
 INITBLOCK {
-	RegisterExample("User graph", Construct10);
+	RegisterExample("User graph", Construct10, __FILE__);
 
 	SeriesPlot::Register<MyPlot>("My plot");
 	MarkPlot::Register<MyMark>("My mark");

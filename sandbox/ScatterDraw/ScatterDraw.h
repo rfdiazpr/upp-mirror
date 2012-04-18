@@ -434,6 +434,8 @@ private:
 								   Upp::Array <String> &texts, Upp::Array <Size> &sizes);
 };
 
+void GoBreakpoint();
+
 template <class T>
 void ScatterDraw::SetDrawing(T& w, const int& scale)
 {
@@ -446,7 +448,7 @@ void ScatterDraw::SetDrawing(T& w, const int& scale)
 		Painter &p = (Painter &)w;
 		p.Translate(0, 0.5);
 	}
-	
+
 	Size sz(0, 0); 
 	
 	int titleHeight = !title.IsEmpty() ? scale*titleFont.GetHeight() : 0;
@@ -477,12 +479,12 @@ void ScatterDraw::SetDrawing(T& w, const int& scale)
 	DrawText(w, (plotW - lx.cx)/2., scale*GetSize().cy - lx.cy - 70*scale, 0,   xLabel,  fontLabel, labelsColor);
 	DrawText(w, scale*2. - scale*hPlotLeft,  (plotH + ly.cx)/2., 900, yLabel,  fontLabel, labelsColor);
 	DrawText(w, scale*GetSize().cx - ly2.cy - 42*scale, (plotH + ly2.cx)/2., 900, yLabel2, fontLabel, labelsColor);
-	
+
 	if (typeid(T) == typeid(BufferPainter)) {
 		Painter &p = (Painter &)w;
 		p.Translate(0.5, 0);
 	}
-	
+GoBreakpoint();		
 	if (drawXReticle)
 		for(int i = 0; xMinUnit + i*xMajorUnit <= xRange; i++){
 			w.DrawLine(fround(plotW*xMinUnit/xRange + i*plotW/(xRange/xMajorUnit)), plotH,   
@@ -506,6 +508,7 @@ void ScatterDraw::SetDrawing(T& w, const int& scale)
 							plotH + scale*(4 + ii*cy), 0, texts[ii], standard6, axisColor);
 			}
 		}
+GoBreakpoint();			
 	if (drawYReticle)
 		for(int i = 0; yMinUnit + i*yMajorUnit <= yRange; i++){
 			w.DrawLine(-(scale*4), fround(-plotH*yMinUnit/yRange + plotH - i*plotH/(yRange/yMajorUnit)),
@@ -523,6 +526,7 @@ void ScatterDraw::SetDrawing(T& w, const int& scale)
 			DrawText(w, -dx - scale*6, fround(-plotH*yMinUnit/yRange + plotH - i*plotH/(yRange/yMajorUnit)) - scale*8, 
 						0, gridLabelY, Standard6, axisColor);
 		}	
+GoBreakpoint();			
 	if (drawY2Reticle)
 		for(int i = 0; yMinUnit + i*yMajorUnit <= yRange; i++){
 			w.DrawLine(plotW + (scale*4), fround(-plotH*yMinUnit2/yRange2 + plotH - i*plotH/(yRange/yMajorUnit)),
@@ -539,7 +543,7 @@ void ScatterDraw::SetDrawing(T& w, const int& scale)
 			DrawText(w, plotW + scale*10, fround(-plotH*yMinUnit2/yRange2 + plotH - i*plotH/(yRange/yMajorUnit)) - scale*8, 0, 
 						gridLabelY2, standard6, axisColor);
 		}	
-	
+GoBreakpoint();		
 	Plot(w, scale, plotW, plotH);	
 	ClipEnd(w);	
 }
@@ -568,7 +572,7 @@ void ScatterDraw::Plot(T& w, const int& scale, const int& plotW, const int& plot
 	w.DrawLine(plotW, 0, plotW, plotH + 1, fround(gridWidth*scale), Black);
 	
 	Clip(w, 0, 0, plotW, plotH);
-	
+GoBreakpoint();		
 	if (!series.IsEmpty()) {
 		for (int j = 0; j < series.GetCount(); j++) {
 			if (series[j].opacity == 0 || (!series[j].seriesPlot && !series[j].markPlot))

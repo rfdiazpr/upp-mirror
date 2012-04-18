@@ -211,7 +211,7 @@ void ScatterDraw::AdjustMinUnitX()
 			xMinUnit -= xMajorUnit;
 	}
 }
-
+/*
 void ScatterDraw::AdjustMinUnitY()
 {
 	if (yMajorUnit > 0) {
@@ -229,6 +229,43 @@ void ScatterDraw::AdjustMinUnitY2()
 			yMinUnit2 += yMajorUnit2;	
 		while (yMinUnit2 > yMajorUnit2)
 			yMinUnit2 -= yMajorUnit2;
+	}
+}
+*/
+
+void ScatterDraw::AdjustMinUnitY()
+{
+	if (yMajorUnit > 0) {
+		if (fabs(yMinUnit/yMajorUnit) > 10000000000) 
+			yMinUnit = yMajorUnit;
+		else {
+			while (yMinUnit < 0)
+				yMinUnit += yMajorUnit;	
+		}
+		if (fabs(yMinUnit/yMajorUnit) > 10000000000) 
+			yMinUnit = yMajorUnit;
+		else {
+			while (yMinUnit > yMajorUnit)
+				yMinUnit -= yMajorUnit;
+		}
+	}
+}
+
+void ScatterDraw::AdjustMinUnitY2()
+{
+	if (yMajorUnit2 > 0) {
+		if (fabs(yMinUnit2/yMajorUnit2) > 10000000000) 
+			yMinUnit2 = yMajorUnit2;
+		else {
+			while (yMinUnit2 < 0)
+				yMinUnit2 += yMajorUnit2;	
+		}
+		if (fabs(yMinUnit2/yMajorUnit2) > 10000000000) 
+			yMinUnit2 = yMajorUnit2;
+		else {
+			while (yMinUnit2 > yMajorUnit2)
+				yMinUnit2 -= yMajorUnit2;
+		}
 	}
 }
 
@@ -341,11 +378,18 @@ void ScatterDraw::FitToData(bool vertical) {
 	}
 	if (vertical) {
 		if (miny != -DOUBLE_NULL) {
-			miny = min((miny-yMin)/yRange, (miny2-yMin2)/yRange2);
-			maxy = max((maxy-yMin-yRange)/yRange, (maxy2-yMin2-yRange2)/yRange2);
+			/*
+			if (!IsNull(maxy2)) {
+				miny = min((miny-yMin)/yRange, (miny2-yMin2)/yRange2);
+				maxy = max((maxy-yMin-yRange)/yRange, (maxy2-yMin2-yRange2)/yRange2);
+			} else {
+				miny = (miny-yMin)/yRange;
+				maxy = (maxy-yMin-yRange)/yRange;
+			}
+			
 			miny = miny*yRange + yMin;
 			maxy = maxy*yRange + yMin + yRange;
-			
+			*/
 			double fact = yRange2/yRange;
 			double deltaY = yMin - miny;
 			double deltaY2 = deltaY*fact;

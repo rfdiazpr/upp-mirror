@@ -87,21 +87,24 @@ GraphDraw_test::GraphDraw_test()
 	}
 	g3.CloneTopElement( 20, g3.GetXGridAxisDraw());
 	g3.setGraphSize(0, 100000, -22, +22);
+	g3.CreateLegendElement<LegendElement<MyGraphCtrl::Types>, TOP_OF_GRAPH>( 20 );//.SetBackGndColor( Color(198, 255, 0) );
 	g3.CreateTopElement<GraphDraw_ns::LabelElement>( 30 )
 			.SetLabel("BIG DATA SET")
 			.SetFont(StdFont().Bold().Underline().Height(20))
 			.SetTextColor(Green());
 	g3.CreateRightElement<GraphDraw_ns::BlankAreaElement>( 15 );
 	g3.SetMode( GraphDraw_ns::MD_ANTIALIASED);
-	g3.AddSeries(s1).PlotStyle<LineSeriesPlot>(); //.MarkStyle<TriangleMarkPlot>();
-	g3.AddSeries(s2).MarkStyle<CircleMarkPlot>().SetMarkWidth(1).SetSequential().SetDataThickness(1); //.MarkStyle<TriangleMarkPlot>();
+	g3.AddSeries(s1).PlotStyle<LineSeriesPlot>().Legend("S1"); //.MarkStyle<TriangleMarkPlot>();
+	g3.AddSeries(s2).MarkStyle<CircleMarkPlot>().Legend("S2").SetMarkWidth(1).SetSequential().SetDataThickness(1); //.MarkStyle<TriangleMarkPlot>();
 	g3.AddSeries(&funct1).Legend("sin(x/1000.0)*10.0").MarkStyle<CircleMarkPlot>().SetMarkWidth(1).SetDataThickness(1).SetMarkColor(Black());
+//	g3.CreateLegendElement<LegendElement<MyGraphCtrl::Types>, RIGHT_OF_GRAPH>( 90 );//.SetBackGndColor( Color(198, 255, 0) );
 
 
 
 	// ================ G4 ================
 	g4.CloneTopElement( 20, g4.GetXGridAxisDraw() );
 	g4.CreateElement<ExclusionAreaDraw<MyGraphCtrl::Types>, OVER_GRAPH>(0, g4.GetXCoordConverter(), g4.GetYCoordConverter() );
+	g4.CreateLegendElement<LegendElement<MyGraphCtrl::Types>, TOP_OF_GRAPH>( 20 );//.SetBackGndColor( Color(198, 255, 0) );
 	g4.CreateElement<GraphDraw_ns::LabelElement, TOP_OF_GRAPH>( 50 )
 			.SetLabel("This is the title")
 			.SetFont(StdFont().Bold().Underline().Height(30))
@@ -121,11 +124,22 @@ GraphDraw_test::GraphDraw_test()
 	g4.AddSeries(points2).PlotStyle<LineSeriesPlot>().Legend("S2");; // tied to last X/Y  coordConverters ==> X / Y2
 	g4.SetMode( GraphDraw_ns::MD_SUBPIXEL );
 
-	LegendElement<MyGraphCtrl::Types>& legend = g4.CreateElement<LegendElement<MyGraphCtrl::Types>, OVER_GRAPH>(100)
-   				 .SetLegend("[ [ [*/_R@5$(229)0 This ][*/_`R@6$(229)0 is][*/_R@5$(229)0  ][*/_,R@(255.0.255)$(229)0 the][*/_R@5$(229)0  ][*/_cR@5$(229)0 Title]]");
-	legend.SetFrame( Rect(Point(100,100), Size(350, 30)) );
-	legend.SetBackGndColor( Color(198, 255, 0) );
+//	LegendElement<MyGraphCtrl::Types>& legend = g4.CreateElement<LegendElement<MyGraphCtrl::Types>, OVER_GRAPH>(100)
+//   				 .SetLegend("[ [ [*/_R@5$(229)0 This ][*/_`R@6$(229)0 is][*/_R@5$(229)0  ][*/_,R@(255.0.255)$(229)0 the][*/_R@5$(229)0  ][*/_cR@5$(229)0 Title]]");
+//	legend.SetFrame( Rect(Point(100,100), Size(350, 30)) );
+//	legend.SetBackGndColor( Color(198, 255, 0) );
 
+	g4.CreateLegendElement<LegendElement<MyGraphCtrl::Types>, RIGHT_OF_GRAPH>( 90 );//.SetBackGndColor( Color(198, 255, 0) );
+	LegendElement<MyGraphCtrl::Types>& legend = g4.CreateLegendElement<LegendElement<MyGraphCtrl::Types>, OVER_GRAPH>( 120 );
+	legend.SetFrame( Rect(Point(100,100), Size(350, 30)) );
+	RGBA rgba;
+	
+	rgba.r=90;
+	rgba.g=90;
+	rgba.b=0;
+	rgba.a=90;
+	legend.SetBackGndColor( rgba );
+//	legend.SetBackGndColor(  );
 }
 
 

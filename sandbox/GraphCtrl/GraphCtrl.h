@@ -105,8 +105,9 @@ class GraphCtrlBase : public TYPES::TypeGraphDraw_base, public Ctrl
 
 	void Paint2(Draw& w) {
 		setScreenSize( GetSize() );
-		if (_GD::_mode == GraphDraw_ns::MD_DRAW)
+		if (_GD::_mode == GraphDraw_ns::MD_DRAW) {
 			_GD::Paint(w, 1);
+		}
 		else {
 			ImageBuffer ib(GetSize());
 			BufferPainter bp(ib, _GD::_mode);
@@ -487,6 +488,7 @@ struct GraphCtrlDefaultTypes {
 		typedef StdGridAxisDrawCtrl<GraphCtrlDefaultTypes>                      TypeGridAxisDraw;
 		typedef GraphDraw_ns::GridStepManager<TypeCoordConverter>               TypeGridStepManager;
 		typedef GraphDraw_ns::SeriesConfig<GraphCtrlDefaultTypes>               TypeSeriesConfig;
+		typedef Vector<TypeSeriesConfig>                                        TypeVectorSeries;
 		typedef GraphDraw_ns::StdGraphDraw<GraphCtrlDefaultTypes>               TypeGraphDraw_base;
 		typedef TypeGraphDraw_base                                              TypeGraphDraw;
 };

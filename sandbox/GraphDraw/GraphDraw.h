@@ -305,6 +305,7 @@ namespace GraphDraw_ns
 		}
 
 
+
 		template<class T, int POS_OF_GRAPH>
 		CLASSNAME& AddElement(T& v) {
 				switch(POS_OF_GRAPH){
@@ -363,6 +364,23 @@ namespace GraphDraw_ns
 		template<class T>	T& CloneBottomElement(int elementWidth, T& p) { return CloneElement<T, BOTTOM_OF_GRAPH>(elementWidth, p); }
 		template<class T>	T& CloneOverElement(T& p)   { return CloneElement<OVER_GRAPH>(0, p); }
 
+		template<class T, int POS_OF_GRAPH>
+		T& CreateLegendElement(int elementWidth) {
+			T* e = new T();
+			e->SetSeries(TypeSeriesGroup::series);
+			e->SetElementWidth(elementWidth);
+			e->_parent = this;
+			_createdElements << e; // to manage object destruction
+			AddElement<T, POS_OF_GRAPH>(*e);
+			return *e;
+		}
+		template<class T>	T& CreateLeftLegendElement(int elementWidth)   { return CreateLegendElement<T, LEFT_OF_GRAPH>(elementWidth); }
+		template<class T>	T& CreateRightLegendElement(int elementWidth)  { return CreateLegendElement<T, RIGHT_OF_GRAPH>(elementWidth); }
+		template<class T>	T& CreateTopLegendElement(int elementWidth)    { return CreateLegendElement<T, TOP_OF_GRAPH>(elementWidth); }
+		template<class T>	T& CreateBottomLegendElement(int elementWidth) { return CreateLegendElement<T, BOTTOM_OF_GRAPH>(elementWidth); }
+		template<class T>	T& CreateOverLegendElement()                   { return CreateLegendElement<OVER_GRAPH>(0); }
+
+
 
 		template<class T, int POS_OF_GRAPH>
 		T& CreateElement(int elementWidth) {
@@ -377,7 +395,7 @@ namespace GraphDraw_ns
 		template<class T>	T& CreateRightElement(int elementWidth)  { return CreateElement<T, RIGHT_OF_GRAPH>(elementWidth); }
 		template<class T>	T& CreateTopElement(int elementWidth)    { return CreateElement<T, TOP_OF_GRAPH>(elementWidth); }
 		template<class T>	T& CreateBottomElement(int elementWidth) { return CreateElement<T, BOTTOM_OF_GRAPH>(elementWidth); }
-		template<class T>	T& CreateOverElement()   { return CreateElement<OVER_GRAPH>(0); }
+		template<class T>	T& CreateOverElement()                   { return CreateElement<OVER_GRAPH>(0); }
 
 
 		template<class T, int POS_OF_GRAPH, class P1>

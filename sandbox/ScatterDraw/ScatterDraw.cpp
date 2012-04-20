@@ -189,7 +189,7 @@ void ScatterDraw::DrawLegend(Draw& w, const int& scale) const
 			Vector <Point> vp;
 			vp << Point(scale*(i-start)*legendWeight, scale*(4-12*(j+1))) << 
 				  Point(scale*(i-start)*legendWeight+scale*23, scale*(4-12*(j+1)));
-			if (series[i].opacity > 0 && series[j].seriesPlot)
+			if (series[i].opacity > 0 && series[i].seriesPlot)
 				DrawPolylineOpa(w, vp, scale, 1, scale*series[i].thickness, series[i].color, series[i].dash);
 			Point p(scale*((i-start)*legendWeight+7),scale*(4-12*(j+1))/*+scale*Thick.At(i)/12*/);
 			if (series[i].markWidth >= 1 && series[i].markPlot)

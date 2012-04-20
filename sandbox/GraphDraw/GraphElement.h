@@ -85,14 +85,15 @@ namespace GraphDraw_ns
 
 			virtual ~GraphElementFrame() {}
 
-			inline bool Contains(Point p) const { return _frame.Contains(p); }
+			virtual bool Contains(Point p) const { return _frame.Contains(p); }
 			inline const Rect& GetFrame() const { return _frame; }
 			inline void SetFrame(Rect v) { _frame = v; }
 			inline int GetElementWidth() { return _width; }
 			inline ElementPosition GetElementPos() { return _pos; }
 
-			inline bool IsVertical() { return ((_pos & GraphDraw_ns::VERTICAL_MASK)!=0); }
-			inline bool IsHorizontal() { return ((_pos & GraphDraw_ns::HORIZONTAL_MASK)!=0); }
+			inline bool IsVertical() const { return ((_pos & GraphDraw_ns::VERTICAL_MASK)!=0); }
+			inline bool IsHorizontal() const { return ((_pos & GraphDraw_ns::HORIZONTAL_MASK)!=0); }
+			inline bool IsOverGraph() const { return ((_pos & GraphDraw_ns::OVER_MASK)!=0); }
 
          // Paint element somewhere inside the graph area (legend, ...)
 			// Offset and clipping are set with the '_frame' settings
@@ -197,53 +198,53 @@ namespace GraphDraw_ns
 			}
 		}
 	};
-
-	// ============================
-	//    LabelElement   CLASS
-	// ============================
-	class RichLabelElement : public CRTPGraphElementFrame< RichLabelElement >
-	{
-		private:
-		RichText    _label;
-		Color       _bckGndcolor;
-		typedef RichLabelElement                          CLASSANME;
-		typedef CRTPGraphElementFrame< RichLabelElement > _B;
-
-		public:
-		RichLabelElement() : _bckGndcolor(Null) {}
-		RichLabelElement(RichLabelElement& p) : _B(p), _bckGndcolor(p._bckGndcolor) {}
-		virtual ~RichLabelElement() {}
-
-		virtual CLASSANME* Clone() { return new CLASSANME(*this); };
-
-		template<class T>
-		inline void SetLabel(T& v) { _label = ParseQTF(v); }
-//		inline const Upp::String& GetLabel() const { return _label.; }
-
-		virtual void PaintElement(Draw& dw, int scale)
-		{
-			if ( !_bckGndcolor.IsNullInstance() )
-				dw.DrawRect( 0, 0, _B::GetFrame().GetWidth(), _B::GetFrame().GetHeight(), _bckGndcolor);
-
-			//Size sz(0,0);
-			switch(_B::GetElementPos()){
-				case LEFT_OF_GRAPH:
-
-					//dw.DrawText( _B::GetElementWidth()/2-sz.cy/2, _B::GetFrame().GetHeight()/2+sz.cx/2 , 900, _label, _font, _color);
-					break;
-				case BOTTOM_OF_GRAPH:
-					//dw.DrawText( _B::GetFrame().GetWidth()/2-sz.cx/2, _B::GetElementWidth()/2-sz.cy/2 , _label, _font, _color);
-					break;
-				case TOP_OF_GRAPH:
-					_label.Paint(dw, 0, 0, 1000);
-					//dw.DrawText( _B::GetFrame().GetWidth()/2-sz.cx/2, _B::GetElementWidth()/2-sz.cy/2 , _label, _font, _color);
-					break;
-				case RIGHT_OF_GRAPH:
-					//dw.DrawText( _B::GetElementWidth()/2+sz.cy/2, _B::GetFrame().GetHeight()/2-sz.cx/2 , 2700, _label, _font, _color);
-					break;
-			}
-		}
-	};
+//
+//	// ============================
+//	//    LabelElement   CLASS
+//	// ============================
+//	class RichLabelElement : public CRTPGraphElementFrame< RichLabelElement >
+//	{
+//		private:
+//		RichText    _label;
+//		Color       _bckGndcolor;
+//		typedef RichLabelElement                          CLASSANME;
+//		typedef CRTPGraphElementFrame< RichLabelElement > _B;
+//
+//		public:
+//		RichLabelElement() : _bckGndcolor(Null) {}
+//		RichLabelElement(RichLabelElement& p) : _B(p), _bckGndcolor(p._bckGndcolor) {}
+//		virtual ~RichLabelElement() {}
+//
+//		virtual CLASSANME* Clone() { return new CLASSANME(*this); };
+//
+//		template<class T>
+//		inline void SetLabel(T& v) { _label = ParseQTF(v); }
+////		inline const Upp::String& GetLabel() const { return _label.; }
+//
+//		virtual void PaintElement(Draw& dw, int scale)
+//		{
+//			if ( !_bckGndcolor.IsNullInstance() )
+//				dw.DrawRect( 0, 0, _B::GetFrame().GetWidth(), _B::GetFrame().GetHeight(), _bckGndcolor);
+//
+//			//Size sz(0,0);
+//			switch(_B::GetElementPos()){
+//				case LEFT_OF_GRAPH:
+//
+//					//dw.DrawText( _B::GetElementWidth()/2-sz.cy/2, _B::GetFrame().GetHeight()/2+sz.cx/2 , 900, _label, _font, _color);
+//					break;
+//				case BOTTOM_OF_GRAPH:
+//					//dw.DrawText( _B::GetFrame().GetWidth()/2-sz.cx/2, _B::GetElementWidth()/2-sz.cy/2 , _label, _font, _color);
+//					break;
+//				case TOP_OF_GRAPH:
+//					_label.Paint(dw, 0, 0, 1000);
+//					//dw.DrawText( _B::GetFrame().GetWidth()/2-sz.cx/2, _B::GetElementWidth()/2-sz.cy/2 , _label, _font, _color);
+//					break;
+//				case RIGHT_OF_GRAPH:
+//					//dw.DrawText( _B::GetElementWidth()/2+sz.cy/2, _B::GetFrame().GetHeight()/2-sz.cx/2 , 2700, _label, _font, _color);
+//					break;
+//			}
+//		}
+//	};
 
 
 

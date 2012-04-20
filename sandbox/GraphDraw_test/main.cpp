@@ -87,7 +87,7 @@ GraphDraw_test::GraphDraw_test()
 	}
 	g3.CloneTopElement( 20, g3.GetXGridAxisDraw());
 	g3.setGraphSize(0, 100000, -22, +22);
-	g3.CreateLegendElement<LegendElement<MyGraphCtrl::Types>, TOP_OF_GRAPH>( 20 );//.SetBackGndColor( Color(198, 255, 0) );
+	g3.CreateLegendElement<StdLegendCtrl<MyGraphCtrl::Types, LegendElement<MyGraphCtrl::Types> >, TOP_OF_GRAPH>( 20 );//.SetBackGndColor( Color(198, 255, 0) );
 	g3.CreateTopElement<GraphDraw_ns::LabelElement>( 30 )
 			.SetLabel("BIG DATA SET")
 			.SetFont(StdFont().Bold().Underline().Height(20))
@@ -104,7 +104,7 @@ GraphDraw_test::GraphDraw_test()
 	// ================ G4 ================
 	g4.CloneTopElement( 20, g4.GetXGridAxisDraw() );
 	g4.CreateElement<ExclusionAreaDraw<MyGraphCtrl::Types>, OVER_GRAPH>(0, g4.GetXCoordConverter(), g4.GetYCoordConverter() );
-	g4.CreateLegendElement<LegendElement<MyGraphCtrl::Types>, TOP_OF_GRAPH>( 20 );//.SetBackGndColor( Color(198, 255, 0) );
+	g4.CreateLegendElement<StdLegendCtrl<MyGraphCtrl::Types, LegendElement<MyGraphCtrl::Types> >, TOP_OF_GRAPH>( 20 );//.SetBackGndColor( Color(198, 255, 0) );
 	g4.CreateElement<GraphDraw_ns::LabelElement, TOP_OF_GRAPH>( 50 )
 			.SetLabel("This is the title")
 			.SetFont(StdFont().Bold().Underline().Height(30))
@@ -129,9 +129,10 @@ GraphDraw_test::GraphDraw_test()
 //	legend.SetFrame( Rect(Point(100,100), Size(350, 30)) );
 //	legend.SetBackGndColor( Color(198, 255, 0) );
 
-	g4.CreateLegendElement<LegendElement<MyGraphCtrl::Types>, RIGHT_OF_GRAPH>( 90 );//.SetBackGndColor( Color(198, 255, 0) );
-	LegendElement<MyGraphCtrl::Types>& legend = g4.CreateLegendElement<LegendElement<MyGraphCtrl::Types>, OVER_GRAPH>( 120 );
-	legend.SetFrame( Rect(Point(100,100), Size(350, 30)) );
+	g4.CreateLegendElement<StdLegendCtrl<MyGraphCtrl::Types, LegendElement<MyGraphCtrl::Types> >, RIGHT_OF_GRAPH>( 90 );//.SetBackGndColor( Color(198, 255, 0) );
+	StdLegendCtrl<MyGraphCtrl::Types, LegendElement<MyGraphCtrl::Types> >& legend = g4.CreateLegendElement<StdLegendCtrl<MyGraphCtrl::Types, LegendElement<MyGraphCtrl::Types> >, OVER_GRAPH>( 120 );
+	legend.SetFrame( Rect(Point(0,100), Size(350, 30)) );
+	legend.SetParentCtrl( g4 );
 	RGBA rgba;
 	
 	rgba.r=90;

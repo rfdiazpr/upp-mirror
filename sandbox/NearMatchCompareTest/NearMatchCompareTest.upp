@@ -1,0 +1,10 @@
+uses
+	Core,
+	NearMatchCompare;
+
+file
+	NearMatchCompareTest.cpp;
+
+mainconfig
+	"" = "";
+

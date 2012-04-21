@@ -1,0 +1,7 @@
+description "Algorithm to find compare two strings and find near matches\377";
+
+file
+	src.tpp,
+	NearMatchCompare.hpp,
+	NearMatchCompare.cpp;
+

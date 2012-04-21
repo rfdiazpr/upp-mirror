@@ -254,32 +254,54 @@ namespace GraphDraw_ns
 	template<class TYPES >
 	class LegendElement : public CRTPGraphElementFrame< LegendElement<TYPES> >
 	{
-		private:
-		RichText    _legend;
-		Color       _bckGndcolor;
-		RGBA        _bckGndRgba;
-		bool        _isRgba;
+		public:
+		String _legend;
+		Color  _bckGndcolor;
+		RGBA   _bckGndRgba;
+		bool   _isRgba;
+		Font   _font;
+		int    _xSeparation; // separation between two legends
+		int    _legendStyleLength;
+
+		int    _legendWeight;
+
 		typedef LegendElement CLASSNAME;
 		typedef CRTPGraphElementFrame< LegendElement > _B;
 		typedef typename TYPES::TypeVectorSeries TypeVectorSeries;
-
 		TypeVectorSeries* series;
+
 		public:
-		LegendElement() : _bckGndcolor(Null), series(0), _isRgba(false) {}
-		LegendElement(LegendElement& p) : _B(p), _bckGndcolor(p._bckGndcolor), series(p.series) {}
+		LegendElement()
+		: _bckGndcolor(Null)
+		, series(0)
+		, _isRgba(false)
+		, _font(StdFont())
+		, _xSeparation(20)
+		, _legendStyleLength(23)
+		{}
+		LegendElement(LegendElement& p)
+		: _B(p)
+		, _bckGndcolor(p._bckGndcolor)
+		, _bckGndRgba(p._bckGndRgba)
+		, _isRgba(p._isRgba)
+		, _font(p._font)
+		, _xSeparation(p._xSeparation)
+		, series(p.series)
+		, _legendStyleLength(p._legendStyleLength)
+		{ Update(); }
+
 		virtual ~LegendElement() {}
 
 		virtual CLASSNAME* Clone() { return new CLASSNAME(*this); };
 
 		template<class T>
-		inline CLASSNAME& SetLegend(T& v) { _legend = ParseQTF(v); return *this; }
+		inline CLASSNAME& SetLegend(T& v) { _legend = v; return *this; }
 		//		inline const Upp::String& GetLegend() const { return AsQTF(_legend); }
 
-		inline CLASSNAME& SetSeries(TypeVectorSeries& v) { series = &v; return *this; }
+		inline CLASSNAME& SetSeries(TypeVectorSeries& v) { series = &v; Update(); return *this; }
 
 		inline CLASSNAME&  SetBackGndColor(Color v) { _bckGndcolor = v; _isRgba=false; return *this; }
 		inline CLASSNAME&  SetBackGndColor(RGBA  v) { _bckGndRgba  = v; _isRgba=true;  return *this; }
-		inline const Color& GetBackGndColor() const { return _bckGndcolor; }
 
 		virtual void PaintElement(Draw& dw, int scale){
 			if ( !_bckGndcolor.IsNullInstance() ) {
@@ -302,18 +324,27 @@ namespace GraphDraw_ns
 			DrawLegend(dw, scale);
 		}
 
+		virtual void Update() {
+			if (series==0) return;
+			_legendWeight = 0;
+			for (int c=0; c<(*series).GetCount(); ++c) {
+				int textLength = GetTextSize((*series)[c].legend, _font).cx;
+				if(_legendWeight < textLength) _legendWeight = textLength;
+			}
+			_legendWeight += _legendStyleLength + _xSeparation;
+		}
+
 		void DrawLegend(Draw& w, const int& scale) const
 		{
 			if (series==0) {
 				String text = "This is the legend !!";
-				w.DrawText( 0,0 , text, StdFont(), Black());
+				w.DrawText( 0,0 , text, _font, Black());
 				return;
 			}
 
-			int legendWeight = 80;
-			int nmr = fround(_B::_frame.GetSize().cx/legendWeight);	//max number of labels per row
+			int nmr = fround(_B::_frame.GetSize().cx/_legendWeight);	//max number of labels per row
 			if (nmr <= 0)
-				return;
+				nmr = 1;
 			int nLab = (*series).GetCount();	//number of labels
 			int Nc;							//number of complete rows
 			int LCR;		  				//number of labels on complete row
@@ -333,22 +364,22 @@ namespace GraphDraw_ns
 					end = R;
 				}
 				Font scaledFont;
-				int txtHeight = scaledFont.Height(scale*StdFont().GetHeight()).GetHeight();
+				int txtHeight = scaledFont.Height(scale*_font.GetHeight()).GetHeight();
 				for(int i = start; i < end; i++) {
-					int x = scale*(i-start)*legendWeight;
+					int x = scale*(i-start)*_legendWeight;
 					int y = scale*(txtHeight+txtHeight/2)*j;
 
 					Vector <Point> vp;
 					vp << Point(x,y+txtHeight/2) <<
-							Point(x+scale*23, y+txtHeight/2);
+							Point(x+scale*_legendStyleLength, y+txtHeight/2);
 					if ((*series)[i].opacity > 0 && (*series)[i].seriesPlot)
 						DrawPolylineOpa(w, vp, scale, 1, scale*(*series)[i].thickness, (*series)[i].color, (*series)[i].dash);
 
-					Point p(scale*(x+7),y+txtHeight/2);
+					Point p(scale*(x+_legendStyleLength/2),y+txtHeight/2);
 					if ((*series)[i].markWidth >= 1 && (*series)[i].markPlot)
 						(*series)[i].markPlot->Paint(w, scale, p, (*series)[i].markWidth, (*series)[i].markColor);
 
-					DrawText(w, x+scale*25, y, 0, (*series)[i].legend, scaledFont, Black() );
+					DrawText(w, x+scale*(_legendStyleLength+2), y, 0, (*series)[i].legend, scaledFont, Black() );
 				}
 			}
 		}

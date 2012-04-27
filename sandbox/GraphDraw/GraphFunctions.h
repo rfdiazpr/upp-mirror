@@ -4,7 +4,8 @@
 
 Color GetNewColor(int id);
 String GetNewDash(int id);
-//MarkPlot *GetNewMarkPlot(int id);
+MarkPlot *GetNewMarkPlot(int id);
+SeriesPlot* GetNewPlotStyle(int id);
 
 namespace GraphDraw_ns
 {

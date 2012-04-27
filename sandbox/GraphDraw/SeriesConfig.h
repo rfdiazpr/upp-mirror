@@ -57,13 +57,20 @@ namespace GraphDraw_ns
 				yConverter = 0;
 			}
 
-			void Init(int id)
+			void Init(int id, bool setDefaultStyles)
 			{
 				color = GetNewColor(id);
 				markColor = Color(max(color.GetR()-30, 0), max(color.GetG()-30, 0), max(color.GetB()-30, 0));
-				//dash = GetNewDash(id);
+				if (setDefaultStyles) SetDefaultStyles(id);
 			}
-	};
+
+			void SetDefaultStyles(int id)
+			{
+				dash = GetNewDash(id);
+				markPlot = GetNewMarkPlot(id);
+				seriesPlot = GetNewPlotStyle(id);
+			}
+};
 
 	template <class TYPES>
 	class SeriesConfig : public Moveable< SeriesConfig<TYPES> >, public SeriesConfigBase<TYPES> {

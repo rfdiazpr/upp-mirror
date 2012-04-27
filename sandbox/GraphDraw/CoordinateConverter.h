@@ -36,14 +36,14 @@ namespace GraphDraw_ns
 				update( graphMin, graphMax, screenMin, screenMax);
 			}
 
-			inline SCREEN_COORD getScreenMin()        { return _screenMin; }
-			inline SCREEN_COORD getScreenMax()        { return _screenMax; }
-			inline SCREEN_COORD getScreenRange()      { return _screenRange; }
-			inline GRAPH_COORD  getGraphMin()         { return _graphMin; }
-			inline GRAPH_COORD  getGraphMax()         { return _graphMax; }
-			inline GRAPH_COORD  getGraphRange()       { return _graphRange; }
-			inline GRAPH_COORD  getSignedGraphRange() { return (_graphMax-_graphMin); }
-			inline bool IsInGraphRange(TypeGraphCoord p) { return ((_graphMin <= p) && (p <= _graphMax)); }
+			inline SCREEN_COORD getScreenMin()   const { return _screenMin; }
+			inline SCREEN_COORD getScreenMax()   const { return _screenMax; }
+			inline SCREEN_COORD getScreenRange() const { return _screenRange; }
+			inline GRAPH_COORD  getGraphMin()    const { return _graphMin; }
+			inline GRAPH_COORD  getGraphMax()    const { return _graphMax; }
+			inline GRAPH_COORD  getGraphRange()  const { return _graphRange; }
+			inline GRAPH_COORD  getSignedGraphRange() const { return (_graphMax-_graphMin); }
+			inline bool IsInGraphRange(TypeGraphCoord p) const { return ((_graphMin <= p) && (p <= _graphMax)); }
 
 			inline void Update() {
 				update( getGraphMin(), getGraphMax(), getScreenMin(), getScreenMax() );
@@ -81,6 +81,20 @@ namespace GraphDraw_ns
 				_graphToScreenScale = (_screenMax - _screenMin) / (_graphMax - _graphMin);
 				_screenToGraphScale = (_graphMax - _graphMin) / (_screenMax - _screenMin);
 			}
+
+			virtual void Scroll( SCREEN_COORD offset ) {
+				updateGraphSize( toGraph( _screenMin - offset ),
+								     toGraph( _screenMax - offset )
+								     );
+			}
+
+			virtual void Zoom( double factor ) {
+				double addRange=(_screenRange*(factor-1.0))/2.0;
+				updateGraphSize( toGraph( _screenMin - addRange ),
+								     toGraph( _screenMax + addRange )
+								     );
+			}
+
 
 			virtual SCREEN_COORD toScreen(GRAPH_COORD v)  { return  ((v-_graphMin)*_graphToScreenScale + _screenMin); }
 			virtual GRAPH_COORD  toGraph(SCREEN_COORD v)  { return  ((v-_screenMin)*_screenToGraphScale + _graphMin); }
@@ -146,7 +160,7 @@ namespace GraphDraw_ns
 			virtual SCREEN_COORD toScreen(GRAPH_COORD v)
 			{
 				if (v<=0) return _B::_screenMin;
-				return  ((log(v)-_logGraphMin)*_B::_graphToScreenScale + _B::_screenMin);
+				return  ((log10(v)-_logGraphMin)*_B::_graphToScreenScale + _B::_screenMin);
 			}
 
 			virtual GRAPH_COORD toGraph(SCREEN_COORD v)  { return  pow(10, (v-_B::_screenMin)*_B::_screenToGraphScale + _logGraphMin); }
@@ -166,34 +180,25 @@ namespace GraphDraw_ns
 			long double _pow10GraphMax;
 
 		public:
-			Pow10CoordinateConverter()
-			{
+			Pow10CoordinateConverter() {
 				update( 0, 100, 0, 100);
 			}
 
-			Pow10CoordinateConverter(GRAPH_COORD graphMin, GRAPH_COORD graphMax, SCREEN_COORD screenMin, SCREEN_COORD screenMax)
-			{
+			Pow10CoordinateConverter(GRAPH_COORD graphMin, GRAPH_COORD graphMax, SCREEN_COORD screenMin, SCREEN_COORD screenMax) {
 				update( graphMin, graphMax, screenMin, screenMax);
 			}
 
-			virtual void update(GRAPH_COORD graphMin, GRAPH_COORD graphMax, SCREEN_COORD screenMin, SCREEN_COORD screenMax)
-			{
+			virtual void update(GRAPH_COORD graphMin, GRAPH_COORD graphMax, SCREEN_COORD screenMin, SCREEN_COORD screenMax) {
 				_B::update(graphMin, graphMax, screenMin, screenMax);
-
 				_pow10GraphMin = pow(10, graphMin);
 				_pow10GraphMax = pow(10, graphMax);
 				_B::_graphToScreenScale = (screenMax - screenMin) / (_pow10GraphMax - _pow10GraphMin);
 				_B::_screenToGraphScale = (_pow10GraphMax - _pow10GraphMin) / (screenMax - screenMin);
-//				TRACE_INFO( "Pow10CoordinateConverter::Update(" << graphMin<<", "<< graphMax<<", "<< screenMin<<", "<< screenMax<<" )  ==> ["<< _pow10GraphMin << ", " << _pow10GraphMax << "]" );
 			}
 
-			virtual SCREEN_COORD toScreen(GRAPH_COORD v)
-			{
-				return  ((pow(10, v)-_pow10GraphMin)*_B::_graphToScreenScale + _B::_screenMin);
-			}
-
-			virtual GRAPH_COORD toGraph(SCREEN_COORD v)  { return  log((v-_B::_screenMin)*_B::_screenToGraphScale + _pow10GraphMin); }
-			virtual const char* GetConversionType() { return "10^x"; }
+			virtual SCREEN_COORD toScreen(GRAPH_COORD v) { return  ((pow(10, v)-_pow10GraphMin)*_B::_graphToScreenScale + _B::_screenMin); }
+			virtual GRAPH_COORD toGraph(SCREEN_COORD v)  { return  log10((v-_B::_screenMin)*_B::_screenToGraphScale + _pow10GraphMin); }
+			virtual const char* GetConversionType()      { return "10^x"; }
 	};
 
 	template <class SCREEN_COORD, class GRAPH_COORD>
@@ -210,6 +215,7 @@ namespace GraphDraw_ns
 			} AxisScaleType;
 
 		protected:
+			typedef GenericCoordinateConverter<SCREEN_COORD, GRAPH_COORD> CLASSNAME;
 			typedef CoordinateConverter<SCREEN_COORD, GRAPH_COORD> _B;
 			long double _fctGraphMin;
 			long double _fctGraphMax;
@@ -217,40 +223,43 @@ namespace GraphDraw_ns
 			typedef GRAPH_COORD (*TypeConvertFct) (GRAPH_COORD);
 			TypeConvertFct _convertFct;
 			TypeConvertFct _unConvertFct;
-			int _scaleType; // AxisScaleType
+			int _scaleType;
 			const char* _convTypeName;
 
 			static GRAPH_COORD _defautFct(GRAPH_COORD v) { return v; }
-			static GRAPH_COORD _logFct(GRAPH_COORD v) { if (v<=0) v=0.00001; return log(v); }
-			static GRAPH_COORD _pow10Fct(GRAPH_COORD v) { return pow(10,v); }
+			static GRAPH_COORD _logFct(GRAPH_COORD v) { if (v<=0) v=0.00001; return log10(v); }
+			static GRAPH_COORD _pow10Fct(GRAPH_COORD v) { return pow(10.0,v); }
 			static GRAPH_COORD _X2fct(GRAPH_COORD v) { return (v*v); }
 			static GRAPH_COORD _sqrtFct(GRAPH_COORD v) { return sqrt(v); }
-
 
 		public:
 			GenericCoordinateConverter()
 			: _convertFct(_defautFct)
 			, _unConvertFct(_defautFct)
+			, _scaleType(AXIS_SCALE_STD)
 			, _convTypeName("")
 			{
 				update( 0, 100, 0, 100);
+				SetConvStd();
 			}
 
-			GenericCoordinateConverter(TypeConvertFct convertFct, TypeConvertFct unConvertFct, const char* convTypeName)
-			: _convertFct(convertFct)
-			, _unConvertFct(unConvertFct)
-			, _convTypeName(convTypeName)
-			{
-				update( 0, 100, 0, 100);
-			}
-
-			GenericCoordinateConverter(TypeConvertFct convertFct, TypeConvertFct unConvertFct, const char* convTypeName, GRAPH_COORD graphMin, GRAPH_COORD graphMax, SCREEN_COORD screenMin, SCREEN_COORD screenMax)
-			: _convertFct(convertFct)
-			, _unConvertFct(unConvertFct)
-			, _convTypeName(convTypeName)
-			{
-				update( graphMin, graphMax, screenMin, screenMax);
-			}
+//			GenericCoordinateConverter(TypeConvertFct convertFct, TypeConvertFct unConvertFct, const char* convTypeName)
+//			: _convertFct(convertFct)
+//			, _unConvertFct(unConvertFct)
+//			, _convTypeName(convTypeName)
+//			{
+//				SetConvStd();
+//				update( 0, 100, 0, 100);
+//			}
+//
+//			GenericCoordinateConverter(TypeConvertFct convertFct, TypeConvertFct unConvertFct, const char* convTypeName, GRAPH_COORD graphMin, GRAPH_COORD graphMax, SCREEN_COORD screenMin, SCREEN_COORD screenMax)
+//			: _convertFct(convertFct)
+//			, _unConvertFct(unConvertFct)
+//			, _convTypeName(convTypeName)
+//			{
+//				SetConvStd();
+//				update( graphMin, graphMax, screenMin, screenMax);
+//			}
 
 			void SetConvFct(TypeConvertFct convertFct, TypeConvertFct unConvertFct, const char* convTypeName) {
 				_convTypeName = convTypeName;
@@ -258,13 +267,20 @@ namespace GraphDraw_ns
 				_unConvertFct = unConvertFct;
 				_B::Update();
 			}
-			void SetConvStd()   { SetConvFct(_defautFct, _defautFct, ""); _scaleType = AXIS_SCALE_STD; }
+			void SetConvStd() {
+				SetConvFct(_defautFct, _defautFct, "");
+				_scaleType = AXIS_SCALE_STD;
+			}
 			void SetConvLog()   {
-				SetConvFct(_logFct,    _pow10Fct,  "LOG"); _scaleType = AXIS_SCALE_LOG;
+				SetConvFct(_logFct,    _pow10Fct,  "LOG");
+				_scaleType = AXIS_SCALE_LOG;
 				TRACE_INFO("SetConvLog()::");
 				updateGraphSize(_B::getGraphMin(), _B::getGraphMax());
 			}
-			void SetConvPow10() { SetConvFct(_pow10Fct,  _logFct,    "10^x"); _scaleType = AXIS_SCALE_POW10; }
+			void SetConvPow10() {
+				SetConvFct(_pow10Fct,  _logFct,    "10^x");
+				_scaleType = AXIS_SCALE_POW10;
+			}
 
 			void SetScaleType(AxisScaleType t)	{
 				switch(t) {
@@ -283,26 +299,31 @@ namespace GraphDraw_ns
 			AxisScaleType GetScaleType() { return _scaleType; }
 			virtual const char* GetConversionType() { return _convTypeName; }
 
-
-			virtual void update(GRAPH_COORD graphMin, GRAPH_COORD graphMax, SCREEN_COORD screenMin, SCREEN_COORD screenMax)
-			{
+			virtual bool isRangeValid(GRAPH_COORD& graphMin, GRAPH_COORD& graphMax) {
+				bool res = true;
 				if (_scaleType == AXIS_SCALE_LOG) {
-					if (graphMin <=0) graphMin = 0.000000001;
-					if (graphMax <=0) graphMax = 0.1;
+					GRAPH_COORD range = graphMax - graphMin;
+					if (graphMin <=0) { graphMin = 0.000000001; graphMax = graphMin + range; res = false; }
+					if (graphMax <=0) { graphMax = 0.000000001; graphMin = graphMax - range; res = false; }
 				}
+				return res;
+			}
 
+			virtual void update(GRAPH_COORD graphMin, GRAPH_COORD graphMax, SCREEN_COORD screenMin, SCREEN_COORD screenMax) {
+				isRangeValid( graphMin, graphMax );
 				_B::update(graphMin, graphMax, screenMin, screenMax);
 
 				_fctGraphMin = _convertFct(graphMin);
 				_fctGraphMax = _convertFct(graphMax);
 				_B::_graphToScreenScale = (screenMax - screenMin) / (_fctGraphMax - _fctGraphMin);
 				_B::_screenToGraphScale = (_fctGraphMax - _fctGraphMin) / (screenMax - screenMin);
-				if (_scaleType == AXIS_SCALE_LOG) {
-					TRACE_INFO("update()::   graphMin="<< graphMin << "    graphMax="<< graphMax
-					           << "      _fctGraphMin="<<_fctGraphMin<< "      _fctGraphMax"<<_fctGraphMax
-					           << "      g2s="<<_B::_graphToScreenScale<< "      s2g"<<_B::_screenToGraphScale
-					           );
-				}
+//				if (_scaleType == AXIS_SCALE_LOG) {
+//					TRACE_INFO("LOG GenericCoordinateConverter::update()::   graphMin="<< graphMin << "    graphMax="<< graphMax
+//					           << "      [ _fctGraphMin="<<_fctGraphMin<< "  _fctGraphMax="<<_fctGraphMax
+//					           << " ]    [ _screenMin="<<_B::_screenMin<< "  _screenMax="<<_B::_screenMax
+//					           << " ]    [ g2s="<<_B::_graphToScreenScale<< "  s2g="<<_B::_screenToGraphScale
+//					           << " ]");
+//				}
 			}
 
 			virtual void updateScreenSize(SCREEN_COORD screenMin, SCREEN_COORD screenMax)
@@ -315,30 +336,24 @@ namespace GraphDraw_ns
 
 			virtual void updateGraphSize(GRAPH_COORD graphMin, GRAPH_COORD graphMax)
 			{
-				if (_scaleType == AXIS_SCALE_LOG) {
-					if (graphMin <=0) graphMin = 0.000000001;
-					if (graphMax <=0) graphMax = 0.1;
-				}
+				isRangeValid( graphMin, graphMax );
 				_B::updateGraphSize(graphMin, graphMax);
 
 				_fctGraphMin = _convertFct(graphMin);
 				_fctGraphMax = _convertFct(graphMax);
 				_B::_graphToScreenScale = (_B::_screenMax - _B::_screenMin) / (_fctGraphMax - _fctGraphMin);
 				_B::_screenToGraphScale = (_fctGraphMax - _fctGraphMin) / (_B::_screenMax - _B::_screenMin);
-				if (_scaleType == AXIS_SCALE_LOG) {
-					TRACE_INFO("updateGraphSize()::  graphMin="<< graphMin << "    graphMax="<< graphMax
-					           << "      _fctGraphMin="<<_fctGraphMin<< "      _fctGraphMax"<<_fctGraphMax
-					           << "      g2s="<<_B::_graphToScreenScale<< "      s2g"<<_B::_screenToGraphScale
-					           );
-				}
+//				if (_scaleType == AXIS_SCALE_LOG) {
+//					TRACE_INFO("LOG GenericCoordinateConverter::updateGraphSize( graphMin="<< graphMin << "    graphMax="<< graphMax << " ) : "
+//					           << "      [ _fctGraphMin="<<_fctGraphMin<< "      _fctGraphMax="<<_fctGraphMax
+//					           << " ]    [ _screenMin="<<_B::_screenMin<< "      _screenMax="<<_B::_screenMax
+//					           << " ]    [ g2s="<<_B::_graphToScreenScale<< "      s2g="<<_B::_screenToGraphScale
+//					           << " ]");
+//				}
 			}
 
-			virtual SCREEN_COORD toScreen(GRAPH_COORD v)
-			{
-				return  ((_convertFct(v)-_fctGraphMin)*_B::_graphToScreenScale + _B::_screenMin);
-			}
-
-			virtual GRAPH_COORD toGraph(SCREEN_COORD v)  { return  _unConvertFct((v-_B::_screenMin)*_B::_screenToGraphScale + _fctGraphMin); }
+			virtual SCREEN_COORD toScreen(GRAPH_COORD v)	{ return  ((_convertFct(v)-_fctGraphMin)*_B::_graphToScreenScale + _B::_screenMin); }
+			virtual GRAPH_COORD toGraph(SCREEN_COORD v)  { return  _unConvertFct((v-_B::_screenMin)/_B::_graphToScreenScale + _fctGraphMin); }
 	};
 
 };

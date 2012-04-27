@@ -206,7 +206,7 @@ namespace GraphDraw_ns
 			typename TypeGridStepManager::Iterator iter = getMajorBeginIterator();
 			typename TypeGridStepManager::Iterator endIter = getMajorEndIterator();
 
-			DrawVArrowEnd(dw, _B::GetElementWidth(), _coordConverter.getScreenMin(), _B::GetElementWidth(), _coordConverter.getScreenMax(), 2, 6, 8, _axisColor);
+			dw.DrawLineOp(_B::GetElementWidth(), _coordConverter.getScreenMin(), _B::GetElementWidth(), _coordConverter.getScreenMax(), 2, _axisColor );
 			while ( iter != endIter)
 			{
 				if (_majorTickMark.IsEmpty()) {
@@ -225,7 +225,6 @@ namespace GraphDraw_ns
 			typename TypeGridStepManager::Iterator iter = getMajorBeginIterator();
 			typename TypeGridStepManager::Iterator endIter = getMajorEndIterator();
 
-			//				DrawVArrowEnd(dw, 0, _coordConverter.getScreenMin(), 0, _coordConverter.getScreenMax(), 2, 6, 8, _axisColor);
 			dw.DrawLineOp(0, _coordConverter.getScreenMin(), 0, _coordConverter.getScreenMax(), 2, _axisColor);
 			while ( iter != endIter)
 			{
@@ -245,9 +244,9 @@ namespace GraphDraw_ns
 		{
 			typename TypeGridStepManager::Iterator iter = getMajorBeginIterator();
 			typename TypeGridStepManager::Iterator endIter = getMajorEndIterator();
-			//DrawHArrowEnd(dw, _coordConverter.getScreenMin(), 0, _coordConverter.getScreenMax(), 0, 2, 6, 8, _axisColor );
-			dw.DrawLine(_coordConverter.getScreenMin(), 0, _coordConverter.getScreenMax(), 0, 2, _axisColor );
-			while ( iter != endIter)
+
+			dw.DrawLineOp(_coordConverter.getScreenMin(), 0, _coordConverter.getScreenMax(),0 , 2, _axisColor );
+			while ( iter != endIter )
 			{
 				if (_majorTickMark.IsEmpty()) {
 					dw.DrawLineOp(*iter, 0, *iter, 4, 2, _axisTickColor);
@@ -264,8 +263,8 @@ namespace GraphDraw_ns
 		{
 			typename TypeGridStepManager::Iterator iter = getMajorBeginIterator();
 			typename TypeGridStepManager::Iterator endIter = getMajorEndIterator();
-			//DrawHArrowEnd(dw, _coordConverter.getScreenMin(), _B::GetElementWidth(), _coordConverter.getScreenMax(), _B::GetElementWidth(), 2, 6, 8, _axisColor );
-			dw.DrawLine(_coordConverter.getScreenMin(), _B::GetElementWidth(), _coordConverter.getScreenMax(), _B::GetElementWidth(), 2, _axisColor );
+
+			dw.DrawLineOp(_coordConverter.getScreenMin(), _B::GetElementWidth(), _coordConverter.getScreenMax(), _B::GetElementWidth(), 2, _axisColor );
 			while ( iter != endIter)
 			{
 				if (_majorTickMark.IsEmpty()) {

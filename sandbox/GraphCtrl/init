@@ -1,7 +1,5 @@
 #ifndef _GraphCtrl_icpp_init_stub
 #define _GraphCtrl_icpp_init_stub
 #include "CtrlLib/init"
-#include "Painter/init"
-#include "ScatterDraw/init"
 #include "GraphDraw/init"
 #endif

@@ -62,7 +62,7 @@ GraphDraw_test::GraphDraw_test()
 	
 	CtrlLayout(*this, "Window title");
 
-	points << Pointf(0,0) << Pointf(1, 3.5)<< Pointf(2,1.8)<< Pointf(4, 3)<< Pointf(5.5, 2.5);
+	points << Pointf(0.5,1) << Pointf(1, 3.5)<< Pointf(2,1.8)<< Pointf(4, 3)<< Pointf(5.5, 2.5);
 	points << Pointf(6,7) << Pointf(7, 9)<< Pointf(8,10)<< Pointf(10, 15)<< Pointf(15, 15);
 
 	points2 << Pointf(0,0) << Pointf(1, 2)<< Pointf(2,3)<< Pointf(4, 3)<< Pointf(5.5, 4);
@@ -72,8 +72,9 @@ GraphDraw_test::GraphDraw_test()
 	// ================ G1 ================
 	g1.AddSeries(points).PlotStyle<StaggeredSeriesPlot>();
 	g1.CloneRightElement( 20, g1.GetYGridAxisDraw());
-	g1.setGraphSize(0,20,0,20);
+	g1.setGraphSize(10,20,10,20);
 	g1.SetMode( GraphDraw_ns::MD_DRAW );
+	g1.GetXCoordConverter().SetConvLog();
 
 
 
@@ -94,9 +95,9 @@ GraphDraw_test::GraphDraw_test()
 			.SetTextColor(Green());
 	g3.CreateRightElement<GraphDraw_ns::BlankAreaElement>( 15 );
 	g3.SetMode( GraphDraw_ns::MD_ANTIALIASED);
-	g3.AddSeries(s1).PlotStyle<LineSeriesPlot>().Legend("S1"); //.MarkStyle<TriangleMarkPlot>();
-	g3.AddSeries(s2).MarkStyle<CircleMarkPlot>().Legend("S2").SetMarkWidth(1).SetSequential().SetDataThickness(1); //.MarkStyle<TriangleMarkPlot>();
-	g3.AddSeries(&funct1).Legend("sin(x/1000.0)*10.0").MarkStyle<CircleMarkPlot>().SetMarkWidth(1).SetDataThickness(1).SetMarkColor(Black());
+	g3.AddSeries(s1).PlotStyle<LineSeriesPlot>().NoMark().Legend("S1"); //.MarkStyle<TriangleMarkPlot>();
+	g3.AddSeries(s2).NoPlot().MarkStyle<CircleMarkPlot>().Legend("S2").SetMarkWidth(1).SetSequential().SetDataThickness(1); //.MarkStyle<TriangleMarkPlot>();
+	g3.AddSeries(&funct1).NoPlot().MarkStyle<CircleMarkPlot>().Legend("sin(x/1000.0)*10.0").SetMarkWidth(1).SetDataThickness(1).SetMarkColor(Black());
 //	g3.CreateLegendElement<LegendElement<MyGraphCtrl::Types>, RIGHT_OF_GRAPH>( 90 );//.SetBackGndColor( Color(198, 255, 0) );
 
 
@@ -121,7 +122,7 @@ GraphDraw_test::GraphDraw_test()
 	g4.CreateElement<MyGraphCtrl::Types::TypeGridAxisDraw, RIGHT_OF_GRAPH>( 35, y2CoordConverter ).setGridColor(Null).setMajorTickMark((new GraphDraw_ns::TriangleTickMark())->SetTickLength( 8 ));
 	g4.CreateElement<GraphDraw_ns::LabelElement, RIGHT_OF_GRAPH>( 18 ).SetLabel("Y2 AXIS").SetFont(StdFont().Bold().Underline()).SetTextColor(Green());
 
-	g4.AddSeries(points2).PlotStyle<LineSeriesPlot>().Legend("S2");; // tied to last X/Y  coordConverters ==> X / Y2
+	g4.AddSeries(points2).PlotStyle<LineSeriesPlot>().NoMark().Legend("-----S2-----");; // tied to last X/Y  coordConverters ==> X / Y2
 	g4.SetMode( GraphDraw_ns::MD_SUBPIXEL );
 
 //	LegendElement<MyGraphCtrl::Types>& legend = g4.CreateElement<LegendElement<MyGraphCtrl::Types>, OVER_GRAPH>(100)

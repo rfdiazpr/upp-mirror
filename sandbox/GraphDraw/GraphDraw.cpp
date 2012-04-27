@@ -96,16 +96,19 @@ namespace GraphDraw_ns
 		return ret.Mid(0, 1) + space + ret.Mid(1, 1) + space + ret.Mid(2, 1) + space + ret.Mid(3, 1);
 	}
 
-	//	MarkPlot* GetNewMarkPlot(int id)
-	//	{
-	//		switch(id) {
-	//		case 0:	return new CircleMarkPlot();
-	//		case 1:	return new SquareMarkPlot();
-	//		case 2:	return new TriangleMarkPlot();
-	//		case 3:	return new CrossMarkPlot();
-	//		case 4:	return new XMarkPlot();
-	//		case 5:	return new RhombMarkPlot();
-	//		}
-	//		return new CircleMarkPlot();
-	//	}
+		MarkPlot* GetNewMarkPlot(int id)
+		{
+			switch(id) {
+			case 0:	return new CircleMarkPlot();
+			case 1:	return new SquareMarkPlot();
+			case 2:	return new TriangleMarkPlot();
+			case 3:	return new CrossMarkPlot();
+			case 4:	return new XMarkPlot();
+			case 5:	return new RhombMarkPlot();
+			}
+			return new CircleMarkPlot();
+		}
 
+		SeriesPlot* GetNewPlotStyle(int id) {
+			return new LineSeriesPlot();
+		}

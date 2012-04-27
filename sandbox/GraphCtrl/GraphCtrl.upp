@@ -2,8 +2,6 @@ description "GRaphics display control\377";
 
 uses
 	CtrlLib,
-	Painter,
-	ScatterDraw,
 	GraphDraw;
 
 file

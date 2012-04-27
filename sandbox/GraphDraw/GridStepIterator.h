@@ -133,13 +133,13 @@ namespace GraphDraw_ns
 
 				}
 
-				TRACE_INFO(" Zoom update "
-						<<"\n     - _gridStepValue = " << _gridStepValue
-						<<"\n     - _gridStartValue="<<_gridStartValue
-						<<"\n     - range="<<_coordConverter.getSignedGraphRange()
-						<<"\n     - graphMin="<<_coordConverter.getGraphMin()
-						<<"\n     - graphMax="<<_coordConverter.getGraphMax()
-						);
+//				TRACE_INFO(" Zoom update "
+//						<<"\n     - _gridStepValue = " << _gridStepValue
+//						<<"\n     - _gridStartValue="<<_gridStartValue
+//						<<"\n     - range="<<_coordConverter.getSignedGraphRange()
+//						<<"\n     - graphMin="<<_coordConverter.getGraphMin()
+//						<<"\n     - graphMax="<<_coordConverter.getGraphMax()
+//						);
 
 
 				for (int c=0; c<_nbSteps+1; ++c)

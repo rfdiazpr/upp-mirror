@@ -36,10 +36,10 @@ namespace GraphDraw_ns
 		public:
 			typedef GraphElementParent CLASSNAME;
 			typedef int TypeScreenCoord;
-			virtual CLASSNAME& ScrollX( TypeScreenCoord xOffset) = 0;
-			virtual CLASSNAME& ScrollY( TypeScreenCoord yOffset) = 0;
-			virtual CLASSNAME& ZoomX(TypeScreenCoord left, TypeScreenCoord right) = 0;
-			virtual CLASSNAME& ZoomY(TypeScreenCoord top, TypeScreenCoord bottom) = 0;
+			virtual void ScrollX( TypeScreenCoord xOffset) = 0;
+			virtual void ScrollY( TypeScreenCoord yOffset) = 0;
+			virtual void ZoomX(TypeScreenCoord left, TypeScreenCoord right) = 0;
+			virtual void ZoomY(TypeScreenCoord top, TypeScreenCoord bottom) = 0;
 			virtual void RefreshFromChild( RefreshStrategy doFastPaint ) = 0;
 
 			GraphElementParent() {}
@@ -296,8 +296,6 @@ namespace GraphDraw_ns
 
 		template<class T>
 		inline CLASSNAME& SetLegend(T& v) { _legend = v; return *this; }
-		//		inline const Upp::String& GetLegend() const { return AsQTF(_legend); }
-
 		inline CLASSNAME& SetSeries(TypeVectorSeries& v) { series = &v; Update(); return *this; }
 
 		inline CLASSNAME&  SetBackGndColor(Color v) { _bckGndcolor = v; _isRgba=false; return *this; }
@@ -364,6 +362,7 @@ namespace GraphDraw_ns
 					end = R;
 				}
 				Font scaledFont;
+
 				int txtHeight = scaledFont.Height(scale*_font.GetHeight()).GetHeight();
 				for(int i = start; i < end; i++) {
 					int x = scale*(i-start)*_legendWeight;
@@ -379,7 +378,8 @@ namespace GraphDraw_ns
 					if ((*series)[i].markWidth >= 1 && (*series)[i].markPlot)
 						(*series)[i].markPlot->Paint(w, scale, p, (*series)[i].markWidth, (*series)[i].markColor);
 
-					DrawText(w, x+scale*(_legendStyleLength+2), y, 0, (*series)[i].legend, scaledFont, Black() );
+					DrawText(w, x+scale*(_legendStyleLength+2), y, 0, (*series)[i].legend, scaledFont,
+					         (  ((*series)[i].seriesPlot.IsEmpty()) ? (*series)[i].markColor : (*series)[i].color ) );
 				}
 			}
 		}

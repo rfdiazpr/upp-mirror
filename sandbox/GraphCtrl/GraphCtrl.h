@@ -13,16 +13,16 @@ using namespace Upp;
 
 
 // ============================
-//    GraphCtrlBase   CLASS
+//    CRTP_GraphCtrlBase   CLASS
 // ============================
-template<class TYPES>
-class GraphCtrlBase : public TYPES::TypeGraphDraw_base, public Ctrl
+template<class TYPES, class DERIVED>
+class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED>, public Ctrl
 {
 	public:
-	typedef GraphCtrlBase<TYPES> CLASSNAME;
+	typedef CRTP_GraphCtrlBase<TYPES, DERIVED> CLASSNAME;
 
 	private:
-	typedef typename TYPES::TypeGraphDraw_base _GD;
+	typedef GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED> _GD;
 
 	GraphDraw_ns::GraphElementFrame* elementCapture_LeftDown   ;
 	GraphDraw_ns::GraphElementFrame* elementCapture_LeftDouble ;
@@ -53,7 +53,7 @@ class GraphCtrlBase : public TYPES::TypeGraphDraw_base, public Ctrl
 
 
 
-	GraphCtrlBase()
+	CRTP_GraphCtrlBase()
 	: elementCapture_LeftDown   (0)
 	, elementCapture_LeftDouble (0)
 	, elementCapture_LeftDrag   (0)
@@ -76,7 +76,7 @@ class GraphCtrlBase : public TYPES::TypeGraphDraw_base, public Ctrl
 		setScreenSize( GetSize() );
 	}
 
-	GraphCtrlBase(const GraphCtrlBase& p)
+	CRTP_GraphCtrlBase(const CRTP_GraphCtrlBase& p)
 	: _GD(p)
 	, elementCapture_LeftDown   (0)
 	, elementCapture_LeftDouble (0)
@@ -469,8 +469,7 @@ class StdGridAxisDrawCtrl : public GraphDraw_ns::GridAxisDraw<TYPES>
 					delta = p.x-prevMousePoint.x;
 				}
 				typename TYPES::TypeCoordConverter& converter = _B::GetCoordConverter();
-				converter.updateGraphSize( converter.toGraph( converter.getScreenMin() - delta ),
-				                           converter.toGraph( converter.getScreenMax() - delta ));
+				converter.Scroll( delta );
 				prevMousePoint = p;
 				_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
 				return this; // Capture MouseCtrl
@@ -563,8 +562,8 @@ struct GraphCtrlDefaultTypes {
 		typedef GraphDraw_ns::GridStepManager<TypeCoordConverter>               TypeGridStepManager;
 		typedef GraphDraw_ns::SeriesConfig<GraphCtrlDefaultTypes>               TypeSeriesConfig;
 		typedef Vector<TypeSeriesConfig>                                        TypeVectorSeries;
-		typedef GraphDraw_ns::StdGraphDraw<GraphCtrlDefaultTypes>               TypeGraphDraw_base;
-		typedef TypeGraphDraw_base                                              TypeGraphDraw;
+//		typedef GraphDraw_ns::CRTP_StdGraphDraw<GraphCtrlDefaultTypes>          TypeGraphDraw_base;
+//		typedef TypeGraphDraw_base                                              TypeGraphDraw;
 };
 
 namespace GraphCtrl_ns
@@ -573,13 +572,13 @@ namespace GraphCtrl_ns
 };
 
 
-template<class TYPES = GraphCtrlDefaultTypes >
-class StdGraphCtrl :	public GraphCtrlBase< TYPES >
+template<class TYPES, class DERIVED >
+class CRTP_StdGraphCtrl :	public CRTP_GraphCtrlBase< TYPES, DERIVED >
 {
 	public:
-	typedef StdGraphCtrl<TYPES>  CLASSNAME;
-	typedef GraphCtrlBase<TYPES> _B;
-	typedef TYPES                Types;
+	typedef CRTP_StdGraphCtrl<TYPES, DERIVED>  CLASSNAME;
+	typedef CRTP_GraphCtrlBase<TYPES, DERIVED> _B;
+	typedef TYPES                              Types;
 
 	private:
 	void OpenGridAxisProperties(GraphDraw_ns::GraphElementFrame* v, Point p, dword keyflags) {
@@ -587,10 +586,15 @@ class StdGraphCtrl :	public GraphCtrlBase< TYPES >
 	}
 
 	public:
-	StdGraphCtrl() {
+	CRTP_StdGraphCtrl() {
 		_B::_xGridDraw.WhenLeftDouble << THISBACK(OpenGridAxisProperties);
 		_B::_yGridDraw.WhenLeftDouble << THISBACK(OpenGridAxisProperties);
 	}
+};
+
+template<class TYPES = GraphCtrlDefaultTypes >
+class StdGraphCtrl :	public CRTP_StdGraphCtrl< TYPES, StdGraphCtrl<TYPES> >
+{
 };
 
 

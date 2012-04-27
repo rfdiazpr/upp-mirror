@@ -16,22 +16,34 @@ template<class TYPES, class DERIVED>
 		typename TYPES::TypeCoordConverter* _currentXConverter;
 		typename TYPES::TypeCoordConverter* _currentYConverter;
 
+		bool _setDefaultStylesOnCreate;
+
 	public:
+
+		SeriesGroup() : _currentXConverter(0), _currentYConverter(0), _setDefaultStylesOnCreate(false) {}
+		virtual ~SeriesGroup() {}
 
 		inline typename TYPES::TypeSeriesConfig& GetSeriesConfig(int id) { return series[id]; }
 
 		inline int GetCount() 	{return series.GetCount();}
 		inline bool IsEmpty()	{return series.IsEmpty();}
 
+		DERIVED&  SetDefaultStylesSeriesAdd (bool v = true) {
+			_setDefaultStylesOnCreate = v;
+			return *static_cast<DERIVED*>(this);
+		}
 
-		void SetDataColor(const int j,const Color& color){
+		DERIVED& SetDataColor(const int j,const Color& color){
 			ASSERT(IsValid(j));
 			series[j].color = color;
 			static_cast<DERIVED*>(this)->Refresh();
+			return *static_cast<DERIVED*>(this);
 		}
-		void SetDataColor(const Color& color){
+
+		DERIVED& SetDataColor(const Color& color){
 			series[series.GetCount()-1].color = color;
 			static_cast<DERIVED*>(this)->Refresh();
+			return *static_cast<DERIVED*>(this);
 		}
 
 		Color GetDataColor (const int j) const{
@@ -140,7 +152,7 @@ template<class TYPES, class DERIVED>
 		DERIVED& AddSeries(PlotParamFunc function, int np, double from = 0, double to = 1)     {return AddSeries<PlotParamFuncSource>(function, np, from, to);}
 		DERIVED& AddSeries(DataSource &data) {
 			typename TYPES::TypeSeriesConfig &s = series.Add();
-			s.Init(series.GetCount()-1);
+			s.Init(series.GetCount()-1, _setDefaultStylesOnCreate);
 			s.SetDataSource(&data, false);
 			s.xConverter = _currentXConverter;
 			s.yConverter = _currentYConverter;
@@ -150,7 +162,7 @@ template<class TYPES, class DERIVED>
 		
 		DERIVED& _AddSeries(DataSource *data) {
 			typename TYPES::TypeSeriesConfig &s = series.Add();
-			s.Init(series.GetCount()-1);
+			s.Init(series.GetCount()-1, _setDefaultStylesOnCreate);
 			s.SetDataSource(data);
 			s.xConverter = _currentXConverter;
 			s.yConverter = _currentYConverter;
@@ -195,7 +207,7 @@ template<class TYPES, class DERIVED>
 		void _InsertSeries(int id, DataSource *data) {
 			ASSERT(IsValid(id));
 			typename TYPES::TypeSeriesConfig &s = series.Insert(id);
-			s.Init(id);
+			s.Init(id, _setDefaultStylesOnCreate);
 			s.SetDataSource(data);
 			s.xConverter = _currentXConverter;
 			s.yConverter = _currentYConverter;

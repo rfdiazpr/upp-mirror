@@ -1,0 +1,10 @@
+uses
+	PdfDraw;
+
+file
+	main.cpp,
+	app.iml;
+
+mainconfig
+	"" = "";
+

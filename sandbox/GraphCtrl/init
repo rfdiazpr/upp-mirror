@@ -2,4 +2,6 @@
 #define _GraphCtrl_icpp_init_stub
 #include "CtrlLib/init"
 #include "GraphDraw/init"
+#include "plugin/jpg/init"
+#include "plugin/tif/init"
 #endif

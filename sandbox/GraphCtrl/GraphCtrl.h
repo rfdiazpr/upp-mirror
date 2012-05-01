@@ -1,6 +1,7 @@
 #ifndef _GraphCtrl_GrapCtrl_h
 #define _GraphCtrl_GrapCtrl_h
 
+#include <CtrlLib/CtrlLib.h>
 #include <GraphDraw/GraphDraw.h>
 
 using namespace Upp;
@@ -10,6 +11,9 @@ using namespace Upp;
 #define IMAGECLASS GraphCtrlImg
 #define IMAGEFILE <GraphCtrl/GraphCtrl.iml>
 #include <Draw/iml_header.h>
+
+#include <plugin/jpg/jpg.h>
+#include <plugin/tif/tif.h>
 
 
 // ============================
@@ -22,7 +26,7 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 	typedef CRTP_GraphCtrlBase<TYPES, DERIVED> CLASSNAME;
 
 	private:
-	typedef GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED> _GD;
+	typedef GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED> _B;
 
 	GraphDraw_ns::GraphElementFrame* elementCapture_LeftDown   ;
 	GraphDraw_ns::GraphElementFrame* elementCapture_LeftDouble ;
@@ -48,6 +52,7 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 	Image CaptureMouseMove_cursorImage;
 
 	Point prevMousePoint;
+	int copyRatio;
 
 	public:
 
@@ -72,12 +77,13 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 	, plotCapture_MiddleDown (false)
 	, plotCapture_MouseMove  (false)
 	, plotCapture_MouseWheel (false)
+	, copyRatio(3)
 	{
 		setScreenSize( GetSize() );
 	}
 
 	CRTP_GraphCtrlBase(const CRTP_GraphCtrlBase& p)
-	: _GD(p)
+	: _B(p)
 	, elementCapture_LeftDown   (0)
 	, elementCapture_LeftDouble (0)
 	, elementCapture_LeftDrag   (0)
@@ -96,32 +102,33 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 	, plotCapture_MiddleDown (false)
 	, plotCapture_MouseMove  (false)
 	, plotCapture_MouseWheel (false)
+	, copyRatio(p.copyRatio)
 	{
 		setScreenSize( GetSize() );
 	}
 
 	virtual void Refresh() {
-		_GD::updateSizes();
+		_B::updateSizes();
 		Ctrl::Refresh();
 	};
 
 
 	void Paint2(Draw& w) {
 		setScreenSize( GetSize() );
-		if (_GD::_mode == GraphDraw_ns::MD_DRAW) {
-			_GD::Paint(w, 1);
+		if (_B::_mode == GraphDraw_ns::MD_DRAW) {
+			_B::Paint(w, 1);
 		}
 		else {
 			ImageBuffer ib(GetSize());
-			BufferPainter bp(ib, _GD::_mode);
-			_GD::Paint(bp, 1);
+			BufferPainter bp(ib, _B::_mode);
+			_B::Paint(bp, 1);
 			w.DrawImage(0, 0, ib);
 		}
 	}
 
 
 	virtual void Paint(Draw& w) {
-		if ( _GD::_doFastPaint ==false )	{
+		if ( _B::_doFastPaint ==false )	{
 			Image m = OverrideCursor(GraphCtrlImg::SAND());
 			Paint2(w);
 			OverrideCursor(m);
@@ -132,53 +139,139 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 	}
 
 
+	int GetCopyRatio() { return copyRatio; }
+	DERIVED& SetCopyRatio(int ratio) {
+		copyRatio = ratio;
+		return *static_cast<DERIVED*>(this);
+	}
+
+#ifdef PLATFORM_WIN32
+
+	void SaveAsMetafile(const char* file)
+	{
+		GuiLock __;
+		WinMetaFileDraw wmfd;
+		wmfd.Create(copyRatio*GetSize().cx, copyRatio*GetSize().cy, "GraphCtrl", "chart", file);
+		_B::Paint<Draw>(wmfd, copyRatio);
+		wmfd.Close();
+	}
+
+	void SaveToClipboard(bool saveAsMetafile)
+	{
+		GuiLock __;
+		if (saveAsMetafile) {
+			WinMetaFileDraw wmfd;
+			wmfd.Create(copyRatio*GetSize().cx, copyRatio*GetSize().cy, "GraphCtrl", "chart");
+			SetDrawing<Draw>(wmfd, copyRatio);
+			WinMetaFile wmf = wmfd.Close();
+			wmf.WriteClipboard();
+		} else {
+			Image img = GetImage(copyRatio);
+			WriteClipboardImage(img);
+		}
+	}
+#else
+
+	void SaveToClipboard(bool)
+	{
+		GuiLock __;
+		Image img = _B::GetImage(copyRatio);
+		WriteClipboardImage(img);
+	}
+#endif
+
+	void SaveToFile(String fileName)
+	{
+		GuiLock __;
+		if (IsNull(fileName)) {
+			FileSel fs;
+
+			fs.Type("PNG file", "*.png");
+			fs.Type("JPEG file", "*.jpg");
+			fs.Type("TIFF file", "*.tif");
+		    if(!fs.ExecuteSaveAs(t_("Saving plot to PNG, JPEG or TIFF file"))) {
+		        Exclamation(t_("Plot has not been saved"));
+		        return;
+		    }
+	        fileName = fs;
+		}
+		if (GetFileExt(fileName) == ".png") {
+			PNGEncoder encoder;
+			encoder.SaveFile(fileName, _B::GetImage(copyRatio));
+		} else if (GetFileExt(fileName) == ".jpg") {
+			JPGEncoder encoder(90);
+			encoder.SaveFile(fileName, _B::GetImage(copyRatio));
+		} else if (GetFileExt(fileName) == ".tif") {
+			TIFEncoder encoder;
+			encoder.SaveFile(fileName, _B::GetImage(copyRatio));
+		} else
+			Exclamation(Format(t_("File format \"%s\" not found"), GetFileExt(fileName)));
+	}
+
+
+	void ContextMenu(Bar& bar)
+	{
+//		if (mouseHandlingX || mouseHandlingY) {
+//			bar.Add(t_("Fit to data"), 	ScatterImg::ShapeHandles(), THISBACK1(FitToData, mouseHandlingY));
+//			bar.Add(t_("Zoom +"), 		ScatterImg::ZoomPlus(), 	THISBACK3(Zoom, 1/1.2, true, mouseHandlingY));
+//			bar.Add(t_("Zoom -"), 		ScatterImg::ZoomMinus(), 	THISBACK3(Zoom, 1.2, true, mouseHandlingY));
+//			bar.Add(t_("Scroll Left"), 	ScatterImg::LeftArrow(), 	THISBACK2(ScatterDraw::Scroll, -0.2, 0));
+//			bar.Add(t_("Scroll Right"), ScatterImg::RightArrow(), 	THISBACK2(ScatterDraw::Scroll, 0.2, 0));
+//			if (mouseHandlingY) {
+//				bar.Add(t_("Scroll Up"), 	ScatterImg::UpArrow(), 	THISBACK2(ScatterDraw::Scroll, 0, -0.2));
+//				bar.Add(t_("Scroll Down"), 	ScatterImg::DownArrow(), THISBACK2(ScatterDraw::Scroll, 0, 0.2));
+//			}
+//			bar.Separator();
+//		}
+		bar.Add(t_("Copy"), GraphCtrlImg::COPY(), 		  THISBACK1(SaveToClipboard, false)).Key(K_CTRL_C);
+		bar.Add(t_("Save to file"), GraphCtrlImg::SAVE(), THISBACK1(SaveToFile, Null));
+	}
+
 
 	typedef GraphDraw_ns::GraphElementFrame* (GraphDraw_ns::GraphElementFrame::*mouseCallBack)(Point,dword);
 
-	bool IsContainedByOverElement(Point p) {
-		for (int j = 0; j < _GD::_overElements.GetCount(); j++) {
-			if (_GD::_overElements[j]->Contains(p)) return true;
+	template<class RESULT, class CBCK>
+	bool ProcessMouseCallBack(Point p, dword keyflags, CBCK cbck, RESULT& output ,RESULT defaultRes = 0)
+	{
+		for (int j = 0; j < _B::_overElements.GetCount(); j++)
+		{
+			if (_B::_overElements[j]->Contains(p)) {
+				output = ((_B::_overElements[j]->*cbck)(p, keyflags));
+				return true;
+			}
+		}
+		for (int j = 0; j < _B::_leftElements.GetCount(); j++)
+		{
+			if (_B::_leftElements[j]->Contains(p)) {
+				output = ((_B::_leftElements[j]->*cbck)(p, keyflags));
+				return true;
+			}
+		}
+
+		for (int j = 0; j < _B::_bottomElements.GetCount(); j++)
+		{
+			if (_B::_bottomElements[j]->Contains(p)) {
+				output = ((_B::_bottomElements[j]->*cbck)(p, keyflags));
+				return true;
+			}
+		}
+
+		for (int j = 0; j < _B::_rightElements.GetCount(); j++)
+		{
+			if (_B::_rightElements[j]->Contains(p)) {
+				output = ((_B::_rightElements[j]->*cbck)(p, keyflags));
+				return true;
+			}
+		}
+
+		for (int j = 0; j < _B::_topElements.GetCount(); j++)
+		{
+			if (_B::_topElements[j]->Contains(p)) {
+				output = ((_B::_topElements[j]->*cbck)(p, keyflags));
+				return true;
+			}
 		}
 		return false;
-	}
-
-	template<class RESULT, class CBCK>
-	RESULT ProcessMouseCallBack(Point p, dword keyflags, CBCK cbck, RESULT defaultRes = 0)
-	{
-		for (int j = 0; j < _GD::_overElements.GetCount(); j++)
-		{
-			if (_GD::_overElements[j]->Contains(p)) {
-				return ((_GD::_overElements[j]->*cbck)(p, keyflags));
-			}
-		}
-		for (int j = 0; j < _GD::_leftElements.GetCount(); j++)
-		{
-			if (_GD::_leftElements[j]->Contains(p)) {
-				return ((_GD::_leftElements[j]->*cbck)(p, keyflags));
-			}
-		}
-
-		for (int j = 0; j < _GD::_bottomElements.GetCount(); j++)
-		{
-			if (_GD::_bottomElements[j]->Contains(p)) {
-				return ((_GD::_bottomElements[j]->*cbck)(p, keyflags));
-			}
-		}
-
-		for (int j = 0; j < _GD::_rightElements.GetCount(); j++)
-		{
-			if (_GD::_rightElements[j]->Contains(p)) {
-				return ((_GD::_rightElements[j]->*cbck)(p, keyflags));
-			}
-		}
-
-		for (int j = 0; j < _GD::_topElements.GetCount(); j++)
-		{
-			if (_GD::_topElements[j]->Contains(p)) {
-				return ((_GD::_topElements[j]->*cbck)(p, keyflags));
-			}
-		}
-		return defaultRes;
 	}
 
 
@@ -188,19 +281,22 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 			elementCapture_LeftDown = elementCapture_LeftDown->LeftDown(p, keyflags);
 			return;
 		}
-		if ( _GD::_plotRect.Contains(p)  && !IsContainedByOverElement(p) ) {
+		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::LeftDown, elementCapture_LeftDown) )
+		{
+			return;
+		}
+		else if ( _B::_plotRect.Contains(p) ) {
 			if ( keyflags & K_CTRL )
 			{
 				// SELECT ZOOM
 				RectTracker tracker(*this);
-				Rect selectedZoomArea = tracker.Track( RectfC(p.x,p.y,0,0), ALIGN_NULL, ALIGN_NULL) - _GD::_PlotTopLeft;
+				Rect selectedZoomArea = tracker.Track( RectfC(p.x,p.y,0,0), ALIGN_NULL, ALIGN_NULL) - _B::_PlotTopLeft;
 				if (selectedZoomArea.Width() !=0  && selectedZoomArea.Height() != 0) {
-					_GD::ZoomOnRect( selectedZoomArea );
+					_B::ZoomOnRect( selectedZoomArea );
 				}
 			}
 			return;
 		}
-		elementCapture_LeftDown = ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::LeftDown);
 	}
 
 	virtual void LeftDouble(Point p, dword keyflags) {
@@ -208,10 +304,12 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 			elementCapture_LeftDouble = elementCapture_LeftDouble->LeftDouble(p, keyflags);
 			return;
 		}
-		if ( _GD::_plotRect.Contains(p) && !IsContainedByOverElement(p) ) {
+		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::LeftDouble, elementCapture_LeftDouble) ) {
 			return;
 		}
-		elementCapture_LeftDouble = ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::LeftDouble);
+		if ( _B::_plotRect.Contains(p) ) {
+			return;
+		}
 	}
 
 	virtual void LeftDrag(Point p, dword keyflags) {
@@ -219,11 +317,13 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 			elementCapture_LeftDrag = elementCapture_LeftDrag->LeftDrag(p, keyflags);
 			return;
 		}
-		if ( _GD::_plotRect.Contains(p) && !IsContainedByOverElement(p) ) {
+		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::LeftDrag, elementCapture_LeftDrag)) {
+			return;
+		}
+		if ( _B::_plotRect.Contains(p) ) {
 			// do PLOT SCROLLING
 			return;
 		}
-		elementCapture_LeftDrag = ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::LeftDrag);
 	}
 
 	virtual void RightDown(Point p, dword keyflags) {
@@ -231,10 +331,13 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 			elementCapture_RightDown = elementCapture_RightDown->RightDown(p, keyflags);
 			return;
 		}
-		if ( _GD::_plotRect.Contains(p) && !IsContainedByOverElement(p) ) {
+		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::RightDown, elementCapture_RightDown)) {
 			return;
 		}
-		elementCapture_RightDown = ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::RightDown);
+		if ( _B::_plotRect.Contains(p) ) {
+			MenuBar::Execute(THISBACK(ContextMenu));
+			return;
+		}
 	}
 
 	virtual void RightDouble(Point p, dword keyflags) {
@@ -242,10 +345,13 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 			elementCapture_RightDouble = elementCapture_RightDouble->RightDouble(p, keyflags);
 			return;
 		}
-		if ( _GD::_plotRect.Contains(p)  && !IsContainedByOverElement(p) ) {
+		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::RightDouble, elementCapture_RightDouble) ) {
 			return;
 		}
-		elementCapture_RightDouble = ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::RightDouble);
+		if ( _B::_plotRect.Contains(p) ) {
+			return;
+		}
+
 	}
 
 	virtual void MiddleDown(Point p, dword keyflags) {
@@ -253,11 +359,13 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 			elementCapture_MiddleDown = elementCapture_MiddleDown->MiddleDown(p, keyflags);
 			return;
 		}
-		if ( _GD::_plotRect.Contains(p) && !IsContainedByOverElement(p) ) {
+		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::MiddleDown, elementCapture_MiddleDown) ) {
+			return;
+		}
+		if ( _B::_plotRect.Contains(p) ) {
 			// do PLOT  CENTER  at point
 			return;
 		}
-		elementCapture_MiddleDown = ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::MiddleDown);
 	}
 
 	virtual void MouseMove(Point p, dword keyflags) {
@@ -265,30 +373,34 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 			elementCapture_MouseMove = elementCapture_MouseMove->MouseMove(p, keyflags);
 			return;
 		}
-		if (( _GD::_plotRect.Contains(p) && !IsContainedByOverElement(p) ) || plotCapture_MouseMove)  {
-			if ( keyflags & K_MOUSELEFT )	{
+
+		if ( (plotCapture_MouseMove==0) && ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::MouseMove, elementCapture_MouseMove)) {
+
+		}
+		else if (( _B::_plotRect.Contains(p) ) || plotCapture_MouseMove)  {
+			if ( keyflags & K_MOUSELEFT ) {
 				// LEFT SCROLL
-				_GD::_doFastPaint = true;
+				_B::_doFastPaint = true;
 				plotCapture_MouseMove = true;
 				CaptureMouseMove_cursorImage = CursorImage(p, keyflags);
-				_GD::Scroll(p.x-prevMousePoint.x, p.y-prevMousePoint.y);
+				_B::Scroll(p.x-prevMousePoint.x, p.y-prevMousePoint.y);
 				prevMousePoint = p;
 				Refresh();
-			} else {
+			}
+			else {
 				plotCapture_MouseMove = false;
 				CaptureMouseMove_cursorImage = Null;
-				if (_GD::_doFastPaint) { // Do complete drawing when SCROLLING FINISHED
-					_GD::_doFastPaint = false;
+				if (_B::_doFastPaint) { // Do complete drawing when SCROLLING FINISHED
+					_B::_doFastPaint = false;
 					Refresh();
 				}
 			}
 			return;
 		}
 
-		elementCapture_MouseMove = ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::MouseMove);
-		if (( elementCapture_MouseMove == 0) && (_GD::_doFastPaint))
-		{ // Do complete drawing when nothing special to be done
-			_GD::_doFastPaint = false;
+		if (( elementCapture_MouseMove == 0) && (_B::_doFastPaint)) {
+			// Do complete drawing when nothing special to be done
+			_B::_doFastPaint = false;
 			Refresh();
 		}
 
@@ -303,66 +415,70 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 	virtual Image  CursorImage(Point p, dword keyflags)
 	{
 		if ( !CaptureMouseMove_cursorImage.IsNullInstance() ) return CaptureMouseMove_cursorImage;
-		if ( _GD::_plotRect.Contains(p) && !IsContainedByOverElement(p) ) {
+		Image output;
+		if ( ProcessMouseCallBack<Image>(p, keyflags, &GraphDraw_ns::GraphElementFrame::CursorImage, output, GraphDrawImg::CROSS())) {
+			return output;
+		}
+		if ( _B::_plotRect.Contains(p) ) {
 			if ( keyflags & K_CTRL ) return GraphCtrlImg::ZOOM();
 			return GraphCtrlImg::SCROLL();
 		}
-		return  ProcessMouseCallBack<Image>(p, keyflags, &GraphDraw_ns::GraphElementFrame::CursorImage, GraphDrawImg::CROSS());
+		return GraphDrawImg::CROSS();
 	}
 
 
 
 	virtual void MouseWheel(Point p, int zdelta, dword keyflags)
 	{
-		for (int j = 0; j < _GD::_overElements.GetCount(); j++)
+		for (int j = 0; j < _B::_overElements.GetCount(); j++)
 		{
-			if (_GD::_overElements[j]->Contains(p)) {
-				(_GD::_overElements[j]->MouseWheel)(p, zdelta, keyflags);
+			if (_B::_overElements[j]->Contains(p)) {
+				(_B::_overElements[j]->MouseWheel)(p, zdelta, keyflags);
 				return;
 			}
 		}
 
-		if ( _GD::_plotRect.Contains(p) ) {
-			if ( keyflags & K_CTRL ) // => WHEEL ZOOM
-			{
-				if (zdelta < 0) _GD::ApplyZoomFactor(1.2);
-				else            _GD::ApplyInvZoomFactor(1.2);
-				_GD::_doFastPaint = true;
-
-			}
-			return;
-		}
-
-		for (int j = 0; j < _GD::_leftElements.GetCount(); j++)
+		for (int j = 0; j < _B::_leftElements.GetCount(); j++)
 		{
-			if (_GD::_leftElements[j]->Contains(p)) {
-				(_GD::_leftElements[j]->MouseWheel)(p, zdelta, keyflags);
+			if (_B::_leftElements[j]->Contains(p)) {
+				(_B::_leftElements[j]->MouseWheel)(p, zdelta, keyflags);
 				return;
 			}
 		}
 
-		for (int j = 0; j < _GD::_bottomElements.GetCount(); j++)
+		for (int j = 0; j < _B::_bottomElements.GetCount(); j++)
 		{
-			if (_GD::_bottomElements[j]->Contains(p)) {
-				(_GD::_bottomElements[j]->MouseWheel)(p, zdelta, keyflags);
+			if (_B::_bottomElements[j]->Contains(p)) {
+				(_B::_bottomElements[j]->MouseWheel)(p, zdelta, keyflags);
 				return;
 			}
 		}
 
-		for (int j = 0; j < _GD::_rightElements.GetCount(); j++)
+		for (int j = 0; j < _B::_rightElements.GetCount(); j++)
 		{
-			if (_GD::_rightElements[j]->Contains(p)) {
-				(_GD::_rightElements[j]->MouseWheel)(p, zdelta, keyflags);
+			if (_B::_rightElements[j]->Contains(p)) {
+				(_B::_rightElements[j]->MouseWheel)(p, zdelta, keyflags);
 				return ;
 			}
 		}
 
-		for (int j = 0; j < _GD::_topElements.GetCount(); j++)
+		for (int j = 0; j < _B::_topElements.GetCount(); j++)
 		{
-			if (_GD::_topElements[j]->Contains(p)) {
-				(_GD::_topElements[j]->MouseWheel)(p, zdelta, keyflags);
+			if (_B::_topElements[j]->Contains(p)) {
+				(_B::_topElements[j]->MouseWheel)(p, zdelta, keyflags);
 				return;
 			}
+		}
+
+		if ( _B::_plotRect.Contains(p) ) {
+			if ( keyflags & K_CTRL ) // => WHEEL ZOOM
+			{
+				if (zdelta < 0) _B::ApplyZoomFactor(1.2);
+				else            _B::ApplyInvZoomFactor(1.2);
+				_B::_doFastPaint = true;
+
+			}
+			return;
 		}
 	}
 };
@@ -408,7 +524,8 @@ class StdGridAxisDrawCtrl : public GraphDraw_ns::GridAxisDraw<TYPES>
 		typename TYPES::TypeCoordConverter& converter = _B::GetCoordConverter();
 		if (zdelta < 0) zdelta = -1;
 		else            zdelta =  1;
-		zdelta *= converter.getScreenRange() / 5;
+		if (_B::IsVertical())  zdelta = -zdelta;
+		zdelta *= abs(converter.getScreenRange()) / 5;
 
 		if ( (keyflags & (K_CTRL|K_SHIFT)) == (K_CTRL|K_SHIFT) ) // => ZOOM on wheel (this axis only)
 		{
@@ -499,23 +616,23 @@ class StdGridAxisDrawCtrl : public GraphDraw_ns::GridAxisDraw<TYPES>
 
 
 template <class TYPES, class LEGEND_DRAW_CLASS >
-class StdLegendCtrl : public LEGEND_DRAW_CLASS
+class CtrlElement_MoveResize : public LEGEND_DRAW_CLASS
 {
-	typedef StdLegendCtrl<TYPES,LEGEND_DRAW_CLASS> CLASSNAME;
+	typedef CtrlElement_MoveResize<TYPES,LEGEND_DRAW_CLASS> CLASSNAME;
 	typedef LEGEND_DRAW_CLASS _B;
 
 	Point prevMousePoint;
 	Ctrl* parentCtrl;
 
 	public:
-	StdLegendCtrl() : parentCtrl(0) {}
-	StdLegendCtrl(Ctrl& p) : parentCtrl(&p) {}
-	StdLegendCtrl( StdLegendCtrl& p) : _B(p), parentCtrl(p.parentCtrl)  {}
-	~StdLegendCtrl() {}
+	CtrlElement_MoveResize() : parentCtrl(0) {}
+	CtrlElement_MoveResize(Ctrl& p) : parentCtrl(&p) {}
+	CtrlElement_MoveResize( CtrlElement_MoveResize& p) : _B(p), parentCtrl(p.parentCtrl)  {}
+	~CtrlElement_MoveResize() {}
 
 	virtual bool Contains(Point p) const { return (_B::_frame.Contains(p) && _B::IsOverGraph()); }
 
-	inline StdLegendCtrl& SetParentCtrl(Ctrl& p) { parentCtrl = &p; return *this; }
+	inline CtrlElement_MoveResize& SetParentCtrl(Ctrl& p) { parentCtrl = &p; return *this; }
 
 	virtual Image  CursorImage(Point p, dword keyflags) {
 		if ( keyflags & K_CTRL ){
@@ -546,6 +663,16 @@ class StdLegendCtrl : public LEGEND_DRAW_CLASS
 	virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }
 };
 
+
+template<class TYPES, class LEGENDDRAW>
+class StdLegendCtrl : public CtrlElement_MoveResize<TYPES, LEGENDDRAW> {
+	public:
+	StdLegendCtrl() {}
+	virtual ~StdLegendCtrl() {}
+
+	StdLegendCtrl(Ctrl& ctrl) : CtrlElement_MoveResize<TYPES, LEGENDDRAW>(ctrl) {}
+	StdLegendCtrl(StdLegendCtrl& p) : CtrlElement_MoveResize<TYPES, LEGENDDRAW>(p) {}
+};
 // ===============================================================================================================================
 // ===============================================================================================================================
 //
@@ -562,8 +689,6 @@ struct GraphCtrlDefaultTypes {
 		typedef GraphDraw_ns::GridStepManager<TypeCoordConverter>               TypeGridStepManager;
 		typedef GraphDraw_ns::SeriesConfig<GraphCtrlDefaultTypes>               TypeSeriesConfig;
 		typedef Vector<TypeSeriesConfig>                                        TypeVectorSeries;
-//		typedef GraphDraw_ns::CRTP_StdGraphDraw<GraphCtrlDefaultTypes>          TypeGraphDraw_base;
-//		typedef TypeGraphDraw_base                                              TypeGraphDraw;
 };
 
 namespace GraphCtrl_ns

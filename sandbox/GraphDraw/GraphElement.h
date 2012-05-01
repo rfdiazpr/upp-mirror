@@ -181,19 +181,21 @@ namespace GraphDraw_ns
 			if ( !_bckGndcolor.IsNullInstance() )
 				dw.DrawRect( 0, 0, _B::GetFrame().GetWidth(), _B::GetFrame().GetHeight(), _bckGndcolor);
 
-			Size sz = GetTextSize(_label, _font);
+			Font scaledFont( _font );
+			scaledFont.Height(scale*scaledFont.GetHeight());
+			Size sz = GetTextSize(_label, scaledFont);
 			switch(_B::GetElementPos()){
 				case LEFT_OF_GRAPH:
-					dw.DrawText( _B::GetElementWidth()/2-sz.cy/2, _B::GetFrame().GetHeight()/2+sz.cx/2 , 900, _label, _font, _color);
+					dw.DrawText( _B::GetElementWidth()*scale/2-sz.cy/2, _B::GetFrame().GetHeight()/2+sz.cx/2 , 900, _label, scaledFont, _color);
 					break;
 				case BOTTOM_OF_GRAPH:
-					dw.DrawText( _B::GetFrame().GetWidth()/2-sz.cx/2, _B::GetElementWidth()/2-sz.cy/2 , _label, _font, _color);
+					dw.DrawText( _B::GetFrame().GetWidth()/2-sz.cx/2, _B::GetElementWidth()*scale/2-sz.cy/2 , _label, scaledFont, _color);
 					break;
 				case TOP_OF_GRAPH:
-					dw.DrawText( _B::GetFrame().GetWidth()/2-sz.cx/2, _B::GetElementWidth()/2-sz.cy/2 , _label, _font, _color);
+					dw.DrawText( _B::GetFrame().GetWidth()/2-sz.cx/2, _B::GetElementWidth()*scale/2-sz.cy/2 , _label, scaledFont, _color);
 					break;
 				case RIGHT_OF_GRAPH:
-					dw.DrawText( _B::GetElementWidth()/2+sz.cy/2, _B::GetFrame().GetHeight()/2-sz.cx/2 , 2700, _label, _font, _color);
+					dw.DrawText( _B::GetElementWidth()*scale/2+sz.cy/2, _B::GetFrame().GetHeight()/2-sz.cx/2 , 2700, _label, scaledFont, _color);
 					break;
 			}
 		}
@@ -230,17 +232,17 @@ namespace GraphDraw_ns
 //			switch(_B::GetElementPos()){
 //				case LEFT_OF_GRAPH:
 //
-//					//dw.DrawText( _B::GetElementWidth()/2-sz.cy/2, _B::GetFrame().GetHeight()/2+sz.cx/2 , 900, _label, _font, _color);
+//					//dw.DrawText( _B::GetElementWidth()*scale/2-sz.cy/2, _B::GetFrame().GetHeight()/2+sz.cx/2 , 900, _label, _font, _color);
 //					break;
 //				case BOTTOM_OF_GRAPH:
-//					//dw.DrawText( _B::GetFrame().GetWidth()/2-sz.cx/2, _B::GetElementWidth()/2-sz.cy/2 , _label, _font, _color);
+//					//dw.DrawText( _B::GetFrame().GetWidth()/2-sz.cx/2, _B::GetElementWidth()*scale/2-sz.cy/2 , _label, _font, _color);
 //					break;
 //				case TOP_OF_GRAPH:
 //					_label.Paint(dw, 0, 0, 1000);
-//					//dw.DrawText( _B::GetFrame().GetWidth()/2-sz.cx/2, _B::GetElementWidth()/2-sz.cy/2 , _label, _font, _color);
+//					//dw.DrawText( _B::GetFrame().GetWidth()/2-sz.cx/2, _B::GetElementWidth()*scale/2-sz.cy/2 , _label, _font, _color);
 //					break;
 //				case RIGHT_OF_GRAPH:
-//					//dw.DrawText( _B::GetElementWidth()/2+sz.cy/2, _B::GetFrame().GetHeight()/2-sz.cx/2 , 2700, _label, _font, _color);
+//					//dw.DrawText( _B::GetElementWidth()*scale/2+sz.cy/2, _B::GetFrame().GetHeight()/2-sz.cx/2 , 2700, _label, _font, _color);
 //					break;
 //			}
 //		}
@@ -361,8 +363,7 @@ namespace GraphDraw_ns
 					start = 0;
 					end = R;
 				}
-				Font scaledFont;
-
+				Font scaledFont( _font );
 				int txtHeight = scaledFont.Height(scale*_font.GetHeight()).GetHeight();
 				for(int i = start; i < end; i++) {
 					int x = scale*(i-start)*_legendWeight;

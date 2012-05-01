@@ -82,6 +82,7 @@ namespace GraphDraw_ns
 
 		typedef typename TYPES::TypeCoordConverter                   TypeCoordConverter;
 		typedef SeriesGroup<TYPES, DERIVED >                         TypeSeriesGroup;
+		typedef SeriesGroup<TYPES, DERIVED >                         _B;
 		typedef typename TYPES::TypeCoordConverter::TypeScreenCoord  TypeScreenCoord;
 		typedef typename TYPES::TypeCoordConverter::TypeGraphCoord   TypeGraphCoord;
 
@@ -98,8 +99,6 @@ namespace GraphDraw_ns
 		Vector< TypeCoordConverter* > _xConverters;
 		Vector< TypeCoordConverter* > _yConverters;
 
-		typedef TypeSeriesGroup TG;
-//#define TG::series  TG::series
 
 		Size     _screenPlotSize;
 		Rect     _screenRect;  // whole graph screen Rect
@@ -110,7 +109,7 @@ namespace GraphDraw_ns
 		Color    _plotBckgndColor;
 		Color    _CtrlBckgndColor;
 
-		inline void updateSizes()
+		inline void updateSizes( const int scale = 1 )
 		{
 			// --------------
 			// GRAPH ELEMENTS
@@ -124,19 +123,19 @@ namespace GraphDraw_ns
 			//   calcul des offset
 			for (int j = 0; j < _leftElements.GetCount(); j++)
 			{
-				offsetLeft += _leftElements[j]->GetElementWidth();
+				offsetLeft += _leftElements[j]->GetElementWidth()*scale;
 			}
 			for (int j = 0; j < _topElements.GetCount(); j++)
 			{
-				offsetTop += _topElements[j]->GetElementWidth();
+				offsetTop += _topElements[j]->GetElementWidth()*scale;
 			}
 			for (int j = 0; j < _bottomElements.GetCount(); j++)
 			{
-				offsetBottom += _bottomElements[j]->GetElementWidth();
+				offsetBottom += _bottomElements[j]->GetElementWidth()*scale;
 			}
 			for (int j = 0; j < _rightElements.GetCount(); j++)
 			{
-				offsetRight += _rightElements[j]->GetElementWidth();
+				offsetRight += _rightElements[j]->GetElementWidth()*scale;
 			}
 			
 			_screenPlotSize.cx = _screenRect.GetWidth() - offsetLeft - offsetRight;
@@ -162,8 +161,8 @@ namespace GraphDraw_ns
 			r.Set( Point( offsetLeft, offsetTop ), Size(40,40) );
 			for (int j = 0; j < _leftElements.GetCount(); j++)
 			{
-				r.OffsetHorz( -_leftElements[j]->GetElementWidth() );
-				r.SetSize( _leftElements[j]->GetElementWidth() ,_screenPlotSize.cy);
+				r.OffsetHorz( -_leftElements[j]->GetElementWidth()*scale );
+				r.SetSize( _leftElements[j]->GetElementWidth()*scale ,_screenPlotSize.cy);
 				_leftElements[j]->Update();
 				_leftElements[j]->SetFrame(r);
 			}
@@ -171,8 +170,8 @@ namespace GraphDraw_ns
 			r.Set( Point( offsetLeft, offsetTop ), Size(40,40) );
 			for (int j = 0; j < _topElements.GetCount(); j++)
 			{
-				r.OffsetVert( -_topElements[j]->GetElementWidth() );
-				r.SetSize( _screenPlotSize.cx, _topElements[j]->GetElementWidth());
+				r.OffsetVert( -_topElements[j]->GetElementWidth()*scale );
+				r.SetSize( _screenPlotSize.cx, _topElements[j]->GetElementWidth()*scale);
 				_topElements[j]->SetFrame(r);
 				_topElements[j]->Update();
 			}
@@ -180,19 +179,19 @@ namespace GraphDraw_ns
 			r.Set( Point( offsetLeft, offsetTop+_screenPlotSize.cy ), Size(40,40) );
 			for (int j = 0; j < _bottomElements.GetCount(); j++)
 			{
-				r.SetSize( _screenPlotSize.cx, _bottomElements[j]->GetElementWidth());
+				r.SetSize( _screenPlotSize.cx, _bottomElements[j]->GetElementWidth()*scale);
 				_bottomElements[j]->SetFrame(r);
 				_bottomElements[j]->Update();
-				r.OffsetVert( _bottomElements[j]->GetElementWidth() );
+				r.OffsetVert( _bottomElements[j]->GetElementWidth()*scale );
 			}
 
 			r.Set( Point( offsetLeft+_screenPlotSize.cx, offsetTop ), Size(40,40) );
 			for (int j = 0; j < _rightElements.GetCount(); j++)
 			{
-				r.SetSize( _rightElements[j]->GetElementWidth() ,_screenPlotSize.cy);
+				r.SetSize( _rightElements[j]->GetElementWidth()*scale ,_screenPlotSize.cy);
 				_rightElements[j]->SetFrame(r);
 				_rightElements[j]->Update();
-				r.OffsetHorz( _rightElements[j]->GetElementWidth() );
+				r.OffsetHorz( _rightElements[j]->GetElementWidth()*scale );
 			}
 		}
 
@@ -213,11 +212,19 @@ namespace GraphDraw_ns
 		DERIVED& SetPlotBackgroundColor(Color c) { _plotBckgndColor = c; return *static_cast<DERIVED*>(this); }
 		DERIVED& SetCtrlBackgroundColor(Color c)     { _CtrlBckgndColor = c; return *static_cast<DERIVED*>(this); }
 		DERIVED& SetMode(DrawMode m) { _mode = m; return *static_cast<DERIVED*>(this); }
-
-		DERIVED& setScreenSize(Rect r)	{
-			_screenRect = r;
-			updateSizes();
+		DERIVED& SetMode(int m) {
+			if ((MD_DRAW<=m) && (m<=MD_SUBPIXEL)) _mode = (DrawMode)m;
 			return *static_cast<DERIVED*>(this);
+		}
+
+		DERIVED& setScreenSize(Rect r, const int scale=1)	{
+			_screenRect = r;
+			updateSizes(scale);
+			return *static_cast<DERIVED*>(this);
+		}
+
+		inline DERIVED& setScreenSize( const int scale=1 )	{
+			return setScreenSize(_screenRect, scale);
 		}
 
 		TypeCoordConverter& AddXConverter(TypeCoordConverter& conv) {
@@ -488,22 +495,40 @@ namespace GraphDraw_ns
 		template<class T, class P1, class P2>	T& CreateOverElement( P1& p1, P2& p2) { return CreateElement<T, OVER_GRAPH>(0, p1, p2); }
 
 
-
-
 		// Refresh called from child
-		virtual void RefreshFromChild( RefreshStrategy doFastPaint )
-		{
+		virtual void RefreshFromChild( RefreshStrategy doFastPaint ) {
 			if (doFastPaint == REFRESH_FAST)  _doFastPaint = true;
 			Refresh();
 		};
 
 		virtual void Refresh() {};
 
-		//			template<class T>
-		//			void Paint(T& dw)
-		void Paint(Draw& dw, int scale=1)
-		{
 
+		Image GetImage(DrawMode mode, Size size, const int scale = 1) {
+			Rect _screenRectSvg = _screenRect;
+			setScreenSize( size, scale );
+#ifndef flagGUI
+			ASSERT(mode != MD_DRAW);
+#endif
+			ImageBuffer ib(size);
+			BufferPainter bp(ib, mode);
+			Paint(bp, scale);
+
+			setScreenSize( _screenRectSvg );
+			return ib;
+		}
+
+		inline Image GetImage(DrawMode mode, const int scale=1) {
+			return GetImage( mode, _screenRect.Size()*scale, scale );
+		}
+
+		inline Image GetImage(const int scale=1) {
+			return GetImage( _mode, scale );
+		}
+
+		template<class T>
+		void Paint(T& dw, int scale)
+		{
 			// ------------
 			// paint graph area background
 			// ------------
@@ -545,16 +570,16 @@ namespace GraphDraw_ns
 			// ------------
 			// paint DATA
 			// ------------
-			if (!TG::series.IsEmpty())
+			if (!_B::series.IsEmpty())
 			{
-				for (unsigned int j = 0; j < TG::series.GetCount(); j++)
+				for (unsigned int j = 0; j < _B::series.GetCount(); j++)
 				{
-					if (TG::series[j].opacity == 0 || (!TG::series[j].seriesPlot && !TG::series[j].markPlot))
+					if (_B::series[j].opacity == 0 || (!_B::series[j].seriesPlot && !_B::series[j].markPlot))
 						continue;
 
 					Vector<Point> p1;
 
-					if (TG::series[j].nbVisiblePoints==0) TG::series[j].nbVisiblePoints = TG::series[j].PointsData()->GetCount();
+					if (_B::series[j].nbVisiblePoints==0) _B::series[j].nbVisiblePoints = _B::series[j].PointsData()->GetCount();
 
 					// ============================================
 					//     CREATE  LIST  OF  POINTS  TO  DRAW
@@ -563,33 +588,33 @@ namespace GraphDraw_ns
 					unsigned int nbVisiblePoints = 0;
 					int imin, imax;
 
-					typename TYPES::TypeCoordConverter& xConverter = *(TG::series[j].xConverter);
-					typename TYPES::TypeCoordConverter& yConverter = *(TG::series[j].yConverter);
-//					if (TG::series[j].sequential) {
+					typename TYPES::TypeCoordConverter& xConverter = *(_B::series[j].xConverter);
+					typename TYPES::TypeCoordConverter& yConverter = *(_B::series[j].yConverter);
+//					if (_B::series[j].sequential) {
 //						imin = imax = Null;
-//						for (int i = 1; i < TG::series[j].PointsData()->GetCount() - 1; ++i) {
+//						for (int i = 1; i < _B::series[j].PointsData()->GetCount() - 1; ++i) {
 //							if (IsNull(imin)) {
-//								if (TG::series[j].PointsData()->x(i) >= xMin)
+//								if (_B::series[j].PointsData()->x(i) >= xMin)
 //									imin = i - 1;
 //							} else if (IsNull(imax)) {
-//								if (TG::series[j].PointsData()->x(i) >= xMin + xRange)
+//								if (_B::series[j].PointsData()->x(i) >= xMin + xRange)
 //									imax = i + 1;
 //							}
 //						}
 //						if (IsNull(imin))
 //						    imin = 0;
 //						if (IsNull(imax))
-//						    imax = TG::series[j].PointsData()->GetCount();
+//						    imax = _B::series[j].PointsData()->GetCount();
 //					} else
-					if (TG::series[j].PointsData()->IsParam()) { 				// It is a param function
+					if (_B::series[j].PointsData()->IsParam()) { 				// It is a param function
 						imin = 0;
-						imax = TG::series[j].PointsData()->GetCount();
-					} else if (IsNull(TG::series[j].PointsData()->GetCount())) {		// It is a function
+						imax = _B::series[j].PointsData()->GetCount();
+					} else if (IsNull(_B::series[j].PointsData()->GetCount())) {		// It is a function
 						imin = xConverter.getGraphMin() - 1;
-						imax = xConverter.getGraphMax() + 1;
+						imax = xConverter.getGraphMax() + 2;
 					} else {
 					    imin = 0;
-					    imax = TG::series[j].PointsData()->GetCount();
+					    imax = _B::series[j].PointsData()->GetCount();
 					}
 
 
@@ -600,8 +625,8 @@ namespace GraphDraw_ns
 						TypeGraphCoord y;
 						for (int c=imin; c<imax; c+=inc)
 						{
-							x = TG::series[j].PointsData()->x(c);
-							y = TG::series[j].PointsData()->y(c);
+							x = _B::series[j].PointsData()->x(c);
+							y = _B::series[j].PointsData()->y(c);
 							if (   ( xConverter.IsInGraphRange( x ) )
 							    && ( yConverter.IsInGraphRange( y ) ) )
 							{
@@ -610,21 +635,21 @@ namespace GraphDraw_ns
 							p1 << Point(xConverter.toScreen( x ),
 							            yConverter.toScreen( y ));
 						}
-						TG::series[j].nbVisiblePoints = nbVisiblePoints;
+						_B::series[j].nbVisiblePoints = nbVisiblePoints;
 					}
 					else  // DO FAST DRAW
 					{
-						if ( TG::series[j].seriesPlot.IsEmpty() )
+						if ( _B::series[j].seriesPlot.IsEmpty() )
 						{
-							if ( TG::series[j].nbVisiblePoints>800 ) { inc = TG::series[j].nbVisiblePoints/800 + 1; }
+							if ( _B::series[j].nbVisiblePoints>800 ) { inc = _B::series[j].nbVisiblePoints/800 + 1; }
 
 							nbVisiblePoints = 0;
 							TypeGraphCoord x;
 							TypeGraphCoord y;
 							for ( int c=imin; c<imax; ++c )
 							{
-								x = TG::series[j].PointsData()->x(c);
-								y = TG::series[j].PointsData()->y(c);
+								x = _B::series[j].PointsData()->x(c);
+								y = _B::series[j].PointsData()->y(c);
 								if ( ( xConverter.IsInGraphRange( x ) )
 										&& ( yConverter.IsInGraphRange( y ) ) )
 								{
@@ -633,46 +658,46 @@ namespace GraphDraw_ns
 									                              yConverter.toScreen( y ));
 								}
 							}
-							TG::series[j].nbVisiblePoints = nbVisiblePoints;
+							_B::series[j].nbVisiblePoints = nbVisiblePoints;
 						}
 						else
 						{
 							if ( (fabs(imax-imin)>1000) ) { inc = fabs(imax-imin)/1000 + 1; }
 							for ( int c=imin; c<imax; c+=inc)
 							{
-								p1 << Point(xConverter.toScreen( TG::series[j].PointsData()->x(c)),
-								            yConverter.toScreen( TG::series[j].PointsData()->y(c)));
+								p1 << Point(xConverter.toScreen( _B::series[j].PointsData()->x(c)),
+								            yConverter.toScreen( _B::series[j].PointsData()->y(c)));
 							}
 						}
 					}
 
 					// Draw lines
-					if ( !TG::series[j].seriesPlot.IsEmpty() && (p1.GetCount()>0))
-						TG::series[j].seriesPlot->Paint(dw,
+					if ( !_B::series[j].seriesPlot.IsEmpty() && (p1.GetCount()>0))
+						_B::series[j].seriesPlot->Paint(dw,
 						                                 p1,
 						                                 scale,
-						                                 TG::series[j].opacity,
-						                                 fround(TG::series[j].thickness),
-						                                 TG::series[j].color,
-						                                 TG::series[j].dash,
+						                                 _B::series[j].opacity,
+						                                 fround(_B::series[j].thickness),
+						                                 _B::series[j].color,
+						                                 _B::series[j].dash,
 						                                 LtRed(),
-						                                 TG::series[j].fillColor,
+						                                 _B::series[j].fillColor,
 						                                 xConverter.getScreenRange() / xConverter.getGraphRange(),
 						                                 yConverter.getScreenRange() / yConverter.getGraphRange(),
 						                                 int(yConverter.getScreenRange() * (1 + yConverter.getGraphMin() / yConverter.getGraphRange()))
 						);
 
 					// Draw marks
-					if (TG::series[j].markWidth >= 1 && TG::series[j].markPlot)
+					if (_B::series[j].markWidth >= 1 && _B::series[j].markPlot)
 					{
-						if ( !TG::series[j].markPlot.IsEmpty() )
+						if ( !_B::series[j].markPlot.IsEmpty() )
 							for (unsigned int c=0; c<p1.GetCount(); ++c)
 							{
-								TG::series[j].markPlot->Paint(dw,
+								_B::series[j].markPlot->Paint(dw,
 								                               scale,
 								                               p1[c],
-								                               TG::series[j].markWidth,
-								                               TG::series[j].markColor);
+								                               _B::series[j].markWidth,
+								                               _B::series[j].markColor);
 							}
 					}
 				}
@@ -724,7 +749,6 @@ namespace GraphDraw_ns
 				_overElements[j]->PaintOverGraph(dw, scale);
 				dw.End();
 			}
-
 			TRACE_INFO("==================================" );
 		}
 	};
@@ -764,8 +788,6 @@ namespace GraphDraw_ns
 		TypeCoordConverter        _yConverter;
 		TypeGridAxisDraw          _xGridDraw;
 		TypeGridAxisDraw          _yGridDraw;
-
-//#define TG::series  TypeSeriesGroup::series
 
 		public:
 		CRTP_StdGraphDraw()

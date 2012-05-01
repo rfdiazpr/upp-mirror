@@ -54,14 +54,16 @@ namespace GraphDraw_ns
 			virtual void Paint(Draw &dw, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const {
 				Upp::Vector<Point> p;
 				p << Point(x, y);
+				const int scOffset = 2*scale;
+				const int scTickLength = _tickLength*scale;
 				if (axisPos==LEFT_OF_GRAPH)	{
-					p << Point(x-_tickLength, y-2) << Point(x-_tickLength, y+2);
+					p << Point(x-scTickLength, y-scOffset) << Point(x-scTickLength, y+scOffset);
 				} else if (axisPos==RIGHT_OF_GRAPH)	{
-					p << Point(x+_tickLength, y-2) << Point(x+_tickLength, y+2);
+					p << Point(x+scTickLength, y-scOffset) << Point(x+scTickLength, y+scOffset);
 				} else if (axisPos==BOTTOM_OF_GRAPH)	{
-					p << Point(x-2, y+_tickLength) << Point(x+2, y+_tickLength);
+					p << Point(x-scOffset, y+scTickLength) << Point(x+scOffset, y+scTickLength);
 				} else {
-					p << Point(x-2, y-_tickLength) << Point(x+2, y-_tickLength);
+					p << Point(x-scOffset, y-scTickLength) << Point(x+scOffset, y-scTickLength);
 				}
 				p << Point(x, y);
 				dw.DrawPolygon( p, markColor, scale/2, markColor);
@@ -77,10 +79,11 @@ namespace GraphDraw_ns
 			virtual ~LineTickMark() {}
 
 			virtual void Paint(Draw &dw, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const {
+				const int scTickLength = _tickLength*scale;
 				if ((axisPos==LEFT_OF_GRAPH) || ( axisPos==RIGHT_OF_GRAPH ))	{
-					dw.DrawLine(x-_tickLength, y, x+_tickLength, y, 2, markColor);
+					dw.DrawLine(x-scTickLength, y, x+scTickLength, y, 2*scale, markColor);
 				} else {
-					dw.DrawLine(x, y-_tickLength, x, y+_tickLength, 2, markColor);
+					dw.DrawLine(x, y-scTickLength, x, y+scTickLength, 2*scale, markColor);
 				}
 			}
 
@@ -201,78 +204,86 @@ namespace GraphDraw_ns
 			}
 		}
 
-		virtual void PaintAxisLeft(Draw& dw)
+		virtual void PaintAxisLeft(Draw& dw, const int scale)
 		{
 			typename TypeGridStepManager::Iterator iter = getMajorBeginIterator();
 			typename TypeGridStepManager::Iterator endIter = getMajorEndIterator();
 
-			dw.DrawLineOp(_B::GetElementWidth(), _coordConverter.getScreenMin(), _B::GetElementWidth(), _coordConverter.getScreenMax(), 2, _axisColor );
+			Font scaledAxisTextFont( _axisTextFont );
+			scaledAxisTextFont.Height(scale*scaledAxisTextFont.GetHeight());
+			dw.DrawLineOp(_B::GetElementWidth()*scale, _coordConverter.getScreenMin(), _B::GetElementWidth()*scale, _coordConverter.getScreenMax(), 2, _axisColor );
 			while ( iter != endIter)
 			{
 				if (_majorTickMark.IsEmpty()) {
-					dw.DrawLineOp(_B::GetElementWidth()-8, *iter, _B::GetElementWidth(), *iter, 2, _axisTickColor);
-					PaintTickText<LEFT_OF_GRAPH>(dw, iter.getValue(), _B::GetElementWidth()-8, *iter, _axisTextColor, _axisTextFont);
+					dw.DrawLineOp((_B::GetElementWidth()-8)*scale, *iter, _B::GetElementWidth()*scale, *iter, 2, _axisTickColor);
+					PaintTickText<LEFT_OF_GRAPH>(dw, iter.getValue(), (_B::GetElementWidth()-8)*scale, *iter, _axisTextColor, scaledAxisTextFont);
 				} else {
-					_majorTickMark->Paint(dw, LEFT_OF_GRAPH, 1, _B::GetElementWidth(), *iter, _axisTickColor );
-					PaintTickText<LEFT_OF_GRAPH>(dw, iter.getValue(), _B::GetElementWidth()-_majorTickMark->GetTickLength()-2, *iter, _axisTextColor, _axisTextFont);
+					_majorTickMark->Paint(dw, LEFT_OF_GRAPH, scale, _B::GetElementWidth()*scale, *iter, _axisTickColor );
+					PaintTickText<LEFT_OF_GRAPH>(dw, iter.getValue(), (_B::GetElementWidth()-_majorTickMark->GetTickLength()-2)*scale, *iter, _axisTextColor, scaledAxisTextFont);
 				}
 				++iter;
 			}
 		}
 
-		virtual void PaintAxisRight(Draw& dw)
+		virtual void PaintAxisRight(Draw& dw, const int scale)
 		{
 			typename TypeGridStepManager::Iterator iter = getMajorBeginIterator();
 			typename TypeGridStepManager::Iterator endIter = getMajorEndIterator();
 
+			Font scaledAxisTextFont( _axisTextFont );
+			scaledAxisTextFont.Height(scale*scaledAxisTextFont.GetHeight());
 			dw.DrawLineOp(0, _coordConverter.getScreenMin(), 0, _coordConverter.getScreenMax(), 2, _axisColor);
 			while ( iter != endIter)
 			{
 				if (_majorTickMark.IsEmpty())
 				{
 					dw.DrawLineOp(0, *iter, 8, *iter, 2, _axisTickColor);
-					PaintTickText<RIGHT_OF_GRAPH>(dw, iter.getValue(), 8, *iter, _axisTextColor, _axisTextFont);
+					PaintTickText<RIGHT_OF_GRAPH>(dw, iter.getValue(), 8, *iter, _axisTextColor, scaledAxisTextFont);
 				} else {
-					_majorTickMark->Paint(dw, RIGHT_OF_GRAPH, 1, 0, *iter, _axisTickColor );
-					PaintTickText<RIGHT_OF_GRAPH>(dw, iter.getValue(), _majorTickMark->GetTickLength()+2, *iter, _axisTextColor, _axisTextFont);
+					_majorTickMark->Paint(dw, RIGHT_OF_GRAPH, scale, 0, *iter, _axisTickColor );
+					PaintTickText<RIGHT_OF_GRAPH>(dw, iter.getValue(), (_majorTickMark->GetTickLength()+2)*scale, *iter, _axisTextColor, scaledAxisTextFont);
 				}
 				++iter;
 			}
 		}
 
-		virtual void PaintAxisBottom(Draw& dw)
+		virtual void PaintAxisBottom(Draw& dw, const int scale)
 		{
 			typename TypeGridStepManager::Iterator iter = getMajorBeginIterator();
 			typename TypeGridStepManager::Iterator endIter = getMajorEndIterator();
 
+			Font scaledAxisTextFont( _axisTextFont );
+			scaledAxisTextFont.Height(scale*scaledAxisTextFont.GetHeight());
 			dw.DrawLineOp(_coordConverter.getScreenMin(), 0, _coordConverter.getScreenMax(),0 , 2, _axisColor );
 			while ( iter != endIter )
 			{
 				if (_majorTickMark.IsEmpty()) {
 					dw.DrawLineOp(*iter, 0, *iter, 4, 2, _axisTickColor);
-					PaintTickText<BOTTOM_OF_GRAPH>(dw, iter.getValue(), *iter, 4, _axisTextColor, _axisTextFont);
+					PaintTickText<BOTTOM_OF_GRAPH>(dw, iter.getValue(), *iter, 4, _axisTextColor, scaledAxisTextFont);
 				} else {
-					_majorTickMark->Paint(dw, BOTTOM_OF_GRAPH, 1, *iter, 0, _axisTickColor );
-					PaintTickText<BOTTOM_OF_GRAPH>(dw, iter.getValue(), *iter, _majorTickMark->GetTickLength()+2, _axisTextColor, _axisTextFont);
+					_majorTickMark->Paint(dw, BOTTOM_OF_GRAPH, scale, *iter, 0, _axisTickColor );
+					PaintTickText<BOTTOM_OF_GRAPH>(dw, iter.getValue(), *iter, (_majorTickMark->GetTickLength()+2)*scale, _axisTextColor, scaledAxisTextFont);
 				}
 				++iter;
 			}
 		}
 
-		virtual void PaintAxisTop(Draw& dw)
+		virtual void PaintAxisTop(Draw& dw, const int scale)
 		{
 			typename TypeGridStepManager::Iterator iter = getMajorBeginIterator();
 			typename TypeGridStepManager::Iterator endIter = getMajorEndIterator();
 
-			dw.DrawLineOp(_coordConverter.getScreenMin(), _B::GetElementWidth(), _coordConverter.getScreenMax(), _B::GetElementWidth(), 2, _axisColor );
+			Font scaledAxisTextFont( _axisTextFont );
+			scaledAxisTextFont.Height(scale*scaledAxisTextFont.GetHeight());
+			dw.DrawLineOp(_coordConverter.getScreenMin(), _B::GetElementWidth()*scale, _coordConverter.getScreenMax(), _B::GetElementWidth()*scale, 2, _axisColor );
 			while ( iter != endIter)
 			{
 				if (_majorTickMark.IsEmpty()) {
-					dw.DrawLineOp(*iter, _B::GetElementWidth(), *iter, _B::GetElementWidth()-4, 2, _axisTickColor);
-					PaintTickText<TOP_OF_GRAPH>(dw, iter.getValue(), *iter, _B::GetElementWidth()-4, _axisTextColor, _axisTextFont);
+					dw.DrawLineOp(*iter, _B::GetElementWidth()*scale, *iter, (_B::GetElementWidth()-4)*scale, 2, _axisTickColor);
+					PaintTickText<TOP_OF_GRAPH>(dw, iter.getValue(), *iter, (_B::GetElementWidth()-4)*scale, _axisTextColor, scaledAxisTextFont);
 				} else {
-					_majorTickMark->Paint(dw, TOP_OF_GRAPH, 1, *iter, _B::GetElementWidth(), _axisTickColor );
-					PaintTickText<TOP_OF_GRAPH>(dw, iter.getValue(), *iter, _B::GetElementWidth()-_majorTickMark->GetTickLength()-2, _axisTextColor, _axisTextFont);
+					_majorTickMark->Paint(dw, TOP_OF_GRAPH, scale, *iter, _B::GetElementWidth()*scale, _axisTickColor );
+					PaintTickText<TOP_OF_GRAPH>(dw, iter.getValue(), *iter, (_B::GetElementWidth()-_majorTickMark->GetTickLength()-2)*scale, _axisTextColor, scaledAxisTextFont);
 				}
 				++iter;
 			}
@@ -324,16 +335,16 @@ namespace GraphDraw_ns
 		{
 			switch(_B::GetElementPos()){
 				case LEFT_OF_GRAPH:
-					PaintAxisLeft(dw);
+					PaintAxisLeft(dw, scale);
 					break;
 				case BOTTOM_OF_GRAPH:
-					PaintAxisBottom(dw);
+					PaintAxisBottom(dw, scale);
 					break;
 				case TOP_OF_GRAPH:
-					PaintAxisTop(dw);
+					PaintAxisTop(dw, scale);
 					break;
 				case RIGHT_OF_GRAPH:
-					PaintAxisRight(dw);
+					PaintAxisRight(dw, scale);
 					break;
 			}
 		}

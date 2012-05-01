@@ -2,13 +2,16 @@ description "GRaphics display control\377";
 
 uses
 	CtrlLib,
-	GraphDraw;
+	GraphDraw,
+	plugin/jpg,
+	plugin/tif;
 
 file
 	GraphCtrl.iml,
 	GraphCtrl.lay,
 	GraphCtrl.h,
-	GraphCtrl.cpp;
+	GraphCtrl.cpp,
+	ScatterCtrl.h;
 
 mainconfig
 	"" = "GUI SSE2";

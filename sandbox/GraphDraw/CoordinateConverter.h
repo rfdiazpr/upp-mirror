@@ -150,8 +150,8 @@ namespace GraphDraw_ns
 				if (graphMax <=0) graphMax = 0.1;
 				_B::update(graphMin, graphMax, screenMin, screenMax);
 
-				_logGraphMin = log(graphMin);
-				_logGraphMax = log(graphMax);
+				_logGraphMin = log10(graphMin);
+				_logGraphMax = log10(graphMax);
 				_B::_graphToScreenScale = (screenMax - screenMin) / (_logGraphMax - _logGraphMin);
 				_B::_screenToGraphScale = (_logGraphMax - _logGraphMin) / (screenMax - screenMin);
 //				TRACE_INFO( "LogCoordinateConverter::Update(" << graphMin<<", "<< graphMax<<", "<< screenMin<<", "<< screenMax<<" )  ==> ["<< _logGraphMin << ", " << _logGraphMax << "]" );

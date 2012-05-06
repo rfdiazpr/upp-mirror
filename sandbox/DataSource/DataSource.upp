@@ -1,9 +1,0 @@
-description "Interface class to load numerical data sources\377";
-
-uses
-	Core;
-
-file
-	DataSource.cpp,
-	DataSource.h;
-

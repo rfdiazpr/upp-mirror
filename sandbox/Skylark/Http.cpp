@@ -3,30 +3,6 @@
 #define LLOG(x) LOG(x)
 #define LTIMING(x) RTIMING(x)
 
-bool Http::Read(TcpSocket& http)
-{ // Add length sanity check here...
-	String s = http.GetLine();
-	if(s.IsVoid())
-		return false;
-	Vector<String> h = Split(s, ' '); // Optimize!
-	if(h.GetCount() != 3)
-		return false;
-	method = h[0];
-	uri = h[1];
-	version = h[2];
-	hdrfield.Clear();
-	for(;;) {
-		s = http.GetLine();
-		if(s.IsVoid())
-			return false;
-		if(s.IsEmpty()) break;
-		int q = s.Find(':');
-		if(q >= 0)
-			hdrfield.Add(ToLower(s.Mid(0, q))) = TrimLeft(s.Mid(q + 1));
-	}
-	return !http.IsError();
-}
-
 void Http::ParseRequest(const char *p)
 {
 	while(*p) {

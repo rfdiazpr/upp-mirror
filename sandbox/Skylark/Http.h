@@ -29,13 +29,12 @@ public:
 };
 
 struct Http : Renderer {
-	String method;
-	String uri;
-	String version;
+
+	HttpHeader hdr;
+	
 	String content;
 	String viewid;
 	
-	VectorMap<String, String> hdrfield;
 	Vector<String>            arg;
 	String                    session_id;
 	VectorMap<String, Value>  session_var;
@@ -50,8 +49,6 @@ struct Http : Renderer {
 	VectorMap<String, String> cookies;
 	
 	int    benchmark;
-	
-	bool   Read(TcpSocket& http);
 	
 	void   ParseRequest(const char *s);
 	void   ReadMultiPart(const String& content);
@@ -73,7 +70,7 @@ public:
 
 	void   Dispatch(TcpSocket& socket);
 
-	String GetHeader(const char *s) const              { return hdrfield.Get(s, Null); }
+	String GetHeader(const char *s) const              { return hdr[s]; }
 	int    GetLength() const                           { return atoi(GetHeader("content-length")); }
 
 	String GetViewId() const                           { return viewid; }

@@ -256,11 +256,11 @@ void GetBestDispatch(int method,
 void Http::Dispatch(TcpSocket& socket)
 {
 	Vector<DispatchNode>& DispatchMap = sDispatchMap();
-	if(Read(socket)) {
+	if(hdr.Read(socket)) {
 		int len = GetLength();
 		content = socket.GetAll(len);
 		LLOG(content);
-		Cout() << method << " " << uri << "\n";
+		Cout() << hdr.GetMethod() << " " << hdr.GetURI() << "\n";
 		String r;
 		for(int i = 0; i < benchmark; i++) {
 			var.Clear();
@@ -268,21 +268,22 @@ void Http::Dispatch(TcpSocket& socket)
 			LTIMING("Request processing");
 			request_content_type = GetHeader("content-type");
 			String rc = ToLower(request_content_type);
-			bool post = method == "POST";
+			bool post = hdr.GetMethod() == "POST";
 			if(post)
 				if(rc.StartsWith("application/x-www-form-urlencoded"))
 					ParseRequest(content);
 				else
 				if(rc.StartsWith("multipart/"))
 					ReadMultiPart(content);
+			String uri = hdr.GetURI();
 			int q = uri.Find('?');
 			if(q >= 0) {
 				if(!post)
 					ParseRequest(~uri + q + 1);
 				uri.Trim(q);
 			}
-			for(int i = hdrfield.Find("cookie"); i >= 0; i = hdrfield.FindNext(i)) {
-				const String& h = hdrfield[i];
+			for(int i = hdr.fields.Find("cookie"); i >= 0; i = hdr.fields.FindNext(i)) {
+				const String& h = hdr.fields[i];
 				int q = 0;
 				for(;;) {
 					int qq = h.Find('=', q);

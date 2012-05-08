@@ -31,25 +31,27 @@ bool IsUrlChar(int c)
 
 void WebSpider::ExtractUrls(const String& html)
 {
-	int q = 0;
-	while(q < html.GetCount()) {
-		q = html.Find("http://", q);
-		if(q < 0)
-			return;
-		int b = q;
-		while(q < html.GetCount() && IsUrlChar(html[q]))
-			q++;
-		String url = html.Mid(b, q - b);
-		if(done.Find(url) < 0) {
-			done.Add(url);
-			todo.AddTail(url);
+	for(int ssl = 0; ssl < 2; ssl++) {
+		int q = 0;
+		while(q < html.GetCount()) {
+			q = html.Find(ssl ? "https://" : "http://", q);
+			if(q < 0)
+				return;
+			int b = q;
+			while(q < html.GetCount() && IsUrlChar(html[q]))
+				q++;
+			String url = html.Mid(b, q - b);
+			if(done.Find(url) < 0) {
+				done.Add(url);
+				todo.AddTail(url);
+			}
 		}
 	}
 }
 
 void WebSpider::Run()
 {
-	String seed = "www.ultimatepp.org";
+	String seed = "https://google.com";
 	todo.AddTail(seed);
 	done.Add(seed);
 	Open();

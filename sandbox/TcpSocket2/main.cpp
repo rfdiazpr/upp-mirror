@@ -15,6 +15,8 @@ CONSOLE_APP_MAIN
 	DDUMP(sizeof(fd_set));
 //	DDUMP(RequestHttpGet("www.ultimatepp.com"));
 
+	DDUMP(TcpSocket::GetHostName());
+
 #if 0
 	DDUMP(HttpRequest("www.idnes.cz").Execute());
 	DLOG("=======================");
@@ -40,8 +42,9 @@ CONSOLE_APP_MAIN
 
 	if(1) {
 		HttpRequest h(
+			"euroseptik.cz"
 //			"https://www.google.cz/search"
-			"www.ultimatepp.com"
+//			"www.ultimatepp.com"
 		);
 //		h.Timeout(0);
 //		h.SSLProxy("90.182.182.154");

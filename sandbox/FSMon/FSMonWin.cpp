@@ -42,6 +42,9 @@ FSMon::FSMon(bool nOnClose)
 	EnablePrivilege(SE_BACKUP_NAME, true);
 	EnablePrivilege(SE_RESTORE_NAME, true);
 	EnablePrivilege(SE_CHANGE_NOTIFY_NAME, true);
+	
+	shutDown = false;
+	threadRunning = false;
 
 DLOG("Class constructed");
 }
@@ -50,11 +53,37 @@ DLOG("Class constructed");
 FSMon::~FSMon()
 {
 	// if thread not started, no need to shutdown
-	if(fsmThread.IsOpen())
+	if(threadRunning)
 	{
 		// cancels all pending IO operations
+		// can't use the CancelIoEx (available from Vista+)
+		// so we first cancel IO for current thread
+		// then we send a packet that causes worker thread to
+		// cancel its part
 		for(int i = 0; i < monitoredInfo.GetCount(); i++)
-			CancelIoEx(monitoredInfo[i].hDir, &monitoredInfo[i].overlapped);
+		{
+			CancelIo(monitoredInfo[i].hDir);
+			// no way to pass valid parameters with PostQueuedCompletionStatus(),
+			// so we use a 'cancelling' flag inside Info recors
+			INTERLOCKED_(fsmMutex2){
+				monitoredInfo[i].cancelling = true;
+			}
+			PostQueuedCompletionStatus(completionPort, 0, monitoredDescriptors[i], NULL);
+			while(true)
+			{
+				bool cancelling;
+				INTERLOCKED_(fsmMutex2){
+					cancelling = monitoredInfo[i].cancelling;
+				}
+				if(!cancelling)
+					break;
+				else
+					Sleep(10);
+			}
+		}
+		
+		// wait some time just to allow thread to cancel all pending I/O
+		Sleep(10);
 		
 DLOG("Shutting thread down....");
 		// signal thread shutdown
@@ -67,6 +96,7 @@ DLOG("Shutting thread down....");
 		while(shutDown)
 			;
 DLOG("Thread correctly stopped");
+		threadRunning = false;
 	}
 	
 	// close handles and completion port
@@ -171,10 +201,11 @@ DLOG("Error creating completion port");
 
 DLOG("hDir = " << hDir);	
 	// an now, if not already done, we must start working thread
-	if(!fsmThread.IsOpen())
+	if(!threadRunning)
 	{
 		shutDown = false;
 		fsmThread.Start(THISBACK(monitorCb));
+		threadRunning = true;
 	}
 
 	// thread is started, we shall add the monitored folder with ReadDirectoryChangesW
@@ -212,12 +243,31 @@ bool FSMon::Remove(String const &path)
 	CHANGESINFO &info = monitoredInfo[idx];
 	
 	// camcels io for corresponding path
-	// this well send a completion packet to thread, with a return of ERROR_OPERATION_ABORTED
-	CancelIoEx(info.hDir, &info.overlapped);
+	// as usual, we can't use CancelIoEx because we want it working on XP
+	// so we cancel io in current thread and fake the behaviour
+	// sending a cancel packet to worker thread
+DLOG("Posting completion cancel packet....");
+	// no way to pass valid parameters with PostQueuedCompletionStatus(),
+	// so we use a 'cancelling' flag inside Info recors
+	INTERLOCKED_(fsmMutex2)	{
+		info.cancelling = true;
+	}
+	PostQueuedCompletionStatus(completionPort, 0, monitoredDescriptors[idx], NULL);
+	CancelIo(info.hDir);
 	
-	// just sleep a while in order to not catch thread in the middle
-	// of an I/O on same dir..
-	Sleep(10);
+	// wait for tread get the cancelling packet and reset the flag...
+	while(true)
+	{
+		bool cancelling;
+		INTERLOCKED_(fsmMutex2){
+			cancelling = info.cancelling;
+		}
+		if(!cancelling)
+			break;
+		else
+			Sleep(10);
+	}
+DLOG("Should have got and cancelled");
 	
 	// free dir handle
 	CloseHandle(info.hDir);
@@ -323,7 +373,7 @@ DLOG("unknown action notification");
 void FSMon::monitorCb(void)
 {
 	DWORD numBytes;
-	ULONG descriptor;
+	LONG descriptor;
 	LPOVERLAPPED overlapped;
 
 	// completion port is ok, start monitoring it
@@ -334,7 +384,7 @@ void FSMon::monitorCb(void)
 		if(!GetQueuedCompletionStatus(
 				completionPort,
 				&numBytes,
-				&descriptor,
+				(ULONG *)&descriptor,
 				&overlapped,
 				INFINITE // remember to send a completion packet to shut down thread !!
 		))
@@ -344,6 +394,10 @@ void FSMon::monitorCb(void)
 			if(!overlapped)
 			{
 				// this would mean timeout, but shouldn't happen
+				// even if called with a null overlapped, it sets up one
+				// so this can't be used for cancel packets
+				// we use numBytes parameter, using value of 1 which should
+				// be never valid
 			}
 			else
 			{
@@ -353,6 +407,12 @@ void FSMon::monitorCb(void)
 				{
 					// we land here if a CancelIo was called on this handle
 					// just do nothing... we don't have to respawn the I/O
+					INTERLOCKED_(fsmMutex2)
+					{
+						int idx = monitoredDescriptors.Find(descriptor);
+						if(idx >= 0)
+							CancelIo(monitoredInfo[idx].hDir);
+					}
 DLOG("IO cancelled");
 				}
 				else
@@ -375,41 +435,51 @@ DLOG("GetQueuedCompletionStatus error : " << GetErrorStr(errCode));
 				int idx = monitoredDescriptors.Find(descriptor);
 				if(idx < 0)
 				{
-	DLOG("oops... got a descriptor not in list : " << descriptor);
+DLOG("oops... got a descriptor not in list : " << descriptor);
+					continue;
 				}
 				else
 				{
-					String path = monitoredPaths[idx];
+					// check flag if we wanna cancel...
 					CHANGESINFO &info = monitoredInfo[idx];
-	DLOG("Got an event for path '" << path << "'");
-					// re-post the request, we don't want to loose events here....
-					DWORD bufLen;
-					if (!ReadDirectoryChangesW(
-							info.hDir,
-							info.buffer,
-							READ_DIR_CHANGE_BUFFER_SIZE,
-							true, // we want subdirs events
-							FILE_NOTIFY_CHANGE_FILE_NAME	|
-							FILE_NOTIFY_CHANGE_DIR_NAME		|
-							FILE_NOTIFY_CHANGE_ATTRIBUTES	|
-							FILE_NOTIFY_CHANGE_SIZE			|
-							FILE_NOTIFY_CHANGE_LAST_WRITE	|
-							FILE_NOTIFY_CHANGE_CREATION		|
-							FILE_NOTIFY_CHANGE_SECURITY,
-							&bufLen, //this var not set when using asynchronous mechanisms...
-							&info.overlapped,
-							NULL)) //no completion routine!
+					if(info.cancelling)
 					{
-						SetError(GetLastError());
-		DLOG("Error respawning ReadDirectoryChangesW : " << GetErrorStr(errCode));
+DLOG("Sent cancelio packet from main thread");
+						CancelIo(info.hDir);
+						info.cancelling = false;
 					}
 					else
 					{
-		DLOG("Success respawning monitor of '" << path << "'");
+						String path = monitoredPaths[idx];
+DLOG("Got an event for path '" << path << "'");
+						// re-post the request, we don't want to loose events here....
+						DWORD bufLen;
+						if (!ReadDirectoryChangesW(
+								info.hDir,
+								info.buffer,
+								READ_DIR_CHANGE_BUFFER_SIZE,
+								true, // we want subdirs events
+								FILE_NOTIFY_CHANGE_FILE_NAME	|
+								FILE_NOTIFY_CHANGE_DIR_NAME		|
+								FILE_NOTIFY_CHANGE_ATTRIBUTES	|
+								FILE_NOTIFY_CHANGE_SIZE			|
+								FILE_NOTIFY_CHANGE_LAST_WRITE	|
+								FILE_NOTIFY_CHANGE_CREATION		|
+								FILE_NOTIFY_CHANGE_SECURITY,
+								&bufLen, //this var not set when using asynchronous mechanisms...
+								&info.overlapped,
+								NULL)) //no completion routine!
+						{
+							SetError(GetLastError());
+DLOG("Error respawning ReadDirectoryChangesW : " << GetErrorStr(errCode));
+						}
+						else
+						{
+DLOG("Success respawning monitor of '" << path << "'");
+						}
+						// we got an event, just parse it and fill received event structures
+						ProcessNotify((FILE_NOTIFY_INFORMATION *)info.buffer, path);
 					}
-					
-					// we got an event, just parse it and fill received event structures
-					ProcessNotify((FILE_NOTIFY_INFORMATION *)info.buffer, path);
 				}
 			}
 		}

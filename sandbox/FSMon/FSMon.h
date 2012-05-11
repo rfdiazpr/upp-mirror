@@ -49,6 +49,7 @@ class FSMon
 		struct CHANGESINFO
 		{
 			HANDLE hDir;
+			bool cancelling;
 			OVERLAPPED overlapped;
 			byte buffer[READ_DIR_CHANGE_BUFFER_SIZE];
 		};
@@ -64,7 +65,7 @@ class FSMon
 		HANDLE completionPort;
 		
 		// keys for watched folders -- need to be passed to completion port
-		ULONG lastDescriptor;
+		LONG lastDescriptor;
 		
 		// scans result buffer for FILE_NOTIFY_INFORMATION records
 		// and process them
@@ -123,6 +124,7 @@ class FSMon
 		Mutex fsmMutex2;
 		
 		// the checking thread
+		volatile bool threadRunning;
 		Thread fsmThread;
 	
 		// changed files/folders list
@@ -131,7 +133,7 @@ class FSMon
 		// monitored paths and descriptors
 		// separated for quick access of both (instead of a single map..)
 		Index<String> monitoredPaths;
-		Index<int> monitoredDescriptors;
+		Index<LONG> monitoredDescriptors;
 		
 		// actually opened files -- may be handy
 		// for a sync application and for locking purposes

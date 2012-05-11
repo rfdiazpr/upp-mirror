@@ -49,7 +49,6 @@ class FSMon
 		struct CHANGESINFO
 		{
 			HANDLE hDir;
-			bool stopping;
 			OVERLAPPED overlapped;
 			byte buffer[READ_DIR_CHANGE_BUFFER_SIZE];
 		};

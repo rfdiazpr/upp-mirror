@@ -28,11 +28,10 @@ BOOL FSMon::EnablePrivilege(LPCTSTR pszPrivName, BOOL fEnable)
 	return(fOk);
 }
 
-// check whether a path is a directory or a file
-bool FSMon::IsDirectory(String const &path) const
+// check if path is a folder or a file
+bool FSMon::isFolder(String const &path)
 {
 	DWORD dwAttrib	= GetFileAttributes(path);
-
 	return static_cast<bool>((dwAttrib != 0xffffffff && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY)));
 }
 
@@ -215,10 +214,10 @@ bool FSMon::Add(String const &path)
 				true, // we want subdirs events
 				iType ?
 					FILE_NOTIFY_CHANGE_ATTRIBUTES	|
-					FILE_NOTIFY_CHANGE_SECURITY
+					FILE_NOTIFY_CHANGE_SECURITY		|
+					FILE_NOTIFY_CHANGE_DIR_NAME
 				:
 					FILE_NOTIFY_CHANGE_FILE_NAME	|
-					FILE_NOTIFY_CHANGE_DIR_NAME		|
 					FILE_NOTIFY_CHANGE_SIZE			|
 					FILE_NOTIFY_CHANGE_LAST_WRITE,
 				&bufLen, //this var not set when using asynchronous mechanisms...
@@ -330,82 +329,74 @@ FILE_NOTIFY_CHANGE_LAST_ACCESS	FILE_ACTION_MODIFIED			NOT CATCHED - USELESS
 FILE_NOTIFY_CHANGE_CREATION		FILE_ACTION_MODIFIED			NOT CATCHED - USELESS
 
 */
-void FSMon::ProcessNotify(FILE_NOTIFY_INFORMATION *buf, String const &path, bool isAttrib)
+void FSMon::ProcessNotify(FILE_NOTIFY_INFORMATION *buf, String const &path, bool second)
 {
 	do
 	{
-		if(isAttrib)
+		switch(buf->Action)
 		{
-			INTERLOCKED_(fsmMutex)
-			{
-				Info &info = changed.Add();
-				info.flags = FSM_AttribChange;
-				WString ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
-				info.path = AppendFileName(path, ws.ToString());
-			}
-			callHandlerCb();
-		}
-		else
-		{
-			switch(buf->Action)
-			{
-				case FILE_ACTION_ADDED :
-					INTERLOCKED_(fsmMutex)
-					{
-						Info &info = changed.Add();
-						WString ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
-						info.path = AppendFileName(path, ws.ToString());
-						info.flags = IsDirectory(info.path) ? FSM_FolderCreated : FSM_Created;
-					}
-					callHandlerCb();
-					break;
-				case FILE_ACTION_REMOVED :
-					INTERLOCKED_(fsmMutex)
-					{
-						Info &info = changed.Add();
-						WString ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
-						info.path = AppendFileName(path, ws.ToString());
-						info.flags = IsDirectory(info.path) ? FSM_FolderDeleted : FSM_Deleted;
-					}
-					callHandlerCb();
-					break;
-				case FILE_ACTION_MODIFIED :
-					INTERLOCKED_(fsmMutex)
-					{
-						Info &info = changed.Add();
-						info.flags = FSM_Modified;
-						WString ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
-						info.path = AppendFileName(path, ws.ToString());
-					}
-					callHandlerCb();
-					break;
-				case FILE_ACTION_RENAMED_OLD_NAME :
+			case FILE_ACTION_ADDED :
+				INTERLOCKED_(fsmMutex)
 				{
+					Info &info = changed.Add();
+					info.flags = second ? FSM_FolderCreated : FSM_Created;
 					WString ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
-					String oldPath = path + ws.ToString();
-					if(!buf->NextEntryOffset)
-						break;
-					buf = (FILE_NOTIFY_INFORMATION *)((byte *)buf + buf->NextEntryOffset);
-					if(buf->Action != FILE_ACTION_RENAMED_NEW_NAME)
-					{
-						break;
-					}
-					INTERLOCKED_(fsmMutex)
-					{
-						Info &info = changed.Add();
-						info.flags = FSM_Moved;
-						info.path = oldPath;
-						ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
-						info.newPath = AppendFileName(path, ws.ToString());
-					}
-					callHandlerCb();
+					info.path = AppendFileName(path, ws.ToString());
+				}
+				callHandlerCb();
+				break;
+			case FILE_ACTION_REMOVED :
+				INTERLOCKED_(fsmMutex)
+				{
+					Info &info = changed.Add();
+					info.flags = second ? FSM_FolderDeleted : FSM_Deleted;
+					WString ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
+					info.path = AppendFileName(path, ws.ToString());
+				}
+				callHandlerCb();
+				break;
+			case FILE_ACTION_MODIFIED :
+			{
+				// skip changes on folders... wathever they can mean
+				WString ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
+				String p = AppendFileName(path, ws.ToString());
+				if(isFolder(p) && !second)
+					break;
+				INTERLOCKED_(fsmMutex)
+				{
+					Info &info = changed.Add();
+					info.flags = second ? FSM_AttribChange : FSM_Modified;
+					info.path = p;
+				}
+				callHandlerCb();
+			}
+			break;
+			case FILE_ACTION_RENAMED_OLD_NAME :
+			{
+				WString ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
+				String oldPath = path + ws.ToString();
+				if(!buf->NextEntryOffset)
+					break;
+				buf = (FILE_NOTIFY_INFORMATION *)((byte *)buf + buf->NextEntryOffset);
+				if(buf->Action != FILE_ACTION_RENAMED_NEW_NAME)
+				{
 					break;
 				}
-				case FILE_ACTION_RENAMED_NEW_NAME :
-					break;
-				default :
-					break;
+				INTERLOCKED_(fsmMutex)
+				{
+					Info &info = changed.Add();
+					info.flags = second ? FSM_FolderMoved : FSM_Moved;
+					info.path = oldPath;
+					ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
+					info.newPath = AppendFileName(path, ws.ToString());
+				}
+				callHandlerCb();
+				break;
 			}
+			case FILE_ACTION_RENAMED_NEW_NAME :
+				break;
+			default :
+				break;
 		}
 		// go to next record
 		buf = (FILE_NOTIFY_INFORMATION *)((byte *)buf + buf->NextEntryOffset);
@@ -490,8 +481,8 @@ void FSMon::monitorCb(void)
 						ProcessNotify((FILE_NOTIFY_INFORMATION *)info.buffer, path, (idx & 1));
 						
 						// differentiate between the 2 handlers depending on index
-						// EVEN  indexes : CREATE/DELETE/RENAME/MODIFY
-						// ODD indexes : ATTRIBUTES
+						// EVEN  indexes : CREATE/DELETE/RENAME FOR FILES,   MODIFY FOR ALL
+						// ODD   indexes : CREATE/DELETE/RENAME FOR FOLDERS, ATTRIBUTES FOR ALL
 
 						// re-post the request, we don't want to loose events here....
 						DWORD bufLen;
@@ -502,10 +493,10 @@ void FSMon::monitorCb(void)
 								true, // we want subdirs events
 								(idx & 1) ?
 									FILE_NOTIFY_CHANGE_ATTRIBUTES	|
-									FILE_NOTIFY_CHANGE_SECURITY
+									FILE_NOTIFY_CHANGE_SECURITY		|
+									FILE_NOTIFY_CHANGE_DIR_NAME
 								:
 									FILE_NOTIFY_CHANGE_FILE_NAME	|
-									FILE_NOTIFY_CHANGE_DIR_NAME		|
 									FILE_NOTIFY_CHANGE_SIZE			|
 									FILE_NOTIFY_CHANGE_LAST_WRITE,
 								&bufLen, //this var not set when using asynchronous mechanisms...

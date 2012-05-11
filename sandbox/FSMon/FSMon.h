@@ -18,11 +18,12 @@ class FSMon
 			FSM_NOP				= 0x00,
 			FSM_Created			= 0x01,
 			FSM_Deleted			= 0x02,
-			FSM_FolderCreated	= 0x04,
-			FSM_FolderDeleted	= 0x08,
-			FSM_Modified		= 0x10,
-			FSM_Moved			= 0x20,
-			FSM_AttribChange	= 0x40
+			FSM_Moved			= 0x04,
+			FSM_FolderCreated	= 0x08,
+			FSM_FolderDeleted	= 0x10,
+			FSM_FolderMoved		= 0x20,
+			FSM_Modified		= 0x40,
+			FSM_AttribChange	= 0x80
 		} Flags;
 
 		struct Info :  public Moveable<Info>
@@ -44,8 +45,8 @@ class FSMon
 		//	Enable/Disable process privileges.
 		BOOL EnablePrivilege(LPCTSTR pszPrivName, BOOL fEnable);
 
-		// check whether a path is a directory or a file
-		bool IsDirectory(String const &path) const;
+		// check if path is a folder or a file
+		bool isFolder(String const &path);
 
 		// struct containing info needed for ReadDirectoryChangesW
 		#define READ_DIR_CHANGE_BUFFER_SIZE	8192
@@ -73,7 +74,7 @@ class FSMon
 		
 		// scans result buffer for FILE_NOTIFY_INFORMATION records
 		// and process them
-		void ProcessNotify(FILE_NOTIFY_INFORMATION *buf, String const &path, bool isAttrib);
+		void ProcessNotify(FILE_NOTIFY_INFORMATION *buf, String const &path, bool second);
 
 #else	
 		// error code

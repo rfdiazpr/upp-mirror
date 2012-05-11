@@ -45,8 +45,6 @@ FSMon::FSMon(bool nOnClose)
 	
 	shutDown = false;
 	threadRunning = false;
-
-DLOG("Class constructed");
 }
 
 // destructor
@@ -85,7 +83,6 @@ FSMon::~FSMon()
 		// wait some time just to allow thread to cancel all pending I/O
 		Sleep(10);
 		
-DLOG("Shutting thread down....");
 		// signal thread shutdown
 		shutDown = true;
 		
@@ -95,7 +92,6 @@ DLOG("Shutting thread down....");
 		
 		while(shutDown)
 			;
-DLOG("Thread correctly stopped");
 		threadRunning = false;
 	}
 	
@@ -103,7 +99,6 @@ DLOG("Thread correctly stopped");
 	for(int i = 0; i < monitoredInfo.GetCount(); i++)
 		CloseHandle(monitoredInfo[i].hDir);
 	CloseHandle(completionPort);
-DLOG("Class destructed");
 }
 
 // get error string from code
@@ -139,10 +134,6 @@ String FSMon::GetErrorStr(HRESULT err)
 // add a monitored path
 bool FSMon::Add(String const &path)
 {
-DLOG("Path = " << path);
-	// should enable privileges on first call
-	// @@ to do
-	
 	//open the directory to watch
 	HANDLE hDir = CreateFile(
 		path,
@@ -156,10 +147,7 @@ DLOG("Path = " << path);
 	);
 
 	if (hDir == INVALID_HANDLE_VALUE)
-	{
-DLOG("Error opening dir to watch '" << path << "'");
 		return false;
-	}
 
 	//create a IO completion port/or associate this key with
 	//the existing IO completion port
@@ -177,7 +165,6 @@ DLOG("Error opening dir to watch '" << path << "'");
 	{
 		SetError(GetLastError());
 		CloseHandle(hDir);
-DLOG("Error creating completion port");	
 		return false;
 	}
 	
@@ -195,11 +182,11 @@ DLOG("Error creating completion port");
 	
 	CHANGESINFO &info = monitoredInfo.Top();
 	info.hDir = hDir;
+	info.cancelling = false;
 	
 	// overlapped MUST be zero filled, otherwise ReadDirectoryChangesW fails
 	memset(&info.overlapped, 0, sizeof(OVERLAPPED));
 
-DLOG("hDir = " << hDir);	
 	// an now, if not already done, we must start working thread
 	if(!threadRunning)
 	{
@@ -227,10 +214,8 @@ DLOG("hDir = " << hDir);
 			NULL)) //no completion routine!
 	{
 		SetError(GetLastError());
-DLOG("Error on ReadDirectoryChangesW : " << GetErrorStr(errCode));
 		return false;
 	}
-DLOG("Success starting monitor of '" << path << "'");
 	return true;
 }
 
@@ -246,7 +231,7 @@ bool FSMon::Remove(String const &path)
 	// as usual, we can't use CancelIoEx because we want it working on XP
 	// so we cancel io in current thread and fake the behaviour
 	// sending a cancel packet to worker thread
-DLOG("Posting completion cancel packet....");
+
 	// no way to pass valid parameters with PostQueuedCompletionStatus(),
 	// so we use a 'cancelling' flag inside Info recors
 	INTERLOCKED_(fsmMutex2)	{
@@ -267,7 +252,6 @@ DLOG("Posting completion cancel packet....");
 		else
 			Sleep(10);
 	}
-DLOG("Should have got and cancelled");
 	
 	// free dir handle
 	CloseHandle(info.hDir);
@@ -300,7 +284,6 @@ void FSMon::ProcessNotify(FILE_NOTIFY_INFORMATION *buf, String const &path)
 		switch(buf->Action)
 		{
 			case FILE_ACTION_ADDED :
-DLOG("FILE_ACTION_ADDED"); 
 				INTERLOCKED_(fsmMutex)
 				{
 					Info &info = changed.Add();
@@ -311,7 +294,6 @@ DLOG("FILE_ACTION_ADDED");
 				callHandlerCb();
 				break;
 			case FILE_ACTION_REMOVED :
-DLOG("FILE_ACTION_REMOVED"); 
 				INTERLOCKED_(fsmMutex)
 				{
 					Info &info = changed.Add();
@@ -322,7 +304,6 @@ DLOG("FILE_ACTION_REMOVED");
 				callHandlerCb();
 				break;
 			case FILE_ACTION_MODIFIED :
-DLOG("FILE_ACTION_MODIFIED"); 
 				INTERLOCKED_(fsmMutex)
 				{
 					Info &info = changed.Add();
@@ -333,7 +314,6 @@ DLOG("FILE_ACTION_MODIFIED");
 				callHandlerCb();
 				break;
 			case FILE_ACTION_RENAMED_OLD_NAME :
-DLOG("FILE_ACTION_RENAMED_OLD_NAME"); 
 			{
 				WString ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
 				String oldPath = path + ws.ToString();
@@ -342,7 +322,6 @@ DLOG("FILE_ACTION_RENAMED_OLD_NAME");
 				buf = (FILE_NOTIFY_INFORMATION *)((byte *)buf + buf->NextEntryOffset);
 				if(buf->Action != FILE_ACTION_RENAMED_NEW_NAME)
 				{
-DLOG("ops.... FILE_ACTION_RENAMED_NEW_NAME expected");
 					break;
 				}
 				INTERLOCKED_(fsmMutex)
@@ -357,12 +336,10 @@ DLOG("ops.... FILE_ACTION_RENAMED_NEW_NAME expected");
 				break;
 			}
 			case FILE_ACTION_RENAMED_NEW_NAME :
-DLOG("ops... that one should be handled by previous case...");
 				break;
 			default :
-DLOG("unknown action notification");
+				break;
 		}
-		
 		// go to next record
 		buf = (FILE_NOTIFY_INFORMATION *)((byte *)buf + buf->NextEntryOffset);
 	}
@@ -413,13 +390,9 @@ void FSMon::monitorCb(void)
 						if(idx >= 0)
 							CancelIo(monitoredInfo[idx].hDir);
 					}
-DLOG("IO cancelled");
 				}
 				else
-				{
 					SetError(err);
-DLOG("GetQueuedCompletionStatus error : " << GetErrorStr(errCode));
-				}
 			}
 		}
 		else
@@ -433,25 +406,22 @@ DLOG("GetQueuedCompletionStatus error : " << GetErrorStr(errCode));
 			INTERLOCKED_(fsmMutex2)
 			{
 				int idx = monitoredDescriptors.Find(descriptor);
-				if(idx < 0)
-				{
-DLOG("oops... got a descriptor not in list : " << descriptor);
-					continue;
-				}
-				else
+				if(idx >= 0)
 				{
 					// check flag if we wanna cancel...
 					CHANGESINFO &info = monitoredInfo[idx];
 					if(info.cancelling)
 					{
-DLOG("Sent cancelio packet from main thread");
 						CancelIo(info.hDir);
 						info.cancelling = false;
 					}
 					else
 					{
 						String path = monitoredPaths[idx];
-DLOG("Got an event for path '" << path << "'");
+
+						// we got an event, just parse it and fill received event structures
+						ProcessNotify((FILE_NOTIFY_INFORMATION *)info.buffer, path);
+
 						// re-post the request, we don't want to loose events here....
 						DWORD bufLen;
 						if (!ReadDirectoryChangesW(
@@ -471,19 +441,13 @@ DLOG("Got an event for path '" << path << "'");
 								NULL)) //no completion routine!
 						{
 							SetError(GetLastError());
-DLOG("Error respawning ReadDirectoryChangesW : " << GetErrorStr(errCode));
 						}
-						else
-						{
-DLOG("Success respawning monitor of '" << path << "'");
-						}
-						// we got an event, just parse it and fill received event structures
-						ProcessNotify((FILE_NOTIFY_INFORMATION *)info.buffer, path);
 					}
 				}
 			}
 		}
 	}
+	
 	
 	// reset shutdown flag to signal tread exiting
 	shutDown = false;
@@ -494,10 +458,9 @@ DLOG("Success respawning monitor of '" << path << "'");
 void FSMon::callHandlerCb(void)
 {
 #ifdef flagGUI
-DLOG("Postcallback called");
-	PostCallback(EventHandler);
+	if(EventHandler)
+		PostCallback(EventHandler);
 #else
-DLOG("Handler called");
 	EventHandler();
 #endif
 }

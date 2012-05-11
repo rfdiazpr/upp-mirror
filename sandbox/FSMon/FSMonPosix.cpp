@@ -31,10 +31,6 @@ FSMon::FSMon(bool nOnClose)
 		return;
 	}
 	
-	// no pending moves
-	pendingMovePath = "";
-	pendingMoveCookie = -1;
-	
 	// start monitor thread
 	shutDown = false;
 	fsmThread.Start(THISBACK(monitorCb));
@@ -68,6 +64,7 @@ struct inotify_event {
 
 // scans a newly created folder to look for files
 // being created BEFORE notify handler was in place
+/*
 void FSMon::ScanCreatedFolder(String path)
 {
 	FindFile ff(AppendFileName(path, "*"));
@@ -90,6 +87,7 @@ void FSMon::ScanCreatedFolder(String path)
 		ff.Next();
 	}
 }
+*/
 
 // callback to call event handler in maint thread
 // (via PostCallback) when using GUI
@@ -103,13 +101,13 @@ void FSMon::callHandlerCb(void)
 }
 
 // event handling selector
-void FSMon::EventsSelector(uint32 mask, uint32 cookie, String const &path)
+void FSMon::EventsSelector(uint32 mask, String const &path, String const &newPath)
 {
 	int iMask = 0;
 			
 	// flag stating event related to folder, not file
 	bool isFolder = mask & IN_ISDIR;
-			
+
 	// mask field is a bitmask with OR-ed values, so we can't use a switch
 	// we just check each value in a given order
 	if(mask & IN_CLOSE_WRITE)
@@ -181,11 +179,10 @@ DLOG(++iMask << " IN_CREATE '" << path << "'");
 		// in it, then ensure that in the meanwhile no subitems have been created
 		if(isFolder)
 		{
-			INTERLOCKED_(fsmMutex2)
-			{
+			INTERLOCKED_(fsmMutex2){
 				AddWatch(path);
 			}
-			ScanCreatedFolder(path);
+//			ScanCreatedFolder(path);
 		}
 		return;
 	}
@@ -197,7 +194,7 @@ DLOG(++iMask << " IN_DELETE '" << path << "'");
 		{
 			changed.Add();
 			Info &info = changed.Top();
-			info.flags = FSM_Deleted;
+			info.flags = isFolder ? FSM_FolderDeleted : FSM_Deleted;
 			info.path = path;
 			info.newPath.Clear();
 			callHandlerCb();
@@ -238,65 +235,38 @@ DLOG(++iMask << " IN_MODIFY '" << path << "'");
 		}
 		return;
 	}
-	if(mask & IN_MOVED_FROM)
+	// following one was pre-handled by thread to differentiate
+	// between true moves inside monitored folders or create/delete
+	// if coming/going outside
+	if(mask & IN_MOVE)
 	{
-DLOG(++iMask << " IN_MOVED_FROM '" << path << "'");
-		// for IN_MOVED_FROM, we must wait if an IN_MOVED_TO event follows
-		// in that case, it's a move between watched folders, otherwise
-		// we handle as an IN_DELETE command
-		pendingMoveCookie = cookie;
-		pendingMovePath = path;
-		return;
-	}
-	if(mask & IN_MOVED_TO)
-	{
-DLOG(++iMask << " IN_MOVED_TO '" << path << "'");
-		// we shall differentiate if it's a move from outside
-		// or a move between watched folders
-		// in former case, we shall take it as an IN_CREATE event; 
-		// in latter case we take it as as an IN_MOVE event
-		if(pendingMoveCookie == cookie)
+		INTERLOCKED_(fsmMutex)
 		{
-			// it's a true move from inside monitored paths
-DLOG("MOVE BETWEEN MONITORE PATHS");			
-			INTERLOCKED_(fsmMutex)
+			changed.Add();
+			Info &info = changed.Top();
+			info.flags = isFolder ? FSM_FolderMoved : FSM_Moved;
+			info.path = path;
+			info.newPath = newPath;
+			callHandlerCb();
+			
+			// if we moved a folder, we shall update stored info
+			// with new ones -- we assume that monitors will stay in place...
+			if(isFolder)
 			{
-				changed.Add();
-				Info &info = changed.Top();
-				info.flags = FSM_Moved;
-				info.path = pendingMovePath;
-				info.newPath = path;
-				callHandlerCb();
-				
-				// if we moved a folder, we shall update stored info
-				// with new ones -- we assume that monitors will stay in place...
-				if(isFolder)
+				INTERLOCKED_(fsmMutex2)
 				{
-					INTERLOCKED_(fsmMutex2)
+					Index<String> paths;
+					for(int i = 0; i < monitoredPaths.GetCount(); i++)
 					{
-						Index<String> paths;
-						for(int i = 0; i < monitoredPaths.GetCount(); i++)
-						{
-							String oldPth = monitoredPaths[i];
-							if(oldPth.StartsWith(pendingMovePath))
-								oldPth = path + oldPth.Mid(pendingMovePath.GetCount());
-							paths.Add(oldPth);
-						}
-						monitoredPaths = paths;
+						String oldPth = monitoredPaths[i];
+						if(oldPth.StartsWith(path))
+							oldPth = newPath + oldPth.Mid(path.GetCount());
+						paths.Add(oldPth);
 					}
+					monitoredPaths = paths;
 				}
 			}
 		}
-		else
-		{
-			// it's a create event, files comes from outside
-DLOG("Move is a CREATE, re-entering EventsSelector");
-			EventsSelector(IN_CREATE | (isFolder ? IN_ISDIR : 0), cookie, path);
-		}
-		
-		// reset pending ops data
-		pendingMoveCookie = -1;
-		pendingMovePath = "";
 		return;
 	}
 	if(mask & IN_ATTRIB)
@@ -339,7 +309,7 @@ void FSMon::monitorCb(void)
 		// buffer can be filled by many events at once; the variable-lenght
 		// name overcomplicates stuffs, as usual
 		// we can't also read partial data, because read returns error if buffer is too small
-		// so, we have to read full available data and split records manually
+		// so, we have to read full available data and split records later
 		bigBuf = (byte *)malloc(nBytes);
 		size_t res = read(iNotifyHandle, bigBuf, nBytes);
 		if(res != nBytes)
@@ -353,7 +323,6 @@ void FSMon::monitorCb(void)
 		{
 			int wd			= buf->wd;
 			uint32_t mask	= buf->mask;
-			uint32_t cookie	= buf->cookie;
 			String name = (buf->len ? buf->name : "");
 			buf = (struct inotify_event *)((byte *)buf + BASE_BUFSIZE + buf->len);
 	
@@ -373,19 +342,36 @@ void FSMon::monitorCb(void)
 			}
 			String path = AppendFileName(monitoredPaths[idx], name);
 	
-			// special handling for IN_MOVE events... 
-			if((int)pendingMoveCookie != -1 && !(mask & IN_MOVED_TO))
+			// special handling for IN_MOVED events
+			// an IN_MOVED_FROM must be followed by an IN_MOVE__TO
+			// if moving between monitored folders. Well, I hope nothing
+			// happens between them..... So, if we don't find the IN_MOVED_TO
+			// we assume it's a move outside monitored folders, so a IN_DELETE
+			// OTOH, if we find an IN_MOVED_TO without corresponding IN_MOVED_FROM
+			// we assume e move from outside, so an IN_CREATE
+			if(mask & IN_MOVED_FROM && (byte *)buf - bigBuf < (int)nBytes && buf->mask & IN_MOVED_TO)
 			{
-				// previous MOVE_FROM was outside monitored paths
-				// so we shall emit a DELETED event
-				EventsSelector(IN_DELETE | (mask & IN_ISDIR ? IN_ISDIR : 0), pendingMoveCookie, pendingMovePath);
-				pendingMoveCookie = -1;
-				pendingMovePath = "";
+				// it's a true move
+				String newName = (buf->len ? buf->name : "");
+				EventsSelector(IN_MOVE | (mask & IN_ISDIR ? IN_ISDIR : 0), path, AppendFileName(monitoredPaths[idx], newName));
 			}
-			
-			// handle the event
-			EventsSelector(mask, cookie, path);
-			
+			else if(mask & IN_MOVED_FROM)
+			{
+				// it's a delete
+bool b = (mask & IN_ISDIR);
+DLOG("MOVE/DELETE : IN_ISDIR=" << b << "path = " << path); 
+				EventsSelector(IN_DELETE | (mask & IN_ISDIR ? IN_ISDIR : 0), path, "");
+			}
+			else if(mask & IN_MOVED_TO)
+			{
+				// it's a create
+				EventsSelector(IN_CREATE | (mask & IN_ISDIR ? IN_ISDIR : 0), path, "");
+			}
+			else
+			{
+				// normal event handling
+				EventsSelector(mask, path, "");
+			}
 		}
 		free(bigBuf);
 	}

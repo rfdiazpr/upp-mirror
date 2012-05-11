@@ -76,6 +76,9 @@ class FSMon
 		// and process them
 		void ProcessNotify(FILE_NOTIFY_INFORMATION *buf, String const &path, bool second);
 
+		// monitored descriptors
+		Index<LONG> monitoredDescriptors;
+
 #else	
 		// error code
 		int errCode;
@@ -85,25 +88,19 @@ class FSMon
 		
 		int iNotifyHandle;
 
-		// pending-move descriptor
-		// a IN_MOVE_FROM should be followed by IN_MOVE_TO if renaming
-		// or moving into some other watched folder
-		// otherwise we consider it as a DELETE operation
-		// still not sure if some other event can happen between both
-		// if so, it would be quite difficult to differentiate between moves and deletes
-		uint32_t pendingMoveCookie;
-		String pendingMovePath;
-		
 		// scans a newly created folder to look for files
 		// being created BEFORE notify handler was in place
-		void ScanCreatedFolder(String path);
+//		void ScanCreatedFolder(String path);
 		
 		// recursively add or remove monitors for paths
 		bool AddWatch(String const &path);
 		bool RemoveWatch(String const &path);
 
 		// event handling selector
-		void EventsSelector(uint32 mask, uint32 cookie, String const &name);
+		void EventsSelector(uint32 mask, String const &path, String const &newPath);
+
+		// monitored descriptors
+		Index<int> monitoredDescriptors;
 
 #endif
 
@@ -135,10 +132,8 @@ class FSMon
 		// changed files/folders list
 		Vector<Info> changed;
 		
-		// monitored paths and descriptors
-		// separated for quick access of both (instead of a single map..)
+		// monitored paths
 		Index<String> monitoredPaths;
-		Index<LONG> monitoredDescriptors;
 		
 		// actually opened files -- may be handy
 		// for a sync application and for locking purposes

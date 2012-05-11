@@ -28,6 +28,14 @@ BOOL FSMon::EnablePrivilege(LPCTSTR pszPrivName, BOOL fEnable)
 	return(fOk);
 }
 
+// check whether a path is a directory or a file
+bool FSMon::IsDirectory(String const &path) const
+{
+	DWORD dwAttrib	= GetFileAttributes(path);
+
+	return static_cast<bool>((dwAttrib != 0xffffffff && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY)));
+}
+
 // constructor
 FSMon::FSMon(bool nOnClose)
 {
@@ -134,87 +142,103 @@ String FSMon::GetErrorStr(HRESULT err)
 // add a monitored path
 bool FSMon::Add(String const &path)
 {
-	//open the directory to watch
-	HANDLE hDir = CreateFile(
-		path,
-		FILE_LIST_DIRECTORY,
-		FILE_SHARE_READ | FILE_SHARE_WRITE ,//| FILE_SHARE_DELETE, <-- removing FILE_SHARE_DELETE prevents the user or someone else from renaming or deleting the watched directory. This is a good thing to prevent.
-		NULL, //security attributes
-		OPEN_EXISTING,
-		FILE_FLAG_BACKUP_SEMANTICS | //<- the required priviliges for this flag are: SE_BACKUP_NAME and SE_RESTORE_NAME.  CPrivilegeEnabler takes care of that.
-		FILE_FLAG_OVERLAPPED, // for async mode
-		NULL
-	);
-
-	if (hDir == INVALID_HANDLE_VALUE)
-		return false;
-
-	//create a IO completion port/or associate this key with
-	//the existing IO completion port
-	completionPort = CreateIoCompletionPort(
-		hDir,
-		// if completionPort is NULL, hDir is associated with a NEW completion port,
-		// if completionPort is NON-NULL, hDir is associated with the existing completion
-		// port that the handle completionPort references
-		completionPort,
-		// the completion 'key'... this ptr is returned from GetQueuedCompletionStatus() when one of the events in the dwChangesToWatchFor filter takes place
-		lastDescriptor,
-		0
-	);
-	if(!completionPort)
+	bool res = true;
+	for(int iType = 0; iType < 2; iType++)
 	{
-		SetError(GetLastError());
-		CloseHandle(hDir);
-		return false;
-	}
+		//open the directory to watch
+		HANDLE hDir = CreateFile(
+			path,
+			FILE_LIST_DIRECTORY,
+			FILE_SHARE_READ | FILE_SHARE_WRITE ,//| FILE_SHARE_DELETE, <-- removing FILE_SHARE_DELETE prevents the user or someone else from renaming or deleting the watched directory. This is a good thing to prevent.
+			NULL, //security attributes
+			OPEN_EXISTING,
+			FILE_FLAG_BACKUP_SEMANTICS | //<- the required priviliges for this flag are: SE_BACKUP_NAME and SE_RESTORE_NAME.  CPrivilegeEnabler takes care of that.
+			FILE_FLAG_OVERLAPPED, // for async mode
+			NULL
+		);
+
+		if (hDir == INVALID_HANDLE_VALUE)
+			return false;
+
+		//create a IO completion port/or associate this key with
+		//the existing IO completion port
+		completionPort = CreateIoCompletionPort(
+			hDir,
+			// if completionPort is NULL, hDir is associated with a NEW completion port,
+			// if completionPort is NON-NULL, hDir is associated with the existing completion
+			// port that the handle completionPort references
+			completionPort,
+			// the completion 'key'... this ptr is returned from GetQueuedCompletionStatus() when one of the events in the dwChangesToWatchFor filter takes place
+			lastDescriptor,
+			0
+		);
+		if(!completionPort)
+		{
+			SetError(GetLastError());
+			CloseHandle(hDir);
+			return false;
+		}
 	
-	// completion port created, we can now store monitored path and its key
-	// and update key generator
-
-	// must lock here to avoid working threat to access
-	// removed stuffs
-	INTERLOCKED_(fsmMutex2)
-	{
-		monitoredPaths.Add(path);
-		monitoredDescriptors.Add(lastDescriptor++);
-		monitoredInfo.Add();
-	}
+		// completion port created, we can now store monitored path and its key
+		// and update key generator
 	
-	CHANGESINFO &info = monitoredInfo.Top();
-	info.hDir = hDir;
-	info.cancelling = false;
+		// must lock here to avoid working threat to access
+		// removed stuffs
+		INTERLOCKED_(fsmMutex2)
+		{
+			monitoredPaths.Add(path);
+			monitoredDescriptors.Add(lastDescriptor++);
+			monitoredInfo.Add();
+		}
 	
-	// overlapped MUST be zero filled, otherwise ReadDirectoryChangesW fails
-	memset(&info.overlapped, 0, sizeof(OVERLAPPED));
+		CHANGESINFO &info = monitoredInfo.Top();
+		info.hDir = hDir;
+		info.cancelling = false;
+		
+		// overlapped MUST be zero filled, otherwise ReadDirectoryChangesW fails
+		memset(&info.overlapped, 0, sizeof(OVERLAPPED));
+	
+		// an now, if not already done, we must start working thread
+		if(!threadRunning)
+		{
+			shutDown = false;
+			fsmThread.Start(THISBACK(monitorCb));
+			threadRunning = true;
+		}
 
-	// an now, if not already done, we must start working thread
-	if(!threadRunning)
-	{
-		shutDown = false;
-		fsmThread.Start(THISBACK(monitorCb));
-		threadRunning = true;
+		// thread is started, we shall add the monitored folder with ReadDirectoryChangesW
+		DWORD bufLen;
+		if (!ReadDirectoryChangesW(
+				info.hDir,
+				info.buffer,
+				READ_DIR_CHANGE_BUFFER_SIZE,
+				true, // we want subdirs events
+				iType ?
+					FILE_NOTIFY_CHANGE_ATTRIBUTES	|
+					FILE_NOTIFY_CHANGE_SECURITY
+				:
+					FILE_NOTIFY_CHANGE_FILE_NAME	|
+					FILE_NOTIFY_CHANGE_DIR_NAME		|
+					FILE_NOTIFY_CHANGE_SIZE			|
+					FILE_NOTIFY_CHANGE_LAST_WRITE,
+				&bufLen, //this var not set when using asynchronous mechanisms...
+				&info.overlapped,
+				NULL)) //no completion routine!
+		{
+			SetError(GetLastError());
+			return false;
+		}
 	}
-
-	// thread is started, we shall add the monitored folder with ReadDirectoryChangesW
-	DWORD bufLen;
-	if (!ReadDirectoryChangesW(
-			info.hDir,
-			info.buffer,
-			READ_DIR_CHANGE_BUFFER_SIZE,
-			true, // we want subdirs events
-			FILE_NOTIFY_CHANGE_FILE_NAME	|
-			FILE_NOTIFY_CHANGE_DIR_NAME		|
-			FILE_NOTIFY_CHANGE_ATTRIBUTES	|
-			FILE_NOTIFY_CHANGE_SIZE			|
-			FILE_NOTIFY_CHANGE_LAST_WRITE	|
-			FILE_NOTIFY_CHANGE_CREATION		|
-			FILE_NOTIFY_CHANGE_SECURITY,
-			&bufLen,//this var not set when using asynchronous mechanisms...
-			&info.overlapped,
-			NULL)) //no completion routine!
+	// just in case of 1 of 2 calls went bad... we must have an EVEN
+	// numbero of elements in arrays
+	if(monitoredPaths.GetCount() & 1)
 	{
-		SetError(GetLastError());
-		return false;
+		INTERLOCKED_(fsmMutex2)
+		{
+			monitoredPaths.Drop();
+			monitoredDescriptors.Drop();
+			monitoredInfo.Drop();
+		}
 	}
 	return true;
 }
@@ -224,45 +248,49 @@ bool FSMon::Remove(String const &path)
 	int idx = monitoredPaths.Find(path);
 	if(idx < 0)
 		return false;
+	idx &= 0xFFFFFFFFFFFFFFFE;
 	
-	CHANGESINFO &info = monitoredInfo[idx];
-	
-	// camcels io for corresponding path
-	// as usual, we can't use CancelIoEx because we want it working on XP
-	// so we cancel io in current thread and fake the behaviour
-	// sending a cancel packet to worker thread
-
-	// no way to pass valid parameters with PostQueuedCompletionStatus(),
-	// so we use a 'cancelling' flag inside Info recors
-	INTERLOCKED_(fsmMutex2)	{
-		info.cancelling = true;
-	}
-	PostQueuedCompletionStatus(completionPort, 0, monitoredDescriptors[idx], NULL);
-	CancelIo(info.hDir);
-	
-	// wait for tread get the cancelling packet and reset the flag...
-	while(true)
+	for(int iType = 0; iType < 2; iType++)
 	{
-		bool cancelling;
-		INTERLOCKED_(fsmMutex2){
-			cancelling = info.cancelling;
-		}
-		if(!cancelling)
-			break;
-		else
-			Sleep(10);
-	}
+		CHANGESINFO &info = monitoredInfo[idx + iType];
+		
+		// camcels io for corresponding path
+		// as usual, we can't use CancelIoEx because we want it working on XP
+		// so we cancel io in current thread and fake the behaviour
+		// sending a cancel packet to worker thread
 	
-	// free dir handle
-	CloseHandle(info.hDir);
-
-	// must lock here to avoid working threat to access
+		// no way to pass valid parameters with PostQueuedCompletionStatus(),
+		// so we use a 'cancelling' flag inside Info recors
+		INTERLOCKED_(fsmMutex2)	{
+			info.cancelling = true;
+		}
+		PostQueuedCompletionStatus(completionPort, 0, monitoredDescriptors[idx + iType], NULL);
+		CancelIo(info.hDir);
+		
+		// wait for tread get the cancelling packet and reset the flag...
+		while(true)
+		{
+			bool cancelling;
+			INTERLOCKED_(fsmMutex2){
+				cancelling = info.cancelling;
+			}
+			if(!cancelling)
+				break;
+			else
+				Sleep(10);
+		}
+		
+		// free dir handle
+		CloseHandle(info.hDir);
+	
+	}
+	// must lock here to avoid working thread to access
 	// removed stuffs
 	INTERLOCKED_(fsmMutex2)
 	{
-		monitoredPaths.Remove(idx);
-		monitoredInfo.Remove(idx);
-		monitoredDescriptors.Remove(idx);
+		monitoredPaths.Remove(idx, 2);
+		monitoredInfo.Remove(idx, 2);
+		monitoredDescriptors.Remove(idx, 2);
 	}
 	return true;
 }
@@ -276,69 +304,108 @@ typedef struct _FILE_NOTIFY_INFORMATION {
   DWORD FileNameLength;
   WCHAR FileName[1];
 } FILE_NOTIFY_INFORMATION, *PFILE_NOTIFY_INFORMATION;
+
+To separate the events from originating flags, we need a couple of listeners
+Flags and corresponding catched events :
+
+							LISTENER 1
+		INPUT FLAG					CATCHED EVENTS					MAPPED TO
+FILE_NOTIFY_CHANGE_FILE_NAME	FILE_ACTION_ADDED				FSM_Created
+								FILE_ACTION_REMOVED				FSM_Deleted
+								FILE_ACTION_RENAMED_OLD_NAME	FSM_Moved
+								FILE_ACTION_RENAMED_NEW_NAME	
+
+FILE_NOTIFY_CHANGE_DIR_NAME		FILE_ACTION_ADDED				FSM_FolderCreated
+								FILE_ACTION_REMOVED				FSM_FolderDeleted
+								FILE_ACTION_RENAMED_OLD_NAME	FSM_Moved
+								FILE_ACTION_RENAMED_NEW_NAME	
+
+FILE_NOTIFY_CHANGE_SIZE			FILE_ACTION_MODIFIED			FSM_Modified
+FILE_NOTIFY_CHANGE_LAST_WRITE	FILE_ACTION_MODIFIED			FSM_Modified
+
+							LISTENER 2
+FILE_NOTIFY_CHANGE_ATTRIBUTES	FILE_ACTION_MODIFIED			FSM_AttribChange
+FILE_NOTIFY_CHANGE_SECURITY		FILE_ACTION_MODIFIED			FSM_AttribChange
+FILE_NOTIFY_CHANGE_LAST_ACCESS	FILE_ACTION_MODIFIED			NOT CATCHED - USELESS
+FILE_NOTIFY_CHANGE_CREATION		FILE_ACTION_MODIFIED			NOT CATCHED - USELESS
+
 */
-void FSMon::ProcessNotify(FILE_NOTIFY_INFORMATION *buf, String const &path)
+void FSMon::ProcessNotify(FILE_NOTIFY_INFORMATION *buf, String const &path, bool isAttrib)
 {
 	do
 	{
-		switch(buf->Action)
+		if(isAttrib)
 		{
-			case FILE_ACTION_ADDED :
-				INTERLOCKED_(fsmMutex)
-				{
-					Info &info = changed.Add();
-					info.flags = FSM_Created;
-					WString ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
-					info.path = AppendFileName(path, ws.ToString());
-				}
-				callHandlerCb();
-				break;
-			case FILE_ACTION_REMOVED :
-				INTERLOCKED_(fsmMutex)
-				{
-					Info &info = changed.Add();
-					info.flags = FSM_Deleted;
-					WString ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
-					info.path = AppendFileName(path, ws.ToString());
-				}
-				callHandlerCb();
-				break;
-			case FILE_ACTION_MODIFIED :
-				INTERLOCKED_(fsmMutex)
-				{
-					Info &info = changed.Add();
-					info.flags = FSM_Modified;
-					WString ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
-					info.path = AppendFileName(path, ws.ToString());
-				}
-				callHandlerCb();
-				break;
-			case FILE_ACTION_RENAMED_OLD_NAME :
+			INTERLOCKED_(fsmMutex)
 			{
+				Info &info = changed.Add();
+				info.flags = FSM_AttribChange;
 				WString ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
-				String oldPath = path + ws.ToString();
-				if(!buf->NextEntryOffset)
-					break;
-				buf = (FILE_NOTIFY_INFORMATION *)((byte *)buf + buf->NextEntryOffset);
-				if(buf->Action != FILE_ACTION_RENAMED_NEW_NAME)
-				{
-					break;
-				}
-				INTERLOCKED_(fsmMutex)
-				{
-					Info &info = changed.Add();
-					info.flags = FSM_Moved;
-					info.path = oldPath;
-					ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
-					info.newPath = AppendFileName(path, ws.ToString());
-				}
-				callHandlerCb();
-				break;
+				info.path = AppendFileName(path, ws.ToString());
 			}
-			case FILE_ACTION_RENAMED_NEW_NAME :
-				break;
-			default :
-				break;
+			callHandlerCb();
+		}
+		else
+		{
+			switch(buf->Action)
+			{
+				case FILE_ACTION_ADDED :
+					INTERLOCKED_(fsmMutex)
+					{
+						Info &info = changed.Add();
+						WString ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
+						info.path = AppendFileName(path, ws.ToString());
+						info.flags = IsDirectory(info.path) ? FSM_FolderCreated : FSM_Created;
+					}
+					callHandlerCb();
+					break;
+				case FILE_ACTION_REMOVED :
+					INTERLOCKED_(fsmMutex)
+					{
+						Info &info = changed.Add();
+						WString ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
+						info.path = AppendFileName(path, ws.ToString());
+						info.flags = IsDirectory(info.path) ? FSM_FolderDeleted : FSM_Deleted;
+					}
+					callHandlerCb();
+					break;
+				case FILE_ACTION_MODIFIED :
+					INTERLOCKED_(fsmMutex)
+					{
+						Info &info = changed.Add();
+						info.flags = FSM_Modified;
+						WString ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
+						info.path = AppendFileName(path, ws.ToString());
+					}
+					callHandlerCb();
+					break;
+				case FILE_ACTION_RENAMED_OLD_NAME :
+				{
+					WString ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
+					String oldPath = path + ws.ToString();
+					if(!buf->NextEntryOffset)
+						break;
+					buf = (FILE_NOTIFY_INFORMATION *)((byte *)buf + buf->NextEntryOffset);
+					if(buf->Action != FILE_ACTION_RENAMED_NEW_NAME)
+					{
+						break;
+					}
+					INTERLOCKED_(fsmMutex)
+					{
+						Info &info = changed.Add();
+						info.flags = FSM_Moved;
+						info.path = oldPath;
+						ws = WString(buf->FileName, buf->FileNameLength / sizeof(WCHAR));
+						info.newPath = AppendFileName(path, ws.ToString());
+					}
+					callHandlerCb();
+					break;
+				}
+				case FILE_ACTION_RENAMED_NEW_NAME :
+					break;
+				default :
+					break;
+			}
 		}
 		// go to next record
 		buf = (FILE_NOTIFY_INFORMATION *)((byte *)buf + buf->NextEntryOffset);
@@ -420,7 +487,11 @@ void FSMon::monitorCb(void)
 						String path = monitoredPaths[idx];
 
 						// we got an event, just parse it and fill received event structures
-						ProcessNotify((FILE_NOTIFY_INFORMATION *)info.buffer, path);
+						ProcessNotify((FILE_NOTIFY_INFORMATION *)info.buffer, path, (idx & 1));
+						
+						// differentiate between the 2 handlers depending on index
+						// EVEN  indexes : CREATE/DELETE/RENAME/MODIFY
+						// ODD indexes : ATTRIBUTES
 
 						// re-post the request, we don't want to loose events here....
 						DWORD bufLen;
@@ -429,19 +500,18 @@ void FSMon::monitorCb(void)
 								info.buffer,
 								READ_DIR_CHANGE_BUFFER_SIZE,
 								true, // we want subdirs events
-								FILE_NOTIFY_CHANGE_FILE_NAME	|
-								FILE_NOTIFY_CHANGE_DIR_NAME		|
-								FILE_NOTIFY_CHANGE_ATTRIBUTES	|
-								FILE_NOTIFY_CHANGE_SIZE			|
-								FILE_NOTIFY_CHANGE_LAST_WRITE	|
-								FILE_NOTIFY_CHANGE_CREATION		|
-								FILE_NOTIFY_CHANGE_SECURITY,
+								(idx & 1) ?
+									FILE_NOTIFY_CHANGE_ATTRIBUTES	|
+									FILE_NOTIFY_CHANGE_SECURITY
+								:
+									FILE_NOTIFY_CHANGE_FILE_NAME	|
+									FILE_NOTIFY_CHANGE_DIR_NAME		|
+									FILE_NOTIFY_CHANGE_SIZE			|
+									FILE_NOTIFY_CHANGE_LAST_WRITE,
 								&bufLen, //this var not set when using asynchronous mechanisms...
 								&info.overlapped,
 								NULL)) //no completion routine!
-						{
 							SetError(GetLastError());
-						}
 					}
 				}
 			}

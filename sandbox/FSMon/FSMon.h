@@ -44,14 +44,18 @@ class FSMon
 		//	Enable/Disable process privileges.
 		BOOL EnablePrivilege(LPCTSTR pszPrivName, BOOL fEnable);
 
+		// check whether a path is a directory or a file
+		bool IsDirectory(String const &path) const;
+
 		// struct containing info needed for ReadDirectoryChangesW
 		#define READ_DIR_CHANGE_BUFFER_SIZE	8192
 		struct CHANGESINFO
 		{
 			HANDLE hDir;
-			bool cancelling;
-			OVERLAPPED overlapped;
 			byte buffer[READ_DIR_CHANGE_BUFFER_SIZE];
+			OVERLAPPED overlapped;
+
+			bool cancelling;
 		};
 		Array<CHANGESINFO>monitoredInfo;
 		
@@ -69,7 +73,7 @@ class FSMon
 		
 		// scans result buffer for FILE_NOTIFY_INFORMATION records
 		// and process them
-		void ProcessNotify(FILE_NOTIFY_INFORMATION *buf, String const &path);
+		void ProcessNotify(FILE_NOTIFY_INFORMATION *buf, String const &path, bool isAttrib);
 
 #else	
 		// error code

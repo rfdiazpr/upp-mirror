@@ -8,8 +8,8 @@ void FSMonTest::Log(String const &s)
 
 void FSMonTest::startCb(void)
 {
-	Log("Starting monitor...");
 	String path = AppendFileName(GetHomeDirectory(), "FSMonTest_A");
+	Log("Starting monitor for '" + path + "'");
 	if(!DirectoryExists(path))
 		RealizeDirectory(path);
 	fsmMon.Add(path);
@@ -45,17 +45,20 @@ void FSMonTest::monitorCb()
 			case FSMon::FSM_Deleted :
 				Log(String("Deleting file '") + info.path + "'");
 				break;
+			case FSMon::FSM_Moved :
+				Log(String("Moving file '") + info.path + "' to '" + info.newPath + "'");
+				break;
 			case FSMon::FSM_FolderCreated :
 				Log(String("Creating folder '") + info.path + "'");
 				break;
 			case FSMon::FSM_FolderDeleted :
 				Log(String("Deleting folder '") + info.path + "'");
 				break;
+			case FSMon::FSM_FolderMoved :
+				Log(String("Moving folder '") + info.path + "' to '" + info.newPath + "'");
+				break;
 			case FSMon::FSM_Modified :
 				Log(String("Modifying file '") + info.path + "'");
-				break;
-			case FSMon::FSM_Moved :
-				Log(String("Moving file '") + info.path + "' to '" + info.newPath + "'");
 				break;
 			case FSMon::FSM_AttribChange :
 				Log(String("Modifying file  attributes for '") + info.path + "'");

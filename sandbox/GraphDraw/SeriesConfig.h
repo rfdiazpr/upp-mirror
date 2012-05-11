@@ -3,7 +3,7 @@
 
 #include <ScatterDraw/SeriesPlot.h>
 #include <ScatterDraw/MarkPlot.h>
-#include <DataSource/DataSource.h>
+#include <ScatterDraw/DataSource.h>
 
 namespace GraphDraw_ns
 {

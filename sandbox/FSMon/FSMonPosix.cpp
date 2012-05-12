@@ -112,7 +112,6 @@ void FSMon::EventsSelector(uint32 mask, String const &path, String const &newPat
 	// we just check each value in a given order
 	if(mask & IN_CLOSE_WRITE)
 	{
-DLOG("IN_CLOSE_WRITE '" << path << "'");
 		INTERLOCKED_(fsmMutex)
 		{
 			// remove file from opened list
@@ -137,7 +136,6 @@ DLOG("IN_CLOSE_WRITE '" << path << "'");
 	}
 	if(mask & IN_CLOSE_NOWRITE)
 	{
-DLOG(++iMask << " IN_CLOSE_NOWRITE '" << path << "'");
 		// just update the opened files list
 		int iOpened = openedFiles.Find(path);
 		if(iOpened >= 0)
@@ -151,7 +149,6 @@ DLOG(++iMask << " IN_CLOSE_NOWRITE '" << path << "'");
 	}
 	if(mask & IN_OPEN)
 	{
-DLOG(++iMask << " IN_OPEN '" << path << "'");
 		// just update the opened files list
 		if(openedFiles.Find(path) < 0)
 		{
@@ -164,7 +161,6 @@ DLOG(++iMask << " IN_OPEN '" << path << "'");
 	}
 	if(mask & IN_CREATE)
 	{
-DLOG(++iMask << " IN_CREATE '" << path << "'");
 		// signal file/path creation
 		INTERLOCKED_(fsmMutex)
 		{
@@ -188,7 +184,6 @@ DLOG(++iMask << " IN_CREATE '" << path << "'");
 	}
 	if(mask & IN_DELETE)
 	{
-DLOG(++iMask << " IN_DELETE '" << path << "'");
 		// signal file removal
 		INTERLOCKED_(fsmMutex)
 		{
@@ -219,7 +214,6 @@ DLOG(++iMask << " IN_DELETE '" << path << "'");
 	}
 	if(mask & IN_MODIFY)
 	{
-DLOG(++iMask << " IN_MODIFY '" << path << "'");
 		// if we want just notifies on close, do nothing
 		if(!notifyOnClose)
 		{
@@ -271,7 +265,6 @@ DLOG(++iMask << " IN_MODIFY '" << path << "'");
 	}
 	if(mask & IN_ATTRIB)
 	{
-DLOG(++iMask << " IN_ATTRIB '" << path << "'");
 		// add the attribute-modify event
 		INTERLOCKED_(fsmMutex)
 		{
@@ -328,18 +321,12 @@ void FSMon::monitorCb(void)
 	
 			// skip ignored events
 			if(mask & IN_IGNORED)
-			{
-	DLOG("Ignored event");
 				continue;
-			}
 			
 			// get path from descriptor
 			int idx = monitoredDescriptors.Find(wd);
 			if(idx < 0)
-			{
-	DLOG("Couldn't find descriptor in stored table");
 				continue;
-			}
 			String path = AppendFileName(monitoredPaths[idx], name);
 	
 			// special handling for IN_MOVED events
@@ -358,8 +345,6 @@ void FSMon::monitorCb(void)
 			else if(mask & IN_MOVED_FROM)
 			{
 				// it's a delete
-bool b = (mask & IN_ISDIR);
-DLOG("MOVE/DELETE : IN_ISDIR=" << b << "path = " << path); 
 				EventsSelector(IN_DELETE | (mask & IN_ISDIR ? IN_ISDIR : 0), path, "");
 			}
 			else if(mask & IN_MOVED_TO)
@@ -426,12 +411,10 @@ bool FSMon::AddWatch(String const &path)
 		{
 			errMap.Add(path, errno);
 			SetError(errno);
-DLOG("Error adding monitor for '" << path << "', " << errMsg);
 			res = false;
 		}
 		else
 		{
-DLOG("Monitor for '" << path << "' added, descriptor is " << desc);
 			monitoredPaths.Add(path);
 			monitoredDescriptors.Add(desc);
 		}

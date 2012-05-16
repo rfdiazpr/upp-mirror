@@ -1,6 +1,8 @@
 uses
 	CtrlLib,
-	GraphCtrl;
+	GraphCtrl,
+	Functions4U,
+	Report;
 
 file
 	GraphDraw_test.h,

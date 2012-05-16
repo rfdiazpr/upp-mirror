@@ -1,12 +1,18 @@
 
-
-
 //#define TRACE_INFO(TXT) { std::ostringstream str; str <<  "\n" << TXT; LOG(str.str().c_str()); }
 #define TRACE_INFO(TXT) std::cout <<  "\n" << TXT << std::flush
 #define TRACE_ERROR(TXT) std::cout <<  "\n ### ERROR : " << TXT << std::flush
 
+#include <Report/Report.h>
+
+#include <Functions4U/Functions4U.h>
 
 #include "GraphDraw_test.h"
+
+
+#define IMAGECLASS GraphDraw_testImg
+#define IMAGEFILE <GraphDraw_test/GraphDraw_test.iml>
+#include <Draw/iml_source.h>
 
 
 using namespace GraphDraw_ns;
@@ -61,6 +67,7 @@ GraphDraw_test::GraphDraw_test()
 {
 	
 	CtrlLayout(*this, "Window title");
+
 
 	points << Pointf(0.5,1) << Pointf(1, 3.5)<< Pointf(2,1.8)<< Pointf(4, 3)<< Pointf(5.5, 2.5);
 	points << Pointf(6,7) << Pointf(7, 9)<< Pointf(8,10)<< Pointf(10, 15)<< Pointf(15, 15);
@@ -142,8 +149,54 @@ GraphDraw_test::GraphDraw_test()
 	rgba.a=90;
 	legend.SetBackGndColor( rgba );
 //	legend.SetBackGndColor(  );
+
+	bReport << THISBACK(DoReport);
 }
 
+
+
+void replaceImage(Upp::String& srcTxt, const Upp::String& label, const Upp::Image& inputImg, Upp::Size destSize )
+{
+	Upp::String s;
+	if (!inputImg.IsEmpty() )
+	{
+		if (destSize.cy != 0)
+		{
+			if ( inputImg.GetWidth()*100/inputImg.GetHeight() > destSize.cx*100/destSize.cy )
+			{
+				s << AsQTF(CreatePNGObject(inputImg, destSize.cx,0));
+			}
+			else
+			{
+				s << AsQTF(CreatePNGObject(inputImg, 0, destSize.cy));
+			}
+		}
+		else
+		{
+			s << AsQTF( CreatePNGObject(inputImg));
+		}
+	}
+	else
+	{
+		replaceImage(srcTxt, label, GraphDraw_testImg::EMPTY_IMG(), destSize);
+	}
+	
+//	Replace(result, label, value);
+	srcTxt = Replace(srcTxt, label, s);
+//	replaceVar(label,s);
+};
+
+void GraphDraw_test::DoReport(void)
+{
+	String qtfText = "[ [ [R@5$(229)0 This the report]&][R@5$(229)0 &][ [R@5$(229)0 #IMG]&][R@5$(229)0 &][ [R@5$(229)0 This is the end of the report]]";
+	Size sz(640,480);
+//	replaceImage(qtfText, "#IMG", g4.GetImage(MD_SUBPIXEL, sz, 1), Size(3600,1800));
+	replaceImage(qtfText, "#IMG", g4.GetImage(MD_SUBPIXEL, sz, 1), Size(640,480));
+	
+	Report r;
+	r << qtfText;
+	Perform(r);
+}
 
 using namespace GraphDraw_ns;
 

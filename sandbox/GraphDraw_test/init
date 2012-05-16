@@ -2,4 +2,6 @@
 #define _GraphDraw_test_icpp_init_stub
 #include "CtrlLib/init"
 #include "GraphCtrl/init"
+#include "Functions4U/init"
+#include "Report/init"
 #endif

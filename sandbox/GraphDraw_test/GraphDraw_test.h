@@ -14,6 +14,7 @@ typedef StdGraphCtrl< GraphCtrlDefaultTypes >  MyGraphCtrl;
 #define LAYOUTFILE <GraphDraw_test/GraphDraw_test.lay>
 #include <CtrlCore/lay.h>
 
+#define IMAGECLASS GraphDraw_testImg
 #define IMAGEFILE <GraphDraw_test/GraphDraw_test.iml>
 #include <Draw/iml_header.h>
 
@@ -30,6 +31,7 @@ public:
 	MyGraphCtrl::Types::TypeCoordConverter y2CoordConverter;
 	GraphDraw_test();
 	
+	void DoReport(void);
 };
 
 #endif

@@ -159,16 +159,17 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 	void SaveToClipboard(bool saveAsMetafile)
 	{
 		GuiLock __;
-		if (saveAsMetafile) {
+		
+/*		if (saveAsMetafile) {
 			WinMetaFileDraw wmfd;
 			wmfd.Create(copyRatio*GetSize().cx, copyRatio*GetSize().cy, "GraphCtrl", "chart");
 			SetDrawing<Draw>(wmfd, copyRatio);
 			WinMetaFile wmf = wmfd.Close();
 			wmf.WriteClipboard();
-		} else {
+		} else {*/
 			Image img = GetImage(copyRatio);
 			WriteClipboardImage(img);
-		}
+//		}
 	}
 #else
 
@@ -684,7 +685,7 @@ struct GraphCtrlDefaultTypes {
 		typedef DataSource                                                      TypeDataSource;
 		typedef SeriesPlot                                                      TypeSeriesPlot;
 		typedef MarkPlot                                                        TypeMarkPlot;
-		typedef GraphDraw_ns::GenericCoordinateConverter<Upp::int32, double>    TypeCoordConverter;
+		typedef GraphDraw_ns::GenericCoordinateConverter                        TypeCoordConverter;
 		typedef StdGridAxisDrawCtrl<GraphCtrlDefaultTypes>                      TypeGridAxisDraw;
 		typedef GraphDraw_ns::GridStepManager<TypeCoordConverter>               TypeGridStepManager;
 		typedef GraphDraw_ns::SeriesConfig<GraphCtrlDefaultTypes>               TypeSeriesConfig;

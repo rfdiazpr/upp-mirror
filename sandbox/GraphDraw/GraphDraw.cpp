@@ -10,7 +10,7 @@ namespace GraphDraw_ns
 	void DrawHArrowEnd(Draw &w, double x0, double y0, double x1, double y1, double width, double aWidth, double aHeight, const Color &color)
 	{
 		DrawLine(w, x0, y0, x1, y1, width, color);
-		if (fabs(x0 - x1) > 2*aHeight) {
+		if (tabs(x0 - x1) > 2*aHeight) {
 			Vector <Point> arrow;
 			if (y0 > y1)
 				Swap(y0, y1);
@@ -28,7 +28,7 @@ namespace GraphDraw_ns
 	void DrawVArrowEnd(Draw &w, double x0, double y0, double x1, double y1, double width, double aWidth, double aHeight, const Color &color)
 	{
 		DrawLine(w, x0, y0, x1, y1, width, color);
-		if (fabs(y0 - y1) > 2*aHeight) {
+		if (tabs(y0 - y1) > 2*aHeight) {
 			Vector <Point> arrow;
 			if (x0 > x1)
 				Swap(x0, x1);

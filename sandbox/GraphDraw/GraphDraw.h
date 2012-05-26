@@ -23,10 +23,12 @@ using namespace Upp;
 #define TRACE_ERROR(TXT) //{ std::ostringstream str; str <<  "\n" << TXT; LOG(str.str().c_str()); }
 #endif
 
+#include "GraphDrawTypes.h"
+
+#include "CoordinateConverter.h"
 #include "GraphFunctions.h"
 #include "SeriesConfig.h"
 #include "SeriesGroup.h"
-#include "CoordinateConverter.h"
 #include "GridStepIterator.h"
 #include "GraphElement.h"
 #include "GridAxisDraw.h"
@@ -72,10 +74,10 @@ namespace GraphDraw_ns
 
 
 	// ============================
-	//    CRTP_EmptyGraphDraw   CLASS
+	// CRTP_EmptyGraphDraw   CLASS
 	// ============================
 	template<class TYPES, class DERIVED>
-	class CRTP_EmptyGraphDraw : public SeriesGroup< TYPES, DERIVED > , GraphElementParent
+	class CRTP_EmptyGraphDraw : public SeriesGroup< TYPES, DERIVED > , public GraphElementParent
 	{
 		public:
 		typedef CRTP_EmptyGraphDraw<TYPES, DERIVED> CLASSNAME;
@@ -83,8 +85,6 @@ namespace GraphDraw_ns
 		typedef typename TYPES::TypeCoordConverter                   TypeCoordConverter;
 		typedef SeriesGroup<TYPES, DERIVED >                         TypeSeriesGroup;
 		typedef SeriesGroup<TYPES, DERIVED >                         _B;
-		typedef typename TYPES::TypeCoordConverter::TypeScreenCoord  TypeScreenCoord;
-		typedef typename TYPES::TypeCoordConverter::TypeGraphCoord   TypeGraphCoord;
 
 
 
@@ -245,12 +245,12 @@ namespace GraphDraw_ns
 			static const TypeGraphCoord rangeMin = std::numeric_limits<TypeGraphCoord>::epsilon() * 1000.0;
 			for (int j = 0; j < _xConverters.GetCount(); j++)
 			{
-				if ( fabs(_xConverters[j]->toGraph( r.left ) - _xConverters[j]->toGraph( r.right )) < rangeMin ) return false;
+				if ( tabs(_xConverters[j]->toGraph( r.left ) - _xConverters[j]->toGraph( r.right )) < rangeMin ) return false;
 			}
 
 			for (int j = 0; j < _yConverters.GetCount(); j++)
 			{
-				if ( fabs(_yConverters[j]->toGraph( r.bottom ) - _yConverters[j]->toGraph( r.top )) < rangeMin) return false;
+				if ( tabs(_yConverters[j]->toGraph( r.bottom ) - _yConverters[j]->toGraph( r.top )) < rangeMin) return false;
 			}
 			return true;
 		}
@@ -294,8 +294,8 @@ namespace GraphDraw_ns
 
 		DERIVED& ApplyZoomFactor( TypeGraphCoord zoom)
 		{
-			typename TYPES::TypeCoordConverter::TypeScreenCoord xDelta = _plotRect.GetWidth() * (1.0 - zoom) + .5;
-			typename TYPES::TypeCoordConverter::TypeScreenCoord yDelta = _plotRect.GetHeight() * (1.0 - zoom) + .5;
+			TypeScreenCoord xDelta = (TypeScreenCoord)(_plotRect.GetWidth() * (1.0 - zoom) + .5);
+			TypeScreenCoord yDelta = (TypeScreenCoord)(_plotRect.GetHeight() * (1.0 - zoom) + .5);
 			Rect r = Rect( -xDelta/2,
 								-yDelta/2,
 								_plotRect.GetWidth() +xDelta - xDelta/2,
@@ -513,6 +513,8 @@ namespace GraphDraw_ns
 			ImageBuffer ib(size);
 			BufferPainter bp(ib, mode);
 			Paint(bp, scale);
+//			ImageDraw ib(size);
+//			Paint(ib, scale);
 
 			setScreenSize( _screenRectSvg );
 			return ib;
@@ -572,7 +574,7 @@ namespace GraphDraw_ns
 			// ------------
 			if (!_B::series.IsEmpty())
 			{
-				for (unsigned int j = 0; j < _B::series.GetCount(); j++)
+				for ( int j = 0; j < _B::series.GetCount(); j++)
 				{
 					if (_B::series[j].opacity == 0 || (!_B::series[j].seriesPlot && !_B::series[j].markPlot))
 						continue;
@@ -610,8 +612,8 @@ namespace GraphDraw_ns
 						imin = 0;
 						imax = _B::series[j].PointsData()->GetCount();
 					} else if (IsNull(_B::series[j].PointsData()->GetCount())) {		// It is a function
-						imin = xConverter.getGraphMin() - 1;
-						imax = xConverter.getGraphMax() + 2;
+						imin = ffloor(xConverter.getGraphMin() - 1);
+						imax = ffloor(xConverter.getGraphMax() + 2);
 					} else {
 					    imin = 0;
 					    imax = _B::series[j].PointsData()->GetCount();
@@ -662,7 +664,7 @@ namespace GraphDraw_ns
 						}
 						else
 						{
-							if ( (fabs(imax-imin)>1000) ) { inc = fabs(imax-imin)/1000 + 1; }
+							if ( (tabs(imax-imin)>1000) ) { inc = tabs(imax-imin)/1000 + 1; }
 							for ( int c=imin; c<imax; c+=inc)
 							{
 								p1 << Point(xConverter.toScreen( _B::series[j].PointsData()->x(c)),
@@ -691,7 +693,7 @@ namespace GraphDraw_ns
 					if (_B::series[j].markWidth >= 1 && _B::series[j].markPlot)
 					{
 						if ( !_B::series[j].markPlot.IsEmpty() )
-							for (unsigned int c=0; c<p1.GetCount(); ++c)
+							for (int c=0; c<p1.GetCount(); ++c)
 							{
 								_B::series[j].markPlot->Paint(dw,
 								                               scale,
@@ -758,7 +760,7 @@ namespace GraphDraw_ns
 			typedef DataSource                                     TypeDataSource;
 			typedef SeriesPlot                                     TypeSeriesPlot;
 			typedef MarkPlot                                       TypeMarkPlot;
-			typedef GenericCoordinateConverter<Upp::int32, double> TypeCoordConverter;
+			typedef GenericCoordinateConverter                     TypeCoordConverter;
 			typedef GridAxisDraw<GraphDrawDefaultTypes>            TypeGridAxisDraw;
 			typedef GridStepManager<TypeCoordConverter>            TypeGridStepManager;
 			typedef SeriesConfig<GraphDrawDefaultTypes>            TypeSeriesConfig;
@@ -780,8 +782,6 @@ namespace GraphDraw_ns
 		typedef typename TYPES::TypeCoordConverter            TypeCoordConverter;
 		typedef typename TYPES::TypeGridAxisDraw              TypeGridAxisDraw;
 		typedef SeriesGroup<TYPES,CLASSNAME>                  TypeSeriesGroup;
-		typedef typename TypeCoordConverter::TypeScreenCoord  ScreenCoord;
-		typedef typename TypeCoordConverter::TypeGraphCoord   GraphCoord;
 
 		protected:
 		TypeCoordConverter        _xConverter;
@@ -823,7 +823,7 @@ namespace GraphDraw_ns
 			return *this;
 		}
 
-		CLASSNAME& setGraphSize(GraphCoord x0, GraphCoord x1, GraphCoord y0, GraphCoord y1)
+		CLASSNAME& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1)
 		{
 			_xConverter.updateGraphSize( x0, x1);
 			_yConverter.updateGraphSize( y0, y1);

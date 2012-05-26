@@ -91,7 +91,7 @@ GraphDraw_test::GraphDraw_test()
 		y = 20.0*sin(2.0*M_PI*t/100000.0);
 		// create a "cloud" of points around the main line
 		s1 <<Pointf(t,y);
-		s2 <<Pointf(t,y + (random()*5.0)/RAND_MAX-2.5);
+		s2 <<Pointf(t,y + (Upp::Randomf()*5.0)-2.5);
 	}
 	g3.CloneTopElement( 20, g3.GetXGridAxisDraw());
 	g3.setGraphSize(0, 100000, -22, +22);

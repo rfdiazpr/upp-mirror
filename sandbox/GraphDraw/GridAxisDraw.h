@@ -186,7 +186,7 @@ namespace GraphDraw_ns
 		}
 
 		template<int GRAPH_SIDE>
-		void PaintTickText(Draw& dw,  typename TypeCoordConverter::TypeGraphCoord v, typename TypeCoordConverter::TypeScreenCoord x, typename TypeCoordConverter::TypeScreenCoord y, Color& color, Font& font) {
+		void PaintTickText(Draw& dw,  TypeGraphCoord v, TypeScreenCoord x, TypeScreenCoord y, Color& color, Font& font) {
 //			Upp::String text=FormatDouble(v, 3, FD_FIX);
 			Upp::String text=FormatDouble(v);
 			Size sz = GetTextSize(text, font);

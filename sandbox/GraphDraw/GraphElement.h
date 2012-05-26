@@ -9,7 +9,6 @@
 #define GRAPHELEMENT_H_
 
 
-
 namespace GraphDraw_ns
 {
 	typedef enum {
@@ -35,7 +34,6 @@ namespace GraphDraw_ns
 	class GraphElementParent {
 		public:
 			typedef GraphElementParent CLASSNAME;
-			typedef int TypeScreenCoord;
 			virtual void ScrollX( TypeScreenCoord xOffset) = 0;
 			virtual void ScrollY( TypeScreenCoord yOffset) = 0;
 			virtual void ZoomX(TypeScreenCoord left, TypeScreenCoord right) = 0;
@@ -54,7 +52,7 @@ namespace GraphDraw_ns
 		protected:
 			Rect            _frame;  // Frame on which element is painted (absolute position in complete draw area)
 			int             _width;  // width of GraphElement (in screen size)
-			ElementPosition _pos;    // position to plot area
+			ElementPosition _pos;    // position in plot area
 
 		public:
 			GraphElementParent* _parent;

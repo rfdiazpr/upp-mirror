@@ -109,22 +109,6 @@ namespace GraphDraw_ns
 		Color    _plotBckgndColor;
 		Color    _CtrlBckgndColor;
 
-//		virtual bool IsModified() const {
-//			GuiLock __;
-//			return _modify;
-//		}
-		
-//		void SetModify()
-//		{
-//			_modify = true;
-//		}
-
-//		void ClearModify()
-//		{
-//			GuiLock __;
-//			_modify = false;
-//		}
-		
 		inline void updateSizes( const int scale = 1 )
 		{
 			// --------------

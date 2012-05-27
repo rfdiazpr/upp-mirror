@@ -120,6 +120,15 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 		SetModify();
 	}
 
+	virtual bool   IsModified() const {
+		return ( Ctrl::IsModified() || _B::IsModifiedData());
+	}
+
+	virtual void   ClearModify() {
+		Ctrl::ClearModify();
+		_B::ClearModifyData();
+	}
+
 	void Paint2(Draw& w) {
 		setScreenSize( GetSize() );
 		if (_B::_mode == GraphDraw_ns::MD_DRAW) {
@@ -321,6 +330,7 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 				Rect selectedZoomArea = tracker.Track( RectfC(p.x,p.y,0,0), ALIGN_NULL, ALIGN_NULL) - _B::_PlotTopLeft;
 				if (selectedZoomArea.Width() !=0  && selectedZoomArea.Height() != 0) {
 					_B::ZoomOnRect( selectedZoomArea );
+					SetModify();
 				}
 			}
 			return;

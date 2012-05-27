@@ -109,6 +109,22 @@ namespace GraphDraw_ns
 		Color    _plotBckgndColor;
 		Color    _CtrlBckgndColor;
 
+//		virtual bool IsModified() const {
+//			GuiLock __;
+//			return _modify;
+//		}
+		
+//		void SetModify()
+//		{
+//			_modify = true;
+//		}
+
+//		void ClearModify()
+//		{
+//			GuiLock __;
+//			_modify = false;
+//		}
+		
 		inline void updateSizes( const int scale = 1 )
 		{
 			// --------------
@@ -497,7 +513,6 @@ namespace GraphDraw_ns
 
 		// Refresh called from child
 		virtual void RefreshFromChild( RefreshStrategy doFastPaint ) {
-			if (doFastPaint == REFRESH_FAST)  _doFastPaint = true;
 			Refresh();
 		};
 
@@ -513,9 +528,6 @@ namespace GraphDraw_ns
 			ImageBuffer ib(size);
 			BufferPainter bp(ib, mode);
 			Paint(bp, scale);
-//			ImageDraw ib(size);
-//			Paint(ib, scale);
-
 			setScreenSize( _screenRectSvg );
 			return ib;
 		}

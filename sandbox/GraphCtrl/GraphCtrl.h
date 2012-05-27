@@ -51,6 +51,8 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 
 	Image CaptureMouseMove_cursorImage;
 
+	Image ctrlImgSave; // to save ctrl image
+
 	Point prevMousePoint;
 	int copyRatio;
 
@@ -79,6 +81,7 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 	, plotCapture_MouseWheel (false)
 	, copyRatio(3)
 	{
+		SetModify();
 		setScreenSize( GetSize() );
 	}
 
@@ -104,6 +107,7 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 	, plotCapture_MouseWheel (false)
 	, copyRatio(p.copyRatio)
 	{
+		SetModify();
 		setScreenSize( GetSize() );
 	}
 
@@ -112,29 +116,52 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 		Ctrl::Refresh();
 	};
 
+	virtual void Layout() {
+		SetModify();
+	}
 
 	void Paint2(Draw& w) {
 		setScreenSize( GetSize() );
 		if (_B::_mode == GraphDraw_ns::MD_DRAW) {
-			_B::Paint(w, 1);
+			ImageDraw ib(GetSize());
+			_B::Paint(ib, 1);
+			ctrlImgSave = ib;
+			w.DrawImage(0, 0, ctrlImgSave);
 		}
 		else {
 			ImageBuffer ib(GetSize());
 			BufferPainter bp(ib, _B::_mode);
 			_B::Paint(bp, 1);
-			w.DrawImage(0, 0, ib);
+			ctrlImgSave = ib;
+			w.DrawImage(0, 0, ctrlImgSave);
 		}
 	}
 
+	// Refresh called from child
+	virtual void RefreshFromChild( GraphDraw_ns::RefreshStrategy doFastPaint ) {
+		if (doFastPaint == GraphDraw_ns::REFRESH_FAST) {
+			_B::_doFastPaint = true;
+		}
+		SetModify();
+		Refresh();
+	};
+
 
 	virtual void Paint(Draw& w) {
-		if ( _B::_doFastPaint ==false )	{
-			Image m = OverrideCursor(GraphCtrlImg::SAND());
-			Paint2(w);
-			OverrideCursor(m);
+		if ( _B::_doFastPaint == false )	{
+			if ( IsModified() ) {
+				Image m = OverrideCursor(GraphCtrlImg::SAND());
+				Paint2(w);
+				OverrideCursor(m);
+				ClearModify();
+			}
+			else {
+				w.DrawImage(0, 0, ctrlImgSave);
+			}
 		}
 		else {
 			Paint2(w);
+			SetModify();
 		}
 	}
 

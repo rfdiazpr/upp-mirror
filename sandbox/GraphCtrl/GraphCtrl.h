@@ -746,6 +746,7 @@ class CRTP_StdGraphCtrl :	public CRTP_GraphCtrlBase< TYPES, DERIVED >
 	private:
 	void OpenGridAxisProperties(GraphDraw_ns::GraphElementFrame* v, Point p, dword keyflags) {
 		GraphCtrl_ns::OpenGridAxisPropertiesCtrl( dynamic_cast<typename TYPES::TypeGridAxisDraw*>(v) );
+		_B::SetModify();
 	}
 
 	public:

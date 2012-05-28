@@ -151,7 +151,7 @@ namespace GraphDraw_ns
 		virtual ~GridAxisDraw() {}
 
 
-		virtual CLASSNAME* Clone() { return new CLASSNAME(*this); } // called when coordinates need update
+		virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }
 
 		virtual void Update() { _gridStepManager->Update(); }
 
@@ -164,6 +164,12 @@ namespace GraphDraw_ns
 		inline CLASSNAME& setGridColor(Color v)                         { _gridColor = v; return *this; }
 		inline CLASSNAME& setMajorTickMark(TickMark* v)                 { _majorTickMark = v; return *this;  }
 		inline CLASSNAME& setMinorTickMark(TickMark* v)                 { _minorTickMark = v; return *this;  }
+
+		inline int GetMajorTickLength()       { return _majorTickMark->GetTickLength(); }
+		inline void SetMajorTickLength(int v) { _majorTickMark->SetTickLength(v); }
+
+		inline int GetMinorTickLength()       { return _minorTickMark->GetTickLength(); }
+		inline void SetMinorTickLength(int v) { _minorTickMark->SetTickLength(v); }
 
 		inline TypeCoordConverter& GetCoordConverter()                 { return _coordConverter;  }
 

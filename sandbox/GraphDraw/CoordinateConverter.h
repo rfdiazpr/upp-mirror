@@ -263,7 +263,13 @@ namespace GraphDraw_ns
 				_scaleType = AXIS_SCALE_POW10;
 			}
 
-			void SetScaleType(AxisScaleType t)	{
+			void SetScaleType(unsigned int t)	{
+				if ( t <=  AXIS_SCALE_POW10) {
+					SetScaleType( (AxisScaleType) t );
+				}
+
+			}
+				void SetScaleType(AxisScaleType t)	{
 				switch(t) {
 					case AXIS_SCALE_STD:
 						SetConvStd();

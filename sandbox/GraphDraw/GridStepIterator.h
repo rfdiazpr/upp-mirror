@@ -166,23 +166,15 @@ namespace GraphDraw_ns
 			{
 				int e = 0;
 				double s = Upp::normalize(range/(_nbMaxSteps+1), e);
-				if (s>0)
-				{
-					if     ( (s>2) && (s<=5)  ) { s = 5; }
-					else if( (s>1) && (s<=2)  ) { s = 2; }
-					else if( (s>5) && (s<=10) ) { s = 1; e++; }
-					else   { s = 1; }
-					return s * Upp::ipow10(e);
-				}
-				else
-				{
-					s = -s;
-					if     ( (s>2) && (s<=5)  ) { s = 5; }
-					else if( (s>1) && (s<=2)  ) { s = 2; }
-					else if( (s>5) && (s<=10) ) { s = 1; e++; }
-					else   { s = 1; }
-					return -s * Upp::ipow10(e);
-				}
+				double sign = 1;
+				if (s<0) sign = -1;
+
+				s = sign*s;
+				if     ( (s>2) && (s<=5)  ) { s = 5; }
+				else if( (s>1) && (s<=2)  ) { s = 2; }
+				else if( (s>5) && (s<=10) ) { s = 1; e++; }
+				else   { s = 1; }
+				return sign * s * Upp::ipow10(e);
 			}
 
 			

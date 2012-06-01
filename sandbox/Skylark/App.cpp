@@ -4,14 +4,14 @@
 #include <wincon.h>
 #endif
 
-bool Exit;
+bool ExitSkylark;
 int  Port = 8001;
 
 #ifdef PLATFORM_WIN32
 BOOL WINAPI CtrlCHandlerRoutine(__in  DWORD dwCtrlType)
 {
 	LOG("Ctrl+C handler");
-	Exit = true;
+	ExitSkylark = true;
 	Cout() << "Ctrl + C\n";
 	Socket h;
 	ClientSocket(h, "127.0.0.1", Port);
@@ -35,13 +35,13 @@ void SkylarkApp::RunThread()
 	for(;;) {
 		TcpSocket request;
 		accept_mutex.Enter();
-		if(Exit) {
+		if(ExitSkylark) {
 			accept_mutex.Leave();
 			break;
 		}
 		bool b = request.Timeout(2000).Accept(server);
 		accept_mutex.Leave();
-		if(Exit)
+		if(ExitSkylark)
 			break;
 		if(b) {
 			Cout() << "Accepted " << Thread::GetCurrentId() << "\n";
@@ -77,5 +77,5 @@ void SkylarkApp::Run(int threads)
 	ThreadRun();
 	while(Thread::GetCount())
 		Sleep(10);
-	Cout() << "Exit\n";
+	Cout() << "ExitSkylark\n";
 }

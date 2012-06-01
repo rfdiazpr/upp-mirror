@@ -17,7 +17,7 @@ Tuple2<int, int> Pagination(Http& http, int total)
 	if(!IsNull(pp))
 		perpage = pp;
 	perpage = max(perpage, 10);
-	http.SetSession(ppid, perpage);
+	http.SessionSet(ppid, perpage);
 	int pages = total / perpage;
 	int page = atoi((String)http["page"]);
 	ValueArray pg;
@@ -98,7 +98,7 @@ URL_VIEW(New, "new")
 
 URL_VIEW(SubmitEdit, "submit/edit/*:POST")
 {
-	int id = atoi((String)http[0]);
+	int id = http.Int(0);
 	SQL * http.Update(PERSON).Where(ID == atoi(http[0]));
 /*
 	SQL * Update(PERSON)
@@ -117,7 +117,7 @@ URL_VIEW(SubmitEdit, "submit/edit/*:POST")
 
 URL_VIEW(Edit, "person/*/edit")
 {
-	int id = atoi(http[0]);
+	int id = http.Int(0);
 	Sql sql;
 	sql * Select(FIRSTNAME, LASTNAME, EMAIL, SEX)
 	      .From(PERSON)

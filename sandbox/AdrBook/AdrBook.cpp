@@ -38,7 +38,8 @@ CONSOLE_APP_MAIN
 	SetViewRoot("root");
 	SetViewVar("base", "asdfasdf");
 	SessionConfig cfg;
-	cfg.table = SES;
+//	cfg.table = SES;
+	cfg.format = SESSION_FORMAT_XML;
 	SetSessionConfig(cfg);
 	
 	{

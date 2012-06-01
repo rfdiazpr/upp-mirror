@@ -4,8 +4,7 @@
 #include "plugin/sqlite3/init"
 #include "MySql/init"
 #include "Skylark/init"
-#include "Web/SSL/init"
-#define BLITZ_INDEX__ Fbd0954e684b508cd9ec416bd644bfa7d
+#define BLITZ_INDEX__ F84e725a12454a0bef450aae51d3e4e62
 #include "Pages.icpp"
 #undef BLITZ_INDEX__
 #endif

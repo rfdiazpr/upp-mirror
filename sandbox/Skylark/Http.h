@@ -95,7 +95,7 @@ public:
 	                 const char *domain = NULL, bool secure = false, bool httponly = false);
 
 	Http&  ClearSession();
-	Http&  SetSession(const char *id, const Value& value);
+	Http&  SessionSet(const char *id, const Value& value);
 
 	Http&  RenderResult(const String& template_name);
 	Http&  Redirect(const char *url, int code_ = 302) { code = code_; redirect = url; return *this; }
@@ -126,9 +126,14 @@ void FinalizeViews(); // Remove later
 void SetViewRoot(const char *root);
 void SetViewVar(const char *id, const char *value);
 
+enum {
+	SESSION_FORMAT_BINARY, SESSION_FORMAT_JSON, SESSION_FORMAT_XML
+};
+
 struct SessionConfig {
 	String cookie;
 	String dir;
+	int    format;
 	SqlId  table, id_column, data_column, lastwrite_column;
 	int    max_stored_count;
 	

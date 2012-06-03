@@ -22,6 +22,7 @@ void AdrBook::WorkThread()
 		LOG("Can't create or open database file\n");
 		return;
 	}
+	mysql.AutoReconnect();
 #ifdef _DEBUG
 	mysql.LogErrors();
 	mysql.SetTrace();

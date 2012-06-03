@@ -45,7 +45,7 @@ void SkylarkApp::RunThread()
 			break;
 		if(b) {
 			Cout() << "Accepted " << Thread::GetCurrentId() << "\n";
-			Http http;
+			Http http(*this);
 			http.Dispatch(request);
 			Cout() << "Finished " << Thread::GetCurrentId() << "\n";
 		}
@@ -78,4 +78,17 @@ void SkylarkApp::Run(int threads)
 	while(Thread::GetCount())
 		Sleep(10);
 	Cout() << "ExitSkylark\n";
+}
+
+
+void SkylarkApp::SqlError(Http& http)
+{
+}
+
+void SkylarkApp::InternalError(Http& http)
+{
+}
+
+void SkylarkApp::NotFound(Http& http)
+{
 }

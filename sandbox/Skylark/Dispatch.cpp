@@ -262,102 +262,103 @@ void Http::Dispatch(TcpSocket& socket)
 		LLOG(content);
 		Cout() << hdr.GetMethod() << " " << hdr.GetURI() << "\n";
 		String r;
-		for(int i = 0; i < benchmark; i++) {
-			var.Clear();
-			arg.Clear();
-			LTIMING("Request processing");
-			request_content_type = GetHeader("content-type");
-			String rc = ToLower(request_content_type);
-			bool post = hdr.GetMethod() == "POST";
-			if(post)
-				if(rc.StartsWith("application/x-www-form-urlencoded"))
-					ParseRequest(content);
-				else
-				if(rc.StartsWith("multipart/"))
-					ReadMultiPart(content);
-			String uri = hdr.GetURI();
-			int q = uri.Find('?');
-			if(q >= 0) {
-				if(!post)
-					ParseRequest(~uri + q + 1);
-				uri.Trim(q);
-			}
-			for(int i = hdr.fields.Find("cookie"); i >= 0; i = hdr.fields.FindNext(i)) {
-				const String& h = hdr.fields[i];
-				int q = 0;
-				for(;;) {
-					int qq = h.Find('=', q);
-					if(qq < 0)
-						break;
-					String id = ToLower(TrimBoth(h.Mid(q, qq - q)));
-					qq++;
-					DUMP(id);
-					q = h.Find(';', qq);
-					if(q < 0) {
-						var.Add(id, UrlDecode(h.Mid(qq)));
-						break;
-					}
-					var.Add(id, UrlDecode(h.Mid(qq, q - qq)));
-					q++;
+		var.Clear();
+		arg.Clear();
+		LTIMING("Request processing");
+		request_content_type = GetHeader("content-type");
+		String rc = ToLower(request_content_type);
+		bool post = hdr.GetMethod() == "POST";
+		if(post)
+			if(rc.StartsWith("application/x-www-form-urlencoded"))
+				ParseRequest(content);
+			else
+			if(rc.StartsWith("multipart/"))
+				ReadMultiPart(content);
+		String uri = hdr.GetURI();
+		int q = uri.Find('?');
+		if(q >= 0) {
+			if(!post)
+				ParseRequest(~uri + q + 1);
+			uri.Trim(q);
+		}
+		for(int i = hdr.fields.Find("cookie"); i >= 0; i = hdr.fields.FindNext(i)) {
+			const String& h = hdr.fields[i];
+			int q = 0;
+			for(;;) {
+				int qq = h.Find('=', q);
+				if(qq < 0)
+					break;
+				String id = ToLower(TrimBoth(h.Mid(q, qq - q)));
+				qq++;
+				DUMP(id);
+				q = h.Find(';', qq);
+				if(q < 0) {
+					var.Add(id, UrlDecode(h.Mid(qq)));
+					break;
 				}
+				var.Add(id, UrlDecode(h.Mid(qq, q - qq)));
+				q++;
 			}
-			DUMPM(var);
-			Vector<String> part = Split(uri, '/');
-			for(int i = 0; i < part.GetCount(); i++)
-				part[i] = UrlDecode(part[i]);
-			DUMPC(part);
-			Vector<String> a;
-			BestDispatch bd(arg);
-			if(DispatchMap.GetCount())
-				GetBestDispatch(post ? DispatchNode::POST : DispatchNode::GET, part, 0, DispatchMap[0], a, bd, 0, 0);
-			DUMPC(arg);
-			response.Clear();
-			if(bd.view) {
-				try {
-					SQL.Begin();
-					LoadSession();
-					viewid = bd.id;
-					(*bd.view)(*this);
-					SaveSession();
-					SQL.Commit();
-				}
-				catch(SqlExc e) {
-					response << "Internal server error<br>"
-					         << "SQL ERROR: " << e;
-					code = 500;
-					code_text = "Internal server error";
-					SQL.Rollback();
-				}
-				catch(Exc e) {
-					response << "Internal server error<br>"
-					         << e;
-					code = 500;
-					code_text = "Internal server error";
-					SQL.Rollback();
-				}
+		}
+		DUMPM(var);
+		Vector<String> part = Split(uri, '/');
+		for(int i = 0; i < part.GetCount(); i++)
+			part[i] = UrlDecode(part[i]);
+		DUMPC(part);
+		Vector<String> a;
+		BestDispatch bd(arg);
+		if(DispatchMap.GetCount())
+			GetBestDispatch(post ? DispatchNode::POST : DispatchNode::GET, part, 0, DispatchMap[0], a, bd, 0, 0);
+		DUMPC(arg);
+		response.Clear();
+		if(bd.view) {
+			try {
+				SQL.Begin();
+				LoadSession();
+				viewid = bd.id;
+				(*bd.view)(*this);
+				SaveSession();
+				SQL.Commit();
 			}
-			else {
-				response << "Page not found";
-				code = 404;
-				code_text = "Not found";
+			catch(SqlExc e) {
+				SQL.Rollback();
+				response << "Internal server error<br>"
+				         << "SQL ERROR: " << e;
+				code = 500;
+				code_text = "Internal server error";
+				app.SqlError(*this);
 			}
-			r.Clear();
-			if(redirect.GetCount()) {
-				r << "HTTP/1.1 " << code << " Found\r\n";
-				r << "Location: " << redirect << "\r\n";
+			catch(Exc e) {
+				SQL.Rollback();
+				response << "Internal server error<br>"
+				         << e;
+				code = 500;
+				code_text = "Internal server error";
+				app.InternalError(*this);
 			}
-			else {
-				r <<
-					"HTTP/1.0 " << code << ' ' << code_text << "\r\n"
-					"Date: " <<  WwwFormat(GetUtcTime()) << "\r\n"
-					"Server: U++\r\n"
-					"Content-Length: " << response.GetCount() << "\r\n"
-					"Connection: close\r\n"
-					"Content-Type: " << content_type << "\r\n";
-				for(int i = 0; i < cookies.GetCount(); i++)
-					r << cookies[i];
-				r << "\r\n";
-			}
+		}
+		else {
+			response << "Page not found";
+			code = 404;
+			code_text = "Not found";
+			app.NotFound(*this);
+		}
+		r.Clear();
+		if(redirect.GetCount()) {
+			r << "HTTP/1.1 " << code << " Found\r\n";
+			r << "Location: " << redirect << "\r\n";
+		}
+		else {
+			r <<
+				"HTTP/1.0 " << code << ' ' << code_text << "\r\n"
+				"Date: " <<  WwwFormat(GetUtcTime()) << "\r\n"
+				"Server: U++\r\n"
+				"Content-Length: " << response.GetCount() << "\r\n"
+				"Connection: close\r\n"
+				"Content-Type: " << content_type << "\r\n";
+			for(int i = 0; i < cookies.GetCount(); i++)
+				r << cookies[i];
+			r << "\r\n";
 		}
 		socket.PutAll(r);
 		socket.PutAll(response);

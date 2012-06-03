@@ -29,8 +29,8 @@ public:
 };
 
 struct Http : Renderer {
-
-	HttpHeader hdr;
+	SkylarkApp& app;
+	HttpHeader  hdr;
 	
 	String content;
 	String viewid;
@@ -47,8 +47,6 @@ struct Http : Renderer {
 	String request_content_type;
 	
 	VectorMap<String, String> cookies;
-	
-	int    benchmark;
 	
 	void   ParseRequest(const char *s);
 	void   ReadMultiPart(const String& content);
@@ -96,6 +94,8 @@ public:
 
 	Http&  ClearSession();
 	Http&  SessionSet(const char *id, const Value& value);
+	
+	Http&  Response(int code_, const String& ctext)   { code = code_; code_text = ctext; return *this; }
 
 	Http&  RenderResult(const String& template_name);
 	Http&  Redirect(const char *url, int code_ = 302) { code = code_; redirect = url; return *this; }
@@ -105,10 +105,8 @@ public:
 	Http&  Redirect(void (*view)(Http&), const Value& v1, const Value& v2);
 	
 	String GetResponse() const                        { return response; }
-	
-	void   Benchmark(int n = 10)                      { benchmark = n; }
 
-	Http() { code = 200; content_type = "text/html; charset=UTF-8"; benchmark = 1; }
+	Http(SkylarkApp& app) : app(app) { code = 200; content_type = "text/html; charset=UTF-8"; }
 };
 
 String HttpResponse(int code, const char *phrase, const String& data, const char *content_type = NULL);

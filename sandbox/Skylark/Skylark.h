@@ -8,8 +8,7 @@
 
 using namespace Upp;
 
-#include "Witz.h"
-#include "Http.h"
+class Http;
 
 class SkylarkApp {
 	TcpSocket server;
@@ -20,9 +19,15 @@ class SkylarkApp {
 
 public:
 	virtual void WorkThread() = 0;
+	virtual void SqlError(Http& http);
+	virtual void InternalError(Http& http);
+	virtual void NotFound(Http& http);
 	
 	void RunThread();
 	void Run(int threads = Null);
 };
+
+#include "Witz.h"
+#include "Http.h"
 
 #endif

@@ -1,2 +1,2 @@
-- hidden fields
+- hidden fields CSRF issue
 - MySql reconnection

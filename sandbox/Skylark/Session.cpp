@@ -31,7 +31,7 @@ String SessionFile(const String& sid)
 void Http::LoadSession()
 {
 	session_var.Clear();
-	session_id = (*this)[sCfg.cookie];
+	session_id = (*this)[app.session.cookie];
 	if(IsNull(session_id))
 		return;
 	String data;

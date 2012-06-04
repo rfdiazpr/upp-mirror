@@ -1,12 +1,5 @@
 #include "Skylark.h"
 
-String template_path;
-
-void SetTemplatePath(const char *path)
-{
-	template_path = path;
-}
-
 String LoadTemplate(const char *file, const char *search_path)
 {
 	String path = GetFileOnPath(file, search_path);
@@ -35,7 +28,7 @@ String LoadTemplate(const char *file, const char *search_path)
 
 String LoadTemplate(const char *file)
 {
-	return LoadTemplate(file, template_path);
+	return LoadTemplate(file, SkylarkApp::TheApp().template_path);
 }
 
 VectorMap<String, String> GetTemplateDefs(const char *file)

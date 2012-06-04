@@ -215,8 +215,6 @@ One<Exe> Compile(const char *code, const Index<String>& vars);
 
 String   Render(const One<Exe>& exe, Vector<Value>& var);
 
-void     SetTemplatePath(const char *path);
-
 String   GetPreprocessedTemplate(const String& name);
 
 String   ReplaceVars(const String& src, const VectorMap<String, String>& def, int chr);

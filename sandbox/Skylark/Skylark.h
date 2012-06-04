@@ -10,12 +10,32 @@ using namespace Upp;
 
 class Http;
 
+struct SessionConfig {
+	String cookie;
+	String dir;
+	int    format;
+	SqlId  table, id_column, data_column, lastwrite_column;
+	int    max_stored_count;
+	
+	SessionConfig();
+};
+
 class SkylarkApp {
 	TcpSocket server;
 	Mutex     accept_mutex;
 	void      ThreadRun();
+
+	void      FinalizeViews();
 	
+	static SkylarkApp *app;
+
 	typedef SkylarkApp CLASSNAME;
+
+public: // should be protected
+	String                    root;
+	VectorMap<String, String> view_var;
+	String                    template_path;
+	SessionConfig             session;
 
 public:
 	virtual void WorkThread() = 0;
@@ -24,8 +44,14 @@ public:
 	virtual void NotFound(Http& http);
 	
 	void RunThread();
+
 	void Run(int threads = Null);
+	
+	static SkylarkApp& TheApp();
+
+	SkylarkApp();
 };
+
 
 #include "Witz.h"
 #include "Http.h"

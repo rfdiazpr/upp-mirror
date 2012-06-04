@@ -105,6 +105,8 @@ public:
 	Http&  Redirect(void (*view)(Http&), const Value& v1, const Value& v2);
 	
 	String GetResponse() const                        { return response; }
+	
+	const SkylarkApp& App() const                     { return app; }
 
 	Http(SkylarkApp& app) : app(app) { code = 200; content_type = "text/html; charset=UTF-8"; }
 };
@@ -119,23 +121,6 @@ Vector<String> *GetUrlViewLinkParts(const String& id);
 
 String MakeLink(void (*view)(Http&), const Vector<Value>& arg);
 
-void FinalizeViews(); // Remove later
-
-void SetViewRoot(const char *root);
-void SetViewVar(const char *id, const char *value);
-
 enum {
 	SESSION_FORMAT_BINARY, SESSION_FORMAT_JSON, SESSION_FORMAT_XML
 };
-
-struct SessionConfig {
-	String cookie;
-	String dir;
-	int    format;
-	SqlId  table, id_column, data_column, lastwrite_column;
-	int    max_stored_count;
-	
-	SessionConfig();
-};
-
-void SetSessionConfig(const SessionConfig& scfg);

@@ -92,3 +92,17 @@ void SkylarkApp::InternalError(Http& http)
 void SkylarkApp::NotFound(Http& http)
 {
 }
+
+SkylarkApp *SkylarkApp::app;
+
+SkylarkApp& SkylarkApp::TheApp()
+{
+	ASSERT(app);
+	return *app;
+}
+
+SkylarkApp::SkylarkApp()
+{
+	ASSERT(!app);
+	app = this;
+}

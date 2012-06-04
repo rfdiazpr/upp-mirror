@@ -144,35 +144,13 @@ void RegisterView(void (*view)(Http&), const char *id, const char *path)
 	w.path = path;
 }
 
-static VectorMap<String, String>& sViewVar()
-{
-	static VectorMap<String, String> x;
-	return x;
-}
-
-void SetViewVar(const char *id, const char *value)
-{
-	sViewVar().GetAdd(id) = value;
-}
-
-static String& sRoot()
-{
-	static String x;
-	return x;
-}
-
-void SetViewRoot(const char *root)
-{
-	sRoot() = root;
-}
-
-void FinalizeViews()
+void SkylarkApp::FinalizeViews()
 {
 	Array<ViewData>& w = sViewData();
 	for(int i = 0; i < w.GetCount(); i++) {
 		const ViewData& v = w[i];
 		ASSERT_(sViewIndex().Find((uintptr_t)v.view) < 0, "duplicate view function registration " + String(v.id));
-		Vector<String> h = Split(ReplaceVars(sRoot() + '/' + v.path, sViewVar(), '$'), ';');
+		Vector<String> h = Split(ReplaceVars(root + '/' + v.path, view_var, '$'), ';');
 		for(int i = 0; i < h.GetCount(); i++)
 			RegisterView0(v.view, v.id, h[i], i == 0);
 	}

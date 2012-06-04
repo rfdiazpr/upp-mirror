@@ -13,6 +13,8 @@
 
 struct AdrBook : SkylarkApp {
 	virtual void WorkThread();
+	
+	AdrBook();
 };
 
 void AdrBook::WorkThread()
@@ -33,15 +35,17 @@ void AdrBook::WorkThread()
 	RunThread();
 }
 
+AdrBook::AdrBook()
+{
+	root = "root";
+	template_path = "/home/cxl/sandbox;u:/sandbox";
+	view_var.Add("base", "asdfasdf");
+	session.format = SESSION_FORMAT_XML;
+}
+
 CONSOLE_APP_MAIN
 {
-	SetTemplatePath("/home/cxl/sandbox;u:/sandbox");
-	SetViewRoot("root");
-	SetViewVar("base", "asdfasdf");
-	SessionConfig cfg;
 //	cfg.table = SES;
-	cfg.format = SESSION_FORMAT_XML;
-	SetSessionConfig(cfg);
 	
 	{
 		MySqlSession mysql;

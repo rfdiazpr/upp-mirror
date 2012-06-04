@@ -29,7 +29,7 @@ void AdrBook::WorkThread()
 #endif
 	SQL = mysql;
 	SQLR = mysql;
-	
+
 	RunThread();
 }
 

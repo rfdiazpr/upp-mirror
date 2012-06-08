@@ -1,0 +1,37 @@
+description "TheIDE - debuggers\377B";
+
+uses
+	ide\Common,
+	plugin\ndisasm,
+	HexView;
+
+file
+	MIValue.h,
+	MIValue.cpp,
+	Debuggers.h,
+	Debuggers.iml,
+	Gdb.lay,
+	Disas.cpp,
+	Dbg.cpp,
+	Gdb.cpp,
+	Gdb_MI2.lay,
+	Gdb_MI2.h,
+	Gdb_MI2.cpp,
+	PrettyPrinters.brc,
+	PrettyPrinters.py,
+	PDB readonly separator,
+	Pdb.h,
+	cvconst.h,
+	Debug.cpp,
+	Mem.cpp,
+	Sym.cpp,
+	Exp.cpp,
+	Visualise.cpp,
+	Data.cpp,
+	Code.cpp,
+	Pdb.cpp,
+	Pdb.key,
+	Info readonly separator,
+	Copying,
+	srcimp.tpp;
+

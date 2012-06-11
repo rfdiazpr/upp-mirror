@@ -1,5 +1,13 @@
+struct ExeContext {
+	Renderer      *renderer;
+	Vector<Value>& stack;
+	StringBuffer   out;
+
+	ExeContext(Vector<Value>& stack, Renderer *r = NULL) : renderer(r), stack(stack) {}
+};
+
 struct Exe {
-	virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const { return Value(); }
+	virtual Value Eval(ExeContext& x) const { return Value(); }
 	virtual ~Exe() {}
 };
 
@@ -10,7 +18,7 @@ struct RawHtmlText {
 Value Raw(const String& s);
 
 struct Compiler {
-	static VectorMap<String, Value (*)(const Vector<Value>& arg)>& functions();
+	static VectorMap<String, Value (*)(const Vector<Value>&, Renderer *)>& functions();
 
 	static bool IsTrue(const Value& v);
 	
@@ -43,76 +51,76 @@ struct Compiler {
 	struct ExeVar : Exe {
 		int var_index;
 
-		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
+		virtual Value Eval(ExeContext& x) const;
 	};
 
 	struct ExeConst : Exe {
 		Value value;
 		
-		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
+		virtual Value Eval(ExeContext& x) const;
 	};
 
 	struct ExeArray : Exe {
 		Vector< One<Exe> > item;
 		
-		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
+		virtual Value Eval(ExeContext& x) const;
 	};
 
 	struct ExeMap : Exe {
 		Vector< One<Exe> > key;
 		Vector< One<Exe> > value;
 		
-		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
+		virtual Value Eval(ExeContext& x) const;
 	};
 	
-	struct ExeNot : Exe1 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeNeg : Exe1 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeMul : Exe2 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeDiv : Exe2 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeMod : Exe2 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeAdd : Exe2 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeSub : Exe2 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeSll : Exe2 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeSra : Exe2 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeSrl : Exe2 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeLt  : Exe2 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeLte : Exe2 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeEq  : Exe2 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeNeq : Exe2 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeAnd : Exe2 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeXor : Exe2 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeOr  : Exe2 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeAnl : Exe2 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeOrl : Exe2 { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
+	struct ExeNot : Exe1 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeNeg : Exe1 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeMul : Exe2 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeDiv : Exe2 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeMod : Exe2 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeAdd : Exe2 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeSub : Exe2 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeSll : Exe2 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeSra : Exe2 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeSrl : Exe2 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeLt  : Exe2 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeLte : Exe2 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeEq  : Exe2 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeNeq : Exe2 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeAnd : Exe2 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeXor : Exe2 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeOr  : Exe2 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeAnl : Exe2 { virtual Value Eval(ExeContext& x) const; };
+	struct ExeOrl : Exe2 { virtual Value Eval(ExeContext& x) const; };
 	
 	struct ExeCond : Exe {
 		One<Exe> cond;
 		One<Exe> ontrue;
 		One<Exe> onfalse;
 		
-		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
+		virtual Value Eval(ExeContext& x) const;
 	};
 
 	struct ExeField : Exe {
 		One<Exe> value;
 		String   id;
 
-		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
+		virtual Value Eval(ExeContext& x) const;
 	};
 	
 	struct ExeVarField : Exe {
 		int    var_index;
 		String id;
 
-		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
+		virtual Value Eval(ExeContext& x) const;
 	};
 	
 	struct ExeFn : Exe {
-		Value (*fn)(const Vector<Value>& arg);
+		Value (*fn)(const Vector<Value>&, Renderer *);
 		
 		Vector< One<Exe> > arg;
 
-		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
+		virtual Value Eval(ExeContext& x) const;
 	};
 
 	struct ExeLink : Exe {
@@ -120,7 +128,7 @@ struct Compiler {
 		
 		Vector< One<Exe> > arg;
 
-		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
+		virtual Value Eval(ExeContext& x) const;
 	};
 
 	struct ExeLinkVarField1 : Exe {
@@ -129,7 +137,7 @@ struct Compiler {
 		int    var_index;
 		String id;
 
-		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
+		virtual Value Eval(ExeContext& x) const;
 	};
 	
 	struct LoopInfo {
@@ -139,17 +147,17 @@ struct Compiler {
 		Value key;
 	};
 	
-	struct ExeFirst : ExeVar { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeLast  : ExeVar { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeIndex : ExeVar { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
-	struct ExeKey   : ExeVar { virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const; };
+	struct ExeFirst : ExeVar { virtual Value Eval(ExeContext& x) const; };
+	struct ExeLast  : ExeVar { virtual Value Eval(ExeContext& x) const; };
+	struct ExeIndex : ExeVar { virtual Value Eval(ExeContext& x) const; };
+	struct ExeKey   : ExeVar { virtual Value Eval(ExeContext& x) const; };
 	
 	struct ExeFor : Exe {
 		One<Exe> value;
 		One<Exe> body;
 		One<Exe> onempty;
 
-		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
+		virtual Value Eval(ExeContext& x) const;
 	};
 
 	struct ExeBlock : Exe {
@@ -157,7 +165,7 @@ struct Compiler {
 		
 		void AddText(const char *b, const char *s);
 
-		virtual Value Eval(Vector<Value>& stack, StringBuffer& out) const;
+		virtual Value Eval(ExeContext& x) const;
 	};
 
 	struct CompiledTemplate {
@@ -195,7 +203,7 @@ struct Compiler {
 	
 	One<Exe> Block();
 	
-	static void Register(const String& id, Value (*fn)(const Vector<Value>& arg));
+	static void Register(const String& id, Value (*fn)(const Vector<Value>&, Renderer *));
 	
 	typedef Compiler CLASSNAME;
 
@@ -213,7 +221,7 @@ struct Compiler {
 
 One<Exe> Compile(const char *code, const Index<String>& vars);
 
-String   Render(const One<Exe>& exe, Vector<Value>& var);
+String   Render(const One<Exe>& exe, Renderer *r, Vector<Value>& var);
 
 String   GetPreprocessedTemplate(const String& name);
 

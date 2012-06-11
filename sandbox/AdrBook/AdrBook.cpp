@@ -12,17 +12,16 @@
 #include <Draw/iml_source.h>
 
 struct AdrBook : SkylarkApp {
-	virtual void WorkThread();
-	
+	void WorkThread();
+
 	AdrBook();
 };
 
-void AdrBook::WorkThread()
+void OpenSQL(MySqlSession& mysql)
 {
-	MySqlSession mysql;
 	if(!mysql.Connect("root", "Passw0rd", "test")) {
 		LOG("Can't create or open database file\n");
-		return;
+		Exit(1);
 	}
 	mysql.AutoReconnect();
 #ifdef _DEBUG
@@ -30,8 +29,26 @@ void AdrBook::WorkThread()
 	mysql.SetTrace();
 #endif
 	SQL = mysql;
-	SQLR = mysql;
+}
 
+void InitModel()
+{
+#ifdef _DEBUG
+	MySqlSession mysql;
+	OpenSQL(mysql);
+	SqlSchema sch(MY_SQL);
+
+	All_Tables(sch);
+	SqlPerformScript(sch.Upgrade());
+	SqlPerformScript(sch.Attributes());
+	sch.SaveNormal();
+#endif
+}
+
+void AdrBook::WorkThread()
+{
+	MySqlSession mysql;
+	OpenSQL(mysql);
 	RunThread();
 }
 
@@ -45,28 +62,6 @@ AdrBook::AdrBook()
 
 CONSOLE_APP_MAIN
 {
-//	cfg.table = SES;
-	
-	{
-		MySqlSession mysql;
-	#ifdef _DEBUG
-		mysql.LogErrors();
-		mysql.SetTrace();
-	#endif
-		SqlId::UseQuotes();
-		if(!mysql.Connect("root", "Passw0rd", "test")) {
-			LOG("Can't create or open database file\n");
-			return;
-		}
-		SQL = mysql;
-		
-		SqlSchema sch(MY_SQL);
-
-		All_Tables(sch);
-		SqlPerformScript(sch.Upgrade());
-		SqlPerformScript(sch.Attributes());
-		sch.SaveNormal();
-	}
-	
-	AdrBook().Run();
+	InitModel();
+	AdrBook().Run();	
 }

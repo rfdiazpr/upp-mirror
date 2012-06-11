@@ -12,8 +12,8 @@ void Compiler::OptimizeConst(One<Exe>& exe)
 {
 	One<Exe> oxe;
 	Vector<Value> stack;
-	StringBuffer  out;
-	oxe.Create<ExeConst>().value = exe->Eval(stack, out);
+	ExeContext x(stack);
+	oxe.Create<ExeConst>().value = exe->Eval(x);
 	LLOG("OPTIMIZED constant: " << exe->Eval(stack, out));
 	exe = oxe;
 	optimized = true;

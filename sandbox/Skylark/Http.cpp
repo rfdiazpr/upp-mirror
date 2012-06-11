@@ -42,13 +42,13 @@ Http& Http::SetRawCookie(const char *id, const String& value, Time expires,
                          const char *path, const char *domain, bool secure,
                          bool httponly)
 {
+	var.GetAdd(id) = value;
 	String& c = cookies.GetAdd(id);
 	c.Clear();
 	c << "Set-Cookie:" << ' ' << id << '=' << value;
 	if(!IsNull(expires))
 		c << "; " << WwwFormat(expires);
-	if(path && *path)
-		c << "; Path=" << path;
+	c << "; Path=" << (path && *path ? path : "/");
 	if(domain && *domain)
 		c << "; Domain=" << domain;
 	if(secure)
@@ -256,7 +256,7 @@ void MakeLink(StringBuffer& out, const Vector<String>& part, const Vector<Value>
 Http& Http::RenderResult(const String& template_name)
 {
 	LTIMING("Render");
-	response << ::Render(GetTemplate(template_name), var.GetValues());
+	response << ::Render(GetTemplate(template_name), this, var.GetValues());
 	return *this;
 }
 

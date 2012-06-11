@@ -20,6 +20,11 @@ BOOL WINAPI CtrlCHandlerRoutine(__in  DWORD dwCtrlType)
 }
 #endif
 
+void SkylarkApp::WorkThread()
+{
+	RunThread();
+}
+
 void SkylarkApp::ThreadRun()
 {
 	WorkThread();
@@ -54,7 +59,7 @@ void SkylarkApp::RunThread()
 	}
 }
 
-void SkylarkApp::Run(int threads)
+void SkylarkApp::Run()
 {
 	SqlSession::PerThread();
 	SqlId::UseQuotes();
@@ -64,19 +69,19 @@ void SkylarkApp::Run(int threads)
 	SetConsoleCtrlHandler(CtrlCHandlerRoutine, true);
 #endif
 
+	// Add prefork here
 	if(!server.Listen(Port, 5)) {
 		Cout() << "Cannot open server socket!\n";
 		return;
 	}
 
-	if(IsNull(threads))
-		threads = CPU_Cores() + 1;
 	Buffer<Thread> uwt(threads);
 	for(int i = 0; i < threads; i++)
 		Thread::Start(THISBACK(ThreadRun));
-	ThreadRun();
+
 	while(Thread::GetCount())
-		Sleep(10);
+		Sleep(100);
+
 	Cout() << "ExitSkylark\n";
 }
 
@@ -93,6 +98,10 @@ void SkylarkApp::NotFound(Http& http)
 {
 }
 
+void SkylarkApp::Unauthorized(Http& http)
+{
+}
+
 SkylarkApp *SkylarkApp::app;
 
 SkylarkApp& SkylarkApp::TheApp()
@@ -105,4 +114,6 @@ SkylarkApp::SkylarkApp()
 {
 	ASSERT(!app);
 	app = this;
+	threads = 3 * CPU_Cores() + 1;
+	post_identities = 60;
 }

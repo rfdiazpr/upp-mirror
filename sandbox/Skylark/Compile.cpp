@@ -2,13 +2,20 @@
 
 #define LLOG(x)  // DLOG(x)
 
-VectorMap<String, Value (*)(const Vector<Value>& v)>& Compiler::functions()
+Value Raw(const String& s)
 {
-	static VectorMap<String, Value (*)(const Vector<Value>& v)> x;
+	RawHtmlText r;
+	r.text = s;
+	return RawToValue(r);
+}
+
+VectorMap<String, Value (*)(const Vector<Value>&, Renderer *)>& Compiler::functions()
+{
+	static VectorMap<String, Value (*)(const Vector<Value>&, Renderer *)> x;
 	return x;
 }
 
-void Compiler::Register(const String& id, Value (*fn)(const Vector<Value>& v))
+void Compiler::Register(const String& id, Value (*fn)(const Vector<Value>&, Renderer *))
 {
 	functions().GetAdd(id) = fn;
 }
@@ -48,7 +55,7 @@ One<Exe> Compiler::Prim()
 		String id = p.ReadId();
 		int n = var.Find(id);
 		if(p.Char('(')) {
-			Value (*f)(const Vector<Value>& arg) = functions().Get(id, NULL);
+			Value (*f)(const Vector<Value>&, Renderer *) = functions().Get(id, NULL);
 			if(!f) {
 				Vector<String> *part = GetUrlViewLinkParts(id);
 				if(!part)

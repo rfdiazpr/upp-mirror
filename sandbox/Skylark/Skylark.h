@@ -8,6 +8,7 @@
 
 using namespace Upp;
 
+class Renderer;
 class Http;
 
 struct SessionConfig {
@@ -20,9 +21,14 @@ struct SessionConfig {
 	SessionConfig();
 };
 
+struct AuthExc : Exc {
+	AuthExc(const String& s) : Exc(s) {}
+};
+
 class SkylarkApp {
 	TcpSocket server;
 	Mutex     accept_mutex;
+
 	void      ThreadRun();
 
 	void      FinalizeViews();
@@ -36,16 +42,20 @@ public: // should be protected
 	VectorMap<String, String> view_var;
 	String                    template_path;
 	SessionConfig             session;
+	int                       threads;
+	int                       post_identities;
 
 public:
-	virtual void WorkThread() = 0;
 	virtual void SqlError(Http& http);
 	virtual void InternalError(Http& http);
 	virtual void NotFound(Http& http);
+	virtual void Unauthorized(Http& http);
+
+	virtual void WorkThread() = 0;
 	
 	void RunThread();
 
-	void Run(int threads = Null);
+	void Run();
 	
 	static SkylarkApp& TheApp();
 

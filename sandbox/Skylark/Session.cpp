@@ -14,36 +14,30 @@ SessionConfig::SessionConfig()
 	lastwrite_column = "LASTWRITE";
 }
 
-static SessionConfig sCfg;
-
-void SetSessionConfig(const SessionConfig& scfg)
-{
-	sCfg = scfg;
-}
-
-String SessionFile(const String& sid)
+String Http::SessionFile(const String& sid)
 {
 	ONCELOCK
-		RealizeDirectory(sCfg.dir);
-	return AppendFileName(sCfg.dir, sid);
+		RealizeDirectory(app.session.dir);
+	return AppendFileName(app.session.dir, sid);
 }
 
 void Http::LoadSession()
 {
+	const SessionConfig& cfg = app.session;
 	session_var.Clear();
-	session_id = (*this)[app.session.cookie];
+	session_id = (*this)[cfg.cookie];
 	if(IsNull(session_id))
 		return;
 	String data;
-	if(sCfg.table.IsNull()) {
+	if(cfg.table.IsNull()) {
 		data = LoadFile(SessionFile(session_id));
 	}
 	else {
-		String data = SQLR % Select(sCfg.data_column).From(sCfg.table)
-		                     .Where(sCfg.id_column == session_id);
+		String data = SQLR % Select(cfg.data_column).From(cfg.table)
+		                     .Where(cfg.id_column == session_id);
 	}
 	LOGHEX(data);
-	switch(sCfg.format) {
+	switch(cfg.format) {
 	case SESSION_FORMAT_JSON:
 		LoadFromJson(session_var, data);
 		break;
@@ -62,11 +56,13 @@ void Http::LoadSession()
 
 void Http::SaveSession()
 {
-	SetCookie(sCfg.cookie, session_id);
+	DDUMPM(session_var);
+	const SessionConfig& cfg = app.session;
+	SetCookie(cfg.cookie, session_id);
 	if(IsNull(session_id))
 		return;
 	String data;
-	switch(sCfg.format) {
+	switch(cfg.format) {
 	case SESSION_FORMAT_JSON:
 		data = StoreAsJson(session_var);
 		break;
@@ -77,20 +73,20 @@ void Http::SaveSession()
 		data = StoreAsString(session_var);
 		break;
 	}
-	if(sCfg.table.IsNull())
+	if(cfg.table.IsNull())
 		SaveFile(SessionFile(session_id), data);
 	else {
 		SqlVal d = SqlBinary(data);
 		Time tm = GetSysTime();
-		SQL * Update(sCfg.table)
-				(sCfg.data_column, d)
-				(sCfg.lastwrite_column, tm)
-		      .Where(sCfg.id_column == session_id);
+		SQL * Update(cfg.table)
+				(cfg.data_column, d)
+				(cfg.lastwrite_column, tm)
+		      .Where(cfg.id_column == session_id);
 		if(SQL.GetRowsProcessed() == 0)
-			SQL * Insert(sCfg.table)
-			        (sCfg.id_column, session_id)
-					(sCfg.data_column, d)
-					(sCfg.lastwrite_column, tm);
+			SQL * Insert(cfg.table)
+			        (cfg.id_column, session_id)
+					(cfg.data_column, d)
+					(cfg.lastwrite_column, tm);
 	}
 	LLOG("Stored session: " << session_id);
 	LDUMPM(session_var);

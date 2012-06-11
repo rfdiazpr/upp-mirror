@@ -1,20 +1,13 @@
 #include "Skylark.h"
 
-Value Cycle(const Vector<Value>& arg)
+Value Cycle(const Vector<Value>& arg, Renderer *)
 {
 	if(arg.GetCount() < 3 && !IsNumber(arg[0]))
 		return String();
 	return arg[1 + int(arg[0]) % (arg.GetCount() - 1)];
 }
 
-Value Raw(const String& s)
-{
-	RawHtmlText r;
-	r.text = s;
-	return RawToValue(r);
-}
-
-Value Raw(const Vector<Value>& arg)
+Value RawFn(const Vector<Value>& arg, Renderer *)
 {
 	RawHtmlText r;
 	for(int i = 0; i < arg.GetCount(); i++)
@@ -22,7 +15,24 @@ Value Raw(const Vector<Value>& arg)
 	return RawToValue(r);
 }
 
+Value PostIdentity(const Vector<Value>& arg, Renderer *r)
+{
+	DLOG("POST IDENTITY");
+	Http *http = dynamic_cast<Http *>(r);
+	if(!http)
+		throw Exc("invalid POST identity call");
+	ValueArray va = (*http)["post_identities"];
+	int mn = SkylarkApp::TheApp().post_identities;
+	if(va.GetCount() > 3 * mn / 1)
+		va.Remove(0, va.GetCount() / 3);
+	String h = AsString(Uuid::Create());
+	va.Add(h);
+	http->SessionSet("post_identities", va);
+	return Raw("<input type=\"hidden\" name=\"__post_identity__\" value=\"" + h + "\">");
+}
+
 INITBLOCK {
 	Compiler::Register("cycle", Cycle);
-	Compiler::Register("raw", Raw);
+	Compiler::Register("raw", RawFn);
+	Compiler::Register("post_identity", PostIdentity);
 };

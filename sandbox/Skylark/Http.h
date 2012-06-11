@@ -26,6 +26,8 @@ public:
 	Value     Render(const String& template_name)        { return Raw(RenderString(template_name)); }
 	
 	Renderer& Render(const char *id, const String& template_name);
+	
+	virtual ~Renderer();
 };
 
 struct Http : Renderer {
@@ -51,6 +53,8 @@ struct Http : Renderer {
 	void   ParseRequest(const char *s);
 	void   ReadMultiPart(const String& content);
 	
+	String SessionFile(const String& sid);
+
 	void   LoadSession();
 	void   SaveSession();
 

@@ -10,11 +10,12 @@ struct DispatchNode : Moveable<DispatchNode> {
 	void   (*view)(Http&);
 	int    argpos;
 	int    method;
+	bool   post_raw;
 	String id;
 	
 	enum { GET, POST };
 
-	DispatchNode() { view = NULL; argpos = Null; method = GET; }
+	DispatchNode() { view = NULL; argpos = Null; method = GET; post_raw = false; }
 };
 
 static Vector<DispatchNode>& sDispatchMap()
@@ -74,10 +75,15 @@ void RegisterView0(void (*view)(Http&), const char *id, String path, bool primar
 	sViewIndex().FindAdd((uintptr_t)view);
 	Vector<DispatchNode>& DispatchMap = sDispatchMap();
 	int method = DispatchNode::GET;
+	bool post_raw = false;
 	int q = path.Find(':');
 	if(q >= 0) {
 		if(path.Mid(q + 1) == "POST")
 			method = DispatchNode::POST;
+		if(path.Mid(q + 1) == "POST_RAW") {
+			method = DispatchNode::POST;
+			post_raw = true;
+		}
 		path = path.Mid(0, q);
 	}
 	Vector<String> h = Split(path, '/');
@@ -120,6 +126,7 @@ void RegisterView0(void (*view)(Http&), const char *id, String path, bool primar
 	DispatchMap[q].view = view;
 	DispatchMap[q].method = method;
 	DispatchMap[q].id = id;
+	DispatchMap[q].post_raw = post_raw;
 //	DumpDispatchMap();
 }
 
@@ -163,8 +170,9 @@ struct BestDispatch {
 	int             matched_params;
 	Vector<String>& arg;
 	String          id;
+	bool            post_raw;
 	
-	BestDispatch(Vector<String>& arg) : arg(arg) { matched_parts = -1; matched_params = 0; view = NULL; }
+	BestDispatch(Vector<String>& arg) : arg(arg) { matched_parts = -1; matched_params = 0; view = NULL; post_raw = false; }
 };
 
 void GetBestDispatch(int method,
@@ -180,6 +188,7 @@ void GetBestDispatch(int method,
 			bd.view = n.view;
 			bd.matched_parts = matched_parts;
 			bd.id = n.id;
+			bd.post_raw = n.post_raw;
 		}
 		int q = n.subnode.Find(String());
 		while(q >= 0) {
@@ -293,6 +302,17 @@ void Http::Dispatch(TcpSocket& socket)
 			try {
 				SQL.Begin();
 				LoadSession();
+				if(post && !bd.post_raw) {
+					ValueArray va = (*this)["post_identities"];
+					String id = (*this)["__post_identity__"];
+					_DBG_ id.Cat("xx");
+					for(int i = va.GetCount() - 1; i >= 0; i--) {
+						if(va[i] == id)
+							goto found;
+						throw AuthExc("identity error");
+					}
+				found:;
+				}
 				viewid = bd.id;
 				(*bd.view)(*this);
 				SaveSession();
@@ -305,6 +325,12 @@ void Http::Dispatch(TcpSocket& socket)
 				code = 500;
 				code_text = "Internal server error";
 				app.SqlError(*this);
+			}
+			catch(AuthExc e) {
+				SQL.Rollback();
+				response << e;
+				code = 403;
+				app.Unauthorized(*this);
 			}
 			catch(Exc e) {
 				SQL.Rollback();

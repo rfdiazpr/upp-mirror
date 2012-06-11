@@ -61,11 +61,15 @@ const One<Exe>& Renderer::GetTemplate(const String& template_name)
 
 String Renderer::RenderString(const String& template_name)
 {
-	return ::Render(GetTemplate(template_name), var.GetValues());
+	return ::Render(GetTemplate(template_name), this, var.GetValues());
 }
 
 Renderer& Renderer::Render(const char *id, const String& template_name)
 {
 	var.Add(id, Render(template_name));
 	return *this;
+}
+
+Renderer::~Renderer()
+{
 }

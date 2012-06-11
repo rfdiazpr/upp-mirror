@@ -96,7 +96,7 @@ URL_VIEW(New, "new")
 	http("ACTION", SubmitNew).RenderResult("AdrBook/Dialog.witz");
 }
 
-URL_VIEW(SubmitEdit, "submit/edit/*:POST")
+URL_VIEW(SubmitEdit, "submit/edit/*:POST_RAW")
 {
 	int id = http.Int(0);
 	SQL * http.Update(PERSON).Where(ID == atoi(http[0]));

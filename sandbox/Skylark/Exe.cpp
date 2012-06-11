@@ -13,67 +13,67 @@ String TypeMismatch(const char *s)
 	return ErrorValue("<* type mismatch for '" + String(s) + "' *>");
 }
 
-Value Compiler::ExeVar::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeVar::Eval(ExeContext& x) const
 {
-	return stack[var_index];
+	return x.stack[var_index];
 }
 
-Value Compiler::ExeConst::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeConst::Eval(ExeContext& x) const
 {
 	return value;
 }
 
-Value Compiler::ExeArray::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeArray::Eval(ExeContext& x) const
 {
 	ValueArray va;
 	for(int i = 0; i < item.GetCount(); i++)
-		va.Add(item[i]->Eval(stack, out));
+		va.Add(item[i]->Eval(x));
 	return va;
 }
 
-Value Compiler::ExeMap::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeMap::Eval(ExeContext& x) const
 {
 	ValueMap m;
 	for(int i = 0; i < key.GetCount(); i++)
-		m.Add(key[i]->Eval(stack, out), value[i]->Eval(stack, out));
+		m.Add(key[i]->Eval(x), value[i]->Eval(x));
 	return m;
 }
 
-Value Compiler::ExeNot::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeNot::Eval(ExeContext& x) const
 {
-	return !IsTrue(a->Eval(stack, out));
+	return !IsTrue(a->Eval(x));
 }
 
-Value Compiler::ExeNeg::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeNeg::Eval(ExeContext& x) const
 {
-	Value v = a->Eval(stack, out);
+	Value v = a->Eval(x);
 	if(IsNumber(v))
 		return -(double)v;
 	return TypeMismatch("unary -");
 }
 
-Value Compiler::ExeMul::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeMul::Eval(ExeContext& x) const
 {
-	Value v1 = a->Eval(stack, out);
-	Value v2 = b->Eval(stack, out);
+	Value v1 = a->Eval(x);
+	Value v2 = b->Eval(x);
 	if(IsNumber(v1) && IsNumber(v2))
 		return (double)v1 * (double)v2;
 	return TypeMismatch("*");
 }
 
-Value Compiler::ExeDiv::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeDiv::Eval(ExeContext& x) const
 {
-	Value v1 = a->Eval(stack, out);
-	Value v2 = b->Eval(stack, out);
+	Value v1 = a->Eval(x);
+	Value v2 = b->Eval(x);
 	if(IsNumber(v1) && IsNumber(v2))
 		return (double)v1 / (double)v2;
 	return TypeMismatch("/");
 }
 
-Value Compiler::ExeMod::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeMod::Eval(ExeContext& x) const
 {
-	Value v1 = a->Eval(stack, out);
-	Value v2 = b->Eval(stack, out);
+	Value v1 = a->Eval(x);
+	Value v2 = b->Eval(x);
 	if(IsNumber(v1) && IsNumber(v2)) {
 		int m = v2;
 		if(m == 0)
@@ -83,10 +83,10 @@ Value Compiler::ExeMod::Eval(Vector<Value>& stack, StringBuffer& out) const
 	return TypeMismatch("%");
 }
 
-Value Compiler::ExeAdd::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeAdd::Eval(ExeContext& x) const
 {
-	Value v1 = a->Eval(stack, out);
-	Value v2 = b->Eval(stack, out);
+	Value v1 = a->Eval(x);
+	Value v2 = b->Eval(x);
 	if(IsString(v1) && IsString(v2))
 		return (String)v1 + (String)v2;
 	if(IsNumber(v1) && IsNumber(v2))
@@ -99,46 +99,46 @@ Value Compiler::ExeAdd::Eval(Vector<Value>& stack, StringBuffer& out) const
 	return AsString(v1) + AsString(v2);
 }
 
-Value Compiler::ExeSub::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeSub::Eval(ExeContext& x) const
 {
-	Value v1 = a->Eval(stack, out);
-	Value v2 = b->Eval(stack, out);
+	Value v1 = a->Eval(x);
+	Value v2 = b->Eval(x);
 	if(IsNumber(v1) && IsNumber(v2))
 		return (double)v1 - (double)v2;
 	return TypeMismatch("-");
 }
 
-Value Compiler::ExeSll::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeSll::Eval(ExeContext& x) const
 {
-	Value v1 = a->Eval(stack, out);
-	Value v2 = b->Eval(stack, out);
+	Value v1 = a->Eval(x);
+	Value v2 = b->Eval(x);
 	if(IsNumber(v1) && IsNumber(v2))
 		return (int)v1 << min(32, (int)v2);
 	return TypeMismatch("<<");
 }
 
-Value Compiler::ExeSrl::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeSrl::Eval(ExeContext& x) const
 {
-	Value v1 = a->Eval(stack, out);
-	Value v2 = b->Eval(stack, out);
+	Value v1 = a->Eval(x);
+	Value v2 = b->Eval(x);
 	if(IsNumber(v1) && IsNumber(v2))
 		return int((unsigned)(int)v1 >> min(32, (int)v2));
 	return TypeMismatch(">>>");
 }
 
-Value Compiler::ExeSra::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeSra::Eval(ExeContext& x) const
 {
-	Value v1 = a->Eval(stack, out);
-	Value v2 = b->Eval(stack, out);
+	Value v1 = a->Eval(x);
+	Value v2 = b->Eval(x);
 	if(IsNumber(v1) && IsNumber(v2))
 		return (int)v1 >> min(32, (int)v2);
 	return TypeMismatch(">>");
 }
 
-Value Compiler::ExeLt::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeLt::Eval(ExeContext& x) const
 {
-	Value v1 = a->Eval(stack, out);
-	Value v2 = b->Eval(stack, out);
+	Value v1 = a->Eval(x);
+	Value v2 = b->Eval(x);
 	if(IsString(v1) && IsString(v2))
 		return (String)v1 < (String)v2;
 	if(IsNumber(v1) && IsNumber(v2))
@@ -146,10 +146,10 @@ Value Compiler::ExeLt::Eval(Vector<Value>& stack, StringBuffer& out) const
 	return AsString(v1) < AsString(v2);
 }
 
-Value Compiler::ExeLte::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeLte::Eval(ExeContext& x) const
 {
-	Value v1 = a->Eval(stack, out);
-	Value v2 = b->Eval(stack, out);
+	Value v1 = a->Eval(x);
+	Value v2 = b->Eval(x);
 	if(IsString(v1) && IsString(v2))
 		return (String)v1 <= (String)v2;
 	if(IsNumber(v1) && IsNumber(v2))
@@ -157,10 +157,10 @@ Value Compiler::ExeLte::Eval(Vector<Value>& stack, StringBuffer& out) const
 	return AsString(v1) <= AsString(v2);
 }
 
-Value Compiler::ExeEq::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeEq::Eval(ExeContext& x) const
 {
-	Value v1 = a->Eval(stack, out);
-	Value v2 = b->Eval(stack, out);
+	Value v1 = a->Eval(x);
+	Value v2 = b->Eval(x);
 	if(IsString(v1) && IsString(v2))
 		return (String)v1 == (String)v2;
 	if(IsNumber(v1) && IsNumber(v2))
@@ -168,10 +168,10 @@ Value Compiler::ExeEq::Eval(Vector<Value>& stack, StringBuffer& out) const
 	return AsString(v1) == AsString(v2);
 }
 
-Value Compiler::ExeNeq::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeNeq::Eval(ExeContext& x) const
 {
-	Value v1 = a->Eval(stack, out);
-	Value v2 = b->Eval(stack, out);
+	Value v1 = a->Eval(x);
+	Value v2 = b->Eval(x);
 	if(IsString(v1) && IsString(v2))
 		return (String)v1 != (String)v2;
 	if(IsNumber(v1) && IsNumber(v2))
@@ -179,84 +179,84 @@ Value Compiler::ExeNeq::Eval(Vector<Value>& stack, StringBuffer& out) const
 	return AsString(v1) != AsString(v2);
 }
 
-Value Compiler::ExeAnd::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeAnd::Eval(ExeContext& x) const
 {
-	Value v1 = a->Eval(stack, out);
-	Value v2 = b->Eval(stack, out);
+	Value v1 = a->Eval(x);
+	Value v2 = b->Eval(x);
 	if(IsNumber(v1) && IsNumber(v2))
 		return (int)v1 & (int)v2;
 	return TypeMismatch("&");
 }
 
-Value Compiler::ExeXor::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeXor::Eval(ExeContext& x) const
 {
-	Value v1 = a->Eval(stack, out);
-	Value v2 = b->Eval(stack, out);
+	Value v1 = a->Eval(x);
+	Value v2 = b->Eval(x);
 	if(IsNumber(v1) && IsNumber(v2))
 		return (int)v1 ^ (int)v2;
 	return TypeMismatch("^");
 }
 
-Value Compiler::ExeOr::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeOr::Eval(ExeContext& x) const
 {
-	Value v1 = a->Eval(stack, out);
-	Value v2 = b->Eval(stack, out);
+	Value v1 = a->Eval(x);
+	Value v2 = b->Eval(x);
 	if(IsNumber(v1) && IsNumber(v2))
 		return (int)v1 | (int)v2;
 	return TypeMismatch("|");
 }
 
-Value Compiler::ExeAnl::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeAnl::Eval(ExeContext& x) const
 {
-	Value v1 = a->Eval(stack, out);
-	Value v2 = b->Eval(stack, out);
+	Value v1 = a->Eval(x);
+	Value v2 = b->Eval(x);
 	return IsTrue(v1) && IsTrue(v2);
 }
 
-Value Compiler::ExeOrl::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeOrl::Eval(ExeContext& x) const
 {
-	Value v1 = a->Eval(stack, out);
-	Value v2 = b->Eval(stack, out);
+	Value v1 = a->Eval(x);
+	Value v2 = b->Eval(x);
 	return IsTrue(v1) || IsTrue(v2);
 }
 
-Value Compiler::ExeCond::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeCond::Eval(ExeContext& x) const
 {
-	if(cond->Eval(stack, out))
-		return ontrue->Eval(stack, out);
+	if(cond->Eval(x))
+		return ontrue->Eval(x);
 	else
 	if(onfalse)
-		return onfalse->Eval(stack, out);
+		return onfalse->Eval(x);
 	return Value();
 }
 
-Value Compiler::ExeField::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeField::Eval(ExeContext& x) const
 {
-	return value->Eval(stack, out)[id];	
+	return value->Eval(x)[id];	
 }
 
-Value Compiler::ExeVarField::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeVarField::Eval(ExeContext& x) const
 {
-	return stack[var_index][id];
+	return x.stack[var_index][id];
 }
 
-Value Compiler::ExeFn::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeFn::Eval(ExeContext& x) const
 {
 	Vector<Value> v;
 	v.SetCount(arg.GetCount());
 	for(int i = 0; i < arg.GetCount(); i++)
-		v[i] = arg[i]->Eval(stack, out);
-	return (*fn)(v);
+		v[i] = arg[i]->Eval(x);
+	return (*fn)(v, x.renderer);
 }
 
-Value Compiler::ExeLink::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeLink::Eval(ExeContext& x) const
 {
 	LTIMING("ExeLink");
 	Vector<Value> v;
 	v.SetCount(arg.GetCount());
 	for(int i = 0; i < arg.GetCount(); i++) {
 		LTIMING("arg eval");
-		v[i] = arg[i]->Eval(stack, out);
+		v[i] = arg[i]->Eval(x);
 	}
 	StringBuffer r;
 	r << "\"";
@@ -265,11 +265,11 @@ Value Compiler::ExeLink::Eval(Vector<Value>& stack, StringBuffer& out) const
 	return Raw(r);
 }
 
-Value Compiler::ExeLinkVarField1::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeLinkVarField1::Eval(ExeContext& x) const
 {
 	LTIMING("ExeLinkVarField");
 	Vector<Value> v;
-	v.Add(stack[var_index][id]);
+	v.Add(x.stack[var_index][id]);
 	StringBuffer r;
 	r << "\"";
 	MakeLink(r, *part, v);
@@ -277,27 +277,27 @@ Value Compiler::ExeLinkVarField1::Eval(Vector<Value>& stack, StringBuffer& out) 
 	return Raw(r);
 }
 
-Value Compiler::ExeFirst::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeFirst::Eval(ExeContext& x) const
 {
-	const LoopInfo& f = ValueTo<LoopInfo>(stack[var_index]);
+	const LoopInfo& f = ValueTo<LoopInfo>(x.stack[var_index]);
 	return f.first;
 }
 
-Value Compiler::ExeLast::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeLast::Eval(ExeContext& x) const
 {
-	const LoopInfo& f = ValueTo<LoopInfo>(stack[var_index]);
+	const LoopInfo& f = ValueTo<LoopInfo>(x.stack[var_index]);
 	return f.last;
 }
 
-Value Compiler::ExeIndex::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeIndex::Eval(ExeContext& x) const
 {
-	const LoopInfo& f = ValueTo<LoopInfo>(stack[var_index]);
+	const LoopInfo& f = ValueTo<LoopInfo>(x.stack[var_index]);
 	return f.index;
 }
 
-Value Compiler::ExeKey::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeKey::Eval(ExeContext& x) const
 {
-	const LoopInfo& f = ValueTo<LoopInfo>(stack[var_index]);
+	const LoopInfo& f = ValueTo<LoopInfo>(x.stack[var_index]);
 	return f.key;
 }
 
@@ -347,47 +347,47 @@ static void sCatAsString(StringBuffer& out, const Value& v)
 	}
 }
 
-Value Compiler::ExeFor::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeFor::Eval(ExeContext& x) const
 {
 	LTIMING("ExeFor");
-	Value array = value->Eval(stack, out);
+	Value array = value->Eval(x);
 	if(array.GetCount() == 0 && onempty)
-		return onempty->Eval(stack, out);
+		return onempty->Eval(x);
 	ValueMap m;
 	bool map = array.Is<ValueMap>();
 	if(map)
 		m = array;
-	int q = stack.GetCount();
-	stack.Add();
-	stack.Add();
+	int q = x.stack.GetCount();
+	x.stack.Add();
+	x.stack.Add();
 	for(int i = 0; i < array.GetCount(); i++) {
-		stack[q] = array[i];
+		x.stack[q] = array[i];
 		LoopInfo f;
 		f.first = i == 0;
 		f.last = i == array.GetCount() - 1;
 		f.index = i;
 		f.key = map ? m.GetKeys()[i] : (Value)i;
-		stack[q + 1] = RawToValue(f);
-		sCatAsString(out, body->Eval(stack, out));
+		x.stack[q + 1] = RawToValue(f);
+		sCatAsString(x.out, body->Eval(x));
 	}
-	stack.SetCount(q);
+	x.stack.SetCount(q);
 	return Value();
 }
 
-Value Compiler::ExeBlock::Eval(Vector<Value>& stack, StringBuffer& out) const
+Value Compiler::ExeBlock::Eval(ExeContext& x) const
 {
-	int q = stack.GetCount();
+	int q = x.stack.GetCount();
 	for(int i = 0; i < item.GetCount(); i++)
-		sCatAsString(out, item[i]->Eval(stack, out));
-	stack.SetCount(q);
+		sCatAsString(x.out, item[i]->Eval(x));
+	x.stack.SetCount(q);
 	return Value();
 }
 
-String Render(const One<Exe>& exe, Vector<Value>& var)
+String Render(const One<Exe>& exe, Renderer *r, Vector<Value>& var)
 {
 	LTIMING("Render0");
-	StringBuffer b;
-	Value v = exe->Eval(var, b);
-	b.Cat(AsString(v));
-	return b;
+	ExeContext x(var, r);
+	Value v = exe->Eval(x);
+	x.out.Cat(AsString(v));
+	return x.out;
 }

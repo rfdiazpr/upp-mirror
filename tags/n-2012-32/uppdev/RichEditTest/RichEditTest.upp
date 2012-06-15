@@ -1,0 +1,17 @@
+uses
+	RichEdit,
+	plugin\jpg,
+	Painter;
+
+file
+	main.cpp,
+	todo.txt,
+	test.tpp,
+	test.iml;
+
+mainconfig
+	"" = "GUI",
+	"" = "GUI NOGTK",
+	"" = "GUI MT",
+	"" = "GUI USEMALLOC";
+

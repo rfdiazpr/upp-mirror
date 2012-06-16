@@ -16,7 +16,7 @@ struct SessionConfig {
 	String dir;
 	int    format;
 	SqlId  table, id_column, data_column, lastwrite_column;
-	int    max_stored_count;
+	int    expire;
 	
 	SessionConfig();
 };
@@ -39,8 +39,7 @@ class SkylarkApp {
 	static void  SignalHandler(int signal);
 	void         Main();
 
-
-	void      FinalizeViews();
+	void         FinalizeViews();
 
 	static SkylarkApp *app;
 

@@ -34,10 +34,7 @@ void OpenSQL(MySqlSession& mysql)
 void InitModel()
 {
 #ifdef _DEBUG
-	MySqlSession mysql;
-	OpenSQL(mysql);
 	SqlSchema sch(MY_SQL);
-
 	All_Tables(sch);
 	SqlPerformScript(sch.Upgrade());
 	SqlPerformScript(sch.Attributes());
@@ -54,15 +51,23 @@ void AdrBook::WorkThread()
 
 AdrBook::AdrBook()
 {
-	root = "root";
+	root = "adrbook";
 	template_path = "/home/cxl/sandbox;u:/sandbox";
 	view_var.Add("base", "asdfasdf");
-	session.format = SESSION_FORMAT_XML;
+	session.format = SESSION_FORMAT_JSON;
+	session.expire = 5 * 60;
+#ifdef _DEBUG
+	prefork = 0;
+#else
 	prefork = 5;
+#endif
+	
 }
 
 CONSOLE_APP_MAIN
 {
+	MySqlSession mysql;
+	OpenSQL(mysql);
 	InitModel();
 	AdrBook().Run();	
 }

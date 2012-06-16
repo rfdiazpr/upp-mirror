@@ -1,8 +1,9 @@
 #include "Skylark.h"
 
-#define LLOG(x)   DLOG(x)
-#define LDUMPC(x) DDUMPC(x)
-#define LDUMPM(x) DDUMPM(x)
+#define LLOG(x)    DLOG(x)
+#define LDUMPC(x)  DDUMPC(x)
+#define LDUMPM(x)  DDUMPM(x)
+#define LLOGHEX(x) DLOGHEX(x)
 
 SessionConfig::SessionConfig()
 {
@@ -12,6 +13,7 @@ SessionConfig::SessionConfig()
 	id_column = "ID";
 	data_column = "DATA";
 	lastwrite_column = "LASTWRITE";
+	expire = 3600 * 24 * 365; // one year to expire the session
 }
 
 String Http::SessionFile(const String& sid)
@@ -29,14 +31,12 @@ void Http::LoadSession()
 	if(IsNull(session_id))
 		return;
 	String data;
-	if(cfg.table.IsNull()) {
+	if(cfg.table.IsNull())
 		data = LoadFile(SessionFile(session_id));
-	}
-	else {
-		String data = SQLR % Select(cfg.data_column).From(cfg.table)
-		                     .Where(cfg.id_column == session_id);
-	}
-	LOGHEX(data);
+	else
+		data = SQLR % Select(cfg.data_column).From(cfg.table)
+		              .Where(cfg.id_column == session_id);
+	LLOGHEX(data);
 	switch(cfg.format) {
 	case SESSION_FORMAT_JSON:
 		LoadFromJson(session_var, data);
@@ -53,6 +53,8 @@ void Http::LoadSession()
 	for(int i = 0; i < session_var.GetCount(); i++)
 		var.Add(session_var.GetKey(i), session_var[i]);
 }
+
+thread__ int s_exp;
 
 void Http::SaveSession()
 {
@@ -90,9 +92,28 @@ void Http::SaveSession()
 	}
 	LLOG("Stored session: " << session_id);
 	LDUMPM(session_var);
+	
+	if((s_exp++ % 1000) == 0) {
+		Time tm = GetSysTime() - cfg.expire;
+		LLOG("Expiring sessions older than " << tm);
+		if(cfg.table.IsNull()) {
+			FindFile ff(AppendFileName(cfg.dir, "*.*"));
+			Vector<String> todelete;
+			while(ff) {
+				DDUMP(ff.GetPath());
+				DDUMP(Time(ff.GetLastWriteTime()));
+				if(ff.GetLastWriteTime() < tm)
+					todelete.Add(ff.GetPath());
+				ff.Next();
+			}
+			DDUMPC(todelete);
+			for(int i = 0; i < todelete.GetCount(); i++)
+				FileDelete(todelete[i]);
+		}
+		else
+			SQL * Delete(cfg.table).Where(cfg.lastwrite_column < tm);
+	}
 }
-
-// ToDo: Limit number of session - remove oldest ones
 
 Http& Http::ClearSession()
 {

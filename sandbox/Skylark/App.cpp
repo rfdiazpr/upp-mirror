@@ -36,7 +36,7 @@ void SkylarkApp::RunThread()
 	SQLR.ClearError();
 	SQL.GetSession().ThrowOnError();
 	SQLR.GetSession().ThrowOnError();
-
+	
 	for(;;) {
 		TcpSocket request;
 		accept_mutex.Enter();
@@ -69,8 +69,11 @@ void SkylarkApp::Main()
 	for(int i = 0; i < threads; i++)
 		Thread::Start(THISBACK(ThreadRun));
 
-	while(Thread::GetCount())
+	while(Thread::GetCount()) {
+		if(getpid() == main_pid && (msecs() % 1000) == 0)
+			ThreadRun();
 		Sleep(100);
+	}
 }
 
 void SkylarkApp::Broadcast(int signal)
@@ -113,7 +116,6 @@ void DisableHUP()
 	sigaddset(&mask, SIGHUP);
 	sigprocmask(SIG_BLOCK, &mask, NULL);
 }
-
 
 void EnableHUP()
 {
@@ -169,7 +171,7 @@ void SkylarkApp::Run()
 				}
 			}
 			int status = 0;
-			pid_t p = waitpid(-1, &status, 0);
+			pid_t p = wait(&status);
 			if(p > 0) {
 				int q = FindIndex(child_pid, p);
 				if(q >= 0)
@@ -220,6 +222,7 @@ SkylarkApp::SkylarkApp()
 	app = this;
 	threads = 3 * CPU_Cores() + 1;
 	post_identities = 60;
+	port = 8001;
 #ifdef _DEBUG
 	prefork = 0;
 	timeout = 0;

@@ -26,24 +26,36 @@ struct AuthExc : Exc {
 };
 
 class SkylarkApp {
-	TcpSocket server;
-	Mutex     accept_mutex;
+	TcpSocket    server;
+	Mutex        accept_mutex;
+	int          main_pid;
+	Vector<int>  child_pid;
+	bool         quit;
+	
 
-	void      ThreadRun();
+	void         ThreadRun();
+	void         Broadcast(int signal);
+	void         Signal(int signal);
+	static void  SignalHandler(int signal);
+	void         Main();
+
 
 	void      FinalizeViews();
-	
+
 	static SkylarkApp *app;
 
 	typedef SkylarkApp CLASSNAME;
 
-public: // should be protected
+public: // Skylark config - should be protected
 	String                    root;
 	VectorMap<String, String> view_var;
 	String                    template_path;
 	SessionConfig             session;
 	int                       threads;
 	int                       post_identities;
+	int                       port;
+	int                       prefork;
+	int                       timeout;
 
 public:
 	virtual void SqlError(Http& http);
@@ -60,6 +72,7 @@ public:
 	static SkylarkApp& TheApp();
 
 	SkylarkApp();
+	virtual ~SkylarkApp();
 };
 
 

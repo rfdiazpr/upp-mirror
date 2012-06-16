@@ -58,6 +58,7 @@ AdrBook::AdrBook()
 	template_path = "/home/cxl/sandbox;u:/sandbox";
 	view_var.Add("base", "asdfasdf");
 	session.format = SESSION_FORMAT_XML;
+	prefork = 5;
 }
 
 CONSOLE_APP_MAIN

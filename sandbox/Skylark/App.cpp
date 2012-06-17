@@ -1,5 +1,7 @@
 #include "Skylark.h"
+#ifdef PLATFORM_POSIX
 #include <sys/wait.h>
+#endif
 
 #ifdef PLATFORM_WIN32
 #include <wincon.h>
@@ -8,14 +10,14 @@
 #define CONSOLE(x)   Cout() << x << '\n'
 
 #ifdef PLATFORM_WIN32
-BOOL WINAPI CtrlCHandlerRoutine(__in  DWORD dwCtrlType)
+BOOL WINAPI SkylarkApp::CtrlCHandlerRoutine(__in  DWORD dwCtrlType)
 {
 	LOG("Ctrl+C handler");
-	ExitSkylark = true;
+	TheApp().quit = true;
 	Cout() << "Ctrl + C\n";
-	Socket h;
-	ClientSocket(h, "127.0.0.1", Port);
-	h.Write("quit");
+	TcpSocket h;
+	h.Connect("127.0.0.1", TheApp().port);
+	h.Put("quit");
 	return TRUE;
 }
 #endif
@@ -50,12 +52,16 @@ void SkylarkApp::RunThread()
 			break;
 		if(b) {
 			CONSOLE("Accepted " << Thread::GetCurrentId());
+		#ifdef PLATFORM_POSIX
 			if(prefork)
 				alarm(timeout);
+		#endif
 			Http http(*this);
 			http.Dispatch(request);
+		#ifdef PLATFORM_POSIX
 			if(prefork)
 				alarm(0);
+		#endif
 			CONSOLE("Finished " << Thread::GetCurrentId());
 		}
 		else
@@ -78,13 +84,16 @@ void SkylarkApp::Main()
 
 void SkylarkApp::Broadcast(int signal)
 {
+#ifdef PLATFORM_POSIX
 	if(getpid() == main_pid)
-		for(int i = 0; i < child_pid.GetCount();i++)
-			kill(child_pid[i], signal);					
+		for(int i = 0; i < child_pid.GetCount(); i++)
+			kill(child_pid[i], signal);	
+#endif
 }
 
 void SkylarkApp::Signal(int signal)
 {
+#ifdef PLATFORM_POSIX
 	switch(signal) {
 	case SIGTERM:
 		quit = true;
@@ -102,6 +111,7 @@ void SkylarkApp::Signal(int signal)
 		}
 		break;
 	}
+#endif
 }
 
 void SkylarkApp::SignalHandler(int signal) 
@@ -111,18 +121,22 @@ void SkylarkApp::SignalHandler(int signal)
 
 void DisableHUP()
 {
+#ifdef PLATFORM_POSIX
 	sigset_t mask;
 	sigemptyset(&mask);
 	sigaddset(&mask, SIGHUP);
 	sigprocmask(SIG_BLOCK, &mask, NULL);
+#endif
 }
 
 void EnableHUP()
 {
+#ifdef PLATFORM_POSIX
 	sigset_t mask;
 	sigemptyset(&mask);
 	sigaddset(&mask, SIGHUP);
 	sigprocmask(SIG_UNBLOCK, &mask, NULL);
+#endif
 }
 
 void SkylarkApp::Run()
@@ -145,6 +159,7 @@ void SkylarkApp::Run()
 	main_pid = getpid();
 	quit = false;
 
+#ifdef PLATFORM_POSIX
 	if(prefork) {
 		struct sigaction sa;
 		memset(&sa, 0, sizeof(sa));
@@ -186,6 +201,7 @@ void SkylarkApp::Run()
 		// "server stopped";
 	}
 	else
+#endif
 		Main();
 
 	CONSOLE("ExitSkylark");

@@ -19,7 +19,7 @@ INITBLOCK {
 
 URL_VIEW(ServeStaticPage, "static/**")
 {
-	String file = "static/" + Join(http.arg, "/");
+	String file = "static/" + http[0];
 	for(int i = 0; i < sPath.GetCount(); i++) {
 		String path = AppendFileName(sPath[i], file);
 		if(FileExists(path))
@@ -29,7 +29,7 @@ URL_VIEW(ServeStaticPage, "static/**")
 
 URL_VIEW(ServeIml, "iml/*")
 {
-	String name = http.arg[0];
+	String name = http[0];
 	int q = name.Find('.');
 	String ext;
 	if(q >= 0) {

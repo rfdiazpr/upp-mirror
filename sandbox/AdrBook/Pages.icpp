@@ -28,8 +28,7 @@ Tuple2<int, int> Pagination(Http& http, int total)
 	return MakeTuple(page * perpage, perpage);
 }
 
-//URL_VIEW(HomePage, "$base/stránčička.html")
-URL_VIEW(HomePage, "index.html")
+void Persons(Http& http)
 {
 	ValueArray person;
 	SqlBool where;
@@ -39,7 +38,6 @@ URL_VIEW(HomePage, "index.html")
 		where = Like(FIRSTNAME, s) || Like(LASTNAME, s) || Like(EMAIL, s);
 	}
 	ValueMap vm;
-	{ RTIMING("SQL");
 	Tuple2<int, int> pg = Pagination(http, int(SQL % Select(SqlCountRows()).From(PERSON).Where(where)));
 	Sql sql;
 	sql * Select(ID, FIRSTNAME, LASTNAME, EMAIL, SEX)
@@ -51,8 +49,21 @@ URL_VIEW(HomePage, "index.html")
 		vm.Add("HASPICTURE", FileExists(ConfigFile(AsString(sql[ID]) + ".data")));
 		person.Add(vm);
 	}
-	}
-	http("PERSON", person).RenderResult("AdrBook/Index.witz");
+	http("PERSON", person);
+};
+
+//URL_VIEW(HomePage, "$base/stránčička.html")
+URL_VIEW(HomePage, "index.html")
+{
+	Persons(http);
+	http.RenderResult("AdrBook/Index.witz");
+}
+
+URL_VIEW(SetPerPage, "ajax/perpage/*")
+{
+	http.SessionSet(http.GetViewId() + "_perpage", Nvl(http.Int(0), 10));
+	Persons(http);
+	http << "persons:" << http.Render("AdrBook/Persons.witz");
 }
 
 URL_VIEW(NotFound, "**")
@@ -139,4 +150,9 @@ URL_VIEW(Delete, "person/*/delete")
 	SQL * Delete(PERSON).Where(ID == atoi(http[0]));
 	DeleteFile(ConfigFile(atoi(http[0]) + ".data"));
 	http.Redirect(HomePage);
+}
+
+URL_VIEW(AjaxTest, "ajax/*")
+{
+	http << "ajax_id:AJAX response: " << AsString(4 * Nvl(http.Int(0)));
 }

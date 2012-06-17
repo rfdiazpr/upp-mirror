@@ -43,6 +43,10 @@ class SkylarkApp {
 
 	static SkylarkApp *app;
 
+#ifdef PLATFORM_WIN32
+	static BOOL WINAPI CtrlCHandlerRoutine(__in  DWORD dwCtrlType);
+#endif
+
 	typedef SkylarkApp CLASSNAME;
 
 public: // Skylark config - should be protected

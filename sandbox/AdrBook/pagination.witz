@@ -3,5 +3,5 @@ $for(i in PAGES)
 $/
 Per page:
 $for(i in [10, 20, 50, 100, 250])
-	<a href=$HomePage({"page":page, "search":search, "perpage":i})>$(i)</a>
+	<a href="javascript:void(0)" onclick='AjaxGet($SetPerPage(i))'>$i</a>
 $/

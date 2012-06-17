@@ -1,8 +1,7 @@
 void MakeLink(StringBuffer& out, const Vector<String>& part, const Vector<Value>& arg);
 
-struct Http;
-
-struct Renderer {
+class Renderer {
+protected:
 	VectorMap<String, Value>  var;
 
 	Renderer& Link(const char *id, void (*view)(Http&), const Vector<Value>& arg);
@@ -30,7 +29,7 @@ public:
 	virtual ~Renderer();
 };
 
-struct Http : Renderer {
+class Http : public Renderer {
 	SkylarkApp& app;
 	HttpHeader  hdr;
 	
@@ -86,8 +85,9 @@ public:
 	int    GetParamCount() const                       { return arg.GetCount(); }
 
 	Http&  ContentType(const char *s)                  { content_type = s; return *this; }
-	Http&  Content(const char *s, const String& data)  { content_type = s; response = data; return *this; }
-	Http&  operator<<(const String& s)                 { response << s; return *this; }
+
+	Http&  Content(const char *s, const Value& data);
+	Http&  operator<<(const Value& s);
 
 	Http&  SetRawCookie(const char *id, const String& value,
 	                    Time expires = Null, const char *path = NULL,

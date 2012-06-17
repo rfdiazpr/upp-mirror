@@ -81,6 +81,26 @@ int Http::Int(int i) const
 	return ScanInt(operator[](i));
 }
 
+String HttpAsString(const Value& v)
+{
+	if(v.Is<RawHtmlText>())
+		return v.To<RawHtmlText>().text;
+	return AsString(v);
+}
+
+Http& Http::Content(const char *s, const Value& data)
+{
+	content_type = s;
+	response = HttpAsString(data);
+	return *this;
+}
+
+Http& Http::operator<<(const Value& s)
+{
+	response << HttpAsString(s);
+	return *this;
+}
+
 Http& Http::SetCookie(const char *id, const String& value, Time expires,
                       const char *path, const char *domain, bool secure, bool httponly)
 {

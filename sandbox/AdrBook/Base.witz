@@ -3,8 +3,29 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>#TITLE</title>
+	<script type="text/javascript">
+		function AjaxGet(request) {
+			var xmlhttp;
+			if(window.XMLHttpRequest)
+				xmlhttp = new XMLHttpRequest();
+			else
+				xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+			xmlhttp.onreadystatechange = function() {
+				if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+					var ss = xmlhttp.responseText.split('\1');
+					for(i = 0; i < ss.length; i++) {
+						var pos = ss[i].indexOf(':');
+						if(pos >= 0)
+							document.getElementById(ss[i].slice(0, pos)).innerHTML = ss[i].slice(pos + 1);
+					}
+				}
+			}
+			xmlhttp.open("GET", request, true);
+			xmlhttp.send();
+		}
+	</script>
 <html>
-<body>
+<body id="body_id">
 	#BODY
 </body>
 </html>

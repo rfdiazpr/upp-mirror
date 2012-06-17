@@ -8,28 +8,10 @@
    </P>
 </FORM>
 
-<table border="1">
-<tr>
-  <th>First Name</th>
-  <th>Last Name</th>
-  <th>Email</th>
-  <th>Sex</th>
-  <th>Action</th>
-</tr>
-$for(i in PERSON)
-	<tr>
-	  <td>$i.FIRSTNAME</td>
-	  <td>$i.LASTNAME</td>
-	  <td>$i.EMAIL</td>
-	  <td>$(i.SEX == "M" ? "Male" : "Female")</td>
-	  <td><a href=$Edit(i.ID)><img src=$ServeIml("AdrBookImg:Plus")/>Edit</a> <a href=$Delete(i.ID)>Delete</a>
-	  	$if(i.HASPICTURE) <a href=$Picture(i.ID)>Show picture</a> $/
-	  </td>
-	</tr>
-$/
-</table>
+#include Persons.witz
+
 <p/>
 <a href=$New>Insert new person</a>
 <a href=$InsertTestData>Insert test data</a>
+<p id="ajax_id">AJAX will be placed here!</p>
 $PAGINATION
-

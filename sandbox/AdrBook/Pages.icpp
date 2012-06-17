@@ -41,7 +41,6 @@ void Persons(Http& http)
 	http("PERSON", person);
 };
 
-//URL_VIEW(HomePage, "$base/stránčička.html")
 URL_VIEW(HomePage, "index.html")
 {
 	Persons(http);

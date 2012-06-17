@@ -14,4 +14,6 @@
 <a href=$New>Insert new person</a>
 <a href=$InsertTestData>Insert test data</a>
 <p id="ajax_id">AJAX will be placed here!</p>
-$PAGINATION
+<div id="pagination">
+#include pagination.witz
+</div>

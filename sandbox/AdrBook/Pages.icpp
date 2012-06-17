@@ -7,24 +7,13 @@ URL_VIEW(Picture, "person/*/picture")
 
 Tuple2<int, int> Pagination(Http& http, int total)
 {
-	String ppid = http.GetViewId() + "_perpage";
-	DDUMP(ppid);
-	DDUMP(http.Int(ppid));
-	int perpage = Nvl(http.Int(ppid), 10);
-	int pp = http.Int("perpage");
-	DDUMP(perpage);
-	DDUMP(pp);
-	if(!IsNull(pp))
-		perpage = pp;
-	perpage = max(perpage, 10);
-	http.SessionSet(ppid, perpage);
+	int perpage = minmax(http.Int("perpage"), 10, 250);
 	int pages = total / perpage;
-	int page = atoi((String)http["page"]);
+	int page = Nvl(http.Int("page"));
 	ValueArray pg;
 	for(int i = 0; i < pages; i++)
 		pg.Add(i);
 	http("PAGES", pg);
-	http.Render("PAGINATION", "AdrBook/pagination.witz");
 	return MakeTuple(page * perpage, perpage);
 }
 
@@ -61,7 +50,15 @@ URL_VIEW(HomePage, "index.html")
 
 URL_VIEW(SetPerPage, "ajax/perpage/*")
 {
-	http.SessionSet(http.GetViewId() + "_perpage", Nvl(http.Int(0), 10));
+	http.SessionSet("perpage", Nvl(http.Int(0), 10));
+	Persons(http);
+	http << "persons:" << http.Render("AdrBook/Persons.witz") << "\1"
+	     << "pagination:" << http.Render("AdrBook/pagination.witz");
+}
+
+URL_VIEW(SetPage, "ajax/setpage/*")
+{
+	http.SessionSet("page", Nvl(http.Int(0), 10));
 	Persons(http);
 	http << "persons:" << http.Render("AdrBook/Persons.witz");
 }

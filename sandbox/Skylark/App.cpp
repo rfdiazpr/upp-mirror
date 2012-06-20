@@ -150,8 +150,8 @@ void SkylarkApp::Run()
 	SetConsoleCtrlHandler(CtrlCHandlerRoutine, true);
 #endif
 
-	// Add prefork here
 	if(!server.Listen(port, 5)) {
+		LOG("Cannot open server socket!");
 		Cout() << "Cannot open server socket!\n";
 		return;
 	}

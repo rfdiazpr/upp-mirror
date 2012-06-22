@@ -1,0 +1,20 @@
+description "TheIDE - common library\377B";
+
+uses
+	Esc,
+	Web,
+	coff/binobj,
+	plugin/bz2;
+
+file
+	Core.h,
+	Core.cpp,
+	Hdepend.cpp optimize_speed,
+	Package.cpp,
+	Workspace.cpp,
+	usc.cpp,
+	Host.h,
+	Host.cpp,
+	Info readonly separator,
+	Copying;
+

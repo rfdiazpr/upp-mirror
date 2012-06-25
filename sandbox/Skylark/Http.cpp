@@ -3,6 +3,15 @@
 #define LLOG(x) LOG(x)
 #define LTIMING(x) RTIMING(x)
 
+Http::Http(SkylarkApp& app)
+:	app(app)
+{
+	code = 200;
+	content_type = "text/html; charset=UTF-8";
+	session_dirty = false;
+	lang = LNG_ENGLISH;
+}
+
 void Http::ParseRequest(const char *p)
 {
 	while(*p) {

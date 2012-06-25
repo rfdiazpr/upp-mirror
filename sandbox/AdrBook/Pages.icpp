@@ -26,8 +26,8 @@ void Persons(Http& http)
 		s << '%';
 		where = Like(FIRSTNAME, s) || Like(LASTNAME, s) || Like(EMAIL, s);
 	}
-	ValueMap vm;
 	Tuple2<int, int> pg = Pagination(http, int(SQL % Select(SqlCountRows()).From(PERSON).Where(where)));
+	ValueMap vm;
 	Sql sql;
 	sql * Select(ID, FIRSTNAME, LASTNAME, EMAIL, SEX)
 	      .From(PERSON)
@@ -44,22 +44,42 @@ void Persons(Http& http)
 URL_VIEW(HomePage, "index.html")
 {
 	Persons(http);
-	http.RenderResult("AdrBook/Index.witz");
+	http.RenderResult("AdrBook/Index");
+}
+
+SKYLARK(SetLanguage, "setlanguage/*")
+{
+	int lang = LNGFromText(http[0]);
+	DDUMP(lang);
+	DDUMP(LNGAsText(lang));
+	if(lang)
+		http.SetLanguage(lang);
+	http.Redirect(HomePage);
 }
 
 URL_VIEW(SetPerPage, "ajax/perpage/*")
 {
 	http.SessionSet("perpage", Nvl(http.Int(0), 10));
 	Persons(http);
-	http << "persons:" << http.Render("AdrBook/Persons.witz") << "\1"
-	     << "pagination:" << http.Render("AdrBook/pagination.witz");
+	http << "persons:" << http.Render("AdrBook/Persons") << "\1"
+	     << "pagination:" << http.Render("AdrBook/pagination");
 }
 
 URL_VIEW(SetPage, "ajax/setpage/*")
 {
 	http.SessionSet("page", Nvl(http.Int(0), 10));
 	Persons(http);
-	http << "persons:" << http.Render("AdrBook/Persons.witz");
+	http << "persons:" << http.Render("AdrBook/Persons");
+}
+
+SKYLARK(AjaxCreate, "ajax/create:POST")
+{
+	SQL * http.Insert(PERSON);
+	Persons(http);
+	http << "persons:" << http.Render("AdrBook/Persons") << "\1"
+	     << "pagination:" << http.Render("AdrBook/pagination") << "\1"
+	     << ">firstname:" << "\1"
+	     << ">lastname:";
 }
 
 URL_VIEW(NotFound, "**")
@@ -101,7 +121,7 @@ URL_VIEW(SubmitNew, "submit:POST")
 
 URL_VIEW(New, "new")
 {
-	http("ACTION", SubmitNew).RenderResult("AdrBook/Dialog.witz");
+	http("ACTION", SubmitNew).RenderResult("AdrBook/Dialog");
 }
 
 URL_VIEW(SubmitEdit, "submit/edit/*:POST_RAW")
@@ -138,7 +158,7 @@ URL_VIEW(Edit, "person/*/edit")
 		("ID", id)
 		(sql)
 		("ACTION", SubmitEdit, id)
-	.RenderResult("AdrBook/Dialog.witz");
+	.RenderResult("AdrBook/Dialog");
 }
 
 URL_VIEW(Delete, "person/*/delete")

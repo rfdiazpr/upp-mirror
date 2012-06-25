@@ -223,6 +223,6 @@ One<Exe> Compile(const char *code, const Index<String>& vars);
 
 String   Render(const One<Exe>& exe, Renderer *r, Vector<Value>& var);
 
-String   GetPreprocessedTemplate(const String& name);
+String   GetPreprocessedTemplate(const String& name, int lang);
 
 String   ReplaceVars(const String& src, const VectorMap<String, String>& def, int chr);

@@ -15,24 +15,32 @@ Value RawFn(const Vector<Value>& arg, Renderer *)
 	return RawToValue(r);
 }
 
-Value PostIdentity(const Vector<Value>& arg, Renderer *r)
+String GetIdentity(Renderer *r)
 {
-	DLOG("POST IDENTITY");
 	Http *http = dynamic_cast<Http *>(r);
 	if(!http)
 		throw Exc("invalid POST identity call");
-	ValueArray va = (*http)["post_identities"];
-	int mn = SkylarkApp::TheApp().post_identities;
-	if(va.GetCount() > 3 * mn / 1)
-		va.Remove(0, va.GetCount() / 3);
-	String h = AsString(Uuid::Create());
-	va.Add(h);
-	http->SessionSet("post_identities", va);
-	return Raw("<input type=\"hidden\" name=\"__post_identity__\" value=\"" + h + "\">");
+	String s = (*http)["__identity__"];
+	if(s.GetCount())
+		return s;
+	s = AsString(Uuid::Create());
+	http->SessionSet("__identity__", s);
+	return s;
+}
+
+Value PostIdentity(const Vector<Value>&, Renderer *r)
+{
+	return Raw("<input type=\"hidden\" name=\"__post_identity__\" value=\"" + GetIdentity(r) + "\">");
+}
+
+Value JsIdentity(const Vector<Value>&, Renderer *r)
+{
+	return Raw("<script type=\"text/javascript\">var __js_identity__ = \"" + GetIdentity(r) + "\"</script>");
 }
 
 INITBLOCK {
 	Compiler::Register("cycle", Cycle);
 	Compiler::Register("raw", RawFn);
 	Compiler::Register("post_identity", PostIdentity);
+	Compiler::Register("js_identity", JsIdentity);
 };

@@ -36,7 +36,6 @@ TIMING Render         : 344.82 ms - 86.21 us (345.00 ms / 4000 ), min:  0.00 ns,
 TIMING SQL            :  1.20 s  - 300.46 us ( 1.20 s  / 4000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 4000
 TIMING Request processing:  1.70 s  - 424.96 us ( 1.70 s  / 4000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 4000
 
-
 ----------------------------
 TIMING MakeLink       : 47.68 ms - 340.56 ns (54.00 ms / 139993 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 139993
 TIMING arg eval       : 69.68 ms - 497.71 ns (76.00 ms / 139993 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 139993

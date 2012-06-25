@@ -11,10 +11,13 @@ file
 	Model.sch,
 	Pages.icpp,
 	AdrBook.cpp,
+	ajax.js,
 	Base.witz,
+	Lang.witz,
 	Dialog.witz,
 	Persons.witz,
 	Index.witz,
+	Index.cs-cz.witz,
 	pagination.witz,
 	AdrBook.iml,
 	benchmark.txt;

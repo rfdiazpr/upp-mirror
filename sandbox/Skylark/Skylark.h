@@ -25,7 +25,19 @@ struct AuthExc : Exc {
 	AuthExc(const String& s) : Exc(s) {}
 };
 
-class SkylarkApp {
+struct SkylarkConfig {
+	String                    root;
+	VectorMap<String, String> view_var;
+	String                    path;
+	SessionConfig             session;
+	int                       threads;
+	int                       port;
+	int                       prefork;
+	int                       timeout;
+	bool                      use_caching;
+};
+
+class SkylarkApp : protected SkylarkConfig {
 	TcpSocket    server;
 	Mutex        accept_mutex;
 	int          main_pid;
@@ -48,17 +60,8 @@ class SkylarkApp {
 #endif
 
 	typedef SkylarkApp CLASSNAME;
-
-public: // Skylark config - should be protected
-	String                    root;
-	VectorMap<String, String> view_var;
-	String                    template_path;
-	SessionConfig             session;
-	int                       threads;
-	int                       post_identities;
-	int                       port;
-	int                       prefork;
-	int                       timeout;
+	
+	friend class Http;
 
 public:
 	virtual void SqlError(Http& http);
@@ -73,11 +76,13 @@ public:
 	void Run();
 	
 	static SkylarkApp& TheApp();
+	static const SkylarkConfig& Config();
 
 	SkylarkApp();
 	virtual ~SkylarkApp();
 };
 
+void SetStaticPath(const String& path);
 
 #include "Witz.h"
 #include "Http.h"

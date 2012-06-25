@@ -3,6 +3,7 @@ void MakeLink(StringBuffer& out, const Vector<String>& part, const Vector<Value>
 class Renderer {
 protected:
 	VectorMap<String, Value>  var;
+	int                       lang;
 
 	Renderer& Link(const char *id, void (*view)(Http&), const Vector<Value>& arg);
 	const One<Exe>& GetTemplate(const String& template_name);
@@ -26,6 +27,7 @@ public:
 	
 	Renderer& Render(const char *id, const String& template_name);
 	
+	Renderer()               { lang = LNG_ENGLISH; }
 	virtual ~Renderer();
 };
 
@@ -39,6 +41,7 @@ class Http : public Renderer {
 	Vector<String>            arg;
 	String                    session_id;
 	VectorMap<String, Value>  session_var;
+	bool                      session_dirty;
 	
 	String redirect;
 	int    code;
@@ -99,6 +102,10 @@ public:
 	Http&  ClearSession();
 	Http&  SessionSet(const char *id, const Value& value);
 	
+	Http&  NewIdentity()                              { SessionSet("__identity__", Null); return *this; }
+	Http&  NewSessionId();
+	Http&  SetLanguage(int lang);
+	
 	Http&  Response(int code_, const String& ctext)   { code = code_; code_text = ctext; return *this; }
 
 	Http&  RenderResult(const String& template_name);
@@ -112,7 +119,7 @@ public:
 	
 	const SkylarkApp& App() const                     { return app; }
 
-	Http(SkylarkApp& app) : app(app) { code = 200; content_type = "text/html; charset=UTF-8"; }
+	Http(SkylarkApp& app);
 };
 
 String HttpResponse(int code, const char *phrase, const String& data, const char *content_type = NULL);
@@ -120,6 +127,7 @@ String HttpResponse(int code, const char *phrase, const String& data, const char
 void RegisterView(void (*view)(Http&), const char *id, const char *path);
 
 #define URL_VIEW(name, path) void name(Http& http); INITBLOCK { RegisterView(name, #name, path); } void name(Http& http)
+#define SKYLARK(name, path)  void name(Http& http); INITBLOCK { RegisterView(name, #name, path); } void name(Http& http)
 
 Vector<String> *GetUrlViewLinkParts(const String& id);
 

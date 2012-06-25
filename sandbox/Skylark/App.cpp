@@ -141,7 +141,7 @@ void EnableHUP()
 
 void SkylarkApp::Run()
 {
-	DisableHUP();
+//	DisableHUP();
 	SqlSession::PerThread();
 	SqlId::UseQuotes();
 	FinalizeViews();
@@ -168,7 +168,7 @@ void SkylarkApp::Run()
 		sigaction(SIGINT, &sa, NULL);
 		sigaction(SIGHUP, &sa, NULL);
 		sigaction(SIGALRM, &sa, NULL);
-		EnableHUP();	
+//		EnableHUP();	
 		while(!quit) {
 			while(child_pid.GetCount() < prefork && !quit) {
 				pid_t p = fork();
@@ -232,13 +232,19 @@ SkylarkApp& SkylarkApp::TheApp()
 	return *app;
 }
 
+const SkylarkConfig& SkylarkApp::Config()
+{
+	ASSERT(app);
+	return *app;
+}
+
 SkylarkApp::SkylarkApp()
 {
 	ASSERT(!app);
 	app = this;
 	threads = 3 * CPU_Cores() + 1;
-	post_identities = 60;
 	port = 8001;
+	use_caching = true;
 #ifdef _DEBUG
 	prefork = 0;
 	timeout = 0;

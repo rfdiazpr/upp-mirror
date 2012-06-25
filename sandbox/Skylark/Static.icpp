@@ -1,33 +1,35 @@
 #include "Skylark.h"
 
-static Vector<String> sPath;
+// add static page caching?
 
-int CharFilterSplitPath(int c)
+SKYLARK(ServeStaticPage, "static/**")
 {
-	return c == ';' || c == ':';
-}
-
-void SetStaticPath(const String& path)
-{
-	sPath = Split(path, CharFilterSplitPath);
-	sPath.Add(GetFileFolder(GetExeFilePath()));
-}
-
-INITBLOCK {
-	SetStaticPath(Null);
-}
-
-URL_VIEW(ServeStaticPage, "static/**")
-{
-	String file = "static/" + http[0];
-	for(int i = 0; i < sPath.GetCount(); i++) {
-		String path = AppendFileName(sPath[i], file);
-		if(FileExists(path))
-			http << LoadFile(path);
+	String file;
+	for(int i = 0; i < http.GetParamCount(); i++) {
+		if(i)
+			file << '/';
+		file << http[i];
+	}
+	DDUMP(file);
+	DDUMP(SkylarkApp::Config().path);
+	String path = GetFileOnPath(file, SkylarkApp::Config().path, false);
+	if(path.GetCount()) {
+		String ext = ToLower(GetFileExt(file));
+		DDUMP(ext);
+		String type = "text";
+		if(ext == ".css")
+			type = "text/css";
+		else
+		if(ext == ".js")
+			type = "text/javascript";
+		else
+		if(ext == ".png" || ext == ".jpg" || ext == ".gif")
+			type = "image/" + ext.Mid(1);
+		http.Content(type, LoadFile(path));
 	}
 }
 
-URL_VIEW(ServeIml, "iml/*")
+SKYLARK(ServeIml, "iml/*")
 {
 	String name = http[0];
 	int q = name.Find('.');

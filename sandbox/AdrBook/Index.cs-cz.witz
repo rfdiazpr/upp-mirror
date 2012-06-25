@@ -11,11 +11,11 @@
    </P>
 </FORM>
 
-#include Persons.witz
+#include Persons
 
 <p/>
-<a href=$New>Insert new person</a>
-<a href=$InsertTestData>Insert test data</a>
+<a href=$New>Vložit novou osobu</a>
+<a href=$InsertTestData>Vložit testovací data</a>
 <p id="ajax_id">AJAX will be placed here!</p>
 $js_identity()
 <form id="small_form">
@@ -30,5 +30,5 @@ $js_identity()
  </form>
 
 <div id="pagination">
-#include pagination.witz
+#include pagination
 </div>

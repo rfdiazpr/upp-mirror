@@ -50,12 +50,12 @@ const One<Exe>& Renderer::GetTemplate(const String& template_name)
 	LLOG("Trying to retrieve " << sgn << " from cache");
 	Mutex::Lock __(template_cache_lock);
 	int q = template_cache.Find(sgn);
-	if(q >= 0)
+	if(q >= 0 && SkylarkApp::Config().use_caching)
 		return template_cache[q];
 	LLOG("About to compile: " << sgn);
 	LTIMING("Compile");
-	One<Exe>& exe = template_cache.Add(sgn);
-	exe = Compile(GetPreprocessedTemplate(template_name), var.GetIndex());
+	One<Exe>& exe = q >= 0 ? template_cache[q] : template_cache.Add(sgn);
+	exe = Compile(GetPreprocessedTemplate(template_name, lang), var.GetIndex());
 	return exe;
 }
 

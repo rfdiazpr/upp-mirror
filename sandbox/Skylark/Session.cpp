@@ -1,9 +1,9 @@
 #include "Skylark.h"
 
-#define LLOG(x)    DLOG(x)
-#define LDUMPC(x)  DDUMPC(x)
-#define LDUMPM(x)  DDUMPM(x)
-#define LLOGHEX(x) DLOGHEX(x)
+#define LLOG(x)    //DLOG(x)
+#define LDUMPC(x)  //DDUMPC(x)
+#define LDUMPM(x)  //DDUMPM(x)
+#define LLOGHEX(x) //DLOGHEX(x)
 
 SessionConfig::SessionConfig()
 {
@@ -124,9 +124,28 @@ Http& Http::ClearSession()
 
 Http& Http::SessionSet(const char *id, const Value& value)
 {
+	DLOG("SessionSet " << id << " = " << value);
 	if(IsNull(session_id))
-		session_id = AsString(Uuid::Create());
+		NewSessionId();
 	session_var.GetAdd(id) = value;
 	var.GetAdd(id) = value;
+	session_dirty = true;
+	return *this;
+}
+
+Http& Http::NewSessionId()
+{
+	session_id = AsString(Uuid::Create());
+	session_dirty = true;
+	return *this;
+}
+
+Http& Http::SetLanguage(int lang_)
+{
+	DDUMP(lang_);
+	lang = lang_;
+	Upp::SetLanguage(lang_);
+	SessionSet("__lang__", lang);
+	SessionSet("language", ToLower(LNGAsText(lang)));
 	return *this;
 }

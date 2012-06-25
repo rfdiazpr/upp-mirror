@@ -1,4 +1,4 @@
-#include Base.witz
+#include Base
 
 #define BODY
  <FORM action=$ACTION method="post" accept-charset="utf-8" enctype="multipart/form-data">
@@ -7,10 +7,14 @@
     First name: <INPUT type="text" name="firstname" value="$FIRSTNAME"><BR>
     Last name: <INPUT type="text" name="lastname" value="$LASTNAME"><BR>
     email: <INPUT type="text" name="email" value="$EMAIL"><BR>
-    <INPUT type="radio" name="sex" value="M" $(SEX != "F" ? "checked" : "")>Male<BR>
-    <INPUT type="radio" name="sex" value="F" $(SEX == "F" ? "checked" : "")>Female<BR>
-    <INPUT type="submit" value="Send" name="OK"><BR>
+    <INPUT type="radio" name="sex" value="M" $(SEX != "F" ? "checked" : "")/>Male<BR>
+    <INPUT type="radio" name="sex" value="F" $(SEX == "F" ? "checked" : "")/>Female<BR>
+    <INPUT type="submit" value="Send" name="OK"/><BR>
     Picture upload: <INPUT type="file" name="file" id="file" /> 
+    <select name="select_test">
+    	<option value="A">A</option>
+    	<option value="B">B</option>
+    </select>
     </P>
  </FORM>
 

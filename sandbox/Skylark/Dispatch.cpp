@@ -1,6 +1,7 @@
 #include "Skylark.h"
 
 #define LLOG(x)    DLOG(x)
+#define LDUMP(x)   DDUMP(x)
 #define LTIMING(x) RTIMING(x)
 
 enum { DISPATCH_VARARGS = -1 };
@@ -246,7 +247,9 @@ void Http::Dispatch(TcpSocket& socket)
 	if(hdr.Read(socket)) {
 		int len = GetLength();
 		content = socket.GetAll(len);
-		LLOG(content);
+		LLOG("--------------------------------------------");
+		LLOG(hdr.GetMethod() << " " << hdr.GetURI() << "\n");
+		LDUMP(content);
 		Cout() << hdr.GetMethod() << " " << hdr.GetURI() << "\n";
 		String r;
 		var.Clear();
@@ -302,20 +305,18 @@ void Http::Dispatch(TcpSocket& socket)
 			try {
 				SQL.Begin();
 				LoadSession();
+				session_dirty = false;
 				if(post && !bd.post_raw) {
-					ValueArray va = (*this)["post_identities"];
-					String id = (*this)["__post_identity__"];
-					_DBG_ id.Cat("xx");
-					for(int i = va.GetCount() - 1; i >= 0; i--) {
-						if(va[i] == id)
-							goto found;
+					String id = Nvl((*this)["__post_identity__"], (*this)["__js_identity__"]);
+					if(id != (*this)["__identity__"])
 						throw AuthExc("identity error");
-					}
-				found:;
 				}
+				lang = Nvl(Int("__lang__"), LNG_ENGLISH);
+				SetLanguage(lang);
 				viewid = bd.id;
 				(*bd.view)(*this);
-				SaveSession();
+				if(session_dirty)
+					SaveSession();
 				SQL.Commit();
 			}
 			catch(SqlExc e) {
@@ -330,6 +331,7 @@ void Http::Dispatch(TcpSocket& socket)
 				SQL.Rollback();
 				response << e;
 				code = 403;
+				code_text = "Unauthorized";
 				app.Unauthorized(*this);
 			}
 			catch(Exc e) {
@@ -359,6 +361,7 @@ void Http::Dispatch(TcpSocket& socket)
 				"Server: U++\r\n"
 				"Content-Length: " << response.GetCount() << "\r\n"
 				"Connection: close\r\n"
+				"Cache-Control: no-cache\r\n"
 				"Content-Type: " << content_type << "\r\n";
 			for(int i = 0; i < cookies.GetCount(); i++)
 				r << cookies[i];

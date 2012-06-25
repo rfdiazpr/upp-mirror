@@ -52,14 +52,15 @@ void AdrBook::WorkThread()
 AdrBook::AdrBook()
 {
 	root = "adrbook";
-	template_path = "/home/cxl/sandbox;u:/sandbox";
-	view_var.Add("base", "asdfasdf");
+	path = "/home/cxl/sandbox;u:/sandbox";
 	session.format = SESSION_FORMAT_JSON;
 	session.expire = 5 * 60;
 #ifdef _DEBUG
 	prefork = 0;
+	use_caching = false;
 #else
 	prefork = 5;
+	use_cachong = true;
 #endif
 	
 }

@@ -1,10 +1,26 @@
 #include "Skylark.h"
 
-String LoadTemplate(const char *file, const char *search_path)
+String GetFileOnPath1(const char *file, const char *path)
 {
-	String path = GetFileOnPath(file, search_path);
-	if(IsNull(path))
-		return Null;
+	DDUMP(file);
+	DDUMP(path);
+	String r = GetFileOnPath(file, path);
+	DDUMP(r);
+	return r;
+}
+
+String LoadTemplate(const char *file, const String& search_path, int lang)
+{
+	String f = file;
+	String path = GetFileOnPath1(f + '.' + ToLower(LNGAsText(lang)) + ".witz", search_path);
+	if(IsNull(path)) {
+		path = GetFileOnPath1(f + ".witz", search_path);
+		if(IsNull(path)) {
+			path = GetFileOnPath1(f, search_path);
+			if(IsNull(path))
+				return Null;
+		}
+	}
 	FileIn in(path);
 	String r;
 	while(in && !in.IsEof()) {
@@ -17,7 +33,7 @@ String LoadTemplate(const char *file, const char *search_path)
 				q = file.Find('\t');
 			if(q >= 0)
 				file = file.Mid(0, q);
-			r << LoadTemplate(file, GetFileFolder(path) + ';' + search_path);
+			r << LoadTemplate(file, GetFileFolder(path) + ';' + search_path, lang);
 		}
 		else
 			r << line;
@@ -26,14 +42,9 @@ String LoadTemplate(const char *file, const char *search_path)
 	return r;
 }
 
-String LoadTemplate(const char *file)
+VectorMap<String, String> GetTemplateDefs(const char *file, int lang)
 {
-	return LoadTemplate(file, SkylarkApp::TheApp().template_path);
-}
-
-VectorMap<String, String> GetTemplateDefs(const char *file)
-{
-	String s = LoadTemplate(file);
+	String s = LoadTemplate(file, SkylarkApp::Config().path, lang);
 	VectorMap<String, String> def;
 	int ti = def.FindAdd("MAIN");
 	StringStream ss(s);
@@ -103,7 +114,7 @@ int CharFilter20toHash(int c)
 	return c == 20 ? '#' : c;
 }
 
-String GetPreprocessedTemplate(const String& name)
+String GetPreprocessedTemplate(const String& name, int lang)
 {
 	String id = "MAIN";
 	String file = name;
@@ -112,7 +123,7 @@ String GetPreprocessedTemplate(const String& name)
 		id = file.Mid(q + 1);
 		file = file.Mid(0, q);
 	}
-	VectorMap<String, String> def = GetTemplateDefs(file);
+	VectorMap<String, String> def = GetTemplateDefs(file, lang);
 	String r = Filter(ReplaceVars(def.Get(id, Null), def, '#'), CharFilter20toHash);
 	return Join(Split(r, CharFilterIsCrLf), "\r\n");
 }

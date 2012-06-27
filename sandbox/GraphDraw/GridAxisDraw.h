@@ -104,6 +104,7 @@ namespace GraphDraw_ns
 		typedef typename TYPES::TypeCoordConverter    TypeCoordConverter;
 		typedef typename TYPES::TypeGridStepManager   TypeGridStepManager;
 		typedef CRTPGraphElementFrame< GridAxisDraw<TYPES> > _B;
+		typedef Callback2<TypeGraphCoord, String&> TypeFormatTextCbk;
 
 //		protected:
 		int       _axisWidth;
@@ -114,6 +115,8 @@ namespace GraphDraw_ns
 		Color     _gridColor;
 		One<TickMark> _majorTickMark;
 		One<TickMark> _minorTickMark;
+		TypeFormatTextCbk formatTextCbk;
+
 
 		One< TypeGridStepManager > _gridStepManager;
 		TypeCoordConverter& _coordConverter;
@@ -145,6 +148,7 @@ namespace GraphDraw_ns
 		, _coordConverter( p._coordConverter )
 		, _majorTickMark(new TickMark())
 		, _minorTickMark(new TickMark())
+		, formatTextCbk( p.formatTextCbk )
 		{
 		}
 
@@ -164,6 +168,10 @@ namespace GraphDraw_ns
 		inline CLASSNAME& setGridColor(Color v)                         { _gridColor = v; return *this; }
 		inline CLASSNAME& setMajorTickMark(TickMark* v)                 { _majorTickMark = v; return *this;  }
 		inline CLASSNAME& setMinorTickMark(TickMark* v)                 { _minorTickMark = v; return *this;  }
+		inline CLASSNAME& setAxisTextFormat(TypeFormatTextCbk v)        { formatTextCbk = v; return *this;  }
+		inline CLASSNAME& resetAxisTextFormat()                         { formatTextCbk = Null; return *this;  }
+		inline CLASSNAME& setAxisDateFormat()                           {	formatTextCbk = THISBACK(FormatAsDate); return *this;	}
+
 
 		inline int GetMajorTickLength()       { return _majorTickMark->GetTickLength(); }
 		inline void SetMajorTickLength(int v) { _majorTickMark->SetTickLength(v); }
@@ -191,10 +199,19 @@ namespace GraphDraw_ns
 				return (*_gridStepManager);
 		}
 
+
+		void FormatAsDate(TypeGraphCoord v, String& output) {
+			Date dat;
+			dat.Set(int(v));
+			output = Format("%d/%d/%d",dat.day, dat.month, dat.year);
+		}
+
+
 		template<int GRAPH_SIDE>
 		void PaintTickText(Draw& dw,  TypeGraphCoord v, TypeScreenCoord x, TypeScreenCoord y, Color& color, Font& font) {
-//			Upp::String text=FormatDouble(v, 3, FD_FIX);
-			Upp::String text=FormatDouble(v);
+			Upp::String text;
+			if ( ! formatTextCbk )	text=FormatDouble(v);
+			else                    formatTextCbk(v, text);
 			Size sz = GetTextSize(text, font);
 			if (GRAPH_SIDE == LEFT_OF_GRAPH) {
 				dw.DrawText( x-sz.cx, y-(sz.cy/2) , text, font, color);

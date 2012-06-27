@@ -7,6 +7,8 @@
 using namespace Upp;
 
 
+#define LAYOUTFILE <GraphCtrl/GraphCtrl.lay>
+#include <CtrlCore/lay.h>
 
 #define IMAGECLASS GraphCtrlImg
 #define IMAGEFILE <GraphCtrl/GraphCtrl.iml>
@@ -521,9 +523,94 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 	}
 };
 
+// Default GridAxisPropertiesDlg  class
+// it opens the minimal dialog for the CoordConverter beeing used
+template <class GRIDAXISDRAW, class COORDCONVERTER>
+struct GridAxisPropertiesDlg {
+		void openDialog(GRIDAXISDRAW& gda, COORDCONVERTER& converter) {
+			CtrlRetriever r;
+			double gMin = converter.getGraphMin();
+			double gMax = converter.getGraphMax();
+			int majorTickLength = gda.GetMajorTickLength();
+			int minorTickLength = gda.GetMinorTickLength();
+
+			WithGridAxisPropertiesLayout<TopWindow> dlg;
+
+			dlg.scaleType.Hide();
+
+			r ( dlg.axisLineColor, gda._axisColor)
+			  ( dlg.axisTextColor, gda._axisTextColor)
+			  ( dlg.axisTickColor, gda._axisTickColor)
+			  ( dlg.axisMajorTickLength, majorTickLength)
+			  ( dlg.axisMinorTickLength, minorTickLength)
+			  ( dlg.gridColor, gda._gridColor)
+			  ( dlg.min, gMin)
+			  ( dlg.max, gMax)
+			  ;
+
+			CtrlLayoutOKCancel(dlg, "");
+
+			if ( dlg.Execute() == IDOK ) {
+				r.Retrieve();
+				gda.SetMajorTickLength(majorTickLength);
+				gda.SetMinorTickLength(majorTickLength);
+				converter.updateGraphSize(gMin, gMax);
+				gda._parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL);
+			}
+		}
+};
+
+
+// Specialized 'GridAxisPropertiesDlg'  class
+// it opens A dedicated dialog for the 'GenericCoordinateConverter' beeing used
+template <class GRIDAXISDRAW>
+struct GridAxisPropertiesDlg<GRIDAXISDRAW, GraphDraw_ns::GenericCoordinateConverter> {
+		void openDialog(GRIDAXISDRAW& gda, GraphDraw_ns::GenericCoordinateConverter& converter) {
+			CtrlRetriever r;
+			double gMin = converter.getGraphMin();
+			double gMax = converter.getGraphMax();
+			int majorTickLength = gda.GetMajorTickLength();
+			int minorTickLength = gda.GetMinorTickLength();
+			int scaleType = converter.GetScaleType();
+
+			WithGridAxisPropertiesLayout<TopWindow> dlg;
+
+			dlg.scaleType.Add(GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_STD,   t_("Std new") );
+			dlg.scaleType.Add(GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_LOG,   t_("Log") );
+			dlg.scaleType.Add(GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_POW10, t_("Pow10") );
+			if ( gMin < 0) {
+				dlg.scaleType.DisableValue( GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_LOG);
+			}
+
+			r ( dlg.axisLineColor, gda._axisColor)
+			( dlg.axisTextColor, gda._axisTextColor)
+			( dlg.axisTickColor, gda._axisTickColor)
+			( dlg.axisMajorTickLength, majorTickLength)
+			( dlg.axisMinorTickLength, minorTickLength)
+			( dlg.gridColor, gda._gridColor)
+			( dlg.min, gMin)
+			( dlg.max, gMax)
+			( dlg.scaleType, scaleType)
+			;
+
+			CtrlLayoutOKCancel(dlg, "");
+
+			if ( dlg.Execute() == IDOK ) {
+				r.Retrieve();
+				gda.SetMajorTickLength(majorTickLength);
+				gda.SetMinorTickLength(majorTickLength);
+				converter.SetScaleType(scaleType);
+				converter.updateGraphSize(gMin, gMax);
+				gda._parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL);
+			}
+		}
+};
 
 
 
+/************************************************************
+ *
+ ************************************************************/
 
 template <class TYPES>
 class StdGridAxisDrawCtrl : public GraphDraw_ns::GridAxisDraw<TYPES>
@@ -648,6 +735,17 @@ class StdGridAxisDrawCtrl : public GraphDraw_ns::GridAxisDraw<TYPES>
 	}
 
 	virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }
+
+
+	virtual void OpenGridAxisPropertiesDlg()
+	{
+		GridAxisPropertiesDlg<CLASSNAME,  typename TYPES::TypeCoordConverter >().openDialog(*this,  _B::GetCoordConverter() );
+	}
+
+	virtual GraphDraw_ns::GraphElementFrame* LeftDouble (Point p, dword keyflags) {
+		OpenGridAxisPropertiesDlg();
+		return 0;
+	}
 };
 
 
@@ -723,16 +821,13 @@ struct GraphCtrlDefaultTypes {
 		typedef SeriesPlot                                                      TypeSeriesPlot;
 		typedef MarkPlot                                                        TypeMarkPlot;
 		typedef GraphDraw_ns::GenericCoordinateConverter                        TypeCoordConverter;
+//		typedef GraphDraw_ns::LogCoordinateConverter                            TypeCoordConverter;
 		typedef StdGridAxisDrawCtrl<GraphCtrlDefaultTypes>                      TypeGridAxisDraw;
 		typedef GraphDraw_ns::GridStepManager<TypeCoordConverter>               TypeGridStepManager;
 		typedef GraphDraw_ns::SeriesConfig<GraphCtrlDefaultTypes>               TypeSeriesConfig;
 		typedef Vector<TypeSeriesConfig>                                        TypeVectorSeries;
 };
 
-namespace GraphCtrl_ns
-{
-	void OpenGridAxisPropertiesCtrl( GraphCtrlDefaultTypes::TypeGridAxisDraw* v);
-};
 
 
 template<class TYPES, class DERIVED >
@@ -744,16 +839,11 @@ class CRTP_StdGraphCtrl :	public CRTP_GraphCtrlBase< TYPES, DERIVED >
 	typedef TYPES                              Types;
 
 	private:
-	void OpenGridAxisProperties(GraphDraw_ns::GraphElementFrame* v, Point p, dword keyflags) {
-		GraphCtrl_ns::OpenGridAxisPropertiesCtrl( dynamic_cast<typename TYPES::TypeGridAxisDraw*>(v) );
-		_B::SetModify();
-	}
 
 	public:
 	CRTP_StdGraphCtrl() {
-		_B::_xGridDraw.WhenLeftDouble << THISBACK(OpenGridAxisProperties);
-		_B::_yGridDraw.WhenLeftDouble << THISBACK(OpenGridAxisProperties);
 	}
+
 };
 
 template<class TYPES = GraphCtrlDefaultTypes >

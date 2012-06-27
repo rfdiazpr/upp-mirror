@@ -1,0 +1,167 @@
+@startuml img/GraphDraw.png
+
+skinparam abstractclass {
+	BackgroundColor PaleGreen
+	ArrowColor SeaGreen
+	BorderColor SpringGreen
+	BackgroundColor<<CRTP>> YellowGreen
+}
+
+skinparam stereotypeABackgroundColor Yellow
+
+
+skinparam class {
+	BackgroundColor<<CRTP>> YellowGreen
+}
+
+
+
+namespace GraphDraw_ns #DDDDDD
+
+
+class SeriesConfigBase
+class SeriesConfig
+SeriesConfigBase <|-- SeriesConfig
+
+class SeriesGroup << CRTP >> {
++ DERIVED& AddSeries()
++ DERIVED& InserSeries()
++ DERIVED& RemoveSeries()
+..
++ DERIVED& MarkStyle()
++ DERIVED& PlotStyle()
+}
+
+SeriesConfig<--*SeriesGroup : series
+
+interface GraphElementParent {
+	+ void ScrollX(xOffset)=0 {abstract};
+	+ void ScrollY(yOffset)=0 {abstract};
+	+ void ZoomX(left, right)=0 {abstract};
+	+ void ZoomY(top, bottom)=0 {abstract};
+	+ void RefreshFromChild(RefreshStrategy)=0 {abstract};
+}
+
+class CRTP_EmptyGraphDraw << CRTP >> {
+	# void updateSizes(scale)
+	+ DERIVED& setScreenSize(..)
+	+ TypeCoordConverter& AddXConverter(..)
+	+ TypeCoordConverter& AddYConverter(..)
+	+ DERIVED& ZoomOnRect(Rect)
+	+ DERIVED& ApplyZoomFactor()
+	+ DERIVED& Scroll(..)
+	.. GraphElementParent methods..
+	+ virtual void ZoomX(xLeft, xRight)
+	+ virtual void ZoomY(yTop, yBottom)
+	+ virtual void ScrollX(..)
+	+ virtual void ScrollY(..)
+	+ virtual void RefreshFromChild( RefreshStrategy )
+	.. Elements management ..
+	+ T& AddElement<T>(..)
+	+ T& CloneElement<T>(..)
+	+ T& CreateElement<T>(..)
+	+ T& CreateLegendElement<T>(..)
+	..
+}
+
+class CRTP_StdGraphDraw<<CRTP>>
+
+
+abstract class GraphElementFrame {
+	+ virtual void Update()
+	+ virtual GraphElementFrame* Clone() = 0 {abstract}
+	+ virtual void PaintOverGraph(Draw&, scale)
+	+ virtual void PaintElement(Draw&, scale)
+	+ virtual void PaintOnPlot(Draw&, ..)
+	+ virtual LeftDown(..)
+	+ virtual LeftUp(..)
+	+ virtual LeftDouble(..)
+	+ virtual LeftDrag(..)
+	+ virtual RightDown(..)
+	+ virtual RightUp(..)
+	+ virtual RightDouble(..)
+	+ virtual RightDrag(..)
+	+ virtual MiddleDown(..)
+	+ virtual MiddleUp(..)  
+	+ virtual MouseMove(..)
+	+ virtual MouseWheel(..)
+	+ virtual CursorImage(..)
+}
+GraphElementParent<--GraphElementFrame : parent
+
+class CoordinateConverter {
+	+ virtual void update(graphMin, graphMax, screenMin, screenMax)
+	+ virtual void updateScreenSize(screenMin, screenMax)
+	+ virtual void updateGraphSize(graphMin, graphMax)
+	+ virtual void Scroll( offset )
+	+ virtual void Zoom( factor )
+	+ virtual TypeScreenCoord toScreen(v)
+	+ virtual TypeGraphCoord  toGraph(v)
+	+ virtual const char* GetConversionType()
+} 
+class LogCoordinateConverter
+class Pow10CoordinateConverter
+class GenericCoordinateConverter {
+	void SetConvStd()
+	void SetConvLog()
+	void SetConvPow10()
+	SetScaleType( AxisScaleType )
+}
+
+
+abstract class CRTPGraphElementFrame << CRTP >>
+class BlankAreaElement
+class LabelElement
+class LegendElement
+class GridAxisDraw {
+	GridAxisDraw& setAxisColor(Color v)                 
+    GridAxisDraw& setAxisWidth(int v)                   
+    GridAxisDraw& setAxisTextFont(Font v)               
+    GridAxisDraw& setAxisTextColor(Color v)             
+    GridAxisDraw& setAxisTickColor(Color v)             
+    GridAxisDraw& setGridColor(Color v)                 
+    GridAxisDraw& setMajorTickMark(TickMark* v)         
+    GridAxisDraw& setMinorTickMark(TickMark* v)         
+    GridAxisDraw& setAxisTextFormat(TypeFormatTextCbk v)
+    GridAxisDraw& resetAxisTextFormat()                 
+    GridAxisDraw& setAxisDateFormat()                   
+}
+
+class GridStepManager {
+	void SetNbSteps(nbSteps)
+}
+
+class GridStepIterator {
+	TypeGraphCoord getValue()
+	TypeScreenCoord getStepValue()
+}
+
+GridStepManager-->GridStepIterator
+GridAxisDraw *-->GridStepManager
+
+GraphElementFrame <|-- CRTPGraphElementFrame
+CRTPGraphElementFrame <|-- BlankAreaElement
+CRTPGraphElementFrame <|-- LabelElement
+CRTPGraphElementFrame <|-- LegendElement
+CRTPGraphElementFrame <|-- GridAxisDraw
+
+CoordinateConverter<|-- LogCoordinateConverter
+CoordinateConverter<|-- Pow10CoordinateConverter
+CoordinateConverter<|-- GenericCoordinateConverter
+
+CRTP_EmptyGraphDraw "1" o-left-> "*" GraphElementFrame
+CRTP_EmptyGraphDraw "1" o-right-> "*" CoordinateConverter : xConverters
+CRTP_EmptyGraphDraw "1" o-right-> "*" CoordinateConverter : yConverters
+
+GraphElementParent <|-- CRTP_EmptyGraphDraw
+SeriesGroup <|--CRTP_EmptyGraphDraw 
+CRTP_EmptyGraphDraw <|-- CRTP_StdGraphDraw 
+
+end namespace
+
+
+GraphDraw_ns.SeriesGroup o-right-> class MarkPlot
+GraphDraw_ns.SeriesGroup o-right-> class SeriesPlot
+
+@enduml
+

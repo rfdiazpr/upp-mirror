@@ -93,6 +93,7 @@ GraphDraw_test::GraphDraw_test()
 		s1 <<Pointf(t,y);
 		s2 <<Pointf(t,y + (Upp::Randomf()*5.0)-2.5);
 	}
+	g3.GetXGridAxisDraw().setAxisDateFormat();
 	g3.CloneTopElement( 20, g3.GetXGridAxisDraw());
 	g3.setGraphSize(0, 100000, -22, +22);
 	g3.CreateLegendElement<StdLegendCtrl<MyGraphCtrl::Types, LegendElement<MyGraphCtrl::Types> >, TOP_OF_GRAPH>( 20 );//.SetBackGndColor( Color(198, 255, 0) );
@@ -106,6 +107,7 @@ GraphDraw_test::GraphDraw_test()
 	g3.AddSeries(s2).NoPlot().MarkStyle<CircleMarkPlot>().Legend("S2").SetMarkWidth(1).SetSequential().SetDataThickness(1); //.MarkStyle<TriangleMarkPlot>();
 	g3.AddSeries(&funct1).NoPlot().MarkStyle<CircleMarkPlot>().Legend("sin(x/1000.0)*10.0").SetMarkWidth(1).SetDataThickness(1).SetMarkColor(Black());
 //	g3.CreateLegendElement<LegendElement<MyGraphCtrl::Types>, RIGHT_OF_GRAPH>( 90 );//.SetBackGndColor( Color(198, 255, 0) );
+	
 
 
 
@@ -131,6 +133,13 @@ GraphDraw_test::GraphDraw_test()
 
 	g4.AddSeries(points2).PlotStyle<LineSeriesPlot>().NoMark().Legend("-----S2-----");; // tied to last X/Y  coordConverters ==> X / Y2
 	g4.SetMode( GraphDraw_ns::MD_SUBPIXEL );
+	
+	g4.GetXCoordConverter().setGraphMaxRangeLimit(20);
+	g4.GetXCoordConverter().setGraphMinRangeLimit(-10);
+	g4.GetYCoordConverter().setGraphMaxRangeLimit(20);
+	g4.GetYCoordConverter().setGraphMinRangeLimit(-10);
+	y2CoordConverter.setGraphMaxRangeLimit(20);
+	y2CoordConverter.setGraphMinRangeLimit(-10);
 
 //	LegendElement<MyGraphCtrl::Types>& legend = g4.CreateElement<LegendElement<MyGraphCtrl::Types>, OVER_GRAPH>(100)
 //   				 .SetLegend("[ [ [*/_R@5$(229)0 This ][*/_`R@6$(229)0 is][*/_R@5$(229)0  ][*/_,R@(255.0.255)$(229)0 the][*/_R@5$(229)0  ][*/_cR@5$(229)0 Title]]");

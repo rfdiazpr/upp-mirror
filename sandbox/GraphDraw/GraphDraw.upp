@@ -15,5 +15,6 @@ file
 	SeriesConfig.h,
 	SeriesGroup.h,
 	GraphElement.h,
-	GraphFunctions.h;
+	GraphFunctions.h,
+	GridAxisDraw.h;
 

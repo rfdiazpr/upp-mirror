@@ -48,7 +48,7 @@ namespace GraphDraw_ns
 			inline void setGraphMinRangeLimit(TypeGraphCoord v) { _graphMinLimit = v; }
 			inline void resetGraphRangeLimits() { _graphMaxLimit = Null; _graphMinLimit = Null; }
 			
-			TypeGraphCoord applyRangeLimits(TypeGraphCoord v) {
+			virtual TypeGraphCoord applyRangeLimits(TypeGraphCoord v) {
 				if (!_graphMaxLimit.IsNull()) {
 					if (v > ValueTo<TypeGraphCoord>(_graphMaxLimit)) v = _graphMaxLimit;
 				}
@@ -56,6 +56,16 @@ namespace GraphDraw_ns
 					if (v < ValueTo<TypeGraphCoord>(_graphMinLimit)) v = _graphMinLimit;
 				}
 				return v;
+			}
+
+			virtual bool isInRangeLimits(TypeGraphCoord v) {
+				if (!_graphMaxLimit.IsNull()) {
+					if (v > ValueTo<TypeGraphCoord>(_graphMaxLimit)) return false;;
+				}
+				if (!_graphMinLimit.IsNull()) {
+					if (v < ValueTo<TypeGraphCoord>(_graphMinLimit)) return false;;
+				}
+				return true;
 			}
 
 
@@ -97,9 +107,11 @@ namespace GraphDraw_ns
 			}
 
 			virtual void Scroll( TypeScreenCoord offset ) {
-				updateGraphSize( toGraph( _screenMin - offset ),
-								 toGraph( _screenMax - offset )
-								 );
+				TypeGraphCoord graphMin = toGraph( _screenMin - offset );
+				TypeGraphCoord graphMax = toGraph( _screenMax - offset );
+				if ( isInRangeLimits(graphMin) && isInRangeLimits(graphMax)) {
+					updateGraphSize( graphMin, graphMax );
+				}
 			}
 
 			virtual void Zoom( double factor ) {
@@ -271,18 +283,15 @@ namespace GraphDraw_ns
 				_B::Update();
 			}
 			void SetConvStd() {
-				resetGraphRangeLimits();
 				SetConvFct(_defautFct, _defautFct, "");
 				_scaleType = AXIS_SCALE_STD;
 			}
 			void SetConvLog()   {
-				setGraphMinRangeLimit(0.0000000001);
 				SetConvFct(_logFct,    _pow10Fct,  "LOG");
 				_scaleType = AXIS_SCALE_LOG;
 				updateGraphSize(_B::getGraphMin(), _B::getGraphMax());
 			}
 			void SetConvPow10() {
-				resetGraphRangeLimits();
 				SetConvFct(_pow10Fct,  _logFct,    "10^x");
 				_scaleType = AXIS_SCALE_POW10;
 			}
@@ -331,8 +340,8 @@ namespace GraphDraw_ns
 			{
 				_B::updateGraphSize(graphMin, graphMax);
 
-				_fctGraphMin = _convertFct(graphMin);
-				_fctGraphMax = _convertFct(graphMax);
+				_fctGraphMin = _convertFct(_graphMin);
+				_fctGraphMax = _convertFct(_graphMax);
 				_B::_graphToScreenScale = (_B::_screenMax - _B::_screenMin) / (_fctGraphMax - _fctGraphMin);
 				_B::_screenToGraphScale = (_fctGraphMax - _fctGraphMin) / (_B::_screenMax - _B::_screenMin);
 			}

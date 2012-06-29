@@ -11,8 +11,6 @@ file
 	Model.sch,
 	Pages.icpp,
 	AdrBook.cpp,
-	ajax.js,
-	Base.witz,
 	Lang.witz,
 	Dialog.witz,
 	Persons.witz,

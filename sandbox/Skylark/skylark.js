@@ -26,17 +26,6 @@ function AjaxRequest()
 		return new ActiveXObject("Microsoft.XMLHTTP");
 }
 
-function AjaxGet(request)
-{
-	var xmlhttp = AjaxRequest();
-	xmlhttp.onreadystatechange = function() {
-		if(xmlhttp.readyState == 4 && xmlhttp.status == 200)
-			ProcessAjaxResult(xmlhttp.responseText.split('\1'));
-	}
-	xmlhttp.open("GET", request, true);
-	xmlhttp.send();
-}
-
 function IsNull(x)
 {
 	return x == null || x.length == 0;
@@ -64,7 +53,18 @@ function ScanForValues(x, result)
 	}
 }
 
-function AjaxPost(request)
+function UxGet(request)
+{
+	var xmlhttp = AjaxRequest();
+	xmlhttp.onreadystatechange = function() {
+		if(xmlhttp.readyState == 4 && xmlhttp.status == 200)
+			ProcessAjaxResult(xmlhttp.responseText.split('\1'));
+	}
+	xmlhttp.open("GET", request, true);
+	xmlhttp.send();
+}
+
+function UxPost(request)
 {
 	var xmlhttp = AjaxRequest();
 	xmlhttp.onreadystatechange = function() {

@@ -6,7 +6,7 @@ protected:
 	int                       lang;
 
 	Renderer& Link(const char *id, void (*view)(Http&), const Vector<Value>& arg);
-	const One<Exe>& GetTemplate(const String& template_name);
+	const One<Exe>& GetTemplate(const char *template_name);
 
 public:	
 	Renderer& operator()(const char *id, const Value& v)  { var.Add(id, v); return *this; }
@@ -107,13 +107,17 @@ public:
 	Http&  SetLanguage(int lang);
 	
 	Http&  Response(int code_, const String& ctext)   { code = code_; code_text = ctext; return *this; }
-
-	Http&  RenderResult(const String& template_name);
+	
+	Http&  RenderResult(const char *template_name);
 	Http&  Redirect(const char *url, int code_ = 302) { code = code_; redirect = url; return *this; }
 	Http&  Redirect(void (*view)(Http&), const Vector<Value>& arg);
 	Http&  Redirect(void (*view)(Http&));
 	Http&  Redirect(void (*view)(Http&), const Value& v1);
 	Http&  Redirect(void (*view)(Http&), const Value& v1, const Value& v2);
+
+	Http&  Ux(const char *id, const String& text);
+	Http&  UxRender(const char *id, const char *template_name);
+	Http&  UxSetValue(const char *id, const String& value);
 	
 	String GetResponse() const                        { return response; }
 	

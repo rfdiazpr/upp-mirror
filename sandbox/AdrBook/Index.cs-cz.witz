@@ -1,4 +1,6 @@
-#include Base
+#include Skylark/Base
+
+#define TITLE Toto je experimentalni aplikace Skylark
 
 #define BODY
 

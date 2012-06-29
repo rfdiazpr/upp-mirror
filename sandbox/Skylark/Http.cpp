@@ -282,7 +282,7 @@ void MakeLink(StringBuffer& out, const Vector<String>& part, const Vector<Value>
 		}
 }
 
-Http& Http::RenderResult(const String& template_name)
+Http& Http::RenderResult(const char *template_name)
 {
 	LTIMING("Render");
 	response << ::Render(GetTemplate(template_name), this, var.GetValues());
@@ -316,5 +316,25 @@ Http& Http::Redirect(void (*view)(Http&), const Value& v1, const Value& v2)
 	arg.Add(v1);
 	arg.Add(v2);
 	Redirect(view, arg);
+	return *this;
+}
+
+Http& Http::Ux(const char *id, const String& text)
+{
+	if(response.GetCount())
+		response << '\1';
+	response << id << ':' << text;
+	return *this;
+}
+
+Http& Http::UxRender(const char *id, const char *template_name)
+{
+	Ux(id, RenderString(template_name));
+	return *this;
+}
+
+Http& Http::UxSetValue(const char *id, const String& value)
+{
+	Ux(String(">") + id, value);
 	return *this;
 }

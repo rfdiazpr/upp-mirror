@@ -36,7 +36,7 @@ Renderer& Renderer::operator()(const char *id, void (*view)(Http&), const Value&
 StaticMutex                 template_cache_lock;
 ArrayMap<String, One<Exe> > template_cache;
 
-const One<Exe>& Renderer::GetTemplate(const String& template_name)
+const One<Exe>& Renderer::GetTemplate(const char *template_name)
 {
 	LTIMING("GetTemplate");
 	StringBuffer s;

@@ -61,25 +61,26 @@ URL_VIEW(SetPerPage, "ajax/perpage/*")
 {
 	http.SessionSet("perpage", Nvl(http.Int(0), 10));
 	Persons(http);
-	http << "persons:" << http.Render("AdrBook/Persons") << "\1"
-	     << "pagination:" << http.Render("AdrBook/pagination");
+	http.UxRender("persons", "AdrBook/Persons")
+	    .UxRender("pagination", "AdrBook/pagination");
 }
 
 URL_VIEW(SetPage, "ajax/setpage/*")
 {
 	http.SessionSet("page", Nvl(http.Int(0), 10));
 	Persons(http);
-	http << "persons:" << http.Render("AdrBook/Persons");
+	http.UxRender("persons", "AdrBook/Persons");
 }
 
 SKYLARK(AjaxCreate, "ajax/create:POST")
 {
 	SQL * http.Insert(PERSON);
 	Persons(http);
-	http << "persons:" << http.Render("AdrBook/Persons") << "\1"
-	     << "pagination:" << http.Render("AdrBook/pagination") << "\1"
-	     << ">firstname:" << "\1"
-	     << ">lastname:";
+	http.UxRender("persons", "AdrBook/Persons")
+	    .UxRender("pagination", "AdrBook/pagination")
+	    .UxSetValue("firstname", Null)
+	    .UxSetValue("lastname", Null)
+	;
 }
 
 URL_VIEW(NotFound, "**")
@@ -170,5 +171,5 @@ URL_VIEW(Delete, "person/*/delete")
 
 URL_VIEW(AjaxTest, "ajax/*")
 {
-	http << "ajax_id:AJAX response: " << AsString(4 * Nvl(http.Int(0)));
+	http.Ux("ajax_id", "AJAX response: " + AsString(4 * Nvl(http.Int(0))));
 }

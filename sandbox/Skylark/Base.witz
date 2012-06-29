@@ -3,11 +3,11 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>#TITLE</title>
-	<script type="text/javascript" src="static/AdrBook/ajax.js"></script>
+	<script type="text/javascript" src="static/Skylark/skylark.js"></script>
 </head>
 <body id="body_id">
 	#BODY
 </body>
 </html>
 
-#define TITLE This is an experimental Web AddressBook application
+#define TITLE Skylark application

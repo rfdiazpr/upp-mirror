@@ -1,4 +1,6 @@
-#include Base
+#include Skylark/Base
+
+#define TITLE This is an experimental Web AddressBook application
 
 #define BODY
 
@@ -21,7 +23,7 @@ $js_identity()
 <form id="small_form">
     First name: <INPUT type="text" id='firstname'><BR>
     Last name: <INPUT type="text" id='lastname'><BR>
-    <INPUT type="button" onclick='AjaxPost($AjaxCreate(), "small_form")'><br>
+    <INPUT type="button" onclick='UxPost($AjaxCreate(), "small_form")'><br>
     <select id="select_test">
     	<option value="A">A</option>
     	<option value="B">B</option>
@@ -30,5 +32,5 @@ $js_identity()
  </form>
 
 <div id="pagination">
-#include pagination.witz
+#include pagination
 </div>

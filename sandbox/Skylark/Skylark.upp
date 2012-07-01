@@ -7,6 +7,8 @@ uses
 	Sql;
 
 file
+	Skylark.h,
+	App.cpp,
 	Witz.h,
 	Preprocess.cpp,
 	Compile.cpp,
@@ -18,8 +20,6 @@ file
 	Http.cpp,
 	Session.cpp,
 	Dispatch.cpp,
-	Skylark.h,
-	App.cpp,
 	StdLib.icpp,
 	Util readonly separator,
 	Static.icpp,

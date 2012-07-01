@@ -96,8 +96,8 @@ void SkylarkApp::Signal(int signal)
 #ifdef PLATFORM_POSIX
 	switch(signal) {
 	case SIGTERM:
-		quit = true;
 	case SIGHUP:
+		quit = true;
 		Broadcast(signal);
 		break;
 	case SIGINT:

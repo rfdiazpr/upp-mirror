@@ -170,7 +170,17 @@ namespace GraphDraw_ns
 		inline CLASSNAME& setMinorTickMark(TickMark* v)                 { _minorTickMark = v; return *this;  }
 		inline CLASSNAME& setAxisTextFormat(TypeFormatTextCbk v)        { formatTextCbk = v; return *this;  }
 		inline CLASSNAME& resetAxisTextFormat()                         { formatTextCbk = Null; return *this;  }
-		inline CLASSNAME& setAxisDateFormat()                           {	formatTextCbk = THISBACK(FormatAsDate); return *this;	}
+		inline CLASSNAME& setAxisDateFormat() {
+			formatTextCbk = THISBACK(FormatAsDate);
+			_gridStepManager->setDateGridSteps();
+			return *this;
+		}
+		
+		inline CLASSNAME& setAxisTimeFormat() {
+			formatTextCbk = THISBACK(FormatAsTime);
+			_gridStepManager->setTimeGridSteps();
+			return *this;
+		}
 
 
 		inline int GetMajorTickLength()       { return _majorTickMark->GetTickLength(); }
@@ -199,11 +209,18 @@ namespace GraphDraw_ns
 				return (*_gridStepManager);
 		}
 
-
 		void FormatAsDate(TypeGraphCoord v, String& output) {
 			Date dat;
 			dat.Set(int(v));
 			output = Format("%d/%d/%d",dat.day, dat.month, dat.year);
+		}
+
+		void FormatAsTime(TypeGraphCoord v, String& output) {
+			Time time;
+			time.Set(int64(v));
+//			output = Format("%d/%d/%d-%d:%d:%d",time.day, time.month, time.year, time.hour, time.minute, time.second);
+//			output = Format("%dj  %dh%d:%d", time.day, time.hour, time.minute, time.second);
+			output = Format("%d/%d/%d",time.day, time.month, time.year);
 		}
 
 

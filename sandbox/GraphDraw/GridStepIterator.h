@@ -144,7 +144,6 @@ namespace GraphDraw_ns
 					int normalizedYearStep = GetNormalizedStep( yearRange );
 					if (normalizedYearStep==0) normalizedYearStep = 1;
 
-					const double daysPerYear = 365.0;
 					Date dateIter(0,1,1);
 
 					if ( Date(dateIter.year,1,1).Get() < graphStartDate.Get()) {
@@ -247,14 +246,11 @@ namespace GraphDraw_ns
 					int normalizedYearStep = GetNormalizedStep( yearRange );
 					if (normalizedYearStep==0) normalizedYearStep = 1;
 
-					const double daysPerYear = 365.0;
 					Date dateIter(0,1,1);
-
-					if ( Date(dateIter.year,1,1).Get() < graphStartDate.Get()) {
-						dateIter.year = GetGridStartValue( normalizedYearStep, graphStartDate.year+1 );
-					}
-					else {
-						dateIter.year = GetGridStartValue( normalizedYearStep, graphStartDate.year );
+					dateIter.year = GetGridStartValue( normalizedYearStep, graphStartDate.year+1 );
+					if ( dateIter < graphStartDate ) {
+						LOG("     #### YEAR  STEP_2 :    dateIter="<< dateIter << "      graphStartDate="<< graphStartDate);
+						dateIter.year += normalizedYearStep;
 					}
 
 					_nbSteps = (unsigned int)tabs((graphEndDate.year - dateIter.year) / normalizedYearStep);
@@ -263,11 +259,11 @@ namespace GraphDraw_ns
 					}
 					else if (_nbSteps==0) _nbSteps = 1;
 
-					LOG("YEAR  range=" << yearRange << "months    normalizedStep = "<< normalizedYearStep << " years     _nbSteps=" << _nbSteps<< "       graphStartDate = "<< dateIter);
+					LOG("YEAR  range=" << yearRange << "years    normalizedStep = "<< normalizedYearStep << " years     _nbSteps=" << _nbSteps<< "       graphStartDate = "<< dateIter);
 					for (unsigned int c=0; c<= _nbSteps; ++c) {
 						Time tmp = ToTime(dateIter);
 						_stepValues[c] = tmp.Get();
-						LOG("     YEAR  STEP : "<< dateIter << "       tmp=" << tmp);
+						LOG("     YEAR  STEP :    dateIter="<< dateIter);
 						dateIter = ToTime(AddYears(dateIter, normalizedYearStep));
 					}
 				}
@@ -277,31 +273,36 @@ namespace GraphDraw_ns
 				else if ((timeRange.month >= 7) || (timeRange.year > 0 )) {
 					Date graphStartDate( graphStartTime.year, graphStartTime.month, graphStartTime.day);
 					Date graphEndDate( graphEndTime.year, graphEndTime.month, graphEndTime.day);
-					int monthRange = timeRange.year*12 + timeRange.month;
-					Vector<double> monthSteps;
-					monthSteps << 1 << 2 << 3 << 4 << 6 << 12 << 24 << 48;
-					int normalizedMonthStep = GetNormalizedStep( monthRange, monthSteps );
+					int monthRange = timeRange.year*12+timeRange.month-1 ;
+					Vector<double> monthStep;
+					monthStep << 1 << 2 << 3 << 4 << 6 << 12 << 24 << 48;
+					int normalizedMonthStep = GetNormalizedStep( monthRange, monthStep );
 					if (normalizedMonthStep==0) normalizedMonthStep = 1;
 
-					const double daysPerMonths = 365.0/12;
-					Date dateIter;
-					dateIter.Set( GetGridStartValue( normalizedMonthStep*daysPerMonths, graphStartDate.Get() ));
+					Date dateIter(0,1,1);
 
-					if (dateIter.day > 1) {
-						dateIter = LastDayOfMonth(dateIter)+1; // goto 1rst day of next month
+					int nbMonths = GetGridStartValue( normalizedMonthStep, graphStartDate.year*12+graphStartDate.month-1 );
+					dateIter.year = nbMonths/12;
+					dateIter.month= nbMonths - dateIter.year*12 + 1;
+					dateIter.day = 1;
+					LOG("     MONTH  STEP_1 : "<< dateIter << "       nbMonths=" << nbMonths << "     graphStartDate=" << graphStartDate);
+					if ( dateIter < graphStartDate ) {
+						LOG("     #### MONTH  STEP_2 :    dateIter="<< dateIter << "      graphStartDate="<< graphStartDate);
+						dateIter = AddMonths(dateIter, normalizedMonthStep);
 					}
 
-					_nbSteps = (unsigned int)tabs(((graphEndDate.year - dateIter.year)*12 + graphEndDate.month - dateIter.month ) / normalizedMonthStep);
+					_nbSteps = (unsigned int)tabs(((graphEndDate.year-dateIter.year)*12 + (graphEndDate.month-dateIter.month)) / normalizedMonthStep);
 					if (_nbSteps > _nbMaxSteps) {
 						_nbSteps = _nbMaxSteps;
 					}
 					else if (_nbSteps==0) _nbSteps = 1;
-					LOG("MONTH  range=" << monthRange << "months    normalizedStep = "<< normalizedMonthStep << "months     _nbSteps=" << _nbSteps<< "       graphStartDate = "<< dateIter);
+
+					LOG("MONTH  range=" << monthRange << " months    normalizedMonthStep = "<< normalizedMonthStep << " months     _nbSteps=" << _nbSteps<< "       graphStartDate = "<< graphStartDate);
 					for (unsigned int c=0; c<= _nbSteps; ++c) {
 						Time tmp = ToTime(dateIter);
 						_stepValues[c] = tmp.Get();
-						LOG("     MONTH  STEP : "<< dateIter << "       tmp=" << tmp);
-						dateIter = ToTime(AddMonths(dateIter, normalizedMonthStep));
+						LOG("     MONTH  STEP : "<< dateIter);
+						dateIter = AddMonths(dateIter, normalizedMonthStep);
 					}
 				}
 				// ================================

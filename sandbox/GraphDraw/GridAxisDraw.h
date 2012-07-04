@@ -104,7 +104,7 @@ namespace GraphDraw_ns
 		typedef typename TYPES::TypeCoordConverter    TypeCoordConverter;
 		typedef typename TYPES::TypeGridStepManager   TypeGridStepManager;
 		typedef CRTPGraphElementFrame< GridAxisDraw<TYPES> > _B;
-		typedef Callback2<TypeGraphCoord, String&> TypeFormatTextCbk;
+		typedef Callback3<TypeGraphCoord, String&, TypeGraphCoord> TypeFormatTextCbk; // value,  formated value,  range
 
 //		protected:
 		int       _axisWidth;
@@ -170,14 +170,16 @@ namespace GraphDraw_ns
 		inline CLASSNAME& setMinorTickMark(TickMark* v)                 { _minorTickMark = v; return *this;  }
 		inline CLASSNAME& setAxisTextFormat(TypeFormatTextCbk v)        { formatTextCbk = v; return *this;  }
 		inline CLASSNAME& resetAxisTextFormat()                         { formatTextCbk = Null; return *this;  }
-		inline CLASSNAME& setAxisDateFormat() {
-			formatTextCbk = THISBACK(FormatAsDate);
+		inline CLASSNAME& setAxisDateFormat( TypeFormatTextCbk cbk=TypeFormatTextCbk() ) {
+			if ( cbk ) formatTextCbk = cbk;
+			else       formatTextCbk = THISBACK(FormatAsDate);
 			_gridStepManager->setDateGridSteps();
 			return *this;
 		}
 		
-		inline CLASSNAME& setAxisTimeFormat() {
-			formatTextCbk = THISBACK(FormatAsTime);
+		inline CLASSNAME& setAxisTimeFormat( TypeFormatTextCbk cbk=TypeFormatTextCbk() ) {
+			if ( cbk ) formatTextCbk = cbk;
+			else       formatTextCbk = THISBACK(FormatAsTime);
 			_gridStepManager->setTimeGridSteps();
 			return *this;
 		}
@@ -209,18 +211,50 @@ namespace GraphDraw_ns
 				return (*_gridStepManager);
 		}
 
-		void FormatAsDate(TypeGraphCoord v, String& output) {
+		void FormatAsDate(TypeGraphCoord v, String& output, TypeGraphCoord range) {
 			Date dat;
+			dat.Set(range);
 			dat.Set(int(v));
 			output = Format("%d/%d/%d",dat.day, dat.month, dat.year);
 		}
 
-		void FormatAsTime(TypeGraphCoord v, String& output) {
+		void FormatAsTime(TypeGraphCoord value, String& output, TypeGraphCoord range) {
 			Time time;
-			time.Set(int64(v));
-//			output = Format("%d/%d/%d-%d:%d:%d",time.day, time.month, time.year, time.hour, time.minute, time.second);
-//			output = Format("%dj  %dh%d:%d", time.day, time.hour, time.minute, time.second);
-			output = Format("%d/%d/%d",time.day, time.month, time.year);
+			time.Set(int64(value));
+			if (range > 7*365*24*60*60) { // 7 years
+				output = Format("%d", time.year);
+			}
+			else if (range > 182.5*24*60*60) { // 6 months
+				if ((time.month == 1) && (time.day == 1) ) {
+					output << time.year;
+				}
+				else {
+					output << MonName(time.month-1);
+				}
+			}
+			else if (range > 7*24*60*60) { // 7 days
+				if ((time.month == 1) && (time.day == 1) && (time.hour==0) ) {
+					output << int(time.day) << " " << MonName(time.month-1) << " " << time.year;
+				}
+				else if ( (time.day == 1) && (time.hour==0) ) {
+					output << int(time.day) << " " << MonName(time.month-1);
+				}
+				else {
+					output << int(time.day);
+				}
+			}
+			else {
+//				if ((time.day == 1) && (time.hour == 0) && (time.minute == 0) && (time.second == 0)) {
+//					output = Format("%d/%d", time.day, time.month);
+//				}
+//				else if ( (time.hour == 0) && (time.minute == 0) && (time.second == 0)) {
+//					output = Format("%dh%d:%d", time.hour, time.minute, time.second);
+//				}
+//				else {
+//					output = Format("%d/%d", time.month, time.year);
+//				}
+				output = Format("%dh%d:%d", time.hour, time.minute, time.second);
+			}
 		}
 
 
@@ -228,7 +262,7 @@ namespace GraphDraw_ns
 		void PaintTickText(Draw& dw,  TypeGraphCoord v, TypeScreenCoord x, TypeScreenCoord y, Color& color, Font& font) {
 			Upp::String text;
 			if ( ! formatTextCbk )	text=FormatDouble(v);
-			else                    formatTextCbk(v, text);
+			else                    formatTextCbk(v, text, _coordConverter.getSignedGraphRange() );
 			Size sz = GetTextSize(text, font);
 			if (GRAPH_SIDE == LEFT_OF_GRAPH) {
 				dw.DrawText( x-sz.cx, y-(sz.cy/2) , text, font, color);

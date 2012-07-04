@@ -31,6 +31,8 @@ public:
 	MyGraphCtrl::Types::TypeCoordConverter y2CoordConverter;
 	GraphDraw_test();
 	
+	void FormatAsTime(double value, String& output, double range);
+
 	void DoReport(void);
 };
 

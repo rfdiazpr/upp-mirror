@@ -107,11 +107,15 @@ GraphDraw_test::GraphDraw_test()
 		s1 <<Pointf(t,y);
 		s2 <<Pointf(t,y + (Upp::Randomf()*5.0)-2.5);
 	}
-	g3.GetXGridAxisDraw().setAxisTimeFormat();
+	g3.GetXGridAxisDraw().setAxisTimeFormat().SetElementWidth(50);
+	g3.GetYGridAxisDraw().setAxisTimeFormat().SetElementWidth(100);
+	g3.CloneTopElement( 50, g3.GetXGridAxisDraw()).setAxisTimeFormat();
+	g3.CloneRightElement( 100, g3.GetYGridAxisDraw()).setAxisTimeFormat();
+
 	{
 		Time startTime(2010, 1, 1);
 		Time endTime(2013, 1, 1);
-		g3.setGraphSize(startTime.Get(), endTime.Get(), -22, +22);
+		g3.setGraphSize(startTime.Get(), endTime.Get(), 6.56e+10, 6.57e+10);
 	}
 
 	//	g3.setGraphSize( 0, 100000, -22, +22);
@@ -120,15 +124,13 @@ GraphDraw_test::GraphDraw_test()
 			.SetLabel("BIG DATA SET")
 			.SetFont(StdFont().Bold().Underline().Height(20))
 			.SetTextColor(Green());
-	g3.CreateRightElement<GraphDraw_ns::BlankAreaElement>( 15 );
+	//g3.CreateRightElement<GraphDraw_ns::BlankAreaElement>( 15 );
 	g3.SetMode( GraphDraw_ns::MD_ANTIALIASED);
 //	g3.AddSeries(s1).PlotStyle<LineSeriesPlot>().NoMark().Legend("S1"); //.MarkStyle<TriangleMarkPlot>();
 //	g3.AddSeries(s2).NoPlot().MarkStyle<CircleMarkPlot>().Legend("S2").SetMarkWidth(1).SetSequential().SetDataThickness(1); //.MarkStyle<TriangleMarkPlot>();
 //	g3.AddSeries(&funct1).NoPlot().MarkStyle<CircleMarkPlot>().Legend("sin(x/1000.0)*10.0").SetMarkWidth(1).SetDataThickness(1).SetMarkColor(Black());
 //	g3.CreateLegendElement<LegendElement<MyGraphCtrl::Types>, RIGHT_OF_GRAPH>( 90 );//.SetBackGndColor( Color(198, 255, 0) );
 
-	g3.CloneBottomElement( 20, g3.GetXGridAxisDraw()).setAxisTimeFormat(THISBACK(FormatAsTime));
-//	g3.CloneBottomElement( 20, g3.GetXGridAxisDraw()).setAxisTimeFormat();
 
 
 

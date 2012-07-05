@@ -145,12 +145,10 @@ namespace GraphDraw_ns
 					if (normalizedYearStep==0) normalizedYearStep = 1;
 
 					Date dateIter(0,1,1);
-
-					if ( Date(dateIter.year,1,1).Get() < graphStartDate.Get()) {
-						dateIter.year = GetGridStartValue( normalizedYearStep, graphStartDate.year+1 );
-					}
-					else {
-						dateIter.year = GetGridStartValue( normalizedYearStep, graphStartDate.year );
+					dateIter.year = GetGridStartValue( normalizedYearStep, graphStartDate.year+1 );
+					if ( dateIter < graphStartDate ) {
+						LOG("     #### YEAR  STEP_2 :    dateIter="<< dateIter << "      graphStartDate="<< graphStartDate);
+						dateIter.year += normalizedYearStep;
 					}
 
 					_nbSteps = (unsigned int)tabs((graphEndDate.year - dateIter.year) / normalizedYearStep);
@@ -159,10 +157,11 @@ namespace GraphDraw_ns
 					}
 					else if (_nbSteps==0) _nbSteps = 1;
 
-					LOG("YEAR  range=" << yearRange << "months    normalizedStep = "<< normalizedYearStep << " years     _nbSteps=" << _nbSteps<< "       graphStartDate = "<< dateIter);
+					LOG("YEAR  range=" << yearRange << "years    normalizedStep = "<< normalizedYearStep << " years     _nbSteps=" << _nbSteps<< "       graphStartDate = "<< dateIter);
 					for (unsigned int c=0; c<= _nbSteps; ++c) {
-						_stepValues[c] = dateIter.Get();
-						LOG("     YEAR  STEP : "<< dateIter);
+						Time tmp = ToTime(dateIter);
+						_stepValues[c] = tmp.Get();
+						LOG("     YEAR  STEP :    dateIter="<< dateIter);
 						dateIter = AddYears(dateIter, normalizedYearStep);
 					}
 				}
@@ -176,22 +175,28 @@ namespace GraphDraw_ns
 					int normalizedMonthStep = GetNormalizedStep( monthRange, monthSteps );
 					if (normalizedMonthStep==0) normalizedMonthStep = 1;
 
-					const double daysPerMonths = 365.0/12;
-					Date dateIter;
-					dateIter.Set( GetGridStartValue( normalizedMonthStep*daysPerMonths, graphStartDate.Get() ));
+					Date dateIter(0,1,1);
 
-					if (dateIter.day > 1) {
-						dateIter = LastDayOfMonth(dateIter)+1; // goto 1rst day of next month
+					int nbMonths = GetGridStartValue( normalizedMonthStep, graphStartDate.year*12+graphStartDate.month-1 );
+					dateIter.year = nbMonths/12;
+					dateIter.month= nbMonths - dateIter.year*12 + 1;
+					dateIter.day = 1;
+					LOG("     MONTH  STEP_1 : "<< dateIter << "       nbMonths=" << nbMonths << "     graphStartDate=" << graphStartDate);
+					if ( dateIter < graphStartDate ) {
+						LOG("     #### MONTH  STEP_2 :    dateIter="<< dateIter << "      graphStartDate="<< graphStartDate);
+						dateIter = AddMonths(dateIter, normalizedMonthStep);
 					}
 
-					_nbSteps = (unsigned int)tabs(((graphEndDate.year - dateIter.year)*12 + graphEndDate.month - dateIter.month ) / normalizedMonthStep);
+					_nbSteps = (unsigned int)tabs(((graphEndDate.year-dateIter.year)*12 + (graphEndDate.month-dateIter.month)) / normalizedMonthStep);
 					if (_nbSteps > _nbMaxSteps) {
 						_nbSteps = _nbMaxSteps;
 					}
 					else if (_nbSteps==0) _nbSteps = 1;
-					LOG("MONTH  range=" << monthRange << "months    normalizedStep = "<< normalizedMonthStep << "months     _nbSteps=" << _nbSteps<< "       graphStartDate = "<< dateIter);
+
+					LOG("MONTH  range=" << monthRange << " months    normalizedMonthStep = "<< normalizedMonthStep << " months     _nbSteps=" << _nbSteps<< "       graphStartDate = "<< graphStartDate);
 					for (unsigned int c=0; c<= _nbSteps; ++c) {
-						_stepValues[c] = dateIter.Get();
+						Time tmp = ToTime(dateIter);
+						_stepValues[c] = tmp.Get();
 						LOG("     MONTH  STEP : "<< dateIter);
 						dateIter = AddMonths(dateIter, normalizedMonthStep);
 					}
@@ -326,7 +331,7 @@ namespace GraphDraw_ns
 					}
 					else if (_nbSteps==0) _nbSteps = 1;
 
-					LOG("D/H/M/S  ==>  _nbSteps=" << _nbSteps << "      gridStepValue=" << normalizedStep);
+					RLOG("D/H/M/S  ==>  _nbSteps=" << _nbSteps << "      gridStepValue=" << normalizedStep);
 					for (unsigned int c=0; c<_nbSteps+1; ++c)
 					{
 						_stepValues[c] = gridStartValue + normalizedStep * c;
@@ -397,9 +402,9 @@ namespace GraphDraw_ns
 				long double stepValue = pstepValue;
 				long double graphMin = pgraphMin;
 				if (graphMin>=0) {
-					res = ((int)(graphMin/stepValue + 1 - std::numeric_limits<TypeGraphCoord>::epsilon()) ) * stepValue;
+					res = ((int64)(graphMin/stepValue + 1.0 - std::numeric_limits<TypeGraphCoord>::epsilon()) ) * stepValue;
 				} else {
-					res = (((int)(graphMin/stepValue) ) * stepValue);
+					res = (((int64)(graphMin/stepValue) ) * stepValue);
 				}
 				if (res < pgraphMin) res = pgraphMin;
 				return res;

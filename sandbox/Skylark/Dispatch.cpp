@@ -290,6 +290,7 @@ void Http::Dispatch(TcpSocket& socket)
 				q++;
 			}
 		}
+		var.GetAdd("__identity__"); // To make StdLib.icpp GetIndentity work without changing preset stack positions
 		DUMPM(var);
 		Vector<String> part = Split(uri, '/');
 		for(int i = 0; i < part.GetCount(); i++)

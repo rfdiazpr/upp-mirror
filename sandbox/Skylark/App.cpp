@@ -150,16 +150,40 @@ void SkylarkApp::Run()
 	SetConsoleCtrlHandler(CtrlCHandlerRoutine, true);
 #endif
 
+	main_pid = getpid();
+	quit = false;
+
+#if defined(PLATFORM_POSIX) && defined(_DEBUG)
+	// Avoid the need to close running server in debug mode...
+	String pidf = ConfigFile("debug_pid");
+	int prev_pid = atoi(LoadFile(pidf));
+	if(prev_pid) {
+		kill(prev_pid, SIGTERM);
+		int status = 0;
+		waitpid(prev_pid, &status, 0);
+	}
+	for(int i = 0; i < 100; i++) {
+		Cout() << i;
+		if(server.Listen(port, 5))
+			goto listening;
+		Sleep(10);
+	}
+	LOG("Cannot open server socket!");
+	Cout() << "Cannot open server socket!\n";
+	return;
+listening:;
+#else
 	if(!server.Listen(port, 5)) {
 		LOG("Cannot open server socket!");
 		Cout() << "Cannot open server socket!\n";
 		return;
 	}
-
-	main_pid = getpid();
-	quit = false;
+#endif
 
 #ifdef PLATFORM_POSIX
+#ifdef _DEBUG
+	SaveFile(pidf, AsString(main_pid));
+#endif
 	if(prefork) {
 		struct sigaction sa;
 		memset(&sa, 0, sizeof(sa));
@@ -203,6 +227,10 @@ void SkylarkApp::Run()
 	else
 #endif
 		Main();
+
+#if defined(_DEBUG) && defined(POSIX)
+	FileDelete(pidf);
+#endif
 
 	CONSOLE("ExitSkylark");
 }

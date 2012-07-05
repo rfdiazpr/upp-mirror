@@ -129,6 +129,7 @@ Http& Http::SessionSet(const char *id, const Value& value)
 		NewSessionId();
 	session_var.GetAdd(id) = value;
 	var.GetAdd(id) = value;
+	DDUMPM(var);
 	session_dirty = true;
 	return *this;
 }

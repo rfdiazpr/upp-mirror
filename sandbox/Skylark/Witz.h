@@ -1,9 +1,9 @@
 struct ExeContext {
-	Renderer      *renderer;
-	Vector<Value>& stack;
-	StringBuffer   out;
+	const Renderer *renderer;
+	Vector<Value>&  stack;
+	StringBuffer    out;
 
-	ExeContext(Vector<Value>& stack, Renderer *r = NULL) : renderer(r), stack(stack) {}
+	ExeContext(Vector<Value>& stack, const Renderer *r = NULL) : renderer(r), stack(stack) {}
 };
 
 struct Exe {
@@ -18,7 +18,7 @@ struct RawHtmlText {
 Value Raw(const String& s);
 
 struct Compiler {
-	static VectorMap<String, Value (*)(const Vector<Value>&, Renderer *)>& functions();
+	static VectorMap<String, Value (*)(const Vector<Value>&, const Renderer *)>& functions();
 
 	static bool IsTrue(const Value& v);
 	
@@ -116,7 +116,7 @@ struct Compiler {
 	};
 	
 	struct ExeFn : Exe {
-		Value (*fn)(const Vector<Value>&, Renderer *);
+		Value (*fn)(const Vector<Value>&, const Renderer *);
 		
 		Vector< One<Exe> > arg;
 
@@ -203,8 +203,6 @@ struct Compiler {
 	
 	One<Exe> Block();
 	
-	static void Register(const String& id, Value (*fn)(const Vector<Value>&, Renderer *));
-	
 	typedef Compiler CLASSNAME;
 
 	void Iterate(Vector< One<Exe> >& a, Callback1< One<Exe>& > op);
@@ -215,6 +213,8 @@ struct Compiler {
 	void CountNodes(One<Exe>& exe);
 
 	int  GetNodeCount(One<Exe>& exe);
+
+	static void Register(const String& id, Value (*fn)(const Vector<Value>&, const Renderer *));
 
 	Compiler(const char *code, const Index<String>& var) : p(code), var(var, 1) { forvar.SetCount(var.GetCount(), false); }
 };

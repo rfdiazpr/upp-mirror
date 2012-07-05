@@ -1,6 +1,7 @@
 #include "Skylark.h"
 
 #define LTIMING(x) // RTIMING(x)
+#define LLOG(x)    DLOG(x)
 
 force_inline
 bool Compiler::IsTrue(const Value& v)
@@ -15,6 +16,7 @@ String TypeMismatch(const char *s)
 
 Value Compiler::ExeVar::Eval(ExeContext& x) const
 {
+	LLOG("Retrieving var no " << var_index << " = " << x.stack[var_index]);
 	return x.stack[var_index];
 }
 
@@ -351,6 +353,7 @@ Value Compiler::ExeFor::Eval(ExeContext& x) const
 {
 	LTIMING("ExeFor");
 	Value array = value->Eval(x);
+	LLOG("ExeFor array: " << array);
 	if(array.GetCount() == 0 && onempty)
 		return onempty->Eval(x);
 	ValueMap m;

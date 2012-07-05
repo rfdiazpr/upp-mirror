@@ -2,10 +2,7 @@
 
 String GetFileOnPath1(const char *file, const char *path)
 {
-	DDUMP(file);
-	DDUMP(path);
 	String r = GetFileOnPath(file, path);
-	DDUMP(r);
 	return r;
 }
 

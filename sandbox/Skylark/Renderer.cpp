@@ -1,6 +1,6 @@
 #include "Skylark.h"
 
-#define LLOG(x)    // DLOG(x)
+#define LLOG(x)    DLOG(x)
 #define LTIMING(x) // RTIMING(x)
 
 Renderer& Renderer::operator()(const ValueMap& map)
@@ -48,6 +48,7 @@ const One<Exe>& Renderer::GetTemplate(const char *template_name)
 	}
 	String sgn = s;
 	LLOG("Trying to retrieve " << sgn << " from cache");
+	DDUMPM(var);
 	Mutex::Lock __(template_cache_lock);
 	int q = template_cache.Find(sgn);
 	if(q >= 0 && SkylarkApp::Config().use_caching)

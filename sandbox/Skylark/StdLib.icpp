@@ -1,13 +1,13 @@
 #include "Skylark.h"
 
-Value Cycle(const Vector<Value>& arg, Renderer *)
+Value Cycle(const Vector<Value>& arg, const Renderer *)
 {
 	if(arg.GetCount() < 3 && !IsNumber(arg[0]))
 		return String();
 	return arg[1 + int(arg[0]) % (arg.GetCount() - 1)];
 }
 
-Value RawFn(const Vector<Value>& arg, Renderer *)
+Value RawFn(const Vector<Value>& arg, const Renderer *)
 {
 	RawHtmlText r;
 	for(int i = 0; i < arg.GetCount(); i++)
@@ -15,9 +15,10 @@ Value RawFn(const Vector<Value>& arg, Renderer *)
 	return RawToValue(r);
 }
 
-String GetIdentity(Renderer *r)
+String GetIdentity(const Renderer *r)
 {
-	Http *http = dynamic_cast<Http *>(r);
+	// This ugly hack expects that __identity__ is always present in r->var
+	Http *http = const_cast<Http *>(dynamic_cast<const Http *>(r));
 	if(!http)
 		throw Exc("invalid POST identity call");
 	String s = (*http)["__identity__"];
@@ -28,12 +29,12 @@ String GetIdentity(Renderer *r)
 	return s;
 }
 
-Value PostIdentity(const Vector<Value>&, Renderer *r)
+Value PostIdentity(const Vector<Value>&, const Renderer *r)
 {
 	return Raw("<input type=\"hidden\" name=\"__post_identity__\" value=\"" + GetIdentity(r) + "\">");
 }
 
-Value JsIdentity(const Vector<Value>&, Renderer *r)
+Value JsIdentity(const Vector<Value>&, const Renderer *r)
 {
 	return Raw("<script type=\"text/javascript\">var __js_identity__ = \"" + GetIdentity(r) + "\"</script>");
 }

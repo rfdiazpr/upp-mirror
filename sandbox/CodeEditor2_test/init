@@ -1,0 +1,4 @@
+#ifndef _CodeEditor2_test_icpp_init_stub
+#define _CodeEditor2_test_icpp_init_stub
+#include "CodeEditor2/init"
+#endif

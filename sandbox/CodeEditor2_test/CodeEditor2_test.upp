@@ -1,0 +1,9 @@
+uses
+	CodeEditor2;
+
+file
+	main.cpp optimize_speed;
+
+mainconfig
+	"" = "GUI";
+

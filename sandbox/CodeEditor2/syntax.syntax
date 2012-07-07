@@ -1,0 +1,9 @@
+/*
+	Syntax highlighting for .syntax files
+*/
+HL_NAME("syntax")
+HL_PATTERN(INK_UPPMACROS, "\\bHL_(NAME|SUBPATTERN|PATTERN(_ML){0,1}|SCOPE)\\b")
+HL_PATTERN(INK_CONST_STRING, "\"([^\\\\\"]+|\\\\[^\"]|\\\\\")*\"")
+HL_SUBPATTERN(INK_CONST_STRINGOP, "%.|\\\\([xX][[:xdigit:]]{1,2}|[0-7]{1,3}|.)")
+HL_PATTERN(INK_COMMENT, "//.*")
+HL_PATTERN_ML(INK_COMMENT, "/\\*", "\\*/")

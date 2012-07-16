@@ -821,9 +821,8 @@ struct GraphCtrlDefaultTypes {
 		typedef SeriesPlot                                                      TypeSeriesPlot;
 		typedef MarkPlot                                                        TypeMarkPlot;
 		typedef GraphDraw_ns::GenericCoordinateConverter                        TypeCoordConverter;
-//		typedef GraphDraw_ns::LogCoordinateConverter                            TypeCoordConverter;
 		typedef StdGridAxisDrawCtrl<GraphCtrlDefaultTypes>                      TypeGridAxisDraw;
-		typedef GraphDraw_ns::GridStepManager<TypeCoordConverter>               TypeGridStepManager;
+		typedef GraphDraw_ns::GridStepManager<>                                 TypeGridStepManager;
 		typedef GraphDraw_ns::SeriesConfig<GraphCtrlDefaultTypes>               TypeSeriesConfig;
 		typedef Vector<TypeSeriesConfig>                                        TypeVectorSeries;
 };

@@ -167,9 +167,12 @@ class ScatterCtrl : public CRTP_StdGraphCtrl< GraphCtrlDefaultTypes, ScatterCtrl
 
 	//
 
-	ScatterCtrl& LogX(const bool& logx=true)  { GetXCoordConverter().SetConvLog(); return *this;}
-	ScatterCtrl& LogY(const bool& logy=true)  { GetYCoordConverter().SetConvLog(); return *this;}
-	ScatterCtrl& LogY2(const bool& logy=true) { y2CoordConverter.SetConvLog() ;return *this;}
+	ScatterCtrl& LogX(const bool& logx=true)  { GetXCoordConverter().SetConvLog(); GetXGridAxisDraw().setAxisLogFormat(); return *this;}
+	ScatterCtrl& LogY(const bool& logy=true)  { GetYCoordConverter().SetConvLog(); GetYGridAxisDraw().setAxisLogFormat(); return *this;}
+	ScatterCtrl& LogY2(const bool& logy=true) { y2CoordConverter.SetConvLog() ;    y2GridAxisDraw.setAxisLogFormat();     return *this;}
+//	ScatterCtrl& LogX(const bool& logx=true)  { GetXCoordConverter().SetConvLog(); return *this;}
+//	ScatterCtrl& LogY(const bool& logy=true)  { GetYCoordConverter().SetConvLog(); return *this;}
+//	ScatterCtrl& LogY2(const bool& logy=true) { y2CoordConverter.SetConvLog() ;    return *this;}
 
 	ScatterCtrl& SetMinZoom(double x, double y = -1) {return *this;}
 	ScatterCtrl& SetMaxZoom(double x, double y = -1) {return *this;}

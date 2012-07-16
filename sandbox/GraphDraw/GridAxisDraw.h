@@ -11,7 +11,6 @@
 
 namespace GraphDraw_ns
 {
-
 	class TickMark {
 
 		public:
@@ -19,10 +18,10 @@ namespace GraphDraw_ns
 			TickMark() : _tickLength(2) { UpdateTick(); }
 			virtual ~TickMark() {}
 
-			virtual void Paint(Draw &w, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const {};
+			virtual void Paint(Draw &w, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const = 0;
 			inline void Paint(Draw &p, ElementPosition axisPos, const int scale, const Point& cp, const Color& markColor) const { Paint(p, axisPos, scale, cp.x, cp.y, markColor); }
 
-			virtual void Paint(Painter &p, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const {};
+			virtual void Paint(Painter &p, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const = 0;
 			inline void Paint(Painter &p, ElementPosition axisPos, const int scale, const Point& cp, const Color& markColor) const { Paint(p, axisPos, scale, cp.x, cp.y, markColor); }
 
 			inline int GetTickLength()       { return _tickLength; }
@@ -104,7 +103,7 @@ namespace GraphDraw_ns
 		typedef typename TYPES::TypeCoordConverter    TypeCoordConverter;
 		typedef typename TYPES::TypeGridStepManager   TypeGridStepManager;
 		typedef CRTPGraphElementFrame< GridAxisDraw<TYPES> > _B;
-		typedef Callback3<TypeGraphCoord, String&, TypeGraphCoord> TypeFormatTextCbk; // value,  formated value,  range
+		typedef Callback2< const GridStepIterator&, String&> TypeFormatTextCbk; // IN: valueIterator,  OUT: formated value
 
 //		protected:
 		int       _axisWidth;
@@ -131,8 +130,8 @@ namespace GraphDraw_ns
 		, _axisTickColor(Red())
 		, _gridColor(LtGray())
 		, _coordConverter( coordConv )
-		, _majorTickMark(new TickMark())
-		, _minorTickMark(new TickMark())
+		, _majorTickMark(new LineTickMark())
+		, _minorTickMark(new LineTickMark())
 		{
 		}
 
@@ -146,8 +145,8 @@ namespace GraphDraw_ns
 		, _axisTickColor(p._axisTickColor)
 		, _gridColor(Null)  // This is a slave Axis ==> so no need to draw grid
 		, _coordConverter( p._coordConverter )
-		, _majorTickMark(new TickMark())
-		, _minorTickMark(new TickMark())
+		, _majorTickMark(new LineTickMark())
+		, _minorTickMark(new LineTickMark())
 		, formatTextCbk( p.formatTextCbk )
 		{
 		}
@@ -170,6 +169,13 @@ namespace GraphDraw_ns
 		inline CLASSNAME& setMinorTickMark(TickMark* v)                 { _minorTickMark = v; return *this;  }
 		inline CLASSNAME& setAxisTextFormat(TypeFormatTextCbk v)        { formatTextCbk = v; return *this;  }
 		inline CLASSNAME& resetAxisTextFormat()                         { formatTextCbk = Null; return *this;  }
+		inline CLASSNAME& setAxisLogFormat(TypeFormatTextCbk cbk=TypeFormatTextCbk()) {
+			if ( cbk ) formatTextCbk = cbk;
+			else       formatTextCbk = THISBACK(FormatAsLog10);
+			_gridStepManager->setLogGridSteps();
+			return *this;
+		}
+
 		inline CLASSNAME& setAxisDateFormat( TypeFormatTextCbk cbk=TypeFormatTextCbk() ) {
 			if ( cbk ) formatTextCbk = cbk;
 			else       formatTextCbk = THISBACK(FormatAsDate);
@@ -211,22 +217,33 @@ namespace GraphDraw_ns
 				return (*_gridStepManager);
 		}
 
-		void FormatAsDate(TypeGraphCoord v, String& output, TypeGraphCoord range) {
+		void FormatAsLog10( const GridStepIterator& value, String& output ) {
+			if (value.getValueParam() == 1) {
+				output << value.getValue() ;
+			}
+		}
+
+
+
+		void FormatAsDate( const GridStepIterator& value, String& output ) {
 			Date dat;
-			dat.Set(range);
-			dat.Set(int(v));
+			dat.Set(int(value.getValue()));
 			output = Format("%d/%d/%d",dat.day, dat.month, dat.year);
 		}
 
-		void FormatAsTime(TypeGraphCoord value, String& output, TypeGraphCoord range) {
+		void FormatAsTime( const GridStepIterator& value, String& output ) {
 			Time time;
-			time.Set(int64(value));
+			time.Set(int64( value.getValue() ));
+
+			TypeGraphCoord range = value.getGraphRange();
 
 			if (range > 7*365*24*60*60) { // 7 years
 				output << "\1[1= " << time.year << "]";
 			}
 			else if (range > 182.5*24*60*60) { // 6 months
-				if ((time.month == 1) && (time.day == 1) ) {
+				if (((time.month == 1) && (time.day == 1) )
+					|| value.isFirst() || value.isLast() )
+				   {
 					switch(_B::GetElementPos()){
 						case LEFT_OF_GRAPH:
 							output << "\1[1* " << time.year;
@@ -251,23 +268,25 @@ namespace GraphDraw_ns
 				}
 			}
 			else if (range > 7*24*60*60) { // 7 days
-				if ( (time.day == 1) && (time.hour==0) ) {
+				if ( (time.day == 1) && (time.hour==0)
+						|| value.isFirst() || value.isLast() )
+				{
 					switch(_B::GetElementPos()){
 						case LEFT_OF_GRAPH:
 							output << "\1[1* " << time.year;
-							output << " ][1 " << MonName(time.month-1) << "]";
+							output << " ][1 " << int(time.day) << " " << MonName(time.month-1) << "]";
 							break;
 						case RIGHT_OF_GRAPH:
-							output << "\1[1 " << MonName(time.month-1) ;
+							output << "\1[1 " << int(time.day) << " " << MonName(time.month-1) ;
 							output << " ][1* " << time.year << "]";
 							break;
 						case BOTTOM_OF_GRAPH:
-							output << "\1[1= " << MonName(time.month-1) ;
+							output << "\1[1= " << int(time.day) << " " << MonName(time.month-1) ;
 							output << "&][1*= " << time.year << "]";
 							break;
 						case TOP_OF_GRAPH:
 							output << "\1[1*= " << time.year;
-							output << "&][1= " << MonName(time.month-1) << "]";
+							output << "&][1= " << int(time.day) << " " << MonName(time.month-1) << "]";
 							break;
 					}
 				}
@@ -276,12 +295,38 @@ namespace GraphDraw_ns
 				}
 			}
 			else {
-				output << "\1[1 " << int(time.hour) << "h" << int(time.minute) << "`:" << int(time.second) << "]";
+				if ( value.isFirst() || value.isLast() ) {
+					switch(_B::GetElementPos()){
+						case LEFT_OF_GRAPH:
+							output << "\1[1* " << time.year;
+							output << " ][1 " << int(time.day) << " " << MonName(time.month-1) << "]";
+							output << "[1 " << FormatTime( time, " h`hmm:ss" ) << "]";
+							break;
+						case RIGHT_OF_GRAPH:
+							output << "\1[1 " << FormatTime( time, "h`hmm:ss " ) << "]";
+							output << "[1 " << int(time.day) << " " << MonName(time.month-1) ;
+							output << " ][1* " << time.year << "]";
+							break;
+						case BOTTOM_OF_GRAPH:
+							output << "\1[1= " << FormatTime( time, "h`hmm:ss" ) << "&]";
+							output << "[1= " << int(time.day) << " " << MonName(time.month-1) ;
+							output << "&][1*= " << time.year << "]";
+							break;
+						case TOP_OF_GRAPH:
+							output << "\1[1*= " << time.year;
+							output << "&][1= " << int(time.day) << " " << MonName(time.month-1) << "&]";
+							output << "[1= " << FormatTime( time, "h`hmm:ss" ) << "]";
+							break;
+					}
+				}
+				else {
+					output << "\1[1 " << FormatTime( time, "h`hmm:ss" ) << "]";
+				}
 			}
 		}
 
 
-		Size GetSmartTextSize2(const char *text, Font font, int scale, int cx=INT_MAX) {
+		Size GetSmartTextSize2(const char *text, Font& scaledFont, int scale, int cx=INT_MAX) {
 			if(*text == '\1') {
 				Size sz;
 				RichText txt = ParseQTF(text + 1);
@@ -290,24 +335,24 @@ namespace GraphDraw_ns
 				sz.cy = txt.GetHeight(Zoom(1, 1), sz.cx);
 				return sz*scale;
 			}
-			return GetTLTextSize(ToUnicode(text, CHARSET_DEFAULT), font);
+			return GetTLTextSize(ToUnicode(text, CHARSET_DEFAULT), scaledFont);
 		}
 
-		void DrawSmartText2(Draw& draw, int x, int y, int cx, const char *text, Font font, Color ink, int scale) {
+		void DrawSmartText2(Draw& draw, int x, int y, int cx, const char *text, Font& scaledFont, Color ink, int scale) {
 			if(*text == '\1') {
 				RichText txt = ParseQTF(text + 1, 0);
 				txt.ApplyZoom(GetRichTextStdScreenZoom());
 				txt.Paint(Zoom(scale, 1), draw, x, y, cx);
 				return;
 			}
-			DrawTLText(draw, x, y, cx, ToUnicode(text, CHARSET_DEFAULT), font, ink, 0);
+			DrawTLText(draw, x, y, cx, ToUnicode(text, CHARSET_DEFAULT), scaledFont, ink, 0);
 		}
 
 		template<int GRAPH_SIDE>
-		void PaintTickText(Draw& dw,  TypeGraphCoord v, TypeScreenCoord x, TypeScreenCoord y, Color& color, Font& scaledFont, int scale) {
+		void PaintTickText(Draw& dw,  const GridStepIterator& value, TypeScreenCoord x, TypeScreenCoord y, Color& color, Font& scaledFont, int scale) {
 			Upp::String text;
-			if ( ! formatTextCbk )	text=FormatDouble(v);
-			else                    formatTextCbk(v, text, _coordConverter.getSignedGraphRange() );
+			if ( ! formatTextCbk )	text=FormatDouble( value.getValue() );
+			else                    formatTextCbk(value, text );
 
 			Size sz = GetSmartTextSize2(text, scaledFont, scale);
 			if (GRAPH_SIDE == LEFT_OF_GRAPH) {
@@ -336,10 +381,10 @@ namespace GraphDraw_ns
 			{
 				if (_majorTickMark.IsEmpty()) {
 					dw.DrawLineOp((_B::GetElementWidth()-8)*scale, *iter, _B::GetElementWidth()*scale, *iter, 2, _axisTickColor);
-					PaintTickText<LEFT_OF_GRAPH>(dw, iter.getValue(), (_B::GetElementWidth()-8)*scale, *iter, _axisTextColor, scaledAxisTextFont, scale);
+					PaintTickText<LEFT_OF_GRAPH>(dw, iter, (_B::GetElementWidth()-8)*scale, *iter, _axisTextColor, scaledAxisTextFont, scale);
 				} else {
 					_majorTickMark->Paint(dw, LEFT_OF_GRAPH, scale, _B::GetElementWidth()*scale, *iter, _axisTickColor );
-					PaintTickText<LEFT_OF_GRAPH>(dw, iter.getValue(), (_B::GetElementWidth()-_majorTickMark->GetTickLength()-2)*scale, *iter, _axisTextColor, scaledAxisTextFont, scale);
+					PaintTickText<LEFT_OF_GRAPH>(dw, iter, (_B::GetElementWidth()-_majorTickMark->GetTickLength()-2)*scale, *iter, _axisTextColor, scaledAxisTextFont, scale);
 				}
 				++iter;
 			}
@@ -358,10 +403,10 @@ namespace GraphDraw_ns
 				if (_majorTickMark.IsEmpty())
 				{
 					dw.DrawLineOp(0, *iter, 8, *iter, 2, _axisTickColor);
-					PaintTickText<RIGHT_OF_GRAPH>(dw, iter.getValue(), 8, *iter, _axisTextColor, scaledAxisTextFont, scale);
+					PaintTickText<RIGHT_OF_GRAPH>(dw, iter, 8, *iter, _axisTextColor, scaledAxisTextFont, scale);
 				} else {
 					_majorTickMark->Paint(dw, RIGHT_OF_GRAPH, scale, 0, *iter, _axisTickColor );
-					PaintTickText<RIGHT_OF_GRAPH>(dw, iter.getValue(), (_majorTickMark->GetTickLength()+2)*scale, *iter, _axisTextColor, scaledAxisTextFont, scale);
+					PaintTickText<RIGHT_OF_GRAPH>(dw, iter, (_majorTickMark->GetTickLength()+2)*scale, *iter, _axisTextColor, scaledAxisTextFont, scale);
 				}
 				++iter;
 			}
@@ -379,10 +424,10 @@ namespace GraphDraw_ns
 			{
 				if (_majorTickMark.IsEmpty()) {
 					dw.DrawLineOp(*iter, 0, *iter, 4, 2, _axisTickColor);
-					PaintTickText<BOTTOM_OF_GRAPH>(dw, iter.getValue(), *iter, 4, _axisTextColor, scaledAxisTextFont, scale);
+					PaintTickText<BOTTOM_OF_GRAPH>(dw, iter, *iter, 4, _axisTextColor, scaledAxisTextFont, scale);
 				} else {
 					_majorTickMark->Paint(dw, BOTTOM_OF_GRAPH, scale, *iter, 0, _axisTickColor );
-					PaintTickText<BOTTOM_OF_GRAPH>(dw, iter.getValue(), *iter, (_majorTickMark->GetTickLength()+2)*scale, _axisTextColor, scaledAxisTextFont, scale);
+					PaintTickText<BOTTOM_OF_GRAPH>(dw, iter, *iter, (_majorTickMark->GetTickLength()+2)*scale, _axisTextColor, scaledAxisTextFont, scale);
 				}
 				++iter;
 			}
@@ -400,10 +445,10 @@ namespace GraphDraw_ns
 			{
 				if (_majorTickMark.IsEmpty()) {
 					dw.DrawLineOp(*iter, _B::GetElementWidth()*scale, *iter, (_B::GetElementWidth()-4)*scale, 2, _axisTickColor);
-					PaintTickText<TOP_OF_GRAPH>(dw, iter.getValue(), *iter, (_B::GetElementWidth()-4)*scale, _axisTextColor, scaledAxisTextFont, scale);
+					PaintTickText<TOP_OF_GRAPH>(dw, iter, *iter, (_B::GetElementWidth()-4)*scale, _axisTextColor, scaledAxisTextFont, scale);
 				} else {
 					_majorTickMark->Paint(dw, TOP_OF_GRAPH, scale, *iter, _B::GetElementWidth()*scale, _axisTickColor );
-					PaintTickText<TOP_OF_GRAPH>(dw, iter.getValue(), *iter, (_B::GetElementWidth()-_majorTickMark->GetTickLength()-2)*scale, _axisTextColor, scaledAxisTextFont, scale);
+					PaintTickText<TOP_OF_GRAPH>(dw, iter, *iter, (_B::GetElementWidth()-_majorTickMark->GetTickLength()-2)*scale, _axisTextColor, scaledAxisTextFont, scale);
 				}
 				++iter;
 			}

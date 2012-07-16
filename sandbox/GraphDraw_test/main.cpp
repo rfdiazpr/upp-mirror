@@ -96,6 +96,7 @@ GraphDraw_test::GraphDraw_test()
 	g1.setGraphSize(10,20,10,20);
 	g1.SetMode( GraphDraw_ns::MD_DRAW );
 	g1.GetXCoordConverter().SetConvLog();
+	g1.GetXGridAxisDraw().setAxisLogFormat();
 
 
 
@@ -146,7 +147,7 @@ GraphDraw_test::GraphDraw_test()
 	g4.CreateElement<GraphDraw_ns::LabelElement, LEFT_OF_GRAPH>( 18 ).SetLabel("Y axis").SetFont(StdFont().Bold().Underline()).SetTextColor(Green());
 	g4.CreateElement<GraphDraw_ns::LabelElement, BOTTOM_OF_GRAPH>( 18 ).SetLabel("X axis").SetFont(StdFont().Bold().Underline()).SetTextColor(Green());
 	g4.AddSeries(points).PlotStyle<LineSeriesPlot>().MarkStyle<XMarkPlot>().Legend("S1");
-	g4.setGraphSize(0,20,0,20);
+	g4.setGraphSize(1,20,0,20);
 	g4.GetYGridAxisDraw().setMajorTickMark( (new LineTickMark())->SetTickLength( 3 ) );
 
 	// ADD Y2 AXIS
@@ -184,6 +185,10 @@ GraphDraw_test::GraphDraw_test()
 //	legend.SetBackGndColor(  );
 
 	bReport << THISBACK(DoReport);
+
+	g4.GetXCoordConverter().SetConvLog();
+	g4.GetXGridAxisDraw().setAxisLogFormat();
+
 }
 
 

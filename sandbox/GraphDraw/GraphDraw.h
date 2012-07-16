@@ -758,7 +758,7 @@ namespace GraphDraw_ns
 			typedef MarkPlot                                       TypeMarkPlot;
 			typedef GenericCoordinateConverter                     TypeCoordConverter;
 			typedef GridAxisDraw<GraphDrawDefaultTypes>            TypeGridAxisDraw;
-			typedef GridStepManager<TypeCoordConverter>            TypeGridStepManager;
+			typedef GridStepManager<>                              TypeGridStepManager;
 			typedef SeriesConfig<GraphDrawDefaultTypes>            TypeSeriesConfig;
 	};
 
@@ -793,12 +793,12 @@ namespace GraphDraw_ns
 			_xGridDraw.SetElementWidth(20);
 			_xGridDraw.setAxisColor( Blue() ).setAxisTextFont(StdFont()).setAxisTextColor( Blue() ).setAxisTickColor( Red() );
 			_xGridDraw.setGridColor( Gray() );
-			_xGridDraw.setMajorTickMark( (new RoundTickMark())->SetTickLength( 4 ) );
+			_xGridDraw.setMajorTickMark( (new LineTickMark())->SetTickLength( 3 ) );
 
 			_yGridDraw.SetElementWidth(40);
 			_yGridDraw.setAxisColor( Blue() ).setAxisTextFont(StdFont()).setAxisTextColor( Blue() ).setAxisTickColor( Red() );
 			_yGridDraw.setGridColor( Gray() );
-			_yGridDraw.setMajorTickMark( (new TriangleTickMark())->SetTickLength( 8 ) );
+			_yGridDraw.setMajorTickMark( (new LineTickMark())->SetTickLength( 3 ) );
 
 			BASECLASS::AddXConverter(_xConverter);
 			BASECLASS::AddYConverter(_yConverter);

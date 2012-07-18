@@ -1,0 +1,88 @@
+description "JPEG image file format\3770,128,128";
+
+acceptflags
+	EMBED_JPG;
+
+library(!EMBED_JPG&!WIN32) jpeg;
+
+uses
+	Draw;
+
+file
+	jpg.h,
+	jpgupp.cpp,
+	jpgreg.icpp,
+	src.tpp,
+	lib readonly separator
+, lib/config.h
+, lib/jconfig.h
+, lib/jdct.h
+, lib/jdhuff.h
+, lib/jerror.h
+, lib/jchuff.h
+, lib/jinclude.h
+, lib/jmemsys.h
+, lib/jmorecfg.h
+, lib/jpegcomp.h
+, lib/jpegint.h
+, lib/jpeglib.h
+, lib/jsimddct.h
+, lib/jsimd.h
+, lib/jversion.h
+, lib/jaricom.c
+, lib/jcapimin.c
+, lib/jcapistd.c
+, lib/jcarith.c
+, lib/jccoefct.c
+, lib/jccolor.c
+, lib/jcdctmgr.c
+, lib/jcinit.c
+, lib/jcmainct.c
+, lib/jcmarker.c
+, lib/jcmaster.c
+, lib/jcomapi.c
+, lib/jcparam.c
+, lib/jcphuff.c
+, lib/jcprepct.c
+, lib/jcsample.c
+, lib/jctrans.c
+, lib/jdapimin.c
+, lib/jdapistd.c
+, lib/jdarith.c
+, lib/jdatadst.c
+, lib/jdatasrc.c
+, lib/jdcoefct.c
+, lib/jdcolor.c
+, lib/jddctmgr.c
+, lib/jdhuff.c
+, lib/jdinput.c
+, lib/jdmainct.c
+, lib/jdmarker.c
+, lib/jdmaster.c
+, lib/jdmerge.c
+, lib/jdphuff.c
+, lib/jdpostct.c
+, lib/jdsample.c
+, lib/jdtrans.c
+, lib/jerror.c
+, lib/jfdctflt.c
+, lib/jfdctfst.c
+, lib/jfdctint.c
+, lib/jchuff.c
+, lib/jidctflt.c
+, lib/jidctfst.c
+, lib/jidctint.c
+, lib/jidctred.c
+, lib/jmemmgr.c
+, lib/jmemnobs.c
+, lib/jquant1.c
+, lib/jquant2.c
+, lib/jsimd_none.c
+, lib/jutils.c
+,Info readonly separator
+, lib/filelist.txt
+, lib/ChangeLog.txt
+, lib/libjpeg.txt
+, lib/README-turbo.txt
+, lib/structure.txt
+;

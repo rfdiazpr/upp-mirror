@@ -161,22 +161,22 @@ namespace GraphDraw_ns
 					if (logStepValue == 0) logStepValue = 1;
 					gridStartValue =  GetGridStartValue(logStepValue, log10(coordConv.getGraphMin()));
 					--gridStartValue;
-					int nbLogSteps = (log10(coordConv.getGraphMax())-gridStartValue) / logStepValue;
+					unsigned int nbLogSteps = (log10(coordConv.getGraphMax())-gridStartValue) / logStepValue;
 
-					if (nbLogSteps > nbLogSteps) {
+					if (nbLogSteps > _nbMaxSteps) {
 						nbLogSteps = _nbMaxSteps;
 					}
 					RLOG("log10  getGraphMin=" << coordConv.getGraphMin() );
 					RLOG("log10  getGraphMax=" << coordConv.getGraphMax() );
 					RLOG("log10  rangeFactor=" << rangeFactor );
 					RLOG("log10  logRangeFactor=" << logRangeFactor );
-					RLOG("log10  logStepValue=" << logStepValue );
+					RLOG("log10  logStepValue=" << double(logStepValue) );
 					RLOG("log10  gridStartValue=" << gridStartValue );
 
 					RLOG("log10  nbLogSteps=" << nbLogSteps );
 					// fill step values ==> used by gridStepIterator
 					_nbSteps = -1;
-					for (unsigned int c=0; c<nbLogSteps+1; ++c) {
+					for (unsigned int c=0; c<(nbLogSteps+1); ++c) {
 						double stepValue = pow10(gridStartValue + logStepValue*c);
 						double currVal = stepValue;
 
@@ -193,7 +193,7 @@ namespace GraphDraw_ns
 							}
 							currVal += stepValue;
 						}
-						RLOG("log10  step[" << c << "] = " << _stepValues[c]);
+						RLOG("log10  step[" << c << "] = " << _stepValues[c] << "     nbSteps="<<nbLogSteps);
 					}
 				}
 			}

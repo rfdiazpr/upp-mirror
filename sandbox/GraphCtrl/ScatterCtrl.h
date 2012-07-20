@@ -57,6 +57,10 @@ class ScatterCtrl : public CRTP_StdGraphCtrl< GraphCtrlDefaultTypes, ScatterCtrl
 	virtual ~ScatterCtrl() {};
 
 
+	Drawing GetDrawing() {
+		Drawing dr;
+		return dr;
+	}
 
 	ScatterCtrl& SetRange(double rx, double ry, double ry2) {
 		xRange = rx;
@@ -165,11 +169,19 @@ class ScatterCtrl : public CRTP_StdGraphCtrl< GraphCtrlDefaultTypes, ScatterCtrl
 	void SaveToClipboard(bool saveAsMetafile = false){};
 	void SaveToFile(String fileName = Null) {};
 
-	//
+	ScatterCtrl& LogX(const bool& logx=true) {
+		if (logx) { GetXCoordConverter().SetConvLog(); GetXGridAxisDraw().setAxisLogFormat(); return *this; }
+		else      { GetXCoordConverter().SetConvStd(); GetXGridAxisDraw().resetAxisTextFormat(); return *this; }
+	}
+	ScatterCtrl& LogY(const bool& logy=true) {
+		if (logy) { GetYCoordConverter().SetConvLog(); GetYGridAxisDraw().setAxisLogFormat(); return *this; }
+		else      { GetYCoordConverter().SetConvStd(); GetYGridAxisDraw().resetAxisTextFormat(); return *this; }
+	}
+	ScatterCtrl& LogY2(const bool& logy2=true){
+		if (logy2) { y2CoordConverter.SetConvLog(); y2GridAxisDraw.setAxisLogFormat(); return *this; }
+		else      { y2CoordConverter.SetConvStd(); y2GridAxisDraw.resetAxisTextFormat(); return *this; }
+	}
 
-	ScatterCtrl& LogX(const bool& logx=true)  { GetXCoordConverter().SetConvLog(); GetXGridAxisDraw().setAxisLogFormat(); return *this;}
-	ScatterCtrl& LogY(const bool& logy=true)  { GetYCoordConverter().SetConvLog(); GetYGridAxisDraw().setAxisLogFormat(); return *this;}
-	ScatterCtrl& LogY2(const bool& logy=true) { y2CoordConverter.SetConvLog() ;    y2GridAxisDraw.setAxisLogFormat();     return *this;}
 //	ScatterCtrl& LogX(const bool& logx=true)  { GetXCoordConverter().SetConvLog(); return *this;}
 //	ScatterCtrl& LogY(const bool& logy=true)  { GetYCoordConverter().SetConvLog(); return *this;}
 //	ScatterCtrl& LogY2(const bool& logy=true) { y2CoordConverter.SetConvLog() ;    return *this;}

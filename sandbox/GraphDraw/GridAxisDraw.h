@@ -168,7 +168,7 @@ namespace GraphDraw_ns
 		inline CLASSNAME& setMajorTickMark(TickMark* v)                 { _majorTickMark = v; return *this;  }
 		inline CLASSNAME& setMinorTickMark(TickMark* v)                 { _minorTickMark = v; return *this;  }
 		inline CLASSNAME& setAxisTextFormat(TypeFormatTextCbk v)        { formatTextCbk = v; return *this;  }
-		inline CLASSNAME& resetAxisTextFormat()                         { formatTextCbk = Null; return *this;  }
+		inline CLASSNAME& resetAxisTextFormat()                         { formatTextCbk.Clear(); return *this;  }
 		inline CLASSNAME& setAxisLogFormat(TypeFormatTextCbk cbk=TypeFormatTextCbk()) {
 			if ( cbk ) formatTextCbk = cbk;
 			else       formatTextCbk = THISBACK(FormatAsLog10);

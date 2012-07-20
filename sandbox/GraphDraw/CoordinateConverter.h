@@ -287,6 +287,8 @@ namespace GraphDraw_ns
 				_scaleType = AXIS_SCALE_STD;
 			}
 			void SetConvLog()   {
+				setGraphMinRangeLimit(0.00000000000001);
+				Update();
 				SetConvFct(_logFct,    _pow10Fct,  "LOG");
 				_scaleType = AXIS_SCALE_LOG;
 				updateGraphSize(_B::getGraphMin(), _B::getGraphMax());

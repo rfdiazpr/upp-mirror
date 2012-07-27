@@ -8,6 +8,10 @@ file
 	MergeSort.cpp,
 	QuickSort.cpp,
 	Heap.cpp,
+	Heap2.cpp,
+	Qsort.cpp,
+	Stack.cpp,
+	Sort3.cpp,
 	Algo.cpp optimize_speed;
 
 mainconfig

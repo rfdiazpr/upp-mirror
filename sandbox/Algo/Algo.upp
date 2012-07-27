@@ -2,6 +2,12 @@ uses
 	Core;
 
 file
+	Algo.h,
+	Tree.cpp,
+	Replace.cpp,
+	MergeSort.cpp,
+	QuickSort.cpp,
+	Heap.cpp,
 	Algo.cpp optimize_speed;
 
 mainconfig

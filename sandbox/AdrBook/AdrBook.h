@@ -9,6 +9,8 @@
 #include <wincon.h>
 #endif
 
+using namespace Upp;
+
 #define  MODEL <AdrBook/Model.sch>
 
 #define  SCHEMADIALECT <MySql/MySqlSchema.h>

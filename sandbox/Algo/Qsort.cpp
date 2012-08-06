@@ -11,7 +11,47 @@ void OrderIter2(I a, I b, Less less)
 }
 
 template <class I, class Less>
-void Isort(I l, I h, Less less)
+void ForwardSort(I begin, I end, const Less& less)
+{
+	if(begin == end)
+		return;
+	I last = end;
+	--last;
+	while(!(begin == last)) {
+		I best = last;
+		I next = last;
+		I ptr = last;
+		for(;;) {
+			if(less(*best, *--ptr)) { // best holds, scan for better candidate
+				do
+					if(ptr == begin) { // best is least
+						IterSwap(begin, best);
+						++begin;
+						goto NEXT_ITEM;
+					}
+				while(less(*best, *--ptr));
+				if(ptr == begin) { // begin is least, best is 2nd least
+					IterSwap(++begin, best);
+					++begin;
+					break;
+				}
+				next = ptr; // mark position after new best as the new end of sorted array
+				++next;     // it will hold only if all subseqent iterations define new best (descending order)
+			}
+			else
+			if(ptr == begin) { // begin is least
+				begin = next; // everything is sorted up to next
+				break;
+			}
+			best = ptr;
+		}
+	NEXT_ITEM:
+		;
+	}
+}
+
+template <class I, class Less>
+void Isort0(I l, I h, Less less)
 {
 	for(;;) {
 		int count = h - l;

@@ -78,8 +78,8 @@ SKYLARK(AjaxCreate, "ajax/create:POST")
 	Persons(http);
 	http.UxRender("persons", "AdrBook/Persons")
 	    .UxRender("pagination", "AdrBook/pagination")
-	    .UxSetValue("firstname", Null)
-	    .UxSetValue("lastname", Null)
+	    .UxSet("firstname", Null)
+	    .UxSet("lastname", Null)
 	;
 }
 

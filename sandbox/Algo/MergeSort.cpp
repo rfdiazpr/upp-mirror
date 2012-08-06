@@ -26,11 +26,11 @@ C MergeSort1(const C& src, int l, int h)
 	return result;
 }
 
-template <class T>
+template <class T, class I>
 void MergeSort2(I array, int count) {
 	int stride = 1;
 	while(stride < count) {
-		Buffer<int> result(min(2 * stride, count));
+		Buffer<T> result(min(2 * stride, count));
 		for(int pos = 0; pos < count; pos += 2 * stride) {
 			I a = array + pos;
 			I ae = min(a + stride, array + count);

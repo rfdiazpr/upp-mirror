@@ -1,0 +1,11 @@
+uses
+	Core;
+
+file
+	CoChain.h,
+	CoChain.cpp,
+	main.cpp;
+
+mainconfig
+	"" = "SSE2 MT";
+

@@ -1,0 +1,29 @@
+#include "Skylark.h"
+
+namespace Upp {
+
+SKYLARK(ServeStaticPage, "static/**")
+{
+	String file;
+	for(int i = 0; i < http.GetParamCount(); i++) {
+		if(i)
+			file << '/';
+		file << http[i];
+	}
+	String path = GetFileOnPath(file, SkylarkApp::Config().path, false);
+	if(path.GetCount()) {
+		String ext = ToLower(GetFileExt(file));
+		String type = "text";
+		if(ext == ".css")
+			type = "text/css";
+		else
+		if(ext == ".js")
+			type = "text/javascript";
+		else
+		if(ext == ".png" || ext == ".jpg" || ext == ".gif")
+			type = "image/" + ext.Mid(1);
+		http.Content(type, LoadFile(path));
+	}
+}
+
+};

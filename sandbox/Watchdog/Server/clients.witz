@@ -1,0 +1,21 @@
+#include base
+#define TITLE Clients
+#define BODY
+<table border="1">
+<tr>
+ <th>Name</th>
+ <th>Description</th>
+ <th>Followed path</th>
+ <th>Last contact</th>
+ <th>Last work</th>
+</tr>
+$for(i in CLIENT)
+    <tr>
+      <th><a href=$Client(i.ID)>$i.NAME</a></th>
+      <td>$raw(i.DESCR)</td>
+      <td>$i.SRC</td>
+      <td>$i.LAST_ACTIVITY</td>
+      <td>$i.LAST_WORK</td>
+    </tr>    
+$/
+</table>

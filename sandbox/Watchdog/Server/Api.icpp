@@ -1,0 +1,136 @@
+#include "Server.h"
+
+namespace Upp{ namespace Ini {
+	INI_STRING(output_dir,GetExeFilePath()+"/output","Directory where the output logs are stored");
+}}
+
+SKYLARK(Auth, "api/auth/*")
+{
+	String salt("1234");
+	for(int i = 0; i < 4; i++){
+		salt.Set(i, Random() % 25 + 97); //byte between 97 and 122
+	}
+	Sql sql;
+	sql * Update(CLIENT)(SALT,salt).Where(ID==http.Int(0));
+	http("SALT", salt).RenderResult("Watchdog/Server/auth");
+}
+
+SKYLARK(GetWork, "api/getwork:POST")
+{
+	int cid = http.Int("client_id");
+	Sql sql;
+	sql * Select(SALT, PASSWORD, SRC)
+	      .From(CLIENT).Where(ID == cid);
+	ValueMap vm;
+	sql.Fetch(vm);
+	if (http["passphrase"]!=MD5String(AsString(vm["SALT"])+AsString(vm["PASSWORD"]))) {
+		http << "Auth FAIL";
+		http.Response(403,"Auth FAIL");
+		return;
+	}
+	int max_age;
+	if(IsNull(http["max_age"])){
+		max_age = 365;
+	} else {
+		max_age = http.Int("max_age");
+	}
+	String path = vm["SRC"];
+	sql * Select(REVISION)
+	       .From(WORK).LeftJoin(RESULT).On(REVISION == REV && CLIENT_ID == cid)
+	       .Where((IsNull(STATUS) || STATUS == WD_READY) 
+	              && Like(PATH,path+"%") 
+	              && DT >= (GetSysDate()-max_age))
+	       .OrderBy(REVISION);
+	while(sql.Fetch())
+		http << IntStr(sql[0]) << ",";
+	sql * Update(CLIENT)(LAST_ACTIVITY,GetSysTime())(SALT,"").Where(ID == cid);
+}
+
+SKYLARK(AcceptWork, "api/acceptwork:POST")
+{
+	Sql sql;
+	sql * Select(SALT, PASSWORD)
+	      .From(CLIENT).Where(ID == http.Int("client_id"));
+	ValueMap vm;
+	sql.Fetch(vm);
+	if (http["passphrase"]!=MD5String(vm["SALT"].ToString()+vm["PASSWORD"].ToString())) {
+		http << "Auth FAIL";
+		http.Response(403,"Auth FAIL");
+		return;
+	}
+	Time start;
+	if(IsNull(http["start"])){
+		start = GetSysTime();
+	} else {
+		start.Set(ScanInt64(AsString(http["start"])));
+	}
+	sql * Update(CLIENT)(LAST_WORK,GetSysTime())(LAST_ACTIVITY,GetSysTime())(SALT,"")
+	       .Where(ID==http.Int("client_id"));
+	SqlStatement insert = 
+	      Insert(RESULT)(REV,http.Int("revision"))
+	                    (CLIENT_ID,http.Int("client_id"))
+	                    (START,start)
+	                    (STATUS,WD_INPROGRESS);
+	sql * SqlStatement(insert.Get()+" on duplicate key update "
+	         "STATUS=values(STATUS),"
+	         "START=values(START),"
+	         "FINISHED=NULL,"
+	         "DURATION=NULL");
+	http << "Accepted";
+}
+
+SKYLARK(SubmitWork, "api/submitwork:POST")
+{
+	Sql sql;
+	sql * Select(SALT, PASSWORD)
+	      .From(CLIENT).Where(ID == http.Int("client_id"));
+	ValueMap vm;
+	sql.Fetch(vm);
+	if (http["passphrase"]!=MD5String(vm["SALT"].ToString()+vm["PASSWORD"].ToString())) {
+		http << "Auth FAIL";
+		http.Response(403,"Auth FAIL");
+		return;
+	}
+	Time start;
+	if(IsNull(http["start"])){
+		start.Set(GetSysTime().Get()-http.Int("time"));
+	} else {
+		start.Set(ScanInt64(AsString(http["start"])));
+	}
+	Time end;
+	if(IsNull(http["end"])){
+		end = GetSysTime();
+	} else {
+		end.Set(ScanInt64(AsString(http["end"])));
+	}
+	String output = Format("%s/%d/%d.log",(String)Ini::output_dir,http.Int("revision"),http.Int("client_id"));
+	RealizePath(output);
+	SaveFile(output, http["output"]);
+	sql * Update(CLIENT)(LAST_WORK, GetSysTime())(LAST_ACTIVITY,GetSysTime())(SALT, "")
+	       .Where(ID==http.Int("client_id"));
+	SqlStatement insert = 
+	      Insert(RESULT)(REV, http.Int("revision"))
+	                    (CLIENT_ID, http.Int("client_id"))
+	                    (STATUS, http.Int("result"))
+	                    (DURATION, http.Int("time"))
+	                    (START, start)
+	                    (FINISHED, end);
+	sql * SqlStatement(insert.Get()+" on duplicate key update "
+	         "STATUS=values(STATUS),"
+	         "DURATION=values(DURATION),"
+	         "START=if(START is NULL, values(START), START),"
+	         "FINISHED=values(FINISHED)");
+	http << "Submitted";
+}
+
+SKYLARK(Update, "api/update") {
+	if(!CheckLocal(http)) return;
+	UpdateLogs();
+	http << "OK";
+}
+
+SKYLARK(Clean, "api/clean") {
+	if(!CheckLocal(http)) return;
+	CleanResults();
+	http << "OK";
+}

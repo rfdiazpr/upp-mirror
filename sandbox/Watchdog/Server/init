@@ -1,0 +1,12 @@
+#ifndef _Watchdog_Server_icpp_init_stub
+#define _Watchdog_Server_icpp_init_stub
+#include "Watchdog/init"
+#include "Skylark/init"
+#include "MySql/init"
+#define BLITZ_INDEX__ F185875d3ca97de7013153a719c932471
+#include "Web.icpp"
+#undef BLITZ_INDEX__
+#define BLITZ_INDEX__ Fef6719472bea98b28ffcdd94ebd1114e
+#include "Api.icpp"
+#undef BLITZ_INDEX__
+#endif

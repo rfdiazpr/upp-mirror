@@ -1,0 +1,237 @@
+#include "Server.h"
+
+SKYLARK(HomePage, "") {
+	Sql sql;
+	sql * Select(STATUS, SqlFunc("count",SqlSet("*")).As("CNT"))
+	      .From(RESULT)
+	      .Where(START > (GetSysTime()-86400))
+	      .GroupBy(STATUS);
+	ValueArray dstat;
+	ValueMap vm;
+	while(sql.Fetch(vm)) {
+		dstat.Set(int(vm["STATUS"]),vm["CNT"]);
+	}
+	sql * Select(SqlFunc("count",SqlSet("*")).As("CNT"))
+	      .From(CLIENT)
+	      .Where(LAST_WORK > (GetSysTime()-86400));
+	ValueMap misc;
+	if(sql.Fetch(vm))
+		misc.Add("DACTIVE" ,vm["CNT"]);
+	sql * Select(STATUS, SqlFunc("count",SqlSet("*")).As("CNT"))
+	      .From(RESULT)
+	      .Where(START > (GetSysDate()-30))
+	      .GroupBy(STATUS);
+	ValueArray mstat;
+	while(sql.Fetch(vm)) {
+		mstat.Set(int(vm["STATUS"]),vm["CNT"]);
+	}
+	sql * Select(SqlFunc("count",SqlSet("*")).As("CNT"))
+	      .From(CLIENT)
+	      .Where(LAST_WORK > (GetSysDate()-30));
+	if(sql.Fetch(vm))
+		misc.Add("MACTIVE" ,vm["CNT"]);
+	misc.Add("LAST", lastrev());
+	http("MSTAT", mstat)("DSTAT", dstat)("MISC", misc)
+	    .RenderResult("Watchdog/Server/index");
+}
+
+SKYLARK(Clients, "clients") {
+	Sql sql;
+	sql * Select(ID, NAME, LAST_ACTIVITY, LAST_WORK, DESCR, SRC)
+	      .From(CLIENT).OrderBy(NAME);
+	ValueArray client;
+	ValueMap vm;
+	while(sql.Fetch(vm))
+		client.Add(vm);
+	http("CLIENT", client)
+	    .RenderResult("Watchdog/Server/clients");
+}
+
+SKYLARK(Client, "client/*") {
+	int cid = http.Int(0);
+	VectorMap<String, int> pg = Paging(http);
+	Sql sql;
+	sql * Select(ID, NAME, LAST_ACTIVITY, LAST_WORK, DESCR, SRC)
+	      .From(CLIENT).Where(ID == cid);
+	ValueMap client;
+	if(!sql.Fetch(client)){
+		http << "unknown client";
+		return;
+	}
+	sql * Select(REVISION, START, FINISHED, DURATION, STATUS, SqlVal(Like(PATH,AsString(client["SRC"])+"%")," = ",SqlVal(1),SqlS::LOW).As("FITS"))
+	       .From(WORK).LeftJoin(RESULT).On(REVISION == REV && CLIENT_ID == cid)
+	       .Where(Between(REVISION,pg.Get("min"),pg.Get("max")))
+	       .OrderBy(Descending(REVISION));
+	ValueArray results;
+	ValueMap vm;
+	while(sql.Fetch(vm)){
+		if((bool)vm["FITS"]){
+			vm.Add("STATUSSTR", IsNull(vm["STATUS"])?"Ready":status(vm["STATUS"]));
+		} else {
+			vm.Add("STATUSSTR", IsNull(vm["STATUS"])?"Not interested":status(vm["STATUS"]));
+		}
+		results.Add(vm);
+	}
+	http("CLIENT", client)("RESULTS",results)
+	    .RenderResult("Watchdog/Server/client");
+}
+
+SKYLARK(Commits, "commits") {
+	VectorMap<String,int> pg = Paging(http);
+	Sql sql;
+	sql * Select(REVISION, DT, AUTHOR, MSG, PATH)
+	      .From(WORK)
+	      .Where(Between(REVISION,pg.Get("min"),pg.Get("max")))
+	      .OrderBy(Descending(REVISION));
+	ValueArray commits;
+	ValueMap vm;
+	while(sql.Fetch(vm))
+		commits.Add(vm);
+	sql * Select(REV, STATUS, SqlFunc("count",SqlSet("*")).As("CNT"))
+	      .From(RESULT)
+	      .Where(Between(REV,pg.Get("min"),pg.Get("max")))
+	      .GroupBy(REV,STATUS)
+	      .OrderBy(Descending(REV),STATUS);
+	int i=0;
+	while(sql.Fetch(vm)) {
+		while(i<commits.GetCount()&&commits[i]["REVISION"]!=vm["REV"]) {
+			i++;
+		}
+		if(i==commits.GetCount()) break;
+		ValueMap tmp(commits[i]);
+		ValueMap s;
+		s.Set(vm["STATUS"],vm["CNT"]);
+		tmp.Add("STATUS",s);
+		commits.Set(i,tmp);
+	}
+	http("COMMITS", commits)
+	    .RenderResult("Watchdog/Server/commits");
+}
+
+SKYLARK(Commit, "commit/*") {
+	int rev = http.Int(0);
+	VectorMap<String,int> pg = Paging(http);
+	Sql sql;
+	sql * Select(REVISION, DT, AUTHOR, MSG, PATH)
+	      .From(WORK).Where(REVISION == rev);
+	ValueMap commit;
+	if(!sql.Fetch(commit)){
+		http << "unknown commit";
+		return;
+	}
+	sql * Select(CLIENT_ID, NAME, START, FINISHED, DURATION, STATUS)
+	      .From(RESULT).InnerJoin(CLIENT).On(ID == CLIENT_ID)
+	      .Where(REV == rev && STATUS != WD_READY);
+	ValueArray results;
+	ValueMap vm;
+	while(sql.Fetch(vm)){
+		vm.Add("STATUSSTR", status(vm["STATUS"]));
+		results.Add(vm);
+	}
+	http("COMMIT", commit)("RESULTS", results)
+	    .RenderResult("Watchdog/Server/commit");
+}
+
+SKYLARK(Results, "results") {
+	VectorMap<String, int> pg = Paging(http);
+	Sql sql;
+	sql * Select(REVISION, CLIENT_ID, NAME, STATUS)
+	      .From(RESULT)
+	      .RightJoin(WORK).On(REV == REVISION)
+	      .LeftJoin(CLIENT).On(ID == CLIENT_ID)
+	      .Where(Between(REVISION,pg.Get("min"),pg.Get("max")))
+	      .OrderBy(Descending(REVISION),CLIENT_ID);
+	VectorMap<int,ValueMap> results;
+	ValueMap clients;
+	Index<int> commits;
+	ValueMap vm;
+	while(sql.Fetch(vm)){
+		if(!AsString(vm["STATUS"]).IsEmpty()) {
+			ValueArray va;
+			va.Add(status(vm["STATUS"]));
+			va.Add(vm["STATUS"]);
+			results.GetAdd(vm["REVISION"]).Add(vm["CLIENT_ID"], va);
+		}
+		commits.FindAdd(vm["REVISION"]);
+		clients.Set(vm["CLIENT_ID"], vm["NAME"]);
+	}
+	ValueArray commits_;
+	for(int i = 0; i < commits.GetCount(); i++){
+		commits_.Add(commits[i]);
+	}
+	ValueMap results_;
+	for(int i = 0; i < results.GetCount(); i++){
+		results_.Add(results.GetKey(i), results[i]);
+	}
+	http("RESULTS", results_)("CLIENTS", clients)("COMMITS", commits_)
+	    .RenderResult("Watchdog/Server/results");
+}
+
+SKYLARK(Result, "result/*/*") {
+	int rev = http.Int(0);
+	int cid = http.Int(1);
+	Sql sql;
+	sql * Select(REVISION, DT, AUTHOR, MSG, PATH,
+	             ID, NAME, DESCR, SRC,
+	             START, FINISHED, DURATION, STATUS)
+	      .From(RESULT)
+	      .InnerJoin(WORK).On(REVISION == REV)
+	      .InnerJoin(CLIENT).On(ID == CLIENT_ID)
+	      .Where(CLIENT_ID == cid && REV == rev);
+	ValueMap result;
+	if(!sql.Fetch(result)){
+		http << "data not available";
+		return;
+	}
+	result.Set("STATUSN", result["STATUS"]);
+	result.Set("STATUS", status(result["STATUS"]));
+	String output = Format("%s/%d/%d.log",(String)Ini::output_dir,rev,cid);
+	http("RESULT", result)("OUTPUT", LoadFile(output))
+	    .RenderResult("Watchdog/Server/result");
+}
+
+SKYLARK(Output, "output/*/*"){
+	int rev = http.Int(0);
+	int cid = http.Int(1);
+	String output = Format("%s/%d/%d.log",(String)Ini::output_dir,rev,cid);
+	if(FileExists(output)){
+		http.ContentType("text/plain");
+		http << LoadFile(output);
+	} else {
+		http.Response(404,"File not found");
+	}
+}
+
+SKYLARK(Static, "static/*") {
+	String file = GetFileOnPath("Watchdog/Server/static/"+http[0],SkylarkApp::Config().path);
+	String tag = IntStr64(GetFileTime(file).ft);
+	if(tag == "0") {
+		http.Response(404, "Not found");
+		return;
+	}
+	if(file.EndsWith(".css"))
+		http.ContentType("text/css");
+	else if(file.EndsWith(".js"))
+		http.ContentType("text/javascript");
+	else if(file.EndsWith(".png"))
+		http.ContentType("image/png"); 
+	else {
+		http.Response(403, "Not authorized");
+		return;
+	}
+
+	http.SetHeader("Cache-Control", "max-age=2592000");
+	http.SetHeader("ETag", tag);
+	if(http.GetHeader("if-none-match") != tag)
+		http << LoadFile(file);
+	else
+		http.Response(304, "Not Modified");
+}
+
+SKYLARK(Favicon, "favicon.ico") {
+	http.Redirect(Static, "favicon.png");
+}
+ 
+SKYLARK(CatchAll, "**") {
+	http.Redirect(HomePage);
+}

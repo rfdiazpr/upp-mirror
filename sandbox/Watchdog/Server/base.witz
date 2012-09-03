@@ -1,0 +1,21 @@
+<html>
+<head>
+<title>#TITLE</title>
+<link rel="stylesheet" type="text/css" href="/static/style.css"/>
+<link rel="icon" type="image/png" href="/static/favicon.png"/>
+<script type="text/javascript" src="/static/watchdog.js"></script>
+</head>
+<body>
+<h1><img src="/static/favicon.png" height="16" width="16"> #TITLE</h1>
+
+<div class="menu">
+<a href=$HomePage>Homepage</a><br>
+<a href=$Results>Results</a><br>
+<a href=$Clients>Clients</a><br>
+<a href=$Commits>Commits</a><br>
+</div>
+<div id="content">
+#BODY
+</div>
+</body>
+</html>

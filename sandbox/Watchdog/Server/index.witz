@@ -1,0 +1,28 @@
+#include base
+#define TITLE Watchdog
+#define BODY
+<div class="ldiv">
+<h3>Now</h3>
+<table>
+<tr><td>Last commit:</td><td>$MISC.LAST</td></tr>
+<tr><td>Currently building:</td><td>$if(DSTAT[1]!="") $DSTAT[1] $else 0 $endif</td></tr>
+</table>
+</div>
+<div class="ldiv">
+<h3>Last 24 hours<h3>
+<table>
+<tr><td>Succesful builds:</td><td>$if(DSTAT[4]!="") $DSTAT[4] $else 0 $endif</td><tr>
+<tr><td>Failed builds:</td><td>$if(DSTAT[2]!="") $DSTAT[2] $else 0 $endif</td><tr>
+<tr><td>Errors:</td><td>$if(DSTAT[3]!="") $DSTAT[3] $else 0 $endif</td><tr>
+<tr><td>Active clients:</td><td>$MISC.DACTIVE</td><tr>
+</table>
+</div>
+<div class="ldiv">
+<h3>Last 30 days<h3>
+<table>
+<tr><td>Succesful builds:</td><td>$if(MSTAT[4]!="") $MSTAT[4] $else 0 $endif</td><tr>
+<tr><td>Failed builds:</td><td>$if(MSTAT[2]!="") $MSTAT[2] $else 0 $endif</td><tr>
+<tr><td>Errors:</td><td>$if(MSTAT[3]!="") $MSTAT[3] $else 0 $endif</td><tr>
+<tr><td>Active clients:</td><td>$MISC.MACTIVE</td><tr>
+</table>
+</div>

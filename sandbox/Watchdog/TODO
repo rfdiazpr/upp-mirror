@@ -1,0 +1,9 @@
+SERVER
+------
+Write deploy docs
+
+CLIENT
+------
+Client should send WD_ERROR on error
+Check why sometimes the submit from client fails
+Make the client more verbose

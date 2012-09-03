@@ -1,0 +1,33 @@
+uses
+	Watchdog,
+	Skylark,
+	MySql;
+
+file
+	Server.h,
+	Server.cpp,
+	Web.icpp,
+	Api.icpp,
+	Util.h,
+	Util.cpp,
+	table.sch,
+	Server.ini,
+	Templates readonly separator,
+	index.witz,
+	base.witz,
+	paging.witz,
+	auth.witz,
+	client.witz,
+	clients.witz,
+	commit.witz,
+	commits.witz,
+	result.witz,
+	results.witz,
+	Static readonly separator,
+	static/watchdog.js,
+	static/style.css,
+	static/favicon.png;
+
+mainconfig
+	"" = "MT SSE2";
+

@@ -33,7 +33,7 @@ bool WatchdogClient::GetWork(int max_age){
 	if(max_age >= 0)
 		req.Post("max_age", IntStr(max_age));
 	else if (Ini::max_age >= 0)
-		req.Post("max_age", IntStr(max_age));
+		req.Post("max_age", IntStr(Ini::max_age));
 	req.Header("Cookie",cookiename+"="+cookie);
 	String resp = req.ExecuteRedirect();
 	todo = Split(resp,",");

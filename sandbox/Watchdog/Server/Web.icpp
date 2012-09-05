@@ -79,30 +79,20 @@ SKYLARK(Client, "client/*") {
 SKYLARK(Commits, "commits") {
 	VectorMap<String,int> pg = Paging(http);
 	Sql sql;
-	sql * Select(REVISION, DT, AUTHOR, MSG, PATH)
-	      .From(WORK)
-	      .Where(Between(REVISION,pg.Get("min"),pg.Get("max")))
-	      .OrderBy(Descending(REVISION));
 	ValueArray commits;
 	ValueMap vm;
-	while(sql.Fetch(vm))
-		commits.Add(vm);
-	sql * Select(REV, STATUS, SqlFunc("count",SqlSet("*")).As("CNT"))
-	      .From(RESULT)
-	      .Where(Between(REV,pg.Get("min"),pg.Get("max")))
-	      .GroupBy(REV,STATUS)
-	      .OrderBy(Descending(REV),STATUS);
-	int i=0;
+	sql * Select(REVISION,AUTHOR,DT,PATH,MSG,
+	             SqlFunc("sum",SqlSet("if(STATUS=1,1,0)",SqlSet::HIGH)).As("CNT1"),
+	             SqlFunc("sum",SqlSet("if(STATUS=2,1,0)",SqlSet::HIGH)).As("CNT2"),
+	             SqlFunc("sum",SqlSet("if(STATUS=3,1,0)",SqlSet::HIGH)).As("CNT3"),
+	             SqlFunc("sum",SqlSet("if(STATUS=4,1,0)",SqlSet::HIGH)).As("CNT4"))
+	      .From(WORK)
+	      .LeftJoin(RESULT).On(REVISION==REV)
+	      .Where(Between(REVISION,pg.Get("min"),pg.Get("max")))
+	      .GroupBy(REVISION)
+	      .OrderBy(Descending(REVISION));
 	while(sql.Fetch(vm)) {
-		while(i<commits.GetCount()&&commits[i]["REVISION"]!=vm["REV"]) {
-			i++;
-		}
-		if(i==commits.GetCount()) break;
-		ValueMap tmp(commits[i]);
-		ValueMap s;
-		s.Set(vm["STATUS"],vm["CNT"]);
-		tmp.Add("STATUS",s);
-		commits.Set(i,tmp);
+		commits.Add(vm);
 	}
 	http("COMMITS", commits)
 	    .RenderResult("Watchdog/Server/commits");

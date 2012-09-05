@@ -79,7 +79,7 @@ CONSOLE_APP_MAIN{
 	SetDateFormat("%1:4d/%2:02d/%3:02d");
 	SetDateScan("ymd");
 	
-	String cfg = GetDataFile("Client.ini");
+	String cfg = GetDataFile(GetExeTitle()+".ini");
 	if(!FileExists(cfg)){
 		RLOG("Configuration file '" << cfg << "' not found");
 		Exit(5);

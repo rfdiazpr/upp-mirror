@@ -10,8 +10,8 @@ $for(i in PERSON)
 	  <td>$i.LASTNAME</td>
 	  <td>$i.EMAIL</td>
 	  <td>
-	  	<a href=$Edit(i.ID)><img src=$Iml("AdrBookImg:Edit")/>Edit</a>
-	  	<a href=$Delete(i.ID)><img src=$Iml("AdrBookImg:Delete")/>Delete</a>
+	  	<a href=$Edit(i.ID)>Edit</a>
+	  	<a href=$Delete(i.ID)>Delete</a>
 	  </td>
 	</tr>	
 $/

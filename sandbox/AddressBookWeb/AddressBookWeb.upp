@@ -3,8 +3,7 @@ description "Address book WEB application - (using Skylark)\377";
 uses
 	Core,
 	plugin/sqlite3,
-	Skylark,
-	Skylark\Iml;
+	Skylark;
 
 file
 	AddressBook.h,
@@ -12,7 +11,7 @@ file
 	Pages.icpp,
 	AdrBook.cpp,
 	Dialog.witz,
-	Persons.witz,
+	Persons1.witz,
 	Index.witz,
 	AdrBook.iml;
 

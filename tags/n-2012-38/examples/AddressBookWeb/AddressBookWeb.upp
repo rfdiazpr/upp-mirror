@@ -1,0 +1,18 @@
+description "Address book WEB application - (using Skylark)\377";
+
+uses
+	Core,
+	plugin/sqlite3,
+	Skylark;
+
+file
+	AddressBook.h,
+	Model.sch,
+	Pages.icpp,
+	Main.cpp,
+	Dialog.witz,
+	Index.witz;
+
+mainconfig
+	"" = "SSE2 MT";
+

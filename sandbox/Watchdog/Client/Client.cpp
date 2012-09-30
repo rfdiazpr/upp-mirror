@@ -8,71 +8,60 @@ namespace Upp { namespace Ini {
 	INI_STRING(session_cookie, "__watchdog_cookie__", "Skylark session cookie ID");
 }}
 
-bool WatchdogClient::Auth(){
-	HttpClient req;
-	req.URL(Ini::host+String("/auth/")+IntStr(Ini::client_id));
-	String resp = req.ExecuteRedirect();
-	if(req.status_code != 200){
-		RLOG("Authentication error (" << req.status_code << "): " << req.error << "\n" << resp);
+bool WatchdogClient::Auth(HttpRequest& req){
+	HttpRequest auth(Ini::host+String("/auth/")+IntStr(Ini::client_id));
+	auth.Execute();
+	if(!auth.IsSuccess()){
+		RLOG("Error during authentication");
+		RLOG((auth.IsError() ? auth.GetErrorDesc() : AsString(auth.GetStatusCode())+':'+auth.GetReasonPhrase()));
 		return false;
 	}
-	salt = resp.Left(4);
-	String headers = req.GetHeaders();
-	cookie = headers.Mid(headers.Find(cookiename)+cookiename.GetLength()+1,32);
-	identity = resp.Mid(resp.Find("value=")+7,32);
+	req.Header("WD-Nonce", auth.GetHeader("wd-nonce"));
+	req.Header("WD-Auth", MD5String(auth.GetHeader("wd-nonce")+MD5String(auth.GetHeader("wd-salt")+Ini::password)));
+	req.Header("Cookie", auth.GetHeader("set-cookie").Left(52));
+	req.Post("__post_identity__", auth.GetHeader("wd-id"));
+	req.Post("client_id", IntStr(Ini::client_id));
 	return true;
 }
 
 bool WatchdogClient::GetWork(int max_age){
-	if(!Auth()) return false;
-	HttpClient req;
-	req.URL(Ini::host+String("/getwork"));
-	req.Post("__post_identity__", identity);
-	req.Post("client_id", IntStr(Ini::client_id));
-	req.Post("passphrase", MD5String(salt+Ini::password));
+	HttpRequest req(Ini::host+String("/getwork"));
+	if(!Auth(req))
+		return false;
+	
 	if(max_age >= 0)
 		req.Post("max_age", IntStr(max_age));
 	else if (Ini::max_age >= 0)
 		req.Post("max_age", IntStr(Ini::max_age));
-	req.Header("Cookie",cookiename+"="+cookie);
-	String resp = req.ExecuteRedirect();
-	todo = Split(resp,",");
-	ClearAuth();
-	if(req.status_code != 200){
-		DUMP(req.error);
+	String resp = req.Execute();
+	if(!req.IsSuccess()){
+		RLOG("Error during get work phase");
+		RLOG((req.IsError() ? req.GetErrorDesc() : AsString(req.GetStatusCode())+':'+req.GetReasonPhrase()));
 		return false;
 	}
+	todo = Split(resp,",");
 	return true;
 }
 
 bool WatchdogClient::AcceptWork(int revision, Time start){
-	if(!Auth()) return false;
-	HttpClient req;
-	req.URL(Ini::host+String("/acceptwork"));
-	req.Post("__post_identity__", identity);
-	req.Post("client_id", IntStr(Ini::client_id));
-	req.Post("passphrase", MD5String(salt+Ini::password));
+	HttpRequest req(Ini::host+String("/acceptwork"));
+	if(!Auth(req)) return false;
 	req.Post("revision", IntStr(revision));
 	if(!IsNull(start)){
 		req.Post("start", IntStr64(start.Get()));
 	}
-	req.Header("Cookie",cookiename+"="+cookie);
-	req.ExecuteRedirect();
-	ClearAuth();
-	if(req.status_code != 200){
-		DUMP(req.error);
+	req.Execute();
+	if(!req.IsSuccess()){
+		RLOG("Error during accept work phase");
+		RLOG((req.IsError() ? req.GetErrorDesc() : AsString(req.GetStatusCode())+':'+req.GetReasonPhrase()));
 		return false;
 	}
 	return true;
 }
 
 bool WatchdogClient::SubmitWork(const int revision, const int result, const int time, const String& output, Time start, Time end){
-	if(!Auth()) return false;
-	HttpClient req;
-	req.URL(Ini::host+String("/submitwork"));
-	req.Post("__post_identity__", identity);
-	req.Post("client_id", IntStr(Ini::client_id));
-	req.Post("passphrase", MD5String(salt+Ini::password));
+	HttpRequest req(Ini::host+String("/submitwork"));
+	if(!Auth(req)) return false;
 	req.Post("result", IntStr(result));
 	req.Post("time", IntStr(time));
 	req.Post("revision", IntStr(revision));
@@ -83,18 +72,13 @@ bool WatchdogClient::SubmitWork(const int revision, const int result, const int 
 	if(!IsNull(end)){
 		req.Post("end", IntStr64(end.Get()));
 	}
-	req.Header("Cookie",cookiename+"="+cookie);
-	req.ExecuteRedirect();
-	ClearAuth();
-	if(req.status_code != 200){
-		DUMP(req.error);
+	req.Execute();
+	if(!req.IsSuccess()){
+		RLOG("Error during submit work phase");
+		RLOG((req.IsError() ? req.GetErrorDesc() : AsString(req.GetStatusCode())+':'+req.GetReasonPhrase()));
 		return false;
 	}
 	return true;
 }
 
-void WatchdogClient::ClearAuth() {
-	salt = cookie = identity = "";
-}
-
-WatchdogClient::WatchdogClient() : cookiename(Ini::session_cookie) {}
+WatchdogClient::WatchdogClient(){}

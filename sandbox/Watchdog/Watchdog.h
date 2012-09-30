@@ -1,7 +1,7 @@
 #ifndef _Watchdog_Client_h_
 #define _Watchdog_Client_h_
 
-#include <Web/Web.h>
+#include <Core/Core.h>
 using namespace Upp;
 
 enum {

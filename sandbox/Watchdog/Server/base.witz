@@ -1,12 +1,12 @@
 <html>
 <head>
 <title>#TITLE</title>
-<link rel="stylesheet" type="text/css" href="/static/style.css"/>
-<link rel="icon" type="image/png" href="/static/favicon.png"/>
-<script type="text/javascript" src="/static/watchdog.js"></script>
+<link rel="stylesheet" type="text/css" href="$CachedStatic("style.css")"/>
+<link rel="icon" type="image/png" href="$CachedStatic("favicon.png")"/>
+<script type="text/javascript" src="$CachedStatic("watchdog.js")"></script>
 </head>
 <body>
-<h1><img src="/static/favicon.png" height="16" width="16"> #TITLE</h1>
+<h1><img src="$CachedStatic("favicon.png")" height="16" width="16"> #TITLE</h1>
 
 <div class="menu">
 <a href=$HomePage>Homepage</a><br>

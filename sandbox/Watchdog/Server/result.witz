@@ -24,8 +24,8 @@
 <tr><td>Start time:</td><td>$RESULT.START</td></tr>
 $if(RESULT.STATUSN>1)
 <tr><td>End time:</td><td>$RESULT.FINISHED</td></tr>
-<tr><td>Duration:</td><td>$Duration(RESULT.DURATION)</td></tr>
 $endif
+<tr><td>Duration:</td><td>$Duration(RESULT.DURATION)</td></tr>
 </table>
 </div>
 $if(RESULT.STATUSN>1)

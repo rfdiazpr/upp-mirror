@@ -1,9 +1,9 @@
 SERVER
 ------
-Write deploy docs
+Write docs
 
 CLIENT
 ------
-Client should send WD_ERROR on error
-Check why sometimes the submit from client fails
+Client should send WD_ERROR on error (implement as bash trap in shell, exception handling in python)
 Make the client more verbose
+Publish the usage examples

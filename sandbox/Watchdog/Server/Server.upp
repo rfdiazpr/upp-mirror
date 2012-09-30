@@ -16,7 +16,6 @@ file
 	index.witz,
 	base.witz,
 	paging.witz,
-	auth.witz,
 	client.witz,
 	clients.witz,
 	commit.witz,

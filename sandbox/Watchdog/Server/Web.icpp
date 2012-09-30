@@ -70,6 +70,8 @@ SKYLARK(Client, "client/*") {
 		} else {
 			vm.Add("STATUSSTR", IsNull(vm["STATUS"])?"Not interested":status(vm["STATUS"]));
 		}
+		if(vm["STATUS"]==1)
+			vm.Set("DURATION",GetSysTime()-Time(vm["START"]));
 		results.Add(vm);
 	}
 	http("CLIENT", client)("RESULTS",results)
@@ -116,6 +118,8 @@ SKYLARK(Commit, "commit/*") {
 	ValueMap vm;
 	while(sql.Fetch(vm)){
 		vm.Add("STATUSSTR", status(vm["STATUS"]));
+		if(vm["STATUS"]==1)
+			vm.Set("DURATION",GetSysTime()-Time(vm["START"]));
 		results.Add(vm);
 	}
 	http("COMMIT", commit)("RESULTS", results)
@@ -130,7 +134,7 @@ SKYLARK(Results, "results") {
 	      .RightJoin(WORK).On(REV == REVISION)
 	      .LeftJoin(CLIENT).On(ID == CLIENT_ID)
 	      .Where(Between(REVISION,pg.Get("min"),pg.Get("max")))
-	      .OrderBy(Descending(REVISION),CLIENT_ID);
+	      .OrderBy(CLIENT_ID);
 	VectorMap<int,ValueMap> results;
 	ValueMap clients;
 	Index<int> commits;
@@ -145,9 +149,10 @@ SKYLARK(Results, "results") {
 		commits.FindAdd(vm["REVISION"]);
 		clients.Set(vm["CLIENT_ID"], vm["NAME"]);
 	}
+	Vector<int> s = GetSortOrder(commits.GetKeys());
 	ValueArray commits_;
-	for(int i = 0; i < commits.GetCount(); i++){
-		commits_.Add(commits[i]);
+	for(int i = s.GetCount()-1; i >= 0; --i){
+		commits_.Add(commits[s[i]]);
 	}
 	ValueMap results_;
 	for(int i = 0; i < results.GetCount(); i++){
@@ -173,6 +178,8 @@ SKYLARK(Result, "result/*/*") {
 		http << "data not available";
 		return;
 	}
+	if(result["STATUS"]==1)
+		result.Set("DURATION",GetSysTime()-Time(result["START"]));
 	result.Set("STATUSN", result["STATUS"]);
 	result.Set("STATUS", status(result["STATUS"]));
 	String output = Format("%s/%d/%d.log",(String)Ini::output_dir,rev,cid);
@@ -191,7 +198,7 @@ SKYLARK(Output, "output/*/*"){
 		http.Response(404,"File not found");
 	}
 }
-
+/*
 SKYLARK(Static, "static/*") {
 	String file = GetFileOnPath("Watchdog/Server/static/"+http[0],SkylarkApp::Config().path);
 	String tag = IntStr64(GetFileTime(file).ft);
@@ -217,9 +224,9 @@ SKYLARK(Static, "static/*") {
 	else
 		http.Response(304, "Not Modified");
 }
-
+*/
 SKYLARK(Favicon, "favicon.ico") {
-	http.Redirect(Static, "favicon.png");
+	http.Redirect(ServeStaticPage, "favicon.png");
 }
  
 SKYLARK(CatchAll, "**") {

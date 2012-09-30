@@ -4,71 +4,105 @@ namespace Upp{ namespace Ini {
 	INI_STRING(output_dir,GetExeFilePath()+"/output","Directory where the output logs are stored");
 }}
 
+//SKYLARK(Auth, "api/auth/*")
+//{
+//	String salt("1234");
+//	for(int i = 0; i < 4; i++){
+//		salt.Set(i, Random() % 25 + 97); //byte between 97 and 122
+//	}
+//	Sql sql;
+//	sql * Update(CLIENT)(SALT,salt).Where(ID==http.Int(0));
+//	http("SALT", salt).RenderResult("Watchdog/Server/auth");
+//}
+
 SKYLARK(Auth, "api/auth/*")
 {
-	String salt("1234");
-	for(int i = 0; i < 4; i++){
-		salt.Set(i, Random() % 25 + 97); //byte between 97 and 122
-	}
+	String nonce = AsString(Uuid::Create());
+	
 	Sql sql;
-	sql * Update(CLIENT)(SALT,salt).Where(ID==http.Int(0));
-	http("SALT", salt).RenderResult("Watchdog/Server/auth");
+	sql * Select(SALT).From(CLIENT).Where(ID==http.Int(0));
+	String salt;
+	if(!sql.Fetch(salt))
+		http.Response(404,"Unknown client");
+	RDUMP(salt);
+	http.SetHeader("WD-Salt", salt);
+	
+	String id = http[".__identity__"];
+	if(id.IsEmpty()) {
+		id = AsString(Uuid::Create());
+		http.SessionSet("__identity__", id);
+	}
+	
+	sql * Insert(AUTH)(NONCE, nonce)(VALID, GetSysTime());
+	http.SetHeader("WD-Id",id);
+	http.SetHeader("WD-Nonce",nonce);
+	http.Response(200, "OK");
+}
+
+bool CheckAuth(Http& http, Sql& sql){
+	String nonce = http.GetHeader("wd-nonce");
+	sql * Delete(AUTH).Where(NONCE==nonce);
+	if(sql.GetRowsProcessed() == 0){
+		http << "Auth FAIL";
+		http.Response(403,"Auth FAIL (nonce)");
+		return false;
+	}
+	sql * Select(PASSWORD)
+	      .From(CLIENT).Where(ID == http.Int("client_id"));
+	String pwd;
+	sql.Fetch(pwd);
+	if (http.GetHeader("wd-auth")!=MD5String(nonce+pwd)) {
+		http << "Auth FAIL";
+		http.Response(403,"Auth FAIL (auth)");
+		return false;
+	}
+	return true;
 }
 
 SKYLARK(GetWork, "api/getwork:POST")
 {
-	int cid = http.Int("client_id");
 	Sql sql;
-	sql * Select(SALT, PASSWORD, SRC)
-	      .From(CLIENT).Where(ID == cid);
-	ValueMap vm;
-	sql.Fetch(vm);
-	if (http["passphrase"]!=MD5String(AsString(vm["SALT"])+AsString(vm["PASSWORD"]))) {
-		http << "Auth FAIL";
-		http.Response(403,"Auth FAIL");
+	if(!CheckAuth(http, sql))
 		return;
-	}
+
+	int cid = http.Int("client_id");
 	int max_age;
 	if(IsNull(http["max_age"])){
 		max_age = 365;
 	} else {
 		max_age = http.Int("max_age");
 	}
-	String path = vm["SRC"];
+	sql * Update(CLIENT)(LAST_ACTIVITY,GetSysTime()).Where(ID == cid);
 	sql * Select(REVISION)
-	       .From(WORK).LeftJoin(RESULT).On(REVISION == REV && CLIENT_ID == cid)
+	       .From(WORK)
+	       .LeftJoin(RESULT).On(REVISION == REV && CLIENT_ID == cid)
+	       .InnerJoin(CLIENT).On(ID == cid)
 	       .Where((IsNull(STATUS) || STATUS == WD_READY) 
-	              && Like(PATH,path+"%") 
+	              && Like(PATH,SqlFunc("concat",SqlSet(SRC,"%"))) 
 	              && DT >= (GetSysDate()-max_age))
 	       .OrderBy(REVISION);
 	while(sql.Fetch())
 		http << IntStr(sql[0]) << ",";
-	sql * Update(CLIENT)(LAST_ACTIVITY,GetSysTime())(SALT,"").Where(ID == cid);
 }
 
 SKYLARK(AcceptWork, "api/acceptwork:POST")
 {
 	Sql sql;
-	sql * Select(SALT, PASSWORD)
-	      .From(CLIENT).Where(ID == http.Int("client_id"));
-	ValueMap vm;
-	sql.Fetch(vm);
-	if (http["passphrase"]!=MD5String(vm["SALT"].ToString()+vm["PASSWORD"].ToString())) {
-		http << "Auth FAIL";
-		http.Response(403,"Auth FAIL");
+	if(!CheckAuth(http, sql))
 		return;
-	}
+
+	int cid = http.Int("client_id");
 	Time start;
 	if(IsNull(http["start"])){
 		start = GetSysTime();
 	} else {
 		start.Set(ScanInt64(AsString(http["start"])));
 	}
-	sql * Update(CLIENT)(LAST_WORK,GetSysTime())(LAST_ACTIVITY,GetSysTime())(SALT,"")
-	       .Where(ID==http.Int("client_id"));
+	sql * Update(CLIENT)(LAST_WORK,GetSysTime())(LAST_ACTIVITY,GetSysTime())
+	       .Where(ID==cid);
 	SqlStatement insert = 
 	      Insert(RESULT)(REV,http.Int("revision"))
-	                    (CLIENT_ID,http.Int("client_id"))
+	                    (CLIENT_ID,cid)
 	                    (START,start)
 	                    (STATUS,WD_INPROGRESS);
 	sql * SqlStatement(insert.Get()+" on duplicate key update "
@@ -76,21 +110,16 @@ SKYLARK(AcceptWork, "api/acceptwork:POST")
 	         "START=values(START),"
 	         "FINISHED=NULL,"
 	         "DURATION=NULL");
-	http << "Accepted";
+	http.Response(200, "OK");
 }
 
 SKYLARK(SubmitWork, "api/submitwork:POST")
 {
 	Sql sql;
-	sql * Select(SALT, PASSWORD)
-	      .From(CLIENT).Where(ID == http.Int("client_id"));
-	ValueMap vm;
-	sql.Fetch(vm);
-	if (http["passphrase"]!=MD5String(vm["SALT"].ToString()+vm["PASSWORD"].ToString())) {
-		http << "Auth FAIL";
-		http.Response(403,"Auth FAIL");
+	if(!CheckAuth(http, sql))
 		return;
-	}
+	
+	int cid = http.Int("client_id");
 	Time start;
 	if(IsNull(http["start"])){
 		start.Set(GetSysTime().Get()-http.Int("time"));
@@ -103,14 +132,14 @@ SKYLARK(SubmitWork, "api/submitwork:POST")
 	} else {
 		end.Set(ScanInt64(AsString(http["end"])));
 	}
-	String output = Format("%s/%d/%d.log",(String)Ini::output_dir,http.Int("revision"),http.Int("client_id"));
+	String output = Format("%s/%d/%d.log",(String)Ini::output_dir,http.Int("revision"),cid);
 	RealizePath(output);
 	SaveFile(output, http["output"]);
-	sql * Update(CLIENT)(LAST_WORK, GetSysTime())(LAST_ACTIVITY,GetSysTime())(SALT, "")
-	       .Where(ID==http.Int("client_id"));
+	sql * Update(CLIENT)(LAST_WORK, GetSysTime())(LAST_ACTIVITY,GetSysTime())
+	       .Where(ID==cid);
 	SqlStatement insert = 
 	      Insert(RESULT)(REV, http.Int("revision"))
-	                    (CLIENT_ID, http.Int("client_id"))
+	                    (CLIENT_ID, cid)
 	                    (STATUS, http.Int("result"))
 	                    (DURATION, http.Int("time"))
 	                    (START, start)
@@ -120,7 +149,7 @@ SKYLARK(SubmitWork, "api/submitwork:POST")
 	         "DURATION=values(DURATION),"
 	         "START=if(START is NULL, values(START), START),"
 	         "FINISHED=values(FINISHED)");
-	http << "Submitted";
+	http.Response(200,"OK");
 }
 
 SKYLARK(Update, "api/update") {
@@ -132,5 +161,7 @@ SKYLARK(Update, "api/update") {
 SKYLARK(Clean, "api/clean") {
 	if(!CheckLocal(http)) return;
 	CleanResults();
+	Sql sql;
+	sql * Delete(AUTH).Where(VALID < GetSysTime()-600);
 	http << "OK";
 }

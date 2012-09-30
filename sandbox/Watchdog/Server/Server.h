@@ -14,6 +14,7 @@ using namespace Upp;
 
 struct Watchdog : SkylarkApp {
 	virtual void WorkThread();
+	virtual void SigUsr1();
 	Watchdog();
 };
 

@@ -43,6 +43,10 @@ void Watchdog::WorkThread()
 	RunThread();
 }
 
+void Watchdog::SigUsr1(){
+	ReopenLog();
+}
+
 void InitDB()
 {
 	MySqlSession sqlsession;
@@ -52,14 +56,14 @@ void InitDB()
 	SqlPerformScript(sch.Upgrade());
 	SqlPerformScript(sch.Attributes());
 	Sql sql;
-	sql * Insert(CLIENT)(NAME, "test")
+	sql * Insert(CLIENT)(NAME, "Basic apps")
 	                    (PASSWORD, "aaa")
 	                    (DESCR, "Testing client")
 	                    (SRC, "/trunk/uppsrc");
-	sql * Insert(CLIENT)(NAME, "test2")
+	sql * Insert(CLIENT)(NAME, "Launchpad")
 	                    (PASSWORD, "bbb")
 	                    (DESCR, "Another testing client")
-	                    (SRC, "/trunk/uppsrc");
+	                    (SRC, "/trunk/");
 }
 
 Value Duration(const Vector<Value>& arg, const Renderer *)
@@ -86,10 +90,13 @@ Watchdog::Watchdog() {
 #endif
 	MySqlSession sqlsession;
 	OpenSQL(sqlsession);
-	SigUsr1 = callback(&ReopenLog);
 }
 
 #ifdef flagMAIN
+
+namespace Upp { namespace Ini {
+	extern IniString path;
+}}
 
 CONSOLE_APP_MAIN{
 	SetIniFile(GetDataFile("Server.ini"));
@@ -104,8 +111,11 @@ CONSOLE_APP_MAIN{
 #endif
 	           , (String)Ini::log_file);
 	
-//	InitDB(); //only for development phase
-	
+	//InitDB(); //only for development phase
+#ifdef _DEBUG
+	DUMP(GetFileDirectory(__FILE__) + "static");
+	Ini::path = String(Ini::path) + ";" + GetFileDirectory(__FILE__) + "static";
+#endif
 	RLOG(" === STARTING WATCHDOG === ");
 	RLOG(GetIniInfoFormatted());
 	

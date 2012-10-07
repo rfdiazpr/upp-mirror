@@ -3,6 +3,7 @@
 <title>#TITLE</title>
 <link rel="stylesheet" type="text/css" href="$CachedStatic("style.css")"/>
 <link rel="icon" type="image/png" href="$CachedStatic("favicon.png")"/>
+<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss"/>
 <script type="text/javascript" src="$CachedStatic("watchdog.js")"></script>
 </head>
 <body>
@@ -13,6 +14,7 @@
 <a href=$Results>Results</a><br>
 <a href=$Clients>Clients</a><br>
 <a href=$Commits>Commits</a><br>
+<a href=$Feeds>Feeds</a><br>
 </div>
 <div id="content">
 #BODY

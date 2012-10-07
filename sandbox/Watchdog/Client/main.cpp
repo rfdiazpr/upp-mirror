@@ -6,7 +6,7 @@ void Usage(){
 	String appname = GetExeTitle();
 	Cerr() << "Usage:\n"
 	<< "\t" << appname << " --help\n"
-	<< "\t\t" << "Prints usage information (this tex)\n"
+	<< "\t\t" << "Prints usage information (this text)\n"
 	<< "\t" << appname << " --get [<max_age>]\n"
 	<< "\t\t" << "Returns a list of not yet built revisions, optionally\n"
 	<< "\t\t" << "limited to <max_age> days in the past.\n"
@@ -15,7 +15,7 @@ void Usage(){
 	<< "\t" << appname << " --submit <revision> <result> <duration> <output_file> [<start_time> [<end_time>]]\n"
 	<< "\t\t" << "Sends results to the server. Optional start and end times can be supplied as int64.\n"
 	<< "\t" << appname << " --command <command> [<max_age>]\n"
-	<< "\t\t" << "Gets and accepts work automaticaly, then performs <command>\n"
+	<< "\t\t" << "Gets and accepts work automatically, then performs <command>\n"
 	<< "\t\t" << "with '@revision' substituted by actual revision number\n"
 	<< "\t\t" << "and then submits the results to server. Optional parameter\n"
 	<< "\t\t" << "<max_age> can be used to restrict the execution to commits\n"
@@ -35,11 +35,13 @@ void Command(const Vector<String>& cmd){
 	
 	// select what to do
 	if(client.todo.GetCount()==0){
-		Cout() << "Nothing to do.\n";
+		if(Ini::log_level>0) 
+			Cout() << "Nothing to do.\n";
 		Exit(0);
 	}
 	int revision = StrInt(client.todo.Top());
-	Cout() << "Revision " << revision << " selected for build\n";
+	if(Ini::log_level > 0) 
+		Cout() << "Revision " << revision << " selected for build\n";
 	if(!client.AcceptWork(revision))
 		Exit(3);
 	
@@ -48,11 +50,15 @@ void Command(const Vector<String>& cmd){
 	command.Replace("@revision", IntStr(revision));
 	
 	// do work
-	Cout() << "Executing command '" << command << "'\n";
+	if(Ini::log_level > 0) 
+		Cout() << "Executing command '" << command << "'\n";
 	String output;
 	Time start = GetSysTime();
 	int result = Sys(command, output);
 	int duration = GetSysTime()-start;
+	
+	if(Ini::log_level > 0) 
+		Cout() << "Execution finished after " << duration << " with exit code '" << result << "'\n";
 	
 	if(result != 0)
 		result = WD_FAILED;
@@ -60,7 +66,6 @@ void Command(const Vector<String>& cmd){
 		result = WD_DONE;
 	
 	// send the results
-	Cout() << "Sending results (result='" << status(result) << "', duration=" << duration << ")\n";
 	if(!client.SubmitWork(revision, result, duration, output))
 		Exit(4);
 }
@@ -68,7 +73,7 @@ void Command(const Vector<String>& cmd){
 void CheckParamCount(const Vector<String>& cmd, int expected_min, int expected_max=-1){
 	if(expected_max < 0) expected_max = expected_min;
 	if(cmd.GetCount() < expected_min || cmd.GetCount() > expected_max) {
-		Cerr() << "ERROR: Wrong number of parameters for "<<cmd[0]<<"\n";
+		Cerr() << "ERROR: Wrong number of parameters for " << cmd[0] << "\n";
 		Usage();
 		Exit(1);
 	}
@@ -81,16 +86,16 @@ CONSOLE_APP_MAIN{
 	
 	String cfg = GetDataFile(GetExeTitle()+".ini");
 	if(!FileExists(cfg)){
-		RLOG("Configuration file '" << cfg << "' not found");
-		Exit(5);
+		Cerr() << "Configuration file '" << cfg << "' not found";
+		Exit(1);
 	}
 	SetIniFile(cfg);
-	LOG(GetIniInfoFormatted());
+	LOG_(Ini::log_level==2,GetIniInfoFormatted());
 	
 	const Vector<String>& cmd = CommandLine();
 	if(cmd.GetCount() < 1) {
 		Usage();
-		Exit(1);
+		Exit(2);
 	}
 	if(cmd[0] == "-h" || cmd[0] == "--help"){
 		Usage();
@@ -99,9 +104,10 @@ CONSOLE_APP_MAIN{
 		WatchdogClient client;
 		int max_age = cmd.GetCount()==2?StrInt(cmd[1]):-1;
 		if(!client.GetWork(max_age))
-			Exit(2);
+			Exit(3);
 		if(client.todo.IsEmpty()){
-			RLOG("Nothing to do");
+			if(Ini::log_level > 0) 
+				Cout() << "Nothing to do.\n";
 			Exit(0);
 		}
 		for(int i = 0; i < client.todo.GetCount(); i++){
@@ -112,7 +118,7 @@ CONSOLE_APP_MAIN{
 		int rev = StrInt(cmd[1]);
 		if (rev <= 0){
 			Cerr() << "ERROR: Wrong value of <revision>\n";
-			Exit(1);
+			Exit(4);
 		}
 		Time start;
 		if(cmd.GetCount()==3){

@@ -5,6 +5,7 @@ namespace Upp { namespace Ini {
 	INI_INT(client_id, 1, "Watchdog client ID");
 	INI_STRING(password, "", "Watchdog client password");
 	INI_INT(max_age, -1, "Only commits this many days old can be build (negative value means any age)");
+	INI_INT(log_level, 1, "Verbosity (0=errors only, 1=normal, 2=verbose)");
 	INI_STRING(session_cookie, "__watchdog_cookie__", "Skylark session cookie ID");
 }}
 
@@ -60,6 +61,8 @@ bool WatchdogClient::AcceptWork(int revision, Time start){
 }
 
 bool WatchdogClient::SubmitWork(const int revision, const int result, const int time, const String& output, Time start, Time end){
+	if(Ini::log_level > 0) 
+		Cout() << "Sending result '" << status(result) << "'\n";
 	HttpRequest req(Ini::host+String("/submitwork"));
 	if(!Auth(req)) return false;
 	req.Post("result", IntStr(result));

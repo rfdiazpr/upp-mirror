@@ -9,4 +9,7 @@
 #define BLITZ_INDEX__ Fef6719472bea98b28ffcdd94ebd1114e
 #include "Api.icpp"
 #undef BLITZ_INDEX__
+#define BLITZ_INDEX__ F6d5026f9e1918b1bcdc608aee456c9fa
+#include "Rss.icpp"
+#undef BLITZ_INDEX__
 #endif

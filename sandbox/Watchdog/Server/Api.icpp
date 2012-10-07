@@ -4,17 +4,6 @@ namespace Upp{ namespace Ini {
 	INI_STRING(output_dir,GetExeFilePath()+"/output","Directory where the output logs are stored");
 }}
 
-//SKYLARK(Auth, "api/auth/*")
-//{
-//	String salt("1234");
-//	for(int i = 0; i < 4; i++){
-//		salt.Set(i, Random() % 25 + 97); //byte between 97 and 122
-//	}
-//	Sql sql;
-//	sql * Update(CLIENT)(SALT,salt).Where(ID==http.Int(0));
-//	http("SALT", salt).RenderResult("Watchdog/Server/auth");
-//}
-
 SKYLARK(Auth, "api/auth/*")
 {
 	String nonce = AsString(Uuid::Create());
@@ -24,7 +13,6 @@ SKYLARK(Auth, "api/auth/*")
 	String salt;
 	if(!sql.Fetch(salt))
 		http.Response(404,"Unknown client");
-	RDUMP(salt);
 	http.SetHeader("WD-Salt", salt);
 	
 	String id = http[".__identity__"];

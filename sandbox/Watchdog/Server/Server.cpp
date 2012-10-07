@@ -99,7 +99,12 @@ namespace Upp { namespace Ini {
 }}
 
 CONSOLE_APP_MAIN{
-	SetIniFile(GetDataFile("Server.ini"));
+	const Vector<String>& cmd = CommandLine();
+	RDUMPC(cmd);
+	if(cmd.GetCount())
+		SetIniFile(cmd[0]);
+	else
+		SetIniFile(GetDataFile("Server.ini"));
 	
 	SetDateFormat("%1:4d/%2:02d/%3:02d");
 	

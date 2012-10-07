@@ -26,13 +26,32 @@ topic "Tutorial";
 [s0; &]
 [s0; Watchdog is a skylark based platform for testing and continuous 
 integration. It consist of two parts, the Server and reference 
-implementation of Client. However, anyone is free to create their 
-own clients, using the public [^topic`:`/`/Watchdog`/srcdoc`/API`$en`-us^ API].&]
+implementation of [^topic`:`/`/Watchdog`/srcdoc`/Client`$en`-us^ Client]. 
+However, anyone is free to create their own clients, using the 
+public [^topic`:`/`/Watchdog`/srcdoc`/API`$en`-us^ API].&]
 [s0; &]
-[s0; The Server monitors commits in SVN, and can distribute the work 
-among clients. The client can do pretty much anything, e.g. compile 
-a package, run unit tests, etc. After the client does it`'s job, 
-it calls back to the server, announcing the result. All the results, 
-commits and registered clients are browseable through the web 
-interface provided by the Server.&]
+[s0; The Server monitors activity in SVN, and can distribute the 
+work among clients. The client can do pretty much anything, e.g. 
+compile a package, run unit tests, etc. After the client does 
+it`'s job, it calls back to the server, announcing the result. 
+All the results, commits and registered clients are browsable 
+through the web interface provided by the Server.&]
+[s0; &]
+[s0; Everything from server behavior to SVN  address is fully configurable. 
+It should be possible to use this application for monitoring 
+of any project as long as it is available through SVN. With a 
+little bit of extra work, support for other version control systems 
+should be possible as well.&]
+[s0; &]
+[s0; Some notable features:&]
+[s0;l192;i150;O0; Distributed work, many different clients can work 
+in parallel&]
+[s0;l192;i150;O0; Simple, fast `& easy to use web interface&]
+[s0;l192;i150;O0; Public HTTP API, client can be anything&]
+[s0;l192;i150;O0; Configurable RSS feeds to keep interested users 
+up`-to`-date&]
+[s0;l192;i150;O0; Web interface can be skinned (by simply modifying 
+witz templates)&]
+[s0;l192;i150;O0; Can be used `'as is`' or embedded into existing 
+web pages&]
 [s0; ]]

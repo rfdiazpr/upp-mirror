@@ -1,5 +1,5 @@
-#ifndef _UNS_icpp_init_stub
-#define _UNS_icpp_init_stub
+#ifndef _uppcocoa_uppsrc_UNS_icpp_init_stub
+#define _uppcocoa_uppsrc_UNS_icpp_init_stub
 #include "Core/init"
 #include "RichText/init"
 #endif

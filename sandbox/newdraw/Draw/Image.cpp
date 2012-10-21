@@ -122,49 +122,6 @@ Size ImageBuffer::GetDPI()
 	return Size(dots.cx ? int(600.*size.cx/dots.cx) : 0, dots.cy ? int(600.*size.cy/dots.cy) : 0);
 }
 
-void  (Image::Data::*Image::Data::sSysInit)();
-void  (Image::Data::*Image::Data::sSysRelease)();
-int   (Image::Data::*Image::Data::sGetResCount)() const;
-void  (Image::Data::*Image::Data::sPaint)(SystemDraw& w, int x, int y, const Rect& src, Color c);
-
-void Image::Data::InitSystemImage(
-	void  (Image::Data::*fSysInit)(),
-	void  (Image::Data::*fSysRelease)(),
-	int   (Image::Data::*fGetResCount)() const,
-	void  (Image::Data::*fPaint)(SystemDraw& w, int x, int y, const Rect& src, Color c)
-)
-{
-	Image::Data::sSysInit = fSysInit;
-	Image::Data::sSysRelease = fSysRelease;
-	Image::Data::sGetResCount = fGetResCount;
-	Image::Data::sPaint = fPaint;
-}
-
-void Image::Data::SysInit()
-{
-	if(sSysInit)
-		(this->*sSysInit)();
-}
-
-void Image::Data::SysRelease()
-{
-	if(sSysRelease)
-		(this->*sSysRelease)();
-}
-
-int Image::Data::GetResCount() const
-{
-	if(sGetResCount)
-		return (this->*sGetResCount)();
-	return 0;
-}
-
-void Image::Data::Paint(SystemDraw& w, int x, int y, const Rect& src, Color c)
-{
-	if(sPaint)
-		(this->*sPaint)(w, x, y, src, c);
-}
-
 void Image::Set(ImageBuffer& b)
 {
 	if(b.GetWidth() == 0 || b.GetHeight() == 0)
@@ -267,12 +224,6 @@ int Image::GetKind() const
 	return data ? data->GetKind() : IMAGE_EMPTY;
 }
 
-void Image::PaintImage(SystemDraw& w, int x, int y, const Rect& src, Color c) const
-{
-	if(data)
-		data->Paint(w, x, y, src, c);
-}
-
 void Image::Serialize(Stream& s)
 {
 	int version = 0;
@@ -372,38 +323,38 @@ String Image::ToString() const
 	return String("Image ").Cat() << GetSize();
 }
 
-Link<Image::Data>     Image::Data::ResData[1];
-int                   Image::Data::ResCount;
-
 Image::Data::Data(ImageBuffer& b)
 :	buffer(b)
 {
 	paintcount = 0;
 	paintonly = false;
 	refcount = 1;
+	aux_data = 0;
 	INTERLOCKED {
 		static int64 gserial;
 		serial = ++gserial;
 	}
-	SysInit();
 }
 
-Image::Data::~Data()
+void Image::SetAuxData(uint64 adata)
 {
-	DrawLock __;
-	SysRelease();
-	Unlink();
+	if(data)
+		data->aux_data = adata;
+}
+
+uint64 Image::GetAuxData() const
+{
+	return data ? data->aux_data : 0;
 }
 
 void Image::Data::PaintOnlyShrink()
 {
-	if(paintonly) {
+/*	if(paintonly) {
 		LTIMING("PaintOnlyShrink");
 		DrawLock __;
 		DropPixels___(buffer);
-		ResCount -= GetResCount();
 		Unlink();
-	}
+	}*/
 }
 
 static void sMultiply(ImageBuffer& b, int (*op)(RGBA *t, const RGBA *s, int len))
@@ -442,12 +393,6 @@ Image Premultiply(const Image& img)
 Image Unmultiply(const Image& img)
 {
 	return sMultiply(img, Unmultiply);
-}
-
-void SetPaintOnly___(Image& m)
-{
-	if(m.data && m.data->refcount == 1)
-		m.data->paintonly = true;
 }
 
 void Iml::Init(int n)

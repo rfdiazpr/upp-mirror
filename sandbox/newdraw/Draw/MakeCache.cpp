@@ -22,7 +22,7 @@ struct scImageMaker : LRUCache<Image>::Maker {
 	virtual int    Make(Image& object) const {
 		object = m->Make();
 		if(paintonly) {
-			SetPaintOnly___(object);
+//			SetPaintOnly___(object);
 			return object.GetLength() + 20000;
 		}
 		return object.GetLength() + 100;
@@ -31,6 +31,16 @@ struct scImageMaker : LRUCache<Image>::Maker {
 
 static int sMaxSize;
 static int sMaxSizeMax = 1000000;
+
+
+void SysImageRealized(const Image& img)
+{ // CtrlCore created handle for img, no need to keep pixels data in cache if it is paintonly kind
+}
+
+void SysImageReleased(const Image& img)
+{ // CtrlCore removed handle for img, have to remove paintonly
+}
+
 
 void ClearMakeImageCache()
 {

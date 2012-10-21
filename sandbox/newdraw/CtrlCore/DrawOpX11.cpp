@@ -144,10 +144,10 @@ void SystemDraw::DrawLineOp(int x1, int y1, int x2, int y2, int width, Color col
 	          x2 + actual_offset.x, y2 + actual_offset.y);
 }
 
-void SystemDraw::DrawImageOp(int x, int y, int cx, int cy, const Image& img, const Rect& src, Color color)
+void SystemDraw::SysDrawImageOp(int x, int y, const Image& img, const Rect& src, Color color)
 {
 	GuiLock __;
-	StdDrawImage(*this, x, y, cx, cy, img, src, color);
+	img.PaintImage(*this, x, y, src, color);
 }
 
 void SystemDraw::DrawPolyPolylineOp(const Point *vertices, int vertex_count,

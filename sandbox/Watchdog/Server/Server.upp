@@ -8,7 +8,7 @@ file
 	Server.cpp,
 	Web.icpp,
 	Api.icpp,
-	Rss.icpp,
+	Feeds.icpp,
 	Util.h,
 	Util.cpp,
 	table.sch,
@@ -17,8 +17,12 @@ file
 	index.witz,
 	base.witz,
 	paging.witz,
+	404.witz,
 	rss.witz,
+	auth.witz,
 	feeds.witz,
+	subscription.witz,
+	verifymail.witz,
 	client.witz,
 	clients.witz,
 	commit.witz,
@@ -26,8 +30,10 @@ file
 	result.witz,
 	results.witz,
 	Static readonly separator,
-	static/watchdog.js,
 	static/style.css,
+	static/watchdog.js,
+	static/md5.js,
+	static/robots.txt,
 	static/favicon.png;
 
 mainconfig

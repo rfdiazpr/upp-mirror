@@ -1,12 +1,5 @@
 #include "Server.h"
 
-namespace Upp {
-namespace Ini {
-	INI_STRING(svn, ".", "URL/path of the svn repository");
-	INI_INT(max_build_time, 86400, "Number of seconds before an 'In progress' record is deleted from results");
-}
-}
-
 struct SvnLog{
 	Vector<String> dirs;
 	String author;
@@ -114,9 +107,12 @@ void UpdateLogs(){
 }
 
 void CleanResults(){
-	Sql sql;
-	sql * Delete(RESULT)
+	SQL * Delete(RESULT)
 	       .Where(STATUS==WD_INPROGRESS && START < GetSysTime()-int(Ini::max_build_time));
+}
+
+void CleanAuth(){
+	SQL * Delete(AUTH).Where(VALID < GetSysTime()-600);
 }
 
 VectorMap<String,int> Paging(Http& http){
@@ -149,6 +145,7 @@ VectorMap<String,int> Paging(Http& http){
 		va.Add(vm);
 	}
 	http("PAGING", va);
+//	http("cnt", pagesize);
 	VectorMap<String,int> result;
 	result.Add("min", current-pagesize+1);
 	result.Add("max", current);
@@ -182,3 +179,94 @@ int& lastrev(){
 	}
 	return rev;
 };
+
+bool CheckAuth(Http& http, Sql& sql){
+	String nonce = http.GetHeader("wd-nonce");
+	sql * Delete(AUTH).Where(NONCE==nonce);
+	if(sql.GetRowsProcessed() == 0){
+		http << "Auth FAIL";
+		http.Response(403,"Auth FAIL (nonce)");
+		return false;
+	}
+	sql * Select(PASSWORD)
+	      .From(CLIENT).Where(ID == http.Int("client_id"));
+	String pwd;
+	sql.Fetch(pwd);
+	if (http.GetHeader("wd-auth")!=MD5String(nonce+pwd)) {
+		http << "Auth FAIL";
+		http.Response(403,"Auth FAIL (auth)");
+		return false;
+	}
+	return true;
+}
+
+bool CheckAuth2(Http& http, Sql& sql, int client, const String& action){
+	if(http.Int("client_id")!=client && http.Int("client_id")!=0){
+		http << "Permission denied";
+		http.Response(403,"Permission denied");
+		return false;
+	}
+	if(http["wd_action"] != action) {
+		http << "Auth FAIL (action)";
+		http.Response(403,"Permission denied");
+		return false;
+	}
+	String nonce = http["wd_nonce"];
+	String auth = http["wd_auth"];
+	sql * Delete(AUTH).Where(NONCE==nonce);
+	if(sql.GetRowsProcessed() == 0){
+		http << "Auth FAIL (nonce)";
+		http.Response(403,"Permission denied");
+		return false;
+	}
+	sql * Select(PASSWORD)
+	      .From(CLIENT).Where(ID == http.Int("client_id"));
+	String pwd;
+	sql.Fetch(pwd);
+	if (auth!=MD5String(nonce+String(http["wd_action"])+pwd)) {
+		http << "Auth FAIL (auth)";
+		http.Response(403,"Permission denied");
+		return false;
+	}
+	return true;
+}
+
+void SendEmail(const String& to, const String& subject, const String& text){
+	//TODO
+	RLOG("Sending email");
+	SaveFile("/tmp/mail","TO:"+to+"\nSUBJECT:"+subject+"\n"+text);
+	RLOG("Email sent");
+}
+
+ValueArray ParseFilter(const String& filter){
+	Vector<String> v = Split(filter,"&");
+	ValueArray res;
+	if(v.IsEmpty()) {
+		res.Add("All the results");
+		return res;
+	}
+	for(int i = 0; i < v.GetCount(); i++){
+		if(v[i].StartsWith("author=")){
+			v[i].Replace("author=","Author is ");
+			res.Add(v[i]);
+		} else if(v[i].StartsWith("path=")){
+			v[i].Replace("path=","Commit affects path ");
+			res.Add(v[i]);
+		} else if(v[i].StartsWith("client=")){
+			v[i].Replace("client=","");
+			Sql sql;
+			sql * Select(NAME).From(CLIENT).Where(ID==StrInt(v[i]));
+			String name;
+			sql.Fetch(name);
+			res.Add("Client is " + name);
+		} else if(v[i].StartsWith("status=")){
+			res.Add(v[i].EndsWith("=ok")?"Only successfull":"Only failed");
+		}
+	}
+	return res;
+}
+
+SqlVal SqlEmptyString(){
+	static SqlVal s("''",SqlS::HIGH);
+	return s;
+}

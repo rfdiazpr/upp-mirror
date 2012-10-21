@@ -1,0 +1,112 @@
+#include "Server.h"
+
+SKYLARK(RssFeed, "rss")
+{
+	SqlBool filter(true);
+	int cid = http.Int("client");
+	String author = http["author"];
+	String path = http["path"];
+	String state = ToLower(String(http["status"]));
+	if(!IsNull(cid))
+		filter = SqlBool(ID==cid);
+	if(!IsNull(author))
+		filter = SqlBool(filter && AUTHOR==author);
+	if(!IsNull(path))
+		filter = SqlBool(filter && Like(PATH,path+"%"));
+	if(state == "failed")
+		filter = SqlBool(filter && STATUS==WD_FAILED);
+	else if(state == "ok")
+		filter = SqlBool(filter && STATUS==WD_DONE);
+	
+	Sql sql;
+	sql * Select(REVISION, DT, AUTHOR, MSG, PATH,
+	             ID, NAME, DESCR, SRC,
+	             START, FINISHED, DURATION, STATUS)
+	      .From(RESULT)
+	      .InnerJoin(WORK).On(REV == REVISION)
+	      .InnerJoin(CLIENT).On(ID == CLIENT_ID)
+	      .Where((STATUS==WD_DONE || STATUS==WD_FAILED)
+	             && FINISHED>(GetSysTime()-30*60*60*24)
+	             && filter)
+	      .OrderBy(Descending(FINISHED));
+	ValueArray results;
+	ValueMap vm;
+	while(sql.Fetch(vm)){
+		vm.Add("STATUSSTR",status(vm["STATUS"]));
+		results.Add(vm);
+	}
+
+	http("ITEMS", results)("SELF", String(Ini::server_url))
+	 .ContentType("application/rss+xml")
+	 .RenderResult("Watchdog/Server/rss");
+}
+
+SKYLARK(Feeds, "feeds")
+{
+	Sql sql;
+	sql * Select(ID, NAME).From(CLIENT).Where(ID>0).OrderBy(ID);
+	ValueArray clients;
+	ValueMap vm;
+	while(sql.Fetch(vm)){
+		clients.Add(vm);
+	}
+	sql * Select(Distinct(AUTHOR)).From(WORK).OrderBy(AUTHOR);
+	ValueArray authors;
+	while(sql.Fetch(vm)){
+		authors.Add(vm);
+	}
+	http("CLIENTS", clients)("AUTHORS",authors)("SELF", String(Ini::server_url))
+	 .RenderResult("Watchdog/Server/feeds");
+}
+
+SKYLARK(Subscribe, "subscribe:POST")
+{
+	String email = http["email"];
+	if(email.Find('@', 1) < 0){
+		http << "<div class=alert>Invalid email address</div>";
+		Feeds(http);
+		return;
+	}
+	String filter = http["filter"];
+	String token = Uuid::Create().ToString();
+	Sql sql;
+	sql * Insert(MAIL)(EMAIL, email)
+	                  (FILTER, ~filter?SqlEmptyString():filter)
+	                  (TOKEN, token)
+	                  (UNIQ, int(CRC32(email+filter)))
+	                  (CTIME, GetSysTime());
+	String md5 = MD5String(email+filter+token);
+	String verify = String(Ini::server_url) + "/verify?v=" + md5;
+	
+	http("FILTER", ParseFilter(filter));
+	http("LINK", verify);
+	http("ACTION",1)("EMAIL",email)
+	 .RenderResult("Watchdog/Server/subscription");
+	http.WhenFinished = callback3(SendEmail, email, "Verify Watchdog subscription", http.RenderString("Watchdog/Server/verifymail"));
+}
+
+SKYLARK(Verify, "verify")
+{
+	Sql sql;
+	sql * Update(MAIL)(ACTIVE,true)
+	 .Where(http["v"]==SqlFunc("md5",SqlFunc("concat",SqlSet(EMAIL,FILTER,TOKEN))));
+	if(!sql.GetRowsProcessed()){
+		http << "Verification failed. Possible reasons for this are:<br>The subscription is already active<br>The link was corupted<br>The subscription request expired (ussually happens after 24 hours).";
+		return;
+	}
+	String unsubscribe = String(Ini::server_url) + "/unsubscribe?v=" + String(http["v"]);
+	http("LINK",unsubscribe)("ACTION",2)
+	 .RenderResult("Watchdog/Server/subscription");
+}
+
+SKYLARK(Unsubscribe, "unsubscribe")
+{
+	Sql sql;
+	sql * Delete(MAIL)
+	 .Where(http["v"]==SqlFunc("md5",SqlFunc("concat",SqlSet(EMAIL,FILTER,TOKEN))));
+	if(sql.GetRowsProcessed())
+	http("FILTER",String("???"))("ACTION",3)
+	 .RenderResult("Watchdog/Server/subscription");
+	else
+		http << "Unsubscribing failed. Possible reasons for this are:<br>The subscription was already canceled<br>The link was corupted";
+}

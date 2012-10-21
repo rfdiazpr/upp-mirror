@@ -9,25 +9,39 @@ namespace Upp { namespace Ini {
 	INI_STRING(session_cookie, "__watchdog_cookie__", "Skylark session cookie ID");
 }}
 
-bool WatchdogClient::Auth(HttpRequest& req){
-	HttpRequest auth(Ini::host+String("/auth/")+IntStr(Ini::client_id));
+bool WatchdogClient::Auth(HttpRequest& req, const String& action){
+	HttpRequest auth(Ini::host+("/auth"+action));
 	auth.Execute();
 	if(!auth.IsSuccess()){
 		RLOG("Error during authentication");
 		RLOG((auth.IsError() ? auth.GetErrorDesc() : AsString(auth.GetStatusCode())+':'+auth.GetReasonPhrase()));
 		return false;
 	}
-	req.Header("WD-Nonce", auth.GetHeader("wd-nonce"));
-	req.Header("WD-Auth", MD5String(auth.GetHeader("wd-nonce")+MD5String(auth.GetHeader("wd-salt")+Ini::password)));
-	req.Header("Cookie", auth.GetHeader("set-cookie").Left(52));
-	req.Post("__post_identity__", auth.GetHeader("wd-id"));
-	req.Post("client_id", IntStr(Ini::client_id));
+	Vector<String> clients = Split(auth.GetHeader("wd_salts"),"|");
+	Vector<String> v;
+	for(int i = 0; i < clients.GetCount(); i++){
+		v = Split(clients[i],":");
+		if(StrInt(v[0]) == Ini::client_id)
+			break;
+		v.Clear();
+	}
+	if(v.IsEmpty()){
+		RLOG("Client unknown to server");
+		return false;
+	}
+	req.Header("Cookie", Split(auth.GetHeader("set-cookie"),";")[0])
+	   .Post("__post_identity__", auth.GetHeader("wd_id"))
+	   .Post("wd_auth", MD5String(auth.GetHeader("wd_nonce")+action+MD5String(v[1]+Ini::password)))
+	   .Post("wd_nonce", auth.GetHeader("wd_nonce"))
+	   .Post("wd_action", action)
+	   .Post("client_id", v[0]);
 	return true;
 }
 
 bool WatchdogClient::GetWork(int max_age){
-	HttpRequest req(Ini::host+String("/getwork"));
-	if(!Auth(req))
+	String target = "/api/getwork/" + IntStr(Ini::client_id);
+	HttpRequest req(Ini::host + target);
+	if(!Auth(req, target))
 		return false;
 	
 	if(max_age >= 0)
@@ -36,6 +50,7 @@ bool WatchdogClient::GetWork(int max_age){
 		req.Post("max_age", IntStr(Ini::max_age));
 	String resp = req.Execute();
 	if(!req.IsSuccess()){
+		RDUMP(resp);
 		RLOG("Error during get work phase");
 		RLOG((req.IsError() ? req.GetErrorDesc() : AsString(req.GetStatusCode())+':'+req.GetReasonPhrase()));
 		return false;
@@ -45,8 +60,14 @@ bool WatchdogClient::GetWork(int max_age){
 }
 
 bool WatchdogClient::AcceptWork(int revision, Time start){
-	HttpRequest req(Ini::host+String("/acceptwork"));
-	if(!Auth(req)) return false;
+	if(Ini::log_level > 0) 
+		Cout() << "Accepting revision " << revision << "\n";
+	
+	String target = "/api/acceptwork/" + IntStr(Ini::client_id);
+	HttpRequest req(Ini::host + target);
+	if(!Auth(req, target))
+		return false;
+	
 	req.Post("revision", IntStr(revision));
 	if(!IsNull(start)){
 		req.Post("start", IntStr64(start.Get()));
@@ -63,8 +84,12 @@ bool WatchdogClient::AcceptWork(int revision, Time start){
 bool WatchdogClient::SubmitWork(const int revision, const int result, const int time, const String& output, Time start, Time end){
 	if(Ini::log_level > 0) 
 		Cout() << "Sending result '" << status(result) << "'\n";
-	HttpRequest req(Ini::host+String("/submitwork"));
-	if(!Auth(req)) return false;
+
+	String target = "/api/submitwork/" + IntStr(Ini::client_id);
+	HttpRequest req(Ini::host + target);
+	if(!Auth(req, target))
+		return false;
+	
 	req.Post("result", IntStr(result));
 	req.Post("time", IntStr(time));
 	req.Post("revision", IntStr(revision));

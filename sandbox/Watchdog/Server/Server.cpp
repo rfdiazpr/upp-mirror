@@ -14,6 +14,10 @@ namespace Upp{ namespace Ini {
 	INI_STRING(sql_socket, "/var/run/mysqld/mysqld.sock", "MySql socket path");
 	INI_BOOL(sql_log, true, "Activates logging of MySql queries");
 	INI_STRING(log_file, GetExeDirFile("log")+"/"+GetExeTitle()+".log", "Path for the log file");
+	INI_STRING(output_dir,GetExeFilePath()+"/output","Directory where the output logs are stored");
+	INI_STRING(server_url,"http://localhost:8001", "Url of the server where the application runs.");
+	INI_STRING(svn, ".", "URL/path of the svn repository");
+	INI_INT(max_build_time, 86400, "Number of seconds before an 'In progress' record is deleted from results");
 }}
 
 void OpenSQL(MySqlSession& session)
@@ -44,7 +48,9 @@ void Watchdog::WorkThread()
 }
 
 void Watchdog::SigUsr1(){
+	RLOG("Received SIGUSR1, reopening log file");
 	ReopenLog();
+	RLOG("Log file reopened on SIGUSR1");
 }
 
 void InitDB()
@@ -55,15 +61,15 @@ void InitDB()
 	All_Tables(sch);
 	SqlPerformScript(sch.Upgrade());
 	SqlPerformScript(sch.Attributes());
-	Sql sql;
-	sql * Insert(CLIENT)(NAME, "Basic apps")
-	                    (PASSWORD, "aaa")
-	                    (DESCR, "Testing client")
-	                    (SRC, "/trunk/uppsrc");
-	sql * Insert(CLIENT)(NAME, "Launchpad")
-	                    (PASSWORD, "bbb")
-	                    (DESCR, "Another testing client")
-	                    (SRC, "/trunk/");
+//	Sql sql;
+//	sql * Insert(CLIENT)(NAME, "Basic apps")
+//	                    (PASSWORD, "aaa")
+//	                    (DESCR, "Testing client")
+//	                    (SRC, "/trunk/uppsrc");
+//	sql * Insert(CLIENT)(NAME, "Launchpad")
+//	                    (PASSWORD, "bbb")
+//	                    (DESCR, "Another testing client")
+//	                    (SRC, "/trunk/");
 }
 
 Value Duration(const Vector<Value>& arg, const Renderer *)
@@ -79,8 +85,56 @@ Value Duration(const Vector<Value>& arg, const Renderer *)
 		return Format("%d`h %d`m %d`s", t/3600, (t%3600)/60, (t%3600)%60);
 }
 
+Value Email(const Vector<Value>& arg, const Renderer *)
+{
+	String name;
+	switch(arg.GetCount()) {
+	case 1:
+		name = arg[0];
+		break;
+	case 2:
+		name = arg[1];
+		break;
+	case 0:
+	default:
+		throw Exc("email: wrong number of arguments");
+	}
+	String addr;
+	addr.Cat() << "<a href=\"mailto:" << arg[0] << "\">" << name << "</a>";
+	RawHtmlText r;
+	r.text.Cat("<script type=\"text/javascript\">document.write('");
+	for(int i = addr.GetCount()-1; i >= 0; --i)
+		r.text.Cat(addr[i]);
+	r.text.Cat("'.split('').reverse().join(''));</script>");
+	return RawPickToValue(r);
+}
+
+Value Dbg(const Vector<Value>& arg, const Renderer *r)
+{
+	#ifdef _DEBUG
+	String html;
+	if(r) {
+		const VectorMap<String, Value>& set = r->Variables();
+		html << "<br><br><br><br><br><table border='1'><tr><th>ID</th><th>VALUE</th></tr>";
+		for(int i = 0; i < set.GetCount(); i++)
+			html << "<tr><td>"
+			     << EscapeHtml(set.GetKey(i))
+			     << "</td><td>"
+			     << EscapeHtml(AsString(set[i]))
+			     << "</td></tr>"
+			;
+		html << "</table>";
+	}
+	return Raw(html);
+	#else
+	return Value();
+	#endif
+}
+
 INITBLOCK {
 	Compiler::Register("Duration", Duration);
+	Compiler::Register("email", Email);
+	Compiler::Register("dbg", Dbg);
 };
 
 Watchdog::Watchdog() {
@@ -100,11 +154,15 @@ namespace Upp { namespace Ini {
 
 CONSOLE_APP_MAIN{
 	const Vector<String>& cmd = CommandLine();
-	RDUMPC(cmd);
+	
+	String ini;
 	if(cmd.GetCount())
-		SetIniFile(cmd[0]);
+		ini = cmd[0];
 	else
-		SetIniFile(GetDataFile("Server.ini"));
+		ini = GetDataFile("Server.ini");
+	
+	RLOG("Loading configuration from '" << ini << "'");
+	SetIniFile(ini);
 	
 	SetDateFormat("%1:4d/%2:02d/%3:02d");
 	

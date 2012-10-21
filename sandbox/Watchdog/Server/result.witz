@@ -26,6 +26,7 @@ $if(RESULT.STATUSN>1)
 <tr><td>End time:</td><td>$RESULT.FINISHED</td></tr>
 $endif
 <tr><td>Duration:</td><td>$Duration(RESULT.DURATION)</td></tr>
+<tr><td><a href="/auth/remove/$RESULT.ID/$RESULT.REVISION">Delete</a></td><td></td></tr>
 </table>
 </div>
 $if(RESULT.STATUSN>1)

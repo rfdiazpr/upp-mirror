@@ -18,6 +18,7 @@
 </div>
 <div id="content">
 #BODY
+$dbg()
 </div>
 </body>
 </html>

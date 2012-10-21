@@ -85,6 +85,7 @@ CONSOLE_APP_MAIN{
 	SetDateScan("ymd");
 	
 	String cfg = GetDataFile(GetExeTitle()+".ini");
+	cfg="/home/h/prog/wdc.ini";
 	if(!FileExists(cfg)){
 		Cerr() << "Configuration file '" << cfg << "' not found";
 		Exit(1);

@@ -1,5 +1,9 @@
 SERVER
 ------
+Write something better on the home page
+Try/catch blocks around sql where it can fail
+Prevent sql injection
+Send failure reports by email
 Timezone handling?
 
 CLIENT

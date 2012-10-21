@@ -38,7 +38,7 @@ SKYLARK(HomePage, "") {
 SKYLARK(Clients, "clients") {
 	Sql sql;
 	sql * Select(ID, NAME, LAST_ACTIVITY, LAST_WORK, DESCR, SRC)
-	      .From(CLIENT).OrderBy(NAME);
+	      .From(CLIENT).Where(ID>0).OrderBy(NAME);
 	ValueArray client;
 	ValueMap vm;
 	while(sql.Fetch(vm))
@@ -187,6 +187,53 @@ SKYLARK(Result, "result/*/*") {
 	    .RenderResult("Watchdog/Server/result");
 }
 
+SKYLARK(WebAuth, "auth/**")
+{
+	String nonce = AsString(Uuid::Create());
+	
+	Sql sql;
+	sql * Select(ID,NAME,SALT).From(CLIENT);
+	ValueMap clients;
+	String salts;
+	ValueMap vm;
+	while(sql.Fetch(vm)){
+		salts.Cat() << vm["ID"] << ':' << vm["SALT"] << '|';
+		clients.Add(IntStr(vm["ID"])+";"+String(vm["SALT"]),vm["NAME"]);
+	}
+	String id = http[".__identity__"];
+	if(id.IsEmpty()) {
+		id = AsString(Uuid::Create());
+		http.SessionSet("__identity__", id);
+	}
+	
+	String target;
+	for(int i = 0; i < http.GetParamCount(); ++i)
+		target.Cat() << "/" << http[i];
+	
+	
+	http.SetHeader("wd_nonce",nonce)
+	    .SetHeader("wd_id", id)
+	    .SetHeader("wd_action", target)
+	    .SetHeader("wd_salts", salts);
+	
+	sql * Insert(AUTH)(NONCE, nonce)(VALID, GetSysTime());
+	http("WD_ID", id)
+	    ("WD_NONCE", nonce)
+	    ("CLIENTS", clients)
+	    ("TARGET", target)
+	    .RenderResult("Watchdog/Server/auth");
+}
+
+SKYLARK(Remove, "remove/*/*:POST"){
+	int cid = http.Int(0);
+	int rev = http.Int(1);
+	Sql sql;
+	if(!CheckAuth2(http, sql, cid, "/remove/"+IntStr(cid)+"/"+IntStr(rev)))
+		return;
+	sql * Delete(RESULT).Where(CLIENT_ID==cid && REV==rev);
+	http.Redirect("/client/"+IntStr(cid)+"?rev="+IntStr(rev));
+}
+
 SKYLARK(Output, "output/*/*"){
 	int rev = http.Int(0);
 	int cid = http.Int(1);
@@ -198,37 +245,20 @@ SKYLARK(Output, "output/*/*"){
 		http.Response(404,"File not found");
 	}
 }
-/*
-SKYLARK(Static, "static/*") {
-	String file = GetFileOnPath("Watchdog/Server/static/"+http[0],SkylarkApp::Config().path);
-	String tag = IntStr64(GetFileTime(file).ft);
-	if(tag == "0") {
-		http.Response(404, "Not found");
-		return;
-	}
-	if(file.EndsWith(".css"))
-		http.ContentType("text/css");
-	else if(file.EndsWith(".js"))
-		http.ContentType("text/javascript");
-	else if(file.EndsWith(".png"))
-		http.ContentType("image/png"); 
-	else {
-		http.Response(403, "Not authorized");
-		return;
-	}
 
-	http.SetHeader("Cache-Control", "max-age=2592000");
-	http.SetHeader("ETag", tag);
-	if(http.GetHeader("if-none-match") != tag)
-		http << LoadFile(file);
-	else
-		http.Response(304, "Not Modified");
-}
-*/
 SKYLARK(Favicon, "favicon.ico") {
 	http.Redirect(ServeStaticPage, "favicon.png");
 }
- 
-SKYLARK(CatchAll, "**") {
-	http.Redirect(HomePage);
+
+SKYLARK(Robots, "robots.txt") {
+	http.Redirect(ServeStaticPage, "robots.txt");
+}
+
+SKYLARK(NotFound, "**") {
+	String target(Ini::server_url);
+	for(int i = 0; i < http.GetParamCount(); ++i)
+		target.Cat() << "/" << http[i];
+	http("PAGE", target)
+	 .RenderResult("Watchdog/Server/404")
+	 .Response(404, "Not found");
 }

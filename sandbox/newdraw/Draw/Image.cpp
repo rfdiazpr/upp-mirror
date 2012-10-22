@@ -347,16 +347,6 @@ uint64 Image::GetAuxData() const
 	return data ? data->aux_data : 0;
 }
 
-void Image::Data::PaintOnlyShrink()
-{
-/*	if(paintonly) {
-		LTIMING("PaintOnlyShrink");
-		DrawLock __;
-		DropPixels___(buffer);
-		Unlink();
-	}*/
-}
-
 static void sMultiply(ImageBuffer& b, int (*op)(RGBA *t, const RGBA *s, int len))
 {
 	if(b.GetKind() != IMAGE_OPAQUE && b.GetKind() != IMAGE_EMPTY)

@@ -7,7 +7,7 @@
 NAMESPACE_UPP
 
 #define LTIMING(x) // RTIMING(x)
-#define LLOG(x)  DLOG(x)
+#define LLOG(x)    // DLOG(x)
 
 bool ImageFallBack
 // = true
@@ -186,11 +186,10 @@ struct ImageSysData {
 	int         paintcount;
 	
 	void Init(const Image& img);
-	void Release();
 	void CreateHBMP(HDC dc, const RGBA *data);
 	void Paint(SystemDraw& w, int x, int y, const Rect& src, Color c);
 	
-	~ImageSysData() { Release(); }
+	~ImageSysData();
 };
 
 void ImageSysData::Init(const Image& _img)
@@ -201,7 +200,7 @@ void ImageSysData::Init(const Image& _img)
 	LLOG("ImageSysData::Init " << img.GetSerialId() << " " << img.GetSize());
 }
 
-void ImageSysData::Release()
+ImageSysData::~ImageSysData()
 {
 	SysImageReleased(img);
 	if(hbmp) {
@@ -366,19 +365,16 @@ struct ImageSysDataMaker : LRUCache<ImageSysData, int64>::Maker {
 void SystemDraw::SysDrawImageOp(int x, int y, const Image& img, const Rect& src, Color color)
 {
 	GuiLock __;
+	if(img.GetLength() == 0)
+		return;
 	LLOG("SysDrawImageOp " << img.GetSerialId() << ' ' << img.GetSize());
 	ImageSysDataMaker m;
 	static LRUCache<ImageSysData, int64> cache;
 	LLOG("SysImage cache pixels " << cache.GetSize() << ", count " << cache.GetCount());
-	int maxhandles = IsWinNT() ? 250 : 100;
 	Size sz = Ctrl::GetPrimaryScreenArea().GetSize();
-	int maxpixels = sz.cx * sz.cy;
-	while(cache.GetSize() > maxpixels || cache.GetCount() > maxhandles) {
-		LLOG("Dropping ImageSysData " << cache.GetLRU().img.GetSerialId());
-		cache.DropLRU();
-	}
 	m.img = img;
 	cache.Get(m).Paint(*this, x, y, src, color);
+	cache.Shrink(4 * sz.cx * sz.cy, IsWinNT() ? 1000 : 100);
 }
 
 void ImageDraw::Section::Init(int cx, int cy)

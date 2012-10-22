@@ -141,7 +141,6 @@ private:
 		bool        paintonly;
 		
 		int         GetKind();
-		void        PaintOnlyShrink();
 
 		Data(ImageBuffer& b);
 	};
@@ -153,6 +152,8 @@ private:
 	friend class ImageBuffer;
 	friend struct Data;
 	friend class SystemDraw;
+	friend void  SetPaintOnly__(Image& img)          { img.data->paintonly = true; }
+	friend void  SysImageRealized(const Image& img);
 
 	void         SetAuxData(uint64 data);
 	uint64       GetAuxData() const;
@@ -193,6 +194,8 @@ public:
 
 	bool IsEmpty() const                { return IsNullInstance(); }
 	operator Value() const              { return RichValue<Image>(*this); }
+	
+	bool IsPaintOnly() const            { return data && data->paintonly; }
 
 	Image()                             { data = NULL; }
 	Image(const Nuller&)                { data = NULL; }

@@ -404,11 +404,13 @@ void Iml::Set(int i, const Image& img)
 	map[i].loaded = true;
 }
 
+static StaticMutex sImlLock;
+
 Image Iml::Get(int i)
 {
 	IImage& m = map[i];
 	if(!m.loaded) {
-		DrawLock __;
+		Mutex::Lock __(sImlLock);
 		if(data.GetCount()) {
 			int ii = 0;
 			for(;;) {
@@ -503,13 +505,13 @@ Iml& GetIml(int i)
 
 String GetImlName(int i)
 {
-	DrawLock __;
+	Mutex::Lock __(sImlLock);
 	return sImgMap().GetKey(i);
 }
 
 int FindIml(const char *name)
 {
-	DrawLock __;
+	Mutex::Lock __(sImlLock);
 	return sImgMap().Find(name);
 }
 
@@ -518,7 +520,7 @@ Image GetImlImage(const char *name)
 	Image m;
 	const char *w = strchr(name, ':');
 	if(w) {
-		DrawLock __;
+		Mutex::Lock __(sImlLock);
 		int q = FindIml(String(name, w));
 		if(q >= 0) {
 			Iml& iml = *sImgMap()[q];
@@ -536,7 +538,7 @@ void SetImlImage(const char *name, const Image& m)
 {
 	const char *w = strchr(name, ':');
 	if(w) {
-		DrawLock __;
+		Mutex::Lock __(sImlLock);
 		int q = FindIml(String(name, w));
 		if(q >= 0) {
 			Iml& iml = *sImgMap()[q];

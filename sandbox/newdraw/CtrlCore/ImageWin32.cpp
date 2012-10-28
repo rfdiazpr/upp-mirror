@@ -233,7 +233,7 @@ LPCSTR  Image::GetCursorCheat() const
 
 void ImageSysData::CreateHBMP(HDC dc, const RGBA *data)
 {
-	DLOG("Creating BMP for " << img.GetSerialId() << ' ' << img.GetSize());
+	LLOG("Creating BMP for " << img.GetSerialId() << ' ' << img.GetSize());
 	Size sz = img.GetSize();
 	BitmapInfo32__ bi(sz.cx, sz.cy);
 	HDC dcMem = ::CreateCompatibleDC(dc);

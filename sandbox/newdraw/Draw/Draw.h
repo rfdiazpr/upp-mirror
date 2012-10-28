@@ -13,6 +13,8 @@ class Painting;
 class SystemDraw;
 class ImageDraw;
 
+#if 0
+
 #ifdef _MULTITHREADED
 void EnterGMutex();
 void EnterGMutex(int n);
@@ -33,6 +35,8 @@ struct DrawLock {
 	DrawLock() {}
 	~DrawLock() {}
 };
+#endif
+
 #endif
 
 #include "Image.h"
@@ -386,8 +390,8 @@ public:
 
 	void    Clear()                             { size = Null; data.Clear(); cmd.Clear(); }
 	void    Serialize(Stream& s)                { s % cmd % data % size; }
-	void Xmlize(XmlIO& xio)                     { XmlizeBySerialize(xio, *this); }
-	void Jsonize(JsonIO& jio)                   { JsonizeBySerialize(jio, *this); }
+	void    Xmlize(XmlIO& xio)                  { XmlizeBySerialize(xio, *this); }
+	void    Jsonize(JsonIO& jio)                { JsonizeBySerialize(jio, *this); }
 	bool    IsNullInstance() const              { return cmd.IsEmpty(); }
 	void    SetNull()                           { size = Null; }
 	bool    operator==(const Painting& b) const { return cmd == b.cmd && data == b.data && size == b.size; }
@@ -653,7 +657,7 @@ public:
 	void Jsonize(JsonIO& jio)      { JsonizeBySerialize(jio, *this); }
 
 	bool    IsNullInstance() const             { return data.IsEmpty(); }
-	void    SetNull()                          { size = Null; }
+	void    SetNull()                          { size = Null; data.Clear(); }
 
 	bool    operator==(const Drawing& b) const { return val == b.val && data == b.data && size == b.size; }
 	String  ToString() const                   { return "drawing " + AsString(size); }

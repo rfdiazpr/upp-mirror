@@ -57,7 +57,7 @@ void SysImageRealized(const Image& img)
 }
 
 struct ImageRemover {
-	int serial_id;
+	int64 serial_id;
 	
 	bool operator()(const Image& img) const {
 		if(serial_id == img.GetSerialId()) {

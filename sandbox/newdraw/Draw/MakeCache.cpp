@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x)   // DLOG(x)
+#define LLOG(x)  //  DLOG(x)
 
 static StaticCriticalSection sMakeImage;
 
@@ -76,8 +76,8 @@ void SysImageReleased(const Image& img)
 		ImageRemover ir;
 		ir.serial_id = img.GetSerialId();
 		LLOG("SysImageReleased " << img.GetSerialId() << ", cache size: " << sImageCache().GetSize() << ", count " << sImageCache().GetCount());
-		sImageCache().RemoveOne(ir);
-		LLOG("SysImageReleased removed: " << n);
+		int n = sImageCache().RemoveOne(ir);
+		LLOG("SysImageReleased count: " << n);
 		LLOG("SysImageReleased done cache size: " << sImageCache().GetSize() << ", count " << sImageCache().GetCount());
 	}
 }

@@ -13,7 +13,7 @@ class Painting;
 class SystemDraw;
 class ImageDraw;
 
-#if 0
+#if 1
 
 #ifdef _MULTITHREADED
 void EnterGMutex();
@@ -42,6 +42,14 @@ struct DrawLock {
 #include "Image.h"
 
 const int FONT_V = 40;
+
+struct FontGlyphConsumer {
+	virtual void Move(double x, double y) = 0;
+	virtual void Line(double x, double y) = 0;
+	virtual void Quadratic(double x1, double y1, double x2, double y2) = 0;
+	virtual void Cubic(double x1, double y1, double x2, double y2, double x3, double y3) = 0;
+	virtual void Close() = 0;
+};
 
 #include "FontInt.h"
 
@@ -76,7 +84,8 @@ class Font : public ValueType<Font, FONT_V, Moveable<Font> >{
 
 	const CommonFontInfo& Fi() const;
 	
-	friend void sInitFonts();
+	friend void   sInitFonts();
+	friend String GetFontDataSys(Font font);
 	
 public:
 	enum {
@@ -178,12 +187,12 @@ public:
 	bool  IsScaleable() const                { return Fi().scaleable; }
 	bool  IsSpecial() const                  { return !(GetFaceInfo() & SPECIAL); }
 
-#ifdef PLATFORM_POSIX
-	String GetPath() const                   { return Fi().path; }
-#endif
-
 	String GetTextFlags() const;
 	void   ParseTextFlags(const char *s);
+	
+	String GetData() const                   { return GetFontDataSys(*this); }
+	
+	void   Render(FontGlyphConsumer& sw, double x, double y, int ch) const;
 
 	void  Serialize(Stream& s);
 	void  Jsonize(JsonIO& jio);
@@ -231,9 +240,6 @@ public:
 	bool   IsScaleable() const                { return font.IsScaleable(); }
 	int    GetFontHeight() const              { return font.GetHeight(); }
 	Font   GetFont() const                    { return font; }
-#ifdef PLATFORM_POSIX
-	String GetFileName() const                { return font.GetPath(); }
-#endif
 };
 
 struct ComposedGlyph {

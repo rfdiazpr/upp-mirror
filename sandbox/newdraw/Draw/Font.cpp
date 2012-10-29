@@ -501,6 +501,12 @@ const CommonFontInfo& Font::Fi() const
 	return lastFontInfo;
 }
 
+void Font::Render(FontGlyphConsumer& sw, double x, double y, int ch) const
+{
+	Mutex::Lock __(sFontLock);
+	RenderCharacterSys(sw, x, y, ch, *this);
+}
+
 FontInfo Font::Info() const
 {
 	FontInfo h;

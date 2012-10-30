@@ -3,8 +3,7 @@
 SKYLARK(GetWork, "api/getwork/*:POST")
 {
 	int cid = http.Int(0);
-	Sql sql;
-	if(!CheckAuth2(http, sql, cid, "/api/getwork/"+IntStr(cid)))
+	if(!CheckAuth2(http, SQL, cid, "/api/getwork/"+IntStr(cid)))
 		return;
 	
 	int max_age;
@@ -13,8 +12,8 @@ SKYLARK(GetWork, "api/getwork/*:POST")
 	} else {
 		max_age = http.Int("max_age");
 	}
-	sql * Update(CLIENT)(LAST_ACTIVITY,GetSysTime()).Where(ID == cid);
-	sql * Select(REVISION)
+	SQL * Update(CLIENT)(LAST_ACTIVITY,GetSysTime()).Where(ID == cid);
+	SQL * Select(REVISION)
 	       .From(WORK)
 	       .LeftJoin(RESULT).On(REVISION == REV && CLIENT_ID == cid)
 	       .InnerJoin(CLIENT).On(ID == cid)
@@ -22,15 +21,14 @@ SKYLARK(GetWork, "api/getwork/*:POST")
 	              && Like(PATH,SqlFunc("concat",SqlSet(SRC,"%"))) 
 	              && DT >= (GetSysDate()-max_age))
 	       .OrderBy(REVISION);
-	while(sql.Fetch())
-		http << IntStr(sql[0]) << ",";
+	while(SQL.Fetch())
+		http << IntStr(SQL[0]) << ",";
 }
 
 SKYLARK(AcceptWork, "api/acceptwork/*:POST")
 {
 	int cid = http.Int(0);
-	Sql sql;
-	if(!CheckAuth2(http, sql, cid, "/api/acceptwork/"+IntStr(cid)))
+	if(!CheckAuth2(http, SQL, cid, "/api/acceptwork/"+IntStr(cid)))
 		return;
 
 	Time start;
@@ -39,14 +37,14 @@ SKYLARK(AcceptWork, "api/acceptwork/*:POST")
 	} else {
 		start.Set(ScanInt64(AsString(http["start"])));
 	}
-	sql * Update(CLIENT)(LAST_WORK,GetSysTime())(LAST_ACTIVITY,GetSysTime())
+	SQL * Update(CLIENT)(LAST_WORK,GetSysTime())(LAST_ACTIVITY,GetSysTime())
 	       .Where(ID==cid);
 	SqlStatement insert = 
 	      Insert(RESULT)(REV,http.Int("revision"))
 	                    (CLIENT_ID,cid)
 	                    (START,start)
 	                    (STATUS,WD_INPROGRESS);
-	sql * SqlStatement(insert.Get()+" on duplicate key update "
+	SQL * SqlStatement(insert.Get()+" on duplicate key update "
 	         "STATUS=values(STATUS),"
 	         "START=values(START),"
 	         "FINISHED=NULL,"
@@ -57,8 +55,7 @@ SKYLARK(AcceptWork, "api/acceptwork/*:POST")
 SKYLARK(SubmitWork, "api/submitwork/*:POST")
 {
 	int cid = http.Int(0);
-	Sql sql;
-	if(!CheckAuth2(http, sql, cid, "/api/submitwork/"+IntStr(cid)))
+	if(!CheckAuth2(http, SQL, cid, "/api/submitwork/"+IntStr(cid)))
 		return;
 	
 	Time start;
@@ -76,7 +73,7 @@ SKYLARK(SubmitWork, "api/submitwork/*:POST")
 	String output = Format("%s/%d/%d.log",(String)Ini::output_dir,http.Int("revision"),cid);
 	RealizePath(output);
 	SaveFile(output, http["output"]);
-	sql * Update(CLIENT)(LAST_WORK, GetSysTime())(LAST_ACTIVITY,GetSysTime())
+	SQL * Update(CLIENT)(LAST_WORK, GetSysTime())(LAST_ACTIVITY,GetSysTime())
 	       .Where(ID==cid);
 	SqlStatement insert = 
 	      Insert(RESULT)(REV, http.Int("revision"))
@@ -85,7 +82,7 @@ SKYLARK(SubmitWork, "api/submitwork/*:POST")
 	                    (DURATION, http.Int("time"))
 	                    (START, start)
 	                    (FINISHED, end);
-	sql * SqlStatement(insert.Get()+" on duplicate key update "
+	SQL * SqlStatement(insert.Get()+" on duplicate key update "
 	         "STATUS=values(STATUS),"
 	         "DURATION=values(DURATION),"
 	         "START=if(START is NULL, values(START), START),"

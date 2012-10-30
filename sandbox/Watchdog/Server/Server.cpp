@@ -115,15 +115,15 @@ Value Dbg(const Vector<Value>& arg, const Renderer *r)
 	String html;
 	if(r) {
 		const VectorMap<String, Value>& set = r->Variables();
-		html << "<br><br><br><br><br><table border='1'><tr><th>ID</th><th>VALUE</th></tr>";
+		html << "<div class=\"dbg\"><table border='1'><tr><th>ID</th><th>VALUE</th></tr>";
 		for(int i = 0; i < set.GetCount(); i++)
 			html << "<tr><td>"
 			     << EscapeHtml(set.GetKey(i))
-			     << "</td><td>"
+			     << "</td><td><pre class=\"prewrap\">"
 			     << EscapeHtml(AsString(set[i]))
-			     << "</td></tr>"
+			     << "</pre></td></tr>"
 			;
-		html << "</table>";
+		html << "</table></div>";
 	}
 	return Raw(html);
 	#else

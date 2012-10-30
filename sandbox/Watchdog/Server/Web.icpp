@@ -1,47 +1,51 @@
 #include "Server.h"
 
+inline SqlVal CountIf(const SqlBool& b){
+	return SqlFunc("sum",SqlFunc("if", SqlSet(SqlVal(~b,SqlVal::HIGH),1,0)));
+}
+
 SKYLARK(HomePage, "") {
-	Sql sql;
-	sql * Select(STATUS, SqlFunc("count",SqlSet("*")).As("CNT"))
+	SQLR * Select(STATUS,
+	             CountIf(START > (GetSysTime()-86400)).As("DAILY"),
+	             CountIf(START > (GetSysDate()-30)).As("MONTHLY"),
+	             CountIf(SqlBool::True()).As("TOTAL"))
 	      .From(RESULT)
-	      .Where(START > (GetSysTime()-86400))
 	      .GroupBy(STATUS);
-	ValueArray dstat;
 	ValueMap vm;
-	while(sql.Fetch(vm)) {
-		dstat.Set(int(vm["STATUS"]),vm["CNT"]);
+	ValueArray daily, monthly, total;
+	while(SQLR.Fetch(vm)) {
+		daily.Set(int(vm[STATUS]),vm["DAILY"]);
+		monthly.Set(int(vm[STATUS]),vm["MONTHLY"]);
+		total.Set(int(vm[STATUS]),vm["TOTAL"]);
 	}
-	sql * Select(SqlFunc("count",SqlSet("*")).As("CNT"))
-	      .From(CLIENT)
-	      .Where(LAST_WORK > (GetSysTime()-86400));
+	for(int i = WD_READY; i <= WD_DONE; i++){
+		if(IsNull(daily[i])) daily.Set(i, 0);
+		if(IsNull(monthly[i])) monthly.Set(i, 0);
+		if(IsNull(total[i])) total.Set(i, 0);
+	}
+	
 	ValueMap misc;
-	if(sql.Fetch(vm))
-		misc.Add("DACTIVE" ,vm["CNT"]);
-	sql * Select(STATUS, SqlFunc("count",SqlSet("*")).As("CNT"))
-	      .From(RESULT)
-	      .Where(START > (GetSysDate()-30))
-	      .GroupBy(STATUS);
-	ValueArray mstat;
-	while(sql.Fetch(vm)) {
-		mstat.Set(int(vm["STATUS"]),vm["CNT"]);
+	SQLR * Select(CountIf(LAST_WORK > (GetSysTime()-86400)).As("DAILY"),
+	             CountIf(LAST_WORK > (GetSysDate()-30)).As("MONTHLY"),
+	             CountIf(SqlBool::True()).As("TOTAL"))
+	      .From(CLIENT);
+	if(SQLR.Fetch(vm)){
+		misc.Add("D_ACTIVE" ,vm["DAILY"]);
+		misc.Add("M_ACTIVE" ,vm["MONTHLY"]);
+		misc.Add("T_ACTIVE" ,vm["TOTAL"]);
 	}
-	sql * Select(SqlFunc("count",SqlSet("*")).As("CNT"))
-	      .From(CLIENT)
-	      .Where(LAST_WORK > (GetSysDate()-30));
-	if(sql.Fetch(vm))
-		misc.Add("MACTIVE" ,vm["CNT"]);
 	misc.Add("LAST", lastrev());
-	http("MSTAT", mstat)("DSTAT", dstat)("MISC", misc)
+
+	http("MISC", misc)("DAILY",daily)("MONTHLY",monthly)("TOTAL",total)
 	    .RenderResult("Watchdog/Server/index");
 }
 
 SKYLARK(Clients, "clients") {
-	Sql sql;
-	sql * Select(ID, NAME, LAST_ACTIVITY, LAST_WORK, DESCR, SRC)
-	      .From(CLIENT).Where(ID>0).OrderBy(NAME);
+	SQLR * Select(ID, NAME, LAST_ACTIVITY, LAST_WORK, DESCR, SRC)
+	       .From(CLIENT).Where(ID>0).OrderBy(NAME);
 	ValueArray client;
 	ValueMap vm;
-	while(sql.Fetch(vm))
+	while(SQLR.Fetch(vm))
 		client.Add(vm);
 	http("CLIENT", client)
 	    .RenderResult("Watchdog/Server/clients");
@@ -50,21 +54,20 @@ SKYLARK(Clients, "clients") {
 SKYLARK(Client, "client/*") {
 	int cid = http.Int(0);
 	VectorMap<String, int> pg = Paging(http);
-	Sql sql;
-	sql * Select(ID, NAME, LAST_ACTIVITY, LAST_WORK, DESCR, SRC)
-	      .From(CLIENT).Where(ID == cid);
+	SQLR * Select(ID, NAME, LAST_ACTIVITY, LAST_WORK, DESCR, SRC)
+	       .From(CLIENT).Where(ID == cid);
 	ValueMap client;
-	if(!sql.Fetch(client)){
+	if(!SQLR.Fetch(client)){
 		http << "unknown client";
 		return;
 	}
-	sql * Select(REVISION, START, FINISHED, DURATION, STATUS, SqlVal(Like(PATH,AsString(client["SRC"])+"%")," = ",SqlVal(1),SqlS::LOW).As("FITS"))
+	SQLR * Select(REVISION, START, FINISHED, DURATION, STATUS, SqlVal(Like(PATH,AsString(client["SRC"])+"%")," = ",SqlVal(1),SqlS::LOW).As("FITS"))
 	       .From(WORK).LeftJoin(RESULT).On(REVISION == REV && CLIENT_ID == cid)
 	       .Where(Between(REVISION,pg.Get("min"),pg.Get("max")))
 	       .OrderBy(Descending(REVISION));
 	ValueArray results;
 	ValueMap vm;
-	while(sql.Fetch(vm)){
+	while(SQLR.Fetch(vm)){
 		if((bool)vm["FITS"]){
 			vm.Add("STATUSSTR", IsNull(vm["STATUS"])?"Ready":status(vm["STATUS"]));
 		} else {
@@ -80,10 +83,9 @@ SKYLARK(Client, "client/*") {
 
 SKYLARK(Commits, "commits") {
 	VectorMap<String,int> pg = Paging(http);
-	Sql sql;
 	ValueArray commits;
 	ValueMap vm;
-	sql * Select(REVISION,AUTHOR,DT,PATH,MSG,
+	SQLR * Select(REVISION,AUTHOR,DT,PATH,MSG,
 	             SqlFunc("sum",SqlSet("if(STATUS=1,1,0)",SqlSet::HIGH)).As("CNT1"),
 	             SqlFunc("sum",SqlSet("if(STATUS=2,1,0)",SqlSet::HIGH)).As("CNT2"),
 	             SqlFunc("sum",SqlSet("if(STATUS=3,1,0)",SqlSet::HIGH)).As("CNT3"),
@@ -93,7 +95,7 @@ SKYLARK(Commits, "commits") {
 	      .Where(Between(REVISION,pg.Get("min"),pg.Get("max")))
 	      .GroupBy(REVISION)
 	      .OrderBy(Descending(REVISION));
-	while(sql.Fetch(vm)) {
+	while(SQLR.Fetch(vm)) {
 		commits.Add(vm);
 	}
 	http("COMMITS", commits)
@@ -103,20 +105,19 @@ SKYLARK(Commits, "commits") {
 SKYLARK(Commit, "commit/*") {
 	int rev = http.Int(0);
 	VectorMap<String,int> pg = Paging(http);
-	Sql sql;
-	sql * Select(REVISION, DT, AUTHOR, MSG, PATH)
-	      .From(WORK).Where(REVISION == rev);
+	SQLR * Select(REVISION, DT, AUTHOR, MSG, PATH)
+	       .From(WORK).Where(REVISION == rev);
 	ValueMap commit;
-	if(!sql.Fetch(commit)){
+	if(!SQLR.Fetch(commit)){
 		http << "unknown commit";
 		return;
 	}
-	sql * Select(CLIENT_ID, NAME, START, FINISHED, DURATION, STATUS)
-	      .From(RESULT).InnerJoin(CLIENT).On(ID == CLIENT_ID)
-	      .Where(REV == rev && STATUS != WD_READY);
+	SQLR * Select(CLIENT_ID, NAME, START, FINISHED, DURATION, STATUS)
+	       .From(RESULT).InnerJoin(CLIENT).On(ID == CLIENT_ID)
+	       .Where(REV == rev && STATUS != WD_READY);
 	ValueArray results;
 	ValueMap vm;
-	while(sql.Fetch(vm)){
+	while(SQLR.Fetch(vm)){
 		vm.Add("STATUSSTR", status(vm["STATUS"]));
 		if(vm["STATUS"]==1)
 			vm.Set("DURATION",GetSysTime()-Time(vm["START"]));
@@ -128,18 +129,17 @@ SKYLARK(Commit, "commit/*") {
 
 SKYLARK(Results, "results") {
 	VectorMap<String, int> pg = Paging(http);
-	Sql sql;
-	sql * Select(REVISION, CLIENT_ID, NAME, STATUS)
-	      .From(RESULT)
-	      .RightJoin(WORK).On(REV == REVISION)
-	      .LeftJoin(CLIENT).On(ID == CLIENT_ID)
-	      .Where(Between(REVISION,pg.Get("min"),pg.Get("max")))
-	      .OrderBy(CLIENT_ID);
+	SQLR * Select(REVISION, CLIENT_ID, NAME, STATUS)
+	       .From(RESULT)
+	       .RightJoin(WORK).On(REV == REVISION)
+	       .LeftJoin(CLIENT).On(ID == CLIENT_ID)
+	       .Where(Between(REVISION,pg.Get("min"),pg.Get("max")))
+	       .OrderBy(CLIENT_ID);
 	VectorMap<int,ValueMap> results;
 	ValueMap clients;
 	Index<int> commits;
 	ValueMap vm;
-	while(sql.Fetch(vm)){
+	while(SQLR.Fetch(vm)){
 		if(!AsString(vm["STATUS"]).IsEmpty()) {
 			ValueArray va;
 			va.Add(status(vm["STATUS"]));
@@ -165,8 +165,7 @@ SKYLARK(Results, "results") {
 SKYLARK(Result, "result/*/*") {
 	int rev = http.Int(0);
 	int cid = http.Int(1);
-	Sql sql;
-	sql * Select(REVISION, DT, AUTHOR, MSG, PATH,
+	SQLR * Select(REVISION, DT, AUTHOR, MSG, PATH,
 	             ID, NAME, DESCR, SRC,
 	             START, FINISHED, DURATION, STATUS)
 	      .From(RESULT)
@@ -174,7 +173,7 @@ SKYLARK(Result, "result/*/*") {
 	      .InnerJoin(CLIENT).On(ID == CLIENT_ID)
 	      .Where(CLIENT_ID == cid && REV == rev);
 	ValueMap result;
-	if(!sql.Fetch(result)){
+	if(!SQLR.Fetch(result)){
 		http << "data not available";
 		return;
 	}
@@ -190,13 +189,11 @@ SKYLARK(Result, "result/*/*") {
 SKYLARK(WebAuth, "auth/**")
 {
 	String nonce = AsString(Uuid::Create());
-	
-	Sql sql;
-	sql * Select(ID,NAME,SALT).From(CLIENT);
+	SQLR * Select(ID,NAME,SALT).From(CLIENT);
 	ValueMap clients;
 	String salts;
 	ValueMap vm;
-	while(sql.Fetch(vm)){
+	while(SQLR.Fetch(vm)){
 		salts.Cat() << vm["ID"] << ':' << vm["SALT"] << '|';
 		clients.Add(IntStr(vm["ID"])+";"+String(vm["SALT"]),vm["NAME"]);
 	}
@@ -216,7 +213,7 @@ SKYLARK(WebAuth, "auth/**")
 	    .SetHeader("wd_action", target)
 	    .SetHeader("wd_salts", salts);
 	
-	sql * Insert(AUTH)(NONCE, nonce)(VALID, GetSysTime());
+	SQL * Insert(AUTH)(NONCE, nonce)(VALID, GetSysTime());
 	http("WD_ID", id)
 	    ("WD_NONCE", nonce)
 	    ("CLIENTS", clients)
@@ -227,10 +224,9 @@ SKYLARK(WebAuth, "auth/**")
 SKYLARK(Remove, "remove/*/*:POST"){
 	int cid = http.Int(0);
 	int rev = http.Int(1);
-	Sql sql;
-	if(!CheckAuth2(http, sql, cid, "/remove/"+IntStr(cid)+"/"+IntStr(rev)))
+	if(!CheckAuth2(http, SQL, cid, "/remove/"+IntStr(cid)+"/"+IntStr(rev)))
 		return;
-	sql * Delete(RESULT).Where(CLIENT_ID==cid && REV==rev);
+	SQL * Delete(RESULT).Where(CLIENT_ID==cid && REV==rev);
 	http.Redirect("/client/"+IntStr(cid)+"?rev="+IntStr(rev));
 }
 

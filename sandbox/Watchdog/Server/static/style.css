@@ -12,3 +12,9 @@ td,th {padding: 3 3 3 3;}
 .wide {position:relative;width:100%;}
 .dl_link {font-size: 75%; position:absolute; right:0;}
 .indent {padding-left: 25px;}
+.dbg {margin-top: 75px;}
+.prewrap {
+	white-space: pre-wrap; /* CSS2.1 compliant */
+	white-space: -moz-pre-wrap; /* Mozilla-based browsers */
+	white-space: o-pre-wrap; /* Opera 7+ */
+}

@@ -18,8 +18,7 @@ SKYLARK(RssFeed, "rss")
 	else if(state == "ok")
 		filter = SqlBool(filter && STATUS==WD_DONE);
 	
-	Sql sql;
-	sql * Select(REVISION, DT, AUTHOR, MSG, PATH,
+	SQLR * Select(REVISION, DT, AUTHOR, MSG, PATH,
 	             ID, NAME, DESCR, SRC,
 	             START, FINISHED, DURATION, STATUS)
 	      .From(RESULT)
@@ -31,7 +30,7 @@ SKYLARK(RssFeed, "rss")
 	      .OrderBy(Descending(FINISHED));
 	ValueArray results;
 	ValueMap vm;
-	while(sql.Fetch(vm)){
+	while(SQLR.Fetch(vm)){
 		vm.Add("STATUSSTR",status(vm["STATUS"]));
 		results.Add(vm);
 	}
@@ -43,16 +42,15 @@ SKYLARK(RssFeed, "rss")
 
 SKYLARK(Feeds, "feeds")
 {
-	Sql sql;
-	sql * Select(ID, NAME).From(CLIENT).Where(ID>0).OrderBy(ID);
+	SQLR * Select(ID, NAME).From(CLIENT).Where(ID>0).OrderBy(ID);
 	ValueArray clients;
 	ValueMap vm;
-	while(sql.Fetch(vm)){
+	while(SQLR.Fetch(vm)){
 		clients.Add(vm);
 	}
-	sql * Select(Distinct(AUTHOR)).From(WORK).OrderBy(AUTHOR);
+	SQLR * Select(Distinct(AUTHOR)).From(WORK).OrderBy(AUTHOR);
 	ValueArray authors;
-	while(sql.Fetch(vm)){
+	while(SQLR.Fetch(vm)){
 		authors.Add(vm);
 	}
 	http("CLIENTS", clients)("AUTHORS",authors)("SELF", String(Ini::server_url))
@@ -69,8 +67,7 @@ SKYLARK(Subscribe, "subscribe:POST")
 	}
 	String filter = http["filter"];
 	String token = Uuid::Create().ToString();
-	Sql sql;
-	sql * Insert(MAIL)(EMAIL, email)
+	SQL * Insert(MAIL)(EMAIL, email)
 	                  (FILTER, ~filter?SqlEmptyString():filter)
 	                  (TOKEN, token)
 	                  (UNIQ, int(CRC32(email+filter)))
@@ -87,10 +84,9 @@ SKYLARK(Subscribe, "subscribe:POST")
 
 SKYLARK(Verify, "verify")
 {
-	Sql sql;
-	sql * Update(MAIL)(ACTIVE,true)
+	SQL * Update(MAIL)(ACTIVE,true)
 	 .Where(http["v"]==SqlFunc("md5",SqlFunc("concat",SqlSet(EMAIL,FILTER,TOKEN))));
-	if(!sql.GetRowsProcessed()){
+	if(!SQL.GetRowsProcessed()){
 		http << "Verification failed. Possible reasons for this are:<br>The subscription is already active<br>The link was corupted<br>The subscription request expired (ussually happens after 24 hours).";
 		return;
 	}
@@ -101,10 +97,9 @@ SKYLARK(Verify, "verify")
 
 SKYLARK(Unsubscribe, "unsubscribe")
 {
-	Sql sql;
-	sql * Delete(MAIL)
+	SQL * Delete(MAIL)
 	 .Where(http["v"]==SqlFunc("md5",SqlFunc("concat",SqlSet(EMAIL,FILTER,TOKEN))));
-	if(sql.GetRowsProcessed())
+	if(SQL.GetRowsProcessed())
 	http("FILTER",String("???"))("ACTION",3)
 	 .RenderResult("Watchdog/Server/subscription");
 	else

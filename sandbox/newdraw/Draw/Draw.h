@@ -44,10 +44,10 @@ struct DrawLock {
 const int FONT_V = 40;
 
 struct FontGlyphConsumer {
-	virtual void Move(double x, double y) = 0;
-	virtual void Line(double x, double y) = 0;
-	virtual void Quadratic(double x1, double y1, double x2, double y2) = 0;
-	virtual void Cubic(double x1, double y1, double x2, double y2, double x3, double y3) = 0;
+	virtual void Move(Pointf p) = 0;
+	virtual void Line(Pointf p) = 0;
+	virtual void Quadratic(Pointf p1, Pointf p2) = 0;
+	virtual void Cubic(Pointf p1, Pointf p2, Pointf p3) = 0;
 	virtual void Close() = 0;
 };
 

@@ -3,22 +3,22 @@
 NAMESPACE_UPP
 
 struct PaintCharPath : FontGlyphConsumer {
-	Painter *p;
+	Painter *sw;
 	
-	virtual void Move(double x, double y) {
-		p->Move(x, y);
+	virtual void Move(Pointf p) {
+		sw->Move(p);
 	}
-	virtual void Line(double x, double y) {
-		p->Line(x, y);
+	virtual void Line(Pointf p) {
+		sw->Line(p);
 	}
-	virtual void Quadratic(double x1, double y1, double x2, double y2) {
-		p->Quadratic(x1, y1, x2, y2);
+	virtual void Quadratic(Pointf p1, Pointf p2) {
+		sw->Quadratic(p1, p2);
 	}
-	virtual void Cubic(double x1, double y1, double x2, double y2, double x3, double y3) {
-		p->Cubic(x1, y1, x2, y2, x3, y3);
+	virtual void Cubic(Pointf p1, Pointf p2, Pointf p3) {
+		sw->Cubic(p1, p2, p3);
 	}
 	virtual void Close() {
-		p->Close();
+		sw->Close();
 	}
 };
 
@@ -26,7 +26,7 @@ void PaintCharacter(Painter& sw, const Pointf& p, int chr, Font font)
 {
 	GlyphInfo gi = GetGlyphInfo(font, chr);
 	PaintCharPath pw;
-	pw.p = &sw;
+	pw.sw = &sw;
 	if(gi.IsNormal())
 		font.Render(pw, p.x, p.y, chr);
 	else

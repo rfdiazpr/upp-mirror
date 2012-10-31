@@ -190,7 +190,7 @@ public:
 	String GetTextFlags() const;
 	void   ParseTextFlags(const char *s);
 	
-	String GetData() const                   { return GetFontDataSys(*this); }
+	String GetData() const;
 	
 	void   Render(FontGlyphConsumer& sw, double x, double y, int ch) const;
 

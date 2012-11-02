@@ -1,0 +1,22 @@
+description "Automation of Office suites OpenOffice and Microsoft\377B255,170,0";
+
+noblitz;
+
+uses
+	Core,
+	Functions4U;
+
+library(WIN32) Oleaut32;
+
+file
+	OfficeSheet.cpp,
+	OfficeDoc.cpp,
+	OfficeAutomation.h,
+	OfficeAutomation.cpp,
+	OfficeAutomationMethods.h,
+	OfficeAutomationBase.h,
+	srcdoc.tpp,
+	src.tpp,
+	OfficeAutomation.t,
+	License.txt;
+

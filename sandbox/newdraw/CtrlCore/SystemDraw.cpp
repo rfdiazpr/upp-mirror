@@ -52,7 +52,6 @@ void SetSurface(Draw& w, int x, int y, int cx, int cy, const RGBA *pixels)
 	SetSurface(w, RectC(x, y, cx, cy), pixels, Size(cx, cy), Point(0, 0));
 }
 
-
 SystemDraw& ScreenInfo();
 
 bool BackDraw::IsPaintingOp(const Rect& r) const

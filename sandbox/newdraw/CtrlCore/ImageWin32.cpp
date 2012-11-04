@@ -219,18 +219,6 @@ ImageSysData::~ImageSysData()
 	img.Clear();
 }
 
-/*
-void    Image::SetCursorCheat(LPCSTR id)
-{
-	data->Sys().cursor_cheat = id;
-}
-
-LPCSTR  Image::GetCursorCheat() const
-{
-	return data ? data->Sys().cursor_cheat : NULL;
-}
-*/
-
 void ImageSysData::CreateHBMP(HDC dc, const RGBA *data)
 {
 	LLOG("Creating BMP for " << img.GetSerialId() << ' ' << img.GetSize());

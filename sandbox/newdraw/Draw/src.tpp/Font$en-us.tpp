@@ -333,13 +333,6 @@ for example some symbol fonts have this issue.&]
 [s5;:Font`:`:GetPath`(`)const: [_^String^ String]_[* GetPath]()[@(64) _][@(0.0.255) const]&]
 [s2;%% [/ POSIX specific:] Returns the path of font file.&]
 [s3; &]
-[s0; &]
-[ {{10000t/25b/25@1 [s0; [* Constructor Detail]]}}&]
-[s3; &]
-[s5;:Font`:`:Font`(`): [* Font]()&]
-[s2;%% Initializes Font to STDFONT, default height, all attributes 
-not active.&]
-[s3; &]
 [s4; &]
 [s5;:Font`:`:GetTextFlags`(`)const: [_^String^ String]_[* GetTextFlags]()_[@(0.0.255) const
 ]&]
@@ -351,6 +344,22 @@ not active.&]
 onst]_[@(0.0.255) char]_`*[*@3 s])&]
 [s2;%% Sets font flags based on text in format created by GetTextFlags.&]
 [s3;%% &]
+[s4; &]
+[s5;:Font`:`:GetData`(`)const: [_^String^ String]_[* GetData]()_[@(0.0.255) const]&]
+[s2;%% Returns the raw content of font file.&]
+[s3; &]
+[s4; &]
+[s5;:Font`:`:Render`(FontGlyphConsumer`&`,double`,double`,int`)const: [@(0.0.255) void]_
+[* Render]([_^FontGlyphConsumer^ FontGlyphConsumer][@(0.0.255) `&]_[*@3 sw], 
+[@(0.0.255) double]_[*@3 x], [@(0.0.255) double]_[*@3 y], [@(0.0.255) int]_[*@3 ch])_[@(0.0.255) c
+onst]&]
+[s2;%% For true`-type fonts, renders the character glyph.&]
+[s3;%% &]
+[s4; &]
+[s5;:Font`:`:Font`(`): [* Font]()&]
+[s2;%% Initializes Font to STDFONT, default height, all attributes 
+not active.&]
+[s3; &]
 [s4; &]
 [s5;:Font`:`:Font`(int`,int`): Font([@(0.0.255) int]_[@3 face], [@(0.0.255) int]_[@3 height])
 &]

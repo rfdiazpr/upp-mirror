@@ -3,6 +3,10 @@
 
 // Implementation header
 
+#ifdef PLATFORM_POSIX
+#define FONT_FT
+#endif
+
 struct FaceInfo : Moveable<FaceInfo> {
 	String name;
 	dword  info;
@@ -35,6 +39,9 @@ struct GlyphInfo {
 	int16 width;
 	int16 lspc;
 	int16 rspc;
+#ifdef FONT_FT
+	word  glyphi;
+#endif
 	
 	bool IsNormal() const     { return (word)width != 0x8000; }
 	bool IsComposed() const   { return !IsNormal() && (lspc == -1 || lspc == -11); }

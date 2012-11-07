@@ -410,7 +410,6 @@ void RenderCharPath(const char* gbuf, unsigned total_size, FontGlyphConsumer& sw
 
 void RenderCharacterSys(FontGlyphConsumer& sw, double x, double y, int ch, Font fnt)
 {
-	DrawLock __;
 	HFONT hfont = GetWin32Font(fnt, 0);
 	if(hfont) {
 		HDC hdc = Win32_IC();

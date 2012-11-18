@@ -8,4 +8,4 @@ MAILTO=dolik.rce@gmail.com
 */5 * * * * root wget -q -O /dev/null http://localhost:8001/api/clean
 
 # check if server is still running, restart if needed
-* * * * * root /etc/init.d/wds status &> /dev/null || /etc/init.d/wds restart
+* * * * * root /etc/init.d/watchdog status &> /dev/null || /etc/init.d/watchdog restart

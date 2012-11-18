@@ -18,6 +18,7 @@ namespace Upp{ namespace Ini {
 	INI_STRING(server_url,"http://localhost:8001", "Url of the server where the application runs.");
 	INI_STRING(svn, ".", "URL/path of the svn repository");
 	INI_INT(max_build_time, 86400, "Number of seconds before an 'In progress' record is deleted from results");
+	INI_BOOL(debug, false, "Activates debug functions");
 }}
 
 void OpenSQL(MySqlSession& session)
@@ -111,7 +112,8 @@ Value Email(const Vector<Value>& arg, const Renderer *)
 
 Value Dbg(const Vector<Value>& arg, const Renderer *r)
 {
-	#ifdef _DEBUG
+	if(!Ini::debug)
+		return Value();
 	String html;
 	if(r) {
 		const VectorMap<String, Value>& set = r->Variables();
@@ -126,9 +128,6 @@ Value Dbg(const Vector<Value>& arg, const Renderer *r)
 		html << "</table></div>";
 	}
 	return Raw(html);
-	#else
-	return Value();
-	#endif
 }
 
 INITBLOCK {
@@ -176,7 +175,6 @@ CONSOLE_APP_MAIN{
 	
 	//InitDB(); //only for development phase
 #ifdef _DEBUG
-	DUMP(GetFileDirectory(__FILE__) + "static");
 	Ini::path = String(Ini::path) + ";" + GetFileDirectory(__FILE__) + "static";
 #endif
 	RLOG(" === STARTING WATCHDOG === ");

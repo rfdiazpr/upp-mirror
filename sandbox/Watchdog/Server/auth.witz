@@ -11,7 +11,7 @@ function updateForm(){
 }
 </script>
 <form action="$TARGET" method="POST">
-<table border="0">
+<table class="indent">
     <tr>
       <td>Client:</td>
       <td><select id="id" onchange='updateForm();'>

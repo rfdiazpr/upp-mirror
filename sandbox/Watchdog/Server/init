@@ -3,13 +3,15 @@
 #include "Watchdog/init"
 #include "Skylark/init"
 #include "MySql/init"
-#define BLITZ_INDEX__ F185875d3ca97de7013153a719c932471
+#include "Core/SMTP/init"
+#include "Core/SSL/init"
+#define BLITZ_INDEX__ F0cec388ac3a75c3d628508aeb74c6c4f
 #include "Web.icpp"
 #undef BLITZ_INDEX__
-#define BLITZ_INDEX__ Fef6719472bea98b28ffcdd94ebd1114e
+#define BLITZ_INDEX__ F2bf4ab1ac9e48dee4664eaf901ca3373
 #include "Api.icpp"
 #undef BLITZ_INDEX__
-#define BLITZ_INDEX__ F61ddddbc03137651fe1ef43968ad36b8
+#define BLITZ_INDEX__ F4a7d82e1c25a132f3570e7d45506fff6
 #include "Feeds.icpp"
 #undef BLITZ_INDEX__
 #endif

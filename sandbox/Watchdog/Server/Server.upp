@@ -1,7 +1,9 @@
 uses
 	Watchdog,
 	Skylark,
-	MySql;
+	MySql,
+	Core/SMTP,
+	Core/SSL;
 
 file
 	Server.h,
@@ -28,6 +30,7 @@ file
 	commit.witz,
 	commits.witz,
 	result.witz,
+	resultmail.witz,
 	results.witz,
 	Static readonly separator,
 	static/style.css,

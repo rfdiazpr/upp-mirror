@@ -14,11 +14,19 @@ namespace Upp{ namespace Ini {
 	INI_STRING(sql_socket, "/var/run/mysqld/mysqld.sock", "MySql socket path");
 	INI_BOOL(sql_log, true, "Activates logging of MySql queries");
 	INI_STRING(log_file, GetExeDirFile("log")+"/"+GetExeTitle()+".log", "Path for the log file");
+	INI_INT(log_level, 2, "Logging verbosity (0,1,2)");
 	INI_STRING(output_dir,GetExeFilePath()+"/output","Directory where the output logs are stored");
 	INI_STRING(server_url,"http://localhost:8001", "Url of the server where the application runs.");
 	INI_STRING(svn, ".", "URL/path of the svn repository");
 	INI_INT(max_build_time, 86400, "Number of seconds before an 'In progress' record is deleted from results");
 	INI_BOOL(debug, false, "Activates debug functions");
+	INI_STRING(smtp_host, "127.0.0.1", "SMTP server address");
+	INI_INT(smtp_port, 25, "SMTP server port");
+	INI_BOOL(smtp_use_ssl, false, "Whether to use SSL to connect to SMTP");
+	INI_STRING(smtp_user, "", "SMTP user (if empty, authentication is not attempted)");
+	INI_STRING(smtp_password, "", "SMTP password");
+	INI_STRING(smtp_from, "Watchdog", "Name to put in the From field of sent emails");
+	INI_STRING(smtp_sender, "Watchdog@example.com", "E-mail to put in the From field of sent e-mails");
 }}
 
 void OpenSQL(MySqlSession& session)
@@ -172,6 +180,7 @@ CONSOLE_APP_MAIN{
 	           |LOG_CERR
 #endif
 	           , (String)Ini::log_file);
+	Smtp::Trace(Ini::log_level == 2);
 	
 	//InitDB(); //only for development phase
 #ifdef _DEBUG

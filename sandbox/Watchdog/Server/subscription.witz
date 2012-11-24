@@ -36,3 +36,29 @@ $if(ACTION==3)
  $/
  </ul>
 $endif
+
+$if(ACTION==-1)
+ <h2>Verification failed</h2>
+ Possible reasons for this are:
+ <ul>
+  <li>The subscription is already activated</li>
+  <li>The link was corupted</li>
+  <li>The subscription request expired (This ussually happens after 24 hours)</li>
+ </ul>
+$endif
+
+$if(ACTION==-2)
+ <h2>Subscription already exists</h2>
+ You already subscribed
+ $if(STATE==0)
+ (but you have not yet verified your e-mail address)
+ $else
+ (and you also verified your e-mail address)
+ $endif
+ this address for exactly this filter:
+ <ul>
+ $for(i in FILTER)
+  <li>$i</li>
+ $/
+ </ul>
+$endif

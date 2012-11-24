@@ -10,7 +10,7 @@ $for(i in ITEMS)
     <title>$i.NAME ($i.REVISION)</title>
     <link>$SELF/result/$i.REVISION/$i.ID</link>
     <description>
-<![CDATA[    
+<![CDATA[
 	<table border=0>
 
 	<tr><td>Status:</td><td>$i.STATUSSTR</td></tr>

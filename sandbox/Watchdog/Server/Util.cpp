@@ -231,11 +231,40 @@ bool CheckAuth2(Http& http, Sql& sql, int client, const String& action){
 	return true;
 }
 
-void SendEmail(const String& to, const String& subject, const String& text){
-	//TODO
-	RLOG("Sending email");
-	SaveFile("/tmp/mail","TO:"+to+"\nSUBJECT:"+subject+"\n"+text);
-	RLOG("Email sent");
+void SendEmails(const Vector<String>& to, const Vector<String>& tokens, const String& subject, const String& text, const String& html){
+	RLOG("Sending emails");
+	Smtp mail;
+	
+	mail.Host(Ini::smtp_host).Port(Ini::smtp_port);
+	if(Ini::smtp_use_ssl)
+	    mail.SSL();
+	if(!IsEmpty(Ini::smtp_user))
+	   mail.Auth(Ini::smtp_user, Ini::smtp_password);
+	String body, htmlbody;
+	for(int i = 0; i < to.GetCount(); ++i){
+		body = text;
+		body.Replace("@token@",tokens[i]);
+		mail.From(Ini::smtp_sender, Ini::smtp_from)
+		    .To(to[i])
+		    .Subject(subject)
+		    .Body(body);
+		if(!IsEmpty(html)){
+			htmlbody = html;
+			htmlbody.Replace("@token@",tokens[i]);
+			mail.Body(htmlbody, "text/html");
+		}
+		if(mail.Send())
+		    RLOG("Email succesfully sent to " << to[i]);
+		else
+		    RLOG("Email sending failed: " << mail.GetError());
+	}
+}
+void SendEmail(const String& to, const String& token, const String& subject, const String& text, const String& html){
+	Vector<String> v1;
+	v1.Add(to);
+	Vector<String> v2;
+	v2.Add(token);
+	SendEmails(v1, v2, subject, text, html);
 }
 
 ValueArray ParseFilter(const String& filter){
@@ -264,6 +293,28 @@ ValueArray ParseFilter(const String& filter){
 		}
 	}
 	return res;
+}
+
+bool MatchFilter(const ValueMap& m, int revision, int client, int result, const String& author, const String& path){
+	Vector<String> v = Split(AsString(m["FILTER"]),"&");
+	if(v.IsEmpty())
+		return true;
+	bool matches = true;
+	for(int i = 0; i < v.GetCount(); i++){
+		if(v[i].StartsWith("author=")){
+			v[i].Replace("author=","");
+			matches = matches && (author == v[i]);
+		} else if(v[i].StartsWith("path=")){
+			v[i].Replace("path=","");
+			matches = matches && (v[i].StartsWith(path));
+		} else if(v[i].StartsWith("client=")){
+			v[i].Replace("client=","");
+			matches = matches && (StrInt(v[i]) == client);
+		} else if(v[i].StartsWith("status=")){
+			matches = matches && ((v[i].EndsWith("=ok") && result == WD_DONE) || (v[i].EndsWith("=failed") && result != WD_DONE));
+		}
+	}
+	return matches;
 }
 
 SqlVal SqlEmptyString(){

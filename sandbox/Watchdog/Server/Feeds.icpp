@@ -67,19 +67,26 @@ SKYLARK(Subscribe, "subscribe:POST")
 	}
 	String filter = http["filter"];
 	String token = Uuid::Create().ToString();
+	http("FILTER", ParseFilter(filter));
+	http("SELF", String(Ini::server_url));
+
+	SQLR * Select(ACTIVE).From(MAIL).Where(UNIQ == int(CRC32(email+filter)));
+	if(SQLR.Fetch()){
+		http("ACTION",-2)("STATE",SQLR[0])
+		 .RenderResult("Watchdog/Server/subscription");
+		return;
+	}
 	SQL * Insert(MAIL)(EMAIL, email)
-	                  (FILTER, ~filter?SqlEmptyString():filter)
+	                  (FILTER, filter.IsEmpty()?SqlEmptyString():filter)
 	                  (TOKEN, token)
 	                  (UNIQ, int(CRC32(email+filter)))
 	                  (CTIME, GetSysTime());
 	String md5 = MD5String(email+filter+token);
-	String verify = String(Ini::server_url) + "/verify?v=" + md5;
 	
-	http("FILTER", ParseFilter(filter));
-	http("LINK", verify);
 	http("ACTION",1)("EMAIL",email)
 	 .RenderResult("Watchdog/Server/subscription");
-	http.WhenFinished = callback3(SendEmail, email, "Verify Watchdog subscription", http.RenderString("Watchdog/Server/verifymail"));
+	http.Finalize();
+	SendEmail(email, md5, "Verify Watchdog subscription", http.RenderString("Watchdog/Server/verifymail"));
 }
 
 SKYLARK(Verify, "verify")
@@ -87,7 +94,8 @@ SKYLARK(Verify, "verify")
 	SQL * Update(MAIL)(ACTIVE,true)
 	 .Where(http["v"]==SqlFunc("md5",SqlFunc("concat",SqlSet(EMAIL,FILTER,TOKEN))));
 	if(!SQL.GetRowsProcessed()){
-		http << "Verification failed. Possible reasons for this are:<br>The subscription is already active<br>The link was corupted<br>The subscription request expired (ussually happens after 24 hours).";
+		http("ACTION",-1)
+		 .RenderResult("Watchdog/Server/subscription");
 		return;
 	}
 	String unsubscribe = String(Ini::server_url) + "/unsubscribe?v=" + String(http["v"]);

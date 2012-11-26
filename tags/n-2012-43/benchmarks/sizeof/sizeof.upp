@@ -1,0 +1,11 @@
+uses
+	Core,
+	CtrlLib;
+
+file
+	main.cpp
+		depends() test.h;
+
+mainconfig
+	"" = "GUI MT";
+

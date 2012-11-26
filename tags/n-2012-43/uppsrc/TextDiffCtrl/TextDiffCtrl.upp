@@ -1,0 +1,10 @@
+uses
+	CtrlLib;
+
+file
+	TextDiffCtrl.h,
+	TextDiff.cpp,
+	TextCtrl.cpp,
+	DiffCtrl.cpp,
+	Diff.iml;
+

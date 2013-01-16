@@ -464,6 +464,18 @@ void  HlStyles::Set(int i, Color c, bool bold, bool italic, bool underline){
 //	SetColor(LineEdit::PAPER_SELECTED, HlStyles::Get(PAPER_SELECTED).color);
 }
 
+void CodeEditor::ZoomFont(int d){
+	if(d!=0){
+		int h = font.GetCy();
+		int q = font.GetHeight();
+		while(font.GetCy() == h && (d < 0 ? font.GetCy() > 5 : font.GetCy() < 40))
+			font.Height(q += d);
+	} else
+		font.Height(16);
+	SetFont(font);
+	bar.Refresh();
+}
+
 
 INITBLOCK{
 	HlStyles::Defaults();

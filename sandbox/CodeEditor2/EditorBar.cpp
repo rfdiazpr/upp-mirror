@@ -68,6 +68,7 @@ void EditorBar::Paint(Draw& w)
 	int i = editor->GetScrollPos().y;
 	int cy = GetSize().cy;
 	bool hi_if = (hilite_if_endif && (editor->highlight == CodeEditor::HIGHLIGHT_CPP
+		|| editor->highlight == CodeEditor::HIGHLIGHT_CS
 		|| editor->highlight == CodeEditor::HIGHLIGHT_JAVA));
 //TODO: reimplement ifdef tracking...
 //	Vector<CodeEditor::IfState> previf;

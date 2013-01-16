@@ -160,6 +160,11 @@ struct FindReplaceDlg : WithIDEFindReplaceLayout<TopWindow> {
 	Size    GetAdjustedSize();
 	virtual bool Key(dword key, int count);
 	void Setup(bool doreplace);
+	void Sync();
+	
+	typedef FindReplaceDlg CLASSNAME;
+
+	FindReplaceDlg();
 };
 
 class HlStyles{
@@ -254,6 +259,7 @@ public:
 	virtual void  LeftDown(Point p, dword keyflags);
 	virtual void  LeftDouble(Point p, dword keyflags);
 	virtual void  MouseMove(Point p, dword keyflags);
+	virtual void  MouseWheel(Point pt, int zdelta, dword keyFlags);
 	virtual Image CursorImage(Point p, dword keyflags);
 	virtual void  Serialize(Stream& s);
 	virtual void  MouseLeave();
@@ -263,7 +269,8 @@ public:
 
 	enum {
 		HIGHLIGHT_NONE = -1, HIGHLIGHT_CPP = 0, HIGHLIGHT_USC, HIGHLIGHT_JAVA, HIGHLIGHT_T,
-		HIGHLIGHT_CALC, HIGHLIGHT_LAY, HIGHLIGHT_SCH, HIGHLIGHT_SQL,
+		HIGHLIGHT_CALC, HIGHLIGHT_LAY, HIGHLIGHT_SCH, HIGHLIGHT_SQL, HIGHLIGHT_CS,
+		HIGHLIGHT_JAVASCRIPT, HIGHLIGHT_CSS,
 		HIGHLIGHT_COUNT
 	};
 
@@ -434,7 +441,7 @@ protected:
 	int     Match(const wchar *f, const wchar *s, int line, bool we, bool icase, int fi = 0);
 	WString GetWild(int type, int& i);
 	WString GetReplaceText();
-	WString GetReplaceText(WString replace, bool wildcards);
+	WString GetReplaceText(WString replace, bool wildcards, bool samecase);
 
 	bool   InsertRS(int chr, int count = 1);
 	void   IndentEnter(int count = 1);
@@ -510,7 +517,8 @@ public:
 	bool   FindLangString(bool back);
 	void   Replace();
 	void   BlockReplace();
-	int    BlockReplace(WString find, WString replace, bool wholeword, bool ignorecase, bool wildcards);
+	int    BlockReplace(WString find, WString replace, bool wholeword, bool ignorecase,
+	                    bool wildcards, bool samecase);
 	void   MakeTabs();
 	void   MakeTabsOrSpaces(bool tabs);
 
@@ -646,6 +654,8 @@ public:
 
 	void Fill(Vector<LineEdit::Highlight>& h, int ln, const Hl& a, int ln2, const Hl& b) const;
 	void FillLine(Vector<LineEdit::Highlight>& h, const Rule& rule) const;
+
+	void ZoomFont(int d);
 
 protected:
 	void MatchSubrules(const Rule& rule, const String& s, int offset, Cache& v);

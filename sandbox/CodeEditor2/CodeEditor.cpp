@@ -2,9 +2,9 @@
 
 NAMESPACE_UPP
 
-#define LLOG(x)    // RLOG(x)
-#define LDUMP(x)   // RDUMP(x)
-#define LDUMPCC(x) // RDUMPCC(x)
+#define LLOG(x)    // LOG(x)
+#define LDUMP(x)   // DUMP(x)
+#define LDUMPCC(x) // DUMPCC(x)
 #define LTIMING(x) // RTIMING(x)
 #define LOGFN      // LOG(String('\t',fndbg::n)<<__PRETTY_FUNCTION__<<" {"); fndbg __fn;
 struct fndbg{
@@ -697,6 +697,14 @@ void CodeEditor::MouseMove(Point p, dword f) {
 	SyncTip();	
 }
 
+void CodeEditor::MouseWheel(Point pt, int zdelta, dword keyFlags)
+{
+	if (keyFlags & K_CTRL) {
+		ZoomFont(sgn(zdelta));
+	} else
+		LineEdit::MouseWheel(pt, zdelta, keyFlags);
+}
+
 Image CodeEditor::CursorImage(Point p, dword keyflags)
 {
 	if(WhenCtrlClick && (keyflags & K_CTRL))
@@ -903,6 +911,17 @@ bool CodeEditor::Key(dword code, int count) {
 		IndentEnter(count);
 		return true;
 	}
+	if (code == (K_CTRL|'+'|K_DELTA)) {
+		ZoomFont(+1);
+		return true;
+	} else if (code == (K_CTRL|'-'|K_DELTA)) {
+		ZoomFont(-1);
+		return true;
+	} else if ((code&~K_SHIFT) == (K_CTRL|'0'|K_DELTA)) {
+		ZoomFont(0);
+		return true;
+	}
+	
 	bool sel = code & K_SHIFT;
 	switch(code & ~K_SHIFT) {
 	case K_F3:
@@ -911,6 +930,12 @@ bool CodeEditor::Key(dword code, int count) {
 	case K_CTRL_F3:
 		FindWord(sel);
 		return true;
+	case K_CTRL_F:
+		FindReplace(sel, false, false);
+		break;
+	case K_CTRL_H:
+		FindReplace(sel, false, true);
+		break;
 	case K_CTRL_RIGHT:
 		MoveNextWord(sel);
 		return true;

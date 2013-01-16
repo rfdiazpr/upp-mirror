@@ -3,6 +3,7 @@ using namespace Upp;
 
 #include <CodeEditor/CodeEditor.h>
 
+#define TEST 0
 
 struct App : public TopWindow {
 	typedef App CLASSNAME;
@@ -38,7 +39,21 @@ struct App : public TopWindow {
 	App(){
 		Title("CodeEditor2 test").Icon(CtrlImg::new_doc());
 		Sizeable().Zoomable().Maximize();
-		
+		#if TEST
+		Add(test.SizePos());
+		test.SetFocus();
+		test.ShowTabs();
+		test.CheckEdited();
+		test.LineNumbers(true);
+		test.BarLine(true);
+		test.HiliteScope(2);
+		test.HiliteIfEndif(true);
+		test.Highlight("cpp");
+		//test.Set(LoadFile(__FILE__));
+		test.Set(String("line1\n\"line2\"\nline3\n"));
+		return;
+		#endif
+
 		Add(s.SizePos());
 		s.Vert(top.SizePos(), bottom.SizePos());
 		
@@ -62,17 +77,17 @@ struct App : public TopWindow {
 		test.BarLine(true);
 		test.HiliteScope(2);
 		test.HiliteIfEndif(true);
-		test.CheckEdited();
+		//test.CheckEdited();
 		
 		syntax.Highlight("syntax");
 		syntax.ShowTabs();
 		syntax.LineNumbers(true);
-		syntax.BarLine(true);
+		//syntax.BarLine(true);
 		syntax.HiliteScope(2);
 		syntax.CheckEdited();
 		
 		String fn(__FILE__);
-		fn.Replace("_test/main.cpp","/c.syntax");
+		fn.Replace("_test"DIR_SEPS"main.cpp", DIR_SEPS"c.syntax");
 		syntax.Set(LoadFile(fn));
 		test.Set(LoadFile(__FILE__));
 		

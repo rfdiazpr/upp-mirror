@@ -1,8 +1,6 @@
 #include <CodeEditor2/CodeEditor.h>
 using namespace Upp;
 
-#include <CodeEditor/CodeEditor.h>
-
 #define TEST 0
 
 struct App : public TopWindow {
@@ -77,12 +75,12 @@ struct App : public TopWindow {
 		test.BarLine(true);
 		test.HiliteScope(2);
 		test.HiliteIfEndif(true);
-		//test.CheckEdited();
+		test.CheckEdited();
 		
 		syntax.Highlight("syntax");
 		syntax.ShowTabs();
 		syntax.LineNumbers(true);
-		//syntax.BarLine(true);
+		syntax.BarLine(true);
 		syntax.HiliteScope(2);
 		syntax.CheckEdited();
 		

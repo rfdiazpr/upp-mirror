@@ -240,7 +240,7 @@ public:
 	static Highlighter& Add(const String& name="") {return list.GetAdd(name);}
 	static void Remove(int n)                      {list.Remove(n);}
 	static int Remove(const String& name)          {return list.RemoveKey(name);}
-	static Vector<String> GetNames()               {return list.GetKeys();}
+	static const Vector<String> GetNames()         {return list.GetKeys();}
 	static int Find(const String& name)            {return list.Find(name);}
 	static VectorMap<String,Highlighter>& Get()    {return list;}
 	static Highlighter& Get(int n)                 {return list[n];}

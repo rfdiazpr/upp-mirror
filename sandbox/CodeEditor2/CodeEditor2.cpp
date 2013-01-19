@@ -201,7 +201,9 @@ void CodeEditor::Fill(Vector<LineEdit::Highlight>& h, int ln, const CodeEditor::
 	int from, to;
 	if(a.begin) {
 		from = a.pos;
-		to = (ln < ln2) ? h.GetCount()-1 : b.pos; 
+		to = (ln < ln2) ? h.GetCount()-1 : min<int>(b.pos, h.GetCount()-1);
+		//note: b.pos should never be higher than h.GetCount()-1, if it is,
+		//      then it means there is error somewhere else...
 	} else {
 		from = (ln > ln2) ? 0 : b.pos;
 		to = a.pos;

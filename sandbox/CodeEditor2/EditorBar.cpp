@@ -138,7 +138,7 @@ void EditorBar::Paint(Draw& w)
 			int width = CodeEditorImg::Breakpoint().GetWidth() >> 1;
 			if(edit)
 			{
-				int age = (int)(log((double)(editor->GetUndoCount() + 1 - edit)) * 30);
+				int age = max(0,(int)(log((double)(editor->GetUndoCount() + 1 - edit)) * 30));
 				w.DrawRect(0, y, width, fy, Blend(LtBlue, SColorLtFace(), min(220, age)));
 			}
 			if(err)
@@ -425,7 +425,7 @@ void EditorBar::ClearErrors(int line)
 		count = li.GetCount();
 	}
 	else
-		count = line + 1;
+		count = min(line + 1, li.GetCount());
 
 	for(int i = line; i < count; i++)
 		li[i].error = 0;

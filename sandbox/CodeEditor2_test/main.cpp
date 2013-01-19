@@ -11,12 +11,15 @@ struct App : public TopWindow {
 	Button open_syntax, open_test, apply;
 
 	void Apply(){
+		bool c = test.GetCheckEdited();
+		test.CheckEdited(false);
 		Highlighter& h = Highlighter::Add("tmp");
 		h.LoadSyntax(~syntax, true);
 		test.Highlight("tmp");
 		String t = ~test;
 		test.Clear();
 		test.Set(t);
+		test.CheckEdited(c);
 	}
 
 	void LoadSyntax(){
@@ -24,6 +27,8 @@ struct App : public TopWindow {
 		if(!fs.ExecuteOpen("Load syntax file ..."))
 			return;
 		syntax.Set(LoadFile(fs.Get()));
+		syntax.ClearEdited();
+		syntax.ClearUndo();
 		Apply();
 	}
 
@@ -32,6 +37,8 @@ struct App : public TopWindow {
 		if(!fs.ExecuteOpen("Load test file ..."))
 			return;
 		test.Set(LoadFile(fs.Get()));
+		test.ClearEdited();
+		test.ClearUndo();
 	}
 
 	App(){
@@ -69,6 +76,11 @@ struct App : public TopWindow {
 		open_test <<= THISBACK(LoadTest);
 		apply <<= THISBACK(Apply);
 		
+		syntax.Set(LoadFile(AppendFileName(String(__FILE__,strlen(__FILE__)-14), "c.syntax")));
+		test.Set(LoadFile(__FILE__));
+		
+		Apply();
+		
 		test.SetFocus();
 		test.ShowTabs();
 		test.LineNumbers(true);
@@ -83,13 +95,6 @@ struct App : public TopWindow {
 		syntax.BarLine(true);
 		syntax.HiliteScope(2);
 		syntax.CheckEdited();
-		
-		String fn(__FILE__);
-		fn.Replace("_test"DIR_SEPS"main.cpp", DIR_SEPS"c.syntax");
-		syntax.Set(LoadFile(fn));
-		test.Set(LoadFile(__FILE__));
-		
-		Apply();
 	}
 };
 

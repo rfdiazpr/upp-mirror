@@ -1,0 +1,8 @@
+uses
+	Core;
+
+file
+	PipeStream.h,
+	PipeStream.cpp,
+	src.tpp;
+

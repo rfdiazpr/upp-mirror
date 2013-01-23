@@ -1,0 +1,4 @@
+#ifndef _LzmaTest_icpp_init_stub
+#define _LzmaTest_icpp_init_stub
+#include "plugin/lzma/init"
+#endif

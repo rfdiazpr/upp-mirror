@@ -1,0 +1,8 @@
+description "Example application for plugin/lzma\377";
+
+uses
+	plugin/lzma;
+
+file
+	LzmaTest.cpp;
+

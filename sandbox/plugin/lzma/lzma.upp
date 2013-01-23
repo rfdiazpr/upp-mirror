@@ -1,0 +1,26 @@
+uses
+	PipeStream;
+
+library
+	lzma;
+
+options(!WIN32) -D_7ZIP_ST;
+
+include
+	./lib;
+
+file
+	lzma.h,
+	lzma.cpp,
+	lib readonly separator,
+	lib/LzFind.c,
+	lib/LzFind.h,
+	lib/LzFindMt.c_,
+	lib/LzFindMt.h,
+	lib/LzHash.h,
+	lib/LzmaDec.c,
+	lib/LzmaDec.h,
+	lib/LzmaEnc.c_,
+	lib/LzmaEnc.h,
+	lib/Types.h;
+

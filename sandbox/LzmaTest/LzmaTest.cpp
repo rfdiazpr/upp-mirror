@@ -14,11 +14,15 @@ void OutputFunc(const void* buf, int size){
 }
 
 CONSOLE_APP_MAIN {
-	String fn = GetExeFilePath();
+	String fn; 
+	if(CommandLine().IsEmpty())
+		fn = GetExeFilePath();
+	else	
+		fn = CommandLine()[0];
 	
 	String tmp = LoadFile(fn);
 	Cout() << Format("          Name%s     Size      MD5\n", String(' ',fn.GetCount()-4));
-	Cout() << Format("Original: %s     %9i %s\n", fn, tmp.GetCount(), MD5String(tmp));
+	Cout() << Format("Original: %s     %9<i %s\n", fn, tmp.GetCount(), MD5String(tmp));
 
 	Lzma lzma;
 	//lzma.WhenProgress = callback(&ProgressFunc);
@@ -38,7 +42,7 @@ CONSOLE_APP_MAIN {
 	}
 
 	tmp = LoadFile(fn+".enc");
-	Cout() << Format("Encoded:  %s %9i %s\n", fn+".enc", tmp.GetCount(), MD5String(tmp));
+	Cout() << Format("Encoded:  %s %9<i %s\n", fn+".enc", tmp.GetCount(), MD5String(tmp));
 	
 	/* Decompression */
 	{
@@ -54,5 +58,5 @@ CONSOLE_APP_MAIN {
 	}
 	
 	tmp = LoadFile(fn+".dec");
-	Cout() << Format("Decoded:  %s %9i %s\n", fn+".dec", tmp.GetCount(), MD5String(tmp));
+	Cout() << Format("Decoded:  %s %9<i %s\n", fn+".dec", tmp.GetCount(), MD5String(tmp));
 }

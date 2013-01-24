@@ -15,12 +15,12 @@ file
 	lib readonly separator,
 	lib/LzFind.c,
 	lib/LzFind.h,
-	lib/LzFindMt.c_,
+	lib/LzFindMt.c_ highlight cpp,
 	lib/LzFindMt.h,
 	lib/LzHash.h,
 	lib/LzmaDec.c,
 	lib/LzmaDec.h,
-	lib/LzmaEnc.c_,
+	lib/LzmaEnc.c_ highlight cpp,
 	lib/LzmaEnc.h,
 	lib/Types.h;
 

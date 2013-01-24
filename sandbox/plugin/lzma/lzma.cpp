@@ -81,7 +81,8 @@ void Lzma::CompressFirst(){
 	inStream.Set(&in);
 	outStream.Set(&out);
 
-	ASSERT(LzmaEnc_Prepare(enc, (ISeqOutStream*)&outStream, (ISeqInStream*)&inStream, &SzAllocForLzma, &SzAllocForLzma) == 0);
+	res = LzmaEnc_Prepare(enc, (ISeqOutStream*)&outStream, (ISeqInStream*)&inStream, &SzAllocForLzma, &SzAllocForLzma);
+	ASSERT(res == SZ_OK);
 	
 	inPos = 1;
 }

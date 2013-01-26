@@ -8,10 +8,12 @@ uses
 
 file
 	GraphCtrl.iml,
+	ScatterCtrl.t,
 	GraphCtrl.lay,
 	GraphCtrl.h,
 	GraphCtrl.cpp,
-	ScatterCtrl.h;
+	ScatterCtrl.h,
+	GraphCtrl.usc;
 
 mainconfig
 	"" = "GUI SSE2";

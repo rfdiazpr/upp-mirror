@@ -21,14 +21,16 @@ using namespace Upp;
 // ============================
 //    CRTP_GraphCtrlBase   CLASS
 // ============================
-template<class TYPES, class DERIVED>
-class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED>, public Ctrl
+//template<class TYPES, class DERIVED>
+//class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_XYGraphDraw<TYPES, DERIVED>, public Ctrl
+template<class TYPES, class DERIVED, template <class TYPES2, class DERIVED2> class GRAPHDRAW_BASE_CLASS >
+class CRTP_GraphCtrlBase : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public Ctrl
 {
 	public:
-	typedef CRTP_GraphCtrlBase<TYPES, DERIVED> CLASSNAME;
+	typedef CRTP_GraphCtrlBase<TYPES, DERIVED, GRAPHDRAW_BASE_CLASS> CLASSNAME;
 
 	private:
-	typedef GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED> _B;
+	typedef GraphDraw_ns::CRTP_XYGraphDraw<TYPES, DERIVED> _B;
 
 	GraphDraw_ns::GraphElementFrame* elementCapture_LeftDown   ;
 	GraphDraw_ns::GraphElementFrame* elementCapture_LeftDouble ;
@@ -84,7 +86,7 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 	, copyRatio(3)
 	{
 		SetModify();
-		setScreenSize( GetSize() );
+		_B::setScreenSize( GetSize() );
 	}
 
 	CRTP_GraphCtrlBase(const CRTP_GraphCtrlBase& p)
@@ -110,7 +112,7 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 	, copyRatio(p.copyRatio)
 	{
 		SetModify();
-		setScreenSize( GetSize() );
+		_B::setScreenSize( GetSize() );
 	}
 
 	virtual void Refresh() {
@@ -132,7 +134,7 @@ class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_StdGraphDraw<TYPES, DERIVED
 	}
 
 	void Paint2(Draw& w) {
-		setScreenSize( GetSize() );
+		_B::setScreenSize( GetSize() );
 		if (_B::_mode == GraphDraw_ns::MD_DRAW) {
 			ImageDraw ib(GetSize());
 			_B::Paint(ib, 1);
@@ -575,7 +577,7 @@ struct GridAxisPropertiesDlg<GRIDAXISDRAW, GraphDraw_ns::GenericCoordinateConver
 
 			WithGridAxisPropertiesLayout<TopWindow> dlg;
 
-			dlg.scaleType.Add(GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_STD,   t_("Std new") );
+			dlg.scaleType.Add(GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_STD,   t_("Std") );
 			dlg.scaleType.Add(GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_LOG,   t_("Log") );
 			dlg.scaleType.Add(GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_POW10, t_("Pow10") );
 			if ( gMin < 0) {
@@ -819,39 +821,47 @@ class StdLegendCtrl : public CtrlElement_MoveResize<TYPES, LEGENDDRAW> {
 struct GraphCtrlDefaultTypes {
 		typedef DataSource                                                      TypeDataSource;
 		typedef SeriesPlot                                                      TypeSeriesPlot;
+		typedef GraphDraw_ns::SeriesConfig<GraphCtrlDefaultTypes>               TypeSeriesConfig;
+		typedef Vector<TypeSeriesConfig>                                        TypeVectorSeries;
 		typedef MarkPlot                                                        TypeMarkPlot;
 		typedef GraphDraw_ns::GenericCoordinateConverter                        TypeCoordConverter;
 		typedef StdGridAxisDrawCtrl<GraphCtrlDefaultTypes>                      TypeGridAxisDraw;
 		typedef GraphDraw_ns::GridStepManager<>                                 TypeGridStepManager;
-		typedef GraphDraw_ns::SeriesConfig<GraphCtrlDefaultTypes>               TypeSeriesConfig;
-		typedef Vector<TypeSeriesConfig>                                        TypeVectorSeries;
+		typedef GraphDraw_ns::LabelElement                                      TypeLabelElement;
 };
 
-
-
-template<class TYPES, class DERIVED >
-class CRTP_StdGraphCtrl :	public CRTP_GraphCtrlBase< TYPES, DERIVED >
+class XYY2_GraphCtrl   : public CRTP_GraphCtrlBase< GraphCtrlDefaultTypes, XYY2_GraphCtrl, GraphDraw_ns::CRTP_XYY2GraphDraw>
 {
 	public:
-	typedef CRTP_StdGraphCtrl<TYPES, DERIVED>  CLASSNAME;
-	typedef CRTP_GraphCtrlBase<TYPES, DERIVED> _B;
-	typedef TYPES                              Types;
-
-	private:
-
-	public:
-	CRTP_StdGraphCtrl() {
-	}
-
+	typedef XYY2_GraphCtrl  CLASSNAME;
+	typedef CRTP_GraphCtrlBase< GraphCtrlDefaultTypes, XYY2_GraphCtrl, GraphDraw_ns::CRTP_XYY2GraphDraw> _B;
+	typedef GraphCtrlDefaultTypes  Types;
 };
 
-template<class TYPES = GraphCtrlDefaultTypes >
-class StdGraphCtrl :	public CRTP_StdGraphCtrl< TYPES, StdGraphCtrl<TYPES> >
+class XY_GraphCtrl   : public CRTP_GraphCtrlBase< GraphCtrlDefaultTypes, XY_GraphCtrl, GraphDraw_ns::CRTP_XYGraphDraw>
 {
+	public:
+	typedef XY_GraphCtrl  CLASSNAME;
+	typedef CRTP_GraphCtrlBase< GraphCtrlDefaultTypes, XY_GraphCtrl, GraphDraw_ns::CRTP_XYGraphDraw> _B;
+	typedef GraphCtrlDefaultTypes  Types;
 };
 
 
+class XYLT_GraphCtrl : public CRTP_GraphCtrlBase< GraphCtrlDefaultTypes, XYLT_GraphCtrl, GraphDraw_ns::CRTP_XYLTGraphDraw>
+{
+	public:
+	typedef XYLT_GraphCtrl  CLASSNAME;
+	typedef CRTP_GraphCtrlBase< GraphCtrlDefaultTypes, XYLT_GraphCtrl, GraphDraw_ns::CRTP_XYLTGraphDraw> _B;
+	typedef GraphCtrlDefaultTypes  Types;
+};
 
+class XYY2LT_GraphCtrl : public CRTP_GraphCtrlBase< GraphCtrlDefaultTypes, XYY2LT_GraphCtrl, GraphDraw_ns::CRTP_XYY2LTGraphDraw>
+{
+	public:
+	typedef XYY2LT_GraphCtrl  CLASSNAME;
+	typedef CRTP_GraphCtrlBase< GraphCtrlDefaultTypes, XYY2LT_GraphCtrl, GraphDraw_ns::CRTP_XYY2LTGraphDraw> _B;
+	typedef GraphCtrlDefaultTypes  Types;
+};
 
 
 #endif

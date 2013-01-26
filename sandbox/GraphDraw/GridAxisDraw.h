@@ -95,6 +95,13 @@ namespace GraphDraw_ns
 	// ============================
 	//    GridAxisDraw   CLASS
 	// ============================
+	typedef enum {
+		AXIS_TEXT_FORMAT_STD,
+		AXIS_TEXT_FORMAT_LOG,
+		AXIS_TEXT_FORMAT_DATE,
+		AXIS_TEXT_FORMAT_TIME,
+	} AxisTextFormat;
+
 	template<class TYPES >
 	class GridAxisDraw : public CRTPGraphElementFrame< GridAxisDraw<TYPES> >
 	{
@@ -105,6 +112,7 @@ namespace GraphDraw_ns
 		typedef CRTPGraphElementFrame< GridAxisDraw<TYPES> > _B;
 		typedef Callback2< const GridStepIterator&, String&> TypeFormatTextCbk; // IN: valueIterator,  OUT: formated value
 
+		
 //		protected:
 		int       _axisWidth;
 		Color     _axisColor;
@@ -161,13 +169,33 @@ namespace GraphDraw_ns
 		TypeGridStepManager& GetGridStepManager() { return *_gridStepManager; }
 		inline CLASSNAME& setAxisColor(Color v)                         { _axisColor = v; return *this;  }
 		inline CLASSNAME& setAxisWidth(int v)                           { _axisWidth = v; return *this;  }
-		inline CLASSNAME& setAxisTextFont(Font v)                       { _axisTextFont = v; return *this; }
+		inline CLASSNAME& setAxisTextFont(Font v)                      { _axisTextFont = v; return *this; }
 		inline CLASSNAME& setAxisTextColor(Color v)                     { _axisTextColor = v; return *this; }
 		inline CLASSNAME& setAxisTickColor(Color v)                     { _axisTickColor = v; return *this; }
 		inline CLASSNAME& setGridColor(Color v)                         { _gridColor = v; return *this; }
 		inline CLASSNAME& setMajorTickMark(TickMark* v)                 { _majorTickMark = v; return *this;  }
 		inline CLASSNAME& setMinorTickMark(TickMark* v)                 { _minorTickMark = v; return *this;  }
 		inline CLASSNAME& setAxisTextFormat(TypeFormatTextCbk v)        { formatTextCbk = v; return *this;  }
+		CLASSNAME& setAxisTextFormat(AxisTextFormat v) {
+			switch(v) {
+				case AXIS_TEXT_FORMAT_STD:
+					formatTextCbk.Clear();
+					break;
+				case AXIS_TEXT_FORMAT_LOG:
+					setAxisLogFormat();
+					break;
+				case AXIS_TEXT_FORMAT_DATE:
+					setAxisDateFormat();
+					break;
+				case AXIS_TEXT_FORMAT_TIME:
+					setAxisTimeFormat();
+					break;
+			}
+			return *this;
+		}
+		
+		
+		
 		inline CLASSNAME& resetAxisTextFormat()                         { formatTextCbk.Clear(); return *this;  }
 		inline CLASSNAME& setAxisLogFormat(TypeFormatTextCbk cbk=TypeFormatTextCbk()) {
 			if ( cbk ) formatTextCbk = cbk;
@@ -515,5 +543,6 @@ namespace GraphDraw_ns
 		}
 	};
 }
+
 
 #endif /* GRIDAXISDRAW_H_ */

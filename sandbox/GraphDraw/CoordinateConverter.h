@@ -47,7 +47,6 @@ namespace GraphDraw_ns
 			inline void setGraphMaxRangeLimit(TypeGraphCoord v) { _graphMaxLimit = v; }
 			inline void setGraphMinRangeLimit(TypeGraphCoord v) { _graphMinLimit = v; }
 			inline void resetGraphRangeLimits() { _graphMaxLimit = Null; _graphMinLimit = Null; }
-			
 			virtual TypeGraphCoord applyRangeLimits(TypeGraphCoord v) {
 				if (!_graphMaxLimit.IsNull()) {
 					if (v > ValueTo<TypeGraphCoord>(_graphMaxLimit)) v = _graphMaxLimit;
@@ -73,6 +72,8 @@ namespace GraphDraw_ns
 				update( getGraphMin(), getGraphMax(), getScreenMin(), getScreenMax() );
 			}
 
+			inline void SetGraphMin(TypeGraphCoord v) { update( v, getGraphMax(), getScreenMin(), getScreenMax() ); }
+			inline void SetGraphMax(TypeGraphCoord v) { update( getGraphMin(), v, getScreenMin(), getScreenMax() ); }
 			virtual void update(TypeGraphCoord graphMin, TypeGraphCoord graphMax, TypeScreenCoord screenMin, TypeScreenCoord screenMax)
 			{
 				//TRACE_INFO("CoordinateConverter.update(" << graphMin << ", " << graphMax  << ", " << screenMin<< ", " << screenMax << " )" );
@@ -304,7 +305,8 @@ namespace GraphDraw_ns
 				}
 
 			}
-				void SetScaleType(AxisScaleType t)	{
+
+			void SetScaleType(AxisScaleType t)	{
 				switch(t) {
 					case AXIS_SCALE_STD:
 						SetConvStd();
@@ -353,5 +355,7 @@ namespace GraphDraw_ns
 	};
 
 };
+
+typedef GraphDraw_ns::GenericCoordinateConverter GraphGConv; // Needed by '.USC' file
 
 #endif

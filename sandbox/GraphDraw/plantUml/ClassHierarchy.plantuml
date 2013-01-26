@@ -129,6 +129,11 @@ class GridAxisDraw {
 
 class GridStepManager {
 	void SetNbSteps(nbSteps)
+	void setGridStepCalcBack(TypeGridStepCalcCallBack cbk)
+	void setStdGridSteps()                                
+	void setLogGridSteps()
+	void setTimeGridSteps()
+	void setDateGridSteps()
 }
 
 class GridStepIterator {

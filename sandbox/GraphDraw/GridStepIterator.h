@@ -177,7 +177,7 @@ namespace GraphDraw_ns
 					// fill step values ==> used by gridStepIterator
 					_nbSteps = -1;
 					for (unsigned int c=0; c<(nbLogSteps+1); ++c) {
-						double stepValue = pow10(gridStartValue + logStepValue*c);
+						double stepValue = pow( 10, gridStartValue + logStepValue*c );
 						double currVal = stepValue;
 
 						if ( (currVal > coordConv.getGraphMin()) && (currVal < coordConv.getGraphMax())) {

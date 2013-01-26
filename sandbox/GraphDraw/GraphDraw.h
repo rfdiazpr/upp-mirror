@@ -99,7 +99,6 @@ namespace GraphDraw_ns
 		Vector< TypeCoordConverter* > _xConverters;
 		Vector< TypeCoordConverter* > _yConverters;
 
-
 		Size     _screenPlotSize;
 		Rect     _screenRect;  // whole graph screen Rect
 		Point    _PlotTopLeft; // TopLeft opoint of plot area inside graph area
@@ -109,15 +108,20 @@ namespace GraphDraw_ns
 		Color    _plotBckgndColor;
 		Color    _CtrlBckgndColor;
 
+		int       _topMarginWidth;
+		int       _bottomMarginWidth;
+		int       _leftMarginWidth;
+		int       _rightMarginWidth;
+		
 		inline void updateSizes( const int scale = 1 )
 		{
 			// --------------
 			// GRAPH ELEMENTS
 			// --------------
-			TypeScreenCoord offsetLeft=0;
-			TypeScreenCoord offsetTop=0;
-			TypeScreenCoord offsetRight=0;
-			TypeScreenCoord offsetBottom=0;
+			TypeScreenCoord offsetLeft   = _leftMarginWidth*scale;
+			TypeScreenCoord offsetTop    = _topMarginWidth*scale;
+			TypeScreenCoord offsetRight  = _rightMarginWidth*scale;
+			TypeScreenCoord offsetBottom = _bottomMarginWidth*scale;
 			
 			// ======================
 			//   calcul des offset
@@ -196,7 +200,17 @@ namespace GraphDraw_ns
 		}
 
 		public:
-		CRTP_EmptyGraphDraw() : _mode( MD_DRAW ), _doFastPaint(false), _plotBckgndColor( LtGray() ), _CtrlBckgndColor( White() ) {};
+		CRTP_EmptyGraphDraw()
+		: _mode( MD_DRAW )
+		, _doFastPaint(false)
+		, _plotBckgndColor( LtGray() )
+		, _CtrlBckgndColor( White() )
+		, _topMarginWidth(0)
+		, _bottomMarginWidth(0)
+		, _leftMarginWidth(0)
+		, _rightMarginWidth(0)
+		{};
+
 
 		virtual ~CRTP_EmptyGraphDraw() {
 			for (int j = 0; j < _createdElements.GetCount(); j++)
@@ -216,6 +230,11 @@ namespace GraphDraw_ns
 			if ((MD_DRAW<=m) && (m<=MD_SUBPIXEL)) _mode = (DrawMode)m;
 			return *static_cast<DERIVED*>(this);
 		}
+
+		DERIVED& SetTopMargin(int v)    { _topMarginWidth = v;    return *static_cast<DERIVED*>(this); }
+		DERIVED& SetBottomMargin(int v) { _bottomMarginWidth = v; return *static_cast<DERIVED*>(this); }
+		DERIVED& SetLeftMargin(int v)   { _leftMarginWidth = v;   return *static_cast<DERIVED*>(this); }
+		DERIVED& SetRightMargin(int v)  { _rightMarginWidth = v;  return *static_cast<DERIVED*>(this); }
 
 		DERIVED& setScreenSize(Rect r, const int scale=1)	{
 			_screenRect = r;
@@ -427,7 +446,7 @@ namespace GraphDraw_ns
 		template<class T>	T& CloneRightElement(int elementWidth, T& p)  { return CloneElement<T, RIGHT_OF_GRAPH>(elementWidth, p); }
 		template<class T>	T& CloneTopElement(int elementWidth, T& p)    { return CloneElement<T, TOP_OF_GRAPH>(elementWidth, p); }
 		template<class T>	T& CloneBottomElement(int elementWidth, T& p) { return CloneElement<T, BOTTOM_OF_GRAPH>(elementWidth, p); }
-		template<class T>	T& CloneOverElement(T& p)   { return CloneElement<OVER_GRAPH>(0, p); }
+		template<class T>	T& CloneOverElement(T& p)                     { return CloneElement<OVER_GRAPH>(0, p); }
 
 		template<class T, int POS_OF_GRAPH>
 		T& CreateLegendElement(int elementWidth) {
@@ -678,7 +697,7 @@ namespace GraphDraw_ns
 						                                 fround(_B::series[j].thickness),
 						                                 _B::series[j].color,
 						                                 _B::series[j].dash,
-						                                 LtRed(),
+						                                 _plotBckgndColor,
 						                                 _B::series[j].fillColor,
 						                                 xConverter.getScreenRange() / xConverter.getGraphRange(),
 						                                 yConverter.getScreenRange() / yConverter.getGraphRange(),
@@ -708,7 +727,7 @@ namespace GraphDraw_ns
 			// --------------------------------------
 
 			// --------------
-			// GRAPH ELEMENTS
+			// GRAPH ELEMENTS (painted in they're area)
 			// --------------
 			for (int j = 0; j < _leftElements.GetCount(); j++)
 			{
@@ -767,11 +786,11 @@ namespace GraphDraw_ns
 	//    CRTP_EmptyGraphDraw   CLASS
 	// ============================
 	template<class TYPES, class DERIVED>
-	class CRTP_StdGraphDraw : public CRTP_EmptyGraphDraw<TYPES, DERIVED >
+	class CRTP_XYGraphDraw : public CRTP_EmptyGraphDraw<TYPES, DERIVED >
 	{
 		public:
 		typedef TYPES Types;
-		typedef CRTP_StdGraphDraw<TYPES, DERIVED> CLASSNAME;
+		typedef CRTP_XYGraphDraw<TYPES, DERIVED> CLASSNAME;
 		typedef CRTP_EmptyGraphDraw<TYPES, DERIVED > BASECLASS;
 
 
@@ -780,17 +799,22 @@ namespace GraphDraw_ns
 		typedef SeriesGroup<TYPES,CLASSNAME>                  TypeSeriesGroup;
 
 		protected:
-		TypeCoordConverter        _xConverter;
-		TypeCoordConverter        _yConverter;
-		TypeGridAxisDraw          _xGridDraw;
-		TypeGridAxisDraw          _yGridDraw;
-
+		TypeCoordConverter   _xConverter;
+		TypeCoordConverter   _yConverter;
+		TypeGridAxisDraw     _xGridDraw;
+		TypeGridAxisDraw     _yGridDraw;
+		
 		public:
-		CRTP_StdGraphDraw()
+		CRTP_XYGraphDraw()
 		: _xGridDraw(_xConverter)
 		, _yGridDraw(_yConverter)
 		{
-			_xGridDraw.SetElementWidth(20);
+			BASECLASS::SetTopMargin(   10);
+			BASECLASS::SetBottomMargin( 0);
+			BASECLASS::SetLeftMargin(   0);
+			BASECLASS::SetRightMargin( 15);
+
+			_xGridDraw.SetElementWidth(25);
 			_xGridDraw.setAxisColor( Blue() ).setAxisTextFont(StdFont()).setAxisTextColor( Blue() ).setAxisTickColor( Red() );
 			_xGridDraw.setGridColor( Gray() );
 			_xGridDraw.setMajorTickMark( (new LineTickMark())->SetTickLength( 3 ) );
@@ -808,23 +832,23 @@ namespace GraphDraw_ns
 			setGraphSize(0, 100, 0, 100);
 		};
 
-		virtual ~CRTP_StdGraphDraw() {}
+		virtual ~CRTP_XYGraphDraw() {}
 
 
-		CLASSNAME& setGraphSize(Rectf r)
+		DERIVED& setGraphSize(Rectf r)
 		{
 			_xConverter.updateGraphSize(r.TopLeft().x, r.BottomRight().x);
 			_yConverter.updateGraphSize(r.TopLeft().y, r.BottomRight().y);
 			BASECLASS::updateSizes();
-			return *this;
+			return *static_cast<DERIVED*>(this);
 		}
 
-		CLASSNAME& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1)
+		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1)
 		{
 			_xConverter.updateGraphSize( x0, x1);
 			_yConverter.updateGraphSize( y0, y1);
 			BASECLASS::updateSizes();
-			return *this;
+			return *static_cast<DERIVED*>(this);
 		}
 
 		TypeCoordConverter& GetXCoordConverter() { return _xConverter; }
@@ -833,13 +857,210 @@ namespace GraphDraw_ns
 		TypeGridAxisDraw& GetXGridAxisDraw() { return _xGridDraw; }
 		TypeGridAxisDraw& GetYGridAxisDraw() { return _yGridDraw; }
 
-		CLASSNAME& setXAxisRectWidth(int v) { _xGridDraw.SetElementWidth(v); return *this; }
-		CLASSNAME& setYAxisRectWidth(int v) { _yGridDraw.SetElementWidth(v); return *this; }
+
+		DERIVED& SetXAxisRectWidth(int v) { _xGridDraw.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisRectWidth(int v) { _yGridDraw.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
 
 
-		CLASSNAME& setXNbGridSteps(int v) { _xGridDraw.GetGridStepManager().SetNbSteps(v); return *this; }
-		CLASSNAME& setYNbGridSteps(int v) { _yGridDraw.GetGridStepManager().SetNbSteps(v); return *this; }
+		DERIVED& setXNbGridSteps(int v) { _xGridDraw.GetGridStepManager().SetNbSteps(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& setYNbGridSteps(int v) { _yGridDraw.GetGridStepManager().SetNbSteps(v); return *static_cast<DERIVED*>(this); }
+		
+		DERIVED& SetXGridColor(Color v) { _xGridDraw.setGridColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYGridColor(Color v) { _yGridDraw.setGridColor(v); return *static_cast<DERIVED*>(this); }
+		
+		DERIVED& SetXAxisWidth(int v) { _xGridDraw.setAxisWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisWidth(int v) { _yGridDraw.setAxisWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXAxisColor(Color v) { _xGridDraw.setAxisColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisColor(Color v) { _yGridDraw.setAxisColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXAxisTextColor(Color v) { _xGridDraw.setAxisTextColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisTextColor(Color v) { _yGridDraw.setAxisTextColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXAxisTextFont(Font v) { _xGridDraw.setAxisTextFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisTextFont(Font v) { _yGridDraw.setAxisTextFont(v); return *static_cast<DERIVED*>(this); }
+		
+		DERIVED& SetXAxisTickColor(Color v) { _xGridDraw.setAxisTickColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisTickColor(Color v) { _yGridDraw.setAxisTickColor(v); return *static_cast<DERIVED*>(this); }
+		
+		
+		DERIVED& SetXScaleType(int v) { _xConverter.SetScaleType(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYScaleType(int v) { _yConverter.SetScaleType(v); return *static_cast<DERIVED*>(this); }
+
+		DERIVED& SetXAxisFormatType(AxisTextFormat v) { _xGridDraw.setAxisTextFormat(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisFormatType(AxisTextFormat v) { _yGridDraw.setAxisTextFormat(v); return *static_cast<DERIVED*>(this); }
+
+
+		DERIVED& SetXMin(double v) { _xConverter.SetGraphMin(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXMax(double v) { _xConverter.SetGraphMax(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYMin(double v) { _yConverter.SetGraphMin(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYMax(double v) { _yConverter.SetGraphMax(v); return *static_cast<DERIVED*>(this); }
 	};
+
+
+	template<class TYPES, class DERIVED>
+	class CRTP_XYLTGraphDraw : public CRTP_XYGraphDraw<TYPES, DERIVED >
+	{
+		public:
+		typedef TYPES Types;
+		typedef CRTP_XYLTGraphDraw<TYPES, DERIVED> CLASSNAME;
+		typedef CRTP_XYGraphDraw<TYPES, DERIVED>   BASECLASS;
+		typedef typename TYPES::TypeLabelElement   TypeLabel;
+	
+		TypeLabel   _title;
+		TypeLabel   _xLabel;
+		TypeLabel   _yLabel;
+
+		protected:
+		
+		public:
+		CRTP_XYLTGraphDraw()
+		{
+			_title.SetFont( StdFontZ(20).Bold().Underline()).SetTextColor(Red).SetLabel("TITLE");
+			_xLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("X Axis label");
+			_yLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("Y Axis label");
+			BASECLASS::AddTopElement(40, _title);
+			BASECLASS::AddLeftElement(30, _xLabel);
+			BASECLASS::AddBottomElement(30, _yLabel);
+		}
+		
+		
+		DERIVED& SetTitle(const String& v) { _title.SetLabel(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitlePosition(const ElementPosition v) { return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitleFont(const Font& v) { _title.SetFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitleWidth(int v) { _title.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitleColor(const Color& v) { _title.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+		
+	
+		DERIVED& SetXLabel(const String& v) { _xLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXLabelFont(const Font& v) { _xLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXLabelWidth(int v) { _xLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXLabelColor(const Color& v) { _xLabel.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+
+		DERIVED& SetYLabel(const String& v) { _yLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYLabelFont(const Font& v) { _yLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYLabelWidth(int v) { _yLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYLabelColor(const Color& v) { _yLabel.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+	};
+
+
+	template<class TYPES, class DERIVED>
+	class CRTP_XYY2GraphDraw : public CRTP_XYGraphDraw<TYPES, DERIVED >
+	{
+		public:
+		typedef TYPES Types;
+		typedef CRTP_XYY2GraphDraw<TYPES, DERIVED> CLASSNAME;
+		typedef CRTP_XYGraphDraw<TYPES, DERIVED>   BASECLASS;
+		
+		typedef typename TYPES::TypeLabelElement   TypeLabel;
+		typedef typename TYPES::TypeCoordConverter TypeCoordConverter;
+		typedef typename TYPES::TypeGridAxisDraw   TypeGridAxisDraw;
+		typedef SeriesGroup<TYPES,CLASSNAME>       TypeSeriesGroup;
+	
+		TypeCoordConverter   _y2Converter;
+		TypeGridAxisDraw     _y2GridDraw;
+		
+		public:
+		CRTP_XYY2GraphDraw()
+		: _y2GridDraw(_y2Converter)
+		{
+			_y2GridDraw.SetElementWidth(40);
+			_y2GridDraw.setAxisColor( Blue() ).setAxisTextFont(StdFont()).setAxisTextColor( Blue() ).setAxisTickColor( Red() );
+			_y2GridDraw.setGridColor( Null );
+			_y2GridDraw.setMajorTickMark( (new LineTickMark())->SetTickLength( 3 ) );
+
+			BASECLASS::AddYConverter(_y2Converter);
+			BASECLASS::AddRightElement(_y2GridDraw);
+			setGraphSize(0, 100, 0, 100, 0, 100);
+		};
+
+		virtual ~CRTP_XYY2GraphDraw() {}
+
+		private:
+		DERIVED& setGraphSize(Rectf r)
+		{
+			return *static_cast<DERIVED*>(this);
+		}
+		
+		public:
+		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1, TypeGraphCoord y20, TypeGraphCoord y21 )
+		{
+			BASECLASS::_xConverter.updateGraphSize( x0, x1);
+			BASECLASS::_yConverter.updateGraphSize( y0, y1);
+			_y2Converter.updateGraphSize( y20, y21);
+			BASECLASS::updateSizes();
+			return *static_cast<DERIVED*>(this);
+		}
+
+		TypeCoordConverter& GetY2CoordConverter() { return _y2Converter; }
+		TypeGridAxisDraw& GetY2GridAxisDraw()     { return _y2GridDraw; }
+
+
+		DERIVED& SetY2AxisRectWidth(int v)   { _y2GridDraw.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& setY2NbGridSteps(int v)     { _y2GridDraw.GetGridStepManager().SetNbSteps(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2GridColor(Color v)     { _y2GridDraw.setGridColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2AxisWidth(int v)       { _y2GridDraw.setAxisWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2AxisColor(Color v)     { _y2GridDraw.setAxisColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2AxisTextColor(Color v) { _y2GridDraw.setAxisTextColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2AxisTextFont(Font v)   { _y2GridDraw.setAxisTextFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2AxisTickColor(Color v) { _y2GridDraw.setAxisTickColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2ScaleType(int v)       { _y2Converter.SetScaleType(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2AxisFormatType(AxisTextFormat v) { _y2GridDraw.setAxisTextFormat(v); return *static_cast<DERIVED*>(this); }
+
+		DERIVED& SetY2Min(double v) { _y2Converter.SetGraphMin(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2Max(double v) { _y2Converter.SetGraphMax(v); return *static_cast<DERIVED*>(this); }
+	};
+
+
+	template<class TYPES, class DERIVED>
+	class CRTP_XYY2LTGraphDraw : public CRTP_XYY2GraphDraw<TYPES, DERIVED >
+	{
+		public:
+		typedef TYPES Types;
+		typedef CRTP_XYY2LTGraphDraw<TYPES, DERIVED> CLASSNAME;
+		typedef CRTP_XYY2GraphDraw<TYPES, DERIVED>   BASECLASS;
+		typedef typename TYPES::TypeLabelElement     TypeLabel;
+	
+		TypeLabel   _title;
+		TypeLabel   _xLabel;
+		TypeLabel   _yLabel;
+		TypeLabel   _y2Label;
+
+		protected:
+		
+		public:
+		CRTP_XYY2LTGraphDraw()
+		{
+			_title.SetFont( StdFontZ(20).Bold().Underline()).SetTextColor(Red).SetLabel("TITLE");
+			_xLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("X Axis label");
+			_yLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("Y Axis label");
+			_y2Label.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("Y2 Axis label");
+			BASECLASS::AddTopElement(40, _title);
+			BASECLASS::AddBottomElement(30, _xLabel);
+			BASECLASS::AddLeftElement(30, _yLabel);
+			BASECLASS::AddRightElement(30, _y2Label);
+		}
+		
+		
+		DERIVED& SetTitle(const String& v)       { _title.SetLabel(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitlePosition(const ElementPosition v) { return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitleFont(const Font& v)     { _title.SetFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitleWidth(int v)            { _title.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitleColor(const Color& v)   { _title.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+		
+		DERIVED& SetXLabel(const String& v)      { _xLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXLabelFont(const Font& v)    { _xLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXLabelWidth(int v)           { _xLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXLabelColor(const Color& v)  { _xLabel.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+
+		DERIVED& SetYLabel(const String& v)      { _yLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYLabelFont(const Font& v)    { _yLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYLabelWidth(int v)           { _yLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYLabelColor(const Color& v)  { _yLabel.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+
+		DERIVED& SetY2Label(const String& v)     { _y2Label.SetLabel(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2LabelFont(const Font& v)   { _y2Label.SetFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2LabelWidth(int v)          { _y2Label.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2LabelColor(const Color& v) { _y2Label.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+	};
+
 };
 
 

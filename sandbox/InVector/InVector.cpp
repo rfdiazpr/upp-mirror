@@ -1,4 +1,5 @@
 #include <Core/Core.h>
+#include <set>
 
 using namespace Upp;
 
@@ -195,6 +196,7 @@ T& InVector<T>::Insert(int ii)
 	if(data[blki].GetCount() > BLKSIZE) {
 		Vector<T>& b2 = data.Insert(blki + 1);
 		b2.InsertSplit(0, data[blki], data[blki].GetCount() / 2);
+		data[blki].Shrink();
 		Reindex();
 		serial2++;
 		ii = ii0;
@@ -214,10 +216,18 @@ T& InVector<T>::Insert(int ii)
 	return x;
 }
 
-#define N 1000000
+#define N 10000000
 
 void InVectorBenchmark()
 {
+	std::set<int> s;
+	SeedRandom();
+	{
+		RTIMING("std::set INSERT");
+		for(int i = 0; i < N; i++)
+			s.insert(Random());
+	}
+
 	InVector<int> a;
 	SeedRandom();
 	{
@@ -238,6 +248,9 @@ void InVectorBenchmark()
 		RTIMING("InVector Sort");
 		Sort(a);
 	}
+	RDUMP(a.GetCount());
+	return;
+
 	SeedRandom();
 	Vector<int> b;
 	{
@@ -279,6 +292,28 @@ void InVectorBenchmark()
 	{
 		RTIMING("Array Sort");
 		Sort(c);
+	}
+
+	SeedRandom();
+	BiVector<int> d;
+	{
+		RTIMING("BiVector INSERT");
+		d.AddTail() = 0;
+		for(int i = 0; i < N; i++) {
+			d.AddTail(Random(100));
+//			d.Insert(Random(d.GetCount())) = Random(100);
+		}
+	}
+	{
+		RTIMING("BiVector SCAN");
+		int sum = 0;
+		for(int i = 0; i < d.GetCount(); i++)
+			sum += d[i];
+		RDUMP(sum);
+	}
+	{
+		RTIMING("BiVector Sort");
+		Sort(d);
 	}
 }
 

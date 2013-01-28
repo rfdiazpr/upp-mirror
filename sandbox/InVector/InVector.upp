@@ -2,7 +2,10 @@ uses
 	Core;
 
 file
-	InVector.cpp,
+	InVector.h,
+	InVector.hpp,
+	InVector.cpp optimize_speed,
+	InVectorTest.cpp optimize_speed,
 	info.txt;
 
 mainconfig

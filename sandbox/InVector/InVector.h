@@ -78,12 +78,12 @@ public:
 
 		int  operator-(const ConstIterator& x) const   { return GetIndex() - x.GetIndex(); }
 
-		bool operator==(const ConstIterator& x) const  { return ptr == x.ptr; }
-		bool operator!=(const ConstIterator& x) const  { return ptr != x.ptr; }
-		bool operator<(const ConstIterator& x) const   { return blki == b.blki ? ptr < b.ptr : blki < b.blki; }
-		bool operator>(const ConstIterator& x) const   { return blki == b.blki ? ptr > b.ptr : blki > b.blki; }
-		bool operator<=(const ConstIterator& x) const  { return blki == b.blki ? ptr <= b.ptr : blki <= b.blki; }
-		bool operator>=(const ConstIterator& x) const  { return blki == b.blki ? ptr >= b.ptr : blki >= b.blki; }
+		bool operator==(const ConstIterator& b) const  { return ptr == b.ptr; }
+		bool operator!=(const ConstIterator& b) const  { return ptr != b.ptr; }
+		bool operator<(const ConstIterator& b) const   { return blki == b.blki ? ptr < b.ptr : blki < b.blki; }
+		bool operator>(const ConstIterator& b) const   { return blki == b.blki ? ptr > b.ptr : blki > b.blki; }
+		bool operator<=(const ConstIterator& b) const  { return blki == b.blki ? ptr <= b.ptr : blki <= b.blki; }
+		bool operator>=(const ConstIterator& b) const  { return blki == b.blki ? ptr >= b.ptr : blki >= b.blki; }
 
 		operator bool() const                          { return ptr; }
 
@@ -92,7 +92,9 @@ public:
 		const T& operator[](int i) const               { ConstIterator h = *this; h += i; return *h; }
 	};
 
-	struct Iterator : public ConstIterator {
+	class Iterator : public ConstIterator {
+		typedef ConstIterator B;
+	public:
 		Iterator& operator++()                         { ConstIterator::operator++(); return *this; }
 		Iterator& operator--()                         { ConstIterator::operator--(); return *this; }
 		Iterator  operator++(int)                      { Iterator t = *this; ++*this; return t; }
@@ -104,14 +106,14 @@ public:
 		Iterator operator+(int d) const                { Iterator t = *this; t += d; return t; }
 		Iterator operator-(int d) const                { return operator+(-d); }
 
-		int  operator-(const Iterator& x) const        { return GetIndex() - x.GetIndex(); }
+		int  operator-(const Iterator& x) const        { return B::GetIndex() - x.GetIndex(); }
 
-		T& operator*()                                 { return *ptr; }
-		T *operator->()                                { return ptr; }
+		T& operator*()                                 { return *B::ptr; }
+		T *operator->()                                { return B::ptr; }
 		T& operator[](int i)                           { Iterator h = *this; h += i; return *h; }
 
-		const T& operator*() const                     { return *ptr; }
-		const T *operator->() const                    { return ptr; }
+		const T& operator*() const                     { return *B::ptr; }
+		const T *operator->() const                    { return B::ptr; }
 		const T& operator[](int i) const               { ConstIterator h = *this; h += i; return *h; }
 	};
 

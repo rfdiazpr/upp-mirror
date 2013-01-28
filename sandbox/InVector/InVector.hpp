@@ -1,5 +1,7 @@
 #include "InVector.h"
 
+int64 NewInVectorSerial();
+
 template <class T>
 InVector<T>::InVector()
 {
@@ -34,8 +36,6 @@ struct InVectorCacheRecord {
 	int   end;
 	int   filler;
 };
-
-int64 NewInVectorSerial();
 
 extern thread__ InVectorCacheRecord invector_cache[6];
 extern thread__ int invector_cachei;

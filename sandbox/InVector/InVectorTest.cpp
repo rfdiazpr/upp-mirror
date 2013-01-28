@@ -29,7 +29,7 @@ void InVectorBenchmark()
 		RTIMING("InVector INSERT");
 		a.Insert(0) = 0;
 		for(int i = 0; i < N; i++) {
-			a.Insert(Random(a.GetCount())) = Random(100);
+			a.Insert(Random(a.GetCount())) = i;
 		}
 	}
 	{
@@ -151,8 +151,8 @@ void Compare(C1& a, C2& b)
 	for(int i = 0; i < a.GetCount(); i++)
 		ASSERT(a[i] == b[i]);
 	
-	C1::Iterator ia = a.Begin();
-	C2::Iterator ib = b.Begin();
+	typename C1::Iterator ia = a.Begin();
+	typename C2::Iterator ib = b.Begin();
 	while(ib != b.End()) {
 		ASSERT(*ia == *ib);
 		ia++;

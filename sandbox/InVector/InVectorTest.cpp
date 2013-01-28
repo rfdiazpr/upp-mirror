@@ -4,25 +4,26 @@
 
 void InVectorBenchmark()
 {
-/*
+
 	std::multiset<int> s;
 	SeedRandom();
 	{
 		RTIMING("std::set INSERT");
-		for(int i = 0; i < N; i++)
-			s.insert(Random());
+		for(int i = 0; i < N; i++) {
+			int x = Random();
+			s.insert(x);
+		}
 	}
 
 	SeedRandom();
 	{
+		InVector<int> a;
 		RTIMING("InVector INSERT UB");
 		for(int i = 0; i < N; i++) {
 			int x = Random();
-			a.Insert(FindUpperBound(a, x)) = x;
+			a.Insert(FindLowerBound(a, x)) = x;
 		}
 	}
-	return;
-*/
 	InVector<int> a;
 	{
 		RTIMING("InVector INSERT");
@@ -31,6 +32,23 @@ void InVectorBenchmark()
 			a.Insert(Random(a.GetCount())) = Random(100);
 		}
 	}
+	{
+		InVector<int> a;
+		RTIMING("InVector INSERT 0");
+		a.Insert(0) = 0;
+		for(int i = 0; i < N; i++) {
+			a.Insert(0) = Random(100);
+		}
+	}
+	{
+		InVector<int> a;
+		RTIMING("InVector INSERT N/2");
+		a.Insert(0) = 0;
+		for(int i = 0; i < N; i++) {
+			a.Insert(i / 2) = Random(100);
+		}
+	}
+	return;
 	{
 		RTIMING("InVector SCAN");
 		int sum = 0;

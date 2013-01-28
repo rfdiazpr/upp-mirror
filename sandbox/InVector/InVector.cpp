@@ -6,6 +6,7 @@ using namespace Upp;
 #define LLOG(x) // LOG(x)
 
 #define USECACHE
+#define IITERATOR
 
 template <class T>
 class InVector {
@@ -20,7 +21,8 @@ class InVector {
 	enum { BLKSIZE = 12000 / sizeof(T) };
 #endif
 
-	int FindBlock(int& pos) const;
+	int  FindBlock(int& pos, int& off) const;
+	int  FindBlock(int& pos) const;
 	void Reindex();
 
 public:
@@ -31,10 +33,11 @@ public:
 	T& operator[](int i);
 	int  GetCount() const      { return count; }
 
+	typedef T        ValueType;
+
+#ifdef IITERATOR
 	typedef ConstIIterator<InVector> ConstIterator;
 	typedef IIterator<InVector>      Iterator;
-
-	typedef T        ValueType;
 
 	ConstIterator    Begin() const              { return ConstIterator(*this, 0); }
 	ConstIterator    End() const                { return ConstIterator(*this, GetCount()); }
@@ -42,6 +45,55 @@ public:
 	Iterator         Begin()                    { return Iterator(*this, 0); }
 	Iterator         End()                      { return Iterator(*this, GetCount()); }
 	Iterator         GetIter(int pos)           { return Iterator(*this, pos); }
+#else
+	class IteratorBase {
+		T  *ptr;
+		T  *begin;
+		T  *end;
+		int offset;
+		int blki;
+		InVector& v;
+		
+		friend class InVector;
+		
+		void NextBlk()
+		{
+			if(blki + 1 < v.data.GetCount()) {
+				offset += v.data[blki].GetCount();
+				blki++;
+				ptr = begin = v.data[blki].Begin();
+				end = v.data[blki].End();
+			}
+		}
+
+		void PrevBlk()		
+		{
+			blki--;
+			begin = v.data[blki].Begin();
+			ptr = end = v.data[blki].End();
+			offset -= v.data[blki].GetCount();
+		}
+		
+		force_inline void Next() {
+			if(++ptr == end)
+				NextBlk();
+		}
+		
+		force_inline void Prev() {
+			if(ptr == begin)
+				PrevBlk();
+			--ptr;
+		}
+		
+		void Advance(int d) {
+			*this = v.GetIter(ptr - begin + offset + d);
+		}
+		
+		IteratorBase(InVector& v) : v(v) {}
+	};
+	
+	IteratorBase GetIter(
+#endif
 };
 
 int64 NewInVectorSerial()
@@ -92,8 +144,9 @@ static thread__ InVectorCacheRecord invector_cache[6];
 static thread__ int invector_cachei;
 
 template <class T>
-int InVector<T>::FindBlock(int& pos) const
+int InVector<T>::FindBlock(int& pos, int& off) const
 {
+//	RTIMING("FindBlock");
 	LLOG("FindBlock " << pos);
 	ASSERT(pos >= 0 && pos <= count);
 #ifdef USECACHE
@@ -105,6 +158,7 @@ int InVector<T>::FindBlock(int& pos) const
 		return r.blki;
 	}
 #endif
+//	RTIMING("FindBlock no cache");
 	if(pos == count) {
 		LLOG("Found last");
 		pos = data.Top().GetCount();
@@ -134,7 +188,15 @@ int InVector<T>::FindBlock(int& pos) const
 	r.offset = offset;
 	r.end = offset + data[ii].GetCount();
 #endif
+	off = offset;
 	return ii;
+}
+
+template <class T>
+int InVector<T>::FindBlock(int& pos) const
+{
+	int h;
+	return FindBlock(pos, h);
 }
 
 template <class T>
@@ -216,11 +278,11 @@ T& InVector<T>::Insert(int ii)
 	return x;
 }
 
-#define N 10000000
+#define N 1000000
 
 void InVectorBenchmark()
 {
-	std::set<int> s;
+	std::multiset<int> s;
 	SeedRandom();
 	{
 		RTIMING("std::set INSERT");
@@ -230,6 +292,14 @@ void InVectorBenchmark()
 
 	InVector<int> a;
 	SeedRandom();
+	{
+		RTIMING("InVector INSERT UB");
+		for(int i = 0; i < N; i++) {
+			int x = Random();
+			a.Insert(FindUpperBound(a, x)) = x;
+		}
+	}
+	return;
 	{
 		RTIMING("InVector INSERT");
 		a.Insert(0) = 0;

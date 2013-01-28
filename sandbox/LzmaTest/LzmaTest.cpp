@@ -51,7 +51,7 @@ CONSOLE_APP_MAIN {
 		lzma.Decompress();
 		while (!fi.IsEof() && !fi.IsError()){
 			lzma.Put(fi.Get(10240));
-			//fo.Put(lzma.Get());
+			fo.Put(lzma.Get());
 		}
 		lzma.End();
 		fo.Put(lzma.Get());

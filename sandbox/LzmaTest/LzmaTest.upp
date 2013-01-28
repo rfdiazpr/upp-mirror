@@ -6,3 +6,6 @@ uses
 file
 	LzmaTest.cpp;
 
+mainconfig
+	"" = "";
+

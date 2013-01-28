@@ -71,7 +71,7 @@ class Lzma {
 	ELzmaStatus status;
 	
 	void DecompressFirst();
-	bool DecompressStep();
+	bool DecompressStep(bool last = false);
 	
 	// compression
 	int dictSize;

@@ -59,6 +59,7 @@ void Lzma::Compress(){
 	mode = DEFLATE;
 	enc = LzmaEnc_Create(&SzAllocForLzma);
 	ASSERT(enc);
+	inPos = outPos = -1;
 }
 
 void Lzma::CompressFirst(){
@@ -84,7 +85,7 @@ void Lzma::CompressFirst(){
 	res = LzmaEnc_Prepare(enc, (ISeqOutStream*)&outStream, (ISeqInStream*)&inStream, &SzAllocForLzma, &SzAllocForLzma);
 	ASSERT(res == SZ_OK);
 	
-	inPos = 1;
+	inPos = outPos = 0;
 }
 
 void Lzma::Decompress(){
@@ -92,7 +93,8 @@ void Lzma::Decompress(){
 	LzmaDec_Construct(&dec);
 	in.Clear();
 	out.Clear();
-	bufPos = inPos = 0;
+	bufPos = 0;
+	inPos = outPos = -1;
 }
 
 void Lzma::DecompressFirst(){
@@ -108,13 +110,17 @@ void Lzma::DecompressFirst(){
 	inPos = LZMA_PROPS_SIZE;
 }
 
-bool Lzma::DecompressStep(){
+bool Lzma::DecompressStep(bool last){
 	while(true){
 		unsigned destLen = LZMA_BUF_SIZE;
 		unsigned srcLen = min(LZMA_BUF_SIZE, uint64(bufPos + in.GetLeft()));
-		
-		if (srcLen < LZMA_REQUIRED_INPUT_MAX)
-			break;
+		ELzmaFinishMode finishMode=LZMA_FINISH_ANY;
+		if(last){
+			finishMode = LZMA_FINISH_END;
+		} else {
+			if (srcLen < LZMA_REQUIRED_INPUT_MAX)
+				break;
+		}
 		unsigned origLen = srcLen;
 		inBuf.SetLength(srcLen);
 		in.GetAll(inBuf.Begin() + bufPos, srcLen - bufPos);
@@ -125,7 +131,7 @@ bool Lzma::DecompressStep(){
 		          &destLen,
 		          (const unsigned char*)~inBuf,
 		          &srcLen,
-		          LZMA_FINISH_ANY,
+		          finishMode,
 		          &status);
 		ASSERT(res == SZ_OK);
 		
@@ -155,13 +161,13 @@ bool Lzma::DecompressStep(){
 void Lzma::Put(const void *ptr, int size){
 	if(mode == INFLATE) {
 		in.Put(ptr, size);
-		if(inPos==0)
+		if(inPos==-1)
 			DecompressFirst();
 		DecompressStep();
 	}
 	else if(mode == DEFLATE) {
 		in.Put((const char*)ptr, size);
-		if(inPos==0)
+		if(inPos==-1)
 			CompressFirst();
 		if(in.GetLeft() > 1<<16)
 			CompressStep();
@@ -171,20 +177,19 @@ void Lzma::Put(const void *ptr, int size){
 
 void Lzma::End(){
 	if(mode == INFLATE) {
-		if(inPos==0)
+		if(inPos==-1)
 			DecompressFirst();
-		DecompressStep();
+		DecompressStep(true);
 		LzmaDec_Free(&dec, &SzAllocForLzma);
 	}
 	else if (mode == DEFLATE) {
-		if(inPos=0)
+		if(inPos==-1)
 			CompressFirst();
 		CompressStep(true);
 		LzmaEnc_Destroy(enc, &SzAllocForLzma, &SzAllocForLzma);
 		enc = NULL;
 	} else 
 		NEVER();
-	inPos=0;
 }
 
 void Lzma::Clear(){
@@ -194,7 +199,7 @@ void Lzma::Clear(){
 	out.Clear();
 }
 
-Lzma::Lzma() : in(1311072), out(1311072) {
+Lzma::Lzma() : in(0x20000), out(0x20000) {
 	inPos = 0;
 	enc = NULL;
 	dec.dic = NULL;

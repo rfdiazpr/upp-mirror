@@ -201,6 +201,49 @@ void InVector<T>::Dump()
 	LLOG(".");
 }
 
+#ifdef REINDEX2
+template <class T>
+void InVector<T>::Reindex()
+{
+	RTIMING("Reindex");
+	LLOG("--- Reindexing");
+	index.Clear();
+	Vector<int> *ds = data.Begin();
+	Vector<int> *dend = data.End();
+	int n = data.GetCount();
+	Vector<int>& w = index.Add();
+	w.SetCount((n + 1) >> 1);
+	if(n <= 1)
+		return;
+	int *t = w.Begin();
+	while(ds != dend) {
+		*t = (ds++)->GetCount();
+		if(ds == dend)
+			break;
+		*t++ += (ds++)->GetCount();
+	}
+	int *s = w.Begin();
+	int *end = w.End();
+	n = w.GetCount();
+	while(n > 1) {
+		Vector<int>& w = index.Add();
+		w.SetCount((n + 1) >> 1);
+		t = w.Begin();
+		while(s != end) {
+			*t = *s++;
+			if(s == end)
+				break;
+			*t++ += *s++;
+		}
+		s = w.Begin();
+		end = w.End();
+		n = w.GetCount();
+	}
+#ifdef _DEBUG
+	Dump();
+#endif
+}
+#else
 template <class T>
 void InVector<T>::Reindex()
 {
@@ -222,6 +265,7 @@ void InVector<T>::Reindex()
 	Dump();
 #endif
 }
+#endif
 
 template <class T>
 T& InVector<T>::Insert(int ii)

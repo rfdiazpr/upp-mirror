@@ -54,3 +54,38 @@ TIMING InVector Sort  : 64.56 s  - 64.56 s  (64.56 s  / 1 ), min: 64.56 s , max:
 TIMING InVector SCAN  : 863.00 ms - 863.00 ms (863.00 ms / 1 ), min: 863.00 ms, max: 863.00 ms, nesting: 1 - 1
 TIMING Reindex        : 95.47 s  -  1.86 ms (95.47 s  / 51266 ), min:  0.00 ns, max: 11.00 ms, nesting: 1 - 51266
 TIMING InVector INSERT: 197.38 s  - 197.38 s  (197.38 s  / 1 ), min: 197.38 s , max: 197.38 s , nesting: 1 - 1
+
+-------------
+1000000
+REINDEX2
+TIMING InVector INSERT N/2: 257.00 ms - 257.00 ms (257.00 ms / 1 ), min: 257.00 ms, max: 257.00 ms, nesting: 1 - 1
+TIMING InVector INSERT 0: 353.00 ms - 353.00 ms (353.00 ms / 1 ), min: 353.00 ms, max: 353.00 ms, nesting: 1 - 1
+TIMING InVector INSERT: 412.00 ms - 412.00 ms (412.00 ms / 1 ), min: 412.00 ms, max: 412.00 ms, nesting: 1 - 1
+TIMING Reindex        : 851.55 us - 362.06 ns ( 1.00 ms / 2352 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 2352
+TIMING InVector INSERT UB:  1.18 s  -  1.18 s  ( 1.18 s  / 1 ), min:  1.18 s , max:  1.18 s , nesting: 1 - 1
+TIMING std::set INSERT: 750.00 ms - 750.00 ms (750.00 ms / 1 ), min: 750.00 ms, max: 750.00 ms, nesting: 1 - 1
+
+REINDEX OLD
+TIMING InVector INSERT N/2: 260.00 ms - 260.00 ms (260.00 ms / 1 ), min: 260.00 ms, max: 260.00 ms, nesting: 1 - 1
+TIMING InVector INSERT 0: 356.00 ms - 356.00 ms (356.00 ms / 1 ), min: 356.00 ms, max: 356.00 ms, nesting: 1 - 1
+TIMING InVector INSERT: 416.00 ms - 416.00 ms (416.00 ms / 1 ), min: 416.00 ms, max: 416.00 ms, nesting: 1 - 1
+TIMING Reindex        : 26.82 ms - 11.40 us (27.00 ms / 2352 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 2352
+TIMING InVector INSERT UB:  1.16 s  -  1.16 s  ( 1.16 s  / 1 ), min:  1.16 s , max:  1.16 s , nesting: 1 - 1
+TIMING std::set INSERT: 748.00 ms - 748.00 ms (748.00 ms / 1 ), min: 748.00 ms, max: 748.00 ms, nesting: 1 - 1
+
+10000000
+REINDEX2
+TIMING InVector INSERT N/2:  2.39 s  -  2.39 s  ( 2.39 s  / 1 ), min:  2.39 s , max:  2.39 s , nesting: 1 - 1
+TIMING InVector INSERT 0:  3.71 s  -  3.71 s  ( 3.71 s  / 1 ), min:  3.71 s , max:  3.71 s , nesting: 1 - 1
+TIMING InVector INSERT:  7.43 s  -  7.43 s  ( 7.43 s  / 1 ), min:  7.43 s , max:  7.43 s , nesting: 1 - 1
+TIMING Reindex        : 110.54 ms -  5.14 us (112.00 ms / 21514 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 21514
+TIMING InVector INSERT UB: 23.81 s  - 23.81 s  (23.81 s  / 1 ), min: 23.81 s , max: 23.81 s , nesting: 1 - 1
+TIMING std::set INSERT: 12.22 s  - 12.22 s  (12.22 s  / 1 ), min: 12.22 s , max: 12.22 s , nesting: 1 - 1
+
+REINDEX OLD
+TIMING InVector INSERT N/2:  3.74 s  -  3.74 s  ( 3.74 s  / 1 ), min:  3.74 s , max:  3.74 s , nesting: 1 - 1
+TIMING InVector INSERT 0:  4.90 s  -  4.90 s  ( 4.90 s  / 1 ), min:  4.90 s , max:  4.90 s , nesting: 1 - 1
+TIMING InVector INSERT:  7.60 s  -  7.60 s  ( 7.60 s  / 1 ), min:  7.60 s , max:  7.60 s , nesting: 1 - 1
+TIMING Reindex        :  3.21 s  - 149.00 us ( 3.21 s  / 21514 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 21514
+TIMING InVector INSERT UB: 23.50 s  - 23.50 s  (23.50 s  / 1 ), min: 23.50 s , max: 23.50 s , nesting: 1 - 1
+TIMING std::set INSERT: 12.33 s  - 12.33 s  (12.33 s  / 1 ), min: 12.33 s , max: 12.33 s , nesting: 1 - 1

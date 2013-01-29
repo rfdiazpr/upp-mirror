@@ -6,9 +6,10 @@
 
 using namespace Upp;
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)  // DLOG(x)
 
 #define USECACHE
+#define REINDEX2
 //#define IITERATOR
 
 template <class T>

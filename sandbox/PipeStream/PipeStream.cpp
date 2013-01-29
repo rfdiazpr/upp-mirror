@@ -2,16 +2,11 @@
 
 NAMESPACE_UPP
 
-void PipeStream::SetLoading(){
-	if(style & STRM_LOADING) return;
-	Stream::SetLoading();
-	Swap(ptr,pptr);
-}
-
-void PipeStream::SetStoring(){
-	if(!(style & STRM_LOADING)) return;
-	Stream::SetStoring();
-	Swap(ptr,pptr);
+void PipeStream::SetState(bool b){
+	if(state != b) {
+		Swap(ptr,pptr);
+		state = b;
+	}
 }
 
 void PipeStream::Reserve(int n){
@@ -30,7 +25,7 @@ void PipeStream::Reserve(int n){
 }
 
 dword PipeStream::_Get(void *data, dword size) {
-	SetLoading();
+	SetState(READING);
 	
 	if(size > len)
 		size = len;
@@ -58,7 +53,7 @@ void  PipeStream::_Put(const void *data, dword size) {
 		}
 	}
 
-	SetStoring();
+	SetState(WRITING);
 	dword cont = (dword)(uintptr_t)(buffer + bufsize - ptr);
 	if(size > cont) {
 		memcpy(ptr, data, cont);
@@ -83,7 +78,7 @@ int PipeStream::_Get() {
 }
 
 int PipeStream::_Term() {
-	SetLoading();
+	SetState(READING);
 	if(len)
 		return *ptr;
 	else

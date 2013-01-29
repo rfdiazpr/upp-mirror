@@ -13,11 +13,10 @@ protected:
 	virtual int   _Get();
 	virtual int   _Term();
 	
+	enum {READING, WRITING};
+	inline void SetState(bool b);
 public:
 	virtual bool  IsOpen() const;
-	
-	void SetLoading();
-	void SetStoring();
 	
 	void Reserve(int n);
 	int  GetReserved() const            { return bufsize; }
@@ -33,6 +32,7 @@ protected:
 	byte *pptr;
 	int64 len;
 	bool autoresize;
+	bool state;
 	
 public:
 	PipeStream(int buffersize = 4096, bool resize = true);

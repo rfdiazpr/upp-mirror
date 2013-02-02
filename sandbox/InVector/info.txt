@@ -89,3 +89,10 @@ TIMING InVector INSERT:  7.60 s  -  7.60 s  ( 7.60 s  / 1 ), min:  7.60 s , max:
 TIMING Reindex        :  3.21 s  - 149.00 us ( 3.21 s  / 21514 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 21514
 TIMING InVector INSERT UB: 23.50 s  - 23.50 s  (23.50 s  / 1 ), min: 23.50 s , max: 23.50 s , nesting: 1 - 1
 TIMING std::set INSERT: 12.33 s  - 12.33 s  (12.33 s  / 1 ), min: 12.33 s , max: 12.33 s , nesting: 1 - 1
+
+TIMING InVector INSERT N/2:  2.37 s  -  2.37 s  ( 2.38 s  / 1 ), min:  2.38 s , max:  2.38 s , nesting: 1 - 1
+TIMING InVector INSERT 0:  3.71 s  -  3.71 s  ( 3.71 s  / 1 ), min:  3.71 s , max:  3.71 s , nesting: 1 - 1
+TIMING InVector INSERT:  7.32 s  -  7.32 s  ( 7.32 s  / 1 ), min:  7.32 s , max:  7.32 s , nesting: 1 - 1
+TIMING Reindex        : 120.54 ms -  5.60 us (122.00 ms / 21514 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 21514
+TIMING InVector INSERT UB: 23.27 s  - 23.27 s  (23.27 s  / 1 ), min: 23.27 s , max: 23.27 s , nesting: 1 - 1
+TIMING std::set INSERT: 12.14 s  - 12.14 s  (12.14 s  / 1 ), min: 12.14 s , max: 12.14 s , nesting: 1 - 1

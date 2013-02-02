@@ -64,8 +64,88 @@ int InVector<T>::FindBlock(int& pos, int& off) const
 	//	DLOG("Last off: " << off);
 		return data.GetCount() - 1;
 	}
+	int blki = 0;
+	int offset = 0;
+	for(int i = index.GetCount(); --i >= 0;) {
+		int n = index[i][blki];
+		if(pos >= n) {
+			blki++;
+			pos -= n;
+			offset += n;
+		}
+		blki += blki;
+	}
+	int n = data[blki].GetCount();
+	if(pos >= n) {
+		blki++;
+		pos -= n;
+		offset += n;
+	}
+#ifdef USECACHE
+	r.serial1 = serial1;
+	r.serial2 = serial2;
+	r.blki = blki;
+	r.offset = offset;
+	r.end = offset + data[blki].GetCount();
+#endif
+	off = offset;
+	DDUMP(off);
+	ASSERT(BlkToOffset(blki) == offset); _DBG_
+	return blki;
+}
+
+template <class T>
+int InVector<T>::BlkToOffset(int blki) const
+{
 	int ii = 0;
 	int offset = 0;
+	int count = data.GetCount();
+	DLOG("BlkToOffset");
+	DDUMP(blki);
+	DDUMP(index.GetCount());
+	for(int i = index.GetCount(); --i >= 0;) {
+		int n = index[i][ii];
+		count >>= 1;
+		if(blki > count) {
+			ii++;
+			blki -= count;
+			offset += n;
+		}
+		ii += ii;
+	}
+	DDUMP(blki);
+	DDUMP(ii);
+	if(blki > ii)
+		offset += data[ii].GetCount();
+	DDUMP(offset);
+	return offset;
+}
+
+/*
+int InVector::FindUpperBound(const T& val, const L& less, int& off, int& pos)
+{
+	int count = data.GetCount();
+	int blki = 0;
+	while(count > 0) {
+		int half = count >> 1;
+		int m = blki + half;
+		if(less(val, data[m].Top()))
+			count = half;
+		else {
+			blki = m + 1;
+			count = count - half - 1;
+		}
+	}
+	
+	off = BlkToOffset(blki);
+	return pos;
+	
+	
+	
+	
+	LLOG("FindUpperBound " << pos);
+	int ii = 0;
+	int offt = 0;
 	for(int i = index.GetCount(); --i >= 0;) {
 		int n = index[i][ii];
 		if(pos >= n) {
@@ -92,6 +172,7 @@ int InVector<T>::FindBlock(int& pos, int& off) const
 //	DDUMP(off);
 	return ii;
 }
+*/
 
 #ifndef IITERATOR
 
@@ -211,10 +292,10 @@ void InVector<T>::Reindex()
 	Vector<int> *ds = data.Begin();
 	Vector<int> *dend = data.End();
 	int n = data.GetCount();
+	if(n <= 2)
+		return;
 	Vector<int>& w = index.Add();
 	w.SetCount((n + 1) >> 1);
-	if(n <= 1)
-		return;
 	int *t = w.Begin();
 	while(ds != dend) {
 		*t = (ds++)->GetCount();
@@ -225,7 +306,7 @@ void InVector<T>::Reindex()
 	int *s = w.Begin();
 	int *end = w.End();
 	n = w.GetCount();
-	while(n > 1) {
+	while(n > 2) {
 		Vector<int>& w = index.Add();
 		w.SetCount((n + 1) >> 1);
 		t = w.Begin();
@@ -270,7 +351,7 @@ void InVector<T>::Reindex()
 template <class T>
 T& InVector<T>::Insert(int ii)
 {
-	LLOG("*** Insert " << ii << ", count " << count);
+	LLOG("*** Insert " << ii << ", count " << count << ", index: " << index.GetCount());
 	if(ii == 0 && data.GetCount() == 0) {
 		count++;
 		serial2++;

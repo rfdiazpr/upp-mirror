@@ -6,7 +6,7 @@
 
 using namespace Upp;
 
-#define LLOG(x)  // DLOG(x)
+#define LLOG(x)   DLOG(x)
 
 #define USECACHE
 #define REINDEX2
@@ -27,7 +27,11 @@ class InVector {
 
 	int  FindBlock(int& pos, int& off) const;
 	int  FindBlock(int& pos) const;
+	int  BlkToOffset(int blki) const;
 	void Reindex();
+
+	template <class L>
+	int  FindUpperBound(const T& val, const L& less, int& off, int& pos);
 
 public:
 	InVector();
@@ -36,7 +40,7 @@ public:
 	const T& operator[](int i) const;
 	T& operator[](int i);
 	int  GetCount() const      { return count; }
-
+	
 	typedef T        ValueType;
 
 #ifdef IITERATOR

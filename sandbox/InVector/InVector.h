@@ -6,9 +6,9 @@
 
 using namespace Upp;
 
-#define LLOG(x)   DLOG(x)
+#define LLOG(x)   // DLOG(x)
 
-#define USECACHE
+#define USECACHE2
 #define REINDEX2
 //#define IITERATOR
 
@@ -17,21 +17,33 @@ class InVector {
 	Vector< Vector<T> > data;
 	Vector< Vector<int> > index;
 	int   count;
+	int   hcount;
+#ifdef USECACHE
 	int64 serial1, serial2;
+#endif
+
+#ifdef USECACHE2
+	int64 serial;
+#endif
 	
 #ifdef _DEBUG
 	enum { BLKSIZE = 10 };
 #else
-	enum { BLKSIZE = 12000 / sizeof(T) };
+	enum { BLKSIZE = 12000 / sizeof(T) > 16 ? 12000 / sizeof(T) : 16; };
 #endif
 
+#ifdef USECACHE2
+	int  FindBlock0(int& pos, int& off) const;
+#endif
 	int  FindBlock(int& pos, int& off) const;
 	int  FindBlock(int& pos) const;
-	int  BlkToOffset(int blki) const;
 	void Reindex();
 
 	template <class L>
 	int  FindUpperBound(const T& val, const L& less, int& off, int& pos);
+
+	template <class L>
+	int  FindLowerBound(const T& val, const L& less, int& off, int& pos);
 
 public:
 	InVector();
@@ -40,6 +52,16 @@ public:
 	const T& operator[](int i) const;
 	T& operator[](int i);
 	int  GetCount() const      { return count; }
+	
+	template <class L>
+	int FindUpperBound(const T& val, const L& less) { int off, pos; FindUpperBound(val, less, off, pos); return off + pos; }
+	
+	int FindUpperBound(const T& val) { return FindUpperBound(val, StdLess<T>()); }
+
+	template <class L>
+	int FindLowerBound(const T& val, const L& less) { int off, pos; FindLowerBound(val, less, off, pos); return off + pos; }
+	
+	int FindLowerBound(const T& val) { return FindLowerBound(val, StdLess<T>()); }
 	
 	typedef T        ValueType;
 

@@ -10,5 +10,11 @@ int64 NewInVectorSerial()
 }
 
 
+#ifdef USECACHE
 thread__ InVectorCacheRecord invector_cache[6];
 thread__ int invector_cachei;
+#endif
+
+#ifdef USECACHE2
+thread__ InVectorCacheRecord invector_cache;
+#endif

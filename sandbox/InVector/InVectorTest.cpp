@@ -1,6 +1,43 @@
 #include "InVector.h"
 
+#define SN 10000000
+#define IN 100
+
+int sSum = 0;
+
+template <class T>
+void ScanBenchmark()
+{
+	T x;
+	for(int i = 0; i < SN; i++)
+		x.Insert(x.GetCount()) = i;
+	
+	{
+		TimeStop tm;
+		for(int j = 0; j < IN; j++)
+			for(int i = 0; i < SN; i++)
+				sSum += x[i];
+		RLOG(typeid(T).name() << " index scan " << tm);
+	}
+	{
+		TimeStop tm;
+		typename T::Iterator end = x.End();
+		for(int j = 0; j < IN; j++)
+			for(typename T::Iterator it = x.Begin(); it != end; ++it)
+				sSum += *it;
+		RLOG(typeid(T).name() << " iterator scan " << tm);
+	}
+}
+
+void InVectorScanBenchmark()
+{
+	ScanBenchmark< Vector<int> >();
+	ScanBenchmark< Array<int> >();
+	ScanBenchmark< InVector<int> >();
+}
+
 #define N 10000000
+
 
 void InVectorBenchmark()
 {
@@ -201,13 +238,70 @@ void InVectorTest()
 	StableSort(iv);
 	Compare(q, iv);
 }
-	
+
+void TestUpperBound()
+{
+	{
+		InVector<int> v;
+		for(int i = 0; i < 3000; i++) {
+			if(i % 1000 == 0)
+				LOG(i);
+			v.Insert(i) = i;
+			ASSERT(v.FindUpperBound(i) == i + 1);
+			for(int j = 0; j < i; j++)
+				ASSERT(v.FindUpperBound(j) == j + 1);
+		}
+	}
+	{
+		InVector<int> v;
+		for(int i = 0; i < 3000; i++) {
+			if(i % 1000 == 0)
+				LOG(i);
+			for(int j = 0; j < 7; j++)
+				v.Insert(7 * i) = i;
+			ASSERT(v.FindUpperBound(i) == 7 * i + 7);
+			for(int j = 0; j < i; j++)
+				ASSERT(v.FindUpperBound(j) == 7 * j + 7);
+		}
+	}
+}
+
+void TestLowerBound()
+{
+	{
+		InVector<int> v;
+		for(int i = 0; i < 3000; i++) {
+			if(i % 1000 == 0)
+				LOG(i);
+			v.Insert(i) = i;
+			ASSERT(v.FindLowerBound(i) == i);
+			for(int j = 0; j < i; j++)
+				ASSERT(v.FindLowerBound(j) == j);
+		}
+	}
+	{
+		InVector<int> v;
+		for(int i = 0; i < 3000; i++) {
+			if(i % 1000 == 0)
+				LOG(i);
+			for(int j = 0; j < 7; j++)
+				v.Insert(7 * i) = i;
+			ASSERT(v.FindLowerBound(i) == 7 * i);
+			for(int j = 0; j < i; j++)
+				ASSERT(v.FindLowerBound(j) == 7 * j);
+		}
+	}
+}
+
 CONSOLE_APP_MAIN
 {
 	StdLogSetup(LOG_FILE|LOG_COUT);
 #ifdef _DEBUG
-	InVectorTest();
+	TestLowerBound();
+//	TestUpperBound();
+//	InVectorTest();
 #else
-	InVectorBenchmark();
+	InVectorScanBenchmark();
+//	InVectorBenchmark();
 #endif
 }

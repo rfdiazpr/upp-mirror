@@ -96,3 +96,27 @@ TIMING InVector INSERT:  7.32 s  -  7.32 s  ( 7.32 s  / 1 ), min:  7.32 s , max:
 TIMING Reindex        : 120.54 ms -  5.60 us (122.00 ms / 21514 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 21514
 TIMING InVector INSERT UB: 23.27 s  - 23.27 s  (23.27 s  / 1 ), min: 23.27 s , max: 23.27 s , nesting: 1 - 1
 TIMING std::set INSERT: 12.14 s  - 12.14 s  (12.14 s  / 1 ), min: 12.14 s , max: 12.14 s , nesting: 1 - 1
+
+--------------------------
+N3Upp6VectorIiEE index scan 0.873
+N3Upp6VectorIiEE iterator scan 0.873
+N3Upp5ArrayIiEE index scan 1.957
+N3Upp5ArrayIiEE iterator scan 1.923
+8InVectorIiE index scan 7.481
+8InVectorIiE iterator scan 2.879
+----
+Without cache:
+N3Upp6VectorIiEE index scan 0.881
+N3Upp6VectorIiEE iterator scan 0.899
+N3Upp5ArrayIiEE index scan 2.026
+N3Upp5ArrayIiEE iterator scan 1.980
+8InVectorIiE index scan 23.577
+8InVectorIiE iterator scan 2.848
+------------
+UseCache2 a)
+N3Upp6VectorIiEE index scan 0.869
+N3Upp6VectorIiEE iterator scan 0.873
+N3Upp5ArrayIiEE index scan 1.971
+N3Upp5ArrayIiEE iterator scan 1.946
+8InVectorIiE index scan 5.951
+8InVectorIiE iterator scan 2.847

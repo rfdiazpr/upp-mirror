@@ -6,7 +6,8 @@ file
 	InVector.hpp,
 	InVector.cpp optimize_speed,
 	InVectorTest.cpp optimize_speed,
-	info.txt;
+	info.txt,
+	help.txt;
 
 mainconfig
 	"" = "SSE2 MT";

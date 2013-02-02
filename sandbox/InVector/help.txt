@@ -1,0 +1,67 @@
+template <class T>
+template <class L>
+int InVector<T>::FindUpperBound(const T& val, const L& less, int& off, int& pos)
+{
+	int n = data.GetCount();
+	if(n == 0) {
+		pos = off = 0;
+		return 0;
+	}
+	if(n == 1) {
+		pos = Upp::FindUpperBound(data[0], val, less);
+		off = 0;
+		return 0;
+	}
+	int blki = 0;
+	int ii = 0;
+	int offset = 0;
+	DLOG("------ Bound " << val);
+	Dump();
+	DDUMP(index.GetCount());
+	DDUMP(data.GetCount());
+	DDUMP(hcount);
+	DDUMP(val);
+	int half = hcount;
+	for(int i = index.GetCount(); --i >= 0;) {
+		int m = blki + half;
+		DDUMP(m);
+		if(m - 1 < data.GetCount())
+			DDUMP(data[m - 1].Top());
+		if(m - 1 < data.GetCount() && !less(val, data[m - 1].Top())) {
+			DDUMP(index[i][ii]);
+			blki = m;
+			offset += index[i][ii];
+			ii++;
+		}
+		DDUMP(blki);
+		DDUMP(n);
+		ii += ii;
+		half >>= 1;
+	}
+	DLOG("------ Bound B");
+	DDUMP(half);
+	DDUMP(blki);
+	DDUMP(offset);
+	if(blki < data.GetCount()) {
+		DDUMP(data[blki].Top());
+		if(!less(val, data[blki].Top())) {
+			DLOG("NEXT");
+			DDUMP(blki);
+			offset += data[blki++].GetCount();
+		}
+		if(blki < data.GetCount()) {
+			DLOG("blki < data.GetCount()");
+			pos = Upp::FindUpperBound(data[blki], val, less);
+			DDUMP(pos);
+			off = offset;
+			DDUMP(off);
+			return blki;
+		}
+	}
+	DLOG("Last");
+	pos = data.Top().GetCount();
+	off = count - pos;
+	blki--;
+	return blki;
+}
+

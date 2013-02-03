@@ -65,7 +65,7 @@ void Lzma::Compress(){
 void Lzma::CompressFirst(){
 	LzmaEncProps_Init(&props);
 	props.dictSize = dictSize;
-	props.writeEndMark = 0;
+	props.writeEndMark = 1;
 	
 	SRes res = LzmaEnc_SetProps(enc, &props);
 	ASSERT(res == SZ_OK);
@@ -142,12 +142,14 @@ bool Lzma::DecompressStep(bool last){
 		
 		bufPos = origLen-srcLen;
 		if (status == LZMA_STATUS_NEEDS_MORE_INPUT)
-			break;
+			continue;
 		
 		memmove(inBuf.Begin(), inBuf.Begin() + srcLen, inBuf.GetCount()-srcLen);
 		
 		if (WhenProgress)
 			WhenProgress(inPos, outPos);
+		if (status == LZMA_STATUS_FINISHED_WITH_MARK)
+			break;
 	}
 	if(WhenOut) {
 		StringBuffer buf(out.GetLeft());

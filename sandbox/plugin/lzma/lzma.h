@@ -13,7 +13,7 @@
 
 NAMESPACE_UPP
 
-#define LZMA_BUF_SIZE uint64(4096)
+#define LZMA_BUF_SIZE uint64(0x4000)
 
 struct LzmaInStream : ISeqInStream {
 	PipeStream *buf;

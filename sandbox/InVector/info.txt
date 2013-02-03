@@ -120,3 +120,28 @@ N3Upp5ArrayIiEE index scan 1.971
 N3Upp5ArrayIiEE iterator scan 1.946
 8InVectorIiE index scan 5.951
 8InVectorIiE iterator scan 2.847
+
+..............................
+4000
+TIMING InVector SCAN  :  3.00 ms -  3.00 ms ( 3.00 ms / 1 ), min:  3.00 ms, max:  3.00 ms, nesting: 1 - 1
+TIMING Reindex        :  1.92 ms -  1.39 us ( 2.00 ms / 1379 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1379
+TIMING InVector INSERT: 549.00 ms - 549.00 ms (549.00 ms / 1 ), min: 549.00 ms, max: 549.00 ms, nesting: 1 - 1
+TIMING std::set INSERT: 619.00 ms - 619.00 ms (619.00 ms / 1 ), min: 619.00 ms, max: 619.00 ms, nesting: 1 - 1
+
+2000
+TIMING InVector SCAN  :  3.00 ms -  3.00 ms ( 3.00 ms / 1 ), min:  3.00 ms, max:  3.00 ms, nesting: 1 - 1
+TIMING Reindex        :  7.85 ms -  2.76 us ( 8.00 ms / 2840 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 2840
+TIMING InVector INSERT: 492.00 ms - 492.00 ms (492.00 ms / 1 ), min: 492.00 ms, max: 492.00 ms, nesting: 1 - 1
+TIMING std::set INSERT: 613.00 ms - 613.00 ms (613.00 ms / 1 ), min: 613.00 ms, max: 613.00 ms, nesting: 1 - 1
+
+1000
+TIMING InVector SCAN  :  3.00 ms -  3.00 ms ( 3.00 ms / 1 ), min:  3.00 ms, max:  3.00 ms, nesting: 1 - 1
+TIMING Reindex        : 36.67 ms -  6.34 us (37.00 ms / 5782 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 5782
+TIMING InVector INSERT: 489.00 ms - 489.00 ms (489.00 ms / 1 ), min: 489.00 ms, max: 489.00 ms, nesting: 1 - 1
+TIMING std::set INSERT: 617.00 ms - 617.00 ms (617.00 ms / 1 ), min: 617.00 ms, max: 617.00 ms, nesting: 1 - 1
+
+500
+TIMING InVector SCAN  :  4.00 ms -  4.00 ms ( 4.00 ms / 1 ), min:  4.00 ms, max:  4.00 ms, nesting: 1 - 1
+TIMING Reindex        : 103.43 ms -  9.03 us (104.00 ms / 11451 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 11451
+TIMING InVector INSERT: 612.00 ms - 612.00 ms (612.00 ms / 1 ), min: 612.00 ms, max: 612.00 ms, nesting: 1 - 1
+TIMING std::set INSERT: 615.00 ms - 615.00 ms (615.00 ms / 1 ), min: 615.00 ms, max: 615.00 ms, nesting: 1 - 1

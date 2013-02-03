@@ -293,15 +293,75 @@ void TestLowerBound()
 	}
 }
 
+void SetTest()
+{
+	for(int j = 0; j < 100; j++) {
+		LOG(j);
+		Vector<int> va;
+		InVector<int> ia;
+		for(int i = 0; i < 1000; i++) {
+			int q = Random(100);
+			int ii = FindUpperBound(va, q);
+			va.Insert(ii) = q;
+			ia.InsertUpperBound(q);
+			Compare(va, ia);
+		}
+	}
+}
+
+void SetBenchmark()
+{
+	const int count = 1000000;
+	SeedRandom();
+	Buffer<int> rnd(count);
+	for(int i = 0; i < count; i++)
+		rnd[i] = Random();
+
+	{	
+		std::multiset<int> s;
+		{
+			RTIMING("std::set INSERT");
+			for(int i = 0; i < count; i++) {
+				s.insert(rnd[i]);
+			}
+		}
+		typedef std::multiset<int>::iterator It;
+		{
+			RTIMING("std::set SCAN");
+			It e = s.end();
+			for(It i = s.begin(); i != e; i++) {
+				sSum += *i;
+			}
+		}
+	}
+	{
+		InVector<int> s;
+		{
+			RTIMING("InVector INSERT");
+			for(int i = 0; i < count; i++)
+				s.InsertUpperBound(rnd[i]);
+//				s.Insert(s.FindUpperBound(rnd[i])) = rnd[i];
+		}
+		{
+			RTIMING("InVector SCAN");
+			for(int i = 0; i < count; i++)
+				sSum += s[i];
+		}
+	}
+}
+
 CONSOLE_APP_MAIN
 {
 	StdLogSetup(LOG_FILE|LOG_COUT);
+	SeedRandom();
 #ifdef _DEBUG
-	TestLowerBound();
+	SetTest();
+//	TestLowerBound();
 //	TestUpperBound();
 //	InVectorTest();
 #else
-	InVectorScanBenchmark();
+	SetBenchmark();
+//	InVectorScanBenchmark();
 //	InVectorBenchmark();
 #endif
 }

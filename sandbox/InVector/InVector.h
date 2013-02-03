@@ -29,7 +29,7 @@ class InVector {
 #ifdef _DEBUG
 	enum { BLKSIZE = 10 };
 #else
-	enum { BLKSIZE = 12000 / sizeof(T) > 16 ? 12000 / sizeof(T) : 16; };
+	enum { BLKSIZE = 2000 / sizeof(T) > 16 ? 2000 / sizeof(T) : 16 };
 #endif
 
 #ifdef USECACHE2
@@ -44,6 +44,8 @@ class InVector {
 
 	template <class L>
 	int  FindLowerBound(const T& val, const L& less, int& off, int& pos);
+
+	T&   Insert0(int ii, int blki, int pos);
 
 public:
 	InVector();
@@ -62,7 +64,12 @@ public:
 	int FindLowerBound(const T& val, const L& less) { int off, pos; FindLowerBound(val, less, off, pos); return off + pos; }
 	
 	int FindLowerBound(const T& val) { return FindLowerBound(val, StdLess<T>()); }
-	
+
+	template <class L>
+	int InsertUpperBound(const T& val, const L& less);
+
+	int InsertUpperBound(const T& val) { return InsertUpperBound(val, StdLess<T>()); }
+
 	typedef T        ValueType;
 
 #ifdef IITERATOR

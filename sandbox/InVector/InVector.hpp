@@ -165,6 +165,13 @@ int InVector<T>::FindUpperBound(const T& val, const L& less, int& off, int& pos)
 		if(blki < data.GetCount()) {
 			pos = Upp::FindUpperBound(data[blki], val, less);
 			off = offset;
+
+			InVectorCacheRecord& r = invector_cache;
+			r.serial = serial;
+			r.blki = blki;
+			r.offset = offset;
+			r.end = offset + data[blki].GetCount();
+
 			return blki;
 		}
 	}
@@ -188,7 +195,7 @@ int InVector<T>::FindLowerBound(const T& val, const L& less, int& off, int& pos)
 	int half = hcount;
 	for(int i = index.GetCount(); --i >= 0;) {
 		int m = blki + half;
-		if(m - 1 < data.GetCount() && less(data[m - 1][0], val)) {
+		if(m < data.GetCount() && less(data[m][0], val)) {
 			blki = m;
 			offset += index[i][ii];
 			ii++;
@@ -197,11 +204,18 @@ int InVector<T>::FindLowerBound(const T& val, const L& less, int& off, int& pos)
 		half >>= 1;
 	}
 	if(blki < data.GetCount()) {
-		if(less(data[blki][0], val))
+		if(blki + 1 < data.GetCount() && less(data[blki + 1][0], val))
 			offset += data[blki++].GetCount();
 		if(blki < data.GetCount()) {
 			pos = Upp::FindLowerBound(data[blki], val, less);
 			off = offset;
+
+			InVectorCacheRecord& r = invector_cache;
+			r.serial = serial;
+			r.blki = blki;
+			r.offset = offset;
+			r.end = offset + data[blki].GetCount();
+
 			return blki;
 		}
 	}
@@ -378,8 +392,35 @@ T& InVector<T>::Insert(int ii)
 #endif
 		return data.Add().Insert(0);
 	}
-	int ii0 = ii;
-	int blki = FindBlock(ii);
+	int pos = ii;
+	int blki = FindBlock(pos);
+	return Insert0(ii, blki, pos);
+}
+
+template <class T>
+template <class L>
+int InVector<T>::InsertUpperBound(const T& val, const L& less)
+{
+	if(data.GetCount() == 0) {
+		count++;
+#ifdef USECACHE
+		serial2++;
+#endif
+#ifdef USECACHE2
+		invector_cache.serial = 0;
+#endif
+		return data.Add().Insert(0) = val;
+	}
+	int off;
+	int pos;
+	int blki = FindUpperBound(val, less, off, pos);
+	Insert0(off + pos, blki, pos) = val;
+	return off + pos;
+}
+
+template <class T>
+T& InVector<T>::Insert0(int ii, int blki, int pos)
+{
 	if(data[blki].GetCount() > BLKSIZE) {
 		Vector<T>& b2 = data.Insert(blki + 1);
 		b2.InsertSplit(0, data[blki], data[blki].GetCount() / 2);
@@ -391,10 +432,10 @@ T& InVector<T>::Insert(int ii)
 #ifdef USECACHE2
 		invector_cache.serial = 0;
 #endif
-		ii = ii0;
-		blki = FindBlock(ii);
+		pos = ii;
+		blki = FindBlock(pos);
 	}
-	LLOG("blki: " << blki << ", ii: " << ii);
+	LLOG("blki: " << blki << ", pos: " << pos);
 	count++;
 	invector_cache.serial = 0;
 #ifdef USECACHE
@@ -407,7 +448,7 @@ T& InVector<T>::Insert(int ii)
 	int q = blki;
 	for(int i = 0; i < index.GetCount(); i++)
 		index[i].At(q >>= 1, 0)++;
-	T& x = data[blki].Insert(ii);
+	T& x = data[blki].Insert(pos);
 #ifdef _DEBUG
 	Dump();
 #endif

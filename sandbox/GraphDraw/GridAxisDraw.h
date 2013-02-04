@@ -169,7 +169,7 @@ namespace GraphDraw_ns
 		TypeGridStepManager& GetGridStepManager() { return *_gridStepManager; }
 		inline CLASSNAME& setAxisColor(Color v)                         { _axisColor = v; return *this;  }
 		inline CLASSNAME& setAxisWidth(int v)                           { _axisWidth = v; return *this;  }
-		inline CLASSNAME& setAxisTextFont(Font v)                      { _axisTextFont = v; return *this; }
+		inline CLASSNAME& setAxisTextFont(Font v)                       { _axisTextFont = v; return *this; }
 		inline CLASSNAME& setAxisTextColor(Color v)                     { _axisTextColor = v; return *this; }
 		inline CLASSNAME& setAxisTickColor(Color v)                     { _axisTickColor = v; return *this; }
 		inline CLASSNAME& setGridColor(Color v)                         { _gridColor = v; return *this; }
@@ -178,25 +178,15 @@ namespace GraphDraw_ns
 		inline CLASSNAME& setAxisTextFormat(TypeFormatTextCbk v)        { formatTextCbk = v; return *this;  }
 		CLASSNAME& setAxisTextFormat(AxisTextFormat v) {
 			switch(v) {
-				case AXIS_TEXT_FORMAT_STD:
-					formatTextCbk.Clear();
-					break;
-				case AXIS_TEXT_FORMAT_LOG:
-					setAxisLogFormat();
-					break;
-				case AXIS_TEXT_FORMAT_DATE:
-					setAxisDateFormat();
-					break;
-				case AXIS_TEXT_FORMAT_TIME:
-					setAxisTimeFormat();
-					break;
+				case AXIS_TEXT_FORMAT_STD:  formatTextCbk.Clear(); break;
+				case AXIS_TEXT_FORMAT_LOG:  setAxisLogFormat(); break;
+				case AXIS_TEXT_FORMAT_DATE: setAxisDateFormat(); break;
+				case AXIS_TEXT_FORMAT_TIME: setAxisTimeFormat(); break;
 			}
 			return *this;
 		}
 		
-		
-		
-		inline CLASSNAME& resetAxisTextFormat()                         { formatTextCbk.Clear(); return *this;  }
+		inline CLASSNAME& resetAxisTextFormat() { formatTextCbk.Clear(); return *this;  }
 		inline CLASSNAME& setAxisLogFormat(TypeFormatTextCbk cbk=TypeFormatTextCbk()) {
 			if ( cbk ) formatTextCbk = cbk;
 			else       formatTextCbk = THISBACK(FormatAsLog10);
@@ -250,8 +240,6 @@ namespace GraphDraw_ns
 				output << value.getValue() ;
 			}
 		}
-
-
 
 		void FormatAsDate( const GridStepIterator& value, String& output ) {
 			Date dat;

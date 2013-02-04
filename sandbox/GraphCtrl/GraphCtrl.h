@@ -22,7 +22,6 @@ using namespace Upp;
 //    CRTP_GraphCtrlBase   CLASS
 // ============================
 //template<class TYPES, class DERIVED>
-//class CRTP_GraphCtrlBase : public GraphDraw_ns::CRTP_XYGraphDraw<TYPES, DERIVED>, public Ctrl
 template<class TYPES, class DERIVED, template <class TYPES2, class DERIVED2> class GRAPHDRAW_BASE_CLASS >
 class CRTP_GraphCtrlBase : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public Ctrl
 {
@@ -258,7 +257,6 @@ class CRTP_GraphCtrlBase : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public C
 //			bar.Add(t_("Zoom -"), 		ScatterImg::ZoomMinus(), 	THISBACK3(Zoom, 1.2, true, mouseHandlingY));
 //			bar.Add(t_("Scroll Left"), 	ScatterImg::LeftArrow(), 	THISBACK2(ScatterDraw::Scroll, -0.2, 0));
 //			bar.Add(t_("Scroll Right"), ScatterImg::RightArrow(), 	THISBACK2(ScatterDraw::Scroll, 0.2, 0));
-//			if (mouseHandlingY) {
 //				bar.Add(t_("Scroll Up"), 	ScatterImg::UpArrow(), 	THISBACK2(ScatterDraw::Scroll, 0, -0.2));
 //				bar.Add(t_("Scroll Down"), 	ScatterImg::DownArrow(), THISBACK2(ScatterDraw::Scroll, 0, 0.2));
 //			}
@@ -274,42 +272,22 @@ class CRTP_GraphCtrlBase : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public C
 	template<class RESULT, class CBCK>
 	bool ProcessMouseCallBack(Point p, dword keyflags, CBCK cbck, RESULT& output ,RESULT defaultRes = 0)
 	{
-		for (int j = 0; j < _B::_overElements.GetCount(); j++)
+		for (int j = 0; j < _B::_drawElements.GetCount(); j++)
 		{
-			if (_B::_overElements[j]->Contains(p)) {
-				output = ((_B::_overElements[j]->*cbck)(p, keyflags));
-				return true;
+			if ( _B::_drawElements[j]->IsOverGraph() ) {
+				if (_B::_drawElements[j]->Contains(p)) {
+					output = ((_B::_drawElements[j]->*cbck)(p, keyflags));
+					return true;
+				}
 			}
 		}
-		for (int j = 0; j < _B::_leftElements.GetCount(); j++)
+		for (int j = 0; j < _B::_drawElements.GetCount(); j++)
 		{
-			if (_B::_leftElements[j]->Contains(p)) {
-				output = ((_B::_leftElements[j]->*cbck)(p, keyflags));
-				return true;
-			}
-		}
-
-		for (int j = 0; j < _B::_bottomElements.GetCount(); j++)
-		{
-			if (_B::_bottomElements[j]->Contains(p)) {
-				output = ((_B::_bottomElements[j]->*cbck)(p, keyflags));
-				return true;
-			}
-		}
-
-		for (int j = 0; j < _B::_rightElements.GetCount(); j++)
-		{
-			if (_B::_rightElements[j]->Contains(p)) {
-				output = ((_B::_rightElements[j]->*cbck)(p, keyflags));
-				return true;
-			}
-		}
-
-		for (int j = 0; j < _B::_topElements.GetCount(); j++)
-		{
-			if (_B::_topElements[j]->Contains(p)) {
-				output = ((_B::_topElements[j]->*cbck)(p, keyflags));
-				return true;
+			if ( !_B::_drawElements[j]->IsOverGraph() ) {
+				if (_B::_drawElements[j]->Contains(p)) {
+					output = ((_B::_drawElements[j]->*cbck)(p, keyflags));
+					return true;
+				}
 			}
 		}
 		return false;
@@ -331,7 +309,7 @@ class CRTP_GraphCtrlBase : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public C
 			{
 				// SELECT ZOOM
 				RectTracker tracker(*this);
-				Rect selectedZoomArea = tracker.Track( RectfC(p.x,p.y,0,0), ALIGN_NULL, ALIGN_NULL) - _B::_PlotTopLeft;
+				Rect selectedZoomArea = tracker.Track( RectfC(p.x,p.y,0,0), ALIGN_NULL, ALIGN_NULL) - _B::_plotRect.TopLeft();
 				if (selectedZoomArea.Width() !=0  && selectedZoomArea.Height() != 0) {
 					_B::ZoomOnRect( selectedZoomArea );
 					SetModify();
@@ -472,46 +450,24 @@ class CRTP_GraphCtrlBase : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public C
 
 	virtual void MouseWheel(Point p, int zdelta, dword keyflags)
 	{
-		for (int j = 0; j < _B::_overElements.GetCount(); j++)
+		for (int j = 0; j < _B::_drawElements.GetCount(); j++)
 		{
-			if (_B::_overElements[j]->Contains(p)) {
-				(_B::_overElements[j]->MouseWheel)(p, zdelta, keyflags);
-				return;
+			if ( _B::_drawElements[j]->IsOverGraph() ) {
+				if (_B::_drawElements[j]->Contains(p)) {
+					(_B::_drawElements[j]->MouseWheel)(p, zdelta, keyflags);
+					return;
+				}
 			}
 		}
-
-		for (int j = 0; j < _B::_leftElements.GetCount(); j++)
+		for (int j = 0; j < _B::_drawElements.GetCount(); j++)
 		{
-			if (_B::_leftElements[j]->Contains(p)) {
-				(_B::_leftElements[j]->MouseWheel)(p, zdelta, keyflags);
-				return;
+			if ( !_B::_drawElements[j]->IsOverGraph() ) {
+				if (_B::_drawElements[j]->Contains(p)) {
+					(_B::_drawElements[j]->MouseWheel)(p, zdelta, keyflags);
+					return;
+				}
 			}
 		}
-
-		for (int j = 0; j < _B::_bottomElements.GetCount(); j++)
-		{
-			if (_B::_bottomElements[j]->Contains(p)) {
-				(_B::_bottomElements[j]->MouseWheel)(p, zdelta, keyflags);
-				return;
-			}
-		}
-
-		for (int j = 0; j < _B::_rightElements.GetCount(); j++)
-		{
-			if (_B::_rightElements[j]->Contains(p)) {
-				(_B::_rightElements[j]->MouseWheel)(p, zdelta, keyflags);
-				return ;
-			}
-		}
-
-		for (int j = 0; j < _B::_topElements.GetCount(); j++)
-		{
-			if (_B::_topElements[j]->Contains(p)) {
-				(_B::_topElements[j]->MouseWheel)(p, zdelta, keyflags);
-				return;
-			}
-		}
-
 		if ( _B::_plotRect.Contains(p) ) {
 			if ( keyflags & K_CTRL ) // => WHEEL ZOOM
 			{
@@ -756,21 +712,23 @@ class StdGridAxisDrawCtrl : public GraphDraw_ns::GridAxisDraw<TYPES>
 template <class TYPES, class LEGEND_DRAW_CLASS >
 class CtrlElement_MoveResize : public LEGEND_DRAW_CLASS
 {
-	typedef CtrlElement_MoveResize<TYPES,LEGEND_DRAW_CLASS> CLASSNAME;
-	typedef LEGEND_DRAW_CLASS _B;
-
+	private:
 	Point prevMousePoint;
 	Ctrl* parentCtrl;
 
 	public:
+	typedef CtrlElement_MoveResize<TYPES,LEGEND_DRAW_CLASS> CLASSNAME;
+	typedef LEGEND_DRAW_CLASS _B;
+
+
 	CtrlElement_MoveResize() : parentCtrl(0) {}
 	CtrlElement_MoveResize(Ctrl& p) : parentCtrl(&p) {}
 	CtrlElement_MoveResize( CtrlElement_MoveResize& p) : _B(p), parentCtrl(p.parentCtrl)  {}
-	~CtrlElement_MoveResize() {}
+	virtual ~CtrlElement_MoveResize() {}
 
 	virtual bool Contains(Point p) const { return (_B::_frame.Contains(p) && _B::IsOverGraph()); }
 
-	inline CtrlElement_MoveResize& SetParentCtrl(Ctrl& p) { parentCtrl = &p; return *this; }
+	inline void SetParentCtrl(Ctrl& p) { parentCtrl = &p; }
 
 	virtual Image  CursorImage(Point p, dword keyflags) {
 		if ( keyflags & K_CTRL ){
@@ -785,12 +743,12 @@ class CtrlElement_MoveResize : public LEGEND_DRAW_CLASS
 				RectTracker tracker(*parentCtrl);
 				if(keyflags & K_CTRL) {
 					tracker.Dashed().Animation();
-					_B::_frame = tracker.Track(_B::_frame, ALIGN_NULL, ALIGN_NULL);
+					_B::_overFrame = tracker.Track(_B::_overFrame, ALIGN_NULL, ALIGN_NULL);
 					_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
 					return 0;
 				}
 				tracker.Dashed().Animation();
-				_B::_frame = tracker.Track(_B::_frame, ALIGN_CENTER, ALIGN_CENTER);
+				_B::_overFrame = tracker.Track(_B::_overFrame, ALIGN_CENTER, ALIGN_CENTER);
 				_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
 				return 0;
 			}
@@ -819,15 +777,16 @@ class StdLegendCtrl : public CtrlElement_MoveResize<TYPES, LEGENDDRAW> {
 // ===============================================================================================================================
 // ===============================================================================================================================
 struct GraphCtrlDefaultTypes {
-		typedef DataSource                                                      TypeDataSource;
-		typedef SeriesPlot                                                      TypeSeriesPlot;
-		typedef GraphDraw_ns::SeriesConfig<GraphCtrlDefaultTypes>               TypeSeriesConfig;
-		typedef Vector<TypeSeriesConfig>                                        TypeVectorSeries;
-		typedef MarkPlot                                                        TypeMarkPlot;
-		typedef GraphDraw_ns::GenericCoordinateConverter                        TypeCoordConverter;
-		typedef StdGridAxisDrawCtrl<GraphCtrlDefaultTypes>                      TypeGridAxisDraw;
-		typedef GraphDraw_ns::GridStepManager<>                                 TypeGridStepManager;
-		typedef GraphDraw_ns::LabelElement                                      TypeLabelElement;
+		typedef DataSource                                                                  TypeDataSource;
+		typedef SeriesPlot                                                                  TypeSeriesPlot;
+		typedef GraphDraw_ns::SeriesConfig<GraphCtrlDefaultTypes>                           TypeSeriesConfig;
+		typedef Vector<TypeSeriesConfig>                                                    TypeVectorSeries;
+		typedef MarkPlot                                                                    TypeMarkPlot;
+		typedef GraphDraw_ns::GenericCoordinateConverter                                    TypeCoordConverter;
+		typedef StdGridAxisDrawCtrl<GraphCtrlDefaultTypes>                                  TypeGridAxisDraw;
+		typedef GraphDraw_ns::GridStepManager<>                                             TypeGridStepManager;
+		typedef GraphDraw_ns::LabelElement                                                  TypeLabelElement;
+		typedef StdLegendCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::LegendElement<GraphCtrlDefaultTypes> > TypeLegendElement;
 };
 
 class XYY2_GraphCtrl   : public CRTP_GraphCtrlBase< GraphCtrlDefaultTypes, XYY2_GraphCtrl, GraphDraw_ns::CRTP_XYY2GraphDraw>

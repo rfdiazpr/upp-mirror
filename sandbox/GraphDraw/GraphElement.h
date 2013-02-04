@@ -49,10 +49,15 @@ namespace GraphDraw_ns
 	//    GraphElementFrame   CLASS
 	// ============================
 	class GraphElementFrame {
-		protected:
-			Rect            _frame;  // Frame on which element is painted (absolute position in complete draw area)
-			int             _width;  // width of GraphElement (in screen size)
-			ElementPosition _pos;    // position in plot area
+		public:
+			Rect            _frame;    // Frame on which element is painted (absolute position in complete draw area)
+			Rect            _overFrame;// Frame size used as SCALE=1 reference frame
+			int             _width;    // width of GraphElement (in screen size)
+			ElementPosition _pos;      // position in plot area
+			int             _allowedPosMask;
+			bool            _hide;     // true: is not drawn
+			int             _stackingPriority; // 
+			String          _name;
 
 		public:
 			GraphElementParent* _parent;
@@ -67,12 +72,28 @@ namespace GraphDraw_ns
 			Callback3<GraphElementFrame*, Point , dword > WhenMiddleDown   ;
 			Callback3<GraphElementFrame*, Point , dword > WhenMiddleUp     ;
 
-			GraphElementFrame() : _width(5), _pos(LEFT_OF_GRAPH) {}
-			GraphElementFrame(GraphElementFrame* p)
-			: _width(p->_width)
+			GraphElementFrame()
+			: _frame( 0, 0, 5, 5 )
+			, _overFrame(_frame)
+			, _width(5)
 			, _pos(LEFT_OF_GRAPH)
+			, _allowedPosMask(LEFT_OF_GRAPH | RIGHT_OF_GRAPH| BOTTOM_OF_GRAPH | TOP_OF_GRAPH | OVER_GRAPH )
+			, _parent(0)
+			, _hide(false)
+			, _stackingPriority(100)
+			, _name("NAME NOT SET")
+			{}
+			
+			GraphElementFrame(GraphElementFrame* p)
+			: _frame( 0, 0, 5, 5 )
+			, _overFrame(p->_overFrame)
+			, _width(p->_width)
+			, _pos(LEFT_OF_GRAPH)
+			, _allowedPosMask(p->_allowedPosMask)
 			, _parent(p->_parent)
-			, WhenLeftDown(p->WhenLeftDown)
+			, _hide(p->_hide)
+			, _stackingPriority(p->_stackingPriority)
+			, WhenLeftDown    (p->WhenLeftDown)
 			, WhenLeftDouble  (p->WhenLeftDouble  )
 			, WhenLeftDrag    (p->WhenLeftDrag    )
 			, WhenRightDown   (p->WhenRightDown   )
@@ -81,17 +102,49 @@ namespace GraphDraw_ns
 			, WhenMiddleDown  (p->WhenMiddleDown  )
 			{}
 
+			template<class T>
+			inline void SetParentCtrl(T& p) {} // for compatibility with GraphCtrl only
+
+			void AdjustToPlotRect(const Rect& plotRect)
+			{
+				if ( !IsOverGraph() ) {
+					int xCenter = (plotRect.left + plotRect.right)/2;
+					int yCenter = (plotRect.top + plotRect.bottom)/2;
+					if ( (_frame.left < xCenter) && (xCenter < _frame.right) ) {
+						_frame.left = plotRect.left;
+						_frame.right = plotRect.right;
+					}
+					else {
+						_frame.top = plotRect.top;
+						_frame.bottom = plotRect.bottom;
+					}
+					Update();
+				}
+			}
+
 			virtual ~GraphElementFrame() {}
 
 			virtual bool Contains(Point p) const { return _frame.Contains(p); }
 			inline const Rect& GetFrame() const { return _frame; }
-			inline void SetFrame(Rect v) { _frame = v; }
+			inline void SetFrame(Rect v) { _frame = v; Update(); }
+			inline const Rect& GetOverFrame() const { return _overFrame; }
+			inline void SetOverFrame(Rect v) { _overFrame = v; }
 			inline int GetElementWidth() { return _width; }
 			inline ElementPosition GetElementPos() { return _pos; }
+			inline void SetElementPos( ElementPosition v ) { _pos = v; }
+			inline void SetAllowedPosMask( int v ) { _allowedPosMask = v; }
+			inline void DisablePos( int v ) { _allowedPosMask &= ~v; }
+			inline void SetStackingPriority( int v ) { _stackingPriority = v; }
+			inline int GetStackingPriority( int v )  { return _stackingPriority; }
 
 			inline bool IsVertical() const { return ((_pos & GraphDraw_ns::VERTICAL_MASK)!=0); }
 			inline bool IsHorizontal() const { return ((_pos & GraphDraw_ns::HORIZONTAL_MASK)!=0); }
 			inline bool IsOverGraph() const { return ((_pos & GraphDraw_ns::OVER_MASK)!=0); }
+			inline bool IsHidden() const { return _hide; }
+			inline void Hide( bool v=true ) { _hide = v; }
+			
+			bool operator<(const GraphElementFrame& b) const { return (_stackingPriority < b._stackingPriority); };
+			bool operator>(const GraphElementFrame& b) const { return (_stackingPriority > b._stackingPriority); };
 
          // Paint element somewhere inside the graph area (legend, ...)
 			// Offset and clipping are set with the '_frame' settings
@@ -123,6 +176,8 @@ namespace GraphDraw_ns
 			virtual GraphElementFrame* MouseWheel (Point p, int zdelta, dword keyflags) { return 0; };
 			virtual Image  CursorImage(Point p, dword keyflags) { return GraphDrawImg::CROSS(); }
 	};
+
+	inline bool compareGraphElementFrame(const GraphElementFrame* a, const GraphElementFrame* b) { return *a < *b; }
 
 	template<class DERIVED>
 	class CRTPGraphElementFrame : public GraphElementFrame {
@@ -279,6 +334,7 @@ namespace GraphDraw_ns
 		, _xSeparation(20)
 		, _legendStyleLength(23)
 		{}
+		
 		LegendElement(LegendElement& p)
 		: _B(p)
 		, _bckGndcolor(p._bckGndcolor)
@@ -340,7 +396,7 @@ namespace GraphDraw_ns
 				return;
 			}
 
-			int nmr = fround(_B::_frame.GetSize().cx/_legendWeight);	//max number of labels per row
+			int nmr = fround(_B::_frame.GetSize().cx/(_legendWeight*scale));	//max number of labels per row
 			if (nmr <= 0)
 				nmr = 1;
 			int nLab = (*series).GetCount();	//number of labels
@@ -364,16 +420,15 @@ namespace GraphDraw_ns
 				Font scaledFont( _font );
 				int txtHeight = scaledFont.Height(scale*_font.GetHeight()).GetHeight();
 				for(int i = start; i < end; i++) {
-					int x = scale*(i-start)*_legendWeight;
-					int y = scale*(txtHeight+txtHeight/2)*j;
+					int x = scale*(i-start)*_legendWeight + txtHeight/2;
+					int y = j*txtHeight + txtHeight/2;
 
 					Vector <Point> vp;
-					vp << Point(x,y+txtHeight/2) <<
-							Point(x+scale*_legendStyleLength, y+txtHeight/2);
+					vp << Point(x,y+txtHeight) <<	Point(x+scale*_legendStyleLength, y);
 					if ((*series)[i].opacity > 0 && (*series)[i].seriesPlot)
 						DrawPolylineOpa(w, vp, scale, 1, scale*(*series)[i].thickness, (*series)[i].color, (*series)[i].dash);
 
-					Point p(scale*(x+_legendStyleLength/2),y+txtHeight/2);
+					Point p(x+scale*(_legendStyleLength/2),y+txtHeight/2);
 					if ((*series)[i].markWidth >= 1 && (*series)[i].markPlot)
 						(*series)[i].markPlot->Paint(w, scale, p, (*series)[i].markWidth, (*series)[i].markColor);
 

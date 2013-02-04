@@ -355,6 +355,7 @@ template<class TYPES, class DERIVED>
 			}
 			series[id].markColor = color;
 //			static_cast<DERIVED*>(this)->Refresh();
+			_isDataModified = true;
 			return *static_cast<DERIVED*>(this);
 		}
 		

@@ -12,12 +12,13 @@
 
 using namespace GraphDraw_ns;
 
-class ScatterCtrl : public CRTP_StdGraphCtrl< GraphCtrlDefaultTypes, ScatterCtrl >
+
+class ScatterCtrl : public CRTP_GraphCtrlBase< GraphCtrlDefaultTypes, ScatterCtrl, GraphDraw_ns::CRTP_XYGraphDraw >
 {
 	public:
 	typedef GraphCtrlDefaultTypes                        TYPES;
 	typedef ScatterCtrl                                  CLASSNAME;
-	typedef CRTP_StdGraphCtrl< TYPES, CLASSNAME >        _B;
+	typedef CRTP_GraphCtrlBase< GraphCtrlDefaultTypes, ScatterCtrl, GraphDraw_ns::CRTP_XYGraphDraw >        _B;
 	typedef StdLegendCtrl<TYPES, LegendElement<TYPES> >  TypeLegend;
 	typedef LabelElement                                 TypeLabel;
 
@@ -95,7 +96,7 @@ class ScatterCtrl : public CRTP_StdGraphCtrl< GraphCtrlDefaultTypes, ScatterCtrl
 	ScatterCtrl& SetXYMin(double xmin,double ymin,double ymin2) {
 		_B::_xConverter.updateGraphSize(xmin, xmin+xRange);
 		_B::_yConverter.updateGraphSize(ymin, ymin+yRange);
-		_B::AddRightElementAt(0, 50, y2GridAxisDraw );
+		_B::AddRightElement(50, y2GridAxisDraw );
 		y2CoordConverter.updateGraphSize(ymin2, ymin2+y2Range);
 		AddYConverter(y2CoordConverter);
 		_B::_currentYConverter = &_B::GetYCoordConverter();

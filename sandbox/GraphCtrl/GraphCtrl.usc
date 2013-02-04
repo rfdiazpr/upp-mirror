@@ -127,7 +127,7 @@ fn GD_DrawGrid(w, plotRect, xticks, yticks, xColor, yColor )
 		}
 	}
 }
-
+/*
 fn GD_DrawGrid(w, plotRect, xticks, yticks, xColor, yColor )
 {
 	if ( xColor != Null ) {
@@ -142,7 +142,7 @@ fn GD_DrawGrid(w, plotRect, xticks, yticks, xColor, yColor )
 		}
 	}
 }
-
+*/
 fn GD_DrawGraphic(w, plotRect, color )
 {
 	dx = ( plotRect.right-plotRect.left )/5;
@@ -167,6 +167,7 @@ fn GD_DrawLabelElement(w, side, rect, txt, color, font)
 	if ( color != Null ) {
 		center = Point( (rect.left+rect.right)/2,  (rect.top+rect.bottom)/2);
 		textsize = GetTextSize( txt , font);
+		//w.DrawRect( rect, :Yellow);
 		switch(side)
 		{
 			case "GraphDraw_ns::TOP_OF_GRAPH":
@@ -175,12 +176,26 @@ fn GD_DrawLabelElement(w, side, rect, txt, color, font)
 					w.DrawText( orig.x, orig.y, txt, font, color);
 				break;
 			case "GraphDraw_ns::RIGHT_OF_GRAPH":
+					orig = Point( center.x + (textsize.cy/2), center.y -(textsize.cx/2) );
+					w.DrawText( orig.x, orig.y, 2700, txt, font, color);
+				break;
 			case "GraphDraw_ns::LEFT_OF_GRAPH":
 					orig = Point( center.x - (textsize.cy/2), center.y +(textsize.cx/2) );
 					w.DrawText( orig.x, orig.y, 900, txt, font, color);
 				break;
 		}
 	}
+}
+
+
+fn GD_DrawLegendElement(w, side, rect, bckGndcolor, font)
+{
+	if (bckGndcolor != Null) w.DrawRect( rect, bckGndcolor );
+	txt = "Legend";
+	center = Point( (rect.left+rect.right)/2,  (rect.top+rect.bottom)/2);
+	textsize = GetTextSize( txt , font);
+	orig = Point( center.x - (textsize.cx/2), center.y -(textsize.cy/2) );
+	w.DrawText( orig.x, orig.y, txt, font, :Blue);
 }
 
 
@@ -209,17 +224,21 @@ fn GD_AddElementFrame(side, &fromRect, width)
 	return res;
 }
 
-fn GD_AdjustElementFrame(plotRect, &elem)
+fn GD_AdjustElementFrame(side, plotRect, &elem)
 {
 	xCenter = (plotRect.left + plotRect.right)/2;
 	yCenter = (plotRect.top + plotRect.bottom)/2;
-	if ( (elem.left < xCenter) && (xCenter < elem.right) ) {
-		elem.left = plotRect.left;
-		elem.right = plotRect.right;
-	}
-	else {
-		elem.top = plotRect.top;
-		elem.bottom = plotRect.bottom;
+	switch (side) {
+		case "GraphDraw_ns::TOP_OF_GRAPH":
+		case "GraphDraw_ns::BOTTOM_OF_GRAPH":
+			elem.left = plotRect.left;
+			elem.right = plotRect.right;
+			break;
+		case "GraphDraw_ns::LEFT_OF_GRAPH":
+		case "GraphDraw_ns::RIGHT_OF_GRAPH":
+			elem.top = plotRect.top;
+			elem.bottom = plotRect.bottom;
+			break;
 	}
 }
 
@@ -285,10 +304,23 @@ subctrl GraphDraw_Y2AxisParams {
 
 subctrl GraphDraw_TitleParams {
 	ElementSidePosition SetTitlePosition = GraphDraw_ns::TOP_OF_GRAPH;
+	bool   HideTitle = false;
 	Text   SetTitle = "TITLE";
 	Font   SetTitleFont = StdFontZ(20).Bold().Underline();
 	int    SetTitleWidth = 40;
 	Color  SetTitleColor = Red;
+};
+
+subctrl GraphDraw_LegendParams {
+	ElementPosition SetLegendPosition = GraphDraw_ns::OVER_GRAPH;
+	bool   HideLegend = false;
+	Color  SetLegendBckgndColor = Yellow;
+	Font   SetLegendFont = StdFont();
+	int    SetLegendWidth = 40;
+	int    SetLegendXSize = 80;
+	int    SetLegendYSize = 30;
+	int    SetLegendXPos = 40;
+	int    SetLegendYPos = 20;
 };
 
 subctrl GraphDraw_XLabelParams {
@@ -316,6 +348,7 @@ subctrl GraphDraw_Y2LabelParams {
 ctrl XY_GraphCtrl {
 	group "Extra";
 	> GraphDraw;
+	> GraphDraw_LegendParams;
 	> GraphDraw_XAxisParams;
 	> GraphDraw_YAxisParams;
 
@@ -332,27 +365,35 @@ ctrl XY_GraphCtrl {
 		GD_AddElementFrame( "GraphDraw_ns::LEFT_OF_GRAPH",   plotRect, .SetLeftMargin );
 		GD_AddElementFrame( "GraphDraw_ns::RIGHT_OF_GRAPH",  plotRect, .SetRightMargin );
 
+		legendFrame = RectC(.SetLegendXPos, .SetLegendYPos, .SetLegendXSize, .SetLegendYSize);
+		if ( !.HideLegend  && (.SetLegendPosition!= "GraphDraw_ns::OVER_GRAPH" )) {
+			legendFrame = GD_AddElementFrame( .SetLegendPosition,  plotRect, .SetLegendWidth );
+		}
+
 		xAxisSide = "GraphDraw_ns::BOTTOM_OF_GRAPH";
 		yAxisSide = "GraphDraw_ns::LEFT_OF_GRAPH";
 		yAxisFrame = GD_AddElementFrame( yAxisSide, plotRect, .SetYAxisRectWidth );
 		xAxisFrame = GD_AddElementFrame( xAxisSide, plotRect, .SetXAxisRectWidth );
-		GD_AdjustElementFrame(plotRect, xAxisFrame);
-		GD_AdjustElementFrame(plotRect, yAxisFrame);
+
+		GD_AdjustElementFrame(.SetLegendPosition, plotRect, legendFrame);
+		GD_AdjustElementFrame(xAxisSide, plotRect, xAxisFrame);
+		GD_AdjustElementFrame(yAxisSide, plotRect, yAxisFrame);
 
 		if ( .SetPlotBackgroundColor != Null ) w.DrawRect(plotRect, .SetPlotBackgroundColor);
 		
-		tk = (plotRect.right - plotRect.left)/8;  // tick
-		st = plotRect.left;  // startOffset
+		tk = (plotRect.right - plotRect.left)/8;
+		st = plotRect.left;
 		xticks = [st, st+tk, st+tk*2, st+tk*3, st+tk*4, st+tk*5, st+tk*6, st+tk*7, st+tk*8 ];
 
-		tk = (plotRect.bottom - plotRect.top)/8;  // tick
-		st = plotRect.bottom;  // startOffset
+		tk = (plotRect.bottom - plotRect.top)/8;
+		st = plotRect.bottom;
 		yticks = [st, st-tk, st-tk*2, st-tk*3, st-tk*4, st-tk*5, st-tk*6, st-tk*7, st-tk*8 ];
 
 		GD_DrawGrid(w, plotRect, xticks, yticks, .SetXGridColor, .SetYGridColor);
 		GD_DrawAxis(w, xAxisSide, xAxisFrame, xticks, .SetXAxisWidth, .SetXAxisColor, .SetXAxisTextFont, .SetXAxisTextColor, .SetXAxisTickColor);
 		GD_DrawAxis(w, yAxisSide, yAxisFrame, yticks, .SetYAxisWidth, .SetYAxisColor, .SetYAxisTextFont, .SetYAxisTextColor, .SetYAxisTickColor);
 		GD_DrawGraphic(w, plotRect, :Red);
+		if (!.HideLegend) GD_DrawLegendElement(w, .SetLegendPosition, legendFrame, .SetLegendBckgndColor, .SetLegendFont );
 	}
 };
 
@@ -360,6 +401,7 @@ ctrl XY_GraphCtrl {
 ctrl XYY2_GraphCtrl {
 	group "Extra";
 	> GraphDraw;
+	> GraphDraw_LegendParams;
 	> GraphDraw_XAxisParams;
 	> GraphDraw_YAxisParams;
 	> GraphDraw_Y2AxisParams;
@@ -377,28 +419,35 @@ ctrl XYY2_GraphCtrl {
 		GD_AddElementFrame( "GraphDraw_ns::LEFT_OF_GRAPH",   plotRect, .SetLeftMargin );
 		GD_AddElementFrame( "GraphDraw_ns::RIGHT_OF_GRAPH",  plotRect, .SetRightMargin );
 
+		legendFrame = RectC(.SetLegendXPos, .SetLegendYPos, .SetLegendXSize, .SetLegendYSize);
+		if ( !.HideLegend  && (.SetLegendPosition!= "GraphDraw_ns::OVER_GRAPH" )) {
+			legendFrame = GD_AddElementFrame( .SetLegendPosition,  plotRect, .SetLegendWidth );
+		}
+
 		xAxisSide = "GraphDraw_ns::BOTTOM_OF_GRAPH";
 		yAxisSide = "GraphDraw_ns::LEFT_OF_GRAPH";
 		y2AxisSide = "GraphDraw_ns::RIGHT_OF_GRAPH";
 		xAxisFrame = GD_AddElementFrame( xAxisSide, plotRect, .SetXAxisRectWidth );
 		yAxisFrame = GD_AddElementFrame( yAxisSide, plotRect, .SetYAxisRectWidth );
 		y2AxisFrame = GD_AddElementFrame( y2AxisSide, plotRect, .SetYAxisRectWidth );
-		GD_AdjustElementFrame(plotRect, xAxisFrame);
-		GD_AdjustElementFrame(plotRect, yAxisFrame);
-		GD_AdjustElementFrame(plotRect, y2AxisFrame);
+
+		GD_AdjustElementFrame(.SetLegendPosition, plotRect, legendFrame);
+		GD_AdjustElementFrame(xAxisSide, plotRect, xAxisFrame);
+		GD_AdjustElementFrame(yAxisSide, plotRect, yAxisFrame);
+		GD_AdjustElementFrame(y2AxisSide, plotRect, y2AxisFrame);
 
 		if ( .SetPlotBackgroundColor != Null ) w.DrawRect(plotRect, .SetPlotBackgroundColor);
 		
-		tk = (plotRect.right - plotRect.left)/8;  // tick
-		st = plotRect.left;  // startOffset
+		tk = (plotRect.right - plotRect.left)/8;
+		st = plotRect.left;
 		xticks = [st, st+tk, st+tk*2, st+tk*3, st+tk*4, st+tk*5, st+tk*6, st+tk*7, st+tk*8 ];
 
-		tk = (plotRect.bottom - plotRect.top)/8;  // tick
-		st = plotRect.bottom;  // startOffset
+		tk = (plotRect.bottom - plotRect.top)/8;
+		st = plotRect.bottom;
 		yticks = [st, st-tk, st-tk*2, st-tk*3, st-tk*4, st-tk*5, st-tk*6, st-tk*7, st-tk*8 ];
 
-		tk = (plotRect.bottom - plotRect.top)/7;  // tick
-		st = plotRect.bottom;  // startOffset
+		tk = (plotRect.bottom - plotRect.top)/7;
+		st = plotRect.bottom;
 		y2ticks = [st, st-tk, st-tk*2, st-tk*3, st-tk*4, st-tk*5, st-tk*6, st-tk*7 ];
 
 		GD_DrawGrid(w, plotRect, xticks, yticks, .SetXGridColor, .SetYGridColor);
@@ -406,6 +455,7 @@ ctrl XYY2_GraphCtrl {
 		GD_DrawAxis(w, yAxisSide, yAxisFrame, yticks, .SetYAxisWidth, .SetYAxisColor, .SetYAxisTextFont, .SetYAxisTextColor, .SetYAxisTickColor);
 		GD_DrawAxis(w, y2AxisSide, y2AxisFrame, y2ticks, .SetY2AxisWidth, .SetY2AxisColor, .SetY2AxisTextFont, .SetY2AxisTextColor, .SetY2AxisTickColor);
 		GD_DrawGraphic(w, plotRect, :Red);
+		if (!.HideLegend) GD_DrawLegendElement(w, .SetLegendPosition, legendFrame, .SetLegendBckgndColor, .SetLegendFont );
 	}
 };
 
@@ -413,6 +463,7 @@ ctrl XYLT_GraphCtrl {
 	group "Extra";
 	> GraphDraw;
 	> GraphDraw_TitleParams;
+	> GraphDraw_LegendParams;
 	> GraphDraw_XLabelParams;
 	> GraphDraw_XAxisParams;
 	> GraphDraw_YLabelParams;
@@ -430,7 +481,13 @@ ctrl XYLT_GraphCtrl {
 		GD_AddElementFrame( "GraphDraw_ns::LEFT_OF_GRAPH",   plotRect, .SetLeftMargin );
 		GD_AddElementFrame( "GraphDraw_ns::RIGHT_OF_GRAPH",  plotRect, .SetRightMargin );
 		
-		titleFrame = GD_AddElementFrame( .SetTitlePosition, plotRect, .SetTitleWidth );
+		if (! .HideTitle) {
+			titleFrame = GD_AddElementFrame( .SetTitlePosition, plotRect, .SetTitleWidth );
+		}
+		legendFrame = RectC(.SetLegendXPos, .SetLegendYPos, .SetLegendXSize, .SetLegendYSize);
+		if ( !.HideLegend  && (.SetLegendPosition!= "GraphDraw_ns::OVER_GRAPH" )) {
+			legendFrame = GD_AddElementFrame( .SetLegendPosition,  plotRect, .SetLegendWidth );
+		}
 
 		xAxisSide = "GraphDraw_ns::BOTTOM_OF_GRAPH";
 		yAxisSide = "GraphDraw_ns::LEFT_OF_GRAPH";
@@ -440,41 +497,41 @@ ctrl XYLT_GraphCtrl {
 		yAxisFrame = GD_AddElementFrame( yAxisSide, plotRect, .SetYAxisRectWidth );
 		
 
-		GD_AdjustElementFrame(plotRect, titleFrame);
-		GD_AdjustElementFrame(plotRect, xAxisFrame);
-		GD_AdjustElementFrame(plotRect, xLabelFrame);
-		GD_AdjustElementFrame(plotRect, xAxisFrame);
-		GD_AdjustElementFrame(plotRect, yLabelFrame);
+		GD_AdjustElementFrame(.SetTitlePosition, plotRect, titleFrame);
+		GD_AdjustElementFrame(.SetLegendPosition, plotRect, legendFrame);
+		GD_AdjustElementFrame(xAxisSide, plotRect, xAxisFrame);
+		GD_AdjustElementFrame(xAxisSide, plotRect, xLabelFrame);
+		GD_AdjustElementFrame(yAxisSide, plotRect, yAxisFrame);
+		GD_AdjustElementFrame(yAxisSide, plotRect, yLabelFrame);
 
 		if ( .SetPlotBackgroundColor != Null ) w.DrawRect(plotRect, .SetPlotBackgroundColor);
 		
-		tk = (plotRect.right - plotRect.left)/8;  // tick
-		st = plotRect.left;  // startOffset
+		tk = (plotRect.right - plotRect.left)/8;
+		st = plotRect.left;
 		xticks = [st, st+tk, st+tk*2, st+tk*3, st+tk*4, st+tk*5, st+tk*6, st+tk*7, st+tk*8 ];
 
-		tk = (plotRect.bottom - plotRect.top)/8;  // tick
-		st = plotRect.bottom;  // startOffset
+		tk = (plotRect.bottom - plotRect.top)/8;
+		st = plotRect.bottom;
 		yticks = [st, st-tk, st-tk*2, st-tk*3, st-tk*4, st-tk*5, st-tk*6, st-tk*7, st-tk*8 ];
 
 		GD_DrawGrid(w, plotRect, xticks, yticks, .SetXGridColor, .SetYGridColor);
-		GD_DrawGraphic(w, plotRect, Red);
 		GD_DrawAxis(w, xAxisSide, xAxisFrame, xticks, .SetXAxisWidth, .SetXAxisColor, .SetXAxisTextFont, .SetXAxisTextColor, .SetXAxisTickColor);
 		GD_DrawAxis(w, yAxisSide, yAxisFrame, yticks, .SetYAxisWidth, .SetYAxisColor, .SetYAxisTextFont, .SetYAxisTextColor, .SetYAxisTickColor);
 		GD_DrawGraphic(w, plotRect, :Red);
 		
 		GD_DrawLabelElement( w, xAxisSide, xLabelFrame, .SetXLabel, .SetXLabelColor, .SetXLabelFont );
 		GD_DrawLabelElement( w, yAxisSide, yLabelFrame, .SetYLabel, .SetYLabelColor, .SetYLabelFont );
-		GD_DrawLabelElement(w, .SetTitlePosition, titleFrame, .SetTitle, .SetTitleColor, .SetTitleFont );
+		if (!.HideTitle) GD_DrawLabelElement(w, .SetTitlePosition, titleFrame, .SetTitle, .SetTitleColor, .SetTitleFont );
+		if (!.HideLegend) GD_DrawLegendElement(w, .SetLegendPosition, legendFrame, .SetLegendBckgndColor, .SetLegendFont );
 	}
-
-}
-
+};
 
 
 ctrl XYY2LT_GraphCtrl {
 	group "Extra";
 	> GraphDraw;
 	> GraphDraw_TitleParams;
+	> GraphDraw_LegendParams;
 	> GraphDraw_XLabelParams;
 	> GraphDraw_XAxisParams;
 	> GraphDraw_YLabelParams;
@@ -494,7 +551,13 @@ ctrl XYY2LT_GraphCtrl {
 		GD_AddElementFrame( "GraphDraw_ns::LEFT_OF_GRAPH",   plotRect, .SetLeftMargin );
 		GD_AddElementFrame( "GraphDraw_ns::RIGHT_OF_GRAPH",  plotRect, .SetRightMargin );
 		
-		titleFrame = GD_AddElementFrame( .SetTitlePosition, plotRect, .SetTitleWidth );
+		if (! .HideTitle) {
+			titleFrame = GD_AddElementFrame( .SetTitlePosition, plotRect, .SetTitleWidth );
+		}
+		legendFrame = RectC(.SetLegendXPos, .SetLegendYPos, .SetLegendXSize, .SetLegendYSize);
+		if ( !.HideLegend  && (.SetLegendPosition!= "GraphDraw_ns::OVER_GRAPH" )) {
+			legendFrame = GD_AddElementFrame( .SetLegendPosition,  plotRect, .SetLegendWidth );
+		}
 
 		xAxisSide = "GraphDraw_ns::BOTTOM_OF_GRAPH";
 		yAxisSide = "GraphDraw_ns::LEFT_OF_GRAPH";
@@ -506,12 +569,14 @@ ctrl XYY2LT_GraphCtrl {
 		y2LabelFrame = GD_AddElementFrame( y2AxisSide, plotRect, .SetY2LabelWidth );
 		y2AxisFrame = GD_AddElementFrame( y2AxisSide, plotRect, .SetY2AxisRectWidth );
 		
-
-		GD_AdjustElementFrame(plotRect, titleFrame);
-		GD_AdjustElementFrame(plotRect, xAxisFrame);
-		GD_AdjustElementFrame(plotRect, xLabelFrame);
-		GD_AdjustElementFrame(plotRect, xAxisFrame);
-		GD_AdjustElementFrame(plotRect, yLabelFrame);
+		GD_AdjustElementFrame(.SetTitlePosition, plotRect, titleFrame);
+		GD_AdjustElementFrame(.SetLegendPosition, plotRect, legendFrame);
+		GD_AdjustElementFrame(xAxisSide, plotRect, xAxisFrame);
+		GD_AdjustElementFrame(xAxisSide, plotRect, xLabelFrame);
+		GD_AdjustElementFrame(yAxisSide, plotRect, yAxisFrame);
+		GD_AdjustElementFrame(yAxisSide, plotRect, yLabelFrame);
+		GD_AdjustElementFrame(y2AxisSide, plotRect, y2AxisFrame);
+		GD_AdjustElementFrame(y2AxisSide, plotRect, y2LabelFrame);
 
 		if ( .SetPlotBackgroundColor != Null ) w.DrawRect(plotRect, .SetPlotBackgroundColor);
 		
@@ -528,7 +593,6 @@ ctrl XYY2LT_GraphCtrl {
 		y2ticks = [st, st-tk, st-tk*2, st-tk*3, st-tk*4, st-tk*5, st-tk*6, st-tk*7 ];
 
 		GD_DrawGrid(w, plotRect, xticks, yticks, .SetXGridColor, .SetYGridColor);
-		GD_DrawGraphic(w, plotRect, Red);
 		GD_DrawAxis(w, xAxisSide, xAxisFrame, xticks, .SetXAxisWidth, .SetXAxisColor, .SetXAxisTextFont, .SetXAxisTextColor, .SetXAxisTickColor);
 		GD_DrawAxis(w, yAxisSide, yAxisFrame, yticks, .SetYAxisWidth, .SetYAxisColor, .SetYAxisTextFont, .SetYAxisTextColor, .SetYAxisTickColor);
 		GD_DrawAxis(w, y2AxisSide, y2AxisFrame, y2ticks, .SetY2AxisWidth, .SetY2AxisColor, .SetY2AxisTextFont, .SetY2AxisTextColor, .SetY2AxisTickColor);
@@ -537,7 +601,8 @@ ctrl XYY2LT_GraphCtrl {
 		GD_DrawLabelElement( w, xAxisSide, xLabelFrame, .SetXLabel, .SetXLabelColor, .SetXLabelFont );
 		GD_DrawLabelElement( w, yAxisSide, yLabelFrame, .SetYLabel, .SetYLabelColor, .SetYLabelFont );
 		GD_DrawLabelElement( w, y2AxisSide, y2LabelFrame, .SetY2Label, .SetY2LabelColor, .SetY2LabelFont );
-		GD_DrawLabelElement( w, .SetTitlePosition, titleFrame, .SetTitle, .SetTitleColor, .SetTitleFont );
+		if (!.HideTitle) GD_DrawLabelElement( w, .SetTitlePosition, titleFrame, .SetTitle, .SetTitleColor, .SetTitleFont );
+		if (!.HideLegend) GD_DrawLegendElement(w, .SetLegendPosition, legendFrame, .SetLegendBckgndColor, .SetLegendFont );
 	}
 }
 

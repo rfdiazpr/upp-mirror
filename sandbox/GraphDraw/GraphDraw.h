@@ -24,7 +24,6 @@ using namespace Upp;
 #endif
 
 #include "GraphDrawTypes.h"
-
 #include "CoordinateConverter.h"
 #include "GraphFunctions.h"
 #include "SeriesConfig.h"
@@ -90,18 +89,12 @@ namespace GraphDraw_ns
 
 		protected:
 		// graph elements draw aound the graph
+		Vector< GraphElementFrame* >  _drawElements;
 		Vector< GraphElementFrame* >  _createdElements;
-		Vector< GraphElementFrame* >  _leftElements;
-		Vector< GraphElementFrame* >  _topElements;
-		Vector< GraphElementFrame* >  _rightElements;
-		Vector< GraphElementFrame* >  _bottomElements;
-		Vector< GraphElementFrame* >  _overElements;
 		Vector< TypeCoordConverter* > _xConverters;
 		Vector< TypeCoordConverter* > _yConverters;
 
-		Size     _screenPlotSize;
 		Rect     _screenRect;  // whole graph screen Rect
-		Point    _PlotTopLeft; // TopLeft opoint of plot area inside graph area
 		Rect     _plotRect;
 		DrawMode _mode;
 		bool     _doFastPaint;
@@ -113,91 +106,71 @@ namespace GraphDraw_ns
 		int       _leftMarginWidth;
 		int       _rightMarginWidth;
 		
+		
+		// helper method
+		void AppendElementToRect(GraphElementFrame& element, Rect& fromRect, const int scale)
+		{
+			Rect res = fromRect;
+			switch(element.GetElementPos()) {
+				case TOP_OF_GRAPH:
+					res.bottom = res.top+element.GetElementWidth()*scale;
+					fromRect.top = res.bottom;
+					element.SetFrame(res);
+					break;
+				case BOTTOM_OF_GRAPH:
+					res.top = res.bottom-element.GetElementWidth()*scale;
+					fromRect.bottom = res.top;
+					element.SetFrame(res);
+					break;
+				case LEFT_OF_GRAPH:
+					res.right = res.left+element.GetElementWidth()*scale;
+					fromRect.left = res.right;
+					element.SetFrame(res);
+					break;
+				case RIGHT_OF_GRAPH:
+					res.left = res.right-element.GetElementWidth()*scale;
+					fromRect.right = res.left;
+					element.SetFrame(res);
+					break;
+				case OVER_GRAPH:
+					res = element.GetOverFrame();
+					res = Rect( res.TopLeft()*scale, res.Size()*scale );
+					element.SetFrame(res);
+					break;
+			}
+		}
+
 		inline void updateSizes( const int scale = 1 )
 		{
-			// --------------
-			// GRAPH ELEMENTS
-			// --------------
-			TypeScreenCoord offsetLeft   = _leftMarginWidth*scale;
-			TypeScreenCoord offsetTop    = _topMarginWidth*scale;
-			TypeScreenCoord offsetRight  = _rightMarginWidth*scale;
-			TypeScreenCoord offsetBottom = _bottomMarginWidth*scale;
-			
-			// ======================
-			//   calcul des offset
-			for (int j = 0; j < _leftElements.GetCount(); j++)
-			{
-				offsetLeft += _leftElements[j]->GetElementWidth()*scale;
-			}
-			for (int j = 0; j < _topElements.GetCount(); j++)
-			{
-				offsetTop += _topElements[j]->GetElementWidth()*scale;
-			}
-			for (int j = 0; j < _bottomElements.GetCount(); j++)
-			{
-				offsetBottom += _bottomElements[j]->GetElementWidth()*scale;
-			}
-			for (int j = 0; j < _rightElements.GetCount(); j++)
-			{
-				offsetRight += _rightElements[j]->GetElementWidth()*scale;
-			}
-			
-			_screenPlotSize.cx = _screenRect.GetWidth() - offsetLeft - offsetRight;
-			_screenPlotSize.cy = _screenRect.GetHeight() - offsetTop - offsetBottom;
+			_plotRect = _screenRect;
+			_plotRect.left   += _leftMarginWidth*scale;
+			_plotRect.right  -= _rightMarginWidth*scale;
+			_plotRect.top    += _topMarginWidth*scale;
+			_plotRect.bottom -= _bottomMarginWidth*scale;
 
-			_PlotTopLeft.x = offsetLeft;
-			_PlotTopLeft.y = offsetTop;
+			Sort(_drawElements, compareGraphElementFrame);
 
-			_plotRect = Rect(_PlotTopLeft, _screenPlotSize);
+			for (int j = _drawElements.GetCount()-1; j>=0; j--) {
+				if (!_drawElements[j]->IsHidden()) {
+					AppendElementToRect(*(_drawElements[j]), _plotRect, scale);
+				}
+			}
+
+			for (int j = 0; j < _drawElements.GetCount(); j++) {
+				if (!_drawElements[j]->IsHidden()) {
+					_drawElements[j]->AdjustToPlotRect( _plotRect );
+				}
+			}
 
 			for (int j = 0; j < _xConverters.GetCount(); j++) {
-				_xConverters[j]->updateScreenSize( 0, _screenPlotSize.cx );
+				_xConverters[j]->updateScreenSize( 0, _plotRect.GetWidth() );
 			}
 
 			for (int j = 0; j < _yConverters.GetCount(); j++) {
-				_yConverters[j]->updateScreenSize( _screenPlotSize.cy, 0  );
-			}
-
-			// ======================
-			//  Update element positions
-			Rect r;
-			
-			r.Set( Point( offsetLeft, offsetTop ), Size(40,40) );
-			for (int j = 0; j < _leftElements.GetCount(); j++)
-			{
-				r.OffsetHorz( -_leftElements[j]->GetElementWidth()*scale );
-				r.SetSize( _leftElements[j]->GetElementWidth()*scale ,_screenPlotSize.cy);
-				_leftElements[j]->Update();
-				_leftElements[j]->SetFrame(r);
-			}
-
-			r.Set( Point( offsetLeft, offsetTop ), Size(40,40) );
-			for (int j = 0; j < _topElements.GetCount(); j++)
-			{
-				r.OffsetVert( -_topElements[j]->GetElementWidth()*scale );
-				r.SetSize( _screenPlotSize.cx, _topElements[j]->GetElementWidth()*scale);
-				_topElements[j]->SetFrame(r);
-				_topElements[j]->Update();
-			}
-
-			r.Set( Point( offsetLeft, offsetTop+_screenPlotSize.cy ), Size(40,40) );
-			for (int j = 0; j < _bottomElements.GetCount(); j++)
-			{
-				r.SetSize( _screenPlotSize.cx, _bottomElements[j]->GetElementWidth()*scale);
-				_bottomElements[j]->SetFrame(r);
-				_bottomElements[j]->Update();
-				r.OffsetVert( _bottomElements[j]->GetElementWidth()*scale );
-			}
-
-			r.Set( Point( offsetLeft+_screenPlotSize.cx, offsetTop ), Size(40,40) );
-			for (int j = 0; j < _rightElements.GetCount(); j++)
-			{
-				r.SetSize( _rightElements[j]->GetElementWidth()*scale ,_screenPlotSize.cy);
-				_rightElements[j]->SetFrame(r);
-				_rightElements[j]->Update();
-				r.OffsetHorz( _rightElements[j]->GetElementWidth()*scale );
+				_yConverters[j]->updateScreenSize( _plotRect.GetHeight(), 0  );
 			}
 		}
+		
 
 		public:
 		CRTP_EmptyGraphDraw()
@@ -280,7 +253,7 @@ namespace GraphDraw_ns
 			for (int j = 0; j < _xConverters.GetCount(); j++)
 			{
 				_xConverters[j]->updateGraphSize( _xConverters[j]->toGraph( left ),
-															 _xConverters[j]->toGraph( right ));
+				                                  _xConverters[j]->toGraph( right ));
 			}
 			Refresh();
 		}
@@ -347,31 +320,37 @@ namespace GraphDraw_ns
 			return *static_cast<DERIVED*>(this);
 		}
 
-
-
 		template<class T, int POS_OF_GRAPH>
-		T& AddElement(T& v) {
-				switch(POS_OF_GRAPH){
-					case LEFT_OF_GRAPH:
-						_leftElements << &v.SetElementPos(LEFT_OF_GRAPH);
-						break;
-					case BOTTOM_OF_GRAPH:
-						_bottomElements << &v.SetElementPos(BOTTOM_OF_GRAPH);
-						break;
-					case TOP_OF_GRAPH:
-						_topElements << &v.SetElementPos(TOP_OF_GRAPH);
-						break;
-					case RIGHT_OF_GRAPH:
-						_rightElements << &v.SetElementPos(RIGHT_OF_GRAPH);
-						break;
-					case OVER_GRAPH:
-						_overElements << &v.SetElementPos(OVER_GRAPH);
-						break;
-				}
-				v._parent = this;
-				return v;
+		T& AddElement(T& v, int stackPrio) {
+			v._parent = this;
+			v.SetStackingPriority(stackPrio);
+			_drawElements << &v.SetElementPos((ElementPosition)POS_OF_GRAPH);
+			Sort(_drawElements, compareGraphElementFrame);
+			return v;
 		}
 
+		template<class T, int POS_OF_GRAPH>
+		T& AddElement(int elementWidth, T& v, int stackPrio) {
+				v.SetElementWidth(elementWidth);
+				return AddElement<T, POS_OF_GRAPH>(v, stackPrio);
+				
+		}
+
+		template<class T>  T& AddLeftElement(T& v, int stackPrio)   { return AddElement<T, LEFT_OF_GRAPH>(v, stackPrio); }
+		template<class T>  T& AddRightElement(T& v, int stackPrio)  { return AddElement<T, RIGHT_OF_GRAPH>(v, stackPrio); }
+		template<class T>  T& AddTopElement(T& v, int stackPrio)    { return AddElement<T, TOP_OF_GRAPH>(v, stackPrio); }
+		template<class T>  T& AddBottomElement(T& v, int stackPrio) { return AddElement<T, BOTTOM_OF_GRAPH>(v, stackPrio); }
+		template<class T>  T& AddOverElement(T& v, int stackPrio)   { return AddElement<T, OVER_GRAPH>(v, stackPrio); }
+
+		template<class T>  T& AddLeftElement(int elementWidth, T& v, int stackPrio)   { return AddElement<T, LEFT_OF_GRAPH>(elementWidth, v, stackPrio); }
+		template<class T>  T& AddRightElement(int elementWidth, T& v, int stackPrio)  { return AddElement<T, RIGHT_OF_GRAPH>(elementWidth, v, stackPrio); }
+		template<class T>  T& AddTopElement(int elementWidth, T& v, int stackPrio)    { return AddElement<T, TOP_OF_GRAPH>(elementWidth, v, stackPrio); }
+		template<class T>  T& AddBottomElement(int elementWidth, T& v, int stackPrio) { return AddElement<T, BOTTOM_OF_GRAPH>(elementWidth, v, stackPrio); }
+		template<class T>  T& AddOverElement(int elementWidth, T& v, int stackPrio)   { return AddElement<T, OVER_GRAPH>(elementWidth, v, stackPrio); }
+
+
+
+/*
 		template<class T, int POS_OF_GRAPH>
 		T& AddElementAt(int pos, T& v) {
 				switch(POS_OF_GRAPH){
@@ -395,25 +374,13 @@ namespace GraphDraw_ns
 				return v;
 		}
 
-		template<class T>  T& AddLeftElement(T& v)   { return AddElement<T, LEFT_OF_GRAPH>(v); }
-		template<class T>  T& AddRightElement(T& v)  { return AddElement<T, RIGHT_OF_GRAPH>(v); }
-		template<class T>  T& AddTopElement(T& v)    { return AddElement<T, TOP_OF_GRAPH>(v); }
-		template<class T>  T& AddBottomElement(T& v) { return AddElement<T, BOTTOM_OF_GRAPH>(v); }
-		template<class T>  T& AddOverElement(T& v)   { return AddElement<T, OVER_GRAPH>(v); }
 
-		template<class T>  T& AddLeftElementAt(int pos, T& v)   { return AddElement<T, LEFT_OF_GRAPH>(pos, v); }
-		template<class T>  T& AddRightElementAt(int pos, T& v)  { return AddElement<T, RIGHT_OF_GRAPH>(pos, v); }
-		template<class T>  T& AddTopElementAt(int pos, T& v)    { return AddElement<T, TOP_OF_GRAPH>(pos, v); }
-		template<class T>  T& AddBottomElementAt(int pos, T& v) { return AddElement<T, BOTTOM_OF_GRAPH>(pos, v); }
-		template<class T>  T& AddOverElementAt(int pos, T& v)   { return AddElement<T, OVER_GRAPH>(pos, v); }
+		template<class T>  T& AddLeftElementAt(int pos, T& v)   { return AddElementAt<T, LEFT_OF_GRAPH>(pos, v); }
+		template<class T>  T& AddRightElementAt(int pos, T& v)  { return AddElementAt<T, RIGHT_OF_GRAPH>(pos, v); }
+		template<class T>  T& AddTopElementAt(int pos, T& v)    { return AddElementAt<T, TOP_OF_GRAPH>(pos, v); }
+		template<class T>  T& AddBottomElementAt(int pos, T& v) { return AddElementAt<T, BOTTOM_OF_GRAPH>(pos, v); }
+		template<class T>  T& AddOverElementAt(int pos, T& v)   { return AddElementAt<T, OVER_GRAPH>(pos, v); }
 
-
-
-		template<class T, int POS_OF_GRAPH>
-		T& AddElement(int elementWidth, T& v) {
-				v.SetElementWidth(elementWidth);
-				return AddElement<T, POS_OF_GRAPH>(v);
-		}
 
 		template<class T, int POS_OF_GRAPH>
 		T& AddElementAt(int pos, int elementWidth, T& v) {
@@ -421,97 +388,107 @@ namespace GraphDraw_ns
 				return AddElementAt<T, POS_OF_GRAPH>(pos, v);
 		}
 
-		template<class T>  T& AddLeftElement(int elementWidth, T& v)   { return AddElement<T, LEFT_OF_GRAPH>(elementWidth, v); }
-		template<class T>  T& AddRightElement(int elementWidth, T& v)  { return AddElement<T, RIGHT_OF_GRAPH>(elementWidth, v); }
-		template<class T>  T& AddTopElement(int elementWidth, T& v)    { return AddElement<T, TOP_OF_GRAPH>(elementWidth, v); }
-		template<class T>  T& AddBottomElement(int elementWidth, T& v) { return AddElement<T, BOTTOM_OF_GRAPH>(elementWidth, v); }
-		template<class T>  T& AddOverElement(int elementWidth, T& v)   { return AddElement<T, OVER_GRAPH>(elementWidth, v); }
 
 		template<class T>  T& AddLeftElementAt(int pos, int elementWidth, T& v)   { return AddElementAt<T, LEFT_OF_GRAPH>(pos, elementWidth, v); }
 		template<class T>  T& AddRightElementAt(int pos, int elementWidth, T& v)  { return AddElementAt<T, RIGHT_OF_GRAPH>(pos, elementWidth, v); }
 		template<class T>  T& AddTopElementAt(int pos, int elementWidth, T& v)    { return AddElementAt<T, TOP_OF_GRAPH>(pos, elementWidth, v); }
 		template<class T>  T& AddBottomElementAt(int pos, int elementWidth, T& v) { return AddElementAt<T, BOTTOM_OF_GRAPH>(pos, elementWidth, v); }
 		template<class T>  T& AddOverElementAt(int pos, int elementWidth, T& v)   { return AddElementAt<T, OVER_GRAPH>(pos, elementWidth, v); }
-
+*/
 
 		template<class T, int POS_OF_GRAPH>
-		T& CloneElement(int elementWidth, T& p) {
+		T& CloneElement(int elementWidth, T& p, int stackPrio=-1) {
 			T* e = dynamic_cast<T*>( p.Clone() );
 			e->SetElementWidth(elementWidth);
+			if (stackPrio==-1) {
+				stackPrio = e->GetStackingPriority();
+			}
 			_createdElements << e; // to manage object destruction
-			AddElement<T, POS_OF_GRAPH>(*e);
+			AddElement<T, POS_OF_GRAPH>(*e, stackPrio);
 			return *e;
 		}
-		template<class T>	T& CloneLeftElement(int elementWidth, T& p)   { return CloneElement<T, LEFT_OF_GRAPH>(elementWidth, p); }
-		template<class T>	T& CloneRightElement(int elementWidth, T& p)  { return CloneElement<T, RIGHT_OF_GRAPH>(elementWidth, p); }
-		template<class T>	T& CloneTopElement(int elementWidth, T& p)    { return CloneElement<T, TOP_OF_GRAPH>(elementWidth, p); }
-		template<class T>	T& CloneBottomElement(int elementWidth, T& p) { return CloneElement<T, BOTTOM_OF_GRAPH>(elementWidth, p); }
-		template<class T>	T& CloneOverElement(T& p)                     { return CloneElement<OVER_GRAPH>(0, p); }
-
-		template<class T, int POS_OF_GRAPH>
-		T& CreateLegendElement(int elementWidth) {
-			T* e = new T();
-			e->SetSeries(TypeSeriesGroup::series);
-			e->SetElementWidth(elementWidth);
-			e->_parent = this;
-			_createdElements << e; // to manage object destruction
-			AddElement<T, POS_OF_GRAPH>(*e);
-			return *e;
-		}
-		template<class T>	T& CreateLeftLegendElement(int elementWidth)   { return CreateLegendElement<T, LEFT_OF_GRAPH>(elementWidth); }
-		template<class T>	T& CreateRightLegendElement(int elementWidth)  { return CreateLegendElement<T, RIGHT_OF_GRAPH>(elementWidth); }
-		template<class T>	T& CreateTopLegendElement(int elementWidth)    { return CreateLegendElement<T, TOP_OF_GRAPH>(elementWidth); }
-		template<class T>	T& CreateBottomLegendElement(int elementWidth) { return CreateLegendElement<T, BOTTOM_OF_GRAPH>(elementWidth); }
-		template<class T>	T& CreateOverLegendElement()                   { return CreateLegendElement<OVER_GRAPH>(0); }
-
+		template<class T>	T& CloneLeftElement(int elementWidth, T& p, int stackPrio=-1)   { return CloneElement<T, LEFT_OF_GRAPH>(elementWidth, p, stackPrio); }
+		template<class T>	T& CloneRightElement(int elementWidth, T& p, int stackPrio=-1)  { return CloneElement<T, RIGHT_OF_GRAPH>(elementWidth, p, stackPrio); }
+		template<class T>	T& CloneTopElement(int elementWidth, T& p, int stackPrio=-1)    { return CloneElement<T, TOP_OF_GRAPH>(elementWidth, p, stackPrio); }
+		template<class T>	T& CloneBottomElement(int elementWidth, T& p, int stackPrio=-1) { return CloneElement<T, BOTTOM_OF_GRAPH>(elementWidth, p, stackPrio); }
+		template<class T>	T& CloneOverElement(T& p, int stackPrio=-1)                     { return CloneElement<OVER_GRAPH>(0, p, stackPrio); }
 
 
 		template<class T, int POS_OF_GRAPH>
-		T& CreateElement(int elementWidth) {
+		T& AddLegendElement(int elementWidth, T& legend, int stackPrio) {
+			legend.SetParentCtrl(* static_cast<DERIVED*>(this));
+			legend.SetSeries(TypeSeriesGroup::series);
+			legend.SetElementWidth(elementWidth);
+			legend._parent = this;
+			AddElement<T, POS_OF_GRAPH>(legend,stackPrio);
+			return legend;
+		}
+		template<class T>	T& AddLeftLegendElement(int elementWidth, T& legend, int stackPrio)   { return AddLegendElement<T, LEFT_OF_GRAPH>(elementWidth, legend, stackPrio); }
+		template<class T>	T& AddRightLegendElement(int elementWidth, T& legend, int stackPrio)  { return AddLegendElement<T, RIGHT_OF_GRAPH>(elementWidth, legend, stackPrio); }
+		template<class T>	T& AddTopLegendElement(int elementWidth, T& legend, int stackPrio)    { return AddLegendElement<T, TOP_OF_GRAPH>(elementWidth, legend, stackPrio); }
+		template<class T>	T& AddBottomLegendElement(int elementWidth, T& legend, int stackPrio) { return AddLegendElement<T, BOTTOM_OF_GRAPH>(elementWidth, legend, stackPrio); }
+		template<class T>	T& AddOverLegendElement(int elementWidth, T& legend, int stackPrio)   { return AddLegendElement<T, OVER_GRAPH>(elementWidth, legend, stackPrio); }
+
+		template<class T, int POS_OF_GRAPH>
+		T& CreateLegendElement(int elementWidth, int stackPrio) {
+			T* e = new T();
+			_createdElements << e; // to manage object destruction
+			return AddLegendElement(elementWidth, *e, stackPrio);
+		}
+		template<class T>	T& CreateLeftLegendElement(int elementWidth, int stackPrio)   { return CreateLegendElement<T, LEFT_OF_GRAPH>(elementWidth, stackPrio); }
+		template<class T>	T& CreateRightLegendElement(int elementWidth, int stackPrio)  { return CreateLegendElement<T, RIGHT_OF_GRAPH>(elementWidth, stackPrio); }
+		template<class T>	T& CreateTopLegendElement(int elementWidth, int stackPrio)    { return CreateLegendElement<T, TOP_OF_GRAPH>(elementWidth, stackPrio); }
+		template<class T>	T& CreateBottomLegendElement(int elementWidth, int stackPrio) { return CreateLegendElement<T, BOTTOM_OF_GRAPH>(elementWidth, stackPrio); }
+		template<class T>	T& CreateOverLegendElement(int stackPrio)                     { return CreateLegendElement<OVER_GRAPH>(0, stackPrio); }
+
+
+
+		template<class T, int POS_OF_GRAPH>
+		T& CreateElement(int elementWidth, int stackPrio) {
 			T* e = new T();
 			e->SetElementWidth(elementWidth);
 			e->_parent = this;
 			_createdElements << e; // to manage object destruction
-			AddElement<T, POS_OF_GRAPH>(*e);
+			AddElement<T, POS_OF_GRAPH>(*e, stackPrio);
 			return *e;
 		}
-		template<class T>	T& CreateLeftElement(int elementWidth)   { return CreateElement<T, LEFT_OF_GRAPH>(elementWidth); }
-		template<class T>	T& CreateRightElement(int elementWidth)  { return CreateElement<T, RIGHT_OF_GRAPH>(elementWidth); }
-		template<class T>	T& CreateTopElement(int elementWidth)    { return CreateElement<T, TOP_OF_GRAPH>(elementWidth); }
-		template<class T>	T& CreateBottomElement(int elementWidth) { return CreateElement<T, BOTTOM_OF_GRAPH>(elementWidth); }
-		template<class T>	T& CreateOverElement()                   { return CreateElement<OVER_GRAPH>(0); }
+		template<class T>	T& CreateLeftElement(int elementWidth, int stackPrio)   { return CreateElement<T, LEFT_OF_GRAPH>(elementWidth, stackPrio); }
+		template<class T>	T& CreateRightElement(int elementWidth, int stackPrio)  { return CreateElement<T, RIGHT_OF_GRAPH>(elementWidth, stackPrio); }
+		template<class T>	T& CreateTopElement(int elementWidth, int stackPrio)    { return CreateElement<T, TOP_OF_GRAPH>(elementWidth, stackPrio); }
+		template<class T>	T& CreateBottomElement(int elementWidth, int stackPrio) { return CreateElement<T, BOTTOM_OF_GRAPH>(elementWidth, stackPrio); }
+		template<class T>	T& CreateOverElement(int stackPrio)                     { return CreateElement<OVER_GRAPH>(0, stackPrio); }
 
 
 		template<class T, int POS_OF_GRAPH, class P1>
-		T& CreateElement(int elementWidth, P1& p1 ) {
+		T& CreateElement1(int elementWidth, int stackPrio, P1& p1 ) {
 			T* e = new T(p1);
 			e->SetElementWidth(elementWidth);
 			e->_parent = this;
 			_createdElements << e; // to manage object destruction
-			AddElement<T, POS_OF_GRAPH>(*e);
+			AddElement<T, POS_OF_GRAPH>(*e, stackPrio);
 			return *e;
 		}
-		template<class T, class P1>	T& CreateLeftElement(int elementWidth, P1& p1)   { return CreateElement<T, LEFT_OF_GRAPH>(elementWidth, p1); }
-		template<class T, class P1>	T& CreateRightElement(int elementWidth, P1& p1)  { return CreateElement<T, RIGHT_OF_GRAPH>(elementWidth, p1); }
-		template<class T, class P1>	T& CreateTopElement(int elementWidth, P1& p1)    { return CreateElement<T, TOP_OF_GRAPH>(elementWidth, p1); }
-		template<class T, class P1>	T& CreateBottomElement(int elementWidth, P1& p1) { return CreateElement<T, BOTTOM_OF_GRAPH>(elementWidth, p1); }
-		template<class T, class P1>	T& CreateOverElement(P1& p1) { return CreateElement<T, OVER_GRAPH>(0, p1); }
+		template<class T, class P1>	T& CreateLeftElement1(int elementWidth, int stackPrio, P1& p1)   { return CreateElement1<T, LEFT_OF_GRAPH>(elementWidth, stackPrio, p1); }
+		template<class T, class P1>	T& CreateRightElement1(int elementWidth, int stackPrio, P1& p1)  { return CreateElement1<T, RIGHT_OF_GRAPH>(elementWidth, stackPrio, p1); }
+		template<class T, class P1>	T& CreateTopElement1(int elementWidth, int stackPrio, P1& p1)    { return CreateElement1<T, TOP_OF_GRAPH>(elementWidth, stackPrio, p1); }
+		template<class T, class P1>	T& CreateBottomElement1(int elementWidth, int stackPrio, P1& p1) { return CreateElement1<T, BOTTOM_OF_GRAPH>(elementWidth, stackPrio, p1); }
+		template<class T, class P1>	T& CreateOverElement1(int stackPrio, P1& p1)                       { return CreateElement1<T, OVER_GRAPH>(0, stackPrio, p1); }
 
 
 		template<class T, int POS_OF_GRAPH, class P1, class P2>
-		T& CreateElement(int elementWidth, P1& p1, P2& p2 ) {
+		T& CreateElement2(int elementWidth, int stackPrio, P1& p1, P2& p2 ) {
 			T* e = new T(p1,p2);
 			e->SetElementWidth(elementWidth);
 			e->_parent = this;
 			_createdElements << e; // to manage object destruction
-			AddElement<T, POS_OF_GRAPH>(*e);
+			AddElement<T, POS_OF_GRAPH>(*e, stackPrio);
 			return *e;
 		}
-		template<class T, class P1, class P2>	T& CreateLeftElement(int elementWidth, P1& p1, P2& p2)   { return CreateElement<T, LEFT_OF_GRAPH>(elementWidth, p1, p2); }
-		template<class T, class P1, class P2>	T& CreateRightElement(int elementWidth, P1& p1, P2& p2)  { return CreateElement<T, RIGHT_OF_GRAPH>(elementWidth, p1, p2); }
-		template<class T, class P1, class P2>	T& CreateTopElement(int elementWidth, P1& p1, P2& p2)    { return CreateElement<T, TOP_OF_GRAPH>(elementWidth, p1, p2); }
-		template<class T, class P1, class P2>	T& CreateBottomElement(int elementWidth, P1& p1, P2& p2) { return CreateElement<T, BOTTOM_OF_GRAPH>(elementWidth, p1, p2); }
-		template<class T, class P1, class P2>	T& CreateOverElement( P1& p1, P2& p2) { return CreateElement<T, OVER_GRAPH>(0, p1, p2); }
+		template<class T, class P1, class P2>	T& CreateLeftElement2(int elementWidth, int stackPrio, P1& p1, P2& p2)   { return CreateElement2<T, LEFT_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
+		template<class T, class P1, class P2>	T& CreateRightElement2(int elementWidth, int stackPrio, P1& p1, P2& p2)  { return CreateElement2<T, RIGHT_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
+		template<class T, class P1, class P2>	T& CreateTopElement2(int elementWidth, int stackPrio, P1& p1, P2& p2)    { return CreateElement2<T, TOP_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
+		template<class T, class P1, class P2>	T& CreateBottomElement2(int elementWidth, int stackPrio, P1& p1, P2& p2) { return CreateElement2<T, BOTTOM_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
+		template<class T, class P1, class P2>	T& CreateOverElement2(int stackPrio, P1& p1, P2& p2)                      { return CreateElement2<T, OVER_GRAPH>(0, stackPrio, p1, p2); }
 
 
 		// Refresh called from child
@@ -553,37 +530,24 @@ namespace GraphDraw_ns
 
 			// --------------------------------------
 			// BEGIN paint in PLOT AREA
-			dw.Clipoff(_PlotTopLeft.x, _PlotTopLeft.y, _screenPlotSize.cx, _screenPlotSize.cy);
-			if (!_plotBckgndColor.IsNullInstance()) dw.DrawRect(0, 0, _screenPlotSize.cx, _screenPlotSize.cy, _plotBckgndColor);
+			dw.Clipoff(_plotRect.left, _plotRect.top, _plotRect.GetWidth(), _plotRect.GetHeight());
+			if (!_plotBckgndColor.IsNullInstance()) dw.DrawRect(0, 0, _plotRect.GetWidth(), _plotRect.GetHeight(), _plotBckgndColor);
 			// --------------------------------------
 
 			// --------------
 			// GRAPH ELEMENTS on PLOT area   ( X/Y Grid, or anything else )
 			// --------------
-			for (int j = 0; j < _overElements.GetCount(); j++)
-			{
-				_overElements[j]->PaintOnPlot(dw, _screenPlotSize.cx, scale);
-			}
-			for (int j = 0; j < _leftElements.GetCount(); j++)
-			{
-				_leftElements[j]->PaintOnPlot(dw, _screenPlotSize.cx, scale);
-			}
 
-			for (int j = 0; j < _bottomElements.GetCount(); j++)
-			{
-				_bottomElements[j]->PaintOnPlot(dw, _screenPlotSize.cy, scale);
+			for (int j = 0; j < _drawElements.GetCount(); j++) {
+				if ( (!_drawElements[j]->IsHidden()) && _drawElements[j]->IsOverGraph() ) _drawElements[j]->PaintOnPlot(dw, _plotRect.GetWidth(), scale);
 			}
-
-			for (int j = 0; j < _rightElements.GetCount(); j++)
-			{
-				_rightElements[j]->PaintOnPlot(dw, _screenPlotSize.cx, scale);
+			
+			for (int j = 0; j < _drawElements.GetCount(); j++) {
+				if (!_drawElements[j]->IsHidden()) {
+					if      ( _drawElements[j]->IsVertical() )   _drawElements[j]->PaintOnPlot(dw, _plotRect.GetWidth(), scale);
+					else if ( _drawElements[j]->IsHorizontal() ) _drawElements[j]->PaintOnPlot(dw, _plotRect.GetHeight(), scale);
+				}
 			}
-
-			for (int j = 0; j < _topElements.GetCount(); j++)
-			{
-				_topElements[j]->PaintOnPlot(dw, _screenPlotSize.cy, scale);
-			}
-
 			// ------------
 			// paint DATA
 			// ------------
@@ -727,44 +691,27 @@ namespace GraphDraw_ns
 			// --------------------------------------
 
 			// --------------
-			// GRAPH ELEMENTS (painted in they're area)
+			// GRAPH ELEMENTS (painted in they're own area)
 			// --------------
-			for (int j = 0; j < _leftElements.GetCount(); j++)
+			
+			for (int j = 0; j < _drawElements.GetCount(); j++)
 			{
-				dw.Offset(_leftElements[j]->GetFrame().TopLeft());
-				_leftElements[j]->PaintElement(dw, scale);
-				dw.End();
+				if ( (!_drawElements[j]->IsHidden()) && (!_drawElements[j]->IsOverGraph()) ) {
+					dw.Offset(_drawElements[j]->GetFrame().TopLeft());
+					_drawElements[j]->PaintElement(dw, scale);
+					dw.End();
+				}
 			}
-
-			for (int j = 0; j < _bottomElements.GetCount(); j++)
-			{
-				dw.Offset(_bottomElements[j]->GetFrame().TopLeft());
-				_bottomElements[j]->PaintElement(dw, scale);
-				dw.End();
-			}
-
-			for (int j = 0; j < _rightElements.GetCount(); j++)
-			{
-				dw.Offset(_rightElements[j]->GetFrame().TopLeft());
-				_rightElements[j]->PaintElement(dw, scale);
-				dw.End();
-			}
-
-			for (int j = 0; j < _topElements.GetCount(); j++)
-			{
-				dw.Offset(_topElements[j]->GetFrame().TopLeft());
-				_topElements[j]->PaintElement(dw, scale);
-				dw.End();
-			}
-
 			// --------------
 			// GRAPH ELEMENTS on ALL GRAPH area   ( legend, or anything else )
 			// --------------
-			for (int j = 0; j < _overElements.GetCount(); j++)
+			for (int j = 0; j < _drawElements.GetCount(); j++)
 			{
-				dw.Clipoff( _overElements[j]->GetFrame() );
-				_overElements[j]->PaintOverGraph(dw, scale);
-				dw.End();
+				if ( (!_drawElements[j]->IsHidden()) && (_drawElements[j]->IsOverGraph()) ) {
+					dw.Clipoff( _drawElements[j]->GetFrame() );
+					_drawElements[j]->PaintOverGraph(dw, scale);
+					dw.End();
+				}
 			}
 			TRACE_INFO("==================================" );
 		}
@@ -797,18 +744,27 @@ namespace GraphDraw_ns
 		typedef typename TYPES::TypeCoordConverter            TypeCoordConverter;
 		typedef typename TYPES::TypeGridAxisDraw              TypeGridAxisDraw;
 		typedef SeriesGroup<TYPES,CLASSNAME>                  TypeSeriesGroup;
+		typedef typename TYPES::TypeLegendElement             TypeLegendElement;
 
 		protected:
 		TypeCoordConverter   _xConverter;
 		TypeCoordConverter   _yConverter;
 		TypeGridAxisDraw     _xGridDraw;
 		TypeGridAxisDraw     _yGridDraw;
+		TypeLegendElement    _legend;
 		
 		public:
 		CRTP_XYGraphDraw()
 		: _xGridDraw(_xConverter)
 		, _yGridDraw(_yConverter)
 		{
+//			_legend.SetFrame( Rect(Point(20,20), Size(80, 30)) );
+			RGBA rgba;
+			rgba.r=90; rgba.g=90; rgba.b=0;	rgba.a=90;
+			_legend.SetBackGndColor( rgba );
+			_legend.SetOverFrame(Rect(Point(40,20), Size(80, 30)));
+			BASECLASS::AddOverLegendElement(30, _legend, 150);
+			
 			BASECLASS::SetTopMargin(   10);
 			BASECLASS::SetBottomMargin( 0);
 			BASECLASS::SetLeftMargin(   0);
@@ -824,11 +780,11 @@ namespace GraphDraw_ns
 			_yGridDraw.setGridColor( Gray() );
 			_yGridDraw.setMajorTickMark( (new LineTickMark())->SetTickLength( 3 ) );
 
+			
 			BASECLASS::AddXConverter(_xConverter);
 			BASECLASS::AddYConverter(_yConverter);
-			BASECLASS::AddLeftElement(_yGridDraw);
-			BASECLASS::AddBottomElement(_xGridDraw);
-
+			BASECLASS::AddLeftElement(_yGridDraw, 20);
+			BASECLASS::AddBottomElement(_xGridDraw, 20);
 			setGraphSize(0, 100, 0, 100);
 		};
 
@@ -856,6 +812,20 @@ namespace GraphDraw_ns
 
 		TypeGridAxisDraw& GetXGridAxisDraw() { return _xGridDraw; }
 		TypeGridAxisDraw& GetYGridAxisDraw() { return _yGridDraw; }
+
+
+
+		//TypeLegendElement
+		DERIVED& SetLegendPosition(const ElementPosition v) { _legend.SetElementPos(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetLegendFont(const Font& v)   { _legend.SetFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetLegendWidth(int v)          { _legend.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetLegendBckgndColor(const Color& v) { _legend.SetBackGndColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetLegendBckgndColor(const RGBA& v)  { _legend.SetBackGndColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& HideLegend(bool v)             { _legend.Hide(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetLegendXSize(int v)          { Rect r = _legend.GetOverFrame();r.right = r.left+v; _legend.SetOverFrame(r); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetLegendYSize(int v)          { Rect r = _legend.GetOverFrame();r.bottom = r.top+v; _legend.SetOverFrame(r); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetLegendXPos(int v)           { Rect r = _legend.GetOverFrame();r.right = v+r.Width(); r.left=v; _legend.SetOverFrame(r); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetLegendYPos(int v)           { Rect r = _legend.GetOverFrame();r.bottom = v+r.Height(); r.top=v; _legend.SetOverFrame(r); return *static_cast<DERIVED*>(this); }
 
 
 		DERIVED& SetXAxisRectWidth(int v) { _xGridDraw.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
@@ -916,27 +886,28 @@ namespace GraphDraw_ns
 			_title.SetFont( StdFontZ(20).Bold().Underline()).SetTextColor(Red).SetLabel("TITLE");
 			_xLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("X Axis label");
 			_yLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("Y Axis label");
-			BASECLASS::AddTopElement(40, _title);
-			BASECLASS::AddLeftElement(30, _xLabel);
-			BASECLASS::AddBottomElement(30, _yLabel);
+			BASECLASS::AddLeftElement(30, _xLabel, 25);
+			BASECLASS::AddBottomElement(30, _yLabel, 25);
+			BASECLASS::AddTopElement(40, _title, 200);
 		}
 		
 		
-		DERIVED& SetTitle(const String& v) { _title.SetLabel(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetTitlePosition(const ElementPosition v) { return *static_cast<DERIVED*>(this); }
-		DERIVED& SetTitleFont(const Font& v) { _title.SetFont(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetTitleWidth(int v) { _title.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitle(const String& v)     { _title.SetLabel(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitlePosition(const ElementPosition v) { _title.SetElementPos(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitleFont(const Font& v)   { _title.SetFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitleWidth(int v)          { _title.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetTitleColor(const Color& v) { _title.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& HideTitle(bool v)             { _title.Hide(v); return *static_cast<DERIVED*>(this); }
 		
 	
-		DERIVED& SetXLabel(const String& v) { _xLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXLabelFont(const Font& v) { _xLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXLabelWidth(int v) { _xLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXLabel(const String& v)     { _xLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXLabelFont(const Font& v)   { _xLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXLabelWidth(int v)          { _xLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetXLabelColor(const Color& v) { _xLabel.SetTextColor(v); return *static_cast<DERIVED*>(this); }
 
-		DERIVED& SetYLabel(const String& v) { _yLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYLabelFont(const Font& v) { _yLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYLabelWidth(int v) { _yLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYLabel(const String& v)     { _yLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYLabelFont(const Font& v)   { _yLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYLabelWidth(int v)          { _yLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetYLabelColor(const Color& v) { _yLabel.SetTextColor(v); return *static_cast<DERIVED*>(this); }
 	};
 
@@ -967,7 +938,7 @@ namespace GraphDraw_ns
 			_y2GridDraw.setMajorTickMark( (new LineTickMark())->SetTickLength( 3 ) );
 
 			BASECLASS::AddYConverter(_y2Converter);
-			BASECLASS::AddRightElement(_y2GridDraw);
+			BASECLASS::AddRightElement(_y2GridDraw, 50);
 			setGraphSize(0, 100, 0, 100, 0, 100);
 		};
 
@@ -1032,18 +1003,19 @@ namespace GraphDraw_ns
 			_xLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("X Axis label");
 			_yLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("Y Axis label");
 			_y2Label.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("Y2 Axis label");
-			BASECLASS::AddTopElement(40, _title);
-			BASECLASS::AddBottomElement(30, _xLabel);
-			BASECLASS::AddLeftElement(30, _yLabel);
-			BASECLASS::AddRightElement(30, _y2Label);
+			BASECLASS::AddBottomElement(30, _xLabel, 25);
+			BASECLASS::AddLeftElement(30, _yLabel, 25);
+			BASECLASS::AddRightElement(30, _y2Label, 55);
+			BASECLASS::AddTopElement(40, _title, 200);
 		}
 		
 		
 		DERIVED& SetTitle(const String& v)       { _title.SetLabel(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetTitlePosition(const ElementPosition v) { return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitlePosition(const ElementPosition v) { _title.SetElementPos(v); BASECLASS::updateSizes(); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetTitleFont(const Font& v)     { _title.SetFont(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetTitleWidth(int v)            { _title.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetTitleColor(const Color& v)   { _title.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& HideTitle(bool v)               { _title.Hide(v); return *static_cast<DERIVED*>(this); }
 		
 		DERIVED& SetXLabel(const String& v)      { _xLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetXLabelFont(const Font& v)    { _xLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
@@ -1060,8 +1032,8 @@ namespace GraphDraw_ns
 		DERIVED& SetY2LabelWidth(int v)          { _y2Label.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetY2LabelColor(const Color& v) { _y2Label.SetTextColor(v); return *static_cast<DERIVED*>(this); }
 	};
-
 };
+
 
 
 #endif

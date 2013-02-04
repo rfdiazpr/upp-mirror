@@ -40,7 +40,7 @@ namespace GraphDraw_ns
 			SeriesConfigBase()
 			{
 				color = Null;
-				thickness = 3;
+				thickness = 1;
 				legend = "";
 				opacity = 1;
 				sequential = true;

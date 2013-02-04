@@ -311,7 +311,7 @@ void SetTest()
 
 void SetBenchmark()
 {
-	const int count = 1000000;
+	const int count = 100000;
 	SeedRandom();
 	Buffer<int> rnd(count);
 	for(int i = 0; i < count; i++)
@@ -320,14 +320,14 @@ void SetBenchmark()
 	{	
 		std::multiset<int> s;
 		{
-			RTIMING("std::set INSERT");
+			RTIMING("std::set<int> INSERT");
 			for(int i = 0; i < count; i++) {
 				s.insert(rnd[i]);
 			}
 		}
 		typedef std::multiset<int>::iterator It;
 		{
-			RTIMING("std::set SCAN");
+			RTIMING("std::set<int> SCAN");
 			It e = s.end();
 			for(It i = s.begin(); i != e; i++) {
 				sSum += *i;
@@ -337,16 +337,86 @@ void SetBenchmark()
 	{
 		InVector<int> s;
 		{
-			RTIMING("InVector INSERT");
+			RTIMING("InVector<int> INSERT");
 			for(int i = 0; i < count; i++)
 				s.InsertUpperBound(rnd[i]);
 //				s.Insert(s.FindUpperBound(rnd[i])) = rnd[i];
 		}
 		{
-			RTIMING("InVector SCAN");
+			RTIMING("InVector<int> SCAN");
 			for(int i = 0; i < count; i++)
 				sSum += s[i];
 		}
+	}
+}
+
+void SetBenchmark2()
+{
+	const int count = 100000;
+	SeedRandom();
+	Buffer<String> rnd(count);
+	for(int i = 0; i < count; i++)
+		rnd[i] = AsString(Random());
+
+	{	
+		std::multiset<String> s;
+		{
+			RTIMING("std::set<String> INSERT");
+			for(int i = 0; i < count; i++) {
+				s.insert(rnd[i]);
+			}
+		}
+		typedef std::multiset<String>::iterator It;
+		{
+			RTIMING("std::set<String> SCAN");
+			It e = s.end();
+			for(It i = s.begin(); i != e; i++) {
+				sSum += i->GetCount();
+			}
+		}
+	}
+	{
+		InVector<String> s;
+		{
+			RTIMING("InVector<String> INSERT");
+			for(int i = 0; i < count; i++)
+				s.InsertUpperBound(rnd[i]);
+//				s.Insert(s.FindUpperBound(rnd[i])) = rnd[i];
+		}
+		{
+			RTIMING("InVector<String> SCAN");
+			for(int i = 0; i < count; i++)
+				sSum += s[i].GetCount();
+		}
+	}
+}
+
+void RemoveTest()
+{
+	SeedRandom();
+	Vector<int> q;
+	InVector<int> iv;
+	Compare(q, iv);
+	iv.Insert(0) = 0;
+	q.Insert(0) = 0;
+	iv.Insert(1) = -1;
+	q.Insert(1) = -1;
+	for(int j = 0; j < 10000000; j++) {
+		if(j % 1000 == 0)
+			LOG(j);
+		if(iv.GetCount() > 200 && Random(4) == 1) {
+			int i = Random(iv.GetCount() - 21);
+			int n = Random(20);
+			iv.Remove(i, n);
+			q.Remove(i, n);
+		}
+		else {
+			int i = Random(iv.GetCount());
+			iv.Insert(i) = i;
+			q.Insert(i) = i;
+		}
+		Compare(q, iv);
+		ASSERT(iv.End() - iv.Begin() == iv.GetCount());
 	}
 }
 
@@ -355,12 +425,14 @@ CONSOLE_APP_MAIN
 	StdLogSetup(LOG_FILE|LOG_COUT);
 	SeedRandom();
 #ifdef _DEBUG
-	SetTest();
+	RemoveTest();
+//	SetTest();
 //	TestLowerBound();
 //	TestUpperBound();
 //	InVectorTest();
 #else
 	SetBenchmark();
+	SetBenchmark2();
 //	InVectorScanBenchmark();
 //	InVectorBenchmark();
 #endif

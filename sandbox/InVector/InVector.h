@@ -8,33 +8,27 @@ using namespace Upp;
 
 #define LLOG(x)   // DLOG(x)
 
-#define USECACHE2
-#define REINDEX2
-//#define IITERATOR
-
 template <class T>
 class InVector {
 	Vector< Vector<T> > data;
 	Vector< Vector<int> > index;
 	int   count;
 	int   hcount;
-#ifdef USECACHE
-	int64 serial1, serial2;
-#endif
-
-#ifdef USECACHE2
 	int64 serial;
-#endif
 	
-#ifdef _DEBUG
-	enum { BLKSIZE = 10 };
+#if defined(_DEBUG) && defined(flagIVTEST)
+	enum { PAGE = 11 * sizeof(T) };
 #else
-	enum { BLKSIZE = 2000 / sizeof(T) > 16 ? 2000 / sizeof(T) : 16 };
+	enum { PAGE = 3000 };
 #endif
+	enum {
+		BLKUPPER0 = PAGE / sizeof(T),
+		BLKUPPER = BLKUPPER0 > 8 ? BLKUPPER0 : 8,
+		BLKLOWER = BLKUPPER / 3,
+		BLKMIDDLE = BLKLOWER
+	};
 
-#ifdef USECACHE2
 	int  FindBlock0(int& pos, int& off) const;
-#endif
 	int  FindBlock(int& pos, int& off) const;
 	int  FindBlock(int& pos) const;
 	void Reindex();
@@ -45,44 +39,32 @@ class InVector {
 	template <class L>
 	int  FindLowerBound(const T& val, const L& less, int& off, int& pos);
 
-	T&   Insert0(int ii, int blki, int pos);
+	bool JoinSmall(int blki);
+	T   *Insert0(int ii, int blki, int pos, const T *val);
+	T   *Insert(int ii, const T *val);
 
 public:
 	InVector();
-	void Dump();
-	T&   Insert(int ii);
 	const T& operator[](int i) const;
 	T& operator[](int i);
 	int  GetCount() const      { return count; }
+
+	T&   Insert(int ii)                             { return *Insert(ii, NULL); }
+	void Remove(int ii, int count);
 	
 	template <class L>
 	int FindUpperBound(const T& val, const L& less) { int off, pos; FindUpperBound(val, less, off, pos); return off + pos; }
-	
-	int FindUpperBound(const T& val) { return FindUpperBound(val, StdLess<T>()); }
+	int FindUpperBound(const T& val)                { return FindUpperBound(val, StdLess<T>()); }
 
 	template <class L>
 	int FindLowerBound(const T& val, const L& less) { int off, pos; FindLowerBound(val, less, off, pos); return off + pos; }
-	
-	int FindLowerBound(const T& val) { return FindLowerBound(val, StdLess<T>()); }
+	int FindLowerBound(const T& val)                { return FindLowerBound(val, StdLess<T>()); }
 
-	template <class L>
-	int InsertUpperBound(const T& val, const L& less);
-
+	template <class L> int InsertUpperBound(const T& val, const L& less);
 	int InsertUpperBound(const T& val) { return InsertUpperBound(val, StdLess<T>()); }
 
 	typedef T        ValueType;
 
-#ifdef IITERATOR
-	typedef ConstIIterator<InVector> ConstIterator;
-	typedef IIterator<InVector>      Iterator;
-
-	ConstIterator    Begin() const              { return ConstIterator(*this, 0); }
-	ConstIterator    End() const                { return ConstIterator(*this, GetCount()); }
-	ConstIterator    GetIter(int pos) const     { return ConstIterator(*this, pos); }
-	Iterator         Begin()                    { return Iterator(*this, 0); }
-	Iterator         End()                      { return Iterator(*this, GetCount()); }
-	Iterator         GetIter(int pos)           { return Iterator(*this, pos); }
-#else
 	class ConstIterator  {
 		T        *ptr;
 		T        *begin;
@@ -162,9 +144,14 @@ public:
 	Iterator         Begin()                    { Iterator it; SetBegin(it); return it; }
 	Iterator         End()                      { Iterator it; SetEnd(it); return it; }
 	Iterator         GetIter(int pos)           { Iterator it; SetIter(it, pos); return it; }
+
+#ifdef _DEBUG
+	void DumpIndex();
 #endif
 };
 
 #include "InVector.hpp"
+#include "Bound.hpp"
+#include "Iterator.hpp"
 
 #endif

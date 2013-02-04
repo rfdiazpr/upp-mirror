@@ -8,8 +8,8 @@ uses
 
 file
 	GraphCtrl.iml,
-	ScatterCtrl.t,
 	GraphCtrl.lay,
+	ScatterCtrl.t,
 	GraphCtrl.h,
 	GraphCtrl.cpp,
 	ScatterCtrl.h,

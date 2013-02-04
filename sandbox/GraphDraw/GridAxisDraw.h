@@ -141,6 +141,7 @@ namespace GraphDraw_ns
 		, _majorTickMark(new LineTickMark())
 		, _minorTickMark(new LineTickMark())
 		{
+			_B::DisablePos(OVER_GRAPH);
 		}
 
 		GridAxisDraw(GridAxisDraw& p)
@@ -165,6 +166,19 @@ namespace GraphDraw_ns
 		virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }
 
 		virtual void Update() { _gridStepManager->Update(); }
+		
+		virtual CLASSNAME&  SetElementPos(ElementPosition v) {
+			if (v==LEFT_OF_GRAPH || v==RIGHT_OF_GRAPH) {
+				_B::DisablePos(BOTTOM_OF_GRAPH);
+				_B::DisablePos(TOP_OF_GRAPH);
+			} else {
+				_B::DisablePos(LEFT_OF_GRAPH);
+				_B::DisablePos(RIGHT_OF_GRAPH);
+			}
+			return _B::SetElementPos(v);
+		 }
+
+
 
 		TypeGridStepManager& GetGridStepManager() { return *_gridStepManager; }
 		inline CLASSNAME& setAxisColor(Color v)                         { _axisColor = v; return *this;  }

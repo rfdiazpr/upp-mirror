@@ -758,7 +758,7 @@ namespace GraphDraw_ns
 		: _xGridDraw(_xConverter)
 		, _yGridDraw(_yConverter)
 		{
-//			_legend.SetFrame( Rect(Point(20,20), Size(80, 30)) );
+			_legend.SetName(t_("Legend"));
 			RGBA rgba;
 			rgba.r=90; rgba.g=90; rgba.b=0;	rgba.a=90;
 			_legend.SetBackGndColor( rgba );
@@ -770,11 +770,13 @@ namespace GraphDraw_ns
 			BASECLASS::SetLeftMargin(   0);
 			BASECLASS::SetRightMargin( 15);
 
+			_xGridDraw.SetName( t_("X axis") );
 			_xGridDraw.SetElementWidth(25);
 			_xGridDraw.setAxisColor( Blue() ).setAxisTextFont(StdFont()).setAxisTextColor( Blue() ).setAxisTickColor( Red() );
 			_xGridDraw.setGridColor( Gray() );
 			_xGridDraw.setMajorTickMark( (new LineTickMark())->SetTickLength( 3 ) );
 
+			_yGridDraw.SetName( t_("Y axis") );
 			_yGridDraw.SetElementWidth(40);
 			_yGridDraw.setAxisColor( Blue() ).setAxisTextFont(StdFont()).setAxisTextColor( Blue() ).setAxisTickColor( Red() );
 			_yGridDraw.setGridColor( Gray() );
@@ -883,6 +885,10 @@ namespace GraphDraw_ns
 		public:
 		CRTP_XYLTGraphDraw()
 		{
+			_title.SetName( t_("Title") );
+			_xLabel.SetName( t_("X label") );
+			_yLabel.SetName( t_("Y label") );
+
 			_title.SetFont( StdFontZ(20).Bold().Underline()).SetTextColor(Red).SetLabel("TITLE");
 			_xLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("X Axis label");
 			_yLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("Y Axis label");
@@ -932,6 +938,7 @@ namespace GraphDraw_ns
 		CRTP_XYY2GraphDraw()
 		: _y2GridDraw(_y2Converter)
 		{
+			_y2GridDraw.SetName( t_("Y2 axis") );
 			_y2GridDraw.SetElementWidth(40);
 			_y2GridDraw.setAxisColor( Blue() ).setAxisTextFont(StdFont()).setAxisTextColor( Blue() ).setAxisTickColor( Red() );
 			_y2GridDraw.setGridColor( Null );
@@ -999,6 +1006,11 @@ namespace GraphDraw_ns
 		public:
 		CRTP_XYY2LTGraphDraw()
 		{
+			_title.SetName( t_("Title") );
+			_xLabel.SetName( t_("X label") );
+			_yLabel.SetName( t_("Y label") );
+			_y2Label.SetName( t_("Y2 label") );
+			
 			_title.SetFont( StdFontZ(20).Bold().Underline()).SetTextColor(Red).SetLabel("TITLE");
 			_xLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("X Axis label");
 			_yLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("Y Axis label");

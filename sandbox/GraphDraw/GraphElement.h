@@ -93,6 +93,7 @@ namespace GraphDraw_ns
 			, _parent(p->_parent)
 			, _hide(p->_hide)
 			, _stackingPriority(p->_stackingPriority)
+			, _name("NAME NOT SET")
 			, WhenLeftDown    (p->WhenLeftDown)
 			, WhenLeftDouble  (p->WhenLeftDouble  )
 			, WhenLeftDrag    (p->WhenLeftDrag    )
@@ -124,6 +125,7 @@ namespace GraphDraw_ns
 
 			virtual ~GraphElementFrame() {}
 
+			inline void SetName(const char* name) { _name = name; };
 			virtual bool Contains(Point p) const { return _frame.Contains(p); }
 			inline const Rect& GetFrame() const { return _frame; }
 			inline void SetFrame(Rect v) { _frame = v; Update(); }
@@ -131,7 +133,7 @@ namespace GraphDraw_ns
 			inline void SetOverFrame(Rect v) { _overFrame = v; }
 			inline int GetElementWidth() { return _width; }
 			inline ElementPosition GetElementPos() { return _pos; }
-			inline void SetElementPos( ElementPosition v ) { _pos = v; }
+			//virtual void SetElementPos( ElementPosition v ) { _pos = v; }
 			inline void SetAllowedPosMask( int v ) { _allowedPosMask = v; }
 			inline void DisablePos( int v ) { _allowedPosMask &= ~v; }
 			inline void SetStackingPriority( int v ) { _stackingPriority = v; }
@@ -186,8 +188,8 @@ namespace GraphDraw_ns
 			CRTPGraphElementFrame(CRTPGraphElementFrame& p) : GraphElementFrame(p) {}
 			virtual ~CRTPGraphElementFrame() {}
 
-			inline DERIVED&  SetElementWidth(int v) { _width = v; return *static_cast<DERIVED*>(this); }
-			inline DERIVED&  SetElementPos(ElementPosition v) { _pos = v; return *static_cast<DERIVED*>(this); }
+			inline  DERIVED&  SetElementWidth(int v) { _width = v; return *static_cast<DERIVED*>(this); }
+			virtual DERIVED&  SetElementPos(ElementPosition v) { _pos = v; return *static_cast<DERIVED*>(this); }
 	};
 
 

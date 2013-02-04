@@ -474,96 +474,165 @@ class CRTP_GraphCtrlBase : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public C
 				if (zdelta < 0) _B::ApplyZoomFactor(1.2);
 				else            _B::ApplyInvZoomFactor(1.2);
 				_B::_doFastPaint = true;
-
 			}
 			return;
 		}
 	}
 };
 
+// ============================================================================================
+// ============================================================================================
+template <class ELEMENT>
+class ElementPropertiesDlg : public WithElementBaseLayout<TopWindow> {
+	public:
+	CtrlRetriever r1;
+	ELEMENT*      elem;
+	int           pos;
+	
+	public:
+	typedef ElementPropertiesDlg<ELEMENT>  CLASSNAME;
+	typedef WithElementBaseLayout<TopWindow> _B;
+	
+	ElementPropertiesDlg() : elem(0), pos(100) {
+		CtrlLayoutOKCancel(*this, "");
+	}
+	~ElementPropertiesDlg() {}
+
+	
+	void InitDlg(ELEMENT& element) {
+		_B::Title(element._name);
+		elem = &element;
+		position.Add(GraphDraw_ns::OVER_GRAPH, t_("FLOAT") );
+		position.Add(GraphDraw_ns::TOP_OF_GRAPH, t_("TOP") );
+		position.Add(GraphDraw_ns::BOTTOM_OF_GRAPH, t_("BOTTOM") );
+		position.Add(GraphDraw_ns::LEFT_OF_GRAPH, t_("LEFT") );
+		position.Add(GraphDraw_ns::RIGHT_OF_GRAPH, t_("RIGHT") );
+
+		for (int c=0; c<position.GetCases().GetCount(); ++c) {
+			 const Switch::Case& caseData = position.GetCases()[c];
+			if ((elem->_allowedPosMask & ValueTo<int>(caseData.value)) == 0 ) position.DisableValue(caseData.value);
+		}
+
+		pos = elem->_pos;
+		r1( width, elem->_width)
+		  ( hide, elem->_hide)
+		  ( stackingPrio, elem->_stackingPriority)
+		  ( position, pos)
+		  ;
+	}
+	
+	virtual void Retrieve() {
+		r1.Retrieve();
+		elem->SetElementPos(static_cast<GraphDraw_ns::ElementPosition>(pos));
+		elem->_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
+	}
+};
+
+// ============================================================================================
+
 // Default GridAxisPropertiesDlg  class
 // it opens the minimal dialog for the CoordConverter beeing used
 template <class GRIDAXISDRAW, class COORDCONVERTER>
-struct GridAxisPropertiesDlg {
-		void openDialog(GRIDAXISDRAW& gda, COORDCONVERTER& converter) {
-			CtrlRetriever r;
-			double gMin = converter.getGraphMin();
-			double gMax = converter.getGraphMax();
-			int majorTickLength = gda.GetMajorTickLength();
-			int minorTickLength = gda.GetMinorTickLength();
+class GridAxisPropertiesDlg : public WithGridAxisPropertiesBaseLayout<ElementPropertiesDlg<GRIDAXISDRAW> > {
+	public:
+	COORDCONVERTER* converter;
+	CtrlRetriever r2;
+	double gMin;
+	double gMax;
+	
+	public:
+	typedef GridAxisPropertiesDlg<GRIDAXISDRAW, COORDCONVERTER>  CLASSNAME;
+	typedef WithGridAxisPropertiesBaseLayout<ElementPropertiesDlg<GRIDAXISDRAW> > _B;
+	
+	GridAxisPropertiesDlg() : converter(0) {
+		SetLayout_GridAxisPropertiesBaseLayout(*this, true);
+		 Size sz = _B::GetLayoutSize();
+		 _B::SetMinSize(sz);
+		 _B::SetRect(sz);
+	}
+	
+	virtual ~GridAxisPropertiesDlg() {}
 
-			WithGridAxisPropertiesLayout<TopWindow> dlg;
+	void InitDlg(GRIDAXISDRAW& gda, COORDCONVERTER& conv) {
+		_B::InitDlg(gda);
+		converter = &conv;
+		gMin = converter->getGraphMin();
+		gMax = converter->getGraphMax();
 
-			dlg.scaleType.Hide();
+		//scaleType.Hide();
 
-			r ( dlg.axisLineColor, gda._axisColor)
-			  ( dlg.axisTextColor, gda._axisTextColor)
-			  ( dlg.axisTickColor, gda._axisTickColor)
-			  ( dlg.axisMajorTickLength, majorTickLength)
-			  ( dlg.axisMinorTickLength, minorTickLength)
-			  ( dlg.gridColor, gda._gridColor)
-			  ( dlg.min, gMin)
-			  ( dlg.max, gMax)
-			  ;
-
-			CtrlLayoutOKCancel(dlg, "");
-
-			if ( dlg.Execute() == IDOK ) {
-				r.Retrieve();
-				gda.SetMajorTickLength(majorTickLength);
-				gda.SetMinorTickLength(majorTickLength);
-				converter.updateGraphSize(gMin, gMax);
-				gda._parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL);
-			}
-		}
+		r2( _B::axisLineColor, _B::elem->_axisColor)
+		  ( _B::axisTextColor, _B::elem->_axisTextColor)
+		  ( _B::axisTickColor, _B::elem->_axisTickColor)
+		  ( _B::gridColor,     _B::elem->_gridColor)
+		  ( _B::min, gMin)
+		  ( _B::max, gMax)
+		  ;
+	}
+		
+	virtual void Retrieve() {
+		r2.Retrieve();
+		converter->updateGraphSize(gMin, gMax);
+		_B::Retrieve();
+	}
 };
 
 
-// Specialized 'GridAxisPropertiesDlg'  class
-// it opens A dedicated dialog for the 'GenericCoordinateConverter' beeing used
 template <class GRIDAXISDRAW>
-struct GridAxisPropertiesDlg<GRIDAXISDRAW, GraphDraw_ns::GenericCoordinateConverter> {
-		void openDialog(GRIDAXISDRAW& gda, GraphDraw_ns::GenericCoordinateConverter& converter) {
-			CtrlRetriever r;
-			double gMin = converter.getGraphMin();
-			double gMax = converter.getGraphMax();
-			int majorTickLength = gda.GetMajorTickLength();
-			int minorTickLength = gda.GetMinorTickLength();
-			int scaleType = converter.GetScaleType();
+class GridAxisPropertiesDlg<GRIDAXISDRAW, GraphDraw_ns::GenericCoordinateConverter> : public WithGenericGridAxisPropertiesLayout<ElementPropertiesDlg<GRIDAXISDRAW> > {
+	public:
+	int iscaleType;
+	typedef GraphDraw_ns::GenericCoordinateConverter COORDCONVERTER;
+	COORDCONVERTER* converter;
+	CtrlRetriever r2;
+	double gMin;
+	double gMax;
+	
+	public:
+	typedef GridAxisPropertiesDlg<GRIDAXISDRAW, GraphDraw_ns::GenericCoordinateConverter>  CLASSNAME;
+	typedef WithGenericGridAxisPropertiesLayout<ElementPropertiesDlg<GRIDAXISDRAW> > _B;
+	
+	GridAxisPropertiesDlg() : converter(0) {
+		SetLayout_GenericGridAxisPropertiesLayout(*this, true);
+		 Size sz = _B::GetLayoutSize();
+		 _B::SetMinSize(sz);
+		 _B::SetRect(sz);
+	}
+	
+	virtual ~GridAxisPropertiesDlg() {}
 
-			WithGridAxisPropertiesLayout<TopWindow> dlg;
+	void InitDlg(GRIDAXISDRAW& gda, COORDCONVERTER& conv) {
+		_B::InitDlg(gda);
+		converter = &conv;
+		gMin = converter->getGraphMin();
+		gMax = converter->getGraphMax();
+		iscaleType = converter->GetScaleType();
+		
 
-			dlg.scaleType.Add(GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_STD,   t_("Std") );
-			dlg.scaleType.Add(GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_LOG,   t_("Log") );
-			dlg.scaleType.Add(GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_POW10, t_("Pow10") );
-			if ( gMin < 0) {
-				dlg.scaleType.DisableValue( GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_LOG);
-			}
-
-			r ( dlg.axisLineColor, gda._axisColor)
-			( dlg.axisTextColor, gda._axisTextColor)
-			( dlg.axisTickColor, gda._axisTickColor)
-			( dlg.axisMajorTickLength, majorTickLength)
-			( dlg.axisMinorTickLength, minorTickLength)
-			( dlg.gridColor, gda._gridColor)
-			( dlg.min, gMin)
-			( dlg.max, gMax)
-			( dlg.scaleType, scaleType)
-			;
-
-			CtrlLayoutOKCancel(dlg, "");
-
-			if ( dlg.Execute() == IDOK ) {
-				r.Retrieve();
-				gda.SetMajorTickLength(majorTickLength);
-				gda.SetMinorTickLength(majorTickLength);
-				converter.SetScaleType(scaleType);
-				converter.updateGraphSize(gMin, gMax);
-				gda._parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL);
-			}
+		_B::scaleType.Add(GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_STD,   t_("Std") );
+		_B::scaleType.Add(GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_LOG,   t_("Log") );
+		_B::scaleType.Add(GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_POW10, t_("Pow10") );
+		if ( gMin <= 0) {
+			_B::scaleType.DisableValue( GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_LOG);
 		}
-};
 
+		r2( _B::axisLineColor, _B::elem->_axisColor)
+		  ( _B::axisTextColor, _B::elem->_axisTextColor)
+		  ( _B::axisTickColor, _B::elem->_axisTickColor)
+		  ( _B::gridColor,     _B::elem->_gridColor)
+		  ( _B::min, gMin)
+		  ( _B::max, gMax)
+		  ( _B::scaleType, iscaleType)
+		  ;
+	}
+		
+	virtual void Retrieve() {
+		r2.Retrieve();
+		converter->updateGraphSize(gMin, gMax);
+		converter->SetScaleType(iscaleType);
+		_B::Retrieve();
+	}
+};
 
 
 /************************************************************
@@ -695,18 +764,48 @@ class StdGridAxisDrawCtrl : public GraphDraw_ns::GridAxisDraw<TYPES>
 	virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }
 
 
-	virtual void OpenGridAxisPropertiesDlg()
+	virtual GraphDraw_ns::GraphElementFrame* LeftDouble (Point p, dword keyflags)
 	{
-		GridAxisPropertiesDlg<CLASSNAME,  typename TYPES::TypeCoordConverter >().openDialog(*this,  _B::GetCoordConverter() );
-	}
-
-	virtual GraphDraw_ns::GraphElementFrame* LeftDouble (Point p, dword keyflags) {
-		OpenGridAxisPropertiesDlg();
+		GridAxisPropertiesDlg<CLASSNAME,  typename TYPES::TypeCoordConverter> dlg;
+		dlg.InitDlg(*this, _B::GetCoordConverter());
+		if ( dlg.Execute() == IDOK ) {
+			dlg.Retrieve();
+		}
 		return 0;
 	}
 };
 
 
+
+
+template<class TYPES, class ELEMENT_CLASS>
+class ElementCtrlBase : public ELEMENT_CLASS {
+	public:
+	typedef ElementCtrlBase<TYPES, ELEMENT_CLASS> CLASSNAME;
+	typedef ELEMENT_CLASS _B;
+
+	ElementCtrlBase() {}
+	virtual ~ElementCtrlBase() {}
+
+	ElementCtrlBase(Ctrl& ctrl) : ELEMENT_CLASS(ctrl) {}
+	ElementCtrlBase(ElementCtrlBase& p) : ELEMENT_CLASS(p) {}
+	
+	public:
+	virtual bool Contains(Point p) const { return (_B::_frame.Contains(p)); }
+
+	virtual GraphDraw_ns::GraphElementFrame* LeftDouble (Point p, dword keyflags) {
+		ElementPropertiesDlg<CLASSNAME> dlg;
+		dlg.InitDlg(*this);
+		if ( dlg.Execute() == IDOK ) {
+				dlg.Retrieve();
+		}
+		return 0;
+	}
+
+	virtual Image  CursorImage(Point p, dword keyflags) {
+		return GraphCtrlImg::ACTIVE_CROSS();
+	}
+};
 
 
 template <class TYPES, class LEGEND_DRAW_CLASS >
@@ -726,18 +825,22 @@ class CtrlElement_MoveResize : public LEGEND_DRAW_CLASS
 	CtrlElement_MoveResize( CtrlElement_MoveResize& p) : _B(p), parentCtrl(p.parentCtrl)  {}
 	virtual ~CtrlElement_MoveResize() {}
 
-	virtual bool Contains(Point p) const { return (_B::_frame.Contains(p) && _B::IsOverGraph()); }
+	virtual bool Contains(Point p) const { return (_B::_frame.Contains(p)); }
 
 	inline void SetParentCtrl(Ctrl& p) { parentCtrl = &p; }
 
 	virtual Image  CursorImage(Point p, dword keyflags) {
-		if ( keyflags & K_CTRL ){
-			return GraphCtrlImg::ELEMENT_RESIZE();
+		if (_B::IsOverGraph()) {
+			if ( keyflags & K_CTRL ){
+				return GraphCtrlImg::ELEMENT_RESIZE();
+			}
+			return GraphCtrlImg::ELEMENT_MOVE();
 		}
-		return GraphCtrlImg::ELEMENT_MOVE();
+		return GraphCtrlImg::ACTIVE_CROSS();
 	}
+	
 	virtual GraphDraw_ns::GraphElementFrame* MouseMove (Point p, dword keyflags) {
-		if (parentCtrl != 0) {
+		if ((parentCtrl != 0) && _B::IsOverGraph()) {
 			if (keyflags & K_MOUSELEFT)
 			{
 				RectTracker tracker(*parentCtrl);
@@ -760,15 +863,31 @@ class CtrlElement_MoveResize : public LEGEND_DRAW_CLASS
 };
 
 
-template<class TYPES, class LEGENDDRAW>
-class StdLegendCtrl : public CtrlElement_MoveResize<TYPES, LEGENDDRAW> {
-	public:
-	StdLegendCtrl() {}
-	virtual ~StdLegendCtrl() {}
 
-	StdLegendCtrl(Ctrl& ctrl) : CtrlElement_MoveResize<TYPES, LEGENDDRAW>(ctrl) {}
+template<class TYPES, class LEGENDDRAW>
+class StdLegendCtrl : public CtrlElement_MoveResize<TYPES, ElementCtrlBase<TYPES, LEGENDDRAW> > {
+	public:
+	typedef StdLegendCtrl<TYPES, LEGENDDRAW>  CLASSNAME;
+	typedef CtrlElement_MoveResize<TYPES, ElementCtrlBase<TYPES, LEGENDDRAW> >  _B;
+	StdLegendCtrl() {}
 	StdLegendCtrl(StdLegendCtrl& p) : CtrlElement_MoveResize<TYPES, LEGENDDRAW>(p) {}
+	virtual ~StdLegendCtrl() {}
 };
+
+
+
+//DisablePos
+template<class TYPES, class LABELDRAW>
+class StdLabelCtrl : public  ElementCtrlBase< TYPES, LABELDRAW> {
+	public:
+	typedef ElementCtrlBase<TYPES,LABELDRAW> _B;
+	typedef TYPES  Types;
+	
+	StdLabelCtrl() {
+		_B::DisablePos(GraphDraw_ns::OVER_GRAPH);
+	}
+};
+
 // ===============================================================================================================================
 // ===============================================================================================================================
 //
@@ -785,7 +904,7 @@ struct GraphCtrlDefaultTypes {
 		typedef GraphDraw_ns::GenericCoordinateConverter                                    TypeCoordConverter;
 		typedef StdGridAxisDrawCtrl<GraphCtrlDefaultTypes>                                  TypeGridAxisDraw;
 		typedef GraphDraw_ns::GridStepManager<>                                             TypeGridStepManager;
-		typedef GraphDraw_ns::LabelElement                                                  TypeLabelElement;
+		typedef StdLabelCtrl<GraphCtrlDefaultTypes,GraphDraw_ns::LabelElement>              TypeLabelElement;
 		typedef StdLegendCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::LegendElement<GraphCtrlDefaultTypes> > TypeLegendElement;
 };
 

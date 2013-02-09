@@ -11,13 +11,13 @@ using namespace ButtonStyles;
 
 // Accesseur permettant de recuperer le style par defaut en fonction du type passé
 template<class STYLE>
-inline STYLE  GetBFInitStyle() { return STYLE(); };
+inline STYLE  GetDemoInitStyle() { return STYLE(); };
 
 template<>
-inline Button::Style  GetBFInitStyle<Button::Style>() { return Button::StyleNormal(); };
+inline Button::Style  GetDemoInitStyle<Button::Style>() { return Button::StyleNormal(); };
 
 template<>
-inline ButtonOption::Style  GetBFInitStyle<ButtonOption::Style>() { return ButtonOption::StyleDefault(); };
+inline ButtonOption::Style  GetDemoInitStyle<ButtonOption::Style>() { return ButtonOption::StyleDefault(); };
 
 
 
@@ -33,7 +33,7 @@ STYLE MakeStyledButton_WithAppStyle(int style, int SubStyle, Image icon=Null)
 	int col = 43;
 	int alpha = 47;
 	int v = alpha*col/255;
-	STYLE s =  GetBFInitStyle<STYLE>();
+	STYLE s =  GetDemoInitStyle<STYLE>();
 	s.look[0] = MakeButtonLook( style, White, GrayColor(v),  alpha, subbuttonDeflate, subbuttonBorderWidth, icon );
 	s.look[1] = MakeButtonLook( style, White, GrayColor(v),  alpha, subbuttonDeflate, subbuttonBorderWidth, icon );
 	s.look[2] = MakeButtonLook( style, White, GrayColor(255),  255, subbuttonDeflate, subbuttonBorderWidth, icon );
@@ -74,23 +74,23 @@ class MyButton :  public FStyledButton<Button, APP_STYLE_NUM> {
 
 
 #define _CM_ ,
-#define LAYOUTFILE <AlphaButtonTest/AlphaButtonTest.lay>
+#define LAYOUTFILE <ButtonStyles_Demo/ButtonStyles_Demo.lay>
 #include <CtrlCore/lay.h>
 #undef _CM_
 
-#define IMAGECLASS AlphaButtonImg
-#define IMAGEFILE <AlphaButtonTest/AlphaButtonTest.iml>
+#define IMAGECLASS ButtonStyles_DemoImg
+#define IMAGEFILE <ButtonStyles_Demo/ButtonStyles_Demo.iml>
 #include <Draw/iml_header.h>
 
 
-#define IMAGECLASS AlphaButtonImg
-#define IMAGEFILE <AlphaButtonTest/AlphaButtonTest.iml>
+#define IMAGECLASS ButtonStyles_DemoImg
+#define IMAGEFILE <ButtonStyles_Demo/ButtonStyles_Demo.iml>
 #include <Draw/iml_source.h>
 
 
 
-class AlphaButtonTestDlg : public WithAlphaButtonTestLayout<TopWindow> {
-	typedef AlphaButtonTestDlg CLASSNAME;
+class ButtonStyles_DemoDlg : public WithButtonStyles_DemoLayout<TopWindow> {
+	typedef ButtonStyles_DemoDlg CLASSNAME;
 
 	void ToggleIcon();
 	void ToggleText();
@@ -104,17 +104,17 @@ class AlphaButtonTestDlg : public WithAlphaButtonTestLayout<TopWindow> {
 	int customFlags;
 
 public:
-	AlphaButtonTestDlg();
+	ButtonStyles_DemoDlg();
 };
 
-AlphaButtonTestDlg::AlphaButtonTestDlg()
+ButtonStyles_DemoDlg::ButtonStyles_DemoDlg()
 : isIconSet(false)
 , isTextSet(false)
 , customFlags( BUTTON_STYLE_3g )
 {
 
 	CtrlLayout(*this, "");
-	backImg.Set( AlphaButtonImg::BACKGROUND_S);
+	backImg.Set( ButtonStyles_DemoImg::BACKGROUND_S);
 	bToggleIcon <<= THISBACK(ToggleIcon);
 	bToggleText <<= THISBACK(ToggleText);
 	
@@ -145,14 +145,14 @@ AlphaButtonTestDlg::AlphaButtonTestDlg()
 }
 
 
-void AlphaButtonTestDlg::updateBorderWidth()
+void ButtonStyles_DemoDlg::updateBorderWidth()
 {
 	subbuttonBorderWidth = ~sliderWidth;
 	RLOG("updateBorderWidth() = " << subbuttonBorderWidth);
 	refreshCustoms();
 }
 	
-void AlphaButtonTestDlg::updateDeflate()
+void ButtonStyles_DemoDlg::updateDeflate()
 {
 	subbuttonDeflate = ~sliderDeflate;
 	RLOG("updateDeflate() = " << subbuttonDeflate);
@@ -160,7 +160,7 @@ void AlphaButtonTestDlg::updateDeflate()
 }
 
 
-void AlphaButtonTestDlg::updateCustomFlags(int flag, Option* ctrl)
+void ButtonStyles_DemoDlg::updateCustomFlags(int flag, Option* ctrl)
 {
 	RLOG("updateCustomFlags()");
 	customFlags = 0;
@@ -175,7 +175,7 @@ void AlphaButtonTestDlg::updateCustomFlags(int flag, Option* ctrl)
 	refreshCustoms();
 }
 
-void AlphaButtonTestDlg::refreshCustoms()
+void ButtonStyles_DemoDlg::refreshCustoms()
 {
 	RLOG("refreshCustoms()");
 	cust2.SetFlags(customFlags);
@@ -187,36 +187,36 @@ void AlphaButtonTestDlg::refreshCustoms()
 }
 
 
-void AlphaButtonTestDlg::ToggleIcon() {
+void ButtonStyles_DemoDlg::ToggleIcon() {
 	if (!isIconSet)
 	{
-		c27.SetIcon( AlphaButtonImg::UPP );
-		c1.SetIcon( AlphaButtonImg::UPP );
-		c3.SetIcon( AlphaButtonImg::UPP );
-		c2.SetIcon( AlphaButtonImg::UPP );
-		c4.SetIcon( AlphaButtonImg::UPP );
-		c5.SetIcon( AlphaButtonImg::UPP );
-		c6.SetIcon( AlphaButtonImg::UPP );
-		c7.SetIcon( AlphaButtonImg::UPP );
-		c8.SetIcon( AlphaButtonImg::UPP );
-		c9.SetIcon( AlphaButtonImg::UPP );
-		c10.SetIcon( AlphaButtonImg::UPP );
-		c12.SetIcon( AlphaButtonImg::UPP );
-		c13.SetIcon( AlphaButtonImg::UPP );
-		c14.SetIcon( AlphaButtonImg::UPP );
-		c15.SetIcon( AlphaButtonImg::UPP );
-		c16.SetIcon( AlphaButtonImg::UPP );
-		c17.SetIcon( AlphaButtonImg::UPP );
-		c18.SetIcon( AlphaButtonImg::UPP  );
-		c26.SetIcon( AlphaButtonImg::UPP );
-		c20.SetIcon( AlphaButtonImg::UPP );
-		c21.SetIcon( AlphaButtonImg::UPP );
-		c22.SetIcon( AlphaButtonImg::UPP );
-		c23.SetIcon( AlphaButtonImg::UPP );
-		c24.SetIcon( AlphaButtonImg::UPP );
-		c25.SetIcon( AlphaButtonImg::UPP );
-		c19.SetIcon( AlphaButtonImg::UPP );
-		c28.SetIcon( AlphaButtonImg::UPP );
+		c27.SetIcon( ButtonStyles_DemoImg::UPP );
+		c1.SetIcon( ButtonStyles_DemoImg::UPP );
+		c3.SetIcon( ButtonStyles_DemoImg::UPP );
+		c2.SetIcon( ButtonStyles_DemoImg::UPP );
+		c4.SetIcon( ButtonStyles_DemoImg::UPP );
+		c5.SetIcon( ButtonStyles_DemoImg::UPP );
+		c6.SetIcon( ButtonStyles_DemoImg::UPP );
+		c7.SetIcon( ButtonStyles_DemoImg::UPP );
+		c8.SetIcon( ButtonStyles_DemoImg::UPP );
+		c9.SetIcon( ButtonStyles_DemoImg::UPP );
+		c10.SetIcon( ButtonStyles_DemoImg::UPP );
+		c12.SetIcon( ButtonStyles_DemoImg::UPP );
+		c13.SetIcon( ButtonStyles_DemoImg::UPP );
+		c14.SetIcon( ButtonStyles_DemoImg::UPP );
+		c15.SetIcon( ButtonStyles_DemoImg::UPP );
+		c16.SetIcon( ButtonStyles_DemoImg::UPP );
+		c17.SetIcon( ButtonStyles_DemoImg::UPP );
+		c18.SetIcon( ButtonStyles_DemoImg::UPP  );
+		c26.SetIcon( ButtonStyles_DemoImg::UPP );
+		c20.SetIcon( ButtonStyles_DemoImg::UPP );
+		c21.SetIcon( ButtonStyles_DemoImg::UPP );
+		c22.SetIcon( ButtonStyles_DemoImg::UPP );
+		c23.SetIcon( ButtonStyles_DemoImg::UPP );
+		c24.SetIcon( ButtonStyles_DemoImg::UPP );
+		c25.SetIcon( ButtonStyles_DemoImg::UPP );
+		c19.SetIcon( ButtonStyles_DemoImg::UPP );
+		c28.SetIcon( ButtonStyles_DemoImg::UPP );
 	}
 	else
 	{
@@ -252,7 +252,7 @@ void AlphaButtonTestDlg::ToggleIcon() {
 	Refresh();
 }
 
-void AlphaButtonTestDlg::ToggleText() {
+void ButtonStyles_DemoDlg::ToggleText() {
 	if (!isTextSet)
 	{
 		c27.SetLabel("Text");
@@ -319,5 +319,5 @@ void AlphaButtonTestDlg::ToggleText() {
 
 GUI_APP_MAIN
 {
-	AlphaButtonTestDlg().Run();
+	ButtonStyles_DemoDlg().Run();
 }

@@ -7,8 +7,8 @@ uses
 
 file
 	main.cpp,
-	AlphaButtonTest.lay,
-	AlphaButtonTest.iml;
+	ButtonStyles_Demo.lay,
+	ButtonStyles_Demo.iml;
 
 mainconfig
 	"" = "GUI SSE2 MT",

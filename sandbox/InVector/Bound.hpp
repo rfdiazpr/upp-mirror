@@ -27,11 +27,7 @@ int InVector<T>::FindUpperBound(const T& val, const L& less, int& off, int& pos)
 		if(blki < data.GetCount()) {
 			pos = Upp::FindUpperBound(data[blki], val, less);
 			off = offset;
-			InVectorCacheRecord& r = invector_cache;
-			r.serial = serial;
-			r.blki = blki;
-			r.offset = offset;
-			r.end = offset + data[blki].GetCount();
+			SetCache(blki, offset);
 			return blki;
 		}
 	}
@@ -69,11 +65,7 @@ int InVector<T>::FindLowerBound(const T& val, const L& less, int& off, int& pos)
 		if(blki < data.GetCount()) {
 			pos = Upp::FindLowerBound(data[blki], val, less);
 			off = offset;
-			InVectorCacheRecord& r = invector_cache;
-			r.serial = serial;
-			r.blki = blki;
-			r.offset = offset;
-			r.end = offset + data[blki].GetCount();
+			SetCache(blki, offset);
 			return blki;
 		}
 	}
@@ -89,12 +81,7 @@ int InVector<T>::InsertUpperBound(const T& val, const L& less)
 {
 	if(data.GetCount() == 0) {
 		count++;
-#ifdef USECACHE
-		serial2++;
-#endif
-#ifdef USECACHE2
-		invector_cache.serial = 0;
-#endif
+		ClearCache();
 		data.Add().Insert(0) = val;
 		return 0;
 	}

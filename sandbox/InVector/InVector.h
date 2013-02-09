@@ -12,6 +12,11 @@ using namespace Upp;
 
 template <class T>
 class InVector {
+public:
+	class ConstIterator;
+	class Iterator;
+
+private:	
 	Vector< Vector<T> > data;
 	Vector< Vector<int> > index;
 	int   count;
@@ -20,6 +25,8 @@ class InVector {
 	int   blk_high;
 	int   blk_low;
 
+	void SetCache(int blki, int offset) const;
+	void ClearCache() const;
 	int  FindBlock0(int& pos, int& off) const;
 	int  FindBlock(int& pos, int& off) const;
 	int  FindBlock(int& pos) const;
@@ -37,15 +44,24 @@ class InVector {
 	
 	void Reset();
 
+	void SetIter(ConstIterator& it, int ii);
+	void SetBegin(ConstIterator& it);
+	void SetEnd(ConstIterator& it);
+
 public:
 	InVector();
+
 	const T& operator[](int i) const;
 	T& operator[](int i);
-	int  GetCount() const      { return count; }
+	int  GetCount() const                           { return count; }
+
+	void Clear();
 
 	T&   Insert(int ii)                             { return *Insert(ii, NULL); }
-	void Remove(int ii, int count);
-	void Clear();
+	void Remove(int ii, int count = 1);
+	
+	T&   Add()                                      { return Insert(GetCount()); }
+	T&   Add(const T& x)                            { return Insert(GetCount(), x); }
 	
 	template <class L>
 	int FindUpperBound(const T& val, const L& less) { int off, pos; FindUpperBound(val, less, off, pos); return off + pos; }
@@ -63,78 +79,6 @@ public:
 
 	typedef T        ValueType;
 
-	class ConstIterator  {
-		T        *ptr;
-		T        *begin;
-		T        *end;
-		InVector *v;
-		int       offset;
-		int       blki;
-
-		friend class InVector;
-
-		void NextBlk();
-		void PrevBlk();		
-
-	public:
-		force_inline int GetIndex() const              { return ptr - begin + offset; }
-
-		force_inline ConstIterator& operator++()       { ASSERT(ptr); if(++ptr == end) NextBlk(); return *this; }
-		force_inline ConstIterator& operator--()       { ASSERT(ptr); if(ptr == begin) PrevBlk(); --ptr; return *this; }
-		force_inline ConstIterator  operator++(int)    { ConstIterator t = *this; ++*this; return t; }
-		force_inline ConstIterator  operator--(int)    { ConstIterator t = *this; --*this; return t; }
-
-		force_inline ConstIterator& operator+=(int d);
-		ConstIterator& operator-=(int d)               { return operator+=(-d); }
-
-		ConstIterator operator+(int d) const           { ConstIterator t = *this; t += d; return t; }
-		ConstIterator operator-(int d) const           { return operator+(-d); }
-
-		int  operator-(const ConstIterator& x) const   { return GetIndex() - x.GetIndex(); }
-
-		bool operator==(const ConstIterator& b) const  { return ptr == b.ptr; }
-		bool operator!=(const ConstIterator& b) const  { return ptr != b.ptr; }
-		bool operator<(const ConstIterator& b) const   { return blki == b.blki ? ptr < b.ptr : blki < b.blki; }
-		bool operator>(const ConstIterator& b) const   { return blki == b.blki ? ptr > b.ptr : blki > b.blki; }
-		bool operator<=(const ConstIterator& b) const  { return blki == b.blki ? ptr <= b.ptr : blki <= b.blki; }
-		bool operator>=(const ConstIterator& b) const  { return blki == b.blki ? ptr >= b.ptr : blki >= b.blki; }
-
-		operator bool() const                          { return ptr; }
-
-		const T& operator*() const                     { return *ptr; }
-		const T *operator->() const                    { return ptr; }
-		const T& operator[](int i) const               { ConstIterator h = *this; h += i; return *h; }
-	};
-
-	class Iterator : public ConstIterator {
-		typedef ConstIterator B;
-	public:
-		Iterator& operator++()                         { ConstIterator::operator++(); return *this; }
-		Iterator& operator--()                         { ConstIterator::operator--(); return *this; }
-		Iterator  operator++(int)                      { Iterator t = *this; ++*this; return t; }
-		Iterator  operator--(int)                      { Iterator t = *this; --*this; return t; }
-
-		Iterator& operator+=(int d)                    { ConstIterator::operator+=(d); return *this; }
-		Iterator& operator-=(int d)                    { return operator+=(-d); }
-
-		Iterator operator+(int d) const                { Iterator t = *this; t += d; return t; }
-		Iterator operator-(int d) const                { return operator+(-d); }
-
-		int  operator-(const Iterator& x) const        { return B::GetIndex() - x.GetIndex(); }
-
-		T& operator*()                                 { return *B::ptr; }
-		T *operator->()                                { return B::ptr; }
-		T& operator[](int i)                           { Iterator h = *this; h += i; return *h; }
-
-		const T& operator*() const                     { return *B::ptr; }
-		const T *operator->() const                    { return B::ptr; }
-		const T& operator[](int i) const               { ConstIterator h = *this; h += i; return *h; }
-	};
-
-	void SetIter(ConstIterator& it, int ii);
-	void SetBegin(ConstIterator& it);
-	void SetEnd(ConstIterator& it);
-
 	ConstIterator    Begin() const              { ConstIterator it; SetBegin(it); return it; }
 	ConstIterator    End() const                { ConstIterator it; SetEnd(it); return it; }
 	ConstIterator    GetIter(int pos) const     { ConstIterator it; SetIter(it, pos); return it; }
@@ -148,6 +92,77 @@ public:
 #endif
 	void Info() const { RDUMP(data.GetCount()); RDUMP(blk_high); }
 };
+
+template <class T>
+class InVector<T>::ConstIterator {
+	T        *ptr;
+	T        *begin;
+	T        *end;
+	InVector *v;
+	int       offset;
+	int       blki;
+
+	friend class InVector;
+
+	void NextBlk();
+	void PrevBlk();		
+
+public:
+	force_inline int GetIndex() const              { return ptr - begin + offset; }
+
+	force_inline ConstIterator& operator++()       { ASSERT(ptr); if(++ptr == end) NextBlk(); return *this; }
+	force_inline ConstIterator& operator--()       { ASSERT(ptr); if(ptr == begin) PrevBlk(); --ptr; return *this; }
+	force_inline ConstIterator  operator++(int)    { ConstIterator t = *this; ++*this; return t; }
+	force_inline ConstIterator  operator--(int)    { ConstIterator t = *this; --*this; return t; }
+
+	force_inline ConstIterator& operator+=(int d);
+	ConstIterator& operator-=(int d)               { return operator+=(-d); }
+
+	ConstIterator operator+(int d) const           { ConstIterator t = *this; t += d; return t; }
+	ConstIterator operator-(int d) const           { return operator+(-d); }
+
+	int  operator-(const ConstIterator& x) const   { return GetIndex() - x.GetIndex(); }
+
+	bool operator==(const ConstIterator& b) const  { return ptr == b.ptr; }
+	bool operator!=(const ConstIterator& b) const  { return ptr != b.ptr; }
+	bool operator<(const ConstIterator& b) const   { return blki == b.blki ? ptr < b.ptr : blki < b.blki; }
+	bool operator>(const ConstIterator& b) const   { return blki == b.blki ? ptr > b.ptr : blki > b.blki; }
+	bool operator<=(const ConstIterator& b) const  { return blki == b.blki ? ptr <= b.ptr : blki <= b.blki; }
+	bool operator>=(const ConstIterator& b) const  { return blki == b.blki ? ptr >= b.ptr : blki >= b.blki; }
+
+	operator bool() const                          { return ptr; }
+
+	const T& operator*() const                     { return *ptr; }
+	const T *operator->() const                    { return ptr; }
+	const T& operator[](int i) const               { ConstIterator h = *this; h += i; return *h; }
+};
+
+template <class T>
+class InVector<T>::Iterator : public InVector<T>::ConstIterator {
+	typedef ConstIterator B;
+public:
+	Iterator& operator++()                         { ConstIterator::operator++(); return *this; }
+	Iterator& operator--()                         { ConstIterator::operator--(); return *this; }
+	Iterator  operator++(int)                      { Iterator t = *this; ++*this; return t; }
+	Iterator  operator--(int)                      { Iterator t = *this; --*this; return t; }
+
+	Iterator& operator+=(int d)                    { ConstIterator::operator+=(d); return *this; }
+	Iterator& operator-=(int d)                    { return operator+=(-d); }
+
+	Iterator operator+(int d) const                { Iterator t = *this; t += d; return t; }
+	Iterator operator-(int d) const                { return operator+(-d); }
+
+	int  operator-(const Iterator& x) const        { return B::GetIndex() - x.GetIndex(); }
+
+	T& operator*()                                 { return *B::ptr; }
+	T *operator->()                                { return B::ptr; }
+	T& operator[](int i)                           { Iterator h = *this; h += i; return *h; }
+
+	const T& operator*() const                     { return *B::ptr; }
+	const T *operator->() const                    { return B::ptr; }
+	const T& operator[](int i) const               { ConstIterator h = *this; h += i; return *h; }
+};
+
 
 #include "InVector.hpp"
 #include "Bound.hpp"

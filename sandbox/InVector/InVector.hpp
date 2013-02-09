@@ -22,42 +22,36 @@ void InVector<T>::Clear()
 	Reset();
 }
 
+extern thread__ int64 invector_cache_serial_;
+extern thread__ int   invector_cache_blki_;
+extern thread__ int   invector_cache_offset_;
+extern thread__ int   invector_cache_end_;
+
 template <class T>
-const T& InVector<T>::operator[](int i) const
+force_inline void InVector<T>::SetCache(int blki, int offset) const
 {
-	LLOG("operator[] " << i);
-	ASSERT(i >= 0 && i < count);
-	int blki = FindBlock(i);
-	return data[blki][i];
+	invector_cache_serial_ = serial;
+	invector_cache_blki_ = blki;
+	invector_cache_offset_ = offset;
+	invector_cache_end_ = offset + data[blki].GetCount();
 }
 
 template <class T>
-T& InVector<T>::operator[](int i)
+force_inline void InVector<T>::ClearCache() const
 {
-	LLOG("operator[] " << i);
-	ASSERT(i >= 0 && i < count);
-	int blki = FindBlock(i);
-	return data[blki][i];
+	invector_cache_serial_ = 0;
 }
 
-struct InVectorCacheRecord {
-	int64 serial;
-	int   blki;
-	int   offset;
-	int   end;
-};
-
-extern thread__ InVectorCacheRecord invector_cache;
 
 template <class T>
 force_inline int InVector<T>::FindBlock(int& pos, int& off) const
 {
-	InVectorCacheRecord& r = invector_cache;
-	if(r.serial == serial && pos >= r.offset && pos < r.end) {
+	if(invector_cache_serial_ == serial && pos >= invector_cache_offset_ &&
+	   pos < invector_cache_end_) {
 		LLOG("Found in cache, serial: " << r.serial << ", offset: " << r.offset << ", end: " << r.end);
-		pos -= r.offset;
-		off = r.offset;
-		return r.blki;
+		off = invector_cache_offset_;
+		pos -= off;
+		return invector_cache_blki_;
 	}
 	return FindBlock0(pos, off);
 }
@@ -91,11 +85,7 @@ int InVector<T>::FindBlock0(int& pos, int& off) const
 		offset += n;
 	}
 
-	InVectorCacheRecord& r = invector_cache;
-	r.serial = serial;
-	r.blki = blki;
-	r.offset = offset;
-	r.end = offset + data[blki].GetCount();
+	SetCache(blki, offset);
 
 	off = offset;
 	return blki;
@@ -106,6 +96,24 @@ force_inline int InVector<T>::FindBlock(int& pos) const
 {
 	int h;
 	return FindBlock(pos, h);
+}
+
+template <class T>
+const T& InVector<T>::operator[](int i) const
+{
+	LLOG("operator[] " << i);
+	ASSERT(i >= 0 && i < count);
+	int blki = FindBlock(i);
+	return data[blki][i];
+}
+
+template <class T>
+T& InVector<T>::operator[](int i)
+{
+	LLOG("operator[] " << i);
+	ASSERT(i >= 0 && i < count);
+	int blki = FindBlock(i);
+	return data[blki][i];
 }
 
 #ifdef _DEBUG
@@ -173,7 +181,7 @@ void InVector<T>::Reindex()
 		end = w.End();
 		n = w.GetCount();
 	}
-	invector_cache.serial = 0;
+	ClearCache();
 #ifdef ADAPTIVE
 	n = 2500 + data.GetCount() / 4;
 	blk_high = max(n / (int)sizeof(T), 16);
@@ -189,19 +197,19 @@ T *InVector<T>::Insert0(int ii, int blki, int pos, const T *val)
 		b2.InsertSplit(0, data[blki], data[blki].GetCount() / 2);
 		data[blki].Shrink();
 		Reindex();
-		invector_cache.serial = 0;
+		ClearCache();
 		pos = ii;
 		blki = FindBlock(pos);
 	}
 	LLOG("blki: " << blki << ", pos: " << pos);
 	count++;
-	invector_cache.serial = 0; // TODO: Immediately after inserting, update cache for the next retrieval
+	ClearCache(); // TODO: Immediately after inserting, update cache for the next retrieval
 	int q = blki;
 	for(int i = 0; i < index.GetCount(); i++)
 		index[i].At(q >>= 1, 0)++;
 	if(val) {
 		data[blki].Insert(pos, *val);
-		return NULL;
+		return &data[blki][pos];
 	}
 	else
 		return &data[blki].Insert(pos);
@@ -235,13 +243,13 @@ force_inline bool InVector<T>::JoinSmall(int blki)
 template <class T>
 T *InVector<T>::Insert(int ii, const T *val)
 {
-	LLOG("*** Insert " << ii << ", count " << count << ", index: " << index.GetCount());
+	ASSERT(ii >= 0 && ii <= GetCount());
 	if(ii == 0 && data.GetCount() == 0) {
 		count++;
-		invector_cache.serial = 0;
+		ClearCache();
 		if(val) {
 			data.Add().Insert(0, *val);
-			return NULL;
+			return &data[0][0];
 		}
 		return &data.Add().Insert(0);
 	}
@@ -254,19 +262,27 @@ T *InVector<T>::Insert(int ii, const T *val)
 template <class T>
 void InVector<T>::InsertN(int ii, int n)
 {
-	LLOG("*** Insert " << ii << ", count " << count << ", index: " << index.GetCount());
-	if(ii == 0 && data.GetCount() == 0) {
-		count++;
+	ASSERT(ii >= 0 && ii <= GetCount());
+	if(data[blki].GetCount() > blk_high) {
+		Vector<T>& b2 = data.Insert(blki + 1);
+		b2.InsertSplit(0, data[blki], data[blki].GetCount() / 2);
+		data[blki].Shrink();
+		Reindex();
 		invector_cache.serial = 0;
-		if(val) {
-			data.Add().Insert(0, *val);
-			return NULL;
-		}
-		return &data.Add().Insert(0);
+		pos = ii;
+		blki = FindBlock(pos);
 	}
-	int pos = ii;
-	int blki = FindBlock(pos);
-	return Insert0(ii, blki, pos, val);
+	count++;
+	invector_cache.serial = 0; // TODO: Immediately after inserting, update cache for the next retrieval
+	int q = blki;
+	for(int i = 0; i < index.GetCount(); i++)
+		index[i].At(q >>= 1, 0)++;
+	if(val) {
+		data[blki].Insert(pos, *val);
+		return &data[blki][pos];
+	}
+	else
+		return &data[blki].Insert(pos);
 }
 */
 
@@ -302,5 +318,5 @@ void InVector<T>::Remove(int pos, int n)
 		JoinSmall(blki);
 		Reindex();
 	}
-	invector_cache.serial = 0; // TODO: Immediately after removing, update cache for the next retrieval
+	ClearCache(); // TODO: Immediately after removing, update cache for the next retrieval
 }

@@ -9,4 +9,7 @@ int64 NewInVectorSerial()
 	return x;
 }
 
-thread__ InVectorCacheRecord invector_cache;
+thread__ int64 invector_cache_serial_;
+thread__ int   invector_cache_blki_;
+thread__ int   invector_cache_offset_;
+thread__ int   invector_cache_end_;

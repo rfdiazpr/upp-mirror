@@ -11,6 +11,7 @@ namespace ButtonStyles {
 	
 typedef struct {
 	Image buttonIcon; // image à mettre dans le cercle
+	Image tmpImg;
 	Color opaqueColor; // couleur du cercle au bout du bouton
 	Color alphaColor;
 	int   subbuttonDeflate;
@@ -82,7 +83,7 @@ enum {
 };
 
 
-Value MakeButtonLook( int flags, Color opaqueColor, Color alphaColor, int alphaValue, Image buttonIcon );
+Value MakeButtonLook( int flags, Color opaqueColor, Color alphaColor, int alphaValue, int deflate, int borderWidth, Image buttonIcon);
 
 
 typedef struct {

@@ -5,7 +5,7 @@
 
 namespace ButtonStyles {
 
-Value MakeButtonLook( int flags, Color opaqueColor, Color alphaColor, int alphaValue, Image buttonIcon )
+Value MakeButtonLook( int flags, Color opaqueColor, Color alphaColor, int alphaValue, int deflate, int borderWidth, Image buttonIcon )
 {
 	ButtonLook e;
 	e.buttonIcon = buttonIcon;
@@ -13,8 +13,8 @@ Value MakeButtonLook( int flags, Color opaqueColor, Color alphaColor, int alphaV
 	e.alphaColor = alphaColor;
 	e.alphaValue = alphaValue;
 	e.flags = flags;
-	e.subbuttonDeflate = 6;
-	e.subbuttonBorderWidth = 4;
+	e.subbuttonDeflate = deflate;
+	e.subbuttonBorderWidth = borderWidth;
 	return RawToValue(e);
 }
 
@@ -22,14 +22,14 @@ Value MakeButtonLook( int flags, Color opaqueColor, Color alphaColor, int alphaV
 
 Value ButtonStyleLookFunction(Draw& dw, const Rect& rect, const Value& v, int op)
 {
-	if( IsTypeRaw<ButtonLook>(v) )
+	if( v.Is<ButtonLook>() )
 	{
-
-		const ButtonLook& e = ValueTo<ButtonLook>(v);
+		const ButtonLook& e = v.To<ButtonLook>();
 		switch(op)
 		{
 			case LOOK_MARGINS:
-				return Rect(2,2,2,2);
+				return rect;
+//			Rect(2,2,2,2);
 			case LOOK_ISOPAQUE:
 				return false;
 			case LOOK_PAINT:
@@ -38,7 +38,7 @@ Value ButtonStyleLookFunction(Draw& dw, const Rect& rect, const Value& v, int op
 				Rect RightCircleRect = LeftCircleRect;
 				RightCircleRect.OffsetHorz(rect.Width()-rect.Height());
 				Rect bandRect = rect;
-				ImageDraw iw( rect.Width(), rect.Height() );
+				ImageDraw iw( rect.Size() );
 
 				if (TEST(LEFT_END_ROUND))
 				{
@@ -54,6 +54,7 @@ Value ButtonStyleLookFunction(Draw& dw, const Rect& rect, const Value& v, int op
 				iw.Alpha().DrawRect(bandRect, GrayColor(e.alphaValue));
 				dw.DrawImage( rect, iw , e.alphaColor);
 
+//#define DO_ANTIALIASING 1
 				#if DO_ANTIALIASING
 				ImageBuffer ib(rect.Size());
 				BufferPainter w(ib, MODE_ANTIALIASED);
@@ -63,7 +64,7 @@ Value ButtonStyleLookFunction(Draw& dw, const Rect& rect, const Value& v, int op
 
 
 				bandRect=rect;
-				bandRect.Deflate(0, e.subbuttonDeflate+1);
+				bandRect.Deflate(0, e.subbuttonDeflate);
 				LeftCircleRect.Deflate(e.subbuttonDeflate);
 				RightCircleRect.Deflate(e.subbuttonDeflate);
 				if ( TEST(CONTAINS_SUBBUTON ))
@@ -71,7 +72,7 @@ Value ButtonStyleLookFunction(Draw& dw, const Rect& rect, const Value& v, int op
 					
 					if ( TEST(SUBBUTTON_RIGHT_END_ROUND ) && !TEST(SUBBUTTON_IS_SHORT_LEFT))
 					{
-						bandRect.right = bandRect.right-bandRect.Height()/2;
+						bandRect.right = bandRect.right-rect.Height()/2;
 						if ( TEST(SUBBUTTON_IS_FULL))
 						{
 							w.DrawEllipse(RightCircleRect, e.opaqueColor);
@@ -90,7 +91,7 @@ Value ButtonStyleLookFunction(Draw& dw, const Rect& rect, const Value& v, int op
 					}
 					if (TEST(SUBBUTTON_LEFT_END_ROUND) && !TEST(SUBBUTTON_IS_SHORT_RIGHT))
 					{
-						bandRect.left = bandRect.left+bandRect.Height()/2;
+						bandRect.left = bandRect.left+rect.Height()/2;
 						if ( TEST(SUBBUTTON_IS_FULL))
 						{
 							w.DrawEllipse(LeftCircleRect, e.opaqueColor);

@@ -1,0 +1,16 @@
+description "Button drawing tests  using alpha\377";
+
+uses
+	CtrlLib,
+	Controls4U,
+	ButtonStyles;
+
+file
+	main.cpp,
+	AlphaButtonTest.lay,
+	AlphaButtonTest.iml;
+
+mainconfig
+	"" = "GUI SSE2 MT",
+	"" = "GUI MT";
+

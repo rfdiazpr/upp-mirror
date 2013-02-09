@@ -1,0 +1,6 @@
+#ifndef _ButtonStyles_Demo_icpp_init_stub
+#define _ButtonStyles_Demo_icpp_init_stub
+#include "CtrlLib/init"
+#include "Controls4U/init"
+#include "ButtonStyles/init"
+#endif

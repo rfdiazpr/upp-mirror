@@ -3,8 +3,23 @@ int64 NewInVectorSerial();
 template <class T>
 InVector<T>::InVector()
 {
-	hcount = count = 0;
 	serial = NewInVectorSerial();
+	Reset();
+}
+
+template <class T>
+void InVector<T>::Reset()
+{
+	hcount = count = 0;
+	blk_high = 4000 / sizeof(T);
+	blk_low = 800 / sizeof(T);
+}
+
+template <class T>
+void InVector<T>::Clear()
+{
+	data.Clear();
+	Reset();
 }
 
 template <class T>
@@ -159,12 +174,17 @@ void InVector<T>::Reindex()
 		n = w.GetCount();
 	}
 	invector_cache.serial = 0;
+#ifdef ADAPTIVE
+	n = 2500 + data.GetCount() / 4;
+	blk_high = max(n / (int)sizeof(T), 16);
+	blk_low = max(n / 3 / (int)sizeof(T), 16);
+#endif
 }
 
 template <class T>
 T *InVector<T>::Insert0(int ii, int blki, int pos, const T *val)
 {
-	if(data[blki].GetCount() > BLKUPPER) {
+	if(data[blki].GetCount() > blk_high) {
 		Vector<T>& b2 = data.Insert(blki + 1);
 		b2.InsertSplit(0, data[blki], data[blki].GetCount() / 2);
 		data[blki].Shrink();
@@ -188,6 +208,31 @@ T *InVector<T>::Insert0(int ii, int blki, int pos, const T *val)
 }
 
 template <class T>
+force_inline bool InVector<T>::JoinSmall(int blki)
+{
+	if(blki < data.GetCount()) {
+		int n = data[blki].GetCount();
+		if(n == 0) {
+			data.Remove(blki);
+			return true;
+		}
+		if(n < blk_low) {
+			if(blki > 0 && data[blki - 1].GetCount() + n <= blk_high) {
+				data[blki - 1].AppendPick(data[blki]);
+				data.Remove(blki);
+				return true;
+			}
+			if(blki + 1 < data.GetCount() && n + data[blki + 1].GetCount() <= blk_high) {
+				data[blki].AppendPick(data[blki + 1]);
+				data.Remove(blki + 1);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+template <class T>
 T *InVector<T>::Insert(int ii, const T *val)
 {
 	LLOG("*** Insert " << ii << ", count " << count << ", index: " << index.GetCount());
@@ -205,30 +250,25 @@ T *InVector<T>::Insert(int ii, const T *val)
 	return Insert0(ii, blki, pos, val);
 }
 
+/*
 template <class T>
-force_inline bool InVector<T>::JoinSmall(int blki)
+void InVector<T>::InsertN(int ii, int n)
 {
-	if(blki < data.GetCount()) {
-		int n = data[blki].GetCount();
-		if(n == 0) {
-			data.Remove(blki);
-			return true;
+	LLOG("*** Insert " << ii << ", count " << count << ", index: " << index.GetCount());
+	if(ii == 0 && data.GetCount() == 0) {
+		count++;
+		invector_cache.serial = 0;
+		if(val) {
+			data.Add().Insert(0, *val);
+			return NULL;
 		}
-		if(n < BLKLOWER) {
-			if(blki > 0 && data[blki - 1].GetCount() + n <= BLKUPPER) {
-				data[blki - 1].AppendPick(data[blki]);
-				data.Remove(blki);
-				return true;
-			}
-			if(blki + 1 < data.GetCount() && n + data[blki + 1].GetCount() <= BLKUPPER) {
-				data[blki].AppendPick(data[blki + 1]);
-				data.Remove(blki + 1);
-				return true;
-			}
-		}
+		return &data.Add().Insert(0);
 	}
-	return false;
+	int pos = ii;
+	int blki = FindBlock(pos);
+	return Insert0(ii, blki, pos, val);
 }
+*/
 
 template <class T>
 void InVector<T>::Remove(int pos, int n)

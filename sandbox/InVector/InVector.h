@@ -8,6 +8,8 @@ using namespace Upp;
 
 #define LLOG(x)   // DLOG(x)
 
+#define ADAPTIVE
+
 template <class T>
 class InVector {
 	Vector< Vector<T> > data;
@@ -15,18 +17,8 @@ class InVector {
 	int   count;
 	int   hcount;
 	int64 serial;
-	
-#if defined(_DEBUG) && defined(flagIVTEST)
-	enum { PAGE = 11 * sizeof(T) };
-#else
-	enum { PAGE = 3000 };
-#endif
-	enum {
-		BLKUPPER0 = PAGE / sizeof(T),
-		BLKUPPER = BLKUPPER0 > 8 ? BLKUPPER0 : 8,
-		BLKLOWER = BLKUPPER / 3,
-		BLKMIDDLE = BLKLOWER
-	};
+	int   blk_high;
+	int   blk_low;
 
 	int  FindBlock0(int& pos, int& off) const;
 	int  FindBlock(int& pos, int& off) const;
@@ -42,6 +34,8 @@ class InVector {
 	bool JoinSmall(int blki);
 	T   *Insert0(int ii, int blki, int pos, const T *val);
 	T   *Insert(int ii, const T *val);
+	
+	void Reset();
 
 public:
 	InVector();
@@ -51,6 +45,7 @@ public:
 
 	T&   Insert(int ii)                             { return *Insert(ii, NULL); }
 	void Remove(int ii, int count);
+	void Clear();
 	
 	template <class L>
 	int FindUpperBound(const T& val, const L& less) { int off, pos; FindUpperBound(val, less, off, pos); return off + pos; }
@@ -62,6 +57,9 @@ public:
 
 	template <class L> int InsertUpperBound(const T& val, const L& less);
 	int InsertUpperBound(const T& val) { return InsertUpperBound(val, StdLess<T>()); }
+	
+	template <class L> int Find(const T& val, const L& less);
+	int Find(const T& val)                          { return Find(val, StdLess<T>()); }
 
 	typedef T        ValueType;
 
@@ -148,6 +146,7 @@ public:
 #ifdef _DEBUG
 	void DumpIndex();
 #endif
+	void Info() const { RDUMP(data.GetCount()); RDUMP(blk_high); }
 };
 
 #include "InVector.hpp"

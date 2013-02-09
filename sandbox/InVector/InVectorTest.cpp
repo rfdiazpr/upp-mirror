@@ -180,6 +180,15 @@ void InVectorBenchmark()
 	}
 }
 
+void InVectorInsertBenchmark()
+{
+	RTIMING("InVectorInsertBenchmark");
+	InVector<int> iv;
+	for(int i = 0; i < 10000000; i++)
+		iv.Insert(iv.GetCount() / 2);
+	iv.Info();
+}
+
 template <class C1, class C2>
 void Compare(C1& a, C2& b)
 {
@@ -305,13 +314,18 @@ void SetTest()
 			va.Insert(ii) = q;
 			ia.InsertUpperBound(q);
 			Compare(va, ia);
+			
+			int i = ia.Find(q);
+			ASSERT(ia[i] == q);
+			ASSERT(ia.Find(200) < 0);
 		}
 	}
 }
 
 void SetBenchmark()
 {
-	const int count = 100000;
+	const int rep = 100;
+	const int count = 1000;
 	SeedRandom();
 	Buffer<int> rnd(count);
 	for(int i = 0; i < count; i++)
@@ -321,38 +335,48 @@ void SetBenchmark()
 		std::multiset<int> s;
 		{
 			RTIMING("std::set<int> INSERT");
-			for(int i = 0; i < count; i++) {
-				s.insert(rnd[i]);
+			for(int j = 0; j < rep; j++) {
+				s.clear();
+				for(int i = 0; i < count; i++) {
+					s.insert(rnd[i]);
+				}
 			}
 		}
 		typedef std::multiset<int>::iterator It;
 		{
 			RTIMING("std::set<int> SCAN");
 			It e = s.end();
-			for(It i = s.begin(); i != e; i++) {
-				sSum += *i;
-			}
+			for(int j = 0; j < rep; j++)
+				for(It i = s.begin(); i != e; i++) {
+					sSum += *i;
+				}
 		}
 	}
 	{
 		InVector<int> s;
 		{
 			RTIMING("InVector<int> INSERT");
-			for(int i = 0; i < count; i++)
-				s.InsertUpperBound(rnd[i]);
-//				s.Insert(s.FindUpperBound(rnd[i])) = rnd[i];
+			for(int j = 0; j < rep; j++) {
+				s.Clear();
+				for(int i = 0; i < count; i++)
+					s.InsertUpperBound(rnd[i]);
+			}
+			RDUMP(s.GetCount());
+	//				s.Insert(s.FindUpperBound(rnd[i])) = rnd[i];
 		}
 		{
 			RTIMING("InVector<int> SCAN");
-			for(int i = 0; i < count; i++)
-				sSum += s[i];
+			for(int j = 0; j < rep; j++)
+				for(int i = 0; i < count; i++)
+					sSum += s[i];
 		}
 	}
 }
 
 void SetBenchmark2()
 {
-	const int count = 100000;
+	const int rep = 1;
+	const int count = 30000 * 1000;
 	SeedRandom();
 	Buffer<String> rnd(count);
 	for(int i = 0; i < count; i++)
@@ -362,31 +386,58 @@ void SetBenchmark2()
 		std::multiset<String> s;
 		{
 			RTIMING("std::set<String> INSERT");
-			for(int i = 0; i < count; i++) {
-				s.insert(rnd[i]);
+			for(int j = 0; j < rep ; j++) {
+				s.clear();
+				for(int i = 0; i < count; i++) {
+					s.insert(rnd[i]);
+				}
 			}
 		}
 		typedef std::multiset<String>::iterator It;
 		{
 			RTIMING("std::set<String> SCAN");
 			It e = s.end();
-			for(It i = s.begin(); i != e; i++) {
-				sSum += i->GetCount();
-			}
+			for(int j = 0; j < rep ; j++)
+				for(It i = s.begin(); i != e; i++) {
+					sSum += i->GetCount();
+				}
+		}
+		{
+			RTIMING("std::set<String> FIND");
+			int n = 0;
+			for(int j = 0; j < rep ; j++)
+				for(int i = 0; i < count; i++)
+					if(s.find(rnd[i]) != s.end())
+					   n++;
+			RDUMP(n);
 		}
 	}
 	{
 		InVector<String> s;
 		{
 			RTIMING("InVector<String> INSERT");
-			for(int i = 0; i < count; i++)
-				s.InsertUpperBound(rnd[i]);
+			for(int j = 0; j < rep ; j++) {
+				s.Clear();
+				for(int i = 0; i < count; i++)
+					s.InsertUpperBound(rnd[i]);
+			}
 //				s.Insert(s.FindUpperBound(rnd[i])) = rnd[i];
 		}
 		{
 			RTIMING("InVector<String> SCAN");
-			for(int i = 0; i < count; i++)
-				sSum += s[i].GetCount();
+			for(int j = 0; j < rep ; j++)
+				for(int i = 0; i < count; i++)
+					sSum += s[i].GetCount();
+		}
+		{
+			RTIMING("InVector<String> FIND");
+			int n = 0;
+			for(int j = 0; j < rep ; j++) {
+				for(int i = 0; i < count; i++)
+					if(s.Find(rnd[i]) >= 0)
+						n++;
+			}
+			RDUMP(n);
 		}
 	}
 }
@@ -426,12 +477,13 @@ CONSOLE_APP_MAIN
 	SeedRandom();
 #ifdef _DEBUG
 	RemoveTest();
-//	SetTest();
-//	TestLowerBound();
-//	TestUpperBound();
-//	InVectorTest();
+	SetTest();
+	TestLowerBound();
+	TestUpperBound();
+	InVectorTest();
 #else
-	SetBenchmark();
+//	SetBenchmark();
+//	InVectorInsertBenchmark();
 	SetBenchmark2();
 //	InVectorScanBenchmark();
 //	InVectorBenchmark();

@@ -105,3 +105,11 @@ int InVector<T>::InsertUpperBound(const T& val, const L& less)
 	Insert0(off + pos, blki, pos, &val);
 	return off + pos;
 }
+
+template <class T>
+template <class L>
+int InVector<T>::Find(const T& val, const L& less)
+{
+	int i = FindLowerBound(val, less);
+	return i < GetCount() && !less(val, (*this)[i]) ? i : -1;
+}

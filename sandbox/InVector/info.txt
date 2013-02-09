@@ -145,3 +145,9 @@ TIMING InVector SCAN  :  4.00 ms -  4.00 ms ( 4.00 ms / 1 ), min:  4.00 ms, max:
 TIMING Reindex        : 103.43 ms -  9.03 us (104.00 ms / 11451 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 11451
 TIMING InVector INSERT: 612.00 ms - 612.00 ms (612.00 ms / 1 ), min: 612.00 ms, max: 612.00 ms, nesting: 1 - 1
 TIMING std::set INSERT: 615.00 ms - 615.00 ms (615.00 ms / 1 ), min: 615.00 ms, max: 615.00 ms, nesting: 1 - 1
+------------------------------------------
+TIMING InVector<String> SCAN: 50.00 ms - 50.00 ms (50.00 ms / 1 ), min: 50.00 ms, max: 50.00 ms, nesting: 1 - 1
+TIMING Reindex        :  1.56 s  - 42.66 us ( 1.56 s  / 36466 ), min:  0.00 ns, max:  5.00 ms, nesting: 1 - 36466
+TIMING InVector<String> INSERT: 15.06 s  - 15.06 s  (15.06 s  / 1 ), min: 15.06 s , max: 15.06 s , nesting: 1 - 1
+TIMING std::set<String> SCAN:  1.28 s  -  1.28 s  ( 1.28 s  / 1 ), min:  1.28 s , max:  1.28 s , nesting: 1 - 1
+TIMING std::set<String> INSERT: 13.05 s  - 13.05 s  (13.05 s  / 1 ), min: 13.05 s , max: 13.05 s , nesting: 1 - 1

@@ -31,6 +31,7 @@ public:
 	const T&      operator[](int i) const          { return iv[i]; }
 	int           GetCount() const                 { return iv.GetCount(); }
 	bool          IsEmpty() const                  { return iv.IsEmpty(); }
+	void          Clear()                          { iv.Clear(); }
 
 	void          Trim(int n)                      { return iv.Trim(n); }
 	void          Drop(int n = 1)                  { iv.Drop(n); }
@@ -51,5 +52,7 @@ public:
 	Iterator         End()                          { return iv.End(); }
 	Iterator         GetIter(int pos)               { return iv.GetIter(pos); }
 };
+
+#include "InVector.hpp"
 
 #endif

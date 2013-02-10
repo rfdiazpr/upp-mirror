@@ -89,7 +89,7 @@ int InVector<T>::InsertUpperBound(const T& val, const L& less)
 	int pos;
 	int blki = FindUpperBound(val, less, off, pos);
 //	RTIMING("Insert0");
-	Insert0(off + pos, blki, pos, &val);
+	Insert0(off + pos, blki, pos, off, &val);
 	return off + pos;
 }
 

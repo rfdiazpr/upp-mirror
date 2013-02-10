@@ -471,11 +471,38 @@ void RemoveTest()
 	}
 }
 
+void InsertNTest()
+{
+	SeedRandom();
+	Vector<int> av;
+	InVector<int> iv;
+	for(int i = 0; i < 10000000; i++) {
+		if(i % 1000 == 0)
+			LOG(i);
+		if(av.GetCount() > 2000) {
+			av.Clear();
+			iv.Clear();
+		}
+		int pos = av.GetCount() ? Random(av.GetCount()) : 0;
+		int n = Random(30);
+		av.InsertN(pos, n);
+		iv.InsertN(pos, n);
+		for(int j = 0; j < n; j++) {
+			int r = Random();
+			av[pos + j] = r;
+			iv[pos + j] = r;
+		}
+		Compare(av, iv);
+	}
+}
+
 CONSOLE_APP_MAIN
 {
 	StdLogSetup(LOG_FILE|LOG_COUT);
 	SeedRandom();
 #ifdef _DEBUG
+	InsertNTest();
+	return;
 	RemoveTest();
 	SetTest();
 	TestLowerBound();

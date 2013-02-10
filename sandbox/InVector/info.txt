@@ -151,3 +151,109 @@ TIMING Reindex        :  1.56 s  - 42.66 us ( 1.56 s  / 36466 ), min:  0.00 ns, 
 TIMING InVector<String> INSERT: 15.06 s  - 15.06 s  (15.06 s  / 1 ), min: 15.06 s , max: 15.06 s , nesting: 1 - 1
 TIMING std::set<String> SCAN:  1.28 s  -  1.28 s  ( 1.28 s  / 1 ), min:  1.28 s , max:  1.28 s , nesting: 1 - 1
 TIMING std::set<String> INSERT: 13.05 s  - 13.05 s  (13.05 s  / 1 ), min: 13.05 s , max: 13.05 s , nesting: 1 - 1
+-------
+set:
+
+n = 1000000
+63584 KB
+  16 B,     16 allocated (    0 KB),    238 fragmented (    3 KB)
+  32 B,      7 allocated (    0 KB),    120 fragmented (    3 KB)
+  48 B, 1000076 allocated (46878 KB),     28 fragmented (    1 KB)
+  64 B,     12 allocated (    0 KB),     51 fragmented (    3 KB)
+  80 B,      7 allocated (    0 KB),     43 fragmented (    3 KB)
+  96 B,      2 allocated (    0 KB),     40 fragmented (    3 KB)
+ 112 B,      5 allocated (    0 KB),     31 fragmented (    3 KB)
+ 128 B,      8 allocated (    1 KB),     23 fragmented (    2 KB)
+ 144 B,      1 allocated (    0 KB),     27 fragmented (    3 KB)
+ 160 B,      4 allocated (    0 KB),     21 fragmented (    3 KB)
+ 192 B,     66 allocated (   12 KB),     18 fragmented (    3 KB)
+ 208 B,      1 allocated (    0 KB),     18 fragmented (    3 KB)
+ 224 B,      1 allocated (    0 KB),     17 fragmented (    3 KB)
+ 288 B,      7 allocated (    1 KB),      7 fragmented (    1 KB)
+ 368 B,      1 allocated (    0 KB),     10 fragmented (    3 KB)
+ 448 B,      3 allocated (    1 KB),      6 fragmented (    2 KB)
+ 576 B,      2 allocated (    1 KB),      5 fragmented (    2 KB)
+ TOTAL, 1000219 allocated (46900 KB),    703 fragmented (   54 KB)
+Free pages 0 (0 KB)
+Large block count 10, total size 16 KB
+Large fragments count 4, total size 47 KB
+
+TIMING std::set<String> FIND: 778.00 ms - 778.00 ms (778.00 ms / 1 ), min: 778.00 ms, max: 778.00 ms, nesting: 1 - 1
+TIMING std::set<String> SCAN: 91.00 ms - 91.00 ms (91.00 ms / 1 ), min: 91.00 ms, max: 91.00 ms, nesting: 1 - 1
+TIMING std::set<String> INSERT: 801.00 ms - 801.00 ms (801.00 ms / 1 ), min: 801.00 ms, max: 801.00 ms, nesting: 1 - 1
+------
+n = 1000000
+46832 KB
+  16 B,     16 allocated (    0 KB),    238 fragmented (    3 KB)
+  32 B,      7 allocated (    0 KB),    120 fragmented (    3 KB)
+  48 B,     76 allocated (    3 KB),      8 fragmented (    0 KB)
+  64 B,     12 allocated (    0 KB),     51 fragmented (    3 KB)
+  80 B,      7 allocated (    0 KB),     43 fragmented (    3 KB)
+  96 B,      2 allocated (    0 KB),     40 fragmented (    3 KB)
+ 112 B,      5 allocated (    0 KB),     31 fragmented (    3 KB)
+ 128 B,      8 allocated (    1 KB),     23 fragmented (    2 KB)
+ 144 B,      1 allocated (    0 KB),     27 fragmented (    3 KB)
+ 160 B,      4 allocated (    0 KB),     21 fragmented (    3 KB)
+ 176 B,      1 allocated (    0 KB),     22 fragmented (    3 KB)
+ 192 B,     67 allocated (   12 KB),     17 fragmented (    3 KB)
+ 208 B,      1 allocated (    0 KB),     18 fragmented (    3 KB)
+ 224 B,      1 allocated (    0 KB),     17 fragmented (    3 KB)
+ 288 B,      7 allocated (    1 KB),      7 fragmented (    1 KB)
+ 368 B,      2 allocated (    0 KB),      9 fragmented (    3 KB)
+ 448 B,      3 allocated (    1 KB),      6 fragmented (    2 KB)
+ 576 B,      3 allocated (    1 KB),      4 fragmented (    2 KB)
+ TOTAL,    223 allocated (   26 KB),    702 fragmented (   55 KB)
+Free pages 0 (0 KB)
+Large block count 5830, total size 19643 KB
+Large fragments count 2721, total size 10988 KB
+
+TIMING InVector<String> FIND: 554.00 ms - 554.00 ms (554.00 ms / 1 ), min: 554.00 ms, max: 554.00 ms, nesting: 1 - 1
+TIMING InVector<String> SCAN:  8.00 ms -  8.00 ms ( 8.00 ms / 1 ), min:  8.00 ms, max:  8.00 ms, nesting: 1 - 1
+TIMING Reindex        : 29.67 ms -  5.10 us (30.00 ms / 5813 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 5813
+TIMING InVector<String> INSERT: 976.00 ms - 976.00 ms (976.00 ms / 1 ), min: 976.00 ms, max: 976.00 ms, nesting: 1 - 1
+--------
+n = 1000000
+49904 KB
+  16 B,     16 allocated (    0 KB),    238 fragmented (    3 KB)
+  32 B,      7 allocated (    0 KB),    120 fragmented (    3 KB)
+  48 B,     76 allocated (    3 KB),      8 fragmented (    0 KB)
+  64 B,     12 allocated (    0 KB),     51 fragmented (    3 KB)
+  80 B,      7 allocated (    0 KB),     43 fragmented (    3 KB)
+  96 B,      2 allocated (    0 KB),     40 fragmented (    3 KB)
+ 112 B,      5 allocated (    0 KB),     31 fragmented (    3 KB)
+ 128 B,      8 allocated (    1 KB),     23 fragmented (    2 KB)
+ 144 B,      1 allocated (    0 KB),     27 fragmented (    3 KB)
+ 160 B,      4 allocated (    0 KB),     21 fragmented (    3 KB)
+ 176 B,      1 allocated (    0 KB),     22 fragmented (    3 KB)
+ 192 B,     67 allocated (   12 KB),     17 fragmented (    3 KB)
+ 208 B,      1 allocated (    0 KB),     18 fragmented (    3 KB)
+ 224 B,      1 allocated (    0 KB),     17 fragmented (    3 KB)
+ 288 B,      7 allocated (    1 KB),      7 fragmented (    1 KB)
+ 368 B,      2 allocated (    0 KB),      9 fragmented (    3 KB)
+ 448 B,      3 allocated (    1 KB),      6 fragmented (    2 KB)
+ 576 B,      3 allocated (    1 KB),      4 fragmented (    2 KB)
+ TOTAL,    223 allocated (   26 KB),    702 fragmented (   55 KB)
+Free pages 0 (0 KB)
+Large block count 5830, total size 23669 KB
+Large fragments count 2435, total size 9972 KB
+
+TIMING InVector<String> FIND: 561.00 ms - 561.00 ms (561.00 ms / 1 ), min: 561.00 ms, max: 561.00 ms, nesting: 1 - 1
+TIMING InVector<String> SCAN:  7.00 ms -  7.00 ms ( 7.00 ms / 1 ), min:  7.00 ms, max:  7.00 ms, nesting: 1 - 1
+TIMING Reindex        : 32.66 ms -  5.62 us (33.00 ms / 5813 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 5813
+TIMING InVector<String> INSERT: 956.00 ms - 956.00 ms (956.00 ms / 1 ), min: 956.00 ms, max: 956.00 ms, nesting: 1 - 1
+---------
+5M
+TIMING InVector<String> FIND:  4.13 s  -  4.13 s  ( 4.13 s  / 1 ), min:  4.13 s , max:  4.13 s , nesting: 1 - 1
+TIMING InVector<String> SCAN: 36.00 ms - 36.00 ms (36.00 ms / 1 ), min: 36.00 ms, max: 36.00 ms, nesting: 1 - 1
+TIMING InVector<String> INSERT:  7.52 s  -  7.52 s  ( 7.52 s  / 1 ), min:  7.52 s , max:  7.52 s , nesting: 1 - 1
+TIMING std::set<String> FIND:  5.76 s  -  5.76 s  ( 5.76 s  / 1 ), min:  5.76 s , max:  5.76 s , nesting: 1 - 1
+TIMING std::set<String> SCAN: 507.00 ms - 507.00 ms (507.00 ms / 1 ), min: 507.00 ms, max: 507.00 ms, nesting: 1 - 1
+TIMING std::set<String> INSERT:  5.65 s  -  5.65 s  ( 5.65 s  / 1 ), min:  5.65 s , max:  5.65 s , nesting: 1 - 1
+---------
+10M
+TIMING InVector<String> FIND:  9.77 s  -  9.77 s  ( 9.77 s  / 1 ), min:  9.77 s , max:  9.77 s , nesting: 1 - 1
+TIMING InVector<String> SCAN: 69.00 ms - 69.00 ms (69.00 ms / 1 ), min: 69.00 ms, max: 69.00 ms, nesting: 1 - 1
+TIMING InVector<String> INSERT: 18.54 s  - 18.54 s  (18.54 s  / 1 ), min: 18.54 s , max: 18.54 s , nesting: 1 - 1
+TIMING std::set<String> FIND: 13.55 s  - 13.55 s  (13.55 s  / 1 ), min: 13.55 s , max: 13.55 s , nesting: 1 - 1
+TIMING std::set<String> SCAN:  1.10 s  -  1.10 s  ( 1.10 s  / 1 ), min:  1.10 s , max:  1.10 s , nesting: 1 - 1
+TIMING std::set<String> INSERT: 13.21 s  - 13.21 s  (13.21 s  / 1 ), min: 13.21 s , max: 13.21 s , nesting: 1 - 1

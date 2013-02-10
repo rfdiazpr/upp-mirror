@@ -186,7 +186,6 @@ void InVectorInsertBenchmark()
 	InVector<int> iv;
 	for(int i = 0; i < 10000000; i++)
 		iv.Insert(iv.GetCount() / 2);
-	iv.Info();
 }
 
 template <class C1, class C2>
@@ -315,8 +314,8 @@ void SetTest()
 			ia.InsertUpperBound(q);
 			Compare(va, ia);
 			
-			int i = ia.Find(q);
-			ASSERT(ia[i] == q);
+			ii = ia.Find(q);
+			ASSERT(ia[ii] == q);
 			ASSERT(ia.Find(200) < 0);
 		}
 	}
@@ -373,16 +372,23 @@ void SetBenchmark()
 	}
 }
 
+void MemoryInfo()
+{
+	RLOG(MemoryUsedKb() << " KB");
+	MemoryProfile mem;
+	RLOG(mem);
+}
+
 void SetBenchmark2()
 {
 	const int rep = 1;
-	const int count = 30000 * 1000;
+	const int count = 10000 * 1000;
 	SeedRandom();
 	Buffer<String> rnd(count);
 	for(int i = 0; i < count; i++)
 		rnd[i] = AsString(Random());
 
-	{	
+	if(1) {	
 		std::multiset<String> s;
 		{
 			RTIMING("std::set<String> INSERT");
@@ -411,8 +417,9 @@ void SetBenchmark2()
 					   n++;
 			RDUMP(n);
 		}
+		MemoryInfo();
 	}
-	{
+	if(1) {
 		InVector<String> s;
 		{
 			RTIMING("InVector<String> INSERT");
@@ -439,6 +446,7 @@ void SetBenchmark2()
 			}
 			RDUMP(n);
 		}
+		MemoryInfo();
 	}
 }
 
@@ -476,7 +484,7 @@ void InsertNTest()
 	SeedRandom();
 	Vector<int> av;
 	InVector<int> iv;
-	for(int i = 0; i < 10000000; i++) {
+	for(int i = 0; i < 100000; i++) {
 		if(i % 1000 == 0)
 			LOG(i);
 		if(av.GetCount() > 2000) {
@@ -501,9 +509,8 @@ CONSOLE_APP_MAIN
 	StdLogSetup(LOG_FILE|LOG_COUT);
 	SeedRandom();
 #ifdef _DEBUG
-	InsertNTest();
-	return;
 	RemoveTest();
+	InsertNTest();
 	SetTest();
 	TestLowerBound();
 	TestUpperBound();

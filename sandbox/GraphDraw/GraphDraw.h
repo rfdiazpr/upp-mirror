@@ -225,6 +225,16 @@ namespace GraphDraw_ns
 			return conv;
 		}
 
+		void SetCurrentXConverter(int n) {
+			ASSERT( n < _xConverters.GetCount() );
+			TypeSeriesGroup::_currentXConverter =  _xConverters[n];
+		}
+
+		void SetCurrentYConverter(int n) {
+			ASSERT( n < _yConverters.GetCount() );
+			TypeSeriesGroup::_currentYConverter =  _yConverters[n];
+		}
+
 		TypeCoordConverter& AddYConverter(TypeCoordConverter& conv) {
 			_yConverters << &conv;
 			TypeSeriesGroup::_currentYConverter = &conv;
@@ -555,7 +565,7 @@ namespace GraphDraw_ns
 			{
 				for ( int j = 0; j < _B::series.GetCount(); j++)
 				{
-					if (_B::series[j].opacity == 0 || (!_B::series[j].seriesPlot && !_B::series[j].markPlot))
+					if ((_B::series[j].show==false) || (_B::series[j].opacity == 0) && (!_B::series[j].seriesPlot && !_B::series[j].markPlot))
 						continue;
 
 					Vector<Point> p1;
@@ -597,7 +607,6 @@ namespace GraphDraw_ns
 					    imin = 0;
 					    imax = _B::series[j].PointsData()->GetCount();
 					}
-
 
 					if ( !_doFastPaint )  // DRAW ALL POINTS
 					{
@@ -738,7 +747,7 @@ namespace GraphDraw_ns
 		public:
 		typedef TYPES Types;
 		typedef CRTP_XYGraphDraw<TYPES, DERIVED> CLASSNAME;
-		typedef CRTP_EmptyGraphDraw<TYPES, DERIVED > BASECLASS;
+		typedef CRTP_EmptyGraphDraw<TYPES, DERIVED > _B;
 
 
 		typedef typename TYPES::TypeCoordConverter            TypeCoordConverter;
@@ -763,12 +772,12 @@ namespace GraphDraw_ns
 			rgba.r=90; rgba.g=90; rgba.b=0;	rgba.a=90;
 			_legend.SetBackGndColor( rgba );
 			_legend.SetOverFrame(Rect(Point(40,20), Size(80, 30)));
-			BASECLASS::AddOverLegendElement(30, _legend, 150);
+			_B::AddOverLegendElement(30, _legend, 150);
 			
-			BASECLASS::SetTopMargin(   10);
-			BASECLASS::SetBottomMargin( 0);
-			BASECLASS::SetLeftMargin(   0);
-			BASECLASS::SetRightMargin( 15);
+			_B::SetTopMargin(   10);
+			_B::SetBottomMargin( 0);
+			_B::SetLeftMargin(   0);
+			_B::SetRightMargin( 15);
 
 			_xGridDraw.SetName( t_("X axis") );
 			_xGridDraw.SetElementWidth(25);
@@ -783,10 +792,10 @@ namespace GraphDraw_ns
 			_yGridDraw.setMajorTickMark( (new LineTickMark())->SetTickLength( 3 ) );
 
 			
-			BASECLASS::AddXConverter(_xConverter);
-			BASECLASS::AddYConverter(_yConverter);
-			BASECLASS::AddLeftElement(_yGridDraw, 20);
-			BASECLASS::AddBottomElement(_xGridDraw, 20);
+			_B::AddXConverter(_xConverter);
+			_B::AddYConverter(_yConverter);
+			_B::AddLeftElement(_yGridDraw, 20);
+			_B::AddBottomElement(_xGridDraw, 20);
 			setGraphSize(0, 100, 0, 100);
 		};
 
@@ -797,7 +806,7 @@ namespace GraphDraw_ns
 		{
 			_xConverter.updateGraphSize(r.TopLeft().x, r.BottomRight().x);
 			_yConverter.updateGraphSize(r.TopLeft().y, r.BottomRight().y);
-			BASECLASS::updateSizes();
+			_B::updateSizes();
 			return *static_cast<DERIVED*>(this);
 		}
 
@@ -805,7 +814,7 @@ namespace GraphDraw_ns
 		{
 			_xConverter.updateGraphSize( x0, x1);
 			_yConverter.updateGraphSize( y0, y1);
-			BASECLASS::updateSizes();
+			_B::updateSizes();
 			return *static_cast<DERIVED*>(this);
 		}
 
@@ -873,7 +882,7 @@ namespace GraphDraw_ns
 		public:
 		typedef TYPES Types;
 		typedef CRTP_XYLTGraphDraw<TYPES, DERIVED> CLASSNAME;
-		typedef CRTP_XYGraphDraw<TYPES, DERIVED>   BASECLASS;
+		typedef CRTP_XYGraphDraw<TYPES, DERIVED>   _B;
 		typedef typename TYPES::TypeLabelElement   TypeLabel;
 	
 		TypeLabel   _title;
@@ -892,9 +901,9 @@ namespace GraphDraw_ns
 			_title.SetFont( StdFontZ(20).Bold().Underline()).SetTextColor(Red).SetLabel("TITLE");
 			_xLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("X Axis label");
 			_yLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("Y Axis label");
-			BASECLASS::AddLeftElement(30, _xLabel, 25);
-			BASECLASS::AddBottomElement(30, _yLabel, 25);
-			BASECLASS::AddTopElement(40, _title, 200);
+			_B::AddLeftElement(30, _xLabel, 25);
+			_B::AddBottomElement(30, _yLabel, 25);
+			_B::AddTopElement(40, _title, 200);
 		}
 		
 		
@@ -924,7 +933,7 @@ namespace GraphDraw_ns
 		public:
 		typedef TYPES Types;
 		typedef CRTP_XYY2GraphDraw<TYPES, DERIVED> CLASSNAME;
-		typedef CRTP_XYGraphDraw<TYPES, DERIVED>   BASECLASS;
+		typedef CRTP_XYGraphDraw<TYPES, DERIVED>   _B;
 		
 		typedef typename TYPES::TypeLabelElement   TypeLabel;
 		typedef typename TYPES::TypeCoordConverter TypeCoordConverter;
@@ -944,9 +953,10 @@ namespace GraphDraw_ns
 			_y2GridDraw.setGridColor( Null );
 			_y2GridDraw.setMajorTickMark( (new LineTickMark())->SetTickLength( 3 ) );
 
-			BASECLASS::AddYConverter(_y2Converter);
-			BASECLASS::AddRightElement(_y2GridDraw, 50);
+			_B::AddYConverter(_y2Converter);
+			_B::AddRightElement(_y2GridDraw, 50);
 			setGraphSize(0, 100, 0, 100, 0, 100);
+			_B::SetCurrentYConverter(0);
 		};
 
 		virtual ~CRTP_XYY2GraphDraw() {}
@@ -960,10 +970,10 @@ namespace GraphDraw_ns
 		public:
 		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1, TypeGraphCoord y20, TypeGraphCoord y21 )
 		{
-			BASECLASS::_xConverter.updateGraphSize( x0, x1);
-			BASECLASS::_yConverter.updateGraphSize( y0, y1);
+			_B::_xConverter.updateGraphSize( x0, x1);
+			_B::_yConverter.updateGraphSize( y0, y1);
 			_y2Converter.updateGraphSize( y20, y21);
-			BASECLASS::updateSizes();
+			_B::updateSizes();
 			return *static_cast<DERIVED*>(this);
 		}
 
@@ -993,7 +1003,7 @@ namespace GraphDraw_ns
 		public:
 		typedef TYPES Types;
 		typedef CRTP_XYY2LTGraphDraw<TYPES, DERIVED> CLASSNAME;
-		typedef CRTP_XYY2GraphDraw<TYPES, DERIVED>   BASECLASS;
+		typedef CRTP_XYY2GraphDraw<TYPES, DERIVED>   _B;
 		typedef typename TYPES::TypeLabelElement     TypeLabel;
 	
 		TypeLabel   _title;
@@ -1015,15 +1025,16 @@ namespace GraphDraw_ns
 			_xLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("X Axis label");
 			_yLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("Y Axis label");
 			_y2Label.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("Y2 Axis label");
-			BASECLASS::AddBottomElement(30, _xLabel, 25);
-			BASECLASS::AddLeftElement(30, _yLabel, 25);
-			BASECLASS::AddRightElement(30, _y2Label, 55);
-			BASECLASS::AddTopElement(40, _title, 200);
+			_B::AddBottomElement(30, _xLabel, 25);
+			_B::AddLeftElement(30, _yLabel, 25);
+			_B::AddRightElement(30, _y2Label, 55);
+			_B::AddTopElement(40, _title, 200);
+			_B::SetCurrentYConverter(0);
 		}
 		
 		
 		DERIVED& SetTitle(const String& v)       { _title.SetLabel(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetTitlePosition(const ElementPosition v) { _title.SetElementPos(v); BASECLASS::updateSizes(); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitlePosition(const ElementPosition v) { _title.SetElementPos(v); _B::updateSizes(); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetTitleFont(const Font& v)     { _title.SetFont(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetTitleWidth(int v)            { _title.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetTitleColor(const Color& v)   { _title.SetTextColor(v); return *static_cast<DERIVED*>(this); }

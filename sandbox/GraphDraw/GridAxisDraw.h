@@ -406,7 +406,7 @@ namespace GraphDraw_ns
 
 			Font scaledAxisTextFont( _axisTextFont );
 			scaledAxisTextFont.Height(scale*scaledAxisTextFont.GetHeight());
-			dw.DrawLineOp(_B::GetElementWidth()*scale, _coordConverter.getScreenMin(), _B::GetElementWidth()*scale, _coordConverter.getScreenMax(), 2, _axisColor );
+			dw.DrawLineOp(_B::GetElementWidth()*scale, _coordConverter.getScreenMin(), _B::GetElementWidth()*scale, _coordConverter.getScreenMax(), _axisWidth*scale, _axisColor );
 			while ( iter != endIter)
 			{
 				if (_majorTickMark.IsEmpty()) {
@@ -427,7 +427,7 @@ namespace GraphDraw_ns
 
 			Font scaledAxisTextFont( _axisTextFont );
 			scaledAxisTextFont.Height(scale*scaledAxisTextFont.GetHeight());
-			dw.DrawLineOp(0, _coordConverter.getScreenMin(), 0, _coordConverter.getScreenMax(), 2, _axisColor);
+			dw.DrawLineOp(0, _coordConverter.getScreenMin(), 0, _coordConverter.getScreenMax(), _axisWidth*scale, _axisColor);
 			while ( iter != endIter)
 			{
 				if (_majorTickMark.IsEmpty())
@@ -449,7 +449,7 @@ namespace GraphDraw_ns
 
 			Font scaledAxisTextFont( _axisTextFont );
 			scaledAxisTextFont.Height(scale*scaledAxisTextFont.GetHeight());
-			dw.DrawLineOp(_coordConverter.getScreenMin(), 0, _coordConverter.getScreenMax(),0 , 2, _axisColor );
+			dw.DrawLineOp(_coordConverter.getScreenMin(), 0, _coordConverter.getScreenMax(),0 , _axisWidth*scale, _axisColor );
 			while ( iter != endIter )
 			{
 				if (_majorTickMark.IsEmpty()) {
@@ -470,7 +470,7 @@ namespace GraphDraw_ns
 
 			Font scaledAxisTextFont( _axisTextFont );
 			scaledAxisTextFont.Height(scale*scaledAxisTextFont.GetHeight());
-			dw.DrawLineOp(_coordConverter.getScreenMin(), _B::GetElementWidth()*scale, _coordConverter.getScreenMax(), _B::GetElementWidth()*scale, 2, _axisColor );
+			dw.DrawLineOp(_coordConverter.getScreenMin(), _B::GetElementWidth()*scale, _coordConverter.getScreenMax(), _B::GetElementWidth()*scale, _axisWidth*scale, _axisColor );
 			while ( iter != endIter)
 			{
 				if (_majorTickMark.IsEmpty()) {

@@ -13,12 +13,12 @@
 using namespace GraphDraw_ns;
 
 
-class ScatterCtrl : public CRTP_GraphCtrlBase< GraphCtrlDefaultTypes, ScatterCtrl, GraphDraw_ns::CRTP_XYGraphDraw >
+class ScatterCtrl : public CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, ScatterCtrl, GraphDraw_ns::CRTP_XYGraphDraw >
 {
 	public:
 	typedef GraphCtrlDefaultTypes                        TYPES;
 	typedef ScatterCtrl                                  CLASSNAME;
-	typedef CRTP_GraphCtrlBase< GraphCtrlDefaultTypes, ScatterCtrl, GraphDraw_ns::CRTP_XYGraphDraw >        _B;
+	typedef CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, ScatterCtrl, GraphDraw_ns::CRTP_XYGraphDraw >        _B;
 	typedef StdLegendCtrl<TYPES, LegendElement<TYPES> >  TypeLegend;
 	typedef LabelElement                                 TypeLabel;
 

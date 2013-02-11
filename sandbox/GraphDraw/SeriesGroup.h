@@ -367,7 +367,7 @@ template<class TYPES, class DERIVED>
 			return *static_cast<DERIVED*>(this);
 		}
 		DERIVED& Hide() {
-			series[series.GetCount() - 1].opacity = 0;
+			series[series.GetCount() - 1].show = false;
 			_isDataModified = true;
 			return *static_cast<DERIVED*>(this);
 		}
@@ -406,19 +406,19 @@ template<class TYPES, class DERIVED>
 
 		void Show(const int j, const bool& show) {
 			ASSERT(IsValid(j));
-			series[j].opacity = show ? 1 : 0;
+			series[j].show = show;
 			_isDataModified = true;
 //			static_cast<DERIVED*>(this)->Refresh();
 		}
 
 		bool IsVisible(const int j) {
 			ASSERT(IsValid(j));
-			return series[j].opacity > 0;
+			return series[j].show;
 		}
 
 		DERIVED &ShowAll(const bool& show) {
 			for (int i = 0; i < series.GetCount(); ++i)
-				series[i].opacity = 1;
+				series[i].show = true;
 			_isDataModified = true;
 			return *static_cast<DERIVED*>(this);
 		}

@@ -399,44 +399,35 @@ namespace GraphDraw_ns
 			}
 
 			int nmr = fround(_B::_frame.GetSize().cx/(_legendWeight*scale));	//max number of labels per row
-			if (nmr <= 0)
-				nmr = 1;
+			if (nmr <= 0) nmr = 1;
 			int nLab = (*series).GetCount();	//number of labels
-			int Nc;							//number of complete rows
-			int LCR;		  				//number of labels on complete row
-			int R;							//number of remaining labels on incomplete row
-			if(nmr > nLab) {
-				Nc = 0;      	LCR = 0; 	R = nLab;
-			} else if (nmr == nLab) {
-				Nc = 1;      	LCR = nLab; R = 0;
-			} else {
-				Nc = nLab/nmr;  LCR = nmr;	R = nLab%nmr;
-			}
-			for(int j = 0; j <= Nc; j++) {
-				int start = nLab - (j+1)*LCR;
-				int end = nLab - j*LCR;
-				if (j == Nc) {
-					start = 0;
-					end = R;
-				}
-				Font scaledFont( _font );
-				int txtHeight = scaledFont.Height(scale*_font.GetHeight()).GetHeight();
-				for(int i = start; i < end; i++) {
-					int x = scale*(i-start)*_legendWeight + txtHeight/2;
-					int y = j*txtHeight + txtHeight/2;
-
+			int idx=0;
+			int ix=0;
+			int iy=0;
+			Font scaledFont( _font );
+			int txtHeight = scaledFont.Height(scale*_font.GetHeight()).GetHeight();
+			while (idx<nLab) {
+				while ((idx<nLab) && ((*series)[idx].show == false )) { ++idx; }
+				
+				if (idx<nLab) {
+					int x = scale*ix*_legendWeight + txtHeight/2;
+					int y = iy*txtHeight + txtHeight/2;
+	
 					Vector <Point> vp;
-					vp << Point(x,y+txtHeight) <<	Point(x+scale*_legendStyleLength, y);
-					if ((*series)[i].opacity > 0 && (*series)[i].seriesPlot)
-						DrawPolylineOpa(w, vp, scale, 1, scale*(*series)[i].thickness, (*series)[i].color, (*series)[i].dash);
-
+					vp << Point(x,y+txtHeight) << Point(x+scale*_legendStyleLength, y);
+					if ((*series)[idx].opacity > 0 && (*series)[idx].seriesPlot)
+						DrawPolylineOpa(w, vp, scale, 1, scale*(*series)[idx].thickness, (*series)[idx].color, (*series)[idx].dash);
+	
 					Point p(x+scale*(_legendStyleLength/2),y+txtHeight/2);
-					if ((*series)[i].markWidth >= 1 && (*series)[i].markPlot)
-						(*series)[i].markPlot->Paint(w, scale, p, (*series)[i].markWidth, (*series)[i].markColor);
-
-					DrawText(w, x+scale*(_legendStyleLength+2), y, 0, (*series)[i].legend, scaledFont,
-					         (  ((*series)[i].seriesPlot.IsEmpty()) ? (*series)[i].markColor : (*series)[i].color ) );
+					if ((*series)[idx].markWidth >= 1 && (*series)[idx].markPlot)
+						(*series)[idx].markPlot->Paint(w, scale, p, (*series)[idx].markWidth, (*series)[idx].markColor);
+	
+					DrawText(w, x+scale*(_legendStyleLength+2), y, 0, (*series)[idx].legend, scaledFont,
+					         (  ((*series)[idx].seriesPlot.IsEmpty()) ? (*series)[idx].markColor : (*series)[idx].color ) );
+					++idx;
 				}
+				++ix;
+				if (ix>=nmr) { ix=0; ++iy; }
 			}
 		}
 	};

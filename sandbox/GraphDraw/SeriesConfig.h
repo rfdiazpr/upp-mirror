@@ -17,25 +17,26 @@ namespace GraphDraw_ns
 
 			unsigned int nbVisiblePoints;
 
+			String legend;
+			int id;
+			typename TYPES::TypeCoordConverter* xConverter;
+			typename TYPES::TypeCoordConverter* yConverter;
+			bool show;
+			
+			// plot
 			One<typename TYPES::TypeSeriesPlot> seriesPlot;
 			double thickness;
 			Color color;
 			String dash;
 
+			// Mark
 			One<typename TYPES::TypeMarkPlot> markPlot;
 			double markWidth;
 			Color markColor;
+			
+			// Filling
 			Color fillColor;
-
-			String legend;
-
 			double opacity;
-			int id;
-			bool trendLine;
-
-			typename TYPES::TypeCoordConverter* xConverter;
-			typename TYPES::TypeCoordConverter* yConverter;
-
 
 			SeriesConfigBase()
 			{
@@ -55,6 +56,7 @@ namespace GraphDraw_ns
 				fillColor = Null;
 				xConverter = 0;
 				yConverter = 0;
+				show = true;
 			}
 
 			void Init(int id, bool setDefaultStyles)

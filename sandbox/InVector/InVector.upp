@@ -6,7 +6,7 @@ file
 	InVector.hpp,
 	Bound.hpp,
 	Iterator.hpp,
-	InVectorTest.cpp optimize_speed,
+	main.cpp optimize_speed,
 	info.txt,
 	help.txt;
 

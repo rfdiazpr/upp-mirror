@@ -1,36 +1,30 @@
-template <class T, class Less>
-int SortedIndex<T, Less>::FindAdd(const T& key)
+template <class K, class T, class Less>
+int SortedVectorMap<K, T, Less>::FindAdd(const K& k)
 {
-	int i = FindLowerBound(key);
-	if(!less(key, iv[i]))
-		return i;
-	return Add(key);
+	int i = FindLowerBound(k);
+	if(i == GetCount() || less(k, key[i])) {
+		key.iv.Insert(i, k);
+		value.Insert(i);
+	}
+	return i;
 }
 
-template <class T, class Less>
-int SortedIndex<T, Less>::FindNext(int i) const
+template <class K, class T, class Less>
+int SortedVectorMap<K, T, Less>::FindAdd(const K& k, const T& init)
 {
-	return i + 1 < iv.GetCount() && !less(iv[i], iv[i + 1]) ? i + 1 : 0;
+	int i = FindLowerBound(k);
+	if(i == GetCount() || less(k, key[i])) {
+		key.iv.Insert(i, k);
+		value.Insert(i, init);
+	}
+	return i;
 }
 
-template <class T, class Less>
-int SortedIndex<T, Less>::FindLast(const T& x) const
+template <class K, class T, class Less>
+int SortedVectorMap<K, T, Less>::RemoveKey(const K& k)
 {
-	int i = iv.FindUpperBound(x, less);
-	return i > 0 && !less(iv[i - 1], x) ? i - 1 : 0;
-}
-
-template <class T, class Less>
-int SortedIndex<T, Less>::FindPrev(int i) const
-{
-	return i > 0 && !less(iv[i - 1], iv[1]) ? i - 1 : 0;
-}
-
-template <class T, class Less>
-int SortedIndex<T, Less>::RemoveKey(const T& x)
-{
-	int l = FindLowerBound(x);
-	int count = FindUpperBound(x) - l;
+	int l = FindLowerBound(k);
+	int count = FindUpperBound(k) - l;
 	Remove(l, count);
 	return count;
 }

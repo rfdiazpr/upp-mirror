@@ -12,12 +12,27 @@ template <class K, class T, class Less>
 class SortedVectorMap : MoveableAndDeepCopyOption< SortedVectorMap<K, T, Less> >
 {
 	SortedIndex<K, Less> key;
-	InVector<T>          value;
-	Less                 less;
 	
+	struct Data : InVectorSlave__ {
+		Vector< Vector<T> > data;
+		const T *ptr;
+	      
+		virtual void Clear();
+		virtual void Insert(int blki, int pos);
+		virtual void Split(int blki, int nextsize);
+		virtual void AddFirst();
+		virtual void RemoveBlk(int blki, int n);
+		virtual void Join(int blki);
+		virtual void Remove(int blki, int pos, int n);
+	};
+	Data  value;
+	Less  less;
+	
+	T&       At(int i) const                        { int blki = key.iv.FindBlock(i); return *(T*)&value.data[blki][i]; }
+
 public:
-	T&       Add(const K& k, const T& x)            { return value.Insert(key.Add(k), x); }
-	T&       Add(const K& k)                        { return value.Insert(key.Add(k)); }
+	T&       Add(const K& k, const T& x)            { value.ptr = &x; key.Add(k); return *(T*)value.ptr; }
+	T&       Add(const K& k)                        { value.ptr = NULL; key.Add(k); return *(T*)value.ptr; }
 
 	int      FindLowerBound(const K& k) const       { return key.FindLowerBound(k); }
 	int      FindUpperBound(const K& k) const       { return key.FindUpperBound(k); }
@@ -27,46 +42,46 @@ public:
 	int      FindLast(const K& k) const             { return key.FindLast(k); }
 	int      FindPrev(int i) const                  { return key.FindPrev(i); }
 
-	int      FindAdd(const K& k);
-	int      FindAdd(const K& k, const T& init);
+	int      FindAdd(const K& k)                    { value.ptr = NULL; return key.FindAdd(k); }
+	int      FindAdd(const K& k, const T& init)     { value.ptr = &init; return key.FindAdd(k); }
 
-	T&       Get(const K& k)                        { return value[Find(k)]; }
-	const T& Get(const K& k) const                  { return value[Find(k)]; }
+	T&       Get(const K& k)                        { return At(Find(k)); }
+	const T& Get(const K& k) const                  { return At(Find(k)); }
 	const T& Get(const K& k, const T& d) const      { int i = Find(k); return i >= 0 ? value[i] : d; }
 
-	T&       GetAdd(const K& k)                     { return value[FindAdd(k)]; }
-	T&       GetAdd(const K& k, const T& x)         { return value[FindAdd(k, x)]; }
+	T&       GetAdd(const K& k)                     { return At(FindAdd(k)); }
+	T&       GetAdd(const K& k, const T& x)         { return At(FindAdd(k, x)); }
 
 	T       *FindPtr(const K& k)                    { int i = Find(k); return i >= 0 ? &value[i] : NULL; }
 	const T *FindPtr(const K& k) const              { int i = Find(k); return i >= 0 ? &value[i] : NULL; }
 
 	const K& GetKey(int i) const                    { return key[i]; }
-	const T& operator[](int i) const                { return value[i]; }
-	T&       operator[](int i)                      { return value[i]; }
-	int      GetCount() const                       { return value.GetCount(); }
-	bool     IsEmpty() const                        { return value.IsEmpty(); }
-	void     Clear()                                { key.Clear(); value.Clear(); }
-	void     Shrink()                               { value.Shrink(); key.Shrink(); }
+	const T& operator[](int i) const                { return At(i); }
+	T&       operator[](int i)                      { return At(i); }
+	int      GetCount() const                       { return key.GetCount(); }
+	bool     IsEmpty() const                        { return key.IsEmpty(); }
+	void     Clear()                                { key.Clear(); }
+	void     Shrink();
 
-	void     Remove(int i)                         { key.Remove(i); value.Remove(i); }
-	void     Remove(int i, int count)              { key.Remove(i, count); value.Remove(i, count); }
-	int      RemoveKey(const K& k);
+	void     Remove(int i)                         { key.Remove(i); }
+	void     Remove(int i, int count)              { key.Remove(i, count); }
+	int      RemoveKey(const K& k)                 { return key.RemoveKey(k); }
 
-	void     Drop(int n = 1)                       { key.Drop(n); value.Drop(n); }
-	T&       Top()                                 { return value.Top(); }
-	const T& Top() const                           { return value.Top(); }
+	void     Drop(int n = 1)                       { key.Drop(n); }
+//	T&       Top()                                 { return value.Top(); }
+//	const T& Top() const                           { return value.Top(); }
 	const K& TopKey() const                        { return key.Top(); }
 	K        PopKey()                              { K h = TopKey(); Drop(); return h; }
-	void     Trim(int n)                           { key.Trim(n); value.SetCount(n); }
+	void     Trim(int n)                           { key.Trim(n); }
 
 	void     Swap(SortedVectorMap& x)              { Swap(value, x.value); Swap(key, x.key); }
 	
 	bool     IsPicked() const                      { return value.IsPicked() || key.IsPicked(); }
 	
 	const SortedIndex<K>& GetKeys() const          { return key; }
-	const InVector<T>& GetValues() const           { return value; }
+//	const InVector<T>& GetValues() const           { return value; }
 
-	SortedVectorMap()                              {}
+	SortedVectorMap()                              { key.iv.slave = &value; }
 
 /*
 	AMap(const AMap& s, int) : key(s.key, 0), value(s.value, 0) {}

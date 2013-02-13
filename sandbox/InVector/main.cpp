@@ -26,7 +26,7 @@ void BenchNTL(const char *file, Stream& out) {
 		return;
 	}
 
-	SortedVectorMap<String, Vector<int> > map;
+	SortedVectorMap<String, int> map;
 	
 	int line = 1;
 
@@ -41,7 +41,7 @@ void BenchNTL(const char *file, Stream& out) {
 				id.Cat(c);
 				c = in.Get();
 			}
-			map.GetAdd(id).Add(line);
+			map.GetAdd(id, 0)++;
 		}
 		else
 		if(IsDigit(c))
@@ -51,15 +51,8 @@ void BenchNTL(const char *file, Stream& out) {
 			++line;
 	}
 
-	for(int i = 0; i < map.GetCount(); i++) {
-		out << ~map.GetKey(i) << ": ";
-		const Vector<int>& l = map[i];
-		for(int i = 0; i < l.GetCount(); i++) {
-			if(i) out << ", ";
-			out << l[i];
-		}
-		out << '\n';
-	}
+	for(int i = 0; i < map.GetCount(); i++)
+		out << ~map.GetKey(i) << ": " << map[i] << '\n';
 }
 
 void BenchNTL2(const char *file, Stream& out) {
@@ -69,7 +62,7 @@ void BenchNTL2(const char *file, Stream& out) {
 		return;
 	}
 
-	VectorMap<String, Vector<int> > map;
+	VectorMap<String, int> map;
 	
 	int line = 1;
 
@@ -84,7 +77,7 @@ void BenchNTL2(const char *file, Stream& out) {
 				id.Cat(c);
 				c = in.Get();
 			}
-			map.GetAdd(id).Add(line);
+			map.GetAdd(id, 0)++;
 		}
 		else
 		if(IsDigit(c))
@@ -95,15 +88,8 @@ void BenchNTL2(const char *file, Stream& out) {
 	}
 
 	Vector<int> order = GetSortOrder(map.GetKeys());
-	for(int i = 0; i < order.GetCount(); i++) {
-		out << ~map.GetKey(order[i]) << ": ";
-		const Vector<int>& l = map[order[i]];
-		for(int i = 0; i < l.GetCount(); i++) {
-			if(i) out << ", ";
-			out << l[i];
-		}
-		out << '\n';
-	}
+	for(int i = 0; i < order.GetCount(); i++)
+		out << ~map.GetKey(order[i]) << ": " << map[i] << '\n';
 }
 
 void BenchSTL(const char *file, Stream& out) {
@@ -114,7 +100,7 @@ void BenchSTL(const char *file, Stream& out) {
 	}
 
 	int line = 1;
-	map< string, vector<int> > imap;
+	map<string, int> imap;
 
 	for(;;) {
 		int c = in.Get();
@@ -127,7 +113,7 @@ void BenchSTL(const char *file, Stream& out) {
 				id += c;
 				c = in.Get();
 			}
-			imap[id].push_back(line);
+			imap[id]++;
 		}
 		else
 		if(isdigit(c))
@@ -136,17 +122,44 @@ void BenchSTL(const char *file, Stream& out) {
 		if(c == '\n')
 			++line;
 	}
-	map< std::string, vector<int> >::const_iterator e = imap.end();
-	for(map< std::string, vector<int> >::const_iterator i = imap.begin(); i != e; i++) {
-		out << i->first.c_str() << ": ";
-		vector<int>::const_iterator e = i->second.end();
-		vector<int>::const_iterator b = i->second.begin();
-		for(vector<int>::const_iterator j = b; j != e; j++) {
-			if(j != b) out << ", ";
-			out << *j;
-		}
-		out << '\n';
+	map< std::string, int >::const_iterator e = imap.end();
+	for(map< std::string, int >::const_iterator i = imap.begin(); i != e; i++)
+		out << i->first.c_str() << ": " << i->second << '\n';
+}
+
+void BenchSTL2(const char *file, Stream& out) {
+	FileIn in(file);
+	if (!in) {
+		out << "Cannot open input file.\n";
+		return;
 	}
+
+	int line = 1;
+	map<String, int> imap;
+
+	for(;;) {
+		int c = in.Get();
+		if(c == EOF) break;
+		if(isalpha(c) || c == '_') {
+			string id;
+			id += c;
+			c = in.Get();
+			while(c != EOF && (isalnum(c) || c == '_')) {
+				id += c;
+				c = in.Get();
+			}
+			imap[id]++;
+		}
+		else
+		if(isdigit(c))
+			do c = in.Get();
+			while(c != EOF && (isalnum(c) || c == '.'));
+		if(c == '\n')
+			++line;
+	}
+	map< String, int >::const_iterator e = imap.end();
+	for(map< String, int >::const_iterator i = imap.begin(); i != e; i++)
+		out << i->first << ": " << i->second << '\n';
 }
 
 #ifdef _DEBUG
@@ -161,8 +174,11 @@ void BenchmarkMap()
 	int argc = CommandLine().GetCount();
 	const Vector<String>& argv = CommandLine();
 	if(argc < 1)
+#ifdef _DEBUG
+		fn = GetDataFile("main.cpp");
+#else
 		fn = GetHomeDirFile("test.txt");
-//		fn = GetDataFile("main.cpp");
+#endif
 	else
 		fn = argv[0];
 
@@ -174,7 +190,16 @@ void BenchmarkMap()
 		TimeStop tm;
 		for(int n = 0; n < N; n++)
 			BenchSTL(fn, NilStream());
-		Cout() << "STL map time: " << tm.Elapsed() << " ms \n";
+		Cout() << "std::map<std::string, int> time: " << tm.Elapsed() << " ms \n";
+	}
+
+	{
+		FileOut out(GetHomeDirFile("stl.txt"));
+		BenchSTL2(fn, out);
+		TimeStop tm;
+		for(int n = 0; n < N; n++)
+			BenchSTL2(fn, NilStream());
+		Cout() << "std::map<String, int> time: " << tm.Elapsed() << " ms \n";
 	}
 
 	{
@@ -183,7 +208,7 @@ void BenchmarkMap()
 		TimeStop tm;
 		for(int n = 0; n < N; n++)
 			BenchNTL(fn, NilStream());
-		Cout() << "NTL SortedVectorMap time: " << tm.Elapsed() << " ms\n";
+		Cout() << "SortedVectorMap<String, int> time: " << tm.Elapsed() << " ms\n";
 	}
 
 	{
@@ -192,18 +217,24 @@ void BenchmarkMap()
 		TimeStop tm;
 		for(int n = 0; n < N; n++)
 			BenchNTL2(fn, NilStream());
-		Cout() << "NTL VectorMap time: " << tm.Elapsed() << " ms\n";
+		Cout() << "VectorMap<String, int> time: " << tm.Elapsed() << " ms\n";
 	}
 	
 	ASSERT(LoadFile(GetHomeDirFile("stl.txt")) == LoadFile(GetHomeDirFile("ntl.txt")));
+	
+	if(LoadFile(GetHomeDirFile("stl.txt")) == LoadFile(GetHomeDirFile("ntl.txt")))
+		LOG("MATCH!");
+	else
+		LOG("ERROR!!!!!");
 }
 
 CONSOLE_APP_MAIN
 {
-	BenchmarkMap();
-	return;
+	StdLogSetup(LOG_COUT|LOG_FILE);
 
-#if 0
+	BenchmarkMap();
+
+#if 1
 	SortedVectorMap<int, int> map;
 	
 	map.Add(1, 10);
@@ -215,14 +246,22 @@ CONSOLE_APP_MAIN
 	
 	map.GetAdd(12) = 1234;
 	
-	DDUMPM(map);
+	DUMPM(map);
 	
-	DDUMP(map.FindAdd(4, 2));
+	DUMP(map.FindAdd(4, 2));
 	
-	DDUMPM(map);
+	DUMPM(map);
 	
 	map.GetAdd(13) = 1313;
 	
-	DDUMPM(map);
+	ASSERT(map.Get(13) == 1313);
+	ASSERT(map.Get(1) == 10);
+	ASSERT(map.Get(10) == 10);
+
+	DUMPM(map);
 #endif
+	RDUMP(sizeof(Vector<int>));
+	RDUMP(sizeof(InVector<int>));
+	RDUMP(sizeof(VectorMap<int, int>));
+	RDUMP(sizeof(SortedVectorMap<int, int>));
 }

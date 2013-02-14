@@ -1,60 +1,56 @@
-template <class K, class T, class Less>
-void SortedVectorMap<K, T, Less>::Data::Clear()
+template <class K, class T, class Less, class Data>
+SortedAMap<K, T, Less, Data>::SortedAMap(const SortedAMap& s, int)
+:	key(s.key, 0), value(s.value, 0)
 {
-	data.Clear();
+	key.iv.slave = &value;
 }
 
-template <class K, class T, class Less>
-void SortedVectorMap<K, T, Less>::Data::Insert(int blki, int pos)
-{
-	if(ptr)
-		data[blki].Insert(pos, *ptr);
-	else
-		data[blki].Insert(pos);
-	ptr = &data[blki][pos];
-}
-
-template <class K, class T, class Less>
-void SortedVectorMap<K, T, Less>::Data::Split(int blki, int nextsize)
-{
-	Vector<T>& x = data.Insert(blki + 1);
-	x.InsertSplit(0, data[blki], nextsize);
-}
-
-template <class K, class T, class Less>
-void SortedVectorMap<K, T, Less>::Data::AddFirst()
+template <class T>
+void Slaved_InVector__<T>::Insert(int blki, int pos)
 {
 	if(ptr)
-		data.Add().Add(*ptr);
+		data.data[blki].Insert(pos, *ptr);
 	else
-		data.Add().Add();
-	ptr = &data[0][0];
+		data.data[blki].Insert(pos);
+	ptr = &data.data[blki][pos];
 }
 
-template <class K, class T, class Less>
-void SortedVectorMap<K, T, Less>::Data::RemoveBlk(int blki, int n)
+template <class T>
+void Slaved_InVector__<T>::Split(int blki, int nextsize)
 {
-	data.Remove(blki, n);
+	Vector<T>& x = data.data.Insert(blki + 1);
+	x.InsertSplit(0, data.data[blki], nextsize);
 }
 
-template <class K, class T, class Less>
-void SortedVectorMap<K, T, Less>::Data::Join(int blki)
+template <class T>
+void Slaved_InVector__<T>::AddFirst()
 {
-	data[blki].AppendPick(data[blki + 1]);
-	data.Remove(blki + 1);
+	if(ptr)
+		data.data.Add().Add(*ptr);
+	else
+		data.data.Add().Add();
+	ptr = &data.data[0][0];
 }
 
-template <class K, class T, class Less>
-void SortedVectorMap<K, T, Less>::Data::Remove(int blki, int pos, int n)
+template <class T>
+void Slaved_InArray__<T>::Insert(int blki, int pos)
 {
-	data[blki].Remove(pos, n);
+	T *x = ptr ? new T(*ptr) : new T();
+	data.iv.data[blki].Insert(pos, x);
+	ptr = x;
 }
 
-template <class K, class T, class Less>
-void SortedVectorMap<K, T, Less>::Shrink()
+template <class T>
+void Slaved_InArray__<T>::Split(int blki, int nextsize)
 {
-	key.Shrink();
-	for(int i = 0; i < value.data.GetCount(); i++)
-		value.data[i].Shrink();
+	Vector< typename InArray<T>::PointerType >& x = data.iv.data.Insert(blki + 1);
+	x.InsertSplit(0, data.iv.data[blki], nextsize);
 }
 
+template <class T>
+void Slaved_InArray__<T>::AddFirst()
+{
+	T *x = ptr ? new T(*ptr) : new T();
+	data.iv.data.Add().Add(x);
+	ptr = x;
+}

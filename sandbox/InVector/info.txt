@@ -257,3 +257,18 @@ TIMING InVector<String> INSERT: 18.54 s  - 18.54 s  (18.54 s  / 1 ), min: 18.54 
 TIMING std::set<String> FIND: 13.55 s  - 13.55 s  (13.55 s  / 1 ), min: 13.55 s , max: 13.55 s , nesting: 1 - 1
 TIMING std::set<String> SCAN:  1.10 s  -  1.10 s  ( 1.10 s  / 1 ), min:  1.10 s , max:  1.10 s , nesting: 1 - 1
 TIMING std::set<String> INSERT: 13.21 s  - 13.21 s  (13.21 s  / 1 ), min: 13.21 s , max: 13.21 s , nesting: 1 - 1
+ --------------------
+================================================= 
+std::map<std::string, int> time: 3170 ms
+std::map<String, int> time: 2039 ms
+SortedVectorMap<String, int> time: 1059 ms
+VectorMap<String, int> time: 387 ms
+MATCH!
+sizeof(Vector<int>) = 16
+sizeof(Array<int>) = 24
+sizeof(Index<int>) = 88
+sizeof(VectorMap<int, int>) = 112
+sizeof(InVector<int>) = 72
+sizeof(InArray<int>) = 80
+sizeof(SortedIndex<int>) = 88
+sizeof(SortedVectorMap<int, int>) = 136

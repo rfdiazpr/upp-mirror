@@ -114,6 +114,9 @@ namespace GraphDraw_ns
 
 		
 //		protected:
+		TypeCoordConverter& _coordConverter;
+		One< TypeGridStepManager > _gridStepManager;
+
 		int       _axisWidth;
 		Color     _axisColor;
 		Font      _axisTextFont;
@@ -125,19 +128,17 @@ namespace GraphDraw_ns
 		TypeFormatTextCbk formatTextCbk;
 
 
-		One< TypeGridStepManager > _gridStepManager;
-		TypeCoordConverter& _coordConverter;
 
 		public:
 		GridAxisDraw(TypeCoordConverter& coordConv)
-		: _gridStepManager( new TypeGridStepManager(coordConv) )
+		: _coordConverter( coordConv )
+		, _gridStepManager( new TypeGridStepManager(coordConv) )
 		, _axisWidth(2)
 		, _axisColor( Blue())
 		, _axisTextFont(StdFont())
 		, _axisTextColor(Red())
 		, _axisTickColor(Red())
 		, _gridColor(LtGray())
-		, _coordConverter( coordConv )
 		, _majorTickMark(new LineTickMark())
 		, _minorTickMark(new LineTickMark())
 		{
@@ -146,6 +147,7 @@ namespace GraphDraw_ns
 
 		GridAxisDraw(GridAxisDraw& p)
 		: _B(p)
+		, _coordConverter( p._coordConverter )
 		, _gridStepManager( new TypeGridStepManager(p._coordConverter) )
 		, _axisWidth(p._axisWidth)
 		, _axisColor(p._axisColor)
@@ -153,7 +155,6 @@ namespace GraphDraw_ns
 		, _axisTextColor(p._axisTextColor)
 		, _axisTickColor(p._axisTickColor)
 		, _gridColor(Null)  // This is a slave Axis ==> so no need to draw grid
-		, _coordConverter( p._coordConverter )
 		, _majorTickMark(new LineTickMark())
 		, _minorTickMark(new LineTickMark())
 		, formatTextCbk( p.formatTextCbk )
@@ -523,6 +524,8 @@ namespace GraphDraw_ns
 				case TOP_OF_GRAPH:
 					PaintHGrid(dw, otherWidth);
 					break;
+				case OVER_GRAPH:
+					break;
 			}
 		}
 
@@ -540,6 +543,8 @@ namespace GraphDraw_ns
 					break;
 				case RIGHT_OF_GRAPH:
 					PaintAxisRight(dw, scale);
+					break;
+				case OVER_GRAPH:
 					break;
 			}
 		}

@@ -49,8 +49,8 @@ namespace GraphDraw_ns
 				sequentialPointsRangeMax = 0;
 				nbVisiblePoints = 0;
 				dash = LINE_SOLID;
-				seriesPlot;// = new LineSeriesPlot();
-				markPlot;  // = new CircleMarkPlot();
+//				seriesPlot;// = new LineSeriesPlot();
+//				markPlot;  // = new CircleMarkPlot();
 				markWidth = 8;
 				markColor = Null;
 				fillColor = Null;

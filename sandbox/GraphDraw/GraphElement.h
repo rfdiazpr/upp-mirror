@@ -78,10 +78,10 @@ namespace GraphDraw_ns
 			, _width(5)
 			, _pos(LEFT_OF_GRAPH)
 			, _allowedPosMask(LEFT_OF_GRAPH | RIGHT_OF_GRAPH| BOTTOM_OF_GRAPH | TOP_OF_GRAPH | OVER_GRAPH )
-			, _parent(0)
 			, _hide(false)
 			, _stackingPriority(100)
 			, _name("NAME NOT SET")
+			, _parent(0)
 			{}
 			
 			GraphElementFrame(GraphElementFrame* p)
@@ -90,10 +90,10 @@ namespace GraphDraw_ns
 			, _width(p->_width)
 			, _pos(LEFT_OF_GRAPH)
 			, _allowedPosMask(p->_allowedPosMask)
-			, _parent(p->_parent)
 			, _hide(p->_hide)
 			, _stackingPriority(p->_stackingPriority)
 			, _name("NAME NOT SET")
+			, _parent(p->_parent)
 			, WhenLeftDown    (p->WhenLeftDown)
 			, WhenLeftDouble  (p->WhenLeftDouble  )
 			, WhenLeftDrag    (p->WhenLeftDrag    )
@@ -110,7 +110,6 @@ namespace GraphDraw_ns
 			{
 				if ( !IsOverGraph() ) {
 					int xCenter = (plotRect.left + plotRect.right)/2;
-					int yCenter = (plotRect.top + plotRect.bottom)/2;
 					if ( (_frame.left < xCenter) && (xCenter < _frame.right) ) {
 						_frame.left = plotRect.left;
 						_frame.right = plotRect.right;
@@ -252,6 +251,8 @@ namespace GraphDraw_ns
 				case RIGHT_OF_GRAPH:
 					dw.DrawText( _B::GetElementWidth()*scale/2+sz.cy/2, _B::GetFrame().GetHeight()/2-sz.cx/2 , 2700, _label, scaledFont, _color);
 					break;
+				case OVER_GRAPH:
+					break;
 			}
 		}
 	};
@@ -312,6 +313,10 @@ namespace GraphDraw_ns
 	class LegendElement : public CRTPGraphElementFrame< LegendElement<TYPES> >
 	{
 		public:
+		typedef LegendElement CLASSNAME;
+		typedef CRTPGraphElementFrame< LegendElement > _B;
+		typedef typename TYPES::TypeVectorSeries TypeVectorSeries;
+
 		String _legend;
 		Color  _bckGndcolor;
 		RGBA   _bckGndRgba;
@@ -319,22 +324,17 @@ namespace GraphDraw_ns
 		Font   _font;
 		int    _xSeparation; // separation between two legends
 		int    _legendStyleLength;
-
 		int    _legendWeight;
-
-		typedef LegendElement CLASSNAME;
-		typedef CRTPGraphElementFrame< LegendElement > _B;
-		typedef typename TYPES::TypeVectorSeries TypeVectorSeries;
 		TypeVectorSeries* series;
 
 		public:
 		LegendElement()
 		: _bckGndcolor(Null)
-		, series(0)
 		, _isRgba(false)
 		, _font(StdFont())
 		, _xSeparation(20)
 		, _legendStyleLength(23)
+		, series(0)
 		{}
 		
 		LegendElement(LegendElement& p)
@@ -344,8 +344,8 @@ namespace GraphDraw_ns
 		, _isRgba(p._isRgba)
 		, _font(p._font)
 		, _xSeparation(p._xSeparation)
-		, series(p.series)
 		, _legendStyleLength(p._legendStyleLength)
+		, series(p.series)
 		{ Update(); }
 
 		virtual ~LegendElement() {}

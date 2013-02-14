@@ -565,7 +565,7 @@ namespace GraphDraw_ns
 			{
 				for ( int j = 0; j < _B::series.GetCount(); j++)
 				{
-					if ((_B::series[j].show==false) || (_B::series[j].opacity == 0) && (!_B::series[j].seriesPlot && !_B::series[j].markPlot))
+					if ((_B::series[j].show==false) || (!_B::series[j].seriesPlot && !_B::series[j].markPlot))
 						continue;
 
 					Vector<Point> p1;

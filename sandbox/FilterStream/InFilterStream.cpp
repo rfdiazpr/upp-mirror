@@ -2,6 +2,11 @@
 
 InputFilterStream::InputFilterStream()
 {
+	Init();
+}
+
+void InputFilterStream::Init()
+{
 	static byte h[1];
 	ptr = rdlim = h;
 }

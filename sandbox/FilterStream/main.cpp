@@ -3,21 +3,28 @@
 CONSOLE_APP_MAIN
 {
 	String path = GetHomeDirFile("test.gz");
+	{
+		FileOut fout(path);
+		Zlib zlib;
+		OutputFilterStream out(fout, zlib);
+		zlib.GZip().Compress();
+		for(int i = 0; i < 100000; i++)
+			out.Put(FormatIntBase(i, 27));
+		out.Close();
+	}
+
 	String data;
 	for(int i = 0; i < 100000; i++)
 		data.Cat(FormatIntBase(i, 27));
+	SaveFile(path + ".1", GZCompress(data));
+#if 0
 	SaveFile(path, GZCompress(data));
-
+#endif
 	for(int pass = 0; pass < 2; pass++) {	
 		FileIn fin(path);
-		InputFilterStream in;
 		Zlib zlib;
+		InputFilterStream in(fin, zlib);
 		zlib.GZip().Decompress();
-		zlib.WhenOut = callback(&in, &InputFilterStream::Out);
-		in.Filter = callback<Zlib, Zlib, const void *, int>(&zlib, &Zlib::Put);
-		in.End = callback(&zlib, &Zlib::End);
-		in.in = &fin;
-	
 		if(pass)
 			for(int i = 0; i < data.GetCount(); i++) {
 				char c = in.Get();

@@ -1,0 +1,12 @@
+uses
+	Core;
+
+file
+	FilterStream.h,
+	InFilterStream.cpp,
+	OutFilterStream.cpp,
+	main.cpp;
+
+mainconfig
+	"" = "SSE2";
+

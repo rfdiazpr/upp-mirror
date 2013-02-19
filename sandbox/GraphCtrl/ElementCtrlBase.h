@@ -57,8 +57,6 @@ class GraphElementCtrl_MoveResize : public LEGEND_DRAW_CLASS
 
 	virtual bool Contains(Point p) const { return (_B::_frame.Contains(p)); }
 
-	inline void SetParentCtrl(Ctrl& p) { parentCtrl = &p; }
-
 	virtual Image  CursorImage(Point p, dword keyflags) {
 		if (_B::IsOverGraph()) {
 			if ( keyflags & K_CTRL ){
@@ -70,6 +68,9 @@ class GraphElementCtrl_MoveResize : public LEGEND_DRAW_CLASS
 	}
 	
 	virtual GraphDraw_ns::GraphElementFrame* MouseMove (Point p, dword keyflags) {
+		if (parentCtrl == 0) {
+			parentCtrl = ValueTo<Ctrl*>(_B::_parent->GetParentCtrl());
+		}
 		if ((parentCtrl != 0) && _B::IsOverGraph()) {
 			if (keyflags & K_MOUSELEFT)
 			{

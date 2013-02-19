@@ -98,6 +98,11 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		_B::setScreenSize( GetSize() );
 	}
 
+
+	virtual Value GetParentCtrl() {
+		return RawToValue(static_cast<Ctrl*>(this));
+	}
+
 	virtual void Refresh() {
 		_B::updateSizes();
 		Ctrl::Refresh();

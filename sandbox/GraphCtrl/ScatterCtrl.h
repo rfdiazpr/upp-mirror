@@ -36,7 +36,7 @@ class ScatterCtrl : public CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, ScatterCt
 	double y2Range;
 
 	ScatterCtrl()
-	: _legend( CreateLegendElement<TypeLegend, TOP_OF_GRAPH>( 20 ) )
+	: _legend( CreateElement<TypeLegend, TOP_OF_GRAPH>( 20 ) )
 	, _title( CreateElement<TypeLabel, TOP_OF_GRAPH>( 50 )
 	          .SetLabel("This is the title")
 	          .SetFont(StdFont().Bold().Underline().Height(30))

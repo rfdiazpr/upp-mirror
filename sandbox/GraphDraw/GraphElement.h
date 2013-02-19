@@ -39,6 +39,8 @@ namespace GraphDraw_ns
 			virtual void ZoomX(TypeScreenCoord left, TypeScreenCoord right) = 0;
 			virtual void ZoomY(TypeScreenCoord top, TypeScreenCoord bottom) = 0;
 			virtual void RefreshFromChild( RefreshStrategy doFastPaint ) = 0;
+			virtual Value GetSeries() = 0;	
+			virtual Value GetParentCtrl() = 0;	
 
 			GraphElementParent() {}
 			virtual ~GraphElementParent() {}
@@ -102,9 +104,6 @@ namespace GraphDraw_ns
 			, WhenRightDrag   (p->WhenRightDrag   )
 			, WhenMiddleDown  (p->WhenMiddleDown  )
 			{}
-
-			template<class T>
-			inline void SetParentCtrl(T& p) {} // for compatibility with GraphCtrl only
 
 			void AdjustToPlotRect(const Rect& plotRect)
 			{
@@ -325,7 +324,7 @@ namespace GraphDraw_ns
 		int    _xSeparation; // separation between two legends
 		int    _legendStyleLength;
 		int    _legendWeight;
-		TypeVectorSeries* series;
+		TypeVectorSeries* v_series;
 
 		public:
 		LegendElement()
@@ -334,7 +333,7 @@ namespace GraphDraw_ns
 		, _font(StdFont())
 		, _xSeparation(20)
 		, _legendStyleLength(23)
-		, series(0)
+		, v_series(0)
 		{}
 		
 		LegendElement(LegendElement& p)
@@ -345,7 +344,7 @@ namespace GraphDraw_ns
 		, _font(p._font)
 		, _xSeparation(p._xSeparation)
 		, _legendStyleLength(p._legendStyleLength)
-		, series(p.series)
+		, v_series(p.v_series)
 		{ Update(); }
 
 		virtual ~LegendElement() {}
@@ -354,7 +353,6 @@ namespace GraphDraw_ns
 
 		template<class T>
 		inline CLASSNAME& SetLegend(T& v) { _legend = v; return *this; }
-		inline CLASSNAME& SetSeries(TypeVectorSeries& v) { series = &v; Update(); return *this; }
 
 		inline CLASSNAME&  SetBackGndColor(Color v) { _bckGndcolor = v; _isRgba=false; return *this; }
 		inline CLASSNAME&  SetBackGndColor(RGBA  v) { _bckGndRgba  = v; _isRgba=true;  return *this; }
@@ -381,10 +379,13 @@ namespace GraphDraw_ns
 		}
 
 		virtual void Update() {
-			if (series==0) return;
+			if (v_series==0) {
+				v_series = ValueTo<TypeVectorSeries*>(_B::_parent->GetSeries());
+			}
+
 			_legendWeight = 0;
-			for (int c=0; c<(*series).GetCount(); ++c) {
-				int textLength = GetTextSize((*series)[c].legend, _font).cx;
+			for (int c=0; c<(*v_series).GetCount(); ++c) {
+				int textLength = GetTextSize((*v_series)[c].legend, _font).cx;
 				if(_legendWeight < textLength) _legendWeight = textLength;
 			}
 			_legendWeight += _legendStyleLength + _xSeparation;
@@ -392,7 +393,7 @@ namespace GraphDraw_ns
 
 		void DrawLegend(Draw& w, const int& scale) const
 		{
-			if (series==0) {
+			if (v_series==0) {
 				String text = "This is the legend !!";
 				w.DrawText( 0,0 , text, _font, Black());
 				return;
@@ -400,14 +401,14 @@ namespace GraphDraw_ns
 
 			int nmr = fround(_B::_frame.GetSize().cx/(_legendWeight*scale));	//max number of labels per row
 			if (nmr <= 0) nmr = 1;
-			int nLab = (*series).GetCount();	//number of labels
+			int nLab = (*v_series).GetCount();	//number of labels
 			int idx=0;
 			int ix=0;
 			int iy=0;
 			Font scaledFont( _font );
 			int txtHeight = scaledFont.Height(scale*_font.GetHeight()).GetHeight();
 			while (idx<nLab) {
-				while ((idx<nLab) && ((*series)[idx].show == false )) { ++idx; }
+				while ((idx<nLab) && ((*v_series)[idx].show == false )) { ++idx; }
 				
 				if (idx<nLab) {
 					int x = scale*ix*_legendWeight + txtHeight/2;
@@ -415,15 +416,15 @@ namespace GraphDraw_ns
 	
 					Vector <Point> vp;
 					vp << Point(x,y+txtHeight) << Point(x+scale*_legendStyleLength, y);
-					if ((*series)[idx].opacity > 0 && (*series)[idx].seriesPlot)
-						DrawPolylineOpa(w, vp, scale, 1, scale*(*series)[idx].thickness, (*series)[idx].color, (*series)[idx].dash);
+					if ((*v_series)[idx].opacity > 0 && (*v_series)[idx].seriesPlot)
+						DrawPolylineOpa(w, vp, scale, 1, scale*(*v_series)[idx].thickness, (*v_series)[idx].color, (*v_series)[idx].dash);
 	
 					Point p(x+scale*(_legendStyleLength/2),y+txtHeight/2);
-					if ((*series)[idx].markWidth >= 1 && (*series)[idx].markPlot)
-						(*series)[idx].markPlot->Paint(w, scale, p, (*series)[idx].markWidth, (*series)[idx].markColor);
+					if ((*v_series)[idx].markWidth >= 1 && (*v_series)[idx].markPlot)
+						(*v_series)[idx].markPlot->Paint(w, scale, p, (*v_series)[idx].markWidth, (*v_series)[idx].markColor);
 	
-					DrawText(w, x+scale*(_legendStyleLength+2), y, 0, (*series)[idx].legend, scaledFont,
-					         (  ((*series)[idx].seriesPlot.IsEmpty()) ? (*series)[idx].markColor : (*series)[idx].color ) );
+					DrawText(w, x+scale*(_legendStyleLength+2), y, 0, (*v_series)[idx].legend, scaledFont,
+					         (  ((*v_series)[idx].seriesPlot.IsEmpty()) ? (*v_series)[idx].markColor : (*v_series)[idx].color ) );
 					++idx;
 				}
 				++ix;

@@ -81,9 +81,10 @@ namespace GraphDraw_ns
 		public:
 		typedef CRTP_EmptyGraphDraw<TYPES, DERIVED> CLASSNAME;
 
-		typedef typename TYPES::TypeCoordConverter                   TypeCoordConverter;
-		typedef SeriesGroup<TYPES, DERIVED >                         TypeSeriesGroup;
-		typedef SeriesGroup<TYPES, DERIVED >                         _B;
+		typedef typename TYPES::TypeCoordConverter  TypeCoordConverter;
+		typedef typename TYPES::TypeVectorSeries    TypeVectorSeries;
+		typedef SeriesGroup<TYPES, DERIVED >        TypeSeriesGroup;
+		typedef TypeSeriesGroup                     _B;
 
 
 
@@ -193,6 +194,16 @@ namespace GraphDraw_ns
 			_createdElements.Clear();
 		}
 
+		virtual Value GetSeries() {
+			return RawToValue(&(_B::series));
+		}
+
+		virtual Value GetParentCtrl() {
+			return Null;
+		}
+
+		
+		
 		TypeCoordConverter& GetXCoordConverter() { return *TypeSeriesGroup::_currentXConverter; }
 		TypeCoordConverter& GetYCoordConverter() { return *TypeSeriesGroup::_currentYConverter; }
 
@@ -422,36 +433,6 @@ namespace GraphDraw_ns
 		template<class T>	T& CloneTopElement(int elementWidth, T& p, int stackPrio=-1)    { return CloneElement<T, TOP_OF_GRAPH>(elementWidth, p, stackPrio); }
 		template<class T>	T& CloneBottomElement(int elementWidth, T& p, int stackPrio=-1) { return CloneElement<T, BOTTOM_OF_GRAPH>(elementWidth, p, stackPrio); }
 		template<class T>	T& CloneOverElement(T& p, int stackPrio=-1)                     { return CloneElement<OVER_GRAPH>(0, p, stackPrio); }
-
-
-		template<class T, int POS_OF_GRAPH>
-		T& AddLegendElement(int elementWidth, T& legend, int stackPrio) {
-			legend.SetParentCtrl(* static_cast<DERIVED*>(this));
-			legend.SetSeries(TypeSeriesGroup::series);
-			legend.SetElementWidth(elementWidth);
-			legend._parent = this;
-			AddElement<T, POS_OF_GRAPH>(legend,stackPrio);
-			return legend;
-		}
-		template<class T>	T& AddLeftLegendElement(int elementWidth, T& legend, int stackPrio)   { return AddLegendElement<T, LEFT_OF_GRAPH>(elementWidth, legend, stackPrio); }
-		template<class T>	T& AddRightLegendElement(int elementWidth, T& legend, int stackPrio)  { return AddLegendElement<T, RIGHT_OF_GRAPH>(elementWidth, legend, stackPrio); }
-		template<class T>	T& AddTopLegendElement(int elementWidth, T& legend, int stackPrio)    { return AddLegendElement<T, TOP_OF_GRAPH>(elementWidth, legend, stackPrio); }
-		template<class T>	T& AddBottomLegendElement(int elementWidth, T& legend, int stackPrio) { return AddLegendElement<T, BOTTOM_OF_GRAPH>(elementWidth, legend, stackPrio); }
-		template<class T>	T& AddOverLegendElement(int elementWidth, T& legend, int stackPrio)   { return AddLegendElement<T, OVER_GRAPH>(elementWidth, legend, stackPrio); }
-
-		template<class T, int POS_OF_GRAPH>
-		T& CreateLegendElement(int elementWidth, int stackPrio) {
-			T* e = new T();
-			_createdElements << e; // to manage object destruction
-			return AddLegendElement(elementWidth, *e, stackPrio);
-		}
-		template<class T>	T& CreateLeftLegendElement(int elementWidth, int stackPrio)   { return CreateLegendElement<T, LEFT_OF_GRAPH>(elementWidth, stackPrio); }
-		template<class T>	T& CreateRightLegendElement(int elementWidth, int stackPrio)  { return CreateLegendElement<T, RIGHT_OF_GRAPH>(elementWidth, stackPrio); }
-		template<class T>	T& CreateTopLegendElement(int elementWidth, int stackPrio)    { return CreateLegendElement<T, TOP_OF_GRAPH>(elementWidth, stackPrio); }
-		template<class T>	T& CreateBottomLegendElement(int elementWidth, int stackPrio) { return CreateLegendElement<T, BOTTOM_OF_GRAPH>(elementWidth, stackPrio); }
-		template<class T>	T& CreateOverLegendElement(int stackPrio)                     { return CreateLegendElement<OVER_GRAPH>(0, stackPrio); }
-
-
 
 		template<class T, int POS_OF_GRAPH>
 		T& CreateElement(int elementWidth, int stackPrio) {
@@ -772,7 +753,7 @@ namespace GraphDraw_ns
 			rgba.r=90; rgba.g=90; rgba.b=0;	rgba.a=90;
 			_legend.SetBackGndColor( rgba );
 			_legend.SetOverFrame(Rect(Point(40,20), Size(80, 30)));
-			_B::AddOverLegendElement(30, _legend, 150);
+			_B::AddOverElement(30, _legend, 150);
 			
 			_B::SetTopMargin(   10);
 			_B::SetBottomMargin( 0);

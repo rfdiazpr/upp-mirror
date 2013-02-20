@@ -10,22 +10,26 @@ void PipeStream::SetState(bool b){
 }
 
 void PipeStream::Reserve(int n){
-	ASSERT(n>=len);
+	if (n == bufsize)
+		return;
+	SetState(READING);
+	int len = GetLeft();
+	ASSERT(n >= len && n > 0);
+
 	byte* tmp = new byte[n];
-	if(buffer){
-		if(len>0){
-			len = _Get(tmp ,len);
-			ptr = tmp;
-			pptr = tmp + len;
-		}
-		delete[] buffer;
-	}
+	if(len>0)
+		_Get(tmp ,len);
+	delete[] buffer;
+
 	bufsize = n;
-	buffer = tmp;
+	ptr = wrlim = buffer = tmp;
+	pptr = rdlim = buffer + len;
 }
 
 dword PipeStream::_Get(void *data, dword size) {
+	if (size <= 0) return 0;
 	SetState(READING);
+	int len = GetLeft();
 	
 	if(size > len)
 		size = len;
@@ -39,20 +43,23 @@ dword PipeStream::_Get(void *data, dword size) {
 		memcpy(data, ptr, size);
 		ptr += size;
 	}
-	len -= size;
+	rdlim = ptr>pptr ? buffer+bufsize : pptr;
+	wrlim = buffer;
 	return size;
 }
 
 void  PipeStream::_Put(const void *data, dword size) {
-	if(size > bufsize - len) {
+	int len = GetLeft();
+	
+	if((int)size > bufsize - len - 1) {
 		if(autoresize){
-			Reserve(2*(len + size)); //TODO: nicer sizes
+			Reserve(2*(len + size)); //TODO: do we want nicer sizes?
 		} else {
 			SetError(ERROR_NOT_ENOUGH_SPACE);
 			return;
 		}
 	}
-
+	
 	SetState(WRITING);
 	dword cont = (dword)(uintptr_t)(buffer + bufsize - ptr);
 	if(size > cont) {
@@ -63,7 +70,8 @@ void  PipeStream::_Put(const void *data, dword size) {
 		memcpy(ptr, data, size);
 		ptr += size;
 	}
-	len += size;
+	wrlim = ptr>pptr ? buffer+bufsize : pptr-1;
+	rdlim = buffer;
 }
 
 void PipeStream::_Put(int w) {
@@ -78,11 +86,10 @@ int PipeStream::_Get() {
 }
 
 int PipeStream::_Term() {
-	SetState(READING);
-	if(len)
-		return *ptr;
-	else
+	if(GetLeft()==0)
 		return -1;
+	SetState(READING);
+	return *ptr;
 }
 
 bool  PipeStream::IsOpen() const {
@@ -90,19 +97,25 @@ bool  PipeStream::IsOpen() const {
 }
 
 void PipeStream::Clear() {
-	len = pos = 0;
-	ptr = pptr = buffer;
+	pos = 0;
+	ptr = pptr = rdlim = buffer;
+	wrlim = buffer + bufsize;
+	SetState(WRITING);
 }
 
-int64 PipeStream::GetLeft() {
-	return len;
+int PipeStream::GetLeft() const {
+	if(state==READING)
+		return ptr<=pptr ? pptr-ptr : bufsize-(ptr-pptr);
+	else
+		return ptr<pptr ? bufsize-(pptr-ptr) : ptr-pptr;
 }
 
 PipeStream::PipeStream(int buffersize, bool resize) : bufsize(buffersize), autoresize(resize) {
-	ptr = pptr = buffer = new byte[bufsize];
+	rdlim = ptr = pptr = buffer = new byte[bufsize];
+	wrlim = buffer + bufsize;
+	state = WRITING;
 	style = STRM_WRITE|STRM_READ;
-	wrlim = rdlim = NULL;
-	len = pos = 0;
+	pos = 0;
 }
 
 PipeStream::~PipeStream() {

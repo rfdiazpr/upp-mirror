@@ -25,7 +25,7 @@ struct LzmaInStream : ISeqInStream {
 	}
 	static SRes Read(void *p, void *buffer, size_t *size) {
 		PipeStream* buf = ((LzmaInStream*)p)->buf;
-		*size = min(int64(*size), buf->GetLeft());
+		*size = min<int>(*size, buf->GetLeft());
 		if (*size) {
 			buf->SetLoading();
 			buf->GetAll(buffer, *size);

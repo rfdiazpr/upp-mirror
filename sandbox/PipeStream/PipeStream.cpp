@@ -13,7 +13,7 @@ void PipeStream::Reserve(int n){
 	if (n == bufsize)
 		return;
 	SetState(READING);
-	int len = GetLeft();
+	int len = GetAvailable();
 	ASSERT(n >= len && n > 0);
 
 	byte* tmp = new byte[n];
@@ -29,7 +29,7 @@ void PipeStream::Reserve(int n){
 dword PipeStream::_Get(void *data, dword size) {
 	if (size <= 0) return 0;
 	SetState(READING);
-	int len = GetLeft();
+	int len = GetAvailable();
 	
 	if(size > len)
 		size = len;
@@ -49,7 +49,7 @@ dword PipeStream::_Get(void *data, dword size) {
 }
 
 void  PipeStream::_Put(const void *data, dword size) {
-	int len = GetLeft();
+	int len = GetAvailable();
 	
 	if((int)size > bufsize - len - 1) {
 		if(autoresize){
@@ -86,7 +86,7 @@ int PipeStream::_Get() {
 }
 
 int PipeStream::_Term() {
-	if(GetLeft()==0)
+	if(GetAvailable()==0)
 		return -1;
 	SetState(READING);
 	return *ptr;
@@ -103,7 +103,7 @@ void PipeStream::Clear() {
 	SetState(WRITING);
 }
 
-int PipeStream::GetLeft() const {
+int PipeStream::GetAvailable() const {
 	if(state==READING)
 		return ptr<=pptr ? pptr-ptr : bufsize-(ptr-pptr);
 	else

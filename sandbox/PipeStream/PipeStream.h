@@ -24,16 +24,8 @@ public:
 	void NoAutoResize()                 { autoresize = false; }
 	bool IsAutoResize() const           { return autoresize; }
 	
-	int GetLeft() const;
+	int GetAvailable() const;
 	void Clear();
-	
-	String ToString() const{
-		String s;
-		s << (state==READING?"READ (":"WRITE (") << GetLeft() << ") " << AsCString(String((const char*) buffer, bufsize)) << '\n'
-		  << "r=" << (state==READING?ptr:pptr)-buffer << " R=" << rdlim-buffer << '\n'
-		  << "w=" << (state==WRITING?ptr:pptr)-buffer << " W=" << wrlim-buffer << '\n';
-		return s;
-	}
 	
 protected:
 	int bufsize;

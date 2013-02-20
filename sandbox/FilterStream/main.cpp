@@ -1,7 +1,26 @@
-#include "FilterStream.h"
+#include "Core/Core.h"
+
+using namespace Upp;
 
 CONSOLE_APP_MAIN
 {
+	{
+		HttpRequest http("www.ultimatepp.org");
+		InputFilterStream in;
+		http.WhenContent = callback(&in, &InputFilterStream::Out);
+		in.More = callback(&http, &HttpRequest::Do);
+		http.Blocking();
+		ASSERT(!in.IsEof());
+		String h;
+		h = in.GetLine();
+		ASSERT(h.StartsWith("<!DOCTYPE"));
+		LOG(h);
+		while(!in.IsEof()) {
+			h = in.GetLine();
+			LOG(h);
+		}
+		ASSERT(h.EndsWith("BODY>"));
+	}
 	String path = GetHomeDirFile("test.gz");
 	{
 		FileOut fout(path);
@@ -39,4 +58,6 @@ CONSOLE_APP_MAIN
 		ASSERT(in.Get() < 0);
 		ASSERT(in.IsEof());	
 	}
+
+	DeleteFile(path);
 }

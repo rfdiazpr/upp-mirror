@@ -288,14 +288,13 @@ template<class TYPES, class DERIVED>
 		DERIVED& PlotStyle(T1 &arg1, T2 &arg2)           {return PlotStyle(new C(arg1, arg2));};
 		template <class C, class T1, class T2, class T3>
 		DERIVED& PlotStyle(T1 &arg1, T2 &arg2, T3 &arg3) {return PlotStyle(new C(arg1, arg2, arg3));};
+		DERIVED& NoPlot()	{return PlotStyle();};
 		DERIVED& PlotStyle(SeriesPlot *data) {
 			int id = series.GetCount() - 1;
 			series[id].seriesPlot = data;
 			_isDataModified = true;
 			return *static_cast<DERIVED*>(this);
 		}
-
-		DERIVED& NoPlot()	{return PlotStyle();};
 
 		DERIVED& MarkStyle()                             {return MarkStyle(0);};
 		template <class C>
@@ -306,14 +305,13 @@ template<class TYPES, class DERIVED>
 		DERIVED& MarkStyle(T1 &arg1, T2 &arg2)           {return MarkStyle(new C(arg1, arg2));};
 		template <class C, class T1, class T2, class T3>
 		DERIVED& MarkStyle(T1 &arg1, T2 &arg2, T3 &arg3) {return MarkStyle(new C(arg1, arg2, arg3));};
+		DERIVED& NoMark()	{return MarkStyle();};
 		DERIVED& MarkStyle(MarkPlot *data) {
 			int id = series.GetCount() - 1;
 			series[id].markPlot = data;
 			_isDataModified = true;
 			return *static_cast<DERIVED*>(this);
 		}
-
-		DERIVED& NoMark()	{return MarkStyle();};
 
 		DERIVED& Stroke(double thickness = 3, Color color = Null) {
 			int id = series.GetCount() - 1;

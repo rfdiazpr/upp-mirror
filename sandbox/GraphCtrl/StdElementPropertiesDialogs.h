@@ -47,7 +47,40 @@ class ElementPropertiesDlg : public WithElementBaseLayout<TopWindow> {
 		elem->_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
 	}
 };
+// ============================================================================================
 
+// Default GridAxisPropertiesDlg  class
+// it opens the minimal dialog for the CoordConverter beeing used
+template <class LABELDRAW>
+class LabelPropertiesDlg : public WithLabelPropertiesDlgLayout<ElementPropertiesDlg<LABELDRAW> > {
+	public:
+	CtrlRetriever r2;
+	
+	public:
+	typedef LabelPropertiesDlg<LABELDRAW>  CLASSNAME;
+	typedef WithLabelPropertiesDlgLayout<ElementPropertiesDlg<LABELDRAW> > _B;
+	
+	LabelPropertiesDlg() {
+		SetLayout_LabelPropertiesDlgLayout(*this, true);
+		 Size sz = _B::GetLayoutSize();
+		 _B::SetMinSize(sz);
+		 _B::SetRect(sz);
+	}
+	
+	virtual ~LabelPropertiesDlg() {}
+
+	void InitDlg(LABELDRAW& gda) {
+		_B::InitDlg(gda);
+		r2( _B::textColor, _B::elem->_color)
+		  ( _B::labelText, _B::elem->_label)
+		  ;
+	}
+		
+	virtual void Retrieve() {
+		r2.Retrieve();
+		_B::Retrieve();
+	}
+};
 // ============================================================================================
 
 // Default GridAxisPropertiesDlg  class

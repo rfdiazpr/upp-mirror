@@ -303,19 +303,23 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	{
 		for (int j = 0; j < _B::_drawElements.GetCount(); j++)
 		{
-			if ( _B::_drawElements[j]->IsOverGraph() ) {
-				if (_B::_drawElements[j]->Contains(p)) {
-					output = ((_B::_drawElements[j]->*cbck)(p, keyflags));
-					return true;
+			if ( !_B::_drawElements[j]->IsHidden() ) {
+				if ( _B::_drawElements[j]->IsOverGraph() ) {
+					if (_B::_drawElements[j]->Contains(p)) {
+						output = ((_B::_drawElements[j]->*cbck)(p, keyflags));
+						return true;
+					}
 				}
 			}
 		}
 		for (int j = 0; j < _B::_drawElements.GetCount(); j++)
 		{
-			if ( !_B::_drawElements[j]->IsOverGraph() ) {
-				if (_B::_drawElements[j]->Contains(p)) {
-					output = ((_B::_drawElements[j]->*cbck)(p, keyflags));
-					return true;
+			if ( !_B::_drawElements[j]->IsHidden() ) {
+				if ( !_B::_drawElements[j]->IsOverGraph() ) {
+					if (_B::_drawElements[j]->Contains(p)) {
+						output = ((_B::_drawElements[j]->*cbck)(p, keyflags));
+						return true;
+					}
 				}
 			}
 		}

@@ -96,3 +96,10 @@ LAYOUT(SeriesPropertiesDlgLayout, 356, 212)
 	ITEM(ColorPusher, markColor, LeftPosZ(196, 60).TopPosZ(72, 20))
 END_LAYOUT
 
+LAYOUT(LabelPropertiesDlgLayout, 400, 200)
+	ITEM(ColorPusher, textColor, LeftPosZ(76, 36).TopPosZ(112, 16))
+	ITEM(LabelBox, dv___1, SetLabel(t_("Label Text")).HSizePosZ(4, 4).TopPosZ(96, 64))
+	ITEM(Label, dv___2, SetLabel(t_("Color")).SetAlign(ALIGN_RIGHT).LeftPosZ(8, 64).TopPosZ(111, 17))
+	ITEM(EditString, labelText, LeftPosZ(8, 380).TopPosZ(132, 20))
+END_LAYOUT
+

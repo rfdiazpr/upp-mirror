@@ -134,14 +134,11 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 };
 
 
-
-
-
 template<class TYPES, class LEGENDDRAW>
 class StdLegendCtrl : public GraphElementCtrl_MoveResize<TYPES, CRTPGraphElementCtrl_Base<TYPES, LEGENDDRAW, StdLegendCtrl<TYPES, LEGENDDRAW> > > {
 	public:
 	typedef StdLegendCtrl<TYPES, LEGENDDRAW>  CLASSNAME;
-	typedef GraphElementCtrl_MoveResize<TYPES, CRTPGraphElementCtrl_Base<TYPES, LEGENDDRAW, StdLegendCtrl<TYPES, LEGENDDRAW> > >  _B;
+	typedef GraphElementCtrl_MoveResize<TYPES, CRTPGraphElementCtrl_Base<TYPES, LEGENDDRAW, CLASSNAME > >  _B;
 	StdLegendCtrl() {}
 	StdLegendCtrl(StdLegendCtrl& p) : GraphElementCtrl_MoveResize<TYPES, LEGENDDRAW>(p) {}
 	virtual ~StdLegendCtrl() {}
@@ -149,15 +146,19 @@ class StdLegendCtrl : public GraphElementCtrl_MoveResize<TYPES, CRTPGraphElement
 
 
 
-//DisablePos
 template<class TYPES, class LABELDRAW>
-class StdLabelCtrl : public  CRTPGraphElementCtrl_Base< TYPES, LABELDRAW, StdLegendCtrl<TYPES, LABELDRAW> > {
+class StdLabelCtrl : public  CRTPGraphElementCtrl_Base< TYPES, LABELDRAW, StdLabelCtrl<TYPES, LABELDRAW> > {
 	public:
-	typedef CRTPGraphElementCtrl_Base< TYPES, LABELDRAW, StdLegendCtrl<TYPES, LABELDRAW> > _B;
+	typedef StdLabelCtrl<TYPES, LABELDRAW>  CLASSNAME;
+	typedef CRTPGraphElementCtrl_Base< TYPES, LABELDRAW, CLASSNAME > _B;
 	typedef TYPES  Types;
 	
 	StdLabelCtrl() {
 		_B::DisablePos(GraphDraw_ns::OVER_GRAPH);
+	}
+	
+	virtual void OpenPropertiesDlg(void) {
+		_B::template TOpenPropertiesDlg<LabelPropertiesDlg>();
 	}
 };
 

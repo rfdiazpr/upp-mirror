@@ -288,6 +288,7 @@ namespace GraphDraw_ns
 							output << "\1[1= " << MonName(time.month-1) ;
 							output << "&][1*= " << time.year << "]";
 							break;
+						case OVER_GRAPH:
 						case TOP_OF_GRAPH:
 							output << "\1[1*= " << time.year;
 							output << "&][1= " << MonName(time.month-1) << "]";
@@ -315,6 +316,7 @@ namespace GraphDraw_ns
 							output << "\1[1= " << int(time.day) << " " << MonName(time.month-1) ;
 							output << "&][1*= " << time.year << "]";
 							break;
+						case OVER_GRAPH:
 						case TOP_OF_GRAPH:
 							output << "\1[1*= " << time.year;
 							output << "&][1= " << int(time.day) << " " << MonName(time.month-1) << "]";
@@ -343,6 +345,7 @@ namespace GraphDraw_ns
 							output << "[1= " << int(time.day) << " " << MonName(time.month-1) ;
 							output << "&][1*= " << time.year << "]";
 							break;
+						case OVER_GRAPH:
 						case TOP_OF_GRAPH:
 							output << "\1[1*= " << time.year;
 							output << "&][1= " << int(time.day) << " " << MonName(time.month-1) << "&]";

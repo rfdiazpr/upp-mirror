@@ -208,7 +208,7 @@ namespace GraphDraw_ns
 	// ============================
 	class LabelElement : public CRTPGraphElementFrame< LabelElement >
 	{
-		private:
+		public:
 		Upp::String _label;
 		Font        _font;
 		Color       _color;
@@ -356,6 +356,7 @@ namespace GraphDraw_ns
 
 		inline CLASSNAME&  SetBackGndColor(Color v) { _bckGndcolor = v; _isRgba=false; return *this; }
 		inline CLASSNAME&  SetBackGndColor(RGBA  v) { _bckGndRgba  = v; _isRgba=true;  return *this; }
+		inline CLASSNAME&  SetFont(Font  v)         { _font  = v;  return *this; }
 
 		virtual void PaintElement(Draw& dw, int scale){
 			if ( !_bckGndcolor.IsNullInstance() ) {

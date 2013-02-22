@@ -21,12 +21,19 @@ class CRTPGraphElementCtrl_Base : public ELEMENT_CLASS {
 	CRTPGraphElementCtrl_Base(PARAM1& p1, PARAM2 p2, PARAM3 p3) : ELEMENT_CLASS(p1, p2, p3) {}
 	
 	public:
-	virtual void OpenPropertiesDlg(void) {
-		ElementPropertiesDlg<ELEMENT_CLASS> dlg;
+	
+	// helper class to make 
+	template <  template <class T> class DLG>
+	void TOpenPropertiesDlg(void) {
+		DLG<ELEMENT_CLASS> dlg;
 		dlg.InitDlg(*this);
 		if ( dlg.Execute() == IDOK ) {
 				dlg.Retrieve();
 		}
+	}
+
+	virtual void OpenPropertiesDlg(void) {
+		TOpenPropertiesDlg<ElementPropertiesDlg>();
 	}
 	
 	virtual bool Contains(Point p) const                                          { return (_B::_frame.Contains(p)); }

@@ -830,24 +830,22 @@ namespace GraphDraw_ns
 		DERIVED& SetXGridColor(Color v) { _xGridDraw.setGridColor(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetYGridColor(Color v) { _yGridDraw.setGridColor(v); return *static_cast<DERIVED*>(this); }
 		
-		DERIVED& SetXAxisWidth(int v) { _xGridDraw.setAxisWidth(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYAxisWidth(int v) { _yGridDraw.setAxisWidth(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXAxisColor(Color v) { _xGridDraw.setAxisColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYAxisColor(Color v) { _yGridDraw.setAxisColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXAxisTextColor(Color v) { _xGridDraw.setAxisTextColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYAxisTextColor(Color v) { _yGridDraw.setAxisTextColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXAxisTextFont(Font v) { _xGridDraw.setAxisTextFont(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYAxisTextFont(Font v) { _yGridDraw.setAxisTextFont(v); return *static_cast<DERIVED*>(this); }
-		
-		DERIVED& SetXAxisTickColor(Color v) { _xGridDraw.setAxisTickColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYAxisTickColor(Color v) { _yGridDraw.setAxisTickColor(v); return *static_cast<DERIVED*>(this); }
-		
-		
-		DERIVED& SetXScaleType(int v) { _xConverter.SetScaleType(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYScaleType(int v) { _yConverter.SetScaleType(v); return *static_cast<DERIVED*>(this); }
-
+		DERIVED& SetXAxisWidth(int v)                 { _xGridDraw.setAxisWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXAxisColor(Color v)               { _xGridDraw.setAxisColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXAxisTextColor(Color v)           { _xGridDraw.setAxisTextColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXAxisTextFont(Font v)             { _xGridDraw.setAxisTextFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXAxisTickColor(Color v)           { _xGridDraw.setAxisTickColor(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetXAxisFormatType(AxisTextFormat v) { _xGridDraw.setAxisTextFormat(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXScaleType(int v)                 { _xConverter.SetScaleType(v); return *static_cast<DERIVED*>(this); }
+		
+		DERIVED& SetYAxisWidth(int v)                 { _yGridDraw.setAxisWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisColor(Color v)               { _yGridDraw.setAxisColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisTextColor(Color v)           { _yGridDraw.setAxisTextColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisTextFont(Font v)             { _yGridDraw.setAxisTextFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisTickColor(Color v)           { _yGridDraw.setAxisTickColor(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetYAxisFormatType(AxisTextFormat v) { _yGridDraw.setAxisTextFormat(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYScaleType(int v)                 { _yConverter.SetScaleType(v); return *static_cast<DERIVED*>(this); }
+
 
 
 		DERIVED& SetXMin(double v) { _xConverter.SetGraphMin(v); return *static_cast<DERIVED*>(this); }
@@ -876,14 +874,14 @@ namespace GraphDraw_ns
 		CRTP_XYLTGraphDraw()
 		{
 			_title.SetName( t_("Title") );
-			_xLabel.SetName( t_("X label") );
-			_yLabel.SetName( t_("Y label") );
+			_xLabel.SetName( t_("X--- label") );
+			_yLabel.SetName( t_("Y--- label") );
 
 			_title.SetFont( StdFontZ(20).Bold().Underline()).SetTextColor(Red).SetLabel("TITLE");
 			_xLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("X Axis label");
 			_yLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("Y Axis label");
-			_B::AddLeftElement(30, _xLabel, 25);
-			_B::AddBottomElement(30, _yLabel, 25);
+			_B::AddBottomElement(30, _xLabel, 25);
+			_B::AddLeftElement(30, _yLabel, 25);
 			_B::AddTopElement(40, _title, 200);
 		}
 		
@@ -894,17 +892,18 @@ namespace GraphDraw_ns
 		DERIVED& SetTitleWidth(int v)          { _title.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetTitleColor(const Color& v) { _title.SetTextColor(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& HideTitle(bool v)             { _title.Hide(v); return *static_cast<DERIVED*>(this); }
-		
 	
 		DERIVED& SetXLabel(const String& v)     { _xLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetXLabelFont(const Font& v)   { _xLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetXLabelWidth(int v)          { _xLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetXLabelColor(const Color& v) { _xLabel.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& HideXLabel(bool v=true)        { _xLabel.Hide(v); return *static_cast<DERIVED*>(this); }
 
 		DERIVED& SetYLabel(const String& v)     { _yLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetYLabelFont(const Font& v)   { _yLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetYLabelWidth(int v)          { _yLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetYLabelColor(const Color& v) { _yLabel.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& HideYLabel(bool v=true)        { _yLabel.Hide(v); return *static_cast<DERIVED*>(this); }
 	};
 
 
@@ -943,10 +942,10 @@ namespace GraphDraw_ns
 		virtual ~CRTP_XYY2GraphDraw() {}
 
 		private:
-		DERIVED& setGraphSize(Rectf r)
-		{
-			return *static_cast<DERIVED*>(this);
-		}
+//		DERIVED& setGraphSize(Rectf r)
+//		{
+//			return *static_cast<DERIVED*>(this);
+//		}
 		
 		public:
 		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1, TypeGraphCoord y20, TypeGraphCoord y21 )
@@ -1019,22 +1018,25 @@ namespace GraphDraw_ns
 		DERIVED& SetTitleFont(const Font& v)     { _title.SetFont(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetTitleWidth(int v)            { _title.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetTitleColor(const Color& v)   { _title.SetTextColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& HideTitle(bool v)               { _title.Hide(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& HideTitle(bool v=true)          { _title.Hide(v); return *static_cast<DERIVED*>(this); }
 		
 		DERIVED& SetXLabel(const String& v)      { _xLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetXLabelFont(const Font& v)    { _xLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetXLabelWidth(int v)           { _xLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetXLabelColor(const Color& v)  { _xLabel.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& HideXLabel(bool v=true)         { _xLabel.Hide(v); return *static_cast<DERIVED*>(this); }
 
 		DERIVED& SetYLabel(const String& v)      { _yLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetYLabelFont(const Font& v)    { _yLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetYLabelWidth(int v)           { _yLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetYLabelColor(const Color& v)  { _yLabel.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& HideYLabel(bool v=true)         { _yLabel.Hide(v); return *static_cast<DERIVED*>(this); }
 
 		DERIVED& SetY2Label(const String& v)     { _y2Label.SetLabel(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetY2LabelFont(const Font& v)   { _y2Label.SetFont(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetY2LabelWidth(int v)          { _y2Label.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetY2LabelColor(const Color& v) { _y2Label.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& HideY2Label(bool v=true)        { _y2Label.Hide(v); return *static_cast<DERIVED*>(this); }
 	};
 };
 

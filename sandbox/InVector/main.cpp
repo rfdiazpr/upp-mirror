@@ -283,14 +283,51 @@ CONSOLE_APP_MAIN
 
 	BenchmarkMap();
 
-#if 1
+	LOG("===========================");
+	LOG("VectorMap");
 	SortedVectorMap<int, int> map;
 	Test(map);
 
+	LOG("===========================");
+	LOG("ArrayMap");
 	SortedArrayMap<int, int> amap;
 	Test(amap);
+
+	LOG("------------");
 	
-#endif
+	SortedArrayMap<int, int, StdGreater<int> > am;
+	am.Add(1, 11);
+	am.Add(2) = 12;
+	am.Add(3, new int(13));
+	am.Create<int>(4) = 14;
+	am.GetAdd(5) = 15;
+	am.GetAdd(6, 0);
+	am.GetAdd(6, 1) = 16;
+	am.GetAdd(7, 17);
+	
+	DDUMPM(am);
+
+	ASSERT(am.GetCount() == 7);	
+	for(int i = 0; i < am.GetCount(); i++) {
+		ASSERT(am.GetKey(i) == am[i] - 10);
+	}
+
+	am.Remove(0);
+
+	DDUMPM(am);
+	
+	ASSERT(am.GetCount() == 6);	
+	for(int i = 0; i < am.GetCount(); i++)
+		ASSERT(am.GetKey(i) + 1 == am[i] - 10 + 1);
+	
+	delete am.Detach(0);
+
+	DDUMPM(am);
+
+	ASSERT(am.GetCount() == 5);	
+	for(int i = 0; i < am.GetCount(); i++)
+		ASSERT(am.GetKey(i) + 2 == am[i] - 10 + 2);
+	
 	RDUMP(sizeof(Vector<int>));
 	RDUMP(sizeof(Array<int>));
 	RDUMP(sizeof(Index<int>));

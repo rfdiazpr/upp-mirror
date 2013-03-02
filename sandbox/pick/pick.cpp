@@ -6,24 +6,30 @@ struct Foo;
 
 template <class T>
 struct pick {
-	T& foo;
+	T& src;
 	
-	T& operator~()             { return foo; }
-	operator T&()              { LOG("operator T&"); return foo; }
+	T& operator~()             { return src; }
+	operator T&() const        { return src; }
 	
-	pick(T& foo) : foo(foo)    { LOG("pick(T&)"); }
+	pick(T& src) : src(src)    {}
 };
 
-struct Foo {
-	int x;
-	
-	Foo(Foo& a)                { LOG("Foo(Foo& a)"); }
-	Foo(pick<Foo> a)           { LOG("Foo(pick<Foo>& a)"); }
-	Foo()                      { LOG("Foo();"); }
+struct PickType {
+	PickType(PickType& t)       { LOG("PickType(PickType&)"); }
+	void operator=(PickType& t) { LOG("operator=(PickType&)"); }
+	PickType()                  { LOG("PickType"); }
+};
 
-	void operator=(Foo&)       { LOG("opreator=(Foo&)"); }
-	void operator=(pick<Foo>)  { LOG("operator=(pick<Foo>)"); }
+struct Foo : PickType {
+	int x;
+
+	Foo()                      { LOG("Foo();"); }
 	
+	Foo(Foo& a)                { LOG("Foo(Foo&);"); }
+	void operator=(Foo& a)     { LOG("operator=(Foo&a)"); }
+	
+//	Foo(pick<Foo> a)           { LOG("Foo(pick<Foo>& a)"); }
+//	void operator=(pick<Foo>)  { LOG("operator=(pick<Foo>)"); }
 	operator pick<Foo>()       { LOG("operator pick()"); return pick<Foo>(*this); }
 };
 
@@ -33,10 +39,13 @@ struct Bar {
 	int c;
 
 	Bar() {}
+
 	Bar(pick<Bar> a)            { LOG("Bar(pick<Bar>)"); *this = ~a; }
 	void operator=(pick<Bar> b) { LOG("operator=(pick<Bar>)"); *this = ~b; }
 	operator pick<Bar>()        { LOG("operator Bar::pick()"); return pick<Bar>(*this); }
 };
+
+void Another(pick<
 
 Foo MakeFoo()
 {
@@ -79,7 +88,7 @@ CONSOLE_APP_MAIN
 	Foo y5 = MakeFoo();		
 	
 	
-	LOG("============");
+	LOG("============ Bar b = Bar()");
 	Bar b = Bar();
 	LOG("============ b = Bar()");
 	b = Bar();

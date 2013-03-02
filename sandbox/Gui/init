@@ -1,0 +1,4 @@
+#ifndef _Gui_icpp_init_stub
+#define _Gui_icpp_init_stub
+#include "CtrlLib/init"
+#endif

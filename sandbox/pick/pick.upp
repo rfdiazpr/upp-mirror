@@ -1,0 +1,9 @@
+uses
+	Core;
+
+file
+	pick.cpp;
+
+mainconfig
+	"" = "SSE2";
+

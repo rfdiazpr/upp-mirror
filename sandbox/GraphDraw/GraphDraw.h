@@ -183,7 +183,9 @@ namespace GraphDraw_ns
 		, _bottomMarginWidth(0)
 		, _leftMarginWidth(0)
 		, _rightMarginWidth(0)
-		{};
+		{
+			setScreenSize( Size(100,100) ); // set default size
+		};
 
 
 		virtual ~CRTP_EmptyGraphDraw() {
@@ -195,20 +197,22 @@ namespace GraphDraw_ns
 		}
 
 		virtual Value GetSeries() {
+			ASSERT_(&(_B::series), "CRTP_EmptyGraphDraw::GetSeries()  returns NULL");
 			return RawToValue(&(_B::series));
 		}
 
 		virtual Value GetParentCtrl() {
+			ASSERT_(0, "CRTP_EmptyGraphDraw::GetParentCtrl()  was CALLED");
 			return Null;
 		}
 
 		
 		
-		TypeCoordConverter& GetXCoordConverter() { return *TypeSeriesGroup::_currentXConverter; }
-		TypeCoordConverter& GetYCoordConverter() { return *TypeSeriesGroup::_currentYConverter; }
+		TypeCoordConverter& GetXCoordConverter() { ASSERT(TypeSeriesGroup::_currentXConverter!=0); return *TypeSeriesGroup::_currentXConverter; }
+		TypeCoordConverter& GetYCoordConverter() { ASSERT(TypeSeriesGroup::_currentYConverter!=0); return *TypeSeriesGroup::_currentYConverter; }
 
 		DERIVED& SetPlotBackgroundColor(Color c) { _plotBckgndColor = c; return *static_cast<DERIVED*>(this); }
-		DERIVED& SetCtrlBackgroundColor(Color c)     { _CtrlBckgndColor = c; return *static_cast<DERIVED*>(this); }
+		DERIVED& SetCtrlBackgroundColor(Color c) { _CtrlBckgndColor = c; return *static_cast<DERIVED*>(this); }
 		DERIVED& SetMode(DrawMode m) { _mode = m; return *static_cast<DERIVED*>(this); }
 		DERIVED& SetMode(int m) {
 			if ((MD_DRAW<=m) && (m<=MD_SUBPIXEL)) _mode = (DrawMode)m;
@@ -252,6 +256,11 @@ namespace GraphDraw_ns
 			return conv;
 		}
 
+		template <class T>
+		DERIVED& LinkX(T& g) {
+			_xConverters.Append( g._xConverters );
+			return *static_cast<DERIVED*>(this);
+		}
 
 		bool IsValidForZoom(Rect r)
 		{
@@ -345,16 +354,20 @@ namespace GraphDraw_ns
 		T& AddElement(T& v, int stackPrio) {
 			v._parent = this;
 			v.SetStackingPriority(stackPrio);
-			_drawElements << &v.SetElementPos((ElementPosition)POS_OF_GRAPH);
+			v.SetElementPos((ElementPosition)POS_OF_GRAPH);
+			_drawElements.Add(&v);
 			Sort(_drawElements, compareGraphElementFrame);
 			return v;
 		}
+
+//		    N3Upp11RawValueRepIMN12 GraphDraw_ns::SeriesGroup::GraphCtrlDefaultTypes::Test_GraphCtrl::Vector::SeriesConfig
+//		 -> Vector::GraphDraw_ns::SeriesConfig::GraphCtrlDefaultTypes
+
 
 		template<class T, int POS_OF_GRAPH>
 		T& AddElement(int elementWidth, T& v, int stackPrio) {
 				v.SetElementWidth(elementWidth);
 				return AddElement<T, POS_OF_GRAPH>(v, stackPrio);
-				
 		}
 
 		template<class T>  T& AddLeftElement(T& v, int stackPrio)   { return AddElement<T, LEFT_OF_GRAPH>(v, stackPrio); }
@@ -369,53 +382,6 @@ namespace GraphDraw_ns
 		template<class T>  T& AddBottomElement(int elementWidth, T& v, int stackPrio) { return AddElement<T, BOTTOM_OF_GRAPH>(elementWidth, v, stackPrio); }
 		template<class T>  T& AddOverElement(int elementWidth, T& v, int stackPrio)   { return AddElement<T, OVER_GRAPH>(elementWidth, v, stackPrio); }
 
-
-
-/*
-		template<class T, int POS_OF_GRAPH>
-		T& AddElementAt(int pos, T& v) {
-				switch(POS_OF_GRAPH){
-					case LEFT_OF_GRAPH:
-						_leftElements.Insert(pos, &v.SetElementPos(LEFT_OF_GRAPH));
-						break;
-					case BOTTOM_OF_GRAPH:
-						_bottomElements.Insert(pos, &v.SetElementPos(BOTTOM_OF_GRAPH));
-						break;
-					case TOP_OF_GRAPH:
-						_topElements.Insert(pos, &v.SetElementPos(TOP_OF_GRAPH));
-						break;
-					case RIGHT_OF_GRAPH:
-						_rightElements.Insert(pos, &v.SetElementPos(RIGHT_OF_GRAPH));
-						break;
-					case OVER_GRAPH:
-						_overElements.Insert(pos, &v.SetElementPos(OVER_GRAPH));
-						break;
-				}
-				v._parent = this;
-				return v;
-		}
-
-
-		template<class T>  T& AddLeftElementAt(int pos, T& v)   { return AddElementAt<T, LEFT_OF_GRAPH>(pos, v); }
-		template<class T>  T& AddRightElementAt(int pos, T& v)  { return AddElementAt<T, RIGHT_OF_GRAPH>(pos, v); }
-		template<class T>  T& AddTopElementAt(int pos, T& v)    { return AddElementAt<T, TOP_OF_GRAPH>(pos, v); }
-		template<class T>  T& AddBottomElementAt(int pos, T& v) { return AddElementAt<T, BOTTOM_OF_GRAPH>(pos, v); }
-		template<class T>  T& AddOverElementAt(int pos, T& v)   { return AddElementAt<T, OVER_GRAPH>(pos, v); }
-
-
-		template<class T, int POS_OF_GRAPH>
-		T& AddElementAt(int pos, int elementWidth, T& v) {
-				v.SetElementWidth(elementWidth);
-				return AddElementAt<T, POS_OF_GRAPH>(pos, v);
-		}
-
-
-		template<class T>  T& AddLeftElementAt(int pos, int elementWidth, T& v)   { return AddElementAt<T, LEFT_OF_GRAPH>(pos, elementWidth, v); }
-		template<class T>  T& AddRightElementAt(int pos, int elementWidth, T& v)  { return AddElementAt<T, RIGHT_OF_GRAPH>(pos, elementWidth, v); }
-		template<class T>  T& AddTopElementAt(int pos, int elementWidth, T& v)    { return AddElementAt<T, TOP_OF_GRAPH>(pos, elementWidth, v); }
-		template<class T>  T& AddBottomElementAt(int pos, int elementWidth, T& v) { return AddElementAt<T, BOTTOM_OF_GRAPH>(pos, elementWidth, v); }
-		template<class T>  T& AddOverElementAt(int pos, int elementWidth, T& v)   { return AddElementAt<T, OVER_GRAPH>(pos, elementWidth, v); }
-*/
 
 		template<class T, int POS_OF_GRAPH>
 		T& CloneElement(int elementWidth, T& p, int stackPrio=-1) {
@@ -719,8 +685,44 @@ namespace GraphDraw_ns
 	};
 
 
+
+#define COMBINE3__(a, b, c)        a##b##c
+#define COMBINE3(a, b, c)          COMBINE3__(a, b, c)
+#define MAKE_GRAPHDRAW_AXIS_FN( XYZ, xyz) \
+	DERIVED& COMBINE3(Hide, XYZ, Axis) (bool v)                   { COMBINE3(_, xyz, GridDraw).Hide(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(Set, XYZ, AxisRectWidth)(int v)             { COMBINE3(_, xyz, GridDraw).SetElementWidth(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(set, XYZ, NbGridSteps)(int v)               { COMBINE3(_, xyz, GridDraw).GetGridStepManager().SetNbSteps(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(Set, XYZ, GridColor)(Color v)               { COMBINE3(_, xyz, GridDraw).setGridColor(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(Set, XYZ, AxisWidth)(int v)                 { COMBINE3(_, xyz, GridDraw).setAxisWidth(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(Set, XYZ, AxisColor)(Color v)               { COMBINE3(_, xyz, GridDraw).setAxisColor(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(Set, XYZ, AxisTextColor)(Color v)           { COMBINE3(_, xyz, GridDraw).setAxisTextColor(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(Set, XYZ, AxisTextFont)(Font v)             { COMBINE3(_, xyz, GridDraw).setAxisTextFont(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(Set, XYZ, AxisTickColor)(Color v)           { COMBINE3(_, xyz, GridDraw).setAxisTickColor(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(Set, XYZ, ScaleType)(int v)                 { COMBINE3(_, xyz, Converter).SetScaleType(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(Set, XYZ, AxisFormatType)(AxisTextFormat v) { COMBINE3(_, xyz, GridDraw).setAxisTextFormat(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(Set, XYZ, Min)(double v)                    { COMBINE3(_, xyz, Converter).SetGraphMin(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(Set, XYZ, Max)(double v)                    { COMBINE3(_, xyz, Converter).SetGraphMax(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(Set, XYZ, MinRangeLimit)(double v)          { COMBINE3(_, xyz, Converter).setGraphMinRangeLimit(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(Set, XYZ, MaxRangeLimit)(double v)          { COMBINE3(_, xyz, Converter).setGraphMaxRangeLimit(v); return *static_cast<DERIVED*>(this); }
+
+
+#define MAKE_GRAPHDRAW_LABEL_FN( XYZ, xyz) \
+	DERIVED& COMBINE3(Set, XYZ, Label)(const String& v)     { COMBINE3(_, xyz, Label).SetLabel(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(Set, XYZ, LabelFont)(const Font& v)   { COMBINE3(_, xyz, Label).SetFont(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(Set, XYZ, LabelWidth)(int v)          { COMBINE3(_, xyz, Label).SetElementWidth(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(Set, XYZ, LabelColor)(const Color& v) { COMBINE3(_, xyz, Label).SetTextColor(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& COMBINE3(Hide, XYZ, Label)(bool v=true)        { COMBINE3(_, xyz, Label).Hide(v); return *static_cast<DERIVED*>(this); }
+
+#define MAKE_GRAPHDRAW_TITLE_FN \
+	DERIVED& SetTitle(const String& v)     { _title.SetLabel(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& SetTitlePosition(const ElementPosition v) { _title.SetElementPos(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& SetTitleFont(const Font& v)   { _title.SetFont(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& SetTitleWidth(int v)          { _title.SetElementWidth(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& SetTitleColor(const Color& v) { _title.SetTextColor(v); return *static_cast<DERIVED*>(this); }\
+	DERIVED& HideTitle(bool v)             { _title.Hide(v); return *static_cast<DERIVED*>(this); }
+
 	// ============================
-	//    CRTP_EmptyGraphDraw   CLASS
+	//    CRTP_XYGraphDraw   CLASS
 	// ============================
 	template<class TYPES, class DERIVED>
 	class CRTP_XYGraphDraw : public CRTP_EmptyGraphDraw<TYPES, DERIVED >
@@ -741,20 +743,15 @@ namespace GraphDraw_ns
 		TypeCoordConverter   _yConverter;
 		TypeGridAxisDraw     _xGridDraw;
 		TypeGridAxisDraw     _yGridDraw;
-		TypeLegendElement    _legend;
 		
 		public:
 		CRTP_XYGraphDraw()
 		: _xGridDraw(_xConverter)
 		, _yGridDraw(_yConverter)
 		{
-			_legend.SetName(t_("Legend"));
-			RGBA rgba;
-			rgba.r=90; rgba.g=90; rgba.b=0;	rgba.a=90;
-			_legend.SetBackGndColor( rgba );
-			_legend.SetOverFrame(Rect(Point(40,20), Size(80, 30)));
-			_B::AddOverElement(30, _legend, 150);
-			
+			_B::AddXConverter(_xConverter);
+			_B::AddYConverter(_yConverter);
+
 			_B::SetTopMargin(   10);
 			_B::SetBottomMargin( 0);
 			_B::SetLeftMargin(   0);
@@ -772,9 +769,6 @@ namespace GraphDraw_ns
 			_yGridDraw.setGridColor( Gray() );
 			_yGridDraw.setMajorTickMark( (new LineTickMark())->SetTickLength( 3 ) );
 
-			
-			_B::AddXConverter(_xConverter);
-			_B::AddYConverter(_yConverter);
 			_B::AddLeftElement(_yGridDraw, 20);
 			_B::AddBottomElement(_xGridDraw, 20);
 			setGraphSize(0, 100, 0, 100);
@@ -806,6 +800,44 @@ namespace GraphDraw_ns
 		TypeGridAxisDraw& GetYGridAxisDraw() { return _yGridDraw; }
 
 
+		MAKE_GRAPHDRAW_AXIS_FN(X,x);
+		MAKE_GRAPHDRAW_AXIS_FN(Y,y);
+	};
+
+	// ============================
+	//    CRTP_XYLGraphDraw   CLASS
+	// ============================
+	template<class TYPES, class DERIVED>
+	class CRTP_XYLGraphDraw : public CRTP_XYGraphDraw<TYPES, DERIVED >
+	{
+		public:
+		typedef TYPES Types;
+		typedef CRTP_XYLGraphDraw<TYPES, DERIVED> CLASSNAME;
+		typedef CRTP_XYGraphDraw<TYPES, DERIVED > _B;
+
+
+		typedef typename TYPES::TypeCoordConverter            TypeCoordConverter;
+		typedef typename TYPES::TypeGridAxisDraw              TypeGridAxisDraw;
+		typedef SeriesGroup<TYPES,CLASSNAME>                  TypeSeriesGroup;
+		typedef typename TYPES::TypeLegendElement             TypeLegendElement;
+
+		protected:
+		TypeLegendElement    _legend;
+		
+		public:
+		CRTP_XYLGraphDraw()
+		{
+			_legend.SetName(t_("Legend"));
+			RGBA rgba;
+			rgba.r=90; rgba.g=90; rgba.b=0;	rgba.a=90;
+			_legend.SetBackGndColor( rgba );
+			_legend.SetOverFrame(Rect(Point(40,20), Size(80, 30)));
+			_B::AddOverElement(30, _legend, 150);
+		};
+
+		virtual ~CRTP_XYLGraphDraw() {}
+
+		DERIVED& HideLegend(bool v)             { _legend.Hide(v); return *static_cast<DERIVED*>(this); }
 
 		//TypeLegendElement
 		DERIVED& SetLegendPosition(const ElementPosition v) { _legend.SetElementPos(v); return *static_cast<DERIVED*>(this); }
@@ -813,55 +845,20 @@ namespace GraphDraw_ns
 		DERIVED& SetLegendWidth(int v)          { _legend.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetLegendBckgndColor(const Color& v) { _legend.SetBackGndColor(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetLegendBckgndColor(const RGBA& v)  { _legend.SetBackGndColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& HideLegend(bool v)             { _legend.Hide(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetLegendXSize(int v)          { Rect r = _legend.GetOverFrame();r.right = r.left+v; _legend.SetOverFrame(r); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetLegendYSize(int v)          { Rect r = _legend.GetOverFrame();r.bottom = r.top+v; _legend.SetOverFrame(r); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetLegendXPos(int v)           { Rect r = _legend.GetOverFrame();r.right = v+r.Width(); r.left=v; _legend.SetOverFrame(r); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetLegendYPos(int v)           { Rect r = _legend.GetOverFrame();r.bottom = v+r.Height(); r.top=v; _legend.SetOverFrame(r); return *static_cast<DERIVED*>(this); }
-
-
-		DERIVED& SetXAxisRectWidth(int v) { _xGridDraw.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYAxisRectWidth(int v) { _yGridDraw.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
-
-
-		DERIVED& setXNbGridSteps(int v) { _xGridDraw.GetGridStepManager().SetNbSteps(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& setYNbGridSteps(int v) { _yGridDraw.GetGridStepManager().SetNbSteps(v); return *static_cast<DERIVED*>(this); }
-		
-		DERIVED& SetXGridColor(Color v) { _xGridDraw.setGridColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYGridColor(Color v) { _yGridDraw.setGridColor(v); return *static_cast<DERIVED*>(this); }
-		
-		DERIVED& SetXAxisWidth(int v)                 { _xGridDraw.setAxisWidth(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXAxisColor(Color v)               { _xGridDraw.setAxisColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXAxisTextColor(Color v)           { _xGridDraw.setAxisTextColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXAxisTextFont(Font v)             { _xGridDraw.setAxisTextFont(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXAxisTickColor(Color v)           { _xGridDraw.setAxisTickColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXAxisFormatType(AxisTextFormat v) { _xGridDraw.setAxisTextFormat(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXScaleType(int v)                 { _xConverter.SetScaleType(v); return *static_cast<DERIVED*>(this); }
-		
-		DERIVED& SetYAxisWidth(int v)                 { _yGridDraw.setAxisWidth(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYAxisColor(Color v)               { _yGridDraw.setAxisColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYAxisTextColor(Color v)           { _yGridDraw.setAxisTextColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYAxisTextFont(Font v)             { _yGridDraw.setAxisTextFont(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYAxisTickColor(Color v)           { _yGridDraw.setAxisTickColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYAxisFormatType(AxisTextFormat v) { _yGridDraw.setAxisTextFormat(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYScaleType(int v)                 { _yConverter.SetScaleType(v); return *static_cast<DERIVED*>(this); }
-
-
-
-		DERIVED& SetXMin(double v) { _xConverter.SetGraphMin(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXMax(double v) { _xConverter.SetGraphMax(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYMin(double v) { _yConverter.SetGraphMin(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYMax(double v) { _yConverter.SetGraphMax(v); return *static_cast<DERIVED*>(this); }
 	};
 
 
 	template<class TYPES, class DERIVED>
-	class CRTP_XYLTGraphDraw : public CRTP_XYGraphDraw<TYPES, DERIVED >
+	class CRTP_XYLTGraphDraw : public CRTP_XYLGraphDraw<TYPES, DERIVED >
 	{
 		public:
 		typedef TYPES Types;
 		typedef CRTP_XYLTGraphDraw<TYPES, DERIVED> CLASSNAME;
-		typedef CRTP_XYGraphDraw<TYPES, DERIVED>   _B;
+		typedef CRTP_XYLGraphDraw<TYPES, DERIVED>   _B;
 		typedef typename TYPES::TypeLabelElement   TypeLabel;
 	
 		TypeLabel   _title;
@@ -885,35 +882,20 @@ namespace GraphDraw_ns
 			_B::AddTopElement(40, _title, 200);
 		}
 		
-		
-		DERIVED& SetTitle(const String& v)     { _title.SetLabel(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetTitlePosition(const ElementPosition v) { _title.SetElementPos(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetTitleFont(const Font& v)   { _title.SetFont(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetTitleWidth(int v)          { _title.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetTitleColor(const Color& v) { _title.SetTextColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& HideTitle(bool v)             { _title.Hide(v); return *static_cast<DERIVED*>(this); }
+		MAKE_GRAPHDRAW_TITLE_FN;
 	
-		DERIVED& SetXLabel(const String& v)     { _xLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXLabelFont(const Font& v)   { _xLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXLabelWidth(int v)          { _xLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXLabelColor(const Color& v) { _xLabel.SetTextColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& HideXLabel(bool v=true)        { _xLabel.Hide(v); return *static_cast<DERIVED*>(this); }
-
-		DERIVED& SetYLabel(const String& v)     { _yLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYLabelFont(const Font& v)   { _yLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYLabelWidth(int v)          { _yLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYLabelColor(const Color& v) { _yLabel.SetTextColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& HideYLabel(bool v=true)        { _yLabel.Hide(v); return *static_cast<DERIVED*>(this); }
+		MAKE_GRAPHDRAW_LABEL_FN(X,x);
+		MAKE_GRAPHDRAW_LABEL_FN(Y,y);
 	};
 
 
 	template<class TYPES, class DERIVED>
-	class CRTP_XYY2GraphDraw : public CRTP_XYGraphDraw<TYPES, DERIVED >
+	class CRTP_XYY2GraphDraw : public CRTP_XYLGraphDraw<TYPES, DERIVED >
 	{
 		public:
 		typedef TYPES Types;
 		typedef CRTP_XYY2GraphDraw<TYPES, DERIVED> CLASSNAME;
-		typedef CRTP_XYGraphDraw<TYPES, DERIVED>   _B;
+		typedef CRTP_XYLGraphDraw<TYPES, DERIVED>   _B;
 		
 		typedef typename TYPES::TypeLabelElement   TypeLabel;
 		typedef typename TYPES::TypeCoordConverter TypeCoordConverter;
@@ -959,21 +941,8 @@ namespace GraphDraw_ns
 
 		TypeCoordConverter& GetY2CoordConverter() { return _y2Converter; }
 		TypeGridAxisDraw& GetY2GridAxisDraw()     { return _y2GridDraw; }
-
-
-		DERIVED& SetY2AxisRectWidth(int v)   { _y2GridDraw.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& setY2NbGridSteps(int v)     { _y2GridDraw.GetGridStepManager().SetNbSteps(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetY2GridColor(Color v)     { _y2GridDraw.setGridColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetY2AxisWidth(int v)       { _y2GridDraw.setAxisWidth(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetY2AxisColor(Color v)     { _y2GridDraw.setAxisColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetY2AxisTextColor(Color v) { _y2GridDraw.setAxisTextColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetY2AxisTextFont(Font v)   { _y2GridDraw.setAxisTextFont(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetY2AxisTickColor(Color v) { _y2GridDraw.setAxisTickColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetY2ScaleType(int v)       { _y2Converter.SetScaleType(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetY2AxisFormatType(AxisTextFormat v) { _y2GridDraw.setAxisTextFormat(v); return *static_cast<DERIVED*>(this); }
-
-		DERIVED& SetY2Min(double v) { _y2Converter.SetGraphMin(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetY2Max(double v) { _y2Converter.SetGraphMax(v); return *static_cast<DERIVED*>(this); }
+		
+		MAKE_GRAPHDRAW_AXIS_FN(Y2,y2);
 	};
 
 
@@ -1011,32 +980,10 @@ namespace GraphDraw_ns
 			_B::AddTopElement(40, _title, 200);
 			_B::SetCurrentYConverter(0);
 		}
-		
-		
-		DERIVED& SetTitle(const String& v)       { _title.SetLabel(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetTitlePosition(const ElementPosition v) { _title.SetElementPos(v); _B::updateSizes(); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetTitleFont(const Font& v)     { _title.SetFont(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetTitleWidth(int v)            { _title.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetTitleColor(const Color& v)   { _title.SetTextColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& HideTitle(bool v=true)          { _title.Hide(v); return *static_cast<DERIVED*>(this); }
-		
-		DERIVED& SetXLabel(const String& v)      { _xLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXLabelFont(const Font& v)    { _xLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXLabelWidth(int v)           { _xLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetXLabelColor(const Color& v)  { _xLabel.SetTextColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& HideXLabel(bool v=true)         { _xLabel.Hide(v); return *static_cast<DERIVED*>(this); }
-
-		DERIVED& SetYLabel(const String& v)      { _yLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYLabelFont(const Font& v)    { _yLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYLabelWidth(int v)           { _yLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetYLabelColor(const Color& v)  { _yLabel.SetTextColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& HideYLabel(bool v=true)         { _yLabel.Hide(v); return *static_cast<DERIVED*>(this); }
-
-		DERIVED& SetY2Label(const String& v)     { _y2Label.SetLabel(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetY2LabelFont(const Font& v)   { _y2Label.SetFont(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetY2LabelWidth(int v)          { _y2Label.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetY2LabelColor(const Color& v) { _y2Label.SetTextColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& HideY2Label(bool v=true)        { _y2Label.Hide(v); return *static_cast<DERIVED*>(this); }
+		MAKE_GRAPHDRAW_TITLE_FN;
+		MAKE_GRAPHDRAW_LABEL_FN(X,x);
+		MAKE_GRAPHDRAW_LABEL_FN(Y,y);
+		MAKE_GRAPHDRAW_LABEL_FN(Y2,y2);
 	};
 };
 

@@ -135,7 +135,7 @@ namespace GraphDraw_ns
 			inline void SetAllowedPosMask( int v ) { _allowedPosMask = v; }
 			inline void DisablePos( int v ) { _allowedPosMask &= ~v; }
 			inline void SetStackingPriority( int v ) { _stackingPriority = v; }
-			inline int GetStackingPriority( int v )  { return _stackingPriority; }
+			inline int GetStackingPriority()  { return _stackingPriority; }
 
 			inline bool IsVertical() const { return ((_pos & GraphDraw_ns::VERTICAL_MASK)!=0); }
 			inline bool IsHorizontal() const { return ((_pos & GraphDraw_ns::HORIZONTAL_MASK)!=0); }
@@ -381,7 +381,8 @@ namespace GraphDraw_ns
 
 		virtual void Update() {
 			if (v_series==0) {
-				v_series = ValueTo<TypeVectorSeries*>(_B::_parent->GetSeries());
+				v_series = _B::_parent->GetSeries().template To<typename TYPES::TypeVectorSeries*>();
+				// ###### BUG DE CONVERSION ######
 			}
 
 			_legendWeight = 0;

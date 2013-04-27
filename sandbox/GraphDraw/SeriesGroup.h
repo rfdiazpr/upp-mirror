@@ -12,7 +12,7 @@ template<class TYPES, class DERIVED>
 	class SeriesGroup {
 	public:
 		typedef SeriesGroup<TYPES, DERIVED> CLASSNAME;
-		Vector<typename TYPES::TypeSeriesConfig> series;
+		typename TYPES::TypeVectorSeries    series;
 		typename TYPES::TypeCoordConverter* _currentXConverter;
 		typename TYPES::TypeCoordConverter* _currentYConverter;
 
@@ -168,7 +168,9 @@ template<class TYPES, class DERIVED>
 			typename TYPES::TypeSeriesConfig &s = series.Add();
 			s.Init(series.GetCount()-1, _setDefaultStylesOnCreate);
 			s.SetDataSource(&data, false);
+			ASSERT(_currentXConverter!=0);
 			s.xConverter = _currentXConverter;
+			ASSERT(_currentYConverter!=0);
 			s.yConverter = _currentYConverter;
 			_isDataModified = true;
 //			static_cast<DERIVED*>(this)->Refresh();
@@ -179,7 +181,9 @@ template<class TYPES, class DERIVED>
 			typename TYPES::TypeSeriesConfig &s = series.Add();
 			s.Init(series.GetCount()-1, _setDefaultStylesOnCreate);
 			s.SetDataSource(data);
+			ASSERT(_currentXConverter!=0);
 			s.xConverter = _currentXConverter;
+			ASSERT(_currentYConverter!=0);
 			s.yConverter = _currentYConverter;
 			_isDataModified = true;
 //			static_cast<DERIVED*>(this)->Refresh();
@@ -225,7 +229,9 @@ template<class TYPES, class DERIVED>
 			typename TYPES::TypeSeriesConfig &s = series.Insert(id);
 			s.Init(id, _setDefaultStylesOnCreate);
 			s.SetDataSource(data);
+			ASSERT(_currentXConverter!=0);
 			s.xConverter = _currentXConverter;
+			ASSERT(_currentYConverter!=0);
 			s.yConverter = _currentYConverter;
 			_isDataModified = true;
 //			static_cast<DERIVED*>(this)->Refresh();

@@ -16,5 +16,6 @@ file
 	SeriesGroup.h,
 	GraphElement.h,
 	GraphFunctions.h,
-	GridAxisDraw.h;
+	GridAxisDraw.h,
+	srcimp.tpp;
 

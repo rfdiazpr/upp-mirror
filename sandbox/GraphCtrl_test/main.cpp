@@ -101,7 +101,7 @@ GraphDraw_test::GraphDraw_test()
 	//g4.setGraphSize(1,20,0,20, 0,20);
 	g4.GetYGridAxisDraw().setMajorTickMark( (new LineTickMark())->SetTickLength( 3 ) );
 	points2 << Pointf(0,0) << Pointf(1, 2)<< Pointf(2,3)<< Pointf(4, 3)<< Pointf(5.5, 4) << Pointf(6,5) << Pointf(7, 6)<< Pointf(8,10)<< Pointf(10, 9)<< Pointf(15, 8);
-	g4.AddSeries(points2).PlotStyle<LineSeriesPlot>().NoMark().Legend("-----S2-----");; // tied to last X/Y  coordConverters ==> X / Y2
+	g4.AddSeries(points2).PlotStyle<LineSeriesPlot>().NoMark().Legend("S2"); // tied to last X/Y  coordConverters ==> X / Y2
 	//g4.SetMode( GraphDraw_ns::MD_DRAW );
 
 	bReport << THISBACK(DoReport);

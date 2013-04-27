@@ -1,0 +1,7 @@
+LAYOUT(GraphDraw_testLayout, 664, 444)
+	ITEM(XYY2LT_GraphCtrl, g4, SetXMax(10).SetY2MaxRangeLimit(20).SetMode(GraphDraw_ns::MD_SUBPIXEL).SetXMinRangeLimit(-10).SetXMaxRangeLimit(20).SetYMax(10).SetYMinRangeLimit(-10).SetYMaxRangeLimit(20).SetY2Max(10).SetY2MinRangeLimit(-10).SetFrame(ButtonFrame()).HSizePosZ(4, 4).VSizePosZ(280, 4))
+	ITEM(XYLT_GraphCtrl, g3, SetYMaxRangeLimit(30).SetMode(GraphDraw_ns::MD_ANTIALIASED).SetXMax(60000).SetXMinRangeLimit(0).SetXMaxRangeLimit(100000).SetYMin(-20).SetYMax(20).SetYMinRangeLimit(-30).SetFrame(ButtonFrame()).HSizePosZ(212, 4).TopPosZ(4, 272))
+	ITEM(XY_GraphCtrl, g1, SetMode(GraphDraw_ns::MD_ANTIALIASED).SetXScaleType(GraphGConv::AXIS_SCALE_LOG).SetXAxisFormatType(GraphDraw_ns::AXIS_TEXT_FORMAT_LOG).SetXMin(0.2).SetXMax(30).SetXMinRangeLimit(0.05).SetXMaxRangeLimit(40).SetYMax(20).SetFrame(ButtonFrame()).LeftPosZ(4, 204).TopPosZ(24, 252))
+	ITEM(Button, bReport, SetLabel(t_("REPORT")).SetFrame(OutsetFrame()).LeftPosZ(72, 56).TopPosZ(0, 20))
+END_LAYOUT
+

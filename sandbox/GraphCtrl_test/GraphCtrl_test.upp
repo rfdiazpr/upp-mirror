@@ -1,0 +1,16 @@
+uses
+	CtrlLib,
+	GraphCtrl,
+	Functions4U,
+	Report;
+
+file
+	GraphCtrl_test.h,
+	GraphCtrl_test.lay,
+	main.cpp,
+	GraphCtrl_test.iml,
+	GraphCtrl_test.usc;
+
+mainconfig
+	"" = "GUI SSE2";
+

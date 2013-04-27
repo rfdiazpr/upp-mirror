@@ -1,0 +1,13 @@
+
+ctrl MyGraphCtrl {
+	group "DQ";
+
+	GetMinSize() { return XMinSize(); }
+	GetStdSize() { sz = GetTextSize("Label", .StdFont); sz.cy += 6; sz.cx *= 1.2; return sz; }
+
+	>Base;
+
+	Paint(w) {
+		sz = ViewSize(w);
+	}
+};

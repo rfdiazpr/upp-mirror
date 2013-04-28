@@ -2,35 +2,44 @@
 
 #include "Client.h"
 
-void Usage(){
-	String appname = GetExeTitle();
-	Cerr() << "Usage:\n"
-	<< "\t" << appname << " --help\n"
-	<< "\t\t" << "Prints usage information (this text)\n"
-	<< "\t" << appname << " --get [<max_age>]\n"
-	<< "\t\t" << "Returns a list of not yet built revisions, optionally\n"
-	<< "\t\t" << "limited to <max_age> days in the past.\n"
-	<< "\t" << appname << " --accept <revision> [<start_time>]\n"
-	<< "\t\t" << "Notifies server about building <revision>.\n"
-	<< "\t" << appname << " --submit <revision> <result> <duration> <output_file> [<start_time> [<end_time>]]\n"
-	<< "\t\t" << "Sends results to the server. Optional start and end times can be supplied as int64.\n"
-	<< "\t" << appname << " --command <command> [<max_age>]\n"
-	<< "\t\t" << "Gets and accepts work automatically, then performs <command>\n"
-	<< "\t\t" << "with '@revision' substituted by actual revision number\n"
-	<< "\t\t" << "and then submits the results to server. Optional parameter\n"
-	<< "\t\t" << "<max_age> can be used to restrict the execution to commits\n"
-	<< "\t\t" << "<max_age> days old.\n"
-	<< "The optional <start_time> and <end_time> parameters can be used to specify when the build took place. "
-	   "The value is int64 representation of U++ Time. If not supplied, server will use time of the accept "
-	   "request as start and time of submit request as end. \n"
-	<< "It is also posible to use short form switches '-h', '-g', '-a', '-s' and '-c'.\n";
+void Usage(int exitcode){
+	(exitcode==0?Cout():Cerr()) << 
+	"Usage:\n"
+	"\t" << GetExeTitle() << " [options] action\n\n"
+	"Actions:\n"
+	"\t-h --help\n"
+	"\t\tPrints usage information (this text)\n"
+	"\t-g --get\n"
+	"\t\tReturns a list of not yet built revisions\n"
+	"\t-a --accept <revision>\n"
+	"\t\tNotifies server about building <revision>.\n"
+	"\t-s --submit <revision> <result> <duration> <output_file>\n"
+	"\t\tSends results to the server. Optional start and end times can\n"
+	"\t\tbe supplied as int64.\n"
+	"\t-c --command <command>\n"
+	"\t\tGets and accepts work automatically, then performs <command>\n"
+	"\t\twith '@revision' substituted by actual revision number\n"
+	"\t\tand then submits the results to server.\n\n"
+	"Options:\n"
+	"\t-C --config <file>\n"
+	"\t\tPath to configuration file\n"
+	"\t-S --start <time>\n"
+	"\t\tStart date given in \"YYYY/MM/DD hh:mm:ss\" format, only \n"
+	"\t\thonoured with --accept and --submit\n"
+	"\t-E --end <time>\n"
+	"\t\tEnd date given given in \"YYYY/MM/DD hh:mm:ss\" format, only\n"
+	"\t\thonoured with --submit\n"
+	"\t-A --age <days>\n"
+	"\t\tMaximum age of commits, only honoured with --get and --command\n\n"
+	"If not supplied, server will use the time of the accept request as start time\n"
+	"and the time of submit request as end time.\n";
+	Exit(exitcode);
 }
 
-void Command(const Vector<String>& cmd){
+void Command(String& command, int maxage){
 	// ask for work
 	WatchdogClient client;
-	int max_age = cmd.GetCount()==3?StrInt(cmd[2]):-1;
-	if(!client.GetWork(max_age))
+	if(!client.GetWork(maxage))
 		Exit(2);
 	
 	// select what to do
@@ -46,7 +55,6 @@ void Command(const Vector<String>& cmd){
 		Exit(3);
 	
 	// replace @revision
-	String command = cmd[1];
 	command.Replace("@revision", IntStr(revision));
 	
 	// do work
@@ -70,12 +78,23 @@ void Command(const Vector<String>& cmd){
 		Exit(4);
 }
 
-void CheckParamCount(const Vector<String>& cmd, int expected_min, int expected_max=-1){
-	if(expected_max < 0) expected_max = expected_min;
-	if(cmd.GetCount() < expected_min || cmd.GetCount() > expected_max) {
-		Cerr() << "ERROR: Wrong number of parameters for " << cmd[0] << "\n";
-		Usage();
-		Exit(1);
+inline void CheckParamCount(const Vector<String>& cmd, int current, int count){
+	if(cmd.GetCount() <= current+count) {
+		Cerr() << "ERROR: Wrong number of parameters for " << cmd[current] << "\n";
+		Usage(1);
+	}
+}
+
+inline void SetAction(char& action, const String& value){
+	if(action == 0) {
+		if (value.StartsWith("--")) {
+			action=value[2];
+		} else {
+			action=value[1];
+		}
+	} else {
+		Cerr() << "ERROR: Only one action can be specified\n\n";
+		Usage(3);
 	}
 }
 
@@ -84,26 +103,75 @@ CONSOLE_APP_MAIN{
 	SetDateFormat("%1:4d/%2:02d/%3:02d");
 	SetDateScan("ymd");
 	
-	String cfg = GetDataFile(GetExeTitle()+".ini");
+	const Vector<String>& cmd = CommandLine();
+	if(cmd.GetCount() < 1) {
+		Usage(1);
+	}
+	
+	Time start;
+	Time end;
+	int maxage=-1;
+	int revision=-1;
+	int duration=-1;
+	int result=-1;
+	char action = 0;
+	String cfg;
+	String output;
+	String command;
+	
+	for(int i = 0; i < cmd.GetCount(); i++){
+		if(cmd[i] == "--help" || cmd[i] == "-h") {
+			Usage(0);
+		} else if(cmd[i] == "--get" || cmd[i] == "-g") {
+			SetAction(action, cmd[i]);
+		} else if(cmd[i] == "--accept" || cmd[i] == "-a") {
+			SetAction(action, cmd[i]);
+			CheckParamCount(cmd, i, 1);
+			revision = StrInt(cmd[++i]);
+		} else if(cmd[i] == "--submit" || cmd[i] == "-s") {
+			SetAction(action, cmd[i]);
+			CheckParamCount(cmd, i, 4);
+			revision = StrInt(cmd[++i]);
+			result = StrInt(cmd[++i]);
+			duration = StrInt(cmd[++i]);
+			output = cmd[++i];
+		} else if(cmd[i] == "--command" || cmd[i] == "-c") {
+			SetAction(action, cmd[i]);
+			CheckParamCount(cmd, i, 1);
+			command = cmd[++i];
+		} else if(cmd[i] == "--config" || cmd[i] == "-C") {
+			CheckParamCount(cmd, i, 1);
+			cfg = cmd[++i];
+		} else if(cmd[i] == "--start" || cmd[i] == "-S") {
+			CheckParamCount(cmd, i, 1);
+			start = ScanTime(cmd[++i]);
+		} else if(cmd[i] == "--end" || cmd[i] == "-E") {
+			CheckParamCount(cmd, i, 1);
+			end = ScanTime(cmd[++i]);
+		} else if(cmd[i] == "--age" || cmd[i] == "-A") {
+			CheckParamCount(cmd, i, 1);
+			maxage = StrInt(cmd[++i]);
+		} else {
+			Cerr() << "ERROR: Unknown argument '" << cmd[i] << "'\n\n";
+			Usage(2);
+		}
+	}
+	
+	if (cfg.IsEmpty())
+		cfg = GetExeDirFile(GetExeTitle()+".ini");
 	if(!FileExists(cfg)){
-		Cerr() << "Configuration file '" << cfg << "' not found";
+		Cerr() << "ERROR: Configuration file '" << cfg << "' not found\n";
 		Exit(1);
 	}
 	SetIniFile(cfg);
-	LOG_(Ini::log_level==2,GetIniInfoFormatted());
+	LOG_(Ini::log_level==2, GetIniInfoFormatted());
 	
-	const Vector<String>& cmd = CommandLine();
-	if(cmd.GetCount() < 1) {
-		Usage();
-		Exit(2);
-	}
-	if(cmd[0] == "-h" || cmd[0] == "--help"){
-		Usage();
-	} else if(cmd[0] == "-g" || cmd[0] == "--get") {
-		CheckParamCount(cmd, 1, 2);
+	if (action == 0) {
+		Cerr() << "ERROR: No action given\n\n";
+		Usage(5);
+	} else if (action == 'g') {
 		WatchdogClient client;
-		int max_age = cmd.GetCount()==2?StrInt(cmd[1]):-1;
-		if(!client.GetWork(max_age))
+		if(!client.GetWork(maxage))
 			Exit(3);
 		if(client.todo.IsEmpty()){
 			if(Ini::log_level > 0) 
@@ -113,50 +181,36 @@ CONSOLE_APP_MAIN{
 		for(int i = 0; i < client.todo.GetCount(); i++){
 			Cout() << client.todo[i] << "\n";
 		}
-	} else if(cmd[0] == "-a" || cmd[0] == "--accept") {
-		CheckParamCount(cmd, 2, 3);
-		int rev = StrInt(cmd[1]);
-		if (rev <= 0){
+	} else if(action == 'a') {
+		if (revision <= 0){
 			Cerr() << "ERROR: Wrong value of <revision>\n";
 			Exit(4);
 		}
-		Time start;
-		if(cmd.GetCount()==3){
-			start = ScanTime(cmd[2]);
-		}
 		WatchdogClient client;
-		if(!client.AcceptWork(rev, start))
+		if(!client.AcceptWork(revision, start))
 			Exit(3);
-	} else if(cmd[0] == "-s" || cmd[0] == "--submit") {
-		CheckParamCount(cmd, 5, 7);
-		int rev = StrInt(cmd[1]);
-		if (rev <= 0){
+	} else if(action == 's') {
+		if (revision <= 0){
 			Cerr() << "ERROR: Wrong value of <revision>\n";
 			Exit(1);
 		}
-		int result = StrInt(cmd[2]);
 		if (result < WD_READY || result > WD_DONE){
 			Cerr() << "ERROR: Wrong value of <result>\n";
 			Exit(1);
 		}
-		int duration = StrInt(cmd[3]);
 		if (duration < 0){
 			Cerr() << "ERROR: Wrong value of <duration>\n";
 			Exit(1);
 		}
-		String output = LoadFile(cmd[4]);
-		if (output.IsVoid()){
-			Cerr() << "ERROR: Can't load file '"<<cmd[4]<<"'\n";
+		String out = LoadFile(output);
+		if (out.IsVoid()){
+			Cerr() << "ERROR: Can't load file '"<<output<<"'\n";
 			Exit(4);
 		}
 		WatchdogClient client;
-		client.SubmitWork(rev, result, duration, output);
-	} else if(cmd[0] == "-c" || cmd[0] == "--command") {
-		CheckParamCount(cmd, 2, 3);
-		Command(cmd);
-	} else {
-		Usage();
-		Exit(1); 
+		client.SubmitWork(revision, result, duration, out);
+	} else if(action == 'c') {
+		Command(command, maxage);
 	}
 }
 

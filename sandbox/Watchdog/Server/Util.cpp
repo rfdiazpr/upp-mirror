@@ -60,6 +60,8 @@ void SvnLog::Load(String& log) {
 }
 
 void SvnLog::Store() {
+	if(IsNull(date))
+		date=Time(0,0,0);
 	Sql sql;
 	sql * Insert(WORK)(REVISION,revision)
 	                  (DT,date)
@@ -69,7 +71,8 @@ void SvnLog::Store() {
 }
 
 void SvnLog::Clear() {
-	author = msg = "";
+	author = "unknown";
+	msg = "*** no commit message ***";
 	date = Null;
 	dirs.Clear();
 	revision = -1;
@@ -86,7 +89,7 @@ String SvnLog::AffectedPath() {
 			dirs[j] = dirs[i];
 		}
 	}
-	return dirs[0];
+	return dirs.GetCount()?dirs[0]:"/";
 }
 
 String SvnLog::ToString() const {
@@ -100,8 +103,14 @@ void UpdateLogs(){
 	SvnLog svnlog;
 	while(Sys(cmd, xml) == 0){
 		svnlog.Load(xml);
-		svnlog.Store();
 		lastrev()++;
+		if(xml!="") {
+			svnlog.Load(xml);
+		} else {
+			svnlog.Clear();
+			svnlog.revision=lastrev();
+		}
+		svnlog.Store();
 		cmd = "svn log --xml --verbose --incremental --revision " + IntStr(lastrev()+1) + " " + Ini::svn;
 	}
 }
@@ -235,9 +244,9 @@ void SendEmails(const Vector<String>& to, const Vector<String>& tokens, const St
 	RLOG("Sending emails");
 	Smtp mail;
 	
-	mail.Host(Ini::smtp_host).Port(Ini::smtp_port);
-	if(Ini::smtp_use_ssl)
-	    mail.SSL();
+	mail.Host(Ini::smtp_host)
+	    .Port(Ini::smtp_port)
+	    .SSL(Ini::smtp_use_ssl);
 	if(!IsEmpty(Ini::smtp_user))
 	   mail.Auth(Ini::smtp_user, Ini::smtp_password);
 	String body, htmlbody;

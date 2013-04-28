@@ -113,3 +113,47 @@ SKYLARK(Unsubscribe, "unsubscribe")
 	else
 		http << "Unsubscribing failed. Possible reasons for this are:<br>The subscription was already canceled<br>The link was corupted";
 }
+
+SKYLARK(Sitemap, "sitemap.xml")
+{
+	ValueMap url;
+	ValueArray urls;
+	
+	url.Set("FREQ","daily");
+	url.Set("PRI","1.0");
+	
+	url.Set("LOC",""); urls.Add(url);
+	url.Set("LOC","feeds"); urls.Add(url);
+	
+	url.Set("FREQ","hourly");
+	url.Set("LOC","rss"); urls.Add(url);
+	url.Set("LOC","clients"); urls.Add(url);
+	url.Set("LOC","commits"); urls.Add(url);
+	url.Set("LOC","results"); urls.Add(url);
+	
+	url.Set("FREQ","daily");
+	url.Set("PRI","0.5");
+	
+	SQLR * Select(ID).From(CLIENT);
+	while(SQLR.Fetch()){
+		url.Set("LOC",Format("client/%d",SQLR[0]));
+		urls.Add(url);
+	}
+	
+	SQLR * Select(REVISION).From(WORK);
+	while(SQLR.Fetch()){
+		url.Set("LOC",Format("commit/%d",SQLR[0]));
+		urls.Add(url);
+	}
+	
+	SQLR * Select(REV,CLIENT_ID).From(RESULT);
+	while(SQLR.Fetch()){
+		url.Set("LOC",Format("result/%d/%d", SQLR[0], SQLR[1]));
+		urls.Add(url);
+		url.Set("LOC",Format("output/%d/%d", SQLR[0], SQLR[1]));
+		urls.Add(url);
+	}
+	
+	http("URLS",urls)("SELF",Ini::server_url)
+	 .RenderResult("Watchdog/Server/sitemap");
+}

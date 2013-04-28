@@ -1,6 +1,7 @@
 SERVER
 ------
-Try/catch blocks around sql where it can fail
+Subtest support
+Graphing
 Timezone handling?
 
 CLIENT

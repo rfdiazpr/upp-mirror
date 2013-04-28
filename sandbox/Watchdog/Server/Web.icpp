@@ -13,15 +13,15 @@ SKYLARK(HomePage, "") {
 	      .GroupBy(STATUS);
 	ValueMap vm;
 	ValueArray daily, monthly, total;
+	for(int i = WD_READY; i <= WD_DONE; i++){
+		daily.Set(i, 0);
+		monthly.Set(i, 0);
+		total.Set(i, 0);
+	}
 	while(SQLR.Fetch(vm)) {
 		daily.Set(int(vm[STATUS]),vm["DAILY"]);
 		monthly.Set(int(vm[STATUS]),vm["MONTHLY"]);
 		total.Set(int(vm[STATUS]),vm["TOTAL"]);
-	}
-	for(int i = WD_READY; i <= WD_DONE; i++){
-		if(IsNull(daily[i])) daily.Set(i, 0);
-		if(IsNull(monthly[i])) monthly.Set(i, 0);
-		if(IsNull(total[i])) total.Set(i, 0);
 	}
 	
 	ValueMap misc;
@@ -35,7 +35,8 @@ SKYLARK(HomePage, "") {
 		misc.Add("T_ACTIVE" ,vm["TOTAL"]);
 	}
 	misc.Add("LAST", lastrev());
-
+	
+	
 	http("MISC", misc)("DAILY",daily)("MONTHLY",monthly)("TOTAL",total)
 	    .RenderResult("Watchdog/Server/index");
 }
@@ -47,8 +48,64 @@ SKYLARK(Clients, "clients") {
 	ValueMap vm;
 	while(SQLR.Fetch(vm))
 		client.Add(vm);
+	
 	http("CLIENT", client)
 	    .RenderResult("Watchdog/Server/clients");
+}
+
+SKYLARK(EditClient, "editclient/*") {
+	int cid = -1;
+	ValueMap client;
+	if(http[0] != "new") {
+		cid = http.Int(0);
+		SQLR * Select(ID, NAME, DESCR, SRC)
+		       .From(CLIENT).Where(ID == cid);
+		if(!SQLR.Fetch(client)){
+			http << "unknown client";
+			return;
+		}
+	} else {
+		client.Set("ID", cid);
+	}
+
+	String id = http[".__identity__"];
+	if(id.IsEmpty()) {
+		id = AsString(Uuid::Create());
+		http.SessionSet("__identity__", id);
+	}
+
+	http("CLIENT", client)("WD_ID", id)
+	    .RenderResult("Watchdog/Server/editclient");
+}
+
+SKYLARK(SaveClient, "saveclient:POST"){
+	int cid = http.Int("client");
+	if(!CheckAuth2(http, SQL, cid, "/saveclient"))
+		return;
+	if(cid>0) {
+		SqlUpdate update = Update(CLIENT)(NAME, http["name"])
+		                    (DESCR, http["description"])
+		                    (SRC, http["path"]);
+		if(http["changepwd"]=="on")
+			update(PASSWORD, http["password"])(SALT, http["salt"]);
+		SQL * update.Where(ID==cid);
+	} else {
+		SQL * Insert(CLIENT)(NAME, http["name"])
+	                    (PASSWORD, http["password"])
+	                    (DESCR, http["description"])
+	                    (SRC, http["path"])
+	                    (SALT, http["salt"]);
+	}
+	http.Redirect("/clients");
+}
+
+SKYLARK(RemoveClient, "removeclient/*:POST"){
+	int cid = http.Int(0);
+	if(!CheckAuth2(http, SQL, cid, "/removeclient/"+IntStr(cid)))
+		return;
+	SQL * Delete(RESULT).Where(CLIENT_ID==cid);
+	SQL * Delete(CLIENT).Where(ID==cid);
+	http.Redirect("/clients");
 }
 
 SKYLARK(Client, "client/*") {
@@ -186,10 +243,13 @@ SKYLARK(Result, "result/*/*") {
 	    .RenderResult("Watchdog/Server/result");
 }
 
-SKYLARK(WebAuth, "auth/**")
-{
+void Auth(Http& http, int cid){
 	String nonce = AsString(Uuid::Create());
-	SQLR * Select(ID,NAME,SALT).From(CLIENT);
+	SqlSet allowed;
+	allowed.Cat(0);
+	if(cid!=0)
+		allowed.Cat(cid);
+	SQLR * Select(ID,NAME,SALT).From(CLIENT).Where(In(ID, allowed));
 	ValueMap clients;
 	String salts;
 	ValueMap vm;
@@ -207,7 +267,6 @@ SKYLARK(WebAuth, "auth/**")
 	for(int i = 0; i < http.GetParamCount(); ++i)
 		target.Cat() << "/" << http[i];
 	
-	
 	http.SetHeader("wd_nonce",nonce)
 	    .SetHeader("wd_id", id)
 	    .SetHeader("wd_action", target)
@@ -219,6 +278,31 @@ SKYLARK(WebAuth, "auth/**")
 	    ("CLIENTS", clients)
 	    ("TARGET", target)
 	    .RenderResult("Watchdog/Server/auth");
+}
+
+SKYLARK(WebAuth, "auth/**"){
+	int cid;
+	for(int i = 0; i < http.GetParamCount(); i++){
+		cid = http.Int(i);
+		if(!IsNull(cid))
+			break;
+	}
+	Auth(http, cid);
+}
+
+SKYLARK(WebAuthPost, "auth/**:POST"){
+	const VectorMap<String, Value>& vars = http.Variables();
+	String pass;
+	ValueMap vm;
+	for(int i = 0; i < vars.GetCount(); i++){
+		if(vars.GetKey(i).StartsWith("wd_"))
+			vm.Add(vars.GetKey(i).Mid(3), vars[i]);
+	}
+	int cid = 0;
+	if(vars.Find("wd_client") >= 0)
+		cid=http.Int("wd_client");
+	http("PASS", vm);
+	Auth(http, http.Int("wd_client"));
 }
 
 SKYLARK(Remove, "remove/*/*:POST"){

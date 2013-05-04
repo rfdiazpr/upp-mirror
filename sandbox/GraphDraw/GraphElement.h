@@ -415,16 +415,8 @@ namespace GraphDraw_ns
 				if (idx<nLab) {
 					int x = scale*ix*_legendWeight + txtHeight/2;
 					int y = iy*txtHeight + txtHeight/2;
-	
-					Vector <Point> vp;
-					vp << Point(x,y+txtHeight) << Point(x+scale*_legendStyleLength, y);
-					if ((*v_series)[idx].opacity > 0 && (*v_series)[idx].seriesPlot)
-						DrawPolylineOpa(w, vp, scale, 1, scale*(*v_series)[idx].thickness, (*v_series)[idx].color, (*v_series)[idx].dash);
-	
-					Point p(x+scale*(_legendStyleLength/2),y+txtHeight/2);
-					if ((*v_series)[idx].markWidth >= 1 && (*v_series)[idx].markPlot)
-						(*v_series)[idx].markPlot->Paint(w, scale, p, (*v_series)[idx].markWidth, (*v_series)[idx].markColor);
-	
+					Image img = (*v_series)[idx].MakeSerieIcon(txtHeight);
+					w.DrawImage(x,y, img);
 					DrawText(w, x+scale*(_legendStyleLength+2), y, 0, (*v_series)[idx].legend, scaledFont,
 					         (  ((*v_series)[idx].seriesPlot.IsEmpty()) ? (*v_series)[idx].markColor : (*v_series)[idx].color ) );
 					++idx;

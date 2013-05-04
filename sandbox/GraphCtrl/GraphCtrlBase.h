@@ -98,7 +98,6 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		_B::setScreenSize( GetSize() );
 	}
 
-
 	virtual Value GetParentCtrl() {
 		return RawToValue(static_cast<Ctrl*>(this));
 	}
@@ -283,15 +282,17 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		bar.Add( t_("Show ALL"), THISBACK(ShowAllSeries) );
 		for (int c=0; c < _B::series.GetCount(); c++) {
 			String txt = t_("Show");
+			 _B::series[c].UpdateSerieImage();
 			txt += " : " + _B::series[c].legend;
-		bar.Add(txt ,THISBACK1(HideSeries, c)).Check(_B::IsVisible(c));
+			//bar.Add( txt, _B::series[c].serieIcon, THISBACK1(HideSeries, c)).Check(_B::IsVisible(c));
+			bar.Add( txt, THISBACK1(HideSeries, c)).Check(_B::IsVisible(c));
 		}
 		
 		bar.Separator();
 		for (int c=0; c < _B::series.GetCount(); c++) {
 			String txt = t_("Edit");
 			txt += " : " + _B::series[c].legend;
-			bar.Add(txt, GraphCtrlImg::MENU_SERIES(), THISBACK1(OpenSeriesPropertiesDlg, c));
+			bar.Add(txt,  _B::series[c].GetSerieIcon(), THISBACK1(OpenSeriesPropertiesDlg, c));
 		}
 	}
 

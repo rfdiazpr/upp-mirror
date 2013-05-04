@@ -74,10 +74,17 @@ LAYOUT(GraphBasePropertiesBaseLayout, 400, 92)
 	ITEM(EditInt, topMargin, LeftPosZ(184, 40).TopPosZ(40, 21))
 END_LAYOUT
 
+LAYOUT(LabelPropertiesDlgLayout, 400, 200)
+	ITEM(ColorPusher, textColor, LeftPosZ(76, 36).TopPosZ(112, 16))
+	ITEM(LabelBox, dv___1, SetLabel(t_("Label Text")).HSizePosZ(4, 4).TopPosZ(96, 64))
+	ITEM(Label, dv___2, SetLabel(t_("Color")).SetAlign(ALIGN_RIGHT).LeftPosZ(8, 64).TopPosZ(111, 17))
+	ITEM(EditString, labelText, LeftPosZ(8, 380).TopPosZ(132, 20))
+END_LAYOUT
+
 LAYOUT(SeriesPropertiesDlgLayout, 356, 212)
 	ITEM(DropList, markShape, LeftPosZ(264, 76).TopPosZ(72, 20))
 	ITEM(LabelBox, dv___1, SetLabel(t_("Mark")).LeftPosZ(192, 156).TopPosZ(28, 72))
-	ITEM(EditDouble, opacity, Max(1).Min(0).Tip(t_("Null value = No Fill")).HSizePosZ(108, 200).TopPosZ(116, 20))
+	ITEM(EditDouble, opacity, Max(1).Min(0).Tip(t_("Null value = No Fill")).LeftPosZ(108, 48).TopPosZ(116, 20))
 	ITEM(Label, dv___3, SetLabel(t_("Opacity")).SetAlign(ALIGN_RIGHT).LeftPosZ(12, 88).TopPosZ(116, 21))
 	ITEM(ColorPusher, lineColor, LeftPosZ(12, 60).TopPosZ(72, 20))
 	ITEM(DropList, lineDash, LeftPosZ(80, 76).TopPosZ(72, 20))
@@ -96,10 +103,11 @@ LAYOUT(SeriesPropertiesDlgLayout, 356, 212)
 	ITEM(ColorPusher, markColor, LeftPosZ(196, 60).TopPosZ(72, 20))
 END_LAYOUT
 
-LAYOUT(LabelPropertiesDlgLayout, 400, 200)
-	ITEM(ColorPusher, textColor, LeftPosZ(76, 36).TopPosZ(112, 16))
-	ITEM(LabelBox, dv___1, SetLabel(t_("Label Text")).HSizePosZ(4, 4).TopPosZ(96, 64))
-	ITEM(Label, dv___2, SetLabel(t_("Color")).SetAlign(ALIGN_RIGHT).LeftPosZ(8, 64).TopPosZ(111, 17))
-	ITEM(EditString, labelText, LeftPosZ(8, 380).TopPosZ(132, 20))
+LAYOUT(SeriesManagementLayout, 540, 332)
+	ITEM(WithSeriesPropertiesDlgLayout<TopWindow>, dv___0, LeftPosZ(160, 376).TopPosZ(24, 268))
+	ITEM(Button, ok, SetLabel(t_("OK")).HCenterPosZ(64, 130).BottomPosZ(8, 28))
+	ITEM(Button, cancel, SetLabel(t_("CANCEL")).HCenterPosZ(64, 28).BottomPosZ(8, 28))
+	ITEM(ArrayCtrl, dv___3, LeftPosZ(4, 152).TopPosZ(8, 316))
+	ITEM(LabelBox, dv___4, LeftPosZ(160, 376).TopPosZ(4, 288))
 END_LAYOUT
 

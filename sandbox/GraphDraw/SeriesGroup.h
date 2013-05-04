@@ -162,7 +162,7 @@ template<class TYPES, class DERIVED>
 		DERIVED& AddSeries(Upp::Array<Pointf> &points)                                         {return AddSeries<ArrayPointf>(points);}
 		DERIVED& AddSeries(double (*function)(double))                                         {return AddSeries<FuncSource>(function);}
 		DERIVED& AddSeries(Pointf (*function)(double), int np, double from = 0, double to = 1) {return AddSeries<FuncSourcePara>(function, np, from, to);}
-		DERIVED& AddSeries(PlotFunc &function)                                                 {return AddSeries<PlotFuncSource>(function);}
+		DERIVED& AddSeries(PlotExplicFunc &function)                                           {return AddSeries<PlotExplicFuncSource>(function);}
 		DERIVED& AddSeries(PlotParamFunc function, int np, double from = 0, double to = 1)     {return AddSeries<PlotParamFuncSource>(function, np, from, to);}
 		DERIVED& AddSeries(DataSource &data) {
 			typename TYPES::TypeSeriesConfig &s = series.Add();
@@ -222,7 +222,7 @@ template<class TYPES, class DERIVED>
 		void InsertSeries(int id, Upp::Array<Pointf> &points)                                         {InsertSeries<ArrayPointf>(id, points);}
 		void InsertSeries(int id, double (*function)(double))                                         {InsertSeries<FuncSource>(id, function);}
 		void InsertSeries(int id, Pointf (*function)(double), int np, double from = 0, double to = 1) {InsertSeries<FuncSourcePara>(id, function, np, from, to);}
-		void InsertSeries(int id, PlotFunc &function)                                                 {InsertSeries<PlotFuncSource>(id, function);}
+		void InsertSeries(int id, PlotExplicFunc &function)                                           {InsertSeries<PlotExplicFuncSource>(id, function);}
 		void InsertSeries(int id, PlotParamFunc function, int np, double from = 0, double to = 1)     {InsertSeries<PlotParamFuncSource>(id, function, np, from, to);}
 		void _InsertSeries(int id, DataSource *data) {
 			ASSERT(IsValid(id));

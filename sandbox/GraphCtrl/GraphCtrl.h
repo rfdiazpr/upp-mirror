@@ -3,7 +3,6 @@
 
 #include <CtrlLib/CtrlLib.h>
 #include <GraphDraw/GraphDraw.h>
-
 using namespace Upp;
 
 

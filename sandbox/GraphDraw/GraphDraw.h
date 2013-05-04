@@ -560,7 +560,7 @@ namespace GraphDraw_ns
 						nbVisiblePoints = 0;
 						TypeGraphCoord x;
 						TypeGraphCoord y;
-						for (int c=imin; c<imax; c+=inc)
+						for (Upp::int64 c=imin; c<imax; c+=inc)
 						{
 							x = _B::series[j].PointsData()->x(c);
 							y = _B::series[j].PointsData()->y(c);
@@ -583,7 +583,7 @@ namespace GraphDraw_ns
 							nbVisiblePoints = 0;
 							TypeGraphCoord x;
 							TypeGraphCoord y;
-							for ( int c=imin; c<imax; ++c )
+							for ( Upp::int64 c=imin; c<imax; ++c )
 							{
 								x = _B::series[j].PointsData()->x(c);
 								y = _B::series[j].PointsData()->y(c);
@@ -600,7 +600,7 @@ namespace GraphDraw_ns
 						else
 						{
 							if ( (tabs(imax-imin)>1000) ) { inc = tabs(imax-imin)/1000 + 1; }
-							for ( int c=imin; c<imax; c+=inc)
+							for ( Upp::int64 c=imin; c<imax; c+=inc)
 							{
 								p1 << Point(xConverter.toScreen( _B::series[j].PointsData()->x(c)),
 								            yConverter.toScreen( _B::series[j].PointsData()->y(c)));
@@ -924,10 +924,6 @@ namespace GraphDraw_ns
 		virtual ~CRTP_XYY2GraphDraw() {}
 
 		private:
-//		DERIVED& setGraphSize(Rectf r)
-//		{
-//			return *static_cast<DERIVED*>(this);
-//		}
 		
 		public:
 		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1, TypeGraphCoord y20, TypeGraphCoord y21 )

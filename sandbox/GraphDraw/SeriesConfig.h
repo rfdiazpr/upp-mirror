@@ -37,6 +37,8 @@ namespace GraphDraw_ns
 			// Filling
 			Color fillColor;
 			double opacity;
+			
+			Image serieIcon; // image shown in LEGENDs & MENUs
 
 			SeriesConfigBase()
 			{
@@ -72,7 +74,69 @@ namespace GraphDraw_ns
 				markPlot = GetNewMarkPlot(id);
 				seriesPlot = GetNewPlotStyle(id);
 			}
-};
+
+			Image MakeSerieIcon( int width=16 ) {
+				RGBA bckgColor;   bckgColor.r = 0; bckgColor.g = 0; bckgColor.b = 0; bckgColor.a = 0;
+				
+				ImageBuffer ib( Size(width,width) );
+				RGBA* iter = ib.Begin();
+				while (iter < ib.End()) {
+					*iter = bckgColor;
+					++iter;
+				}
+
+				Vector<Point> p1;
+				const int scale=1;
+				int painterMode = MODE_ANTIALIASED;
+				if ( !seriesPlot.IsEmpty() && !color.IsNullInstance() ) {
+					// draw multiple points ONLY if lines are drawn 
+					p1 << Point((width*2)/32,(width*2)/32) << Point((width*10)/32,(width*20)/32) << Point((width*20)/32,(width*12)/32) << Point((width*30)/32,(width*30)/32);
+				}
+				else {
+					// lines not drawn ==> only one point in serie ( CENTERED )
+					p1 << Point(width/2,width/2);
+					painterMode = MODE_SUBPIXEL;
+				}
+
+				BufferPainter dw(ib, painterMode );
+				
+				// Draw lines
+				if ( !seriesPlot.IsEmpty() ) {
+					seriesPlot->Paint(dw,
+	                                 p1,
+	                                 scale,
+	                                 opacity,
+	                                 fround(thickness),
+	                                 color,
+	                                 dash,
+	                                 Null,
+	                                 fillColor,
+	                                 1,
+	                                 1,
+	                                 32
+					                 );
+				}
+				// Draw marks
+				if ( markWidth >= 1 && markPlot && !markPlot.IsEmpty()) {
+					for (int c=0; c<p1.GetCount(); ++c)
+					{
+						markPlot->Paint(dw,
+		                               scale,
+		                               p1[c],
+		                               markWidth,
+		                               markColor);
+					}
+				}
+				return ib;
+			}
+			
+			const Image& UpdateSerieImage() {
+				serieIcon = MakeSerieIcon();
+				return serieIcon;
+			}
+	
+			inline const Image& GetSerieIcon() { return serieIcon; }
+	};
 
 	template <class TYPES>
 	class SeriesConfig : public Moveable< SeriesConfig<TYPES> >, public SeriesConfigBase<TYPES> {

@@ -7,9 +7,6 @@ using namespace Upp;
 
 #include <GraphCtrl/GraphCtrl.h>
 
-// define custom graph type
-//typedef StdGraphCtrl< GraphCtrlDefaultTypes >  MyGraphCtrl;
-
 
 #define LAYOUTFILE <GraphCtrl_test/GraphCtrl_test.lay>
 #include <CtrlCore/lay.h>

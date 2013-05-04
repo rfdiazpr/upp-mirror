@@ -270,7 +270,7 @@ subctrl GraphDraw {
 
 subctrl GraphDraw_XAxisParams {
 	bool   HideXAxis = false;
-	int SetXAxisRectWidth = 20;
+	int SetXAxisRectWidth = 25;
 	AxisScaleType SetXScaleType = GraphGConv::AXIS_SCALE_STD;
 	AxisTextFormat SetXAxisFormatType = GraphDraw_ns::AXIS_TEXT_FORMAT_STD;
 	int   SetXAxisWidth = 2;
@@ -330,7 +330,7 @@ subctrl GraphDraw_TitleParams {
 
 subctrl GraphDraw_LegendParams {
 	bool   HideLegend = false;
-	int    SetLegendWidth = 40;
+	int    SetLegendWidth = 30;
 	ElementPosition SetLegendPosition = GraphDraw_ns::OVER_GRAPH;
 	int    SetLegendXSize = 80;
 	int    SetLegendYSize = 30;

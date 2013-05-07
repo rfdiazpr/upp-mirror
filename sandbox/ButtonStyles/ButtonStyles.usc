@@ -1,0 +1,334 @@
+
+enum_property ButtonPushState {
+	"ButtonStyles::NORMAL",
+	"ButtonStyles::HOT",
+	"ButtonStyles::PRESSED",
+	"ButtonStyles::DISABLED"
+};
+
+fn PaintEllipse(w, left, top, right, bottom, width, color)
+{
+	if (width < 1)
+		width = 1;
+	a = (right-left)/2.;
+	b = (bottom-top)/2.;
+	width_2 = width/2.;
+	delta = Pi()/20.;
+	maxi = 2.*Pi();
+	for (i = 0; i < maxi; i += delta) {
+		if (i == 0) {
+			x0 = left + a + (a - width_2);
+			y0 = top  + b;
+		} else {
+			x0 = x1;
+			y0 = y1;
+		}
+		x1 = left + a + (a - width_2) * cos(i + delta);
+		y1 = top  + b + (b - width_2) * sin(i + delta);
+		w.DrawLine(x0, y0, x1, y1, width, color);
+	}
+}
+
+fn DrawCircle(w, cx, cy, R, width, color) {
+	PaintEllipse(w, cx-R-width/2., cy-R-width/2., cx+R+width/2., cy+R+width/2., width, color);
+}
+
+fn PaintArc(w, cx, cy, R, ang0, ang1, direction, width, color)
+{
+	if (direction == -1) {
+		c = ang0;
+		ang0 = ang1;
+		ang1 = c;
+	}
+	ang0 = ang0*Pi()/180;
+	ang1 = ang1*Pi()/180;
+	delta = 3*Pi()/180;
+	if (ang0 > ang1)
+		ang1 += 2*Pi();
+	for (i = ang0; i < ang1; i += delta) {
+		if (i == ang0) {
+			x0 = cx + R*cos(i);
+			y0 = cy - R*sin(i);
+		} else {
+			x0 = x1;
+			y0 = y1;
+		}
+		x1 = cx + R*cos(i + delta);
+		y1 = cy - R*sin(i + delta);
+		w.DrawLine(x0, y0, x1, y1, width, color);
+	}
+}
+
+fn FillEllipse(w, left, top, right, bottom, background)
+{
+	a = (right-left)/2.;
+	b = (bottom-top)/2.;
+	if (a <= 0.5 || b <= 0.5) {
+		w.DrawLine(left, top, right, bottom, 1, background);
+		return;
+	}
+	delta = Pi()/10.;
+	x0 = left + a;
+	y0 = top  + b;
+	
+	for (i = delta; i < Pi()/2.; i += delta) {
+		x1 = a * cos(i);
+		y1 = b * sin(i);
+		w.DrawRect(x0-x1 , y0-y1, 2*x1 , 2*y1, background);
+	}
+	width = min(a, b)/4.;
+	if (width > 1)
+		PaintEllipse(w, left, top, right, bottom, width, background);
+}
+
+fn FillCircle(w, cx, cy, R, color) {
+	FillEllipse(w, cx-R, cy-R, cx+R, cy+R, color);
+}
+
+
+fn DeflateRectXY(&r, x, y)
+{
+	r.top += y;
+	r.left += x;
+	r.right -= x;
+	r.bottom -= y;
+}
+
+fn Height(r) {
+	return (r.bottom-r.top);
+}
+
+fn Width(r) {
+	return (r.right-r.left);
+}
+
+
+fn XMean(r) {
+	return ((r.right+r.left)/2);
+}
+
+fn YMean(r) {
+	return ((r.bottom+r.top)/2);
+}
+
+
+fn applyAlpha( color, alpha)
+{
+	res.r = (color.r*alpha) >> 8;
+	res.g = (color.g*alpha) >> 8;
+	res.b = (color.b*alpha) >> 8;
+	return res;
+}
+
+
+TEST(flags, FLAG) {
+	if ((flags & FLAG)==FLAG) return 1;
+	else                      return 0;
+}
+
+ButtonStyles_paintButton( w, r, flags, backColor, bColor, borderWidth, deflate)
+{
+	LEFT_END_ROUND             = 0x0001;
+	RIGHT_END_ROUND            = 0x0002;
+	CONTAINS_SUBBUTON          = 0x0004;
+	SUBBUTTON_IS_FULL          = 0x0008|CONTAINS_SUBBUTON;
+	SUBBUTTON_LEFT_END_ROUND   = 0x0010|CONTAINS_SUBBUTON;
+	SUBBUTTON_RIGHT_END_ROUND  = 0x0020|CONTAINS_SUBBUTON;
+	SUB_ITEM_LEFT              = 0x0040;
+	SUB_ITEM_RIGHT             = 0x0080;
+	
+	SUBBUTTON_IS_SHORT_LEFT    = SUB_ITEM_LEFT|CONTAINS_SUBBUTON;
+	SUBBUTTON_IS_SHORT_RIGHT   = SUB_ITEM_RIGHT|CONTAINS_SUBBUTON;
+
+	TEXT_USED_AS_MASK          = 0x8000;
+
+	BOTH_ENDS_ROUND            = LEFT_END_ROUND | RIGHT_END_ROUND;
+	BOTH_SUBBUTTON_ENDS_ROUND  = SUBBUTTON_LEFT_END_ROUND | SUBBUTTON_RIGHT_END_ROUND;
+	ALL_ENDS_ROUND             = BOTH_ENDS_ROUND | BOTH_SUBBUTTON_ENDS_ROUND;
+
+	
+	//.flags = LEFT_END_ROUND | BOTH_SUBBUTTON_ENDS_ROUND | SUBBUTTON_IS_FULL;
+	
+	width = r.right - r.left;
+	height = r.bottom - r.top;
+	LeftCircleRect = RectC( r.left, r.top, height, height);
+	RightCircleRect =  RectC(r.right-height, r.top, height, height) ;
+	bandRect = r;
+	
+	if (TEST( flags, LEFT_END_ROUND ))
+	{
+		bandRect.left = bandRect.left+height/2;
+		FillEllipse(w, LeftCircleRect.left, LeftCircleRect.top, LeftCircleRect.right, LeftCircleRect.bottom, backColor);
+//			
+	}
+
+	if (TEST(flags, RIGHT_END_ROUND))
+	{
+		bandRect.right = bandRect.right-height/2;
+		FillEllipse(w, RightCircleRect.left, RightCircleRect.top, RightCircleRect.right, RightCircleRect.bottom, backColor);
+	}
+	w.DrawRect(bandRect, backColor);
+
+	bandRect = r;
+	DeflateRectXY(bandRect, 0, deflate);
+	DeflateRectXY(LeftCircleRect, deflate, deflate);
+	DeflateRectXY(RightCircleRect, deflate, deflate);
+	if ( TEST(flags, CONTAINS_SUBBUTON ))
+	{
+		if ( TEST(flags, SUBBUTTON_RIGHT_END_ROUND ) && !TEST(flags, SUBBUTTON_IS_SHORT_LEFT))
+		{
+			bandRect.right = bandRect.right-height/2;
+			if ( TEST(flags, SUBBUTTON_IS_FULL))
+			{
+				FillEllipse(w, RightCircleRect.left, RightCircleRect.top, RightCircleRect.right, RightCircleRect.bottom, bColor);
+			}
+			else
+			{
+				if (TEST(flags, SUBBUTTON_IS_SHORT_RIGHT))
+				{
+					PaintEllipse(w, RightCircleRect.left, RightCircleRect.top, RightCircleRect.right, RightCircleRect.bottom, borderWidth, bColor);
+				}
+				else
+				{
+					PaintArc(w, XMean(RightCircleRect), YMean(RightCircleRect), Height(RightCircleRect)/2 , -90, 90, 1, borderWidth, bColor );
+				}
+			}
+		}
+		if (TEST(flags, SUBBUTTON_LEFT_END_ROUND) && !TEST(flags, SUBBUTTON_IS_SHORT_RIGHT))
+		{
+			bandRect.left = bandRect.left+height/2;
+			if ( TEST(flags, SUBBUTTON_IS_FULL))
+			{
+				FillEllipse(w, LeftCircleRect.left, LeftCircleRect.top, LeftCircleRect.right, LeftCircleRect.bottom, bColor);
+			}
+			else
+			{
+				if (TEST(flags, SUBBUTTON_IS_SHORT_LEFT))
+				{
+					PaintEllipse(w, LeftCircleRect.left, LeftCircleRect.top, LeftCircleRect.right, LeftCircleRect.bottom, borderWidth, bColor);
+				}
+				else
+				{
+					PaintArc(w, XMean(LeftCircleRect), YMean(LeftCircleRect), Height(LeftCircleRect)/2 , 90, -90, 1, borderWidth, bColor );
+				}
+			}
+		}
+		
+		if (!(TEST(flags, SUBBUTTON_IS_SHORT_LEFT) || TEST(flags, SUBBUTTON_IS_SHORT_RIGHT)))
+		{
+			if ( TEST(flags, SUBBUTTON_IS_FULL))
+			{
+				w.DrawRect(bandRect, bColor);
+			}
+			else
+			{
+				w.DrawLine(bandRect.left, bandRect.top, bandRect.right, bandRect.top, borderWidth, bColor);
+				w.DrawLine(bandRect.left, bandRect.bottom, bandRect.right, bandRect.bottom, borderWidth, bColor);
+			}
+		}
+	}
+//		// DRAW BUTTON ICON
+//		if ( ! e.buttonIcon.IsEmpty() )
+//		{
+//			Point imgPos;
+//			if (TEST(SUB_ITEM_LEFT))
+//			{
+//				imgPos = LeftCircleRect.CenterPos(e.buttonIcon.GetSize());
+//			}
+//			else if(TEST(SUB_ITEM_RIGHT))
+//			{
+//				imgPos = RightCircleRect.CenterPos(e.buttonIcon.GetSize());
+//			}
+//			else // draw image at center
+//			{
+//				imgPos = bandRect.CenterPos(e.buttonIcon.GetSize());
+//			}
+//			dw.DrawImage( imgPos.x, imgPos.y, e.buttonIcon);
+//		}
+}
+
+
+subctrl ButtonStyles_NORMAL {
+	Color NORM_textColor = :Black;
+	Color NORM_color = :White;
+	Color NORM_backColor = :WhiteGray;
+	int NORM_alpha = 50;
+	int NORM_flags = 63;
+	int NORM_deflate = 6;
+	int NORM_borderWidth1 = 2;
+};
+
+subctrl ButtonStyles_HOT {
+	Color HOT_textColor2 = :Black;
+	Color HOT_color = :White;
+	Color HOT_backColor = :WhiteGray;
+	int HOT_alpha = 50;
+	int HOT_flags = 63;
+	int HOT_deflate = 6;
+	int HOT_borderWidth = 2;
+};
+
+subctrl ButtonStyles_PRESSED {
+	Color PRESS_textColor = :Black;
+	Color PRESS_color = :White;
+	Color PRESS_backColor = :WhiteGray;
+	int PRESS_alpha = 50;
+	int PRESS_flags = 63;
+	int PRESS_deflate = 6;
+	int PRESS_borderWidth = 2;
+};
+
+subctrl ButtonStyles_DISABLED {
+	Color DISAB_textColor = :Black;
+	Color DISAB_color = :White;
+	Color DISAB_backColor = :WhiteGray;
+	int DISAB_alpha = 50;
+	int DISAB_flags = 63;
+	int DISAB_deflate = 6;
+	int DISAB_borderWidth = 2;
+};
+
+subctrl ButtonStyleBase {
+	Text   SetLabel ? "Button label";
+	Font   SetFont = StdFont();
+	Text   Tip;
+	GetMinSize() { sz = Size(5, 5); return sz; }
+	GetStdSize() { sz = Size(108, 44); return sz; }
+}
+
+ctrl TStyledButton {
+	group "Push";
+	ButtonPushState pushState = ButtonStyles::NORMAL;
+	> ButtonStyleBase;
+	> ButtonStyles_NORMAL;
+	> ButtonStyles_HOT;
+	> ButtonStyles_PRESSED;
+	> ButtonStyles_DISABLED;
+	
+	Paint(w) {
+		r = GetRect();
+		textsize = GetSmartTextSize(.SetLabel, .SetFont);
+		sz = Size(r.right - r.left, r.bottom - r.top);
+		px = (sz.cx - textsize.cx) / 2;
+		py = (sz.cy - textsize.cy) / 2;
+		switch( .pushState ) {
+			case "ButtonStyles::NORMAL":
+				ButtonStyles_paintButton( w, r, .NORM_flags, .NORM_backColor, .NORM_color, .NORM_borderWidth, .NORM_deflate );
+				w.DrawSmartText(px + r.left, py + r.top, .SetLabel, .SetFont, .NORM_textColor);
+				break;
+			case "ButtonStyles::HOT":
+				ButtonStyles_paintButton( w, r, .HOT_flags, .HOT_backColor, .HOT_color, .HOT_borderWidth, .HOT_deflate );
+				w.DrawSmartText(px + r.left, py + r.top, .SetLabel, .SetFont, .HOT_textColor);
+				break;
+			case "ButtonStyles::PRESSED":
+				ButtonStyles_paintButton( w, r, .PRESS_flags, .PRESS_backColor, .PRESS_color, .PRESS_borderWidth, .PRESS_deflate );
+				w.DrawSmartText(px + r.left, py + r.top, .SetLabel, .SetFont, .PRESS_textColor);
+				break;
+			case "ButtonStyles::DISABLED":
+				ButtonStyles_paintButton( w, r, .DISAB_flags, .DISAB_backColor, .DISAB_color, .DISAB_borderWidth, .DISAB_deflate );
+				w.DrawSmartText(px + r.left, py + r.top, .SetLabel, .SetFont, .DISAB_textColor);
+				break;
+		}
+	}
+};
+

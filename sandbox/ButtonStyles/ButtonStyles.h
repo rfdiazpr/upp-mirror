@@ -10,9 +10,9 @@ namespace ButtonStyles {
 
 typedef enum  {
 	NORMAL = 0,
-	HOVER,
-	PUSHED,
-	PUSHED2,
+	HOT,
+	PRESSED,
+	DISABLED,
 } ButtonPushState;
 
 	
@@ -164,20 +164,20 @@ class TStyledButton : public BUTTON {
 
 		CLASSNAME& pushState(int c) { return *this; } // dummy function
 		
-		#define  MAKE_STYLE_FN(N) \
-			CLASSNAME& color_##N(Color  c)    { styles[N-1].look.buttoncolor = c; bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
-			CLASSNAME& backColor_##N(Color c) { styles[N-1].look.backcolor = c;   bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
-			CLASSNAME& textColor_##N(Color c) { styles[N-1].textColor = c;        bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
-			CLASSNAME& flags_##N(int c)       { styles[N-1].look.flags = c;       bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
-			CLASSNAME& alpha_##N(int c)       { styles[N-1].look.alphaValue = c;  bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
-			CLASSNAME& deflate_##N(int c)     { styles[N-1].look.deflate = c;     bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
-			CLASSNAME& borderWidth_##N(int c) { styles[N-1].look.borderWidth = c; bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
-			CLASSNAME& setIcon_##N(Image c)   { styles[N-1].look.buttonIcon = c;  bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }
+		#define  MAKE_STYLE_FN(N, PREFIX) \
+			CLASSNAME& PREFIX##_color(Color  c)    { styles[N-1].look.buttoncolor = c; bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& PREFIX##_backColor(Color c) { styles[N-1].look.backcolor = c;   bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& PREFIX##_textColor(Color c) { styles[N-1].textColor = c;        bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& PREFIX##_flags(int c)       { styles[N-1].look.flags = c;       bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& PREFIX##_alpha(int c)       { styles[N-1].look.alphaValue = c;  bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& PREFIX##_deflate(int c)     { styles[N-1].look.deflate = c;     bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& PREFIX##_borderWidth(int c) { styles[N-1].look.borderWidth = c; bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& PREFIX##_setIcon(Image c)   { styles[N-1].look.buttonIcon = c;  bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }
 
-		MAKE_STYLE_FN( 1 )
-		MAKE_STYLE_FN( 2 )
-		MAKE_STYLE_FN( 3 )
-		MAKE_STYLE_FN( 4 )
+		MAKE_STYLE_FN( 1, NORM )
+		MAKE_STYLE_FN( 2, HOT )
+		MAKE_STYLE_FN( 3, PRESS )
+		MAKE_STYLE_FN( 4, DISAB )
 		#undef MAKE_STYLE_FN
 
 		void SetIcon(Image icon) {

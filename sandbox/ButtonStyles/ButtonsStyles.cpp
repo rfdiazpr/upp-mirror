@@ -5,18 +5,25 @@
 
 namespace ButtonStyles {
 
-Value MakeButtonLook( int flags, Color opaqueColor, Color alphaColor, int alphaValue, int deflate, int borderWidth, Image buttonIcon )
+Value MakeButtonLook( int flags, Color buttoncolor, Color backcolor, int alphaValue, int deflate, int borderWidth, Image buttonIcon )
 {
 	ButtonLook e;
 	e.buttonIcon = buttonIcon;
-	e.opaqueColor = opaqueColor;
-	e.alphaColor = alphaColor;
+	e.buttoncolor = buttoncolor;
+	e.backcolor = backcolor;
 	e.alphaValue = alphaValue;
 	e.flags = flags;
-	e.subbuttonDeflate = deflate;
-	e.subbuttonBorderWidth = borderWidth;
+	e.deflate = deflate;
+	e.borderWidth = borderWidth;
 	return RawToValue(e);
 }
+
+Value MakeButtonLook( ButtonStyle_style& style )
+{
+	return RawToValue(style.look);
+}
+
+
 
 #define TEST(FLAG)  ((e.flags & ButtonLook::FLAG)==ButtonLook::FLAG)
 
@@ -34,58 +41,58 @@ Value ButtonStyleLookFunction(Draw& dw, const Rect& rect, const Value& v, int op
 				return false;
 			case LOOK_PAINT:
 			{
+				RGBA bckgColor;   bckgColor.r = 0; bckgColor.g = 0; bckgColor.b = 0; bckgColor.a = 0;
+				ImageBuffer ib(rect.Size());
+				Fill( ib.Begin(), bckgColor, ib.GetLength() );
+				BufferPainter w(ib, MODE_ANTIALIASED);
+
 				Rect LeftCircleRect( rect.TopLeft(), Size(rect.Height(), rect.Height()) );
 				Rect RightCircleRect = LeftCircleRect;
 				RightCircleRect.OffsetHorz(rect.Width()-rect.Height());
 				Rect bandRect = rect;
-				ImageDraw iw( rect.Size() );
+				ImageDraw imgd( rect.Size() );
 
 				if (TEST(LEFT_END_ROUND))
 				{
 					bandRect.left = bandRect.left+bandRect.Height()/2;
-					iw.Alpha().DrawEllipse( LeftCircleRect, GrayColor(e.alphaValue));
+					w.DrawEllipse( LeftCircleRect, e.backcolor);
 				}
 				if (TEST(RIGHT_END_ROUND))
 				{
 					bandRect.right = bandRect.right-bandRect.Height()/2;
-					iw.Alpha().DrawEllipse( RightCircleRect, GrayColor(e.alphaValue));
+					w.DrawEllipse( RightCircleRect, e.backcolor);
 				}
-				bandRect.Deflate(0,1); // to have same size as circles
-				iw.Alpha().DrawRect(bandRect, GrayColor(e.alphaValue));
-				dw.DrawImage( rect, iw , e.alphaColor);
-
-//#define DO_ANTIALIASING 1
-				#if DO_ANTIALIASING
-				ImageBuffer ib(rect.Size());
-				BufferPainter w(ib, MODE_ANTIALIASED);
-				#else
-				#define w dw
-				#endif
-
-
+				w.DrawRect(bandRect, e.backcolor);
+				
+				// apply alpha value
+				RGBA* iter = ib.Begin();
+				while ( iter < ib.End() ) {
+					*iter = Mul8( *iter, e.alphaValue );
+					++iter;
+				}
+				
 				bandRect=rect;
-				bandRect.Deflate(0, e.subbuttonDeflate);
-				LeftCircleRect.Deflate(e.subbuttonDeflate);
-				RightCircleRect.Deflate(e.subbuttonDeflate);
+				bandRect.Deflate(0, e.deflate);
+				LeftCircleRect.Deflate(e.deflate);
+				RightCircleRect.Deflate(e.deflate);
 				if ( TEST(CONTAINS_SUBBUTON ))
 				{
-					
 					if ( TEST(SUBBUTTON_RIGHT_END_ROUND ) && !TEST(SUBBUTTON_IS_SHORT_LEFT))
 					{
 						bandRect.right = bandRect.right-rect.Height()/2;
 						if ( TEST(SUBBUTTON_IS_FULL))
 						{
-							w.DrawEllipse(RightCircleRect, e.opaqueColor);
+							w.DrawEllipse(RightCircleRect, e.buttoncolor);
 						}
 						else
 						{
 							if (TEST(SUBBUTTON_IS_SHORT_RIGHT))
 							{
-								w.DrawEllipse(RightCircleRect, Null, e.subbuttonBorderWidth, e.opaqueColor);
+								w.DrawEllipse(RightCircleRect, Null, e.borderWidth, e.buttoncolor);
 							}
 							else
 							{
-								w.DrawArc(RightCircleRect, RightCircleRect.BottomCenter(), RightCircleRect.TopCenter(), e.subbuttonBorderWidth, e.opaqueColor);
+								w.DrawArc(RightCircleRect, RightCircleRect.BottomCenter(), RightCircleRect.TopCenter(), e.borderWidth, e.buttoncolor);
 							}
 						}
 					}
@@ -94,17 +101,17 @@ Value ButtonStyleLookFunction(Draw& dw, const Rect& rect, const Value& v, int op
 						bandRect.left = bandRect.left+rect.Height()/2;
 						if ( TEST(SUBBUTTON_IS_FULL))
 						{
-							w.DrawEllipse(LeftCircleRect, e.opaqueColor);
+							w.DrawEllipse(LeftCircleRect, e.buttoncolor);
 						}
 						else
 						{
 							if (TEST(SUBBUTTON_IS_SHORT_LEFT))
 							{
-								w.DrawEllipse(LeftCircleRect, Null, e.subbuttonBorderWidth, e.opaqueColor);
+								w.DrawEllipse(LeftCircleRect, Null, e.borderWidth, e.buttoncolor);
 							}
 							else
 							{
-								w.DrawArc(LeftCircleRect, LeftCircleRect.TopCenter(), LeftCircleRect.BottomCenter(), e.subbuttonBorderWidth, e.opaqueColor);
+								w.DrawArc(LeftCircleRect, LeftCircleRect.TopCenter(), LeftCircleRect.BottomCenter(), e.borderWidth, e.buttoncolor);
 							}
 						}
 					}
@@ -113,18 +120,16 @@ Value ButtonStyleLookFunction(Draw& dw, const Rect& rect, const Value& v, int op
 					{
 						if ( TEST(SUBBUTTON_IS_FULL))
 						{
-							w.DrawRect(bandRect, e.opaqueColor);
+							w.DrawRect(bandRect, e.buttoncolor);
 						}
 						else
 						{
-							w.DrawLine(bandRect.TopLeft()   , bandRect.TopRight()   , e.subbuttonBorderWidth, e.opaqueColor);
-							w.DrawLine(bandRect.BottomLeft(), bandRect.BottomRight(), e.subbuttonBorderWidth, e.opaqueColor);
+							w.DrawLine(bandRect.TopLeft()   , bandRect.TopRight()   , e.borderWidth, e.buttoncolor);
+							w.DrawLine(bandRect.BottomLeft(), bandRect.BottomRight(), e.borderWidth, e.buttoncolor);
 						}
 					}
-					#if DO_ANTIALIASING
-					dw.DrawImage(rect, ib);
-					#endif
 				}
+				dw.DrawImage(rect, ib);
 				
 				// DRAW BUTTON ICON
 				if ( ! e.buttonIcon.IsEmpty() )

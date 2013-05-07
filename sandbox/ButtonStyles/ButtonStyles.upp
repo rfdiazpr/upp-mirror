@@ -5,7 +5,8 @@ uses
 
 file
 	ButtonStyles.h,
-	ButtonsStyles.cpp;
+	ButtonsStyles.cpp,
+	ButtonStyles.usc;
 
 mainconfig
 	"" = "GUI";

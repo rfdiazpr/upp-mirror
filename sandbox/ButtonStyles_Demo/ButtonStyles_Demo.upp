@@ -3,7 +3,8 @@ description "Button drawing tests  using alpha\377";
 uses
 	CtrlLib,
 	Controls4U,
-	ButtonStyles;
+	ButtonStyles,
+	GraphCtrl;
 
 file
 	main.cpp,
@@ -12,5 +13,6 @@ file
 
 mainconfig
 	"" = "GUI SSE2 MT",
-	"" = "GUI MT";
+	"" = "GUI MT",
+	"" = "GUI SSE2";
 

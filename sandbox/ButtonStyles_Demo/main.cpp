@@ -172,6 +172,7 @@ void ButtonStyles_DemoDlg::updateCustomFlags(int flag, Option* ctrl)
 	customFlags |= (int)~opt_SubbuttonLeftRound * ButtonLook::SUBBUTTON_LEFT_END_ROUND;
 	customFlags |= (int)~opt_SubItemOnRight * ButtonLook::SUB_ITEM_RIGHT;
 	customFlags |= (int)~opt_SubItemOnLeft * ButtonLook::SUB_ITEM_LEFT;
+	flags.SetData(customFlags);
 	refreshCustoms();
 }
 

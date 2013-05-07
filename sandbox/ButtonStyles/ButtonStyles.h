@@ -8,14 +8,22 @@ using namespace Upp;
 
 namespace ButtonStyles {
 
+typedef enum  {
+	NORMAL = 0,
+	HOVER,
+	PUSHED,
+	PUSHED2,
+} ButtonPushState;
+
 	
-typedef struct {
+class ButtonLook {
+	public:
 	Image buttonIcon; // image à mettre dans le cercle
 	Image tmpImg;
-	Color opaqueColor; // couleur du cercle au bout du bouton
-	Color alphaColor;
-	int   subbuttonDeflate;
-	int   subbuttonBorderWidth;
+	Color buttoncolor; // couleur du cercle au bout du bouton
+	Color backcolor;
+	int   deflate;
+	int   borderWidth;
 	int   alphaValue;
 	int   flags;
 	enum {
@@ -37,7 +45,28 @@ typedef struct {
 		BOTH_SUBBUTTON_ENDS_ROUND  = SUBBUTTON_LEFT_END_ROUND | SUBBUTTON_RIGHT_END_ROUND,
 		ALL_ENDS_ROUND             = BOTH_ENDS_ROUND | BOTH_SUBBUTTON_ENDS_ROUND
 	};
-} ButtonLook;
+	
+	ButtonLook() {
+		buttonIcon = Null; // image à mettre dans le cercle
+		buttoncolor = White(); // couleur du cercle au bout du bouton
+		backcolor = WhiteGray();
+		deflate = 6;
+		borderWidth = 2;
+		alphaValue = 50;
+		flags = ButtonLook::ALL_ENDS_ROUND | ButtonLook::SUBBUTTON_IS_FULL;
+	}
+} ;
+
+
+class ButtonStyle_style {
+	public:
+	ButtonLook look;
+	Color textColor;
+	
+	ButtonStyle_style() {
+		textColor = Black();
+	}
+};
 
 enum {
 	BUTTON_STYLE_0a = 0,
@@ -83,17 +112,90 @@ enum {
 };
 
 
-Value MakeButtonLook( int flags, Color opaqueColor, Color alphaColor, int alphaValue, int deflate, int borderWidth, Image buttonIcon);
+
+Value MakeButtonLook( int flags, Color buttoncolor, Color backcolor, int alphaValue, int deflate, int borderWidth, Image buttonIcon);
+Value MakeButtonLook( ButtonStyle_style& style );
 
 
-typedef struct {
-	int stylingFlags;
-	Color textColor;
-	Color opaqueColor;
-	Color alphaColor;
-	int alphaValue;
-	Image buttonIcon;
-} StyledButtonStyle;
+
+
+
+// Accesseur permettant de recuperer le style par defaut en fonction du type passé
+template<class STYLE>
+inline STYLE  GetInitStyle() { return STYLE(); };
+
+template<>  inline Button::Style  GetInitStyle<Button::Style>() { return Button::StyleNormal(); };
+template<>  inline ButtonOption::Style  GetInitStyle<ButtonOption::Style>() { return ButtonOption::StyleDefault(); };
+
+
+
+template <class STYLE>
+inline STYLE toChameleon(ButtonStyle_style* styles)
+{
+	STYLE s = GetInitStyle<STYLE>();
+	s.look[0] = MakeButtonLook( styles[0] );
+	s.look[1] = MakeButtonLook( styles[1] );
+	s.look[2] = MakeButtonLook( styles[2] );
+	s.look[3] = MakeButtonLook( styles[3] );
+	s.textcolor[0] = styles[0].textColor;
+	s.textcolor[1] = styles[1].textColor;
+	s.textcolor[2] = styles[2].textColor;
+	s.textcolor[3] = styles[3].textColor;
+	return s;
+}
+
+
+// -------------------------
+// Skinned buttons template
+// -------------------------
+template <class BUTTON>
+class TStyledButton : public BUTTON {
+	private:
+		typename BUTTON::Style bChameleon;
+		ButtonStyle_style  styles[4];
+
+	public:
+		typedef TStyledButton<BUTTON>  CLASSNAME;
+		
+		TStyledButton() {
+			bChameleon = toChameleon<typename BUTTON::Style>(styles);
+			BUTTON::SetStyle(bChameleon);
+		}
+
+		CLASSNAME& pushState(int c) { return *this; } // dummy function
+		
+		#define  MAKE_STYLE_FN(N) \
+			CLASSNAME& color_##N(Color  c)    { styles[N-1].look.buttoncolor = c; bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& backColor_##N(Color c) { styles[N-1].look.backcolor = c;   bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& textColor_##N(Color c) { styles[N-1].textColor = c;        bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& flags_##N(int c)       { styles[N-1].look.flags = c;       bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& alpha_##N(int c)       { styles[N-1].look.alphaValue = c;  bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& deflate_##N(int c)     { styles[N-1].look.deflate = c;     bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& borderWidth_##N(int c) { styles[N-1].look.borderWidth = c; bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& setIcon_##N(Image c)   { styles[N-1].look.buttonIcon = c;  bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }
+
+		MAKE_STYLE_FN( 1 )
+		MAKE_STYLE_FN( 2 )
+		MAKE_STYLE_FN( 3 )
+		MAKE_STYLE_FN( 4 )
+		#undef MAKE_STYLE_FN
+
+		void SetIcon(Image icon) {
+			styles[0].look.buttonIcon = icon;
+			styles[1].look.buttonIcon = icon;
+			styles[2].look.buttonIcon = icon;
+			styles[3].look.buttonIcon = icon;
+			bChameleon = toChameleon<typename BUTTON::Style>( styles );
+			return *this;
+		}
+
+		CLASSNAME&  SetFont(Font fnt)          { BUTTON::SetFont(fnt); return *this; }
+		CLASSNAME&  SetLabel(const char *text) { BUTTON::SetLabel(text); return *this; }
+		CLASSNAME&  Tip(const char *text)      { BUTTON::Tip(text); return *this; }
+		CLASSNAME&  ClickFocus(bool cf = true) { BUTTON::ClickFocus(cf); return *this; }
+		CLASSNAME&  NoClickFocus()             { BUTTON::NoClickFocus(); return *this; }
+
+};
 
 
 }

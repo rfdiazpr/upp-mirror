@@ -259,7 +259,7 @@ subctrl ButtonStyles_NORMAL {
 };
 
 subctrl ButtonStyles_HOT {
-	Color HOT_textColor2 = :Black;
+	Color HOT_textColor = :Black;
 	Color HOT_color = :White;
 	Color HOT_backColor = :WhiteGray;
 	int HOT_alpha = 50;

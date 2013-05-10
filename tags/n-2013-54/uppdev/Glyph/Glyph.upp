@@ -1,0 +1,14 @@
+uses
+	CtrlLib,
+	Painter;
+
+file
+	glyph.h,
+	DDA.cpp,
+	main.cpp optimize_speed,
+	help.txt,
+	glyph.iml;
+
+mainconfig
+	"" = "GUI SSE2";
+

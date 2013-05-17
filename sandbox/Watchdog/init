@@ -1,4 +1,0 @@
-#ifndef _Watchdog_icpp_init_stub
-#define _Watchdog_icpp_init_stub
-#include "Core/init"
-#endif

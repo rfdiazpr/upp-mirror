@@ -1,0 +1,16 @@
+uses
+	CtrlLib,
+	Painter;
+
+file
+	glyph.h,
+	TestDraw.cpp,
+	Glyph.cpp,
+	main.cpp optimize_speed,
+	text.qtf,
+	help.txt,
+	glyph.iml;
+
+mainconfig
+	"" = "GUI SSE2";
+

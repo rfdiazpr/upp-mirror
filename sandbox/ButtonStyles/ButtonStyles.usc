@@ -309,24 +309,23 @@ ctrl TStyledButton {
 		r = GetRect();
 		textsize = GetSmartTextSize(.SetLabel, .SetFont);
 		sz = Size(r.right - r.left, r.bottom - r.top);
-		px = (sz.cx - textsize.cx) / 2;
 		py = (sz.cy - textsize.cy) / 2;
 		switch( .pushState ) {
 			case "ButtonStyles::NORMAL":
 				ButtonStyles_paintButton( w, r, .NORM_flags, .NORM_backColor, .NORM_color, .NORM_borderWidth, .NORM_deflate );
-				w.DrawSmartText(px + r.left, py + r.top, .SetLabel, .SetFont, .NORM_textColor);
+				w.DrawSmartText( r.left, py + r.top, .SetLabel, .SetFont, .NORM_textColor, sz.cx);
 				break;
 			case "ButtonStyles::HOT":
 				ButtonStyles_paintButton( w, r, .HOT_flags, .HOT_backColor, .HOT_color, .HOT_borderWidth, .HOT_deflate );
-				w.DrawSmartText(px + r.left, py + r.top, .SetLabel, .SetFont, .HOT_textColor);
+				w.DrawSmartText( r.left, py + r.top, .SetLabel, .SetFont, .HOT_textColor, sz.cx);
 				break;
 			case "ButtonStyles::PRESSED":
 				ButtonStyles_paintButton( w, r, .PRESS_flags, .PRESS_backColor, .PRESS_color, .PRESS_borderWidth, .PRESS_deflate );
-				w.DrawSmartText(px + r.left, py + r.top, .SetLabel, .SetFont, .PRESS_textColor);
+				w.DrawSmartText( r.left, py + r.top, .SetLabel, .SetFont, .PRESS_textColor, sz.cx);
 				break;
 			case "ButtonStyles::DISABLED":
 				ButtonStyles_paintButton( w, r, .DISAB_flags, .DISAB_backColor, .DISAB_color, .DISAB_borderWidth, .DISAB_deflate );
-				w.DrawSmartText(px + r.left, py + r.top, .SetLabel, .SetFont, .DISAB_textColor);
+				w.DrawSmartText( r.left, py + r.top, .SetLabel, .SetFont, .DISAB_textColor, sz.cx);
 				break;
 		}
 	}

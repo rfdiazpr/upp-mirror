@@ -457,9 +457,9 @@ void DockWindow::SyncAll()
 void DockWindow::Undock0(Ctrl& c, bool do_animatehl, int fsz, bool ishighlight)
 {
 	int al = GetDockAlign(c);
-	Ctrl *p = c.Win().GetParent();
+	Ctrl *p = c.GetParent();
 	if (p != &dockpane[al]) {
-		c.Win().Remove();
+		c.Remove();
 		if (p) {
 			p->Layout();
 			p->RefreshLayout();

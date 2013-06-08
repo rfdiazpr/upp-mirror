@@ -4,8 +4,6 @@ public:
 	virtual void Moving();
 	virtual void MoveEnd();
 
-	virtual void Paint(Draw& w) { w.DrawRect(GetSize(), Green()); }
-
 private:		
 	struct ToolWinFrame : public TopWindow {
 		virtual void  Paint(Draw& w);
@@ -49,7 +47,7 @@ public:
 	void SetClientRect(const Rect& r) { win.SetClientRect(r); }
 	void PlaceClientRect(Rect r);
 	
-	TopWindow& Win()                  { return win; }
+//	TopWindow& Win()                  { return win; }
 	
 	ToolWin();
 };

@@ -2,132 +2,6 @@
 
 NAMESPACE_UPP
 
-#if 0
-// DockCont (Dockable Container)
-#if	defined(PLATFORM_WIN32)
-LRESULT DockCont::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
-{
-	if (animating) 
-		return TopWindow::WindowProc(message, wParam, lParam);
-	if (message == WM_NCRBUTTONDOWN) {
-		WindowMenu();
-		return 1L;
-	}
-	if (IsFloating() && base) {
-		switch (message) {
-			case WM_NCLBUTTONDBLCLK:
-				RestoreCurrent();
-				return 0;
-			case WM_NCLBUTTONUP:
-			case WM_SIZE:					
-				dragging = 0;
-				break;
-			case WM_ENTERSIZEMOVE:
-				dragging = 1;
-				break;
-			case WM_MOVING:
-				LOG("Got Message: LeftDown " << GetMouseLeft());
-				if (GetMouseLeft() && dragging >= 1)
-					(dragging > 2) ? Moving() : MoveBegin();
-				dragging++;
-				break;
-			case WM_EXITSIZEMOVE:
-				if (!GetMouseLeft() && dragging) {
-					dragging = 0;
-					Ptr<TopWindow> _this = this;
-					MoveEnd();
-					if (!_this) return 0;
-				}
-				break;
-		}
-	}
-	return TopWindow::WindowProc(message, wParam, lParam);
-}
-
-void DockCont::StartMouseDrag()
-{
-	SendMessage(GetHWND(), WM_NCLBUTTONDOWN, 2, MAKELONG(GetMousePos().x, GetMousePos().y));	
-}
-#elif defined(PLATFORM_X11)
-static const int CB_ID = 10;
-void DockCont::EventProc(XWindow& w, XEvent *event)
-{
-	static bool notify = true;
-	static bool composited = IsCompositedGui();
-	if (IsOpen() && !animating) {
-		switch(event->type) {
-		case ConfigureNotify:{
-				XConfigureEvent& e = event->xconfigure;
-				if (Point(e.x, e.y) != GetScreenRect().TopLeft()) {
-					if (!dragging)
-						MoveBegin();
-					Moving();				
-					SetFocus();
-					dragging = true;
-				}
-			}
-			break;
-		case FocusIn: {
-				if (notify && composited) {
-					SetTimeCallback(-300, THISBACK(Notify), CB_ID);
-					notify = false;
-				}
-				XFocusChangeEvent &e = event->xfocus;
-				if (e.mode == NotifyUngrab && dragging) {
-					if (!notify && composited) {
-						KillTimeCallback(CB_ID);
-						notify = true;
-						Ctrl* owner = GetOwner();
-						if (owner)
-							owner->SetFocus();
-						SetFocus();
-					}
-					dragging = false;
-					MoveEnd();
-					return;
-				}
-				break;
-			}
-		}
-	}
-	TopWindow::EventProc(w, event);	
-}
-
-void DockCont::Notify()
-{
-	Window window = GetWindow();
-	if (window) {
-		XWindowAttributes attr;
-		XGetWindowAttributes(Xdisplay, window, &attr);
-		XSetWindowBorderWidth(Xdisplay, window, attr.border_width);
-	}
-}
-
-void DockCont::StartMouseDrag()
-{
-	Atom xwndDrag = XAtom("_NET_WM_MOVERESIZE");
-	XEvent e;
-	Zero(e);
-	e.xclient.type = ClientMessage;
-	e.xclient.message_type = xwndDrag;
-	e.xclient.window = GetWindow();
-	e.xclient.format = 32;
-	e.xclient.display = Xdisplay;
-	e.xclient.send_event = XTrue;
-	e.xclient.data.l[0] = GetMousePos().x;
-	e.xclient.data.l[1] = GetMousePos().y;
-	e.xclient.data.l[2] = 8;
-	e.xclient.data.l[3] = 1;
-	e.xclient.data.l[4] = 0;	
-	
-	XUngrabPointer( Xdisplay, CurrentTime );
-	XSendEvent(Xdisplay, RootWindow(Xdisplay, Xscreenno), XFalse, SubstructureNotifyMask, &e);
-	XFlush(Xdisplay);
-}
-#endif
-
-#endif
-
 // ImgButton
 void ImgButton::Paint(Draw &w)
 {
@@ -352,7 +226,7 @@ void DockCont::TabSelected()
 		ctrl->Show();
 
 		handle.dc = dc;
-		Win().Icon(dc->GetIcon()).Title(dc->GetTitle());
+		Icon(dc->GetIcon()).Title(dc->GetTitle());
 
 		SyncButtons(*dc);
 
@@ -680,7 +554,7 @@ void DockCont::WindowButtons(bool menu, bool hide, bool _close)
 	AddRemoveButton(autohide, hide && !locked);
 	AddRemoveButton(close, _close && !locked);
 	tabbar.Crosses(_close && !locked);
-	Win().NoCloseBox((!_close) || locked);
+	NoCloseBox((!_close) || locked);
 	SyncButtons();
 }
 
@@ -804,7 +678,7 @@ void DockCont::ChildTitleChanged(Ctrl *child, WString title, Image icon)
 		    break;
 		}
 	if (!GetParent()) 
-		Win().Title(GetTitle());	
+		Title(GetTitle());
 	RefreshFrame();
 }
 
@@ -939,7 +813,7 @@ DockCont::DockCont()
 	animating = false;
 	usersize.cx = usersize.cy = Null;
 	BackPaint();
-	Win().NoCenter().Sizeable(true).MaximizeBox(false).MinimizeBox(false);
+	NoCenter().Sizeable(true).MaximizeBox(false).MinimizeBox(false);
 
 	tabbar.SortTabValues(Single<StdValueOrder>());
 	tabbar.SortTabs(false);
@@ -950,7 +824,7 @@ DockCont::DockCont()
 	tabbar.WhenCloseSome = THISBACK(TabsClosed);
 	tabbar.SetBottom();	
 
-	Win().WhenClose = THISBACK(CloseAll);
+	WhenClose = THISBACK(CloseAll);
 	
 	handle << close << autohide << windowpos;
 	handle.WhenContext = THISBACK(WindowMenu);

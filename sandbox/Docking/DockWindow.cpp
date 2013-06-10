@@ -198,7 +198,7 @@ void DockWindow::SaveDockerPos(DockableCtrl& dc, PosInfo& pi)
 			break;
 		}
 		case DockCont::STATE_FLOATING:
-			cont->Win().SerializePlacement(s);
+			cont->SerializePlacement(s);
 			break;
 		case DockCont::STATE_AUTOHIDE:
 			for (int i = 0; i < 4; i++) {
@@ -264,7 +264,7 @@ void DockWindow::RestoreDockerPos(DockableCtrl& dc, bool savefirst)
 		}
 		case DockCont::STATE_FLOATING: {
 			DockCont *cont = GetReleasedContainer(dc);
-			cont->Win().SerializePlacement(s);
+			cont->SerializePlacement(s);
 			if (pi.tabcont && pi.tabcont->IsFloating())
 				DockAsTab(*~pi.tabcont, dc);			
 			else
@@ -546,8 +546,8 @@ void DockWindow::Unfloat(DockCont& c)
 {
 	if (c.IsFloating()) {
 		c.SyncUserSize(true, true);
-		if (c.Win().IsOpen() || c.Win().IsPopUp()) 
-			c.Win().Close();
+		if (c.IsOpen() || c.IsPopUp()) 
+			c.Close();
 		c.StateNotDocked();
 	}
 }
@@ -617,7 +617,7 @@ void DockWindow::FloatContainer(DockCont& c, Point p, bool move)
 			p = GetScreenRect().CenterPoint() - best/2;
 		c.SetClientRect(Rect(p, best));
 	}
-	c.Win().Open(this);
+	c.Open(this);
 }
 
 void DockWindow::FloatFromTab(DockCont& c, DockCont& tab)
@@ -1015,7 +1015,7 @@ void DockWindow::ContainerDragStart(DockCont& dc)
 		// Reposition if not under the mouse
 		Detach(dc);	
 		dc.StateFloating(*this);
-		Rect r = dc.GetScreenRect();
+		Rect r = dc.GetScreenView();
 		r.SetSize(CtrlBestSize(dc, false));
 		dc.SyncUserSize(true, true);
 		if (IsAnimatedHighlight() && dc.IsDocked() && dc.GetParent()) {
@@ -1023,12 +1023,9 @@ void DockWindow::ContainerDragStart(DockCont& dc)
 			dc.StateNotDocked();
 		}
 		dc.PlaceClientRect(r);
-		DDUMP(r);
-		dc.Win().Open(this);
-		DDUMP(dc.Win().GetRect());
-		DDUMP(GetMousePos());
+		if(!dc.IsOpen())
+			dc.Open(this);
 		dc.StartMouseDrag();
-		DDUMP(dc.Win().HasCapture());
 	}
 }
 
@@ -1335,7 +1332,7 @@ void DockWindow::SerializeLayout(Stream& s, bool withsavedlayouts)
 		for (int i = 0; i < conts.GetCount(); i++) {
 			if (conts[i].IsFloating()) {
 				conts[i].Serialize(s);
-				conts[i].Win().SerializePlacement(s, false);
+				conts[i].SerializePlacement(s, false);
 			}
 		}
 		// Write Autohidden
@@ -1386,7 +1383,7 @@ void DockWindow::SerializeLayout(Stream& s, bool withsavedlayouts)
 			DockCont *dc = CreateContainer();
 			dc->Serialize(s);
 			FloatContainer(*dc);
-			dc->Win().SerializePlacement(s, false);	
+			dc->SerializePlacement(s, false);	
 		}
 		// Read Autohidden
 		for (int i = 0; i < 4; i++) {

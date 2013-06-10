@@ -163,7 +163,7 @@ public:
 	
 	void			StateNotDocked(DockWindow *dock = NULL) 	{ if (dock) base = dock; dockstate = STATE_NONE; }
 	void			StateDocked(DockWindow& dock)				{ State(dock, STATE_DOCKED); }
-	void 			StateFloating(DockWindow& dock)				{ State(dock, STATE_FLOATING); Win().Title(GetTitle()); }
+	void 			StateFloating(DockWindow& dock)				{ State(dock, STATE_FLOATING); Title(GetTitle()); }
 	void			StateAutoHide(DockWindow& dock)				{ State(dock, STATE_AUTOHIDE); Hide(); }
 	void			StateTabbed(DockWindow& dock)				{ State(dock, STATE_TABBED); Hide(); }	
 	

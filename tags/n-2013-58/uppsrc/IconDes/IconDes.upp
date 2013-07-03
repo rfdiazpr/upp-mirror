@@ -1,0 +1,30 @@
+description "Image designer\377";
+
+uses
+	CtrlLib,
+	plugin\gif,
+	plugin\jpg,
+	Painter;
+
+file
+	IconDes.h,
+	IconDes.key,
+	IconDraw.cpp,
+	AlphaCtrl.cpp,
+	RGBACtrl.cpp,
+	ImageOp.cpp optimize_speed,
+	Paint.cpp,
+	Event.cpp,
+	Fast.cpp optimize_speed,
+	IconDes.cpp,
+	List.cpp,
+	Image.cpp,
+	Smoothen.cpp,
+	Bar.cpp,
+	EditPos.cpp,
+	ImlFile.cpp,
+	IconDes.lay,
+	IconDes.iml,
+	Info readonly separator,
+	Copying;
+

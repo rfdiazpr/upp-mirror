@@ -1,9 +1,0 @@
-uses
-	plugin/portaudio;
-
-file
-	Sound.h,
-	Sound.cpp,
-	SoundStream.cpp,
-	SoundSystem.cpp;
-

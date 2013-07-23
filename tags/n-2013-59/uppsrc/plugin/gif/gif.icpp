@@ -1,9 +1,0 @@
-#include "gif.h"
-
-NAMESPACE_UPP
-
-INITBLOCK {
-	StreamRaster::Register<GIFRaster>();
-}
-
-END_UPP_NAMESPACE

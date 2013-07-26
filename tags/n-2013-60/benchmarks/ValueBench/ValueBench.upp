@@ -1,0 +1,13 @@
+optimize_speed;
+
+uses
+	Core;
+
+file
+	ValueBench.cpp,
+	data.txt;
+
+mainconfig
+	"" = "SSE2 MT SVO_VALUE",
+	"" = "SSE2 SVO_VALUE";
+

@@ -1,0 +1,12 @@
+uses
+	CtrlLib,
+	RichEdit,
+	SDL20GL;
+
+file
+	main.cpp;
+
+mainconfig
+	"" = "GUI SSE2",
+	"" = "GUI SDL20GL";
+

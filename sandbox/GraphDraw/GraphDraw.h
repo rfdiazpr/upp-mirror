@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include <CtrlLib/CtrlLib.h>
+#include <RichText/RichText.h>
 
 #include <Core/Core.h>
 
@@ -56,7 +56,6 @@ public:
 
 namespace GraphDraw_ns
 {
-
 
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------
 	//
@@ -134,7 +133,7 @@ namespace GraphDraw_ns
 					element.SetFrame(res);
 					break;
 				case OVER_GRAPH:
-					res = element.GetOverFrame();
+					res = element.GetFloatFrame();
 					res = Rect( res.TopLeft()*scale, res.Size()*scale );
 					element.SetFrame(res);
 					break;
@@ -374,13 +373,13 @@ namespace GraphDraw_ns
 		template<class T>  T& AddRightElement(T& v, int stackPrio)  { return AddElement<T, RIGHT_OF_GRAPH>(v, stackPrio); }
 		template<class T>  T& AddTopElement(T& v, int stackPrio)    { return AddElement<T, TOP_OF_GRAPH>(v, stackPrio); }
 		template<class T>  T& AddBottomElement(T& v, int stackPrio) { return AddElement<T, BOTTOM_OF_GRAPH>(v, stackPrio); }
-		template<class T>  T& AddOverElement(T& v, int stackPrio)   { return AddElement<T, OVER_GRAPH>(v, stackPrio); }
+		template<class T>  T& AddFloatElement(T& v, int stackPrio)   { return AddElement<T, OVER_GRAPH>(v, stackPrio); }
 
 		template<class T>  T& AddLeftElement(int elementWidth, T& v, int stackPrio)   { return AddElement<T, LEFT_OF_GRAPH>(elementWidth, v, stackPrio); }
 		template<class T>  T& AddRightElement(int elementWidth, T& v, int stackPrio)  { return AddElement<T, RIGHT_OF_GRAPH>(elementWidth, v, stackPrio); }
 		template<class T>  T& AddTopElement(int elementWidth, T& v, int stackPrio)    { return AddElement<T, TOP_OF_GRAPH>(elementWidth, v, stackPrio); }
 		template<class T>  T& AddBottomElement(int elementWidth, T& v, int stackPrio) { return AddElement<T, BOTTOM_OF_GRAPH>(elementWidth, v, stackPrio); }
-		template<class T>  T& AddOverElement(int elementWidth, T& v, int stackPrio)   { return AddElement<T, OVER_GRAPH>(elementWidth, v, stackPrio); }
+		template<class T>  T& AddFloatElement(int elementWidth, T& v, int stackPrio)   { return AddElement<T, OVER_GRAPH>(elementWidth, v, stackPrio); }
 
 
 		template<class T, int POS_OF_GRAPH>
@@ -398,7 +397,7 @@ namespace GraphDraw_ns
 		template<class T>	T& CloneRightElement(int elementWidth, T& p, int stackPrio=-1)  { return CloneElement<T, RIGHT_OF_GRAPH>(elementWidth, p, stackPrio); }
 		template<class T>	T& CloneTopElement(int elementWidth, T& p, int stackPrio=-1)    { return CloneElement<T, TOP_OF_GRAPH>(elementWidth, p, stackPrio); }
 		template<class T>	T& CloneBottomElement(int elementWidth, T& p, int stackPrio=-1) { return CloneElement<T, BOTTOM_OF_GRAPH>(elementWidth, p, stackPrio); }
-		template<class T>	T& CloneOverElement(T& p, int stackPrio=-1)                     { return CloneElement<OVER_GRAPH>(0, p, stackPrio); }
+		template<class T>	T& CloneFloatElement(T& p, int stackPrio=-1)                     { return CloneElement<OVER_GRAPH>(0, p, stackPrio); }
 
 		template<class T, int POS_OF_GRAPH>
 		T& CreateElement(int elementWidth, int stackPrio) {
@@ -413,7 +412,7 @@ namespace GraphDraw_ns
 		template<class T>	T& CreateRightElement(int elementWidth, int stackPrio)  { return CreateElement<T, RIGHT_OF_GRAPH>(elementWidth, stackPrio); }
 		template<class T>	T& CreateTopElement(int elementWidth, int stackPrio)    { return CreateElement<T, TOP_OF_GRAPH>(elementWidth, stackPrio); }
 		template<class T>	T& CreateBottomElement(int elementWidth, int stackPrio) { return CreateElement<T, BOTTOM_OF_GRAPH>(elementWidth, stackPrio); }
-		template<class T>	T& CreateOverElement(int stackPrio)                     { return CreateElement<OVER_GRAPH>(0, stackPrio); }
+		template<class T>	T& CreateFloatElement(int stackPrio)                     { return CreateElement<T, OVER_GRAPH>(0, stackPrio); }
 
 
 		template<class T, int POS_OF_GRAPH, class P1>
@@ -429,7 +428,7 @@ namespace GraphDraw_ns
 		template<class T, class P1>	T& CreateRightElement1(int elementWidth, int stackPrio, P1& p1)  { return CreateElement1<T, RIGHT_OF_GRAPH>(elementWidth, stackPrio, p1); }
 		template<class T, class P1>	T& CreateTopElement1(int elementWidth, int stackPrio, P1& p1)    { return CreateElement1<T, TOP_OF_GRAPH>(elementWidth, stackPrio, p1); }
 		template<class T, class P1>	T& CreateBottomElement1(int elementWidth, int stackPrio, P1& p1) { return CreateElement1<T, BOTTOM_OF_GRAPH>(elementWidth, stackPrio, p1); }
-		template<class T, class P1>	T& CreateOverElement1(int stackPrio, P1& p1)                       { return CreateElement1<T, OVER_GRAPH>(0, stackPrio, p1); }
+		template<class T, class P1>	T& CreateFloatElement1(int stackPrio, P1& p1)                     { return CreateElement1<T, OVER_GRAPH>(0, stackPrio, p1); }
 
 
 		template<class T, int POS_OF_GRAPH, class P1, class P2>
@@ -445,7 +444,7 @@ namespace GraphDraw_ns
 		template<class T, class P1, class P2>	T& CreateRightElement2(int elementWidth, int stackPrio, P1& p1, P2& p2)  { return CreateElement2<T, RIGHT_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
 		template<class T, class P1, class P2>	T& CreateTopElement2(int elementWidth, int stackPrio, P1& p1, P2& p2)    { return CreateElement2<T, TOP_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
 		template<class T, class P1, class P2>	T& CreateBottomElement2(int elementWidth, int stackPrio, P1& p1, P2& p2) { return CreateElement2<T, BOTTOM_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
-		template<class T, class P1, class P2>	T& CreateOverElement2(int stackPrio, P1& p1, P2& p2)                      { return CreateElement2<T, OVER_GRAPH>(0, stackPrio, p1, p2); }
+		template<class T, class P1, class P2>	T& CreateFloatElement2(int stackPrio, P1& p1, P2& p2)                     { return CreateElement2<T, OVER_GRAPH>(0, stackPrio, p1, p2); }
 
 
 		// Refresh called from child
@@ -477,6 +476,53 @@ namespace GraphDraw_ns
 			return GetImage( _mode, scale );
 		}
 
+		template <class V, class XC, class YC>
+		inline void addToFullPointsList(V& p1, TypeGraphCoord x, TypeGraphCoord y , XC& xConverter, YC& yConverter, int64& nbVisiblePoints, Point& prevPoint, bool& prevPointIsVisible) {
+			if (   ( xConverter.IsInGraphRange( x ) )
+			    && ( yConverter.IsInGraphRange( y ) ) )
+			{
+				++nbVisiblePoints;
+				if (!prevPoint.IsNullInstance()) p1 << prevPoint;
+				p1 << Point(xConverter.toScreen( x ),
+				            yConverter.toScreen( y ));
+				prevPoint = Null;
+				prevPointIsVisible = true;
+			}
+			else {
+				prevPoint = Point(xConverter.toScreen( x ),
+				                  yConverter.toScreen( y ));
+				if (prevPointIsVisible) {
+					p1 << prevPoint;
+					prevPoint = Null;
+				}
+				prevPointIsVisible = false;
+			}
+		}
+
+
+		#define addToFullPointsListM(p1, x, y , xConverter, yConverter, nbVisiblePoints, prevPoint, prevPointIsVisible, isSeriesFilled) {\
+				if ( xConverter.IsInGraphRange( x ) && ( isSeriesFilled || yConverter.IsInGraphRange( y )) )\
+				{\
+					++nbVisiblePoints;\
+					if (!prevPoint.IsNullInstance()) p1 << prevPoint;\
+					p1 << Point(xConverter.toScreen( x ),\
+					            yConverter.toScreen( y ));\
+					prevPoint = Null;\
+					prevPointIsVisible = true;\
+				}\
+				else {\
+					prevPoint = Point(xConverter.toScreen( x ),\
+					                  yConverter.toScreen( y ));\
+					if (prevPointIsVisible) {\
+						p1 << prevPoint;\
+						prevPoint = Null;\
+					}\
+					prevPointIsVisible = false;\
+				}\
+		}\
+
+
+
 		template<class T>
 		void Paint(T& dw, int scale)
 		{
@@ -496,7 +542,7 @@ namespace GraphDraw_ns
 			// --------------
 
 			for (int j = 0; j < _drawElements.GetCount(); j++) {
-				if ( (!_drawElements[j]->IsHidden()) && _drawElements[j]->IsOverGraph() ) _drawElements[j]->PaintOnPlot(dw, _plotRect.GetWidth(), scale);
+				if ( (!_drawElements[j]->IsHidden()) && _drawElements[j]->IsFloat() ) _drawElements[j]->PaintOnPlot(dw, _plotRect.GetWidth(), scale);
 			}
 			
 			for (int j = 0; j < _drawElements.GetCount(); j++) {
@@ -517,13 +563,15 @@ namespace GraphDraw_ns
 
 					Vector<Point> p1;
 
-					if (_B::series[j].nbVisiblePoints==0) _B::series[j].nbVisiblePoints = _B::series[j].PointsData()->GetCount();
+					if ((_B::series[j].nbVisiblePoints==0)  &&  ( ! _B::series[j].PointsData()->IsExplicit())) {
+							_B::series[j].nbVisiblePoints = _B::series[j].PointsData()->GetCount();
+					}
 
 					// ============================================
 					//     CREATE  LIST  OF  POINTS  TO  DRAW
 					// ============================================
 					unsigned int inc = 1;
-					unsigned int nbVisiblePoints = 0;
+					int64 nbVisiblePoints = 0;
 					int imin, imax;
 
 					typename TYPES::TypeCoordConverter& xConverter = *(_B::series[j].xConverter);
@@ -544,62 +592,74 @@ namespace GraphDraw_ns
 //						if (IsNull(imax))
 //						    imax = _B::series[j].PointsData()->GetCount();
 //					} else
-					if (_B::series[j].PointsData()->IsParam()) { 				// It is a param function
+					if (_B::series[j].PointsData()->IsParam()) {             // It is a param function
 						imin = 0;
 						imax = _B::series[j].PointsData()->GetCount();
-					} else if (IsNull(_B::series[j].PointsData()->GetCount())) {		// It is a function
+					} else if ( _B::series[j].PointsData()->IsExplicit() ) { // It is a function
 						imin = ffloor(xConverter.getGraphMin() - 1);
 						imax = ffloor(xConverter.getGraphMax() + 2);
 					} else {
 					    imin = 0;
 					    imax = _B::series[j].PointsData()->GetCount();
 					}
-
 					if ( !_doFastPaint )  // DRAW ALL POINTS
 					{
+						Point prevPoint = Null;
+						bool prevPointIsVisible = false;
 						nbVisiblePoints = 0;
 						TypeGraphCoord x;
 						TypeGraphCoord y;
-						for (Upp::int64 c=imin; c<imax; c+=inc)
-						{
-							x = _B::series[j].PointsData()->x(c);
-							y = _B::series[j].PointsData()->y(c);
-							if (   ( xConverter.IsInGraphRange( x ) )
-							    && ( yConverter.IsInGraphRange( y ) ) )
+						bool isSeriesFilled = false;
+						if ( !_B::series[j].seriesPlot.IsEmpty() && !_B::series[j].fillColor.IsNullInstance() ) {
+							isSeriesFilled = true;
+						}
+						    
+						if (_B::series[j].PointsData()->IsParam()) {
+							const double xmax = imax;
+							for (double cx=imin; cx<xmax; ++cx)
 							{
-								++nbVisiblePoints;
+								x = _B::series[j].PointsData()->x(cx);
+								y = _B::series[j].PointsData()->y(cx);
+								addToFullPointsListM( p1, x, y, xConverter, yConverter, nbVisiblePoints, prevPoint, prevPointIsVisible, isSeriesFilled);
 							}
-							p1 << Point(xConverter.toScreen( x ),
-							            yConverter.toScreen( y ));
+						} else if (_B::series[j].PointsData()->IsExplicit() ) {
+							double xmax = imax;
+							double dx = double(xmax - imin)/xConverter.getScreenRange();
+							for (double xx = imin; xx < xmax; xx += dx) {
+								double yy = _B::series[j].PointsData()->f(xx);
+								addToFullPointsListM( p1, xx, yy, xConverter, yConverter, nbVisiblePoints, prevPoint, prevPointIsVisible, isSeriesFilled);
+							}
+
+						} else {
+							for (Upp::int64 c=imin; c<imax; c+=inc)
+							{
+								x = _B::series[j].PointsData()->x(c);
+								y = _B::series[j].PointsData()->y(c);
+								addToFullPointsListM( p1, x, y, xConverter, yConverter, nbVisiblePoints, prevPoint, prevPointIsVisible, isSeriesFilled);
+							}
 						}
 						_B::series[j].nbVisiblePoints = nbVisiblePoints;
 					}
 					else  // DO FAST DRAW
 					{
-						if ( _B::series[j].seriesPlot.IsEmpty() )
-						{
-							if ( _B::series[j].nbVisiblePoints>800 ) { inc = _B::series[j].nbVisiblePoints/800 + 1; }
+						//Point prevPoint = Null;
+//						bool prevPointIsVisible = false;
+						nbVisiblePoints = 0;
+//						TypeGraphCoord x;
+//						TypeGraphCoord y;
+						if (_B::series[j].PointsData()->IsExplicit() ) {
+							double xmax = imax;
+							double dx = double(xmax - imin)/800.;
+							if (xConverter.getScreenRange()<800.) dx = double(xmax - imin)/xConverter.getScreenRange();
 
-							nbVisiblePoints = 0;
-							TypeGraphCoord x;
-							TypeGraphCoord y;
-							for ( Upp::int64 c=imin; c<imax; ++c )
-							{
-								x = _B::series[j].PointsData()->x(c);
-								y = _B::series[j].PointsData()->y(c);
-								if ( ( xConverter.IsInGraphRange( x ) )
-										&& ( yConverter.IsInGraphRange( y ) ) )
-								{
-									++nbVisiblePoints;
-									if ((c%inc) == 0) p1 << Point(xConverter.toScreen( x ),
-									                              yConverter.toScreen( y ));
-								}
+							for (double xx = imin; xx < xmax; xx += dx) {
+								double yy = _B::series[j].PointsData()->f(xx);
+								p1 << Point(xConverter.toScreen( xx ),
+									        yConverter.toScreen( yy ));
+								//addToFullPointsListM(p1, xx, yy, xConverter, yConverter, nbVisiblePoints, prevPoint, prevPointIsVisible);
 							}
-							_B::series[j].nbVisiblePoints = nbVisiblePoints;
-						}
-						else
-						{
-							if ( (tabs(imax-imin)>1000) ) { inc = tabs(imax-imin)/1000 + 1; }
+						} else {
+							inc = tabs(imax-imin)/800 + 1;
 							for ( Upp::int64 c=imin; c<imax; c+=inc)
 							{
 								p1 << Point(xConverter.toScreen( _B::series[j].PointsData()->x(c)),
@@ -647,25 +707,25 @@ namespace GraphDraw_ns
 			// --------------------------------------
 
 			// --------------
-			// GRAPH ELEMENTS (painted in they're own area)
+			// GRAPH ELEMENTS ( painted in they're own area : the ones around the PLOT area )
 			// --------------
 			
 			for (int j = 0; j < _drawElements.GetCount(); j++)
 			{
-				if ( (!_drawElements[j]->IsHidden()) && (!_drawElements[j]->IsOverGraph()) ) {
+				if ( (!_drawElements[j]->IsHidden()) && (!_drawElements[j]->IsFloat()) ) {
 					dw.Offset(_drawElements[j]->GetFrame().TopLeft());
 					_drawElements[j]->PaintElement(dw, scale);
 					dw.End();
 				}
 			}
 			// --------------
-			// GRAPH ELEMENTS on ALL GRAPH area   ( legend, or anything else )
+			// GRAPH ELEMENTS on ALL GRAPH area == FLOATING ELEMENTS  ( legend, or anything else )
 			// --------------
 			for (int j = 0; j < _drawElements.GetCount(); j++)
 			{
-				if ( (!_drawElements[j]->IsHidden()) && (_drawElements[j]->IsOverGraph()) ) {
-					dw.Clipoff( _drawElements[j]->GetFrame() );
-					_drawElements[j]->PaintOverGraph(dw, scale);
+				if ( (!_drawElements[j]->IsHidden()) && (_drawElements[j]->IsFloat()) ) {
+					dw.Clipoff( _drawElements[j]->GetFloatFrame(scale) );
+					_drawElements[j]->PaintFloatElement(dw, scale);
 					dw.End();
 				}
 			}
@@ -677,17 +737,19 @@ namespace GraphDraw_ns
 	struct GraphDrawDefaultTypes {
 			typedef DataSource                                     TypeDataSource;
 			typedef SeriesPlot                                     TypeSeriesPlot;
+			typedef SeriesConfig<GraphDrawDefaultTypes>            TypeSeriesConfig;
+			typedef Vector<TypeSeriesConfig>                       TypeVectorSeries;
 			typedef MarkPlot                                       TypeMarkPlot;
 			typedef GenericCoordinateConverter                     TypeCoordConverter;
 			typedef GridAxisDraw<GraphDrawDefaultTypes>            TypeGridAxisDraw;
 			typedef GridStepManager<>                              TypeGridStepManager;
-			typedef SeriesConfig<GraphDrawDefaultTypes>            TypeSeriesConfig;
+			typedef LabelElement                                   TypeLabelElement;
+			typedef LegendElement<GraphDrawDefaultTypes>           TypeLegendElement;
 	};
 
 
-
-#define COMBINE3__(a, b, c)        a##b##c
-#define COMBINE3(a, b, c)          COMBINE3__(a, b, c)
+//#define COMBINE3__(a, b, c)        a##b##c
+//#define COMBINE3(a, b, c)          COMBINE3__(a, b, c)
 #define MAKE_GRAPHDRAW_AXIS_FN( XYZ, xyz) \
 	DERIVED& COMBINE3(Hide, XYZ, Axis) (bool v)                   { COMBINE3(_, xyz, GridDraw).Hide(v); return *static_cast<DERIVED*>(this); }\
 	DERIVED& COMBINE3(Set, XYZ, AxisRectWidth)(int v)             { COMBINE3(_, xyz, GridDraw).SetElementWidth(v); return *static_cast<DERIVED*>(this); }\
@@ -831,8 +893,8 @@ namespace GraphDraw_ns
 			RGBA rgba;
 			rgba.r=90; rgba.g=90; rgba.b=0;	rgba.a=90;
 			_legend.SetBackGndColor( rgba );
-			_legend.SetOverFrame(Rect(Point(40,20), Size(80, 30)));
-			_B::AddOverElement(30, _legend, 150);
+			_legend.SetFloatFrame(Rect(Point(40,20), Size(80, 30)));
+			_B::AddFloatElement(30, _legend, 150);
 		};
 
 		virtual ~CRTP_XYLGraphDraw() {}
@@ -845,10 +907,10 @@ namespace GraphDraw_ns
 		DERIVED& SetLegendWidth(int v)          { _legend.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetLegendBckgndColor(const Color& v) { _legend.SetBackGndColor(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetLegendBckgndColor(const RGBA& v)  { _legend.SetBackGndColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetLegendXSize(int v)          { Rect r = _legend.GetOverFrame();r.right = r.left+v; _legend.SetOverFrame(r); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetLegendYSize(int v)          { Rect r = _legend.GetOverFrame();r.bottom = r.top+v; _legend.SetOverFrame(r); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetLegendXPos(int v)           { Rect r = _legend.GetOverFrame();r.right = v+r.Width(); r.left=v; _legend.SetOverFrame(r); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetLegendYPos(int v)           { Rect r = _legend.GetOverFrame();r.bottom = v+r.Height(); r.top=v; _legend.SetOverFrame(r); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetLegendXSize(int v)          { Rect r = _legend.GetFloatFrame();r.right = r.left+v; _legend.SetFloatFrame(r); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetLegendYSize(int v)          { Rect r = _legend.GetFloatFrame();r.bottom = r.top+v; _legend.SetFloatFrame(r); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetLegendXPos(int v)           { Rect r = _legend.GetFloatFrame();r.right = v+r.Width(); r.left=v; _legend.SetFloatFrame(r); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetLegendYPos(int v)           { Rect r = _legend.GetFloatFrame();r.bottom = v+r.Height(); r.top=v; _legend.SetFloatFrame(r); return *static_cast<DERIVED*>(this); }
 	};
 
 
@@ -874,9 +936,9 @@ namespace GraphDraw_ns
 			_xLabel.SetName( t_("X--- label") );
 			_yLabel.SetName( t_("Y--- label") );
 
-			_title.SetFont( StdFontZ(20).Bold().Underline()).SetTextColor(Red).SetLabel("TITLE");
-			_xLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("X Axis label");
-			_yLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("Y Axis label");
+			_title.SetFont( StdFont(20).Bold().Underline()).SetTextColor(Red).SetLabel("TITLE");
+			_xLabel.SetFont( StdFont(15).Bold()).SetTextColor(Green).SetLabel("X Axis label");
+			_yLabel.SetFont( StdFont(15).Bold()).SetTextColor(Green).SetLabel("Y Axis label");
 			_B::AddBottomElement(30, _xLabel, 25);
 			_B::AddLeftElement(30, _yLabel, 25);
 			_B::AddTopElement(40, _title, 200);
@@ -966,10 +1028,10 @@ namespace GraphDraw_ns
 			_yLabel.SetName( t_("Y label") );
 			_y2Label.SetName( t_("Y2 label") );
 			
-			_title.SetFont( StdFontZ(20).Bold().Underline()).SetTextColor(Red).SetLabel("TITLE");
-			_xLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("X Axis label");
-			_yLabel.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("Y Axis label");
-			_y2Label.SetFont( StdFontZ(15).Bold()).SetTextColor(Green).SetLabel("Y2 Axis label");
+			_title.SetFont( StdFont(20).Bold().Underline()).SetTextColor(Red).SetLabel("TITLE");
+			_xLabel.SetFont( StdFont(15).Bold()).SetTextColor(Green).SetLabel("X Axis label");
+			_yLabel.SetFont( StdFont(15).Bold()).SetTextColor(Green).SetLabel("Y Axis label");
+			_y2Label.SetFont( StdFont(15).Bold()).SetTextColor(Green).SetLabel("Y2 Axis label");
 			_B::AddBottomElement(30, _xLabel, 25);
 			_B::AddLeftElement(30, _yLabel, 25);
 			_B::AddRightElement(30, _y2Label, 55);

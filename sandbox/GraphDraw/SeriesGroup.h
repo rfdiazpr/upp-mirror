@@ -289,7 +289,7 @@ template<class TYPES, class DERIVED>
 		template <class C>
 		DERIVED& PlotStyle()                             {return PlotStyle(new C());};
 		template <class C, class T1>
-		DERIVED& PlotStyle(T1 &arg1)                     {return PlotStyle(new C(arg1));};
+		DERIVED& PlotStyle(T1 arg1)                     {return PlotStyle(new C(arg1));};
 		template <class C, class T1, class T2>
 		DERIVED& PlotStyle(T1 &arg1, T2 &arg2)           {return PlotStyle(new C(arg1, arg2));};
 		template <class C, class T1, class T2, class T3>

@@ -17,5 +17,6 @@ file
 	GraphElement.h,
 	GraphFunctions.h,
 	GridAxisDraw.h,
-	srcimp.tpp;
+	srcimp.tpp,
+	Copying;
 

@@ -2,6 +2,25 @@
 #define _GraphCtrl_GraphCtrlBase_h_
 
 
+
+// ============================================================================================
+//                        LOOP DELEGATION CLASS
+// ============================================================================================
+typedef GraphDraw_ns::GraphElementFrame* (GraphDraw_ns::GraphElementFrame::*mouseCallBack)(Point,dword);
+
+class GraphCtrlLooper : public LocalLoop {
+	private:
+	virtual void  LeftUp(Point, dword) { EndLoop(); }
+	virtual void  RightUp(Point, dword) { EndLoop(); }
+	virtual void  MouseMove(Point p, dword f)  { WhenMouseMove(p, f); };
+	
+	public:
+	GraphCtrlLooper(Ctrl& master) { SetMaster(master); } 
+	Callback2< Point, dword > WhenMouseMove     ;
+	virtual Image CursorImage(Point p, dword keyFlags) { return GetMaster().CursorImage(p,keyFlags); };
+};
+
+
 // ============================
 //    CRTP_GraphCtrl_Base   CLASS
 // ============================
@@ -15,57 +34,17 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	private:
 	typedef GraphDraw_ns::CRTP_XYGraphDraw<TYPES, DERIVED> _B;
 
-	GraphDraw_ns::GraphElementFrame* elementCapture_LeftDown   ;
-	GraphDraw_ns::GraphElementFrame* elementCapture_LeftDouble ;
-	GraphDraw_ns::GraphElementFrame* elementCapture_LeftDrag   ;
-	GraphDraw_ns::GraphElementFrame* elementCapture_RightDown  ;
-	GraphDraw_ns::GraphElementFrame* elementCapture_RightDouble;
-	GraphDraw_ns::GraphElementFrame* elementCapture_RightDrag  ;
-	GraphDraw_ns::GraphElementFrame* elementCapture_MiddleDown ;
 	GraphDraw_ns::GraphElementFrame* elementCapture_MouseMove  ;
-	GraphDraw_ns::GraphElementFrame* elementCapture_MouseWheel ;
-
-
-	bool plotCapture_LeftDown   ;
-	bool plotCapture_LeftDouble ;
-	bool plotCapture_LeftDrag   ;
-	bool plotCapture_RightDown  ;
-	bool plotCapture_RightDouble;
-	bool plotCapture_RightDrag  ;
-	bool plotCapture_MiddleDown ;
-	bool plotCapture_MouseMove  ;
-	bool plotCapture_MouseWheel ;
-
 	Image CaptureMouseMove_cursorImage;
-
 	Image ctrlImgSave; // to save ctrl image
-
 	Point prevMousePoint;
 	int copyRatio;
-
+	int autoWaitCursorAvg;
+	
 	public:
 
-
-
 	CRTP_GraphCtrl_Base()
-	: elementCapture_LeftDown   (0)
-	, elementCapture_LeftDouble (0)
-	, elementCapture_LeftDrag   (0)
-	, elementCapture_RightDown  (0)
-	, elementCapture_RightDouble(0)
-	, elementCapture_RightDrag  (0)
-	, elementCapture_MiddleDown (0)
-	, elementCapture_MouseMove  (0)
-	, elementCapture_MouseWheel (0)
-	, plotCapture_LeftDown   (false)
-	, plotCapture_LeftDouble (false)
-	, plotCapture_LeftDrag   (false)
-	, plotCapture_RightDown  (false)
-	, plotCapture_RightDouble(false)
-	, plotCapture_RightDrag  (false)
-	, plotCapture_MiddleDown (false)
-	, plotCapture_MouseMove  (false)
-	, plotCapture_MouseWheel (false)
+	: elementCapture_MouseMove  (0)
 	, copyRatio(3)
 	{
 		SetModify();
@@ -74,24 +53,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 
 	CRTP_GraphCtrl_Base(const CRTP_GraphCtrl_Base& p)
 	: _B(p)
-	, elementCapture_LeftDown   (0)
-	, elementCapture_LeftDouble (0)
-	, elementCapture_LeftDrag   (0)
-	, elementCapture_RightDown  (0)
-	, elementCapture_RightDouble(0)
-	, elementCapture_RightDrag  (0)
-	, elementCapture_MiddleDown (0)
 	, elementCapture_MouseMove  (0)
-	, elementCapture_MouseWheel (0)
-	, plotCapture_LeftDown   (false)
-	, plotCapture_LeftDouble (false)
-	, plotCapture_LeftDrag   (false)
-	, plotCapture_RightDown  (false)
-	, plotCapture_RightDouble(false)
-	, plotCapture_RightDrag  (false)
-	, plotCapture_MiddleDown (false)
-	, plotCapture_MouseMove  (false)
-	, plotCapture_MouseWheel (false)
 	, copyRatio(p.copyRatio)
 	{
 		SetModify();
@@ -148,11 +110,10 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 
 
 	virtual void Paint(Draw& w) {
-		if ( _B::_doFastPaint == false )	{
+		if ( _B::_doFastPaint == false ) {
 			if ( IsModified() ) {
-				Image m = OverrideCursor(GraphCtrlImg::SAND());
+				AutoWaitCursor waitcursor(autoWaitCursorAvg);
 				Paint2(w);
-				OverrideCursor(m);
 				ClearModify();
 			}
 			else {
@@ -165,8 +126,8 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		}
 	}
 
-
 	int GetCopyRatio() { return copyRatio; }
+	
 	DERIVED& SetCopyRatio(int ratio) {
 		copyRatio = ratio;
 		return *static_cast<DERIVED*>(this);
@@ -297,15 +258,13 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	}
 
 
-	typedef GraphDraw_ns::GraphElementFrame* (GraphDraw_ns::GraphElementFrame::*mouseCallBack)(Point,dword);
-
 	template<class RESULT, class CBCK>
 	bool ProcessMouseCallBack(Point p, dword keyflags, CBCK cbck, RESULT& output ,RESULT defaultRes = 0)
 	{
 		for (int j = 0; j < _B::_drawElements.GetCount(); j++)
 		{
 			if ( !_B::_drawElements[j]->IsHidden() ) {
-				if ( _B::_drawElements[j]->IsOverGraph() ) {
+				if ( _B::_drawElements[j]->IsFloat() ) {
 					if (_B::_drawElements[j]->Contains(p)) {
 						output = ((_B::_drawElements[j]->*cbck)(p, keyflags));
 						return true;
@@ -316,7 +275,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		for (int j = 0; j < _B::_drawElements.GetCount(); j++)
 		{
 			if ( !_B::_drawElements[j]->IsHidden() ) {
-				if ( !_B::_drawElements[j]->IsOverGraph() ) {
+				if ( !_B::_drawElements[j]->IsFloat() ) {
 					if (_B::_drawElements[j]->Contains(p)) {
 						output = ((_B::_drawElements[j]->*cbck)(p, keyflags));
 						return true;
@@ -327,14 +286,18 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		return false;
 	}
 
+	template<class RESULT, class CBCK>
+	inline bool ProcessMouseCallBack(Point p, dword keyflags, CBCK cbck)
+	{
+		RESULT dummy;
+		return ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, cbck, dummy);
+	}
+
 
 	virtual void LeftDown(Point p, dword keyflags) {
 		prevMousePoint = p;
-		if ( elementCapture_LeftDown != 0) {
-			elementCapture_LeftDown = elementCapture_LeftDown->LeftDown(p, keyflags);
-			return;
-		}
-		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::LeftDown, elementCapture_LeftDown) )
+		GraphDraw_ns::GraphElementFrame* dummy;
+		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::LeftDown, dummy) )
 		{
 			return;
 		}
@@ -354,38 +317,16 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	}
 
 	virtual void LeftDouble(Point p, dword keyflags) {
-		if ( elementCapture_LeftDouble != 0) {
-			elementCapture_LeftDouble = elementCapture_LeftDouble->LeftDouble(p, keyflags);
-			return;
-		}
-		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::LeftDouble, elementCapture_LeftDouble) ) {
+		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::LeftDouble) ) {
 			return;
 		}
 		if ( _B::_plotRect.Contains(p) ) {
-			return;
-		}
-	}
-
-	virtual void LeftDrag(Point p, dword keyflags) {
-		if ( elementCapture_LeftDrag != 0) {
-			elementCapture_LeftDrag = elementCapture_LeftDrag->LeftDrag(p, keyflags);
-			return;
-		}
-		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::LeftDrag, elementCapture_LeftDrag)) {
-			return;
-		}
-		if ( _B::_plotRect.Contains(p) ) {
-			// do PLOT SCROLLING
 			return;
 		}
 	}
 
 	virtual void RightDown(Point p, dword keyflags) {
-		if ( elementCapture_RightDown != 0) {
-			elementCapture_RightDown = elementCapture_RightDown->RightDown(p, keyflags);
-			return;
-		}
-		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::RightDown, elementCapture_RightDown)) {
+		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::RightDown)) {
 			return;
 		}
 		if ( _B::_plotRect.Contains(p) ) {
@@ -395,11 +336,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	}
 
 	virtual void RightDouble(Point p, dword keyflags) {
-		if ( elementCapture_RightDouble != 0) {
-			elementCapture_RightDouble = elementCapture_RightDouble->RightDouble(p, keyflags);
-			return;
-		}
-		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::RightDouble, elementCapture_RightDouble) ) {
+		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::RightDouble) ) {
 			return;
 		}
 		if ( _B::_plotRect.Contains(p) ) {
@@ -409,11 +346,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	}
 
 	virtual void MiddleDown(Point p, dword keyflags) {
-		if ( elementCapture_MiddleDown != 0) {
-			elementCapture_MiddleDown = elementCapture_MiddleDown->MiddleDown(p, keyflags);
-			return;
-		}
-		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::MiddleDown, elementCapture_MiddleDown) ) {
+		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::MiddleDown) ) {
 			return;
 		}
 		if ( _B::_plotRect.Contains(p) ) {
@@ -422,27 +355,39 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		}
 	}
 
-	virtual void MouseMove(Point p, dword keyflags) {
-		if ( elementCapture_MouseMove != 0) {
-			elementCapture_MouseMove = elementCapture_MouseMove->MouseMove(p, keyflags);
-			return;
-		}
-
-		if ( (plotCapture_MouseMove==0) && ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::MouseMove, elementCapture_MouseMove)) {
-
-		}
-		else if (( _B::_plotRect.Contains(p) ) || plotCapture_MouseMove)  {
-			if ( keyflags & K_MOUSELEFT ) {
+	private:
+	void LoopedElementMouseMove(Point p, dword keyflags) {
+		elementCapture_MouseMove->MouseMove(p, keyflags );
+		RefreshFromChild(GraphDraw_ns::REFRESH_FAST);
+	}
+	
+	void LoopedPlotScrollMouseMove(Point p, dword keyflags) {
 				// LEFT SCROLL
 				_B::_doFastPaint = true;
-				plotCapture_MouseMove = true;
 				CaptureMouseMove_cursorImage = CursorImage(p, keyflags);
 				_B::Scroll(p.x-prevMousePoint.x, p.y-prevMousePoint.y);
 				prevMousePoint = p;
 				Refresh();
+	}
+	
+	public:
+	virtual void MouseMove(Point p, dword keyflags) {
+		if ( elementCapture_MouseMove != 0) {
+			GraphCtrlLooper looper(*this);
+			looper.WhenMouseMove << THISBACK(LoopedElementMouseMove);
+			looper.Run();
+			elementCapture_MouseMove=0;
+			return;
+		}
+
+		else if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::MouseMove, elementCapture_MouseMove)) {}
+		else if ( _B::_plotRect.Contains(p) )  {
+			if ( keyflags & K_MOUSELEFT ) {
+				GraphCtrlLooper looper(*this);
+				looper.WhenMouseMove << THISBACK(LoopedPlotScrollMouseMove);
+				looper.Run();
 			}
 			else {
-				plotCapture_MouseMove = false;
 				CaptureMouseMove_cursorImage = Null;
 				if (_B::_doFastPaint) { // Do complete drawing when SCROLLING FINISHED
 					_B::_doFastPaint = false;
@@ -486,7 +431,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	{
 		for (int j = 0; j < _B::_drawElements.GetCount(); j++)
 		{
-			if ( _B::_drawElements[j]->IsOverGraph() ) {
+			if ( _B::_drawElements[j]->IsFloat() ) {
 				if (_B::_drawElements[j]->Contains(p)) {
 					(_B::_drawElements[j]->MouseWheel)(p, zdelta, keyflags);
 					return;
@@ -495,7 +440,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		}
 		for (int j = 0; j < _B::_drawElements.GetCount(); j++)
 		{
-			if ( !_B::_drawElements[j]->IsOverGraph() ) {
+			if ( !_B::_drawElements[j]->IsFloat() ) {
 				if (_B::_drawElements[j]->Contains(p)) {
 					(_B::_drawElements[j]->MouseWheel)(p, zdelta, keyflags);
 					return;

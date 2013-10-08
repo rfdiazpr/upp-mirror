@@ -2,6 +2,12 @@
 #define _GraphCtrl_ElementCtrlBase_h_
 
 
+
+
+
+// ============================================================================================
+
+
 template<class TYPES, class ELEMENT_CLASS, class DERIVED>
 class CRTPGraphElementCtrl_Base : public ELEMENT_CLASS {
 	public:
@@ -65,7 +71,7 @@ class GraphElementCtrl_MoveResize : public LEGEND_DRAW_CLASS
 	virtual bool Contains(Point p) const { return (_B::_frame.Contains(p)); }
 
 	virtual Image  CursorImage(Point p, dword keyflags) {
-		if (_B::IsOverGraph()) {
+		if (_B::IsFloat()) {
 			if ( keyflags & K_CTRL ){
 				return GraphCtrlImg::ELEMENT_RESIZE();
 			}
@@ -78,18 +84,18 @@ class GraphElementCtrl_MoveResize : public LEGEND_DRAW_CLASS
 		if (parentCtrl == 0) {
 			parentCtrl = ValueTo<Ctrl*>(_B::_parent->GetParentCtrl());
 		}
-		if ((parentCtrl != 0) && _B::IsOverGraph()) {
+		if ((parentCtrl != 0) && _B::IsFloat()) {
 			if (keyflags & K_MOUSELEFT)
 			{
 				RectTracker tracker(*parentCtrl);
 				if(keyflags & K_CTRL) {
 					tracker.Dashed().Animation();
-					_B::_overFrame = tracker.Track(_B::_overFrame, ALIGN_NULL, ALIGN_NULL);
+					_B::_floatFrame = tracker.Track(_B::_floatFrame, ALIGN_NULL, ALIGN_NULL);
 					_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
 					return 0;
 				}
 				tracker.Dashed().Animation();
-				_B::_overFrame = tracker.Track(_B::_overFrame, ALIGN_CENTER, ALIGN_CENTER);
+				_B::_floatFrame = tracker.Track(_B::_floatFrame, ALIGN_CENTER, ALIGN_CENTER);
 				_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
 				return 0;
 			}

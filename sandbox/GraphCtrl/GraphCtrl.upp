@@ -17,7 +17,9 @@ file
 	GraphCtrl.h,
 	GraphCtrl.cpp,
 	ScatterCtrl.h,
-	GraphCtrl.usc;
+	GraphCtrl.usc,
+	Copying,
+	src.tpp;
 
 mainconfig
 	"" = "GUI SSE2";

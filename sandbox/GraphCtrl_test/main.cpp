@@ -96,9 +96,9 @@ GraphDraw_test::GraphDraw_test()
 	// ================ G4 ================
 	g4.CreateElement2<ExclusionAreaDraw<MyGraphCtrl::Types>, OVER_GRAPH>(0, 0, g4.GetXCoordConverter(), g4.GetYCoordConverter() );
 	g4.AddSeries(points).PlotStyle<LineSeriesPlot>().MarkStyle<XMarkPlot>().MarkWidth(3).Fill(Color(28, 255, 200)).Opacity(.5).Legend("S1");
-	//g4.setGraphSize(1,20,0,20, 0,20);
-	//g4.GetYGridAxisDraw().setMajorTickMark( (new LineTickMark())->SetTickLength( 3 ) );
 	points2 << Pointf(0,0) << Pointf(1, 2)<< Pointf(2,3)<< Pointf(4, 3)<< Pointf(5.5, 4) << Pointf(6,5) << Pointf(7, 6)<< Pointf(8,10)<< Pointf(10, 9)<< Pointf(15, 8);
+	
+	g4.SetCurrentYConverter(1); // set Y2 as current Y axis
 	g4.AddSeries(points2).PlotStyle<LineSeriesPlot>().NoMark().Legend("S2"); // tied to last X/Y  coordConverters ==> X / Y2
 
 	bReport << THISBACK(DoReport);

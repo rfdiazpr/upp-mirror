@@ -53,7 +53,11 @@ namespace GraphDraw_ns
 	class GraphElementFrame {
 		public:
 			Rect            _frame;    // Frame on which element is painted (absolute position in complete draw area)
-			Rect            _overFrame;// Frame size used as SCALE=1 reference frame
+			Rect            _floatFrame;// Frame size used as SCALE=1 reference frame  when element is FLOATING
+			struct {
+				Rect        frame;      
+				Pointf      percentPos; // position in percentage of plot area
+			}               _floatData;
 			int             _width;    // width of GraphElement (in screen size)
 			ElementPosition _pos;      // position in plot area
 			int             _allowedPosMask;
@@ -63,20 +67,10 @@ namespace GraphDraw_ns
 
 		public:
 			GraphElementParent* _parent;
-			Callback3<GraphElementFrame*, Point , dword > WhenLeftDown     ;
-			Callback3<GraphElementFrame*, Point , dword > WhenLeftUp       ;
-			Callback3<GraphElementFrame*, Point , dword > WhenLeftDouble   ;
-			Callback3<GraphElementFrame*, Point , dword > WhenLeftDrag     ;
-			Callback3<GraphElementFrame*, Point , dword > WhenRightDown    ;
-			Callback3<GraphElementFrame*, Point , dword > WhenRightUp      ;
-			Callback3<GraphElementFrame*, Point , dword > WhenRightDouble  ;
-			Callback3<GraphElementFrame*, Point , dword > WhenRightDrag    ;
-			Callback3<GraphElementFrame*, Point , dword > WhenMiddleDown   ;
-			Callback3<GraphElementFrame*, Point , dword > WhenMiddleUp     ;
 
 			GraphElementFrame()
 			: _frame( 0, 0, 5, 5 )
-			, _overFrame(_frame)
+			, _floatFrame(_frame)
 			, _width(5)
 			, _pos(LEFT_OF_GRAPH)
 			, _allowedPosMask(LEFT_OF_GRAPH | RIGHT_OF_GRAPH| BOTTOM_OF_GRAPH | TOP_OF_GRAPH | OVER_GRAPH )
@@ -88,7 +82,7 @@ namespace GraphDraw_ns
 			
 			GraphElementFrame(GraphElementFrame* p)
 			: _frame( 0, 0, 5, 5 )
-			, _overFrame(p->_overFrame)
+			, _floatFrame(p->_floatFrame)
 			, _width(p->_width)
 			, _pos(LEFT_OF_GRAPH)
 			, _allowedPosMask(p->_allowedPosMask)
@@ -96,18 +90,11 @@ namespace GraphDraw_ns
 			, _stackingPriority(p->_stackingPriority)
 			, _name("NAME NOT SET")
 			, _parent(p->_parent)
-			, WhenLeftDown    (p->WhenLeftDown)
-			, WhenLeftDouble  (p->WhenLeftDouble  )
-			, WhenLeftDrag    (p->WhenLeftDrag    )
-			, WhenRightDown   (p->WhenRightDown   )
-			, WhenRightDouble (p->WhenRightDouble )
-			, WhenRightDrag   (p->WhenRightDrag   )
-			, WhenMiddleDown  (p->WhenMiddleDown  )
 			{}
 
 			void AdjustToPlotRect(const Rect& plotRect)
 			{
-				if ( !IsOverGraph() ) {
+				if ( !IsFloat() ) {
 					int xCenter = (plotRect.left + plotRect.right)/2;
 					if ( (_frame.left < xCenter) && (xCenter < _frame.right) ) {
 						_frame.left = plotRect.left;
@@ -127,8 +114,9 @@ namespace GraphDraw_ns
 			virtual bool Contains(Point p) const { return _frame.Contains(p); }
 			inline const Rect& GetFrame() const { return _frame; }
 			inline void SetFrame(Rect v) { _frame = v; Update(); }
-			inline const Rect& GetOverFrame() const { return _overFrame; }
-			inline void SetOverFrame(Rect v) { _overFrame = v; }
+			inline const Rect& GetFloatFrame() const { return _floatFrame; }
+			inline const Rect GetFloatFrame(int scale) const { Rect f=_floatFrame; f.Set(f.TopLeft()*scale, f.BottomRight()*scale) ; return f; }
+			inline void SetFloatFrame(Rect v) { _floatFrame = v; }
 			inline int GetElementWidth() { return _width; }
 			inline ElementPosition GetElementPos() { return _pos; }
 			//virtual void SetElementPos( ElementPosition v ) { _pos = v; }
@@ -139,16 +127,16 @@ namespace GraphDraw_ns
 
 			inline bool IsVertical() const { return ((_pos & GraphDraw_ns::VERTICAL_MASK)!=0); }
 			inline bool IsHorizontal() const { return ((_pos & GraphDraw_ns::HORIZONTAL_MASK)!=0); }
-			inline bool IsOverGraph() const { return ((_pos & GraphDraw_ns::OVER_MASK)!=0); }
+			inline bool IsFloat() const { return ((_pos & GraphDraw_ns::OVER_MASK)!=0); }
 			inline bool IsHidden() const { return _hide; }
 			inline void Hide( bool v=true ) { _hide = v; }
 			
 			bool operator<(const GraphElementFrame& b) const { return (_stackingPriority < b._stackingPriority); };
 			bool operator>(const GraphElementFrame& b) const { return (_stackingPriority > b._stackingPriority); };
 
-         // Paint element somewhere inside the graph area (legend, ...)
-			// Offset and clipping are set with the '_frame' settings
-			virtual void PaintOverGraph(Draw& dw, int scale) { };
+            // Paint element somewhere inside the graph area as a FLOATING element (legend, ...)
+			// Offset and clipping are set with the '_floatFrame' settings
+			virtual void PaintFloatElement(Draw& dw, int scale) { };
 
 			// Paint the element in his own area
 			// There is no clipping ==> drawing can overlap plot or other elements
@@ -162,16 +150,11 @@ namespace GraphDraw_ns
 			virtual GraphElementFrame* Clone() = 0;
 
 
-			virtual GraphElementFrame* LeftDown   (Point p, dword keyflags) { WhenLeftDown   (this, p, keyflags); return 0;}
-			virtual GraphElementFrame* LeftUp     (Point p, dword keyflags) { WhenLeftUp     (this, p, keyflags); return 0;}
-			virtual GraphElementFrame* LeftDouble (Point p, dword keyflags) { WhenLeftDouble (this, p, keyflags); return 0;}
-			virtual GraphElementFrame* LeftDrag   (Point p, dword keyflags) { WhenLeftDrag   (this, p, keyflags); return 0;}
-			virtual GraphElementFrame* RightDown  (Point p, dword keyflags) { WhenRightDown  (this, p, keyflags); return 0;}
-			virtual GraphElementFrame* RightUp    (Point p, dword keyflags) { WhenRightUp    (this, p, keyflags); return 0;}
-			virtual GraphElementFrame* RightDouble(Point p, dword keyflags) { WhenRightDouble(this, p, keyflags); return 0;}
-			virtual GraphElementFrame* RightDrag  (Point p, dword keyflags) { WhenRightDrag  (this, p, keyflags); return 0;}
-			virtual GraphElementFrame* MiddleDown (Point p, dword keyflags) { WhenMiddleDown (this, p, keyflags); return 0;}
-			virtual GraphElementFrame* MiddleUp (Point p, dword keyflags)   { WhenMiddleUp   (this, p, keyflags); return 0;}
+			virtual GraphElementFrame* LeftDown   (Point p, dword keyflags) { return 0;}
+			virtual GraphElementFrame* LeftDouble (Point p, dword keyflags) { return 0;}
+			virtual GraphElementFrame* RightDown  (Point p, dword keyflags) { return 0;}
+			virtual GraphElementFrame* RightDouble(Point p, dword keyflags) { return 0;}
+			virtual GraphElementFrame* MiddleDown (Point p, dword keyflags) { return 0;}
 			virtual GraphElementFrame* MouseMove  (Point p, dword keyflags) { return 0;}
 			virtual GraphElementFrame* MouseWheel (Point p, int zdelta, dword keyflags) { return 0; };
 			virtual Image  CursorImage(Point p, dword keyflags) { return GraphDrawImg::CROSS(); }
@@ -358,22 +341,22 @@ namespace GraphDraw_ns
 		inline CLASSNAME&  SetBackGndColor(RGBA  v) { _bckGndRgba  = v; _isRgba=true;  return *this; }
 		inline CLASSNAME&  SetFont(Font  v)         { _font  = v;  return *this; }
 
-		virtual void PaintElement(Draw& dw, int scale){
+		virtual void PaintElement(Draw& dw, int scale) {
 			if ( !_bckGndcolor.IsNullInstance() ) {
-				dw.DrawRect( 0, 0, _B::GetFrame().GetWidth(), _B::GetFrame().GetHeight(), _bckGndcolor);
+				dw.DrawRect( 0, 0, _B::GetFrame().GetWidth(), _B::GetFrame().GetHeight(), _bckGndcolor); // no SCALING needed here
 			}
 			else if (_isRgba){
-				Image img = CreateImage(_B::GetFrame().GetSize(), _bckGndRgba);
+				Image img = CreateImage(_B::GetFrame().GetSize(), _bckGndRgba); // no SCALING needed here
 				dw.DrawImage( 0,0, img );
 			}
 			DrawLegend(dw, scale);
 		}
 
-		virtual void PaintOverGraph(Draw& dw, int scale){
+		virtual void PaintFloatElement(Draw& dw, int scale){
 			if ( !_bckGndcolor.IsNullInstance() )
-				dw.DrawRect( 0, 0, _B::GetFrame().GetWidth(), _B::GetFrame().GetHeight(), _bckGndcolor);
+				dw.DrawRect( 0, 0, _B::GetFloatFrame(scale).GetWidth(), _B::GetFloatFrame(scale).GetHeight(), _bckGndcolor);
 			else if (_isRgba){
-				Image img = CreateImage(_B::GetFrame().GetSize(), _bckGndRgba);
+				Image img = CreateImage(_B::GetFloatFrame(scale).GetSize(), _bckGndRgba);
 				dw.DrawImage( 0,0, img );
 			}
 			DrawLegend(dw, scale);

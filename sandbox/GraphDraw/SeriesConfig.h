@@ -79,11 +79,7 @@ namespace GraphDraw_ns
 				RGBA bckgColor;   bckgColor.r = 0; bckgColor.g = 0; bckgColor.b = 0; bckgColor.a = 0;
 				
 				ImageBuffer ib( Size(width,width) );
-				RGBA* iter = ib.Begin();
-				while (iter < ib.End()) {
-					*iter = bckgColor;
-					++iter;
-				}
+				Fill( ib.Begin(), bckgColor, ib.GetLength() );
 
 				Vector<Point> p1;
 				const int scale=1;

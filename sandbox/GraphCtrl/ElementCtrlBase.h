@@ -44,7 +44,7 @@ class CRTPGraphElementCtrl_Base : public ELEMENT_CLASS {
 	
 	virtual bool Contains(Point p) const                                          { return (_B::_frame.Contains(p)); }
 	virtual GraphDraw_ns::GraphElementFrame* LeftDouble (Point p, dword keyflags) { OpenPropertiesDlg(); return 0; }
-	void ContextMenu(Bar& bar)                                                    { bar.Add(t_("Edit properties"), THISBACK(OpenPropertiesDlg)); }
+	virtual void ContextMenu(Bar& bar)                                            { bar.Add(t_("Edit properties"), THISBACK(OpenPropertiesDlg)); }
 	virtual GraphDraw_ns::GraphElementFrame* RightDown(Point p, dword keyflags)   { MenuBar::Execute(THISBACK(ContextMenu)); return 0; } 
 	virtual Image  CursorImage(Point p, dword keyflags)                           { return GraphCtrlImg::ACTIVE_CROSS(); }
 };

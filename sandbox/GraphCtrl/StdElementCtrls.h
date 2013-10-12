@@ -16,6 +16,17 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 
 	virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }
 
+
+	void FitToDataRefresh() {
+		_B::FitToData();
+		_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
+	}
+
+	virtual void ContextMenu(Bar& bar) {
+		bar.Add(t_("Edit properties"), THISBACK(OpenPropertiesDlg));
+		bar.Add(t_("Fit To Data"), THISBACK(FitToDataRefresh));
+	}
+
 	virtual void OpenPropertiesDlg(void) {
 		GridAxisPropertiesDlg<CLASSNAME,  typename TYPES::TypeCoordConverter> dlg;
 		dlg.InitDlg(*this, _B::GetCoordConverter());
@@ -52,37 +63,53 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 
 		if ( (keyflags & (K_CTRL|K_SHIFT)) == (K_CTRL|K_SHIFT) ) // => ZOOM on wheel (this axis only)
 		{
-			converter.updateGraphSize( converter.toGraph( converter.getScreenMin() - zdelta ),
-			                           converter.toGraph( converter.getScreenMax() + zdelta ));
+			GraphDraw_ns::GraphUndoData undo;
+			undo.undoAction << converter.MakeSetGraphSizeAction();
+				converter.updateGraphSize( converter.toGraph( converter.getScreenMin() - zdelta ),
+				                           converter.toGraph( converter.getScreenMax() + zdelta ));
+			undo.redoAction << converter.MakeSetGraphSizeAction();
+			_B::_parent->AddUndoAction(undo);
 			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
 		}
 		else if ( keyflags & K_CTRL )
 		{ // => ZOOM on wheel ( whole graph )
-			if (_B::IsVertical() ) {
-				_B::_parent->ZoomY(converter.getScreenMax() + zdelta, converter.getScreenMin() - zdelta);
-			} else {
-				_B::_parent->ZoomX(converter.getScreenMin() - zdelta, converter.getScreenMax() + zdelta);
-			}
+			GraphDraw_ns::GraphUndoData undo;
+			undo.undoAction << _B::_parent->MakeSetGraphSizeAction();
+				if (_B::IsVertical() ) {
+					_B::_parent->ZoomY(converter.getScreenMax() + zdelta, converter.getScreenMin() - zdelta);
+				} else {
+					_B::_parent->ZoomX(converter.getScreenMin() - zdelta, converter.getScreenMax() + zdelta);
+				}
+			undo.redoAction << _B::_parent->MakeSetGraphSizeAction();
+			_B::_parent->AddUndoAction(undo);
 			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
 		}
 		else if ( keyflags & K_SHIFT )
 		{
 			// => SCROLL on wheel ( on axis )
-			converter.updateGraphSize( converter.toGraph( converter.getScreenMin() - zdelta ),
-			                           converter.toGraph( converter.getScreenMax() - zdelta ));
+			GraphDraw_ns::GraphUndoData undo;
+			undo.undoAction << converter.MakeSetGraphSizeAction();
+				converter.updateGraphSize( converter.toGraph( converter.getScreenMin() - zdelta ),
+				                           converter.toGraph( converter.getScreenMax() - zdelta ));
+			undo.redoAction << converter.MakeSetGraphSizeAction();
+			_B::_parent->AddUndoAction(undo);
 			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
 			return this; // Capture MouseCtrl
 		}
 		else
 		{
-			// => SCROLL on wheel ( whole graph )
-			if (_B::IsVertical() ) {
-				// Vertical drag
-				_B::_parent->ScrollY(zdelta);
-			} else {
-				// Horizontal drag
-				_B::_parent->ScrollX(zdelta);
-			}
+			// => SCROLL on wheel ( ALL vertical OR horizontal axis )
+			GraphDraw_ns::GraphUndoData undo;
+			undo.undoAction << _B::_parent->MakeSetGraphSizeAction();
+				if (_B::IsVertical() ) {
+					// Vertical drag
+					_B::_parent->ScrollY(zdelta);
+				} else {
+					// Horizontal drag
+					_B::_parent->ScrollX(zdelta);
+				}
+			undo.redoAction << _B::_parent->MakeSetGraphSizeAction();
+			_B::_parent->AddUndoAction(undo);
 			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
 			return this; // Capture MouseCtrl
 		}

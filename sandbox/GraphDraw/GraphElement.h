@@ -8,6 +8,7 @@
 #ifndef GRAPHELEMENT_H_
 #define GRAPHELEMENT_H_
 
+#include "GraphUndo.h"
 
 namespace GraphDraw_ns
 {
@@ -20,7 +21,7 @@ namespace GraphDraw_ns
 	} ElementPosition;
 
 	enum {
-		VERTICAL_MASK  = 0x00F,
+		VERTICAL_MASK   = 0x00F,
 		HORIZONTAL_MASK = 0x0F0,
 		OVER_MASK       = 0xF00
 	};
@@ -31,6 +32,7 @@ namespace GraphDraw_ns
 	} RefreshStrategy;
 
 
+
 	class GraphElementParent {
 		public:
 			typedef GraphElementParent CLASSNAME;
@@ -39,8 +41,10 @@ namespace GraphDraw_ns
 			virtual void ZoomX(TypeScreenCoord left, TypeScreenCoord right) = 0;
 			virtual void ZoomY(TypeScreenCoord top, TypeScreenCoord bottom) = 0;
 			virtual void RefreshFromChild( RefreshStrategy doFastPaint ) = 0;
-			virtual Value GetSeries() = 0;	
-			virtual Value GetParentCtrl() = 0;	
+			virtual Value GetSeries() = 0;
+			virtual Value GetParentCtrl() = 0;
+			virtual void AddUndoAction(GraphUndoData& CB) = 0;
+			virtual Callback MakeSetGraphSizeAction() = 0;
 
 			GraphElementParent() {}
 			virtual ~GraphElementParent() {}
@@ -158,6 +162,9 @@ namespace GraphDraw_ns
 			virtual GraphElementFrame* MouseMove  (Point p, dword keyflags) { return 0;}
 			virtual GraphElementFrame* MouseWheel (Point p, int zdelta, dword keyflags) { return 0; };
 			virtual Image  CursorImage(Point p, dword keyflags) { return GraphDrawImg::CROSS(); }
+			
+			virtual void FitToData() {}
+
 	};
 
 	inline bool compareGraphElementFrame(const GraphElementFrame* a, const GraphElementFrame* b) { return *a < *b; }
@@ -364,8 +371,9 @@ namespace GraphDraw_ns
 
 		virtual void Update() {
 			if (v_series==0) {
-				v_series = _B::_parent->GetSeries().template To<typename TYPES::TypeVectorSeries*>();
-				// ###### BUG DE CONVERSION ######
+				typedef typename TYPES::TypeVectorSeries*  PtrTypeVectorSeries;
+				v_series = _B::_parent->GetSeries().template To<PtrTypeVectorSeries>();
+				// ###### BUG DE CONVERSION ARM ######
 			}
 
 			_legendWeight = 0;

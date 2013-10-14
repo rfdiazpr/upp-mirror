@@ -8,6 +8,7 @@ file
 	CoordinateConverter.h,
 	GraphDraw.cpp,
 	src.tpp,
+	GraphUndo.h,
 	GraphDraw.h,
 	GraphFunctions.h,
 	GridStepIterator.h,
@@ -17,6 +18,5 @@ file
 	GraphElement.h,
 	GraphFunctions.h,
 	GridAxisDraw.h,
-	srcimp.tpp,
 	Copying;
 

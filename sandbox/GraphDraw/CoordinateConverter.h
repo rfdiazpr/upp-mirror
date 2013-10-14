@@ -23,6 +23,7 @@ namespace GraphDraw_ns
 			Value _graphMinLimit;
 
 		public:
+		typedef CoordinateConverter CLASSNAME;
 			CoordinateConverter()
 			{
 				update( 0, 100, 0, 100);
@@ -44,6 +45,9 @@ namespace GraphDraw_ns
 			inline TypeGraphCoord  getSignedGraphRange() const { return (_graphMax-_graphMin); }
 			inline bool IsInGraphRange(TypeGraphCoord p) const { return ((_graphMin <= p) && (p <= _graphMax)); }
 
+			Callback MakeSetGraphSizeAction() {
+				return THISBACK2(updateGraphSize, _graphMin, _graphMax);
+			}
 			inline void setGraphMaxRangeLimit(TypeGraphCoord v) { _graphMaxLimit = v; }
 			inline void setGraphMinRangeLimit(TypeGraphCoord v) { _graphMinLimit = v; }
 			inline void resetGraphRangeLimits() { _graphMaxLimit = Null; _graphMinLimit = Null; }

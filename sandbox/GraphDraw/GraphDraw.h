@@ -71,6 +71,7 @@ namespace GraphDraw_ns
 	} DrawMode;
 
 
+
 	// ============================
 	// CRTP_EmptyGraphDraw   CLASS
 	// ============================
@@ -88,9 +89,9 @@ namespace GraphDraw_ns
 
 
 		protected:
-		// graph elements draw aound the graph
+		// graph elements draw raound the graph
 		Vector< GraphElementFrame* >  _drawElements;
-		Vector< GraphElementFrame* >  _createdElements;
+		Vector< GraphElementFrame* >  _createdElements; // the elements in this list are owned by GrapDraw
 		Vector< TypeCoordConverter* > _xConverters;
 		Vector< TypeCoordConverter* > _yConverters;
 
@@ -106,6 +107,7 @@ namespace GraphDraw_ns
 		int       _leftMarginWidth;
 		int       _rightMarginWidth;
 		
+		GraphUndo _undoManager;
 		
 		// helper method
 		void AppendElementToRect(GraphElementFrame& element, Rect& fromRect, const int scale)
@@ -197,7 +199,8 @@ namespace GraphDraw_ns
 
 		virtual Value GetSeries() {
 			ASSERT_(&(_B::series), "CRTP_EmptyGraphDraw::GetSeries()  returns NULL");
-			return RawToValue(&(_B::series));
+			typename TYPES::TypeVectorSeries* pseries = &(_B::series);
+			return RawToValue( pseries );
 		}
 
 		virtual Value GetParentCtrl() {
@@ -205,8 +208,28 @@ namespace GraphDraw_ns
 			return Null;
 		}
 
+		virtual void AddUndoAction(GraphUndoData& CB) {
+			_undoManager.AddUndoAction(CB);
+		}
 		
+		void Undo() {
+			_undoManager.Undo();
+			RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
+		}
+
+		void Redo() {
+			_undoManager.Redo();
+			RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
+		}
 		
+		void FitToData() {
+			for (int j = _drawElements.GetCount()-1; j>=0; j--) {
+				_drawElements[j]->FitToData();
+			}
+			RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
+		}
+		
+
 		TypeCoordConverter& GetXCoordConverter() { ASSERT(TypeSeriesGroup::_currentXConverter!=0); return *TypeSeriesGroup::_currentXConverter; }
 		TypeCoordConverter& GetYCoordConverter() { ASSERT(TypeSeriesGroup::_currentYConverter!=0); return *TypeSeriesGroup::_currentYConverter; }
 
@@ -276,6 +299,12 @@ namespace GraphDraw_ns
 			return true;
 		}
 
+		virtual Callback MakeSetGraphSizeAction() {
+			Callback action;
+			for (int j = 0; j < _xConverters.GetCount(); j++) { action << _xConverters[j]->MakeSetGraphSizeAction(); }
+			for (int j = 0; j < _yConverters.GetCount(); j++) { action << _yConverters[j]->MakeSetGraphSizeAction(); }
+			return 	action;
+		}
 
 		virtual void ZoomX(TypeScreenCoord left, TypeScreenCoord right)
 		{

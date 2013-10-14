@@ -236,13 +236,13 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 
 	void ContextMenu(Bar& bar)
 	{
-		bar.Add( t_("Copy"), GraphCtrlImg::COPY(), 		  THISBACK1(SaveToClipboard, false)).Key(K_CTRL_C);
+		bar.Add( t_("Copy"), GraphCtrlImg::COPY(), 		  THISBACK1(SaveToClipboard, false));//.Key(K_CTRL_C);
 		bar.Add( t_("Save to file"), GraphCtrlImg::SAVE(), THISBACK1(SaveToFile, Null));
 
 		bar.Separator();
 
-		bar.Add( _B::_undoManager.CanUndo(), t_("Undo"), THISBACK(Undo));
-		bar.Add( _B::_undoManager.CanRedo(), t_("Redo"), THISBACK(Redo));
+		bar.Add( _B::_undoManager.CanUndo(), t_("Undo"), THISBACK(Undo));//.Key(K_CTRL_Z);
+		bar.Add( _B::_undoManager.CanRedo(), t_("Redo"), THISBACK(Redo));//.Key(K_SHIFT_CTRL_Z);
 
 		bar.Separator();
 

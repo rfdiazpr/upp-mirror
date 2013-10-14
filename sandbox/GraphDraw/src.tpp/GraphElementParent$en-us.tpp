@@ -10,34 +10,19 @@ topic "";
 [i448;b42;O9;2 $$8,8#61672508125594000341940100500538:tparam]
 [b42;2 $$9,9#13035079074754324216151401829390:normal]
 [{_}%EN-US 
-[s4;%- &]
 [s0;*@7;4 &]
-[ {{10000@(113.42.0) [s0; [*@7;4 Title]]}}&]
+[ {{10000@(113.42.0) [s0; [*@7;4 Class   GraphElementParent]]}}&]
 [s0;i448;a25;kKO9;@(0.0.255)%- &]
 [ {{10000F(128)G(128)@1 [s0; [* Function List]]}}&]
 [s0;i448;a25;kKO9;:noref:@(0.0.255)%- &]
 [ {{10000F(128)G(128)@1 [s0; [* Public Method List]]}}&]
-[s5;:CRTP`_EmptyGraphDraw`:`:CreateElement`(int`,int`):%- [@(0.0.255) template]_<[@(0.0.255) c
-lass]_[*@4 T], [@(0.0.255) int]_[*@4 POS`_OF`_GRAPH]>_[*@4 T][@(0.0.255) `&]_[* CreateElement
-]([@(0.0.255) int]_[*@3 elementWidth], [@(0.0.255) int]_[*@3 stackPrio])&]
-[s2; [%-*@3 elementWidth ]:&]
-[s2; [%-*@3 stackPrio ]:&]
-[s2;l416; Used to manage the stacking order of GraphElements (can 
-be interpreted as the distance from the graph) : lower values 
-are closer to the graph &]
-[s2;l416; Values used by default predefined graphs are the following:&]
-[s2;l576;i64;O0; 20-|: X/Y axis&]
-[s2;l576;i64;O0; 25-|: X/Y axis label&]
-[s2;l576;i64;O0; 50-|: Y2 axis&]
-[s2;l576;i64;O0; 55-|: Y2 axis label&]
-[s2;l576;i64;O0; 150-|: legend&]
-[s2;l576;i64;O0; 200-|: Title&]
 [s4;%- &]
-[s3;%- [@(0.0.255) virtual] [_^Callback^ Callback]_[* MakeSetGraphSizeAction]()&]
+[s5;:GraphElementParent`:`:MakeSetGraphSizeAction`(`):%- [@(0.0.255) virtual] 
+[_^Callback^ Callback]_[* MakeSetGraphSizeAction]()_`=_[@3 0]&]
 [s2; Returns a Callback that, when executed, will set the Graph size 
 settings identical to the current settings.&]
 [s2; This is useful for UNDO / REDO&]
 [s3;%- &]
-[s0;%- &]
+[s0; &]
 [ {{10000F(128)G(128)@1 [s0; [* Constructor detail]]}}&]
 [s0; ]]

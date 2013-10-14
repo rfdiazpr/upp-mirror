@@ -179,6 +179,40 @@ namespace GraphDraw_ns
 			return _B::SetElementPos(v);
 		 }
 
+		virtual void FitToData() {
+			typedef typename TYPES::TypeVectorSeries*  PtrTypeVectorSeries;
+			PtrTypeVectorSeries v_series = _B::_parent->GetSeries().template To<PtrTypeVectorSeries>();
+			double lmin = -DOUBLE_NULL;
+			double lmax =  DOUBLE_NULL;
+			bool doFitToData = false;
+			switch(_B::GetElementPos()) {
+				case LEFT_OF_GRAPH:
+				case RIGHT_OF_GRAPH:
+					for (int c=0; c<(*v_series).GetCount(); ++c) {
+						if ((*v_series)[c].yConverter == &_coordConverter) {
+							lmin = min (lmin, (*v_series)[c].PointsData()->MinY());
+							lmax = max (lmax, (*v_series)[c].PointsData()->MaxY());
+							doFitToData = true;
+						}
+					}
+					break;
+				case BOTTOM_OF_GRAPH:
+				case TOP_OF_GRAPH:
+					for (int c=0; c<(*v_series).GetCount(); ++c) {
+						if ((*v_series)[c].xConverter == &_coordConverter) {
+							lmin = min (lmin, (*v_series)[c].PointsData()->MinX());
+							lmax = max (lmax, (*v_series)[c].PointsData()->MaxX());
+							doFitToData = true;
+						}
+					}
+					break;
+				case OVER_GRAPH:
+					break;
+			}
+			if (doFitToData) _coordConverter.updateGraphSize( lmin, lmax );
+ 			//return *this;
+		}
+		//CLASSNAME& FitToData() { FitToData(0); };
 
 
 		TypeGridStepManager& GetGridStepManager() { return *_gridStepManager; }
@@ -232,13 +266,6 @@ namespace GraphDraw_ns
 
 		inline TypeCoordConverter& GetCoordConverter()                 { return _coordConverter;  }
 
-/*		inline Color GetAxisColor(Color v)                        { _axisColor = v; return *this;  }
-		inline int GetAxisWidth(int v)                            { _axisWidth = v; return *this;  }
-		inline Font GetAxisTextFont(Font v)                       { _axisTextFont = v; return *this; }
-		inline Color GetAxisTextColor(Color v)                    { _axisTextColor = v; return *this; }
-		inline Color GetAxisTickColor(Color v)                    { _axisTickColor = v; return *this; }
-		inline Color GetGridColor(Color v)                        { _gridColor = v; return *this; }
-*/
 		inline typename TypeGridStepManager::Iterator getMajorBeginIterator(void) { return  _gridStepManager->Begin(); }
 		inline typename TypeGridStepManager::Iterator getMajorEndIterator(void)   { return  _gridStepManager->End(); }
 

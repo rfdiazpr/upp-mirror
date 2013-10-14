@@ -64,23 +64,23 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 		if ( (keyflags & (K_CTRL|K_SHIFT)) == (K_CTRL|K_SHIFT) ) // => ZOOM on wheel (this axis only)
 		{
 			GraphDraw_ns::GraphUndoData undo;
-			undo.undoAction << converter.MakeSetGraphSizeAction();
+			undo.undoAction << converter.MakeRestoreGraphMinMaxCB();
 				converter.updateGraphSize( converter.toGraph( converter.getScreenMin() - zdelta ),
 				                           converter.toGraph( converter.getScreenMax() + zdelta ));
-			undo.redoAction << converter.MakeSetGraphSizeAction();
+			undo.redoAction << converter.MakeRestoreGraphMinMaxCB();
 			_B::_parent->AddUndoAction(undo);
 			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
 		}
 		else if ( keyflags & K_CTRL )
 		{ // => ZOOM on wheel ( whole graph )
 			GraphDraw_ns::GraphUndoData undo;
-			undo.undoAction << _B::_parent->MakeSetGraphSizeAction();
+			undo.undoAction << _B::_parent->MakeRestoreGraphSizeCB();
 				if (_B::IsVertical() ) {
 					_B::_parent->ZoomY(converter.getScreenMax() + zdelta, converter.getScreenMin() - zdelta);
 				} else {
 					_B::_parent->ZoomX(converter.getScreenMin() - zdelta, converter.getScreenMax() + zdelta);
 				}
-			undo.redoAction << _B::_parent->MakeSetGraphSizeAction();
+			undo.redoAction << _B::_parent->MakeRestoreGraphSizeCB();
 			_B::_parent->AddUndoAction(undo);
 			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
 		}
@@ -88,10 +88,10 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 		{
 			// => SCROLL on wheel ( on axis )
 			GraphDraw_ns::GraphUndoData undo;
-			undo.undoAction << converter.MakeSetGraphSizeAction();
+			undo.undoAction << converter.MakeRestoreGraphMinMaxCB();
 				converter.updateGraphSize( converter.toGraph( converter.getScreenMin() - zdelta ),
 				                           converter.toGraph( converter.getScreenMax() - zdelta ));
-			undo.redoAction << converter.MakeSetGraphSizeAction();
+			undo.redoAction << converter.MakeRestoreGraphMinMaxCB();
 			_B::_parent->AddUndoAction(undo);
 			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
 			return this; // Capture MouseCtrl
@@ -100,7 +100,7 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 		{
 			// => SCROLL on wheel ( ALL vertical OR horizontal axis )
 			GraphDraw_ns::GraphUndoData undo;
-			undo.undoAction << _B::_parent->MakeSetGraphSizeAction();
+			undo.undoAction << _B::_parent->MakeRestoreGraphSizeCB();
 				if (_B::IsVertical() ) {
 					// Vertical drag
 					_B::_parent->ScrollY(zdelta);
@@ -108,7 +108,7 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 					// Horizontal drag
 					_B::_parent->ScrollX(zdelta);
 				}
-			undo.redoAction << _B::_parent->MakeSetGraphSizeAction();
+			undo.redoAction << _B::_parent->MakeRestoreGraphSizeCB();
 			_B::_parent->AddUndoAction(undo);
 			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
 			return this; // Capture MouseCtrl

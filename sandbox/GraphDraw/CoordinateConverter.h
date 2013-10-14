@@ -45,7 +45,7 @@ namespace GraphDraw_ns
 			inline TypeGraphCoord  getSignedGraphRange() const { return (_graphMax-_graphMin); }
 			inline bool IsInGraphRange(TypeGraphCoord p) const { return ((_graphMin <= p) && (p <= _graphMax)); }
 
-			Callback MakeSetGraphSizeAction() {
+			Callback MakeRestoreGraphMinMaxCB() {
 				return THISBACK2(updateGraphSize, _graphMin, _graphMax);
 			}
 			inline void setGraphMaxRangeLimit(TypeGraphCoord v) { _graphMaxLimit = v; }

@@ -44,7 +44,7 @@ namespace GraphDraw_ns
 			virtual Value GetSeries() = 0;
 			virtual Value GetParentCtrl() = 0;
 			virtual void AddUndoAction(GraphUndoData& CB) = 0;
-			virtual Callback MakeSetGraphSizeAction() = 0;
+			virtual Callback MakeRestoreGraphSizeCB() = 0;
 
 			GraphElementParent() {}
 			virtual ~GraphElementParent() {}

@@ -299,10 +299,10 @@ namespace GraphDraw_ns
 			return true;
 		}
 
-		virtual Callback MakeSetGraphSizeAction() {
+		virtual Callback MakeRestoreGraphSizeCB() {
 			Callback action;
-			for (int j = 0; j < _xConverters.GetCount(); j++) { action << _xConverters[j]->MakeSetGraphSizeAction(); }
-			for (int j = 0; j < _yConverters.GetCount(); j++) { action << _yConverters[j]->MakeSetGraphSizeAction(); }
+			for (int j = 0; j < _xConverters.GetCount(); j++) { action << _xConverters[j]->MakeRestoreGraphMinMaxCB(); }
+			for (int j = 0; j < _yConverters.GetCount(); j++) { action << _yConverters[j]->MakeRestoreGraphMinMaxCB(); }
 			return 	action;
 		}
 

@@ -234,6 +234,15 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		Refresh();
 	}
 
+	void CtrlFitToData() {
+		GraphDraw_ns::GraphUndoData undo;
+		undo.undoAction << _B::MakeRestoreGraphSizeCB();
+			_B::FitToData();
+		undo.redoAction << _B::MakeRestoreGraphSizeCB();
+		_B::AddUndoAction(undo);
+	}
+
+
 	void ContextMenu(Bar& bar)
 	{
 		bar.Add( t_("Copy"), GraphCtrlImg::COPY(), 		  THISBACK1(SaveToClipboard, false));//.Key(K_CTRL_C);
@@ -246,7 +255,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 
 		bar.Separator();
 
-		bar.Add( t_("Fit To Data"), THISBACK(FitToData));
+		bar.Add( t_("Fit To Data"), THISBACK(CtrlFitToData));
 
 		bar.Separator();
 
@@ -316,13 +325,13 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 			{
 				// SELECT ZOOM
 				GraphDraw_ns::GraphUndoData undo;
-				undo.undoAction << _B::MakeSetGraphSizeAction(); // PREV size before  SELECT ZOOM
+				undo.undoAction << _B::MakeRestoreGraphSizeCB(); // PREV size before  SELECT ZOOM
 				RectTracker tracker(*this);
 				Rect selectedZoomArea = tracker.Track( RectfC(p.x,p.y,0,0), ALIGN_NULL, ALIGN_NULL) - _B::_plotRect.TopLeft();
 				if (selectedZoomArea.Width() !=0  && selectedZoomArea.Height() != 0) {
 					_B::ZoomOnRect( selectedZoomArea );
 					SetModify();
-					undo.redoAction << _B::MakeSetGraphSizeAction(); // NEW size after  SELECT ZOOM
+					undo.redoAction << _B::MakeRestoreGraphSizeCB(); // NEW size after  SELECT ZOOM
 					_B::AddUndoAction(undo);
 				}
 			}
@@ -388,12 +397,12 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	virtual void MouseMove(Point p, dword keyflags) {
 		if ( elementCapture_MouseMove != 0) {
 			GraphDraw_ns::GraphUndoData undo;
-			undo.undoAction << _B::MakeSetGraphSizeAction(); // PREV size before  MOVE
+			undo.undoAction << _B::MakeRestoreGraphSizeCB(); // PREV size before  MOVE
 				GraphCtrlLooper looper(*this);
 				looper.WhenMouseMove << THISBACK(LoopedElementMouseMove);
 				looper.Run();
 				elementCapture_MouseMove=0;
-			undo.redoAction << _B::MakeSetGraphSizeAction(); // NEW size after  MOVE
+			undo.redoAction << _B::MakeRestoreGraphSizeCB(); // NEW size after  MOVE
 			_B::AddUndoAction(undo);
 			return;
 		}
@@ -402,11 +411,11 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		else if ( _B::_plotRect.Contains(p) )  {
 			if ( keyflags & K_MOUSELEFT ) {
 				GraphDraw_ns::GraphUndoData undo;
-				undo.undoAction << _B::MakeSetGraphSizeAction(); // PREV size before  MOVE
+				undo.undoAction << _B::MakeRestoreGraphSizeCB(); // PREV size before  MOVE
 					GraphCtrlLooper looper(*this);
 					looper.WhenMouseMove << THISBACK(LoopedPlotScrollMouseMove);
 					looper.Run();
-				undo.redoAction << _B::MakeSetGraphSizeAction(); // NEW size after  MOVE
+				undo.redoAction << _B::MakeRestoreGraphSizeCB(); // NEW size after  MOVE
 				_B::AddUndoAction(undo);
 			}
 			else {
@@ -473,11 +482,11 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 			if ( keyflags & K_CTRL ) // => WHEEL ZOOM
 			{
 				GraphDraw_ns::GraphUndoData undo;
-				undo.undoAction << _B::MakeSetGraphSizeAction(); // PREV size before  MOVE
+				undo.undoAction << _B::MakeRestoreGraphSizeCB(); // PREV size before  MOVE
 					if (zdelta < 0) _B::ApplyZoomFactor(1.2);
 					else            _B::ApplyInvZoomFactor(1.2);
 					_B::_doFastPaint = true;
-				undo.redoAction << _B::MakeSetGraphSizeAction(); // NEW size after  MOVE
+				undo.redoAction << _B::MakeRestoreGraphSizeCB(); // NEW size after  MOVE
 				_B::AddUndoAction(undo);
 			}
 			return;

@@ -179,7 +179,8 @@ namespace GraphDraw_ns
 			return _B::SetElementPos(v);
 		 }
 
-		virtual void FitToData() {
+		
+		virtual void FitToData(FitToDataStrategy fitStrategy) {
 			typedef typename TYPES::TypeVectorSeries*  PtrTypeVectorSeries;
 			PtrTypeVectorSeries v_series = _B::_parent->GetSeries().template To<PtrTypeVectorSeries>();
 			double lmin = -DOUBLE_NULL;
@@ -189,7 +190,7 @@ namespace GraphDraw_ns
 				case LEFT_OF_GRAPH:
 				case RIGHT_OF_GRAPH:
 					for (int c=0; c<(*v_series).GetCount(); ++c) {
-						if ((*v_series)[c].yConverter == &_coordConverter) {
+						if ( ( (fitStrategy==ALL_SERIES)  || ((*v_series)[c].show)) && ((*v_series)[c].yConverter == &_coordConverter) ) {
 							lmin = min (lmin, (*v_series)[c].PointsData()->MinY());
 							lmax = max (lmax, (*v_series)[c].PointsData()->MaxY());
 							doFitToData = true;
@@ -199,7 +200,7 @@ namespace GraphDraw_ns
 				case BOTTOM_OF_GRAPH:
 				case TOP_OF_GRAPH:
 					for (int c=0; c<(*v_series).GetCount(); ++c) {
-						if ((*v_series)[c].xConverter == &_coordConverter) {
+						if ( ( (fitStrategy==ALL_SERIES)  || ((*v_series)[c].show)) && ((*v_series)[c].xConverter == &_coordConverter) ) {
 							lmin = min (lmin, (*v_series)[c].PointsData()->MinX());
 							lmax = max (lmax, (*v_series)[c].PointsData()->MaxX());
 							doFitToData = true;
@@ -210,9 +211,7 @@ namespace GraphDraw_ns
 					break;
 			}
 			if (doFitToData) _coordConverter.updateGraphSize( lmin, lmax );
- 			//return *this;
 		}
-		//CLASSNAME& FitToData() { FitToData(0); };
 
 
 		TypeGridStepManager& GetGridStepManager() { return *_gridStepManager; }

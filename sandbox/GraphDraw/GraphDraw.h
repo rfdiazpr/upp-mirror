@@ -222,9 +222,9 @@ namespace GraphDraw_ns
 			RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
 		}
 		
-		void FitToData() {
+		void FitToData(FitToDataStrategy fitStrategy=ALL_SERIES) {
 			for (int j = _drawElements.GetCount()-1; j>=0; j--) {
-				_drawElements[j]->FitToData();
+				_drawElements[j]->FitToData(fitStrategy);
 			}
 			RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
 		}

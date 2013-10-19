@@ -234,10 +234,10 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		Refresh();
 	}
 
-	void CtrlFitToData() {
+	void CtrlFitToData(GraphDraw_ns::FitToDataStrategy fitStrategy = GraphDraw_ns::ALL_SERIES) {
 		GraphDraw_ns::GraphUndoData undo;
 		undo.undoAction << _B::MakeRestoreGraphSizeCB();
-			_B::FitToData();
+			_B::FitToData( fitStrategy );
 		undo.redoAction << _B::MakeRestoreGraphSizeCB();
 		_B::AddUndoAction(undo);
 	}
@@ -255,7 +255,8 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 
 		bar.Separator();
 
-		bar.Add( t_("Fit To Data"), THISBACK(CtrlFitToData));
+		bar.Add( t_("Fit To Data"),         THISBACK1(CtrlFitToData, GraphDraw_ns::ALL_SERIES));
+		bar.Add( t_("Fit To Visible Data"), THISBACK1(CtrlFitToData, GraphDraw_ns::VISIBLE_SERIES_ONLY));
 
 		bar.Separator();
 

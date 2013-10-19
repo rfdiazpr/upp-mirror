@@ -1,0 +1,13 @@
+description "Line & dash style selection tools\377";
+
+uses
+	Draw,
+	CtrlLib,
+	Painter;
+
+file
+	DropLineDash.h,
+	DropLineDash.cpp,
+	src.tpp,
+	DropLineDash.usc;
+

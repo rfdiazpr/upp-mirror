@@ -1,0 +1,34 @@
+
+
+
+subctrl DropLineDashBase {
+	GetMinSize() { sz = XMinSize(); sz.cy += 2; return sz; }
+	GetStdSize() { sz = GetMinSize(); sz.cx *= 7; return sz; }
+
+	Frame  SetFrame @1;
+	bool   Dropping = true;
+	raw    SetDropLines = 16;
+	Text   Tip;
+
+	Paint(w) {
+		r = GetRect();
+		DrawCtrlFrame(w, r, .SetFrame);
+		DrawButtonFrame(w, r);
+		sz = Size(r.right - r.left, r.bottom - r.top);
+		//n = int(sz.cy / 8);
+		w.DrawRect(r.left, r.top, sz.cx, sz.cy, :SLtGray);
+		n = r.bottom - r.top;
+		DrawEdgeButton(w, RectC(r.right - n, r.top, n, n));
+		w.DrawImage((n - 7) / 2 + r.right - n, (n - 6) / 2 + r.top, "ClassicCtrlsImg::DA");
+	}
+}
+
+ctrl DropLineWidth {
+	group "Push";
+	> DropLineDashBase;
+}
+
+ctrl DropDashStyle {
+	group "Push";
+	> DropLineDashBase;
+}

@@ -17,14 +17,15 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 	virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }
 
 
-	void FitToDataRefresh() {
-		_B::FitToData();
+	void FitToDataRefresh(GraphDraw_ns::FitToDataStrategy fitStrategy = GraphDraw_ns::ALL_SERIES) {
+		_B::FitToData(fitStrategy);
 		_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
 	}
 
 	virtual void ContextMenu(Bar& bar) {
-		bar.Add(t_("Edit properties"), THISBACK(OpenPropertiesDlg));
-		bar.Add(t_("Fit To Data"), THISBACK(FitToDataRefresh));
+		bar.Add(t_("Edit properties"),     THISBACK (OpenPropertiesDlg));
+		bar.Add(t_("Fit To Data"),         THISBACK1(FitToDataRefresh,  GraphDraw_ns::ALL_SERIES));
+		bar.Add(t_("Fit To Visible Data"), THISBACK1(FitToDataRefresh,  GraphDraw_ns::VISIBLE_SERIES_ONLY));
 	}
 
 	virtual void OpenPropertiesDlg(void) {

@@ -31,6 +31,10 @@ namespace GraphDraw_ns
 			REFRESH_TOTAL
 	} RefreshStrategy;
 
+	typedef enum {
+		ALL_SERIES,
+		VISIBLE_SERIES_ONLY
+	} FitToDataStrategy;
 
 
 	class GraphElementParent {
@@ -163,7 +167,7 @@ namespace GraphDraw_ns
 			virtual GraphElementFrame* MouseWheel (Point p, int zdelta, dword keyflags) { return 0; };
 			virtual Image  CursorImage(Point p, dword keyflags) { return GraphDrawImg::CROSS(); }
 			
-			virtual void FitToData() {}
+			virtual void FitToData(FitToDataStrategy fitStrategy) {}
 
 	};
 

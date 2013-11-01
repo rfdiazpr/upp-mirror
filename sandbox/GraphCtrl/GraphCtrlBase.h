@@ -6,25 +6,32 @@
 // ============================================================================================
 //                        LOOP DELEGATION CLASS
 // ============================================================================================
-typedef GraphDraw_ns::GraphElementFrame* (GraphDraw_ns::GraphElementFrame::*mouseCallBack)(Point,dword);
 
 class GraphCtrlLooper : public LocalLoop {
 	private:
+	Image cursorImg;
+	
 	virtual void  LeftUp(Point, dword) { EndLoop(); }
 	virtual void  RightUp(Point, dword) { EndLoop(); }
 	virtual void  MouseMove(Point p, dword f)  { WhenMouseMove(p, f); };
+	virtual Image CursorImage(Point p, dword keyflags) {
+		if (cursorImg.IsNullInstance()) cursorImg = GetMaster().CursorImage(p,keyflags);
+		return cursorImg;
+	}
 	
 	public:
-	GraphCtrlLooper(Ctrl& master) { SetMaster(master); } 
-	Callback2< Point, dword > WhenMouseMove     ;
-	virtual Image CursorImage(Point p, dword keyFlags) { return GetMaster().CursorImage(p,keyFlags); };
+	GraphCtrlLooper(Ctrl& master) {
+		SetMaster(master);
+	} 
+	GraphDraw_ns::MouseLocalLoopCB WhenMouseMove;
 };
 
 
 // ============================
 //    CRTP_GraphCtrl_Base   CLASS
 // ============================
-//template<class TYPES, class DERIVED>
+typedef GraphDraw_ns::GraphElementFrame* (GraphDraw_ns::GraphElementFrame::*mouseCallBack)(Point,dword);
+
 template<class TYPES, class DERIVED, template <class TYPES2, class DERIVED2> class GRAPHDRAW_BASE_CLASS >
 class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public Ctrl
 {
@@ -34,7 +41,6 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	private:
 	typedef GraphDraw_ns::CRTP_XYGraphDraw<TYPES, DERIVED> _B;
 
-	GraphDraw_ns::GraphElementFrame* elementCapture_MouseMove  ;
 	Image CaptureMouseMove_cursorImage;
 	Image ctrlImgSave; // to save ctrl image
 	Point prevMousePoint;
@@ -44,8 +50,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	public:
 
 	CRTP_GraphCtrl_Base()
-	: elementCapture_MouseMove  (0)
-	, copyRatio(3)
+	: copyRatio(3)
 	{
 		SetModify();
 		_B::setScreenSize( GetSize() );
@@ -53,7 +58,6 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 
 	CRTP_GraphCtrl_Base(const CRTP_GraphCtrl_Base& p)
 	: _B(p)
-	, elementCapture_MouseMove  (0)
 	, copyRatio(p.copyRatio)
 	{
 		SetModify();
@@ -199,13 +203,17 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	
 	void OpenSeriesPropertiesDlg(int c) {
 		WithSeriesPropertiesDlgLayout<TopWindow> dlg;
+		
+		//dlg.lineDash.SetDrawMode(_B::GetDrawMode());
+		//dlg.lineThickness.SetDrawMode(_B::GetDrawMode());
+		
 		typename TYPES::TypeSeriesConfig& s = _B::series[c];
 		CtrlRetriever r;
 		r ( dlg.fillColor, s.fillColor)
 		  //( dlg.markShape, s.markShape)
 		  ( dlg.opacity, s.opacity)
 		  ( dlg.markColor, s.markColor)
-		  //( dlg.lineDash, lineDash)
+		  ( dlg.lineDash, s.dash )
 		  ( dlg.lineColor, s.color)
 		  ( dlg.lineThickness, s.thickness)
 		  ( dlg.fillColor, s.fillColor)
@@ -275,6 +283,13 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 			txt += " : " + _B::series[c].legend;
 			bar.Add(txt,  _B::series[c].GetSerieIcon(), THISBACK1(OpenSeriesPropertiesDlg, c));
 		}
+	}
+
+	virtual void DoLocalLoop(GraphDraw_ns::MouseLocalLoopCB CB)
+	{
+		GraphCtrlLooper looper(*this);
+		looper.WhenMouseMove << CB;
+		looper.Run();
 	}
 
 
@@ -380,15 +395,9 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	}
 
 	private:
-	void LoopedElementMouseMove(Point p, dword keyflags) {
-		elementCapture_MouseMove->MouseMove(p, keyflags );
-		RefreshFromChild(GraphDraw_ns::REFRESH_FAST);
-	}
-	
 	void LoopedPlotScrollMouseMove(Point p, dword keyflags) {
 				// LEFT SCROLL
 				_B::_doFastPaint = true;
-				CaptureMouseMove_cursorImage = CursorImage(p, keyflags);
 				_B::Scroll(p.x-prevMousePoint.x, p.y-prevMousePoint.y);
 				prevMousePoint = p;
 				Refresh();
@@ -396,31 +405,17 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	
 	public:
 	virtual void MouseMove(Point p, dword keyflags) {
-		if ( elementCapture_MouseMove != 0) {
-			GraphDraw_ns::GraphUndoData undo;
-			undo.undoAction << _B::MakeRestoreGraphSizeCB(); // PREV size before  MOVE
-				GraphCtrlLooper looper(*this);
-				looper.WhenMouseMove << THISBACK(LoopedElementMouseMove);
-				looper.Run();
-				elementCapture_MouseMove=0;
-			undo.redoAction << _B::MakeRestoreGraphSizeCB(); // NEW size after  MOVE
-			_B::AddUndoAction(undo);
-			return;
-		}
-
-		else if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::MouseMove, elementCapture_MouseMove)) {}
+		GraphDraw_ns::GraphElementFrame* dummy;
+		if ( ProcessMouseCallBack<GraphDraw_ns::GraphElementFrame*>(p, keyflags, &GraphDraw_ns::GraphElementFrame::MouseMove, dummy)) {}
 		else if ( _B::_plotRect.Contains(p) )  {
 			if ( keyflags & K_MOUSELEFT ) {
 				GraphDraw_ns::GraphUndoData undo;
 				undo.undoAction << _B::MakeRestoreGraphSizeCB(); // PREV size before  MOVE
-					GraphCtrlLooper looper(*this);
-					looper.WhenMouseMove << THISBACK(LoopedPlotScrollMouseMove);
-					looper.Run();
+					DoLocalLoop( THISBACK(LoopedPlotScrollMouseMove) );
 				undo.redoAction << _B::MakeRestoreGraphSizeCB(); // NEW size after  MOVE
 				_B::AddUndoAction(undo);
 			}
 			else {
-				CaptureMouseMove_cursorImage = Null;
 				if (_B::_doFastPaint) { // Do complete drawing when SCROLLING FINISHED
 					_B::_doFastPaint = false;
 					Refresh();
@@ -429,23 +424,16 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 			return;
 		}
 
-		if (( elementCapture_MouseMove == 0) && (_B::_doFastPaint)) {
+		if (_B::_doFastPaint) {
 			// Do complete drawing when nothing special to be done
 			_B::_doFastPaint = false;
 			Refresh();
-		}
-
-		CaptureMouseMove_cursorImage = Null;
-		if ( elementCapture_MouseMove)
-		{
-			CaptureMouseMove_cursorImage = CursorImage(p, keyflags);
 		}
 	}
 
 
 	virtual Image  CursorImage(Point p, dword keyflags)
 	{
-		if ( !CaptureMouseMove_cursorImage.IsNullInstance() ) return CaptureMouseMove_cursorImage;
 		Image output;
 		if ( ProcessMouseCallBack<Image>(p, keyflags, &GraphDraw_ns::GraphElementFrame::CursorImage, output, GraphDrawImg::CROSS())) {
 			return output;
@@ -461,6 +449,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 
 	virtual void MouseWheel(Point p, int zdelta, dword keyflags)
 	{
+		// Process FLOAT elements FIRST
 		for (int j = 0; j < _B::_drawElements.GetCount(); j++)
 		{
 			if ( _B::_drawElements[j]->IsFloat() ) {

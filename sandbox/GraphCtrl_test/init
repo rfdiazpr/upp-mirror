@@ -4,4 +4,5 @@
 #include "GraphCtrl/init"
 #include "Functions4U/init"
 #include "Report/init"
+#include "DropLineDash/init"
 #endif

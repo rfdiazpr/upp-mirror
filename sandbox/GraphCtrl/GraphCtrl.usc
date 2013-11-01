@@ -261,7 +261,7 @@ subctrl GraphDraw {
 	int SetRightMargin  = 15;
 	Color SetCtrlBackgroundColor = White;
 	Color SetPlotBackgroundColor = LtGray;
-	DrawMode SetMode = MODE_ANTIALIASED;
+	DrawMode SetDrawMode = MODE_ANTIALIASED;
 	int SetCopyRatio = 3;
 	
 	GetMinSize() { sz = Size(60, 50); return sz; }

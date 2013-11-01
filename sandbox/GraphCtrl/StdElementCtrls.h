@@ -65,10 +65,10 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 		if ( (keyflags & (K_CTRL|K_SHIFT)) == (K_CTRL|K_SHIFT) ) // => ZOOM on wheel (this axis only)
 		{
 			GraphDraw_ns::GraphUndoData undo;
-			undo.undoAction << converter.MakeRestoreGraphMinMaxCB();
+			undo.undoAction << converter.MakeRestoreAxisMinMaxCB();
 				converter.updateGraphSize( converter.toGraph( converter.getScreenMin() - zdelta ),
 				                           converter.toGraph( converter.getScreenMax() + zdelta ));
-			undo.redoAction << converter.MakeRestoreGraphMinMaxCB();
+			undo.redoAction << converter.MakeRestoreAxisMinMaxCB();
 			_B::_parent->AddUndoAction(undo);
 			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
 		}
@@ -89,10 +89,10 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 		{
 			// => SCROLL on wheel ( on axis )
 			GraphDraw_ns::GraphUndoData undo;
-			undo.undoAction << converter.MakeRestoreGraphMinMaxCB();
+			undo.undoAction << converter.MakeRestoreAxisMinMaxCB();
 				converter.updateGraphSize( converter.toGraph( converter.getScreenMin() - zdelta ),
 				                           converter.toGraph( converter.getScreenMax() - zdelta ));
-			undo.redoAction << converter.MakeRestoreGraphMinMaxCB();
+			undo.redoAction << converter.MakeRestoreAxisMinMaxCB();
 			_B::_parent->AddUndoAction(undo);
 			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
 			return this; // Capture MouseCtrl
@@ -122,12 +122,13 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 		return 0; // no need to capture MouseCtrl
 	}
 
-	virtual GraphDraw_ns::GraphElementFrame* MouseMove (Point p, dword keyflags) {
+	private:
+	void _MouseMove(Point p, dword keyflags) {
 		if (keyflags & K_MOUSELEFT)
 		{
-			if ( keyflags & K_SHIFT )
+			if ( keyflags & K_SHIFT ) // SCROLL --ONLY THIS AXIS--
 			{
-				// ==> LEFT SCROLL (this axis only)
+				// ==> LEFT SCROLL 
 				int delta=0;
 				if (_B::IsVertical() ) {
 					// Vertical drag
@@ -139,12 +140,10 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 				typename TYPES::TypeCoordConverter& converter = _B::GetCoordConverter();
 				converter.Scroll( delta );
 				prevMousePoint = p;
-				_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
-				return this; // Capture MouseCtrl
 			}
-			else // if (keyflags & K_SHIFT)
+			else // SCROLL  --WHOLE GRAPH--
 			{
-				// ==> LEFT SCROLL ( whole graph )
+				// ==> LEFT SCROLL 
 				if (_B::IsVertical() ) {
 					// Vertical drag
 					_B::_parent->ScrollY(p.y-prevMousePoint.y);
@@ -153,12 +152,24 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 					_B::_parent->ScrollX(p.x-prevMousePoint.x);
 				}
 				prevMousePoint = p;
-				_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
-				return this; // Capture MouseCtrl
 			}
+			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
+		}
+	}
+	public:
+	virtual GraphDraw_ns::GraphElementFrame* MouseMove (Point p, dword keyflags) {
+		if (keyflags & K_MOUSELEFT)
+		{
+			GraphDraw_ns::GraphUndoData undo;
+			undo.undoAction << _B::_parent->MakeRestoreGraphSizeCB();
+				_B::_parent->DoLocalLoop( THISBACK( _MouseMove ) );
+			undo.redoAction << _B::_parent->MakeRestoreGraphSizeCB();
+			_B::_parent->AddUndoAction(undo);
+			return 0; // Capture MouseCtrl
 		}
 		return 0; // no need to capture MouseCtrl
 	}
+	
 };
 
 
@@ -189,5 +200,136 @@ class StdLabelCtrl : public  CRTPGraphElementCtrl_Base< TYPES, LABELDRAW, StdLab
 		_B::template TOpenPropertiesDlg<LabelPropertiesDlg>();
 	}
 };
+
+
+
+template<class TYPES, class MARKERDRAW>
+class DynamicMarkerCtrl : public  CRTPGraphElementCtrl_Base< TYPES, MARKERDRAW, DynamicMarkerCtrl<TYPES, MARKERDRAW> > {
+	public:
+	typedef DynamicMarkerCtrl<TYPES, MARKERDRAW>  CLASSNAME;
+	typedef CRTPGraphElementCtrl_Base< TYPES, MARKERDRAW, CLASSNAME > _B;
+	typedef TYPES  Types;
+	Point prevMousePoint;
+	GraphDraw_ns::TypeScreenCoord selectOffset;
+	
+	GraphDraw_ns::MarkerPosList::Iterator currMarkerPos; // marker selected for MOVE action
+
+	DynamicMarkerCtrl(typename TYPES::TypeCoordConverter& coordconv)
+	: _B(coordconv)
+	{ }
+	
+//	virtual void OpenPropertiesDlg(void) {
+//		_B::template TOpenPropertiesDlg<LabelPropertiesDlg>();
+//	}
+
+	private:
+
+	void _MoveMarker (Point p, dword keyflags) {
+		if (keyflags & K_MOUSELEFT)
+		{
+			if (_B::IsVertical() ) {
+				// Vertical drag
+				*currMarkerPos =  _B::_coordConverter.toGraph(p.y+selectOffset);
+			} else {
+				// Horizontal drag
+				*currMarkerPos =  _B::_coordConverter.toGraph(p.x+selectOffset);
+			}
+			prevMousePoint = p;
+			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
+		}
+	}
+	
+	public:
+	virtual GraphDraw_ns::GraphElementFrame*  LeftDown(Point p, dword keyflags) {
+		prevMousePoint = p;
+		return 0; // no need to capture MouseCtrl
+	}
+
+	virtual GraphDraw_ns::GraphElementFrame* MouseMove (Point p, dword keyflags) {
+		if (keyflags & K_MOUSELEFT)
+		{
+			GraphDraw_ns::MarkerPosList::Iterator iter = _B::markersPos.Begin();
+			GraphDraw_ns::MarkerPosList::ConstIterator endIter = _B::markersPos.End();
+
+			while ( iter != endIter ) {
+				if (_B::_coordConverter.IsInGraphVisibleRange(*iter)) {
+					switch( _B::GetElementPos() ) {
+						case GraphDraw_ns::LEFT_OF_GRAPH:
+							if (_B::tickMark.Contains(p, _B::GetFrame().TopLeft(),  _B::GetElementPos(), _B::GetElementWidth(), _B::_coordConverter.toScreen(*iter) )) {
+								currMarkerPos = iter;
+								selectOffset = _B::_coordConverter.toScreen(*iter) - p.y;
+								_B::_parent->DoLocalLoop( THISBACK( _MoveMarker ) );
+							}
+							break;
+						case GraphDraw_ns::BOTTOM_OF_GRAPH:
+							if (_B::tickMark.Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), _B::_coordConverter.toScreen(*iter), 0)) {
+								currMarkerPos = iter;
+								selectOffset = _B::_coordConverter.toScreen(*iter) - p.x;
+								_B::_parent->DoLocalLoop( THISBACK( _MoveMarker ) );
+							}
+							break;
+						case GraphDraw_ns::TOP_OF_GRAPH:
+							if (_B::tickMark.Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(),  _B::_coordConverter.toScreen(*iter), _B::GetElementWidth() )) {
+								currMarkerPos = iter;
+								selectOffset = _B::_coordConverter.toScreen(*iter) - p.x;
+								_B::_parent->DoLocalLoop( THISBACK( _MoveMarker ) );
+							}
+							break;
+						case GraphDraw_ns::RIGHT_OF_GRAPH:
+							if (_B::tickMark.Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), 0, _B::_coordConverter.toScreen(*iter) )) {
+								currMarkerPos = iter;
+								selectOffset = _B::_coordConverter.toScreen(*iter) - p.y;
+								_B::_parent->DoLocalLoop( THISBACK( _MoveMarker ) );
+							}
+							break;
+						case GraphDraw_ns::OVER_GRAPH:
+							break;
+					}
+				}
+				++iter;
+			}
+
+
+			//GraphDraw_ns::GraphUndoData undo;
+			//undo.undoAction << _B::_parent->MakeRestoreGraphSizeCB();
+			//	_B::_parent->DoLocalLoop( THISBACK( _MouseMove ) );
+			//undo.redoAction << _B::_parent->MakeRestoreGraphSizeCB();
+			//_B::_parent->AddUndoAction(undo);
+			return 0; // Capture MouseCtrl
+		}
+		return 0; // no need to capture MouseCtrl
+	}
+
+	virtual Image  CursorImage(Point p, dword keyflags) {
+		GraphDraw_ns::MarkerPosList::Iterator iter = _B::markersPos.Begin();
+		GraphDraw_ns::MarkerPosList::ConstIterator endIter = _B::markersPos.End();
+
+		while ( iter != endIter ) {
+			if (_B::_coordConverter.IsInGraphVisibleRange(*iter)) {
+				switch( _B::GetElementPos() ) {
+					case GraphDraw_ns::LEFT_OF_GRAPH:
+						if (_B::tickMark.Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), _B::GetElementWidth(), _B::_coordConverter.toScreen(*iter) ) ) return GraphCtrlImg::SCROLL_Y();
+						break;
+					case GraphDraw_ns::BOTTOM_OF_GRAPH:
+						if (_B::tickMark.Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), _B::_coordConverter.toScreen(*iter), 0 )) return GraphCtrlImg::SCROLL_X();
+						break;
+					case GraphDraw_ns::TOP_OF_GRAPH:
+						if (_B::tickMark.Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), _B::_coordConverter.toScreen(*iter), _B::GetElementWidth() )) return GraphCtrlImg::SCROLL_X();
+						break;
+					case GraphDraw_ns::RIGHT_OF_GRAPH:
+						if (_B::tickMark.Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), 0, _B::_coordConverter.toScreen(*iter) ) ) return GraphCtrlImg::SCROLL_Y();
+						break;
+					case GraphDraw_ns::OVER_GRAPH:
+						return Null;
+						break;
+				}
+			}
+			++iter;
+		}
+		return Null;
+	}
+
+};
+
 
 #endif

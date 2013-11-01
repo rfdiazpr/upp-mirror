@@ -9,88 +9,10 @@
 #define GRIDAXISDRAW_H_
 
 
+#include "TickMark.h"
+
 namespace GraphDraw_ns
 {
-	class TickMark {
-
-		public:
-			int _tickLength;
-			TickMark() : _tickLength(2) { UpdateTick(); }
-			virtual ~TickMark() {}
-
-			virtual void Paint(Draw &w, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const = 0;
-			inline void Paint(Draw &p, ElementPosition axisPos, const int scale, const Point& cp, const Color& markColor) const { Paint(p, axisPos, scale, cp.x, cp.y, markColor); }
-
-			virtual void Paint(Painter &p, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const = 0;
-			inline void Paint(Painter &p, ElementPosition axisPos, const int scale, const Point& cp, const Color& markColor) const { Paint(p, axisPos, scale, cp.x, cp.y, markColor); }
-
-			inline int GetTickLength()       { return _tickLength; }
-			inline TickMark* SetTickLength(int v) { _tickLength = v; UpdateTick(); return this; }
-
-			virtual void UpdateTick() {}; // called when tick drawing needs to be recalculated
-	};
-
-	class RoundTickMark  : public TickMark {
-		public:
-			RoundTickMark() { SetTickLength(5);	}
-			virtual ~RoundTickMark() {}
-
-			virtual void Paint(Draw &w, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const {
-				int diam = fround(scale*_tickLength*2);
-				int radius = diam/2;
-				w.DrawEllipse(x - radius, y - radius, diam, diam, markColor, 1, markColor);
-			}
-
-			virtual void Paint(Painter &p, ElementPosition axisPos, const int& scale, int x, int y, const Color& markColor) const {
-			}
-	};
-
-	class TriangleTickMark  : public TickMark {
-		public:
-			TriangleTickMark() { SetTickLength(5);	}
-			virtual ~TriangleTickMark() {}
-
-			virtual void Paint(Draw &dw, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const {
-				Upp::Vector<Point> p;
-				p << Point(x, y);
-				const int scOffset = 2*scale;
-				const int scTickLength = _tickLength*scale;
-				if (axisPos==LEFT_OF_GRAPH)	{
-					p << Point(x-scTickLength, y-scOffset) << Point(x-scTickLength, y+scOffset);
-				} else if (axisPos==RIGHT_OF_GRAPH)	{
-					p << Point(x+scTickLength, y-scOffset) << Point(x+scTickLength, y+scOffset);
-				} else if (axisPos==BOTTOM_OF_GRAPH)	{
-					p << Point(x-scOffset, y+scTickLength) << Point(x+scOffset, y+scTickLength);
-				} else {
-					p << Point(x-scOffset, y-scTickLength) << Point(x+scOffset, y-scTickLength);
-				}
-				p << Point(x, y);
-				dw.DrawPolygon( p, markColor, scale/2, markColor);
-			}
-
-			virtual void Paint(Painter &p, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const {
-			}
-	};
-
-	class LineTickMark  : public TickMark {
-		public:
-			LineTickMark() { SetTickLength(3);	}
-			virtual ~LineTickMark() {}
-
-			virtual void Paint(Draw &dw, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const {
-				const int scTickLength = _tickLength*scale;
-				if ((axisPos==LEFT_OF_GRAPH) || ( axisPos==RIGHT_OF_GRAPH ))	{
-					dw.DrawLine(x-scTickLength, y, x+scTickLength, y, 2*scale, markColor);
-				} else {
-					dw.DrawLine(x, y-scTickLength, x, y+scTickLength, 2*scale, markColor);
-				}
-			}
-
-			virtual void Paint(Painter &p, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const {
-			}
-	};
-
-
 
 	// ============================
 	//    GridAxisDraw   CLASS

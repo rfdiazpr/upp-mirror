@@ -95,6 +95,13 @@ GraphDraw_test::GraphDraw_test()
 
 	// ================ G4 ================
 	g4.CreateElement2<ExclusionAreaDraw<MyGraphCtrl::Types>, OVER_GRAPH>(0, 0, g4.GetXCoordConverter(), g4.GetYCoordConverter() );
+	//g4.CreateElement1<GraphDraw_ns::MarkerElement<MyGraphCtrl::Types>, TOP_OF_GRAPH>(20, 0, g4.GetXCoordConverter() );
+	typedef DynamicMarkerCtrl< MyGraphCtrl::Types, GraphDraw_ns::MarkerElement< MyGraphCtrl::Types > >  MarkerElementType;
+	MarkerElementType& markerElem = g4.CreateElement1< MarkerElementType, TOP_OF_GRAPH>(20, 0, g4.GetXCoordConverter() );
+	markerElem.AddMarkerAt(3.8);
+	markerElem.AddMarkerAt(8.5);
+
+	
 	g4.AddSeries(points).PlotStyle<LineSeriesPlot>().MarkStyle<XMarkPlot>().MarkWidth(3).Fill(Color(28, 255, 200)).Opacity(.5).Legend("S1");
 	points2 << Pointf(0,0) << Pointf(1, 2)<< Pointf(2,3)<< Pointf(4, 3)<< Pointf(5.5, 4) << Pointf(6,5) << Pointf(7, 6)<< Pointf(8,10)<< Pointf(10, 9)<< Pointf(15, 8);
 	

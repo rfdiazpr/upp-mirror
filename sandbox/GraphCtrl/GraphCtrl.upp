@@ -16,7 +16,6 @@ file
 	GraphCtrlBase.h,
 	GraphCtrl.h,
 	GraphCtrl.cpp,
-	ScatterCtrl.h,
 	GraphCtrl.usc,
 	Copying,
 	src.tpp;

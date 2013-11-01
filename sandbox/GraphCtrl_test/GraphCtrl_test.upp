@@ -2,7 +2,8 @@ uses
 	CtrlLib,
 	GraphCtrl,
 	Functions4U,
-	Report;
+	Report,
+	DropLineDash;
 
 file
 	GraphCtrl_test.h,

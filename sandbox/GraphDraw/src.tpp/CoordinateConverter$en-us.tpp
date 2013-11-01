@@ -1,4 +1,4 @@
-topic "";
+topic "CoordinateConverter";
 [2 $$0,0#00000000000000000000000000000000:Default]
 [i448;a25;kKO9;2 $$1,0#37138531426314131252341829483380:class]
 [l288;2 $$2,2#27521748481378242620020725143825:desc]
@@ -9,53 +9,83 @@ topic "";
 [l288;i1121;b17;O9;~~~.1408;2 $$7,0#10431211400427159095818037425705:param]
 [i448;b42;O9;2 $$8,8#61672508125594000341940100500538:tparam]
 [b42;2 $$9,9#13035079074754324216151401829390:normal]
-[{_}%EN-US 
-[s4;%- &]
-[s3; &]
-[s0;*@7;4 &]
-[ {{10000@(113.42.0) [s0; [*@7;4 Class CoordinateConverter]]}}&]
-[s1;:CoordinateConverter`:`:class:%- [@(0.0.255)3 class][3 _][*3 CoordinateConverter]&]
-[s2; Class dedicated to managing conversion between logical an physical 
-coordinates.&]
-[s0;i448;a25;kKO9;@(0.0.255)%- &]
-[ {{10000F(128)G(128)@1 [s0; [* Function List]]}}&]
-[s4;%- &]
-[s5;:CoordinateConverter`:`:updateScreenSize`(TypeScreenCoord`,TypeScreenCoord`):%- [@(0.0.255) v
-irtual] [@(0.0.255) void]_[* updateScreenSize](TypeScreenCoord_[*@3 screenMin], 
-TypeScreenCoord_[*@3 screenMax])&]
-[s2; Set screen size in pixels (physical coordinates).&]
-[s3; &]
-[s4;%- &]
-[s5;:CoordinateConverter`:`:updateGraphSize`(TypeGraphCoord`,TypeGraphCoord`):%- [@(0.0.255) v
-irtual] [@(0.0.255) void]_[* updateGraphSize](TypeGraphCoord_[*@3 graphMin], 
-TypeGraphCoord_[*@3 graphMax])&]
-[s2; Set the visible graphic size ( logical coordinates ).&]
-[s3; &]
-[s4;%- &]
-[s5;:CoordinateConverter`:`:applyRangeLimits`(TypeGraphCoord`):%- [@(0.0.255) virtual] 
-TypeGraphCoord_[* applyRangeLimits](TypeGraphCoord_[*@3 v])&]
-[s2; Apply logical (in graph coordiantes ) range limits to the value 
-V : V is not in authorized range then modified to be in the range.&]
+[{_} 
+[s0;*@7;4%% &]
+[ {{10000@(113.42.0) [s0;%% [*@7;4 Coordinate Data Types]]}}&]
+[s4; &]
+[s5;:TypeScreenCoord`:`:typedef: [@(0.0.255) typedef]_[_^int32^ Upp`::int32]_[* TypeScreenCo
+ord]&]
+[s2;%% Type used for physical coordiantes : the ones used for screen 
+positions (pixels)&]
 [s3; &]
 [s4; &]
-[s5;:CoordinateConverter`:`:toScreen`(TypeGraphCoord`):%- [@(0.0.255) virtual] 
+[s5;:TypeGraphCoord`:`:typedef: [@(0.0.255) typedef]_[@(0.0.255) double]_[* TypeGraphCoord]&]
+[s2;%% Type used for logical coordinates (the same one as you`'re 
+data)&]
+[s3; &]
+[s3;%% &]
+[s0;*@7;4%% &]
+[ {{10000@(113.42.0) [s0;%% [*@7;4 Class CoordinateConverter]]}}&]
+[s1;:CoordinateConverter`:`:class: [@(0.0.255)3 class][3 _][*3 CoordinateConverter]&]
+[s2;%% Class dedicated to managing conversion between logical an 
+physical coordinates.&]
+[s3; &]
+[ {{10000F(128)G(128)@1 [s0;%% [* Function List]]}}&]
+[s4; &]
+[s5;:CoordinateConverter`:`:IsInGraphVisibleRange`(TypeGraphCoord`)const: [@(0.0.255) b
+ool]_[* IsInGraphVisibleRange]([_^topic`:`/`/GraphDraw`/src`/CoordinateConverter`$en`-us`#TypeGraphCoord`:`:typedef^ T
+ypeGraphCoord]_[*@3 p])_[@(0.0.255) const]&]
+[s2;%%  [%-*@3 p] : &]
+[s2;%% [*@(128.0.255) TRUE ]: p is in graph range         `=`=> p is 
+in visible range.&]
+[s2;%% [*@(128.0.255) FALSE ]: p is not in graphRange  `=`=> p is NOT 
+visible&]
+[s3;%% &]
+[s4; &]
+[s5;:CoordinateConverter`:`:MakeRestoreAxisMinMaxCB`(`): [_^Callback^ Callback]_[* MakeRe
+storeAxisMinMaxCB]()&]
+[s2;%% Returns a CallBack that, when executed, sets the axis Min/Max 
+values to the current values&]
+[s2;%% This is usefull for UNDO/REDO&]
+[s3; &]
+[s4; &]
+[s5;:CoordinateConverter`:`:updateScreenSize`(TypeScreenCoord`,TypeScreenCoord`): [@(0.0.255) v
+irtual] [@(0.0.255) void]_[* updateScreenSize](TypeScreenCoord_[*@3 screenMin], 
+TypeScreenCoord_[*@3 screenMax])&]
+[s2;%% Set screen size in pixels (physical coordinates).&]
+[s3;%% &]
+[s4; &]
+[s5;:CoordinateConverter`:`:updateGraphSize`(TypeGraphCoord`,TypeGraphCoord`): [@(0.0.255) v
+irtual] [@(0.0.255) void]_[* updateGraphSize](TypeGraphCoord_[*@3 graphMin], 
+TypeGraphCoord_[*@3 graphMax])&]
+[s2;%% Set the visible graphic size ( logical coordinates ).&]
+[s3;%% &]
+[s4; &]
+[s5;:CoordinateConverter`:`:applyRangeLimits`(TypeGraphCoord`): [@(0.0.255) virtual] 
+TypeGraphCoord_[* applyRangeLimits](TypeGraphCoord_[*@3 v])&]
+[s2;%% Apply logical (in graph coordiantes ) range limits to the 
+value V : V is not in authorized range then modified to be in 
+the range.&]
+[s3;%% &]
+[s4;%% &]
+[s5;:CoordinateConverter`:`:toScreen`(TypeGraphCoord`): [@(0.0.255) virtual] 
 TypeScreenCoord_[* toScreen](TypeGraphCoord_[*@3 v])&]
-[s2; Convert [%-*@3 v] from logical coordinates to physical coordinates 
+[s2;%% Convert [%-*@3 v] from logical coordinates to physical coordinates 
 (pixels).&]
-[s3; &]
-[s4;%- &]
-[s5;:CoordinateConverter`:`:toGraph`(TypeScreenCoord`):%- [@(0.0.255) virtual] 
+[s3;%% &]
+[s4; &]
+[s5;:CoordinateConverter`:`:toGraph`(TypeScreenCoord`): [@(0.0.255) virtual] 
 TypeGraphCoord_[* toGraph](TypeScreenCoord_[*@3 v])&]
-[s2; Convert [%-*@3 v] from physical coordinates (pixels) to logical 
+[s2;%% Convert [%-*@3 v] from physical coordinates (pixels) to logical 
 coordinates.&]
-[s3; &]
+[s3;%% &]
+[s0;%% &]
+[s0;%% &]
+[ {{10000F(128)G(128)@1 [s0;%% [* Public Method List]]}}&]
 [s0; &]
-[s0; &]
-[ {{10000F(128)G(128)@1 [s0; [* Public Method List]]}}&]
-[s0;%- &]
-[ {{10000F(128)G(128)@1 [s0; [* Constructor detail]]}}&]
-[s3;%- &]
-[s4;%- &]
+[ {{10000F(128)G(128)@1 [s0;%% [* Constructor detail]]}}&]
 [s3; &]
-[s4;%- &]
-[s0; ]]
+[s4; &]
+[s3;%% &]
+[s4; &]
+[s0;%% ]]

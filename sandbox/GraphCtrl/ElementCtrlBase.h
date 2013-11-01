@@ -72,13 +72,19 @@ class GraphElementCtrl_MoveResize : public LEGEND_DRAW_CLASS
 
 	virtual Image  CursorImage(Point p, dword keyflags) {
 		if (_B::IsFloat()) {
-			if ( keyflags & K_CTRL ){
+			if ( keyflags & K_CTRL ) {
 				return GraphCtrlImg::ELEMENT_RESIZE();
 			}
 			return GraphCtrlImg::ELEMENT_MOVE();
 		}
 		return GraphCtrlImg::ACTIVE_CROSS();
 	}
+	
+	
+	Callback MakeRestoreElementPosCB() {
+		return 	THISBACK1( _B::SetFloatFrame, _B::_floatFrame);
+	}
+
 	
 	virtual GraphDraw_ns::GraphElementFrame* MouseMove (Point p, dword keyflags) {
 		if (parentCtrl == 0) {
@@ -88,16 +94,20 @@ class GraphElementCtrl_MoveResize : public LEGEND_DRAW_CLASS
 			if (keyflags & K_MOUSELEFT)
 			{
 				RectTracker tracker(*parentCtrl);
-				if(keyflags & K_CTRL) {
-					tracker.Dashed().Animation();
-					_B::_floatFrame = tracker.Track(_B::_floatFrame, ALIGN_NULL, ALIGN_NULL);
-					_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
-					return 0;
-				}
 				tracker.Dashed().Animation();
-				_B::_floatFrame = tracker.Track(_B::_floatFrame, ALIGN_CENTER, ALIGN_CENTER);
-				_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
-				return 0;
+				tracker.SetCursorImage( CursorImage(p,keyflags) );
+				GraphDraw_ns::GraphUndoData undo;
+				undo.undoAction << MakeRestoreElementPosCB();
+					if(keyflags & K_CTRL) {
+						_B::_floatFrame = tracker.Track(_B::_floatFrame, ALIGN_NULL, ALIGN_NULL);
+						_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
+					}
+					else {
+						_B::_floatFrame = tracker.Track(_B::_floatFrame, ALIGN_CENTER, ALIGN_CENTER);
+						_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
+					}
+				undo.redoAction << MakeRestoreElementPosCB();
+				_B::_parent->AddUndoAction(undo);
 			}
 		}
 		return 0; // no need to capture MouseCtrl

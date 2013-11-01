@@ -15,8 +15,11 @@ file
 	GraphDraw.iml,
 	SeriesConfig.h,
 	SeriesGroup.h,
+	StdGraphElements.h,
 	GraphElement.h,
 	GraphFunctions.h,
+	TickMark.h,
 	GridAxisDraw.h,
-	Copying;
+	Copying,
+	GraphDrawTypes.h;
 

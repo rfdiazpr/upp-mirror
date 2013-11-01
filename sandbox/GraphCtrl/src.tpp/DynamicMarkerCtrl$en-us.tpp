@@ -1,4 +1,4 @@
-topic "class GraphCtrlLooper : public LocalLoop";
+topic "template <class TYPES, class LABELDRAW>";
 [2 $$0,0#00000000000000000000000000000000:Default]
 [i448;a25;kKO9;2 $$1,0#37138531426314131252341829483380:class]
 [l288;2 $$2,2#27521748481378242620020725143825:desc]
@@ -10,9 +10,13 @@ topic "class GraphCtrlLooper : public LocalLoop";
 [i448;b42;O9;2 $$8,8#61672508125594000341940100500538:tparam]
 [b42;2 $$9,9#13035079074754324216151401829390:normal]
 [{_} 
-[s1;:GraphCtrlLooper`:`:class: [@(0.0.255)3 class][3 _][*3 GraphCtrlLooper][3 _:_][@(0.0.255)3 p
-ublic][3 _][*@3;3 LocalLoop]&]
-[s2;%% Used to catch CTRL LOOP and delegate mouse actions to Callbacks&]
+[s1;:noref: [@(0.0.255)3 template][3 _<][@(0.0.255)3 class][3 _][*@4;3 TYPES][3 , 
+][@(0.0.255)3 class][3 _][*@4;3 LABELDRAW][3 >]&]
+[s1;:DynamicMarkerCtrl`:`:class: [@(0.0.255) class]_[* DynamicMarkerCtrl]_:_[@(0.0.255) publ
+ic]_[*@3 CRTPGraphElementCtrl`_Base]<_[*@4 TYPES], [*@4 LABELDRAW], 
+[_^StdLabelCtrl^ StdLabelCtrl]<[*@4 TYPES], [*@4 LABELDRAW]>_>_&]
+[s2;%% This Element Ctrl adds markers on the graph, these markers 
+can be dynamically moved on the plot&]
 [s3; &]
 [s0;*@7;4%% &]
 [ {{10000@(113.42.0) [s0;%% [*@7;4 Title]]}}&]
@@ -22,9 +26,4 @@ ublic][3 _][*@3;3 LocalLoop]&]
 [ {{10000F(128)G(128)@1 [s0;%% [* Public Method List]]}}&]
 [s0; &]
 [ {{10000F(128)G(128)@1 [s0;%% [* Constructor detail]]}}&]
-[s4; &]
-[s5;:GraphCtrlLooper`:`:WhenMouseMove: [_^MouseLocalLoopCB^ GraphDraw`_ns`::MouseLocalLo
-opCB]_[* WhenMouseMove]&]
-[s2;%% Callback which is executed in local loop&]
-[s3; &]
 [s0;%% ]]

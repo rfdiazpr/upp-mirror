@@ -12,6 +12,7 @@
 namespace GraphDraw_ns {
 	typedef Upp::int32 TypeScreenCoord;
 	typedef double     TypeGraphCoord;
+	
 };
 
 #endif /* GRAPHDRAWTYPES_H_ */

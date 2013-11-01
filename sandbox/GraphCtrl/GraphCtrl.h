@@ -3,6 +3,8 @@
 
 #include <CtrlLib/CtrlLib.h>
 #include <GraphDraw/GraphDraw.h>
+#include <DropLineDash/DropLineDash.h>
+
 using namespace Upp;
 
 

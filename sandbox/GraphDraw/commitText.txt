@@ -1,0 +1,1 @@
+GraphDraw/GraphCtrl : code cleaning + some documentation + Added dash management in SeriesPropertiesDialog + Undo/Redo refactoring for GraphElements + Added DynamicMarker  management

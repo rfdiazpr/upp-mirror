@@ -16,7 +16,7 @@ class ElementPropertiesDlg : public WithElementBaseLayout<TopWindow> {
 	ElementPropertiesDlg() : elem(0), pos(100) {
 		CtrlLayoutOKCancel(*this, "");
 	}
-	~ElementPropertiesDlg() {}
+	virtual ~ElementPropertiesDlg() {}
 
 	
 	void InitDlg(ELEMENT& element) {

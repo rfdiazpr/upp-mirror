@@ -29,7 +29,7 @@ using namespace Upp;
 #include "SeriesConfig.h"
 #include "SeriesGroup.h"
 #include "GridStepIterator.h"
-#include "GraphElement.h"
+#include "StdGraphElements.h"
 #include "GridAxisDraw.h"
 
 
@@ -95,7 +95,7 @@ namespace GraphDraw_ns
 		Vector< TypeCoordConverter* > _xConverters;
 		Vector< TypeCoordConverter* > _yConverters;
 
-		Rect     _screenRect;  // whole graph screen Rect
+		Rect     _ctrlRect;  // whole graph screen Rect
 		Rect     _plotRect;
 		DrawMode _mode;
 		bool     _doFastPaint;
@@ -144,7 +144,7 @@ namespace GraphDraw_ns
 
 		inline void updateSizes( const int scale = 1 )
 		{
-			_plotRect = _screenRect;
+			_plotRect = _ctrlRect;
 			_plotRect.left   += _leftMarginWidth*scale;
 			_plotRect.right  -= _rightMarginWidth*scale;
 			_plotRect.top    += _topMarginWidth*scale;
@@ -235,11 +235,14 @@ namespace GraphDraw_ns
 
 		DERIVED& SetPlotBackgroundColor(Color c) { _plotBckgndColor = c; return *static_cast<DERIVED*>(this); }
 		DERIVED& SetCtrlBackgroundColor(Color c) { _CtrlBckgndColor = c; return *static_cast<DERIVED*>(this); }
-		DERIVED& SetMode(DrawMode m) { _mode = m; return *static_cast<DERIVED*>(this); }
-		DERIVED& SetMode(int m) {
+		DERIVED& SetDrawMode(DrawMode m) { _mode = m; return *static_cast<DERIVED*>(this); }
+		DERIVED& SetDrawMode(int m) {
 			if ((MD_DRAW<=m) && (m<=MD_SUBPIXEL)) _mode = (DrawMode)m;
 			return *static_cast<DERIVED*>(this);
 		}
+		DrawMode GetDrawMode() { return _mode; }
+		
+		
 
 		DERIVED& SetTopMargin(int v)    { _topMarginWidth = v;    return *static_cast<DERIVED*>(this); }
 		DERIVED& SetBottomMargin(int v) { _bottomMarginWidth = v; return *static_cast<DERIVED*>(this); }
@@ -247,13 +250,13 @@ namespace GraphDraw_ns
 		DERIVED& SetRightMargin(int v)  { _rightMarginWidth = v;  return *static_cast<DERIVED*>(this); }
 
 		DERIVED& setScreenSize(Rect r, const int scale=1)	{
-			_screenRect = r;
+			_ctrlRect = r;
 			updateSizes(scale);
 			return *static_cast<DERIVED*>(this);
 		}
 
 		inline DERIVED& setScreenSize( const int scale=1 )	{
-			return setScreenSize(_screenRect, scale);
+			return setScreenSize(_ctrlRect, scale);
 		}
 
 		TypeCoordConverter& AddXConverter(TypeCoordConverter& conv) {
@@ -301,8 +304,8 @@ namespace GraphDraw_ns
 
 		virtual Callback MakeRestoreGraphSizeCB() {
 			Callback action;
-			for (int j = 0; j < _xConverters.GetCount(); j++) { action << _xConverters[j]->MakeRestoreGraphMinMaxCB(); }
-			for (int j = 0; j < _yConverters.GetCount(); j++) { action << _yConverters[j]->MakeRestoreGraphMinMaxCB(); }
+			for (int j = 0; j < _xConverters.GetCount(); j++) { action << _xConverters[j]->MakeRestoreAxisMinMaxCB(); }
+			for (int j = 0; j < _yConverters.GetCount(); j++) { action << _yConverters[j]->MakeRestoreAxisMinMaxCB(); }
 			return 	action;
 		}
 
@@ -485,7 +488,7 @@ namespace GraphDraw_ns
 
 
 		Image GetImage(DrawMode mode, Size size, const int scale = 1) {
-			Rect _screenRectSvg = _screenRect;
+			Rect _screenRectSvg = _ctrlRect;
 			setScreenSize( size, scale );
 #ifndef flagGUI
 			ASSERT(mode != MD_DRAW);
@@ -498,7 +501,7 @@ namespace GraphDraw_ns
 		}
 
 		inline Image GetImage(DrawMode mode, const int scale=1) {
-			return GetImage( mode, _screenRect.Size()*scale, scale );
+			return GetImage( mode, _ctrlRect.Size()*scale, scale );
 		}
 
 		inline Image GetImage(const int scale=1) {
@@ -507,8 +510,8 @@ namespace GraphDraw_ns
 
 		template <class V, class XC, class YC>
 		inline void addToFullPointsList(V& p1, TypeGraphCoord x, TypeGraphCoord y , XC& xConverter, YC& yConverter, int64& nbVisiblePoints, Point& prevPoint, bool& prevPointIsVisible) {
-			if (   ( xConverter.IsInGraphRange( x ) )
-			    && ( yConverter.IsInGraphRange( y ) ) )
+			if (   ( xConverter.IsInGraphVisibleRange( x ) )
+			    && ( yConverter.IsInGraphVisibleRange( y ) ) )
 			{
 				++nbVisiblePoints;
 				if (!prevPoint.IsNullInstance()) p1 << prevPoint;
@@ -530,7 +533,7 @@ namespace GraphDraw_ns
 
 
 		#define addToFullPointsListM(p1, x, y , xConverter, yConverter, nbVisiblePoints, prevPoint, prevPointIsVisible, isSeriesFilled) {\
-				if ( xConverter.IsInGraphRange( x ) && ( isSeriesFilled || yConverter.IsInGraphRange( y )) )\
+				if ( xConverter.IsInGraphVisibleRange( x ) && ( isSeriesFilled || yConverter.IsInGraphVisibleRange( y )) )\
 				{\
 					++nbVisiblePoints;\
 					if (!prevPoint.IsNullInstance()) p1 << prevPoint;\

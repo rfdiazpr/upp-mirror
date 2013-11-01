@@ -42,7 +42,6 @@ class DropDashStyle : public DropList
 	template<class LIST>
 	void SetValues( LIST& v)
 	{
-		
 		ClearList();
 		for (int c=0; c<v.GetCount(); ++c)
 		{

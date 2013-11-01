@@ -11,8 +11,8 @@ DashStyleDisplay& DashStyleDisplay::GetDefaultDisplay()
 
 DashStyleDisplay::DashStyleDisplay()
 : lineColor(Null)
-, lineWidth(2)
-, drawMode(MODE_ANTIALIASED)
+, lineWidth(1)
+, drawMode(MODE_NOAA)
 {
 }
 
@@ -28,6 +28,7 @@ void DashStyleDisplay::Paint(Draw& w, const Rect& r, const Value& q, Color ink, 
 	BufferPainter bp(ib, drawMode);
 	bp.Dash( q.To<String>() );
 	if ( !lineColor.IsNullInstance() ) ink = lineColor;
+//	bp.DrawLine(5, r.GetHeight()-5, r.GetWidth()-5, 5, lineWidth, ink);
 	bp.DrawLine(5, r.GetHeight()/2, r.GetWidth()-5, r.GetHeight()/2, lineWidth, ink);
 	w.DrawImage(r.left, r.top, ib );
 }
@@ -83,8 +84,9 @@ LineWidthDisplay& LineWidthDisplay::GetDefaultDisplay()
 
 
 LineWidthDisplay::LineWidthDisplay()
-: lineColor(Null)
-, drawMode(MODE_ANTIALIASED)
+: lineColor(Black)
+, dashStyle("")
+, drawMode(MODE_NOAA)
 {
 }
 
@@ -95,14 +97,23 @@ void LineWidthDisplay::PaintBackground(Draw& w, const Rect& r, const Value& q, C
 
 void LineWidthDisplay::Paint(Draw& w, const Rect& r, const Value& q, Color ink, Color paper, dword style) const
 {
-	w.DrawRect(r, paper);
-	ImageBuffer ib(r.Size());
-	Fill( ib.Begin(), paper, ib.GetLength() );
-	BufferPainter bp(ib, drawMode);
-	bp.Dash( dashStyle );
-	if ( !lineColor.IsNullInstance() ) ink = lineColor;
-	bp.DrawLine(5, r.GetHeight()/2, r.GetWidth()-5, r.GetHeight()/2, q.To<int>(), ink);
-	w.DrawImage(r.left, r.top, ib );
+	if (drawMode != MODE_NOAA)
+	{
+		ImageBuffer ib(r.Size());
+		Fill( ib.Begin(), paper, ib.GetLength() );
+		BufferPainter bp(ib, drawMode);
+		bp.Dash( dashStyle );
+		if ( !lineColor.IsNullInstance() ) ink = lineColor;
+//		bp.DrawLine(5, r.GetHeight()-5, r.GetWidth()-5, 5, q.To<int>(), ink);
+		bp.DrawLine(5, r.GetHeight()/2, r.GetWidth()-5, r.GetHeight()/2, q.To<int>(), ink);
+		w.DrawImage(r.left, r.top, ib );
+	}
+	else
+	{
+		w.DrawRect(r, paper);
+//		w.DrawLine(r.left+5, r.bottom-5, r.right-5, r.top+5, q.To<int>(), ink);
+		w.DrawLine(r.left+5, r.CenterLeft().y, r.right-5, r.CenterLeft().y, q.To<int>(), ink);
+	}
 }
 
 Size LineWidthDisplay::GetStdSize(const Value& q) const 

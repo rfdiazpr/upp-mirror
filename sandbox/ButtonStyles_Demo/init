@@ -3,5 +3,4 @@
 #include "CtrlLib/init"
 #include "Controls4U/init"
 #include "ButtonStyles/init"
-#include "GraphCtrl/init"
 #endif

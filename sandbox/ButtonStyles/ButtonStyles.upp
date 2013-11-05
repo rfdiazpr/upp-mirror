@@ -6,7 +6,8 @@ uses
 file
 	ButtonStyles.h,
 	ButtonsStyles.cpp,
-	ButtonStyles.usc;
+	ButtonStyles.usc,
+	Copying;
 
 mainconfig
 	"" = "GUI";

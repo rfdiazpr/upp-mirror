@@ -153,31 +153,31 @@ inline STYLE toChameleon(ButtonStyle_style* styles)
 // -------------------------
 // Skinned buttons template
 // -------------------------
-template <class BUTTON>
-class TStyledButton : public BUTTON {
+template <class T_BUTTON>
+class TStyledButton : public T_BUTTON {
 	private:
-		typename BUTTON::Style bChameleon;
+		typename T_BUTTON::Style bChameleon;
 		ButtonStyle_style  styles[4];
 
 	public:
-		typedef TStyledButton<BUTTON>  CLASSNAME;
+		typedef TStyledButton<T_BUTTON>  CLASSNAME;
 		
 		TStyledButton() {
-			bChameleon = toChameleon<typename BUTTON::Style>(styles);
-			BUTTON::SetStyle(bChameleon);
+			bChameleon = toChameleon<typename T_BUTTON::Style>(styles);
+			T_BUTTON::SetStyle(bChameleon);
 		}
 
 		CLASSNAME& pushState(int c) { return *this; } // dummy function
 		
 		#define  MAKE_STYLE_FN(N, PREFIX) \
-			CLASSNAME& PREFIX##_color(Color  c)    { styles[N-1].look.buttoncolor = c; bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
-			CLASSNAME& PREFIX##_backColor(Color c) { styles[N-1].look.backcolor = c;   bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
-			CLASSNAME& PREFIX##_textColor(Color c) { styles[N-1].textColor = c;        bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
-			CLASSNAME& PREFIX##_flags(int c)       { styles[N-1].look.flags = c;       bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
-			CLASSNAME& PREFIX##_alpha(int c)       { styles[N-1].look.alphaValue = c;  bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
-			CLASSNAME& PREFIX##_deflate(int c)     { styles[N-1].look.deflate = c;     bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
-			CLASSNAME& PREFIX##_borderWidth(int c) { styles[N-1].look.borderWidth = c; bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }\
-			CLASSNAME& PREFIX##_setIcon(Image c)   { styles[N-1].look.buttonIcon = c;  bChameleon = toChameleon<typename BUTTON::Style>( styles ); return *this; }
+			CLASSNAME& PREFIX##_color(Color  c)    { styles[N-1].look.buttoncolor = c; bChameleon = toChameleon<typename T_BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& PREFIX##_backColor(Color c) { styles[N-1].look.backcolor = c;   bChameleon = toChameleon<typename T_BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& PREFIX##_textColor(Color c) { styles[N-1].textColor = c;        bChameleon = toChameleon<typename T_BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& PREFIX##_flags(int c)       { styles[N-1].look.flags = c;       bChameleon = toChameleon<typename T_BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& PREFIX##_alpha(int c)       { styles[N-1].look.alphaValue = c;  bChameleon = toChameleon<typename T_BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& PREFIX##_deflate(int c)     { styles[N-1].look.deflate = c;     bChameleon = toChameleon<typename T_BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& PREFIX##_borderWidth(int c) { styles[N-1].look.borderWidth = c; bChameleon = toChameleon<typename T_BUTTON::Style>( styles ); return *this; }\
+			CLASSNAME& PREFIX##_setIcon(Image c)   { styles[N-1].look.buttonIcon = c;  bChameleon = toChameleon<typename T_BUTTON::Style>( styles ); return *this; }
 
 		MAKE_STYLE_FN( 1, NORM )
 		MAKE_STYLE_FN( 2, HOT )
@@ -190,15 +190,15 @@ class TStyledButton : public BUTTON {
 			styles[1].look.buttonIcon = icon;
 			styles[2].look.buttonIcon = icon;
 			styles[3].look.buttonIcon = icon;
-			bChameleon = toChameleon<typename BUTTON::Style>( styles );
+			bChameleon = toChameleon<typename T_BUTTON::Style>( styles );
 			return *this;
 		}
 
-		CLASSNAME&  SetFont(Font fnt)          { BUTTON::SetFont(fnt); return *this; }
-		CLASSNAME&  SetLabel(const char *text) { BUTTON::SetLabel(text); return *this; }
-		CLASSNAME&  Tip(const char *text)      { BUTTON::Tip(text); return *this; }
-		CLASSNAME&  ClickFocus(bool cf = true) { BUTTON::ClickFocus(cf); return *this; }
-		CLASSNAME&  NoClickFocus()             { BUTTON::NoClickFocus(); return *this; }
+		CLASSNAME&  SetFont(Font fnt)          { T_BUTTON::SetFont(fnt); return *this; }
+		CLASSNAME&  SetLabel(const char *text) { T_BUTTON::SetLabel(text); return *this; }
+		CLASSNAME&  Tip(const char *text)      { T_BUTTON::Tip(text); return *this; }
+		CLASSNAME&  ClickFocus(bool cf = true) { T_BUTTON::ClickFocus(cf); return *this; }
+		CLASSNAME&  NoClickFocus()             { T_BUTTON::NoClickFocus(); return *this; }
 
 };
 

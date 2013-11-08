@@ -45,22 +45,22 @@ STYLE MakeStyledButton_WithAppStyle(int style, int SubStyle, Image icon=Null)
 	return s;
 }
 
-template <class BUTTON, int APP_STYLE_NUM, int APP_SUBSTYLE_NUM=0>
-class FStyledButton : public BUTTON {
+template <class T_BUTTON, int APP_STYLE_NUM, int APP_SUBSTYLE_NUM=0>
+class FStyledButton : public T_BUTTON {
 	public:
-		typedef FStyledButton<BUTTON, APP_STYLE_NUM, APP_SUBSTYLE_NUM>  CLASSNAME;
+		typedef FStyledButton<T_BUTTON, APP_STYLE_NUM, APP_SUBSTYLE_NUM>  CLASSNAME;
 		
 		FStyledButton() {
-			tStyle = MakeStyledButton_WithAppStyle<typename BUTTON::Style>(APP_STYLE_NUM, APP_SUBSTYLE_NUM);
-			BUTTON::SetStyle(tStyle);
+			tStyle = MakeStyledButton_WithAppStyle<typename T_BUTTON::Style>(APP_STYLE_NUM, APP_SUBSTYLE_NUM);
+			T_BUTTON::SetStyle(tStyle);
 			}
-//		void SetIcon(Image icon) { tStyle = MakeStyledButton_WithAppStyle<typename BUTTON::Style>(APP_STYLE_NUM, APP_SUBSTYLE_NUM, icon); BUTTON::SetModify(); }
-//		void SetFlags(int flags)  { tStyle = MakeStyledButton_WithAppStyle<typename BUTTON::Style>(flags, APP_SUBSTYLE_NUM); BUTTON::SetModify(); };
-		void SetIcon(Image icon) { tStyle = MakeStyledButton_WithAppStyle<typename BUTTON::Style>(APP_STYLE_NUM, APP_SUBSTYLE_NUM, icon); }
-		void SetFlags(int flags)  { tStyle = MakeStyledButton_WithAppStyle<typename BUTTON::Style>(flags, APP_SUBSTYLE_NUM); };
+//		void SetIcon(Image icon) { tStyle = MakeStyledButton_WithAppStyle<typename T_BUTTON::Style>(APP_STYLE_NUM, APP_SUBSTYLE_NUM, icon); T_BUTTON::SetModify(); }
+//		void SetFlags(int flags)  { tStyle = MakeStyledButton_WithAppStyle<typename T_BUTTON::Style>(flags, APP_SUBSTYLE_NUM); T_BUTTON::SetModify(); };
+		void SetIcon(Image icon) { tStyle = MakeStyledButton_WithAppStyle<typename T_BUTTON::Style>(APP_STYLE_NUM, APP_SUBSTYLE_NUM, icon); }
+		void SetFlags(int flags)  { tStyle = MakeStyledButton_WithAppStyle<typename T_BUTTON::Style>(flags, APP_SUBSTYLE_NUM); };
 		
 	private:
-		typename BUTTON::Style tStyle;
+		typename T_BUTTON::Style tStyle;
 };
 
 template <int APP_STYLE_NUM>

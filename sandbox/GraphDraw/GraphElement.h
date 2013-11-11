@@ -64,7 +64,7 @@ namespace GraphDraw_ns
 	// ============================
 	class GraphElementFrame {
 		public:
-			Rect            _frame;     // Frame on which element is painted (absolute position in complete draw area)
+			Rect            _frame;     // Frame on which element is painted (absolute position in complete ctrl area)
 			Rect            _floatFrame;// Frame size used as SCALE=1 reference frame  when element is FLOATING
 			int             _width;     // width of GraphElement (in screen size)
 			ElementPosition _pos;       // position in plot area
@@ -72,6 +72,7 @@ namespace GraphDraw_ns
 			bool            _hide;      // true: is not drawn
 			int             _stackingPriority; // 
 			String          _name;
+			Value           _backgndStyle; //
 
 		public:
 			GraphElementParent* _parent;
@@ -97,6 +98,7 @@ namespace GraphDraw_ns
 			, _hide(p->_hide)
 			, _stackingPriority(p->_stackingPriority)
 			, _name("NAME NOT SET")
+			, _backgndStyle(p->_backgndStyle)
 			, _parent(p->_parent)
 			{}
 
@@ -181,6 +183,7 @@ namespace GraphDraw_ns
 
 			inline  DERIVED&  SetElementWidth(int v) { _width = v; return *static_cast<DERIVED*>(this); }
 			virtual DERIVED&  SetElementPos(ElementPosition v) { _pos = v; return *static_cast<DERIVED*>(this); }
+			inline  DERIVED&  SetBackgndStyle(const Value& v) { _backgndStyle = v; return *static_cast<DERIVED*>(this); }
 	};
 
 

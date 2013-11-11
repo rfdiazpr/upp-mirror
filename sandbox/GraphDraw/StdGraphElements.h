@@ -121,7 +121,6 @@ namespace GraphDraw_ns
 		typedef typename TYPES::TypeVectorSeries TypeVectorSeries;
 
 		String _legend;
-		Color  _bckGndcolor;
 		RGBA   _bckGndRgba;
 		bool   _isRgba;
 		Font   _font;
@@ -132,8 +131,7 @@ namespace GraphDraw_ns
 
 		public:
 		LegendElement()
-		: _bckGndcolor(Null)
-		, _isRgba(false)
+		: _isRgba(false)
 		, _font(StdFont())
 		, _xSeparation(20)
 		, _legendStyleLength(23)
@@ -142,7 +140,6 @@ namespace GraphDraw_ns
 		
 		LegendElement(LegendElement& p)
 		: _B(p)
-		, _bckGndcolor(p._bckGndcolor)
 		, _bckGndRgba(p._bckGndRgba)
 		, _isRgba(p._isRgba)
 		, _font(p._font)
@@ -158,13 +155,13 @@ namespace GraphDraw_ns
 		template<class T>
 		inline CLASSNAME& SetLegend(T& v) { _legend = v; return *this; }
 
-		inline CLASSNAME&  SetBackGndColor(Color v) { _bckGndcolor = v; _isRgba=false; return *this; }
-		inline CLASSNAME&  SetBackGndColor(RGBA  v) { _bckGndRgba  = v; _isRgba=true;  return *this; }
+		inline CLASSNAME&  SetBackGndColor(Color v) { _B::SetBackgndStyle(v); _isRgba=false; return *this; }
+		inline CLASSNAME&  SetBackGndColor(RGBA  v) { _bckGndRgba = v; _isRgba=true;  return *this; }
 		inline CLASSNAME&  SetFont(Font  v)         { _font  = v;  return *this; }
 
 		virtual void PaintElement(Draw& dw, int scale) {
-			if ( !_bckGndcolor.IsNullInstance() ) {
-				dw.DrawRect( 0, 0, _B::GetFrame().GetWidth(), _B::GetFrame().GetHeight(), _bckGndcolor); // no SCALING needed here
+			if      ( !_B::_backgndStyle.IsNull() ) {
+				ChPaint(dw, Rect(0, 0, _B::GetFrame().GetWidth(), _B::GetFrame().GetHeight()), _B::_backgndStyle );
 			}
 			else if (_isRgba){
 				Image img = CreateImage(_B::GetFrame().GetSize(), _bckGndRgba); // no SCALING needed here
@@ -174,8 +171,9 @@ namespace GraphDraw_ns
 		}
 
 		virtual void PaintFloatElement(Draw& dw, int scale){
-			if ( !_bckGndcolor.IsNullInstance() )
-				dw.DrawRect( 0, 0, _B::GetFloatFrame(scale).GetWidth(), _B::GetFloatFrame(scale).GetHeight(), _bckGndcolor);
+			if      ( !_B::_backgndStyle.IsNull() ) {
+				ChPaint(dw, Rect(0, 0, _B::GetFrame().GetWidth(), _B::GetFrame().GetHeight()), _B::_backgndStyle );
+			}
 			else if (_isRgba){
 				Image img = CreateImage(_B::GetFloatFrame(scale).GetSize(), _bckGndRgba);
 				dw.DrawImage( 0,0, img );
@@ -232,24 +230,31 @@ namespace GraphDraw_ns
 		}
 	};
 	
-/*	
-		struct GraphDrawDefaultTypes {
-			typedef DataSource                                     TypeDataSource;
-			typedef SeriesPlot                                     TypeSeriesPlot;
-			typedef SeriesConfig<GraphDrawDefaultTypes>            TypeSeriesConfig;
-			typedef Vector<TypeSeriesConfig>                       TypeVectorSeries;
-			typedef MarkPlot                                       TypeMarkPlot;
-			typedef GenericCoordinateConverter                     TypeCoordConverter;
-			typedef GridAxisDraw<GraphDrawDefaultTypes>            TypeGridAxisDraw;
-			typedef GridStepManager<>                              TypeGridStepManager;
-			typedef LabelElement                                   TypeLabelElement;
-			typedef LegendElement<GraphDrawDefaultTypes>           TypeLegendElement;
-	};
-*/
 	// ============================
 	//    MarkerElement   CLASS
 	// ============================
-	typedef Vector<TypeGraphCoord> MarkerPosList;
+	class MarkerElementData : Moveable<MarkerElementData> {
+		private:
+		TickMark* tickMark;
+		
+		MarkerElementData(const MarkerElementData& p) : tickMark(0), pos(p.pos) {} // prohibited
+		
+		public:
+		MarkerElementData() : tickMark(0) {}
+
+		TypeGraphCoord pos;
+		
+		TickMark& GetTickMark() { return *tickMark; }
+		
+		template <class T>
+		T& Create() {
+			if (tickMark) delete tickMark;
+			T& tick = * new T();
+			tickMark = &tick;
+			return tick;
+		}
+	};
+	typedef Array<MarkerElementData> MarkerPosList;
 
 	template<class TYPES>
 	class MarkerElement : public CRTPGraphElementFrame< MarkerElement<TYPES> >
@@ -264,8 +269,7 @@ namespace GraphDraw_ns
 		typedef CRTPGraphElementFrame< MarkerElement >  _B;
 		typedef MarkerElement<TYPES>  CLASSNAME;
 		
-		MarkerPosList markersPos;
-		RectTriangleTickMark tickMark;
+		MarkerPosList markers;
 		
 
 		public:
@@ -296,13 +300,15 @@ namespace GraphDraw_ns
 		template<class T>	inline MarkerElement& SetTextColor(T v)   { _color = v; return *this; }
 		template<class T>	inline MarkerElement& SetBckGndColor(T v) { _bckGndcolor = v; return *this; }
 
-		virtual CLASSNAME&  AddMarkerAt(TypeGraphCoord pos) {
-			markersPos.Add(pos);
-			return *this;
+		template <class MARKER_TYPE>
+		MARKER_TYPE&  AddMarker(TypeGraphCoord pos) {
+			MarkerElementData& markData = markers.Add();
+			markData.pos = pos;
+			return markData.Create<MARKER_TYPE>();
 		}
 
 		void ClearMarkers() {
-			markersPos.Clear();
+			markers.Clear();
 		}
 
 		virtual CLASSNAME&  SetElementPos(ElementPosition v) {
@@ -321,12 +327,13 @@ namespace GraphDraw_ns
 		{
 			if ( !_color.IsNullInstance())
 			{
-				MarkerPosList::Iterator iter = markersPos.Begin();
-				MarkerPosList::ConstIterator endIter =  markersPos.End();
+				MarkerPosList::Iterator iter = markers.Begin();
+				MarkerPosList::ConstIterator endIter =  markers.End();
 				while( iter != endIter)
 				{
-					if (_coordConverter.IsInGraphVisibleRange(*iter)) {
-						dw.DrawLineOp( 0, _coordConverter.toScreen(*iter), range, _coordConverter.toScreen(*iter), 2, _color );
+					MarkerElementData& markerData = *iter;
+					if (_coordConverter.IsInGraphVisibleRange(markerData.pos)) {
+						dw.DrawLineOp( 0, _coordConverter.toScreen(markerData.pos), range, _coordConverter.toScreen(markerData.pos), 2, _color );
 					}
 					++iter;
 				}
@@ -337,12 +344,13 @@ namespace GraphDraw_ns
 		{
 			if ( !_color.IsNullInstance())
 			{
-				MarkerPosList::Iterator iter = markersPos.Begin();
-				MarkerPosList::ConstIterator endIter =  markersPos.End();
+				MarkerPosList::Iterator iter = markers.Begin();
+				MarkerPosList::ConstIterator endIter =  markers.End();
 				while( iter != endIter)
 				{
-					if (_coordConverter.IsInGraphVisibleRange(*iter)) {
-						dw.DrawLineOp( _coordConverter.toScreen(*iter), 0, _coordConverter.toScreen(*iter), range, 2, _color );
+					MarkerElementData& markerData = *iter;
+					if (_coordConverter.IsInGraphVisibleRange(markerData.pos)) {
+						dw.DrawLineOp( _coordConverter.toScreen(markerData.pos), 0, _coordConverter.toScreen(markerData.pos), range, 2, _color );
 					}
 					++iter;
 				}
@@ -356,38 +364,24 @@ namespace GraphDraw_ns
 			}
 
 			//dw.DrawLineOp(_B::GetElementWidth()*scale, _coordConverter.getScreenMin(), _B::GetElementWidth()*scale, _coordConverter.getScreenMax(), _axisWidth*scale, _color );
-			MarkerPosList::Iterator iter = markersPos.Begin();
-			MarkerPosList::ConstIterator endIter = markersPos.End();
+			MarkerPosList::Iterator iter = markers.Begin();
+			MarkerPosList::ConstIterator endIter = markers.End();
 			int c=0;
 			while ( iter != endIter ) {
-				RectTriangleTickMarkConfig val2;
-				if (c==0) {
-					val2.IDtext = "1";
-					val2.OutlineColor = Black;
-					val2.textBckgndColor = Red;
-					val2.textColor = Yellow;
-				}
-				else {
-					val2.IDtext = "2";
-					val2.OutlineColor = Black;
-					val2.textBckgndColor = Green;
-					val2.textColor = Yellow;
-				}
-				Value val = RawToValue(val2);
-				if (_coordConverter.IsInGraphVisibleRange(*iter)) {
+					MarkerElementData& markerData = *iter;
+				if (_coordConverter.IsInGraphVisibleRange(markerData.pos)) {
 					switch( _B::GetElementPos() ) {
 						case LEFT_OF_GRAPH:
-							
-							tickMark.Paint(dw, _B::GetElementPos(), scale, _B::GetElementWidth(), _coordConverter.toScreen(*iter), _color, val );
+							markerData.GetTickMark().Paint(dw, _B::GetElementPos(), scale, _B::GetElementWidth(), _coordConverter.toScreen(markerData.pos), _color);
 							break;
 						case BOTTOM_OF_GRAPH:
-							tickMark.Paint(dw, _B::GetElementPos(), scale, _coordConverter.toScreen(*iter), 0, _color, val );
+							markerData.GetTickMark().Paint(dw, _B::GetElementPos(), scale, _coordConverter.toScreen(markerData.pos), 0, _color );
 							break;
 						case TOP_OF_GRAPH:
-							tickMark.Paint(dw, _B::GetElementPos(), scale,  _coordConverter.toScreen(*iter), _B::GetElementWidth(), _color, val );
+							markerData.GetTickMark().Paint(dw, _B::GetElementPos(), scale,  _coordConverter.toScreen(markerData.pos), _B::GetElementWidth(), _color );
 							break;
 						case RIGHT_OF_GRAPH:
-							tickMark.Paint(dw, _B::GetElementPos(), scale, 0, _coordConverter.toScreen(*iter), _color, val );
+							markerData.GetTickMark().Paint(dw, _B::GetElementPos(), scale, 0, _coordConverter.toScreen(markerData.pos), _color );
 							break;
 						case OVER_GRAPH:
 							break;

@@ -23,6 +23,14 @@ using namespace Upp;
 #define TRACE_ERROR(TXT) //{ std::ostringstream str; str <<  "\n" << TXT; LOG(str.str().c_str()); }
 #endif
 
+namespace GraphDraw_ns
+{
+	Size GetSmartTextSize(const char *text, Font font = StdFont(), int cx = INT_MAX);
+	int  GetSmartTextHeight(const char *s, int cx, Font font = StdFont());
+	void DrawSmartText(Draw& w, int x, int y, int cx, const char *text,
+	                   Font font = StdFont(), Color ink = DefaultInk, int accesskey = 0);
+};
+
 #include "GraphDrawTypes.h"
 #include "CoordinateConverter.h"
 #include "GraphFunctions.h"
@@ -89,7 +97,7 @@ namespace GraphDraw_ns
 
 
 		protected:
-		// graph elements draw raound the graph
+		// graph elements draw around the graph
 		Vector< GraphElementFrame* >  _drawElements;
 		Vector< GraphElementFrame* >  _createdElements; // the elements in this list are owned by GrapDraw
 		Vector< TypeCoordConverter* > _xConverters;
@@ -99,8 +107,8 @@ namespace GraphDraw_ns
 		Rect     _plotRect;
 		DrawMode _mode;
 		bool     _doFastPaint;
-		Color    _plotBckgndColor;
-		Color    _CtrlBckgndColor;
+		Value    _plotBckgndStyle;
+		Value    _ctrlBckgndStyle;
 
 		int       _topMarginWidth;
 		int       _bottomMarginWidth;
@@ -178,13 +186,13 @@ namespace GraphDraw_ns
 		CRTP_EmptyGraphDraw()
 		: _mode( MD_DRAW )
 		, _doFastPaint(false)
-		, _plotBckgndColor( LtGray() )
-		, _CtrlBckgndColor( White() )
 		, _topMarginWidth(0)
 		, _bottomMarginWidth(0)
 		, _leftMarginWidth(0)
 		, _rightMarginWidth(0)
 		{
+			_plotBckgndStyle = LtGray();
+			_ctrlBckgndStyle = White();
 			setScreenSize( Size(100,100) ); // set default size
 		};
 
@@ -233,8 +241,10 @@ namespace GraphDraw_ns
 		TypeCoordConverter& GetXCoordConverter() { ASSERT(TypeSeriesGroup::_currentXConverter!=0); return *TypeSeriesGroup::_currentXConverter; }
 		TypeCoordConverter& GetYCoordConverter() { ASSERT(TypeSeriesGroup::_currentYConverter!=0); return *TypeSeriesGroup::_currentYConverter; }
 
-		DERIVED& SetPlotBackgroundColor(Color c) { _plotBckgndColor = c; return *static_cast<DERIVED*>(this); }
-		DERIVED& SetCtrlBackgroundColor(Color c) { _CtrlBckgndColor = c; return *static_cast<DERIVED*>(this); }
+		DERIVED& SetPlotBackgroundColor(Color c) { _plotBckgndStyle = c; return *static_cast<DERIVED*>(this); }
+		DERIVED& SetCtrlBackgroundColor(Color c) { _ctrlBckgndStyle = c; return *static_cast<DERIVED*>(this); }
+		DERIVED& SetPlotBackgroundImage(Image c) { _plotBckgndStyle = c; return *static_cast<DERIVED*>(this); }
+		DERIVED& SetCtrlBackgroundImage(Image c) { _ctrlBckgndStyle = c; return *static_cast<DERIVED*>(this); }
 		DERIVED& SetDrawMode(DrawMode m) { _mode = m; return *static_cast<DERIVED*>(this); }
 		DERIVED& SetDrawMode(int m) {
 			if ((MD_DRAW<=m) && (m<=MD_SUBPIXEL)) _mode = (DrawMode)m;
@@ -561,12 +571,14 @@ namespace GraphDraw_ns
 			// ------------
 			// paint graph area background
 			// ------------
-			if ( !_CtrlBckgndColor.IsNullInstance() ) dw.DrawRect(dw.GetPaintRect(), _CtrlBckgndColor);
+			if ( !_ctrlBckgndStyle.IsNull() ) ChPaint(dw, _ctrlRect, _ctrlBckgndStyle );
 
 			// --------------------------------------
 			// BEGIN paint in PLOT AREA
+			if ( !_plotBckgndStyle.IsNull()) ChPaint(dw, _plotRect, _plotBckgndStyle );
+
 			dw.Clipoff(_plotRect.left, _plotRect.top, _plotRect.GetWidth(), _plotRect.GetHeight());
-			if (!_plotBckgndColor.IsNullInstance()) dw.DrawRect(0, 0, _plotRect.GetWidth(), _plotRect.GetHeight(), _plotBckgndColor);
+//			else if (!_plotBckgndStyle.IsNullInstance() ) dw.DrawRect(0, 0, _plotRect.GetWidth(), _plotRect.GetHeight(), _plotBckgndStyle);
 			// --------------------------------------
 
 			// --------------
@@ -709,7 +721,7 @@ namespace GraphDraw_ns
 						                                 fround(_B::series[j].thickness),
 						                                 _B::series[j].color,
 						                                 _B::series[j].dash,
-						                                 _plotBckgndColor,
+						                                 Null, //_plotBckgndStyle,
 						                                 _B::series[j].fillColor,
 						                                 xConverter.getScreenRange() / xConverter.getGraphRange(),
 						                                 yConverter.getScreenRange() / yConverter.getGraphRange(),
@@ -943,6 +955,7 @@ namespace GraphDraw_ns
 		DERIVED& SetLegendYSize(int v)          { Rect r = _legend.GetFloatFrame();r.bottom = r.top+v; _legend.SetFloatFrame(r); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetLegendXPos(int v)           { Rect r = _legend.GetFloatFrame();r.right = v+r.Width(); r.left=v; _legend.SetFloatFrame(r); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetLegendYPos(int v)           { Rect r = _legend.GetFloatFrame();r.bottom = v+r.Height(); r.top=v; _legend.SetFloatFrame(r); return *static_cast<DERIVED*>(this); }
+		TypeLegendElement& GetLegendElement()   { return _legend; }
 	};
 
 

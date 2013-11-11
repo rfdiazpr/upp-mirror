@@ -29,7 +29,7 @@ need to be updated to. This must be done inside UpdateTick()
 method.&]
 [s3;%- &]
 [s4;%- &]
-[s5;:TickMark`:`:GetTickRect`(Point`,ElementPosition`,int`,int`,const int`):%- [@(0.0.255) v
+[s5;:TickMark`:`:GetTickRect`(Point`,ElementPosition`,int`,int`,const int`)const:%- [@(0.0.255) v
 irtual] [_^Rect^ Rect]_[* GetTickRect]([_^Point^ Point]_[*@3 xyOffset], 
 ElementPosition_[*@3 side], [@(0.0.255) int]_[*@3 x], [@(0.0.255) int]_[*@3 y], 
 [@(0.0.255) const]_[@(0.0.255) int]_[*@3 scale]) `= 0&]
@@ -45,7 +45,7 @@ to TickRect&]
 is inside the TickMarker or not.&]
 [s3; &]
 [s4;%- &]
-[s5;:TickMark`:`:Contains`(Point`,Point`,ElementPosition`,int`,int`,const int`):%- [@(0.0.255) b
+[s5;:TickMark`:`:Contains`(Point`,Point`,ElementPosition`,int`,int`,const int`)const:%- [@(0.0.255) b
 ool]_[* Contains]([_^Point^ Point]_[*@3 p], [_^Point^ Point]_[*@3 xyOffset], 
 ElementPosition_[*@3 side], [@(0.0.255) int]_[*@3 x], [@(0.0.255) int]_[*@3 y], 
 [@(0.0.255) const]_[@(0.0.255) int]_[*@3 scale]_`=_[@3 1])&]
@@ -66,4 +66,15 @@ according to mouse position.&]
 [s3; &]
 [s0;%- &]
 [ {{10000F(128)G(128)@1 [s0; [* Constructor detail]]}}&]
+[s0; &]
+[s0; &]
+[s0; &]
+[s0; &]
+[s0;*@7;4 &]
+[ {{10000@(113.42.0) [s0; [*@7;4 TextTickMark]]}}&]
+[s0; &]
+[s1;:TextTickMark`:`:class:%- [@(0.0.255)3 class][3 _][*3 TextTickMark][3 _:_][@(0.0.255)3 publi
+c][3 _][*@3;3 TickMark]&]
+[s2; TickMark that draws text inside box as a TickMark&]
+[s3;%- &]
 [s0; ]]

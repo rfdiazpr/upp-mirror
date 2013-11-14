@@ -42,6 +42,14 @@ are closer to the graph &]
 [s2; Rect of the graph plot area ( inside the `_ctrlRect )&]
 [s3;%- &]
 [s4;%- &]
+[s5;:CRTP`_EmptyGraphDraw`:`:`_PlotDrawImage:%- [_^Image^ Image]_[* `_PlotDrawImage]&]
+[s2; Image of the drawn Plot data (and only that).&]
+[s2; This Image is used to store data plotting result and therefor 
+speed`-up drawing of Graph when plot data hasn`'t changed. In 
+thsi case the plot image is just drawn on the Graph result without 
+really processing the plot data&]
+[s3;%- &]
+[s4;%- &]
 [s3;%- [@(0.0.255) virtual] [_^Callback^ Callback]_[* MakeSetGraphSizeAction]()&]
 [s2; Returns a Callback that, when executed, will set the Graph size 
 settings identical to the current settings.&]

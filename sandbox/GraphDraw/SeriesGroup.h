@@ -62,7 +62,6 @@ template<class TYPES, class DERIVED>
 			ASSERT(IsValid(j));
 			series[j].sequential = v;
 			_isDataModified = true;
-//			static_cast<DERIVED*>(this)->Refresh();
 			return *static_cast<DERIVED*>(this);
 		}
 		DERIVED&  SetSequential(bool v){
@@ -76,7 +75,6 @@ template<class TYPES, class DERIVED>
 			ASSERT(IsValid(j));
 			series[j].thickness = thickness;
 			_isDataModified = true;
-//			static_cast<DERIVED*>(this)->Refresh();
 			return *static_cast<DERIVED*>(this);
 		}
 		DERIVED& SetDataThickness(const double& thickness){
@@ -91,7 +89,6 @@ template<class TYPES, class DERIVED>
 			ASSERT(IsValid(j));
 			series[j].fillColor = color;
 			_isDataModified = true;
-//			static_cast<DERIVED*>(this)->Refresh();
 		}
 
 		Color GetFillColor(const int j) const{
@@ -104,7 +101,6 @@ template<class TYPES, class DERIVED>
 			ASSERT(IsValid(j));
 			series[j].markWidth = width;
 			_isDataModified = true;
-//			static_cast<DERIVED*>(this)->Refresh();
 			return *static_cast<DERIVED*>(this);
 		}
 		DERIVED& SetMarkWidth(const double& width){
@@ -120,13 +116,11 @@ template<class TYPES, class DERIVED>
 			ASSERT(IsValid(j));
 			series[j].markColor = color;
 			_isDataModified = true;
-//			static_cast<DERIVED*>(this)->Refresh();
 		}
 		void SetMarkColor(const Color& color){
 			ASSERT(series.GetCount()-1);
 			series[series.GetCount()-1].markColor = color;
 			_isDataModified = true;
-//			static_cast<DERIVED*>(this)->Refresh();
 		}
 
 		::Color GetMarkColor (const int j) const{
@@ -173,7 +167,6 @@ template<class TYPES, class DERIVED>
 			ASSERT(_currentYConverter!=0);
 			s.yConverter = _currentYConverter;
 			_isDataModified = true;
-//			static_cast<DERIVED*>(this)->Refresh();
 			return *static_cast<DERIVED*>(this);
 		}
 		
@@ -186,7 +179,6 @@ template<class TYPES, class DERIVED>
 			ASSERT(_currentYConverter!=0);
 			s.yConverter = _currentYConverter;
 			_isDataModified = true;
-//			static_cast<DERIVED*>(this)->Refresh();
 			return *static_cast<DERIVED*>(this);
 		}
 
@@ -234,7 +226,6 @@ template<class TYPES, class DERIVED>
 			ASSERT(_currentYConverter!=0);
 			s.yConverter = _currentYConverter;
 			_isDataModified = true;
-//			static_cast<DERIVED*>(this)->Refresh();
 		}
 
 
@@ -273,13 +264,11 @@ template<class TYPES, class DERIVED>
 			ASSERT(IsValid(j));
 			series.Remove(j);
 			_isDataModified = true;
-//			static_cast<DERIVED*>(this)->Refresh();
 		}
 
 		void RemoveAllSeries(){
 			series.Clear();
 			_isDataModified = true;
-//			static_cast<DERIVED*>(this)->Refresh();
 		}
 
 
@@ -328,14 +317,12 @@ template<class TYPES, class DERIVED>
 			//series[id].dash = GetNewDash(id);
 
 			_isDataModified = true;
-//			static_cast<DERIVED*>(this)->Refresh();
 			return *static_cast<DERIVED*>(this);
 		}
 		DERIVED& Dash(const char *dash) {
 			int id = series.GetCount() - 1;
 			series[id].dash = dash;
 			_isDataModified = true;
-//			static_cast<DERIVED*>(this)->Refresh();
 			return *static_cast<DERIVED*>(this);
 		}
 
@@ -347,7 +334,6 @@ template<class TYPES, class DERIVED>
 			}
 			series[id].fillColor = color;
 			_isDataModified = true;
-//			static_cast<DERIVED*>(this)->Refresh();
 			return *static_cast<DERIVED*>(this);
 		}
 
@@ -358,7 +344,6 @@ template<class TYPES, class DERIVED>
 				color = Color(max(color.GetR()-30, 0), max(color.GetG()-30, 0), max(color.GetB()-30, 0));
 			}
 			series[id].markColor = color;
-//			static_cast<DERIVED*>(this)->Refresh();
 			_isDataModified = true;
 			return *static_cast<DERIVED*>(this);
 		}
@@ -367,7 +352,6 @@ template<class TYPES, class DERIVED>
 			int id = series.GetCount() - 1;
 			series[id].markWidth = markWidth;
 			_isDataModified = true;
-//			static_cast<DERIVED*>(this)->Refresh();
 			return *static_cast<DERIVED*>(this);
 		}
 		DERIVED& Hide() {
@@ -412,7 +396,6 @@ template<class TYPES, class DERIVED>
 			ASSERT(IsValid(j));
 			series[j].show = show;
 			_isDataModified = true;
-//			static_cast<DERIVED*>(this)->Refresh();
 		}
 
 		bool IsVisible(const int j) {

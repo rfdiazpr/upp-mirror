@@ -21,10 +21,12 @@ topic "GraphElementFrame";
 [s2; This is usefull when accomplishing mouse move/resize and that 
 the data is to big to get refreshed rapidly.&]
 [s2; The values accepted are the following :&]
-[s2;i150;O0; [*@(128.0.255) REFRESH`_FAST]&]
-[s2;i150;O0; [*@(128.0.255) REFRESH`_TOTAL]&]
+[s2;i150;O0; [*@(128.0.255) REFRESH`_FAST : ]only partial data is draw 
+(to be faster)&]
+[s2;i150;O0; [*@(128.0.255) REFRESH`_TOTAL : ]everything is redrawn&]
+[s2;i150;O0; [*@(128.0.255) REFRESH`_KEEP`_DATA : ]data is not redrawn, 
+it`'s buffered image is used instead&]
 [s3;%- &]
-[s0;*@7;4 &]
 [ {{10000@(113.42.0) [s0; [*@7;4 GraphElementFrame]]}}&]
 [s1;:GraphElementFrame`:`:class:%- [@(0.0.255)3 class][3 _][*3 GraphElementFrame]&]
 [s2; Base class used to implement all Graph Elements.&]

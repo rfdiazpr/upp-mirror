@@ -55,7 +55,7 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 		else                   return GraphCtrlImg::SCROLL_X();
 	}
 
-	virtual GraphDraw_ns::GraphElementFrame* MouseWheel (Point p, int zdelta, dword keyflags) {
+	virtual void MouseWheel (Point p, int zdelta, dword keyflags) {
 		typename TYPES::TypeCoordConverter& converter = _B::GetCoordConverter();
 		if (zdelta < 0) zdelta = -1;
 		else            zdelta =  1;
@@ -95,7 +95,6 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 			undo.redoAction << converter.MakeRestoreAxisMinMaxCB();
 			_B::_parent->AddUndoAction(undo);
 			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
-			return this; // Capture MouseCtrl
 		}
 		else
 		{
@@ -112,14 +111,11 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 			undo.redoAction << _B::_parent->MakeRestoreGraphSizeCB();
 			_B::_parent->AddUndoAction(undo);
 			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
-			return this; // Capture MouseCtrl
 		}
-		return 0; // no need to capture MouseCtrl
 	}
 
-	virtual GraphDraw_ns::GraphElementFrame*  LeftDown   (Point p, dword keyflags) {
+	virtual void  LeftDown   (Point p, dword keyflags) {
 		prevMousePoint = p;
-		return 0; // no need to capture MouseCtrl
 	}
 
 	private:
@@ -157,7 +153,7 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 		}
 	}
 	public:
-	virtual GraphDraw_ns::GraphElementFrame* MouseMove (Point p, dword keyflags) {
+	virtual void MouseMove (Point p, dword keyflags) {
 		if (keyflags & K_MOUSELEFT)
 		{
 			GraphDraw_ns::GraphUndoData undo;
@@ -165,9 +161,7 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 				_B::_parent->DoLocalLoop( THISBACK( _MouseMove ) );
 			undo.redoAction << _B::_parent->MakeRestoreGraphSizeCB();
 			_B::_parent->AddUndoAction(undo);
-			return 0; // Capture MouseCtrl
 		}
-		return 0; // no need to capture MouseCtrl
 	}
 	
 };
@@ -235,17 +229,16 @@ class DynamicMarkerCtrl : public  CRTPGraphElementCtrl_Base< TYPES, MARKERDRAW, 
 				(*currMarkerPos).pos =  _B::_coordConverter.toGraph(p.x+selectOffset);
 			}
 			prevMousePoint = p;
-			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
+			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_KEEP_DATA );
 		}
 	}
 	
 	public:
-	virtual GraphDraw_ns::GraphElementFrame*  LeftDown(Point p, dword keyflags) {
+	virtual void  LeftDown(Point p, dword keyflags) {
 		prevMousePoint = p;
-		return 0; // no need to capture MouseCtrl
 	}
 
-	virtual GraphDraw_ns::GraphElementFrame* MouseMove (Point p, dword keyflags) {
+	virtual void MouseMove (Point p, dword keyflags) {
 		if (keyflags & K_MOUSELEFT)
 		{
 			GraphDraw_ns::MarkerPosList::Iterator iter = _B::markers.Begin();
@@ -296,9 +289,7 @@ class DynamicMarkerCtrl : public  CRTPGraphElementCtrl_Base< TYPES, MARKERDRAW, 
 			//	_B::_parent->DoLocalLoop( THISBACK( _MouseMove ) );
 			//undo.redoAction << _B::_parent->MakeRestoreGraphSizeCB();
 			//_B::_parent->AddUndoAction(undo);
-			return 0; // Capture MouseCtrl
 		}
-		return 0; // no need to capture MouseCtrl
 	}
 
 	virtual Image  CursorImage(Point p, dword keyflags) {
@@ -322,13 +313,13 @@ class DynamicMarkerCtrl : public  CRTPGraphElementCtrl_Base< TYPES, MARKERDRAW, 
 						if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), 0, _B::_coordConverter.toScreen(markerData.pos) ) ) return GraphCtrlImg::SCROLL_Y();
 						break;
 					case GraphDraw_ns::OVER_GRAPH:
-						return Null;
+						return _B::CursorImage(p,keyflags);
 						break;
 				}
 			}
 			++iter;
 		}
-		return Null;
+		return _B::CursorImage(p,keyflags);
 	}
 
 };

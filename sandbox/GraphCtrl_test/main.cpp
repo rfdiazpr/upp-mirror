@@ -1,7 +1,7 @@
 
 //#define TRACE_INFO(TXT) { std::ostringstream str; str <<  "\n" << TXT; LOG(str.str().c_str()); }
-#define TRACE_INFO(TXT) std::cout <<  "\n" << TXT << std::flush
-#define TRACE_ERROR(TXT) std::cout <<  "\n ### ERROR : " << TXT << std::flush
+#define TRACE_INFO(TXT) RLOG( TXT )
+#define TRACE_ERROR(TXT) RLOG(" ### ERROR : " << TXT )
 
 #include <Report/Report.h>
 
@@ -74,6 +74,8 @@ void GraphDraw_test::FormatAsTime(double value, String& output, double range) {
 	output = Format("%d/%d/%d", time.day, time.month, time.year);
 }
 
+typedef DynamicMarkerCtrl< MyGraphCtrl::Types, GraphDraw_ns::MarkerElement< MyGraphCtrl::Types > >  MarkerElementType;
+
 GraphDraw_test::GraphDraw_test()
 {
 	CtrlLayout(*this, "Window title");
@@ -92,25 +94,25 @@ GraphDraw_test::GraphDraw_test()
 	}
 	g3.AddSeries(s1).MarkStyle<FastMarkPlot>().Legend("S1");
 	g3.AddSeries(s2).MarkStyle<FastMarkPlot>().Legend("S2");
+	g3.SetCtrlBackgroundImage(GraphCtrl_testImg::CTRL_BCKGND() );
 	g3.SetPlotBackgroundImage(GraphCtrl_testImg::PLOT_BCKGND() );
 	g3.GetLegendElement().SetBackgndStyle(GraphCtrl_testImg::LEGEND_BACKGND());
+	MarkerElementType& g3_markerElem = g3.CreateElement1< MarkerElementType, TOP_OF_GRAPH>(30, 0, g3.GetXCoordConverter() );
+	SmartTextTickMark& sttmg3_1 = g3_markerElem.AddMarker<SmartTextTickMark>(25000);
+		sttmg3_1.SetText("\1[ [ [*@6;1  3 ]]]");
+		sttmg3_1.SetBckgndImage(GraphCtrl_testImg::BACKGND());
 
 	// ================ G4 ================
 	g4.CreateElement2<ExclusionAreaDraw<MyGraphCtrl::Types>, OVER_GRAPH>(0, 0, g4.GetXCoordConverter(), g4.GetYCoordConverter() );
 	//g4.CreateElement1<GraphDraw_ns::MarkerElement<MyGraphCtrl::Types>, TOP_OF_GRAPH>(20, 0, g4.GetXCoordConverter() );
-	typedef DynamicMarkerCtrl< MyGraphCtrl::Types, GraphDraw_ns::MarkerElement< MyGraphCtrl::Types > >  MarkerElementType;
 	MarkerElementType& markerElem = g4.CreateElement1< MarkerElementType, TOP_OF_GRAPH>(30, 0, g4.GetXCoordConverter() );
 
-	RectTriangleTickMark& rttm = markerElem.AddMarker<RectTriangleTickMark>(3.8);
-		rttm.IDtext = "1";
-		rttm.OutlineColor = Black;
-		rttm.textBckgndColor = Red;
-		rttm.textColor = Yellow;
-
-	SmartTextTickMark& sttmg4_1 = markerElem.AddMarker<SmartTextTickMark>(8.5);
-		sttmg4_1.SetText("\1[ [ [*@6;1  2 ]]]");
-		sttmg4_1.SetBckgndImage(GraphCtrl_testImg::BACKGND());
-	markerElem.AddMarker<LineTickMark>(5);
+	SmartTextTickMark& sttmg4_1 = markerElem.AddMarker<SmartTextTickMark>(3.5);
+		sttmg4_1.SetText("\1[ [ [*@6;1  1 ]]]");
+		sttmg4_1.SetBckgndImage(GraphCtrl_testImg::BACKGND2());
+	SmartTextTickMark& sttmg4_2 = markerElem.AddMarker<SmartTextTickMark>(8.5);
+		sttmg4_2.SetText("\1[ [ [*@6;1  2 ]]]");
+		sttmg4_2.SetBckgndImage(GraphCtrl_testImg::BACKGND());
 	
 	g4.AddSeries(points).PlotStyle<LineSeriesPlot>().MarkStyle<XMarkPlot>().MarkWidth(3).Fill(Color(28, 255, 200)).Opacity(.5).Legend("S1");
 
@@ -119,7 +121,7 @@ GraphDraw_test::GraphDraw_test()
 	g4.AddSeries(points2).PlotStyle<LineSeriesPlot>().NoMark().Legend("S2"); // tied to last X/Y  coordConverters ==> X / Y2
 	g4.SetCtrlBackgroundImage(GraphCtrl_testImg::CTRL_BCKGND() );
 	g4.SetPlotBackgroundImage(GraphCtrl_testImg::PLOT_BCKGND() );
-	g4.GetLegendElement().SetBackgndStyle(GraphCtrl_testImg::LEGEND_BACKGND2());
+	g4.GetLegendElement().SetBackgndStyle(GraphCtrl_testImg::LEGEND_BACKGND3());
 	g4.GetLegendElement().SetElementWidth(28);
 
 	MarkerElementType& markerElemG5_1 = g5.CreateElement1< MarkerElementType, TOP_OF_GRAPH >(60, 0, g5.GetXCoordConverter() );

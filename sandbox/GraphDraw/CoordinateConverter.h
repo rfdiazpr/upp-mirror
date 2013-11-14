@@ -71,7 +71,7 @@ namespace GraphDraw_ns
 				return true;
 			}
 
-
+			
 			inline void Update() {
 				update( getGraphMin(), getGraphMax(), getScreenMin(), getScreenMax() );
 			}
@@ -80,35 +80,41 @@ namespace GraphDraw_ns
 			inline void SetGraphMax(TypeGraphCoord v) { update( getGraphMin(), v, getScreenMin(), getScreenMax() ); }
 			virtual void update(TypeGraphCoord graphMin, TypeGraphCoord graphMax, TypeScreenCoord screenMin, TypeScreenCoord screenMax)
 			{
-				//TRACE_INFO("CoordinateConverter.update(" << graphMin << ", " << graphMax  << ", " << screenMin<< ", " << screenMax << " )" );
-				_graphMin = applyRangeLimits(graphMin);
-				_graphMax = applyRangeLimits(graphMax);
-				_screenMin = screenMin;
-				_screenMax = screenMax;
-				_graphRange =  tabs(_graphMax - _graphMin);
-				_screenRange = tabs(_screenMax - _screenMin);
-				_graphToScreenScale = (_screenMax - _screenMin) / (_graphMax - _graphMin);
-				_screenToGraphScale = (_graphMax - _graphMin) / (_screenMax - _screenMin);
+				if (screenMin!=_screenMin  || screenMax!=_screenMax || _graphMin!=graphMin || _graphMax!=graphMax ) {
+					//TRACE_INFO("CoordinateConverter.update(" << graphMin << ", " << graphMax  << ", " << screenMin<< ", " << screenMax << " )" );
+					_graphMin = applyRangeLimits(graphMin);
+					_graphMax = applyRangeLimits(graphMax);
+					_screenMin = screenMin;
+					_screenMax = screenMax;
+					_graphRange =  tabs(_graphMax - _graphMin);
+					_screenRange = tabs(_screenMax - _screenMin);
+					_graphToScreenScale = (_screenMax - _screenMin) / (_graphMax - _graphMin);
+					_screenToGraphScale = (_graphMax - _graphMin) / (_screenMax - _screenMin);
+				}
 			}
 
 			virtual void updateScreenSize(TypeScreenCoord screenMin, TypeScreenCoord screenMax)
 			{
-				//TRACE_INFO("CoordinateConverter.update(" << graphMin << ", " << graphMax  << ", " << screenMin<< ", " << screenMax << " )" );
-				_screenMin = screenMin;
-				_screenMax = screenMax;
-				_screenRange = tabs(_screenMax - _screenMin);
-				_graphToScreenScale = (_screenMax - _screenMin) / (_graphMax - _graphMin);
-				_screenToGraphScale = (_graphMax - _graphMin) / (_screenMax - _screenMin);
+				if (screenMin!=_screenMin  || screenMax!=_screenMax ) {
+					//TRACE_INFO("CoordinateConverter.update( "<< screenMin<< ", " << screenMax << " )" );
+					_screenMin = screenMin;
+					_screenMax = screenMax;
+					_screenRange = tabs(_screenMax - _screenMin);
+					_graphToScreenScale = (_screenMax - _screenMin) / (_graphMax - _graphMin);
+					_screenToGraphScale = (_graphMax - _graphMin) / (_screenMax - _screenMin);
+				}
 			}
 
 			virtual void updateGraphSize(TypeGraphCoord graphMin, TypeGraphCoord graphMax)
 			{
-				//TRACE_INFO("CoordinateConverter.update(" << graphMin << ", " << graphMax  << ", " << screenMin<< ", " << screenMax << " )" );
-				_graphMin = applyRangeLimits(graphMin);
-				_graphMax = applyRangeLimits(graphMax);
-				_graphRange =  tabs(_graphMax - _graphMin);
-				_graphToScreenScale = (_screenMax - _screenMin) / (_graphMax - _graphMin);
-				_screenToGraphScale = (_graphMax - _graphMin) / (_screenMax - _screenMin);
+				if ( _graphMin!=graphMin || _graphMax!=graphMax ) {
+					//TRACE_INFO("CoordinateConverter.update(" << graphMin << ", " << graphMax  << " )" );
+					_graphMin = applyRangeLimits(graphMin);
+					_graphMax = applyRangeLimits(graphMax);
+					_graphRange =  tabs(_graphMax - _graphMin);
+					_graphToScreenScale = (_screenMax - _screenMin) / (_graphMax - _graphMin);
+					_screenToGraphScale = (_graphMax - _graphMin) / (_screenMax - _screenMin);
+				}
 			}
 
 			virtual void Scroll( TypeScreenCoord offset ) {

@@ -105,8 +105,9 @@ namespace GraphDraw_ns
 
 		Rect     _ctrlRect;  // whole graph screen Rect
 		Rect     _plotRect;
-		DrawMode _mode;
+		DrawMode _drawMode;
 		bool     _doFastPaint;
+		bool     _keepDataPaint;
 		Value    _plotBckgndStyle;
 		Value    _ctrlBckgndStyle;
 
@@ -116,6 +117,8 @@ namespace GraphDraw_ns
 		int       _rightMarginWidth;
 		
 		GraphUndo _undoManager;
+		Image     _PlotDrawImage;
+		Image     _CtrlBackgroundImage;
 		
 		// helper method
 		void AppendElementToRect(GraphElementFrame& element, Rect& fromRect, const int scale)
@@ -152,12 +155,14 @@ namespace GraphDraw_ns
 
 		inline void updateSizes( const int scale = 1 )
 		{
+			Rect svg = _plotRect;
 			_plotRect = _ctrlRect;
 			_plotRect.left   += _leftMarginWidth*scale;
 			_plotRect.right  -= _rightMarginWidth*scale;
 			_plotRect.top    += _topMarginWidth*scale;
 			_plotRect.bottom -= _bottomMarginWidth*scale;
 
+			if (_plotRect != svg) _CtrlBackgroundImage.Clear();
 			Sort(_drawElements, compareGraphElementFrame);
 
 			for (int j = _drawElements.GetCount()-1; j>=0; j--) {
@@ -184,8 +189,9 @@ namespace GraphDraw_ns
 
 		public:
 		CRTP_EmptyGraphDraw()
-		: _mode( MD_DRAW )
+		: _drawMode( MD_DRAW )
 		, _doFastPaint(false)
+		, _keepDataPaint(false)
 		, _topMarginWidth(0)
 		, _bottomMarginWidth(0)
 		, _leftMarginWidth(0)
@@ -241,16 +247,16 @@ namespace GraphDraw_ns
 		TypeCoordConverter& GetXCoordConverter() { ASSERT(TypeSeriesGroup::_currentXConverter!=0); return *TypeSeriesGroup::_currentXConverter; }
 		TypeCoordConverter& GetYCoordConverter() { ASSERT(TypeSeriesGroup::_currentYConverter!=0); return *TypeSeriesGroup::_currentYConverter; }
 
-		DERIVED& SetPlotBackgroundColor(Color c) { _plotBckgndStyle = c; return *static_cast<DERIVED*>(this); }
-		DERIVED& SetCtrlBackgroundColor(Color c) { _ctrlBckgndStyle = c; return *static_cast<DERIVED*>(this); }
-		DERIVED& SetPlotBackgroundImage(Image c) { _plotBckgndStyle = c; return *static_cast<DERIVED*>(this); }
-		DERIVED& SetCtrlBackgroundImage(Image c) { _ctrlBckgndStyle = c; return *static_cast<DERIVED*>(this); }
-		DERIVED& SetDrawMode(DrawMode m) { _mode = m; return *static_cast<DERIVED*>(this); }
+		DERIVED& SetPlotBackgroundColor(Color c) { _plotBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetCtrlBackgroundColor(Color c) { _ctrlBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetPlotBackgroundImage(Image c) { _plotBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetCtrlBackgroundImage(Image c) { _ctrlBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetDrawMode(DrawMode m) { _drawMode = m; return *static_cast<DERIVED*>(this); }
 		DERIVED& SetDrawMode(int m) {
-			if ((MD_DRAW<=m) && (m<=MD_SUBPIXEL)) _mode = (DrawMode)m;
+			if ((MD_DRAW<=m) && (m<=MD_SUBPIXEL)) _drawMode = (DrawMode)m;
 			return *static_cast<DERIVED*>(this);
 		}
-		DrawMode GetDrawMode() { return _mode; }
+		DrawMode GetDrawMode() { return _drawMode; }
 		
 		
 
@@ -260,12 +266,17 @@ namespace GraphDraw_ns
 		DERIVED& SetRightMargin(int v)  { _rightMarginWidth = v;  return *static_cast<DERIVED*>(this); }
 
 		DERIVED& setScreenSize(Rect r, const int scale=1)	{
-			_ctrlRect = r;
-			updateSizes(scale);
+			//RLOGBLOCK("setScreenSize");
+			if (r!=_ctrlRect) {
+				_ctrlRect = r;
+				_CtrlBackgroundImage.Clear();
+				updateSizes(scale);
+			}
 			return *static_cast<DERIVED*>(this);
 		}
 
 		inline DERIVED& setScreenSize( const int scale=1 )	{
+			//RLOGBLOCK("setScreenSize");
 			return setScreenSize(_ctrlRect, scale);
 		}
 
@@ -515,7 +526,7 @@ namespace GraphDraw_ns
 		}
 
 		inline Image GetImage(const int scale=1) {
-			return GetImage( _mode, scale );
+			return GetImage( _drawMode, scale );
 		}
 
 		template <class V, class XC, class YC>
@@ -564,40 +575,9 @@ namespace GraphDraw_ns
 		}\
 
 
-
 		template<class T>
-		void Paint(T& dw, int scale)
+		void PaintPlotData(T& dw, int scale)
 		{
-			// ------------
-			// paint graph area background
-			// ------------
-			if ( !_ctrlBckgndStyle.IsNull() ) ChPaint(dw, _ctrlRect, _ctrlBckgndStyle );
-
-			// --------------------------------------
-			// BEGIN paint in PLOT AREA
-			if ( !_plotBckgndStyle.IsNull()) ChPaint(dw, _plotRect, _plotBckgndStyle );
-
-			dw.Clipoff(_plotRect.left, _plotRect.top, _plotRect.GetWidth(), _plotRect.GetHeight());
-//			else if (!_plotBckgndStyle.IsNullInstance() ) dw.DrawRect(0, 0, _plotRect.GetWidth(), _plotRect.GetHeight(), _plotBckgndStyle);
-			// --------------------------------------
-
-			// --------------
-			// GRAPH ELEMENTS on PLOT area   ( X/Y Grid, or anything else )
-			// --------------
-
-			for (int j = 0; j < _drawElements.GetCount(); j++) {
-				if ( (!_drawElements[j]->IsHidden()) && _drawElements[j]->IsFloat() ) _drawElements[j]->PaintOnPlot(dw, _plotRect.GetWidth(), scale);
-			}
-			
-			for (int j = 0; j < _drawElements.GetCount(); j++) {
-				if (!_drawElements[j]->IsHidden()) {
-					if      ( _drawElements[j]->IsVertical() )   _drawElements[j]->PaintOnPlot(dw, _plotRect.GetWidth(), scale);
-					else if ( _drawElements[j]->IsHorizontal() ) _drawElements[j]->PaintOnPlot(dw, _plotRect.GetHeight(), scale);
-				}
-			}
-			// ------------
-			// paint DATA
-			// ------------
 			if (!_B::series.IsEmpty())
 			{
 				for ( int j = 0; j < _B::series.GetCount(); j++)
@@ -744,11 +724,73 @@ namespace GraphDraw_ns
 				}
 			}
 
+		}
+
+		template<class T>
+		void Paint(T& dw, int scale)
+		{
+			//RLOGBLOCK("==================================" );
+			if ( _CtrlBackgroundImage.IsEmpty() )
+			{
+				RGBA bckgColor;   bckgColor.r = 0; bckgColor.g = 0; bckgColor.b = 0; bckgColor.a = 0;
+				ImageBuffer ib(_ctrlRect.Size());
+				Upp::Fill( ib.Begin(), bckgColor, ib.GetLength() );
+				BufferPainter bp(ib, _drawMode);
+				// ------------
+				// paint graph area background
+				// ------------
+				if ( !_ctrlBckgndStyle.IsNull() ) ChPaint(bp, _ctrlRect, _ctrlBckgndStyle );
+	
+				// --------------------------------------
+				// BEGIN paint in PLOT AREA
+				// --------------------------------------
+				if ( !_plotBckgndStyle.IsNull()) ChPaint(bp, _plotRect, _plotBckgndStyle );
+				_CtrlBackgroundImage = ib;
+			}
+			dw.DrawImage(0, 0, _CtrlBackgroundImage );
+			dw.Clipoff(_plotRect.left, _plotRect.top, _plotRect.GetWidth(), _plotRect.GetHeight());
+
+			// --------------
+			// GRAPH ELEMENTS on PLOT area   ( X/Y Grid, or anything else )
+			// --------------
+			for (int j = 0; j < _drawElements.GetCount(); j++) {
+				if ( (!_drawElements[j]->IsHidden()) && _drawElements[j]->IsFloat() ) _drawElements[j]->PaintOnPlot(dw, _plotRect.GetWidth(), scale);
+			}
+			
+			for (int j = 0; j < _drawElements.GetCount(); j++) {
+				if (!_drawElements[j]->IsHidden()) {
+					if      ( _drawElements[j]->IsVertical() )   _drawElements[j]->PaintOnPlot(dw, _plotRect.GetWidth(), scale);
+					else if ( _drawElements[j]->IsHorizontal() ) _drawElements[j]->PaintOnPlot(dw, _plotRect.GetHeight(), scale);
+				}
+			}
+			
+			// ----------------
+			// paint PLOT DATA
+			// ----------------
+			if (_doFastPaint)
+			{
+				PaintPlotData(dw, scale);
+				_PlotDrawImage.Clear();
+			}
+			else
+			{
+				if ( _PlotDrawImage.IsEmpty() || !_keepDataPaint )
+				{
+					RGBA bckgColor;   bckgColor.r = 0; bckgColor.g = 0; bckgColor.b = 0; bckgColor.a = 0;
+					ImageBuffer ib(_plotRect.Size());
+					Upp::Fill( ib.Begin(), bckgColor, ib.GetLength() );
+					BufferPainter bp(ib, _drawMode);
+					PaintPlotData(bp, scale);
+					_PlotDrawImage = ib;
+					_keepDataPaint = false;
+				}
+				dw.DrawImage(0, 0, _PlotDrawImage);
+			}
 
 			// --------------------------------------
-			dw.End();
 			// END of paint in PLOT AREA
 			// --------------------------------------
+			dw.End();
 
 			// --------------
 			// GRAPH ELEMENTS ( painted in they're own area : the ones around the PLOT area )
@@ -773,7 +815,6 @@ namespace GraphDraw_ns
 					dw.End();
 				}
 			}
-			TRACE_INFO("==================================" );
 		}
 	};
 

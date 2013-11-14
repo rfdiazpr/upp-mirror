@@ -42,11 +42,11 @@ class CRTPGraphElementCtrl_Base : public ELEMENT_CLASS {
 		TOpenPropertiesDlg<ElementPropertiesDlg>();
 	}
 	
-	virtual bool Contains(Point p) const                                          { return (_B::_frame.Contains(p)); }
-	virtual GraphDraw_ns::GraphElementFrame* LeftDouble (Point p, dword keyflags) { OpenPropertiesDlg(); return 0; }
-	virtual void ContextMenu(Bar& bar)                                            { bar.Add(t_("Edit properties"), THISBACK(OpenPropertiesDlg)); }
-	virtual GraphDraw_ns::GraphElementFrame* RightDown(Point p, dword keyflags)   { MenuBar::Execute(THISBACK(ContextMenu)); return 0; } 
-	virtual Image  CursorImage(Point p, dword keyflags)                           { return GraphCtrlImg::ACTIVE_CROSS(); }
+	virtual bool Contains(Point p) const                { return (_B::_frame.Contains(p)); }
+	virtual void LeftDouble (Point p, dword keyflags)   { OpenPropertiesDlg(); }
+	virtual void ContextMenu(Bar& bar)                  { bar.Add(t_("Edit properties"), THISBACK(OpenPropertiesDlg)); }
+	virtual void RightDown(Point p, dword keyflags)     { MenuBar::Execute(THISBACK(ContextMenu)); } 
+	virtual Image  CursorImage(Point p, dword keyflags) { return GraphCtrlImg::ACTIVE_CROSS(); }
 };
 
 // ============================================================================================
@@ -86,7 +86,7 @@ class GraphElementCtrl_MoveResize : public LEGEND_DRAW_CLASS
 	}
 
 	
-	virtual GraphDraw_ns::GraphElementFrame* MouseMove (Point p, dword keyflags) {
+	virtual void MouseMove (Point p, dword keyflags) {
 		if (parentCtrl == 0) {
 			parentCtrl = ValueTo<Ctrl*>(_B::_parent->GetParentCtrl());
 		}
@@ -100,17 +100,16 @@ class GraphElementCtrl_MoveResize : public LEGEND_DRAW_CLASS
 				undo.undoAction << MakeRestoreElementPosCB();
 					if(keyflags & K_CTRL) {
 						_B::_floatFrame = tracker.Track(_B::_floatFrame, ALIGN_NULL, ALIGN_NULL);
-						_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
+						_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_KEEP_DATA );
 					}
 					else {
 						_B::_floatFrame = tracker.Track(_B::_floatFrame, ALIGN_CENTER, ALIGN_CENTER);
-						_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
+						_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_KEEP_DATA );
 					}
 				undo.redoAction << MakeRestoreElementPosCB();
 				_B::_parent->AddUndoAction(undo);
 			}
 		}
-		return 0; // no need to capture MouseCtrl
 	}
 
 	virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }

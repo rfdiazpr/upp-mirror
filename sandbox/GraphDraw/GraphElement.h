@@ -28,7 +28,8 @@ namespace GraphDraw_ns
 
 	typedef enum RefreshStrategy {
 			REFRESH_FAST = 0,
-			REFRESH_TOTAL
+			REFRESH_TOTAL,
+			REFRESH_KEEP_DATA
 	} RefreshStrategy;
 
 	typedef enum FitToDataStrategy {
@@ -159,13 +160,13 @@ namespace GraphDraw_ns
 			virtual GraphElementFrame* Clone() = 0;
 
 
-			virtual GraphElementFrame* LeftDown   (Point p, dword keyflags) { return 0;}
-			virtual GraphElementFrame* LeftDouble (Point p, dword keyflags) { return 0;}
-			virtual GraphElementFrame* RightDown  (Point p, dword keyflags) { return 0;}
-			virtual GraphElementFrame* RightDouble(Point p, dword keyflags) { return 0;}
-			virtual GraphElementFrame* MiddleDown (Point p, dword keyflags) { return 0;}
-			virtual GraphElementFrame* MouseMove  (Point p, dword keyflags) { return 0;}
-			virtual GraphElementFrame* MouseWheel (Point p, int zdelta, dword keyflags) { return 0; };
+			virtual void LeftDown   (Point p, dword keyflags) { };
+			virtual void LeftDouble (Point p, dword keyflags) { };
+			virtual void RightDown  (Point p, dword keyflags) { };
+			virtual void RightDouble(Point p, dword keyflags) { };
+			virtual void MiddleDown (Point p, dword keyflags) { };
+			virtual void MouseMove  (Point p, dword keyflags) { };
+			virtual void MouseWheel (Point p, int zdelta, dword keyflags) { };
 			virtual Image  CursorImage(Point p, dword keyflags) { return GraphDrawImg::CROSS(); }
 			
 			virtual void FitToData(FitToDataStrategy fitStrategy) {}

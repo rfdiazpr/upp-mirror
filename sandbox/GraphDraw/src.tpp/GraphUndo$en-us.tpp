@@ -15,10 +15,11 @@ topic "GraphUndo";
 [s4;%- &]
 [s1;:GraphUndo`:`:class:%- [@(0.0.255)3 class][3 _][*3 GraphUndo]&]
 [s2; Manages UNDO/REDO stacks storing [%-^topic`:`/`/GraphDraw`/src`/GraphUndo`$en`-us`#GraphUndoData`:`:class^ G
-raphUndoData].&]
+raphUndoData] objects.&]
 [s2; &]
-[s2; It also tests the time when an undo action is stored in order 
-to merge undo actions if they are very close in time.&]
+[s2; It also monitors the duration between the addition two Undo 
+actions in order to merge undo actions if they are very close 
+in time : T < 500ms .&]
 [s0;%- &]
 [ {{10000F(128)G(128)@1 [s0; [* Member List]]}}&]
 [s0;%- &]
@@ -64,17 +65,6 @@ when executed.&]
 [s5;:GraphUndoData`:`:redoAction:%- [_^Callback^ Callback]_[* redoAction]&]
 [s2; [@(128.0.255) Restores ][*@(128.0.255) next ][@(128.0.255) state] 
 when executed.&]
-[s3;%- &]
-[s4;%- &]
-[s5;:GraphUndoData`:`:`_actionRequestTime:%- [_^Time^ Time]_[* `_actionRequestTime]&]
-[s2; Time when the action was requested by user (does not include 
-the time spent to execute the action).&]
-[s2; Used to manage Undo merging.&]
-[s3;%- &]
-[s4;%- &]
-[s5;:GraphUndoData`:`:`_actionApplyEndTime:%- [_^Time^ Time]_[* `_actionApplyEndTime]&]
-[s2;%- [%% `= ][* `_actionRequestTime `+ `'action execute duration`']&]
-[s2; Used to manage Undo merging.&]
 [s3;%- &]
 [ {{10000F(128)G(128)@1 [s0; [* Public Method List]]}}&]
 [s4;%- &]

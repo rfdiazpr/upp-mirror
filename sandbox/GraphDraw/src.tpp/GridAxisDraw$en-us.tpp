@@ -12,23 +12,53 @@ topic "GridAxisDraw";
 [{_}%EN-US 
 [s0;*@7;4 &]
 [ {{10000@(113.42.0) [s0; [*@7;4 Title]]}}&]
+[s1;:noref:%- [@(0.0.255)3 template][3 _<][@(0.0.255)3 class][3 _][*@4;3 TYPES][3 _>]&]
+[s1;:GridAxisDraw`:`:class:%- [@(0.0.255) class]_[* GridAxisDraw]_:_[@(0.0.255) public]_[*@3 C
+RTPGraphElementFrame]<_[* GridAxisDraw]<[*@4 TYPES]>_>_&]
+[s2; &]
+[s3;%- &]
 [s0;i448;a25;kKO9;@(0.0.255)%- &]
 [ {{10000F(128)G(128)@1 [s0; [* Function List]]}}&]
 [s0;i448;a25;kKO9;:noref:@(0.0.255)%- &]
 [ {{10000F(128)G(128)@1 [s0; [* Public Method List]]}}&]
 [s4;%- &]
-[s5;:GridAxisDraw`:`:AutoSize`(double`):%- [@(0.0.255) virtual ][_^GridAxisDraw`:`:CLASSNAME^ C
-LASSNAME][@(0.0.255) `&]_[* AutoSize](_[@(0.0.255) double]_[*@3 stepValue])&]
+[s5;:GridAxisDraw`:`:FitToData`(FitToDataStrategy`):%- [@(0.0.255) virtual] 
+[@(0.0.255) void]_[* FitToData](FitToDataStrategy_[*@3 fitStrategy])&]
+[s2;  [%-*@3 fitStrategy] .&]
 [s2; Resizes the axis min/max value in order to see all the data 
 linked to this axis&]
-[s2;  [%-*@3 stepValue] : step value used to increment size ( intended 
-to keep valid boundaries ).&]
 [s3; &]
-[s4;%- &]
-[s5;:GridAxisDraw`:`:AutoSize`(`):%- [@(0.0.255) virtual] [@(0.0.255) void]_[* AutoSize]()&]
-[s2; Resizes the axis min/max value in order to see all the data 
-linked to this axis&]
-[s3;%- &]
+[s4; &]
+[s5;:GridAxisDraw`:`:Update`(`):%- [@(0.0.255) virtual] [@(0.0.255) void]_[* Update]()&]
+[s2; &]
+[s3; &]
+[s4; &]
+[s5;:GridAxisDraw`:`:SetElementPos`(ElementPosition`):%- [@(0.0.255) virtual] 
+[_^GridAxisDraw`:`:CLASSNAME^ CLASSNAME][@(0.0.255) `&]_[* SetElementPos](ElementPositi
+on_[*@3 v])&]
+[s2;  [%-*@3 v] .&]
+[s3; &]
+[s4; &]
+[s5;:GridAxisDraw`:`:GetGridStepManager`(`):%- [_^GridAxisDraw`:`:TypeGridStepManager^ T
+ypeGridStepManager][@(0.0.255) `&]_[* GetGridStepManager]()&]
+[s2; &]
+[s3; &]
+[s4; &]
+[s5;:GridAxisDraw`:`:GetCoordConverter`(`):%- [_^GridAxisDraw`:`:TypeCoordConverter^ Ty
+peCoordConverter][@(0.0.255) `&]_[* GetCoordConverter]()&]
+[s2; &]
+[s3; &]
+[s4; &]
+[s5;:GridAxisDraw`:`:CreateGridStepManager`(`):%- [@(0.0.255) template]_<[@(0.0.255) clas
+s]_[*@4 T]>_[*@4 T][@(0.0.255) `&]_[* CreateGridStepManager]()&]
+[s2; &]
+[s3; &]
 [s0; &]
 [ {{10000F(128)G(128)@1 [s0; [* Constructor detail]]}}&]
+[s4;%- &]
+[s5;:GridAxisDraw`:`:GridAxisDraw`(GridAxisDraw`:`:TypeCoordConverter`&`):%- [* GridAxi
+sDraw]([_^GridAxisDraw`:`:TypeCoordConverter^ TypeCoordConverter][@(0.0.255) `&]_[*@3 c
+oordConv])&]
+[s2;  [%-*@3 coordConv] .&]
+[s3; &]
 [s0; ]]

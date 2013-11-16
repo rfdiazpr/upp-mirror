@@ -74,17 +74,27 @@ void GraphDraw_test::FormatAsTime(double value, String& output, double range) {
 	output = Format("%d/%d/%d", time.day, time.month, time.year);
 }
 
-typedef DynamicMarkerCtrl< MyGraphCtrl::Types, GraphDraw_ns::MarkerElement< MyGraphCtrl::Types > >  MarkerElementType;
+void GraphDraw_test::onMarkerMoveCBK( const GraphDraw_ns::MarkerPosList& markers, int ID )
+{
+	m1Pos.SetData(markers.Get(1).GetPos());
+	m2Pos.SetData(markers.Get(2).GetPos());
+	mDelta.SetData(markers.Get(1).GetPos() - markers.Get(2).GetPos());
+}
+
 
 GraphDraw_test::GraphDraw_test()
 {
 	CtrlLayout(*this, "Window title");
 
-	// ================ G1 ================
+	// ====================================
+	//                 G1
+	// ====================================
 	points << Pointf(0.5,1) << Pointf(1, 3.5)<< Pointf(2,1.8)<< Pointf(4, 3)<< Pointf(5.5, 2.5) << Pointf(6,7) << Pointf(7, 9)<< Pointf(8,10)<< Pointf(10, 15)<< Pointf(15, 15);
 	g1.AddSeries(points).PlotStyle<StaggeredSeriesPlot>();
 
-	// ================ G3 ================
+	// ====================================
+	//                 G3
+	// ====================================
 	double y;
 	for (int t = 0; t < 100000; ++t) {
 		y = 20.0*sin(2.0*M_PI*t/100000.0);
@@ -98,19 +108,23 @@ GraphDraw_test::GraphDraw_test()
 	g3.SetPlotBackgroundImage(GraphCtrl_testImg::PLOT_BCKGND() );
 	g3.GetLegendElement().SetBackgndStyle(GraphCtrl_testImg::LEGEND_BACKGND());
 	MarkerElementType& g3_markerElem = g3.CreateElement1< MarkerElementType, TOP_OF_GRAPH>(30, 0, g3.GetXCoordConverter() );
-	SmartTextTickMark& sttmg3_1 = g3_markerElem.AddMarker<SmartTextTickMark>(25000);
+	SmartTextTickMark& sttmg3_1 = g3_markerElem.AddMarker<SmartTextTickMark>(1, 25000);
 		sttmg3_1.SetText("\1[ [ [*@6;1  3 ]]]");
 		sttmg3_1.SetBckgndImage(GraphCtrl_testImg::BACKGND());
 
-	// ================ G4 ================
+	// ====================================
+	//                 G4
+	// ====================================
 	g4.CreateElement2<ExclusionAreaDraw<MyGraphCtrl::Types>, OVER_GRAPH>(0, 0, g4.GetXCoordConverter(), g4.GetYCoordConverter() );
 	//g4.CreateElement1<GraphDraw_ns::MarkerElement<MyGraphCtrl::Types>, TOP_OF_GRAPH>(20, 0, g4.GetXCoordConverter() );
 	MarkerElementType& markerElem = g4.CreateElement1< MarkerElementType, TOP_OF_GRAPH>(30, 0, g4.GetXCoordConverter() );
+	markerElem.whenMarkerMove = THISBACK(onMarkerMoveCBK);
 
-	SmartTextTickMark& sttmg4_1 = markerElem.AddMarker<SmartTextTickMark>(3.5);
+	SmartTextTickMark& sttmg4_1 = markerElem.AddMarker<SmartTextTickMark>(1, 3.5);
 		sttmg4_1.SetText("\1[ [ [*@6;1  1 ]]]");
 		sttmg4_1.SetBckgndImage(GraphCtrl_testImg::BACKGND2());
-	SmartTextTickMark& sttmg4_2 = markerElem.AddMarker<SmartTextTickMark>(8.5);
+	
+	SmartTextTickMark& sttmg4_2 = markerElem.AddMarker<SmartTextTickMark>(2, 8.5);
 		sttmg4_2.SetText("\1[ [ [*@6;1  2 ]]]");
 		sttmg4_2.SetBckgndImage(GraphCtrl_testImg::BACKGND());
 	
@@ -123,18 +137,24 @@ GraphDraw_test::GraphDraw_test()
 	g4.SetPlotBackgroundImage(GraphCtrl_testImg::PLOT_BCKGND() );
 	g4.GetLegendElement().SetBackgndStyle(GraphCtrl_testImg::LEGEND_BACKGND3());
 	g4.GetLegendElement().SetElementWidth(28);
+	
 
+	// ====================================
+	//                 G5
+	// ====================================
 	MarkerElementType& markerElemG5_1 = g5.CreateElement1< MarkerElementType, TOP_OF_GRAPH >(60, 0, g5.GetXCoordConverter() );
-	markerElemG5_1.AddMarker<SmartTextTickMark>(3.8).SetText("\1[ [ [@6$(255.255.192)2 @@image:200&200€„À€À€€€€€€€€€€ø§œíÛÁ’Â Œ…Ğâİ½îº‹­†ä™‡–«ÉÏŒ›ûƒ¼è¢›ëòå•ÒÒ®ÆŸï­è§ŸşúéÇ§ŸşüÅ¿à®ïŞ“‡³ĞÅ—€şÎ«ü×ùù­ÿûÙãíùÙÒ¾ÈÆºÖ„Úßæµ…ÜşÃõ÷ÎÚï‹Øä¼öÏœ¯˜ÔÁø¿ñ—åüõ£öã¾ÓüÈ¾ŒĞŞ³öÈşı©¢ù½ûÿ“úß›Úçô¤á÷Ë½Ê¶¤ÿº€ÓóÓıÒİô½½£ş°è§ÚÿºŸñĞŸßù¿ÕÆÿÖçÉ­ÒÏÿªşÔêùÁ¿ı«ú­Ø™è™úéßİ·ÿ‹ç¢¦©ŒışŞÎø­„ğ°ëöã†ÓıÒŸæÊù­à¿œ¼¤üÁß««ûüÈŒ¢û÷˜‡¬şü¨ÿ¯®›ÑŞ£²ÿ½ËÙ™•ıÖŒæ²ø­™ ‹ş£µıççÁÿĞæ†£şé¼ä¼ûÁí£ıÚŒõ¶‚÷³ı‡Ğò¯¤ã™¼ıÍµÓÎı ÿàû¢Ÿşúé§¿ËÜÿßä»–«©Ö—‰¨ò]]]");
+	markerElemG5_1.AddMarker<SmartTextTickMark>(1, 3.8).SetText("\1[ [ [@6$(255.255.192)2 @@image:200&200€„À€À€€€€€€€€€€ø§œíÛÁ’Â Œ…Ğâİ½îº‹­†ä™‡–«ÉÏŒ›ûƒ¼è¢›ëòå•ÒÒ®ÆŸï­è§ŸşúéÇ§ŸşüÅ¿à®ïŞ“‡³ĞÅ—€şÎ«ü×ùù­ÿûÙãíùÙÒ¾ÈÆºÖ„Úßæµ…ÜşÃõ÷ÎÚï‹Øä¼öÏœ¯˜ÔÁø¿ñ—åüõ£öã¾ÓüÈ¾ŒĞŞ³öÈşı©¢ù½ûÿ“úß›Úçô¤á÷Ë½Ê¶¤ÿº€ÓóÓıÒİô½½£ş°è§ÚÿºŸñĞŸßù¿ÕÆÿÖçÉ­ÒÏÿªşÔêùÁ¿ı«ú­Ø™è™úéßİ·ÿ‹ç¢¦©ŒışŞÎø­„ğ°ëöã†ÓıÒŸæÊù­à¿œ¼¤üÁß««ûüÈŒ¢û÷˜‡¬şü¨ÿ¯®›ÑŞ£²ÿ½ËÙ™•ıÖŒæ²ø­™ ‹ş£µıççÁÿĞæ†£şé¼ä¼ûÁí£ıÚŒõ¶‚÷³ı‡Ğò¯¤ã™¼ıÍµÓÎı ÿàû¢Ÿşúé§¿ËÜÿßä»–«©Ö—‰¨ò]]]");
+	
 	MarkerElementType& markerElemG5_2 = g5.CreateElement1< MarkerElementType, RIGHT_OF_GRAPH >(30, 0, g5.GetYCoordConverter() );
-	markerElemG5_2.AddMarker<SmartTextTickMark>(3.8).SetText("\1[ [ [*_@6$(28.255.150)+59 M2]]]");
+	markerElemG5_2.AddMarker<SmartTextTickMark>(2, 3.8).SetText("\1[ [ [*_@6$(28.255.150)+59 M2]]]");
+	
 	MarkerElementType& markerElemG5_3 = g5.CreateElement1< MarkerElementType, BOTTOM_OF_GRAPH >(30, 0, g5.GetXCoordConverter() );
-	SmartTextTickMark& sttm = markerElemG5_3.AddMarker<SmartTextTickMark>(3.8);
+	SmartTextTickMark& sttm = markerElemG5_3.AddMarker<SmartTextTickMark>(3, 3.8);
 		sttm.SetText("\1[ [ [@6$(255.255.192)2 `-`-][*_$(255.255.192)2 M3][@6$(255.255.192)2 `-`-]]]");
 		sttm.SetBckgndImage(GraphCtrl_testImg::BACKGND());
 	
 	MarkerElementType& markerElemG5_4 = g5.CreateElement1< MarkerElementType, LEFT_OF_GRAPH >(30, 0, g5.GetYCoordConverter() );
-	SmartTextTickMark& sttm4 = markerElemG5_4.AddMarker<SmartTextTickMark>(3.8);
+	SmartTextTickMark& sttm4 = markerElemG5_4.AddMarker<SmartTextTickMark>(4, 3.8);
 		sttm4.SetText("---M4---");
 		sttm4.SetBckgndImage(GraphCtrl_testImg::BACKGND());
 

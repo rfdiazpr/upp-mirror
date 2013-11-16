@@ -71,14 +71,14 @@ namespace GraphDraw_ns
 	//
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------
 
-	typedef enum {
+	 typedef enum {
 		MD_DRAW		   = -1,
 		MD_ANTIALIASED = MODE_ANTIALIASED,
 		MD_NOAA        = MODE_NOAA,
 		MD_SUBPIXEL    = MODE_SUBPIXEL
-	} DrawMode;
+	} DrawMode_;
 
-
+	typedef DrawMode_ DrawMode;
 
 	// ============================
 	// CRTP_EmptyGraphDraw   CLASS
@@ -461,13 +461,14 @@ namespace GraphDraw_ns
 			AddElement<T, POS_OF_GRAPH>(*e, stackPrio);
 			return *e;
 		}
+		/*
 		template<class T>	T& CreateLeftElement(int elementWidth, int stackPrio)   { return CreateElement<T, LEFT_OF_GRAPH>(elementWidth, stackPrio); }
 		template<class T>	T& CreateRightElement(int elementWidth, int stackPrio)  { return CreateElement<T, RIGHT_OF_GRAPH>(elementWidth, stackPrio); }
 		template<class T>	T& CreateTopElement(int elementWidth, int stackPrio)    { return CreateElement<T, TOP_OF_GRAPH>(elementWidth, stackPrio); }
 		template<class T>	T& CreateBottomElement(int elementWidth, int stackPrio) { return CreateElement<T, BOTTOM_OF_GRAPH>(elementWidth, stackPrio); }
 		template<class T>	T& CreateFloatElement(int stackPrio)                     { return CreateElement<T, OVER_GRAPH>(0, stackPrio); }
 
-
+*/
 		template<class T, int POS_OF_GRAPH, class P1>
 		T& CreateElement1(int elementWidth, int stackPrio, P1& p1 ) {
 			T* e = new T(p1);
@@ -477,12 +478,13 @@ namespace GraphDraw_ns
 			AddElement<T, POS_OF_GRAPH>(*e, stackPrio);
 			return *e;
 		}
+		/*
 		template<class T, class P1>	T& CreateLeftElement1(int elementWidth, int stackPrio, P1& p1)   { return CreateElement1<T, LEFT_OF_GRAPH>(elementWidth, stackPrio, p1); }
 		template<class T, class P1>	T& CreateRightElement1(int elementWidth, int stackPrio, P1& p1)  { return CreateElement1<T, RIGHT_OF_GRAPH>(elementWidth, stackPrio, p1); }
 		template<class T, class P1>	T& CreateTopElement1(int elementWidth, int stackPrio, P1& p1)    { return CreateElement1<T, TOP_OF_GRAPH>(elementWidth, stackPrio, p1); }
 		template<class T, class P1>	T& CreateBottomElement1(int elementWidth, int stackPrio, P1& p1) { return CreateElement1<T, BOTTOM_OF_GRAPH>(elementWidth, stackPrio, p1); }
 		template<class T, class P1>	T& CreateFloatElement1(int stackPrio, P1& p1)                     { return CreateElement1<T, OVER_GRAPH>(0, stackPrio, p1); }
-
+*/
 
 		template<class T, int POS_OF_GRAPH, class P1, class P2>
 		T& CreateElement2(int elementWidth, int stackPrio, P1& p1, P2& p2 ) {
@@ -493,12 +495,13 @@ namespace GraphDraw_ns
 			AddElement<T, POS_OF_GRAPH>(*e, stackPrio);
 			return *e;
 		}
+		/*
 		template<class T, class P1, class P2>	T& CreateLeftElement2(int elementWidth, int stackPrio, P1& p1, P2& p2)   { return CreateElement2<T, LEFT_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
 		template<class T, class P1, class P2>	T& CreateRightElement2(int elementWidth, int stackPrio, P1& p1, P2& p2)  { return CreateElement2<T, RIGHT_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
 		template<class T, class P1, class P2>	T& CreateTopElement2(int elementWidth, int stackPrio, P1& p1, P2& p2)    { return CreateElement2<T, TOP_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
 		template<class T, class P1, class P2>	T& CreateBottomElement2(int elementWidth, int stackPrio, P1& p1, P2& p2) { return CreateElement2<T, BOTTOM_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
 		template<class T, class P1, class P2>	T& CreateFloatElement2(int stackPrio, P1& p1, P2& p2)                     { return CreateElement2<T, OVER_GRAPH>(0, stackPrio, p1, p2); }
-
+*/
 
 		// Refresh called from child
 		virtual void RefreshFromChild( RefreshStrategy doFastPaint ) {
@@ -741,13 +744,14 @@ namespace GraphDraw_ns
 				// ------------
 				if ( !_ctrlBckgndStyle.IsNull() ) ChPaint(bp, _ctrlRect, _ctrlBckgndStyle );
 	
-				// --------------------------------------
-				// BEGIN paint in PLOT AREA
-				// --------------------------------------
 				if ( !_plotBckgndStyle.IsNull()) ChPaint(bp, _plotRect, _plotBckgndStyle );
 				_CtrlBackgroundImage = ib;
 			}
 			dw.DrawImage(0, 0, _CtrlBackgroundImage );
+
+			// --------------------------------------
+			// BEGIN paint in PLOT AREA
+			// --------------------------------------
 			dw.Clipoff(_plotRect.left, _plotRect.top, _plotRect.GetWidth(), _plotRect.GetHeight());
 
 			// --------------

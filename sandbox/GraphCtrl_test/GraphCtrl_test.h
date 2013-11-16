@@ -17,6 +17,8 @@ using namespace Upp;
 
 typedef XYY2LT_GraphCtrl MyGraphCtrl;
 
+typedef DynamicMarkerCtrl< MyGraphCtrl::Types, GraphDraw_ns::MarkerElement< MyGraphCtrl::Types > >  MarkerElementType;
+
 class GraphDraw_test : public WithGraphDraw_testLayout<TopWindow> {
 public:
 	typedef GraphDraw_test CLASSNAME;
@@ -29,6 +31,10 @@ public:
 	GraphDraw_test();
 	
 	void FormatAsTime(double value, String& output, double range);
+	
+//	typedef ArrayMap<int, MarkerElementData> MarkerPosList;
+//	typedef Callback2< const MarkerPosList&, int> TypeMarkerMoveCbk;
+	void onMarkerMoveCBK( const GraphDraw_ns::MarkerPosList& markers, int ID);
 
 	void DoReport(void);
 };

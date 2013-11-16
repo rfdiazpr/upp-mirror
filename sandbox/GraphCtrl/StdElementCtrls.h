@@ -199,7 +199,7 @@ class StdLabelCtrl : public  CRTPGraphElementCtrl_Base< TYPES, LABELDRAW, StdLab
 
 template<class TYPES, class MARKERDRAW>
 class DynamicMarkerCtrl : public  CRTPGraphElementCtrl_Base< TYPES, MARKERDRAW, DynamicMarkerCtrl<TYPES, MARKERDRAW> > {
-	public:
+	protected:
 	typedef DynamicMarkerCtrl<TYPES, MARKERDRAW>  CLASSNAME;
 	typedef CRTPGraphElementCtrl_Base< TYPES, MARKERDRAW, CLASSNAME > _B;
 	typedef TYPES  Types;
@@ -207,6 +207,12 @@ class DynamicMarkerCtrl : public  CRTPGraphElementCtrl_Base< TYPES, MARKERDRAW, 
 	GraphDraw_ns::TypeScreenCoord selectOffset;
 	
 	GraphDraw_ns::MarkerPosList::Iterator currMarkerPos; // marker selected for MOVE action
+
+	public:
+	GraphDraw_ns::TypeMarkerMoveCbk whenMarkerMove;
+	GraphDraw_ns::TypeMarkerMoveCbk whenMarkerMoveStart;
+	GraphDraw_ns::TypeMarkerMoveCbk whenMarkerMoveEnd;
+		
 
 	DynamicMarkerCtrl(typename TYPES::TypeCoordConverter& coordconv)
 	: _B(coordconv)
@@ -223,12 +229,13 @@ class DynamicMarkerCtrl : public  CRTPGraphElementCtrl_Base< TYPES, MARKERDRAW, 
 		{
 			if (_B::IsVertical() ) {
 				// Vertical drag
-				(*currMarkerPos).pos =  _B::_coordConverter.toGraph(p.y+selectOffset);
+				(*currMarkerPos) =  _B::_coordConverter.toGraph(p.y+selectOffset);
 			} else {
 				// Horizontal drag
-				(*currMarkerPos).pos =  _B::_coordConverter.toGraph(p.x+selectOffset);
+				(*currMarkerPos) =  _B::_coordConverter.toGraph(p.x+selectOffset);
 			}
 			prevMousePoint = p;
+			whenMarkerMove(_B::markers, currMarkerPos->GetID());
 			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_KEEP_DATA );
 		}
 	}
@@ -241,46 +248,53 @@ class DynamicMarkerCtrl : public  CRTPGraphElementCtrl_Base< TYPES, MARKERDRAW, 
 	virtual void MouseMove (Point p, dword keyflags) {
 		if (keyflags & K_MOUSELEFT)
 		{
-			GraphDraw_ns::MarkerPosList::Iterator iter = _B::markers.Begin();
-			GraphDraw_ns::MarkerPosList::ConstIterator endIter = _B::markers.End();
-
+			GraphDraw_ns::MarkerPosList::Iterator iter = _B::markers.End();
+			GraphDraw_ns::MarkerPosList::ConstIterator endIter = _B::markers.Begin();
 			while ( iter != endIter ) {
+				--iter;
 				GraphDraw_ns::MarkerElementData& markerData = *iter;
-				if (_B::_coordConverter.IsInGraphVisibleRange(markerData.pos)) {
+				if (_B::_coordConverter.IsInGraphVisibleRange(markerData)) {
 					switch( _B::GetElementPos() ) {
 						case GraphDraw_ns::LEFT_OF_GRAPH:
-							if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(),  _B::GetElementPos(), _B::GetElementWidth(), _B::_coordConverter.toScreen(markerData.pos) )) {
+							if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(),  _B::GetElementPos(), _B::GetElementWidth(), _B::_coordConverter.toScreen(markerData) )) {
 								currMarkerPos = iter;
-								selectOffset = _B::_coordConverter.toScreen(markerData.pos) - p.y;
+								selectOffset = _B::_coordConverter.toScreen(markerData) - p.y;
+								whenMarkerMoveStart(_B::markers, currMarkerPos->GetID());
 								_B::_parent->DoLocalLoop( THISBACK( _MoveMarker ) );
+								whenMarkerMoveEnd(_B::markers, currMarkerPos->GetID());
 							}
 							break;
 						case GraphDraw_ns::BOTTOM_OF_GRAPH:
-							if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), _B::_coordConverter.toScreen(markerData.pos), 0)) {
+							if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), _B::_coordConverter.toScreen(markerData), 0)) {
 								currMarkerPos = iter;
-								selectOffset = _B::_coordConverter.toScreen(markerData.pos) - p.x;
+								selectOffset = _B::_coordConverter.toScreen(markerData) - p.x;
+								whenMarkerMoveStart(_B::markers, currMarkerPos->GetID());
 								_B::_parent->DoLocalLoop( THISBACK( _MoveMarker ) );
+								whenMarkerMoveEnd(_B::markers, currMarkerPos->GetID());
 							}
 							break;
 						case GraphDraw_ns::TOP_OF_GRAPH:
-							if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(),  _B::_coordConverter.toScreen(markerData.pos), _B::GetElementWidth() )) {
+							if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(),  _B::_coordConverter.toScreen(markerData), _B::GetElementWidth() )) {
 								currMarkerPos = iter;
-								selectOffset = _B::_coordConverter.toScreen(markerData.pos) - p.x;
+								selectOffset = _B::_coordConverter.toScreen(markerData) - p.x;
+								whenMarkerMoveStart(_B::markers, currMarkerPos->GetID());
 								_B::_parent->DoLocalLoop( THISBACK( _MoveMarker ) );
+								whenMarkerMoveEnd(_B::markers, currMarkerPos->GetID());
 							}
 							break;
 						case GraphDraw_ns::RIGHT_OF_GRAPH:
-							if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), 0, _B::_coordConverter.toScreen(markerData.pos) )) {
+							if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), 0, _B::_coordConverter.toScreen(markerData) )) {
 								currMarkerPos = iter;
-								selectOffset = _B::_coordConverter.toScreen(markerData.pos) - p.y;
+								selectOffset = _B::_coordConverter.toScreen(markerData) - p.y;
+								whenMarkerMoveStart(_B::markers, currMarkerPos->GetID());
 								_B::_parent->DoLocalLoop( THISBACK( _MoveMarker ) );
+								whenMarkerMoveEnd(_B::markers, currMarkerPos->GetID());
 							}
 							break;
 						case GraphDraw_ns::OVER_GRAPH:
 							break;
 					}
 				}
-				++iter;
 			}
 
 
@@ -298,19 +312,19 @@ class DynamicMarkerCtrl : public  CRTPGraphElementCtrl_Base< TYPES, MARKERDRAW, 
 
 		while ( iter != endIter ) {
 			GraphDraw_ns::MarkerElementData& markerData = *iter;
-			if (_B::_coordConverter.IsInGraphVisibleRange(markerData.pos)) {
+			if (_B::_coordConverter.IsInGraphVisibleRange(markerData)) {
 				switch( _B::GetElementPos() ) {
 					case GraphDraw_ns::LEFT_OF_GRAPH:
-						if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), _B::GetElementWidth(), _B::_coordConverter.toScreen(markerData.pos) ) ) return GraphCtrlImg::SCROLL_Y();
+						if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), _B::GetElementWidth(), _B::_coordConverter.toScreen(markerData) ) ) return GraphCtrlImg::SCROLL_Y();
 						break;
 					case GraphDraw_ns::BOTTOM_OF_GRAPH:
-						if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), _B::_coordConverter.toScreen(markerData.pos), 0 )) return GraphCtrlImg::SCROLL_X();
+						if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), _B::_coordConverter.toScreen(markerData), 0 )) return GraphCtrlImg::SCROLL_X();
 						break;
 					case GraphDraw_ns::TOP_OF_GRAPH:
-						if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), _B::_coordConverter.toScreen(markerData.pos), _B::GetElementWidth() )) return GraphCtrlImg::SCROLL_X();
+						if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), _B::_coordConverter.toScreen(markerData), _B::GetElementWidth() )) return GraphCtrlImg::SCROLL_X();
 						break;
 					case GraphDraw_ns::RIGHT_OF_GRAPH:
-						if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), 0, _B::_coordConverter.toScreen(markerData.pos) ) ) return GraphCtrlImg::SCROLL_Y();
+						if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), 0, _B::_coordConverter.toScreen(markerData) ) ) return GraphCtrlImg::SCROLL_Y();
 						break;
 					case GraphDraw_ns::OVER_GRAPH:
 						return _B::CursorImage(p,keyflags);

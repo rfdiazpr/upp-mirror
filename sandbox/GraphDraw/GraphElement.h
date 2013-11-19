@@ -17,7 +17,7 @@ namespace GraphDraw_ns
 		RIGHT_OF_GRAPH = 0x002,
 		TOP_OF_GRAPH   = 0x010,
 		BOTTOM_OF_GRAPH= 0x020,
-		OVER_GRAPH     = 0x100
+		FLOAT_OVER_GRAPH     = 0x100
 	} ElementPosition;
 
 	enum {
@@ -61,9 +61,9 @@ namespace GraphDraw_ns
 
 
 	// ============================
-	//    GraphElementFrame   CLASS
+	//    GraphElement   CLASS
 	// ============================
-	class GraphElementFrame {
+	class GraphElement {
 		public:
 			Rect            _frame;     // Frame on which element is painted (absolute position in complete ctrl area)
 			Rect            _floatFrame;// Frame size used as SCALE=1 reference frame  when element is FLOATING
@@ -78,19 +78,19 @@ namespace GraphDraw_ns
 		public:
 			GraphElementParent* _parent;
 
-			GraphElementFrame()
+			GraphElement()
 			: _frame( 0, 0, 5, 5 )
 			, _floatFrame(_frame)
 			, _width(5)
 			, _pos(LEFT_OF_GRAPH)
-			, _allowedPosMask(LEFT_OF_GRAPH | RIGHT_OF_GRAPH| BOTTOM_OF_GRAPH | TOP_OF_GRAPH | OVER_GRAPH )
+			, _allowedPosMask(LEFT_OF_GRAPH | RIGHT_OF_GRAPH| BOTTOM_OF_GRAPH | TOP_OF_GRAPH | FLOAT_OVER_GRAPH )
 			, _hide(false)
 			, _stackingPriority(100)
 			, _name("NAME NOT SET")
 			, _parent(0)
 			{}
 			
-			GraphElementFrame(GraphElementFrame* p)
+			GraphElement(GraphElement* p)
 			: _frame( 0, 0, 5, 5 )
 			, _floatFrame(p->_floatFrame)
 			, _width(p->_width)
@@ -119,7 +119,7 @@ namespace GraphDraw_ns
 				}
 			}
 
-			virtual ~GraphElementFrame() {}
+			virtual ~GraphElement() {}
 
 			inline void SetName(const char* name) { _name = name; };
 			virtual bool Contains(Point p) const { return _frame.Contains(p); }
@@ -141,8 +141,8 @@ namespace GraphDraw_ns
 			inline bool IsHidden() const { return _hide; }
 			inline void Hide( bool v=true ) { _hide = v; }
 			
-			bool operator<(const GraphElementFrame& b) const { return (_stackingPriority < b._stackingPriority); };
-			bool operator>(const GraphElementFrame& b) const { return (_stackingPriority > b._stackingPriority); };
+			bool operator<(const GraphElement& b) const { return (_stackingPriority < b._stackingPriority); };
+			bool operator>(const GraphElement& b) const { return (_stackingPriority > b._stackingPriority); };
 
             // Paint element somewhere inside the graph area as a FLOATING element (legend, ...)
 			// Offset and clipping are set with the '_floatFrame' settings
@@ -154,10 +154,11 @@ namespace GraphDraw_ns
 
 			// Paint additionnal element stuff on PLOT AREA : grids, square zones,  anything you wan't
 			// Painting zone is clipped so nothing can be drawn outside
-			virtual void PaintOnPlot(Draw& dw, int otherWidth, int scale) {}
+			virtual void PaintOnPlot_underData(Draw& dw, int otherWidth, int scale) {}
+			virtual void PaintOnPlot_overData(Draw& dw, int otherWidth, int scale) {}
 			virtual void Update() {}; // called when coordinates need update
 
-			virtual GraphElementFrame* Clone() = 0;
+			virtual GraphElement* Clone() = 0;
 
 
 			virtual void LeftDown   (Point p, dword keyflags) { };
@@ -173,14 +174,14 @@ namespace GraphDraw_ns
 
 	};
 
-	inline bool compareGraphElementFrame(const GraphElementFrame* a, const GraphElementFrame* b) { return *a < *b; }
+	inline bool compareGraphElementFrame(const GraphElement* a, const GraphElement* b) { return *a < *b; }
 
 	template<class DERIVED>
-	class CRTPGraphElementFrame : public GraphElementFrame {
+	class CRTPGraphElement : public GraphElement {
 		public:
-			CRTPGraphElementFrame() {}
-			CRTPGraphElementFrame(CRTPGraphElementFrame& p) : GraphElementFrame(p) {}
-			virtual ~CRTPGraphElementFrame() {}
+			CRTPGraphElement() {}
+			CRTPGraphElement(CRTPGraphElement& p) : GraphElement(p) {}
+			virtual ~CRTPGraphElement() {}
 
 			inline  DERIVED&  SetElementWidth(int v) { _width = v; return *static_cast<DERIVED*>(this); }
 			virtual DERIVED&  SetElementPos(ElementPosition v) { _pos = v; return *static_cast<DERIVED*>(this); }
@@ -188,12 +189,12 @@ namespace GraphDraw_ns
 	};
 
 
-	class BlankAreaElement : public CRTPGraphElementFrame< BlankAreaElement >
+	class BlankAreaElement : public CRTPGraphElement< BlankAreaElement >
 	{
 		typedef BlankAreaElement CLASSNAME;
 		public:
 			BlankAreaElement() {}
-			BlankAreaElement( BlankAreaElement& p) : CRTPGraphElementFrame< BlankAreaElement >(p) {}
+			BlankAreaElement( BlankAreaElement& p) : CRTPGraphElement< BlankAreaElement >(p) {}
 			virtual ~BlankAreaElement() {}
 			virtual void PaintElement(Draw& dw, int scale) { /* do noting */}
 			virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }

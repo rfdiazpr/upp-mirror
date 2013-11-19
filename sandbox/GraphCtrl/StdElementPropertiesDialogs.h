@@ -22,7 +22,7 @@ class ElementPropertiesDlg : public WithElementBaseLayout<TopWindow> {
 	void InitDlg(ELEMENT& element) {
 		_B::Title(element._name);
 		elem = &element;
-		position.Add(GraphDraw_ns::OVER_GRAPH, t_("FLOAT") );
+		position.Add(GraphDraw_ns::FLOAT_OVER_GRAPH, t_("FLOAT") );
 		position.Add(GraphDraw_ns::TOP_OF_GRAPH, t_("TOP") );
 		position.Add(GraphDraw_ns::BOTTOM_OF_GRAPH, t_("BOTTOM") );
 		position.Add(GraphDraw_ns::LEFT_OF_GRAPH, t_("LEFT") );

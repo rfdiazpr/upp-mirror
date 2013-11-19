@@ -1,4 +1,4 @@
-@startuml img/GraphDraw.png
+@startuml img/ClassHierarchy_1.png
 
 skinparam abstractclass {
 	BackgroundColor PaleGreen
@@ -169,4 +169,5 @@ GraphDraw_ns.SeriesGroup o-right-> class MarkPlot
 GraphDraw_ns.SeriesGroup o-right-> class SeriesPlot
 
 @enduml
+
 

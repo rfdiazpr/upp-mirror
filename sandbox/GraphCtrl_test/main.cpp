@@ -21,12 +21,12 @@ using namespace GraphDraw_ns;
 
 
 template<class TYPES>
-class ExclusionAreaDraw : public CRTPGraphElementFrame< ExclusionAreaDraw<TYPES> >
+class ExclusionAreaDraw : public CRTPGraphElement< ExclusionAreaDraw<TYPES> >
 {
 	private:
 	typename TYPES::TypeCoordConverter& _xConverter;
 	typename TYPES::TypeCoordConverter& _yConverter;
-	typedef  CRTPGraphElementFrame< ExclusionAreaDraw<TYPES> > _B;
+	typedef  CRTPGraphElement< ExclusionAreaDraw<TYPES> > _B;
 
 	public:
 	typedef ExclusionAreaDraw<TYPES>   CLASSNAME;
@@ -37,7 +37,7 @@ class ExclusionAreaDraw : public CRTPGraphElementFrame< ExclusionAreaDraw<TYPES>
 
 
 	virtual void PaintElement(Draw& dw, int scale) { /* do noting */}
-	virtual void PaintOnPlot(Draw& dw, int otherWidth, int scale)
+	virtual void PaintOnPlot_underData(Draw& dw, int otherWidth, int scale)
 	{
 		int xMin = _xConverter.getScreenMin();
 		int xMax = _xConverter.getScreenMax();
@@ -115,7 +115,7 @@ GraphDraw_test::GraphDraw_test()
 	// ====================================
 	//                 G4
 	// ====================================
-	g4.CreateElement2<ExclusionAreaDraw<MyGraphCtrl::Types>, OVER_GRAPH>(0, 0, g4.GetXCoordConverter(), g4.GetYCoordConverter() );
+	g4.CreateElement2<ExclusionAreaDraw<MyGraphCtrl::Types>, FLOAT_OVER_GRAPH>(0, 0, g4.GetXCoordConverter(), g4.GetYCoordConverter() );
 	//g4.CreateElement1<GraphDraw_ns::MarkerElement<MyGraphCtrl::Types>, TOP_OF_GRAPH>(20, 0, g4.GetXCoordConverter() );
 	MarkerElementType& markerElem = g4.CreateElement1< MarkerElementType, TOP_OF_GRAPH>(30, 0, g4.GetXCoordConverter() );
 	markerElem.whenMarkerMove = THISBACK(onMarkerMoveCBK);

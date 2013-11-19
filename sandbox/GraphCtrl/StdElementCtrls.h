@@ -187,7 +187,7 @@ class StdLabelCtrl : public  CRTPGraphElementCtrl_Base< TYPES, LABELDRAW, StdLab
 	typedef TYPES  Types;
 	
 	StdLabelCtrl() {
-		_B::DisablePos(GraphDraw_ns::OVER_GRAPH);
+		_B::DisablePos(GraphDraw_ns::FLOAT_OVER_GRAPH);
 	}
 	
 	virtual void OpenPropertiesDlg(void) {
@@ -291,7 +291,7 @@ class DynamicMarkerCtrl : public  CRTPGraphElementCtrl_Base< TYPES, MARKERDRAW, 
 								whenMarkerMoveEnd(_B::markers, currMarkerPos->GetID());
 							}
 							break;
-						case GraphDraw_ns::OVER_GRAPH:
+						case GraphDraw_ns::FLOAT_OVER_GRAPH:
 							break;
 					}
 				}
@@ -326,7 +326,7 @@ class DynamicMarkerCtrl : public  CRTPGraphElementCtrl_Base< TYPES, MARKERDRAW, 
 					case GraphDraw_ns::RIGHT_OF_GRAPH:
 						if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), 0, _B::_coordConverter.toScreen(markerData) ) ) return GraphCtrlImg::SCROLL_Y();
 						break;
-					case GraphDraw_ns::OVER_GRAPH:
+					case GraphDraw_ns::FLOAT_OVER_GRAPH:
 						return _B::CursorImage(p,keyflags);
 						break;
 				}

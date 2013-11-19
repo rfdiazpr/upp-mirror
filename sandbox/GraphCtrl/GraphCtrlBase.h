@@ -30,7 +30,7 @@ class GraphCtrlLooper : public LocalLoop {
 // ============================
 //    CRTP_GraphCtrl_Base   CLASS
 // ============================
-typedef GraphDraw_ns::GraphElementFrame* (GraphDraw_ns::GraphElementFrame::*mouseCallBack)(Point,dword);
+typedef GraphDraw_ns::GraphElement* (GraphDraw_ns::GraphElement::*mouseCallBack)(Point,dword);
 
 template<class TYPES, class DERIVED, template <class TYPES2, class DERIVED2> class GRAPHDRAW_BASE_CLASS >
 class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public Ctrl
@@ -351,7 +351,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 
 	virtual void LeftDown(Point p, dword keyflags) {
 		prevMousePoint = p;
-		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElementFrame::LeftDown) )
+		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElement::LeftDown) )
 		{
 			return;
 		}
@@ -375,7 +375,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	}
 
 	virtual void LeftDouble(Point p, dword keyflags) {
-		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElementFrame::LeftDouble) ) {
+		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElement::LeftDouble) ) {
 			return;
 		}
 		if ( _B::_plotRect.Contains(p) ) {
@@ -384,7 +384,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	}
 
 	virtual void RightDown(Point p, dword keyflags) {
-		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElementFrame::RightDown)) {
+		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElement::RightDown)) {
 			return;
 		}
 		if ( _B::_plotRect.Contains(p) ) {
@@ -394,7 +394,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	}
 
 	virtual void RightDouble(Point p, dword keyflags) {
-		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElementFrame::RightDouble) ) {
+		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElement::RightDouble) ) {
 			return;
 		}
 		if ( _B::_plotRect.Contains(p) ) {
@@ -404,7 +404,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	}
 
 	virtual void MiddleDown(Point p, dword keyflags) {
-		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElementFrame::MiddleDown) ) {
+		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElement::MiddleDown) ) {
 			return;
 		}
 		if ( _B::_plotRect.Contains(p) ) {
@@ -424,7 +424,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	
 	public:
 	virtual void MouseMove(Point p, dword keyflags) {
-		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElementFrame::MouseMove)) {}
+		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElement::MouseMove)) {}
 		else if ( _B::_plotRect.Contains(p) )  {
 			if ( keyflags & K_MOUSELEFT ) {
 				GraphDraw_ns::GraphUndoData undo;
@@ -453,7 +453,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	virtual Image  CursorImage(Point p, dword keyflags)
 	{
 		Image output;
-		if ( ProcessMouseCallBack<Image>(p, keyflags, &GraphDraw_ns::GraphElementFrame::CursorImage, output, GraphDrawImg::CROSS())) {
+		if ( ProcessMouseCallBack<Image>(p, keyflags, &GraphDraw_ns::GraphElement::CursorImage, output, GraphDrawImg::CROSS())) {
 			return output;
 		}
 		if ( _B::_plotRect.Contains(p) ) {

@@ -10,14 +10,14 @@ namespace GraphDraw_ns
 	// ============================
 	//    LabelElement   CLASS
 	// ============================
-	class LabelElement : public CRTPGraphElementFrame< LabelElement >
+	class LabelElement : public CRTPGraphElement< LabelElement >
 	{
 		public:
 		Upp::String _label;
 		Font        _font;
 		Color       _color;
 		Color       _bckGndcolor;
-		typedef CRTPGraphElementFrame< LabelElement >  _B;
+		typedef CRTPGraphElement< LabelElement >  _B;
 
 		public:
 		LabelElement() : _color( Blue() ), _bckGndcolor(Null) {}
@@ -54,7 +54,7 @@ namespace GraphDraw_ns
 				case RIGHT_OF_GRAPH:
 					dw.DrawText( _B::GetElementWidth()*scale/2+sz.cy/2, _B::GetFrame().GetHeight()/2-sz.cx/2 , 2700, _label, scaledFont, _color);
 					break;
-				case OVER_GRAPH:
+				case FLOAT_OVER_GRAPH:
 					break;
 			}
 		}
@@ -63,13 +63,13 @@ namespace GraphDraw_ns
 //	// ============================
 //	//    LabelElement   CLASS
 //	// ============================
-//	class RichLabelElement : public CRTPGraphElementFrame< RichLabelElement >
+//	class RichLabelElement : public CRTPGraphElement< RichLabelElement >
 //	{
 //		private:
 //		RichText    _label;
 //		Color       _bckGndcolor;
 //		typedef RichLabelElement                          CLASSANME;
-//		typedef CRTPGraphElementFrame< RichLabelElement > _B;
+//		typedef CRTPGraphElement< RichLabelElement > _B;
 //
 //		public:
 //		RichLabelElement() : _bckGndcolor(Null) {}
@@ -113,11 +113,11 @@ namespace GraphDraw_ns
 	//    LegendElement   CLASS
 	// ============================
 	template<class TYPES >
-	class LegendElement : public CRTPGraphElementFrame< LegendElement<TYPES> >
+	class LegendElement : public CRTPGraphElement< LegendElement<TYPES> >
 	{
 		public:
 		typedef LegendElement CLASSNAME;
-		typedef CRTPGraphElementFrame< LegendElement > _B;
+		typedef CRTPGraphElement< LegendElement > _B;
 		typedef typename TYPES::TypeVectorSeries TypeVectorSeries;
 
 		String _legend;
@@ -272,7 +272,7 @@ namespace GraphDraw_ns
 
 
 	template<class TYPES>
-	class MarkerElement : public CRTPGraphElementFrame< MarkerElement<TYPES> >
+	class MarkerElement : public CRTPGraphElement< MarkerElement<TYPES> >
 	{
 		public:
 		typedef typename TYPES::TypeCoordConverter   TypeCoordConverter;
@@ -281,7 +281,7 @@ namespace GraphDraw_ns
 		Color       _color;
 		Color       _bckGndcolor;
 		int         _axisWidth;
-		typedef CRTPGraphElementFrame< MarkerElement >  _B;
+		typedef CRTPGraphElement< MarkerElement >  _B;
 		typedef MarkerElement<TYPES>  CLASSNAME;
 		MarkerPosList markers;
 		
@@ -294,7 +294,7 @@ namespace GraphDraw_ns
 		, _bckGndcolor(Null)
 		, _axisWidth(2)
 		{
-			_B::DisablePos(OVER_GRAPH);
+			_B::DisablePos(FLOAT_OVER_GRAPH);
 		}
 		
 		MarkerElement(MarkerElement& p)
@@ -304,7 +304,7 @@ namespace GraphDraw_ns
 		, _bckGndcolor(p._bckGndcolor)
 		, _axisWidth(p._axisWidth)
 		{
-			_B::DisablePos(OVER_GRAPH);
+			_B::DisablePos(FLOAT_OVER_GRAPH);
 		}
 		
 		virtual ~MarkerElement() {}
@@ -398,7 +398,7 @@ namespace GraphDraw_ns
 						case RIGHT_OF_GRAPH:
 							markerData.GetTickMark().Paint(dw, _B::GetElementPos(), scale, 0, _coordConverter.toScreen(markerData), _color );
 							break;
-						case OVER_GRAPH:
+						case FLOAT_OVER_GRAPH:
 							break;
 					}
 				}
@@ -407,7 +407,7 @@ namespace GraphDraw_ns
 			}
 		}
 		
-		virtual void PaintOnPlot(Draw& dw, int otherWidth, int scale)
+		virtual void PaintOnPlot_overData(Draw& dw, int otherWidth, int scale)
 		{
 			switch( _B::GetElementPos() )
 			{
@@ -419,7 +419,7 @@ namespace GraphDraw_ns
 				case BOTTOM_OF_GRAPH:
 					PaintVLine(dw, otherWidth);
 					break;
-				case OVER_GRAPH:
+				case FLOAT_OVER_GRAPH:
 					break;
 			}
 			

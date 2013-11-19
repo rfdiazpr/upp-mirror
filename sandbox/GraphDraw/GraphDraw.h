@@ -98,8 +98,8 @@ namespace GraphDraw_ns
 
 		protected:
 		// graph elements draw around the graph
-		Vector< GraphElementFrame* >  _drawElements;
-		Vector< GraphElementFrame* >  _createdElements; // the elements in this list are owned by GrapDraw
+		Vector< GraphElement* >  _drawElements;
+		Vector< GraphElement* >  _createdElements; // the elements in this list are owned by GrapDraw
 		Vector< TypeCoordConverter* > _xConverters;
 		Vector< TypeCoordConverter* > _yConverters;
 
@@ -121,7 +121,7 @@ namespace GraphDraw_ns
 		Image     _CtrlBackgroundImage;
 		
 		// helper method
-		void AppendElementToRect(GraphElementFrame& element, Rect& fromRect, const int scale)
+		void AppendElementToRect(GraphElement& element, Rect& fromRect, const int scale)
 		{
 			Rect res = fromRect;
 			switch(element.GetElementPos()) {
@@ -145,7 +145,7 @@ namespace GraphDraw_ns
 					fromRect.right = res.left;
 					element.SetFrame(res);
 					break;
-				case OVER_GRAPH:
+				case FLOAT_OVER_GRAPH:
 					res = element.GetFloatFrame();
 					res = Rect( res.TopLeft()*scale, res.Size()*scale );
 					element.SetFrame(res);
@@ -426,13 +426,13 @@ namespace GraphDraw_ns
 		template<class T>  T& AddRightElement(T& v, int stackPrio)  { return AddElement<T, RIGHT_OF_GRAPH>(v, stackPrio); }
 		template<class T>  T& AddTopElement(T& v, int stackPrio)    { return AddElement<T, TOP_OF_GRAPH>(v, stackPrio); }
 		template<class T>  T& AddBottomElement(T& v, int stackPrio) { return AddElement<T, BOTTOM_OF_GRAPH>(v, stackPrio); }
-		template<class T>  T& AddFloatElement(T& v, int stackPrio)   { return AddElement<T, OVER_GRAPH>(v, stackPrio); }
+		template<class T>  T& AddFloatElement(T& v, int stackPrio)   { return AddElement<T, FLOAT_OVER_GRAPH>(v, stackPrio); }
 
 		template<class T>  T& AddLeftElement(int elementWidth, T& v, int stackPrio)   { return AddElement<T, LEFT_OF_GRAPH>(elementWidth, v, stackPrio); }
 		template<class T>  T& AddRightElement(int elementWidth, T& v, int stackPrio)  { return AddElement<T, RIGHT_OF_GRAPH>(elementWidth, v, stackPrio); }
 		template<class T>  T& AddTopElement(int elementWidth, T& v, int stackPrio)    { return AddElement<T, TOP_OF_GRAPH>(elementWidth, v, stackPrio); }
 		template<class T>  T& AddBottomElement(int elementWidth, T& v, int stackPrio) { return AddElement<T, BOTTOM_OF_GRAPH>(elementWidth, v, stackPrio); }
-		template<class T>  T& AddFloatElement(int elementWidth, T& v, int stackPrio)   { return AddElement<T, OVER_GRAPH>(elementWidth, v, stackPrio); }
+		template<class T>  T& AddFloatElement(int elementWidth, T& v, int stackPrio)   { return AddElement<T, FLOAT_OVER_GRAPH>(elementWidth, v, stackPrio); }
 
 
 		template<class T, int POS_OF_GRAPH>
@@ -450,7 +450,7 @@ namespace GraphDraw_ns
 		template<class T>	T& CloneRightElement(int elementWidth, T& p, int stackPrio=-1)  { return CloneElement<T, RIGHT_OF_GRAPH>(elementWidth, p, stackPrio); }
 		template<class T>	T& CloneTopElement(int elementWidth, T& p, int stackPrio=-1)    { return CloneElement<T, TOP_OF_GRAPH>(elementWidth, p, stackPrio); }
 		template<class T>	T& CloneBottomElement(int elementWidth, T& p, int stackPrio=-1) { return CloneElement<T, BOTTOM_OF_GRAPH>(elementWidth, p, stackPrio); }
-		template<class T>	T& CloneFloatElement(T& p, int stackPrio=-1)                     { return CloneElement<OVER_GRAPH>(0, p, stackPrio); }
+		template<class T>	T& CloneFloatElement(T& p, int stackPrio=-1)                     { return CloneElement<FLOAT_OVER_GRAPH>(0, p, stackPrio); }
 
 		template<class T, int POS_OF_GRAPH>
 		T& CreateElement(int elementWidth, int stackPrio) {
@@ -466,7 +466,7 @@ namespace GraphDraw_ns
 		template<class T>	T& CreateRightElement(int elementWidth, int stackPrio)  { return CreateElement<T, RIGHT_OF_GRAPH>(elementWidth, stackPrio); }
 		template<class T>	T& CreateTopElement(int elementWidth, int stackPrio)    { return CreateElement<T, TOP_OF_GRAPH>(elementWidth, stackPrio); }
 		template<class T>	T& CreateBottomElement(int elementWidth, int stackPrio) { return CreateElement<T, BOTTOM_OF_GRAPH>(elementWidth, stackPrio); }
-		template<class T>	T& CreateFloatElement(int stackPrio)                     { return CreateElement<T, OVER_GRAPH>(0, stackPrio); }
+		template<class T>	T& CreateFloatElement(int stackPrio)                     { return CreateElement<T, FLOAT_OVER_GRAPH>(0, stackPrio); }
 
 */
 		template<class T, int POS_OF_GRAPH, class P1>
@@ -483,7 +483,7 @@ namespace GraphDraw_ns
 		template<class T, class P1>	T& CreateRightElement1(int elementWidth, int stackPrio, P1& p1)  { return CreateElement1<T, RIGHT_OF_GRAPH>(elementWidth, stackPrio, p1); }
 		template<class T, class P1>	T& CreateTopElement1(int elementWidth, int stackPrio, P1& p1)    { return CreateElement1<T, TOP_OF_GRAPH>(elementWidth, stackPrio, p1); }
 		template<class T, class P1>	T& CreateBottomElement1(int elementWidth, int stackPrio, P1& p1) { return CreateElement1<T, BOTTOM_OF_GRAPH>(elementWidth, stackPrio, p1); }
-		template<class T, class P1>	T& CreateFloatElement1(int stackPrio, P1& p1)                     { return CreateElement1<T, OVER_GRAPH>(0, stackPrio, p1); }
+		template<class T, class P1>	T& CreateFloatElement1(int stackPrio, P1& p1)                     { return CreateElement1<T, FLOAT_OVER_GRAPH>(0, stackPrio, p1); }
 */
 
 		template<class T, int POS_OF_GRAPH, class P1, class P2>
@@ -500,7 +500,7 @@ namespace GraphDraw_ns
 		template<class T, class P1, class P2>	T& CreateRightElement2(int elementWidth, int stackPrio, P1& p1, P2& p2)  { return CreateElement2<T, RIGHT_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
 		template<class T, class P1, class P2>	T& CreateTopElement2(int elementWidth, int stackPrio, P1& p1, P2& p2)    { return CreateElement2<T, TOP_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
 		template<class T, class P1, class P2>	T& CreateBottomElement2(int elementWidth, int stackPrio, P1& p1, P2& p2) { return CreateElement2<T, BOTTOM_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
-		template<class T, class P1, class P2>	T& CreateFloatElement2(int stackPrio, P1& p1, P2& p2)                     { return CreateElement2<T, OVER_GRAPH>(0, stackPrio, p1, p2); }
+		template<class T, class P1, class P2>	T& CreateFloatElement2(int stackPrio, P1& p1, P2& p2)                     { return CreateElement2<T, FLOAT_OVER_GRAPH>(0, stackPrio, p1, p2); }
 */
 
 		// Refresh called from child
@@ -755,16 +755,16 @@ namespace GraphDraw_ns
 			dw.Clipoff(_plotRect.left, _plotRect.top, _plotRect.GetWidth(), _plotRect.GetHeight());
 
 			// --------------
-			// GRAPH ELEMENTS on PLOT area   ( X/Y Grid, or anything else )
+			// GRAPH ELEMENTS on PLOT area --UNDER DATA-- ( X/Y Grid, or anything else )
 			// --------------
 			for (int j = 0; j < _drawElements.GetCount(); j++) {
-				if ( (!_drawElements[j]->IsHidden()) && _drawElements[j]->IsFloat() ) _drawElements[j]->PaintOnPlot(dw, _plotRect.GetWidth(), scale);
+				if ( (!_drawElements[j]->IsHidden()) && _drawElements[j]->IsFloat() ) _drawElements[j]->PaintOnPlot_underData(dw, _plotRect.GetWidth(), scale);
 			}
 			
 			for (int j = 0; j < _drawElements.GetCount(); j++) {
 				if (!_drawElements[j]->IsHidden()) {
-					if      ( _drawElements[j]->IsVertical() )   _drawElements[j]->PaintOnPlot(dw, _plotRect.GetWidth(), scale);
-					else if ( _drawElements[j]->IsHorizontal() ) _drawElements[j]->PaintOnPlot(dw, _plotRect.GetHeight(), scale);
+					if      ( _drawElements[j]->IsVertical() )   _drawElements[j]->PaintOnPlot_underData(dw, _plotRect.GetWidth(), scale);
+					else if ( _drawElements[j]->IsHorizontal() ) _drawElements[j]->PaintOnPlot_underData(dw, _plotRect.GetHeight(), scale);
 				}
 			}
 			
@@ -790,6 +790,21 @@ namespace GraphDraw_ns
 				}
 				dw.DrawImage(0, 0, _PlotDrawImage);
 			}
+
+			// --------------
+			// GRAPH ELEMENTS on PLOT area --OVER DATA-- ( X/Y Grid, or anything else )
+			// --------------
+			for (int j = 0; j < _drawElements.GetCount(); j++) {
+				if ( (!_drawElements[j]->IsHidden()) && _drawElements[j]->IsFloat() ) _drawElements[j]->PaintOnPlot_overData(dw, _plotRect.GetWidth(), scale);
+			}
+			
+			for (int j = 0; j < _drawElements.GetCount(); j++) {
+				if (!_drawElements[j]->IsHidden()) {
+					if      ( _drawElements[j]->IsVertical() )   _drawElements[j]->PaintOnPlot_overData(dw, _plotRect.GetWidth(), scale);
+					else if ( _drawElements[j]->IsHorizontal() ) _drawElements[j]->PaintOnPlot_overData(dw, _plotRect.GetHeight(), scale);
+				}
+			}
+			
 
 			// --------------------------------------
 			// END of paint in PLOT AREA

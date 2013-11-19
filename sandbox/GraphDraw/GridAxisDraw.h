@@ -25,13 +25,13 @@ namespace GraphDraw_ns
 	} AxisTextFormat;
 
 	template<class TYPES >
-	class GridAxisDraw : public CRTPGraphElementFrame< GridAxisDraw<TYPES> >
+	class GridAxisDraw : public CRTPGraphElement< GridAxisDraw<TYPES> >
 	{
 		public:
 		typedef GridAxisDraw<TYPES>                   CLASSNAME;
 		typedef typename TYPES::TypeCoordConverter    TypeCoordConverter;
 		typedef typename TYPES::TypeGridStepManager   TypeGridStepManager;
-		typedef CRTPGraphElementFrame< GridAxisDraw<TYPES> > _B;
+		typedef CRTPGraphElement< GridAxisDraw<TYPES> > _B;
 		typedef Callback2< const GridStepIterator&, String&> TypeFormatTextCbk; // IN: valueIterator,  OUT: formated value
 
 		
@@ -64,7 +64,7 @@ namespace GraphDraw_ns
 		, _majorTickMark(new LineTickMark())
 		, _minorTickMark(new LineTickMark())
 		{
-			_B::DisablePos(OVER_GRAPH);
+			_B::DisablePos(FLOAT_OVER_GRAPH);
 		}
 
 		GridAxisDraw(GridAxisDraw& p)
@@ -129,7 +129,7 @@ namespace GraphDraw_ns
 						}
 					}
 					break;
-				case OVER_GRAPH:
+				case FLOAT_OVER_GRAPH:
 					break;
 			}
 			if (doFitToData) _coordConverter.updateGraphSize( lmin, lmax );
@@ -236,7 +236,7 @@ namespace GraphDraw_ns
 							output << "\1[1= " << MonName(time.month-1) ;
 							output << "&][1*= " << time.year << "]";
 							break;
-						case OVER_GRAPH:
+						case FLOAT_OVER_GRAPH:
 						case TOP_OF_GRAPH:
 							output << "\1[1*= " << time.year;
 							output << "&][1= " << MonName(time.month-1) << "]";
@@ -264,7 +264,7 @@ namespace GraphDraw_ns
 							output << "\1[1= " << int(time.day) << " " << MonName(time.month-1) ;
 							output << "&][1*= " << time.year << "]";
 							break;
-						case OVER_GRAPH:
+						case FLOAT_OVER_GRAPH:
 						case TOP_OF_GRAPH:
 							output << "\1[1*= " << time.year;
 							output << "&][1= " << int(time.day) << " " << MonName(time.month-1) << "]";
@@ -293,7 +293,7 @@ namespace GraphDraw_ns
 							output << "[1= " << int(time.day) << " " << MonName(time.month-1) ;
 							output << "&][1*= " << time.year << "]";
 							break;
-						case OVER_GRAPH:
+						case FLOAT_OVER_GRAPH:
 						case TOP_OF_GRAPH:
 							output << "\1[1*= " << time.year;
 							output << "&][1= " << int(time.day) << " " << MonName(time.month-1) << "&]";
@@ -464,7 +464,7 @@ namespace GraphDraw_ns
 			}
 		}
 
-		virtual void PaintOnPlot(Draw& dw, int otherWidth, int scale)
+		virtual void PaintOnPlot_underData(Draw& dw, int otherWidth, int scale)
 		{
 			switch(_B::GetElementPos()){
 				case LEFT_OF_GRAPH:
@@ -475,7 +475,7 @@ namespace GraphDraw_ns
 				case TOP_OF_GRAPH:
 					PaintHGrid(dw, otherWidth);
 					break;
-				case OVER_GRAPH:
+				case FLOAT_OVER_GRAPH:
 					break;
 			}
 		}
@@ -495,7 +495,7 @@ namespace GraphDraw_ns
 				case RIGHT_OF_GRAPH:
 					PaintAxisRight(dw, scale);
 					break;
-				case OVER_GRAPH:
+				case FLOAT_OVER_GRAPH:
 					break;
 			}
 		}

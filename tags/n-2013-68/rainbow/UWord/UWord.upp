@@ -1,0 +1,35 @@
+description "Wordprocessor application\377";
+
+uses
+	CtrlLib,
+	RichEdit,
+	PdfDraw,
+	plugin\jpg,
+	SDL20;
+
+uses(SKELETON) Skeleton;
+
+uses(WINALT) WinAlt;
+
+uses(WINFB) WinFb;
+
+uses(LINUXFB) LinuxFb;
+
+uses(SDLFB) SDLFb;
+
+uses(WINGL) WinGl;
+
+file
+	UWord.cpp,
+	UWord.iml;
+
+mainconfig
+	"" = "GUI SKELETON",
+	"" = "GUI WINALT",
+	"" = "GUI WINFB",
+	"" = "GUI LINUXFB",
+	"" = "GUI SDLFB",
+	"" = "GUI WINGL",
+	"" = "GUI",
+	"" = "GUI SDL20";
+

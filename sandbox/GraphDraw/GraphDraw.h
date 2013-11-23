@@ -84,30 +84,24 @@ namespace GraphDraw_ns
 	// CRTP_EmptyGraphDraw   CLASS
 	// ============================
 	template<class TYPES, class DERIVED>
-	class CRTP_EmptyGraphDraw : public SeriesGroup< TYPES, DERIVED > , public GraphElementParent
+	class CRTP_EmptyGraphDraw : public SeriesGroup< DERIVED > , public GraphElementParent
 	{
 		public:
 		typedef CRTP_EmptyGraphDraw<TYPES, DERIVED> CLASSNAME;
-
-		typedef typename TYPES::TypeCoordConverter  TypeCoordConverter;
-		typedef typename TYPES::TypeVectorSeries    TypeVectorSeries;
-		typedef SeriesGroup<TYPES, DERIVED >        TypeSeriesGroup;
+		typedef SeriesGroup<DERIVED >        TypeSeriesGroup;
 		typedef TypeSeriesGroup                     _B;
-
-
 
 		protected:
 		// graph elements draw around the graph
 		Vector< GraphElement* >  _drawElements;
 		Vector< GraphElement* >  _createdElements; // the elements in this list are owned by GrapDraw
-		Vector< TypeCoordConverter* > _xConverters;
-		Vector< TypeCoordConverter* > _yConverters;
+		Vector< CoordinateConverter* > _xConverters;
+		Vector< CoordinateConverter* > _yConverters;
 
 		Rect     _ctrlRect;  // whole graph screen Rect
 		Rect     _plotRect;
 		DrawMode _drawMode;
 		bool     _doFastPaint;
-		bool     _keepDataPaint;
 		Value    _plotBckgndStyle;
 		Value    _ctrlBckgndStyle;
 
@@ -153,6 +147,10 @@ namespace GraphDraw_ns
 			}
 		}
 
+		void ClearPlotDrawImg() {
+			_PlotDrawImage.Clear();
+		}
+		
 		inline void updateSizes( const int scale = 1 )
 		{
 			Rect svg = _plotRect;
@@ -191,7 +189,6 @@ namespace GraphDraw_ns
 		CRTP_EmptyGraphDraw()
 		: _drawMode( MD_DRAW )
 		, _doFastPaint(false)
-		, _keepDataPaint(false)
 		, _topMarginWidth(0)
 		, _bottomMarginWidth(0)
 		, _leftMarginWidth(0)
@@ -213,7 +210,7 @@ namespace GraphDraw_ns
 
 		virtual Value GetSeries() {
 			ASSERT_(&(_B::series), "CRTP_EmptyGraphDraw::GetSeries()  returns NULL");
-			typename TYPES::TypeVectorSeries* pseries = &(_B::series);
+			TypeVectorSeries* pseries = &(_B::series);
 			return RawToValue( pseries );
 		}
 
@@ -244,8 +241,8 @@ namespace GraphDraw_ns
 		}
 		
 
-		TypeCoordConverter& GetXCoordConverter() { ASSERT(TypeSeriesGroup::_currentXConverter!=0); return *TypeSeriesGroup::_currentXConverter; }
-		TypeCoordConverter& GetYCoordConverter() { ASSERT(TypeSeriesGroup::_currentYConverter!=0); return *TypeSeriesGroup::_currentYConverter; }
+		CoordinateConverter& GetXCoordConverter() { ASSERT(TypeSeriesGroup::_currentXConverter!=0); return *TypeSeriesGroup::_currentXConverter; }
+		CoordinateConverter& GetYCoordConverter() { ASSERT(TypeSeriesGroup::_currentYConverter!=0); return *TypeSeriesGroup::_currentYConverter; }
 
 		DERIVED& SetPlotBackgroundColor(Color c) { _plotBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetCtrlBackgroundColor(Color c) { _ctrlBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
@@ -267,7 +264,7 @@ namespace GraphDraw_ns
 
 		DERIVED& setScreenSize(Rect r, const int scale=1)	{
 			//RLOGBLOCK("setScreenSize");
-			if (r!=_ctrlRect) {
+			if (r!=_ctrlRect || scale != 1) {
 				_ctrlRect = r;
 				_CtrlBackgroundImage.Clear();
 				updateSizes(scale);
@@ -280,12 +277,20 @@ namespace GraphDraw_ns
 			return setScreenSize(_ctrlRect, scale);
 		}
 
-		TypeCoordConverter& AddXConverter(TypeCoordConverter& conv) {
+		template <class COORDCONV>
+		COORDCONV& AddXConverter(COORDCONV& conv) {
 			_xConverters << &conv;
 			TypeSeriesGroup::_currentXConverter = &conv;
 			return conv;
 		}
 
+		template <class COORDCONV>
+		COORDCONV& AddYConverter(COORDCONV& conv) {
+			_yConverters << &conv;
+			TypeSeriesGroup::_currentYConverter = &conv;
+			return conv;
+		}
+		
 		void SetCurrentXConverter(int n) {
 			ASSERT( n < _xConverters.GetCount() );
 			TypeSeriesGroup::_currentXConverter =  _xConverters[n];
@@ -296,11 +301,6 @@ namespace GraphDraw_ns
 			TypeSeriesGroup::_currentYConverter =  _yConverters[n];
 		}
 
-		TypeCoordConverter& AddYConverter(TypeCoordConverter& conv) {
-			_yConverters << &conv;
-			TypeSeriesGroup::_currentYConverter = &conv;
-			return conv;
-		}
 
 		template <class T>
 		DERIVED& LinkX(T& g) {
@@ -337,6 +337,7 @@ namespace GraphDraw_ns
 				_xConverters[j]->updateGraphSize( _xConverters[j]->toGraph( left ),
 				                                  _xConverters[j]->toGraph( right ));
 			}
+			ClearPlotDrawImg();
 			Refresh();
 		}
 
@@ -347,6 +348,7 @@ namespace GraphDraw_ns
 				_yConverters[j]->updateGraphSize( _yConverters[j]->toGraph( bottom ),
 				                                  _yConverters[j]->toGraph( top ));
 			}
+			ClearPlotDrawImg();
 			Refresh();
 		}
 
@@ -377,28 +379,29 @@ namespace GraphDraw_ns
 			return ZoomOnRect(r);
 		}
 
-		virtual void ScrollX( TypeScreenCoord xOffset)
+		virtual void ScrollX( TypeScreenCoord xOffset, bool doRefresh)
 		{
 			for (int j = 0; j < _xConverters.GetCount(); j++)
 			{
 				_xConverters[j]->Scroll( xOffset );
 			}
-			Refresh();
+			if (doRefresh) Refresh();
 		}
 
-		virtual void ScrollY( TypeScreenCoord yOffset)
+		virtual void ScrollY( TypeScreenCoord yOffset, bool doRefresh)
 		{
 			for (int j = 0; j < _yConverters.GetCount(); j++)
 			{
 				_yConverters[j]->Scroll( yOffset );
 			}
-			Refresh();
+			if (doRefresh) Refresh();
 		}
 
 		DERIVED& Scroll( TypeScreenCoord xOffset, TypeScreenCoord yOffset)
 		{
-			ScrollX(xOffset);
-			ScrollY(yOffset);
+			ScrollX(xOffset, false);
+			ScrollY(yOffset, false);
+			Refresh();
 			return *static_cast<DERIVED*>(this);
 		}
 
@@ -434,7 +437,7 @@ namespace GraphDraw_ns
 		template<class T>  T& AddBottomElement(int elementWidth, T& v, int stackPrio) { return AddElement<T, BOTTOM_OF_GRAPH>(elementWidth, v, stackPrio); }
 		template<class T>  T& AddFloatElement(int elementWidth, T& v, int stackPrio)   { return AddElement<T, FLOAT_OVER_GRAPH>(elementWidth, v, stackPrio); }
 
-
+/*
 		template<class T, int POS_OF_GRAPH>
 		T& CloneElement(int elementWidth, T& p, int stackPrio=-1) {
 			T* e = dynamic_cast<T*>( p.Clone() );
@@ -451,7 +454,7 @@ namespace GraphDraw_ns
 		template<class T>	T& CloneTopElement(int elementWidth, T& p, int stackPrio=-1)    { return CloneElement<T, TOP_OF_GRAPH>(elementWidth, p, stackPrio); }
 		template<class T>	T& CloneBottomElement(int elementWidth, T& p, int stackPrio=-1) { return CloneElement<T, BOTTOM_OF_GRAPH>(elementWidth, p, stackPrio); }
 		template<class T>	T& CloneFloatElement(T& p, int stackPrio=-1)                     { return CloneElement<FLOAT_OVER_GRAPH>(0, p, stackPrio); }
-
+*/
 		template<class T, int POS_OF_GRAPH>
 		T& CreateElement(int elementWidth, int stackPrio) {
 			T* e = new T();
@@ -519,7 +522,9 @@ namespace GraphDraw_ns
 #endif
 			ImageBuffer ib(size);
 			BufferPainter bp(ib, mode);
+			ClearPlotDrawImg();
 			Paint(bp, scale);
+			ClearPlotDrawImg();
 			setScreenSize( _screenRectSvg );
 			return ib;
 		}
@@ -601,8 +606,8 @@ namespace GraphDraw_ns
 					int64 nbVisiblePoints = 0;
 					int imin, imax;
 
-					typename TYPES::TypeCoordConverter& xConverter = *(_B::series[j].xConverter);
-					typename TYPES::TypeCoordConverter& yConverter = *(_B::series[j].yConverter);
+					CoordinateConverter& xConverter = *(_B::series[j].xConverter);
+					CoordinateConverter& yConverter = *(_B::series[j].yConverter);
 //					if (_B::series[j].sequential) {
 //						imin = imax = Null;
 //						for (int i = 1; i < _B::series[j].PointsData()->GetCount() - 1; ++i) {
@@ -774,11 +779,11 @@ namespace GraphDraw_ns
 			if (_doFastPaint)
 			{
 				PaintPlotData(dw, scale);
-				_PlotDrawImage.Clear();
+				ClearPlotDrawImg();
 			}
 			else
 			{
-				if ( _PlotDrawImage.IsEmpty() || !_keepDataPaint )
+				if ( _PlotDrawImage.IsEmpty() )
 				{
 					RGBA bckgColor;   bckgColor.r = 0; bckgColor.g = 0; bckgColor.b = 0; bckgColor.a = 0;
 					ImageBuffer ib(_plotRect.Size());
@@ -786,7 +791,6 @@ namespace GraphDraw_ns
 					BufferPainter bp(ib, _drawMode);
 					PaintPlotData(bp, scale);
 					_PlotDrawImage = ib;
-					_keepDataPaint = false;
 				}
 				dw.DrawImage(0, 0, _PlotDrawImage);
 			}
@@ -839,11 +843,6 @@ namespace GraphDraw_ns
 
 
 	struct GraphDrawDefaultTypes {
-			typedef DataSource                                     TypeDataSource;
-			typedef SeriesPlot                                     TypeSeriesPlot;
-			typedef SeriesConfig<GraphDrawDefaultTypes>            TypeSeriesConfig;
-			typedef Vector<TypeSeriesConfig>                       TypeVectorSeries;
-			typedef MarkPlot                                       TypeMarkPlot;
 			typedef GenericCoordinateConverter                     TypeCoordConverter;
 			typedef GridAxisDraw<GraphDrawDefaultTypes>            TypeGridAxisDraw;
 			typedef GridStepManager<>                              TypeGridStepManager;
@@ -887,6 +886,8 @@ namespace GraphDraw_ns
 	DERIVED& SetTitleColor(const Color& v) { _title.SetTextColor(v); return *static_cast<DERIVED*>(this); }\
 	DERIVED& HideTitle(bool v)             { _title.Hide(v); return *static_cast<DERIVED*>(this); }
 
+
+
 	// ============================
 	//    CRTP_XYGraphDraw   CLASS
 	// ============================
@@ -899,16 +900,18 @@ namespace GraphDraw_ns
 		typedef CRTP_EmptyGraphDraw<TYPES, DERIVED > _B;
 
 
-		typedef typename TYPES::TypeCoordConverter            TypeCoordConverter;
-		typedef typename TYPES::TypeGridAxisDraw              TypeGridAxisDraw;
-		typedef SeriesGroup<TYPES,CLASSNAME>                  TypeSeriesGroup;
+		typedef typename TYPES::X_TypeCoordConverter            TypeCoordConverterX;
+		typedef typename TYPES::Y_TypeCoordConverter            TypeCoordConverterY;
+		typedef typename TYPES::X_TypeGridAxisDraw              TypeGridAxisDrawX;
+		typedef typename TYPES::Y_TypeGridAxisDraw              TypeGridAxisDrawY;
+		typedef SeriesGroup< DERIVED >                        TypeSeriesGroup;
 		typedef typename TYPES::TypeLegendElement             TypeLegendElement;
 
 		protected:
-		TypeCoordConverter   _xConverter;
-		TypeCoordConverter   _yConverter;
-		TypeGridAxisDraw     _xGridDraw;
-		TypeGridAxisDraw     _yGridDraw;
+		TypeCoordConverterX   _xConverter;
+		TypeCoordConverterY   _yConverter;
+		TypeGridAxisDrawX     _xGridDraw;
+		TypeGridAxisDrawY     _yGridDraw;
 		
 		public:
 		CRTP_XYGraphDraw()
@@ -959,11 +962,11 @@ namespace GraphDraw_ns
 			return *static_cast<DERIVED*>(this);
 		}
 
-		TypeCoordConverter& GetXCoordConverter() { return _xConverter; }
-		TypeCoordConverter& GetYCoordConverter() { return _yConverter; }
+		TypeCoordConverterX& GetXCoordConverter() { return _xConverter; }
+		TypeCoordConverterY& GetYCoordConverter() { return _yConverter; }
 
-		TypeGridAxisDraw& GetXGridAxisDraw() { return _xGridDraw; }
-		TypeGridAxisDraw& GetYGridAxisDraw() { return _yGridDraw; }
+		TypeGridAxisDrawX& GetXGridAxisDraw() { return _xGridDraw; }
+		TypeGridAxisDrawY& GetYGridAxisDraw() { return _yGridDraw; }
 
 
 		MAKE_GRAPHDRAW_AXIS_FN(X,x);
@@ -982,9 +985,6 @@ namespace GraphDraw_ns
 		typedef CRTP_XYGraphDraw<TYPES, DERIVED > _B;
 
 
-		typedef typename TYPES::TypeCoordConverter            TypeCoordConverter;
-		typedef typename TYPES::TypeGridAxisDraw              TypeGridAxisDraw;
-		typedef SeriesGroup<TYPES,CLASSNAME>                  TypeSeriesGroup;
 		typedef typename TYPES::TypeLegendElement             TypeLegendElement;
 
 		protected:
@@ -1018,7 +1018,9 @@ namespace GraphDraw_ns
 		TypeLegendElement& GetLegendElement()   { return _legend; }
 	};
 
-
+	// ============================
+	//    CRTP_XYLTGraphDraw   CLASS
+	// ============================
 	template<class TYPES, class DERIVED>
 	class CRTP_XYLTGraphDraw : public CRTP_XYLGraphDraw<TYPES, DERIVED >
 	{
@@ -1056,6 +1058,9 @@ namespace GraphDraw_ns
 	};
 
 
+	// ============================
+	//    CRTP_XYY2GraphDraw   CLASS
+	// ============================
 	template<class TYPES, class DERIVED>
 	class CRTP_XYY2GraphDraw : public CRTP_XYLGraphDraw<TYPES, DERIVED >
 	{
@@ -1065,12 +1070,12 @@ namespace GraphDraw_ns
 		typedef CRTP_XYLGraphDraw<TYPES, DERIVED>   _B;
 		
 		typedef typename TYPES::TypeLabelElement   TypeLabel;
-		typedef typename TYPES::TypeCoordConverter TypeCoordConverter;
-		typedef typename TYPES::TypeGridAxisDraw   TypeGridAxisDraw;
-		typedef SeriesGroup<TYPES,CLASSNAME>       TypeSeriesGroup;
+		typedef typename TYPES::Y2_TypeCoordConverter TypeCoordConverterY2;
+		typedef typename TYPES::Y2_TypeGridAxisDraw   TypeGridAxisDrawY2;
+		typedef SeriesGroup<DERIVED>       TypeSeriesGroup;
 	
-		TypeCoordConverter   _y2Converter;
-		TypeGridAxisDraw     _y2GridDraw;
+		TypeCoordConverterY2   _y2Converter;
+		TypeGridAxisDrawY2     _y2GridDraw;
 		
 		public:
 		CRTP_XYY2GraphDraw()
@@ -1091,6 +1096,9 @@ namespace GraphDraw_ns
 		virtual ~CRTP_XYY2GraphDraw() {}
 
 		private:
+		// forbid usage of following methods in this case
+		DERIVED& setGraphSize(Rectf r) {}
+		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1) {}
 		
 		public:
 		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1, TypeGraphCoord y20, TypeGraphCoord y21 )
@@ -1102,13 +1110,16 @@ namespace GraphDraw_ns
 			return *static_cast<DERIVED*>(this);
 		}
 
-		TypeCoordConverter& GetY2CoordConverter() { return _y2Converter; }
-		TypeGridAxisDraw& GetY2GridAxisDraw()     { return _y2GridDraw; }
+		TypeCoordConverterY2& GetY2CoordConverter() { return _y2Converter; }
+		TypeGridAxisDrawY2& GetY2GridAxisDraw()     { return _y2GridDraw; }
 		
 		MAKE_GRAPHDRAW_AXIS_FN(Y2,y2);
 	};
 
 
+	// ============================
+	//    CRTP_XYY2LTGraphDraw   CLASS
+	// ============================
 	template<class TYPES, class DERIVED>
 	class CRTP_XYY2LTGraphDraw : public CRTP_XYY2GraphDraw<TYPES, DERIVED >
 	{
@@ -1148,6 +1159,7 @@ namespace GraphDraw_ns
 		MAKE_GRAPHDRAW_LABEL_FN(Y,y);
 		MAKE_GRAPHDRAW_LABEL_FN(Y2,y2);
 	};
+
 };
 
 

@@ -24,13 +24,13 @@ template<class TYPES>
 class ExclusionAreaDraw : public CRTPGraphElement< ExclusionAreaDraw<TYPES> >
 {
 	private:
-	typename TYPES::TypeCoordConverter& _xConverter;
-	typename TYPES::TypeCoordConverter& _yConverter;
+	CoordinateConverter& _xConverter;
+	CoordinateConverter& _yConverter;
 	typedef  CRTPGraphElement< ExclusionAreaDraw<TYPES> > _B;
 
 	public:
 	typedef ExclusionAreaDraw<TYPES>   CLASSNAME;
-	ExclusionAreaDraw(typename TYPES::TypeCoordConverter& xConv, typename TYPES::TypeCoordConverter& yConv) :  _xConverter(xConv), _yConverter(yConv) {};
+	ExclusionAreaDraw(CoordinateConverter& xConv, CoordinateConverter& yConv) :  _xConverter(xConv), _yConverter(yConv) {};
 	~ExclusionAreaDraw() {};
 
 	virtual CLASSNAME* Clone() { return new CLASSNAME(_xConverter, _yConverter); }

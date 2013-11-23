@@ -8,13 +8,13 @@ namespace GraphDraw_ns
 /*
  * Graph Series managemet class
  */
-template<class TYPES, class DERIVED>
+	template<class DERIVED>
 	class SeriesGroup {
 	public:
-		typedef SeriesGroup<TYPES, DERIVED> CLASSNAME;
-		typename TYPES::TypeVectorSeries    series;
-		typename TYPES::TypeCoordConverter* _currentXConverter;
-		typename TYPES::TypeCoordConverter* _currentYConverter;
+		typedef SeriesGroup CLASSNAME;
+		TypeVectorSeries    series;
+		CoordinateConverter* _currentXConverter;
+		CoordinateConverter* _currentYConverter;
 
 		bool _setDefaultStylesOnCreate;
 		bool _isDataModified;
@@ -28,7 +28,7 @@ template<class TYPES, class DERIVED>
 		inline void ClearModifyData() { _isDataModified = false; }
 		inline bool IsModifiedData() const { return _isDataModified;  }
 
-		inline typename TYPES::TypeSeriesConfig& GetSeriesConfig(int id) { return series[id]; }
+		inline SeriesConfig& GetSeriesConfig(int id) { return series[id]; }
 
 		inline int GetCount() 	{return series.GetCount();}
 		inline bool IsEmpty()	{return series.IsEmpty();}
@@ -136,12 +136,12 @@ template<class TYPES, class DERIVED>
 			return series[j].markWidth > 0;
 		}
 
-		DERIVED& SetXconverter(typename TYPES::TypeCoordConverter& conv) {
+		DERIVED& SetXconverter(CoordinateConverter& conv) {
 			series[series.GetCount() - 1].xConverter = &conv;
 			return *static_cast<DERIVED*>(this);
 		}
 
-		DERIVED& SetYconverter(typename TYPES::TypeCoordConverter& conv) {
+		DERIVED& SetYconverter(CoordinateConverter& conv) {
 			series[series.GetCount() - 1].yConverter = &conv;
 			_isDataModified = true;
 			return *static_cast<DERIVED*>(this);
@@ -159,7 +159,7 @@ template<class TYPES, class DERIVED>
 		DERIVED& AddSeries(PlotExplicFunc &function)                                           {return AddSeries<PlotExplicFuncSource>(function);}
 		DERIVED& AddSeries(PlotParamFunc function, int np, double from = 0, double to = 1)     {return AddSeries<PlotParamFuncSource>(function, np, from, to);}
 		DERIVED& AddSeries(DataSource &data) {
-			typename TYPES::TypeSeriesConfig &s = series.Add();
+			SeriesConfig &s = series.Add();
 			s.Init(series.GetCount()-1, _setDefaultStylesOnCreate);
 			s.SetDataSource(&data, false);
 			ASSERT(_currentXConverter!=0);
@@ -171,7 +171,7 @@ template<class TYPES, class DERIVED>
 		}
 		
 		DERIVED& _AddSeries(DataSource *data) {
-			typename TYPES::TypeSeriesConfig &s = series.Add();
+			SeriesConfig &s = series.Add();
 			s.Init(series.GetCount()-1, _setDefaultStylesOnCreate);
 			s.SetDataSource(data);
 			ASSERT(_currentXConverter!=0);
@@ -218,7 +218,7 @@ template<class TYPES, class DERIVED>
 		void InsertSeries(int id, PlotParamFunc function, int np, double from = 0, double to = 1)     {InsertSeries<PlotParamFuncSource>(id, function, np, from, to);}
 		void _InsertSeries(int id, DataSource *data) {
 			ASSERT(IsValid(id));
-			typename TYPES::TypeSeriesConfig &s = series.Insert(id);
+			SeriesConfig &s = series.Insert(id);
 			s.Init(id, _setDefaultStylesOnCreate);
 			s.SetDataSource(data);
 			ASSERT(_currentXConverter!=0);
@@ -405,7 +405,7 @@ template<class TYPES, class DERIVED>
 
 		DERIVED &ShowAll(const bool& show) {
 			for (int i = 0; i < series.GetCount(); ++i)
-				series[i].show = true;
+				series[i].show = show;
 			_isDataModified = true;
 			return *static_cast<DERIVED*>(this);
 		}

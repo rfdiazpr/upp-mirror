@@ -8,7 +8,6 @@
 namespace GraphDraw_ns
 {
 
-	template <class TYPES>
 	class SeriesConfigBase {
 		public:
 			bool sequential;
@@ -19,18 +18,18 @@ namespace GraphDraw_ns
 
 			String legend;
 			int id;
-			typename TYPES::TypeCoordConverter* xConverter;
-			typename TYPES::TypeCoordConverter* yConverter;
+			CoordinateConverter* xConverter;
+			CoordinateConverter* yConverter;
 			bool show;
 			
 			// plot
-			One<typename TYPES::TypeSeriesPlot> seriesPlot;
+			One<SeriesPlot> seriesPlot;
 			double thickness;
 			Color color;
 			String dash;
 
 			// Mark
-			One<typename TYPES::TypeMarkPlot> markPlot;
+			One<MarkPlot> markPlot;
 			double markWidth;
 			Color markColor;
 			
@@ -134,17 +133,18 @@ namespace GraphDraw_ns
 			inline const Image& GetSerieIcon() { return serieIcon; }
 	};
 
-	template <class TYPES>
-	class SeriesConfig : public Moveable< SeriesConfig<TYPES> >, public SeriesConfigBase<TYPES> {
+	class SeriesConfig : public Moveable< SeriesConfig >, public SeriesConfigBase {
 		public:
 		SeriesConfig()	{pD = 0;}
-		void SetDataSource(typename TYPES::TypeDataSource *pointsData, bool ownsData = true) {pD = pointsData; owns = ownsData;}
-		inline typename TYPES::TypeDataSource *PointsData()	{return pD;}
+		void SetDataSource(DataSource *pointsData, bool ownsData = true) {pD = pointsData; owns = ownsData;}
+		inline DataSource *PointsData()	{return pD;}
 		~SeriesConfig()	{if(pD && owns) delete pD;}
 
 		private:
-		typename TYPES::TypeDataSource *pD;
+		DataSource* pD;
 		bool owns;
 	};
+	
+	typedef Vector<SeriesConfig>  TypeVectorSeries;
 };
 #endif

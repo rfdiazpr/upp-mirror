@@ -87,7 +87,6 @@ namespace GraphDraw_ns
 	template<int NB_MAX_STEPS=200>
 	class GridStepManager {
 		public:
-			typedef CoordinateConverter TypeCoordConverter;
 			typedef GridStepManager<NB_MAX_STEPS>  CLASSNAME;
 			typedef GridStepIterator Iterator;
 			typedef Callback2<CLASSNAME&, CoordinateConverter&> TypeGridStepCalcCallBack;
@@ -96,7 +95,7 @@ namespace GraphDraw_ns
 			unsigned int _nbMaxSteps;  // steps range is : [0, _nbMaxSteps]
 			unsigned int _nbSteps;     // current step range (according to grid step)
 			unsigned int _currentStep; // current step number
-			TypeCoordConverter& _coordConverter;
+			CoordinateConverter& _coordConverter;
 			
 			TypeGraphCoord _stepValues[NB_MAX_STEPS];
 			Value          _stepDrawingParams[NB_MAX_STEPS]; // general purpose step parameter holder : filled when calculating the steps
@@ -104,7 +103,7 @@ namespace GraphDraw_ns
 
 			TypeGridStepCalcCallBack updateCbk;
 		public:
-			GridStepManager(TypeCoordConverter& coordConv)
+			GridStepManager(CoordinateConverter& coordConv)
 			: _nbMaxSteps( 15 )
 			, _currentStep( 0 )
 			, _coordConverter( coordConv )
@@ -113,7 +112,7 @@ namespace GraphDraw_ns
 				Update();
 			}
 
-			GridStepManager(int nbSteps, int currStep, TypeCoordConverter& coordConv)
+			GridStepManager(int nbSteps, int currStep, CoordinateConverter& coordConv)
 			: _nbMaxSteps( nbSteps )
 			, _currentStep( currStep )
 			, _coordConverter( coordConv )

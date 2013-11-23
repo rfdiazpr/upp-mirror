@@ -91,22 +91,23 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		if (_B::_drawMode == GraphDraw_ns::MD_DRAW) {
 			ImageDraw ib(GetSize());
 			_B::Paint(ib, 1);
-			ctrlImgSave = ib;
-			w.DrawImage(0, 0, ctrlImgSave);
+			//ctrlImgSave = ib;
+			w.DrawImage(0, 0, ib);
 		}
 		else {
 			ImageBuffer ib(GetSize());
 			BufferPainter bp(ib, _B::_drawMode);
 			_B::Paint(bp, 1);
-			ctrlImgSave = ib;
-			w.DrawImage(0, 0, ctrlImgSave);
+			//ctrlImgSave = ib;
+			w.DrawImage(0, 0, ib);
 		}
 	}
+
 
 	// Refresh called from child
 	virtual void RefreshFromChild( GraphDraw_ns::RefreshStrategy strategy ) {
 		if      (strategy == GraphDraw_ns::REFRESH_FAST)      _B::_doFastPaint = true;
-		else if (strategy == GraphDraw_ns::REFRESH_KEEP_DATA) _B::_keepDataPaint = true;
+		else if (strategy != GraphDraw_ns::REFRESH_KEEP_DATA)  _B::_PlotDrawImage.Clear();// _B::_keepDataPaint = true;
 		SetModify();
 		Refresh();
 	};
@@ -114,14 +115,14 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 
 	virtual void Paint(Draw& w) {
 		if ( _B::_doFastPaint == false ) {
-			if ( IsModified() ) {
+			//if ( IsModified() ) {
 				AutoWaitCursor waitcursor(autoWaitCursorAvg);
 				Paint2(w);
 				ClearModify();
-			}
-			else {
-				w.DrawImage(0, 0, ctrlImgSave);
-			}
+//			}
+//			else {
+//				w.DrawImage(0, 0, ctrlImgSave);
+//			}
 		}
 		else {
 			Paint2(w);
@@ -206,7 +207,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		//dlg.lineDash.SetDrawMode(_B::GetDrawMode());
 		//dlg.lineThickness.SetDrawMode(_B::GetDrawMode());
 		
-		typename TYPES::TypeSeriesConfig& s = _B::series[c];
+		GraphDraw_ns::SeriesConfig& s = _B::series[c];
 		CtrlRetriever r;
 		r ( dlg.fillColor, s.fillColor)
 		  //( dlg.markShape, s.markShape)
@@ -231,12 +232,14 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 
 	void HideSeries(int c) {
 		_B::Show(c, _B::IsVisible(c) ? false : true);
+		_B::ClearPlotDrawImg();
 		SetModify();
 		Refresh();
 	}
 	
-	void ShowAllSeries() {
-		_B::ShowAll(true);
+	void ShowAllSeries(bool show=true) {
+		_B::ShowAll(show);
+		_B::ClearPlotDrawImg();
 		SetModify();
 		Refresh();
 	}
@@ -267,7 +270,8 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 
 		bar.Separator();
 
-		bar.Add( t_("Show ALL"), THISBACK(ShowAllSeries) );
+		bar.Add( t_("Show ALL"), THISBACK1(ShowAllSeries, true) );
+		bar.Add( t_("Hide ALL"), THISBACK1(ShowAllSeries, false) );
 		for (int c=0; c < _B::series.GetCount(); c++) {
 			String txt = t_("Show");
 			 _B::series[c].UpdateSerieImage();
@@ -368,6 +372,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 					SetModify();
 					undo.redoAction << _B::MakeRestoreGraphSizeCB(); // NEW size after  SELECT ZOOM
 					_B::AddUndoAction(undo);
+					Refresh();
 				}
 			}
 			return;

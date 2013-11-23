@@ -11,19 +11,45 @@ topic "";
 [b42;2 $$9,9#13035079074754324216151401829390:normal]
 [{_} 
 [s0;*@7;4%% &]
-[ {{10000@(113.42.0) [s0;%% [*@7;4 Title]]}}&]
+[ {{10000@(113.42.0) [s0;*@7;4%% ]}}&]
+[s1;:noref: [@(0.0.255)3 template][3 _<][@(0.0.255)3 class][3 _][*@4;3 TYPES][3 , 
+][@(0.0.255)3 class][3 _][*@3;3 BASE][3 >]&]
+[s1;:GraphElementCtrl`_Base`:`:class: [@(0.0.255) class]_[* GraphElementCtrl`_Base]_:_[@(0.0.255) p
+ublic]_[*@3 BASE]&]
+[s2;%% Base class for ALL GraphElementCtrl classes&]
+[s3; &]
 [s0;i448;a25;kKO9;@(0.0.255) &]
 [ {{10000F(128)G(128)@1 [s0;%% [* Function List]]}}&]
 [s0;i448;a25;kKO9;:noref:@(0.0.255) &]
 [ {{10000F(128)G(128)@1 [s0;%% [* Public Method List]]}}&]
 [s4; &]
-[s5;:CRTPGraphElementCtrl`_Base`:`:TOpenPropertiesDlg`(void`): [@(0.0.255) template]_<_
-[@(0.0.255) template]_<[@(0.0.255) class]_T>_[@(0.0.255) class]_[*@4 DLG]>_[@(0.0.255) void
-]_[* TOpenPropertiesDlg]([@(0.0.255) void])&]
+[s5;:GraphElementCtrl`_Base`:`:TOpenPropertiesDlg`(void`): [@(0.0.255) template]_<_[@(0.0.255) t
+emplate]_<[@(0.0.255) class]_T>_[@(0.0.255) class]_[*@4 DLG]>_[@(0.0.255) void]_[* TOpenPro
+pertiesDlg]([@(0.0.255) void])&]
 [s2;%% Template method that delegates the instantiation of the properties 
 dialog according to the template parameters.&]
+[s2; [%% It it used to make a CallBack called by ][^topic`:`/`/GraphCtrl`/src`/CRTPGraphElementCtrl`_Base`$en`-us`#CRTPGraphElementCtrl`_Base`:`:OpenPropertiesDlg`(void`)^ O
+penPropertiesDlg]()&]
 [s3; &]
 [s0; &]
 [s0; &]
 [ {{10000F(128)G(128)@1 [s0;%% [* Constructor detail]]}}&]
+[s4; &]
+[s5;:GraphElementCtrl`_Base`:`:OpenPropertiesDlg`(void`): [@(0.0.255) void]_[* OpenProper
+tiesDlg]([@(0.0.255) void])&]
+[s2;%% Method to be called when wanting to open Element Properties 
+dialog.&]
+[s2;%% By default it is called on Mouse Left Double click&]
+[s3; &]
+[s0; &]
+[s0;*@7;4%% &]
+[ {{10000@(113.42.0) [s0;%% [*@7;4 Title]]}}&]
+[s1;:noref: [@(0.0.255)3 template][3 _<][@(0.0.255)3 class][3 _][*@4;3 TYPES][3 , 
+][@(0.0.255)3 class][3 _][*@3;3 BASE][3 _>]&]
+[s1;:GraphElementCtrl`_FloatMoveResize`:`:class: [@(0.0.255) class]_[* GraphElementCtrl`_
+FloatMoveResize]_:_[@(0.0.255) public]_[*@3 BASE]&]
+[s2;%% Brings MOVE / RESIZE capacities to a GraphElement when it 
+is in FLOATING.&]
+[s3;%% &]
+[s0;%% &]
 [s0;%% ]]

@@ -2,19 +2,33 @@
 #define _GraphCtrl_StdElementCtrls_h_
 
 
-template <class TYPES>
-class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns::GridAxisDraw<TYPES>, StdGridAxisDrawCtrl<TYPES> >
+template <class TYPES, class GRIDAXISDRAW>
+class StdGridAxisDrawCtrl : public GraphElementCtrl_Base<TYPES, GRIDAXISDRAW >
 {
-	typedef StdGridAxisDrawCtrl<TYPES> CLASSNAME;
-	typedef CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns::GridAxisDraw<TYPES>, StdGridAxisDrawCtrl<TYPES> > _B;
+	typedef StdGridAxisDrawCtrl<TYPES, GRIDAXISDRAW> CLASSNAME;
+	typedef GraphElementCtrl_Base<TYPES, GRIDAXISDRAW > _B;
 	Point prevMousePoint;
 
+	template <class COORDCONV>
+	void TOpenPropertiesDlg(void) {
+		GridAxisPropertiesDlg<CLASSNAME,  COORDCONV> dlg;
+		COORDCONV& coordConv = * dynamic_cast< COORDCONV*>( &_B::GetCoordConverter() );
+		dlg.InitDlg(*this, coordConv);
+		if ( dlg.Execute() == IDOK ) {
+			dlg.Retrieve();
+			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
+		}
+	}
+
+	
 	public:
-	StdGridAxisDrawCtrl(typename TYPES::TypeCoordConverter& conv) : _B(conv) {}
+	template<class COORDCONV>
+	StdGridAxisDrawCtrl( COORDCONV& conv) : _B(conv) {
+		_B::whenOpenPropertiesDlgCB = THISBACK( TOpenPropertiesDlg<COORDCONV> );
+	}
+	
 	StdGridAxisDrawCtrl( StdGridAxisDrawCtrl& p) : _B(p) {}
 	~StdGridAxisDrawCtrl() {}
-
-	virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }
 
 
 	void FitToDataRefresh(GraphDraw_ns::FitToDataStrategy fitStrategy = GraphDraw_ns::ALL_SERIES) {
@@ -28,14 +42,6 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 		bar.Add(t_("Fit To Visible Data"), THISBACK1(FitToDataRefresh,  GraphDraw_ns::VISIBLE_SERIES_ONLY));
 	}
 
-	virtual void OpenPropertiesDlg(void) {
-		GridAxisPropertiesDlg<CLASSNAME,  typename TYPES::TypeCoordConverter> dlg;
-		dlg.InitDlg(*this, _B::GetCoordConverter());
-		if ( dlg.Execute() == IDOK ) {
-			dlg.Retrieve();
-			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
-		}
-	}
 
 	virtual Image  CursorImage(Point p, dword keyflags) {
 		if ( keyflags & K_CTRL ){
@@ -56,7 +62,7 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 	}
 
 	virtual void MouseWheel (Point p, int zdelta, dword keyflags) {
-		typename TYPES::TypeCoordConverter& converter = _B::GetCoordConverter();
+		GraphDraw_ns::CoordinateConverter& converter = _B::GetCoordConverter();
 		if (zdelta < 0) zdelta = -1;
 		else            zdelta =  1;
 		if (_B::IsVertical())  zdelta = -zdelta;
@@ -124,7 +130,6 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 		{
 			if ( keyflags & K_SHIFT ) // SCROLL --ONLY THIS AXIS--
 			{
-				// ==> LEFT SCROLL 
 				int delta=0;
 				if (_B::IsVertical() ) {
 					// Vertical drag
@@ -133,13 +138,12 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 					// Horizontal drag
 					delta = p.x-prevMousePoint.x;
 				}
-				typename TYPES::TypeCoordConverter& converter = _B::GetCoordConverter();
+				GraphDraw_ns::CoordinateConverter& converter = _B::GetCoordConverter();
 				converter.Scroll( delta );
 				prevMousePoint = p;
 			}
 			else // SCROLL  --WHOLE GRAPH--
 			{
-				// ==> LEFT SCROLL 
 				if (_B::IsVertical() ) {
 					// Vertical drag
 					_B::_parent->ScrollY(p.y-prevMousePoint.y);
@@ -163,27 +167,26 @@ class StdGridAxisDrawCtrl : public CRTPGraphElementCtrl_Base<TYPES, GraphDraw_ns
 			_B::_parent->AddUndoAction(undo);
 		}
 	}
-	
 };
 
 
 template<class TYPES, class LEGENDDRAW>
-class StdLegendCtrl : public GraphElementCtrl_MoveResize<TYPES, CRTPGraphElementCtrl_Base<TYPES, LEGENDDRAW, StdLegendCtrl<TYPES, LEGENDDRAW> > > {
+class StdLegendCtrl : public GraphElementCtrl_FloatMoveResize<TYPES, GraphElementCtrl_Base<TYPES, LEGENDDRAW > > {
 	public:
 	typedef StdLegendCtrl<TYPES, LEGENDDRAW>  CLASSNAME;
-	typedef GraphElementCtrl_MoveResize<TYPES, CRTPGraphElementCtrl_Base<TYPES, LEGENDDRAW, CLASSNAME > >  _B;
+	typedef GraphElementCtrl_FloatMoveResize<TYPES, GraphElementCtrl_Base<TYPES, LEGENDDRAW > >  _B;
 	StdLegendCtrl() {}
-	StdLegendCtrl(StdLegendCtrl& p) : GraphElementCtrl_MoveResize<TYPES, LEGENDDRAW>(p) {}
+	StdLegendCtrl(StdLegendCtrl& p) : GraphElementCtrl_FloatMoveResize<TYPES, LEGENDDRAW>(p) {}
 	virtual ~StdLegendCtrl() {}
 };
 
 
 
 template<class TYPES, class LABELDRAW>
-class StdLabelCtrl : public  CRTPGraphElementCtrl_Base< TYPES, LABELDRAW, StdLabelCtrl<TYPES, LABELDRAW> > {
+class StdLabelCtrl : public  GraphElementCtrl_Base< TYPES, LABELDRAW > {
 	public:
 	typedef StdLabelCtrl<TYPES, LABELDRAW>  CLASSNAME;
-	typedef CRTPGraphElementCtrl_Base< TYPES, LABELDRAW, CLASSNAME > _B;
+	typedef GraphElementCtrl_Base< TYPES, LABELDRAW > _B;
 	typedef TYPES  Types;
 	
 	StdLabelCtrl() {
@@ -198,10 +201,10 @@ class StdLabelCtrl : public  CRTPGraphElementCtrl_Base< TYPES, LABELDRAW, StdLab
 
 
 template<class TYPES, class MARKERDRAW>
-class DynamicMarkerCtrl : public  CRTPGraphElementCtrl_Base< TYPES, MARKERDRAW, DynamicMarkerCtrl<TYPES, MARKERDRAW> > {
+class DynamicMarkerCtrl : public  GraphElementCtrl_Base< TYPES, MARKERDRAW > {
 	protected:
 	typedef DynamicMarkerCtrl<TYPES, MARKERDRAW>  CLASSNAME;
-	typedef CRTPGraphElementCtrl_Base< TYPES, MARKERDRAW, CLASSNAME > _B;
+	typedef GraphElementCtrl_Base< TYPES, MARKERDRAW > _B;
 	typedef TYPES  Types;
 	Point prevMousePoint;
 	GraphDraw_ns::TypeScreenCoord selectOffset;
@@ -214,14 +217,10 @@ class DynamicMarkerCtrl : public  CRTPGraphElementCtrl_Base< TYPES, MARKERDRAW, 
 	GraphDraw_ns::TypeMarkerMoveCbk whenMarkerMoveEnd;
 		
 
-	DynamicMarkerCtrl(typename TYPES::TypeCoordConverter& coordconv)
+	DynamicMarkerCtrl(GraphDraw_ns::CoordinateConverter& coordconv)
 	: _B(coordconv)
 	{ }
 	
-//	virtual void OpenPropertiesDlg(void) {
-//		_B::template TOpenPropertiesDlg<LabelPropertiesDlg>();
-//	}
-
 	private:
 
 	void _MoveMarker (Point p, dword keyflags) {
@@ -296,13 +295,6 @@ class DynamicMarkerCtrl : public  CRTPGraphElementCtrl_Base< TYPES, MARKERDRAW, 
 					}
 				}
 			}
-
-
-			//GraphDraw_ns::GraphUndoData undo;
-			//undo.undoAction << _B::_parent->MakeRestoreGraphSizeCB();
-			//	_B::_parent->DoLocalLoop( THISBACK( _MouseMove ) );
-			//undo.redoAction << _B::_parent->MakeRestoreGraphSizeCB();
-			//_B::_parent->AddUndoAction(undo);
 		}
 	}
 

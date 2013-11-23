@@ -41,8 +41,9 @@ tRect]([@(0.0.255) const]_[_^Rect^ Rect][@(0.0.255) `&]_[*@3 plotRect])&]
 [s2;  [%-*@3 plotRect] : plot area Rect&]
 [s2; Adjusts ElementFrame according to plotRect.&]
 [s2; This method is called when all GraphElements have been added 
-to the Graph, and finally, all elements need there size to be 
-adjusted.&]
+to the Graph, and finally, all elements need they`'re size to 
+be adjusted.&]
+[s2; NB: for internal use only&]
 [s3; &]
 [s4;%- &]
 [s5;:GraphElement`:`:SetName`(const char`*`):%- [@(0.0.255) void]_[* SetName]([@(0.0.255) c

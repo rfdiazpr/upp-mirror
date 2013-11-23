@@ -30,15 +30,18 @@ using namespace Upp;
 // ===============================================================================================================================
 // ===============================================================================================================================
 struct GraphCtrlDefaultTypes {
-		typedef DataSource                                                                  TypeDataSource;
-		typedef SeriesPlot                                                                  TypeSeriesPlot;
-		typedef GraphDraw_ns::SeriesConfig<GraphCtrlDefaultTypes>                           TypeSeriesConfig;
-		typedef Vector<TypeSeriesConfig>                                                    TypeVectorSeries;
-		typedef MarkPlot                                                                    TypeMarkPlot;
 		typedef GraphDraw_ns::GenericCoordinateConverter                                    TypeCoordConverter;
-		typedef StdGridAxisDrawCtrl<GraphCtrlDefaultTypes>                                  TypeGridAxisDraw;
-		typedef GraphDraw_ns::GridStepManager<>                                             TypeGridStepManager;
-		typedef StdLabelCtrl<GraphCtrlDefaultTypes,GraphDraw_ns::LabelElement>              TypeLabelElement;
+		
+		typedef GraphDraw_ns::GenericCoordinateConverter                                       X_TypeCoordConverter;
+		typedef GraphDraw_ns::GenericCoordinateConverter                                       X2_TypeCoordConverter;
+		typedef GraphDraw_ns::GenericCoordinateConverter                                       Y_TypeCoordConverter;
+		typedef GraphDraw_ns::GenericCoordinateConverter                                       Y2_TypeCoordConverter;
+		typedef StdGridAxisDrawCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::GridAxisDraw<GraphCtrlDefaultTypes> > X_TypeGridAxisDraw;
+		typedef StdGridAxisDrawCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::GridAxisDraw<GraphCtrlDefaultTypes> > X2_TypeGridAxisDraw;
+		typedef StdGridAxisDrawCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::GridAxisDraw<GraphCtrlDefaultTypes> > Y_TypeGridAxisDraw;
+		typedef StdGridAxisDrawCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::GridAxisDraw<GraphCtrlDefaultTypes> > Y2_TypeGridAxisDraw;
+		typedef GraphDraw_ns::GridStepManager<>                                                TypeGridStepManager;
+		typedef StdLabelCtrl<GraphCtrlDefaultTypes,GraphDraw_ns::LabelElement>                 TypeLabelElement;
 		typedef StdLegendCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::LegendElement<GraphCtrlDefaultTypes> > TypeLegendElement;
 };
 

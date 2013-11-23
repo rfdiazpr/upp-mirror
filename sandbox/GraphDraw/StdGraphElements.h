@@ -24,7 +24,7 @@ namespace GraphDraw_ns
 		LabelElement(LabelElement& p) : _B(p), _color( p._color ), _bckGndcolor(p._bckGndcolor) {}
 		virtual ~LabelElement() {}
 
-		virtual LabelElement* Clone() { return new LabelElement(*this); };
+//		virtual LabelElement* Clone() { return new LabelElement(*this); };
 
 		template<class T>	inline LabelElement& SetLabel(T& v) { _label = v; return *this; }
 		template<class T>	inline LabelElement& SetFont(T& v) { _font = v; return *this; }
@@ -118,7 +118,6 @@ namespace GraphDraw_ns
 		public:
 		typedef LegendElement CLASSNAME;
 		typedef CRTPGraphElement< LegendElement > _B;
-		typedef typename TYPES::TypeVectorSeries TypeVectorSeries;
 
 		String _legend;
 		RGBA   _bckGndRgba;
@@ -150,7 +149,7 @@ namespace GraphDraw_ns
 
 		virtual ~LegendElement() {}
 
-		virtual CLASSNAME* Clone() { return new CLASSNAME(*this); };
+//		virtual CLASSNAME* Clone() { return new CLASSNAME(*this); };
 
 		template<class T>
 		inline CLASSNAME& SetLegend(T& v) { _legend = v; return *this; }
@@ -183,8 +182,7 @@ namespace GraphDraw_ns
 
 		virtual void Update() {
 			if (v_series==0) {
-				typedef typename TYPES::TypeVectorSeries*  PtrTypeVectorSeries;
-				v_series = _B::_parent->GetSeries().template To<PtrTypeVectorSeries>();
+				v_series = _B::_parent->GetSeries().template To<TypeVectorSeries*>();
 				// ###### BUG DE CONVERSION ARM ######
 			}
 
@@ -275,8 +273,7 @@ namespace GraphDraw_ns
 	class MarkerElement : public CRTPGraphElement< MarkerElement<TYPES> >
 	{
 		public:
-		typedef typename TYPES::TypeCoordConverter   TypeCoordConverter;
-		TypeCoordConverter& _coordConverter;
+		CoordinateConverter& _coordConverter;
 		Font        _font;
 		Color       _color;
 		Color       _bckGndcolor;
@@ -288,7 +285,7 @@ namespace GraphDraw_ns
 
 		public:
 
-		MarkerElement(TypeCoordConverter& coordconv)
+		MarkerElement(CoordinateConverter& coordconv)
 		: _coordConverter(coordconv)
 		, _color( Red() )
 		, _bckGndcolor(Null)
@@ -309,7 +306,7 @@ namespace GraphDraw_ns
 		
 		virtual ~MarkerElement() {}
 
-		virtual MarkerElement* Clone() { return new MarkerElement(*this); };
+//		virtual MarkerElement* Clone() { return new MarkerElement(*this); };
 
 		template<class T>	inline MarkerElement& SetFont(T& v)       { _font = v; return *this; }
 		template<class T>	inline MarkerElement& SetTextColor(T v)   { _color = v; return *this; }

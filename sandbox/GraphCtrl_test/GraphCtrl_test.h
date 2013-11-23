@@ -27,7 +27,7 @@ public:
 	Vector<Pointf> points2;
 	Vector<Pointf> s1;
 	Vector<Pointf> s2;
-	XYY2LT_GraphCtrl::Types::TypeCoordConverter y2CoordConverter;
+	//XYY2LT_GraphCtrl::Types::TypeCoordConverter y2CoordConverter;
 	GraphDraw_test();
 	
 	void FormatAsTime(double value, String& output, double range);

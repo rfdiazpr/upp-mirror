@@ -8,27 +8,13 @@
 // ============================================================================================
 
 
-template<class TYPES, class ELEMENT_CLASS, class DERIVED>
-class CRTPGraphElementCtrl_Base : public ELEMENT_CLASS {
+template<class TYPES, class ELEMENT_CLASS>
+class GraphElementCtrl_Base : public ELEMENT_CLASS {
 	public:
-	typedef CRTPGraphElementCtrl_Base<TYPES, ELEMENT_CLASS, DERIVED> CLASSNAME;
+	typedef GraphElementCtrl_Base<TYPES, ELEMENT_CLASS> CLASSNAME;
 	typedef ELEMENT_CLASS _B;
 
-	CRTPGraphElementCtrl_Base() {}
-	virtual ~CRTPGraphElementCtrl_Base() {}
-
-	template <class PARAM>
-	CRTPGraphElementCtrl_Base(PARAM& p) : ELEMENT_CLASS(p) {}
-	
-	template <class PARAM1, class PARAM2>
-	CRTPGraphElementCtrl_Base(PARAM1& p1, PARAM2 p2) : ELEMENT_CLASS(p1, p2) {}
-	
-	template <class PARAM1, class PARAM2, class PARAM3>
-	CRTPGraphElementCtrl_Base(PARAM1& p1, PARAM2 p2, PARAM3 p3) : ELEMENT_CLASS(p1, p2, p3) {}
-	
-	public:
-	
-	// helper class to make 
+	Callback  whenOpenPropertiesDlgCB;
 	template <  template <class T> class DLG>
 	void TOpenPropertiesDlg(void) {
 		DLG<ELEMENT_CLASS> dlg;
@@ -38,8 +24,24 @@ class CRTPGraphElementCtrl_Base : public ELEMENT_CLASS {
 		}
 	}
 
-	virtual void OpenPropertiesDlg(void) {
-		TOpenPropertiesDlg<ElementPropertiesDlg>();
+
+	GraphElementCtrl_Base() { whenOpenPropertiesDlgCB = THISBACK( TOpenPropertiesDlg<ElementPropertiesDlg> ); }
+	virtual ~GraphElementCtrl_Base() {}
+
+	template <class PARAM>
+	GraphElementCtrl_Base(PARAM& p) : ELEMENT_CLASS(p) { whenOpenPropertiesDlgCB = THISBACK( TOpenPropertiesDlg<ElementPropertiesDlg> ); }
+	
+	template <class PARAM1, class PARAM2>
+	GraphElementCtrl_Base(PARAM1& p1, PARAM2 p2) : ELEMENT_CLASS(p1, p2) { whenOpenPropertiesDlgCB = THISBACK( TOpenPropertiesDlg<ElementPropertiesDlg> ); }
+	
+	template <class PARAM1, class PARAM2, class PARAM3>
+	GraphElementCtrl_Base(PARAM1& p1, PARAM2 p2, PARAM3 p3) : ELEMENT_CLASS(p1, p2, p3) { whenOpenPropertiesDlgCB = THISBACK( TOpenPropertiesDlg<ElementPropertiesDlg> ); }
+	
+	public:
+
+
+	void OpenPropertiesDlg(void) {
+		whenOpenPropertiesDlgCB();
 	}
 	
 	virtual bool Contains(Point p) const                { return (_B::_frame.Contains(p)); }
@@ -51,22 +53,34 @@ class CRTPGraphElementCtrl_Base : public ELEMENT_CLASS {
 
 // ============================================================================================
 
-template <class TYPES, class LEGEND_DRAW_CLASS >
-class GraphElementCtrl_MoveResize : public LEGEND_DRAW_CLASS
+template <class TYPES, class BASE >
+class GraphElementCtrl_FloatMoveResize : public BASE
 {
 	private:
 	Point prevMousePoint;
 	Ctrl* parentCtrl;
 
 	public:
-	typedef GraphElementCtrl_MoveResize<TYPES,LEGEND_DRAW_CLASS> CLASSNAME;
-	typedef LEGEND_DRAW_CLASS _B;
+	typedef GraphElementCtrl_FloatMoveResize<TYPES,BASE> CLASSNAME;
+	typedef BASE _B;
 
 
-	GraphElementCtrl_MoveResize() : parentCtrl(0) {}
-	GraphElementCtrl_MoveResize(Ctrl& p) : parentCtrl(&p) {}
-	GraphElementCtrl_MoveResize( GraphElementCtrl_MoveResize& p) : _B(p), parentCtrl(p.parentCtrl)  {}
-	virtual ~GraphElementCtrl_MoveResize() {}
+	GraphElementCtrl_FloatMoveResize() : parentCtrl(0) {}
+
+	template <class PARAM>
+	GraphElementCtrl_FloatMoveResize(PARAM& p) : _B(p), parentCtrl(0) {}
+
+	template <class PAR1, class PAR2>
+	GraphElementCtrl_FloatMoveResize(PAR1& p1, PAR2 p2) : _B(p1, p2), parentCtrl(0) {}
+
+	template <class PAR1, class PAR2, class PAR3>
+	GraphElementCtrl_FloatMoveResize(PAR1& p1, PAR2 p2, PAR3 p3) : _B(p1, p2, p3), parentCtrl(0) {}
+
+
+
+	GraphElementCtrl_FloatMoveResize(Ctrl& p) : parentCtrl(&p) {}
+	GraphElementCtrl_FloatMoveResize( GraphElementCtrl_FloatMoveResize& p) : _B(p), parentCtrl(p.parentCtrl)  {}
+	virtual ~GraphElementCtrl_FloatMoveResize() {}
 
 	virtual bool Contains(Point p) const { return (_B::_frame.Contains(p)); }
 
@@ -77,7 +91,7 @@ class GraphElementCtrl_MoveResize : public LEGEND_DRAW_CLASS
 			}
 			return GraphCtrlImg::ELEMENT_MOVE();
 		}
-		return GraphCtrlImg::ACTIVE_CROSS();
+		return _B::CursorImage(p, keyflags);
 	}
 	
 	
@@ -90,8 +104,8 @@ class GraphElementCtrl_MoveResize : public LEGEND_DRAW_CLASS
 		if (parentCtrl == 0) {
 			parentCtrl = ValueTo<Ctrl*>(_B::_parent->GetParentCtrl());
 		}
-		if ((parentCtrl != 0) && _B::IsFloat()) {
-			if (keyflags & K_MOUSELEFT)
+		if (_B::IsFloat() ) {
+			if ( (parentCtrl != 0) && (keyflags & K_MOUSELEFT) )
 			{
 				RectTracker tracker(*parentCtrl);
 				tracker.Dashed().Animation();
@@ -110,9 +124,12 @@ class GraphElementCtrl_MoveResize : public LEGEND_DRAW_CLASS
 				_B::_parent->AddUndoAction(undo);
 			}
 		}
+		else
+		{
+			_B::MouseMove(p, keyflags);
+		}
 	}
 
-	virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }
 };
 
 

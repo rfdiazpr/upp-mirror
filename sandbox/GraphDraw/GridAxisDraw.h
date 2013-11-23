@@ -29,14 +29,13 @@ namespace GraphDraw_ns
 	{
 		public:
 		typedef GridAxisDraw<TYPES>                   CLASSNAME;
-		typedef typename TYPES::TypeCoordConverter    TypeCoordConverter;
 		typedef typename TYPES::TypeGridStepManager   TypeGridStepManager;
 		typedef CRTPGraphElement< GridAxisDraw<TYPES> > _B;
 		typedef Callback2< const GridStepIterator&, String&> TypeFormatTextCbk; // IN: valueIterator,  OUT: formated value
 
 		
 //		protected:
-		TypeCoordConverter& _coordConverter;
+		CoordinateConverter& _coordConverter;
 		One< TypeGridStepManager > _gridStepManager;
 
 		int       _axisWidth;
@@ -52,7 +51,7 @@ namespace GraphDraw_ns
 
 
 		public:
-		GridAxisDraw(TypeCoordConverter& coordConv)
+		GridAxisDraw(CoordinateConverter& coordConv)
 		: _coordConverter( coordConv )
 		, _gridStepManager( new TypeGridStepManager(coordConv) )
 		, _axisWidth(2)
@@ -86,7 +85,7 @@ namespace GraphDraw_ns
 		virtual ~GridAxisDraw() {}
 
 
-		virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }
+//		virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }
 
 		virtual void Update() { _gridStepManager->Update(); }
 		
@@ -103,7 +102,7 @@ namespace GraphDraw_ns
 
 		
 		virtual void FitToData(FitToDataStrategy fitStrategy) {
-			typedef typename TYPES::TypeVectorSeries*  PtrTypeVectorSeries;
+			typedef TypeVectorSeries*  PtrTypeVectorSeries;
 			PtrTypeVectorSeries v_series = _B::_parent->GetSeries().template To<PtrTypeVectorSeries>();
 			double lmin = -DOUBLE_NULL;
 			double lmax =  DOUBLE_NULL;
@@ -185,7 +184,7 @@ namespace GraphDraw_ns
 		inline int GetMinorTickLength()       { return _minorTickMark->GetTickLength(); }
 		inline void SetMinorTickLength(int v) { _minorTickMark->SetTickLength(v); }
 
-		inline TypeCoordConverter& GetCoordConverter()                 { return _coordConverter;  }
+		inline CoordinateConverter& GetCoordConverter()                 { return _coordConverter;  }
 
 		inline typename TypeGridStepManager::Iterator getMajorBeginIterator(void) { return  _gridStepManager->Begin(); }
 		inline typename TypeGridStepManager::Iterator getMajorEndIterator(void)   { return  _gridStepManager->End(); }

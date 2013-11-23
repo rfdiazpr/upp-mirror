@@ -43,8 +43,8 @@ namespace GraphDraw_ns
 	class GraphElementParent {
 		public:
 			typedef GraphElementParent CLASSNAME;
-			virtual void ScrollX( TypeScreenCoord xOffset) = 0;
-			virtual void ScrollY( TypeScreenCoord yOffset) = 0;
+			virtual void ScrollX( TypeScreenCoord xOffset, bool doRefresh = true) = 0;
+			virtual void ScrollY( TypeScreenCoord yOffset, bool doRefresh = true) = 0;
 			virtual void ZoomX(TypeScreenCoord left, TypeScreenCoord right) = 0;
 			virtual void ZoomY(TypeScreenCoord top, TypeScreenCoord bottom) = 0;
 			virtual void RefreshFromChild( RefreshStrategy doFastPaint ) = 0;
@@ -158,7 +158,7 @@ namespace GraphDraw_ns
 			virtual void PaintOnPlot_overData(Draw& dw, int otherWidth, int scale) {}
 			virtual void Update() {}; // called when coordinates need update
 
-			virtual GraphElement* Clone() = 0;
+//			virtual GraphElement* Clone() = 0;
 
 
 			virtual void LeftDown   (Point p, dword keyflags) { };
@@ -197,7 +197,7 @@ namespace GraphDraw_ns
 			BlankAreaElement( BlankAreaElement& p) : CRTPGraphElement< BlankAreaElement >(p) {}
 			virtual ~BlankAreaElement() {}
 			virtual void PaintElement(Draw& dw, int scale) { /* do noting */}
-			virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }
+//			virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }
 	};
 
 

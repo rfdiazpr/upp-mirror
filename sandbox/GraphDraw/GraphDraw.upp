@@ -2,7 +2,8 @@ description "Graph drawing\377";
 
 uses
 	Painter,
-	ScatterDraw;
+	ScatterDraw,
+	RichText;
 
 file
 	CoordinateConverter.h,

@@ -33,7 +33,7 @@ class GraphCtrlLooper : public LocalLoop {
 typedef GraphDraw_ns::GraphElement* (GraphDraw_ns::GraphElement::*mouseCallBack)(Point,dword);
 
 template<class TYPES, class DERIVED, template <class TYPES2, class DERIVED2> class GRAPHDRAW_BASE_CLASS >
-class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public Ctrl
+class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>
 {
 	public:
 	typedef CRTP_GraphCtrl_Base<TYPES, DERIVED, GRAPHDRAW_BASE_CLASS> CLASSNAME;
@@ -42,7 +42,6 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	typedef GraphDraw_ns::CRTP_XYGraphDraw<TYPES, DERIVED> _B;
 
 	Image CaptureMouseMove_cursorImage;
-	Image ctrlImgSave; // to save ctrl image
 	Point prevMousePoint;
 	int copyRatio;
 	int autoWaitCursorAvg;
@@ -52,6 +51,8 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	CRTP_GraphCtrl_Base()
 	: copyRatio(3)
 	{
+		Transparent();
+		BackPaint();
 		SetModify();
 		_B::setScreenSize( GetSize() );
 	}
@@ -60,6 +61,8 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	: _B(p)
 	, copyRatio(p.copyRatio)
 	{
+		Transparent();
+		BackPaint();
 		SetModify();
 		_B::setScreenSize( GetSize() );
 	}
@@ -88,19 +91,21 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 
 	void Paint2(Draw& w) {
 		_B::setScreenSize( GetSize() );
-		if (_B::_drawMode == GraphDraw_ns::MD_DRAW) {
-			ImageDraw ib(GetSize());
-			_B::Paint(ib, 1);
-			//ctrlImgSave = ib;
-			w.DrawImage(0, 0, ib);
+		if (1) { //_B::_drawMode == GraphDraw_ns::MD_DRAW) {
+			_B::Paint(w, 1);
 		}
 		else {
+			RGBA bckgColor;   bckgColor.r = 0; bckgColor.g = 0; bckgColor.b = 0; bckgColor.a = 0;
 			ImageBuffer ib(GetSize());
+			Upp::Fill( ib.Begin(), bckgColor, ib.GetLength() );
 			BufferPainter bp(ib, _B::_drawMode);
 			_B::Paint(bp, 1);
-			//ctrlImgSave = ib;
 			w.DrawImage(0, 0, ib);
 		}
+		
+//		if(HasFocus())
+//			DrawFocus(w, Rect(GetSize()).Deflated(5));//st->focusmargin));
+
 	}
 
 
@@ -112,17 +117,11 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		Refresh();
 	};
 
-
 	virtual void Paint(Draw& w) {
 		if ( _B::_doFastPaint == false ) {
-			//if ( IsModified() ) {
-				AutoWaitCursor waitcursor(autoWaitCursorAvg);
-				Paint2(w);
-				ClearModify();
-//			}
-//			else {
-//				w.DrawImage(0, 0, ctrlImgSave);
-//			}
+			AutoWaitCursor waitcursor(autoWaitCursorAvg);
+			Paint2(w);
+			ClearModify();
 		}
 		else {
 			Paint2(w);

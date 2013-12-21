@@ -40,7 +40,7 @@ class GraphElementCtrl_Base : public ELEMENT_CLASS {
 	public:
 
 
-	void OpenPropertiesDlg(void) {
+	virtual void OpenPropertiesDlg(void) {
 		whenOpenPropertiesDlgCB();
 	}
 	

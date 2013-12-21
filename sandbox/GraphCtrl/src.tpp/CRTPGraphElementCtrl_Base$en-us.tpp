@@ -1,4 +1,4 @@
-topic "";
+topic "GraphElementCtrl_Base";
 [2 $$0,0#00000000000000000000000000000000:Default]
 [i448;a25;kKO9;2 $$1,0#37138531426314131252341829483380:class]
 [l288;2 $$2,2#27521748481378242620020725143825:desc]
@@ -35,8 +35,8 @@ penPropertiesDlg]()&]
 [s0; &]
 [ {{10000F(128)G(128)@1 [s0;%% [* Constructor detail]]}}&]
 [s4; &]
-[s5;:GraphElementCtrl`_Base`:`:OpenPropertiesDlg`(void`): [@(0.0.255) void]_[* OpenProper
-tiesDlg]([@(0.0.255) void])&]
+[s5;:GraphElementCtrl`_Base`:`:OpenPropertiesDlg`(void`): [@(0.0.255) virtual 
+void]_[* OpenPropertiesDlg]([@(0.0.255) void])&]
 [s2;%% Method to be called when wanting to open Element Properties 
 dialog.&]
 [s2;%% By default it is called on Mouse Left Double click&]

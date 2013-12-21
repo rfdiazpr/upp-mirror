@@ -76,7 +76,6 @@ namespace GraphDraw_ns
 
 			Image MakeSerieIcon( int width=16 ) {
 				RGBA bckgColor;   bckgColor.r = 0; bckgColor.g = 0; bckgColor.b = 0; bckgColor.a = 0;
-				
 				ImageBuffer ib( Size(width,width) );
 				Fill( ib.Begin(), bckgColor, ib.GetLength() );
 

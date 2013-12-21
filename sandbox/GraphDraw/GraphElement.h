@@ -37,6 +37,15 @@ namespace GraphDraw_ns
 		VISIBLE_SERIES_ONLY
 	} FitToDataStrategy;
 
+	 typedef enum {
+		MD_DRAW		   = -1,
+		MD_ANTIALIASED = MODE_ANTIALIASED,
+		MD_NOAA        = MODE_NOAA,
+		MD_SUBPIXEL    = MODE_SUBPIXEL
+	} DrawMode_;
+
+	typedef DrawMode_ DrawMode;
+
 
 	typedef Callback2< Point, dword >  MouseLocalLoopCB;
 
@@ -172,6 +181,23 @@ namespace GraphDraw_ns
 			
 			virtual void FitToData(FitToDataStrategy fitStrategy) {}
 
+
+			void PaintElementBckGround(Draw& dw, Size sz) {
+				if ( !_backgndStyle.IsNull() ) {
+//					if ( IsType<Image>(_backgndStyle) && _backgndStyle.To<Image>() .GetKind() == IMAGE_OPAQUE) {
+//						ChPaint(dw, sz, _backgndStyle );
+//					}
+//					else {
+						RGBA bckgColor;   bckgColor.r = 0; bckgColor.g = 0; bckgColor.b = 0; bckgColor.a = 0;
+						ImageBuffer ib( sz );
+						Upp::Fill( ib.Begin(), bckgColor, ib.GetLength() );
+						BufferPainter bp(ib, MD_ANTIALIASED);
+						ChPaint(bp, sz, _backgndStyle );
+						Premultiply(ib);
+						dw.DrawImage(0, 0, ib);
+//					}
+				}
+			}
 	};
 
 	inline bool compareGraphElementFrame(const GraphElement* a, const GraphElement* b) { return *a < *b; }

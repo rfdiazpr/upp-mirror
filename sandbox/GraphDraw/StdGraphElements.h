@@ -16,12 +16,11 @@ namespace GraphDraw_ns
 		Upp::String _label;
 		Font        _font;
 		Color       _color;
-		Color       _bckGndcolor;
 		typedef CRTPGraphElement< LabelElement >  _B;
 
 		public:
-		LabelElement() : _color( Blue() ), _bckGndcolor(Null) {}
-		LabelElement(LabelElement& p) : _B(p), _color( p._color ), _bckGndcolor(p._bckGndcolor) {}
+		LabelElement() : _color( Blue() ) {}
+		LabelElement(LabelElement& p) : _B(p), _color( p._color ) {}
 		virtual ~LabelElement() {}
 
 //		virtual LabelElement* Clone() { return new LabelElement(*this); };
@@ -29,15 +28,13 @@ namespace GraphDraw_ns
 		template<class T>	inline LabelElement& SetLabel(T& v) { _label = v; return *this; }
 		template<class T>	inline LabelElement& SetFont(T& v) { _font = v; return *this; }
 		template<class T>	inline LabelElement& SetTextColor(T v) { _color = v; return *this; }
-		template<class T>	inline LabelElement& SetBckGndColor(T v) { _bckGndcolor = v; return *this; }
 
 		inline const Upp::String& GetLabel() const { return _label; }
 
 		virtual void PaintElement(Draw& dw, int scale)
 		{
-			if ( !_bckGndcolor.IsNullInstance() )
-				dw.DrawRect( 0, 0, _B::GetFrame().GetWidth(), _B::GetFrame().GetHeight(), _bckGndcolor);
-
+			_B::PaintElementBckGround(dw, _B::GetFrame().GetSize() );
+			
 			Font scaledFont( _font );
 			scaledFont.Height(scale*scaledFont.GetHeight());
 			Size sz = GetTextSize(_label, scaledFont);
@@ -120,8 +117,6 @@ namespace GraphDraw_ns
 		typedef CRTPGraphElement< LegendElement > _B;
 
 		String _legend;
-		RGBA   _bckGndRgba;
-		bool   _isRgba;
 		Font   _font;
 		int    _xSeparation; // separation between two legends
 		int    _legendStyleLength;
@@ -130,8 +125,7 @@ namespace GraphDraw_ns
 
 		public:
 		LegendElement()
-		: _isRgba(false)
-		, _font(StdFont())
+		: _font(StdFont())
 		, _xSeparation(20)
 		, _legendStyleLength(23)
 		, v_series(0)
@@ -139,8 +133,6 @@ namespace GraphDraw_ns
 		
 		LegendElement(LegendElement& p)
 		: _B(p)
-		, _bckGndRgba(p._bckGndRgba)
-		, _isRgba(p._isRgba)
 		, _font(p._font)
 		, _xSeparation(p._xSeparation)
 		, _legendStyleLength(p._legendStyleLength)
@@ -154,29 +146,16 @@ namespace GraphDraw_ns
 		template<class T>
 		inline CLASSNAME& SetLegend(T& v) { _legend = v; return *this; }
 
-		inline CLASSNAME&  SetBackGndColor(Color v) { _B::SetBackgndStyle(v); _isRgba=false; return *this; }
-		inline CLASSNAME&  SetBackGndColor(RGBA  v) { _bckGndRgba = v; _isRgba=true;  return *this; }
+		inline CLASSNAME&  SetBackGndColor(Color v) { _B::SetBackgndStyle(v); return *this; }
 		inline CLASSNAME&  SetFont(Font  v)         { _font  = v;  return *this; }
 
 		virtual void PaintElement(Draw& dw, int scale) {
-			if      ( !_B::_backgndStyle.IsNull() ) {
-				ChPaint(dw, Rect(0, 0, _B::GetFrame().GetWidth(), _B::GetFrame().GetHeight()), _B::_backgndStyle );
-			}
-			else if (_isRgba){
-				Image img = CreateImage(_B::GetFrame().GetSize(), _bckGndRgba); // no SCALING needed here
-				dw.DrawImage( 0,0, img );
-			}
+			_B::PaintElementBckGround(dw, _B::GetFrame().GetSize() );
 			DrawLegend(dw, scale);
 		}
 
 		virtual void PaintFloatElement(Draw& dw, int scale){
-			if      ( !_B::_backgndStyle.IsNull() ) {
-				ChPaint(dw, Rect(0, 0, _B::GetFrame().GetWidth(), _B::GetFrame().GetHeight()), _B::_backgndStyle );
-			}
-			else if (_isRgba){
-				Image img = CreateImage(_B::GetFloatFrame(scale).GetSize(), _bckGndRgba);
-				dw.DrawImage( 0,0, img );
-			}
+			_B::PaintElementBckGround(dw, _B::GetFloatFrame().GetSize() );
 			DrawLegend(dw, scale);
 		}
 
@@ -197,7 +176,7 @@ namespace GraphDraw_ns
 		void DrawLegend(Draw& w, const int& scale) const
 		{
 			if (v_series==0) {
-				String text = "This is the legend !!";
+				String text = "LEGEND TEXT : no series defined";
 				w.DrawText( 0,0 , text, _font, Black());
 				return;
 			}
@@ -276,7 +255,6 @@ namespace GraphDraw_ns
 		CoordinateConverter& _coordConverter;
 		Font        _font;
 		Color       _color;
-		Color       _bckGndcolor;
 		int         _axisWidth;
 		typedef CRTPGraphElement< MarkerElement >  _B;
 		typedef MarkerElement<TYPES>  CLASSNAME;
@@ -288,7 +266,6 @@ namespace GraphDraw_ns
 		MarkerElement(CoordinateConverter& coordconv)
 		: _coordConverter(coordconv)
 		, _color( Red() )
-		, _bckGndcolor(Null)
 		, _axisWidth(2)
 		{
 			_B::DisablePos(FLOAT_OVER_GRAPH);
@@ -298,7 +275,6 @@ namespace GraphDraw_ns
 		: _B(p)
 		, _coordConverter(p._coordConverter)
 		, _color( p._color )
-		, _bckGndcolor(p._bckGndcolor)
 		, _axisWidth(p._axisWidth)
 		{
 			_B::DisablePos(FLOAT_OVER_GRAPH);
@@ -310,7 +286,6 @@ namespace GraphDraw_ns
 
 		template<class T>	inline MarkerElement& SetFont(T& v)       { _font = v; return *this; }
 		template<class T>	inline MarkerElement& SetTextColor(T v)   { _color = v; return *this; }
-		template<class T>	inline MarkerElement& SetBckGndColor(T v) { _bckGndcolor = v; return *this; }
 
 		template <class MARKER_TYPE>
 		MARKER_TYPE&  AddMarker(int markerId, TypeGraphCoord pos) {
@@ -345,7 +320,7 @@ namespace GraphDraw_ns
 				{
 					MarkerElementData& markerData = *iter;
 					if (_coordConverter.IsInGraphVisibleRange(markerData)) {
-						dw.DrawLineOp( 0, _coordConverter.toScreen(markerData), range, _coordConverter.toScreen(markerData), 2, _color );
+						dw.DrawLineOp( 0, _coordConverter.toScreen(markerData), range, _coordConverter.toScreen(markerData), 1, _color );
 					}
 					++iter;
 				}
@@ -362,7 +337,7 @@ namespace GraphDraw_ns
 				{
 					MarkerElementData& markerData = *iter;
 					if (_coordConverter.IsInGraphVisibleRange(markerData)) {
-						dw.DrawLineOp( _coordConverter.toScreen(markerData), 0, _coordConverter.toScreen(markerData), range, 2, _color );
+						dw.DrawLineOp( _coordConverter.toScreen(markerData), 0, _coordConverter.toScreen(markerData), range, 1, _color );
 					}
 					++iter;
 				}
@@ -371,9 +346,7 @@ namespace GraphDraw_ns
 
 		virtual void PaintElement(Draw& dw, int scale)
 		{
-			if ( !_bckGndcolor.IsNullInstance() ) {
-				dw.DrawRect( 0, 0, _B::GetFrame().GetWidth(), _B::GetFrame().GetHeight(), _bckGndcolor);
-			}
+			_B::PaintElementBckGround(dw, _B::GetFrame().GetSize() );
 
 			//dw.DrawLineOp(_B::GetElementWidth()*scale, _coordConverter.getScreenMin(), _B::GetElementWidth()*scale, _coordConverter.getScreenMax(), _axisWidth*scale, _color );
 			MarkerPosList::Iterator iter = markers.Begin();

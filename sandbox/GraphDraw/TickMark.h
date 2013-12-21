@@ -294,7 +294,7 @@ namespace GraphDraw_ns
 			virtual Size GetTickSize(ElementPosition side, const int scale) const 
 			{
 				const int coneLength  = GetTickLength()/2 * scale;
-				Size res = textSize;
+				Size res = textSize*scale;
 				switch (side)
 				{
 					case LEFT_OF_GRAPH:   
@@ -313,8 +313,8 @@ namespace GraphDraw_ns
 
 			virtual Rect GetTickRect(Point xyOffset, ElementPosition side, int x, int y, const int scale) const
 			{
-				x += xyOffset.x;
-				y += xyOffset.y;
+				x += xyOffset.x*scale;
+				y += xyOffset.y*scale;
 				Rect markRect;
 				Size sz = GetTickSize(side, scale);
 				switch (side) {
@@ -342,7 +342,7 @@ namespace GraphDraw_ns
 				p << Point(x, y);
 				const int halfHeight  = GetTickLength()/3 * scale;
 				const int coneLength  = GetTickLength()/2 * scale;
-				Point txtPt( x-textSize.cx/2, y-textSize.cy/2 );
+				Point txtPt( x-textSize.cx*scale/2, y-textSize.cy*scale/2 );
 				
 				switch (side) {
 					case LEFT_OF_GRAPH:
@@ -367,14 +367,25 @@ namespace GraphDraw_ns
 				p << Point(x, y);
 				dw.DrawPolygon( p, markColor, 1, markColor );
 				
-				Rect textRect(Rect(txtPt, textSize));
+				Rect textRect(Rect(txtPt, textSize*scale));
 				
 				// Draw background image
 				if ( !backgndImg.IsNullInstance())
 				{
 					Rect r2 = textRect;
 					r2.Inflate(3);
-					ChPaint(dw, r2, backgndImg );
+//					if ( backgndImg.GetKind() == IMAGE_OPAQUE) {
+//						ChPaint(dw, r2, backgndImg );
+//					} 
+//					else {
+						RGBA bckgColor;   bckgColor.r = 0; bckgColor.g = 0; bckgColor.b = 0; bckgColor.a = 0;
+						ImageBuffer ib( r2.Size() );
+						Upp::Fill( ib.Begin(), bckgColor, ib.GetLength() );
+						BufferPainter bp(ib, MD_ANTIALIASED);
+						ChPaint(bp, r2.Size(), backgndImg );
+						Premultiply(ib);
+						dw.DrawImage(r2.left, r2.top, ib);
+//					}
 				}
 				// Draw OUTLINE
 				else if ( !textBckgndColor.IsNullInstance() || !OutlineColor.IsNullInstance())

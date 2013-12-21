@@ -6,8 +6,8 @@
 #include <RichText/RichText.h>
 
 #include <Core/Core.h>
-
 #include <ScatterDraw/ScatterDraw.h>
+//#include <TimingPolicies/TimingPolicies.h>
 
 #define IMAGECLASS GraphDrawImg
 #define IMAGEFILE <GraphDraw/GraphDraw.iml>
@@ -40,7 +40,17 @@ namespace GraphDraw_ns
 #include "StdGraphElements.h"
 #include "GridAxisDraw.h"
 
-
+#ifndef __TimingPolicies_H__
+class TimingStub
+{
+	public:
+		TimingStub(const char* prefix) {}
+		inline void beginTiming(void) {};
+		inline void endTiming(void)  {};
+		inline void reset(void) {};
+		template <class STREAM> STREAM& printStats(STREAM& str)	{ return str; }
+};
+#endif
 
 
 class FastMarkPlot : public MarkPlot {
@@ -64,21 +74,11 @@ public:
 
 namespace GraphDraw_ns
 {
-
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------
 	//
 	//            G r a p h D r a  w    C l a s s e s
 	//
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------
-
-	 typedef enum {
-		MD_DRAW		   = -1,
-		MD_ANTIALIASED = MODE_ANTIALIASED,
-		MD_NOAA        = MODE_NOAA,
-		MD_SUBPIXEL    = MODE_SUBPIXEL
-	} DrawMode_;
-
-	typedef DrawMode_ DrawMode;
 
 	// ============================
 	// CRTP_EmptyGraphDraw   CLASS
@@ -113,6 +113,23 @@ namespace GraphDraw_ns
 		GraphUndo _undoManager;
 		Image     _PlotDrawImage;
 		Image     _CtrlBackgroundImage;
+
+#ifndef __TimingPolicies_H__
+		typedef TimingStub TimingType;
+#else
+		typedef NamedTimings< TimingPolicies_ns::MinMaxAverageTiming > TimingType;		
+		//typedef NamedTimings< TimingPolicies_ns::NoTiming >  TimingType;
+#endif
+		
+		TimingType _paintTiming;
+		TimingType _paintPlotDataTiming;
+		TimingType _paintPlotDataGlobalTiming;
+		TimingType _paintBackGndTiming;
+		TimingType _paintBackGndTiming_chPaint;
+		TimingType _paintBackGndTiming_paintImage;
+		TimingType _initBackGndPaintTiming;
+		TimingType _paintBackGndTiming_copyImage;
+		
 		
 		// helper method
 		void AppendElementToRect(GraphElement& element, Rect& fromRect, const int scale)
@@ -160,13 +177,16 @@ namespace GraphDraw_ns
 			_plotRect.top    += _topMarginWidth*scale;
 			_plotRect.bottom -= _bottomMarginWidth*scale;
 
-			if (_plotRect != svg) _CtrlBackgroundImage.Clear();
 			Sort(_drawElements, compareGraphElementFrame);
 
 			for (int j = _drawElements.GetCount()-1; j>=0; j--) {
 				if (!_drawElements[j]->IsHidden()) {
 					AppendElementToRect(*(_drawElements[j]), _plotRect, scale);
 				}
+			}
+
+			if (_plotRect != svg) {
+				_CtrlBackgroundImage.Clear();
 			}
 
 			for (int j = 0; j < _drawElements.GetCount(); j++) {
@@ -182,6 +202,7 @@ namespace GraphDraw_ns
 			for (int j = 0; j < _yConverters.GetCount(); j++) {
 				_yConverters[j]->updateScreenSize( _plotRect.GetHeight(), 0  );
 			}
+			
 		}
 		
 
@@ -193,6 +214,14 @@ namespace GraphDraw_ns
 		, _bottomMarginWidth(0)
 		, _leftMarginWidth(0)
 		, _rightMarginWidth(0)
+		, _paintTiming("paint()")
+		, _paintPlotDataTiming("paintPlotData()")
+		, _paintPlotDataGlobalTiming("paintPlotDataGlobalTiming()")
+		, _paintBackGndTiming("paintBckGnd()")
+		, _initBackGndPaintTiming("initBackGndPaint()")
+		, _paintBackGndTiming_chPaint("paintBackGndTiming_chPaint()")
+		, _paintBackGndTiming_paintImage("paintBackGndTiming_paintImage()")
+		, _paintBackGndTiming_copyImage("paintBackGndTiming_copyImage()")
 		{
 			_plotBckgndStyle = LtGray();
 			_ctrlBckgndStyle = White();
@@ -246,8 +275,8 @@ namespace GraphDraw_ns
 
 		DERIVED& SetPlotBackgroundColor(Color c) { _plotBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetCtrlBackgroundColor(Color c) { _ctrlBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetPlotBackgroundImage(Image c) { _plotBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetCtrlBackgroundImage(Image c) { _ctrlBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetPlotBackgroundImage(const Image& c) { _plotBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetCtrlBackgroundImage(const Image& c) { _ctrlBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetDrawMode(DrawMode m) { _drawMode = m; return *static_cast<DERIVED*>(this); }
 		DERIVED& SetDrawMode(int m) {
 			if ((MD_DRAW<=m) && (m<=MD_SUBPIXEL)) _drawMode = (DrawMode)m;
@@ -266,6 +295,7 @@ namespace GraphDraw_ns
 			//RLOGBLOCK("setScreenSize");
 			if (r!=_ctrlRect || scale != 1) {
 				_ctrlRect = r;
+				ClearPlotDrawImg();
 				_CtrlBackgroundImage.Clear();
 				updateSizes(scale);
 			}
@@ -437,24 +467,6 @@ namespace GraphDraw_ns
 		template<class T>  T& AddBottomElement(int elementWidth, T& v, int stackPrio) { return AddElement<T, BOTTOM_OF_GRAPH>(elementWidth, v, stackPrio); }
 		template<class T>  T& AddFloatElement(int elementWidth, T& v, int stackPrio)   { return AddElement<T, FLOAT_OVER_GRAPH>(elementWidth, v, stackPrio); }
 
-/*
-		template<class T, int POS_OF_GRAPH>
-		T& CloneElement(int elementWidth, T& p, int stackPrio=-1) {
-			T* e = dynamic_cast<T*>( p.Clone() );
-			e->SetElementWidth(elementWidth);
-			if (stackPrio==-1) {
-				stackPrio = e->GetStackingPriority();
-			}
-			_createdElements << e; // to manage object destruction
-			AddElement<T, POS_OF_GRAPH>(*e, stackPrio);
-			return *e;
-		}
-		template<class T>	T& CloneLeftElement(int elementWidth, T& p, int stackPrio=-1)   { return CloneElement<T, LEFT_OF_GRAPH>(elementWidth, p, stackPrio); }
-		template<class T>	T& CloneRightElement(int elementWidth, T& p, int stackPrio=-1)  { return CloneElement<T, RIGHT_OF_GRAPH>(elementWidth, p, stackPrio); }
-		template<class T>	T& CloneTopElement(int elementWidth, T& p, int stackPrio=-1)    { return CloneElement<T, TOP_OF_GRAPH>(elementWidth, p, stackPrio); }
-		template<class T>	T& CloneBottomElement(int elementWidth, T& p, int stackPrio=-1) { return CloneElement<T, BOTTOM_OF_GRAPH>(elementWidth, p, stackPrio); }
-		template<class T>	T& CloneFloatElement(T& p, int stackPrio=-1)                     { return CloneElement<FLOAT_OVER_GRAPH>(0, p, stackPrio); }
-*/
 		template<class T, int POS_OF_GRAPH>
 		T& CreateElement(int elementWidth, int stackPrio) {
 			T* e = new T();
@@ -464,14 +476,7 @@ namespace GraphDraw_ns
 			AddElement<T, POS_OF_GRAPH>(*e, stackPrio);
 			return *e;
 		}
-		/*
-		template<class T>	T& CreateLeftElement(int elementWidth, int stackPrio)   { return CreateElement<T, LEFT_OF_GRAPH>(elementWidth, stackPrio); }
-		template<class T>	T& CreateRightElement(int elementWidth, int stackPrio)  { return CreateElement<T, RIGHT_OF_GRAPH>(elementWidth, stackPrio); }
-		template<class T>	T& CreateTopElement(int elementWidth, int stackPrio)    { return CreateElement<T, TOP_OF_GRAPH>(elementWidth, stackPrio); }
-		template<class T>	T& CreateBottomElement(int elementWidth, int stackPrio) { return CreateElement<T, BOTTOM_OF_GRAPH>(elementWidth, stackPrio); }
-		template<class T>	T& CreateFloatElement(int stackPrio)                     { return CreateElement<T, FLOAT_OVER_GRAPH>(0, stackPrio); }
 
-*/
 		template<class T, int POS_OF_GRAPH, class P1>
 		T& CreateElement1(int elementWidth, int stackPrio, P1& p1 ) {
 			T* e = new T(p1);
@@ -481,13 +486,6 @@ namespace GraphDraw_ns
 			AddElement<T, POS_OF_GRAPH>(*e, stackPrio);
 			return *e;
 		}
-		/*
-		template<class T, class P1>	T& CreateLeftElement1(int elementWidth, int stackPrio, P1& p1)   { return CreateElement1<T, LEFT_OF_GRAPH>(elementWidth, stackPrio, p1); }
-		template<class T, class P1>	T& CreateRightElement1(int elementWidth, int stackPrio, P1& p1)  { return CreateElement1<T, RIGHT_OF_GRAPH>(elementWidth, stackPrio, p1); }
-		template<class T, class P1>	T& CreateTopElement1(int elementWidth, int stackPrio, P1& p1)    { return CreateElement1<T, TOP_OF_GRAPH>(elementWidth, stackPrio, p1); }
-		template<class T, class P1>	T& CreateBottomElement1(int elementWidth, int stackPrio, P1& p1) { return CreateElement1<T, BOTTOM_OF_GRAPH>(elementWidth, stackPrio, p1); }
-		template<class T, class P1>	T& CreateFloatElement1(int stackPrio, P1& p1)                     { return CreateElement1<T, FLOAT_OVER_GRAPH>(0, stackPrio, p1); }
-*/
 
 		template<class T, int POS_OF_GRAPH, class P1, class P2>
 		T& CreateElement2(int elementWidth, int stackPrio, P1& p1, P2& p2 ) {
@@ -498,13 +496,6 @@ namespace GraphDraw_ns
 			AddElement<T, POS_OF_GRAPH>(*e, stackPrio);
 			return *e;
 		}
-		/*
-		template<class T, class P1, class P2>	T& CreateLeftElement2(int elementWidth, int stackPrio, P1& p1, P2& p2)   { return CreateElement2<T, LEFT_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
-		template<class T, class P1, class P2>	T& CreateRightElement2(int elementWidth, int stackPrio, P1& p1, P2& p2)  { return CreateElement2<T, RIGHT_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
-		template<class T, class P1, class P2>	T& CreateTopElement2(int elementWidth, int stackPrio, P1& p1, P2& p2)    { return CreateElement2<T, TOP_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
-		template<class T, class P1, class P2>	T& CreateBottomElement2(int elementWidth, int stackPrio, P1& p1, P2& p2) { return CreateElement2<T, BOTTOM_OF_GRAPH>(elementWidth, stackPrio, p1, p2); }
-		template<class T, class P1, class P2>	T& CreateFloatElement2(int stackPrio, P1& p1, P2& p2)                     { return CreateElement2<T, FLOAT_OVER_GRAPH>(0, stackPrio, p1, p2); }
-*/
 
 		// Refresh called from child
 		virtual void RefreshFromChild( RefreshStrategy doFastPaint ) {
@@ -514,14 +505,15 @@ namespace GraphDraw_ns
 		virtual void Refresh() {};
 
 
-		Image GetImage(DrawMode mode, Size size, const int scale = 1) {
+		Image GetImage(DrawMode mode, Size size, Color backGndColor = Upp::White(), const int scale = 1 ) {
 			Rect _screenRectSvg = _ctrlRect;
 			setScreenSize( size, scale );
 #ifndef flagGUI
 			ASSERT(mode != MD_DRAW);
 #endif
 			ImageBuffer ib(size);
-			BufferPainter bp(ib, mode);
+			Upp::Fill( ib.Begin(),backGndColor, ib.GetLength() );
+			BufferPainter bp(ib, mode); // MD_ANTIALIASED); 
 			ClearPlotDrawImg();
 			Paint(bp, scale);
 			ClearPlotDrawImg();
@@ -529,8 +521,20 @@ namespace GraphDraw_ns
 			return ib;
 		}
 
+		Image GetImage(DrawMode mode, Size size, const int scale = 1 ) {
+			return GetImage( mode, _ctrlRect.Size()*scale, White(), scale );
+		}
+
+		inline Image GetImage(DrawMode mode, Size size, Color backGndColor ) {
+			return GetImage(mode, size, 1, backGndColor);
+		}
+
 		inline Image GetImage(DrawMode mode, const int scale=1) {
 			return GetImage( mode, _ctrlRect.Size()*scale, scale );
+		}
+
+		inline Image GetImage(Color backGndColor, const int scale=1) {
+			return GetImage( _drawMode, backGndColor, scale );
 		}
 
 		inline Image GetImage(const int scale=1) {
@@ -586,6 +590,7 @@ namespace GraphDraw_ns
 		template<class T>
 		void PaintPlotData(T& dw, int scale)
 		{
+			_paintPlotDataTiming.beginTiming();
 			if (!_B::series.IsEmpty())
 			{
 				for ( int j = 0; j < _B::series.GetCount(); j++)
@@ -731,28 +736,47 @@ namespace GraphDraw_ns
 					}
 				}
 			}
-
+			_paintPlotDataTiming.endTiming();
 		}
 
 		template<class T>
 		void Paint(T& dw, int scale)
 		{
+			_paintTiming.beginTiming();
+			_paintBackGndTiming.beginTiming();
+
 			//RLOGBLOCK("==================================" );
 			if ( _CtrlBackgroundImage.IsEmpty() )
 			{
+				_initBackGndPaintTiming.beginTiming();
 				RGBA bckgColor;   bckgColor.r = 0; bckgColor.g = 0; bckgColor.b = 0; bckgColor.a = 0;
 				ImageBuffer ib(_ctrlRect.Size());
 				Upp::Fill( ib.Begin(), bckgColor, ib.GetLength() );
 				BufferPainter bp(ib, _drawMode);
+				_initBackGndPaintTiming.endTiming();
 				// ------------
 				// paint graph area background
 				// ------------
+				_paintBackGndTiming_chPaint.beginTiming();
 				if ( !_ctrlBckgndStyle.IsNull() ) ChPaint(bp, _ctrlRect, _ctrlBckgndStyle );
-	
 				if ( !_plotBckgndStyle.IsNull()) ChPaint(bp, _plotRect, _plotBckgndStyle );
+				_paintBackGndTiming_chPaint.endTiming();
+				_paintBackGndTiming_copyImage.beginTiming();
 				_CtrlBackgroundImage = ib;
+				_paintBackGndTiming_copyImage.endTiming();
 			}
+			else
+			{
+				_initBackGndPaintTiming.reset();
+				_paintBackGndTiming_chPaint.reset();
+				_paintBackGndTiming_copyImage.reset();
+			}
+			_paintBackGndTiming_paintImage.beginTiming();
+			//ChPaint(dw, _ctrlRect.Size(), _CtrlBackgroundImage);
 			dw.DrawImage(0, 0, _CtrlBackgroundImage );
+			_paintBackGndTiming_paintImage.endTiming();
+			
+			_paintBackGndTiming.endTiming();
 
 			// --------------------------------------
 			// BEGIN paint in PLOT AREA
@@ -776,9 +800,16 @@ namespace GraphDraw_ns
 			// ----------------
 			// paint PLOT DATA
 			// ----------------
+			_paintPlotDataGlobalTiming.beginTiming();
+
 			if (_doFastPaint)
 			{
-				PaintPlotData(dw, scale);
+				RGBA bckgColor;   bckgColor.r = 0; bckgColor.g = 0; bckgColor.b = 0; bckgColor.a = 0;
+				ImageBuffer ib(_plotRect.Size());
+				Upp::Fill( ib.Begin(), bckgColor, ib.GetLength() );
+				BufferPainter bp(ib, _drawMode);
+				PaintPlotData(bp, scale);
+				dw.DrawImage(0, 0, ib);
 				ClearPlotDrawImg();
 			}
 			else
@@ -794,6 +825,7 @@ namespace GraphDraw_ns
 				}
 				dw.DrawImage(0, 0, _PlotDrawImage);
 			}
+			_paintPlotDataGlobalTiming.endTiming();
 
 			// --------------
 			// GRAPH ELEMENTS on PLOT area --OVER DATA-- ( X/Y Grid, or anything else )
@@ -838,16 +870,37 @@ namespace GraphDraw_ns
 					dw.End();
 				}
 			}
+			_paintTiming.endTiming();
+			
+			//std::cout << "\n===============================";
+			_paintTiming.printStats( std::cout );
+
+			_paintBackGndTiming.printStats( std::cout );
+			_initBackGndPaintTiming.printStats( std::cout );
+			_paintBackGndTiming_chPaint.printStats( std::cout );
+			_paintBackGndTiming_copyImage.printStats( std::cout );
+			_paintBackGndTiming_paintImage.printStats( std::cout );
+
+			_paintPlotDataTiming.printStats( std::cout );
+			_paintPlotDataGlobalTiming.printStats( std::cout );
 		}
 	};
 
 
 	struct GraphDrawDefaultTypes {
-			typedef GenericCoordinateConverter                     TypeCoordConverter;
-			typedef GridAxisDraw<GraphDrawDefaultTypes>            TypeGridAxisDraw;
-			typedef GridStepManager<>                              TypeGridStepManager;
-			typedef LabelElement                                   TypeLabelElement;
-			typedef LegendElement<GraphDrawDefaultTypes>           TypeLegendElement;
+			typedef GraphDraw_ns::GenericCoordinateConverter          X_TypeCoordConverter;
+			typedef GraphDraw_ns::GenericCoordinateConverter          X2_TypeCoordConverter;
+			typedef GraphDraw_ns::GenericCoordinateConverter          Y_TypeCoordConverter;
+			typedef GraphDraw_ns::GenericCoordinateConverter          Y2_TypeCoordConverter;
+
+			typedef GraphDraw_ns::GridAxisDraw<GraphDrawDefaultTypes> X_TypeGridAxisDraw;
+			typedef GraphDraw_ns::GridAxisDraw<GraphDrawDefaultTypes> X2_TypeGridAxisDraw;
+			typedef GraphDraw_ns::GridAxisDraw<GraphDrawDefaultTypes> Y_TypeGridAxisDraw;
+			typedef GraphDraw_ns::GridAxisDraw<GraphDrawDefaultTypes> Y2_TypeGridAxisDraw;
+
+			typedef GridStepManager<>                                 TypeGridStepManager;
+			typedef LabelElement                                      TypeLabelElement;
+			typedef LegendElement<GraphDrawDefaultTypes>              TypeLegendElement;
 	};
 
 

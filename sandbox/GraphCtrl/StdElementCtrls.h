@@ -190,11 +190,8 @@ class StdLabelCtrl : public  GraphElementCtrl_Base< TYPES, LABELDRAW > {
 	typedef TYPES  Types;
 	
 	StdLabelCtrl() {
+		_B::whenOpenPropertiesDlgCB = THISBACK( _B::template TOpenPropertiesDlg<LabelPropertiesDlg> );
 		_B::DisablePos(GraphDraw_ns::FLOAT_OVER_GRAPH);
-	}
-	
-	virtual void OpenPropertiesDlg(void) {
-		_B::template TOpenPropertiesDlg<LabelPropertiesDlg>();
 	}
 };
 

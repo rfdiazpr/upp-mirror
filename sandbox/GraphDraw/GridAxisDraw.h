@@ -307,46 +307,24 @@ namespace GraphDraw_ns
 		}
 
 
-		Size GetSmartTextSize2(const char *text, Font& scaledFont, int scale, int cx=INT_MAX) {
-			if(*text == '\1') {
-				Size sz;
-				RichText txt = ParseQTF(text + 1);
-				txt.ApplyZoom(GetRichTextStdScreenZoom());
-				sz.cx = min(cx, txt.GetWidth());
-				sz.cy = txt.GetHeight(Zoom(1, 1), sz.cx);
-				return sz*scale;
-			}
-			return GetTLTextSize(ToUnicode(text, CHARSET_DEFAULT), scaledFont);
-		}
-
-		void DrawSmartText2(Draw& draw, int x, int y, int cx, const char *text, Font& scaledFont, Color ink, int scale) {
-			if(*text == '\1') {
-				RichText txt = ParseQTF(text + 1, 0);
-				txt.ApplyZoom(GetRichTextStdScreenZoom());
-				txt.Paint(Zoom(scale, 1), draw, x, y, cx);
-				return;
-			}
-			DrawTLText(draw, x, y, cx, ToUnicode(text, CHARSET_DEFAULT), scaledFont, ink, 0);
-		}
-
 		template<int GRAPH_SIDE>
 		void PaintTickText(Draw& dw,  const GridStepIterator& value, TypeScreenCoord x, TypeScreenCoord y, Color& color, Font& scaledFont, int scale) {
 			Upp::String text;
 			if ( ! formatTextCbk )	text=FormatDouble( value.getValue() );
 			else                    formatTextCbk(value, text );
 
-			Size sz = GetSmartTextSize2(text, scaledFont, scale);
+			Size sz = GraphDraw_ns::GetSmartTextSize(text, scaledFont, scale);
 			if (GRAPH_SIDE == LEFT_OF_GRAPH) {
-				DrawSmartText2(dw, x-sz.cx, y-(sz.cy/2), sz.cx, text, scaledFont, color, scale);
+				GraphDraw_ns::DrawSmartText(dw, x-sz.cx, y-(sz.cy/2), sz.cx, text, scaledFont, color, scale);
 			}
 			else if (GRAPH_SIDE == BOTTOM_OF_GRAPH) {
-				DrawSmartText2(dw, x-(sz.cx/2), y, sz.cx, text, scaledFont, color, scale);
+				GraphDraw_ns::DrawSmartText(dw, x-(sz.cx/2), y, sz.cx, text, scaledFont, color, scale);
 			}
 			else if (GRAPH_SIDE == RIGHT_OF_GRAPH) {
-				DrawSmartText2( dw, x, y-(sz.cy/2), sz.cx, text, scaledFont, color, scale);
+				GraphDraw_ns::DrawSmartText( dw, x, y-(sz.cy/2), sz.cx, text, scaledFont, color, scale);
 			}
 			else {
-				DrawSmartText2( dw,  x-(sz.cx/2), y-sz.cy ,sz.cx,  text, scaledFont, color, scale);
+				GraphDraw_ns::DrawSmartText( dw,  x-(sz.cx/2), y-sz.cy ,sz.cx,  text, scaledFont, color, scale);
 			}
 		}
 

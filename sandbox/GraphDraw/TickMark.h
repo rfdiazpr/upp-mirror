@@ -17,8 +17,6 @@ namespace GraphDraw_ns
 			virtual void Paint(Draw &w, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const = 0;
 			inline void Paint(Draw &p, ElementPosition axisPos, const int scale, const Point& cp, const Color& markColor) const { Paint(p, axisPos, scale, cp.x, cp.y, markColor); }
 
-			virtual void Paint(Painter &p, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const = 0;
-			inline void Paint( Painter &p, ElementPosition axisPos, const int scale, const Point& cp, const Color& markColor) const { Paint(p, axisPos, scale, cp.x, cp.y, markColor); }
 
 			inline int GetTickLength() const      { return _tickLength; }
 			inline TickMark* SetTickLength(int v) { _tickLength = v; UpdateTick(); return this; }
@@ -45,9 +43,6 @@ namespace GraphDraw_ns
 				w.DrawEllipse(x - radius, y - radius, diam, diam, markColor, 1, markColor);
 			}
 
-			virtual void Paint(Painter &p, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const {
-			}
-			
 			virtual Rect GetTickRect(Point xyOffset, ElementPosition side, int x, int y, const int scale) const
 			{
 				int diam = fround(scale*GetTickLength()*2);
@@ -88,9 +83,6 @@ namespace GraphDraw_ns
 				dw.DrawPolygon( p, markColor, scale/2, markColor);
 			}
 
-			virtual void Paint(Painter &p, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const {
-			}
-
 			virtual Rect GetTickRect(Point xyOffset, ElementPosition side, int x, int y, const int scale) const
 			{
 				return Null;
@@ -121,9 +113,6 @@ namespace GraphDraw_ns
 						dw.DrawLine(x, y-scTickLength, x, y+scTickLength, 2*scale, markColor);
 						break;
 				}
-			}
-
-			virtual void Paint(Painter &p, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const {
 			}
 
 			virtual Rect GetTickRect(Point xyOffset, ElementPosition axisPos, int x, int y, const int scale) const
@@ -165,110 +154,14 @@ namespace GraphDraw_ns
 			}
 	};
 
-
-	class RectTriangleTickMark  : public TickMark {
-		public:
-			Font tickIdFont;
-			String IDtext;
-			Color  textColor;
-			Color  textBckgndColor;
-			Color  OutlineColor;
-		
-		public:
-		
-			RectTriangleTickMark() : textColor(White), textBckgndColor(Red), OutlineColor(Black) { SetTickLength(15);	}
-			virtual ~RectTriangleTickMark() {}
-
-			virtual void UpdateTick() {
-				tickIdFont.Height(GetTickLength()/2);
-			}
-
-			virtual Size GetTickSize(ElementPosition side, const int scale) const 
-			{
-				const int halfHeight  = GetTickLength()/3 * scale;
-				const int totalLength = GetTickLength() * scale;
-				switch (side) {
-					case LEFT_OF_GRAPH:   return Size(totalLength, halfHeight*2); break;
-					case RIGHT_OF_GRAPH:  return Size(totalLength, halfHeight*2); break;
-					case BOTTOM_OF_GRAPH: return Size(halfHeight*2, totalLength); break;
-					case TOP_OF_GRAPH:    return Size(halfHeight*2, totalLength); break;
-					default:  break;
-				}
-				return Null;
-			}
-
-			virtual Rect GetTickRect(Point xyOffset, ElementPosition side, int x, int y, const int scale) const
-			{
-				const int halfHeight  = GetTickLength()/3 * scale;
-				const int totalLength = GetTickLength() * scale;
-				x += xyOffset.x;
-				y += xyOffset.y;
-				Rect markRect;
-				switch (side) {
-					case LEFT_OF_GRAPH:
-						markRect = Rect( Point(x-totalLength, y-halfHeight), Size(totalLength, halfHeight*2) );
-						break;
-					case RIGHT_OF_GRAPH:
-						markRect = Rect( Point(x, y-halfHeight), Size(totalLength, halfHeight*2) );
-						break;
-					case BOTTOM_OF_GRAPH:
-						markRect = Rect( Point(x-halfHeight, y), Size(halfHeight*2, totalLength) );
-						break;
-					case TOP_OF_GRAPH:
-						markRect = Rect( Point(x-halfHeight, y-totalLength), Size(halfHeight*2, totalLength) );
-						break;
-					default:
-						break;
-				}
-				return markRect;
-			}
-			
-			
-			virtual void Paint(Draw &dw, ElementPosition side, const int scale, int x, int y, const Color& markColor) const {
-				Upp::Vector<Point> p;
-				p << Point(x, y);
-				const int halfHeight  = GetTickLength()/3 * scale;
-				const int totalLength = GetTickLength() * scale;
-				const int coneLength  = GetTickLength()/2 * scale;
-				
-
-				switch (side) {
-					case LEFT_OF_GRAPH:
-						p << Point(x-coneLength, y-halfHeight) << Point(x-totalLength, y-halfHeight)<< Point(x-totalLength, y+halfHeight)<< Point(x-coneLength, y+halfHeight);
-						break;
-					case RIGHT_OF_GRAPH:
-						p << Point(x+coneLength, y-halfHeight) << Point(x+totalLength, y-halfHeight)<< Point(x+totalLength, y+halfHeight)<< Point(x+coneLength, y+halfHeight);
-						break;
-					case BOTTOM_OF_GRAPH:
-						p << Point(x+halfHeight, y+coneLength) << Point(x+halfHeight, y+totalLength)<< Point(x-halfHeight, y+totalLength)<< Point(x-halfHeight, y+coneLength);
-						break;
-					case TOP_OF_GRAPH:
-						p << Point(x+halfHeight, y-coneLength) << Point(x+halfHeight, y-totalLength)<< Point(x-halfHeight, y-totalLength)<< Point(x-halfHeight, y-coneLength);
-						break;
-					default:
-						break;
-				}
-				p << Point(x, y);
-
-				dw.DrawPolygon( p, textBckgndColor, 1, OutlineColor );
-				Size tickSize = GetTickSize(side, scale);
-				Point xyOffset((tickSize.cx  - tickIdFont.GetWidth(IDtext[0]))/2, 0 );
-				Rect textRect = GetTickRect(xyOffset, side, x, y , scale);
-				dw.DrawText(textRect.TopLeft().x, textRect.TopLeft().y, IDtext, tickIdFont, textColor );
-			}
-
-			virtual void Paint(Painter &p, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const {
-			}
-	};
-
 	class SmartTextTickMark  : public TickMark {
 		private:
-			Font tickIdFont;
+			Font textFont;
 			Size textSize;
-			Image  backgndImg;
+			Value backgndStyle;
+			String text;
 
 		public:
-			String IDtext;
 			Color  textColor;
 			Color  textBckgndColor;
 			Color  OutlineColor;
@@ -278,18 +171,24 @@ namespace GraphDraw_ns
 			virtual ~SmartTextTickMark() {}
 
 			virtual void UpdateTick() {
-				tickIdFont.Height(GetTickLength()/2);
-				textSize = GraphDraw_ns::GetSmartTextSize(IDtext.Begin(), tickIdFont);
+				textFont.Height(GetTickLength()/2);
+				textSize = GraphDraw_ns::GetSmartTextSize(text.Begin(), textFont );
 			}
 
 			void SetText(String& str) {
-				IDtext = str;
+				text = str;
 				UpdateTick();
 			}
 			void SetText(const char* str) { String s(str); SetText( s ); }
+
+			void SetTextFont(Font f) {
+				textFont = f;
+				UpdateTick();
+			}
 			
-			//void SetBckgndImage(const Image& img) { backgndImg = img; }
-			void SetBckgndImage(Image img) { backgndImg = img; }
+			
+			
+			void SetBckgndStyle(const Value s) { backgndStyle = s; }
 			
 			virtual Size GetTickSize(ElementPosition side, const int scale) const 
 			{
@@ -344,10 +243,11 @@ namespace GraphDraw_ns
 				const int coneLength  = GetTickLength()/2 * scale;
 				Point txtPt( x-textSize.cx*scale/2, y-textSize.cy*scale/2 );
 				
+				// Draw tick triangle
 				switch (side) {
 					case LEFT_OF_GRAPH:
 						p << Point(x-coneLength, y-halfHeight) << Point(x-coneLength, y+halfHeight);
-						txtPt.x = x-textSize.cx - coneLength;
+						txtPt.x = x-textSize.cx*scale - coneLength;
 						break;
 					case RIGHT_OF_GRAPH:
 						p << Point(x+coneLength, y-halfHeight) << Point(x+coneLength, y+halfHeight);
@@ -359,7 +259,7 @@ namespace GraphDraw_ns
 						break;
 					case TOP_OF_GRAPH:
 						p << Point(x+halfHeight, y-coneLength) << Point(x-halfHeight, y-coneLength);
-						txtPt.y = y - textSize.cy - coneLength;
+						txtPt.y = y - textSize.cy*scale - coneLength;
 						break;
 					default:
 						break;
@@ -370,22 +270,17 @@ namespace GraphDraw_ns
 				Rect textRect(Rect(txtPt, textSize*scale));
 				
 				// Draw background image
-				if ( !backgndImg.IsNullInstance())
+				if ( !backgndStyle.IsNull() )
 				{
 					Rect r2 = textRect;
 					r2.Inflate(3);
-//					if ( backgndImg.GetKind() == IMAGE_OPAQUE) {
-//						ChPaint(dw, r2, backgndImg );
-//					} 
-//					else {
-						RGBA bckgColor;   bckgColor.r = 0; bckgColor.g = 0; bckgColor.b = 0; bckgColor.a = 0;
-						ImageBuffer ib( r2.Size() );
-						Upp::Fill( ib.Begin(), bckgColor, ib.GetLength() );
-						BufferPainter bp(ib, MD_ANTIALIASED);
-						ChPaint(bp, r2.Size(), backgndImg );
-						Premultiply(ib);
-						dw.DrawImage(r2.left, r2.top, ib);
-//					}
+					RGBA bckgColor;   bckgColor.r = 0; bckgColor.g = 0; bckgColor.b = 0; bckgColor.a = 0;
+					ImageBuffer ib( r2.Size() );
+					Upp::Fill( ib.Begin(), bckgColor, ib.GetLength() );
+					BufferPainter bp(ib, MD_ANTIALIASED);
+					ChPaint(bp, r2.Size(), backgndStyle );
+					Premultiply(ib);
+					dw.DrawImage(r2.left, r2.top, ib);
 				}
 				// Draw OUTLINE
 				else if ( !textBckgndColor.IsNullInstance() || !OutlineColor.IsNullInstance())
@@ -413,12 +308,11 @@ namespace GraphDraw_ns
 				}
 
 				// Draw TEXT
-				if ( !IDtext.IsEmpty() && !textColor.IsNullInstance() ) {
-					GraphDraw_ns::DrawSmartText(dw, txtPt.x, txtPt.y, textSize.cx, IDtext, tickIdFont, textColor );
+				if ( !text.IsEmpty() && !textColor.IsNullInstance() ) {
+					Font scaledFont(textFont);
+					scaledFont.Height(scale*textFont.GetHeight()).GetHeight();
+					GraphDraw_ns::DrawSmartText(dw, txtPt.x, txtPt.y, textSize.cx*scale, text, scaledFont, textColor, scale );
 				}
-			}
-
-			virtual void Paint(Painter &p, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const {
 			}
 	};
 }

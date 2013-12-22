@@ -110,7 +110,7 @@ GraphDraw_test::GraphDraw_test()
 	MarkerElementType& g3_markerElem = g3.CreateElement1< MarkerElementType, TOP_OF_GRAPH>(30, 0, g3.GetXCoordConverter() );
 	SmartTextTickMark& sttmg3_1 = g3_markerElem.AddMarker<SmartTextTickMark>(1, 25000);
 		sttmg3_1.SetText("\1[ [ [*@6;1  3 ]]]");
-		sttmg3_1.SetBckgndImage(GraphCtrl_testImg::BACKGND());
+		sttmg3_1.SetBckgndStyle(GraphCtrl_testImg::BACKGND());
 
 	// ====================================
 	//                 G4
@@ -118,15 +118,19 @@ GraphDraw_test::GraphDraw_test()
 	g4.CreateElement2<ExclusionAreaDraw<MyGraphCtrl::Types>, FLOAT_OVER_GRAPH>(0, 0, g4.GetXCoordConverter(), g4.GetYCoordConverter() );
 	//g4.CreateElement1<GraphDraw_ns::MarkerElement<MyGraphCtrl::Types>, TOP_OF_GRAPH>(20, 0, g4.GetXCoordConverter() );
 	MarkerElementType& markerElem = g4.CreateElement1< MarkerElementType, TOP_OF_GRAPH>(30, 0, g4.GetXCoordConverter() );
+	//markerElem.SetBackgndStyle(GraphCtrl_testImg::LEGEND_BACKGND3());
 	markerElem.whenMarkerMove = THISBACK(onMarkerMoveCBK);
 
 	SmartTextTickMark& sttmg4_1 = markerElem.AddMarker<SmartTextTickMark>(1, 3.5);
 		sttmg4_1.SetText("\1[ [ [*@6;1  1 ]]]");
-		sttmg4_1.SetBckgndImage(GraphCtrl_testImg::BACKGND2());
+		sttmg4_1.SetBckgndStyle(GraphCtrl_testImg::BACKGND());
+		sttmg4_1.OutlineColor = Black();
 	
 	SmartTextTickMark& sttmg4_2 = markerElem.AddMarker<SmartTextTickMark>(2, 8.5);
-		sttmg4_2.SetText("\1[ [ [*@6;1  2 ]]]");
-		sttmg4_2.SetBckgndImage(GraphCtrl_testImg::BACKGND());
+//		sttmg4_2.SetText("\1[ [ [*@6;1  2 ]]]");
+		sttmg4_2.SetText(" 2 ");
+		sttmg4_2.SetTextFont(Font().Bold().Width(36));
+		sttmg4_2.SetBckgndStyle(GraphCtrl_testImg::BACKGND2());
 	
 	g4.AddSeries(points).PlotStyle<LineSeriesPlot>().MarkStyle<XMarkPlot>().MarkWidth(3).Fill(Color(28, 255, 200)).Opacity(.5).Legend("S1");
 
@@ -151,12 +155,12 @@ GraphDraw_test::GraphDraw_test()
 	MarkerElementType& markerElemG5_3 = g5.CreateElement1< MarkerElementType, BOTTOM_OF_GRAPH >(30, 0, g5.GetXCoordConverter() );
 	SmartTextTickMark& sttm = markerElemG5_3.AddMarker<SmartTextTickMark>(3, 3.8);
 		sttm.SetText("\1[ [ [@6$(255.255.192)2 `-`-][*_$(255.255.192)2 M3][@6$(255.255.192)2 `-`-]]]");
-		sttm.SetBckgndImage(GraphCtrl_testImg::BACKGND());
+		sttm.SetBckgndStyle(GraphCtrl_testImg::BACKGND());
 	
 	MarkerElementType& markerElemG5_4 = g5.CreateElement1< MarkerElementType, LEFT_OF_GRAPH >(30, 0, g5.GetYCoordConverter() );
 	SmartTextTickMark& sttm4 = markerElemG5_4.AddMarker<SmartTextTickMark>(4, 3.8);
 		sttm4.SetText("---M4---");
-		sttm4.SetBckgndImage(GraphCtrl_testImg::BACKGND());
+		sttm4.SetBckgndStyle(GraphCtrl_testImg::BACKGND());
 
 	
 	bReport << THISBACK(DoReport);
@@ -198,8 +202,8 @@ void replaceImage(Upp::String& srcTxt, const Upp::String& label, const Upp::Imag
 void GraphDraw_test::DoReport(void)
 {
 	String qtfText = "[ [ [R@5$(229)0 This the report]&][R@5$(229)0 &][ [R@5$(229)0 #IMG]&][R@5$(229)0 &][ [R@5$(229)0 This is the end of the report]]";
-	Size sz(640*2,480*2);
-	replaceImage(qtfText, "#IMG", g4.GetImage(MD_SUBPIXEL, sz, 1), sz);
+	Size sz(640*3,480*3);
+	replaceImage(qtfText, "#IMG", g4.GetImage(sz, 3), sz);
 	
 	Report r;
 	r << qtfText;

@@ -74,13 +74,12 @@ namespace GraphDraw_ns
 				seriesPlot = GetNewPlotStyle(id);
 			}
 
-			Image MakeSerieIcon( int width=16 ) {
+			Image MakeSerieIcon( int width=16, const int scale=1 ) {
 				RGBA bckgColor;   bckgColor.r = 0; bckgColor.g = 0; bckgColor.b = 0; bckgColor.a = 0;
 				ImageBuffer ib( Size(width,width) );
 				Fill( ib.Begin(), bckgColor, ib.GetLength() );
 
 				Vector<Point> p1;
-				const int scale=1;
 				int painterMode = MODE_ANTIALIASED;
 				if ( !seriesPlot.IsEmpty() && !color.IsNullInstance() ) {
 					// draw multiple points ONLY if lines are drawn 

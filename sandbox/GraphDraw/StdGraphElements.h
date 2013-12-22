@@ -141,8 +141,6 @@ namespace GraphDraw_ns
 
 		virtual ~LegendElement() {}
 
-//		virtual CLASSNAME* Clone() { return new CLASSNAME(*this); };
-
 		template<class T>
 		inline CLASSNAME& SetLegend(T& v) { _legend = v; return *this; }
 
@@ -155,7 +153,7 @@ namespace GraphDraw_ns
 		}
 
 		virtual void PaintFloatElement(Draw& dw, int scale){
-			_B::PaintElementBckGround(dw, _B::GetFloatFrame().GetSize() );
+			_B::PaintElementBckGround(dw, _B::GetFloatFrame().GetSize()*scale );
 			DrawLegend(dw, scale);
 		}
 
@@ -173,7 +171,7 @@ namespace GraphDraw_ns
 			_legendWeight += _legendStyleLength + _xSeparation;
 		}
 
-		void DrawLegend(Draw& w, const int& scale) const
+		void DrawLegend(Draw& w, const int scale) const
 		{
 			if (v_series==0) {
 				String text = "LEGEND TEXT : no series defined";
@@ -195,7 +193,7 @@ namespace GraphDraw_ns
 				if (idx<nLab) {
 					int x = scale*ix*_legendWeight + txtHeight/2;
 					int y = iy*txtHeight + txtHeight/2;
-					Image img = (*v_series)[idx].MakeSerieIcon(txtHeight);
+					Image img = (*v_series)[idx].MakeSerieIcon(txtHeight, scale);
 					w.DrawImage(x,y, img);
 					DrawText(w, x+scale*(_legendStyleLength+2), y, 0, (*v_series)[idx].legend, scaledFont,
 					         (  ((*v_series)[idx].seriesPlot.IsEmpty()) ? (*v_series)[idx].markColor : (*v_series)[idx].color ) );
@@ -244,9 +242,9 @@ namespace GraphDraw_ns
 			return tick;
 		}
 	};
+	
 	typedef ArrayMap<int, MarkerElementData> MarkerPosList;
 	typedef Callback2< const MarkerPosList&, int> TypeMarkerMoveCbk;
-
 
 	template<class TYPES>
 	class MarkerElement : public CRTPGraphElement< MarkerElement<TYPES> >
@@ -357,13 +355,13 @@ namespace GraphDraw_ns
 				if (_coordConverter.IsInGraphVisibleRange(markerData)) {
 					switch( _B::GetElementPos() ) {
 						case LEFT_OF_GRAPH:
-							markerData.GetTickMark().Paint(dw, _B::GetElementPos(), scale, _B::GetElementWidth(), _coordConverter.toScreen(markerData), _color);
+							markerData.GetTickMark().Paint(dw, _B::GetElementPos(), scale, _B::GetElementWidth()*scale, _coordConverter.toScreen(markerData), _color);
 							break;
 						case BOTTOM_OF_GRAPH:
 							markerData.GetTickMark().Paint(dw, _B::GetElementPos(), scale, _coordConverter.toScreen(markerData), 0, _color );
 							break;
 						case TOP_OF_GRAPH:
-							markerData.GetTickMark().Paint(dw, _B::GetElementPos(), scale,  _coordConverter.toScreen(markerData), _B::GetElementWidth(), _color );
+							markerData.GetTickMark().Paint(dw, _B::GetElementPos(), scale,  _coordConverter.toScreen(markerData), _B::GetElementWidth()*scale, _color );
 							break;
 						case RIGHT_OF_GRAPH:
 							markerData.GetTickMark().Paint(dw, _B::GetElementPos(), scale, 0, _coordConverter.toScreen(markerData), _color );

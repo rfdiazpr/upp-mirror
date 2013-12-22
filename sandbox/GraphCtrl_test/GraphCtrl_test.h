@@ -6,6 +6,8 @@
 using namespace Upp;
 
 #include <GraphCtrl/GraphCtrl.h>
+#include <Functions4U/Functions4U.h>
+
 
 
 #define LAYOUTFILE <GraphCtrl_test/GraphCtrl_test.lay>

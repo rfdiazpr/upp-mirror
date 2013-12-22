@@ -25,10 +25,14 @@ using namespace Upp;
 
 namespace GraphDraw_ns
 {
-	Size GetSmartTextSize(const char *text, Font font = StdFont(), int cx = INT_MAX);
-	int  GetSmartTextHeight(const char *s, int cx, Font font = StdFont());
-	void DrawSmartText(Draw& w, int x, int y, int cx, const char *text,
-	                   Font font = StdFont(), Color ink = DefaultInk, int accesskey = 0);
+//	Size GetSmartTextSize(const char *text, Font font = StdFont(), int cx = INT_MAX);
+//	int  GetSmartTextHeight(const char *s, int cx, Font font = StdFont());
+//	void DrawSmartText(Draw& w, int x, int y, int cx, const char *text, Font font = StdFont(), Color ink = DefaultInk, int accesskey = 0);
+	                   
+	                   
+	Size GetSmartTextSize(const char *text, Font& scaledFont, int scale=1, int cx=INT_MAX);
+	int GetSmartTextHeight(const char *s, int cx, Font font, int scale=1);
+	void DrawSmartText(Draw& draw, int x, int y, int cx, const char *text, Font& scaledFont, Color ink, int scale);
 };
 
 #include "GraphDrawTypes.h"
@@ -505,15 +509,12 @@ namespace GraphDraw_ns
 		virtual void Refresh() {};
 
 
-		Image GetImage(DrawMode mode, Size size, Color backGndColor = Upp::White(), const int scale = 1 ) {
+		Image GetImage( Size size, Color backGndColor = Upp::White(), const int scale = 1 ) {
 			Rect _screenRectSvg = _ctrlRect;
 			setScreenSize( size, scale );
-#ifndef flagGUI
-			ASSERT(mode != MD_DRAW);
-#endif
 			ImageBuffer ib(size);
 			Upp::Fill( ib.Begin(),backGndColor, ib.GetLength() );
-			BufferPainter bp(ib, mode); // MD_ANTIALIASED); 
+			BufferPainter bp(ib, MD_ANTIALIASED); 
 			ClearPlotDrawImg();
 			Paint(bp, scale);
 			ClearPlotDrawImg();
@@ -521,24 +522,20 @@ namespace GraphDraw_ns
 			return ib;
 		}
 
-		Image GetImage(DrawMode mode, Size size, const int scale = 1 ) {
-			return GetImage( mode, _ctrlRect.Size()*scale, White(), scale );
+		Image GetImage(Size size, const int scale = 1 ) {
+			return GetImage(_ctrlRect.Size()*scale, White(), scale );
 		}
 
-		inline Image GetImage(DrawMode mode, Size size, Color backGndColor ) {
-			return GetImage(mode, size, 1, backGndColor);
-		}
-
-		inline Image GetImage(DrawMode mode, const int scale=1) {
-			return GetImage( mode, _ctrlRect.Size()*scale, scale );
-		}
-
-		inline Image GetImage(Color backGndColor, const int scale=1) {
-			return GetImage( _drawMode, backGndColor, scale );
+		inline Image GetImage(Size size, Color backGndColor ) {
+			return GetImage(size, 1, backGndColor);
 		}
 
 		inline Image GetImage(const int scale=1) {
-			return GetImage( _drawMode, scale );
+			return GetImage( _ctrlRect.Size()*scale, scale );
+		}
+
+		inline Image GetImage(Color backGndColor, const int scale=1) {
+			return GetImage( backGndColor, scale );
 		}
 
 		template <class V, class XC, class YC>

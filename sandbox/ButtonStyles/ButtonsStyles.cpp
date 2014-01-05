@@ -50,7 +50,6 @@ Value ButtonStyleLookFunction(Draw& dw, const Rect& rect, const Value& v, int op
 				Rect RightCircleRect = LeftCircleRect;
 				RightCircleRect.OffsetHorz(rect.Width()-rect.Height());
 				Rect bandRect = rect;
-				ImageDraw imgd( rect.Size() );
 
 				if (TEST(LEFT_END_ROUND))
 				{

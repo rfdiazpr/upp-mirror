@@ -57,8 +57,7 @@ class ButtonLook {
 	}
 } ;
 
-
-class ButtonStyle_style {
+class ButtonStyle_style : ChStyle<ButtonStyle_style> {
 	public:
 	ButtonLook look;
 	Color textColor;

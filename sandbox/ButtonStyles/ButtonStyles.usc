@@ -6,6 +6,10 @@ enum_property ButtonPushState {
 	"ButtonStyles::DISABLED"
 };
 
+fn Pi() {
+	return 3.14159265358979323846;
+}
+
 fn PaintEllipse(w, left, top, right, bottom, width, color)
 {
 	if (width < 1)
@@ -67,6 +71,8 @@ fn FillEllipse(w, left, top, right, bottom, background)
 		w.DrawLine(left, top, right, bottom, 1, background);
 		return;
 	}
+
+
 	delta = Pi()/10.;
 	x0 = left + a;
 	y0 = top  + b;
@@ -77,6 +83,7 @@ fn FillEllipse(w, left, top, right, bottom, background)
 		w.DrawRect(x0-x1 , y0-y1, 2*x1 , 2*y1, background);
 	}
 	width = min(a, b)/4.;
+
 	if (width > 1)
 		PaintEllipse(w, left, top, right, bottom, width, background);
 }
@@ -167,8 +174,10 @@ ButtonStyles_paintButton( w, r, flags, backColor, bColor, borderWidth, deflate)
 		bandRect.right = bandRect.right-height/2;
 		FillEllipse(w, RightCircleRect.left, RightCircleRect.top, RightCircleRect.right, RightCircleRect.bottom, backColor);
 	}
+
 	w.DrawRect(bandRect, backColor);
 
+	
 	bandRect = r;
 	DeflateRectXY(bandRect, 0, deflate);
 	DeflateRectXY(LeftCircleRect, deflate, deflate);

@@ -8,7 +8,13 @@ class StdGridAxisDrawCtrl : public GraphElementCtrl_Base<TYPES, GRIDAXISDRAW >
 	typedef StdGridAxisDrawCtrl<TYPES, GRIDAXISDRAW> CLASSNAME;
 	typedef GraphElementCtrl_Base<TYPES, GRIDAXISDRAW > _B;
 	Point prevMousePoint;
-
+	Point selectOriginPoint, selectEndPoint;
+	Rect selectRect;
+	bool useLocalSelectLoop;
+	Value VSelectStyle, VAxisSelectStyle;
+	Value HSelectStyle, HAxisSelectStyle;
+	Value currSelectStyle;
+	
 	template <class COORDCONV>
 	void TOpenPropertiesDlg(void) {
 		GridAxisPropertiesDlg<CLASSNAME,  COORDCONV> dlg;
@@ -16,24 +22,38 @@ class StdGridAxisDrawCtrl : public GraphElementCtrl_Base<TYPES, GRIDAXISDRAW >
 		dlg.InitDlg(*this, coordConv);
 		if ( dlg.Execute() == IDOK ) {
 			dlg.Retrieve();
-			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
+			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FULL );
 		}
 	}
 
 	
 	public:
 	template<class COORDCONV>
-	StdGridAxisDrawCtrl( COORDCONV& conv) : _B(conv) {
+	StdGridAxisDrawCtrl( COORDCONV& conv)
+	: _B(conv)
+	, useLocalSelectLoop(true)
+	{
 		_B::whenOpenPropertiesDlgCB = THISBACK( TOpenPropertiesDlg<COORDCONV> );
+		VAxisSelectStyle = VSelectStyle = GraphCtrlImg::VSELECT();
+		HAxisSelectStyle = HSelectStyle = GraphCtrlImg::HSELECT();
+		VAxisSelectStyle = GraphCtrlImg::VAXISSELECT();
+		HAxisSelectStyle = GraphCtrlImg::HAXISSELECT();
+		currSelectStyle = Null;
 	}
 	
-	StdGridAxisDrawCtrl( StdGridAxisDrawCtrl& p) : _B(p) {}
-	~StdGridAxisDrawCtrl() {}
+	private:
+	StdGridAxisDrawCtrl( StdGridAxisDrawCtrl& p)
+	: _B(p)
+	, useLocalSelectLoop(p.useLocalSelectLoop)
+	{}
+	
+	public:
+	virtual ~StdGridAxisDrawCtrl() {}
 
 
 	void FitToDataRefresh(GraphDraw_ns::FitToDataStrategy fitStrategy = GraphDraw_ns::ALL_SERIES) {
 		_B::FitToData(fitStrategy);
-		_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
+		_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FULL );
 	}
 
 	virtual void ContextMenu(Bar& bar) {
@@ -42,23 +62,46 @@ class StdGridAxisDrawCtrl : public GraphElementCtrl_Base<TYPES, GRIDAXISDRAW >
 		bar.Add(t_("Fit To Visible Data"), THISBACK1(FitToDataRefresh,  GraphDraw_ns::VISIBLE_SERIES_ONLY));
 	}
 
+	void UseLocalSelectLoop(bool p = true) {
+		useLocalSelectLoop = p;
+	}
+
+	void SetVSelectStyle(Value p) {
+		VSelectStyle = p;
+	}
+	void SetVAxisSelectStyle(Value p) {
+		VAxisSelectStyle = p;
+	}
+
+	void SetHSelectStyle(Value p) {
+		HSelectStyle = p;
+	}
+	void SetHAxisSelectStyle(Value p) {
+		HAxisSelectStyle = p;
+	}
 
 	virtual Image  CursorImage(Point p, dword keyflags) {
-		if ( keyflags & K_CTRL ){
-			if (keyflags & K_SHIFT) {
-				if (_B::IsVertical() ) return GraphCtrlImg::AXIS_ZOOM_Y();
-				else                   return GraphCtrlImg::AXIS_ZOOM_X();
-			}
+		if (  TEST_GC_KEYS(keyflags, GraphCtrl_Keys::K_AXIS_ZOOM) ) {
+			if (!_B::GetCoordConverter().IsZoomAllowed())    return GraphCtrlImg::CROSS();
+			if (_B::IsVertical() ) return GraphCtrlImg::AXIS_ZOOM_Y();
+			else                   return GraphCtrlImg::AXIS_ZOOM_X();
+		}
+		else if ( TEST_GC_KEYS(keyflags, GraphCtrl_Keys::K_ZOOM)) {
+			if (!_B::GetCoordConverter().IsZoomAllowed())    return GraphCtrlImg::CROSS();
 			if (_B::IsVertical() ) return GraphCtrlImg::ZOOM_Y();
 			else                   return GraphCtrlImg::ZOOM_X();
 		}
-
-		if (keyflags & K_SHIFT) {
+		else if ( TEST_GC_KEYS(keyflags, GraphCtrl_Keys::K_AXIS_SCROLL)) {
+			if (!_B::GetCoordConverter().IsScrollAllowed())  return GraphCtrlImg::CROSS();
 			if (_B::IsVertical() ) return GraphCtrlImg::AXIS_SCROLL_Y();
 			else                   return GraphCtrlImg::AXIS_SCROLL_X();
 		}
-		if (_B::IsVertical() ) return GraphCtrlImg::SCROLL_Y();
-		else                   return GraphCtrlImg::SCROLL_X();
+		else if ( TEST_GC_KEYS(keyflags, GraphCtrl_Keys::K_SCROLL)) {
+			if (!_B::GetCoordConverter().IsScrollAllowed())  return GraphCtrlImg::CROSS();
+			if (_B::IsVertical() ) return GraphCtrlImg::SCROLL_Y();
+			else                   return GraphCtrlImg::SCROLL_X();
+		}
+		return GraphCtrlImg::CROSS();
 	}
 
 	virtual void MouseWheel (Point p, int zdelta, dword keyflags) {
@@ -68,8 +111,9 @@ class StdGridAxisDrawCtrl : public GraphElementCtrl_Base<TYPES, GRIDAXISDRAW >
 		if (_B::IsVertical())  zdelta = -zdelta;
 		zdelta *= abs(converter.getScreenRange()) / 5;
 
-		if ( (keyflags & (K_CTRL|K_SHIFT)) == (K_CTRL|K_SHIFT) ) // => ZOOM on wheel (this axis only)
+		if (  TEST_GC_KEYS(keyflags, GraphCtrl_Keys::K_AXIS_ZOOM) ) // => ZOOM on wheel (this axis only)
 		{
+			if (!_B::GetCoordConverter().IsZoomAllowed()) return;
 			GraphDraw_ns::GraphUndoData undo;
 			undo.undoAction << converter.MakeRestoreAxisMinMaxCB();
 				converter.updateGraphSize( converter.toGraph( converter.getScreenMin() - zdelta ),
@@ -78,8 +122,10 @@ class StdGridAxisDrawCtrl : public GraphElementCtrl_Base<TYPES, GRIDAXISDRAW >
 			_B::_parent->AddUndoAction(undo);
 			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
 		}
-		else if ( keyflags & K_CTRL )
-		{ // => ZOOM on wheel ( whole graph )
+		else if (  TEST_GC_KEYS(keyflags, GraphCtrl_Keys::K_ZOOM) )
+		{
+			// => ZOOM on wheel ( whole graph )
+			if (!_B::GetCoordConverter().IsZoomAllowed()) return;
 			GraphDraw_ns::GraphUndoData undo;
 			undo.undoAction << _B::_parent->MakeRestoreGraphSizeCB();
 				if (_B::IsVertical() ) {
@@ -91,9 +137,10 @@ class StdGridAxisDrawCtrl : public GraphElementCtrl_Base<TYPES, GRIDAXISDRAW >
 			_B::_parent->AddUndoAction(undo);
 			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
 		}
-		else if ( keyflags & K_SHIFT )
+		else if (  TEST_GC_KEYS(keyflags, GraphCtrl_Keys::K_AXIS_SCROLL) )
 		{
 			// => SCROLL on wheel ( on axis )
+			if (!_B::GetCoordConverter().IsScrollAllowed()) return;
 			GraphDraw_ns::GraphUndoData undo;
 			undo.undoAction << converter.MakeRestoreAxisMinMaxCB();
 				converter.updateGraphSize( converter.toGraph( converter.getScreenMin() - zdelta ),
@@ -102,8 +149,9 @@ class StdGridAxisDrawCtrl : public GraphElementCtrl_Base<TYPES, GRIDAXISDRAW >
 			_B::_parent->AddUndoAction(undo);
 			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
 		}
-		else
+		else if (  TEST_GC_KEYS(keyflags, GraphCtrl_Keys::K_SCROLL) )
 		{
+			if (!_B::GetCoordConverter().IsScrollAllowed()) return;
 			// => SCROLL on wheel ( ALL vertical OR horizontal axis )
 			GraphDraw_ns::GraphUndoData undo;
 			undo.undoAction << _B::_parent->MakeRestoreGraphSizeCB();
@@ -120,52 +168,139 @@ class StdGridAxisDrawCtrl : public GraphElementCtrl_Base<TYPES, GRIDAXISDRAW >
 		}
 	}
 
-	virtual void  LeftDown   (Point p, dword keyflags) {
+	virtual void  LeftDown(Point p, dword keyflags) {
 		prevMousePoint = p;
+		selectOriginPoint = p-_B::GetFrame().TopLeft();
+		selectEndPoint = selectOriginPoint;
+
+
+			GraphDraw_ns::CoordinateConverter& converter = _B::GetCoordConverter();
+			Ctrl* parentCtrl = ValueTo<Ctrl*>(_B::_parent->GetParentCtrl());
+			RectTracker tracker(*parentCtrl);
+			tracker.Dashed().Animation();
+			tracker.SetColor(Cyan()).Width(1);
+
+			GraphDraw_ns::GraphUndoData undo;
+			undo.undoAction << _B::_parent->MakeRestoreGraphSizeCB();
+
+			if ( TEST_GC_KEYS(keyflags, GraphCtrl_Keys::K_AXIS_ZOOM) )
+			{
+				if (!_B::GetCoordConverter().IsZoomAllowed()) return;
+				if (_B::IsVertical() ) {
+					if ( useLocalSelectLoop ) {
+						currSelectStyle = VAxisSelectStyle;
+						_B::_parent->DoLocalLoop( THISBACK( _selectZoomLoop ) );
+					} else {
+						selectRect = tracker.Track(Rect(Point(_B::GetFrame().TopLeft().x, p.y), Size(_B::GetFrame().GetSize().cx, 2)), ALIGN_CENTER, ALIGN_NULL ) - _B::GetFrame().TopLeft();
+					}
+					converter.updateGraphSize( converter.toGraph( selectRect.bottom ), converter.toGraph( selectRect.top ));
+				} else {
+					if ( useLocalSelectLoop ) {
+						currSelectStyle = HAxisSelectStyle;
+						_B::_parent->DoLocalLoop( THISBACK( _selectZoomLoop ) );
+					} else {
+						selectRect = tracker.Track(Rect(Point(p.x, _B::GetFrame().TopLeft().y), Size(2,_B::GetFrame().GetSize().cy)), ALIGN_NULL, ALIGN_CENTER) - _B::GetFrame().TopLeft();
+					}
+					converter.updateGraphSize( converter.toGraph( selectRect.left ), converter.toGraph( selectRect.right ));
+				}
+				currSelectStyle = Null;
+				_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
+				
+				if (p != (ValueTo<Ctrl*>(_B::_parent->GetParentCtrl()))->GetMouseViewPos()) {
+					undo.redoAction << _B::_parent->MakeRestoreGraphSizeCB();
+					_B::_parent->AddUndoAction(undo);
+				}
+			}
+			else if (TEST_GC_KEYS(keyflags, GraphCtrl_Keys::K_ZOOM) )
+			{
+				if (!_B::GetCoordConverter().IsZoomAllowed()) return;
+				if (_B::IsVertical() ) {
+					if ( useLocalSelectLoop ) {
+						currSelectStyle = VSelectStyle;
+						_B::_parent->DoLocalLoop( THISBACK( _selectZoomLoop ) );
+					}
+					else {
+						selectRect = tracker.Track(Rect(Point(_B::GetFrame().TopLeft().x, p.y), Size(_B::GetFrame().GetSize().cx, 2)), ALIGN_CENTER, ALIGN_NULL ) - _B::GetFrame().TopLeft();
+					}
+					_B::_parent->ZoomY( selectRect.top, selectRect.bottom );
+				} else {
+					if ( useLocalSelectLoop ) {
+						currSelectStyle = HSelectStyle;
+						_B::_parent->DoLocalLoop( THISBACK( _selectZoomLoop ) );
+					}
+					else {
+						selectRect = tracker.Track(Rect(Point(p.x, _B::GetFrame().TopLeft().y), Size(2,_B::GetFrame().GetSize().cy)), ALIGN_NULL, ALIGN_CENTER) - _B::GetFrame().TopLeft();
+					}
+					_B::_parent->ZoomX(selectRect.left, selectRect.right );
+				}
+				currSelectStyle = Null;
+				_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
+
+				if (p != (ValueTo<Ctrl*>(_B::_parent->GetParentCtrl()))->GetMouseViewPos()) {
+					undo.redoAction << _B::_parent->MakeRestoreGraphSizeCB();
+					_B::_parent->AddUndoAction(undo);
+				}
+			}
+			else if ( TEST_GC_KEYS(keyflags, GraphCtrl_Keys::K_AXIS_SCROLL ) ) // SCROLL --ONLY THIS AXIS--
+			{
+				if (!_B::GetCoordConverter().IsScrollAllowed()) return;
+				_B::_parent->DoLocalLoop( THISBACK( _AxisScrollLoop ) );
+
+				if (p != (ValueTo<Ctrl*>(_B::_parent->GetParentCtrl()))->GetMouseViewPos()) {
+					undo.redoAction << _B::_parent->MakeRestoreGraphSizeCB();
+					_B::_parent->AddUndoAction(undo);
+				}
+			}
+			else if ( TEST_GC_KEYS(keyflags, GraphCtrl_Keys::K_SCROLL )) // SCROLL --ONLY THIS AXIS--
+			{
+				if (!_B::GetCoordConverter().IsScrollAllowed()) return;
+				_B::_parent->DoLocalLoop( THISBACK( _ScrollLoop ) );
+
+				if (p != (ValueTo<Ctrl*>(_B::_parent->GetParentCtrl()))->GetMouseViewPos()) {
+					undo.redoAction << _B::_parent->MakeRestoreGraphSizeCB();
+					_B::_parent->AddUndoAction(undo);
+				}
+			}
 	}
 
 	private:
-	void _MouseMove(Point p, dword keyflags) {
-		if (keyflags & K_MOUSELEFT)
-		{
-			if ( keyflags & K_SHIFT ) // SCROLL --ONLY THIS AXIS--
-			{
-				int delta=0;
-				if (_B::IsVertical() ) {
-					// Vertical drag
-					delta = p.y-prevMousePoint.y;
-				} else {
-					// Horizontal drag
-					delta = p.x-prevMousePoint.x;
-				}
-				GraphDraw_ns::CoordinateConverter& converter = _B::GetCoordConverter();
-				converter.Scroll( delta );
-				prevMousePoint = p;
+	virtual void PaintOnPlot_overData(Draw& dw, int otherWidth, int scale) {
+		_B::PaintOnPlot_overData(dw, otherWidth, scale);
+		if ( useLocalSelectLoop && !currSelectStyle.IsNull() ) {
+			if (_B::IsVertical() ) {
+				if (selectOriginPoint.y<=selectEndPoint.y) { selectRect = Rect(Point(0, selectOriginPoint.y), Point(otherWidth, selectEndPoint.y) );    }
+				else                                       { selectRect = Rect(Point(0, selectEndPoint.y),    Point(otherWidth, selectOriginPoint.y) ); }
+			} else {
+				if (selectOriginPoint.x<=selectEndPoint.x) { selectRect = Rect(Point(selectOriginPoint.x, 0), Point(selectEndPoint.x, otherWidth) );    }
+				else                                       { selectRect = Rect(Point(selectEndPoint.x, 0),    Point(selectOriginPoint.x, otherWidth) ); }
 			}
-			else // SCROLL  --WHOLE GRAPH--
-			{
-				if (_B::IsVertical() ) {
-					// Vertical drag
-					_B::_parent->ScrollY(p.y-prevMousePoint.y);
-				} else {
-					// Horizontal drag
-					_B::_parent->ScrollX(p.x-prevMousePoint.x);
-				}
-				prevMousePoint = p;
-			}
-			_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
+			ChPaint(dw, selectRect, currSelectStyle);
 		}
 	}
+
+	void _selectZoomLoop (Point p, dword keyflags) {
+		selectEndPoint = p-_B::GetFrame().TopLeft();
+		_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_KEEP_DATA );
+	}
+
+	void _ScrollLoop (Point p, dword keyflags) {
+		if (_B::IsVertical() ) { _B::_parent->ScrollY(p.y-prevMousePoint.y); }
+		else                   { _B::_parent->ScrollX(p.x-prevMousePoint.x); }
+		prevMousePoint = p;
+		_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
+	}
+
+	void _AxisScrollLoop (Point p, dword keyflags) {
+		int delta=0;
+		if (_B::IsVertical() ) { delta = p.y-prevMousePoint.y; }
+		else                   { delta = p.x-prevMousePoint.x; }
+		_B::_coordConverter.Scroll( delta );
+		prevMousePoint = p;
+		_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FAST );
+	}
+
 	public:
 	virtual void MouseMove (Point p, dword keyflags) {
-		if (keyflags & K_MOUSELEFT)
-		{
-			GraphDraw_ns::GraphUndoData undo;
-			undo.undoAction << _B::_parent->MakeRestoreGraphSizeCB();
-				_B::_parent->DoLocalLoop( THISBACK( _MouseMove ) );
-			undo.redoAction << _B::_parent->MakeRestoreGraphSizeCB();
-			_B::_parent->AddUndoAction(undo);
-		}
 	}
 };
 
@@ -239,61 +374,57 @@ class DynamicMarkerCtrl : public  GraphElementCtrl_Base< TYPES, MARKERDRAW > {
 	public:
 	virtual void  LeftDown(Point p, dword keyflags) {
 		prevMousePoint = p;
-	}
 
-	virtual void MouseMove (Point p, dword keyflags) {
-		if (keyflags & K_MOUSELEFT)
-		{
-			GraphDraw_ns::MarkerPosList::Iterator iter = _B::markers.End();
-			GraphDraw_ns::MarkerPosList::ConstIterator endIter = _B::markers.Begin();
-			while ( iter != endIter ) {
-				--iter;
-				GraphDraw_ns::MarkerElementData& markerData = *iter;
-				if (_B::_coordConverter.IsInGraphVisibleRange(markerData)) {
-					switch( _B::GetElementPos() ) {
-						case GraphDraw_ns::LEFT_OF_GRAPH:
-							if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(),  _B::GetElementPos(), _B::GetElementWidth(), _B::_coordConverter.toScreen(markerData) )) {
-								currMarkerPos = iter;
-								selectOffset = _B::_coordConverter.toScreen(markerData) - p.y;
-								whenMarkerMoveStart(_B::markers, currMarkerPos->GetID());
-								_B::_parent->DoLocalLoop( THISBACK( _MoveMarker ) );
-								whenMarkerMoveEnd(_B::markers, currMarkerPos->GetID());
-							}
-							break;
-						case GraphDraw_ns::BOTTOM_OF_GRAPH:
-							if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), _B::_coordConverter.toScreen(markerData), 0)) {
-								currMarkerPos = iter;
-								selectOffset = _B::_coordConverter.toScreen(markerData) - p.x;
-								whenMarkerMoveStart(_B::markers, currMarkerPos->GetID());
-								_B::_parent->DoLocalLoop( THISBACK( _MoveMarker ) );
-								whenMarkerMoveEnd(_B::markers, currMarkerPos->GetID());
-							}
-							break;
-						case GraphDraw_ns::TOP_OF_GRAPH:
-							if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(),  _B::_coordConverter.toScreen(markerData), _B::GetElementWidth() )) {
-								currMarkerPos = iter;
-								selectOffset = _B::_coordConverter.toScreen(markerData) - p.x;
-								whenMarkerMoveStart(_B::markers, currMarkerPos->GetID());
-								_B::_parent->DoLocalLoop( THISBACK( _MoveMarker ) );
-								whenMarkerMoveEnd(_B::markers, currMarkerPos->GetID());
-							}
-							break;
-						case GraphDraw_ns::RIGHT_OF_GRAPH:
-							if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), 0, _B::_coordConverter.toScreen(markerData) )) {
-								currMarkerPos = iter;
-								selectOffset = _B::_coordConverter.toScreen(markerData) - p.y;
-								whenMarkerMoveStart(_B::markers, currMarkerPos->GetID());
-								_B::_parent->DoLocalLoop( THISBACK( _MoveMarker ) );
-								whenMarkerMoveEnd(_B::markers, currMarkerPos->GetID());
-							}
-							break;
-						case GraphDraw_ns::FLOAT_OVER_GRAPH:
-							break;
-					}
+		GraphDraw_ns::MarkerPosList::Iterator iter = _B::markers.End();
+		GraphDraw_ns::MarkerPosList::ConstIterator endIter = _B::markers.Begin();
+		while ( iter != endIter ) {
+			--iter;
+			GraphDraw_ns::MarkerElementData& markerData = *iter;
+			if (_B::_coordConverter.IsInGraphVisibleRange(markerData)) {
+				switch( _B::GetElementPos() ) {
+					case GraphDraw_ns::LEFT_OF_GRAPH:
+						if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(),  _B::GetElementPos(), _B::GetElementWidth(), _B::_coordConverter.toScreen(markerData) )) {
+							currMarkerPos = iter;
+							selectOffset = _B::_coordConverter.toScreen(markerData) - p.y;
+							whenMarkerMoveStart(_B::markers, currMarkerPos->GetID());
+							_B::_parent->DoLocalLoop( THISBACK( _MoveMarker ) );
+							whenMarkerMoveEnd(_B::markers, currMarkerPos->GetID());
+						}
+						break;
+					case GraphDraw_ns::BOTTOM_OF_GRAPH:
+						if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), _B::_coordConverter.toScreen(markerData), 0)) {
+							currMarkerPos = iter;
+							selectOffset = _B::_coordConverter.toScreen(markerData) - p.x;
+							whenMarkerMoveStart(_B::markers, currMarkerPos->GetID());
+							_B::_parent->DoLocalLoop( THISBACK( _MoveMarker ) );
+							whenMarkerMoveEnd(_B::markers, currMarkerPos->GetID());
+						}
+						break;
+					case GraphDraw_ns::TOP_OF_GRAPH:
+						if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(),  _B::_coordConverter.toScreen(markerData), _B::GetElementWidth() )) {
+							currMarkerPos = iter;
+							selectOffset = _B::_coordConverter.toScreen(markerData) - p.x;
+							whenMarkerMoveStart(_B::markers, currMarkerPos->GetID());
+							_B::_parent->DoLocalLoop( THISBACK( _MoveMarker ) );
+							whenMarkerMoveEnd(_B::markers, currMarkerPos->GetID());
+						}
+						break;
+					case GraphDraw_ns::RIGHT_OF_GRAPH:
+						if ( markerData.GetTickMark().Contains(p, _B::GetFrame().TopLeft(), _B::GetElementPos(), 0, _B::_coordConverter.toScreen(markerData) )) {
+							currMarkerPos = iter;
+							selectOffset = _B::_coordConverter.toScreen(markerData) - p.y;
+							whenMarkerMoveStart(_B::markers, currMarkerPos->GetID());
+							_B::_parent->DoLocalLoop( THISBACK( _MoveMarker ) );
+							whenMarkerMoveEnd(_B::markers, currMarkerPos->GetID());
+						}
+						break;
+					case GraphDraw_ns::FLOAT_OVER_GRAPH:
+						break;
 				}
 			}
 		}
 	}
+
 
 	virtual Image  CursorImage(Point p, dword keyflags) {
 		GraphDraw_ns::MarkerPosList::Iterator iter = _B::markers.Begin();

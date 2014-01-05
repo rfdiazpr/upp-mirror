@@ -51,6 +51,22 @@ in plot.&]
 visible in polt&]
 [s3; &]
 [s4;%- &]
+[s5;:CoordinateConverter`:`:AllowZoom`(bool`):%- [@(0.0.255) void]_[* AllowZoom]([@(0.0.255) b
+ool]_[*@3 p]_`=_[@(0.0.255) true])&]
+[s5;:CoordinateConverter`:`:AllowScroll`(bool`):%- [@(0.0.255) void]_[* AllowScroll]([@(0.0.255) b
+ool]_[*@3 p]_`=_[@(0.0.255) true])&]
+[s5;:CoordinateConverter`:`:IsZoomAllowed`(`)const:%- [@(0.0.255) bool]_[* IsZoomAllowed](
+)_[@(0.0.255) const]&]
+[s5;:CoordinateConverter`:`:IsScrollAllowed`(`)const:%- [@(0.0.255) bool]_[* IsScrollAllo
+wed]()_[@(0.0.255) const]&]
+[s2; Zooming and scrolling are managed by GraphCtrl derived classes, 
+but to have a common interface throughout all the GridCtrls made 
+by users : zoom and Scroll authorisations are hosted by the CoordinateConverter 
+class and made available&]
+[s2; [_ NB] : The internal data is not used in any way by CoordinateConverter 
+class.&]
+[s3;%- &]
+[s4;%- &]
 [s5;:CoordinateConverter`:`:MakeRestoreAxisMinMaxCB`(`):%- [_^Callback^ Callback]_[* Make
 RestoreAxisMinMaxCB]()&]
 [s2; Returns a CallBack that, when executed, sets the axis Min/Max 

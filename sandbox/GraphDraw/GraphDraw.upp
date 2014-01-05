@@ -1,27 +1,29 @@
-description "Graph drawing\377";
+description "Graph drawing\377255,127,200";
 
 uses
 	Painter,
-	ScatterDraw,
-	RichText;
+	ScatterDraw;
+
+uses(GD_TIMINGS) TimingPolicies;
 
 file
 	CoordinateConverter.h,
 	GraphDraw.cpp,
-	srcdoc.tpp,
 	src.tpp,
-	GraphUndo.h,
 	GraphDraw.h,
 	GraphFunctions.h,
 	GridStepIterator.h,
 	GraphDraw.iml,
 	SeriesConfig.h,
 	SeriesGroup.h,
-	StdGraphElements.h,
 	GraphElement.h,
 	GraphFunctions.h,
-	TickMark.h,
 	GridAxisDraw.h,
+	srcimp.tpp,
 	Copying,
-	GraphDrawTypes.h;
+	GraphDrawTypes.h,
+	GraphUndo.h,
+	StdGraphElements.h,
+	TickMark.h,
+	srcdoc.tpp;
 

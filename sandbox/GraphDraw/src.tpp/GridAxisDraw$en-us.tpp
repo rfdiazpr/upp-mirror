@@ -55,10 +55,4 @@ s]_[*@4 T]>_[*@4 T][@(0.0.255) `&]_[* CreateGridStepManager]()&]
 [s3; &]
 [s0; &]
 [ {{10000F(128)G(128)@1 [s0; [* Constructor detail]]}}&]
-[s4;%- &]
-[s5;:GridAxisDraw`:`:GridAxisDraw`(GridAxisDraw`:`:TypeCoordConverter`&`):%- [* GridAxi
-sDraw]([_^GridAxisDraw`:`:TypeCoordConverter^ TypeCoordConverter][@(0.0.255) `&]_[*@3 c
-oordConv])&]
-[s2;  [%-*@3 coordConv] .&]
-[s3; &]
 [s0; ]]

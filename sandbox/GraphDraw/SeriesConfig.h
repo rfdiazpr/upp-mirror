@@ -136,7 +136,7 @@ namespace GraphDraw_ns
 		SeriesConfig()	{pD = 0;}
 		void SetDataSource(DataSource *pointsData, bool ownsData = true) {pD = pointsData; owns = ownsData;}
 		inline DataSource *PointsData()	{return pD;}
-		~SeriesConfig()	{if(pD && owns) delete pD;}
+		virtual ~SeriesConfig()	{if(pD && owns) delete pD;}
 
 		private:
 		DataSource* pD;

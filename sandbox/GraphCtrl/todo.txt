@@ -1,0 +1,48 @@
+
+DONE:
+----
+* StdGridAxisDrawCtrl:
+	* Added AXIS SELECT-ZOOM
+	* Added LocalLoopSelect
+	* Added configurable select style
+* Added  global KEY management ==> replace K_CTRL, ...  by predefined constants K_ZOOM, K_SCROLL, ...
+* BUG : Corrected BUGs when LEFTMOUSE pressed outside GRAPH and moves into graph area 
+* Undo stack :
+	* Added isModified Verification before adding UndoAction to UNDO STACK
+	* Added UNDOSTACK limitation  (100 undo actions max by default )
+* Added LocalLoopSelect & Select style  in GraphCtrl
+* Layout() requests :
+	* Painting done in 'fastPaint' mode when requested by Layout()  ==> Application resizing
+	* Added FULL repaint 300 ms after last Layout() request
+	==> this gives fluide application resize (no app freeze when resizing)
+* Add AllowZoom, AllowScroll for X/Y management
+* Added additionnal methods in GraphCtrl.usc
+	* UseLocalSelectLoop
+	* DisableGraphZoom
+	* DisableGraphScroll
+	* DisableXZoom
+	* DisableYZoom
+	* DisableXScroll
+	* DisableYScroll
+	* DisableAxisScroll
+	* DisableAxisZoom
+
+
+TODO:
+----
+* Add Graph Scrolling restrictions ( isXScrollAllowed ) 
+* Add management of GraphElements with NEGATIVE priority 
+	==> only one Graphelement with negative prio allowed per stack 
+* Add AllowZoom, AllowScroll management
+	* add mouse cursor management with AllowZoom/Scroll cases
+	* add FitToData  restrictions 
+* Cleanup  CRTP_GraphCtrl_Base::IsModified()  CRTP_GraphCtrl_Base::ClearModify()
+* Add [Ctrl]+[Z]  for UNDO/REDO
+* Add 'reset markers' option in DynMarkers menu
+* Add additionnal methods in GraphCtrl.usc
+	* AllowZoom
+	* AllowScroll
+* Add Chameleon style containing all main fonts/colors/images/... for most common properties
+* BUG : corr date/time GridAxis display
+* improve Series properties dialog
+* improve Graph Drop Menu

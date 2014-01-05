@@ -11,6 +11,13 @@ topic "CRTP_GraphCtrl_Base";
 [b42;2 $$9,9#13035079074754324216151401829390:normal]
 [{_} 
 [s0;*@7;4%% &]
+[ {{10000@(113.42.0) [s0;%% [*@7;4 GraphCtrl`_Keys]]}}&]
+[s1;:GraphCtrl`_Keys`:`:struct: [@(0.0.255)3 struct][3 _][*3 GraphCtrl`_Keys]&]
+[s2;%% Contains configurable key masks for the predefined actions 
+: ZOOM, SCROLL&]
+[s3; &]
+[s0;*@7;4%% &]
+[s0;*@7;4%% &]
 [ {{10000@(113.42.0) [s0;%% [*@7;4 CRTP`_GraphCtrl`_Base]]}}&]
 [s1;:noref: [@(0.0.255)3 template][3 _<][@(0.0.255)3 class][3 _][*@4;3 TYPES][3 , 
 ][@(0.0.255)3 class][3 _][*@4;3 DERIVED][3 , ][@(0.0.255)3 template][3 _<][@(0.0.255)3 class][3 _

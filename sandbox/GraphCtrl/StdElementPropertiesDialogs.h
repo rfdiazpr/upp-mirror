@@ -44,7 +44,7 @@ class ElementPropertiesDlg : public WithElementBaseLayout<TopWindow> {
 	virtual void Retrieve() {
 		r1.Retrieve();
 		elem->SetElementPos(static_cast<GraphDraw_ns::ElementPosition>(pos));
-		elem->_parent->RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
+		elem->_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FULL );
 	}
 };
 // ============================================================================================

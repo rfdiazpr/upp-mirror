@@ -5,4 +5,5 @@
 #include "Functions4U/init"
 #include "Report/init"
 #include "DropLineDash/init"
+#include "TimingPolicies/init"
 #endif

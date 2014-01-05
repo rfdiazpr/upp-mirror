@@ -15,7 +15,7 @@ topic "2 - GraphElement class";
 [s0;%- &]
 [s0;%- &]
 [s4;%- &]
-[s5;:typedef:%- typedef_enum_[*3 FitToDataStrategy]&]
+[s5;:typedef:%- typedef_enum_[*3 RefreshStrategy]&]
 [s2; Used to indicate if refresh needs to be complete or partial 
 (in order to be FAST).&]
 [s2; This is usefull when accomplishing mouse move/resize and that 

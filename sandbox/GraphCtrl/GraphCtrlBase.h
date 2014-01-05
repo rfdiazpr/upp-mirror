@@ -2,6 +2,30 @@
 #define _GraphCtrl_GraphCtrlBase_h_
 
 
+struct GraphCtrl_Keys {
+	static dword K_ZOOM;
+	static dword K_AXIS_SELECT;
+	static dword K_AXIS_ZOOM;
+	static dword K_SCROLL;
+	static dword K_AXIS_SCROLL;
+
+	static dword K_ELEMENT_FLOAT_MOVERESIZE;
+	static dword K_ELEMENT_FLOAT_MOVE;
+	
+	static void reset() {
+		K_AXIS_SELECT = K_SHIFT;
+		K_ZOOM        = K_CTRL;
+		K_SCROLL      = 0;
+
+		K_AXIS_ZOOM   = K_ZOOM   | K_AXIS_SELECT;
+		K_AXIS_SCROLL = K_SCROLL | K_AXIS_SELECT;
+		
+		K_ELEMENT_FLOAT_MOVERESIZE = K_CTRL;
+		K_ELEMENT_FLOAT_MOVE       = 0;
+	}
+};
+
+#define TEST_GC_KEYS( keyflags, MASKS)  ( ((keyflags) & ~(K_MOUSEMIDDLE|K_MOUSELEFT|K_MOUSERIGHT) ) == (MASKS) )
 
 // ============================================================================================
 //                        LOOP DELEGATION CLASS
@@ -10,11 +34,13 @@
 class GraphCtrlLooper : public LocalLoop {
 	private:
 	Image cursorImg;
-	
-	virtual void  LeftUp(Point, dword) { EndLoop(); }
-	virtual void  RightUp(Point, dword) { EndLoop(); }
-	virtual void  MouseMove(Point p, dword f)  { WhenMouseMove(p, f); };
+	virtual void  LeftUp(Point, dword)          { EndLoop(); }
+	virtual void  RightUp(Point, dword)         { EndLoop(); }
+	virtual void  MouseMove(Point p, dword f)   { 
+		RLOGBLOCK_STR( true, "GraphCtrlLooper::MouseMove("<< &GetMaster() << ")");
+		WhenMouseMove(p, f); };
 	virtual Image CursorImage(Point p, dword keyflags) {
+		RLOGBLOCK_STR( true, "GraphCtrlLooper::CursorImage("<< &GetMaster() << ")");
 		if (cursorImg.IsNullInstance()) cursorImg = GetMaster().CursorImage(p,keyflags);
 		return cursorImg;
 	}
@@ -33,7 +59,7 @@ class GraphCtrlLooper : public LocalLoop {
 typedef GraphDraw_ns::GraphElement* (GraphDraw_ns::GraphElement::*mouseCallBack)(Point,dword);
 
 template<class TYPES, class DERIVED, template <class TYPES2, class DERIVED2> class GRAPHDRAW_BASE_CLASS >
-class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>
+class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public Ctrl
 {
 	public:
 	typedef CRTP_GraphCtrl_Base<TYPES, DERIVED, GRAPHDRAW_BASE_CLASS> CLASSNAME;
@@ -43,30 +69,69 @@ class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERI
 
 	Image CaptureMouseMove_cursorImage;
 	Point prevMousePoint;
+	Point selectOriginPoint, selectEndPoint;
 	int copyRatio;
-	int autoWaitCursorAvg;
-	
+	int autoWaitCursor_paint;
+	int autoWaitCursor_saveClipBoard;
+	int autoWaitCursor_saveToFile;
+	bool useLocalSelectLoop;
+	bool isXZoomAllowed;
+	bool isYZoomAllowed;
+	bool isXScrollAllowed;
+	bool isYScrollAllowed;
+	bool isZoomFromAxisAllowed;
+	bool isScrollFromAxisAllowed;
+	bool isZoomFromGraphAllowed;
+	bool isScrollFromGraphAllowed;
+
 	public:
 
 	CRTP_GraphCtrl_Base()
 	: copyRatio(3)
+	, autoWaitCursor_paint(0)
+	, autoWaitCursor_saveClipBoard(0)
+	, autoWaitCursor_saveToFile(0)
+	, useLocalSelectLoop(true)
+	, isXZoomAllowed(true)
+	, isYZoomAllowed(true)
+	, isXScrollAllowed(true)
+	, isYScrollAllowed(true)
+	, isZoomFromAxisAllowed(true)
+	, isScrollFromAxisAllowed(true)
+	, isZoomFromGraphAllowed(true)
+	, isScrollFromGraphAllowed(true)
 	{
 		Transparent();
 		BackPaint();
 		SetModify();
 		_B::setScreenSize( GetSize() );
+		_B::_selectStyle = GraphCtrlImg::GSELECT();
 	}
-
+	private:
 	CRTP_GraphCtrl_Base(const CRTP_GraphCtrl_Base& p)
 	: _B(p)
 	, copyRatio(p.copyRatio)
+	, autoWaitCursor_paint(0)
+	, autoWaitCursor_saveClipBoard(0)
+	, autoWaitCursor_saveToFile(0)
+	, useLocalSelectLoop(true)
+	, isXZoomAllowed(true)
+	, isYZoomAllowed(true)
+	, isXScrollAllowed(true)
+	, isYScrollAllowed(true)
+	, isZoomFromAxisAllowed(true)
+	, isScrollFromAxisAllowed(true)
+	, isZoomFromGraphAllowed(true)
+	, isScrollFromGraphAllowed(true)
 	{
 		Transparent();
 		BackPaint();
 		SetModify();
 		_B::setScreenSize( GetSize() );
+		_B::_selectStyle = GraphCtrlImg::GSELECT();
 	}
 
+	public:
 	virtual Value GetParentCtrl() {
 		return RawToValue(static_cast<Ctrl*>(this));
 	}
@@ -76,7 +141,18 @@ class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERI
 		Ctrl::Refresh();
 	};
 
+	void LayoutRefresh() {
+		_B::_doFastPaint = false;
+		Ctrl::Refresh();
+	}
+	
 	virtual void Layout() {
+		enum { 
+			TIMEID_LAYOUT_REFRESH = Ctrl::TIMEID_COUNT,
+		    TIMEID_COUNT
+		};
+		_B::_doFastPaint = true;
+		KillSetTimeCallback(300, THISBACK(LayoutRefresh), TIMEID_LAYOUT_REFRESH );
 		SetModify();
 	}
 
@@ -89,19 +165,87 @@ class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERI
 		_B::ClearModifyData();
 	}
 
+	DERIVED&  UseLocalSelectLoop(bool p = true) {
+		useLocalSelectLoop = p;
+		return *static_cast<DERIVED*>(this);
+	}
+
+	private:
+	void UpdateScrollZoomAuthorisations() {
+		for (int j = 0; j < _B::_xConverters.GetCount(); j++) {
+			_B::_xConverters[j]->AllowZoom(isXZoomAllowed && isZoomFromAxisAllowed );
+			_B::_xConverters[j]->AllowScroll(isXScrollAllowed && isScrollFromAxisAllowed );
+		}
+		for (int j = 0; j < _B::_yConverters.GetCount(); j++) {
+			_B::_yConverters[j]->AllowZoom(isYZoomAllowed && isZoomFromAxisAllowed );
+			_B::_yConverters[j]->AllowScroll(isYScrollAllowed && isScrollFromAxisAllowed );
+		}
+	}
+	public:
+	
+	DERIVED& DisableGraphZoom(bool p = false) {
+		isZoomFromGraphAllowed= !p;
+		return *static_cast<DERIVED*>(this);
+	}
+
+	DERIVED& DisableGraphScroll(bool p = false) {
+		isScrollFromGraphAllowed= !p;
+		return *static_cast<DERIVED*>(this);
+	}
+
+	DERIVED& DisableAxisZoom(bool p = false) {
+		isZoomFromAxisAllowed= !p;
+		UpdateScrollZoomAuthorisations();
+		return *static_cast<DERIVED*>(this);
+	}
+
+	DERIVED& DisableXZoom(bool p = false) {
+		isXZoomAllowed = !p;
+		UpdateScrollZoomAuthorisations();
+		return *static_cast<DERIVED*>(this);
+	}
+
+	DERIVED& DisableYZoom(bool p = false) {
+		isYZoomAllowed = !p;
+		UpdateScrollZoomAuthorisations();
+		return *static_cast<DERIVED*>(this);
+	}
+
+	DERIVED& DisableAxisScroll(bool p = false) {
+		isScrollFromAxisAllowed = !p;
+		UpdateScrollZoomAuthorisations();
+		return *static_cast<DERIVED*>(this);
+	}
+
+	DERIVED& DisableXScroll(bool p = false) {
+		isXScrollAllowed = !p;
+		UpdateScrollZoomAuthorisations();
+		return *static_cast<DERIVED*>(this);
+	}
+
+	DERIVED& DisableYScroll(bool p = false) {
+		isYScrollAllowed = !p;
+		UpdateScrollZoomAuthorisations();
+		return *static_cast<DERIVED*>(this);
+	}
+
+	virtual void AddXConverter(GraphDraw_ns::CoordinateConverter* conv) {
+		_B::AddXConverter(conv);
+		conv->AllowScroll(isXScrollAllowed);
+		conv->AllowZoom(isXZoomAllowed);
+	}
+
+	virtual void AddYConverter(GraphDraw_ns::CoordinateConverter* conv) {
+		_B::AddYConverter(conv);
+		conv->AllowScroll(isYScrollAllowed);
+		conv->AllowZoom(isYZoomAllowed);
+	}
+
+
 	void Paint2(Draw& w) {
+		RLOGBLOCK_STR( _B::debugTrace, "CRTP_GraphCtrl_Base::Paint2(" << this << ")");
 		_B::setScreenSize( GetSize() );
-		if (1) { //_B::_drawMode == GraphDraw_ns::MD_DRAW) {
-			_B::Paint(w, 1);
-		}
-		else {
-			RGBA bckgColor;   bckgColor.r = 0; bckgColor.g = 0; bckgColor.b = 0; bckgColor.a = 0;
-			ImageBuffer ib(GetSize());
-			Upp::Fill( ib.Begin(), bckgColor, ib.GetLength() );
-			BufferPainter bp(ib, _B::_drawMode);
-			_B::Paint(bp, 1);
-			w.DrawImage(0, 0, ib);
-		}
+		_B::Paint(w, 1);
 		
 //		if(HasFocus())
 //			DrawFocus(w, Rect(GetSize()).Deflated(5));//st->focusmargin));
@@ -111,16 +255,23 @@ class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERI
 
 	// Refresh called from child
 	virtual void RefreshFromChild( GraphDraw_ns::RefreshStrategy strategy ) {
-		if      (strategy == GraphDraw_ns::REFRESH_FAST)      _B::_doFastPaint = true;
-		else if (strategy != GraphDraw_ns::REFRESH_KEEP_DATA)  _B::_PlotDrawImage.Clear();// _B::_keepDataPaint = true;
+		RLOGBLOCK_STR( _B::debugTrace, "CRTP_GraphCtrl_Base::RefreshFromChild(" << this << ")");
+		if      (strategy == GraphDraw_ns::REFRESH_FAST)   _B::_doFastPaint = true;
+		else if (strategy == GraphDraw_ns::REFRESH_FULL)  _B::_PlotDrawImage.Clear();// _B::_keepDataPaint = true;
 		SetModify();
 		Refresh();
 	};
 
 	virtual void Paint(Draw& w) {
+		RLOGBLOCK_STR( _B::debugTrace, "CRTP_GraphCtrl_Base::Paint(" << this << ")   [ FastPaint , PlotImgEmpty ] => [ " << _B::_doFastPaint << " , " << _B::_PlotDrawImage.IsEmpty() << " ]");
 		if ( _B::_doFastPaint == false ) {
-			AutoWaitCursor waitcursor(autoWaitCursorAvg);
-			Paint2(w);
+			if (_B::_PlotDrawImage.IsEmpty()) {
+				AutoWaitCursor waitcursor(autoWaitCursor_paint);
+				Paint2(w);
+			}
+			else {
+				Paint2(w);
+			}
 			ClearModify();
 		}
 		else {
@@ -128,7 +279,6 @@ class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERI
 			SetModify();
 		}
 	}
-
 	int GetCopyRatio() { return copyRatio; }
 	
 	DERIVED& SetCopyRatio(int ratio) {
@@ -149,6 +299,7 @@ class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERI
 
 	void SaveToClipboard(bool saveAsMetafile)
 	{
+		RLOGBLOCK_STR( _B::debugTrace, "CRTP_GraphCtrl_Base::SaveToClipboard(" << this << ")");
 		GuiLock __;
 		
 /*		if (saveAsMetafile) {
@@ -158,6 +309,7 @@ class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERI
 			WinMetaFile wmf = wmfd.Close();
 			wmf.WriteClipboard();
 		} else {*/
+			AutoWaitCursor waitcursor(autoWaitCursor_saveClipBoard);
 			Image img = GetImage(copyRatio);
 			WriteClipboardImage(img);
 //		}
@@ -166,7 +318,9 @@ class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERI
 
 	void SaveToClipboard(bool)
 	{
+		RLOGBLOCK_STR( _B::debugTrace, "CRTP_GraphCtrl_Base::SaveToClipboard(" << this << ")");
 		GuiLock __;
+		AutoWaitCursor waitcursor(autoWaitCursor_saveClipBoard);
 		Image img = _B::GetImage(copyRatio);
 		WriteClipboardImage(img);
 	}
@@ -175,6 +329,7 @@ class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERI
 	void SaveToFile(String fileName)
 	{
 		GuiLock __;
+
 		if (IsNull(fileName)) {
 			FileSel fs;
 
@@ -187,14 +342,18 @@ class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERI
 		    }
 	        fileName = fs;
 		}
+
 		if (GetFileExt(fileName) == ".png") {
 			PNGEncoder encoder;
+			AutoWaitCursor waitcursor(autoWaitCursor_saveToFile);
 			encoder.SaveFile(fileName, _B::GetImage(copyRatio));
 		} else if (GetFileExt(fileName) == ".jpg") {
 			JPGEncoder encoder(90);
+			AutoWaitCursor waitcursor(autoWaitCursor_saveToFile);
 			encoder.SaveFile(fileName, _B::GetImage(copyRatio));
 		} else if (GetFileExt(fileName) == ".tif") {
 			TIFEncoder encoder;
+			AutoWaitCursor waitcursor(autoWaitCursor_saveToFile);
 			encoder.SaveFile(fileName, _B::GetImage(copyRatio));
 		} else
 			Exclamation(Format(t_("File format \"%s\" not found"), GetFileExt(fileName)));
@@ -202,9 +361,6 @@ class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERI
 	
 	void OpenSeriesPropertiesDlg(int c) {
 		WithSeriesPropertiesDlgLayout<TopWindow> dlg;
-		
-		//dlg.lineDash.SetDrawMode(_B::GetDrawMode());
-		//dlg.lineThickness.SetDrawMode(_B::GetDrawMode());
 		
 		GraphDraw_ns::SeriesConfig& s = _B::series[c];
 		CtrlRetriever r;
@@ -224,6 +380,7 @@ class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERI
 		CtrlLayoutOKCancel(dlg, t_("Edit properties"));
 		if(dlg.Execute() == IDOK) {
 			r.Retrieve();
+			_B::ClearPlotDrawImg();
 			SetModify();
 			Refresh();
 		}
@@ -358,30 +515,45 @@ class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERI
 		{
 			return;
 		}
-		else if ( _B::_plotRect.Contains(p) ) {
-			if ( keyflags & K_CTRL )
-			{
+		if ( _B::_plotRect.Contains(p) ) {
+			GraphDraw_ns::GraphUndoData undo;
+			undo.undoAction << _B::MakeRestoreGraphSizeCB(); // PREV size before  SELECT ZOOM
+			if ( TEST_GC_KEYS(keyflags, GraphCtrl_Keys::K_ZOOM) ) {
 				// SELECT ZOOM
-				GraphDraw_ns::GraphUndoData undo;
-				undo.undoAction << _B::MakeRestoreGraphSizeCB(); // PREV size before  SELECT ZOOM
-				RectTracker tracker(*this);
-				Rect selectedZoomArea = tracker.Track( RectfC(p.x,p.y,0,0), ALIGN_NULL, ALIGN_NULL) - _B::_plotRect.TopLeft();
-				if (selectedZoomArea.Width() !=0  && selectedZoomArea.Height() != 0) {
-					_B::ZoomOnRect( selectedZoomArea );
-					SetModify();
-					undo.redoAction << _B::MakeRestoreGraphSizeCB(); // NEW size after  SELECT ZOOM
+				if (!isZoomFromGraphAllowed) return;
+				if (useLocalSelectLoop) {
+					selectEndPoint = selectOriginPoint = p - _B::_plotRect.TopLeft();
+					DoLocalLoop( THISBACK(LoopedPlotSelectCB) );
+					_B::ZoomOnRect( _B::_selectRect );
+					_B::_selectRect.Clear();
+				}
+				else {
+					// ------------------------------------				
+					RectTracker tracker(*this);
+					Rect selectedZoomArea = tracker.Track( RectfC(p.x,p.y,0,0), ALIGN_NULL, ALIGN_NULL) - _B::_plotRect.TopLeft();
+					if ( !selectedZoomArea.IsEmpty() ) {
+						_B::ZoomOnRect( selectedZoomArea );
+						Refresh();
+					}
+				}
+				if ( p != GetMouseViewPos() ) {
+					undo.redoAction << _B::MakeRestoreGraphSizeCB(); // NEW size after  MOVE
 					_B::AddUndoAction(undo);
-					Refresh();
 				}
 			}
-			return;
+			else if ( TEST_GC_KEYS(keyflags, GraphCtrl_Keys::K_SCROLL ) ) {
+				if (!isScrollFromGraphAllowed) return;
+				DoLocalLoop( THISBACK(LoopedPlotScrollCB) );
+				if ( p != GetMouseViewPos() ) {
+					undo.redoAction << _B::MakeRestoreGraphSizeCB(); // NEW size after  MOVE
+					_B::AddUndoAction(undo);
+				}
+			}
 		}
 	}
 
 	virtual void LeftDouble(Point p, dword keyflags) {
-		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElement::LeftDouble) ) {
-			return;
-		}
+		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElement::LeftDouble) ) return;
 		if ( _B::_plotRect.Contains(p) ) {
 			return;
 		}
@@ -404,7 +576,6 @@ class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERI
 		if ( _B::_plotRect.Contains(p) ) {
 			return;
 		}
-
 	}
 
 	virtual void MiddleDown(Point p, dword keyflags) {
@@ -418,34 +589,43 @@ class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERI
 	}
 
 	private:
-	void LoopedPlotScrollMouseMove(Point p, dword keyflags) {
-				// LEFT SCROLL
-				_B::_doFastPaint = true;
-				_B::Scroll(p.x-prevMousePoint.x, p.y-prevMousePoint.y);
-				prevMousePoint = p;
-				Refresh();
+	void LoopedPlotScrollCB(Point p, dword keyflags) {
+		_B::_doFastPaint = true;
+		if (p != prevMousePoint) {
+			_B::Scroll(p.x-prevMousePoint.x, p.y-prevMousePoint.y);
+			SetModify();
+		}
+		prevMousePoint = p;
+		Refresh();
+	}
+	
+	void LoopedPlotSelectCB(Point p, dword keyflags) {
+		selectEndPoint = p - _B::_plotRect.TopLeft();
+		if (p != prevMousePoint) {
+			_B::_selectRect.left   = MIN(selectEndPoint.x, selectOriginPoint.x);
+			_B::_selectRect.right  = MAX(selectEndPoint.x, selectOriginPoint.x);
+			_B::_selectRect.top    = MIN(selectEndPoint.y, selectOriginPoint.y);
+			_B::_selectRect.bottom = MAX(selectEndPoint.y, selectOriginPoint.y);
+		}
+
+		if ( !isXZoomAllowed ) {
+			_B::_selectRect.left = 0;
+			_B::_selectRect.right = _B::_plotRect.GetWidth();
+		}
+		
+		if ( !isYZoomAllowed ) {
+			_B::_selectRect.top = 0;
+			_B::_selectRect.bottom = _B::_plotRect.GetHeight();
+		}
+		
+
+		Refresh();
 	}
 	
 	public:
 	virtual void MouseMove(Point p, dword keyflags) {
+		RLOGBLOCK_STR( _B::debugTrace, "CRTP_GraphCtrl_Base::MouseMove(" << this << ")");
 		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElement::MouseMove)) {}
-		else if ( _B::_plotRect.Contains(p) )  {
-			if ( keyflags & K_MOUSELEFT ) {
-				GraphDraw_ns::GraphUndoData undo;
-				undo.undoAction << _B::MakeRestoreGraphSizeCB(); // PREV size before  MOVE
-					DoLocalLoop( THISBACK(LoopedPlotScrollMouseMove) );
-				undo.redoAction << _B::MakeRestoreGraphSizeCB(); // NEW size after  MOVE
-				_B::AddUndoAction(undo);
-			}
-			else {
-				if (_B::_doFastPaint) { // Do complete drawing when SCROLLING FINISHED
-					_B::_doFastPaint = false;
-					Refresh();
-				}
-			}
-			return;
-		}
-
 		if (_B::_doFastPaint) {
 			// Do complete drawing when nothing special to be done
 			_B::_doFastPaint = false;
@@ -456,13 +636,14 @@ class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERI
 
 	virtual Image  CursorImage(Point p, dword keyflags)
 	{
+		RLOGBLOCK_STR( _B::debugTrace, "CRTP_GraphCtrl_Base::CursorImage(" << this << ")");
 		Image output;
 		if ( ProcessMouseCallBack<Image>(p, keyflags, &GraphDraw_ns::GraphElement::CursorImage, output, GraphDrawImg::CROSS())) {
 			return output;
 		}
 		if ( _B::_plotRect.Contains(p) ) {
-			if ( keyflags & K_CTRL ) return GraphCtrlImg::ZOOM();
-			return GraphCtrlImg::SCROLL();
+			if      ( TEST_GC_KEYS(keyflags, GraphCtrl_Keys::K_ZOOM) && isZoomFromGraphAllowed ) return GraphCtrlImg::ZOOM();
+			else if ( TEST_GC_KEYS(keyflags, GraphCtrl_Keys::K_SCROLL) && isScrollFromGraphAllowed) return GraphCtrlImg::SCROLL();
 		}
 		return GraphDrawImg::CROSS();
 	}
@@ -491,8 +672,9 @@ class CRTP_GraphCtrl_Base : public Ctrl, public GRAPHDRAW_BASE_CLASS<TYPES, DERI
 			}
 		}
 		if ( _B::_plotRect.Contains(p) ) {
-			if ( keyflags & K_CTRL ) // => WHEEL ZOOM
+			if (  TEST_GC_KEYS(keyflags, GraphCtrl_Keys::K_ZOOM) ) // => WHEEL ZOOM
 			{
+				if ( !isZoomFromGraphAllowed ) return;
 				GraphDraw_ns::GraphUndoData undo;
 				undo.undoAction << _B::MakeRestoreGraphSizeCB(); // PREV size before  MOVE
 					if (zdelta < 0) _B::ApplyZoomFactor(1.2);

@@ -50,4 +50,11 @@ by a graphElement&]
 [s3;%- &]
 [s0; &]
 [ {{10000F(128)G(128)@1 [s0; [* Constructor detail]]}}&]
+[s4;%- &]
+[s5;:GraphElementParent`:`:GetDrawMode`(`):%- [@(0.0.255) virtual] 
+DrawMode_[* GetDrawMode]()_`=_[@3 0]&]
+[s2; Returns the drawing mode used.&]
+[s2; This method is used by [^topic`:`/`/GraphDraw`/src`/GraphElement`$en`-us`#GraphElement`:`:class^ G
+raphElements ]that need to draw using Painter instead of the 
+native Draw passed to GraphElement`::PaintXxx() methods.&]
 [s0; ]]

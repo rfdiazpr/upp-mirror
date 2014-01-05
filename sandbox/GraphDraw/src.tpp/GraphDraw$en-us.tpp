@@ -35,8 +35,11 @@ awMode](DrawMode_[*@3 m])&]
 [s2;%% Set the drawing mode to be used&]
 [s3;%% &]
 [s4; &]
-[s5;:CRTP`_EmptyGraphDraw`:`:GetDrawMode`(`): DrawMode_[* GetDrawMode]()&]
+[s5;:CRTP`_EmptyGraphDraw`:`:GetDrawMode`(`): [@(0.0.255) virtual] 
+DrawMode_[* GetDrawMode]()&]
 [s2;%% Returns the drawing mode used&]
+[s2;%% [*_ NB:] Part of [^topic`:`/`/GraphDraw`/src`/GraphElementParent`$en`-us`#GraphElementParent`:`:class^ G
+raphElementParent ]interface&]
 [s3; &]
 [s4; &]
 [s5;:CRTP`_EmptyGraphDraw`:`:AddXConverter`(CRTP`_EmptyGraphDraw`:`:TypeCoordConverter`&`): [_^CRTP`_EmptyGraphDraw`:`:TypeCoordConverter^ T

@@ -1,18 +1,20 @@
-description "GRaphics display control\377";
+description "GRaphics display control\377255,127,200";
 
 uses
 	CtrlLib,
 	GraphDraw,
 	plugin/jpg,
-	plugin/tif;
+	plugin/tif,
+	DropLineDash;
 
 file
 	GraphCtrl.iml,
 	GraphCtrl.lay,
 	ScatterCtrl.t,
-	ElementCtrlBase.h,
 	StdElementCtrls.h,
+	ElementCtrlBase.h,
 	StdElementPropertiesDialogs.h,
+	todo.txt,
 	GraphCtrlBase.h,
 	GraphCtrl.h,
 	GraphCtrl.cpp,

@@ -10,6 +10,7 @@
 #include "GraphCtrl_test.h"
 
 
+
 #define IMAGECLASS GraphCtrl_testImg
 #define IMAGEFILE <GraphCtrl_test/GraphCtrl_test.iml>
 #include <Draw/iml_source.h>
@@ -32,8 +33,6 @@ class ExclusionAreaDraw : public CRTPGraphElement< ExclusionAreaDraw<TYPES> >
 	typedef ExclusionAreaDraw<TYPES>   CLASSNAME;
 	ExclusionAreaDraw(CoordinateConverter& xConv, CoordinateConverter& yConv) :  _xConverter(xConv), _yConverter(yConv) {};
 	~ExclusionAreaDraw() {};
-
-	virtual CLASSNAME* Clone() { return new CLASSNAME(_xConverter, _yConverter); }
 
 
 	virtual void PaintElement(Draw& dw, int scale) { /* do noting */}
@@ -95,12 +94,15 @@ GraphDraw_test::GraphDraw_test()
 	// ====================================
 	//                 G3
 	// ====================================
+	//g3.debugTrace = true;
+	
 	double y;
-	for (int t = 0; t < 100000; ++t) {
-		y = 20.0*sin(2.0*M_PI*t/100000.0);
+	const int NB_POINTS_G3 = 100000;
+	for (int t = 0; t < NB_POINTS_G3; ++t) {
+		y = 20.0*sin(2.0*M_PI*t/100000);
 		// create a "cloud" of points around the main line
-		s1 <<Pointf(t,y);
-		s2 <<Pointf(t,y + (Upp::Randomf()*5.0)-2.5);
+		s1 <<Pointf(t, y);
+		s2 <<Pointf(t, y + (Upp::Randomf()*5.0)-2.5);
 	}
 	g3.AddSeries(s1).MarkStyle<FastMarkPlot>().Legend("S1");
 	g3.AddSeries(s2).MarkStyle<FastMarkPlot>().Legend("S2");
@@ -115,6 +117,7 @@ GraphDraw_test::GraphDraw_test()
 	// ====================================
 	//                 G4
 	// ====================================
+	//g4.debugTrace = true;
 	g4.CreateElement2<ExclusionAreaDraw<MyGraphCtrl::Types>, FLOAT_OVER_GRAPH>(0, 0, g4.GetXCoordConverter(), g4.GetYCoordConverter() );
 	//g4.CreateElement1<GraphDraw_ns::MarkerElement<MyGraphCtrl::Types>, TOP_OF_GRAPH>(20, 0, g4.GetXCoordConverter() );
 	MarkerElementType& markerElem = g4.CreateElement1< MarkerElementType, TOP_OF_GRAPH>(30, 0, g4.GetXCoordConverter() );
@@ -141,6 +144,7 @@ GraphDraw_test::GraphDraw_test()
 	g4.SetPlotBackgroundImage(GraphCtrl_testImg::PLOT_BCKGND() );
 	g4.GetLegendElement().SetBackgndStyle(GraphCtrl_testImg::LEGEND_BACKGND3());
 	g4.GetLegendElement().SetElementWidth(28);
+	g4.GetYGridAxisDraw().SetVSelectStyle(GraphCtrl_testImg::VSELECT());
 	
 
 	// ====================================
@@ -213,9 +217,24 @@ void GraphDraw_test::DoReport(void)
 using namespace GraphDraw_ns;
 
 
+#include <ide/ide.h>
 
 GUI_APP_MAIN
 {
+	VALIDATE_IML(GraphCtrl_testImg);
+	VALIDATE_IML(GraphDrawImg);
+	VALIDATE_IML(GraphCtrlImg);
+
+	VALIDATE_IML(CtrlImg);
+	VALIDATE_IML(CtrlsImg);
+	VALIDATE_IML(ClassicCtrlsImg);
+	VALIDATE_IML(BrowserImg);
+	VALIDATE_IML(TopicImg);
+	VALIDATE_IML(IdeCommonImg);
+
+	
+
+
 	TRACE_INFO("STARTING application");
 	One<GraphDraw_test> app = new GraphDraw_test();
 	app->Sizeable().Run();

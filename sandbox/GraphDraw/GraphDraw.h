@@ -7,7 +7,9 @@
 
 #include <Core/Core.h>
 #include <ScatterDraw/ScatterDraw.h>
-//#include <TimingPolicies/TimingPolicies.h>
+#ifdef GD_TIMINGS
+#include <TimingPolicies/TimingPolicies.h>
+#endif
 
 #define IMAGECLASS GraphDrawImg
 #define IMAGEFILE <GraphDraw/GraphDraw.iml>
@@ -23,6 +25,19 @@ using namespace Upp;
 #define TRACE_ERROR(TXT) //{ std::ostringstream str; str <<  "\n" << TXT; LOG(str.str().c_str()); }
 #endif
 
+
+
+struct DebugLogBlockString
+{
+	DebugLogBlockString(const String name, bool cond) : name(name), printLogs(cond) { if (printLogs) { VppLog() << name << EOL << LOG_BEGIN; } }
+	~DebugLogBlockString()                                                          { if (printLogs) { VppLog() << LOG_END << "//" << name << EOL; } }
+	const String name;
+	bool printLogs;
+};
+#define RLOGBLOCK_STR(COND, TXT)   //StringStream str; str << TXT; DebugLogBlockString DLBS( str.GetResult(), COND );
+
+
+
 namespace GraphDraw_ns
 {
 //	Size GetSmartTextSize(const char *text, Font font = StdFont(), int cx = INT_MAX);
@@ -34,6 +49,19 @@ namespace GraphDraw_ns
 	int GetSmartTextHeight(const char *s, int cx, Font font, int scale=1);
 	void DrawSmartText(Draw& draw, int x, int y, int cx, const char *text, Font& scaledFont, Color ink, int scale);
 };
+
+
+#define VALIDATE_IML(IML_NAME) \
+	for (int c=0; c<IML_NAME::GetCount(); ++c)	{\
+		Image img = IML_NAME::Get(c);\
+		for(const RGBA *s = ~img; s != img.End(); ++s) {\
+			if ( !(s->r <= s->a && s->g <= s->a && s->b <= s->a )) {\
+				RLOG("*s =" << *s << "    " <<  IML_NAME::GetId(c));\
+				break;\
+			}\
+		}\
+	}
+
 
 #include "GraphDrawTypes.h"
 #include "CoordinateConverter.h"
@@ -117,21 +145,25 @@ namespace GraphDraw_ns
 		GraphUndo _undoManager;
 		Image     _PlotDrawImage;
 		Image     _CtrlBackgroundImage;
+		
+		Rect      _selectRect;
+		Value     _selectStyle;
 
 #ifndef __TimingPolicies_H__
 		typedef TimingStub TimingType;
 #else
 		typedef NamedTimings< TimingPolicies_ns::MinMaxAverageTiming > TimingType;		
 		//typedef NamedTimings< TimingPolicies_ns::NoTiming >  TimingType;
+		
 #endif
 		
 		TimingType _paintTiming;
 		TimingType _paintPlotDataTiming;
 		TimingType _paintPlotDataGlobalTiming;
 		TimingType _paintBackGndTiming;
+		TimingType _initBackGndPaintTiming;
 		TimingType _paintBackGndTiming_chPaint;
 		TimingType _paintBackGndTiming_paintImage;
-		TimingType _initBackGndPaintTiming;
 		TimingType _paintBackGndTiming_copyImage;
 		
 		
@@ -211,6 +243,8 @@ namespace GraphDraw_ns
 		
 
 		public:
+		bool debugTrace;
+
 		CRTP_EmptyGraphDraw()
 		: _drawMode( MD_DRAW )
 		, _doFastPaint(false)
@@ -226,7 +260,9 @@ namespace GraphDraw_ns
 		, _paintBackGndTiming_chPaint("paintBackGndTiming_chPaint()")
 		, _paintBackGndTiming_paintImage("paintBackGndTiming_paintImage()")
 		, _paintBackGndTiming_copyImage("paintBackGndTiming_copyImage()")
+		, debugTrace(false)
 		{
+			_selectRect.Clear();
 			_plotBckgndStyle = LtGray();
 			_ctrlBckgndStyle = White();
 			setScreenSize( Size(100,100) ); // set default size
@@ -258,19 +294,19 @@ namespace GraphDraw_ns
 		
 		void Undo() {
 			_undoManager.Undo();
-			RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
+			RefreshFromChild( GraphDraw_ns::REFRESH_FULL );
 		}
 
 		void Redo() {
 			_undoManager.Redo();
-			RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
+			RefreshFromChild( GraphDraw_ns::REFRESH_FULL );
 		}
 		
 		void FitToData(FitToDataStrategy fitStrategy=ALL_SERIES) {
 			for (int j = _drawElements.GetCount()-1; j>=0; j--) {
 				_drawElements[j]->FitToData(fitStrategy);
 			}
-			RefreshFromChild( GraphDraw_ns::REFRESH_TOTAL );
+			RefreshFromChild( GraphDraw_ns::REFRESH_FULL );
 		}
 		
 
@@ -286,8 +322,8 @@ namespace GraphDraw_ns
 			if ((MD_DRAW<=m) && (m<=MD_SUBPIXEL)) _drawMode = (DrawMode)m;
 			return *static_cast<DERIVED*>(this);
 		}
-		DrawMode GetDrawMode() { return _drawMode; }
-		
+		virtual DrawMode GetDrawMode() { return _drawMode; }
+
 		
 
 		DERIVED& SetTopMargin(int v)    { _topMarginWidth = v;    return *static_cast<DERIVED*>(this); }
@@ -311,17 +347,25 @@ namespace GraphDraw_ns
 			return setScreenSize(_ctrlRect, scale);
 		}
 
+		virtual void AddXConverter(CoordinateConverter* conv) {
+			_xConverters << conv;
+			TypeSeriesGroup::_currentXConverter = conv;
+		}
+
+		virtual void AddYConverter(CoordinateConverter* conv) {
+			_yConverters << conv;
+			TypeSeriesGroup::_currentYConverter = conv;
+		}
+
 		template <class COORDCONV>
 		COORDCONV& AddXConverter(COORDCONV& conv) {
-			_xConverters << &conv;
-			TypeSeriesGroup::_currentXConverter = &conv;
+			AddXConverter(&conv);
 			return conv;
 		}
 
 		template <class COORDCONV>
 		COORDCONV& AddYConverter(COORDCONV& conv) {
-			_yConverters << &conv;
-			TypeSeriesGroup::_currentYConverter = &conv;
+			AddYConverter(&conv);
 			return conv;
 		}
 		
@@ -333,6 +377,11 @@ namespace GraphDraw_ns
 		void SetCurrentYConverter(int n) {
 			ASSERT( n < _yConverters.GetCount() );
 			TypeSeriesGroup::_currentYConverter =  _yConverters[n];
+		}
+
+		DERIVED&  SetSelectStyle(Value p) {
+			_selectStyle = p;
+			return *static_cast<DERIVED*>(this);
 		}
 
 
@@ -510,6 +559,7 @@ namespace GraphDraw_ns
 
 
 		Image GetImage( Size size, Color backGndColor = Upp::White(), const int scale = 1 ) {
+			RLOGBLOCK_STR( debugTrace, "CRTP_EmptyGraphDraw::GetImage(" << this << ")   [ FastPaint , PlotImgEmpty ] => [ " << _doFastPaint << " , " << _PlotDrawImage.IsEmpty() << " ]");
 			Rect _screenRectSvg = _ctrlRect;
 			setScreenSize( size, scale );
 			ImageBuffer ib(size);
@@ -676,11 +726,7 @@ namespace GraphDraw_ns
 					}
 					else  // DO FAST DRAW
 					{
-						//Point prevPoint = Null;
-//						bool prevPointIsVisible = false;
 						nbVisiblePoints = 0;
-//						TypeGraphCoord x;
-//						TypeGraphCoord y;
 						if (_B::series[j].PointsData()->IsExplicit() ) {
 							double xmax = imax;
 							double dx = double(xmax - imin)/800.;
@@ -739,6 +785,7 @@ namespace GraphDraw_ns
 		template<class T>
 		void Paint(T& dw, int scale)
 		{
+			RLOGBLOCK_STR( debugTrace, "CRTP_EmptyGraphDraw::Paint(" << this << ")   [ FastPaint , PlotImgEmpty ] => [ " << _doFastPaint << " , " << _PlotDrawImage.IsEmpty() << " ]");
 			_paintTiming.beginTiming();
 			_paintBackGndTiming.beginTiming();
 
@@ -752,7 +799,7 @@ namespace GraphDraw_ns
 				BufferPainter bp(ib, _drawMode);
 				_initBackGndPaintTiming.endTiming();
 				// ------------
-				// paint graph area background
+				// paint background
 				// ------------
 				_paintBackGndTiming_chPaint.beginTiming();
 				if ( !_ctrlBckgndStyle.IsNull() ) ChPaint(bp, _ctrlRect, _ctrlBckgndStyle );
@@ -769,7 +816,6 @@ namespace GraphDraw_ns
 				_paintBackGndTiming_copyImage.reset();
 			}
 			_paintBackGndTiming_paintImage.beginTiming();
-			//ChPaint(dw, _ctrlRect.Size(), _CtrlBackgroundImage);
 			dw.DrawImage(0, 0, _CtrlBackgroundImage );
 			_paintBackGndTiming_paintImage.endTiming();
 			
@@ -838,7 +884,12 @@ namespace GraphDraw_ns
 				}
 			}
 			
-
+			// --------------------------------------
+			// Paint SELECT Rect
+			// --------------------------------------
+			if ( !_selectRect.IsEmpty() && !_selectStyle.IsNull()) {
+				ChPaint(dw, _selectRect, _selectStyle);
+			}
 			// --------------------------------------
 			// END of paint in PLOT AREA
 			// --------------------------------------
@@ -870,16 +921,19 @@ namespace GraphDraw_ns
 			_paintTiming.endTiming();
 			
 			//std::cout << "\n===============================";
-			_paintTiming.printStats( std::cout );
-
-			_paintBackGndTiming.printStats( std::cout );
-			_initBackGndPaintTiming.printStats( std::cout );
-			_paintBackGndTiming_chPaint.printStats( std::cout );
-			_paintBackGndTiming_copyImage.printStats( std::cout );
-			_paintBackGndTiming_paintImage.printStats( std::cout );
-
-			_paintPlotDataTiming.printStats( std::cout );
-			_paintPlotDataGlobalTiming.printStats( std::cout );
+			if (debugTrace) {
+				//_paintTiming.printStats( std::cout );
+				_paintTiming.printStats( VppLog() );
+	
+				_paintBackGndTiming.printStats( std::cout );
+				_initBackGndPaintTiming.printStats( std::cout );
+				_paintBackGndTiming_chPaint.printStats( std::cout );
+				_paintBackGndTiming_copyImage.printStats( std::cout );
+				_paintBackGndTiming_paintImage.printStats( std::cout );
+	
+				_paintPlotDataTiming.printStats( std::cout );
+				_paintPlotDataGlobalTiming.printStats( std::cout );
+			}
 		}
 	};
 
@@ -918,7 +972,11 @@ namespace GraphDraw_ns
 	DERIVED& COMBINE3(Set, XYZ, Min)(double v)                    { COMBINE3(_, xyz, Converter).SetGraphMin(v); return *static_cast<DERIVED*>(this); }\
 	DERIVED& COMBINE3(Set, XYZ, Max)(double v)                    { COMBINE3(_, xyz, Converter).SetGraphMax(v); return *static_cast<DERIVED*>(this); }\
 	DERIVED& COMBINE3(Set, XYZ, MinRangeLimit)(double v)          { COMBINE3(_, xyz, Converter).setGraphMinRangeLimit(v); return *static_cast<DERIVED*>(this); }\
-	DERIVED& COMBINE3(Set, XYZ, MaxRangeLimit)(double v)          { COMBINE3(_, xyz, Converter).setGraphMaxRangeLimit(v); return *static_cast<DERIVED*>(this); }
+	DERIVED& COMBINE3(Set, XYZ, MaxRangeLimit)(double v)          { COMBINE3(_, xyz, Converter).setGraphMaxRangeLimit(v); return *static_cast<DERIVED*>(this); }\
+	TypeGraphCoord COMBINE3(Get, XYZ, Min)()                      { return ( COMBINE3(_, xyz, Converter).getGraphMin()); }\
+	TypeGraphCoord COMBINE3(Get, XYZ, Max)()                      { return ( COMBINE3(_, xyz, Converter).getGraphMax()); }\
+	Value COMBINE3(Get, XYZ, MinRangeLimit)()                     { return (COMBINE3(_, xyz, Converter).getGraphMinRangeLimit()); }\
+	Value COMBINE3(Get, XYZ, MaxRangeLimit)()                     { return (COMBINE3(_, xyz, Converter).getGraphMaxRangeLimit()); }
 
 
 #define MAKE_GRAPHDRAW_LABEL_FN( XYZ, xyz) \

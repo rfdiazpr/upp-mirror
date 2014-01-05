@@ -7,6 +7,20 @@
 
 namespace GraphDraw_ns
 {
+	ElementBorderPosition GetElementSubArea( Point p, Rect r, int borderWidth ) {
+		if ( ! r.Contains(p) ) return  ELEMENT_BORDER_NONE;
+		int result = 0;
+		if      ( r.left<=p.x && p.x<=(r.left + borderWidth) ) result |= ELEMENT_BORDER_LEFT;
+		else if ((r.right-borderWidth)<=p.x && p.x<=r.right)   result |= ELEMENT_BORDER_RIGHT;
+		
+		if      ( r.top<=p.y && p.y<=(r.top + borderWidth) )   result |= ELEMENT_BORDER_TOP;
+		else if ((r.bottom-borderWidth)<=p.y && p.y<=r.bottom) result |= ELEMENT_BORDER_BOTTOM;
+	
+		if (result) return  (ElementBorderPosition) result;
+		return ELEMENT_BORDER_CENTER;
+	};
+
+	
 	void DrawHArrowEnd(Draw &w, double x0, double y0, double x1, double y1, double width, double aWidth, double aHeight, const Color &color)
 	{
 		DrawLine(w, x0, y0, x1, y1, width, color);

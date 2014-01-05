@@ -24,13 +24,6 @@ enum_property ElementYPosition {
 	"GraphDraw_ns::BOTTOM_OF_GRAPH"
 };
 
-
-//enum_property DrawMode {
-//	"MODE_ANTIALIASED",
-//	"MODE_NOAA",
-//	"MODE_SUBPIXEL"
-//};
-
 enum_property DrawMode {
 	"GraphDraw_ns::MD_DRAW",
 	"GraphDraw_ns::MD_ANTIALIASED",
@@ -135,22 +128,8 @@ fn GD_DrawGrid(w, plotRect, xticks, yticks, xColor, yColor )
 		}
 	}
 }
-/*
-fn GD_DrawGrid(w, plotRect, xticks, yticks, xColor, yColor )
-{
-	if ( xColor != Null ) {
-		for(i = 1; i < count(xticks); i++) {
-			w.DrawLine( xticks[i], plotRect.top, xticks[i] , plotRect.bottom, 1, xColor );
-		}
-	}
 
-	if ( yColor != Null ) {
-		for(i = 1; i < count(xticks); i++) {
-			w.DrawLine( plotRect.left, yticks[i], plotRect.right, yticks[i], 1, yColor );
-		}
-	}
-}
-*/
+
 fn GD_DrawGraphic(w, plotRect, color )
 {
 	dx = ( plotRect.right-plotRect.left )/5;
@@ -181,7 +160,7 @@ fn GD_DrawLabelElement(w, side, rect, txt, color, font)
 			case "GraphDraw_ns::TOP_OF_GRAPH":
 			case "GraphDraw_ns::BOTTOM_OF_GRAPH":
 					orig = Point( center.x - (textsize.cx/2), center.y -(textsize.cy/2) );
-					w.DrawText( orig.x, orig.y, txt, font, color);
+					w.DrawSmartText( orig.x, orig.y, txt, font, color, 1);
 				break;
 			case "GraphDraw_ns::RIGHT_OF_GRAPH":
 					orig = Point( center.x + (textsize.cy/2), center.y -(textsize.cx/2) );
@@ -255,13 +234,23 @@ fn GD_AdjustElementFrame(side, plotRect, &elem)
 
 subctrl GraphDraw {
 	Frame  SetFrame @1;
+	DrawMode SetDrawMode = MODE_ANTIALIASED;
+	bool UseLocalSelectLoop = true;
+	bool DisableGraphZoom = false;
+	bool DisableAxisZoom = false;
+	bool DisableXZoom = false;
+	bool DisableYZoom = false;
+	bool DisableGraphScroll = false;
+	bool DisableAxisScroll = false;
+	bool DisableXScroll = false;
+	bool DisableYScroll = false;
+	
 	int SetTopMargin    = 10;
 	int SetBottomMargin = 0;
 	int SetLeftMargin   = 0;
 	int SetRightMargin  = 15;
 	Color SetCtrlBackgroundColor = White;
 	Color SetPlotBackgroundColor = LtGray;
-	DrawMode SetDrawMode = MODE_ANTIALIASED;
 	int SetCopyRatio = 3;
 	
 	GetMinSize() { sz = Size(60, 50); return sz; }

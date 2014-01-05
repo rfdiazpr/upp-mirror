@@ -13,22 +13,41 @@
 namespace GraphDraw_ns
 {
 	typedef enum ElementPosition {
-		LEFT_OF_GRAPH  = 0x001,
-		RIGHT_OF_GRAPH = 0x002,
-		TOP_OF_GRAPH   = 0x010,
-		BOTTOM_OF_GRAPH= 0x020,
-		FLOAT_OVER_GRAPH     = 0x100
+		LEFT_OF_GRAPH    = 0x001,
+		RIGHT_OF_GRAPH   = 0x002,
+		TOP_OF_GRAPH     = 0x010,
+		BOTTOM_OF_GRAPH  = 0x020,
+		FLOAT_OVER_GRAPH = 0x100
 	} ElementPosition;
+
+	typedef enum {
+		ELEMENT_BORDER_NONE   = 0x0,
+		
+		ELEMENT_BORDER_LEFT   = LEFT_OF_GRAPH,
+		ELEMENT_BORDER_RIGHT  = RIGHT_OF_GRAPH,
+		ELEMENT_BORDER_TOP    = TOP_OF_GRAPH,
+		ELEMENT_BORDER_BOTTOM = BOTTOM_OF_GRAPH,
+		
+		ELEMENT_BORDER_CENTER = 0x200,
+
+		ELEMENT_BORDER_TOP_LEFT     = ELEMENT_BORDER_LEFT | ELEMENT_BORDER_TOP,
+		ELEMENT_BORDER_TOP_RIGHT    = ELEMENT_BORDER_RIGHT | ELEMENT_BORDER_TOP,
+		ELEMENT_BORDER_BOTTOM_RIGHT = ELEMENT_BORDER_RIGHT | ELEMENT_BORDER_BOTTOM,
+		ELEMENT_BORDER_BOTTOM_LEFT  = ELEMENT_BORDER_LEFT | ELEMENT_BORDER_BOTTOM
+	} ElementBorderPosition;
+
+	ElementBorderPosition GetElementSubArea( Point p, Rect r, int borderWidth );
 
 	enum {
 		VERTICAL_MASK   = 0x00F,
 		HORIZONTAL_MASK = 0x0F0,
-		OVER_MASK       = 0xF00
+		FLOAT_MASK      = 0xF00
 	};
+
 
 	typedef enum RefreshStrategy {
 			REFRESH_FAST = 0,
-			REFRESH_TOTAL,
+			REFRESH_FULL,
 			REFRESH_KEEP_DATA
 	} RefreshStrategy;
 
@@ -42,12 +61,12 @@ namespace GraphDraw_ns
 		MD_ANTIALIASED = MODE_ANTIALIASED,
 		MD_NOAA        = MODE_NOAA,
 		MD_SUBPIXEL    = MODE_SUBPIXEL
-	} DrawMode_;
+	} DrawMode;
 
-	typedef DrawMode_ DrawMode;
 
 
 	typedef Callback2< Point, dword >  MouseLocalLoopCB;
+
 
 	class GraphElementParent {
 		public:
@@ -61,6 +80,7 @@ namespace GraphDraw_ns
 			virtual Value GetParentCtrl() = 0;
 			virtual void AddUndoAction(GraphUndoData& CB) = 0;
 			virtual Callback MakeRestoreGraphSizeCB() = 0;
+			virtual DrawMode GetDrawMode() = 0;
 			
 			virtual void DoLocalLoop(MouseLocalLoopCB  CB) {};
 
@@ -146,7 +166,7 @@ namespace GraphDraw_ns
 
 			inline bool IsVertical() const { return ((_pos & GraphDraw_ns::VERTICAL_MASK)!=0); }
 			inline bool IsHorizontal() const { return ((_pos & GraphDraw_ns::HORIZONTAL_MASK)!=0); }
-			inline bool IsFloat() const { return ((_pos & GraphDraw_ns::OVER_MASK)!=0); }
+			inline bool IsFloat() const { return ((_pos & GraphDraw_ns::FLOAT_MASK)!=0); }
 			inline bool IsHidden() const { return _hide; }
 			inline void Hide( bool v=true ) { _hide = v; }
 			

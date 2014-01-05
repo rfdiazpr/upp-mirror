@@ -4,4 +4,5 @@
 #include "GraphDraw/init"
 #include "plugin/jpg/init"
 #include "plugin/tif/init"
+#include "DropLineDash/init"
 #endif

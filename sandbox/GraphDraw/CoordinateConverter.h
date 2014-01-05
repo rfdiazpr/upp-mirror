@@ -21,15 +21,21 @@ namespace GraphDraw_ns
 			TypeScreenCoord _screenRange;
 			Value _graphMaxLimit;
 			Value _graphMinLimit;
+			bool _isZoomAllowed;
+			bool _isScrollAllowed;
 
 		public:
 		typedef CoordinateConverter CLASSNAME;
 			CoordinateConverter()
+			: _isZoomAllowed(true)
+			, _isScrollAllowed(true)
 			{
 				update( 0, 100, 0, 100);
 			}
 
 			CoordinateConverter(TypeGraphCoord graphMin, TypeGraphCoord graphMax, TypeScreenCoord screenMin, TypeScreenCoord screenMax)
+			: _isZoomAllowed(true)
+			, _isScrollAllowed(true)
 			{
 				update( graphMin, graphMax, screenMin, screenMax);
 			}
@@ -39,11 +45,17 @@ namespace GraphDraw_ns
 			inline TypeScreenCoord getScreenRange()      const { return _screenRange; }
 			inline TypeGraphCoord  getGraphMin()         const { return _graphMin; }
 			inline TypeGraphCoord  getGraphMax()         const { return _graphMax; }
-			inline Value           getGraphMinLimit()    const { return _graphMinLimit; }
-			inline Value           getGraphMaxLimit()    const { return _graphMaxLimit; }
+			inline Value           getGraphMinRangeLimit()    const { return _graphMinLimit; }
+			inline Value           getGraphMaxRangeLimit()    const { return _graphMaxLimit; }
 			inline TypeGraphCoord  getGraphRange()       const { return _graphRange; }
 			inline TypeGraphCoord  getSignedGraphRange() const { return (_graphMax-_graphMin); }
 			inline bool IsInGraphVisibleRange(TypeGraphCoord p) const { return ((_graphMin <= p) && (p <= _graphMax)); }
+
+			inline void AllowZoom(bool p = true)               { _isZoomAllowed = p; }
+			inline void AllowScroll(bool p = true)             { _isScrollAllowed = p; }
+			inline bool IsZoomAllowed()                  const { return _isZoomAllowed; }
+			inline bool IsScrollAllowed()                const { return _isScrollAllowed; }
+
 
 			Callback MakeRestoreAxisMinMaxCB() {
 				return THISBACK2(updateGraphSize, _graphMin, _graphMax);

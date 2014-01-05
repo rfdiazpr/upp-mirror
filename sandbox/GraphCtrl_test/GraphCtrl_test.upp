@@ -3,7 +3,8 @@ uses
 	GraphCtrl,
 	Functions4U,
 	Report,
-	DropLineDash;
+	DropLineDash,
+	TimingPolicies;
 
 file
 	GraphCtrl_test.h,
@@ -13,5 +14,7 @@ file
 	GraphCtrl_test.usc;
 
 mainconfig
+	"" = "GUI SSE2 X11",
+	"" = "GUI SSE2 MT X11",
 	"" = "GUI SSE2";
 

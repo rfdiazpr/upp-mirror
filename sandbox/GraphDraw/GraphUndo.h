@@ -11,8 +11,8 @@ namespace GraphDraw_ns
 		Callback redoAction;
 	
 		void Merge(const GraphUndoData& mostRecentAction) {
-			// x === A==> y === B==> z        x == C ==> z    C =  A >> B
-			// x <==~A=== y <==~B=== z                       ~C = ~B >> ~A
+			// x === A==> y === B==> z        x ==> C==> z    C =  A >> B
+			// x <==~A=== y <==~B=== z        x <==~C<== z   ~C = ~B >> ~A
 			Callback cb;
 			(cb << mostRecentAction.undoAction) << undoAction;
 			undoAction = cb;
@@ -31,10 +31,20 @@ namespace GraphDraw_ns
 			Vector<GraphUndoData> _undoStack;
 			Vector<GraphUndoData> _redoStack;
 			int64 _lastActionAddTime;
-	
-		public:
-			GraphUndo() : _lastActionAddTime(0) {}
+			int _undoStackSize;
 			
+			void trimStack() {
+				if ( _undoStack.GetCount() > _undoStackSize) {
+					_undoStack.Remove(0, _undoStack.GetCount() - _undoStackSize);
+				}
+			}
+		public:
+			GraphUndo() : _lastActionAddTime(0), _undoStackSize(100) {}
+			
+			void SetUndoStackSize(unsigned int p) {
+				_undoStackSize = p;
+				trimStack();
+			}
 			bool CanUndo() const { return !_undoStack.IsEmpty(); }
 			bool CanRedo() const  { return !_redoStack.IsEmpty(); }
 			
@@ -44,6 +54,7 @@ namespace GraphDraw_ns
 				else                                       _undoStack.Add(CB);
 				_redoStack.Clear();
 				_lastActionAddTime = currTime;
+				trimStack();
 			}
 	
 			void Undo() {

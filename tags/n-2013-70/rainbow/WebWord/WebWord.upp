@@ -1,0 +1,14 @@
+uses
+	Core,
+	Telpp,
+	plugin/DroidFonts,
+	RichEdit,
+	Turtle,
+	PdfDraw;
+
+file
+	WebWord.cpp;
+
+mainconfig
+	"" = "SSE2 TURTLE RAINBOW";
+

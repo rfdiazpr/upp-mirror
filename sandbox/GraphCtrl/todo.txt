@@ -1,6 +1,39 @@
 
-DONE:
-----
+		--------------
+		|    TODO    |
+		--------------
+* Add management of GraphElements with NEGATIVE priority 
+	==> only one Graphelement with negative prio allowed per stack 
+* Cleanup  CRTP_GraphCtrl_Base::IsModified()  CRTP_GraphCtrl_Base::ClearModify()
+* Add [Ctrl]+[Z]  for UNDO/REDO
+* Add 'reset markers' option in DynMarkers menu
+* Add Chameleon style containing all main fonts/colors/images/... for most common properties
+* BUG : corr date/time GridAxis display
+* improve Series properties dialog
+* improve Graph Drop Menu
+
+
+		--------------
+		|    DONE    |
+		--------------
+09/01/2014 - SVN.6738
+----------------------
+* Added FitToData  menu disable  when Scroll/Zoom are disabled
+* Removed extra Paint(FULL) after calling GetImage()
+* BUG : Corrected A GuiLock problem in  SaveToClipBoard()
+* AllowZoom, AllowScroll:
+	* added Graph Zoom/Scroll restrictions management
+	* added mouse cursor management 
+	* added FitToData restrictions 
+* Added additionnal methods in GraphCtrl.usc
+	* DisableGraphZoom
+	* DisableGraphScroll
+* Renamed AllowXxxxx ==> DisableXxxx
+
+
+04/01/2014 - SVN.6718
+----------------------
+* GraphElementCtrl_FloatMoveResize : improved resize  with full border/corner selection and to resize with adapted MouseCursor 
 * StdGridAxisDrawCtrl:
 	* Added AXIS SELECT-ZOOM
 	* Added LocalLoopSelect
@@ -18,31 +51,11 @@ DONE:
 * Add AllowZoom, AllowScroll for X/Y management
 * Added additionnal methods in GraphCtrl.usc
 	* UseLocalSelectLoop
-	* DisableGraphZoom
-	* DisableGraphScroll
-	* DisableXZoom
-	* DisableYZoom
-	* DisableXScroll
-	* DisableYScroll
-	* DisableAxisScroll
-	* DisableAxisZoom
+	* AllowXZoom
+	* AllowYZoom
+	* AllowXScroll
+	* AllowYScroll
+	* AllowAxisScroll
+	* AllowAxisZoom
 
 
-TODO:
-----
-* Add Graph Scrolling restrictions ( isXScrollAllowed ) 
-* Add management of GraphElements with NEGATIVE priority 
-	==> only one Graphelement with negative prio allowed per stack 
-* Add AllowZoom, AllowScroll management
-	* add mouse cursor management with AllowZoom/Scroll cases
-	* add FitToData  restrictions 
-* Cleanup  CRTP_GraphCtrl_Base::IsModified()  CRTP_GraphCtrl_Base::ClearModify()
-* Add [Ctrl]+[Z]  for UNDO/REDO
-* Add 'reset markers' option in DynMarkers menu
-* Add additionnal methods in GraphCtrl.usc
-	* AllowZoom
-	* AllowScroll
-* Add Chameleon style containing all main fonts/colors/images/... for most common properties
-* BUG : corr date/time GridAxis display
-* improve Series properties dialog
-* improve Graph Drop Menu

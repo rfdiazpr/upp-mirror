@@ -560,7 +560,9 @@ namespace GraphDraw_ns
 
 		Image GetImage( Size size, Color backGndColor = Upp::White(), const int scale = 1 ) {
 			RLOGBLOCK_STR( debugTrace, "CRTP_EmptyGraphDraw::GetImage(" << this << ")   [ FastPaint , PlotImgEmpty ] => [ " << _doFastPaint << " , " << _PlotDrawImage.IsEmpty() << " ]");
-			Rect _screenRectSvg = _ctrlRect;
+			Rect screenRectSvg = _ctrlRect;
+			Image plotDrawImageSvg = _PlotDrawImage;
+			Image ctrlBackgroundImageSvg = _CtrlBackgroundImage;
 			setScreenSize( size, scale );
 			ImageBuffer ib(size);
 			Upp::Fill( ib.Begin(),backGndColor, ib.GetLength() );
@@ -568,7 +570,9 @@ namespace GraphDraw_ns
 			ClearPlotDrawImg();
 			Paint(bp, scale);
 			ClearPlotDrawImg();
-			setScreenSize( _screenRectSvg );
+			setScreenSize( screenRectSvg );
+			_PlotDrawImage = plotDrawImageSvg;
+			_CtrlBackgroundImage = ctrlBackgroundImageSvg;
 			return ib;
 		}
 

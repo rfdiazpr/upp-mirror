@@ -16,6 +16,9 @@
 		--------------
 		|    DONE    |
 		--------------
+
+10/01/2014 - SVN.6749
+----------------------
 * Renamed all SetBckgroundXxxx()  ==> SetBackGroundStyle()
 * Replaced all SetBackGroundColor() SetBackGroundImage()  with SetBackGroundStyle()
 * Removed CRTPGraphElement  class ( useless )

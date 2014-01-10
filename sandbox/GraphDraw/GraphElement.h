@@ -76,7 +76,7 @@ namespace GraphDraw_ns
 			virtual void ZoomX(TypeScreenCoord left, TypeScreenCoord right) = 0;
 			virtual void ZoomY(TypeScreenCoord top, TypeScreenCoord bottom) = 0;
 			virtual void RefreshFromChild( RefreshStrategy doFastPaint ) = 0;
-			virtual Value GetSeries() = 0;
+			virtual TypeVectorSeries& GetSeries() = 0;
 			virtual Value GetParentCtrl() = 0;
 			virtual void AddUndoAction(GraphUndoData& CB) = 0;
 			virtual Callback MakeRestoreGraphSizeCB() = 0;
@@ -151,18 +151,24 @@ namespace GraphDraw_ns
 			virtual ~GraphElement() {}
 
 			inline void SetName(const char* name) { _name = name; };
-			virtual bool Contains(Point p) const { return _frame.Contains(p); }
-			inline const Rect& GetFrame() const { return _frame; }
 			inline void SetFrame(Rect v) { _frame = v; Update(); }
+			inline const Rect& GetFrame() const { return _frame; }
+
+			inline void SetFloatFrame(Rect v) { _floatFrame = v; }
 			inline const Rect& GetFloatFrame() const { return _floatFrame; }
 			inline const Rect GetFloatFrame(int scale) const { Rect f=_floatFrame; f.Set(f.TopLeft()*scale, f.BottomRight()*scale) ; return f; }
-			inline void SetFloatFrame(Rect v) { _floatFrame = v; }
+
+			inline  void  SetElementWidth(int v) { _width = v; }
 			inline int GetElementWidth() { return _width; }
-			inline ElementPosition GetElementPos() { return _pos; }
-			inline void SetAllowedPosMask( int v ) { _allowedPosMask = v; }
-			inline void DisablePos( int v ) { _allowedPosMask &= ~v; }
+
 			inline void SetStackingPriority( int v ) { _stackingPriority = v; }
 			inline int GetStackingPriority()  { return _stackingPriority; }
+			inline  void  SetBackGroundStyle( const Value& v) { _backgndStyle = v; }
+
+			virtual void  SetElementPos(ElementPosition v) { _pos = v; }
+			inline ElementPosition GetElementPos() { return _pos; }
+			inline void DisablePos( int v ) { _allowedPosMask &= ~v; }
+			inline void SetAllowedPosMask( int v ) { _allowedPosMask = v; }
 
 			inline bool IsVertical() const { return ((_pos & GraphDraw_ns::VERTICAL_MASK)!=0); }
 			inline bool IsHorizontal() const { return ((_pos & GraphDraw_ns::HORIZONTAL_MASK)!=0); }
@@ -172,6 +178,11 @@ namespace GraphDraw_ns
 			
 			bool operator<(const GraphElement& b) const { return (_stackingPriority < b._stackingPriority); };
 			bool operator>(const GraphElement& b) const { return (_stackingPriority > b._stackingPriority); };
+
+
+			virtual bool Contains(Point p) const { return _frame.Contains(p); }
+
+			inline void PaintElementBckGround(Draw& dw, Size sz) { if ( !_backgndStyle.IsNull() ) ChPaint(dw, sz, _backgndStyle ); }
 
             // Paint element somewhere inside the graph area as a FLOATING element (legend, ...)
 			// Offset and clipping are set with the '_floatFrame' settings
@@ -187,8 +198,6 @@ namespace GraphDraw_ns
 			virtual void PaintOnPlot_overData(Draw& dw, int otherWidth, int scale) {}
 			virtual void Update() {}; // called when coordinates need update
 
-//			virtual GraphElement* Clone() = 0;
-
 
 			virtual void LeftDown   (Point p, dword keyflags) { };
 			virtual void LeftDouble (Point p, dword keyflags) { };
@@ -201,49 +210,22 @@ namespace GraphDraw_ns
 			
 			virtual void FitToData(FitToDataStrategy fitStrategy) {}
 
-
-			void PaintElementBckGround(Draw& dw, Size sz) {
-				if ( !_backgndStyle.IsNull() ) {
-//					if ( IsType<Image>(_backgndStyle) && _backgndStyle.To<Image>() .GetKind() == IMAGE_OPAQUE) {
-//						ChPaint(dw, sz, _backgndStyle );
-//					}
-//					else {
-						RGBA bckgColor;   bckgColor.r = 0; bckgColor.g = 0; bckgColor.b = 0; bckgColor.a = 0;
-						ImageBuffer ib( sz );
-						Upp::Fill( ib.Begin(), bckgColor, ib.GetLength() );
-						BufferPainter bp(ib, MD_ANTIALIASED);
-						ChPaint(bp, sz, _backgndStyle );
-						Premultiply(ib);
-						dw.DrawImage(0, 0, ib);
-//					}
-				}
-			}
 	};
 
 	inline bool compareGraphElementFrame(const GraphElement* a, const GraphElement* b) { return *a < *b; }
 
-	template<class DERIVED>
-	class CRTPGraphElement : public GraphElement {
-		public:
-			CRTPGraphElement() {}
-			CRTPGraphElement(CRTPGraphElement& p) : GraphElement(p) {}
-			virtual ~CRTPGraphElement() {}
-
-			inline  DERIVED&  SetElementWidth(int v) { _width = v; return *static_cast<DERIVED*>(this); }
-			virtual DERIVED&  SetElementPos(ElementPosition v) { _pos = v; return *static_cast<DERIVED*>(this); }
-			inline  DERIVED&  SetBackgndStyle(const Value& v) { _backgndStyle = v; return *static_cast<DERIVED*>(this); }
-	};
-
-
-	class BlankAreaElement : public CRTPGraphElement< BlankAreaElement >
+	class BlankAreaElement : public GraphElement
 	{
 		typedef BlankAreaElement CLASSNAME;
 		public:
 			BlankAreaElement() {}
-			BlankAreaElement( BlankAreaElement& p) : CRTPGraphElement< BlankAreaElement >(p) {}
+			
 			virtual ~BlankAreaElement() {}
 			virtual void PaintElement(Draw& dw, int scale) { /* do noting */}
 //			virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }
+
+		private:
+			BlankAreaElement( BlankAreaElement& p)  {}
 	};
 
 

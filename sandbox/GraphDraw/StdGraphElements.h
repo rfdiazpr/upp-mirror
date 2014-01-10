@@ -10,13 +10,13 @@ namespace GraphDraw_ns
 	// ============================
 	//    LabelElement   CLASS
 	// ============================
-	class LabelElement : public CRTPGraphElement< LabelElement >
+	class LabelElement : public GraphElement
 	{
 		public:
 		Upp::String _label;
 		Font        _font;
 		Color       _color;
-		typedef CRTPGraphElement< LabelElement >  _B;
+		typedef GraphElement  _B;
 
 		public:
 		LabelElement() : _color( Blue() ) {}
@@ -60,13 +60,13 @@ namespace GraphDraw_ns
 //	// ============================
 //	//    LabelElement   CLASS
 //	// ============================
-//	class RichLabelElement : public CRTPGraphElement< RichLabelElement >
+//	class RichLabelElement : public GraphElement
 //	{
 //		private:
 //		RichText    _label;
 //		Color       _bckGndcolor;
 //		typedef RichLabelElement                          CLASSANME;
-//		typedef CRTPGraphElement< RichLabelElement > _B;
+//		typedef GraphElement _B;
 //
 //		public:
 //		RichLabelElement() : _bckGndcolor(Null) {}
@@ -110,11 +110,11 @@ namespace GraphDraw_ns
 	//    LegendElement   CLASS
 	// ============================
 	template<class TYPES >
-	class LegendElement : public CRTPGraphElement< LegendElement<TYPES> >
+	class LegendElement : public GraphElement
 	{
 		public:
 		typedef LegendElement CLASSNAME;
-		typedef CRTPGraphElement< LegendElement > _B;
+		typedef GraphElement _B;
 
 		String _legend;
 		Font   _font;
@@ -144,7 +144,6 @@ namespace GraphDraw_ns
 		template<class T>
 		inline CLASSNAME& SetLegend(T& v) { _legend = v; return *this; }
 
-		inline CLASSNAME&  SetBackGndColor(Color v) { _B::SetBackgndStyle(v); return *this; }
 		inline CLASSNAME&  SetFont(Font  v)         { _font  = v;  return *this; }
 
 		virtual void PaintElement(Draw& dw, int scale) {
@@ -159,8 +158,7 @@ namespace GraphDraw_ns
 
 		virtual void Update() {
 			if (v_series==0) {
-				v_series = _B::_parent->GetSeries().template To<TypeVectorSeries*>();
-				// ###### BUG DE CONVERSION ARM ######
+				v_series = &_B::_parent->GetSeries();
 			}
 
 			_legendWeight = 0;
@@ -247,14 +245,14 @@ namespace GraphDraw_ns
 	typedef Callback2< const MarkerPosList&, int> TypeMarkerMoveCbk;
 
 	template<class TYPES>
-	class MarkerElement : public CRTPGraphElement< MarkerElement<TYPES> >
+	class MarkerElement : public GraphElement
 	{
 		public:
 		CoordinateConverter& _coordConverter;
 		Font        _font;
 		Color       _color;
 		int         _axisWidth;
-		typedef CRTPGraphElement< MarkerElement >  _B;
+		typedef GraphElement  _B;
 		typedef MarkerElement<TYPES>  CLASSNAME;
 		MarkerPosList markers;
 		
@@ -296,7 +294,7 @@ namespace GraphDraw_ns
 			markers.Clear();
 		}
 
-		virtual CLASSNAME&  SetElementPos(ElementPosition v) {
+		virtual void  SetElementPos(ElementPosition v) {
 			if (v==LEFT_OF_GRAPH || v==RIGHT_OF_GRAPH) {
 				_B::DisablePos(BOTTOM_OF_GRAPH);
 				_B::DisablePos(TOP_OF_GRAPH);
@@ -304,7 +302,7 @@ namespace GraphDraw_ns
 				_B::DisablePos(LEFT_OF_GRAPH);
 				_B::DisablePos(RIGHT_OF_GRAPH);
 			}
-			return _B::SetElementPos(v);
+			_B::SetElementPos(v);
 		 }
 
 

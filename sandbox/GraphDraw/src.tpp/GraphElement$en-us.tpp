@@ -21,11 +21,13 @@ topic "2 - GraphElement class";
 [s2; This is usefull when accomplishing mouse move/resize and that 
 the data is to big to get refreshed rapidly.&]
 [s2; The values accepted are the following :&]
-[s2;i150;O0; [*@(128.0.255) REFRESH`_FAST : ]only partial data is draw 
-(to be faster)&]
-[s2;i150;O0; [*@(128.0.255) REFRESH`_TOTAL : ]everything is redrawn&]
-[s2;i150;O0; [*@(128.0.255) REFRESH`_KEEP`_DATA : ]data is not redrawn, 
-it`'s buffered image is used instead&]
+[s2;i150;O0; [*@(128.0.255) REFRESH`_FAST : ]only partial PLOT DATA 
+is draw (to be faster)&]
+[s2;i150;O0; [*@(128.0.255) REFRESH`_TOTAL : ]everything is redrawn 
+( all the PLOT DATA is redrawn)&]
+[s2;i150;O0; [*@(128.0.255) REFRESH`_KEEP`_DATA : ]PLOT DATA is not 
+redrawn, it`'s buffered image is used instead to refresh the 
+Graph&]
 [s3;%- &]
 [ {{10000@(113.42.0) [s0; [*@7;4 GraphElement]]}}&]
 [s1;:GraphElement`:`:class:%- [@(0.0.255)3 class][3 _][*3 GraphElement]&]
@@ -60,9 +62,24 @@ the element in the elements list.&]
 events to the correct element according to mouse position.&]
 [s3; &]
 [s4;%- &]
+[s5;:GraphElement`:`:SetElementPos`(ElementPosition`):%- [@(0.0.255) virtual] 
+[@(0.0.255) void]_[* SetElementPos](ElementPosition_[*@3 v])&]
+[s2; Sets the position of the element `=`=> on which side of the 
+Graph is positionned the GraphElement.&]
+[s2; This method can be overriden to disable specific positions.&]
+[s2; Ex: allow only TOP and BOTTOM only for an X axis GraphElement.&]
+[s3; &]
+[s4;%- &]
 [s5;:GraphElement`:`:SetFloatFrame`(Rect`):%- [@(0.0.255) void]_[* SetFloatFrame]([_^Rect^ R
 ect]_[*@3 v])&]
 [s2;  [%-*@3 v] .&]
+[s3; &]
+[s4;%- &]
+[s5;:GraphElement`:`:SetBackGroundStyle`(const Value`&`):%- [@(0.0.255) void]_[* SetBackG
+roundStyle](_[_^Value^ Value][@(0.0.255) `&]_[*@3 v])&]
+[s2; Sets the background style of the TickMark. [%-*@3 s ]can be anything 
+that is accepted by [^topic`:`/`/CtrlCore`/srcdoc`/AboutChameleon`$en`-us^ Chameleo
+n] ChPaint() method : Color, Image (hot spots are used), ...&]
 [s3; &]
 [s4;%- &]
 [s5;:GraphElement`:`:PaintFloatElement`(Draw`&`,int`):%- [@(0.0.255) virtual] 

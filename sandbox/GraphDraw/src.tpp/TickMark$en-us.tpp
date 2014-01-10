@@ -45,6 +45,13 @@ to TickRect&]
 is inside the TickMarker or not.&]
 [s3; &]
 [s4;%- &]
+[s5;:TickMark`:`:SetBackGroundStyle`(const Value`):%- [@(0.0.255) void]_[* SetBackGroundS
+tyle]([@(0.0.255) const]_[_^Value^ Value]_[*@3 s])&]
+[s2; Sets the background style of the TickMark. [%-*@3 s ]can be anything 
+that is accepted by [^topic`:`/`/CtrlCore`/srcdoc`/AboutChameleon`$en`-us^ Chameleo
+n] ChPaint() method : Color, Image (hot spots are used), ...&]
+[s3; &]
+[s4;%- &]
 [s5;:TickMark`:`:Contains`(Point`,Point`,ElementPosition`,int`,int`,const int`)const:%- [@(0.0.255) b
 ool]_[* Contains]([_^Point^ Point]_[*@3 p], [_^Point^ Point]_[*@3 xyOffset], 
 ElementPosition_[*@3 side], [@(0.0.255) int]_[*@3 x], [@(0.0.255) int]_[*@3 y], 

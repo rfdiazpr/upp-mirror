@@ -277,10 +277,8 @@ namespace GraphDraw_ns
 			_createdElements.Clear();
 		}
 
-		virtual Value GetSeries() {
-			ASSERT_(&(_B::series), "CRTP_EmptyGraphDraw::GetSeries()  returns NULL");
-			TypeVectorSeries* pseries = &(_B::series);
-			return RawToValue( pseries );
+		virtual TypeVectorSeries& GetSeries() {
+			return _B::series;
 		}
 
 		virtual Value GetParentCtrl() {
@@ -313,10 +311,9 @@ namespace GraphDraw_ns
 		CoordinateConverter& GetXCoordConverter() { ASSERT(TypeSeriesGroup::_currentXConverter!=0); return *TypeSeriesGroup::_currentXConverter; }
 		CoordinateConverter& GetYCoordConverter() { ASSERT(TypeSeriesGroup::_currentYConverter!=0); return *TypeSeriesGroup::_currentYConverter; }
 
-		DERIVED& SetPlotBackgroundColor(Color c) { _plotBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetCtrlBackgroundColor(Color c) { _ctrlBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetPlotBackgroundImage(const Image& c) { _plotBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetCtrlBackgroundImage(const Image& c) { _ctrlBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
+		template <class T> DERIVED& SetPlotBackgroundStyle(T c) { _plotBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
+		template <class T> DERIVED& SetCtrlBackgroundStyle(T c) { _ctrlBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
+		
 		DERIVED& SetDrawMode(DrawMode m) { _drawMode = m; return *static_cast<DERIVED*>(this); }
 		DERIVED& SetDrawMode(int m) {
 			if ((MD_DRAW<=m) && (m<=MD_SUBPIXEL)) _drawMode = (DrawMode)m;
@@ -771,7 +768,7 @@ namespace GraphDraw_ns
 					// Draw marks
 					if (_B::series[j].markWidth >= 1 && _B::series[j].markPlot)
 					{
-						if ( !_B::series[j].markPlot.IsEmpty() )
+						if ( !_B::series[j].markPlot.IsEmpty() ) {
 							for (int c=0; c<p1.GetCount(); ++c)
 							{
 								_B::series[j].markPlot->Paint(dw,
@@ -780,6 +777,7 @@ namespace GraphDraw_ns
 								                               _B::series[j].markWidth,
 								                               _B::series[j].markColor);
 							}
+						}
 					}
 				}
 			}
@@ -1108,7 +1106,7 @@ namespace GraphDraw_ns
 			_legend.SetName(t_("Legend"));
 			RGBA rgba;
 			rgba.r=90; rgba.g=90; rgba.b=0;	rgba.a=90;
-			_legend.SetBackGndColor( rgba );
+			_legend.SetBackGroundStyle( Color(rgba) );
 			_legend.SetFloatFrame(Rect(Point(40,20), Size(80, 30)));
 			_B::AddFloatElement(30, _legend, 150);
 		};
@@ -1121,8 +1119,7 @@ namespace GraphDraw_ns
 		DERIVED& SetLegendPosition(const ElementPosition v) { _legend.SetElementPos(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetLegendFont(const Font& v)   { _legend.SetFont(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetLegendWidth(int v)          { _legend.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetLegendBckgndColor(const Color& v) { _legend.SetBackGndColor(v); return *static_cast<DERIVED*>(this); }
-		DERIVED& SetLegendBckgndColor(const RGBA& v)  { _legend.SetBackGndColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetLegendBackGroundStyle(const Value& v) { _legend.SetBackGroundStyle(v); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetLegendXSize(int v)          { Rect r = _legend.GetFloatFrame();r.right = r.left+v; _legend.SetFloatFrame(r); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetLegendYSize(int v)          { Rect r = _legend.GetFloatFrame();r.bottom = r.top+v; _legend.SetFloatFrame(r); return *static_cast<DERIVED*>(this); }
 		DERIVED& SetLegendXPos(int v)           { Rect r = _legend.GetFloatFrame();r.right = v+r.Width(); r.left=v; _legend.SetFloatFrame(r); return *static_cast<DERIVED*>(this); }

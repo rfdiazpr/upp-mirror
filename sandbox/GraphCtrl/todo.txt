@@ -16,7 +16,17 @@
 		--------------
 		|    DONE    |
 		--------------
-09/01/2014 - SVN.6738
+* Renamed all SetBckgroundXxxx()  ==> SetBackGroundStyle()
+* Replaced all SetBackGroundColor() SetBackGroundImage()  with SetBackGroundStyle()
+* Removed CRTPGraphElement  class ( useless )
+* Replaced SetLegendBackgndColor()  with  SetLegendBackgndStyle()
+* GraphDraw: added RichText dependency
+* Removed   'Value' return type from GraphElementParent::GetSeries() method
+* Some documentation
+
+
+
+09/01/2014 - SVN.6739
 ----------------------
 * Added FitToData  menu disable  when Scroll/Zoom are disabled
 * Removed extra Paint(FULL) after calling GetImage()

@@ -25,12 +25,12 @@ namespace GraphDraw_ns
 	} AxisTextFormat;
 
 	template<class TYPES >
-	class GridAxisDraw : public CRTPGraphElement< GridAxisDraw<TYPES> >
+	class GridAxisDraw : public GraphElement
 	{
 		public:
 		typedef GridAxisDraw<TYPES>                   CLASSNAME;
 		typedef typename TYPES::TypeGridStepManager   TypeGridStepManager;
-		typedef CRTPGraphElement< GridAxisDraw<TYPES> > _B;
+		typedef GraphElement _B;
 		typedef Callback2< const GridStepIterator&, String&> TypeFormatTextCbk; // IN: valueIterator,  OUT: formated value
 
 		
@@ -89,7 +89,7 @@ namespace GraphDraw_ns
 
 		virtual void Update() { _gridStepManager->Update(); }
 		
-		virtual CLASSNAME&  SetElementPos(ElementPosition v) {
+		virtual void  SetElementPos(ElementPosition v) {
 			if (v==LEFT_OF_GRAPH || v==RIGHT_OF_GRAPH) {
 				_B::DisablePos(BOTTOM_OF_GRAPH);
 				_B::DisablePos(TOP_OF_GRAPH);
@@ -97,33 +97,32 @@ namespace GraphDraw_ns
 				_B::DisablePos(LEFT_OF_GRAPH);
 				_B::DisablePos(RIGHT_OF_GRAPH);
 			}
-			return _B::SetElementPos(v);
+			_B::SetElementPos(v);
 		 }
 
 		
 		virtual void FitToData(FitToDataStrategy fitStrategy) {
-			typedef TypeVectorSeries*  PtrTypeVectorSeries;
-			PtrTypeVectorSeries v_series = _B::_parent->GetSeries().template To<PtrTypeVectorSeries>();
+			TypeVectorSeries& v_series = _B::_parent->GetSeries();
 			double lmin = -DOUBLE_NULL;
 			double lmax =  DOUBLE_NULL;
 			bool doFitToData = false;
 			switch(_B::GetElementPos()) {
 				case LEFT_OF_GRAPH:
 				case RIGHT_OF_GRAPH:
-					for (int c=0; c<(*v_series).GetCount(); ++c) {
-						if ( ( (fitStrategy==ALL_SERIES)  || ((*v_series)[c].show)) && ((*v_series)[c].yConverter == &_coordConverter) ) {
-							lmin = min (lmin, (*v_series)[c].PointsData()->MinY());
-							lmax = max (lmax, (*v_series)[c].PointsData()->MaxY());
+					for (int c=0; c<v_series.GetCount(); ++c) {
+						if ( ( (fitStrategy==ALL_SERIES)  || (v_series[c].show)) && (v_series[c].yConverter == &_coordConverter) ) {
+							lmin = min (lmin, v_series[c].PointsData()->MinY());
+							lmax = max (lmax, v_series[c].PointsData()->MaxY());
 							doFitToData = true;
 						}
 					}
 					break;
 				case BOTTOM_OF_GRAPH:
 				case TOP_OF_GRAPH:
-					for (int c=0; c<(*v_series).GetCount(); ++c) {
-						if ( ( (fitStrategy==ALL_SERIES)  || ((*v_series)[c].show)) && ((*v_series)[c].xConverter == &_coordConverter) ) {
-							lmin = min (lmin, (*v_series)[c].PointsData()->MinX());
-							lmax = max (lmax, (*v_series)[c].PointsData()->MaxX());
+					for (int c=0; c<v_series.GetCount(); ++c) {
+						if ( ( (fitStrategy==ALL_SERIES)  || (v_series[c].show)) && (v_series[c].xConverter == &_coordConverter) ) {
+							lmin = min (lmin, v_series[c].PointsData()->MinX());
+							lmax = max (lmax, v_series[c].PointsData()->MaxX());
 							doFitToData = true;
 						}
 					}

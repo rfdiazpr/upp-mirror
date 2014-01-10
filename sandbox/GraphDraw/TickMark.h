@@ -6,9 +6,10 @@
 namespace GraphDraw_ns
 {
 	class TickMark {
-		private:
+		protected:
 			const Value nullVal;
-			int _tickLength;
+			int         _tickLength;
+			Value       _backgndStyle;
 			
 		public:
 			TickMark() : nullVal(Null), _tickLength(2) { UpdateTick(); }
@@ -24,8 +25,9 @@ namespace GraphDraw_ns
 			virtual void UpdateTick() {}; // called when tick drawing needs to be recalculated
 			
 			virtual Rect GetTickRect(Point xyOffset, ElementPosition side, int x, int y, const int scale) const = 0;
-
 			virtual Size GetTickSize(ElementPosition side, const int scale) const = 0;
+
+			void SetBackGroundStyle(const Value s) { _backgndStyle = s; }
 
 			bool Contains(Point p, Point xyOffset, ElementPosition side, int x, int y, const int scale = 1) const {
 				return GetTickRect(xyOffset, side, x, y, scale ).Contains(p);
@@ -38,26 +40,23 @@ namespace GraphDraw_ns
 			virtual ~RoundTickMark() {}
 
 			virtual void Paint(Draw &w, ElementPosition axisPos, const int scale, int x, int y, const Color& markColor) const {
-				int diam = fround(scale*GetTickLength()*2);
+				int diam = scale*GetTickLength()*2;
 				int radius = diam/2;
 				w.DrawEllipse(x - radius, y - radius, diam, diam, markColor, 1, markColor);
 			}
 
-			virtual Rect GetTickRect(Point xyOffset, ElementPosition side, int x, int y, const int scale) const
-			{
-				int diam = fround(scale*GetTickLength()*2);
+			virtual Rect GetTickRect(Point xyOffset, ElementPosition side, int x, int y, const int scale) const {
+				int diam = scale*GetTickLength()*2;
 				x += xyOffset.x - diam/2;
 				y += xyOffset.y - diam/2;
 				return Rect( Point(x,y), Size(diam, diam) );
 				return Null;
 			}
 			
-			virtual Size GetTickSize(ElementPosition side, const int scale) const 
-			{
-				int diam = fround(scale*GetTickLength()*2);
+			virtual Size GetTickSize(ElementPosition side, const int scale) const {
+				int diam = scale*GetTickLength()*2;
 				return Size(diam, diam);
 			}
-
 	};
 
 	class TriangleTickMark  : public TickMark {
@@ -83,13 +82,11 @@ namespace GraphDraw_ns
 				dw.DrawPolygon( p, markColor, scale/2, markColor);
 			}
 
-			virtual Rect GetTickRect(Point xyOffset, ElementPosition side, int x, int y, const int scale) const
-			{
+			virtual Rect GetTickRect(Point xyOffset, ElementPosition side, int x, int y, const int scale) const {
 				return Null;
 			}
 			
-			virtual Size GetTickSize(ElementPosition side, const int scale) const 
-			{
+			virtual Size GetTickSize(ElementPosition side, const int scale) const {
 				return Null;
 			}
 
@@ -186,10 +183,6 @@ namespace GraphDraw_ns
 				UpdateTick();
 			}
 			
-			
-			
-			void SetBckgndStyle(const Value s) { backgndStyle = s; }
-			
 			virtual Size GetTickSize(ElementPosition side, const int scale) const 
 			{
 				const int coneLength  = GetTickLength()/2 * scale;
@@ -270,7 +263,7 @@ namespace GraphDraw_ns
 				Rect textRect(Rect(txtPt, textSize*scale));
 				
 				// Draw background image
-				if ( !backgndStyle.IsNull() )
+				if ( !_backgndStyle.IsNull() )
 				{
 					Rect r2 = textRect;
 					r2.Inflate(3);
@@ -278,8 +271,8 @@ namespace GraphDraw_ns
 					ImageBuffer ib( r2.Size() );
 					Upp::Fill( ib.Begin(), bckgColor, ib.GetLength() );
 					BufferPainter bp(ib, MD_ANTIALIASED);
-					ChPaint(bp, r2.Size(), backgndStyle );
-					Premultiply(ib);
+					ChPaint(bp, r2.Size(), _backgndStyle );
+					//Premultiply(ib);
 					dw.DrawImage(r2.left, r2.top, ib);
 				}
 				// Draw OUTLINE

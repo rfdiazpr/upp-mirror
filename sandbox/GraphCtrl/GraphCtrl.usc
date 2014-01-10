@@ -249,8 +249,8 @@ subctrl GraphDraw {
 	int SetBottomMargin = 0;
 	int SetLeftMargin   = 0;
 	int SetRightMargin  = 15;
-	Color SetCtrlBackgroundColor = White;
-	Color SetPlotBackgroundColor = LtGray;
+	Color SetCtrlBackgroundStyle = White;
+	Color SetPlotBackgroundStyle = LtGray;
 	int SetCopyRatio = 3;
 	
 	GetMinSize() { sz = Size(60, 50); return sz; }
@@ -363,7 +363,7 @@ ctrl XY_GraphCtrl {
 
 	Paint(w) {
 		r = GetRect();
-		if ( .SetCtrlBackgroundColor != Null ) w.DrawRect(r, .SetCtrlBackgroundColor);
+		if ( .SetCtrlBackgroundStyle != Null ) w.DrawRect(r, .SetCtrlBackgroundStyle);
 		DrawCtrlFrame(w, r, .SetFrame);
 
 		plotRect = r;
@@ -387,7 +387,7 @@ ctrl XY_GraphCtrl {
 		GD_AdjustElementFrame(xAxisSide, plotRect, xAxisFrame);
 		GD_AdjustElementFrame(yAxisSide, plotRect, yAxisFrame);
 
-		if ( .SetPlotBackgroundColor != Null ) w.DrawRect(plotRect, .SetPlotBackgroundColor);
+		if ( .SetPlotBackground != Null ) w.DrawRect(plotRect, .SetPlotBackgroundStyle);
 		
 		tk = (plotRect.right - plotRect.left)/8;
 		st = plotRect.left;
@@ -417,7 +417,7 @@ ctrl XYY2_GraphCtrl {
 
 	Paint(w) {
 		r = GetRect();
-		if ( .SetCtrlBackgroundColor != Null ) w.DrawRect(r, .SetCtrlBackgroundColor);
+		if ( .SetCtrlBackgroundStyle != Null ) w.DrawRect(r, .SetCtrlBackgroundStyle);
 		DrawCtrlFrame(w, r, .SetFrame);
 
 		plotRect = r;
@@ -444,7 +444,7 @@ ctrl XYY2_GraphCtrl {
 		GD_AdjustElementFrame(yAxisSide, plotRect, yAxisFrame);
 		GD_AdjustElementFrame(y2AxisSide, plotRect, y2AxisFrame);
 
-		if ( .SetPlotBackgroundColor != Null ) w.DrawRect(plotRect, .SetPlotBackgroundColor);
+		if ( .SetPlotBackgroundStyle != Null ) w.DrawRect(plotRect, .SetPlotBackgroundStyle);
 		
 		tk = (plotRect.right - plotRect.left)/8;
 		st = plotRect.left;
@@ -479,7 +479,7 @@ ctrl XYLT_GraphCtrl {
 
 	Paint(w) {
 		r = GetRect();
-		if ( .SetCtrlBackgroundColor != Null ) w.DrawRect(r, .SetCtrlBackgroundColor);
+		if ( .SetCtrlBackgroundStyle != Null ) w.DrawRect(r, .SetCtrlBackgroundStyle);
 		DrawCtrlFrame(w, r, .SetFrame);
 
 		plotRect = r;
@@ -512,7 +512,7 @@ ctrl XYLT_GraphCtrl {
 		GD_AdjustElementFrame(yAxisSide, plotRect, yAxisFrame);
 		GD_AdjustElementFrame(yAxisSide, plotRect, yLabelFrame);
 
-		if ( .SetPlotBackgroundColor != Null ) w.DrawRect(plotRect, .SetPlotBackgroundColor);
+		if ( .SetPlotBackgroundStyle != Null ) w.DrawRect(plotRect, .SetPlotBackgroundStyle);
 		
 		tk = (plotRect.right - plotRect.left)/8;
 		st = plotRect.left;
@@ -549,7 +549,7 @@ ctrl XYY2LT_GraphCtrl {
 
 	Paint(w) {
 		r = GetRect();
-		if ( .SetCtrlBackgroundColor != Null ) w.DrawRect(r, .SetCtrlBackgroundColor);
+		if ( .SetCtrlBackgroundStyle != Null ) w.DrawRect(r, .SetCtrlBackgroundStyle);
 		DrawCtrlFrame(w, r, .SetFrame);
 
 		plotRect = r;
@@ -585,7 +585,7 @@ ctrl XYY2LT_GraphCtrl {
 		GD_AdjustElementFrame(y2AxisSide, plotRect, y2AxisFrame);
 		GD_AdjustElementFrame(y2AxisSide, plotRect, y2LabelFrame);
 
-		if ( .SetPlotBackgroundColor != Null ) w.DrawRect(plotRect, .SetPlotBackgroundColor);
+		if ( .SetPlotBackgroundStyle != Null ) w.DrawRect(plotRect, .SetPlotBackgroundStyle);
 		
 		tk = (plotRect.right - plotRect.left)/8;
 		st = plotRect.left;

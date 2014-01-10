@@ -2,7 +2,8 @@ description "Graph drawing\377255,127,200";
 
 uses
 	Painter,
-	ScatterDraw;
+	ScatterDraw,
+	RichText;
 
 uses(GD_TIMINGS) TimingPolicies;
 

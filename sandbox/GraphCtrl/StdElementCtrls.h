@@ -355,6 +355,24 @@ class DynamicMarkerCtrl : public  GraphElementCtrl_Base< TYPES, MARKERDRAW > {
 	
 	private:
 
+	virtual void ContextMenu(Bar& bar) {
+		bar.Add(t_("Edit properties"),     THISBACK (OpenPropertiesDlg));
+		bar.Add(t_("Reset markers"),       THISBACK(ResetMarkers));
+	}
+
+	void ResetMarkers() {
+		GraphDraw_ns::MarkerPosList::Iterator iter = _B::markers.Begin();
+		GraphDraw_ns::MarkerPosList::ConstIterator endIter = _B::markers.End();
+		GraphDraw_ns::TypeGraphCoord step = _B::_coordConverter.getSignedGraphRange()/ (_B::markers.GetCount()+1);
+		GraphDraw_ns::TypeGraphCoord currVal = _B::_coordConverter.getGraphMin();
+		while ( iter != endIter ) {
+			currVal += step;
+			(*iter) = currVal;
+			++iter;
+		}
+		_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_KEEP_DATA );
+	}
+
 	void _MoveMarker (Point p, dword keyflags) {
 		if (keyflags & K_MOUSELEFT)
 		{

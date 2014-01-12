@@ -213,11 +213,14 @@ namespace GraphDraw_ns
 			_plotRect.top    += _topMarginWidth*scale;
 			_plotRect.bottom -= _bottomMarginWidth*scale;
 
-			Sort(_drawElements, compareGraphElementFrame);
+			Sort(_drawElements, compareGraphElementPriority);
+
+			Rect tmpRect = _plotRect;
 
 			for (int j = _drawElements.GetCount()-1; j>=0; j--) {
 				if (!_drawElements[j]->IsHidden()) {
-					AppendElementToRect(*(_drawElements[j]), _plotRect, scale);
+					AppendElementToRect(*(_drawElements[j]), tmpRect, scale);
+					if ( _drawElements[j]->GetStackingPriority() >=0 ) _plotRect = tmpRect;
 				}
 			}
 
@@ -491,7 +494,7 @@ namespace GraphDraw_ns
 			v.SetStackingPriority(stackPrio);
 			v.SetElementPos((ElementPosition)POS_OF_GRAPH);
 			_drawElements.Add(&v);
-			Sort(_drawElements, compareGraphElementFrame);
+			Sort(_drawElements, compareGraphElementPriority);
 			return v;
 		}
 

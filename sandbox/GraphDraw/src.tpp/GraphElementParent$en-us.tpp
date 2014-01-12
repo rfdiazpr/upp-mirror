@@ -72,10 +72,11 @@ a Value object containing a `'Ctrl`*`'.&]
 [s3;%- &]
 [s4;%- &]
 [s5;:GraphElementParent`:`:AddUndoAction`(GraphUndoData`&`):%- [@(0.0.255) virtual] 
-[@(0.0.255) void]_[* AddUndoAction]([_^GraphUndoData^ GraphUndoData][@(0.0.255) `&]_[*@3 CB
-])_`=_[@3 0]&]
+[@(0.0.255) void]_[* AddUndoAction]([_^topic`:`/`/GraphDraw`/src`/GraphUndo`$en`-us`#GraphUndoData`:`:class^@(0.0.255) G
+raphUndoData][@(0.0.255) `&]_[*@3 CB])_`=_[@3 0]&]
 [s2;  [%-*@3 CB] .&]
-[s2; Adds an UNDO action to the undo stack&]
+[s2; Adds an UNDO action to the [^topic`:`/`/GraphDraw`/src`/GraphUndo`$en`-us`#GraphUndo`:`:AddUndoAction`(GraphUndoData`&`)^ u
+ndo stack].&]
 [s3; &]
 [s4;%- &]
 [s5;:GraphElementParent`:`:DoLocalLoop`(MouseLocalLoopCB`):%- [@(0.0.255) virtual] 

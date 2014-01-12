@@ -62,7 +62,7 @@ namespace GraphDraw_ns
 			}
 			inline void setGraphMaxRangeLimit(TypeGraphCoord v) { _graphMaxLimit = v; }
 			inline void setGraphMinRangeLimit(TypeGraphCoord v) { _graphMinLimit = v; }
-			inline void resetGraphRangeLimits() { _graphMaxLimit = Null; _graphMinLimit = Null; }
+			inline void ClearGraphRangeLimits() { _graphMaxLimit = Null; _graphMinLimit = Null; }
 			virtual TypeGraphCoord applyRangeLimits(TypeGraphCoord v) {
 				if (!_graphMaxLimit.IsNull()) {
 					if (v > ValueTo<TypeGraphCoord>(_graphMaxLimit)) v = _graphMaxLimit;
@@ -302,7 +302,7 @@ namespace GraphDraw_ns
 				_convTypeName = convTypeName;
 				_convertFct = convertFct;
 				_unConvertFct = unConvertFct;
-				resetGraphRangeLimits();
+				ClearGraphRangeLimits();
 				_B::Update();
 			}
 			void SetConvStd() {

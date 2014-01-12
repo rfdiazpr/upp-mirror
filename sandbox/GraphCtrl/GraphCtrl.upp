@@ -10,7 +10,7 @@ uses
 file
 	GraphCtrl.iml,
 	GraphCtrl.lay,
-	ScatterCtrl.t,
+	GraphCtrl.t,
 	StdElementCtrls.h,
 	ElementCtrlBase.h,
 	StdElementPropertiesDialogs.h,

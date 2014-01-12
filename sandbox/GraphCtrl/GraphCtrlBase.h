@@ -141,19 +141,25 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		Ctrl::Refresh();
 	};
 
+	protected:
 	void LayoutRefresh() {
 		_B::_doFastPaint = false;
 		Ctrl::Refresh();
 	}
 	
-	virtual void Layout() {
+	void ScheduleFullRefresh() {
 		enum { 
 			TIMEID_LAYOUT_REFRESH = Ctrl::TIMEID_COUNT,
 		    TIMEID_COUNT
 		};
+		SetTimeCallback(300, THISBACK(LayoutRefresh), TIMEID_LAYOUT_REFRESH );
+	}
+	
+	public:
+	virtual void Layout() {
 		_B::_doFastPaint = true;
-		KillSetTimeCallback(300, THISBACK(LayoutRefresh), TIMEID_LAYOUT_REFRESH );
 		SetModify();
+		ScheduleFullRefresh();
 	}
 
 	virtual bool   IsModified() const {
@@ -405,10 +411,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 
 	void ContextMenu(Bar& bar)
 	{
-		
-		bar.Add( t_("Copy"), GraphCtrlImg::COPY(),  THISBACK1(SaveToClipboard, false));//.Key(K_CTRL_C);
-		//bar.Add( t_("Copy_post"), GraphCtrlImg::COPY(), THISBACK2(PostCallback, THISBACK1(SaveToClipboard, false), 0));
-		//bar.Add( t_("Copy_100ms"), GraphCtrlImg::COPY(), THISBACK3(SetTimeCallback, 100, THISBACK1(SaveToClipboard, false), 0));
+		bar.Add( t_("Copy"), GraphCtrlImg::COPY(), THISBACK2(PostCallback, THISBACK1(SaveToClipboard, false), 0)); //.Key(K_CTRL_C);
 		bar.Add( t_("Save to file"), GraphCtrlImg::SAVE(), THISBACK1(SaveToFile, Null));
 
 		bar.Separator();
@@ -632,7 +635,11 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		}
 	}
 
-
+	virtual void MouseLeave() {
+		ScheduleFullRefresh();
+	}
+	
+	
 	virtual Image  CursorImage(Point p, dword keyflags)
 	{
 		RLOGBLOCK_STR( _B::debugTrace, "CRTP_GraphCtrl_Base::CursorImage(" << this << ")");

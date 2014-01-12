@@ -119,7 +119,7 @@ GraphDraw_test::GraphDraw_test()
 	//g4.debugTrace = true;
 	g4.CreateElement2<ExclusionAreaDraw, FLOAT_OVER_GRAPH>(0, 0, g4.GetXCoordConverter(), g4.GetYCoordConverter() );
 	//g4.CreateElement1<GraphDraw_ns::MarkerElement<MyGraphCtrl::Types>, TOP_OF_GRAPH>(20, 0, g4.GetXCoordConverter() );
-	MarkerElementType& markerElem = g4.CreateElement1< MarkerElementType, TOP_OF_GRAPH>(30, 0, g4.GetXCoordConverter() );
+	MarkerElementType& markerElem = g4.CreateElement1< MarkerElementType, TOP_OF_GRAPH>(30, -1, g4.GetXCoordConverter() );
 	//markerElem.SetBackGroundStyle(GraphCtrl_testImg::LEGEND_BACKGND3());
 	markerElem.whenMarkerMove = THISBACK(onMarkerMoveCBK);
 

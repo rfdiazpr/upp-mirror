@@ -41,11 +41,31 @@ T_("Range")
 
 T_("Margins")
 
+T_("Label Text")
+
+T_("Opacity :")
+
+T_("Visible")
+
 T_("Mark")
+
+T_("Style:")
+
+T_("Color:")
+
+T_("Width:")
+
+T_("Fill:")
 
 T_("Null value = No Fill")
 
-T_("Opacity")
+T_("Dash:")
+
+T_("Thickness:")
+
+T_("Name:")
+
+T_("Line:")
 
 T_("Fill")
 
@@ -57,10 +77,18 @@ T_("Legend")
 
 T_("Line")
 
+T_("Opacity")
 
-// ElementCtrlBase.h
+
+// StdElementCtrls.h
 
 T_("Edit properties")
+
+T_("Fit To Data")
+
+T_("Fit To Visible Data")
+
+T_("Reset markers")
 
 
 // StdElementPropertiesDialogs.h
@@ -94,29 +122,12 @@ T_("Copy")
 
 T_("Save to file")
 
+T_("Undo")
+
+T_("Redo")
+
 T_("Show ALL")
 
+T_("Hide ALL")
+
 T_("Edit")
-
-
-// Obsolete
-
-T_("Std\nLog\npow10")
-
-T_("Axis color")
-
-T_("Minor tick length")
-
-T_("Tick color")
-
-T_("Cancel")
-
-T_("Scale")
-
-T_("Tick")
-
-T_("Text color")
-
-T_("Major tick length")
-
-T_("Std new")

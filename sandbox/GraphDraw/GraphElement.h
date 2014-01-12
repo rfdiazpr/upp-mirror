@@ -212,7 +212,7 @@ namespace GraphDraw_ns
 
 	};
 
-	inline bool compareGraphElementFrame(const GraphElement* a, const GraphElement* b) { return *a < *b; }
+	inline bool compareGraphElementPriority(const GraphElement* a, const GraphElement* b) { return *a < *b; }
 
 	class BlankAreaElement : public GraphElement
 	{

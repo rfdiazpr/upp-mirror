@@ -2,11 +2,8 @@
 		--------------
 		|    TODO    |
 		--------------
-* Add management of GraphElements with NEGATIVE priority 
-	==> only one Graphelement with negative prio allowed per stack 
 * Cleanup  CRTP_GraphCtrl_Base::IsModified()  CRTP_GraphCtrl_Base::ClearModify()
 * Add [Ctrl]+[Z]  for UNDO/REDO
-* Add 'reset markers' option in DynMarkers menu
 * Add Chameleon style containing all main fonts/colors/images/... for most common properties
 * BUG : corr date/time GridAxis display
 * improve Series properties dialog
@@ -16,6 +13,16 @@
 		--------------
 		|    DONE    |
 		--------------
+
+
+11/01/2014 - SVN.xxxxxxxx
+----------------------
+* Documentation
+* Added DynamicMarkerCtrl::ResetMarkers() ==> is called through menu/"Reset markers"
+* Added FULL REFESH on MouseLeave() to prevent letting Graph partially drawn when mouse is outside the GraphCtrl
+* Add management of GraphElements with NEGATIVE priority ( if several elements with negative prio are allowed one same side ) 
+* GridAxisDraw::Paint()  now takes in account StackingPriority to paint the best way possible
+
 
 10/01/2014 - SVN.6749
 ----------------------

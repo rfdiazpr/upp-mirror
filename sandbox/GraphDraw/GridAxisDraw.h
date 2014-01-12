@@ -458,21 +458,41 @@ namespace GraphDraw_ns
 
 		virtual void PaintElement(Draw& dw, int scale)
 		{
-			switch(_B::GetElementPos()){
-				case LEFT_OF_GRAPH:
-					PaintAxisLeft(dw, scale);
-					break;
-				case BOTTOM_OF_GRAPH:
-					PaintAxisBottom(dw, scale);
-					break;
-				case TOP_OF_GRAPH:
-					PaintAxisTop(dw, scale);
-					break;
-				case RIGHT_OF_GRAPH:
-					PaintAxisRight(dw, scale);
-					break;
-				case FLOAT_OVER_GRAPH:
-					break;
+			if ( _B::GetStackingPriority() > 0) {
+				switch(_B::GetElementPos()){
+					case LEFT_OF_GRAPH:
+						PaintAxisLeft(dw, scale);
+						break;
+					case BOTTOM_OF_GRAPH:
+						PaintAxisBottom(dw, scale);
+						break;
+					case TOP_OF_GRAPH:
+						PaintAxisTop(dw, scale);
+						break;
+					case RIGHT_OF_GRAPH:
+						PaintAxisRight(dw, scale);
+						break;
+					case FLOAT_OVER_GRAPH:
+						break;
+				}
+			}
+			else {
+				switch(_B::GetElementPos()){
+					case LEFT_OF_GRAPH:
+						PaintAxisRight(dw, scale);
+						break;
+					case BOTTOM_OF_GRAPH:
+						PaintAxisTop(dw, scale);
+						break;
+					case TOP_OF_GRAPH:
+						PaintAxisBottom(dw, scale);
+						break;
+					case RIGHT_OF_GRAPH:
+						PaintAxisLeft(dw, scale);
+						break;
+					case FLOAT_OVER_GRAPH:
+						break;
+				}
 			}
 		}
 	};

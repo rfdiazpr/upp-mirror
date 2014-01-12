@@ -79,7 +79,10 @@ ect]_[*@3 v])&]
 roundStyle](_[_^Value^ Value][@(0.0.255) `&]_[*@3 v])&]
 [s2; Sets the background style of the TickMark. [%-*@3 s ]can be anything 
 that is accepted by [^topic`:`/`/CtrlCore`/srcdoc`/AboutChameleon`$en`-us^ Chameleo
-n] ChPaint() method : Color, Image (hot spots are used), ...&]
+n] ChPaint() method :&]
+[s2;i150;O0; Color&]
+[s2;i150;O0; Image (hot spots are used)&]
+[s2;i150;O0; ...&]
 [s3; &]
 [s4;%- &]
 [s5;:GraphElement`:`:PaintFloatElement`(Draw`&`,int`):%- [@(0.0.255) virtual] 

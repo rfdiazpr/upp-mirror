@@ -50,7 +50,6 @@ namespace GraphDraw_ns
 				x += xyOffset.x - diam/2;
 				y += xyOffset.y - diam/2;
 				return Rect( Point(x,y), Size(diam, diam) );
-				return Null;
 			}
 			
 			virtual Size GetTickSize(ElementPosition side, const int scale) const {

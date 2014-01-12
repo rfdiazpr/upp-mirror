@@ -42,14 +42,19 @@ in the correct coordinates&]
 to TickRect&]
 [s2; Returns the Rect containing the Tick drawing.&]
 [s2; This mehotd is useful when you need to determine if a point 
-is inside the TickMarker or not.&]
+is inside the TickMarker.&]
+[s2; It is also used to HIGHLIGHT the TickMark when ( point selection 
+for example )&]
 [s3; &]
 [s4;%- &]
 [s5;:TickMark`:`:SetBackGroundStyle`(const Value`):%- [@(0.0.255) void]_[* SetBackGroundS
 tyle]([@(0.0.255) const]_[_^Value^ Value]_[*@3 s])&]
 [s2; Sets the background style of the TickMark. [%-*@3 s ]can be anything 
 that is accepted by [^topic`:`/`/CtrlCore`/srcdoc`/AboutChameleon`$en`-us^ Chameleo
-n] ChPaint() method : Color, Image (hot spots are used), ...&]
+n] ChPaint() method :&]
+[s2;i150;O0; Color&]
+[s2;i150;O0; Image (hot spots are used)&]
+[s2;i150;O0; ...&]
 [s3; &]
 [s4;%- &]
 [s5;:TickMark`:`:Contains`(Point`,Point`,ElementPosition`,int`,int`,const int`)const:%- [@(0.0.255) b

@@ -20,7 +20,6 @@ file
 	GraphElement.h,
 	GraphFunctions.h,
 	GridAxisDraw.h,
-	srcimp.tpp,
 	Copying,
 	GraphDrawTypes.h,
 	GraphUndo.h,

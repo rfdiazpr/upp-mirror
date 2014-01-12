@@ -42,20 +42,31 @@ DrawMode_[* GetDrawMode]()&]
 raphElementParent ]interface&]
 [s3; &]
 [s4; &]
-[s5;:CRTP`_EmptyGraphDraw`:`:AddXConverter`(CRTP`_EmptyGraphDraw`:`:TypeCoordConverter`&`): [_^CRTP`_EmptyGraphDraw`:`:TypeCoordConverter^ T
-ypeCoordConverter][@(0.0.255) `&]_[* AddXConverter]([_^CRTP`_EmptyGraphDraw`:`:TypeCoordConverter^ T
-ypeCoordConverter][@(0.0.255) `&]_[*@3 conv])&]
-[s5;:CRTP`_EmptyGraphDraw`:`:AddYConverter`(CRTP`_EmptyGraphDraw`:`:TypeCoordConverter`&`): [_^CRTP`_EmptyGraphDraw`:`:TypeCoordConverter^ T
-ypeCoordConverter][@(0.0.255) `&]_[* AddYConverter]([_^CRTP`_EmptyGraphDraw`:`:TypeCoordConverter^ T
-ypeCoordConverter][@(0.0.255) `&]_[*@3 conv])&]
-[s2;%% [%-*@3 conv] : CorrdinateConverter instance to add&]
+[s5;:CRTP`_EmptyGraphDraw`:`:AddXConverter`(CoordinateConverter`*`): [@(0.0.255) virtua
+l] [@(0.0.255) void]_[* AddXConverter]([_^CoordinateConverter^ CoordinateConverter][@(0.0.255) `*
+]_[*@3 conv])&]
+[s5;:CRTP`_EmptyGraphDraw`:`:AddYConverter`(CoordinateConverter`*`): [@(0.0.255) virtua
+l] [@(0.0.255) void]_[* AddYConverter]([_^CoordinateConverter^ CoordinateConverter][@(0.0.255) `*
+]_[*@3 conv])&]
+[s2;%% [%-*@3 conv] : CoordinateConverter instance to add&]
 [s2;%% Adds a CoordinateConverter instance to the list of the ones 
-managed by the GraphDraw.&]
+managed by GraphDraw.&]
 [s2;%% Plotting can then use this CoordinateConverter for plotting.&]
 [s2;%% GraphDraw does [*_ not take the ownership] of the CoordinateConverter 
 instance so it has to ba managed elsewhere.&]
-[s2;%% It`'s main usage is for Child classes who derive from GraphDraw 
-and add more axis&]
+[s2;%% It`'s main usage is for GraphDraw  Child classes and add more 
+axis&]
+[s3;%% &]
+[s4; &]
+[s5;:CRTP`_EmptyGraphDraw`:`:AddXConverter`(COORDCONV`&`): [@(0.0.255) template]_<[@(0.0.255) c
+lass]_[*@4 COORDCONV]>_[*@4 COORDCONV][@(0.0.255) `&]_[* AddXConverter]([*@4 COORDCONV][@(0.0.255) `&
+]_[*@3 conv])&]
+[s5;:CRTP`_EmptyGraphDraw`:`:AddYConverter`(COORDCONV`&`): [@(0.0.255) template]_<[@(0.0.255) c
+lass]_[*@4 COORDCONV]>_[*@4 COORDCONV][@(0.0.255) `&]_[* AddYConverter]([*@4 COORDCONV][@(0.0.255) `&
+]_[*@3 conv])&]
+[s2; [%% Same as : ][*^topic`:`/`/GraphDraw`/src`/GraphDraw`$en`-us`#CRTP`_EmptyGraphDraw`:`:AddXConverter`(CoordinateConverter`*`)^ A
+ddXConverter]&]
+[s2;%% Additionnal helper methods that allow call chaining&]
 [s3;%% &]
 [s4; &]
 [s5;:CRTP`_EmptyGraphDraw`:`:SetCurrentXConverter`(int`): [@(0.0.255) void]_[* SetCurrent
@@ -66,7 +77,6 @@ YConverter]([@(0.0.255) int]_[*@3 n])&]
 [s2;%% Set the CoordinateConverter that will be used when adding 
 a series.&]
 [s3;%% &]
-[s3; &]
 [s4; &]
 [s5;:CRTP`_EmptyGraphDraw`:`:GetXCoordConverter`(`): [_^CRTP`_EmptyGraphDraw`:`:TypeCoordConverter^ T
 ypeCoordConverter][@(0.0.255) `&]_[* GetXCoordConverter]()&]
@@ -79,6 +89,18 @@ ypeCoordConverter][@(0.0.255) `&]_[* GetYCoordConverter]()&]
 [s3; &]
 [s3;%% &]
 [s4; &]
+[s5;:CRTP`_EmptyGraphDraw`:`:SetPlotBackgroundStyle`(T`): [@(0.0.255) template]_<[@(0.0.255) c
+lass]_[*@4 T]>_[*@4 DERIVED][@(0.0.255) `&]_[* SetPlotBackgroundStyle]([*@4 T]_[*@3 c])&]
+[s5;:CRTP`_EmptyGraphDraw`:`:SetCtrlBackgroundStyle`(T`): [@(0.0.255) template]_<[@(0.0.255) c
+lass]_[*@4 T]>_[*@4 DERIVED][@(0.0.255) `&]_[* SetCtrlBackgroundStyle]([*@4 T]_[*@3 c])&]
+[s2;%% Sets the background style of Plot or whole Ctrl area. [%-*@3 `'c`' 
+]can be anything that is accepted by [^topic`:`/`/CtrlCore`/srcdoc`/AboutChameleon`$en`-us^ C
+hameleon] ChPaint() method : &]
+[s2;i150;O0;%% Color&]
+[s2;i150;O0;%% Image (hot spots are used)&]
+[s2;i150;O0;%% ...&]
+[s3;%% &]
+[s4; &]
 [s5;:CRTP`_EmptyGraphDraw`:`:FitToData`(FitToDataStrategy`): [@(0.0.255) void]_[* FitToDa
 ta](FitToDataStrategy_[*@3 fitStrategy][@(0.0.255) `=]ALL`_SERIES)&]
 [s2;%%  [%-*@3 fitStrategy] .&]
@@ -89,7 +111,27 @@ ta](FitToDataStrategy_[*@3 fitStrategy][@(0.0.255) `=]ALL`_SERIES)&]
 [s4; &]
 [s5;:CRTP`_EmptyGraphDraw`:`:updateSizes`(const int`): [@(0.0.255) void]_[* updateSizes](
 _[@(0.0.255) const]_[@(0.0.255) int]_[*@3 scale]_`=_[@3 1]_)&]
-[s2;%%  [%-*@3 scale] .&]
+[s2;%% [*@(128.0.255) For internal use only]&]
+[s2;%% Updates all the stacked elements and Plotting area sizes.&]
+[s2;%% This method [@6 MUST BE CALLED], if a GraphElement is added.&]
+[s2;%% It manages the following aspects :&]
+[s2;i150;O0;%% GraphElements position/size calculation&]
+[s2;i150;O0;%% Plot area position/size calculation&]
+[s2;i150;O0;%% Manages the [*c@(128.0.255) NEGATIVE PRIORITY] cases&]
+[s3;%% &]
+[s4; &]
+[s5;:CRTP`_EmptyGraphDraw`:`:AppendElementToRect`(GraphElement`&`,Rect`&`,const int`): [@(0.0.255) v
+oid]_[* AppendElementToRect]([_^GraphElement^ GraphElement][@(0.0.255) `&]_[*@3 element],
+ [_^Rect^ Rect][@(0.0.255) `&]_[*@3 fromRect], [@(0.0.255) const]_[@(0.0.255) int]_[*@3 scale
+])&]
+[s2;%% [*@(128.0.255) For internal use only]&]
+[s2;%% Appends a GraphElement to [%-*@3 fromRect]. It sets the [%-*@3 element 
+]size (only one side of the size is valid depending on the side 
+on which the GraphElement has been added) &]
+[s2;%% The [%-*@3 fromRect] size is modified to take in account the 
+[%-*@3 element ]added.&]
+[s2; [%%*_ NB][%%*  :][%%  the list of GraphElements have to be sorted by 
+StackingPriority before using ][* AppendElementToRect().]&]
 [s3;%% &]
 [s4;%% &]
 [s5;:CRTP`_EmptyGraphDraw`:`:CreateElement`(int`,int`): [@(0.0.255) template]_<[@(0.0.255) c

@@ -15,7 +15,7 @@ topic "CoordinateConverter";
 [s4;%- &]
 [s5;:TypeScreenCoord`:`:typedef:%- [@(0.0.255) typedef]_[_^int32^ Upp`::int32]_[* TypeScreen
 Coord]&]
-[s2; Type used for physical coordiantes : the ones used for screen 
+[s2; Type used for physical coordinates : the ones used for screen 
 positions (pixels)&]
 [s3;%- &]
 [s4;%- &]

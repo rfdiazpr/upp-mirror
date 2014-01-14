@@ -17,7 +17,7 @@
 		|    DONE    |
 		--------------
 
-12/01/2014 - SVN.xxxxxxxxxxxxx
+12/01/2014 - SVN.6779
 ----------------------
 * Added KEYs for UNDO/REDO
 * Key shortcuts for context menu

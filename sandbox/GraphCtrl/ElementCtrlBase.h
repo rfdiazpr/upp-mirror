@@ -94,10 +94,12 @@ class GraphElementCtrl_FloatMoveResize : public BASE
 	template <class PAR1, class PAR2, class PAR3>
 	GraphElementCtrl_FloatMoveResize(PAR1& p1, PAR2 p2, PAR3 p3) : _B(p1, p2, p3), parentCtrl(0), moveBorderWidth(4) {}
 
-
-
 	GraphElementCtrl_FloatMoveResize(Ctrl& p) : parentCtrl(&p) {}
+	
+	private:
 	GraphElementCtrl_FloatMoveResize( GraphElementCtrl_FloatMoveResize& p) : _B(p), parentCtrl(p.parentCtrl), moveBorderWidth(4)  {}
+	
+	public:
 	virtual ~GraphElementCtrl_FloatMoveResize() {}
 
 	virtual bool Contains(Point p) const { return (_B::_frame.Contains(p)); }
@@ -171,6 +173,30 @@ class GraphElementCtrl_FloatMoveResize : public BASE
 			_B::LeftDown(p, keyflags);
 		}
 	}
+};
+
+
+
+template<class BASE>
+class AutoHideElementCtrl : public  BASE {
+	public:
+	typedef AutoHideElementCtrl<BASE>  CLASSNAME;
+	typedef BASE _B;
+
+	bool isActive;
+
+	virtual ~AutoHideElementCtrl() {}
+	template <class PAR> AutoHideElementCtrl(PAR& p) : isActive(false), _B(p){}
+	template <class PAR1, class PAR2> AutoHideElementCtrl(PAR1& p1, PAR2 p2) : isActive(false),_B(p1, p2) {}
+	template <class PAR1, class PAR2, class PAR3> AutoHideElementCtrl(PAR1& p1, PAR2 p2, PAR3 p3) : isActive(false),_B(p1, p2, p3) {}
+
+	virtual void MouseEnter(Point p, dword keyflags)  { isActive = true;  _B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_KEEP_DATA ); }
+	virtual void MouseLeave()                         { isActive = false; _B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_KEEP_DATA ); }
+
+	virtual void PaintElement(Draw& dw, int scale) {
+		if ( isActive ) _B::PaintElement(dw, scale);
+	};
+
 };
 
 

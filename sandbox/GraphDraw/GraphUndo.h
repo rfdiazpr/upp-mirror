@@ -57,20 +57,24 @@ namespace GraphDraw_ns
 				trimStack();
 			}
 	
-			void Undo() {
+			bool Undo() {
 				if ( !_undoStack.IsEmpty() ) {
 					GraphUndoData cb = _undoStack.Pop();
 					_redoStack.Add(cb);
 					cb.undoAction();
+					return true;
 				}
+				return false;
 			}
 			
-			void Redo() {
+			bool Redo() {
 				if ( !_redoStack.IsEmpty() ) {
 					GraphUndoData cb = _redoStack.Pop();
 					_undoStack.Add(cb);
 					cb.redoAction();
+					return true;
 				}
+				return false;
 			}
 	};
 }

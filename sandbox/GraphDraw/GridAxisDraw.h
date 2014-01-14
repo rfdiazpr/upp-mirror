@@ -458,6 +458,7 @@ namespace GraphDraw_ns
 
 		virtual void PaintElement(Draw& dw, int scale)
 		{
+			_B::PaintElementBckGround(dw, _B::GetFrame().GetSize());
 			if ( _B::GetStackingPriority() > 0) {
 				switch(_B::GetElementPos()){
 					case LEFT_OF_GRAPH:

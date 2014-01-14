@@ -3,22 +3,32 @@
 		|    TODO    |
 		--------------
 * Cleanup  CRTP_GraphCtrl_Base::IsModified()  CRTP_GraphCtrl_Base::ClearModify()
-* Add [Ctrl]+[Z]  for UNDO/REDO
 * Add Chameleon style containing all main fonts/colors/images/... for most common properties
 * BUG : corr date/time GridAxis display
 * improve Series properties dialog
 * improve Graph Drop Menu
+* Add data point selection
+	* Add 'Point' highlight when selected
+	* Add 'Rect Selection' feature to achieve MultiSelect
+* Add DropFont button to manage text settings en Properties dialogs
 
 
 		--------------
 		|    DONE    |
 		--------------
 
+12/01/2014 - SVN.xxxxxxxxxxxxx
+----------------------
+* Added KEYs for UNDO/REDO
+* Key shortcuts for context menu
+* Added LEFT/RIGHT/UP/DOWN  scroll KBD actions
+* Added AUTO-HIDE  feature : When using  AutoHideElementCtrl<BASE_ELEMENT>  template the GraphElement Hides once the mouse is not on it
+                             ==> this brings the possibility of adding tools on graphs that do not parasite the visual aspect of the graph
 
-11/01/2014 - SVN.xxxxxxxx
+12/01/2014 - SVN.6763
 ----------------------
 * Documentation
-* Added DynamicMarkerCtrl::ResetMarkers() ==> is called through menu/"Reset markers"
+* Added DynamicMarkerCtrl::ResetMarkers() ==> is called through [popup menu]/[Reset markers]
 * Added FULL REFESH on MouseLeave() to prevent letting Graph partially drawn when mouse is outside the GraphCtrl
 * Add management of GraphElements with NEGATIVE priority ( if several elements with negative prio are allowed one same side ) 
 * GridAxisDraw::Paint()  now takes in account StackingPriority to paint the best way possible

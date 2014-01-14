@@ -198,14 +198,15 @@ namespace GraphDraw_ns
 			virtual void PaintOnPlot_overData(Draw& dw, int otherWidth, int scale) {}
 			virtual void Update() {}; // called when coordinates need update
 
-
-			virtual void LeftDown   (Point p, dword keyflags) { };
-			virtual void LeftDouble (Point p, dword keyflags) { };
-			virtual void RightDown  (Point p, dword keyflags) { };
-			virtual void RightDouble(Point p, dword keyflags) { };
-			virtual void MiddleDown (Point p, dword keyflags) { };
-			virtual void MouseMove  (Point p, dword keyflags) { };
-			virtual void MouseWheel (Point p, int zdelta, dword keyflags) { };
+			virtual void MouseEnter(Point p, dword keyflags)  { }
+			virtual void MouseLeave()                         { }
+			virtual void LeftDown   (Point p, dword keyflags) { }
+			virtual void LeftDouble (Point p, dword keyflags) { }
+			virtual void RightDown  (Point p, dword keyflags) { }
+			virtual void RightDouble(Point p, dword keyflags) { }
+			virtual void MiddleDown (Point p, dword keyflags) { }
+			virtual void MouseMove  (Point p, dword keyflags) { }
+			virtual void MouseWheel (Point p, int zdelta, dword keyflags) { }
 			virtual Image  CursorImage(Point p, dword keyflags) { return GraphDrawImg::CROSS(); }
 			
 			virtual void FitToData(FitToDataStrategy fitStrategy) {}

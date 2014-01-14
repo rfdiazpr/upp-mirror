@@ -17,11 +17,11 @@ file
 	todo.txt,
 	GraphCtrlBase.h,
 	GraphCtrl.h,
-	GraphCtrl.cpp,
 	GraphCtrl.usc,
 	Copying,
 	srcdoc.tpp,
-	src.tpp;
+	src.tpp,
+	GraphCtrl.cpp;
 
 mainconfig
 	"" = "GUI SSE2";

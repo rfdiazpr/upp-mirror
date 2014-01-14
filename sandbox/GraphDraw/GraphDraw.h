@@ -294,13 +294,11 @@ namespace GraphDraw_ns
 		}
 		
 		void Undo() {
-			_undoManager.Undo();
-			RefreshFromChild( GraphDraw_ns::REFRESH_FULL );
+			if (_undoManager.Undo()) RefreshFromChild( GraphDraw_ns::REFRESH_FULL );
 		}
 
 		void Redo() {
-			_undoManager.Redo();
-			RefreshFromChild( GraphDraw_ns::REFRESH_FULL );
+			if (_undoManager.Redo()) RefreshFromChild( GraphDraw_ns::REFRESH_FULL );
 		}
 		
 		void FitToData(FitToDataStrategy fitStrategy=ALL_SERIES) {
@@ -464,19 +462,23 @@ namespace GraphDraw_ns
 
 		virtual void ScrollX( TypeScreenCoord xOffset, bool doRefresh)
 		{
+			if (xOffset == 0) return;
 			for (int j = 0; j < _xConverters.GetCount(); j++)
 			{
 				_xConverters[j]->Scroll( xOffset );
 			}
+			ClearPlotDrawImg();
 			if (doRefresh) Refresh();
 		}
 
 		virtual void ScrollY( TypeScreenCoord yOffset, bool doRefresh)
 		{
+			if (yOffset == 0) return;
 			for (int j = 0; j < _yConverters.GetCount(); j++)
 			{
 				_yConverters[j]->Scroll( yOffset );
 			}
+			ClearPlotDrawImg();
 			if (doRefresh) Refresh();
 		}
 

@@ -3,22 +3,41 @@
 
 
 struct GraphCtrl_Keys {
+	static dword K_UNDO;
+	static dword K_REDO;
+
+	// MOUSE ACTION MODIFIERS
 	static dword K_ZOOM;
 	static dword K_AXIS_SELECT;
 	static dword K_AXIS_ZOOM;
 	static dword K_SCROLL;
 	static dword K_AXIS_SCROLL;
 
+	static dword K_KBD_LEFT_SCROLL;
+	static dword K_KBD_RIGHT_SCROLL;
+	static dword K_KBD_UP_SCROLL;
+	static dword K_KBD_DOWN_SCROLL;
+
 	static dword K_ELEMENT_FLOAT_MOVERESIZE;
 	static dword K_ELEMENT_FLOAT_MOVE;
+
 	
-	static void reset() {
+	
+	static void Reset() {
+		K_UNDO        = K_CTRL_Z;
+		K_REDO        = K_SHIFT_CTRL_Z;
+
 		K_AXIS_SELECT = K_SHIFT;
 		K_ZOOM        = K_CTRL;
 		K_SCROLL      = 0;
 
 		K_AXIS_ZOOM   = K_ZOOM   | K_AXIS_SELECT;
 		K_AXIS_SCROLL = K_SCROLL | K_AXIS_SELECT;
+
+		K_KBD_LEFT_SCROLL  = K_LEFT;
+		K_KBD_RIGHT_SCROLL = K_RIGHT;
+		K_KBD_UP_SCROLL    = K_UP;
+		K_KBD_DOWN_SCROLL  = K_DOWN;
 		
 		K_ELEMENT_FLOAT_MOVERESIZE = K_CTRL;
 		K_ELEMENT_FLOAT_MOVE       = 0;
@@ -84,6 +103,10 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	bool isZoomFromGraphAllowed;
 	bool isScrollFromGraphAllowed;
 
+	Callback1<Bar&> WhenBar;
+	
+	GraphDraw_ns::GraphElement* currElement;
+	
 	public:
 
 	CRTP_GraphCtrl_Base()
@@ -100,6 +123,8 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	, isScrollFromAxisAllowed(true)
 	, isZoomFromGraphAllowed(true)
 	, isScrollFromGraphAllowed(true)
+	, WhenBar( THISBACK(ContextMenu) )
+	, currElement(0)
 	{
 		Transparent();
 		BackPaint();
@@ -123,6 +148,8 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	, isScrollFromAxisAllowed(true)
 	, isZoomFromGraphAllowed(true)
 	, isScrollFromGraphAllowed(true)
+	, WhenBar( THISBACK(ContextMenu) )
+	, currElement(0)
 	{
 		Transparent();
 		BackPaint();
@@ -411,18 +438,24 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 
 	void ContextMenu(Bar& bar)
 	{
-		bar.Add( t_("Copy"), GraphCtrlImg::COPY(), THISBACK2(PostCallback, THISBACK1(SaveToClipboard, false), 0)); //.Key(K_CTRL_C);
+		bar.Add( t_("Copy"), GraphCtrlImg::COPY(), THISBACK2(PostCallback, THISBACK1(SaveToClipboard, false), 0)).Key(K_CTRL_C);
 		bar.Add( t_("Save to file"), GraphCtrlImg::SAVE(), THISBACK1(SaveToFile, Null));
 
 		bar.Separator();
 
-		bar.Add( _B::_undoManager.CanUndo(), t_("Undo"), THISBACK(Undo));//.Key(K_CTRL_Z);
-		bar.Add( _B::_undoManager.CanRedo(), t_("Redo"), THISBACK(Redo));//.Key(K_SHIFT_CTRL_Z);
+		bar.Add( _B::_undoManager.CanUndo(), t_("Undo"), THISBACK(Undo)).Key(GraphCtrl_Keys::K_UNDO);
+		bar.Add( _B::_undoManager.CanRedo(), t_("Redo"), THISBACK(Redo)).Key(GraphCtrl_Keys::K_REDO);
 
 		bar.Separator();
 
 		bar.Add( IsScrollFromGraphEnabled() && IsZoomFromGraphEnabled(), t_("Fit To Data"),         THISBACK1(CtrlFitToData, GraphDraw_ns::ALL_SERIES));
 		bar.Add( IsScrollFromGraphEnabled() && IsZoomFromGraphEnabled(), t_("Fit To Visible Data"), THISBACK1(CtrlFitToData, GraphDraw_ns::VISIBLE_SERIES_ONLY));
+
+		bar.Separator();
+		bar.Add( IsScrollFromGraphEnabled(), t_("Scroll left"), THISBACK2( _B::ScrollX,  100, true) ).Key(GraphCtrl_Keys::K_KBD_LEFT_SCROLL);
+		bar.Add( IsScrollFromGraphEnabled(), t_("Scroll right"),THISBACK2( _B::ScrollX, -100, true) ).Key(GraphCtrl_Keys::K_KBD_RIGHT_SCROLL);
+		bar.Add( IsScrollFromGraphEnabled(), t_("Scroll up"),   THISBACK2( _B::ScrollY,  100, true) ).Key(GraphCtrl_Keys::K_KBD_UP_SCROLL);
+		bar.Add( IsScrollFromGraphEnabled(), t_("Scroll down"), THISBACK2( _B::ScrollY, -100, true) ).Key(GraphCtrl_Keys::K_KBD_DOWN_SCROLL);
 
 		bar.Separator();
 
@@ -564,7 +597,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 			return;
 		}
 		if ( _B::_plotRect.Contains(p) ) {
-			MenuBar::Execute(THISBACK(ContextMenu));
+			MenuBar::Execute(WhenBar);
 			return;
 		}
 	}
@@ -619,17 +652,32 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 			_B::_selectRect.top = 0;
 			_B::_selectRect.bottom = _B::_plotRect.GetHeight();
 		}
-		
-
 		Refresh();
 	}
 	
 	public:
 	virtual void MouseMove(Point p, dword keyflags) {
 		RLOGBLOCK_STR( _B::debugTrace, "CRTP_GraphCtrl_Base::MouseMove(" << this << ")");
+		
+		GraphDraw_ns::GraphElement* tmpElment = 0;
+		for (int j = 0; j < _B::_drawElements.GetCount(); j++)
+		{
+			if ( !_B::_drawElements[j]->IsHidden() ) {
+				if (_B::_drawElements[j]->Contains(p)) {
+					tmpElment = _B::_drawElements[j];
+				}
+			}
+		}
+		if (tmpElment != currElement)
+		{
+			if (tmpElment) tmpElment->MouseEnter(p, keyflags);
+			if (currElement) currElement->MouseLeave();
+			currElement = tmpElment;
+		}
+		
 		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElement::MouseMove)) {}
 		if (_B::_doFastPaint) {
-			// Do complete drawing when nothing special to be done
+			// Do complete drawing when nothing special to be done ( only if needed )
 			_B::_doFastPaint = false;
 			Refresh();
 		}
@@ -639,7 +687,11 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		ScheduleFullRefresh();
 	}
 	
-	
+	virtual void MouseEnter(Point, dword)
+	{
+		SetFocus();
+	}
+
 	virtual Image  CursorImage(Point p, dword keyflags)
 	{
 		RLOGBLOCK_STR( _B::debugTrace, "CRTP_GraphCtrl_Base::CursorImage(" << this << ")");
@@ -654,10 +706,19 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		return GraphDrawImg::CROSS();
 	}
 
-
-
-	virtual void MouseWheel(Point p, int zdelta, dword keyflags)
-	{
+	virtual bool Key(dword key, int repcnt) {
+		if      (key == GraphCtrl_Keys::K_UNDO) { _B::Undo(); return true; }
+		else if (key == GraphCtrl_Keys::K_REDO) { _B::Redo(); return true; }
+		return MenuBar::Scan( WhenBar, key);
+	}
+	
+	virtual bool HotKey(dword key) {
+		if      (key == GraphCtrl_Keys::K_UNDO) { _B::Undo(); return true; }
+		else if (key == GraphCtrl_Keys::K_REDO) { _B::Redo(); return true; }
+		return Ctrl::HotKey(key);
+	}
+	
+	virtual void MouseWheel(Point p, int zdelta, dword keyflags) {
 		// Process FLOAT elements FIRST
 		for (int j = 0; j < _B::_drawElements.GetCount(); j++)
 		{

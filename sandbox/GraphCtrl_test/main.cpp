@@ -119,9 +119,10 @@ GraphDraw_test::GraphDraw_test()
 	//g4.debugTrace = true;
 	g4.CreateElement2<ExclusionAreaDraw, FLOAT_OVER_GRAPH>(0, 0, g4.GetXCoordConverter(), g4.GetYCoordConverter() );
 	//g4.CreateElement1<GraphDraw_ns::MarkerElement<MyGraphCtrl::Types>, TOP_OF_GRAPH>(20, 0, g4.GetXCoordConverter() );
-	MarkerElementType& markerElem = g4.CreateElement1< MarkerElementType, TOP_OF_GRAPH>(30, -1, g4.GetXCoordConverter() );
+	MarkerElementType& markerElem = g4.CreateElement1< AutoHideElementCtrl<MarkerElementType>, TOP_OF_GRAPH>(30, -1, g4.GetXCoordConverter() );
 	//markerElem.SetBackGroundStyle(GraphCtrl_testImg::LEGEND_BACKGND3());
 	markerElem.whenMarkerMove = THISBACK(onMarkerMoveCBK);
+	markerElem.SetBackGroundStyle(GraphCtrl_testImg::LEGEND_BACKGND4());
 
 	SmartTextTickMark& sttmg4_1 = markerElem.AddMarker<SmartTextTickMark>(1, 3.5);
 		sttmg4_1.SetText("\1[ [ [*@6;1  1 ]]]");
@@ -143,6 +144,7 @@ GraphDraw_test::GraphDraw_test()
 	g4.SetPlotBackgroundStyle(GraphCtrl_testImg::PLOT_BCKGND() );
 	g4.GetLegendElement().SetBackGroundStyle(GraphCtrl_testImg::LEGEND_BACKGND3());
 	g4.GetLegendElement().SetElementWidth(28);
+	//g4.GetYGridAxisDraw().SetBackGroundStyle(GraphCtrl_testImg::LEGEND_BACKGND4());
 	g4.GetYGridAxisDraw().SetVSelectStyle(GraphCtrl_testImg::VSELECT());
 	
 

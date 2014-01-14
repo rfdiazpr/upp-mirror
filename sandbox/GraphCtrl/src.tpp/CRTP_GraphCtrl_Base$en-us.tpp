@@ -32,6 +32,12 @@ trl]&]
 [ {{10000F(128)G(128)@1 [s0;%% [* Function List]]}}&]
 [s0;i448;a25;kKO9;:noref:@(0.0.255) &]
 [ {{10000F(128)G(128)@1 [s0;%% [* Public Method List]]}}&]
+[s4; &]
+[s5;:CRTP`_GraphCtrl`_Base`:`:WhenBar: [_^Callback1^ Callback1]<Bar[@(0.0.255) `&]>_[* When
+Bar]&]
+[s2;%% Is called when user requests the Plot context menu ( the one 
+tied to the plot area not to a GraphElement )&]
+[s3; &]
 [s0; &]
 [ {{10000F(128)G(128)@1 [s0;%% [* Constructor detail]]}}&]
 [s0;%% ]]

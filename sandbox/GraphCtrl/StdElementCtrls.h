@@ -335,8 +335,6 @@ class StdLabelCtrl : public  GraphElementCtrl_Base< TYPES, LABELDRAW > {
 template<class TYPES, class MARKERDRAW>
 class DynamicMarkerCtrl : public  GraphElementCtrl_Base< TYPES, MARKERDRAW > {
 	protected:
-	typedef DynamicMarkerCtrl<TYPES, MARKERDRAW>  CLASSNAME;
-	typedef GraphElementCtrl_Base< TYPES, MARKERDRAW > _B;
 	typedef TYPES  Types;
 	Point prevMousePoint;
 	GraphDraw_ns::TypeScreenCoord selectOffset;
@@ -344,6 +342,8 @@ class DynamicMarkerCtrl : public  GraphElementCtrl_Base< TYPES, MARKERDRAW > {
 	GraphDraw_ns::MarkerPosList::Iterator currMarkerPos; // marker selected for MOVE action
 
 	public:
+	typedef DynamicMarkerCtrl<TYPES, MARKERDRAW>  CLASSNAME;
+	typedef GraphElementCtrl_Base< TYPES, MARKERDRAW > _B;
 	GraphDraw_ns::TypeMarkerMoveCbk whenMarkerMove;
 	GraphDraw_ns::TypeMarkerMoveCbk whenMarkerMoveStart;
 	GraphDraw_ns::TypeMarkerMoveCbk whenMarkerMoveEnd;
@@ -354,7 +354,6 @@ class DynamicMarkerCtrl : public  GraphElementCtrl_Base< TYPES, MARKERDRAW > {
 	{ }
 	
 	private:
-
 	virtual void ContextMenu(Bar& bar) {
 		bar.Add(t_("Edit properties"),     THISBACK (OpenPropertiesDlg));
 		bar.Add(t_("Reset markers"),       THISBACK(ResetMarkers));
@@ -473,8 +472,5 @@ class DynamicMarkerCtrl : public  GraphElementCtrl_Base< TYPES, MARKERDRAW > {
 		}
 		return _B::CursorImage(p,keyflags);
 	}
-
 };
-
-
 #endif

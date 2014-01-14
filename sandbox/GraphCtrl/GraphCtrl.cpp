@@ -6,12 +6,28 @@
 
 using namespace Upp;
 
-dword GraphCtrl_Keys::K_AXIS_SELECT = K_SHIFT;
-dword GraphCtrl_Keys::K_ZOOM        = K_CTRL;
-dword GraphCtrl_Keys::K_SCROLL      = 0;
+enum { DUMMY_KEY = K_TAB | K_9 | K_M | K_CTRL_Z }; // default values are set by  GraphCtrl_Keys::Reset();   ==> so static init set dummy values 
 
-dword GraphCtrl_Keys::K_AXIS_ZOOM   = GraphCtrl_Keys::K_ZOOM   | GraphCtrl_Keys::K_AXIS_SELECT;
-dword GraphCtrl_Keys::K_AXIS_SCROLL = GraphCtrl_Keys::K_SCROLL | GraphCtrl_Keys::K_AXIS_SELECT;
+dword GraphCtrl_Keys::K_UNDO        = DUMMY_KEY;
+dword GraphCtrl_Keys::K_REDO        = DUMMY_KEY;
 
-dword GraphCtrl_Keys::K_ELEMENT_FLOAT_MOVERESIZE = K_CTRL;
-dword GraphCtrl_Keys::K_ELEMENT_FLOAT_MOVE       = 0;
+dword GraphCtrl_Keys::K_AXIS_SELECT = DUMMY_KEY;
+dword GraphCtrl_Keys::K_ZOOM        = DUMMY_KEY;
+dword GraphCtrl_Keys::K_SCROLL      = DUMMY_KEY;
+
+dword GraphCtrl_Keys::K_AXIS_ZOOM   = DUMMY_KEY;
+dword GraphCtrl_Keys::K_AXIS_SCROLL = DUMMY_KEY;
+
+dword GraphCtrl_Keys::K_ELEMENT_FLOAT_MOVERESIZE = DUMMY_KEY;
+dword GraphCtrl_Keys::K_ELEMENT_FLOAT_MOVE       = DUMMY_KEY;
+
+dword GraphCtrl_Keys::K_KBD_LEFT_SCROLL  = DUMMY_KEY;
+dword GraphCtrl_Keys::K_KBD_RIGHT_SCROLL = DUMMY_KEY;
+dword GraphCtrl_Keys::K_KBD_UP_SCROLL    = DUMMY_KEY;
+dword GraphCtrl_Keys::K_KBD_DOWN_SCROLL  = DUMMY_KEY;
+
+INITBLOCK
+{
+	GraphCtrl_Keys::Reset();
+}
+

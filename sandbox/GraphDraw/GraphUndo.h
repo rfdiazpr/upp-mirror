@@ -30,7 +30,7 @@ namespace GraphDraw_ns
 		private:
 			Vector<GraphUndoData> _undoStack;
 			Vector<GraphUndoData> _redoStack;
-			int64 _lastActionAddTime;
+			Upp::int64 _lastActionAddTime;
 			int _undoStackSize;
 			
 			void trimStack() {
@@ -49,7 +49,7 @@ namespace GraphDraw_ns
 			bool CanRedo() const  { return !_redoStack.IsEmpty(); }
 			
 			void AddUndoAction(GraphUndoData& CB) {
-				int64 currTime = GetTickCount();
+				Upp::int64 currTime = GetTickCount();
 				if ((currTime - _lastActionAddTime) < 500) _undoStack.Top().Merge(CB);
 				else                                       _undoStack.Add(CB);
 				_redoStack.Clear();

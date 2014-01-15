@@ -210,7 +210,7 @@ namespace GraphDraw_ns
 
 		void FormatAsTime( const GridStepIterator& value, String& output ) {
 			Time time;
-			time.Set(int64( value.getValue() ));
+			time.Set(Upp::int64( value.getValue() ));
 
 			TypeGraphCoord range = value.getGraphRange();
 

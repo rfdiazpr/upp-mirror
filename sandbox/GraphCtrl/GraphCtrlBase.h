@@ -72,6 +72,10 @@ class GraphCtrlLooper : public LocalLoop {
 };
 
 
+
+
+void SaveImageToFile(String fileName, const Image& img);
+
 // ============================
 //    CRTP_GraphCtrl_Base   CLASS
 // ============================
@@ -368,21 +372,8 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		    }
 	        fileName = fs;
 		}
-
-		if (GetFileExt(fileName) == ".png") {
-			PNGEncoder encoder;
-			AutoWaitCursor waitcursor(autoWaitCursor_saveToFile);
-			encoder.SaveFile(fileName, _B::GetImage(copyRatio));
-		} else if (GetFileExt(fileName) == ".jpg") {
-			JPGEncoder encoder(90);
-			AutoWaitCursor waitcursor(autoWaitCursor_saveToFile);
-			encoder.SaveFile(fileName, _B::GetImage(copyRatio));
-		} else if (GetFileExt(fileName) == ".tif") {
-			TIFEncoder encoder;
-			AutoWaitCursor waitcursor(autoWaitCursor_saveToFile);
-			encoder.SaveFile(fileName, _B::GetImage(copyRatio));
-		} else
-			Exclamation(Format(t_("File format \"%s\" not found"), GetFileExt(fileName)));
+		AutoWaitCursor waitcursor(autoWaitCursor_saveToFile);
+		SaveImageToFile(fileName, _B::GetImage(copyRatio));
 	}
 	
 	void OpenSeriesPropertiesDlg(int c) {

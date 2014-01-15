@@ -272,7 +272,7 @@ namespace GraphDraw_ns
 				// ======
 				else {
 					TypeGraphCoord gridStartValue;
-					int64 normalizedStep;
+					Upp::int64 normalizedStep;
 					Vector<double> daySteps;
 					daySteps << 1 << 2  << 3 << 4 << 5 << 7 << 14 << 28 << 56;
 					normalizedStep = GetNormalizedStep( dateRange.Get(), daySteps );
@@ -381,7 +381,7 @@ namespace GraphDraw_ns
 				// ================================
 				else {
 					TypeGraphCoord gridStartValue;
-					int64 normalizedStep;
+					Upp::int64 normalizedStep;
 					Vector<double> secondsSteps;
 					secondsSteps << 1 << 2 << 5 << 10 << 15 << 20 << 30;
 					secondsSteps << MINUTES_sec << MINUTES_sec*2 << MINUTES_sec*3 << MINUTES_sec*5 << MINUTES_sec*10 << MINUTES_sec*15 << MINUTES_sec*20 << MINUTES_sec*30;
@@ -468,9 +468,9 @@ namespace GraphDraw_ns
 				long double stepValue = pstepValue;
 				long double graphMin = pgraphMin;
 				if (graphMin>=0) {
-					res = ((int64)(graphMin/stepValue + 1.0 - std::numeric_limits<TypeGraphCoord>::epsilon()) ) * stepValue;
+					res = ((Upp::int64)(graphMin/stepValue + 1.0 - std::numeric_limits<TypeGraphCoord>::epsilon()) ) * stepValue;
 				} else {
-					res = (((int64)(graphMin/stepValue) ) * stepValue);
+					res = (((Upp::int64)(graphMin/stepValue) ) * stepValue);
 				}
 				if (res < pgraphMin) res = pgraphMin;
 				return res;

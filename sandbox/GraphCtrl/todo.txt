@@ -17,6 +17,14 @@
 		|    DONE    |
 		--------------
 
+
+15/01/2014 - SVN.6782
+----------------------
+* Refactored namespace usage
+* Moved  #include <plugin/jpg/jpg.h>  and <plugin/tif/tif.h>   to  GraphCtrl.cpp
+  to avoid side effects of <plugin/tif/tif.h>  header
+
+
 12/01/2014 - SVN.6779
 ----------------------
 * Added KEYs for UNDO/REDO

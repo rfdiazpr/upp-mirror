@@ -16,6 +16,7 @@
 #include <Draw/iml_source.h>
 
 
+using namespace Upp;
 using namespace GraphDraw_ns;
 
 

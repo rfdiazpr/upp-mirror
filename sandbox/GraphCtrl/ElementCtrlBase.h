@@ -186,9 +186,9 @@ class AutoHideElementCtrl : public  BASE {
 	bool isActive;
 
 	virtual ~AutoHideElementCtrl() {}
-	template <class PAR> AutoHideElementCtrl(PAR& p) : isActive(false), _B(p){}
-	template <class PAR1, class PAR2> AutoHideElementCtrl(PAR1& p1, PAR2 p2) : isActive(false),_B(p1, p2) {}
-	template <class PAR1, class PAR2, class PAR3> AutoHideElementCtrl(PAR1& p1, PAR2 p2, PAR3 p3) : isActive(false),_B(p1, p2, p3) {}
+	template <class PAR> AutoHideElementCtrl(PAR& p) : _B(p), isActive(false) {}
+	template <class PAR1, class PAR2> AutoHideElementCtrl(PAR1& p1, PAR2 p2) : _B(p1, p2), isActive(false) {}
+	template <class PAR1, class PAR2, class PAR3> AutoHideElementCtrl(PAR1& p1, PAR2 p2, PAR3 p3) : _B(p1, p2, p3), isActive(false) {}
 
 	virtual void MouseEnter(Point p, dword keyflags)  { isActive = true;  _B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_KEEP_DATA ); }
 	virtual void MouseLeave()                         { isActive = false; _B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_KEEP_DATA ); }

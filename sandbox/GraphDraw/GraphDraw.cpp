@@ -5,6 +5,8 @@
 #define IMAGEFILE <GraphDraw/GraphDraw.iml>
 #include <Draw/iml_source.h>
 
+NAMESPACE_UPP
+
 namespace GraphDraw_ns
 {
 	ElementBorderPosition GetElementSubArea( Point p, Rect r, int borderWidth ) {
@@ -214,5 +216,5 @@ String GetNewDash(int id)
 	}
 
 
-
+END_UPP_NAMESPACE
 

@@ -3,7 +3,6 @@
 
 #include <CtrlLib/CtrlLib.h>
 
-using namespace Upp;
 
 #include <GraphCtrl/GraphCtrl.h>
 #include <Functions4U/Functions4U.h>
@@ -16,6 +15,9 @@ using namespace Upp;
 #define IMAGECLASS GraphCtrl_testImg
 #define IMAGEFILE <GraphCtrl_test/GraphCtrl_test.iml>
 #include <Draw/iml_header.h>
+
+using namespace Upp;
+using namespace GraphDraw_ns;
 
 typedef XYY2LT_GraphCtrl MyGraphCtrl;
 

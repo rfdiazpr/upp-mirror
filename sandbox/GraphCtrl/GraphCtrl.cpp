@@ -1,10 +1,14 @@
 #include "GraphCtrl.h"
 
+#include <plugin/jpg/jpg.h>
+#include <plugin/tif/tif.h>
+
 #define IMAGECLASS GraphCtrlImg
 #define IMAGEFILE <GraphCtrl/GraphCtrl.iml>
 #include <Draw/iml_source.h>
 
-using namespace Upp;
+NAMESPACE_UPP
+namespace GraphDraw_ns {
 
 enum { DUMMY_KEY = K_TAB | K_9 | K_M | K_CTRL_Z }; // default values are set by  GraphCtrl_Keys::Reset();   ==> so static init set dummy values 
 
@@ -30,4 +34,28 @@ INITBLOCK
 {
 	GraphCtrl_Keys::Reset();
 }
+
+
+
+
+void SaveImageToFile(String fileName, const Image& img)
+{
+	if (GetFileExt(fileName) == ".png") {
+		PNGEncoder encoder;
+		encoder.SaveFile(fileName, img);
+	} else if (GetFileExt(fileName) == ".jpg") {
+		JPGEncoder encoder(90);
+		encoder.SaveFile(fileName, img);
+	} else if (GetFileExt(fileName) == ".tif") {
+		TIFEncoder encoder;
+		encoder.SaveFile(fileName, img);
+	} else {
+		Exclamation(Format(t_("File format \"%s\" not found"), GetFileExt(fileName)));
+	}
+}
+	
+
+};
+END_UPP_NAMESPACE
+
 

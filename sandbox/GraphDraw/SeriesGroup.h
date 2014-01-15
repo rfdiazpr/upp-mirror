@@ -123,7 +123,7 @@ namespace GraphDraw_ns
 			_isDataModified = true;
 		}
 
-		::Color GetMarkColor (const int j) const{
+		Color GetMarkColor (const int j) const{
 			ASSERT(IsValid(j));
 			return series[j].markColor;
 		}

@@ -15,7 +15,6 @@
 #define IMAGEFILE <GraphDraw/GraphDraw.iml>
 #include <Draw/iml_header.h>
 
-using namespace Upp;
 
 #ifndef TRACE_INFO
 #define TRACE_INFO(TXT) //{ std::ostringstream str; str <<  "\n" << TXT; LOG(str.str().c_str()); }
@@ -26,6 +25,7 @@ using namespace Upp;
 #endif
 
 
+NAMESPACE_UPP
 
 struct DebugLogBlockString
 {
@@ -595,7 +595,7 @@ namespace GraphDraw_ns
 		}
 
 		template <class V, class XC, class YC>
-		inline void addToFullPointsList(V& p1, TypeGraphCoord x, TypeGraphCoord y , XC& xConverter, YC& yConverter, int64& nbVisiblePoints, Point& prevPoint, bool& prevPointIsVisible) {
+		inline void addToFullPointsList(V& p1, TypeGraphCoord x, TypeGraphCoord y , XC& xConverter, YC& yConverter, Upp::int64& nbVisiblePoints, Point& prevPoint, bool& prevPointIsVisible) {
 			if (   ( xConverter.IsInGraphVisibleRange( x ) )
 			    && ( yConverter.IsInGraphVisibleRange( y ) ) )
 			{
@@ -661,7 +661,7 @@ namespace GraphDraw_ns
 					//     CREATE  LIST  OF  POINTS  TO  DRAW
 					// ============================================
 					unsigned int inc = 1;
-					int64 nbVisiblePoints = 0;
+					Upp::int64 nbVisiblePoints = 0;
 					int imin, imax;
 
 					CoordinateConverter& xConverter = *(_B::series[j].xConverter);
@@ -932,14 +932,15 @@ namespace GraphDraw_ns
 				//_paintTiming.printStats( std::cout );
 				_paintTiming.printStats( VppLog() );
 	
-				_paintBackGndTiming.printStats( std::cout );
-				_initBackGndPaintTiming.printStats( std::cout );
-				_paintBackGndTiming_chPaint.printStats( std::cout );
-				_paintBackGndTiming_copyImage.printStats( std::cout );
-				_paintBackGndTiming_paintImage.printStats( std::cout );
+				_paintBackGndTiming.printStats(VppLog() );
+				_initBackGndPaintTiming.printStats( VppLog() );
+				_paintBackGndTiming_chPaint.printStats( VppLog() );
+				_paintBackGndTiming_copyImage.printStats( VppLog() );
+				_paintBackGndTiming_paintImage.printStats( VppLog() );
 	
-				_paintPlotDataTiming.printStats( std::cout );
-				_paintPlotDataGlobalTiming.printStats( std::cout );
+				_paintPlotDataTiming.printStats( VppLog() );
+				_paintPlotDataGlobalTiming.printStats( VppLog() );
+	
 			}
 		}
 	};
@@ -1276,6 +1277,6 @@ namespace GraphDraw_ns
 
 };
 
-
+END_UPP_NAMESPACE
 
 #endif

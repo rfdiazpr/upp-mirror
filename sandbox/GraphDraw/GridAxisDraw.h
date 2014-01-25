@@ -110,7 +110,7 @@ namespace GraphDraw_ns
 				case LEFT_OF_GRAPH:
 				case RIGHT_OF_GRAPH:
 					for (int c=0; c<v_series.GetCount(); ++c) {
-						if ( ( (fitStrategy==ALL_SERIES)  || (v_series[c].show)) && (v_series[c].yConverter == &_coordConverter) ) {
+						if ( ( (fitStrategy==ALL_SERIES)  || (v_series[c].show)) && (v_series[c].yConverter == &_coordConverter) && !v_series[c].PointsData()->IsExplicit() && !v_series[c].PointsData()->IsParam() ) {
 							lmin = min (lmin, v_series[c].PointsData()->MinY());
 							lmax = max (lmax, v_series[c].PointsData()->MaxY());
 							doFitToData = true;
@@ -120,7 +120,7 @@ namespace GraphDraw_ns
 				case BOTTOM_OF_GRAPH:
 				case TOP_OF_GRAPH:
 					for (int c=0; c<v_series.GetCount(); ++c) {
-						if ( ( (fitStrategy==ALL_SERIES)  || (v_series[c].show)) && (v_series[c].xConverter == &_coordConverter) ) {
+						if ( ( (fitStrategy==ALL_SERIES)  || (v_series[c].show)) && (v_series[c].xConverter == &_coordConverter) && !v_series[c].PointsData()->IsExplicit() && !v_series[c].PointsData()->IsParam() ) {
 							lmin = min (lmin, v_series[c].PointsData()->MinX());
 							lmax = max (lmax, v_series[c].PointsData()->MaxX());
 							doFitToData = true;

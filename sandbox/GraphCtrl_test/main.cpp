@@ -109,7 +109,7 @@ GraphDraw_test::GraphDraw_test()
 	g3.SetCtrlBackgroundStyle(GraphCtrl_testImg::CTRL_BCKGND() );
 	g3.SetPlotBackgroundStyle(GraphCtrl_testImg::PLOT_BCKGND() );
 	g3.GetLegendElement().SetBackGroundStyle(GraphCtrl_testImg::LEGEND_BACKGND());
-	MarkerElementType& g3_markerElem = g3.CreateElement1< MarkerElementType, TOP_OF_GRAPH>(30, 0, g3.GetXCoordConverter() );
+	MarkerElementType& g3_markerElem = g3.CreateElement1< MarkerElementType, TOP_OF_GRAPH>(30, 0, g3.GetX1CoordConverter() );
 	SmartTextTickMark& sttmg3_1 = g3_markerElem.AddMarker<SmartTextTickMark>(1, 25000);
 		sttmg3_1.SetText("\1[ [ [*@6;1  3 ]]]");
 		sttmg3_1.SetBackGroundStyle(GraphCtrl_testImg::BACKGND());
@@ -118,9 +118,9 @@ GraphDraw_test::GraphDraw_test()
 	//                 G4
 	// ====================================
 	//g4.debugTrace = true;
-	g4.CreateElement2<ExclusionAreaDraw, FLOAT_OVER_GRAPH>(0, 0, g4.GetXCoordConverter(), g4.GetYCoordConverter() );
+	g4.CreateElement2<ExclusionAreaDraw, FLOAT_OVER_GRAPH>(0, 0, g4.GetX1CoordConverter(), g4.GetY1CoordConverter() );
 	//g4.CreateElement1<GraphDraw_ns::MarkerElement<MyGraphCtrl::Types>, TOP_OF_GRAPH>(20, 0, g4.GetXCoordConverter() );
-	MarkerElementType& markerElem = g4.CreateElement1< AutoHideElementCtrl<MarkerElementType>, TOP_OF_GRAPH>(30, -1, g4.GetXCoordConverter() );
+	MarkerElementType& markerElem = g4.CreateElement1< AutoHideElementCtrl<MarkerElementType>, TOP_OF_GRAPH>(30, -1, g4.GetX1CoordConverter() );
 	//markerElem.SetBackGroundStyle(GraphCtrl_testImg::LEGEND_BACKGND3());
 	markerElem.whenMarkerMove = THISBACK(onMarkerMoveCBK);
 	markerElem.SetBackGroundStyle(GraphCtrl_testImg::LEGEND_BACKGND4());
@@ -146,24 +146,24 @@ GraphDraw_test::GraphDraw_test()
 	g4.GetLegendElement().SetBackGroundStyle(GraphCtrl_testImg::LEGEND_BACKGND3());
 	g4.GetLegendElement().SetElementWidth(28);
 	//g4.GetYGridAxisDraw().SetBackGroundStyle(GraphCtrl_testImg::LEGEND_BACKGND4());
-	g4.GetYGridAxisDraw().SetVSelectStyle(GraphCtrl_testImg::VSELECT());
+	g4.GetY1GridAxisDraw().SetVSelectStyle(GraphCtrl_testImg::VSELECT());
 	
 
 	// ====================================
 	//                 G5
 	// ====================================
-	MarkerElementType& markerElemG5_1 = g5.CreateElement1< MarkerElementType, TOP_OF_GRAPH >(60, 0, g5.GetXCoordConverter() );
+	MarkerElementType& markerElemG5_1 = g5.CreateElement1< MarkerElementType, TOP_OF_GRAPH >(60, 0, g5.GetX1CoordConverter() );
 	markerElemG5_1.AddMarker<SmartTextTickMark>(1, 3.8).SetText("\1[ [ [@6$(255.255.192)2 @@image:200&200€„À€À€€€€€€€€€€ø§œíÛÁ’Â Œ…Ğâİ½îº‹­†ä™‡–«ÉÏŒ›ûƒ¼è¢›ëòå•ÒÒ®ÆŸï­è§ŸşúéÇ§ŸşüÅ¿à®ïŞ“‡³ĞÅ—€şÎ«ü×ùù­ÿûÙãíùÙÒ¾ÈÆºÖ„Úßæµ…ÜşÃõ÷ÎÚï‹Øä¼öÏœ¯˜ÔÁø¿ñ—åüõ£öã¾ÓüÈ¾ŒĞŞ³öÈşı©¢ù½ûÿ“úß›Úçô¤á÷Ë½Ê¶¤ÿº€ÓóÓıÒİô½½£ş°è§ÚÿºŸñĞŸßù¿ÕÆÿÖçÉ­ÒÏÿªşÔêùÁ¿ı«ú­Ø™è™úéßİ·ÿ‹ç¢¦©ŒışŞÎø­„ğ°ëöã†ÓıÒŸæÊù­à¿œ¼¤üÁß««ûüÈŒ¢û÷˜‡¬şü¨ÿ¯®›ÑŞ£²ÿ½ËÙ™•ıÖŒæ²ø­™ ‹ş£µıççÁÿĞæ†£şé¼ä¼ûÁí£ıÚŒõ¶‚÷³ı‡Ğò¯¤ã™¼ıÍµÓÎı ÿàû¢Ÿşúé§¿ËÜÿßä»–«©Ö—‰¨ò]]]");
 	
-	MarkerElementType& markerElemG5_2 = g5.CreateElement1< MarkerElementType, RIGHT_OF_GRAPH >(30, 0, g5.GetYCoordConverter() );
+	MarkerElementType& markerElemG5_2 = g5.CreateElement1< MarkerElementType, RIGHT_OF_GRAPH >(30, 0, g5.GetY1CoordConverter() );
 	markerElemG5_2.AddMarker<SmartTextTickMark>(2, 3.8).SetText("\1[ [ [*_@6$(28.255.150)+59 M2]]]");
 	
-	MarkerElementType& markerElemG5_3 = g5.CreateElement1< MarkerElementType, BOTTOM_OF_GRAPH >(30, 0, g5.GetXCoordConverter() );
+	MarkerElementType& markerElemG5_3 = g5.CreateElement1< MarkerElementType, BOTTOM_OF_GRAPH >(30, 0, g5.GetX1CoordConverter() );
 	SmartTextTickMark& sttm = markerElemG5_3.AddMarker<SmartTextTickMark>(3, 3.8);
 		sttm.SetText("\1[ [ [@6$(255.255.192)2 `-`-][*_$(255.255.192)2 M3][@6$(255.255.192)2 `-`-]]]");
 		sttm.SetBackGroundStyle(GraphCtrl_testImg::BACKGND());
 	
-	MarkerElementType& markerElemG5_4 = g5.CreateElement1< MarkerElementType, LEFT_OF_GRAPH >(30, 0, g5.GetYCoordConverter() );
+	MarkerElementType& markerElemG5_4 = g5.CreateElement1< MarkerElementType, LEFT_OF_GRAPH >(30, 0, g5.GetY1CoordConverter() );
 	SmartTextTickMark& sttm4 = markerElemG5_4.AddMarker<SmartTextTickMark>(4, 3.8);
 		sttm4.SetText("---M4---");
 		sttm4.SetBackGroundStyle(GraphCtrl_testImg::BACKGND());

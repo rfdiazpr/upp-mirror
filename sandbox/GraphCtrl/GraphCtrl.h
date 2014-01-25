@@ -15,7 +15,6 @@
 #define IMAGEFILE <GraphCtrl/GraphCtrl.iml>
 #include <Draw/iml_header.h>
 
-
 #include <GraphDraw/GraphDraw.h>
 
 NAMESPACE_UPP
@@ -33,19 +32,19 @@ namespace GraphDraw_ns {
 // ===============================================================================================================================
 // ===============================================================================================================================
 struct GraphCtrlDefaultTypes {
-		typedef GraphDraw_ns::GenericCoordinateConverter                                    TypeCoordConverter;
-		
-		typedef GraphDraw_ns::GenericCoordinateConverter                                       X_TypeCoordConverter;
-		typedef GraphDraw_ns::GenericCoordinateConverter                                       X2_TypeCoordConverter;
-		typedef GraphDraw_ns::GenericCoordinateConverter                                       Y_TypeCoordConverter;
-		typedef GraphDraw_ns::GenericCoordinateConverter                                       Y2_TypeCoordConverter;
+		typedef GraphDraw_ns::GenericCoordinateConverter                                                                     TypeCoordConverter;
+		typedef GraphDraw_ns::GenericCoordinateConverter                                                                     X_TypeCoordConverter;
+		typedef GraphDraw_ns::GenericCoordinateConverter                                                                     X2_TypeCoordConverter;
+		typedef GraphDraw_ns::GenericCoordinateConverter                                                                     Y_TypeCoordConverter;
+		typedef GraphDraw_ns::GenericCoordinateConverter                                                                     Y2_TypeCoordConverter;
 		typedef GraphDraw_ns::StdGridAxisDrawCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::GridAxisDraw<GraphCtrlDefaultTypes> > X_TypeGridAxisDraw;
 		typedef GraphDraw_ns::StdGridAxisDrawCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::GridAxisDraw<GraphCtrlDefaultTypes> > X2_TypeGridAxisDraw;
 		typedef GraphDraw_ns::StdGridAxisDrawCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::GridAxisDraw<GraphCtrlDefaultTypes> > Y_TypeGridAxisDraw;
 		typedef GraphDraw_ns::StdGridAxisDrawCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::GridAxisDraw<GraphCtrlDefaultTypes> > Y2_TypeGridAxisDraw;
-		typedef GraphDraw_ns::GridStepManager<>                                                TypeGridStepManager;
-		typedef GraphDraw_ns::StdLabelCtrl<GraphCtrlDefaultTypes,GraphDraw_ns::LabelElement>                 TypeLabelElement;
-		typedef GraphDraw_ns::StdLegendCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::LegendElement<GraphCtrlDefaultTypes> > TypeLegendElement;
+		typedef GraphDraw_ns::GridStepManager<>                                                                              TypeGridStepManager;
+		typedef GraphDraw_ns::StdLabelCtrl<GraphCtrlDefaultTypes,GraphDraw_ns::LabelElement>                                 TypeLabelElement;
+		typedef GraphDraw_ns::StdLegendCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::LegendElement<GraphCtrlDefaultTypes> >      TypeLegendElement;
+		typedef GraphDraw_ns::StdBlankAreaCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::BlankAreaElement >                       TypeBlankElement;
 };
 
 class XYY2_GraphCtrl   : public GraphDraw_ns::CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, XYY2_GraphCtrl, GraphDraw_ns::CRTP_XYY2GraphDraw>

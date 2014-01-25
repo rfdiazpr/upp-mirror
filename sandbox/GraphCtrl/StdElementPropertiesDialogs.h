@@ -8,7 +8,8 @@ class ElementPropertiesDlg : public WithElementBaseLayout<TopWindow> {
 	CtrlRetriever r1;
 	ELEMENT*      elem;
 	int           pos;
-	
+	int           elementWidth;
+
 	public:
 	typedef ElementPropertiesDlg<ELEMENT>  CLASSNAME;
 	typedef WithElementBaseLayout<TopWindow> _B;
@@ -34,7 +35,9 @@ class ElementPropertiesDlg : public WithElementBaseLayout<TopWindow> {
 		}
 
 		pos = elem->_pos;
-		r1( width, elem->_width)
+		elementWidth = elem->GetElementWidth();
+
+		r1( width, elementWidth)
 		  ( hide, elem->_hide)
 		  ( stackingPrio, elem->_stackingPriority)
 		  ( position, pos)
@@ -44,9 +47,44 @@ class ElementPropertiesDlg : public WithElementBaseLayout<TopWindow> {
 	virtual void Retrieve() {
 		r1.Retrieve();
 		elem->SetElementPos(static_cast<GraphDraw_ns::ElementPosition>(pos));
+		elem->SetElementWidth(elementWidth);
 		elem->_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FULL );
 	}
 };
+// ============================================================================================
+
+// Default GridAxisPropertiesDlg  class
+// it opens the minimal dialog for the CoordConverter beeing used
+template <class ELEMENTDRAW>
+class BlankAreaPropertiesDlg : public WithBlankAreaLayout<TopWindow> {
+	public:
+	CtrlRetriever r1;
+	ELEMENTDRAW*  elem;
+	int           elementWidth;
+	
+	public:
+	typedef BlankAreaPropertiesDlg<ELEMENTDRAW>  CLASSNAME;
+	typedef WithBlankAreaLayout<ELEMENTDRAW>     _B;
+	
+	BlankAreaPropertiesDlg() {
+		CtrlLayoutOKCancel(*this, "");
+	}
+	
+	virtual ~BlankAreaPropertiesDlg() {}
+
+	void InitDlg(ELEMENTDRAW& gda) {
+		elem = &gda;
+		Title(elem->_name);
+		elementWidth = elem->GetElementWidth();
+		r1( width, elementWidth);
+	}
+		
+	virtual void Retrieve() {
+		r1.Retrieve();
+		elem->SetElementWidth(elementWidth);
+	}
+};
+
 // ============================================================================================
 
 // Default GridAxisPropertiesDlg  class
@@ -81,6 +119,7 @@ class LabelPropertiesDlg : public WithLabelPropertiesDlgLayout<ElementProperties
 		_B::Retrieve();
 	}
 };
+
 // ============================================================================================
 
 // Default GridAxisPropertiesDlg  class

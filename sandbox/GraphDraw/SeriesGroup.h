@@ -155,9 +155,11 @@ namespace GraphDraw_ns
 		DERIVED& AddSeries(Vector<Pointf> &points)                                             {return AddSeries<VectorPointf>(points);}
 		DERIVED& AddSeries(Upp::Array<Pointf> &points)                                         {return AddSeries<ArrayPointf>(points);}
 		DERIVED& AddSeries(double (*function)(double))                                         {return AddSeries<FuncSource>(function);}
+		DERIVED& AddSeries(void (*function)(double&, double))                                  {return AddSeries<FuncSourceV>(function);}
 		DERIVED& AddSeries(Pointf (*function)(double), int np, double from = 0, double to = 1) {return AddSeries<FuncSourcePara>(function, np, from, to);}
 		DERIVED& AddSeries(PlotExplicFunc &function)                                           {return AddSeries<PlotExplicFuncSource>(function);}
 		DERIVED& AddSeries(PlotParamFunc function, int np, double from = 0, double to = 1)     {return AddSeries<PlotParamFuncSource>(function, np, from, to);}
+
 		DERIVED& AddSeries(DataSource &data) {
 			SeriesConfig &s = series.Add();
 			s.Init(series.GetCount()-1, _setDefaultStylesOnCreate);
@@ -213,6 +215,7 @@ namespace GraphDraw_ns
 		void InsertSeries(int id, Vector<Pointf> &points)                                             {InsertSeries<VectorPointf>(id, points);}
 		void InsertSeries(int id, Upp::Array<Pointf> &points)                                         {InsertSeries<ArrayPointf>(id, points);}
 		void InsertSeries(int id, double (*function)(double))                                         {InsertSeries<FuncSource>(id, function);}
+		void InsertSeries(int id, void (*function)(double&, double))                                  {InsertSeries<FuncSourceV>(id, function);}
 		void InsertSeries(int id, Pointf (*function)(double), int np, double from = 0, double to = 1) {InsertSeries<FuncSourcePara>(id, function, np, from, to);}
 		void InsertSeries(int id, PlotExplicFunc &function)                                           {InsertSeries<PlotExplicFuncSource>(id, function);}
 		void InsertSeries(int id, PlotParamFunc function, int np, double from = 0, double to = 1)     {InsertSeries<PlotParamFuncSource>(id, function, np, from, to);}

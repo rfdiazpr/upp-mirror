@@ -7,6 +7,23 @@
 
 namespace GraphDraw_ns
 {
+	
+	class BlankAreaElement : public GraphElement
+	{
+		typedef BlankAreaElement CLASSNAME;
+		public:
+			BlankAreaElement() {}
+			
+			virtual ~BlankAreaElement() {}
+			virtual void PaintElement(Draw& dw, int scale) { /* do noting */}
+			virtual void SetElementWidth(int v) { _width = Upp::max(v, 3); }
+
+		private:
+			BlankAreaElement( BlankAreaElement& p)  {}
+	};
+
+
+	
 	// ============================
 	//    LabelElement   CLASS
 	// ============================

@@ -46,7 +46,8 @@ namespace GraphDraw_ns
 
 
 	typedef enum RefreshStrategy {
-			REFRESH_FAST = 0,
+			REFRESH_DEFAULT = 0,
+			REFRESH_FAST,
 			REFRESH_FULL,
 			REFRESH_KEEP_DATA
 	} RefreshStrategy;
@@ -158,7 +159,7 @@ namespace GraphDraw_ns
 			inline const Rect& GetFloatFrame() const { return _floatFrame; }
 			inline const Rect GetFloatFrame(int scale) const { Rect f=_floatFrame; f.Set(f.TopLeft()*scale, f.BottomRight()*scale) ; return f; }
 
-			inline  void  SetElementWidth(int v) { _width = v; }
+			virtual  void  SetElementWidth(int v) { _width = v; }
 			inline int GetElementWidth() { return _width; }
 
 			inline void SetStackingPriority( int v ) { _stackingPriority = v; }
@@ -214,20 +215,6 @@ namespace GraphDraw_ns
 	};
 
 	inline bool compareGraphElementPriority(const GraphElement* a, const GraphElement* b) { return *a < *b; }
-
-	class BlankAreaElement : public GraphElement
-	{
-		typedef BlankAreaElement CLASSNAME;
-		public:
-			BlankAreaElement() {}
-			
-			virtual ~BlankAreaElement() {}
-			virtual void PaintElement(Draw& dw, int scale) { /* do noting */}
-//			virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }
-
-		private:
-			BlankAreaElement( BlankAreaElement& p)  {}
-	};
 
 
 }

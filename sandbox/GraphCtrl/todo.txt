@@ -17,6 +17,15 @@
 		|    DONE    |
 		--------------
 
+25/01/2014 - SVN.6811
+----------------------
+* Corrected FAST PAINT for PARAMETRIC functions
+* Added AddBlankArea()
+* Added ExecuteWithUndo()
+* Corrected KBD scroll & FitToData authorisations
+* Replaced Margins with BlankAreas
+* Corrected FOCUS management and Added WantFocus to .USC
+
 
 15/01/2014 - SVN.6782
 ----------------------

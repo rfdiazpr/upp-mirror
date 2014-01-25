@@ -82,7 +82,7 @@ void SaveImageToFile(String fileName, const Image& img);
 typedef GraphDraw_ns::GraphElement* (GraphDraw_ns::GraphElement::*mouseCallBack)(Point,dword);
 
 template<class TYPES, class DERIVED, template <class TYPES2, class DERIVED2> class GRAPHDRAW_BASE_CLASS >
-class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public Ctrl
+class CRTP_GraphCtrl_Base :  public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public Ctrl
 {
 	public:
 	typedef CRTP_GraphCtrl_Base<TYPES, DERIVED, GRAPHDRAW_BASE_CLASS> CLASSNAME;
@@ -298,8 +298,10 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	// Refresh called from child
 	virtual void RefreshFromChild( GraphDraw_ns::RefreshStrategy strategy ) {
 		RLOGBLOCK_STR( _B::debugTrace, "CRTP_GraphCtrl_Base::RefreshFromChild(" << this << ")");
-		if      (strategy == GraphDraw_ns::REFRESH_FAST)   _B::_doFastPaint = true;
-		else if (strategy == GraphDraw_ns::REFRESH_FULL)  _B::_PlotDrawImage.Clear();// _B::_keepDataPaint = true;
+		if      (strategy == GraphDraw_ns::REFRESH_DEFAULT) _B::updateSizes();
+		else if (strategy == GraphDraw_ns::REFRESH_FAST)    _B::_doFastPaint = true;
+		else if (strategy == GraphDraw_ns::REFRESH_FULL)    _B::_PlotDrawImage.Clear();// _B::_keepDataPaint = true;
+		
 		SetModify();
 		Refresh();
 	};
@@ -320,6 +322,8 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 			Paint2(w);
 			SetModify();
 		}
+		if(HasFocus())
+			DrawFocus(w, Rect(GetSize()).Deflated(5));//st->focusmargin));
 	}
 	int GetCopyRatio() { return copyRatio; }
 	
@@ -417,15 +421,15 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		Refresh();
 	}
 
-	void CtrlFitToData(GraphDraw_ns::FitToDataStrategy fitStrategy = GraphDraw_ns::ALL_SERIES) {
-		// No need to verify Authorisations ==> the menu isn't available
+	void ExecuteWithUndo(Callback cb) {
 		GraphDraw_ns::GraphUndoData undo;
 		undo.undoAction << _B::MakeRestoreGraphSizeCB();
-			_B::FitToData( fitStrategy );
-		undo.redoAction << _B::MakeRestoreGraphSizeCB();
-		_B::AddUndoAction(undo);
+		if (!cb.Empty()) {
+			cb();
+			undo.redoAction << _B::MakeRestoreGraphSizeCB();
+			_B::AddUndoAction(undo);
+		}
 	}
-
 
 	void ContextMenu(Bar& bar)
 	{
@@ -439,15 +443,14 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 
 		bar.Separator();
 
-		bar.Add( IsScrollFromGraphEnabled() && IsZoomFromGraphEnabled(), t_("Fit To Data"),         THISBACK1(CtrlFitToData, GraphDraw_ns::ALL_SERIES));
-		bar.Add( IsScrollFromGraphEnabled() && IsZoomFromGraphEnabled(), t_("Fit To Visible Data"), THISBACK1(CtrlFitToData, GraphDraw_ns::VISIBLE_SERIES_ONLY));
+		bar.Add( IsScrollFromGraphEnabled() && IsZoomFromGraphEnabled(), t_("Fit To Data"),         THISBACK1(ExecuteWithUndo, THISBACK1(_B::FitToData, GraphDraw_ns::ALL_SERIES)));
+		bar.Add( IsScrollFromGraphEnabled() && IsZoomFromGraphEnabled(), t_("Fit To Visible Data"), THISBACK1(ExecuteWithUndo, THISBACK1(_B::FitToData, GraphDraw_ns::VISIBLE_SERIES_ONLY)));
 
 		bar.Separator();
-		bar.Add( IsScrollFromGraphEnabled(), t_("Scroll left"), THISBACK2( _B::ScrollX,  100, true) ).Key(GraphCtrl_Keys::K_KBD_LEFT_SCROLL);
-		bar.Add( IsScrollFromGraphEnabled(), t_("Scroll right"),THISBACK2( _B::ScrollX, -100, true) ).Key(GraphCtrl_Keys::K_KBD_RIGHT_SCROLL);
-		bar.Add( IsScrollFromGraphEnabled(), t_("Scroll up"),   THISBACK2( _B::ScrollY,  100, true) ).Key(GraphCtrl_Keys::K_KBD_UP_SCROLL);
-		bar.Add( IsScrollFromGraphEnabled(), t_("Scroll down"), THISBACK2( _B::ScrollY, -100, true) ).Key(GraphCtrl_Keys::K_KBD_DOWN_SCROLL);
-
+		bar.Add( isScrollFromGraphAllowed && isXScrollAllowed, t_("Scroll left"), THISBACK1(ExecuteWithUndo, THISBACK2( _B::ScrollX,  100, true) )).Key(GraphCtrl_Keys::K_KBD_LEFT_SCROLL);
+		bar.Add( isScrollFromGraphAllowed && isXScrollAllowed, t_("Scroll right"),THISBACK1(ExecuteWithUndo, THISBACK2( _B::ScrollX, -100, true) )).Key(GraphCtrl_Keys::K_KBD_RIGHT_SCROLL);
+		bar.Add( isScrollFromGraphAllowed && isYScrollAllowed, t_("Scroll up"),   THISBACK1(ExecuteWithUndo, THISBACK2( _B::ScrollY,  100, true) )).Key(GraphCtrl_Keys::K_KBD_UP_SCROLL);
+		bar.Add( isScrollFromGraphAllowed && isYScrollAllowed, t_("Scroll down"), THISBACK1(ExecuteWithUndo, THISBACK2( _B::ScrollY, -100, true) )).Key(GraphCtrl_Keys::K_KBD_DOWN_SCROLL);
 		bar.Separator();
 
 		bar.Add( t_("Show ALL"), THISBACK1(ShowAllSeries, true) );
@@ -532,8 +535,16 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 		return false;
 	}
 
-
+	void GotFocus() {
+		Refresh();
+	}
+	
+	void LostFocus() {
+		Refresh();
+	}
+	
 	virtual void LeftDown(Point p, dword keyflags) {
+		if(IsWantFocus() && !HasFocus() ) SetFocus();
 		prevMousePoint = p;
 		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElement::LeftDown) )
 		{
@@ -584,6 +595,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	}
 
 	virtual void RightDown(Point p, dword keyflags) {
+		if( IsWantFocus() && !HasFocus() ) SetFocus();
 		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElement::RightDown)) {
 			return;
 		}
@@ -603,6 +615,7 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	}
 
 	virtual void MiddleDown(Point p, dword keyflags) {
+		if( IsWantFocus() && !HasFocus() ) SetFocus();
 		if ( ProcessMouseCallBack(p, keyflags, &GraphDraw_ns::GraphElement::MiddleDown) ) {
 			return;
 		}
@@ -680,7 +693,6 @@ class CRTP_GraphCtrl_Base : public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public 
 	
 	virtual void MouseEnter(Point, dword)
 	{
-		SetFocus();
 	}
 
 	virtual Image  CursorImage(Point p, dword keyflags)

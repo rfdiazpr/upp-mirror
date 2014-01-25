@@ -285,8 +285,6 @@ namespace GraphDraw_ns
 			static TypeGraphCoord _X2fct(TypeGraphCoord v) { return (v*v); }
 			static TypeGraphCoord _sqrtFct(TypeGraphCoord v) { return sqrt(v); }
 
-
-
 		public:
 			GenericCoordinateConverter()
 			: _convertFct(_defautFct)

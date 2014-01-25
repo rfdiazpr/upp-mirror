@@ -10,6 +10,13 @@ LAYOUT(ElementBaseLayout, 396, 128)
 	ITEM(EditInt, stackingPrio, LeftPosZ(348, 40).TopPosZ(12, 21))
 END_LAYOUT
 
+LAYOUT(BlankAreaLayout, 185, 89)
+	ITEM(EditIntNotNull, width, Min(0).LeftPosZ(97, 60).TopPosZ(17, 21))
+	ITEM(Label, dv___1, SetLabel(t_("Width")).SetAlign(ALIGN_RIGHT).LeftPosZ(19, 75).TopPosZ(17, 21))
+	ITEM(Button, ok, SetLabel(t_("OK")).LeftPosZ(111, 64).TopPosZ(50, 28))
+	ITEM(Button, cancel, SetLabel(t_("CANCEL")).LeftPosZ(9, 64).TopPosZ(50, 28))
+END_LAYOUT
+
 LAYOUT(GridAxisPropertiesBaseLayout, 396, 268)
 	ITEM(ColorPusher, axisLineColor, LeftPosZ(284, 36).TopPosZ(112, 16))
 	ITEM(LabelBox, dv___1, SetLabel(t_("Axis")).HSizePosZ(200, 4).TopPosZ(96, 132))

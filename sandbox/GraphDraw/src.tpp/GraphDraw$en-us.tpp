@@ -78,15 +78,19 @@ YConverter]([@(0.0.255) int]_[*@3 n])&]
 a series.&]
 [s3;%% &]
 [s4; &]
-[s5;:CRTP`_EmptyGraphDraw`:`:GetXCoordConverter`(`): [_^CRTP`_EmptyGraphDraw`:`:TypeCoordConverter^ T
-ypeCoordConverter][@(0.0.255) `&]_[* GetXCoordConverter]()&]
-[s2;%% &]
-[s3; &]
+[s5;:CRTP`_EmptyGraphDraw`:`:GetXCoordConverter`(int`): [_^CoordinateConverter^ Coordin
+ateConverter][@(0.0.255) `&]_[* GetXCoordConverter]([@(0.0.255) int]_N[@(0.0.255) `=`-][@3 1
+])&]
+[s2;%% Returns the N[` th] [* X] coordinate converter&]
+[s2;%% [%- if ][%-*@3 N] < 0 : returns current corrdiante converter&]
+[s3;%% &]
 [s4; &]
-[s5;:CRTP`_EmptyGraphDraw`:`:GetYCoordConverter`(`): [_^CRTP`_EmptyGraphDraw`:`:TypeCoordConverter^ T
-ypeCoordConverter][@(0.0.255) `&]_[* GetYCoordConverter]()&]
-[s2;%% &]
-[s3; &]
+[s5;:CRTP`_EmptyGraphDraw`:`:GetYCoordConverter`(int`): [_^CoordinateConverter^ Coordin
+ateConverter][@(0.0.255) `&]_[* GetYCoordConverter]([@(0.0.255) int]_[*@3 c][@(0.0.255) `=`-
+][@3 1])&]
+[s2;%% Returns the N[` th] [* Y ]coordinate converter&]
+[s2;%% [%-*@3 N] .&]
+[s3;%% &]
 [s3;%% &]
 [s4; &]
 [s5;:CRTP`_EmptyGraphDraw`:`:SetPlotBackgroundStyle`(T`): [@(0.0.255) template]_<[@(0.0.255) c
@@ -302,4 +306,47 @@ necessary&]
 [s0; &]
 [ {{10000F(128)G(128)@1 [s0;%% [* Constructor detail]]}}&]
 [s0;%% &]
+[s0;%% &]
+[s0;*@7;4%% &]
+[ {{10000@(113.42.0) [s0;%% [*@7;4 CRTP`_XYGraphDraw class]]}}&]
+[s0; &]
+[s1; [@(0.0.255)3 template][3 _<][@(0.0.255)3 class][3 _][*@4;3 TYPES][3 , ][@(0.0.255)3 class][3 _][*@4;3 D
+ERIVED][3 >]&]
+[s1;:CRTP`_XYGraphDraw`:`:class: [@(0.0.255) class]_[* CRTP`_XYGraphDraw]_:_[@(0.0.255) publ
+ic]_[*^topic`:`/`/GraphDraw`/src`/GraphDraw`$en`-us`#CRTP`_EmptyGraphDraw`:`:class^@3 C
+RTP`_EmptyGraphDraw]<[*@4 TYPES], [*@4 DERIVED]_>_&]
+[s2;%% &]
+[s3; &]
+[s4; &]
+[s5;:CRTP`_XYGraphDraw`:`:setGraphSize`(Rectf`): [*@4 DERIVED][@(0.0.255) `&]_[* setGraphSi
+ze]([_^Rectf^ Rectf]_[*@3 r])&]
+[s2;%%  [%-*@3 r] .&]
+[s3;%% &]
+[s4; &]
+[s5;:CRTP`_XYGraphDraw`:`:setGraphSize`(TypeGraphCoord`,TypeGraphCoord`,TypeGraphCoord`,TypeGraphCoord`): [*@4 D
+ERIVED][@(0.0.255) `&]_[* setGraphSize]([_^TypeGraphCoord^ TypeGraphCoord]_[*@3 x0], 
+[_^TypeGraphCoord^ TypeGraphCoord]_[*@3 x1], [_^TypeGraphCoord^ TypeGraphCoord]_[*@3 y0],
+ [_^TypeGraphCoord^ TypeGraphCoord]_[*@3 y1])&]
+[s2;%%  [%-*@3 x0] [%-*@3 x1] [%-*@3 y0] [%-*@3 y1] .&]
+[s3;%% &]
+[s4; &]
+[s5;:CRTP`_XYGraphDraw`:`:GetXCoordConverter`(`): [_^CRTP`_XYGraphDraw`:`:TypeCoordConverterX^ T
+ypeCoordConverterX][@(0.0.255) `&]_[* GetX1CoordConverter]()&]
+[s2;%% Dedicated method that returns X1&]
+[s3; &]
+[s4; &]
+[s5;:CRTP`_XYGraphDraw`:`:GetYCoordConverter`(`): [_^CRTP`_XYGraphDraw`:`:TypeCoordConverterY^ T
+ypeCoordConverterY][@(0.0.255) `&]_[* GetY1CoordConverter]()&]
+[s2;%% &]
+[s3; &]
+[s4; &]
+[s5;:CRTP`_XYGraphDraw`:`:GetXGridAxisDraw`(`): [_^CRTP`_XYGraphDraw`:`:TypeGridAxisDrawX^ T
+ypeGridAxisDrawX][@(0.0.255) `&]_[* GetX1GridAxisDraw]()&]
+[s2;%% &]
+[s3; &]
+[s4; &]
+[s5;:CRTP`_XYGraphDraw`:`:GetYGridAxisDraw`(`): [_^CRTP`_XYGraphDraw`:`:TypeGridAxisDrawY^ T
+ypeGridAxisDrawY][@(0.0.255) `&]_[* GetY1GridAxisDraw]()&]
+[s2;%% &]
+[s3; &]
 [s0;%% ]]

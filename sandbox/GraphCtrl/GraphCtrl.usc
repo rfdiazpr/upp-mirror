@@ -234,6 +234,7 @@ fn GD_AdjustElementFrame(side, plotRect, &elem)
 
 subctrl GraphDraw {
 	Frame  SetFrame @1;
+	bool  WantFocus = true @7;
 	DrawMode SetDrawMode = MODE_ANTIALIASED;
 	bool UseLocalSelectLoop = true;
 	bool DisableGraphZoom = false;
@@ -325,7 +326,7 @@ subctrl GraphDraw_LegendParams {
 	int    SetLegendYSize = 30;
 	int    SetLegendXPos = 40;
 	int    SetLegendYPos = 20;
-	Color  SetLegendBckgndColor = Yellow;
+	Color  SetLegendBackGroundStyle = Yellow;
 	Font   SetLegendFont = StdFont();
 };
 
@@ -401,7 +402,7 @@ ctrl XY_GraphCtrl {
 		if ( !.HideXAxis ) GD_DrawAxis(w, xAxisSide, xAxisFrame, xticks, .SetXAxisWidth, .SetXAxisColor, .SetXAxisTextFont, .SetXAxisTextColor, .SetXAxisTickColor);
 		if ( !.HideYAxis ) GD_DrawAxis(w, yAxisSide, yAxisFrame, yticks, .SetYAxisWidth, .SetYAxisColor, .SetYAxisTextFont, .SetYAxisTextColor, .SetYAxisTickColor);
 		GD_DrawGraphic(w, plotRect, :Red);
-//		if (!.HideLegend) GD_DrawLegendElement(w, .SetLegendPosition, legendFrame, .SetLegendBckgndColor, .SetLegendFont );
+//		if (!.HideLegend) GD_DrawLegendElement(w, .SetLegendPosition, legendFrame, .SetLegendBackGroundStyle, .SetLegendFont );
 	}
 };
 
@@ -463,7 +464,7 @@ ctrl XYY2_GraphCtrl {
 		if ( !.HideYAxis )  GD_DrawAxis(w, yAxisSide, yAxisFrame, yticks, .SetYAxisWidth, .SetYAxisColor, .SetYAxisTextFont, .SetYAxisTextColor, .SetYAxisTickColor);
 		if ( !.HideY2Axis ) GD_DrawAxis(w, y2AxisSide, y2AxisFrame, y2ticks, .SetY2AxisWidth, .SetY2AxisColor, .SetY2AxisTextFont, .SetY2AxisTextColor, .SetY2AxisTickColor);
 		GD_DrawGraphic(w, plotRect, :Red);
-		if (!.HideLegend) GD_DrawLegendElement(w, .SetLegendPosition, legendFrame, .SetLegendBckgndColor, .SetLegendFont );
+		if (!.HideLegend) GD_DrawLegendElement(w, .SetLegendPosition, legendFrame, .SetLegendBackGroundStyle, .SetLegendFont );
 	}
 };
 
@@ -530,7 +531,7 @@ ctrl XYLT_GraphCtrl {
 		if (!.HideXLabel) GD_DrawLabelElement( w, xAxisSide, xLabelFrame, .SetXLabel, .SetXLabelColor, .SetXLabelFont );
 		if (!.HideYLabel) GD_DrawLabelElement( w, yAxisSide, yLabelFrame, .SetYLabel, .SetYLabelColor, .SetYLabelFont );
 		if (!.HideTitle)  GD_DrawLabelElement(w, .SetTitlePosition, titleFrame, .SetTitle, .SetTitleColor, .SetTitleFont );
-		if (!.HideLegend) GD_DrawLegendElement(w, .SetLegendPosition, legendFrame, .SetLegendBckgndColor, .SetLegendFont );
+		if (!.HideLegend) GD_DrawLegendElement(w, .SetLegendPosition, legendFrame, .SetLegendBackGroundStyle, .SetLegendFont );
 	}
 };
 
@@ -609,7 +610,7 @@ ctrl XYY2LT_GraphCtrl {
 		if (!.HideYLabel)  GD_DrawLabelElement( w, yAxisSide, yLabelFrame, .SetYLabel, .SetYLabelColor, .SetYLabelFont );
 		if (!.HideY2Label) GD_DrawLabelElement( w, y2AxisSide, y2LabelFrame, .SetY2Label, .SetY2LabelColor, .SetY2LabelFont );
 		if (!.HideTitle)   GD_DrawLabelElement( w, .SetTitlePosition, titleFrame, .SetTitle, .SetTitleColor, .SetTitleFont );
-		if (!.HideLegend)  GD_DrawLegendElement(w, .SetLegendPosition, legendFrame, .SetLegendBckgndColor, .SetLegendFont );
+		if (!.HideLegend)  GD_DrawLegendElement(w, .SetLegendPosition, legendFrame, .SetLegendBackGroundStyle, .SetLegendFont );
 	}
 }
 

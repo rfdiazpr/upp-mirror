@@ -21,6 +21,7 @@ class GraphElementCtrl_Base : public ELEMENT_CLASS {
 		dlg.InitDlg(*this);
 		if ( dlg.Execute() == IDOK ) {
 				dlg.Retrieve();
+				_B::_parent->RefreshFromChild( GraphDraw_ns::REFRESH_DEFAULT );
 		}
 	}
 
@@ -45,7 +46,7 @@ class GraphElementCtrl_Base : public ELEMENT_CLASS {
 	virtual bool Contains(Point p) const                { return (_B::_frame.Contains(p)); }
 	virtual void LeftDouble (Point p, dword keyflags)   { OpenPropertiesDlg(); }
 	virtual void ContextMenu(Bar& bar)                  { bar.Add(t_("Edit properties"), THISBACK(OpenPropertiesDlg)); }
-	virtual void RightDown(Point p, dword keyflags)     { MenuBar::Execute(THISBACK(ContextMenu)); } 
+	virtual void RightDown(Point p, dword keyflags)     { MenuBar::Execute(THISBACK(ContextMenu)); }
 	virtual Image  CursorImage(Point p, dword keyflags) { return GraphCtrlImg::ACTIVE_CROSS(); }
 };
 

@@ -137,10 +137,10 @@ namespace GraphDraw_ns
 		Value    _plotBckgndStyle;
 		Value    _ctrlBckgndStyle;
 
-		int       _topMarginWidth;
-		int       _bottomMarginWidth;
-		int       _leftMarginWidth;
-		int       _rightMarginWidth;
+		typename TYPES::TypeBlankElement topMargin;
+		typename TYPES::TypeBlankElement bottomMargin;
+		typename TYPES::TypeBlankElement leftMargin;
+		typename TYPES::TypeBlankElement rightMargin;
 		
 		GraphUndo _undoManager;
 		Image     _PlotDrawImage;
@@ -165,7 +165,6 @@ namespace GraphDraw_ns
 		TimingType _paintBackGndTiming_chPaint;
 		TimingType _paintBackGndTiming_paintImage;
 		TimingType _paintBackGndTiming_copyImage;
-		
 		
 		// helper method
 		void AppendElementToRect(GraphElement& element, Rect& fromRect, const int scale)
@@ -208,10 +207,6 @@ namespace GraphDraw_ns
 		{
 			Rect svg = _plotRect;
 			_plotRect = _ctrlRect;
-			_plotRect.left   += _leftMarginWidth*scale;
-			_plotRect.right  -= _rightMarginWidth*scale;
-			_plotRect.top    += _topMarginWidth*scale;
-			_plotRect.bottom -= _bottomMarginWidth*scale;
 
 			Sort(_drawElements, compareGraphElementPriority);
 
@@ -226,6 +221,7 @@ namespace GraphDraw_ns
 
 			if (_plotRect != svg) {
 				_CtrlBackgroundImage.Clear();
+				ClearPlotDrawImg();
 			}
 
 			for (int j = 0; j < _drawElements.GetCount(); j++) {
@@ -241,7 +237,6 @@ namespace GraphDraw_ns
 			for (int j = 0; j < _yConverters.GetCount(); j++) {
 				_yConverters[j]->updateScreenSize( _plotRect.GetHeight(), 0  );
 			}
-			
 		}
 		
 
@@ -251,10 +246,6 @@ namespace GraphDraw_ns
 		CRTP_EmptyGraphDraw()
 		: _drawMode( MD_DRAW )
 		, _doFastPaint(false)
-		, _topMarginWidth(0)
-		, _bottomMarginWidth(0)
-		, _leftMarginWidth(0)
-		, _rightMarginWidth(0)
 		, _paintTiming("paint()")
 		, _paintPlotDataTiming("paintPlotData()")
 		, _paintPlotDataGlobalTiming("paintPlotDataGlobalTiming()")
@@ -269,6 +260,16 @@ namespace GraphDraw_ns
 			_plotBckgndStyle = LtGray();
 			_ctrlBckgndStyle = White();
 			setScreenSize( Size(100,100) ); // set default size
+			
+			topMargin.SetName("Top Margin");
+			bottomMargin.SetName("Bottom Margin");
+			leftMargin.SetName("Left Margin");
+			rightMargin.SetName("Right Margin");
+
+			AddElement(TOP_OF_GRAPH,    3, topMargin,    INT_MAX);
+			AddElement(BOTTOM_OF_GRAPH, 3, bottomMargin, INT_MAX);
+			AddElement(RIGHT_OF_GRAPH,  3, rightMargin,  INT_MAX);
+			AddElement(LEFT_OF_GRAPH,   3, leftMargin,   INT_MAX);
 		};
 
 
@@ -309,8 +310,21 @@ namespace GraphDraw_ns
 		}
 		
 
-		CoordinateConverter& GetXCoordConverter() { ASSERT(TypeSeriesGroup::_currentXConverter!=0); return *TypeSeriesGroup::_currentXConverter; }
-		CoordinateConverter& GetYCoordConverter() { ASSERT(TypeSeriesGroup::_currentYConverter!=0); return *TypeSeriesGroup::_currentYConverter; }
+		CoordinateConverter& GetXCoordConverter(int c) {
+			if (c<0) {
+				ASSERT(TypeSeriesGroup::_currentXConverter!=0);
+				return *TypeSeriesGroup::_currentXConverter;
+			}
+			return _xConverters[c];
+		}
+		
+		CoordinateConverter& GetYCoordConverter(int c) {
+			if (c <0 ) {
+				ASSERT(TypeSeriesGroup::_currentYConverter!=0);
+				return *TypeSeriesGroup::_currentYConverter;
+			}
+			return _yConverters[c];
+		}
 
 		template <class T> DERIVED& SetPlotBackgroundStyle(T c) { _plotBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
 		template <class T> DERIVED& SetCtrlBackgroundStyle(T c) { _ctrlBckgndStyle = c; _CtrlBackgroundImage.Clear(); return *static_cast<DERIVED*>(this); }
@@ -323,11 +337,10 @@ namespace GraphDraw_ns
 		virtual DrawMode GetDrawMode() { return _drawMode; }
 
 		
-
-		DERIVED& SetTopMargin(int v)    { _topMarginWidth = v;    return *static_cast<DERIVED*>(this); }
-		DERIVED& SetBottomMargin(int v) { _bottomMarginWidth = v; return *static_cast<DERIVED*>(this); }
-		DERIVED& SetLeftMargin(int v)   { _leftMarginWidth = v;   return *static_cast<DERIVED*>(this); }
-		DERIVED& SetRightMargin(int v)  { _rightMarginWidth = v;  return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTopMargin(int v)    { topMargin.SetElementWidth(v);    return *static_cast<DERIVED*>(this); }
+		DERIVED& SetBottomMargin(int v) { bottomMargin.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetLeftMargin(int v)   { leftMargin.SetElementWidth(v);   return *static_cast<DERIVED*>(this); }
+		DERIVED& SetRightMargin(int v)  { rightMargin.SetElementWidth(v);  return *static_cast<DERIVED*>(this); }
 
 		DERIVED& setScreenSize(Rect r, const int scale=1)	{
 			//RLOGBLOCK("setScreenSize");
@@ -351,7 +364,7 @@ namespace GraphDraw_ns
 		}
 
 		virtual void AddYConverter(CoordinateConverter* conv) {
-			_yConverters << conv;
+			_yConverters.Add( conv );
 			TypeSeriesGroup::_currentYConverter = conv;
 		}
 
@@ -500,14 +513,26 @@ namespace GraphDraw_ns
 			return v;
 		}
 
-//		    N3Upp11RawValueRepIMN12 GraphDraw_ns::SeriesGroup::GraphCtrlDefaultTypes::Test_GraphCtrl::Vector::SeriesConfig
-//		 -> Vector::GraphDraw_ns::SeriesConfig::GraphCtrlDefaultTypes
-
+		template<class T>
+		T& AddElement(ElementPosition pos, T& v, int stackPrio) {
+			v._parent = this;
+			v.SetStackingPriority(stackPrio);
+			v.SetElementPos(pos);
+			_drawElements.Add(&v);
+			Sort(_drawElements, compareGraphElementPriority);
+			return v;
+		}
 
 		template<class T, int POS_OF_GRAPH>
 		T& AddElement(int elementWidth, T& v, int stackPrio) {
 				v.SetElementWidth(elementWidth);
 				return AddElement<T, POS_OF_GRAPH>(v, stackPrio);
+		}
+
+		template<class T>
+		T& AddElement(ElementPosition pos, int elementWidth, T& v, int stackPrio) {
+				v.SetElementWidth(elementWidth);
+				return AddElement<T>(pos, v, stackPrio);
 		}
 
 		template<class T>  T& AddLeftElement(T& v, int stackPrio)   { return AddElement<T, LEFT_OF_GRAPH>(v, stackPrio); }
@@ -532,6 +557,16 @@ namespace GraphDraw_ns
 			return *e;
 		}
 
+		template<class T>
+		T& CreateElement(ElementPosition pos, int elementWidth, int stackPrio) {
+			T* e = new T();
+			e->SetElementWidth(elementWidth);
+			e->_parent = this;
+			_createdElements << e; // to manage object destruction
+			AddElement<T>(pos, *e, stackPrio);
+			return *e;
+		}
+
 		template<class T, int POS_OF_GRAPH, class P1>
 		T& CreateElement1(int elementWidth, int stackPrio, P1& p1 ) {
 			T* e = new T(p1);
@@ -551,6 +586,11 @@ namespace GraphDraw_ns
 			AddElement<T, POS_OF_GRAPH>(*e, stackPrio);
 			return *e;
 		}
+
+		void AddBlanklArea(ElementPosition pos, int width, int stackPrio) {
+			CreateElement<typename TYPES::TypeBlankElement>( pos, width, stackPrio );
+		}
+		
 
 		// Refresh called from child
 		virtual void RefreshFromChild( RefreshStrategy doFastPaint ) {
@@ -705,7 +745,7 @@ namespace GraphDraw_ns
 						}
 						    
 						if (_B::series[j].PointsData()->IsParam()) {
-							const double xmax = imax;
+							const double xmax = imax+1;
 							for (double cx=imin; cx<xmax; ++cx)
 							{
 								x = _B::series[j].PointsData()->x(cx);
@@ -713,7 +753,7 @@ namespace GraphDraw_ns
 								addToFullPointsListM( p1, x, y, xConverter, yConverter, nbVisiblePoints, prevPoint, prevPointIsVisible, isSeriesFilled);
 							}
 						} else if (_B::series[j].PointsData()->IsExplicit() ) {
-							double xmax = imax;
+							double xmax = imax+1;
 							double dx = double(xmax - imin)/xConverter.getScreenRange();
 							for (double xx = imin; xx < xmax; xx += dx) {
 								double yy = _B::series[j].PointsData()->f(xx);
@@ -733,8 +773,19 @@ namespace GraphDraw_ns
 					else  // DO FAST DRAW
 					{
 						nbVisiblePoints = 0;
-						if (_B::series[j].PointsData()->IsExplicit() ) {
-							double xmax = imax;
+						if (_B::series[j].PointsData()->IsParam()) {
+							const double xmax = imax+1;
+							double x, y;
+							double dx = Upp::max(double(xmax - imin)/800. , 1.0);
+							for (double cx=imin; cx<xmax; cx+=dx)
+							{
+								x = _B::series[j].PointsData()->x(cx);
+								y = _B::series[j].PointsData()->y(cx);
+								p1 << Point(xConverter.toScreen( x ),
+									        yConverter.toScreen( y ));
+							}
+						} else if (_B::series[j].PointsData()->IsExplicit() ) {
+							double xmax = imax+1;
 							double dx = double(xmax - imin)/800.;
 							if (xConverter.getScreenRange()<800.) dx = double(xmax - imin)/xConverter.getScreenRange();
 
@@ -960,6 +1011,7 @@ namespace GraphDraw_ns
 			typedef GridStepManager<>                                 TypeGridStepManager;
 			typedef LabelElement                                      TypeLabelElement;
 			typedef LegendElement<GraphDrawDefaultTypes>              TypeLegendElement;
+			typedef BlankAreaElement                                  TypeBlankElement;
 	};
 
 
@@ -1062,27 +1114,25 @@ namespace GraphDraw_ns
 		virtual ~CRTP_XYGraphDraw() {}
 
 
-		DERIVED& setGraphSize(Rectf r)
-		{
+		DERIVED& setGraphSize(Rectf r) {
 			_xConverter.updateGraphSize(r.TopLeft().x, r.BottomRight().x);
 			_yConverter.updateGraphSize(r.TopLeft().y, r.BottomRight().y);
 			_B::updateSizes();
 			return *static_cast<DERIVED*>(this);
 		}
 
-		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1)
-		{
+		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1) {
 			_xConverter.updateGraphSize( x0, x1);
 			_yConverter.updateGraphSize( y0, y1);
 			_B::updateSizes();
 			return *static_cast<DERIVED*>(this);
 		}
 
-		TypeCoordConverterX& GetXCoordConverter() { return _xConverter; }
-		TypeCoordConverterY& GetYCoordConverter() { return _yConverter; }
+		TypeCoordConverterX& GetX1CoordConverter() { return _xConverter; }
+		TypeCoordConverterY& GetY1CoordConverter() { return _yConverter; }
 
-		TypeGridAxisDrawX& GetXGridAxisDraw() { return _xGridDraw; }
-		TypeGridAxisDrawY& GetYGridAxisDraw() { return _yGridDraw; }
+		TypeGridAxisDrawX& GetX1GridAxisDraw() { return _xGridDraw; }
+		TypeGridAxisDrawY& GetY1GridAxisDraw() { return _yGridDraw; }
 
 
 		MAKE_GRAPHDRAW_AXIS_FN(X,x);

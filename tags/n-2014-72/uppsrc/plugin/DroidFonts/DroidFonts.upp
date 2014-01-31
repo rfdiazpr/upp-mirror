@@ -1,9 +1,0 @@
-uses
-	plugin/FT_fontsys;
-
-file
-	DroidFonts.icpp,
-	DroidFonts.brc,
-	Info readonly separator,
-	Copying;
-

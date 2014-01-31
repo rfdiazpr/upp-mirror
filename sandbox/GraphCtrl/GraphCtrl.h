@@ -7,7 +7,6 @@
 #include <CtrlLib/CtrlLib.h>
 
 
-
 #define LAYOUTFILE <GraphCtrl/GraphCtrl.lay>
 #include <CtrlCore/lay.h>
 
@@ -29,6 +28,10 @@ namespace GraphDraw_ns {
 #include <GraphCtrl/StdElementCtrls.h>
 };
 
+
+
+
+
 // ===============================================================================================================================
 // ===============================================================================================================================
 struct GraphCtrlDefaultTypes {
@@ -47,36 +50,36 @@ struct GraphCtrlDefaultTypes {
 		typedef GraphDraw_ns::StdBlankAreaCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::BlankAreaElement >                       TypeBlankElement;
 };
 
-class XYY2_GraphCtrl   : public GraphDraw_ns::CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, XYY2_GraphCtrl, GraphDraw_ns::CRTP_XYY2GraphDraw>
+class XYY2_GraphCtrl   : public GraphDraw_ns::CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, XYY2_GraphCtrl, GraphDraw_ns::CRTP_XYY2GraphDraw<GraphCtrlDefaultTypes, XYY2_GraphCtrl> >
 {
 	public:
 	typedef XYY2_GraphCtrl  CLASSNAME;
-	typedef GraphDraw_ns::CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, XYY2_GraphCtrl, GraphDraw_ns::CRTP_XYY2GraphDraw> _B;
+	typedef GraphDraw_ns::CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, XYY2_GraphCtrl, GraphDraw_ns::CRTP_XYY2GraphDraw<GraphCtrlDefaultTypes, XYY2_GraphCtrl> > _B;
 	typedef GraphCtrlDefaultTypes  Types;
 };
 
-class XY_GraphCtrl   : public GraphDraw_ns::CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, XY_GraphCtrl, GraphDraw_ns::CRTP_XYGraphDraw>
+class XY_GraphCtrl   : public GraphDraw_ns::CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, XY_GraphCtrl, GraphDraw_ns::CRTP_XYGraphDraw<GraphCtrlDefaultTypes, XY_GraphCtrl> >
 {
 	public:
 	typedef XY_GraphCtrl  CLASSNAME;
-	typedef GraphDraw_ns::CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, XY_GraphCtrl, GraphDraw_ns::CRTP_XYGraphDraw> _B;
+	typedef GraphDraw_ns::CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, XY_GraphCtrl, GraphDraw_ns::CRTP_XYGraphDraw<GraphCtrlDefaultTypes, XY_GraphCtrl> > _B;
 	typedef GraphCtrlDefaultTypes  Types;
 };
 
 
-class XYLT_GraphCtrl : public GraphDraw_ns::CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, XYLT_GraphCtrl, GraphDraw_ns::CRTP_XYLTGraphDraw>
+class XYLT_GraphCtrl : public GraphDraw_ns::CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, XYLT_GraphCtrl, GraphDraw_ns::CRTP_XYLTGraphDraw<GraphCtrlDefaultTypes, XYLT_GraphCtrl> >
 {
 	public:
 	typedef XYLT_GraphCtrl  CLASSNAME;
-	typedef GraphDraw_ns::CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, XYLT_GraphCtrl, GraphDraw_ns::CRTP_XYLTGraphDraw> _B;
+	typedef GraphDraw_ns::CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, XYLT_GraphCtrl, GraphDraw_ns::CRTP_XYLTGraphDraw<GraphCtrlDefaultTypes, XYLT_GraphCtrl> > _B;
 	typedef GraphCtrlDefaultTypes  Types;
 };
 
-class XYY2LT_GraphCtrl : public GraphDraw_ns::CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, XYY2LT_GraphCtrl, GraphDraw_ns::CRTP_XYY2LTGraphDraw>
+class XYY2LT_GraphCtrl : public GraphDraw_ns::CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, XYY2LT_GraphCtrl, GraphDraw_ns::CRTP_XYY2LTGraphDraw<GraphCtrlDefaultTypes, XYY2LT_GraphCtrl> >
 {
 	public:
 	typedef XYY2LT_GraphCtrl  CLASSNAME;
-	typedef GraphDraw_ns::CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, XYY2LT_GraphCtrl, GraphDraw_ns::CRTP_XYY2LTGraphDraw> _B;
+	typedef GraphDraw_ns::CRTP_GraphCtrl_Base< GraphCtrlDefaultTypes, XYY2LT_GraphCtrl, GraphDraw_ns::CRTP_XYY2LTGraphDraw<GraphCtrlDefaultTypes, XYY2LT_GraphCtrl> > _B;
 	typedef GraphCtrlDefaultTypes  Types;
 };
 END_UPP_NAMESPACE

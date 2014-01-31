@@ -90,6 +90,7 @@ GraphDraw_test::GraphDraw_test()
 	// ====================================
 	points << Pointf(0.5,1) << Pointf(1, 3.5)<< Pointf(2,1.8)<< Pointf(4, 3)<< Pointf(5.5, 2.5) << Pointf(6,7) << Pointf(7, 9)<< Pointf(8,10)<< Pointf(10, 15)<< Pointf(15, 15);
 	g1.AddSeries(points).PlotStyle<StaggeredSeriesPlot>();
+//	g4.
 
 	// ====================================
 	//                 G3

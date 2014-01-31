@@ -2,6 +2,8 @@
 #define _GraphCtrl_GraphCtrlBase_h_
 
 
+
+
 struct GraphCtrl_Keys {
 	static dword K_UNDO;
 	static dword K_REDO;
@@ -81,14 +83,17 @@ void SaveImageToFile(String fileName, const Image& img);
 // ============================
 typedef GraphDraw_ns::GraphElement* (GraphDraw_ns::GraphElement::*mouseCallBack)(Point,dword);
 
-template<class TYPES, class DERIVED, template <class TYPES2, class DERIVED2> class GRAPHDRAW_BASE_CLASS >
-class CRTP_GraphCtrl_Base :  public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public Ctrl
+//template<class TYPES, class DERIVED, template <class TYPES2, class DERIVED2> class GRAPHDRAW_BASE_CLASS >
+//class CRTP_GraphCtrl_Base :  public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public Ctrl
+template<class TYPES, class DERIVED, class GRAPHDRAW_BASE_CLASS >
+class CRTP_GraphCtrl_Base :  public GRAPHDRAW_BASE_CLASS, public Ctrl
 {
 	public:
 	typedef CRTP_GraphCtrl_Base<TYPES, DERIVED, GRAPHDRAW_BASE_CLASS> CLASSNAME;
 
 	private:
-	typedef GraphDraw_ns::CRTP_XYGraphDraw<TYPES, DERIVED> _B;
+//	typedef GRAPHDRAW_BASE_CLASS<TYPES, DERIVED> _B;
+	typedef GRAPHDRAW_BASE_CLASS _B;
 
 	Image CaptureMouseMove_cursorImage;
 	Point prevMousePoint;
@@ -288,10 +293,6 @@ class CRTP_GraphCtrl_Base :  public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public
 		RLOGBLOCK_STR( _B::debugTrace, "CRTP_GraphCtrl_Base::Paint2(" << this << ")");
 		_B::setScreenSize( GetSize() );
 		_B::Paint(w, 1);
-		
-//		if(HasFocus())
-//			DrawFocus(w, Rect(GetSize()).Deflated(5));//st->focusmargin));
-
 	}
 
 
@@ -322,8 +323,7 @@ class CRTP_GraphCtrl_Base :  public GRAPHDRAW_BASE_CLASS<TYPES, DERIVED>, public
 			Paint2(w);
 			SetModify();
 		}
-		if(HasFocus())
-			DrawFocus(w, Rect(GetSize()).Deflated(5));//st->focusmargin));
+		if(HasFocus()) DrawFocus(w, Rect(GetSize()).Deflated(5));
 	}
 	int GetCopyRatio() { return copyRatio; }
 	

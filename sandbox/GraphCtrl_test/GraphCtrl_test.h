@@ -8,7 +8,6 @@
 #include <Functions4U/Functions4U.h>
 
 
-
 #define LAYOUTFILE <GraphCtrl_test/GraphCtrl_test.lay>
 #include <CtrlCore/lay.h>
 

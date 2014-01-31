@@ -17,6 +17,13 @@
 		|    DONE    |
 		--------------
 
+
+31/01/2014 - SVN.6840
+----------------------
+* COMPLETION  now works with on FULL class hierarchy of GraphCtrl !!!
+* Refactored GraphDraw instance classes in order to improve usability through taking advantage of inheritance tree in completion
+
+
 25/01/2014 - SVN.6811
 ----------------------
 * Corrected FAST PAINT for PARAMETRIC functions

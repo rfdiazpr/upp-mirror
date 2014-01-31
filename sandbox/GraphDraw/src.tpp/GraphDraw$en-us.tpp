@@ -16,8 +16,7 @@ topic "3 - GraphDraw class";
 [s0; [@(0.0.255)3 template][3 _<][@(0.0.255)3 class][3 _][*@4;3 TYPES][3 , ][@(0.0.255)3 class][3 _][*@4;3 D
 ERIVED][3 >]&]
 [s1;:CRTP`_EmptyGraphDraw`:`:class: [@(0.0.255) class]_[* CRTP`_EmptyGraphDraw]_:_[@(0.0.255) p
-ublic]_[*@3 SeriesGroup]<_[*@4 TYPES], [*@4 DERIVED]_>_, [@(0.0.255) public]_[*@3 GraphElem
-entParent]&]
+ublic]_[*@3 SeriesGroup]_, [@(0.0.255) public]_[*@3 GraphElementParent]&]
 [s2;%% This class is the base class of GraphDraw, it contains all 
 the common methods.&]
 [s2;%% See [^topic`:`/`/GraphDraw`/src`/ClassHierarchy`$en`-us^ ClassHierarchy 

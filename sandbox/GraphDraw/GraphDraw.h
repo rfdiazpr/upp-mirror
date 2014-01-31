@@ -120,8 +120,7 @@ namespace GraphDraw_ns
 	{
 		public:
 		typedef CRTP_EmptyGraphDraw<TYPES, DERIVED> CLASSNAME;
-		typedef SeriesGroup<DERIVED >        TypeSeriesGroup;
-		typedef TypeSeriesGroup                     _B;
+		typedef SeriesGroup<DERIVED >               _B;
 
 		protected:
 		// graph elements draw around the graph
@@ -312,16 +311,16 @@ namespace GraphDraw_ns
 
 		CoordinateConverter& GetXCoordConverter(int c) {
 			if (c<0) {
-				ASSERT(TypeSeriesGroup::_currentXConverter!=0);
-				return *TypeSeriesGroup::_currentXConverter;
+				ASSERT(_B::_currentXConverter!=0);
+				return *_B::_currentXConverter;
 			}
 			return _xConverters[c];
 		}
 		
 		CoordinateConverter& GetYCoordConverter(int c) {
 			if (c <0 ) {
-				ASSERT(TypeSeriesGroup::_currentYConverter!=0);
-				return *TypeSeriesGroup::_currentYConverter;
+				ASSERT(_B::_currentYConverter!=0);
+				return *_B::_currentYConverter;
 			}
 			return _yConverters[c];
 		}
@@ -360,12 +359,12 @@ namespace GraphDraw_ns
 
 		virtual void AddXConverter(CoordinateConverter* conv) {
 			_xConverters << conv;
-			TypeSeriesGroup::_currentXConverter = conv;
+			_B::_currentXConverter = conv;
 		}
 
 		virtual void AddYConverter(CoordinateConverter* conv) {
 			_yConverters.Add( conv );
-			TypeSeriesGroup::_currentYConverter = conv;
+			_B::_currentYConverter = conv;
 		}
 
 		template <class COORDCONV>
@@ -382,12 +381,12 @@ namespace GraphDraw_ns
 		
 		void SetCurrentXConverter(int n) {
 			ASSERT( n < _xConverters.GetCount() );
-			TypeSeriesGroup::_currentXConverter =  _xConverters[n];
+			_B::_currentXConverter =  _xConverters[n];
 		}
 
 		void SetCurrentYConverter(int n) {
 			ASSERT( n < _yConverters.GetCount() );
-			TypeSeriesGroup::_currentYConverter =  _yConverters[n];
+			_B::_currentYConverter =  _yConverters[n];
 		}
 
 		DERIVED&  SetSelectStyle(Value p) {
@@ -1056,49 +1055,112 @@ namespace GraphDraw_ns
 
 
 
+
+
 	// ============================
-	//    CRTP_XYGraphDraw   CLASS
+	//    CRTP_GD_X1   CLASS
 	// ============================
-	template<class TYPES, class DERIVED>
-	class CRTP_XYGraphDraw : public CRTP_EmptyGraphDraw<TYPES, DERIVED >
+	template<class TYPES, class DERIVED, class BASE>
+	class CRTP_GD_X1 : public BASE
 	{
 		public:
 		typedef TYPES Types;
-		typedef CRTP_XYGraphDraw<TYPES, DERIVED> CLASSNAME;
-		typedef CRTP_EmptyGraphDraw<TYPES, DERIVED > _B;
-
-
-		typedef typename TYPES::X_TypeCoordConverter            TypeCoordConverterX;
-		typedef typename TYPES::Y_TypeCoordConverter            TypeCoordConverterY;
-		typedef typename TYPES::X_TypeGridAxisDraw              TypeGridAxisDrawX;
-		typedef typename TYPES::Y_TypeGridAxisDraw              TypeGridAxisDrawY;
-		typedef SeriesGroup< DERIVED >                        TypeSeriesGroup;
-		typedef typename TYPES::TypeLegendElement             TypeLegendElement;
-
-		protected:
+		typedef CRTP_GD_X1<TYPES, DERIVED, BASE> CLASSNAME;
+		typedef BASE                             _B;
+		
+		typedef typename TYPES::X_TypeCoordConverter  TypeCoordConverterX;
+		typedef typename TYPES::X_TypeGridAxisDraw    TypeGridAxisDrawX;
+		typedef typename TYPES::TypeLabelElement      TypeLabel;
+	
 		TypeCoordConverterX   _xConverter;
-		TypeCoordConverterY   _yConverter;
 		TypeGridAxisDrawX     _xGridDraw;
-		TypeGridAxisDrawY     _yGridDraw;
+		TypeLabel             _xLabel;
 		
 		public:
-		CRTP_XYGraphDraw()
+		CRTP_GD_X1()
 		: _xGridDraw(_xConverter)
-		, _yGridDraw(_yConverter)
 		{
 			_B::AddXConverter(_xConverter);
-			_B::AddYConverter(_yConverter);
-
-			_B::SetTopMargin(   10);
-			_B::SetBottomMargin( 0);
-			_B::SetLeftMargin(   0);
-			_B::SetRightMargin( 15);
-
+			
 			_xGridDraw.SetName( t_("X axis") );
 			_xGridDraw.SetElementWidth(25);
 			_xGridDraw.setAxisColor( Blue() ).setAxisTextFont(StdFont()).setAxisTextColor( Blue() ).setAxisTickColor( Red() );
 			_xGridDraw.setGridColor( Gray() );
 			_xGridDraw.setMajorTickMark( (new LineTickMark())->SetTickLength( 3 ) );
+
+			_xLabel.SetName( t_("X label") );
+			_xLabel.SetFont( StdFont(15).Bold()).SetTextColor(Green).SetLabel("X Axis label");
+
+			_B::AddBottomElement(_xGridDraw, 20);
+			_B::AddBottomElement(30, _xLabel, 25);
+		};
+
+		virtual ~CRTP_GD_X1() {}
+
+		TypeCoordConverterX& GetX1CoordConverter() { return _xConverter; }
+		TypeGridAxisDrawX& GetX1GridAxisDraw()     { return _xGridDraw; }
+		
+		#ifdef USE_DG_MACROS
+		MAKE_GRAPHDRAW_AXIS_FN(X,x);
+		#else
+		DERIVED& HideXAxis (bool v)          { _xGridDraw.Hide(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXAxisRectWidth(int v)    { _xGridDraw.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& setXNbGridSteps(int v)      { _xGridDraw.GetGridStepManager().SetNbSteps(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXGridColor(Color v)      { _xGridDraw.setGridColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXAxisWidth(int v)        { _xGridDraw.setAxisWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXAxisColor(Color v)      { _xGridDraw.setAxisColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXAxisTextColor(Color v)  { _xGridDraw.setAxisTextColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXAxisTextFont(Font v)    { _xGridDraw.setAxisTextFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXAxisTickColor(Color v)  { _xGridDraw.setAxisTickColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXScaleType(int v)        { _xConverter.SetScaleType(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXAxisFormatType(AxisTextFormat v) { _xGridDraw.setAxisTextFormat(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXMin(double v)           { _xConverter.SetGraphMin(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXMax(double v)           { _xConverter.SetGraphMax(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXMinRangeLimit(double v) { _xConverter.setGraphMinRangeLimit(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetXMaxRangeLimit(double v) { _xConverter.setGraphMaxRangeLimit(v); return *static_cast<DERIVED*>(this); }
+		TypeGraphCoord GetXMin()             { return ( _xConverter.getGraphMin()); }
+		TypeGraphCoord GetXMax()             { return ( _xConverter.getGraphMax()); }
+		Value GetXMinRangeLimit()            { return (_xConverter.getGraphMinRangeLimit()); }
+		Value GetXMaxRangeLimit()            { return (_xConverter.getGraphMaxRangeLimit()); }
+		#endif
+
+		#ifdef USE_GD_MACROS
+		MAKE_GRAPHDRAW_LABEL_FN(X,x);
+		#else
+  		DERIVED& SetXLabel(const String& v)     { _xLabel.SetLabel(v);        return *static_cast<DERIVED*>(this); }
+  		DERIVED& SetXLabelFont(const Font& v)   { _xLabel.SetFont(v);         return *static_cast<DERIVED*>(this); }
+  		DERIVED& SetXLabelWidth(int v)          { _xLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+  		DERIVED& SetXLabelColor(const Color& v) { _xLabel.SetTextColor(v);    return *static_cast<DERIVED*>(this); }
+  		DERIVED& HideXLabel(bool v=true)        { _xLabel.Hide(v);            return *static_cast<DERIVED*>(this); }
+		#endif
+	};
+	
+	// ============================
+	//    CRTP_DQ_Y1   CLASS
+	// ============================
+	template<class TYPES, class DERIVED, class BASE>
+	class CRTP_GD_Y1 : public BASE
+	{
+		public:
+		typedef TYPES Types;
+		typedef CRTP_GD_Y1<TYPES, DERIVED, BASE> CLASSNAME;
+		typedef BASE                             _B;
+
+
+		typedef typename TYPES::Y_TypeCoordConverter   TypeCoordConverterY;
+		typedef typename TYPES::Y_TypeGridAxisDraw     TypeGridAxisDrawY;
+		typedef typename TYPES::TypeLabelElement       TypeLabel;
+
+		protected:
+		TypeCoordConverterY   _yConverter;
+		TypeGridAxisDrawY     _yGridDraw;
+		TypeLabel   _yLabel;
+		
+		public:
+		CRTP_GD_Y1()
+		: _yGridDraw(_yConverter)
+		{
+			_B::AddYConverter(_yConverter);
 
 			_yGridDraw.SetName( t_("Y axis") );
 			_yGridDraw.SetElementWidth(40);
@@ -1106,58 +1168,73 @@ namespace GraphDraw_ns
 			_yGridDraw.setGridColor( Gray() );
 			_yGridDraw.setMajorTickMark( (new LineTickMark())->SetTickLength( 3 ) );
 
+			_yLabel.SetName( t_("Y label") );
+			_yLabel.SetFont( StdFont(15).Bold()).SetTextColor(Green).SetLabel("Y Axis label");
+
 			_B::AddLeftElement(_yGridDraw, 20);
-			_B::AddBottomElement(_xGridDraw, 20);
-			setGraphSize(0, 100, 0, 100);
+			_B::AddLeftElement(30, _yLabel, 25);
 		};
 
-		virtual ~CRTP_XYGraphDraw() {}
+		virtual ~CRTP_GD_Y1() {}
 
-
-		DERIVED& setGraphSize(Rectf r) {
-			_xConverter.updateGraphSize(r.TopLeft().x, r.BottomRight().x);
-			_yConverter.updateGraphSize(r.TopLeft().y, r.BottomRight().y);
-			_B::updateSizes();
-			return *static_cast<DERIVED*>(this);
-		}
-
-		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1) {
-			_xConverter.updateGraphSize( x0, x1);
-			_yConverter.updateGraphSize( y0, y1);
-			_B::updateSizes();
-			return *static_cast<DERIVED*>(this);
-		}
-
-		TypeCoordConverterX& GetX1CoordConverter() { return _xConverter; }
 		TypeCoordConverterY& GetY1CoordConverter() { return _yConverter; }
+		TypeGridAxisDrawY& GetY1GridAxisDraw()     { return _yGridDraw; }
 
-		TypeGridAxisDrawX& GetX1GridAxisDraw() { return _xGridDraw; }
-		TypeGridAxisDrawY& GetY1GridAxisDraw() { return _yGridDraw; }
-
-
-		MAKE_GRAPHDRAW_AXIS_FN(X,x);
+		#ifdef USE_GD_MACROS
 		MAKE_GRAPHDRAW_AXIS_FN(Y,y);
+		#else
+		DERIVED& HideYAxis (bool v) { _yGridDraw.Hide(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisRectWidth(int v) { _yGridDraw.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& setYNbGridSteps(int v) { _yGridDraw.GetGridStepManager().SetNbSteps(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYGridColor(Color v) { _yGridDraw.setGridColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisWidth(int v) { _yGridDraw.setAxisWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisColor(Color v) { _yGridDraw.setAxisColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisTextColor(Color v) { _yGridDraw.setAxisTextColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisTextFont(Font v) { _yGridDraw.setAxisTextFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisTickColor(Color v) { _yGridDraw.setAxisTickColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYScaleType(int v) { _yConverter.SetScaleType(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYAxisFormatType(AxisTextFormat v) { _yGridDraw.setAxisTextFormat(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYMin(double v) { _yConverter.SetGraphMin(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYMax(double v) { _yConverter.SetGraphMax(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYMinRangeLimit(double v) { _yConverter.setGraphMinRangeLimit(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetYMaxRangeLimit(double v) { _yConverter.setGraphMaxRangeLimit(v); return *static_cast<DERIVED*>(this); }
+		TypeGraphCoord GetYMin() { return ( _yConverter.getGraphMin()); }
+		TypeGraphCoord GetYMax() { return ( _yConverter.getGraphMax()); }
+		Value GetYMinRangeLimit() { return (_yConverter.getGraphMinRangeLimit()); }
+		Value GetYMaxRangeLimit() { return (_yConverter.getGraphMaxRangeLimit()); };
+		#endif
+
+		#ifdef USE_GD_MACROS
+		MAKE_GRAPHDRAW_LABEL_FN(Y,y);
+		#else
+  		DERIVED& SetYLabel(const String& v) { _yLabel.SetLabel(v); return *static_cast<DERIVED*>(this); }
+  		DERIVED& SetYLabelFont(const Font& v) { _yLabel.SetFont(v); return *static_cast<DERIVED*>(this); }
+  		DERIVED& SetYLabelWidth(int v) { _yLabel.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+  		DERIVED& SetYLabelColor(const Color& v) { _yLabel.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+  		DERIVED& HideYLabel(bool v=true) { _yLabel.Hide(v); return *static_cast<DERIVED*>(this); };
+		#endif
 	};
 
+
 	// ============================
-	//    CRTP_XYLGraphDraw   CLASS
+	//    CRTP_GD_Legend   CLASS
 	// ============================
-	template<class TYPES, class DERIVED>
-	class CRTP_XYLGraphDraw : public CRTP_XYGraphDraw<TYPES, DERIVED >
+	template<class TYPES, class DERIVED, class BASE>
+	class CRTP_GD_Legend : public BASE
 	{
 		public:
 		typedef TYPES Types;
-		typedef CRTP_XYLGraphDraw<TYPES, DERIVED> CLASSNAME;
-		typedef CRTP_XYGraphDraw<TYPES, DERIVED > _B;
+		typedef CRTP_GD_Legend<TYPES, DERIVED, BASE> CLASSNAME;
+		typedef BASE                                 _B;
 
 
-		typedef typename TYPES::TypeLegendElement             TypeLegendElement;
+		typedef typename TYPES::TypeLegendElement   TypeLegendElement;
 
 		protected:
 		TypeLegendElement    _legend;
 		
 		public:
-		CRTP_XYLGraphDraw()
+		CRTP_GD_Legend()
 		{
 			_legend.SetName(t_("Legend"));
 			RGBA rgba;
@@ -1167,7 +1244,7 @@ namespace GraphDraw_ns
 			_B::AddFloatElement(30, _legend, 150);
 		};
 
-		virtual ~CRTP_XYLGraphDraw() {}
+		virtual ~CRTP_GD_Legend() {}
 
 		DERIVED& HideLegend(bool v)             { _legend.Hide(v); return *static_cast<DERIVED*>(this); }
 
@@ -1184,80 +1261,275 @@ namespace GraphDraw_ns
 	};
 
 	// ============================
-	//    CRTP_XYLTGraphDraw   CLASS
+	//    CRTP_GD_Title   CLASS
 	// ============================
-	template<class TYPES, class DERIVED>
-	class CRTP_XYLTGraphDraw : public CRTP_XYLGraphDraw<TYPES, DERIVED >
+	template<class TYPES, class DERIVED, class BASE>
+	class CRTP_GD_Title : public BASE
 	{
 		public:
 		typedef TYPES Types;
-		typedef CRTP_XYLTGraphDraw<TYPES, DERIVED> CLASSNAME;
-		typedef CRTP_XYLGraphDraw<TYPES, DERIVED>   _B;
-		typedef typename TYPES::TypeLabelElement   TypeLabel;
-	
+		typedef CRTP_GD_Title<TYPES, DERIVED, BASE>      CLASSNAME;
+		typedef BASE                                     _B;
+		typedef typename TYPES::TypeLabelElement         TypeLabel;
+			
 		TypeLabel   _title;
-		TypeLabel   _xLabel;
-		TypeLabel   _yLabel;
-
 		protected:
 		
 		public:
-		CRTP_XYLTGraphDraw()
+		CRTP_GD_Title()
 		{
 			_title.SetName( t_("Title") );
-			_xLabel.SetName( t_("X--- label") );
-			_yLabel.SetName( t_("Y--- label") );
-
 			_title.SetFont( StdFont(20).Bold().Underline()).SetTextColor(Red).SetLabel("TITLE");
-			_xLabel.SetFont( StdFont(15).Bold()).SetTextColor(Green).SetLabel("X Axis label");
-			_yLabel.SetFont( StdFont(15).Bold()).SetTextColor(Green).SetLabel("Y Axis label");
-			_B::AddBottomElement(30, _xLabel, 25);
-			_B::AddLeftElement(30, _yLabel, 25);
 			_B::AddTopElement(40, _title, 200);
 		}
 		
+		#ifdef USE_GD_MACROS
 		MAKE_GRAPHDRAW_TITLE_FN;
+		#else
+		DERIVED& SetTitle(const String& v)     { _title.SetLabel(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitlePosition(const ElementPosition v) { _title.SetElementPos(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitleFont(const Font& v)   { _title.SetFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitleWidth(int v)          { _title.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetTitleColor(const Color& v) { _title.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& HideTitle(bool v)             { _title.Hide(v); return *static_cast<DERIVED*>(this); }
+		#endif
 	
-		MAKE_GRAPHDRAW_LABEL_FN(X,x);
-		MAKE_GRAPHDRAW_LABEL_FN(Y,y);
 	};
 
 
+
+	
+
 	// ============================
-	//    CRTP_XYY2GraphDraw   CLASS
+	//    CRTP_GD_X2   CLASS
 	// ============================
-	template<class TYPES, class DERIVED>
-	class CRTP_XYY2GraphDraw : public CRTP_XYLGraphDraw<TYPES, DERIVED >
+	template<class TYPES, class DERIVED, class BASE>
+	class CRTP_GD_X2 : public BASE
 	{
 		public:
 		typedef TYPES Types;
-		typedef CRTP_XYY2GraphDraw<TYPES, DERIVED> CLASSNAME;
-		typedef CRTP_XYLGraphDraw<TYPES, DERIVED>   _B;
+		typedef CRTP_GD_X2<TYPES, DERIVED, BASE> CLASSNAME;
+		typedef BASE                                       _B;
 		
-		typedef typename TYPES::TypeLabelElement   TypeLabel;
+		typedef typename TYPES::X2_TypeCoordConverter TypeCoordConverterX2;
+		typedef typename TYPES::X2_TypeGridAxisDraw   TypeGridAxisDrawX2;
+		typedef typename TYPES::TypeLabelElement      TypeLabel;
+	
+		TypeLabel              _x2Label;
+		TypeCoordConverterX2   _x2Converter;
+		TypeGridAxisDrawX2     _x2GridDraw;
+		
+		public:
+		CRTP_GD_X2()
+		: _x2GridDraw(_x2Converter)
+		{
+			_x2GridDraw.SetName( t_("X2 axis") );
+			_x2GridDraw.SetElementWidth(40);
+			_x2GridDraw.setAxisColor( Blue() ).setAxisTextFont(StdFont()).setAxisTextColor( Blue() ).setAxisTickColor( Red() );
+			_x2GridDraw.setGridColor( Null );
+			_x2GridDraw.setMajorTickMark( (new LineTickMark())->SetTickLength( 3 ) );
+			_x2Label.SetFont( StdFont(15).Bold()).SetTextColor(Green).SetLabel("Y2 Axis label");
+
+			_B::AddYConverter(_x2Converter);
+			_B::AddRightElement(30, _x2Label, 55);
+			_B::AddRightElement(_x2GridDraw, 50);
+			_B::SetCurrentYConverter(0);
+		};
+
+		virtual ~CRTP_GD_X2() {}
+
+		TypeCoordConverterX2& GetX2CoordConverter() { return _x2Converter; }
+		TypeGridAxisDrawX2& GetX2GridAxisDraw()     { return _x2GridDraw; }
+		
+		#ifdef USE_DG_MACROS
+		MAKE_GRAPHDRAW_AXIS_FN(X2,x2);
+		#else
+		DERIVED& HideX2Axis (bool v)          { _x2GridDraw.Hide(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetX2AxisRectWidth(int v)    { _x2GridDraw.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& setX2NbGridSteps(int v)      { _x2GridDraw.GetGridStepManager().SetNbSteps(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetX2GridColor(Color v)      { _x2GridDraw.setGridColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetX2AxisWidth(int v)        { _x2GridDraw.setAxisWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetX2AxisColor(Color v)      { _x2GridDraw.setAxisColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetX2AxisTextColor(Color v)  { _x2GridDraw.setAxisTextColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetX2AxisTextFont(Font v)    { _x2GridDraw.setAxisTextFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetX2AxisTickColor(Color v)  { _x2GridDraw.setAxisTickColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetX2ScaleType(int v)        { _x2Converter.SetScaleType(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetX2AxisFormatType(AxisTextFormat v) { _x2GridDraw.setAxisTextFormat(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetX2Min(double v)           { _x2Converter.SetGraphMin(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetX2Max(double v)           { _x2Converter.SetGraphMax(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetX2MinRangeLimit(double v) { _x2Converter.setGraphMinRangeLimit(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetX2MaxRangeLimit(double v) { _x2Converter.setGraphMaxRangeLimit(v); return *static_cast<DERIVED*>(this); }
+		TypeGraphCoord GetX2Min()             { return ( _x2Converter.getGraphMin()); }
+		TypeGraphCoord GetX2Max()             { return ( _x2Converter.getGraphMax()); }
+		Value GetX2MinRangeLimit()            { return (_x2Converter.getGraphMinRangeLimit()); }
+		Value GetX2MaxRangeLimit()            { return (_x2Converter.getGraphMaxRangeLimit()); };
+		#endif
+
+		#ifdef USE_GD_MACROS
+		MAKE_GRAPHDRAW_LABEL_FN(X2,x2);
+		#else
+  		DERIVED& SetX2Label(const String& v)     { _x2Label.SetLabel(v); return *static_cast<DERIVED*>(this); }
+  		DERIVED& SetX2LabelFont(const Font& v)   { _x2Label.SetFont(v); return *static_cast<DERIVED*>(this); }
+  		DERIVED& SetX2LabelWidth(int v)          { _x2Label.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+  		DERIVED& SetX2LabelColor(const Color& v) { _x2Label.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+  		DERIVED& HideX2Label(bool v=true)        { _x2Label.Hide(v); return *static_cast<DERIVED*>(this); };
+		#endif
+
+	};
+	
+	
+	
+	// ============================
+	//    CRTP_GD_Y2   CLASS
+	// ============================
+	template<class TYPES, class DERIVED, class BASE>
+	class CRTP_GD_Y2 : public BASE
+	{
+		public:
+		typedef TYPES Types;
+		typedef CRTP_GD_Y2<TYPES, DERIVED, BASE> CLASSNAME;
+		typedef BASE                                       _B;
+		
 		typedef typename TYPES::Y2_TypeCoordConverter TypeCoordConverterY2;
 		typedef typename TYPES::Y2_TypeGridAxisDraw   TypeGridAxisDrawY2;
-		typedef SeriesGroup<DERIVED>       TypeSeriesGroup;
+		typedef typename TYPES::TypeLabelElement      TypeLabel;
 	
+		TypeLabel              _y2Label;
 		TypeCoordConverterY2   _y2Converter;
 		TypeGridAxisDrawY2     _y2GridDraw;
 		
 		public:
-		CRTP_XYY2GraphDraw()
+		CRTP_GD_Y2()
 		: _y2GridDraw(_y2Converter)
 		{
+			_y2Label.SetName( t_("Y2 label") );
 			_y2GridDraw.SetName( t_("Y2 axis") );
 			_y2GridDraw.SetElementWidth(40);
 			_y2GridDraw.setAxisColor( Blue() ).setAxisTextFont(StdFont()).setAxisTextColor( Blue() ).setAxisTickColor( Red() );
 			_y2GridDraw.setGridColor( Null );
 			_y2GridDraw.setMajorTickMark( (new LineTickMark())->SetTickLength( 3 ) );
+			_y2Label.SetFont( StdFont(15).Bold()).SetTextColor(Green).SetLabel("Y2 Axis label");
 
 			_B::AddYConverter(_y2Converter);
+			_B::AddRightElement(30, _y2Label, 55);
 			_B::AddRightElement(_y2GridDraw, 50);
-			setGraphSize(0, 100, 0, 100, 0, 100);
 			_B::SetCurrentYConverter(0);
 		};
 
+		virtual ~CRTP_GD_Y2() {}
+
+		TypeCoordConverterY2& GetY2CoordConverter() { return _y2Converter; }
+		TypeGridAxisDrawY2& GetY2GridAxisDraw()     { return _y2GridDraw; }
+		
+		#ifdef USE_DG_MACROS
+		MAKE_GRAPHDRAW_AXIS_FN(Y2,y2);
+		#else
+		DERIVED& HideY2Axis (bool v) { _y2GridDraw.Hide(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2AxisRectWidth(int v) { _y2GridDraw.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& setY2NbGridSteps(int v) { _y2GridDraw.GetGridStepManager().SetNbSteps(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2GridColor(Color v) { _y2GridDraw.setGridColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2AxisWidth(int v) { _y2GridDraw.setAxisWidth(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2AxisColor(Color v) { _y2GridDraw.setAxisColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2AxisTextColor(Color v) { _y2GridDraw.setAxisTextColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2AxisTextFont(Font v) { _y2GridDraw.setAxisTextFont(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2AxisTickColor(Color v) { _y2GridDraw.setAxisTickColor(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2ScaleType(int v) { _y2Converter.SetScaleType(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2AxisFormatType(AxisTextFormat v) { _y2GridDraw.setAxisTextFormat(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2Min(double v) { _y2Converter.SetGraphMin(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2Max(double v) { _y2Converter.SetGraphMax(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2MinRangeLimit(double v) { _y2Converter.setGraphMinRangeLimit(v); return *static_cast<DERIVED*>(this); }
+		DERIVED& SetY2MaxRangeLimit(double v) { _y2Converter.setGraphMaxRangeLimit(v); return *static_cast<DERIVED*>(this); }
+		TypeGraphCoord GetY2Min() { return ( _y2Converter.getGraphMin()); }
+		TypeGraphCoord GetY2Max() { return ( _y2Converter.getGraphMax()); }
+		Value GetY2MinRangeLimit() { return (_y2Converter.getGraphMinRangeLimit()); }
+		Value GetY2MaxRangeLimit() { return (_y2Converter.getGraphMaxRangeLimit()); };
+		#endif
+
+		#ifdef USE_GD_MACROS
+		MAKE_GRAPHDRAW_LABEL_FN(Y2,y2);
+		#else
+  		DERIVED& SetY2Label(const String& v) { _y2Label.SetLabel(v); return *static_cast<DERIVED*>(this); }
+  		DERIVED& SetY2LabelFont(const Font& v) { _y2Label.SetFont(v); return *static_cast<DERIVED*>(this); }
+  		DERIVED& SetY2LabelWidth(int v) { _y2Label.SetElementWidth(v); return *static_cast<DERIVED*>(this); }
+  		DERIVED& SetY2LabelColor(const Color& v) { _y2Label.SetTextColor(v); return *static_cast<DERIVED*>(this); }
+  		DERIVED& HideY2Label(bool v=true) { _y2Label.Hide(v); return *static_cast<DERIVED*>(this); };
+		#endif
+	};
+
+
+ 
+	// ==================================================================================================================================
+	// ==================================================================================================================================
+
+	// ============================
+	//    CRTP_XYGraphDraw   CLASS
+	// ============================
+	template<class TYPES, class DERIVED>
+	class CRTP_XYGraphDraw : public CRTP_GD_Y1< TYPES, DERIVED, CRTP_GD_X1< TYPES, DERIVED, CRTP_EmptyGraphDraw<TYPES, DERIVED > > > 
+	{
+		public:
+		typedef CRTP_XYGraphDraw<TYPES, DERIVED> CLASSNAME;
+		typedef CRTP_GD_Y1< TYPES, DERIVED, CRTP_GD_X1< TYPES, DERIVED, CRTP_EmptyGraphDraw<TYPES, DERIVED > > > _B;
+
+		public:
+		CRTP_XYGraphDraw() {
+			setGraphSize(0, 100, 0, 100);
+		};
+
+		virtual ~CRTP_XYGraphDraw() {}
+
+		DERIVED& setGraphSize(Rectf r) {
+			_B::_xConverter.updateGraphSize(r.TopLeft().x, r.BottomRight().x);
+			_B::_yConverter.updateGraphSize(r.TopLeft().y, r.BottomRight().y);
+			_B::updateSizes();
+			return *static_cast<DERIVED*>(this);
+		}
+
+		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1) {
+			_B::_xConverter.updateGraphSize( x0, x1);
+			_B::_yConverter.updateGraphSize( y0, y1);
+			_B::updateSizes();
+			return *static_cast<DERIVED*>(this);
+		}
+	};
+
+	// ============================
+	//    CRTP_XYLGraphDraw   CLASS
+	// ============================
+	template<class TYPES, class DERIVED>
+	class CRTP_XYLGraphDraw : public CRTP_GD_Legend< TYPES, DERIVED ,  CRTP_GD_Y1< TYPES, DERIVED, CRTP_GD_X1< TYPES, DERIVED, CRTP_EmptyGraphDraw<TYPES, DERIVED > > > >
+	{
+		public:
+		typedef CRTP_XYLGraphDraw<TYPES, DERIVED> CLASSNAME;
+
+		CRTP_XYLGraphDraw() {}
+		virtual ~CRTP_XYLGraphDraw() {}
+	};
+
+	// ============================
+	//    CRTP_XYLTGraphDraw   CLASS
+	// ============================
+	template<class TYPES, class DERIVED>
+	class CRTP_XYLTGraphDraw : public CRTP_GD_Title< TYPES, DERIVED , CRTP_GD_Legend< TYPES, DERIVED ,  CRTP_GD_Y1< TYPES, DERIVED, CRTP_GD_X1< TYPES, DERIVED, CRTP_EmptyGraphDraw<TYPES, DERIVED > > > > >
+	{
+		public:
+		typedef CRTP_XYLTGraphDraw<TYPES, DERIVED> CLASSNAME;
+		CRTP_XYLTGraphDraw() {}
+		~CRTP_XYLTGraphDraw() {}
+	};
+
+	// ============================
+	//    CRTP_XYY2GraphDraw   CLASS
+	// ============================
+	template<class TYPES, class DERIVED>
+	class CRTP_XYY2GraphDraw : public CRTP_GD_Y2<TYPES, DERIVED,  CRTP_GD_Y1< TYPES, DERIVED, CRTP_GD_X1< TYPES, DERIVED, CRTP_EmptyGraphDraw<TYPES, DERIVED > > > >
+	{
+		public:
+		typedef CRTP_XYY2GraphDraw<TYPES, DERIVED>                                CLASSNAME;
+		typedef CRTP_GD_Y2<TYPES, DERIVED,  CRTP_GD_Y1< TYPES, DERIVED, CRTP_GD_X1< TYPES, DERIVED, CRTP_EmptyGraphDraw<TYPES, DERIVED > > > >   _B;
+		
+		public:
+		CRTP_XYY2GraphDraw() { setGraphSize(0, 100, 0, 100, 0, 100); }
 		virtual ~CRTP_XYY2GraphDraw() {}
 
 		private:
@@ -1270,59 +1542,43 @@ namespace GraphDraw_ns
 		{
 			_B::_xConverter.updateGraphSize( x0, x1);
 			_B::_yConverter.updateGraphSize( y0, y1);
-			_y2Converter.updateGraphSize( y20, y21);
+			_B::_y2Converter.updateGraphSize( y20, y21);
 			_B::updateSizes();
 			return *static_cast<DERIVED*>(this);
 		}
-
-		TypeCoordConverterY2& GetY2CoordConverter() { return _y2Converter; }
-		TypeGridAxisDrawY2& GetY2GridAxisDraw()     { return _y2GridDraw; }
-		
-		MAKE_GRAPHDRAW_AXIS_FN(Y2,y2);
 	};
-
-
+	
+	
 	// ============================
 	//    CRTP_XYY2LTGraphDraw   CLASS
 	// ============================
 	template<class TYPES, class DERIVED>
-	class CRTP_XYY2LTGraphDraw : public CRTP_XYY2GraphDraw<TYPES, DERIVED >
+	class CRTP_XYY2LTGraphDraw : public CRTP_GD_Title< TYPES, DERIVED , CRTP_GD_Legend< TYPES, DERIVED, CRTP_GD_Y2< TYPES, DERIVED,  CRTP_GD_Y1< TYPES, DERIVED, CRTP_GD_X1< TYPES, DERIVED, CRTP_EmptyGraphDraw<TYPES, DERIVED > > > > > >
 	{
 		public:
 		typedef TYPES Types;
 		typedef CRTP_XYY2LTGraphDraw<TYPES, DERIVED> CLASSNAME;
-		typedef CRTP_XYY2GraphDraw<TYPES, DERIVED>   _B;
-		typedef typename TYPES::TypeLabelElement     TypeLabel;
-	
-		TypeLabel   _title;
-		TypeLabel   _xLabel;
-		TypeLabel   _yLabel;
-		TypeLabel   _y2Label;
-
+		typedef CRTP_GD_Title< TYPES, DERIVED , CRTP_GD_Legend< TYPES, DERIVED, CRTP_GD_Y2< TYPES, DERIVED,  CRTP_GD_Y1< TYPES, DERIVED, CRTP_GD_X1< TYPES, DERIVED, CRTP_EmptyGraphDraw<TYPES, DERIVED > > > > > > _B;
 		protected:
 		
 		public:
-		CRTP_XYY2LTGraphDraw()
+		CRTP_XYY2LTGraphDraw() {}
+		virtual ~CRTP_XYY2LTGraphDraw() {}
+		
+		private:
+		// forbid usage of following methods in this case
+		DERIVED& setGraphSize(Rectf r) {}
+		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1) {}
+		
+		public:
+		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1, TypeGraphCoord y20, TypeGraphCoord y21 )
 		{
-			_title.SetName( t_("Title") );
-			_xLabel.SetName( t_("X label") );
-			_yLabel.SetName( t_("Y label") );
-			_y2Label.SetName( t_("Y2 label") );
-			
-			_title.SetFont( StdFont(20).Bold().Underline()).SetTextColor(Red).SetLabel("TITLE");
-			_xLabel.SetFont( StdFont(15).Bold()).SetTextColor(Green).SetLabel("X Axis label");
-			_yLabel.SetFont( StdFont(15).Bold()).SetTextColor(Green).SetLabel("Y Axis label");
-			_y2Label.SetFont( StdFont(15).Bold()).SetTextColor(Green).SetLabel("Y2 Axis label");
-			_B::AddBottomElement(30, _xLabel, 25);
-			_B::AddLeftElement(30, _yLabel, 25);
-			_B::AddRightElement(30, _y2Label, 55);
-			_B::AddTopElement(40, _title, 200);
-			_B::SetCurrentYConverter(0);
+			_B::_xConverter.updateGraphSize( x0, x1);
+			_B::_yConverter.updateGraphSize( y0, y1);
+			_B::_y2Converter.updateGraphSize( y20, y21);
+			_B::updateSizes();
+			return *static_cast<DERIVED*>(this);
 		}
-		MAKE_GRAPHDRAW_TITLE_FN;
-		MAKE_GRAPHDRAW_LABEL_FN(X,x);
-		MAKE_GRAPHDRAW_LABEL_FN(Y,y);
-		MAKE_GRAPHDRAW_LABEL_FN(Y2,y2);
 	};
 
 };

@@ -23,11 +23,11 @@ class ElementPropertiesDlg : public WithElementBaseLayout<TopWindow> {
 	void InitDlg(ELEMENT& element) {
 		_B::Title(element._name);
 		elem = &element;
-		position.Add(GraphDraw_ns::FLOAT_OVER_GRAPH, t_("FLOAT") );
-		position.Add(GraphDraw_ns::TOP_OF_GRAPH, t_("TOP") );
-		position.Add(GraphDraw_ns::BOTTOM_OF_GRAPH, t_("BOTTOM") );
-		position.Add(GraphDraw_ns::LEFT_OF_GRAPH, t_("LEFT") );
-		position.Add(GraphDraw_ns::RIGHT_OF_GRAPH, t_("RIGHT") );
+		position.Add(FLOAT_OVER_GRAPH, t_("FLOAT") );
+		position.Add(TOP_OF_GRAPH, t_("TOP") );
+		position.Add(BOTTOM_OF_GRAPH, t_("BOTTOM") );
+		position.Add(LEFT_OF_GRAPH, t_("LEFT") );
+		position.Add(RIGHT_OF_GRAPH, t_("RIGHT") );
 
 		for (int c=0; c<position.GetCases().GetCount(); ++c) {
 			 const Switch::Case& caseData = position.GetCases()[c];
@@ -46,9 +46,9 @@ class ElementPropertiesDlg : public WithElementBaseLayout<TopWindow> {
 	
 	virtual void Retrieve() {
 		r1.Retrieve();
-		elem->SetElementPos(static_cast<GraphDraw_ns::ElementPosition>(pos));
+		elem->SetElementPos(static_cast<ElementPosition>(pos));
 		elem->SetElementWidth(elementWidth);
-		elem->_parent->RefreshFromChild( GraphDraw_ns::REFRESH_FULL );
+		elem->_parent->RefreshFromChild( REFRESH_FULL );
 	}
 };
 // ============================================================================================
@@ -172,17 +172,18 @@ class GridAxisPropertiesDlg : public WithGridAxisPropertiesBaseLayout<ElementPro
 
 // specialized class  for   GenericCoordinateConverter
 template <class GRIDAXISDRAW>
-class GridAxisPropertiesDlg<GRIDAXISDRAW, GraphDraw_ns::GenericCoordinateConverter> : public WithGenericGridAxisPropertiesLayout<ElementPropertiesDlg<GRIDAXISDRAW> > {
+class GridAxisPropertiesDlg<GRIDAXISDRAW, GenericCoordinateConverter> : public WithGenericGridAxisPropertiesLayout< ElementPropertiesDlg<GRIDAXISDRAW> >
+{
 	public:
 	int iscaleType;
-	typedef GraphDraw_ns::GenericCoordinateConverter COORDCONVERTER;
+	typedef GenericCoordinateConverter COORDCONVERTER;
 	COORDCONVERTER* converter;
 	CtrlRetriever r2;
 	double gMin;
 	double gMax;
 	
 	public:
-	typedef GridAxisPropertiesDlg<GRIDAXISDRAW, GraphDraw_ns::GenericCoordinateConverter>  CLASSNAME;
+	typedef GridAxisPropertiesDlg<GRIDAXISDRAW, GenericCoordinateConverter>  CLASSNAME;
 	typedef WithGenericGridAxisPropertiesLayout<ElementPropertiesDlg<GRIDAXISDRAW> > _B;
 	
 	GridAxisPropertiesDlg() : converter(0) {
@@ -202,11 +203,11 @@ class GridAxisPropertiesDlg<GRIDAXISDRAW, GraphDraw_ns::GenericCoordinateConvert
 		iscaleType = converter->GetScaleType();
 		
 
-		_B::scaleType.Add(GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_STD,   t_("Std") );
-		_B::scaleType.Add(GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_LOG,   t_("Log") );
-		_B::scaleType.Add(GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_POW10, t_("Pow10") );
+		_B::scaleType.Add(GenericCoordinateConverter::AXIS_SCALE_STD,   t_("Std") );
+		_B::scaleType.Add(GenericCoordinateConverter::AXIS_SCALE_LOG,   t_("Log") );
+		_B::scaleType.Add(GenericCoordinateConverter::AXIS_SCALE_POW10, t_("Pow10") );
 		if ( gMin <= 0) {
-			_B::scaleType.DisableValue( GraphDraw_ns::GenericCoordinateConverter::AXIS_SCALE_LOG);
+			_B::scaleType.DisableValue( GenericCoordinateConverter::AXIS_SCALE_LOG);
 		}
 
 		r2( _B::axisLineColor, _B::elem->_axisColor)

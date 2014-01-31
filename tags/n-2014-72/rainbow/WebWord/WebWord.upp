@@ -1,0 +1,15 @@
+uses
+	Core,
+	plugin/DroidFonts,
+	RichEdit,
+	Turtle,
+	PdfDraw;
+
+file
+	test.qtf,
+	WebWord.h,
+	WebWord.cpp;
+
+mainconfig
+	"" = "SSE2 TURTLE RAINBOW";
+
